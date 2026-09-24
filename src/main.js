@@ -35,10 +35,11 @@ import {bakeBellcrab,bakeBellguard} from './bellcrab.js';
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
-import { xpFoe, xpFloor, levelOfXp, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
+import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { COMBAT, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
-import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill } from './progression.js';
+import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving } from './progression.js';
+import { depthsOf } from './campaign-order.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
 import { bakeFrog } from './redraw/frogking.js';
@@ -396,13 +397,17 @@ const ROW_LV = [0, 2, 5, 10];        // the level a row opens at
 const ROW_NEED = [0, 2, 5, 10];      // and the points it wants spent in its own tree
 const CAP_NEED = 18, PTS_CAP = 30;   /* what a capstone asks of its tree, and the most points a hero ever has */
 const TREE = LEGACY_NODES; // frozen historical metadata, retained for migration and art icons
-const TALENTS = [{ id: 'tree', name: 'SKILL LOADOUT', desc: 'buy skills with coins. active skills and passive techniques share two slots, three at level 8 and four at level 16. health, stamina and damage grow automatically. Z to open' }];
+const TALENTS = [{ id: 'tree', name: 'SKILL LOADOUT', desc: 'buy abilities with coins and put two on F and G. passives are never bought: they arrive with levels, and so do health, stamina and damage. Z to open' }];
 const heroXp = h => ((PROG.xp || {})[h || hero()] || 0);   /* THIS hero's XP, not the save's: every hero carries his own */
 const heroLevel = h => levelOfXp(heroXp(coopLent(h || PROG.hero || 'knight') ? players[0].hero : h));   /* THE LEVEL IS XP (src/xp.js): the fights pay it and a wood's first finish pays a share. It was the woods walked, and a straight run still lands within one of that */
 const heroDone = () => (PROG.done[hero()] = PROG.done[hero()] || {});
 const talentsOf = h => { PROG.talents = PROG.talents || {}; const m = (PROG.talents[h] = PROG.talents[h] || {}); for (const k in m) if (m[k] === true) m[k] = 1; return m; };
 let trialVerbs = false, trialLend = null;   /* trialLend: the skills a hero's trial lends him for its F and G step (lendSkills) */   // in a practice yard you are lent the verbs, bought or not: the yard is where you find out whether you want them
+/* A PASSIVE IS ON FROM ITS LEVEL (hero-kits 1b, 2026-09-24). It used to be on only while it sat in one of the two slots, which made
+   every passive a rival of the abilities for the same two keys; now it needs nothing but the level (or, for one a save bought before
+   this, the owning - src/progression.js passiveOn). An ACTIVE is still on only while it is slotted. */
 const tal = id => { if(id==='heavy')return 1+growthAt(hero(),heroLevel()).techniqueRank;if(growthNodes[hero()]?.has(id))return growthAt(hero(),heroLevel()).techniqueRank; if (trialLend && trialLend.has(id)) return 1;
+  const n = skillFor(hero(), id); if (n && !n.active) return passiveOn(PROG, hero(), id, heroLevel()) ? 1 : 0;
   return equipped(PROG, hero(), heroLevel()).includes(id) ? 1 : 0; };
 const ptsSpent = h => { const m = talentsOf(h); return TREE.filter(n => n.hero === h).reduce((s, n) => s + Math.min(n.max, m[n.id] || 0) * (n.cost || 1), 0); };
 const ptsTotal = h => godMode() ? 99 : Math.min(PTS_CAP, heroLevel(h));   /* ONE TREE'S WORTH: a point a wood, and never more than thirty */
@@ -424,7 +429,7 @@ function resetTalents(h) { PROG.talents = PROG.talents || {}; PROG.talents[h] = 
 const LV_GROW = h => growthAt(h || hero(), heroLevel(h)).ranks;
 const cdOf = k => k === 'summonSkeleton' && tal('gleaner') ? 12 : CD_MAX[k] || 3;
 const amul = k => skillScale(heroLevel()); // skill damage grows, cooldowns and invulnerability do not
-let treeResetT = 0, talentsBackT = 0, talentsBackWho = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
+let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPress(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
   damagePlayer: (x, d, o) => damagePlayer(x, d, o), hurtEnemy: (e, d, x, pl) => hurtEnemy(e, d, x, pl), respawn: () => respawn(), fullHp: e => fullHp(e), risen: () => risen, bodies: () => bodies, acorns: () => acorns, heavyWind: () => heavyWind(),
@@ -2850,16 +2855,23 @@ function startGame() {
 /* ---------- XP (src/xp.js) ----------
    A kill pays by its weight, the first finish of a wood pays a share of what the wood holds, and a quest pays once. Only the campaign's
    woods pay, the secret ones with them: the rush, the trials, the practice yard, the store and the editor pay nothing. */
-let levelXp = 0, xpRun = 0, lvAtStart = 0, lvUpT = 0, lvUpN = 0;
+let levelXp = 0, xpRun = 0, xpBoost = 0, lvAtStart = 0, lvUpT = 0, lvUpN = 0, lvHealOwed = null;
+/* THE LEVEL A HERO IS EXPECTED TO BE IN THIS WOOD: how deep it sits on the gate chain (src/campaign-order.js), which src/xp.js is
+   fitted to. Below it, the wood pays XP_CATCHUP times (xpCatchUp, which stops at the curve). */
+const LEVEL_DEPTH = depthsOf(LEVELS.filter(l => !l.hidden || l.secret));
+const expectedLv = () => LEVEL_DEPTH[curId()] || 0;
+const catchingUp = () => xpWood() && heroXp() < xpFloor(expectedLv());
 const xpWood = () => !!L && !rushOn() && !L.trial && !L.shop && !edTesting && !!LEVELS[levelIndex] && (!LEVELS[levelIndex].hidden || !!LEVELS[levelIndex].secret);
 function xpGot(id) { const h = hero(); PROG.xpGot = PROG.xpGot || {}; const m = (PROG.xpGot[h] = PROG.xpGot[h] || {}); return (m[id] = m[id] || {}); }
 /* WHAT THE WOOD HOLDS: every placed foe that is not its mini or its boss, and every ambusher. The share and the quest are fractions of it */
 function woodXp() { const tier = tierOf(curId());
   return enemies.reduce((s, e) => s + (e.xpKey && !e.harmless && !e.xpRole ? xpFoe(e.t, '', tier) : 0), 0) + (L.ambushes || []).reduce((s, A) => s + A.waves.reduce((m, w) => m + w.reduce((k, q) => k + xpFoe(q[0], '', tier), 0), 0), 0); }
-function xpStart() { levelXp = woodXp(); xpRun = 0; lvAtStart = heroLevel(); lvUpT = 0; }
+function xpStart() { levelXp = woodXp(); xpRun = 0; xpBoost = 0; lvAtStart = heroLevel(); lvUpT = 0; lvHealOwed = null;
+  if (catchingUp()) { hintT = 4.5; hintMsg = '+XP x' + XP_CATCHUP + ' CATCHING UP: THIS WOOD EXPECTS LEVEL ' + expectedLv() + '.'; } }
 function gainXp(n) { n = Math.round(n); if (!(n > 0)) return;
   if (passOn && players && passOn !== players[0]) return;   /* THE XP IS PLAYER ONE'S. A borrowed hero is lent a level for the run; levelling him in the save off the back of it would hand the save a hero it never earned */
-  const h = hero(), was = heroLevel(h); PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + n; xpRun += n; const now = heroLevel(h); if (now > was) levelUp(now); }
+  const h = hero(), was = heroLevel(h), paid = xpWood() ? xpCatchUp(n, heroXp(h), expectedLv()) : n;   /* CATCH-UP: below the wood's expected level he is paid x3, up to the curve and no further */
+  PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + paid; xpRun += paid; xpBoost += paid - n; const now = heroLevel(h); if (now > was) levelUp(now, was); }
 /* THE FIRST TIME A PLACED FOE FALLS it pays in full and goes on this hero's list for the wood. After a death, a shrine or a second walk it is
    on the list (or the wood is finished) and pays XP_AGAIN. The list is saved with the XP, so leaving a wood and coming back is no way round it. */
 function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) return; e.xpPaid = true;
@@ -2870,11 +2882,28 @@ function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) 
 /* THE LEVEL-UP. A ring and a chime on him, LEVEL UP off him as a move word (kept off the tells like every other), and the plate's bar turns
    gold and says LEVEL n; the new health comes with it. The first time, a line says there is a point to spend. Never over a tell: the rings
    are not text, the word is settled off the marks, and the line is a hint, which waits for them (hintWaits). */
-function levelUp(n) { lvUpN = n; if (state !== 'play') return;
+/* A LEVEL-UP HEALS HIM TO FULL, health and stamina (Daniel, 2026-09-24) - but NEVER INSIDE A FIGHT. A kill that levels him while a boss,
+   a mini or an ambush is still live (an add, a first form, a wave) owes the heal until that fight is over (levelHealTick, every frame),
+   so a level-up can never be a potion in the middle of a boss. The boss's own killing blow ends the fight in the same hurtEnemy call
+   (queenDies, chiefDies, miniEnd clear bossActive/miniActive), so that one heals on the frame he falls. The hint says what arrived:
+   the growth, the heal, and any passive that came with the level - never a slot: there are two, always. */
+function levelUp(n, from) { lvUpN = n; if (state !== 'play') return; if (from === undefined) from = n - 1;
   lvUpT = 2.6; const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh));
   SFX.rankUp(); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b');
-  { const before=growthAt(hero(),n-1),after=growthAt(hero(),n); hintT=4.5; hintMsg='LEVEL '+n+': +'+(after.hp-before.hp)+' HEALTH, +5 STAMINA, +'+(after.damage-before.damage)+' DAMAGE.'; }
+  lvHealOwed = { n, from: lvHealOwed ? lvHealOwed.from : from }; levelHealTick();
   saveProgress(); }
+const fightLive = () => !!(bossActive || miniActive || ambushLive());
+/* WHAT A LEVEL-UP SAYS: the growth, the heal and the passives, trimmed until it is two lines of the hint (textfit's rule) */
+function levelUpLine(h, n, from) { const before = growthAt(h, from), after = growthAt(h, n), got = passivesArriving(h, from, n);
+  const pas = got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '';
+  const head = 'LEVEL ' + n + (n - from > 1 ? ' (+' + (n - from) + ')' : '');
+  const tries = [head + ': +' + (after.hp - before.hp) + ' HEALTH, +' + (after.stamina - before.stamina) + ' STAMINA, +' + (after.damage - before.damage) + ' DAMAGE. FULLY HEALED.' + pas,
+    head + ': +' + (after.hp - before.hp) + ' HEALTH. FULLY HEALED.' + pas, head + '. FULLY HEALED.' + pas];
+  return tries.find(s => wrap(s, VW - 40, 6).length <= 2) || tries[tries.length - 1]; }
+function levelHealTick() { const o = lvHealOwed; if (!o || state !== 'play' || fightLive()) return; const p = players ? players[0] : P; if (!p || p.dead) return;
+  lvHealOwed = null; p.hp = p.maxHp; p.hpShown = p.maxHp; p.st = p.maxSt;
+  ringAt(p.x, p.y - 12, 20, '#8fd160', 0.45); number(p.x, p.y - 44, 'FULLY HEALED', '#8fd160');
+  hintT = 4.5; hintMsg = levelUpLine(hero(), o.n, o.from); }
 /* THE SIM (tools/xp.mjs): the campaign in the order it opens - a secret wood straight after the wood that opens it - priced by the same
    xpFoe the kills use. A straight run kills XP_KILL_NORMAL of what a wood holds, every mini and boss, and takes the share; a full clear
    takes everything and every quest as well. old is the level the count of woods gave. */
@@ -3404,7 +3433,7 @@ function learnTalent(k) { treeFrom = state; treeI = 0; treeBranch = 0; state = '
 let treeFrom = 'store', treeI = 0, treeMsg = '', treeMsgT = 0, treeBranch = 0;
 const SKILL_NEEDS = { coldComfort: ['summonSkeleton'], gleaner: ['summonSkeleton'], press: ['summonSkeleton'], ossuary: ['summonSkeleton'], graveProvides: ['summonSkeleton'], gripAll: ['deathGrip'], bidden: ['summonSkeleton','gravecall'], secondDeath: ['summonSkeleton','gravecall'] };
 const skillNeeds = n => n?.hero === 'reaper' ? SKILL_NEEDS[n.id] || [] : [];
-const treeNodes = () => skillsFor(hero()).filter(n => !!n.active === (treeBranch === 0)).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));
+const treeNodes = () => treeBranch === 1 ? passiveLadder(hero()) : skillsFor(hero()).filter(n => n.active).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));   /* the PASSIVES tab is the ladder: the order they arrive in */
 const loadoutSafe = () => { const from = state === 'tree' ? treeFrom : state, origin = from === 'menu' ? menuFrom : from;
   if (['map','select'].includes(origin) || (from === 'store' && equipFrom === 'map' && storeMode === 'equip')) return true;
   if (bossActive || miniActive || ambushLive()) return false;
@@ -3415,8 +3444,9 @@ function updateTree(dt) {
  if(upPress)treeI=(treeI+ns.length-1)%ns.length;if(downPress)treeI=(treeI+1)%ns.length;
  if(old!==treeI){treePage=0;SFX.ui();}if(morePress()&&treePages>1)treePage=(treePage+1)%treePages;
  const n=ns[treeI],say=m=>{treeMsg=m;treeMsgT=3;SFX.ui();};
- if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}
- [throwPress,skill2Press,skill3Press,skill4Press].forEach((pressed,index)=>{if(!pressed||!n)return;const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
+ if(confirmPress&&n&&!n.active){say(passiveOn(PROG,hero(),n.id,heroLevel())?n.name+' is always on':'Arrives at level '+n.level);}
+ else if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}
+ [throwPress,skill2Press,skill3Press,skill4Press].forEach((pressed,index)=>{if(!pressed||!n)return;if(!n.active){say('Passives are always on: slots are for abilities');return;}const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
  if(pausePress||talentsPress){state=treeFrom;SFX.menuClose();}
 }
 const TREE_ICON = {};
@@ -3565,11 +3595,14 @@ function drawTree() {
  text('SKILLS / LOADOUT',10,6,UI.title,'left',6);text('LV '+lv+'   '+(PROG.coins||0)+' COINS',VW-10,6,UI.gold,'right',6);
  for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),key=['F','G'][i];g.fillStyle=i<limit?'#302c3e':'#191622';g.fillRect(x,19,width-3,23);text(i<limit?(sk&&!sk.active?'PASSIVE':key):'LEVEL '+(i===2?8:16),x+4,21,i<limit?UI.gold:UI.dim,'left',6);text(fitName(sk?sk.name:i<limit?'EMPTY':'LOCKED',width-11,6),x+4,31,UI.text,'left',6);}
  for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,46,91,12);text(tab===0?'ACTIVES':'PASSIVES',x+45,49,treeBranch===tab?UI.gold:UI.dim,'center',6);}text((Math.floor(idx/6)+1)+' / '+Math.ceil(ns.length/6),VW-12,49,UI.dim,'right',6);
- const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
- if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):'PASSIVE TECHNIQUE  1 SLOT'),12,124,UI.gold,'left',6);
+ const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}
+  /* THE PASSIVE LADDER: what he has is lit and says ON; what is coming is dim and says the level it arrives at */
+  if(!q.active){const on=passiveOn(PROG,h,q.id,lv);text(fitName(q.name,VW-145,6),13,y,on?UI.sel:UI.dim,'left',6);text(on?'ON':'LV '+q.level,VW-13,y,on?UI.sel:UI.dim,'right',6);continue;}
+  text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
+ if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):passiveOn(PROG,h,n.id,lv)?'PASSIVE  ALWAYS ON':'PASSIVE  ARRIVES AT LEVEL '+n.level),12,124,UI.gold,'left',6);
  const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
  const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,134+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
- const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':('LEFT/RIGHT TABS  Z BUY  F/G EQUIP  X MORE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
+ const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':treeBranch===1?'PASSIVES COME WITH LEVELS  LEFT/RIGHT TABS':('LEFT/RIGHT TABS  Z BUY  F/G EQUIP  X MORE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
 }
 function updateStore(dt) {
   if (morePress() && storePages > 1) { storePage = (storePage + 1) % storePages; SFX.ui(); }   /* the next page of a long description */
@@ -5455,7 +5488,12 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
     if (e.t === 'gill' && mother) { number(e.x, e.y - 18, 'GILL SNAPS', '#e0b0f0'); { const tx = Math.floor(e.x / TS), ty = Math.floor(L.arena.floor / TS) - 1, i = ty * LW + tx; if (L.grid[i] === T.AIR) { L.grid[i] = T.BOUNCER; tileSpr[i] = null; resolveTiles(); number(e.x, L.arena.floor - 26, 'A CAP FALLS: A SPRING', '#8fd160'); burst(e.x, L.arena.floor - 8, 14, ['#e8e0d0', '#9a5aa8'], 70, 0.7); shakeCam(3); } } for (let i = 0; i < 2; i++) enemies.push({ t: 'sporeling', x: e.x + (i ? 14 : -14), y: e.y - 20, vx: 0, vy: -60, w: 8, h: 10, hp: EHP.sporeling, speed: 30, face: i ? 1 : -1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0.3 }); const left = enemies.filter(g => g.alive && g.t === 'gill').length; mother.rootT = Math.min(mother.rootT, 0.8); if (left === 0) { mother.mode = 'tip'; mother.modeT = 1.6; L.violet = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 999; number(mother.x, mother.y - 110, 'SHE TIPS', '#ff7a9a'); SFX.roar(); SFX.dieOf('mother')(); shakeCam(8); zoomKick(1.1, 0.5); } }
     if (e.t === 'heart' && mother) { mother.alive = false; kills++; xpKill(mother); queenDies(mother); L.violet = false; L.healed = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 0; number(mother.x, mother.y - 130, 'THE WOOD BREATHES AGAIN', '#8fd160'); burst(mother.x, mother.y - 60, 40, COLS.mother, 120, 1.2); }
     if (e.t === 'prince') princeDies(e);   /* his court goes back into the floor and the tomb's lamps come back */
-    if (e.t === 'chief') chiefDies(); else if (!e.mini && (e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e.t === 'bellcrab' || e.t === 'closedhelm' || e.t === 'drownedking' || e.t === 'prince' || e.t === 'gqueen' || e.t === 'queen' || e.t === 'frog' || e.t === 'king' || e.t === 'ram' || e.t === 'owl' || e.t === 'forgemaster' || e.t === 'golem' || e.t === 'windcaller' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'herald' || e.t === 'reefmaw' || e.t === 'quarter' || e.t === 'captain' || e.t === 'masthead' || e.t === 'kraken' || e.t === 'strawking' || e.t === 'archmage' || e.t === 'tollmaster' || e.t === 'grandmother' || e.t === 'master' || (e.t === 'troll' && e.hill))) queenDies(e); // (a boss missing from this list leaves the walls shut and the fight running)
+    /* THE FIGHT'S OWN BOSS ENDS THE FIGHT WHEN HE DIES - a rule, not only the list below. The list was the whole of it, and a boss left off
+       it (THE FALSE ABBOT, 2026-09-24) kept the walls shut, the music up, the loadout locked and a level-up's heal owed for ever
+       (tools/boss-fight-end.mjs kills every boss and mini in the game and fails on any fight that runs on). The Mother is ended through
+       her heart; if her body is put down any other way the wood breathes again all the same. */
+    if (e === boss && e.t === 'mother') { L.violet = false; L.healed = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 0; }
+    if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e.t === 'bellcrab' || e.t === 'closedhelm' || e.t === 'drownedking' || e.t === 'prince' || e.t === 'gqueen' || e.t === 'queen' || e.t === 'frog' || e.t === 'king' || e.t === 'ram' || e.t === 'owl' || e.t === 'forgemaster' || e.t === 'golem' || e.t === 'windcaller' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'herald' || e.t === 'reefmaw' || e.t === 'quarter' || e.t === 'captain' || e.t === 'masthead' || e.t === 'kraken' || e.t === 'strawking' || e.t === 'archmage' || e.t === 'tollmaster' || e.t === 'grandmother' || e.t === 'master' || (e.t === 'troll' && e.hill))) queenDies(e); // (a boss missing from this list leaves the walls shut and the fight running)
     if (e.t === 'thief' && e.loot > 0) { for (let i = 0; i < e.loot + 3; i++) acorns.push({ x: e.x + (i - e.loot / 2) * 6, y: e.y - 10, got: false, ph: Math.random() * 6, crate: 'thief' + e.x + i, vy: -110 - Math.random() * 60 }); number(e.x, e.y - 24, 'WITH INTEREST', '#ffd34a'); SFX.coin(); }
     if (e.t === 'folk') number(e.x, e.y - 18, 'SHAME', '#9aa39a');
     if (e.t === 'master') { for (const h of enemies) if (h.alive && h.t === 'hound' && (h.pack || h.held)) { h.alive = false; burst(h.x, h.y - 3, 6, COLS.hound, 50, 0.4); } }   /* no whistle, no pack */
@@ -20490,6 +20528,7 @@ function update(dt) {
   for (const pp of players) asPlayer(pp, () => {
     if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; P.abufUp = !!keys.up; P.abufLow = !!keys.down; } if (dodgePress) P.dbuf = 0.12;
     updateCharge(STEP); });
+  levelHealTick();   /* a level-up's heal waits for the fight to end (levelUp); ahead of the hitstop, so the killing blow's own freeze does not hold it back */
   if (stop > 0) { stop -= dt; return; }
   slowT = Math.max(0, slowT - dt); const wdt = (slowT > 0 ? dt * 0.3 : dt) * (SET.speed || 1);
   // THE CLOCK RUNS ON WORLD TIME, NOT WALL TIME. Every medal in the game was set against a world running at
@@ -23085,7 +23124,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
   const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill  F', skName], ['skill  G', sk2Name], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold / silver', PROG.coins + ' / ' + silverAvail() + ' spare']];
   rows.forEach(([a, b], i) => { const yy = rowY + i * 10; text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
-  { const tr = 'level ' + heroLevel() + ' (' + (xpFloor(heroLevel() + 1) - heroXp()) + ' xp to next)   points ' + ptsSpent(hero()) + '/' + ptsTotal() + '   tonics ' + (PROG.tonics || 0);
+  { const tr = 'level ' + heroLevel() + ' (' + (xpFloor(heroLevel() + 1) - heroXp()) + ' xp to next)   passives ' + passiveLadder(hero()).filter(n => passiveOn(PROG, hero(), n.id, heroLevel())).length + '/' + passiveLadder(hero()).length + '   tonics ' + (PROG.tonics || 0);
     text(tr, VW / 2, y + h - 34, '#8fd160', 'center', 6);
     text('Q  SKILLS AND LOADOUT', VW / 2, y + h - 24, UI.gold, 'center', 6);
     text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 14, UI.sel, 'center', 6); }
@@ -23822,8 +23861,8 @@ function render() {
     /* THE XP BAR: a thin line under the meters, inside the plate, with the level beside it. A level-up turns it gold and it says LEVEL n */
     if (xpRow) { const yy = (SET.iron ? 41 : 29) + 8, n = heroLevel(), lo = xpFloor(n), k = Math.max(0, Math.min(1, (heroXp() - lo) / Math.max(1, xpFloor(n + 1) - lo)));
       if (lvUpT > 0) lvUpT = Math.max(0, lvUpT - 1 / 60); const up = lvUpT > 0, fl = up && Math.floor(time * 8) % 2 === 0;
-      const lab = (up ? 'LEVEL ' : 'LV ') + n, bx = 6 + inkW(lab, 6) + 4;
-      text(lab, 6, yy - 1, up ? (fl ? '#fff6c8' : '#ffd36b') : '#c9b27c', 'left', 6);
+      const cu = !up && catchingUp(), lab = (up ? 'LEVEL ' : 'LV ') + n + (cu ? ' x' + XP_CATCHUP : ''), bx = 6 + inkW(lab, 6) + 4;   /* x3: CATCHING UP, below the level this wood expects */
+      text(lab, 6, yy - 1, up ? (fl ? '#fff6c8' : '#ffd36b') : cu ? '#8fd160' : '#c9b27c', 'left', 6);
       bar(bx, yy, 86 - bx, 3, up ? 1 : k, up ? (fl ? '#fff6c8' : '#ffd36b') : '#8fb8ff'); }
     if (SET.hud === 'minimal') { g.globalAlpha = 1; } 
     if (P.relic && (PROP.relic[P.relic] || PROP.lampIcon)) { g.drawImage(PROP.relic[P.relic] || PROP.lampIcon, 152, 14); }
@@ -23957,8 +23996,8 @@ function render() {
   if (state === 'slots') drawSlots();
   if (state === 'bestiary') drawBestiary();
   if (state === 'map' || state === 'store') { for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x), Math.round(n.y), n.col, 'center'); } g.globalAlpha = 1; }
-  if(PROG.progressionNotice && (state==='map'||state==='play')){talentsBackT=7;talentsBackWho=String(PROG.progressionNotice);PROG.progressionNotice=0;saveProgress();}
-  if(talentsBackT>0&&(state==='map'||state==='play')){talentsBackT-=1/60;const lab=talentsBackWho+' COINS REFUNDED',sub='Q OPENS SKILLS AND LOADOUT';g.fillStyle='rgba(24,18,8,0.94)';g.fillRect(VW/2-114,58,228,23);text(lab,VW/2,62,UI.gold,'center',6);text(sub,VW/2,72,UI.text,'center',6);}
+  if(PROG.progressionNotice && (state==='map'||state==='play')){talentsBackT=7;talentsBackWho=String(PROG.progressionNotice);talentsBackWhy=PROG.passiveNotice?'PASSIVES NOW COME WITH LEVELS':'';PROG.progressionNotice=0;PROG.passiveNotice=0;saveProgress();}
+  if(talentsBackT>0&&(state==='map'||state==='play')){talentsBackT-=1/60;const lab=talentsBackWho+' COINS REFUNDED',sub=talentsBackWhy||'Q OPENS SKILLS AND LOADOUT';g.fillStyle='rgba(24,18,8,0.94)';g.fillRect(VW/2-114,58,228,23);text(lab,VW/2,62,UI.gold,'center',6);text(sub,VW/2,72,UI.text,'center',6);}
   drawWayOn(cx, cy);   /* the way-on arrow, under the tells it keeps clear of */
   drawTells();   /* the ! and the !!, over the numbers, the plates and the boss bar */
   drawWarp(); // the door closing, over everything
@@ -24015,7 +24054,7 @@ function render() {
     line(0.80, 'foes     ' + Math.round(cnt(0.80, kills)), 90, '#fff6e0');
     line(1.00, 'blocks   ' + Math.round(cnt(1.00, blocks)) + '   dodges ' + Math.round(cnt(1.00, dodges)), 103, '#fff6e0');
     line(1.20, 'deaths   ' + deaths, 116, '#fff6e0'); }
-    { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' : xpRun > 0 ? '+' + xpRun + ' XP   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
+    { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') : xpRun > 0 ? '+' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') + '   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
       if (s && !coop()) line(0.15, fitText(s, pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }   /* (in co-op that row is the tally's, and the XP is player one's alone anyway) */
     if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') line(1.9, 'NEW AT THE STORE: SHIELD THROW', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     if (PROG.storeHint === 'groundSlam' && LEVELS[levelIndex].id === 'kings') line(1.9, 'NEW AT THE STORE: GROUND SLAM', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');

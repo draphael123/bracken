@@ -48,7 +48,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 5,
     "price": 120
   },
   {
@@ -82,7 +82,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 7,
     "price": 120
   },
   {
@@ -99,7 +99,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 12,
     "price": 220
   },
   {
@@ -133,7 +133,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 13,
     "price": 220
   },
   {
@@ -150,7 +150,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 19,
     "price": 360
   },
   {
@@ -167,7 +167,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 22,
     "price": 360
   },
   {
@@ -201,7 +201,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 2,
     "price": 60
   },
   {
@@ -218,7 +218,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 8,
     "price": 120
   },
   {
@@ -252,7 +252,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 9,
     "price": 120
   },
   {
@@ -269,7 +269,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 14,
     "price": 220
   },
   {
@@ -303,7 +303,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 15,
     "price": 220
   },
   {
@@ -320,7 +320,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 20,
     "price": 360
   },
   {
@@ -337,7 +337,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 23,
     "price": 360
   },
   {
@@ -354,7 +354,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 1,
     "destination": "skill",
-    "level": 1,
+    "level": 3,
     "price": 60
   },
   {
@@ -371,7 +371,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 4,
     "price": 60
   },
   {
@@ -388,7 +388,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 10,
     "price": 120
   },
   {
@@ -422,7 +422,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 11,
     "price": 120
   },
   {
@@ -439,7 +439,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 17,
     "price": 220
   },
   {
@@ -473,7 +473,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 18,
     "price": 220
   },
   {
@@ -490,7 +490,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 21,
     "price": 360
   },
   {
@@ -507,7 +507,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 24,
     "price": 360
   },
   {
@@ -541,7 +541,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 2,
     "price": 60
   },
   {
@@ -558,7 +558,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 6,
     "price": 120
   },
   {
@@ -592,7 +592,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 7,
     "price": 120
   },
   {
@@ -609,7 +609,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 13,
     "price": 220
   },
   {
@@ -643,7 +643,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 14,
     "price": 220
   },
   {
@@ -660,7 +660,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 19,
     "price": 360
   },
   {
@@ -677,7 +677,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 22,
     "price": 360
   },
   {
@@ -694,7 +694,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 1,
     "destination": "skill",
-    "level": 1,
+    "level": 3,
     "price": 60
   },
   {
@@ -711,7 +711,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 4,
     "price": 60
   },
   {
@@ -728,7 +728,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 8,
     "price": 120
   },
   {
@@ -762,7 +762,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 9,
     "price": 120
   },
   {
@@ -779,7 +779,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 15,
     "price": 220
   },
   {
@@ -813,7 +813,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 16,
     "price": 220
   },
   {
@@ -830,7 +830,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 20,
     "price": 360
   },
   {
@@ -847,7 +847,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 23,
     "price": 360
   },
   {
@@ -881,7 +881,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 5,
     "price": 60
   },
   {
@@ -898,7 +898,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 10,
     "price": 120
   },
   {
@@ -932,7 +932,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 12,
     "price": 120
   },
   {
@@ -949,7 +949,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 17,
     "price": 220
   },
   {
@@ -983,7 +983,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 18,
     "price": 220
   },
   {
@@ -1000,7 +1000,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 21,
     "price": 360
   },
   {
@@ -1017,7 +1017,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 24,
     "price": 360
   },
   {
@@ -1068,7 +1068,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 5,
     "price": 120
   },
   {
@@ -1102,7 +1102,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 6,
     "price": 120
   },
   {
@@ -1119,7 +1119,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 12,
     "price": 220
   },
   {
@@ -1153,7 +1153,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 13,
     "price": 220
   },
   {
@@ -1170,7 +1170,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 19,
     "price": 360
   },
   {
@@ -1187,7 +1187,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 22,
     "price": 360
   },
   {
@@ -1221,7 +1221,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 2,
     "price": 60
   },
   {
@@ -1238,7 +1238,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 7,
     "price": 120
   },
   {
@@ -1272,7 +1272,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 8,
     "price": 120
   },
   {
@@ -1289,7 +1289,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 14,
     "price": 220
   },
   {
@@ -1323,7 +1323,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 15,
     "price": 220
   },
   {
@@ -1340,7 +1340,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 20,
     "price": 360
   },
   {
@@ -1357,7 +1357,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 23,
     "price": 360
   },
   {
@@ -1391,7 +1391,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 3,
     "price": 60
   },
   {
@@ -1408,7 +1408,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 9,
     "price": 120
   },
   {
@@ -1442,7 +1442,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 10,
     "price": 120
   },
   {
@@ -1459,7 +1459,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 16,
     "price": 220
   },
   {
@@ -1493,7 +1493,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 17,
     "price": 220
   },
   {
@@ -1510,7 +1510,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 21,
     "price": 360
   },
   {
@@ -1527,7 +1527,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 24,
     "price": 360
   },
   {
@@ -1578,7 +1578,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 6,
     "price": 120
   },
   {
@@ -1612,7 +1612,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 7,
     "price": 120
   },
   {
@@ -1629,7 +1629,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 13,
     "price": 220
   },
   {
@@ -1663,7 +1663,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 14,
     "price": 220
   },
   {
@@ -1680,7 +1680,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 19,
     "price": 360
   },
   {
@@ -1697,7 +1697,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 22,
     "price": 360
   },
   {
@@ -1714,7 +1714,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 1,
     "destination": "skill",
-    "level": 1,
+    "level": 2,
     "price": 60
   },
   {
@@ -1731,7 +1731,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 3,
     "price": 60
   },
   {
@@ -1748,7 +1748,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 8,
     "price": 120
   },
   {
@@ -1782,7 +1782,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 9,
     "price": 120
   },
   {
@@ -1799,7 +1799,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 15,
     "price": 220
   },
   {
@@ -1833,7 +1833,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 16,
     "price": 220
   },
   {
@@ -1850,7 +1850,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 20,
     "price": 360
   },
   {
@@ -1867,7 +1867,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 23,
     "price": 360
   },
   {
@@ -1884,7 +1884,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 1,
     "destination": "skill",
-    "level": 1,
+    "level": 4,
     "price": 60
   },
   {
@@ -1901,7 +1901,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 5,
     "price": 60
   },
   {
@@ -1918,7 +1918,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 10,
     "price": 120
   },
   {
@@ -1952,7 +1952,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 12,
     "price": 120
   },
   {
@@ -1969,7 +1969,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 17,
     "price": 220
   },
   {
@@ -2003,7 +2003,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 18,
     "price": 220
   },
   {
@@ -2020,7 +2020,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 21,
     "price": 360
   },
   {
@@ -2037,7 +2037,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 24,
     "price": 360
   },
   {
@@ -2088,7 +2088,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 5,
     "price": 120
   },
   {
@@ -2122,7 +2122,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 6,
     "price": 120
   },
   {
@@ -2139,7 +2139,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 12,
     "price": 220
   },
   {
@@ -2173,7 +2173,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 13,
     "price": 220
   },
   {
@@ -2190,7 +2190,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 19,
     "price": 360
   },
   {
@@ -2207,7 +2207,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 22,
     "price": 360
   },
   {
@@ -2258,7 +2258,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 2,
     "price": 60
   },
   {
@@ -2275,7 +2275,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 7,
     "price": 120
   },
   {
@@ -2309,7 +2309,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 8,
     "price": 120
   },
   {
@@ -2326,7 +2326,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 14,
     "price": 220
   },
   {
@@ -2360,7 +2360,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 15,
     "price": 220
   },
   {
@@ -2377,7 +2377,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 20,
     "price": 360
   },
   {
@@ -2394,7 +2394,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 23,
     "price": 360
   },
   {
@@ -2428,7 +2428,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 3,
     "price": 60
   },
   {
@@ -2445,7 +2445,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 9,
     "price": 120
   },
   {
@@ -2479,7 +2479,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 10,
     "price": 120
   },
   {
@@ -2496,7 +2496,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 16,
     "price": 220
   },
   {
@@ -2530,7 +2530,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 17,
     "price": 220
   },
   {
@@ -2547,7 +2547,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 21,
     "price": 360
   },
   {
@@ -2564,7 +2564,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 24,
     "price": 360
   },
   {
@@ -2649,7 +2649,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 5,
     "price": 120
   },
   {
@@ -2666,7 +2666,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 10,
     "price": 220
   },
   {
@@ -2683,7 +2683,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 11,
     "price": 220
   },
   {
@@ -2700,7 +2700,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 12,
     "price": 220
   },
   {
@@ -2717,7 +2717,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 19,
     "price": 360
   },
   {
@@ -2734,7 +2734,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 22,
     "price": 360
   },
   {
@@ -2768,7 +2768,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 2,
     "price": 60
   },
   {
@@ -2785,7 +2785,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 6,
     "price": 120
   },
   {
@@ -2819,7 +2819,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 7,
     "price": 120
   },
   {
@@ -2836,7 +2836,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 13,
     "price": 220
   },
   {
@@ -2853,7 +2853,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 14,
     "price": 220
   },
   {
@@ -2870,7 +2870,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 15,
     "price": 220
   },
   {
@@ -2887,7 +2887,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 20,
     "price": 360
   },
   {
@@ -2904,7 +2904,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 23,
     "price": 360
   },
   {
@@ -2938,7 +2938,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
+    "level": 3,
     "price": 60
   },
   {
@@ -2955,7 +2955,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 8,
     "price": 120
   },
   {
@@ -2989,7 +2989,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 9,
     "price": 120
   },
   {
@@ -3006,7 +3006,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 16,
     "price": 220
   },
   {
@@ -3023,7 +3023,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 17,
     "price": 220
   },
   {
@@ -3040,7 +3040,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 8,
+    "level": 18,
     "price": 220
   },
   {
@@ -3057,7 +3057,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 12,
+    "level": 21,
     "price": 360
   },
   {
@@ -3074,7 +3074,7 @@ export const LEGACY_NODES = [
     "cap": true,
     "cost": 4,
     "destination": "skill",
-    "level": 12,
+    "level": 24,
     "price": 360
   }
 ];

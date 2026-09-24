@@ -40,3 +40,13 @@ export function xpFoe(t, role, tier, elite) {
 }
 export const xpFloor = n => n <= 0 ? 0 : Math.round(XP_C * Math.pow(n, XP_P) / 10) * 10;
 export function levelOfXp(xp) { let n = 0; while (n < LV_TOP && xpFloor(n + 1) <= (xp || 0)) n++; return n; }
+
+/* CATCH-UP (Daniel, 2026-09-24). A hero BELOW the level the wood expects (its depth on the gate chain, src/campaign-order.js
+   depthsOf: the curve above is fitted so level = levels finished) is paid XP_CATCHUP times what a kill, a share or a quest pays,
+   so a Pyromancer or a Death Knight bought mid-campaign walks up to the others instead of starting every wood outmatched. The
+   extra STOPS AT THE CURVE: it never takes him past the floor of the expected level, and a hero at or above it is paid exactly n.
+   So nothing new is farmable: XP_AGAIN still cuts a second kill to a fifth before this sees it, and the most a catching-up hero
+   can ever gain from the multiplier is the gap he is catching up. */
+export const XP_CATCHUP = 3;
+export function xpCatchUp(n, xp, expected) { if (!(n > 0)) return 0; const gap = xpFloor(expected || 0) - (xp || 0);
+  return gap > 0 ? n + Math.min(n * (XP_CATCHUP - 1), gap) : n; }
