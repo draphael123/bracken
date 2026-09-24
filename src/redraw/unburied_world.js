@@ -21,6 +21,7 @@
 // DECO PROPS (anchor bottom-centre, bottom row = ground, dark OUT outline)
 //   brokenSpears(v 0-2) 22x26 · stuckShield(v 0-1) 16x14 · fallenBanner() 34x12 · crookedCross(v 0-1) 13x20
 //   siegeWreck() 50x30 · brokenPillar(v 0-1) 14x34 · oldStandard() 16x46
+//   and the rework's (2026-09-24): plantedSpears · shieldPile · catapultWreck · batteringRam · barrowMound · armyBanner · trenchRevet
 // GROUND
 //   boneSoil(tiles, seed)        paints the field's dead into a share of the dirt tiles: ribs, a skull, a long bone, a helm
 import { canvas, px, rect, fillPoly, line, circle, outline, mulberry } from '../px.js';
@@ -301,6 +302,97 @@ export function oldStandard() {
   for (let y = 5; y < 26; y++) { const tear = y > 18 ? Math.round(hsh(y, 3, 1) * 4) : 0; for (let x = 5; x < 15 - tear; x++) px(g, x + (y > 12 && (x & 1) ? 0 : 0), y, (x + y) % 6 === 0 ? CL[0] : x < 7 ? CL[2] : CL[1]); }
   for (let y = 9; y < 15; y++) px(g, 10, y, '#c9a24a'); for (let x = 8; x < 13; x++) px(g, x, 11, '#c9a24a');   /* the order's cross, still on it */
   for (let x = 1; x <= 8; x++) px(g, x, b, '#3c3226');
+  return outline(c, OUT);
+}
+
+// ============================================================================================
+// THE REWORK'S SCENERY (2026-09-24, docs/briefs/unburied-rework.md item 4): the battle's leavings, a size up from the look pass's
+//   plantedSpears(v 0-1) 30x30 · shieldPile(v 0-1) 26x13 · catapultWreck() 60x40 · batteringRam() 64x34 · barrowMound(v 0-1) 44x18
+//   armyBanner(v 0 the order, 1 the host they fought) 20x46 · trenchRevet(v 0-1) 16x32 (the trench line's timber, drawn behind)
+// ============================================================================================
+const HO = ['#1e2630', '#34404e', '#56667a', '#8a98aa'];                  /* the other army: slate blue gone grey */
+/* A HEDGE OF PIKES planted against horse, points up and forward, the way the stake lines were: most still standing */
+export function plantedSpears(v = 0) {
+  const [c, g] = canvas(30, 30), b = 29, xs = v ? [3, 8, 13, 19, 25] : [4, 10, 15, 21, 26];
+  xs.forEach((x, i) => { const lean = v ? 0.35 : -0.35, top = 3 + ((i * 5 + v * 3) % 6), tx = x + (b - top) * lean * 0.5;
+    shaft(g, x, b, tx, top + 3);
+    if (i === 2 && !v) { px(g, tx, top + 2, WD[4]); return; }   /* one snapped */
+    fillPoly(g, [[tx - 1.5, top + 4], [tx + 1.5, top + 4], [tx + lean * 3, top - 2]], IR[3]); px(g, tx, top + 1, IR[4]);
+    if (i % 2) { px(g, tx - 1, top + 6, CL[2]); px(g, tx - 1, top + 7, CL[1]); } });   /* a rag of pennon on every other */
+  rect(g, 1, b, 28, 1, '#3c3226'); for (let x = 2; x < 28; x += 4) px(g, x, b - 1, '#44362a');
+  return outline(c, OUT);
+}
+/* SHIELDS WHERE A LINE BROKE: a pile of them, split and face down, the order's red and the host's grey in one heap */
+export function shieldPile(v = 0) {
+  const [c, g] = canvas(26, 13), b = 12;
+  const sh = (x, y, w, col, rim, boss) => { fillPoly(g, [[x, b], [x + 1, y + 2], [x + w / 2, y], [x + w - 1, y + 2], [x + w, b]], col); line(g, x + 1, y + 2, x + w - 1, y + 2, rim); if (boss) { px(g, x + w / 2, y + 4, IR[4]); px(g, x + w / 2 + 1, y + 5, IR[2]); } };
+  if (v) { sh(1, 5, 11, HO[2], HO[3], true); sh(9, 3, 12, CL[1], CL[3], false); sh(16, 7, 9, IR[2], IR[3], true); line(g, 12, 4, 15, 9, '#2a2224'); }
+  else { sh(2, 4, 12, CL[2], CL[3], true); sh(12, 6, 11, HO[1], HO[3], true); line(g, 7, 5, 9, 11, '#2a2224'); px(g, 20, 8, RU[1]); }
+  rect(g, 1, b, 24, 1, '#3c3226');
+  return outline(c, OUT);
+}
+/* A MANGONEL on its side: the cup arm snapped at the skein, a wheel off, the rope gone to rags - not the trebuchet (that is the
+   engine you work, and the snapped trebuchet arm is siegeWreck) */
+export function catapultWreck() {
+  const [c, g] = canvas(60, 40), b = 39;
+  fillPoly(g, [[6, b - 6], [44, b - 12], [46, b - 7], [8, b - 1]], WD[2]); line(g, 6, b - 6, 44, b - 12, WD[4]);   /* the frame, tipped */
+  rect(g, 20, b - 16, 8, 8, WD[1]); rect(g, 20, b - 16, 8, 1, WD[3]);                                              /* the skein box */
+  for (let k = 0; k < 4; k++) line(g, 21 + k * 2, b - 15, 21 + k * 2, b - 9, '#6a5a44');                            /* the twisted rope */
+  thick(g, 24, b - 14, 40, b - 34, 3, WD[2]); line(g, 24, b - 16, 40, b - 36, WD[4]);                                /* the arm, up and cracked */
+  fillPoly(g, [[37, b - 38], [45, b - 37], [44, b - 32], [38, b - 32]], WD[1]); px(g, 41, b - 36, '#2a2224');       /* its cup */
+  px(g, 31, b - 26, '#1a1418'); px(g, 32, b - 25, '#1a1418');                                                      /* the crack */
+  { const cx = 12, cy = b - 5, r = 5; for (let k = 0; k < 30; k++) { const t = k / 30 * TAU; px(g, cx + Math.cos(t) * r, cy + Math.sin(t) * r, WD[3]); } rect(g, cx - 1, cy - 1, 2, 2, IR[2]); }
+  { const cx = 52, cy = b - 3, r = 5; for (let k = 0; k < 30; k++) { const t = k / 30 * TAU; if (Math.sin(t) < -0.2) continue; px(g, cx + Math.cos(t) * r * 1.3, cy + Math.sin(t) * r * 0.5, WD[2]); } }   /* the other wheel, flat on the ground */
+  for (const [x, y] of [[48, b - 1], [30, b], [55, b]]) rect(g, x, y, 3, 1, SN[3]);                                 /* its stones, never thrown */
+  rect(g, 1, b, 58, 1, '#3c3226');
+  return outline(c, OUT);
+}
+/* A BATTERING RAM under its roof ("the tortoise"): the log on its chains with the iron head, the hides on the roof rotted
+   through, one wheel gone so it lists toward the chapel it never reached */
+export function batteringRam() {
+  const [c, g] = canvas(64, 34), b = 33;
+  fillPoly(g, [[6, b - 22], [58, b - 26], [60, b - 22], [8, b - 18]], '#4a3a2c'); line(g, 6, b - 22, 58, b - 26, '#6a5a44');   /* the roof */
+  for (let x = 10; x < 56; x += 7) fillPoly(g, [[x, b - 21], [x + 5, b - 22], [x + 4, b - 18], [x + 1, b - 17]], (x / 7) % 2 ? '#5a4632' : '#3e3024');   /* the hides, rotted */
+  for (const x of [10, 30, 52]) { line(g, x, b - 20, x - 1, b - 3, WD[2]); line(g, x + 1, b - 20, x, b - 3, WD[1]); }  /* the posts */
+  for (const x of [18, 42]) line(g, x, b - 21, x, b - 13, IR[1]);                                                   /* its chains */
+  thick(g, 4, b - 12, 54, b - 13, 3, WD[3]); line(g, 4, b - 14, 54, b - 15, WD[4]);                                /* the log */
+  fillPoly(g, [[54, b - 16], [62, b - 14], [62, b - 11], [54, b - 9]], IR[2]); line(g, 55, b - 15, 61, b - 13, IR[4]); px(g, 60, b - 12, RU[1]);   /* the ram's iron head */
+  for (const cx of [14, 46]) { const cy = b - 4, r = 4; for (let k = 0; k < 26; k++) { const t = k / 26 * TAU; px(g, cx + Math.cos(t) * r, cy + Math.sin(t) * r, WD[3]); } rect(g, cx - 1, cy - 1, 2, 2, IR[2]); }
+  rect(g, 1, b, 62, 1, '#3c3226');
+  return outline(c, OUT);
+}
+/* A BURIAL MOUND: a low barrow of turfed earth with the markers of whoever is in it - a standing stone, a post with a helm on it */
+export function barrowMound(v = 0) {
+  const [c, g] = canvas(44, 18), b = 17;
+  for (let x = 1; x <= 42; x++) { const h = Math.round(Math.sin((x - 0.5) / 42 * Math.PI) * 7); for (let y = b - h; y <= b; y++) px(g, x, y, y === b - h ? '#6a6242' : y === b - h + 1 ? '#5a4c36' : '#44362a'); }
+  for (let x = 4; x < 40; x += 5) px(g, x, b - Math.round(Math.sin((x - 0.5) / 42 * Math.PI) * 7) - 1, '#8a8258');   /* dead grass on it */
+  if (v) { rect(g, 12, 2, 4, 9, SN[2]); rect(g, 12, 2, 1, 9, SN[4]); rect(g, 15, 3, 1, 8, SN[1]); px(g, 13, 5, SN[0]); px(g, 14, 7, SN[0]);   /* a standing stone, cut with a mark */
+    line(g, 30, 3, 30, 12, WD[3]); line(g, 31, 3, 31, 12, WD[1]); rect(g, 28, 5, 6, 1, WD[3]); }                                        /* a wooden marker */
+  else { line(g, 21, 1, 21, 11, WD[3]); line(g, 22, 1, 22, 11, WD[1]); fillPoly(g, [[18, 3], [19, 0], [24, 0], [25, 3]], IR[2]); line(g, 19, 2, 24, 2, IR[0]); px(g, 20, 0, IR[4]);   /* a post with his helm on it */
+    rect(g, 8, 7, 3, 4, SN[3]); rect(g, 33, 7, 3, 4, SN[2]); px(g, 8, 7, SN[4]); }                                                        /* two small stones */
+  return outline(c, OUT);
+}
+/* THE TWO ARMIES' COLOURS, torn: the order's red with its gold cross on a crossbar (v 0), and the host it fought - slate grey,
+   a black raven on it, the pole leaning where it was planted in a hurry (v 1). Two sides, told apart at a glance. */
+export function armyBanner(v = 0) {
+  const [c, g] = canvas(20, 46), b = 45, lean = v ? 1 : 0;
+  for (let y = 4; y <= b; y++) { const x = 5 + Math.round((b - y) * 0.06 * lean); px(g, x, y, WD[3]); px(g, x + 1, y, WD[1]); }
+  const top = 4, x0 = 5 + Math.round((b - top) * 0.06 * lean);
+  rect(g, x0 - 3, top + 1, 14, 1, WD[3]);                                                                          /* the crossbar */
+  if (v) fillPoly(g, [[x0, top], [x0 + 2, top - 4], [x0 + 3, top]], IR[3]); else fillPoly(g, [[x0 - 1, top], [x0 + 3, top], [x0 + 1, top - 4]], '#c9a24a');
+  const [dark, mid, lit] = v ? [HO[0], HO[1], HO[2]] : [CL[0], CL[1], CL[2]];
+  for (let x = x0 - 2; x < x0 + 11; x++) { const len = 20 - Math.round(hsh(x, v, 7) * 7) - (x > x0 + 7 ? 3 : 0); for (let y = top + 2; y < top + 2 + len; y++) px(g, x, y, (x + y) % 7 === 0 ? dark : x < x0 + 1 ? lit : mid); }
+  if (v) { const rx = x0 + 3, ry = top + 8; rect(g, rx, ry, 4, 2, '#141018'); px(g, rx + 4, ry - 1, '#141018'); px(g, rx - 1, ry + 1, '#141018'); px(g, rx + 1, ry + 2, '#141018'); px(g, rx + 3, ry - 1, '#141018'); }   /* the raven */
+  else { for (let y = top + 5; y < top + 12; y++) px(g, x0 + 4, y, '#c9a24a'); for (let x = x0 + 2; x < x0 + 7; x++) px(g, x, top + 7, '#c9a24a'); }                                         /* the order's cross */
+  for (let x = 2; x <= 9; x++) px(g, x, b, '#3c3226');
+  return outline(c, OUT);
+}
+/* THE TRENCH LINE'S TIMBER: a revetment of stakes and wattle holding up the trench's wall, drawn behind the play */
+export function trenchRevet(v = 0) {
+  const [c, g] = canvas(16, 32), b = 31;
+  for (const x of [1, 8, 14]) { line(g, x, 1, x, b, WD[2]); px(g, x, 0, WD[4]); }
+  for (let y = 3; y < b; y += 3) for (let x = 1; x < 15; x++) px(g, x, y + ((x + (y / 3 | 0)) % 2), ((x + y) & 1) ? '#5e4a36' : '#44362a');   /* the wattle, woven */
+  if (v) { rect(g, 3, b - 7, 10, 7, '#5a4c3a'); for (let x = 3; x < 13; x += 5) rect(g, x, b - 7, 4, 3, '#6e5e46'); }                       /* sandbags at the foot */
   return outline(c, OUT);
 }
 

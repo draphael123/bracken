@@ -65,8 +65,12 @@ export function buildUnburiedField({ painter, T, TS }) {
   meet('THE TRENCH GUARD', 58, 74, [['zombie', 62, G + 4], ['zombie', 67, G + 4], ['bonearcher', 74, G]]);
 
   // ---- 2. THE SHIELD CROSSING (c 70-129): sixty columns of open ground under the ridge. Cover to cover, on the horn ----
-  cover(76, 'mantlet'); cover(92, 'wagon'); cover(112, 'shields'); cover(124, 'mantlet');
-  ent('check', 80, G);
+  /* THE OLD TRENCH LINE (the rework, 2026-09-24): the first army's own trench across the foot of the crossing, two rows deep and
+     eleven long, stepped at each end so it is RUN, not jumped - and down in it the ridge's arrows go over you (sheltered(): a
+     trench is cover). The first cover of the crossing, where a mantlet stood. Its walls are timber and wattle (trenchRevet). */
+  air(73, 83, G + 1, G + 1); air(74, 82, G + 2, G + 2);
+  cover(92, 'wagon'); cover(112, 'shields'); cover(124, 'mantlet');
+  ent('check', 80, G + 2);
   ent('sign', 72, G, { text: 'THE RIDGE HAS THE RANGE ON ALL OF THIS. GO WHEN THE HORN STOPS.' });
   pegWall(104, 26, [33, 31, 29, 27], 'a shelf of coins over the crossing'); plat(106, 25, 5); coins([107, 24], [109, 24], [110, 24]);
   plat(101, 27, 3);                                                                                          // and the long way to that shelf, for anyone who will not wait for a volley
@@ -151,6 +155,14 @@ export function buildUnburiedField({ painter, T, TS }) {
      the charge broke, the tower crew's banner in the dirt. Scenery only: deco collides with nothing. */
   for (const [kind, x, y, v] of [['fieldGrave', 85, G - 2, 0], ['fieldGrave', 11, G + 1, 1], ['crookedCross', 54, G + 1, 1], ['bones', 28, G + 4, 0], ['brokenSpears', 136, G, 1],
     ['bones', 204, G + 5, 1], ['stuckShield', 244, G, 0], ['fallenBanner', 254, G, 0], ['oldStandard', 260, G, 0]]) ent('deco', x, y, { kind, v });
+  /* THE REWORK'S SCENERY (2026-09-24): planted pikes and broken shields where the lines held and broke, a mangonel and a ram the siege
+     left, the barrows the dead went into, and the two armies' colours - the order's red on the west of the field, the host's slate
+     grey on the east, and both where they met. Scenery only: deco collides with nothing, and the crows sit on all of it. */
+  for (const [kind, x, y, v] of [['plantedSpears', 38, G, 0], ['plantedSpears', 143, G, 1], ['plantedSpears', 243, G, 1], ['shieldPile', 94, G, 0], ['shieldPile', 110, G, 1], ['shieldPile', 318, G, 0],
+    ['catapultWreck', 137, G, 0], ['batteringRam', 299, G, 0], ['barrowMound', 49, G, 1], ['barrowMound', 278, G, 0], ['barrowMound', 291, G, 1],
+    ['armyBanner', 20, G, 0], ['armyBanner', 88, G - 2, 0], ['armyBanner', 128, G, 1], ['armyBanner', 238, G, 0], ['armyBanner', 261, 20, 1], ['armyBanner', 317, G, 1],
+    ['trenchRevet', 74, G + 2, 1], ['trenchRevet', 82, G + 2, 0],
+    ['brokenCart', 273, G, 0], ['brokenCart', 287, G, 0]]) ent('deco', x, y, { kind, v });   /* the Barrow Rider's two ledges are what is left of these carts' beds (B9: they are held up by something) */
   /* THE GARRISON ROW the brief asks for, kept small: the encounters are the level and this is the battle going on round them.
      No blanket calm. A build reads it off L.garrison the way GARRISON in src/level.js is read. */
   garrison.push(['corpse', 10], ['zombie', 6], ['bonearcher', 4], ['bonegob', 3], ['wight', 2], ['husk', 2]);

@@ -353,9 +353,13 @@ export function newField(L, TS = 16) {
     cav: L.cavalry ? { ...L.cavalry, t: 0, x: null, warn: false, hitP: false } : null,
     pegs: (L.pegs || []).map(p => ({ ...p, up: 0, zone: null, stray: 0 })),
     covers: props.filter(p => p.t === 'cover'), engines: props.filter(p => p.t !== 'cover'),
-    bolts: [], stones: [], arrows: [], breach: false,
+    bolts: [], stones: [], arrows: [], breach: false, surf: groundLine(L, G),
   };
 }
+/* WHERE THE GROUND IS, column by column: the first solid-or-ledge row from above the field down (for the mist to lie on) */
+function groundLine(L, G) { const W = L.W, s = new Int16Array(W).fill(-1); if (!L.grid) return s;
+  for (let x = 0; x < W; x++) for (let y = G - 8; y < Math.min(L.H, G + 8); y++) { const t = L.grid[y * W + x]; if (t !== 0) { s[x] = t === 3 ? -1 : y; break; } }   /* 3: T.SPIKE - no mist over a stake line, the hazard stays plain */
+  return s; }
 export const HORN_CAV = 3.0;
 /* WHERE AN ARROW CANNOT FIND YOU: behind a cover prop on its own floor, or down in a trench (the low route is sheltered) */
 export function sheltered(F, P) {
@@ -479,6 +483,14 @@ export function drawUnbWorld(g, foes, cx, cy, time) {
 }
 export function drawField(g, F, cx, cy, time, VW, VH) {
   if (!F) return; const TS = F.TS;
+  /* LOW GROUND MIST (the rework, 2026-09-24): a band along the ground's own line, pooling in trenches and craters. It is drawn here,
+     under the creatures and their marks, and it never lies over a stake line - readability first, weather second */
+  if (F.surf) { const G = F.G, x0 = Math.max(0, Math.floor(cx / TS)), x1 = Math.min(F.surf.length - 1, Math.ceil((cx + VW) / TS));
+    for (let tx = x0; tx <= x1; tx++) { const r = F.surf[tx]; if (r < 0) continue; const deep = Math.max(0, r - (G + 1)), sx = tx * TS - cx, top = r * TS - cy;
+      for (let q = 0; q < TS; q += 4) { const n = 0.5 + 0.5 * Math.sin((tx * TS + q) * 0.07 + time * 0.6) * Math.sin((tx * TS + q) * 0.023 - time * 0.35);
+        g.globalAlpha = 0.07 + 0.07 * n; R(g, sx + q, top - 6 - Math.round(n * 3), 4, 6 + Math.round(n * 3), '#b8aec4');
+        if (deep) { g.globalAlpha = 0.09 + 0.05 * n; R(g, sx + q, top - deep * TS, 4, deep * TS, '#a89cb6'); } } }
+    g.globalAlpha = 1; }
   /* THE GHOST ARMY on the ridge, over every stretch that is still fighting - and nothing over the ones you have ended */
   for (const v of F.volleys) { if (v.quiet) continue; const x0 = Math.max(0, v.x0 - cx), x1 = Math.min(VW, v.x1 - cx); if (x1 <= x0) continue;
     const ry = Math.round((F.G - 13) * TS - cy * 0.6);

@@ -54,8 +54,8 @@ try {
     for (const [k, v] of Object.entries(r)) save('knight-' + k, v);
   } else {
     const SPOTS = set === 'crypt' ? [['crypt', 332, 36], ['crypt-stair', 363, 36]]
-      : [['barrowline', 18, 36], ['trench-line', 60, 36], ['shieldcrossing', 92, 36], ['brokencharge-high', 176, 30], ['brokencharge-low', 196, 41], ['siege-wrecks', 132, 36],
-         ['toppledtower', 246, 24], ['standard', 270, 36], ['chapel', 312, 36], ['nave', 358, 36]];
+      : [['barrowline', 30, 36], ['trench-line', 80, 36], ['shieldcrossing', 104, 36], ['brokencharge', 138, 36], ['brokencharge-low', 196, 41],
+         ['toppledtower', 242, 36], ['barrow', 280, 36], ['chapel-ram', 304, 36], ['crypt', 330, 36], ['nave', 360, 36]];
     const r = await pg.evalp(`(async()=>{${PRE}
       const shots={};for(const [name,x,y] of ${JSON.stringify(SPOTS)}){load();BK.tp(x,y);for(const e of BK.enemies())if(!e.boss&&e!==BK.boss)e.alive=false;steps(300);shots[name]=snap();}
       return shots;})()`, 600000);

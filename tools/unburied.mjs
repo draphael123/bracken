@@ -70,6 +70,12 @@ assert.ok(L.pools.length >= 3 && L.pools.every(p => p.shallow), 'churned mud tha
 assert.ok(UF.CRATERS.length >= 4, 'craters');
 assert.ok(box(UF.HIGH[0], UF.HIGH[1], 0, 32) > 30, 'the HIGH ROUTE over the wreckage is walked');
 assert.ok(box(UF.LOW[0], UF.LOW[1], G + 3, G + 5) > 30, 'the LOW ROUTE through the trenches is walked');
+/* THE OLD TRENCH LINE (the rework, 2026-09-24, item 4): real shape and not dressing - two rows deep along 74-82, a one-row step
+   at each end so it is RUN and not jumped, and its floor walked end to end */
+{ let dug = 0; for (let x = 74; x <= 82; x++) if (L.grid[(G + 1) * W + x] === T.AIR && L.grid[(G + 2) * W + x] === T.AIR && L.grid[(G + 3) * W + x] !== T.AIR) dug++;
+  assert.equal(dug, 9, 'THE OLD TRENCH LINE is dug two rows deep along 74-82: ' + dug + ' of 9');
+  for (const x of [73, 83]) assert.ok(L.grid[(G + 1) * W + x] === T.AIR && L.grid[(G + 2) * W + x] !== T.AIR, 'the trench line is stepped a row at ' + x);
+  assert.ok(box(74, 82, G + 2, G + 2) >= 9, 'the floor of the trench line is walked end to end'); }
 ok('battlefield ground', UF.TRENCHES.length + ' trenches, ' + UF.STAKES.length + ' stake lines, ' + L.pools.length + ' mud, ' + UF.CRATERS.length + ' craters');
 /* 5 THE FIELD CHANGES AS YOU GO: every volley zone belongs to a banner-bearer, and cutting him quiets that stretch of ridge */
 const encNames = new Set(L.encounters.map(e => e.name));

@@ -125,3 +125,20 @@ the rotation - the life pulled out of everything near him; get away from him.
   (12), the surge (10), the nova's growth (3 a blow) and his health (1150 -> 1000): **13/24 = 54%**, median win 74.6 s
   (warden, pyro, pirate 4/4; reaper 1/4; knight and paladin 0/4). Before the rework: **4/24 = 17%**, knight 4/4 only.
   The dice are pinned and the salt changes almost nothing: these fights are deterministic, so 24 rows are 6 fights x4.
+
+### Item 4 as built (2026-09-24)
+- **Scenery, new art** (`src/redraw/unburied_world.js`, deco only, nothing in the editor's tiles): planted pikes (a hedge
+  against horse, 2 kinds), shield piles (both armies' shields in one heap), a wrecked mangonel (not the trebuchet you
+  work), a battering ram under its rotten roof at the Rider's gate, burial mounds with a standing stone / a post with a
+  helm on it (two in the Rider's own room: it is his barrow), and the two armies' colours - the order's red with its gold
+  cross, and the host they fought in slate grey with a black raven - planted west, east and where they met. Placed by hand
+  (19) and two of them in the level's sprinkle.
+- **Crows that go up as you pass:** the field's crows already flew from its graves; now two or three sit on every new
+  prop, so the field goes up in black wings as you walk it.
+- **Low ground mist:** lies along the ground's own line and pools in trenches and craters, drawn UNDER the creatures and
+  their marks and never over a stake line - so every tell and hazard reads over it (see `docs/unburied2/rider-*.png`).
+- **The old trench line** (real shape): 73-83, two rows deep, stepped a row at each end so it is run and not jumped, its
+  walls timber and wattle; it replaces the crossing's first mantlet as cover (down in it the volleys go over you), and
+  the checkpoint moves onto its floor. Asserted in `tools/unburied.mjs` and proved red.
+- The Rider's two ledges now stand on two wrecked carts (B9).
+- Before/after real-page shots: `docs/unburied2/field-before-*.png` / `field-after-*.png`.
