@@ -45,7 +45,7 @@ import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
 import { bakeFrog } from './redraw/frogking.js';
 import * as LWP from './lw_props.js';
-import { kitPose, kitPoseFrame, airPose, landPose } from './hero-poses.js';
+import { kitPose, kitPoseFrame, airPose, landPose, POSE_DASH } from './hero-poses.js';   /* EVERY ABILITY HAS A BODY: the pose an active plays while it fires */
 import { bakeGeomancer } from './chars.js';   /* THE GEOMANCER (2026-09-24): her rig */
 import { makeGeomancer } from './geomancer.js';   /* and her kit: the stone she raises and what she does with it */   /* EVERY ABILITY HAS A BODY: the pose an active plays while it fires */
 import * as RFP from './reef_props.js';
@@ -6228,7 +6228,7 @@ function deathGrip() {
   row.sort((a, b2) => a[0] - b2[0]);
   /* THE WHOLE ROW: all of it arrives at once, and it arrives in the order it was standing in */
   const take = all ? row : [row[0]];
-  SFX.hiss ? SFX.hiss() : SFX.puff(); SFX.clank(); P.castT = 0.25;
+  SFX.hiss ? SFX.hiss() : SFX.puff(); SFX.clank(); P.castT = 0.25; kitPose(P, 'grip', 0.35);
   if (all && row.length > 1) { shakeCam(4); number(P.x, P.y - 34, 'THE WHOLE ROW', '#8fd160'); }
   let n = 0;
   for (const [, b] of take) {
@@ -6270,7 +6270,7 @@ function drawGrips(cx, cy) {
 // It is the answer to the one thing the raising could never do - hold a PLACE instead of a moment.
 function unholyGround() {
   unholy.push({ x: P.x, y: P.y, r: 52, life: 6 + tal('unholyGround'), tick: 0 });
-  SFX.crack(); SFX.hiss ? SFX.hiss() : SFX.puff(); shakeCam(3); P.castT = 0.3;
+  SFX.crack(); SFX.hiss ? SFX.hiss() : SFX.puff(); shakeCam(3); P.castT = 0.3; kitPose(P, 'unholy', 0.35);
   ringAt(P.x, P.y - 4, 52, '#8fd160', 0.4); number(P.x, P.y - 30, 'UNHOLY GROUND', '#8fd160');
   for (let i = 0; i < 18; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 100, y: P.y, vx: (Math.random() - 0.5) * 30, vy: -30 - Math.random() * 60, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#8fd160' : '#2a3a24', size: 2, grav: 50 });
   return true;
@@ -6615,16 +6615,16 @@ function updatePlayer(dt) {
     if (dn && !busy && Math.abs(P.vx) < 20) { P.dance = P.dance > 0 ? 0 : 0.0001; SFX.uiSel(); }
     if (P.dance > 0) { if (busy) P.dance = 0; else { P.dance += dt; P.vx = 0; } } }
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
-  if (isPyro() && skillPress('fireWall') && (P.ground || P.swim) && cdReady('fireWall') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('fireWall');  P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 3, delay: i * 0.08, own: true }); SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
-  if (isPyro() && skillPress('cinderStep') && cdReady('cinderStep') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { cdSet('cinderStep');  P.dodge = 0.3; P.vx = P.face * 320; P.inv = Math.max(P.inv, 0.4); P.cinderT = 0.3; streaks(P.x, P.y - 8, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 160); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0, own: true }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (isPyro() && skillPress('fireWall') && (P.ground || P.swim) && cdReady('fireWall') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('fireWall'); kitPose(P, 'wall', 0.4); P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 3, delay: i * 0.08, own: true }); SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (isPyro() && skillPress('cinderStep') && cdReady('cinderStep') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { cdSet('cinderStep');  P.dodge = 0.3; P.vx = P.face * 320; P.inv = Math.max(P.inv, 0.4); P.cinderT = 0.3; kitPose(P, 'cinder', 0.3); streaks(P.x, P.y - 8, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 160); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0, own: true }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (skillPress('risingCut') && cdReady('risingCut') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge && !(P.riseUsed && !P.ground)) { if (spend(20)) { cdSet('risingCut'); P.riseT = 0.3; P.riseUsed = true; P.vy = -335; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.block = false; P.atk = -1; P.hitSet.clear(); P.riseCarry = null; SFX.riseCut(); squash(0.9, 1.12, 0.1); riseSparks(10); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   /* RISING CUT, THE BOUGHT ONE. UP+X is already a free rising cut, so this one has to be more than a taller jump: THE FIRST
      FOE THE BLADE CATCHES GOES UP WITH HIM, riding the edge in front of him, and is HELD at the top of the climb (RISE_HOLD)
      for an air combo while it cannot fall, turn or strike - every blow on it landing a third harder. It READS AS A CUT: his
      frames are the upward cut from hip to overhead (key 'rise'), a tall crescent is drawn on the arc above him
      (drawRiseCrescent), the sparks go up the blade, the sound is steel rising, and a catch lands with weight. */
-  if (isPyro() && skillPress('vent') && cdReady('vent') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if ((P.heat || 0) < 15) { SFX.buzz(); number(P.x, P.y - 22, 'COLD', '#9aa39a'); } else if (spend(15)) { const heat = P.heat; cdSet('vent'); const dmg = Math.round((10 + heat * 0.5)*amul('vent')), R = 30 + heat * 0.25; P.heat = 0; P.overheat = 0; P.light = 0; P.atk = -1; ringAt(P.x, P.y - 8, R, '#ff9a5c', 0.35); for (let a = 0; a < 18; a++) { const an = a / 18 * Math.PI * 2, sp = 70 + heat * 1.2; parts.push({ x: P.x, y: P.y - 8, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, life: 0.45, max: 0.45, col: '#ffd36b', size: 3, grav: -20, fire: true, drag: 2.5 }); } smoke(P.x, P.y - 10, 5, 8); burst(P.x, P.y - 8, 18 + Math.round(heat / 6), ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + heat, 0.5, 0, 2); shakeCam(3 + heat / 25); zoomKick(1.06, 0.15); SFX.heavy(); SFX.puff(); for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < R && Math.abs(e.y - 6 - (P.y - 8)) < R) { const big = !!e.maxHp; hurtEnemy(e, big ? Math.round(dmg * 0.5) : dmg, P.x, false); if (!big) { e.burn = Math.max(e.burn || 0, 1.5); flinch(e); } } for (const s2 of seeds) if (!s2.dead && Math.abs(s2.x - P.x) < R && Math.abs(s2.y - P.y + 8) < R) { s2.dead = true; burst(s2.x, s2.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); } for (const pr of props) { if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - P.x) < R + 10 && Math.abs(pr.y - P.y) < R + 10) { pr.lit = true; pr.hits = 0; burst(pr.x, pr.y - 8, 8, ['#ffd36b', '#fff6c8'], 50, 0.5); SFX.spark(); } } } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // VENT: the heat bar is the ammunition
-  if (isPyro() && skillPress('wisp') && cdReady('wisp') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { cdSet('wisp');  wisp = { x: P.x, y: P.y - 14, t: 0, life: 8, cd: 0, target: null }; SFX.spark(); SFX.puff(); burst(P.x, P.y - 14, 8, ['#ffd36b', '#fff6c8'], 40, 0.4, 0, 1); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // WISP: a flame that keeps you company
+  if (isPyro() && skillPress('vent') && cdReady('vent') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if ((P.heat || 0) < 15) { SFX.buzz(); number(P.x, P.y - 22, 'COLD', '#9aa39a'); } else if (spend(15)) { const heat = P.heat; cdSet('vent'); const dmg = Math.round((10 + heat * 0.5)*amul('vent')), R = 30 + heat * 0.25; P.heat = 0; P.overheat = 0; P.light = 0; P.atk = -1; kitPose(P, 'vent', 0.45); ringAt(P.x, P.y - 8, R, '#ff9a5c', 0.35); for (let a = 0; a < 18; a++) { const an = a / 18 * Math.PI * 2, sp = 70 + heat * 1.2; parts.push({ x: P.x, y: P.y - 8, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, life: 0.45, max: 0.45, col: '#ffd36b', size: 3, grav: -20, fire: true, drag: 2.5 }); } smoke(P.x, P.y - 10, 5, 8); burst(P.x, P.y - 8, 18 + Math.round(heat / 6), ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + heat, 0.5, 0, 2); shakeCam(3 + heat / 25); zoomKick(1.06, 0.15); SFX.heavy(); SFX.puff(); for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < R && Math.abs(e.y - 6 - (P.y - 8)) < R) { const big = !!e.maxHp; hurtEnemy(e, big ? Math.round(dmg * 0.5) : dmg, P.x, false); if (!big) { e.burn = Math.max(e.burn || 0, 1.5); flinch(e); } } for (const s2 of seeds) if (!s2.dead && Math.abs(s2.x - P.x) < R && Math.abs(s2.y - P.y + 8) < R) { s2.dead = true; burst(s2.x, s2.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); } for (const pr of props) { if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - P.x) < R + 10 && Math.abs(pr.y - P.y) < R + 10) { pr.lit = true; pr.hits = 0; burst(pr.x, pr.y - 8, 8, ['#ffd36b', '#fff6c8'], 50, 0.5); SFX.spark(); } } } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // VENT: the heat bar is the ammunition
+  if (isPyro() && skillPress('wisp') && cdReady('wisp') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { cdSet('wisp'); kitPose(P, 'wisp', 0.4); wisp = { x: P.x, y: P.y - 14, t: 0, life: 8, cd: 0, target: null }; SFX.spark(); SFX.puff(); burst(P.x, P.y - 14, 8, ['#ffd36b', '#fff6c8'], 40, 0.4, 0, 1); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // WISP: a flame that keeps you company
   // THE PASSING: he goes thin, and what is left behind him is a line of him going out. Six after-images over
   // a third of a second, each one dimmer, with the green of the harvest on its shoulders.
   if ((P.passT || 0) > 0) { P.passT -= dt;
@@ -6641,9 +6641,9 @@ function updatePlayer(dt) {
       sparks(e.x, e.y - e.h / 2, P.face, 12); burst(e.x, e.y - e.h / 2, 8, ['#fff6e0', '#dfe8ff'], 110, 0.35, -80, 1); hitstop(carry ? 0.1 : 0.08); shakeCam(carry ? 4 : 3); SFX.riseBite(); } } }
   if (P.ground) P.riseUsed = false;
   // THE PALADIN'S SKILLS
-  if (isPaladin() && skillPress('consecrate') && (P.ground || P.swim) && cdReady('consecrate') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('consecrate'); hallows.push({ x: P.x, y: P.y, life: 4 + tal('consecrate'), r: 40, tick: 0 }); SFX.mend(); SFX.heavy(); ringAt(P.x, P.y - 4, 40, '#ffd36b', 0.5); motes(P.x, P.y - 6, 14, 30); P.castT = 0.3; } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
-  if (isPaladin() && skillPress('holyCharge') && cdReady('holyCharge') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { cdSet('holyCharge'); P.chargeT = 0.3; P.dodge = 0.3; P.vx = P.face * 330; P.inv = Math.max(P.inv, 0.4); P.chargeHit = new Set(); SFX.throwWhoosh(); SFX.aegis(); streaks(P.x, P.y - 10, 8, ['#fff6c8', '#ffd36b'], 160); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
-  if (isPaladin() && skillPress('blessedHammer') && cdReady('blessedHammer') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(15)) { cdSet('blessedHammer'); hammers.push({ x0: P.x, y0: P.y - 12, dir: P.face, t: 0, x: P.x, y: P.y - 12, hit: new Map() }); SFX.throwWhoosh(); SFX.lightFull(); P.castT = 0.25; } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (isPaladin() && skillPress('consecrate') && (P.ground || P.swim) && cdReady('consecrate') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('consecrate'); hallows.push({ x: P.x, y: P.y, life: 4 + tal('consecrate'), r: 40, tick: 0 }); SFX.mend(); SFX.heavy(); ringAt(P.x, P.y - 4, 40, '#ffd36b', 0.5); motes(P.x, P.y - 6, 14, 30); P.castT = 0.3; kitPose(P, 'hallow', 0.4); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (isPaladin() && skillPress('holyCharge') && cdReady('holyCharge') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(20)) { cdSet('holyCharge'); P.chargeT = 0.3; P.dodge = 0.3; kitPose(P, 'charge', 0.3); P.vx = P.face * 330; P.inv = Math.max(P.inv, 0.4); P.chargeHit = new Set(); SFX.throwWhoosh(); SFX.aegis(); streaks(P.x, P.y - 10, 8, ['#fff6c8', '#ffd36b'], 160); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (isPaladin() && skillPress('blessedHammer') && cdReady('blessedHammer') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(15)) { cdSet('blessedHammer'); hammers.push({ x0: P.x, y0: P.y - 12, dir: P.face, t: 0, x: P.x, y: P.y - 12, hit: new Map() }); SFX.throwWhoosh(); SFX.lightFull(); P.castT = 0.25; kitPose(P, 'hurlH', 0.35); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (P.chargeT > 0) { P.chargeT -= dt; P.vx = P.face * 330; if (Math.random() < dt * 40) parts.push({ x: P.x - P.face * 6, y: P.y - 4 - Math.random() * 14, vx: -P.face * 60, vy: 0, life: 0.3, max: 0.3, col: '#ffd36b', size: 1, grav: 0, glow: true });
     for (const e of enemies) if (e.alive && !e.harmless && !P.chargeHit.has(e) && overlap({ l: P.x - 10, r: P.x + 10, t: P.y - 18, b: P.y }, box(e))) { P.chargeHit.add(e); hurtAs('dash', e,Math.round(12 * amul('holyCharge')), P.x, false); if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1); e.vx = P.face * 240; e.vy = -150; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(3, P.face * 2); hitstop(0.04); } }
   if (skillPress('groundSlam') && (P.ground || P.swim) && cdReady('groundSlam') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(25)) { cdSet('groundSlam'); P.block = false; P.atk = -1; kitPose(P, 'slam', 0.42); shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: P.ground ? 1.2 : 0.8, sp: 210, hit: new Set(), water: !P.ground, skill: 'groundSlam' }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); } number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
@@ -6667,9 +6667,9 @@ function updatePlayer(dt) {
     for (const e of enemies) if (e.alive && !e.harmless && !P.whirlHits[half].has(e) && Math.abs(e.x - P.x) < 34 + e.w / 2 && Math.abs((e.y - e.h / 2) - (P.y - 9)) < 26) { P.whirlHits[half].add(e); hurtEnemy(e, Math.round(swordDmg() * 0.9 * amul('whirlwind')), P.x, false); flinch(e); sparks(e.x, e.y - e.h / 2, Math.sign(e.x - P.x) || 1, 5); } }
   // METEOR: fire out of the sky onto the nearest foe ahead
   if (isPyro() && skillPress('meteor') && cdReady('meteor') && canAct()) { if (spend(25)) { cdSet('meteor');  let tx = P.x + P.face * 90, best = 220; for (const e of enemies) if (e.alive && !e.harmless && Math.sign(e.x - P.x) === P.face && Math.abs(e.x - P.x) < best && Math.abs(e.y - P.y) < 120) { best = Math.abs(e.x - P.x); tx = e.x; }
-      const txT = Math.floor(tx / TS); let gy = Math.floor((P.y - 8) / TS); for (let k = 0; k < 16 && !isSolid(txT, gy) && !isOneWay(tileAt(txT, gy)); k++) gy++; meteors.push({ x: tx - P.face * 50, y: camY - 20, x0: tx - P.face * 50, y0: camY - 20, tx, ty: gy * TS, t: 0 }); P.castT = 0.3; SFX.stormChant(); } else tired(); }
+      const txT = Math.floor(tx / TS); let gy = Math.floor((P.y - 8) / TS); for (let k = 0; k < 16 && !isSolid(txT, gy) && !isOneWay(tileAt(txT, gy)); k++) gy++; meteors.push({ x: tx - P.face * 50, y: camY - 20, x0: tx - P.face * 50, y0: camY - 20, tx, ty: gy * TS, t: 0 }); P.castT = 0.3; kitPose(P, 'meteor', 0.4); SFX.stormChant(); } else tired(); }
   // RING OF FIRE
-  if (isPyro() && skillPress('flameRing') && cdReady('flameRing') && canAct()) { if (spend(20)) { cdSet('flameRing');  fireRings.push({ x: P.x, y: P.y - 8, r: 6, hit: new Set() }); SFX.puff(); SFX.heavy(); P.castT = 0.25; } else tired(); }
+  if (isPyro() && skillPress('flameRing') && cdReady('flameRing') && canAct()) { if (spend(20)) { cdSet('flameRing');  fireRings.push({ x: P.x, y: P.y - 8, r: 6, hit: new Set() }); SFX.puff(); SFX.heavy(); P.castT = 0.25; kitPose(P, 'ring', 0.35); } else tired(); }
   // SPEAR OF LIGHT: straight ahead to the first wall, through everything
   /* DEATH GRIP: he does not go to it. It comes to him. */
   if (isReaper() && skillPress('deathGrip') && cdReady('deathGrip') && canAct()) { if (P.st < 20) tired(); else if (deathGrip()) { spend(20); cdSet('deathGrip'); } }
@@ -6677,12 +6677,12 @@ function updatePlayer(dt) {
   if (isReaper() && skillPress('unholyGround') && cdReady('unholyGround') && canAct()) { if (spend(26)) { cdSet('unholyGround'); unholyGround(); } else tired(); }
   // THE SCYTHE THROWN: it goes out and it comes back, and it cuts both ways.
   if (isReaper() && skillPress('scytheThrown') && cdReady('scytheThrown') && canAct()) { if (spend(26)) { cdSet('scytheThrown');
-    P.castT = 0.25; SFX.pSlash();
+    P.castT = 0.25; kitPose(P, 'coil', 0.3); SFX.pSlash();
     thrownScythe = { x: P.x + P.face * 10, y: P.y - 12, dir: P.face, out: true, t: 0, reach: 96 + 16 * tal('scytheThrown'), hit: new Set() };
   } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   // GRAVE TIDE: hands out of the floor, holding what is standing on it
   if (isReaper() && skillPress('graveTide') && cdReady('graveTide') && (P.ground || P.swim) && canAct()) { if (spend(24)) { cdSet('graveTide');
-    P.castT = 0.35; SFX.stone(); shakeCam(4);
+    P.castT = 0.35; kitPose(P, 'tide', 0.4); SFX.stone(); shakeCam(4);
     for (let k = 1; k <= 6; k++) { const hx = P.x + P.face * (18 + k * 13);
       /* THE WATER VERSION: the drowned come up for what swims at his depth - out of the bed if it is near, out of the dark under him if it is not */
       let hy = P.y; if (!P.ground) { const t0 = Math.floor(P.y / TS); for (let q = 0; q <= 2; q++) if (isSolid(Math.floor(hx / TS), t0 + q)) { hy = (t0 + q) * TS; break; } }
@@ -6692,13 +6692,13 @@ function updatePlayer(dt) {
   if (isReaper() && skillPress('harvestMoon') && cdReady('harvestMoon') && canAct()) { if (spend(20)) { cdSet('harvestMoon');
     moons.push({ x: P.x, y: P.y - 12, r: 32 + 5 * tal('harvestMoon'), t: 3, tick: 0.2, dmg: Math.round(9 * amul('harvestMoon')) });
     SFX.squelch(); SFX.puff(); ringAt(P.x, P.y - 2, 32, '#c0283a', 0.4); shakeCam(3); P.atk = -1;
-    number(P.x, P.y - 30, 'BLOOD BOIL', '#ff6b6b'); } else tired(); }
+    number(P.x, P.y - 30, 'BLOOD BOIL', '#ff6b6b'); kitPose(P, 'boil', 0.45); } else tired(); }
   // ---- GRAVECALL: he does not wait for a body ----
   if (isReaper() && skillPress('gravecall') && cdReady('gravecall') && canAct()) { if (spend(26)) { cdSet('gravecall');
     SUMMON_KINDS.forEach((kind, i) => { const rx = boneSpot((i - 1) * 24);   /* one of each: the warrior, the archer and the mage, for CALL_LIFE */
       riseAt(rx, kind === 'wisp' ? P.y - 20 : P.y, kind, 'call'); burst(rx, P.y, 8, ['#8fd160', '#141a16'], 60, 0.5); });
     SFX.gobDie(); SFX.heavy(); shakeCam(5); zoomKick(1.06, 0.25); ringAt(P.x, P.y - 10, 44, '#8fd160', 0.45);
-    number(P.x, P.y - 32, 'GRAVECALL', '#8fd160'); } else tired(); }
+    number(P.x, P.y - 32, 'GRAVECALL', '#8fd160'); kitPose(P, 'call', 0.5); } else tired(); }
   // ---- BROADSIDE: everything he has, down the deck, in one line ----
   if (isPirate() && skillPress('broadside') && cdReady('broadside') && canAct()) { if (spend(24)) { cdSet('broadside');
     const y0 = P.y - 12; let len = 0;
@@ -6712,14 +6712,14 @@ function updatePlayer(dt) {
       if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 240; } }
     for (let i = 0; i < 18; i++) parts.push({ x: P.x + P.face * 12, y: y0, vx: P.face * (80 + Math.random() * 220), vy: (Math.random() - 0.5) * 80, life: 0.35, max: 0.35, col: Math.random() < 0.4 ? '#fff6c8' : Math.random() < 0.7 ? '#ffd36b' : '#9aa39a', size: 2, grav: -20 });
     SFX.crack(); SFX.heavy(); shakeCam(8, P.face * 4); zoomKick(1.08, 0.28); hitstop(0.05);
-    P.vx = -P.face * 140; P.blastT = 0.34; P.atk = -1;
+    P.vx = -P.face * 140; P.blastT = 0.34; kitPose(P, 'broad', 0.4); P.atk = -1;
     number(P.x, P.y - 30, 'BROADSIDE', '#ffd36b'); } else tired(); }
   // ---- THE BLACK SPOT: named, and it does not come off until it falls ----
   if (isPirate() && skillPress('blackSpot') && cdReady('blackSpot') && canAct()) {
     let bs = null, bsd = 1e9;
     for (const e of enemies) { if (!e.alive || e.harmless) continue; const d = Math.hypot(e.x - P.x, e.y - P.y); if (d < 230 && d < bsd) { bsd = d; bs = e; } }
     if (!bs) { number(P.x, P.y - 26, 'NOBODY TO NAME', '#9aa39a'); SFX.buzz(); }
-    else if (spend(16)) { cdSet('blackSpot'); bs.spot = 8 + 2 * (tal('blackSpot') - 1);
+    else if (spend(16)) { cdSet('blackSpot'); kitPose(P, 'spot', 0.45); bs.spot = 8 + 2 * (tal('blackSpot') - 1);
       number(bs.x, bs.y - bs.h - 18, 'THE BLACK SPOT', '#ff6b6b'); SFX.sting(); SFX.ui();
       ringAt(bs.x, bs.y - bs.h / 2, 22, '#ff6b6b', 0.45); burst(bs.x, bs.y - bs.h / 2, 8, ['#1a1620', '#ff6b6b'], 50, 0.5); }
     else tired(); }
@@ -6729,7 +6729,7 @@ function updatePlayer(dt) {
     for (const e of enemies) { if (!e.alive || e.harmless || e.maxHp) continue;
       const d = (e.x - P.x) * P.face; if (d < 0 || d > 130 || Math.abs(e.y - P.y) > 38) continue; if (d < khd) { khd = d; kh = e; } }
     if (!kh) { number(P.x, P.y - 26, 'NOTHING TO HOOK', '#9aa39a'); SFX.buzz(); }
-    else if (spend(18)) { cdSet('keelhaul');
+    else if (spend(18)) { cdSet('keelhaul'); kitPose(P, 'haul', 0.4);
       shots.push({ x0: P.x + P.face * 8, y0: P.y - 12, x1: kh.x, y1: kh.y - kh.h / 2, life: 0.18 });
       hurtAs('shot', kh,Math.round(19 * amul('keelhaul')), P.x + P.face * 20, false);
       kh.x = P.x - P.face * 26; kh.vx = -P.face * 130; kh.vy = -120; kh.stagger = Math.max(kh.stagger || 0, 1.6);
@@ -6737,7 +6737,7 @@ function updatePlayer(dt) {
       number(kh.x, kh.y - kh.h - 16, 'KEELHAULED', '#ffd36b'); }
     else tired(); }
   if (isPirate() && skillPress('grapeshot') && cdReady('grapeshot') && canAct()) { if (spend(18)) { cdSet('grapeshot');
-    P.blastT = 0.3; P.vx = -P.face * 90; SFX.crack(); SFX.heavy(); shakeCam(6, P.face * 3); zoomKick(1.06, 0.22); hitstop(0.05); flash = Math.max(flash, 0.06);
+    P.blastT = 0.3; kitPose(P, 'grape', 0.35); P.vx = -P.face * 90; SFX.crack(); SFX.heavy(); shakeCam(6, P.face * 3); zoomKick(1.06, 0.22); hitstop(0.05); flash = Math.max(flash, 0.06);
     const x0 = P.x + P.face * 12, y0 = P.y - 12, reach = 74 + 8 * tal('grapeshot');
     for (let i = 0; i < 22; i++) { const sp = 60 + Math.random() * 200; parts.push({ x: x0, y: y0, vx: P.face * sp, vy: (Math.random() - 0.5) * 150, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#fff6c8' : '#9aa39a', size: 1, grav: 60 }); }
     for (let k = 0; k < 5; k++) shots.push({ x0, y0, x1: x0 + P.face * reach, y1: y0 + (k - 2) * 9, life: 0.1 });
@@ -6749,7 +6749,7 @@ function updatePlayer(dt) {
       if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 200; } }
     if (!n) number(P.x, P.y - 26, 'NOTHING IN IT', '#9aa39a'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   if (isPirate() && skillPress('rum') && cdReady('rum') && canAct()) { cdSet('rum');
-    P.hp = Math.min(P.maxHp, P.hp + Math.round(P.maxHp*.2)); P.rum = 4; P.castT = 0.3;
+    P.hp = Math.min(P.maxHp, P.hp + Math.round(P.maxHp*.2)); P.rum = 4; P.castT = 0.3; kitPose(P, 'rum', 0.45);
     SFX.mend(); number(P.x, P.y - 26, 'RUM', '#e0b040'); motes(P.x, P.y - 10, 10, 8);
     for (let i = 0; i < 8; i++) parts.push({ x: P.x, y: P.y - 14, vx: (Math.random() - 0.5) * 60, vy: -40 - Math.random() * 40, life: 0.6, max: 0.6, col: '#c9843a', size: 2, grav: 90 }); }
   if (isPirate() && skillPress('boarding') && cdReady('boarding') && canAct()) { if (spend(20)) { cdSet('boarding');
@@ -6758,15 +6758,15 @@ function updatePlayer(dt) {
     P.vx = P.face * 420; P.vy = -60; P.inv = Math.max(P.inv, 0.35); P.castT = 0.25; P.ground = false; P.coyote = 0; P.onMover = null;
     SFX.pDodge(); streaks(P.x, P.y - 12, -P.face, ['#c9b27c', '#fff6e0'], 170);
     const cut = new Set();
-    P.boardT = 0.35; P.boardHit = cut; } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
+    P.boardT = 0.35; P.boardHit = cut; kitPose(P, 'board', 0.35); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   if (isPaladin() && skillPress('lightLance') && cdReady('lightLance') && canAct()) { if (spend(20)) { cdSet('lightLance'); const y = P.y - 11; let len = 0; while (len < 230 && !isSolid(Math.floor((P.x + P.face * (8 + len)) / TS), Math.floor(y / TS))) len += 4;
       lanceBeams.push({ x0: P.x + P.face * 8, y, dir: P.face, len, t: 0.3 }); for (const e of enemies) if (e.alive && !e.harmless && Math.sign(e.x - P.x) === P.face && Math.abs(e.x - P.x) < len + 8 && e.y - e.h < y + 4 && e.y > y - 4) { hurtAs('shot', e, Math.round(22 * amul('lightLance')), P.x, false); sparks(e.x, y, P.face, 6); }
-      SFX.lightFull(); SFX.aegis(); P.castT = 0.3; shakeCam(2, P.face * 2); } else tired(); }
+      SFX.lightFull(); SFX.aegis(); P.castT = 0.3; kitPose(P, 'beam', 0.4); shakeCam(2, P.face * 2); } else tired(); }
   // DIVINE SHIELD: nothing touches you
-  if (isPaladin() && skillPress('divineShield') && cdReady('divineShield') && !P.dead && !(P.asleep > 0)) { cdSet('divineShield'); P.divineT = 2 + 0.5 * (tal('divineShield') - 1); SFX.aegis(); SFX.lightFull(); ringAt(P.x, P.y - 10, 24, '#ffd36b', 0.4); }
+  if (isPaladin() && skillPress('divineShield') && cdReady('divineShield') && !P.dead && !(P.asleep > 0)) { cdSet('divineShield'); P.divineT = 2 + 0.5 * (tal('divineShield') - 1); if (!(P.atk >= 0) && !(P.hurt > 0)) kitPose(P, 'halo', 0.5); SFX.aegis(); SFX.lightFull(); ringAt(P.x, P.y - 10, 24, '#ffd36b', 0.4); }
   if (P.divineT > 0) P.divineT -= dt;
   // HAMMER LEAP: up, and down with the maul
-  if (isPaladin() && skillPress('hammerLeap') && cdReady('hammerLeap') && (P.ground || P.swim) && canAct()) { if (spend(25)) { cdSet('hammerLeap'); P.hleapT = 1.4; P.hleapWet = !P.ground; P.vy = P.hleapWet ? 200 : -330; P.vx = P.face * (P.hleapWet ? 120 : 200);   /* THE WATER VERSION: there is nothing to leap off, so he drives DOWN through the water maul first, and it lands where he stops */ P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.atk = -1; SFX.pJump(); SFX.throwWhoosh(); } else tired(); }
+  if (isPaladin() && skillPress('hammerLeap') && cdReady('hammerLeap') && (P.ground || P.swim) && canAct()) { if (spend(25)) { cdSet('hammerLeap'); P.hleapT = 1.4; P.hleapWet = !P.ground; kitPose(P, 'leap', 1.4); P.vy = P.hleapWet ? 200 : -330; P.vx = P.face * (P.hleapWet ? 120 : 200);   /* THE WATER VERSION: there is nothing to leap off, so he drives DOWN through the water maul first, and it lands where he stops */ P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.atk = -1; SFX.pJump(); SFX.throwWhoosh(); } else tired(); }
   /* ==== THE WARDEN'S THREE SKILLS. Each one is a verb she already has, asked for on a key: the point that holds
      something down, the ground that grows spears, and the vault taken at a foe instead of at a gap. ==== */
   if (isWarden() && skillPress('skewer') && cdReady('skewer') && canAct()) { if (spend(18)) { cdSet('skewer');
@@ -6801,10 +6801,13 @@ function updatePlayer(dt) {
     if (best) { best.stagger = Math.max(best.stagger || 0, 0.5); number(best.x, best.y - (best.h || 16) - 18, 'OVER YOU', '#8fd160'); }
   } else tired(); }
   if (P.kPoseT > 0) P.kPoseT = Math.max(0, P.kPoseT - dt);   /* the ability's pose (hero-poses.js): art only */
+  /* A POSED DODGE IS NOT BLINKED (Daniel, 2026-09-24): while HOLY CHARGE or CINDER STEP is playing its pose, its grace is copied
+     here and runs down beside P.inv, and the draw leaves the blink off until it is out. ART ONLY: P.inv itself is not touched */
+  if (P.dodge > 0 && P.kPoseT > 0 && POSE_DASH[P.kPoseK]) P.poseInv = P.inv; else if (P.poseInv > 0) P.poseInv = Math.max(0, P.poseInv - dt);
   if (P.landArt > 0) P.landArt = Math.max(0, P.landArt - dt); if (!P.ground) P.landArt = 0;   /* the landing's three frames (art only) */
   P.airArt = P.ground ? 0.1 : Math.max(0, (P.airArt || 0) - dt);   /* the first beat off the ground: the take-off frame (art only) */
   wardenKit(dt, canAct, tired); knightKit(dt, canAct, tired); geomancerKit(dt, canAct, tired);   /* (and the Knight's three: DISARM, IRONCLAD, SWORD OF THE REALM) */   /* THE WARDEN'S SIX BOUGHT ACTIVES (below updatePlayer): the wheel, the javelin, the pole spring, the stretch, the dance, the rain */
-  if (P.hleapT > 0) { P.hleapT -= dt; if (P.hleapWet) P.vy = Math.max(P.vy, 140); if (P.hleapT < 1.25 && (P.ground || (P.hleapWet && P.hleapT < 1.08))) { P.hleapT = 0; const wet = !P.ground; P.hleapWet = false; shakeCam(8); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 40, '#ffd36b', 0.4); dust(P.x - 10, P.y, 8); dust(P.x + 10, P.y, 8); SFX.forgeHammer(); SFX.heavy(); hitstop(0.05);
+  if (P.hleapT > 0) { P.hleapT -= dt; if (P.hleapWet) P.vy = Math.max(P.vy, 140); if (P.hleapT < 1.25 && (P.ground || (P.hleapWet && P.hleapT < 1.08))) { P.hleapT = 0; kitPose(P, 'leapLand', 0.3); const wet = !P.ground; P.hleapWet = false; shakeCam(8); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 40, '#ffd36b', 0.4); dust(P.x - 10, P.y, 8); dust(P.x + 10, P.y, 8); SFX.forgeHammer(); SFX.heavy(); hitstop(0.05);
       for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: wet ? 0.7 : 1.1, sp: 220, hit: new Set(), water: wet });
       for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 42 && Math.abs(e.y - P.y) < 30) { hurtAs('plunge', e, Math.round(24 * amul('hammerLeap')), P.x, false); if (!e.maxHp) { e.vy = -180; e.stagger = Math.max(e.stagger || 0, 0.8); } } }
     else if (P.hleapT > 0) P.vx = P.face * (P.hleapWet ? 120 : 200); }
@@ -22550,7 +22553,7 @@ function drawWorld(cx, cy, showPlayer) {
       drawSet(K, gh.pass ? 'run' : 'roll', gh.frame, gh.x - cx, gh.y - cy, gh.face, !gh.pass, 1, 1, gh.life * (gh.pass ? 0.9 : 2));
       if (gh.pass) { g.globalAlpha = Math.min(0.35, gh.life * 1.1); g.fillStyle = '#8fd160';
         g.fillRect(Math.round(gh.x - cx) - 4, Math.round(gh.y - cy) - 20, 8, 1); g.globalAlpha = 1; } }
-    const vis = P.inv <= 0 || Math.floor(P.inv * 20) % 2 === 0;
+    const vis = P.inv <= 0 || (P.poseInv > 0 && !(P.hurt > 0)) || Math.floor(P.inv * 20) % 2 === 0;   /* a posed dodge's grace does not blink (P.poseInv, updatePlayer) */
     if (vis) {
       if (P.carpet) drawRug(g, P.x - cx, P.y - cy + 1 + P.carpet.bob, time, P.carpet.tilt);   /* the rug under his feet, and no shadow: the ground is a long way down */
       else if (!P.fly) g.drawImage(PROP.shadow, Math.round(P.x) - 6 - cx, Math.round(P.y) - 2 - cy);
@@ -22558,6 +22561,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (P.fly) { const kx = Math.round(P.x - cx) - 4, ky = Math.round(P.y - cy) - 58; g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(P.x - cx) + 0.5, Math.round(P.y - cy) - 14); g.lineTo(kx + 0.5, ky + 20); g.stroke(); drawBigKite(kx, ky, time); }
       if (P.fly && !(P.atk >= 0)) { key = 'jump'; frame = 1; }
       else if (P.hurt > 0) { key = 'hurt'; frame = P.hurt > 0.18 ? 0 : 1; }
+      else if (P.dodge > 0 && POSE_DASH[P.kPoseK] && kitPoseFrame(P, K.R)) { [key, frame] = kitPoseFrame(P, K.R); }   /* HOLY CHARGE and CINDER STEP are dodges with a body of their own, not the roll (hero-poses.js) */
       else if (P.dodge > 0) { const dm = P.dodgeMax || 0.3; key = 'roll'; frame = Math.floor((dm - P.dodge) / dm * 4) * (P.face > 0 ? 1 : -1); }   /* (its own length, so a short back-step plays all four beats of it and not the first one twice) */
       else if (P.pinning && K.R.pin) key = 'pin';   /* THE PIN: down on the spear, both hands on it, holding the thing under the point */
       else if (P.plunge) key = 'plunge';
