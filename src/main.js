@@ -4122,12 +4122,12 @@ function drawHeroPick() {
     g.globalAlpha = sel ? 1 : 0.7;
     g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(x + cw / 2 - fr.width * sc / 2), top + ch - 8 - Math.round(fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
     g.globalAlpha = 1;
-    text({ knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER' }[h] || H.name, x + cw / 2, top + ch + 3, sel ? UI.title : '#7a7a84', 'center', 6);
+    text({ knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER' }[h] || H.name, x + cw / 2, top + ch + 3 + (k % 2 ? 7 : 0), sel ? UI.title : '#7a7a84', 'center', 6);
   });
   // and the words, for the one you are looking at, where there is room for them: the name, THE LOOP under it (HERO_LOOP,
   // the one sentence that is how this hero is played, where a player looks first), then the stats under that. A row of
   // the small hand every eight pixels (BODY_LH: seven of glyph and one of air), and the footer is at VH - 19.
-  { const h = PICK[heroPick.i], H = HEROES.find(q => q.id === h), y0 = top + ch + 13;
+  { const h = PICK[heroPick.i], H = HEROES.find(q => q.id === h), y0 = top + ch + 20;   /* (seven cards: every other name drops a line, so GEOMANCER and DEATH KNIGHT stop running into their neighbours) */
     text(H.name, VW / 2, y0, UI.title, 'center');
     const loop = wrap(HERO_LOOP[h], VW - 24, 6); loop.forEach((ln, i) => text(ln, VW / 2, y0 + 9 + i * BODY_LH, UI.text, 'center', 6));
     LINES[h].forEach((ln, i) => text(ln, VW / 2, y0 + 12 + (loop.length + i) * BODY_LH, ln.includes('HARDER') ? '#ff9a5c' : UI.dim, 'center', 6)); }

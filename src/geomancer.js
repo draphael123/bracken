@@ -76,8 +76,9 @@ export function makeGeomancer(api) {
     const top = (fy - h) * TS, col = { l: tx * TS, r: tx * TS + TS, t: top - 2, b: fy * TS };
     const P = api.P, launched = [];
     if (!o.noHero && !P.dead && api.overlap(col, heroBox()) && roomAbove(P, top)) { P.y = top; P.vy = o.heroVy || GEO.heroLaunchVy; P.ground = false; P.coyote = 0; P.onMover = null; }
-    for (const e of foes()) { if (e.harmless || !api.overlap(col, api.box(e))) continue;
-      if (liftable(e) && roomAbove(e, top)) { e.y = top; e.vy = GEO.launchVy; e.geoAirT = api.time; e.stagger = Math.max(e.stagger || 0, 0.5); launched.push(e); }
+    for (const e of foes()) { if (e.harmless) continue; const eb = api.box(e), inCol = api.overlap(col, eb);
+      if (!inCol && !api.overlap({ l: col.l - 8, r: col.r + 8, t: col.t, b: col.b + 2 }, eb)) continue;   /* THE GROUND HEAVES a hand either side: what stands beside the column is hit, not lifted */
+      if (inCol && liftable(e) && roomAbove(e, top)) { e.y = top; e.vy = GEO.launchVy; e.geoAirT = api.time; e.stagger = Math.max(e.stagger || 0, 0.5); launched.push(e); }
       if (!e.turncoat && o.hurt !== false) { api.hurtAs('heavy', e, dmg(o.mul || 1.3, o.k), P.x, false); api.sparks(e.x, e.y - (e.h || 16) / 2, 0, 5); } }
     const cells = []; for (let k = 1; k <= h; k++) { if (!freeCell(tx, fy - k)) break; cells.push([tx, fy - k]); }   /* bottom up: stop at the first that is not air, or has a body in it */
     const p = cells.length ? place(kind, cells, T().SOLID) : null;
@@ -91,7 +92,11 @@ export function makeGeomancer(api) {
   /* UPHEAVAL (hold X): a pillar erupts ahead of her - further the longer the hold - launches what stands there, and stays as a platform */
   function upheavalX(wound) { return api.P.x + api.P.face * (26 + 40 * Math.max(0, Math.min(1, wound))); }
   function upheaval(wound) {
-    const P = api.P, x = upheavalX(wound), tx = Math.floor(x / TS), fy = floorRow(tx, Math.floor((P.y - 1) / TS), 3);
+    const P = api.P, aim = upheavalX(wound);
+    /* IT FINDS ITS FOOTING UNDER THEM: a foe standing within a hand of where it was aimed has it come up under him (the grid is sixteen
+       pixels and a foe is twelve: without this a pillar aimed at a man half the time rose beside him) */
+    const near = foes().filter(e => !e.harmless && !e.turncoat && (e.x - P.x) * P.face > 8 && Math.abs(e.x - aim) < 18 && Math.abs(e.y - P.y) < 20).sort((a, b) => Math.abs(a.x - aim) - Math.abs(b.x - aim))[0];
+    const x = near ? near.x : aim, tx = Math.floor(x / TS), fy = floorRow(tx, Math.floor((P.y - 1) / TS), 3);
     api.SFX.geoThud && api.SFX.geoThud(); api.dust(P.x + P.face * 8, P.y, 5);
     if (fy === null) { api.number(x, P.y - 20, 'NO GROUND THERE', '#9aa39a'); return null; }
     return erupt(tx, fy, GEO.pillarH + (tal('tall') ? 1 : 0), 'pillar', { mul: 1.3 });
