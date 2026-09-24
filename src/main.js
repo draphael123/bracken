@@ -15141,7 +15141,7 @@ function updateGobMage(e, dt) {
 // THE SHRIEK (round two). Standing on the boards was always right, and nothing she did ever said otherwise. Now she goes over
 // the nest bell, climbs, and screams at the roof: every board rings red and splinters come up through them. A bell struck
 // under her goes through her like a blow: strike it while she is over it and she comes down.
-const gqOpen = e => e.mode === 'pinned'; // the only window: under her own gallery
+const gqOpen = e => e.mode === 'pinned'; // the only window: under her own chandelier (it was her gallery until 2026-09-24)
 let sceptres = []; // her sceptre in flight: out along the floor, back at head height
 const GQ_FRAME = { crownTell: 2, crownRain: 8, pinned: 10, gLeapTell: 6, gLeap: 11, gPerch: 3, gDropTell: 6, gDrop: 11, shadowTell: 2, shadow: 2, sleep: 0, wake: 0, court: 0, point: 1, throw: 2, topple: 10, rise: 3, stand: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slamTell: 6, slam: 7, slamRec: 7, sweepTell: 3, sweep: 8, rec: 8,
   chargeTell: 6, charge: 9, dazed: 10, chandTell: 2, decreeTell: 6, decree: 7, sceptreTell: 2, sceptreWait: 3, ceilTell: 6, ceil: 11, roofWait: 3, roof: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slateTell: 12, slate: 12, leapTell: 6, leap: 11, land: 7, struck: 13 };
@@ -17628,7 +17628,7 @@ function updateCastleProps(dt, hb) {
     }
     /* A CRANE WINDS ITS STONE BACK UP, a while after it dropped it or the troll tore it off - never onto a troll still under it */
     if (pr.t === 'weight' && pr.crane && (pr.state === 'down' || pr.state === 'gone')) { pr.downT = (pr.downT || 0) + dt; if (pr.downT > (pr.state === 'gone' ? 8 : 6) && Math.abs(P.x - pr.x) > 24 && !enemies.some(q => q.alive && q.hill && q.mode === 'pinned' && Math.abs(q.x - pr.x) < 30)) { pr.state = 'hang'; pr.hitE = null; pr.hitP = false; pr.vy = 0; pr.downT = 0; SFX.clank(); } }
-    if (pr.t === 'weight' && pr.lamp && pr.state === 'down') { pr.downT += dt; if (pr.downT > 7 && Math.abs(P.x - pr.x) > 30) { pr.state = 'hang'; pr.hitE = null; pr.hitP = false; pr.vy = 0; burst(pr.x, pr.y + pr.len - 8, 8, ['#ffd36b'], 40, 0.4); } }
+    if (pr.t === 'weight' && pr.lamp && pr.state === 'down') { pr.downT += dt; if (pr.downT > (pr.gq ? 5 : 7) && Math.abs(P.x - pr.x) > 30) { pr.state = 'hang'; pr.hitE = null; pr.hitP = false; pr.vy = 0; burst(pr.x, pr.y + pr.len - 8, 8, ['#ffd36b'], 40, 0.4); } }
     if (pr.t === 'weight') {
       if (pr.unstable && pr.state === 'hang' && Math.abs(P.x-pr.x)<100 && Math.abs(P.y-(pr.y+pr.len))<100 && Math.random()<dt*0.35) { pr.state='tell';pr.tellT=1;pr.fy=pr.y+pr.len;pr.floorY=20*TS;pr.hitE=null;pr.hitP=false;SFX.forgeChain();number(pr.x,pr.fy-18,'!!','#ff6b6b'); }
       if (pr.state === 'hang') { const by = pr.y + pr.len; if (hb && overlap(hb, { l: pr.x - 8, r: pr.x + 8, t: by - 10, b: by + 2 }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.state = 'fall'; pr.fy = by; pr.vy = 0; SFX.clank(); SFX.crack(); } }
@@ -17638,7 +17638,11 @@ function updateCastleProps(dt, hb) {
         // a ton of iron: whatever is under it is flat, however many of them (a boss only feels it)
         pr.hitE = pr.hitE || new Set();
         for (const e of enemies) if (e.alive && Math.abs(e.x - pr.x) < e.w / 2 + 7 && pr.fy > e.y - e.h && pr.fy < e.y + 4 && !pr.hitE.has(e)) { pr.hitE.add(e);
-          if (e.t === 'gqueen' && e.alive && e.phase === 2) { e.mode = 'dazed'; e.modeT = 2.6; e.vx = 0; gqSay(e, 'HER OWN CHANDELIER', '#8fd160'); SFX.golemShatter(); shakeCam(7); zoomKick(1.1, 0.3); } // the thing she threw at comes down on her
+          /* THE CHANDELIER PINS HER (2026-09-24, Daniel: it replaces the gallery). Exactly what a fallen stretch of gallery did (gqDropSection):
+             pinned 4.6 s (3.8 in round three), 7% of her off the top, and the plate open for the whole of it (gqOpen). The iron's own blow
+             below is NOT added: the gallery never added one. */
+          if (e.t === 'gqueen') { if (e.mode !== 'pinned' && e.mode !== 'shadow' && e.mode !== 'wake' && e.mode !== 'sleep') { e.mode = 'pinned'; e.modeT = e.phase >= 3 ? 3.8 : 4.6; e.vx = 0; e.dropT = 0.3; e.hp -= Math.round(e.maxHp * 0.07); e.flash = 0.4;
+              burst(e.x, e.y - 40, 24, ['#5a5a68', '#8a5a32', '#e0b040'], 90, 0.8); gqSay(e, 'HER OWN CHANDELIER COMES DOWN ON HER', '#8fd160'); SFX.golemShatter(); shakeCam(7); zoomKick(1.1, 0.3); if (e.hp <= 0) hurtEnemy(e, 1, pr.x, true); } continue; }
           if (e.t === 'lance' && e.alive) { e.mode = 'reel'; e.modeT = 2.6; e.stagger = 2.6; e.vx = 0; number(e.x, e.y - e.h - 16, 'THE CAGE COMES DOWN ON HIM', '#8fd160'); SFX.golemShatter(); shakeCam(7); zoomKick(1.1, 0.3); } // knocked flat first, so his plate is no use to him
           if (e.hill && pr.crane) { e.mode = 'pinned'; e.modeT = e.phase === 2 ? 2.6 : 3.2; e.stagger = e.modeT; e.vx = 0; e.stone = null; e.pins = (e.pins || 0) + 1; SFX.golemShatter(); shakeCam(8); zoomKick(1.1, 0.3); ringAt(e.x, e.y - 16, 30, '#8fd160', 0.4); }   /* THE HILL TROLL, PINNED */
           hurtEnemy(e, e.maxHp ? (pr.lamp ? (e.t === 'lance' ? 60 : 36) : 30) : 999, pr.x, true); }
