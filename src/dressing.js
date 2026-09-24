@@ -5,6 +5,7 @@ export const GROUND_KITS = {
   "burning": {"density":0.34,"kinds":["tuft","rock","stump"]},   /* THE BURNING VILLAGE: a farming street on the road, and the fires they cooked on */
   "harbor": {"density":0,"kinds":[]},
   "burial": {"density":0,"kinds":[]},
+  "unburied": {"density":0.22,"kinds":["tuft","rock","stone"]},   /* THE UNBURIED FIELD: a trampled battlefield - dead grass, thrown stones, no flowers */
   "wood": {
     "density": 0.7,
     "kinds": [
@@ -261,6 +262,7 @@ export const ALLOWED_DECORATIONS = {
   "burning": ["tuft","rock","stump","campfire","barrels","fence","cart","hayBale","brokenCart","milkChurn","waterPump","crookedFence","lanternPost"],
   "harbor": ["stall","pierPost","rumBarrels","wreckBow","anchor","mastStump","kegStack","chartTable","seaChest","plunder","capstan","coiledCable","lanternDeck","waterButt","cannon","netPoles","snow","stem"],
   "burial": ["grave","bones","coffer","candelabra","snow","stem"],
+  "unburied": ["tuft","rock","stone","grave","bones","coffer","brokenCart","crookedFence"],
   "wood": [
     "beehive",
     "birdhouse",

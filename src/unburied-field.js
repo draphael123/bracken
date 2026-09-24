@@ -93,7 +93,7 @@ export function buildUnburiedField({ painter, T, TS }) {
   ent('oilbarrel', 200, G + 5, { spill: [190, 212] });                                                          // knock it over and the trench takes a line of fire
   ent('trebuchet', 230, G, { aim: [246, 33], knocks: 'tower' });   /* its stone breaks the tower open at the foot - its palisade (246) and its fallen base (257) - a ground road under the climb; the climb stays (B4) */                                                 // the engines you work
   ent('check', 142, G); ent('check', 196, G + 5);
-  ent('sign', 140, G, { text: 'HIGH OVER THE WRECKS IS DRY AND IN THE VOLLEYS. LOW IN THE TRENCH IS SHELTERED, SLOW AND FULL.' });
+  ent('sign', 140, G, { text: 'HIGH IS DRY BUT IN THE VOLLEYS. LOW IN THE TRENCH IS SHELTERED, AND SLOW.' });
   ent('sign', 148, G - 3, { text: 'HORNS AND DUST ON THE HORIZON. THE HORSE COME DOWN THIS LANE AND THEY DO NOT STOP.' });
   ent('sign', 227, G - 3, { text: 'SIEGE OIL AND A TREBUCHET STILL LOADED. BOTH OF THEM WORK.' });
   coins([152, G + 5], [166, 28], [178, G + 5], [190, 30], [204, G + 5], [216, 29], [224, G]);
