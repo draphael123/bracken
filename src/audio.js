@@ -722,6 +722,7 @@ export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, cu
 const gob = (rate, v = 0.5) => (rate < 0.8 && voice('vo_gobbig_die', v, rate * 1.3)) || file('gobDie', v, rate);     /* a brute is not a sprig slowed down */
 const gobH = (rate, v = 0.4) => (rate < 0.8 && voice('vo_gobbig_hurt', v, rate * 1.3)) || file('gobHurt', v, rate);
 const DIE = {
+  bonearcher() { noise(.45,.24,1200,.6);tone('triangle',240,60,.3,.1);noise(.2,.12,2800,.5,.18); },   /* the bone archer comes apart: a spill of bone, the bow last */
   standardbearer() { noise(1.0, 0.34, 500, 0.5); tone('sawtooth', 110, 30, 1.1, 0.2); },   /* THE UNBURIED FIELD: the great banner coming down with him */
   deathknight() { noise(1.4, 0.38, 380, 0.5); tone('sine', 80, 24, 1.6, 0.26); tone('triangle', 220, 60, 1.2, 0.1, 0.2); },
   burngob() { gob(0.95, 0.7) || tone('sawtooth', 260, 60, 0.35, 0.2); noise(0.5, 0.2, 2600, 0.5, 0.12); },   /* THE BURNING VILLAGE */
@@ -910,6 +911,7 @@ const HURT = {
   zombie() { noise(.2,.2,400,.4);tone('triangle',100,50,.2,.12); },
   husk() { noise(.26,.26,300,.5);tone('triangle',78,40,.26,.14); },
   bonegob() { noise(.1,.1,900,.3);tone('square',420,180,.1,.07); },
+  bonearcher() { noise(.12,.14,1400,.55);tone('triangle',300,140,.1,.06);noise(.06,.08,2600,.4,.07); },   /* a skeleton's ribs knocked together, then the bow clattering after (it was a goblin's squeal: main.js voiceOf) */
   apprentice() { noise(.16,.18,520,.35);tone('triangle',150,90,.18,.1); },
   undeadmage() { noise(.2,.16,550,.7);tone('triangle',180,70,.3,.14); },
   burieddead() { noise(.3,.3,250,.5);tone('sine',80,30,.3,.2); },

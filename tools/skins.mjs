@@ -48,3 +48,31 @@ for (const lv of LEVELS) {
 assert.ok(checked >= 3, 'only ' + checked + ' levels with a skins table were found: this check has stopped covering things it used to');
 console.log(report.join('\n'));
 console.log('ok  skins          ' + checked + ' levels paint their own stone, ' + cells.toLocaleString() + ' solid cells, and nothing indoors grows grass.');
+
+/* AND NOTHING FALLS THROUGH TO THE FOREST (Daniel 2026-09-24, THE UNBURIED FIELD: "it uses the forest theme/tiles ... it
+   needs a graveyard theme"). The same bug class one level out: a level that names no palette does not fail, it paints
+   with the DEFAULT KIT - src/art.js's green turf, the wood's felled-log ledges, its oaks, beehives and butterflies (dress
+   'wood' is what main.js assumes when none is named), its leafy bough over the lens and a blue day sky. The wood is the
+   one level that kit belongs to; `custom` is the parked editor's blank page. Everything else must say what it is. */
+import { readFileSync } from 'node:fs';
+import { DRESS } from '../src/level.js';
+const FOREST_OWNS = new Set(['wood', 'custom']);
+const bareKit = [];
+for (const lv of LEVELS) { if (FOREST_OWNS.has(lv.id)) continue; let L; try { L = lv.build(); } catch { continue; }
+  if (!L.palette || !L.palette.dress) bareKit.push(lv.id); }
+assert.deepEqual(bareKit, [], 'these levels name no palette dress, so they paint with the forest kit: ' + bareKit.join(', '));
+{ /* THE UNBURIED FIELD resolves its own look, and main.js has a branch for every name it asks for */
+  const U = LEVELS.find(l => l.id === 'unburied').build(), P = U.palette || {}, MAIN = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  for (const k of ['sky', 'far', 'mid', 'near']) {
+    assert.equal(P[k], 'unburied', "unburied: palette." + k + " is not its own ('" + P[k] + "'): it falls through to the default forest layer");
+    assert.ok(MAIN.includes("pal." + k + " === 'unburied'"), "unburied: main.js has no branch for pal." + k + " === 'unburied', so the name resolves to the forest layer");
+  }
+  assert.equal(P.dress, 'battlefield', 'unburied: its dress is not the battlefield');
+  assert.ok(P.grass && P.grass !== '#5aa33e' && P.dirt && P.dirt !== '#7a5230', 'unburied: its ground wears the forest turf (palette.grass/dirt unset)');
+  assert.ok(P.boneSoil && MAIN.includes('pal.boneSoil'), 'unburied: the dead are not in its soil');
+  assert.ok(P.ledges && P.ledges !== 'log', 'unburied: its ledges are the wood\'s felled logs');
+  assert.ok((U.masonry || []).some(([a, b]) => a <= 320 && b >= 419), 'unburied: THE CHAPEL OF THE FALLEN ORDER is not laid in stone (L.masonry)');
+  const kinds = new Set((DRESS.unburied || []).map(d => d[0]));
+  for (const k of ['fieldGrave', 'crookedCross', 'brokenSpears', 'stuckShield', 'fallenBanner', 'bones']) assert.ok(kinds.has(k), 'unburied: its dressing has no ' + k);
+  console.log('ok  forest kit     ' + (LEVELS.length - FOREST_OWNS.size) + ' levels name their own dress; THE UNBURIED FIELD resolves its own sky, layers, ground, ledges, chapel stone and dressing.');
+}

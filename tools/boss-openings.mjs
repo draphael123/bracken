@@ -53,12 +53,12 @@ try {
 
   /* THE UNDEAD ARCHMAGE: the death mark, left to land and then flown out of */
   {const b=boot('fallingtower');const hold=()=>{BK.P.vx=BK.P.vy=0;};
-   const lay=()=>{b.mode='markTell';b.spell='mark';b.modeT=0;b.mark=null;b.shots=[];b.clouds=[];b.blinkT=99;BK.sim(2);return !!b.mark;};
+   const lay=()=>{b.mode='markTell';b.spell='mark';b.modeT=0;b.deathMark=null;b.shots=[];b.clouds=[];b.blinkT=99;BK.sim(2);return !!b.deathMark;};
    // left to land: he is NOT open
-   BK.god=false;BK.P.hp=BK.P.maxHp;const laid1=lay();const m1=b.mark&&{x:b.mark.x,y:b.mark.y};for(let i=0;i<200&&b.mark;i++){if(m1){BK.P.x=m1.x;BK.P.y=m1.y+8;}hold();BK.sim(1);}
+   BK.god=false;BK.P.hp=BK.P.maxHp;const laid1=lay();const m1=b.deathMark&&{x:b.deathMark.x,y:b.deathMark.y};for(let i=0;i<200&&b.deathMark;i++){if(m1){BK.P.x=m1.x;BK.P.y=m1.y+8;}hold();BK.sim(1);}
    const landed={mode:b.mode,open:+(b.open||0).toFixed(1),hurt:BK.P.hp<BK.P.maxHp};BK.P.hp=BK.P.maxHp;BK.god=true;
    // flown out of: it comes back on him
-   b.mode='hover';b.modeT=1;BK.sim(5);const laid2=lay();const m2=b.mark&&{x:b.mark.x,y:b.mark.y};for(let i=0;i<200&&b.mark;i++){if(m2){BK.P.x=m2.x+b.mark.r+40;BK.P.y=m2.y+8;}hold();BK.sim(1);}
+   b.mode='hover';b.modeT=1;BK.sim(5);const laid2=lay();const m2=b.deathMark&&{x:b.deathMark.x,y:b.deathMark.y};for(let i=0;i<200&&b.deathMark;i++){if(m2){BK.P.x=m2.x+b.deathMark.r+40;BK.P.y=m2.y+8;}hold();BK.sim(1);}
    out.mage={laid:laid1&&laid2,landed,mode:b.mode,open:+(b.open||0).toFixed(1)};}
   /* THE PYROMANDER: the same hot boss, left alone (he vents) and struck (he overheats) */
   {const b=boot('burning');BK.P.x=b.x-110;

@@ -162,3 +162,20 @@ and never converged. A held density pass sits in `work/claude/oreroad-density-HE
   track. Owned by the integrator, not lane A: lane A leaves `L.music` alone until the track lands.
 - **WALK ORDER: UNCHANGED.** He answered every other question and did not ask for this one to move, so the level
   stays between STORMHOLD and HIGHCROWN. Re-ask only if the measured INDEX makes the slot indefensible.
+
+## 11. ROUND THREE (Daniel, 2026-09-24: 9/10, four notes, all approved)
+
+1. **The housings you fight him on are bigger**: the Head Frame 6 tiles (was 5), the Tail Wheel 7 (was 4), the Great
+   Drum 9. Each keeps its ledge four rows under it and its line's end on that ledge (A12, `tools/arena-supplies.mjs`).
+2. **He is bigger** (`WINCH.scale` 1.3, applied at draw time through main.js's `bigF`; his box grows with it, and
+   `WINCH.hand` moves the hook's origin up to his drawn hand). His frame set is untouched.
+   **A10, the new sentence: AT HALF HEALTH HE WILL NOT STAY ON ONE HOUSING - every `WINCH.leapEvery` seconds he
+   crouches (HE CROUCHES TO LEAP, red) and LEAPS to another - the one you are up on if you are, else the next - with a
+   red ring on where he will land (C1/C3), and the landing hurts whoever is under it; the lines still run a quarter
+   faster, he lets two buckets go at a time, and the roof comes down twice as often.** Said over him on the turn:
+   ENRAGED, HE LEAPS DRUM TO DRUM.
+3. **The drum house's floor is the pit**, like every span's: spikes, turbines, a recovery ledge (482-484, row 18) and
+   the Head Frame's ladder home past the entrance deck. The spoil heap and its three ropes are gone; the low line runs
+   back to the deck whenever he is not on (or bound for) the Great Drum, so no ledge is a dead end.
+4. **Harpies are bats** (it is a cave), and **the bomb goblins (`sapper`) are back** in four authored encounters: both
+   pylon lookouts, the Tipple House and the Drum Yard (plus the Brakeman's Hut's existing one).
