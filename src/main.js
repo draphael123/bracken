@@ -42,6 +42,7 @@ import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
 import { bakeFrog } from './redraw/frogking.js';
 import * as LWP from './lw_props.js';
+import { kitPose, kitPoseFrame } from './hero-poses.js';   /* EVERY ABILITY HAS A BODY: the pose an active plays while it fires */
 import * as RFP from './reef_props.js';
 import * as FLP from './flot_props.js';
 import { bakeTurtle, bakeEel, bakeHeronFoe, bakeCrab } from './redraw/shore.js';
@@ -2652,7 +2653,7 @@ function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenix
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
-  Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, wheelT: 0, sdN: 0, springT: 0, stretchT: 0, javThrowT: 0, disarmT: 0, ironT: 0, realmT: 0, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
+  Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, wheelT: 0, sdN: 0, springT: 0, stretchT: 0, javThrowT: 0, disarmT: 0, ironT: 0, realmT: 0, kPoseT: 0, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
   mendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; wardJav = null; spearRain = []; droppedArms = []; realmWaves = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   for (const m of movers) if (m.kind === 'raft' && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.returning = false; m.called = false; m.offT = 0; m.bored = false; m.frogT = 0; } // EVERY RAFT AHEAD OF THE SHRINE POLES BACK TO ITS DOCK: only the Ferryman's did, so a fall off the marsh rafts left them docked on the far bank and the stream uncrossable
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
@@ -6466,21 +6467,21 @@ function updatePlayer(dt) {
   if (isPaladin() && skillPress('blessedHammer') && cdReady('blessedHammer') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(15)) { cdSet('blessedHammer'); hammers.push({ x0: P.x, y0: P.y - 12, dir: P.face, t: 0, x: P.x, y: P.y - 12, hit: new Map() }); SFX.throwWhoosh(); SFX.lightFull(); P.castT = 0.25; } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (P.chargeT > 0) { P.chargeT -= dt; P.vx = P.face * 330; if (Math.random() < dt * 40) parts.push({ x: P.x - P.face * 6, y: P.y - 4 - Math.random() * 14, vx: -P.face * 60, vy: 0, life: 0.3, max: 0.3, col: '#ffd36b', size: 1, grav: 0, glow: true });
     for (const e of enemies) if (e.alive && !e.harmless && !P.chargeHit.has(e) && overlap({ l: P.x - 10, r: P.x + 10, t: P.y - 18, b: P.y }, box(e))) { P.chargeHit.add(e); hurtAs('dash', e,Math.round(12 * amul('holyCharge')), P.x, false); if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1); e.vx = P.face * 240; e.vy = -150; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(3, P.face * 2); hitstop(0.04); } }
-  if (skillPress('groundSlam') && (P.ground || P.swim) && cdReady('groundSlam') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(25)) { cdSet('groundSlam'); P.block = false; P.atk = -1; shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: P.ground ? 1.2 : 0.8, sp: 210, hit: new Set(), water: !P.ground, skill: 'groundSlam' }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); } number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
-  if (skillPress('shieldThrow') && !thrown && cdReady('shieldThrow') && tal('shieldThrow') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !P.plunge && !(P.dodge > 0)) { if (spend(20)) { thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set() }; P.block = false; SFX.throwWhoosh(); squash(0.85, 1.15, 0.08); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
+  if (skillPress('groundSlam') && (P.ground || P.swim) && cdReady('groundSlam') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(25)) { cdSet('groundSlam'); P.block = false; P.atk = -1; kitPose(P, 'slam', 0.42); shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: P.ground ? 1.2 : 0.8, sp: 210, hit: new Set(), water: !P.ground, skill: 'groundSlam' }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); } number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
+  if (skillPress('shieldThrow') && !thrown && cdReady('shieldThrow') && tal('shieldThrow') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !P.plunge && !(P.dodge > 0)) { if (spend(20)) { thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set() }; P.block = false; kitPose(P, 'toss', 0.3); SFX.throwWhoosh(); squash(0.85, 1.15, 0.08); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   // ---- MORE ON THE KEYS ----
   const canAct = () => !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge;
   const tired = () => number(P.x, P.y - 22, 'TIRED', '#ffd36b');
   // LUNGE: a dashing thrust through everything in front
-  if (skillPress('lunge') && cdReady('lunge') && canAct()) { if (spend(18)) { cdSet('lunge'); P.lungeT = 0.2; P.lungeHit = new Set(); P.atk = -1; P.block = false; P.inv = Math.max(P.inv, 0.25); SFX.slash(); SFX.throwWhoosh(); streaks(P.x, P.y - 9, 8, ['#fff6e0', '#c9d1dc'], 200); } else tired(); }
+  if (skillPress('lunge') && cdReady('lunge') && canAct()) { if (spend(18)) { cdSet('lunge'); kitPose(P, 'lunge', 0.3); P.lungeT = 0.2; P.lungeHit = new Set(); P.atk = -1; P.block = false; P.inv = Math.max(P.inv, 0.25); SFX.slash(); SFX.throwWhoosh(); streaks(P.x, P.y - 9, 8, ['#fff6e0', '#c9d1dc'], 200); } else tired(); }
   if (P.lungeT > 0) { P.lungeT -= dt; P.vx = P.face * 470; ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.14, frame: 1 });
     for (const e of enemies) if (e.alive && !e.harmless && !P.lungeHit.has(e) && overlap({ l: P.x - 12, r: P.x + 12, t: P.y - 20, b: P.y }, box(e))) { P.lungeHit.add(e); hurtAs('dash', e,Math.round((swordDmg() + 4) * 1.4 * amul('lunge')), P.x, false); sparks(e.x, e.y - e.h / 2, P.face, 8); hitstop(0.04); } }
   // WAR CRY: they fall back, you get your wind, and for a while everything lands lighter
-  if (skillPress('warCry') && cdReady('warCry') && !P.dead && !(P.asleep > 0)) { cdSet('warCry'); P.st = Math.min(P.maxSt, P.st + 30 + 10 * (tal('warCry') - 1)); P.cryT = 4; SFX.bellow(); SFX.roar(); shakeCam(4); ringAt(P.x, P.y - 10, 90, '#ff9a5c', 0.45);
+  if (skillPress('warCry') && cdReady('warCry') && !P.dead && !(P.asleep > 0)) { cdSet('warCry'); if (canAct()) kitPose(P, 'cry', 0.55); P.st = Math.min(P.maxSt, P.st + 30 + 10 * (tal('warCry') - 1)); P.cryT = 4; SFX.bellow(); SFX.roar(); shakeCam(4); ringAt(P.x, P.y - 10, 90, '#ff9a5c', 0.45);
     for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 90 && Math.abs(e.y - P.y) < 50) { if (e.maxHp) e.stagger = Math.max(e.stagger || 0, 0.3); else { e.stagger = Math.max(e.stagger || 0, 1.2); e.vx = (Math.sign(e.x - P.x) || 1) * 160; startle(e); } } }
   if (P.cryT > 0) { P.cryT -= dt; if (Math.random() < dt * 8) parts.push({ x: P.x + (Math.random() - 0.5) * 12, y: P.y - 20, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#ff9a5c', size: 1, grav: 0 }); }
   // WHIRLWIND: two cuts all the way round
-  if (skillPress('whirlwind') && cdReady('whirlwind') && canAct()) { if (spend(25)) { cdSet('whirlwind'); P.whirlT = 0.5; P.whirlHits = [new Set(), new Set()]; P.atk = -1; P.block = false; SFX.slash(); SFX.throwWhoosh(); } else tired(); }
+  if (skillPress('whirlwind') && cdReady('whirlwind') && canAct()) { if (spend(25)) { cdSet('whirlwind'); kitPose(P, 'whirl', 0.5); P.whirlT = 0.5; P.whirlHits = [new Set(), new Set()]; P.atk = -1; P.block = false; SFX.slash(); SFX.throwWhoosh(); } else tired(); }
   if (P.whirlT > 0) { const prev = P.whirlT; P.whirlT -= dt; P.face = Math.floor(P.whirlT * 16) % 2 ? 1 : -1; const half = P.whirlT > 0.25 ? 0 : 1;
     if (Math.random() < dt * 50) { const a = Math.random() * 6.28; parts.push({ x: P.x + Math.cos(a) * 26, y: P.y - 9 + Math.sin(a) * 10, vx: -Math.sin(a) * 90, vy: Math.cos(a) * 30, life: 0.2, max: 0.2, col: '#fff6e0', size: 1, grav: 0 }); }
     if ((prev > 0.36 && P.whirlT <= 0.36) || (prev > 0.12 && P.whirlT <= 0.12)) { ringAt(P.x, P.y - 9, 30, '#fff6e0', 0.2); SFX.slash(); }
@@ -6620,6 +6621,7 @@ function updatePlayer(dt) {
     streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#c9b27c'], 150);
     if (best) { best.stagger = Math.max(best.stagger || 0, 0.5); number(best.x, best.y - (best.h || 16) - 18, 'OVER YOU', '#8fd160'); }
   } else tired(); }
+  if (P.kPoseT > 0) P.kPoseT = Math.max(0, P.kPoseT - dt);   /* the ability's pose (hero-poses.js): art only */
   wardenKit(dt, canAct, tired); knightKit(dt, canAct, tired);   /* (and the Knight's three: DISARM, IRONCLAD, SWORD OF THE REALM) */   /* THE WARDEN'S SIX BOUGHT ACTIVES (below updatePlayer): the wheel, the javelin, the pole spring, the stretch, the dance, the rain */
   if (P.hleapT > 0) { P.hleapT -= dt; if (P.hleapWet) P.vy = Math.max(P.vy, 140); if (P.hleapT < 1.25 && (P.ground || (P.hleapWet && P.hleapT < 1.08))) { P.hleapT = 0; const wet = !P.ground; P.hleapWet = false; shakeCam(8); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 40, '#ffd36b', 0.4); dust(P.x - 10, P.y, 8); dust(P.x + 10, P.y, 8); SFX.forgeHammer(); SFX.heavy(); hitstop(0.05);
       for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: wet ? 0.7 : 1.1, sp: 220, hit: new Set(), water: wet });
@@ -19053,7 +19055,7 @@ function knightKit(dt, canAct, tired) {
   if (hero() !== 'knight') return;
   if (P.dead) { P.disarmT = 0; P.ironT = 0; P.realmT = 0; }
   /* DISARM */
-  if (skillPress('disarm') && cdReady('disarm') && canAct()) { if (spend(20)) { cdSet('disarm'); P.disarmT = 0.26; P.disarmHit = false; P.atk = -1; P.block = false; P.vx = P.face * 60; SFX.disarmSwing(); } else tired(); }
+  if (skillPress('disarm') && cdReady('disarm') && canAct()) { if (spend(20)) { cdSet('disarm'); kitPose(P, 'hook', 0.26); P.disarmT = 0.26; P.disarmHit = false; P.atk = -1; P.block = false; P.vx = P.face * 60; SFX.disarmSwing(); } else tired(); }
   if (P.disarmT > 0) { P.disarmT -= dt;
     if (!P.disarmHit && P.disarmT < 0.2 && P.disarmT > 0.06) { const f = P.face, hb = f > 0 ? { l: P.x + 2, r: P.x + 32, t: P.y - 22, b: P.y + 1 } : { l: P.x - 32, r: P.x - 2, t: P.y - 22, b: P.y + 1 };
       const e = enemies.filter(q => q.alive && !q.harmless && !(q.gone > 0) && !q.turncoat && overlap(hb, box(q))).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
@@ -19064,10 +19066,10 @@ function knightKit(dt, canAct, tired) {
           droppedArms.push({ x: ax, y: Math.floor((gy + 1) / TS) * TS, t: 0, dir: f });
           for (let i = 0; i < 6; i++) parts.push({ x: e.x + f * 4, y: e.y - (e.h || 16) / 2, vx: f * (60 + Math.random() * 80), vy: -120 - Math.random() * 60, life: 0.5, max: 0.5, col: i % 2 ? '#c9d1dc' : '#8a5a32', size: 2, grav: 600 }); } } } }
   /* IRONCLAD */
-  if (skillPress('ironclad') && cdReady('ironclad') && !P.dead && !(P.asleep > 0)) { if (spend(25)) { cdSet('ironclad'); P.ironT = 4; SFX.ironclad(); ringAt(P.x, P.y - 10, 20, '#c9d1dc', 0.4); shakeCam(3); number(P.x, P.y - 30, 'IRONCLAD', '#c9d1dc'); } else tired(); }
+  if (skillPress('ironclad') && cdReady('ironclad') && !P.dead && !(P.asleep > 0)) { if (spend(25)) { cdSet('ironclad'); if (!(P.atk >= 0) && canAct()) kitPose(P, 'iron', 0.45); P.ironT = 4; SFX.ironclad(); ringAt(P.x, P.y - 10, 20, '#c9d1dc', 0.4); shakeCam(3); number(P.x, P.y - 30, 'IRONCLAD', '#c9d1dc'); } else tired(); }
   if (P.ironT > 0) { P.ironT -= dt; if (Math.random() < dt * 10) parts.push({ x: P.x + (Math.random() - 0.5) * 12, y: P.y - 4 - Math.random() * 16, vx: 0, vy: -14, life: 0.35, max: 0.35, col: '#dfe8ff', size: 1, grav: 0 }); }
   /* SWORD OF THE REALM */
-  if (skillPress('swordOfRealm') && cdReady('swordOfRealm') && canAct()) { if (spend(40)) { cdSet('swordOfRealm'); P.realmT = 10; SFX.realm(); ringAt(P.x, P.y - 12, 34, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 18, '#fff6c8', 0.35); shakeCam(5); zoomKick(1.08, 0.25); number(P.x, P.y - 32, 'SWORD OF THE REALM', '#ffd36b');
+  if (skillPress('swordOfRealm') && cdReady('swordOfRealm') && canAct()) { if (spend(40)) { cdSet('swordOfRealm'); kitPose(P, 'realm', 0.55); P.realmT = 10; SFX.realm(); ringAt(P.x, P.y - 12, 34, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 18, '#fff6c8', 0.35); shakeCam(5); zoomKick(1.08, 0.25); number(P.x, P.y - 32, 'SWORD OF THE REALM', '#ffd36b');
     if (P.ground || P.swim) for (const d of [-1, 1]) realmWaves.push({ x: P.x + d * 12, y: P.y, dir: d, life: 0.8, sp: 300, big: true, hit: new Set(), delay: 0.1 }); } else tired(); }
   if (P.realmT > 0) { P.realmT -= dt; if (Math.random() < dt * 16) parts.push({ x: P.x + P.face * (4 + Math.random() * 10), y: P.y - 8 - Math.random() * 10, vx: 0, vy: -24, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: 0 }); }
 }
@@ -22143,7 +22145,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
       else if (P.atk >= 0) { const pose = attackPose(hero(), P, K.R); key = pose.key; frame = pose.frame; }
-      else if (hero() === 'knight' && P.disarmT > 0 && K.R.atkB) { key = 'atkB'; frame = Math.min(3, Math.floor((0.26 - P.disarmT) / 0.065)); }   /* DISARM: the backhand, low to high - the hook */
+      else if (kitPoseFrame(P, K.R)) { [key, frame] = kitPoseFrame(P, K.R); }   /* EVERY ABILITY HAS A BODY (hero-poses.js): the active that just fired, in a pose of its own - DISARM's hook among them, which borrowed the combo's backhand */
       else if (isWarden() && wardPose()) { const wp = wardPose(); key = wp[0]; frame = wp[1]; }   /* THE WARDEN'S BOUGHT ACTIVES (wardenKit) */
       else if (P.riseT > 0) { if (K.R.rise) { key = 'rise'; frame = P.riseT > 0.26 ? 0 : P.riseT > 0.19 ? 1 : 2; } else { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; } }   /* THE BOUGHT RISING CUT: hip, then the blade overhead - the upward cut's own frames, never the forward swing's */
       else if ((isPyro() || isPaladin() || isPirate() || isReaper() || isWarden()) && P.blastT > 0) { key = 'blast'; frame = P.blastT > 0.2 ? 0 : 1; }

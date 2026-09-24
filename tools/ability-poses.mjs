@@ -34,7 +34,7 @@ const KNOWN_POSELESS = {
 };
 /* LANE E's WORK LIST (2026-09-23), proved red on master first: the Knight's and the Warden's faults not yet fixed on this branch.
    It only shrinks - a fixed one must come off it - and it is empty when the lane is done. */
-const LANE_TODO = ['lunge', 'shieldThrow', 'warCry', 'groundSlam', 'whirlwind', 'disarm', 'ironclad', 'swordOfRealm', 'skewer', 'javelin', 'fullStretch', 'rainOfSpears/setSpears'];
+const LANE_TODO = ['skewer', 'javelin', 'fullStretch', 'rainOfSpears/setSpears'];
 const REPORT = process.argv.includes('--report');
 
 const pg = await openPage({ audio: false, fonts: false });
