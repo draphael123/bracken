@@ -13921,8 +13921,7 @@ function updateFalseAbbotBoss(e, dt) {
     fire: (x, life, delay) => fires.push({ x, y: A.floor, life, delay }),
     /* THE CONGREGATION: up the belfry ladder, and they are HIS - the bell dazes them with him */
     adds: () => enemies.filter(q => q.alive && q.fromAbbot).length,
-    summon: () => { const dr = A.doors && A.doors.length ? A.doors.reduce((a, b) => Math.abs(b * TS - P.x) > Math.abs(a * TS - P.x) ? b : a) : null;   /* THE BELFRY'S DOORS (docs/briefs/abbot-room.md): the one away from you */
-      const side = dr !== null ? (Math.sign(dr * TS + 8 - e.x) || 1) : Math.random() < 0.5 ? -1 : 1, gx = dr !== null ? dr : Math.floor((e.x + side * 110) / TS);
+    summon: () => { const side = Math.random() < 0.5 ? -1 : 1, gx = Math.floor((e.x + side * 110) / TS);
       const n0 = enemies.length; spawnEnt({ t: Math.random() < 0.4 ? 'archer' : 'sprig', x: Math.max(4, Math.min(L.W - 5, gx)), y: Math.floor(A.floor / TS) - 1, face: -side });
       for (let i = n0; i < enemies.length; i++) { enemies[i].fromAbbot = true; enemies[i].seenP = true; }
       burst(gx * TS, A.floor - 8, 8, ['#6faa4a', '#e8a83a'], 50, 0.4); },

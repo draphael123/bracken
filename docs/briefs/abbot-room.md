@@ -79,8 +79,10 @@ the signs) stays outside it as the approach - the check is now outside the arena
   bell either side so they are never a way to ring it from safety), and the ringers' galleries at 96px along both end
   walls (x 51-58, 85-93) on a post each and the wall behind, with a ladder up each (x 52 and 90). They are the step off his coals,
   the "round him" for the procession, and where the knell finds you just the same.
-- **THE CONGREGATION COMES IN AT THE DOORS**: his adds spawn at the foot of the end wall farther from YOU (x 53 or 91), so they never appear on top of you (the
-  stair doors are painted there), instead of out of the air beside him. Same count, same cadence (`ABBOT.adds`, `addEvery`).
+- **THE CONGREGATION'S DOORS** are painted at the foot of each end wall (x 53 and 91). *Built and then taken back:* spawning
+  his adds there (the door farther from you) took the pilot from 58% to 24/24 - they spent the fight walking the room and
+  never reached you, which deletes a layer of his fight. His adds still come in 110px either side of him, as before. Whether
+  they should use the doors (with a faster walk, or the door nearer to YOU) is parked for Daniel.
 - **HE STARTS IN HIS CHAIR** in the east apse (x 80), with the bell between him and the door you come in by: the first
   thing he does is walk toward you under it.
 - **THE DRESSING IS HIS**: the psalters and a lectern by the west door, candelabra lighting the choir, the goblins'
@@ -108,3 +110,15 @@ the signs) stays outside it as the approach - the check is now outside the arena
 - **His procession's walls** move in with the room (it already clamps to `A.x0/x1`); nothing in `ABBOT` changes.
 - If the pilot moves out of the 60-75% band because of the narrower room, that is reported, not tuned - rebalancing
   him is not this lane's call.
+
+## 5. Pilot (tools/abbot-pilot.mjs 4: six heroes x 4 seeded passes, normal health, 300 s cap)
+
+| | wins | median win | by hero (knight/warden/pyro/paladin/pirate/reaper) |
+|---|---|---|---|
+| before (the Roc's summit, parent 4226345) | 10/24 = 42% | 59 s | 2/4, 0/4, 4/4, 0/4, 1/4, 3/4 |
+| this room, adds at the doors (not shipped) | 24/24 = 100% | 59 s | 4/4 each |
+| **this room, as committed** | **14/24 = 58%** | 49 s | 2/4, 3/4, 4/4, 0/4, 3/4, 2/4 |
+
+The band is 60-75%. The room moved him from well under it to just under it, with no ABBOT number changed; openings per
+fight rose (the bell is at the centre of a room he cannot leave by more than 21 tiles). Paladin is 0/4 in both rooms,
+which is a hero problem rather than a room one. Not tuned further: rebalancing him is not this lane's call.
