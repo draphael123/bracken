@@ -7335,6 +7335,7 @@ export const DRESS = {
   oreroad: [['barrels', 2], ['cart'], ['lanternPost', 2], ['lootHeap', 2], ['cairn']],   /* THE ORE ROAD: the stations' ore, their carts and their lamps */
   witchlight: [['topiaryUrn', 2], ['lamppost', 2], ['ivyWall', 2], ['stone', 3], ['grave', 2], ['bones', 2]],   /* THE WITCHLIGHT STAIR: the tower's garden going wild down the hill, and the graves of the dead that followed you up */
   mage: [['candelabra'], ['bookpile', 2], ['jars', 2], ['topiaryUrn'], ['lamppost'], ['ivyWall'], ['stone', 3]],   /* the tower: candles, books and jars; the grounds: urns, lamps and ivy */
+  unburied: [['fieldGrave', 3], ['crookedCross', 2], ['brokenSpears', 3], ['stuckShield', 2], ['fallenBanner'], ['bones', 2], ['siegeWreck'], ['oldStandard']],   /* THE UNBURIED FIELD (look pass 2026-09-24): the Hexed Fields' own graves and crosses, then the battle's leavings on top of them */
   fields: [['deadCorn', 3], ['crookedFence', 2], ['hayStack', 2], ['pumpkinPatch'], ['farmLantern'], ['milkChurn'], ['plough'], ['brokenCart'], ['waterPump'], ['fieldGrave', 3], ['stone', 3], ['deadTree', 2]],   /* the farm, gone wrong: dead corn, crooked fences, the lanterns they left in the fields */
   hunt: [['fence', 2], ['stump', 2], ['fern', 3], ['hayBale', 2], ['trough'], ['tent', 2], ['banner', 2], ['spearRack'], ['bushDeco', 3], ['flower', 2], ['stone', 3], ['deadTree', 2], ['hideRack', 2], ['trophyRack', 2], ['gobPennant', 3], ['cookSpit'], ['warStandard']],   /* the lord's hunt: hides drying, antlers racked, his pennants */
   skyship: [['kegStack'], ['rumBarrels', 2], ['coiledCable', 2], ['washing'], ['hammock', 2], ['lanternDeck', 2], ['plunder', 3], ['waterButt'], ['gobPennant', 3], ['lootHeap', 2], ['boneChime', 2], ['ragBanner', 2]],   /* a pirate crew's: pennants, plunder and bones on a line */
@@ -7537,7 +7538,9 @@ function dressLevel(L, id) {
   const W = L.W, H = L.H, g = L.grid, rnd = mulberryL(id.length * 977 + id.charCodeAt(0));
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
-  const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade', 'sheet', 'balloon', 'sail']);
+  /* 'cover' and the siege engines (THE UNBURIED FIELD): a shield wall that stops a volley must never have a dressed shield or a
+     wreck set down beside it, or the thing that saves you and the thing that does not look alike */
+  const KEEP = new Set(['cover', 'ballista', 'trebuchet', 'oilbarrel', 'sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade', 'sheet', 'balloon', 'sail']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   const placed = [];
   const clear = (x, y) => keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 7 || Math.abs(py - y) > 4);
