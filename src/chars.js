@@ -132,15 +132,25 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const [x0, y0, x1, y1] = stave.map((v, i) => v + (i & 1 ? dy : dx));
     const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax;
     const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
-    line(g, ...at(1), ...at(len - 5), '#6a4e30', 2);                     /* the haft, two through */
-    px(g, ...at(len - 7, 1), '#4a3420');                                 /* its shadowed side */
+    /* (2026-09-24, POLISH: the head was a 6x5 ROUNDED SLAB, as wide as it was long and symmetric about the haft, on a thin
+       handle - which at 1x is a SHOVEL. A standing stone is TALLER THAN IT IS WIDE, lumpy and lopsided, and a lashed one has
+       the wood running up INTO its foot under two turns of rawhide. So: an eight-pixel stone, wider than her hood, that swells off one side of the
+       haft and ends in a BLUNT, lopsided crown (a point would make it a spearhead); the haft carried two pixels into its foot; two pale bands crossing it.
+       Nothing is drawn past `len`, so the reach every attack box was matched to is unchanged.) */
+    line(g, ...at(1), ...at(len - 5), '#6a4e30', 2);                     /* the haft, two through, run up into the foot of the stone */
+    for (let t = 2; t <= len - 6; t += 0.5) px(g, ...at(t, 1.5), '#4a3420');   /* its shadowed side, the whole way: a THICK shaft, not a handle */
     px(g, ...at(0), '#8a929c'); px(g, ...at(0, 1), '#5a6068'); px(g, ...at(-1), '#c9d1dc');   /* the iron shoe of the butt */
-    px(g, ...at(len - 5), '#c9b27c'); px(g, ...at(len - 5, 1), '#a08a5a');                     /* the lashing */
-    for (let t = len - 5; t <= len + 0.01; t += 0.5) for (let o = -2; o <= 2; o += 0.5) {       /* THE STONE: rounded at both ends */
-      if ((t < len - 4.5 || t > len - 0.5) && Math.abs(o) > 1.2) continue;
-      px(g, ...at(t, o), o <= -1.5 ? '#5e5c54' : o >= 1.5 ? '#aaa898' : t > len - 1 ? '#a09e8e' : '#8a887c'); }
-    px(g, ...at(len - 2.5, 0), '#e8a83a');                               /* the rune, faint amber in the grey */
-    px(g, ...at(len, -1), '#6f9a4a'); px(g, ...at(len - 1, -2), '#557a38');   /* moss on the top of it */
+    /* THE STONE, its foot at len-8 and its crown at len: half-widths either side of the haft, one row a pixel, so it is
+       lopsided on purpose - it bellies out on the near side, and the crown is broad and flat-ish, never a point */
+    const NEAR = [1.5, 2, 2.5, 3, 3, 3, 3, 2.5, 1.5], FAR = [1.5, 2, 2, 2, 2, 2, 1.5, 1.5, 0.5];
+    for (let k = 0; k < NEAR.length; k++) { const t = len - 8 + k;
+      for (let o = -NEAR[k]; o <= FAR[k] + 0.01; o += 0.5) {
+        const edge = o <= -NEAR[k] + 0.5, lit = o >= FAR[k] - 0.5;
+        px(g, ...at(t, o), edge ? '#4e4c45' : lit ? '#a4a294' : k > 6 ? '#939184' : '#7c7a70'); } }
+    px(g, ...at(len - 3, -1), '#6c6a60'); px(g, ...at(len - 4, -1.5), '#6c6a60');   /* a crack down its face, so it reads as ROCK */
+    for (const t of [len - 7.5, len - 6]) for (let o = -1.5; o <= 1.5; o += 0.5) px(g, ...at(t, o), o > 0.5 ? '#6a5030' : '#9a7a4c');   /* THE LASHING: two dark turns of rawhide round the foot, the stone showing between */
+    px(g, ...at(len - 3.5, 0.5), '#e8a83a');                             /* the rune, faint amber in the grey */
+    px(g, ...at(len - 1, -1), '#6f9a4a'); px(g, ...at(len - 2, -2), '#557a38');   /* moss on the shoulder of it */
   }
   /* (the head is inked from len-4 to len and the outline puts a dark ring a pixel past that, so a spear given a point
      at x lands its last lit pixel at x and its outline at x+1: the callers pull their endpoints back to suit, and the
@@ -4137,16 +4147,22 @@ export function bakeTemperer() {
    thick stave laid diagonally over the body with a standing stone for its head. The Pyromancer holds a thin staff upright
    in one hand and POINTS it; this one is two-handed, crossways, and every spell of hers starts with the iron BUTT struck
    into the ground (the heavy, block and blast frames), which is the pose that must read at sixteen pixels. ==== */
+/* A GEOMANCER, NOT A RECOLOURED MAGE (2026-09-24, the rework's sprite item: Daniel played her and she read as a small brown
+   monk with a club). Three things now say STONE at game scale, none of them a colour a mage or a goblin wears:
+   - a SLATE-GREY ROBE and hood, cool and dark, so the stone on her is the lightest thing about her;
+   - two RUNE-CARVED STONE PLATES on her shoulders, standing up past the line of her jaw like a pair of standing stones - the
+     widest, squarest thing at shoulder height in the cast, pale worked stone with a moss crown and an amber rune cut in each;
+   - the standing-stone STAVE, and grit and pebbles that lift off the ground and float round her while she casts (geomancer.js). */
 const GEO_BODY = [
   '...BBB....',     /* 0  the peak of the hood */
   '..BbbbB...',     /* 1 */
   '.BbbbbbB..',     /* 2 */
   '.Bbvvvvb..',     /* 3  the hood's mouth, in shadow */
   '.Bbvvkkb..',     /* 4  her face lit on the side she faces */
-  '..Bbkkb...',     /* 5  the jaw */
-  'gGBbbbBGg.',     /* 6  THE MANTLE: a rough stone on each shoulder, wider than any helm */
-  'GgSbybSgG.',     /* 7  the amber rune-stone at her breast */
-  '.SBbbbBS..',     /* 8 */
+  'hmBbkkbmh.',     /* 5  the jaw - and the crowns of THE PLATES beside it, moss on their inner edge */
+  'ggBbbbBgg.',     /* 6  THE PLATES: a squared stone on each shoulder */
+  'gyBbbbBgy.',     /* 7  the rune cut in each, amber */
+  'GGSbbbSGG.',     /* 8  their shadowed foot, the sleeves under them */
   '..BbbbB...',     /* 9 */
   '.wywwyw...',     /* 10 the belt, studded with amber */
 ];
@@ -4155,7 +4171,11 @@ const GEO_PLUME = [
   ['..BBB.....', '..BbbbB...', '.BbbbbbB..'],   /* the peak of the hood falls back a pixel as she breathes */
   ['...BB.....', '.BBbbbB...', '.BbbbbbB..'],
 ];
-const GEO_PAL = { s: '#b0ae9e', S: '#6e6c60', b: '#4e7a3a', B: '#2a4420', r: '#e0a040', k: '#d8ac82', w: '#6a5034', W: '#3a2c1c', y: '#e8a83a', v: '#1e1a22', g: '#8c8a7e', G: '#5a584e' };
+/* THE HOOD IS GREY-BROWN HOMESPUN (2026-09-24, POLISH). It was moss green, and at game scale a green hood round a small face
+   is exactly what a GOBLIN is in this game - the goblins are green. The moss stays, on the mantle's stones (m), in the stave's
+   rune and on its crown; the hood and robe are undyed wool, so the one green thing on her head is gone and the face reads human. */
+/* (2026-09-24, THE REWORK: the robe goes SLATE - b/B, sleeves and legs S/w - and the plates g/G/h are the pale worked stone) */
+const GEO_PAL = { s: '#8f928c', S: '#4e514d', b: '#6d706b', B: '#353735', m: '#6f9a4a', r: '#e0a040', k: '#cfa47c', w: '#5a5a54', W: '#2e2a24', y: '#e8a83a', v: '#18181c', g: '#aaa694', G: '#67645a', h: '#d6d1bc' };
 export function bakeGeomancer(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, GEO_PAL, skin); BODY_REF = GEO_BODY; PLUME_REF = GEO_PLUME;
   const sh = [BX + 8, BY + 7], [X, Y] = sh, OFF = [BX + 2, BY + 7], WIDE = 12;
@@ -4197,8 +4217,9 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', arm: [X, Y, X - 1, Y + 3], stave: [X + 4, Y + 6, X - 8, Y - 5], plume: 2 }),
       knightFrame({ dx: -2, dy: 2, legs: 'land', arm: [X, Y, X - 2, Y + 4], stave: [X + 3, Y + 7, X - 9, Y - 2], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [X, Y, X + 2, Y + 2], arm2: [OFF[0], OFF[1], X - 2, Y + 4], stave: [X - 6, Y + 6, X + 6, Y - 7] }),
-    /* RAISE WALL (C): the butt driven into the ground in front of her, both hands high on the haft, her weight down on it */
-    block: [0, 1].map(i => knightFrame({ dy: 1 + i, legs: 'wide', arm: [X, Y, X + 4, Y - 4 + i], arm2: [OFF[0], OFF[1], X + 3, Y - 1 + i], stave: [X + 6, Y + 9 - i, X + 4, Y - 9 + i], plume: i + 1, bits: [o(5, 9 - i, D), o(8, 9 - i, D), o(4, 8 - i, M)] })),
+    /* THE ROCK SHIELD (C held, 2026-09-24 - it was RAISE WALL): the lead arm brought up and across her chest where the slab rides
+       (geomancer.js draws the stone on it), the stave drawn back low in the off hand, her weight settled behind it */
+    block: [0, 1].map(i => knightFrame({ dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y - 3 + i], arm2: [OFF[0], OFF[1], X - 3, Y + 2], stave: [X - 8, Y + 6, X + 1, Y - 9 + i], plume: i + 1 })),
   };
   /* ROLLING STONE (X early in a dash): the stave laid back as a lever and the boot put through a stone at her feet */
   F.dashAtk = [knightFrame({ dx: 2, dy: 1, legs: 'push', arm: [X, Y, X - 3, Y + 2], arm2: [OFF[0], OFF[1], X - 5, Y + 1], stave: [X - 10, Y + 6, X + 3, Y - 8], plume: 2 }),
@@ -4240,7 +4261,17 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
     F.swim = S.swim; F.tread = S.tread; }
   /* HER DODGE: a shoulder roll, the stave hugged to her */
   const tuck = knightFrame({ dy: 4, legs: 'crouch', arm: [X, Y, X + 1, Y + 2], stave: [X - 5, Y + 5, X + 5, Y - 3] });
-  F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
+  F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));   /* (still hers in the water and on a ceiling, where there is no floor to go into) */
+  /* HER DODGE IS BURROW (2026-09-24): SINK - into the floor to the waist, the stave hugged upright, earth heaped round her; UNDER -
+     nothing of her but the peak of the hood riding a travelling hump of earth; BURST - up out of it, arms and stave flung high in a
+     spray of rock. Everything below her feet (row 22, the floor line) is cut away, so she really is IN the ground */
+  const sunk = (c, w, h) => { const g2 = c.getContext('2d'); g2.clearRect(0, 22, c.width, c.height);
+    for (let r = 0; r < h; r++) { const hw = w - r * 2; g2.fillStyle = r === h - 1 ? '#8a7a5e' : '#5e4e38'; g2.fillRect(16 - hw, 21 - r, hw * 2, 1); }
+    g2.fillStyle = '#8c8a7e'; g2.fillRect(16 - w + 2, 21, 1, 1); g2.fillRect(16 + w - 3, 20, 1, 1); g2.fillStyle = '#a8a696'; g2.fillRect(16 + 1, 22 - h, 1, 1); return c; };
+  F.burrow = [sunk(knightFrame({ dy: 6, legs: 'crouch', legsDy: 6, arm: [X, Y, X + 1, Y - 2], arm2: [OFF[0], OFF[1], X - 1, Y - 1], stave: [X + 2, Y + 8, X + 1, Y - 9], plume: 2 }), 9, 3),
+    sunk(knightFrame({ dy: 13, legs: 'crouch', legsDy: 13, plume: 1 }), 7, 3),
+    knightFrame({ dy: -3, legs: 'jump', legsDy: -3, arm: [X, Y, X + 3, Y - 8], arm2: [OFF[0], OFF[1], X - 4, Y - 7], stave: [X - 6, Y - 4, X + 8, Y - 12], plume: 2,
+      bits: [o(-8, 8, M), o(10, 6, M), o(-4, 11, D), o(8, 10, D), o(12, 2, M), o(-10, 3, D)] })];
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'stave', {});
   /* THE TALL ONES, made after the padding with the headroom of their own: the stave goes up over the hood on these */
@@ -4271,6 +4302,11 @@ function geoKitPoses(F, sh) {
   const [X, Y] = sh, OFF = [BX + 2, BY + 7], KF = f => knightFrame({ top: ATTACK_HEADROOM, ...f });
   const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
   const A = '#e8a83a', D = '#c9b27c', M = '#8c8a7e', MS = '#6f9a4a';
+  /* THE MEND (her shield's only refill, 2026-09-24): the stave lifted upright in both hands, the butt STRUCK into the ground at her feet
+     (the thud, and the dust ring off it), and her weight on it while the stone knits back onto her arm - the rune alight in its head */
+  F.gMend = [KF({ dy: -1, legs: 'wide', sho: 1, arm: [X, Y, X + 2, Y - 7], arm2: [OFF[0], OFF[1], X + 1, Y - 6], stave: [X + 3, Y - 1, X + 2, Y - 17], plume: 1 }),
+    KF({ wide: 4, dy: 2, legs: 'wide', arm: [X, Y, X + 4, Y - 1], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X + 5, Y + 9, X + 4, Y - 9], plume: 2, bits: [o(3, 9, D), o(7, 9, D), o(1, 8, M), o(9, 8, M)] }),
+    KF({ dy: 1, legs: 'stand', arm: [X, Y, X + 4, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y], stave: [X + 5, Y + 9, X + 5, Y - 8], plume: 0, bits: [o(6, -9, A)] })];
   /* STONE STEP: in the air, the stave jabbed straight down under her boots onto the stone that rises to meet it, knees up */
   F.gStep = [KF({ legs: 'tuck', dy: -2, arm: [X, Y, X, Y + 3], arm2: [OFF[0], OFF[1], X - 1, Y + 2], stave: [X, Y + 14, X - 2, Y - 7], plume: 1 }),
     KF({ legs: 'jump', dy: -3, sho: 1, arm: [X, Y, X + 1, Y + 1], arm2: [OFF[0], OFF[1], X, Y + 1], stave: [X + 1, Y + 11, X - 1, Y - 10], plume: 2, bits: [o(0, 12, M), o(2, 12, M), o(-2, 12, M)] })];
@@ -4284,9 +4320,10 @@ function geoKitPoses(F, sh) {
   /* ARCHWAY: the stave raised flat over her head in both hands, as if she were holding the arch up herself */
   F.gArch = [KF({ dy: 1, legs: 'wide', arm: [X, Y, X + 2, Y - 6], arm2: [OFF[0], OFF[1], X - 4, Y - 6], stave: [X - 8, Y - 6, X + 6, Y - 8], plume: 1 }),
     KF({ dy: -1, legs: 'wide', sho: 1, hy: -1, arm: [X, Y, X + 3, Y - 10], arm2: [OFF[0], OFF[1], X - 5, Y - 10], stave: [X - 9, Y - 10, X + 7, Y - 12], plume: 2, bits: [o(-6, -13, M), o(0, -14, M), o(5, -14, M)] })];
-  /* LODESTONE: the stone head levelled straight at them and the off hand open behind it, the rune pulling */
-  F.gLode = [KF({ wide: 8, dx: -1, legs: 'wide', arm: [X, Y, X + 4, Y], arm2: [OFF[0], OFF[1], X + 1, Y - 3], stave: [X - 6, Y + 1, X + 12, Y - 1], plume: 1 }),
-    KF({ wide: 8, dx: -2, legs: 'wide', sho: 1, arm: [X, Y, X + 4, Y], arm2: [OFF[0], OFF[1], X + 2, Y - 5], stave: [X - 6, Y + 1, X + 12, Y - 1], plume: 2, bits: [o(15, -1, A), o(16, -2, A), o(16, 1, A), o(17, -1, '#fff0c0')] })];
+  /* STONE WALL (level 9, 2026-09-24 - her old C, the RAISE WALL frames it used): the stave swung up across her, then the butt driven
+     into the ground in front of her with both hands high on the haft and her weight down on it, a spray of grit off its foot */
+  F.gWall = [KF({ dy: -1, legs: 'wide', arm: [X, Y, X + 2, Y - 6], arm2: [OFF[0], OFF[1], X - 2, Y - 4], stave: [X - 6, Y + 2, X + 6, Y - 12], plume: 1 }),
+    ...[0, 1].map(i => KF({ dy: 1 + i, legs: 'wide', arm: [X, Y, X + 4, Y - 4 + i], arm2: [OFF[0], OFF[1], X + 3, Y - 1 + i], stave: [X + 6, Y + 9 - i, X + 4, Y - 9 + i], plume: i + 1, bits: [o(5, 9 - i, D), o(8, 9 - i, D), o(4, 8 - i, M)] }))];
   /* ENTOMB: both hands on the stave, the stone swung down onto them like a lid being shut */
   F.gTomb = [KF({ dy: -1, legs: 'wide', arm: [X, Y, X + 1, Y - 6], arm2: [OFF[0], OFF[1], X - 1, Y - 6], stave: [X + 2, Y - 3, X - 6, Y - 16], plume: 1 }),
     KF({ wide: 8, dx: 2, dy: 2, legs: 'runC', arm: [X, Y, X + 5, Y + 1], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X - 1, Y - 2, X + 13, Y + 6], plume: 2, bits: [o(16, 6, M), o(15, 8, M), o(17, 8, D)] })];

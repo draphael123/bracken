@@ -47,11 +47,12 @@ export const POSE_BEATS = {
   unholy: [0.1],               /* UNHOLY GROUND: the blade low behind him, then swept flat along the floor */
   grip: [0.12],                /* DEATH GRIP: the off hand out clawed, then the fist hauled back to his chest */
   /* THE GEOMANCER (every spell of hers begins with the butt of the stave struck into the ground) */
+  gMend: [0.26, 0.34],          /* THE MEND: the stave raised, the butt struck into the ground (the thud), and the weight on it while the stone knits */
   gStep: [0.08],               /* STONE STEP: the stave jabbed down under her boots, then up off the stone that met it */
   gHeave: [0.08, 0.2],         /* BOULDER: down on the lever, heaved through, arms flung after it */
   gSpikes: [0.12],             /* SPIKE ROW: on one knee, the stave raised, then driven in on the slant */
   gArch: [0.14],               /* ARCHWAY: the stave lifted flat, then held up over her like the arch itself */
-  gLode: [0.12],               /* LODESTONE: levelled at them, then the rune pulling */
+  gWall: [0.1, 0.22],          /* STONE WALL: the stave up, the butt driven in, and her weight on it while the wall comes up */
   gTomb: [0.1],                /* ENTOMB: raised, and shut down on them like a lid */
   gFault: [0.12],              /* FAULT LINE: the butt set in the ground, then dragged along the line of the crack */
   gGolem: [0.18],              /* GOLEM: the stave raised to call it, then the other hand beckoning it up */

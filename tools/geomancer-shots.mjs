@@ -24,16 +24,19 @@ try {
   const shot = async (name, js) => { S[name] = await pg.evalp('(()=>{' + js + '})()'); };
   await shot('1 HEAD-STRIKE (X)', `__geo([]);BK.press('atk');__run(7);return __shot('X: HEAD-STRIKE')`);
   await shot('2 BUTT-JAB (X X)', `__geo([]);BK.press('atk');__run(14);BK.press('atk');__run(7);return __shot('X X: BUTT-JAB')`);
-  await shot('3 THE SPIN (X X X) SHATTERS', `__geo([],[[110,'sprig']]);BK.keys.block=true;__run(1);BK.keys.block=false;__run(4);BK.press('atk');__run(18);BK.press('atk');__run(18);BK.press('atk');__run(9);return __shot('X X X: THE SPIN shatters the wall')`);
-  await shot('4 RAISE WALL (C)', `__geo([]);BK.keys.block=true;__run(1);BK.keys.block=false;__run(10);return __shot('TAP C: RAISE WALL')`);
-  await shot('5 WALL, PERFECT', `const [e]=__geo([],[[34,'sprig']]);BK.keys.block=true;__run(1);BK.keys.block=false;__run(2);BKT.damagePlayer(e.x,10,{});__run(3);return __shot('A BLOW ON THE BEAT: BOUNCED OFF')`);
+  await shot('3 THE SPIN (X X X) SHATTERS', `__geo([],[[110,'sprig']]);BK.geo().raiseWall();__run(4);BK.press('atk');__run(18);BK.press('atk');__run(18);BK.press('atk');__run(9);return __shot('X X X: THE SPIN shatters stone (a parked wall)')`);
+  await shot('4 ROCK SHIELD (C held)', `__geo([]);BK.keys.block=true;__run(12);const r=__shot('HOLD C: THE ROCK SHIELD');BK.keys.block=false;return r`);
+  await shot('5 SHIELD, PERFECT', `const [e]=__geo([],[[34,'sprig']]);BK.keys.block=true;__run(2);BKT.damagePlayer(e.x,10,{});__run(3);const r=__shot('A BLOW ON THE BEAT: BOUNCED OFF');BK.keys.block=false;return r`);
+  await shot('5b SHIELD, CRACKED', `const [e]=__geo([],[[34,'sprig']]);BK.keys.block=true;__run(20);BKT.damagePlayer(e.x,10,{});__run(4);const r=__shot('ONE BLOW TAKEN: CRACKED');BK.keys.block=false;return r`);
+  await shot('5c THE MEND (DOWN+C)', `__geo([]);BK.P.geoSh=0;BK.keys.down=true;BK.keys.block=true;__run(1);BK.keys.block=false;__run(18);BK.keys.down=false;return __shot('DOWN+C: THE MEND (the thud)')`);
+  await shot('5d BURROW (dodge)', `__geo([]);BK.press('dodge');__run(9);return __shot('DODGE: BURROW, UNDER THE FLOOR')`);
   await shot('6 UPHEAVAL (HOLD X) WIND', `__geo([],[[66,'sprig']]);BK.keys.atk=true;__run(14);return __shot('HOLD X: THE PILLAR IS MARKED')`);
-  await shot('7 UPHEAVAL LAUNCH', `__geo([],[[66,'sprig']]);BK.keys.atk=true;__run(24);BK.keys.atk=false;__run(8);return __shot('UPHEAVAL: LAUNCHED')`);
+  await shot('7 UPHEAVAL LAUNCH', `__geo([],[[66,'sprig']]);BK.keys.atk=true;__run(18);BK.keys.atk=false;__run(8);return __shot('UPHEAVAL: LAUNCHED')`);
   await shot('8 SPUR (UP+X)', `__geo([]);BK.keys.up=true;BK.press('atk');__run(6);BK.keys.up=false;return __shot('UP+X: SPUR')`);
   await shot('9 STONEFALL (plunge)', `__geo([],[[34,'sprig'],[-34,'sprig']]);BK.press('jump');BK.keys.jump=true;__run(18);BK.keys.jump=false;BK.keys.down=true;BK.press('atk');let i=0;while(!BK.P.ground&&i++<60)__run(1);__run(1);BK.keys.down=false;return __shot('DOWN+X: STONEFALL')`);
   await shot('10 ROLLING STONE (dash X)', `__geo([],[[90,'sprig']]);BK.press('right');__run(2);BK.press('right');__run(1);BK.press('atk');__run(12);return __shot('DASH, X: ROLLING STONE')`);
   await shot('11 THE QUAKE (full TREMOR, C)', `__geo([],[[50,'sprig'],[-60,'sprig'],[110,'shield']]);BK.P.tremor=100;BK.keys.block=true;__run(1);BK.keys.block=false;__run(26);return __shot('FULL TREMOR, C: THE QUAKE')`);
-  const AB = [['stoneStep', 8, 'STONE STEP (1)', ''], ['boulder', 20, 'BOULDER (3)', ''], ['spikeRow', 16, 'SPIKE ROW (5)', ''], ['archway', 16, 'ARCHWAY (7)', ''], ['lodestone', 30, 'LODESTONE (9)', ''],
+  const AB = [['stoneStep', 8, 'STONE STEP (1)', ''], ['boulder', 20, 'BOULDER (3)', ''], ['spikeRow', 16, 'SPIKE ROW (5)', ''], ['archway', 16, 'ARCHWAY (7)', ''], ['stoneWall', 16, 'STONE WALL (9)', ''],
     ['entomb', 20, 'ENTOMB (12)', ''], ['faultLine', 16, 'FAULT LINE (14)', ''], ['golem', 50, 'GOLEM (17)', ''], ['avalanche', 44, 'AVALANCHE (20)', '']];
   for (const [id, n, label] of AB) await shot('A ' + label, `__geo(['${id}'],[[40,'sprig'],[80,'shield']]);${id === 'archway' ? 'BK.P.x+=180;BK.sim(2);' : ''}${id === 'stoneStep' ? 'BK.press("jump");BK.keys.jump=true;__run(16);BK.keys.jump=false;' : ''}BK.press('throw');__run(${n});return __shot('${label}')`);
   const names = Object.keys(S);

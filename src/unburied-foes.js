@@ -402,10 +402,21 @@ function text2(g, s, x, y, col) { /* two red bars and a gap: the '!!' without th
 
 /* ---------------- THE ART (baked once; the house pixel style: px.js shapes, a dark outline, flipped for the left) ---------------- */
 /* one armoured body, posed: feet at (cx, fy). o.lean shifts the torso, o.kneel folds a leg, the arms go to where the hands are */
+const hx0 = (o, cx, s) => cx + (o.lean || 0) * s;   /* where the shoulders are over the hips */
 function figure(g, o) {
   const s = o.s || 1, cx = o.cx, fy = o.fy, P2 = o.pal;
   const hip = fy - 11 * s * (o.kneel ? 0.62 : 1), sh = hip - 11 * s, lean = (o.lean || 0) * s, hx = cx + lean;
   const legA = o.stride || 0;
+  /* THE TATTERED CLOAK (2026-09-24, POLISH): hung from the shoulders and flying out behind, its hem torn into tongues. Drawn first, so
+     the legs and the body stand in front of it; it is what makes a tall armoured man a SHAPE at game scale and not a column. */
+  if (o.cloak && !o.lying) { const [cl, clD] = o.cloak, sy = hip - 11 * s, hem = fy - 2 * s, back = cx - (12 + (o.flut || 0) % 3) * s;
+    const pts = [[hx0(o, cx, s) - 4 * s, sy], [hx0(o, cx, s) + 2 * s, sy], [cx + 3 * s, hem]];
+    const N = 7; for (let k = 0; k <= N; k++) { const t = k / N, x = cx + 3 * s + (back - cx - 3 * s) * t, tongue = (k + (o.flut || 0)) % 2 ? 0 : 3 + ((k * 5 + (o.flut || 0)) % 3);
+      pts.push([x, hem - tongue * s * 0.9 + t * -2 * s]); }
+    pts.push([back + 2 * s, sy + 12 * s]);
+    fillPoly(g, pts, clD);
+    fillPoly(g, [[hx0(o, cx, s) - 2 * s, sy + 1], [hx0(o, cx, s) + 1 * s, sy + 1], [cx, hem - 4 * s], [back + 5 * s, hem - 6 * s], [back + 4 * s, sy + 12 * s]], cl);
+    for (let k = 0; k < 3; k++) rect(g, back + (4 + k * 5) * s, hem - (5 + k % 2 * 2) * s, Math.max(1, s), Math.max(1, s), clD); }   /* moth holes */
   if (o.lying) {   /* on his back across the ground, the blade beside him */
     rect(g, cx - 12 * s, fy - 5 * s, 20 * s, 5 * s, P2.mail); rect(g, cx - 10 * s, fy - 6 * s, 12 * s, 3 * s, P2.cloth); circle(g, cx + 11 * s, fy - 3 * s, 3.2 * s, P2.bone); rect(g, cx + 10 * s, fy - 4 * s, 1, 1, P2.eye);
     line(g, cx - 14 * s, fy - 1, cx - 3 * s, fy - 1, P2.steel, 1); return; }
@@ -422,7 +433,23 @@ function figure(g, o) {
   if (P2.mark) rect(g, hx - 1 * s, sh + 4 * s, 2 * s, 3 * s, P2.mark);
   /* head: a helm with the face gone */
   const hy = sh - 5 * s;
-  if (o.helm === 'great') { rect(g, hx - 4 * s, hy - 5 * s, 8 * s, 9 * s, P2.steel); rect(g, hx - 4 * s, hy - 1 * s, 8 * s, Math.max(1, s), '#101018'); rect(g, hx + 1 * s, hy - 1 * s, 2 * s, Math.max(1, s), P2.eye); rect(g, hx - 1 * s, hy - 8 * s, 2 * s, 3 * s, P2.plume || P2.steel); }
+  if (o.helm === 'great') {
+    /* A GREAT HELM, NOT A BOX (2026-09-24, POLISH): an 8x9 rectangle read as a crate on his shoulders. Now: a crown that narrows, cheeks that
+       swell and a skirt that flares onto the gorget, lit down its facing edge and dark down its back; a visor slit with the eyes in it,
+       breaths punched under it on the side he faces, a ridge down the middle, and a crest - a horsehair plume for the herald, a torn
+       iron fin and two horns of bone for the Death Knight. */
+    const u = Math.max(1, s), lo = P2.steelD || P2.mailD, hi = P2.steelL || '#c8ccd4';
+    if (o.crest === 'plume') { line(g, hx, hy - 5 * s, hx - 1 * s, hy - 9 * s, P2.plume, Math.max(2, 2 * s)); line(g, hx - 1 * s, hy - 9 * s, hx - 6 * s, hy - 9 * s, P2.plume, Math.max(2, 2.2 * s)); line(g, hx - 6 * s, hy - 9 * s, hx - 10 * s, hy - 4 * s, P2.plume, Math.max(2, 1.8 * s)); line(g, hx - 10 * s, hy - 4 * s, hx - 11 * s, hy, P2.plume, Math.max(1, 1.2 * s));
+      line(g, hx - 2 * s, hy - 10 * s, hx - 6 * s, hy - 10 * s, P2.plumeL || '#c84a3a', u); }
+    if (o.crest === 'fin') { fillPoly(g, [[hx - 3 * s, hy - 4 * s], [hx + 2 * s, hy - 4 * s], [hx + 1 * s, hy - 8 * s], [hx - 0.5 * s, hy - 6.5 * s], [hx - 2 * s, hy - 10 * s], [hx - 3.5 * s, hy - 7 * s], [hx - 5 * s, hy - 8.5 * s]], P2.plume);
+      line(g, hx - 3.5 * s, hy - 2 * s, hx - 7 * s, hy - 5 * s, P2.bone, Math.max(2, 1.5 * s)); line(g, hx - 7 * s, hy - 5 * s, hx - 7.5 * s, hy - 8 * s, P2.bone, u); }
+    fillPoly(g, [[hx - 2.5 * s, hy - 5.5 * s], [hx + 2.5 * s, hy - 5.5 * s], [hx + 4 * s, hy - 3.5 * s], [hx + 4.5 * s, hy + 2.5 * s], [hx + 5.5 * s, hy + 4.5 * s], [hx - 5.5 * s, hy + 4.5 * s], [hx - 4.5 * s, hy + 2.5 * s], [hx - 4 * s, hy - 3.5 * s]], P2.steel);
+    fillPoly(g, [[hx - 2.5 * s, hy - 5.5 * s], [hx - 1 * s, hy - 5.5 * s], [hx - 2.5 * s, hy + 4.5 * s], [hx - 5.5 * s, hy + 4.5 * s], [hx - 4.5 * s, hy + 2.5 * s], [hx - 4 * s, hy - 3.5 * s]], lo);   /* its back, in shadow */
+    line(g, hx + 3.5 * s, hy - 3.5 * s, hx + 4 * s, hy + 2 * s, hi, u);   /* the lit edge on the side he faces */
+    line(g, hx + 0.5 * s, hy - 5 * s, hx + 0.5 * s, hy - 2 * s, hi, u);   /* the ridge */
+    rect(g, hx - 4 * s, hy - 1.5 * s, 8.5 * s, u, '#101018'); rect(g, hx + 1 * s, hy - 1.5 * s, 2.5 * s, u, P2.eye);   /* the visor slit, and his eyes in it */
+    for (let k = 0; k < 3; k++) rect(g, hx + (1.5 + (k % 2) * 1.5) * s, hy + (1 + k) * s, u, u, '#101018');   /* the breaths */
+    rect(g, hx - 5.5 * s, hy + 3.5 * s, 11 * s, u, lo); }
   else if (o.helm === 'hood') { circle(g, hx, hy, 4.5 * s, P2.clothD); circle(g, hx + 0.5 * s, hy + 0.5 * s, 3 * s, '#141018'); rect(g, hx + 1 * s, hy, Math.max(1, s), Math.max(1, s), P2.eye); rect(g, hx - 1.5 * s, hy, Math.max(1, s), Math.max(1, s), P2.eye); }
   else { circle(g, hx, hy, 4 * s, P2.bone); rect(g, hx - 4 * s, hy - 4 * s, 8 * s, 3 * s, P2.steel); rect(g, hx + 1 * s, hy - 1 * s, 2 * s, 2 * s, '#101018'); rect(g, hx + 1.5 * s, hy - 0.5 * s, 1, 1, P2.eye); rect(g, hx - 1 * s, hy + 2 * s, 3 * s, 1, '#6a6450'); }
   /* front arm */
@@ -461,40 +488,47 @@ export function bakeBannerbearer() {
     F.push(c); }
   return setOf(F, 44, 64, 18, 63, 12, 26);
 }
-const HERALD = { mail: '#7a7488', mailD: '#58526a', cloth: '#8e2a26', clothD: '#5e1a1a', belt: '#c8a44a', boot: '#2a2630', bone: '#e0dac0', steel: '#9a9eaa', eye: '#e0c8ff', mark: '#e8c35a', plume: '#a8342c' };
+const HERALD = { plumeL: '#c84a3a', steelD: '#6a6e7a', mail: '#7a7488', mailD: '#58526a', cloth: '#8e2a26', clothD: '#5e1a1a', belt: '#c8a44a', boot: '#2a2630', bone: '#e0dac0', steel: '#9a9eaa', eye: '#e0c8ff', mark: '#e8c35a', plume: '#a8342c' };
 /* THE STANDARD-BEARER: a herald twice a man's height, in the order's red and gold, with the army's great banner */
 export function bakeStandardBearer() {
   const F = [];
   for (let f = 0; f < 11; f++) { const [c, g] = canvas(80, 98), cx = 34, fy = 97, s = 1.9;
     const walk = f === 1 ? 1 : f === 2 ? -1 : 0, stell = f === 3, sweep = f === 4, ctell = f === 5, charge = f === 6, ptell = f === 7, planted = f === 8, torn = f === 9, hurt = f === 10;
     const hand = stell ? [-6, -40] : sweep ? [22, -22] : ctell ? [8, -26] : charge ? [14, -22] : ptell ? [4, -58] : planted ? [10, -26] : torn ? [10, -12] : [8, -34];
-    figure(g, { cx: cx - (hurt ? 3 : 0), fy, s, pal: HERALD, helm: 'great', stride: walk, kneel: torn, lean: hurt ? -3 : stell ? -2 : ctell || charge ? 3 : 0, front: hand.map(v => v / s), back: ptell ? [2 / s, -54 / s] : [-10 / s, -20 / s] });
+    figure(g, { cx: cx - (hurt ? 3 : 0), fy, s, pal: HERALD, helm: 'great', crest: 'plume', cloak: ['#6e1e1c', '#44100e'], flut: f, stride: walk, kneel: torn, lean: hurt ? -3 : stell ? -2 : ctell || charge ? 3 : 0, front: hand.map(v => v / s), back: ptell ? [2 / s, -54 / s] : [-10 / s, -20 / s] });
     const bx = cx + hand[0], by = fy + hand[1];
     if (planted || torn) { /* hands empty: the banner is in the ground, drawn by the world */ }
-    else if (ctell || charge) { line(g, bx - 16, by + 4, bx + 40, by + (ctell ? 6 : 10), '#4a3222', 3); for (let i = 0; i < 18; i++) rect(g, bx - 14 + i, by + 6 + Math.round(Math.sin(i * 0.6 + f) * 1.5), 1, 12 - (i > 13 ? (i % 2) * 4 : 0), i % 4 === 0 ? '#a8342c' : '#8e2a26'); rect(g, bx + 38, by + 4, 5, 5, '#d8b04a'); }
-    else if (sweep) { line(g, bx - 20, by - 6, bx + 30, by + 6, '#4a3222', 3); rect(g, bx + 28, by + 4, 5, 5, '#d8b04a'); }
-    else { const top = by - (stell ? 26 : 36); line(g, bx, by + 22, bx + 2, top, '#4a3222', 3); rect(g, bx, top - 4, 5, 5, '#d8b04a');
+    else if (ctell || charge) { line(g, bx - 16, by + 4, bx + 40, by + (ctell ? 6 : 10), '#4a3222', 3); line(g, bx - 16, by + 3, bx + 40, by + (ctell ? 5 : 9), '#7a5a3a', 1); fillPoly(g, [[bx + 40, by + (ctell ? 2 : 6)], [bx + 40, by + (ctell ? 10 : 14)], [bx + 48, by + (ctell ? 6 : 10)]], '#e8c35a'); for (let i = 0; i < 18; i++) rect(g, bx - 14 + i, by + 6 + Math.round(Math.sin(i * 0.6 + f) * 1.5), 1, 12 - (i > 13 ? (i % 2) * 4 : 0), i % 4 === 0 ? '#a8342c' : '#8e2a26'); rect(g, bx + 38, by + 4, 5, 5, '#d8b04a'); }
+    else if (sweep) { line(g, bx - 20, by - 6, bx + 30, by + 6, '#4a3222', 3); line(g, bx - 20, by - 7, bx + 30, by + 5, '#7a5a3a', 1); fillPoly(g, [[bx + 29, by + 2], [bx + 31, by + 10], [bx + 38, by + 8]], '#e8c35a'); }
+    else { const top = by - (stell ? 26 : 36); line(g, bx, by + 22, bx + 2, top, '#4a3222', 3); line(g, bx + 1, by + 22, bx + 3, top, '#7a5a3a', 1);   /* THE POLE (POLISH): lit down one side, so it reads against the plate */
+      fillPoly(g, [[bx - 1, top - 3], [bx + 5, top - 3], [bx + 2, top - 12]], '#e8c35a'); rect(g, bx - 2, top - 4, 8, 2, '#a8842a');   /* a gilt spear-point and its crossbar on the top of it */
       for (let i = 0; i < 22; i++) rect(g, bx + 4 + i, top + 1 + Math.round(Math.sin(i * 0.5 + f) * 1.5), 1, 18 - (i > 17 ? (i % 2) * 5 : 0), i % 5 === 0 ? '#a8342c' : '#8e2a26');
       rect(g, bx + 9, top + 5, 8, 3, '#e8c35a'); rect(g, bx + 12, top + 8, 2, 7, '#e8c35a'); }
     F.push(c); }
   return setOf(F, 80, 98, 34, 97, 22, 48);
 }
-const KNIGHT = { mail: '#3e4a44', mailD: '#2a322e', cloth: '#1e2622', clothD: '#141a18', belt: '#6a5a3a', boot: '#161a18', bone: '#c8d0c0', steel: '#5a6660', eye: '#9ff0c0', mark: '#9ff0c0', plume: '#2a3a34' };
+const KNIGHT = { steelD: '#38423e', steelL: '#8a9892', mail: '#3e4a44', mailD: '#2a322e', cloth: '#1e2622', clothD: '#141a18', belt: '#6a5a3a', boot: '#161a18', bone: '#c8d0c0', steel: '#5a6660', eye: '#9ff0c0', mark: '#9ff0c0', plume: '#2a3a34' };
 /* THE FIRST DEATH KNIGHT: black-green plate, the eyes the class wears, and the scythe - long enough to reach a room */
 export function bakeDeathKnight() {
   const F = [];
   for (let f = 0; f < 14; f++) { const [c, g] = canvas(96, 84), cx = 42, fy = 83, s = 2;
     const walk = f === 1 ? 1 : f === 2 ? -1 : 0, stell = f === 3, sw = f === 4, rtell = f === 5, reap = f === 6, ptell = f === 7, pass = f === 8, raise = f === 9, ctell = f === 10, cut = f === 11, open = f === 12, hurt = f === 13;
     const hand = stell ? [-14, -40] : sw ? [24, -24] : rtell ? [2, -56] : reap ? [-20, -26] : ptell ? [10, -22] : pass ? [18, -30] : raise ? [6, -60] : ctell ? [-6, -44] : cut ? [18, -18] : open ? [16, -8] : [10, -30];
-    figure(g, { cx: cx - (hurt ? 4 : 0), fy, s, pal: KNIGHT, helm: 'great', stride: walk, kneel: open || ptell, lean: hurt ? -4 : stell ? -3 : pass ? 5 : sw ? 3 : 0, front: hand.map(v => v / s), back: raise ? [-12 / s, -58 / s] : [-10 / s, -22 / s] });
+    figure(g, { cx: cx - (hurt ? 4 : 0), fy, s, pal: KNIGHT, helm: 'great', crest: 'fin', cloak: ['#1c2420', '#0c100e'], flut: f, stride: walk, kneel: open || ptell, lean: hurt ? -4 : stell ? -3 : pass ? 5 : sw ? 3 : 0, front: hand.map(v => v / s), back: raise ? [-12 / s, -58 / s] : [-10 / s, -22 / s] });
     const bx = cx + hand[0], by = fy + hand[1];
     /* the scythe: a long haft, and the blade hung off the top of it the way the hero's is */
     const ang = stell ? -2.5 : sw ? 0.25 : rtell ? -1.6 : reap ? 2.9 : ptell ? 0.1 : pass ? -0.2 : raise ? -1.5 : ctell ? -2.2 : cut ? 0.6 : open ? 0.35 : -1.25;
     const L1 = 34, tx = bx + Math.cos(ang) * L1, ty = by + Math.sin(ang) * L1, ex = bx - Math.cos(ang) * 14, ey = by - Math.sin(ang) * 14;
-    line(g, ex, ey, tx, ty, '#3a2e24', 2);
-    const bl = [Math.cos(ang + 1.9), Math.sin(ang + 1.9)];
-    fillPoly(g, [[tx, ty], [tx + bl[0] * 22 + Math.cos(ang) * 4, ty + bl[1] * 22 + Math.sin(ang) * 4], [tx + bl[0] * 16 - Math.cos(ang) * 3, ty + bl[1] * 16 - Math.sin(ang) * 3], [tx - Math.cos(ang) * 3, ty - Math.sin(ang) * 3]], '#b8c4bc');
-    line(g, tx, ty, tx + bl[0] * 20, ty + bl[1] * 20, '#e8f4ec', 1);
+    /* THE SCYTHE, READ AT A GLANCE (2026-09-24, POLISH): a haft three pixels through with its lit side, a steel collar where the blade is
+       socketed, and the blade a real crescent - broad at the heel, curving to a point, a bright cutting edge and a dark back - where it
+       was a thin grey sliver the plate swallowed. Same angles, same hands, frame for frame: only the picture of it changed. */
+    line(g, ex, ey, tx, ty, '#3a2e24', 3); line(g, ex + 1, ey, tx + 1, ty, '#6a5440', 1);
+    const bl = [Math.cos(ang + 1.9), Math.sin(ang + 1.9)], ca = Math.cos(ang), sa = Math.sin(ang), BL = 27;
+    const bpt = (k, off) => [tx + bl[0] * k + ca * off, ty + bl[1] * k + sa * off];
+    fillPoly(g, [bpt(0, 4), bpt(8, 6), bpt(17, 6), bpt(BL, 3), bpt(BL - 4, -1), bpt(14, -2), bpt(5, -3), bpt(0, -3)], '#b8c4bc');
+    line(g, ...bpt(0, 4), ...bpt(8, 6), '#e8f4ec', 1); line(g, ...bpt(8, 6), ...bpt(17, 6), '#e8f4ec', 1); line(g, ...bpt(17, 6), ...bpt(BL, 3), '#e8f4ec', 1);   /* the edge */
+    line(g, ...bpt(5, -3), ...bpt(BL - 4, -1), '#6e7a74', 1);   /* its back */
+    rect(g, tx - 2, ty - 2, 4, 4, '#8a968e');   /* the collar */
     if (raise) for (let i = 0; i < 5; i++) rect(g, cx - 18 + i * 9, fy - 4 - (i % 2) * 3, 2, 3, '#9ff0c0');
     if (open) rect(g, bx + 8, fy - 6, 10, 5, '#5a5a4a');   /* the blade is in one of his own */
     F.push(c); }
