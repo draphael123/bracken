@@ -131,9 +131,16 @@ export function buildTowerAscent({ painter, T, TS }) {
     hung.push([24, F.top], [46, F.top]);                                  /* turrets under the divider, hung by mageReset */
     pocket(F.tiers[5]);                                                   /* a pocket off the sixth tier */
   }
-  // ---- 4. THE PENDULUM GALLERY. The clock still keeps time: ride the weights over the gear pit. ----
+  // ---- 4. THE PENDULUM GALLERY. The clock still keeps time, but what rides its arms are the Folly's own loose books,
+  //      not weights: three tomes drift the gear pit on a faint arcane tether. EASED 2026-09-23 (Daniel's playtest,
+  //      screenshot ~3:31/coin 20 of 346): the boarding platform is a THIRD WIDER (48->64px, SWING.w untouched since
+  //      it is shared with Marsh Wood/Kingswood), the ride is SLOWER (period +0.4s per book, was 3.4/3.7/4.0 now
+  //      3.8/4.1/4.4 - about 12%, more time to time the jump), and a checkpoint was added after the SECOND book too
+  //      (was only after the first), so a miss on the third book does not undo two rides, only one. The pendulum
+  //      motion itself (th=0.9, the arc) is main.js's own 'swing' mover code and is untouched - only the platform's
+  //      size, pace and the checkpoint spacing changed. Still a fall onto T.SPIKE if missed: it is eased, not free.
   //      LOAD-BEARING: with the swings taken out, the upper landings and the cistern over them are out of reach.
-  { const F = floors[3], rise = endRise(), mid = 36;
+  { const F = floors[3], rise = endRise(), mid = 36, bw = SWING.w + 16;
     rect(26, 41, F.bot - 1, F.bot - 1, T.SPIKE);                                                     /* the gear pit: the floor under the swings bites */
     const stairL = [[13, 6], [19, 7]], stairR = [[53, 6], [47, 7]];                                  /* each wall's stair: a step by the wall, then the boarding ledge */
     let row = F.bot - 3; const swings = [];
@@ -142,11 +149,11 @@ export function buildTowerAscent({ painter, T, TS }) {
       ledge(st[0][0], st[0][1], row); F.tiers.push([st[0][0], st[0][1], row]); row -= 3;
       ledge(st[1][0], st[1][1], row); F.tiers.push([st[1][0], st[1][1], row]);                       /* the boarding ledge, at the arc's end */
       const other = fromLeft ? stairR[1] : stairL[1]; ledge(other[0], other[1], row); F.tiers.push([other[0], other[1], row]);   /* the landing across the gap */
-      const yb = row + rise; moversExtra.push({ kind: 'swing', px: mid * TS + 8, py: (yb - 12) * TS, arm: SWING.arm, x: 0, y: 0, w: SWING.w, h: 8, period: 3.4 + s * 0.3, phase: s * 1.3 });
-      swings.push({ row, yb, land: fromLeft ? stairR[1] : stairL[1] }); if (s === 0) ent('check', 50, row - 1); row -= 3;
+      const yb = row + rise; moversExtra.push({ kind: 'swing', px: mid * TS + 8, py: (yb - 12) * TS, arm: SWING.arm, x: 0, y: 0, w: bw, h: 8, period: 3.8 + s * 0.3, phase: s * 1.3, book: true });
+      swings.push({ row, yb, land: fromLeft ? stairR[1] : stairL[1] }); if (s === 0 || s === 1) ent('check', 50, row - 1); row -= 3;
     }
     const endL = swings[2].land === stairL[1], lt = endL ? [15, 8] : [49, 8]; ledge(lt[0], lt[1], row); F.tiers.push([lt[0], lt[1], row]);   /* the last tier, off the third landing: the rope */
-    ent('check', 15, F.bot - 1); ent('sign', 20, F.bot - 1, { text: 'THE PENDULUM GALLERY. THE CLOCK STILL KEEPS TIME. RIDE THE WEIGHTS OVER THE GEARS.' });
+    ent('check', 15, F.bot - 1); ent('sign', 20, F.bot - 1, { text: 'THE PENDULUM GALLERY. THE CLOCK STILL KEEPS TIME. RIDE THE BOOKS OVER THE GEARS.' });
     deco('clockface', 36, F.top + 3, { hang: true }); deco('gears', 32, F.bot - 2);                  /* the face high over the pit, the wheels turning behind it */
     for (const [t, x, y] of [['armour', 15, F.bot - 1], ['tome', 22, swings[0].row - 3], ['bat', 50, swings[0].row - 2], ['apprentice', 50, swings[0].row - 1], ['tome', 56, swings[1].row + 2],
       ['haunt', 30, swings[1].row - 4], ['armour', 22, swings[1].row - 1], ['tome', 15, swings[2].row + 2], ['imp', 44, swings[2].row - 4], ['apprentice', 50, swings[2].row - 1], ['tome', 43, row - 3]]) foe(t, x, y);
