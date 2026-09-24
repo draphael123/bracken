@@ -1554,6 +1554,47 @@ function paladinKitPoses(F, sh) {
     K({ wide: 4, dx: 2, legs: 'runC', arm2: [OFF[0] + 1, OFF[1], X + 7, Y - 4], maul: rest(), glow: [X + 10, Y - 5], plume: 2, bits: [a(X + 12, Y - 5, C)] })];
   function rest() { return [X + 2, Y + 1, X + 5, Y + 9]; }
 }
+/* EVERY ABILITY HAS A BODY: THE FREEBOOTER'S BOUGHT ACTIVES (lane P, 2026-09-24). THE BLACK SPOT and KEELHAUL played beside an idle
+   freebooter; GRAPESHOT and BROADSIDE shared the one pistol shot, and RUM and BOARDING PARTY the grapnel cast. Each now has frames
+   of its own on his rig; OFF is the off shoulder, a() puts a loose pixel at an absolute point, and the frames carry the headroom. */
+function pirateKitPoses(F, sh, holster, carry) {
+  const top = ATTACK_HEADROOM, [X, Y] = sh, OFF = [BX + 2, BY + 7], K = o => knightFrame({ top, ...o });
+  const a = (x, y, col) => [x - BX, y - BY, col], INK = '#1a1620', RED = '#ff6b6b', SMOKE = '#9aa39a', PALE = '#d8dcd0', G = '#ffd36b', W = '#fff6c8';
+  /* THE BLACK SPOT: the cutlass point levelled at the one he means; the spot on the end of it, his chin up; and the blade brought
+     back up in front of his face, a salute to a dead man */
+  F.spot = [K({ wide: 6, legs: 'wide', arm: [X, Y, X + 5, Y - 2], cutlass: [X + 5, Y - 2, X + 16, Y - 4], pistol: holster(), plume: 1 }),
+    K({ wide: 6, legs: 'wide', hy: -1, arm: [X, Y, X + 5, Y - 2], cutlass: [X + 5, Y - 2, X + 16, Y - 4], pistol: holster(), plume: 2,
+      bits: [a(X + 17, Y - 6, INK), a(X + 18, Y - 6, INK), a(X + 17, Y - 5, INK), a(X + 18, Y - 5, INK), a(X + 16, Y - 7, RED), a(X + 19, Y - 7, RED), a(X + 16, Y - 4, RED), a(X + 19, Y - 4, RED)] }),
+    K({ legs: 'stand', arm: [X, Y, X + 2, Y - 2], cutlass: [X + 2, Y - 2, X + 3, Y - 12], pistol: holster(), plume: 0 })];
+  /* KEELHAUL: the grapnel flung out flat along the deck at him; the line hauled in hand over hand, leaning back on it; and the
+     whole catch heaved over his shoulder behind him */
+  F.haul = [K({ wide: 14, dx: 1, legs: 'runC', arm: [X, Y, X + 5, Y - 2], hook: [X + 5, Y - 2, X + 26, Y - 3], cutlass: carry(), pistol: holster(), plume: 2 }),
+    K({ wide: 6, dx: -2, legs: 'wide', sho: 1, arm: [X, Y, X - 1, Y + 1], arm2: [OFF[0], OFF[1], X + 4, Y - 1], hook: [X - 1, Y + 1, X + 14, Y + 1], cutlass: carry(1), pistol: holster(), plume: 1 }),
+    K({ dx: -1, legs: 'wide', hy: 1, arm: [X, Y, X - 3, Y - 4], arm2: [OFF[0], OFF[1], X - 4, Y - 3], hook: [X - 3, Y - 4, X - 11, Y - 9], cutlass: carry(1), pistol: holster(), plume: 2 })];
+  /* GRAPESHOT: the pistol snapped off from the hip, low, the smoke thrown out of the muzzle; then the kick of it throwing the barrel up */
+  F.grape = [K({ wide: 4, legs: 'wide', arm: [X, Y, X + 4, Y + 3], pistol: [X + 4, Y + 3, X + 11, Y + 2], cutlass: carry(), plume: 1,
+      bits: [a(X + 12, Y + 2, W), a(X + 13, Y + 1, G), a(X + 13, Y + 3, G), a(X + 14, Y + 2, SMOKE), a(X + 15, Y + 1, PALE)] }),
+    K({ wide: 4, dx: -1, legs: 'wide', arm: [X, Y, X + 3, Y + 1], pistol: [X + 3, Y + 1, X + 9, Y - 3], cutlass: carry(), plume: 2,
+      bits: [a(X + 11, Y - 3, SMOKE), a(X + 12, Y - 2, PALE), a(X + 13, Y - 4, SMOKE)] })];
+  /* BROADSIDE: set low and square with the pistol out in both hands, the whole charge going off at once; then thrown back off his
+     feet by it, arms up, the barrel at the sky */
+  F.broad = [K({ wide: 6, dy: 2, legs: 'wide', arm: [X, Y, X + 5, Y - 1], arm2: [OFF[0], OFF[1], X + 4, Y], pistol: [X + 5, Y - 1, X + 12, Y - 1], cutlass: carry(), plume: 2,
+      bits: [a(X + 14, Y - 1, '#ffffff'), a(X + 15, Y - 1, W), a(X + 14, Y - 2, G), a(X + 14, Y, G), a(X + 16, Y - 1, '#ff9a5c'), a(X + 15, Y - 3, G), a(X + 15, Y + 1, G)] }),
+    K({ dx: -3, legs: 'fall', hy: -1, arm: [X, Y, X + 1, Y - 6], arm2: [OFF[0], OFF[1], OFF[0] - 2, OFF[1] - 5], pistol: [X + 1, Y - 6, X + 4, Y - 12], cutlass: carry(), plume: 2,
+      bits: [a(X + 7, Y - 2, SMOKE), a(X + 9, Y - 3, PALE), a(X + 8, Y, SMOKE), a(X + 11, Y - 1, PALE)] })];
+  /* RUM: the bottle brought up in the off hand; tipped up with his head back and a drop going; and the back of the hand wiped
+     across his mouth, the bottle gone back in the coat */
+  const B1 = '#3f7a44', B2 = '#b8f0a0', CORK = '#e8dcc0';   /* green glass: brown went into his coat */
+  F.rum = [K({ legs: 'stand', arm2: [OFF[0], OFF[1], X - 1, Y - 2], cutlass: [X + 1, Y + 2, X + 7, Y + 7], pistol: holster(), plume: 0,
+      bits: [a(X - 1, Y - 3, B1), a(X, Y - 3, B1), a(X - 1, Y - 4, B2), a(X, Y - 4, B1), a(X - 1, Y - 5, B1), a(X - 1, Y - 6, CORK)] }),
+    K({ legs: 'stand', hy: -1, sho: 1, arm2: [OFF[0], OFF[1], X - 2, Y - 5], cutlass: [X + 1, Y + 2, X + 7, Y + 7], pistol: holster(), plume: 1,
+      bits: [a(X - 3, Y - 7, B1), a(X - 2, Y - 7, B1), a(X - 3, Y - 6, B2), a(X - 2, Y - 6, B1), a(X - 1, Y - 5, B1), a(X, Y - 4, B1), a(X + 1, Y - 3, B2)] }),
+    K({ legs: 'stand', arm2: [OFF[0], OFF[1], X + 1, Y - 3], cutlass: [X + 1, Y + 2, X + 7, Y + 7], pistol: holster(), plume: 2 })];
+  /* BOARDING PARTY: the grapnel flung high ahead off the off hand; then swung in on the line, knees drawn up, the cutlass out in
+     front for whoever is standing where he comes down */
+  F.board = [K({ wide: 8, legs: 'jump', dy: -1, arm2: [OFF[0], OFF[1], X + 2, Y - 7], hook: [X + 2, Y - 7, X + 14, Y - 22], cutlass: carry(), pistol: holster(), plume: 2 }),
+    K({ wide: 8, dx: 1, legs: 'tuck', arm2: [OFF[0], OFF[1], X - 1, Y - 8], hook: [X - 1, Y - 8, X + 2, Y - 24], arm: [X, Y, X + 5, Y - 1], cutlass: [X + 5, Y - 1, X + 15, Y - 2], pistol: holster(), plume: 2 })];
+}
 export function bakePyro(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, PYRO_PAL, skin);
   const up = (dx = 0, d = 0) => [17 + dx, 18 + d, 18 + dx, 0 + d]; // the staff stood upright in the front hand, taller than her
@@ -2018,7 +2059,10 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, cutlass: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8 - Math.max(0, dy)], pistol: holster() })),   /* carried down at his side, the point clear of the deck: carry()'s point went two and three pixels into it on the stride */
     jump: [knightFrame({ legs: 'jump', dy: -1, cutlass: [sh[0] + 1, sh[1], sh[0] + 7, sh[1] - 5], pistol: holster(), plume: 1 }), knightFrame({ legs: 'jump2', cutlass: [sh[0] + 1, sh[1], sh[0] + 7, sh[1] - 4], pistol: holster(), plume: 1 })],
     fall: [knightFrame({ legs: 'fall', cutlass: [sh[0] + 1, sh[1] + 1, sh[0] + 7, sh[1] - 4], pistol: holster(), plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, cutlass: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 5], pistol: holster(), plume: 2 })],
-    land: [knightFrame({ legs: 'land', dy: 2, cutlass: rest(2), pistol: holster(2) }), knightFrame({ legs: 'stand', dy: 1, cutlass: rest(1), pistol: holster(1), plume: 1 })],
+    /* LANDING in three beats, as the starters': the IMPACT deep on bent knees with the cutlass point down near the boards, the SETTLE, and up */
+    land: [knightFrame({ legs: 'crouch', legsDy: 3, dy: 4, cutlass: [sh[0] + 1, sh[1] + 1, sh[0] + 7, sh[1] + 4], pistol: holster(), plume: 2 }), knightFrame({ legs: 'land', dy: 2, cutlass: rest(2), pistol: holster(2) }), knightFrame({ legs: 'stand', dy: 1, cutlass: rest(1), pistol: holster(1), plume: 1 })],
+    /* THE TAKE-OFF: stretched off the push, the cutlass thrown up by the lift of it */
+    takeoff: knightFrame({ legs: 'push', dy: -2, sho: 1, cutlass: [sh[0] + 1, sh[1], sh[0] + 6, sh[1] - 7], pistol: holster(), plume: 2 }),
     apex: knightFrame({ legs: 'jump2', dy: -1, cutlass: [sh[0] + 1, sh[1], sh[0] + 7, sh[1] - 6], pistol: holster(), plume: 0 }),
     skid: knightFrame({ dx: -2, legs: 'wide', cutlass: [sh[0] - 1, sh[1] + 3, sh[0] - 6, sh[1] + 8], pistol: holster(1), plume: 2 }),
     // THE PISTOL: he brings it up across his body, levels it, and it goes off
@@ -2090,6 +2134,7 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'cutlass', { extra: { pistol: holster() } });
+  pirateKitPoses(F, sh, holster, carry);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);

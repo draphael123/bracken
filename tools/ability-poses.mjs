@@ -25,12 +25,11 @@ const BORROW_OK = {
   spearDance: 'SPEAR DANCE is a flurry of her own thrusts, stood still: the thrust frames are exactly what it is',
 };
 /* THE HEROES HELD TO IT: the starters (lane E), and each of the other four as lane P (2026-09-24) gives it its poses */
-const HELD = ['knight', 'warden', 'paladin', 'pyro'];
+const HELD = ['knight', 'warden', 'paladin', 'pyro', 'pirate'];
 /* two of hers are the same movement at heart, and read as it */
 const SHARED_OK = { harrier: 'HARRIER is the vault taken at a foe instead of at a gap: it is drawn as the vault Pole Spring also uses' };
 /* THE DEBT, measured on master 313e0da (2026-09-23). Report, don't fix: each of these plays with no body of its own. */
 const KNOWN_POSELESS = {
-  pirate: ['blackSpot', 'keelhaul'],
   reaper: ['harvestMoon', 'gravecall'],
 };
 /* LANE E's WORK LIST (2026-09-23), proved red on master first: the Knight's and the Warden's faults not yet fixed on this branch.
