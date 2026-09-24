@@ -30,7 +30,7 @@ if (WANT.includes('lesson')) {
 const pg = await openPage({ audio: false, fonts: false });
 try {
   await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');
-    window.__kn=(ids,foes)=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('knight');BK.reset({fresh:true});BKT.PROG.xp.knight=xpFloor(20);
+    window.__kn=(ids,foes)=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('knight');BK.reset({fresh:true});BKT.PROG.xp.knight=0;
       BKT.PROG.skillOwned.knight=Object.fromEntries(ids.map(i=>[i,true]));BKT.PROG.loadouts.knight=ids.slice(0,4);BK.applyUpgrades();BK.load(0);BK.state='play';
       BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');const L=BK.L;for(let x=2;x<60;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:0;
       BK.tp(10,21);BK.sim(120);BK.P.hp=BK.P.maxHp;BK.P.inv=0;BK.P.st=BK.P.maxSt;BK.P.face=1;BK.P.combo=0;BK.P.riposteT=0;BK.P.riposteHeavy=false;BK.P.thirdPays=0;BK.P.thirdPayLast=null;
