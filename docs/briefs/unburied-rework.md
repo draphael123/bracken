@@ -142,3 +142,10 @@ the rotation - the life pulled out of everything near him; get away from him.
   the checkpoint moves onto its floor. Asserted in `tools/unburied.mjs` and proved red.
 - The Rider's two ledges now stand on two wrecked carts (B9).
 - Before/after real-page shots: `docs/unburied2/field-before-*.png` / `field-after-*.png`.
+
+## 5. INDEX (tools/curve.mjs), recorded
+**89 before, 89 after** (474 columns, 49 foes, threat 125, 10 kinds, 12 hazard tiles, 11 checkpoints, worst gap 62;
+after witchlight 94, beside mage 122). Nothing the index counts changed: the Barrow Rider scores as a mini (4) exactly
+as the Standard-Bearer did, the Death Knight is still a boss (6), the scenery is not counted, and the trench line moved
+a checkpoint without changing the worst gap. The index measures what a level contains, not how its fights play - the
+change this rework made is in the pilot numbers, not here. `docs/unburied2/curve-before.txt`, `curve-after.txt`.
