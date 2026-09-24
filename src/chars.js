@@ -3968,16 +3968,22 @@ export function bakeTemperer() {
    thick stave laid diagonally over the body with a standing stone for its head. The Pyromancer holds a thin staff upright
    in one hand and POINTS it; this one is two-handed, crossways, and every spell of hers starts with the iron BUTT struck
    into the ground (the heavy, block and blast frames), which is the pose that must read at sixteen pixels. ==== */
+/* A GEOMANCER, NOT A RECOLOURED MAGE (2026-09-24, the rework's sprite item: Daniel played her and she read as a small brown
+   monk with a club). Three things now say STONE at game scale, none of them a colour a mage or a goblin wears:
+   - a SLATE-GREY ROBE and hood, cool and dark, so the stone on her is the lightest thing about her;
+   - two RUNE-CARVED STONE PLATES on her shoulders, standing up past the line of her jaw like a pair of standing stones - the
+     widest, squarest thing at shoulder height in the cast, pale worked stone with a moss crown and an amber rune cut in each;
+   - the standing-stone STAVE, and grit and pebbles that lift off the ground and float round her while she casts (geomancer.js). */
 const GEO_BODY = [
   '...BBB....',     /* 0  the peak of the hood */
   '..BbbbB...',     /* 1 */
   '.BbbbbbB..',     /* 2 */
   '.Bbvvvvb..',     /* 3  the hood's mouth, in shadow */
   '.Bbvvkkb..',     /* 4  her face lit on the side she faces */
-  '..Bbkkb...',     /* 5  the jaw */
-  'mGBbbbBGm.',     /* 6  THE MANTLE: a rough stone on each shoulder, wider than any helm, moss on the outer edge of each */
-  'GgSbybSgG.',     /* 7  the amber rune-stone at her breast */
-  '.SBbbbBS..',     /* 8 */
+  'hmBbkkbmh.',     /* 5  the jaw - and the crowns of THE PLATES beside it, moss on their inner edge */
+  'ggBbbbBgg.',     /* 6  THE PLATES: a squared stone on each shoulder */
+  'gyBbbbBgy.',     /* 7  the rune cut in each, amber */
+  'GGSbbbSGG.',     /* 8  their shadowed foot, the sleeves under them */
   '..BbbbB...',     /* 9 */
   '.wywwyw...',     /* 10 the belt, studded with amber */
 ];
@@ -3989,7 +3995,8 @@ const GEO_PLUME = [
 /* THE HOOD IS GREY-BROWN HOMESPUN (2026-09-24, POLISH). It was moss green, and at game scale a green hood round a small face
    is exactly what a GOBLIN is in this game - the goblins are green. The moss stays, on the mantle's stones (m), in the stave's
    rune and on its crown; the hood and robe are undyed wool, so the one green thing on her head is gone and the face reads human. */
-const GEO_PAL = { s: '#b0ae9e', S: '#6e6c60', b: '#7a6c58', B: '#433a2e', m: '#6f9a4a', r: '#e0a040', k: '#d8ac82', w: '#6a5034', W: '#3a2c1c', y: '#e8a83a', v: '#1e1a22', g: '#8c8a7e', G: '#5a584e' };
+/* (2026-09-24, THE REWORK: the robe goes SLATE - b/B, sleeves and legs S/w - and the plates g/G/h are the pale worked stone) */
+const GEO_PAL = { s: '#8f928c', S: '#4e514d', b: '#6d706b', B: '#353735', m: '#6f9a4a', r: '#e0a040', k: '#cfa47c', w: '#5a5a54', W: '#2e2a24', y: '#e8a83a', v: '#18181c', g: '#aaa694', G: '#67645a', h: '#d6d1bc' };
 export function bakeGeomancer(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, GEO_PAL, skin); BODY_REF = GEO_BODY; PLUME_REF = GEO_PLUME;
   const sh = [BX + 8, BY + 7], [X, Y] = sh, OFF = [BX + 2, BY + 7], WIDE = 12;

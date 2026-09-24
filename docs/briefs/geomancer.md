@@ -82,8 +82,21 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 - Proved: `tools/geomancer.mjs` `heavy` - a foe at contact is hit by the minimal charge, a full charge reaches >= 120 px,
   the pillar is gone within 0.5 s. RED on the old code (hurt 0, 64 px, still standing after 2.5 s).
 
+### 2. A sprite that reads GEOMANCER, not a recoloured mage (and not a goblin)
+- A SLATE-GREY robe and hood (src/chars.js GEO_PAL: cool, dark, so the stone on her is the lightest thing about her).
+- Two RUNE-CARVED STONE PLATES on her shoulders (GEO_BODY rows 5-8): pale worked stone standing up past the line of her
+  jaw like a pair of standing stones, a moss crown and an amber rune cut in each - the squarest thing at shoulder height
+  in the cast.
+- The standing-stone STAVE (THE STAVE, above; the polish lane's lopsided stone head kept).
+- GRIT AND PEBBLES float round her while she casts: winding UPHEAVAL (rising with the wind), any of her nine, THE MEND,
+  THE QUAKE (src/geomancer.js draw0).
+- Every frame and pose keeps its count and timing: only the palette and the body rows changed.
+- Before/after: docs/geomancer/frames-before.png / frames-after.png (every frame), docs/geomancer/look-before.png /
+  look-after.png (beside the Pyromancer and the Knight at 5x, and in the first level: standing, running, winding, C held;
+  `node tools/geomancer-look.mjs before|after`).
+
 ## Open (decide when she is built, not now)
-- Her name and look beyond the stave. (Built as THE GEOMANCER: a moss-green hood and mantle over grey stone-cloth.)
+- Her name and look beyond the stave. (Built as THE GEOMANCER; the look is now THE REWORK 2, above.)
 - ~~Whether she is a starter (free) or a cheap early unlock.~~ **DECIDED (Daniel, 2026-09-24): a STARTER - free from the
   start like the Knight and the Warden**, on the hero pick with them and always offered to player two in co-op.
 - Whether ARCHWAY/STONE STEP open "Geomancer-only" optional routes, and how many.

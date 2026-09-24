@@ -305,6 +305,13 @@ export function makeGeomancer(api) {
   function draw(g, cx, cy) { g.save(); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; try { draw0(g, cx, cy); } finally { g.restore(); } }   /* whatever alpha the hero's draw left behind is not the stone's */
   function draw0(g, cx, cy) {
     const P = api.P;
+    /* GRIT AND PEBBLES LIFT OFF THE GROUND AND FLOAT ROUND HER WHILE SHE CASTS (the rework's sprite item): winding UPHEAVAL (rising
+       with the wind), any of her nine, THE MEND and THE QUAKE. Drawn behind nothing and touching nothing: it is how she reads as
+       the one who MOVES STONE, before any stone has moved */
+    if (api.isGeo() && !P.dead && !P.geoBurrow) { const kit = P.kPoseT > 0 && /^g[A-Z]/.test(P.kPoseK || ''), k = P.charge > 0 ? Math.min(1, P.charge / api.heavyWind()) : (kit || P.geoMendT > 0 || P.blastT > 0) ? 1 : 0;
+      if (k > 0) for (let i = 0; i < 5; i++) { const a = api.time * (2.2 + i * 0.3) + i * 1.26, r = 8 + (i % 3) * 3, x = Math.round(P.x - cx + Math.cos(a) * r), y = Math.round(P.y - cy - 2 - k * (6 + (i % 3) * 5) + Math.sin(a * 1.7) * 2);
+        g.fillStyle = i % 2 ? STONE.lo : STONE.hi; if (i < 3) g.fillRect(x, y, 2, 2); else g.fillRect(x, y, 1, 1);
+        if (i < 3) { g.fillStyle = STONE.dark; g.fillRect(x, y + 2, 2, 1); } } }
     for (const p of pieces) { const k = Math.min(1, p.age / GEO.rise), left = p.life - p.age, crackK = left < p.crack ? 1 - left / p.crack : 0;
       const jit = left < 0.25 ? (Math.floor(api.time * 40) % 2 ? 1 : -1) : 0, rise = Math.round((1 - k) * (p.y1 - p.y0)), set = new Set(p.cells.map(c => c.i));
       g.save(); g.beginPath(); g.rect(Math.round(p.x0 - cx) - 2, Math.round(p.y0 - cy) - 4, p.x1 - p.x0 + 4, p.y1 - p.y0 + 4); g.clip();
