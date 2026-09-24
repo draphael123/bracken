@@ -65,7 +65,7 @@ export const BY_HAND = {
   'tidemarauder|thrustTell':'!','tidemarauder|castTell':'!','tidemarauder|reelThrust':'!','tidemarauder|undertowTell':'!!',   /* THE TIDE REAVER (tide-reaver.js, by hand): the thrust, the cast and the thrust after the reel a shield turns; the rake and the wave nothing does */
   'hedgewarden|cutTell':'!','hedgewarden|rushTell':'!','hedgewarden|thornTell':'!!',   /* THE HEDGE WARDEN (hedge-warden.js, by hand): the cut and the rush a shield turns; the thorns nothing does */
   'broom|sweepTell':'!',
-  'winchmaster|reverseTell':'','winchmaster|sendTell':'!!','winchmaster|hookTell':'!!','winchmaster|leverTell':'!',   /* THE WINCHMASTER (winchmaster.js, by hand): the send and the hook no shield turns, the brake bar it does, and the reverse throws no blow so it is QUIET */
+  'winchmaster|reverseTell':'','winchmaster|sendTell':'!!','winchmaster|hookTell':'!!','winchmaster|leverTell':'!','winchmaster|leapTell':'!!',   /* THE WINCHMASTER (winchmaster.js, by hand): the send and the hook no shield turns, the brake bar it does, and the reverse throws no blow so it is QUIET */
   'abbot|censerTell':'!','abbot|castTell':'!','abbot|processTell':'!!','abbot|coalsTell':'!!','abbot|knellTell':'!!','abbot|riteTell':'',   /* THE FALSE ABBOT (false-abbot.js, by hand: a module-file boss the audit cannot follow): the censer and the chain a shield turns; the procession, the coals and the knell nothing does; the rite throws no blow at all */
   'tome|tell':'!',   /* THE TOME (tome.js, by hand: a module-file foe the audit cannot follow): the dart is a blow, and the shield does not just turn it - it SHUTS the book */
   'gargoyle|diveTell':'!!','gargoyle|gustTell':'!','gargoyle|spitTell':'!','gargoyle|flareTell':'!!',   /* THE GATE GARGOYLE (gate-gargoyle.js, by hand): the dive and the flare wear the red cross; the gust and the spit a shield turns */   /* THE WITCHLIGHT STAIR's aqueduct broom (sweepBroom, by hand): a sweep at the ankles a shield braces against */
@@ -173,7 +173,7 @@ export const MARK = {
   'turtle|pinchTell': '!', 'turtle|snapTell': '!', 'turtle|strikeTell': '!', 'turtle|thrustTell': '!', 'undeadmage|fireTell': '!', 'undeadmage|handTell': '!',
   'undeadmage|iceTell': '!', 'undeadmage|markTell': '!!', 'undeadmage|poisonTell': '!', 'undeadmage|stormTell': '!!', 'urchin|biteTell': '!', 'urchin|castTell': '!',
   'urchin|dive': '!', 'urchin|hookTell': '!', 'urchin|swellTell': '!', 'wasp|stingTell': '!', 'watch|sweepTell': '!', 'watch|thrustTell': '!',
-  'winchmaster|hookTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|sendTell': '!!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!',
+  'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|sendTell': '!!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!',
   'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
 };
 /* MARK:END */

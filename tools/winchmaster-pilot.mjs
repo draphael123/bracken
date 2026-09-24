@@ -15,7 +15,7 @@ try {
     await pg.reload();
     const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;let seed=${3100 + p * 97};
       Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
-      const o=await BK.bossLab({bosses:['oreroad'],healthMode:'normal',maxSecs:300,modes:true});
+      const o=await BK.bossLab({bosses:['oreroad'],healthMode:'normal',maxSecs:300,modes:true,salt:${p}});   /* bossLab pins its own dice per row (341cb78), which made the seed above dead: every pass replayed pass 1. The salt makes each pass its own fight */
       return o.rows.map(r=>({h:r.h,out:r.outcome||(r.won?'win':r.dead?'death':''),secs:r.secs,hp:r.health&&r.health.endHp,taken:r.health&&r.health.damageTaken,opened:r.opened,left:r.hpLeftPct,falls:r.falls,hitBy:r.hitBy,modes:r.modes,skipped:r.skipped}));})()`, 900000);
     rows.push(...r);
     console.log(JSON.stringify(r));
