@@ -9,6 +9,9 @@
 //   heavy     UPHEAVAL, reworked (Daniel, 2026-09-24): the quickest release hits a foe TOUCHING her (a spike at her front foot, no
 //             rock written); a full wind comes up at twice the old reach (>= 120 px out, it was 66); and the pillar is gone - shattered -
 //             within half a second of rising (it stood four as a platform)
+//   shield    THE ROCK SHIELD (her C from 2026-09-24): two yellow blows break it (cracked after one), one red breaks it fresh or
+//             cracked, a perfect block (raised as it lands) costs it nothing, raising and holding it costs no wind, it never refills by
+//             itself (ten seconds idle), THE MEND (DOWN+C) restores it, and a blow in the middle of the mend breaks it off
 //   levels    in three real early levels, at every 5th tile of floor she can stand on: wall, pillar and step raised, and every frame
 //             no living body is inside her rock and, eight seconds on, the level's grid is exactly what it was (no route blocked)
 // PROVED RED FIRST (2026-09-24): with the body test taken out of freeCell and RULE 4 disabled in src/geomancer.js, `lift` and `body`
@@ -25,7 +28,7 @@ try {
       BK.sim(30);BK.P.hp=BK.P.maxHp;BK.P.inv=0;BK.P.st=BK.P.maxSt;BK.P.face=1;};
     window.__inside=()=>{const G=BK.geo(),P=BK.P,bs=[P,...BK.enemies().filter(e=>e.alive&&!(e.gone>0))].map(b=>({l:b.x-b.w/2,r:b.x+b.w/2,t:b.y-b.h,b:b.y}));
       for(const p of G.pieces())if(p.tile===1)for(const c of p.cells){const cb={l:c.tx*16,r:c.tx*16+16,t:c.ty*16,b:c.ty*16+16};if(bs.some(b=>b.l<cb.r&&b.r>cb.l&&b.t<cb.b&&b.b>cb.t))return true;}return false;};
-    window.__raise=()=>{const P=BK.P;P.st=P.maxSt;BK.keys.block=true;BK.sim(1);BK.keys.block=false;BK.sim(2);P.face=-P.face;};
+    window.__raise=()=>{const P=BK.P;P.st=P.maxSt;BK.geo().raiseWall();BK.sim(2);P.face=-P.face;};   /* (RAISE WALL is PARKED - no longer her C - and still held to THE CAP here) */
     return 1})()`);
   const out = {};
   out.cap = await pg.evalp(`(()=>{const run=n=>{let most=0;for(let k=0;k<n;k++){BK.tp(5+k*5,21);BK.sim(3);BK.P.face=1;__raise();BK.sim(4);most=Math.max(most,BK.geo().pieces().length);}return most;};
@@ -48,6 +51,15 @@ try {
       for(let i=0;i<200&&gone<0;i++){if(i===45)BK.keys.atk=false;BK.sim(1);const p=BK.geo().pieces().find(q=>q.kind==='pillar');
         if(p&&seen<0){seen=i;far=Math.round((p.x0+p.x1)/2-x0);}if(!p&&seen>=0)gone=i;}BK.keys.atk=false;
       return {contact,far,goneIn:gone<0?999:+((gone-seen)/60).toFixed(2)}})()`);
+  out.shield = await pg.evalp(`(()=>{const P=()=>BK.P,K=BK.keys,hit=red=>{P().inv=0;P().hurt=0;const r=BKT.damagePlayer(P().x+P().face*20,10,{unblockable:!!red});BK.sim(2);return r;};
+      const up=()=>{K.block=true;BK.sim(20);},down=()=>{K.block=false;BK.sim(2);},fresh=()=>{__geo([]);P().face=1;};
+      fresh();P().st=50;up();BK.sim(40);const st=P().st;const y1=hit(),c1=P().geoSh,y2=hit(),c2=P().geoSh,y3=hit();down();
+      BK.sim(600);const idle=P().geoSh;K.down=true;K.block=true;BK.sim(1);K.block=false;BK.sim(2);K.down=false;BK.sim(50);const mended=P().geoSh;
+      fresh();up();const r1=hit(true),rf=P().geoSh;down();
+      fresh();up();hit();const cr=P().geoSh,r2=hit(true),rc=P().geoSh;down();
+      fresh();K.block=true;BK.sim(3);const p1=hit(),pc=P().geoSh;down();
+      fresh();P().geoSh=0;K.block=true;BK.sim(1);K.block=false;BK.sim(10);const mending=P().geoMendT>0;hit();BK.sim(60);const broken=P().geoSh;
+      return {st,y1,c1,y2,c2,y3,idle,mended,r1,rf,cr,r2,rc,p1,pc,mending,broken}})()`);
   /* THE REAL LEVELS: the first three of the campaign */
   out.levels = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const ids=LEVELS.map((l,i)=>[l.id,i]).filter(([id])=>!/^trial|^practice|^draft/.test(id)).slice(0,3);const rows=[];
     for(const [id,i] of ids){__geo(['stoneStep'],false,i);const L=BK.L,W=L.W,H=L.H;const g0=Array.from(L.grid);let tried=0,inside=0,raised=0;
@@ -68,6 +80,14 @@ try {
   assert(!out.lift.bossInside, 'and one under a boss stops short under it');
   assert(out.heavy.contact.gap <= 1 && out.heavy.contact.hurt > 0, 'UPHEAVAL: the quickest release hits a foe touching her (' + JSON.stringify(out.heavy.contact) + ')');
   assert(out.heavy.far >= 120, 'UPHEAVAL: a full wind comes up at the new reach, twice the old 66 px (' + out.heavy.far + ' px)');
+  const S = out.shield;
+  assert(S.y1 === 'blocked' && S.c1 === 1 && S.y2 === 'blocked' && S.c2 === 0 && S.y3 !== 'blocked', 'THE ROCK SHIELD: two yellow blows break it (' + JSON.stringify(S) + ')');
+  assert(S.r1 !== 'blocked' && S.rf === 0 && S.cr === 1 && S.r2 !== 'blocked' && S.rc === 0, 'THE ROCK SHIELD: one red blow breaks it, fresh or cracked (' + JSON.stringify(S) + ')');
+  assert(S.p1 === 'blocked' && S.pc === 2, 'THE ROCK SHIELD: a perfect block costs it nothing (' + JSON.stringify(S) + ')');
+  assert(S.st >= 50, 'THE ROCK SHIELD: raising and holding it costs no wind (' + S.st + ')');
+  assert(S.idle === 0, 'THE ROCK SHIELD: it never refills by itself (' + S.idle + ' after ten seconds)');
+  assert(S.mended === 2, 'THE MEND restores it (' + S.mended + ')');
+  assert(S.mending && S.broken === 0, 'THE MEND is broken off by a blow (' + JSON.stringify(S) + ')');
   assert(out.heavy.goneIn <= 0.5, 'UPHEAVAL: the pillar shatters within half a second (' + out.heavy.goneIn + ' s)');
   assert(!out.body.none && !out.body.stood && !out.body.inside, 'stone a foe turns up inside crumbles at once (' + JSON.stringify(out.body) + ')');
   assert(out.reload.had >= 1 && out.reload.after === 0 && out.reload.same, 'a level left takes its stone with it (' + JSON.stringify(out.reload) + ')');

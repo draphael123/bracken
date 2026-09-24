@@ -3530,13 +3530,13 @@ function trialYard(hero) {
       ['meter', 1, 'TIP HITS AND TURNED BLOWS FILL VIGIL. FULL, TAP C: THE PHALANX. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
       SKILL],
     /* THE GEOMANCER'S YARD (2026-09-24, POLISH): she BUILDS SOMETHING IN ITS WAY. UPHEAVAL (the held X is a pillar out of the ground),
-       RAISE WALL on the beat (a wall only just up bounces the blade: GEO.perfect, so in her yard the sword flashes at that beat), the
-       marks (the wall takes a yellow one; a red one smashes through it), STONEFALL (she lands like a boulder and the ring knocks down
+       THE ROCK SHIELD on the beat (one only just raised bounces the blade: GEO.perfect, so in her yard the sword flashes at that beat), the
+       marks (the shield takes a yellow one; a red one shatters it), STONEFALL (she lands like a boulder and the ring knocks down
        both sides) and THE QUAKE (a full TREMOR, spent). */
     geomancer: [
       ['upheaval', 2, 'UPHEAVAL: HOLD X, LET GO. A PILLAR ERUPTS AHEAD, FURTHER THE LONGER THE HOLD. HIT TWO.', [['dummy', 16], ['dummy', 21]], 'HOLD X, LET GO'],
-      ['flash', 2, 'RAISE WALL: TAP C AS HIS SWORD FLASHES WHITE. A WALL THAT NEW BOUNCES HIS BLADE. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
-      ['tells', 2, 'ONE YELLOW ! : THE WALL TAKES IT. TWO RED !! : IT SMASHES THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
+      ['flash', 2, 'ROCK SHIELD: TAP C AS HIS SWORD FLASHES WHITE. RAISED THAT LATE, HIS BLADE BOUNCES OFF. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : THE SHIELD TAKES IT. TWO RED !! : IT SHATTERS, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
       ['stonefall', 2, 'STONEFALL: JUMP, THEN DOWN+X BETWEEN THEM. THE RING KNOCKS DOWN BOTH SIDES. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
       ['meter', 1, 'WHAT SHE BUILDS AND BREAKS FILLS TREMOR. FULL, TAP C: THE QUAKE. IT IS FILLED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'LB WITH A FULL BAR'],
       SKILL],

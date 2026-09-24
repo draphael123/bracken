@@ -19,6 +19,7 @@ export const POSE_BEATS = {
   hurl: [0.1, 0.22],           /* RAIN OF SPEARS: both arms back and down, heaving up, and the spear gone at the sky */
   stretch: [0.12, 0.26],       /* FULL STRETCH: the hands slide back down the shaft to the butt, and she settles long on it */
   /* THE GEOMANCER (every spell of hers begins with the butt of the stave struck into the ground) */
+  gMend: [0.26, 0.34],          /* THE MEND: the stave raised, the butt struck into the ground (the thud), and the weight on it while the stone knits */
   gStep: [0.08],               /* STONE STEP: the stave jabbed down under her boots, then up off the stone that met it */
   gHeave: [0.08, 0.2],         /* BOULDER: down on the lever, heaved through, arms flung after it */
   gSpikes: [0.12],             /* SPIKE ROW: on one knee, the stave raised, then driven in on the slant */

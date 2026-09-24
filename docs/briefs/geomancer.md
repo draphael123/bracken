@@ -32,10 +32,11 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 | X x3 | **stave combo** | head-strike, butt-jab, a full quarterstaff SPIN. The third **shatters any stone piece it hits**, spraying shards forward — her "finish the combo HERE" decision |
 | UP+X | **Spur** | a stone spike juts up in front of her (anti-air) |
 | hold X | **UPHEAVAL** | **the charge sets the distance** (rework, 2026-09-24): let go at once and a STONE SPIKE juts up at her front foot and hits whatever is touching her (it writes no rock, so it can never trap her); hold, and the eruption point walks out to ~132 px (twice the old 66) with a mark on the floor where it will come up (C1). The pillar LAUNCHES whatever stands there and SHATTERS ~0.4 s later - a crack frame, then a burst of shards. It is a blow, not a platform |
-| tap C | **RAISE WALL** (her defence) | a wall rises in front of her: stops projectiles and YELLOW blows. Raised as a blow lands = the attacker's weapon bounces off and it staggers (her perfect guard). RED blows smash through it: red still means move |
+| hold C | **ROCK SHIELD** (her defence, from 2026-09-24; it was RAISE WALL) | a stone slab on her lead arm that moves with her (at guard pace). It takes TWO blows - visibly cracked after the first, broken by the second (a burst of shards). A RED blow shatters it at once, fresh or cracked: red still means move. Raised as a blow lands = PERFECT BLOCK: the weapon bounces off, the attacker staggers, and it costs the shield nothing. No wind to raise or hold, and NO refill by itself |
+| DOWN+C (or C with nothing on her arm) | **THE MEND** | the only refill: the stave struck into the ground - 0.6 s, the thud at 0.3 s with a dust ring, her own pose (gMend) - and the shield is whole. A blow, a jump or a roll breaks it off |
 | plunge | **STONEFALL** | lands like a boulder: a short shockwave that knocks down grounded foes |
 | X in a dash | **ROLLING STONE** | kicks a small boulder forward that bowls through little foes |
-| meter **TREMOR** | fills from walls that stop blows and pillars that launch foes | full, tap C on the ground: **THE QUAKE** — the floor heaves, every grounded foe is knocked down, loose rock falls, each told by a shadow (C1/C3) |
+| meter **TREMOR** | fills from blows the shield stops (a perfect block most) and pillars that launch foes | full, tap C on the ground: **THE QUAKE** — the floor heaves, every grounded foe is knocked down, loose rock falls, each told by a shadow (C1/C3) |
 
 ## Abilities (bought; the same ladder and PRICE_AT table as the Knight and Warden)
 | lv | ability | |
@@ -52,8 +53,9 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 
 ## Passives (arrive with hero level, per Daniel's levelling decision) — three branches
 - **EARTH (the pillars):** 4 pieces instead of 3; her step and arch last longer (BEDROCK no longer keeps a pillar: it is a blow); pillars rise taller; a launched foe lands harder.
-- **WALL (the defence):** a perfect wall throws arrows back; a cracked wall bursts into shrapnel; a wall takes one red
-  blow's full force without breaking.
+- **SHIELD (the defence; was WALL, reworded 2026-09-24):** STONEFACE - a shield raised on the beat throws an arrow back the
+  way it came; SHRAPNEL - a shield that is broken or shattered bursts into shards that fly at the nearest foe; BULWARK - a
+  RED blow that shatters her shield finds her at half its force (it can no longer keep the shield whole: red still means move).
 - **TREMOR (the meter):** fills faster; the Quake reaches further; Stonefall's knockdown lasts longer.
 
 ## Rules she must satisfy when built
@@ -81,6 +83,19 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
   Her yard's UPHEAVAL station (tools/hero-trials.mjs) held X to a full wind and now holds it for the 60 px it needs.
 - Proved: `tools/geomancer.mjs` `heavy` - a foe at contact is hit by the minimal charge, a full charge reaches >= 120 px,
   the pillar is gone within 0.5 s. RED on the old code (hurt 0, 64 px, still standing after 2.5 s).
+
+### 3. THE ROCK SHIELD replaces RAISE WALL as her guard
+- src/geomancer.js `guard / shieldTakes / startMend / mendUpdate`, GEO.shield `{ hp: 2, hold: 0.2, mend: 0.6, mendAt: 0.3 }`;
+  main.js damagePlayer asks it first. A tap still guards for `hold` (0.2 s), so a tap on the beat is a perfect block.
+- Shots: a shot that reaches her is a blow on the shield like any other (it costs a hit); with STONEFACE one met on the beat
+  is thrown back.
+- **Where the old wall went: PARKED.** No bought slot fits - the nine actives fill the ladder (levels 1-20, three per
+  branch). `raiseWall`/`wallTakes` are kept whole in src/geomancer.js, unbound from C, and tools/geomancer.mjs still holds
+  them to THE CAP and the grid rules. Recommendation: if Daniel wants it back, swap it for LODESTONE (level 9, the least
+  distinct of the nine) rather than adding a tenth rung.
+- Proved: tools/geomancer.mjs `shield` - two yellow blows break it, one red breaks it fresh or cracked, a perfect block costs
+  nothing, raising and holding costs no wind, ten seconds idle leave it broken, THE MEND restores it, a blow breaks the mend
+  off. RED on the old code (the wall took a third yellow blow; no shield state).
 
 ### 2. A sprite that reads GEOMANCER, not a recoloured mage (and not a goblin)
 - A SLATE-GREY robe and hood (src/chars.js GEO_PAL: cool, dark, so the stone on her is the lightest thing about her).

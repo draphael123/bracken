@@ -138,9 +138,11 @@ function labBotFrame(BK, h, e, f) {
     else if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
     else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
     else if (h === 'warden') { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); }
-    else if (h === 'geomancer') { k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); }   /* THE GEOMANCER: a WALL raised on the beat of a yellow blow (a tap, never held); red is dodged above */   /* sweep at a yellow blow, step back off a red one */
+    else if (h === 'geomancer') { if (P.geoSh > 0) k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); else if (ON_THE_BEAT(e) && f % 14 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }   /* THE GEOMANCER: her ROCK SHIELD raised on the beat of a yellow blow (a tap: the perfect block costs it nothing); red is dodged above, and with the shield broken she rolls */   /* sweep at a yellow blow, step back off a red one */
     else k.block = true;
-  } else {
+  } else if (h === 'geomancer' && P.geoMendT > 0) { /* THE MEND: she stands on it until it is done */ }
+  else if (h === 'geomancer' && P.geoSh < 2 && ad > 60 && P.ground && P.atk < 0 && !(P.charge > 0)) { k.down = true; k.block = true; }   /* clear of it with a cracked or broken shield: strike the stave in and mend it */
+  else {
     const s = strike(BK, h, e, f); swing = s.swing;
     /* THE WARDEN KEEPS HER POINT OUT: inside the haft she only shoves, so she steps back out of it (her step goes backward by itself) */
     if (h === 'warden' && ad < 20 && P.atk < 0 && !(P.charge > 0) && !(P.dodge > 0) && P.st >= 20 && f % 10 === 0) BK.press('dodge');
