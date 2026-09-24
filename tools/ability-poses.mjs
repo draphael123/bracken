@@ -15,9 +15,13 @@
 // pose-less active is a plain failure now. `node tools/ability-poses.mjs --report` prints every active's key run without asserting.
 // THE JUMP: every hero leaves the ground on a TAKE-OFF frame, shows four or more poses in the air, and lands in three (impact,
 // settle, stand).
+// A POSED DODGE IS NEVER BLINKED OUT: HOLY CHARGE and CINDER STEP (any active whose pose is in POSE_DASH) set the dodge's
+// invulnerability, whose blink left the hero undrawn on half the frames of its grace - so the pose was only there half the time.
+// Every frame of that grace must draw the hero (Daniel, 2026-09-24); invulnerability that is not a posed dodge still blinks.
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { SKILLS } from '../src/progression-catalog.js';
+import { POSE_DASH } from '../src/hero-poses.js';
 
 const ACTIVES = [...new Map(SKILLS.filter(s => s.active).map(s => [s.id, s])).values()];
 const GENERIC = new Set(['idle', 'run', 'jump', 'fall', 'land', 'apex', 'skid', 'crouch', 'fidget', 'roll', 'hurt', 'block', 'climb', 'swim', 'tread', 'recover', 'slump', 'dance']);
@@ -81,6 +85,25 @@ try {
       assert.equal(fresh.length, 0, h.toUpperCase() + ': ' + fresh.join(', ') + ' newly plays with no pose of its own (the rule: every active selects one)');
       assert.equal(fixed.length, 0, h.toUpperCase() + ': ' + fixed.join(', ') + ' has its pose now - take it off KNOWN_POSELESS');
     }
+  }
+  /* A POSED DODGE IS DRAWN ON EVERY FRAME OF ITS GRACE. P.lastKey is only written when the hero is drawn, so it is cleared before
+     each step and read after: null is a frame the blink left him out. The grace after being struck is the control - it must
+     still blink, or the rule has simply switched the blink off. */
+  const dashes = rows.filter(r => r.own.some(k => POSE_DASH[k]));
+  const graces = {};
+  for (const r of dashes) graces[r.hero + ' ' + r.id] = await pg.evalp(`(()=>{__kit(${JSON.stringify(r.hero)},[${JSON.stringify(r.id)}],[]);const P=BK.P;P.heat=100;BK.step(1);
+    BK.press('throw');if(BK.stop>0&&!(P.cds&&Object.keys(P.cds).length)){for(let i=0;i<120&&BK.stop>0;i++)BK.step(1);BK.press('throw');}
+    const out=[];for(let i=0;i<90;i++){P.lastKey=null;BK.step(1);if(!(P.inv>0))break;out.push(P.lastKey);}return out})()`);
+  const struck = await pg.evalp(`(()=>{__kit('pyro',[],[]);const P=BK.P;BK.step(1);P.inv=0.6;const out=[];for(let i=0;i<40&&P.inv>0;i++){P.lastKey=null;BK.step(1);out.push(P.lastKey);}return out})()`);
+  console.log('POSED DODGES: ' + Object.entries(graces).map(([k, f]) => k + ' ' + f.filter(x => x !== null).length + '/' + f.length + ' frames drawn').join('; ') + '; plain grace ' + struck.filter(x => x !== null).length + '/' + struck.length);
+  if (!REPORT) {
+    assert(dashes.length >= 2, 'only ' + dashes.length + ' posed dodge(s) found (HOLY CHARGE and CINDER STEP at least): the grace rule would pass on nothing');
+    for (const [k, f] of Object.entries(graces)) {
+      assert(f.length >= 10, k + ': its grace lasted only ' + f.length + ' frames - the dodge did not fire as a dodge');
+      const gone = f.map((x, i) => x === null ? i : -1).filter(i => i >= 0);
+      assert.equal(gone.length, 0, k.toUpperCase() + ' is blinked out on ' + gone.length + ' of the ' + f.length + ' frames of its grace (frames ' + gone.join(',') + '): a posed dodge is drawn on every one');
+    }
+    assert(struck.some(x => x === null), 'the grace after being struck no longer blinks: only a posed dodge is exempt');
   }
   /* THE JUMP ARC AND THE LANDING. Every hero had two jump frames, one apex, two fall and two land (docs/hero-animation-audit.md). All
      six are held to a real arc - a TAKE-OFF frame of its own, then at least four distinct poses in the air - and a landing of three

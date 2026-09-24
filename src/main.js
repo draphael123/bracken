@@ -6800,6 +6800,9 @@ function updatePlayer(dt) {
     if (best) { best.stagger = Math.max(best.stagger || 0, 0.5); number(best.x, best.y - (best.h || 16) - 18, 'OVER YOU', '#8fd160'); }
   } else tired(); }
   if (P.kPoseT > 0) P.kPoseT = Math.max(0, P.kPoseT - dt);   /* the ability's pose (hero-poses.js): art only */
+  /* A POSED DODGE IS NOT BLINKED (Daniel, 2026-09-24): while HOLY CHARGE or CINDER STEP is playing its pose, its grace is copied
+     here and runs down beside P.inv, and the draw leaves the blink off until it is out. ART ONLY: P.inv itself is not touched */
+  if (P.dodge > 0 && P.kPoseT > 0 && POSE_DASH[P.kPoseK]) P.poseInv = P.inv; else if (P.poseInv > 0) P.poseInv = Math.max(0, P.poseInv - dt);
   if (P.landArt > 0) P.landArt = Math.max(0, P.landArt - dt); if (!P.ground) P.landArt = 0;   /* the landing's three frames (art only) */
   P.airArt = P.ground ? 0.1 : Math.max(0, (P.airArt || 0) - dt);   /* the first beat off the ground: the take-off frame (art only) */
   wardenKit(dt, canAct, tired); knightKit(dt, canAct, tired); geomancerKit(dt, canAct, tired);   /* (and the Knight's three: DISARM, IRONCLAD, SWORD OF THE REALM) */   /* THE WARDEN'S SIX BOUGHT ACTIVES (below updatePlayer): the wheel, the javelin, the pole spring, the stretch, the dance, the rain */
@@ -22548,7 +22551,7 @@ function drawWorld(cx, cy, showPlayer) {
       drawSet(K, gh.pass ? 'run' : 'roll', gh.frame, gh.x - cx, gh.y - cy, gh.face, !gh.pass, 1, 1, gh.life * (gh.pass ? 0.9 : 2));
       if (gh.pass) { g.globalAlpha = Math.min(0.35, gh.life * 1.1); g.fillStyle = '#8fd160';
         g.fillRect(Math.round(gh.x - cx) - 4, Math.round(gh.y - cy) - 20, 8, 1); g.globalAlpha = 1; } }
-    const vis = P.inv <= 0 || Math.floor(P.inv * 20) % 2 === 0;
+    const vis = P.inv <= 0 || (P.poseInv > 0 && !(P.hurt > 0)) || Math.floor(P.inv * 20) % 2 === 0;   /* a posed dodge's grace does not blink (P.poseInv, updatePlayer) */
     if (vis) {
       if (P.carpet) drawRug(g, P.x - cx, P.y - cy + 1 + P.carpet.bob, time, P.carpet.tilt);   /* the rug under his feet, and no shadow: the ground is a long way down */
       else if (!P.fly) g.drawImage(PROP.shadow, Math.round(P.x) - 6 - cx, Math.round(P.y) - 2 - cy);
