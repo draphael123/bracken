@@ -264,7 +264,7 @@ export const ALLOWED_DECORATIONS = {
   "burning": ["tuft","rock","stump","campfire","barrels","fence","cart","hayBale","brokenCart","milkChurn","waterPump","crookedFence","lanternPost"],
   "harbor": ["stall","pierPost","rumBarrels","wreckBow","anchor","mastStump","kegStack","chartTable","seaChest","plunder","capstan","coiledCable","lanternDeck","waterButt","cannon","netPoles","snow","stem"],
   "burial": ["grave","bones","coffer","candelabra","snow","stem"],
-  "unburied": ["tuft","rock","stone","grave","bones","coffer","brokenCart","crookedFence","fieldGrave","crookedCross","brokenSpears","stuckShield","fallenBanner","siegeWreck","brokenPillar","oldStandard"],   /* the look pass (2026-09-24): the Hexed Fields' graves, the battle's wreckage, the chapel's columns */
+  "unburied": ["tuft","rock","stone","grave","bones","coffer","brokenCart","crookedFence","fieldGrave","crookedCross","brokenSpears","stuckShield","fallenBanner","siegeWreck","brokenPillar","oldStandard","plantedSpears","shieldPile","catapultWreck","batteringRam","barrowMound","armyBanner","trenchRevet"],   /* the look pass (2026-09-24): the Hexed Fields' graves, the battle's wreckage, the chapel's columns */
   "wood": [
     "beehive",
     "birdhouse",

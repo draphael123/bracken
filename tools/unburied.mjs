@@ -70,6 +70,12 @@ assert.ok(L.pools.length >= 3 && L.pools.every(p => p.shallow), 'churned mud tha
 assert.ok(UF.CRATERS.length >= 4, 'craters');
 assert.ok(box(UF.HIGH[0], UF.HIGH[1], 0, 32) > 30, 'the HIGH ROUTE over the wreckage is walked');
 assert.ok(box(UF.LOW[0], UF.LOW[1], G + 3, G + 5) > 30, 'the LOW ROUTE through the trenches is walked');
+/* THE OLD TRENCH LINE (the rework, 2026-09-24, item 4): real shape and not dressing - two rows deep along 74-82, a one-row step
+   at each end so it is RUN and not jumped, and its floor walked end to end */
+{ let dug = 0; for (let x = 74; x <= 82; x++) if (L.grid[(G + 1) * W + x] === T.AIR && L.grid[(G + 2) * W + x] === T.AIR && L.grid[(G + 3) * W + x] !== T.AIR) dug++;
+  assert.equal(dug, 9, 'THE OLD TRENCH LINE is dug two rows deep along 74-82: ' + dug + ' of 9');
+  for (const x of [73, 83]) assert.ok(L.grid[(G + 1) * W + x] === T.AIR && L.grid[(G + 2) * W + x] !== T.AIR, 'the trench line is stepped a row at ' + x);
+  assert.ok(box(74, 82, G + 2, G + 2) >= 9, 'the floor of the trench line is walked end to end'); }
 ok('battlefield ground', UF.TRENCHES.length + ' trenches, ' + UF.STAKES.length + ' stake lines, ' + L.pools.length + ' mud, ' + UF.CRATERS.length + ' craters');
 /* 5 THE FIELD CHANGES AS YOU GO: every volley zone belongs to a banner-bearer, and cutting him quiets that stretch of ridge */
 const encNames = new Set(L.encounters.map(e => e.name));
@@ -86,6 +92,16 @@ assert.ok(L.pegs && L.pegs.length >= 3, 'ARROW PEGS: the brief\'s signature, and
 for (const p of L.pegs) { assert.ok(p.rows.length >= 3 && p.why, 'a peg wall says what it is for'); assert.equal(L.grid[G * W + p.x], T.PALISADE, 'a peg wall is a wooden wall at x ' + p.x); }
 { const S = build(); for (const p of S.pegs) for (let y = p.top; y <= G; y++) for (let x = p.x; x <= p.x + 1; x++) S.grid[y * S.W + x] = T.AIR;
   const s2 = fill(S).seen; assert.ok(s2.some(([x]) => x >= UF.ARENA.x0 + 4), 'WITH EVERY ARROW PEG DELETED the field is still crossed: no peg is on the only way on'); }
+/* AND WITH EVERY STAKE WALL STANDING. The block above deletes the walls, so it could never catch a wall with no way past it -
+   and the reach model's walk only stops at SOLID, so it strolled through PALISADE and so did this file. THE CHAPEL'S wall
+   (330, rows 26-36, over solid floor) was on the only way on for as long as the level has existed: you crossed it on the pegs
+   or not at all, and THE SEALED CRYPT locked its captain behind it (tools/ambush-reach.mjs). So: every wall as rock, no peg
+   in any of them, and the field must still be crossed. The trebuchet's breach (updateUnburied: 246-247 and 257-258, rows
+   G-5 to G) is one shot worked from the ground, so it is taken as done, the way src/reachcore.js takes a laid gun's hole. */
+{ const S = build(); for (let i = 0; i < S.grid.length; i++) if (S.grid[i] === T.PALISADE) S.grid[i] = T.SOLID;
+  for (let y = G - 5; y <= G; y++) for (const x of [246, 247, 257, 258]) S.grid[y * S.W + x] = T.AIR;
+  const s3 = fill(S).seen, far = Math.max(...s3.filter(([, y]) => y >= G - 12).map(([x]) => x));
+  assert.ok(s3.some(([x]) => x >= UF.ARENA.x0 + 4), 'WITH EVERY STAKE WALL STANDING (and no peg in it) the field is crossed: the walk stops at column ' + far); }
 assert.ok(L.moversExtra.filter(m => m.kind === 'swing').length >= 2, 'catapult arms and chains to swing the trench gaps');
 /* CORPSE MOUNDS that give way into mass-grave pits, and rule B3: every pocket has a way out */
 assert.ok(tiles(T.SOFT) > 0, 'a corpse mound that gives way (the Burial\'s crumbling floors)');
@@ -101,10 +117,13 @@ ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake l
 
 /* ---- 5. THE MINI, THE BOSS AND THEIR ROOMS ---- */
 { const m = L.mini, a = L.arena;
-  assert.equal(m.boss, 'standardbearer'); assert.equal(a.boss, 'deathknight');
+  assert.equal(m.boss, 'barrowrider'); assert.equal(a.boss, 'deathknight');
   const mw = (m.x1 - m.x0) / TS, aw = (a.x1 - a.x0) / TS;
   assert.ok(aw >= 34 && aw <= 44, 'A7: an arena is about forty tiles - the Death Knight\'s is ' + aw);
-  assert.ok(mw <= 44, 'A7: the Standard-Bearer\'s room is ' + mw + ' tiles');
+  assert.ok(mw <= 44, 'A7: the Barrow Rider\'s room is ' + mw + ' tiles');
+  /* THE RIDE-THROUGH is the room's length: a gallop needs a run, and nothing in the lane stops a ghost horse but the walls */
+  assert.ok(mw >= 26, 'the ride-through needs the room: ' + mw + ' tiles');
+  for (let x = m.x0 / TS + 1; x < m.x1 / TS - 1; x++) assert.ok(L.grid[G * W + x] === T.AIR || L.grid[G * W + x] === T.ONEWAY, 'the ride-through\'s lane is clear at ' + x);
   /* RULE I: A BOSS ARENA IS ENTERED FROM THE LEFT. The trigger is P.x > arena.trigger and there is no direction flag. */
   assert.ok(a.trigger > a.x0 && a.trigger < a.x1, 'the arena trigger sits inside its own walls');
   assert.ok(seen.some(([x, y]) => x === (a.x0 / TS) - 2 && y === G), 'the arena is walked into from the LEFT');
@@ -112,7 +131,7 @@ ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake l
   assert.ok(box(a.x0 / TS, a.x1 / TS, 0, G - 1) > 4, 'A12: the Death Knight\'s room has footing off its floor');
   /* THE GATE the brief asks for: the mini holds the way on */
   const S = build(); for (let y = 0; y < S.H; y++) if (S.grid[y * S.W + UF.MINI.gate] === T.PORT) S.grid[y * S.W + UF.MINI.gate] = T.SOLID;
-  assert.ok(!fill(S).seen.some(([x]) => x > UF.MINI.gate + 1), 'THE STANDARD-BEARER holds the way on');
+  assert.ok(!fill(S).seen.some(([x]) => x > UF.MINI.gate + 1), 'THE BARROW RIDER holds the way on');
   ok('the mini and the boss', 'mini ' + mw + ' tiles, arena ' + aw + ' tiles, the gate holds'); }
 
 /* ---- 6. RULE Q: ONE AMBUSH, ONE WAVE, ONE CAPTAIN ---- */
@@ -121,10 +140,13 @@ ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake l
   assert.equal(A2.waves.length, 1, 'rule Q3: ONE WAVE ONLY, led by a named captain - the first draft had two');
   assert.ok(wide >= 25 && wide <= 45, 'rule Q1: 25 to 45 tiles between the gates, this is ' + wide);
   const w = A2.waves[0]; assert.ok(w.length >= 3 && w.length <= 5, 'a captain and two to four small foes: ' + w.length);
-  const cap = w.find(f => f[3] && f[3].captain); assert.ok(cap && cap[3].name, 'the captain announces the lock by name');
+  /* THE CAPTAIN IS THE ELITE: ambushStart announces ELITE[t].name, so a name tag on some other foe is never read (it was, for a
+     wight that led nothing, while the husk led the room) */
+  const cap = w.find(f => f[3] && f[3].elite); assert.ok(cap && ['husk'].includes(cap[0]), 'the captain is the room\'s elite, and a kind the ELITE table names');
+  assert.ok(!w.some(f => f[3] && f[3].captain), 'no second, unread captain tag');
   assert.ok(A2.check, 'rule Q5: the door is a checkpoint, placed by hand outside the room');
   assert.ok(A2.check[0] < A2.wallL, 'and it stands OUTSIDE the walls');
-  ok('the sealed crypt', wide + ' tiles, one wave of ' + w.length + ' under ' + cap[3].name); }
+  ok('the sealed crypt', wide + ' tiles, one wave of ' + w.length + ' under the ' + cap[0]); }
 
 /* ---- 7. THE RULES EVERY LEVEL KEEPS (the brief's own last line) ---- */
 const silvers = of('silver'); assert.equal(silvers.length, 3, 'three silvers');

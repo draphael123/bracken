@@ -277,7 +277,7 @@ export async function fightLab(BK, opts = {}) {
 // THE BOSS LAB. Each hero into each boss's room. A boss that has an OPENING is played the way its room teaches it:
 //   the paladin       - meet his sword ON THE BEAT, each hero its own way (see below); roll the bash; step off judgement's mark
 //   the king          - stand beside one of his cages until it comes down on him, then cut him while he is held or open
-//   the gallery queen - strike the pillar holding up the stretch of gallery she stands under, then cut her while she is pinned
+//   the goblin queen  - lead her under one of her chandeliers, jump and cut its chain, then cut her while she is pinned (2026-09-24: it was her gallery's pillars)
 //   the roc           - stand on the glass so her dive sticks in it, then cut her while she is down
 //   the buried prince - in the dark, light a lamp; with him under a timber set, cut its post; off the red mark when he is under the floor
 // Every other boss is cut whenever it is in reach. All of them are defended against on their tells. The hero's health is
@@ -980,9 +980,14 @@ async function runbossLab(BK, opts) {
         // his cages drop from pressure plates up on the scaffold, where the bot cannot climb: when he walks under one, it drops it, as a player on that plate would
         /* opts.noCage takes the cage hand away, which is how the above was found: without it, zero swings and 100% of him */
         const under = opts.noCage ? null : cages.find(q => Math.abs(q.x - boss.x) < 18); if (under) { under.dropped = true; under.landed = 0; if (under.hit) under.hit.clear(); under.resetT = 5; } }
-      else if (boss.t === 'gqueen') { const qx = Math.floor(boss.x / TS);
-        const s = BK.props().find(p => p.t === 'support' && !p.broken && p.sx0 !== undefined && qx >= p.sx0 && qx <= p.sx1);
-        if (s) { goal = s.x; if (Math.abs(s.x - P.x) < 18) { P.face = Math.sign(s.x - P.x) || P.face; if (P.atk < 0) { BK.press('atk'); swings++; } } } else goal = boss.x - Math.sign(d || 1) * 70; }
+      /* THE GOBLIN QUEEN, played as her hall teaches it now: she walks to within 56 px of you, so stand that far past a hanging chandelier
+         and she comes to stand under it; then step in, JUMP and cut the chain (a real jump and a real swing: nothing is dropped for the bot) */
+      else if (boss.t === 'gqueen') { const cs = BK.props().filter(p => p.t === 'weight' && p.gq && p.state === 'hang');
+        if (P.labCut > 0) { P.labCut--; k.jump = true; if (P.labCut === 6 && P.atk < 0) { BK.press('atk'); swings++; } goal = null; }
+        else { const under = cs.find(c => Math.abs(c.x - boss.x) < boss.w / 2 + 6 && Math.abs(c.x - P.x) < 28);
+          if (under) { strike = false; goal = null; if (P.ground) { P.face = Math.sign(under.x - P.x) || P.face; BK.press('jump'); P.labCut = 16; } }
+          /* wait just on HER side of the nearest one: she stops 56 px short of you, which is right under it */
+          else { const c = cs.sort((a, b) => Math.abs(a.x - boss.x) - Math.abs(b.x - boss.x))[0]; goal = c ? c.x - (Math.sign(boss.x - c.x) || 1) * 22 : boss.x - Math.sign(d || 1) * 70; strike = false; } } }
       else { goal = boss.x; strike = true; }
       /* THE OWL'S DEAD BOUGHS: when the Reeve is low under one the bot cuts its peg, as a player standing at it would, and it hops the skim */
       if (boss.t === 'owl') {

@@ -10,54 +10,59 @@
 //   THE BANNER-BEARER          walks the standard up to you and PLANTS it (quiet: the plant is not a blow), then guards it
 //                              with the pole, ! a shield turns it. Kill him and every man his standard raised lies down,
 //                              and his stretch of ridge stops loosing volleys (the field goes quiet behind you).
-//   THE STANDARD-BEARER (mini) the army's great banner. SWEEP ! (guard or step back), CHARGE !! (the banner lowered like a
-//                              lance, at the ankles: jump it), PLANT (quiet): the banner in the ground, and a wave gets up.
-//                              THE OPENING IS YOURS: while it stands in the ground, cut the BANNER, not him - three blows
-//                              and it tears, his wave lies down and he is on one knee, open. Left alone the plant ends
-//                              and he pulls it up: nothing opens.
-//   THE FIRST DEATH KNIGHT     the armour and the scythe the class inherits, and his kit turned on you:
-//                              THE SWATHE  !!  a wide arc whose INSIDE barely cuts: close in (or jump it)
-//                              THE REAPING !!  a full circle that DRAGS you in, cut at the ankles: jump it, or stand
-//                                              on a tomb ledge where the drag cannot reach you
-//                              THE PASSING !!  he steps through you and leaves a mark where you stood; it goes off: leave it
-//                              THE CUT     !   a short blade when you crowd him: guard it
-//                              RAISE           (quiet) the dead get up off his chapel floor
-//                              THE OPENING IS CAUSED: a Reaping that drags one of his own RISEN dead into the circle cuts
-//                              it, and he is left OPEN (a stagger, and blows land half as hard again). Unprovoked, the
-//                              Reaping opens nothing - tools/unburied-fights.mjs and tools/boss-openings.mjs prove both.
-//                              PHASE TWO (under half; A10, PROPOSED - the brief does not specify one): HE IS THE BANNER.
-//                              RAISE calls up three, and anything of his that falls in the chapel gets up again unless you
-//                              finish it on the floor or let his own Reaping cut it - the duel becomes a crowd you manage
-//                              with the one trick his first phase taught you.
+//   THE BARROW RIDER (mini)    the old order's last knight on a ghost horse, the old banner for a lance (2026-09-24, in place
+//                              of the Standard-Bearer). THE RIDE-THROUGH !! (the arena's length, THROUGH you: jump or
+//                              dodge), REARING TRAMPLE ! (guard), GRAVE-FIRE ! (slow green bolts: guard), THE LANCE LINE !!
+//                              (lances out of the ground toward you: step out). Strike him as he rides through and he is
+//                              out of the saddle, OPEN. Phase two: the horse falls apart and he fights ON FOOT - THE BANNER
+//                              THRUST ! and the lance line - until the bones crawl back and he REMOUNTS; strike the bones
+//                              and the remount breaks, and he is OPEN.
+//   THE FIRST DEATH KNIGHT     the armour and the scythe the class inherits - and, since 2026-09-24, the CLASS'S OWN KIT turned
+//                              on you, boss-sized (Daniel: "fights with the Death Knight hero's kit"):
+//                              THE CLEAVE        !   over the shoulder and down through what is in front of him: guard it
+//                              DEATH GRIP        !!  a chain along the floor; caught, you are dragged to his feet and cleaved
+//                              BLOOD BOIL        !!  the ground boils where you stand and cuts while you stay: step out
+//                              THE LONG PASSING  !!  the greatsword rush: through you and far past: jump or dodge it
+//                              BLOOD WARD, NOVA  !!  the ward keeps every blow on it; he lets go and the nova pays it out
+//                              SUMMON SKELETON       (quiet) one of his dead gets up
+//                              THE OPENING IS CAUSED, AND IT IS THE HERO'S OWN RULE: a FULL ward struck again BREAKS, and he
+//                              reels OPEN. Left alone the ward opens nothing - it only makes the nova bigger.
+//                              PHASE TWO (A10; "he is the banner", approved 2026-09-23, kept): anything of his that falls in
+//                              the chapel gets up again unless you finish it on the floor or his own NOVA cuts it; SUMMON
+//                              becomes GRAVECALL (three at once) and BLOOD SURGE !! (get away from him) joins the rotation.
 // Touching none of them hurts (the touch rule): every blow is a told one.
 import { canvas, rect, line, circle, fillPoly, outline, flipX, whiten } from './px.js';
 
 export const UNB = {
-  hp: { bannerbearer: 56, corpse: 30, standardbearer: 680, deathknight: 1150 },
-  dmg: { pole: 12, corpseCut: 10, sbSweep: 18, sbCharge: 16, sbBash: 12, swathe: 20, swatheIn: 4, reap: 16, mark: 16, dkCut: 14, volley: 8, cavalry: 18 },
+  hp: { bannerbearer: 56, corpse: 30, barrowrider: 720, deathknight: 1000 },
+  dmg: { pole: 12, corpseCut: 10, brRide: 18, brTrample: 14, brFire: 10, brLance: 16, brThrust: 14, cleave: 12, grip: 6, boil: 6, pass: 12, nova: 10, novaPer: 3, surge: 10, volley: 8, cavalry: 18 },
   bannerR: 120,        /* a planted standard raises the fallen within this many pixels of its foot */
   riseT: 1.1, downT: 3.2, plantRange: 150, tether: 44,
   corpseSpeed: 21, bearerSpeed: 26,
-  sb: { walk: 30, keep: 40, cd: 1.1, cdP2: 0.8, tell: { sweep: 0.85, charge: 1.0, plant: 0.9, bash: 0.6 }, sweepR: 64, chargeV: 250, plantT: 4.2, plantTP2: 3.6, flagHits: 3, tornT: 3.6, tornMul: 2, raise: 2, raiseP2: 3, adds: 4,
-    order: ['sweep', 'plant', 'charge', 'sweep', 'charge', 'plant'] },
-  dk: { walk: 34, keep: 48, cd: 1.15, cdP2: 0.85, tell: { swathe: 0.9, reap: 1.1, pass: 0.8, raise: 1.2, cut: 0.6 },
-    swatheIn: 28, swatheOut: 104, reapR: 112, pullR: 150, pullV: 95, passStep: 60, markT: 1.3, markR: 34, cutR: 40, openT: 3.4, openMul: 1.5,
-    raise: 2, raiseP2: 3, adds: 2, addsP2: 4,
-    order: ['swathe', 'raise', 'reap', 'pass', 'cut', 'swathe', 'raise', 'reap', 'pass'],
-    orderP2: ['raise', 'reap', 'swathe', 'pass', 'raise', 'reap', 'cut', 'pass'] },
+  /* THE BARROW RIDER: tells in seconds; the ride at rideV px/s the arena's length; the lance line lanceN lances lanceStep apart, one
+     every lanceGap; on foot footT seconds before the bones crawl back, boneHits blows on them to break it, mountMoves in the saddle */
+  br: { walk: 44, keep: 70, footWalk: 30, footKeep: 38, cd: 1.1, cdP2: 0.9, tell: { ride: 1.0, trample: 0.75, fire: 0.8, lance: 0.9, thrust: 0.6, remount: 2.2 },
+    rideV: 290, rideHit: 22, trampleR: 42, bolts: 2, boltsP2: 3, boltT: 1.5, lanceN: 8, lanceStep: 22, lanceGap: 0.07, lanceR: 9, thrustR: 58, openT: 3.2, openMul: 1.6,
+    footT: 7, mountMoves: 3, boneHits: 2, order: ['trample', 'fire', 'ride', 'lance', 'fire', 'ride'], orderFoot: ['thrust', 'lance', 'thrust'] },
+  /* THE FIRST DEATH KNIGHT: tells in seconds; the chain runs chainV px/s out to gripR; a pool of blood boils boilT seconds, a cut every
+     boilTick; the passing crosses passStep past where you stood in passT; the ward stands wardT and is FULL at wardFull blows */
+  dk: { walk: 34, keep: 48, cd: 1.15, cdP2: 0.85, tell: { cleave: 0.7, cleaveAfter: 0.6, grip: 0.8, boil: 0.9, pass: 0.8, ward: 0.5, nova: 0.6, raise: 1.0, call: 1.2, surge: 1.0 },
+    cleaveR: 56, gripR: 180, chainV: 480, boilR: 30, boilT: 2.5, boilTick: 0.5, passStep: 80, passT: 0.35, wardT: 2.4, wardFull: 3, novaR: 70, novaPer: 12, surgeR: 90,
+    openT: 3.4, openMul: 1.5, raise: 1, call: 3, adds: 2, addsP2: 4,
+    order: ['cleave', 'grip', 'ward', 'raise', 'boil', 'pass', 'cleave', 'ward', 'boil', 'pass'],
+    orderP2: ['call', 'surge', 'ward', 'grip', 'boil', 'pass', 'cleave', 'surge', 'ward', 'pass'] },
 };
-export const UNB_FOES = new Set(['bannerbearer', 'corpse', 'standardbearer', 'deathknight']);
+export const UNB_FOES = new Set(['bannerbearer', 'corpse', 'barrowrider', 'deathknight']);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const tells = e => typeof e.mode === 'string' && e.mode.endsWith('Tell');
 
 /* ---------------- THE BANNER RULE ---------------- */
-/* Who is holding a standard up over this spot: a bearer whose standard is PLANTED, the Standard-Bearer while his great banner
-   is in the ground, or - in his second phase, inside his own chapel - the First Death Knight himself. */
+/* Who is holding a standard up over this spot: a bearer whose standard is PLANTED, or - in his second phase, inside his own
+   chapel - the First Death Knight himself. (The Barrow Rider raises nobody: his banner is a lance now.) */
 export function coverOf(q, bearers, o = {}) {
   for (const b of bearers) {
     if (!b || !b.alive) continue;
     if (b.t === 'bannerbearer' && b.planted && Math.abs(q.x - b.flagX) < UNB.bannerR && Math.abs(q.y - b.flagY) < 64) return b;
-    if (b.t === 'standardbearer' && b.flagUp && Math.abs(q.x - b.flagX) < UNB.bannerR * 1.6 && Math.abs(q.y - b.y) < 64) return b;
     if (b.t === 'deathknight' && b.phase === 2 && o.bossLive && o.arena && q.x > o.arena.x0 && q.x < o.arena.x1 && Math.abs(q.y - o.arena.floor) < 60) return b;
   }
   return null;
@@ -120,102 +125,182 @@ export function updateBannerbearer(e, dt, c) {
   if (Math.abs(d) > 20 && c.solid(e.x + Math.sign(d) * 10, e.y + 4)) { e.vx = Math.sign(d) * UNB.bearerSpeed; c.move(e, e.vx * dt, 0); }
 }
 
-/* ---------------- THE STANDARD-BEARER (mini) ---------------- */
-const SB_TELL = { sweep: 'sweepTell', charge: 'chargeTell', plant: 'plantTell', bash: 'bashTell' };
-const SB_SAY = { sweepTell: 'THE GREAT POLE: GUARD', chargeTell: 'HE LOWERS THE BANNER: JUMP', plantTell: 'HE PLANTS THE BANNER', bashTell: 'THE BUTT OF THE POLE' };
-export const sbOpen = e => e.mode === 'torn';
-export function updateStandardBearer(e, dt, c) {
-  const { P, A } = c, S = UNB.sb, floor = A.floor;
+/* ---------------- THE BARROW RIDER (mini) ---------------- */
+/* A knight of the old order buried with his horse under the field; the battle got him up, and the horse came with him as a ghost.
+   The banner he carried is his lance. He is not the Lancer (whose charge the SHIELD stops, and who wheels) and not the Hound
+   Master (mounted, a yellow charge, his dogs): the Rider's gallop is RED, it goes THROUGH you, and it does not stop at you.
+   The caused openings (A11) are both yours: strike him as he rides through and he is out of the saddle; in phase two, strike
+   the bones crawling back to him and the remount breaks. Left alone, neither happens. */
+const BR_TELL = { ride: 'rideTell', trample: 'trampleTell', fire: 'fireTell', lance: 'lanceTell', thrust: 'thrustTell', remount: 'remountTell' };
+const BR_SAY = { rideTell: 'THE RIDE-THROUGH: JUMP IT', trampleTell: 'THE HORSE REARS: GUARD', fireTell: 'GRAVE-FIRE: GUARD', lanceTell: 'THE LANCE LINE: STEP OUT', thrustTell: 'THE BANNER THRUST: GUARD', remountTell: 'THE BONES CRAWL BACK TO HIM' };
+const BR_SND = { rideTell: 'snort', trampleTell: 'bellow', fireTell: 'fire', lanceTell: 'plant', thrustTell: 'charge', remountTell: 'bones' };
+export const brOpen = e => e.mode === 'unsaddled' || e.mode === 'scattered';
+/* a blow on him: a blow while he rides through UNSADDLES him (the caused opening), and an open Rider takes more */
+export function brHurt(e, dmg) { if (e.mode === 'ride' && e.mounted) e.unsaddle = true; return brOpen(e) ? Math.round(dmg * UNB.br.openMul) : dmg; }
+function brCollapse(e, c, why) { e.mode = 'collapse'; e.modeT = 1.2; e.mounted = false; e.bonesX = e.horseX ?? e.x; e.horseX = null; e.footLeft = UNB.br.footT; e.boneHits = 0;
+  c.say(why || 'THE HORSE FALLS APART UNDER HIM', '#ff6b6b'); c.sound('crack'); c.sound('bones'); c.shake(4); }
+export function updateBarrowRider(e, dt, c) {
+  const { P, A } = c, S = UNB.br, floor = A.floor;
   if (!e.alive || e.mode === 'sleep') return;
-  e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.turn ??= 0; e.y = floor; e.vx = 0;
-  e.open = sbOpen(e) ? Math.max(0, e.modeT) : 0;
-  if (e.phase !== 2 && e.hp <= e.maxHp * 0.5) { e.phase = 2; c.say('THE WHOLE ARMY ANSWERS HIM', '#ff6b6b'); c.sound('horn'); }
+  e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.turn ??= 0; e.mounted ??= true; e.bolts ??= []; e.lances ??= []; e.y = floor; e.vx = 0;
+  e.w = e.mounted ? 30 : 12; e.h = e.mounted ? 52 : 28; e.arenaX ??= [A.x0 + 24, A.x1 - 24];
+  e.open = brOpen(e) ? Math.max(0, e.modeT) : 0;
+  /* GRAVE-FIRE in the air: slow, and each one only once */
+  for (const b of e.bolts) { b.vy += 140 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
+    if (!P.dead && Math.abs(P.x - b.x) < 8 && b.y > P.y - 24 && b.y < P.y + 2) { b.done = true; c.hit(b.x, UNB.dmg.brFire, false, 'GRAVE-FIRE'); }
+    if (b.y >= floor - 2 || b.x < A.x0 || b.x > A.x1) { b.done = true; b.burst = true; } }
+  e.bolts = e.bolts.filter(b => !b.done);
+  /* THE LANCE LINE: one lance after another out of the ground, each once */
+  for (const l of e.lances) { if (!l.up) { l.t -= dt; if (l.t <= 0) { l.up = true; l.life = 0.45; c.sound('crack');
+        if (!e.lanceHit && !P.dead && Math.abs(P.x - l.x) < S.lanceR + 4 && P.y > floor - 34) { e.lanceHit = true; c.hit(l.x, UNB.dmg.brLance, true, 'THE LANCE LINE'); } } }
+    else l.life -= dt; }
+  e.lances = e.lances.filter(l => !l.up || l.life > 0);
+  /* the horse that threw him runs on, and comes back for him */
+  if (e.horseX !== null && e.horseX !== undefined && !e.mounted) { e.horseX += (e.horseV || 0) * dt; if (e.horseX < A.x0 + 10 || e.horseX > A.x1 - 10) { e.horseV = -(e.horseV || 0) * 0.5; e.horseX = clamp(e.horseX, A.x0 + 10, A.x1 - 10); } }
+  if (e.phase !== 2 && e.hp <= e.maxHp * 0.5 && !tells(e) && e.mode !== 'ride' && !brOpen(e)) { e.phase = 2; if (e.mounted) { brCollapse(e, c); return; } }
+  /* ON FOOT IN PHASE TWO the clock to the remount runs whatever he is doing - a thrust does not stop the bones */
+  if (!e.mounted && e.phase === 2 && e.mode !== 'remountTell' && e.mode !== 'scattered' && e.mode !== 'collapse') e.footLeft = (e.footLeft ?? S.footT) - dt;
   if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.6; } return; }
-  if (e.mode === 'torn') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.8; c.say('HE GATHERS THE RAG UP', '#ffd36b'); } return; }
-  /* THE BANNER IN THE GROUND IS THE WINDOW: strike IT (not him) and it tears. It stands through his bash as well. */
-  e.flagUp = e.mode === 'planted' || e.mode === 'bashTell' || e.mode === 'bash';
-  if (e.flagUp) { e.plantLeft -= dt;
-    if (c.struck(e.flagX - 7, floor - 58, 14, 58, e.flagKey ??= {})) { e.flagHits = (e.flagHits || 0) + 1; c.sound('crack');
-      if (e.flagHits >= S.flagHits) { e.mode = 'torn'; e.modeT = S.tornT; e.open = S.tornT; e.flagUp = false; e.bashing = false; c.collapse(e); c.say('THE BANNER IS DOWN: HE IS OPEN', '#8fd160'); c.sound('heavy'); c.shake(5); return; }
-      c.say('THE BANNER TEARS', '#8fd160'); }
-    if (e.mode === 'planted' && e.plantLeft <= 0) { e.mode = 'stalk'; e.cd = 0.5; e.flagUp = false; c.say('HE PULLS IT UP', '#ffd36b'); return; } }
-  if (e.mode === 'planted') {
-    if (!P.dead && Math.abs(P.x - e.x) < 30 && Math.abs(P.y - floor) < 30 && e.cd <= 0) { e.bashing = true; e.mode = 'bashTell'; e.modeT = S.tell.bash; e.face = Math.sign(P.x - e.x) || e.face; c.say(SB_SAY.bashTell, '#ffd36b'); }
+  if (e.mode === 'collapse') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.6; } return; }
+  if (e.mode === 'unsaddled') { if (e.modeT <= 0) { e.horseV = 0;
+      if (e.phase === 2) { brCollapse(e, c, 'THE HORSE COMES BACK IN PIECES'); return; }
+      e.mode = 'mountUp'; e.modeT = 0.5; e.x = e.horseX ?? e.x; c.sound('snort'); } return; }
+  if (e.mode === 'mountUp') { if (e.modeT <= 0) { e.mounted = true; e.horseX = null; e.mode = 'stalk'; e.cd = 0.7; c.say('HE IS BACK IN THE SADDLE', '#ffd36b'); } return; }
+  if (e.mode === 'scattered') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.6; e.footLeft = S.footT; c.say('HE GATHERS HIMSELF', '#ffd36b'); } return; }
+  if (e.mode === 'ride') {
+    if (e.unsaddle) { e.unsaddle = false; e.mounted = false; e.mode = 'unsaddled'; e.modeT = S.openT; e.open = S.openT; e.horseX = e.x; e.horseV = e.face * S.rideV * 0.7;
+      c.say('OUT OF THE SADDLE: HE IS OPEN', '#8fd160'); c.sound('heavy'); c.sound('snort'); c.shake(5); return; }
+    e.x = clamp(e.x + e.face * S.rideV * dt, A.x0 + 24, A.x1 - 24); e.vx = e.face * S.rideV;
+    if (!e.rideHit && !P.dead && Math.abs(P.x - e.x) < S.rideHit && P.y > floor - 30) { e.rideHit = true; c.hit(e.x, UNB.dmg.brRide, true, 'THE RIDE-THROUGH'); }
+    if (e.modeT <= 0 || e.x <= A.x0 + 24 || e.x >= A.x1 - 24) { e.mode = 'wheel'; e.modeT = 0.7; c.shake(3); c.sound('heavy'); }
     return; }
-  if (e.mode === 'charge') {
-    const nx = e.x + e.face * S.chargeV * dt; e.x = clamp(nx, A.x0 + 24, A.x1 - 24); e.vx = e.face * S.chargeV;
-    if (!e.chargeHit && !P.dead && Math.abs(P.x - e.x) < 22 && P.y > floor - 30) { e.chargeHit = true; c.hit(e.x, UNB.dmg.sbCharge, true, 'THE LOWERED BANNER'); }
-    if (e.modeT <= 0 || e.x <= A.x0 + 24 || e.x >= A.x1 - 24) { e.mode = 'rest'; e.modeT = 0.9; c.shake(3); c.sound('heavy'); }
+  if (e.mode === 'drawBack') { const wall = e.face > 0 ? A.x0 + 30 : A.x1 - 30; e.x += Math.sign(wall - e.x) * 150 * dt; e.vx = Math.sign(wall - e.x) * 150;
+    if (Math.abs(wall - e.x) < 6 || e.modeT <= 0) begin2(e, 'ride', c); return; }
+  if (e.mode === 'thrust') { if (e.modeT > 0.18) { const nx = e.x + e.face * 60 * dt; if (nx > A.x0 + 20 && nx < A.x1 - 20) e.x = nx; } }
+  if (e.mode === 'trample' || e.mode === 'fire' || e.mode === 'lance' || e.mode === 'thrust' || e.mode === 'wheel' || e.mode === 'rest') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = e.phase === 2 ? S.cdP2 : S.cd; } return; }
+  if (e.mode === 'remountTell') {
+    const tgt = e.x, k = Math.min(1, dt / Math.max(dt, e.modeT)); e.bonesX += (tgt - e.bonesX) * k;
+    if (c.struck(e.bonesX - 12, floor - 10, 24, 10, e.boneKey ??= {})) { e.boneHits = (e.boneHits || 0) + 1; c.sound('crack');
+      if (e.boneHits >= S.boneHits) { e.mode = 'scattered'; e.modeT = S.openT; e.open = S.openT; e.bonesX = e.face > 0 ? A.x0 + 40 : A.x1 - 40; e.boneHits = 0; c.say('THE BONES SCATTER: HE IS OPEN', '#8fd160'); c.sound('heavy'); c.shake(5); return; }
+      c.say('THE BONES SCATTER', '#8fd160'); }
+    if (e.modeT <= 0) { e.mounted = true; e.mountLeft = S.mountMoves; e.mode = 'stalk'; e.cd = 0.6; e.bonesX = null; c.say('HE IS BACK IN THE SADDLE', '#ff6b6b'); c.sound('snort'); }
     return; }
-  if (e.mode === 'sweep' || e.mode === 'rest' || e.mode === 'bash') { if (e.modeT <= 0) { if (e.bashing) { e.bashing = false; e.mode = 'planted'; e.cd = 1; return; } e.mode = 'stalk'; e.cd = e.phase === 2 ? S.cdP2 : S.cd; } return; }
   if (tells(e)) {
-    if (e.mode !== 'chargeTell') e.face = Math.sign(P.x - e.x) || e.face;
+    if (e.mode !== 'rideTell' && e.mode !== 'lanceTell') e.face = Math.sign(P.x - e.x) || e.face;
     if (e.modeT > 0) return;
-    if (e.mode === 'sweepTell') { const f = (P.x - e.x) * e.face; if (!P.dead && f > -10 && f < S.sweepR && Math.abs(P.y - floor) < 34) c.hit(e.x, UNB.dmg.sbSweep, false, 'THE GREAT POLE'); e.mode = 'sweep'; e.modeT = 0.4; c.sound('whoosh'); return; }
-    if (e.mode === 'bashTell') { const f = (P.x - e.x) * e.face; if (!P.dead && f > -8 && f < 34 && Math.abs(P.y - floor) < 30) c.hit(e.x, UNB.dmg.sbBash, false, 'THE BUTT OF THE POLE'); e.mode = 'bash'; e.modeT = 0.3; c.sound('slash'); return; }
-    if (e.mode === 'chargeTell') { e.mode = 'charge'; e.modeT = 1.3; e.chargeHit = false; c.sound('charge'); return; }
-    if (e.mode === 'plantTell') { e.mode = 'planted'; e.flagUp = true; e.plantLeft = e.phase === 2 ? S.plantTP2 : S.plantT; e.modeT = e.plantLeft; e.flagX = clamp(e.x + e.face * 20, A.x0 + 16, A.x1 - 16); e.flagHits = 0; c.sound('plant'); c.shake(3);
-      const n = Math.min(e.phase === 2 ? S.raiseP2 : S.raise, S.adds - c.adds(e).filter(q => q.mode !== 'down').length);
-      for (let i = 0; i < n; i++) { const side = i % 2 ? -1 : 1, x = clamp(P.x + side * (70 + 30 * i), A.x0 + 30, A.x1 - 30); c.raise(x, floor, e); }
-      if (n > 0) c.say('THE FIELD RISES', '#c8b6ff'); return; }
+    const f = (P.x - e.x) * e.face;
+    if (e.mode === 'rideTell') { e.mode = 'ride'; e.modeT = 3; e.rideHit = false; c.sound('gallop'); c.sound('charge'); return; }
+    if (e.mode === 'trampleTell') { e.mode = 'trample'; e.modeT = 0.35; c.sound('heavy'); c.shake(4); c.ring(e.x, floor - 4, S.trampleR, '#ffd36b');
+      if (!P.dead && Math.abs(P.x - e.x) < S.trampleR && P.y > floor - 26) c.hit(e.x, UNB.dmg.brTrample, false, 'THE REARING TRAMPLE'); return; }
+    if (e.mode === 'fireTell') { e.mode = 'fire'; e.modeT = 0.4; c.sound('whoosh');
+      /* SLOW: each is thrown to come down at chest height a second and a half later - one where you stand, one a stride past you, and
+         in phase two one a stride short. Standing still, one finds you; the shield turns it; walking out from under them turns all */
+      const n = e.phase === 2 ? S.boltsP2 : S.bolts, sx = e.x + e.face * 8, sy = floor - (e.mounted ? 46 : 26), T = S.boltT;
+      for (let i = 0; i < n; i++) { const tx = clamp(P.x + [0, 28, -28][i] * e.face, A.x0 + 8, A.x1 - 8); e.bolts.push({ x: sx, y: sy, vx: (tx - sx) / T, vy: ((Math.min(P.y, floor) - 12) - sy - 70 * T * T) / T }); }
+      return; }
+    if (e.mode === 'lanceTell') { e.mode = 'lance'; e.modeT = S.lanceN * S.lanceGap + 0.5; e.lanceHit = false; c.sound('plant'); c.shake(3); e.lances = e.lanceAt.map((x, k) => ({ x, t: k * S.lanceGap, up: false })); return; }
+    if (e.mode === 'thrustTell') { e.mode = 'thrust'; e.modeT = 0.3; c.sound('slash'); if (!P.dead && f > -6 && f < S.thrustR && P.y > floor - 30) c.hit(e.x, UNB.dmg.brThrust, false, 'THE BANNER THRUST'); return; }
   }
+  /* STALKING: mounted he keeps a lance's length off you, on foot a pole's */
   const d = P.x - e.x, ad = Math.abs(d); e.face = Math.sign(d) || e.face;
-  const want = ad > S.keep ? e.face : 0, nx = e.x + want * S.walk * dt; if (nx > A.x0 + 20 && nx < A.x1 - 20) e.x = nx; e.vx = want * S.walk;
+  const keep = e.mounted ? S.keep : S.footKeep, sp = e.mounted ? S.walk : S.footWalk;
+  const want = ad > keep ? e.face : ad < keep - 24 && e.mounted ? -e.face : 0, nx = e.x + want * sp * dt; if (nx > A.x0 + 20 && nx < A.x1 - 20) e.x = nx; e.vx = want * sp;
+  if (!e.mounted && e.phase === 2 && e.footLeft <= 0 && e.cd <= 0 && !P.dead) { beginBR(e, 'remount', c); return; }
   if (e.cd > 0 || P.dead) return;
-  let what = S.order[e.turn++ % S.order.length];
-  if (what === 'sweep' && ad > S.sweepR + 40) what = 'charge';
-  if (e.phase === 2 && what === 'sweep' && e.turn % 3 === 0) what = 'charge';
-  e.mode = SB_TELL[what]; e.modeT = S.tell[what]; e.face = Math.sign(P.x - e.x) || e.face;
-  c.say(SB_SAY[e.mode], what === 'charge' ? '#ff6b6b' : '#ffd36b');
+  if (e.mounted && e.phase === 2) { e.mountLeft = (e.mountLeft ?? S.mountMoves) - 1; if (e.mountLeft < 0) { brCollapse(e, c); return; } }
+  const order = e.mounted ? S.order : S.orderFoot;
+  let what = order[e.turn++ % order.length];
+  if (what === 'trample' && ad > S.trampleR + 50) what = 'fire';
+  if (e.mounted && ad < S.trampleR) what = 'trample';   /* UNDER HIM is where the trample is for: stand there and it is what comes */
+  if (what === 'thrust' && ad > S.thrustR + 40) what = 'lance';
+  beginBR(e, what, c);
 }
-/* 0 idle | 1,2 walk | 3 sweep tell | 4 sweep | 5 charge tell | 6 charge | 7 plant tell | 8 planted (hands empty) | 9 torn (on one knee) | 10 hurt */
-export function sbFrame(e) {
-  switch (e.mode) { case 'sweepTell': case 'bashTell': return 3; case 'sweep': case 'bash': return 4; case 'chargeTell': return 5; case 'charge': return 6; case 'plantTell': return 7; case 'planted': return 8; case 'torn': return 9; }
-  if (e.hurtT > 0) return 10;
-  return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 5) % 2 : 0;
+function begin2(e, what, c) { const { P } = c; e.mode = BR_TELL[what]; e.modeT = UNB.br.tell[what]; if (what !== 'ride') e.face = Math.sign(P.x - e.x) || e.face || 1;
+  if (what === 'lance') { const S = UNB.br, A = c.A, at = []; for (let k = 1; k <= S.lanceN; k++) { const x = e.x + e.face * (18 + k * S.lanceStep); if (x < A.x0 + 8 || x > A.x1 - 8) break; at.push(x); } e.lanceAt = at; }
+  if (what === 'remount') { e.bonesX ??= e.face > 0 ? c.A.x0 + 40 : c.A.x1 - 40; e.boneHits = 0; e.boneKey = {}; }
+  c.say(BR_SAY[e.mode], what === 'ride' || what === 'lance' ? '#ff6b6b' : what === 'remount' ? '#c8b6ff' : '#ffd36b'); c.sound(BR_SND[e.mode]); }
+function beginBR(e, what, c) { const { P, A } = c;
+  /* THE RIDE-THROUGH is the arena's length: he draws back to the wall behind him first (no tell: he is only riding), then paws */
+  if (what === 'ride') { e.face = Math.sign(P.x - e.x) || e.face || 1; const wall = e.face > 0 ? A.x0 + 30 : A.x1 - 30;
+    if (Math.abs(wall - e.x) > 12) { e.mode = 'drawBack'; e.modeT = 3; return; } }
+  begin2(e, what, c); }
+export const brForce = (e, what, c) => { if (what === 'ride') e.face = Math.sign(c.P.x - e.x) || e.face || 1; begin2(e, what, c); };   /* for the harness: A3, every attack forced (the ride straight to its tell) */
+/* MOUNTED 0 idle | 1,2 walk | 3 ride tell | 4,5 gallop | 6 rear (trample tell) | 7 trample | 8 fire tell | 9 fire | 10 lance tell | 11 lance | 12 hurt
+   ON FOOT 13 idle | 14,15 walk | 16 thrust tell | 17 thrust | 18 lance tell | 19 lance | 20 open (on a knee) | 21 remount (calling his bones) | 22 hurt | 23 the horse falling apart */
+export function brFrame(e) {
+  const m = e.mode;
+  if (m === 'collapse') return 23;
+  if (e.mounted) { switch (m) { case 'rideTell': return 3; case 'ride': return 4 + Math.floor((e.anim || 0) * 10) % 2; case 'trampleTell': return 6; case 'trample': return 7; case 'fireTell': return 8; case 'fire': return 9; case 'lanceTell': return 10; case 'lance': return 11; case 'sleep': case 'wake': return 0; }
+    if (e.hurtT > 0) return 12; return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 6) % 2 : 0; }
+  switch (m) { case 'thrustTell': return 16; case 'thrust': return 17; case 'lanceTell': return 18; case 'lance': return 19; case 'unsaddled': case 'scattered': case 'mountUp': return 20; case 'remountTell': return 21; }
+  if (e.hurtT > 0) return 22;
+  return Math.abs(e.vx || 0) > 3 ? 14 + Math.floor((e.anim || 0) * 5) % 2 : 13;
 }
 
 /* ---------------- THE FIRST DEATH KNIGHT (boss) ---------------- */
-const DK_TELL = { swathe: 'swatheTell', reap: 'reapTell', pass: 'passTell', raise: 'raiseTell', cut: 'cutTell' };
-const DK_SAY = { swatheTell: 'THE SWATHE: CLOSE IN', reapTell: 'THE REAPING: JUMP IT', passTell: 'THE PASSING: LEAVE THE MARK', raiseTell: 'HE RAISES THE DEAD', cutTell: 'THE SHORT CUT: GUARD' };
+/* HE FIGHTS WITH THE KIT THE CLASS INHERITS (Daniel, 24 Sept: "the First Death Knight fights with the Death Knight hero's kit").
+   Every move is one of the playable Death Knight's, boss-sized; the scythe stays (the polish lane's silhouette), so a greatsword
+   blow is a scythe blow here. The hero's own rule is his opening: a FULL ward struck again BREAKS. */
+const DK_TELL = { cleave: 'cleaveTell', grip: 'gripTell', boil: 'boilTell', pass: 'passTell', ward: 'wardTell', raise: 'raiseTell', call: 'callTell', surge: 'surgeTell' };
+const DK_SAY = { cleaveTell: 'THE CLEAVE: GUARD', gripTell: 'DEATH GRIP: JUMP THE CHAIN', boilTell: 'BLOOD BOIL: STEP OUT', passTell: 'THE LONG PASSING: JUMP IT', wardTell: 'BLOOD WARD: BREAK IT', novaTell: 'BLOOD NOVA: JUMP IT',
+  raiseTell: 'SUMMON SKELETON', callTell: 'GRAVECALL', surgeTell: 'BLOOD SURGE: GET AWAY' };
+const DK_SND = { cleaveTell: 'charge', gripTell: 'crank', boilTell: 'fire', passTell: 'pass', wardTell: 'plant', novaTell: 'roar', raiseTell: 'rise', callTell: 'horn', surgeTell: 'pass' };
+const DK_COL = { cleaveTell: '#ffd36b', raiseTell: '#c8b6ff', callTell: '#c8b6ff', wardTell: '#8fd160' };
 export const dkOpen = e => e.mode === 'open';
+/* A BLOW ON HIM. While the ward stands it takes the blow and keeps it (the hero's ward: a blow on its face is stopped and FILLS
+   it); a FULL ward struck again BREAKS, and he reels. Returns the damage that reaches him. */
+export function dkHurt(e, dmg) {
+  if (e.mode === 'ward') { if ((e.wardFill || 0) >= UNB.dk.wardFull) { e.wardBroke = true; return 0; } e.wardFill = (e.wardFill || 0) + 1; e.wardEvt = 'fill'; return 0; }
+  return dkOpen(e) ? Math.round(dmg * UNB.dk.openMul) : dmg;
+}
 export function updateDeathKnight(e, dt, c) {
   const { P, A } = c, D = UNB.dk, floor = A.floor;
   if (!e.alive || e.mode === 'sleep') return;
-  e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.turn ??= 0; e.marks ??= []; e.y = floor; e.vx = 0;
+  e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.turn ??= 0; e.pools ??= []; e.y = floor; e.vx = 0;
   e.open = dkOpen(e) ? Math.max(0, e.modeT) : 0;
-  /* THE MARKS HE LEFT: each one goes off where it was laid */
-  for (const m of e.marks) { m.t -= dt; if (m.t <= 0 && !m.done) { m.done = true; c.sound('boom'); c.ring(m.x, m.y - 6, D.markR, '#b07cf0');
-    if (!P.dead && Math.abs(P.x - m.x) < D.markR && Math.abs(P.y - m.y) < 30) c.hit(m.x, UNB.dmg.mark, true, 'THE MARK OF THE PASSING'); } }
-  e.marks = e.marks.filter(m => m.t > -0.3);
-  if (e.phase !== 2 && e.hp <= e.maxHp * 0.5 && !tells(e) && e.mode !== 'reap' && e.mode !== 'pass' && e.mode !== 'open') { e.phase = 2; e.mode = 'rally'; e.modeT = 1.4; e.turn = 0; c.say('HE IS THE BANNER NOW: WHAT FALLS HERE GETS UP', '#ff6b6b'); c.sound('horn'); return; }
+  /* BLOOD BOIL: each pool cuts whoever stands in it, every half second, until it cools */
+  for (const p of e.pools) { p.t -= dt; p.tick -= dt; if (p.tick <= 0) { p.tick = D.boilTick; if (!P.dead && Math.abs(P.x - p.x) < D.boilR && P.y > floor - 20) c.hit(p.x, UNB.dmg.boil, true, 'BLOOD BOIL'); } }
+  e.pools = e.pools.filter(p => p.t > 0);
+  if (e.phase !== 2 && e.hp <= e.maxHp * 0.5 && !tells(e) && e.mode !== 'pass' && e.mode !== 'grip' && e.mode !== 'ward' && e.mode !== 'open') { e.phase = 2; e.mode = 'rally'; e.modeT = 1.4; e.turn = 0; c.say('HE IS THE BANNER NOW: WHAT FALLS HERE GETS UP', '#ff6b6b'); c.sound('horn'); return; }
   if (e.mode === 'wake' || e.mode === 'rally') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.6; } return; }
-  if (e.mode === 'open') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.7; c.say('HE WRENCHES THE SCYTHE FREE', '#ffd36b'); } return; }
-  if (e.mode === 'swathe' || e.mode === 'reap' || e.mode === 'cut' || e.mode === 'raise' || e.mode === 'rest') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = e.phase === 2 ? D.cdP2 : D.cd; } return; }
-  if (e.mode === 'pass') { const k = 1 - clamp(e.modeT / 0.3, 0, 1); e.x = e.passX0 + (e.passX1 - e.passX0) * k; if (e.modeT <= 0) { e.x = e.passX1; e.mode = 'rest'; e.modeT = 0.7; } return; }
+  if (e.mode === 'open') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.7; c.say('HE TAKES UP THE SCYTHE', '#ffd36b'); } return; }
+  /* THE WARD STANDS: it keeps what it is given; FULL and struck again it breaks (A11); left alone, he lets go and the nova pays it out */
+  if (e.mode === 'ward') {
+    if (e.wardBroke) { e.wardBroke = false; e.mode = 'open'; e.modeT = D.openT; e.open = D.openT; c.say('THE WARD BREAKS: HE IS OPEN', '#8fd160'); c.sound('crack'); c.sound('heavy'); c.shake(6); return; }
+    if (e.wardEvt) { e.wardEvt = null; c.sound('crank'); if (e.wardFill >= D.wardFull) c.say('THE WARD IS FULL: STRIKE IT AGAIN', '#8fd160'); }
+    if (e.modeT <= 0) { e.mode = 'novaTell'; e.modeT = D.tell.nova; c.say(DK_SAY.novaTell, '#ff6b6b'); c.sound(DK_SND.novaTell); }
+    return; }
+  if (e.mode === 'grip') {   /* the chain runs out along the floor; what it catches it brings to his feet, and the cleave follows */
+    e.chainX += e.face * D.chainV * dt;
+    if (!P.dead && (P.x - e.x) * e.face > 0 && (P.x - e.chainX) * e.face <= 0 && P.y > floor - 26 && Math.abs(P.x - e.x) <= D.gripR) { c.hit(e.x, UNB.dmg.grip, true, 'DEATH GRIP'); c.sound('crank');
+      P.x = e.x + e.face * 26; e.mode = 'cleaveTell'; e.modeT = D.tell.cleaveAfter; c.say('COME HERE', '#8fd160'); return; }
+    if (Math.abs(e.chainX - e.x) >= D.gripR || e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.5; }
+    return; }
+  if (e.mode === 'pass') { const k = 1 - clamp(e.modeT / D.passT, 0, 1), was = e.x; e.x = e.passX0 + (e.passX1 - e.passX0) * k;
+    if (!e.passHit && !P.dead && P.y > floor - 30 && (P.x - was) * (P.x - e.x) <= 0) { e.passHit = true; c.hit(e.x, UNB.dmg.pass, true, 'THE LONG PASSING'); }
+    if (e.modeT <= 0) { e.x = e.passX1; e.mode = 'rest'; e.modeT = 0.7; } return; }
+  if (e.mode === 'cleave' || e.mode === 'boil' || e.mode === 'nova' || e.mode === 'raise' || e.mode === 'surge' || e.mode === 'rest') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = e.phase === 2 ? D.cdP2 : D.cd; } return; }
   if (tells(e)) {
-    if (e.mode !== 'passTell' && e.mode !== 'reapTell') e.face = Math.sign(P.x - e.x) || e.face;
-    /* THE REAPING DRAGS: you on the ground, and his own dead with you */
-    if (e.mode === 'reapTell') { c.pull(e.x, D.pullR, D.pullV, dt); for (const q of c.adds(e)) if (q.mode !== 'down' && Math.abs(q.x - e.x) < D.pullR && Math.abs(q.x - e.x) > 10) q.x += Math.sign(e.x - q.x) * D.pullV * dt; }
+    if (e.mode !== 'passTell' && e.mode !== 'boilTell' && e.mode !== 'gripTell') e.face = Math.sign(P.x - e.x) || e.face;
+    if (e.mode === 'surgeTell') c.pull?.(e.x, D.surgeR + 30, 30, dt);   /* the drain takes a step of you toward him */
     if (e.modeT > 0) return;
     const f = (P.x - e.x) * e.face, ad = Math.abs(P.x - e.x);
-    if (e.mode === 'swatheTell') { e.mode = 'swathe'; e.modeT = 0.35; c.sound('whoosh'); c.ring(e.x + e.face * 60, floor - 20, D.swatheOut - 20, '#ff6b6b');
-      if (!P.dead && f > -12 && ad >= D.swatheIn && ad <= D.swatheOut && P.y > floor - 48) c.hit(e.x, UNB.dmg.swathe, true, 'THE SWATHE');
-      else if (!P.dead && f > -12 && ad < D.swatheIn && Math.abs(P.y - floor) < 40) c.hit(e.x, UNB.dmg.swatheIn, false, 'THE INSIDE OF THE BLADE');
+    if (e.mode === 'cleaveTell') { e.mode = 'cleave'; e.modeT = 0.35; c.sound('whoosh'); c.shake(3);
+      if (!P.dead && f > -8 && f < D.cleaveR && P.y > floor - 40) c.hit(e.x, UNB.dmg.cleave, false, 'THE CLEAVE'); return; }
+    if (e.mode === 'gripTell') { e.mode = 'grip'; e.modeT = 1; e.chainX = e.x + e.face * 10; c.sound('whoosh'); return; }
+    if (e.mode === 'boilTell') { e.mode = 'boil'; e.modeT = 0.3; e.pools.push({ x: e.boilX, t: D.boilT, tick: 0 }); c.sound('fire'); c.ring(e.boilX, floor - 4, D.boilR, '#ff6b6b'); return; }
+    if (e.mode === 'passTell') { e.mode = 'pass'; e.modeT = D.passT; e.passX0 = e.x; e.passHit = false; const side = Math.sign(e.markX - e.x) || e.face; e.passX1 = clamp(e.markX + side * D.passStep, A.x0 + 24, A.x1 - 24); e.face = side; c.sound('pass'); return; }
+    if (e.mode === 'wardTell') { e.mode = 'ward'; e.modeT = D.wardT; e.wardFill = 0; e.wardBroke = false; c.sound('plant'); return; }
+    if (e.mode === 'novaTell') { const R = D.novaR + D.novaPer * (e.wardFill || 0); e.mode = 'nova'; e.modeT = 0.45; c.sound('boom'); c.shake(4 + (e.wardFill || 0)); c.ring(e.x, floor - 10, R, '#ff6b6b');
+      if (!P.dead && ad < R && P.y > floor - 30) c.hit(e.x, UNB.dmg.nova + UNB.dmg.novaPer * (e.wardFill || 0), true, 'BLOOD NOVA');
+      for (const q of c.adds(e)) if (Math.abs(q.x - e.x) < R && Math.abs(q.y - floor) < 30) c.cut(q);   /* phase two's rule: his own nova finishes his own dead */
       return; }
-    if (e.mode === 'reapTell') { e.mode = 'reap'; e.modeT = 0.45; c.sound('whoosh'); c.ring(e.x, floor - 10, D.reapR, '#ff6b6b');
-      if (!P.dead && ad < D.reapR && P.y > floor - 24) c.hit(e.x, UNB.dmg.reap, true, 'THE REAPING');
-      /* A11: THE CAUSED OPENING. His own risen dead in the circle are cut - and the scythe is in them, not in you */
-      let cut = 0; for (const q of c.adds(e)) if (Math.abs(q.x - e.x) < D.reapR && Math.abs(q.y - floor) < 30) { const standing = q.mode !== 'down' && q.mode !== 'riseTell'; c.cut(q); if (standing) cut++; }
-      if (cut > 0) { e.mode = 'open'; e.modeT = D.openT; e.open = D.openT; c.say('HE CUT HIS OWN DEAD: HE IS OPEN', '#8fd160'); c.sound('crack'); c.shake(5); }
-      return; }
-    if (e.mode === 'passTell') { e.mode = 'pass'; e.modeT = 0.3; e.passX0 = e.x; const side = Math.sign(e.markX - e.x) || e.face; e.passX1 = clamp(e.markX + side * D.passStep, A.x0 + 24, A.x1 - 24); e.face = side;
-      e.marks.push({ x: e.markX, y: e.markY, t: D.markT }); c.sound('pass'); return; }
-    if (e.mode === 'raiseTell') { e.mode = 'raise'; e.modeT = 0.5; c.sound('rise');
-      const cap = e.phase === 2 ? D.addsP2 : D.adds, n = Math.min(e.phase === 2 ? D.raiseP2 : D.raise, cap - c.adds(e).filter(q => q.mode !== 'down').length);
+    if (e.mode === 'raiseTell' || e.mode === 'callTell') { const call = e.mode === 'callTell'; e.mode = 'raise'; e.modeT = 0.5; c.sound('rise');
+      const cap = e.phase === 2 ? D.addsP2 : D.adds, n = Math.min(call ? D.call : D.raise, cap - c.adds(e).filter(q => q.mode !== 'down').length);
       for (let i = 0; i < n; i++) { const side = i % 2 ? -1 : 1, x = clamp(e.x + side * (54 + 34 * (i >> 1)), A.x0 + 30, A.x1 - 30); c.raise(x, floor, e); }
       return; }
-    if (e.mode === 'cutTell') { e.mode = 'cut'; e.modeT = 0.3; c.sound('slash'); if (!P.dead && f > -8 && f < D.cutR && P.y > floor - 30) c.hit(e.x, UNB.dmg.dkCut, false, 'THE SHORT CUT'); return; }
+    if (e.mode === 'surgeTell') { e.mode = 'surge'; e.modeT = 0.5; c.sound('pass'); c.ring(e.x, floor - 12, D.surgeR, '#ff6b6b');
+      if (!P.dead && ad < D.surgeR && P.y > floor - 44) c.hit(e.x, UNB.dmg.surge, true, 'BLOOD SURGE'); return; }
   }
   /* STALKING */
   const d = P.x - e.x, ad = Math.abs(d); e.face = Math.sign(d) || e.face;
@@ -223,18 +308,21 @@ export function updateDeathKnight(e, dt, c) {
   if (e.cd > 0 || P.dead) return;
   const order = e.phase === 2 ? D.orderP2 : D.order;
   let what = order[e.turn++ % order.length];
-  if (what === 'cut' && ad > D.cutR + 30) what = 'swathe';
+  if (what === 'cleave' && ad > D.cleaveR + 30) what = 'grip';
+  if (what === 'surge' && ad > D.surgeR + 40) what = 'boil';
   begin(e, what, c);
 }
 function begin(e, what, c) { const { P, A } = c; e.mode = DK_TELL[what]; e.modeT = UNB.dk.tell[what]; e.face = Math.sign(P.x - e.x) || e.face || 1;
-  if (what === 'pass') { e.markX = clamp(P.x, A.x0 + 16, A.x1 - 16); e.markY = Number.isFinite(P.y) ? Math.min(P.y, A.floor) : A.floor; }
-  c.say(DK_SAY[e.mode], what === 'cut' ? '#ffd36b' : what === 'raise' ? '#c8b6ff' : '#ff6b6b'); }
+  if (what === 'pass') { e.markX = clamp(P.x, A.x0 + 16, A.x1 - 16); }
+  if (what === 'boil') { e.boilX = clamp(P.x, A.x0 + 16, A.x1 - 16); }
+  c.say(DK_SAY[e.mode], DK_COL[e.mode] || '#ff6b6b'); c.sound?.(DK_SND[e.mode]); }
 export const dkForce = (e, what, c) => begin(e, what, c);   /* for the harness: A3, every attack forced */
-/* 0 idle | 1,2 walk | 3 swathe tell | 4 swathe | 5 reap tell | 6 reap | 7 pass tell | 8 pass | 9 raise | 10 cut tell | 11 cut | 12 open | 13 hurt */
+/* 0 idle | 1,2 walk | 3 cleave tell | 4 cleave | 5 grip tell | 6 grip | 7 boil tell | 8 passing tell | 9 passing | 10 ward | 11 nova tell |
+   12 nova | 13 summon / gravecall | 14 surge tell | 15 open | 16 hurt */
 export function dkFrame(e) {
-  switch (e.mode) { case 'swatheTell': return 3; case 'swathe': return 4; case 'reapTell': return 5; case 'reap': return 6; case 'passTell': return 7; case 'pass': return 8;
-    case 'raiseTell': case 'raise': case 'rally': return 9; case 'cutTell': return 10; case 'cut': return 11; case 'open': return 12; case 'sleep': case 'wake': return 0; }
-  if (e.hurtT > 0) return 13;
+  switch (e.mode) { case 'cleaveTell': return 3; case 'cleave': return 4; case 'gripTell': return 5; case 'grip': return 6; case 'boilTell': case 'boil': return 7; case 'passTell': return 8; case 'pass': return 9;
+    case 'wardTell': case 'ward': return 10; case 'novaTell': return 11; case 'nova': return 12; case 'raiseTell': case 'callTell': case 'raise': case 'rally': return 13; case 'surgeTell': case 'surge': return 14; case 'open': return 15; case 'sleep': case 'wake': return 0; }
+  if (e.hurtT > 0) return 16;
   return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 5) % 2 : 0;
 }
 /* 0 idle carrying | 1,2 walk | 3 plant tell | 4 guard (planted, pole in hand) | 5 pole tell | 6 pole | 7 hurt */
@@ -250,7 +338,7 @@ export function corpseFrame(e) {
   if (e.mode === 'cutTell') return 5; if (e.mode === 'cut') return 6; if (e.hurtT > 0) return 7;
   return Math.abs(e.vx || 0) > 3 ? 3 + Math.floor((e.anim || 0) * 5) % 2 : 2;
 }
-export const unbFrame = e => e.t === 'deathknight' ? dkFrame(e) : e.t === 'standardbearer' ? sbFrame(e) : e.t === 'bannerbearer' ? bbFrame(e) : corpseFrame(e);
+export const unbFrame = e => e.t === 'deathknight' ? dkFrame(e) : e.t === 'barrowrider' ? brFrame(e) : e.t === 'bannerbearer' ? bbFrame(e) : corpseFrame(e);
 
 /* ---------------- THE BATTLE ROUND YOU: volleys, cover, the cavalry, arrow pegs, the engines ---------------- */
 /* F is built once a (re)spawn from the level and its placed props, and stepped every frame with the world's hands in c. */
@@ -265,9 +353,13 @@ export function newField(L, TS = 16) {
     cav: L.cavalry ? { ...L.cavalry, t: 0, x: null, warn: false, hitP: false } : null,
     pegs: (L.pegs || []).map(p => ({ ...p, up: 0, zone: null, stray: 0 })),
     covers: props.filter(p => p.t === 'cover'), engines: props.filter(p => p.t !== 'cover'),
-    bolts: [], stones: [], arrows: [], breach: false,
+    bolts: [], stones: [], arrows: [], breach: false, surf: groundLine(L, G),
   };
 }
+/* WHERE THE GROUND IS, column by column: the first solid-or-ledge row from above the field down (for the mist to lie on) */
+function groundLine(L, G) { const W = L.W, s = new Int16Array(W).fill(-1); if (!L.grid) return s;
+  for (let x = 0; x < W; x++) for (let y = G - 8; y < Math.min(L.H, G + 8); y++) { const t = L.grid[y * W + x]; if (t !== 0) { s[x] = t === 3 ? -1 : y; break; } }   /* 3: T.SPIKE - no mist over a stake line, the hazard stays plain */
+  return s; }
 export const HORN_CAV = 3.0;
 /* WHERE AN ARROW CANNOT FIND YOU: behind a cover prop on its own floor, or down in a trench (the low route is sheltered) */
 export function sheltered(F, P) {
@@ -324,6 +416,29 @@ export function stepField(F, dt, c) {
 }
 
 /* ---------------- DRAWING (the world's parts; the creatures are sprites) ---------------- */
+/* THE BARROW RIDER'S WORLD: the lane his ride will take, the lances coming and standing, his grave-fire, the horse that threw him,
+   and the bones of it on the floor - crawling back to him in phase two, outlined green, because that is the window */
+let HORSE_ART = null;
+function drawRiderWorld(g, e, x, fy, cx, cy, time) {
+  const A = e.arenaX, f = e.face || 1;
+  if (e.mode === 'rideTell' || e.mode === 'drawBack') { const k = 0.5 + 0.5 * Math.sin(time * 20); g.globalAlpha = (e.mode === 'rideTell' ? 0.22 : 0.08) + 0.14 * k; g.fillStyle = '#ff6b6b';
+    const x1 = A ? Math.round((f > 0 ? A[1] : A[0]) - cx) : (f > 0 ? x + 400 : x - 400); g.fillRect(Math.min(x, x1), fy - 30, Math.abs(x1 - x), 30); g.globalAlpha = 1; }
+  if (e.mode === 'lanceTell') for (const lx of e.lanceAt || []) { const sx = Math.round(lx - cx), k = 0.5 + 0.5 * Math.sin(time * 18 + lx); g.globalAlpha = 0.35 + 0.4 * k; R(g, sx - 4, fy - 2, 9, 2, '#ff6b6b'); R(g, sx - 1, fy - 6, 3, 4, '#ff6b6b'); g.globalAlpha = 1; }
+  for (const l of e.lances || []) { if (!l.up) continue; const sx = Math.round(l.x - cx), h = Math.round(34 * Math.min(1, (0.45 - l.life) / 0.08 + 0.2));
+    g.globalAlpha = 0.85; R(g, sx - 1, fy - h, 2, h, '#c8d6ff'); R(g, sx - 3, fy - h - 4, 6, 4, '#e8eeff'); R(g, sx, fy - h - 7, 1, 3, '#ffffff'); g.globalAlpha = 1; }
+  for (const b of e.bolts || []) { const bx = Math.round(b.x - cx), by = Math.round(b.y - cy); R(g, bx - 3, by - 3, 6, 6, '#4fa87c'); R(g, bx - 2, by - 2, 4, 4, '#9ff0c0'); R(g, bx - 1, by - 1, 2, 2, '#efffe0');
+    g.globalAlpha = 0.5; R(g, bx - 3 - Math.sign(b.vx) * 5, by - 1, 4, 2, '#9ff0c0'); g.globalAlpha = 1; }
+  if (!e.mounted && e.horseX !== null && e.horseX !== undefined && (e.mode === 'unsaddled' || e.mode === 'mountUp') && HORSE_ART) { const hs = HORSE_ART, fr = Math.floor(time * 10) % 2, img = (e.horseV || e.face) >= 0 ? hs.R[fr] : hs.L[fr];
+    g.globalAlpha = 0.85; g.drawImage(img, Math.round(e.horseX - cx) - hs.ax, fy - hs.ay); g.globalAlpha = 1; }
+  if (!e.mounted && e.bonesX !== null && e.bonesX !== undefined && e.mode !== 'collapse') { const bx = Math.round(e.bonesX - cx), crawl = e.mode === 'remountTell';
+    for (let i = 0; i < 7; i++) { const ox = (i - 3) * (crawl ? 3 : 5) + (crawl ? Math.round(Math.sin(time * 14 + i) * 2) : 0); R(g, bx + ox - 2, fy - 3 - (i % 3), 5, 2, '#e4e8f0'); }
+    R(g, bx + 8, fy - 6, 5, 4, '#e4e8f0'); R(g, bx + 10, fy - 5, 1, 1, '#9ff0c0');   /* the skull */
+    if (crawl) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(bx - 13, fy - 11, 26, 11); g.globalAlpha = 1;
+      for (let i = 0; i < (e.boneHits || 0); i++) R(g, bx - 4 + i * 5, fy - 16, 3, 3, '#8fd160');
+      g.globalAlpha = 0.4; for (let i = 0; i < 4; i++) R(g, bx + Math.round((x - bx) * (i + 1) / 5), fy - 2, 3, 1, '#9ff0c0'); g.globalAlpha = 1; } }
+  if (brOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 20 + k * 3, 6, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
+}
+export function setHorseArt(h) { HORSE_ART = h; }
 const R = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
 /* a torn battle standard on its pole, foot at (x, y): the thing the whole level is about, so it is the loudest colour on the field */
 export function drawStandard(g, x, y, time, big, torn) {
@@ -340,25 +455,42 @@ export function drawUnbWorld(g, foes, cx, cy, time) {
     if (e.t === 'bannerbearer' && e.planted) { const fx = Math.round(e.flagX - cx);
       g.globalAlpha = 0.14 + 0.06 * Math.sin(time * 3); g.fillStyle = '#b07cf0'; g.fillRect(fx - UNB.bannerR, fy - 2, UNB.bannerR * 2, 2); g.globalAlpha = 1;   /* the ground its standard holds */
       drawStandard(g, fx, fy, time, false, false); }
-    if (e.t === 'standardbearer' && (e.flagUp || e.mode === 'torn')) { const fx = Math.round(e.flagX - cx), torn = e.mode === 'torn';
-      drawStandard(g, fx, fy, time, true, torn);
-      if (!torn) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(fx - 8, fy - 60, 16, 58); g.globalAlpha = 1;   /* THE WINDOW: the banner, outlined green */
-        for (let i = 0; i < (e.flagHits || 0); i++) R(g, fx - 6 + i * 5, fy - 66, 3, 3, '#8fd160'); } }
+    if (e.t === 'barrowrider') drawRiderWorld(g, e, x, fy, cx, cy, time);
     if (e.t === 'corpse' && e.mode === 'riseTell') { for (let i = 0; i < 3; i++) R(g, x - 8 + i * 7 + Math.round(Math.sin(time * 14 + i) * 2), fy - 3 - ((time * 30 + i * 5) % 8), 2, 2, '#c8b6ff'); }
-    if (e.t === 'deathknight') {
-      for (const m of e.marks || []) { if (m.done) continue; const mx = Math.round(m.x - cx), my = Math.round(m.y - cy), k = 0.5 + 0.5 * Math.sin(time * (m.t < 0.5 ? 30 : 12));
-        g.globalAlpha = 0.3 + 0.4 * k; g.fillStyle = '#ff6b6b'; g.beginPath(); g.ellipse(mx, my - 2, UNB.dk.markR, 6, 0, 0, 7); g.fill(); g.globalAlpha = 1;
-        g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.moveTo(mx - 5, my - 12); g.lineTo(mx + 5, my - 2); g.moveTo(mx + 5, my - 12); g.lineTo(mx - 5, my - 2); g.stroke(); }
-      if (e.mode === 'reapTell') { const k = 1 - Math.max(0, e.modeT) / UNB.dk.tell.reap; g.globalAlpha = 0.25 + 0.35 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 4, UNB.dk.reapR, 10, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
-      if (e.mode === 'swatheTell') { g.globalAlpha = 0.28; g.fillStyle = '#ff6b6b'; const f = e.face || 1; g.fillRect(f > 0 ? x + UNB.dk.swatheIn : x - UNB.dk.swatheOut, fy - 48, UNB.dk.swatheOut - UNB.dk.swatheIn, 48); g.fillStyle = '#8fd160'; g.fillRect(x - UNB.dk.swatheIn, fy - 3, UNB.dk.swatheIn * 2, 3); g.globalAlpha = 1; }   /* red where it cuts, green inside it */
+    if (e.t === 'deathknight') { const D = UNB.dk, f = e.face || 1, k = 0.5 + 0.5 * Math.sin(time * 12);
+      /* BLOOD BOIL: where it will come up (bubbles, red), and the pools while they boil */
+      if (e.mode === 'boilTell' && Number.isFinite(e.boilX)) { const bx = Math.round(e.boilX - cx); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, fy - 2, D.boilR, 5, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
+        for (let i = 0; i < 4; i++) R(g, bx - 20 + i * 12, fy - 3 - ((time * 40 + i * 7) % 8), 2, 2, '#c0283a'); }
+      for (const p of e.pools || []) { const bx = Math.round(p.x - cx); g.globalAlpha = 0.55; g.fillStyle = '#8a1020'; g.beginPath(); g.ellipse(bx, fy - 1, D.boilR, 4, 0, 0, 7); g.fill(); g.globalAlpha = 1;
+        for (let i = 0; i < 6; i++) { const h = (time * 30 + i * 11) % 10; R(g, bx - D.boilR + 6 + i * 9, fy - 2 - h, 2, 2, i % 2 ? '#ff6b6b' : '#c0283a'); } }
+      /* DEATH GRIP: the line the chain will run, then the chain of runes itself */
+      if (e.mode === 'gripTell') { g.globalAlpha = 0.25 + 0.3 * k; R(g, f > 0 ? x : x - D.gripR, fy - 6, D.gripR, 4, '#ff6b6b'); g.globalAlpha = 1; }
+      if (e.mode === 'grip' && Number.isFinite(e.chainX)) { const x1 = Math.round(e.chainX - cx); for (let q = Math.min(x, x1); q < Math.max(x, x1); q += 5) R(g, q, fy - 6 + ((q >> 2) % 2), 3, 2, (q >> 2) % 2 ? '#8fd160' : '#dfffa0'); }
+      /* THE LONG PASSING: the lane he will cross */
+      if (e.mode === 'passTell' && Number.isFinite(e.markX)) { const x1 = Math.round(e.markX - cx + Math.sign(e.markX - e.x || f) * D.passStep); g.globalAlpha = 0.18 + 0.2 * k; R(g, Math.min(x, x1), fy - 30, Math.abs(x1 - x), 30, '#ff6b6b'); g.globalAlpha = 1; }
+      /* BLOOD WARD: the crimson ward in front of him, a pip for every blow it has kept - and FULL, it is outlined green: the window */
+      if (e.mode === 'wardTell' || e.mode === 'ward') { const wx = x + f * 18, full = (e.wardFill || 0) >= D.wardFull;
+        g.globalAlpha = 0.35 + 0.1 * (e.wardFill || 0); g.fillStyle = '#c0283a'; g.fillRect(wx - 4, fy - 50, 8, 48); g.globalAlpha = 0.8; g.fillStyle = '#ff6b6b'; g.fillRect(wx - 4, fy - 50, 8, 2); g.fillRect(f > 0 ? wx + 3 : wx - 4, fy - 50, 1, 48); g.globalAlpha = 1;
+        for (let i = 0; i < D.wardFull; i++) R(g, wx - 6 + i * 5, fy - 58, 3, 3, i < (e.wardFill || 0) ? '#ff6b6b' : '#3a1418');
+        if (full) { g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(wx - 6, fy - 52, 12, 52); g.globalAlpha = 1; } }
+      /* BLOOD NOVA and BLOOD SURGE: the ring they will reach, drawing in */
+      if (e.mode === 'novaTell') { const r = D.novaR + D.novaPer * (e.wardFill || 0), t = 1 - Math.max(0, e.modeT) / D.tell.nova; g.globalAlpha = 0.25 + 0.4 * t; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 4, r, 9, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
+      if (e.mode === 'surgeTell') { const t = 1 - Math.max(0, e.modeT) / D.tell.surge; g.globalAlpha = 0.2 + 0.4 * t; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 12, D.surgeR, 14, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
+        for (let i = 0; i < 6; i++) { const a = time * 3 + i, rr = D.surgeR * (1 - ((time * 0.8 + i / 6) % 1)); R(g, x + Math.cos(a) * rr, fy - 12 + Math.sin(a) * 8, 2, 2, '#c0283a'); } }
       if (e.mode === 'open') { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 26 + k * 3, 7, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
     }
-    if (e.t === 'standardbearer' && e.mode === 'chargeTell') { const f = e.face || 1; g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 20); g.fillStyle = '#ff6b6b'; g.fillRect(f > 0 ? x : x - 600, fy - 30, 600, 30); g.globalAlpha = 1; }
-    if (e.t === 'standardbearer' && e.mode === 'torn') { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 24 + k * 3, 7, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
   }
 }
 export function drawField(g, F, cx, cy, time, VW, VH) {
   if (!F) return; const TS = F.TS;
+  /* LOW GROUND MIST (the rework, 2026-09-24): a band along the ground's own line, pooling in trenches and craters. It is drawn here,
+     under the creatures and their marks, and it never lies over a stake line - readability first, weather second */
+  if (F.surf) { const G = F.G, x0 = Math.max(0, Math.floor(cx / TS)), x1 = Math.min(F.surf.length - 1, Math.ceil((cx + VW) / TS));
+    for (let tx = x0; tx <= x1; tx++) { const r = F.surf[tx]; if (r < 0) continue; const deep = Math.max(0, r - (G + 1)), sx = tx * TS - cx, top = r * TS - cy;
+      for (let q = 0; q < TS; q += 4) { const n = 0.5 + 0.5 * Math.sin((tx * TS + q) * 0.07 + time * 0.6) * Math.sin((tx * TS + q) * 0.023 - time * 0.35);
+        g.globalAlpha = 0.07 + 0.07 * n; R(g, sx + q, top - 6 - Math.round(n * 3), 4, 6 + Math.round(n * 3), '#b8aec4');
+        if (deep) { g.globalAlpha = 0.09 + 0.05 * n; R(g, sx + q, top - deep * TS, 4, deep * TS, '#a89cb6'); } } }
+    g.globalAlpha = 1; }
   /* THE GHOST ARMY on the ridge, over every stretch that is still fighting - and nothing over the ones you have ended */
   for (const v of F.volleys) { if (v.quiet) continue; const x0 = Math.max(0, v.x0 - cx), x1 = Math.min(VW, v.x1 - cx); if (x1 <= x0) continue;
     const ry = Math.round((F.G - 13) * TS - cy * 0.6);
@@ -433,14 +565,13 @@ function figure(g, o) {
   if (P2.mark) rect(g, hx - 1 * s, sh + 4 * s, 2 * s, 3 * s, P2.mark);
   /* head: a helm with the face gone */
   const hy = sh - 5 * s;
-  if (o.helm === 'great') {
+  if (o.helm === 'great' && !o.crest) { rect(g, hx - 4 * s, hy - 5 * s, 8 * s, 9 * s, P2.steel); rect(g, hx - 4 * s, hy - 1 * s, 8 * s, Math.max(1, s), '#101018'); rect(g, hx + 1 * s, hy - 1 * s, 2 * s, Math.max(1, s), P2.eye); rect(g, hx - 1 * s, hy - 8 * s, 2 * s, 3 * s, P2.plume || P2.steel); }   /* (the old box helm: nobody on the field wears it now - the Barrow Rider has the crested one too) */
+  else if (o.helm === 'great') {
     /* A GREAT HELM, NOT A BOX (2026-09-24, POLISH): an 8x9 rectangle read as a crate on his shoulders. Now: a crown that narrows, cheeks that
        swell and a skirt that flares onto the gorget, lit down its facing edge and dark down its back; a visor slit with the eyes in it,
-       breaths punched under it on the side he faces, a ridge down the middle, and a crest - a horsehair plume for the herald, a torn
-       iron fin and two horns of bone for the Death Knight. */
+       breaths punched under it on the side he faces, a ridge down the middle, and a crest - a torn
+       iron fin and a horn of bone. The Death Knight's first; the Barrow Rider (2026-09-24) wears it in the order's red. */
     const u = Math.max(1, s), lo = P2.steelD || P2.mailD, hi = P2.steelL || '#c8ccd4';
-    if (o.crest === 'plume') { line(g, hx, hy - 5 * s, hx - 1 * s, hy - 9 * s, P2.plume, Math.max(2, 2 * s)); line(g, hx - 1 * s, hy - 9 * s, hx - 6 * s, hy - 9 * s, P2.plume, Math.max(2, 2.2 * s)); line(g, hx - 6 * s, hy - 9 * s, hx - 10 * s, hy - 4 * s, P2.plume, Math.max(2, 1.8 * s)); line(g, hx - 10 * s, hy - 4 * s, hx - 11 * s, hy, P2.plume, Math.max(1, 1.2 * s));
-      line(g, hx - 2 * s, hy - 10 * s, hx - 6 * s, hy - 10 * s, P2.plumeL || '#c84a3a', u); }
     if (o.crest === 'fin') { fillPoly(g, [[hx - 3 * s, hy - 4 * s], [hx + 2 * s, hy - 4 * s], [hx + 1 * s, hy - 8 * s], [hx - 0.5 * s, hy - 6.5 * s], [hx - 2 * s, hy - 10 * s], [hx - 3.5 * s, hy - 7 * s], [hx - 5 * s, hy - 8.5 * s]], P2.plume);
       line(g, hx - 3.5 * s, hy - 2 * s, hx - 7 * s, hy - 5 * s, P2.bone, Math.max(2, 1.5 * s)); line(g, hx - 7 * s, hy - 5 * s, hx - 7.5 * s, hy - 8 * s, P2.bone, u); }
     fillPoly(g, [[hx - 2.5 * s, hy - 5.5 * s], [hx + 2.5 * s, hy - 5.5 * s], [hx + 4 * s, hy - 3.5 * s], [hx + 4.5 * s, hy + 2.5 * s], [hx + 5.5 * s, hy + 4.5 * s], [hx - 5.5 * s, hy + 4.5 * s], [hx - 4.5 * s, hy + 2.5 * s], [hx - 4 * s, hy - 3.5 * s]], P2.steel);
@@ -488,36 +619,117 @@ export function bakeBannerbearer() {
     F.push(c); }
   return setOf(F, 44, 64, 18, 63, 12, 26);
 }
-const HERALD = { plumeL: '#c84a3a', steelD: '#6a6e7a', mail: '#7a7488', mailD: '#58526a', cloth: '#8e2a26', clothD: '#5e1a1a', belt: '#c8a44a', boot: '#2a2630', bone: '#e0dac0', steel: '#9a9eaa', eye: '#e0c8ff', mark: '#e8c35a', plume: '#a8342c' };
-/* THE STANDARD-BEARER: a herald twice a man's height, in the order's red and gold, with the army's great banner */
-export function bakeStandardBearer() {
-  const F = [];
-  for (let f = 0; f < 11; f++) { const [c, g] = canvas(80, 98), cx = 34, fy = 97, s = 1.9;
-    const walk = f === 1 ? 1 : f === 2 ? -1 : 0, stell = f === 3, sweep = f === 4, ctell = f === 5, charge = f === 6, ptell = f === 7, planted = f === 8, torn = f === 9, hurt = f === 10;
-    const hand = stell ? [-6, -40] : sweep ? [22, -22] : ctell ? [8, -26] : charge ? [14, -22] : ptell ? [4, -58] : planted ? [10, -26] : torn ? [10, -12] : [8, -34];
-    figure(g, { cx: cx - (hurt ? 3 : 0), fy, s, pal: HERALD, helm: 'great', crest: 'plume', cloak: ['#6e1e1c', '#44100e'], flut: f, stride: walk, kneel: torn, lean: hurt ? -3 : stell ? -2 : ctell || charge ? 3 : 0, front: hand.map(v => v / s), back: ptell ? [2 / s, -54 / s] : [-10 / s, -20 / s] });
-    const bx = cx + hand[0], by = fy + hand[1];
-    if (planted || torn) { /* hands empty: the banner is in the ground, drawn by the world */ }
-    else if (ctell || charge) { line(g, bx - 16, by + 4, bx + 40, by + (ctell ? 6 : 10), '#4a3222', 3); line(g, bx - 16, by + 3, bx + 40, by + (ctell ? 5 : 9), '#7a5a3a', 1); fillPoly(g, [[bx + 40, by + (ctell ? 2 : 6)], [bx + 40, by + (ctell ? 10 : 14)], [bx + 48, by + (ctell ? 6 : 10)]], '#e8c35a'); for (let i = 0; i < 18; i++) rect(g, bx - 14 + i, by + 6 + Math.round(Math.sin(i * 0.6 + f) * 1.5), 1, 12 - (i > 13 ? (i % 2) * 4 : 0), i % 4 === 0 ? '#a8342c' : '#8e2a26'); rect(g, bx + 38, by + 4, 5, 5, '#d8b04a'); }
-    else if (sweep) { line(g, bx - 20, by - 6, bx + 30, by + 6, '#4a3222', 3); line(g, bx - 20, by - 7, bx + 30, by + 5, '#7a5a3a', 1); fillPoly(g, [[bx + 29, by + 2], [bx + 31, by + 10], [bx + 38, by + 8]], '#e8c35a'); }
-    else { const top = by - (stell ? 26 : 36); line(g, bx, by + 22, bx + 2, top, '#4a3222', 3); line(g, bx + 1, by + 22, bx + 3, top, '#7a5a3a', 1);   /* THE POLE (POLISH): lit down one side, so it reads against the plate */
-      fillPoly(g, [[bx - 1, top - 3], [bx + 5, top - 3], [bx + 2, top - 12]], '#e8c35a'); rect(g, bx - 2, top - 4, 8, 2, '#a8842a');   /* a gilt spear-point and its crossbar on the top of it */
-      for (let i = 0; i < 22; i++) rect(g, bx + 4 + i, top + 1 + Math.round(Math.sin(i * 0.5 + f) * 1.5), 1, 18 - (i > 17 ? (i % 2) * 5 : 0), i % 5 === 0 ? '#a8342c' : '#8e2a26');
-      rect(g, bx + 9, top + 5, 8, 3, '#e8c35a'); rect(g, bx + 12, top + 8, 2, 7, '#e8c35a'); }
-    F.push(c); }
-  return setOf(F, 80, 98, 34, 97, 22, 48);
+/* THE BARROW RIDER'S HORSE: a ghost of a destrier, bone showing through it - drawn from points, so a rear is a turn of the
+   same points about the hind hooves and not a smeared rotation (the house style has no anti-aliasing). Feet at (cx, fy),
+   facing right. o.rear: radians the forehand is lifted; o.gait: 0 stand, 1/2 walk, 3/4 gallop, 5 stamp (forehand down hard),
+   6 pawing; o.broken: it is coming apart (the bones fall away from each other). */
+const GHOST = { body: '#6f8499', bodyD: '#4c5c70', bodyL: '#9fb4c8', bone: '#e4e8f0', boneD: '#a8b0bc', flame: '#9ff0c0', flameD: '#4fa87c', eye: '#dfffa0', hoof: '#2a3040' };
+function horse(g, o) {
+  const cx = o.cx, fy = o.fy, rear = o.rear || 0, gait = o.gait || 0, br = o.broken || 0, K = o.k || 1;
+  const px = cx - 18 * K, py = fy - 1;   /* the pivot a rear turns about: the hind hooves */
+  /* o.k: the whole horse scaled about its feet - a destrier stands a head over the man on it, so it is drawn at 1.35 */
+  const R = (x0, y0) => { const x = cx + (x0 - cx) * K, y = fy + (y0 - fy) * K; if (!rear) return [x, y]; const dx = x - px, dy = y - py, c = Math.cos(-rear), s = Math.sin(-rear); return [px + dx * c - dy * s, py + dx * s + dy * c]; };
+  const P2 = (x, y, k = 0) => { const [a, b] = R(x, y); return [a + (br ? (k % 3 - 1) * br * 6 : 0), b + (br ? br * (4 + (k % 4) * 3) : 0)]; };
+  const leg = (x0, y0, x1, y1, x2, y2, col, k) => { const a = P2(x0, y0, k), b = P2(x1, y1, k), d = P2(x2, y2, k); line(g, a[0], a[1], b[0], b[1], col, 3); line(g, b[0], b[1], d[0], d[1], col, 2); rect(g, d[0] - 2, d[1] - 1, 4, 2, GHOST.hoof); };
+  /* the legs: [hip x, knee dx, knee dy, hoof dx] per leg, by gait */
+  const G = [[0, 0, 0, 0], [3, -3, 2, -2], [-3, 3, -2, 2], [8, -8, 6, -6], [-7, 9, -5, 7], [0, 0, 0, 0], [0, 0, 0, 0]][gait] || [0, 0, 0, 0];
+  const lift = gait === 3 ? 4 : gait === 4 ? 2 : 0;
+  /* far legs first, in the dark */
+  leg(cx - 14, fy - 20, cx - 16 + G[1], fy - 10 - lift, cx - 18 + G[1] * 1.2, fy - 1 - lift * 0.5, GHOST.bodyD, 1);
+  if (gait === 6) leg(cx + 14, fy - 20, cx + 22, fy - 16, cx + 24, fy - 8, GHOST.bodyD, 2);   /* pawing: the far fore up */
+  else leg(cx + 14, fy - 20, cx + 15 + G[3], fy - 10 - lift, cx + 16 + G[3] * 1.3, fy - 1 - lift * 0.3, GHOST.bodyD, 2);
+  /* the body: a barrel, the croup behind, the chest forward */
+  const body = [P2(cx - 24, fy - 30, 3), P2(cx - 10, fy - 33, 4), P2(cx + 8, fy - 33, 5), P2(cx + 20, fy - 30, 6), P2(cx + 22, fy - 22, 7), P2(cx + 12, fy - 17, 8), P2(cx - 10, fy - 17, 9), P2(cx - 22, fy - 20, 10)];
+  fillPoly(g, body, GHOST.body, GHOST.bodyD);
+  fillPoly(g, [P2(cx - 22, fy - 29, 3), P2(cx + 18, fy - 31, 5), P2(cx + 18, fy - 28, 6), P2(cx - 20, fy - 26, 3)], GHOST.bodyL);   /* its back, lit */
+  /* THE RIBS: bone showing through the ghost */
+  for (let k = 0; k < 5; k++) { const a = P2(cx - 6 + k * 4, fy - 30, 11 + k), b = P2(cx - 8 + k * 4, fy - 19, 11 + k); line(g, a[0], a[1], b[0], b[1], GHOST.bone, 1); }
+  /* the neck up and forward, and the skull */
+  const nb = P2(cx + 16, fy - 30, 20), nt = P2(cx + 24, fy - 44, 21);
+  fillPoly(g, [P2(cx + 12, fy - 31, 20), P2(cx + 20, fy - 46, 21), P2(cx + 27, fy - 44, 22), P2(cx + 22, fy - 26, 23)], GHOST.body, GHOST.bodyD);
+  const sk = P2(cx + 26, fy - 46, 24), sn = P2(cx + 36, fy - 40, 25);
+  fillPoly(g, [[sk[0] - 3, sk[1] - 3], [sk[0] + 3, sk[1] - 4], [sn[0] + 1, sn[1] - 1], [sn[0], sn[1] + 2], [sk[0] + 1, sk[1] + 4]], GHOST.bone);
+  line(g, sk[0] + 2, sk[1] + 3, sn[0] - 1, sn[1] + 2, GHOST.boneD, 1);   /* the jaw */
+  rect(g, sk[0], sk[1] - 1, 2, 2, GHOST.eye);   /* the eye, alight */
+  rect(g, sk[0] - 3, sk[1] - 6, 2, 3, GHOST.bone);   /* an ear */
+  /* THE MANE AND THE TAIL: cold green fire, streaming back */
+  const stream = gait >= 3 && gait <= 4 ? 6 : 2;
+  for (let k = 0; k < 5; k++) { const a = P2(cx + 20 - k * 2, fy - 46 + k * 3, 26 + k); fillPoly(g, [[a[0], a[1]], [a[0] - 4 - stream, a[1] - 2 + (k % 2)], [a[0] - 2, a[1] + 3]], k % 2 ? GHOST.flame : GHOST.flameD); }
+  const t0 = P2(cx - 24, fy - 28, 31); for (let k = 0; k < 4; k++) fillPoly(g, [[t0[0], t0[1] + k * 2], [t0[0] - 8 - stream - k * 2, t0[1] + 2 + k * 3], [t0[0] - 3, t0[1] + 4 + k * 2]], k % 2 ? GHOST.flame : GHOST.flameD);
+  /* the saddle cloth: the order's red, rotten */
+  fillPoly(g, [P2(cx - 10, fy - 33, 32), P2(cx + 6, fy - 33, 33), P2(cx + 4, fy - 21, 34), P2(cx - 8, fy - 21, 35)], '#7a2a28', '#5a1e1e');
+  rect(g, ...P2(cx - 4, fy - 29, 36), 3, 3, '#c8a44a');
+  /* near legs, in front */
+  if (gait === 6 || rear > 0.3) leg(cx + 16, fy - 21, cx + 26, fy - 22, cx + 28, fy - 13, GHOST.body, 40);   /* the near fore struck up high */
+  else if (gait === 5) leg(cx + 16, fy - 21, cx + 22, fy - 10, cx + 24, fy - 1, GHOST.body, 40);   /* stamped down */
+  else leg(cx + 16, fy - 21, cx + 16 - G[3], fy - 10 - lift * 0.5, cx + 16 - G[3] * 1.3, fy - 1, GHOST.body, 40);
+  leg(cx - 16, fy - 21, cx - 15 - G[1], fy - 10, cx - 15 - G[1] * 1.3, fy - 1, GHOST.body, 41);
+  /* (the hind hooves stay down through a rear: they are what it turns about) */
 }
+const RIDER = { mail: '#6a6e78', mailD: '#4a4e58', cloth: '#8e2a26', clothD: '#5e1a1a', belt: '#c8a44a', boot: '#24222a', bone: '#dcd6bc', steel: '#8e949e', steelD: '#50565e', steelL: '#c0c6ce', eye: '#9ff0c0', mark: '#e8c35a', plume: '#8e2a26' };
+/* THE OLD BANNER, his lance: a pole with a torn red flag near the head and the order's gold on it. (bx, by) the hands, ang the pole */
+function bannerLance(g, bx, by, ang, len, fl) {
+  const ca = Math.cos(ang), sa = Math.sin(ang), tx = bx + ca * len, ty = by + sa * len, ex = bx - ca * 12, ey = by - sa * 12;
+  line(g, ex, ey, tx, ty, '#4a3222', 2);
+  fillPoly(g, [[tx, ty], [tx + ca * 6 - sa * 2, ty + sa * 6 + ca * 2], [tx + ca * 6 + sa * 2, ty + sa * 6 - ca * 2]], '#c0c6ce');   /* the lance head */
+  rect(g, tx - 1, ty - 1, 3, 3, '#d8b04a');
+  /* the flag hangs off the pole below the head, and trails (fl: how far it streams) */
+  const fx = bx + ca * (len - 16), fy = by + sa * (len - 16);
+  for (let i = 0; i < 12; i++) { const k = i / 12, x = fx - ca * i * 0.4 - fl * k * 6, y = fy - sa * i * 0.4 + 1 + Math.round(Math.sin(i * 0.9) * 1); rect(g, x, y, 1, 8 - (i > 8 ? (i % 2) * 3 : 0), i % 4 === 0 ? '#a8342c' : '#7e2622'); }
+  rect(g, fx - fl * 2 - 2, fy + 3, 3, 2, '#e8c35a');
+}
+export function bakeBarrowRider() {
+  const F = [];
+  for (let f = 0; f < 24; f++) { const [c, g] = canvas(124, 100), cx = 58, fy = 99, s = 1.25, HK = 1.35;
+    const foot = f >= 13 && f !== 23;
+    if (!foot) {
+      /* MOUNTED (and 23: the horse coming apart under him) */
+      const gait = f === 1 ? 1 : f === 2 ? 2 : f === 3 ? 6 : f === 4 ? 3 : f === 5 ? 4 : f === 7 ? 5 : 0, rear = f === 6 ? 0.55 : 0, broken = f === 23 ? 1 : 0;
+      horse(g, { cx, fy, gait, rear, broken, k: HK });
+      /* IN THE SADDLE: seated on its back (the kneeling legs of figure() are a rider's - one thigh forward along the flank, the
+         shin down it), low enough that the horse reads as the bigger animal */
+      const seatX = cx - 2 + (rear ? 10 : 0), seatY = fy - 31 * HK - (rear ? 16 : 0) + (f === 23 ? 14 : 0) + (f === 4 || f === 5 ? (f % 2) : 0);
+      const lean = f === 3 || f === 4 || f === 5 ? 3 : f === 6 ? 4 : f === 12 ? -4 : f === 23 ? -3 : 0;
+      const hand = f === 3 || f === 4 || f === 5 ? [10, -20] : f === 8 ? [-12, -34] : f === 9 ? [14, -26] : f === 10 ? [4, -44] : f === 11 ? [14, -16] : f === 6 ? [8, -30] : f === 7 ? [12, -24] : [8, -24];
+      figure(g, { cx: seatX, fy: seatY + 6.8 * s, s, pal: RIDER, helm: 'great', crest: 'fin', cloak: ['#3a2224', '#22141a'], flut: f, lean, kneel: true, front: hand.map(v => v / s), back: f === 8 ? [8 / s, -30 / s] : [6 / s, -22 / s] });
+      const bx = seatX + hand[0], by = seatY + 6.8 * s + hand[1];
+      if (f === 8) { bannerLance(g, seatX + 6, seatY + 1, -1.45, 46, 1); circle(g, bx - 1, by - 2, 4, '#4fa87c'); circle(g, bx - 1, by - 3, 2.5, '#9ff0c0'); rect(g, bx - 2, by - 4, 2, 2, '#efffe0'); }   /* grave-fire in his hand */
+      else { const ang = f === 3 || f === 4 || f === 5 ? 0.05 : f === 10 ? -1.5 : f === 11 ? 1.0 : f === 6 ? -1.1 : f === 7 ? 0.35 : f === 9 ? -1.2 : f === 12 ? -1.9 : f === 23 ? 0.9 : -1.35;
+        bannerLance(g, bx, by, ang, f === 11 ? 40 : 46, f === 4 || f === 5 ? 3 : 1); }
+      if (f === 9) for (let i = 0; i < 4; i++) rect(g, bx + 4 + i * 3, by - 3 + (i % 2) * 2, 2, 2, i % 2 ? '#4fa87c' : '#9ff0c0');   /* the throw's trail */
+      if (f === 7) for (let i = 0; i < 6; i++) rect(g, cx + 14 + i * 4, fy - 2 - (i % 2) * 2, 3, 2, '#9a8a6a');   /* the stamp's dust */
+      if (f === 23) for (let i = 0; i < 7; i++) rect(g, cx - 20 + i * 7, fy - 3 - (i % 3), 4, 2, GHOST.bone);   /* bones already on the ground */
+    } else {
+      /* ON FOOT: the knight alone, a head taller than a man, with the banner */
+      const walk = f === 14 ? 1 : f === 15 ? -1 : 0, kneel = f === 20, s2 = 1.6;
+      const hand = f === 16 ? [-10, -30] : f === 17 ? [18, -24] : f === 18 ? [4, -52] : f === 19 ? [14, -14] : f === 20 ? [10, -12] : f === 21 ? [-2, -40] : f === 22 ? [4, -24] : [8, -28];
+      figure(g, { cx: cx - (f === 22 ? 3 : 0), fy, s: s2, pal: RIDER, helm: 'great', crest: 'fin', cloak: ['#3a2224', '#22141a'], flut: f, stride: walk, kneel, lean: f === 22 ? -4 : f === 16 ? -2 : f === 17 ? 4 : 0, front: hand.map(v => v / s2), back: f === 21 ? [10 / s2, -40 / s2] : [-8 / s2, -18 / s2] });
+      const bx = cx + hand[0], by = fy + hand[1];
+      const ang = f === 16 ? 0.15 : f === 17 ? 0.02 : f === 18 ? -1.52 : f === 19 ? 0.95 : f === 20 ? 0.5 : f === 21 ? -1.6 : f === 22 ? -1.9 : -1.4;
+      if (f === 21) { bannerLance(g, cx + 20, fy - 2, -1.57, 46, 0); for (let i = 0; i < 5; i++) rect(g, cx - 26 + i * 6, fy - 3 - (i % 2) * 3, 3, 2, GHOST.flame); }   /* the banner planted beside him; the green going out along the ground to the bones */
+      else bannerLance(g, bx, by, ang, 46, f === 17 ? 2 : 1);
+    }
+    F.push(c); }
+  return setOf(F, 124, 100, 58, 99, 30, 52);
+}
+/* the horse alone, for when it has thrown him and runs on: two strides of a gallop */
+export function bakeBarrowHorse() { const F = []; for (const gait of [3, 4]) { const [c, g] = canvas(96, 70); horse(g, { cx: 44, fy: 69, gait, k: 1.35 }); F.push(c); } return (HORSE_ART = setOf(F, 96, 70, 44, 69, 30, 30)); }
 const KNIGHT = { steelD: '#38423e', steelL: '#8a9892', mail: '#3e4a44', mailD: '#2a322e', cloth: '#1e2622', clothD: '#141a18', belt: '#6a5a3a', boot: '#161a18', bone: '#c8d0c0', steel: '#5a6660', eye: '#9ff0c0', mark: '#9ff0c0', plume: '#2a3a34' };
 /* THE FIRST DEATH KNIGHT: black-green plate, the eyes the class wears, and the scythe - long enough to reach a room */
 export function bakeDeathKnight() {
   const F = [];
-  for (let f = 0; f < 14; f++) { const [c, g] = canvas(96, 84), cx = 42, fy = 83, s = 2;
-    const walk = f === 1 ? 1 : f === 2 ? -1 : 0, stell = f === 3, sw = f === 4, rtell = f === 5, reap = f === 6, ptell = f === 7, pass = f === 8, raise = f === 9, ctell = f === 10, cut = f === 11, open = f === 12, hurt = f === 13;
-    const hand = stell ? [-14, -40] : sw ? [24, -24] : rtell ? [2, -56] : reap ? [-20, -26] : ptell ? [10, -22] : pass ? [18, -30] : raise ? [6, -60] : ctell ? [-6, -44] : cut ? [18, -18] : open ? [16, -8] : [10, -30];
-    figure(g, { cx: cx - (hurt ? 4 : 0), fy, s, pal: KNIGHT, helm: 'great', crest: 'fin', cloak: ['#1c2420', '#0c100e'], flut: f, stride: walk, kneel: open || ptell, lean: hurt ? -4 : stell ? -3 : pass ? 5 : sw ? 3 : 0, front: hand.map(v => v / s), back: raise ? [-12 / s, -58 / s] : [-10 / s, -22 / s] });
+  /* 0 idle | 1,2 walk | 3 CLEAVE TELL (over the shoulder) | 4 CLEAVE (down through the front) | 5 GRIP TELL (the free hand thrust out) |
+     6 GRIP (hauling it in) | 7 BLOOD BOIL (the point down, the hand to the ground) | 8 PASSING TELL (crouched, the blade trailed) |
+     9 PASSING (the rush) | 10 WARD (the scythe planted before him) | 11 NOVA TELL (both hands up) | 12 NOVA (flung wide) |
+     13 SUMMON / GRAVECALL (the hand up, green) | 14 SURGE (arms out, drinking) | 15 OPEN (on a knee, the ward broken) | 16 hurt */
+  for (let f = 0; f < 17; f++) { const [c, g] = canvas(96, 84), cx = 42, fy = 83, s = 2;
+    const walk = f === 1 ? 1 : f === 2 ? -1 : 0, ctell = f === 3, cleave = f === 4, gtell = f === 5, grip = f === 6, boil = f === 7, ptell = f === 8, pass = f === 9, ward = f === 10, ntell = f === 11, nova = f === 12, raise = f === 13, surge = f === 14, open = f === 15, hurt = f === 16;
+    const hand = ctell ? [-14, -44] : cleave ? [22, -20] : gtell ? [-4, -36] : grip ? [-8, -30] : boil ? [14, -20] : ptell ? [-8, -22] : pass ? [18, -30] : ward ? [14, -34] : ntell ? [4, -58] : nova ? [-6, -48] : raise ? [-6, -34] : surge ? [-10, -38] : open ? [16, -8] : [10, -30];
+    figure(g, { cx: cx - (hurt ? 4 : 0), fy, s, pal: KNIGHT, helm: 'great', crest: 'fin', cloak: ['#1c2420', '#0c100e'], flut: f, stride: walk || (pass ? 1 : 0), kneel: open || ptell || boil, lean: hurt ? -4 : ctell ? -3 : pass ? 5 : cleave ? 4 : grip ? -3 : 0,
+      front: hand.map(v => v / s), back: gtell ? [26 / s, -36 / s] : grip ? [14 / s, -34 / s] : raise ? [-12 / s, -58 / s] : ntell ? [-8 / s, -60 / s] : nova ? [-24 / s, -44 / s] : surge ? [26 / s, -40 / s] : boil ? [-16 / s, -4 / s] : [-10 / s, -22 / s] });
     const bx = cx + hand[0], by = fy + hand[1];
     /* the scythe: a long haft, and the blade hung off the top of it the way the hero's is */
-    const ang = stell ? -2.5 : sw ? 0.25 : rtell ? -1.6 : reap ? 2.9 : ptell ? 0.1 : pass ? -0.2 : raise ? -1.5 : ctell ? -2.2 : cut ? 0.6 : open ? 0.35 : -1.25;
+    const ang = ctell ? -2.6 : cleave ? 0.7 : gtell ? -1.05 : grip ? -0.95 : boil ? 1.35 : ptell ? 2.9 : pass ? 0.05 : ward ? 1.52 : ntell ? -1.57 : nova ? -2.2 : raise ? -1.1 : surge ? -1.15 : open ? 0.35 : -1.25;
     const L1 = 34, tx = bx + Math.cos(ang) * L1, ty = by + Math.sin(ang) * L1, ex = bx - Math.cos(ang) * 14, ey = by - Math.sin(ang) * 14;
     /* THE SCYTHE, READ AT A GLANCE (2026-09-24, POLISH): a haft three pixels through with its lit side, a steel collar where the blade is
        socketed, and the blade a real crescent - broad at the heel, curving to a point, a bright cutting edge and a dark back - where it
@@ -530,9 +742,13 @@ export function bakeDeathKnight() {
     line(g, ...bpt(5, -3), ...bpt(BL - 4, -1), '#6e7a74', 1);   /* its back */
     rect(g, tx - 2, ty - 2, 4, 4, '#8a968e');   /* the collar */
     if (raise) for (let i = 0; i < 5; i++) rect(g, cx - 18 + i * 9, fy - 4 - (i % 2) * 3, 2, 3, '#9ff0c0');
-    if (open) rect(g, bx + 8, fy - 6, 10, 5, '#5a5a4a');   /* the blade is in one of his own */
+    if (gtell || grip) { const hx = cx + (gtell ? 26 : 14), hy = fy - (gtell ? 36 : 34); circle(g, hx, hy, 3, '#8fd160'); for (let i = 0; i < 3; i++) rect(g, hx + (gtell ? 4 + i * 4 : 3 + i * 3), hy - 1 + (i % 2), 2, 2, '#dfffa0'); }   /* the rune-chain in his hand */
+    if (boil) for (let i = 0; i < 5; i++) rect(g, cx - 22 + i * 6, fy - 3 - (i % 2) * 2, 3, 2, i % 2 ? '#c0283a' : '#ff6b6b');   /* the blood coming up where his hand is */
+    if (ntell || nova || surge) { for (let i = 0; i < (nova ? 8 : 5); i++) { const a = i * 0.8 + f, r = nova ? 20 : 12; rect(g, cx + Math.cos(a) * r, fy - 40 + Math.sin(a) * r * 0.6, 2, 2, i % 2 ? '#c0283a' : '#ff6b6b'); } }   /* the blood gathering round him */
+    if (ward) { rect(g, cx + 20, fy - 48, 3, 46, '#c0283a'); rect(g, cx + 20, fy - 48, 1, 46, '#ff6b6b'); }   /* the ward standing up off the blade */
+    if (open) for (let i = 0; i < 4; i++) rect(g, bx + 6 + i * 4, fy - 4 - (i % 2) * 3, 3, 2, '#c0283a');   /* the broken ward, spilled */
     F.push(c); }
   return setOf(F, 96, 84, 42, 83, 24, 52);
 }
 /* the world's own props (cover, engines) are drawn live in drawField; this bakes one sheet of everything for the PNG review */
-export function bakeAll() { return { bannerbearer: bakeBannerbearer(), corpse: bakeCorpse(), standardbearer: bakeStandardBearer(), deathknight: bakeDeathKnight() }; }
+export function bakeAll() { return { bannerbearer: bakeBannerbearer(), corpse: bakeCorpse(), barrowrider: bakeBarrowRider(), barrowhorse: bakeBarrowHorse(), deathknight: bakeDeathKnight() }; }

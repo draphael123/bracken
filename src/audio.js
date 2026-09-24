@@ -724,7 +724,7 @@ const gob = (rate, v = 0.5) => (rate < 0.8 && voice('vo_gobbig_die', v, rate * 1
 const gobH = (rate, v = 0.4) => (rate < 0.8 && voice('vo_gobbig_hurt', v, rate * 1.3)) || file('gobHurt', v, rate);
 const DIE = {
   bonearcher() { noise(.45,.24,1200,.6);tone('triangle',240,60,.3,.1);noise(.2,.12,2800,.5,.18); },   /* the bone archer comes apart: a spill of bone, the bow last */
-  standardbearer() { noise(1.0, 0.34, 500, 0.5); tone('sawtooth', 110, 30, 1.1, 0.2); },   /* THE UNBURIED FIELD: the great banner coming down with him */
+  barrowrider() { noise(1.0, 0.34, 500, 0.5); tone('sawtooth', 110, 30, 1.1, 0.2); SFX.bellow(); },   /* THE UNBURIED FIELD: the old banner coming down with him, and the horse going with it */
   deathknight() { noise(1.4, 0.38, 380, 0.5); tone('sine', 80, 24, 1.6, 0.26); tone('triangle', 220, 60, 1.2, 0.1, 0.2); },
   burngob() { gob(0.95, 0.7) || tone('sawtooth', 260, 60, 0.35, 0.2); noise(0.5, 0.2, 2600, 0.5, 0.12); },   /* THE BURNING VILLAGE */
   emberwisp() { noise(0.3, 0.18, 3200, 0.6); tone('sine', 900, 200, 0.25, 0.08); },
@@ -900,7 +900,7 @@ const DIE = {
 const HURT = {
   corpse() { noise(.14,.16,700,.4);tone('triangle',130,70,.16,.1); },   /* THE UNBURIED FIELD: rotten mail and a dry throat */
   bannerbearer() { noise(.16,.18,600,.4);tone('triangle',110,60,.2,.12); },
-  standardbearer() { noise(.22,.26,420,.5);tone('sawtooth',90,50,.26,.14); },
+  barrowrider() { noise(.22,.26,420,.5);tone('sawtooth',90,50,.26,.14); },
   deathknight() { noise(.24,.3,300,.5);tone('sine',70,34,.3,.2); },
   scorpion() { noise(0.05, 0.22, 3000, 0.4); tone('square', 900, 700, 0.05, 0.08); },
   sandgob() { gobH(0.9) || tone('square', 500, 300, 0.08, 0.14); noise(0.08, 0.08, 900, 0.6); },
@@ -1080,7 +1080,7 @@ SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.
 // with a voice from a kit (bosses keep their synth under it, for the size of the moment), creatures LAYER a voice
 // over their own, and whatever the body is made of - plate, mail, cloth - is heard under both.
 const CAST = {
-  corpse: { kit: 'zom', rate: 1.05, lp: 2000, mat: 'mail' }, bannerbearer: { kit: 'zom', rate: 0.92, lp: 1900, mat: 'mail' }, standardbearer: { kit: 'zom', rate: 0.7, lp: 1400, mat: 'plate', boss: true }, deathknight: { kit: 'zom', rate: 0.6, lp: 1200, mat: 'plate', boss: true },   /* THE UNBURIED FIELD */
+  corpse: { kit: 'zom', rate: 1.05, lp: 2000, mat: 'mail' }, bannerbearer: { kit: 'zom', rate: 0.92, lp: 1900, mat: 'mail' }, barrowrider: { kit: 'zom', rate: 0.7, lp: 1400, mat: 'plate', boss: true }, deathknight: { kit: 'zom', rate: 0.6, lp: 1200, mat: 'plate', boss: true },   /* THE UNBURIED FIELD */
   swornsword: { kit: 'm2', rate: 1, mat: 'mail', human: true }, hedgeknight: { kit: 'm4', rate: 0.92, lp: 1600, mat: 'plate', human: true },
   closedhelm: { kit: 'm4', rate: 0.78, lp: 1100, mat: 'plate', human: true, boss: true }, runner: { kit: 'm6', rate: 1.12, mat: 'cloth', human: true, alert: 'vo_hum_alert' },
   crossbow: { kit: 'm5', rate: 1.05, mat: 'mail', human: true }, lancer: { kit: 'm3', rate: 0.95, mat: 'mail', human: true },

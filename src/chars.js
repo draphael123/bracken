@@ -2254,8 +2254,11 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     atk: () => ([
       () => (knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 2], greatsword: [sh[0] - 3, sh[1] + 2, sh[0] - 11, sh[1] - 6], plume: 1 })),
       () => (knightFrame({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 4], greatsword: [sh[0] + 2, sh[1] - 4, sh[0] + 3, sh[1] - 16], plume: 2 })),
-      () => (knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], greatsword: [sh[0] + 5, sh[1] - 2, sh[0] + 17, sh[1] - 1], plume: 2 })),
-      () => (knightFrame({ dx: 2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 7], plume: 0 })),
+      /* THE ART GROWS TO MEET THE BOX (2026-09-24, Daniel: "lengthen the art"). The swathe's live frame drew its blade to sh+17 on a 34-wide
+         canvas, so the point was CUT OFF at the frame's edge, and the blow landed ~9 px past the steel anyone could see. Now the frame is
+         widened on the right (wide) and the blade runs out to where the box has always reached. The reach did not change; only the picture did. */
+      () => (knightFrame({ wide: 8, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], greatsword: [sh[0] + 5, sh[1] - 2, sh[0] + 19, sh[1] - 1], plume: 2 })),
+      () => (knightFrame({ wide: 8, dx: 2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 7], plume: 0 })),   /* (widened too: its point was cut off at the old edge) */
       () => (knightFrame({ greatsword: rest(), plume: 0 }))
     ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
   };
@@ -2278,7 +2281,9 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     heavy: [
       knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 1], greatsword: [sh[0] - 3, sh[1] + 3, sh[0] - 12, sh[1] - 5], plume: 2 }),
       knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 4], greatsword: [sh[0] + 1, sh[1] - 4, sh[0] + 2, sh[1] - 17], plume: 1 }),
-      knightFrame({ dx: 1, legs: 'wide', dy: 3, arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 3], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 8, sh[1] + 16], glow: [sh[0] + 8, sh[1] + 14], plume: 2 }),
+      /* (the same, on the planted heavy: its box reaches ~13 px past a blade driven almost straight down, so the blade is longer and is driven
+         in FORWARD, its point in the ground where the box's front is) */
+      knightFrame({ wide: 8, dx: 1, legs: 'wide', dy: 3, arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 3], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 20, sh[1] + 14], glow: [sh[0] + 19, sh[1] + 12], plume: 2 }),
     ],
     climb: [
       knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], greatsword: carry(), plume: 0 }),

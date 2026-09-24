@@ -3008,14 +3008,14 @@ function highcrown() {
   block(240, 251, 18, 19); block(237, 239, 19, 19); // the dais and its step
   ent('deco', 247, 17, { kind: 'throne' });
   ent('gqueen', 246, 17);
-  plat(213, 14, 24);                            // the gallery
-  // (no archers on the gallery any more: the court has left her to it)
-  for (const x of [216, 221, 226, 231, 235]) ent('support', x, 19, { top: 14 });
+  /* THE GALLERY IS GONE (Daniel, 2026-09-24: "the Queen's walkway goes, and the chandelier replaces it"). Its three breakable pillars
+     were her only opening; now her own chandeliers are. They hang low enough that a jump and a swing from the hall floor cuts a chain,
+     and the chandelier that comes down on her PINS her exactly as the gallery did (main.js, the weight's fall). */
   for (const x of [212, 224, 236]) ent('deco', x, 13, { kind: 'hallWindow' });
   ent('deco', 219, 19, { kind: 'banner', v: 0 }); ent('deco', 233, 19, { kind: 'banner', v: 1 });
   for (const x of [210, 229]) ent('torch', x, 19);
-  for (const x of [219, 231, 245]) ent('weight', x, 10, { len: 3, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them
-  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. BREAK A PILLAR WITH HER UNDER IT: PINNED, SHE BLEEDS.' });
+  for (const x of [214, 220, 226, 232, 238, 245]) ent('weight', x, 10, { len: 6, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them - and a jump and a swing cuts one down on HER
+  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. CUT A CHANDELIER DOWN ON HER: PINNED UNDER IT, SHE BLEEDS.' });
   // the roof: three peaks with an iron rod on each, and a step up to each
   block(214, 218, 4, 7); block(228, 232, 4, 7); block(242, 246, 4, 7);
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
@@ -3036,7 +3036,7 @@ function highcrown() {
       canopy: ['#2a2a38', '#3a3a4a', '#4a4a5c', '#5a5a6e'] },
     weather: [{ x0: 0, x1: 123 * TS, kind: 'snow' }], ambient: [{ x0: 0, x1: 123 * TS, kind: 'wind' }],
     arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 224 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'queen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
-      roof: 8 * TS, gallery: { row: 14, x0: 213, x1: 236 }, hole: { x0: 221, x1: 224, y0: 8, y1: 9 }, rubble: [[216, 17, 4], [221, 15, 4], [216, 13, 4], [221, 11, 4], [221, 9, 4]] },
+      roof: 8 * TS, hole: { x0: 221, x1: 224, y0: 8, y1: 9 }, rubble: [[216, 17, 4], [221, 15, 4], [216, 13, 4], [221, 11, 4], [221, 9, 4]] },
   };
 }
 
@@ -7371,7 +7371,7 @@ export const DRESS = {
   oreroad: [['barrels', 2], ['cart'], ['lanternPost', 2], ['lootHeap', 2], ['cairn']],   /* THE ORE ROAD: the stations' ore, their carts and their lamps */
   witchlight: [['topiaryUrn', 2], ['lamppost', 2], ['ivyWall', 2], ['stone', 3], ['grave', 2], ['bones', 2]],   /* THE WITCHLIGHT STAIR: the tower's garden going wild down the hill, and the graves of the dead that followed you up */
   mage: [['candelabra'], ['bookpile', 2], ['jars', 2], ['topiaryUrn'], ['lamppost'], ['ivyWall'], ['stone', 3]],   /* the tower: candles, books and jars; the grounds: urns, lamps and ivy */
-  unburied: [['fieldGrave', 3], ['crookedCross', 2], ['brokenSpears', 3], ['stuckShield', 2], ['fallenBanner'], ['bones', 2], ['siegeWreck'], ['oldStandard']],   /* THE UNBURIED FIELD (look pass 2026-09-24): the Hexed Fields' own graves and crosses, then the battle's leavings on top of them */
+  unburied: [['fieldGrave', 3], ['crookedCross', 2], ['brokenSpears', 3], ['stuckShield', 2], ['fallenBanner'], ['bones', 2], ['siegeWreck'], ['oldStandard'], ['shieldPile', 2], ['plantedSpears']],   /* THE UNBURIED FIELD (look pass 2026-09-24): the Hexed Fields' own graves and crosses, then the battle's leavings on top of them */
   fields: [['deadCorn', 3], ['crookedFence', 2], ['hayStack', 2], ['pumpkinPatch'], ['farmLantern'], ['milkChurn'], ['plough'], ['brokenCart'], ['waterPump'], ['fieldGrave', 3], ['stone', 3], ['deadTree', 2]],   /* the farm, gone wrong: dead corn, crooked fences, the lanterns they left in the fields */
   hunt: [['fence', 2], ['stump', 2], ['fern', 3], ['hayBale', 2], ['trough'], ['tent', 2], ['banner', 2], ['spearRack'], ['bushDeco', 3], ['flower', 2], ['stone', 3], ['deadTree', 2], ['hideRack', 2], ['trophyRack', 2], ['gobPennant', 3], ['cookSpit'], ['warStandard']],   /* the lord's hunt: hides drying, antlers racked, his pennants */
   caravan: [['scrub', 3], ['deadTreeD'], ['amphora', 2], ['cargoSack', 2], ['oxHorn', 2]],   /* THE SUNKEN CARAVAN: dry scrub, a bleached tree, and what the caravan carried, half in the sand */

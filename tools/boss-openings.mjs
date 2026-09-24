@@ -12,8 +12,10 @@
      THE HEDGE WARDEN  cut him down beside a witchlight brazier: the stump burns, open, and cannot regrow while it does (batch 4c)
      THE GATE GARGOYLE  stand on a CRACKED slab and leave it late: his dive goes through it and he hangs from the next one's edge;
                         the same dive on a solid slab opens nothing, and leaving early only moves his aim (the stair's top, 2026-09-22)
-     THE FIRST DEATH KNIGHT  let his Reaping drag one of his own risen dead in: he cuts it and is open; alone it opens nothing
-     THE STANDARD-BEARER  cut his banner while it stands in the ground: it tears and he is open; left alone the plant opens nothing */
+     THE FIRST DEATH KNIGHT  the hero's own rule: fill his BLOOD WARD and strike it again, and it breaks - he is open; a ward
+                             left to run out opens nothing (2026-09-24: he fights with the class's kit)
+     THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
+                       his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
@@ -91,19 +93,26 @@ try {
      if(late)on(next(m));for(let i=0;i<120&&g.mode==='dive';i++)BK.sim(1);const o={mode:g.mode,open:+(g.open||0).toFixed(1),broken:!!m.broken,aim:g.tgt===m};g.mode='hover';g.modeT=0;return o;};
    const solid=dive(sl.find(m=>!m.cracked),true),early=dive(sl.find(m=>m.cracked&&!m.broken),false),cracked=dive(sl.find(m=>m.cracked&&!m.broken),true);
    out.gargoyle={solid,early,cracked};}
-  /* THE FIRST DEATH KNIGHT: the same Reaping twice - with nothing of his in the circle, then with one of his own risen dead in it */
+  /* THE FIRST DEATH KNIGHT: the BLOOD WARD twice - left to run out into its nova, then filled and struck once more through the
+     game's own hurtEnemy (so unbHurt's wiring is asked too) */
   {const b=boot('unburied');const A=BK.L.arena;for(const e of BK.enemies())if(e!==b&&e.t==='corpse')e.alive=false;b.cd=99;
-   const reap=()=>{b.mode='stalk';b.open=0;b.cd=99;BK.P.x=b.x-70;BK.P.y=A.floor-40;BK.P.vy=0;BK.unbU.dkForce(b,'reap',{P:BK.P,A,say:()=>{}});b.modeT=0.02;for(let i=0;i<40&&b.mode==='reapTell';i++)BK.sim(1);for(let i=0;i<5;i++)BK.sim(1);return {mode:b.mode,open:+(b.open||0).toFixed(1)};};
-   const alone=reap();
-   BK.unbSpawn({t:'corpse',x:Math.floor((b.x+60)/16),y:Math.round(A.floor/16)-1});const add=BK.enemies()[BK.enemies().length-1];add.mode='walk';add.h=24;add.from=b;add.raisedBy=b;
-   const drag=reap();out.deathKnight={alone,drag,addCut:!add.alive};}
-  /* THE STANDARD-BEARER: a plant left to run out, then a plant whose banner is cut three times */
+   const ward=hits=>{b.mode='stalk';b.open=0;b.cd=99;BK.P.x=b.x-140;BK.P.y=A.floor-40;BK.P.vy=0;BK.unbU.dkForce(b,'ward',{P:BK.P,A,say:()=>{},sound:()=>{}});b.modeT=0.02;
+     for(let i=0;i<10&&b.mode!=='ward';i++)BK.sim(1);const hp0=b.hp;let open=0;for(let k=0;k<hits;k++){BKT.hurtEnemy(b,10,b.x-20,true);BK.sim(2);}
+     for(let i=0;i<60*4&&b.mode!=='open'&&b.mode!=='stalk';i++){BK.sim(1);b.cd=99;}open=b.open||0;return {mode:b.mode,open:+open.toFixed(1),kept:hp0-b.hp};};
+   const alone=ward(0),broke=ward(BK.unbU.UNB.dk.wardFull+1);out.deathKnight={alone,broke};}
+  /* THE BARROW RIDER: a ride left alone, then a ride struck as it passes (the game's own hurtEnemy, so unbHurt's wiring is asked
+     too); then, past half, a remount left alone and a remount whose crawling bones are cut twice by the hero's own swings */
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='unburied'));BK.state='play';BK.god=true;
-   const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=BK.enemies().find(e=>e.t==='standardbearer');
-   const plant=()=>{w.mode='plantTell';w.modeT=0;w.cd=99;BK.P.x=w.x-120;BK.sim(2);};
-   plant();let openA=0;for(let i=0;i<60*5;i++){BK.sim(1);w.cd=99;openA=Math.max(openA,w.open||0);BK.P.x=w.x-120;}const alone={mode:w.mode,open:+openA.toFixed(1)};
-   plant();const fx=w.flagX;let swings=0;for(let k=0;k<8&&w.mode!=='torn';k++){swings++;BK.P.x=fx-12;BK.P.face=1;BK.P.y=M.floor;BK.press('atk');for(let i=0;i<24;i++){BK.sim(1);w.cd=99;}}
-   out.standard={alone,mode:w.mode,open:+(w.open||0).toFixed(1),hits:w.flagHits,swings};}
+   const M=BK.L.mini,A={x0:M.x0,x1:M.x1,floor:M.floor},c={P:BK.P,A,say:()=>{},sound:()=>{}};BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=BK.enemies().find(e=>e.t==='barrowrider');
+   const ride=hit=>{w.mode='stalk';w.mounted=true;w.cd=99;w.x=A.x1-60;BK.P.x=A.x0+120;BK.P.y=A.floor-60;BK.P.vy=0;BK.unbU.brForce(w,'ride',c);w.modeT=0.02;let open=0,struck=false;
+     for(let i=0;i<150;i++){BK.P.y=A.floor-60;BK.P.vy=0;if(hit&&!struck&&w.mode==='ride'&&Math.abs(w.x-BK.P.x)<40){struck=true;BKT.hurtEnemy(w,8,BK.P.x,true);}BK.sim(1);w.cd=99;open=Math.max(open,w.open||0);}
+     return {mode:w.mode,open:+open.toFixed(1),mounted:w.mounted};};
+   const alone=ride(false),struck=ride(true);
+   const remount=cut=>{w.mode='stalk';w.phase=2;w.hp=Math.round(w.maxHp*0.4);w.mounted=false;w.footLeft=0;w.cd=0;w.x=(A.x0+A.x1)/2;BK.P.x=w.x-70;BK.P.y=A.floor;BK.P.vy=0;BK.sim(2);
+     let open=0,swings=0;for(let i=0;i<60*3&&w.mode!=='scattered';i++){if(cut&&w.mode==='remountTell'&&i%24===0&&Number.isFinite(w.bonesX)){swings++;BK.P.x=w.bonesX-14;BK.P.face=1;BK.P.y=A.floor;BK.press('atk');}BK.sim(1);open=Math.max(open,w.open||0);}
+     return {mode:w.mode,open:+open.toFixed(1),mounted:w.mounted,swings};};
+   const left=remount(false),cut=remount(true);
+   out.rider={alone,struck,left,cut};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -139,12 +148,17 @@ try {
   assert.ok(r.hedgeWarden.fire.open > 2, 'felled beside a brazier, the stump burns open: ' + JSON.stringify(r.hedgeWarden));
   assert.ok(r.hedgeWarden.burning.mode === 'stump' && r.hedgeWarden.burning.open > 0, 'a burning stump does not regrow: ' + JSON.stringify(r.hedgeWarden));
 
-  assert.notEqual(r.deathKnight.alone.mode, 'open', 'A11: his Reaping with nothing of his in it opens nothing: ' + JSON.stringify(r.deathKnight));
-  assert.equal(r.deathKnight.drag.mode, 'open', 'A11: a Reaping that cuts one of his own risen dead leaves him open: ' + JSON.stringify(r.deathKnight));
-  assert.ok(r.deathKnight.drag.open > 3 && r.deathKnight.addCut, 'the window, and the dead man cut: ' + JSON.stringify(r.deathKnight));
-  assert.equal(r.standard.alone.open, 0, 'a plant left alone opens nothing: ' + JSON.stringify(r.standard));
-  assert.equal(r.standard.mode, 'torn', 'three cuts on the planted banner tear it: ' + JSON.stringify(r.standard));
-  assert.ok(r.standard.open > 2, 'the torn banner is the window: ' + JSON.stringify(r.standard));
+  assert.notEqual(r.deathKnight.alone.mode, 'open', 'A11: a blood ward left to run out opens nothing: ' + JSON.stringify(r.deathKnight));
+  assert.equal(r.deathKnight.broke.mode, 'open', 'A11: a FULL ward struck again breaks and leaves him open: ' + JSON.stringify(r.deathKnight));
+  assert.ok(r.deathKnight.broke.open > 3, 'the window: ' + JSON.stringify(r.deathKnight));
+  assert.equal(r.deathKnight.broke.kept, 0, 'the blows on the ward are kept, not taken: ' + JSON.stringify(r.deathKnight));
+  assert.equal(r.rider.alone.open, 0, 'a ride-through left alone opens nothing: ' + JSON.stringify(r.rider));
+  assert.ok(r.rider.alone.mounted, 'and leaves him in the saddle: ' + JSON.stringify(r.rider));
+  assert.ok(r.rider.struck.open > 3, 'struck as he rides through, he is out of the saddle and open: ' + JSON.stringify(r.rider));
+  assert.equal(r.rider.left.open, 0, 'a remount left alone opens nothing: ' + JSON.stringify(r.rider));
+  assert.ok(r.rider.left.mounted, 'and puts him back in the saddle: ' + JSON.stringify(r.rider));
+  assert.equal(r.rider.cut.mode, 'scattered', 'the crawling bones cut by the hero\'s swings scatter: ' + JSON.stringify(r.rider));
+  assert.ok(r.rider.cut.open > 3, 'and he is open on foot: ' + JSON.stringify(r.rider));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

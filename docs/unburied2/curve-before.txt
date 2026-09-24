@@ -1,0 +1,63 @@
+
+THE RAMP, in the order the `needs` chain is walked
+
+level        after          cols  foes  threat  kinds  thr/100  hazard  checks   gap  INDEX   ramp
+wood         (first)         554    56      98     11     17.6      12      13    65     75   ###################
+marsh        wood            502    54      93     11     18.4       0      10    62     73 \ ##################
+stockade     marsh           494    36      90     11     18.2       2      11    57     73 - ##################
+spore        stockade        552    61     136      8     24.6       0      11    64     76 / ###################
+kings        spore           714    97     196     19     27.4      20      13    65    119 / ##############################
+scree        kings           552    76     184     13     33.3      14      10    68    113 \ ############################
+hanging      scree           416    43     108     12     25.8      12       7    19     93 \ #######################
+spire        hanging         672    69     169     12     25.1      15      12    44     92 \ #######################
+moor         spire           996    81     181     11     18.2     235      17    73    108 / ###########################
+oreroad      moor            614    73     184     13     29.9      55      17    37    114 / #############################
+storm        oreroad         478    61     149     17     31.2       0       8    56    116 / #############################
+crown        storm          1150   119     345     21       30       0      19    28    124 / ###############################
+longwater    crown           512    67     152     16     29.7      37      10    72    122 \ ###############################
+reef         longwater       502    66     142     17     28.3      43       9    70    124 / ###############################
+flotilla     reef            430    42     113     11     26.2     107       8    67    126 / ################################
+hurricane    flotilla        802   101     252     16     31.4     119      17    70    136 / ##################################
+lamplit      hurricane       748   104     257     20     34.3      24      19    68    137 / ##################################
+deep         lamplit         684   102     248     25     36.2      28      14    28    155 / #######################################
+keep         deep            862   119     310     17       36      95      15    39    141 \ ###################################
+causeway     keep            654   102     236     23       36      79      13    63    162 / #########################################
+waymeet      causeway        824    70     269      9     32.6      59      15    71    106 \ ###########################
+fields       waymeet         754    76     185     16     24.5     139      16    62    128 / ################################
+burial       fields         1386   186     440     13     31.7      52      19    43    110 \ ############################
+witchlight   burial          616    47     142     11     23.1      51      10    40     94 \ ########################
+mage         witchlight      766    91     224     14     29.2      96      26    63    122 / ###############################
+fallingtower mage            900    95     256     11     28.4      22      11    50     96 \ ########################
+
+  -- a branch off stockade: burning -- stockade is also continued by spore, so this is not "after" anything on the road above
+burning      stockade        520    68     139     11     26.6       0       8    64     89 / ######################
+
+  -- a branch off causeway: harbor -- causeway is also continued by waymeet, so this is not "after" anything on the road above
+harbor       causeway       1122   150     372     17     33.1      21      21    72    124 \ ###############################
+
+  -- a branch off witchlight: unburied -- witchlight is also continued by mage, so this is not "after" anything on the road above
+unburied     witchlight      474    49     125     10     26.3      12      11    62     89 \ ######################
+
+THE SHAPE OF THE CHAIN
+  first level (no `needs`): wood
+  3 fork(s): the chain is a TREE, not a line. "The level before" means THE LEVEL IT NEEDS, which is
+  well defined for every level here - but the levels AFTER a fork are not in one order, and none is invented:
+    2 levels need stockade: spore, burning - a player can meet them in either order
+    2 levels need causeway: harbor, waymeet - a player can meet them in either order
+    2 levels need witchlight: mage, unburied - a player can meet them in either order
+  ends of a branch (nothing needs them): harbor, fallingtower, burning, unburied
+  29 visible levels, 29 on the chain, 0 off it.
+
+  kings is 43 harder than spore, the level it needs - a wall
+  scree opens THE CRAGS at 113 (kings closed the last one at 119)
+  hanging is 20 EASIER than scree, the level it needs
+  longwater opens THE SEA at 122 (crown closed the last one at 124)
+  keep is 14 EASIER than deep, the level it needs
+  waymeet opens THE ROAD INLAND at 106 (causeway closed the last one at 162)
+  burial is 18 EASIER than fields, the level it needs
+  witchlight is 16 EASIER than burial, the level it needs
+  mage is 28 harder than witchlight, the level it needs - a wall
+  fallingtower is 26 EASIER than mage, the level it needs
+  harbor is 38 EASIER than causeway, the level it needs
+
+8 step(s) out of line.

@@ -91,8 +91,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      all - was read off a table that scored part of its own input as nothing, so it is SMALLER THAN THE TRUTH. */
   /* THE UNBURIED FIELD. THE FALLEN are a zombie's weight (2): a told cut and 30 health, inert alone, but under a banner
      they come back, so they cost more than their health says. THE BANNER-BEARER is the shaman's 3: a support that makes the
-     crowd, with a told pole of his own. THE STANDARD-BEARER is a mini like the grave warden (4); THE FIRST DEATH KNIGHT a boss (6). */
-  corpse: 2, bannerbearer: 3, standardbearer: 4, deathknight: 6, cover: 0, ballista: 0, trebuchet: 0, oilbarrel: 0,
+     crowd, with a told pole of his own. THE BARROW RIDER is a mini like the grave warden (4); THE FIRST DEATH KNIGHT a boss (6). */
+  corpse: 2, bannerbearer: 3, barrowrider: 4, deathknight: 6, cover: 0, ballista: 0, trebuchet: 0, oilbarrel: 0,
   burieddead: 6, undeadmage: 6, harbormaster: 6, hedgewarden: 6, gargoyle: 6, gravewarden: 4,
   /* SEA WILDLIFE: a puffer is nearly nothing until it swells, a jelly is a timing problem more than a fight, a
      lamprey costs you air rather than health, and a manta is a diving strike off her own open water */
