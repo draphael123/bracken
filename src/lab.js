@@ -347,7 +347,7 @@ async function runbossLab(BK, opts) {
        only at its own first frame still opened on a different footing every run. Seeding here, before BK.load, and restoring
        in the finally below (every continue in this row is covered) pins the row end to end - the level it loads, the setup
        sim before the arena wakes, and the fight itself. */
-    const realRandom = Math.random; Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode));
+    const realRandom = Math.random; Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed !== undefined ? '|' + opts.seed : '')));   /* opts.seed: a pilot that wants 21+ DIFFERENT fights salts the row (unsalted, every row is the one it always was) */
     try {
     if(opts.mini && BK.PROG[lvId]) BK.PROG[lvId].mini=false;
     BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(10);
