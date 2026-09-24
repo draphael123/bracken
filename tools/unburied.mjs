@@ -111,10 +111,13 @@ ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake l
 
 /* ---- 5. THE MINI, THE BOSS AND THEIR ROOMS ---- */
 { const m = L.mini, a = L.arena;
-  assert.equal(m.boss, 'standardbearer'); assert.equal(a.boss, 'deathknight');
+  assert.equal(m.boss, 'barrowrider'); assert.equal(a.boss, 'deathknight');
   const mw = (m.x1 - m.x0) / TS, aw = (a.x1 - a.x0) / TS;
   assert.ok(aw >= 34 && aw <= 44, 'A7: an arena is about forty tiles - the Death Knight\'s is ' + aw);
-  assert.ok(mw <= 44, 'A7: the Standard-Bearer\'s room is ' + mw + ' tiles');
+  assert.ok(mw <= 44, 'A7: the Barrow Rider\'s room is ' + mw + ' tiles');
+  /* THE RIDE-THROUGH is the room's length: a gallop needs a run, and nothing in the lane stops a ghost horse but the walls */
+  assert.ok(mw >= 26, 'the ride-through needs the room: ' + mw + ' tiles');
+  for (let x = m.x0 / TS + 1; x < m.x1 / TS - 1; x++) assert.ok(L.grid[G * W + x] === T.AIR || L.grid[G * W + x] === T.ONEWAY, 'the ride-through\'s lane is clear at ' + x);
   /* RULE I: A BOSS ARENA IS ENTERED FROM THE LEFT. The trigger is P.x > arena.trigger and there is no direction flag. */
   assert.ok(a.trigger > a.x0 && a.trigger < a.x1, 'the arena trigger sits inside its own walls');
   assert.ok(seen.some(([x, y]) => x === (a.x0 / TS) - 2 && y === G), 'the arena is walked into from the LEFT');
@@ -122,7 +125,7 @@ ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake l
   assert.ok(box(a.x0 / TS, a.x1 / TS, 0, G - 1) > 4, 'A12: the Death Knight\'s room has footing off its floor');
   /* THE GATE the brief asks for: the mini holds the way on */
   const S = build(); for (let y = 0; y < S.H; y++) if (S.grid[y * S.W + UF.MINI.gate] === T.PORT) S.grid[y * S.W + UF.MINI.gate] = T.SOLID;
-  assert.ok(!fill(S).seen.some(([x]) => x > UF.MINI.gate + 1), 'THE STANDARD-BEARER holds the way on');
+  assert.ok(!fill(S).seen.some(([x]) => x > UF.MINI.gate + 1), 'THE BARROW RIDER holds the way on');
   ok('the mini and the boss', 'mini ' + mw + ' tiles, arena ' + aw + ' tiles, the gate holds'); }
 
 /* ---- 6. RULE Q: ONE AMBUSH, ONE WAVE, ONE CAPTAIN ---- */

@@ -100,3 +100,14 @@ the rotation - the life pulled out of everything near him; get away from him.
 ## 4. Theming and art (decided as it lands; see the item's commit)
 
 ## 5. INDEX (recorded as it lands)
+
+### Item 2 as built (2026-09-24)
+- As designed above, plus: standing UNDER him (inside the trample's 42 px) always draws the trample - it is what the trample
+  is for, and without it a hero who never came close never saw it (A3 caught this). The grave-fire is aimed to come down at
+  chest height 1.5 s later: one where you stand, one a stride past you (and one a stride short in phase two).
+- Numbers: 720 health; ride 290 px/s; lance line 8 lances 22 px apart, one every 0.07 s; on foot 7 s before the remount
+  (2.2 s tell), two blows on the bones break it; 3 moves in the saddle before the horse comes apart again; open 3.2 s at x1.6.
+- Pilot (`tools/unburied-pilot.mjs 4`, normal health, 4 salted passes): **13/24 = 54%**, median win 64.7 s; knight 4/4,
+  pyro 4/4, pirate 4/4, reaper 1/4, warden 0/4, paladin 0/4. The fights are deterministic: the salt only changed the
+  reaper's rows (`docs/unburied2/rider-pilot.txt`).
+- Sheet and real-page shots: `docs/unburied2/rider-*.png`.

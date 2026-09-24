@@ -4,8 +4,9 @@
      1 THE BANNER RULE: the fallen stay down with no standard; rise under a planted one; only FALL when cut under it; are
        finished lying down or burning; lie down for good when their bearer is cut.
      2 THE BANNER-BEARER plants when you come near, and his pole is a told blow a shield turns.
-     3 THE STANDARD-BEARER: every attack forced (A3) and answered; the plant raises a wave; three blows on the BANNER tear it
-       and open him (the caused opening); a plant left alone ends and opens nothing.
+     3 THE BARROW RIDER: every move forced (A3) and answered by its one answer; the ride-through goes THROUGH you and on to
+       the wall; A11 - struck in the ride he is out of the saddle, and in phase two the bones crawling back break when struck,
+       and either left alone opens nothing; A10 - at half the horse falls apart, he fights on foot, remounts, and comes apart again.
      4 THE FIRST DEATH KNIGHT: every attack forced (A3) and answered by its one answer; A11 - the Reaping that drags one of
        his own risen dead in opens him, the same Reaping with nothing of his in it does not; A10 (proposed) - past half he is
        the banner over his chapel; A12 - the Reaping's answer (a tomb ledge) is really in his room; both rotations reach
@@ -30,6 +31,7 @@ function world(P, extra = {}) {
   return c;
 }
 const corpse = (x, o = {}) => ({ t: 'corpse', alive: true, x, y: FLOOR, w: 10, h: 7, hp: UNB.hp.corpse, mode: 'down', modeT: 0, face: -1, anim: 0, ...o });
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const run = (fn, e, c, secs, dt = 1 / 60) => { for (let i = 0; i < secs / dt; i++) fn(e, dt, c); };
 
 /* ---- 1. THE BANNER RULE ---- */
@@ -65,28 +67,58 @@ const run = (fn, e, c, secs, dt = 1 / 60) => { for (let i = 0; i < secs / dt; i+
   run(U.updateBannerbearer, e, c, 0.8); assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, false, 'the pole is a blow a shield turns');
   ok('the banner-bearer', 'plants in range, a told pole'); }
 
-/* ---- 3. THE STANDARD-BEARER ---- */
-{ const A = { x0: 266 * TS, x1: 295 * TS, floor: FLOOR };
-  const mk = () => ({ t: 'standardbearer', alive: true, x: 284 * TS, y: FLOOR, hp: UNB.hp.standardbearer, maxHp: UNB.hp.standardbearer, mode: 'stalk', modeT: 0, cd: 99, phase: 1, turn: 0, face: -1, anim: 0 });
-  const sb = (P, extra = {}) => { const raised = []; let strikes = 0; const c = world(P, { A, adds: () => raised, raise: x => raised.push({ t: 'corpse', alive: true, x, y: FLOOR, mode: 'walk' }), collapse: e => U.bannerFalls(e, raised),
-    struck: () => strikes-- > 0, ...extra }); c.raised = raised; c.strike = n => { strikes = n; }; return c; };
-  const force = (e, m) => { e.mode = m; e.modeT = 0; };
-  { const P = { x: 284 * TS - 40, y: FLOOR, dead: false }, e = mk(), c = sb(P); force(e, 'sweepTell'); U.updateStandardBearer(e, 0.02, c); assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, false, 'the sweep is guardable');
-    const Q = { x: 284 * TS - 100, y: FLOOR, dead: false }, e2 = mk(), c2 = sb(Q); force(e2, 'sweepTell'); U.updateStandardBearer(e2, 0.02, c2); assert.equal(c2.hits.length, 0, 'stepping back answers the sweep'); }
-  { const P = { x: 284 * TS - 120, y: FLOOR, dead: false }, e = mk(), c = sb(P); force(e, 'chargeTell'); run(U.updateStandardBearer, e, c, 1.4); assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, true, 'the charge is at the ankles: no shield');
-    const Q = { x: 284 * TS - 120, y: FLOOR - 40, dead: false }, e2 = mk(), c2 = sb(Q); force(e2, 'chargeTell'); run(U.updateStandardBearer, e2, c2, 1.4); assert.equal(c2.hits.length, 0, 'a jump answers the charge'); }
-  { const P = { x: 284 * TS - 100, y: FLOOR, dead: false }, e = mk(), c = sb(P); force(e, 'plantTell'); U.updateStandardBearer(e, 0.02, c);
-    assert.equal(e.mode, 'planted'); assert.equal(c.raised.length, UNB.sb.raise, 'the plant raises a wave');
-    run(U.updateStandardBearer, e, c, UNB.sb.plantT + 0.2); assert.notEqual(e.mode, 'torn'); assert.equal(e.open, 0, 'a plant left alone must open nothing'); }
-  { const P = { x: 284 * TS - 100, y: FLOOR, dead: false }, e = mk(), c = sb(P); force(e, 'plantTell'); U.updateStandardBearer(e, 0.02, c);
-    for (const q of c.raised) q.raisedBy = e;
-    for (let i = 0; i < UNB.sb.flagHits; i++) { c.strike(1); U.updateStandardBearer(e, 0.05, c); }
-    assert.equal(e.mode, 'torn', 'three blows on the banner must tear it'); assert.ok(e.open > 2, 'the torn banner is the window: ' + e.open);
-    assert.ok(c.raised.every(q => q.mode === 'down'), 'with the banner torn his wave lies down'); }
-  { const e = mk(), P = { x: 200 * TS, y: FLOOR, dead: false }, c = sb(P); e.cd = 0; e.hp = e.maxHp * 0.4; const seen = new Set();
-    for (let i = 0; i < 60 * 90; i++) { U.updateStandardBearer(e, 1 / 60, c); seen.add(e.mode); P.x = 284 * TS + Math.sin(i / 90) * 150; c.raised.length = 0; }
-    for (const m of ['sweepTell', 'chargeTell', 'plantTell']) assert.ok(seen.has(m), 'the Standard-Bearer never reached ' + m); assert.equal(e.phase, 2); }
-  ok('the standard-bearer', 'sweep, charge, plant, bash; the banner torn is the window'); }
+/* ---- 3. THE BARROW RIDER ---- */
+{ const A = { x0: L.mini.x0, x1: L.mini.x1, floor: L.mini.floor }, X = 284 * TS + 8;
+  const mk = o => ({ t: 'barrowrider', alive: true, x: X, y: A.floor, hp: UNB.hp.barrowrider, maxHp: UNB.hp.barrowrider, mode: 'stalk', modeT: 0, cd: 99, phase: 1, turn: 0, face: -1, anim: 0, mounted: true, bolts: [], lances: [], ...o });
+  const br = P => { let strikes = 0; const c = world(P, { A, struck: () => strikes-- > 0 }); c.strike = n => { strikes = n; }; return c; };
+  const force = (e, what, c) => { U.brForce(e, what, c); e.modeT = 0; };
+  /* THE RIDE-THROUGH: red, the length of the room, THROUGH you and on - it does not stop at you */
+  { const P = { x: X - 120, y: A.floor, dead: false }, e = mk(), c = br(P); force(e, 'ride', c); run(U.updateBarrowRider, e, c, 1.3);
+    assert.equal(c.hits.length, 1, 'the ride-through lands once on a hero on the floor in its lane'); assert.equal(c.hits[0].hard, true, 'no shield turns the ride-through');
+    assert.ok(e.x < P.x - 60, 'he rides THROUGH you and on to the wall - he does not stop at you: ' + Math.round(e.x - P.x));
+    assert.ok(e.x <= A.x0 + 40, 'the ride goes the room\'s length: ' + Math.round(e.x - A.x0));
+    assert.equal(e.open, 0, 'A11: a ride left alone opens nothing');
+    const J = { x: X - 120, y: A.floor - 40, dead: false }, e2 = mk(), c2 = br(J); force(e2, 'ride', c2); run(U.updateBarrowRider, e2, c2, 2.5); assert.equal(c2.hits.length, 0, 'a jump answers the ride-through'); }
+  /* A11: THE CAUSED OPENING - struck as he rides through, he is out of the saddle */
+  { const P = { x: X - 150, y: A.floor - 40, dead: false }, e = mk(), c = br(P); force(e, 'ride', c); run(U.updateBarrowRider, e, c, 0.2);
+    assert.equal(e.mode, 'ride'); assert.equal(U.brHurt(e, 10), 10, 'the blow that unsaddles him lands at its own weight');
+    run(U.updateBarrowRider, e, c, 0.05); assert.equal(e.mode, 'unsaddled', 'struck in the ride, he is out of the saddle'); assert.equal(e.mounted, false); assert.ok(e.open > 3, 'the window: ' + e.open);
+    assert.equal(U.brHurt(e, 10), Math.round(10 * UNB.br.openMul), 'open, he takes more');
+    run(U.updateBarrowRider, e, c, UNB.br.openT + 0.7); assert.equal(e.mounted, true, 'the horse comes back for him'); }
+  /* REARING TRAMPLE: yellow, close round the horse */
+  { const P = { x: X - 30, y: A.floor, dead: false }, e = mk(), c = br(P); force(e, 'trample', c); U.updateBarrowRider(e, 0.02, c); assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, false, 'a shield turns the trample');
+    const Q = { x: X - 90, y: A.floor, dead: false }, e2 = mk(), c2 = br(Q); force(e2, 'trample', c2); U.updateBarrowRider(e2, 0.02, c2); assert.equal(c2.hits.length, 0, 'the trample is for the hero who stands under him'); }
+  /* GRAVE-FIRE: two slow bolts, three in phase two, yellow */
+  { const P = { x: X - 110, y: A.floor, dead: false }, e = mk(), c = br(P); force(e, 'fire', c); U.updateBarrowRider(e, 0.02, c); assert.equal(e.bolts.length, UNB.br.bolts, 'two bolts from the saddle');
+    run(U.updateBarrowRider, e, c, 2.2); assert.ok(c.hits.length >= 1 && c.hits.every(h => !h.hard), 'grave-fire lands, and a shield turns it: ' + JSON.stringify(c.hits));
+    const e2 = mk({ phase: 2, hp: UNB.hp.barrowrider * 0.4, mounted: false }), c2 = br({ x: X - 110, y: A.floor, dead: false }); force(e2, 'fire', c2); U.updateBarrowRider(e2, 0.02, c2); assert.equal(e2.bolts.length, UNB.br.boltsP2, 'three in phase two'); }
+  /* THE LANCE LINE: red, a row out of the ground toward you */
+  { const P = { x: X - 100, y: A.floor, dead: false }, e = mk(), c = br(P); force(e, 'lance', c); U.updateBarrowRider(e, 0.02, c); run(U.updateBarrowRider, e, c, 1.0);
+    assert.equal(c.hits.length, 1, 'the lance line finds a hero standing in it'); assert.equal(c.hits[0].hard, true, 'no shield turns a lance out of the ground');
+    const J = { x: X - 100, y: A.floor - 40, dead: false }, e2 = mk(), c2 = br(J); force(e2, 'lance', c2); U.updateBarrowRider(e2, 0.02, c2); run(U.updateBarrowRider, e2, c2, 1.0); assert.equal(c2.hits.length, 0, 'over the line, nothing');
+    const S2 = { x: X - 100, y: A.floor, dead: false }, e3 = mk(), c3 = br(S2); force(e3, 'lance', c3); S2.x = X + 60; U.updateBarrowRider(e3, 0.02, c3); run(U.updateBarrowRider, e3, c3, 1.0); assert.equal(c3.hits.length, 0, 'stepped out of the line, nothing'); }
+  /* ON FOOT: the banner thrust, yellow */
+  { const P = { x: X - 40, y: A.floor, dead: false }, e = mk({ mounted: false, phase: 2, hp: UNB.hp.barrowrider * 0.4 }), c = br(P); force(e, 'thrust', c); U.updateBarrowRider(e, 0.02, c); assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, false, 'a shield turns the thrust'); }
+  /* A10: at half, the horse falls apart; the bones crawl back and he remounts - and struck, they scatter and he is OPEN */
+  { const P = { x: X - 90, y: A.floor, dead: false }, e = mk({ cd: 0 }), c = br(P); e.hp = e.maxHp * 0.49; U.updateBarrowRider(e, 0.02, c);
+    assert.equal(e.phase, 2); assert.equal(e.mode, 'collapse', 'at half the horse falls apart under him'); assert.equal(e.mounted, false);
+    const seen = new Set(); for (let i = 0; i < 60 * (UNB.br.footT + 4); i++) { U.updateBarrowRider(e, 1 / 60, c); seen.add(e.mode); if (e.mode === 'remountTell') break; }
+    assert.equal(e.mode, 'remountTell', 'on foot a while, then the bones crawl back: ' + [...seen]);
+    run(U.updateBarrowRider, e, c, UNB.br.tell.remount + 0.1); assert.equal(e.mounted, true, 'left alone, he is back in the saddle'); assert.equal(e.open, 0, 'the remount left alone opens nothing');
+    const e2 = mk({ cd: 0 }), c2 = br({ x: X - 90, y: A.floor, dead: false }); e2.hp = e2.maxHp * 0.49; U.updateBarrowRider(e2, 0.02, c2); run(U.updateBarrowRider, e2, c2, 1.3);
+    e2.footLeft = 0; e2.cd = 0; U.updateBarrowRider(e2, 0.02, c2); assert.equal(e2.mode, 'remountTell');
+    for (let i = 0; i < UNB.br.boneHits; i++) { c2.strike(1); U.updateBarrowRider(e2, 0.05, c2); }
+    assert.equal(e2.mode, 'scattered', 'A11: the bones struck, the remount breaks'); assert.equal(e2.mounted, false); assert.ok(e2.open > 3, 'and he is open: ' + e2.open);
+    /* back in the saddle, the horse holds for three moves, then comes apart again */
+    const e3 = mk({ cd: 0, phase: 2, hp: UNB.hp.barrowrider * 0.4, mountLeft: UNB.br.mountMoves }), c3 = br({ x: X - 90, y: A.floor, dead: false }); let moves = 0;
+    for (let i = 0; i < 60 * 30 && e3.mounted; i++) { const m = e3.mode; U.updateBarrowRider(e3, 1 / 60, c3); if (e3.mode !== m && /Tell$/.test(e3.mode)) moves++; }
+    assert.equal(e3.mounted, false, 'in phase two the horse comes apart again'); assert.equal(moves, UNB.br.mountMoves, 'after three moves in the saddle: ' + moves); }
+  /* A3: from a cold start (the spawn case's timers) both phases reach every move */
+  for (const phase of [1, 2]) { const e = mk({ cd: undefined, phase }); if (phase === 2) { e.hp = e.maxHp * 0.4; e.mounted = false; e.footLeft = 0; } delete e.bolts; delete e.lances;
+    const P = { x: X - 60, y: A.floor, dead: false }, c = br(P), seen = new Set();
+    for (let i = 0; i < 60 * 150; i++) { U.updateBarrowRider(e, 1 / 60, c); seen.add(e.mode); P.x = clamp(e.x + Math.sin(i / 70) * 120, A.x0 + 20, A.x1 - 20); }   /* a hero who comes and goes: under him, and a lance's length off */
+    for (const m of phase === 1 ? ['rideTell', 'trampleTell', 'fireTell', 'lanceTell'] : ['thrustTell', 'lanceTell', 'remountTell', 'rideTell', 'fireTell']) assert.ok(seen.has(m), 'phase ' + phase + ' never reached ' + m + ': ' + [...seen]); }
+  ok('the barrow rider', 'ride-through, trample, grave-fire, lance line, thrust, remount; A3, A10, A11'); }
 
 /* ---- 4. THE FIRST DEATH KNIGHT ---- */
 { const A = { x0: L.arena.x0, x1: L.arena.x1, floor: L.arena.floor }, X = 396 * TS + 8;
@@ -146,4 +178,4 @@ const run = (fn, e, c, secs, dt = 1 / 60) => { for (let i = 0; i < secs / dt; i+
   hits.length = 0; P.y = (G + 3) * TS; P.x = 184 * TS; cav.x = null; cav.t = cav.period - 0.01; for (let i = 0; i < 60 * 8; i++) U.stepField(F, 1 / 60, c); assert.ok(!hits.includes('THE GHOST CAVALRY'), 'on a wreck in the lane the cavalry passes under you');
   let wreck = 0; for (let x = 150; x <= 226; x++) if (L.grid[(G + 3) * L.W + x] !== 0) wreck++; assert.ok(wreck >= 15, 'C5: the lane has wrecks to get up onto: ' + wreck);
   ok('the field', 'volley and cover, trench shelter, quiet ridge, pegs, cavalry and wrecks'); }
-console.log('ok  unburied-fights the banner rule, the Standard-Bearer, the First Death Knight and the field hold');
+console.log('ok  unburied-fights the banner rule, the Barrow Rider, the First Death Knight and the field hold');

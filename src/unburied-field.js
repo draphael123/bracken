@@ -15,7 +15,7 @@
 //                                     trebuchet you work
 //   c 230-265  4 THE TOPPLED TOWER    a wrecked siege tower lying at an angle: ladders, ropes, broken decks, and the
 //                                     trebuchet shot that knocks its top deck loose
-//   c 266-299  5 THE STANDARD         open field and THE STANDARD-BEARER (mini) at the gate
+//   c 266-299  5 THE STANDARD         open field and THE BARROW RIDER (mini) at the gate - the old banner is his lance now
 //   c 300-373  6 THE CHAPEL OF THE FALLEN ORDER   the ruined chapel and THE SEALED CRYPT ambush (one wave, one captain)
 //   c 374-419  7 THE FIRST DEATH KNIGHT   forty tiles of chapel floor, two tomb ledges, and the dead he can raise off it
 //
@@ -24,7 +24,7 @@
 // bearer that owns them (kill him and that stretch of ridge goes quiet - the brief's "the field changes as you go"),
 // 'cover' props that stop a volley, the cavalry lane hazard, 'ballista'/'trebuchet'/'oilbarrel' engines, ARROW PEGS
 // (L.pegs: a volley into a palisade leaves its arrows standing a few seconds - climbable, and never the only way on;
-// tools/unburied.mjs proves the level still crosses with all four peg walls deleted), 'standardbearer' (mini) and
+// tools/unburied.mjs proves the level still crosses with all four peg walls deleted), 'barrowrider' (mini, in the Standard-Bearer's place since 2026-09-24) and
 // 'deathknight' (boss). EHP has no entries for any of these: F10 (a level must bring a foe the game has never fought,
 // and its boss does not count) is satisfied by that fact alone.
 import { UF as GEOM } from './draft/unburied-field.js';
@@ -109,15 +109,16 @@ export function buildUnburiedField({ painter, T, TS }) {
   pegWall(246, 18, [31, 29, 27], 'the tower\'s top deck without its ladder');
   ent('silver', t0 + 13, 20);                                                                                   // silver 2: on the tower's top deck
   plat(t1 + 3, 21, 4); block(t1 + 7, 262, 22, G);                                                               // off the top onto the fallen base's crest, and down
-  ent('check', 240, G); ent('check', 261, 20); ent('check', 263, G);   /* and one on the ground road the trebuchet opens, so a death at the Standard-Bearer does not send you back up the tower */   /* on the crest ledge (259-262, row 21), not beside it */
+  ent('check', 240, G); ent('check', 261, 20); ent('check', 263, G);   /* and one on the ground road the trebuchet opens, so a death at the Barrow Rider does not send you back up the tower */   /* on the crest ledge (259-262, row 21), not beside it */
   coins([t0 + 2, 32], [t0 + 7, 29], [t0 + 12, 26], [t0 + 8, 23], [t0 + 15, 20], [260, 21]);
   ent('sign', 237, G, { text: 'THEY GOT THIS FAR AND IT WENT OVER WITH THEM STILL IN IT.' });
   meet('THE TOWER CREW', 236, 250, [['bonegob', t0 + 7, 29], ['bonearcher', t0 + 12, 26], ['bannerbearer', t0 + 2, G], ['corpse', t0 + 4, G]]);
 
   // ---- 5. THE STANDARD (c 266-299): open field, the gate behind him ----
   const M = UF.MINI; for (let y = G - 4; y <= G; y++) set(M.gate, y, T.PORT); block(M.gate - 1, M.gate + 1, G - 9, G - 5);
-  ent('standardbearer', 284, G, { face: -1, mini: true });
-  ent('sign', 268, G, { text: 'THE ARMY\'S GREAT BANNER. EVERY TIME HE PLANTS IT, THE FIELD RISES. TAKE IT FROM HIM.' });
+  ent('barrowrider', 284, G, { face: -1, mini: true });
+  plat(272, G - 2, 3); plat(286, G - 2, 3);   /* two wrecked carts' beds: a jump's worth of ground off the floor, and the ride goes under them */
+  ent('sign', 268, G, { text: 'HIS BARROW, AND HIS HORSE IN IT. WHEN HE RIDES, GET OFF THE GROUND.' });
 
   // ---- 6. THE CHAPEL OF THE FALLEN ORDER (c 300-373) ----
   ent('check', 302, G); block(348, 350, G - 12, G - 3);                                                        // the chapel's broken arch (walked under)
@@ -176,7 +177,7 @@ export function buildUnburiedField({ painter, T, TS }) {
        tag on one was never read and the husk led the room all along). The room is one floor wall to wall now: nothing stands in it. */
     ambushes: [{ name: 'THE SEALED CRYPT', row: G, wallL: A2.wallL, wallR: A2.wallR, check: [302, G],
       waves: [[['husk', 338, G, { elite: true }], ['wight', 328, G], ['zombie', 324, G], ['corpse', 342, G]]] }],
-    mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'standardbearer', name: 'THE STANDARD-BEARER' },
+    mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'barrowrider', name: 'THE BARROW RIDER' },
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'deathknight', music: 'deathknight' },   /* Night on Bald Mountain: the dead rise for one night */
   };
 }
