@@ -20,7 +20,7 @@ export const GEO = {
   tremor: { wall: 18, perfect: 28, launch: 14, shot: 6 },
   launchVy: -330, heroLaunchVy: -430, stepVy: -400,
   quakeR: 200, quakeWideMul: 1.5,
-  roll: { sp: 230, r: 5, life: 1.0, dmg: 1.0 }, boulder: { sp: 190, r: 8, life: 3.2, dmg: 1.6, bounces: 2 },
+  roll: { sp: 230, r: 5, life: 1.0, dmg: 1.0 }, boulder: { sp: 190, r: 8, life: 3.2, dmg: 1.0, bounces: 2 },   /* (1.6 and a fresh hit on every bounce measured 120 at level 3 on the probe, four times Harrier's; each foe is hit ONCE now) */
 };
 const STONE = { base: '#7c7a6e', hi: '#a8a696', lo: '#5e5c54', dark: '#44423a', moss: '#6f9a4a', moss2: '#557a38', rune: '#e8a83a', crack: '#26241e' };
 
@@ -160,7 +160,7 @@ export function makeGeomancer(api) {
     boulder() { const P = api.P; api.kitPose(P, 'gHeave', 0.34); rollers.push({ x: P.x + P.face * 14, y: P.y, vy: 0, dir: P.face, ...GEO.boulder, hit: new Set(), spin: 0, kind: 'boulder' }); api.SFX.geoRise(); api.shakeCam(3); },
     spikeRow() { const P = api.P; api.kitPose(P, 'gSpikes', 0.4); api.SFX.geoThud(); let fy0 = Math.floor((P.y + 1) / TS);
       for (let i = 0; i < 5; i++) { const x = P.x + P.face * (20 + 15 * i), tx = Math.floor(x / TS), fy = floorRow(tx, fy0 - 1, 2); if (fy === null || api.isSolid(tx, fy - 1)) break; fy0 = fy;
-        spikes.push({ x, gy: fy * TS, t: -0.06 * i - 0.1, hit: new Set(), dmg: dmg(0.9, 'spikeRow') }); } },
+        spikes.push({ x, gy: fy * TS, t: -0.06 * i - 0.1, hit: new Set(), dmg: dmg(0.7, 'spikeRow') }); } },
     archway() { const P = api.P; api.kitPose(P, 'gArch', 0.5); api.SFX.geoRise(); const f = P.face, tx0 = Math.floor(P.x / TS), fy = Math.floor((P.y + 1) / TS);
       const ground = tx => api.isSolid(tx, fy) || api.isOneWay(api.tileAt(tx, fy)); let a = null, b = null;
       for (let k = 1; k <= 8; k++) { const tx = tx0 + f * k; if (a === null) { if (!ground(tx)) a = tx; } else if (ground(tx)) { b = tx - f; break; } }
@@ -178,7 +178,7 @@ export function makeGeomancer(api) {
     avalanche() { const P = api.P; api.kitPose(P, 'gAval', 0.6); api.SFX.geoQuake(); api.shakeCam(6); P.atk = -1;
       const aimed = foes().filter(e => !e.harmless && !e.turncoat && Math.abs(e.x - P.x) < 190 && Math.abs(e.y - P.y) < 120).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x)).slice(0, 6);
       const xs = aimed.map(e => e.x); for (let k = 0; xs.length < 10 && k < 20; k++) { const x = P.x + (k % 2 ? 1 : -1) * (24 + Math.floor(k / 2) * 36); if (!xs.some(q => Math.abs(q - x) < 18)) xs.push(x); }
-      xs.forEach((x, i) => dropRock(x, 0.55 + i * 0.1, dmg(1.4, 'avalanche'), 1.2, aimed[i] || null, true)); },
+      xs.forEach((x, i) => dropRock(x, 0.55 + i * 0.1, dmg(0.6, 'avalanche'), 1.2, aimed[i] || null, true)); },
   };
   /* ENTOMB: a blow on the tomb cracks it and lands half as hard again; the third crack breaks it open (hurtEnemy asks) */
   function tombHit(e, d) { const tb = e.geoTomb; if (!tb) return d; tb.cracks++; api.sparks(e.x, e.y - (e.h || 16) / 2, 0, 5);
@@ -206,7 +206,7 @@ export function makeGeomancer(api) {
     /* the rolling stones and the boulder */
     for (const r of rollers) { r.life -= dt; r.spin += r.dir * dt * r.sp / r.r;
       const nx = r.x + r.dir * r.sp * dt, ahead = Math.floor((nx + r.dir * r.r) / TS), row = Math.floor((r.y - r.r) / TS);
-      if (api.isSolid(ahead, row)) { if (r.bounces > 0) { r.bounces--; r.dir = -r.dir; r.hit.clear(); api.SFX.geoThud(); api.dust(r.x, r.y, 4); } else { r.life = 0; } }
+      if (api.isSolid(ahead, row)) { if (r.bounces > 0) { r.bounces--; r.dir = -r.dir; api.SFX.geoThud(); api.dust(r.x, r.y, 4); } else { r.life = 0; } }
       else r.x = nx;
       const under = Math.floor((r.y + 1) / TS), tx = Math.floor(r.x / TS); if (!api.isSolid(tx, under) && !api.isOneWay(api.tileAt(tx, under))) { r.vy = Math.min(500, r.vy + 900 * dt); r.y += r.vy * dt; if (r.y > api.LH * TS) r.life = 0; }
       else { r.vy = 0; r.y = under * TS; }
@@ -235,7 +235,7 @@ export function makeGeomancer(api) {
       const tipX = fl.x0 + fl.dir * fl.len, ttx = Math.floor(tipX / TS), fy = Math.floor(fl.gy / TS); if (api.isSolid(ttx, fy - 1) || !(api.isSolid(ttx, fy) || api.isOneWay(api.tileAt(ttx, fy)))) fl.max = Math.min(fl.max, fl.len);
       if (fl.len > was && Math.random() < 0.6) api.dust(tipX, fl.gy, 2);
       for (const e of foes()) { if (e.harmless || e.turncoat || fl.hit.has(e) || Math.abs(e.y - fl.gy) > 14) continue; const d = (e.x - fl.x0) * fl.dir; if (d < -6 || d > fl.len) continue;
-        fl.hit.add(e); api.hurtAs('heavy', e, dmg(1.1, 'faultLine'), e.x - fl.dir * 8, false);
+        fl.hit.add(e); api.hurtAs('heavy', e, dmg(0.8, 'faultLine'), e.x - fl.dir * 8, false);
         if (e.alive && liftable(e)) { e.vy = -320; e.geoAirT = api.time; e.stagger = Math.max(e.stagger || 0, 0.8); api.number(e.x, e.y - (e.h || 16) - 14, 'THROWN UP', STONE.hi); } else if (e.alive) e.stagger = Math.max(e.stagger || 0, 0.4); } }
     faults = faults.filter(f => f.life > 0);
     if (lode) { lode.life -= dt;
@@ -250,7 +250,7 @@ export function makeGeomancer(api) {
       const tgt = foes().filter(e => !e.harmless && !e.turncoat && Math.abs(e.x - G.x) < 200 && Math.abs(e.y - G.y) < 60).sort((a, b) => Math.abs(a.x - G.x) - Math.abs(b.x - G.x))[0];
       if (tgt) { G.face = Math.sign(tgt.x - G.x) || G.face; const ad = Math.abs(tgt.x - G.x) - (tgt.w || 12) / 2;
         if (ad > 10) { const nx = G.x + G.face * 62 * dt, tx = Math.floor((nx + G.face * 6) / TS); if (!api.isSolid(tx, Math.floor((G.y - 8) / TS))) G.x = nx; }
-        else if (G.atkT <= 0) { G.atkT = 0.8; G.swing = 0.2; api.hurtAs('heavy', tgt, dmg(1.2, 'golem'), G.x, false); if (tgt.alive && !api.lcBig(tgt)) tgt.stagger = Math.max(tgt.stagger || 0, 0.4); api.sparks(tgt.x, tgt.y - 8, G.face, 6); api.SFX.geoThud(); } }
+        else if (G.atkT <= 0) { G.atkT = 1.0; G.swing = 0.2; api.hurtAs('heavy', tgt, dmg(0.6, 'golem'), G.x, false); if (tgt.alive && !api.lcBig(tgt)) tgt.stagger = Math.max(tgt.stagger || 0, 0.4); api.sparks(tgt.x, tgt.y - 8, G.face, 6); api.SFX.geoThud(); } }
       const under = Math.floor((G.y + 1) / TS), gx = Math.floor(G.x / TS); if (!api.isSolid(gx, under) && !api.isOneWay(api.tileAt(gx, under))) { G.vy = Math.min(500, G.vy + 900 * dt); G.y += G.vy * dt; if (G.y > api.LH * TS) G.life = 0; } else { G.vy = 0; G.y = under * TS; }
       if (G.life <= 0) { api.burst(G.x, G.y - 10, 14, [STONE.base, STONE.hi, STONE.moss], 70, 0.6); api.SFX.geoCrumble(); golem = null; } }
   }
