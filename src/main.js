@@ -2840,7 +2840,7 @@ function startGame() {
 /* ---------- XP (src/xp.js) ----------
    A kill pays by its weight, the first finish of a wood pays a share of what the wood holds, and a quest pays once. Only the campaign's
    woods pay, the secret ones with them: the rush, the trials, the practice yard, the store and the editor pay nothing. */
-let levelXp = 0, xpRun = 0, lvAtStart = 0, lvUpT = 0, lvUpN = 0;
+let levelXp = 0, xpRun = 0, lvAtStart = 0, lvUpT = 0, lvUpN = 0, lvHealOwed = null;
 const xpWood = () => !!L && !rushOn() && !L.trial && !L.shop && !edTesting && !!LEVELS[levelIndex] && (!LEVELS[levelIndex].hidden || !!LEVELS[levelIndex].secret);
 function xpGot(id) { const h = hero(); PROG.xpGot = PROG.xpGot || {}; const m = (PROG.xpGot[h] = PROG.xpGot[h] || {}); return (m[id] = m[id] || {}); }
 /* WHAT THE WOOD HOLDS: every placed foe that is not its mini or its boss, and every ambusher. The share and the quest are fractions of it */
@@ -2860,11 +2860,21 @@ function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) 
 /* THE LEVEL-UP. A ring and a chime on him, LEVEL UP off him as a move word (kept off the tells like every other), and the plate's bar turns
    gold and says LEVEL n; the new health comes with it. The first time, a line says there is a point to spend. Never over a tell: the rings
    are not text, the word is settled off the marks, and the line is a hint, which waits for them (hintWaits). */
-function levelUp(n) { lvUpN = n; if (state !== 'play') return;
+/* A LEVEL-UP HEALS HIM TO FULL, health and stamina (Daniel, 2026-09-24) - but NEVER INSIDE A FIGHT. A kill that levels him while a boss,
+   a mini or an ambush is still live (an add, a first form, a wave) owes the heal until that fight is over (levelHealTick, every frame),
+   so a level-up can never be a potion in the middle of a boss. The boss's own killing blow ends the fight in the same hurtEnemy call
+   (queenDies, chiefDies, miniEnd clear bossActive/miniActive), so that one heals on the frame he falls. The hint says what arrived:
+   the growth, the heal, and any passive that came with the level - never a slot: there are two, always. */
+function levelUp(n, from) { lvUpN = n; if (state !== 'play') return; if (from === undefined) from = n - 1;
   lvUpT = 2.6; const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh));
   SFX.rankUp(); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b');
-  { const before=growthAt(hero(),n-1),after=growthAt(hero(),n); hintT=4.5; hintMsg='LEVEL '+n+': +'+(after.hp-before.hp)+' HEALTH, +5 STAMINA, +'+(after.damage-before.damage)+' DAMAGE.'; }
+  lvHealOwed = { n, from: lvHealOwed ? lvHealOwed.from : from }; levelHealTick();
   saveProgress(); }
+const fightLive = () => !!(bossActive || miniActive || ambushLive());
+function levelHealTick() { const o = lvHealOwed; if (!o || state !== 'play' || fightLive()) return; const p = players ? players[0] : P; if (!p || p.dead) return;
+  lvHealOwed = null; p.hp = p.maxHp; p.hpShown = p.maxHp; p.st = p.maxSt;
+  ringAt(p.x, p.y - 12, 20, '#8fd160', 0.45); number(p.x, p.y - 44, 'FULLY HEALED', '#8fd160');
+  hintT = 4.5; { const before = growthAt(hero(), o.from), after = growthAt(hero(), o.n); hintMsg = 'LEVEL ' + o.n + ': +' + (after.hp - before.hp) + ' HEALTH, +5 STAMINA, +' + (after.damage - before.damage) + ' DAMAGE. FULLY HEALED.'; } }
 /* THE SIM (tools/xp.mjs): the campaign in the order it opens - a secret wood straight after the wood that opens it - priced by the same
    xpFoe the kills use. A straight run kills XP_KILL_NORMAL of what a wood holds, every mini and boss, and takes the share; a full clear
    takes everything and every quest as well. old is the level the count of woods gave. */
@@ -20418,6 +20428,7 @@ function update(dt) {
   for (const pp of players) asPlayer(pp, () => {
     if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; P.abufUp = !!keys.up; P.abufLow = !!keys.down; } if (dodgePress) P.dbuf = 0.12;
     updateCharge(STEP); });
+  levelHealTick();   /* a level-up's heal waits for the fight to end (levelUp); ahead of the hitstop, so the killing blow's own freeze does not hold it back */
   if (stop > 0) { stop -= dt; return; }
   slowT = Math.max(0, slowT - dt); const wdt = (slowT > 0 ? dt * 0.3 : dt) * (SET.speed || 1);
   // THE CLOCK RUNS ON WORLD TIME, NOT WALL TIME. Every medal in the game was set against a world running at
