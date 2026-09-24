@@ -5,7 +5,7 @@ import { floodReach } from '../src/reachcore.js';
 const want = process.argv[2];
 const RUN = 100, JUMPV = -320, G = 1000, COY = 0.1;
 const solidT = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PLANK || t === T.PORT || t === T.SHELF || t === T.RAIL || t === T.SOFT || t === T.BOUNCER || t === T.CRYST || t === T.ICE;   /* ice is a floor: the Frostfell's rams and trolls stand on its tarns */
-const standT = t => solidT(t) || t === T.ONEWAY || t === T.REED;
+const standT = t => solidT(t) || t === T.ONEWAY || t === T.REED || (t >= 20 && t <= 25);   /* a SLOPE (ids 20-25, src/slopes.js) is a floor: THE SUNKEN CARAVAN's checkpoints on the dunes stand on one */
 for (const lv of LEVELS) {
   if (lv.hidden && !lv.secret) continue; if (want && lv.id !== want) continue;
   const L = lv.build(); const W = L.W, H = L.H, g = L.grid; const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];

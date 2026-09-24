@@ -154,7 +154,8 @@ for (const lv of LEVELS) {
   // 14. NOTHING STANDS IN THE AIR
   // (four hands on the Flotilla, two of them in the Quartermaster's arena, and the audit's whitelist hid them)
   { const solidish = t => t === T.SOLID || t === T.ONEWAY || t === T.CRATE || t === T.PALISADE || t === T.PLANK || t === T.NET
-      || t === T.BOUNCER || t === T.SHELF || t === T.PORT || t === T.RAIL || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CRYST || t === T.REED || t === T.CLIMB;
+      || t === T.BOUNCER || t === T.SHELF || t === T.PORT || t === T.RAIL || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CRYST || t === T.REED || t === T.CLIMB
+      || (t >= 20 && t <= 25);   /* a SLOPE is floor (src/slopes.js): the garrison puts THE SUNKEN CARAVAN's creatures in the air cell over a dune, and they settle onto it */
     // what does not stand: swimmers, fliers, things that hang from a thread, and the traps that swing from a roof
     const swims = new Set(['clinger', 'eel', 'siren', 'urchin', 'angler', 'petrel', 'wasp', 'drone', 'spider', 'weaver', 'bat', 'crow', 'harpy', 'kite',
       'lookout', 'marine', 'spit', 'thorn', 'reefmaw', 'roc', 'owl', 'queen', 'gill', 'heart', 'mother', 'shardling', 'suncatcher', 'netter',

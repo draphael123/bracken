@@ -42,12 +42,18 @@ export function buildCaravan({ T, TS }) {
     else if (e.t === 'deco' && e.kind === 'ribs') e.kind = 'oxRibs';
     else if (e.t === 'deco' && e.kind === 'skull') e.kind = 'oxSkull';
   }
-  /* THE SUNK WAGONS stand on the quicksand's surface row (the draft puts them in the pit cell): drawn from the row over it */
-  for (const e of L.ents) if (e.t === 'deco' && e.kind === 'wagonSunk') e.y -= 1;
+  /* THE SUNK WAGONS stay where the draft puts them, IN the pit cell on the rock under the quicksand: the quicksand is drawn over
+     the dressing (drawCaravan runs after the deco), so the wagon's lowest tile goes under the sand and it reads as sunk. It was
+     lifted a row once, which stood it on nothing (tools/audit.mjs, the play bot) and the loader set it back down anyway */
   /* A SIGN STANDS ON THE FLAT. A signpost's post is square, so one planted on a slope tile has its foot in the sand on the
      high side (tools/headless.mjs floats found the first sign doing it): walk it back to the nearest flat column */
   const slope = t => t >= 20 && t <= 25;
   for (const e of L.ents) if (e.t === 'sign') { let x = e.x; while (x > 1 && slope(at(x, top(x)))) x--; if (x !== e.x) { e.x = x; e.y = top(x) - 1; } }
+  /* A SILVER HANGS WITHIN A PLAIN JUMP OF THE FLOOR UNDER IT: two rows over the cell you stand in, the height the reach model
+     calls "near" (src/reachcore.js). The draft's wagon silver hung three over the wagon's boards, which the play bot's reach
+     called out of the fill; lowered to two it is still "up on the wagon, then a jump" */
+  const stands = t => t !== T.AIR && t !== T.SPIKE;
+  for (const e of L.ents) if (e.t === 'silver') { let y = e.y + 1; while (y < H && !stands(at(e.x, y))) y++; if (y - 1 - e.y > 2) e.y = y - 3; }
   /* 4. the quest: three of the caravan's own coffers lost along the road */
   for (const e of L.ents) if (e.t === 'stray') e.kind = 'coffer';
   L.quest = { n: 3, item: 'coffer', name: "TRADER'S COFFER", done: "THE CARAVAN'S TAKINGS ARE FOUND", thanks: "THE TRADER'S THANKS" };
@@ -64,14 +70,17 @@ export function buildCaravan({ T, TS }) {
     L.ambushes = [{ name: "THE TRADERS' YARD", row, wallL, wallR, check: [x0 - 4, foot(x0 - 4)],
       waves: [[['scorpion', x0 + 16, foot(x0 + 16)], ['thief', x0 + 5, foot(x0 + 5)], ['thief', x0 + 29, foot(x0 + 29)], ['sandgob', x0 + 23, foot(x0 + 23)]]] }]; }
   /* 8. dressing a desert has: scrub and a dead tree or two, bleached against the sky, placed on flats */
-  L.palette = { set: 'desert', near: 'none', dress: 'desert' };   /* main.js's cvBackdrop lays the sky, the mesas and the dunes */
+  L.palette = { set: 'desert', near: 'none', dress: 'desert', noFg: true, noNear: true, haze: 'rgba(236,206,160,0.12)' };   /* no grass strip in front of a desert (noFg), no bough or blades framing the lens (noNear), and a warm haze, not the wood's green default */   /* main.js's cvBackdrop lays the sky, the mesas and the dunes */
   /* THE ROCK: what the draft builds of sandstone rather than sand (the arch's lintel, the caravanserai, the rim's overhang), so it is
      skinned as rock. The same arithmetic as the draft's own, off its marks */
   { const m = L.marks;
     const archRow = (() => { for (let y = 0; y < H; y++) if (at(m.arch, y) === T.SOLID) return y; return 0; })();
     const cs = m.caravanserai, csRoof = (() => { for (let y = 0; y < H; y++) if (at(cs, y) === T.SOLID) return y; return 0; })();
     const ov = L.hollow.wallL + 3, ovRow = (() => { for (let y = 0; y < H; y++) if (at(ov, y) === T.SOLID) return y; return 0; })();
-    L.rockZones = [[m.arch - 3, m.arch + 7, archRow, archRow], [cs, cs + 6, csRoof, top(cs - 1) - 1], [ov - 1, ov + 5, ovRow, ovRow]]; }
+    L.rockZones = [[m.arch - 3, m.arch + 7, archRow, archRow], [cs, cs + 6, csRoof, top(cs - 1) - 1], [ov - 1, ov + 5, ovRow, ovRow]];
+    /* AND IT IS A ROOM: the tower's inside gets a back wall (drawRoomPaint 'caravanserai' in main.js), so it reads as a place you
+       climb through - door, shelf, shelf, hatch - and not as posts against the sky. The same rect is the reverb and the no-grass rule */
+    L.interiors = (L.interiors || []).concat([[cs + 1, cs + 5, csRoof + 1, top(cs - 1) - 1, 'caravanserai']]); }
   L.music = 'musBeach';   /* PARKED (see the lane report): no desert track in audio/, and this lane downloads nothing. MintoDog's CC0 "beach"
                              stage theme is the warmest one there is; tools/newlevel.mjs flags it as shared, deliberately */
   L.ambient = [{ x0: 0, x1: 99999, kind: 'wind' }];

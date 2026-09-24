@@ -108,8 +108,8 @@ export function buildSunkenCaravan(T) {
     for (let x = x0; x <= x0 + 6; x++) for (let y = roof; y < g; y++) set(x, y, T.SOLID);
     for (let x = x0 + 1; x <= x0 + 5; x++) for (let y = roof + 1; y < g; y++) set(x, y, T.AIR);
     for (let y = g - 3; y < g; y++) set(x0, y, T.AIR);                                            // the door
-    for (let x = x0 + 1; x <= x0 + 3; x++) set(x, g - 3, T.ONEWAY); for (let x = x0 + 3; x <= x0 + 5; x++) set(x, g - 6, T.ONEWAY);   // up inside it, a jump (3 rows) at a time
-    for (let y = roof; y <= roof; y++) set(x0 + 5, y, T.AIR);                                     // the hatch to the roof
+    for (let x = x0 + 1; x <= x0 + 5; x++) set(x, g - 3, T.ONEWAY); for (let x = x0 + 3; x <= x0 + 5; x++) set(x, g - 6, T.ONEWAY);   // up inside it, a jump (3 rows) at a time
+    for (let x = x0 + 4; x <= x0 + 5; x++) set(x, roof, T.AIR);                                   // the hatch to the roof: TWO tiles (F9 walk, 2026-09-24: through one, only a jump from dead under it got out, and the play bot never found it)
     shade.push([(x0 + 1) * TS, (x0 + 6) * TS, (roof + 1) * TS, g * TS + 1]);                     // inside it is shade (its roof is too high for the overhang rule)
     ent('stray', x0 + 2, g - 4); ent('check', x0 - 3, on(x0 - 3)); }
   // ---- 7 THE HOLLOW'S RIM, and THE WORM'S HOLLOW ----
