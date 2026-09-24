@@ -82,7 +82,7 @@ function brackenWood() {
   ent('sign', 284, 8, { text: 'THE HIVE. THE QUEEN DIVES TO STING: JUMP IT, THEN CUT HER WHILE SHE PULLS FREE.' });
   ent('deco', 10, 21, { kind: 'cabin' }); ent('npc', 16, 21, { kind: 'woodsman' }); // the woodsman's cabin: he wants his honey back
   coins([12, 20], [13, 19], [14, 20]);
-  ent('sprig', 22, 21, { face: -1 }); ent('sign', 26, 21, { text: 'TAP A WAY TWICE TO DASH: IT CLEARS A GAP.' });   /* the gap, and a sprig past the crates. (The dash ATTACK is the Stockade's lesson now: the first wood teaches two keys, the heavy and the down attack) */
+  ent('sprig', 22, 21, { face: -1 }); ent('sign', 26, 21, { text: 'TAP A WAY TWICE TO DODGE: IT CLEARS A GAP.' });   /* the gap, and a sprig past the crates. (The dash ATTACK is the Stockade's lesson now: the first wood teaches two keys, the heavy and the down attack) */
   floor(34, 49, 22);
   coins([31, 19], [32, 18], [33, 19]);
   crate(40, 21); crate(44, 21); crate(44, 20);
@@ -3419,7 +3419,7 @@ function openYard() {
   ent('torch', 8, 21); ent('torch', 112, 21);
   // ---- the straw men: one on the floor, one on a table, one over the pit ----
   for (const x of [16, 22, 28]) ent('dummy', x, 21);
-  ent('sign', 14, 21, { text: 'STRAW MEN STAND FOR ANYTHING. X X X IS A THIRD CUT; A DASH, THEN X, IS A DASH ATTACK.' });
+  ent('sign', 14, 21, { text: 'STRAW MEN STAND FOR ANYTHING. X X X IS A THIRD CUT; A DODGE, THEN X, IS A DASH ATTACK.' });
   // ---- the steps: every height worth jumping, in a row you can read ----
   plat(36, 19, 4); plat(43, 17, 4); plat(50, 15, 4); plat(57, 13, 4);
   ent('sign', 34, 21, { text: 'THE STEPS GO UP TWO ROWS AT A TIME. DOWN+JUMP ON A LEDGE TO DROP THROUGH.' });
@@ -3428,7 +3428,7 @@ function openYard() {
   // ---- the gap: wide enough that a walk will not do it ----
   for (let x = 64; x <= 71; x++) for (let y = 22; y < H; y++) set(x, y, T.AIR);
   block(64, 71, 28, H - 1);                                                             // a floor at the bottom of it, so nothing is lost
-  ent('sign', 62, 21, { text: 'THE GAP. A JUMP WILL NOT CROSS IT. TAP A WAY TWICE TO DASH, OR COME AT IT OFF THE STEPS.' });
+  ent('sign', 62, 21, { text: 'THE GAP. A JUMP WILL NOT CROSS IT. TAP A WAY TWICE TO DODGE, OR COME AT IT OFF THE STEPS.' });
   ent('dummy', 68, 27);                                                                 // and one at the bottom to plunge onto
   // ---- the wall: a climb, and a ledge to plunge off ----
   block(78, 79, 8, 21); for (let y = 9; y <= 20; y++) { set(78, y, T.NET); set(79, y, T.NET); }
@@ -3461,7 +3461,7 @@ function trialYard(hero) {
   const SKILL_G = ['skill', 1, 'G: A SKILL FROM THE TALENT TREE (Q). ONE NOT YET LEARNED IS LENT HERE. USE IT.', [['dummy', 14], ['sprig', 20]], 'RT', ['skillG']];
   /* THE NEW CUTS, THE SAME FOR EVERY HERO: what the controls page promises, a gate each. The goblins in these yards are straw
      inside (see e.trainer in main.js): they can be thrown, tripped and cut all day, they never go down, and they keep to their yard. */
-  const DASH = ['dashatk', 2, 'TAP A WAY TWICE TO DASH, X AT ONCE: THE ATTACK CARRIES YOU THROUGH. LAND IT TWICE.', [['dummy', 15], ['dummy', 21]], 'TAP THE STICK TWICE, THEN X'];
+  const DASH = ['dashatk', 2, 'DODGE AT HIM (TAP A WAY TWICE, OR V) AND X AT ONCE: THE ATTACK CARRIES YOU THROUGH. TWICE.', [['dummy', 15], ['dummy', 21]], 'B, THEN X AT ONCE'];
   const RISE = ['rise', 2, 'UP+X: THE RISING CUT LAUNCHES A SMALL FOE. CUT IT AGAIN WHILE IT HANGS. LAUNCH TWO.', [['sprig', 14], ['sprig', 19]], 'UP+X'];
   const SWEEP = ['sweep', 2, 'DOWN+X: THE LOW SWEEP GOES UNDER A RAISED SHIELD AND TRIPS HIM. TRIP THEM TWICE.', [['shield', 14], ['shield', 20]], 'DOWN+X'];
   const SKILL = ['skill', 2, 'F AND G: SKILLS FROM THE TALENT TREE (Q). ANY NOT YET LEARNED ARE LENT HERE. USE BOTH.', [['dummy', 14], ['sprig', 20]], 'Y, THEN RT', ['skillF', 'skillG']];
@@ -3471,7 +3471,7 @@ function trialYard(hero) {
       ['hit', 3, 'THE SWING. X STRIKES. HIT THE STRAW MAN THREE TIMES.', [['dummy', 16], ['dummy', 20]], 'X'],
       ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN. THE THIRD LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
       ['block', 3, 'THE SHIELD. HOLD C TO RAISE IT, AND FACE THE ARCHER. TURN THREE OF HIS ARROWS.', [['archer', 22]], 'HOLD LB'],
-      ['dodge', 2, 'THE DODGE. V ROLLS YOU THROUGH A BLOW. ROLL TWICE.', [], 'B'],
+      ['dodge', 2, 'THE DODGE: TAP A WAY TWICE, OR V. IT ROLLS YOU THROUGH A BLOW. ROLL TWICE.', [], 'B, OR THE STICK TWICE'],
       ['flash', 2, 'THE BEAT: RAISE C AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TURN HIS CUT TWICE.', [['swornsword', 18]], 'LB AS THE SWORD FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE SHIELD TAKES IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'LB FOR !    B OR A FOR !!', MARKS],
       ['pogo', 3, 'THE PLUNGE: JUMP, THEN DOWN+X. BOUNCE OFF THE STRAW MEN THREE TIMES.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],
@@ -3481,7 +3481,7 @@ function trialYard(hero) {
       SKILL],
     pyro: [
       ['ember', 3, 'THE EMBER. TAP C AND ONE FLIES. SET THE STRAW MAN ALIGHT THREE TIMES.', [['dummy', 18]], 'TAP LB'],
-      ['dodge', 2, 'NO SHIELD: YOU LIVE BY THE DODGE. V ROLLS YOU THROUGH A BLOW. ROLL TWICE.', [], 'B'],
+      ['dodge', 2, 'NO SHIELD: YOU LIVE BY THE DODGE. TAP A WAY TWICE, OR V: SHE ROLLS THROUGH IT. TWICE.', [], 'B, OR THE STICK TWICE'],
       ['third', 2, 'THE STAFF: X THREE TIMES IN A RUN. THE THIRD BLOW LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
       ['meter', 1, 'HOLD C: THE JET FILLS YOUR HEAT. FULL, PRESS C AGAIN: THE PYRE. THROW IT AT THE STRAW.', [['dummy', 14], ['dummy', 18]], 'HOLD LB, THEN LB AGAIN'],
       ['firedrop', 2, 'THE FIREDROP: JUMP, THEN DOWN+X. HIT A STRAW MAN FROM ABOVE TWICE.', [['dummy', 14], ['dummy', 19]], 'A, THEN DOWN+X'],
@@ -3494,7 +3494,7 @@ function trialYard(hero) {
       ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN, SLOW AS IT IS. THE THIRD LANDS HEAVY. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
       ['heavyblow', 2, 'HOLD X: HE PLANTS THE BLADE, AND BLOOD BOLTS FAN OUT THROUGH ANY GUARD. LAND IT TWICE.', [['dummy', 13], ['dummy', 21]], 'HOLD X'],
       REAPER_C.ward,
-      ['dodge', 2, 'V: THE PASSING. HE GOES THIN AND NOTHING TOUCHES HIM. ROLL TWICE.', [], 'B'],
+      ['dodge', 2, 'THE PASSING: TAP A WAY TWICE, OR V. HE GOES THIN AND NOTHING TOUCHES HIM. TWICE.', [], 'B, OR THE STICK TWICE'],
       ['flash', 2, 'THE BEAT: ROLL THROUGH HIS CUT WITH V AS THE SWORD FLASHES WHITE, AND HE REELS. TWICE.', [['swornsword', 18]], 'B AS THE SWORD FLASHES'],
       ['tells', 2, 'ONE YELLOW ! CAN BE TURNED OR ROLLED. TWO RED !! CANNOT BE TURNED: GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'B THROUGH BOTH, OR A CLEAR', MARKS],
       ['pogo', 2, 'THE CULL: JUMP, THEN DOWN+X. A SHADE TEARS OUT AND FIGHTS FOR HIM. BOUNCE TWICE.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],
@@ -3503,7 +3503,7 @@ function trialYard(hero) {
       ['hit', 3, 'THE CUTLASS: X AND KEEP GOING, A RUN OF FIVE. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]], 'X'],
       ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN. THE THIRD LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
       ['parry', 3, 'NO SHIELD: TAP C TO PARRY. IT TURNS A YELLOW BLOW AND LOADS THE PISTOL. TURN THREE.', [['archer', 22]], 'TAP LB'],
-      ['dodge', 2, 'V ROLLS. HE HAS GOT OUT OF THE WAY FOR A LIVING. ROLL TWICE.', [], 'B'],
+      ['dodge', 2, 'TAP A WAY TWICE, OR V: HE ROLLS. HE HAS GOT OUT OF THE WAY FOR A LIVING. TWICE.', [], 'B, OR THE STICK TWICE'],
       ['flash', 2, 'THE BEAT: TAP C AS HIS SWORD FLASHES WHITE. THE PARRY LEAVES HIM OPEN. TURN IT TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : A PARRY TURNS IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
       ['heavyblow', 2, 'HOLD X: THE PISTOL GOES THROUGH ANY GUARD, THEN RELOADS. FIRE IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
@@ -3519,7 +3519,7 @@ function trialYard(hero) {
       ['mend', 1, 'MEND: TAP C TO SPEND HALF THE LIGHT ON HEALING. IT ROOTS YOU A MOMENT.', [], 'TAP LB'],
       ['hammerfall', 2, 'HAMMERFALL: JUMP, THEN DOWN+X. THE GROUND CARRIES IT BOTH WAYS. CATCH TWO.', [['dummy', 12], ['dummy', 22]], 'A, THEN DOWN+X'],
       ['heavyblow', 2, 'HOLD X FOR THE OVERHEAD: IT BREAKS A RAISED SHIELD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
-      ['dodge', 2, 'V: THE HEAVY STEP. THE PAULDRON GOES FIRST AND TURNS WHAT IT MEETS. STEP TWICE.', [], 'B'],
+      ['dodge', 2, 'THE HEAVY STEP: TAP A WAY TWICE, OR V. THE PAULDRON GOES FIRST AND TURNS WHAT IT MEETS.', [], 'B, OR THE STICK TWICE'],
       DASH, RISE, SWEEP,
       ['judgement', 1, 'JUDGEMENT: WITH A FULL LIGHT, PRESS C AGAIN. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB WITH A FULL BAR'],
       SKILL],
