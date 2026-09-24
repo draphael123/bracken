@@ -7,12 +7,14 @@
 //   - one of the combo's own swings (atk, atkB, atkC, air) - a BORROWED blow reads as the blow, not the ability - unless the
 //     ability is in BORROW_OK below, with the reason the borrowed frame reads right,
 //   - the key the hero was drawn in just before the press.
-// THE KNIGHT AND THE WARDEN are held to it (this lane gave them their poses), and each of their actives must also have a pose no
-// other of their actives uses (SHARED_OK names the one pair that honestly shares). THE OTHER FOUR are a RATCHET: KNOWN_POSELESS
-// is the debt measured on 2026-09-23; a new pose-less active fails, and so does a listed one that has since got its pose (take it
-// off the list). `node tools/ability-poses.mjs --report` prints every active's key run without asserting.
-// THE JUMP: the two starters also leave the ground on a TAKE-OFF frame, show four or more poses in the air, and land in three
-// (impact, settle, stand); the other four heroes' arcs are printed (JUMP ARCS), not asserted.
+// EVERY HERO is held to it (lane E gave the Knight and the Warden their poses on 2026-09-23, lane P the other four on 2026-09-24),
+// and each of a hero's actives must also have a pose no other of that hero's actives uses - so a hero's casts can no longer all
+// fall through to the one generic `cast` or `blast` frame, which is how the Death Knight's five casts and the Freebooter's two
+// shots and two hook throws were drawn identically. SHARED_OK is the short list of pairs that honestly share, each with its
+// reason. KNOWN_POSELESS was the ratchet on the debt measured on 2026-09-23 (13 actives); it is EMPTY, and it stays empty - a
+// pose-less active is a plain failure now. `node tools/ability-poses.mjs --report` prints every active's key run without asserting.
+// THE JUMP: every hero leaves the ground on a TAKE-OFF frame, shows four or more poses in the air, and lands in three (impact,
+// settle, stand).
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { SKILLS } from '../src/progression-catalog.js';
@@ -25,13 +27,12 @@ const BORROW_OK = {
   spearDance: 'SPEAR DANCE is a flurry of her own thrusts, stood still: the thrust frames are exactly what it is',
 };
 /* THE HEROES HELD TO IT: the starters (lane E), and each of the other four as lane P (2026-09-24) gives it its poses */
-const HELD = ['knight', 'warden', 'paladin', 'pyro', 'pirate'];
-/* two of hers are the same movement at heart, and read as it */
+const HELD = ['knight', 'warden', 'paladin', 'pyro', 'pirate', 'reaper'];
+/* A SHARED POSE THAT IS RIGHT, with the reason (keyed by either active of the pair): two of hers are the same movement at heart */
 const SHARED_OK = { harrier: 'HARRIER is the vault taken at a foe instead of at a gap: it is drawn as the vault Pole Spring also uses' };
-/* THE DEBT, measured on master 313e0da (2026-09-23). Report, don't fix: each of these plays with no body of its own. */
-const KNOWN_POSELESS = {
-  reaper: ['harvestMoon', 'gravecall'],
-};
+/* THE DEBT, measured on master 313e0da (2026-09-23): 13 actives with no body of their own. Paid off by lane P (2026-09-24); a
+   new entry here is a step backwards and wants a reason in the commit that adds it. */
+const KNOWN_POSELESS = {};
 /* LANE E's WORK LIST (2026-09-23), proved red on master first: the Knight's and the Warden's faults not yet fixed on this branch.
    It only shrinks - a fixed one must come off it - and it is empty when the lane is done. */
 const LANE_TODO = [];
@@ -71,7 +72,7 @@ try {
     for (const [h, a, b, k] of shares) if (HELD.includes(h) && !SHARED_OK[a] && !SHARED_OK[b]) faults.push([a + '/' + b, h.toUpperCase() + ' ' + a + ' and ' + b + ' are drawn in the same pose (' + k + '): each ability wants its own']);
     const fails = faults.filter(([id]) => !LANE_TODO.includes(id)).map(([, m]) => m), done = LANE_TODO.filter(id => !faults.some(([f]) => f === id));
     if (LANE_TODO.length) console.log('lane E still to do: ' + LANE_TODO.filter(id => !done.includes(id)).join(', '));
-    assert.equal(fails.length, 0, fails.length + ' faults in the Knight\'s and the Warden\'s actives:\n  ' + fails.join('\n  '));
+    assert.equal(fails.length, 0, fails.length + ' faults in the heroes\' actives:\n  ' + fails.join('\n  '));
     assert.equal(done.length, 0, done.join(', ') + ' has a body of its own now: take it off LANE_TODO');
     for (const [h, ids] of Object.entries(KNOWN_POSELESS)) {
       const now = bad.filter(r => r.hero === h).map(r => r.id).sort();
@@ -80,16 +81,16 @@ try {
       assert.equal(fixed.length, 0, h.toUpperCase() + ': ' + fixed.join(', ') + ' has its pose now - take it off KNOWN_POSELESS');
     }
   }
-  /* THE JUMP ARC AND THE LANDING. Every hero had two jump frames, one apex, two fall and two land (docs/hero-animation-audit.md). The
-     two starters are held to a real arc - a TAKE-OFF frame of its own, then at least four distinct poses in the air - and a landing
-     of three distinct frames (impact, settle, stand) while standing still; the other four are reported. */
+  /* THE JUMP ARC AND THE LANDING. Every hero had two jump frames, one apex, two fall and two land (docs/hero-animation-audit.md). All
+     six are held to a real arc - a TAKE-OFF frame of its own, then at least four distinct poses in the air - and a landing of three
+     distinct frames (impact, settle, stand) while standing still. */
   const arcs = {};
   for (const h of ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden'])
     arcs[h] = await pg.evalp(`(()=>{__kit('${h}',[],[]);BKT.PROG.xp['${h}']=0;/* THE PLAIN JUMP: at level 24 passives now arrive by level, and the Warden's VAULTER turns her jump into the vault */const P=BK.P;BK.step(1);BK.keys.jump=true;BK.press('jump');const air=[],land=[];let n=0;
       for(let i=0;i<120;i++){BK.step(1);if(!P.ground)air.push(P.lastKey+':'+P.lastFrame);else if(air.length){BK.keys.jump=false;land.push(P.lastKey+':'+P.lastFrame);if(++n>=24)break;}}
       return {air:[...new Set(air)],land:[...new Set(land.filter(k=>k.startsWith('land:')))]}})()`);
   console.log('JUMP ARCS: ' + Object.entries(arcs).map(([h, a]) => h + ' air ' + a.air.length + ' [' + a.air.join(' ') + '] land ' + a.land.length).join('; '));
-  if (!REPORT) for (const h of HELD) { const a = arcs[h];
+  if (!REPORT) for (const h of Object.keys(arcs)) { const a = arcs[h];
     assert(a.air.some(k => k.startsWith('takeoff:')), h.toUpperCase() + ' leaves the ground with no take-off frame of its own (drew ' + a.air.join(' ') + ')');
     assert(a.air.length >= 4, h.toUpperCase() + ' has only ' + a.air.length + ' poses in the air');
     assert(a.land.length >= 3, h.toUpperCase() + ' lands in ' + a.land.length + ' frame(s), not three (impact, settle, stand): ' + a.land.join(' ')); }

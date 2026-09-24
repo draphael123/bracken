@@ -1595,6 +1595,51 @@ function pirateKitPoses(F, sh, holster, carry) {
   F.board = [K({ wide: 8, legs: 'jump', dy: -1, arm2: [OFF[0], OFF[1], X + 2, Y - 7], hook: [X + 2, Y - 7, X + 14, Y - 22], cutlass: carry(), pistol: holster(), plume: 2 }),
     K({ wide: 8, dx: 1, legs: 'tuck', arm2: [OFF[0], OFF[1], X - 1, Y - 8], hook: [X - 1, Y - 8, X + 2, Y - 24], arm: [X, Y, X + 5, Y - 1], cutlass: [X + 5, Y - 1, X + 15, Y - 2], pistol: holster(), plume: 2 })];
 }
+/* EVERY ABILITY HAS A BODY: THE DEATH KNIGHT'S BOUGHT ACTIVES (lane P, 2026-09-24). BLOOD BOIL and GRAVECALL played beside an idle
+   death knight, and GRAVE TIDE, UNHOLY GROUND, DEATH COIL and DEATH GRIP all shared the one RAISE cast with SUMMON SKELETON - which
+   keeps it, because the free hand down and the green coming up out of the ground is exactly what raising one is. The other five
+   now have frames of their own on his rig; OFF is the off shoulder, and a() puts a loose pixel at an absolute point. */
+function reaperKitPoses(F, sh) {
+  const top = ATTACK_HEADROOM, [X, Y] = sh, OFF = [BX + 2, BY + 7], K = o => knightFrame({ top, ...o });
+  const a = (x, y, col) => [x - BX, y - BY, col], RED = '#c0283a', PINK = '#ff6b6b', GRN = '#8fd160', DGRN = '#4f7a3a', LIT = '#dfffc0', BONE = '#b9c2cf';
+  const lit = [[4, 3, LIT], [5, 3, LIT]];   /* the two lights in the helm, up bright */
+  const low = [X - 3, Y + 3, X + 12, Y + 6];   /* the long blade held low across him, as he breathes (the idle's own guard) */
+  /* BLOOD BOIL: hunched over the blade stood point-down before him, both hands on it; flung open with the blade out wide and the
+     blood coming up off him every way; and the settle back to guard */
+  F.boil = [K({ dy: 2, hy: 1, legs: 'wide', arm: [X, Y, X + 2, Y - 1], arm2: [OFF[0], OFF[1], X + 1, Y - 1], greatsword: [X + 2, Y - 1, X + 3, Y + 12], plume: 0, bits: [a(X - 2, Y + 7, RED), a(X + 5, Y + 7, RED)] }),
+    K({ wide: 6, dy: -1, sho: 1, legs: 'wide', arm: [X, Y, X + 5, Y - 3], greatsword: [X + 5, Y - 3, X + 17, Y - 9], arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] - 4], plume: 2,
+      bits: [...lit, a(X - 13, Y - 8, RED), a(X - 10, Y - 12, PINK), a(X - 15, Y - 1, PINK), a(X - 12, Y + 6, RED), a(X + 9, Y + 4, PINK), a(X + 12, Y + 1, RED), a(X - 4, Y - 14, RED), a(X + 3, Y - 13, PINK), a(X - 9, Y + 7, PINK), a(X + 6, Y + 7, RED)] }),
+    K({ dy: 1, legs: 'stand', arm: [X, Y, X - 1, Y + 3], greatsword: low, plume: 1, bits: [a(X - 8, Y + 6, RED), a(X + 7, Y + 6, RED)] })];
+  /* GRAVECALL: the blade driven into the ground beside him; the off hand raised with the green in it, the lights in the helm up;
+     and the green coming up out of the ground on both sides of him */
+  const stood = { arm: [X, Y, X + 3, Y - 1], greatsword: [X + 3, Y - 2, X + 4, Y + 13] };
+  const flame = [a(OFF[0] - 3, OFF[1] - 11, GRN), a(OFF[0] - 4, OFF[1] - 10, GRN), a(OFF[0] - 2, OFF[1] - 10, GRN), a(OFF[0] - 3, OFF[1] - 12, LIT)];
+  F.call = [K({ legs: 'wide', ...stood, arm2: [OFF[0], OFF[1], OFF[0] - 1, OFF[1] + 3], plume: 1 }),
+    K({ legs: 'wide', hy: -1, ...stood, arm2: [OFF[0], OFF[1], OFF[0] - 3, OFF[1] - 9], plume: 2, bits: [...lit, ...flame] }),
+    K({ legs: 'wide', hy: -1, ...stood, arm2: [OFF[0], OFF[1], OFF[0] - 3, OFF[1] - 9], plume: 0,
+      bits: [...lit, ...flame, a(X - 14, Y + 8, GRN), a(X - 11, Y + 7, DGRN), a(X - 13, Y + 5, GRN), a(X + 9, Y + 8, GRN), a(X + 12, Y + 7, DGRN), a(X + 10, Y + 5, GRN), a(X - 16, Y + 6, LIT), a(X + 13, Y + 4, LIT)] })];
+  /* DEATH COIL: the off hand drawn back with the knot of blood in it; then flung out past him, and the coil gone off the fingers */
+  F.coil = [K({ dx: -1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] - 1], plume: 1,
+      bits: [a(OFF[0] - 6, OFF[1] - 2, RED), a(OFF[0] - 7, OFF[1] - 1, PINK), a(OFF[0] - 6, OFF[1], RED)] }),
+    K({ wide: 4, dx: 1, legs: 'runC', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 7, Y - 2], plume: 2,
+      bits: [a(X + 10, Y - 3, RED), a(X + 11, Y - 2, PINK), a(X + 12, Y - 3, RED), a(X + 11, Y - 4, PINK)] })];
+  /* GRAVE TIDE: down on his haunches with the fist raised; then the fist driven into the ground before him, and the green running
+     off along it the way the hands will come up */
+  F.tide = [K({ dy: 4, legs: 'crouch', legsDy: 3, arm: [X, Y, X - 2, Y + 2], greatsword: [X - 2, Y + 2, X - 14, Y - 3], arm2: [OFF[0], OFF[1], X + 3, Y - 6], plume: 1, bits: [a(X + 3, Y - 7, BONE)] }),
+    K({ wide: 6, dy: 4, legs: 'crouch', legsDy: 3, arm: [X, Y, X - 2, Y + 2], greatsword: [X - 2, Y + 2, X - 14, Y - 3], arm2: [OFF[0], OFF[1], X + 5, Y + 4], plume: 2,
+      bits: [...lit, a(X + 5, Y + 5, BONE), a(X + 9, Y + 4, GRN), a(X + 12, Y + 4, DGRN), a(X + 15, Y + 4, GRN), a(X + 18, Y + 4, DGRN), a(X + 7, Y + 3, LIT), a(X + 13, Y + 3, GRN)] })];
+  /* UNHOLY GROUND: the blade taken low and back behind him in both hands; then swept flat along the floor ahead, the green left
+     on the ground where the edge went */
+  F.unholy = [K({ dx: -1, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y + 3], arm2: [OFF[0], OFF[1], X - 4, Y + 3], greatsword: [X - 4, Y + 3, X - 17, Y + 7], plume: 1 }),
+    K({ wide: 10, dx: 2, dy: 2, legs: 'runC', arm: [X, Y, X + 4, Y + 3], arm2: [OFF[0], OFF[1], X + 3, Y + 3], greatsword: [X + 4, Y + 3, X + 21, Y + 6], plume: 2,
+      bits: [a(X + 8, Y + 7, GRN), a(X + 12, Y + 7, DGRN), a(X + 16, Y + 7, GRN), a(X + 20, Y + 7, DGRN), a(X + 4, Y + 7, DGRN), a(X + 10, Y + 6, LIT)] })];
+  /* DEATH GRIP: the off hand thrown out ahead, clawed, with the green off the fingers; then the fist hauled back in to his chest,
+     the green line coming with it */
+  F.grip = [K({ wide: 4, dx: 1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 8, Y - 2], plume: 2,
+      bits: [a(X + 9, Y - 3, BONE), a(X + 10, Y - 2, BONE), a(X + 9, Y - 1, BONE), a(X + 11, Y - 2, GRN), a(X + 12, Y - 3, LIT)] }),
+    K({ dx: -1, sho: 1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X - 1, Y - 1], plume: 1,
+      bits: [...lit, a(X - 1, Y - 1, BONE), a(X + 3, Y - 1, GRN), a(X + 6, Y - 1, DGRN), a(X + 9, Y - 1, GRN)] })];
+}
 export function bakePyro(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, PYRO_PAL, skin);
   const up = (dx = 0, d = 0) => [17 + dx, 18 + d, 18 + dx, 0 + d]; // the staff stood upright in the front hand, taller than her
@@ -2195,7 +2240,10 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 2], greatsword: [sh[0] - 4, sh[1] + 2, sh[0] + 12, sh[1] + 6 - Math.max(0, dy)] })),   /* dragged, not buried: carry() had the cross and the point four to six pixels under the ground */
     jump: [knightFrame({ legs: 'jump', dy: -1, greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 6, sh[1] - 7], plume: 1 }), knightFrame({ legs: 'jump2', greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 7, sh[1] - 5], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 4, sh[0] - 7, sh[1] - 4], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, greatsword: [sh[0] + 2, sh[1] + 3, sh[0] - 8, sh[1] - 2], plume: 2 })],
-    land: [knightFrame({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 7], greatsword: rest(2) }), knightFrame({ legs: 'stand', dy: 1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 6], greatsword: rest(1), plume: 1 })],
+    /* LANDING in three beats, as the starters': the IMPACT deep on bent knees with the long blade jarred down level across him, the SETTLE, and up */
+    land: [knightFrame({ legs: 'crouch', legsDy: 3, dy: 4, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 3], greatsword: [sh[0] - 3, sh[1] + 3, sh[0] + 12, sh[1] + 4], plume: 2 }), knightFrame({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 7], greatsword: rest(2) }), knightFrame({ legs: 'stand', dy: 1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 6], greatsword: rest(1), plume: 1 })],
+    /* THE TAKE-OFF: stretched off the push, the two-hander hauled up behind him by the lift of it */
+    takeoff: knightFrame({ legs: 'push', dy: -2, sho: 1, greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 5, sh[1] - 9], plume: 2 }),
     apex: knightFrame({ legs: 'jump2', dy: -1, greatsword: [sh[0] + 1, sh[1] + 4, sh[0] - 8, sh[1] - 6], plume: 0 }),
     skid: knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 6], greatsword: carry(1), plume: 2 }),
     /* THE PLANTED BLADE: he sets his feet, lifts the whole thing straight over his head, and drives it point-first
@@ -2272,6 +2320,7 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'greatsword', { scale: 1.22 });
+  reaperKitPoses(F, sh);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
