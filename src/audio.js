@@ -295,6 +295,9 @@ export const SFX = {
   coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
   clank() { file('clang', 0.5) || (tone('square', 1500, 900, 0.05, 0.18), tone('sine', 2300, 2100, 0.16, 0.14), noise(0.05, 0.2, 3200)); },
   parry() { file('parry', 0.5) || tone('square', 1200, 1900, 0.08, 0.16); },
+  /* THE KNIGHT'S PERFECT GUARD: a clang that rings like a bell - the steel knock high and bright, and two long clean partials over it.
+     Nothing else in the game rings this long, so it is heard as THE thing, and never confused with a block's dull knock */
+  perfectGuard() { file('clang', 0.55, 1.35); tone('sine', 2637, 2610, 0.55, 0.09); tone('sine', 3951, 3920, 0.4, 0.05, 0.01); tone('triangle', 1319, 1312, 0.35, 0.07); noise(0.04, 0.22, 6400, 1.2); },
   /* THE GLANCE: the wrong tool for that body (main.js, the family table). Not the clank of a guard ringing and not a cut going in: the
      edge skating off something it could not bite - a dry scrape sliding DOWN, a dull knock under it, and no ring left after. Every
      wrong-verb hit in the game makes this one sound, so it is learned once. */

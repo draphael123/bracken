@@ -258,7 +258,20 @@ function brackenWood() {
   LC.ent('badger', 139, 21, { face: -1 });
   LC.coins([142, 18], [145, 20]);
   const RC = LC.done();
-  const LB = grow(RC, RC, 98, 26);    // b. THE DOWN ATTACK: three sprigs bunched on the flat - come down among them and the ground throws them
+  // d. THE PERFECT GUARD (the knight rework): straight after the sign that teaches C, a lone SWORN SWORD on the flat - the slowest
+  // blow in the game, one at a time, and his sword FLASHES on the beat (e.lesson: the trial's long tell, and for a knight the flash
+  // comes a reaction's length before the blow lands). Raised as it flashes, the shield turns it for nothing, he reels, and the next
+  // cut is heavy. Grown at 121 AFTER the badger, so it comes BEFORE the badger on the road.
+  const LD = grow(RC, RC, 121, 26);
+  LD.floor(121, 146, 22);
+  LD.ent('check', 123, 21); LD.ent('deco', 125, 21, { kind: 'fern', v: 0 });
+  LD.ent('sign', 127, 21, { text: 'A PERFECT GUARD: RAISE C AS HIS SWORD FLASHES. HE REELS, AND YOUR NEXT CUT IS HEAVY.', pyro: 'ROLL THROUGH HIS CUT WITH V AS HIS SWORD FLASHES, AND HE REELS OPEN.', reaper: 'ROLL THROUGH HIS CUT WITH V AS HIS SWORD FLASHES, AND HE REELS OPEN.', paladin: 'HOLD C FOR THE AEGIS AS HIS SWORD FLASHES, AND HE REELS OPEN.', pirate: 'TAP C AS HIS SWORD FLASHES: THE PARRY TURNS IT, AND HE REELS OPEN.', warden: 'TAP C AS HIS SWORD FLASHES: THE DEFLECT TURNS IT, AND HE REELS OPEN.' });
+  LD.coins([130, 20], [132, 19], [134, 20]);
+  LD.ent('swornsword', 139, 21, { face: -1, lesson: 'parry' });
+  LD.ent('deco', 143, 21, { kind: 'stump', v: 1 }); LD.coins([145, 20]);
+  LD.R.lessons = (LD.R.lessons || []).concat([{ kind: 'parry', x0: 122, x1: 146 }]);
+  const RD = LD.done();
+  const LB = grow(RD, RD, 98, 26);    // b. THE DOWN ATTACK: three sprigs bunched on the flat - come down among them and the ground throws them
   LB.floor(98, 123, 22);
   LB.ent('check', 100, 21); LB.ent('deco', 102, 21, { kind: 'fern', v: 0 });
   LB.ent('sign', 104, 21, { text: 'DOWN+X IN THE AIR, ONTO THE GROUND: IT KNOCKS WHAT STANDS BESIDE YOU OFF ITS FEET.', warden: 'DOWN+X IN THE AIR, ONTO THE GROUND: THE CRACK RUNS AHEAD AND TRIPS WHAT IT MEETS.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. THE GROUND CARRIES IT BOTH WAYS UNDER THEIR FEET.', pyro: 'DOWN+X IN THE AIR: FIREDROP. THE FIRE GOES DOWN AHEAD OF YOU: LAND AMONG THEM.', pirate: 'DOWN+X IN THE AIR: COME DOWN AMONG THEM. MISS, AND YOU STAND THERE A BEAT.', reaper: 'DOWN+X IN THE AIR: COME DOWN AMONG THEM. MISS, AND YOU STAND THERE A BEAT.' });
