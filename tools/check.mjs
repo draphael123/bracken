@@ -77,7 +77,7 @@ for (const t of ['tells', 'hero-trials', 'ore-road', 'ore-ride', 'scree-rework',
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
 /* THE WORDS FIT: every hint, the bestiary, the store, the talent trees, the pause menu and every hero's HUD, drawn and measured (tools/textfit.mjs;
    the talk pages of every level and the boss fights are the long run: node tools/textfit.mjs --strict) */
-if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud', '--strict'], { PORT: String(portFor(4)) }));
+if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,pick,practice', '--strict'], { PORT: String(portFor(4)) }));
 if (!SUBSET) results.push(run('profile-cleanup', process.execPath, ['tools/profile-cleanup.mjs']));   /* every way a tool can end leaves nothing in Temp */   /* the full run only: a subset did not make the mess and must not be failed by it */
 if (!SUBSET) results.push(run('profile-leaks', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(SUITE_T0), '--run', process.env.BRACKEN_RUN, '--check']));
 

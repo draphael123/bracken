@@ -15,7 +15,9 @@
 // hero, the bestiary (all seen), the store and equip lists for every hero, the talent tree for every hero, the pause menu,
 // the HUD with every meter full, and every boss and mini name card as the fight starts.
 //   node tools/textfit.mjs                  everything (report mode: prints, writes textfit.json, exits 0)
-//   node tools/textfit.mjs hints,talk       only those screens (hints talk bestiary store tree menu hud boss)
+//   node tools/textfit.mjs hints,talk       only those screens (hints talk bestiary store tree menu hud boss pick practice)
+//   pick      THE HERO PICK, with each of its cards selected in turn: every hero's name under its card, and the words for the selected one
+//   practice  THE PRACTICE YARDS list, each row selected in turn
 //   node tools/textfit.mjs --strict         exit 1 on any OVERFLOW, OFFSCREEN, CLIPPED, TRUNCATED, COVERS, COLLIDE or SMUDGE (LONGHINT only reports)
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
@@ -138,6 +140,17 @@ async function pageTextFit(input) {
 
   if (want('tree')) for (const h of HEROES) for (const tab of [0,1]) { BK.setHero(h); BK.state = 'tree'; BK.ui.treeTab=tab; const n = BK.ui.treeRows();
     for (let i = 0; i < n; i++) frame('tree [' + h + '] tab'+tab+' #' + i, () => { BK.state = 'tree'; BK.ui.treeI = i; });
+    await yieldNow(); }
+
+  /* THE HERO PICK (2026-09-24), drawn BEFORE the menu (whose pause map stays up and lays its window over later screens): seven cards across a 320-pixel screen, a name under each - DEATH KNIGHT ran off the right edge, unseen here */
+  if (want('pick')) { const n = 7;
+    /* drawn once unrecorded first: each card's hero is baked (preview) the first time it is drawn, and a bake's own rectangles on its
+       own canvas are not plates the words are on */
+    for (let i = 0; i < n; i++) { BK.state = 'heropick'; BK.ui.heroPickI = i; BK.step(1); }
+    for (let i = 0; i < n; i++) frame('pick #' + i, () => { BK.state = 'heropick'; BK.ui.heroPickI = i; }, { settle: 20 });
+    await yieldNow(); }
+  if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};
+    for (let i = 0; i < 8; i++) frame('practice #' + i, () => { BK.state = 'practice'; BK.ui.practiceI = i; }, { settle: 20 });
     await yieldNow(); }
 
   if (want('menu')) { toPlay(0, 'knight'); BK.state = 'menu'; const n = BK.ui.menuCount();

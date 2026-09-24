@@ -4188,7 +4188,10 @@ function drawHeroPick() {
     g.globalAlpha = sel ? 1 : 0.7;
     g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(x + cw / 2 - fr.width * sc / 2), top + ch - 8 - Math.round(fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
     g.globalAlpha = 1;
-    text({ knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER' }[h] || H.name, x + cw / 2, top + ch + 3 + (k % 2 ? 7 : 0), sel ? UI.title : '#7a7a84', 'center', 6);
+    /* THE NAME STAYS ON THE SCREEN (2026-09-24, POLISH): a name is wider than its 41-pixel card (DEATH KNIGHT is ~70), so the last card's
+       name ran off the right edge. Its centre is held in far enough that the whole name is drawn; the stagger keeps it off its neighbours. */
+    { const nm = { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER' }[h] || H.name, nw = textW(nm, 6);
+      text(nm, Math.max(2 + nw / 2, Math.min(VW - 2 - nw / 2, x + cw / 2)), top + ch + 3 + (k % 2 ? 7 : 0), sel ? UI.title : '#7a7a84', 'center', 6); }
   });
   // and the words, for the one you are looking at, where there is room for them: the name, THE LOOP under it (HERO_LOOP,
   // the one sentence that is how this hero is played, where a player looks first), then the stats under that. A row of
@@ -4196,7 +4199,11 @@ function drawHeroPick() {
   { const h = PICK[heroPick.i], H = HEROES.find(q => q.id === h), y0 = top + ch + 20;   /* (seven cards: every other name drops a line, so GEOMANCER and DEATH KNIGHT stop running into their neighbours) */
     text(H.name, VW / 2, y0, UI.title, 'center');
     const loop = wrap(HERO_LOOP[h], VW - 24, 6); loop.forEach((ln, i) => text(ln, VW / 2, y0 + 9 + i * BODY_LH, UI.text, 'center', 6));
-    LINES[h].forEach((ln, i) => text(ln, VW / 2, y0 + 12 + (loop.length + i) * BODY_LH, ln.includes('HARDER') ? '#ff9a5c' : UI.dim, 'center', 6)); }
+    /* HARDER rides on the end of the last line, not a line of its own: with a two-line loop the Pyromancer's fourth line landed on the footer */
+    const body = LINES[h].filter(ln => ln !== 'HARDER'), hard = body.length < LINES[h].length;
+    body.forEach((ln, i) => { const yy = y0 + 12 + (loop.length + i) * BODY_LH;
+      if (hard && i === body.length - 1) { const w1 = textW(ln, 6), w2 = textW('HARDER', 6), lx = Math.round(VW / 2 - (w1 + 8 + w2) / 2); text(ln, lx, yy, UI.dim, 'left', 6); text('HARDER', lx + w1 + 8, yy, '#ff9a5c', 'left', 6); }
+      else text(ln, VW / 2, yy, UI.dim, 'center', 6); }); }
   text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 19, UI.sel, 'center', 6);
   text('the other four are 15 silver each, later', VW / 2, VH - 10, UI.dim, 'center', 6);
 }
@@ -24289,6 +24296,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
     get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },
+    get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
     get titleI() { return titleI; }, set titleI(v) { titleI = v; },
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),
