@@ -250,7 +250,14 @@ const MAGE = { sees: 220, near: 90, far: 150, speed: 40, reach: 180, boltV: 135,
 // hardest for the two things you do when you are losing. Defence is cheap now. Which of the two you reach
 // for is the MARK's job to tell you - a yellow ! is the shield, a red !! is your feet - and that is a read,
 // not an arithmetic problem about a bar.
-const ST = { swing: 12, plunge: 28, dodge: 16, blockHit: 11, hold: 6, regen: 48, delay: 0.5 };
+const ST = { swing: 12, plunge: 28, dodge: 16, blockHit: 11, hold: 15, regen: 48, delay: 0.5 };   /* hold: 6 -> 15 a second (the knight rework): a raised shield empties a full bar in under seven seconds, so turtling is a cost and a timed guard - free - is the answer */
+/* HOLDING THE SHIELD COSTS, and only holding it. The first moments of a guard - the perfect guard's own window - are free, so a
+   shield raised on the beat costs nothing at all (and the parry pays wind back); after that it drains ST.hold a second, half
+   that with STEADY ARM (it made holding free, which made holding the default). HEAVY BLOWS PUSH HIM: a blow on the shield
+   shoves him back by how hard it was, from a light one's step to a heavy one's slide (guardPush). */
+const perfectWindow = () => tal('parry') ? 0.22 : 0.11;
+function guardHoldDrain(dt) { if ((P.blockT || 0) <= perfectWindow()) return; P.st -= ST.hold * dt * (tal('holdLine') ? 0.5 : 1); }
+const guardPush = dmg => Math.min(260, 90 + Math.max(0, dmg - 12) * 9);
 /* THE KNIGHT'S RIPOSTE (the knight rework, docs/briefs/knight-rework.md). A PERFECT GUARD - the shield RAISED as the blow lands,
    inside its six frames (twelve with PERFECT GUARD) - opens a window this long, and the first cut he starts inside it is a HEAVY
    cut whatever its place in the run: it counts as a third cut, with everything a third cut does. This is his answer to the
@@ -4460,7 +4467,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER']);   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
+const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER', 'PUSHED BACK']);   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
   if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (!SET.numbers || !MOVE_WORDS.has(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }
@@ -4720,7 +4727,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
      paid for it. The same NOs hold - a red blow, a blow from behind, a bolt through the boards - so the charge is never untouchable */
   const lcUp = hero() === 'knight' && lcOn() && front;
   const rushUp = hero() === 'knight' && (P.rush > 0 || lcUp) && front;
-  const perfectUp = !rushUp && (P.blockT || 0) < (tal('parry') ? 0.22 : 0.11);
+  const perfectUp = !rushUp && (P.blockT || 0) < perfectWindow();
   const pierced = pierce && (P.block || rushUp) && (front || tal('plated')) && !unblockable && !perfectUp;
   if (pierced) { number(P.x, P.y - 30, 'THROUGH THE SHIELD', '#ff6b6b'); SFX.pierce(); }
   if (((P.block && (front || tal('plated'))) || rushUp) && !unblockable && !pierced) {   /* PLATED: the shield at his back too */
@@ -4742,7 +4749,9 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
         sparks(P.x + P.face * 10, P.y - 9, P.face, 10);
         return 'blocked'; }
       if (!rushUp) guardEarlySay();
-      if (!rushUp) P.vx = -P.face * 90; hitstop(0.05); shakeCam(1.5, -P.face * 2); SFX.block(); impactAt(P.x + P.face * 9, P.y - 9, 'steel'); ringAt(P.x + P.face * 8, P.y - 9, 10, '#c9d1dc', 0.2);
+      const push = guardPush(dmg), hard = push > 150;   /* a heavy blow on the shield SLIDES him */
+      if (!rushUp) { P.vx = -P.face * push; if (hard) { dust(P.x - P.face * 4, P.y, 5); number(P.x, P.y - 22, 'PUSHED BACK', '#c9d1dc'); } }
+      hitstop(hard ? 0.08 : 0.05); shakeCam(hard ? 3 : 1.5, -P.face * 2); SFX.block(); impactAt(P.x + P.face * 9, P.y - 9, 'steel'); ringAt(P.x + P.face * 8, P.y - 9, 10, '#c9d1dc', 0.2);
       sparks(P.x + P.face * 9, P.y - 8, P.face, 7);
       return 'blocked';
     }
@@ -6871,7 +6880,7 @@ function updatePlayer(dt) {
   }
   if (keys.block && thrown && !P.saidNoShield) { P.saidNoShield = true; number(P.x, P.y - 22, 'NO SHIELD', '#9aa39a'); } if (!thrown) P.saidNoShield = false;
   if (P.block) {
-    if (!tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;   /* STEADY ARM (the knight's; it was HOLD THE LINE, a name the warden's capstone also had) */
+    guardHoldDrain(dt); P.stDelay = ST.delay;   /* STEADY ARM halves it (the knight's; it was HOLD THE LINE, a name the warden's capstone also had) */
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && (P.ground || P.swim)) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
@@ -10315,7 +10324,7 @@ function magePlayer(dt) {
      the turn, the parry window (P.blockT), the guard break and the stamina are all the shield's own and already work. */
   P.block = !!keys.block && footed && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && hero() === 'knight';
   P.blockT = P.block ? (P.blockT || 0) + dt : 0;
-  if (P.block) { if (!tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;
+  if (P.block) { guardHoldDrain(dt); P.stDelay = ST.delay;
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } }
   /* THE ROLL, off the ceiling he is standing on. No air roll: a hero falling UP has nothing under him to push off. */
   P.dbuf = Math.max(0, (P.dbuf || 0) - dt);

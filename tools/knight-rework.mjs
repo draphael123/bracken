@@ -13,7 +13,7 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
-const WANT = process.argv[2] ? process.argv[2].split(',') : ['lesson', 'riposte', 'third'];   /* (guard joins with chunk 3) */
+const WANT = process.argv[2] ? process.argv[2].split(',') : ['lesson', 'riposte', 'third', 'guard'];
 
 if (WANT.includes('lesson')) {
   const R = LEVELS.find(l => l.id === 'wood').build(), z = (R.lessons || []).find(q => q.kind === 'parry');

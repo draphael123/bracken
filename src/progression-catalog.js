@@ -314,7 +314,7 @@ export const LEGACY_NODES = [
     "col": 0,
     "name": "STEADY ARM",
     "max": 1,
-    "desc": "holding the shield up costs no wind: only what lands on it does",
+    "desc": "holding the shield up costs half the wind. what lands on it costs the same",
     "parent": "bash",
     "active": false,
     "cap": false,
