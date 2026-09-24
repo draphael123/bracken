@@ -7,6 +7,7 @@ import { mulberry } from './px.js';   /* bossLab seeds Math.random for the row i
 //   await BK.fightLab({ levels: ['wood', 'spire', 'waymeet'], heroes: [...], foes: [...], reps: 2 })   -> window.__lab
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 import { MARK } from './marks.js';
+import { GEO as GEO_K } from './geomancer.js';   /* THE GEOMANCER's UPHEAVAL: how far the point has walked is read off the same numbers the kit uses */
 import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // each hero's real reach (attackBox in main.js), so the bot swings from where the blow actually lands
@@ -72,8 +73,8 @@ export function keyVerb(BK, h, e) {
   return 'light';
 }
 /* WHERE EACH VERB WANTS TO STAND, in pixels from the foe: inside reach for a cut (and a dash, which is taken on the way in), a step out for the knight's charge and for the warden's lunge (it drives her a tile on, and must end with the point on it), well out of its reach for the freebooter's pistol (it carries 150 px), on top of it for a plunge */
-/* (the geomancer: her held X is a PILLAR that comes up ahead of her, 26-66 px out by the wind - a full wind lands it at reach + 36) */
-export const wantOf = (h, e, verb) => { const reach = LAB_REACH[h] + (e.w || 12) / 2; return verb === 'plunge' ? 0 : verb === 'heavy' ? (h === 'knight' ? reach + 2 : h === 'warden' ? reach + 12 : h === 'geomancer' ? reach + 36 : h === 'pirate' ? Math.min(120,reach+80) : reach - 4) : reach - 2; };
+/* (the geomancer: her held X comes up 12-132 px ahead of her by the wind - a spike at her foot, or a pillar - so she winds it from where she stands and lets go when the point reaches the foe: see strike) */
+export const wantOf = (h, e, verb) => { const reach = LAB_REACH[h] + (e.w || 12) / 2; return verb === 'plunge' ? 0 : verb === 'heavy' ? (h === 'knight' ? reach + 2 : h === 'warden' ? reach + 12 : h === 'geomancer' ? reach + 20 : h === 'pirate' ? Math.min(120,reach+80) : reach - 4) : reach - 2; };
 /* THE HANDS FOR IT: one frame of whichever verb keyVerb chose. It presses and holds the action keys only (attack, up, down, jump, and the
    double tap of a dash) and never lets one go (whoever calls it clears them first), and leaves the walking to whoever called it (wantOf).
    Every one of them waits on the wind it costs: a bot that swung on an empty bar would stand there winded in front of the thing. */
@@ -86,6 +87,7 @@ export function strike(BK, h, e, f) {
   if (verb === 'heavy') {
     const winding = P.charge > 0 || P.atkHeld > 0;
     if (h === 'knight' && winding && P.atkHeld >= knightCutAt(e)) { /* let go: THE HEAVY CUT comes down */ }
+    else if (h === 'geomancer' && P.charge > 0 && GEO_K.reach0 + GEO_K.reachK * Math.min(1, P.charge / GEO_K.wind) >= ad - 6) { /* let go: the point has walked out to it */ }
     else if (winding || (free && !P.heavy && ad < want + 4 && (h !== 'pirate' || ad > reach + 12) && level && (P.ground || P.swim) && P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 2)) { k.atk = true; if (!winding) swing = 1; }
     else if (free && ad < reach && level && P.st < 20 && P.st >= 8 && h !== 'pirate') { BK.press('atk'); swing = 1; }   /* no wind for a heavy: a plain cut rather than standing idle */
   } else if (verb === 'sweep' || verb === 'rise') {

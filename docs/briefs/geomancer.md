@@ -13,8 +13,9 @@ shortcuts (never required: B4).
 
 ## Stats and the one rule
 - **95 health**, slightly slower on foot than the other starters, heavy blows.
-- **At most 3 stone pieces** (pillars and walls) exist at once; a fourth crumbles the oldest. Every piece crumbles on
-  its own after ~4 s. Without this cap she walls off the level.
+- **At most 3 stone pieces** (walls, steps, arches) exist at once; a fourth crumbles the oldest. Every piece crumbles on
+  its own after ~4 s. Without this cap she walls off the level. (UPHEAVAL's pillar is not under the cap: it shatters in
+  under half a second - see the rework below.)
 
 ## The weapon: THE STAVE (not the Pyromancer's staff)
 Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and USE:
@@ -30,7 +31,7 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 |---|---|---|
 | X x3 | **stave combo** | head-strike, butt-jab, a full quarterstaff SPIN. The third **shatters any stone piece it hits**, spraying shards forward — her "finish the combo HERE" decision |
 | UP+X | **Spur** | a stone spike juts up in front of her (anti-air) |
-| hold X | **UPHEAVAL** | a pillar erupts ahead (further the longer the hold); it LAUNCHES whatever stands there and stays ~4 s as a platform |
+| hold X | **UPHEAVAL** | **the charge sets the distance** (rework, 2026-09-24): let go at once and a STONE SPIKE juts up at her front foot and hits whatever is touching her (it writes no rock, so it can never trap her); hold, and the eruption point walks out to ~132 px (twice the old 66) with a mark on the floor where it will come up (C1). The pillar LAUNCHES whatever stands there and SHATTERS ~0.4 s later - a crack frame, then a burst of shards. It is a blow, not a platform |
 | tap C | **RAISE WALL** (her defence) | a wall rises in front of her: stops projectiles and YELLOW blows. Raised as a blow lands = the attacker's weapon bounces off and it staggers (her perfect guard). RED blows smash through it: red still means move |
 | plunge | **STONEFALL** | lands like a boulder: a short shockwave that knocks down grounded foes |
 | X in a dash | **ROLLING STONE** | kicks a small boulder forward that bowls through little foes |
@@ -50,7 +51,7 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 | 20 | **AVALANCHE** (capstone) | boulders rain across the room, each with a warning shadow |
 
 ## Passives (arrive with hero level, per Daniel's levelling decision) — three branches
-- **EARTH (the pillars):** 4 pieces instead of 3; pillars last longer; rise taller; a launched foe lands harder.
+- **EARTH (the pillars):** 4 pieces instead of 3; her step and arch last longer (BEDROCK no longer keeps a pillar: it is a blow); pillars rise taller; a launched foe lands harder.
 - **WALL (the defence):** a perfect wall throws arrows back; a cracked wall bursts into shrapnel; a wall takes one red
   blow's full force without breaking.
 - **TREMOR (the meter):** fills faster; the Quake reaches further; Stonefall's knockdown lasts longer.
@@ -63,6 +64,23 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 - Balance: each ability against the Knight's and Warden's at the same level (skill-balance-probe), and a full level
   + boss pilot pass like every hero gets.
 - The Editor and Boss Rush are parked: do not add her to either.
+
+## THE REWORK (Daniel played her; all four items approved 2026-09-24, lane geo2)
+### 1. UPHEAVAL: the charge sets the distance, and close foes are hittable
+- Was: `upheavalX() = 26 + 40*wound` px ahead, and a release under 55% of the wind did nothing - so even the quickest
+  heavy landed a body-length away and a foe touching her was never hit; the pillar then stood ~4 s as a platform.
+- Now (`GEO.wind/reach0/reachK/spikeUpTo/pillarLife` in src/geomancer.js): her wind is 0.5 s (the others' 0.32) and ANY
+  release past the first beat fires. Inside the first 15% of it, a SPIKE at her front foot (hits what is in contact, pops
+  the light ones up, writes no rock). Past that, a pillar at `12 + 120*wound` px (full: 132), with the old "finds its
+  footing under a foe within a hand of the aim" kept. The marker on the floor while she winds is the same answer the
+  blow uses (`upheavalAim`), spike or pillar.
+- The pillar shatters `GEO.pillarLife` = 0.42 s after it erupts (0.12 rising, a crack for the last 0.16, then a burst
+  of shards). It takes no place under THE CAP and never lifts HER.
+- **What it cost:** nothing in the levels - no level has a Geomancer-only shortcut yet (the "Open" question below was
+  never acted on), and no check stood on a pillar. STONE STEP and ARCHWAY are separate pieces and keep their lifetimes.
+  Her yard's UPHEAVAL station (tools/hero-trials.mjs) held X to a full wind and now holds it for the 60 px it needs.
+- Proved: `tools/geomancer.mjs` `heavy` - a foe at contact is hit by the minimal charge, a full charge reaches >= 120 px,
+  the pillar is gone within 0.5 s. RED on the old code (hurt 0, 64 px, still standing after 2.5 s).
 
 ## Open (decide when she is built, not now)
 - Her name and look beyond the stave. (Built as THE GEOMANCER: a moss-green hood and mantle over grey stone-cloth.)

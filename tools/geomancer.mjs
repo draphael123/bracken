@@ -6,6 +6,9 @@
 //             under a boss stops short under it
 //   body      a foe that turns up inside standing stone (spawned, thrown) crumbles that stone the next frame
 //   reload    a level left while stone stands takes the stone with it: the new level's grid is untouched
+//   heavy     UPHEAVAL, reworked (Daniel, 2026-09-24): the quickest release hits a foe TOUCHING her (a spike at her front foot, no
+//             rock written); a full wind comes up at twice the old reach (>= 120 px out, it was 66); and the pillar is gone - shattered -
+//             within half a second of rising (it stood four as a platform)
 //   levels    in three real early levels, at every 5th tile of floor she can stand on: wall, pillar and step raised, and every frame
 //             no living body is inside her rock and, eight seconds on, the level's grid is exactly what it was (no route blocked)
 // PROVED RED FIRST (2026-09-24): with the body test taken out of freeCell and RULE 4 disabled in src/geomancer.js, `lift` and `body`
@@ -30,13 +33,21 @@ try {
   out.crumble = await pg.evalp(`(()=>{__geo([]);const g0=Array.from(BK.L.grid);__raise();BK.keys.atk=true;BK.sim(30);BK.keys.atk=false;BK.sim(5);const n=BK.geo().pieces().length;
     for(let i=0;i<60*7;i++){BK.sim(1);}   /* seven seconds: BEDROCK (level 8, on at 20) makes a piece stand six */const g1=Array.from(BK.L.grid);return {raised:n,left:BK.geo().pieces().length,same:g0.every((v,i)=>v===g1[i])}})()`);
   out.lift = await pg.evalp(`(()=>{__geo([]);BK.spawnEnt({t:'sprig',x:(BK.P.x+66)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;BK.sim(2);const y0=e.y;
-    BK.keys.atk=true;BK.sim(40);BK.keys.atk=false;let inside=false,top=0;for(let i=0;i<40;i++){BK.sim(1);inside=inside||__inside();top=Math.max(top,y0-e.y);}
-    __geo([]);BK.spawnEnt({t:'sprig',x:(BK.P.x+66)/16,y:21});const b=BK.enemies().at(-1);b.hp=b.hp0=5000;b.cd=99;b.mini=true;BK.sim(2);BK.keys.atk=true;BK.sim(40);BK.keys.atk=false;let bin=false;for(let i=0;i<20;i++){BK.sim(1);bin=bin||__inside();}
+    BK.keys.atk=true;BK.sim(22);BK.keys.atk=false;let inside=false,top=0;   /* (22 frames: the wind that walks the point out to him, 66 px) */for(let i=0;i<40;i++){BK.sim(1);inside=inside||__inside();top=Math.max(top,y0-e.y);}
+    __geo([]);BK.spawnEnt({t:'sprig',x:(BK.P.x+66)/16,y:21});const b=BK.enemies().at(-1);b.hp=b.hp0=5000;b.cd=99;b.mini=true;BK.sim(2);BK.keys.atk=true;BK.sim(22);BK.keys.atk=false;let bin=false;for(let i=0;i<20;i++){BK.sim(1);bin=bin||__inside();}
     return {rose:Math.round(top),inside,bossInside:bin,pieces:BK.geo().pieces().length}})()`);
   out.body = await pg.evalp(`(()=>{__geo([]);BK.keys.atk=true;BK.sim(40);BK.keys.atk=false;BK.sim(3);const p=BK.geo().pieces()[0];if(!p)return {none:true};const c=p.cells[0];
     BK.spawnEnt({t:'sprig',x:(c.tx*16+8)/16,y:c.ty+1});const e=BK.enemies().at(-1);e.x=c.tx*16+8;e.y=c.ty*16+12;BK.sim(1);return {stood:BK.geo().pieces().includes(p),inside:__inside()}})()`);
   out.reload = await pg.evalp(`(()=>{__geo([]);__raise();BK.keys.atk=true;BK.sim(40);BK.keys.atk=false;BK.sim(2);const had=BK.geo().pieces().length;BK.load(0);const L=BK.L;const g0=Array.from(L.grid);BK.sim(5);
     return {had,after:BK.geo().pieces().length,same:g0.every((v,i)=>v===L.grid[i])}})()`);
+  out.heavy = await pg.evalp(`(()=>{__geo([]);const P=BK.P;BK.spawnEnt({t:'sprig',x:P.x/16+1,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;
+      const touch=()=>{e.x=P.x+P.w/2+e.w/2;e.vx=0;};BK.sim(2);touch();BK.sim(1);touch();const h0=e.hp,gap=Math.round(e.x-P.x-(P.w+e.w)/2);
+      let f=0;BK.keys.atk=true;while(!(P.charge>0)&&f++<60){touch();BK.sim(1);}BK.keys.atk=false;touch();BK.sim(1);for(let i=0;i<4;i++)BK.sim(1);
+      const contact={hurt:h0-e.hp,gap,held:f};
+      __geo([]);const x0=BK.P.x;let seen=-1,gone=-1,far=0;BK.keys.atk=true;
+      for(let i=0;i<200&&gone<0;i++){if(i===45)BK.keys.atk=false;BK.sim(1);const p=BK.geo().pieces().find(q=>q.kind==='pillar');
+        if(p&&seen<0){seen=i;far=Math.round((p.x0+p.x1)/2-x0);}if(!p&&seen>=0)gone=i;}BK.keys.atk=false;
+      return {contact,far,goneIn:gone<0?999:+((gone-seen)/60).toFixed(2)}})()`);
   /* THE REAL LEVELS: the first three of the campaign */
   out.levels = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const ids=LEVELS.map((l,i)=>[l.id,i]).filter(([id])=>!/^trial|^practice|^draft/.test(id)).slice(0,3);const rows=[];
     for(const [id,i] of ids){__geo(['stoneStep'],false,i);const L=BK.L,W=L.W,H=L.H;const g0=Array.from(L.grid);let tried=0,inside=0,raised=0;
@@ -55,10 +66,13 @@ try {
   assert(out.crumble.same, 'and the level is exactly what it was');
   assert(out.lift.rose >= 20 && !out.lift.inside, 'a pillar under a small foe LIFTS it, never buries it (' + JSON.stringify(out.lift) + ')');
   assert(!out.lift.bossInside, 'and one under a boss stops short under it');
+  assert(out.heavy.contact.gap <= 1 && out.heavy.contact.hurt > 0, 'UPHEAVAL: the quickest release hits a foe touching her (' + JSON.stringify(out.heavy.contact) + ')');
+  assert(out.heavy.far >= 120, 'UPHEAVAL: a full wind comes up at the new reach, twice the old 66 px (' + out.heavy.far + ' px)');
+  assert(out.heavy.goneIn <= 0.5, 'UPHEAVAL: the pillar shatters within half a second (' + out.heavy.goneIn + ' s)');
   assert(!out.body.none && !out.body.stood && !out.body.inside, 'stone a foe turns up inside crumbles at once (' + JSON.stringify(out.body) + ')');
   assert(out.reload.had >= 1 && out.reload.after === 0 && out.reload.same, 'a level left takes its stone with it (' + JSON.stringify(out.reload) + ')');
   for (const r of out.levels) { assert(r.tried >= 5 && r.raised > 0, r.id + ': she raised stone there (' + JSON.stringify(r) + ')'); assert.equal(r.inside, 0, r.id + ': nobody was ever inside her rock'); assert(r.same && r.left === 0, r.id + ': and eight seconds on the level is exactly as it was: no route blocked'); }
   assert(out.oldSave.hp > 0, 'a save that never had her plays her (' + JSON.stringify(out.oldSave) + ')');
   assert.deepEqual(pg.errors, []);
-  console.log('geomancer: the cap holds (3, 4 with the passive), every piece crumbles and gives the grid back, nothing is ever buried, and ' + out.levels.length + ' real levels end as they began');
+  console.log('geomancer: a quick UPHEAVAL hits what touches her, a full one reaches ' + out.heavy.far + ' px and is gone in ' + out.heavy.goneIn + ' s; the cap holds (3, 4 with the passive), every piece crumbles and gives the grid back, nothing is ever buried, and ' + out.levels.length + ' real levels end as they began');
 } finally { pg.close(); }
