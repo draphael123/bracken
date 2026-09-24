@@ -250,7 +250,20 @@ const MAGE = { sees: 220, near: 90, far: 150, speed: 40, reach: 180, boltV: 135,
 // hardest for the two things you do when you are losing. Defence is cheap now. Which of the two you reach
 // for is the MARK's job to tell you - a yellow ! is the shield, a red !! is your feet - and that is a read,
 // not an arithmetic problem about a bar.
-const ST = { swing: 12, plunge: 28, dodge: 16, blockHit: 11, hold: 6, regen: 48, delay: 0.5 };
+const ST = { swing: 12, plunge: 28, dodge: 16, blockHit: 11, hold: 15, regen: 48, delay: 0.5 };   /* hold: 6 -> 15 a second (the knight rework): a raised shield empties a full bar in under seven seconds, so turtling is a cost and a timed guard - free - is the answer */
+/* HOLDING THE SHIELD COSTS, and only holding it. The first moments of a guard - the perfect guard's own window - are free, so a
+   shield raised on the beat costs nothing at all (and the parry pays wind back); after that it drains ST.hold a second, half
+   that with STEADY ARM (it made holding free, which made holding the default). HEAVY BLOWS PUSH HIM: a blow on the shield
+   shoves him back by how hard it was, from a light one's step to a heavy one's slide (guardPush). */
+const perfectWindow = () => tal('parry') ? 0.22 : 0.11;
+function guardHoldDrain(dt) { if ((P.blockT || 0) <= perfectWindow()) return; P.st -= ST.hold * dt * (tal('holdLine') ? 0.5 : 1); }
+const guardPush = dmg => Math.min(260, 90 + Math.max(0, dmg - 12) * 9);
+/* THE KNIGHT'S RIPOSTE (the knight rework, docs/briefs/knight-rework.md). A PERFECT GUARD - the shield RAISED as the blow lands,
+   inside its six frames (twelve with PERFECT GUARD) - opens a window this long, and the first cut he starts inside it is a HEAVY
+   cut whatever its place in the run: it counts as a third cut, with everything a third cut does. This is his answer to the
+   Warden's deflect - a read, paid off where you can see it. (A plain block with the RIPOSTE talent keeps its own, older promise:
+   the next swing within a breath cuts twice as hard, and it is not made heavy.) */
+const RIPOSTE = { window: 0.6, beat: 0.25 };   /* beat: how long before the blow lands the wood's lesson swordsman's sword flashes for a knight */
 
 // ---------- bake ----------
 const SKINS = [
@@ -2133,6 +2146,7 @@ function spawnEnt(e) {
   if (e.elite && enemies.length > n0) eliteMake(enemies[n0], e);   /* before the tier scales it, like a mini's health */
   for (let i = n0; i < enemies.length; i++) if (AMPHIB.has(enemies[i].t)) enemies[i].shore = shoreOf(enemies[i].x, enemies[i].y);   /* an amphibious thing is given the water it was put down by (see shoreLeash) */
   const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.xpRole = !isBoss ? '' : (L.arena && L.arena.boss === e2.t) ? 'boss' : 'mini'; e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr) * (coop() ? 2 : 1)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }   /* CO-OP DOUBLES EVERYTHING THAT FIGHTS. Two heroes, twice the health - and it is done HERE, on the one line every creature, mini and boss in the game already comes through, never per creature. (The other half is in damagePlayer0.) */
+  if (e.lesson) for (let i = n0; i < enemies.length; i++) enemies[i].lesson = e.lesson;   /* a lesson's foe (the wood's swordsman): slow, and his sword flashes */
   if (e.trainer || e.lx0) for (let i = n0; i < enemies.length; i++) Object.assign(enemies[i], { trainer: e.trainer, lx0: e.lx0 * TS + 8, lx1: e.lx1 * TS + 8, leapT: 1.5, trialSt: (L.trial || []).find(q => q.x0 + 1 === e.lx0) || null });   /* A TRIAL'S MAN: he never goes down and he keeps to his own yard */
 }
 function spawnEntitiesTail() {
@@ -4453,7 +4467,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED']);   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
+const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER', 'PUSHED BACK']);   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
   if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (!SET.numbers || !MOVE_WORDS.has(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }
@@ -4563,6 +4577,25 @@ function hintWaits() {
   if (tellQ.length || nums.some(n => isTell(n) && n.life > 0)) hintHoldT = 0.4; else hintHoldT = Math.max(0, hintHoldT - 1 / 60);
   return introCardUp() || bannerT > 0 || ambushMsgT > 0 || hintHoldT > 0 || !!(L && L.wash && wash && wash.state === 'tell');
 }
+/* THE KNIGHT'S PERFECT GUARD GOES OFF BRIGHTER than any other hero's parry, because it is the thing he is FOR now: a white screen
+   flash the size of a kill's, a bell-bright clang of its own (SFX.perfectGuard - never the plain block's knock or the parry's file),
+   a star off the shield rim, and the word. The riposte window it opens is drawn on him until it is spent or gone (drawRiposteGlint). */
+function perfectGuardFx() { const x = P.x + P.face * 10, y = P.y - 10;
+  if (SFX.perfectGuard) SFX.perfectGuard(); if (SET.flashes) killFlash = Math.max(killFlash, 0.06);
+  ringAt(x, y, 44, '#ffffff', 0.3); ringAt(x, y, 24, '#fff6c8', 0.45);
+  for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; parts.push({ streak: true, x, y, vx: Math.cos(a) * 260, vy: Math.sin(a) * 260, life: 0.16, max: 0.16, col: i % 2 ? '#ffffff' : '#fff6c8', size: 1, grav: 0 }); }
+  lessonHint('parry'); }
+/* A GUARD RAISED EARLY in the wood's lesson stretch is a block and not a perfect guard: say so, a few times, while it is true */
+function guardEarlySay() { if (hero() !== 'knight' || !lessonAt('parry') || hintT > 0) return; if ((PROG.guardEarly || 0) >= 3 || (PROG.lessons && PROG.lessons.parry)) return;
+  PROG.guardEarly = (PROG.guardEarly || 0) + 1; hintT = 3.5; hintMsg = 'TOO EARLY: THAT WAS ONLY A BLOCK. RAISE C AS HIS SWORD FLASHES, NOT BEFORE.'; }
+/* THE RIPOSTE WINDOW, ON HIM: a gold ring round the sword hand that closes as the window does, and a glint running up the blade */
+function drawRiposteGlint(cx, cy) {
+  if (hero() !== 'knight' || !P.riposteHeavy || !(P.riposteT > 0) || P.dead) return;
+  const k = Math.min(1, P.riposteT / RIPOSTE.window), x = Math.round(P.x - cx) + P.face * 7, y = Math.round(P.y - cy) - 12;
+  g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35 + 0.5 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1;
+  g.beginPath(); g.arc(x, y, 6 + 12 * k, 0, 7); g.stroke();
+  g.globalAlpha = 0.9; g.fillStyle = '#ffffff'; const gy = y - 2 - Math.floor((1 - k) * 10) % 6; g.fillRect(x - 1, gy, 3, 1); g.fillRect(x, gy - 1, 1, 3);
+  g.restore(); }
 /* THE PARRY GOES OFF: a star of light off the edge of the shield, a second ring twice the size, and a breath of white */
 function parryBurst() { const x = P.x + P.face * 10, y = P.y - 9;
   streaks(x, y, 12, ['#ffffff', '#fff6e0', '#ffd36b'], 240); ringAt(x, y, 34, '#ffd36b', 0.42);
@@ -4694,7 +4727,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
      paid for it. The same NOs hold - a red blow, a blow from behind, a bolt through the boards - so the charge is never untouchable */
   const lcUp = hero() === 'knight' && lcOn() && front;
   const rushUp = hero() === 'knight' && (P.rush > 0 || lcUp) && front;
-  const perfectUp = !rushUp && (P.blockT || 0) < (tal('parry') ? 0.22 : 0.11);
+  const perfectUp = !rushUp && (P.blockT || 0) < perfectWindow();
   const pierced = pierce && (P.block || rushUp) && (front || tal('plated')) && !unblockable && !perfectUp;
   if (pierced) { number(P.x, P.y - 30, 'THROUGH THE SHIELD', '#ff6b6b'); SFX.pierce(); }
   if (((P.block && (front || tal('plated'))) || rushUp) && !unblockable && !pierced) {   /* PLATED: the shield at his back too */
@@ -4702,20 +4735,23 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     if (lcUp) number(P.x, P.y - 28, 'TURNED', '#ffd36b');
     gainResolve(perfect ? 20 : 8);
     if (P.st >= bc) {
-      P.st -= bc; P.stDelay = ST.delay; blocks++; trialEvent('block'); if (tal('riposte')) P.riposteT = 1;
+      P.st -= bc; P.stDelay = ST.delay; blocks++; trialEvent('block'); if (tal('riposte')) { P.riposteT = 1; P.riposteHeavy = false; }
       if (tal('vengeance')) { P.venge = Math.min(30, (P.venge || 0) + Math.round(dmg * 0.5)); number(P.x, P.y - 26, 'KEPT ' + P.venge, '#c9d1dc'); } // VENGEANCE
       if (perfect) { // THE PARRY. Six frames, and it turns the blow round on whoever threw it.
         const f = nearFoe(fromX);
         if (f) { P.parryFoe = f; P.parryFoeUntil = time + 1.5; }
         if (f) { f.stagger = Math.max(f.stagger || 0, f.maxHp ? 0.35 : 1.1); f.flash = 0.2; if (!f.maxHp) f.vx = Math.sign(f.x - P.x) * 160; }
-        P.st = Math.min(P.maxSt, P.st + 12 + (tal('parry') ? 10 : 0)); P.riposteT = 1;
+        P.st = Math.min(P.maxSt, P.st + 12 + (tal('parry') ? 10 : 0)); P.riposteT = RIPOSTE.window; P.riposteHeavy = true; perfectGuardFx();
         if (tal('counterstroke') && f && !f.harmless) counterCut(f, 'COUNTERSTROKE');   /* the shield turns it and the blade answers by itself */
         noteVerb('parry'); P.parryT = 0.22; parries++; trialEvent('parry');
         SFX.parry(); hitstop(0.09); zoomKick(1.04, 0.2); shakeCam(2.5, -P.face * 2);
         ringAt(P.x + P.face * 9, P.y - 9, 18, '#fff6e0', 0.3); number(P.x, P.y - 28, 'PARRY', '#fff6e0'); parryBurst();
         sparks(P.x + P.face * 10, P.y - 9, P.face, 10);
         return 'blocked'; }
-      if (!rushUp) P.vx = -P.face * 90; hitstop(0.05); shakeCam(1.5, -P.face * 2); SFX.block(); impactAt(P.x + P.face * 9, P.y - 9, 'steel'); ringAt(P.x + P.face * 8, P.y - 9, 10, '#c9d1dc', 0.2);
+      if (!rushUp) guardEarlySay();
+      const push = guardPush(dmg), hard = push > 150;   /* a heavy blow on the shield SLIDES him */
+      if (!rushUp) { P.vx = -P.face * push; if (hard) { dust(P.x - P.face * 4, P.y, 5); number(P.x, P.y - 22, 'PUSHED BACK', '#c9d1dc'); } }
+      hitstop(hard ? 0.08 : 0.05); shakeCam(hard ? 3 : 1.5, -P.face * 2); SFX.block(); impactAt(P.x + P.face * 9, P.y - 9, 'steel'); ringAt(P.x + P.face * 8, P.y - 9, 10, '#c9d1dc', 0.2);
       sparks(P.x + P.face * 9, P.y - 8, P.face, 7);
       return 'blocked';
     }
@@ -5153,15 +5189,45 @@ function finisher(e) {
 /* THE WALL SLAM. Thrown into a wall hard enough, a creature hits it, takes it, and comes back off it at you - into the next blow */
 function wallSlam(e) {
   const dir = Math.sign(e.kvx) || 1; e.slammed = true; e.kvx = -dir * Math.min(200, Math.abs(e.kvx) * 0.55); e.kvy = -130; e.knock = Math.max(e.knock, 0.3); e.knockAir = 0;
+  if (e.thirdT > time) { thirdPay(e, 'wall', null, dir); return; }   /* THE KNIGHT'S THIRD CUT into the wall: its own, bigger payoff */
   number(e.x, e.y - e.h - 12, 'SLAM', '#ffd36b'); dust(e.x + dir * 6, e.y - 6, 6); sparks(e.x + dir * 6, e.y - e.h / 2, -dir, 6); shakeCam(3, dir * 2); hitstop(0.05); SFX.thud();
   e.slamming = true; hurtEnemy(e, Math.max(4, Math.round(swordDmg() * 0.5)), e.x + dir * 20, false); e.slamming = false;
 }
+/* THE THIRD CUT PAYS FOR WHERE YOU FINISH (the knight rework). A body the knight's third cut threw that ENDS in something pays:
+   against a wall or into another foe it takes a second, bigger blow (mul x his sword) and reels; into the spikes, a drop or deep
+   water the room kills it as it always did (hazardFoe) and now it is said and heard as his. Each has the same feedback, loud on
+   purpose - the stop, the shake, the zoom, a crunch of its own (SFX.thirdCrunch), the word and the number - because the tip hit's
+   ring is what makes the Warden's swing a decision, and this is his. Thrown into open air, nothing: the choice is where to stand.
+   live: how long a throw stays his (a drop can take a while to reach the bottom). other: the share the foe it was thrown into takes.
+   talentThrow: THIRD CUT (the talent) throws them this much further. */
+const THIRD_PAY = { live: 1.4, mul: 1.6, other: 0.8, stagger: 1.2, talentThrow: 1.4, minSpeed: 30 };
+const THIRD_WORD = { wall: 'AGAINST THE WALL', foe: 'BOWLED OVER', spikes: 'ON THE SPIKES', pit: 'OFF THE EDGE', water: 'INTO THE WATER' };
+let thirdPaying = false;   /* the blow the payoff lands is not itself a third cut, or one throw would bowl a whole room */
+function thirdPay(e, kind, other, dir) {
+  e.thirdT = 0; dir = dir || Math.sign(e.kvx) || P.face; P.thirdPays = (P.thirdPays || 0) + 1; P.thirdPayLast = kind;
+  const y = e.y - (e.h || 16) / 2;
+  hitstop(0.12); shakeCam(6, dir * 3); zoomKick(1.08, 0.25); if (SFX.thirdCrunch) SFX.thirdCrunch(kind);
+  ringAt(e.x, y, 26, '#fff6e0', 0.35); ringAt(e.x, y, 12, '#ffd36b', 0.25); sparks(e.x + dir * 6, y, -dir, 10); dust(e.x + dir * 6, e.y - 4, 8);
+  burst(e.x + dir * 4, y, 10, ['#fff6e0', '#ffd36b', '#c9b27c'], 110, 0.45);
+  number(e.x, e.y - (e.h || 16) - 18, THIRD_WORD[kind], '#ffd36b');
+  if (kind !== 'wall' && kind !== 'foe') return;   /* the room does the rest */
+  thirdPaying = true; try {
+    e.slamming = true; hurtEnemy(e, Math.max(6, Math.round(swordDmg() * THIRD_PAY.mul)), e.x - dir * 20, false); e.slamming = false;
+    if (e.alive) e.stagger = Math.max(e.stagger || 0, THIRD_PAY.stagger);
+    if (other && other.alive) { other.slamming = true; hurtEnemy(other, Math.max(4, Math.round(swordDmg() * THIRD_PAY.mul * THIRD_PAY.other)), e.x, false); other.slamming = false;
+      if (other.alive) { other.stagger = Math.max(other.stagger || 0, THIRD_PAY.stagger); knockFoe(other, dir, 170); other.thirdT = 0; } }
+  } finally { thirdPaying = false; e.slamming = false; if (other) other.slamming = false; } }
+/* what a third-cut throw has run into: another creature standing in its way, on its level (not a boss's own hide: it takes the blow
+   and is not thrown, which knockFoe already refuses) */
+function bowlTarget(e) { const b = box(e); b.l -= 2; b.r += 2;
+  for (const q of enemies) if (q !== e && q.alive && !q.harmless && !(q.gone > 0) && !q.trainer && q.t !== 'dummy' && overlap(b, box(q))) return q; return null; }
 const KNOCK_SKIP = new Set(['hedgewarden', 'gargoyle', 'gravewarden', 'emberwisp', 'pyromancer', 'archmage', 'homunculus', 'turret', 'strawking', 'ploughman', 'rook', 'marshlight', 'haunt', 'boo', 'farmhand', 'kraken', 'krakenarm', 'feeler', 'wasp', 'drone', 'bat', 'harpy', 'crow', 'kite', 'spit', 'gill', 'heart', 'bearer', 'folk', 'sheep', 'siren', 'eel', 'angler', 'petrel', 'gull', 'wisp', 'spider', 'dummy', 'turret', 'bale', 'clinger', 'urchin', 'lurker', 'jelly', 'lamprey', 'manta']);   /* NOT the puffer: deflated, it is light enough to throw */
 function knockFoe(e, dir, push) {
-  if (!e.alive || e.maxHp || e.mini || e.slamming || e.mounted || KNOCK_SKIP.has(e.t)) return;   /* a horse is not thrown across the road by a sword */
-  e.slammed = false;
+  if (!e.alive || e.maxHp || e.mini || e.slamming || e.mounted || KNOCK_SKIP.has(e.t)) return false;   /* a horse is not thrown across the road by a sword */
+  e.slammed = false; e.thirdT = 0;   /* (a throw is the knight's third-cut throw only if the third cut marks it, after this) */
   const wt = POISE_HEAVY.has(e.t) || e.big ? 0.45 : 1;
   e.knockAir = 0; e.knock = 0.45; e.kvx = dir * Math.max(150, push * 1.15) * wt; e.kvy = Math.min(e.vy || 0, -150 * wt); e.bounced = false;   /* (bounced: it comes up off the floor once when it lands) */
+  return true;
 }
 function hazardFoe(e) {
   const tx = Math.floor(e.x / TS); let why = null;
@@ -5169,6 +5235,7 @@ function hazardFoe(e) {
   else if (e.y > LH * TS + 8) why = 'OVER THE EDGE';
   else if (!AMPHIB.has(e.t)) for (const p of (L.pools || [])) if (!p.shallow && !p.swim && !p.dry && e.x > p.x0 && e.x < p.x1 && e.y > p.y + 6) { why = 'DROWNED';   /* a turtle knocked into the river is home, not drowned */ burst(e.x, p.y, 10, ['#eefaff', '#bfe6f5'], 70, 0.5); SFX.splash(); break; }
   if (!why) return false;
+  if (e.thirdT > time) thirdPay(e, why === 'IMPALED' ? 'spikes' : why === 'DROWNED' ? 'water' : 'pit');   /* the knight's third cut put it there */
   number(e.x, Math.min(e.y, LH * TS) - (e.h || 16) - 10, why, '#8fd160'); e.knock = 0; hurtEnemy(e, Math.max(1, e.hp) + 999, e.x + 1, false); return true;
 }
 /* EVERY WARD AND EVERY OPENING, IN ONE PLACE. These five lived inline in hurtEnemy0, which meant a blow went through
@@ -5410,7 +5477,12 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
       const push = plunge ? 30 : Math.min(210, 52 + dmg * 2.4) * (P.heavy ? 1.5 : 1);
       e.vx = dir * push;
       if (P.heavy && !e.maxHp && !(P.bashing && e.mini) && P.y > e.y - 4) { e.vy = Math.min(e.vy || 0, -110); }
-      if (!e.maxHp && !e.mini && (P.heavy || P.dash > 0 || P.dashAtk > 0 || hurtKnock || (P.heavySwing && P.atk >= 0 && hero() === 'knight' && tal('thirdCut')))) knockFoe(e, dir, push);   /* THIRD CUT: the end of a run throws them */
+      /* THE KNIGHT'S THIRD CUT THROWS, every knight's now and not only the talent's: where he finishes the run is the decision.
+         A body it throws is MARKED (e.thirdT) for a moment, and what the throw ends in pays (thirdPay): a wall, the spikes, a drop,
+         deep water or another foe. Open air pays nothing. The held heavy cut and the shield bash (P.heavy) are not third cuts. */
+      const thirdThrow = hero() === 'knight' && P.heavySwing && P.atk >= 0 && !P.heavy && !hurtKnock && !thirdPaying;
+      if (!e.maxHp && !e.mini && (P.heavy || P.dash > 0 || P.dashAtk > 0 || hurtKnock || thirdThrow)) { const thrown = knockFoe(e, dir, thirdThrow && !(P.dash > 0 || P.dashAtk > 0) ? push * (tal('thirdCut') ? THIRD_PAY.talentThrow : 1) : push);   /* THIRD CUT (the talent): it throws them further */
+        if (thrown && thirdThrow) e.thirdT = time + THIRD_PAY.live; }
     }
     if (!P.ground && !P.plunge && !P.dead) { P.vy = Math.min(P.vy, -30); P.airHold = 0.12; } // A HIT IN THE AIR HOLDS YOU UP
     if (wheel) guardWheel(e, fromX);
@@ -6350,6 +6422,7 @@ function lessonHint(kind) {
   if (kind === 'heavyblow') { if (hero() === 'knight') hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING, LET GO: CUT THROUGH IT. DOWN+SWING: UNDER.'; else hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING TO GO THROUGH, OR DOWN+SWING TO GO UNDER.'; }   /* guardTurned's own words (the knight's held swing is a charge, not a cut) */
   else if (kind === 'sweep') hintMsg = 'HIS SHIELD TURNED IT. DOWN+SWING: THE LOW SWEEP GOES UNDER IT AND TRIPS HIM.';
   else if (kind === 'down') hintMsg = DOWN_STRIKE[hero()] ? 'THE DOWN ATTACK SHAKES THE GROUND BESIDE YOU. ONE THAT CATCHES NOTHING ROOTS YOU A BEAT.' : 'COME DOWN AMONG THEM. A PLUNGE THAT CATCHES NOTHING LEAVES YOU STANDING A BEAT.';
+  else if (kind === 'parry') hintMsg = hero() === 'knight' ? 'A PERFECT GUARD: IT COST NOTHING AND HE REELS. CUT NOW - THE NEXT CUT LANDS HEAVY.' : 'ON THE BEAT: HE REELS OPEN. CUT HIM NOW.';
   else if (kind === 'dashatk') hintMsg = 'A GUARD MET AT A RUN GOES OFF BALANCE: DOUBLE-TAP TOWARD HIM AND SWING, THEN CUT HIM WHILE HE REELS.';
   else hintMsg = 'THREE SWINGS IN A RUN: THE THIRD IS A HEAVY CUT THAT SHOVES. STOP, AND IT STARTS OVER.';
   return true;
@@ -6807,7 +6880,7 @@ function updatePlayer(dt) {
   }
   if (keys.block && thrown && !P.saidNoShield) { P.saidNoShield = true; number(P.x, P.y - 22, 'NO SHIELD', '#9aa39a'); } if (!thrown) P.saidNoShield = false;
   if (P.block) {
-    if (!tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;   /* STEADY ARM (the knight's; it was HOLD THE LINE, a name the warden's capstone also had) */
+    guardHoldDrain(dt); P.stDelay = ST.delay;   /* STEADY ARM halves it (the knight's; it was HOLD THE LINE, a name the warden's capstone also had) */
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && (P.ground || P.swim)) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
@@ -10251,7 +10324,7 @@ function magePlayer(dt) {
      the turn, the parry window (P.blockT), the guard break and the stamina are all the shield's own and already work. */
   P.block = !!keys.block && footed && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && hero() === 'knight';
   P.blockT = P.block ? (P.blockT || 0) + dt : 0;
-  if (P.block) { if (!tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;
+  if (P.block) { guardHoldDrain(dt); P.stDelay = ST.delay;
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } }
   /* THE ROLL, off the ceiling he is standing on. No air roll: a hero falling UP has nothing under him to push off. */
   P.dbuf = Math.max(0, (P.dbuf || 0) - dt);
@@ -13563,7 +13636,7 @@ function updateRoadman(e, dt) {
     // on the beat - which is the only way this town teaches it, because nothing here explains anything.
     switch (e.mode) {
       case 'cutTell': want = 0;
-        if (L.trial && !e.glint && e.modeT <= PAL_BEAT) { e.glint = 1; ringAt(e.x + e.face * 12, e.y - e.h + 4, 9, '#ffffff', 0.3); burst(e.x + e.face * 12, e.y - e.h + 4, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); }   /* IN A TRIAL HIS SWORD FLASHES as the Paladin's does: the beat, drawn and heard */
+        if ((L.trial || e.lesson) && !e.glint && e.modeT <= (e.lesson && hero() === 'knight' ? RIPOSTE.beat : PAL_BEAT)) { e.glint = 1;   /* THE WOOD'S LESSON (e.lesson): his sword flashes too, and for a knight at HIS beat - a reaction's length before the blow, so raising the shield as it flashes is a perfect guard */ ringAt(e.x + e.face * 12, e.y - e.h + 4, 9, '#ffffff', 0.3); burst(e.x + e.face * 12, e.y - e.h + 4, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); }   /* IN A TRIAL HIS SWORD FLASHES as the Paladin's does: the beat, drawn and heard */
         if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.22; SFX.slash(); e.vx = e.face * 70;
           if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 22) {
             const res = damagePlayer(e.x, DMG.swornCut);
@@ -13579,7 +13652,7 @@ function updateRoadman(e, dt) {
       default: e.mode = 'walk';
         if (near && e.stagger <= 0) { const wf = faceHim();
           want = wf === e.face && ad > 22 ? e.face * e.speed : 0;
-          if (ad < 30 && wf === e.face && e.cd <= 0) { e.mode = 'cutTell'; e.modeT = L.trial ? 0.9 : 0.55; e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
+          if (ad < 30 && wf === e.face && e.cd <= 0) { e.mode = 'cutTell'; e.modeT = L.trial || e.lesson ? 0.9 : 0.55; e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
         else want = e.face * e.speed * 0.35;
     }
   } else if (e.t === 'hedgeknight') {
@@ -18499,6 +18572,8 @@ function updateEnemies(dt) {
           e.kvy = -Math.min(heavy ? 70 : 110, kvy0 * 0.3); e.sq = 0.16; dust(e.x, e.y, heavy ? 8 : 5);
           for (let i = 0; i < 4; i++) parts.push({ x: e.x + dir * (4 + i * 5), y: e.y - 1, vx: dir * (30 + i * 20), vy: -10 - i * 4, life: 0.28, max: 0.28, col: '#c9b27c', size: i < 2 ? 2 : 1, grav: 90 });
           if (heavy) { SFX.thud(); if (!SET.reduceMotion) shakeCam(1.5); } } }
+      if (e.thirdT > time && !e.slammed && Math.abs(e.kvx) > THIRD_PAY.minSpeed) {   /* a THIRD-CUT throw finds the wall at any speed it was given (a heavy foe's is slow), or a foe */
+        if (Math.abs(e.x - kx0) < Math.abs(e.kvx * dt) * 0.3) wallSlam(e); else { const q = bowlTarget(e); if (q) { e.slammed = true; e.kvx *= -0.3; thirdPay(e, 'foe', q); } } }
       if (!e.slammed && Math.abs(e.kvx) > 110 && Math.abs(e.x - kx0) < Math.abs(e.kvx * dt) * 0.3) wallSlam(e);
       e.vx = e.kvx * 0.3; e.vy = e.kvy; if (!e.alive) continue;
       if (hazardFoe(e)) continue;
@@ -19427,6 +19502,10 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
   // THE THIRD CUT. Every hero, no talent needed: this is what the attack IS, and the tree only sharpens it.
   if (L.hush) noiseAt(P.x, P.y, P.heavy ? 132 : P.combo % 3 === 0 ? 104 : 82, null);   /* a swing carries, and the third one carries further */
   if ((P.evadeCutT || 0) > time && hero() === 'knight') { P.evadeCutT = 0; P.combo = Math.ceil(P.combo / 3) * 3; }   /* EVASION: out of a dodge through a blow, the next swing is a third cut */
+  /* THE KNIGHT'S RIPOSTE: a cut started inside a perfect guard's window IS a third cut, as EVASION's is - the count is
+     moved on to the next third, so everything that reads the third cut (the shove, the throw, the poise, the swing-through,
+     OPENED UP on the one who swung) reads this one. The doubling is the RIPOSTE talent's and only the talent's. */
+  const ripHeavy = hero() === 'knight' && P.riposteT > 0 && !!P.riposteHeavy; if (ripHeavy) P.combo = Math.ceil(P.combo / 3) * 3;
   P.heavySwing = P.combo % 3 === 0; const rip = P.riposteT > 0; P.swingRiposte=!!rip;
   if (hero() === 'knight' && P.realmT > 0 && (P.ground || P.swim)) realmWave(P.heavySwing || P.heavy);   /* SWORD OF THE REALM: every swing sends light along the floor, a third or heavy one a great wave */
   /* SPEARHEAD (her capstone): the third thrust of a run IS the run-through, and she never wound it up. The lunge's own
@@ -19434,11 +19513,12 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
   if (isWarden() && P.heavySwing && !P.heavy && tal('spearhead')) { P.heavy = true; P.runThrough = true; P.rtHit = null; P.rtWound = 1; P.vx = P.face * 40; SFX.heavy(); }   /* and it lunges the whole way: she never wound it, so it is given the full wind */
   if (P.heavySwing && (P.ground || P.swim) && isPaladin() && tal('aftershock') && !P.heavy) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 1.5 : 0.9) * (P.ground ? 1 : 0.7), sp: 200, hit: new Set(), water: !P.ground }); shakeCam(4); SFX.stone(); number(P.x, P.y - 30, 'AFTERSHOCK', '#ffe6a0'); }   /* AFTERSHOCK */
   if (P.heavySwing && P.combo >= 6 && hero() === 'knight' && tal('unbroken')) number(P.x, P.y - 32, 'UNBROKEN ' + P.combo, '#fff6e0');
-  P.swingMul = (P.heavySwing ? 1.5 + 0.25 * tal('thirdCut') : 1) * (rip ? 2 : 1);
-  if (rip) { P.riposteT = 0; ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); }
+  P.swingMul = (P.heavySwing ? 1.5 + 0.25 * tal('thirdCut') : 1) * (rip && (!ripHeavy || tal('riposte')) ? 2 : 1);
+  if (rip) { P.riposteT = 0; P.riposteHeavy = false; ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); }
+  if (ripHeavy) { P.ripostes = (P.ripostes || 0) + 1; SFX.riposte(); number(P.x, P.y - 30, 'RIPOSTE', '#ffd36b'); ringAt(P.x + P.face * 12, P.y - 11, 22, '#fff6c8', 0.25); streaks(P.x + P.face * 12, P.y - 12, 7, ['#ffffff', '#ffd36b'], 190); zoomKick(1.03, 0.14); }
   if (P.heavySwing) { SFX.heavy(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#fff6e0', '#c9d1dc'], 140);
-    if ((PROG.thirdSeen || 0) < 2 && !lessonAt('third')) { PROG.thirdSeen = (PROG.thirdSeen || 0) + 1; hintT = 4;   /* (not in the wood's third-cut stretch: the lesson there says it, once, as the first blow lands) */
-      hintMsg = 'THE THIRD SWING IN A RUN IS A HEAVY CUT THAT SHOVES. STOP SWINGING AND IT STARTS OVER.'; } } }
+    if ((PROG.thirdSeen || 0) < 2 && !lessonAt('third') && !ripHeavy) {   /* (not on a riposte: that heavy cut was the guard's, not the run's) */ PROG.thirdSeen = (PROG.thirdSeen || 0) + 1; hintT = 4;   /* (not in the wood's third-cut stretch: the lesson there says it, once, as the first blow lands) */
+      hintMsg = hero() === 'knight' ? 'THE THIRD SWING IN A RUN THROWS THEM. THROW THEM AT A WALL, THE SPIKES OR EACH OTHER.' : 'THE THIRD SWING IN A RUN IS A HEAVY CUT THAT SHOVES. STOP SWINGING AND IT STARTS OVER.'; } } }
 /* ==== THE TIP. The Warden's one rule, and the only thing a player has to learn about her: a blow pays by WHERE ALONG
    THE SPEAR it landed. The last quarter - 34 px out and beyond, which is the leaf of the head and a little behind it -
    is the TIP and pays thirty percent more, with extra poise on it. The middle is a glancing blow at three quarters.
@@ -21202,7 +21282,7 @@ function drawCutArc(cx, cy) {
     g.beginPath(); if (f > 0) g.ellipse(x, y, 24 - i, 22 - i, 0, tail, head); else g.ellipse(x, y, 24 - i, 22 - i, 0, Math.PI - head, Math.PI - tail); g.stroke(); }
   g.restore(); return true; }
 function drawSwing(cx, cy) {
-  drawRiseCrescent(cx, cy);
+  drawRiseCrescent(cx, cy); drawRiposteGlint(cx, cy);
   if (drawCutArc(cx, cy)) return;
   if (!P.dead && P.atk >= 0 && !P.heavy && (P.swingKind === 'rise' || P.swingKind === 'sweep')) {
     const rising = P.swingKind === 'rise', end = rising ? 0.17 : 0.15;
