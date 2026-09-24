@@ -1,0 +1,2303 @@
+[
+ {
+  "lvl": "wood",
+  "which": "arena",
+  "boss": "queen",
+  "fn": "updateQueen",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "aim",
+   "buck",
+   "call",
+   "dive",
+   "hover",
+   "rise",
+   "slam",
+   "slamHang",
+   "slamRest",
+   "slamUp",
+   "sleep",
+   "sweep",
+   "sweepStart",
+   "volley",
+   "volleyUp",
+   "wake",
+   "winded"
+  ],
+  "tells": [
+   "aim",
+   "slamHang"
+  ],
+  "inWindingUp": [
+   "aim",
+   "slamHang"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 1,
+  "width": 33,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'queen' && !e.mini && e.mode !== 'winded' && e.mode !== 'slamRest' && e.mode !== 'buck') {",
+   "if (e.t === 'queen' && e.mode === 'winded') dmg *= 2;",
+   "if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished",
+   "if (isPaladin() && tal('wrath')) gainLight(10);   /* WRATH */ killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry ",
+   "{ const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : 0.09); shakeCam(big ? 8 : 3, dir * 2); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) k",
+   "burst(e.x, e.y - e.h / 2, e.t === 'queen' ? 40 : 12, COLS[e.t], 100, 0.6);",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp"
+  ]
+ },
+ {
+  "lvl": "marsh",
+  "which": "arena",
+  "boss": "frog",
+  "fn": "updateFrog",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "croak",
+   "croak3",
+   "crouch",
+   "dazed",
+   "hop",
+   "hopAway",
+   "idle",
+   "inhale",
+   "inhaleTell",
+   "leap",
+   "mired",
+   "sleep",
+   "spit",
+   "tongue",
+   "tongueTell",
+   "wake"
+  ],
+  "tells": [
+   "crouch",
+   "inhaleTell",
+   "tongueTell"
+  ],
+  "inWindingUp": [
+   "crouch",
+   "inhaleTell",
+   "tongueTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 2,
+  "width": 43,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'frog' && (e.mode === 'croak' || e.mode === 'dazed')) { dmg *= 2; if (e.mode === 'croak') number(e.x, e.y - e.h - 16, 'THROAT', '#8fd160'); }",
+   "if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }",
+   "if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }",
+   "if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished",
+   "if (isPaladin() && tal('wrath')) gainLight(10);   /* WRATH */ killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry ",
+   "{ const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : 0.09); shakeCam(big ? 8 : 3, dir * 2); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) k",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp"
+  ]
+ },
+ {
+  "lvl": "stockade",
+  "which": "arena",
+  "boss": "chief",
+  "fn": "updateChief",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "aim",
+   "bash",
+   "bashWind",
+   "crouch",
+   "landed",
+   "leap",
+   "lunge",
+   "planted",
+   "rainAim",
+   "rainLoose",
+   "raise",
+   "reach",
+   "shoot",
+   "slam",
+   "slash",
+   "slashWind",
+   "sleep",
+   "swap",
+   "sweep",
+   "toRack",
+   "wake",
+   "walk",
+   "whirl",
+   "whirlWind",
+   "wind"
+  ],
+  "tells": [
+   "aim",
+   "bashWind",
+   "crouch",
+   "rainAim",
+   "raise",
+   "slashWind",
+   "whirlWind",
+   "wind"
+  ],
+  "inWindingUp": [
+   "bashWind",
+   "crouch",
+   "rainAim",
+   "raise",
+   "slashWind",
+   "whirlWind",
+   "wind"
+  ],
+  "notInWindingUp": [
+   "aim"
+  ],
+  "phaseLines": 1,
+  "width": 35,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'chief' && e.mode === 'planted') dmg *= 2;",
+   "if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished",
+   "if (isPaladin() && tal('wrath')) gainLight(10);   /* WRATH */ killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry ",
+   "{ const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : 0.09); shakeCam(big ? 8 : 3, dir * 2); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) k",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "const voice = SFX.hurtOf(e.t); if (voice) voice(); else SFX.hit(); // every creature is hurt in its own voice if (e.t === 'thorn' || e.t === 'sprig' || e.t === 'archer' || e.t === 'sapper' || e.t === 'shield' || e.t === 'brute' || e.t === '",
+   "if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp"
+  ]
+ },
+ {
+  "lvl": "spore",
+  "which": "arena",
+  "boss": "mother",
+  "fn": "updateMother",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "capClap",
+   "capClapTell",
+   "floorSurgeTell",
+   "idle",
+   "open",
+   "phaseRise",
+   "rootColumnsTell",
+   "rootFan",
+   "rootFanTell",
+   "rootStab",
+   "rootStabTell",
+   "seedRain",
+   "seedRainTell",
+   "sleep",
+   "sporeSweepTell",
+   "sporeVolleyTell",
+   "sporeWheelTell",
+   "wake"
+  ],
+  "tells": [
+   "capClapTell",
+   "floorSurgeTell",
+   "rootColumnsTell",
+   "rootFanTell",
+   "rootStabTell",
+   "seedRainTell",
+   "sporeSweepTell",
+   "sporeVolleyTell",
+   "sporeWheelTell"
+  ],
+  "inWindingUp": [
+   "capClapTell",
+   "floorSurgeTell",
+   "rootColumnsTell",
+   "rootFanTell",
+   "rootStabTell",
+   "seedRainTell",
+   "sporeSweepTell",
+   "sporeVolleyTell",
+   "sporeWheelTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 9,
+  "width": 48,
+  "tall": null,
+  "hurtGate": [
+   "if (e === boss && e.t === 'mother') { L.violet = false; L.healed = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 0; }"
+  ]
+ },
+ {
+  "lvl": "kings",
+  "which": "arena",
+  "boss": "king",
+  "fn": "updateKing",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "cageTell",
+   "carried",
+   "charge",
+   "chargeTell",
+   "grab",
+   "grabTell",
+   "held",
+   "hurl",
+   "liftTell",
+   "rise",
+   "shout",
+   "shoutTell",
+   "slam",
+   "slamTell",
+   "sleep",
+   "wake",
+   "walk"
+  ],
+  "tells": [
+   "cageTell",
+   "chargeTell",
+   "grabTell",
+   "liftTell",
+   "shoutTell",
+   "slamTell"
+  ],
+  "inWindingUp": [
+   "cageTell",
+   "chargeTell",
+   "grabTell",
+   "liftTell",
+   "shoutTell",
+   "slamTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 8,
+  "width": 55,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 20, e.y - 30, Math.sign(e.x - fromX) || 1, 5); return; } // his crown turns every blade: only a cage brings his head down",
+   "if (e.t === 'king' && e.mode === 'held') dmg *= 2; // held by a cage: his head is down",
+   "{ const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : 0.09); shakeCam(big ? 8 : 3, dir * 2); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) k",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "if (e.t === 'king' && e.phase === 1 && e.hp <= e.maxHp * 0.66) { e.phase = 2; e.y = L.arena.floor; e.mode = 'rise'; e.modeT = 1.3; e.h = 60; e.throne = { x: e.x, y: L.arena.floor }; number(e.x, e.y - 36, 'THE LITTER BREAKS. HE STANDS', '#ff",
+   "if (e.t === 'king' && e.phase === 2 && e.hp <= e.maxHp * 0.4) { e.phase = 3; e.throneT = 5; number(e.x, e.y - 70, 'THE KING RAGES', '#ff6b6b'); SFX.roar(); shakeCam(6); zoomKick(1.1, 0.3); for (const f of enemies) if (f.alive && f.t === 'fo"
+  ]
+ },
+ {
+  "lvl": "kings",
+  "which": "mini",
+  "boss": "greathound",
+  "fn": "updateGreatHound",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "backstep",
+   "circle",
+   "howl",
+   "howlTell",
+   "idle",
+   "landed",
+   "lunge",
+   "lungeTell",
+   "pounce",
+   "pounceTell",
+   "skid",
+   "snapTell",
+   "stun",
+   "wait",
+   "whine"
+  ],
+  "tells": [
+   "howlTell",
+   "lungeTell",
+   "pounceTell",
+   "snapTell"
+  ],
+  "inWindingUp": [
+   "howlTell",
+   "lungeTell",
+   "pounceTell",
+   "snapTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 1,
+  "width": 21,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'greathound') { for (const h of enemies) if (h.alive && h.t === 'hound' && h.pack) { h.alive = false; burst(h.x, h.y - 3, 6, COLS.hound, 50, 0.4); } miniEnd(e); }",
+   "if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp"
+  ]
+ },
+ {
+  "lvl": "scree",
+  "which": "arena",
+  "boss": "ram",
+  "fn": "updateRam",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "butt",
+   "buttTell",
+   "call",
+   "callTell",
+   "charge",
+   "crash",
+   "land",
+   "leap",
+   "leapTell",
+   "lower",
+   "pace",
+   "patrol",
+   "rear",
+   "sleep",
+   "stamp",
+   "stampTell",
+   "toss",
+   "tossTell",
+   "wake"
+  ],
+  "tells": [
+   "buttTell",
+   "callTell",
+   "leapTell",
+   "lower",
+   "stampTell",
+   "tossTell"
+  ],
+  "inWindingUp": [
+   "buttTell",
+   "callTell",
+   "leapTell",
+   "lower",
+   "stampTell",
+   "tossTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 1,
+  "width": 17,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'ram' && ramOpen(e)) dmg *= 2;",
+   "if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished",
+   "{ const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : 0.09); shakeCam(big ? 8 : 3, dir * 2); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) k",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp"
+  ]
+ },
+ {
+  "lvl": "hanging",
+  "which": "arena",
+  "boss": "owl",
+  "fn": "updateOwl",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "carry",
+   "crash",
+   "dazzled",
+   "descend",
+   "douseDive",
+   "douseTell",
+   "fan",
+   "fanTell",
+   "fly",
+   "grounded",
+   "gust",
+   "hang",
+   "hootTell",
+   "land",
+   "parried",
+   "pinned",
+   "plunge",
+   "riseUp",
+   "screech",
+   "screechTell",
+   "sit",
+   "skim",
+   "skimTell",
+   "sleep",
+   "stalk",
+   "stuckTalons",
+   "swoop",
+   "takeoff",
+   "wake"
+  ],
+  "tells": [
+   "douseTell",
+   "fanTell",
+   "hootTell",
+   "screechTell",
+   "skimTell"
+  ],
+  "inWindingUp": [
+   "douseTell",
+   "fanTell",
+   "hootTell",
+   "screechTell",
+   "skimTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 1,
+  "width": 70,
+  "tall": 16,
+  "hurtGate": [
+   "if (e.t === 'owl' && (e.mode === 'crash' || e.mode === 'grounded')) dmg *= 2;",
+   "if (e.t === 'owl' && e.mode === 'pinned') dmg = Math.round(dmg * 2.5); /* under the dead bough: the window the player made pays best */",
+   "if (e.t === 'owl' && e.mode === 'sit') e.hits = (e.hits || 0) + 1;",
+   "if(e.t==='owl'&&e.lampT>0)dmg=Math.round(dmg*2);   /* THE OWL REEVE, lamp-struck: double (Daniel, 2026-09-21) */   /* THE OPENING: the mark came back on him, and he is open while he gathers himself */",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp"
+  ]
+ },
+ {
+  "lvl": "hanging",
+  "which": "mini",
+  "boss": "spider",
+  "fn": "updateSpider",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "climb",
+   "drop",
+   "dropTell",
+   "ground",
+   "hang",
+   "reelTell",
+   "spit",
+   "spitTell"
+  ],
+  "tells": [
+   "dropTell",
+   "reelTell",
+   "spitTell"
+  ],
+  "inWindingUp": [
+   "dropTell",
+   "reelTell",
+   "spitTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 11,
+  "width": 55,
+  "tall": 15,
+  "hurtGate": []
+ },
+ {
+  "lvl": "spire",
+  "which": "arena",
+  "boss": "abbot",
+  "fn": "updateFalseAbbotBoss",
+  "files": [
+   "src/main.js",
+   "src/false-abbot.js"
+  ],
+  "modes": [
+   "cast",
+   "castTell",
+   "censer",
+   "censerTell",
+   "coals",
+   "coalsTell",
+   "downed",
+   "haul",
+   "knell",
+   "knellTell",
+   "process",
+   "processTell",
+   "rite",
+   "riteTell",
+   "sleep",
+   "spoiled",
+   "stalk",
+   "wake"
+  ],
+  "tells": [
+   "castTell",
+   "censerTell",
+   "coalsTell",
+   "knellTell",
+   "processTell",
+   "riteTell"
+  ],
+  "inWindingUp": [
+   "castTell",
+   "censerTell",
+   "coalsTell",
+   "knellTell",
+   "processTell",
+   "riteTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 6,
+  "width": 92,
+  "tall": 6,
+  "hurtGate": []
+ },
+ {
+  "lvl": "spire",
+  "which": "mini",
+  "boss": "golem",
+  "fn": "updateGolem",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "shroud",
+   "shroudTell",
+   "sleep",
+   "stagger",
+   "stomp",
+   "stompTell",
+   "sweep",
+   "sweepTell",
+   "throw",
+   "throwTell",
+   "wake",
+   "walk"
+  ],
+  "tells": [
+   "shroudTell",
+   "stompTell",
+   "sweepTell",
+   "throwTell"
+  ],
+  "inWindingUp": [
+   "shroudTell",
+   "stompTell",
+   "sweepTell",
+   "throwTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 2,
+  "width": 20,
+  "tall": 8,
+  "hurtGate": [
+   "if (e.t === 'golem' && !(e.crackT > 0) && e.mode !== 'stagger') { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 18, Math.sign(e.x - fromX) || 1, 4); if (!(e.stoneSaid > 0)) { e.stoneSaid = 2; number(e.x, e.y - e.h - 12",
+   "if (e.t === 'golem' && e.mode === 'stagger') dmg *= 1.5;",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "moor",
+  "which": "arena",
+  "boss": "windcaller",
+  "fn": "updateWindcaller",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "appear",
+   "blink",
+   "cast",
+   "fallen",
+   "ground",
+   "howl",
+   "howlTell",
+   "lightning",
+   "lightningTell",
+   "sleep",
+   "stone",
+   "stoneTell",
+   "twister",
+   "twisterTell",
+   "wake",
+   "wall",
+   "wallTell"
+  ],
+  "tells": [
+   "howlTell",
+   "lightningTell",
+   "stoneTell",
+   "twisterTell",
+   "wallTell"
+  ],
+  "inWindingUp": [
+   "howlTell",
+   "lightningTell",
+   "stoneTell",
+   "twisterTell",
+   "wallTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 2,
+  "width": 45,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'windcaller' && !callerOpen(e)) { SFX.buzz(); return; } // between stones there is nothing to cut",
+   "if (e.t === 'windcaller') e.hits = (e.hits || 0) + 1;",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "storm",
+  "which": "arena",
+  "boss": "lance",
+  "fn": "updateLance",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "bash",
+   "bashTell",
+   "charge",
+   "couch",
+   "gale",
+   "galeTell",
+   "guard",
+   "guardSwing",
+   "guardTell",
+   "javTell",
+   "javThrow",
+   "pace",
+   "planted",
+   "recover",
+   "reel",
+   "rise",
+   "rush",
+   "rushTell",
+   "sleep",
+   "stumble",
+   "sweep",
+   "sweepTell",
+   "thrust",
+   "thrustTell",
+   "vault",
+   "vaultTell",
+   "wake",
+   "whirl",
+   "whirlTell"
+  ],
+  "tells": [
+   "bashTell",
+   "couch",
+   "galeTell",
+   "guardTell",
+   "javTell",
+   "rushTell",
+   "sweepTell",
+   "thrustTell",
+   "vaultTell",
+   "whirlTell"
+  ],
+  "inWindingUp": [
+   "bashTell",
+   "couch",
+   "galeTell",
+   "guardTell",
+   "javTell",
+   "rushTell",
+   "sweepTell",
+   "thrustTell",
+   "vaultTell",
+   "whirlTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 2,
+  "width": 127,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'lance' && !lanceOpen(e) && blowHas(blow, 'dash') && !LANCE_BRACED.has(e.mode)) {",
+   "if (e.t === 'lance') { if (lanceOpen(e)) { if (e.mode === 'planted') dmg = Math.round(dmg * 1.6); } else { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 18, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - e.h - 8, '",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "if (e.t === 'lance' && e.hp <= e.maxHp / 2 && e.phase === 1) { e.phase = 2; e.mode = 'rise'; e.modeT = 1.1; e.stagger = 1.1; e.sweepT = 1;"
+  ]
+ },
+ {
+  "lvl": "crown",
+  "which": "arena",
+  "boss": "gqueen",
+  "fn": "updateGQueen",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "ceil",
+   "ceilTell",
+   "chandTell",
+   "charge",
+   "chargeTell",
+   "court",
+   "crownRain",
+   "crownTell",
+   "dazed",
+   "decree",
+   "decreeTell",
+   "gDrop",
+   "gDropTell",
+   "gLeap",
+   "gLeapTell",
+   "gPerch",
+   "land",
+   "leap",
+   "leapTell",
+   "pinned",
+   "point",
+   "rec",
+   "rise",
+   "roof",
+   "roofWait",
+   "sceptreTell",
+   "sceptreWait",
+   "shadow",
+   "shadowTell",
+   "slam",
+   "slamRec",
+   "slamTell",
+   "slate",
+   "slateTell",
+   "sleep",
+   "stand",
+   "struck",
+   "sweep",
+   "sweepTell",
+   "throw",
+   "topple",
+   "wake"
+  ],
+  "tells": [
+   "ceilTell",
+   "chandTell",
+   "chargeTell",
+   "crownTell",
+   "decreeTell",
+   "gDropTell",
+   "gLeapTell",
+   "leapTell",
+   "sceptreTell",
+   "shadowTell",
+   "slamTell",
+   "slateTell",
+   "sweepTell"
+  ],
+  "inWindingUp": [
+   "ceilTell",
+   "chandTell",
+   "chargeTell",
+   "crownTell",
+   "decreeTell",
+   "gDropTell",
+   "gLeapTell",
+   "leapTell",
+   "sceptreTell",
+   "shadowTell",
+   "slamTell",
+   "slateTell",
+   "sweepTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 10,
+  "width": 44,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'gqueen') { if (e.mode !== 'pinned' && e.mode !== 'dazed') {",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "crown",
+  "which": "mini",
+  "boss": "forgemaster",
+  "fn": "updateForgemaster",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "anvil",
+   "anvilTell",
+   "beam",
+   "bellows",
+   "bellowsTell",
+   "breath",
+   "breathTell",
+   "drag",
+   "dragTell",
+   "drop",
+   "dropTell",
+   "hang",
+   "hurl",
+   "hurlTell",
+   "ladle",
+   "ladleTell",
+   "landed",
+   "leap",
+   "leapTell",
+   "pace",
+   "pour",
+   "pourTell",
+   "scald",
+   "slam",
+   "slamTell",
+   "sleep",
+   "spray",
+   "sprayTell",
+   "stride",
+   "stun",
+   "tongs",
+   "tongsTell",
+   "wake",
+   "whirl",
+   "whirlTell"
+  ],
+  "tells": [
+   "anvilTell",
+   "bellowsTell",
+   "breathTell",
+   "dragTell",
+   "dropTell",
+   "hurlTell",
+   "ladleTell",
+   "leapTell",
+   "pourTell",
+   "slamTell",
+   "sprayTell",
+   "tongsTell",
+   "whirlTell"
+  ],
+  "inWindingUp": [
+   "anvilTell",
+   "bellowsTell",
+   "breathTell",
+   "dragTell",
+   "dropTell",
+   "hurlTell",
+   "ladleTell",
+   "leapTell",
+   "pourTell",
+   "slamTell",
+   "sprayTell",
+   "tongsTell",
+   "whirlTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 1,
+  "width": 72,
+  "tall": 14,
+  "hurtGate": [
+   "if (e.t === 'forgemaster') { if (forgeOpen(e)) dmg *= 2; else { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 16, Math.sign(e.x - fromX) || 1, 3); } } // his iron turns half of",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp"
+  ]
+ },
+ {
+  "lvl": "longwater",
+  "which": "arena",
+  "boss": "herald",
+  "fn": "updateHerald",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "callTell",
+   "dead",
+   "ebb",
+   "fetch",
+   "glide",
+   "glideTell",
+   "hurl",
+   "hurlTell",
+   "mael",
+   "maelTell",
+   "mired",
+   "raise",
+   "rec",
+   "reel",
+   "sleep",
+   "spear",
+   "spearTell",
+   "stride",
+   "sweep",
+   "sweepTell",
+   "thrust",
+   "thrustTell",
+   "wake",
+   "walk",
+   "wave"
+  ],
+  "tells": [
+   "callTell",
+   "glideTell",
+   "hurlTell",
+   "maelTell",
+   "raise",
+   "spearTell",
+   "sweepTell",
+   "thrustTell"
+  ],
+  "inWindingUp": [
+   "callTell",
+   "glideTell",
+   "hurlTell",
+   "maelTell",
+   "spearTell",
+   "sweepTell",
+   "thrustTell"
+  ],
+  "notInWindingUp": [
+   "raise"
+  ],
+  "phaseLines": 4,
+  "width": 40,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'herald') { if (e.mode === 'mired') dmg = Math.round(dmg * 1.5); else if (e.mode !== 'reel') { dmg = Math.max(1, Math.round(dmg * 0.35)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 8, e.y - 24, Math.sign(e.x - fro",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "reef",
+  "which": "arena",
+  "boss": "reefmaw",
+  "fn": "updateMaw",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "bite",
+   "biteTell",
+   "dead",
+   "lurk",
+   "recoil",
+   "reel",
+   "rise",
+   "riseTell",
+   "sink",
+   "sleep",
+   "spit",
+   "spitTell",
+   "stuck",
+   "thrash",
+   "thrashTell",
+   "wake"
+  ],
+  "tells": [
+   "biteTell",
+   "riseTell",
+   "spitTell",
+   "thrashTell"
+  ],
+  "inWindingUp": [
+   "biteTell",
+   "riseTell",
+   "spitTell",
+   "thrashTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 4,
+  "width": 28,
+  "tall": 10,
+  "hurtGate": [
+   "if (e.t === 'reefmaw') { // only the open jaw and the caught head take a proper cut",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "flotilla",
+  "which": "arena",
+  "boss": "quarter",
+  "fn": "updateQuarter",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "cut",
+   "dead",
+   "leap",
+   "reel",
+   "riposte",
+   "shoot",
+   "shootTell",
+   "slash",
+   "slashTell",
+   "sleep",
+   "stanceTell",
+   "stride",
+   "wake"
+  ],
+  "tells": [
+   "shootTell",
+   "slashTell",
+   "stanceTell"
+  ],
+  "inWindingUp": [
+   "shootTell",
+   "slashTell",
+   "stanceTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 3,
+  "width": 116,
+  "tall": 14,
+  "hurtGate": [
+   "if (e.t === 'quarter' && e.guard) { SFX.clank(); sparks(e.x, e.y - 12, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 30, 'HER GUARD HOLDS', '#9aa39a'); return; }",
+   "if (e.t === 'quarter' && (e.mode === 'cut' || e.mode === 'reel')) dmg = Math.round(dmg * 1.5); // her blade is in a rope: she cannot answer",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "hurricane",
+  "which": "arena",
+  "boss": "captain",
+  "fn": "updateCaptain",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "beach",
+   "call",
+   "dead",
+   "hook",
+   "hookTell",
+   "keg",
+   "kegTell",
+   "reel",
+   "ride",
+   "sabre1",
+   "sabre2",
+   "sabreTell",
+   "shoot",
+   "shootTell",
+   "sleep",
+   "stride",
+   "wake"
+  ],
+  "tells": [
+   "hookTell",
+   "kegTell",
+   "sabreTell",
+   "shootTell"
+  ],
+  "inWindingUp": [
+   "hookTell",
+   "kegTell",
+   "sabreTell",
+   "shootTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 3,
+  "width": 42,
+  "tall": 10,
+  "hurtGate": [
+   "if (e.t === 'captain' && (e.ride || e.mode === 'ride')) { SFX.splash(); sparks(e.x, e.y - 16, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 44, 'THE SEA HAS HIM', '#9aa39a'); return; }",
+   "if (e.t === 'captain' && e.mode === 'beach') dmg = Math.round(dmg * 2); // beached on his own planking",
+   "if (e.t === 'captain' && e.mode === 'reel') dmg = Math.round(dmg * 1.5);",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "lamplit",
+  "which": "arena",
+  "boss": "tollmaster",
+  "fn": "updateTollmaster",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "blackoutTell",
+   "borne",
+   "dark",
+   "darkTell",
+   "dead",
+   "ledger",
+   "ledgerTell",
+   "reel",
+   "rod",
+   "rodTell",
+   "setDown",
+   "sleep",
+   "toll",
+   "tollTell",
+   "wake",
+   "walk"
+  ],
+  "tells": [
+   "blackoutTell",
+   "darkTell",
+   "ledgerTell",
+   "rodTell",
+   "tollTell"
+  ],
+  "inWindingUp": [
+   "blackoutTell",
+   "darkTell",
+   "ledgerTell",
+   "rodTell",
+   "tollTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 3,
+  "width": 44,
+  "tall": 14,
+  "hurtGate": [
+   "if (e.t === 'tollmaster' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 7); } // both hands over his head",
+   "else if (e.t === 'tollmaster' && !e.onFoot) { dmg = Math.max(1, Math.round(dmg * 0.7)); } // up on the bier, out of an easy reach",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "lamplit",
+  "which": "mini",
+  "boss": "lampreeve",
+  "fn": "updateLampreeve",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "dead",
+   "douse",
+   "draw",
+   "drawTell",
+   "hook",
+   "hookTell",
+   "reach",
+   "sleep",
+   "snuff",
+   "snuffTell",
+   "stalk",
+   "sweep",
+   "sweepTell",
+   "toLamp",
+   "wake"
+  ],
+  "tells": [
+   "draw",
+   "drawTell",
+   "hookTell",
+   "snuffTell",
+   "sweepTell"
+  ],
+  "inWindingUp": [
+   "drawTell",
+   "hookTell",
+   "snuffTell",
+   "sweepTell"
+  ],
+  "notInWindingUp": [
+   "draw"
+  ],
+  "phaseLines": 2,
+  "width": 40,
+  "tall": 9,
+  "hurtGate": [
+   "if (e.t === 'lampreeve' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 30, Math.sign(e.x - fromX) || 1, 6); } // stretched over a lamp with both hands"
+  ]
+ },
+ {
+  "lvl": "underleaf",
+  "which": "arena",
+  "boss": "grandmother",
+  "fn": "updateGrandmother",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "appear",
+   "call",
+   "cast",
+   "feel",
+   "feelTell",
+   "fireTell",
+   "listen",
+   "listenTell",
+   "rap",
+   "reel",
+   "sleep",
+   "sweep",
+   "sweepTell",
+   "throwTell",
+   "thrown",
+   "vanish",
+   "vanishTell",
+   "wake",
+   "walk"
+  ],
+  "tells": [
+   "feelTell",
+   "fireTell",
+   "listenTell",
+   "sweepTell",
+   "throwTell",
+   "vanishTell"
+  ],
+  "inWindingUp": [
+   "feelTell",
+   "fireTell",
+   "listenTell",
+   "sweepTell",
+   "throwTell",
+   "vanishTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 2,
+  "width": 45,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'grandmother' && (e.mode === 'vanish' || (e.alpha !== undefined && e.alpha < 0.35))) return;   /* nothing there to hit */",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "deep",
+  "which": "arena",
+  "boss": "bellcrab",
+  "fn": "updateBellcrab",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "ballastTell",
+   "claw",
+   "clawTell",
+   "idle",
+   "pressure",
+   "pressureTell",
+   "scuttle",
+   "scuttleTell",
+   "slam",
+   "sleep",
+   "vent",
+   "wake"
+  ],
+  "tells": [
+   "ballastTell",
+   "clawTell",
+   "pressureTell",
+   "scuttleTell"
+  ],
+  "inWindingUp": [
+   "ballastTell",
+   "clawTell",
+   "pressureTell",
+   "scuttleTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 2,
+  "width": 43,
+  "tall": 19,
+  "hurtGate": [
+   "if(e.t==='bellcrab') dmg*=e.open>0?1.35:.55;",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp"
+  ]
+ },
+ {
+  "lvl": "keep",
+  "which": "arena",
+  "boss": "drownedking",
+  "fn": "updateDrownedKing",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "anchor",
+   "anchorTell",
+   "debt",
+   "debtTell",
+   "dive",
+   "diveTell",
+   "diveUp",
+   "gulp",
+   "gulpTell",
+   "haul",
+   "haulTell",
+   "mired",
+   "ram",
+   "ramTell",
+   "reel",
+   "rise",
+   "sink",
+   "slam",
+   "slamTell",
+   "sleep",
+   "stunned",
+   "swim",
+   "wake",
+   "whirl",
+   "whirlTell"
+  ],
+  "tells": [
+   "anchorTell",
+   "debtTell",
+   "diveTell",
+   "gulpTell",
+   "haulTell",
+   "ramTell",
+   "slamTell",
+   "whirlTell"
+  ],
+  "inWindingUp": [
+   "anchorTell",
+   "debtTell",
+   "diveTell",
+   "gulpTell",
+   "haulTell",
+   "ramTell",
+   "slamTell",
+   "whirlTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 1,
+  "width": 41,
+  "tall": 35,
+  "hurtGate": [
+   "if (e.t === 'drownedking' && e.open > 0) dmg = Math.round(dmg * 1.35);   /* in the stone or in the floor: every blow lands */",
+   "else if (e.t === 'drownedking' && plunge && P.swim) dmg = Math.max(1, Math.round(dmg * 0.5));   /* A PLUNGE IN HIS WATER HAS NOTHING UNDER IT: you are too light to be down here, and a dive on a swimming king is a cut with no weight behind i",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp"
+  ]
+ },
+ {
+  "lvl": "keep",
+  "which": "mini",
+  "boss": "bellguard",
+  "fn": "updateBellguard",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "hookTell",
+   "knellTell",
+   "rest",
+   "walk"
+  ],
+  "tells": [
+   "hookTell",
+   "knellTell"
+  ],
+  "inWindingUp": [
+   "hookTell",
+   "knellTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 0,
+  "width": 27,
+  "tall": 45,
+  "hurtGate": []
+ },
+ {
+  "lvl": "causeway",
+  "which": "arena",
+  "boss": "kraken",
+  "fn": "updateKraken",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "breath",
+   "dead",
+   "dive",
+   "emerge",
+   "far",
+   "farRise",
+   "farSink",
+   "geyser",
+   "geyserTell",
+   "grab",
+   "grabTell",
+   "held",
+   "hurl",
+   "hurlTell",
+   "jet",
+   "jetTell",
+   "knelled",
+   "look",
+   "lookTell",
+   "lunge",
+   "lungeTell",
+   "orbTell",
+   "orbs",
+   "rake",
+   "rakeTell",
+   "recover",
+   "retract",
+   "rise1",
+   "rise2",
+   "roar",
+   "roarTell",
+   "roll",
+   "rollTell",
+   "sink",
+   "slam",
+   "slamTell",
+   "sleep",
+   "stride",
+   "stride2",
+   "stride3",
+   "stuck",
+   "surface",
+   "sweep",
+   "sweepTell",
+   "wake"
+  ],
+  "tells": [
+   "geyserTell",
+   "grabTell",
+   "hurlTell",
+   "jetTell",
+   "lookTell",
+   "lungeTell",
+   "orbTell",
+   "rakeTell",
+   "roarTell",
+   "rollTell",
+   "slamTell",
+   "sweepTell"
+  ],
+  "inWindingUp": [
+   "geyserTell",
+   "grabTell",
+   "hurlTell",
+   "jetTell",
+   "lookTell",
+   "lungeTell",
+   "orbTell",
+   "rakeTell",
+   "roarTell",
+   "rollTell",
+   "slamTell",
+   "sweepTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 2,
+  "width": 44,
+  "tall": 20,
+  "hurtGate": [
+   "if (e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'feeler') { const kd = krakenHurt(e, dmg, fromX, plunge); if (kd === false) return; dmg = kd; }",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "causeway",
+  "which": "mini",
+  "boss": "tidemarauder",
+  "fn": "updateTideReaverBoss",
+  "files": [
+   "src/main.js",
+   "src/tide-reaver.js"
+  ],
+  "modes": [
+   "backstep",
+   "cast",
+   "castTell",
+   "disarmed",
+   "fetch",
+   "haul",
+   "rake",
+   "rakeTell",
+   "reel",
+   "reelThrust",
+   "stalk",
+   "thrust",
+   "thrustTell",
+   "undertow",
+   "undertowTell",
+   "wrench"
+  ],
+  "tells": [
+   "castTell",
+   "rakeTell",
+   "thrustTell",
+   "undertowTell"
+  ],
+  "inWindingUp": [
+   "castTell",
+   "rakeTell",
+   "thrustTell",
+   "undertowTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 3,
+  "width": 18,
+  "tall": 24,
+  "hurtGate": []
+ },
+ {
+  "lvl": "waymeet",
+  "which": "arena",
+  "boss": "closedhelm",
+  "fn": "updateClosedHelm",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "bash",
+   "bashTell",
+   "broken",
+   "cut",
+   "cutTell",
+   "judge",
+   "judgeTell",
+   "oathRecover",
+   "oathTell",
+   "radianceTell",
+   "reward",
+   "sleep",
+   "stalk",
+   "thrust",
+   "thrustTell",
+   "wake"
+  ],
+  "tells": [
+   "bashTell",
+   "cutTell",
+   "judgeTell",
+   "oathTell",
+   "radianceTell",
+   "thrustTell"
+  ],
+  "inWindingUp": [
+   "bashTell",
+   "cutTell",
+   "judgeTell",
+   "oathTell",
+   "radianceTell",
+   "thrustTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 1,
+  "width": 45,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'closedhelm' && !(e.open > 0)) { SFX.clank(); SFX.aegis(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 22, e.y - 30, Math.sign(fromX - e.x) || 1, 6); e.wardHit = 0.35; hitstop(0.03);",
+   "if (e.t === 'closedhelm' && e.open > 0) { dmg = Math.round(dmg * 2); }   /* the ward is down: the blow finds the man */",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp"
+  ]
+ },
+ {
+  "lvl": "waymeet",
+  "which": "mini",
+  "boss": "lancer",
+  "fn": "updateLancer",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "blown",
+   "charge",
+   "chargeTell",
+   "cut",
+   "cutTell",
+   "rear",
+   "reel",
+   "rest",
+   "ride",
+   "swipe",
+   "swipeTell",
+   "unhorsed",
+   "walk",
+   "wheel"
+  ],
+  "tells": [
+   "chargeTell",
+   "cutTell",
+   "swipeTell"
+  ],
+  "inWindingUp": [
+   "chargeTell",
+   "cutTell",
+   "swipeTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 2,
+  "width": 44,
+  "tall": 10,
+  "hurtGate": [
+   "if (e.t === 'lancer') { if (e.mounted && e.mode !== 'blown' && e.mode !== 'rear' && e.mode !== 'reel') dmg = Math.max(1, Math.round(dmg * 0.6)); else if (e.open > 0) dmg = Math.round(dmg * 1.5); }   /* THE BARDING takes some of every cut; i"
+  ]
+ },
+ {
+  "lvl": "undercrown",
+  "which": "arena",
+  "boss": "prince",
+  "fn": "updatePrince",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "buried",
+   "call",
+   "callTell",
+   "crownTell",
+   "crownThrow",
+   "cut",
+   "cutTell",
+   "reel",
+   "rise",
+   "sinkTell",
+   "sleep",
+   "snuff",
+   "snuffTell",
+   "stalk",
+   "sunk",
+   "wake"
+  ],
+  "tells": [
+   "callTell",
+   "crownTell",
+   "cutTell",
+   "sinkTell",
+   "snuffTell"
+  ],
+  "inWindingUp": [
+   "callTell",
+   "crownTell",
+   "cutTell",
+   "sinkTell",
+   "snuffTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 1,
+  "width": 45,
+  "tall": 23,
+  "hurtGate": [
+   "if (e.t === 'prince') { const pd = princeHurt(e, dmg); if (pd === null) return; dmg = pd; }   /* THE TOMB'S MULTIPLIERS: buried, reeling, bareheaded, in the light - or shrouded, or under the floor */",
+   "if (e.t === 'prince') princeDies(e);   /* his court goes back into the floor and the tomb's lamps come back */",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e",
+   "e.hurtT = HAS_HURT.has(e.t) && !(e.t === 'masthead' && windingUp(e)) && !(e.t === 'prince' && (windingUp(e) || e.mode === 'buried' || e.mode === 'rise' || e.mode === 'cut')) ? 0.2 : 0;",
+   "if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp"
+  ]
+ },
+ {
+  "lvl": "fields",
+  "which": "arena",
+  "boss": "strawking",
+  "fn": "updateStrawKing",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "ablaze",
+   "bale",
+   "baleTell",
+   "call",
+   "callTell",
+   "circle",
+   "fork",
+   "forkTell",
+   "lanternTell",
+   "lanternThrow",
+   "lashed",
+   "leap",
+   "leapTell",
+   "lightTell",
+   "poleDrop",
+   "poleGo",
+   "poleLeap",
+   "rebuild",
+   "rise",
+   "slam",
+   "slamTell",
+   "sleep",
+   "slump",
+   "sweep",
+   "sweepTell",
+   "tangled",
+   "wake",
+   "walk"
+  ],
+  "tells": [
+   "baleTell",
+   "callTell",
+   "forkTell",
+   "lanternTell",
+   "leapTell",
+   "lightTell",
+   "slamTell",
+   "sweepTell"
+  ],
+  "inWindingUp": [
+   "baleTell",
+   "callTell",
+   "forkTell",
+   "lanternTell",
+   "leapTell",
+   "lightTell",
+   "slamTell",
+   "sweepTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 2,
+  "width": 40,
+  "tall": 26,
+  "hurtGate": [
+   "if (e.t === 'strawking') { const sd = strawHurt(e, dmg, fromX, plunge); if (sd === false) return; dmg = sd; }",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "fields",
+  "which": "mini",
+  "boss": "ploughman",
+  "fn": "updatePloughman",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "charge",
+   "chargeTell",
+   "goad",
+   "goadTell",
+   "headTell",
+   "headThrow",
+   "sleep",
+   "stuck",
+   "wake",
+   "walk",
+   "wrench"
+  ],
+  "tells": [
+   "chargeTell",
+   "goadTell",
+   "headTell"
+  ],
+  "inWindingUp": [
+   "chargeTell",
+   "goadTell",
+   "headTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 5,
+  "width": 31,
+  "tall": 10,
+  "hurtGate": [
+   "if (e.t === 'ploughman') dmg = e.open > 0 ? Math.round(dmg * 1.8) : Math.max(1, Math.round(dmg * 0.6));   /* the plough takes the blows in front of him; heaving at his stuck share, nothing does */   /* an arm only lying on the road, the bod"
+  ]
+ },
+ {
+  "lvl": "burial",
+  "which": "arena",
+  "boss": "burieddead",
+  "fn": "updateBuriedDead",
+  "files": [
+   "src/buried-dead.js",
+   "src/main.js"
+  ],
+  "modes": [
+   "bodyFly",
+   "bodyTell",
+   "burrow",
+   "callTell",
+   "clawTell",
+   "cleaveTell",
+   "eruptTell",
+   "novaTell",
+   "rally",
+   "rest",
+   "sinkTell",
+   "slamTell",
+   "sleep",
+   "stuck",
+   "throwTell",
+   "walk"
+  ],
+  "tells": [
+   "bodyTell",
+   "callTell",
+   "clawTell",
+   "cleaveTell",
+   "eruptTell",
+   "novaTell",
+   "sinkTell",
+   "slamTell",
+   "throwTell"
+  ],
+  "inWindingUp": [
+   "bodyTell",
+   "callTell",
+   "clawTell",
+   "cleaveTell",
+   "eruptTell",
+   "novaTell",
+   "sinkTell",
+   "slamTell",
+   "throwTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 4,
+  "width": 42,
+  "tall": 16,
+  "hurtGate": [
+   "if(e.t==='burieddead'&&(e.mode==='burrow'||e.mode==='eruptTell'))return;",
+   "if ((e.t === 'burieddead'||e.t === 'harbormaster') && e.open > 0) dmg=Math.round(dmg*1.3);",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "burial",
+  "which": "mini",
+  "boss": "gravewarden",
+  "fn": "updateGraveWardenBoss",
+  "files": [
+   "src/main.js",
+   "src/grave-warden.js"
+  ],
+  "modes": [
+   "cleave",
+   "cleaveTell",
+   "dig",
+   "digTell",
+   "kneel",
+   "sleep",
+   "stalk",
+   "swing",
+   "swingTell",
+   "toll",
+   "tollTell",
+   "toss",
+   "tossTell",
+   "wake"
+  ],
+  "tells": [
+   "cleaveTell",
+   "digTell",
+   "swingTell",
+   "tollTell",
+   "tossTell"
+  ],
+  "inWindingUp": [
+   "cleaveTell",
+   "digTell",
+   "swingTell",
+   "tollTell",
+   "tossTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 6,
+  "width": 57,
+  "tall": 17,
+  "hurtGate": [
+   "if (e.t === 'gravewarden' && graveOpen(e)) dmg = Math.round(dmg * GRAVE_W.kneelMul);"
+  ]
+ },
+ {
+  "lvl": "mage",
+  "which": "arena",
+  "boss": "archmage",
+  "fn": "updateArchmage",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "blink",
+   "blinkTell",
+   "bolt",
+   "boltTell",
+   "change",
+   "idle",
+   "open",
+   "openTell",
+   "rend",
+   "rendTell",
+   "slam",
+   "slamTell",
+   "sleep",
+   "spit",
+   "spitTell",
+   "swipe",
+   "swipeTell",
+   "wake",
+   "ward",
+   "wardTell"
+  ],
+  "tells": [
+   "blinkTell",
+   "boltTell",
+   "openTell",
+   "rendTell",
+   "slamTell",
+   "spitTell",
+   "swipeTell",
+   "wardTell"
+  ],
+  "inWindingUp": [
+   "blinkTell",
+   "boltTell",
+   "openTell",
+   "rendTell",
+   "slamTell",
+   "spitTell",
+   "swipeTell",
+   "wardTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 1,
+  "width": 43,
+  "tall": 16,
+  "hurtGate": [
+   "if (e.t === 'archmage') { const md = archHurt(e, dmg, fromX); if (md === false) return; dmg = md; }   /* THE MAGE'S FOLLY: nothing through the runes, twice when he is open, a third through the familiar's hide */",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "mage",
+  "which": "mini",
+  "boss": "homunculus",
+  "fn": "updateHomunculus",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "dive",
+   "flaskTell",
+   "leap",
+   "lob",
+   "pounceTell",
+   "pound",
+   "poundTell",
+   "scurry",
+   "scuttleTell",
+   "sleep",
+   "spent",
+   "swipe",
+   "swipeTell",
+   "wake",
+   "walk"
+  ],
+  "tells": [
+   "flaskTell",
+   "pounceTell",
+   "poundTell",
+   "scuttleTell",
+   "swipeTell"
+  ],
+  "inWindingUp": [
+   "flaskTell",
+   "pounceTell",
+   "poundTell",
+   "scuttleTell",
+   "swipeTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 3,
+  "width": 24,
+  "tall": 12,
+  "hurtGate": [
+   "if (e.t === 'homunculus') dmg = homHurt(e, dmg);   /* and the Homunculus takes its blows while it pants */   /* THE HEXED FIELDS: straw takes little that finds no opening */"
+  ]
+ },
+ {
+  "lvl": "fallingtower",
+  "which": "arena",
+  "boss": "undeadmage",
+  "fn": "updateUndeadMage",
+  "files": [
+   "src/main.js",
+   "src/undead-mage.js"
+  ],
+  "modes": [
+   "blinkIn",
+   "blinkOut",
+   "gather",
+   "hover",
+   "markWait",
+   "sleep",
+   "stormTell",
+   "wake"
+  ],
+  "tells": [
+   "stormTell"
+  ],
+  "inWindingUp": [
+   "stormTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 0,
+  "width": 70,
+  "tall": 16,
+  "hurtGate": [
+   "if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake')return;}   /* between two places, he is in neither */",
+   "if(e.t==='undeadmage'&&e.mode==='gather')dmg=Math.round(dmg*LICH.openMul);",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "burning",
+  "which": "arena",
+  "boss": "pyromancer",
+  "fn": "updatePyromancer",
+  "files": [
+   "src/main.js"
+  ],
+  "modes": [
+   "drop",
+   "ember",
+   "emberTell",
+   "jet",
+   "jetTell",
+   "overheat",
+   "rise",
+   "sleep",
+   "staff",
+   "staffTell",
+   "stalk",
+   "step",
+   "stepTell",
+   "vent",
+   "ventTell",
+   "wake",
+   "wall",
+   "wallTell",
+   "wisp",
+   "wispTell"
+  ],
+  "tells": [
+   "emberTell",
+   "jetTell",
+   "staffTell",
+   "stepTell",
+   "ventTell",
+   "wallTell",
+   "wispTell"
+  ],
+  "inWindingUp": [
+   "emberTell",
+   "jetTell",
+   "staffTell",
+   "stepTell",
+   "ventTell",
+   "wallTell",
+   "wispTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 1,
+  "width": 43,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'pyromancer') { if (e.open > 0) dmg = Math.round(dmg * 1.5); e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0; }   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; overheated he takes half as much aga",
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "witchlight",
+  "which": "arena",
+  "boss": "gargoyle",
+  "fn": "updateGargoyleBoss",
+  "files": [
+   "src/main.js",
+   "src/gate-gargoyle.js"
+  ],
+  "modes": [
+   "dive",
+   "diveTell",
+   "flareTell",
+   "gust",
+   "gustTell",
+   "hang",
+   "hover",
+   "land",
+   "perchFly",
+   "recover",
+   "rise",
+   "shriek",
+   "sleep",
+   "spit",
+   "spitTell",
+   "wake"
+  ],
+  "tells": [
+   "diveTell",
+   "flareTell",
+   "gustTell",
+   "spitTell"
+  ],
+  "inWindingUp": [
+   "diveTell",
+   "flareTell",
+   "gustTell",
+   "spitTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 8,
+  "width": 79,
+  "tall": 29,
+  "hurtGate": [
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "witchlight",
+  "which": "mini",
+  "boss": "hedgewarden",
+  "fn": "updateHedgeWardenBoss",
+  "files": [
+   "src/main.js",
+   "src/hedge-warden.js"
+  ],
+  "modes": [
+   "cut",
+   "cutTell",
+   "felled",
+   "rush",
+   "rushTell",
+   "sleep",
+   "stalk",
+   "stump",
+   "thorn",
+   "thornTell",
+   "wake"
+  ],
+  "tells": [
+   "cutTell",
+   "rushTell",
+   "thornTell"
+  ],
+  "inWindingUp": [
+   "cutTell",
+   "rushTell",
+   "thornTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 8,
+  "width": 32,
+  "tall": 13,
+  "hurtGate": []
+ },
+ {
+  "lvl": "oreroad",
+  "which": "arena",
+  "boss": "winchmaster",
+  "fn": "updateWinchBoss",
+  "files": [
+   "src/main.js",
+   "src/winchmaster.js"
+  ],
+  "modes": [
+   "downed",
+   "hook",
+   "hookTell",
+   "letgo",
+   "lever",
+   "leverTell",
+   "reverse",
+   "reverseTell",
+   "send",
+   "sendTell",
+   "sleep",
+   "stalk",
+   "swing",
+   "thrown",
+   "wake"
+  ],
+  "tells": [
+   "hookTell",
+   "leverTell",
+   "reverseTell",
+   "sendTell"
+  ],
+  "inWindingUp": [
+   "hookTell",
+   "leverTell",
+   "reverseTell",
+   "sendTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 9,
+  "width": 43,
+  "tall": 13,
+  "hurtGate": [
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "unburied",
+  "which": "arena",
+  "boss": "deathknight",
+  "fn": "updateDeathKnightBoss",
+  "files": [
+   "src/main.js",
+   "src/unburied-foes.js"
+  ],
+  "modes": [
+   "cut",
+   "cutTell",
+   "open",
+   "pass",
+   "passTell",
+   "raise",
+   "raiseTell",
+   "rally",
+   "reap",
+   "reapTell",
+   "rest",
+   "riseTell",
+   "sleep",
+   "stalk",
+   "swathe",
+   "swatheTell",
+   "wake"
+  ],
+  "tells": [
+   "cutTell",
+   "passTell",
+   "raise",
+   "raiseTell",
+   "reapTell",
+   "riseTell",
+   "swatheTell"
+  ],
+  "inWindingUp": [
+   "cutTell",
+   "passTell",
+   "raiseTell",
+   "reapTell",
+   "riseTell",
+   "swatheTell"
+  ],
+  "notInWindingUp": [
+   "raise"
+  ],
+  "phaseLines": 4,
+  "width": 39,
+  "tall": null,
+  "hurtGate": [
+   "if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e"
+  ]
+ },
+ {
+  "lvl": "unburied",
+  "which": "mini",
+  "boss": "standardbearer",
+  "fn": "updateStandardBearerMini",
+  "files": [
+   "src/main.js",
+   "src/unburied-foes.js"
+  ],
+  "modes": [
+   "bash",
+   "bashTell",
+   "charge",
+   "chargeTell",
+   "plantTell",
+   "planted",
+   "rest",
+   "sleep",
+   "stalk",
+   "sweep",
+   "sweepTell",
+   "torn",
+   "wake"
+  ],
+  "tells": [
+   "bashTell",
+   "chargeTell",
+   "plantTell",
+   "sweepTell"
+  ],
+  "inWindingUp": [
+   "bashTell",
+   "chargeTell",
+   "plantTell",
+   "sweepTell"
+  ],
+  "notInWindingUp": [],
+  "phaseLines": 5,
+  "width": 29,
+  "tall": 13,
+  "hurtGate": []
+ }
+]
