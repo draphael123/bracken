@@ -14,6 +14,7 @@ import { floodReach } from './reachcore.js';
 import { findDeadEnds } from './deadends.js';
 import { spanOf, THREAT } from './threat.js';
 import { buildUnburiedField } from './unburied-field.js';
+import { stormholdTown } from './stormhold-town.js';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
 export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17, CRYST: 18 };
@@ -2053,224 +2054,7 @@ function theMonastery() {
   };
 }
 
-// ============================================================================================
-// LEVEL 10 - STORMHOLD, the last hold.
-// What is left of the goblins after Kingswood, the Stockade and the crags has fallen back up
-// the mountain to the town they came from, and the Queen's castle stands over it in the snow.
-// The village is the lock and the castle is the door: three tiers, three houses, three keys,
-// three gates. You go indoors for the keys. You cross bridges to get anywhere. Then the last
-// gate opens on a bridge a quarter of a mile long, and the Queen's Lance is standing on it.
-// ============================================================================================
-function stormhold() {
-  const L = painter(430, 46); // rows 0-17 are the indoors, off where the street cannot reach
-  const { block, floor, plat, ent, coins, set, spikes } = L;
-  const movers = [], interiors = [], bridges = [];
-  const gateCol = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PORT); };
-  const room = (x0, x1, y0, y1, st = 'stone') => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, 0); interiors.push([x0, x1, y0, y1, st]); };
-  block(0, 429, 0, 18); // the indoor band is solid rock; every room below is cut out of it
-  const roofs = [];
-  const roof = (x0, x1, y) => { block(x0, x1, y - 2, y); roofs.push([x0, x1, y]); }; // a goblin roof: two courses of slate, and a house under it
-  // A span of rope and plank between two piers. `give` planks snap under a standing weight.
-  const span = (x0, x1, y, o) => { const opt = o || {};
-    for (let x = x0; x <= x1; x++) set(x, y, opt.give ? T.SHELF : T.PLANK);
-    bridges.push({ x: x0, x1, y, sway: opt.sway || 0, cut: !!opt.cut });
-    ent('deco', x0, y - 1, { kind: 'bridgepost' }); ent('deco', x1, y - 1, { kind: 'bridgepost' }); };
-
-  // ---- 1. THE UNDER STREET: the market gone to a war camp. Snow, stalls, and the castle above it all. ----
-  floor(0, 60, 34);
-  ent('npc', 8, 33, { kind: 'squire' });
-  ent('sign', 4, 33, { text: 'STORMHOLD. THE GATES ARE LOCKED AND THE KEYS ARE INDOORS. PRESS UP AT A DOOR.' });
-  ent('deco', 16, 33, { kind: 'cairn' }); ent('torch', 12, 33); ent('deco', 24, 33, { kind: 'barrels' });
-  ent('sprig', 30, 33, { face: -1 }); ent('shield', 40, 33, { face: -1 }); ent('torch', 34, 33);
-  coins([14, 32], [22, 31], [36, 32], [48, 32]);
-  ent('check', 20, 33); coins([10, 32], [18, 31], [28, 32], [36, 31]);
-  // the first house: it is already open, so the doorway teaches itself
-  roof(44, 54, 30);
-  ent('doorway', 48, 33, { id: 'hearth-out', to: 'hearth-in', kind: 'goblin' });
-  ent('doorway', 53, 33, { id: 'hearth-far', to: 'hearth-back', kind: 'goblin' });
-  ent('sign', 44, 33, { text: 'THIS DOOR IS ON THE LATCH. INSIDE IS ASLEEP, AND THE BRASS KEY IS ON THE NAIL.' });
-  room(6, 30, 6, 13, 'hall');
-  ent('doorway', 9, 13, { id: 'hearth-in', to: 'hearth-out', lock: [6, 30], label: 'THE HEARTH HOUSE' });
-  ent('torch', 12, 13); ent('brazier', 20, 13); ent('deco', 26, 13, { kind: 'barrels' });
-  ent('hearthgob', 18, 13, { face: -1 }); ent('key', 26, 13, { kind: 'brass' });
-  ent('doorway', 29, 13, { id: 'hearth-back', to: 'hearth-far', lock: [6, 30], label: 'OUT THE BACK' });
-  coins([12, 12], [16, 12], [20, 12], [24, 12], [26, 11]);
-  ent('sign', 7, 13, { text: 'HEARTH GOBLINS SLEEP BY THE FIRE UNTIL YOU COME CLOSE.' });
-  // the first span: short, low, and the planks give
-  block(61, 62, 34, 45); block(75, 76, 34, 45);
-  span(63, 74, 34, { give: true });
-  ent('sign', 58, 33, { text: 'THE PLANKS GIVE UNDER A STANDING WEIGHT. KEEP MOVING.' });
-  ent('deco', 66, 33, { kind: 'lanternPost' });
-  floor(77, 96, 34); ent('archer', 86, 33, { face: -1 }); coins([80, 33], [84, 32], [88, 32], [90, 33]);
-  ent('check', 60, 33);
-  ent('lockgate', 96, 33, { needs: 'brass', h: 6 }); gateCol(96, 28, 33);
-  ent('check', 92, 33);
-
-  // ---- 2. SMOKE ROW: forges and tanneries, and the spans start being watched. ----
-  floor(97, 150, 32);
-  ent('sign', 99, 31, { text: 'SMOKE ROW. THEY WORK IRON FOR THE CASTLE HERE. THE TOWERS COVER EVERY SPAN: PICK YOUR MOMENT.' });
-  ent('deco', 104, 31, { kind: 'forge' }); ent('brazier', 108, 31); ent('brazier', 120, 31); ent('check', 140, 31);
-  ent('hearthgob', 114, 31, { face: -1 }); ent('brute', 130, 31, { face: -1 }); ent('sprig', 140, 31, { face: -1 });
-  roof(110, 124, 28); roof(132, 146, 28);
-  // the rooftops are a road: up the lean-to steps at the forge, across the slates, over the archer's perch
-  // (the silver up here had no way to it at all: the roofs sit six rows over the street)
-  plat(103, 30, 3); plat(106, 28, 3);
-  plat(126, 26, 4); ent('archer', 127, 25, { face: -1 }); coins([102, 30], [110, 29], [118, 30], [127, 25], [132, 29], [136, 30], [144, 29], [146, 30]);
-  ent('silver', 128, 25);
-  // the smithy: the smith, his shelf, and the first captive (the iron key was up his shelf, two houses back from the gate it opens;
-  // a player at that gate went into the tannery beside it and found no key. It lives in the tannery now: every key in Stormhold is
-  // in the house nearest its gate)
-  ent('doorway', 113, 31, { id: 'smithy-out', to: 'smithy-in', kind: 'goblin' });
-  ent('doorway', 122, 31, { id: 'smithy-far', to: 'smithy-back', kind: 'goblin' });
-  room(38, 66, 6, 14, 'stone');
-  ent('doorway', 41, 14, { id: 'smithy-in', to: 'smithy-out', lock: [38, 66], label: 'THE SMITHY' });
-  ent('brazier', 46, 14); ent('deco', 52, 14, { kind: 'anvil' }); ent('torch', 60, 14);
-  ent('hearthgob', 50, 14, { face: -1 }); ent('hearthgob', 58, 14, { face: -1 }); ent('miner', 62, 14, { face: -1 });
-  plat(47, 13, 3); plat(50, 11, 3); plat(54, 10, 4); coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13], [63, 13], [64, 13]); // steps to the shelf: it was five rows off the floor (the coins at the end of it are where the iron key lay)
-  ent('stray', 56, 9, { kind: 'folk' });
-  ent('doorway', 65, 14, { id: 'smithy-back', to: 'smithy-far', lock: [38, 66], label: 'OUT THE SLACK-TUB DOOR' });
-  ent('sign', 39, 14, { text: 'THE SMITHY. THE BACK DOOR IS PAST THE SHELF.' });
-  // the second span: long, watched from both ends, and a cutter on the far post
-  block(151, 152, 32, 45); block(178, 179, 32, 45);
-  // (the span over the sootworks gorge came down: THE CHIMNEYS, below, are the crossing now)
-  ent('stormshaman', 181, 31, { face: -1 }); // (the rope cutter could drop the only way on: a shaman holds the far end instead)
-  ent('archer', 151, 31, { face: 1, fire: true }); ent('rockgoblin', 179, 31, { face: -1 }); // (her floor there is row 32: these two were standing two rows over it)
-  ent('sign', 148, 31, { text: 'AN AXE GOBLIN ON THE ROPE WILL CUT IT. THROW THE SHIELD AT HIM.', pyro: 'AN AXE GOBLIN ON THE ROPE WILL CUT IT. AN EMBER REACHES HIM.', paladin: 'AN AXE GOBLIN ON THE ROPE WILL CUT IT. THE BLESSED HAMMER REACHES HIM.' });
-  ent('deco', 152, 31, { kind: 'lanternPost' }); ent('deco', 179, 31, { kind: 'lanternPost' }); // a lamp on each bank of the chimneys (they stood in the air over the old span)
-  floor(180, 208, 32); ent('sprig', 190, 31, { face: -1 }); ent('shield', 200, 31, { face: -1 });
-  coins([184, 31], [194, 30], [204, 31]);
-  // the tannery: a house you go through, not into, the second captive, and the iron key for the gate just past its far door
-  roof(186, 198, 28); ent('doorway', 188, 31, { id: 'tan-out', to: 'tan-in', kind: 'goblin' });
-  ent('doorway', 196, 31, { id: 'tan-far', to: 'tan-back', kind: 'goblin' });
-  room(74, 98, 6, 13, 'earth');
-  ent('doorway', 77, 13, { id: 'tan-in', to: 'tan-out', lock: [74, 98], label: 'THE TANNERY' });
-  ent('torch', 82, 13); ent('hearthgob', 88, 13, { face: -1 }); ent('spider', 92, 7, { drop: 90 });
-  ent('key', 93, 13, { kind: 'iron' });   /* under the spider's thread: you take it past the goblin and the drop */
-  ent('stray', 95, 13, { kind: 'folk' }); coins([80, 12], [84, 12], [88, 12], [90, 12]);
-  ent('doorway', 97, 13, { id: 'tan-back', to: 'tan-far', lock: [74, 98], label: 'OUT PAST THE PITS' });
-  ent('lockgate', 208, 31, { needs: 'iron', h: 6 }); gateCol(208, 26, 31);
-  ent('check', 204, 31);
-
-  // ---- 3. THE HALLS: the officers' houses under the crag, and every span at once. ----
-  floor(209, 250, 30);
-  ent('sign', 211, 29, { text: 'THE HALLS UNDER THE CRAG. THE LAST KEY IS IN THE LONGHOUSE, AND IT IS FULL.' });
-  ent('deco', 218, 29, { kind: 'banner', v: 0 }); ent('deco', 240, 29, { kind: 'banner', v: 1 });
-  ent('brute', 224, 29, { face: -1 }); ent('pike', 234, 29, { face: -1 }); ent('archer', 246, 29, { face: -1, fire: true }); ent('check', 240, 29); ent('shield', 249, 29, { face: -1 });   /* a composed pair: the shield stands past her fire arrows, on the same hall floor - go round the guard and into the flames, or through the guard first */
-  roof(214, 232, 26); roof(236, 248, 26); ent('torch', 216, 29); ent('torch', 244, 29);
-  coins([214, 28], [220, 27], [228, 28], [232, 27], [238, 28], [244, 27], [248, 28]);
-  // the longhouse: the deepest room, the bone key at the back of it
-  ent('doorway', 220, 29, { id: 'long-out', to: 'long-in', kind: 'cottage' });
-  ent('doorway', 244, 29, { id: 'long-far', to: 'long-back', kind: 'cottage' });
-  room(106, 160, 4, 15, 'hall');
-  ent('doorway', 109, 15, { id: 'long-in', to: 'long-out', lock: [106, 160], label: 'THE LONGHOUSE' });
-  ent('torch', 114, 15); ent('brazier', 124, 15); ent('brazier', 142, 15); ent('torch', 154, 15);
-  ent('hearthgob', 120, 15, { face: -1 }); ent('hearthgob', 134, 15, { face: 1 }); ent('brute', 146, 15, { face: -1 });
-  plat(112, 14, 3); plat(115, 12, 3); plat(118, 11, 4); plat(123, 10, 3); plat(128, 8, 5); plat(136, 10, 4); ent('archer', 129, 7, { face: -1 }); // a real way into the rafters
-  ent('stray', 130, 7, { kind: 'folk' }); ent('key', 156, 15, { kind: 'bone' });
-  ent('doorway', 159, 15, { id: 'long-back', to: 'long-far', lock: [106, 160], label: 'OUT THE GABLE END' });
-  coins([116, 10], [120, 10], [126, 7], [130, 7], [137, 9], [139, 9], [150, 14], [154, 14]);
-  ent('sign', 107, 15, { text: 'THE LONGHOUSE. THE BONE KEY AND THE WAY OUT ARE BOTH AT THE FAR END.' });
-  // a swaying span with a cutter, over the drop, to the last gate
-  block(251, 252, 30, 45); block(274, 275, 30, 45);
-  span(253, 273, 30, { sway: 2, give: true });
-  ent('stormshaman', 273, 29, { face: -1 }); ent('harpy', 262, 20);
-  ent('archer', 251, 29, { face: 1, fire: true });
-  floor(276, 300, 30); ent('sprig', 284, 29, { face: -1 }); ent('shield', 294, 29, { face: -1 });
-  ent('silver', 288, 25); plat(286, 26, 4); coins([280, 29], [288, 25], [296, 29]);
-  ent('lockgate', 300, 29, { needs: 'bone', h: 7 }); gateCol(300, 23, 29);
-  ent('check', 296, 29);
-
-  // ---- 4. THE LONG BRIDGE: seven spans, six piers, and the Queen's Lance. ----
-  // one height the whole way, so his charge has one line to run and the piers are the rhythm
-  const BY = 30, P0 = 302; // the deck row: the piers are solid from here down and the deck planks sit on it
-  // the bridgehead: the one column between the bone gate and the first pier was open to the gorge, and
-  // anyone who walked through the gate without jumping fell out of the world on the way to the fight
-  block(301, 301, BY, 45);
-  ent('check', 304, BY - 1);
-  ent('sign', 302, BY - 1, { text: 'THE QUEEN\'S LANCE CANNOT TURN MID-CHARGE. STAND ON A LOOKOUT AND LET HIM PASS.' });
-  const piers = [];
-  for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4;
-    block(px0, px1, BY, 45); piers.push([px0, px1]);
-    // sound planks: a duel of blocks and parries cannot be fought on boards that drop you for standing still.
-    // The give-planks are the street's lesson; out here the hazard is the holes his charge leaves.
-    if (k > 0) { const s0 = px0 - 13, s1 = px0 - 1; span(s0, s1, BY, { sway: k >= 3 ? 2 : 1 }); }
-    if (k >= 1 && k <= 5) { ent('deco', px0 + 2, BY - 1, { kind: 'bridgetower' });
-      plat(px0, BY - 3, 5); ent('brazier', px0 + 4, BY - 4); } // a lookout on every tower pier: hop up and his charge goes under you
-    // a fire cage over the middle of every span, on a lamp-standard: cut its chain as he goes under it
-    if (k > 0) ent('weight', px0 - 7, BY - 9, { len: 6, lamp: true });
-  }
-  // the last span, from the seventh pier to the gatehouse. Without it the bridge stopped nine tiles
-  // short of the door and there was no way off it at all.
-  span(415, 423, BY, { sway: 2 });
-  // the towers loose at you on the open spans
-  ent('archer', 322, BY - 1, { face: 1, fire: true }); ent('archer', 358, BY - 1, { face: -1, fire: true });
-  ent('rockgoblin', 394, BY - 1, { face: -1 }); ent('archer', 412, BY - 1, { face: -1, fire: true });
-  // (no rope cutter out here: a span dropping out from under a duel on a timer nobody can see is not a fight)
-  for (const x of [310, 328, 346, 364, 382, 400]) { ent('deco', x, BY - 1, { kind: 'lanternPost' }); coins([x + 4, BY - 2]); }
-  ent('silver', 373, BY - 2);
-  // the far gatehouse, and the way out
-  block(428, 429, 20, 45); floor(424, 429, BY);
-  ent('deco', 426, BY - 1, { kind: 'gatehouse' });
-  ent('gate', 427, BY - 1);
-  /* (THE BARRICADES WENT. Six palisades across the bridge made the Queen's Lance a fight about walls; the bridge is bare now,
-     and the weights over it are what you bring down on him.) */
-  ent('lance', 320, BY - 1);
-
-  // ---- (pass two) THE CHIMNEYS: the old sootworks gorge. The span is down; the chimney stacks still stand a hop apart,
-  // and the sweeps who live in them come up to throw soot. The gorge has a floor
-  // now and a rope ladder up the near side: a fall is a climb back, not a death. ----
-  for (let x = 153; x <= 177; x++) set(x, 32, T.AIR);
-  block(153, 177, 44, 45); for (let y = 32; y <= 43; y++) set(153, y, T.NET);
-  for (const [x0, top] of [[155, 31], [159, 29], [164, 30], [168, 29], [173, 30]]) { block(x0, x0 + 1, top, 43); ent('chimpot', x0 + 1, top - 1); } // up-hops are two tiles, drops three
-  // a rope ladder down every shaft, not just the first: the stacks wall each one off from the next (the last one
-  // climbs the far bank instead, so a fall there is a way on)
-  for (const [lx, top] of [[157, 31], [161, 29], [166, 30], [170, 29], [177, 32]]) for (let y = top; y <= 43; y++) set(lx, y, T.NET);
-  ent('sweep', 159, 28, { face: -1 }); ent('sweep', 168, 28, { face: -1 });
-  ent('sign', 150, 31, { text: 'THE SPAN IS DOWN: CLIMB THE STACKS. SWEEPS THROW SOOT. EVERY SHAFT HAS A LADDER.' });
-  coins([157, 28], [160, 27], [165, 28], [169, 27], [171, 27], [176, 29], [162, 40], [171, 40]);
-  // ---- (pass two) THE HOUSES AS PLACES. The longhouse is a feast: tables to fight over and three chandeliers to cut down
-  // on whoever is under them. The smithy's forge breathes up to the shelf. The tannery hangs its hides from racks you climb. ----
-  for (const x of [121, 138, 152]) ent('weight', x, 4, { len: 4, lamp: true, hang: true });
-  plat(124, 14, 5); plat(142, 14, 5); ent('sapper', 146, 15, { face: -1 }); ent('hearthgob', 128, 15, { face: 1 });
-  ent('vent', 52, 14, { heat: true, h: 90, period: 3.4, on: 1.5, lift: 240, w: 12 });
-  plat(80, 11, 3); plat(85, 9, 3); plat(90, 11, 3); coins([81, 10], [86, 8], [91, 10]);
-  for (const x of [79, 84, 89, 94]) ent('deco', x, 6, { kind: 'banner', v: x % 2, hang: true });
-  ent('sprig', 82, 13, { face: 1 }); ent('sprig', 88, 13, { face: -1 });
-  // ---- (pass two) more of the goblins that live here: bombers on the street, a shaman on the roofs, a sweep in a house chimney ----
-  ent('sapper', 124, 31, { face: -1 }); ent('sapper', 200, 31, { face: -1 }); ent('stormshaman', 139, 25, { face: -1 }); ent('sweep', 122, 25, { face: -1 });
-
-  // THE HOUSES. Every roof has a house under it, walls down to the street: the door you go in by is its
-  // door, and a roof with no way in gets a door that stays shut. (They were a slate slab over a lone door.)
-  const houses = roofs.map(([x0, x1, y]) => { const mx = (x0 + x1) >> 1; let fy = y + 1; while (fy < L.H && L.grid[fy * L.W + mx] === T.AIR) fy++;
-    const drs = L.ents.filter(e => e.t === 'doorway' && !e.lock && e.y === fy - 1 && e.x > x0 && e.x < x1).map(e => e.x);
-    return { x0: x0 + 1, x1: x1 - 1, y0: y + 1, y1: fy - 1, door: drs.length ? drs[0] : null, door2: drs.length > 1 ? drs[1] : null, seed: x0 }; }).filter(h => h.y1 >= h.y0 + 1);
-
-  // THE WATCHTOWERS: permanent banks carry the legs; each upper deck repays the climb.
-  const watchtowers=[{x0:28,x1:35,top:23,floor:34,kind:'timber',payoff:'horn'},{x0:180,x1:185,top:21,floor:32,kind:'timber',payoff:'weight'},{x0:277,x1:283,top:21,floor:30,kind:'timber',payoff:'gate'}],zipLines=[];
-  for(const [i,z] of watchtowers.entries()){
-    plat(z.x0,z.top,z.x1-z.x0+1);for(let y=z.top;y<z.floor;y++)set(z.x0,y,T.NET);
-    for(let x=z.x0+2;x<=z.x1;x++)if(L.grid[(z.top+5)*L.W+x]===T.AIR)set(x,z.top+5,T.ONEWAY);
-    ent('sprig',z.x0+3,z.top+4,{face:-1});ent(i===0?'horn':'archer',z.x0+3,z.top-1,{face:-1});
-    ent('sign',z.x0+1,z.floor-1,{text:i===0?'THE HORN TOWER. CLIMB INSIDE AND SILENCE IT. UP TAKES THE ROPE; JUMP LETS GO.':i===1?'THE SOOT WATCH. STRIKE THE WINCH TO DROP ITS WEIGHT ON THE ROOF BELOW.':'THE GATE WATCH. ITS TOP WINCH OPENS THE CAMP BARRIER. TAKE THE ROPE BACK DOWN.'});
-    const end=[42,204,295][i],endY=[29,27,27][i];zipLines.push({x0:(z.x1-1)*TS+8,y0:z.top*TS-18,x1:end*TS+8,y1:endY*TS-18,posts:[[(z.x1-1)*TS+8,z.top*TS-18,z.top*TS],[end*TS+8,endY*TS-18,(i===0?34:i===1?32:30)*TS]]});
-  }
-  ent('weight',187,19,{len:3,hang:true});ent('archer',187,25,{face:-1});ent('lever',184,20,{dropWeight:187});
-  gateCol(285,27,29);ent('lever',282,20,{openColumn:[285,27,29]});
-  return {
-    watchtowers,structures:watchtowers,zipLines,ropes:zipLines,
-    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 }, pools: [], falls: [], moversExtra: movers, interiors, bridges, houses,
-    indoorRow: 18, // rows 0-18 are the insides of the houses: the camera never shows them from the street, nor the street from inside
-    duskStart: -1, duskLen: 1, music: 'stormhold', night: true, glowNight: true, nightA: 0.26,
-    quest: { n: 3, item: 'folk', name: 'HILL FOLK', npc: 'squire', done: 'THEY ARE OUT OF THEIR CELLARS', reward: 'relic', relic: 'shoes' },
-    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(150,160,200,0.16)',
-      grass: '#cfd8e2', grassL: '#eef4ff', grassD: '#9aa8bc', dirt: '#4a4a58', dirtL: '#62626e', dirtD: '#32323c',
-      canopy: ['#3a3a48', '#4a4a5a', '#5a5a6c', '#6a6a80'] },
-    weather: [{ x0: 0, x1: 99999, kind: 'snow' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    castle: true, // the castle grows over the whole level: drawn behind everything
-    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'musCastle', tint: '#6a7a9a', tintA: 0.10, fx: 'dust' },
-  };
-}
-
+/* LEVEL 10 - STORMHOLD, THE CASTLE TOWN: built in src/stormhold-town.js (docs/briefs/stormhold-town.md). */
 
 // ============================================================================================
 // THE UNDERCROWN - the secret level under Highcrown, and the only one in the game that goes DOWN.
@@ -7164,7 +6948,7 @@ export const LEVELS = [
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'EIGHT FLOORS ON ONE CLIFF, AND THE WAY UP IS THROUGH THEM.', build: hangingVillage, needs: 'scree' },
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND IS THE VERB: IT CARRIES YOU, IT PINS YOU, IT LIFTS YOU.', build: galeMoor, needs: 'spire' },
-  { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES, AND EVERY KEY IS INDOORS.', build: stormhold, needs: 'oreroad' },
+  { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES. EVERY KEY HANGS IN A WATCHTOWER.', build: () => stormholdTown({ painter, T, TS }), needs: 'oreroad' },
   { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: 'storm' },   /* (2026-09-23: the Ore Road is the way to her gate now) */
   { id: 'longwater', arc: 'the sea', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: longWater, needs: 'crown' },
   { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', rule: 'BREATH IS THE CLOCK. THE AIR IS IN BELLS, A SWIM APART.', build: shipwreckReef, needs: 'longwater' },
@@ -7275,8 +7059,6 @@ const REVIEW = {
   // the sappers' tunnel was the busiest 38 tiles in the busiest level: the brute and one sapper go, and it is a
   // held breath between the walls instead of another fight
   stockade: L => { L.ents = L.ents.filter(e => !((e.t === 'brute' && e.x === 372 && e.y >= 21) || (e.t === 'sapper' && e.x === 368 && e.y >= 21))); },
-  // a silver four rows over the street: a step up to it
-  storm: L => { rv(L).plat(282, 28, 3); for (const e of L.ents) if (e.t === 'deco' && e.kind === 'cairn') { e.kind = 'skullTotem'; e.v = 0; } },
   // one spider in four goes: a fall off a climb should not land you in three more of them
   hanging: L => { let n = 0; for (let i = L.ents.length - 1; i >= 0; i--) { const e = L.ents[i]; if (e.t === 'spider' && !e.big && !e.mini && (n++ % 4) === 3) L.ents.splice(i, 1); } },
   // THE CLOUD CAMP: a foreman's tent and fire in the cloister's corner, and someone to tell you about the sun; and
@@ -7307,7 +7089,7 @@ export const DRESS = {
      that reads: flags on a post, a shrine with a roof on it, a censer stand, the bee skeps. */
   spire: [['prayerFlags', 2], ['herbBed'], ['skep'], ['incenseStand', 2], ['monkChores'], ['stone', 3], ['shrine', 2], ['flagPost', 2]],
   moor: [['stone', 3], ['cairn'], ['fence', 2], ['bones', 2], ['deadTree', 2]],
-  storm: [['barrels'], ['lanternPost'], ['spearRack'], ['banner', 2], ['cart'], ['tent', 2], ['warStandard', 2], ['hideBanner', 2], ['gobPennant', 3], ['stakeFence', 2], ['hideRack', 2], ['cookSpit'], ['cauldron'], ['trophyRack', 2], ['clothStrip', 3], ['boneChime', 2], ['warnPost', 2]],   /* the hill clans' hold: hides, stakes, standards */
+  storm: [['barrels', 2], ['lanternPost', 2], ['cart'], ['trough'], ['waterButt', 2], ['wares', 2], ['banner', 2], ['spearRack'], ['gobPennant', 2], ['warStandard'], ['stakeFence']],   /* a town's own furniture, and what an occupying army leaves on it */
   crown: [['banner', 2], ['barrels'], ['spearRack'], ['lanternPost'], ['hangCage'], ['clothStrip', 4], ['warStandard', 2], ['gobPennant', 4], ['lootHeap', 2], ['trophyRack', 2], ['idol', 2], ['cauldron'], ['boneChime', 2]],   /* the Queen's castle: her strips in the halls, the loot of the whole wood */
   lamplit: [['cityWeed', 3], ['shellDrift', 2], ['lampWreck', 2], ['sealDrift', 2], ['drownedCart'], ['column', 2]],
   underleaf: [['barrels'], ['wares'], ['fence', 2], ['cart'], ['well'], ['lanternPost'], ['beehive'], ['idol', 2], ['hideRack', 2], ['cauldron'], ['cookSpit'], ['gobPennant', 3], ['lootHeap', 2], ['boneChime', 2], ['clothStrip', 3], ['trophyRack', 2]],   /* a village at home: pots on, hides out, the household gods */
@@ -7338,7 +7120,7 @@ const GARRISON = {
      is the mountain's own (the birds, the bats, the rock) and the goblins who took the monastery, who are the False
      Abbot's congregation now and so belong here twice over. The weights still total 67: the density does not move. */
   spire: [['fledgling', 14], ['harpy', 11], ['bat', 9], ['sentry', 9], ['rockgoblin', 9], ['troll', 5], ['gobpriest', 5], ['gobmage', 5]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
-  storm: [['hearthgob', 5], ['cutter', 5], ['sentry', 2], ['pike', 1]],
+  storm: [['hearthgob', 8], ['cutter', 7], ['sentry', 3], ['pike', 2], ['sprig', 6], ['archer', 3], ['shield', 3], ['brute', 2], ['hound', 3]],   /* the castle town is half again as long as the war camp was */
   crown: [['soldier', 5], ['javelin', 4], ['heavy', 3], ['pike', 2]],   // the peak of act two, and it was reading under Stormhold before it. Her HEAVY KNIGHTS live here and nowhere earlier.
   longwater: [['scout', 5], ['tideguard', 6], ['crab', 6], ['siren', 4], ['eel', 3], ['netter', 2], ['angler', 3], ['turtle', 4], ['heronfoe', 3], ['lamprey', 2], ['puffer', 1], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],   // replacing weight, not piling on: three of the eel/angler/siren's slots go to the new wildlife
   reef: [['angler', 9], ['crab', 7], ['sailor', 4], ['netter', 4], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 4], ['urchin', 2], ['lookout', 1], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 3], ['merrowcaller', 2]],
@@ -7507,7 +7289,7 @@ function garrison(L, id) {
 const GOBLIN_CAMP = {
   stockade: [['warnPost', 22, 19, 0], ['stakeFence', 56, 19, 1], ['hideBanner', 90, 19, 0], ['trophyRack', 130, 19, 0], ['hideRack', 243, 13, 1], ['cookSpit', 260, 13], ['lootHeap', 364, 13, 0], ['skullTotem', 386, 11, 1], ['warStandard', 441, 11, 0]],
   kings: [['gobPennant', 16, 19, 2], ['warnPost', 35, 19, 1], ['cauldron', 167, 12], ['cookSpit', 194, 12], ['boneChime', 432, 16, 0, true], ['skullTotem', 497, 13, 0], ['warStandard', 506, 13, 1], ['lootHeap', 684, 13, 1], ['idol', 702, 13, 0]],
-  storm: [['warnPost', 86, 33, 0], ['hideRack', 119, 15, 0], ['lootHeap', 133, 15, 1], ['boneChime', 192, 19, 1, true], ['gobPennant', 200, 31, 1], ['cookSpit', 229, 29], ['cauldron', 287, 29]],
+  storm: [['warnPost', 66, 35, 0], ['hideRack', 119, 15, 0], ['lootHeap', 133, 15, 1], ['gobPennant', 178, 31, 1], ['cookSpit', 266, 31], ['cauldron', 420, 29]],
   crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 684, 7, 3], ['ragBanner', 716, 7, 2], ['cauldron', 706, 63], ['boneChime', 712, 54, 0, true], ['trophyRack', 710, 51, 1], ['skullTotem', 745, 51, 0], ['clothStrip', 724, 10, 3, true], ['warStandard', 738, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
   underleaf: [['gobPennant', 32, 33, 2], ['cookSpit', 325, 33], ['lootHeap', 376, 33, 0], ['boneChime', 237, 7, 1, true], ['idol', 444, 33, 1]],
   undercrown: [['stakeFence', 80, 28, 0], ['skullTotem', 42, 111, 1], ['boneChime', 26, 88, 0, true], ['ragBanner', 58, 122, 0], ['clothStrip', 20, 88, 2, true], ['warnPost', 26, 140, 0], ['lootHeap', 52, 140, 1], ['cauldron', 68, 140]],
@@ -7582,8 +7364,8 @@ const AMBUSH = {
     waves: [[['fledgling', 46], ['fledgling', 66], ['rockgoblin', 56], ['bat', 52, 94]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 93], ['fledgling', 68]]] }],
   moor: [{ name: 'THE CAIRN RIDGE', row: 13, wallL: 596, wallR: 633,
     waves: [[['goat', 602], ['goat', 628], ['rockgoblin', 615], ['crow', 612, 7]], [['rockgoblin', 626], ['troll', 604, null, { elite: true }], ['goat', 620]]] }],
-  storm: [{ name: 'THE HEARTH HALL', row: 31, wallL: 98, wallR: 152, check: false,
-    waves: [[['sprig', 104], ['sprig', 146], ['hearthgob', 128], ['cutter', 117]], [['shield', 140], ['archer', 148], ['pike', 126, null, { elite: true }]]] }],
+  storm: [{ name: 'THE MARKET SQUARE', row: 31, wallL: 98, wallR: 138, check: false,   /* the square among the stalls; its door checkpoint stands at 95 */
+    waves: [[['pike', 128, null, { elite: true }], ['sprig', 106], ['sprig', 132], ['cutter', 116], ['hearthgob', 122]]] }],
   longwater: [{ name: 'THE SLUICE BRIDGE', row: 26, wallL: 293, wallR: 339, check: false,
     waves: [[['scout', 297], ['scout', 336], ['crab', 316, 25], ['crab', 324, 25]], [['tideguard', 330, 25], ['scout', 336], ['netter', 298], ['heronfoe', 316, 25]]] }],
   flotilla: [{ name: 'THE WAIST', row: 23, wallL: 62, wallR: 92, check: [57, 23],
@@ -7647,7 +7429,7 @@ const ELITES = {
      shrines' ledge above the cloud, clear of the way up at 31-37, the cellar at 81-89 and the bellows at 14 */
   spire: [['troll', 61, 171], ['goat', 62, 79]],
   moor: [['goat', 168, 21, { gate: 200 }], ['troll', 432, 13]],
-  storm: [['pike', 250, 29, { gate: 257 }]],
+  storm: [['shield', 514, 28, { gate: 523 }]],   /* the shield-wall on the curtain wall's walk, holding the way to the Wall Watch */
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 792 is left alone */
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],

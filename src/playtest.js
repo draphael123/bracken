@@ -177,8 +177,21 @@ export function makeBot(BK) {
       // nearest door it has not already been through and WALKS BACK TO IT.
       // A SHUT GATE IN FRONT OF YOU IS NOT "STUCK", it is an INSTRUCTION, and waiting sixty frames to
       // notice wastes the run: go and find the door the moment you can see the gate.
-      const shut = props.find(p => p.t === 'lockgate' && !p.open && Math.abs(p.x - P.x) < 90);
-      if (!tick.seek && (shut || still > 60) && doorCd <= 0) {
+      /* (a gate it holds the key to is not an instruction to go and find one: it walks on and the gate turns) */
+      const shut = props.find(p => p.t === 'lockgate' && !p.open && Math.abs(p.x - P.x) < 90 && !props.some(q => q.t === 'key' && q.got && q.kind === p.needs));
+      /* THE KEY UP A TOWER (Stormhold, docs/briefs/stormhold-town.md): a key that is NOT indoors hangs on a watchtower's top
+         deck, and the way to it is the tower's own ladders. So a shut gate whose key is outdoors sends the bot to the KEY -
+         to the nearest ladder that rises from where it stands, up it, and along the deck - and not to a door. */
+      const ahead = shut || props.find(p => p.t === 'lockgate' && !p.open && p.x > P.x - 40 && p.x - P.x < 400 && !props.some(q => q.t === 'key' && q.got && q.kind === p.needs));   /* a tower key is worth walking back for from further off than a door */
+      if (ahead && !tick.climbKey) { const k = props.find(p => p.t === 'key' && !p.got && p.kind === ahead.needs && !(L.interiors || []).some(([x0, x1, y0, y1]) => p.x >= x0 * TS && p.x <= (x1 + 1) * TS && p.y >= (y0 - 1) * TS && p.y <= (y1 + 2) * TS));
+        if (k) tick.climbKey = k; }
+      if (tick.climbKey) tick.climbKey = props.find(p => p.t === 'key' && p.kind === tick.climbKey.kind) || null;   /* a death rebuilds the props: hold the key by its kind, not by an object that is gone */
+      if (tick.climbKey && tick.climbKey.got) { tick.climbKey = null; tick.ladderX = undefined; }
+      if (tick.climbKey) { const k = tick.climbKey, kx = Math.floor(k.x / TS);
+        if (Math.abs(k.y + 6 - P.y) < 20) { goalX = k.x; tick.ladderX = undefined; }
+        else if (!P.climb) { let lx, bd = 1e9; for (let x = kx - 10; x <= kx + 10; x++) if (at(x, fy - 1) === T.NET && at(x, fy - 2) === T.NET) { const q = Math.abs(x * TS + 8 - P.x); if (q < bd) { bd = q; lx = x; } }
+          tick.ladderX = lx; goalX = lx !== undefined ? lx * TS + 8 : k.x; } }
+      if (!tick.seek && !tick.climbKey && (shut || still > 60) && doorCd <= 0) {
         let d = null, bd = 1e9;
         for (const p of props) { if (p.t !== 'doorway' || p.lock || (tick.used && tick.used.has(p.id))) continue;
           const q = Math.abs(p.x - P.x); if (q < bd) { bd = q; d = p; } }
@@ -245,6 +258,10 @@ export function makeBot(BK) {
       if (below && !foot(fx, fy + 1)) keys.down = true; else keys.up = true;
       keys.left = keys.right = false;
     } else keys.up = false;
+    /* up the tower's ladder to the key: line up on the rungs, then hold UP until they end */
+    if (tick.climbKey && tick.ladderX !== undefined) { const cxl = tick.ladderX * TS + 8;
+      if (P.climb) { keys.up = true; keys.left = keys.right = false; hold = 0; still = 0; }
+      else if (Math.abs(P.x - cxl) < 16) { keys.left = P.x > cxl + 3; keys.right = P.x < cxl - 3; if (Math.abs(P.x - cxl) <= 5) keys.up = true; hold = 0; } }
 
     // look two tiles on: a wall to clear, a hole to cross, or thorns to hop. A jump has to START two tiles
     // before the hole and be HELD past the apex, or it lands a third of a tile short - which is exactly what
