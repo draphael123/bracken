@@ -80,7 +80,7 @@ export const OR = {
      a fight instead of a nuisance you cannot answer. `lift` is how much higher an EMPTIED skip rides. */
   BUCKET: { w: 46, h: 6, hang: 30, lift: 18 },
   CRACK: 0.9,                                                    // how long a rusted bucket holds you
-  ROCK_TELL: 1.0,                                                // how long every falling rock is told before it falls
+  ROCK_TELL: 0.5,                                                // how long every falling rock is told before it falls
   /* THE PIT under every span: its spike row, the deck the span starts from, the recovery ledge [x0, x1, standing row] on that
      wall and the ladder [x, top row, bottom row] from the ledge up to that deck (the ladder's top is level with the deck) */
   PITS: [

@@ -2052,7 +2052,7 @@ function spawnEnt(e) {
       case 'temperer': enemies.push({ ...base, t: 'temperer', w: 10, h: 14, hp: EHP.temperer, maxHp: EHP.temperer, speed: 26, mode: 'walk', modeT: 0, cd: 0.8 + Math.random() * 0.6, heatCd: 1.5 + Math.random() * 2, hot: 0, open: 0, quenched: 0, shoved: 0, fire: null }); break;
       /* THE FALSE ABBOT: src/false-abbot.js is the fight, and it keeps its own mode, timers and ward on the entity */
       /* THE WINCHMASTER: src/winchmaster.js is the fight; he stands on the drum's housing and sets his own height */
-      case 'winchmaster': { const a = { ...base, t: 'winchmaster', w: 24, h: 36, hp: EHP.winchmaster, maxHp: EHP.winchmaster, mode: 'sleep', modeT: 0, cd: 1.2, phase: 1, noGrav: true };
+      case 'winchmaster': { const a = { ...base, t: 'winchmaster', w: Math.round(24 * WINCH.scale), h: Math.round(36 * WINCH.scale),   /* (round three: bigger, box and all - his drawing is bigF) */ hp: EHP.winchmaster, maxHp: EHP.winchmaster, mode: 'sleep', modeT: 0, cd: 1.2, phase: 1, noGrav: true };
         boss = a; enemies.push(a); break; }
       case 'abbot': { const a = { ...base, t: 'abbot', w: 20, h: 40, hp: EHP.abbot, maxHp: EHP.abbot, mode: 'sleep', modeT: 0, cd: 1.2, phase: 1, blessT: 0, addT: 3, turn: 0, noGrav: true };
         boss = a; enemies.push(a); break; }
@@ -22333,7 +22333,7 @@ function drawWorld(cx, cy, showPlayer) {
     /* THE HEXED FIELDS' BATS are the farm's dead ones, pale and red-eyed: baked the first time one is drawn, from the cave bat */
     const sprSet = e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.stage === 3 ? SPR.familiar : SPR[e.t];
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
-    const bigF = e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : e.elite ? EL.big : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
+    const bigF = e.t === 'winchmaster' ? WINCH.scale : e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : e.elite ? EL.big : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
     if ((e.t === 'scout' || e.t === 'siren' || e.t === 'herald' || e.t === 'grandmother' || e.t === 'farmhand' || e.t === 'boo' || e.t === 'jelly') && e.alpha !== undefined && e.alpha < 1) g.globalAlpha = Math.max(0.05, e.alpha);
     if (e.t === 'gqueen' && e.mode === 'shadow') g.globalAlpha = 0.12; else if (e.t === 'gqueen' && e.mode === 'shadowTell') g.globalAlpha = 1 - 0.6 * Math.min(1, (0.5 - e.modeT) / 0.5);

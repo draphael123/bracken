@@ -119,7 +119,7 @@ function arrive(e, c, at) {
 /* THE JAM: main.js calls this the frame a LOADED bucket, with a rider who boarded it at least WINCH.rideIn px out, reaches the
    drum of the housing he stands on. The cable locks (the world's job) and he goes off the housing. Returns true if it took him */
 export function winchJam(e, c) {
-  if (!e || !e.alive || e.mode === 'thrown' || e.mode === 'downed' || e.mode === 'letgo' || e.mode === 'swing' || e.mode === 'sleep' || e.mode === 'wake') return false;
+  if (!e || !e.alive || e.mode === 'thrown' || e.mode === 'downed' || e.mode === 'letgo' || e.mode === 'swing' || e.mode === 'leap' || e.mode === 'sleep' || e.mode === 'wake') return false;
   const H = c.H[e.at];
   e.mode = 'thrown'; e.modeT = WINCH.thrownT; e.fromY = e.y; e.fromX = e.x; e.toX = H.ledgeX; e.toY = H.ledgeY; e.vx = 0; e.revT = 0; e.hk = null;
   /* a jammed drum lets nothing go: a bucket still waiting to be sent is not sent (one already on the line goes on) */
