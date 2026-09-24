@@ -17,11 +17,14 @@
 //             while she is under does not land; and X as she surfaces kicks the ROLLING STONE
 //   wall      STONE WALL, bought at level 9 in LODESTONE's place: pressed, it raises a wall piece in front of her; and a save that
 //             bought LODESTONE loads, owning STONE WALL in the same loadout slot
+//   dodges    BURROW IS THE FLOOR'S ONLY: swimming her dodge is the ordinary swimming dash (it fires, and never burrows); in the air
+//             nothing burrows (she has no air roll of her own); and the ceiling-walk dodge (magePlayer) has no burrow in it
 //   levels    in three real early levels, at every 5th tile of floor she can stand on: wall, pillar and step raised, and every frame
 //             no living body is inside her rock and, eight seconds on, the level's grid is exactly what it was (no route blocked)
 // PROVED RED FIRST (2026-09-24): with the body test taken out of freeCell and RULE 4 disabled in src/geomancer.js, `lift` and `body`
 // fail (a sprig buried in the pillar; the stone that a foe was spawned into stood on) - the guards are what makes this green.
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false });
 try {
@@ -77,6 +80,12 @@ try {
   out.wall = await pg.evalp(`(async()=>{__geo(['stoneWall']);BK.P.cds={};BK.press('throw');BK.sim(4);const kinds=BK.geo().pieces().map(p=>p.kind);
       const {migrateProgress}=await import('/src/progression.js');let mig;try{const r=migrateProgress(JSON.stringify({...JSON.parse(JSON.stringify(BKT.PROG)),skillOwned:{geomancer:{lodestone:true}},loadouts:{geomancer:['lodestone']}}),[]);mig={own:Object.keys(r.progress.skillOwned.geomancer),lo:r.progress.loadouts.geomancer};}catch(e){mig={err:String(e.message||e)};}
       return {kinds,mig}})()`);
+  out.dodges = await pg.evalp(`(()=>{const P=()=>BK.P;__geo([]);const L=BK.L;L.pools=L.pools||[];L.pools.push({x0:2*16,x1:40*16,y:17*16,shallow:false,swim:true,depth:0,bottom:22*16});BK.tp(10,20);BK.sim(40);
+      const swam=P().swim;P().st=P().maxSt;BK.press('dodge');let bur=0,dg=0;for(let i=0;i<30;i++){BK.sim(1);bur|=!!P().geoBurrow;dg=Math.max(dg,P().dodge||0);}const swim={swam,bur:!!bur,dodged:dg>0};
+      __geo([]);BK.press('jump');BK.keys.jump=true;BK.sim(14);const up=!P().ground;P().st=P().maxSt;BK.press('dodge');let b2=0;for(let i=0;i<30;i++){BK.sim(1);b2|=!!P().geoBurrow;}BK.keys.jump=false;
+      return {swim,air:{up,bur:!!b2}}})()`);
+  { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), i = src.indexOf('function magePlayer('), j = src.indexOf('\nfunction ', i + 10);
+    out.dodges.ceiling = { found: i > 0, dodges: /P\.dodge = /.test(src.slice(i, j)), burrows: /geoBurrow/.test(src.slice(i, j)) }; }
   /* THE REAL LEVELS: the first three of the campaign */
   out.levels = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const ids=LEVELS.map((l,i)=>[l.id,i]).filter(([id])=>!/^trial|^practice|^draft/.test(id)).slice(0,3);const rows=[];
     for(const [id,i] of ids){__geo(['stoneStep'],false,i);const L=BK.L,W=L.W,H=L.H;const g0=Array.from(L.grid);let tried=0,inside=0,raised=0;
@@ -107,6 +116,10 @@ try {
   assert(S.mending && S.broken === 0, 'THE MEND is broken off by a blow (' + JSON.stringify(S) + ')');
   assert(out.wall.kinds.includes('wall'), 'STONE WALL: the bought ability raises a wall (' + JSON.stringify(out.wall) + ')');
   assert(!out.wall.mig.err && out.wall.mig.own.join() === 'stoneWall' && out.wall.mig.lo.join() === 'stoneWall', 'a save that bought LODESTONE owns STONE WALL in its slot (' + JSON.stringify(out.wall.mig) + ')');
+  const D = out.dodges;
+  assert(D.swim.swam && D.swim.dodged && !D.swim.bur, 'swimming, her dodge is the ordinary swimming dash, never a burrow (' + JSON.stringify(D.swim) + ')');
+  assert(D.air.up && !D.air.bur, 'in the air nothing burrows (' + JSON.stringify(D.air) + ')');
+  assert(D.ceiling.found && D.ceiling.dodges && !D.ceiling.burrows, 'on a ceiling (magePlayer) the dodge is the ordinary roll (' + JSON.stringify(D.ceiling) + ')');
   const B = out.burrow;
   assert(B.pit.right <= B.pit.edge + 1 && B.pit.ground && B.pit.y === 0 && !B.pit.rock, 'BURROW: toward a pit she comes up at the last solid cell, on her feet (' + JSON.stringify(B.pit) + ')');
   assert(!B.foe.inFoe && !B.foe.rock && B.foe.ground, 'BURROW: she never comes up inside a foe or rock (' + JSON.stringify(B.foe) + ')');
