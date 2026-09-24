@@ -7,6 +7,7 @@
 import fs from 'fs';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
+import { MARK } from '../src/marks.js';   /* the table every windup's mark is drawn from (tools/tells.mjs writes it) */
 
 const main = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const audio = fs.readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
@@ -98,8 +99,14 @@ for (const lv of LEVELS) {
   if (L.arena && L.arena.boss) {
     const b = L.arena.boss, fn = updateOf(b);
     if (!fn) say(id, `boss '${b}' has no update function in main.js that the tool can find`);
-    else { const tells = [...new Set([...fn.matchAll(/'(\w*[Tt]ell)'/g)].map(m => m[1]))];
-      if (tells.length && !windUp.includes(`e.t === '${b}'`)) say(id, `boss '${b}' has tells (${tells.join(', ')}) but is not in windingUp() in main.js: it winds up in silence`);
+    /* A BOSS WHOSE FIGHT LIVES IN ITS OWN MODULE (THE FIRST DEATH KNIGHT: src/unburied-foes.js) has only its hands in main.js - the
+       update there names one tell (the Reaping's zoom) and passes the rest through. Its tells are REGISTERED where tools/tells.mjs
+       and the screen read them, the MARK table in src/marks.js, so they are counted from there as well as from the update: reading
+       main.js alone called a five-attack fight "one told attack". */
+    else { const inUpdate = [...new Set([...fn.matchAll(/'(\w*[Tt]ell)'/g)].map(m => m[1]))];
+      const tells = [...new Set(inUpdate.concat(Object.keys(MARK).filter(k => k.startsWith(b + '|') && /Tell$/.test(k)).map(k => k.split('|')[1])))];
+      /* the windingUp() test stays on what the update itself names: the table is only asked HOW MANY ideas the fight has */
+      if (inUpdate.length && !windUp.includes(`e.t === '${b}'`)) say(id, `boss '${b}' has tells (${inUpdate.join(', ')}) but is not in windingUp() in main.js: it winds up in silence`);
       else if (tells.length === 1) say(id, `boss '${b}' has one told attack: one idea is not a fight`); }
   }
 
