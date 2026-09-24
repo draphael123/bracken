@@ -1487,7 +1487,7 @@ export const LEGACY_NODES = [
     "col": 2,
     "name": "EARTHSHAKER",
     "max": 1,
-    "desc": "land hard from a height and the ground quakes both ways",
+    "desc": "drop from higher than a jump (four and a half tiles) and the ground quakes both ways where you land",
     "parent": "heavyTread",
     "active": false,
     "cap": false,

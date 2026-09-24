@@ -209,7 +209,11 @@ function saveProgress() { if (saveBlocked) return; const was = PROG.hero; if (pa
 loadSlot(slot);
 
 // ---------- tuning ----------
-const RUN = 92, GRAV = 1000, JUMPV = -320, POGO = -330;   /* he read as sprinting everywhere at 100: the legs came down, the camera looks further ahead to pay for it */
+const RUN = 92, GRAV = 1000, JUMPV = -320, POGO = -330;
+/* EARTHSHAKER's 'from a height', 2026-09-24: it was prevVy > 250, and the fall is capped at 270 - so every full jump on flat ground
+   (it lands at ~270) was a free, costless quake that staggered the boss, and the lab's Hurricane went 57s -> 33s on it alone.
+   A flat jump peaks JUMPV^2/2G = 51 px up; this asks for 72 (four and a half tiles): off a ledge, or down from one. */
+const EARTHSHAKER_DROP = 72;   /* he read as sprinting everywhere at 100: the legs came down, the camera looks further ahead to pay for it */
 const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
@@ -7204,7 +7208,7 @@ function updatePlayer(dt) {
   updatePhalanx(dt);                 /* THE PHALANX's row of spears: up out of the ground, and back down into it */
   const wasGround = P.ground, prevY = P.y;
   P.ground = false;
-  const prevVy = P.vy;
+  const prevVy = P.vy; P.airTopY = P.ground ? P.y : Math.min(P.airTopY ?? P.y, P.y);   /* the highest point of this time off the ground: EARTHSHAKER reads how far he FELL, not how fast */
   const r = moveBody(P, P.vx * dt, P.vy * dt, P.drop > 0 || (P.climb && P.vy > 0));
   if (r.hitX) P.vx = 0;
   // THE MANTLE: coming down onto the lip of a ledge you did not quite make, with the button still held that
@@ -7272,7 +7276,7 @@ function updatePlayer(dt) {
           if (P.consecrate) { P.consecrate = false; gainLight(14); // THE CONSECRATION: where the maul lands, the ground is holy for a moment
             ringAt(P.x, P.y - 2, 46, '#ffe6a0', 0.45); motes(P.x, P.y - 8, 16, 22); SFX.medal && SFX.medal();
             for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 46 && Math.abs(e.y - e.h / 2 - (P.y - 10)) < 30) { hurtEnemy(e, Math.round(swordDmg() * 0.5), P.x, false); e.stagger = Math.max(e.stagger || 0, 0.5); } } } } // HAMMERFALL: the maul comes down and the ground carries it both ways
-    } else { const heavy = prevVy > 250; if (heavy && isPaladin() && tal('earthshaker')) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 0.9, sp: 200, hit: new Set() }); shakeCam(4); SFX.hammerfall(); ringAt(P.x, P.y - 2, 22, '#ffd36b', 0.25); } // EARTHSHAKER
+    } else { const heavy = P.y - (P.airTopY ?? P.y) >= EARTHSHAKER_DROP; if (heavy && isPaladin() && tal('earthshaker')) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 0.9, sp: 200, hit: new Set() }); shakeCam(4); SFX.hammerfall(); ringAt(P.x, P.y - 2, 22, '#ffd36b', 0.25); } // EARTHSHAKER
       dust(P.x, P.y, heavy ? 9 : 4); SFX.pLand(surface()); if (L.hush && P.relic !== 'soles') noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; P.landArt = P.landArtMax = heavy ? 0.26 : 0.2; if (heavy) { SFX.thud(); shakeCam(2); hitstop(0.035); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
     pogoChain = 0;
     for (const d of decor) if ((d.k === 'mushroom' || d.k === 'tiny') && Math.abs(d.x - P.x) < 30 && Math.abs(d.y - P.y) < 20) d.wob = 0.4;
