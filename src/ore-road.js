@@ -70,6 +70,14 @@ export const OR = {
   BUCKET: { w: 46, h: 6, hang: 30, lift: 18 },
   CRACK: 0.9,                                                    // how long a rusted bucket holds you
   ROCK_TELL: 1.0,                                                // how long every falling rock is told before it falls
+  /* THE PIT under every span: its spike row, the deck the span starts from, the recovery ledge [x0, x1, standing row] on that
+     wall and the ladder [x, top row, bottom row] from the ledge up to that deck (the ladder's top is level with the deck) */
+  PITS: [
+    { id: 'span1', x0: 68, x1: 135, floor: 57, start: [67, 36], ledge: [68, 70, 50], ladder: [68, 37, 50] },
+    { id: 'chute', x0: 204, x1: 261, floor: 57, start: [203, 21], ledge: [204, 206, 50], ladder: [204, 22, 50] },
+    { id: 'wreck', bed: true, x0: 281, x1: 324, floor: 44, start: [280, 34], ledge: [281, 283, 39], ladder: [281, 35, 39] },
+    { id: 'steep', x0: 353, x1: 407, floor: 57, start: [352, 20], ledge: [353, 355, 50], ladder: [353, 21, 50] }],
+  PIT_BITE: 0.2, PIT_LIFT: 150, PIT_DRAFT: 230, TURBINE_EVERY: 5,
   DARK: 0.34,                                                    // how black the cavern is away from the lamps
   CEIL_GAP: 6,                                                   // how many rows the cavern's ceiling keeps above anything anyone uses
   WORK_FAR: 240, WORK_CHIPS: 6, WORK_CHIP: 0.4, WORK_WALK: 18,                   // a miner works a seam while no hero is within 240 px: six blows, then he carries it
@@ -210,7 +218,7 @@ export function buildOreRoad({ painter, T }) {
   // ---- THE ORE CHUTE (c 204-271) — down thirteen rows, steered, over the crusher run ----
   /* THE CRUSHER RUN under the chute: what misses the buckets goes down it, and so does anything that comes off one. It is the
      floor the gorge never had, and it is drawn as what it is - broken ore in a steel trough, red-lit from below. */
-  block(232, 244, WRECK_BED + 3, H - 1); spikes(232, 244, WRECK_BED + 2);
+  /* (the crusher run that stood here is the pit now: one floor under the whole chasm - see THE PIT) */
   plat(TIPPLE[0], TIPPLE_ROW + 1, TIPPLE[1] - TIPPLE[0] + 1);                   // THE TIPPLE HOUSE: the one rest on the chute
   plat(231, TIPPLE_ROW - 3, 8); rope(239, TIPPLE_ROW - 3, TIPPLE_ROW);          // and the tipping stage over it, with the ladder up its EAST end (at 230 it stood in the checkpoint's base)
   ent('check', 229, TIPPLE_ROW);
@@ -279,6 +287,23 @@ export function buildOreRoad({ painter, T }) {
   ent('winchmaster', Math.floor(A.housings[0].home), A.housing, { face: -1 });
   ent('sign', 477, A.deck, { text: 'RIDE A LOADED BUCKET INTO HIS DRUM AND IT JAMS. HE HAS THREE.' });
 
+  /* ======== THE PIT (Daniel's playtest, 2026-09-25, item 5) ========
+     At the very bottom of every span, a bed of spikes. A hero who falls in pays about a FIFTH of his health and never his life
+     (main.js orePitStep: the level's own blow, min(OR.PIT_BITE, hp - 1), in place of the engine's spikes), and then the
+     WIND-TURBINES in the floor take him: up on their updraft and along the chasm to a RECOVERY LEDGE on the wall at the
+     start of that span, and from the ledge a LADDER climbs back to the deck he set out from. Anything else that falls in is
+     impaled (orePitStep). UNDER THE THREE RIDES THE FLOOR IS THE PIT'S OWN, not the grid's: the tiles stay the void they were
+     and drawOreVeins draws the rock and the spikes, because as tiles they misled every tool - 236 spike tiles read to
+     tools/curve.mjs as a lethal hazard field (INDEX 160), and as rock the sprinklers paid the "dead end" with a heart and
+     a loot heap nobody can reach (the turbines take you first). The WRECK's bed stays real spike tiles: it is the collapsed
+     span's hazard, the one you jump the fallen decks over, and the pit rule takes a hero who falls onto it all the same.
+     The crusher run under the chute is gone into it: one floor for the whole chasm, one rule for a fall. */
+  for (const q of OR.PITS) {
+    if (q.bed) for (let x = q.x0; x <= q.x1; x++) { set(x, q.floor, T.SPIKE); for (let y = q.floor + 1; y < H; y++) set(x, y, T.SOLID); }   /* the wreck's bed: real spikes, the on-foot section's hazard */
+    else for (let x = q.x0; x <= q.x1; x++) for (let y = q.floor; y < H; y++) set(x, y, T.AIR);   /* under a ride: the floor is the pit's own (see above) */
+    block(q.ledge[0], q.ledge[1], q.ledge[2] + 1, q.ledge[2] + 1);                 /* the recovery ledge, a shelf on the wall */
+    rope(q.ladder[0], q.ladder[1], q.ladder[2]);                                    /* and the ladder from it to the deck the span starts from */
+  }
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);   /* every rope is hung last (the Gale Moor bug) */
   const cable = cableLines();
   /* ======== UNDERGROUND (Daniel's playtest, 2026-09-25: "the whole level becomes one vast cavern: no sky") ========
@@ -337,6 +362,7 @@ export function buildOreRoad({ painter, T }) {
        at OR.DARK, the night wash thin under it, and the lamps' warm pools; the far wall, the pillars and the veins are
        drawOreBackdrop, the ceiling and its stalactites drawOreStructures */
     dark: OR.DARK, edgeLit: true, night: true, glowNight: true, nightA: 0.1, ceil, veins, glints,
+    pits: OR.PITS.map(q => ({ ...q, turbines: [...Array(Math.floor((q.x1 - q.x0 - 4) / OR.TURBINE_EVERY) + 1).keys()].map(k => q.x0 + 4 + k * OR.TURBINE_EVERY).filter(x => x <= q.x1 - 1) })),
     cable, encounters, places: OR.PLACES, oreRoad: true,
     /* THE AMBUSH ROOM (Q), returned by the builder rather than written into level.js's table, so its columns live beside the
        geometry they are read off. THE SORTING FLOOR is the tower's middle deck: a trestle floor 27 tiles between its gates -
@@ -515,5 +541,22 @@ export function drawOreVeins(g, L, cx, cy, time, VW, VH) {
       g.globalAlpha = a; g.fillStyle = pal[1 + (k % 2)]; g.fillRect(fx, fy, 2, k % 3 ? 1 : 2); } g.globalAlpha = 1;
     if (v.hits > 0) { g.fillStyle = '#0e0c10'; for (let k = 0; k < v.hits; k++) { g.fillRect(x + 4 + k * 3, y + 1 + k, 1, 4); g.fillRect(x + 5 + k * 3, y + 4 + k, 2, 1); } }
     if (v.flash > 0) { g.globalAlpha = Math.min(1, v.flash * 4); g.fillStyle = '#fff6e0'; g.fillRect(x + 2, y - 1, 12, 11); g.globalAlpha = 1; } }
+  /* THE TURBINES in the pit's floor: a grated housing sunk among the spikes and a three-bladed rotor over it, always turning; when
+     the pit has someone they ROAR - the rotor a blur and the updraft streaming off them, told for as long as it carries him */
+  for (const q of (L.pits || [])) { const fy = q.floor * TS - cy; if (fy < -40 || fy > VH + 60) continue; const k = q.kick || 0;
+    /* the bed under a ride: the rock (it is not tiles - see THE PIT), and iron spikes along the whole of it */
+    if (!q.bed) { const X0 = Math.max(q.x0 * TS, cx - 8) - cx, X1 = Math.min((q.x1 + 1) * TS, cx + VW + 8) - cx; g.fillStyle = '#3e342c'; g.fillRect(X0, fy, X1 - X0, VH + 60); g.fillStyle = '#54483a'; g.fillRect(X0, fy, X1 - X0, 2); g.fillStyle = '#241d18'; for (let x = X0 + ((-cx) % 11 + 11) % 11; x < X1; x += 11) g.fillRect(x, fy + 6 + ((x * 7) & 7), 3, 2); }
+    if (!q.bed) for (let x = Math.max(q.x0 * TS, cx - 8); x < Math.min((q.x1 + 1) * TS, cx + VW + 8); x += 4) { const h = 5 + ((x >> 2) * 7) % 4, X = Math.round(x - cx);
+      g.fillStyle = '#3a3a42'; g.fillRect(X, fy - h, 2, h); g.fillStyle = '#8a8a94'; g.fillRect(X, fy - h, 1, 2); g.fillStyle = '#6a3420'; g.fillRect(X + 1, fy - 2, 1, 2); }
+    for (const tx of q.turbines) { const x = tx * TS + 8 - cx; if (x < -30 || x > VW + 30) continue;
+      g.fillStyle = '#2a2a30'; g.fillRect(x - 9, fy - 3, 18, 8); g.fillStyle = '#4a4a52'; g.fillRect(x - 8, fy - 2, 16, 6); g.fillStyle = '#6a6a74'; g.fillRect(x - 8, fy - 2, 16, 1);
+      for (let j = -6; j <= 6; j += 3) { g.fillStyle = '#1a1a20'; g.fillRect(x + j, fy - 1, 1, 4); }
+      const ang = time * (k > 0 ? 40 : 6) + tx;
+      for (let b = 0; b < 3; b++) { const a = ang + b * 2.094, c = Math.cos(a), sn = Math.sin(a);
+        g.fillStyle = k > 0.2 ? '#9aa0aa' : '#7a7a84'; for (let r = 2; r <= 8; r++) g.fillRect(Math.round(x + c * r), Math.round(fy - 7 + sn * r * 0.35), 1, 1); }
+      g.fillStyle = '#c8ccd4'; g.fillRect(x - 1, fy - 8, 2, 2);
+      const n = k > 0 ? 6 : 2, a0 = k > 0 ? 0.5 : 0.18;
+      for (let j = 0; j < n; j++) { const ph = ((time * (k > 0 ? 2.2 : 0.8) + j / n + tx * 0.13) % 1), yy = fy - 10 - ph * (k > 0 ? 160 : 60);
+        g.globalAlpha = a0 * (1 - ph); g.fillStyle = '#dfe8f0'; g.fillRect(Math.round(x - 5 + ((j * 7) % 11)), Math.round(yy), 1, k > 0 ? 6 : 3); } g.globalAlpha = 1; } }
   for (const c of (L.carrying || [])) { const x = Math.round(c.x - cx), y = Math.round(c.y - cy); g.fillStyle = '#2a2a30'; g.fillRect(x - 5, y - 4, 10, 5); g.fillStyle = '#7a7080'; g.fillRect(x - 4, y - 6, 8, 3); g.fillStyle = '#b09a5a'; g.fillRect(x - 2, y - 7, 3, 1); }
 }

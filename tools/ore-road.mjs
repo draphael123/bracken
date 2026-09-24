@@ -148,8 +148,9 @@ for (const l of C.lines) {
   const use = new Array(L.W).fill(L.H);
   for (let x = 0; x < L.W; x++) for (let y = 1; y < L.H; y++) if (footing(at(x, y)) && !footing(at(x, y - 1))) { use[x] = y - 1; break; }
   for (const l of cableLines()) for (let x = Math.ceil(Math.min(l.pts[0][0], l.pts[l.pts.length - 1][0]) / TS); x * TS <= Math.max(l.pts[0][0], l.pts[l.pts.length - 1][0]); x++) { const y = lineYAt(l, x * TS + 8); if (y !== null) use[x] = Math.min(use[x], Math.floor((y - OR.BUCKET.hang - 10) / TS)); }
-  let low = null; for (let x = 0; x < L.W; x++) for (let k = -5; k <= 5; k++) { const c = x + k; if (c < 0 || c >= L.W) continue; if (L.ceil[x] > 0 && L.ceil[x] > use[c] - OR.CEIL_GAP) low = low || `column ${x} (row ${L.ceil[x]}) over something at ${c},${use[c]}`; }
-  ok(L.ceil.length === L.W && !low, `the ceiling keeps ${OR.CEIL_GAP} rows over everything anyone uses within five columns - a jump never reaches it` + (low ? ' - it does not at ' + low : ''));
+  const HEAD = 5;   /* a jump rises 3 rows (51 px) and a hero is a row and a bit tall: rock nearer than 5 rows is rock he is drawn inside */
+  let low = null; for (let x = 0; x < L.W; x++) for (let k = -5; k <= 5; k++) { const c = x + k; if (c < 0 || c >= L.W) continue; if (L.ceil[x] > 0 && L.ceil[x] > use[c] - HEAD) low = low || `column ${x} (row ${L.ceil[x]}) over something at ${c},${use[c]}`; }
+  ok(L.ceil.length === L.W && !low, `the ceiling keeps at least ${HEAD} rows over everything anyone uses within five columns (it keeps ${OR.CEIL_GAP}) - a jump never reaches it` + (low ? ' - it does not at ' + low : ''));
   const fl = L.ents.filter(e => e.t === 'bat' || e.t === 'harpy' || e.t === 'crow');
   ok(!L.ents.some(e => e.t === 'crow') && fl.every(e => e.y > L.ceil[e.x]), `the ${fl.length} fliers are under the rock (and a crow is a bat down here)`);
   ok(L.ents.filter(e => e.t === 'rockfall').every(e => e.y === L.ceil[e.x] + 1), 'every rockfall hangs from the ceiling\'s underside: they fall from the stalactites');
@@ -158,6 +159,27 @@ for (const l of C.lines) {
   const V = L.veins || [], badV = V.filter(v => !(at(v.x, v.y) === T.AIR && at(v.x, v.y - 1) === T.AIR && footing(at(v.x, v.y + 1)) && at(v.x, v.y + 1) !== T.NET) || L.ents.some(e => e.t !== 'coin' && e.x === v.x && e.y === v.y));
   ok(V.length >= 12 && !badV.length, `${V.length} seams to mine, each in the back wall over a floor its spill lands on, standing in nobody's way (the cell in front is clear and holds nothing)` + (badV.length ? ' - not ' + badV.map(v => v.x + ',' + v.y).join(' ') : ''));
   ok(OR.VEIN_HITS === 3 && V.every(v => v.coins === OR.VEIN_COINS) && /total \+= \(L\.veins \|\| \[\]\)\.reduce/.test(readFileSync(new URL('../src/main.js', import.meta.url), 'utf8')), `three blows a seam, ${OR.VEIN_COINS} coins each, and main.js counts them into the level's total the way it counts a crate's`); }
+
+/* ---- THE PIT (Daniel's playtest, item 5): nowhere on the road can a fall reach the bottom of the level any more. Every column
+   from the yard to the drum house, dropped down from the top, meets something - a floor, a ledge, or a span's spike bed - and
+   every spike bed has its turbines, a recovery ledge on the wall at the START of its span, a clear path for the lift from any
+   point of the bed to that ledge, and a ladder from the ledge whose top is level with the deck the span starts from. (The page
+   half - that it costs a fifth, never a life, and carries you there - is tools/ore-ride.mjs.) */
+{ let hole = null;
+  for (let x = 0; x < OR.ARENA.x0 && !hole; x++) { if (L.pits.some(q => !q.bed && x >= q.x0 && x <= q.x1)) continue;   /* under a ride the pit's own floor catches you (orePitStep) */
+    let y = 0; while (y < L.H && at(x, y) === T.AIR || (y < L.H && at(x, y) === T.NET)) y++; if (y >= L.H) hole = x; }
+  ok(!hole, 'no fall anywhere from the yard to the drum house reaches the bottom of the level' + (hole !== null ? ' - column ' + hole + ' falls through' : ''));
+  for (const q of L.pits) { const why = [];
+    for (let x = q.x0; x <= q.x1; x++) if (q.bed ? (at(x, q.floor) !== T.SPIKE || at(x, q.floor + 1) !== T.SOLID) : [...Array(L.H - q.floor).keys()].some(k => at(x, q.floor + k) !== T.AIR)) { why.push((q.bed ? 'no spike bed at ' : 'tiles in the pit floor at ') + x); break; }
+    if (!(q.turbines.length >= 6 && q.turbines.every(t => t > q.x0 && t < q.x1) && q.turbines.every((t, i) => !i || t - q.turbines[i - 1] <= OR.TURBINE_EVERY))) why.push('turbines');
+    const [l0, l1, lr] = q.ledge; if (!(at(l0, lr + 1) === T.SOLID && at(l1, lr + 1) === T.SOLID && at(l0 + 1, lr) !== T.SOLID)) why.push('ledge');
+    const [lx, ly0, ly1] = q.ladder; for (let y = ly0; y <= ly1; y++) if (at(lx, y) !== T.NET) { why.push('ladder broken at ' + y); break; }
+    if (ly1 !== lr || !(lx >= l0 && lx <= l1)) why.push('the ladder does not stand on the ledge');
+    if (!(ly0 === q.start[1] + 1 && footing(at(q.start[0], q.start[1] + 1)) && Math.abs(lx - q.start[0]) === 1)) why.push('the ladder\'s top is not level with the start deck beside it');
+    const hover = lr - 1; for (let x = Math.min(q.x0, l0); x <= q.x1 && !why.length; x++) { for (let y = hover; y < q.floor; y++) if (at(x, y) === T.SOLID && !(x >= l0 && x <= l1)) { why.push(`the lift's path is blocked at ${x},${y}`); break; } }
+    ok(!why.length, `the ${q.id} pit (${q.x0}-${q.x1}): a spike bed under all of it, ${q.turbines.length} turbines, a recovery ledge at ${l0}-${l1} and a ladder home to ${q.start}` + (why.length ? ' - ' + why.slice(0, 3).join('; ') : '')); }
+  const M = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  ok(/Math\.min\(Math\.round\(P\.maxHp \* OR\.PIT_BITE\), P\.hp - 1\)/.test(M) && OR.PIT_BITE === 0.2, 'the pit takes a fifth of your health and never the last point of it (straight off, not through the difficulty\'s scaling)'); }
 
 /* ---- EVERY FALLING ROCK IS TOLD (Daniel's playtest): a second of warning, never begun off screen, and over the gorge the
    ring is on the cable a rider is on, not a hundred feet under it. (The page half - that each one really falls in view - is

@@ -13723,7 +13723,7 @@ function oreBuild() {
    which is the whole point. MOVING IS PROGRESS; STOPPED IS WHERE YOU CAN FIGHT, and everything that flies over this
    gorge keeps coming while you are stopped. The drum line is not brakeable: the Winchmaster drives that one. */
 function oreBrake(dt) {
-  oreVeinsStep(dt);   /* (the ore road's per-frame hook: the veins and the miners working them ride on it) */
+  oreVeinsStep(dt); orePitStep(dt);   /* (the ore road's per-frame hook: the veins, the miners working them, and the pit ride on it) */
   const m = P.onMover;
   for (const l of L.cableway.lines) {
     const held = !l.drum && !P.dead && !!keys.block && !!m && m.kind === 'bucket' && L.cableway.lines[m.line] === l && m.vis && !(m.fallen > 0);
@@ -13776,6 +13776,39 @@ function oreVeinsStep(dt) {
     if (w.t <= 0) { w.t = OR.WORK_CHIP; const down = e.mode !== 'dig'; e.mode = down ? 'dig' : 'swing'; e.modeT = 9; e.digT = 9;
       if (down) { w.chips++; v.flash = 0.06; if (vx > camX - 20 && vx < camX + VW + 20 && Math.abs(v.y * TS - camY - VH / 2) < VH) { burst(vx - e.face * 4, v.y * TS + 4, 3, v.gem ? ['#c08aff', '#6fe0d8'] : ['#e0a040', '#7a7080'], 40, 0.3); if (Math.random() < 0.5) SFX.clank(); } }
       if (w.chips >= OR.WORK_CHIPS && e.mode === 'swing') { w.carry = true; e.mode = 'walk'; e.modeT = 0.3; } } }
+}
+/* THE PIT (Daniel's playtest, 2026-09-25, item 5). A hero falling into the spikes at the bottom of a span is the LEVEL's to
+   handle, not the engine's: a few rows above the spikes his own guard (P.inv) keeps the engine's spike bite off him, and when
+   he reaches them the pit takes its own - OR.PIT_BITE, about a fifth, and never the last point of his health (a pit is not a
+   life). Then the turbines have him: up on their updraft and along the chasm to the recovery ledge at the START of that span
+   (moved by the level, not by his legs - a ride, told by the turbines roaring and the streaks), and the ladder from the ledge
+   is his to climb. The turbines spin all the time; they roar when they have someone. */
+function orePitStep(dt) {
+  const pits = L.pits; if (!pits) return;
+  for (const q of pits) q.kick = Math.max(0, (q.kick || 0) - dt);
+  /* and anything else that goes in is impaled */
+  for (const e of enemies) if (e.alive && !e.maxHp && !e.noGrav && pits.some(q => e.x > q.x0 * TS && e.x < (q.x1 + 1) * TS && e.y >= q.floor * TS - 1)) { e.bucket = null; hurtEnemy(e, 9999, e.x, false); }
+  if (P.dead) { P.pitLift = null; return; }
+  const k = P.pitLift;
+  if (k) { const q = k.q, lx = (q.ledge[0] + q.ledge[1] + 1) / 2 * TS, ly = (q.ledge[2] + 1) * TS - 22;
+    q.kick = 0.6; k.t += dt; P.inv = Math.max(P.inv || 0, 0.15); P.ground = false; P.onMover = null; P.climb = false; P.vx = 0; P.vy = 0;
+    const dy = ly - P.y, dx = lx - P.x;
+    const vy = Math.sign(dy) * Math.min(OR.PIT_LIFT, Math.abs(dy) * 5 + 20), vx = P.y > ly + 40 ? 0 : Math.sign(dx) * Math.min(OR.PIT_DRAFT, Math.abs(dx) * 4 + 30);   /* up first, then along */
+    P.y += vy * dt; P.x += vx * dt; P.face = Math.sign(dx) || P.face;
+    if (Math.random() < dt * 30) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y + 4, vx: -vx * 0.3, vy: 60 + Math.random() * 40, life: 0.4, max: 0.4, col: '#dfe8f0', size: 1, grav: 0 });
+    if ((Math.abs(dx) < 6 && Math.abs(dy) < 6) || k.t > 14) { P.pitLift = null; P.vy = 30; number(P.x, P.y - 24, 'UP THE LADDER', '#c8bcb0'); }
+    return; }
+  const q = pits.find(p => P.x > p.x0 * TS - 6 && P.x < (p.x1 + 1) * TS + 6 && P.y > (p.floor - 3) * TS && P.y < (p.floor + 3) * TS);
+  if (!q) return;
+  P.inv = Math.max(P.inv || 0, 0.06);   /* the engine's spikes do not bite in here: the pit's own blow does, once */
+  if (P.y >= q.floor * TS + (q.bed ? 4 : 0) || P.ground) {   /* (under a ride the floor is not tiles: he reaches it at its top) */
+    /* A FIFTH OF HIS HEALTH, taken straight off it: through damagePlayer the difficulty and the relics scale it, and a scaled
+       bite can take the last point - which a pit must never do */
+    const bite = Math.min(Math.round(P.maxHp * OR.PIT_BITE), P.hp - 1);
+    if (bite > 0) { P.hp -= bite; P.hurt = 0.25; flash = Math.max(flash, 0.12); SFX.pHurt(); number(P.x, P.y - 20, '-' + bite, '#ff6b6b'); }
+    P.inv = 1; P.pitLift = { q, t: 0 }; q.kick = 1.5; P.pitFalls = (P.pitFalls || 0) + 1;
+    SFX.puff(); SFX.charge(); shakeCam(3); burst(P.x, q.floor * TS + 4, 12, ['#dfe8f0', '#9aa0aa'], 90, 0.5);
+    number(P.x, P.y - 30, 'THE TURBINES TAKE YOU', '#dfe8f0'); }
 }
 /* THE PICK IN YOUR SKIP (brief section 3: THE MINER BECOMES LOAD-BEARING). Over a gorge a thrown pick used to be
    simply gone - it fell out of the world and the miner stood there for ever. Now a bucket under it CATCHES it, and

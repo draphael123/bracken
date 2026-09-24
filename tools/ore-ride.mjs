@@ -104,6 +104,29 @@ try {
   console.log(`  ${V.chips > 0 && V.carried > 0 ? 'ok  ' : 'FAIL'} with no hero near, the miners work the seams (${V.chips} blows at one) and carry the ore off (${V.carried} frames carrying)`);
   assert(V.mined && V.blows === 3 && V.spilled === 3, 'three blows mine a seam, and it spills three coins');
   assert(V.chips > 0 && V.carried > 0, 'a miner left alone works a seam and carries its ore to the buckets');
+  /* THE PIT, in the page: at every span, a hero dropped into it pays a fifth (never his life), the turbines carry him to the
+     recovery ledge at the start of that span, and he climbs the ladder back onto the deck the span starts from */
+  const PIT = await pg.evalp(`(async()=>{
+    const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'oreroad'), out = [];
+    for (const [k, hp0] of [[0, 100], [1, 100], [2, 100], [3, 100], [0, 6]]) {
+      BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = false; BK.sim(5);
+      for (const e of BK.enemies()) if (!e.maxHp) e.alive = false;
+      const L = BK.L, P = BK.P, q = L.pits[k], kk = BK.keys; P.hp = hp0;
+      BK.tp(Math.round((q.x0 + q.x1) / 2), q.floor - 8); P.vx = 0; P.vy = 0;
+      let f = 0, lifted = false, lowest = 999; const hpIn = P.hp;
+      for (; f < 60 * 25 && !P.dead; f++) { BK.sim(1); if (P.pitLift) lifted = true; lowest = Math.min(lowest, P.hp); if (lifted && !P.pitLift && P.ground) break; }
+      const onLedge = P.ground && Math.abs(P.y - (q.ledge[2] + 1) * 16) < 3 && P.x > q.ledge[0] * 16 - 4 && P.x < (q.ledge[1] + 1) * 16 + 4;
+      /* the ladder home: to it, up it, and off it onto the deck */
+      for (let g = 0; g < 60 * 30 && !P.dead; g++) { kk.left = kk.right = kk.up = kk.down = false;
+        const lx = q.ladder[0] * 16 + 8;
+        if (P.climb) kk.up = true; else if (Math.abs(P.y - (q.start[1] + 1) * 16) < 3 && P.x < (q.start[0] + 1) * 16 + 2) break;
+        else if (P.y < (q.ladder[1] + 1) * 16 + 2) kk.left = true; else if (Math.abs(lx - P.x) > 3) kk[lx > P.x ? 'right' : 'left'] = true; else kk.up = true;
+        BK.sim(1); }
+      out.push({ span: q.id, hp0: hpIn, lost: hpIn - lowest, dead: !!P.dead, lifted, onLedge, home: Math.abs(P.y - (q.start[1] + 1) * 16) < 3 && P.x < (q.start[0] + 1) * 16 + 2, secs: +(f / 60).toFixed(1) }); }
+    return out; })()`, 900000);
+  for (const x of PIT) { const ok = !x.dead && x.lifted && x.onLedge && x.home && x.lost === Math.min(20, x.hp0 - 1);   /* a fifth of 100 - and never the last point */
+    console.log(`  ${ok ? 'ok  ' : 'FAIL'} the ${x.span} pit: with ${x.hp0} health it cost ${x.lost}, the turbines carried him to the ledge in ${x.secs}s, and the ladder took him home` + (ok ? '' : ' ' + JSON.stringify(x))); }
+  assert(PIT.every(x => !x.dead && x.lifted && x.onLedge && x.home && x.lost === Math.min(20, x.hp0 - 1)), 'every pit costs a fifth and never a life, carries you to its ledge, and its ladder climbs home');
   assert(!pg.errors.length, 'no page errors');
   console.log('every line of the ore road carries you across');
 } finally { pg.close(); }

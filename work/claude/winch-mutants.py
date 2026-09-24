@@ -25,6 +25,12 @@ MUT = [
   ('src/winchmaster.js', "if (!c.seen()) { e.cd = Math.max(e.cd, 0.25); return; }", "", ['off the hero']),
   ('src/winchmaster.js', "if (r.delay <= 0 && c.atMouth(r.at, WINCH.sendR * 2 + 8)) e.runaway = r.next || null;", "", ['not sent the second one on top']),
   ('src/winchmaster.js', "if (r.delay > 0) { if (prev) prev.next = null; else e.runaway = null; break; }", "", ['a jammed drum lets nothing go']),
+  ('src/ore-road.js', "{ id: 'steep', x0: 353, x1: 407,", "{ id: 'steep', x0: 353, x1: 390,", ['reaches the bottom of the level']),
+  ('src/ore-road.js', "PIT_BITE: 0.2,", "PIT_BITE: 0.5,", ['a fifth of your health']),
+  ('src/ore-road.js', "CEIL_GAP: 6,", "CEIL_GAP: 2,", ['the ceiling keeps']),
+  ('src/ore-road.js', "ROCK_TELL: 1.0,", "ROCK_TELL: 0.5,", ['rockfalls is told']),
+  ('src/art.js', "rect(g, 1, 31, 18, 3, '#4a321e'); rect(g, 1, 31, 18, 1, '#6a4a2c'); rect(g, 1, 33, 18, 1, '#2e2014');", "rect(g, 1, 31, 8, 3, '#4a321e');", ['sits on it with a flat foot']),
+  ('src/ore-road.js', "ent('check', 415, WINCH);", "ent('check', 414, WINCH);", ['stands on a flat floor']),
   ('src/marks.js', "'winchmaster|hookTell': '!!',", "'winchmaster|cutTell': '!!',", ['no longer shows a cut']),
 ]
 bad = 0
