@@ -21,6 +21,8 @@ const MOVES = OTHERS ? Object.fromEntries(['paladin', 'pyro', 'pirate', 'reaper'
 };
 const STEM = OTHERS ? 'docs/pose2-' : 'docs/pose-', BASE = OTHERS ? 'master 341cb78' : 'master 313e0da', BRANCH = OTHERS ? 'claude/poses2' : 'claude/poses';
 const AT = [3, 9, 16];                     /* frames after the press */
+/* THE BLINK IS HELD OFF for the frame before each capture: a dodge (HOLY CHARGE, CINDER STEP) sets P.inv, whose blink leaves the hero
+   undrawn on half its frames, and a capture landing on one of those showed an empty floor labelled with the last key drawn */
 const CW = 72, CH = 64, SC = 2;            /* the crop round the hero, and how much it is blown up */
 const pg = await openPage({ audio: false, fonts: false });
 try {
@@ -39,7 +41,7 @@ try {
   const rows = [];
   for (const [hero, ids] of Object.entries(MOVES)) {
     for (const id of ids) {
-      await pg.evalp(`(()=>{__kit('${hero}',['${id}']);const s=[];BK.step(1);BK.press('throw');if(BK.stop>0&&!(BK.P.cds&&Object.keys(BK.P.cds).length)){for(let i=0;i<120&&BK.stop>0;i++)BK.step(1);BK.press('throw');}let f=0;for(const at of ${JSON.stringify(AT)}){BK.step(at-f);f=at;s.push(__crop('+'+at));}__shots.push(s);return 1})()`);
+      await pg.evalp(`(()=>{__kit('${hero}',['${id}']);const s=[];BK.step(1);BK.press('throw');if(BK.stop>0&&!(BK.P.cds&&Object.keys(BK.P.cds).length)){for(let i=0;i<120&&BK.stop>0;i++)BK.step(1);BK.press('throw');}let f=0;for(const at of ${JSON.stringify(AT)}){BK.step(at-f-1);BK.P.inv=0;BK.step(1);f=at;s.push(__crop('+'+at));}__shots.push(s);return 1})()`);
       rows.push(hero + ' ' + id);
     }
     /* THE JUMP AND THE LANDING: a full jump from the floor, caught take-off, rising, the top, falling; then the three frames after touch-down */
