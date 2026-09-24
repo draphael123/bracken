@@ -47,7 +47,6 @@ const MISSING = new Map([
   ['src/sunken-caravan.js', 'THE OWN OUTPUT OF A LANE, NOT YET LANDED. docs/SECOND-PC.md (the lane prompts) names what a lane builds on its own branch; the path arrives when that branch merges. Delete this line when it does. (claude/desert1)'],
   ['tools/caravan-shots.mjs', 'THE OWN OUTPUT OF A LANE, NOT YET LANDED. docs/SECOND-PC.md (the lane prompts) names what a lane builds on its own branch; the path arrives when that branch merges. Delete this line when it does. (claude/desert1)'],
   ['docs/caravan/', 'THE OWN OUTPUT OF A LANE, NOT YET LANDED. docs/SECOND-PC.md (the lane prompts) names what a lane builds on its own branch; the path arrives when that branch merges. Delete this line when it does. (claude/desert1)'],
-  ['docs/polish/', 'THE OWN OUTPUT OF A LANE, NOT YET LANDED. docs/SECOND-PC.md (the lane prompts) names what a lane builds on its own branch; the path arrives when that branch merges. Delete this line when it does. (claude/polish)'],
   ['tools/sunken-caravan.mjs', 'STALE CITATION - docs/caravan-mechanics.md:16 names a tool that is in no commit (the caravan tools are caravan.mjs, caravan-level.mjs, caravan-map.mjs). Correct the reference.'],
 ]);
 /* a citation is forgiven if it sits under one of the MISSING prefixes */
