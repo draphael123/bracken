@@ -5,7 +5,7 @@ try {
   const rows=await pg.evalp(`(async()=>{
     BK.manualSimulation=true; const {LEVELS}=await import('/src/level.js'); const rows=[];
     const yard=LEVELS.findIndex(l=>l.id==='trial_open');
-    for(const hero of ['knight','warden','pyro','paladin','pirate','reaper']) for(const face of [-1,1]) for(const kind of ['rise','sweep']){
+    for(const hero of ['knight','warden','pyro','paladin','pirate','reaper','geomancer']) for(const face of [-1,1]) for(const kind of ['rise','sweep']){
       BK.setHero(hero);BK.load(yard);BK.state='play';BK.enemies().forEach(e=>e.alive=false);BK.tp(10,21);BK.sim(30);BK.reset();
       const p=BK.P; p.face=face;p.st=p.maxSt;BK.keys[kind==='rise'?'up':'down']=true;BK.press('atk');
       const frames=[];
@@ -25,6 +25,6 @@ try {
     if(BK.P.lastKey!=='heavy'||BK.P.lastFrame!==2)throw Error('run-through recovers while its full reach is still live');
     return rows;
   })()`);
-  assert.equal(rows.length,24);assert.deepEqual(pg.errors,[]);
-  console.log('24 real-input directional attacks render preparation, contact and recovery in both directions; greatsword and spear timing verified.');
+  assert.equal(rows.length,28);   /* seven heroes (THE GEOMANCER, 2026-09-24) */assert.deepEqual(pg.errors,[]);
+  console.log('28 real-input directional attacks render preparation, contact and recovery in both directions; greatsword and spear timing verified.');
 } finally {pg.close();}

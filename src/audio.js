@@ -100,7 +100,7 @@ function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
 const VOK = (kit, act) => { const fb = { alert: 'attack', effort: 'heavy', heavy: 'attack', jump: 'attack', die: 'hurt', attack: 'alert' };
   for (const a of [act, fb[act]]) { const n = 'vo_' + kit + '_' + a; if (clips[n] && clips[n].some(Boolean)) return n; } return 'vo_' + kit; };
 // THE HEROES' OWN VOICES. The knight grunted with a pitched goblin; now each hero is a person.
-const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 } };   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
+const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 }, geomancer: { kit: 'f3', rate: 0.82, lp: 3200 } };   /* THE GEOMANCER: the same woman's kit again, pitched lowest and darkened: the heaviest of the three */   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
 function heroVo(act, v) { const k = HERO_KIT[heroVoice] || HERO_KIT.knight; return voice(VOK(k.kit, act), v, k.rate, k.lp || 0); }
 
 // ---------- synth ----------
@@ -140,7 +140,7 @@ function bell(f, dur = 0.8, v = 0.1, delay = 0) { tone('sine', f, f * 0.998, dur
 // robe that flutters, soft steps, a staff that whooshes and crackles, embers that pop, a jet that roars
 // for as long as she holds it. Enemies keep the shared sounds; only the player's calls come through here.
 let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
-export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' ? h : 'knight'; }
+export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' ? h : 'knight'; }
 const vary = f => f * (0.94 + Math.random() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
@@ -1116,6 +1116,15 @@ Object.assign(SFX, {
   cutQuake() { SFX.stone && SFX.stone(); tone('sine', 90, 36, 0.4, 0.3); noise(0.3, 0.28, 520, 0.5); },
   /* THE WARDEN'S SIX: ash through air low along the floor; a spear leaving the hand, going into wood or stone, whistling home and
      slapped into the palm; the spring's landing, the stretch's rising note, the dance's short whips, the rain called and landing. */
+  /* THE GEOMANCER: thud, crack, grinding stone. geoThud is the butt struck into the ground - the start of every spell of hers -
+     geoRise the stone grinding up out of it, geoCrumble a piece coming apart, geoQuake the floor heaving, geoBounce a blow
+     turned off the face of a wall raised on the beat. */
+  geoThud() { tone('sine', vary(95), 38, 0.22, 0.34); tone('triangle', vary(190), 90, 0.1, 0.12); noise(0.1, 0.2, 260, 0.6); },
+  geoRise() { noise(0.26, 0.2, 480, 0.8); tone('sawtooth', vary(66), vary(132), 0.24, 0.07); tone('sine', 80, 50, 0.2, 0.16); },
+  geoCrumble() { noise(0.34, 0.16, 1100, 0.5); tone('square', vary(170), 60, 0.1, 0.1); noise(0.2, 0.1, 380, 0.7, 0.08); },
+  geoBounce() { tone('square', vary(260), 130, 0.08, 0.1); noise(0.08, 0.18, 1500, 0.9); tone('sine', 120, 60, 0.18, 0.2); },
+  geoQuake() { noise(0.9, 0.34, 170, 0.4); tone('sine', 55, 30, 0.9, 0.34); noise(0.5, 0.14, 700, 0.6, 0.2); },
+  geoShard() { noise(0.12, 0.14, 2200, 1.1); tone('square', vary(900), 300, 0.05, 0.05); },
   wheel() { noise(0.3, 0.18, 700, 0.5); tone('triangle', vary(180), vary(420), 0.28, 0.07); SFX.shaftTurn(); },
   javThrow() { noise(0.18, 0.2, 2600, 1.2); tone('triangle', vary(900), vary(400), 0.16, 0.06); },
   javStick() { tone('square', vary(220), 120, 0.07, 0.07); noise(0.06, 0.14, 900, 0.8); tone('sine', 140, 70, 0.14, 0.12); },

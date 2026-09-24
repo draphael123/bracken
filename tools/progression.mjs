@@ -3,7 +3,7 @@ import{LEGACY_NODES,SKILLS,HERO_IDS,migrateProgress,loadProgress,importProgress,
 import{xpFloor}from'../src/xp.js';
 const memory=()=>{const m=new Map();return{getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>m.set(k,v),removeItem:k=>m.delete(k),m};};
 assert.equal(LEGACY_NODES.length,181);assert.equal(new Set(LEGACY_NODES.map(n=>n.hero+'/'+n.id)).size,181);assert(LEGACY_NODES.every(n=>['baseline','growth','skill'].includes(n.destination)));
-for(let version=1;version<=6;version++)for(const hero of HERO_IDS){
+for(let version=1;version<=6;version++)for(const hero of HERO_IDS.filter(h=>LEGACY_NODES.some(n=>n.hero===h))){   /* a hero with no talent history (THE GEOMANCER, 2026-09-24) has no old save to migrate */
  const learned=LEGACY_NODES.filter(n=>n.hero===hero&&n.destination==='skill'&&n.active),talents=Object.fromEntries(learned.map(n=>[n.id,true]));
  const raw=JSON.stringify({hero,heroes:{[hero]:true},xpVersion:1,xp:{[hero]:xpFloor(12)},coins:83,silverSpent:3,items:{heart:true},done:{[hero]:{wood:1}},talentVersion:version,talents:{[hero]:talents},skill:learned[0].id,skill2:learned[1]?.id,skin:'tide',inventory:{token:1}});
  const r=migrateProgress(raw),p=r.progress;assert.equal(p.coins,383);assert.equal(r.receipt.points[hero],12);for(const n of learned)assert(p.skillOwned[hero][n.id]);assert.equal(p.loadouts[hero][0],hero==='reaper'?'summonSkeleton':learned[0].id);assert.equal(p.loadouts[hero].length,2);/* an old save keeps its first TWO: MAX_SLOTS */assert.deepEqual(p.inventory,{token:1});assert.deepEqual(p.items,{heart:true});assert.deepEqual(p.done,{[hero]:{wood:1}});assert.equal(p.xp[hero],xpFloor(12));

@@ -2,7 +2,7 @@ import {LEGACY_NODES, SKILLS} from './progression-catalog.js';
 import {levelOfXp, xpFloor} from './xp.js';
 export {LEGACY_NODES, SKILLS};
 export const PROGRESSION_VERSION = 1;
-export const HERO_IDS = ['knight','pyro','paladin','pirate','reaper','warden'];
+export const HERO_IDS = ['knight','pyro','paladin','pirate','reaper','warden','geomancer'];   /* THE GEOMANCER (2026-09-24): a third starter */
 const object = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const clone = v => JSON.parse(JSON.stringify(v));
 /* TWO ABILITY SLOTS, AT EVERY LEVEL (Daniel, 2026-09-23): "the UI gets too messy with four". A save that had three or four
@@ -17,7 +17,7 @@ export const skillsFor = h => BY_HERO[h]||[];
 export const skillScale = lv => 1 + Math.min(Math.max(0,lv),24) / 120;
 export function growthAt(h,lv){
  lv=Math.max(0,lv);const ranks=Math.min(lv,24)/12;
- return {hp:({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100}[h]||100)+3*lv+Math.round(8*ranks),stamina:100+5*lv,damage:Math.floor(lv/2)+Math.floor(ranks*(h==='reaper'?1.5:1)),ranks,techniqueRank:Math.floor(ranks),skillMultiplier:skillScale(lv)};
+ return {hp:({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95}[h]||100)+3*lv+Math.round(8*ranks),stamina:100+5*lv,damage:Math.floor(lv/2)+Math.floor(ranks*(h==='reaper'?1.5:1)),ranks,techniqueRank:Math.floor(ranks),skillMultiplier:skillScale(lv)};
 }
 export function checksum(raw){let h=14695981039346656037n;for(let i=0;i<raw.length;i++){h^=BigInt(raw.charCodeAt(i));h=BigInt.asUintN(64,h*1099511628211n);}return h.toString(16).padStart(16,'0');}
 export function validateProgress(p){
