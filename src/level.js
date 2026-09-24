@@ -258,7 +258,20 @@ function brackenWood() {
   LC.ent('badger', 139, 21, { face: -1 });
   LC.coins([142, 18], [145, 20]);
   const RC = LC.done();
-  const LB = grow(RC, RC, 98, 26);    // b. THE DOWN ATTACK: three sprigs bunched on the flat - come down among them and the ground throws them
+  // d. THE PERFECT GUARD (the knight rework): straight after the sign that teaches C, a lone SWORN SWORD on the flat - the slowest
+  // blow in the game, one at a time, and his sword FLASHES on the beat (e.lesson: the trial's long tell, and for a knight the flash
+  // comes a reaction's length before the blow lands). Raised as it flashes, the shield turns it for nothing, he reels, and the next
+  // cut is heavy. Grown at 121 AFTER the badger, so it comes BEFORE the badger on the road.
+  const LD = grow(RC, RC, 121, 26);
+  LD.floor(121, 146, 22);
+  LD.ent('check', 123, 21); LD.ent('deco', 125, 21, { kind: 'fern', v: 0 });
+  LD.ent('sign', 127, 21, { text: 'A PERFECT GUARD: RAISE C AS HIS SWORD FLASHES. HE REELS, AND YOUR NEXT CUT IS HEAVY.', pyro: 'ROLL THROUGH HIS CUT WITH V AS HIS SWORD FLASHES, AND HE REELS OPEN.', reaper: 'ROLL THROUGH HIS CUT WITH V AS HIS SWORD FLASHES, AND HE REELS OPEN.', paladin: 'HOLD C FOR THE AEGIS AS HIS SWORD FLASHES, AND HE REELS OPEN.', pirate: 'TAP C AS HIS SWORD FLASHES: THE PARRY TURNS IT, AND HE REELS OPEN.', warden: 'TAP C AS HIS SWORD FLASHES: THE DEFLECT TURNS IT, AND HE REELS OPEN.' });
+  LD.coins([130, 20], [132, 19], [134, 20]);
+  LD.ent('swornsword', 139, 21, { face: -1, lesson: 'parry' });
+  LD.ent('deco', 143, 21, { kind: 'stump', v: 1 }); LD.coins([145, 20]);
+  LD.R.lessons = (LD.R.lessons || []).concat([{ kind: 'parry', x0: 122, x1: 146 }]);
+  const RD = LD.done();
+  const LB = grow(RD, RD, 98, 26);    // b. THE DOWN ATTACK: three sprigs bunched on the flat - come down among them and the ground throws them
   LB.floor(98, 123, 22);
   LB.ent('check', 100, 21); LB.ent('deco', 102, 21, { kind: 'fern', v: 0 });
   LB.ent('sign', 104, 21, { text: 'DOWN+X IN THE AIR, ONTO THE GROUND: IT KNOCKS WHAT STANDS BESIDE YOU OFF ITS FEET.', warden: 'DOWN+X IN THE AIR, ONTO THE GROUND: THE CRACK RUNS AHEAD AND TRIPS WHAT IT MEETS.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. THE GROUND CARRIES IT BOTH WAYS UNDER THEIR FEET.', pyro: 'DOWN+X IN THE AIR: FIREDROP. THE FIRE GOES DOWN AHEAD OF YOU: LAND AMONG THEM.', pirate: 'DOWN+X IN THE AIR: COME DOWN AMONG THEM. MISS, AND YOU STAND THERE A BEAT.', reaper: 'DOWN+X IN THE AIR: COME DOWN AMONG THEM. MISS, AND YOU STAND THERE A BEAT.' });
@@ -7530,9 +7543,16 @@ function dressLevel(L, id) {
   const clear = (x, y) => keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 7 || Math.abs(py - y) > 4);
   const wet = (x, y) => (L.pools || []).some(p => (p.shallow || p.harm) && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // in a WADING pool, not by it: a fish trap wants a bank. Coral belongs under the sea, so a swim pool is not a reason to leave a floor bare
   const stoneAt = (x, y) => (L.stone || []).some(z => x >= z[0] - 1 && x <= z[1] + 1 && y >= z[2] - 1 && y <= z[3] + 1);
+  // A PLANK IS A FLOOR ONLY WHEN SOMETHING IS UNDER IT. A one-tile bridge board reads as ground the same as a
+  // mountain by this test, so the sprinkler dressed the Monastery's own rope bridge with a standing stone and a
+  // stack of masonry over open sky (tools/floaters.mjs, "sand castles" - a heavy prop with nothing under it for
+  // six rows reads as floating, not resting). A bridge over a short drop is still a floor; six is the Monastery's
+  // own bell-tower floors' clearance plus two, so a real floor never trips it.
+  const PLANK_DROP = 6;
+  const plankFloats = (x, y) => { let d = 0, yy = y + 1; while (d < PLANK_DROP && at(x, yy) === T.AIR) { d++; yy++; } return d >= PLANK_DROP; };
   for (let y = 2; y < H - 1; y++) for (let x = 2; x < W - 2; x++) {
     // open ground three tiles wide with three rows of air over it
-    let ok = true; for (let dx = -1; dx <= 1 && ok; dx++) { const b = at(x + dx, y + 1); if (b !== T.SOLID && b !== T.PLANK) ok = false; for (let dy = 0; dy < 3 && ok; dy++) if (at(x + dx, y - dy) !== T.AIR) ok = false; }
+    let ok = true; for (let dx = -1; dx <= 1 && ok; dx++) { const b = at(x + dx, y + 1); if (b !== T.SOLID && b !== T.PLANK) ok = false; else if (b === T.PLANK && plankFloats(x + dx, y + 1)) ok = false; for (let dy = 0; dy < 3 && ok; dy++) if (at(x + dx, y - dy) !== T.AIR) ok = false; }
     /* L.noDress: boxes [x0, x1, y0, y1] in tiles that get nothing (a lamp gallery is a floor by the tile rule, and it grew a mooring post) */
     if (!ok || rnd() > (id === 'marsh' || id === 'moor' ? 0.4 : id === 'wood' || id === 'spore' ? 0.3 : 0.2) || wet(x, y) || stoneAt(x, y) || !clear(x, y) || (L.interiors || []).some(([a, b, c, d]) => x >= a - 1 && x <= b + 1 && y >= c - 7 && y <= d + 1) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d) || (L.noDress || []).some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
     const [kind, nv] = set[(rnd() * set.length) | 0], v = nv ? (rnd() * nv) | 0 : 0;
@@ -7765,13 +7785,16 @@ export const CHECK_BLOCKED = new Set([T.SOLID, T.CRATE, T.PALISADE, T.ICE, T.SOF
 export function checkStands(L, x, y, strict) {
   const at = (cx, cy) => (cx < 0 || cy < 0 || cx >= L.W || cy >= L.H) ? T.SOLID : L.grid[cy * L.W + cx], fl = cx => !CHECK_FLOORLESS.has(at(cx, y + 1));
   if (CHECK_BLOCKED.has(at(x, y)) || !fl(x)) return false;
+  /* a spot it may MOVE to must also have room for its body: nothing solid in the three columns across its two rows
+     (the Lamplit Street's slid one onto floor beside a wall step and ran 14 px into the masonry - tools/headless floats) */
+  if (strict && (at(x, y) !== T.AIR || at(x, y - 1) !== T.AIR || [-1, 1].some(d => CHECK_BLOCKED.has(at(x + d, y))))) return false;   /* its body is two rows tall: both must be open air where it moves to (a one-way plank above counts - the Lamplit Street's lamp came up through one) */
   return strict ? fl(x - 1) && fl(x + 1) : fl(x - 1) || fl(x + 1);
 }
 export function groundCheckpoints(L) {
   if (!L || !L.grid || !L.ents) return L;
   for (const e of L.ents) { if (e.t !== 'check' || checkStands(L, e.x, e.y, true)) continue;
     let moved = false; for (const d of [1, -1, 2, -2, 3, -3]) if (checkStands(L, e.x + d, e.y, true)) { e.x += d; moved = true; break; }
-    if (!moved && !checkStands(L, e.x, e.y, false)) for (const d of [1, -1, 2, -2, 3, -3]) if (checkStands(L, e.x + d, e.y, false)) { e.x += d; break; } }
+    if (!moved && !checkStands(L, e.x, e.y, false)) for (const d of [1, -1, 2, -2, 3, -3]) if (checkStands(L, e.x + d, e.y, false) && L.grid[e.y * L.W + e.x + d] === T.AIR && L.grid[(e.y - 1) * L.W + e.x + d] === T.AIR) { e.x += d; break; } }
   return L;
 }
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => groundCheckpoints(b(...a)); }

@@ -15,7 +15,7 @@ import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false });
 try {
   await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');
-    window.__geo=(ids,flat=true,lv=0)=>{BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('geomancer');BK.reset({fresh:true});BKT.PROG.xp.geomancer=xpFloor(20);
+    window.__geo=(ids,flat=true,lv=0,hl=20)=>{BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('geomancer');BK.reset({fresh:true});BKT.PROG.xp.geomancer=xpFloor(hl);   /* hero level: her passives now come with it (THE FOURTH STONE at 22) */
       BKT.PROG.skillOwned.geomancer=Object.fromEntries(ids.map(i=>[i,true]));BKT.PROG.loadouts.geomancer=ids.slice(0,2);BK.applyUpgrades();BK.load(lv);BK.state='play';
       BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');const L=BK.L;
       if(flat){for(let x=2;x<40;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:0;BK.tp(10,21);}
@@ -26,7 +26,7 @@ try {
     return 1})()`);
   const out = {};
   out.cap = await pg.evalp(`(()=>{const run=n=>{let most=0;for(let k=0;k<n;k++){BK.tp(5+k*5,21);BK.sim(3);BK.P.face=1;__raise();BK.sim(4);most=Math.max(most,BK.geo().pieces().length);}return most;};
-    __geo([]);const three=run(5);__geo(['geoFourth']);return {three,four:run(6)}})()`);
+    __geo([]);const three=run(5);__geo([],true,0,24);return {three,four:run(6)}})()`);
   out.crumble = await pg.evalp(`(()=>{__geo([]);const g0=Array.from(BK.L.grid);__raise();BK.keys.atk=true;BK.sim(30);BK.keys.atk=false;BK.sim(5);const n=BK.geo().pieces().length;
     let cracked=false;for(let i=0;i<60*5;i++){BK.sim(1);}const g1=Array.from(BK.L.grid);return {raised:n,left:BK.geo().pieces().length,same:g0.every((v,i)=>v===g1[i])}})()`);
   out.lift = await pg.evalp(`(()=>{__geo([]);BK.spawnEnt({t:'sprig',x:(BK.P.x+66)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;BK.sim(2);const y0=e.y;
@@ -45,6 +45,9 @@ try {
         raised+=BK.geo().pieces().length;for(let f=0;f<60*7;f++){BK.sim(1);if(f%6===0&&__inside())inside++;}}
       rows.push({id,tried,raised,inside,same:g0.every((v,k)=>v===L.grid[k]),left:BK.geo().pieces().length});}
     return rows})()`);
+  /* A SAVE FROM BEFORE HER (version 1 migrated, or a version 2 made before she existed): no XP, nothing owned, no loadout for her */
+  out.oldSave = await pg.evalp(`(()=>{__geo([]);const PR=BKT.PROG;delete PR.xp.geomancer;delete PR.skillOwned.geomancer;delete PR.loadouts.geomancer;BK.applyUpgrades();
+    for(const k of ['atk','block','throw','skill2','jump'])BK.press(k);BK.sim(60);BK.state='map';BK.sim(2);BK.state='play';return {hp:BK.P.maxHp,lv:BKT.heroLevel('geomancer')}})()`);
   console.log(JSON.stringify(out));
   assert.equal(out.cap.three, 3, 'THE CAP: never more than three pieces stand at once (' + out.cap.three + ')');
   assert.equal(out.cap.four, 4, 'THE FOURTH STONE: four (' + out.cap.four + ')');
@@ -55,6 +58,7 @@ try {
   assert(!out.body.none && !out.body.stood && !out.body.inside, 'stone a foe turns up inside crumbles at once (' + JSON.stringify(out.body) + ')');
   assert(out.reload.had >= 1 && out.reload.after === 0 && out.reload.same, 'a level left takes its stone with it (' + JSON.stringify(out.reload) + ')');
   for (const r of out.levels) { assert(r.tried >= 5 && r.raised > 0, r.id + ': she raised stone there (' + JSON.stringify(r) + ')'); assert.equal(r.inside, 0, r.id + ': nobody was ever inside her rock'); assert(r.same && r.left === 0, r.id + ': and seven seconds on the level is exactly as it was: no route blocked'); }
+  assert(out.oldSave.hp > 0, 'a save that never had her plays her (' + JSON.stringify(out.oldSave) + ')');
   assert.deepEqual(pg.errors, []);
   console.log('geomancer: the cap holds (3, 4 with the passive), every piece crumbles and gives the grid back, nothing is ever buried, and ' + out.levels.length + ' real levels end as they began');
 } finally { pg.close(); }

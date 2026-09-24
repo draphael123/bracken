@@ -87,7 +87,7 @@ try {
      of three distinct frames (impact, settle, stand) while standing still; the other four are reported. */
   const arcs = {};
   for (const h of ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer'])
-    arcs[h] = await pg.evalp(`(()=>{__kit('${h}',[],[]);const P=BK.P;BK.step(1);BK.keys.jump=true;BK.press('jump');const air=[],land=[];let n=0;
+    arcs[h] = await pg.evalp(`(()=>{__kit('${h}',[],[]);BKT.PROG.xp['${h}']=0;/* THE PLAIN JUMP: at level 24 passives now arrive by level, and the Warden's VAULTER turns her jump into the vault */const P=BK.P;BK.step(1);BK.keys.jump=true;BK.press('jump');const air=[],land=[];let n=0;
       for(let i=0;i<120;i++){BK.step(1);if(!P.ground)air.push(P.lastKey+':'+P.lastFrame);else if(air.length){BK.keys.jump=false;land.push(P.lastKey+':'+P.lastFrame);if(++n>=24)break;}}
       return {air:[...new Set(air)],land:[...new Set(land.filter(k=>k.startsWith('land:')))]}})()`);
   console.log('JUMP ARCS: ' + Object.entries(arcs).map(([h, a]) => h + ' air ' + a.air.length + ' [' + a.air.join(' ') + '] land ' + a.land.length).join('; '));

@@ -35,10 +35,11 @@ import {bakeBellcrab,bakeBellguard} from './bellcrab.js';
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
-import { xpFoe, xpFloor, levelOfXp, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
+import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { COMBAT, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
-import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill } from './progression.js';
+import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving } from './progression.js';
+import { depthsOf } from './campaign-order.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
 import { bakeFrog } from './redraw/frogking.js';
@@ -252,7 +253,24 @@ const MAGE = { sees: 220, near: 90, far: 150, speed: 40, reach: 180, boltV: 135,
 // hardest for the two things you do when you are losing. Defence is cheap now. Which of the two you reach
 // for is the MARK's job to tell you - a yellow ! is the shield, a red !! is your feet - and that is a read,
 // not an arithmetic problem about a bar.
-const ST = { swing: 12, plunge: 28, dodge: 16, blockHit: 11, hold: 6, regen: 48, delay: 0.5 };
+const ST = { swing: 12, plunge: 28, dodge: 16, blockHit: 11, hold: 6, knightHold: 15, regen: 48, delay: 0.5 };   /* hold: 6 -> 15 a second (the knight rework): a raised shield empties a full bar in under seven seconds, so turtling is a cost and a timed guard - free - is the answer */
+/* HOLDING THE SHIELD COSTS, and only holding it. The first moments of a guard - the perfect guard's own window - are free, so a
+   shield raised on the beat costs nothing at all (and the parry pays wind back); after that it drains ST.hold a second, half
+   that with STEADY ARM (it made holding free, which made holding the default). HEAVY BLOWS PUSH HIM: a blow on the shield
+   shoves him back by how hard it was, from a light one's step to a heavy one's slide (guardPush). */
+const perfectWindow = () => tal('parry') ? 0.22 : 0.11;
+/* THE KNIGHT'S rework only (docs/briefs/knight-rework.md). ST.hold was raised globally at first, and the Death Knight
+   and the Paladin - who hold C too - paid the knight's tax: the Spore Mother pilot lost the reaper's fight to the clock.
+   Every other hero keeps the drain it always had. */
+function guardHoldDrain(dt) { if (hero() !== 'knight') { P.st -= ST.hold * dt; return; }
+  if ((P.blockT || 0) <= perfectWindow()) return; P.st -= ST.knightHold * dt * (tal('holdLine') ? 0.5 : 1); }
+const guardPush = dmg => Math.min(260, 90 + Math.max(0, dmg - 12) * 9);
+/* THE KNIGHT'S RIPOSTE (the knight rework, docs/briefs/knight-rework.md). A PERFECT GUARD - the shield RAISED as the blow lands,
+   inside its six frames (twelve with PERFECT GUARD) - opens a window this long, and the first cut he starts inside it is a HEAVY
+   cut whatever its place in the run: it counts as a third cut, with everything a third cut does. This is his answer to the
+   Warden's deflect - a read, paid off where you can see it. (A plain block with the RIPOSTE talent keeps its own, older promise:
+   the next swing within a breath cuts twice as hard, and it is not made heavy.) */
+const RIPOSTE = { window: 0.6, beat: 0.25 };   /* beat: how long before the blow lands the wood's lesson swordsman's sword flashes for a knight */
 
 // ---------- bake ----------
 const SKINS = [
@@ -390,13 +408,17 @@ const ROW_LV = [0, 2, 5, 10];        // the level a row opens at
 const ROW_NEED = [0, 2, 5, 10];      // and the points it wants spent in its own tree
 const CAP_NEED = 18, PTS_CAP = 30;   /* what a capstone asks of its tree, and the most points a hero ever has */
 const TREE = LEGACY_NODES; // frozen historical metadata, retained for migration and art icons
-const TALENTS = [{ id: 'tree', name: 'SKILL LOADOUT', desc: 'buy skills with coins. active skills and passive techniques share two slots, three at level 8 and four at level 16. health, stamina and damage grow automatically. Z to open' }];
+const TALENTS = [{ id: 'tree', name: 'SKILL LOADOUT', desc: 'buy abilities with coins and put two on F and G. passives are never bought: they arrive with levels, and so do health, stamina and damage. Z to open' }];
 const heroXp = h => ((PROG.xp || {})[h || hero()] || 0);   /* THIS hero's XP, not the save's: every hero carries his own */
 const heroLevel = h => levelOfXp(heroXp(coopLent(h || PROG.hero || 'knight') ? players[0].hero : h));   /* THE LEVEL IS XP (src/xp.js): the fights pay it and a wood's first finish pays a share. It was the woods walked, and a straight run still lands within one of that */
 const heroDone = () => (PROG.done[hero()] = PROG.done[hero()] || {});
 const talentsOf = h => { PROG.talents = PROG.talents || {}; const m = (PROG.talents[h] = PROG.talents[h] || {}); for (const k in m) if (m[k] === true) m[k] = 1; return m; };
 let trialVerbs = false, trialLend = null;   /* trialLend: the skills a hero's trial lends him for its F and G step (lendSkills) */   // in a practice yard you are lent the verbs, bought or not: the yard is where you find out whether you want them
+/* A PASSIVE IS ON FROM ITS LEVEL (hero-kits 1b, 2026-09-24). It used to be on only while it sat in one of the two slots, which made
+   every passive a rival of the abilities for the same two keys; now it needs nothing but the level (or, for one a save bought before
+   this, the owning - src/progression.js passiveOn). An ACTIVE is still on only while it is slotted. */
 const tal = id => { if(id==='heavy')return 1+growthAt(hero(),heroLevel()).techniqueRank;if(growthNodes[hero()]?.has(id))return growthAt(hero(),heroLevel()).techniqueRank; if (trialLend && trialLend.has(id)) return 1;
+  const n = skillFor(hero(), id); if (n && !n.active) return passiveOn(PROG, hero(), id, heroLevel()) ? 1 : 0;
   return equipped(PROG, hero(), heroLevel()).includes(id) ? 1 : 0; };
 const ptsSpent = h => { const m = talentsOf(h); return TREE.filter(n => n.hero === h).reduce((s, n) => s + Math.min(n.max, m[n.id] || 0) * (n.cost || 1), 0); };
 const ptsTotal = h => godMode() ? 99 : Math.min(PTS_CAP, heroLevel(h));   /* ONE TREE'S WORTH: a point a wood, and never more than thirty */
@@ -418,7 +440,7 @@ function resetTalents(h) { PROG.talents = PROG.talents || {}; PROG.talents[h] = 
 const LV_GROW = h => growthAt(h || hero(), heroLevel(h)).ranks;
 const cdOf = k => k === 'summonSkeleton' && tal('gleaner') ? 12 : CD_MAX[k] || 3;
 const amul = k => skillScale(heroLevel()); // skill damage grows, cooldowns and invulnerability do not
-let treeResetT = 0, talentsBackT = 0, talentsBackWho = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
+let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPress(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
   damagePlayer: (x, d, o) => damagePlayer(x, d, o), hurtEnemy: (e, d, x, pl) => hurtEnemy(e, d, x, pl), respawn: () => respawn(), fullHp: e => fullHp(e), risen: () => risen, bodies: () => bodies, acorns: () => acorns, heavyWind: () => heavyWind(),
@@ -2140,6 +2162,7 @@ function spawnEnt(e) {
   if (e.elite && enemies.length > n0) eliteMake(enemies[n0], e);   /* before the tier scales it, like a mini's health */
   for (let i = n0; i < enemies.length; i++) if (AMPHIB.has(enemies[i].t)) enemies[i].shore = shoreOf(enemies[i].x, enemies[i].y);   /* an amphibious thing is given the water it was put down by (see shoreLeash) */
   const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.xpRole = !isBoss ? '' : (L.arena && L.arena.boss === e2.t) ? 'boss' : 'mini'; e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr) * (coop() ? 2 : 1)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }   /* CO-OP DOUBLES EVERYTHING THAT FIGHTS. Two heroes, twice the health - and it is done HERE, on the one line every creature, mini and boss in the game already comes through, never per creature. (The other half is in damagePlayer0.) */
+  if (e.lesson) for (let i = n0; i < enemies.length; i++) enemies[i].lesson = e.lesson;   /* a lesson's foe (the wood's swordsman): slow, and his sword flashes */
   if (e.trainer || e.lx0) for (let i = n0; i < enemies.length; i++) Object.assign(enemies[i], { trainer: e.trainer, lx0: e.lx0 * TS + 8, lx1: e.lx1 * TS + 8, leapT: 1.5, trialSt: (L.trial || []).find(q => q.x0 + 1 === e.lx0) || null });   /* A TRIAL'S MAN: he never goes down and he keeps to his own yard */
 }
 function spawnEntitiesTail() {
@@ -2843,16 +2866,23 @@ function startGame() {
 /* ---------- XP (src/xp.js) ----------
    A kill pays by its weight, the first finish of a wood pays a share of what the wood holds, and a quest pays once. Only the campaign's
    woods pay, the secret ones with them: the rush, the trials, the practice yard, the store and the editor pay nothing. */
-let levelXp = 0, xpRun = 0, lvAtStart = 0, lvUpT = 0, lvUpN = 0;
+let levelXp = 0, xpRun = 0, xpBoost = 0, lvAtStart = 0, lvUpT = 0, lvUpN = 0, lvHealOwed = null;
+/* THE LEVEL A HERO IS EXPECTED TO BE IN THIS WOOD: how deep it sits on the gate chain (src/campaign-order.js), which src/xp.js is
+   fitted to. Below it, the wood pays XP_CATCHUP times (xpCatchUp, which stops at the curve). */
+const LEVEL_DEPTH = depthsOf(LEVELS.filter(l => !l.hidden || l.secret));
+const expectedLv = () => LEVEL_DEPTH[curId()] || 0;
+const catchingUp = () => xpWood() && heroXp() < xpFloor(expectedLv());
 const xpWood = () => !!L && !rushOn() && !L.trial && !L.shop && !edTesting && !!LEVELS[levelIndex] && (!LEVELS[levelIndex].hidden || !!LEVELS[levelIndex].secret);
 function xpGot(id) { const h = hero(); PROG.xpGot = PROG.xpGot || {}; const m = (PROG.xpGot[h] = PROG.xpGot[h] || {}); return (m[id] = m[id] || {}); }
 /* WHAT THE WOOD HOLDS: every placed foe that is not its mini or its boss, and every ambusher. The share and the quest are fractions of it */
 function woodXp() { const tier = tierOf(curId());
   return enemies.reduce((s, e) => s + (e.xpKey && !e.harmless && !e.xpRole ? xpFoe(e.t, '', tier) : 0), 0) + (L.ambushes || []).reduce((s, A) => s + A.waves.reduce((m, w) => m + w.reduce((k, q) => k + xpFoe(q[0], '', tier), 0), 0), 0); }
-function xpStart() { levelXp = woodXp(); xpRun = 0; lvAtStart = heroLevel(); lvUpT = 0; }
+function xpStart() { levelXp = woodXp(); xpRun = 0; xpBoost = 0; lvAtStart = heroLevel(); lvUpT = 0; lvHealOwed = null;
+  if (catchingUp()) { hintT = 4.5; hintMsg = '+XP x' + XP_CATCHUP + ' CATCHING UP: THIS WOOD EXPECTS LEVEL ' + expectedLv() + '.'; } }
 function gainXp(n) { n = Math.round(n); if (!(n > 0)) return;
   if (passOn && players && passOn !== players[0]) return;   /* THE XP IS PLAYER ONE'S. A borrowed hero is lent a level for the run; levelling him in the save off the back of it would hand the save a hero it never earned */
-  const h = hero(), was = heroLevel(h); PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + n; xpRun += n; const now = heroLevel(h); if (now > was) levelUp(now); }
+  const h = hero(), was = heroLevel(h), paid = xpWood() ? xpCatchUp(n, heroXp(h), expectedLv()) : n;   /* CATCH-UP: below the wood's expected level he is paid x3, up to the curve and no further */
+  PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + paid; xpRun += paid; xpBoost += paid - n; const now = heroLevel(h); if (now > was) levelUp(now, was); }
 /* THE FIRST TIME A PLACED FOE FALLS it pays in full and goes on this hero's list for the wood. After a death, a shrine or a second walk it is
    on the list (or the wood is finished) and pays XP_AGAIN. The list is saved with the XP, so leaving a wood and coming back is no way round it. */
 function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) return; e.xpPaid = true;
@@ -2863,11 +2893,28 @@ function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) 
 /* THE LEVEL-UP. A ring and a chime on him, LEVEL UP off him as a move word (kept off the tells like every other), and the plate's bar turns
    gold and says LEVEL n; the new health comes with it. The first time, a line says there is a point to spend. Never over a tell: the rings
    are not text, the word is settled off the marks, and the line is a hint, which waits for them (hintWaits). */
-function levelUp(n) { lvUpN = n; if (state !== 'play') return;
+/* A LEVEL-UP HEALS HIM TO FULL, health and stamina (Daniel, 2026-09-24) - but NEVER INSIDE A FIGHT. A kill that levels him while a boss,
+   a mini or an ambush is still live (an add, a first form, a wave) owes the heal until that fight is over (levelHealTick, every frame),
+   so a level-up can never be a potion in the middle of a boss. The boss's own killing blow ends the fight in the same hurtEnemy call
+   (queenDies, chiefDies, miniEnd clear bossActive/miniActive), so that one heals on the frame he falls. The hint says what arrived:
+   the growth, the heal, and any passive that came with the level - never a slot: there are two, always. */
+function levelUp(n, from) { lvUpN = n; if (state !== 'play') return; if (from === undefined) from = n - 1;
   lvUpT = 2.6; const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh));
   SFX.rankUp(); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b');
-  { const before=growthAt(hero(),n-1),after=growthAt(hero(),n); hintT=4.5; hintMsg='LEVEL '+n+': +'+(after.hp-before.hp)+' HEALTH, +5 STAMINA, +'+(after.damage-before.damage)+' DAMAGE.'; }
+  lvHealOwed = { n, from: lvHealOwed ? lvHealOwed.from : from }; levelHealTick();
   saveProgress(); }
+const fightLive = () => !!(bossActive || miniActive || ambushLive());
+/* WHAT A LEVEL-UP SAYS: the growth, the heal and the passives, trimmed until it is two lines of the hint (textfit's rule) */
+function levelUpLine(h, n, from) { const before = growthAt(h, from), after = growthAt(h, n), got = passivesArriving(h, from, n);
+  const pas = got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '';
+  const head = 'LEVEL ' + n + (n - from > 1 ? ' (+' + (n - from) + ')' : '');
+  const tries = [head + ': +' + (after.hp - before.hp) + ' HEALTH, +' + (after.stamina - before.stamina) + ' STAMINA, +' + (after.damage - before.damage) + ' DAMAGE. FULLY HEALED.' + pas,
+    head + ': +' + (after.hp - before.hp) + ' HEALTH. FULLY HEALED.' + pas, head + '. FULLY HEALED.' + pas];
+  return tries.find(s => wrap(s, VW - 40, 6).length <= 2) || tries[tries.length - 1]; }
+function levelHealTick() { const o = lvHealOwed; if (!o || state !== 'play' || fightLive()) return; const p = players ? players[0] : P; if (!p || p.dead) return;
+  lvHealOwed = null; p.hp = p.maxHp; p.hpShown = p.maxHp; p.st = p.maxSt;
+  ringAt(p.x, p.y - 12, 20, '#8fd160', 0.45); number(p.x, p.y - 44, 'FULLY HEALED', '#8fd160');
+  hintT = 4.5; hintMsg = levelUpLine(hero(), o.n, o.from); }
 /* THE SIM (tools/xp.mjs): the campaign in the order it opens - a secret wood straight after the wood that opens it - priced by the same
    xpFoe the kills use. A straight run kills XP_KILL_NORMAL of what a wood holds, every mini and boss, and takes the share; a full clear
    takes everything and every quest as well. old is the level the count of woods gave. */
@@ -3397,7 +3444,7 @@ function learnTalent(k) { treeFrom = state; treeI = 0; treeBranch = 0; state = '
 let treeFrom = 'store', treeI = 0, treeMsg = '', treeMsgT = 0, treeBranch = 0;
 const SKILL_NEEDS = { coldComfort: ['summonSkeleton'], gleaner: ['summonSkeleton'], press: ['summonSkeleton'], ossuary: ['summonSkeleton'], graveProvides: ['summonSkeleton'], gripAll: ['deathGrip'], bidden: ['summonSkeleton','gravecall'], secondDeath: ['summonSkeleton','gravecall'] };
 const skillNeeds = n => n?.hero === 'reaper' ? SKILL_NEEDS[n.id] || [] : [];
-const treeNodes = () => skillsFor(hero()).filter(n => !!n.active === (treeBranch === 0)).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));
+const treeNodes = () => treeBranch === 1 ? passiveLadder(hero()) : skillsFor(hero()).filter(n => n.active).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));   /* the PASSIVES tab is the ladder: the order they arrive in */
 const loadoutSafe = () => { const from = state === 'tree' ? treeFrom : state, origin = from === 'menu' ? menuFrom : from;
   if (['map','select'].includes(origin) || (from === 'store' && equipFrom === 'map' && storeMode === 'equip')) return true;
   if (bossActive || miniActive || ambushLive()) return false;
@@ -3408,8 +3455,9 @@ function updateTree(dt) {
  if(upPress)treeI=(treeI+ns.length-1)%ns.length;if(downPress)treeI=(treeI+1)%ns.length;
  if(old!==treeI){treePage=0;SFX.ui();}if(morePress()&&treePages>1)treePage=(treePage+1)%treePages;
  const n=ns[treeI],say=m=>{treeMsg=m;treeMsgT=3;SFX.ui();};
- if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}
- [throwPress,skill2Press,skill3Press,skill4Press].forEach((pressed,index)=>{if(!pressed||!n)return;const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
+ if(confirmPress&&n&&!n.active){say(passiveOn(PROG,hero(),n.id,heroLevel())?n.name+' is always on':'Arrives at level '+n.level);}
+ else if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}
+ [throwPress,skill2Press,skill3Press,skill4Press].forEach((pressed,index)=>{if(!pressed||!n)return;if(!n.active){say('Passives are always on: slots are for abilities');return;}const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
  if(pausePress||talentsPress){state=treeFrom;SFX.menuClose();}
 }
 const TREE_ICON = {};
@@ -3558,11 +3606,14 @@ function drawTree() {
  text('SKILLS / LOADOUT',10,6,UI.title,'left',6);text('LV '+lv+'   '+(PROG.coins||0)+' COINS',VW-10,6,UI.gold,'right',6);
  for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),key=['F','G'][i];g.fillStyle=i<limit?'#302c3e':'#191622';g.fillRect(x,19,width-3,23);text(i<limit?(sk&&!sk.active?'PASSIVE':key):'LEVEL '+(i===2?8:16),x+4,21,i<limit?UI.gold:UI.dim,'left',6);text(fitName(sk?sk.name:i<limit?'EMPTY':'LOCKED',width-11,6),x+4,31,UI.text,'left',6);}
  for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,46,91,12);text(tab===0?'ACTIVES':'PASSIVES',x+45,49,treeBranch===tab?UI.gold:UI.dim,'center',6);}text((Math.floor(idx/6)+1)+' / '+Math.ceil(ns.length/6),VW-12,49,UI.dim,'right',6);
- const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
- if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):'PASSIVE TECHNIQUE  1 SLOT'),12,124,UI.gold,'left',6);
+ const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}
+  /* THE PASSIVE LADDER: what he has is lit and says ON; what is coming is dim and says the level it arrives at */
+  if(!q.active){const on=passiveOn(PROG,h,q.id,lv);text(fitName(q.name,VW-145,6),13,y,on?UI.sel:UI.dim,'left',6);text(on?'ON':'LV '+q.level,VW-13,y,on?UI.sel:UI.dim,'right',6);continue;}
+  text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
+ if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):passiveOn(PROG,h,n.id,lv)?'PASSIVE  ALWAYS ON':'PASSIVE  ARRIVES AT LEVEL '+n.level),12,124,UI.gold,'left',6);
  const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
  const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,134+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
- const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':('LEFT/RIGHT TABS  Z BUY  F/G EQUIP  X MORE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
+ const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':treeBranch===1?'PASSIVES COME WITH LEVELS  LEFT/RIGHT TABS':('LEFT/RIGHT TABS  Z BUY  F/G EQUIP  X MORE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
 }
 function updateStore(dt) {
   if (morePress() && storePages > 1) { storePage = (storePage + 1) % storePages; SFX.ui(); }   /* the next page of a long description */
@@ -4463,7 +4514,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED']);   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
+const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER', 'PUSHED BACK']);   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
   if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (!SET.numbers || !MOVE_WORDS.has(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }
@@ -4574,6 +4625,25 @@ function hintWaits() {
   if (tellQ.length || nums.some(n => isTell(n) && n.life > 0)) hintHoldT = 0.4; else hintHoldT = Math.max(0, hintHoldT - 1 / 60);
   return introCardUp() || bannerT > 0 || ambushMsgT > 0 || hintHoldT > 0 || !!(L && L.wash && wash && wash.state === 'tell');
 }
+/* THE KNIGHT'S PERFECT GUARD GOES OFF BRIGHTER than any other hero's parry, because it is the thing he is FOR now: a white screen
+   flash the size of a kill's, a bell-bright clang of its own (SFX.perfectGuard - never the plain block's knock or the parry's file),
+   a star off the shield rim, and the word. The riposte window it opens is drawn on him until it is spent or gone (drawRiposteGlint). */
+function perfectGuardFx() { const x = P.x + P.face * 10, y = P.y - 10;
+  if (SFX.perfectGuard) SFX.perfectGuard(); if (SET.flashes) killFlash = Math.max(killFlash, 0.06);
+  ringAt(x, y, 44, '#ffffff', 0.3); ringAt(x, y, 24, '#fff6c8', 0.45);
+  for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; parts.push({ streak: true, x, y, vx: Math.cos(a) * 260, vy: Math.sin(a) * 260, life: 0.16, max: 0.16, col: i % 2 ? '#ffffff' : '#fff6c8', size: 1, grav: 0 }); }
+  lessonHint('parry'); }
+/* A GUARD RAISED EARLY in the wood's lesson stretch is a block and not a perfect guard: say so, a few times, while it is true */
+function guardEarlySay() { if (hero() !== 'knight' || !lessonAt('parry') || hintT > 0) return; if ((PROG.guardEarly || 0) >= 3 || (PROG.lessons && PROG.lessons.parry)) return;
+  PROG.guardEarly = (PROG.guardEarly || 0) + 1; hintT = 3.5; hintMsg = 'TOO EARLY: THAT WAS ONLY A BLOCK. RAISE C AS HIS SWORD FLASHES, NOT BEFORE.'; }
+/* THE RIPOSTE WINDOW, ON HIM: a gold ring round the sword hand that closes as the window does, and a glint running up the blade */
+function drawRiposteGlint(cx, cy) {
+  if (hero() !== 'knight' || !P.riposteHeavy || !(P.riposteT > 0) || P.dead) return;
+  const k = Math.min(1, P.riposteT / RIPOSTE.window), x = Math.round(P.x - cx) + P.face * 7, y = Math.round(P.y - cy) - 12;
+  g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35 + 0.5 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1;
+  g.beginPath(); g.arc(x, y, 6 + 12 * k, 0, 7); g.stroke();
+  g.globalAlpha = 0.9; g.fillStyle = '#ffffff'; const gy = y - 2 - Math.floor((1 - k) * 10) % 6; g.fillRect(x - 1, gy, 3, 1); g.fillRect(x, gy - 1, 1, 3);
+  g.restore(); }
 /* THE PARRY GOES OFF: a star of light off the edge of the shield, a second ring twice the size, and a breath of white */
 function parryBurst() { const x = P.x + P.face * 10, y = P.y - 9;
   streaks(x, y, 12, ['#ffffff', '#fff6e0', '#ffd36b'], 240); ringAt(x, y, 34, '#ffd36b', 0.42);
@@ -4708,7 +4778,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
      paid for it. The same NOs hold - a red blow, a blow from behind, a bolt through the boards - so the charge is never untouchable */
   const lcUp = hero() === 'knight' && lcOn() && front;
   const rushUp = hero() === 'knight' && (P.rush > 0 || lcUp) && front;
-  const perfectUp = !rushUp && (P.blockT || 0) < (tal('parry') ? 0.22 : 0.11);
+  const perfectUp = !rushUp && (P.blockT || 0) < perfectWindow();
   const pierced = pierce && (P.block || rushUp) && (front || tal('plated')) && !unblockable && !perfectUp;
   if (pierced) { number(P.x, P.y - 30, 'THROUGH THE SHIELD', '#ff6b6b'); SFX.pierce(); }
   if (((P.block && (front || tal('plated'))) || rushUp) && !unblockable && !pierced) {   /* PLATED: the shield at his back too */
@@ -4716,20 +4786,23 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     if (lcUp) number(P.x, P.y - 28, 'TURNED', '#ffd36b');
     gainResolve(perfect ? 20 : 8);
     if (P.st >= bc) {
-      P.st -= bc; P.stDelay = ST.delay; blocks++; trialEvent('block'); if (tal('riposte')) P.riposteT = 1;
+      P.st -= bc; P.stDelay = ST.delay; blocks++; trialEvent('block'); if (tal('riposte')) { P.riposteT = 1; P.riposteHeavy = false; }
       if (tal('vengeance')) { P.venge = Math.min(30, (P.venge || 0) + Math.round(dmg * 0.5)); number(P.x, P.y - 26, 'KEPT ' + P.venge, '#c9d1dc'); } // VENGEANCE
       if (perfect) { // THE PARRY. Six frames, and it turns the blow round on whoever threw it.
         const f = nearFoe(fromX);
         if (f) { P.parryFoe = f; P.parryFoeUntil = time + 1.5; }
         if (f) { f.stagger = Math.max(f.stagger || 0, f.maxHp ? 0.35 : 1.1); f.flash = 0.2; if (!f.maxHp) f.vx = Math.sign(f.x - P.x) * 160; }
-        P.st = Math.min(P.maxSt, P.st + 12 + (tal('parry') ? 10 : 0)); P.riposteT = 1;
+        P.st = Math.min(P.maxSt, P.st + 12 + (tal('parry') ? 10 : 0)); P.riposteT = RIPOSTE.window; P.riposteHeavy = true; perfectGuardFx();
         if (tal('counterstroke') && f && !f.harmless) counterCut(f, 'COUNTERSTROKE');   /* the shield turns it and the blade answers by itself */
         noteVerb('parry'); P.parryT = 0.22; parries++; trialEvent('parry');
         SFX.parry(); hitstop(0.09); zoomKick(1.04, 0.2); shakeCam(2.5, -P.face * 2);
         ringAt(P.x + P.face * 9, P.y - 9, 18, '#fff6e0', 0.3); number(P.x, P.y - 28, 'PARRY', '#fff6e0'); parryBurst();
         sparks(P.x + P.face * 10, P.y - 9, P.face, 10);
         return 'blocked'; }
-      if (!rushUp) P.vx = -P.face * 90; hitstop(0.05); shakeCam(1.5, -P.face * 2); SFX.block(); impactAt(P.x + P.face * 9, P.y - 9, 'steel'); ringAt(P.x + P.face * 8, P.y - 9, 10, '#c9d1dc', 0.2);
+      if (!rushUp) guardEarlySay();
+      const push = guardPush(dmg), hard = push > 150;   /* a heavy blow on the shield SLIDES him */
+      if (!rushUp) { P.vx = -P.face * push; if (hard) { dust(P.x - P.face * 4, P.y, 5); number(P.x, P.y - 22, 'PUSHED BACK', '#c9d1dc'); } }
+      hitstop(hard ? 0.08 : 0.05); shakeCam(hard ? 3 : 1.5, -P.face * 2); SFX.block(); impactAt(P.x + P.face * 9, P.y - 9, 'steel'); ringAt(P.x + P.face * 8, P.y - 9, 10, '#c9d1dc', 0.2);
       sparks(P.x + P.face * 9, P.y - 8, P.face, 7);
       return 'blocked';
     }
@@ -5167,15 +5240,45 @@ function finisher(e) {
 /* THE WALL SLAM. Thrown into a wall hard enough, a creature hits it, takes it, and comes back off it at you - into the next blow */
 function wallSlam(e) {
   const dir = Math.sign(e.kvx) || 1; e.slammed = true; e.kvx = -dir * Math.min(200, Math.abs(e.kvx) * 0.55); e.kvy = -130; e.knock = Math.max(e.knock, 0.3); e.knockAir = 0;
+  if (e.thirdT > time) { thirdPay(e, 'wall', null, dir); return; }   /* THE KNIGHT'S THIRD CUT into the wall: its own, bigger payoff */
   number(e.x, e.y - e.h - 12, 'SLAM', '#ffd36b'); dust(e.x + dir * 6, e.y - 6, 6); sparks(e.x + dir * 6, e.y - e.h / 2, -dir, 6); shakeCam(3, dir * 2); hitstop(0.05); SFX.thud();
   e.slamming = true; hurtEnemy(e, Math.max(4, Math.round(swordDmg() * 0.5)), e.x + dir * 20, false); e.slamming = false;
 }
+/* THE THIRD CUT PAYS FOR WHERE YOU FINISH (the knight rework). A body the knight's third cut threw that ENDS in something pays:
+   against a wall or into another foe it takes a second, bigger blow (mul x his sword) and reels; into the spikes, a drop or deep
+   water the room kills it as it always did (hazardFoe) and now it is said and heard as his. Each has the same feedback, loud on
+   purpose - the stop, the shake, the zoom, a crunch of its own (SFX.thirdCrunch), the word and the number - because the tip hit's
+   ring is what makes the Warden's swing a decision, and this is his. Thrown into open air, nothing: the choice is where to stand.
+   live: how long a throw stays his (a drop can take a while to reach the bottom). other: the share the foe it was thrown into takes.
+   talentThrow: THIRD CUT (the talent) throws them this much further. */
+const THIRD_PAY = { live: 1.4, mul: 1.6, other: 0.8, stagger: 1.2, talentThrow: 1.4, minSpeed: 30 };
+const THIRD_WORD = { wall: 'AGAINST THE WALL', foe: 'BOWLED OVER', spikes: 'ON THE SPIKES', pit: 'OFF THE EDGE', water: 'INTO THE WATER' };
+let thirdPaying = false;   /* the blow the payoff lands is not itself a third cut, or one throw would bowl a whole room */
+function thirdPay(e, kind, other, dir) {
+  e.thirdT = 0; dir = dir || Math.sign(e.kvx) || P.face; P.thirdPays = (P.thirdPays || 0) + 1; P.thirdPayLast = kind;
+  const y = e.y - (e.h || 16) / 2;
+  hitstop(0.12); shakeCam(6, dir * 3); zoomKick(1.08, 0.25); if (SFX.thirdCrunch) SFX.thirdCrunch(kind);
+  ringAt(e.x, y, 26, '#fff6e0', 0.35); ringAt(e.x, y, 12, '#ffd36b', 0.25); sparks(e.x + dir * 6, y, -dir, 10); dust(e.x + dir * 6, e.y - 4, 8);
+  burst(e.x + dir * 4, y, 10, ['#fff6e0', '#ffd36b', '#c9b27c'], 110, 0.45);
+  number(e.x, e.y - (e.h || 16) - 18, THIRD_WORD[kind], '#ffd36b');
+  if (kind !== 'wall' && kind !== 'foe') return;   /* the room does the rest */
+  thirdPaying = true; try {
+    e.slamming = true; hurtEnemy(e, Math.max(6, Math.round(swordDmg() * THIRD_PAY.mul)), e.x - dir * 20, false); e.slamming = false;
+    if (e.alive) e.stagger = Math.max(e.stagger || 0, THIRD_PAY.stagger);
+    if (other && other.alive) { other.slamming = true; hurtEnemy(other, Math.max(4, Math.round(swordDmg() * THIRD_PAY.mul * THIRD_PAY.other)), e.x, false); other.slamming = false;
+      if (other.alive) { other.stagger = Math.max(other.stagger || 0, THIRD_PAY.stagger); knockFoe(other, dir, 170); other.thirdT = 0; } }
+  } finally { thirdPaying = false; e.slamming = false; if (other) other.slamming = false; } }
+/* what a third-cut throw has run into: another creature standing in its way, on its level (not a boss's own hide: it takes the blow
+   and is not thrown, which knockFoe already refuses) */
+function bowlTarget(e) { const b = box(e); b.l -= 2; b.r += 2;
+  for (const q of enemies) if (q !== e && q.alive && !q.harmless && !(q.gone > 0) && !q.trainer && q.t !== 'dummy' && overlap(b, box(q))) return q; return null; }
 const KNOCK_SKIP = new Set(['hedgewarden', 'gargoyle', 'gravewarden', 'emberwisp', 'pyromancer', 'archmage', 'homunculus', 'turret', 'strawking', 'ploughman', 'rook', 'marshlight', 'haunt', 'boo', 'farmhand', 'kraken', 'krakenarm', 'feeler', 'wasp', 'drone', 'bat', 'harpy', 'crow', 'kite', 'spit', 'gill', 'heart', 'bearer', 'folk', 'sheep', 'siren', 'eel', 'angler', 'petrel', 'gull', 'wisp', 'spider', 'dummy', 'turret', 'bale', 'clinger', 'urchin', 'lurker', 'jelly', 'lamprey', 'manta']);   /* NOT the puffer: deflated, it is light enough to throw */
 function knockFoe(e, dir, push) {
-  if (!e.alive || e.maxHp || e.mini || e.slamming || e.mounted || KNOCK_SKIP.has(e.t)) return;   /* a horse is not thrown across the road by a sword */
-  e.slammed = false;
+  if (!e.alive || e.maxHp || e.mini || e.slamming || e.mounted || KNOCK_SKIP.has(e.t)) return false;   /* a horse is not thrown across the road by a sword */
+  e.slammed = false; e.thirdT = 0;   /* (a throw is the knight's third-cut throw only if the third cut marks it, after this) */
   const wt = POISE_HEAVY.has(e.t) || e.big ? 0.45 : 1;
   e.knockAir = 0; e.knock = 0.45; e.kvx = dir * Math.max(150, push * 1.15) * wt; e.kvy = Math.min(e.vy || 0, -150 * wt); e.bounced = false;   /* (bounced: it comes up off the floor once when it lands) */
+  return true;
 }
 function hazardFoe(e) {
   const tx = Math.floor(e.x / TS); let why = null;
@@ -5183,6 +5286,7 @@ function hazardFoe(e) {
   else if (e.y > LH * TS + 8) why = 'OVER THE EDGE';
   else if (!AMPHIB.has(e.t)) for (const p of (L.pools || [])) if (!p.shallow && !p.swim && !p.dry && e.x > p.x0 && e.x < p.x1 && e.y > p.y + 6) { why = 'DROWNED';   /* a turtle knocked into the river is home, not drowned */ burst(e.x, p.y, 10, ['#eefaff', '#bfe6f5'], 70, 0.5); SFX.splash(); break; }
   if (!why) return false;
+  if (e.thirdT > time) thirdPay(e, why === 'IMPALED' ? 'spikes' : why === 'DROWNED' ? 'water' : 'pit');   /* the knight's third cut put it there */
   number(e.x, Math.min(e.y, LH * TS) - (e.h || 16) - 10, why, '#8fd160'); e.knock = 0; hurtEnemy(e, Math.max(1, e.hp) + 999, e.x + 1, false); return true;
 }
 /* EVERY WARD AND EVERY OPENING, IN ONE PLACE. These five lived inline in hurtEnemy0, which meant a blow went through
@@ -5403,7 +5507,12 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
     if (e.t === 'gill' && mother) { number(e.x, e.y - 18, 'GILL SNAPS', '#e0b0f0'); { const tx = Math.floor(e.x / TS), ty = Math.floor(L.arena.floor / TS) - 1, i = ty * LW + tx; if (L.grid[i] === T.AIR) { L.grid[i] = T.BOUNCER; tileSpr[i] = null; resolveTiles(); number(e.x, L.arena.floor - 26, 'A CAP FALLS: A SPRING', '#8fd160'); burst(e.x, L.arena.floor - 8, 14, ['#e8e0d0', '#9a5aa8'], 70, 0.7); shakeCam(3); } } for (let i = 0; i < 2; i++) enemies.push({ t: 'sporeling', x: e.x + (i ? 14 : -14), y: e.y - 20, vx: 0, vy: -60, w: 8, h: 10, hp: EHP.sporeling, speed: 30, face: i ? 1 : -1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0.3 }); const left = enemies.filter(g => g.alive && g.t === 'gill').length; mother.rootT = Math.min(mother.rootT, 0.8); if (left === 0) { mother.mode = 'tip'; mother.modeT = 1.6; L.violet = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 999; number(mother.x, mother.y - 110, 'SHE TIPS', '#ff7a9a'); SFX.roar(); SFX.dieOf('mother')(); shakeCam(8); zoomKick(1.1, 0.5); } }
     if (e.t === 'heart' && mother) { mother.alive = false; kills++; xpKill(mother); queenDies(mother); L.violet = false; L.healed = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 0; number(mother.x, mother.y - 130, 'THE WOOD BREATHES AGAIN', '#8fd160'); burst(mother.x, mother.y - 60, 40, COLS.mother, 120, 1.2); }
     if (e.t === 'prince') princeDies(e);   /* his court goes back into the floor and the tomb's lamps come back */
-    if (e.t === 'chief') chiefDies(); else if (!e.mini && (e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e.t === 'bellcrab' || e.t === 'closedhelm' || e.t === 'drownedking' || e.t === 'prince' || e.t === 'gqueen' || e.t === 'queen' || e.t === 'frog' || e.t === 'king' || e.t === 'ram' || e.t === 'owl' || e.t === 'forgemaster' || e.t === 'golem' || e.t === 'windcaller' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'herald' || e.t === 'reefmaw' || e.t === 'quarter' || e.t === 'captain' || e.t === 'masthead' || e.t === 'kraken' || e.t === 'strawking' || e.t === 'archmage' || e.t === 'tollmaster' || e.t === 'grandmother' || e.t === 'master' || (e.t === 'troll' && e.hill))) queenDies(e); // (a boss missing from this list leaves the walls shut and the fight running)
+    /* THE FIGHT'S OWN BOSS ENDS THE FIGHT WHEN HE DIES - a rule, not only the list below. The list was the whole of it, and a boss left off
+       it (THE FALSE ABBOT, 2026-09-24) kept the walls shut, the music up, the loadout locked and a level-up's heal owed for ever
+       (tools/boss-fight-end.mjs kills every boss and mini in the game and fails on any fight that runs on). The Mother is ended through
+       her heart; if her body is put down any other way the wood breathes again all the same. */
+    if (e === boss && e.t === 'mother') { L.violet = false; L.healed = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 0; }
+    if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e.t === 'bellcrab' || e.t === 'closedhelm' || e.t === 'drownedking' || e.t === 'prince' || e.t === 'gqueen' || e.t === 'queen' || e.t === 'frog' || e.t === 'king' || e.t === 'ram' || e.t === 'owl' || e.t === 'forgemaster' || e.t === 'golem' || e.t === 'windcaller' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'herald' || e.t === 'reefmaw' || e.t === 'quarter' || e.t === 'captain' || e.t === 'masthead' || e.t === 'kraken' || e.t === 'strawking' || e.t === 'archmage' || e.t === 'tollmaster' || e.t === 'grandmother' || e.t === 'master' || (e.t === 'troll' && e.hill))) queenDies(e); // (a boss missing from this list leaves the walls shut and the fight running)
     if (e.t === 'thief' && e.loot > 0) { for (let i = 0; i < e.loot + 3; i++) acorns.push({ x: e.x + (i - e.loot / 2) * 6, y: e.y - 10, got: false, ph: Math.random() * 6, crate: 'thief' + e.x + i, vy: -110 - Math.random() * 60 }); number(e.x, e.y - 24, 'WITH INTEREST', '#ffd34a'); SFX.coin(); }
     if (e.t === 'folk') number(e.x, e.y - 18, 'SHAME', '#9aa39a');
     if (e.t === 'master') { for (const h of enemies) if (h.alive && h.t === 'hound' && (h.pack || h.held)) { h.alive = false; burst(h.x, h.y - 3, 6, COLS.hound, 50, 0.4); } }   /* no whistle, no pack */
@@ -5425,7 +5534,12 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
       const push = plunge ? 30 : Math.min(210, 52 + dmg * 2.4) * (P.heavy ? 1.5 : 1);
       e.vx = dir * push;
       if (P.heavy && !e.maxHp && !(P.bashing && e.mini) && P.y > e.y - 4) { e.vy = Math.min(e.vy || 0, -110); }
-      if (!e.maxHp && !e.mini && (P.heavy || P.dash > 0 || P.dashAtk > 0 || hurtKnock || (P.heavySwing && P.atk >= 0 && hero() === 'knight' && tal('thirdCut')))) knockFoe(e, dir, push);   /* THIRD CUT: the end of a run throws them */
+      /* THE KNIGHT'S THIRD CUT THROWS, every knight's now and not only the talent's: where he finishes the run is the decision.
+         A body it throws is MARKED (e.thirdT) for a moment, and what the throw ends in pays (thirdPay): a wall, the spikes, a drop,
+         deep water or another foe. Open air pays nothing. The held heavy cut and the shield bash (P.heavy) are not third cuts. */
+      const thirdThrow = hero() === 'knight' && P.heavySwing && P.atk >= 0 && !P.heavy && !hurtKnock && !thirdPaying;
+      if (!e.maxHp && !e.mini && (P.heavy || P.dash > 0 || P.dashAtk > 0 || hurtKnock || thirdThrow)) { const thrown = knockFoe(e, dir, thirdThrow && !(P.dash > 0 || P.dashAtk > 0) ? push * (tal('thirdCut') ? THIRD_PAY.talentThrow : 1) : push);   /* THIRD CUT (the talent): it throws them further */
+        if (thrown && thirdThrow) e.thirdT = time + THIRD_PAY.live; }
     }
     if (!P.ground && !P.plunge && !P.dead) { P.vy = Math.min(P.vy, -30); P.airHold = 0.12; } // A HIT IN THE AIR HOLDS YOU UP
     if (wheel) guardWheel(e, fromX);
@@ -6366,6 +6480,7 @@ function lessonHint(kind) {
   if (kind === 'heavyblow') { if (hero() === 'knight') hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING, LET GO: CUT THROUGH IT. DOWN+SWING: UNDER.'; else hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING TO GO THROUGH, OR DOWN+SWING TO GO UNDER.'; }   /* guardTurned's own words (the knight's held swing is a charge, not a cut) */
   else if (kind === 'sweep') hintMsg = 'HIS SHIELD TURNED IT. DOWN+SWING: THE LOW SWEEP GOES UNDER IT AND TRIPS HIM.';
   else if (kind === 'down') hintMsg = DOWN_STRIKE[hero()] ? 'THE DOWN ATTACK SHAKES THE GROUND BESIDE YOU. ONE THAT CATCHES NOTHING ROOTS YOU A BEAT.' : 'COME DOWN AMONG THEM. A PLUNGE THAT CATCHES NOTHING LEAVES YOU STANDING A BEAT.';
+  else if (kind === 'parry') hintMsg = hero() === 'knight' ? 'A PERFECT GUARD: IT COST NOTHING AND HE REELS. CUT NOW - THE NEXT CUT LANDS HEAVY.' : 'ON THE BEAT: HE REELS OPEN. CUT HIM NOW.';
   else if (kind === 'dashatk') hintMsg = 'A GUARD MET AT A RUN GOES OFF BALANCE: DOUBLE-TAP TOWARD HIM AND SWING, THEN CUT HIM WHILE HE REELS.';
   else hintMsg = 'THREE SWINGS IN A RUN: THE THIRD IS A HEAVY CUT THAT SHOVES. STOP, AND IT STARTS OVER.';
   return true;
@@ -6839,7 +6954,7 @@ function updatePlayer(dt) {
   }
   if (keys.block && thrown && !P.saidNoShield) { P.saidNoShield = true; number(P.x, P.y - 22, 'NO SHIELD', '#9aa39a'); } if (!thrown) P.saidNoShield = false;
   if (P.block) {
-    if (!tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;   /* STEADY ARM (the knight's; it was HOLD THE LINE, a name the warden's capstone also had) */
+    guardHoldDrain(dt); P.stDelay = ST.delay;   /* STEADY ARM halves it (the knight's; it was HOLD THE LINE, a name the warden's capstone also had) */
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && (P.ground || P.swim)) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
@@ -6852,7 +6967,7 @@ function updatePlayer(dt) {
     if (tapped) { if (P.tapDir === tapped && time - (P.tapT || -9) < 0.26 && !P.dashCd && (P.ground || !P.dashedAir) && !stunned && !P.plunge && !(P.dashRec > 0) && !dashStriking() && !dodging && !P.block && !(P.jetRecover > 0) && !rushing()) {
         if (spend(isPaladin() ? 10 : 8)) { noteVerb('dash'); P.dash = isPyro() ? 0.2 : isPaladin() ? 0.14 : 0.17; P.dashCd = isPaladin() ? 0.7 : 0.55; if (!P.ground) { P.airDashN = (P.airDashN || 0) + 1; P.dashedAir = P.airDashN >= (tal('airDash') ? 2 : 1); }
           P.vx = tapped * (isPyro() ? 300 : isPaladin() ? 230 : isPirate() ? 285 : 265); P.face = tapped; if (!P.ground) P.vy = Math.min(P.vy, 40);
-      if (isWarden() && tal('vaulter')) { P.dash = Math.max(P.dash, 0.2); P.dashLate = 0.2; }
+      /* (VAULTER no longer grants a dash: once passives arrived by level, it turned every Warden jump into a vault from level 3) */
       P.dashDur = P.dash;   /* how long this dash is, so a swing can be judged EARLY or LATE in it (DASH_STRIKE.win) */   /* VAULTER: the plant is always there to be taken */
           streaks(P.x, P.y - 9, -tapped, isPyro() ? ['#ffd36b', '#ff9a5c'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : ['#fff6e0', '#c9d1dc'], 110); dust(P.x - tapped * 6, P.y, 3); SFX.pRoll ? SFX.pRoll() : SFX.skid();
           if (isPyro()) { P.alight = Math.max(P.alight || 0, 0.24); flame(P.x, P.y - 8, 4, 4, 40, 2); }   // even her dash leaves a scorch
@@ -7002,8 +7117,8 @@ function updatePlayer(dt) {
   else if (isWarden() && P.jbuf > 0 && P.swim && !P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && !dodging && P.st >= 10) {   /* THE WATER VERSION of the vault: no heel to plant, so it is a kick off the shaft - up and over, a stroke's height and not a leap's */
     P.jbuf = 0; P.dash = 0; P.dashLate = 0; spend(10); P.vaultT = 0.3; P.vy = -190; P.vx = P.face * 240; P.inv = Math.max(P.inv, 0.2); noteVerb('vault'); SFX.braceSet(); squash(0.8, 1.2, 0.1); streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#bfe6f5'], 120);
   }
-  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0 || tal('vaulter')) && !stunned && !P.plunge && !dodging && (P.st >= 10 || tal('vaulter'))) {
-    P.jbuf = 0; P.dash = 0; P.dashLate = 0; if (!tal('vaulter')) spend(10);   /* VAULTER: no dash to set it up and no wind to pay for it */
+  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && !dodging && (P.st >= 10 || tal('vaulter'))) {
+    P.jbuf = 0; P.dash = 0; P.dashLate = 0; if (!tal('vaulter')) spend(10);   /* VAULTER: the vault costs no wind (it no longer skips the dash: an automatic passive must not take over the jump button) */
     P.vaultT = 0.42; P.vy = -300; P.vx = P.face * (tal('longVault') ? 380 : 300); P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; P.jumpT = time;   /* LONG VAULT: a tile and a half further */
     P.inv = Math.max(P.inv, 0.2);   /* she is up on the shaft and over it: a foe under her is gone past, not run into */
     noteVerb('vault'); SFX.pJump(); SFX.braceSet(); dust(P.x - P.face * 8, P.y, 6); squash(0.78, 1.26, 0.12);
@@ -10283,7 +10398,7 @@ function magePlayer(dt) {
      the turn, the parry window (P.blockT), the guard break and the stamina are all the shield's own and already work. */
   P.block = !!keys.block && footed && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && hero() === 'knight';
   P.blockT = P.block ? (P.blockT || 0) + dt : 0;
-  if (P.block) { if (!tal('holdLine')) P.st -= ST.hold * dt; P.stDelay = ST.delay;
+  if (P.block) { guardHoldDrain(dt); P.stDelay = ST.delay;
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } }
   /* THE ROLL, off the ceiling he is standing on. No air roll: a hero falling UP has nothing under him to push off. */
   P.dbuf = Math.max(0, (P.dbuf || 0) - dt);
@@ -13595,7 +13710,7 @@ function updateRoadman(e, dt) {
     // on the beat - which is the only way this town teaches it, because nothing here explains anything.
     switch (e.mode) {
       case 'cutTell': want = 0;
-        if (L.trial && !e.glint && e.modeT <= PAL_BEAT) { e.glint = 1; ringAt(e.x + e.face * 12, e.y - e.h + 4, 9, '#ffffff', 0.3); burst(e.x + e.face * 12, e.y - e.h + 4, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); }   /* IN A TRIAL HIS SWORD FLASHES as the Paladin's does: the beat, drawn and heard */
+        if ((L.trial || e.lesson) && !e.glint && e.modeT <= (e.lesson && hero() === 'knight' ? RIPOSTE.beat : PAL_BEAT)) { e.glint = 1;   /* THE WOOD'S LESSON (e.lesson): his sword flashes too, and for a knight at HIS beat - a reaction's length before the blow, so raising the shield as it flashes is a perfect guard */ ringAt(e.x + e.face * 12, e.y - e.h + 4, 9, '#ffffff', 0.3); burst(e.x + e.face * 12, e.y - e.h + 4, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); }   /* IN A TRIAL HIS SWORD FLASHES as the Paladin's does: the beat, drawn and heard */
         if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.22; SFX.slash(); e.vx = e.face * 70;
           if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 22) {
             const res = damagePlayer(e.x, DMG.swornCut);
@@ -13611,7 +13726,7 @@ function updateRoadman(e, dt) {
       default: e.mode = 'walk';
         if (near && e.stagger <= 0) { const wf = faceHim();
           want = wf === e.face && ad > 22 ? e.face * e.speed : 0;
-          if (ad < 30 && wf === e.face && e.cd <= 0) { e.mode = 'cutTell'; e.modeT = L.trial ? 0.9 : 0.55; e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
+          if (ad < 30 && wf === e.face && e.cd <= 0) { e.mode = 'cutTell'; e.modeT = L.trial || e.lesson ? 0.9 : 0.55; e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
         else want = e.face * e.speed * 0.35;
     }
   } else if (e.t === 'hedgeknight') {
@@ -18531,6 +18646,8 @@ function updateEnemies(dt) {
           e.kvy = -Math.min(heavy ? 70 : 110, kvy0 * 0.3); e.sq = 0.16; dust(e.x, e.y, heavy ? 8 : 5);
           for (let i = 0; i < 4; i++) parts.push({ x: e.x + dir * (4 + i * 5), y: e.y - 1, vx: dir * (30 + i * 20), vy: -10 - i * 4, life: 0.28, max: 0.28, col: '#c9b27c', size: i < 2 ? 2 : 1, grav: 90 });
           if (heavy) { SFX.thud(); if (!SET.reduceMotion) shakeCam(1.5); } } }
+      if (e.thirdT > time && !e.slammed && Math.abs(e.kvx) > THIRD_PAY.minSpeed) {   /* a THIRD-CUT throw finds the wall at any speed it was given (a heavy foe's is slow), or a foe */
+        if (Math.abs(e.x - kx0) < Math.abs(e.kvx * dt) * 0.3) wallSlam(e); else { const q = bowlTarget(e); if (q) { e.slammed = true; e.kvx *= -0.3; thirdPay(e, 'foe', q); } } }
       if (!e.slammed && Math.abs(e.kvx) > 110 && Math.abs(e.x - kx0) < Math.abs(e.kvx * dt) * 0.3) wallSlam(e);
       e.vx = e.kvx * 0.3; e.vy = e.kvy; if (!e.alive) continue;
       if (hazardFoe(e)) continue;
@@ -19494,6 +19611,10 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
   // THE THIRD CUT. Every hero, no talent needed: this is what the attack IS, and the tree only sharpens it.
   if (L.hush) noiseAt(P.x, P.y, P.heavy ? 132 : P.combo % 3 === 0 ? 104 : 82, null);   /* a swing carries, and the third one carries further */
   if ((P.evadeCutT || 0) > time && hero() === 'knight') { P.evadeCutT = 0; P.combo = Math.ceil(P.combo / 3) * 3; }   /* EVASION: out of a dodge through a blow, the next swing is a third cut */
+  /* THE KNIGHT'S RIPOSTE: a cut started inside a perfect guard's window IS a third cut, as EVASION's is - the count is
+     moved on to the next third, so everything that reads the third cut (the shove, the throw, the poise, the swing-through,
+     OPENED UP on the one who swung) reads this one. The doubling is the RIPOSTE talent's and only the talent's. */
+  const ripHeavy = hero() === 'knight' && P.riposteT > 0 && !!P.riposteHeavy; if (ripHeavy) P.combo = Math.ceil(P.combo / 3) * 3;
   P.heavySwing = P.combo % 3 === 0; const rip = P.riposteT > 0; P.swingRiposte=!!rip;
   if (hero() === 'knight' && P.realmT > 0 && (P.ground || P.swim)) realmWave(P.heavySwing || P.heavy);   /* SWORD OF THE REALM: every swing sends light along the floor, a third or heavy one a great wave */
   /* SPEARHEAD (her capstone): the third thrust of a run IS the run-through, and she never wound it up. The lunge's own
@@ -19501,11 +19622,12 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
   if (isWarden() && P.heavySwing && !P.heavy && tal('spearhead')) { P.heavy = true; P.runThrough = true; P.rtHit = null; P.rtWound = 1; P.vx = P.face * 40; SFX.heavy(); }   /* and it lunges the whole way: she never wound it, so it is given the full wind */
   if (P.heavySwing && (P.ground || P.swim) && isPaladin() && tal('aftershock') && !P.heavy) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 1.5 : 0.9) * (P.ground ? 1 : 0.7), sp: 200, hit: new Set(), water: !P.ground }); shakeCam(4); SFX.stone(); number(P.x, P.y - 30, 'AFTERSHOCK', '#ffe6a0'); }   /* AFTERSHOCK */
   if (P.heavySwing && P.combo >= 6 && hero() === 'knight' && tal('unbroken')) number(P.x, P.y - 32, 'UNBROKEN ' + P.combo, '#fff6e0');
-  P.swingMul = (P.heavySwing ? 1.5 + 0.25 * tal('thirdCut') : 1) * (rip ? 2 : 1);
-  if (rip) { P.riposteT = 0; ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); }
+  P.swingMul = (P.heavySwing ? 1.5 + 0.25 * tal('thirdCut') : 1) * (rip && (!ripHeavy || tal('riposte')) ? 2 : 1);
+  if (rip) { P.riposteT = 0; P.riposteHeavy = false; ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); }
+  if (ripHeavy) { P.ripostes = (P.ripostes || 0) + 1; SFX.riposte(); number(P.x, P.y - 30, 'RIPOSTE', '#ffd36b'); ringAt(P.x + P.face * 12, P.y - 11, 22, '#fff6c8', 0.25); streaks(P.x + P.face * 12, P.y - 12, 7, ['#ffffff', '#ffd36b'], 190); zoomKick(1.03, 0.14); }
   if (P.heavySwing) { SFX.heavy(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#fff6e0', '#c9d1dc'], 140);
-    if ((PROG.thirdSeen || 0) < 2 && !lessonAt('third')) { PROG.thirdSeen = (PROG.thirdSeen || 0) + 1; hintT = 4;   /* (not in the wood's third-cut stretch: the lesson there says it, once, as the first blow lands) */
-      hintMsg = 'THE THIRD SWING IN A RUN IS A HEAVY CUT THAT SHOVES. STOP SWINGING AND IT STARTS OVER.'; } } }
+    if ((PROG.thirdSeen || 0) < 2 && !lessonAt('third') && !ripHeavy) {   /* (not on a riposte: that heavy cut was the guard's, not the run's) */ PROG.thirdSeen = (PROG.thirdSeen || 0) + 1; hintT = 4;   /* (not in the wood's third-cut stretch: the lesson there says it, once, as the first blow lands) */
+      hintMsg = hero() === 'knight' ? 'THE THIRD SWING IN A RUN THROWS THEM. THROW THEM AT A WALL, THE SPIKES OR EACH OTHER.' : 'THE THIRD SWING IN A RUN IS A HEAVY CUT THAT SHOVES. STOP SWINGING AND IT STARTS OVER.'; } } }
 /* ==== THE TIP. The Warden's one rule, and the only thing a player has to learn about her: a blow pays by WHERE ALONG
    THE SPEAR it landed. The last quarter - 34 px out and beyond, which is the leaf of the head and a little behind it -
    is the TIP and pays thirty percent more, with extra poise on it. The middle is a glancing blow at three quarters.
@@ -20477,6 +20599,7 @@ function update(dt) {
   for (const pp of players) asPlayer(pp, () => {
     if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; P.abufUp = !!keys.up; P.abufLow = !!keys.down; } if (dodgePress) P.dbuf = 0.12;
     updateCharge(STEP); });
+  levelHealTick();   /* a level-up's heal waits for the fight to end (levelUp); ahead of the hitstop, so the killing blow's own freeze does not hold it back */
   if (stop > 0) { stop -= dt; return; }
   slowT = Math.max(0, slowT - dt); const wdt = (slowT > 0 ? dt * 0.3 : dt) * (SET.speed || 1);
   // THE CLOCK RUNS ON WORLD TIME, NOT WALL TIME. Every medal in the game was set against a world running at
@@ -21269,7 +21392,7 @@ function drawCutArc(cx, cy) {
     g.beginPath(); if (f > 0) g.ellipse(x, y, 24 - i, 22 - i, 0, tail, head); else g.ellipse(x, y, 24 - i, 22 - i, 0, Math.PI - head, Math.PI - tail); g.stroke(); }
   g.restore(); return true; }
 function drawSwing(cx, cy) {
-  drawRiseCrescent(cx, cy);
+  drawRiseCrescent(cx, cy); drawRiposteGlint(cx, cy);
   if (drawCutArc(cx, cy)) return;
   if (!P.dead && P.atk >= 0 && !P.heavy && (P.swingKind === 'rise' || P.swingKind === 'sweep')) {
     const rising = P.swingKind === 'rise', end = rising ? 0.17 : 0.15;
@@ -21639,6 +21762,12 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.kind === 'wheel') { if (m.mill && m.first) drawMillTower(m, cx, cy); const a = m.mill ? (m.ang || 0) + m.phase : time * 2 * Math.PI / m.period + m.phase; g.save(); g.translate(Math.round(m.px - cx), Math.round(m.py - cy)); g.rotate(a - Math.PI / 2); g.drawImage(PROP.sail, -5, 0); g.restore(); g.fillStyle = '#5c3a1d'; g.fillRect(Math.round(m.x - cx), Math.round(m.y - cy), m.w, 3); g.fillStyle = '#8a5a32'; g.fillRect(Math.round(m.x - cx), Math.round(m.y - cy), m.w, 1); }
     else if (m.kind === 'swing' && m.bucket) { const bx = Math.round(m.x - cx), by = Math.round(m.y - cy), px2 = Math.round(m.px - cx), py2 = Math.round(m.py - cy); g.strokeStyle = '#8a919c'; g.lineWidth = 1; g.beginPath(); g.moveTo(px2 + 0.5, py2); g.lineTo(bx + m.w / 2 + 0.5, by - 10); g.stroke(); g.beginPath(); g.moveTo(bx + 3, by); g.lineTo(bx + m.w / 2, by - 10); g.lineTo(bx + m.w - 3, by); g.stroke();
       g.fillStyle = '#3a2618'; g.fillRect(px2 - 3, py2 - 2, 6, 4); g.fillStyle = '#5a3a24'; g.fillRect(bx + 1, by, m.w - 2, 10); g.fillStyle = '#7a5234'; for (let k = 3; k < m.w - 2; k += 6) g.fillRect(bx + k, by + 1, 2, 8); g.fillStyle = '#8a919c'; g.fillRect(bx, by, m.w, 2); g.fillRect(bx + 1, by + 8, m.w - 2, 2); g.fillStyle = '#a89a80'; g.fillRect(bx + 4, by - 2, m.w - 8, 2); } // the mason's bucket: iron-bound, a load of stone in it
+    else if (m.kind === 'swing' && m.book) { // THE PENDULUM GALLERY's ride, reskinned 2026-09-23 (Daniel: they should not be wooden, they should be magical - the Folly's own tomes): no rope, a faint violet tether; the platform is ma().book (bakeBook, mage_world.js), the same open-book art the tower's flying 'book' patrol carries, stretched to the boarding width; the mover math (th, arm, period) is untouched, only the look is new.
+      const bx = Math.round(m.x - cx), by = Math.round(m.y - cy), px2 = Math.round(m.px - cx), py2 = Math.round(m.py - cy);
+      g.globalAlpha = 0.4; g.strokeStyle = MVIO[1]; g.lineWidth = 1; g.beginPath(); g.moveTo(px2 + 0.5, py2); g.lineTo(bx + m.w / 2 + 0.5, by); g.stroke(); g.globalAlpha = 1;
+      g.globalAlpha = 0.3; g.fillStyle = MVIO[2]; g.beginPath(); g.ellipse(bx + m.w / 2, by + 7, m.w / 2 + 2, 5, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+      const fr = ma().book[Math.floor(time * 3 + (m.phase || 0) * 2) % 2]; g.drawImage(fr, 0, 0, fr.width, fr.height, bx, by - 3, m.w, fr.height);
+      if (Math.random() < 0.12) parts.push({ x: m.x + Math.random() * m.w, y: m.y - 2, vx: (Math.random() - 0.5) * 6, vy: -14, life: 0.5, max: 0.5, col: MVIO[2], size: 1, grav: -6 }); }
     else if (m.kind === 'swing') { g.strokeStyle = m.vine ? '#3f6e2c' : '#c9b27c'; g.lineWidth = m.vine ? 2 : 1; g.beginPath(); g.moveTo(Math.round(m.px - cx) + 0.5, Math.round(m.py - cy)); g.lineTo(Math.round(m.x - cx) + 2.5, Math.round(m.y - cy)); g.moveTo(Math.round(m.px - cx) + 0.5, Math.round(m.py - cy)); g.lineTo(Math.round(m.x + m.w - cx) - 2.5, Math.round(m.y - cy)); g.stroke(); if (m.vine) { g.fillStyle = '#6faa4a'; for (let k = 1; k < 5; k++) { const t = k / 5; g.fillRect(Math.round(m.px + (m.x + 2 - m.px) * t - cx) + (k % 2 ? 1 : -3), Math.round(m.py + (m.y - m.py) * t - cy), 3, 2); g.fillRect(Math.round(m.px + (m.x + m.w - 2 - m.px) * t - cx) + (k % 2 ? -3 : 1), Math.round(m.py + (m.y - m.py) * t - cy) + 1, 3, 2); } } g.fillStyle = m.vine ? '#3f6e2c' : '#5c3a1d'; g.fillRect(Math.round(m.px - cx) - 3, Math.round(m.py - cy) - 3, 6, 4); const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(m.nautical ? LEDGE_SETS.cargo.ledge[i%3] : i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, Math.round(m.y) - cy); }
     else if (m.tide) causeDrawBoat(m, cx, cy);   /* THE DROWNED CAUSEWAY: a boat on its mooring */
     else if (['waymeet','reef','longwater'].includes(curId())&&(!m.kind||m.kind==='lift')) drawWorkPlatform(g,m,cx,cy,curId()==='waymeet'?'town':'sea',L);
@@ -23066,7 +23195,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
   const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill  F', skName], ['skill  G', sk2Name], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold / silver', PROG.coins + ' / ' + silverAvail() + ' spare']];
   rows.forEach(([a, b], i) => { const yy = rowY + i * 10; text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
-  { const tr = 'level ' + heroLevel() + ' (' + (xpFloor(heroLevel() + 1) - heroXp()) + ' xp to next)   points ' + ptsSpent(hero()) + '/' + ptsTotal() + '   tonics ' + (PROG.tonics || 0);
+  { const tr = 'level ' + heroLevel() + ' (' + (xpFloor(heroLevel() + 1) - heroXp()) + ' xp to next)   passives ' + passiveLadder(hero()).filter(n => passiveOn(PROG, hero(), n.id, heroLevel())).length + '/' + passiveLadder(hero()).length + '   tonics ' + (PROG.tonics || 0);
     text(tr, VW / 2, y + h - 34, '#8fd160', 'center', 6);
     text('Q  SKILLS AND LOADOUT', VW / 2, y + h - 24, UI.gold, 'center', 6);
     text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 14, UI.sel, 'center', 6); }
@@ -23809,8 +23938,8 @@ function render() {
     /* THE XP BAR: a thin line under the meters, inside the plate, with the level beside it. A level-up turns it gold and it says LEVEL n */
     if (xpRow) { const yy = (SET.iron ? 41 : 29) + 8, n = heroLevel(), lo = xpFloor(n), k = Math.max(0, Math.min(1, (heroXp() - lo) / Math.max(1, xpFloor(n + 1) - lo)));
       if (lvUpT > 0) lvUpT = Math.max(0, lvUpT - 1 / 60); const up = lvUpT > 0, fl = up && Math.floor(time * 8) % 2 === 0;
-      const lab = (up ? 'LEVEL ' : 'LV ') + n, bx = 6 + inkW(lab, 6) + 4;
-      text(lab, 6, yy - 1, up ? (fl ? '#fff6c8' : '#ffd36b') : '#c9b27c', 'left', 6);
+      const cu = !up && catchingUp(), lab = (up ? 'LEVEL ' : 'LV ') + n + (cu ? ' x' + XP_CATCHUP : ''), bx = 6 + inkW(lab, 6) + 4;   /* x3: CATCHING UP, below the level this wood expects */
+      text(lab, 6, yy - 1, up ? (fl ? '#fff6c8' : '#ffd36b') : cu ? '#8fd160' : '#c9b27c', 'left', 6);
       bar(bx, yy, 86 - bx, 3, up ? 1 : k, up ? (fl ? '#fff6c8' : '#ffd36b') : '#8fb8ff'); }
     if (SET.hud === 'minimal') { g.globalAlpha = 1; } 
     if (P.relic && (PROP.relic[P.relic] || PROP.lampIcon)) { g.drawImage(PROP.relic[P.relic] || PROP.lampIcon, 152, 14); }
@@ -23944,8 +24073,8 @@ function render() {
   if (state === 'slots') drawSlots();
   if (state === 'bestiary') drawBestiary();
   if (state === 'map' || state === 'store') { for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x), Math.round(n.y), n.col, 'center'); } g.globalAlpha = 1; }
-  if(PROG.progressionNotice && (state==='map'||state==='play')){talentsBackT=7;talentsBackWho=String(PROG.progressionNotice);PROG.progressionNotice=0;saveProgress();}
-  if(talentsBackT>0&&(state==='map'||state==='play')){talentsBackT-=1/60;const lab=talentsBackWho+' COINS REFUNDED',sub='Q OPENS SKILLS AND LOADOUT';g.fillStyle='rgba(24,18,8,0.94)';g.fillRect(VW/2-114,58,228,23);text(lab,VW/2,62,UI.gold,'center',6);text(sub,VW/2,72,UI.text,'center',6);}
+  if(PROG.progressionNotice && (state==='map'||state==='play')){talentsBackT=7;talentsBackWho=String(PROG.progressionNotice);talentsBackWhy=PROG.passiveNotice?'PASSIVES NOW COME WITH LEVELS':'';PROG.progressionNotice=0;PROG.passiveNotice=0;saveProgress();}
+  if(talentsBackT>0&&(state==='map'||state==='play')){talentsBackT-=1/60;const lab=talentsBackWho+' COINS REFUNDED',sub=talentsBackWhy||'Q OPENS SKILLS AND LOADOUT';g.fillStyle='rgba(24,18,8,0.94)';g.fillRect(VW/2-114,58,228,23);text(lab,VW/2,62,UI.gold,'center',6);text(sub,VW/2,72,UI.text,'center',6);}
   drawWayOn(cx, cy);   /* the way-on arrow, under the tells it keeps clear of */
   drawTells();   /* the ! and the !!, over the numbers, the plates and the boss bar */
   drawWarp(); // the door closing, over everything
@@ -24002,7 +24131,7 @@ function render() {
     line(0.80, 'foes     ' + Math.round(cnt(0.80, kills)), 90, '#fff6e0');
     line(1.00, 'blocks   ' + Math.round(cnt(1.00, blocks)) + '   dodges ' + Math.round(cnt(1.00, dodges)), 103, '#fff6e0');
     line(1.20, 'deaths   ' + deaths, 116, '#fff6e0'); }
-    { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' : xpRun > 0 ? '+' + xpRun + ' XP   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
+    { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') : xpRun > 0 ? '+' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') + '   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
       if (s && !coop()) line(0.15, fitText(s, pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }   /* (in co-op that row is the tally's, and the XP is player one's alone anyway) */
     if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') line(1.9, 'NEW AT THE STORE: SHIELD THROW', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     if (PROG.storeHint === 'groundSlam' && LEVELS[levelIndex].id === 'kings') line(1.9, 'NEW AT THE STORE: GROUND SLAM', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');

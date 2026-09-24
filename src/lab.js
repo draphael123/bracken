@@ -1,5 +1,6 @@
 import {breathCapacity} from './deepair.js';
 import { AMBUSH_TARGET } from './ambush.js';
+import { mulberry } from './px.js';   /* bossLab seeds Math.random for the row it is about to fight - see the note over the loop in runbossLab */
 // src/lab.js — THE FIGHT LAB and THE BOSS LAB.
 // The playtest bot walks levels. These FIGHT, and measure what a player feels: how long a foe or a boss takes to
 // kill, and how much of your health it costs. Both yield between fights, so a page can be polled while they run.
@@ -312,6 +313,8 @@ function princeTarget(BK, boss, A, P) {
    with the family table taken out of it, because a boss is in no family: double-tap toward him from a dash's length out,
    swing while it carries, and leave the cutting to the OPEN branch above. */
 const DASH_IN = new Set(['lance']);
+/* a stable hash of the row's own key (level + hero + health mode), not the array index: renaming or reordering bosses[]/heroes[] must not reseed anything */
+const seedOf = s => { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; };
 function dashIn(BK, h, e, f) {
   const P = BK.P, k = BK.keys, d = e.x - P.x, ad = Math.abs(d), dir = Math.sign(d) || P.face;
   const reach = LAB_REACH[h] + (e.w || 12) / 2, cost = BK.stepCost ? BK.stepCost() : 12;
@@ -340,6 +343,14 @@ async function runbossLab(BK, opts) {
   const rows = [], out = { rows, healthMode, started: Date.now(), progress: 0, total: bosses.length * heroes.length };
   if (typeof window !== 'undefined') window.__bossLab = out;
   for (const lvId of bosses) for (const h of heroes) {
+    /* THE WHOLE ROW IS SEEDED, from the FIRST frame BK.load draws: a fresh level's own goblins and critters wander on real
+       Math.random for the few frames before bossLab kills everything but the boss, and that unseeded wander (an idleT roll,
+       a look, a mutter - main.js's temper()) was shifting frame counts before the boss fight even began, so a fight seeded
+       only at its own first frame still opened on a different footing every run. Seeding here, before BK.load, and restoring
+       in the finally below (every continue in this row is covered) pins the row end to end - the level it loads, the setup
+       sim before the arena wakes, and the fight itself. */
+    const realRandom = Math.random; Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode));
+    try {
     if(opts.mini && BK.PROG[lvId]) BK.PROG[lvId].mini=false;
     BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(10);
     /* A FRESH HERO EACH ROW. The last swing of the row before used to arrive with him - a heavy swing still going roots the
@@ -1025,6 +1036,7 @@ async function runbossLab(BK, opts) {
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
       takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}) });
     await yieldNow();
+    } finally { Math.random = realRandom; }
   }
   out.done = true; out.ms = Date.now() - out.started;
   return out;
