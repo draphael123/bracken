@@ -14,8 +14,9 @@
 // usage: node tools/slopes.mjs [--quick]     exit 1 on any failure
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';   /* the OLD moveBody comes out of git now: see below */
 import { LEVELS, T, TS } from '../src/level.js';
-import { SLOPE, SLOPE_NAMES, isSlope, heightAt, moveBodySlopes, moveBodySquare, aheadTile, footSlope, slideStep, slopeRise } from '../src/slopes.js';
+import { SLOPE, SLOPE_NAMES, isSlope, heightAt, moveBodySlopes, moveBodySquare, aheadTile, footSlope, slideStep, slopeRise, levelHasSlopes } from '../src/slopes.js';
 import { slopeReachGrid, slopeReachTile, slopeLint } from '../src/reach-slopes.js';
 import { floodReach } from '../src/reachcore.js';
 import { buildDuneYard, DUNE_YARD_FLOOR } from '../src/dune-yard.js';
@@ -25,17 +26,26 @@ let fails = 0; const T0 = Date.now(); const out = { push: s => console.log(s + '
 const ok = (cond, msg) => { out.push((cond ? '  ok   ' : '  FAIL ') + msg); if (!cond) fails++; return cond; };
 const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 
-// ---------- today's moveBody, cut out of src/main.js ----------
-const MAIN = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').split(/\r?\n/);   // (main.js is CRLF)
+// ---------- the OLD moveBody, cut out of GIT ----------
+// PHASE 2 MOVED THIS. Until the wiring landed, this block cut moveBody out of src/main.js as it stood; main.js's
+// moveBody is now a WRAPPER round this module, so cutting it out of the live file would compare the new code with
+// itself and the whole equivalence proof would pass vacuously. The OLD side therefore comes out of git, at the
+// pre-slopes commit 9e0e28a, and the extraction's sha is PINNED: if git is missing, or the lines move, or the text
+// changes by one character, this exits 1 rather than quietly proving nothing.
+const OLD_AT = '9e0e28a', OLD_SHA = 'b45533429f81';   /* main.js lines 4043, 4065, 4066-4099 at that commit */
+let MAIN;
+try { MAIN = execFileSync('git', ['show', OLD_AT + ':src/main.js'], { cwd: new URL('..', import.meta.url), encoding: 'utf8', maxBuffer: 1 << 28 }).split(/\r?\n/); }
+catch (e) { console.log('slopes: cannot read src/main.js at ' + OLD_AT + ' out of git (' + e.message + ') - the equivalence proof has NO OLD SIDE, so it is not run'); process.exit(1); }
 const lineOf = re => MAIN.findIndex(l => re.test(l));
 const iSolid = lineOf(/^const isSolid = \(tx, ty\) =>/), iOne = lineOf(/^const isOneWay = t =>/), iMove = lineOf(/^function moveBody\(b, dx, dy, allowDrop = false\) \{/);
 let iEnd = iMove; while (iEnd < MAIN.length && MAIN[iEnd] !== '}') iEnd++;
-if (iSolid < 0 || iOne < 0 || iMove < 0 || iEnd - iMove > 60) { console.log('slopes: cannot find moveBody in src/main.js - has it moved or changed shape?'); process.exit(1); }
+if (iSolid < 0 || iOne < 0 || iMove < 0 || iEnd - iMove > 60) { console.log('slopes: cannot find moveBody in src/main.js at ' + OLD_AT); process.exit(1); }
 const SRC = [MAIN[iSolid], MAIN[iOne], ...MAIN.slice(iMove, iEnd + 1)].join('\n');
 const SRC_SHA = createHash('sha256').update(SRC).digest('hex').slice(0, 12);
+if (SRC_SHA !== OLD_SHA) { console.log('slopes: the moveBody cut from ' + OLD_AT + ' is sha ' + SRC_SHA + ', not the pinned ' + OLD_SHA + ' - the OLD side is not what this proof was written against'); process.exit(1); }
 const oldFactory = new Function('T', 'TS', 'env', `let P = null; const tileAt = (x, y) => env.tileAt(x, y);\n${SRC}\nreturn (b, dx, dy, allowDrop, p) => { P = p; return moveBody(b, dx, dy, allowDrop); };`);
 const makeOld = tileAt => oldFactory(T, TS, { tileAt });
-out.push(`today's moveBody: main.js lines ${iSolid + 1}, ${iOne + 1}, ${iMove + 1}-${iEnd + 1} (sha ${SRC_SHA})`);
+out.push(`the OLD moveBody: src/main.js at ${OLD_AT}, lines ${iSolid + 1}, ${iOne + 1}, ${iMove + 1}-${iEnd + 1} (sha ${SRC_SHA})`);
 
 const tileFn = (grid, W, H) => (tx, ty) => (tx < 0 || tx >= W) ? T.SOLID : (ty < 0 || ty >= H) ? T.AIR : grid[ty * W + tx];   // main.js:635, exactly
 const SQUARE_KINDS = [T.SOLID, T.ONEWAY, T.SPIKE, T.CRATE, T.REED, T.PALISADE, T.PLANK, T.NET, T.BOUNCER, T.SHELF, T.PORT, T.CLIMB, T.RAIL, T.SOFT, T.ICE, T.WEB, T.CRYST];
@@ -143,9 +153,14 @@ const newProbe = (tileAt, ftx, fty, feetY, w) => aheadTile(tileAt, ftx, fty, fee
 {
   const R = rng(77); let frames = 0, bodies = 0, bad = 0, jumps = 0, landings = 0, firstBad = null; const perLevel = [];
   const DTS = [0.6 / 60, 1 / 60];   // the default game speed, and full speed
+  const sloped = [];
   for (const lv of LEVELS) {
     if (lv.hidden && !lv.secret) continue;
     const L = lv.build(), W = L.W, H = L.H, tileAt = tileFn(L.grid, W, H), old = makeOld(tileAt);
+    /* A LEVEL WITH SLOPES IN IT IS NOT PART OF THIS CLAIM. The claim is that the levels that shipped before slopes do not
+       move; a level built ON slopes (THE SUNKEN CARAVAN) runs moveBodySlopes in the game (SLOPES_ON) and has no old
+       mover to agree with. It is listed, so it can never be skipped silently, and the slope sections below walk it. */
+    if (levelHasSlopes(L.grid)) { sloped.push(lv.id); continue; }
     const opts = { allowDrop: false, P: null };
     const mvOld = P => (b, dx, dy, ad = false) => old(b, dx, dy, ad, P);
     const mvNew = P => (b, dx, dy, ad = false) => { opts.allowDrop = ad; opts.P = P; return moveBodySlopes(b, dx, dy, tileAt, opts); };
@@ -175,6 +190,8 @@ const newProbe = (tileAt, ftx, fty, feetY, w) => aheadTile(tileAt, ftx, fty, fee
   }
   out.push(`REAL LEVELS: ${perLevel.length} levels, ${bodies} bodies (a knight and two walkers per start), ${frames} frames x 3 bodies, ${jumps} jumps, ${landings} knight landings`);
   out.push('    ' + perLevel.join(' '));
+  out.push('    built on slopes, so on the slope mover and not compared: ' + (sloped.join(' ') || 'none'));
+  ok(sloped.every(id => id === 'caravan'), `the only level with slopes in it is the one built for them (${sloped.join(' ') || 'none'})`);
   ok(bad === 0, `every frame of every body identical to today's moveBody (${bad} frames differ)`);
   if (firstBad) out.push('    first: ' + JSON.stringify(firstBad).slice(0, 500));
 }
@@ -302,6 +319,22 @@ function walkAcross(Y, dir, dt, extra = {}) {
   out.push('THE REACH RULE (src/reach-slopes.js)');
   const passthrough = LEVELS.filter(l => !(l.hidden && !l.secret)).slice(0, QUICK ? 3 : 27).every(lv => { const L = lv.build(); return slopeReachGrid(L, T) === L; });
   ok(passthrough, 'a level with no slopes comes back as the same object: reachcore sees today\'s grid');
+  /* PHASE 2 (docs/slopes-integration.md §5). src/reachcore.js now wraps its own level in slopeReachGrid on the first
+     line of floodReach, and tools/caravan-level.mjs and tools/draft-level.mjs ALREADY wrapped theirs before calling it,
+     so those two levels are wrapped TWICE. That is only harmless if the mapping is idempotent, which is not something
+     to assume: it is asserted here, on a grid that HAS slopes. */
+  {
+    const W = 8, H = 5, grid = new Uint8Array(W * H);
+    grid[1 * W + 2] = SLOPE.R1; grid[2 * W + 2] = T.SOLID; grid[1 * W + 3] = SLOPE.L2B; grid[2 * W + 3] = T.SOLID; grid[1 * W + 5] = SLOPE.R2A;
+    const L0 = { W, H, grid, ents: [] }, a = slopeReachGrid(L0, T), b = slopeReachGrid(a, T);
+    ok(a !== L0 && b === a && a.grid.every((t, i) => t === b.grid[i]), 'slopeReachGrid is IDEMPOTENT on a grid with slopes in it: a second wrap is the same object, so a double-wrapping caller is safe');
+  }
+  /* the two tile tables: src/level.js T (what a level paints and what main.js reads) and src/slopes.js SLOPE (what the
+     engine switches on). Two tables for the same six ids is exactly how a silent drift happens, so neither may move. */
+  ok(T.SLOPE_R1 === SLOPE.R1 && T.SLOPE_L1 === SLOPE.L1 && T.SLOPE_R2A === SLOPE.R2A && T.SLOPE_R2B === SLOPE.R2B && T.SLOPE_L2A === SLOPE.L2A && T.SLOPE_L2B === SLOPE.L2B,
+    `level.js T and slopes.js SLOPE name the same six ids (${[T.SLOPE_R1, T.SLOPE_L1, T.SLOPE_R2A, T.SLOPE_R2B, T.SLOPE_L2A, T.SLOPE_L2B].join(' ')})`);
+  ok([20, 21, 22, 23, 24, 25].every(isSlope) && ![T.AIR, T.SOLID, T.ONEWAY, T.SPIKE, T.CRATE, T.REED, T.PALISADE, T.PLANK, T.NET, T.BOUNCER, T.SHELF, T.PORT, T.CLIMB, T.RAIL, T.SOFT, T.ICE, T.WEB, T.CRYST, 19, 26].some(isSlope),
+    'isSlope is true for 20-25 and false for every square tile id the game already has');
   const asStair = L => ({ ...L, grid: L.grid.map(t => isSlope(t) ? T.SOLID : t) });   // the rule NOT taken: a slope as a rock step
   for (const [name, pieces] of [['steep hill, 5 rows', ['F', 'R1', 'R1', 'R1', 'R1', 'R1', 'F', 'F', 'L1', 'L1', 'L1', 'L1', 'L1', 'F']], ['gentle hill, 5 rows', ['F', 'R2', 'R2', 'R2', 'R2', 'R2', 'F', 'F', 'L2', 'L2', 'L2', 'L2', 'L2', 'F']], ['mixed valley', ['F', 'L1', 'L2', 'L1', 'F', 'R2', 'R1', 'R2', 'F']]]) {
     const Y = yard(pieces), L = { W: Y.W, H: Y.H, grid: Y.grid, ents: [], START: { x: 2, y: Y.base - 1 }, pools: [], moversExtra: [] };

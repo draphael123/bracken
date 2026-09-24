@@ -49,7 +49,19 @@ log('QUICKSAND');
   ok(r6.out && r6.out < 1.6 && r4.out && r4.out < 4 && r2.out === null, `from the bottom: mashing jump 6/s gets out in ${r6.out?.toFixed(2)} s, 4/s in ${r4.out?.toFixed(2)} s, 2/s never (${r2.depth?.toFixed(1)} px deep after 10 s) - it is a verb, not a wait`);
   const b = { x: 104, y: q.y, vx: 0, vy: 0 }; let t = 0; while (qsPatchAt(L, b.x, b.y) && t < 3) { qsStep(b, qsPatchAt(L, b.x, b.y), DT, { move: -1 }); b.x += b.vx * DT; t += DT; }
   ok(!qsPatchAt(L, b.x, b.y) && t < 0.4, `stepping in at the edge you can wade back out if you turn at once (${t.toFixed(2)} s); deeper than ${QS.stuck} px you cannot walk`);
-  const d = { x: 150, y: q.y + QS.stuck + 1, vx: 0, vy: 0, qsDepth: QS.stuck + 1 }; qsStep(d, q, DT, { move: 1 }); ok(d.vx === 0, 'below the wading depth, walking does nothing: the only way out is up'); }
+  const d = { x: 150, y: q.y + QS.stuck + 1, vx: 0, vy: 0, qsDepth: QS.stuck + 1 }; qsStep(d, q, DT, { move: 1 }); ok(d.vx === 0, 'below the wading depth, walking does nothing: the only way out is up');
+  /* THE NUMBERS ARE IN REAL TIME (Daniel, 2026-09-24, decision A). A player's taps are real seconds whatever the Game speed
+     setting, and the game hands the quicksand WORLD time (dt x SET.speed). At the default 0.6 the sand sank at 0.6 of its
+     rate under taps that did not slow down, so 2 taps a second got out in 2.5 s in the page. This drives the game's own call
+     (qsGameStep, what src/main.js calls) with real frames at both speeds: 2 taps/s must NEVER get out in 10 s, 6 must. */
+  { const QSM = await import('../src/quicksand.js');
+    const gameStep = QSM.qsGameStep || ((b, q2, gdt, speed, o) => qsStep(b, q2, gdt, o));   /* the old call in main.js: world time, no clock */
+    const real = (rate, speed, secs = 10) => { const b = { x: 148, y: q.y + QS.maxDepth, vx: 0, vy: 0, qsDepth: QS.maxDepth }; let t = 0, next = 0;
+      while (t < secs) { const press = t >= next; if (press) next += 1 / rate; const r = gameStep(b, q, DT * speed, speed, { jumpPress: press }); t += DT; if (r.out) return t; } return null; };
+    for (const sp of [0.6, 1]) { const r2 = real(2, sp), r6 = real(6, sp);
+      ok(r2 === null && r6 !== null && r6 < 0.8, `in REAL time at game speed ${sp}: 2 taps a second ${r2 === null ? 'never gets out in 10 s' : 'gets OUT in ' + r2.toFixed(2) + ' s'}, 6 a second gets out in ${r6 === null ? 'never' : r6.toFixed(2) + ' s'} (the amendments: 0.5 s at 6, never at 2)`); }
+    const main = (await import('node:fs')).readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+    ok(/qsGameStep\(P, q, dt, SET\.speed \|\| 1,/.test(main) && !/[^.\w]qsStep\(P,/.test(main), 'src/main.js steps the hero through qsGameStep with the Game speed, never through qsStep in world time'); } }
 
 // ================= THE DUNE WORM =================
 log('THE DUNE WORM (logic and fight rules, not balance)');

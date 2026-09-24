@@ -15,6 +15,10 @@ const table = name => { const m = main.match(new RegExp('const ' + name + ' = \\
 
 const spawnCases = list(/case '(\w+)':/g);
 const decoKinds = new Set([...(main.match(/const K = \{([\s\S]*?)\}\[e\.kind\]/) || ['', ''])[1].matchAll(/(\w+):\s*\[/g)].map(m => m[1]));
+/* THE SPREADS INTO THAT MAP: `...cvDeco(e)` (THE SUNKEN CARAVAN's own dressing) is a function returning more rows, so its rows are
+   read out of that function's `return { ... }` too, or fourteen kinds that draw read as fourteen that silently do not */
+for (const [, fn] of (main.match(/const K = \{([\s\S]*?)\}\[e\.kind\]/) || ['', ''])[1].matchAll(/\.\.\.(\w+)\(e\)/g))
+  for (const m of ((main.match(new RegExp('function ' + fn + '\\(e\\) \\{[\\s\\S]*?return \\{\\s*(\\w+:[\\s\\S]*?)\\};'))|| ['', ''])[1]).matchAll(/(\w+):\s*\[/g)) decoKinds.add(m[1]);
 const EHP = table('EHP'), DMG = table('DMG'), COLS = table('COLS');
 const beasts = new Set([...main.matchAll(/\{ t: '(\w+)', name: ["']/g)].map(m => m[1]));
 const sprites = new Set([...main.matchAll(/SPR\.(\w+)\s*=/g)].map(m => m[1]));

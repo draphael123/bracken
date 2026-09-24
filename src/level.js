@@ -14,9 +14,15 @@ import { floodReach } from './reachcore.js';
 import { findDeadEnds } from './deadends.js';
 import { spanOf, THREAT } from './threat.js';
 import { buildUnburiedField } from './unburied-field.js';
+import { buildCaravan } from './sunken-caravan.js';   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
 export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17, CRYST: 18 };
+/* THE SLOPES, ids 20-25 (docs/slopes-integration.md). A slope is a floor whose height varies across the tile, and it is
+   NEITHER solid nor a one-way: isSolid and isOneWay in main.js do not name these ids and must not learn them. R rises to
+   the RIGHT; 1 is steep (one row a tile), 2 is gentle (a row over two tiles, A the low half and B the high half).
+   src/slopes.js keeps its own SLOPE table and tools/slopes.mjs asserts the two agree, so neither can drift. */
+Object.assign(T, { SLOPE_R1: 20, SLOPE_L1: 21, SLOPE_R2A: 22, SLOPE_R2B: 23, SLOPE_L2A: 24, SLOPE_L2B: 25 });
 
 function painter(W, H) {
   const grid = new Uint8Array(W * H), ents = [];
@@ -7247,6 +7253,10 @@ export const LEVELS = [
      in src/main.js's hero table. Map node NOT placed here (docs/briefs/map-redesign.md 4.2: node (158,46), spur: true) -
      that is Lane B's, per the Lane C report. */
   { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS}), needs: 'witchlight' },
+  /* THE SUNKEN CARAVAN (lane Q, 2026-09-24): the first level of the desert, through the gold hole the Undead Archmage leaves when
+     he falls. Appended so no index moves (the map's nodes and the saves count by index); brief .claude/briefs/sunken-caravan.md
+     as amended by docs/briefs/sunken-caravan-amendments.md. Its boss, THE DUNE WORM, is its own session: the hollow is built and empty */
+  { id: 'caravan', arc: 'the desert', name: 'THE SUNKEN CARAVAN', sub: 'the road the storm buried', rule: 'THE SUN IS OUT HERE. SHADE IS LIFE.', build: () => buildCaravan({ T, TS }), needs: 'fallingtower' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
   /* (2026-09-24, POLISH) the Warden's and the Geomancer's yards, APPENDED: LEVELS is an append log (map nodes and saves count by index) */
   { id: 'trial_warden', name: "THE WARDEN'S TRIAL", sub: 'point, shaft and pin', build: () => trialYard('warden'), hidden: true },
@@ -7364,6 +7374,7 @@ export const DRESS = {
   unburied: [['fieldGrave', 3], ['crookedCross', 2], ['brokenSpears', 3], ['stuckShield', 2], ['fallenBanner'], ['bones', 2], ['siegeWreck'], ['oldStandard']],   /* THE UNBURIED FIELD (look pass 2026-09-24): the Hexed Fields' own graves and crosses, then the battle's leavings on top of them */
   fields: [['deadCorn', 3], ['crookedFence', 2], ['hayStack', 2], ['pumpkinPatch'], ['farmLantern'], ['milkChurn'], ['plough'], ['brokenCart'], ['waterPump'], ['fieldGrave', 3], ['stone', 3], ['deadTree', 2]],   /* the farm, gone wrong: dead corn, crooked fences, the lanterns they left in the fields */
   hunt: [['fence', 2], ['stump', 2], ['fern', 3], ['hayBale', 2], ['trough'], ['tent', 2], ['banner', 2], ['spearRack'], ['bushDeco', 3], ['flower', 2], ['stone', 3], ['deadTree', 2], ['hideRack', 2], ['trophyRack', 2], ['gobPennant', 3], ['cookSpit'], ['warStandard']],   /* the lord's hunt: hides drying, antlers racked, his pennants */
+  caravan: [['scrub', 3], ['deadTreeD'], ['amphora', 2], ['cargoSack', 2], ['oxHorn', 2]],   /* THE SUNKEN CARAVAN: dry scrub, a bleached tree, and what the caravan carried, half in the sand */
   skyship: [['kegStack'], ['rumBarrels', 2], ['coiledCable', 2], ['washing'], ['hammock', 2], ['lanternDeck', 2], ['plunder', 3], ['waterButt'], ['gobPennant', 3], ['lootHeap', 2], ['boneChime', 2], ['ragBanner', 2]],   /* a pirate crew's: pennants, plunder and bones on a line */
 };
 // per level: what to add, and how many of each. Read tools/curve.mjs before you touch these numbers.
@@ -7399,6 +7410,9 @@ const GARRISON = {
   burial: [['zombie', 16], ['husk', 9], ['wight', 14], ['bat', 13], ['bonegob', 8], ['bonearcher', 9], ['bonecorsair', 7], ['boo', 11], ['lanternshade', 5], ['haunt', 8], ['spider', 6]],   /* and something that SHOOTS: over 1,140 tiles nothing in here could reach the hero across a room */   /* forty-four zombies and nothing else was the whole roster under the hill */
   /* witchlight: NO ROW. The redesigned stair (2026-09-22) is authored ENCOUNTERS of 3-5 with quiet between - Daniel agreed to it over an even sprinkle (src/witchlight.js) */
   fallingtower: [['tome', 3], ['apprentice', 3], ['haunt', 2], ['bat', 2], ['imp', 1], ['armour', 1], ['boo', 1]],   /* the Folly's own staff, and what got loose in it. Small since the ascent (2026-09-21): the builder puts a creature on every tier, and this fills between them - on every floor (L.stackedFloors). NO ZOMBIE AND NO HUSK since the tower was made longer (2026-09-22): Daniel asked for FEWER of them, and the builder's own three zombies plus the cistern's elite husk are the whole count - a row here would quietly put more back. The TOMES lead it instead. */
+  /* THE SUNKEN CARAVAN: its three new creatures (the scorpion on the flats, the sand goblin under them, the vulture over them) and
+     the looters working the wrecks. ~3.8 a screen over 21 screens is what the greybox measured (tools/caravan-level.mjs) */
+  caravan: [['scorpion', 22], ['sandgob', 17], ['vulture', 14], ['thief', 11], ['archer', 4]],
   lamplit: [['watch', 6], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
@@ -7459,7 +7473,7 @@ function garrison(L, id) {
   const W = L.W, H = L.H, g = L.grid;
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
-  const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST;
+  const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST || (t >= 20 && t <= 25);   /* a SLOPE is floor (src/slopes.js): THE SUNKEN CARAVAN is a third dunes, and with no slope a spot the sprinkler put 54 creatures on 577 columns, 2.2 a screen, where B7 asks 3.5-4.5. A creature put in the air cell over a slope settles onto it. No other level has a slope, so no other level's garrison moves */
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 2, A.floor / TS + 2])
     .concat((L.ambushes || []).map(A => [A.wallL - 1, A.wallR + 1, (A.y0 !== undefined ? A.y0 : A.row - 9) - 1, A.row + 2])).concat(L.calm || []);   /* an ambush room is empty until it shuts, and a calm is kept calm */
   const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
@@ -7710,6 +7724,7 @@ const ELITES = {
   waymeet: [['hedgeknight', 465, 35], ['heavy', 548, 35]],
   fields: [['scarecrow', 230, 33]],
   mage: [['armour', 408, 39]],
+  caravan: [['archer', 486, 29, { face: -1, gate: 496 }]],   /* THE SUNKEN CARAVAN: the looters' bowman holds the way down the rim to the hollow, on the rim's last flat with the gate at the foot of the drop (tools/elites.mjs: at 455 he stood four tiles from his gate, with no room to fight him in front of it) */
 };
 /* THE GATE AN ELITE HOLDS, the same shape as an ambush room's (ambushWall in main.js): it stands on its own column's floor
    near the elite's row, up to a ceiling or ten tiles, and a floor you can drop through under it is shut too. One function,
@@ -7738,7 +7753,7 @@ function elites(L, id) {
    The check is tools/deadends.mjs, and the rule is section R of RULES-LEVELS-AND-BOSSES.md. */
 const STASH = { oreroad: 'lootHeap', witchlight: 'coffer', burning: 'barrels', mage: 'coffer', fields: 'stump', wood: 'stump', marsh: 'stump', spore: 'mushroom', hunt: 'stump', stockade: 'lootHeap', kings: 'lootHeap', storm: 'lootHeap', crown: 'lootHeap', underleaf: 'lootHeap', undercrown: 'lootHeap', quarry: 'lootHeap',
   scree: 'cairn', spire: 'shrine', moor: 'cairn', frost: 'cairn', hanging: 'barrels', waymeet: 'barrels',
-  longwater: 'tributeChest', reef: 'seaChest', deep: 'seaChest', keep: 'seaChest', lamplit: 'seaChest', flotilla: 'plunder', hurricane: 'plunder', skyship: 'plunder' };
+  caravan: 'cargoChest', longwater: 'tributeChest', reef: 'seaChest', deep: 'seaChest', keep: 'seaChest', lamplit: 'seaChest', flotilla: 'plunder', hurricane: 'plunder', skyship: 'plunder' };
 const STASH_V = { lootHeap: 2, plunder: 3, stump: 2, mushroom: 2 };
 function payDeadEnds(L, id) {
   const owed = findDeadEnds(L, T).pockets.filter(p => !p.paid); if (!owed.length) return L;

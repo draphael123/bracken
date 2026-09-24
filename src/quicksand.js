@@ -15,6 +15,11 @@ export const QS = {
   wade: 34,       // walking speed held in it near the surface...
   stuck: 5,       // ...and no walking at all below this depth: deeper than this the only way out is up
 };
+/* THE GAME'S CALL: the sand runs on the PLAYER'S clock, not the world's (Daniel, 2026-09-24, decision A). QS's numbers - 6 taps
+   a second out in about half a second, 2 a second never - are real seconds, because taps are: a Game speed of 0.6 slows the
+   world, not the hand. main.js hands out world time (dt x SET.speed), so the sinking is put back into real time here. Wading
+   (vx) is still a world velocity, and moves at the world's pace like every other walk. tools/caravan.mjs proves both speeds. */
+export function qsGameStep(b, q, worldDt, speed, opts) { return qsStep(b, q, worldDt / (speed > 0 ? speed : 1), opts); }
 export function qsPatchAt(L, x, y) { for (const q of (L.quicksand || [])) if (x >= q.x0 && x <= q.x1 && y >= q.y - 0.5 && y <= q.y + QS.maxDepth + 2) return q; return null; }
 export function qsStep(b, q, dt, { move = 0, jumpPress = false } = {}) {
   if (!q) { b.qsDepth = 0; return { held: false, depth: 0, out: false }; }

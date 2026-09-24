@@ -22,8 +22,9 @@
 // 26 px of the room burn. You can go in (it hurts, it does not kill: SANCTUM.dmg a tick and a shove back up, and the
 // way out is up, always) but you cannot live there. That is what makes the height you fly at a decision.
 //
-// THE SANDY PATH is dressing and nothing else: no map node, no `needs:` link, no level behind it. It is the last ten
-// seconds of the world, and it is warm and full of sand, because the next world is.
+// THE SANDY PATH is the last ten seconds of this world, and it is warm and full of sand, because the next world is. It used
+// to be dressing and nothing else; since 2026-09-24 the gold hole LEADS somewhere: THE SUNKEN CARAVAN needs 'fallingtower'
+// and is the desert sheet's first map node (map-redesign §5, reading (a) of §7.4: a needs link and a node, no fight change).
 export const SANCTUM = {
   fire: 26,          /* how deep the witchfire lies on the floor of the hall, in px */
   dmg: 12, tick: 0.55, lift: 190,   /* a bite, a breath between bites, and the shove that gives you a chance to leave */

@@ -97,6 +97,21 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   /* SEA WILDLIFE: a puffer is nearly nothing until it swells, a jelly is a timing problem more than a fight, a
      lamprey costs you air rather than health, and a manta is a diving strike off her own open water */
   puffer: 1, jelly: 1, lamprey: 2.5, manta: 2.5,
+  /* THE SUNKEN CARAVAN's four, weighed BEFORE the level is placed rather than after. A creature missing from this table
+     is silently worth nothing (`undefined > 0` is false), so the first desert level would have read easier than it is -
+     which is the exact bug tools/threat-holes.mjs exists to catch, and it cannot catch this one until the level is in
+     LEVELS. Weighed off src/desert-foes.js's real numbers against the soldier, who is 34 health and a 14 point swing
+     and is a 3:
+       scorpion  34 health, and TWO tells with two different answers - the claw (! 8, the shield turns it) and the
+                 sting (X 12, over its own back, you move). A soldier's health and one more thing to read.
+       vulture   22 health, one told dive (X 10) at a spot it marks - and it LANDS OPEN afterwards, every time, so it
+                 hands back a free punish. Below the harpy at 2.5 for that; the fledgling's price.
+       sandgob   26 health and a small knife (! 7, twice), but untouchable while it is a mound and it burrows to come
+                 up AHEAD of you. What it costs is position and time, not health: the lurker's job, the lurker's price.
+     bandit is the odd one out and its number is PROVISIONAL: it is a roster name in the greybox with NO behaviour
+     module yet (src/desert-foes.js has the other three and nothing for him), so this weighs a looter with a blade
+     against the human melee line - the cutlass at 2.5, under the soldier at 3. Re-weigh him when he is written. */
+  scorpion: 3, vulture: 2, sandgob: 2.5, bandit: 2.5,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
