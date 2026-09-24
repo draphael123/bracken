@@ -7,10 +7,10 @@
      3 THE BARROW RIDER: every move forced (A3) and answered by its one answer; the ride-through goes THROUGH you and on to
        the wall; A11 - struck in the ride he is out of the saddle, and in phase two the bones crawling back break when struck,
        and either left alone opens nothing; A10 - at half the horse falls apart, he fights on foot, remounts, and comes apart again.
-     4 THE FIRST DEATH KNIGHT: every attack forced (A3) and answered by its one answer; A11 - the Reaping that drags one of
-       his own risen dead in opens him, the same Reaping with nothing of his in it does not; A10 (proposed) - past half he is
-       the banner over his chapel; A12 - the Reaping's answer (a tomb ledge) is really in his room; both rotations reach
-       every attack.
+     4 THE FIRST DEATH KNIGHT, with the hero's kit (2026-09-24): every move forced (A3) and answered by its one answer; A11 -
+       a ward left alone opens nothing, a FULL ward struck again breaks and opens him; A10 - past half he is the banner over his
+       chapel, GRAVECALL calls three, BLOOD SURGE joins, his own nova finishes his dead; A12 - the tomb ledges are in his room;
+       both rotations reach every move.
      5 THE FIELD: a volley hurts in the open and not behind cover or in a trench; a quiet ridge fires nothing; the cavalry
        rides down a hero on the trench floor and not one on a wreck; a volley stands the pegs out of a palisade.
    Every assertion here was run red against a broken module before it was trusted (see the commit that added this file). */
@@ -122,45 +122,53 @@ const run = (fn, e, c, secs, dt = 1 / 60) => { for (let i = 0; i < secs / dt; i+
 
 /* ---- 4. THE FIRST DEATH KNIGHT ---- */
 { const A = { x0: L.arena.x0, x1: L.arena.x1, floor: L.arena.floor }, X = 396 * TS + 8;
-  const mk = () => ({ t: 'deathknight', alive: true, x: X, y: A.floor, hp: UNB.hp.deathknight, maxHp: UNB.hp.deathknight, mode: 'stalk', modeT: 0, cd: 99, phase: 1, turn: 0, face: -1, anim: 0, marks: [] });
-  const dk = (P, adds = []) => { const c = world(P, { A, adds: () => adds.filter(q => q.alive), raise: x => adds.push({ t: 'corpse', alive: true, x, y: A.floor, mode: 'riseTell' }), cut: q => { q.alive = false; q.cut = true; },
-    pull: (x, r, v, dt) => { if (P.y >= A.floor - 20 && Math.abs(P.x - x) < r && Math.abs(P.x - x) > 12) P.x += Math.sign(x - P.x) * v * dt; } }); return c; };
+  const mk = () => ({ t: 'deathknight', alive: true, x: X, y: A.floor, hp: UNB.hp.deathknight, maxHp: UNB.hp.deathknight, mode: 'stalk', modeT: 0, cd: 99, phase: 1, turn: 0, face: -1, anim: 0, pools: [] });
+  const dk = (P, adds = []) => world(P, { A, adds: () => adds.filter(q => q.alive), raise: x => adds.push({ t: 'corpse', alive: true, x, y: A.floor, mode: 'riseTell' }), cut: q => { q.alive = false; q.cut = true; } });
   const force = (e, what, c) => { U.dkForce(e, what, c); e.modeT = 0; };
-  /* THE SWATHE: outside it cuts hard; inside it barely cuts, and a shield turns that; over it, nothing */
-  { const P = { x: X - 70, y: A.floor, dead: false }, e = mk(), c = dk(P); force(e, 'swathe', c); U.updateDeathKnight(e, 0.02, c); assert.equal(c.hits.length, 1); assert.ok(c.hits[0].hard && c.hits[0].d === UNB.dmg.swathe, 'the swathe outside cuts hard');
-    const Q = { x: X - 18, y: A.floor, dead: false }, e2 = mk(), c2 = dk(Q); force(e2, 'swathe', c2); U.updateDeathKnight(e2, 0.02, c2); assert.equal(c2.hits.length, 1); assert.ok(!c2.hits[0].hard && c2.hits[0].d < 6, 'inside the swathe it barely cuts: ' + JSON.stringify(c2.hits));
-    const J = { x: X - 70, y: A.floor - 52, dead: false }, e3 = mk(), c3 = dk(J); force(e3, 'swathe', c3); U.updateDeathKnight(e3, 0.02, c3); assert.equal(c3.hits.length, 0, 'a jump over the swathe'); }
-  /* THE REAPING drags and cuts at the ankles: on the floor it lands, on a tomb ledge it does not */
-  { const P = { x: X - 130, y: A.floor, dead: false }, e = mk(), c = dk(P); U.dkForce(e, 'reap', c); const x0 = P.x; run(U.updateDeathKnight, e, c, UNB.dk.tell.reap + 0.05);
-    assert.ok(P.x > x0 + 40, 'the reaping must drag you in: ' + (P.x - x0)); assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, true);
-    assert.equal(e.mode, 'reap'); run(U.updateDeathKnight, e, c, 0.5); assert.equal(e.open, 0, 'A11: the Reaping unprovoked opens NOTHING');
-    const Q = { x: X - 60, y: A.floor - 32, dead: false }, e2 = mk(), c2 = dk(Q); U.dkForce(e2, 'reap', c2); run(U.updateDeathKnight, e2, c2, UNB.dk.tell.reap + 0.05); assert.equal(c2.hits.length, 0, 'a hero on a tomb ledge (32px up) is over the reaping'); }
-  /* A11: THE CAUSED OPENING */
-  { const P = { x: X - 60, y: A.floor - 32, dead: false }, add = { t: 'corpse', alive: true, x: X + 130, y: A.floor, mode: 'walk' }, e = mk(), c = dk(P, [add]); U.dkForce(e, 'reap', c);
-    run(U.updateDeathKnight, e, c, UNB.dk.tell.reap + 0.05); assert.ok(add.cut, 'his own risen dead, dragged in from 130px, must be cut by the circle');
-    assert.equal(e.mode, 'open', 'A11: cutting his own dead leaves him OPEN'); assert.ok(e.open > 3, 'the window: ' + e.open);
-    const lying = { t: 'corpse', alive: true, x: X + 40, y: A.floor, mode: 'down' }, e2 = mk(), c2 = dk({ x: X - 60, y: A.floor - 32, dead: false }, [lying]); U.dkForce(e2, 'reap', c2);
-    run(U.updateDeathKnight, e2, c2, UNB.dk.tell.reap + 0.05); assert.ok(lying.cut, 'a corpse lying in the circle is scythed too'); assert.notEqual(e2.mode, 'open', 'a corpse lying down is not a raised dead: no opening'); }
-  /* THE PASSING: the mark goes off where you stood, and leaving it answers it */
-  { const P = { x: X - 80, y: A.floor, dead: false }, e = mk(), c = dk(P); U.dkForce(e, 'pass', c); const mx = e.markX; run(U.updateDeathKnight, e, c, UNB.dk.tell.pass + 0.4);
-    assert.ok(Math.abs(e.x - mx) > 40 && Math.sign(e.x - mx) === -Math.sign(X - mx), 'he steps THROUGH you to the far side'); assert.equal(c.hits.length, 0, 'the passing itself strikes nobody (the touch rule)');
-    run(U.updateDeathKnight, e, c, UNB.dk.markT); assert.equal(c.hits.length, 1, 'standing on the mark, it goes off on you'); assert.equal(c.hits[0].hard, true);
-    const Q = { x: X - 80, y: A.floor, dead: false }, e2 = mk(), c2 = dk(Q); U.dkForce(e2, 'pass', c2); run(U.updateDeathKnight, e2, c2, UNB.dk.tell.pass + 0.4); Q.x -= 90; run(U.updateDeathKnight, e2, c2, UNB.dk.markT); assert.equal(c2.hits.length, 0, 'leaving the mark answers it'); }
-  /* THE CUT, guarded; RAISE */
-  { const P = { x: X - 25, y: A.floor, dead: false }, e = mk(), c = dk(P); force(e, 'cut', c); U.updateDeathKnight(e, 0.02, c); assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, false, 'the short cut is the guardable one');
-    const adds = [], e2 = mk(), c2 = dk({ x: X - 90, y: A.floor, dead: false }, adds); force(e2, 'raise', c2); U.updateDeathKnight(e2, 0.02, c2); assert.equal(adds.length, UNB.dk.raise, 'RAISE calls up two'); }
-  /* A10 (PROPOSED): past half he is the banner, and his raise is bigger */
+  /* THE CLEAVE: in front, and a shield turns it */
+  { const P = { x: X - 40, y: A.floor, dead: false }, e = mk(), c = dk(P); force(e, 'cleave', c); U.updateDeathKnight(e, 0.02, c); assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, false, 'the cleave is the guardable one');
+    const Q = { x: X - 110, y: A.floor, dead: false }, e2 = mk(), c2 = dk(Q); force(e2, 'cleave', c2); U.updateDeathKnight(e2, 0.02, c2); assert.equal(c2.hits.length, 0, 'out of reach of the cleave, nothing'); }
+  /* DEATH GRIP: the chain along the floor catches you and brings you to his feet, and the cleave follows; a jump clears it */
+  { const P = { x: X - 150, y: A.floor, dead: false }, e = mk(), c = dk(P); force(e, 'grip', c); run(U.updateDeathKnight, e, c, 0.5);
+    assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, true, 'no shield holds the grip'); assert.ok(Math.abs(P.x - (X - 26)) < 2, 'dragged to his feet: ' + (P.x - X)); assert.equal(e.mode, 'cleaveTell', 'and the cleave follows');
+    const J = { x: X - 150, y: A.floor - 40, dead: false }, e2 = mk(), c2 = dk(J); force(e2, 'grip', c2); run(U.updateDeathKnight, e2, c2, 1); assert.equal(c2.hits.length, 0, 'a jump clears the chain'); assert.equal(J.x, X - 150, 'and nothing drags you');
+    const B = { x: X + 60, y: A.floor, dead: false }, e3 = mk(), c3 = dk(B); U.dkForce(e3, 'grip', c3); e3.face = -1; e3.modeT = 0; run(U.updateDeathKnight, e3, c3, 1); assert.equal(c3.hits.length, 0, 'the chain does not reach behind him'); }
+  /* BLOOD BOIL: where you stood, it cuts while you stay; step out and it does not */
+  { const P = { x: X - 90, y: A.floor, dead: false }, e = mk(), c = dk(P); force(e, 'boil', c); run(U.updateDeathKnight, e, c, 1.6);
+    assert.ok(c.hits.length >= 3 && c.hits.every(h => h.hard), 'standing in the boil, it keeps cutting: ' + c.hits.length);
+    const Q = { x: X - 90, y: A.floor, dead: false }, e2 = mk(), c2 = dk(Q); force(e2, 'boil', c2); Q.x -= 50; run(U.updateDeathKnight, e2, c2, 1.6); assert.equal(c2.hits.length, 0, 'stepped out of it, nothing'); }
+  /* THE LONG PASSING: through you and far past; a jump clears it */
+  { const P = { x: X - 80, y: A.floor, dead: false }, e = mk(), c = dk(P); force(e, 'pass', c); run(U.updateDeathKnight, e, c, UNB.dk.passT + 0.1);
+    assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, true, 'the passing throws a guard wide'); assert.ok(e.x < P.x - 60, 'he goes through you and a long way past: ' + (e.x - P.x));
+    const J = { x: X - 80, y: A.floor - 40, dead: false }, e2 = mk(), c2 = dk(J); force(e2, 'pass', c2); run(U.updateDeathKnight, e2, c2, UNB.dk.passT + 0.1); assert.equal(c2.hits.length, 0, 'a jump over the passing'); }
+  /* BLOOD WARD and NOVA - A11, the hero's own rule: left alone the ward opens nothing; filled and struck again it BREAKS */
+  { const P = { x: X - 50, y: A.floor, dead: false }, e = mk(), c = dk(P); force(e, 'ward', c); U.updateDeathKnight(e, 0.02, c); assert.equal(e.mode, 'ward');
+    assert.equal(U.dkHurt(e, 20), 0, 'a blow on the ward is kept, not taken'); assert.equal(e.wardFill, 1);
+    run(U.updateDeathKnight, e, c, UNB.dk.wardT + UNB.dk.tell.nova + 0.1); assert.equal(e.open, 0, 'A11: a ward left to run out opens nothing');
+    assert.equal(c.hits.length, 1, 'the nova goes out'); assert.equal(c.hits[0].hard, true); assert.equal(c.hits[0].d, UNB.dmg.nova + UNB.dmg.novaPer, 'and pays out what it kept');
+    const Q = { x: X - 50, y: A.floor, dead: false }, e2 = mk(), c2 = dk(Q); force(e2, 'ward', c2); U.updateDeathKnight(e2, 0.02, c2);
+    for (let i = 0; i < UNB.dk.wardFull; i++) { U.dkHurt(e2, 20); U.updateDeathKnight(e2, 0.02, c2); } assert.equal(e2.mode, 'ward', 'a FULL ward still stands');
+    U.dkHurt(e2, 20); U.updateDeathKnight(e2, 0.02, c2); assert.equal(e2.mode, 'open', 'A11: a FULL ward struck again BREAKS'); assert.ok(e2.open > 3, 'the window: ' + e2.open);
+    assert.equal(U.dkHurt(e2, 20), Math.round(20 * UNB.dk.openMul), 'open, he takes more');
+    const J = { x: X - 50, y: A.floor - 40, dead: false }, e3 = mk(), c3 = dk(J); force(e3, 'ward', c3); run(U.updateDeathKnight, e3, c3, UNB.dk.wardT + UNB.dk.tell.nova + 0.2); assert.equal(c3.hits.length, 0, 'a jump over the nova'); }
+  /* SUMMON SKELETON: one */
+  { const adds = [], e = mk(), c = dk({ x: X - 90, y: A.floor, dead: false }, adds); force(e, 'raise', c); U.updateDeathKnight(e, 0.02, c); assert.equal(adds.length, UNB.dk.raise, 'SUMMON SKELETON calls up one'); }
+  /* A10: past half he is the banner; GRAVECALL calls three; BLOOD SURGE; and his own nova finishes his own dead */
   { const e = mk(); e.hp = e.maxHp * 0.49; const adds = [], c = dk({ x: X - 90, y: A.floor, dead: false }, adds); U.updateDeathKnight(e, 0.02, c); assert.equal(e.phase, 2); assert.equal(e.mode, 'rally');
     assert.ok(U.coverOf({ x: X + 50, y: A.floor }, [e], { bossLive: true, arena: A }), 'phase two: he is the banner over his own chapel');
     assert.equal(U.coverOf({ x: X + 50, y: A.floor }, [{ ...e, phase: 1 }], { bossLive: true, arena: A }), null, 'phase one: he holds nothing up');
-    force(e, 'raise', c); U.updateDeathKnight(e, 0.02, c); assert.equal(adds.length, UNB.dk.raiseP2, 'phase two raises three'); }
-  /* A3: both rotations reach every attack, from a cold start (every cooldown initialised) */
-  for (const phase of [1, 2]) { const e = mk(); e.cd = undefined; e.phase = phase; if (phase === 2) e.hp = e.maxHp * 0.4; const P = { x: X - 60, y: A.floor, dead: false }, c = dk(P, []), seen = new Set();
-    for (let i = 0; i < 60 * 120; i++) { U.updateDeathKnight(e, 1 / 60, c); seen.add(e.mode); P.x = X + Math.sin(i / 70) * 120; }
-    for (const m of ['swatheTell', 'reapTell', 'passTell', 'raiseTell', 'cutTell']) assert.ok(seen.has(m), 'phase ' + phase + ' never reached ' + m); }
-  /* A12: the Reaping's answer is a ledge 32px up, and his room has one each side */
+    force(e, 'call', c); U.updateDeathKnight(e, 0.02, c); assert.equal(adds.length, UNB.dk.call, 'GRAVECALL raises three');
+    const P = { x: X - 60, y: A.floor, dead: false }, e2 = mk(), c2 = dk(P); e2.phase = 2; force(e2, 'surge', c2); U.updateDeathKnight(e2, 0.02, c2); assert.equal(c2.hits.length, 1); assert.equal(c2.hits[0].hard, true, 'no shield against the surge');
+    const Q = { x: X - 160, y: A.floor, dead: false }, e3 = mk(), c3 = dk(Q); e3.phase = 2; force(e3, 'surge', c3); U.updateDeathKnight(e3, 0.02, c3); assert.equal(c3.hits.length, 0, 'away from him, the surge finds nothing');
+    const add = { t: 'corpse', alive: true, x: X + 40, y: A.floor, mode: 'walk' }, e4 = mk(), c4 = dk({ x: X - 200, y: A.floor, dead: false }, [add]); e4.phase = 2; force(e4, 'ward', c4); run(U.updateDeathKnight, e4, c4, UNB.dk.wardT + UNB.dk.tell.nova + 0.1); assert.ok(add.cut, 'his own nova finishes his own dead'); }
+  /* A3: both rotations reach every move, from a cold start (every cooldown initialised) */
+  for (const phase of [1, 2]) { const e = mk(); e.cd = undefined; delete e.pools; e.phase = phase; if (phase === 2) e.hp = e.maxHp * 0.4; const P = { x: X - 60, y: A.floor, dead: false }, c = dk(P, []), seen = new Set();
+    for (let i = 0; i < 60 * 160; i++) { U.updateDeathKnight(e, 1 / 60, c); seen.add(e.mode); P.x = clamp(e.x + Math.sin(i / 70) * 150, A.x0 + 20, A.x1 - 20); P.y = A.floor; }
+    for (const m of phase === 1 ? ['cleaveTell', 'gripTell', 'boilTell', 'passTell', 'wardTell', 'novaTell', 'raiseTell'] : ['callTell', 'surgeTell', 'wardTell', 'novaTell', 'gripTell', 'boilTell', 'passTell', 'cleaveTell'])
+      assert.ok(seen.has(m), 'phase ' + phase + ' never reached ' + m + ': ' + [...seen]); }
+  /* A12: the tomb ledges (row G-2) are still in his room: the nova and the passing are answered from them as well as by a jump */
   { let n = 0; for (let x = L.arena.x0 / TS; x < L.arena.x1 / TS; x++) if (L.grid[(G - 2) * L.W + x] !== 0) n++; assert.ok(n >= 6, 'A12: the tomb ledges (row G-2) are missing from his room: ' + n); }
-  ok('the first death knight', 'four told attacks and a raise, A3, A10 (proposed), A11, A12'); }
+  ok('the first death knight', 'the hero\'s kit: cleave, grip, boil, passing, ward/nova, summon; A3, A10, A11 (the ward breaks), A12'); }
 
 /* ---- 5. THE FIELD ---- */
 { const F = U.newField(L, TS), P = { x: 90 * TS, y: FLOOR, dead: false }, hits = [], pegs = [];

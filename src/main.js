@@ -15955,13 +15955,13 @@ function updateUnbFoe(e, dt) {
 function updateBarrowRiderMini(e, dt) { const A = L.mini; if (!A) return; if (e.mode === 'sleep') { e.mode = 'wake'; e.modeT = 1.2; SFX.hornBlast(); SFX.snort(); }
   UNBF.updateBarrowRider(e, dt, unbC(e, { x0: A.x0, x1: A.x1, floor: A.floor })); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); }
 function updateDeathKnightBoss(e, dt) { const A = L.arena; if (!A) return;
-  if (e.mode === 'reapTell' && e.modeT > UNBF.UNB.dk.tell.reap - dt) zoomKick(1.05, 0.3);   /* the room draws in with the Reaping */
+  if (e.mode === 'novaTell' && e.modeT > UNBF.UNB.dk.tell.nova - dt) zoomKick(1.05, 0.3);   /* the room draws in with the nova */
   UNBF.updateDeathKnight(e, dt, unbC(e, { x0: A.x0, x1: A.x1, floor: A.floor })); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); }
 /* a blow on one of the four: the fallen only FALL under a banner (and are finished lying down); the two big ones open */
 function unbHurt(e, dmg) {
   if (e.t === 'corpse') { if (e.scythed) return Math.max(dmg, e.hp + 1); const r = UNBF.corpseHurt(e, dmg, unbCover(e), e.burn > 0);
     if (r === false) { number(e.x, e.y - 24, 'IT FALLS - FINISH IT', '#c8b6ff'); SFX.clank(); burst(e.x, e.y - 8, 6, COLS.corpse, 50, 0.4); } return r; }
-  if (e.t === 'deathknight' && UNBF.dkOpen(e)) return Math.round(dmg * UNBF.UNB.dk.openMul);
+  if (e.t === 'deathknight') { const d = UNBF.dkHurt(e, dmg); if (d === 0 && e.mode === 'ward') { number(e.x, e.y - e.h - 18, e.wardBroke ? 'IT BREAKS' : 'THE WARD KEEPS IT', e.wardBroke ? '#8fd160' : '#ff6b6b'); SFX.clank(); return false; } return d; }   /* BLOOD WARD: the blow is kept; FULL, the next one breaks it */
   if (e.t === 'barrowrider') return UNBF.brHurt(e, dmg);   /* struck while he rides through, he is out of the saddle */
   return dmg;
 }

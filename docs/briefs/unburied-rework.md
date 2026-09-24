@@ -111,3 +111,17 @@ the rotation - the life pulled out of everything near him; get away from him.
   pyro 4/4, pirate 4/4, reaper 1/4, warden 0/4, paladin 0/4. The fights are deterministic: the salt only changed the
   reaper's rows (`docs/unburied2/rider-pilot.txt`).
 - Sheet and real-page shots: `docs/unburied2/rider-*.png`.
+
+### Item 3 as built (2026-09-24)
+- **Went, and why:** THE SWATHE (a scythe arc the hero's kit has no version of; its "close in" answer lives on in the
+  CLEAVE's short reach), THE REAPING (its drag became DEATH GRIP, its ground BLOOD BOIL), THE SHORT CUT (became THE
+  CLEAVE, the guardable blow), THE PASSING's delayed mark (BLOOD BOIL does that job, where you stand). RAISE became SUMMON
+  SKELETON (one) and GRAVECALL (three, phase two). The old A11 (the Reaping cutting his own dead) went with the Reaping;
+  the new one is the hero's own rule, the ward that breaks. THE PASSING stayed, as THE LONG PASSING: it now cuts (red).
+- **Came in:** THE CLEAVE `!`, DEATH GRIP `!!` (and the cleave follows a catch, told again at 0.6 s), BLOOD BOIL `!!`,
+  THE LONG PASSING `!!`, BLOOD WARD (quiet) then BLOOD NOVA `!!` (10 + 3 a kept blow), SUMMON SKELETON / GRAVECALL
+  (quiet), BLOOD SURGE `!!` (phase two). His own pose for each on the polish lane's sprite (17 frames).
+- **Tuned for a boss:** first pass 1/24 (4%) - the cleave did most of it; after lowering the cleave (12), the passing
+  (12), the surge (10), the nova's growth (3 a blow) and his health (1150 -> 1000): **13/24 = 54%**, median win 74.6 s
+  (warden, pyro, pirate 4/4; reaper 1/4; knight and paladin 0/4). Before the rework: **4/24 = 17%**, knight 4/4 only.
+  The dice are pinned and the salt changes almost nothing: these fights are deterministic, so 24 rows are 6 fights x4.

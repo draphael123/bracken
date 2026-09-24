@@ -48,7 +48,7 @@ try {
       load();const A0=BK.L.arena;BK.tp(Math.round(A0.trigger/16)+2,Math.round(A0.floor/16)-1);steps(200);
       const b=BK.enemies().find(e=>e.t==='deathknight');for(const e of BK.enemies())if(e!==b)e.alive=false;
       const A={x0:A0.x0,x1:A0.x1,floor:A0.floor},c={P:BK.P,A,say:()=>{},sound:()=>{}};
-      const moves=UB.UNB.dk.shots||[];
+      const moves=[['cleave','cleave',25],['grip','grip',30],['grip-chain','grip',56,-150],['boil','boil',30,-90],['passing','pass',30,-80],['ward','ward',60],['nova','ward',60*2.4+40],['summon','raise',30],['gravecall','call',40,-70,2],['surge','surge',40,-60,2]];
       for(const [name,what,n,dx,phase] of moves){b.cd=99;b.mode='stalk';b.phase=phase||1;b.x=(A.x0+A.x1)/2;BK.P.x=b.x+(dx||-70);BK.P.y=A.floor;UB.dkForce(b,what,c);b.cd=99;steps(n);shots[name]=snap();b.mode='stalk';b.modeT=0;}
       return shots;})()`, 300000);
     for (const [k, v] of Object.entries(r)) save('knight-' + k, v);
