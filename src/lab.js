@@ -347,7 +347,7 @@ async function runbossLab(BK, opts) {
        only at its own first frame still opened on a different footing every run. Seeding here, before BK.load, and restoring
        in the finally below (every continue in this row is covered) pins the row end to end - the level it loads, the setup
        sim before the arena wakes, and the fight itself. */
-    const realRandom = Math.random; Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode));
+    const realRandom = Math.random; Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.salt ? '|' + opts.salt : '')));   /* opts.salt: a pilot's pass number, so pass 2 is a different fight and not pass 1 again (no salt = the same seed as before) */
     try {
     if(opts.mini && BK.PROG[lvId]) BK.PROG[lvId].mini=false;
     BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(10);
@@ -387,7 +387,7 @@ async function runbossLab(BK, opts) {
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
-      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'){   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'){   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -678,9 +678,14 @@ async function runbossLab(BK, opts) {
         if(busy){}
         else if((m==='downed'||m==='thrown')&&Math.abs(P.y-(boss.toY??boss.y))<30&&!P.climb){ /* THE BONUS WINDOW: he is down on a ledge beside you - cut */
           const lx=boss.toX??boss.x,dx=boss.x-P.x,side=Math.sign(lx-P.x)||1,d=Math.abs(lx-P.x);
-          if(P.atk<0&&d>reach2-4)k[side>0?'right':'left']=true;
+          const ln0=on?BK.L.cableway.lines[on.line]:null;
+          if(ln0&&ln0.jam>0)k[ln0.dir>0?'right':'left']=true;   /* out of the jammed skip onto the ledge: when he cuts loose he takes the cable, and the skip goes into the pit */
+          else if(P.atk<0&&d>reach2-4)k[side>0?'right':'left']=true;
           if(Math.abs(dx)<reach2&&P.atk<0&&m==='downed'){P.face=Math.sign(dx)||1;BK.press('atk');swings++;} }
-        else if(on){ /* RIDING (round three: the room's floor is the pit, so the lines are the way round) - answer him and stay on */ }
+        else if(on){ /* RIDING (round three: the room's floor is the pit, so the lines are the way round) - answer him and stay on: in the
+          MIDDLE of the skip (a rider on its trailing lip who jumps the bar comes down behind it), and off onto the ledge at the far end */
+          const ln0=BK.L.cableway.lines[on.line],p0=ln0.pts,end=ln0.dir>0?p0[p0.length-1]:p0[0],cx=on.x+on.w/2;
+          if(ln0.jam>0||Math.abs(end[0]-cx)<10)k[ln0.dir>0?'right':'left']=true; else if(Math.abs(cx-P.x)>5)k[cx>P.x?'right':'left']=true; }
         else if(onTop(tgt)){ /* UP WITH HIM: in to reach, and cut */
           const dx=boss.x-P.x,side=Math.sign(dx)||1;
           if(Math.abs(dx)>reach2-6)k[side>0?'right':'left']=true;
@@ -714,15 +719,16 @@ async function runbossLab(BK, opts) {
           else if(at2(483,484,8)){ /* the Head Frame's ledge */ if(tgt===2)board(hi,485*TZ,1); else if(tgt===1)climb(482); else climb(482); }
           else if(at2(499,501,8)){ /* the Tail Wheel's ledge */ if(tgt===2)climb(501);
             else if(tgt===1)board(hi,499*TZ,-1);
-            else { /* for the Great Drum: drop onto a low skip passing under the ledge's west edge, or into the pit */
-              const li=lines.indexOf(lo),under=lo.dir>0&&BK.movers().some(q=>q.kind==='bucket'&&q.line===li&&q.vis&&q.x+q.w/2>499*TZ-40&&q.x+q.w/2<499*TZ-6);
-              if(under)k.left=true;else go(499*TZ+6); } }
-          else if(at2(507,509,12)){ /* the Great Drum's ledge */ if(tgt===0)climb(509); else if(lo.dir<0)board(lo,507*TZ,-1); else k.left=true; }
+            else board(hi,499*TZ,-1); /* for the Great Drum: the long way, and never through the spikes - back along the high line, down the Head Frame's ladder to the deck, and the low line in */ }
+          else if(at2(507,509,12)){ /* the Great Drum's ledge */ if(tgt===0)climb(509); else if(lo.dir<0)board(lo,507*TZ,-1); else go(508*TZ); }   /* (the low line runs in only while he is on the Great Drum: wait for it to turn, do not step into the pit) */
           else if(at2(482,484,18)){ /* the pit's recovery ledge */ climb(482); }
           else go(482*TZ+8); }
         else if(P.labAir) k[P.labAir]=true;
+        /* A JUMP OFF A SKIP comes back down INTO it: in the air, steer over the skip it left (it goes on moving under you) */
+        if(on)P.labSkip=on; else if(P.ground||P.climb)P.labSkip=null;
+        else if(P.labSkip&&P.labSkip.vis&&!(P.labSkip.fallen>0)&&!k.left&&!k.right){const cx=P.labSkip.x+P.labSkip.w/2;if(Math.abs(cx-P.x)>4)k[cx>P.x?'right':'left']=true;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);{const lost=Math.max(0,was-P.hp),pit=P.pitLift&&P.pitLift.t===0;if(lost>0&&!pit){P.labLastHit=m0;P.labLastF=f;} ledger(pit?'PIT after '+(f-(P.labLastF??-999)<180?P.labLastHit:'a misstep'):m0,lost);}   /* a fall into the drum pit, and what put him there: a blow in the 3 s before it, or his own feet */if(P.dead)falls++;
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='gargoyle'){

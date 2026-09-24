@@ -111,10 +111,17 @@ function arrive(e, c, at) {
   const H = c.H[at]; e.at = at; e.x = H.homeX; e.y = H.topY; e.vx = 0; e.mode = 'stalk'; e.cd = 0.9; e.revT = 0;
   e.qMark = e.hp;   /* the quarter he retreats on is counted from here */
   e.leapCd = WINCH.leapEvery;
-  /* the LOW line runs into the Great Drum while he is on it or bound for it, and back to the deck otherwise (round three: the room's
-     floor is the pit, so a hero set down on the Great Drum's ledge rides home on it instead of dropping into the spikes) */
-  c.drive(0, (at === 0 || winchNext(at) === 0) ? 1 : -1, mulOf(e));
-  c.drive(winchNext(at), 1, mulOf(e)); c.drive(at, 1, mulOf(e));
+  driveAll(e, c, mulOf(e));
+}
+/* THE LINES, for the housing he is on: the next one's line runs in (so you can be on it before he lands), then his own, which wins
+   when the two share a line. EXCEPT THE LOW LINE, which runs into the Great Drum ONLY while he is on it, and back to the deck
+   otherwise - round three made the room's floor the pit, and the Great Drum's ledge has no other way off it: with the low line
+   running in while he stood on the Tail Wheel (bound for the Great Drum), a hero on that ledge could reach him only through the
+   spikes (measured: the lab's hands took 20% a time doing exactly that, over and over) */
+function driveAll(e, c, mul) {
+  c.drive(0, e.at === 0 ? 1 : -1, mul);
+  if (winchNext(e.at) !== 0) c.drive(winchNext(e.at), 1, mul);
+  c.drive(e.at, 1, mul);
 }
 /* THE JAM: main.js calls this the frame a LOADED bucket, with a rider who boarded it at least WINCH.rideIn px out, reaches the
    drum of the housing he stands on. The cable locks (the world's job) and he goes off the housing. Returns true if it took him */
@@ -141,7 +148,7 @@ export function updateWinchmaster(e, dt, c) {
   for (const k of ['revCd', 'sendCd', 'hookCd', 'leverCd', 'leapCd']) e[k] = Math.max(0, (e[k] ?? 0) - dt);
   const H = c.H[e.at];
   if (e.hp <= e.maxHp * 0.5 && e.phase !== 2) { e.phase = 2; e.rockT = Math.min(e.rockT ?? 0, 1.5);
-    c.say('HE DRIVES THE DRUMS HARDER', true); c.sound('roar'); c.shake(4); if (e.mode === 'stalk') { c.drive(winchNext(e.at), 1, WINCH.p2Mul); c.drive(e.at, 1, WINCH.p2Mul); } }
+    c.say('ENRAGED, HE LEAPS DRUM TO DRUM', true);   /* round three: the leap is what phase two IS (A10); the harder drums come with it */ c.sound('roar'); c.shake(4); if (e.mode === 'stalk') driveAll(e, c, WINCH.p2Mul); }
   /* THE ROOF: the drums shake a rock loose over where you stand, on their own clock. It is told for WINCH.rockTell - dust off the
      roof and a ring where it lands - and only ever begun on your screen (c.rockSpot answers null otherwise, and the clock waits) */
   if (e.mode !== 'wake' && !P.dead) { e.rockT = (e.rockT ?? WINCH.rockEvery * 0.6) - dt;
@@ -177,7 +184,7 @@ export function updateWinchmaster(e, dt, c) {
   if (e.mode === 'letgo') { if (e.modeT <= 0) { const N = c.H[winchNext(e.at)]; e.mode = 'swing'; e.modeT = WINCH.swingT; e.fromX = e.x; e.fromY = e.y; e.toX = N.homeX; e.toY = N.topY; e.face = Math.sign(N.homeX - e.x) || e.face; c.sound('whoosh'); } return; }
   /* THE LEAP: a high arc over the room onto the housing the ring was on, and the landing hurts whoever is under it */
   if (e.mode === 'leap') { const k = 1 - Math.max(0, e.modeT) / WINCH.leapT;
-    e.x = e.fromX + (e.toX - e.fromX) * k; e.y = e.fromY + (e.toY - e.fromY) * k - Math.sin(k * Math.PI) * 70;
+    e.x = e.fromX + (e.toX - e.fromX) * k; e.y = e.fromY + (e.toY - e.fromY) * k - Math.sin(k * Math.PI) * 40;   /* (70 carried him up through the cavern roof and under the HUD: seen in the real page) */
     if (e.modeT <= 0) { const to = e.leapTo; arrive(e, c, to); c.shake(6); c.sound('crash'); c.say('HE LANDS', true);
       if (!P.dead && c.onHousing(to) && Math.abs(P.x - e.x) < WINCH.leapHit) { const r = c.hit(e.x, WINCH.dmg.leap, true, 'HIS LANDING'); if (r === 'hit') c.shove((Math.sign(P.x - e.x) || 1) * 200, -180); } }
     return; }
@@ -269,7 +276,7 @@ export function drawWinchFx(g, e, c, cx, cy, time) {
     for (let s = ph; s < 600; s += 24) { const x = R.drumX + R.away * s, ly = c.lineY(e.revAt ?? e.at, x); if (ly === null) break; const X = Math.round(x - cx), Y = Math.round(ly - cy) - 40; g.fillRect(X, Y, 5, 1); g.fillRect(X + (R.away > 0 ? 4 : 0), Y - 1, 1, 3); } g.globalAlpha = 1; }
   /* THE LEAP, told: a red ring on the housing he will land on, tightening as he crouches, and held while he is in the air */
   if ((e.mode === 'leapTell' || e.mode === 'leap') && e.leapTo !== undefined && c.H[e.leapTo]) { const N = c.H[e.leapTo], k = e.mode === 'leap' ? 1 : 1 - Math.max(0, e.modeT) / WINCH.tell.leap;
-    const x = Math.round(N.homeX - cx), y = Math.round(N.topY - cy), w = Math.round(WINCH.leapHit - k * 8), a = 0.4 + 0.5 * k * (0.6 + 0.4 * Math.sin(time * 30));
+    const x = Math.round(N.homeX - cx), y = Math.round(N.topY - cy), w = Math.round(WINCH.leapHit + (1 - k) * 8)   /* closes ON the landing's reach, never inside it: what hurts is what is drawn (C1) */, a = 0.4 + 0.5 * k * (0.6 + 0.4 * Math.sin(time * 30));
     g.globalAlpha = a; g.fillStyle = '#ff6b6b'; g.fillRect(x - w, y - 2, w * 2, 2); g.fillRect(x - w + 3, y + 1, w * 2 - 6, 1); g.fillRect(x - w, y - 5, 2, 4); g.fillRect(x + w - 2, y - 5, 2, 4);
     for (let j = 0; j < 3; j++) g.fillRect(x - 1, y - 18 - j * 7 + Math.round(k * 6), 2, 4); g.globalAlpha = 1; }
   /* THE ROOF'S ROCK, told: dust off the roof over the spot, and a red ring where it will land, tightening */

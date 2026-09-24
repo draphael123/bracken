@@ -380,10 +380,11 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
   const gaps = t0.slice(1).map((t, i) => (t - t0[i]) / 60);
   ok(n >= 3 && gaps.every(g => Math.abs(g - WINCH.rockEvery) < 0.2), `phase one: ${n} rocks in 30 s, one every ${WINCH.rockEvery} s (${gaps.map(g => g.toFixed(1)).join(', ')})`);
   const w2 = world({ noRoof: true }); w2.run(20); ok(!w2.log.some(q => q[0] === 'rock'), 'with nowhere on the screen for one to land, the roof waits'); }
-/* ---- A10: PHASE TWO CHANGES SOMETHING YOU CAN NAME: "at half health he drives the drums harder - every line runs a quarter faster,
-   he lets two buckets go at a time, and the drums shake rock off the roof twice as often" */
+/* ---- A10: PHASE TWO CHANGES SOMETHING YOU CAN NAME (round three): "at half health he will not stay on one housing - he crouches and
+   leaps to another, told by a red ring where he will land - while every line runs a quarter faster, he lets two buckets go at a
+   time, and the drums shake rock off the roof twice as often". The leap is proved in ROUND THREE below; the drums here */
 { const w = world(); w.run(0.3); w.e.revCd = w.e.sendCd = w.e.hookCd = w.e.leverCd = 999; w.e.qMark = -1e9; w.e.hp = w.e.maxHp * 0.45; w.run(0.1);
-  ok(w.e.phase === 2 && w.log.some(q => q[0] === 'say' && /DRIVES THE DRUMS HARDER/.test(q[1])), 'PHASE TWO, said over him: HE DRIVES THE DRUMS HARDER');
+  ok(w.e.phase === 2 && w.log.some(q => q[0] === 'say' && /HE LEAPS DRUM TO DRUM/.test(q[1])), 'PHASE TWO, said over him: ENRAGED, HE LEAPS DRUM TO DRUM');
   const t0 = []; let n = 0; for (let t = 0; t < 20 * 60; t++) { w.step(); const m = w.log.filter(q => q[0] === 'rock').length; if (m > n) { n = m; t0.push(t); } }
   const gaps = t0.slice(1).map((t, i) => (t - t0[i]) / 60);
   ok(gaps.length >= 3 && gaps.every(g => Math.abs(g - WINCH.rockEveryP2) < 0.2) && WINCH.rockEveryP2 * 2 === WINCH.rockEvery, `the roof comes down twice as often (every ${WINCH.rockEveryP2} s: ${gaps.map(g => g.toFixed(1)).join(', ')})`);
@@ -397,10 +398,11 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
   ok(t0 !== null && tl !== null && (tl - t0) / 60 >= WINCH.tell.leap - 0.02 && ring, `phase two: he crouches ${((tl - t0) / 60).toFixed(2)} s with the ring on the Tail Wheel (where you are), then leaps`);
   ok(w2.e.at === 2 && w2.log.some(q => q[0] === 'hit' && q[1] === 'HIS LANDING' && q[3] === true), 'and lands on the Tail Wheel, and the landing hurts you there (no shield turns it)');
   const w3 = world(); w3.run(0.3); w3.e.qMark = -1e9; w3.e.hp = w3.e.maxHp * 0.45; w3.e.leapCd = 0; w3.e.cd = 0; w3.c.P.x = 9999; w3.run(0.1); ok(w3.e.mode === 'leapTell' && w3.e.leapTo === 1, 'with you on no housing, he leaps on to the next one'); }
-/* ---- NO LEDGE IS A DEAD END: the low line runs into the Great Drum while he is on it or bound for it, and back to the deck otherwise */
+/* ---- NO LEDGE IS A DEAD END: the low line runs into the Great Drum only while he is on it, and back to the deck otherwise */
 { const w = world(); w.run(0.3); ok(w.H[0].ln.dir === 1, 'on the Great Drum the low line runs into it');
   w.e.hp = w.e.qMark - w.e.maxHp * (WINCH.retreat + 0.01); w.run(WINCH.tell.letgo + WINCH.swingT + 0.3); ok(w.e.at === 1 && w.H[0].ln.dir === -1, "on the Head Frame it runs back to the deck: a hero on the Great Drum's ledge rides home");
-  w.e.hp = w.e.qMark - w.e.maxHp * (WINCH.retreat + 0.01); w.run(WINCH.tell.letgo + WINCH.swingT + 0.3); ok(w.e.at === 2 && w.H[0].ln.dir === 1, 'and on the Tail Wheel, bound for the Great Drum next, it runs into it again'); }
+  w.e.hp = w.e.qMark - w.e.maxHp * (WINCH.retreat + 0.01); w.run(WINCH.tell.letgo + WINCH.swingT + 0.3); ok(w.e.at === 2 && w.H[0].ln.dir === -1, "and on the Tail Wheel, bound for the Great Drum next, it STILL runs back: the Great Drum's ledge is never a wait with no way off but the spikes");
+  w.e.hp = w.e.qMark - w.e.maxHp * (WINCH.retreat + 0.01); w.run(WINCH.tell.letgo + WINCH.swingT + 0.3); ok(w.e.at === 0 && w.H[0].ln.dir === 1, 'and back on the Great Drum it runs in again'); }
 /* ---- A12: THE ROOM SUPPLIES WHAT THE ATTACKS ASSUME, read off the room and not off this file's hopes */
 { const H = world().H;
   ok(H.every(q => Math.abs(q.mouthY - q.ledgeY) < 1), 'THE BRAKE BAR lands at the drum\'s mouth, and every mouth has its ledge at the line\'s own height: there is somewhere to be barred and somewhere to shield it');
