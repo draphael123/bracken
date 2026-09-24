@@ -16,7 +16,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';   /* the OLD moveBody comes out of git now: see below */
 import { LEVELS, T, TS } from '../src/level.js';
-import { SLOPE, SLOPE_NAMES, isSlope, heightAt, moveBodySlopes, moveBodySquare, aheadTile, footSlope, slideStep, slopeRise } from '../src/slopes.js';
+import { SLOPE, SLOPE_NAMES, isSlope, heightAt, moveBodySlopes, moveBodySquare, aheadTile, footSlope, slideStep, slopeRise, levelHasSlopes } from '../src/slopes.js';
 import { slopeReachGrid, slopeReachTile, slopeLint } from '../src/reach-slopes.js';
 import { floodReach } from '../src/reachcore.js';
 import { buildDuneYard, DUNE_YARD_FLOOR } from '../src/dune-yard.js';
@@ -153,9 +153,14 @@ const newProbe = (tileAt, ftx, fty, feetY, w) => aheadTile(tileAt, ftx, fty, fee
 {
   const R = rng(77); let frames = 0, bodies = 0, bad = 0, jumps = 0, landings = 0, firstBad = null; const perLevel = [];
   const DTS = [0.6 / 60, 1 / 60];   // the default game speed, and full speed
+  const sloped = [];
   for (const lv of LEVELS) {
     if (lv.hidden && !lv.secret) continue;
     const L = lv.build(), W = L.W, H = L.H, tileAt = tileFn(L.grid, W, H), old = makeOld(tileAt);
+    /* A LEVEL WITH SLOPES IN IT IS NOT PART OF THIS CLAIM. The claim is that the levels that shipped before slopes do not
+       move; a level built ON slopes (THE SUNKEN CARAVAN) runs moveBodySlopes in the game (SLOPES_ON) and has no old
+       mover to agree with. It is listed, so it can never be skipped silently, and the slope sections below walk it. */
+    if (levelHasSlopes(L.grid)) { sloped.push(lv.id); continue; }
     const opts = { allowDrop: false, P: null };
     const mvOld = P => (b, dx, dy, ad = false) => old(b, dx, dy, ad, P);
     const mvNew = P => (b, dx, dy, ad = false) => { opts.allowDrop = ad; opts.P = P; return moveBodySlopes(b, dx, dy, tileAt, opts); };
@@ -185,6 +190,8 @@ const newProbe = (tileAt, ftx, fty, feetY, w) => aheadTile(tileAt, ftx, fty, fee
   }
   out.push(`REAL LEVELS: ${perLevel.length} levels, ${bodies} bodies (a knight and two walkers per start), ${frames} frames x 3 bodies, ${jumps} jumps, ${landings} knight landings`);
   out.push('    ' + perLevel.join(' '));
+  out.push('    built on slopes, so on the slope mover and not compared: ' + (sloped.join(' ') || 'none'));
+  ok(sloped.every(id => id === 'caravan'), `the only level with slopes in it is the one built for them (${sloped.join(' ') || 'none'})`);
   ok(bad === 0, `every frame of every body identical to today's moveBody (${bad} frames differ)`);
   if (firstBad) out.push('    first: ' + JSON.stringify(firstBad).slice(0, 500));
 }

@@ -18,6 +18,16 @@ export const POSE_BEATS = {
   plant: [0.1, 0.2],           /* SET THE SPEARS: down on one knee, the spear raised in both hands, driven into the turf */
   hurl: [0.1, 0.22],           /* RAIN OF SPEARS: both arms back and down, heaving up, and the spear gone at the sky */
   stretch: [0.12, 0.26],       /* FULL STRETCH: the hands slide back down the shaft to the butt, and she settles long on it */
+  /* THE GEOMANCER (every spell of hers begins with the butt of the stave struck into the ground) */
+  gStep: [0.08],               /* STONE STEP: the stave jabbed down under her boots, then up off the stone that met it */
+  gHeave: [0.08, 0.2],         /* BOULDER: down on the lever, heaved through, arms flung after it */
+  gSpikes: [0.12],             /* SPIKE ROW: on one knee, the stave raised, then driven in on the slant */
+  gArch: [0.14],               /* ARCHWAY: the stave lifted flat, then held up over her like the arch itself */
+  gLode: [0.12],               /* LODESTONE: levelled at them, then the rune pulling */
+  gTomb: [0.1],                /* ENTOMB: raised, and shut down on them like a lid */
+  gFault: [0.12],              /* FAULT LINE: the butt set in the ground, then dragged along the line of the crack */
+  gGolem: [0.18],              /* GOLEM: the stave raised to call it, then the other hand beckoning it up */
+  gAval: [0.3],                /* AVALANCHE: arms up at the sky, then the butt hammered in */
 };
 export const POSE_CYCLE = { whirl: 30 };   /* WHIRLWIND: the blade out ahead, behind, and across, round and round (frames a second) */
 /* THE JUMP ARC. Every hero keeps his old air frames (jump 0/1 by the climb, apex near the top, fall 0/1 by the drop); a hero with a

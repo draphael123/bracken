@@ -1,7 +1,7 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
-const TRACKS = { oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
+const TRACKS = { unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
   ambWind: './audio/ambWind.ogg', ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
   /* CC0: MintoDog's stage-select set, skrjablin's Sailor Waltz, Memoraphile's Spooky Dungeon (audio/CREDITS.txt) */
   musForest: './audio/musForest.ogg', musCastle: './audio/musCastle.ogg', musMountain: './audio/musMountain.ogg', musUnder: './audio/musUnder.ogg',
@@ -100,7 +100,7 @@ function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
 const VOK = (kit, act) => { const fb = { alert: 'attack', effort: 'heavy', heavy: 'attack', jump: 'attack', die: 'hurt', attack: 'alert' };
   for (const a of [act, fb[act]]) { const n = 'vo_' + kit + '_' + a; if (clips[n] && clips[n].some(Boolean)) return n; } return 'vo_' + kit; };
 // THE HEROES' OWN VOICES. The knight grunted with a pitched goblin; now each hero is a person.
-const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 } };   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
+const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 }, geomancer: { kit: 'f3', rate: 0.82, lp: 3200 } };   /* THE GEOMANCER: the same woman's kit again, pitched lowest and darkened: the heaviest of the three */   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
 function heroVo(act, v) { const k = HERO_KIT[heroVoice] || HERO_KIT.knight; return voice(VOK(k.kit, act), v, k.rate, k.lp || 0); }
 
 // ---------- synth ----------
@@ -140,7 +140,7 @@ function bell(f, dur = 0.8, v = 0.1, delay = 0) { tone('sine', f, f * 0.998, dur
 // robe that flutters, soft steps, a staff that whooshes and crackles, embers that pop, a jet that roars
 // for as long as she holds it. Enemies keep the shared sounds; only the player's calls come through here.
 let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
-export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' ? h : 'knight'; }
+export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' ? h : 'knight'; }
 const vary = f => f * (0.94 + Math.random() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
@@ -1130,6 +1130,15 @@ Object.assign(SFX, {
   cutQuake() { SFX.stone && SFX.stone(); tone('sine', 90, 36, 0.4, 0.3); noise(0.3, 0.28, 520, 0.5); },
   /* THE WARDEN'S SIX: ash through air low along the floor; a spear leaving the hand, going into wood or stone, whistling home and
      slapped into the palm; the spring's landing, the stretch's rising note, the dance's short whips, the rain called and landing. */
+  /* THE GEOMANCER: thud, crack, grinding stone. geoThud is the butt struck into the ground - the start of every spell of hers -
+     geoRise the stone grinding up out of it, geoCrumble a piece coming apart, geoQuake the floor heaving, geoBounce a blow
+     turned off the face of a wall raised on the beat. */
+  geoThud() { tone('sine', vary(95), 38, 0.22, 0.34); tone('triangle', vary(190), 90, 0.1, 0.12); noise(0.1, 0.2, 260, 0.6); },
+  geoRise() { noise(0.26, 0.2, 480, 0.8); tone('sawtooth', vary(66), vary(132), 0.24, 0.07); tone('sine', 80, 50, 0.2, 0.16); },
+  geoCrumble() { noise(0.34, 0.16, 1100, 0.5); tone('square', vary(170), 60, 0.1, 0.1); noise(0.2, 0.1, 380, 0.7, 0.08); },
+  geoBounce() { tone('square', vary(260), 130, 0.08, 0.1); noise(0.08, 0.18, 1500, 0.9); tone('sine', 120, 60, 0.18, 0.2); },
+  geoQuake() { noise(0.9, 0.34, 170, 0.4); tone('sine', 55, 30, 0.9, 0.34); noise(0.5, 0.14, 700, 0.6, 0.2); },
+  geoShard() { noise(0.12, 0.14, 2200, 1.1); tone('square', vary(900), 300, 0.05, 0.05); },
   wheel() { noise(0.3, 0.18, 700, 0.5); tone('triangle', vary(180), vary(420), 0.28, 0.07); SFX.shaftTurn(); },
   javThrow() { noise(0.18, 0.2, 2600, 1.2); tone('triangle', vary(900), vary(400), 0.16, 0.06); },
   javStick() { tone('square', vary(220), 120, 0.07, 0.07); noise(0.06, 0.14, 900, 0.8); tone('sine', 140, 70, 0.14, 0.12); },
@@ -1149,5 +1158,5 @@ Object.assign(SFX, {
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother'];
+export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];

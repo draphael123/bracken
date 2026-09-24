@@ -967,3 +967,5 @@ ALLOWED_DECORATIONS.causeway.push('coiledCable','rumBarrels','pennant');
 GROUND_KITS.mage={density:0,kinds:[]};
 GROUND_KITS.fallingtower={density:0,kinds:[]};
 ALLOWED_DECORATIONS.fallingtower=ALLOWED_DECORATIONS.mage.slice().concat(['readingDesk','clockface','gears']);   /* THE READING ROOM's desk and THE PENDULUM GALLERY's clock face and wheels: the two floors the tower grew in 2026-09-22 (src/tower-ascent.js). They are the tower's own, not the Folly's, so they are added here and not to the mage's list. */
+GROUND_KITS.caravan={density:0,kinds:[]};   /* THE SUNKEN CARAVAN: no grass kit on sand - the draft's own props and its DRESS row are the whole dressing */
+ALLOWED_DECORATIONS.caravan=['wagon','wagonSunk','awning','awningTorn','caravanStandard','oxRibs','oxSkull','oxHorn','archPillar','canopyPost','scrub','deadTreeD','amphora','cargoSack','cargoChest','rug'];   /* the caravan's own: its wrecks, its awnings, the beasts' bones and what they carried (the bakers are src/redraw/desert.js, wired in main.js's caravan block) */

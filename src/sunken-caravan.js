@@ -44,6 +44,10 @@ export function buildCaravan({ T, TS }) {
   }
   /* THE SUNK WAGONS stand on the quicksand's surface row (the draft puts them in the pit cell): drawn from the row over it */
   for (const e of L.ents) if (e.t === 'deco' && e.kind === 'wagonSunk') e.y -= 1;
+  /* A SIGN STANDS ON THE FLAT. A signpost's post is square, so one planted on a slope tile has its foot in the sand on the
+     high side (tools/headless.mjs floats found the first sign doing it): walk it back to the nearest flat column */
+  const slope = t => t >= 20 && t <= 25;
+  for (const e of L.ents) if (e.t === 'sign') { let x = e.x; while (x > 1 && slope(at(x, top(x)))) x--; if (x !== e.x) { e.x = x; e.y = top(x) - 1; } }
   /* 4. the quest: three of the caravan's own coffers lost along the road */
   for (const e of L.ents) if (e.t === 'stray') e.kind = 'coffer';
   L.quest = { n: 3, item: 'coffer', name: "TRADER'S COFFER", done: "THE CARAVAN'S TAKINGS ARE FOUND", thanks: "THE TRADER'S THANKS" };

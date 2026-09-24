@@ -140,6 +140,7 @@ export function buildUnburiedField({ painter, T, TS }) {
   garrison.push(['corpse', 10], ['zombie', 6], ['bonearcher', 4], ['bonegob', 3], ['wight', 2], ['husk', 2]);
   elites.push(['bannerbearer', 128, G, { face: -1 }], ['wight', 260, 21, { face: -1 }]);
   return {
+    music: 'unburied',   /* its own sound (Daniel 2026-09-24): "Haunting Chiptune Loop [Void Estate]", CC0 - audio/CREDITS.txt */
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G }, pools, falls: [], moversExtra, interiors: [], gusts: [], encounters, pegs, garrison, elites,
     volleys: UF.VOLLEYS.map(([a, b], i) => ({ x0: a * TS, x1: b * TS, period: 6, horn: 1.5, bearer: UF.VOLLEY_BEARER[i] })),
     cavalry: { x0: UF.LANE[0] * TS, x1: UF.LANE[1] * TS, row: G, period: 14 },
@@ -147,6 +148,6 @@ export function buildUnburiedField({ painter, T, TS }) {
     ambushes: [{ name: 'THE SEALED CRYPT', row: G, wallL: A2.wallL, wallR: A2.wallR, check: [302, G], captain: 'wight',
       waves: [[['wight', 328, G, { captain: true, name: 'THE CRYPT WARDEN' }], ['zombie', 324, G], ['husk', 338, G], ['corpse', 342, G]]] }],   // 330-331 is the gallery peg wall: the captain stands clear of it
     mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'standardbearer', name: 'THE STANDARD-BEARER' },
-    arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'deathknight' },
+    arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'deathknight', music: 'deathknight' },   /* Night on Bald Mountain: the dead rise for one night */
   };
 }
