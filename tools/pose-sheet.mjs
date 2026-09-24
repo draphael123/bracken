@@ -2,7 +2,7 @@
 // on a flat floor in the real page, and the drawn frame (BK.step renders it) is cropped round the hero at three moments after
 // the press; then the jump - take-off, rising, the top, falling - and the landing, three frames of it. One row a move.
 //   node tools/pose-sheet.mjs before    -> docs/pose-before.png
-//   node tools/pose-sheet.mjs after     -> docs/pose-after.png: the same captures, BEFORE (read from docs/pose-before.png) on the
+//   node tools/pose-sheet.mjs after     -> the AFTER sheet beside it in docs/: the same captures, BEFORE (read from docs/pose-before.png) on the
 //                                          left of each row and AFTER on the right
 import { writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
