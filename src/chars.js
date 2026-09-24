@@ -44,6 +44,10 @@ const LEGS = {
   fall2: ['SS....SS..', 'SS....SS..', 'ww....ww..', 'ww....ww..', 'WW....WW..'],
   crouch:['SS.SS.SS..', 'WWW.ww.WWW', '..........', '..........', '..........'],
   land:  ['.SS..SS...', 'SS....SS..', 'ww....ww..', 'WWW..WWW..', '..........'],
+  // DOWN ON ONE KNEE (the Warden setting the spears): the front thigh level, its shin straight down to the boot; the back knee on the turf, the shin laid flat behind
+  // THE PUSH-OFF: the front leg straight under him, the back one still extended down and behind, the toe the last thing to leave the ground
+  push:  ['.SSSSS....', 'SS..SS....', 'ww...ww...', 'w....ww...', 'W....WWW..'],
+  kneel: ['..........', '..........', '.SSSSSSS..', 'SWw...ww..', 'WWWw..WWW.'],
   // THE POKE's tuck: both thighs drawn up level in front of the belt, the shins hanging from the knees, the boots under them
   tuck:  ['..SSSSSSSs..', '..wwwwwwwss.', '........ww..', '........www.', '.......WWWW.'],
   wide:  ['SS.....SS.', 'SS.....SS.', 'ww.....ww.', 'ww.....ww.', 'WWW...WWW.'],
@@ -64,7 +68,7 @@ const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..
    is measured off each frame's own canvas, so a 52-wide thrust flips to the right place beside a 34-wide idle.
    The rule this serves is the one the greatsword learned: the blow may not reach where the art never went. */
 let SPEARLESS = false;   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0 }) {
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0, arm2 = null }) {
   const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
@@ -78,6 +82,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     draw(body.slice(0, 6), BX + dx, BY + dy + hy); }
   draw(LEGS[legs], BX + dx, BY + 11 + legsDy);
   if (kite && !kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* on the off arm across his front: under the sword arm, over the tabard */
+  if (arm2) line(g, arm2[0] + dx, arm2[1] + dy, arm2[2] + dx, arm2[3] + dy, KP.S, 2);   /* THE OFF ARM, drawn only where an ability puts it to work (a throw, a cry): over the kite, under the sword arm */
   if (arm) line(g, arm[0] + dx, arm[1] + dy, arm[2] + dx, arm[3] + dy, KP.S, 2);
   if (sword) {
     const [x0, y0, x1, y1] = sword.map((v, i) => v + (i & 1 ? dy : dx));
@@ -335,8 +340,11 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
       KF({ legs: 'fall', sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 4], plume: 2 }),
       KF({ legs: 'fall2', dy: -1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 4, sh[1] - 5], plume: 2 }),
     ],
-    // LANDING is two beats: the knees take it, then he stands up out of it
-    land: [KF({ legs: 'land', dy: 2, sword: rest(2), plume: 0 }), KF({ legs: 'stand', dy: 1, sword: rest(1), plume: 1 })],
+    /* LANDING is three beats: the IMPACT, deep, the knees right under him and the point jarred into the turf; the SETTLE, the knees
+       taking the last of it; and he STANDS up out of it (tools/ability-poses.mjs holds the two starters to all three) */
+    land: [KF({ legs: 'crouch', legsDy: 3, dy: 4, sword: rest(0), plume: 2 }), KF({ legs: 'land', dy: 2, sword: rest(2), plume: 0 }), KF({ legs: 'stand', dy: 1, sword: rest(1), plume: 1 })],
+    /* THE TAKE-OFF: stretched tall off the push, the back toe the last thing on the ground and the blade swung up by the lift of it */
+    takeoff: KF({ legs: 'push', dy: -2, sho: 1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 3], plume: 2 }),
     // THE TOP OF THE JUMP: legs tucked, the blade lifted, the plume settling - the one frame where he hangs
     apex: KF({ legs: 'jump2', dy: -1, sword: [sh[0] + 1, sh[1], sh[0] + 6, sh[1] - 5], plume: 0 }),
     // A SKID: turning at a run, heels dug in and leaning back against his own speed, the blade trailing
@@ -430,12 +438,69 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
       KF({ top, wide: 10, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 4], sword: [sh[0] + 4, sh[1] - 4, sh[0] + 15, sh[1] - 8], plume: 2 }),
       KF({ top, wide: 10, dx: 3, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], sword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 9], plume: 0,
         bits: [[sh[0] + 14 - BX, sh[1] + 9 - BY, '#ffffff'], [sh[0] + 15 - BX, sh[1] + 8 - BY, '#fff6c8'], [sh[0] + 13 - BX, sh[1] + 8 - BY, '#fff6c8']] })]; }
+  knightKitPoses(F, KF, sh);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
   const set = { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
   if (!bare) set.bare = bakeKnight(skin, true);   /* (the recursion sets KP from the same skin, so both sets wear it) */
   return set;
+}
+
+/* EVERY ABILITY HAS A BODY: THE KNIGHT'S BOUGHT ACTIVES. Each played beside an idle knight before (tools/ability-poses.mjs); each
+   now has two to four frames of its own, played by src/hero-poses.js over the ability's opening beats. Built on his rig like
+   the heavy cut, after the padding, with the same headroom (a raised blade goes above the helm). OFF is the off shoulder, for
+   the arm that carries the kite when an ability puts it to work; S() gives the sword arm and blade as offsets from the sword
+   shoulder `sh`, as every frame of his does, and o() puts a loose pixel at such an offset. */
+function knightKitPoses(F, KF, sh) {
+  const top = ATTACK_HEADROOM, [X, Y] = sh, OFF = [BX + 2, BY + 7];
+  const S = (x0, y0, x1, y1) => ({ arm: [X, Y, X + x0, Y + y0], sword: [X + x0, Y + y0, X + x1, Y + y1] });
+  const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
+  const W = '#ffffff', C = '#fff6c8', G = '#ffd36b', D = '#c9b27c', R = '#ff9a5c';
+  /* LUNGE: off the back foot and down behind the point, low and long - the kite trailed behind him, not raised (that is the
+     dash attack) - then the pull-up with the point dropping */
+  F.lunge = [KF({ top, wide: 8, dx: 1, dy: 2, legs: 'wide', ...S(5, 2, 16, 1), kite: { x: -2, y: 5 }, plume: 1 }),
+    KF({ top, wide: 10, dx: 4, dy: 3, legs: 'run1', ...S(6, 2, 20, 2), kite: { x: -3, y: 5 }, plume: 2, bits: [[-4, 11, D], [-6, 11, D], [-8, 12, D]] }),
+    KF({ top, wide: 6, dx: 2, dy: 1, legs: 'wide', ...S(4, 3, 12, 7), plume: 0 })];
+  /* SHIELD THROW (drawn from the BARE set: the kite is already in the air): the off arm cocked right back behind him, flung
+     through level at the height the shield flies, and carried on across his front as he turns into it */
+  F.toss = [KF({ top, dx: -2, legs: 'wide', arm2: [OFF[0], OFF[1], OFF[0] - 6, OFF[1] - 3], ...S(1, 3, 3, 10), plume: 1 }),
+    KF({ top, wide: 4, dx: 2, legs: 'runC', arm2: [OFF[0] + 1, OFF[1], X + 7, Y - 1], ...S(0, 3, -5, 9), plume: 2, bits: [o(9, -1, C), o(10, -1, W)] }),
+    KF({ top, dx: 2, dy: 1, legs: 'wide', arm2: [OFF[0] + 1, OFF[1] + 1, X + 3, Y + 5], ...S(-1, 3, -6, 8), plume: 2 })];
+  /* GROUND SLAM: up on his toes with the sword and the kite over his head, brought down, and the crouch the impact drives
+     him into - the point in the turf and a white bite off the ground where it went in */
+  const bite = [[15, 12, W], [16, 11, C], [14, 11, C], [17, 12, C], [12, 12, D], [19, 12, D]];   /* (the ground line, with dy 4) */
+  F.slam = [KF({ top, dy: -2, legs: 'wide', sho: 1, kite: { x: 4, y: -5 }, ...S(0, -8, 1, -20), plume: 1 }),
+    KF({ top, dy: 1, legs: 'wide', kite: { x: 5, y: 1 }, ...S(4, -1, 13, 7), plume: 2 }),
+    KF({ top, dx: 1, dy: 4, legs: 'crouch', kite: { x: 4, y: 3 }, ...S(3, 1, 7, 5), plume: 2, bits: bite })];
+  /* WAR CRY: the breath in, chest out and the arms coming open; then the head thrown back, the sword up and the kite out wide,
+     and the shout coming off him in rings */
+  const shout = k => [[11, 2, G], [12, 1, G], [12, 3, G], [13, 2, R], ...(k ? [[14, 0, G], [14, 4, G], [15, 2, R]] : [])];
+  const wide = { dx: -1, dy: -1, hy: -1, sho: 1, legs: 'wide', arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] - 3], kite: { x: -8, y: 0 }, ...S(5, -5, 7, -17) };
+  F.cry = [KF({ top, dy: -1, sho: 1, legs: 'wide', arm2: [OFF[0], OFF[1], OFF[0] - 4, OFF[1] + 1], kite: { x: -6, y: 4 }, ...S(4, -2, 8, -10), plume: 1 }),
+    KF({ top, ...wide, plume: 2, bits: shout(0) }), KF({ top, ...wide, plume: 0, bits: shout(1) })];
+  /* WHIRLWIND: a real spin - the blade straight out ahead, then trailing out behind, then swept up across; the draw turns
+     him every sixteenth of a second, so the three together go round */
+  F.whirl = [KF({ top, wide: 6, legs: 'wide', ...S(4, 0, 17, 0), plume: 2, bits: [[-3, 6, C], [-5, 7, C]] }),
+    KF({ top, dy: 1, legs: 'run3', ...S(-2, 2, -13, 5), plume: 1, bits: [[13, 3, C], [15, 4, C]] }),
+    KF({ top, wide: 4, legs: 'wide', ...S(3, -2, 14, -8), plume: 0, bits: [[4, 16, C], [2, 15, C]] })];
+  /* DISARM, THE HOOK: the point dropped low and in under the guard, turned up to catch the rim, hauled up high, and held at
+     the top as whatever it caught goes flying (the pale arc is drawKnightKit's, in the world) */
+  F.hook = [KF({ top, dy: 2, legs: 'wide', ...S(1, 4, 10, 10), plume: 1 }),
+    KF({ top, wide: 2, dx: 1, dy: 1, legs: 'runC', ...S(4, 3, 14, 5), plume: 2, bits: [o(14, 3, W), o(15, 2, C)] }),
+    KF({ top, dx: 1, legs: 'runC', ...S(3, -2, 10, -10), plume: 2 }),
+    KF({ top, legs: 'stand', ...S(1, -5, 4, -16), plume: 1, bits: [o(5, -17, W)] })];
+  /* IRONCLAD: braced, the blade brought up before his face; set, the feet wide and the kite in close; then the steel coming
+     over him, a white edge down the blade and across the helm */
+  const set = { top, dy: 2, legs: 'wide', sho: -1, kite: { x: 5, y: 5 }, ...S(1, -2, 1, -14) };
+  F.iron = [KF({ top, dy: 1, legs: 'wide', kite: { x: 5, y: 5 }, ...S(2, 0, 6, -10), plume: 1 }), KF({ ...set, plume: 2 }),
+    KF({ ...set, plume: 0, bits: [o(1, -12, W), o(1, -9, W), o(1, -6, C), [3, 1, '#dfe8ff'], [4, 1, W], [5, 1, '#dfe8ff']] })];
+  /* SWORD OF THE REALM: the sword taken straight up over the helm, the light gathering at the point, and the cut brought
+     down and out that sends the first wave along the floor */
+  const halo = [o(1, -22, W), o(0, -22, G), o(2, -22, G), o(1, -23, G), o(1, -21, G)];
+  const high = { top, dy: -1, legs: 'wide', hy: -1, sho: 1, ...S(0, -8, 1, -20) };
+  F.realm = [KF({ ...high, plume: 1, bits: halo.slice(0, 1) }), KF({ ...high, plume: 2, bits: [...halo, o(-1, -24, C), o(3, -24, C)] }),
+    KF({ top, wide: 6, dx: 2, dy: 1, legs: 'runC', ...S(4, 1, 15, 8), plume: 2, bits: [o(16, 8, G), o(17, 8, W)] })];
 }
 
 // ---------- enemies ----------
@@ -2160,8 +2225,12 @@ export function bakeWarden(skin = {}, previewOnly = false) {
       knightFrame({ legs: 'jump2', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], spear: [sh[0] - 5, sh[1] + 3, sh[0] + 11, sh[1] - 7], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', arm: [sh[0], sh[1], sh[0] + 2, sh[1]], spear: [sh[0] - 6, sh[1] + 1, sh[0] + 10, sh[1] - 9], plume: 2 }),
       knightFrame({ legs: 'fall2', dy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1]], spear: [sh[0] - 6, sh[1], sh[0] + 10, sh[1] - 10], plume: 2 })],
-    land: [knightFrame({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], spear: rest(2), plume: 0 }),
+    /* three beats down, as his: the IMPACT with the heel of the spear jarred into the turf, the SETTLE, and up */
+    land: [knightFrame({ legs: 'crouch', legsDy: 3, dy: 4, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 5], spear: rest(1), plume: 2 }),
+      knightFrame({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], spear: rest(2), plume: 0 }),
       knightFrame({ legs: 'stand', dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], spear: rest(1), plume: 1 })],
+    /* THE TAKE-OFF: stretched off the push with the spear swung up and forward, point leading her into the air */
+    takeoff: knightFrame({ legs: 'push', dy: -2, sho: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 2], spear: [sh[0] - 4, sh[1] + 5, sh[0] + 12, sh[1] - 5], plume: 2 }),
     apex: knightFrame({ legs: 'jump2', dy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], spear: [sh[0] - 5, sh[1] + 2, sh[0] + 11, sh[1] - 8], plume: 0 }),
     skid: knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 2], spear: [sh[0] + 3, sh[1] - 1, sh[0] - 11, sh[1] + 7], plume: 2 }),
     climb: [knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], spear: back(), plume: 0 }),
@@ -2302,6 +2371,7 @@ export function bakeWarden(skin = {}, previewOnly = false) {
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'spear', {});
+  wardenKitPoses(F, sh, WIDE);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -2309,6 +2379,43 @@ export function bakeWarden(skin = {}, previewOnly = false) {
   const set = { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
   if (!SPEARLESS) { SPEARLESS = true; try { set.bare = bakeWarden(skin); } finally { SPEARLESS = false; } }   /* drawn while the JAVELIN is out: the cue that it is gone */
   return set;
+}
+/* EVERY ABILITY HAS A BODY: THE WARDEN'S. Skewer, Javelin, Set the Spears, Rain of Spears and Full Stretch each played beside a
+   Warden standing idle, on a borrowed thrust, or on her Vigil's plant (tools/ability-poses.mjs); each has frames of its own now,
+   played by src/hero-poses.js. Her whole rule is the point, so every one of these is told by where the POINT is. OFF is the off
+   shoulder, for the second hand on the haft; o() puts a loose pixel at an offset from the shoulder `sh`. */
+function wardenKitPoses(F, sh, WIDE) {
+  const [X, Y] = sh, OFF = [BX + 2, BY + 7], KF = f => knightFrame({ top: ATTACK_HEADROOM, ...f });   /* made after the padding, with its headroom */
+  const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
+  const W = '#ffffff', C = '#dff0d8', G = '#8fd160', D = '#c9b27c';
+  /* SKEWER: coiled back over the heel, then the whole of her down behind a point driven in LOW and on the slant - through the
+     thing and into the floor under it, which is the pin - and hauled back out */
+  F.skewer = [KF({ wide: WIDE, dx: -2, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y + 2], spear: [X - 8, Y + 3, X + 8, Y + 4], plume: 1 }),
+    KF({ wide: WIDE + 8, dx: 4, dy: 2, legs: 'runC', arm: [X, Y, X + 6, Y + 2], spear: [X + 2, Y + 1, 52, Y + 7], plume: 2, bits: [[38, 14, W], [37, 13, C], [37, 15, C]] }),
+    KF({ wide: WIDE, dx: 2, dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y + 3], spear: [X - 2, Y + 3, 42, Y + 7], plume: 0 })];
+  /* JAVELIN (drawn from her BARE set: the spear is already in the air): the throwing arm drawn right back behind her head,
+     brought through high and forward on the release, and carried down across her on the follow-through - the empty hand is
+     the read, and the shaft is out ahead of it */
+  F.javThrow = [KF({ dx: -2, legs: 'wide', sho: 1, arm: [X, Y, X - 6, Y - 5], arm2: [OFF[0], OFF[1], OFF[0] + 5, OFF[1] - 1], plume: 1 }),
+    KF({ wide: 4, dx: 2, legs: 'runC', arm: [X, Y, X + 7, Y - 4], plume: 2, bits: [o(8, -5, C), o(9, -5, W)] }),
+    KF({ dx: 2, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 5], arm2: [OFF[0], OFF[1], OFF[0] - 4, OFF[1] + 3], plume: 2 })];
+  /* SET THE SPEARS: down on one knee (LEGS.kneel), the spear raised in both hands point-DOWN over the turf, driven in, and
+     leant on while the row comes up away from her. Her Vigil's plant (blast) stands and holds the point UP: this is the knee */
+  F.plant = [KF({ wide: WIDE, dy: 2, legs: 'kneel', arm: [X, Y, X + 3, Y - 6], arm2: [OFF[0], OFF[1], X + 2, Y - 4], spear: [X + 3, Y - 12, X + 4, Y + 1], plume: 1 }),
+    KF({ wide: WIDE, dy: 3, legs: 'kneel', arm: [X, Y, X + 3, Y + 1], arm2: [OFF[0], OFF[1], X + 2, Y + 2], spear: [X + 3, Y - 6, X + 4, Y + 8], plume: 2, bits: [o(2, 6, D), o(6, 6, D), o(1, 5, D), o(7, 5, D)] }),
+    KF({ wide: WIDE, dy: 3, sho: -1, legs: 'kneel', arm: [X, Y, X + 3, Y + 2], arm2: [OFF[0], OFF[1], X + 2, Y + 3], spear: [X + 3, Y - 5, X + 4, Y + 8], plume: 0, bits: [o(4, 5, G), o(3, 6, D), o(5, 6, D)] })];
+  /* RAIN OF SPEARS: down low with the spear held back along her hip and pointing up, heaved up the whole height of her with
+     both hands under it, and flung at the sky off the ends of her fingers - the green streak going up is the spear leaving */
+  F.hurl = [KF({ wide: WIDE, dx: -1, dy: 2, legs: 'crouch', arm: [X, Y, X - 2, Y + 3], arm2: [OFF[0], OFF[1], X - 3, Y + 4], spear: [X - 6, Y + 5, X + 8, Y - 7], plume: 1 }),
+    KF({ dy: -2, legs: 'jump', sho: 1, arm: [X, Y, X + 1, Y - 6], arm2: [OFF[0], OFF[1], X, Y - 5], spear: [X, Y - 3, X + 4, Y - 19], plume: 2 }),
+    KF({ dy: -3, legs: 'jump', sho: 1, hy: -1, arm: [X, Y, X + 2, Y - 8], arm2: [OFF[0], OFF[1], X + 1, Y - 8], spear: [X + 2, Y - 10, X + 5, Y - 24], plume: 0,
+      bits: [o(5, -27, G), o(5, -29, C), o(6, -31, G)] })];
+  /* FULL STRETCH: from the carry, both hands slide back down the shaft to the heel, and she settles low and long behind it
+     with the point out half as far again - the green running along the haft is the length she has just given it */
+  F.stretch = [KF({ wide: WIDE, legs: 'wide', arm: [X, Y, X + 2, Y + 1], spear: [X - 4, Y + 2, X + 14, Y + 1], plume: 1 }),
+    KF({ wide: WIDE + 4, dx: -1, legs: 'wide', arm: [X, Y, X - 2, Y + 2], arm2: [OFF[0], OFF[1], X - 3, Y + 2], spear: [X - 3, Y + 2, X + 22, Y + 1], plume: 2, bits: [o(6, 1, G), o(12, 1, G)] }),
+    KF({ wide: WIDE + 6, dx: -2, dy: 1, sho: -1, legs: 'wide', arm: [X, Y, X - 3, Y + 2], arm2: [OFF[0], OFF[1], X - 4, Y + 2], spear: [X - 4, Y + 2, X + 25, Y + 1], plume: 0,
+      bits: [o(8, 1, G), o(14, 1, C), o(20, 1, G)] })];
 }
 // HEATHER BALE — a round bale of cut heather the wind rolls about the moor. 12x12, four turns of the straw.
 export function bakeBale() {
