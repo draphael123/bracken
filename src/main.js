@@ -38,7 +38,7 @@ import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: o
 import { xpFoe, xpFloor, levelOfXp, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { COMBAT, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
-import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill } from './progression.js';
+import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving } from './progression.js';
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
 import { bakeFrog } from './redraw/frogking.js';
@@ -383,13 +383,17 @@ const ROW_LV = [0, 2, 5, 10];        // the level a row opens at
 const ROW_NEED = [0, 2, 5, 10];      // and the points it wants spent in its own tree
 const CAP_NEED = 18, PTS_CAP = 30;   /* what a capstone asks of its tree, and the most points a hero ever has */
 const TREE = LEGACY_NODES; // frozen historical metadata, retained for migration and art icons
-const TALENTS = [{ id: 'tree', name: 'SKILL LOADOUT', desc: 'buy skills with coins. active skills and passive techniques share two slots, three at level 8 and four at level 16. health, stamina and damage grow automatically. Z to open' }];
+const TALENTS = [{ id: 'tree', name: 'SKILL LOADOUT', desc: 'buy abilities with coins and put two on F and G. passives are never bought: they arrive with levels, and so do health, stamina and damage. Z to open' }];
 const heroXp = h => ((PROG.xp || {})[h || hero()] || 0);   /* THIS hero's XP, not the save's: every hero carries his own */
 const heroLevel = h => levelOfXp(heroXp(coopLent(h || PROG.hero || 'knight') ? players[0].hero : h));   /* THE LEVEL IS XP (src/xp.js): the fights pay it and a wood's first finish pays a share. It was the woods walked, and a straight run still lands within one of that */
 const heroDone = () => (PROG.done[hero()] = PROG.done[hero()] || {});
 const talentsOf = h => { PROG.talents = PROG.talents || {}; const m = (PROG.talents[h] = PROG.talents[h] || {}); for (const k in m) if (m[k] === true) m[k] = 1; return m; };
 let trialVerbs = false, trialLend = null;   /* trialLend: the skills a hero's trial lends him for its F and G step (lendSkills) */   // in a practice yard you are lent the verbs, bought or not: the yard is where you find out whether you want them
+/* A PASSIVE IS ON FROM ITS LEVEL (hero-kits 1b, 2026-09-24). It used to be on only while it sat in one of the two slots, which made
+   every passive a rival of the abilities for the same two keys; now it needs nothing but the level (or, for one a save bought before
+   this, the owning - src/progression.js passiveOn). An ACTIVE is still on only while it is slotted. */
 const tal = id => { if(id==='heavy')return 1+growthAt(hero(),heroLevel()).techniqueRank;if(growthNodes[hero()]?.has(id))return growthAt(hero(),heroLevel()).techniqueRank; if (trialLend && trialLend.has(id)) return 1;
+  const n = skillFor(hero(), id); if (n && !n.active) return passiveOn(PROG, hero(), id, heroLevel()) ? 1 : 0;
   return equipped(PROG, hero(), heroLevel()).includes(id) ? 1 : 0; };
 const ptsSpent = h => { const m = talentsOf(h); return TREE.filter(n => n.hero === h).reduce((s, n) => s + Math.min(n.max, m[n.id] || 0) * (n.cost || 1), 0); };
 const ptsTotal = h => godMode() ? 99 : Math.min(PTS_CAP, heroLevel(h));   /* ONE TREE'S WORTH: a point a wood, and never more than thirty */
@@ -411,7 +415,7 @@ function resetTalents(h) { PROG.talents = PROG.talents || {}; PROG.talents[h] = 
 const LV_GROW = h => growthAt(h || hero(), heroLevel(h)).ranks;
 const cdOf = k => k === 'summonSkeleton' && tal('gleaner') ? 12 : CD_MAX[k] || 3;
 const amul = k => skillScale(heroLevel()); // skill damage grows, cooldowns and invulnerability do not
-let treeResetT = 0, talentsBackT = 0, talentsBackWho = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
+let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPress(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
   damagePlayer: (x, d, o) => damagePlayer(x, d, o), hurtEnemy: (e, d, x, pl) => hurtEnemy(e, d, x, pl), respawn: () => respawn(), fullHp: e => fullHp(e), risen: () => risen, bodies: () => bodies, acorns: () => acorns, heavyWind: () => heavyWind(),
@@ -3390,7 +3394,7 @@ function learnTalent(k) { treeFrom = state; treeI = 0; treeBranch = 0; state = '
 let treeFrom = 'store', treeI = 0, treeMsg = '', treeMsgT = 0, treeBranch = 0;
 const SKILL_NEEDS = { coldComfort: ['summonSkeleton'], gleaner: ['summonSkeleton'], press: ['summonSkeleton'], ossuary: ['summonSkeleton'], graveProvides: ['summonSkeleton'], gripAll: ['deathGrip'], bidden: ['summonSkeleton','gravecall'], secondDeath: ['summonSkeleton','gravecall'] };
 const skillNeeds = n => n?.hero === 'reaper' ? SKILL_NEEDS[n.id] || [] : [];
-const treeNodes = () => skillsFor(hero()).filter(n => !!n.active === (treeBranch === 0)).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));
+const treeNodes = () => treeBranch === 1 ? passiveLadder(hero()) : skillsFor(hero()).filter(n => n.active).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));   /* the PASSIVES tab is the ladder: the order they arrive in */
 const loadoutSafe = () => { const from = state === 'tree' ? treeFrom : state, origin = from === 'menu' ? menuFrom : from;
   if (['map','select'].includes(origin) || (from === 'store' && equipFrom === 'map' && storeMode === 'equip')) return true;
   if (bossActive || miniActive || ambushLive()) return false;
@@ -3401,8 +3405,9 @@ function updateTree(dt) {
  if(upPress)treeI=(treeI+ns.length-1)%ns.length;if(downPress)treeI=(treeI+1)%ns.length;
  if(old!==treeI){treePage=0;SFX.ui();}if(morePress()&&treePages>1)treePage=(treePage+1)%treePages;
  const n=ns[treeI],say=m=>{treeMsg=m;treeMsgT=3;SFX.ui();};
- if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}
- [throwPress,skill2Press,skill3Press,skill4Press].forEach((pressed,index)=>{if(!pressed||!n)return;const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
+ if(confirmPress&&n&&!n.active){say(passiveOn(PROG,hero(),n.id,heroLevel())?n.name+' is always on':'Arrives at level '+n.level);}
+ else if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}
+ [throwPress,skill2Press,skill3Press,skill4Press].forEach((pressed,index)=>{if(!pressed||!n)return;if(!n.active){say('Passives are always on: slots are for abilities');return;}const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
  if(pausePress||talentsPress){state=treeFrom;SFX.menuClose();}
 }
 const TREE_ICON = {};
@@ -3551,11 +3556,14 @@ function drawTree() {
  text('SKILLS / LOADOUT',10,6,UI.title,'left',6);text('LV '+lv+'   '+(PROG.coins||0)+' COINS',VW-10,6,UI.gold,'right',6);
  for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),key=['F','G'][i];g.fillStyle=i<limit?'#302c3e':'#191622';g.fillRect(x,19,width-3,23);text(i<limit?(sk&&!sk.active?'PASSIVE':key):'LEVEL '+(i===2?8:16),x+4,21,i<limit?UI.gold:UI.dim,'left',6);text(fitName(sk?sk.name:i<limit?'EMPTY':'LOCKED',width-11,6),x+4,31,UI.text,'left',6);}
  for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,46,91,12);text(tab===0?'ACTIVES':'PASSIVES',x+45,49,treeBranch===tab?UI.gold:UI.dim,'center',6);}text((Math.floor(idx/6)+1)+' / '+Math.ceil(ns.length/6),VW-12,49,UI.dim,'right',6);
- const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
- if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):'PASSIVE TECHNIQUE  1 SLOT'),12,124,UI.gold,'left',6);
+ const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}
+  /* THE PASSIVE LADDER: what he has is lit and says ON; what is coming is dim and says the level it arrives at */
+  if(!q.active){const on=passiveOn(PROG,h,q.id,lv);text(fitName(q.name,VW-145,6),13,y,on?UI.sel:UI.dim,'left',6);text(on?'ON':'LV '+q.level,VW-13,y,on?UI.sel:UI.dim,'right',6);continue;}
+  text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
+ if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):passiveOn(PROG,h,n.id,lv)?'PASSIVE  ALWAYS ON':'PASSIVE  ARRIVES AT LEVEL '+n.level),12,124,UI.gold,'left',6);
  const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
  const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,134+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
- const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':('LEFT/RIGHT TABS  Z BUY  F/G EQUIP  X MORE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
+ const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':treeBranch===1?'PASSIVES COME WITH LEVELS  LEFT/RIGHT TABS':('LEFT/RIGHT TABS  Z BUY  F/G EQUIP  X MORE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
 }
 function updateStore(dt) {
   if (morePress() && storePages > 1) { storePage = (storePage + 1) % storePages; SFX.ui(); }   /* the next page of a long description */
@@ -22999,7 +23007,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
   const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill  F', skName], ['skill  G', sk2Name], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold / silver', PROG.coins + ' / ' + silverAvail() + ' spare']];
   rows.forEach(([a, b], i) => { const yy = rowY + i * 10; text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
-  { const tr = 'level ' + heroLevel() + ' (' + (xpFloor(heroLevel() + 1) - heroXp()) + ' xp to next)   points ' + ptsSpent(hero()) + '/' + ptsTotal() + '   tonics ' + (PROG.tonics || 0);
+  { const tr = 'level ' + heroLevel() + ' (' + (xpFloor(heroLevel() + 1) - heroXp()) + ' xp to next)   passives ' + passiveLadder(hero()).filter(n => passiveOn(PROG, hero(), n.id, heroLevel())).length + '/' + passiveLadder(hero()).length + '   tonics ' + (PROG.tonics || 0);
     text(tr, VW / 2, y + h - 34, '#8fd160', 'center', 6);
     text('Q  SKILLS AND LOADOUT', VW / 2, y + h - 24, UI.gold, 'center', 6);
     text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 14, UI.sel, 'center', 6); }
@@ -23871,8 +23879,8 @@ function render() {
   if (state === 'slots') drawSlots();
   if (state === 'bestiary') drawBestiary();
   if (state === 'map' || state === 'store') { for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x), Math.round(n.y), n.col, 'center'); } g.globalAlpha = 1; }
-  if(PROG.progressionNotice && (state==='map'||state==='play')){talentsBackT=7;talentsBackWho=String(PROG.progressionNotice);PROG.progressionNotice=0;saveProgress();}
-  if(talentsBackT>0&&(state==='map'||state==='play')){talentsBackT-=1/60;const lab=talentsBackWho+' COINS REFUNDED',sub='Q OPENS SKILLS AND LOADOUT';g.fillStyle='rgba(24,18,8,0.94)';g.fillRect(VW/2-114,58,228,23);text(lab,VW/2,62,UI.gold,'center',6);text(sub,VW/2,72,UI.text,'center',6);}
+  if(PROG.progressionNotice && (state==='map'||state==='play')){talentsBackT=7;talentsBackWho=String(PROG.progressionNotice);talentsBackWhy=PROG.passiveNotice?'PASSIVES NOW COME WITH LEVELS':'';PROG.progressionNotice=0;PROG.passiveNotice=0;saveProgress();}
+  if(talentsBackT>0&&(state==='map'||state==='play')){talentsBackT-=1/60;const lab=talentsBackWho+' COINS REFUNDED',sub=talentsBackWhy||'Q OPENS SKILLS AND LOADOUT';g.fillStyle='rgba(24,18,8,0.94)';g.fillRect(VW/2-114,58,228,23);text(lab,VW/2,62,UI.gold,'center',6);text(sub,VW/2,72,UI.text,'center',6);}
   drawWayOn(cx, cy);   /* the way-on arrow, under the tells it keeps clear of */
   drawTells();   /* the ! and the !!, over the numbers, the plates and the boss bar */
   drawWarp(); // the door closing, over everything
