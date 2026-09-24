@@ -46,6 +46,16 @@ export const POSE_BEATS = {
   tide: [0.12],                /* GRAVE TIDE: down on the haunches with the fist in the ground, and the green running off along it */
   unholy: [0.1],               /* UNHOLY GROUND: the blade low behind him, then swept flat along the floor */
   grip: [0.12],                /* DEATH GRIP: the off hand out clawed, then the fist hauled back to his chest */
+  /* THE GEOMANCER (every spell of hers begins with the butt of the stave struck into the ground) */
+  gStep: [0.08],               /* STONE STEP: the stave jabbed down under her boots, then up off the stone that met it */
+  gHeave: [0.08, 0.2],         /* BOULDER: down on the lever, heaved through, arms flung after it */
+  gSpikes: [0.12],             /* SPIKE ROW: on one knee, the stave raised, then driven in on the slant */
+  gArch: [0.14],               /* ARCHWAY: the stave lifted flat, then held up over her like the arch itself */
+  gLode: [0.12],               /* LODESTONE: levelled at them, then the rune pulling */
+  gTomb: [0.1],                /* ENTOMB: raised, and shut down on them like a lid */
+  gFault: [0.12],              /* FAULT LINE: the butt set in the ground, then dragged along the line of the crack */
+  gGolem: [0.18],              /* GOLEM: the stave raised to call it, then the other hand beckoning it up */
+  gAval: [0.3],                /* AVALANCHE: arms up at the sky, then the butt hammered in */
 };
 /* A POSE THAT FOLLOWS THE BODY, not a clock: the frame is chosen from the hero's own state, and null ends it early (HAMMER LEAP
    plays his arc - maul up on the rise, over at the top, down on the drop - for as long as he is off the ground, and no longer) */
