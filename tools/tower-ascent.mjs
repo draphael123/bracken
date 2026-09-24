@@ -127,7 +127,10 @@ for (const f of L.towerFloors) assert.ok(checks.some(y => y >= f.top - 2 && y < 
   { const r = rig({ mode: 'handTell', modeT: 0, spell: 'hand' }); updateUndeadMage(r.e, 0.01, r.c); const h = r.e.shots.find(q => q.kind === 'hand'); assert.ok(h && h.sp < CARPET.speed * 0.7, 'the hand can be out-flown');
     r.P.y = 300; run(r, 1); assert.ok(h.vy < 0, 'it turns after you'); }
   // THE OPENING IS CAUSED: the same mark, landed on you, opens nothing; flown out of, it opens him
-  { const r = rig({ mode: 'markTell', modeT: 0, spell: 'mark' }); updateUndeadMage(r.e, 0.01, r.c); assert.ok(r.e.mark, 'the mark is laid');
+  /* THE DEATH KNIGHT'S MARK MUST NOT CRASH HIM (audit 2026-09-24): the hero's markFoe() writes e.mark = 6 on what he strikes;
+     the Archmage's own death mark lived on the same field and a number there threw on `.t`. It is e.deathMark now. */
+  { const r = rig({ mode: 'hover', modeT: 1 }); r.e.mark = 6; assert.doesNotThrow(() => { for (let i = 0; i < 30; i++) updateUndeadMage(r.e, 1 / 60, r.c); }, 'a Death-Knight-marked Undead Archmage keeps fighting'); }
+  { const r = rig({ mode: 'markTell', modeT: 0, spell: 'mark' }); updateUndeadMage(r.e, 0.01, r.c); assert.ok(r.e.deathMark, 'the mark is laid');
     run(r, MAGE.markFuse + 0.1); assert.ok(r.hits.some(h => h.blow === 'mark' && h.hard), 'left on it, the mark lands, unblockable'); assert.notEqual(r.e.mode, 'gather', 'and he is NOT open');
     const q = rig({ mode: 'markTell', modeT: 0, spell: 'mark' }); updateUndeadMage(q.e, 0.01, q.c); q.P.x += 90; run(q, MAGE.markFuse + 0.1);
     assert.equal(q.hits.length, 0); assert.equal(q.e.mode, 'gather', 'flown out of, it comes back on him'); assert.ok(q.e.open > 2, 'the window: ' + q.e.open); }
