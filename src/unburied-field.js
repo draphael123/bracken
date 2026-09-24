@@ -123,16 +123,21 @@ export function buildUnburiedField({ painter, T, TS }) {
   ent('check', 302, G); block(348, 350, G - 12, G - 3);                                                        // the chapel's broken arch (walked under)
   /* THE LOOK PASS (2026-09-24): what is left of the nave's columns, either side of the arch and along the far wall. Scenery
      only - deco stands behind the play and nothing collides with it. */
-  ent('deco', 347, G, { kind: 'brokenPillar', v: 0 }); ent('deco', 351, G, { kind: 'brokenPillar', v: 1 }); ent('deco', 366, G, { kind: 'brokenPillar', v: 1 });
+  ent('deco', 347, G, { kind: 'brokenPillar', v: 0 }); ent('deco', 351, G, { kind: 'brokenPillar', v: 1 }); ent('deco', 355, G, { kind: 'brokenPillar', v: 1 });
   const A2 = UF.AMBUSH; ent('sign', 314, G, { text: 'THE FALLEN ORDER\'S CRYPT. THE DOOR SHUTS BEHIND YOU.' });
   ent('silver', 322, G - 3); plat(320, G - 2, 5);                                                              // silver 3: on the crypt's tomb
-  pegWall(330, 26, [34, 32, 30, 28], 'the chapel\'s gallery and its coins'); plat(332, 25, 4); coins([333, 24], [335, 24]);
-  ent('oilbarrel', 336, G, { spill: [333, 344] });   /* clear of the gallery's peg wall at 330: fire burns palisade */
+  /* THE CHAPEL'S PEG WALL LEFT THE CRYPT (2026-09-24). It stood at 330, rows 26-36, on solid floor: across the ONLY way on (the
+     pegs or nothing) and across the middle of THE SEALED CRYPT, with the room's captain locked east of it and the hero west.
+     It stands in the nave now, over THE CRYPT STAIR - the way down under it and up again - as every other peg wall on this field
+     stands over a trench. tools/unburied.mjs crosses the field with every stake wall as rock; tools/ambush-reach.mjs asks the room. */
+  ent('oilbarrel', 336, G, { spill: [329, 344] });   /* the crypt's pitch: burn the crowd where it stands */
   ent('ballista', 358, G, { aim: [372, G] });
   ent('check', 352, G); ent('check', 370, G);                                                                   // B6: one outside the arena walls
+  air(360, 367, G + 1, G + 4); plat(360, G + 2, 2); plat(366, G + 2, 2);                                      /* THE CRYPT STAIR: down under the wall, and up */
+  pegWall(363, 26, [34, 32, 30, 28], 'the chapel\'s gallery and its coins'); plat(365, 25, 4); coins([366, 24], [368, 24]);
   coins([307, G], [316, G], [326, G], [344, G], [356, G], [366, G]);
   meet('THE CHAPEL YARD', 303, 316, [['corpse', 308, G + 1], ['bannerbearer', 311, G + 1], ['corpse', 313, G], ['wight', 316, G]]);   /* 308 and 311 stand IN the crater (308-312 is a row down): at G they stood over its air and dropped a row on the first frame (tools/newlevel.mjs) */
-  meet('THE BROKEN NAVE', 352, 370, [['bonearcher', 354, G], ['zombie', 360, G], ['husk', 364, G], ['corpse', 368, G]]);
+  meet('THE BROKEN NAVE', 352, 370, [['bonearcher', 354, G], ['husk', 357, G], ['zombie', 364, G + 4], ['corpse', 369, G]]);   /* the zombie keeps the crypt stair */
 
   // ---- 7. THE FIRST DEATH KNIGHT (c 374-419): forty tiles, two tomb ledges, and the dead he raises off the floor ----
   const A = UF.ARENA; plat(382, G - 2, 4); plat(402, G - 2, 4);                                                // A12: the room has footing off the floor as well as on it
@@ -167,8 +172,10 @@ export function buildUnburiedField({ painter, T, TS }) {
     volleys: UF.VOLLEYS.map(([a, b], i) => ({ x0: a * TS, x1: b * TS, period: 6, horn: 1.5, bearer: UF.VOLLEY_BEARER[i] })),
     cavalry: { x0: UF.LANE[0] * TS, x1: UF.LANE[1] * TS, row: G, period: 14 },
     /* RULE Q: ONE wave, led by a named captain of the level's own roster, and the room opens the moment he is down. */
-    ambushes: [{ name: 'THE SEALED CRYPT', row: G, wallL: A2.wallL, wallR: A2.wallR, check: [302, G], captain: 'wight',
-      waves: [[['wight', 328, G, { captain: true, name: 'THE CRYPT WARDEN' }], ['zombie', 324, G], ['husk', 338, G], ['corpse', 342, G]]] }],   // 330-331 is the gallery peg wall: the captain stands clear of it
+    /* its captain is the GRAVE CAPTAIN (the husk: ELITE.husk, AMBUSH_LEADERS - a wight is neither, so the old 'THE CRYPT WARDEN'
+       tag on one was never read and the husk led the room all along). The room is one floor wall to wall now: nothing stands in it. */
+    ambushes: [{ name: 'THE SEALED CRYPT', row: G, wallL: A2.wallL, wallR: A2.wallR, check: [302, G],
+      waves: [[['husk', 338, G, { elite: true }], ['wight', 328, G], ['zombie', 324, G], ['corpse', 342, G]]] }],
     mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'standardbearer', name: 'THE STANDARD-BEARER' },
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'deathknight', music: 'deathknight' },   /* Night on Bald Mountain: the dead rise for one night */
   };
