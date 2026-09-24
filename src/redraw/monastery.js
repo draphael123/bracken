@@ -5,7 +5,7 @@
 // Same conventions as crown_tiles.js: 16x16 tiles, crisp px.js primitives, fixed seeds.
 //   bakeMonkTiles()        { top, edge, fill, silt, wet } in the shape of the crown set, so the tile resolver swaps it in
 //   bakeFacade(kind, ...)  monkTower | monkCurtain | monkBelfry | monkCloister: wall faces drawn behind the play
-//   paintRoom(g, st, ...)  monkScript | monkTower | monkFlue | monkHall | monkShrine: the back walls of the dug rooms
+//   paintRoom(g, st, ...)  monkScript | monkTower | monkFlue | monkHall | monkShrine: the back walls of the dug rooms | monkBelfryIn (the Abbot's belfry)
 //   bakeMonkProps()        the furniture: bells, a bell frame, the prayer wheel, basket, hoist wheel, brazier, loose
 //                          stone, rubble, shelves, shrines, flag posts, a guardian statue, the fallen portcullis, beads
 //   bakeFledgling()        the Roc's chicks, a sprite set   bakeGuardian()   the temple guardian, a sprite set (9 frames)
@@ -168,6 +168,47 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time) {
     g.fillStyle = '#5a3a2a'; g.fillRect(sx, sy + 8, w, 14); g.fillStyle = '#8a6a3a'; g.fillRect(sx, sy + 8, w, 1); g.fillRect(sx, sy + 21, w, 1);
     for (let xx = sx + 6; xx < sx + w - 10; xx += 18) { g.fillStyle = FLAG[((xx - sx) / 18 | 0) % 5]; g.globalAlpha = 0.45; g.fillRect(xx, sy + 11, 8, 8); g.globalAlpha = 1; g.fillStyle = '#c9a44a'; g.fillRect(xx + 3, sy + 14, 2, 2); }
     for (let xx = sx + 20; xx < sx + w - 6; xx += 64) { g.fillStyle = '#4a4038'; g.fillRect(xx, sy, 10, h); g.fillStyle = '#5e544a'; g.fillRect(xx, sy, 2, h); g.fillStyle = '#241e1a'; g.fillRect(xx + 9, sy, 1, h); }
+    return true; }
+  if (st === 'monkBelfryIn') {
+    /* THE BELFRY, from inside (docs/briefs/abbot-room.md): the False Abbot's room. Coursed stone gone dark with incense, a
+       lancet every five tiles with the evening in it and a slant of light off each, the ROSE WINDOW over the crossing where
+       the great bell hangs (its own shaft is the bell's, drawn with it in main.js), the congregation's two stair doors at
+       the foot of the end walls, and the abbot's chair painted into the east apse. The room is x 51-93 of the region; the
+       region's last column is the east door, so the crossing sits at (w - 16) / 2. */
+    g.fillStyle = '#2c241e'; g.fillRect(sx, sy, w, h);
+    g.fillStyle = '#362c24'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((((yy - sy) / 8) | 0) % 2 ? 8 : 0); xx < sx + w; xx += 16) g.fillRect(xx, yy, 15, 7);
+    const mid = sx + ((w - 16) >> 1) + 8, floorY = sy + h;
+    /* the lancets and their light, mirrored about the crossing and clear of the rose */
+    for (const off of [-232, -152, -88, 88, 152, 232]) { const wx = mid + off, wy = sy + 30;
+      g.fillStyle = '#1a1410'; g.fillRect(wx - 7, wy - 3, 14, 50);
+      const gr = g.createLinearGradient(0, wy, 0, wy + 44); gr.addColorStop(0, '#8ea6c4'); gr.addColorStop(1, '#f2d6a6'); g.fillStyle = gr;
+      g.fillRect(wx - 5, wy + 4, 10, 40); g.fillRect(wx - 3, wy + 1, 6, 3); g.fillRect(wx - 1, wy - 1, 2, 2);
+      g.fillStyle = '#3a2a1c'; g.fillRect(wx - 1, wy + 2, 1, 42); g.fillRect(wx - 5, wy + 22, 10, 1);
+      g.fillStyle = '#6e6454'; g.fillRect(wx - 8, wy + 44, 16, 3);
+      const dir = off < 0 ? 1 : -1; g.globalAlpha = 0.05; g.fillStyle = '#ffe8c0'; g.beginPath();
+      g.moveTo(wx - 5, wy + 44); g.lineTo(wx + 5, wy + 44); g.lineTo(wx + 5 + dir * 40, floorY); g.lineTo(wx - 5 + dir * 40, floorY); g.closePath(); g.fill(); g.globalAlpha = 1; }
+    /* THE ROSE WINDOW over the crossing */
+    { const rx = mid, ry = sy + 22, r = 17;
+      g.fillStyle = '#1a1410'; g.beginPath(); g.arc(rx, ry, r + 3, 0, 7); g.fill();
+      for (let i = 0; i < 8; i++) { g.fillStyle = FLAG[i % 5]; g.globalAlpha = 0.85; g.beginPath(); g.moveTo(rx, ry); g.arc(rx, ry, r, i * Math.PI / 4, (i + 1) * Math.PI / 4); g.closePath(); g.fill(); }
+      g.globalAlpha = 1; g.fillStyle = '#f2e0b0'; g.beginPath(); g.arc(rx, ry, 5, 0, 7); g.fill();
+      g.strokeStyle = '#2e1e12'; g.lineWidth = 1; for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; g.beginPath(); g.moveTo(rx, ry); g.lineTo(rx + Math.cos(a) * r, ry + Math.sin(a) * r); g.stroke(); }
+      g.strokeStyle = '#8c7e66'; g.beginPath(); g.arc(rx, ry, r + 2, 0, 7); g.stroke(); }
+    /* the roof beam the great bell's cage is pegged to, and the wall plate along the top */
+    g.fillStyle = '#2e1e12'; g.fillRect(sx, sy, w, 5); g.fillStyle = '#6a4a2c'; g.fillRect(sx, sy + 4, w, 1);
+    /* the congregation's stair doors, at the foot of each end wall (the level's `doors`, x 53 and 91) */
+    for (const dx of [2 * 16, w - 16 - 3 * 16]) { const x0 = sx + dx, y0 = floorY - 30;
+      g.fillStyle = '#6e6454'; g.fillRect(x0 - 2, y0 - 2, 20, 32); g.fillStyle = '#100c09'; g.fillRect(x0, y0 + 6, 16, 24); g.fillRect(x0 + 2, y0 + 2, 12, 4); g.fillRect(x0 + 5, y0, 6, 2);
+      g.fillStyle = '#2a2018'; for (let yy = y0 + 12; yy < floorY; yy += 5) g.fillRect(x0 + 1, yy, 14, 1); }
+    /* THE ABBOT'S CHAIR in the apse (x 88): a tall carved back, red cushion, gilt finials - the chair the goblin sits in */
+    { const cx0 = sx + (88 - 51) * 16, y1 = floorY;
+      g.fillStyle = '#2e1e12'; g.fillRect(cx0 - 1, y1 - 46, 20, 46);
+      g.fillStyle = '#6a4a2c'; g.fillRect(cx0 + 1, y1 - 44, 16, 44); g.fillStyle = '#8a6640'; g.fillRect(cx0 + 1, y1 - 44, 16, 2);
+      g.fillStyle = '#7a2a24'; g.fillRect(cx0 + 4, y1 - 38, 10, 22); g.fillStyle = '#a0463a'; g.fillRect(cx0 + 4, y1 - 38, 10, 2);
+      g.fillStyle = '#4a3020'; g.fillRect(cx0 - 3, y1 - 16, 24, 4); g.fillStyle = '#7a2a24'; g.fillRect(cx0 - 1, y1 - 18, 20, 3);
+      g.fillStyle = BR[3]; g.fillRect(cx0, y1 - 50, 3, 5); g.fillRect(cx0 + 15, y1 - 50, 3, 5); g.fillRect(cx0 + 7, y1 - 54, 4, 8); g.fillStyle = BR[4]; g.fillRect(cx0 + 8, y1 - 54, 2, 2); }
+    /* and all of it a back wall: dimmed, so the boards and the bell stand off it */
+    g.globalAlpha = 0.28; g.fillStyle = '#140e0a'; g.fillRect(sx, sy, w, h); g.globalAlpha = 1;
     return true; }
   if (st === 'monkTower' || st === 'monkFlue' || st === 'monkShrine') {
     const flue = st === 'monkFlue', shrine = st === 'monkShrine';

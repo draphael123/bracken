@@ -52,7 +52,7 @@ the signs) stays outside it as the approach - the check is now outside the arena
 ```
  row 18-19  ================================ ROOF (laid stone), a pitched tile roof and a louvre over it
  row 20     |  win      win    (ROSE)    win      win   |
- row 24     |GALLERY==H   .      ||      .   H==GALLERY|   the ringers' galleries, on posts; ladders at 52 and 91
+ row 24     |GALLERY==H   .      ||      .   H==GALLERY|   the ringers' galleries, on posts; ladders at 52 and 90
  row 27     |    .   STALL      BELL      STALL   .     |   the choir stalls, on posts: 48px up
  row 29     D  lectern   (  brass ring  )   chair  gate |   D = the west door the arena wall shuts
  row 30     ================================= FLOOR ==========
@@ -61,25 +61,26 @@ the signs) stays outside it as the approach - the check is now outside the arena
 
 - **THE WALLS AND ROOF.** Laid stone (the level's own masonry), the west wall with a tall round-headed door (rows
   24-29, exactly the span the arena wall shuts), the east wall the mountain's. Over the roof slab a pitched tile roof
-  facade, so from the approach it reads as the monastery's tower top and not a ceiling in the sky. `camBelow: 1` frames
-  the room ceiling-to-floor on one screen height, so the roof is ON in every frame of the fight.
+  facade, so from the approach it reads as the monastery's tower top and not a ceiling in the sky. A fixed arena
+  camera height (`camY`, new) frames the room ceiling-to-floor on one screen, with the floor just above the boss bar, so
+  the roof is ON in every frame of the fight and the floor never leaves the screen when you are up on a gallery.
 - **THE NAVE WALL behind the play** (a new `paintRoom` kind, `monkBelfryIn`): darker coursed stone, a lancet window every
   five tiles with the evening sky in it and a slant of light falling from each, the congregation's two stair doors at
   the foot of each end wall, and the abbot's chair painted into the east apse (a room-owned prop, not a collider).
-- **THE GREAT BELL at the crossing (x 72, the room's centre).** It hangs from its yoke on the roof beam, three times the
-  size of the bridge bells, with its lip a hand over the floor, so it is struck from the floor as before. Its strike box
+- **THE GREAT BELL at the crossing (x 72, the room's centre).** It hangs in a timber cage whose posts run from the flags to the roof beam, three
+  times the size of the bridge bells, with its lip a hand over the floor, so it is struck from the floor as before. Its strike box
   grows to match what is drawn (the old 24x30 box on a 52px-wide bell would be a lie).
 - **THE ROSE WINDOW over it**, and the one broad shaft of light in the room falls from it onto the floor under the bell.
-- **THE RING.** A brass ring inlaid in the flags under the bell, exactly `ABBOT.bellUnder` either side of it - the
+- **THE RING.** A brass band inlaid in the flags under the bell, with a stud standing at each end,, exactly `ABBOT.bellUnder` either side of it - the
   distance the note reaches. It is dull while he is outside it and **burns gold the moment he steps inside**, and the
   shaft of light over it brightens with it. The room says "NOW" before any text does. That is the caused opening made
   readable by the room itself (A11): the bell, the place, and the moment are all drawn.
 - **HEIGHT TIERS, all held up (B9):** the choir stalls at 48px (x 61-64 and 80-83, on posts, eight tiles clear of the
   bell either side so they are never a way to ring it from safety), and the ringers' galleries at 96px along both end
-  walls (x 51-58, 85-93) on a post each and the wall behind, with a ladder up each. They are the step off his coals,
+  walls (x 51-58, 85-93) on a post each and the wall behind, with a ladder up each (x 52 and 90). They are the step off his coals,
   the "round him" for the procession, and where the knell finds you just the same.
-- **THE CONGREGATION COMES IN AT THE DOORS**: his adds spawn at the foot of the end wall nearer to him (x 53 or 91) - the
-  stair doors painted there - instead of out of the air beside him. Same count, same cadence (`ABBOT.adds`, `addEvery`).
+- **THE CONGREGATION COMES IN AT THE DOORS**: his adds spawn at the foot of the end wall farther from YOU (x 53 or 91), so they never appear on top of you (the
+  stair doors are painted there), instead of out of the air beside him. Same count, same cadence (`ABBOT.adds`, `addEvery`).
 - **HE STARTS IN HIS CHAIR** in the east apse (x 80), with the bell between him and the door you come in by: the first
   thing he does is walk toward you under it.
 - **THE DRESSING IS HIS**: the psalters and a lectern by the west door, candelabra lighting the choir, the goblins'

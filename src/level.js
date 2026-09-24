@@ -1977,7 +1977,7 @@ function theMonastery() {
   // ---- 7. THE NEST: the monastery's broken summit roof, and what nests on it ----
   const s10 = stair(36, 30, 30, 62, 38, 11);
   block(1, s10.gx - 1, 31, 34); block(s10.gx + s10.gw, W - 2, 31, 34); // the roof's body, either side of the way up
-  spikes(4, 12, 29); spikes(80, 90, 29);
+  spikes(4, 12, 29);   /* (the east bed, 80-90, was the Roc's and lay inside what is now his belfry: gone with her) */
   masonry.push([1, W - 2, 30, 34]);
   // the old roof boards still lie in the stone where her dive puts her talons through them and holds her
   const roofBoards = [];
@@ -1985,15 +1985,26 @@ function theMonastery() {
 
 
   ent('sign', 16, 29, { text: 'THE BELFRY. A GOBLIN IN THE ABBOT\'S CHAIR, BLESSING HIS OWN.' });
-  // THE NEST BELL: it hangs on its frame between the two middle boards. She comes over it to scream at the roof,
-  // and a bell struck under her goes through her like a blow - so the answer to her scream is here
-  ent('tbell', 56, 29, { abbot: true });
   ent('sign', 22, 29, { text: 'STRIKE THE GREAT BELL WITH HIM UNDER IT: THE NOTE GOES THROUGH THE RITE.' });
-  ent('abbot', 72, 29);   /* THE FALSE ABBOT, at the far end of the ringing floor: the great bell is at 56, and getting him under it is the fight */
-  // the last hop to the gate is over the thorns on two stones set on a pillar
-  plat(79, 29, 5); block(85, 87, 27, 27); block(89, 91, 27, 27); block(87, 87, 28, 29);
+  // ---- THE BELFRY (Lane T, 2026-09-23; docs/briefs/abbot-room.md). He inherited the Roc's summit - 92 tiles of open roof,
+  // a small bell, a beam walk in the sky - and it is a ROOM now: 43 tiles (x 51-93) by ten rows (20-29), walled and roofed
+  // in the monks' stone, entered by the west door the arena wall shuts. The great bell hangs at the crossing, x 72, the
+  // room's centre, under the rose window; the brass ring in the flags round it (drawn in main.js from ABBOT.bellUnder)
+  // lights when he is inside the note's reach. Tiers at 48px (the choir stalls) and 96px (the ringers' galleries), every
+  // run of boards on a post (B9). The west half of the summit stays the approach, with its check outside the walls (B6).
+  block(49, 94, 18, 19);                                            // the roof
+  block(49, 50, 20, 23); block(94, 94, 20, 23);                     // the end walls over the doors, the west one two blocks thick (the doors are rows 24-29: the arena wall's own span)
+  masonry.push([49, 94, 18, 19], [49, 50, 20, 23], [94, 94, 20, 23]);
+  interiors.push([51, 94, 20, 29, 'monkBelfryIn']);
+  facades.push([49, 95, 12, 17, 'monkTower', { roof: true }], [68, 76, 6, 11, 'monkBelfry']);   /* the tower's top and its louvred bell-stage over the crossing, seen from the approach */
+  boards(51, 24, 8); boards(85, 24, 9);                             // THE RINGERS' GALLERIES, 96px up, along both end walls
+  boards(61, 27, 4); boards(80, 27, 4);                             // THE CHOIR STALLS, 48px up, eight tiles clear of the bell either side: never a place to ring it from
+  hangers.push([58, 25, 29], [85, 25, 29], [61, 28, 29], [64, 28, 29], [80, 28, 29], [83, 28, 29]);   // and what holds them up
+  for (let y = 24; y < 30; y++) { set(52, y, T.NET); set(90, y, T.NET); }   // a ladder up to each gallery
+  ent('tbell', 72, 29, { abbot: true });   /* THE GREAT BELL, at the crossing */
+  ent('abbot', 80, 29);   /* THE FALSE ABBOT, out of his chair in the apse: the bell is between him and the door you come in by, so the first thing he does is walk under it */
   ent('check', 18, 29); ent('gate', 92, 29);
-  ent('silver', 90, 26);
+  ent('silver', 92, 23);   /* up on the east gallery, where the ringers kept their things */
   ent('stray', 38, 29, { kind: 'bead' });
   // the crawl under the roof ends in a hollow either side, and the second chimney comes up into the right one
   for (let y = 32; y <= 34; y++) { for (let x = 70; x <= 93; x++) set(x, y, T.AIR); for (let x = 3; x <= 16; x++) set(x, y, T.AIR); }
@@ -2024,31 +2035,42 @@ function theMonastery() {
   // ---- THE RINGING FLOOR. It was a NEST while the Roc had it - heaped rafters, bones she did not finish, the shells
   // of what she hatched - and with her gone the roof stays ON (she is what tore it off, mid-fight), so this is a ROOM
   // again: the floor the monks rang their bells from, with the goblins' own squalor spread over the top of it.
-  for (const [x, v] of [[10, 0], [86, 1]]) ent('deco', x, 29, { kind: 'bellFrame', v });      /* the two lesser bells' frames, empty: those bells went down the mountain */
-  for (const [x, v] of [[20, 0], [44, 1], [72, 0]]) ent('deco', x, 29, { kind: 'incenseStand', v });   /* what he fills the censer from */
-  for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'bookshelf', v });      /* the psalters, still on their shelf */
-  ent('deco', 34, 29, { kind: 'statue' }); ent('deco', 80, 29, { kind: 'monkChores', v: 0 });
-  for (const [x, v] of [[6, 0], [90, 1]]) ent('deco', x, 29, { kind: 'prayerFlags', v });
+  for (const [x, v] of [[10, 0], [47, 1]]) ent('deco', x, 29, { kind: 'bellFrame', v });      /* the two lesser bells' frames, empty, out on the approach: those bells went down the mountain */
+  for (const [x, v] of [[20, 0], [44, 1]]) ent('deco', x, 29, { kind: 'incenseStand', v });   /* what he fills the censer from */
+  ent('deco', 27, 29, { kind: 'bookshelf', v: 0 });
+  ent('deco', 34, 29, { kind: 'statue' });
+  ent('deco', 6, 29, { kind: 'prayerFlags', v: 0 });
+  // INSIDE THE BELFRY, and it is his: the psalters and the lectern by the west door, candles in the choir, the goblins' loot
+  // and leavings in the corners, incense either side of the chair in the apse (the chair itself is painted on the apse wall).
+  // Nothing within four tiles of the bell: the floor round it is the one place in the room that has to read clean.
+  ent('deco', 54, 29, { kind: 'bookshelf', v: 1 }); ent('deco', 56, 29, { kind: 'lectern' }); ent('deco', 59, 29, { kind: 'lootHeap', v: 0 });
+  ent('deco', 66, 29, { kind: 'candelabra' }); ent('deco', 78, 29, { kind: 'candelabra' });
+  ent('deco', 86, 29, { kind: 'incenseStand', v: 0 }); ent('deco', 63, 29, { kind: 'bones', v: 1 }); ent('deco', 88, 23, { kind: 'bookpile', v: 0 });
   ent('sign', 30, 29, { text: 'HE WILL NOT STAND UNDER IT. GUARD HIS CHAIN AND IT HAULS HIM THERE.' });
   // THE FLOORS THE MONKS LAID: flagstones where there was a building, crag where there was only the mountain; and the stacks,
   // dug into the cliff under the bell yards, have their shelves behind them (the look pass saw open sky inside the rock)
   masonry.push([1, 40, 218, 221], [1, 94, 172, 174], [1, 94, 152, 154], [1, 94, 132, 134], [40, 74, 100, 102], [29, 51, 56, 58]);
   interiors.push([1, 94, 135, 151, 'monkScript']);
-  // THE BELFRY'S BEAM WALK: a ladder from the ringing floor, with a sheltered landing either side.
-  plat(43,24,9);plat(59,24,9);plat(47,27,4);plat(61,27,4);
-  for(let y=24;y<30;y++)set(58,y,T.NET);
+  // (THE BELFRY'S BEAM WALK - boards at rows 24 and 27 and a ladder at 58, held up by nothing - is the galleries and the
+  // choir stalls in the room above now, each on its post.)
   // NOTHING IS DUG AFTER THIS LINE: the goat path's rock face above is the last tile laid
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, cloudLine: CLOUD, snowLine: 28,   /* snow only on the stones over the roof: on the roof it hid the boards */
     belfry: {roofGone:false}, monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors,
+    /* THE SUMMIT'S OLD FOOTPRINT, kept out of the sprinklers (foes, coins, checkpoints, scatter). The arena was the whole summit
+       until the Abbot's belfry (docs/briefs/abbot-room.md) shrank it to x 51-93, and every sprinkler keys on the arena box: without
+       this they put eleven foes on the belfry's new roof and a troll in its door, and moved the rest of the level's draw. With it
+       the summit is excluded exactly as before (and the roof, which is new, with it). */
+    keepOut: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 18 * TS },
+    bareFloors: [[51, 93, 30]],   /* the belfry's flags are indoors: no lanterns, skeps or shrines scattered round the bell (main.js clearGround) */
     tall: { top: CLOUD * TS, bottom: 218 * TS, col: '64,70,84', deepest: 0.26 },
     quest: { n: 3, item: 'bead', name: 'PRAYER BEADS', npc: 'squire', done: 'THE BEADS ARE RESTRUNG', reward: 'relic', relic: 'sunshard' },
     palette: { sky: [[146, 156, 172], [230, 216, 196]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'beam',
       haze: 'rgba(222,208,190,0.14)', grass: '#7c8a56', grassL: '#9aa86c', grassD: '#5a6640',
       dirt: '#6a625a', dirtL: '#827a70', dirtD: '#4a443e', canopy: ['#5a5650', '#6e6a62', '#86806e', '#a89c84'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'abbot', music: 'roc', tint: '#e8c88a', tintA: 0.10, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest. THE FALSE ABBOT has it now (2026-09-22): the Roc was a giant bird in a bell tower, and this level's own rule is that what the monks built answers a blow. Her code is untouched and she is placed nowhere - restorable, as the Harbor was. (The track is still hers: he has not got one of his own yet.) */
+    arena: { x0: 51 * TS, x1: 94 * TS, floor: 30 * TS, y0: 20 * TS, trigger: 53 * TS, wallL: 50, wallR: 94, camY: 30 * TS - 150, doors: [53, 91], boss: 'abbot', music: 'roc', tint: '#e8c88a', tintA: 0.10, fx: 'motes' },   /* THE BELFRY (docs/briefs/abbot-room.md): 43 tiles, not the whole summit's 92 (A7); camY frames it roof to floor, the floor just above the boss bar; `doors` are where his congregation comes in */   /* it used to wake a quarter of the way across the summit, before you had seen the nest. THE FALSE ABBOT has it now (2026-09-22): the Roc was a giant bird in a bell tower, and this level's own rule is that what the monks built answers a blow. Her code is untouched and she is placed nowhere - restorable, as the Harbor was. (The track is still hers: he has not got one of his own yet.) */
     mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS },
   };
 }
@@ -3844,7 +3866,7 @@ function sprinkleCoins(L) {
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.REED || t === T.CRYST;
   // a boss room is a box, not a column: the Sunspire's roof arena spans the whole mountain's width
-  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 1, A.x1 / TS + 1, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
+  const rooms = [L.arena, L.mini, L.keepOut].filter(Boolean).map(A => [A.x0 / TS - 1, A.x1 / TS + 1, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
   const wet = (x, y) => (L.pools || []).some(p => (p.shallow || p.harm) && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // over a wading pool is fine, IN it is not - but you can swim to a coin, and the Deep is one pool a hundred and fifty rows deep
   // a wading floor: lift its coin to just over the water, if a jump from the bottom still reaches it
   const dry = ([x, y]) => { const p = (L.pools || []).find(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); if (!p) return [x, y];
@@ -7374,7 +7396,7 @@ function checkpoints(L) {
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST;
   const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
-  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2]).concat((L.ambushes || []).map(A => [A.wallL - 1, A.wallR + 1, A.y0 !== undefined ? A.y0 : A.row - 9, A.row + 2]));   /* never a checkpoint inside an ambush room: you would wake up locked in */
+  const rooms = [L.arena, L.mini, L.keepOut].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2]).concat((L.ambushes || []).map(A => [A.wallL - 1, A.wallR + 1, A.y0 !== undefined ? A.y0 : A.row - 9, A.row + 2]));   /* never a checkpoint inside an ambush room: you would wake up locked in */
   const key = e => tall ? e.y : e.x;
   let ch = (L.ents || []).filter(e => e.t === 'check').sort((a, b) => key(a) - key(b));
   // 1. one of them is enough
@@ -7420,7 +7442,7 @@ function garrison(L, id) {
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST;
-  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 2, A.floor / TS + 2])
+  const rooms = [L.arena, L.mini, L.keepOut].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 2, A.floor / TS + 2])
     .concat((L.ambushes || []).map(A => [A.wallL - 1, A.wallR + 1, (A.y0 !== undefined ? A.y0 : A.row - 9) - 1, A.row + 2])).concat(L.calm || []);   /* an ambush room is empty until it shuts, and a calm is kept calm */
   const wet = (x, y) => (L.pools || []).some(p => x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
   const deepUnder = (x, y) => (L.pools || []).some(p => !p.shallow && !p.swim && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2);
@@ -7523,7 +7545,7 @@ function dressLevel(L, id) {
   for (const [kind, x, y, v, hang] of GOBLIN_CAMP[id] || []) L.ents.push(Object.assign({ t: 'deco', x, y, kind, v: v || 0 }, hang ? { hang: true } : {}));
   const W = L.W, H = L.H, g = L.grid, rnd = mulberryL(id.length * 977 + id.charCodeAt(0));
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
-  const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
+  const rooms = [L.arena, L.mini, L.keepOut].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
   const KEEP = new Set(['sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade', 'sheet', 'balloon', 'sail']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   const placed = [];

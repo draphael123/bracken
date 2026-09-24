@@ -783,7 +783,7 @@ function resolveTiles() {
         s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? hullSpr(true, x, y, eL, eR, (rnd() * 4) | 0) : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
         const kit = (RDP && RDP.kit) || GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
         const dressFrom = decor.length;
-        const clearGround = up === T.AIR && !(L.interiors || []).some(([a,b,c]) => x >= a && x <= b && y >= c-4 && y<c);
+        const clearGround = up === T.AIR && !(L.interiors || []).some(([a,b,c]) => x >= a && x <= b && y >= c-4 && y<c) && !(L.bareFloors || []).some(([a, b, r]) => x >= a && x <= b && y === r);   /* L.bareFloors [x0, x1, row]: a floor that is a ROOM's floor gets none of the outdoor ground kit (the Abbot's belfry grew stone lanterns and skeps round its bell) */
         if (L.snowLine !== undefined && y <= L.snowLine && rnd()<0.85) decor.push({k:'snow',kind:'snow',x:x*TS,y:y*TS-3,c:PROP.snowCap});
         if (clearGround && kit.kinds.length && rnd()<kit.density) {
           const kind=kit.kinds[Math.floor(rnd()*kit.kinds.length)];
@@ -7379,9 +7379,9 @@ function miniEnd(e) {
 function setWallAt(col, solid, floorY) { const top = floorY / TS - 6, bot = floorY / TS - 1; for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.palisade[(ty + col) % 3] : null; } }
 function setWall(col, solid) {
   const A = L.arena; const top = A.floor / TS - 6, bot = A.floor / TS - 1;
-  for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? ((L.arena.boss === 'chief' || L.arena.boss === 'master') ? TILE.palisade[(ty + col) % 3] : L.arena.boss === 'suncatcher' ? (TILE.ice || (TILE.ice = bakeIceTile())) : (L.arena.boss === 'ram' || L.arena.boss === 'lance' || L.arena.boss === 'roc' || L.arena.boss === 'golem' || L.arena.boss === 'prince') ? TILE.drystone[(ty + col) % 3] : L.arena.boss === 'gqueen' ? TILE.port[(ty + col) % 2] : TILE.vine[(ty + col) % 4]) : null; }
+  for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? ((L.arena.boss === 'chief' || L.arena.boss === 'master') ? TILE.palisade[(ty + col) % 3] : L.arena.boss === 'suncatcher' ? (TILE.ice || (TILE.ice = bakeIceTile())) : (L.arena.boss === 'ram' || L.arena.boss === 'lance' || L.arena.boss === 'roc' || L.arena.boss === 'golem' || L.arena.boss === 'prince') ? TILE.drystone[(ty + col) % 3] : (L.arena.boss === 'gqueen' || L.arena.boss === 'abbot') ? TILE.port[(ty + col) % 2] : TILE.vine[(ty + col) % 4]) : null; }
   // her hall is shut by portcullises, and you see them come down: both doors, with the clang, when she wakes
-  if (solid && L.arena.boss === 'gqueen') { const ys = []; for (let ty = top; ty <= bot; ty++) ys.push(ty); const spr = ys.map(ty => tileSpr[ty * LW + col]); for (const ty of ys) tileSpr[ty * LW + col] = null; gateFx.push({ col, ys, t: 0, dur: 0.3, closing: true, spr }); SFX.gateDrop(); }
+  if (solid && (L.arena.boss === 'gqueen' || L.arena.boss === 'abbot')) { const ys = []; for (let ty = top; ty <= bot; ty++) ys.push(ty); const spr = ys.map(ty => tileSpr[ty * LW + col]); for (const ty of ys) tileSpr[ty * LW + col] = null; gateFx.push({ col, ys, t: 0, dur: 0.3, closing: true, spr }); SFX.gateDrop(); }
   if (L.arena.boss === 'mother') for (let ty = 0; ty < L.arena.floor / TS - 6; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.vine[(ty + col) % 4] : null; }
 }
 function bossStart() {
@@ -13921,7 +13921,8 @@ function updateFalseAbbotBoss(e, dt) {
     fire: (x, life, delay) => fires.push({ x, y: A.floor, life, delay }),
     /* THE CONGREGATION: up the belfry ladder, and they are HIS - the bell dazes them with him */
     adds: () => enemies.filter(q => q.alive && q.fromAbbot).length,
-    summon: () => { const side = Math.random() < 0.5 ? -1 : 1, gx = Math.floor((e.x + side * 110) / TS);
+    summon: () => { const dr = A.doors && A.doors.length ? A.doors.reduce((a, b) => Math.abs(b * TS - P.x) > Math.abs(a * TS - P.x) ? b : a) : null;   /* THE BELFRY'S DOORS (docs/briefs/abbot-room.md): the one away from you */
+      const side = dr !== null ? (Math.sign(dr * TS + 8 - e.x) || 1) : Math.random() < 0.5 ? -1 : 1, gx = dr !== null ? dr : Math.floor((e.x + side * 110) / TS);
       const n0 = enemies.length; spawnEnt({ t: Math.random() < 0.4 ? 'archer' : 'sprig', x: Math.max(4, Math.min(L.W - 5, gx)), y: Math.floor(A.floor / TS) - 1, face: -side });
       for (let i = n0; i < enemies.length; i++) { enemies[i].fromAbbot = true; enemies[i].seenP = true; }
       burst(gx * TS, A.floor - 8, 8, ['#6faa4a', '#e8a83a'], 50, 0.4); },
@@ -15178,9 +15179,10 @@ const ROC_BEAT = 6;   /* ...and within six seconds of her last opening a dive on
 function drawBelfry(cx,cy){
   if(!L.belfry)return;const fl=30*TS-cy,top=20*TS-cy;if(fl<0||top>VH)return;
   // OPEN TO THE WEATHER: the arches are scenery; the dark-edged beams underfoot are the way across.
-  g.fillStyle='#848895';for(const tx of [14,28,42,70,84]){const x=tx*TS-cx;g.fillRect(x,top+22,14,fl-top-22);g.fillStyle='#a6a9ad';g.fillRect(x+2,top+22,3,fl-top-22);g.fillStyle='#848895';for(let k=0;k<5;k++){g.fillRect(x+12+k*9,top+22-k*4,12,6);g.fillRect(x+112-k*9,top+22-k*4,12,6);}}
-  if(!L.belfry.roofGone){g.fillStyle='#5d6573';g.fillRect(14*TS-cx,top-5,71*TS,12);g.fillStyle='#a69b7c';for(let x=14*TS;x<85*TS;x+=16)g.fillRect(x-cx,top-5,14,2);}
-  g.fillStyle='#81766a';g.fillRect(14*TS-cx,fl-8,9*TS,8);g.fillRect(76*TS-cx,fl-8,9*TS,8);
+  const cut=L.arena&&L.arena.boss==='abbot'?L.arena.wallL:99;   /* THE BELFRY is a room from wallL east (docs/briefs/abbot-room.md): nothing of her open summit is painted inside it */
+  g.fillStyle='#848895';for(const tx of [14,28,42,70,84].filter(t=>t+8<=cut)){const x=tx*TS-cx;g.fillRect(x,top+22,14,fl-top-22);g.fillStyle='#a6a9ad';g.fillRect(x+2,top+22,3,fl-top-22);g.fillStyle='#848895';for(let k=0;k<5;k++){g.fillRect(x+12+k*9,top+22-k*4,12,6);g.fillRect(x+112-k*9,top+22-k*4,12,6);}}
+  const re=Math.min(85,cut);if(!L.belfry.roofGone){g.fillStyle='#5d6573';g.fillRect(14*TS-cx,top-5,(re-14)*TS,12);g.fillStyle='#a69b7c';for(let x=14*TS;x<re*TS;x+=16)g.fillRect(x-cx,top-5,14,2);}
+  g.fillStyle='#81766a';g.fillRect(14*TS-cx,fl-8,9*TS,8);if(85<=cut)g.fillRect(76*TS-cx,fl-8,9*TS,8);
 }
 function drawRocArch(e,cx,cy){
  const x=Math.round(e.x-cx),y=Math.round(e.y-cy),fl=L.arena.floor-cy;g.fillStyle='#434c60';
@@ -17172,7 +17174,8 @@ function updateStals(dt) {
    cracks the guardian standing under it; on the roof the nest bell goes through the Roc hovering over it. The counterweight
    baskets are movers (updateMovers) and the braziers are vents. */
 /* a hung bell is struck from a jump (its box reaches down to where a jumping blade is, and never to a standing one); a bell on its frame from the floor */
-const tbellBox = pr => pr.hang ? { l: pr.x - 11, r: pr.x + 11, t: pr.y - 26, b: pr.y + 6 } : { l: pr.x - 12, r: pr.x + 12, t: pr.y - 30, b: pr.y };
+/* the great bell (pr.abbot) is three times the bridge bells: its box is the bell that is drawn (docs/briefs/abbot-room.md) */
+const tbellBox = pr => pr.abbot ? { l: pr.x - 18, r: pr.x + 18, t: pr.y - 60, b: pr.y } : pr.hang ? { l: pr.x - 11, r: pr.x + 11, t: pr.y - 26, b: pr.y + 6 } : { l: pr.x - 12, r: pr.x + 12, t: pr.y - 30, b: pr.y };
 function wheelLay(pr, st, tile) { for (const [x0, y, w] of (st ? pr.b : pr.a)) for (let x = x0; x < x0 + w; x++) { const i = y * LW + x; if (tile === T.AIR ? L.grid[i] === T.ONEWAY : L.grid[i] === T.AIR) { L.grid[i] = tile; tileSpr[i] = null; } } }
 function updateMonkProps(dt, hb) {
   if (!L.monk) return;
@@ -17188,6 +17191,11 @@ function updateMonkProps(dt, hb) {
     if (pr.t !== 'tbell') continue;
     pr.cool = Math.max(0, pr.cool - dt); pr.ring = Math.max(0, pr.ring - dt); pr.swing = Math.max(0, pr.swing - dt); pr.lowerT = Math.max(0, pr.lowerT - dt);
     const b = pr.roc && boss && boss.t === 'roc' && boss.alive && bossActive ? boss : null, over = !!(b && rocOverFork(b, pr)); if (pr.roc) pr.over = over;
+    if (pr.abbot) { const ab = boss && boss.t === 'abbot' && boss.alive && bossActive ? boss : null;
+      /* THE RING UNDER THE GREAT BELL: he is inside it exactly when the note would find him (ABBOT.bellUnder, the same number
+         abbotBellRung reads) - so the room says NOW before anything is written, and the first two times it is written too */
+      pr.under = !!(ab && ab.mode !== 'downed' && Math.abs(ab.x - pr.x) <= ABBOT.bellUnder);
+      if (pr.under && pr.cool <= 0 && !pr.told && !(PROG.abbotRingTold > 1)) { pr.told = true; PROG.abbotRingTold = (PROG.abbotRingTold || 0) + 1; hintT = 4; hintMsg = 'HE IS IN THE RING UNDER THE GREAT BELL. STRIKE IT NOW.'; } }
     if (pr.roc && over && pr.cool <= 0 && !pr.told && !(PROG.rocForkTold > 1)) { pr.told = true; PROG.rocForkTold = (PROG.rocForkTold || 0) + 1; hintT = 4; hintMsg = 'SHE IS OVER THE NEST BELL: STRIKE IT AND THE NOTE GOES THROUGH HER.'; }
     if (pr.ring > 0 && Math.random() < dt * 20) parts.push({ x: pr.x + (Math.random() - 0.5) * 14, y: pr.y - 16 - Math.random() * 10, vx: (Math.random() - 0.5) * 20, vy: -26, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#f0dc8a' : '#c9a44a', size: 1, grav: -10 });
     const struck = hb && overlap(hb, tbellBox(pr)) && !P.hitSet.has(pr); if (!struck) continue;
@@ -17224,6 +17232,7 @@ function updateMonkProps(dt, hb) {
 }
 function drawTBell(pr, cx, cy) {
   const M = mo(), x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -420 || x > VW + 420 || y < -60 || y > VH + 60) return;
+  if (pr.abbot) { drawGreatBell(pr, M, x, y, cy); return; }
   const f = pr.swing > 0 ? 1 + (Math.floor(time * 10) % 2) : 0;
   if (pr.hang) { const top = Math.round(pr.top - cy); g.fillStyle = '#3a2a1c'; g.fillRect(x, top, 1, Math.max(0, y - 20 - top)); g.drawImage(M.bell[f], x - 9, y - 20); }
   else if(pr.roc){g.drawImage(M.bellFrame,x-26,y-60,52,60);g.drawImage(M.bell[f],x-18,y-52,36,40);} else { g.drawImage(M.bellFrame, x - 13, y - 30); g.drawImage(M.bell[f], x - 9, y - 26); }
@@ -17243,6 +17252,34 @@ function drawTBell(pr, cx, cy) {
     g.setLineDash([]); if (pr.over) { g.fillStyle = '#8fd160'; g.globalAlpha = 0.1 + 0.1 * k; g.fillRect(x - 36, top, 72, y - 4 - top); } g.globalAlpha = 1; }
   /* the hall's bells mark the floor they crack: stand it on that */
   if (pr.guard && pr.cool <= 0 && miniActive && L.mini) { const k = 0.5 + 0.5 * Math.sin(time * 3), fy = Math.round(L.mini.floor - cy); g.globalAlpha = 0.2 + 0.12 * k; g.fillStyle = '#e8c88a'; g.fillRect(x - 40, fy - 2, 80, 2); g.globalAlpha = 1; }
+}
+/* THE GREAT BELL OF THE BELFRY (docs/briefs/abbot-room.md). It was drawn as the bridge bells are, 18px on a 26px frame: the
+   one object the False Abbot's fight turns on was the smallest thing in his room. Now: three times the size, in a timber cage
+   whose posts run from the flags to the roof beam (B9: it stands, it does not float), under the one broad shaft of light in
+   the room - from the rose window - and with a BRASS RING inlaid in the floor round it, ABBOT.bellUnder either side: the
+   reach of the note. The ring is dull while he is outside it and burns gold while he is in it; cold (still ringing) it is
+   grey. That is the caused opening drawn by the room (A11): the bell, the place and the moment, before any text. */
+function drawGreatBell(pr, M, x, y, cy) {
+  const R = ABBOT.bellUnder, A = L.arena, top = Math.round((A && A.y0 !== undefined ? A.y0 : pr.y - 160) - cy);
+  const live = pr.under && pr.cool <= 0, cold = pr.cool > 0, k = 0.5 + 0.5 * Math.sin(time * (live ? 12 : 2.2));
+  /* the shaft from the rose window, narrow at the glass and as wide as the ring on the floor */
+  g.globalAlpha = live ? 0.14 + 0.1 * k : 0.06 + 0.015 * k; g.fillStyle = live ? '#ffe39a' : '#f6e6c4';
+  g.beginPath(); g.moveTo(x - 12, top); g.lineTo(x + 12, top); g.lineTo(x + R + 4, y); g.lineTo(x - R - 4, y); g.closePath(); g.fill(); g.globalAlpha = 1;
+  /* the cage: two posts from the flags to the roof beam, a headstock across them, and the stays */
+  for (const s of [-31, 28]) { g.fillStyle = '#4a3020'; g.fillRect(x + s, top, 4, y - top); g.fillStyle = '#6a4a2c'; g.fillRect(x + s, top, 1, y - top); g.fillStyle = '#2e1e12'; g.fillRect(x + s - 2, y - 4, 8, 4); }
+  g.fillStyle = '#2e1e12'; g.fillRect(x - 34, y - 90, 68, 6); g.fillStyle = '#8a6640'; g.fillRect(x - 34, y - 90, 68, 1);
+  g.strokeStyle = '#4a3020'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - 27.5, y - 84); g.lineTo(x - 14.5, y - 71); g.moveTo(x + 28.5, y - 84); g.lineTo(x + 15.5, y - 71); g.stroke();
+  g.fillStyle = '#3a2a12'; g.fillRect(x - 5, y - 84, 10, 20);   /* the crown staple */
+  const f = pr.swing > 0 ? 1 + (Math.floor(time * 10) % 2) : 0;
+  g.drawImage(M.bell[f], x - 27, y - 66, 54, 60);
+  /* THE RING, inlaid in the flags: a brass band along the floor the width of the note's reach, with a brass stud standing at
+     each end so the edge of "under it" can be read from across the room. (An ellipse on the floor, the first try, was a
+     faint line nobody could see: the floor is seen side-on.) */
+  const col = cold ? '#7a7466' : live ? (k > 0.5 ? '#fff0a8' : '#f0c850') : '#a07c34', dk = cold ? '#4a463e' : '#5a4018';
+  g.fillStyle = dk; g.fillRect(x - R, y - 3, R * 2, 3); g.fillStyle = col; g.fillRect(x - R, y - 3, R * 2, 1);
+  for (const s of [-R, R - 2]) { g.fillStyle = dk; g.fillRect(x + s - 1, y - 9, 4, 9); g.fillStyle = col; g.fillRect(x + s, y - 9, 2, 7); }
+  if (live) { g.globalAlpha = 0.16 + 0.12 * k; g.fillStyle = '#ffd36b'; g.fillRect(x - R, y - 18, R * 2, 15); g.globalAlpha = 0.3 + 0.2 * k; g.fillRect(x - R, y - 5, R * 2, 2); }
+  g.globalAlpha = 1;
 }
 function drawPWheel(pr, cx, cy) {
   const M = mo(), x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -120 || x > VW + 120 || y < -220 || y > VH + 40) return;
@@ -20282,6 +20319,10 @@ function updateCamera(dt) {
   /* NOTHING UNDER THE BRIDGE. An arena can say how many rows under its floor the camera may show (camBelow): the Grandmother's
      room is one bridge, and the camera sat low enough to show a band of garden and dark ground under it that was never part of the fight */
   if (L.arena && L.arena.camBelow !== undefined && P.x > L.arena.x0 - 64 && P.x < L.arena.x1 + 64) camY = Math.min(camY, L.arena.floor + L.arena.camBelow * TS - VH);
+  /* A ROOM THAT FITS THE SCREEN IS FRAMED WHOLE. An arena can name the one camera height it is seen from (camY): the Abbot's belfry
+     is ten rows, roof beam to flags, and the follow camera either cut the roof off from the floor or lost the floor from the
+     galleries. Fixed, the floor sits just above the boss bar and the rose window at the top. (docs/briefs/abbot-room.md) */
+  if (L.arena && L.arena.camY !== undefined && P.x > L.arena.x0 - 64 && P.x < L.arena.x1 + 64 && P.y > (L.arena.y0 ?? L.arena.floor - 200) - 32 && P.y <= L.arena.floor + 8) camY = L.arena.camY;
   // THE BOSS INTRO. It takes the camera off you and puts it on the thing, and pushes in while its name lands.
   { const mi = miniIntroT > 0 ? miniOne() : null;
     const who = bossActive && boss && boss.alive && boss.mode === 'wake' ? boss : mi;

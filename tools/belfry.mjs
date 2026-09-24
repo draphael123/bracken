@@ -9,7 +9,9 @@ assert(L.belfry);
    OWN synthetic roc bell, so the code stays tested and restorable while the level no longer claims to hold her. */
 assert(L.ents.some(p=>p.t==='tbell'&&p.abbot), 'the belfry has the Abbot bell');
 assert(!L.ents.some(p=>p.t==='tbell'&&p.roc), 'and no roc bell: she is off this mountain');
-assert.equal(L.grid[26*L.W+58],T.NET);assert.equal(L.grid[24*L.W+45],T.ONEWAY);
+/* THE BELFRY IS A ROOM (docs/briefs/abbot-room.md): a ladder up to each ringers' gallery, a choir stall each side, and the bell at the crossing */
+assert.equal(L.grid[26*L.W+52],T.NET);assert.equal(L.grid[26*L.W+90],T.NET);assert.equal(L.grid[24*L.W+55],T.ONEWAY);assert.equal(L.grid[27*L.W+62],T.ONEWAY);
+assert(L.ents.some(p=>p.t==='tbell'&&p.abbot&&p.x===72),'the great bell hangs at the crossing');assert(L.arena.wallR-L.arena.wallL-1<=44,'the belfry is about forty tiles (A7), not the whole summit');
 const noop=()=>{},props=[{t:'tbell',roc:true,x:904,y:480}],rocks=[],P={x:904,y:480,dead:false,ground:true,vx:0,vy:0,dodge:0};let hurts=0;
 const c=vm.createContext({L,props,rocks,P,TS:16,seeds:[],parts:[],DMG:{rocRake:10,rocDive:10,rocShriek:10},SFX:new Proxy({},{get:()=>noop}),number:noop,ringAt:noop,dust:noop,shakeCam:noop,damagePlayer:()=>hurts++});
 vm.runInContext(s.slice(s.indexOf('function updateRoc(e, dt)'),s.indexOf('// THE RIMEWRIGHT',s.indexOf('function updateRoc(e, dt)'))),c);
