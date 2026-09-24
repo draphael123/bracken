@@ -6591,7 +6591,7 @@ function updatePlayer(dt) {
   /* ==== THE WARDEN'S THREE SKILLS. Each one is a verb she already has, asked for on a key: the point that holds
      something down, the ground that grows spears, and the vault taken at a foe instead of at a gap. ==== */
   if (isWarden() && skillPress('skewer') && cdReady('skewer') && canAct()) { if (spend(18)) { cdSet('skewer');
-    P.atk = -1; P.vx = P.face * 190; P.inv = Math.max(P.inv, 0.2); P.castT = 0.22;
+    P.atk = -1; P.vx = P.face * 190; P.inv = Math.max(P.inv, 0.2); P.castT = 0.22; kitPose(P, 'skewer', 0.3);
     SFX.pSlash(); SFX.throwWhoosh(); streaks(P.x + P.face * 12, P.y - 10, P.face, ['#ffffff', '#dff0d8'], 200);
     let best = null, bd = 1e9;   /* the FIRST thing in the line, which is the one the point reaches */
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue;
@@ -6602,7 +6602,7 @@ function updatePlayer(dt) {
       if (best.alive && pinFoe(best, PIN_HOLD)) number(best.x, best.y - (best.h || 16) - 20, 'PINNED', '#8fd160'); }
   } else tired(); }
   if (isWarden() && skillPress('setSpears') && cdReady('setSpears') && (P.ground || P.swim) && canAct()) { if (spend(22)) { cdSet('setSpears');
-    P.blastT = 0.4; P.atk = -1; P.vx = 0; SFX.braceSet(); shakeCam(3); dust(P.x, P.y, 6);
+    kitPose(P, 'plant', 0.4); P.blastT = 0.4; P.atk = -1; P.vx = 0; SFX.braceSet(); shakeCam(3); dust(P.x, P.y, 6);
     const hit = new Set();
     for (let i = 1; i <= 3; i++) { const x = P.x + P.face * i * 20, tx = Math.floor(x / TS);
       if (isSolid(tx, Math.floor((P.y - 12) / TS))) break;
@@ -18908,7 +18908,7 @@ function drawRiseCrescent(cx, cy) {
                   every one is marked on the ground before it falls, and what it lands on is pinned. ==== */
 const JAV_SPEED = 480, JAV_RANGE = 0.55, JAV_BACK = 4, JAV_CARRY = 100;
 let wardJav = null, spearRain = [];
-const wardPose = () => P.wheelT > 0 && K.R.sweep ? ['sweep', 1 + Math.floor(P.wheelT * 16) % 2] : P.sdN > 0 || P.sdFlash > 0 ? ['atk', P.sdFlash > 0.03 ? 2 : 1] : P.javThrowT > 0 ? ['atk', 2] : P.springT === 1 && K.R.vault ? ['vault', 1] : P.springT === 2 && K.R.plunge ? ['plunge', 0] : null;
+const wardPose = () => P.wheelT > 0 && K.R.sweep ? ['sweep', 1 + Math.floor(P.wheelT * 16) % 2] : P.sdN > 0 || P.sdFlash > 0 ? ['atk', P.sdFlash > 0.03 ? 2 : 1] : P.springT === 1 && K.R.vault ? ['vault', 1] : P.springT === 2 && K.R.plunge ? ['plunge', 0] : null;
 const stretchMul = () => P.stretchT > 0 && !wardJav ? 1.5 : 1;
 const kitFoes = () => enemies.filter(e => e.alive && !e.harmless && !(e.gone > 0) && !e.turncoat);
 function wardenKit(dt, canAct, tired) {
@@ -18927,7 +18927,7 @@ function wardenKit(dt, canAct, tired) {
   if (skillPress('javelin') && wardJav && wardJav.st !== 'back') { javRecall(); }
   else if (skillPress('javelin') && !wardJav && cdReady('javelin') && canAct()) { if (spend(22)) { cdSet('javelin');
     wardJav = { x: P.x + P.face * 10, y: P.y - 8, dir: P.face, t: 0, st: 'fly', foe: null, carried: 0, vy: 0, hit: new Set() };
-    P.javThrowT = 0.2; P.atk = -1; P.vx = -P.face * 30; SFX.javThrow(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#dff0d8', '#fff6e0'], 160); } else tired(); }
+    P.javThrowT = 0.2; kitPose(P, 'javThrow', 0.3); P.atk = -1; P.vx = -P.face * 30; SFX.javThrow(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#dff0d8', '#fff6e0'], 160); } else tired(); }
   if (P.javThrowT > 0) P.javThrowT -= dt;
   if (wardJav) updateJavelin(dt);
   /* POLE SPRING: up, and then down on the point */
@@ -18941,7 +18941,7 @@ function wardenKit(dt, canAct, tired) {
     if (P.ground || P.swim || under || P.climb) springLand(); }
   /* FULL STRETCH */
   if (skillPress('fullStretch') && cdReady('fullStretch') && !P.dead && !(P.asleep > 0)) { if (spend(25)) { cdSet('fullStretch');
-    P.stretchT = 5; SFX.stretch(); ringAt(P.x, P.y - 10, 22, '#8fd160', 0.4); number(P.x, P.y - 30, 'FULL STRETCH', '#8fd160'); } else tired(); }
+    if (!(P.atk >= 0) && canAct()) kitPose(P, 'stretch', 0.45); P.stretchT = 5; SFX.stretch(); ringAt(P.x, P.y - 10, 22, '#8fd160', 0.4); number(P.x, P.y - 30, 'FULL STRETCH', '#8fd160'); } else tired(); }
   if (P.stretchT > 0) { P.stretchT -= dt; if (Math.random() < dt * 14) parts.push({ x: P.x + P.face * (10 + Math.random() * 50), y: P.y - 11 + (Math.random() - 0.5) * 3, vx: P.face * 20, vy: -6, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#8fd160' : '#dff0d8', size: 1, grav: 0 }); }
   /* SPEAR DANCE */
   if (skillPress('spearDance') && cdReady('spearDance') && canAct() && !P.sdN) { if (spend(30)) { cdSet('spearDance');
@@ -18953,7 +18953,7 @@ function wardenKit(dt, canAct, tired) {
       for (const e of kitFoes()) if (overlap(hb, box(e))) { const mul = wardJav ? 0.35 : tipPay(e); hurtAs('light', e, Math.round(swordDmg() * 0.55 * mul * amul('spearDance')), P.x, false); if (e.alive && !lcBig(e)) { e.stagger = Math.max(e.stagger || 0, 0.25); e.vx = 0; e.knock = 0; e.shoved = 0; } }   /* held where the point is: a dance that knocked them out of reach on the first thrust was one thrust */ } }
   if (P.sdFlash > 0) P.sdFlash -= dt;
   /* RAIN OF SPEARS */
-  if (skillPress('rainOfSpears') && cdReady('rainOfSpears') && canAct()) { if (spend(40)) { cdSet('rainOfSpears'); callRain(); } else tired(); }
+  if (skillPress('rainOfSpears') && cdReady('rainOfSpears') && canAct()) { if (spend(40)) { cdSet('rainOfSpears'); kitPose(P, 'hurl', 0.5); callRain();   /* (as long as callRain's blastT, or her Vigil's plant shows at the tail) */ } else tired(); }
   if (spearRain.length) updateSpearRain(dt);
 }
 function springLand() {
@@ -22149,7 +22149,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (isWarden() && wardPose()) { const wp = wardPose(); key = wp[0]; frame = wp[1]; }   /* THE WARDEN'S BOUGHT ACTIVES (wardenKit) */
       else if (P.riseT > 0) { if (K.R.rise) { key = 'rise'; frame = P.riseT > 0.26 ? 0 : P.riseT > 0.19 ? 1 : 2; } else { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; } }   /* THE BOUGHT RISING CUT: hip, then the blade overhead - the upward cut's own frames, never the forward swing's */
       else if ((isPyro() || isPaladin() || isPirate() || isReaper() || isWarden()) && P.blastT > 0) { key = 'blast'; frame = P.blastT > 0.2 ? 0 : 1; }
-      else if ((isPyro() || isPaladin() || isPirate() || isReaper()) && P.castT > 0) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }
+      else if (P.castT > 0 && K.R.cast) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }   /* any hero with cast frames: a list of four left the Warden out, so SKEWER's castT drew nothing (her own pose, hero-poses.js, now plays first) */
       else if (isWarden() && P.vaultT > 0 && K.R.vault) { key = 'vault'; frame = P.vaultT > 0.21 ? 1 : 0; }   /* up on the shaft, and coming down off it */
       else if (isWarden() && (P.deflectT || 0) > 0 && K.R.deflect) { key = 'deflect'; frame = P.deflectT > DEF_LIVE * 0.5 ? 0 : 1; }   /* THE DEFLECT: the shaft crossing her body, then swept out to the point */
       else if (P.block || P.jet || P.aegis || P.warding) { key = 'block'; frame = Math.floor(P.anim * 2) % 2; }

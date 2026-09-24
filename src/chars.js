@@ -44,6 +44,8 @@ const LEGS = {
   fall2: ['SS....SS..', 'SS....SS..', 'ww....ww..', 'ww....ww..', 'WW....WW..'],
   crouch:['SS.SS.SS..', 'WWW.ww.WWW', '..........', '..........', '..........'],
   land:  ['.SS..SS...', 'SS....SS..', 'ww....ww..', 'WWW..WWW..', '..........'],
+  // DOWN ON ONE KNEE (the Warden setting the spears): the front thigh level, its shin straight down to the boot; the back knee on the turf, the shin laid flat behind
+  kneel: ['..........', '..........', '.SSSSSSS..', 'SWw...ww..', 'WWWw..WWW.'],
   // THE POKE's tuck: both thighs drawn up level in front of the belt, the shins hanging from the knees, the boots under them
   tuck:  ['..SSSSSSSs..', '..wwwwwwwss.', '........ww..', '........www.', '.......WWWW.'],
   wide:  ['SS.....SS.', 'SS.....SS.', 'ww.....ww.', 'ww.....ww.', 'WWW...WWW.'],
@@ -2360,6 +2362,7 @@ export function bakeWarden(skin = {}, previewOnly = false) {
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'spear', {});
+  wardenKitPoses(F, sh, WIDE);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -2367,6 +2370,43 @@ export function bakeWarden(skin = {}, previewOnly = false) {
   const set = { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
   if (!SPEARLESS) { SPEARLESS = true; try { set.bare = bakeWarden(skin); } finally { SPEARLESS = false; } }   /* drawn while the JAVELIN is out: the cue that it is gone */
   return set;
+}
+/* EVERY ABILITY HAS A BODY: THE WARDEN'S. Skewer, Javelin, Set the Spears, Rain of Spears and Full Stretch each played beside a
+   Warden standing idle, on a borrowed thrust, or on her Vigil's plant (tools/ability-poses.mjs); each has frames of its own now,
+   played by src/hero-poses.js. Her whole rule is the point, so every one of these is told by where the POINT is. OFF is the off
+   shoulder, for the second hand on the haft; o() puts a loose pixel at an offset from the shoulder `sh`. */
+function wardenKitPoses(F, sh, WIDE) {
+  const [X, Y] = sh, OFF = [BX + 2, BY + 7], KF = f => knightFrame({ top: ATTACK_HEADROOM, ...f });   /* made after the padding, with its headroom */
+  const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
+  const W = '#ffffff', C = '#dff0d8', G = '#8fd160', D = '#c9b27c';
+  /* SKEWER: coiled back over the heel, then the whole of her down behind a point driven in LOW and on the slant - through the
+     thing and into the floor under it, which is the pin - and hauled back out */
+  F.skewer = [KF({ wide: WIDE, dx: -2, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y + 2], spear: [X - 8, Y + 3, X + 8, Y + 4], plume: 1 }),
+    KF({ wide: WIDE + 8, dx: 4, dy: 2, legs: 'runC', arm: [X, Y, X + 6, Y + 2], spear: [X + 2, Y + 1, 52, Y + 7], plume: 2, bits: [[38, 14, W], [37, 13, C], [37, 15, C]] }),
+    KF({ wide: WIDE, dx: 2, dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y + 3], spear: [X - 2, Y + 3, 42, Y + 7], plume: 0 })];
+  /* JAVELIN (drawn from her BARE set: the spear is already in the air): the throwing arm drawn right back behind her head,
+     brought through high and forward on the release, and carried down across her on the follow-through - the empty hand is
+     the read, and the shaft is out ahead of it */
+  F.javThrow = [KF({ dx: -2, legs: 'wide', sho: 1, arm: [X, Y, X - 6, Y - 5], arm2: [OFF[0], OFF[1], OFF[0] + 5, OFF[1] - 1], plume: 1 }),
+    KF({ wide: 4, dx: 2, legs: 'runC', arm: [X, Y, X + 7, Y - 4], plume: 2, bits: [o(8, -5, C), o(9, -5, W)] }),
+    KF({ dx: 2, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 5], arm2: [OFF[0], OFF[1], OFF[0] - 4, OFF[1] + 3], plume: 2 })];
+  /* SET THE SPEARS: down on one knee (LEGS.kneel), the spear raised in both hands point-DOWN over the turf, driven in, and
+     leant on while the row comes up away from her. Her Vigil's plant (blast) stands and holds the point UP: this is the knee */
+  F.plant = [KF({ wide: WIDE, dy: 2, legs: 'kneel', arm: [X, Y, X + 3, Y - 6], arm2: [OFF[0], OFF[1], X + 2, Y - 4], spear: [X + 3, Y - 12, X + 4, Y + 1], plume: 1 }),
+    KF({ wide: WIDE, dy: 3, legs: 'kneel', arm: [X, Y, X + 3, Y + 1], arm2: [OFF[0], OFF[1], X + 2, Y + 2], spear: [X + 3, Y - 6, X + 4, Y + 8], plume: 2, bits: [o(2, 6, D), o(6, 6, D), o(1, 5, D), o(7, 5, D)] }),
+    KF({ wide: WIDE, dy: 3, sho: -1, legs: 'kneel', arm: [X, Y, X + 3, Y + 2], arm2: [OFF[0], OFF[1], X + 2, Y + 3], spear: [X + 3, Y - 5, X + 4, Y + 8], plume: 0, bits: [o(4, 5, G), o(3, 6, D), o(5, 6, D)] })];
+  /* RAIN OF SPEARS: down low with the spear held back along her hip and pointing up, heaved up the whole height of her with
+     both hands under it, and flung at the sky off the ends of her fingers - the green streak going up is the spear leaving */
+  F.hurl = [KF({ wide: WIDE, dx: -1, dy: 2, legs: 'crouch', arm: [X, Y, X - 2, Y + 3], arm2: [OFF[0], OFF[1], X - 3, Y + 4], spear: [X - 6, Y + 5, X + 8, Y - 7], plume: 1 }),
+    KF({ dy: -2, legs: 'jump', sho: 1, arm: [X, Y, X + 1, Y - 6], arm2: [OFF[0], OFF[1], X, Y - 5], spear: [X, Y - 3, X + 4, Y - 19], plume: 2 }),
+    KF({ dy: -3, legs: 'jump', sho: 1, hy: -1, arm: [X, Y, X + 2, Y - 8], arm2: [OFF[0], OFF[1], X + 1, Y - 8], spear: [X + 2, Y - 10, X + 5, Y - 24], plume: 0,
+      bits: [o(5, -27, G), o(5, -29, C), o(6, -31, G)] })];
+  /* FULL STRETCH: from the carry, both hands slide back down the shaft to the heel, and she settles low and long behind it
+     with the point out half as far again - the green running along the haft is the length she has just given it */
+  F.stretch = [KF({ wide: WIDE, legs: 'wide', arm: [X, Y, X + 2, Y + 1], spear: [X - 4, Y + 2, X + 14, Y + 1], plume: 1 }),
+    KF({ wide: WIDE + 4, dx: -1, legs: 'wide', arm: [X, Y, X - 2, Y + 2], arm2: [OFF[0], OFF[1], X - 3, Y + 2], spear: [X - 3, Y + 2, X + 22, Y + 1], plume: 2, bits: [o(6, 1, G), o(12, 1, G)] }),
+    KF({ wide: WIDE + 6, dx: -2, dy: 1, sho: -1, legs: 'wide', arm: [X, Y, X - 3, Y + 2], arm2: [OFF[0], OFF[1], X - 4, Y + 2], spear: [X - 4, Y + 2, X + 25, Y + 1], plume: 0,
+      bits: [o(8, 1, G), o(14, 1, C), o(20, 1, G)] })];
 }
 // HEATHER BALE — a round bale of cut heather the wind rolls about the moor. 12x12, four turns of the straw.
 export function bakeBale() {
