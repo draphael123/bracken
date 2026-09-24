@@ -106,7 +106,8 @@ place you think about.
 - 26 health. Weak once you are up; the danger is the approach. Weighed **2.5** in `src/threat.js` (an archer's reach
   aimed down a column; less than a soldier because he never leaves his post).
 - Own silhouette (the pot is the shape), own death voice (the pot goes over, a hiss), own hurt voice; bestiary row.
-- Where: one on the Gate Watch, two in the Bell Watch, two in the curtain wall's murder holes, one on the Wall Watch.
+- Where (as built): one on the Gate Watch, two in the Bell Watch, one on the hoarding over the curtain wall's face, one on
+  the Wall Watch - five.
 
 ## 6. THE MACHINE (F5): THE KEEP GATE PORTCULLIS
 
@@ -162,3 +163,32 @@ rewritten for keys.
    already holds the wall-walk, and a mini back to back with the ambush breaks Q2.
 3. **Lightning rods on the wall-walk** (same brief). Recommended: **leave for the Lance job** - they are the setup for his
    CALLING THE BOLT, and building one without the other teaches a rule that pays off nowhere.
+
+---
+
+## 13. AS BUILT (branch `claude/stormhold`, 2026-09-24)
+
+- **`src/stormhold-town.js`** builds the level (the old `stormhold()` is gone from `level.js`); 672 columns, span 720.
+  **INDEX 120** (Ore Road 116 before it, Highcrown 124 after), 18 kinds, 31.6 threat a hundred, worst checkpoint gap 57.
+- Every climb was checked two ways: the reach model (`tools/keys.mjs`, `tools/reach.mjs`, the new
+  `tools/watchtowers.mjs`) and the real physics (the curtain wall's zig-zag was jumped sill to board to the hoarding by
+  scripted input in the page). The ladders were moved so no rope leaves from the top of a ladder: UP at the top of a
+  ladder used to grab the rope and throw you off the tower before you had the key.
+- **The camera looks up a ladder** in this level (`L.climbLook`): from the landing the Scalder and his red mark are on the
+  screen before his pitch is. Without it he stood six rows above the top of the picture.
+- **The look**: stone house fronts (`src/redraw/stone-town.js` `bakeStoneFront`), gabled town rows standing behind the
+  square, the close, the Halls and the road (`bakeTownRow`, facade kind `townrow`), the walls in the monks' warm limestone
+  (`L.masonryKit`), a cobbled street (the village tile set), a market of counters, shelves, kegs, hay, a cart and a well.
+- **The bot** (`src/playtest.js`) now fetches a key from a tower: a shut gate whose key is outdoors sends it up the nearest
+  ladder toward the key instead of to a door.
+- **Walked (F9)** with `work/stormhold/walk.mjs`, knight and warden, no god mode, start to the win screen: all three keys,
+  all three gates. The bot cannot fight a locked room or the Lance, so the ambush and the boss were cleared for it, and it
+  was lifted past its own limits (the chimney shafts, a ladder it would not line up on, the shield captain) - every one
+  logged. Knight 4 deaths, warden 6.
+- **Where the build differs from the plan above:** sections 6 and 7 are 430-543 and 544-671 (the wall section runs 114
+  columns); the Wall Watch is timber, standing on the wall's east end; the gated elite is a SHIELD CAPTAIN on the wall-walk
+  holding the way to the Wall Watch (the ambush captain is already a pike, and Q3 wants a different type next door); the
+  Bell Watch's harpy went (two pourers and the archer across were enough); the curtain wall's face is a zig-zag between the
+  masons' old scaffold and the wall's own sills, with one Scalder on a hoarding, not a ladder; the market is counters and
+  shelves, not stalls (the only `stall` sprite is the Mage's Folly's).
+- Screens: `docs/stormhold/before-*.png` (the old level) and `docs/stormhold/after-*.png` (this one), from the real page.

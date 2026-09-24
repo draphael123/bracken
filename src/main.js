@@ -20332,7 +20332,7 @@ function updateCamera(dt) {
   if (P.fly && flight) { camX = Math.max(0, Math.min(LW * TS - VW, flight.cx)); camY = Math.max(0, Math.min(LH * TS - VH, flight.cy)); shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt); return; }
   const lookDown = !SET.lookDown ? 0 : !P.ground && P.vy > 120 ? Math.min(60, (P.vy - 120) * 0.4) : (P.ground && keys.down && !P.block && P.atk < 0 ? 48 : 0);
   // the camera leads your speed as well as your shoulders, so a hard turn does not snap
-  let tx = P.x + P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28)) - VW / 2, ty = P.y - (VH * 0.58) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0); // falling or crouching peeks below; the hollow looks up at her gills
+  let tx = P.x + P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28)) - VW / 2, ty = P.y - (VH * 0.58) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0) - (L.climbLook && P.climb ? 48 : 0);   /* L.climbLook (STORMHOLD's towers): on a ladder the camera looks UP it, so the Scalder at the top and his mark are on the screen before his pitch is */ // falling or crouching peeks below; the hollow looks up at her gills
   /* THE SHARED SCREEN: the MIDPOINT of the two of them, and no shoulder lead - a lead that follows one hero's face
      is a lead that pushes the other one off the edge of the picture. */
   if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * 0.58 + lookDown; }

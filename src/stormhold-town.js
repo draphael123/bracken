@@ -290,7 +290,7 @@ export function stormholdTown({ painter, T, TS }) {
 
   return {
     watchtowers, structures: [...watchtowers.filter(t => t.kind === 'timber'), scaffold], zipLines, ropes: zipLines,
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 35 }, pools: [], falls: [], moversExtra: [], interiors, bridges, houses, masonry, facades, masonryKit: 'limestone',
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 35 }, pools: [], falls: [], moversExtra: [], interiors, bridges, houses, masonry, facades, masonryKit: 'limestone', climbLook: true,
     calm: [[39, 48, 21, 35], [295, 304, 18, 31], [487, 500, 27, 43], [523, 531, 20, 28]],   /* the climbs carry their own authored encounters: the garrison stays off them (F4: a climb, then a fight) */
     playtestSections: STORM_TOWN.SECTIONS,
     indoorRow: 18,   // rows 0-18 are the insides of the houses: the camera never shows them from the street, nor the street from inside
