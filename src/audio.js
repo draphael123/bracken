@@ -297,6 +297,11 @@ export const SFX = {
   parry() { file('parry', 0.5) || tone('square', 1200, 1900, 0.08, 0.16); },
   /* THE KNIGHT'S PERFECT GUARD: a clang that rings like a bell - the steel knock high and bright, and two long clean partials over it.
      Nothing else in the game rings this long, so it is heard as THE thing, and never confused with a block's dull knock */
+  /* THE KNIGHT'S THIRD CUT, PAID: a body driven into something. Stone and a deep knock for a wall, a wet crack for the spikes, a
+     wooden clatter of two bodies for a foe, a splash and a fall for water and a drop - over the one low thump they all share */
+  thirdCrunch(k) { file('imp_stone', 0.5, k === 'foe' ? 1.2 : 0.8); tone('sine', 120, 45, 0.3, 0.2); noise(0.12, 0.3, 900, 0.8);
+    if (k === 'spikes') { file('crack', 0.35, 1.3); noise(0.08, 0.2, 3200, 1.5, 0.03); } else if (k === 'foe') { file('imp_wood', 0.3, 1.1); tone('square', 220, 140, 0.08, 0.06, 0.05); }
+    else if (k === 'water' || k === 'pit') tone('triangle', 520, 160, 0.35, 0.06, 0.04); else file('imp_steelH', 0.2, 0.7); },
   perfectGuard() { file('clang', 0.55, 1.35); tone('sine', 2637, 2610, 0.55, 0.09); tone('sine', 3951, 3920, 0.4, 0.05, 0.01); tone('triangle', 1319, 1312, 0.35, 0.07); noise(0.04, 0.22, 6400, 1.2); },
   /* THE GLANCE: the wrong tool for that body (main.js, the family table). Not the clank of a guard ringing and not a cut going in: the
      edge skating off something it could not bite - a dry scrape sliding DOWN, a dull knock under it, and no ring left after. Every

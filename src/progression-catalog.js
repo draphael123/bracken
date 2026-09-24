@@ -8,7 +8,7 @@ export const LEGACY_NODES = [
     "col": 0,
     "name": "THIRD CUT",
     "max": 1,
-    "desc": "the third cut of a run throws what it hits bodily, like the heavy cut: into the wall, the water or the spikes",
+    "desc": "the third cut of a run already throws: with this it throws them further and cuts a quarter harder",
     "parent": null,
     "active": false,
     "cap": false,

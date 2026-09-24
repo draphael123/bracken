@@ -4460,7 +4460,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED']);   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
+const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER']);   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
   if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (!SET.numbers || !MOVE_WORDS.has(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }
@@ -5180,15 +5180,45 @@ function finisher(e) {
 /* THE WALL SLAM. Thrown into a wall hard enough, a creature hits it, takes it, and comes back off it at you - into the next blow */
 function wallSlam(e) {
   const dir = Math.sign(e.kvx) || 1; e.slammed = true; e.kvx = -dir * Math.min(200, Math.abs(e.kvx) * 0.55); e.kvy = -130; e.knock = Math.max(e.knock, 0.3); e.knockAir = 0;
+  if (e.thirdT > time) { thirdPay(e, 'wall', null, dir); return; }   /* THE KNIGHT'S THIRD CUT into the wall: its own, bigger payoff */
   number(e.x, e.y - e.h - 12, 'SLAM', '#ffd36b'); dust(e.x + dir * 6, e.y - 6, 6); sparks(e.x + dir * 6, e.y - e.h / 2, -dir, 6); shakeCam(3, dir * 2); hitstop(0.05); SFX.thud();
   e.slamming = true; hurtEnemy(e, Math.max(4, Math.round(swordDmg() * 0.5)), e.x + dir * 20, false); e.slamming = false;
 }
+/* THE THIRD CUT PAYS FOR WHERE YOU FINISH (the knight rework). A body the knight's third cut threw that ENDS in something pays:
+   against a wall or into another foe it takes a second, bigger blow (mul x his sword) and reels; into the spikes, a drop or deep
+   water the room kills it as it always did (hazardFoe) and now it is said and heard as his. Each has the same feedback, loud on
+   purpose - the stop, the shake, the zoom, a crunch of its own (SFX.thirdCrunch), the word and the number - because the tip hit's
+   ring is what makes the Warden's swing a decision, and this is his. Thrown into open air, nothing: the choice is where to stand.
+   live: how long a throw stays his (a drop can take a while to reach the bottom). other: the share the foe it was thrown into takes.
+   talentThrow: THIRD CUT (the talent) throws them this much further. */
+const THIRD_PAY = { live: 1.4, mul: 1.6, other: 0.8, stagger: 1.2, talentThrow: 1.4, minSpeed: 30 };
+const THIRD_WORD = { wall: 'AGAINST THE WALL', foe: 'BOWLED OVER', spikes: 'ON THE SPIKES', pit: 'OFF THE EDGE', water: 'INTO THE WATER' };
+let thirdPaying = false;   /* the blow the payoff lands is not itself a third cut, or one throw would bowl a whole room */
+function thirdPay(e, kind, other, dir) {
+  e.thirdT = 0; dir = dir || Math.sign(e.kvx) || P.face; P.thirdPays = (P.thirdPays || 0) + 1; P.thirdPayLast = kind;
+  const y = e.y - (e.h || 16) / 2;
+  hitstop(0.12); shakeCam(6, dir * 3); zoomKick(1.08, 0.25); if (SFX.thirdCrunch) SFX.thirdCrunch(kind);
+  ringAt(e.x, y, 26, '#fff6e0', 0.35); ringAt(e.x, y, 12, '#ffd36b', 0.25); sparks(e.x + dir * 6, y, -dir, 10); dust(e.x + dir * 6, e.y - 4, 8);
+  burst(e.x + dir * 4, y, 10, ['#fff6e0', '#ffd36b', '#c9b27c'], 110, 0.45);
+  number(e.x, e.y - (e.h || 16) - 18, THIRD_WORD[kind], '#ffd36b');
+  if (kind !== 'wall' && kind !== 'foe') return;   /* the room does the rest */
+  thirdPaying = true; try {
+    e.slamming = true; hurtEnemy(e, Math.max(6, Math.round(swordDmg() * THIRD_PAY.mul)), e.x - dir * 20, false); e.slamming = false;
+    if (e.alive) e.stagger = Math.max(e.stagger || 0, THIRD_PAY.stagger);
+    if (other && other.alive) { other.slamming = true; hurtEnemy(other, Math.max(4, Math.round(swordDmg() * THIRD_PAY.mul * THIRD_PAY.other)), e.x, false); other.slamming = false;
+      if (other.alive) { other.stagger = Math.max(other.stagger || 0, THIRD_PAY.stagger); knockFoe(other, dir, 170); other.thirdT = 0; } }
+  } finally { thirdPaying = false; e.slamming = false; if (other) other.slamming = false; } }
+/* what a third-cut throw has run into: another creature standing in its way, on its level (not a boss's own hide: it takes the blow
+   and is not thrown, which knockFoe already refuses) */
+function bowlTarget(e) { const b = box(e); b.l -= 2; b.r += 2;
+  for (const q of enemies) if (q !== e && q.alive && !q.harmless && !(q.gone > 0) && !q.trainer && q.t !== 'dummy' && overlap(b, box(q))) return q; return null; }
 const KNOCK_SKIP = new Set(['hedgewarden', 'gargoyle', 'gravewarden', 'emberwisp', 'pyromancer', 'archmage', 'homunculus', 'turret', 'strawking', 'ploughman', 'rook', 'marshlight', 'haunt', 'boo', 'farmhand', 'kraken', 'krakenarm', 'feeler', 'wasp', 'drone', 'bat', 'harpy', 'crow', 'kite', 'spit', 'gill', 'heart', 'bearer', 'folk', 'sheep', 'siren', 'eel', 'angler', 'petrel', 'gull', 'wisp', 'spider', 'dummy', 'turret', 'bale', 'clinger', 'urchin', 'lurker', 'jelly', 'lamprey', 'manta']);   /* NOT the puffer: deflated, it is light enough to throw */
 function knockFoe(e, dir, push) {
-  if (!e.alive || e.maxHp || e.mini || e.slamming || e.mounted || KNOCK_SKIP.has(e.t)) return;   /* a horse is not thrown across the road by a sword */
-  e.slammed = false;
+  if (!e.alive || e.maxHp || e.mini || e.slamming || e.mounted || KNOCK_SKIP.has(e.t)) return false;   /* a horse is not thrown across the road by a sword */
+  e.slammed = false; e.thirdT = 0;   /* (a throw is the knight's third-cut throw only if the third cut marks it, after this) */
   const wt = POISE_HEAVY.has(e.t) || e.big ? 0.45 : 1;
   e.knockAir = 0; e.knock = 0.45; e.kvx = dir * Math.max(150, push * 1.15) * wt; e.kvy = Math.min(e.vy || 0, -150 * wt); e.bounced = false;   /* (bounced: it comes up off the floor once when it lands) */
+  return true;
 }
 function hazardFoe(e) {
   const tx = Math.floor(e.x / TS); let why = null;
@@ -5196,6 +5226,7 @@ function hazardFoe(e) {
   else if (e.y > LH * TS + 8) why = 'OVER THE EDGE';
   else if (!AMPHIB.has(e.t)) for (const p of (L.pools || [])) if (!p.shallow && !p.swim && !p.dry && e.x > p.x0 && e.x < p.x1 && e.y > p.y + 6) { why = 'DROWNED';   /* a turtle knocked into the river is home, not drowned */ burst(e.x, p.y, 10, ['#eefaff', '#bfe6f5'], 70, 0.5); SFX.splash(); break; }
   if (!why) return false;
+  if (e.thirdT > time) thirdPay(e, why === 'IMPALED' ? 'spikes' : why === 'DROWNED' ? 'water' : 'pit');   /* the knight's third cut put it there */
   number(e.x, Math.min(e.y, LH * TS) - (e.h || 16) - 10, why, '#8fd160'); e.knock = 0; hurtEnemy(e, Math.max(1, e.hp) + 999, e.x + 1, false); return true;
 }
 /* EVERY WARD AND EVERY OPENING, IN ONE PLACE. These five lived inline in hurtEnemy0, which meant a blow went through
@@ -5437,7 +5468,12 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
       const push = plunge ? 30 : Math.min(210, 52 + dmg * 2.4) * (P.heavy ? 1.5 : 1);
       e.vx = dir * push;
       if (P.heavy && !e.maxHp && !(P.bashing && e.mini) && P.y > e.y - 4) { e.vy = Math.min(e.vy || 0, -110); }
-      if (!e.maxHp && !e.mini && (P.heavy || P.dash > 0 || P.dashAtk > 0 || hurtKnock || (P.heavySwing && P.atk >= 0 && hero() === 'knight' && tal('thirdCut')))) knockFoe(e, dir, push);   /* THIRD CUT: the end of a run throws them */
+      /* THE KNIGHT'S THIRD CUT THROWS, every knight's now and not only the talent's: where he finishes the run is the decision.
+         A body it throws is MARKED (e.thirdT) for a moment, and what the throw ends in pays (thirdPay): a wall, the spikes, a drop,
+         deep water or another foe. Open air pays nothing. The held heavy cut and the shield bash (P.heavy) are not third cuts. */
+      const thirdThrow = hero() === 'knight' && P.heavySwing && P.atk >= 0 && !P.heavy && !hurtKnock && !thirdPaying;
+      if (!e.maxHp && !e.mini && (P.heavy || P.dash > 0 || P.dashAtk > 0 || hurtKnock || thirdThrow)) { const thrown = knockFoe(e, dir, thirdThrow && !(P.dash > 0 || P.dashAtk > 0) ? push * (tal('thirdCut') ? THIRD_PAY.talentThrow : 1) : push);   /* THIRD CUT (the talent): it throws them further */
+        if (thrown && thirdThrow) e.thirdT = time + THIRD_PAY.live; }
     }
     if (!P.ground && !P.plunge && !P.dead) { P.vy = Math.min(P.vy, -30); P.airHold = 0.12; } // A HIT IN THE AIR HOLDS YOU UP
     if (wheel) guardWheel(e, fromX);
@@ -18527,6 +18563,8 @@ function updateEnemies(dt) {
           e.kvy = -Math.min(heavy ? 70 : 110, kvy0 * 0.3); e.sq = 0.16; dust(e.x, e.y, heavy ? 8 : 5);
           for (let i = 0; i < 4; i++) parts.push({ x: e.x + dir * (4 + i * 5), y: e.y - 1, vx: dir * (30 + i * 20), vy: -10 - i * 4, life: 0.28, max: 0.28, col: '#c9b27c', size: i < 2 ? 2 : 1, grav: 90 });
           if (heavy) { SFX.thud(); if (!SET.reduceMotion) shakeCam(1.5); } } }
+      if (e.thirdT > time && !e.slammed && Math.abs(e.kvx) > THIRD_PAY.minSpeed) {   /* a THIRD-CUT throw finds the wall at any speed it was given (a heavy foe's is slow), or a foe */
+        if (Math.abs(e.x - kx0) < Math.abs(e.kvx * dt) * 0.3) wallSlam(e); else { const q = bowlTarget(e); if (q) { e.slammed = true; e.kvx *= -0.3; thirdPay(e, 'foe', q); } } }
       if (!e.slammed && Math.abs(e.kvx) > 110 && Math.abs(e.x - kx0) < Math.abs(e.kvx * dt) * 0.3) wallSlam(e);
       e.vx = e.kvx * 0.3; e.vy = e.kvy; if (!e.alive) continue;
       if (hazardFoe(e)) continue;
@@ -19470,8 +19508,8 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
   if (rip) { P.riposteT = 0; P.riposteHeavy = false; ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); }
   if (ripHeavy) { P.ripostes = (P.ripostes || 0) + 1; SFX.riposte(); number(P.x, P.y - 30, 'RIPOSTE', '#ffd36b'); ringAt(P.x + P.face * 12, P.y - 11, 22, '#fff6c8', 0.25); streaks(P.x + P.face * 12, P.y - 12, 7, ['#ffffff', '#ffd36b'], 190); zoomKick(1.03, 0.14); }
   if (P.heavySwing) { SFX.heavy(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#fff6e0', '#c9d1dc'], 140);
-    if ((PROG.thirdSeen || 0) < 2 && !lessonAt('third')) { PROG.thirdSeen = (PROG.thirdSeen || 0) + 1; hintT = 4;   /* (not in the wood's third-cut stretch: the lesson there says it, once, as the first blow lands) */
-      hintMsg = 'THE THIRD SWING IN A RUN IS A HEAVY CUT THAT SHOVES. STOP SWINGING AND IT STARTS OVER.'; } } }
+    if ((PROG.thirdSeen || 0) < 2 && !lessonAt('third') && !ripHeavy) {   /* (not on a riposte: that heavy cut was the guard's, not the run's) */ PROG.thirdSeen = (PROG.thirdSeen || 0) + 1; hintT = 4;   /* (not in the wood's third-cut stretch: the lesson there says it, once, as the first blow lands) */
+      hintMsg = hero() === 'knight' ? 'THE THIRD SWING IN A RUN THROWS THEM. THROW THEM AT A WALL, THE SPIKES OR EACH OTHER.' : 'THE THIRD SWING IN A RUN IS A HEAVY CUT THAT SHOVES. STOP SWINGING AND IT STARTS OVER.'; } } }
 /* ==== THE TIP. The Warden's one rule, and the only thing a player has to learn about her: a blow pays by WHERE ALONG
    THE SPEAR it landed. The last quarter - 34 px out and beyond, which is the leaf of the head and a little behind it -
    is the TIP and pays thirty percent more, with extra poise on it. The middle is a glancing blow at three quarters.
