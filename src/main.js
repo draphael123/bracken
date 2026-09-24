@@ -251,13 +251,17 @@ const MAGE = { sees: 220, near: 90, far: 150, speed: 40, reach: 180, boltV: 135,
 // hardest for the two things you do when you are losing. Defence is cheap now. Which of the two you reach
 // for is the MARK's job to tell you - a yellow ! is the shield, a red !! is your feet - and that is a read,
 // not an arithmetic problem about a bar.
-const ST = { swing: 12, plunge: 28, dodge: 16, blockHit: 11, hold: 15, regen: 48, delay: 0.5 };   /* hold: 6 -> 15 a second (the knight rework): a raised shield empties a full bar in under seven seconds, so turtling is a cost and a timed guard - free - is the answer */
+const ST = { swing: 12, plunge: 28, dodge: 16, blockHit: 11, hold: 6, knightHold: 15, regen: 48, delay: 0.5 };   /* hold: 6 -> 15 a second (the knight rework): a raised shield empties a full bar in under seven seconds, so turtling is a cost and a timed guard - free - is the answer */
 /* HOLDING THE SHIELD COSTS, and only holding it. The first moments of a guard - the perfect guard's own window - are free, so a
    shield raised on the beat costs nothing at all (and the parry pays wind back); after that it drains ST.hold a second, half
    that with STEADY ARM (it made holding free, which made holding the default). HEAVY BLOWS PUSH HIM: a blow on the shield
    shoves him back by how hard it was, from a light one's step to a heavy one's slide (guardPush). */
 const perfectWindow = () => tal('parry') ? 0.22 : 0.11;
-function guardHoldDrain(dt) { if ((P.blockT || 0) <= perfectWindow()) return; P.st -= ST.hold * dt * (tal('holdLine') ? 0.5 : 1); }
+/* THE KNIGHT'S rework only (docs/briefs/knight-rework.md). ST.hold was raised globally at first, and the Death Knight
+   and the Paladin - who hold C too - paid the knight's tax: the Spore Mother pilot lost the reaper's fight to the clock.
+   Every other hero keeps the drain it always had. */
+function guardHoldDrain(dt) { if (hero() !== 'knight') { P.st -= ST.hold * dt; return; }
+  if ((P.blockT || 0) <= perfectWindow()) return; P.st -= ST.knightHold * dt * (tal('holdLine') ? 0.5 : 1); }
 const guardPush = dmg => Math.min(260, 90 + Math.max(0, dmg - 12) * 9);
 /* THE KNIGHT'S RIPOSTE (the knight rework, docs/briefs/knight-rework.md). A PERFECT GUARD - the shield RAISED as the blow lands,
    inside its six frames (twelve with PERFECT GUARD) - opens a window this long, and the first cut he starts inside it is a HEAVY
