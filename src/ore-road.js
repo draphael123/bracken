@@ -58,9 +58,14 @@ export const OR = {
      is the Great Drum's row: main.js seats him there before the fight */
   ARENA: { x0: 476, x1: 519, deck: 12, housing: 8, spoil: 22, highRow: 8, ledge: [507, 509], house: [510, 518],
     housings: [
-      { id: 'A', name: 'THE GREAT DRUM', x0: 510, x1: 518, top: 8, home: 512.5, ledge: [507, 509], ledgeTop: 12, line: 'low', at: 'end' },
-      { id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 480, top: 4, home: 478.5, ledge: [481, 483], ledgeTop: 8, line: 'high', at: 'start' },
-      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 505, top: 4, home: 503.5, ledge: [499, 501], ledgeTop: 8, line: 'high', at: 'end' }],
+      { id: 'A', name: 'THE GREAT DRUM', x0: 510, x1: 518, top: 8, home: 512.5, ledge: [507, 508], ledgeTop: 12, line: 'low', at: 'end', ladder: [509, 9, 22] },
+      { id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 480, top: 4, home: 478.5, ledge: [482, 483], ledgeTop: 8, line: 'high', at: 'start', ladder: [481, 5, 22] },
+      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 505, top: 4, home: 503.5, ledge: [499, 500], ledgeTop: 8, line: 'high', at: 'end', ladder: [501, 5, 22] }],
+    /* ROUND TWO (Daniel's playtest): every housing has a LADDER straight up its face from the spoil (`ladder` [x, top, bottom]: its
+       top level with the housing's surface, its foot on the spoil) - he is a man you can climb up to and fight. It runs up BESIDE
+       the drum's mouth, not through it: a first version stood the ladder on the mouth's ledge, and the lab could never climb it
+       (the bar guards the mouth, the sent bucket runs along it and the hook reached the rope up to it - a gauntlet, not a climb).
+       The Head Frame's is the entrance deck's rope carried on up. The ledges are two tiles now: the ladder took the third */
     ropes: [[481, 13, 22], [484, 9, 22], [498, 9, 22]] },
   PLACES: { yard: [0, 67], span1: [68, 135], tower: [136, 203], chute: [204, 271], collapse: [272, 339], steep: [340, 407], winch: [408, 475], drum: [476, 523] },
   /* THE BUCKET IS 46 PX WIDE, NOT 24. Daniel found this himself and it is the change everything else stands on: the
@@ -69,6 +74,19 @@ export const OR = {
      a fight instead of a nuisance you cannot answer. `lift` is how much higher an EMPTIED skip rides. */
   BUCKET: { w: 46, h: 6, hang: 30, lift: 18 },
   CRACK: 0.9,                                                    // how long a rusted bucket holds you
+  ROCK_TELL: 1.0,                                                // how long every falling rock is told before it falls
+  /* THE PIT under every span: its spike row, the deck the span starts from, the recovery ledge [x0, x1, standing row] on that
+     wall and the ladder [x, top row, bottom row] from the ledge up to that deck (the ladder's top is level with the deck) */
+  PITS: [
+    { id: 'span1', x0: 68, x1: 135, floor: 57, start: [67, 36], ledge: [68, 70, 50], ladder: [68, 37, 50] },
+    { id: 'chute', x0: 204, x1: 261, floor: 57, start: [203, 21], ledge: [204, 206, 50], ladder: [204, 22, 50] },
+    { id: 'wreck', bed: true, x0: 281, x1: 324, floor: 44, start: [280, 34], ledge: [281, 283, 39], ladder: [281, 35, 39] },
+    { id: 'steep', x0: 353, x1: 407, floor: 57, start: [352, 20], ledge: [353, 355, 50], ladder: [353, 21, 50] }],
+  PIT_BITE: 0.2, PIT_LIFT: 150, PIT_DRAFT: 230, TURBINE_EVERY: 5,
+  DARK: 0.34,                                                    // how black the cavern is away from the lamps
+  CEIL_GAP: 6,                                                   // how many rows the cavern's ceiling keeps above anything anyone uses
+  WORK_FAR: 240, WORK_CHIPS: 6, WORK_CHIP: 0.4, WORK_WALK: 18,                   // a miner works a seam while no hero is within 240 px: six blows, then he carries it
+  LAMP_EVERY: 14, VEIN_EVERY: 22, VEIN_COINS: 3, VEIN_HITS: 3,     // a pit lamp every ~14 columns; a vein every ~22, three blows, three coins
   DUMP: 0.3,                                                     // how long DOWN must be held before the skip tips
   BRAKE: 0.5,                                                    // how long the brake takes to bring a bucket to a stand
 };
@@ -205,9 +223,9 @@ export function buildOreRoad({ painter, T }) {
   // ---- THE ORE CHUTE (c 204-271) — down thirteen rows, steered, over the crusher run ----
   /* THE CRUSHER RUN under the chute: what misses the buckets goes down it, and so does anything that comes off one. It is the
      floor the gorge never had, and it is drawn as what it is - broken ore in a steel trough, red-lit from below. */
-  block(232, 244, WRECK_BED + 3, H - 1); spikes(232, 244, WRECK_BED + 2);
+  /* (the crusher run that stood here is the pit now: one floor under the whole chasm - see THE PIT) */
   plat(TIPPLE[0], TIPPLE_ROW + 1, TIPPLE[1] - TIPPLE[0] + 1);                   // THE TIPPLE HOUSE: the one rest on the chute
-  plat(231, TIPPLE_ROW - 3, 8); rope(230, TIPPLE_ROW - 3, TIPPLE_ROW);          // and the tipping stage over it, with the ladder up
+  plat(231, TIPPLE_ROW - 3, 8); rope(239, TIPPLE_ROW - 3, TIPPLE_ROW);          // and the tipping stage over it, with the ladder up its EAST end (at 230 it stood in the checkpoint's base)
   ent('check', 229, TIPPLE_ROW);
   meet('THE TIPPLE HOUSE', TIPPLE[0], TIPPLE[1], [['tippler', 235, TIPPLE_ROW - 4], ['sheargob', 238, TIPPLE_ROW], ['miner', 233, TIPPLE_ROW]]);
   ent('rockfall', 216, TIPPLE_ROW - 6, { every: 2.5 }); ent('rockfall', 252, 29, { every: 2.9 });
@@ -255,7 +273,7 @@ export function buildOreRoad({ painter, T }) {
   rope(417, WINCH - 4, WINCH);                                                  // up into the winch house's loft
   rope(413, WINCH - 7, WINCH); rope(453, WINCH - 9, WINCH);                     // and on up through a hole in each roof, to the frames on top (the shed's one rope serves its loft and its roof)
   ent('silver', 422, WINCH - 4);                                                // SILVER THREE: in the loft
-  ent('check', 414, WINCH); ent('check', 446, WINCH); ent('check', 468, WINCH);
+  ent('check', 415, WINCH); ent('check', 446, WINCH);   /* 415, not 414: the rope at 413 stood in its base */ ent('check', 468, WINCH);
   ent('sign', 430, WINCH, { text: 'THE DRUM HOUSE. NOTHING STOPS THE DRUM BUT A BUCKET WITH SOMEONE IN IT.' });
   meet('THE WINCH CREW', 410, 444, [['miner', 410, WINCH], ['rockgoblin', 436, WINCH], ['sheargob', 419, WINCH - 4]]);
   meet('THE DRUM YARD', 448, 475, [['heavy', 455, WINCH], ['gaffer', 462, WINCH], ['sheargob', 459, WINCH - 4], ['javelin', 466, WINCH]]);
@@ -271,14 +289,86 @@ export function buildOreRoad({ painter, T }) {
   block(A.x1, W - 1, 0, H - 1);
   block(481, A.house[0] - 1, A.spoil + 1, H - 1);                               // THE SPOIL HEAP under the whole room: a fall costs a climb, not a life
   for (const [x, y0, y1] of A.ropes) rope(x, y0, y1);   /* out of the spoil: to the deck (the low line), and to each high ledge (the high line) */
+  for (const Hs of A.housings) rope(...Hs.ladder);   /* ROUND TWO: straight up onto every housing from the spoil */
   ent('winchmaster', Math.floor(A.housings[0].home), A.housing, { face: -1 });
-  ent('sign', 477, A.deck, { text: 'RIDE A LOADED BUCKET INTO HIS DRUM AND IT JAMS. HE HAS THREE.' });
+  ent('sign', 477, A.deck, { text: 'CLIMB UP AND FIGHT HIM, OR RIDE A LOADED BUCKET INTO HIS DRUM.' });
 
+  /* ======== THE PIT (Daniel's playtest, 2026-09-25, item 5) ========
+     At the very bottom of every span, a bed of spikes. A hero who falls in pays about a FIFTH of his health and never his life
+     (main.js orePitStep: the level's own blow, min(OR.PIT_BITE, hp - 1), in place of the engine's spikes), and then the
+     WIND-TURBINES in the floor take him: up on their updraft and along the chasm to a RECOVERY LEDGE on the wall at the
+     start of that span, and from the ledge a LADDER climbs back to the deck he set out from. Anything else that falls in is
+     impaled (orePitStep). UNDER THE THREE RIDES THE FLOOR IS THE PIT'S OWN, not the grid's: the tiles stay the void they were
+     and drawOreVeins draws the rock and the spikes, because as tiles they misled every tool - 236 spike tiles read to
+     tools/curve.mjs as a lethal hazard field (INDEX 160), and as rock the sprinklers paid the "dead end" with a heart and
+     a loot heap nobody can reach (the turbines take you first). The WRECK's bed stays real spike tiles: it is the collapsed
+     span's hazard, the one you jump the fallen decks over, and the pit rule takes a hero who falls onto it all the same.
+     The crusher run under the chute is gone into it: one floor for the whole chasm, one rule for a fall. */
+  for (const q of OR.PITS) {
+    if (q.bed) for (let x = q.x0; x <= q.x1; x++) { set(x, q.floor, T.SPIKE); for (let y = q.floor + 1; y < H; y++) set(x, y, T.SOLID); }   /* the wreck's bed: real spikes, the on-foot section's hazard */
+    else for (let x = q.x0; x <= q.x1; x++) for (let y = q.floor; y < H; y++) set(x, y, T.AIR);   /* under a ride: the floor is the pit's own (see above) */
+    block(q.ledge[0], q.ledge[1], q.ledge[2] + 1, q.ledge[2] + 1);                 /* the recovery ledge, a shelf on the wall */
+    rope(q.ladder[0], q.ladder[1], q.ladder[2]);                                    /* and the ladder from it to the deck the span starts from */
+  }
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);   /* every rope is hung last (the Gale Moor bug) */
   const cable = cableLines();
+  /* ======== UNDERGROUND (Daniel's playtest, 2026-09-25: "the whole level becomes one vast cavern: no sky") ========
+     THE CEILING is rock with stalactites, drawn and never solid, and it is laid off the route rather than typed: over every
+     column it hangs CEIL_GAP rows above the highest thing anything uses there - a floor, a rope, a cable and the hanger above
+     it, a flier - so a jump never meets it and nothing is drawn inside it. Where the route climbs to the top of the level
+     (the drum house) it runs out at row 0. The rockfalls are moved up to its underside: they fall FROM the stalactites. */
+  const foot = t => t === T.SOLID || t === T.PLANK || t === T.ONEWAY || t === T.NET;
+  const topUse = new Array(W).fill(H);
+  for (let x = 0; x < W; x++) for (let y = 1; y < H; y++) if (foot(L.grid[y * W + x]) && !foot(L.grid[(y - 1) * W + x])) { topUse[x] = y - 1; break; }
+  for (const l of cable) for (let x = Math.ceil(Math.min(l.pts[0][0], l.pts[l.pts.length - 1][0]) / TS); x * TS <= Math.max(l.pts[0][0], l.pts[l.pts.length - 1][0]); x++) { const y = lineYAt(l, x * TS + 8); if (y !== null) topUse[x] = Math.min(topUse[x], Math.floor((y - OR.BUCKET.hang - 10) / TS)); }
+  const FLY = new Set(['bat', 'harpy', 'crow']);
+  for (const e of L.ents) if (e.t === 'crow') e.t = 'bat';   /* a crow is a bird of the open sky: under the mountain it is a bat */
+  const ceil = [];
+  for (let x = 0; x < W; x++) { let m = H; for (let k = -5; k <= 5; k++) if (x + k >= 0 && x + k < W) m = Math.min(m, topUse[x + k]); ceil.push(Math.max(0, m - OR.CEIL_GAP - ((x * 7919) % 3 === 0 ? 1 : 0))); }
+  for (const e of L.ents) if (FLY.has(e.t)) e.y = Math.max(e.y, ceil[e.x] + 2);   /* the fliers keep under the rock */
+  for (const e of L.ents) if (e.t === 'rockfall') e.y = Math.max(ceil[e.x] + 1, Math.min(e.y, ceil[e.x] + 1));
+  /* THE LAMPS: a pit lamp on every stretch of floor worth the name, about every OR.LAMP_EVERY columns, standing on footing with air
+     over it and nobody else in its tile - the pools of light the dark falls away from */
+  const busy = new Set(L.ents.filter(e => e.t !== 'coin').map(e => e.x + ',' + e.y));
+  for (let x = 6; x < A.x0 - 2; x += OR.LAMP_EVERY) { let best = null;
+    for (let dx = 0; dx < OR.LAMP_EVERY - 2 && !best; dx++) { const c = x + dx; for (let y = 1; y < H - 1 && !best; y++) { const u = L.grid[(y + 1) * W + c], here = L.grid[y * W + c];
+      if ((u === T.SOLID || u === T.PLANK || u === T.ONEWAY) && here === T.AIR && L.grid[y * W + c - 1] === T.AIR && L.grid[y * W + c + 1] === T.AIR && !busy.has(c + ',' + y) && !busy.has((c - 1) + ',' + y) && !busy.has((c + 1) + ',' + y)) best = [c, y]; } }
+    if (best) { ent('minerlamp', best[0], best[1], { lit: true }); busy.add(best.join(',')); } }
+  /* THE VEINS (item 4): ore and gems in the rock along the route, where a hero can reach them - a wall face at the height of the
+     floor in front of it (so what spills lands on that floor), never in the way (they are IN the rock: the route is untouched).
+     Three blows and it gives OR.VEIN_COINS. The miners work them while you are away (main.js oreVeinsStep) */
+  /* THIS LEVEL HAS FEW ROCK FACES AT FOOT HEIGHT - it is decks and spans over a void - so a vein is a seam in the cavern's BACK
+     WALL behind a walkway, at chest height: struck the way you strike anything, and never in anyone's way. Laid on the widest
+     run of floor near every OR.VEIN_EVERY columns, clear of ropes, lamps, signs and the rest (face 0: in the back wall) */
+  const veins = [], fl = t => t === T.SOLID || t === T.PLANK || t === T.ONEWAY, clear = (c, y) => L.grid[y * W + c] === T.AIR && L.grid[(y - 1) * W + c] === T.AIR;
+  /* first, a seam for every miner to work, two to six columns from where he stands on his own floor - so the mine looks worked */
+  for (const m of L.ents.filter(e => e.t === 'miner')) { let got = null;
+    for (const d of [3, -3, 4, -4, 5, -5, 2, -2, 6, -6]) { const c = m.x + d, y = m.y; if (got || c < 2 || c >= A.x0 - 2) continue;
+      if (!clear(c, y) || !fl(L.grid[(y + 1) * W + c]) || [-1, 0, 1].some(k => busy.has((c + k) + ',' + y) || L.grid[y * W + c + k] === T.NET) || veins.some(v => Math.abs(v.x - c) < 3 && v.y === y)) continue;
+      got = [c, y]; }
+    if (got) { veins.push({ x: got[0], y: got[1], face: 0, gem: (got[0] * 31) % 3 === 0, hits: 0, mined: false, coins: OR.VEIN_COINS }); busy.add(got.join(',')); } }
+  for (let x = 8; x < A.x0 - 4; x += OR.VEIN_EVERY) { if (veins.some(v => Math.abs(v.x - x - OR.VEIN_EVERY / 2) < OR.VEIN_EVERY / 2)) continue; let best = null, bw = 0;
+    for (let c = x; c < x + OR.VEIN_EVERY - 4; c++) for (let y = 2; y < H - 2; y++) {
+      if (!clear(c, y) || !fl(L.grid[(y + 1) * W + c])) continue;
+      if ([-1, 0, 1].some(d => busy.has((c + d) + ',' + y) || L.grid[y * W + c + d] === T.NET)) continue;
+      let w = 0; for (let k = -4; k <= 4; k++) if (clear(c + k, y) && fl(L.grid[(y + 1) * W + c + k])) w++;
+      if (w > bw) { bw = w; best = [c, y]; } }
+    if (best && bw >= 7) { veins.push({ x: best[0], y: best[1], face: 0, gem: (best[0] * 31) % 3 === 0, hits: 0, mined: false, coins: OR.VEIN_COINS }); busy.add(best.join(',')); } }
+  /* and the gem glints in the ceiling over the chasm: nothing to mine up there, only light to see the rock by */
+  const glints = []; for (let x = 4; x < W - 4; x += 9) glints.push([x + ((x * 13) % 5), ceil[x] - 1 - ((x * 7) % 3), (x * 17) % 3]);
+  /* EVERY FALLING ROCK IS TOLD (Daniel's playtest, 2026-09-25). A full second of dust from the spot and a red ring where it
+     lands (tell), never begun off the screen (seen), and - out over the gorge, where the ground it lands on is a hundred feet
+     down - the ring is ALSO on the cable it crosses, which is where a rider is (lane: that line's height under it) */
+  for (const e of L.ents) if (e.t === 'rockfall') { e.tell = OR.ROCK_TELL; e.seen = true;
+    const ys = cable.map(l => lineYAt(l, e.x * TS + 8)).filter(y => y !== null && y > (e.y + 1) * TS); if (ys.length) e.lane = Math.min(...ys); }
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: YARD }, pools: [], falls: [], moversExtra: [], interiors: [], gusts: [],
-    music: 'oreroad',   /* its own track at last (Daniel 2026-09-23): 'mineworks' was a sparse synth that played as silence. audio/CREDITS.txt */ duskStart: -1, duskLen: 1, night: false,
+    music: 'oreroad',   /* its own track at last (Daniel 2026-09-23): 'mineworks' was a sparse synth that played as silence. audio/CREDITS.txt */ duskStart: -1, duskLen: 1,
+    /* ONE VAST CAVERN (Daniel, 2026-09-25): no sky. The engine's dark (black, with a hole for every lamp and the light you carry)
+       at OR.DARK, the night wash thin under it, and the lamps' warm pools; the far wall, the pillars and the veins are
+       drawOreBackdrop, the ceiling and its stalactites drawOreStructures */
+    dark: OR.DARK, edgeLit: true, night: true, glowNight: true, nightA: 0.1, ceil, veins, glints,
+    pits: OR.PITS.map(q => ({ ...q, turbines: [...Array(Math.floor((q.x1 - q.x0 - 4) / OR.TURBINE_EVERY) + 1).keys()].map(k => q.x0 + 4 + k * OR.TURBINE_EVERY).filter(x => x <= q.x1 - 1) })),
     cable, encounters, places: OR.PLACES, oreRoad: true,
     /* THE AMBUSH ROOM (Q), returned by the builder rather than written into level.js's table, so its columns live beside the
        geometry they are read off. THE SORTING FLOOR is the tower's middle deck: a trestle floor 27 tiles between its gates -
@@ -290,9 +380,9 @@ export function buildOreRoad({ painter, T }) {
     /* THE REACH MODEL's footing for a ride (reachcore.js): each line is a band you can board anywhere along and leave anywhere along,
        the way a lift is. It is generous on a sloped line - the tools call this level ASSISTED, and that is the truth */
     cableBridges: cable.map(l => { const xs = l.pts.map(p => p[0]), ys = l.pts.map(p => p[1]); return [Math.floor(Math.min(...xs) / TS), Math.floor((Math.max(...xs) - 1) / TS), Math.floor(Math.min(...ys) / TS), Math.floor(Math.max(...ys) / TS)]; }),
-    palette: { sky: [[120, 150, 190], [228, 214, 190]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(210,200,190,0.16)',
-      grass: '#7a8a4a', grassL: '#9aaa5a', grassD: '#4a5a2a', dirt: '#5e5446', dirtL: '#766a58', dirtD: '#3c342a', canopy: ['#5a6070', '#747a88', '#9098a4', '#b8bcc4'] },
-    weather: [{ x0: 0, x1: 99999, kind: 'dust' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    palette: { sky: [[14, 12, 18], [34, 28, 30]], far: 'crag', mid: 'crag', near: 'none', dress: 'none', ledges: 'staging', haze: 'rgba(40,32,30,0.18)', murkCol: '#221e24', murkLit: '#6a4a2a',
+      grass: '#5a4a3a', grassL: '#7a6448', grassD: '#3a2e22', dirt: '#3e342c', dirtL: '#54483a', dirtD: '#241d18', canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
+    weather: [{ x0: 0, x1: 99999, kind: 'dust' }], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: surf(A.deck), y0: 0, trigger: (A.x0 + 3) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'winchmaster', music: 'boss3', tint: '#5a4a3a', tintA: 0.06, fx: 'dust' },
     noCoin: [[68, 135, 0, H - 1], [204, 261, 0, H - 1], [353, 375, 0, H - 1], [385, 407, 0, H - 1], [476, 523, 0, H - 1]],   /* over the drop: the sprinkler must not put coins where only a bucket goes */
   };
@@ -342,6 +432,7 @@ export function drawBucket(g, m, cx, cy, time) {
    is solid beyond the tiles). B9: everything out over the gorge is stepped into something - a leg down into the dark, or a
    bracket back into the rock. */
 export function drawOreStructures(g, L, cx, cy, time, VW, VH, drumAng) {
+  drawOreCeiling(g, L, cx, cy, time, VW, VH);   /* UNDERGROUND: the rock over it all, first, so every structure stands in front of it */
   const on = (x0, x1) => x1 * TS - cx > -60 && x0 * TS - cx < VW + 60;
   const beam = (x, y, w, h, c = TIMBER) => { g.fillStyle = c[1]; g.fillRect(x, y, w, h); g.fillStyle = c[2]; g.fillRect(x, y, w, 1); g.fillStyle = c[0]; g.fillRect(x, y + h - 1, w, 1); };
   const bottom = VH + 20;
@@ -393,15 +484,85 @@ export function drawOreStructures(g, L, cx, cy, time, VW, VH, drumAng) {
       g.fillStyle = '#c9a44a'; for (let q = -r + 4; q < r - 4; q += 3) g.fillRect(face - 2 + Math.round(Math.sin(q + ang * 3)), dy + q, 1, 2); }   /* the cable wound on it */
   }
 }
-/* THE FAR SIDE: the castle she keeps on the peak, and the cableway's pylons marching to it across the far gorge - drawn in the sky layer */
-export function drawOreBackdrop(g, VW, VH, cx, time) {
-  const hz = Math.round(VH * 0.62), par = cx * 0.06;
-  g.fillStyle = '#8a92a4'; g.globalAlpha = 0.55;
-  for (let k = 0; k < 7; k++) { const x = Math.round(((k * 150 - par) % (VW + 300)) - 60), h = 26 + (k % 3) * 12; g.fillRect(x, hz - h, 3, h); g.fillRect(x - 6, hz - h, 15, 2); }
-  g.fillStyle = '#6a7284'; for (let x = -10; x < VW + 10; x += 2) { const y = hz - 38 + Math.round(Math.sin((x + par) * 0.013) * 4); g.fillRect(x, y, 2, 1); }
-  g.globalAlpha = 0.7; g.fillStyle = '#5a6274'; const kx = Math.round(VW * 0.78 - par * 0.3), ky = hz - 70;   /* HIGHCROWN on its peak */
-  g.fillRect(kx - 40, ky + 20, 80, 50); g.fillRect(kx - 30, ky - 6, 12, 30); g.fillRect(kx + 14, ky - 14, 14, 38); g.fillRect(kx - 8, ky - 2, 16, 24);
-  for (let q = 0; q < 6; q++) g.fillRect(kx - 40 + q * 14, ky + 16, 8, 4);
-  g.fillStyle = '#e8c070'; g.globalAlpha = 0.5 + 0.2 * Math.sin(time * 2); g.fillRect(kx + 19, ky - 4, 3, 4); g.fillRect(kx - 26, ky + 6, 2, 3);
-  g.globalAlpha = 1;
+/* THE CAVERN, drawn in the sky layer (the level is L.dark, so the engine has already laid the murk: rock silhouettes and a black
+   top). Behind the play, three things at their own depths: THE FAR WALL's pillars and flowstone at 0.12, the far cableway
+   running on into the dark with its lamps at 0.2, and the gem seams that glint in the far rock. Motes drift in front of all of
+   it. Rects only, so tools can render it in Node. cy is optional (older call sites passed none). */
+export function drawOreBackdrop(g, VW, VH, cx, time, cy = 0) {
+  const par = (f, w) => ((-cx * f) % w + w) % w, dy = Math.round(-cy * 0.04);
+  /* the far wall: tall pillars of rock, lit a little along one edge */
+  for (let k = 0; k < 7; k++) { const x = Math.round(par(0.12, VW + 240) + k * 97) % (VW + 240) - 120, w = 26 + (k * 37) % 30, top = -20, bot = VH + 20;
+    g.fillStyle = '#1c1820'; g.fillRect(x, top, w, bot - top); g.fillStyle = '#26202a'; g.fillRect(x + 2, top, 3, bot - top);
+    g.fillStyle = '#2e2630'; for (let y = 10 + (k * 23) % 30 + dy; y < VH; y += 34) g.fillRect(x + 4, y, w - 10, 2); }
+  /* the far cableway, going on into the dark: its pylons, the cable, its buckets, and a lamp at every pylon */
+  { const y0 = Math.round(VH * 0.42) + dy, sh = par(0.2, 150);
+    g.fillStyle = '#2e2832'; g.fillRect(0, y0, VW, 1);
+    for (let x = sh - 150; x < VW + 150; x += 150) { g.fillRect(Math.round(x), y0, 3, VH - y0); g.fillRect(Math.round(x) - 6, y0, 15, 2);
+      const k = 0.6 + 0.4 * Math.sin(time * 3 + x); g.globalAlpha = 0.25 * k; g.fillStyle = '#ffb45a'; g.fillRect(Math.round(x) - 3, y0 + 4, 9, 7); g.globalAlpha = 0.8; g.fillStyle = '#ffd36b'; g.fillRect(Math.round(x), y0 + 6, 2, 2); g.globalAlpha = 1; g.fillStyle = '#2e2832'; }
+    const bt = (time * 18) % 60; for (let x = sh - 150 + bt; x < VW + 60; x += 60) { g.fillRect(Math.round(x), y0 + 1, 1, 5); g.fillRect(Math.round(x) - 3, y0 + 6, 7, 3); } }
+  /* the seams: gems in the far rock, each on its own slow pulse (they are the only colour back there) */
+  { const COL = ['#6fe0d8', '#c08aff', '#ffd36b', '#8fd160'];
+    for (let k = 0; k < 16; k++) { const x = Math.round(par(0.16, VW + 80) + k * 53) % (VW + 80) - 40, y = 14 + (k * 41) % (VH - 50) + dy, a = 0.35 + 0.35 * Math.sin(time * (1 + (k % 4) * 0.3) + k);
+      g.globalAlpha = a * 0.35; g.fillStyle = COL[k % 4]; g.fillRect(x - 2, y - 2, 6, 6); g.globalAlpha = a; g.fillRect(x, y, 2, 2); g.fillRect(x + 2, y + 1, 1, 1); } g.globalAlpha = 1; }
+  /* THE ROOF OF THE CAVERN, far off: a fringe of stalactites along the top of every view at 0.3, so there is rock over your head
+     wherever you are, not only where the world's own ceiling (drawOreCeiling) comes near enough to see */
+  { const sh = par(0.3, 14); g.fillStyle = '#3a3240'; g.fillRect(0, 0, VW, 12); g.fillStyle = '#4e4450'; g.fillRect(0, 11, VW, 1);
+    for (let x = sh - 14, k = Math.floor((cx * 0.3) / 14); x < VW + 14; x += 14, k++) { const h = 10 + ((k * 7919) % 5) * 9 + ((k * 31) % 3) * 5, w = 6 + (k % 3) * 3;
+      for (let j = 0; j < h; j++) { const ww = Math.max(1, Math.round(w * (1 - j / h))), xx = Math.round(x) + ((w - ww) >> 1); g.fillStyle = '#3a3240'; g.fillRect(xx, 12 + j, ww, 1); g.fillStyle = '#5a4e58'; g.fillRect(xx, 12 + j, 1, 1); }
+      if (h > 40) { const per = 2.4 + (k % 4) * 0.5, t = ((time + k * 0.61) % per) / per; if (t > 0.6) { g.globalAlpha = 0.7 * (1 - (t - 0.6) / 0.4); g.fillStyle = '#9ac0d8'; g.fillRect(Math.round(x) + (w >> 1), 12 + h + Math.round((t - 0.6) / 0.4 * 60), 1, 2); g.globalAlpha = 1; } } } }
+  /* dust motes in the lamplight, drifting */
+  g.fillStyle = '#d8c8a0'; for (let k = 0; k < 22; k++) { const x = (k * 61 + time * (4 + k % 3) - cx * 0.35) % VW, y = (k * 29 + Math.sin(time * 0.7 + k) * 6 + time * 2) % VH;
+    g.globalAlpha = 0.18 + 0.12 * Math.sin(time * 2 + k); g.fillRect(Math.round((x + VW) % VW), Math.round(y), 1, 1); } g.globalAlpha = 1;
+}
+/* THE CEILING, in the world (behind the tiles, and never solid): rock down to L.ceil over every column, a lit lip on its
+   underside, stalactites of every length, the glints of gem in it, and a drip off the long ones on its own clock */
+export function drawOreCeiling(g, L, cx, cy, time, VW, VH) {
+  const C = L.ceil; if (!C) return;
+  const x0 = Math.max(0, Math.floor(cx / TS) - 1), x1 = Math.min(C.length - 1, Math.ceil((cx + VW) / TS) + 1);
+  for (let tx = x0; tx <= x1; tx++) { const bot = C[tx] * TS + TS - cy, x = tx * TS - cx; if (bot < -2) continue;
+    g.fillStyle = '#2a2430'; g.fillRect(x, Math.min(0, bot - 400), TS, Math.max(0, bot) - Math.min(0, bot - 400));
+    g.fillStyle = '#3e3642'; g.fillRect(x, bot - 3, TS, 3); g.fillStyle = '#5a4e58'; g.fillRect(x, bot - 1, TS, 1);
+    for (let s = 0; s < 3; s++) { const h = (tx * 7 + s * 13) % 11 + (s === 1 ? 6 : 2), sx = x + 2 + s * 5, w = s === 1 ? 4 : 3;
+      for (let k = 0; k < h; k++) { const ww = Math.max(1, Math.round(w * (1 - k / h))); g.fillStyle = k < 2 ? '#3e3642' : '#332c38'; g.fillRect(sx + ((w - ww) >> 1), bot + k, ww, 1); g.fillStyle = '#5a4e58'; g.fillRect(sx + ((w - ww) >> 1), bot + k, 1, 1); }
+      if (s === 1 && h > 12) { const per = 2.2 + (tx % 5) * 0.4, t = ((time + tx * 0.37) % per) / per, dyy = t < 0.6 ? 0 : (t - 0.6) / 0.4 * 70;
+        g.globalAlpha = t < 0.6 ? t / 0.6 * 0.8 : 0.8 * (1 - (t - 0.6) / 0.4); g.fillStyle = '#9ac0d8'; g.fillRect(sx + 1, Math.round(bot + h + dyy), 1, t < 0.6 ? 1 : 2); g.globalAlpha = 1; } } }
+  for (const [gx, gy, k] of (L.glints || [])) { const x = gx * TS - cx + 6, y = gy * TS - cy + 8; if (x < -10 || x > VW + 10 || y < -10 || y > VH + 10) continue;
+    const a = 0.55 + 0.45 * Math.sin(time * 1.7 + gx), col = ['#6fe0d8', '#c08aff', '#ffd36b'][k];
+    g.globalAlpha = 0.3 * a; g.fillStyle = col; g.fillRect(x - 3, y - 3, 8, 8); g.globalAlpha = a; g.fillRect(x, y, 2, 3); g.fillRect(x + 2, y + 1, 1, 2); g.globalAlpha = 1; }
+  /* THE TIMBERS: a pit-prop frame over every lamp - two posts and a cap, stepped into the floor it stands on */
+  for (const e of L.ents) { if (e.t !== 'minerlamp') continue; const x = e.x * TS + 8 - cx, fy = (e.y + 1) * TS - cy; if (x < -40 || x > VW + 40 || fy < -10 || fy > VH + 60) continue;
+    g.fillStyle = '#3a2818'; g.fillRect(x - 22, fy - 44, 4, 44); g.fillRect(x + 18, fy - 44, 4, 44); g.fillRect(x - 26, fy - 48, 52, 5);
+    g.fillStyle = '#5a3e24'; g.fillRect(x - 22, fy - 44, 1, 44); g.fillRect(x + 18, fy - 44, 1, 44); g.fillRect(x - 26, fy - 48, 52, 1);
+    g.fillStyle = '#2a1c10'; g.fillRect(x - 18, fy - 43, 6, 2); g.fillRect(x + 12, fy - 43, 6, 2); }
+}
+/* THE VEINS, drawn over the tiles: a seam of ore in the back wall at chest height, its flecks glinting, cracking as it is struck,
+   an empty scar when it is mined. A gem seam is violet and cyan; an ore seam is brass and rust. And what a miner carries */
+export function drawOreVeins(g, L, cx, cy, time, VW, VH) {
+  for (const v of (L.veins || [])) { const x = v.x * TS - cx, y = v.y * TS - cy; if (x < -20 || x > VW + 20 || y < -20 || y > VH + 20) continue;
+    const pal = v.gem ? ['#3a3048', '#c08aff', '#6fe0d8'] : ['#3a3028', '#e0a040', '#c07048'];
+    g.fillStyle = '#1e1a20'; g.fillRect(x + 1, y - 2, 14, 13); g.fillRect(x - 1, y + 1, 18, 8);
+    g.fillStyle = pal[0]; g.fillRect(x + 2, y - 1, 12, 11); g.fillRect(x, y + 2, 16, 6);
+    if (v.mined) { g.fillStyle = '#141116'; g.fillRect(x + 4, y + 2, 8, 5); continue; }
+    for (let k = 0; k < 6; k++) { const fx = x + 2 + (k * 5 + v.x) % 12, fy = y + (k * 7 + v.y) % 9, a = 0.6 + 0.4 * Math.sin(time * 3 + k * 1.7 + v.x);
+      g.globalAlpha = a; g.fillStyle = pal[1 + (k % 2)]; g.fillRect(fx, fy, 2, k % 3 ? 1 : 2); } g.globalAlpha = 1;
+    if (v.hits > 0) { g.fillStyle = '#0e0c10'; for (let k = 0; k < v.hits; k++) { g.fillRect(x + 4 + k * 3, y + 1 + k, 1, 4); g.fillRect(x + 5 + k * 3, y + 4 + k, 2, 1); } }
+    if (v.flash > 0) { g.globalAlpha = Math.min(1, v.flash * 4); g.fillStyle = '#fff6e0'; g.fillRect(x + 2, y - 1, 12, 11); g.globalAlpha = 1; } }
+  /* THE TURBINES in the pit's floor: a grated housing sunk among the spikes and a three-bladed rotor over it, always turning; when
+     the pit has someone they ROAR - the rotor a blur and the updraft streaming off them, told for as long as it carries him */
+  for (const q of (L.pits || [])) { const fy = q.floor * TS - cy; if (fy < -40 || fy > VH + 60) continue; const k = q.kick || 0;
+    /* the bed under a ride: the rock (it is not tiles - see THE PIT), and iron spikes along the whole of it */
+    if (!q.bed) { const X0 = Math.max(q.x0 * TS, cx - 8) - cx, X1 = Math.min((q.x1 + 1) * TS, cx + VW + 8) - cx; g.fillStyle = '#3e342c'; g.fillRect(X0, fy, X1 - X0, VH + 60); g.fillStyle = '#54483a'; g.fillRect(X0, fy, X1 - X0, 2); g.fillStyle = '#241d18'; for (let x = X0 + ((-cx) % 11 + 11) % 11; x < X1; x += 11) g.fillRect(x, fy + 6 + ((x * 7) & 7), 3, 2); }
+    if (!q.bed) for (let x = Math.max(q.x0 * TS, cx - 8); x < Math.min((q.x1 + 1) * TS, cx + VW + 8); x += 4) { const h = 5 + ((x >> 2) * 7) % 4, X = Math.round(x - cx);
+      g.fillStyle = '#3a3a42'; g.fillRect(X, fy - h, 2, h); g.fillStyle = '#8a8a94'; g.fillRect(X, fy - h, 1, 2); g.fillStyle = '#6a3420'; g.fillRect(X + 1, fy - 2, 1, 2); }
+    for (const tx of q.turbines) { const x = tx * TS + 8 - cx; if (x < -30 || x > VW + 30) continue;
+      g.fillStyle = '#2a2a30'; g.fillRect(x - 9, fy - 3, 18, 8); g.fillStyle = '#4a4a52'; g.fillRect(x - 8, fy - 2, 16, 6); g.fillStyle = '#6a6a74'; g.fillRect(x - 8, fy - 2, 16, 1);
+      for (let j = -6; j <= 6; j += 3) { g.fillStyle = '#1a1a20'; g.fillRect(x + j, fy - 1, 1, 4); }
+      const ang = time * (k > 0 ? 40 : 6) + tx;
+      for (let b = 0; b < 3; b++) { const a = ang + b * 2.094, c = Math.cos(a), sn = Math.sin(a);
+        g.fillStyle = k > 0.2 ? '#9aa0aa' : '#7a7a84'; for (let r = 2; r <= 8; r++) g.fillRect(Math.round(x + c * r), Math.round(fy - 7 + sn * r * 0.35), 1, 1); }
+      g.fillStyle = '#c8ccd4'; g.fillRect(x - 1, fy - 8, 2, 2);
+      const n = k > 0 ? 6 : 2, a0 = k > 0 ? 0.5 : 0.18;
+      for (let j = 0; j < n; j++) { const ph = ((time * (k > 0 ? 2.2 : 0.8) + j / n + tx * 0.13) % 1), yy = fy - 10 - ph * (k > 0 ? 160 : 60);
+        g.globalAlpha = a0 * (1 - ph); g.fillStyle = '#dfe8f0'; g.fillRect(Math.round(x - 5 + ((j * 7) % 11)), Math.round(yy), 1, k > 0 ? 6 : 3); } g.globalAlpha = 1; } }
+  for (const c of (L.carrying || [])) { const x = Math.round(c.x - cx), y = Math.round(c.y - cy); g.fillStyle = '#2a2a30'; g.fillRect(x - 5, y - 4, 10, 5); g.fillStyle = '#7a7080'; g.fillRect(x - 4, y - 6, 8, 3); g.fillStyle = '#b09a5a'; g.fillRect(x - 2, y - 7, 3, 1); }
 }

@@ -19,8 +19,11 @@ import { openPage } from './cdp.mjs';
 import { cableLines } from '../src/ore-road.js';   /* only to prove COVERAGE: that the page rode every line the source declares */
 const pg = await openPage({ audio: false, fonts: false });
 try {
-  const r = await pg.evalp(`(async()=>{
+  const R0 = await pg.evalp(`(async()=>{
     const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'oreroad'), out = [];
+    const rockSeen = new WeakSet(), rocksAt = { inView: 0, off: [] };   /* EVERY FALLING ROCK IS TOLD: each one that falls while a line is ridden, and was its spot on the screen */
+    const watchRocks = () => { const [cx, cy] = BK.cam; for (const r of BK.rocks()) { if (rockSeen.has(r)) continue; rockSeen.add(r); if (r.thrown || r.ore || r.apple) continue;
+      if (r.x > cx && r.x < cx + 320 && r.y < cy + 180) rocksAt.inView++; else rocksAt.off.push([Math.round(r.x / 16), Math.round(r.y / 16)]); } };
     /* ask the level which lines the road is crossed on, rather than naming them here */
     BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.sim(1);
     if (!BK.L.cableway) return [{ id: '(none)', ok: false, why: 'the level built no cableway at all' }];
@@ -57,13 +60,14 @@ try {
           if (skip) { k[dir > 0 ? 'right' : 'left'] = true; walks++; wait = 0; }
           else { wait++; if (wait > waitMax) waitMax = wait; }
         } else wait = 0;
-        BK.sim(1);
+        BK.sim(1); watchRocks();
         if (P.dead) break;
         if (!P.onMover && P.ground && Math.abs(P.x - end[0]) < 40 && Math.abs(P.y - end[1]) < 6) break;
       }
       out.push({ id, ok: !P.dead && f < maxF, secs: +(f / 60).toFixed(1), at: [Math.round(P.x / 16), Math.round(P.y / 16)], end: [Math.round(end[0] / 16), Math.round(end[1] / 16)], dead: !!P.dead, hops, walked: +(walks / 60).toFixed(1), waited: +(waitMax / 60).toFixed(1) });
     }
-    return out; })()`, 600000);
+    return { rows: out, rocks: rocksAt }; })()`, 600000);
+  const r = R0.rows; r.rocks = R0.rocks;
   for (const x of r) console.log((x.ok ? '  ok   ' : '  FAIL ') + JSON.stringify(x));
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
   /* COVERAGE, so that "all green" can never mean "it rode nothing": every line the source declares but the drum's
@@ -79,6 +83,66 @@ try {
     console.log(`  ok   the ${l.id} line's rests hold him ${x.waited}s at the lip, against the ${(l.gap / l.speed).toFixed(1)}s its own skips come`);
     assert(x.waited <= cap, `the ${l.id} line left him standing ${x.waited}s on a rest; its skips come ${(l.gap / l.speed).toFixed(2)}s apart, so anything over ${cap.toFixed(2)}s means the rest is not being served`);
   }
+  console.log(`  ${r.rocks.off.length ? 'FAIL' : 'ok  '} ${r.rocks.inView} rocks fell while the lines were ridden, every one of them on the screen` + (r.rocks.off.length ? ' - not ' + JSON.stringify(r.rocks.off.slice(0, 5)) : ''));
+  assert(r.rocks.inView > 0 && !r.rocks.off.length, 'every rock that falls, falls on the screen (it is told there, or it waits)');
+  /* THE VEINS, in the page: a hero strikes a seam three times and it spills its coins; and a miner left alone works one */
+  const V = await pg.evalp(`(async()=>{
+    const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'oreroad');
+    BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = true; BK.sim(5);
+    const L = BK.L, P = BK.P, v = L.veins.find(q => q.x > 30 && q.y > 20), a0 = BK.acorns().length;
+    BK.tp(v.x - 1, v.y); BK.sim(20); P.face = 1; let n = 0;
+    for (let k = 0; k < 6 && !v.mined; k++) { P.face = 1; BK.press('atk'); BK.sim(28); n++; }
+    const spilled = BK.acorns().length - a0; BK.sim(90);
+    const got = BK.acorns().filter(q => q.vein && q.got).length;
+    /* the miners, with no hero near: send the hero far off and watch */
+    BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = true; BK.sim(5); BK.tp(300, 30); BK.sim(5);
+    let chips = 0, carried = 0, working = 0;
+    for (let f = 0; f < 60 * 40; f++) { BK.sim(1); for (const e of BK.enemies()) if (e.t === 'miner' && e.oreWork) { working = Math.max(working, 1); chips = Math.max(chips, e.oreWork.chips || 0); } if ((BK.L.carrying || []).length) carried++; if (P.x < 280 * 16) BK.tp(300, 30); }
+    return { at: [v.x, v.y], blows: n, mined: v.mined, spilled, got, chips, carried };
+  })()`, 600000);
+  console.log(`  ${V.mined && V.spilled === 3 ? 'ok  ' : 'FAIL'} a seam at ${V.at} struck ${V.blows} times is mined and spills ${V.spilled} coins (${V.got} picked up where they fell)`);
+  console.log(`  ${V.chips > 0 && V.carried > 0 ? 'ok  ' : 'FAIL'} with no hero near, the miners work the seams (${V.chips} blows at one) and carry the ore off (${V.carried} frames carrying)`);
+  assert(V.mined && V.blows === 3 && V.spilled === 3, 'three blows mine a seam, and it spills three coins');
+  assert(V.chips > 0 && V.carried > 0, 'a miner left alone works a seam and carries its ore to the buckets');
+  /* THE PIT, in the page: at every span, a hero dropped into it pays a fifth (never his life), the turbines carry him to the
+     recovery ledge at the start of that span, and he climbs the ladder back onto the deck the span starts from */
+  const PIT = await pg.evalp(`(async()=>{
+    const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'oreroad'), out = [];
+    for (const [k, hp0] of [[0, 100], [1, 100], [2, 100], [3, 100], [0, 6]]) {
+      BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = false; BK.sim(5);
+      for (const e of BK.enemies()) if (!e.maxHp) e.alive = false;
+      const L = BK.L, P = BK.P, q = L.pits[k], kk = BK.keys; P.hp = hp0;
+      BK.tp(Math.round((q.x0 + q.x1) / 2), q.floor - 8); P.vx = 0; P.vy = 0;
+      let f = 0, lifted = false, lowest = 999; const hpIn = P.hp;
+      for (; f < 60 * 25 && !P.dead; f++) { BK.sim(1); if (P.pitLift) lifted = true; lowest = Math.min(lowest, P.hp); if (lifted && !P.pitLift && P.ground) break; }
+      const onLedge = P.ground && Math.abs(P.y - (q.ledge[2] + 1) * 16) < 3 && P.x > q.ledge[0] * 16 - 4 && P.x < (q.ledge[1] + 1) * 16 + 4;
+      /* the ladder home: to it, up it, and off it onto the deck */
+      for (let g = 0; g < 60 * 30 && !P.dead; g++) { kk.left = kk.right = kk.up = kk.down = false;
+        const lx = q.ladder[0] * 16 + 8;
+        if (P.climb) kk.up = true; else if (Math.abs(P.y - (q.start[1] + 1) * 16) < 3 && P.x < (q.start[0] + 1) * 16 + 2) break;
+        else if (P.y < (q.ladder[1] + 1) * 16 + 2) kk.left = true; else if (Math.abs(lx - P.x) > 3) kk[lx > P.x ? 'right' : 'left'] = true; else kk.up = true;
+        BK.sim(1); }
+      out.push({ span: q.id, hp0: hpIn, lost: hpIn - lowest, dead: !!P.dead, lifted, onLedge, home: Math.abs(P.y - (q.start[1] + 1) * 16) < 3 && P.x < (q.start[0] + 1) * 16 + 2, secs: +(f / 60).toFixed(1) }); }
+    return out; })()`, 900000);
+  for (const x of PIT) { const ok = !x.dead && x.lifted && x.onLedge && x.home && x.lost === Math.min(20, x.hp0 - 1);   /* a fifth of 100 - and never the last point */
+    console.log(`  ${ok ? 'ok  ' : 'FAIL'} the ${x.span} pit: with ${x.hp0} health it cost ${x.lost}, the turbines carried him to the ledge in ${x.secs}s, and the ladder took him home` + (ok ? '' : ' ' + JSON.stringify(x))); }
+  assert(PIT.every(x => !x.dead && x.lifted && x.onLedge && x.home && x.lost === Math.min(20, x.hp0 - 1)), 'every pit costs a fifth and never a life, carries you to its ledge, and its ladder climbs home');
+  /* THE JAM IS STILL THE BONUS (round two): in the page, a hero riding a loaded skip in from the deck jams the Great Drum and
+     puts him down on its ledge, open, for the double-damage window */
+  const JAM = await pg.evalp(`(async()=>{
+    const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'oreroad');
+    BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = false; BK.sim(5);
+    for (const e of BK.enemies()) if (!e.maxHp) e.alive = false;
+    const L = BK.L, P = BK.P, A = L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(120);
+    const b = BK.boss, li = L.cableway.lines.findIndex(l => l.id === 'low'); let m = null, seen = [];
+    for (let f = 0; f < 60 * 20 && !m; f++) { BK.sim(1); m = BK.movers().find(q => q.kind === 'bucket' && q.line === li && q.vis && q.x + q.w / 2 > 488 * 16 && q.x + q.w / 2 < 491 * 16); }
+    if (!m) return { err: 'no skip came out' };
+    for (let k = 0; k < 4; k++) { P.x = m.x + m.w / 2; P.y = m.y - 1; P.vx = P.vy = 0; BK.sim(1); }
+    for (let f = 0; f < 60 * 25 && b.mode !== 'downed'; f++) { b.revCd = b.sendCd = b.hookCd = b.leverCd = 99; BK.sim(1); seen.push(b.mode); }
+    BK.sim(2); return { downed: b.mode === 'downed', open: b.open > 0, at: b.at, active: BK.bossActive, modes: [...new Set(seen)].join(','), px: Math.round(P.x / 16), on: !!P.onMover, ore: m.ore, bd: m.boardD };
+  })()`, 600000);
+  console.log(`  ${JAM.downed && JAM.open ? 'ok  ' : 'FAIL'} ridden in from the deck, a loaded skip jams the Great Drum and he is down on its ledge, open ` + JSON.stringify(JAM));
+  assert(JAM.downed && JAM.open, 'the jam still puts him down, open (the bonus)');
   assert(!pg.errors.length, 'no page errors');
   console.log('every line of the ore road carries you across');
 } finally { pg.close(); }

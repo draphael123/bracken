@@ -27,7 +27,7 @@ const SOLID = new Set([T.SOLID, T.CRATE, T.PALISADE, T.PORT, T.CLIMB, T.SOFT, T.
 const LEDGE = new Set([T.ONEWAY, T.REED, T.PLANK, T.BOUNCER, T.SHELF, T.RAIL, T.CRYST]);   /* a net is no floor: a keg does not sit on a rope */
 
 // THE CHECKPOINT MARKERS, as main.js picks one for a level (keep in step with shrineKind there)
-const markerOf = (R, id) => { const p = R.palette || {}, d = p.dress, st = p.set;
+const markerOf = (R, id) => { const p = R.palette || {}, d = p.dress, st = p.set; if (R.oreRoad) return 'mine';
   if (st === 'ship') return 'ship'; if (st === 'city') return 'city'; if (st === 'reef' || st === 'shore') return 'reef';
   if (d === 'myc' || p.myc) return 'myc'; if (d === 'marsh') return 'marsh'; if (d === 'crag') return 'crag';
   if (p.hall || R.castle || id === 'crown' || id === 'storm' || id === 'stockade') return 'hall'; return 'wood'; };

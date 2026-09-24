@@ -1,7 +1,7 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
-import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
+import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
 import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { updateGraveWarden as stepGraveWarden, drawGraveWarden, wardenFrame as graveFrame, wardenOpen as graveOpen, WARDEN as GRAVE_W } from './grave-warden.js';   /* (named apart: harbor-boss.js's Breakwater Warden owns updateWarden and wardenFrame) */   /* THE GRAVE WARDEN (batch 4b) */
@@ -662,7 +662,7 @@ function bakeAll(pal = {}) {
   }
   PROP = {
     coin: ART.bakeCoin(), shrine: [ART.bakeShrine(false), ART.bakeShrine(true)],
-    shrineOf: Object.fromEntries(['wood', 'marsh', 'crag', 'myc', 'hall', 'ship', 'reef', 'city'].map(k => [k, [ART.bakeShrineKind(k, false), ART.bakeShrineKind(k, true)]])), gate: ART.bakeGate(), sign: ART.bakeSign(),
+    shrineOf: Object.fromEntries(['wood', 'marsh', 'crag', 'myc', 'hall', 'ship', 'reef', 'city', 'mine'].map(k => [k, [ART.bakeShrineKind(k, false), ART.bakeShrineKind(k, true)]])), gate: ART.bakeGate(), sign: ART.bakeSign(),
     tuft: [0, 1, 2, 3].map(i => ART.bakeTuft(200 + i)), flower: [0, 1, 2, 3].map(i => ART.bakeFlower(210 + i)),
     mushroom: [0, 1].map(i => ART.bakeMushroom(220 + i)), bush: [0, 1, 2].map(i => ART.bakeBush(230 + i)),
     shadow: ART.bakeShadow(6, 2), pad: ART.bakeLilyPad(), padBig: ART.bakeLilyPad(32), lilyFlowerBig: ART.bakeLilyFlowerBig(), padSpring: ART.bakeSpringPad(), raft: ART.bakeRaft(), throne: ART.bakeThronePad(), plank: ART.bakePlank(), drop: ART.bakeDrop(),
@@ -1705,6 +1705,7 @@ function loadLevel(i) {
     if (e.t === 'gate') gate = { x: px, y: py };
   }
   for (let i2 = 0; i2 < LW * LH; i2++) if (grid0[i2] === T.CRATE) total++;
+  total += (L.veins || []).reduce((a, v) => a + (v.coins || 0), 0);   /* THE ORE ROAD's seams: what they spill is counted like a crate's */
   spawnEntities(); applyLevelRims();
   P.breath=breathCapacity(L,P.relic);P.drownT=0;
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
@@ -2063,7 +2064,7 @@ function spawnEnt(e) {
       case 'npc': props.push({ t: 'npc', x: px, y: py, kind: e.kind, ride: !!e.ride, anim: Math.random() * 6, lines: e.lines, name: e.name }); break;
       case 'exit': props.push({ t: 'exit', x: px, y: py }); break;
       case 'stray': props.push({ t: 'stray', kind: e.kind || 'sheep', x: px, y: py, got: straysGot.has(px), anim: Math.random() * 6 }); if (e.kind === 'folk' && straysGot.has(px)) props.push(camper([...straysGot].indexOf(px))); break;
-      case 'rockfall': props.push({ t: 'rockfall', x: px, y: py, every: e.every || 2.5, timer: 1 + (e.x % 3) * 0.5, apple: !!e.apple }); break; /* a steady beat, no dice: learn it and walk it */
+      case 'rockfall': props.push({ t: 'rockfall', x: px, y: py, every: e.every || 2.5, timer: 1 + (e.x % 3) * 0.5, apple: !!e.apple, tellT: e.tell || 0.8, seen: !!e.seen, lane: e.lane }); break;   /* tell/seen/lane: opt-in (THE ORE ROAD) - a longer tell, only on screen, and a mark on the cable it crosses */ /* a steady beat, no dice: learn it and walk it */
       case 'crusher': props.push({ t: 'crusher', x: px, y: py, every: e.every || 3, timer: 1 + (e.phase || 0), st: 'up', h: 0, D: 7 * TS }); break;
       case 'beam': props.push({ t: 'beam', x: px, y: py, cd: 0 }); break;
       case 'torchbracket': props.push({ t: 'torchbracket', x: px, y: py, taken: false, respawnT: 0 }); lights.push({ x: px, y: py - 14, r: 40, glow: true, warm: true, bracket: props[props.length - 1] }); break;
@@ -13938,6 +13939,9 @@ function oreBuild() {
   L.cableway = makeCableway(L.cable);
   L.cableway.lines.forEach((ln, li) => { for (let i = 0; i < ln.n; i++) movers.push({ kind: 'bucket', line: li, i, w: OR.BUCKET.w, h: OR.BUCKET.h, x: 0, y: -9999, dx: 0, dy: 0, vis: false,
     cracked: !!(ln.cracked && i % ln.cracked === 0), crackT: 0, fallen: 0, ore: !ln.riders, lift: ln.riders ? OR.BUCKET.lift : 0, brake: 0, dump: 0 }); });
+  /* UNDERGROUND: a gem seam glows (a hole in the dark, violet), and so do the glints in the ceiling (cyan). An ore seam does not */
+  for (const v of (L.veins || [])) if (v.gem && !v.mined) lights.push({ x: v.x * TS + 8, y: v.y * TS + 4, r: 30, glow: true, pink: true, vein: v });
+  for (const [gx, gy] of (L.glints || [])) lights.push({ x: gx * TS + 8, y: gy * TS + 10, r: 24, glow: true });
 }
 /* THE BRAKE (brief section 3). Hold the shield while you are standing on a skip and you haul on its grip: the grip
    bites, the line stalls, and it comes back up to speed as slowly as it went down. It is ONE LINE-WIDE state, because
@@ -13945,6 +13949,7 @@ function oreBuild() {
    which is the whole point. MOVING IS PROGRESS; STOPPED IS WHERE YOU CAN FIGHT, and everything that flies over this
    gorge keeps coming while you are stopped. The drum line is not brakeable: the Winchmaster drives that one. */
 function oreBrake(dt) {
+  oreVeinsStep(dt); orePitStep(dt);   /* (the ore road's per-frame hook: the veins, the miners working them, and the pit ride on it) */
   const m = P.onMover;
   for (const l of L.cableway.lines) {
     const held = !l.drum && !P.dead && !!keys.block && !!m && m.kind === 'bucket' && L.cableway.lines[m.line] === l && m.vis && !(m.fallen > 0);
@@ -13952,6 +13957,84 @@ function oreBrake(dt) {
     l.saidBrake = Math.max(0, (l.saidBrake || 0) - dt);
     if (held && l.hold > 0.9 && !l.saidBrake) { l.saidBrake = 3; number(P.x, P.y - 32, 'THE LINE STOPS', '#ffd36b'); SFX.clank(); }
   }
+}
+/* THE VEINS AND THE MEN WHO WORK THEM (Daniel's playtest, 2026-09-25, item 4). A seam in the back wall takes OR.VEIN_HITS blows
+   and spills OR.VEIN_COINS (counted into the level's total at load, the way a crate's is); its state is on L.veins, so a death
+   does not refill it and a reload does. The MINERS work them while you are away: a miner with his pick and no hero within
+   OR.WORK_FAR walks to the nearest seam on his own floor and chips at it (his dig and swing frames, turn about, with the chips
+   flying), and after OR.WORK_CHIPS blows he carries the ore to the nearest bucket station on his floor and tips it in, and goes
+   back. Come near and he drops it and is a miner again - updateMiner has him from then on */
+const oreFloorY = v => (v.y + 1) * TS;
+function oreVeinsStep(dt) {
+  const V = L.veins || [];
+  for (const v of V) { v.flash = Math.max(0, (v.flash || 0) - dt); if (v.mined || P.dead) continue;
+    const hb = attackBox(); if (!hb || P.hitSet.has(v)) continue;
+    if (!overlap(hb, { l: v.x * TS, r: v.x * TS + TS, t: v.y * TS - 4, b: v.y * TS + 14 })) continue;
+    P.hitSet.add(v); v.hits++; v.flash = 0.12; SFX.clank(); sparks(v.x * TS + 8, v.y * TS + 4, P.face, 5);
+    burst(v.x * TS + 8, v.y * TS + 4, 5, v.gem ? ['#c08aff', '#6fe0d8'] : ['#e0a040', '#7a7080'], 60, 0.35);
+    if (v.hits >= OR.VEIN_HITS) { v.mined = true; SFX.stone(); shakeCam(1.5); burst(v.x * TS + 8, v.y * TS + 4, 14, v.gem ? ['#c08aff', '#6fe0d8', '#fff6e0'] : ['#e0a040', '#b09a5a', '#fff6e0'], 90, 0.6);
+      for (let k = 0; k < v.coins; k++) acorns.push({ x: v.x * TS + 8 + (k - (v.coins - 1) / 2) * 6, y: v.y * TS + 4, got: false, ph: k, vy: -90 - k * 25, vein: true });
+      number(v.x * TS + 8, v.y * TS - 14, v.gem ? 'GEMS' : 'ORE', v.gem ? '#c08aff' : '#e0a040');
+      const lt = lights.find(q => q.vein === v); if (lt) lt.r = 0; } }
+  L.carrying = [];
+  for (const e of enemies) { if (!e.alive || e.t !== 'miner') continue;
+    const far = Math.abs(P.x - e.x) > OR.WORK_FAR || Math.abs(P.y - e.y) > 90 || P.dead, armed = !e.pk && e.mode !== 'bare' && e.mode !== 'lost' && e.mode !== 'grab' && e.pick !== 'lost';
+    const w = e.oreWork;
+    if (!far || !armed || e.stagger > 0 || !(e.mode === 'walk' || e.mode === 'idle' || e.mode === undefined || w)) { if (w) { e.oreWork = null; if (e.mode === 'dig' || e.mode === 'swing') { e.mode = 'walk'; e.modeT = 0.3; } } continue; }
+    if (!w) { const v = V.filter(q => !q.mined && Math.abs(oreFloorY(q) - e.y) < 6 && Math.abs(q.x * TS + 8 - e.x) < 6 * TS).sort((a, b) => Math.abs(a.x * TS - e.x) - Math.abs(b.x * TS - e.x))[0];
+      if (v) e.oreWork = { v, chips: 0, t: 0, carry: false, st: null }; continue; }
+    const v = w.v;
+    /* HE WALKS ON HIS OWN LEGS: a miner out past the update cull is not moved by updateMiner, so the work moves him (at a
+       walk) whenever nothing else did this frame */
+    const amble = () => { if (e.x === w.lastX) { const r = moveBody(e, e.face * OR.WORK_WALK * dt, 0, false); if (r.hitX) { e.oreWork = null; e.mode = 'walk'; } } w.lastX = e.x; };
+    if (w.carry) { /* to the station, the ore on his shoulder */
+      L.carrying.push({ x: e.x, y: e.y - (e.h || 12) - 3 });
+      if (w.st === null) { let best = null; for (const l of L.cableway.lines) for (const p of [l.pts[0], l.pts[l.pts.length - 1]]) if (Math.abs(p[1] - e.y) < 6 && Math.abs(p[0] - e.x) < 20 * TS && (!best || Math.abs(p[0] - e.x) < Math.abs(best - e.x))) best = p[0];
+        w.st = best === null ? e.x + e.face * 3 * TS : best; }
+      const d = w.st - e.x; e.mode = 'walk'; e.face = Math.sign(d) || e.face; amble();
+      if (Math.abs(d) < 14) { w.carry = false; w.chips = 0; w.st = null; if (e.x > camX - 20 && e.x < camX + VW + 20) { burst(e.x + e.face * 10, e.y - 8, 8, ['#7a7080', '#b09a5a'], 50, 0.4); SFX.stone(); } }
+      continue; }
+    const vx = v.x * TS + 8, d = vx - e.x;
+    if (v.mined) { e.oreWork = null; e.mode = 'walk'; continue; }
+    if (Math.abs(d) > 14) { e.mode = 'walk'; e.face = Math.sign(d) || e.face; amble(); continue; }
+    /* AT THE FACE: the pick goes up and comes down, turn about, and the chips fly */
+    e.face = Math.sign(d) || e.face; e.vx = 0; w.t -= dt;
+    if (w.t <= 0) { w.t = OR.WORK_CHIP; const down = e.mode !== 'dig'; e.mode = down ? 'dig' : 'swing'; e.modeT = 9; e.digT = 9;
+      if (down) { w.chips++; v.flash = 0.06; if (vx > camX - 20 && vx < camX + VW + 20 && Math.abs(v.y * TS - camY - VH / 2) < VH) { burst(vx - e.face * 4, v.y * TS + 4, 3, v.gem ? ['#c08aff', '#6fe0d8'] : ['#e0a040', '#7a7080'], 40, 0.3); if (Math.random() < 0.5) SFX.clank(); } }
+      if (w.chips >= OR.WORK_CHIPS && e.mode === 'swing') { w.carry = true; e.mode = 'walk'; e.modeT = 0.3; } } }
+}
+/* THE PIT (Daniel's playtest, 2026-09-25, item 5). A hero falling into the spikes at the bottom of a span is the LEVEL's to
+   handle, not the engine's: a few rows above the spikes his own guard (P.inv) keeps the engine's spike bite off him, and when
+   he reaches them the pit takes its own - OR.PIT_BITE, about a fifth, and never the last point of his health (a pit is not a
+   life). Then the turbines have him: up on their updraft and along the chasm to the recovery ledge at the START of that span
+   (moved by the level, not by his legs - a ride, told by the turbines roaring and the streaks), and the ladder from the ledge
+   is his to climb. The turbines spin all the time; they roar when they have someone. */
+function orePitStep(dt) {
+  const pits = L.pits; if (!pits) return;
+  for (const q of pits) q.kick = Math.max(0, (q.kick || 0) - dt);
+  /* and anything else that goes in is impaled */
+  for (const e of enemies) if (e.alive && !e.maxHp && !e.noGrav && pits.some(q => e.x > q.x0 * TS && e.x < (q.x1 + 1) * TS && e.y >= q.floor * TS - 1)) { e.bucket = null; hurtEnemy(e, 9999, e.x, false); }
+  if (P.dead) { P.pitLift = null; return; }
+  const k = P.pitLift;
+  if (k) { const q = k.q, lx = (q.ledge[0] + q.ledge[1] + 1) / 2 * TS, ly = (q.ledge[2] + 1) * TS - 22;
+    q.kick = 0.6; k.t += dt; P.inv = Math.max(P.inv || 0, 0.15); P.ground = false; P.onMover = null; P.climb = false; P.vx = 0; P.vy = 0;
+    const dy = ly - P.y, dx = lx - P.x;
+    const vy = Math.sign(dy) * Math.min(OR.PIT_LIFT, Math.abs(dy) * 5 + 20), vx = P.y > ly + 40 ? 0 : Math.sign(dx) * Math.min(OR.PIT_DRAFT, Math.abs(dx) * 4 + 30);   /* up first, then along */
+    P.y += vy * dt; P.x += vx * dt; P.face = Math.sign(dx) || P.face;
+    if (Math.random() < dt * 30) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y + 4, vx: -vx * 0.3, vy: 60 + Math.random() * 40, life: 0.4, max: 0.4, col: '#dfe8f0', size: 1, grav: 0 });
+    if ((Math.abs(dx) < 6 && Math.abs(dy) < 6) || k.t > 14) { P.pitLift = null; P.vy = 30; number(P.x, P.y - 24, 'UP THE LADDER', '#c8bcb0'); }
+    return; }
+  const q = pits.find(p => P.x > p.x0 * TS - 6 && P.x < (p.x1 + 1) * TS + 6 && P.y > (p.floor - 3) * TS && P.y < (p.floor + 3) * TS);
+  if (!q) return;
+  P.inv = Math.max(P.inv || 0, 0.06);   /* the engine's spikes do not bite in here: the pit's own blow does, once */
+  if (P.y >= q.floor * TS + (q.bed ? 4 : 0) || P.ground) {   /* (under a ride the floor is not tiles: he reaches it at its top) */
+    /* A FIFTH OF HIS HEALTH, taken straight off it: through damagePlayer the difficulty and the relics scale it, and a scaled
+       bite can take the last point - which a pit must never do */
+    const bite = Math.min(Math.round(P.maxHp * OR.PIT_BITE), P.hp - 1);
+    if (bite > 0) { P.hp -= bite; P.hurt = 0.25; flash = Math.max(flash, 0.12); SFX.pHurt(); number(P.x, P.y - 20, '-' + bite, '#ff6b6b'); }
+    P.inv = 1; P.pitLift = { q, t: 0 }; q.kick = 1.5; P.pitFalls = (P.pitFalls || 0) + 1;
+    SFX.puff(); SFX.charge(); shakeCam(3); burst(P.x, q.floor * TS + 4, 12, ['#dfe8f0', '#9aa0aa'], 90, 0.5);
+    number(P.x, P.y - 30, 'THE TURBINES TAKE YOU', '#dfe8f0'); }
 }
 /* THE PICK IN YOUR SKIP (brief section 3: THE MINER BECOMES LOAD-BEARING). Over a gorge a thrown pick used to be
    simply gone - it fell out of the world and the miner stood there for ever. Now a bucket under it CATCHES it, and
@@ -14040,7 +14123,7 @@ const winchInto = ln => OR.ARENA.housings.findIndex(Hs => Hs.line === ln.id && (
    him to the FAR end of his ledge, against his own housing: the jammed skip and the near end are the room a hero fights him from */
 function winchHousings() {
   return OR.ARENA.housings.map(Hs => { const ln = winchLine(Hs), p = ln ? ln.pts : [[0, 0], [0, 0]], near = Hs.at === 'end' ? p[p.length - 1] : p[0], far = Hs.at === 'end' ? p[0] : p[p.length - 1];
-    return { id: Hs.id, name: Hs.name, homeX: Hs.home * TS, topY: (Hs.top + 1) * TS, ledgeX: (Hs.at === 'end' ? Hs.ledge[1] + 0.5 : Hs.ledge[0] + 0.5) * TS, ledgeY: (Hs.ledgeTop + 1) * TS,
+    return { id: Hs.id, name: Hs.name, homeX: Hs.home * TS, topY: (Hs.top + 1) * TS, px0: Hs.x0 * TS, px1: (Hs.x1 + 1) * TS, ledgeX: (Hs.at === 'end' ? Hs.ledge[1] + 0.5 : Hs.ledge[0] + 0.5) * TS, ledgeY: (Hs.ledgeTop + 1) * TS,
       drumX: near[0], mouthY: near[1], away: Math.sign(far[0] - near[0]) || -1, sense: Hs.at === 'end' ? 1 : -1, ln }; });
 }
 function winchC(e) {
@@ -14062,6 +14145,14 @@ function winchC(e) {
     riding: h => { const m = pm(), q = H[h]; if (!m || !q || !q.ln || L.cableway.lines[m.line] !== q.ln || m.fallen > 0) return null;
       const s = bucketS(q.ln, m.i), dist = q.sense > 0 ? q.ln.len - s : s; return { coming: q.ln.dir * q.sense > 0 && !(q.ln.jam > 0), dist }; },
     atMouth: (h, r) => { const q = H[h]; return !!q && !P.dead && Math.abs(P.y - q.mouthY) < 12 && Math.abs(P.x - q.drumX) < r; },
+    /* ROUND TWO: is the hero up on this housing with him; where a rock shaken off the roof over x would come down, on the hero's
+       screen (null if nowhere on it: the roof waits); and let it go */
+    climbing: () => !!P.climb,
+    onHousing: h => { const q = H[h]; return !!q && !P.dead && P.ground && !P.onMover && Math.abs(P.y - q.topY) < 3 && P.x > q.px0 - 4 && P.x < q.px1 + 4; },
+    rockSpot: x0 => { const x = Math.max(camX + 24, Math.min(camX + VW - 24, x0)), y0 = Math.max(0, camY) + 4, tx = Math.floor(x / TS);
+      for (let ty = Math.floor(y0 / TS) + 1; ty < LH && ty * TS < camY + VH - 8; ty++) { const t = tileAt(tx, ty); if (t === T.SOLID || t === T.PLANK || t === T.ONEWAY || t === T.SPIKE) return { x, y0, gy: ty * TS }; }
+      return null; },
+    dropRock: (x, y0) => { rocks.push({ x, y: y0, vy: 0, t: 0, dead: false }); SFX.stone(); },
     /* is he on the hero's screen: the game's own camera, so a tell is never begun where it cannot be seen */
     seen: () => e.x + 12 > camX && e.x - 12 < camX + VW && e.y > camY && e.y - (e.h || 36) < camY + VH,
     onLine: h => { const q = H[h]; if (!q || !q.ln || P.dead || P.onMover || !P.ground) return false; const xs = q.ln.pts.map(p => p[0]);
@@ -17029,6 +17120,7 @@ function spritePad(c) {
   padOf.set(c, pad); return pad;
 }
 function shrineKind() { const p = L.palette || {}, d = p.dress, st = p.set;
+  if (L.oreRoad) return 'mine';   /* THE ORE ROAD, underground: a pit lamp on a sill, not a cairn (tools/ore-road.mjs, tools/floaters.mjs) */
   if (st === 'ship') return 'ship'; if (st === 'city') return 'city';
   if (st === 'reef' || st === 'shore') return 'reef';
   if (d === 'myc' || p.myc) return 'myc'; if (d === 'marsh') return 'marsh';
@@ -19719,7 +19811,13 @@ function updateProps(dt) {
       if (pr.timer <= 0) { pr.timer = pr.every; pr.on = 0.8; fires.push({ x: pr.x, y: pr.y, life: 0.8, delay: 0, vent: true }); SFX.puff(); burst(pr.x, pr.y - 14, 6, ['#ff9a5c', '#ffd36b'], 40, 0.4, -60, 2); }
       if (pr.on > 0 && Math.random() < dt * 30) parts.push({ x: pr.x + (Math.random() - 0.5) * 8, y: pr.y - 12 - Math.random() * 16, vx: (Math.random() - 0.5) * 10, vy: -60, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: 0 });
     }
-    if (pr.t === 'rockfall' && !P.dead && Math.abs(P.x - pr.x) < 230) { pr.timer -= dt; if (pr.timer < 0.8 && Math.random() < dt * 45) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every; rocks.push({ x: pr.x, y: pr.y, vy: 0, t: 0, dead: false, apple: !!pr.apple }); if (!pr.apple) SFX.stone(); } }
+    if (pr.t === 'rockfall' && !P.dead && Math.abs(P.x - pr.x) < 230) { pr.timer -= dt;
+      /* A ROCK THAT FALLS OFF THE SCREEN WAS NEVER TOLD: a `seen` rockfall only falls if its spot was on the screen for its WHOLE
+         tell; otherwise that beat is skipped. (Holding the tell until it came into view synchronised every rock with the rider
+         arriving under it - tools/ore-ride.mjs was knocked off the chute by it - so the beat keeps its own time.) */
+      if (pr.seen) { const inV = pr.x > camX + 8 && pr.x < camX + VW - 8 && (pr.lane || pr.gy || pr.y) > camY + 8 && pr.y < camY + VH; pr.seenT = inV ? (pr.seenT || 0) + dt : 0;
+        if (pr.timer <= 0 && pr.seenT < (pr.tellT || 0.8)) pr.timer = pr.every; }
+      if (pr.timer < (pr.tellT || 0.8) && Math.random() < dt * (pr.seen ? 90 : 45)) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every; rocks.push({ x: pr.x, y: pr.y, vy: 0, t: 0, dead: false, apple: !!pr.apple }); if (!pr.apple) SFX.stone(); } }
     /* THE COUNTER BELONGS TO THE STORE, AND TO NOTHING ELSE. This fired on any keeper anywhere, and eight of them stood
        about in real levels selling to passers-by: press UP at the miller in the Hexed Fields and the run you were in the
        middle of was left standing while the shop menu came up over it. The keepers are gone from every level now, and the
@@ -21375,7 +21473,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   drawShafts(cx, cy);
   if (L.witch && SET.parallax !== 'off' && !L.colosseum) drawWitchBack(cx, cy);
-  if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
+  if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
   if (BG.nearTrees && !L.colosseum) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
   else if (!L.castle && !L.colosseum && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
@@ -21439,7 +21537,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const r of (L.ropes || [])) { g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(r.x0 - cx) + 0.5, Math.round(r.y0 - cy) + 0.5); g.lineTo(Math.round(r.x1 - cx) + 0.5, Math.round(r.y1 - cy) + 0.5); g.stroke(); for (const [px, py, gy] of (r.posts || [])) { const x = Math.round(px - cx); g.fillStyle = '#4a3020'; g.fillRect(x - 2, Math.round(py - cy) - 4, 4, gy - py + 4); g.fillStyle = '#6a4a30'; g.fillRect(x - 1, Math.round(py - cy) - 4, 1, gy - py + 4); g.fillStyle = '#8b8378'; g.fillRect(x - 4, Math.round(py - cy) - 6, 8, 3); } }
   drawShards(cx, cy);
   drawWater(cx, cy, false);
-  if (L.cableway) drawCables(g, L.cableway, cx, cy, time, VW);   /* THE ORE ROAD's cables, and the empties coming back behind them */
+  if (L.cableway) { drawCables(g, L.cableway, cx, cy, time, VW); drawOreVeins(g, L, cx, cy, time, VW, VH); }   /* THE ORE ROAD's cables, and the empties coming back behind them */
   for (const m of movers) {
     if (m.kind === 'bucket') { if (m.vis && m.x + m.w > cx - 10 && m.x < cx + VW + 10) drawBucket(g, m, cx, cy, time); continue; }
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
@@ -21517,7 +21615,10 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'barrel' && !pr.gone) g.drawImage(PROP.barrel, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 14 - cy);
     else if (pr.t === 'rockfall') { if (pr.gy === undefined) { let gy = Math.floor(pr.y / TS) + 1; while (gy < LH && !isSolid(Math.floor(pr.x / TS), gy) && !isOneWay(tileAt(Math.floor(pr.x / TS), gy))) gy++; pr.gy = gy * TS; } /* the fall line: rubble where they land, and a red mark that pulses as the next one works loose */
       const rx = Math.round(pr.x - cx), ry = pr.gy - cy; g.fillStyle = '#6a6e78'; for (const [ox, w] of [[-7, 3], [-2, 2], [3, 3], [6, 2]]) g.fillRect(rx + ox, ry - 2, w, 2); g.fillStyle = '#9aa0aa'; g.fillRect(rx - 5, ry - 3, 2, 1); g.fillRect(rx + 4, ry - 3, 2, 1);
-      if (Math.abs(P.x - pr.x) < 230 && pr.timer < 0.8) { const k = 1 - pr.timer / 0.8; g.globalAlpha = 0.35 + 0.5 * k; g.strokeStyle = '#ff6b4a'; g.lineWidth = 1; g.beginPath(); g.ellipse(rx, ry - 1, 10 - k * 3, 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
+      if (Math.abs(P.x - pr.x) < 230 && pr.timer < (pr.tellT || 0.8)) { const k = 1 - pr.timer / (pr.tellT || 0.8); g.globalAlpha = 0.35 + 0.5 * k; g.strokeStyle = '#ff6b4a'; g.lineWidth = 1; g.beginPath(); g.ellipse(rx, ry - 1, 10 - k * 3, 3, 0, 0, Math.PI * 2); g.stroke();
+        if (pr.lane) { const ly = pr.lane - cy, y0 = Math.round(pr.y - cy) + 4; g.beginPath(); g.ellipse(rx, ly - 1, 12 - k * 3, 3, 0, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#ff6b4a'; g.globalAlpha = 0.4 + 0.5 * k;
+          for (let yy = y0 + ((time * 60) % 8); yy < ly - 6; yy += 8) g.fillRect(rx - 1, Math.round(yy), 2, 4); }   /* THE ORE ROAD: where it crosses the cable, and the fall line down to it, marching */
+        g.globalAlpha = 1; } }
     else if (pr.t === 'brazier') g.drawImage(PROP.brazier[pr.lit ? 1 : 0], Math.round(pr.x) - 7 - cx, Math.round(pr.y) - 16 - cy);
     else if (pr.t === 'crank') { g.drawImage(PROP.crank, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 14 - cy);
       if (pr.raftCall) { g.fillStyle = 'rgba(10,8,20,0.85)'; g.fillRect(Math.round(pr.x - cx) - 31, Math.round(pr.y - cy) - 46, 62, 12); text('CALL RAFT', pr.x - cx, pr.y - 38 - cy, '#ffe6a0', 'center', 6); } }

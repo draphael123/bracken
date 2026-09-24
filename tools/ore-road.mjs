@@ -120,6 +120,76 @@ for (const l of C.lines) {
   const fresh = [...mine].filter(t => !seen.has(t) && !bosses.has(t));
   ok(fresh.length >= 3, `it brings ${fresh.length} creatures the game had never fought, and not one of them is its boss: ${fresh.join(', ')}`); }
 
+/* ---- EVERY CHECKPOINT STANDS ON THE FLOOR (Daniel's playtest, 2026-09-25: "a checkpoint lamp standing on a heap of rubble,
+   not sitting on the floor"). FIX THE RULE, NOT THE ROW: two halves, and both are checked for every checkpoint in the level.
+   THE FLOOR: the three tiles under its 20 px base are all footing (rock or plank - never a rope, never air), the three it
+   stands in are clear, and nothing else stands in them. THE MARKER: the level's own checkpoint drawing (main.js shrineKind,
+   rendered here from src/art.js) has a FLAT FOOT - its last row is one unbroken run at least 12 px wide - so what you see
+   sits on the floor and is not a pile of stones balanced on it. The crag cairn this level used fails the second half at
+   every one of its checkpoints, which is what Daniel saw. */
+{ const { install } = await import('./node-canvas.mjs'); install();
+  const ARTM = await import('../src/art.js'), MAINS = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const kind = /function shrineKind\(\) \{[^\n]*\n\s*if \(L\.oreRoad\) return '(\w+)'/.exec(MAINS)?.[1] || 'crag';
+  const cv = ARTM.bakeShrineKind(kind, false), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+  let run = 0, best = 0; for (let x = 0; x < cv.width; x++) { if (d[((cv.height - 1) * cv.width + x) * 4 + 3] > 0) { run++; best = Math.max(best, run); } else run = 0; }
+  const bad = [];
+  for (const e of L.ents.filter(q => q.t === 'check')) {
+    const why = [];
+    for (const dx of [-1, 0, 1]) { const u = at(e.x + dx, e.y + 1); if (!(u === T.SOLID || u === T.PLANK || u === T.ONEWAY)) why.push(`no floor under column ${e.x + dx}`); if (at(e.x + dx, e.y) !== T.AIR) why.push(`column ${e.x + dx} is not clear`); }
+    const crowd = L.ents.filter(q => q !== e && q.t === 'deco' && Math.abs(q.x - e.x) <= 1 && q.y === e.y); if (crowd.length) why.push('a ' + crowd[0].kind + ' in its base');
+    if (best < 12) why.push(`its marker ('${kind}') has no flat foot (${best} px)`);
+    if (why.length) bad.push(`${e.x},${e.y}: ${why.join(', ')}`); }
+  ok(!bad.length, `every checkpoint (${L.ents.filter(q => q.t === 'check').length}) stands on a flat floor under its whole base, and its marker ('${kind}') sits on it with a flat foot ${best} px wide` + (bad.length ? ` - ${bad.length} do not: ` + bad.slice(0, 4).join('; ') : '')); }
+
+/* ---- ONE VAST CAVERN (Daniel's playtest, 2026-09-25): no sky, a rock ceiling that never comes down into anybody's jump, lamps
+   to pool the dark around, and seams you can mine that never stand in the way */
+{ const P0 = L.palette || {}, lum = c => 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2];
+  ok(L.dark >= 0.2 && L.night && P0.sky.every(c => lum(c) < 40) && (L.ambient || []).every(a => a.kind === 'cave'), `underground: the engine's dark at ${L.dark}, a black sky, the cave's own ambience (no wind)`);
+  const use = new Array(L.W).fill(L.H);
+  for (let x = 0; x < L.W; x++) for (let y = 1; y < L.H; y++) if (footing(at(x, y)) && !footing(at(x, y - 1))) { use[x] = y - 1; break; }
+  for (const l of cableLines()) for (let x = Math.ceil(Math.min(l.pts[0][0], l.pts[l.pts.length - 1][0]) / TS); x * TS <= Math.max(l.pts[0][0], l.pts[l.pts.length - 1][0]); x++) { const y = lineYAt(l, x * TS + 8); if (y !== null) use[x] = Math.min(use[x], Math.floor((y - OR.BUCKET.hang - 10) / TS)); }
+  const HEAD = 5;   /* a jump rises 3 rows (51 px) and a hero is a row and a bit tall: rock nearer than 5 rows is rock he is drawn inside */
+  let low = null; for (let x = 0; x < L.W; x++) for (let k = -5; k <= 5; k++) { const c = x + k; if (c < 0 || c >= L.W) continue; if (L.ceil[x] > 0 && L.ceil[x] > use[c] - HEAD) low = low || `column ${x} (row ${L.ceil[x]}) over something at ${c},${use[c]}`; }
+  ok(L.ceil.length === L.W && !low, `the ceiling keeps at least ${HEAD} rows over everything anyone uses within five columns (it keeps ${OR.CEIL_GAP}) - a jump never reaches it` + (low ? ' - it does not at ' + low : ''));
+  const fl = L.ents.filter(e => e.t === 'bat' || e.t === 'harpy' || e.t === 'crow');
+  ok(!L.ents.some(e => e.t === 'crow') && fl.every(e => e.y > L.ceil[e.x]), `the ${fl.length} fliers are under the rock (and a crow is a bat down here)`);
+  ok(L.ents.filter(e => e.t === 'rockfall').every(e => e.y === L.ceil[e.x] + 1), 'every rockfall hangs from the ceiling\'s underside: they fall from the stalactites');
+  const lamps = L.ents.filter(e => e.t === 'minerlamp'), badL = lamps.filter(e => !(footing(at(e.x, e.y + 1)) && at(e.x, e.y + 1) !== T.NET && at(e.x, e.y) === T.AIR));
+  ok(lamps.length >= 20 && !badL.length, `${lamps.length} pit lamps, every one standing on a floor` + (badL.length ? ' - not ' + badL.map(e => e.x).join(',') : ''));
+  const V = L.veins || [], badV = V.filter(v => !(at(v.x, v.y) === T.AIR && at(v.x, v.y - 1) === T.AIR && footing(at(v.x, v.y + 1)) && at(v.x, v.y + 1) !== T.NET) || L.ents.some(e => e.t !== 'coin' && e.x === v.x && e.y === v.y));
+  ok(V.length >= 12 && !badV.length, `${V.length} seams to mine, each in the back wall over a floor its spill lands on, standing in nobody's way (the cell in front is clear and holds nothing)` + (badV.length ? ' - not ' + badV.map(v => v.x + ',' + v.y).join(' ') : ''));
+  ok(OR.VEIN_HITS === 3 && V.every(v => v.coins === OR.VEIN_COINS) && /total \+= \(L\.veins \|\| \[\]\)\.reduce/.test(readFileSync(new URL('../src/main.js', import.meta.url), 'utf8')), `three blows a seam, ${OR.VEIN_COINS} coins each, and main.js counts them into the level's total the way it counts a crate's`); }
+
+/* ---- THE PIT (Daniel's playtest, item 5): nowhere on the road can a fall reach the bottom of the level any more. Every column
+   from the yard to the drum house, dropped down from the top, meets something - a floor, a ledge, or a span's spike bed - and
+   every spike bed has its turbines, a recovery ledge on the wall at the START of its span, a clear path for the lift from any
+   point of the bed to that ledge, and a ladder from the ledge whose top is level with the deck the span starts from. (The page
+   half - that it costs a fifth, never a life, and carries you there - is tools/ore-ride.mjs.) */
+{ let hole = null;
+  for (let x = 0; x < OR.ARENA.x0 && !hole; x++) { if (L.pits.some(q => !q.bed && x >= q.x0 && x <= q.x1)) continue;   /* under a ride the pit's own floor catches you (orePitStep) */
+    let y = 0; while (y < L.H && at(x, y) === T.AIR || (y < L.H && at(x, y) === T.NET)) y++; if (y >= L.H) hole = x; }
+  ok(!hole, 'no fall anywhere from the yard to the drum house reaches the bottom of the level' + (hole !== null ? ' - column ' + hole + ' falls through' : ''));
+  for (const q of L.pits) { const why = [];
+    for (let x = q.x0; x <= q.x1; x++) if (q.bed ? (at(x, q.floor) !== T.SPIKE || at(x, q.floor + 1) !== T.SOLID) : [...Array(L.H - q.floor).keys()].some(k => at(x, q.floor + k) !== T.AIR)) { why.push((q.bed ? 'no spike bed at ' : 'tiles in the pit floor at ') + x); break; }
+    if (!(q.turbines.length >= 6 && q.turbines.every(t => t > q.x0 && t < q.x1) && q.turbines.every((t, i) => !i || t - q.turbines[i - 1] <= OR.TURBINE_EVERY))) why.push('turbines');
+    const [l0, l1, lr] = q.ledge; if (!(at(l0, lr + 1) === T.SOLID && at(l1, lr + 1) === T.SOLID && at(l0 + 1, lr) !== T.SOLID)) why.push('ledge');
+    const [lx, ly0, ly1] = q.ladder; for (let y = ly0; y <= ly1; y++) if (at(lx, y) !== T.NET) { why.push('ladder broken at ' + y); break; }
+    if (ly1 !== lr || !(lx >= l0 && lx <= l1)) why.push('the ladder does not stand on the ledge');
+    if (!(ly0 === q.start[1] + 1 && footing(at(q.start[0], q.start[1] + 1)) && Math.abs(lx - q.start[0]) === 1)) why.push('the ladder\'s top is not level with the start deck beside it');
+    const hover = lr - 1; for (let x = Math.min(q.x0, l0); x <= q.x1 && !why.length; x++) { for (let y = hover; y < q.floor; y++) if (at(x, y) === T.SOLID && !(x >= l0 && x <= l1)) { why.push(`the lift's path is blocked at ${x},${y}`); break; } }
+    ok(!why.length, `the ${q.id} pit (${q.x0}-${q.x1}): a spike bed under all of it, ${q.turbines.length} turbines, a recovery ledge at ${l0}-${l1} and a ladder home to ${q.start}` + (why.length ? ' - ' + why.slice(0, 3).join('; ') : '')); }
+  const M = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  ok(/Math\.min\(Math\.round\(P\.maxHp \* OR\.PIT_BITE\), P\.hp - 1\)/.test(M) && OR.PIT_BITE === 0.2, 'the pit takes a fifth of your health and never the last point of it (straight off, not through the difficulty\'s scaling)'); }
+
+/* ---- EVERY FALLING ROCK IS TOLD (Daniel's playtest): a second of warning, never begun off screen, and over the gorge the
+   ring is on the cable a rider is on, not a hundred feet under it. (The page half - that each one really falls in view - is
+   tools/ore-ride.mjs.) */
+{ const rf = L.ents.filter(e => e.t === 'rockfall'), C0 = cableLines();
+  const noLane = rf.filter(e => C0.some(l => { const y = lineYAt(l, e.x * TS + 8); return y !== null && y > (e.y + 1) * TS; }) && !(e.lane > 0));
+  ok(rf.length >= 5 && rf.every(e => e.tell >= 0.9 && e.seen) && !noLane.length, `every one of the ${rf.length} rockfalls is told for ${OR.ROCK_TELL} s, only on screen, and marked on the cable it crosses` + (noLane.length ? ' - not ' + noLane.map(e => e.x).join(',') : ''));
+  const MS = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  ok(/if \(pr\.timer <= 0 && pr\.seenT < \(pr\.tellT \|\| 0\.8\)\) pr\.timer = pr\.every/.test(MS) && /if \(pr\.lane\)/.test(MS), 'and main.js honours all three (a beat whose spot was not on screen for its whole tell does not fall, and the ring on the lane)'); }
+
 /* ---- A12: EVERY TIPPING FRAME HAS A FLOOR UNDER THE GOBLIN AND A FLOOR UNDER HIS STREAM. The Tippler's whole
    attack is a column of ore going straight down, so a tippler over open gorge is an attack the room cannot give. */
 { const DROP = 15;   /* TIPPLER.drop in main.js is 230 px, which is fourteen rows and a bit */
@@ -154,20 +224,21 @@ for (const l of C.lines) {
   ok(l.cracked === 3 && hole < JUMP - 6, `on the steep line every ${l.cracked}rd bucket is rust, and the hole to the next is ${hole} px against a ${Math.round(JUMP)} px running jump`);
   ok(OR.CRACK >= 0.8 && OR.CRACK <= 1.2, `a rusted one holds you ${OR.CRACK} s: long enough to see it shake, short enough to matter`); }
 
-/* ---- THE DRUM HOUSE (brief section 6): THREE HOUSINGS ON TWO LINES, AND NO JUMP REACHES ANY OF THEM. The old room's reach
-   problem was arithmetic, not taste, so this is arithmetic too: a cell a hero can stand on (a tile with air over it, or a skip
-   on either drum line, loaded or emptied) reaches a housing if it is no more than 3 rows under it and 4 tiles across (the 51 px
-   jump), or above it and 6 across (a fall carries further). Nothing in the room may. */
+/* ---- THE DRUM HOUSE: THREE HOUSINGS ON TWO LINES, AND - ROUND TWO, Daniel's playtest - A LADDER UP ONTO EVERY ONE. He is a man
+   you can climb up to and fight now: each housing has a ladder from its ledge whose top is level with the housing's surface, and
+   each ledge a rope up to it from the spoil (or it is the deck's own). The drum's mouth is still on the ledge, for the jam. */
 const AR = OR.ARENA;
 { ok(AR.housings.length === 3 && new Set(AR.housings.map(h => h.id)).size === 3, 'THREE HOUSINGS: ' + AR.housings.map(h => h.name).join(', '));
   const lines = C.lines.filter(l => l.drum);
   ok(lines.length === 2 && AR.housings.every(h => lines.some(l => l.id === h.line)), 'on the room\'s two drum lines, and every housing has its drum on one of them');
-  const cells = [];
-  for (let x = AR.x0; x < AR.x1; x++) for (let y = 1; y < L.H; y++) if (footing(at(x, y)) && !footing(at(x, y - 1)) && !AR.housings.some(h => x >= h.x0 && x <= h.x1 && y === h.top + 1)) cells.push([x, y - 1, 'tile']);
-  ok(/m\.ore && !m\.fallen && rider && keys\.down && !ln\.drum/.test(readFileSync(new URL('../src/main.js', import.meta.url), 'utf8')), "a drum line's skips cannot be tipped, so they never ride high: an emptied one would put a jump onto a housing");
-  for (const l of lines) for (let x = l.pts[0][0]; x <= l.pts[l.pts.length - 1][0]; x += 8) for (const lift of [0]) cells.push([Math.floor(x / TS), Math.floor((lineYAt(l, x) - lift - 1) / TS), l.id]);
-  for (const h of AR.housings) { const bad = cells.find(([x, r]) => { const dx = x < h.x0 ? h.x0 - x : x > h.x1 ? x - h.x1 : 0; return r >= h.top ? (r - h.top <= 3 && dx <= 4) : dx <= 6; });
-    ok(!bad && at(h.x0, h.top + 1) === T.SOLID && at(h.x1, h.top + 1) === T.SOLID, `${h.name} (row ${h.top}, columns ${h.x0}-${h.x1}): no footing in the room reaches it` + (bad ? ` - ${bad[2]} at ${bad[0]},${bad[1]} does` : ''));
+  ok(/m\.ore && !m\.fallen && rider && keys\.down && !ln\.drum/.test(readFileSync(new URL('../src/main.js', import.meta.url), 'utf8')), "a drum line's skips cannot be tipped (every one of them is loaded, for the jam)");
+  for (const h of AR.housings) { const [lx, ly0, ly1] = h.ladder, why = [];
+    for (let y = ly0; y <= ly1; y++) if (at(lx, y) !== T.NET) { why.push('broken at row ' + y); break; }
+    if (!(lx === h.x0 - 1 || lx === h.x1 + 1)) why.push('not beside the housing');
+    if (ly0 !== h.top + 1 || at(lx + (lx < h.x0 ? 1 : -1), h.top + 1) !== T.SOLID) why.push('its top is not level with the housing');
+    if (ly1 !== AR.spoil || at(lx, ly1 + 1) !== T.SOLID) why.push('its foot is not on the spoil');
+    if (lx >= h.ledge[0] && lx <= h.ledge[1]) why.push('it stands on the mouth\'s ledge (the gauntlet the lab could not climb)');
+    ok(at(h.x0, h.top + 1) === T.SOLID && at(h.x1, h.top + 1) === T.SOLID && !why.length, `${h.name}: a ladder straight up onto it from the spoil (column ${lx}, rows ${ly0}-${ly1}), beside the drum's mouth and not through it` + (why.length ? ' - ' + why.join('; ') : ''));
     ok(h.ledgeTop - h.top === 4 && at(h.ledge[0], h.ledgeTop + 1) === T.SOLID && at(h.ledge[1], h.ledgeTop + 1) === T.SOLID, `and its ledge (${h.ledge[0]}-${h.ledge[1]}, row ${h.ledgeTop}) is four rows under it: where a jam throws him`);
     const l = lines.find(q => q.id === h.line), end = h.at === 'end' ? l.pts[l.pts.length - 1] : l.pts[0];
     ok(Math.floor(end[0] / TS) >= h.ledge[0] && Math.floor(end[0] / TS) <= h.ledge[1] && Math.abs(end[1] - (h.ledgeTop + 1) * TS) < 1, `and the ${l.id} line's ${h.at} is ON that ledge, at its height: the drum's mouth is where the ride ends`); } }
@@ -186,7 +257,7 @@ console.log('\nTHE WINCHMASTER');
 function world(o = {}) {
   const Cw = makeCableway(cableLines()), log = [], lines = Cw.lines;
   const H = AR.housings.map(Hs => { const ln = lines.find(l => l.id === Hs.line), p = ln.pts, near = Hs.at === 'end' ? p[p.length - 1] : p[0], far = Hs.at === 'end' ? p[0] : p[p.length - 1];
-    return { id: Hs.id, name: Hs.name, homeX: Hs.home * TS, topY: (Hs.top + 1) * TS, ledgeX: (Hs.at === 'end' ? Hs.ledge[1] + 0.5 : Hs.ledge[0] + 0.5) * TS, ledgeY: (Hs.ledgeTop + 1) * TS, drumX: near[0], mouthY: near[1], away: Math.sign(far[0] - near[0]) || -1, sense: Hs.at === 'end' ? 1 : -1, ln }; });
+    return { id: Hs.id, name: Hs.name, homeX: Hs.home * TS, topY: (Hs.top + 1) * TS, px0: Hs.x0 * TS, px1: (Hs.x1 + 1) * TS, ledgeX: (Hs.at === 'end' ? Hs.ledge[1] + 0.5 : Hs.ledge[0] + 0.5) * TS, ledgeY: (Hs.ledgeTop + 1) * TS, drumX: near[0], mouthY: near[1], away: Math.sign(far[0] - near[0]) || -1, sense: Hs.at === 'end' ? 1 : -1, ln }; });
   const P = { x: 478 * TS, y: (AR.deck + 1) * TS, dead: false, ground: true, vx: 0, vy: 0 };
   const w = { lines, H, log, P, ride: null };   /* ride: { h, dist } puts the hero on housing h's line, dist px short of its drum */
   const place = () => { if (!w.ride) return; const q = H[w.ride.h]; P.x = q.drumX + q.away * w.ride.dist; P.y = lineYAt(q.ln, P.x); };
@@ -197,7 +268,9 @@ function world(o = {}) {
     lineY: (h, x) => lineYAt(H[h].ln, x), crash: () => log.push(['crash']), solidAt: (x, y) => T.SOLID === at(Math.floor(x / TS), Math.floor(y / TS)), pVel: () => [0, 0],
     riding: h => w.ride && w.ride.h === h ? { coming: H[h].ln.dir * H[h].sense > 0 && !(H[h].ln.jam > 0), dist: w.ride.dist } : null,
     atMouth: (h, r) => !P.dead && Math.abs(P.y - H[h].mouthY) < 12 && Math.abs(P.x - H[h].drumX) < r,
-    seen: () => o.unseen ? false : true, onLine: () => false };
+    seen: () => o.unseen ? false : true, onLine: () => false, climbing: () => !!w.climbing,
+    onHousing: h => w.upOn === h && Math.abs(P.y - H[h].topY) < 3 && P.x > H[h].px0 - 4 && P.x < H[h].px1 + 4,
+    rockSpot: x => o.noRoof ? null : { x, y0: 4, gy: 208 }, dropRock: (x, y) => log.push(['rock', x, y]) };
   const e = { t: 'winchmaster', alive: true, hp: WINCH.hp, maxHp: WINCH.hp, mode: 'wake', modeT: 0.1, cd: 0, x: H[0].homeX, y: H[0].topY, face: -1, phase: 1 };
   const modes = new Set();
   Object.assign(w, { c, e, modes, place, step() { place(); updateWinchmaster(e, 1 / 60, c); modes.add(e.mode); }, run(sec) { for (let t = 0; t < sec; t += 1 / 60) w.step(); } });
@@ -248,11 +321,11 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
     if (w2.e.mode === 'stalk') { w2.e.sendCd = w2.e.hookCd = 0; w2.e.runaway = null; w2.e.hk = null; } }   /* both ready every time: only the rotation decides */
   ok(seq.length >= 6 && !/ss|hh/.test(seq.join('')), 'a rider in reach of both gets SEND and THE HOOK in turn, never one starving the other: ' + seq.join('')); }
 /* ---- PHASE TWO SENDS TWO: the second never starts on top of a rider who has reached the mouth, and a jam stops it being sent */
-{ const w = world(); w.run(0.3); w.e.phase = 2; w.e.hp = w.e.maxHp * 0.4; w.e.revCd = 99; w.e.hookCd = 99; w.e.leverCd = 99; w.ride = { h: 0, dist: 200 }; w.e.cd = 0;
+{ const w = world(); w.run(0.3); w.e.qMark = -1e9; w.e.phase = 2; w.e.hp = w.e.maxHp * 0.4; w.e.revCd = 99; w.e.hookCd = 99; w.e.leverCd = 99; w.ride = { h: 0, dist: 200 }; w.e.cd = 0;
   w.run(WINCH.tell.send + 0.1); ok(w.e.runaway && w.e.runaway.next, 'phase two: a SEND lets go two buckets, the second half a second behind');
   w.run(0.8); w.ride = { h: 0, dist: 20 }; const n0 = w.log.length; w.run(2.6);   /* the first has passed the rider; now he is at the mouth */   /* the second waits for the first to reach the far end, then half a second */
   ok(!w.log.slice(n0).some(q => q[0] === "hit" && q[1] === "A LOADED BUCKET") && !w.e.runaway, 'and a rider who has reached the mouth by then is not sent the second one on top of them');
-  const w2 = world(); w2.run(0.3); w2.e.phase = 2; w2.e.hp = w2.e.maxHp * 0.4; w2.e.revCd = 99; w2.e.hookCd = 99; w2.e.leverCd = 99; w2.ride = { h: 0, dist: 200 }; w2.e.cd = 0;
+  const w2 = world(); w2.run(0.3); w2.e.qMark = -1e9; w2.e.phase = 2; w2.e.hp = w2.e.maxHp * 0.4; w2.e.revCd = 99; w2.e.hookCd = 99; w2.e.leverCd = 99; w2.ride = { h: 0, dist: 200 }; w2.e.cd = 0;
   w2.run(WINCH.tell.send + 0.1); winchJam(w2.e, w2.c); let second = false; for (let r = w2.e.runaway; r; r = r.next) if (r.delay > 0) second = true;
   ok(!second, 'and a jam stops the second going at all: a jammed drum lets nothing go'); }
 /* ---- A TELL YOU CANNOT SEE IS NOT TOLD (A1): off the hero's screen he begins nothing - not even at a rider at his drum */
@@ -277,12 +350,44 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
     ok(n.ln.dir === n.sense, `and drives the ${n.ln.id} line INTO it`); }
   ok(order.join('') === 'BCA', 'the circuit is A -> B -> C -> A: ' + order.join(' -> '));
   ok(w.H[1].ln.dir === w.H[1].sense, 'and back on the Great Drum, the high line has been turned round from the Tail Wheel toward the Head Frame, where he goes next'); }
-/* ---- A10: PHASE TWO CHANGES SOMETHING YOU CAN NAME. Phase one: he stays on a housing until you knock him off it. Phase two:
-   he does not wait - he swings on by himself every p2Stay seconds - and every drum he drives runs a quarter faster */
-{ const w = world(); w.run(0.3); w.e.hp = w.e.maxHp * 0.6; w.run(40); ok(w.e.at === 0, 'phase one: forty seconds and he is still on the Great Drum');
-  w.e.hp = w.e.maxHp * 0.45; w.run(0.1); ok(w.e.phase === 2 && w.log.some(q => q[0] === 'say' && /STAY PUT/.test(q[1])), 'PHASE TWO, said over him: HE WILL NOT STAY PUT');
-  w.run(WINCH.p2Stay + WINCH.tell.letgo + WINCH.swingT + 2); done(w); ok(w.e.at !== 0, `and within ${WINCH.p2Stay} s he has left the Great Drum by himself, unjammed (he is on ${w.H[w.e.at].name})`);
-  ok(w.log.some(q => q[0] === 'drive' && q[2] === 1 && Math.abs(q[3] - WINCH.p2Mul) < 1e-9), `and drives his lines ${WINCH.p2Mul}x as fast`); }
+/* ---- ROUND TWO: UP ON HIS HOUSING. The brake bar sweeps its top (a shield turns it; unshielded, it throws you off toward the
+   gorge), and the hook yanks you off its EDGE, toward the drop - not toward him */
+{ const put = w => { w.upOn = 0; w.c.P.x = w.H[0].homeX - 40; w.c.P.y = w.H[0].topY; };
+  const w = world({ block: true }); w.run(0.3); put(w); w.e.cd = 0; w.e.hookCd = 9; w.run(1.2);
+  ok(w.modes.has('leverTell') && w.log.some(q => q[0] === 'hit' && q[1] === 'THE BRAKE BAR' && q[3] === false) && !w.log.some(q => q[0] === 'shove'), 'up on his housing: he comes at you and brings THE BRAKE BAR round, and a shield turns it');
+  const w2 = world(); w2.run(0.3); put(w2); w2.e.cd = 0; w2.e.hookCd = 9; w2.run(1.2); done(w2);
+  ok(w2.log.some(q => q[0] === 'shove'), 'unshielded, it throws you off his housing');
+  const w3 = world(); w3.run(0.3); put(w3); w3.c.P.x = w3.H[0].px0 + 6; w3.e.x = w3.H[0].px1 - 12;   /* he is east of you, the gorge is west: the drag goes WEST, away from him */ w3.e.cd = 0; w3.e.leverCd = 99; w3.e.sendCd = 99; w3.run(WINCH.tell.hook + 1.0);
+  ok(w3.log.some(q => q[0] === 'drag' && q[1] === w3.H[0].away), 'and THE HOOK drags you off its edge, toward the gorge (' + (w3.H[0].away > 0 ? 'east' : 'west') + ')');
+  const w4 = world(); w4.run(0.3); put(w4); w4.c.P.x = w4.e.x - 30; w4.e.cd = 0; w4.e.leverCd = 99; w4.e.sendCd = 99; w4.run(3);
+  ok(!w4.modes.has('hookTell'), "but never from arm's length: inside the bar's reach a hook would be on you before it could be read"); }
+/* ---- A CLIMBER IS LEFT TO CLIMB: on a ladder in reach of his hook and on his line, he neither hooks nor sends at you */
+{ const w = world(); w.run(0.3); w.climbing = true; w.c.P.x = w.H[0].drumX + 20; w.c.P.y = w.H[0].mouthY + 40; w.e.cd = 0; w.e.leverCd = 99; w.run(8);
+  ok(!w.modes.has('hookTell') && !w.modes.has('sendTell'), 'a hero climbing a ladder up to him is neither hooked nor sent a bucket: the climb is the crossing');
+  w.climbing = false; w.run(6); ok(w.modes.has('hookTell'), 'and the moment he is off it, the hook comes'); }
+/* ---- ROUND TWO: HE RETREATS. A quarter of his health lost on a housing and he takes the cable to the next, told; less, and he stays */
+{ const w = world(); w.run(0.3); w.e.hp = w.e.maxHp * (1 - WINCH.retreat + 0.03); w.run(3); ok(w.e.at === 0, `${Math.round((WINCH.retreat - 0.03) * 100)}% of his health gone on the Great Drum: he stays on it`);
+  w.e.hp = w.e.maxHp * (1 - WINCH.retreat - 0.01); w.run(WINCH.tell.letgo + WINCH.swingT + 0.2); done(w);
+  ok(w.e.at === 1 && w.log.some(q => q[0] === 'say' && /RETREATS/.test(q[1])), `a quarter gone: HE RETREATS - takes the cable, told, and swings on to ${w.H[1].name}`);
+  const mark = w.e.hp; w.e.hp = mark - w.e.maxHp * (WINCH.retreat + 0.01); w.run(WINCH.tell.letgo + WINCH.swingT + 0.2);
+  ok(w.e.at === 2, 'and the next quarter is counted from where he landed: another quarter, and he is on to ' + w.H[w.e.at].name);
+  const n = Math.round(1 / WINCH.retreat) - 1; ok(n >= 3 && n <= 4, `so over a whole fight he retreats ${n} times (Daniel: "3-4 times")`); }
+/* ---- ROUND TWO: THE DRUMS SHAKE ROCK LOOSE, told: every rockEvery s a rock over where you stand, told rockTell before it falls; and
+   a roof with nowhere on your screen to drop one waits (rockSpot answers null) */
+{ const w = world(); w.run(0.3); w.e.revCd = w.e.sendCd = w.e.hookCd = w.e.leverCd = 999; const t0 = [], leads = []; let told = null, n = 0;
+  for (let t = 0; t < 30 * 60; t++) { w.step(); if (w.e.rocks && w.e.rocks.length && told === null) told = t; const m = w.log.filter(q => q[0] === 'rock').length; if (m > n) { n = m; t0.push(t); leads.push(told === null ? 0 : (t - told) / 60); told = null; } }
+  ok(leads.length && leads.every(l => l >= WINCH.rockTell - 0.02), `every rock that falls is told first: ${leads.map(l => l.toFixed(2) + ' s').join(', ')} of dust and a ring before it drops`);
+  const gaps = t0.slice(1).map((t, i) => (t - t0[i]) / 60);
+  ok(n >= 3 && gaps.every(g => Math.abs(g - WINCH.rockEvery) < 0.2), `phase one: ${n} rocks in 30 s, one every ${WINCH.rockEvery} s (${gaps.map(g => g.toFixed(1)).join(', ')})`);
+  const w2 = world({ noRoof: true }); w2.run(20); ok(!w2.log.some(q => q[0] === 'rock'), 'with nowhere on the screen for one to land, the roof waits'); }
+/* ---- A10: PHASE TWO CHANGES SOMETHING YOU CAN NAME: "at half health he drives the drums harder - every line runs a quarter faster,
+   he lets two buckets go at a time, and the drums shake rock off the roof twice as often" */
+{ const w = world(); w.run(0.3); w.e.revCd = w.e.sendCd = w.e.hookCd = w.e.leverCd = 999; w.e.qMark = -1e9; w.e.hp = w.e.maxHp * 0.45; w.run(0.1);
+  ok(w.e.phase === 2 && w.log.some(q => q[0] === 'say' && /DRIVES THE DRUMS HARDER/.test(q[1])), 'PHASE TWO, said over him: HE DRIVES THE DRUMS HARDER');
+  const t0 = []; let n = 0; for (let t = 0; t < 20 * 60; t++) { w.step(); const m = w.log.filter(q => q[0] === 'rock').length; if (m > n) { n = m; t0.push(t); } }
+  const gaps = t0.slice(1).map((t, i) => (t - t0[i]) / 60);
+  ok(gaps.length >= 3 && gaps.every(g => Math.abs(g - WINCH.rockEveryP2) < 0.2) && WINCH.rockEveryP2 * 2 === WINCH.rockEvery, `the roof comes down twice as often (every ${WINCH.rockEveryP2} s: ${gaps.map(g => g.toFixed(1)).join(', ')})`);
+  ok(w.log.some(q => q[0] === 'drive' && q[2] === 1 && Math.abs(q[3] - WINCH.p2Mul) < 1e-9), `and every line he drives runs ${WINCH.p2Mul}x as fast (the two buckets a SEND are checked above)`); }
 /* ---- A12: THE ROOM SUPPLIES WHAT THE ATTACKS ASSUME, read off the room and not off this file's hopes */
 { const H = world().H;
   ok(H.every(q => Math.abs(q.mouthY - q.ledgeY) < 1), 'THE BRAKE BAR lands at the drum\'s mouth, and every mouth has its ledge at the line\'s own height: there is somewhere to be barred and somewhere to shield it');
