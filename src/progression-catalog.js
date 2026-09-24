@@ -2728,7 +2728,7 @@ export const LEGACY_NODES = [
     "col": 1,
     "name": "SPEARHEAD",
     "max": 1,
-    "desc": "every third thrust of a run IS a run-through, with no winding up at all",
+    "desc": "two thrusts into a run, the run-through needs no winding up: hold the third and she goes at once",
     "parent": "driveHome",
     "active": false,
     "cap": true,

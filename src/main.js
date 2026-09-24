@@ -5579,7 +5579,7 @@ const inJet = (x, y, pad = 6) => { const j = jetBox(); return !!j && x > j.l - p
 // pyromancer gathers the flame back low, the paladin stands the maul straight up. Let go and it lands. It
 // costs twice the stamina of a swing, it goes through a guard, and it is slower than mashing on purpose.
 const HEAVY_START = 0.14;                                     // how long the key is down before the wind-up shows
-const heavyWind = () => isPirate() && (P.hotT || 0) > time ? 0.04 : 0.32 - 0.05 * Math.max(0, tal('heavy') - 1); // and how long the wind-up itself takes (HOT BARREL: next to none)
+const heavyWind = () => (isPirate() && (P.hotT || 0) > time) || spearheadReady() ? 0.04 : 0.32 - 0.05 * Math.max(0, tal('heavy') - 1); // and how long the wind-up itself takes (HOT BARREL: next to none)
 const heavyMul = () => 2 + 0.15 * Math.max(0, tal('heavy') - 1);
 const heavyCost = () => Math.round((isPaladin() ? 22 : sword().cost) * 2.2);
 const PISTOL_RELOAD = 8;                          // it loads itself in eight seconds, or the moment gold reaches him
@@ -6605,7 +6605,7 @@ function updatePlayer(dt) {
   // LUNGE: a dashing thrust through everything in front
   if (skillPress('lunge') && cdReady('lunge') && canAct()) { if (spend(18)) { cdSet('lunge'); kitPose(P, 'lunge', 0.3); P.lungeT = 0.2; P.lungeHit = new Set(); P.atk = -1; P.block = false; P.inv = Math.max(P.inv, 0.25); SFX.slash(); SFX.throwWhoosh(); streaks(P.x, P.y - 9, 8, ['#fff6e0', '#c9d1dc'], 200); } else tired(); }
   if (P.lungeT > 0) { P.lungeT -= dt; P.vx = P.face * 470; ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.14, frame: 1 });
-    for (const e of enemies) if (e.alive && !e.harmless && !P.lungeHit.has(e) && overlap({ l: P.x - 12, r: P.x + 12, t: P.y - 20, b: P.y }, box(e))) { P.lungeHit.add(e); hurtAs('dash', e,Math.round((swordDmg() + 4) * 0.5 * amul('lunge')), P.x, false); sparks(e.x, e.y - e.h / 2, P.face, 8); hitstop(0.04); } }   /* LUNGE, 2026-09-24: it went through everyone in front for 1.4x a hit, ~6 damage a stamina against 0.8-3 for every other skill - it does not cost more for hitting three foes and its cooldown is the shortest in the game (3s). Cut to 0.65x here rather than raising its 18-stamina cost or its cooldown, which would also blunt the quick in-and-out dash it is built to be; skill-balance-probe.mjs re-measures it every run */
+    for (const e of enemies) if (e.alive && !e.harmless && !P.lungeHit.has(e) && overlap({ l: P.x - 12, r: P.x + 12, t: P.y - 20, b: P.y }, box(e))) { P.lungeHit.add(e); hurtAs('dash', e,Math.round((swordDmg() + 4) * 0.5 * amul('lunge')), P.x, false); sparks(e.x, e.y - e.h / 2, P.face, 8); hitstop(0.04); } }   /* LUNGE, 2026-09-24: it went through everyone in front for 1.4x a hit, ~6 damage a stamina against 0.8-3 for every other skill - it does not cost more for hitting three foes and its cooldown is the shortest in the game (3s). Cut to 0.5x here (~3.2 a stamina) rather than raising its 18-stamina cost or its cooldown, which would also blunt the quick in-and-out dash it is built to be; skill-balance-probe.mjs re-measures it every run */
   // WAR CRY: they fall back, you get your wind, and for a while everything lands lighter
   if (skillPress('warCry') && cdReady('warCry') && !P.dead && !(P.asleep > 0)) { cdSet('warCry'); if (canAct()) kitPose(P, 'cry', 0.55); P.st = Math.min(P.maxSt, P.st + 30 + 10 * (tal('warCry') - 1)); P.cryT = 4; SFX.bellow(); SFX.roar(); shakeCam(4); ringAt(P.x, P.y - 10, 90, '#ff9a5c', 0.45);
     for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 90 && Math.abs(e.y - P.y) < 50) { if (e.maxHp) e.stagger = Math.max(e.stagger || 0, 0.3); else { e.stagger = Math.max(e.stagger || 0, 1.2); e.vx = (Math.sign(e.x - P.x) || 1) * 160; startle(e); } } }
@@ -19155,6 +19155,11 @@ function gasBlast(x, y) { // the whole chamber goes up: fire along the floor, an
 /* A RUN IS COUNTED FROM THE END OF THE LAST SWING, not its start. Timed from the start, the Death Knight's swing (0.9 s)
    outlasted the whole window, so he could never reach the third cut the rest of the game is built on. */
 const inRun = () => time - (P.swingEndT ?? -9) < 0.45 || time - (P.lastSwingT ?? -9) < 0.75 || time < (P.runHoldT ?? -9);   /* (UNBROKEN and HAUL AND CUT hold a run open) */
+/* SPEARHEAD (her capstone, rescoped 2026-09-24 the VAULTER way): two thrusts into a run, the run-through needs next to no winding up -
+   HOLD the third and she goes at once. It used to make every third TAP a run-through by itself, and a passive that arrives
+   automatically by level must not take over the attack button: a warden who waits at the tip's distance was being carried
+   forward into what she was spacing. A tapped third thrust is a thrust again. */
+const spearheadReady = () => isWarden() && tal('spearhead') && inRun() && ((P.combo || 0) % 3 === 2 || (!!P.heavySwing && !P.heavy));   /* two thrusts landed, or the third already going: the button held on the third */
 /* THE FIRE REMEMBERS WHAT IT HIT: every landed blow warms the coals; empty air does not. Repeating a useful blow still pays, and a burn keeps the four-second grace alive. */
 const HEAT = { hit: 12, jet: 4, burn: 1.5, grace: 4, drain: 3, varietyFloor: 0.85 };
 function coolHeat(dt) {
@@ -19550,9 +19555,7 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
   const ripHeavy = hero() === 'knight' && P.riposteT > 0 && !!P.riposteHeavy; if (ripHeavy) P.combo = Math.ceil(P.combo / 3) * 3;
   P.heavySwing = P.combo % 3 === 0; const rip = P.riposteT > 0; P.swingRiposte=!!rip;
   if (hero() === 'knight' && P.realmT > 0 && (P.ground || P.swim)) realmWave(P.heavySwing || P.heavy);   /* SWORD OF THE REALM: every swing sends light along the floor, a third or heavy one a great wave */
-  /* SPEARHEAD (her capstone): the third thrust of a run IS the run-through, and she never wound it up. The lunge's own
-     flag goes on with it, so the deep box, the drive and everything that reads the lunge all see the same blow. */
-  if (isWarden() && P.heavySwing && !P.heavy && tal('spearhead')) { P.heavy = true; P.runThrough = true; P.rtHit = null; P.rtWound = 1; P.vx = P.face * 40; SFX.heavy(); }   /* and it lunges the whole way: she never wound it, so it is given the full wind */
+  /* (SPEARHEAD no longer turns the tapped third thrust into a run-through: see spearheadReady, by inRun) */
   if (P.heavySwing && (P.ground || P.swim) && isPaladin() && tal('aftershock') && !P.heavy) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 1.5 : 0.9) * (P.ground ? 1 : 0.7), sp: 200, hit: new Set(), water: !P.ground }); shakeCam(4); SFX.stone(); number(P.x, P.y - 30, 'AFTERSHOCK', '#ffe6a0'); }   /* AFTERSHOCK */
   if (P.heavySwing && P.combo >= 6 && hero() === 'knight' && tal('unbroken')) number(P.x, P.y - 32, 'UNBROKEN ' + P.combo, '#fff6e0');
   P.swingMul = (P.heavySwing ? 1.5 + 0.25 * tal('thirdCut') : 1) * (rip && (!ripHeavy || tal('riposte')) ? 2 : 1);
