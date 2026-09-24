@@ -7530,9 +7530,16 @@ function dressLevel(L, id) {
   const clear = (x, y) => keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 7 || Math.abs(py - y) > 4);
   const wet = (x, y) => (L.pools || []).some(p => (p.shallow || p.harm) && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // in a WADING pool, not by it: a fish trap wants a bank. Coral belongs under the sea, so a swim pool is not a reason to leave a floor bare
   const stoneAt = (x, y) => (L.stone || []).some(z => x >= z[0] - 1 && x <= z[1] + 1 && y >= z[2] - 1 && y <= z[3] + 1);
+  // A PLANK IS A FLOOR ONLY WHEN SOMETHING IS UNDER IT. A one-tile bridge board reads as ground the same as a
+  // mountain by this test, so the sprinkler dressed the Monastery's own rope bridge with a standing stone and a
+  // stack of masonry over open sky (tools/floaters.mjs, "sand castles" - a heavy prop with nothing under it for
+  // six rows reads as floating, not resting). A bridge over a short drop is still a floor; six is the Monastery's
+  // own bell-tower floors' clearance plus two, so a real floor never trips it.
+  const PLANK_DROP = 6;
+  const plankFloats = (x, y) => { let d = 0, yy = y + 1; while (d < PLANK_DROP && at(x, yy) === T.AIR) { d++; yy++; } return d >= PLANK_DROP; };
   for (let y = 2; y < H - 1; y++) for (let x = 2; x < W - 2; x++) {
     // open ground three tiles wide with three rows of air over it
-    let ok = true; for (let dx = -1; dx <= 1 && ok; dx++) { const b = at(x + dx, y + 1); if (b !== T.SOLID && b !== T.PLANK) ok = false; for (let dy = 0; dy < 3 && ok; dy++) if (at(x + dx, y - dy) !== T.AIR) ok = false; }
+    let ok = true; for (let dx = -1; dx <= 1 && ok; dx++) { const b = at(x + dx, y + 1); if (b !== T.SOLID && b !== T.PLANK) ok = false; else if (b === T.PLANK && plankFloats(x + dx, y + 1)) ok = false; for (let dy = 0; dy < 3 && ok; dy++) if (at(x + dx, y - dy) !== T.AIR) ok = false; }
     /* L.noDress: boxes [x0, x1, y0, y1] in tiles that get nothing (a lamp gallery is a floor by the tile rule, and it grew a mooring post) */
     if (!ok || rnd() > (id === 'marsh' || id === 'moor' ? 0.4 : id === 'wood' || id === 'spore' ? 0.3 : 0.2) || wet(x, y) || stoneAt(x, y) || !clear(x, y) || (L.interiors || []).some(([a, b, c, d]) => x >= a - 1 && x <= b + 1 && y >= c - 7 && y <= d + 1) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d) || (L.noDress || []).some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
     const [kind, nv] = set[(rnd() * set.length) | 0], v = nv ? (rnd() * nv) | 0 : 0;
