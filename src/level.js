@@ -17,6 +17,11 @@ import { buildUnburiedField } from './unburied-field.js';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
 export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17, CRYST: 18 };
+/* THE SLOPES, ids 20-25 (docs/slopes-integration.md). A slope is a floor whose height varies across the tile, and it is
+   NEITHER solid nor a one-way: isSolid and isOneWay in main.js do not name these ids and must not learn them. R rises to
+   the RIGHT; 1 is steep (one row a tile), 2 is gentle (a row over two tiles, A the low half and B the high half).
+   src/slopes.js keeps its own SLOPE table and tools/slopes.mjs asserts the two agree, so neither can drift. */
+Object.assign(T, { SLOPE_R1: 20, SLOPE_L1: 21, SLOPE_R2A: 22, SLOPE_R2B: 23, SLOPE_L2A: 24, SLOPE_L2B: 25 });
 
 function painter(W, H) {
   const grid = new Uint8Array(W * H), ents = [];
