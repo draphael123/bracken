@@ -667,37 +667,59 @@ async function runbossLab(BK, opts) {
         const hk=boss.hk&&boss.hk.st==='out'?boss.hk:null,hkNear=(hk&&Math.hypot(hk.x-P.x,hk.y-(P.y-9))<46)||(m==='hookTell'&&boss.modeT<0.1&&Math.hypot(boss.x-P.x,boss.y-P.y)<90);
         const rw=boss.runaway&&!(boss.runaway.delay>0)?boss.runaway:null;let rwNear=false;
         if(rw){const q=HS[rw.at],ln=BK.L.cableway.lines.find(l=>l.id===q.line),p=ln.pts,n=q.at==='end'?p[p.length-1]:p[0],f2=q.at==='end'?p[0]:p[p.length-1],x=n[0]+(Math.sign(f2[0]-n[0])||-1)*rw.s;rwNear=Math.abs(x-P.x)<56&&Math.abs(P.y-n[1])<16;}
-        const ring=(boss.rocks||[]).find(r=>Math.abs(r.x-P.x)<16&&Math.abs(r.gy-P.y)<8);
+        const ring=(boss.rocks||[]).find(r=>Math.abs(r.x-P.x)<16&&Math.abs(r.gy-P.y)<8)||((m==='leapTell'||m==='leap')&&boss.leapTo!==undefined&&onTop(boss.leapTo)&&Math.abs(P.x-HS[boss.leapTo].home*TZ)<34?{x:HS[boss.leapTo].home*TZ,gy:P.y}:null);   /* (and the ring he will land on) */
         let busy=false;
         if((hkNear||rwNear)&&(P.ground||P.climb)){BK.press('jump');P.labJump=12;busy=true;}
         /* THE BAR lands at his drum's mouth (his ledge) and on his housing top: shield it on the ground, or jump it as it comes */
         const mq=HS[boss.at||0],mouthY=(mq.ledgeTop+1)*TZ,mouthX=mq.at==='end'?mq.ledge[0]*TZ:(mq.ledge[1]+1)*TZ;
         const barHere=(Math.abs(P.y-mouthY)<14&&Math.abs(P.x-mouthX)<72)||(onTop(boss.at||0)&&Math.abs(P.x-boss.x)<62);
         if(m==='leverTell'&&barHere&&!P.climb){busy=true;if(SHIELDED(h)&&P.ground){k.block=true;P.face=Math.sign(boss.x-P.x)||1;}else if(boss.modeT<0.22&&P.ground){BK.press('jump');P.labJump=14;}}
-        if(!busy&&ring&&P.ground){busy=true;const side=P.x>ring.x?1:-1;go(ring.x+side*24);}
+        if(!busy&&ring&&P.ground){busy=true;const side=P.x>ring.x?1:-1;go(ring.x+side*42);}
         if(busy){}
         else if((m==='downed'||m==='thrown')&&Math.abs(P.y-(boss.toY??boss.y))<30&&!P.climb){ /* THE BONUS WINDOW: he is down on a ledge beside you - cut */
           const lx=boss.toX??boss.x,dx=boss.x-P.x,side=Math.sign(lx-P.x)||1,d=Math.abs(lx-P.x);
           if(P.atk<0&&d>reach2-4)k[side>0?'right':'left']=true;
           if(Math.abs(dx)<reach2&&P.atk<0&&m==='downed'){P.face=Math.sign(dx)||1;BK.press('atk');swings++;} }
-        else if(on){ const ln=BK.L.cableway.lines[on.line];if(P.ground)k[ln.dir>0?'left':'right']=true; }   /* on a skip by accident: step off */
+        else if(on){ /* RIDING (round three: the room's floor is the pit, so the lines are the way round) - answer him and stay on */ }
         else if(onTop(tgt)){ /* UP WITH HIM: in to reach, and cut */
           const dx=boss.x-P.x,side=Math.sign(dx)||1;
           if(Math.abs(dx)>reach2-6)k[side>0?'right':'left']=true;
-          if(Math.abs(dx)<reach2&&Math.abs(P.y-boss.y)<30&&P.atk<0&&m!=='letgo'&&m!=='swing'){P.face=side;BK.press('atk');swings++;} }
-        else if(P.climb){ /* on a ladder or a rope: up his housing's ladder; down anything else */
-          const lad=HS.findIndex(q=>Math.abs(P.x-(q.ladder[0]*TZ+8))<6);
-          if(lad===tgt) k.up=true;   /* past the mouth without stopping: the bar's tell is longer than the climb takes to pass it */
-          else { k.down=true; if(P.y>spoilY-4){k.down=false;k[T0.ladder[0]*TZ>P.x?'right':'left']=true;} } }
+          if(Math.abs(dx)<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='letgo'&&m!=='swing'&&m!=='leap'){P.face=side;BK.press('atk');swings++;} }
+        else if(P.climb){ /* ON A LADDER: to the row this housing is reached from, and off it there */
+          const lx=Math.floor(P.x/TZ),row=y=>(y+1)*TZ;let want=null,off=0;
+          if(lx===482){ if(tgt===1){want=null;k.up=true;} else if(tgt===2){want=row(8);off=1;} else {want=row(12);off=-1;} }
+          else if(lx===509){ if(tgt===0)k.up=true; else k.down=true; }
+          else if(lx===501){ if(tgt===2)k.up=true; else k.down=true; }
+          else k.up=true;
+          /* step off from a hair ABOVE the floor it leads to (letting go level with it drops you a few pixels short, into the pit) */
+          if(want!==null){ if(P.y<=want-2&&P.y>want-10)k[off>0?'right':'left']=true; else if(P.y>want-2)k.up=true; else k.down=true; } }
         else if(P.ground){
-          const lt=HS.findIndex((q,i)=>onTop(i)),lg=HS.findIndex((q,i)=>onLedge(i)),atTop=HS.findIndex(q=>Math.abs(P.x-(q.ladder[0]*TZ+8))<6&&Math.abs(P.y-(q.top+1)*TZ)<3);
-          if(atTop===tgt){ /* at the top of his ladder: step onto the housing */ k[T0.ladder[0]<T0.x0?'right':'left']=true; }
-          else if(lt>=0||atTop>=0){ /* up on a housing he has left: back down its ladder */ const q=HS[lt>=0?lt:atTop],lx=q.ladder[0]*TZ+8; if(Math.abs(lx-P.x)>3)go(lx);else k.down=true; }
-          else if(lg>=0){ /* on a ledge: off it, down its rope or over its gorge edge */ const q=HS[lg],rp=lg===1?O.ropes[1][0]:lg===2?O.ropes[2][0]:null;
-            if(rp!==null){const rx=rp*TZ+8;if(Math.abs(rx-P.x)>3)go(rx);else k.down=true;} else go((q.ledge[0]-1)*TZ); }
-          else if(P.y>spoilY-6){ /* the spoil: to his ladder, and up */ const lx=T0.ladder[0]*TZ+8; if(Math.abs(lx-P.x)>3)go(lx);else k.up=true; }
-          else if(Math.abs(P.y-deckY)<4&&P.x<(O.ropes[0][0]+1)*TZ+4){ /* the entrance deck: onto the Head Frame's ladder, up it or down it */ const rx=O.ropes[0][0]*TZ+8; if(Math.abs(rx-P.x)>3)go(rx);else if(tgt===1)k.up=true;else k.down=true; }
-          else go(495*TZ); }
+          const L2=BK.L,lines=L2.cableway.lines,lo=lines.find(l=>l.id==='low'),hi=lines.find(l=>l.id==='high');
+          const at2=(x0,x1,r)=>Math.abs(P.y-(r+1)*TZ)<3&&P.x>x0*TZ-6&&P.x<(x1+1)*TZ+6;
+          const topAt=HS.findIndex((q,i)=>onTop(i)||(Math.abs(P.x-(q.ladder[0]*TZ+8))<6&&Math.abs(P.y-(q.top+1)*TZ)<3));
+          /* onto a skip coming under the step at a lip (the ore-ride rule: look before you step) */
+          const board=(ln,lip,dir)=>{ const li=lines.indexOf(ln),step=P.x+dir*14,stand=lip-dir*6;
+            const skip=ln.dir*dir>0&&!(ln.jam>0)&&BK.movers().some(q=>q.kind==='bucket'&&q.line===li&&q.vis&&!(q.fallen>0)&&step>q.x+4&&step<q.x+q.w-4&&Math.abs(q.y-P.y)<6);
+            if(skip)k[dir>0?'right':'left']=true;else go(stand); };
+          const climb=x=>{const lx=x*TZ+8;if(Math.abs(lx-P.x)>3)go(lx);else k.up=true;};
+          const onLad=[482,509,501].find(x=>Math.abs(P.x-(x*TZ+8))<7&&(BK.L.grid[Math.floor((P.y+2)/TZ)*BK.L.W+x]===T.NET||BK.L.grid[Math.floor((P.y-4)/TZ)*BK.L.W+x]===T.NET));
+          const deck=at2(466,482,12);   /* (the Head Frame's ladder top at deck level is part of the deck: that is where the low line is boarded) */
+          if(deck&&tgt===0)board(lo,483*TZ,1);
+          else if(onLad!==undefined&&topAt<0){ /* STANDING ON A LADDER (its top, or a rung level with a floor): take hold the way it leads */
+            if(onLad===482){ const w=tgt===1?-1:tgt===2?(9*TZ):(13*TZ); if(w<0)k.up=true; else if(P.y<=w&&P.y>w-10)k[tgt===2?'right':'left']=true; else if(P.y>w)k.up=true; else k.down=true; }
+            else if((onLad===509&&tgt===0)||(onLad===501&&tgt===2))k.up=true; else k.down=true; }
+          else if(topAt===tgt){ /* at the top of his ladder: step onto the housing */ const q=HS[tgt]; k[q.ladder[0]<q.x0?'right':'left']=true; }
+          else if(topAt>=0){ /* up on a housing he has left: back down its ladder */ const lx=HS[topAt].ladder[0]*TZ+8; if(Math.abs(lx-P.x)>3)go(lx);else k.down=true; }
+          else if(deck){ /* THE ENTRANCE DECK, for the Head Frame or the Tail Wheel: his ladder */ climb(482); }
+          else if(at2(483,484,8)){ /* the Head Frame's ledge */ if(tgt===2)board(hi,485*TZ,1); else if(tgt===1)climb(482); else climb(482); }
+          else if(at2(499,501,8)){ /* the Tail Wheel's ledge */ if(tgt===2)climb(501);
+            else if(tgt===1)board(hi,499*TZ,-1);
+            else { /* for the Great Drum: drop onto a low skip passing under the ledge's west edge, or into the pit */
+              const li=lines.indexOf(lo),under=lo.dir>0&&BK.movers().some(q=>q.kind==='bucket'&&q.line===li&&q.vis&&q.x+q.w/2>499*TZ-40&&q.x+q.w/2<499*TZ-6);
+              if(under)k.left=true;else go(499*TZ+6); } }
+          else if(at2(507,509,12)){ /* the Great Drum's ledge */ if(tgt===0)climb(509); else if(lo.dir<0)board(lo,507*TZ,-1); else k.left=true; }
+          else if(at2(482,484,18)){ /* the pit's recovery ledge */ climb(482); }
+          else go(482*TZ+8); }
         else if(P.labAir) k[P.labAir]=true;
         if(P.labJump>0){P.labJump--;k.jump=true;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;

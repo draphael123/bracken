@@ -80,7 +80,7 @@ export const OR = {
      a fight instead of a nuisance you cannot answer. `lift` is how much higher an EMPTIED skip rides. */
   BUCKET: { w: 46, h: 6, hang: 30, lift: 18 },
   CRACK: 0.9,                                                    // how long a rusted bucket holds you
-  ROCK_TELL: 0.5,                                                // how long every falling rock is told before it falls
+  ROCK_TELL: 1.0,                                                // how long every falling rock is told before it falls
   /* THE PIT under every span: its spike row, the deck the span starts from, the recovery ledge [x0, x1, standing row] on that
      wall and the ladder [x, top row, bottom row] from the ledge up to that deck (the ladder's top is level with the deck) */
   PITS: [
@@ -204,13 +204,13 @@ export function buildOreRoad({ painter, T }) {
   // ---- THE FIRST SPAN (c 68-135) — the ride, broken into three hops by two pylons ----
   for (const [p0, p1] of [PYLON_A, PYLON_B]) plat(p0, YARD + 1, p1 - p0 + 1);
   ent('check', 100, YARD); ent('check', 124, YARD);
-  meet('THE PYLON LOOKOUTS', PYLON_A[0], PYLON_A[1], [['javelin', 97, YARD], ['sprig', 103, YARD], ['gaffer', 101, YARD]]);
-  meet('THE SECOND PYLON', PYLON_B[0], PYLON_B[1], [['javelin', 121, YARD], ['gaffer', 127, YARD], ['miner', 124, YARD]]);
+  meet('THE PYLON LOOKOUTS', PYLON_A[0], PYLON_A[1], [['javelin', 97, YARD], ['sprig', 103, YARD], ['gaffer', 101, YARD], ['sapper', 99, YARD]]   /* ROUND THREE: the bomb goblins are back - on a rest over the drop, where a bomb at your feet leaves nowhere to step */);
+  meet('THE SECOND PYLON', PYLON_B[0], PYLON_B[1], [['javelin', 121, YARD], ['gaffer', 127, YARD], ['miner', 124, YARD], ['sapper', 122, YARD]]);
   /* FALLING ROCK OVER THE SPANS (Daniel's idea 1). Out here there is nothing for a goblin to stand on, so the lane is
      kept honest by the crags themselves: three falls on a beat you can learn, and the answer to all three is the BRAKE.
      A tippler needs a floor under his feet AND a floor under his stream, so every one of them is on a structure. */
   ent('rockfall', 79, YARD - 12, { every: 2.7 }); ent('rockfall', 110, YARD - 12, { every: 2.4 }); ent('rockfall', 132, YARD - 12, { every: 3.1 });
-  meet('THE GORGE FLIERS', 70, 134, [['bat', 76, YARD - 6], ['harpy', 84, YARD - 8], ['harpy', 116, YARD - 9], ['crow', 130, YARD - 7]]);
+  meet('THE GORGE FLIERS', 70, 134, [['bat', 76, YARD - 6], ['bat', 84, YARD - 8], ['bat', 116, YARD - 9], ['crow', 130, YARD - 7]]);
   coins([98, YARD - 1], [102, YARD - 1], [122, YARD - 1], [126, YARD - 1]);
 
   // ---- THE SORTING TOWER (c 136-203) — the climb, and the ambush room on its middle deck ----
@@ -235,9 +235,9 @@ export function buildOreRoad({ painter, T }) {
   plat(TIPPLE[0], TIPPLE_ROW + 1, TIPPLE[1] - TIPPLE[0] + 1);                   // THE TIPPLE HOUSE: the one rest on the chute
   plat(231, TIPPLE_ROW - 3, 8); rope(239, TIPPLE_ROW - 3, TIPPLE_ROW);          // and the tipping stage over it, with the ladder up its EAST end (at 230 it stood in the checkpoint's base)
   ent('check', 229, TIPPLE_ROW);
-  meet('THE TIPPLE HOUSE', TIPPLE[0], TIPPLE[1], [['tippler', 235, TIPPLE_ROW - 4], ['sheargob', 238, TIPPLE_ROW], ['miner', 233, TIPPLE_ROW]]);
+  meet('THE TIPPLE HOUSE', TIPPLE[0], TIPPLE[1], [['tippler', 235, TIPPLE_ROW - 4], ['sheargob', 238, TIPPLE_ROW], ['miner', 233, TIPPLE_ROW], ['sapper', 236, TIPPLE_ROW]]);   /* a bomb on the chute's one rest: be past him or be quick */
   ent('rockfall', 216, TIPPLE_ROW - 6, { every: 2.5 }); ent('rockfall', 252, 29, { every: 2.9 });
-  meet('THE CHUTE FLIERS', 206, 260, [['harpy', 212, 20], ['bat', 222, 24], ['harpy', 248, 29]]);
+  meet('THE CHUTE FLIERS', 206, 260, [['bat', 212, 20], ['bat', 222, 24], ['bat', 248, 29]]);
   block(FOOT[0], FOOT[1], FOOT_ROW + 1, H - 1);                                 // the chute's foot: the head of the wreck
   ent('check', 266, FOOT_ROW);
   coins([230, TIPPLE_ROW - 1], [238, TIPPLE_ROW - 1], [268, FOOT_ROW - 1], [274, FOOT_ROW - 1]);
@@ -271,7 +271,7 @@ export function buildOreRoad({ painter, T }) {
   meet("THE BRAKEMAN'S HUT", PILLAR_X[0], PILLAR_X[1], [['heavy', 343, PILLAR[0]], ['sapper', 351, PILLAR[1]], ['rockgoblin', 348, PILLAR[1]]]);
   meet('THE SECOND PILLAR', PILLAR_BX[0], PILLAR_BX[1], [['gaffer', 378, PILLAR_B], ['javelin', 383, PILLAR_B], ['sheargob', 380, PILLAR_B]]);
   ent('tippler', 346, PILLAR[1], { face: -1 });                                 // on the brakeman's stage, tipping onto the pillar's lower step
-  meet('THE STEEP FLIERS', 354, 406, [['harpy', 360, 14], ['bat', 372, 12], ['crow', 392, 9]]);
+  meet('THE STEEP FLIERS', 354, 406, [['bat', 360, 14], ['bat', 372, 12], ['crow', 392, 9]]);
   coins([348, PILLAR[1] - 1], [378, PILLAR_B - 1], [382, PILLAR_B - 1]);
 
   // ---- THE WINCH HOUSE (c 408-475) — the castle side ----
@@ -284,7 +284,7 @@ export function buildOreRoad({ painter, T }) {
   ent('check', 415, WINCH); ent('check', 446, WINCH);   /* 415, not 414: the rope at 413 stood in its base */ ent('check', 468, WINCH);
   ent('sign', 430, WINCH, { text: 'THE DRUM HOUSE. NOTHING STOPS THE DRUM BUT A BUCKET WITH SOMEONE IN IT.' });
   meet('THE WINCH CREW', 410, 444, [['miner', 410, WINCH], ['rockgoblin', 436, WINCH], ['sheargob', 419, WINCH - 4]]);
-  meet('THE DRUM YARD', 448, 475, [['heavy', 455, WINCH], ['gaffer', 462, WINCH], ['sheargob', 459, WINCH - 4], ['javelin', 466, WINCH]]);
+  meet('THE DRUM YARD', 448, 475, [['heavy', 455, WINCH], ['gaffer', 462, WINCH], ['sheargob', 459, WINCH - 4], ['javelin', 466, WINCH], ['sapper', 450, WINCH]]);   /* and the drum yard's: the last loading house on the road */
   ent('tippler', 428, WINCH - 7, { face: -1 }); ent('tippler', 460, WINCH - 9, { face: -1 });   /* the frames on the two roofs: each has the yard under it */
   coins([419, WINCH - 4], [432, WINCH - 1], [458, WINCH - 4], [464, WINCH - 1]);
 
