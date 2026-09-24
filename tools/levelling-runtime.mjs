@@ -6,6 +6,8 @@
 //   frame she dies.
 //   CATCH-UP: a Pyromancer at level 1 in THE KEEP (depth 18) is paid x3 and says so (the start hint, LV n x3 on the plate); ten XP
 //   short of the curve he is paid only the ten extra; on the curve, above it, in the first wood or in the store he is paid x1.
+//   THE LEVEL-UP LINE: every hero, every level 1-24 and a three-level jump: it names the level, says FULLY HEALED, names the first
+//   passive that arrived (and how many more), never mentions a slot, and wraps to two lines of the hint at most, as drawn.
 // LEVELLING_SCREEN=<prefix> writes the ladder and a level-up as PNGs.
 import assert from 'node:assert/strict'; import { openPage } from './cdp.mjs'; import { writeFileSync } from 'node:fs';
 const pg = await openPage({ audio: false, fonts: false }); let r;
@@ -50,9 +52,19 @@ const low=pay('keep',1,40);if(low.paid!==120)fails.push('a level-1 pyro in the k
 window.__textRec=[];BK.step(0);const plate=window.__textRec.filter(t=>t.kind==='text'&&/^LV \\d+ x3$/.test(t.s));window.__textRec=null;if(!plate.length)fails.push('the plate does not say x3');
 const edge=pay('keep',17,40,xpFloor(18)-10);if(edge.paid!==50)fails.push('ten short of the curve he was paid '+edge.paid+', not 50');
 for(const [id,lv,why] of [['keep',18,'on the curve'],['keep',22,'above it'],['wood',1,'in the first wood'],['shop',1,'in the store']]){const q=pay(id,lv,40);if(q.paid!==(id==='shop'?40:40))fails.push(why+': paid '+q.paid+' for 40');if(/CATCHING UP/.test(q.hint))fails.push(why+': says CATCHING UP');}
+/* 5. WHAT A LEVEL-UP SAYS */
+fresh('knight',3);BK.load(W('wood'));BK.state='play';BK.god=true;for(let f=0;f<170;f++)BK.step(1);let said=0,longest='';
+const say=(h,from,to)=>{fresh(h,from);BK.P.inv=99;BK.gainXp(xpFloor(to)-xpFloor(from));BK.sim(1);const m=BK.hint.msg,got=PR.skillsFor(h).filter(n=>!n.active&&n.level>from&&n.level<=to);
+ if(!m.startsWith('LEVEL '+to))fails.push(h+' '+from+'->'+to+' says '+m);if(!/FULLY HEALED/.test(m))fails.push(h+' '+to+': no FULLY HEALED');if(/SLOT/i.test(m))fails.push(h+' '+to+' promises a slot: '+m);
+ if(got.length&&!got.some(n=>m.includes(n.name)))fails.push(h+' '+to+' names none of '+got.map(n=>n.name).join(', ')+': '+m);if(got.length>1&&!m.includes('+'+(got.length-1)+' MORE'))fails.push(h+' '+to+' hides how many: '+m);if(!got.length&&/PASSIVE/.test(m))fails.push(h+' '+to+' claims a passive: '+m);
+ window.__textRec=[];BK.step(0);const w=window.__textRec.find(r=>r.kind==='wrap'&&r.s===m);window.__textRec=null;if(!w)fails.push(h+' '+to+': the hint was not drawn');else if(w.lines.length>2)fails.push(h+' '+to+': '+w.lines.length+' lines: '+m);
+ if(m.length>longest.length)longest=m;said++;};
+for(const h of PR.HERO_IDS){for(let lv=1;lv<=24;lv++)say(h,lv-1,lv);say(h,2,5);say(h,0,12);}
+out.said=said;out.longest=longest;
+fresh('pyro',3);BK.P.inv=99;BK.gainXp(xpFloor(4)-xpFloor(3));for(let f=0;f<40;f++)BK.step(1);shots.push({name:'level-up-passives',png:BK.view.buf.toDataURL()});out.pyro4=BK.hint.msg;
 return{fails,shots,out};})()`);
   if (process.env.LEVELLING_SCREEN) for (const s of r.shots) writeFileSync(process.env.LEVELLING_SCREEN + '-' + s.name + '.png', Buffer.from(s.png.split(',')[1], 'base64'));
   assert.deepEqual(pg.errors, []);
 } finally { pg.close(); }
 if (r.fails.length) { console.log('LEVELLING-RUNTIME: ' + r.fails.length + ' red\n  ' + r.fails.slice(0, 30).join('\n  ')); process.exit(1); }
-console.log('Levelling runtime: ' + r.out.talReads + ' passive reads through tal() on from their level with nothing owned or slotted; the PASSIVES tab is a ' + r.out.ladder.length + '-step ladder that neither sells nor slots; a level-up heals in a wood (' + r.out.plainHint + '), not while the owl stands (' + r.out.midFightHp + '), and on the frame she falls; catch-up pays x3 below the curve (' + r.out.catchHint + ') and x1 on or above it.');
+console.log('Levelling runtime: ' + r.out.talReads + ' passive reads through tal() on from their level with nothing owned or slotted; the PASSIVES tab is a ' + r.out.ladder.length + '-step ladder that neither sells nor slots; a level-up heals in a wood (' + r.out.plainHint + '), not while the owl stands (' + r.out.midFightHp + '), and on the frame she falls; catch-up pays x3 below the curve (' + r.out.catchHint + ') and x1 on or above it; ' + r.out.said + ' level-up lines fit two lines and name what arrived (longest: ' + r.out.longest + ').');

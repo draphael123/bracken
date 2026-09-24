@@ -2879,10 +2879,17 @@ function levelUp(n, from) { lvUpN = n; if (state !== 'play') return; if (from ==
   lvHealOwed = { n, from: lvHealOwed ? lvHealOwed.from : from }; levelHealTick();
   saveProgress(); }
 const fightLive = () => !!(bossActive || miniActive || ambushLive());
+/* WHAT A LEVEL-UP SAYS: the growth, the heal and the passives, trimmed until it is two lines of the hint (textfit's rule) */
+function levelUpLine(h, n, from) { const before = growthAt(h, from), after = growthAt(h, n), got = passivesArriving(h, from, n);
+  const pas = got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '';
+  const head = 'LEVEL ' + n + (n - from > 1 ? ' (+' + (n - from) + ')' : '');
+  const tries = [head + ': +' + (after.hp - before.hp) + ' HEALTH, +' + (after.stamina - before.stamina) + ' STAMINA, +' + (after.damage - before.damage) + ' DAMAGE. FULLY HEALED.' + pas,
+    head + ': +' + (after.hp - before.hp) + ' HEALTH. FULLY HEALED.' + pas, head + '. FULLY HEALED.' + pas];
+  return tries.find(s => wrap(s, VW - 40, 6).length <= 2) || tries[tries.length - 1]; }
 function levelHealTick() { const o = lvHealOwed; if (!o || state !== 'play' || fightLive()) return; const p = players ? players[0] : P; if (!p || p.dead) return;
   lvHealOwed = null; p.hp = p.maxHp; p.hpShown = p.maxHp; p.st = p.maxSt;
   ringAt(p.x, p.y - 12, 20, '#8fd160', 0.45); number(p.x, p.y - 44, 'FULLY HEALED', '#8fd160');
-  hintT = 4.5; { const before = growthAt(hero(), o.from), after = growthAt(hero(), o.n); hintMsg = 'LEVEL ' + o.n + ': +' + (after.hp - before.hp) + ' HEALTH, +5 STAMINA, +' + (after.damage - before.damage) + ' DAMAGE. FULLY HEALED.'; } }
+  hintT = 4.5; hintMsg = levelUpLine(hero(), o.n, o.from); }
 /* THE SIM (tools/xp.mjs): the campaign in the order it opens - a secret wood straight after the wood that opens it - priced by the same
    xpFoe the kills use. A straight run kills XP_KILL_NORMAL of what a wood holds, every mini and boss, and takes the share; a full clear
    takes everything and every quest as well. old is the level the count of woods gave. */
