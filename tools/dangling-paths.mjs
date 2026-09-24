@@ -43,6 +43,11 @@ const MISSING = new Map([
   ['audits/audio-audit.json', 'GENERATED. tools/audit-audio.mjs writes it; audits/*/ and this file are tool output, kept out of git on purpose. The citation is a tool naming its own output, which is right.'],
   ['audits/combat/', 'GENERATED. tools/audit-lib.mjs writes it; ignored by audits/*/ on purpose.'],
   ['src/tower-return.js', 'STALE CITATION - docs/audit-new-levels-0920.md:47 names a module that is in no commit. Correct the reference or say what replaced it; do not create the file to satisfy the check.'],
+  ['docs/audit/ranking-2026-09-24.md', 'ON A BRANCH, SAID SO. docs/INTEGRATOR.md cites the ranking and says it is on claude/audit, which has not merged. Delete this line when it does.'],
+  ['src/sunken-caravan.js', 'THE OWN OUTPUT OF A LANE, NOT YET LANDED. docs/SECOND-PC.md (the lane prompts) names what a lane builds on its own branch; the path arrives when that branch merges. Delete this line when it does. (claude/desert1)'],
+  ['tools/caravan-shots.mjs', 'THE OWN OUTPUT OF A LANE, NOT YET LANDED. docs/SECOND-PC.md (the lane prompts) names what a lane builds on its own branch; the path arrives when that branch merges. Delete this line when it does. (claude/desert1)'],
+  ['docs/caravan/', 'THE OWN OUTPUT OF A LANE, NOT YET LANDED. docs/SECOND-PC.md (the lane prompts) names what a lane builds on its own branch; the path arrives when that branch merges. Delete this line when it does. (claude/desert1)'],
+  ['docs/polish/', 'THE OWN OUTPUT OF A LANE, NOT YET LANDED. docs/SECOND-PC.md (the lane prompts) names what a lane builds on its own branch; the path arrives when that branch merges. Delete this line when it does. (claude/polish)'],
   ['tools/sunken-caravan.mjs', 'STALE CITATION - docs/caravan-mechanics.md:16 names a tool that is in no commit (the caravan tools are caravan.mjs, caravan-level.mjs, caravan-map.mjs). Correct the reference.'],
 ]);
 /* a citation is forgiven if it sits under one of the MISSING prefixes */
