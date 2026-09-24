@@ -58,15 +58,21 @@ export const OR = {
      is the Great Drum's row: main.js seats him there before the fight */
   ARENA: { x0: 476, x1: 519, deck: 12, housing: 8, spoil: 22, highRow: 8, ledge: [507, 509], house: [510, 518],
     housings: [
-      { id: 'A', name: 'THE GREAT DRUM', x0: 510, x1: 518, top: 8, home: 512.5, ledge: [507, 508], ledgeTop: 12, line: 'low', at: 'end', ladder: [509, 9, 22] },
-      { id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 480, top: 4, home: 478.5, ledge: [482, 483], ledgeTop: 8, line: 'high', at: 'start', ladder: [481, 5, 22] },
-      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 505, top: 4, home: 503.5, ledge: [499, 500], ledgeTop: 8, line: 'high', at: 'end', ladder: [501, 5, 22] }],
+      { id: 'A', name: 'THE GREAT DRUM', x0: 510, x1: 518, top: 8, home: 513, ledge: [507, 509], ledgeTop: 12, line: 'low', at: 'end', ladder: [509, 9, 12] },
+      { id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 481, top: 4, home: 478.5, ledge: [483, 484], ledgeTop: 8, line: 'high', at: 'start', ladder: [482, 5, 18] },
+      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 508, top: 4, home: 505, ledge: [499, 501], ledgeTop: 8, line: 'high', at: 'end', ladder: [501, 5, 8] }],
+    /* ROUND THREE (Daniel, 2026-09-24: "the ore road is great now", four notes): THE HOUSINGS ARE BIGGER - the Head Frame six tiles
+       (it was five), the Tail Wheel seven (it was four), the Great Drum nine - room to move and dodge on top. THE ROOM'S FLOOR IS
+       THE PIT, like every span's: the entrance deck runs to 481, the Head Frame's ladder climbs from the pit's recovery ledge past
+       the deck to the top, the Great Drum's and the Tail Wheel's stand on their ledges, and the ledges are reached by riding -
+       the low line from the deck to the Great Drum, the high line from the Head Frame's ledge to the Tail Wheel. The low line
+       runs back to the deck whenever he is not on (or bound for) the Great Drum, so no ledge is a dead end */
     /* ROUND TWO (Daniel's playtest): every housing has a LADDER straight up its face from the spoil (`ladder` [x, top, bottom]: its
        top level with the housing's surface, its foot on the spoil) - he is a man you can climb up to and fight. It runs up BESIDE
        the drum's mouth, not through it: a first version stood the ladder on the mouth's ledge, and the lab could never climb it
        (the bar guards the mouth, the sent bucket runs along it and the hook reached the rope up to it - a gauntlet, not a climb).
        The Head Frame's is the entrance deck's rope carried on up. The ledges are two tiles now: the ladder took the third */
-    ropes: [[481, 13, 22], [484, 9, 22], [498, 9, 22]] },
+    ropes: [] },
   PLACES: { yard: [0, 67], span1: [68, 135], tower: [136, 203], chute: [204, 271], collapse: [272, 339], steep: [340, 407], winch: [408, 475], drum: [476, 523] },
   /* THE BUCKET IS 46 PX WIDE, NOT 24. Daniel found this himself and it is the change everything else stands on: the
      knight's box is 10-14 px, so a 24 px skip had no room to swing or to dodge on and NO FIGHT COULD HAPPEN ON ONE.
@@ -81,7 +87,9 @@ export const OR = {
     { id: 'span1', x0: 68, x1: 135, floor: 57, start: [67, 36], ledge: [68, 70, 50], ladder: [68, 37, 50] },
     { id: 'chute', x0: 204, x1: 261, floor: 57, start: [203, 21], ledge: [204, 206, 50], ladder: [204, 22, 50] },
     { id: 'wreck', bed: true, x0: 281, x1: 324, floor: 44, start: [280, 34], ledge: [281, 283, 39], ladder: [281, 35, 39] },
-    { id: 'steep', x0: 353, x1: 407, floor: 57, start: [352, 20], ledge: [353, 355, 50], ladder: [353, 21, 50] }],
+    { id: 'steep', x0: 353, x1: 407, floor: 57, start: [352, 20], ledge: [353, 355, 50], ladder: [353, 21, 50] },
+    /* and THE DRUM HOUSE's (round three): the recovery ledge under the Head Frame, and its ladder - the Head Frame's own - up past the deck */
+    { id: 'drum', x0: 482, x1: 509, floor: 23, start: [481, 12], ledge: [482, 484, 18], ladder: [482, 13, 18] }],
   PIT_BITE: 0.2, PIT_LIFT: 150, PIT_DRAFT: 230, TURBINE_EVERY: 5,
   DARK: 0.34,                                                    // how black the cavern is away from the lamps
   CEIL_GAP: 6,                                                   // how many rows the cavern's ceiling keeps above anything anyone uses
@@ -127,7 +135,7 @@ export function cableLines() {
     /* THE DRUM LINES: the arena's two. The LOW line runs from the entrance deck into the Great Drum; the HIGH line runs between
        the Head Frame's ledge and the Tail Wheel's, and he drives it into whichever housing he is on. Both END THREE-QUARTERS OF A
        TILE INSIDE THEIR LEDGES AT BOTH ENDS, because he REVERSES them: a rider is carried back out to the far end as well as in */
-    { id: 'low', speed: 60, gap: 90, ret: 160, drum: true, pts: [[480.25 * TS, surf(A.deck)], [(A.ledge[0] + 0.75) * TS, surf(A.deck)]] },
+    { id: 'low', speed: 60, gap: 90, ret: 160, drum: true, pts: [[481.25 * TS, surf(A.deck)], [(A.ledge[0] + 0.75) * TS, surf(A.deck)]] },
     { id: 'high', speed: 52, gap: 90, ret: 160, drum: true, dir0: -1, pts: [[(A.housings[1].ledge[1] + 0.25) * TS, surf(A.highRow)], [(A.housings[2].ledge[0] + 0.75) * TS, surf(A.highRow)]] },
   ];
 }
@@ -287,9 +295,9 @@ export function buildOreRoad({ painter, T }) {
     else block(Hs.x0, Hs.x1, Hs.top + 1, Hs.top + 2);                                         /* the two high housings: timber decks on legs (drawn) */
   }
   block(A.x1, W - 1, 0, H - 1);
-  block(481, A.house[0] - 1, A.spoil + 1, H - 1);                               // THE SPOIL HEAP under the whole room: a fall costs a climb, not a life
+  block(481, 481, A.deck + 1, H - 1);                                           // the entrance deck's last tile (the room's floor is the pit - THE PIT)
   for (const [x, y0, y1] of A.ropes) rope(x, y0, y1);   /* out of the spoil: to the deck (the low line), and to each high ledge (the high line) */
-  for (const Hs of A.housings) rope(...Hs.ladder);   /* ROUND TWO: straight up onto every housing from the spoil */
+  for (const Hs of A.housings) rope(...Hs.ladder);   /* ROUND TWO: a ladder up onto every housing */
   ent('winchmaster', Math.floor(A.housings[0].home), A.housing, { face: -1 });
   ent('sign', 477, A.deck, { text: 'CLIMB UP AND FIGHT HIM, OR RIDE A LOADED BUCKET INTO HIS DRUM.' });
 
