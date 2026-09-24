@@ -35,10 +35,11 @@ import {bakeBellcrab,bakeBellguard} from './bellcrab.js';
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
-import { xpFoe, xpFloor, levelOfXp, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
+import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { COMBAT, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving } from './progression.js';
+import { depthsOf } from './campaign-order.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
 import { bakeFrog } from './redraw/frogking.js';
@@ -2840,16 +2841,23 @@ function startGame() {
 /* ---------- XP (src/xp.js) ----------
    A kill pays by its weight, the first finish of a wood pays a share of what the wood holds, and a quest pays once. Only the campaign's
    woods pay, the secret ones with them: the rush, the trials, the practice yard, the store and the editor pay nothing. */
-let levelXp = 0, xpRun = 0, lvAtStart = 0, lvUpT = 0, lvUpN = 0, lvHealOwed = null;
+let levelXp = 0, xpRun = 0, xpBoost = 0, lvAtStart = 0, lvUpT = 0, lvUpN = 0, lvHealOwed = null;
+/* THE LEVEL A HERO IS EXPECTED TO BE IN THIS WOOD: how deep it sits on the gate chain (src/campaign-order.js), which src/xp.js is
+   fitted to. Below it, the wood pays XP_CATCHUP times (xpCatchUp, which stops at the curve). */
+const LEVEL_DEPTH = depthsOf(LEVELS.filter(l => !l.hidden || l.secret));
+const expectedLv = () => LEVEL_DEPTH[curId()] || 0;
+const catchingUp = () => xpWood() && heroXp() < xpFloor(expectedLv());
 const xpWood = () => !!L && !rushOn() && !L.trial && !L.shop && !edTesting && !!LEVELS[levelIndex] && (!LEVELS[levelIndex].hidden || !!LEVELS[levelIndex].secret);
 function xpGot(id) { const h = hero(); PROG.xpGot = PROG.xpGot || {}; const m = (PROG.xpGot[h] = PROG.xpGot[h] || {}); return (m[id] = m[id] || {}); }
 /* WHAT THE WOOD HOLDS: every placed foe that is not its mini or its boss, and every ambusher. The share and the quest are fractions of it */
 function woodXp() { const tier = tierOf(curId());
   return enemies.reduce((s, e) => s + (e.xpKey && !e.harmless && !e.xpRole ? xpFoe(e.t, '', tier) : 0), 0) + (L.ambushes || []).reduce((s, A) => s + A.waves.reduce((m, w) => m + w.reduce((k, q) => k + xpFoe(q[0], '', tier), 0), 0), 0); }
-function xpStart() { levelXp = woodXp(); xpRun = 0; lvAtStart = heroLevel(); lvUpT = 0; }
+function xpStart() { levelXp = woodXp(); xpRun = 0; xpBoost = 0; lvAtStart = heroLevel(); lvUpT = 0; lvHealOwed = null;
+  if (catchingUp()) { hintT = 4.5; hintMsg = '+XP x' + XP_CATCHUP + ' CATCHING UP: THIS WOOD EXPECTS LEVEL ' + expectedLv() + '.'; } }
 function gainXp(n) { n = Math.round(n); if (!(n > 0)) return;
   if (passOn && players && passOn !== players[0]) return;   /* THE XP IS PLAYER ONE'S. A borrowed hero is lent a level for the run; levelling him in the save off the back of it would hand the save a hero it never earned */
-  const h = hero(), was = heroLevel(h); PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + n; xpRun += n; const now = heroLevel(h); if (now > was) levelUp(now); }
+  const h = hero(), was = heroLevel(h), paid = xpWood() ? xpCatchUp(n, heroXp(h), expectedLv()) : n;   /* CATCH-UP: below the wood's expected level he is paid x3, up to the curve and no further */
+  PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + paid; xpRun += paid; xpBoost += paid - n; const now = heroLevel(h); if (now > was) levelUp(now, was); }
 /* THE FIRST TIME A PLACED FOE FALLS it pays in full and goes on this hero's list for the wood. After a death, a shrine or a second walk it is
    on the list (or the wood is finished) and pays XP_AGAIN. The list is saved with the XP, so leaving a wood and coming back is no way round it. */
 function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) return; e.xpPaid = true;
@@ -23755,8 +23763,8 @@ function render() {
     /* THE XP BAR: a thin line under the meters, inside the plate, with the level beside it. A level-up turns it gold and it says LEVEL n */
     if (xpRow) { const yy = (SET.iron ? 41 : 29) + 8, n = heroLevel(), lo = xpFloor(n), k = Math.max(0, Math.min(1, (heroXp() - lo) / Math.max(1, xpFloor(n + 1) - lo)));
       if (lvUpT > 0) lvUpT = Math.max(0, lvUpT - 1 / 60); const up = lvUpT > 0, fl = up && Math.floor(time * 8) % 2 === 0;
-      const lab = (up ? 'LEVEL ' : 'LV ') + n, bx = 6 + inkW(lab, 6) + 4;
-      text(lab, 6, yy - 1, up ? (fl ? '#fff6c8' : '#ffd36b') : '#c9b27c', 'left', 6);
+      const cu = !up && catchingUp(), lab = (up ? 'LEVEL ' : 'LV ') + n + (cu ? ' x' + XP_CATCHUP : ''), bx = 6 + inkW(lab, 6) + 4;   /* x3: CATCHING UP, below the level this wood expects */
+      text(lab, 6, yy - 1, up ? (fl ? '#fff6c8' : '#ffd36b') : cu ? '#8fd160' : '#c9b27c', 'left', 6);
       bar(bx, yy, 86 - bx, 3, up ? 1 : k, up ? (fl ? '#fff6c8' : '#ffd36b') : '#8fb8ff'); }
     if (SET.hud === 'minimal') { g.globalAlpha = 1; } 
     if (P.relic && (PROP.relic[P.relic] || PROP.lampIcon)) { g.drawImage(PROP.relic[P.relic] || PROP.lampIcon, 152, 14); }
@@ -23948,7 +23956,7 @@ function render() {
     line(0.80, 'foes     ' + Math.round(cnt(0.80, kills)), 90, '#fff6e0');
     line(1.00, 'blocks   ' + Math.round(cnt(1.00, blocks)) + '   dodges ' + Math.round(cnt(1.00, dodges)), 103, '#fff6e0');
     line(1.20, 'deaths   ' + deaths, 116, '#fff6e0'); }
-    { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' : xpRun > 0 ? '+' + xpRun + ' XP   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
+    { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') : xpRun > 0 ? '+' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') + '   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
       if (s && !coop()) line(0.15, fitText(s, pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }   /* (in co-op that row is the tally's, and the XP is player one's alone anyway) */
     if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') line(1.9, 'NEW AT THE STORE: SHIELD THROW', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     if (PROG.storeHint === 'groundSlam' && LEVELS[levelIndex].id === 'kings') line(1.9, 'NEW AT THE STORE: GROUND SLAM', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');

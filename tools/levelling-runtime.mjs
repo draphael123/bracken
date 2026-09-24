@@ -4,6 +4,8 @@
 //   THE HEAL: a level-up in a wood fills health and stamina; one that lands while a boss is still standing (an XP payment in the
 //   middle of THE HANGING WOOD's owl) heals NOTHING until the owl falls, and the owl's own purse levelling him heals him on the
 //   frame she dies.
+//   CATCH-UP: a Pyromancer at level 1 in THE KEEP (depth 18) is paid x3 and says so (the start hint, LV n x3 on the plate); ten XP
+//   short of the curve he is paid only the ten extra; on the curve, above it, in the first wood or in the store he is paid x1.
 // LEVELLING_SCREEN=<prefix> writes the ladder and a level-up as PNGs.
 import assert from 'node:assert/strict'; import { openPage } from './cdp.mjs'; import { writeFileSync } from 'node:fs';
 const pg = await openPage({ audio: false, fonts: false }); let r;
@@ -42,9 +44,15 @@ if(lvMid!==10)fails.push('no level-up mid-fight');if(most>=BK.P.maxHp)fails.push
 BK.P.hp=12;BKT.PROG.xp.knight=xpFloor(11)-5;for(let k=0;k<20&&owl.alive;k++){BKT.hurtEnemy(owl,1e5,owl.x-10,false);if(owl.alive){BK.P.inv=99;BK.sim(3);}}
 out.owlKill={alive:owl.alive,bossActive:BK.bossActive,level:BKT.heroLevel('knight'),hp:BK.P.hp+'/'+BK.P.maxHp};BK.sim(1);
 if(owl.alive||BK.bossActive)fails.push('the owl fight did not end');if(BKT.heroLevel('knight')<11)fails.push('the owl purse did not level him');if(BK.P.hp!==BK.P.maxHp)fails.push('the fight ended and he was not healed: '+BK.P.hp+'/'+BK.P.maxHp);
+/* 4. CATCH-UP */
+const pay=(id,lv,n,xp)=>{fresh('pyro',lv);if(xp!==undefined)BKT.PROG.xp.pyro=xp;BK.load(W(id));BK.state='play';BK.god=true;BK.xpStart();BK.sim(5);const h0=BK.hint.msg,x0=BKT.PROG.xp.pyro;BK.gainXp(n);return{paid:BKT.PROG.xp.pyro-x0,hint:h0};};
+const low=pay('keep',1,40);if(low.paid!==120)fails.push('a level-1 pyro in the keep was paid '+low.paid+' for 40, not 120');if(!/CATCHING UP/.test(low.hint))fails.push('the keep did not say CATCHING UP: '+low.hint);out.catchHint=low.hint;
+window.__textRec=[];BK.step(0);const plate=window.__textRec.filter(t=>t.kind==='text'&&/^LV \\d+ x3$/.test(t.s));window.__textRec=null;if(!plate.length)fails.push('the plate does not say x3');
+const edge=pay('keep',17,40,xpFloor(18)-10);if(edge.paid!==50)fails.push('ten short of the curve he was paid '+edge.paid+', not 50');
+for(const [id,lv,why] of [['keep',18,'on the curve'],['keep',22,'above it'],['wood',1,'in the first wood'],['shop',1,'in the store']]){const q=pay(id,lv,40);if(q.paid!==(id==='shop'?40:40))fails.push(why+': paid '+q.paid+' for 40');if(/CATCHING UP/.test(q.hint))fails.push(why+': says CATCHING UP');}
 return{fails,shots,out};})()`);
   if (process.env.LEVELLING_SCREEN) for (const s of r.shots) writeFileSync(process.env.LEVELLING_SCREEN + '-' + s.name + '.png', Buffer.from(s.png.split(',')[1], 'base64'));
   assert.deepEqual(pg.errors, []);
 } finally { pg.close(); }
 if (r.fails.length) { console.log('LEVELLING-RUNTIME: ' + r.fails.length + ' red\n  ' + r.fails.slice(0, 30).join('\n  ')); process.exit(1); }
-console.log('Levelling runtime: ' + r.out.talReads + ' passive reads through tal() on from their level with nothing owned or slotted; the PASSIVES tab is a ' + r.out.ladder.length + '-step ladder that neither sells nor slots; a level-up heals in a wood (' + r.out.plainHint + '), not while the owl stands (' + r.out.midFightHp + '), and on the frame she falls.');
+console.log('Levelling runtime: ' + r.out.talReads + ' passive reads through tal() on from their level with nothing owned or slotted; the PASSIVES tab is a ' + r.out.ladder.length + '-step ladder that neither sells nor slots; a level-up heals in a wood (' + r.out.plainHint + '), not while the owl stands (' + r.out.midFightHp + '), and on the frame she falls; catch-up pays x3 below the curve (' + r.out.catchHint + ') and x1 on or above it.');

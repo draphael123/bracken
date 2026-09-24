@@ -13,6 +13,8 @@ import { SKILLS, HERO_IDS, PROGRESSION_VERSION, migrateProgress, loadProgress, i
 import * as PR from '../src/progression.js';
 import * as XP from '../src/xp.js';
 import { xpFloor } from '../src/xp.js';
+import { LEVELS } from '../src/level.js';
+import { depthsOf } from './campaign-order.mjs';
 const memory = () => { const m = new Map(); return { getItem: k => m.has(k) ? m.get(k) : null, setItem: (k, v) => m.set(k, v), removeItem: k => m.delete(k), m }; };
 const fails = [];
 const check = (name, fn) => { try { fn(); } catch (e) { fails.push(name + ': ' + String(e && e.message || e).replace(/\s+/g, ' ').slice(0, 300)); } };
@@ -67,5 +69,20 @@ check('a version-0 save pays nothing twice', () => {
   const r = migrateProgress(raw), p = r.progress; assert.equal(r.receipt.refund, 25 * 6); assert.equal(r.passiveReceipt.refund, 0);
   assert.equal(p.coins, 10 + 150); assert(p.skillOwned.knight.thirdCut && p.skillOwned.knight.plated); assert(!p.loadouts.knight.includes('thirdCut')); });
 
+/* 3. CATCH-UP */
+check('catch-up pays x3 below the curve, stops at it, x1 above', () => {
+  assert.equal(typeof XP.xpCatchUp, 'function', 'no xpCatchUp in src/xp.js'); const c = XP.xpCatchUp;
+  assert.equal(XP.XP_CATCHUP, 3);
+  assert.equal(c(40, xpFloor(2), 9), 120, 'far below: x3');
+  assert.equal(c(40, xpFloor(9) - 10, 9), 50, 'ten short: the extra stops at the curve');
+  assert.equal(c(40, xpFloor(9), 9), 40, 'on the curve: x1');
+  assert.equal(c(40, xpFloor(12), 9), 40, 'above: x1');
+  assert.equal(c(40, 0, 0), 40, 'the first wood expects nothing');
+  for (let lv = 0; lv < 26; lv++) for (const n of [1, 7, 60, 900]) { const xp = xpFloor(lv) + 3, got = c(n, xp, 12);
+    assert(got >= n && got <= 3 * n); if (got > n) assert(xp + got - n <= xpFloor(12), 'the bonus took him past the curve'); } });
+check('expected level is the depth on the gate chain', () => {
+  const d = depthsOf(LEVELS.filter(l => !l.hidden || l.secret)); assert.equal(d.wood, 0); assert.equal(d.marsh, 1);
+  for (const [id, v] of Object.entries(d)) assert(Number.isInteger(v) && v >= 0, id + ' has no depth'); });
+
 if (fails.length) { console.log('LEVELLING: ' + fails.length + ' red\n  ' + fails.join('\n  ')); process.exit(1); }
-console.log('Levelling: ' + SKILLS.filter(n => !n.active).length + ' passives unsold, unslotted and on from their level; ' + SKILLS.filter(n => n.active).length + ' abilities sold; a real version-1 save refunded exactly ' + PAID + ' for four bought passives and nothing for two from the trees.');
+console.log('Levelling: ' + SKILLS.filter(n => !n.active).length + ' passives unsold, unslotted and on from their level; ' + SKILLS.filter(n => n.active).length + ' abilities sold; a real version-1 save refunded exactly ' + PAID + ' for four bought passives and nothing for two from the trees; catch-up x3 stops at the curve.');
