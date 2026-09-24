@@ -124,13 +124,28 @@ All of these pass on `e0fadb5`:
 1. **MUSIC.** `audio/` has no track that fits a desert, and nothing was downloaded. It plays `musBeach` (MintoDog, CC0, shared with another level; newlevel flags it). *Recommendation:* Daniel picks a CC0 desert chiptune. Keep `musBeach` until then. Nothing in the repo fits better.
 2. **THE DUNE WORM (the boss).** The hollow is built and empty, and the level ends at a gate with the sign "SOMETHING LIVES UNDER THIS HOLLOW. NOT TODAY." *Recommendation:* the worm is the next session, as the brief's build order says. The open question from the handover still stands: does the worm's phase-2 `stormOn` survive "no storm in level 1"? My recommendation: keep the gusts and haze inside the arena only, since the phase 2 in the brief changes the fight.
 3. **INDEX 61.** `tools/curve.mjs` scores hazard 0 because it does not know sunstroke or quicksand, and in the walk those were the main source of damage. *Recommendation:* teach curve the sun as a hazard before tuning density. Do not add foes to hit a number the tool cannot see. Density is 2.2 foes per screen, in line with its neighbours (fallingtower 2.5, unburied 2.5) but under B7's 3.5-4.5.
-4. **Quicksand at the default world speed 0.6.** Taps are in real time and sinking is in game time, so in the page:
-   - 6 taps/s escapes in 0.33 s
-   - **2 taps/s escapes in 1.5 s**
+4. **ANSWERED (Daniel, decision A): the quicksand numbers are REAL time at any game speed.**
+   - **The fix:** `qsGameStep` in `src/quicksand.js` runs the sand on the player's clock (world dt ÷ `SET.speed`), and `src/main.js` calls it with the Game speed.
+   - **The test:** `tools/caravan.mjs` now drives real frames at speeds 0.6 and 1.0: 2 taps/s must never get out within 10 s, and 6 taps/s must get out. It also checks that main.js uses `qsGameStep`. It was proved red on the old code first (2 taps/s got out in 2.53 s at speed 0.6).
+   - **In the page, before → after:**
 
-   The amendments say escape "never at 2" (tools/caravan.mjs proves it in game time). *Recommendation:* decide which clock the numbers mean. If real time, scale `QS.lift` by the world speed.
+     | speed | 6 taps/s | 2 taps/s |
+     |---|---|---|
+     | 0.6 | 0.33 s → 0.50 s | out in 2.50 s → **never in 10 s** |
+     | 1.0 | 0.50 s → 0.50 s | never → never |
+
+     (My first report said 1.5 s for 2 taps/s at 0.6. That came from a looser probe; this one starts from full depth.)
 5. **The rim's elite archer** has no lab measurement. *Recommendation:* one hand playtest, or extend ambushLab to elites.
 6. **Sandfalls:** still not placed (deferred by Daniel).
 7. **MEDALS** [300, 440, 660] are an estimate. There is no timed human run.
 
 The Skeleton King is not wired, and levels 2-8 are not built, as instructed.
+
+## Follow-up: the quicksand clock and a master merge
+
+- **`cd2fa90`**: merged origin/master.
+  - `src/main.js`: both conflict hunks kept both sides (the veil icon, and the vulture's windup).
+  - `src/marks.js` MARK: took master's side, then regenerated it with `node tools/tells.mjs --write` (523 rows).
+- **The quicksand commit**: the fix for decision A (question 4 above).
+- **Checks (subset, not the suite):** the whole keep-green list passes on it, plus elites, ambush-single, homepaths, shop-gates, content-audit, caravan, caravan-level, draft-level and newlevel.
+- **The exception is dangling-paths.** It fails on 7 citations in master's new `docs/INTEGRATOR.md` and `docs/SECOND-PC.md`. They point at files that live on other lanes' branches (burial-variety, buried-dead-pilot, mini-names, docs/burial/, docs/polish/, docs/audit/ranking-2026-09-24.md). It fails on origin/master too (10 there), in a scratch worktree I created and removed. I left it alone rather than edit the integrator's documents or forgive paths that are due to land with their lanes.

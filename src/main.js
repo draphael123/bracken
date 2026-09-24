@@ -13,7 +13,7 @@ import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed
 import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, aheadTile } from './slopes.js';
 import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, the vulture and the sand goblin, as pure state machines */
 import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */
-import { qsPatchAt, qsStep } from './quicksand.js';
+import { qsPatchAt, qsGameStep } from './quicksand.js';
 import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
 import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH} from './undead-mage.js';
 import {poolTraps} from './deadly-water.js'; void poolTraps;
@@ -16074,7 +16074,7 @@ function updateCaravan(dt) {
     const q = qsPatchAt(L, P.x, P.y); if (!q && !P.qsDepth) return;
     const jp = P.jbuf > 0; if (jp) P.jbuf = 0;
     const move = keys.left ? -1 : keys.right ? 1 : 0, was = P.qsDepth || 0;
-    const r = qsStep(P, q, dt, { move, jumpPress: jp });
+    const r = qsGameStep(P, q, dt, SET.speed || 1, { move, jumpPress: jp });   /* the sand runs on the player's clock (src/quicksand.js) */
     if (r.held) { P.coyote = 0; P.ground = false; if (!was) { cvS('squelch'); dust(P.x, q.y, 4); number(P.x, P.y - 26, 'JUMP! AND KEEP JUMPING', '#ffd36b'); } if (jp) dust(P.x, q.y, 3); }
     else if (r.out) { cvS('pJump'); dust(P.x, q.y, 5); } });
 }
