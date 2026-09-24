@@ -41,6 +41,14 @@
 //
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`. Proved by tools/ore-road.mjs "THE WINCHMASTER".
 import { OR } from './ore-road.js';   /* the bucket he sends is the road's own bucket: one width, so what hurts is what is drawn (C1) */
+import { bakeWinchHook } from './redraw/winchmaster.js';   /* THE HOOK, on its own two frames (2026-09-24): it was bare rects before; LANE A scales the Winchmaster's own body sprite at draw time, so this stays a small sprite of its own rather than a slice of his */
+let HOOK = null;   /* baked on first use, not at import: this module is imported by node tools with no `document` (ore-road.mjs, ore-ride.mjs, winchmaster-pilot.mjs), same as bakeWinchmaster() never runs outside main.js's own SPR setup */
+/* drawHook: x,y in WORLD space (cx,cy subtracted here, as the rest of drawWinchFx does); frame 0 COILED, 1 OPEN */
+function drawHook(g, x, y, frame, face, cx, cy) {
+  HOOK = HOOK || bakeWinchHook();
+  const spr = (face < 0 ? HOOK.L : HOOK.R)[frame];
+  g.drawImage(spr, Math.round(x - cx) - HOOK.ax, Math.round(y - cy) - HOOK.ay);
+}
 export const WINCH = {
   hp: 600, pace: 22,
   tell: { reverse: 0.45, send: 0.8, hook: 0.7, lever: 0.55, letgo: 0.7 },
@@ -232,13 +240,13 @@ export function drawWinchFx(g, e, c, cx, cy, time) {
   const H = c.H[e.at];
   if (e.mode === 'sendTell' && H) { const k = 1 - Math.max(0, e.modeT) / WINCH.tell.send; g.globalAlpha = 0.25 + 0.5 * k; g.fillStyle = '#ff6b6b';
     for (let s = 0; s < 600; s += 6) { const x = H.drumX + H.away * s, ly = c.lineY(e.at, x); if (ly === null) break; g.fillRect(Math.round(x - cx), Math.round(ly - cy) - 2, 3, 2); } g.globalAlpha = 1; }
-  if (e.mode === 'hookTell') { const k = 1 - Math.max(0, e.modeT) / WINCH.tell.hook, a = e.anim * 18, hx = Math.round(e.x - cx - e.face * 6 + Math.cos(a) * 9), hy = Math.round(e.y - 34 - cy + Math.sin(a) * 5);
-    g.fillStyle = '#6a6a74'; for (let t = 0; t <= 1; t += 0.2) g.fillRect(Math.round(e.x - cx + (hx - (e.x - cx)) * t), Math.round(e.y - 26 - cy + (hy - (e.y - 26 - cy)) * t), 2, 2);
-    g.fillStyle = k > 0.6 && Math.floor(time * 20) % 2 ? '#ff6b6b' : '#c8ccd4'; g.fillRect(hx - 2, hy - 2, 5, 5); }
+  if (e.mode === 'hookTell') { const k = 1 - Math.max(0, e.modeT) / WINCH.tell.hook, a = e.anim * 18, hx = e.x - e.face * 6 + Math.cos(a) * 9, hy = e.y - 34 + Math.sin(a) * 5;
+    g.fillStyle = '#6a6a74'; for (let t = 0; t <= 1; t += 0.2) g.fillRect(Math.round(e.x - cx + (hx - e.x) * t), Math.round(e.y - 26 - cy + (hy - (e.y - 26)) * t), 2, 2);
+    drawHook(g, hx, hy, 0, e.face, cx, cy);   /* COILED: still on the chain, winding up (bakes HOOK, so its size is known below) */
+    if (k > 0.6 && Math.floor(time * 20) % 2) { g.globalAlpha = 0.55; g.fillStyle = '#ff6b6b'; g.fillRect(Math.round(hx - cx) - 5, Math.round(hy - cy) - 5, HOOK.w + 2, HOOK.h + 2); g.globalAlpha = 1; } }
   if (e.hk) { const k = e.hk, x0 = e.x + e.face * 10 - cx, y0 = e.y - 26 - cy, x1 = k.x - cx, y1 = k.y - cy, n = Math.max(2, Math.round(Math.hypot(x1 - x0, y1 - y0) / 4));
     g.fillStyle = '#4a4a52'; for (let i = 0; i <= n; i++) g.fillRect(Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n), 2, 2);
-    g.fillStyle = '#c8ccd4'; g.fillRect(Math.round(x1) - 3, Math.round(y1) - 3, 6, 6); g.fillStyle = '#2a2a30'; g.fillRect(Math.round(x1) - 1, Math.round(y1) - 1, 2, 2);
-    g.fillStyle = '#c8ccd4'; g.fillRect(Math.round(x1) - 5, Math.round(y1) + 1, 2, 3); g.fillRect(Math.round(x1) + 3, Math.round(y1) + 1, 2, 3); }
+    drawHook(g, k.x, k.y, k.st === 'out' ? 1 : 0, Math.sign(k.vx) || e.face, cx, cy); }   /* OPEN out, COILED coming back */
   if (e.mode === 'leverTell' && H) { const k = 1 - Math.max(0, e.modeT) / WINCH.tell.lever; g.globalAlpha = 0.25 + 0.55 * k; g.fillStyle = '#ffd36b';
     for (let s = 0; s < WINCH.leverHit; s += 4) g.fillRect(Math.round(H.drumX + H.away * s - cx), Math.round(H.mouthY - cy) - 20 - Math.round(Math.sin(s / WINCH.leverHit * Math.PI) * 8), 3, 2); g.globalAlpha = 1; }
   if (e.revT > 0) { const R = c.H[e.revAt ?? e.at]; g.globalAlpha = 0.5; g.fillStyle = '#ffd36b'; const ph = (time * 60) % 24;
