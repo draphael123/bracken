@@ -58,9 +58,14 @@ export const OR = {
      is the Great Drum's row: main.js seats him there before the fight */
   ARENA: { x0: 476, x1: 519, deck: 12, housing: 8, spoil: 22, highRow: 8, ledge: [507, 509], house: [510, 518],
     housings: [
-      { id: 'A', name: 'THE GREAT DRUM', x0: 510, x1: 518, top: 8, home: 512.5, ledge: [507, 509], ledgeTop: 12, line: 'low', at: 'end' },
-      { id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 480, top: 4, home: 478.5, ledge: [481, 483], ledgeTop: 8, line: 'high', at: 'start' },
-      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 505, top: 4, home: 503.5, ledge: [499, 501], ledgeTop: 8, line: 'high', at: 'end' }],
+      { id: 'A', name: 'THE GREAT DRUM', x0: 510, x1: 518, top: 8, home: 512.5, ledge: [507, 508], ledgeTop: 12, line: 'low', at: 'end', ladder: [509, 9, 22] },
+      { id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 480, top: 4, home: 478.5, ledge: [482, 483], ledgeTop: 8, line: 'high', at: 'start', ladder: [481, 5, 22] },
+      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 505, top: 4, home: 503.5, ledge: [499, 500], ledgeTop: 8, line: 'high', at: 'end', ladder: [501, 5, 22] }],
+    /* ROUND TWO (Daniel's playtest): every housing has a LADDER straight up its face from the spoil (`ladder` [x, top, bottom]: its
+       top level with the housing's surface, its foot on the spoil) - he is a man you can climb up to and fight. It runs up BESIDE
+       the drum's mouth, not through it: a first version stood the ladder on the mouth's ledge, and the lab could never climb it
+       (the bar guards the mouth, the sent bucket runs along it and the hook reached the rope up to it - a gauntlet, not a climb).
+       The Head Frame's is the entrance deck's rope carried on up. The ledges are two tiles now: the ladder took the third */
     ropes: [[481, 13, 22], [484, 9, 22], [498, 9, 22]] },
   PLACES: { yard: [0, 67], span1: [68, 135], tower: [136, 203], chute: [204, 271], collapse: [272, 339], steep: [340, 407], winch: [408, 475], drum: [476, 523] },
   /* THE BUCKET IS 46 PX WIDE, NOT 24. Daniel found this himself and it is the change everything else stands on: the
@@ -284,8 +289,9 @@ export function buildOreRoad({ painter, T }) {
   block(A.x1, W - 1, 0, H - 1);
   block(481, A.house[0] - 1, A.spoil + 1, H - 1);                               // THE SPOIL HEAP under the whole room: a fall costs a climb, not a life
   for (const [x, y0, y1] of A.ropes) rope(x, y0, y1);   /* out of the spoil: to the deck (the low line), and to each high ledge (the high line) */
+  for (const Hs of A.housings) rope(...Hs.ladder);   /* ROUND TWO: straight up onto every housing from the spoil */
   ent('winchmaster', Math.floor(A.housings[0].home), A.housing, { face: -1 });
-  ent('sign', 477, A.deck, { text: 'RIDE A LOADED BUCKET INTO HIS DRUM AND IT JAMS. HE HAS THREE.' });
+  ent('sign', 477, A.deck, { text: 'CLIMB UP AND FIGHT HIM, OR RIDE A LOADED BUCKET INTO HIS DRUM.' });
 
   /* ======== THE PIT (Daniel's playtest, 2026-09-25, item 5) ========
      At the very bottom of every span, a bed of spikes. A hero who falls in pays about a FIFTH of his health and never his life

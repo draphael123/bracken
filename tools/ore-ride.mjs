@@ -127,6 +127,22 @@ try {
   for (const x of PIT) { const ok = !x.dead && x.lifted && x.onLedge && x.home && x.lost === Math.min(20, x.hp0 - 1);   /* a fifth of 100 - and never the last point */
     console.log(`  ${ok ? 'ok  ' : 'FAIL'} the ${x.span} pit: with ${x.hp0} health it cost ${x.lost}, the turbines carried him to the ledge in ${x.secs}s, and the ladder took him home` + (ok ? '' : ' ' + JSON.stringify(x))); }
   assert(PIT.every(x => !x.dead && x.lifted && x.onLedge && x.home && x.lost === Math.min(20, x.hp0 - 1)), 'every pit costs a fifth and never a life, carries you to its ledge, and its ladder climbs home');
+  /* THE JAM IS STILL THE BONUS (round two): in the page, a hero riding a loaded skip in from the deck jams the Great Drum and
+     puts him down on its ledge, open, for the double-damage window */
+  const JAM = await pg.evalp(`(async()=>{
+    const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'oreroad');
+    BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = false; BK.sim(5);
+    for (const e of BK.enemies()) if (!e.maxHp) e.alive = false;
+    const L = BK.L, P = BK.P, A = L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(120);
+    const b = BK.boss, li = L.cableway.lines.findIndex(l => l.id === 'low'); let m = null, seen = [];
+    for (let f = 0; f < 60 * 20 && !m; f++) { BK.sim(1); m = BK.movers().find(q => q.kind === 'bucket' && q.line === li && q.vis && q.x + q.w / 2 > 488 * 16 && q.x + q.w / 2 < 491 * 16); }
+    if (!m) return { err: 'no skip came out' };
+    for (let k = 0; k < 4; k++) { P.x = m.x + m.w / 2; P.y = m.y - 1; P.vx = P.vy = 0; BK.sim(1); }
+    for (let f = 0; f < 60 * 25 && b.mode !== 'downed'; f++) { b.revCd = b.sendCd = b.hookCd = b.leverCd = 99; BK.sim(1); seen.push(b.mode); }
+    BK.sim(2); return { downed: b.mode === 'downed', open: b.open > 0, at: b.at, active: BK.bossActive, modes: [...new Set(seen)].join(','), px: Math.round(P.x / 16), on: !!P.onMover, ore: m.ore, bd: m.boardD };
+  })()`, 600000);
+  console.log(`  ${JAM.downed && JAM.open ? 'ok  ' : 'FAIL'} ridden in from the deck, a loaded skip jams the Great Drum and he is down on its ledge, open ` + JSON.stringify(JAM));
+  assert(JAM.downed && JAM.open, 'the jam still puts him down, open (the bonus)');
   assert(!pg.errors.length, 'no page errors');
   console.log('every line of the ore road carries you across');
 } finally { pg.close(); }

@@ -13897,7 +13897,7 @@ const winchInto = ln => OR.ARENA.housings.findIndex(Hs => Hs.line === ln.id && (
    him to the FAR end of his ledge, against his own housing: the jammed skip and the near end are the room a hero fights him from */
 function winchHousings() {
   return OR.ARENA.housings.map(Hs => { const ln = winchLine(Hs), p = ln ? ln.pts : [[0, 0], [0, 0]], near = Hs.at === 'end' ? p[p.length - 1] : p[0], far = Hs.at === 'end' ? p[0] : p[p.length - 1];
-    return { id: Hs.id, name: Hs.name, homeX: Hs.home * TS, topY: (Hs.top + 1) * TS, ledgeX: (Hs.at === 'end' ? Hs.ledge[1] + 0.5 : Hs.ledge[0] + 0.5) * TS, ledgeY: (Hs.ledgeTop + 1) * TS,
+    return { id: Hs.id, name: Hs.name, homeX: Hs.home * TS, topY: (Hs.top + 1) * TS, px0: Hs.x0 * TS, px1: (Hs.x1 + 1) * TS, ledgeX: (Hs.at === 'end' ? Hs.ledge[1] + 0.5 : Hs.ledge[0] + 0.5) * TS, ledgeY: (Hs.ledgeTop + 1) * TS,
       drumX: near[0], mouthY: near[1], away: Math.sign(far[0] - near[0]) || -1, sense: Hs.at === 'end' ? 1 : -1, ln }; });
 }
 function winchC(e) {
@@ -13919,6 +13919,14 @@ function winchC(e) {
     riding: h => { const m = pm(), q = H[h]; if (!m || !q || !q.ln || L.cableway.lines[m.line] !== q.ln || m.fallen > 0) return null;
       const s = bucketS(q.ln, m.i), dist = q.sense > 0 ? q.ln.len - s : s; return { coming: q.ln.dir * q.sense > 0 && !(q.ln.jam > 0), dist }; },
     atMouth: (h, r) => { const q = H[h]; return !!q && !P.dead && Math.abs(P.y - q.mouthY) < 12 && Math.abs(P.x - q.drumX) < r; },
+    /* ROUND TWO: is the hero up on this housing with him; where a rock shaken off the roof over x would come down, on the hero's
+       screen (null if nowhere on it: the roof waits); and let it go */
+    climbing: () => !!P.climb,
+    onHousing: h => { const q = H[h]; return !!q && !P.dead && P.ground && !P.onMover && Math.abs(P.y - q.topY) < 3 && P.x > q.px0 - 4 && P.x < q.px1 + 4; },
+    rockSpot: x0 => { const x = Math.max(camX + 24, Math.min(camX + VW - 24, x0)), y0 = Math.max(0, camY) + 4, tx = Math.floor(x / TS);
+      for (let ty = Math.floor(y0 / TS) + 1; ty < LH && ty * TS < camY + VH - 8; ty++) { const t = tileAt(tx, ty); if (t === T.SOLID || t === T.PLANK || t === T.ONEWAY || t === T.SPIKE) return { x, y0, gy: ty * TS }; }
+      return null; },
+    dropRock: (x, y0) => { rocks.push({ x, y: y0, vy: 0, t: 0, dead: false }); SFX.stone(); },
     /* is he on the hero's screen: the game's own camera, so a tell is never begun where it cannot be seen */
     seen: () => e.x + 12 > camX && e.x - 12 < camX + VW && e.y > camY && e.y - (e.h || 36) < camY + VH,
     onLine: h => { const q = H[h]; if (!q || !q.ln || P.dead || P.onMover || !P.ground) return false; const xs = q.ln.pts.map(p => p[0]);

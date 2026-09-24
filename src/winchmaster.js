@@ -25,9 +25,18 @@
 // onto its ledge - DOWNED, and he takes double. A bucket you jumped on at the drum's mouth has no weight behind it and does not
 // jam: it has to come in from WINCH.rideIn px out. (A drum line's skips cannot be tipped: an emptied one would ride high enough
 // to put a jump onto a housing, and every one of them is loaded - main.js updateBucket.)
-// PHASE TWO (A10), one sentence: AT HALF HEALTH HE STOPS WAITING TO BE KNOCKED OFF - every WINCH.p2Stay seconds he takes the
-// cable and swings on to the next housing by himself, and the drums run a quarter faster, so you ride for where he is GOING.
-// THREE LAYERS AT ONCE (DESIGN.md): the lines keep delivering buckets, he attacks, and the drum speed ramps with the phase.
+// ROUND TWO (Daniel played it, 2026-09-25, and every change here is his, approved):
+//   HIS HOUSING IS REACHABLE: a ladder from each ledge up onto its housing, and you fight him there - the brake bar sweeps
+//     the housing top (the blow a shield turns) and the hook yanks you off its edge into the gorge.
+//   HE RETREATS: every time he loses a QUARTER of his health on a housing (WINCH.retreat), he takes the cable and swings on to
+//     the next one, told, and you chase him - three or four times a fight.
+//   THE JAM STAYS AS A BONUS: ride a loaded skip into his drum and he goes down for the double-damage window as before; it is
+//     no longer the only way to hurt him.
+//   THE DRUMS SHAKE ROCK LOOSE: every WINCH.rockEvery s a rock is shaken off the roof over where you stand, TOLD (a second of
+//     dust and a ring where it lands, only ever on your screen), and it falls.
+// PHASE TWO (A10), one sentence: AT HALF HEALTH HE DRIVES THE DRUMS HARDER - every line runs a quarter faster, he lets two
+// buckets go at a time, and the drums shake rock off the roof twice as often.
+// THREE LAYERS AT ONCE (DESIGN.md): the lines keep delivering buckets, he attacks, and the roof comes down on its own clock.
 // Touching him never hurts (the touch rule).
 //
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`. Proved by tools/ore-road.mjs "THE WINCHMASTER".
@@ -55,7 +64,10 @@ export const WINCH = {
   leverCd: 2.2, leverReach: 72, leverHit: 48,
   /* THE OPENING, and the circuit */
   rideIn: 64, thrownT: 0.7, downT: 4.5, downMul: 2, swingT: 1.1,
-  p2Stay: 14, p2Mul: 1.25,
+  p2Mul: 1.25,
+  /* ROUND TWO: a quarter of his health lost on one housing and he retreats to the next; he walks at you on his own housing
+     (walk), and the roof: a told rock every rockEvery s (half that in phase two), rockTell of warning */
+  retreat: 0.25, walk: 34, rockEvery: 7, rockEveryP2: 3.5, rockTell: 1.0,
   dmg: { send: 28, hook: 18, lever: 26 },
 };
 const SAY = { reverseTell: 'HE THROWS THE BRAKE', sendTell: 'HE SENDS ONE DOWN', hookTell: 'THE HOOK', leverTell: 'THE BRAKE BAR' };
@@ -89,7 +101,7 @@ function begin(e, what, c) {
    when the two share a line */
 function arrive(e, c, at) {
   const H = c.H[at]; e.at = at; e.x = H.homeX; e.y = H.topY; e.vx = 0; e.mode = 'stalk'; e.cd = 0.9; e.revT = 0;
-  e.stay = WINCH.p2Stay;
+  e.qMark = e.hp;   /* the quarter he retreats on is counted from here */
   c.drive(winchNext(at), 1, mulOf(e)); c.drive(at, 1, mulOf(e));
 }
 /* THE JAM: main.js calls this the frame a LOADED bucket, with a rider who boarded it at least WINCH.rideIn px out, reaches the
@@ -115,10 +127,15 @@ export function updateWinchmaster(e, dt, c) {
   if (e.at === undefined) e.at = 0;
   e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.cd = (e.cd ?? 1) - dt;
   for (const k of ['revCd', 'sendCd', 'hookCd', 'leverCd']) e[k] = Math.max(0, (e[k] ?? 0) - dt);
-  const H = c.H[e.at], onHousing = !['thrown', 'downed', 'letgo', 'swing', 'wake'].includes(e.mode);
-  if (e.phase === 2 && onHousing) e.stay = (e.stay ?? WINCH.p2Stay) - dt;   /* his clock on a housing runs through his attacks too */
-  if (e.hp <= e.maxHp * 0.5 && e.phase !== 2) { e.phase = 2; e.stay = Math.min(e.stay ?? WINCH.p2Stay, WINCH.p2Stay);
-    c.say('HE WILL NOT STAY PUT', true); c.sound('roar'); if (e.mode === 'stalk') { c.drive(winchNext(e.at), 1, WINCH.p2Mul); c.drive(e.at, 1, WINCH.p2Mul); } }
+  const H = c.H[e.at];
+  if (e.hp <= e.maxHp * 0.5 && e.phase !== 2) { e.phase = 2; e.rockT = Math.min(e.rockT ?? 0, 1.5);
+    c.say('HE DRIVES THE DRUMS HARDER', true); c.sound('roar'); c.shake(4); if (e.mode === 'stalk') { c.drive(winchNext(e.at), 1, WINCH.p2Mul); c.drive(e.at, 1, WINCH.p2Mul); } }
+  /* THE ROOF: the drums shake a rock loose over where you stand, on their own clock. It is told for WINCH.rockTell - dust off the
+     roof and a ring where it lands - and only ever begun on your screen (c.rockSpot answers null otherwise, and the clock waits) */
+  if (e.mode !== 'wake' && !P.dead) { e.rockT = (e.rockT ?? WINCH.rockEvery * 0.6) - dt;
+    if (e.rockT <= 0) { const sp = c.rockSpot(P.x + (c.rand() - 0.5) * 60); if (sp) { (e.rocks || (e.rocks = [])).push({ x: sp.x, y0: sp.y0, gy: sp.gy, t: WINCH.rockTell }); c.sound('crack'); e.rockT = e.phase === 2 ? WINCH.rockEveryP2 : WINCH.rockEvery; } else e.rockT = 0.3; } }
+  for (const r of (e.rocks || [])) { r.t -= dt; if (r.t <= 0 && !r.done) { r.done = true; c.dropRock(r.x, r.y0); } }
+  if (e.rocks) e.rocks = e.rocks.filter(r => !r.done);
   /* THE REVERSE runs out on its own clock, whatever he is doing */
   if (e.revT > 0) { e.revT -= dt; if (e.revT <= 0) c.drive(e.revAt ?? e.at, 1, mulOf(e)); }
   /* THE RUNAWAY BUCKET, once let go, goes down its line whatever becomes of him */
@@ -136,7 +153,8 @@ export function updateWinchmaster(e, dt, c) {
     if (k.st === 'out') { k.x += k.vx * dt; k.y += k.vy * dt; const d = Math.hypot(k.x - k.x0, k.y - k.y0); if (d > WINCH.hookR || (d > 40 && c.solidAt(k.x, k.y))) k.st = 'back'; }   /* (clear of his own housing's lip first: he throws from its top) */
     else { const dx = e.x - k.x, dy = (e.y - 26) - k.y, d = Math.hypot(dx, dy); if (d < 10 || k.t > 3) e.hk = null; else { k.x += dx / d * WINCH.hookV * 1.3 * dt; k.y += dy / d * WINCH.hookV * 1.3 * dt; } }
     if (e.hk && k.st === 'out' && !k.caught && !P.dead && Math.hypot(P.x - k.x, (P.y - 9) - k.y) < WINCH.hookHit + 5) { k.caught = true; k.st = 'back';
-      const res = c.hit(k.x, WINCH.dmg.hook, true, 'THE HOOK'); if (res === 'hit') { c.drag(Math.sign(e.x - P.x) || 1); c.say('HOOKED', true); } } }
+      /* it drags you TOWARD THE DROP: off a line or a ledge toward him, and off his own housing out over its edge */
+      const res = c.hit(k.x, WINCH.dmg.hook, true, 'THE HOOK'); if (res === 'hit') { c.drag(c.onHousing(e.at) ? H.away : (Math.sign(e.x - P.x) || 1)); c.say('HOOKED', true); } } }
   if (e.mode === 'wake') { e.y = H.topY; if (e.modeT <= 0) { arrive(e, c, e.at); e.cd = 1.0; } return; }
   // ---- THE OPENING, and the circuit ----
   if (e.mode === 'thrown') { const k = 1 - Math.max(0, e.modeT) / WINCH.thrownT;   /* an arc off the housing onto its own ledge */
@@ -157,18 +175,23 @@ export function updateWinchmaster(e, dt, c) {
     if (e.mode === 'sendTell') { e.mode = 'send'; e.modeT = 0.4; e.sendCd = e.phase === 2 ? WINCH.sendCdP2 : WINCH.sendCd; c.sound('heavy');
       e.runaway = { at: e.at, s: 0, delay: 0, next: e.phase === 2 ? { at: e.at, s: 0, delay: 0.5 } : null }; return; }
     if (e.mode === 'hookTell') { e.mode = 'hook'; e.modeT = 0.45; e.hookCd = e.phase === 2 ? WINCH.hookCdP2 : WINCH.hookCd; c.sound('whoosh');
-      const x0 = e.x + e.face * 10, y0 = e.y - 26, v = c.pVel(), tx = P.x + v[0] * WINCH.hookLead, ty = P.y - 9 + v[1] * WINCH.hookLead;
+      /* it leads you ALONG, never UP: a lead on your vertical speed followed a jump into the air and made the jump no answer at all
+         (the lab: 0 wins in 24, every one of them hooked out of a jump) */
+      const x0 = e.x + e.face * 10, y0 = e.y - 26, v = c.pVel(), tx = P.x + v[0] * WINCH.hookLead, ty = P.y - 9;
       const d = Math.hypot(tx - x0, ty - y0) || 1; e.hk = { x: x0, y: y0, x0, y0, vx: (tx - x0) / d * WINCH.hookV, vy: (ty - y0) / d * WINCH.hookV, st: 'out', t: 0, caught: false }; return; }
     if (e.mode === 'leverTell') { e.mode = 'lever'; e.modeT = 0.35; e.leverCd = WINCH.leverCd; c.sound('whoosh'); c.shake(2);
-      if (!P.dead && c.atMouth(e.at, WINCH.leverHit)) { const r = c.hit(H.drumX, WINCH.dmg.lever, false, 'THE BRAKE BAR'); if (r === 'hit') c.shove(H.away * 200, -160); }
+      /* the bar sweeps the drum's mouth AND his own housing top: whoever came up after him gets it too, and it throws them off
+         the edge toward the gorge. It is still the one blow a shield turns */
+      if (!P.dead && (c.atMouth(e.at, WINCH.leverHit) || (c.onHousing(e.at) && Math.abs(P.x - e.x) < WINCH.leverHit))) { const r = c.hit(e.x, WINCH.dmg.lever, false, 'THE BRAKE BAR'); if (r === 'hit') c.shove(H.away * 200, -160); }
       return; }
   }
   if (e.mode === 'reverse' || e.mode === 'send' || e.mode === 'hook' || e.mode === 'lever') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = e.phase === 2 ? WINCH.cdP2 : WINCH.cd; } return; }
-  // ---- ON THE HOUSING: he paces by his drum and watches the line ----
-  const want = Math.abs(e.x - H.homeX) > 14 ? Math.sign(H.homeX - e.x) : (Math.sin(e.anim * 0.7) > 0.6 ? H.away : 0);
-  e.x += want * WINCH.pace * dt; e.vx = want * WINCH.pace; e.face = Math.sign(P.x - e.x) || e.face;
-  /* PHASE TWO: he does not wait to be knocked off */
-  if (e.phase === 2 && e.stay <= 0) { letGo(e, c, 'HE WILL NOT STAY PUT: HE TAKES THE CABLE'); return; }
+  /* HE RETREATS: a quarter of his health lost on this housing and he takes the cable to the next, told (A5: it is short) */
+  if (e.qMark !== undefined && e.qMark - e.hp >= e.maxHp * WINCH.retreat) { letGo(e, c, 'HE RETREATS: HE TAKES THE CABLE'); return; }
+  // ---- ON THE HOUSING: he paces by his drum and watches the line - or, with you up on it with him, comes at you ----
+  const up = c.onHousing(e.at), sp = up ? WINCH.walk : WINCH.pace;
+  const want = up ? (Math.abs(P.x - e.x) > 20 ? Math.sign(P.x - e.x) : 0) : Math.abs(e.x - H.homeX) > 14 ? Math.sign(H.homeX - e.x) : (Math.sin(e.anim * 0.7) > 0.6 ? H.away : 0);
+  e.x = Math.max(H.px0 + 10, Math.min(H.px1 - 10, e.x + want * sp * dt)); e.vx = want * sp; e.face = Math.sign(P.x - e.x) || e.face;
   if (P.dead) return;
   /* A TELL YOU CANNOT SEE IS NOT TOLD (A1). The game's camera follows the hero, and from most of the low line the Great Drum is
      off the right of the screen: measured in the page (work/claude/winch-seen.mjs), 96% of his SEND wind-ups and 63% of his
@@ -177,7 +200,7 @@ export function updateWinchmaster(e, dt, c) {
   if (!c.seen()) { e.cd = Math.max(e.cd, 0.25); return; }
   /* THE BRAKE BAR GUARDS THE MOUTH, and it does not wait for his last job to cool: whoever reaches the drum's mouth gets the bar
      if the bar is ready. It is the drum's own defence and the one blow the shield answers - a rider who shields it rides on in */
-  if (c.atMouth(e.at, WINCH.leverReach) && e.leverCd <= 0) { begin(e, 'lever', c); return; }
+  if ((c.atMouth(e.at, WINCH.leverReach) || (up && Math.abs(P.x - e.x) < WINCH.leverHit + 10)) && e.leverCd <= 0) { begin(e, 'lever', c); return; }
   if (e.cd > 0) return;
   /* WHAT HE DOES IS WHAT HE SEES. A rider coming at him inside revRange is reversed; otherwise a rider on his line gets a bucket
      sent down it or the hook, whichever he did NOT do last (a rotation, so neither starves the other). Never a SEND at someone
@@ -185,11 +208,15 @@ export function updateWinchmaster(e, dt, c) {
   const riding = c.riding(e.at), atMouth = c.atMouth(e.at, WINCH.leverReach);
   if (riding && riding.coming && riding.dist < WINCH.revRange && e.revCd <= 0 && !(e.revT > 0)) { begin(e, 'reverse', c); return; }
   const can = [];
-  if (((riding && riding.dist > WINCH.sendMin) || c.onLine(e.at)) && !atMouth && e.sendCd <= 0 && !e.runaway) can.push('send');
-  if (!e.hk && e.hookCd <= 0 && Math.hypot(P.x - e.x, (P.y - 9) - (e.y - 26)) < WINCH.hookR * 0.9) can.push('hook');
+  /* A MAN ON A LADDER IS LEFT TO CLIMB (round two): the climb up to him is the crossing, and the fight is at the top - he neither
+     hooks nor sends at a climber (the bar still sweeps the mouth, and a climber passes it) */
+  const climbing = c.climbing();
+  if (((riding && riding.dist > WINCH.sendMin) || c.onLine(e.at)) && !climbing && !atMouth && e.sendCd <= 0 && !e.runaway) can.push('send');
+  const hd = Math.hypot(P.x - e.x, (P.y - 9) - (e.y - 26));   /* inside the bar's reach it is the bar: a hook from arm's length is on you before it can be read */
+  if (!e.hk && !climbing && e.hookCd <= 0 && hd < WINCH.hookR * 0.9 && hd > WINCH.leverHit + 12) can.push('hook');
   const pick = can.length > 1 ? can.find(k => k !== e.last) : can[0];
   if (pick) { e.last = pick; begin(e, pick, c); return; }
-  if (e.sendCd <= 0 && !e.runaway && !atMouth && !(riding && riding.dist <= WINCH.sendMin) && c.rand() < 0.4) { e.last = 'send'; begin(e, 'send', c); return; }
+  if (e.sendCd <= 0 && !e.runaway && !atMouth && !climbing && !(riding && riding.dist <= WINCH.sendMin) && c.rand() < 0.4) { e.last = 'send'; begin(e, 'send', c); return; }
   e.cd = 0.4;
 }
 /* THE LOOK OF THE FIGHT, rects only (so work/claude/winch-art.mjs can render it in Node): the runaway bucket, the red line under a
@@ -216,6 +243,10 @@ export function drawWinchFx(g, e, c, cx, cy, time) {
     for (let s = 0; s < WINCH.leverHit; s += 4) g.fillRect(Math.round(H.drumX + H.away * s - cx), Math.round(H.mouthY - cy) - 20 - Math.round(Math.sin(s / WINCH.leverHit * Math.PI) * 8), 3, 2); g.globalAlpha = 1; }
   if (e.revT > 0) { const R = c.H[e.revAt ?? e.at]; g.globalAlpha = 0.5; g.fillStyle = '#ffd36b'; const ph = (time * 60) % 24;
     for (let s = ph; s < 600; s += 24) { const x = R.drumX + R.away * s, ly = c.lineY(e.revAt ?? e.at, x); if (ly === null) break; const X = Math.round(x - cx), Y = Math.round(ly - cy) - 40; g.fillRect(X, Y, 5, 1); g.fillRect(X + (R.away > 0 ? 4 : 0), Y - 1, 1, 3); } g.globalAlpha = 1; }
+  /* THE ROOF'S ROCK, told: dust off the roof over the spot, and a red ring where it will land, tightening */
+  for (const r of (e.rocks || [])) { const k = 1 - Math.max(0, r.t) / WINCH.rockTell, x = Math.round(r.x - cx), gy = Math.round(r.gy - cy), y0 = Math.round(r.y0 - cy);
+    g.fillStyle = '#b8a890'; for (let j = 0; j < 4; j++) { const ph = (time * 90 + j * 23) % 40; g.globalAlpha = 0.6 * (1 - ph / 40); g.fillRect(x - 3 + ((j * 5) % 7), y0 + Math.round(ph), 1, 2); }
+    g.globalAlpha = 0.35 + 0.55 * k; g.fillStyle = '#ff6b4a'; const w = Math.round(12 - k * 4); g.fillRect(x - w, gy - 2, w * 2, 1); g.fillRect(x - w + 2, gy, w * 2 - 4, 1); g.fillRect(x - w, gy - 2, 1, 2); g.fillRect(x + w - 1, gy - 2, 1, 2); g.globalAlpha = 1; }
   if (e.mode === 'downed') { const k = 0.5 + 0.5 * Math.sin(time * 10), w = 26 + Math.round(k * 3); g.globalAlpha = 0.35 + 0.35 * k; g.fillStyle = '#8fd160';
     const x = Math.round(e.x - cx), y = Math.round(e.y - cy) - 2; g.fillRect(x - w, y - 1, w * 2, 2); g.fillRect(x - w + 4, y - 4, w * 2 - 8, 1); g.fillRect(x - w + 4, y + 2, w * 2 - 8, 1); g.globalAlpha = 1; }
 }

@@ -631,76 +631,59 @@ async function runbossLab(BK, opts) {
          column and onto a slab at its top; on a slab, it leaves LATE when his shadow is on its slab (after he has dropped, so the aim
          is his and a cracked slab breaks under him), gets off a slab whose glyph is lit, guards the gust and the rubble (or rolls
          them), and cuts him wherever he is in reach - most of all hanging from a broken edge, from the slab he hangs on. */
-      /* THE WINCHMASTER (reworked 2026-09-25), played the way his fight is built: no jump reaches any of his three housings, so
-         every blow is bought by RIDING A LOADED SKIP INTO THE DRUM HE STANDS ON. The hands work out which line runs into that
-         housing and where it is boarded - the entrance deck for the Great Drum's low line, the Tail Wheel's ledge for the high
-         line into the Head Frame, the Head Frame's ledge for the high line into the Tail Wheel - and go there: off a ledge by
-         its rope (or off its edge), across the spoil, up the right rope, and onto a skip as it comes under the step. On the skip
-         they do nothing but ANSWER HIM: jump the sent bucket and the hook as they arrive, and shield the brake bar at the mouth
-         (a hero with no shield jumps it). A reverse is ridden out: it carries you back, and the brake is then cooling for longer
-         than the ride in. Down on his ledge he is cut; when he takes the cable they go for where he is GOING, not where he is.
-         It never tips a skip (a drum line's cannot be tipped anyway) and never uses the brake (a drum line has none). */
+      /* THE WINCHMASTER, ROUND TWO (Daniel's playtest, 2026-09-25): his housings have ladders now, so the hands play him the way the
+         round-two fight is built - GO UP TO HIM AND FIGHT HIM. They work out which housing he is on (or swinging to), get to its
+         ledge (down whatever ladder or rope they are near, across the spoil, up the rope to that ledge), climb its ladder and step
+         onto the housing, and fight him there: in to their reach and cut; the brake bar shielded (or backed off, without a
+         shield); the hook jumped as it comes; a ring on the floor from the roof stepped out of. When he retreats they chase. If a
+         jam puts him down on a ledge they cut him there. They never tip a skip and never ride - the jam is the bonus, not the plan. */
       if(boss.t==='winchmaster'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
-        const O=OR.ARENA,TZ=16,Lv=BK.L,lines=Lv.cableway.lines,HS=O.housings,m=boss.mode;
-        const lnOf=q=>lines.find(l=>l.id===q.line),drumOf=q=>{const p=lnOf(q).pts,n=q.at==='end'?p[p.length-1]:p[0],f=q.at==='end'?p[0]:p[p.length-1];return{x:n[0],y:n[1],away:Math.sign(f[0]-n[0])||-1};};
-        const on=P.onMover&&P.onMover.kind==='bucket'?P.onMover:null,go=x=>{if(Math.abs(x-P.x)>3)k[x>P.x?'right':'left']=true;};
-        const reach2=LAB_REACH[h]+boss.w/2,deckY=(O.deck+1)*TZ,spoilY=(O.spoil+1)*TZ;
-        const tgt=(m==='letgo'||m==='swing')?(boss.at+1)%3:(boss.at||0),T0=HS[tgt];
-        const ledgeAt=()=>HS.findIndex(q=>Math.abs(P.y-(q.ledgeTop+1)*TZ)<4&&P.x>q.ledge[0]*TZ-10&&P.x<(q.ledge[1]+1)*TZ+10);
-        if(P.ground||P.climb){P.labAir=null;if(P.onMover||P.climb||P.y>spoilY-6)P.labSkip=null;}
-        /* A JUMP OFF A SKIP DOES NOT KEEP THE SKIP'S SPEED: the hands steer back over the one they left, or they land behind it */
-        const jumpOff=()=>{BK.press('jump');P.labJump=12;if(on)P.labSkip=on;};
-        /* THE THREAT ON THE WAY: the sent bucket, the hook in flight, the bar at the mouth - answered wherever the hands are */
-        const rw=boss.runaway&&!(boss.runaway.delay>0)?boss.runaway:null;
-        let rwX=null;if(rw){const d=drumOf(HS[rw.at]);rwX=d.x+d.away*rw.s;}
-        const md0=drumOf(HS[boss.at||0]);
-        /* close in, the sent bucket is on you the moment it is let go: jump as its tell runs out, as a player reads the red line */
-        const rwNear=(rwX!==null&&Math.abs(rwX-P.x)<56&&Math.abs(P.y-drumOf(HS[rw.at]).y)<16)||(m==='sendTell'&&boss.modeT<0.1&&Math.abs(P.y-md0.y)<16&&Math.abs(P.x-md0.x)<150);
-        const hk=boss.hk&&boss.hk.st==='out'?boss.hk:null,hkNear=hk&&Math.hypot(hk.x-P.x,hk.y-(P.y-9))<46;
-        const md=drumOf(HS[boss.at||0]),barNow=m==='leverTell'&&Math.abs(P.x-md.x)<96&&Math.abs(P.y-md.y)<14;
-        let dodged=false;
-        if((rwNear||hkNear)&&(P.ground||P.climb)){jumpOff();dodged=true;}
-        if(barNow){if(SHIELDED(h)){k.block=true;P.face=Math.sign(boss.x-P.x)||1;}else if(boss.modeT<0.22&&P.ground){jumpOff();}}
-        const sk=P.labSkip;
-        if(!P.ground&&!P.climb&&sk&&sk.vis&&!(sk.fallen>0)){const cx=sk.x+sk.w/2+(sk.vxs||0)*0.12;if(Math.abs(cx-P.x)>3)k[cx>P.x?'right':'left']=true;}
-        else if(dodged||k.block){}
-        else if(m==='downed'||m==='thrown'){ /* THE OPENING: stand off where he LANDS by the hero's own reach (a spear wants its point,
-             not his chest - the warden stood on top of him and cut for 6), on the jammed skip or the ledge, and cut */
-          const dx=boss.x-P.x,lx=boss.toX??boss.x,side=Math.sign(lx-P.x)||1,d=Math.abs(lx-P.x),near=h==='warden'?boss.w/2+32:0;   /* (the warden's point is measured from his near edge: 34 px out is the TIP) */
-          /* in to reach, or (the warden) back out to her point - and never while a swing is out, or the hands turn it round */
-          if(P.atk<0&&d>reach2-4)k[side>0?'right':'left']=true;else if(P.atk<0&&d<near-4)k[side>0?'left':'right']=true;
-          if(Math.abs(dx)<reach2&&Math.abs(P.y-boss.y)<30&&P.atk<0&&m==='downed'){P.face=Math.sign(dx)||1;BK.press('atk');swings++;} }
-        else if(on){ /* RIDING: nothing to do but answer him (above) - on the line that serves his housing. A skip on any other line
-             is walked off, backwards, into the spoil: riding it would only set the hands down on a ledge that leads nowhere */
-          if(lines[on.line]!==lnOf(T0)&&P.ground){const ln=lines[on.line];k[ln.dir>0?'left':'right']=true;} }
-        else if(P.climb){ /* ON A ROPE: up it to the ledge or the deck this housing is boarded from, or down it to the spoil */
-          const lg=ledgeAt(),wantUp=P.labRope!==undefined;
-          if(wantUp)k.up=true;else k.down=true;
-          if(!wantUp&&P.y>spoilY-4){k.down=false;const r=O.ropes[tgt===0?0:tgt===1?2:1];k[r[0]*TZ+8>P.x?'right':'left']=true;} }   /* at the foot: a step sideways lets go */
-        else if(P.ground&&P.y>spoilY-6){ /* THE SPOIL: to the rope that goes up to where this housing's line is boarded */
-          const r=O.ropes[tgt===0?0:tgt===1?2:1],rx=r[0]*TZ+8;P.labRope=r[0];
-          if(Math.abs(rx-P.x)>3)go(rx);else k.up=true; }
+        const O=OR.ARENA,TZ=16,HS=O.housings,m=boss.mode,spoilY=(O.spoil+1)*TZ,deckY=(O.deck+1)*TZ;
+        const go=x=>{if(Math.abs(x-P.x)>3)k[x>P.x?'right':'left']=true;};
+        const tgt=(m==='letgo'||m==='swing')?(boss.at+1)%3:(boss.at||0),T0=HS[tgt],reach2=LAB_REACH[h]+boss.w/2;
+        const on=P.onMover&&P.onMover.kind==='bucket'?P.onMover:null;
+        const onTop=i=>{const q=HS[i];return P.ground&&!on&&Math.abs(P.y-(q.top+1)*TZ)<3&&P.x>q.x0*TZ-4&&P.x<(q.x1+1)*TZ+4;};
+        const onLedge=i=>{const q=HS[i];return P.ground&&!on&&Math.abs(P.y-(q.ledgeTop+1)*TZ)<3&&P.x>q.ledge[0]*TZ-8&&P.x<(q.ledge[1]+1)*TZ+8;};
+        if(P.ground||P.climb)P.labAir=null;
+        /* THE THREAT, wherever the hands are: the hook as it comes, a sent bucket, the bar (shield, or out of its reach), the roof's ring */
+        /* the hook: jumped as it comes - and close in, where it is on you the instant it leaves his hand, as its tell runs out */
+        const hk=boss.hk&&boss.hk.st==='out'?boss.hk:null,hkNear=(hk&&Math.hypot(hk.x-P.x,hk.y-(P.y-9))<46)||(m==='hookTell'&&boss.modeT<0.1&&Math.hypot(boss.x-P.x,boss.y-P.y)<90);
+        const rw=boss.runaway&&!(boss.runaway.delay>0)?boss.runaway:null;let rwNear=false;
+        if(rw){const q=HS[rw.at],ln=BK.L.cableway.lines.find(l=>l.id===q.line),p=ln.pts,n=q.at==='end'?p[p.length-1]:p[0],f2=q.at==='end'?p[0]:p[p.length-1],x=n[0]+(Math.sign(f2[0]-n[0])||-1)*rw.s;rwNear=Math.abs(x-P.x)<56&&Math.abs(P.y-n[1])<16;}
+        const ring=(boss.rocks||[]).find(r=>Math.abs(r.x-P.x)<16&&Math.abs(r.gy-P.y)<8);
+        let busy=false;
+        if((hkNear||rwNear)&&(P.ground||P.climb)){BK.press('jump');P.labJump=12;busy=true;}
+        /* THE BAR lands at his drum's mouth (his ledge) and on his housing top: shield it on the ground, or jump it as it comes */
+        const mq=HS[boss.at||0],mouthY=(mq.ledgeTop+1)*TZ,mouthX=mq.at==='end'?mq.ledge[0]*TZ:(mq.ledge[1]+1)*TZ;
+        const barHere=(Math.abs(P.y-mouthY)<14&&Math.abs(P.x-mouthX)<72)||(onTop(boss.at||0)&&Math.abs(P.x-boss.x)<62);
+        if(m==='leverTell'&&barHere&&!P.climb){busy=true;if(SHIELDED(h)&&P.ground){k.block=true;P.face=Math.sign(boss.x-P.x)||1;}else if(boss.modeT<0.22&&P.ground){BK.press('jump');P.labJump=14;}}
+        if(!busy&&ring&&P.ground){busy=true;const side=P.x>ring.x?1:-1;go(ring.x+side*24);}
+        if(busy){}
+        else if((m==='downed'||m==='thrown')&&Math.abs(P.y-(boss.toY??boss.y))<30&&!P.climb){ /* THE BONUS WINDOW: he is down on a ledge beside you - cut */
+          const lx=boss.toX??boss.x,dx=boss.x-P.x,side=Math.sign(lx-P.x)||1,d=Math.abs(lx-P.x);
+          if(P.atk<0&&d>reach2-4)k[side>0?'right':'left']=true;
+          if(Math.abs(dx)<reach2&&P.atk<0&&m==='downed'){P.face=Math.sign(dx)||1;BK.press('atk');swings++;} }
+        else if(on){ const ln=BK.L.cableway.lines[on.line];if(P.ground)k[ln.dir>0?'left':'right']=true; }   /* on a skip by accident: step off */
+        else if(onTop(tgt)){ /* UP WITH HIM: in to reach, and cut */
+          const dx=boss.x-P.x,side=Math.sign(dx)||1;
+          if(Math.abs(dx)>reach2-6)k[side>0?'right':'left']=true;
+          if(Math.abs(dx)<reach2&&Math.abs(P.y-boss.y)<30&&P.atk<0&&m!=='letgo'&&m!=='swing'){P.face=side;BK.press('atk');swings++;} }
+        else if(P.climb){ /* on a ladder or a rope: up his housing's ladder; down anything else */
+          const lad=HS.findIndex(q=>Math.abs(P.x-(q.ladder[0]*TZ+8))<6);
+          if(lad===tgt) k.up=true;   /* past the mouth without stopping: the bar's tell is longer than the climb takes to pass it */
+          else { k.down=true; if(P.y>spoilY-4){k.down=false;k[T0.ladder[0]*TZ>P.x?'right':'left']=true;} } }
         else if(P.ground){
-          const lg=ledgeAt(),onDeck=Math.abs(P.y-deckY)<4&&P.x<(O.ropes[0][0]+1)*TZ+2;
-          /* where this housing's line is boarded, and which way the skips leave it */
-          const boardLedge=tgt===1?2:tgt===2?1:-1,ln=lnOf(T0),li=lines.indexOf(ln);
-          const here=tgt===0?onDeck:lg===boardLedge;
-          if(here){ /* at the lip: wait for a skip to come under the step, then walk onto it */
-            const dir=tgt===0?1:tgt===1?-1:1,lip=tgt===0?(O.ropes[0][0]+1)*TZ:tgt===1?HS[2].ledge[0]*TZ:(HS[1].ledge[1]+1)*TZ;
-            const stand=lip-dir*6,step=P.x+dir*14;
-            const skip=BK.movers().some(q=>q.kind==='bucket'&&q.line===li&&q.vis&&!(q.fallen>0)&&step>q.x+4&&step<q.x+q.w-4&&Math.abs(q.y-P.y)<6&&(ln.dir*dir>0));
-            if(skip)k[dir>0?'right':'left']=true;else if(Math.abs(stand-P.x)>3)go(stand);
-            P.labRope=undefined; }
-          else if(lg>=0||onDeck){ /* on the wrong ledge (or the deck): down to the spoil - by its rope, or off its edge */
-            const q=lg>=0?HS[lg]:null,rope=O.ropes.find(([x,y0])=>q?Math.abs(y0-(q.ledgeTop+1))<1&&(x===q.ledge[0]-1||x===q.ledge[1]+1):x===O.ropes[0][0]);
-            P.labRope=undefined;
-            if(rope){const rx=rope[0]*TZ+8;if(Math.abs(rx-P.x)>3)go(rx);else k.down=true;}
-            else if(q){const ex=q.ledge[0]*TZ-10;go(ex);} }
-          else { /* somewhere else on a floor: toward the spoil */ go(495*TZ); }
-        }
-        else if(P.labAir&&!on) k[P.labAir]=true;
+          const lt=HS.findIndex((q,i)=>onTop(i)),lg=HS.findIndex((q,i)=>onLedge(i)),atTop=HS.findIndex(q=>Math.abs(P.x-(q.ladder[0]*TZ+8))<6&&Math.abs(P.y-(q.top+1)*TZ)<3);
+          if(atTop===tgt){ /* at the top of his ladder: step onto the housing */ k[T0.ladder[0]<T0.x0?'right':'left']=true; }
+          else if(lt>=0||atTop>=0){ /* up on a housing he has left: back down its ladder */ const q=HS[lt>=0?lt:atTop],lx=q.ladder[0]*TZ+8; if(Math.abs(lx-P.x)>3)go(lx);else k.down=true; }
+          else if(lg>=0){ /* on a ledge: off it, down its rope or over its gorge edge */ const q=HS[lg],rp=lg===1?O.ropes[1][0]:lg===2?O.ropes[2][0]:null;
+            if(rp!==null){const rx=rp*TZ+8;if(Math.abs(rx-P.x)>3)go(rx);else k.down=true;} else go((q.ledge[0]-1)*TZ); }
+          else if(P.y>spoilY-6){ /* the spoil: to his ladder, and up */ const lx=T0.ladder[0]*TZ+8; if(Math.abs(lx-P.x)>3)go(lx);else k.up=true; }
+          else if(Math.abs(P.y-deckY)<4&&P.x<(O.ropes[0][0]+1)*TZ+4){ /* the entrance deck: onto the Head Frame's ladder, up it or down it */ const rx=O.ropes[0][0]*TZ+8; if(Math.abs(rx-P.x)>3)go(rx);else if(tgt===1)k.up=true;else k.down=true; }
+          else go(495*TZ); }
+        else if(P.labAir) k[P.labAir]=true;
         if(P.labJump>0){P.labJump--;k.jump=true;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});if(f%600===599)await yieldNow();continue;
