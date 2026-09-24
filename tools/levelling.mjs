@@ -38,6 +38,17 @@ check('a passive is on from its level, owned or not', () => {
 check('a slot never reads a passive', () => { const n = SKILLS.find(n => !n.active); const p = { loadouts: { [n.hero]: [n.id] } };
   assert.equal(equipped(p, n.hero, 99)[0], null); });
 
+/* 1b. THE LADDER (the integrator for Daniel, 2026-09-24: "a steady reward"): every hero's passives arrive ONE A LEVEL from 1 to 24 -
+   never two at the same level - in the old tier order (the price a passive was once sold for IS its old tier: 60/120/220/360 were
+   levels 1/4/8/12), the old capstones (cap:true) last at 22, 23 and 24, and nothing arriving before a passive it grew from. */
+check('the passive ladder is one a level, tiers in order, capstones last', () => {
+  for (const h of HERO_IDS) { const ps = SKILLS.filter(n => n.hero === h && !n.active), seen = new Set();
+    for (const n of ps) { assert(n.level >= 1 && n.level <= 24, h + '/' + n.id + ' at ' + n.level); assert(!seen.has(n.level), h + ' gets two passives at level ' + n.level); seen.add(n.level);
+      if (n.cap) assert(n.level >= 22, h + '/' + n.id + ' is a capstone at ' + n.level); else assert(n.level <= 21, h + '/' + n.id + ' sits among the capstones');
+      const par = ps.find(q => q.id === n.parent); if (par) assert(par.level <= n.level, h + '/' + n.id + ' arrives before ' + par.id); }
+    const rest = ps.filter(n => !n.cap).sort((a, b) => a.level - b.level); for (let i = 1; i < rest.length; i++) assert(rest[i].price >= rest[i - 1].price, h + ': ' + rest[i].id + ' (old tier ' + rest[i].price + ') arrives after ' + rest[i - 1].id + ' (' + rest[i - 1].price + ')');
+    assert.equal(ps.filter(n => n.cap).length, 3, h + ' capstones'); } });
+
 /* 2. THE REFUND */
 const RAW = readFileSync(new URL('./fixtures/progression-v1-passives.json', import.meta.url), 'utf8').trim(), OLD = JSON.parse(RAW);
 check('the fixture is a version-1 save', () => { assert.equal(OLD.progressionVersion, 1); assert(OLD.progressionReceipt.mapped.length === 2); });
