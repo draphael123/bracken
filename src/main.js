@@ -3053,10 +3053,18 @@ const MAP_PANEL_ROWS = 10, MAP_PANEL_W = 148;   /* rows visible in drawMapPanel'
    eat a row's worth of blank space or a keypress on its way to being skipped, the way indexing straight into
    NODES did the first time this was drawn (a found-but-secret Underleaf left a blank line in the middle of the
    Wood's rows and cost the cursor an extra press to move past). */
-function mapPanelIdx() { const out = []; for (let i = 0; i < NODES.length; i++) if (!nodeSecret(NODES[i])) out.push(i); return out; }
+/* ROAD ORDER, WITH EACH SIDE ROAD UNDER ITS JUNCTION (Daniel, 2026-09-24: "the death knight level is still unaccessible").
+   NODES is an append log - saves count its indices - so a class level placed later (THE UNBURIED FIELD) sat LAST of
+   ~40 rows, a screen and a half away from the Witchlight Stair it branches off. The list now puts every spur whose
+   level `needs` another node straight under that node; everything else keeps its place. */
+function mapPanelIdx() { const vis = []; for (let i = 0; i < NODES.length; i++) if (!nodeSecret(NODES[i])) vis.push(i);
+  const needsOf = i => { const nd = NODES[i]; return nd.spur && nd.kind === 'level' && LEVELS[nd.level] ? LEVELS[nd.level].needs : null; };
+  const out = vis.filter(i => !(needsOf(i) && vis.some(j => NODES[j].id === needsOf(i))));
+  for (const i of vis) { const need = needsOf(i); if (!need || out.includes(i)) continue; const at = out.findIndex(j => NODES[j].id === need); out.splice(at + 1, 0, i); }
+  return out; }
 function mapPanelToggle() { mapPanel.open = !mapPanel.open; if (mapPanel.open) { const vis = mapPanelIdx(); let at = vis.indexOf(map.node); if (at < 0) at = 0;
     mapPanel.sel = at; mapPanel.scroll = Math.max(0, Math.min(Math.max(0, vis.length - MAP_PANEL_ROWS), at - (MAP_PANEL_ROWS >> 1))); } SFX.ui(); }
-function mapPanelMove(dir) { const vis = mapPanelIdx(); mapPanel.sel = Math.max(0, Math.min(vis.length - 1, mapPanel.sel + dir));
+function mapPanelMove(dir) { const vis = mapPanelIdx(); mapPanel.sel = (mapPanel.sel + dir + vis.length) % vis.length;   /* WRAPS: up from the top is the bottom */
   if (mapPanel.sel < mapPanel.scroll) mapPanel.scroll = mapPanel.sel;
   if (mapPanel.sel >= mapPanel.scroll + MAP_PANEL_ROWS) mapPanel.scroll = mapPanel.sel - MAP_PANEL_ROWS + 1;
   SFX.ui(); }
@@ -3067,7 +3075,10 @@ function mapPanelJump() { const vis = mapPanelIdx(); const i = vis[mapPanel.sel]
   const a = PATH[NODE_AT[map.node]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55));
   SFX.uiSel(); }
 function updateMapPanel(dt) {
-  if (upPress) mapPanelMove(-1); if (downPress) mapPanelMove(1);
+  /* HOLD TO SCROLL: a press moves one row; held, it repeats after 0.35 s, eight rows a second (the list is ~40 rows) */
+  const held = keys.up ? -1 : keys.down ? 1 : 0;
+  if (upPress) { mapPanelMove(-1); mapPanel.rep = 0.35; } else if (downPress) { mapPanelMove(1); mapPanel.rep = 0.35; }
+  else if (held) { mapPanel.rep = (mapPanel.rep || 0) - dt; if (mapPanel.rep <= 0) { mapPanelMove(held); mapPanel.rep = 0.12; } }
   if (confirmPress) mapPanelJump();
   if (pausePress) mapPanelToggle();   /* ESC closes the panel here instead of leaving the map (TAB already toggled it, above) */
 }
