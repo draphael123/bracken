@@ -515,7 +515,7 @@ async function runbossLab(BK, opts) {
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const away=(x,y,r,w=1)=>{const ex=P.x-x,ey=py-y,d=Math.hypot(ex,ey)||1;if(d<r){vx+=ex/d*w;vy+=ey/d*w;threat=true;}};
         if(m==='stormTell'&&Math.abs(P.x-boss.markX)<44){vx+=P.x>=boss.markX?1:-1;threat=true;}
-        if(boss.mark)away(boss.mark.x,boss.mark.y,boss.mark.r+18,2);
+        if(boss.deathMark)away(boss.deathMark.x,boss.deathMark.y,boss.deathMark.r+18,2);
         for(const c of boss.clouds||[])away(c.x,c.y,c.r+30,3);
         let block=false;
         for(const q of boss.shots||[]){const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>(q.kind==='hand'?120:130))continue;
@@ -530,7 +530,7 @@ async function runbossLab(BK, opts) {
         if(vx>0.3)k.right=true;else if(vx<-0.3)k.left=true;if(vy>0.3)k.down=true;else if(vy<-0.3)k.up=true;
         if(block){k.block=true;}
         else if(!rest&&!['blinkOut','blinkIn','wake'].includes(m)&&Math.abs(dx)<LAB_REACH[h]+10&&Math.abs(dy)<20&&P.atk<0){P.face=side;BK.press('atk');swings++;}
-        if(threat&&m==='markWait'&&boss.mark&&Math.hypot(P.x-boss.mark.x,py-boss.mark.y)<boss.mark.r&&P.st>20&&f%20===0)BK.press('dodge');
+        if(threat&&m==='markWait'&&boss.deathMark&&Math.hypot(P.x-boss.deathMark.x,py-boss.deathMark.y)<boss.deathMark.r&&P.st>20&&f%20===0)BK.press('dodge');
         const was=P.hp;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m,Math.max(0,was-P.hp));if(P.dead)falls++;
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});
         if(f%600===599)await yieldNow();continue;
