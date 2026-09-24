@@ -6935,7 +6935,7 @@ function updatePlayer(dt) {
     if (tapped) { if (P.tapDir === tapped && time - (P.tapT || -9) < 0.26 && !P.dashCd && (P.ground || !P.dashedAir) && !stunned && !P.plunge && !(P.dashRec > 0) && !dashStriking() && !dodging && !P.block && !(P.jetRecover > 0) && !rushing()) {
         if (spend(isPaladin() ? 10 : 8)) { noteVerb('dash'); P.dash = isPyro() ? 0.2 : isPaladin() ? 0.14 : 0.17; P.dashCd = isPaladin() ? 0.7 : 0.55; if (!P.ground) { P.airDashN = (P.airDashN || 0) + 1; P.dashedAir = P.airDashN >= (tal('airDash') ? 2 : 1); }
           P.vx = tapped * (isPyro() ? 300 : isPaladin() ? 230 : isPirate() ? 285 : 265); P.face = tapped; if (!P.ground) P.vy = Math.min(P.vy, 40);
-      if (isWarden() && tal('vaulter')) { P.dash = Math.max(P.dash, 0.2); P.dashLate = 0.2; }
+      /* (VAULTER no longer grants a dash: once passives arrived by level, it turned every Warden jump into a vault from level 3) */
       P.dashDur = P.dash;   /* how long this dash is, so a swing can be judged EARLY or LATE in it (DASH_STRIKE.win) */   /* VAULTER: the plant is always there to be taken */
           streaks(P.x, P.y - 9, -tapped, isPyro() ? ['#ffd36b', '#ff9a5c'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : ['#fff6e0', '#c9d1dc'], 110); dust(P.x - tapped * 6, P.y, 3); SFX.pRoll ? SFX.pRoll() : SFX.skid();
           if (isPyro()) { P.alight = Math.max(P.alight || 0, 0.24); flame(P.x, P.y - 8, 4, 4, 40, 2); }   // even her dash leaves a scorch
@@ -7085,8 +7085,8 @@ function updatePlayer(dt) {
   else if (isWarden() && P.jbuf > 0 && P.swim && !P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && !dodging && P.st >= 10) {   /* THE WATER VERSION of the vault: no heel to plant, so it is a kick off the shaft - up and over, a stroke's height and not a leap's */
     P.jbuf = 0; P.dash = 0; P.dashLate = 0; spend(10); P.vaultT = 0.3; P.vy = -190; P.vx = P.face * 240; P.inv = Math.max(P.inv, 0.2); noteVerb('vault'); SFX.braceSet(); squash(0.8, 1.2, 0.1); streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#bfe6f5'], 120);
   }
-  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0 || tal('vaulter')) && !stunned && !P.plunge && !dodging && (P.st >= 10 || tal('vaulter'))) {
-    P.jbuf = 0; P.dash = 0; P.dashLate = 0; if (!tal('vaulter')) spend(10);   /* VAULTER: no dash to set it up and no wind to pay for it */
+  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && !dodging && (P.st >= 10 || tal('vaulter'))) {
+    P.jbuf = 0; P.dash = 0; P.dashLate = 0; if (!tal('vaulter')) spend(10);   /* VAULTER: the vault costs no wind (it no longer skips the dash: an automatic passive must not take over the jump button) */
     P.vaultT = 0.42; P.vy = -300; P.vx = P.face * (tal('longVault') ? 380 : 300); P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; P.jumpT = time;   /* LONG VAULT: a tile and a half further */
     P.inv = Math.max(P.inv, 0.2);   /* she is up on the shaft and over it: a foe under her is gone past, not run into */
     noteVerb('vault'); SFX.pJump(); SFX.braceSet(); dust(P.x - P.face * 8, P.y, 6); squash(0.78, 1.26, 0.12);

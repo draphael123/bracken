@@ -2932,7 +2932,7 @@ export const LEGACY_NODES = [
     "col": 2,
     "name": "VAULTER",
     "max": 1,
-    "desc": "the pole vault needs no dash and no wind: plant it and go",
+    "desc": "the pole vault costs no wind: dash, plant it and go as often as you like",
     "parent": null,
     "active": false,
     "cap": false,
