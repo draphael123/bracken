@@ -36,7 +36,7 @@ try {
   await shot('9 STONEFALL (plunge)', `__geo([],[[34,'sprig'],[-34,'sprig']]);BK.press('jump');BK.keys.jump=true;__run(18);BK.keys.jump=false;BK.keys.down=true;BK.press('atk');let i=0;while(!BK.P.ground&&i++<60)__run(1);__run(1);BK.keys.down=false;return __shot('DOWN+X: STONEFALL')`);
   await shot('10 ROLLING STONE (dash X)', `__geo([],[[90,'sprig']]);BK.press('right');__run(2);BK.press('right');__run(1);BK.press('atk');__run(12);return __shot('DASH, X: ROLLING STONE')`);
   await shot('11 THE QUAKE (full TREMOR, C)', `__geo([],[[50,'sprig'],[-60,'sprig'],[110,'shield']]);BK.P.tremor=100;BK.keys.block=true;__run(1);BK.keys.block=false;__run(26);return __shot('FULL TREMOR, C: THE QUAKE')`);
-  const AB = [['stoneStep', 8, 'STONE STEP (1)', ''], ['boulder', 20, 'BOULDER (3)', ''], ['spikeRow', 16, 'SPIKE ROW (5)', ''], ['archway', 16, 'ARCHWAY (7)', ''], ['lodestone', 30, 'LODESTONE (9)', ''],
+  const AB = [['stoneStep', 8, 'STONE STEP (1)', ''], ['boulder', 20, 'BOULDER (3)', ''], ['spikeRow', 16, 'SPIKE ROW (5)', ''], ['archway', 16, 'ARCHWAY (7)', ''], ['stoneWall', 16, 'STONE WALL (9)', ''],
     ['entomb', 20, 'ENTOMB (12)', ''], ['faultLine', 16, 'FAULT LINE (14)', ''], ['golem', 50, 'GOLEM (17)', ''], ['avalanche', 44, 'AVALANCHE (20)', '']];
   for (const [id, n, label] of AB) await shot('A ' + label, `__geo(['${id}'],[[40,'sprig'],[80,'shield']]);${id === 'archway' ? 'BK.P.x+=180;BK.sim(2);' : ''}${id === 'stoneStep' ? 'BK.press("jump");BK.keys.jump=true;__run(16);BK.keys.jump=false;' : ''}BK.press('throw');__run(${n});return __shot('${label}')`);
   const names = Object.keys(S);

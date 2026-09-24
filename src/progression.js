@@ -32,6 +32,7 @@ export function growthAt(h,lv){
 export function checksum(raw){let h=14695981039346656037n;for(let i=0;i<raw.length;i++){h^=BigInt(raw.charCodeAt(i));h=BigInt.asUintN(64,h*1099511628211n);}return h.toString(16).padStart(16,'0');}
 export function validateProgress(p){
  if(!object(p))throw Error('Save must contain an object.');
+ renameSkills(p);
  const inspect=v=>{if(!v||typeof v!=='object')return;for(const key of Object.keys(v)){if(['__proto__','constructor','prototype'].includes(key))throw Error('Unsafe save key. Original retained.');inspect(v[key]);}};inspect(p);
  if(p.hero!==undefined&&!HERO_IDS.includes(p.hero))throw Error('Unknown hero. Original save retained.');
  for(const value of Object.values(p.done||{}))if(!object(value))throw Error('Invalid completion history. Original retained.');
@@ -42,6 +43,15 @@ export function validateProgress(p){
  for(const [h,v] of Object.entries(p.skillOwned||{})){if(!object(v))throw Error('Invalid skill ownership: '+h);for(const [id,on] of Object.entries(v))if(on!==true||!skillFor(h,id))throw Error('Invalid owned skill: '+id);}
  for(const [h,v] of Object.entries(p.loadouts||{}))if(!Array.isArray(v)||v.length>4||v.some(id=>id!==null&&(!skillFor(h,id)||!p.skillOwned?.[h]?.[id]))||new Set(v.filter(Boolean)).size!==v.filter(Boolean).length)throw Error('Invalid loadout: '+h);
  return p;
+}
+/* A SKILL THAT WAS REPLACED IN ITS OWN SLOT (the Geomancer's LODESTONE became STONE WALL at level 9, 2026-09-24): a save that bought the
+   old one owns the new one, in the same loadout slot - the price was the same. Done before the save is judged, so an id no catalog has
+   any more is never "Invalid owned skill" (the save refused). */
+const RENAMED_SKILLS = { geomancer: { lodestone: 'stoneWall' } };
+function renameSkills(p){
+ for(const [h,ren] of Object.entries(RENAMED_SKILLS))for(const [from,to] of Object.entries(ren)){
+  const own=p.skillOwned&&object(p.skillOwned[h])?p.skillOwned[h]:null;if(own&&own[from]!==undefined){if(own[from]===true)own[to]=true;delete own[from];}
+  const lo=p.loadouts&&Array.isArray(p.loadouts[h])?p.loadouts[h]:null;if(lo)for(let i=0;i<lo.length;i++)if(lo[i]===from)lo[i]=lo.includes(to)?null:to;}
 }
 export function migrateProgress(raw, campaignIds=[]){
  const source=raw===null?'{}':raw;let parsed;try{parsed=JSON.parse(source);}catch{throw Error('Unreadable save. Original save retained.');}

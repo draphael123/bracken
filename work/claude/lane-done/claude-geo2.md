@@ -31,7 +31,7 @@ for the 60 px it needs. Her wind is now 0.5 s (the other heroes' is 0.32), and a
 - BULWARK: "a RED blow that shatters her shield finds her at half its force". It can no longer keep the shield whole,
   because the rule is that a red blow always breaks the shield.
 
-## Where the old wall went: PARKED
+## Where the old wall went: PARKED (superseded: STONE WALL at level 9, see FOLLOW-UP)
 No slot fits: the nine actives fill her ladder (levels 1-20, three per branch). `raiseWall` and `wallTakes` are kept whole
 in src/geomancer.js but are no longer bound to C. tools/geomancer.mjs still holds them to THE CAP and to the grid rules; the
 test now raises them directly. **Recommendation:** if Daniel wants it back, swap it in for LODESTONE (level 9, the least
@@ -95,3 +95,63 @@ this lane. None are mine: they are in docs/SECOND-PC.md and docs/INTEGRATOR.md, 
    shards are one line away, but they would add damage to every heavy.
 6. **The hero-pick description now names the shield and the mend.** It does not mention burrow; I kept it short for the
    text-fit check.
+
+## FOLLOW-UP (Daniel's answers to the parked questions, 2026-09-24)
+
+| # | answer | sha |
+|---|---|---|
+| 1 | The wall comes back as a bought ability, swapped for LODESTONE at level 9 | 3573d75 |
+| 2 | Burrow stays floor-only; off the floor she dodges normally. It already did; now it is asserted | 31173cc |
+| 3 | The boss bot taps her shield on the beat and mends between attacks | the commit that adds this section |
+| 4 | Arrows use up a shield hit unless STONEFACE throws them back | kept as built |
+| 5 | The pillar's shatter does not hurt foes | kept as built |
+
+### 1. STONE WALL
+- The new ability, `stoneWall`, takes LODESTONE's slot: SHIELD branch, row 2, level 9. It keeps LODESTONE's price (240)
+  and cooldown (7 s), costs 18 wind, and works on the ground only.
+- Its menu wording: "a wall of stone rises in front of her for four seconds: it stops a YELLOW blow and a shot, and one
+  raised as the blow lands bounces their weapon off. a RED blow smashes through it".
+- It has its own pose, `gWall` (three frames: the stave swung up, then the butt driven in).
+- LODESTONE's code, draw, pose and catalog row are removed.
+- **Save fix:** a save that bought LODESTONE would have been refused outright ("Invalid owned skill"). `renameSkills` in
+  src/progression.js now runs before the save is checked and gives it STONE WALL in the same loadout slot.
+- **Proved red first:** the bought ability raised no wall, and the old save still owned lodestone.
+
+### 2. Burrow off the floor
+tools/geomancer.mjs `dodges` now asserts:
+- **Swimming:** her dodge is the ordinary swimming dash (it fires) and never burrows.
+- **In the air:** nothing burrows. She has no air roll of her own, so she has no air dodge, the same as any hero without
+  the talent.
+- **On a ceiling** (magePlayer): the dodge is the ordinary roll. This one is checked in the source, not at runtime.
+
+The behaviour was already correct, so I proved the check red by breaking the code on purpose: letting the burrow start in
+water made the swimming assertion fail.
+
+### 3. The boss bot and her shield (src/lab.js runbossLab)
+- **Yellow tell within 50 px:** she taps C on the beat. That is a perfect block, which costs the shield nothing.
+- **Red tell, or a blow from further off:** she rolls, as before. Tapping at every tell was worse at the Abbot (154/min
+  against 105), because his area attacks come from further out; that is why the 50 px limit is there.
+- **Cracked or broken shield, nothing winding up, boss more than 110 px away:** she mends (DOWN+C) and stands still until
+  it finishes.
+
+Boss lab, geomancer only, same pinned seeds, run with the same tool (work/claude/geo2/bosslab.mjs, not committed). "Before"
+is the old bot on today's code:
+
+| boss | before | after |
+|---|---|---|
+| king | win 33.6 s, 0 taken/min | win 33.6 s, 0 taken/min |
+| abbot | win 79.3 s, 105/min, 1 blow thrown back | win **67.2 s, 91/min**, 2 thrown back |
+| queen | win 35.1 s, 55/min | win 35.1 s, 55/min |
+
+- **King and queen are unchanged:** the queen's hits come from her drones and red tells, and the king never touched her.
+- **The shield never cracked** in any of the three fights, so the mend never ran here.
+- **These numbers depend on run order.** Each fight's result changes with what ran before it on the page: the Abbot on his
+  own gives old-bot timeout 120 s / 166 per min against new-bot win 85.8 s / 138 per min. So they do not line up with the
+  earlier table, which ran the knight and the warden first.
+
+### Checks for the follow-up (subset, all green in one run)
+geomancer, starter-kits, ability-poses, attack-animation, combat-feel, render-layers, skill-menu, skill-passives,
+skill-balance-probe, talents, levelling (+ levelling-runtime), progression (+ progression-runtime), tells, textfit,
+boss-openings, arena-supplies, comments, syntax, hero-trials, pixels, homepaths.
+
+Nothing needed a re-run. The full `npm run check` was not run.

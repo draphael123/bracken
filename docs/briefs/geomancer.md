@@ -46,7 +46,7 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 | 3 | **BOULDER** | a big boulder rolls along the floor, bounces off walls, bowls foes over |
 | 5 | **SPIKE ROW** | a row of spikes erupts ahead: hits and briefly roots |
 | 7 | **ARCHWAY** | a stone bridge across a gap for ~6 s; shelter from falling things beneath it |
-| 9 | **LODESTONE** | a magnetic stone that pulls armoured foes and thrown weapons toward it (into a pillar, into each other) |
+| 9 | **STONE WALL** (from 2026-09-24; LODESTONE is gone) | her old C, bought back: a wall of stone rises in front of her for four seconds - it stops a YELLOW blow and a shot, one raised as the blow lands bounces their weapon off, and a RED blow smashes through it. Its own pose (gWall) |
 | 12 | **ENTOMB** | seals a foe in stone ~3 s; hits on the tomb crack it for bonus damage. Bosses: a short open window instead |
 | 14 | **FAULT LINE** | a crack runs along the floor and the ground each side lurches, launching foes |
 | 17 | **GOLEM** | a small stone golem fights beside her for 10 s |
@@ -103,17 +103,19 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
   main.js damagePlayer asks it first. A tap still guards for `hold` (0.2 s), so a tap on the beat is a perfect block.
 - Shots: a shot that reaches her is a blow on the shield like any other (it costs a hit); with STONEFACE one met on the beat
   is thrown back.
-- **Where the old wall went: PARKED.** No bought slot fits - the nine actives fill the ladder (levels 1-20, three per
-  branch). `raiseWall`/`wallTakes` are kept whole in src/geomancer.js, unbound from C, and tools/geomancer.mjs still holds
-  them to THE CAP and the grid rules. Recommendation: if Daniel wants it back, swap it for LODESTONE (level 9, the least
-  distinct of the nine) rather than adding a tenth rung.
+- **Where the old wall went: STONE WALL, level 9, in LODESTONE's place** (Daniel, 2026-09-24; she stays at nine). Same slot,
+  price (240) and cooldown (7 s), 18 wind, on the ground only; `kit.stoneWall` calls `raiseWall`, and `wallTakes` still answers a
+  blow on it. LODESTONE's code, pose and catalog row are gone. A save that bought LODESTONE loads owning STONE WALL in the same
+  loadout slot (src/progression.js `renameSkills`, run before the save is judged - otherwise the old id would refuse the save).
 - Proved: tools/geomancer.mjs `shield` - two yellow blows break it, one red breaks it fresh or cracked, a perfect block costs
   nothing, raising and holding costs no wind, ten seconds idle leave it broken, THE MEND restores it, a blow breaks the mend
   off. RED on the old code (the wall took a third yellow blow; no shield state).
 
 ### 4. HER DODGE IS BURROW
-- main.js `geoBurrowStep / geoSurface` (the dodge still owns the grace, cost and cooldown: 0.3 s, 190 px/s). On the floor only;
-  in the water and walking a ceiling it is still the old roll (there is no floor to go into - report, not a gap in the rule).
+- main.js `geoBurrowStep / geoSurface` (the dodge still owns the grace, cost and cooldown: 0.3 s, 190 px/s). On the floor only
+  (Daniel, 2026-09-24: keep it exactly so). Swimming, her dodge is the ordinary swimming dash; in the air she has no dodge of her
+  own (no air roll), so nothing burrows; walking a ceiling (magePlayer) it is the ordinary roll. tools/geomancer.mjs `dodges`
+  asserts all three (the swimming one proved red by letting the burrow start in the water).
 - THROUGH FLOOR ONLY: each frame, no floor (solid or one-way) under her leading foot and she stops and comes up there.
 - A12: where she comes up, rock in her body, no floor, or a living foe's box means the spot is taken; she is put at the
   nearest clear footing within 48 px, ahead first.
@@ -124,6 +126,14 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
   exactly where a dodge lands her she comes up clear of it and out of rock; a blow along the ground while under does not
   land; X as she surfaces kicks the stone. RED on the old roll for the pit (she fell 84 px), the foe (she ended inside it)
   and the stone (none); the "blow passes over her" line was already true of the roll's grace.
+
+### Decided after the rework (Daniel, 2026-09-24)
+- ARROWS use up a shield hit (unless STONEFACE throws them back): kept as built.
+- The pillar's SHATTER does not hurt foes: kept as built (it is a visual; the blow is the eruption).
+- THE BOSS BOT uses her shield (src/lab.js runbossLab): a yellow tell within 50 px is TAPPED on the beat (DEFLECT_TAP - a
+  perfect block, which costs the stone nothing), a red one or a far one is rolled as before, and with a cracked or broken
+  shield, nothing winding up and the boss 110 px clear, she MENDS (DOWN+C) and stands on it. In the three pinned boss fights
+  (wood / kings / spire) no blow ever cracked it, so the mend never ran there.
 
 ## Open (decide when she is built, not now)
 - Her name and look beyond the stave. (Built as THE GEOMANCER; the look is now THE REWORK 2, above.)
