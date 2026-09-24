@@ -20,7 +20,7 @@ const r=await pg.evalp(`(()=>{
  const pr=BK.props().find(p=>p.raftCall==='marsh-grove'),m=BK.movers().find(m=>m.callId===pr.raftCall);
  BK.coopStart('warden',false);BK.tp(pr.x/16-.5,pr.y/16-1);const q=BK.players()[1];m.x=m.x0+70;m.done=false;m.returning=false;m.called=false;m.moving=true;q.x=m.x+20;q.y=m.y;q.onMover=m;q.ground=true;q.vy=0;
  BK.press('talk');BK.sim(1);if(m.called||m.returning)throw Error('stole occupied raft');BK.sim(80);if(m.returning)throw Error('auto return stole partner raft');BK.coopEnd();
- const shrine=BK.L.ents.find(e=>e.t==='check'&&e.x===392);if(!shrine)throw Error('dock checkpoint missing');BK.tp(shrine.x,shrine.y);BK.sim(3);BK.P.dead=.01;BK.sim(3);
+ const shrine=BK.L.ents.find(e=>e.t==='check'&&Math.abs(e.x-392)<=3);/* within 3: level.js groundCheckpoints may slide a checkpoint off a dock's edge onto its boards */if(!shrine)throw Error('dock checkpoint missing');BK.tp(shrine.x,shrine.y);BK.sim(3);BK.P.dead=.01;BK.sim(3);
  const recovered=BK.props().find(p=>p.raftCall==='marsh-grove'),freshRaft=BK.movers().find(m=>m.callId==='marsh-grove');if(!recovered||BK.P.dead||Math.abs(BK.P.x-(shrine.x*16+8))>16)throw Error('checkpoint recovery');
  BK.enemies().forEach(e=>e.alive=false);BK.tp(recovered.x/16-.5,17);freshRaft.x=freshRaft.x1;freshRaft.done=true;BK.press('talk');BK.sim(1);if(!freshRaft.called)throw Error('winch lost after respawn');BK.sim(360);if(freshRaft.x!==freshRaft.x0)throw Error('post-respawn recall');
  return {rows,coopOccupiedProtected:true,checkpointRetry:true};

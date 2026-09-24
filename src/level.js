@@ -7547,13 +7547,16 @@ export const CHECK_BLOCKED = new Set([T.SOLID, T.CRATE, T.PALISADE, T.ICE, T.SOF
 export function checkStands(L, x, y, strict) {
   const at = (cx, cy) => (cx < 0 || cy < 0 || cx >= L.W || cy >= L.H) ? T.SOLID : L.grid[cy * L.W + cx], fl = cx => !CHECK_FLOORLESS.has(at(cx, y + 1));
   if (CHECK_BLOCKED.has(at(x, y)) || !fl(x)) return false;
+  /* a spot it may MOVE to must also have room for its body: nothing solid in the three columns across its two rows
+     (the Lamplit Street's slid one onto floor beside a wall step and ran 14 px into the masonry - tools/headless floats) */
+  if (strict && (at(x, y) !== T.AIR || at(x, y - 1) !== T.AIR || [-1, 1].some(d => CHECK_BLOCKED.has(at(x + d, y))))) return false;   /* its body is two rows tall: both must be open air where it moves to (a one-way plank above counts - the Lamplit Street's lamp came up through one) */
   return strict ? fl(x - 1) && fl(x + 1) : fl(x - 1) || fl(x + 1);
 }
 export function groundCheckpoints(L) {
   if (!L || !L.grid || !L.ents) return L;
   for (const e of L.ents) { if (e.t !== 'check' || checkStands(L, e.x, e.y, true)) continue;
     let moved = false; for (const d of [1, -1, 2, -2, 3, -3]) if (checkStands(L, e.x + d, e.y, true)) { e.x += d; moved = true; break; }
-    if (!moved && !checkStands(L, e.x, e.y, false)) for (const d of [1, -1, 2, -2, 3, -3]) if (checkStands(L, e.x + d, e.y, false)) { e.x += d; break; } }
+    if (!moved && !checkStands(L, e.x, e.y, false)) for (const d of [1, -1, 2, -2, 3, -3]) if (checkStands(L, e.x + d, e.y, false) && L.grid[e.y * L.W + e.x + d] === T.AIR && L.grid[(e.y - 1) * L.W + e.x + d] === T.AIR) { e.x += d; break; } }
   return L;
 }
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => groundCheckpoints(b(...a)); }
