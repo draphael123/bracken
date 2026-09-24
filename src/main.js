@@ -19286,7 +19286,7 @@ function updateProps(dt) {
          arriving under it - tools/ore-ride.mjs was knocked off the chute by it - so the beat keeps its own time.) */
       if (pr.seen) { const inV = pr.x > camX + 8 && pr.x < camX + VW - 8 && (pr.lane || pr.gy || pr.y) > camY + 8 && pr.y < camY + VH; pr.seenT = inV ? (pr.seenT || 0) + dt : 0;
         if (pr.timer <= 0 && pr.seenT < (pr.tellT || 0.8)) pr.timer = pr.every; }
-      if (pr.timer < (pr.tellT || 0.8) && Math.random() < dt * 45) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every; rocks.push({ x: pr.x, y: pr.y, vy: 0, t: 0, dead: false, apple: !!pr.apple }); if (!pr.apple) SFX.stone(); } }
+      if (pr.timer < (pr.tellT || 0.8) && Math.random() < dt * (pr.seen ? 90 : 45)) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every; rocks.push({ x: pr.x, y: pr.y, vy: 0, t: 0, dead: false, apple: !!pr.apple }); if (!pr.apple) SFX.stone(); } }
     /* THE COUNTER BELONGS TO THE STORE, AND TO NOTHING ELSE. This fired on any keeper anywhere, and eight of them stood
        about in real levels selling to passers-by: press UP at the miller in the Hexed Fields and the run you were in the
        middle of was left standing while the shop menu came up over it. The keepers are gone from every level now, and the
@@ -21065,7 +21065,8 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'rockfall') { if (pr.gy === undefined) { let gy = Math.floor(pr.y / TS) + 1; while (gy < LH && !isSolid(Math.floor(pr.x / TS), gy) && !isOneWay(tileAt(Math.floor(pr.x / TS), gy))) gy++; pr.gy = gy * TS; } /* the fall line: rubble where they land, and a red mark that pulses as the next one works loose */
       const rx = Math.round(pr.x - cx), ry = pr.gy - cy; g.fillStyle = '#6a6e78'; for (const [ox, w] of [[-7, 3], [-2, 2], [3, 3], [6, 2]]) g.fillRect(rx + ox, ry - 2, w, 2); g.fillStyle = '#9aa0aa'; g.fillRect(rx - 5, ry - 3, 2, 1); g.fillRect(rx + 4, ry - 3, 2, 1);
       if (Math.abs(P.x - pr.x) < 230 && pr.timer < (pr.tellT || 0.8)) { const k = 1 - pr.timer / (pr.tellT || 0.8); g.globalAlpha = 0.35 + 0.5 * k; g.strokeStyle = '#ff6b4a'; g.lineWidth = 1; g.beginPath(); g.ellipse(rx, ry - 1, 10 - k * 3, 3, 0, 0, Math.PI * 2); g.stroke();
-        if (pr.lane) { const ly = pr.lane - cy; g.beginPath(); g.ellipse(rx, ly - 1, 12 - k * 3, 3, 0, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#ff6b4a'; g.globalAlpha = 0.25 + 0.4 * k; g.fillRect(rx - 1, Math.round(pr.y - cy) + 4, 2, Math.max(0, Math.round(ly - pr.y) - 8)); }   /* THE ORE ROAD: where it crosses the cable, and the fall line down to it */
+        if (pr.lane) { const ly = pr.lane - cy, y0 = Math.round(pr.y - cy) + 4; g.beginPath(); g.ellipse(rx, ly - 1, 12 - k * 3, 3, 0, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#ff6b4a'; g.globalAlpha = 0.4 + 0.5 * k;
+          for (let yy = y0 + ((time * 60) % 8); yy < ly - 6; yy += 8) g.fillRect(rx - 1, Math.round(yy), 2, 4); }   /* THE ORE ROAD: where it crosses the cable, and the fall line down to it, marching */
         g.globalAlpha = 1; } }
     else if (pr.t === 'brazier') g.drawImage(PROP.brazier[pr.lit ? 1 : 0], Math.round(pr.x) - 7 - cx, Math.round(pr.y) - 16 - cy);
     else if (pr.t === 'crank') { g.drawImage(PROP.crank, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 14 - cy);
