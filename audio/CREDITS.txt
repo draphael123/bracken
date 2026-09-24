@@ -153,3 +153,10 @@ levelled to -15 LUFS like the rest, three of them from packs already credited he
 - oreroad.ogg = "215 [Super Action Chiptunes] bgm_stage_6" from "12 Music Loops" by SubspaceAudio (Juhani Junkala), CC0 -
   https://opengameart.org/content/12-music-loops - THE ORE ROAD, replacing the synthesised 'mineworks'. Lowpassed at 9 kHz and
   level-matched to its neighbours Stormhold and Highcrown (-10.6 LUFS), loop length untouched (55.4 s).
+
+- unburied.ogg = "Haunting Chiptune Loop [Void Estate]" by Zane Little Music, CC0 -
+  https://opengameart.org/content/haunting-chiptune-loop-void-estate - THE UNBURIED FIELD. Lowpassed at 9 kHz, loudness-normalised
+  (-12.6 LUFS, a touch under its neighbours for a haunted field), loop untouched (86.5 s).
+- deathknight.ogg = Mussorgsky, "Night on Bald Mountain" (1867), chiptune arrangement by TheOuterLinux, CC0 -
+  https://opengameart.org/content/mussorgsky-night-on-bald-mountain - THE FIRST DEATH KNIGHT's fight: the climax, 4:00-6:00 of the
+  LMMS render, faded in and out for a loop, lowpassed at 9 kHz, -11.2 LUFS.

@@ -1,8 +1,9 @@
 # THE GEOMANCER — a brief (a third starter hero)
 
-**Status: APPROVED IN PRINCIPLE by Daniel, 2026-09-23. NOT TO BE BUILT YET.** Queue position: AFTER the Knight rework
-(`docs/briefs/knight-rework.md`), the levelling system (passives by level, full heal on level-up, catch-up XP), and the
-map work. She is built on the finished versions of those systems, not the current ones.
+**Status: APPROVED by Daniel, 2026-09-23; BEING BUILT 2026-09-24 on `claude/geomancer` (lane M).** She is a
+**STARTER CLASS: free from the start, like the Knight and the Warden** (Daniel's decision, 2026-09-24 - see Open, below).
+She is built on the batch-6 systems (two ability slots, src/hero-poses.js); the passives are defined so that either the
+equip-a-passive loadout of today or the unlock-by-level system another lane is building can carry them.
 
 ## The one idea
 The Knight **absorbs** a blow. The Warden **turns** it at range. The Geomancer **builds something in its way**, then
@@ -64,5 +65,7 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 - The Editor and Boss Rush are parked: do not add her to either.
 
 ## Open (decide when she is built, not now)
-- Her name and look beyond the stave. Whether she is a starter (free) or a cheap early unlock.
+- Her name and look beyond the stave. (Built as THE GEOMANCER: a moss-green hood and mantle over grey stone-cloth.)
+- ~~Whether she is a starter (free) or a cheap early unlock.~~ **DECIDED (Daniel, 2026-09-24): a STARTER - free from the
+  start like the Knight and the Warden**, on the hero pick with them and always offered to player two in co-op.
 - Whether ARCHWAY/STONE STEP open "Geomancer-only" optional routes, and how many.
