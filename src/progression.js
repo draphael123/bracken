@@ -5,7 +5,10 @@ export const PROGRESSION_VERSION = 1;
 export const HERO_IDS = ['knight','pyro','paladin','pirate','reaper','warden'];
 const object = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const clone = v => JSON.parse(JSON.stringify(v));
-export const slotsAt = lv => lv >= 16 ? 4 : lv >= 8 ? 3 : 2;
+/* TWO ABILITY SLOTS, AT EVERY LEVEL (Daniel, 2026-09-23): "the UI gets too messy with four". A save that had three or four
+   equipped keeps its first two; the rest stay owned and can be swapped in at a shop, the map or a safe shrine. */
+export const MAX_SLOTS = 2;
+export const slotsAt = () => MAX_SLOTS;
 const BY_HERO=Object.fromEntries(HERO_IDS.map(h=>[h,SKILLS.filter(n=>n.hero===h)]));
 const BY_ID=Object.fromEntries(HERO_IDS.map(h=>[h,Object.fromEntries(BY_HERO[h].map(n=>[n.id,n]))]));
 export const growthNodes=Object.fromEntries(HERO_IDS.map(h=>[h,new Set(LEGACY_NODES.filter(n=>n.hero===h&&n.destination==='growth').map(n=>n.id))]));

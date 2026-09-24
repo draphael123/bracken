@@ -29,7 +29,7 @@ const LEDGE = new Set([T.ONEWAY, T.REED, T.PLANK, T.BOUNCER, T.SHELF, T.RAIL, T.
 // THE CHECKPOINT MARKERS, as main.js picks one for a level (keep in step with shrineKind there)
 const markerOf = (R, id) => { const p = R.palette || {}, d = p.dress, st = p.set; if (R.oreRoad) return 'mine';
   if (st === 'ship') return 'ship'; if (st === 'city') return 'city'; if (st === 'reef' || st === 'shore') return 'reef';
-  if (d === 'myc' || p.myc) return 'myc'; if (d === 'marsh') return 'marsh'; if (d === 'crag') return 'crag';
+  if (d === 'myc' || p.myc) return 'myc'; if (d === 'marsh') return 'marsh'; if (d === 'crag') return 'mine';
   if (p.hall || R.castle || id === 'crown' || id === 'storm' || id === 'stockade') return 'hall'; return 'wood'; };
 // THE LOWEST ROW EACH MARKER'S DRAWING REACHES, read off its draw calls. They are 20x34 with the foot on row 33.
 const ART = readFileSync(new URL('../src/art.js', import.meta.url), 'utf8');

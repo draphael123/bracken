@@ -7164,8 +7164,8 @@ export const LEVELS = [
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'EIGHT FLOORS ON ONE CLIFF, AND THE WAY UP IS THROUGH THEM.', build: hangingVillage, needs: 'scree' },
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND IS THE VERB: IT CARRIES YOU, IT PINS YOU, IT LIFTS YOU.', build: galeMoor, needs: 'spire' },
-  { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES, AND EVERY KEY IS INDOORS.', build: stormhold, needs: 'moor' },
-  { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: 'oreroad' },   /* (2026-09-23: the Ore Road is the way to her gate now) */
+  { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES, AND EVERY KEY IS INDOORS.', build: stormhold, needs: 'oreroad' },
+  { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: 'storm' },   /* (2026-09-23: the Ore Road is the way to her gate now) */
   { id: 'longwater', arc: 'the sea', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: longWater, needs: 'crown' },
   { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', rule: 'BREATH IS THE CLOCK. THE AIR IS IN BELLS, A SWIM APART.', build: shipwreckReef, needs: 'longwater' },
   { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'FOUR HULLS LASHED TOGETHER: THE WAY PAST IS OVER THEM, NOT THROUGH.', build: theFlotilla, needs: 'reef' },
@@ -7205,7 +7205,7 @@ export const LEVELS = [
   { id: 'witchlight', name: 'THE WITCHLIGHT STAIR', sub: 'the road up the tower hill', rule: 'SLABS DRIFT, RUNES LIFT, GLYPHS TURN YOU OVER. CLIMB TO THE GATE.', build: ()=>buildWitchlight({painter,T,TS}), needs: 'burial' },
   /* THE ORE ROAD (2026-09-23): the castle's supply line, a cableway over the gorge between Stormhold and Highcrown. Appended so no
      index moves; Highcrown needs it now */
-  { id: 'oreroad', name: 'THE ORE ROAD', sub: "the castle's supply line", rule: 'THE BUCKETS ARE THE FLOOR. STEP ON, STEP OFF, AND DO NOT STAND ON RUST.', build: ()=>buildOreRoad({painter,T,TS}), needs: 'storm' },
+  { id: 'oreroad', name: 'THE ORE ROAD', sub: "the castle's supply line", rule: 'THE BUCKETS ARE THE FLOOR. STEP ON, STEP OFF, AND DO NOT STAND ON RUST.', build: ()=>buildOreRoad({painter,T,TS}), needs: 'moor' },
   /* THE UNBURIED FIELD (Lane C, 2026-09-23/25): the optional Death Knight class level, a spur off THE WITCHLIGHT STAIR.
      Appended so no index moves; brief .claude/briefs/unburied-field.md, gate on hero 'reaper' via coinNeeds: 'unburied'
      in src/main.js's hero table. Map node NOT placed here (docs/briefs/map-redesign.md 4.2: node (158,46), spur: true) -
@@ -7752,3 +7752,26 @@ for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id =
 // The editor puts its document here. Nothing else writes to it, and with no editor open it hands
 // back an empty room, so LEVELS is always safe to build.
 export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };
+
+/* EVERY CHECKPOINT STANDS ON FLOOR (Daniel, 2026-09-23: "the checkpoints should be grounded properly"). A checkpoint is a
+   marker three tiles wide at its foot; placed on a ledge's last tile it hung half over air - sixteen did, in twelve levels,
+   because a stretch or a later edit moved the floor out from under them. Fix the rule, not the rows: when any level is
+   built, a checkpoint whose three tiles underfoot are not all floor slides to the nearest spot within three columns
+   where they are (and where it is not inside rock). tools/checkpoints.mjs asserts the result for every level. */
+export const CHECK_FLOORLESS = new Set([T.AIR, T.SPIKE, T.CLIMB, T.WEB, T.BOUNCER]);
+export const CHECK_BLOCKED = new Set([T.SOLID, T.CRATE, T.PALISADE, T.ICE, T.SOFT, T.CRYST, T.SHELF]);
+/* the marker's foot is narrower than a tile, so the rule is: the tile under its centre is floor and so is one beside it,
+   and it is not standing inside anything solid. Where a full three tiles of floor is within three columns, it goes there. */
+export function checkStands(L, x, y, strict) {
+  const at = (cx, cy) => (cx < 0 || cy < 0 || cx >= L.W || cy >= L.H) ? T.SOLID : L.grid[cy * L.W + cx], fl = cx => !CHECK_FLOORLESS.has(at(cx, y + 1));
+  if (CHECK_BLOCKED.has(at(x, y)) || !fl(x)) return false;
+  return strict ? fl(x - 1) && fl(x + 1) : fl(x - 1) || fl(x + 1);
+}
+export function groundCheckpoints(L) {
+  if (!L || !L.grid || !L.ents) return L;
+  for (const e of L.ents) { if (e.t !== 'check' || checkStands(L, e.x, e.y, true)) continue;
+    let moved = false; for (const d of [1, -1, 2, -2, 3, -3]) if (checkStands(L, e.x + d, e.y, true)) { e.x += d; moved = true; break; }
+    if (!moved && !checkStands(L, e.x, e.y, false)) for (const d of [1, -1, 2, -2, 3, -3]) if (checkStands(L, e.x + d, e.y, false)) { e.x += d; break; } }
+  return L;
+}
+for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => groundCheckpoints(b(...a)); }

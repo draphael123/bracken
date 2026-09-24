@@ -135,7 +135,7 @@ const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
 const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false };
-const TIER = { unburied: 2.1, oreroad: 1.25, witchlight: 2.3, burning: 0.38, fallingtower:2.35, keep: 2.25, harbor: 2.3, burial: 2.25, mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
+const TIER = { unburied: 2.1, oreroad: 1.15, witchlight: 2.3, burning: 0.38, fallingtower:2.35, keep: 2.25, harbor: 2.3, burial: 2.25, mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
 // how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
@@ -2858,7 +2858,7 @@ function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) 
 function levelUp(n) { lvUpN = n; if (state !== 'play') return;
   lvUpT = 2.6; const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh));
   SFX.rankUp(); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b');
-  { const before=growthAt(hero(),n-1),after=growthAt(hero(),n); hintT=4.5; hintMsg='LEVEL '+n+': +'+(after.hp-before.hp)+' HEALTH, +5 STAMINA, +'+(after.damage-before.damage)+' DAMAGE.'+(n===8||n===16?' A NEW SKILL SLOT IS OPEN.':''); }
+  { const before=growthAt(hero(),n-1),after=growthAt(hero(),n); hintT=4.5; hintMsg='LEVEL '+n+': +'+(after.hp-before.hp)+' HEALTH, +5 STAMINA, +'+(after.damage-before.damage)+' DAMAGE.'; }
   saveProgress(); }
 /* THE SIM (tools/xp.mjs): the campaign in the order it opens - a secret wood straight after the wood that opens it - priced by the same
    xpFoe the kills use. A straight run kills XP_KILL_NORMAL of what a wood holds, every mini and boss, and takes the share; a full clear
@@ -2932,8 +2932,8 @@ const CRAG_NODES = [
   { id: 'highstore', kind: 'store', shop: 'shopCrag', needs: 'scree', x: 108, y: 105, name: 'THE HIGH STORE' },
   { id: 'spire', kind: 'level', level: 7, x: 150, y: 89, name: 'THE SUNSPIRE' },
   { id: 'moor', kind: 'level', level: 8, x: 192, y: 73, name: 'GALE MOOR' },
-  { id: 'storm', kind: 'level', level: 9, x: 228, y: 58, name: 'STORMHOLD' },
-  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 252, y: 42, name: 'THE ORE ROAD' },   /* mid-climb, road on both sides */
+  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 228, y: 58, name: 'THE ORE ROAD' },   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
+  { id: 'storm', kind: 'level', level: 9, x: 252, y: 42, name: 'STORMHOLD' },
   { id: 'crown', kind: 'level', level: 10, x: 260, y: 26, name: 'HIGHCROWN' },
   { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 278, y: 36, spur: true, name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
 ];
@@ -3376,7 +3376,7 @@ function drawMap() {
        measured with textW at size 6: 234 + 66 leaves a clear 12px between them at 320 wide. */
     const on = coopShown(), coopLbl = 'F CO-OP ' + (on ? 'ON' : 'OFF');
     g.fillStyle = 'rgba(12,10,18,0.78)'; g.fillRect(0, VH - 11, VW, 11);
-    text(mapPanel.open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS MOVE  Z ENTER  X BEASTS  V EQUIP', 4, VH - 8, UI.dim, 'left', 6);
+    text(mapPanel.open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS MOVE  Z ENTER  TAB ALL LEVELS  X BEASTS', 4, VH - 8, UI.dim, 'left', 6);
     text(coopLbl, VW - 4, VH - 8, on ? '#8fd160' : UI.dim, 'right', 6); }
   if (mapPanel.open) drawMapPanel();   /* over everything else, on the side away from the token so it never covers it or the node you are standing on */
   g.__world = false;
@@ -3546,15 +3546,15 @@ const BRANCH_PIX = {
     ['.sssss....', '.swwws....', '.sssss....', '...b......', '...b......', '...b......', '...b......', '..........', '..........', '..........']] };
 function drawTree() {
  g.drawImage(MAPC,0,0);g.fillStyle='rgba(10,9,18,0.94)';g.fillRect(0,0,VW,VH);panel(3,2,VW-6,VH-4);
- const h=hero(),lv=heroLevel(),ns=treeNodes(),idx=Math.max(0,Math.min(ns.length-1,treeI)),n=ns[idx],list=equipped(PROG,h,lv),limit=slotsAt(lv),width=(VW-20)/4;
+ const h=hero(),lv=heroLevel(),ns=treeNodes(),idx=Math.max(0,Math.min(ns.length-1,treeI)),n=ns[idx],list=equipped(PROG,h,lv),limit=slotsAt(lv),width=(VW-20)/limit;
  text('SKILLS / LOADOUT',10,6,UI.title,'left',6);text('LV '+lv+'   '+(PROG.coins||0)+' COINS',VW-10,6,UI.gold,'right',6);
- for(let i=0;i<4;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),key=['F','G',String(SET.skill3Key).toUpperCase(),String(SET.skill4Key).toUpperCase()][i];g.fillStyle=i<limit?'#302c3e':'#191622';g.fillRect(x,19,width-3,23);text(i<limit?(sk&&!sk.active?'PASSIVE':key):'LEVEL '+(i===2?8:16),x+4,21,i<limit?UI.gold:UI.dim,'left',6);text(fitName(sk?sk.name:i<limit?'EMPTY':'LOCKED',width-11,6),x+4,31,UI.text,'left',6);}
+ for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),key=['F','G'][i];g.fillStyle=i<limit?'#302c3e':'#191622';g.fillRect(x,19,width-3,23);text(i<limit?(sk&&!sk.active?'PASSIVE':key):'LEVEL '+(i===2?8:16),x+4,21,i<limit?UI.gold:UI.dim,'left',6);text(fitName(sk?sk.name:i<limit?'EMPTY':'LOCKED',width-11,6),x+4,31,UI.text,'left',6);}
  for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,46,91,12);text(tab===0?'ACTIVES':'PASSIVES',x+45,49,treeBranch===tab?UI.gold:UI.dim,'center',6);}text((Math.floor(idx/6)+1)+' / '+Math.ceil(ns.length/6),VW-12,49,UI.dim,'right',6);
  const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
  if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):'PASSIVE TECHNIQUE  1 SLOT'),12,124,UI.gold,'left',6);
  const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
  const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,134+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
- const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':('LEFT/RIGHT TABS  Z BUY  F/G/'+SET.skill3Key+'/'+SET.skill4Key+' EQUIP  X MORE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
+ const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':('LEFT/RIGHT TABS  Z BUY  F/G EQUIP  X MORE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
 }
 function updateStore(dt) {
   if (morePress() && storePages > 1) { storePage = (storePage + 1) % storePages; SFX.ui(); }   /* the next page of a long description */
@@ -3961,7 +3961,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
 const PAUSE_ITEMS = ['Resume', 'Map', 'Skills', 'Equip', 'Hero', 'Co-op', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
-const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Way-on arrow', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Slot 3 key', 'Slot 4 key', 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Export save', 'Import save', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Hitboxes', 'Back'];
+const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Way-on arrow', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X',   /* 'Slot 3 key' and 'Slot 4 key' left the menu with the third and fourth slots (MAX_SLOTS = 2); their handlers stay */ 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Export save', 'Import save', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Hitboxes', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
 const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 : 1;
@@ -17124,7 +17124,7 @@ function shrineKind() { const p = L.palette || {}, d = p.dress, st = p.set;
   if (st === 'ship') return 'ship'; if (st === 'city') return 'city';
   if (st === 'reef' || st === 'shore') return 'reef';
   if (d === 'myc' || p.myc) return 'myc'; if (d === 'marsh') return 'marsh';
-  if (d === 'crag') return 'crag'; if (p.hall || L.castle) return 'hall';
+  if (d === 'crag') return 'mine'; if (p.hall || L.castle) return 'hall';   /* THE CRAGS TOO (Daniel 2026-09-23): the stone cairn stood on a 7 px foot and read as a heap of rubble - every crag checkpoint is the grounded pit lamp now */
   { const id = (LEVELS[levelIndex] || {}).id; if (id === 'crown' || id === 'storm' || id === 'stockade') return 'hall'; }   /* their palettes carry no dress: name them */
   return 'wood'; }
 function drawSlick(cx, cy) {
