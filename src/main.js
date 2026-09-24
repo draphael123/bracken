@@ -6992,7 +6992,7 @@ function updatePlayer(dt) {
         ringAt(P.x + P.face * 8, P.y - 10, 12, '#ffe6a0', 0.22); } dust(P.x, P.y, 5); squash(1.2, 0.8, 0.1); }
   }
   if (dodging && isPyro() && tal('phoenixTrail') && Math.abs(P.x - (P.trailX ?? -99)) > 12) { P.trailX = P.x; fires.push({ x: P.x, y: P.y, life: 1.4, delay: 0, own: true }); }   /* PHOENIX TRAIL: the roll leaves its fire behind */
-  if (dodging && isPirate() && tal('rollCut')) P.dashLate = 0.2;   /* TUMBLING CUT: a swing out of the roll is a dash attack */
+  if (dodging && isPirate() && tal('rollCut') && !keys.up && !keys.down) P.dashLate = 0.2;   /* TUMBLING CUT: a swing out of the roll is a dash attack, but only when nothing else was asked for - an automatic passive must not take over the attack button and bury the rising cut or the low sweep */
   if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper()) ghosts.push({ x: P.x, y: P.y, face: P.face, life: isWarden() ? 0.3 : 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2, step: isWarden() }); }   /* HER STEP IS NOT A ROLL AND MUST NOT LOOK LIKE ONE: see the draw */
   // THE PYROMANCER, ALIGHT: a trail of embers, and anything she passes through takes fire
   if (P.alight > 0) { P.alight -= dt;

@@ -2014,7 +2014,7 @@ export const LEGACY_NODES = [
     "col": 0,
     "name": "TUMBLING CUT",
     "max": 1,
-    "desc": "a swing out of a roll is a dash attack: it carries you on and throws what it hits",
+    "desc": "an unaimed swing out of a roll is a dash attack: it carries you on and throws what it hits",
     "parent": "swash",
     "active": false,
     "cap": false,
