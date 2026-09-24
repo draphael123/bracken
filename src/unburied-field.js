@@ -121,6 +121,9 @@ export function buildUnburiedField({ painter, T, TS }) {
 
   // ---- 6. THE CHAPEL OF THE FALLEN ORDER (c 300-373) ----
   ent('check', 302, G); block(348, 350, G - 12, G - 3);                                                        // the chapel's broken arch (walked under)
+  /* THE LOOK PASS (2026-09-24): what is left of the nave's columns, either side of the arch and along the far wall. Scenery
+     only - deco stands behind the play and nothing collides with it. */
+  ent('deco', 347, G, { kind: 'brokenPillar', v: 0 }); ent('deco', 351, G, { kind: 'brokenPillar', v: 1 }); ent('deco', 366, G, { kind: 'brokenPillar', v: 1 });
   const A2 = UF.AMBUSH; ent('sign', 314, G, { text: 'THE FALLEN ORDER\'S CRYPT. THE DOOR SHUTS BEHIND YOU.' });
   ent('silver', 322, G - 3); plat(320, G - 2, 5);                                                              // silver 3: on the crypt's tomb
   pegWall(330, 26, [34, 32, 30, 28], 'the chapel\'s gallery and its coins'); plat(332, 25, 4); coins([333, 24], [335, 24]);
@@ -128,19 +131,38 @@ export function buildUnburiedField({ painter, T, TS }) {
   ent('ballista', 358, G, { aim: [372, G] });
   ent('check', 352, G); ent('check', 370, G);                                                                   // B6: one outside the arena walls
   coins([307, G], [316, G], [326, G], [344, G], [356, G], [366, G]);
-  meet('THE CHAPEL YARD', 303, 316, [['corpse', 308, G], ['bannerbearer', 311, G], ['corpse', 313, G], ['wight', 316, G]]);
+  meet('THE CHAPEL YARD', 303, 316, [['corpse', 308, G + 1], ['bannerbearer', 311, G + 1], ['corpse', 313, G], ['wight', 316, G]]);   /* 308 and 311 stand IN the crater (308-312 is a row down): at G they stood over its air and dropped a row on the first frame (tools/newlevel.mjs) */
   meet('THE BROKEN NAVE', 352, 370, [['bonearcher', 354, G], ['zombie', 360, G], ['husk', 364, G], ['corpse', 368, G]]);
 
   // ---- 7. THE FIRST DEATH KNIGHT (c 374-419): forty tiles, two tomb ledges, and the dead he raises off the floor ----
   const A = UF.ARENA; plat(382, G - 2, 4); plat(402, G - 2, 4);                                                // A12: the room has footing off the floor as well as on it
   ent('deathknight', 396, G, { face: -1 });
+  ent('deco', 377, G, { kind: 'brokenPillar', v: 0 }); ent('deco', 411, G, { kind: 'brokenPillar', v: 0 });   /* the chapel's last two columns, at the walls of his room */
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);                         /* ropes hung LAST */
+  /* THE GRAVES THE BATTLE LEFT (look pass 2026-09-24). The field is dense with the fight - cover every dozen tiles, stakes, signs,
+     the fallen lying where they fell - so the sprinkler (DRESS.unburied) finds little open ground, and these are set by hand on
+     the few stretches nothing uses: a headstone on the barrow, a cross in each of the first craters, spears and a shield where
+     the charge broke, the tower crew's banner in the dirt. Scenery only: deco collides with nothing. */
+  for (const [kind, x, y, v] of [['fieldGrave', 85, G - 2, 0], ['fieldGrave', 11, G + 1, 1], ['crookedCross', 54, G + 1, 1], ['bones', 28, G + 4, 0], ['brokenSpears', 136, G, 1],
+    ['bones', 204, G + 5, 1], ['stuckShield', 244, G, 0], ['fallenBanner', 254, G, 0], ['oldStandard', 260, G, 0]]) ent('deco', x, y, { kind, v });
   /* THE GARRISON ROW the brief asks for, kept small: the encounters are the level and this is the battle going on round them.
      No blanket calm. A build reads it off L.garrison the way GARRISON in src/level.js is read. */
   garrison.push(['corpse', 10], ['zombie', 6], ['bonearcher', 4], ['bonegob', 3], ['wight', 2], ['husk', 2]);
   elites.push(['bannerbearer', 128, G, { face: -1 }], ['wight', 260, 21, { face: -1 }]);
   return {
-    music: 'unburied',   /* its own sound (Daniel 2026-09-24): "Haunting Chiptune Loop [Void Estate]", CC0 - audio/CREDITS.txt */
+    music: 'unburied',
+    /* THE LOOK (Daniel 2026-09-24: "it uses the forest theme/tiles ... it needs a graveyard theme, something similar to the level
+       that is after Waymeet"). The Hexed Fields' graveyard family - its graves and crosses, fog in the hollows, rim-lit dark
+       layers, a night wash - but its own hour and its own horizon: an EMBER DUSK over a ridge where the ghost army still stands,
+       the siege wreck in the middle distance, dead straw grass over peat with the dead in it (src/redraw/unburied_world.js).
+       tools/skins.mjs asserts none of it falls through to the forest kit again. */
+    palette: { sky: 'unburied', far: 'unburied', mid: 'unburied', near: 'unburied', dress: 'battlefield', ledges: 'beam', boneSoil: true,
+      haze: 'rgba(150,108,118,0.10)', grass: '#8a8258', grassL: '#aca276', grassD: '#5a5438', dirt: '#4c3c32', dirtL: '#604c3e', dirtD: '#30261f',
+      stone: '#77716c', stoneD: '#4c4844', stoneL: '#9c968e', canopy: ['#1a1418', '#261c22', '#32242c'], nearCol: '#3e3428', nearDark: '#241c17', grade: ['#b0685a', 0.12] },   /* grade: an ember soft-light, where the default is the wood's green */
+    night: true, nightA: 0.1,   /* a light wash, so the lamps and the hero's glow read; the dusk is in the sky, not in a navy blanket */
+    weather: [{ x0: 0, x1: 99999, kind: 'mist' }],   /* low ground fog, the whole field */
+    tints: [[318, 419, [34, 28, 52], 0.14]],   /* under the chapel's walls the light goes cold and grey */
+    masonry: [[318, W - 1, 20, H - 1], [295, 297, G - 9, G - 5]],   /* THE CHAPEL OF THE FALLEN ORDER is laid stone from its crypt door to the Death Knight's back wall, and so is the gate's lintel */   /* its own sound (Daniel 2026-09-24): "Haunting Chiptune Loop [Void Estate]", CC0 - audio/CREDITS.txt */
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G }, pools, falls: [], moversExtra, interiors: [], gusts: [], encounters, pegs, garrison, elites,
     volleys: UF.VOLLEYS.map(([a, b], i) => ({ x0: a * TS, x1: b * TS, period: 6, horn: 1.5, bearer: UF.VOLLEY_BEARER[i] })),
     cavalry: { x0: UF.LANE[0] * TS, x1: UF.LANE[1] * TS, row: G, period: 14 },

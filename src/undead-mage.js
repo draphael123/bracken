@@ -68,8 +68,10 @@ export function updateUndeadMage(e, dt, c) {
   for (const cl of e.clouds) { cl.t -= dt; if (!P.dead && Math.hypot(P.x - cl.x, py - cl.y) < cl.r) c.venom(); }
   e.clouds = e.clouds.filter(cl => cl.t > 0);
   // ---- the death mark on the air where you were ----
-  if (e.mark) { e.mark.t -= dt;
-    if (e.mark.t <= 0) { const m = e.mark; e.mark = null; e.flashT = 0.3; e.flashX = m.x; e.flashY = m.y; sound('heavy');
+  /* e.deathMark, NOT e.mark: the Death Knight hero's markFoe() writes e.mark = 6 (a number) on whatever he strikes, and a
+     number here crashed the fight on `.t` (tools/audit-bosslab, 2026-09-24). Two systems, one field name. */
+  if (e.deathMark) { e.deathMark.t -= dt;
+    if (e.deathMark.t <= 0) { const m = e.deathMark; e.deathMark = null; e.flashT = 0.3; e.flashX = m.x; e.flashY = m.y; sound('heavy');
       if (!P.dead && Math.hypot(P.x - m.x, py - m.y) < m.r) { hit(m.x, m.y, MAGE.dmg.mark, true, 'mark'); e.mode = 'hover'; e.modeT = 0.8 / k; }
       else { e.mode = 'gather'; e.modeT = MAGE.openT; e.open = MAGE.openT; say('THE MARK FINDS NO ONE. IT COMES BACK ON HIM', true); sound('crack'); } } }
   // ---- the blink ----
@@ -98,7 +100,7 @@ export function updateUndeadMage(e, dt, c) {
   else if (spell === 'storm') { if (!P.dead && Math.abs(P.x - e.markX) < 18) hit(e.markX, py, MAGE.dmg.storm, true, 'storm'); e.flashX = e.markX; e.flashY = null; e.flashT = 0.3; sound('heavy'); }
   else if (spell === 'poison') { for (const s of [-0.5, 0, 0.5]) shot(aim + s, 55, 5, MAGE.dmg.orb, 'orb', '#8fd160', 2.4); sound('hiss'); }
   else if (spell === 'hand') { shot(aim, MAGE.handSpeed * (e.enraged ? 1.3 : 1), 7, MAGE.dmg.hand, 'hand', '#2a4a2a', 4.5); sound('heavy'); }
-  else if (spell === 'mark') { e.mark = { x: P.x, y: py, r: MAGE.markR, t: MAGE.markFuse / (e.enraged ? 1.25 : 1), T: MAGE.markFuse / (e.enraged ? 1.25 : 1) }; e.mode = 'markWait'; e.modeT = 99; sound('crack'); return; }
+  else if (spell === 'mark') { e.deathMark = { x: P.x, y: py, r: MAGE.markR, t: MAGE.markFuse / (e.enraged ? 1.25 : 1), T: MAGE.markFuse / (e.enraged ? 1.25 : 1) }; e.mode = 'markWait'; e.modeT = 99; sound('crack'); return; }
   // IN PAIRS when he burns: the next spell's tell straight away, then he drifts
   if (e.enraged && !e.chained) { e.chained = true; begin(e, MAGE.order[e.turn++ % MAGE.order.length], c); return; }
   e.chained = false; e.mode = 'hover'; e.modeT = MAGE.hover / k;
@@ -114,7 +116,7 @@ export function drawUndeadMage(g, e, cx, cy, time) {
   if (e.mode === 'stormTell' || (e.flashT > 0 && e.flashY === null)) { g.fillStyle = e.mode === 'stormTell' ? 'rgba(210,209,255,.28)' : '#e9e9ff'; g.fillRect(Math.round((e.mode === 'stormTell' ? e.markX : e.flashX) - cx) - 18, 0, 36, g.canvas.height); }
   for (const cl of e.clouds || []) { const a = Math.min(1, cl.t) * 0.5; g.fillStyle = `rgba(110,170,60,${a.toFixed(2)})`; g.beginPath(); g.arc(Math.round(cl.x - cx), Math.round(cl.y - cy), cl.r + Math.sin(time * 3 + cl.x) * 2, 0, Math.PI * 2); g.fill();
     g.fillStyle = `rgba(166,224,74,${(a * 0.8).toFixed(2)})`; for (let i = 0; i < 6; i++) { const t = time * 0.8 + i; g.fillRect(Math.round(cl.x - cx + Math.cos(t * 1.3 + i) * cl.r * 0.7), Math.round(cl.y - cy + Math.sin(t + i * 2) * cl.r * 0.6), 2, 2); } }
-  if (e.mark) { const m = e.mark, k = 1 - m.t / m.T, r = m.r; g.strokeStyle = Math.floor(time * (6 + k * 14)) % 2 ? '#1a2a1a' : '#6fe08a'; g.lineWidth = 2; g.beginPath(); g.arc(Math.round(m.x - cx), Math.round(m.y - cy), r, 0, Math.PI * 2); g.stroke();
+  if (e.deathMark) { const m = e.deathMark, k = 1 - m.t / m.T, r = m.r; g.strokeStyle = Math.floor(time * (6 + k * 14)) % 2 ? '#1a2a1a' : '#6fe08a'; g.lineWidth = 2; g.beginPath(); g.arc(Math.round(m.x - cx), Math.round(m.y - cy), r, 0, Math.PI * 2); g.stroke();
     g.fillStyle = `rgba(20,40,20,${(0.15 + k * 0.3).toFixed(2)})`; g.beginPath(); g.arc(Math.round(m.x - cx), Math.round(m.y - cy), r * k, 0, Math.PI * 2); g.fill(); g.lineWidth = 1; }
   if (e.flashT > 0 && e.flashY !== null && e.flashY !== undefined) { g.fillStyle = '#d8ffe0'; g.beginPath(); g.arc(Math.round(e.flashX - cx), Math.round(e.flashY - cy), MAGE.markR, 0, Math.PI * 2); g.fill(); }
   for (const q of e.shots || []) { const x = Math.round(q.x - cx), y = Math.round(q.y - cy);

@@ -75,3 +75,24 @@ export function bakeWinchmaster() {
   }
   return pack(F, cx, H, 24, 36);
 }
+
+// bakeWinchHook() — THE HOOK ITSELF, on its own two frames: not his hatchet (src/winchmaster.js drew it as bare rects until
+// 2026-09-24; wired into drawWinchFx for both the tell and the throw). 0 COILED (still on the chain, the wind-up and the
+// retrieve) | 1 OPEN (barb out, flying and embedded). Small enough it needs no settle() - it never touches the ground.
+export function bakeWinchHook() {
+  const W = 14, H = 14, cx = 7, cy = 7;
+  const F = [];
+  { // 0: COILED - a tight iron curl, straight up its own short length of chain
+    const [c, g] = canvas(W, H);
+    line(g, cx, 0, cx, 6, C.ir[1], 2); line(g, cx, 0, cx, 6, C.ir[3]);
+    fillPoly(g, [[cx - 3, 6], [cx + 3, 6], [cx + 3, 10], [cx, 13], [cx - 3, 10]], C.ir[2]);
+    rect(g, cx - 1, 7, 2, 3, C.ir[3]); rect(g, cx - 2, 9, 4, 1, C.ir[0]);
+    outline(c, OUT); F.push(c); }
+  { // 1: OPEN - swung wide, barb forward, the chain trailing behind at an angle
+    const [c, g] = canvas(W, H);
+    line(g, cx - 4, 0, cx, 5, C.ir[1], 2); line(g, cx - 4, 0, cx, 5, C.ir[3]);
+    fillPoly(g, [[cx - 2, 5], [cx + 5, 4], [cx + 6, 9], [cx + 2, 13], [cx - 3, 10]], C.ir[2]);
+    rect(g, cx + 2, 6, 2, 3, C.ir[3]); rect(g, cx - 1, 8, 3, 1, C.ir[0]);
+    outline(c, OUT); F.push(c); }
+  return pack(F, cx, cy, W, H);
+}

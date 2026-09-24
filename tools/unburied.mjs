@@ -173,4 +173,4 @@ assert.ok(L.pools.every(p => p.shallow && !p.harm && !p.poison), 'no deadly wate
   assert.equal(f.length, 0, 'route-breaks finds nothing'); }
 
 console.log('ok  unburied       THE UNBURIED FIELD matches its brief, read off the ' + SOURCE);
-console.log('      NOT SEEN HERE: the map spur (Lane B), the music and the look; the fights are tools/unburied-fights.mjs.');
+console.log('      NOT SEEN HERE: the map spur (Lane B) and the music; the look is tools/skins.mjs (forest kit), the fights tools/unburied-fights.mjs.');
