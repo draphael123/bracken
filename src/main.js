@@ -345,13 +345,13 @@ const MENU_MUSIC = [
 ];
 const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PROG.menu : 'select';
 const HEROES = [
-  { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X, the sword up over the shield, and let go: THE HEAVY CUT - held longer it breaks a guard, longer still it knocks them down, but no shield while it is up. blocks and third cuts fill RESOLVE: full, tap C on the ground for THE LAST CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam. X early in a dash: THE SHOULDER CHARGE, through small foes, and a guard is thrown wide. his plunge is a POGO: off a foe he bounces, on the ground it rings out both ways' },
-  { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, coinPrice: 800, coinNeeds: 'burning', desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 88 health, quicker on foot, a lighter blow, one jump like anyone else. the plunge is THE FIRE STOMP: her boots do nothing, only the firedrop ahead of her and the landing ring burn. X early in a dash: THE FLAMING SLIDE, through small foes, and a guard is thrown wide' },
-  { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, coinPrice: 800, coinNeeds: 'unburied', desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. Buy skills with coins and equip them in Skills & Loadout. At full blood, TAP F for the equipped skill or HOLD F for Blood Surge. the plunge drives the blade down into a GRAVE BURST. X early in a dash: THE GREATSWORD RUSH, through small foes, and a guard is thrown wide." },
-  { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dash: THE BOARDING LUNGE, through small foes, and a guard is thrown wide. no shield: he PARRIES" },
-  { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. X early in a dash: THE SHIELDLESS CHARGE, through small foes, and a guard is thrown wide. the dead take double' },
-  { id: 'geomancer', name: 'THE GEOMANCER', price: 10, silver: true, desc: 'a stave with a standing stone for a head, and 95 health. slower on foot, and every blow of hers is heavy. SHE BUILDS SOMETHING IN ITS WAY: hold C for her ROCK SHIELD - it takes two YELLOW blows, cracked after one; raised as a blow lands, their weapon bounces off and it costs nothing. A RED blow shatters it. It never mends itself: DOWN+C strikes the stave into the ground to make it whole. HOLD X and let go: UPHEAVAL, a spike at her front foot, or held longer a pillar further out that launches what stands there and shatters. UP+X is a stone SPUR for what is over her. Her third blow is a full spin that SHATTERS any stone of hers it hits into shards. Her plunge is STONEFALL: it knocks down what stands beside her. X early in a dash kicks a ROLLING STONE. Blows the shield stops and pillars that launch fill TREMOR: full, tap C on the ground for THE QUAKE. Only three stones stand at once, and each crumbles in four seconds' },
-  { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 100 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it. X early in a dash: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
+  { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X, the sword up over the shield, and let go: THE HEAVY CUT - held longer it breaks a guard, longer still it knocks them down, but no shield while it is up. blocks and third cuts fill RESOLVE: full, tap C on the ground for THE LAST CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam. X early in a dodge: THE SHOULDER CHARGE, through small foes, and a guard is thrown wide. his plunge is a POGO: off a foe he bounces, on the ground it rings out both ways' },
+  { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, coinPrice: 800, coinNeeds: 'burning', desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 88 health, quicker on foot, a lighter blow, one jump like anyone else. the plunge is THE FIRE STOMP: her boots do nothing, only the firedrop ahead of her and the landing ring burn. X early in a dodge: THE FLAMING SLIDE, through small foes, and a guard is thrown wide' },
+  { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, coinPrice: 800, coinNeeds: 'unburied', desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. Buy skills with coins and equip them in Skills & Loadout. At full blood, TAP F for the equipped skill or HOLD F for Blood Surge. the plunge drives the blade down into a GRAVE BURST. X early in a dodge: THE GREATSWORD RUSH, through small foes, and a guard is thrown wide." },
+  { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dodge: THE BOARDING LUNGE, through small foes, and a guard is thrown wide. no shield: he PARRIES" },
+  { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. X early in a dodge: THE SHIELDLESS CHARGE, through small foes, and a guard is thrown wide. the dead take double' },
+  { id: 'geomancer', name: 'THE GEOMANCER', price: 10, silver: true, desc: 'a stave with a standing stone for a head, and 95 health. slower on foot, and every blow of hers is heavy. SHE BUILDS SOMETHING IN ITS WAY: hold C for her ROCK SHIELD - it takes two YELLOW blows, cracked after one; raised as a blow lands, their weapon bounces off and it costs nothing. A RED blow shatters it. It never mends itself: DOWN+C strikes the stave into the ground to make it whole. HOLD X and let go: UPHEAVAL, a spike at her front foot, or held longer a pillar further out that launches what stands there and shatters. UP+X is a stone SPUR for what is over her. Her third blow is a full spin that SHATTERS any stone of hers it hits into shards. Her plunge is STONEFALL: it knocks down what stands beside her. X early in a dodge kicks a ROLLING STONE. Blows the shield stops and pillars that launch fill TREMOR: full, tap C on the ground for THE QUAKE. Only three stones stand at once, and each crumbles in four seconds' },
+  { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 100 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it. X early in a dodge: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
 ];
 /* THE LOOP, IN ONE SENTENCE A HERO: what the pick screen and the hero card say under the name - how this hero is PLAYED,
    not what he carries. Every clause is checked against the code, so none of it is a talent's promise: the knight's perfect
@@ -397,8 +397,8 @@ const WARDEN_KEYS = { deflect: 'TAP C: THE DEFLECT. THE SHAFT TURNS A YELLOW BLO
   phalanx: 'A ROW OF SPEARS OUT OF THE GROUND, ACROSS THE ROOM, PINNING WHAT IT CATCHES',
   runThrough: 'HOLD X AND LET GO: THE RUN-THROUGH, A LUNGE THAT SKEWERS A WHOLE LINE OF THEM',
   pin: 'DOWN+X IN THE AIR PINS WHAT YOU LAND ON: X TO STAB IT, Z TO PULL FREE',
-  vault: 'JUMP OUT OF A DASH AND SHE PLANTS THE SPEAR AND VAULTS',
-  controls: { block: ['the deflect', 'TAP C  (FULL: PHALANX)', 'LB RB'], dodge: ['back-step', 'V / SHIFT, TWICE', 'B'] } };
+  vault: 'JUMP OUT OF A STEP FORWARD AND SHE PLANTS THE SPEAR AND VAULTS',
+  controls: { block: ['the deflect', 'TAP C  (FULL: PHALANX)', 'LB RB'], dodge: ['step', 'V BACK, OR TAP A WAY TWICE', 'B'] } };
 /* ==== THE GEOMANCER'S KEYS, IN WORDS (her controls card): C is a WALL, never a shield, and her held swing is a pillar ==== */
 const GEO_KEYS = { controls: { block: ['rock shield', 'HOLD C  (DOWN+C: MEND)', 'LB RB'], 'heavy blow': ['upheaval', 'HOLD SWING, LET GO', 'HOLD X'] } };
 const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'GRAVELORD', 'WARD'], warden: ['SPEARHEAD', 'THE DEFLECT', 'SKIRMISHER'], geomancer: ['EARTH', 'SHIELD', 'TREMOR'] };
@@ -473,6 +473,7 @@ const dodgeCost = () => Math.max(6, ST.dodge - Math.round(2 * footTal()) - 3*tal
    everything in the game instead of spacing it. ==== */
 const STEP_INV = 0.09, STEP_PAIR = 0.75, STEP_CD = 0.62, STEP_GAP = 0.1;   /* s untouchable, how long a pair stays a pair, the wait after the second, the wait after the first */
 const stepCost = () => Math.max(4, dodgeCost() - 7);
+const TAP_TWICE = 0.26;   /* s between the two taps of a way that make the dodge (it was the dash's, and the same number) */
 /* THE MEDAL ROLL: every medal on every level you can see, bronze 1, silver 2, gold 3 */
 const medalCount = () => LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])).reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0);
 const featDone = f => f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
@@ -6519,7 +6520,7 @@ function lessonHint(kind) {
   else if (kind === 'sweep') hintMsg = 'HIS SHIELD TURNED IT. DOWN+SWING: THE LOW SWEEP GOES UNDER IT AND TRIPS HIM.';
   else if (kind === 'down') hintMsg = DOWN_STRIKE[hero()] ? 'THE DOWN ATTACK SHAKES THE GROUND BESIDE YOU. ONE THAT CATCHES NOTHING ROOTS YOU A BEAT.' : 'COME DOWN AMONG THEM. A PLUNGE THAT CATCHES NOTHING LEAVES YOU STANDING A BEAT.';
   else if (kind === 'parry') hintMsg = hero() === 'knight' ? 'A PERFECT GUARD: IT COST NOTHING AND HE REELS. CUT NOW - THE NEXT CUT LANDS HEAVY.' : 'ON THE BEAT: HE REELS OPEN. CUT HIM NOW.';
-  else if (kind === 'dashatk') hintMsg = 'A GUARD MET AT A RUN GOES OFF BALANCE: DOUBLE-TAP TOWARD HIM AND SWING, THEN CUT HIM WHILE HE REELS.';
+  else if (kind === 'dashatk') hintMsg = 'A GUARD MET AT A RUN GOES OFF BALANCE: DODGE AT HIM AND SWING AT ONCE, THEN CUT HIM WHILE HE REELS.';
   else hintMsg = 'THREE SWINGS IN A RUN: THE THIRD IS A HEAVY CUT THAT SHOVES. STOP, AND IT STARTS OVER.';
   return true;
 }
@@ -7001,18 +7002,8 @@ function updatePlayer(dt) {
   const move = (stunned || dodging || (P.aegis && !tal('fortress')) || (P.warding && !tal('drainWalk')) || P.pinning || P.rootT > 0) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
   if (P.onMover) { const m = P.onMover; if (P.x + 4 > m.x && P.x - 4 < m.x + m.w && Math.abs(P.y - m.y) < 3) { P.x += m.dx; P.y += m.dy || 0; } else P.onMover = null; }
 
-  // THE DASH: tap a direction twice and you go, on the ground or in the air, once per landing. It does not
-  // dodge anything - it is distance, not safety - and it costs a little wind.
-  { const tapped = leftPress ? -1 : rightPress ? 1 : 0;
-    if (tapped) { if (P.tapDir === tapped && time - (P.tapT || -9) < 0.26 && !P.dashCd && (P.ground || !P.dashedAir) && !stunned && !P.plunge && !(P.dashRec > 0) && !dashStriking() && !dodging && !P.block && !(P.jetRecover > 0) && !rushing()) {
-        if (spend(isPaladin() ? 10 : 8)) { noteVerb('dash'); P.dash = isPyro() ? 0.2 : isPaladin() ? 0.14 : 0.17; P.dashCd = isPaladin() ? 0.7 : 0.55; if (!P.ground) { P.airDashN = (P.airDashN || 0) + 1; P.dashedAir = P.airDashN >= (tal('airDash') ? 2 : 1); }
-          P.vx = tapped * (isPyro() ? 300 : isPaladin() ? 230 : isPirate() ? 285 : 265); P.face = tapped; if (!P.ground) P.vy = Math.min(P.vy, 40);
-      /* (VAULTER no longer grants a dash: once passives arrived by level, it turned every Warden jump into a vault from level 3) */
-      P.dashDur = P.dash;   /* how long this dash is, so a swing can be judged EARLY or LATE in it (DASH_STRIKE.win) */   /* VAULTER: the plant is always there to be taken */
-          streaks(P.x, P.y - 9, -tapped, isPyro() ? ['#ffd36b', '#ff9a5c'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : ['#fff6e0', '#c9d1dc'], 110); dust(P.x - tapped * 6, P.y, 3); SFX.pRoll ? SFX.pRoll() : SFX.skid();
-          if (isPyro()) { P.alight = Math.max(P.alight || 0, 0.24); flame(P.x, P.y - 8, 4, 4, 40, 2); }   // even her dash leaves a scorch
-          if (isPaladin()) { P.shoulder = Math.max(P.shoulder || 0, 0.16); SFX.clank(); if (tal('heavyTread') && P.ground) { pwaves.push({ x: P.x + tapped * 10, y: P.y, dir: tapped, life: 0.8, sp: 240, hit: new Set() }); shakeCam(2); } } }
-      } P.tapDir = tapped; P.tapT = time; } }
+  /* (THE DASH - tap a way twice: distance, no grace, once in the air - was a move of its own until 2026-09-24. It is THE DODGE now,
+     below: one move, asked for by the double tap or by the button.) */
   P.vaultT = Math.max(0, (P.vaultT || 0) - dt);
   P.dash = Math.max(0, (P.dash || 0) - dt); P.dashCd = Math.max(0, (P.dashCd || 0) - dt); if (P.ground) { P.dashedAir = false; P.airDashN = 0; P.airJump = 0; }
   P.dashLate = P.dash > 0 ? 0.16 : Math.max(0, (P.dashLate || 0) - dt);   /* a swing just after the dash still counts as out of it */
@@ -7024,27 +7015,51 @@ function updatePlayer(dt) {
   /* THE DASH IS DISTANCE, AND THE SWING MAKES IT A BLOW. It used to cut whatever it passed through by itself (the dash strike), so a dash
      through a foe was a free hit and the dash attack went unnoticed. The owner's rule: the dash does no damage; press attack during it (or
      just after: P.dashLate) and dashAttack() carries the cut through. */
-  if (P.dash > 0) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 });
+  if (P.dash > 0 && !dodging) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.16, frame: 1 });   /* (the dodge draws its own) */
   if (P.plunge && !P.swim && DOWN_STRIKE[hero()]) plungeTrail(DOWN_STRIKE[hero()]);
-  /* THE BLADE COMMITS: once swung, its recovery finishes before the feet may roll. */
-  if (P.dbuf > 0 && (P.swim || P.ground || ((tal('airRoll') || (isPirate() && tal('swash'))) && !P.airRolled)) && !attacking && !stunned && !P.plunge && !dodging && !(P.perch > 0) && !(P.dashRec > 0) && !dashStriking() && P.dodgeCd <= 0 && !rushing()) {   /* (the dash attack is committed: no roll out of it, nor out of its end-lag) */
-    P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
+  /* ==== THE DODGE: ONE MOVE (2026-09-24). There were two - THE DASH (tap a way twice: distance, no grace, once in the air, the way
+     into the DASH ATTACK) and THE DODGE (V: a roll with a grace, on the ground, each hero's own). Daniel: "why not just make it a
+     standard dodge like when you double tap the keys. Doesn't really make sense to have two separate dodges." So there is one.
+     ASKED FOR by tapping a way twice, or by V / SHIFT / pad B - the button is kept because a stick cannot be double-tapped
+     reliably, and because every tell in the game was timed for an instant press. It GOES the way you tapped (the button: the
+     way you hold, else the way you face). It is UNTOUCHABLE for its hero's grace from its start (P.dodgeInv). It CARRIES like the
+     dash did - held pace, bleeding off to a run - so a gap a dash cleared is still cleared. It can be taken ONCE IN THE AIR before
+     you land (SLIPSTREAM: twice). ONE wind cost, ONE cooldown. X early in it is the DASH ATTACK (the Geomancer's ROLLING STONE);
+     a jump out of it is a running jump (the Warden's: the vault). Each hero's is their own: the Warden's step (backward unless
+     tapped forward), the Pyromancer's scorch, the Paladin's shoulder, the Freebooter's rum, the Death Knight's passing, the
+     Geomancer's BURROW - floor only, so in the air hers is a plain dash.
+     THE BLADE COMMITS: once swung, its recovery finishes before the feet may go. ==== */
+  const airDodge = !P.ground && !P.swim;
+  if (P.dbuf > 0 && (!airDodge || !P.dashedAir) && !attacking && !stunned && !P.plunge && !dodging && !(P.perch > 0) && !(P.dashRec > 0) && !dashStriking() && P.dodgeCd <= 0 && !rushing()) {   /* (the dash attack is committed: no dodge out of it, nor out of its end-lag) */
+    const held = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+    const dir = P.dbufDir || (isWarden() ? -P.face : held || P.face);   /* the button: the way you hold, else the way you face - and the Warden's button is her back-step, as it always was; her double tap points it */
+    P.dbuf = 0; P.dbufDir = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
     if (spend(isWarden() ? stepCost() : dodgeCost())) {
-      if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DASH: aim it up or down with the stroke
-      else if (!P.ground) { P.airRolled = true; P.vy = Math.min(P.vy, -80); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); } /* AIR ROLL */
+      const back = isWarden() && dir === -P.face;   /* HER STEP BACK: she does not turn, and the point stays on what she left */
+      if (!isWarden()) P.face = dir;
+      if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DODGE: aim it up or down with the stroke
+      else if (airDodge) { P.airDashN = (P.airDashN || 0) + 1; P.dashedAir = P.airDashN >= (tal('airDash') ? 2 : 1); P.airRolled = true;   /* SLIPSTREAM: a second before you land */
+        P.vy = (tal('airRoll') || (isPirate() && tal('swash'))) ? Math.min(P.vy, -80) : Math.min(P.vy, 40);   /* AIR ROLL / SWASHBUCKLE: the one in the air lifts you; without it, it holds the fall level, as the dash did */
+        streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); }
       P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : isWarden() ? 0.18 : isGeo() ? 0.3 : 0.3; P.dodgeCd = 0.5;
       P.dodgeMax = P.dodge; P.dodgeInv = P.dodge;   /* the grace is the whole of it, unless the hero says otherwise */
-      if (isGeo() && P.ground && !P.swim) { P.geoBurrow = { dir: P.face }; burst(P.x, P.y - 2, 10, ['#5e4e38', '#8a7a5e', '#8c8a7e'], 70, 0.4, 120, 1); SFX.geoThud && SFX.geoThud(); }   /* HER DODGE IS BURROW: down into the floor (geoBurrowStep) */
+      const burrow = isGeo() && P.ground && !P.swim;
+      if (burrow) { P.geoBurrow = { dir }; burst(P.x, P.y - 2, 10, ['#5e4e38', '#8a7a5e', '#8c8a7e'], 70, 0.4, 120, 1); SFX.geoThud && SFX.geoThud(); }   /* HER DODGE IS BURROW: down into the floor (geoBurrowStep) */
       /* TWO SMALL STEPS, THEN THE WAIT: the second comes the moment the first is over, and only the third is made to wait */
       if (isWarden()) { const quick = time - (P.stepAt || -9) < STEP_PAIR && (P.stepN || 0) < 2;
         P.stepN = quick ? (P.stepN || 0) + 1 : 1; P.stepAt = time;
         P.dodgeCd = P.stepN >= 2 ? STEP_CD : STEP_GAP; P.dodgeInv = STEP_INV; }
-      /* THE WARDEN STEPS BACKWARD. She does not roll through a blow, she gives ground with the point still up - so
-         whatever she just left is back at the end of the spear by the time she lands. The sign does the whole job,
-         and the number is half what the roll's was: this is a step, and she is expected to take two of them. */
-      P.vx = P.face * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? (230 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 205 * (tal('longPassing') ? 1.5 : 1) : isWarden() ? -175 * (1 + 0.15 * tal('lightFoot')) : isGeo() ? 190 : 215); P.block = false; dodges++;   /* LIGHT FOOT: the step back carries further */
+      /* THE DASH IN IT: for as long as it lasts, X early is the DASH ATTACK and a jump is a running jump (dashCutNow, the jump).
+         Not in her step back - that one gives ground and nothing else, as it always did - and not under the floor. */
+      if (!back && !burrow) { P.dash = P.dodge; P.dashDur = P.dash; }
+      P.dashCd = P.dodgeCd;   /* (one cooldown: the lab's hands still read the dash's name for it) */
+      /* THE WARDEN STEPS. She does not roll through a blow, she gives ground with the point still up - so whatever she just left
+         is back at the end of the spear by the time she lands. Tapped forward, the same step goes in, and a jump out of it vaults. */
+      P.vx = dir * (isPaladin() ? 230 : isPyro() ? 300 : isPirate() ? (285 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 265 * (tal('longPassing') ? 1.5 : 1) : isWarden() ? (back ? 175 : 265) * (1 + 0.15 * tal('lightFoot')) : burrow ? 190 : 265);   /* the dash's pace (RUM: longer; LONG PASSING: half again; LIGHT FOOT: her step either way) */
+      P.block = false; dodges++; noteVerb('dodge');
+      if (!back && !burrow && !P.swim) { streaks(P.x, P.y - 9, -dir, isPyro() ? ['#ffd36b', '#ff9a5c'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : ['#fff6e0', '#c9d1dc'], 110); dust(P.x - dir * 6, P.y, 3); }
       /* GIVE GROUND: whatever had got inside the spear is left reeling as she leaves - the hop buys the distance AND the beat */
-      if (isWarden() && tal('giveGround')) for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue;
+      if (back && tal('giveGround')) for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue;
         if (Math.abs(e.x - P.x) > SHAFT_AT || Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > 24) continue;
         e.stagger = Math.max(e.stagger || 0, 0.6); dust(e.x, e.y, 3); }
       if (isReaper()) { P.inv = Math.max(P.inv, P.dodge + 0.06);   /* THE WAKE: he is not there to be hit */
@@ -7062,10 +7077,11 @@ function updatePlayer(dt) {
         flame(P.x, P.y - 8, 6, 6, 60, 3); SFX.jet && SFX.jet(true); }
       if (isPaladin()) { // THE SHOULDER: the pauldron goes first, and it turns what it meets
         P.shoulder = 0.3; SFX.clank();
+        if (tal('heavyTread') && P.ground) { pwaves.push({ x: P.x + dir * 10, y: P.y, dir, life: 0.8, sp: 240, hit: new Set() }); shakeCam(2); }   /* HEAVY TREAD: a quake rolls on ahead of it */
         ringAt(P.x + P.face * 8, P.y - 10, 12, '#ffe6a0', 0.22); } dust(P.x, P.y, 5); squash(1.2, 0.8, 0.1); }
   }
   if (dodging && isPyro() && tal('phoenixTrail') && Math.abs(P.x - (P.trailX ?? -99)) > 12) { P.trailX = P.x; fires.push({ x: P.x, y: P.y, life: 1.4, delay: 0, own: true }); }   /* PHOENIX TRAIL: the roll leaves its fire behind */
-  if (dodging && isPirate() && tal('rollCut') && !keys.up && !keys.down) P.dashLate = 0.2;   /* TUMBLING CUT: a swing out of the roll is a dash attack, but only when nothing else was asked for - an automatic passive must not take over the attack button and bury the rising cut or the low sweep */
+  /* (TUMBLING CUT used to set dashLate here, which the dash strike never read after it came to him: it is in dashCutNow now) */
   if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper() && !P.geoBurrow) ghosts.push({ x: P.x, y: P.y, face: P.face, life: isWarden() ? 0.3 : 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2, step: isWarden() }); }   /* HER STEP IS NOT A ROLL AND MUST NOT LOOK LIKE ONE: see the draw */
   if (P.geoBurrow) geoBurrowStep(dt);   /* (and the Geomancer's is under the floor: no after-images, a trail in the dirt) */
   // THE PYROMANCER, ALIGHT: a trail of embers, and anything she passes through takes fire
@@ -7114,7 +7130,8 @@ function updatePlayer(dt) {
   } else if (!dodging) {
     const fr = P.ground ? (groundAtk ? 1600 : onSlick ? 70 : 1100) : 200;
     const s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0;
-  } else { P.vx *= Math.pow(0.05, dt); }
+  } else if (P.dash > 0 && !P.swim) { const s = Math.sign(P.vx) || P.face; P.vx = s * Math.max(Math.min(cap, Math.abs(P.vx)), Math.abs(P.vx) - 400 * dt); }   /* THE DODGE CARRIES as the dash did: its pace bleeds off to a run, held or not */
+  else { P.vx *= Math.pow(0.05, dt); }
   /* THE VAULT CARRIES HER ON: for the rise off the shaft her way is kept at VAULT_FWD whatever the stick does, unless it is
      pulled back against the vault - then it is hers to brake, as any air is. Let go and she still goes over, not straight up. */
   if (P.vaultCarry > 0) { P.vaultCarry -= dt;
@@ -7149,7 +7166,7 @@ function updatePlayer(dt) {
   // not a jump - there is nothing to jump with. It is the only way up, and the ground jump was eating the
   // buffer before the water ever saw it.
   if (P.jbuf > 0 && P.ballast && P.swim) { P.jbuf = 0; dropBallast(true); }
-  else if (P.jbuf > 0 && !P.ground && !(P.coyote > 0) && P.airJump > 0 && tal('endlessSky') && !stunned && !P.plunge && !dodging && !P.swim && !P.climb) { P.airJump = 0; P.jbuf = 0; P.vy = JUMPV; P.canCut = true; P.jumpT = time; P.airHang = false; SFX.pJump(); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#bfe6f5'], 90); ringAt(P.x, P.y, 10, '#bfe6f5', 0.22); }   /* ENDLESS SKY: the jump the plunge gave back */
+  else if (P.jbuf > 0 && !P.ground && !(P.coyote > 0) && P.airJump > 0 && tal('endlessSky') && !stunned && !P.plunge && (!dodging || P.dash > 0) && !P.swim && !P.climb) { P.airJump = 0; P.jbuf = 0; if (dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; } P.vy = JUMPV; P.canCut = true; P.jumpT = time; P.airHang = false; SFX.pJump(); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#bfe6f5'], 90); ringAt(P.x, P.y, 10, '#bfe6f5', 0.22); }   /* ENDLESS SKY: the jump the plunge gave back */
   /* THE POLE VAULT: a jump taken OUT OF A DASH. She plants the heel and goes over - the same distance every time,
      never from the air, and it wants ground under the plant. It is a RIDE and not a jump: the reach model must never
      count it as ordinary footing, or levels read as reachable when they are not (tools/reach.mjs). */
@@ -7159,14 +7176,15 @@ function updatePlayer(dt) {
   else if (isWarden() && P.jbuf > 0 && P.swim && !P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && !dodging && P.st >= 10) {   /* THE WATER VERSION of the vault: no heel to plant, so it is a kick off the shaft - up and over, a stroke's height and not a leap's */
     P.jbuf = 0; P.dash = 0; P.dashLate = 0; spend(10); P.vaultT = 0.3; P.vy = -190; P.vx = P.face * 240; P.inv = Math.max(P.inv, 0.2); noteVerb('vault'); SFX.braceSet(); squash(0.8, 1.2, 0.1); streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#bfe6f5'], 120);
   }
-  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && !dodging && (P.st >= 10 || tal('vaulter'))) {
-    P.jbuf = 0; P.dash = 0; P.dashLate = 0; if (!tal('vaulter')) spend(10);   /* VAULTER: the vault costs no wind (it no longer skips the dash: an automatic passive must not take over the jump button) */
+  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && (!dodging || P.dash > 0) && (P.st >= 10 || tal('vaulter'))) {   /* out of her step FORWARD (the back-step carries no dash) */
+    P.jbuf = 0; P.dash = 0; P.dashLate = 0; P.dodge = 0; P.dodgeInv = 0; if (!tal('vaulter')) spend(10);   /* VAULTER: the vault costs no wind (it no longer skips the dash: an automatic passive must not take over the jump button) */
     P.vaultT = 0.42; P.vy = -300; P.vx = P.face * (tal('longVault') ? 380 : 300); P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; P.jumpT = time;   /* LONG VAULT: a tile and a half further */
     P.inv = Math.max(P.inv, 0.2);   /* she is up on the shaft and over it: a foe under her is gone past, not run into */
     noteVerb('vault'); SFX.pJump(); SFX.braceSet(); dust(P.x - P.face * 8, P.y, 6); squash(0.78, 1.26, 0.12);
     streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#c9b27c'], 150);
   }
-  else if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !P.plunge && !dodging && !P.block && !P.aegis && !rushing()) {
+  else if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !P.plunge && (!dodging || P.dash > 0) && !P.block && !P.aegis && !rushing()) {   /* a jump out of the dodge is a running jump, as out of the dash: it ends the dodge and keeps the pace */
+    if (P.dash > 0 && dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; }
     if (keys.down && P.ground && isOneWay(P.groundTile)) { P.drop = 0.2; P.jbuf = 0; }
     else { P.vy = JUMPV * (PROG.charm === 'feather' ? 1.09 : 1); P.ground = false; P.coyote = 0; P.jbuf = 0;
       // WHAT THE ROPE GAVE YOU, YOU KEEP: leaving a swing or a raft at speed used to drop you to a walking pace
@@ -7180,7 +7198,9 @@ function updatePlayer(dt) {
   for (const k of ['coyote', 'jbuf']) { const left = P[k] - dt; P[k] = left > 1e-5 ? left : 0; }
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
-  if (P.abuf > 0 && !stunned && !P.plunge && !dodging && !P.aegis && !P.warding && !(P.deflectRec > 0) && !rushing()) {   /* (a sweep that met nothing is a beat she cannot swing in) */
+  const cutOut = dodging && P.dash > 0 && P.atk < 0 && dashCutNow();   /* X EARLY IN THE DODGE is the dash attack: it is the one thing that ends it */
+  if (P.abuf > 0 && !stunned && !P.plunge && (!dodging || cutOut) && !P.aegis && !P.warding && !(P.deflectRec > 0) && !rushing()) {   /* (a sweep that met nothing is a beat she cannot swing in) */
+    if (cutOut) { P.dodge = 0; P.dodgeInv = 0; }
     if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { P.plungeN=(P.plungeN||0)+1; noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear(); SFX.pPlunge();   /* the plunge is heard as it starts, in the hero's own voice: only the pyromancer's was, and the rest were silent until they landed */
       if (isPaladin()) { P.consecrate = true; motes(P.x, P.y - 10, 8, 8); }   // THE CONSECRATION: it falls slower and it lands wider SFX.slash();
       if (isPyro()) { // the fireball goes down ahead of her and lands first
@@ -10457,7 +10477,8 @@ function magePlayer(dt) {
     P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
     if (spend(isWarden() ? stepCost() : dodgeCost())) {
       P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : isWarden() ? 0.18 : 0.3; P.dodgeCd = 0.5; P.dodgeMax = P.dodge; P.dodgeInv = P.dodge;
-      P.vx = P.face * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? 230 : isReaper() ? 205 : isWarden() ? -175 : 215);   /* THE WARDEN STEPS BACKWARD, here as everywhere */
+      const dir = P.dbufDir || (isWarden() ? -P.face : ((keys.right ? 1 : 0) - (keys.left ? 1 : 0)) || P.face); P.dbufDir = 0; if (!isWarden()) P.face = dir;   /* the double tap points it here too */
+      P.vx = dir * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? 230 : isReaper() ? 205 : isWarden() ? 175 : 215);   /* THE WARDEN STEPS BACKWARD unless tapped forward, here as everywhere */
       P.block = false; dodging = true; dodges++; trialEvent('dodge'); SFX.pDodge(); dust(P.x, P.y, 5); squash(1.2, 0.8, 0.1);
     } else number(P.x, P.y - 22, 'TIRED', '#ffd36b');
   }
@@ -19595,7 +19616,9 @@ const dashStriking = () => P.dashAtk > 0 && P.dashCut && !!DASH_STRIKE[hero()];
 /* EARLY IN THE DASH, with the wind for it. (For the other heroes the old rule stands: any swing in or just after the dash.) */
 function dashCutNow() { const D = DASH_STRIKE[hero()]; if (!D) return P.dashLate > 0;
   if (isGeo() && time - (P.geoSurfT ?? -9) < 0.2 && P.ground && !P.swim) return P.st >= D.st;   /* X AS SHE SURFACES from a BURROW: the rolling stone, as out of a dash */
-  if (!(P.dash > 0) || P.swim) return false; const dur = P.dashDur || P.dash; return dur - P.dash <= D.win * dur && P.st >= D.st; }
+  if (!(P.dash > 0) || P.swim) return false; const dur = P.dashDur || P.dash;
+  const win = isPirate() && tal('rollCut') && !keys.up && !keys.down ? 1 : D.win;   /* TUMBLING CUT: anywhere in his roll, not only early - but only an unaimed swing: a passive must not bury the rising cut or the low sweep */
+  return dur - P.dash <= win * dur && P.st >= D.st; }
 function dashStrike(D) { spend(D.st); P.dashLate = 0; P.dash = 0; P.dashDur = 0; P.dashAtk = D.t; P.dashCut = true;
   if (P.heavySwing) { P.heavySwing = false; P.heavy = false; P.runThrough = false; } P.combo = 0; P.swingMul = D.dmg;   /* its own blow, not a step in a run of cuts */
   P.vx = P.face * D.speed; if (!P.ground) P.vy = Math.min(P.vy, 20);
@@ -19755,7 +19778,7 @@ function swingDmg(e) { P.st = Math.min(P.maxSt, P.st + 3); if (P.heavySwing) gai
   if (hero() === 'knight' && tal('unbroken')) P.runHoldT = time + 1.2;   /* UNBROKEN: a blow that lands holds the run open */
   if (isReaper() && tal('bloodMark')) markFoe(e);   /* a blow that lands buys back a little wind, so a string of hits is not all spent stamina */
   if (e.t === 'dummy') trialEvent(P.heavy ? 'heavyblow' : 'hit'); if (L.trial) { if (P.dashCut) trialEvent('dashatk'); if (P.heavySwing && !P.heavy) trialEvent('third'); }
-  else if (P.dashCut && e.t !== 'dummy' && !lesson && (PROG.dashAtkSeen || 0) < 2) { PROG.dashAtkSeen = (PROG.dashAtkSeen || 0) + 1; hintT = 4; hintMsg = DASH_STRIKE[hero()] ? 'DASH ATTACK: SWING EARLY IN A DASH. IT RUNS THROUGH THE SMALL AND OPENS A GUARD.' : 'A DASH ATTACK: THE DASH CARRIES THE CUT THROUGH HARDER, AND IT THROWS THEM BACK.'; }
+  else if (P.dashCut && e.t !== 'dummy' && !lesson && (PROG.dashAtkSeen || 0) < 2) { PROG.dashAtkSeen = (PROG.dashAtkSeen || 0) + 1; hintT = 4; hintMsg = DASH_STRIKE[hero()] ? 'DASH ATTACK: SWING EARLY IN A DODGE. IT RUNS THROUGH THE SMALL AND OPENS A GUARD.' : 'A DASH ATTACK: THE DODGE CARRIES THE CUT THROUGH HARDER, AND IT THROWS THEM BACK.'; }
   let extra = 0, mul = 1;
   if (tal('momentum') && (P.runT || 0) > 1) { mul *= 1 + 0.12 * tal('momentum'); P.runT = 0; streaks(P.x + P.face * 8, P.y - 10, 5, ['#fff6e0', '#c9b27c'], 150); } // MOMENTUM
   if (tal('vengeance') && (P.venge || 0) > 0) { extra = P.venge; P.venge = 0; number(e.x, e.y - e.h - 14, 'VENGEANCE', '#c9d1dc'); } if (P.heavySwing) { if (!e.maxHp || tal('concuss')) { e.stagger = Math.max(e.stagger || 0, isPaladin() ? 1.2 : 0.6); if (!e.maxHp && !(P.bashing && e.mini)) e.vx = P.face * 170; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(2.5, P.face * 2); }
@@ -20680,7 +20703,12 @@ function update(dt) {
      EACH HERO BUFFERS HIS OWN PRESSES AND HOLDS HIS OWN SWING. In single player asPlayer calls straight through, so
      this is the two lines it always was, in the order it always ran them. */
   for (const pp of players) asPlayer(pp, () => {
-    if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; P.abufUp = !!keys.up; P.abufLow = !!keys.down; } if (dodgePress) P.dbuf = 0.12;
+    if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; P.abufUp = !!keys.up; P.abufLow = !!keys.down; } if (dodgePress) { P.dbuf = 0.12; P.dbufDir = 0; }
+    /* ONE DODGE, TWO WAYS TO ASK FOR IT (2026-09-24). Tapping a way twice IS the dodge button, pointed. It is read here with the
+       other presses, not in updatePlayer: a double tap made during a hitstop is no longer lost, and everything that answers the
+       button (a perch, a pin, a landing, the ceiling) answers the double tap the same way. */
+    { const tapped = leftPress ? -1 : rightPress ? 1 : 0;
+      if (tapped) { if (P.tapDir === tapped && time - (P.tapT ?? -9) < TAP_TWICE) { P.dbuf = 0.12; P.dbufDir = tapped; P.tapT = -9; } else { P.tapDir = tapped; P.tapT = time; } } }
     updateCharge(STEP); });
   levelHealTick();   /* a level-up's heal waits for the fight to end (levelUp); ahead of the hitstop, so the killing blow's own freeze does not hold it back */
   if (stop > 0) { stop -= dt; return; }
@@ -23341,14 +23369,15 @@ function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 2, w = VW - 40, h = VH - 4; panel(x, y, w, h);   /* (eighteen rows of the small hand at 8, and a clear line between the header and the first) */
   text('CONTROLS', VW / 2, y + 5, UI.title, 'center');
-  const rows = [['move', 'ARROWS / WASD', 'STICK'], ['dance', 'H, STANDING STILL', '-'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], hero() === 'knight' ? ['heavy cut', 'HOLD SWING, LET GO', 'HOLD X'] : ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['dash', 'TAP A WAY TWICE', 'TAP TWICE'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'V / SHIFT', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['skill three', SET.skill3Key.toUpperCase()+' (equipped)', 'L3'], ['skill four', SET.skill4Key.toUpperCase()+' (equipped)', 'R3'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P   (MAP: TAB)', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
+  const rows = [['move', 'ARROWS / WASD', 'STICK'], ['dance', 'H, STANDING STILL', '-'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], hero() === 'knight' ? ['heavy cut', 'HOLD SWING, LET GO', 'HOLD X'] : ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'TAP A WAY TWICE, OR V / SHIFT', 'B'], ['', 'TELLS ARE TIMED FOR ONE PRESS', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['skill three', SET.skill3Key.toUpperCase()+' (equipped)', 'L3'], ['skill four', SET.skill4Key.toUpperCase()+' (equipped)', 'R3'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P   (MAP: TAB)', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
   /* IN CO-OP THE TWO COLUMNS ARE TWO PEOPLE: player one on the keys, player two on the first pad */
   text(coop() ? 'keyboard  P1' : 'keyboard', x + 80, y + 15, '#9aa39a', 'left', 6); text(coop() ? 'pad  P2' : 'pad', x + w - 10, y + 15, '#9aa39a', 'right', 6);
   if (isReaper()) rows.forEach((r, i) => { const o = DK_KEYS.controls[r[0]]; if (o) rows[i] = o; });
   /* THE WARDEN'S KEYS: C is not a shield, it is a planted spear, and her dodge goes backward */
   if (isWarden()) rows.forEach((r, i) => { const o = WARDEN_KEYS.controls[r[0]]; if (o) rows[i] = o; });
   if (isGeo()) rows.forEach((r, i) => { const o = GEO_KEYS.controls[r[0]]; if (o) rows[i] = o; });   /* THE GEOMANCER'S KEYS: C is a wall, and her held swing is a pillar */   /* THE DEATH KNIGHT'S KEYS (DK_KEYS): C is his ward, F raises the dead, G is his chosen skill */
-  rows.forEach(([a, b, c], i) => { const yy = y + 24 + i * 8;
+  const step = Math.min(8, (h - 26) / rows.length);   /* THE CARD FITS ITS ROWS: at 8 apiece, drop and to shrine had run off its foot (twenty rows), and one dodge takes two */
+  rows.forEach(([a, b, c], i) => { const yy = y + 24 + Math.round(i * step);
     text(a, x + 8, yy, UI.text, 'left', 6); text(b, x + 80, yy, '#c9d1dc', 'left', 6);
     const btn = { A: '#8fd160', B: '#ff6b6b', X: '#5aa0e0', Y: '#ffd36b' }[c];
     if (btn) { g.fillStyle = btn; g.beginPath(); g.arc(x + w - 12, yy + 3, 4, 0, 7); g.fill(); text(c, x + w - 12, yy + 1, '#1b1626', 'center', 6); }
