@@ -70,11 +70,15 @@ try {
      BKT.respawn();BK.sim(5);
      let whole=0;for(let x=z.x0;x<=z.x1;x++)if(board(L,x)===8)whole++;out.respawn={broke,whole,of:z.x1-z.x0+1,alive:!BK.P.dead};}
     /* 5. THE DARK, by the pixels: the same place, zone on and zone off */
-    const lum=()=>{const c=document.querySelector('canvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let s=0;for(let i=0;i<d.length;i+=16)s+=d[i]*.3+d[i+1]*.59+d[i+2]*.11;return s/(d.length/16);};
-    {const L=boot();BK.tp(355,31);BK.step(90);const on=lum();const keep=L.darkZones;L.darkZones=[];BK.step(90);const off=lum();L.darkZones=keep;out.dark={on:Math.round(on),off:Math.round(off)};}
+    /* THE BUFFER, not the page's canvas: the page letterboxes the 320x180 buffer in a border that is the same colour zone or no zone,
+       and scales it by a factor the old k=width/320 did not know - so it read the vent's glow from the wrong place. Rows 48 down: under the HUD. */
+    const buf=()=>BK.view.buf.getContext('2d'),lum=()=>{const d=buf().getImageData(0,48,320,132).data;let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*.3+d[i+1]*.59+d[i+2]*.11;return s/(d.length/4);};
+    /* the dark EASES in the draw, and BK.step(n) draws once: so a frame at a time, or it has moved 8% (the first run of this measured 28 against 29 and blamed the dark) */
+    const walk=n=>{for(let i=0;i<n;i++)BK.step(1);};
+    {const L=boot();BK.tp(355,31);walk(90);const on=lum();const keep=L.darkZones;L.darkZones=[];walk(90);const off=lum();L.darkZones=keep;out.dark={on:Math.round(on),off:Math.round(off)};}
     {const L=boot();const v=L.gasVents.find(v=>v.x===540);BK.tp(534,38);BK.step(30);let idle=null,puff=null;
-     for(let f=0;f<400&&(idle===null||puff===null);f++){BK.step(1);const c=document.querySelector('canvas'),k=c.width/320;const sx=Math.round((v.x*16+8-BK.cam[0])*k),sy=Math.round((v.y*16-24-BK.cam[1])*k);
-       const d=c.getContext('2d').getImageData(Math.max(0,sx-8*k),Math.max(0,sy-8*k),16*k,16*k).data;let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*.3+d[i+1]*.59+d[i+2]*.11;s/=d.length/4;
+     for(let f=0;f<400&&(idle===null||puff===null);f++){BK.step(1);const sx=Math.round(v.x*16+8-BK.cam[0]),sy=Math.round(v.y*16-24-BK.cam[1]);
+       const d=buf().getImageData(Math.max(0,sx-8),Math.max(0,sy-8),16,16).data;let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*.3+d[i+1]*.59+d[i+2]*.11;s/=d.length/4;
        if(v.state==='idle'&&idle===null)idle=s;if(v.state==='puff'&&puff===null&&f>30)puff=s;}
      out.vent={idle:Math.round(idle),puff:Math.round(puff)};}
     return out;})()`, 600000);

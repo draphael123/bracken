@@ -79,7 +79,7 @@ export function reworkBurial({ L, T, TS, interiors, structures, ex }) {
   const graves = [];
   for (const gx of [726, 742, 758]) { cut(gx, gx + 1, oy1 + 1, oy1 + 2); block(gx, gx + 1, oy1 + 3, oy1 + 3); graves.push(gx); ent('deco', gx + 3, oy1, { kind: 'grave' }); }
   ent('check', 712, 92);                          /* on the east pier, at his door */
-  ent('sign', 714, 92, { text: 'THE GRAVEYARD KEEPER. HIS DIG FOLLOWS YOU: DODGE IT BESIDE AN OPEN GRAVE AND THE GROUND GIVES.' });
+  ent('sign', 714, 92, { text: 'THE GRAVEYARD KEEPER. DODGE HIS DIG BESIDE AN OPEN GRAVE AND THE GROUND GIVES.' });
   ent('gravewarden', 748, oy1, { face: -1, mini: true });
   for (let y = vy0; y <= oy1; y++) set(DESCENT.gate, y, T.PORT);   /* his door east, a portcullis: his death lifts it (miniEnd -> openGate) */
   for (const x of [720, 734, 752, 766]) ent('torch', x, oy1);

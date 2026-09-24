@@ -31,7 +31,7 @@ export function varyBurial({ L, T, TS, rw }) {
   darkZones.push({ x0: BLIND[0] * TS, x1: (BLIND[1] + 1) * TS, y0: 12 * TS, y1: 34 * TS, dark: BURIAL_DARK, name: 'THE BLIND VAULT' });
   for (const x of [346, 380]) ent('torch', x, 31);                                   /* with 311, 328, 364 and the Causeway's 392: a pocket every ~17 */
   for (const x of [337, 355, 372]) ent('zombie', x, 31, { buried: true, face: -1 });  /* in the dark between the pockets: MOVING EARTH is a mark, and marks are drawn over the dark */
-  { const s = L.ents.find(e => e.t === 'sign' && e.x === 321); if (s) s.text = 'THE BLIND VAULT. NO LIGHT BUT THE LAMPS. WALK LAMP TO LAMP: THE DEAD LIE IN THE DARK BETWEEN.'; }
+  { const s = L.ents.find(e => e.t === 'sign' && e.x === 321); if (s) s.text = 'THE BLIND VAULT. WALK LAMP TO LAMP: THE DEAD LIE IN THE DARK BETWEEN.'; }
 
   // ---- 2. THE UNLIT CRYPT ----
   darkZones.push({ x0: CRYPT[0] * TS, x1: (CRYPT[1] + 1) * TS, y0: 32 * TS, y1: 40 * TS, dark: BURIAL_DARK, name: 'THE UNLIT CRYPT' });
@@ -50,7 +50,7 @@ export function varyBurial({ L, T, TS, rw }) {
     for (let x = a + 3; x < b - 1; x += 4) coins([x, 30]);
   }
   ent('torch', 931, 31); ent('torch', 956, 31);
-  ent('sign', 928, 31, { text: 'THE ROTTEN BRIDGES. A BOARD HOLDS A MOMENT, NO MORE: KEEP WALKING. THE CHAINS CLIMB OUT OF THE POISON.' });
+  ent('sign', 928, 31, { text: 'THE ROTTEN BRIDGES. A BOARD HOLDS A MOMENT: KEEP WALKING. THE CHAINS CLIMB OUT.' });
   /* the pier between the spans is held: the level's third elite husk stands on it (level.js ELITES) with the bone archer the
      road already had, who shoots down the first span - and you cannot stop to block on a board */
   ent('boo', 972, 27, { face: -1 });                                                    /* and a pale face over the second */
