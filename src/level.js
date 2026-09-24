@@ -3541,7 +3541,7 @@ function trialYard(hero) {
        both sides) and THE QUAKE (a full TREMOR, spent). */
     geomancer: [
       ['upheaval', 2, 'UPHEAVAL: HOLD X, LET GO. A PILLAR ERUPTS AHEAD, FURTHER THE LONGER THE HOLD. HIT TWO.', [['dummy', 16], ['dummy', 21]], 'HOLD X, LET GO'],
-      ['flash', 2, 'ROCK SHIELD: TAP C AS HIS SWORD FLASHES WHITE. RAISED THAT LATE, HIS BLADE BOUNCES OFF. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
+      ['flash', 2, 'ROCK SHIELD: TAP C AS HIS SWORD FLASHES WHITE AND HIS BLADE BOUNCES OFF. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE SHIELD TAKES IT. TWO RED !! : IT SHATTERS, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
       ['stonefall', 2, 'STONEFALL: JUMP, THEN DOWN+X BETWEEN THEM. THE RING KNOCKS DOWN BOTH SIDES. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
       ['meter', 1, 'WHAT SHE BUILDS AND BREAKS FILLS TREMOR. FULL, TAP C: THE QUAKE. IT IS FILLED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'LB WITH A FULL BAR'],
