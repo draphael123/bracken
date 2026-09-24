@@ -20,6 +20,22 @@ export const POSE_BEATS = {
   stretch: [0.12, 0.26],       /* FULL STRETCH: the hands slide back down the shaft to the butt, and she settles long on it */
 };
 export const POSE_CYCLE = { whirl: 30 };   /* WHIRLWIND: the blade out ahead, behind, and across, round and round (frames a second) */
+/* THE JUMP ARC. Every hero keeps his old air frames (jump 0/1 by the climb, apex near the top, fall 0/1 by the drop); a hero with a
+   TAKE-OFF frame shows it for the first beat off the ground, while the push is still in him. */
+export function airPose(P, frames) {
+  if (P.vy < -250 && frames.takeoff && P.airArt > 0) return ['takeoff', 0];
+  if (Math.abs(P.vy) < 55 && frames.apex) return ['apex', 0];
+  return P.vy < 0 ? ['jump', P.vy < -150 ? 0 : 1] : ['fall', P.vy > 220 ? 1 : 0];
+}
+/* THE LANDING. A set with three landing frames plays impact, settle, stand over P.landArt (art time only, set with the gameplay
+   landT and outlasting it: the landing lag is not lengthened); a two-frame set keeps the old split of landT. */
+export function landPose(P, frames) {
+  const n = frames.land.length;
+  if (n < 3) return P.landT > 0 ? ['land', P.landT > 0.05 ? 0 : 1] : null;
+  if (!(P.landArt > 0) && !(P.landT > 0)) return null;
+  const el = (P.landArtMax || 0.2) - (P.landArt || 0);
+  return ['land', el < 0.06 ? 0 : el < 0.13 ? 1 : 2];
+}
 export function kitPose(P, key, t) { P.kPoseK = key; P.kPoseT = t; P.kPoseMax = t; }
 /* the frame of the pose now playing, or null when there is none */
 export function kitPoseFrame(P, frames) {

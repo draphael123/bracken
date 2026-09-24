@@ -11,6 +11,8 @@
 // other of their actives uses (SHARED_OK names the one pair that honestly shares). THE OTHER FOUR are a RATCHET: KNOWN_POSELESS
 // is the debt measured on 2026-09-23; a new pose-less active fails, and so does a listed one that has since got its pose (take it
 // off the list). `node tools/ability-poses.mjs --report` prints every active's key run without asserting.
+// THE JUMP: the two starters also leave the ground on a TAKE-OFF frame, show four or more poses in the air, and land in three
+// (impact, settle, stand); the other four heroes' arcs are printed (JUMP ARCS), not asserted.
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { SKILLS } from '../src/progression-catalog.js';
@@ -80,5 +82,18 @@ try {
       assert.equal(fixed.length, 0, h.toUpperCase() + ': ' + fixed.join(', ') + ' has its pose now - take it off KNOWN_POSELESS');
     }
   }
+  /* THE JUMP ARC AND THE LANDING. Every hero had two jump frames, one apex, two fall and two land (docs/hero-animation-audit.md). The
+     two starters are held to a real arc - a TAKE-OFF frame of its own, then at least four distinct poses in the air - and a landing
+     of three distinct frames (impact, settle, stand) while standing still; the other four are reported. */
+  const arcs = {};
+  for (const h of ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden'])
+    arcs[h] = await pg.evalp(`(()=>{__kit('${h}',[],[]);const P=BK.P;BK.step(1);BK.keys.jump=true;BK.press('jump');const air=[],land=[];let n=0;
+      for(let i=0;i<120;i++){BK.step(1);if(!P.ground)air.push(P.lastKey+':'+P.lastFrame);else if(air.length){BK.keys.jump=false;land.push(P.lastKey+':'+P.lastFrame);if(++n>=24)break;}}
+      return {air:[...new Set(air)],land:[...new Set(land.filter(k=>k.startsWith('land:')))]}})()`);
+  console.log('JUMP ARCS: ' + Object.entries(arcs).map(([h, a]) => h + ' air ' + a.air.length + ' [' + a.air.join(' ') + '] land ' + a.land.length).join('; '));
+  if (!REPORT) for (const h of HELD) { const a = arcs[h];
+    assert(a.air.some(k => k.startsWith('takeoff:')), h.toUpperCase() + ' leaves the ground with no take-off frame of its own (drew ' + a.air.join(' ') + ')');
+    assert(a.air.length >= 4, h.toUpperCase() + ' has only ' + a.air.length + ' poses in the air');
+    assert(a.land.length >= 3, h.toUpperCase() + ' lands in ' + a.land.length + ' frame(s), not three (impact, settle, stand): ' + a.land.join(' ')); }
   console.log('ability poses: ' + (rows.length - bad.length) + ' of ' + rows.length + ' actives have a body of their own; known debt ' + Object.values(KNOWN_POSELESS).flat().length);
 } finally { pg.close(); }

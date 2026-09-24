@@ -45,6 +45,8 @@ const LEGS = {
   crouch:['SS.SS.SS..', 'WWW.ww.WWW', '..........', '..........', '..........'],
   land:  ['.SS..SS...', 'SS....SS..', 'ww....ww..', 'WWW..WWW..', '..........'],
   // DOWN ON ONE KNEE (the Warden setting the spears): the front thigh level, its shin straight down to the boot; the back knee on the turf, the shin laid flat behind
+  // THE PUSH-OFF: the front leg straight under him, the back one still extended down and behind, the toe the last thing to leave the ground
+  push:  ['.SSSSS....', 'SS..SS....', 'ww...ww...', 'w....ww...', 'W....WWW..'],
   kneel: ['..........', '..........', '.SSSSSSS..', 'SWw...ww..', 'WWWw..WWW.'],
   // THE POKE's tuck: both thighs drawn up level in front of the belt, the shins hanging from the knees, the boots under them
   tuck:  ['..SSSSSSSs..', '..wwwwwwwss.', '........ww..', '........www.', '.......WWWW.'],
@@ -338,8 +340,11 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
       KF({ legs: 'fall', sword: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 4], plume: 2 }),
       KF({ legs: 'fall2', dy: -1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 4, sh[1] - 5], plume: 2 }),
     ],
-    // LANDING is two beats: the knees take it, then he stands up out of it
-    land: [KF({ legs: 'land', dy: 2, sword: rest(2), plume: 0 }), KF({ legs: 'stand', dy: 1, sword: rest(1), plume: 1 })],
+    /* LANDING is three beats: the IMPACT, deep, the knees right under him and the point jarred into the turf; the SETTLE, the knees
+       taking the last of it; and he STANDS up out of it (tools/ability-poses.mjs holds the two starters to all three) */
+    land: [KF({ legs: 'crouch', legsDy: 3, dy: 4, sword: rest(0), plume: 2 }), KF({ legs: 'land', dy: 2, sword: rest(2), plume: 0 }), KF({ legs: 'stand', dy: 1, sword: rest(1), plume: 1 })],
+    /* THE TAKE-OFF: stretched tall off the push, the back toe the last thing on the ground and the blade swung up by the lift of it */
+    takeoff: KF({ legs: 'push', dy: -2, sho: 1, sword: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 3], plume: 2 }),
     // THE TOP OF THE JUMP: legs tucked, the blade lifted, the plume settling - the one frame where he hangs
     apex: KF({ legs: 'jump2', dy: -1, sword: [sh[0] + 1, sh[1], sh[0] + 6, sh[1] - 5], plume: 0 }),
     // A SKID: turning at a run, heels dug in and leaning back against his own speed, the blade trailing
@@ -2220,8 +2225,12 @@ export function bakeWarden(skin = {}, previewOnly = false) {
       knightFrame({ legs: 'jump2', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], spear: [sh[0] - 5, sh[1] + 3, sh[0] + 11, sh[1] - 7], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', arm: [sh[0], sh[1], sh[0] + 2, sh[1]], spear: [sh[0] - 6, sh[1] + 1, sh[0] + 10, sh[1] - 9], plume: 2 }),
       knightFrame({ legs: 'fall2', dy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1]], spear: [sh[0] - 6, sh[1], sh[0] + 10, sh[1] - 10], plume: 2 })],
-    land: [knightFrame({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], spear: rest(2), plume: 0 }),
+    /* three beats down, as his: the IMPACT with the heel of the spear jarred into the turf, the SETTLE, and up */
+    land: [knightFrame({ legs: 'crouch', legsDy: 3, dy: 4, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 5], spear: rest(1), plume: 2 }),
+      knightFrame({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], spear: rest(2), plume: 0 }),
       knightFrame({ legs: 'stand', dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], spear: rest(1), plume: 1 })],
+    /* THE TAKE-OFF: stretched off the push with the spear swung up and forward, point leading her into the air */
+    takeoff: knightFrame({ legs: 'push', dy: -2, sho: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 2], spear: [sh[0] - 4, sh[1] + 5, sh[0] + 12, sh[1] - 5], plume: 2 }),
     apex: knightFrame({ legs: 'jump2', dy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], spear: [sh[0] - 5, sh[1] + 2, sh[0] + 11, sh[1] - 8], plume: 0 }),
     skid: knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 2], spear: [sh[0] + 3, sh[1] - 1, sh[0] - 11, sh[1] + 7], plume: 2 }),
     climb: [knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], spear: back(), plume: 0 }),
