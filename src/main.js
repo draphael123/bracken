@@ -7034,6 +7034,7 @@ function updatePlayer(dt) {
       else if (!P.ground) { P.airRolled = true; P.vy = Math.min(P.vy, -80); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); } /* AIR ROLL */
       P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : isWarden() ? 0.18 : isGeo() ? 0.3 : 0.3; P.dodgeCd = 0.5;
       P.dodgeMax = P.dodge; P.dodgeInv = P.dodge;   /* the grace is the whole of it, unless the hero says otherwise */
+      if (isGeo() && P.ground && !P.swim) { P.geoBurrow = { dir: P.face }; burst(P.x, P.y - 2, 10, ['#5e4e38', '#8a7a5e', '#8c8a7e'], 70, 0.4, 120, 1); SFX.geoThud && SFX.geoThud(); }   /* HER DODGE IS BURROW: down into the floor (geoBurrowStep) */
       /* TWO SMALL STEPS, THEN THE WAIT: the second comes the moment the first is over, and only the third is made to wait */
       if (isWarden()) { const quick = time - (P.stepAt || -9) < STEP_PAIR && (P.stepN || 0) < 2;
         P.stepN = quick ? (P.stepN || 0) + 1 : 1; P.stepAt = time;
@@ -7065,7 +7066,8 @@ function updatePlayer(dt) {
   }
   if (dodging && isPyro() && tal('phoenixTrail') && Math.abs(P.x - (P.trailX ?? -99)) > 12) { P.trailX = P.x; fires.push({ x: P.x, y: P.y, life: 1.4, delay: 0, own: true }); }   /* PHOENIX TRAIL: the roll leaves its fire behind */
   if (dodging && isPirate() && tal('rollCut') && !keys.up && !keys.down) P.dashLate = 0.2;   /* TUMBLING CUT: a swing out of the roll is a dash attack, but only when nothing else was asked for - an automatic passive must not take over the attack button and bury the rising cut or the low sweep */
-  if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper()) ghosts.push({ x: P.x, y: P.y, face: P.face, life: isWarden() ? 0.3 : 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2, step: isWarden() }); }   /* HER STEP IS NOT A ROLL AND MUST NOT LOOK LIKE ONE: see the draw */
+  if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper() && !P.geoBurrow) ghosts.push({ x: P.x, y: P.y, face: P.face, life: isWarden() ? 0.3 : 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2, step: isWarden() }); }   /* HER STEP IS NOT A ROLL AND MUST NOT LOOK LIKE ONE: see the draw */
+  if (P.geoBurrow) geoBurrowStep(dt);   /* (and the Geomancer's is under the floor: no after-images, a trail in the dirt) */
   // THE PYROMANCER, ALIGHT: a trail of embers, and anything she passes through takes fire
   if (P.alight > 0) { P.alight -= dt;
     if (Math.random() < dt * 40) parts.push({ x: P.x + (Math.random() - 0.5) * 10, y: P.y - 4 - Math.random() * 14, vx: -P.vx * 0.12, vy: -20 - Math.random() * 30, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: -30, fire: true });
@@ -19301,6 +19303,26 @@ GEO = makeGeomancer({ get P() { return P; }, get L() { return L; }, get enemies(
   shakeCam: (n, k) => shakeCam(n, k), hitstop: t => hitstop(t), zoomKick: (a, b) => zoomKick(a, b), burst: (...a) => burst(...a), squash: (a, b, c) => squash(a, b, c), reflectSeed: s => reflectSeed(s),
   kitPose: (p, k, t) => kitPose(p, k, t), SFX, attackBox: () => attackBox(), heavyWind: () => heavyWind(), isGeo: () => isGeo(), tal: geoTal,
   meterFull: () => { meterReady('#e8a83a'); SFX.vigilFull(); }, trialEvent: k => trialEvent(k), noteParry: () => { noteVerb('parry'); parries++; } });
+/* HER DODGE IS BURROW (2026-09-24, docs/briefs/geomancer.md THE REWORK 4). She sinks into the floor for the dodge's grace, travels
+   under it and bursts up ahead in a spray of rock. THROUGH FLOOR ONLY: where there is no floor under her leading foot she stops, and
+   comes up at the last solid cell - so it passes UNDER a blow along the ground and never across a pit or a gap. And she never comes
+   up inside rock or a foe (A12): if the spot is taken she is put at the nearest clear footing, ahead first. (Walking a ceiling, and in
+   the water, it is the old roll: there is no floor to go into.) */
+function geoBurrowStep(dt) { const B = P.geoBurrow;
+  if (P.dodge > 0 && !P.dead) { P.vy = 0; const d = Math.sign(P.vx) || B.dir, ty = Math.floor((P.y + 1) / TS), lead = P.x + P.vx * dt + d * (P.w / 2 - 1), tx = Math.floor(lead / TS);
+    if (!(isSolid(tx, ty) || isOneWay(tileAt(tx, ty)))) { P.vx = 0; if (!B.stopped) { B.stopped = true; P.dodge = Math.min(P.dodge, 0.06); } }   /* the floor ends: she comes up here */
+    if (Math.random() < dt * 40) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 1, vx: -P.vx * 0.15, vy: -20 - Math.random() * 30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#8a7a5e' : '#5e4e38', size: 1, grav: 200 });   /* THE TRAIL: the floor heaving over her */
+    return; }
+  P.geoBurrow = null; if (!P.dead) geoSurface(); }
+function geoSurface() {
+  const ty = Math.floor((P.y + 1) / TS);
+  const taken = x => { const b = { l: x - P.w / 2, r: x + P.w / 2, t: P.y - P.h, b: P.y };
+    for (let tx = Math.floor((b.l + 1) / TS); tx <= Math.floor((b.r - 1) / TS); tx++) for (let cy = Math.floor((b.t + 1) / TS); cy <= Math.floor((b.b - 1) / TS); cy++) if (isSolid(tx, cy)) return true;
+    const fx = Math.floor(x / TS); if (!(isSolid(fx, ty) || isOneWay(tileAt(fx, ty)))) return true;
+    return enemies.some(e => e.alive && !e.harmless && !(e.gone > 0) && overlap(b, box(e))); };
+  if (taken(P.x)) { const d = P.face; for (let k = 2; k <= 48; k += 2) { if (!taken(P.x + d * k)) { P.x += d * k; break; } if (!taken(P.x - d * k)) { P.x -= d * k; break; } } }
+  burst(P.x + P.face * 4, P.y - 4, 14, ['#8c8a7e', '#5e5c54', '#8a7a5e', '#a8a696'], 110, 0.45, 160, 2); dust(P.x - 6, P.y, 4); dust(P.x + 6, P.y, 4); shakeCam(2); SFX.geoRise && SFX.geoRise();
+  P.geoSurfT = time; P.vx *= 0.3; squash(0.8, 1.25, 0.1); }
 function geomancerKit(dt, canAct, tired) {
   if (!isGeo()) return;
   GEO.update(dt);
@@ -19572,6 +19594,7 @@ const DASH_STRIKE = {
 const dashStriking = () => P.dashAtk > 0 && P.dashCut && !!DASH_STRIKE[hero()];
 /* EARLY IN THE DASH, with the wind for it. (For the other heroes the old rule stands: any swing in or just after the dash.) */
 function dashCutNow() { const D = DASH_STRIKE[hero()]; if (!D) return P.dashLate > 0;
+  if (isGeo() && time - (P.geoSurfT ?? -9) < 0.2 && P.ground && !P.swim) return P.st >= D.st;   /* X AS SHE SURFACES from a BURROW: the rolling stone, as out of a dash */
   if (!(P.dash > 0) || P.swim) return false; const dur = P.dashDur || P.dash; return dur - P.dash <= D.win * dur && P.st >= D.st; }
 function dashStrike(D) { spend(D.st); P.dashLate = 0; P.dash = 0; P.dashDur = 0; P.dashAtk = D.t; P.dashCut = true;
   if (P.heavySwing) { P.heavySwing = false; P.heavy = false; P.runThrough = false; } P.combo = 0; P.swingMul = D.dmg;   /* its own blow, not a step in a run of cuts */
@@ -22573,6 +22596,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (P.fly) { const kx = Math.round(P.x - cx) - 4, ky = Math.round(P.y - cy) - 58; g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(P.x - cx) + 0.5, Math.round(P.y - cy) - 14); g.lineTo(kx + 0.5, ky + 20); g.stroke(); drawBigKite(kx, ky, time); }
       if (P.fly && !(P.atk >= 0)) { key = 'jump'; frame = 1; }
       else if (P.hurt > 0) { key = 'hurt'; frame = P.hurt > 0.18 ? 0 : 1; }
+      else if (P.dodge > 0 && P.geoBurrow && K.R.burrow) { const el = 1 - P.dodge / (P.dodgeMax || 0.3); key = 'burrow'; frame = el < 0.25 ? 0 : el < 0.82 ? 1 : 2; }   /* BURROW: sink, a hump of earth with her hood in it, and up out of it */
       else if (P.dodge > 0) { const dm = P.dodgeMax || 0.3; key = 'roll'; frame = Math.floor((dm - P.dodge) / dm * 4) * (P.face > 0 ? 1 : -1); }   /* (its own length, so a short back-step plays all four beats of it and not the first one twice) */
       else if (P.pinning && K.R.pin) key = 'pin';   /* THE PIN: down on the spear, both hands on it, holding the thing under the point */
       else if (P.plunge) key = 'plunge';

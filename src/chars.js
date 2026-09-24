@@ -4082,7 +4082,17 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
     F.swim = S.swim; F.tread = S.tread; }
   /* HER DODGE: a shoulder roll, the stave hugged to her */
   const tuck = knightFrame({ dy: 4, legs: 'crouch', arm: [X, Y, X + 1, Y + 2], stave: [X - 5, Y + 5, X + 5, Y - 3] });
-  F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
+  F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));   /* (still hers in the water and on a ceiling, where there is no floor to go into) */
+  /* HER DODGE IS BURROW (2026-09-24): SINK - into the floor to the waist, the stave hugged upright, earth heaped round her; UNDER -
+     nothing of her but the peak of the hood riding a travelling hump of earth; BURST - up out of it, arms and stave flung high in a
+     spray of rock. Everything below her feet (row 22, the floor line) is cut away, so she really is IN the ground */
+  const sunk = (c, w, h) => { const g2 = c.getContext('2d'); g2.clearRect(0, 22, c.width, c.height);
+    for (let r = 0; r < h; r++) { const hw = w - r * 2; g2.fillStyle = r === h - 1 ? '#8a7a5e' : '#5e4e38'; g2.fillRect(16 - hw, 21 - r, hw * 2, 1); }
+    g2.fillStyle = '#8c8a7e'; g2.fillRect(16 - w + 2, 21, 1, 1); g2.fillRect(16 + w - 3, 20, 1, 1); g2.fillStyle = '#a8a696'; g2.fillRect(16 + 1, 22 - h, 1, 1); return c; };
+  F.burrow = [sunk(knightFrame({ dy: 6, legs: 'crouch', legsDy: 6, arm: [X, Y, X + 1, Y - 2], arm2: [OFF[0], OFF[1], X - 1, Y - 1], stave: [X + 2, Y + 8, X + 1, Y - 9], plume: 2 }), 9, 3),
+    sunk(knightFrame({ dy: 13, legs: 'crouch', legsDy: 13, plume: 1 }), 7, 3),
+    knightFrame({ dy: -3, legs: 'jump', legsDy: -3, arm: [X, Y, X + 3, Y - 8], arm2: [OFF[0], OFF[1], X - 4, Y - 7], stave: [X - 6, Y - 4, X + 8, Y - 12], plume: 2,
+      bits: [o(-8, 8, M), o(10, 6, M), o(-4, 11, D), o(8, 10, D), o(12, 2, M), o(-10, 3, D)] })];
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'stave', {});
   /* THE TALL ONES, made after the padding with the headroom of their own: the stave goes up over the hood on these */

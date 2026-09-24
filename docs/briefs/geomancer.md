@@ -35,7 +35,8 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 | hold C | **ROCK SHIELD** (her defence, from 2026-09-24; it was RAISE WALL) | a stone slab on her lead arm that moves with her (at guard pace). It takes TWO blows - visibly cracked after the first, broken by the second (a burst of shards). A RED blow shatters it at once, fresh or cracked: red still means move. Raised as a blow lands = PERFECT BLOCK: the weapon bounces off, the attacker staggers, and it costs the shield nothing. No wind to raise or hold, and NO refill by itself |
 | DOWN+C (or C with nothing on her arm) | **THE MEND** | the only refill: the stave struck into the ground - 0.6 s, the thud at 0.3 s with a dust ring, her own pose (gMend) - and the shield is whole. A blow, a jump or a roll breaks it off |
 | plunge | **STONEFALL** | lands like a boulder: a short shockwave that knocks down grounded foes |
-| X in a dash | **ROLLING STONE** | kicks a small boulder forward that bowls through little foes |
+| X in a dash | **ROLLING STONE** | kicks a small boulder forward that bowls through little foes (and X as she surfaces from a BURROW, the same) |
+| dodge | **BURROW** (from 2026-09-24; it was a shoulder roll) | she sinks into the floor (invulnerable for the dodge's grace), travels a short way under it with the ground heaving over her, and bursts up ahead in a spray of rock. Passes UNDER a blow along the ground, never across a pit or gap: no floor under her leading foot and she comes up at the last solid cell. Never comes up inside rock or a foe (A12). Poses: sink, under, burst |
 | meter **TREMOR** | fills from blows the shield stops (a perfect block most) and pillars that launch foes | full, tap C on the ground: **THE QUAKE** — the floor heaves, every grounded foe is knocked down, loose rock falls, each told by a shadow (C1/C3) |
 
 ## Abilities (bought; the same ladder and PRICE_AT table as the Knight and Warden)
@@ -84,6 +85,19 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 - Proved: `tools/geomancer.mjs` `heavy` - a foe at contact is hit by the minimal charge, a full charge reaches >= 120 px,
   the pillar is gone within 0.5 s. RED on the old code (hurt 0, 64 px, still standing after 2.5 s).
 
+### 2. A sprite that reads GEOMANCER, not a recoloured mage (and not a goblin)
+- A SLATE-GREY robe and hood (src/chars.js GEO_PAL: cool, dark, so the stone on her is the lightest thing about her).
+- Two RUNE-CARVED STONE PLATES on her shoulders (GEO_BODY rows 5-8): pale worked stone standing up past the line of her
+  jaw like a pair of standing stones, a moss crown and an amber rune cut in each - the squarest thing at shoulder height
+  in the cast.
+- The standing-stone STAVE (THE STAVE, above; the polish lane's lopsided stone head kept).
+- GRIT AND PEBBLES float round her while she casts: winding UPHEAVAL (rising with the wind), any of her nine, THE MEND,
+  THE QUAKE (src/geomancer.js draw0).
+- Every frame and pose keeps its count and timing: only the palette and the body rows changed.
+- Before/after: docs/geomancer/frames-before.png / frames-after.png (every frame), docs/geomancer/look-before.png /
+  look-after.png (beside the Pyromancer and the Knight at 5x, and in the first level: standing, running, winding, C held;
+  `node tools/geomancer-look.mjs before|after`).
+
 ### 3. THE ROCK SHIELD replaces RAISE WALL as her guard
 - src/geomancer.js `guard / shieldTakes / startMend / mendUpdate`, GEO.shield `{ hp: 2, hold: 0.2, mend: 0.6, mendAt: 0.3 }`;
   main.js damagePlayer asks it first. A tap still guards for `hold` (0.2 s), so a tap on the beat is a perfect block.
@@ -97,18 +111,19 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
   nothing, raising and holding costs no wind, ten seconds idle leave it broken, THE MEND restores it, a blow breaks the mend
   off. RED on the old code (the wall took a third yellow blow; no shield state).
 
-### 2. A sprite that reads GEOMANCER, not a recoloured mage (and not a goblin)
-- A SLATE-GREY robe and hood (src/chars.js GEO_PAL: cool, dark, so the stone on her is the lightest thing about her).
-- Two RUNE-CARVED STONE PLATES on her shoulders (GEO_BODY rows 5-8): pale worked stone standing up past the line of her
-  jaw like a pair of standing stones, a moss crown and an amber rune cut in each - the squarest thing at shoulder height
-  in the cast.
-- The standing-stone STAVE (THE STAVE, above; the polish lane's lopsided stone head kept).
-- GRIT AND PEBBLES float round her while she casts: winding UPHEAVAL (rising with the wind), any of her nine, THE MEND,
-  THE QUAKE (src/geomancer.js draw0).
-- Every frame and pose keeps its count and timing: only the palette and the body rows changed.
-- Before/after: docs/geomancer/frames-before.png / frames-after.png (every frame), docs/geomancer/look-before.png /
-  look-after.png (beside the Pyromancer and the Knight at 5x, and in the first level: standing, running, winding, C held;
-  `node tools/geomancer-look.mjs before|after`).
+### 4. HER DODGE IS BURROW
+- main.js `geoBurrowStep / geoSurface` (the dodge still owns the grace, cost and cooldown: 0.3 s, 190 px/s). On the floor only;
+  in the water and walking a ceiling it is still the old roll (there is no floor to go into - report, not a gap in the rule).
+- THROUGH FLOOR ONLY: each frame, no floor (solid or one-way) under her leading foot and she stops and comes up there.
+- A12: where she comes up, rock in her body, no floor, or a living foe's box means the spot is taken; she is put at the
+  nearest clear footing within 48 px, ahead first.
+- Told: a burst of earth as she goes in, a dirt trail (particles) along the floor while under, no after-images, the
+  hump-of-earth frame, and a spray of rock and a thud as she comes up. Poses `burrow` 0/1/2 = sink / under / burst.
+- X as she surfaces (within 0.2 s, buffered from the end of the burrow) is a dash-X: the ROLLING STONE (dashCutNow).
+- Proved: tools/geomancer.mjs `burrow` - toward a pit she comes up at the last solid cell on her feet; onto a foe stood
+  exactly where a dodge lands her she comes up clear of it and out of rock; a blow along the ground while under does not
+  land; X as she surfaces kicks the stone. RED on the old roll for the pit (she fell 84 px), the foe (she ended inside it)
+  and the stone (none); the "blow passes over her" line was already true of the roll's grace.
 
 ## Open (decide when she is built, not now)
 - Her name and look beyond the stave. (Built as THE GEOMANCER; the look is now THE REWORK 2, above.)

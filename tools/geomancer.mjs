@@ -12,6 +12,9 @@
 //   shield    THE ROCK SHIELD (her C from 2026-09-24): two yellow blows break it (cracked after one), one red breaks it fresh or
 //             cracked, a perfect block (raised as it lands) costs it nothing, raising and holding it costs no wind, it never refills by
 //             itself (ten seconds idle), THE MEND (DOWN+C) restores it, and a blow in the middle of the mend breaks it off
+//   burrow    HER DODGE IS BURROW: from the floor toward a pit she comes up at the last solid cell, on her feet, never across it;
+//             onto a foe standing where she would come up, she comes up clear of it and never inside rock; a blow along the ground
+//             while she is under does not land; and X as she surfaces kicks the ROLLING STONE
 //   levels    in three real early levels, at every 5th tile of floor she can stand on: wall, pillar and step raised, and every frame
 //             no living body is inside her rock and, eight seconds on, the level's grid is exactly what it was (no route blocked)
 // PROVED RED FIRST (2026-09-24): with the body test taken out of freeCell and RULE 4 disabled in src/geomancer.js, `lift` and `body`
@@ -60,6 +63,15 @@ try {
       fresh();K.block=true;BK.sim(3);const p1=hit(),pc=P().geoSh;down();
       fresh();P().geoSh=0;K.block=true;BK.sim(1);K.block=false;BK.sim(10);const mending=P().geoMendT>0;hit();BK.sim(60);const broken=P().geoSh;
       return {st,y1,c1,y2,c2,y3,idle,mended,r1,rf,cr,r2,rc,p1,pc,mending,broken}})()`);
+  out.burrow = await pg.evalp(`(()=>{const P=()=>BK.P,L=()=>BK.L,solidIn=()=>{const p=P(),b={l:p.x-p.w/2,r:p.x+p.w/2,t:p.y-p.h,b:p.y};for(let tx=Math.floor((b.l+1)/16);tx<=Math.floor((b.r-1)/16);tx++)for(let ty=Math.floor((b.t+1)/16);ty<=Math.floor((b.b-1)/16);ty++)if(L().grid[ty*L().W+tx]===1)return true;return false;};
+      __geo([]);for(let x=12;x<=14;x++)for(let y=22;y<L().H;y++)L().grid[y*L().W+x]=0;BK.tp(10,21);BK.sim(5);P().face=1;const y0=P().y;BK.press('dodge');BK.sim(40);
+      const pit={x:Math.round(P().x),edge:12*16,right:Math.round(P().x+P().w/2),y:Math.round(P().y-y0),ground:P().ground,rock:solidIn()};
+      __geo([]);P().face=1;const x0=P().x;BK.press('dodge');BK.sim(40);const run=P().x-x0;   /* how far a dodge carries her on open floor: the foe is stood exactly there */
+      __geo([]);BK.spawnEnt({t:'dummy',x:(P().x+run)/16,y:21});const e=BK.enemies().at(-1);BK.sim(3);e.x=P().x+run;e.vx=0;P().face=1;const hp0=P().hp;BK.press('dodge');BK.sim(6);const under=BKT.damagePlayer(P().x+10,10,{});BK.sim(40);
+      const eb={l:e.x-e.w/2,r:e.x+e.w/2,t:e.y-e.h,b:e.y},p=P(),pb={l:p.x-p.w/2,r:p.x+p.w/2,t:p.y-p.h,b:p.y};
+      const foe={inFoe:e.alive&&pb.l<eb.r&&pb.r>eb.l&&pb.t<eb.b&&pb.b>eb.t,rock:solidIn(),hurt:hp0-p.hp,under,ground:p.ground,gap:Math.round(Math.abs(e.x-p.x)),run:Math.round(run)};
+      __geo([]);P().face=1;BK.press('dodge');BK.sim(1);let f=0;while(P().dodge>0.05&&f++<40)BK.sim(1);BK.press('atk');BK.sim(12);const stone=BK.geo().rollers().length;
+      return {pit,foe,stone}})()`);
   /* THE REAL LEVELS: the first three of the campaign */
   out.levels = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const ids=LEVELS.map((l,i)=>[l.id,i]).filter(([id])=>!/^trial|^practice|^draft/.test(id)).slice(0,3);const rows=[];
     for(const [id,i] of ids){__geo(['stoneStep'],false,i);const L=BK.L,W=L.W,H=L.H;const g0=Array.from(L.grid);let tried=0,inside=0,raised=0;
@@ -88,6 +100,11 @@ try {
   assert(S.idle === 0, 'THE ROCK SHIELD: it never refills by itself (' + S.idle + ' after ten seconds)');
   assert(S.mended === 2, 'THE MEND restores it (' + S.mended + ')');
   assert(S.mending && S.broken === 0, 'THE MEND is broken off by a blow (' + JSON.stringify(S) + ')');
+  const B = out.burrow;
+  assert(B.pit.right <= B.pit.edge + 1 && B.pit.ground && B.pit.y === 0 && !B.pit.rock, 'BURROW: toward a pit she comes up at the last solid cell, on her feet (' + JSON.stringify(B.pit) + ')');
+  assert(!B.foe.inFoe && !B.foe.rock && B.foe.ground, 'BURROW: she never comes up inside a foe or rock (' + JSON.stringify(B.foe) + ')');
+  assert(B.foe.under !== 'blocked' && B.foe.hurt === 0, 'BURROW: a blow along the ground passes over her while she is under (' + JSON.stringify(B.foe) + ')');
+  assert(B.stone >= 1, 'BURROW: X as she surfaces kicks the ROLLING STONE (' + B.stone + ')');
   assert(out.heavy.goneIn <= 0.5, 'UPHEAVAL: the pillar shatters within half a second (' + out.heavy.goneIn + ' s)');
   assert(!out.body.none && !out.body.stood && !out.body.inside, 'stone a foe turns up inside crumbles at once (' + JSON.stringify(out.body) + ')');
   assert(out.reload.had >= 1 && out.reload.after === 0 && out.reload.same, 'a level left takes its stone with it (' + JSON.stringify(out.reload) + ')');
