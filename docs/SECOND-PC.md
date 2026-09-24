@@ -93,3 +93,25 @@ Keep green: textfit, skill-menu, starter-kits, ability-poses, attack-animation, 
 FINAL MESSAGE: shas per item, before/after paths (committed), what was already built in item 5, checks (+ re-runs), parked questions with recommendations.
 NOTE: the Geomancer is now LIVE on master, and the Unburied Field look has been built (claude/unburied-look); run `git merge origin/master` first. Item 1 (the Geomancer art) was committed at 9a1c1a3 but never verified: check it, finish it, then carry on with items 2-5.
 ```
+## Lane 5: The Geomancer rework
+
+Start this after LANE 4 (Polish) has pushed its Geomancer art item, or instead of that item.
+
+```text
+You are a second-PC lane (GEOMANCER REWORK) for BRACKEN (16-bit platformer, plain JS, no build step, no dependencies).
+SETUP: this is a second computer (Windows or Mac; use its shell). In a fresh folder: `git clone https://github.com/draphael123/bracken.git bracken-geo2 && cd bracken-geo2 && git checkout -b claude/geo2 origin/master && git merge origin/claude/polish` (keep the polish lane's Geomancer art if it is there). Node 24 and Chrome are installed; use Chrome for page checks (do not download anything). Other lanes run on this PC too: at most one Chrome page at a time. Push ONLY to claude/geo2 after every green commit. NEVER touch master, NEVER run the full `npm run check`, never deploy. Level editor and Boss Rush are PARKED: add nothing. Read docs/AGENT-HANDOFF.md "EXPENSIVE LESSONS", docs/briefs/geomancer.md, RULES-LEVELS-AND-BOSSES.md (A, C). Patches: exact-match replacements; /* */ not // in patch strings; commit messages say WHY; re-run failing checks alone; prove every new assertion red first. Keep the pronouns the game already uses.
+The Geomancer (src/geomancer.js, isGeo() in src/main.js) is LIVE and Daniel played her. ALL FOUR ITEMS APPROVED BY DANIEL; one commit per item, green at every push; update docs/briefs/geomancer.md to match:
+1. HEAVY (UPHEAVAL, hold X) - CHARGE SETS DISTANCE, AND CLOSE FOES MUST BE HITTABLE. Today upheavalX() = 26 + 40*wound px ahead, so even a tap lands a body-length away and a foe touching her is never hit. New: a quick release = a stone spike at her front foot that hits a foe in contact (it must not trap her in rock: A12/freeCell); holding walks the eruption point out to ~2x today's max; the floor marker keeps showing where it will come up while charging (C1). Assert: a foe at contact range is hit by a minimal charge; a full charge reaches the new max.
+2. A UNIQUE SPRITE - she must read as a GEOMANCER, not a recoloured mage (and not a goblin): e.g. stone-grey robe, rune-carved stone plates on the shoulders, the standing-stone stave (docs/briefs/geomancer.md "THE STAVE"), pebbles/grit that float while she casts. All her frames and poses keep their timing (tools/ability-poses.mjs, tools/geomancer-sheet.mjs). Before/after sheet + in-game capture committed under docs/geomancer/.
+3. THE GUARD BECOMES A ROCK SHIELD (replaces RAISE WALL as her C/guard). She raises a stone shield on her arm that moves with her:
+   - it takes TWO hits; visibly cracked after the first; the second breaks it (burst of shards; the WALL passive's shrapnel applies here);
+   - a RED blow shatters it at once, fresh or cracked (red still means move);
+   - PERFECT BLOCK (raised as a blow lands): the attacker's weapon bounces off and it staggers, as today - and it costs NO hit;
+   - NO STAMINA cost and NO passive refill: the ONLY refill is her striking the stave into the ground - a short, told, interruptible cast (a thud + dust ring, her silhouette) that restores it to full;
+   - blocked hits fill her TREMOR meter as walls did;
+   - the old free-standing wall is no longer her guard: keep it as a bought ability if a slot fits (report where), else park it with a recommendation; the WALL passive branch must still mean something - re-word it to the shield and report the new wording.
+   Assert: two yellow hits break it, one red breaks it, a perfect block costs nothing, it never refills except by the cast, the cast restores it. Re-run her bot/lab checks and say what the new guard does to her numbers.
+4. HER DODGE BECOMES BURROW: she sinks into the ground (invulnerable for the dodge's grace), travels a short way under the floor and bursts up ahead in a spray of rock. It passes UNDER ground-level attacks but NOT across pits or gaps (she travels through floor only: if there is no floor ahead she surfaces at the last solid cell), never surfaces inside rock or a foe (A12). X as she surfaces kicks the ROLLING STONE, as a dash-X does today. Told and readable (dust trail on the floor while under). Own pose frames (sink, under, burst). Assert the floor-only and never-inside-rock rules.
+Keep green: geomancer, starter-kits, ability-poses, attack-animation, combat-feel, render-layers, skill-menu, skill-passives, talents, levelling, progression, tells, textfit, boss-openings, arena-supplies, comments, syntax.
+FINAL MESSAGE: shas per item, before/after paths (committed), the new WALL-passive wording, where the old wall went, her lab numbers before/after, checks (+ re-runs), parked questions with recommendations.
+```
