@@ -15,6 +15,8 @@
 //   burrow    HER DODGE IS BURROW: from the floor toward a pit she comes up at the last solid cell, on her feet, never across it;
 //             onto a foe standing where she would come up, she comes up clear of it and never inside rock; a blow along the ground
 //             while she is under does not land; and X as she surfaces kicks the ROLLING STONE
+//   wall      STONE WALL, bought at level 9 in LODESTONE's place: pressed, it raises a wall piece in front of her; and a save that
+//             bought LODESTONE loads, owning STONE WALL in the same loadout slot
 //   levels    in three real early levels, at every 5th tile of floor she can stand on: wall, pillar and step raised, and every frame
 //             no living body is inside her rock and, eight seconds on, the level's grid is exactly what it was (no route blocked)
 // PROVED RED FIRST (2026-09-24): with the body test taken out of freeCell and RULE 4 disabled in src/geomancer.js, `lift` and `body`
@@ -72,6 +74,9 @@ try {
       const foe={inFoe:e.alive&&pb.l<eb.r&&pb.r>eb.l&&pb.t<eb.b&&pb.b>eb.t,rock:solidIn(),hurt:hp0-p.hp,under,ground:p.ground,gap:Math.round(Math.abs(e.x-p.x)),run:Math.round(run)};
       __geo([]);P().face=1;BK.press('dodge');BK.sim(1);let f=0;while(P().dodge>0.05&&f++<40)BK.sim(1);BK.press('atk');BK.sim(12);const stone=BK.geo().rollers().length;
       return {pit,foe,stone}})()`);
+  out.wall = await pg.evalp(`(async()=>{__geo(['stoneWall']);BK.P.cds={};BK.press('throw');BK.sim(4);const kinds=BK.geo().pieces().map(p=>p.kind);
+      const {migrateProgress}=await import('/src/progression.js');let mig;try{const r=migrateProgress(JSON.stringify({...JSON.parse(JSON.stringify(BKT.PROG)),skillOwned:{geomancer:{lodestone:true}},loadouts:{geomancer:['lodestone']}}),[]);mig={own:Object.keys(r.progress.skillOwned.geomancer),lo:r.progress.loadouts.geomancer};}catch(e){mig={err:String(e.message||e)};}
+      return {kinds,mig}})()`);
   /* THE REAL LEVELS: the first three of the campaign */
   out.levels = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const ids=LEVELS.map((l,i)=>[l.id,i]).filter(([id])=>!/^trial|^practice|^draft/.test(id)).slice(0,3);const rows=[];
     for(const [id,i] of ids){__geo(['stoneStep'],false,i);const L=BK.L,W=L.W,H=L.H;const g0=Array.from(L.grid);let tried=0,inside=0,raised=0;
@@ -100,6 +105,8 @@ try {
   assert(S.idle === 0, 'THE ROCK SHIELD: it never refills by itself (' + S.idle + ' after ten seconds)');
   assert(S.mended === 2, 'THE MEND restores it (' + S.mended + ')');
   assert(S.mending && S.broken === 0, 'THE MEND is broken off by a blow (' + JSON.stringify(S) + ')');
+  assert(out.wall.kinds.includes('wall'), 'STONE WALL: the bought ability raises a wall (' + JSON.stringify(out.wall) + ')');
+  assert(!out.wall.mig.err && out.wall.mig.own.join() === 'stoneWall' && out.wall.mig.lo.join() === 'stoneWall', 'a save that bought LODESTONE owns STONE WALL in its slot (' + JSON.stringify(out.wall.mig) + ')');
   const B = out.burrow;
   assert(B.pit.right <= B.pit.edge + 1 && B.pit.ground && B.pit.y === 0 && !B.pit.rock, 'BURROW: toward a pit she comes up at the last solid cell, on her feet (' + JSON.stringify(B.pit) + ')');
   assert(!B.foe.inFoe && !B.foe.rock && B.foe.ground, 'BURROW: she never comes up inside a foe or rock (' + JSON.stringify(B.foe) + ')');

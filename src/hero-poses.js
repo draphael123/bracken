@@ -24,7 +24,7 @@ export const POSE_BEATS = {
   gHeave: [0.08, 0.2],         /* BOULDER: down on the lever, heaved through, arms flung after it */
   gSpikes: [0.12],             /* SPIKE ROW: on one knee, the stave raised, then driven in on the slant */
   gArch: [0.14],               /* ARCHWAY: the stave lifted flat, then held up over her like the arch itself */
-  gLode: [0.12],               /* LODESTONE: levelled at them, then the rune pulling */
+  gWall: [0.1, 0.22],          /* STONE WALL: the stave up, the butt driven in, and her weight on it while the wall comes up */
   gTomb: [0.1],                /* ENTOMB: raised, and shut down on them like a lid */
   gFault: [0.12],              /* FAULT LINE: the butt set in the ground, then dragged along the line of the crack */
   gGolem: [0.18],              /* GOLEM: the stave raised to call it, then the other hand beckoning it up */

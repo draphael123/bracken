@@ -4141,9 +4141,10 @@ function geoKitPoses(F, sh) {
   /* ARCHWAY: the stave raised flat over her head in both hands, as if she were holding the arch up herself */
   F.gArch = [KF({ dy: 1, legs: 'wide', arm: [X, Y, X + 2, Y - 6], arm2: [OFF[0], OFF[1], X - 4, Y - 6], stave: [X - 8, Y - 6, X + 6, Y - 8], plume: 1 }),
     KF({ dy: -1, legs: 'wide', sho: 1, hy: -1, arm: [X, Y, X + 3, Y - 10], arm2: [OFF[0], OFF[1], X - 5, Y - 10], stave: [X - 9, Y - 10, X + 7, Y - 12], plume: 2, bits: [o(-6, -13, M), o(0, -14, M), o(5, -14, M)] })];
-  /* LODESTONE: the stone head levelled straight at them and the off hand open behind it, the rune pulling */
-  F.gLode = [KF({ wide: 8, dx: -1, legs: 'wide', arm: [X, Y, X + 4, Y], arm2: [OFF[0], OFF[1], X + 1, Y - 3], stave: [X - 6, Y + 1, X + 12, Y - 1], plume: 1 }),
-    KF({ wide: 8, dx: -2, legs: 'wide', sho: 1, arm: [X, Y, X + 4, Y], arm2: [OFF[0], OFF[1], X + 2, Y - 5], stave: [X - 6, Y + 1, X + 12, Y - 1], plume: 2, bits: [o(15, -1, A), o(16, -2, A), o(16, 1, A), o(17, -1, '#fff0c0')] })];
+  /* STONE WALL (level 9, 2026-09-24 - her old C, the RAISE WALL frames it used): the stave swung up across her, then the butt driven
+     into the ground in front of her with both hands high on the haft and her weight down on it, a spray of grit off its foot */
+  F.gWall = [KF({ dy: -1, legs: 'wide', arm: [X, Y, X + 2, Y - 6], arm2: [OFF[0], OFF[1], X - 2, Y - 4], stave: [X - 6, Y + 2, X + 6, Y - 12], plume: 1 }),
+    ...[0, 1].map(i => KF({ dy: 1 + i, legs: 'wide', arm: [X, Y, X + 4, Y - 4 + i], arm2: [OFF[0], OFF[1], X + 3, Y - 1 + i], stave: [X + 6, Y + 9 - i, X + 4, Y - 9 + i], plume: i + 1, bits: [o(5, 9 - i, D), o(8, 9 - i, D), o(4, 8 - i, M)] }))];
   /* ENTOMB: both hands on the stave, the stone swung down onto them like a lid being shut */
   F.gTomb = [KF({ dy: -1, legs: 'wide', arm: [X, Y, X + 1, Y - 6], arm2: [OFF[0], OFF[1], X - 1, Y - 6], stave: [X + 2, Y - 3, X - 6, Y - 16], plume: 1 }),
     KF({ wide: 8, dx: 2, dy: 2, legs: 'runC', arm: [X, Y, X + 5, Y + 1], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X - 1, Y - 2, X + 13, Y + 6], plume: 2, bits: [o(16, 6, M), o(15, 8, M), o(17, 8, D)] })];
