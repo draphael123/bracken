@@ -24,13 +24,12 @@ const COMBO = new Set(['atk', 'atkB', 'atkC', 'air']);
 const BORROW_OK = {
   spearDance: 'SPEAR DANCE is a flurry of her own thrusts, stood still: the thrust frames are exactly what it is',
 };
-const HELD = ['knight', 'warden'];
+/* THE HEROES HELD TO IT: the starters (lane E), and each of the other four as lane P (2026-09-24) gives it its poses */
+const HELD = ['knight', 'warden', 'paladin', 'pyro'];
 /* two of hers are the same movement at heart, and read as it */
 const SHARED_OK = { harrier: 'HARRIER is the vault taken at a foe instead of at a gap: it is drawn as the vault Pole Spring also uses' };
 /* THE DEBT, measured on master 313e0da (2026-09-23). Report, don't fix: each of these plays with no body of its own. */
 const KNOWN_POSELESS = {
-  pyro: ['vent', 'wisp', 'fireWall', 'cinderStep'],
-  paladin: ['holyCharge', 'divineShield', 'hammerLeap'],
   pirate: ['blackSpot', 'keelhaul'],
   reaper: ['harvestMoon', 'gravecall'],
 };
@@ -50,14 +49,14 @@ try {
   const rows = [];
   for (const s of ACTIVES) {
     const r = await pg.evalp(`(()=>{__kit(${JSON.stringify(s.hero)},[${JSON.stringify(s.id)}],[['sprig',40]]);const P=BK.P;P.heat=100;P.st=P.maxSt;BK.step(1);const before=P.lastKey;
-      BK.press('throw');const seq=[];for(let i=0;i<30;i++){BK.step(1);seq.push([P.lastKey,P.lastFrame]);}
+      BK.press('throw');/* A PRESS EATEN BY A HITSTOP is pressed again once it is over: a METEOR from the row before still falls across the reset, and its landing froze the frame WISP was pressed on */if(BK.stop>0&&!(P.cds&&Object.keys(P.cds).length)){for(let i=0;i<120&&BK.stop>0;i++)BK.step(1);BK.press('throw');}const seq=[];for(let i=0;i<30;i++){BK.step(1);seq.push([P.lastKey,P.lastFrame]);}
       return {before,fired:!!(P.cds&&Object.keys(P.cds).length),seq}})()`);
     const own = [...new Set(r.seq.map(([k]) => k))].filter(k => !GENERIC.has(k) && k !== r.before && (!COMBO.has(k) || BORROW_OK[s.id]));
     const runs = []; for (const [k, f] of r.seq) { const t = k + ':' + f; if (!runs.length || runs.at(-1)[0] !== t) runs.push([t, 1]); else runs.at(-1)[1]++; }
     rows.push({ hero: s.hero, id: s.id, fired: r.fired, own, runs: runs.map(([t, n]) => t + 'x' + n).join(' ') });
   }
   const bad = rows.filter(r => !r.fired || !r.own.length);
-  for (const h of Object.keys(KNOWN_POSELESS).concat(HELD)) {
+  for (const h of [...new Set(Object.keys(KNOWN_POSELESS).concat(HELD))]) {
     const mine = rows.filter(r => r.hero === h);
     console.log(h.toUpperCase() + ':');
     for (const r of mine) console.log('  ' + (r.fired && r.own.length ? 'ok  ' : 'NONE') + ' ' + r.id.padEnd(15) + ' own=[' + r.own.join(',') + ']  ' + r.runs);

@@ -39,7 +39,7 @@ try {
   const rows = [];
   for (const [hero, ids] of Object.entries(MOVES)) {
     for (const id of ids) {
-      await pg.evalp(`(()=>{__kit('${hero}',['${id}']);const s=[];BK.step(1);BK.press('throw');let f=0;for(const at of ${JSON.stringify(AT)}){BK.step(at-f);f=at;s.push(__crop('+'+at));}__shots.push(s);return 1})()`);
+      await pg.evalp(`(()=>{__kit('${hero}',['${id}']);const s=[];BK.step(1);BK.press('throw');if(BK.stop>0&&!(BK.P.cds&&Object.keys(BK.P.cds).length)){for(let i=0;i<120&&BK.stop>0;i++)BK.step(1);BK.press('throw');}let f=0;for(const at of ${JSON.stringify(AT)}){BK.step(at-f);f=at;s.push(__crop('+'+at));}__shots.push(s);return 1})()`);
       rows.push(hero + ' ' + id);
     }
     /* THE JUMP AND THE LANDING: a full jump from the floor, caught take-off, rising, the top, falling; then the three frames after touch-down */

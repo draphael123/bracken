@@ -1477,6 +1477,83 @@ function pyroFrame(o = {}) {
   outline(c, OUT);
   return c;
 }
+/* EVERY ABILITY HAS A BODY: THE PYROMANCER'S BOUGHT ACTIVES (lane P, 2026-09-24). Vent, Wisp and Fire Wall played beside an idle
+   pyromancer, Cinder Step drew the dodge roll, and Meteor and Ring of Fire shared the one ember-off-the-palm cast. Each now has frames
+   of its own on her rig, played by src/hero-poses.js; added after the padding with the same headroom (a raised staff goes over the cowl). */
+function pyroKitPoses(F, up) {
+  const top = ATTACK_HEADROOM, P = o => pyroFrame({ top, ...o });
+  /* VENT: hunched in round the heat with both sleeves drawn to her; then flung open, the robe belled out and the fire leaving her
+     every way; and the settle, cold, the cowl down */
+  F.vent = [P({ sit: 2, hemW: 10, staff: up(0, 2), arm: [16, 12, 15, 13], arm2: [11, 12, 13, 13], cowl: 0, sparks: [[13, 12, 'r']] }),
+    P({ dy: -1, bell: 3, hemW: 14, staff: [9, 18, 10, 0, 'back'], arm: [16, 10, 22, 6], arm2: [11, 10, 5, 6], cowl: 2, flick: 1,
+      sparks: [[3, 5, 'r'], [24, 4, 'y'], [2, 11, 'y'], [25, 10, 'r'], [13, -2, 'y'], [6, 1, 'r'], [21, 0, 'r'], [4, 16, 'r'], [23, 16, 'y']] }),
+    P({ sit: 1, hemW: 12, staff: up(), arm: [16, 11, 18, 13], arm2: [11, 11, 9, 14], cowl: 0 })];
+  /* WISP: the flame cupped low in the free palm, lifted up to her face, and let go - she watches it rise */
+  F.wisp = [P({ sit: 1, staff: up(), arm: [16, 11, 17, 12], arm2: [11, 11, 14, 14], palm: [15, 14], cowl: 0 }),
+    P({ staff: up(), arm: [16, 11, 17, 11], arm2: [11, 10, 14, 5], palm: [15, 4], cowl: 0, flick: 1 }),
+    P({ staff: up(), arm: [16, 11, 17, 11], arm2: [11, 10, 13, 7], cowl: 2, sparks: [[15, 0, 'y'], [16, -1, 'r'], [14, -1, 'r'], [15, -2, 'y']] })];
+  /* FIRE WALL: the staff taken up behind her head in both hands; brought down along the ground ahead with the flare at its foot;
+     and held there, low, while the wall goes up */
+  F.wall = [P({ lean: -2, dy: -1, staff: [4, 6, 20, 1], arm: [15, 9, 13, 5], arm2: [11, 9, 9, 5], cowl: 2, bell: 1 }),
+    P({ lean: 3, trail: 3, sit: 1, feet: [[8, 18], [18, 18]], staff: [13, 12, 29, 18], arm: [17, 10, 21, 13], arm2: [13, 10, 17, 13], cowl: 1, flare: [29, 17, true] }),
+    P({ lean: 2, trail: 2, sit: 2, feet: [[8, 18], [18, 18]], staff: [13, 13, 28, 18], arm: [17, 11, 20, 14], arm2: [13, 11, 16, 14], cowl: 0, sparks: [[29, 16, 'r'], [30, 17, 'y'], [27, 15, 'y']] })];
+  /* CINDER STEP: low and flat through the gap, the staff carried behind, the hem streaming and shedding embers; and the pull-up */
+  const trailS = [[3, 17, 'r'], [1, 16, 'y'], [4, 14, 'r'], [0, 18, 'r']];
+  F.cinder = [P({ lean: 3, sit: 2, trail: 4, hemW: 13, feet: [[8, 18], [17, 18]], staff: [5, 16, 22, 8, 'back'], arm: [17, 11, 20, 12], cowl: 1, sparks: trailS.slice(0, 2) }),
+    P({ lean: 4, sit: 3, trail: 5, hemW: 14, feet: [[7, 18], [19, 18]], staff: [4, 17, 23, 9, 'back'], arm: [17, 12, 21, 12], cowl: 1, flick: 1, sparks: trailS }),
+    P({ lean: -2, sit: 1, trail: -1, hemW: 12, feet: [[10, 18], [16, 18]], staff: [15, 17, 20, 3], arm: [16, 11, 18, 11], cowl: 2, sparks: [[6, 18, 'r']] })];
+  /* METEOR: the staff swung up; then held straight up over the cowl in both hands, the fire at its head calling the sky down */
+  F.meteor = [P({ lean: 1, staff: [11, 14, 24, 2], arm: [16, 10, 20, 7], arm2: [11, 10, 16, 8], cowl: 2 }),
+    P({ dy: -1, staff: [15, 15, 16, -7], arm: [16, 10, 16, 2], arm2: [11, 10, 15, 3], cowl: 2, bell: 1, flare: [16, -8, true] })];
+  /* RING OF FIRE: the staff lifted high in both hands; then driven straight down into the ground before her, and the ring coming
+     off its foot along the floor both ways */
+  F.ring = [P({ dy: -1, staff: [15, 10, 17, -5], arm: [16, 10, 16, 3], arm2: [11, 10, 15, 4], cowl: 0 }),
+    P({ sit: 2, hemW: 13, staff: [17, 21, 18, 3], arm: [16, 12, 17, 9], arm2: [11, 12, 16, 10], cowl: 1, flick: 1,
+      sparks: [[11, 20, 'r'], [23, 20, 'r'], [8, 19, 'y'], [26, 19, 'y'], [5, 20, 'r'], [29, 20, 'r']] })];
+}
+/* EVERY ABILITY HAS A BODY: THE PALADIN'S BOUGHT ACTIVES (lane P, 2026-09-24). Divine Shield played beside an idle paladin, Holy
+   Charge drew the dodge roll, Hammer Leap the plain jump, and Consecrate, Spear of Light and Blessed Hammer all shared MEND's hand-up
+   cast. Each now has frames of its own on his rig; OFF is the off shoulder, and a() puts a loose pixel at an absolute point. */
+function paladinKitPoses(F, sh) {
+  const top = ATTACK_HEADROOM, [X, Y] = sh, OFF = [BX + 2, BY + 7], K = o => knightFrame({ top, ...o });
+  const a = (x, y, col) => [x - BX, y - BY, col], G = '#ffd36b', C = '#fff6c8', W = '#ffffff', D = '#c9b27c';
+  /* HOLY CHARGE: behind the maul stood upright before him like a banner, the head lit, shoulder down; the full stride with the light
+     streaming off him; and the pull-up, heavy, on his heels */
+  F.charge = [K({ wide: 4, dx: 2, dy: 1, legs: 'runC', arm: [X, Y, X + 4, Y + 1], arm2: [OFF[0], OFF[1], X + 3, Y + 3], maul: [X + 4, Y + 8, X + 5, Y - 6], glow: [X + 5, Y - 10], plume: 2 }),
+    K({ wide: 6, dx: 4, dy: 1, legs: 'run1', arm: [X, Y, X + 4, Y + 1], arm2: [OFF[0], OFF[1], X + 3, Y + 3], maul: [X + 4, Y + 8, X + 6, Y - 6], glow: [X + 6, Y - 10], plume: 2,
+      bits: [a(4, 10, G), a(1, 11, C), a(3, 15, G), a(0, 16, D), a(5, 5, C)] }),
+    K({ dx: 1, dy: 2, legs: 'land', arm: [X, Y, X + 3, Y + 3], maul: [X + 3, Y + 4, X + 7, Y + 9], plume: 0 })];
+  /* DIVINE SHIELD: the maul lifted across his chest in both hands; raised straight overhead, level, the light gathering on it; and
+     the light closed round him, a ring of it standing off his plate */
+  const high = { dy: -1, sho: 1, hy: -1, legs: 'wide', arm: [X, Y, X + 1, Y - 8], arm2: [OFF[0], OFF[1], X - 5, Y - 8], maul: [X - 6, Y - 8, X + 6, Y - 8], glow: [X, Y - 12] };
+  const ring = [a(5, -3, G), a(9, -1, C), a(12, 3, G), a(13, 9, C), a(12, 15, G), a(9, 19, C), a(5, 21, G), a(29, -1, C), a(26, -3, G), a(31, 3, G), a(32, 9, C), a(31, 15, G), a(29, 19, C), a(26, 21, G)];
+  F.halo = [K({ legs: 'wide', arm: [X, Y, X + 2, Y - 1], arm2: [OFF[0], OFF[1], X - 3, Y - 1], maul: [X - 5, Y - 1, X + 6, Y - 1], plume: 1 }),
+    K({ ...high, plume: 2 }), K({ ...high, plume: 0, bits: ring })];
+  /* HAMMER LEAP, the arc (chosen by his climb, not a clock): the maul taken back over his shoulder on the rise, straight up over
+     the helm at the top, and swung down ahead of him on the drop */
+  F.leap = [K({ legs: 'jump', dy: -1, arm: [X, Y, X - 1, Y - 5], maul: [X - 1, Y - 4, X - 7, Y - 12], plume: 2 }),
+    K({ legs: 'jump2', dy: -1, sho: 1, arm: [X, Y, X + 1, Y - 7], arm2: [OFF[0], OFF[1], X, Y - 7], maul: [X + 1, Y - 6, X + 2, Y - 18], glow: [X + 2, Y - 21], plume: 1 }),
+    K({ legs: 'fall', arm: [X, Y, X + 4, Y + 1], arm2: [OFF[0], OFF[1], X + 3, Y + 2], maul: [X + 4, Y + 1, X + 11, Y + 10], glow: [X + 12, Y + 11], plume: 2 })];
+  /* ...and where he comes down: the head of the maul in the ground before him, a gold bite off the turf; then up off it */
+  const bite = [a(X + 8, Y + 4, W), a(X + 9, Y + 3, G), a(X + 7, Y + 3, G), a(X + 11, Y + 4, D), a(X + 5, Y + 4, D)];   /* (the ground line, with dy 4) */
+  F.leapLand = [K({ dx: 1, dy: 4, legs: 'crouch', legsDy: 3, arm: [X, Y, X + 3, Y + 2], arm2: [OFF[0], OFF[1], X + 2, Y + 3], maul: [X + 3, Y + 1, X + 7, Y + 3], plume: 2, bits: bite }),
+    K({ dy: 2, legs: 'wide', arm: [X, Y, X + 3, Y + 3], maul: [X + 3, Y + 3, X + 6, Y + 7], plume: 1 })];
+  /* CONSECRATE: the maul lifted straight up before him; then down on one knee with the head set in the turf, both hands on the
+     haft, the light coming up out of the ground round it */
+  F.hallow = [K({ dy: -1, legs: 'wide', arm: [X, Y, X + 2, Y - 3], arm2: [OFF[0], OFF[1], X + 1, Y - 2], maul: [X + 2, Y - 2, X + 3, Y - 13], plume: 1 }),
+    K({ dy: 2, legs: 'kneel', arm: [X, Y, X + 4, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y - 1], maul: [X + 4, Y - 3, X + 6, Y + 5], plume: 2,
+      bits: [a(X + 2, Y + 6, G), a(X + 10, Y + 6, G), a(X + 6, Y + 3, C), a(X, Y + 4, C), a(X + 12, Y + 4, C), a(X + 6, Y - 5, W)] })];
+  /* SPEAR OF LIGHT: the maul drawn back level behind him and the off hand out, sighting; then driven straight out level, the light
+     leaving the head of it */
+  F.beam = [K({ dx: -1, legs: 'wide', arm: [X, Y, X - 1, Y - 1], maul: [X - 1, Y - 1, X - 10, Y - 2], arm2: [OFF[0], OFF[1], X + 5, Y - 2], plume: 1 }),
+    K({ wide: 8, dx: 2, legs: 'runC', arm: [X, Y, X + 5, Y - 1], arm2: [OFF[0], OFF[1], X + 4, Y], maul: [X + 5, Y - 1, X + 16, Y - 2], glow: [X + 19, Y - 2], plume: 2,
+      bits: [a(X + 21, Y - 2, C), a(X + 22, Y - 2, W)] })];
+  /* BLESSED HAMMER: the off hand low behind him with the light in it, the maul grounded; then flung through high, and the hammer of
+     light gone off it */
+  F.hurlH = [K({ dx: -1, legs: 'wide', arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] + 3], maul: rest(), glow: [OFF[0] - 6, OFF[1] + 4], plume: 1 }),
+    K({ wide: 4, dx: 2, legs: 'runC', arm2: [OFF[0] + 1, OFF[1], X + 7, Y - 4], maul: rest(), glow: [X + 10, Y - 5], plume: 2, bits: [a(X + 12, Y - 5, C)] })];
+  function rest() { return [X + 2, Y + 1, X + 5, Y + 9]; }
+}
 export function bakePyro(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, PYRO_PAL, skin);
   const up = (dx = 0, d = 0) => [17 + dx, 18 + d, 18 + dx, 0 + d]; // the staff stood upright in the front hand, taller than her
@@ -1507,7 +1584,10 @@ export function bakePyro(skin = {}, previewOnly = false) {
     // falling, the robe bells out and her feet show
     fall: [pyroFrame({ bell: 3, hemW: 12, feet: [[11, 18], [15, 18]], staff: [14, 16, 21, 1], arm: [16, 9, 19, 7], arm2: [10, 9, 7, 7], cowl: 2 }),
       pyroFrame({ bell: 4, hemW: 13, dy: -1, feet: [[11, 18], [15, 19]], staff: [14, 16, 21, 1], arm: [16, 9, 19, 6], arm2: [10, 9, 7, 6], cowl: 2, flick: 1 })],
-    land: [pyroFrame({ sit: 2, hemW: 13, staff: up(0, 2), arm: [16, 13, 17, 14], cowl: 0 }), pyroFrame({ sit: 1, hemW: 12, staff: up(0, 1), arm: [16, 12, 17, 13], cowl: 0 })],
+    /* LANDING in three beats: the IMPACT sunk right down into the robe with the hem belled out on the ground, the SETTLE, and up */
+    land: [pyroFrame({ sit: 4, bell: 2, hemW: 14, staff: up(0, 3), arm: [16, 14, 17, 15], arm2: [11, 13, 9, 15], cowl: 2 }), pyroFrame({ sit: 2, hemW: 13, staff: up(0, 2), arm: [16, 13, 17, 14], cowl: 0 }), pyroFrame({ sit: 1, hemW: 12, staff: up(0, 1), arm: [16, 12, 17, 13], cowl: 0 })],
+    /* THE TAKE-OFF: up on the toes of the push, the robe drawn narrow and trailing, the staff swung up ahead of her */
+    takeoff: pyroFrame({ dy: -2, hemW: 9, trail: 2, feet: [[12, 18], [15, 19]], staff: [14, 16, 23, 2], arm: [16, 10, 19, 8], cowl: 1 }),
     apex: pyroFrame({ bell: 2, hemW: 12, feet: [[11, 17], [15, 17]], staff: [15, 16, 22, 1], arm: [16, 10, 18, 9], cowl: 1 }),   /* the top of the jump: the robe opens and hangs */
     skid: pyroFrame({ lean: -3, trail: 3, hemW: 12, feet: [[9, 18], [15, 18]], staff: [14, 17, 20, 3], arm: [15, 11, 17, 12], cowl: 2 }),   /* turning at a run: heels in, the robe still going */
     // on a ladder: the staff across her back, a hand up for the next rung and a foot up on it, then the other
@@ -1607,6 +1687,7 @@ export function bakePyro(skin = {}, previewOnly = false) {
       staff: [18, 19, 20, 3], flame: (i + 1) % 4, cowl: 2 })); }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'staff', { pyro: true });
+  pyroKitPoses(F, up);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -2480,7 +2561,10 @@ export function bakePaladin(skin = {}, previewOnly = false) {
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) => knightFrame({ legs: l, dy, plume: i % 3, maul: carry() })),
     jump: [knightFrame({ legs: 'jump', dy: -1, maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 6], plume: 1 }), knightFrame({ legs: 'jump2', maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 5], plume: 1 })],
     fall: [knightFrame({ legs: 'fall', maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 6], plume: 2 }), knightFrame({ legs: 'fall2', dy: -1, maul: [sh[0] + 1, sh[1] + 1, sh[0] + 5, sh[1] - 7], plume: 2 })],
-    land: [knightFrame({ legs: 'land', dy: 2, maul: rest(2) }), knightFrame({ legs: 'stand', dy: 1, maul: rest(1), plume: 1 })],
+    /* LANDING in three beats, as the starters': the IMPACT deep with the head of the maul jarred into the turf, the SETTLE, and up */
+    land: [knightFrame({ legs: 'crouch', legsDy: 3, dy: 4, maul: [sh[0] + 2, sh[1] + 1, sh[0] + 5, sh[1] + 5], plume: 2 }), knightFrame({ legs: 'land', dy: 2, maul: rest(2) }), knightFrame({ legs: 'stand', dy: 1, maul: rest(1), plume: 1 })],
+    /* THE TAKE-OFF: stretched off the push, the maul swung up by the lift of it */
+    takeoff: knightFrame({ legs: 'push', dy: -2, sho: 1, maul: [sh[0] + 1, sh[1] + 1, sh[0] + 6, sh[1] - 7], plume: 2 }),
     apex: knightFrame({ legs: 'jump2', dy: -1, maul: [sh[0] + 1, sh[1], sh[0] + 6, sh[1] - 6], plume: 0 }),
     skid: knightFrame({ dx: -2, legs: 'wide', maul: [sh[0] - 1, sh[1] + 3, sh[0] - 6, sh[1] + 8], plume: 2 }),
     // HOLD THE MAUL: up in both hands, and down into the planking, and the ground carries it
@@ -2553,6 +2637,7 @@ export function bakePaladin(skin = {}, previewOnly = false) {
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'maul', {});
+  paladinKitPoses(F, sh);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
