@@ -3517,6 +3517,29 @@ function trialYard(hero) {
       DASH, RISE, SWEEP,
       ['judgement', 1, 'JUDGEMENT: WITH A FULL LIGHT, PRESS C AGAIN. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB WITH A FULL BAR'],
       SKILL],
+    /* THE WARDEN'S YARD (2026-09-24, POLISH): her four verbs, not the knight's. The POINT (only the last quarter of the spear bites),
+       the DEFLECT on the beat (C is a sweep of the shaft, never a shield), the RUN-THROUGH (the held X that skewers a line) and the PIN
+       (her plunge holds what it lands on). The straw men cannot be pinned (a dummy is too rooted for it, KNOCK_SKIP), so the pin is
+       taught on two still goblins, straw inside like every trainer. */
+    warden: [
+      ['tip', 3, 'THE POINT: ONLY THE LAST QUARTER OF THE SPEAR BITES. STAND OFF AND RING IT THREE TIMES.', [['dummy', 18]], 'X, AT THE LENGTH OF THE SPEAR'],
+      ['flash', 2, 'THE DEFLECT: TAP C AS HIS SWORD FLASHES WHITE. THE SHAFT TURNS IT AND HE REELS. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : THE DEFLECT TURNS IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
+      ['runthrough', 2, 'HOLD X, LET GO: THE RUN-THROUGH LUNGES THROUGH A LINE. SKEWER BOTH STRAW MEN AT ONCE, TWICE.', [['dummy', 14], ['dummy', 17]], 'HOLD X, LET GO'],
+      ['pin', 2, 'THE PIN: JUMP, THEN DOWN+X. THE POINT GOES THROUGH AND HOLDS IT. Z PULLS FREE. PIN TWO.', [['sprig', 13], ['sprig', 19]], 'A, THEN DOWN+X'],
+      ['meter', 1, 'TIP HITS AND TURNED BLOWS FILL VIGIL. FULL, TAP C: THE PHALANX. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
+      SKILL],
+    /* THE GEOMANCER'S YARD (2026-09-24, POLISH): she BUILDS SOMETHING IN ITS WAY. UPHEAVAL (the held X is a pillar out of the ground),
+       RAISE WALL on the beat (a wall only just up bounces the blade: GEO.perfect, so in her yard the sword flashes at that beat), the
+       marks (the wall takes a yellow one; a red one smashes through it), STONEFALL (she lands like a boulder and the ring knocks down
+       both sides) and THE QUAKE (a full TREMOR, spent). */
+    geomancer: [
+      ['upheaval', 2, 'UPHEAVAL: HOLD X, LET GO. A PILLAR ERUPTS AHEAD, FURTHER THE LONGER THE HOLD. HIT TWO.', [['dummy', 16], ['dummy', 21]], 'HOLD X, LET GO'],
+      ['flash', 2, 'RAISE WALL: TAP C AS HIS SWORD FLASHES WHITE. A WALL THAT NEW BOUNCES HIS BLADE. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : THE WALL TAKES IT. TWO RED !! : IT SMASHES THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
+      ['stonefall', 2, 'STONEFALL: JUMP, THEN DOWN+X BETWEEN THEM. THE RING KNOCKS DOWN BOTH SIDES. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
+      ['meter', 1, 'WHAT SHE BUILDS AND BREAKS FILLS TREMOR. FULL, TAP C: THE QUAKE. IT IS FILLED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'LB WITH A FULL BAR'],
+      SKILL],
   }[hero];
   const SW = 26, W = 8 + ST.length * SW + 26, H = 24; const L = painter(W, H);
   const { block, ent, set } = L;
@@ -7225,6 +7248,9 @@ export const LEVELS = [
      that is Lane B's, per the Lane C report. */
   { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS}), needs: 'witchlight' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
+  /* (2026-09-24, POLISH) the Warden's and the Geomancer's yards, APPENDED: LEVELS is an append log (map nodes and saves count by index) */
+  { id: 'trial_warden', name: "THE WARDEN'S TRIAL", sub: 'point, shaft and pin', build: () => trialYard('warden'), hidden: true },
+  { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'pillar, wall and quake', build: () => trialYard('geomancer'), hidden: true },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

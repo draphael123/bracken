@@ -74,17 +74,17 @@ export function makeGeomancer(api) {
   /* THE ERUPTION: a column of `h` cells standing on the floor row fy at column tx, launching what is standing there */
   function erupt(tx, fy, h, kind, o = {}) {
     const top = (fy - h) * TS, col = { l: tx * TS, r: tx * TS + TS, t: top - 2, b: fy * TS };
-    const P = api.P, launched = [];
+    const P = api.P, launched = []; let struck = 0;
     if (!o.noHero && !P.dead && api.overlap(col, heroBox()) && roomAbove(P, top)) { P.y = top; P.vy = o.heroVy || GEO.heroLaunchVy; P.ground = false; P.coyote = 0; P.onMover = null; }
     for (const e of foes()) { if (e.harmless) continue; const eb = api.box(e), inCol = api.overlap(col, eb);
       if (!inCol && !api.overlap({ l: col.l - 8, r: col.r + 8, t: col.t, b: col.b + 2 }, eb)) continue;   /* THE GROUND HEAVES a hand either side: what stands beside the column is hit, not lifted */
       if (inCol && liftable(e) && roomAbove(e, top)) { e.y = top; e.vy = GEO.launchVy; e.geoAirT = api.time; e.stagger = Math.max(e.stagger || 0, 0.5); launched.push(e); }
-      if (!e.turncoat && o.hurt !== false) { api.hurtAs('heavy', e, dmg(o.mul || 1.3, o.k), P.x, false); api.sparks(e.x, e.y - (e.h || 16) / 2, 0, 5); } }
+      if (!e.turncoat && o.hurt !== false) { api.hurtAs('heavy', e, dmg(o.mul || 1.3, o.k), P.x, false); api.sparks(e.x, e.y - (e.h || 16) / 2, 0, 5); struck++; } }
     const cells = []; for (let k = 1; k <= h; k++) { if (!freeCell(tx, fy - k)) break; cells.push([tx, fy - k]); }   /* bottom up: stop at the first that is not air, or has a body in it */
     const p = cells.length ? place(kind, cells, T().SOLID) : null;
     api.dust(tx * TS + 8, fy * TS, 8); api.shakeCam(3); api.SFX.geoRise && api.SFX.geoRise();
     if (launched.length) { gainTremor(GEO.tremor.launch * launched.length); api.number(tx * TS + 8, top - 26, 'LAUNCHED', STONE.rune); }
-    return { piece: p, launched };
+    return { piece: p, launched, struck };
   }
   function gainTremor(n) { const P = api.P, was = (P.tremor || 0) >= 100; P.tremor = Math.min(100, (P.tremor || 0) + n * (tal('rumble') ? 1.5 : 1)); if (!was && P.tremor >= 100) api.meterFull(); }
 
@@ -99,7 +99,9 @@ export function makeGeomancer(api) {
     const x = near ? near.x : aim, tx = Math.floor(x / TS), fy = floorRow(tx, Math.floor((P.y - 1) / TS), 3);
     api.SFX.geoThud && api.SFX.geoThud(); api.dust(P.x + P.face * 8, P.y, 5);
     if (fy === null) { api.number(x, P.y - 20, 'NO GROUND THERE', '#9aa39a'); return null; }
-    return erupt(tx, fy, GEO.pillarH + (tal('tall') ? 1 : 0), 'pillar', { mul: 1.3 });
+    const r = erupt(tx, fy, GEO.pillarH + (tal('tall') ? 1 : 0), 'pillar', { mul: 1.3 });
+    if (r.struck) api.trialEvent && api.trialEvent('upheaval');   /* (her yard's first station: a pillar that came up under something) */
+    return r;
   }
   /* RAISE WALL (tap C): a wall rises in the first column wholly in front of her */
   function raiseWall() {
@@ -125,7 +127,7 @@ export function makeGeomancer(api) {
       api.number(wx, wy - 14, 'SMASHED THROUGH', '#ff6b6b'); crumble(w, 'smashed'); return null; }
     const perfect = api.time - w.born < GEO.perfect;
     if (perfect && foe) { foe.stagger = Math.max(foe.stagger || 0, api.lcBig(foe) ? 0.5 : 1.2); foe.flash = 0.2; if (!foe.maxHp) foe.vx = Math.sign(foe.x - P.x) * 150;
-      api.number(wx, wy - 14, 'BOUNCED OFF', STONE.rune); api.hitstop(0.08); api.ringAt(wx, wy + 6, 16, STONE.rune, 0.3); gainTremor(GEO.tremor.perfect); api.noteParry && api.noteParry(); }
+      api.number(wx, wy - 14, 'BOUNCED OFF', STONE.rune); api.hitstop(0.08); api.ringAt(wx, wy + 6, 16, STONE.rune, 0.3); gainTremor(GEO.tremor.perfect); api.noteParry && api.noteParry(); P.geoBeatT = api.time; }   /* (geoBeatT: her yard asks whether THIS blow bounced) */
     else { api.number(wx, wy - 14, 'THE WALL TAKES IT', STONE.hi); gainTremor(GEO.tremor.wall); }
     api.SFX.geoBounce(); api.sparks(wx, wy, -Math.sign(wx - P.x) || 1, 6); api.shakeCam(2);
     if (!perfect && --w.hp <= 0) crumble(w, 'broken');

@@ -5,7 +5,9 @@ export const GROUND_KITS = {
   "burning": {"density":0.34,"kinds":["tuft","rock","stump"]},   /* THE BURNING VILLAGE: a farming street on the road, and the fires they cooked on */
   "harbor": {"density":0,"kinds":[]},
   "burial": {"density":0,"kinds":[]},
-  "unburied": {"density":0.22,"kinds":["tuft","rock","stone"]},   /* THE UNBURIED FIELD: a trampled battlefield - dead grass, thrown stones, no flowers */
+  "unburied": {"density":0.22,"kinds":["tuft","rock","stone"]},
+  "trial_warden": {"density":0.38,"kinds":["tuft","fern"]},   /* THE WARDEN'S TRIAL (2026-09-24) */
+  "trial_geomancer": {"density":0.38,"kinds":["rock","stone"]},   /* THE GEOMANCER'S TRIAL: her yard is stony */   /* THE UNBURIED FIELD: a trampled battlefield - dead grass, thrown stones, no flowers */
   "wood": {
     "density": 0.7,
     "kinds": [
@@ -751,6 +753,18 @@ export const ALLOWED_DECORATIONS = {
     "mushroom",
     "snow",
     "stem"
+  ],
+  "trial_warden": [
+    "fern",
+    "snow",
+    "stem",
+    "tuft"
+  ],
+  "trial_geomancer": [
+    "rock",
+    "snow",
+    "stem",
+    "stone"
   ],
   "shopCrag": [
     "bones",
