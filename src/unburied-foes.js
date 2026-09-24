@@ -433,14 +433,13 @@ function figure(g, o) {
   if (P2.mark) rect(g, hx - 1 * s, sh + 4 * s, 2 * s, 3 * s, P2.mark);
   /* head: a helm with the face gone */
   const hy = sh - 5 * s;
-  if (o.helm === 'great') {
+  if (o.helm === 'great' && !o.crest) { rect(g, hx - 4 * s, hy - 5 * s, 8 * s, 9 * s, P2.steel); rect(g, hx - 4 * s, hy - 1 * s, 8 * s, Math.max(1, s), '#101018'); rect(g, hx + 1 * s, hy - 1 * s, 2 * s, Math.max(1, s), P2.eye); rect(g, hx - 1 * s, hy - 8 * s, 2 * s, 3 * s, P2.plume || P2.steel); }   /* (the Standard-Bearer keeps his: he is leaving the field, Daniel 2026-09-24) */
+  else if (o.helm === 'great') {
     /* A GREAT HELM, NOT A BOX (2026-09-24, POLISH): an 8x9 rectangle read as a crate on his shoulders. Now: a crown that narrows, cheeks that
        swell and a skirt that flares onto the gorget, lit down its facing edge and dark down its back; a visor slit with the eyes in it,
-       breaths punched under it on the side he faces, a ridge down the middle, and a crest - a horsehair plume for the herald, a torn
-       iron fin and two horns of bone for the Death Knight. */
+       breaths punched under it on the side he faces, a ridge down the middle, and a crest - a torn
+       iron fin and a horn of bone. The Death Knight's only: the Standard-Bearer is leaving the field and keeps his old one. */
     const u = Math.max(1, s), lo = P2.steelD || P2.mailD, hi = P2.steelL || '#c8ccd4';
-    if (o.crest === 'plume') { line(g, hx, hy - 5 * s, hx - 1 * s, hy - 9 * s, P2.plume, Math.max(2, 2 * s)); line(g, hx - 1 * s, hy - 9 * s, hx - 6 * s, hy - 9 * s, P2.plume, Math.max(2, 2.2 * s)); line(g, hx - 6 * s, hy - 9 * s, hx - 10 * s, hy - 4 * s, P2.plume, Math.max(2, 1.8 * s)); line(g, hx - 10 * s, hy - 4 * s, hx - 11 * s, hy, P2.plume, Math.max(1, 1.2 * s));
-      line(g, hx - 2 * s, hy - 10 * s, hx - 6 * s, hy - 10 * s, P2.plumeL || '#c84a3a', u); }
     if (o.crest === 'fin') { fillPoly(g, [[hx - 3 * s, hy - 4 * s], [hx + 2 * s, hy - 4 * s], [hx + 1 * s, hy - 8 * s], [hx - 0.5 * s, hy - 6.5 * s], [hx - 2 * s, hy - 10 * s], [hx - 3.5 * s, hy - 7 * s], [hx - 5 * s, hy - 8.5 * s]], P2.plume);
       line(g, hx - 3.5 * s, hy - 2 * s, hx - 7 * s, hy - 5 * s, P2.bone, Math.max(2, 1.5 * s)); line(g, hx - 7 * s, hy - 5 * s, hx - 7.5 * s, hy - 8 * s, P2.bone, u); }
     fillPoly(g, [[hx - 2.5 * s, hy - 5.5 * s], [hx + 2.5 * s, hy - 5.5 * s], [hx + 4 * s, hy - 3.5 * s], [hx + 4.5 * s, hy + 2.5 * s], [hx + 5.5 * s, hy + 4.5 * s], [hx - 5.5 * s, hy + 4.5 * s], [hx - 4.5 * s, hy + 2.5 * s], [hx - 4 * s, hy - 3.5 * s]], P2.steel);
@@ -488,20 +487,19 @@ export function bakeBannerbearer() {
     F.push(c); }
   return setOf(F, 44, 64, 18, 63, 12, 26);
 }
-const HERALD = { plumeL: '#c84a3a', steelD: '#6a6e7a', mail: '#7a7488', mailD: '#58526a', cloth: '#8e2a26', clothD: '#5e1a1a', belt: '#c8a44a', boot: '#2a2630', bone: '#e0dac0', steel: '#9a9eaa', eye: '#e0c8ff', mark: '#e8c35a', plume: '#a8342c' };
+const HERALD = { mail: '#7a7488', mailD: '#58526a', cloth: '#8e2a26', clothD: '#5e1a1a', belt: '#c8a44a', boot: '#2a2630', bone: '#e0dac0', steel: '#9a9eaa', eye: '#e0c8ff', mark: '#e8c35a', plume: '#a8342c' };
 /* THE STANDARD-BEARER: a herald twice a man's height, in the order's red and gold, with the army's great banner */
 export function bakeStandardBearer() {
   const F = [];
   for (let f = 0; f < 11; f++) { const [c, g] = canvas(80, 98), cx = 34, fy = 97, s = 1.9;
     const walk = f === 1 ? 1 : f === 2 ? -1 : 0, stell = f === 3, sweep = f === 4, ctell = f === 5, charge = f === 6, ptell = f === 7, planted = f === 8, torn = f === 9, hurt = f === 10;
     const hand = stell ? [-6, -40] : sweep ? [22, -22] : ctell ? [8, -26] : charge ? [14, -22] : ptell ? [4, -58] : planted ? [10, -26] : torn ? [10, -12] : [8, -34];
-    figure(g, { cx: cx - (hurt ? 3 : 0), fy, s, pal: HERALD, helm: 'great', crest: 'plume', cloak: ['#6e1e1c', '#44100e'], flut: f, stride: walk, kneel: torn, lean: hurt ? -3 : stell ? -2 : ctell || charge ? 3 : 0, front: hand.map(v => v / s), back: ptell ? [2 / s, -54 / s] : [-10 / s, -20 / s] });
+    figure(g, { cx: cx - (hurt ? 3 : 0), fy, s, pal: HERALD, helm: 'great', stride: walk, kneel: torn, lean: hurt ? -3 : stell ? -2 : ctell || charge ? 3 : 0, front: hand.map(v => v / s), back: ptell ? [2 / s, -54 / s] : [-10 / s, -20 / s] });
     const bx = cx + hand[0], by = fy + hand[1];
     if (planted || torn) { /* hands empty: the banner is in the ground, drawn by the world */ }
-    else if (ctell || charge) { line(g, bx - 16, by + 4, bx + 40, by + (ctell ? 6 : 10), '#4a3222', 3); line(g, bx - 16, by + 3, bx + 40, by + (ctell ? 5 : 9), '#7a5a3a', 1); fillPoly(g, [[bx + 40, by + (ctell ? 2 : 6)], [bx + 40, by + (ctell ? 10 : 14)], [bx + 48, by + (ctell ? 6 : 10)]], '#e8c35a'); for (let i = 0; i < 18; i++) rect(g, bx - 14 + i, by + 6 + Math.round(Math.sin(i * 0.6 + f) * 1.5), 1, 12 - (i > 13 ? (i % 2) * 4 : 0), i % 4 === 0 ? '#a8342c' : '#8e2a26'); rect(g, bx + 38, by + 4, 5, 5, '#d8b04a'); }
-    else if (sweep) { line(g, bx - 20, by - 6, bx + 30, by + 6, '#4a3222', 3); line(g, bx - 20, by - 7, bx + 30, by + 5, '#7a5a3a', 1); fillPoly(g, [[bx + 29, by + 2], [bx + 31, by + 10], [bx + 38, by + 8]], '#e8c35a'); }
-    else { const top = by - (stell ? 26 : 36); line(g, bx, by + 22, bx + 2, top, '#4a3222', 3); line(g, bx + 1, by + 22, bx + 3, top, '#7a5a3a', 1);   /* THE POLE (POLISH): lit down one side, so it reads against the plate */
-      fillPoly(g, [[bx - 1, top - 3], [bx + 5, top - 3], [bx + 2, top - 12]], '#e8c35a'); rect(g, bx - 2, top - 4, 8, 2, '#a8842a');   /* a gilt spear-point and its crossbar on the top of it */
+    else if (ctell || charge) { line(g, bx - 16, by + 4, bx + 40, by + (ctell ? 6 : 10), '#4a3222', 3); for (let i = 0; i < 18; i++) rect(g, bx - 14 + i, by + 6 + Math.round(Math.sin(i * 0.6 + f) * 1.5), 1, 12 - (i > 13 ? (i % 2) * 4 : 0), i % 4 === 0 ? '#a8342c' : '#8e2a26'); rect(g, bx + 38, by + 4, 5, 5, '#d8b04a'); }
+    else if (sweep) { line(g, bx - 20, by - 6, bx + 30, by + 6, '#4a3222', 3); rect(g, bx + 28, by + 4, 5, 5, '#d8b04a'); }
+    else { const top = by - (stell ? 26 : 36); line(g, bx, by + 22, bx + 2, top, '#4a3222', 3); rect(g, bx, top - 4, 5, 5, '#d8b04a');
       for (let i = 0; i < 22; i++) rect(g, bx + 4 + i, top + 1 + Math.round(Math.sin(i * 0.5 + f) * 1.5), 1, 18 - (i > 17 ? (i % 2) * 5 : 0), i % 5 === 0 ? '#a8342c' : '#8e2a26');
       rect(g, bx + 9, top + 5, 8, 3, '#e8c35a'); rect(g, bx + 12, top + 8, 2, 7, '#e8c35a'); }
     F.push(c); }
