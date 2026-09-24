@@ -132,15 +132,25 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const [x0, y0, x1, y1] = stave.map((v, i) => v + (i & 1 ? dy : dx));
     const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax;
     const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
-    line(g, ...at(1), ...at(len - 5), '#6a4e30', 2);                     /* the haft, two through */
-    px(g, ...at(len - 7, 1), '#4a3420');                                 /* its shadowed side */
+    /* (2026-09-24, POLISH: the head was a 6x5 ROUNDED SLAB, as wide as it was long and symmetric about the haft, on a thin
+       handle - which at 1x is a SHOVEL. A standing stone is TALLER THAN IT IS WIDE, lumpy and lopsided, and a lashed one has
+       the wood running up INTO its foot under two turns of rawhide. So: an eight-pixel stone, wider than her hood, that swells off one side of the
+       haft and ends in a BLUNT, lopsided crown (a point would make it a spearhead); the haft carried two pixels into its foot; two pale bands crossing it.
+       Nothing is drawn past `len`, so the reach every attack box was matched to is unchanged.) */
+    line(g, ...at(1), ...at(len - 5), '#6a4e30', 2);                     /* the haft, two through, run up into the foot of the stone */
+    for (let t = 2; t <= len - 6; t += 0.5) px(g, ...at(t, 1.5), '#4a3420');   /* its shadowed side, the whole way: a THICK shaft, not a handle */
     px(g, ...at(0), '#8a929c'); px(g, ...at(0, 1), '#5a6068'); px(g, ...at(-1), '#c9d1dc');   /* the iron shoe of the butt */
-    px(g, ...at(len - 5), '#c9b27c'); px(g, ...at(len - 5, 1), '#a08a5a');                     /* the lashing */
-    for (let t = len - 5; t <= len + 0.01; t += 0.5) for (let o = -2; o <= 2; o += 0.5) {       /* THE STONE: rounded at both ends */
-      if ((t < len - 4.5 || t > len - 0.5) && Math.abs(o) > 1.2) continue;
-      px(g, ...at(t, o), o <= -1.5 ? '#5e5c54' : o >= 1.5 ? '#aaa898' : t > len - 1 ? '#a09e8e' : '#8a887c'); }
-    px(g, ...at(len - 2.5, 0), '#e8a83a');                               /* the rune, faint amber in the grey */
-    px(g, ...at(len, -1), '#6f9a4a'); px(g, ...at(len - 1, -2), '#557a38');   /* moss on the top of it */
+    /* THE STONE, its foot at len-8 and its crown at len: half-widths either side of the haft, one row a pixel, so it is
+       lopsided on purpose - it bellies out on the near side, and the crown is broad and flat-ish, never a point */
+    const NEAR = [1.5, 2, 2.5, 3, 3, 3, 3, 2.5, 1.5], FAR = [1.5, 2, 2, 2, 2, 2, 1.5, 1.5, 0.5];
+    for (let k = 0; k < NEAR.length; k++) { const t = len - 8 + k;
+      for (let o = -NEAR[k]; o <= FAR[k] + 0.01; o += 0.5) {
+        const edge = o <= -NEAR[k] + 0.5, lit = o >= FAR[k] - 0.5;
+        px(g, ...at(t, o), edge ? '#4e4c45' : lit ? '#a4a294' : k > 6 ? '#939184' : '#7c7a70'); } }
+    px(g, ...at(len - 3, -1), '#6c6a60'); px(g, ...at(len - 4, -1.5), '#6c6a60');   /* a crack down its face, so it reads as ROCK */
+    for (const t of [len - 7.5, len - 6]) for (let o = -1.5; o <= 1.5; o += 0.5) px(g, ...at(t, o), o > 0.5 ? '#6a5030' : '#9a7a4c');   /* THE LASHING: two dark turns of rawhide round the foot, the stone showing between */
+    px(g, ...at(len - 3.5, 0.5), '#e8a83a');                             /* the rune, faint amber in the grey */
+    px(g, ...at(len - 1, -1), '#6f9a4a'); px(g, ...at(len - 2, -2), '#557a38');   /* moss on the shoulder of it */
   }
   /* (the head is inked from len-4 to len and the outline puts a dark ring a pixel past that, so a spear given a point
      at x lands its last lit pixel at x and its outline at x+1: the callers pull their endpoints back to suit, and the
@@ -2244,8 +2254,11 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     atk: () => ([
       () => (knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 2], greatsword: [sh[0] - 3, sh[1] + 2, sh[0] - 11, sh[1] - 6], plume: 1 })),
       () => (knightFrame({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 4], greatsword: [sh[0] + 2, sh[1] - 4, sh[0] + 3, sh[1] - 16], plume: 2 })),
-      () => (knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], greatsword: [sh[0] + 5, sh[1] - 2, sh[0] + 17, sh[1] - 1], plume: 2 })),
-      () => (knightFrame({ dx: 2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 7], plume: 0 })),
+      /* THE ART GROWS TO MEET THE BOX (2026-09-24, Daniel: "lengthen the art"). The swathe's live frame drew its blade to sh+17 on a 34-wide
+         canvas, so the point was CUT OFF at the frame's edge, and the blow landed ~9 px past the steel anyone could see. Now the frame is
+         widened on the right (wide) and the blade runs out to where the box has always reached. The reach did not change; only the picture did. */
+      () => (knightFrame({ wide: 8, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], greatsword: [sh[0] + 5, sh[1] - 2, sh[0] + 19, sh[1] - 1], plume: 2 })),
+      () => (knightFrame({ wide: 8, dx: 2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 7], plume: 0 })),   /* (widened too: its point was cut off at the old edge) */
       () => (knightFrame({ greatsword: rest(), plume: 0 }))
     ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
   };
@@ -2268,7 +2281,9 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     heavy: [
       knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 1], greatsword: [sh[0] - 3, sh[1] + 3, sh[0] - 12, sh[1] - 5], plume: 2 }),
       knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 4], greatsword: [sh[0] + 1, sh[1] - 4, sh[0] + 2, sh[1] - 17], plume: 1 }),
-      knightFrame({ dx: 1, legs: 'wide', dy: 3, arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 3], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 8, sh[1] + 16], glow: [sh[0] + 8, sh[1] + 14], plume: 2 }),
+      /* (the same, on the planted heavy: its box reaches ~13 px past a blade driven almost straight down, so the blade is longer and is driven
+         in FORWARD, its point in the ground where the box's front is) */
+      knightFrame({ wide: 8, dx: 1, legs: 'wide', dy: 3, arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 3], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 20, sh[1] + 14], glow: [sh[0] + 19, sh[1] + 12], plume: 2 }),
     ],
     climb: [
       knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], greatsword: carry(), plume: 0 }),
@@ -4144,7 +4159,7 @@ const GEO_BODY = [
   '.Bbvvvvb..',     /* 3  the hood's mouth, in shadow */
   '.Bbvvkkb..',     /* 4  her face lit on the side she faces */
   '..Bbkkb...',     /* 5  the jaw */
-  'gGBbbbBGg.',     /* 6  THE MANTLE: a rough stone on each shoulder, wider than any helm */
+  'mGBbbbBGm.',     /* 6  THE MANTLE: a rough stone on each shoulder, wider than any helm, moss on the outer edge of each */
   'GgSbybSgG.',     /* 7  the amber rune-stone at her breast */
   '.SBbbbBS..',     /* 8 */
   '..BbbbB...',     /* 9 */
@@ -4155,7 +4170,10 @@ const GEO_PLUME = [
   ['..BBB.....', '..BbbbB...', '.BbbbbbB..'],   /* the peak of the hood falls back a pixel as she breathes */
   ['...BB.....', '.BBbbbB...', '.BbbbbbB..'],
 ];
-const GEO_PAL = { s: '#b0ae9e', S: '#6e6c60', b: '#4e7a3a', B: '#2a4420', r: '#e0a040', k: '#d8ac82', w: '#6a5034', W: '#3a2c1c', y: '#e8a83a', v: '#1e1a22', g: '#8c8a7e', G: '#5a584e' };
+/* THE HOOD IS GREY-BROWN HOMESPUN (2026-09-24, POLISH). It was moss green, and at game scale a green hood round a small face
+   is exactly what a GOBLIN is in this game - the goblins are green. The moss stays, on the mantle's stones (m), in the stave's
+   rune and on its crown; the hood and robe are undyed wool, so the one green thing on her head is gone and the face reads human. */
+const GEO_PAL = { s: '#b0ae9e', S: '#6e6c60', b: '#7a6c58', B: '#433a2e', m: '#6f9a4a', r: '#e0a040', k: '#d8ac82', w: '#6a5034', W: '#3a2c1c', y: '#e8a83a', v: '#1e1a22', g: '#8c8a7e', G: '#5a584e' };
 export function bakeGeomancer(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, GEO_PAL, skin); BODY_REF = GEO_BODY; PLUME_REF = GEO_PLUME;
   const sh = [BX + 8, BY + 7], [X, Y] = sh, OFF = [BX + 2, BY + 7], WIDE = 12;

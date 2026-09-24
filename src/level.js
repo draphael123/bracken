@@ -3002,14 +3002,14 @@ function highcrown() {
   block(240, 251, 18, 19); block(237, 239, 19, 19); // the dais and its step
   ent('deco', 247, 17, { kind: 'throne' });
   ent('gqueen', 246, 17);
-  plat(213, 14, 24);                            // the gallery
-  // (no archers on the gallery any more: the court has left her to it)
-  for (const x of [216, 221, 226, 231, 235]) ent('support', x, 19, { top: 14 });
+  /* THE GALLERY IS GONE (Daniel, 2026-09-24: "the Queen's walkway goes, and the chandelier replaces it"). Its three breakable pillars
+     were her only opening; now her own chandeliers are. They hang low enough that a jump and a swing from the hall floor cuts a chain,
+     and the chandelier that comes down on her PINS her exactly as the gallery did (main.js, the weight's fall). */
   for (const x of [212, 224, 236]) ent('deco', x, 13, { kind: 'hallWindow' });
   ent('deco', 219, 19, { kind: 'banner', v: 0 }); ent('deco', 233, 19, { kind: 'banner', v: 1 });
   for (const x of [210, 229]) ent('torch', x, 19);
-  for (const x of [219, 231, 245]) ent('weight', x, 10, { len: 3, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them
-  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. BREAK A PILLAR WITH HER UNDER IT: PINNED, SHE BLEEDS.' });
+  for (const x of [214, 220, 226, 232, 238, 245]) ent('weight', x, 10, { len: 6, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them - and a jump and a swing cuts one down on HER
+  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. CUT A CHANDELIER DOWN ON HER: PINNED UNDER IT, SHE BLEEDS.' });
   // the roof: three peaks with an iron rod on each, and a step up to each
   block(214, 218, 4, 7); block(228, 232, 4, 7); block(242, 246, 4, 7);
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
@@ -3030,7 +3030,7 @@ function highcrown() {
       canopy: ['#2a2a38', '#3a3a4a', '#4a4a5c', '#5a5a6e'] },
     weather: [{ x0: 0, x1: 123 * TS, kind: 'snow' }], ambient: [{ x0: 0, x1: 123 * TS, kind: 'wind' }],
     arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 224 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'queen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
-      roof: 8 * TS, gallery: { row: 14, x0: 213, x1: 236 }, hole: { x0: 221, x1: 224, y0: 8, y1: 9 }, rubble: [[216, 17, 4], [221, 15, 4], [216, 13, 4], [221, 11, 4], [221, 9, 4]] },
+      roof: 8 * TS, hole: { x0: 221, x1: 224, y0: 8, y1: 9 }, rubble: [[216, 17, 4], [221, 15, 4], [216, 13, 4], [221, 11, 4], [221, 9, 4]] },
   };
 }
 
@@ -3516,6 +3516,29 @@ function trialYard(hero) {
       ['dodge', 2, 'V: THE HEAVY STEP. THE PAULDRON GOES FIRST AND TURNS WHAT IT MEETS. STEP TWICE.', [], 'B'],
       DASH, RISE, SWEEP,
       ['judgement', 1, 'JUDGEMENT: WITH A FULL LIGHT, PRESS C AGAIN. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB WITH A FULL BAR'],
+      SKILL],
+    /* THE WARDEN'S YARD (2026-09-24, POLISH): her four verbs, not the knight's. The POINT (only the last quarter of the spear bites),
+       the DEFLECT on the beat (C is a sweep of the shaft, never a shield), the RUN-THROUGH (the held X that skewers a line) and the PIN
+       (her plunge holds what it lands on). The straw men cannot be pinned (a dummy is too rooted for it, KNOCK_SKIP), so the pin is
+       taught on two still goblins, straw inside like every trainer. */
+    warden: [
+      ['tip', 3, 'THE POINT: ONLY THE LAST QUARTER OF THE SPEAR BITES. STAND OFF AND RING IT THREE TIMES.', [['dummy', 18]], 'X, AT THE LENGTH OF THE SPEAR'],
+      ['flash', 2, 'THE DEFLECT: TAP C AS HIS SWORD FLASHES WHITE. THE SHAFT TURNS IT AND HE REELS. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : THE DEFLECT TURNS IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
+      ['runthrough', 2, 'HOLD X, LET GO: THE RUN-THROUGH LUNGES THROUGH A LINE. SKEWER BOTH STRAW MEN AT ONCE, TWICE.', [['dummy', 14], ['dummy', 17]], 'HOLD X, LET GO'],
+      ['pin', 2, 'THE PIN: JUMP, THEN DOWN+X. THE POINT GOES THROUGH AND HOLDS IT. Z PULLS FREE. PIN TWO.', [['sprig', 13], ['sprig', 19]], 'A, THEN DOWN+X'],
+      ['meter', 1, 'TIP HITS AND TURNED BLOWS FILL VIGIL. FULL, TAP C: THE PHALANX. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
+      SKILL],
+    /* THE GEOMANCER'S YARD (2026-09-24, POLISH): she BUILDS SOMETHING IN ITS WAY. UPHEAVAL (the held X is a pillar out of the ground),
+       RAISE WALL on the beat (a wall only just up bounces the blade: GEO.perfect, so in her yard the sword flashes at that beat), the
+       marks (the wall takes a yellow one; a red one smashes through it), STONEFALL (she lands like a boulder and the ring knocks down
+       both sides) and THE QUAKE (a full TREMOR, spent). */
+    geomancer: [
+      ['upheaval', 2, 'UPHEAVAL: HOLD X, LET GO. A PILLAR ERUPTS AHEAD, FURTHER THE LONGER THE HOLD. HIT TWO.', [['dummy', 16], ['dummy', 21]], 'HOLD X, LET GO'],
+      ['flash', 2, 'RAISE WALL: TAP C AS HIS SWORD FLASHES WHITE. A WALL THAT NEW BOUNCES HIS BLADE. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : THE WALL TAKES IT. TWO RED !! : IT SMASHES THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
+      ['stonefall', 2, 'STONEFALL: JUMP, THEN DOWN+X BETWEEN THEM. THE RING KNOCKS DOWN BOTH SIDES. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
+      ['meter', 1, 'WHAT SHE BUILDS AND BREAKS FILLS TREMOR. FULL, TAP C: THE QUAKE. IT IS FILLED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'LB WITH A FULL BAR'],
       SKILL],
   }[hero];
   const SW = 26, W = 8 + ST.length * SW + 26, H = 24; const L = painter(W, H);
@@ -7225,6 +7248,9 @@ export const LEVELS = [
      that is Lane B's, per the Lane C report. */
   { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS}), needs: 'witchlight' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
+  /* (2026-09-24, POLISH) the Warden's and the Geomancer's yards, APPENDED: LEVELS is an append log (map nodes and saves count by index) */
+  { id: 'trial_warden', name: "THE WARDEN'S TRIAL", sub: 'point, shaft and pin', build: () => trialYard('warden'), hidden: true },
+  { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'pillar, wall and quake', build: () => trialYard('geomancer'), hidden: true },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
