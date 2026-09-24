@@ -1,0 +1,321 @@
+{
+ "fight": [
+  {
+   "h": "knight",
+   "t": "sprig",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 1.55,
+   "takenPct": 0,
+   "defends": 58
+  },
+  {
+   "h": "knight",
+   "t": "shield",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 0.53,
+   "takenPct": 0,
+   "defends": 0
+  },
+  {
+   "h": "knight",
+   "t": "swornsword",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 1.11,
+   "takenPct": 0,
+   "defends": 1
+  },
+  {
+   "h": "knight",
+   "t": "archer",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 0.55,
+   "takenPct": 0,
+   "defends": 0
+  },
+  {
+   "h": "knight",
+   "t": "hedgeknight",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 2.19,
+   "takenPct": 0,
+   "defends": 0
+  },
+  {
+   "h": "warden",
+   "t": "sprig",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 0.52,
+   "takenPct": 0,
+   "defends": 0
+  },
+  {
+   "h": "warden",
+   "t": "shield",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 0.33,
+   "takenPct": 0,
+   "defends": 0
+  },
+  {
+   "h": "warden",
+   "t": "swornsword",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 0.81,
+   "takenPct": 0,
+   "defends": 0
+  },
+  {
+   "h": "warden",
+   "t": "archer",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 0.34,
+   "takenPct": 0,
+   "defends": 0
+  },
+  {
+   "h": "warden",
+   "t": "hedgeknight",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 0.8,
+   "takenPct": 0,
+   "defends": 0
+  },
+  {
+   "h": "geomancer",
+   "t": "sprig",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 5.47,
+   "takenPct": 0,
+   "defends": 133
+  },
+  {
+   "h": "geomancer",
+   "t": "shield",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 0.59,
+   "takenPct": 0,
+   "defends": 0
+  },
+  {
+   "h": "geomancer",
+   "t": "swornsword",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 0.64,
+   "takenPct": 0,
+   "defends": 0
+  },
+  {
+   "h": "geomancer",
+   "t": "archer",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 0.61,
+   "takenPct": 0,
+   "defends": 0
+  },
+  {
+   "h": "geomancer",
+   "t": "hedgeknight",
+   "kills": "2/2",
+   "deaths": 0,
+   "ttk": 7.07,
+   "takenPct": 0,
+   "defends": 106
+  }
+ ],
+ "errors": [],
+ "walk": {
+  "geomancer": [
+   {
+    "id": "wood",
+    "stats": {
+     "size": "528x28",
+     "reached": "82%",
+     "foes": 53,
+     "threat": 90,
+     "kinds": 10,
+     "checks": 12,
+     "worstGap": 65,
+     "haz": 12,
+     "thr100": 17,
+     "index": 71,
+     "fell": 0,
+     "walked": "41%",
+     "deaths": 0,
+     "kills": 14,
+     "hp": 95,
+     "hits": 2
+    },
+    "findings": [
+     "1 ASSISTED: a silver is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: THE GATE is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: 29 coins outside the fill",
+     "2 STUCK: a plain run could not get past 1 place(s)",
+     "2 BRUTAL: the bot died 0 times and still only got 41% of the way"
+    ]
+   },
+   {
+    "id": "marsh",
+    "stats": {
+     "size": "502x28",
+     "reached": "6%",
+     "foes": 50,
+     "threat": 86,
+     "kinds": 11,
+     "checks": 10,
+     "worstGap": 62,
+     "haz": 0,
+     "thr100": 17.1,
+     "index": 70,
+     "fell": 0,
+     "walked": "13%",
+     "deaths": 3,
+     "kills": 5,
+     "hp": 95,
+     "hits": 18
+    },
+    "findings": [
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: the relic is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: a silver is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill"
+    ]
+   },
+   {
+    "id": "stockade",
+    "stats": {
+     "size": "494x28",
+     "reached": "95%",
+     "foes": 32,
+     "threat": 84,
+     "kinds": 11,
+     "checks": 11,
+     "worstGap": 57,
+     "haz": 2,
+     "thr100": 16.9,
+     "index": 70,
+     "fell": 0,
+     "walked": "29%",
+     "deaths": 0,
+     "kills": 4,
+     "hp": 95,
+     "hits": 1
+    },
+    "findings": [
+     "1 ASSISTED: 21 coins outside the fill",
+     "2 RUNTIMEFLOAT: sprig floating",
+     "2 STUCK: a plain run could not get past 1 place(s)",
+     "2 BRUTAL: the bot died 0 times and still only got 29% of the way"
+    ]
+   }
+  ],
+  "knight": [
+   {
+    "id": "wood",
+    "stats": {
+     "size": "528x28",
+     "reached": "82%",
+     "foes": 53,
+     "threat": 90,
+     "kinds": 10,
+     "checks": 12,
+     "worstGap": 65,
+     "haz": 12,
+     "thr100": 17,
+     "index": 71,
+     "fell": 0,
+     "walked": "41%",
+     "deaths": 0,
+     "kills": 15,
+     "hp": 100,
+     "hits": 1
+    },
+    "findings": [
+     "1 ASSISTED: a silver is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: THE GATE is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: 29 coins outside the fill",
+     "2 STUCK: a plain run could not get past 1 place(s)",
+     "2 BRUTAL: the bot died 0 times and still only got 41% of the way"
+    ]
+   },
+   {
+    "id": "marsh",
+    "stats": {
+     "size": "502x28",
+     "reached": "6%",
+     "foes": 50,
+     "threat": 86,
+     "kinds": 11,
+     "checks": 10,
+     "worstGap": 62,
+     "haz": 0,
+     "thr100": 17.1,
+     "index": 70,
+     "fell": 0,
+     "walked": "14%",
+     "deaths": 3,
+     "kills": 5,
+     "hp": 87,
+     "hits": 19
+    },
+    "findings": [
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: the relic is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: a silver is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill",
+     "1 ASSISTED: a checkpoint is outside the fill"
+    ]
+   },
+   {
+    "id": "stockade",
+    "stats": {
+     "size": "494x28",
+     "reached": "95%",
+     "foes": 32,
+     "threat": 84,
+     "kinds": 11,
+     "checks": 11,
+     "worstGap": 57,
+     "haz": 2,
+     "thr100": 16.9,
+     "index": 70,
+     "fell": 0,
+     "walked": "29%",
+     "deaths": 0,
+     "kills": 4,
+     "hp": 100,
+     "hits": 1
+    },
+    "findings": [
+     "1 ASSISTED: 21 coins outside the fill",
+     "2 STUCK: a plain run could not get past 1 place(s)",
+     "2 BRUTAL: the bot died 0 times and still only got 29% of the way"
+    ]
+   }
+  ]
+ }
+}
