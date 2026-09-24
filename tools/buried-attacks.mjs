@@ -25,6 +25,17 @@ async function page(){const{LEVELS}=await import('/src/level.js');BK.manualSimul
   for(let i=0;i<12;i++){b.mode='walk';b.modeT=0;BK.P.x=b.x+30;BK.sim(1);seen1.add(b.mode);}
   b.phase=2;b.turn=0;for(let i=0;i<14;i++){b.mode='walk';b.modeT=0;BK.P.x=b.x+30;BK.sim(1);seen2.add(b.mode);}
   out.rotation={phase1:[...seen1].filter(m=>m.endsWith('Tell')).sort(),phase2:[...seen2].filter(m=>m.endsWith('Tell')).sort()};}
+ /* THE SKULLS (2026-09-24), FORCED (A3): a skull flies at where the hero stood, hurts him if he does not guard, and the shield turns it */
+ const skullAt=(guard,phase,dx)=>{const b=boot();b.phase=phase;BK.god=false;for(const e of BK.enemies())if(e!==b)e.alive=false;BK.P.x=b.x+dx;BK.P.hp=BK.P.maxHp;BK.P.inv=0;
+  for(const k in BK.keys)BK.keys[k]=false;BK.P.face=-Math.sign(dx);if(guard)BK.keys.block=true;BK.sim(2);force(b,'skullTell');BK.sim(1);const n=(b.skulls||[]).length;let most=n;
+  for(let i=0;i<90;i++){BK.sim(1);most=Math.max(most,(b.skulls||[]).length);if(guard)BK.keys.block=true;}BK.keys.block=false;return {skulls:most,lost:BK.P.maxHp-BK.P.hp};};
+ out.skullOpen=skullAt(false,1,130);out.skullGuard=skullAt(true,1,130);out.skull2=skullAt(false,2,130);
+ /* AND BY THE RULE: a hero who camps the high tier, or stands off at the far wall, gets skulls; one who fights him on the floor does not */
+ const rule=where=>{const b=boot();BK.god=true;for(const e of BK.enemies())if(e!==b)e.alive=false;const A=BK.L.arena;const seen={};
+  for(let f=0;f<60*20;f++){if(where==='ledge'){BK.P.x=1092.5*16;BK.P.y=26*16;BK.P.vy=0;BK.P.ground=true;}else if(where==='far'){BK.P.x=b.x>(A.x0+A.x1)/2?A.x0+24:A.x1-24;BK.P.y=A.floor;}else{BK.P.x=b.x+40;BK.P.y=A.floor;}
+   for(const e of BK.enemies())if(e!==b&&e.alive)e.alive=false;BK.sim(1);seen[b.mode]=(seen[b.mode]||0)+1;}
+  return {skull:!!seen.skullTell,claw:!!seen.clawTell};};
+ out.camp={ledge:rule('ledge'),far:rule('far'),floor:rule('floor')};
  return out;}
 try { const r = await pg.evalp(`(${page})()`, 300000);
   assert.ok(r.novaClose.lost > 0 && r.novaClose.venom > 2, 'the nova must hurt and poison up close: ' + JSON.stringify(r.novaClose));
@@ -37,5 +48,11 @@ try { const r = await pg.evalp(`(${page})()`, 300000);
   assert.ok(r.rotation.phase1.includes('novaTell') && r.rotation.phase1.includes('throwTell'), 'nova and the throw from the start');
   assert.ok(!r.rotation.phase1.includes('bodyTell'), 'no body slam before he enrages');
   assert.ok(r.rotation.phase2.includes('bodyTell'), 'and the body slam once he does');
+  assert.ok(r.skullOpen.skulls === 1 && r.skullOpen.lost > 0, 'forced, the skull must fly and hurt a hero who does not guard: ' + JSON.stringify(r.skullOpen));
+  assert.ok(r.skullGuard.lost < r.skullOpen.lost / 2, 'and the shield turns it (a YELLOW mark): ' + JSON.stringify(r.skullGuard));
+  assert.equal(r.skull2.skulls, 2, 'two skulls once he is enraged: ' + JSON.stringify(r.skull2));
+  assert.ok(r.camp.ledge.skull, 'camping the high tier for twenty seconds draws a skull: ' + JSON.stringify(r.camp));
+  assert.ok(r.camp.far.skull, 'standing off at the far wall draws a skull: ' + JSON.stringify(r.camp));
+  assert.ok(!r.camp.floor.skull, 'fighting him close on the floor never does: ' + JSON.stringify(r.camp));
   assert.deepEqual(pg.errors, []); console.log(JSON.stringify(r));
 } finally { pg.close(); }

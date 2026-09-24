@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import {LEVELS,T} from '../src/level.js';
 import {updateBuriedDead,updateZombie} from '../src/buried-dead.js';
+import {floodReach} from '../src/reachcore.js';
 const L=LEVELS.find(l=>l.id==='burial').build();assert.equal(L.W,1140);assert.equal(L.arena.boss,'burieddead');assert.equal(L.mini.boss,'gravewarden');assert.equal(L.ents.filter(e=>e.t==='silver').length,3);assert(L.ents.filter(e=>e.t==='zombie').length>35);assert(L.ents.filter(e=>e.t==='stal').length>=3);/* batch 4b: the Falling Gallery's roof stones went with its road */
-const green=L.pools.filter(p=>p.poison);assert.equal(green.length,5);/* four green-water crossings + the one Falling Gallery pit left east of the wall */for(const p of green)assert(p.poison&&p.harm&&p.foulCol&&p.clear);
+const green=L.pools.filter(p=>p.poison);assert.equal(green.length,7);/* four green-water crossings + the one Falling Gallery pit left east of the wall + THE ROTTEN BRIDGES' two (burial-variety.js, 2026-09-24): every one of them still told below */for(const p of green)assert(p.poison&&p.harm&&p.foulCol&&p.clear);
 assert(L.pools.some(p=>!p.harm&&!p.poison&&p.swim),'the Drowned Ossuary black water is plain water');
 const A={x0:0,x1:672,floor:500},P={x:320,y:500,h:22,dead:false};let hits=[],calls=[];
 const c={P,A,hit:(...v)=>hits.push(v),summon:n=>calls.push(n),say:()=>{},sound:()=>{}};
@@ -32,6 +33,12 @@ for(const [row,want] of [[29,8],[26,8]]){let n=0;for(let x=1080;x<=1122;x++)if(L
   assert(n>=want,'the ossuary is missing its row-'+row+' tier: '+n+' ledge tiles');}
 assert(L.arena.floor-26*16>80,'the high tier no longer clears the nova (it is '+(L.arena.floor-26*16)+'px up, the nova reaches 80)');
 assert(L.arena.floor-29*16<80,'the low tier now clears the nova too, so there is no reason to climb');
+/* A REAL PLATFORMING FIGHT (Daniel, 2026-09-24): a step at each wall and the crown bier hung over his grave, and the reach
+   model can walk the whole line - wall step, low, high, crown, high, low, wall step - without the floor. (Red before it was built.) */
+{let n=0;for(let x=1080;x<=1122;x++)if(L.grid[24*L.W+x]===T.ONEWAY)n++;assert(n>=5,'the crown bier (row 24) is missing: '+n+' tiles');
+ for(const [a,b] of [[1080,1085],[1115,1121]]){let k=0;for(let x=a;x<=b;x++)if(L.grid[29*L.W+x]===T.ONEWAY)k++;assert(k>=3,'the wall step at '+a+' is missing');}
+ assert(L.structures.some(s=>s.kind==='chains'&&s.floor===24),'the bier hangs from nothing (B9)');
+ const seen=floodReach(L,T,{rides:true}).seen;for(const k of ['1082,28','1088,28','1092,25','1100,23','1107,25','1112,28','1118,28'])assert(seen.has(k),'the arena route cannot reach '+k);}
 
 console.log('Burial 3x length, poison crossings, zombies, falling stone, boss attacks/counters, THE HANDS and the two tiers, bounded tracking, phase two and grab warnings pass.');
 

@@ -1,4 +1,21 @@
 import {canvas,outline,flipX,whiten} from './px.js';
+/* THE SKULLS (Daniel, 2026-09-24: "a ranged skull throw when the player platform-camps or stays far away"). The ossuary's
+   high tier is nova-safe on purpose and THE HANDS were the only thing that reached it, once a rotation: so a hero who
+   climbed and waited, or stood off at the far wall, could let most of the fight go by. Stay up there, or stay away, for
+   `after` seconds and he tears a lit skull off the mound and throws it - one before he is enraged, two after, at where you
+   stood when he wound up. It does not take a turn out of his rotation (so SINK keeps its place and the arm-in-the-ground
+   punish its timing), and it waits `cd` between throws.
+   THE SHIELD TURNS IT - a YELLOW mark. The skull is the answer to camping, and a camper on a four-tile ledge has nowhere
+   to step: a blow he can only dodge would make the high tier a trap, not a choice. So it is answered where you stand, by
+   guarding (or by stepping off its line, since it goes where you were). THE HANDS stay the unblockable reach to the ledge,
+   so the two ranged answers ask different things of you: the hands your feet, the skull your shield. */
+export const SKULL={after:2,cd:7,tell:.9,speed:230,dmg:14,far:150,r:11};
+function stepSkulls(e,dt,P,A,hit){
+ for(const q of e.skulls){if(q.t<0){q.t+=dt;continue;}q.t+=dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.spin=(q.spin||0)+dt*14;
+  if(!q.done&&!P.dead&&Math.abs(P.x-q.x)<SKULL.r&&Math.abs(P.y-10-q.y)<SKULL.r+4){q.done=true;hit(q.x,SKULL.dmg,false);}
+  if(q.t>2.4||q.x<A.x0-16||q.x>A.x1+16||q.y>A.floor)q.done=true;}
+ e.skulls=e.skulls.filter(q=>!q.done);
+}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function updateBuriedDead(e,dt,c){
  const{P,A,hit,summon,say,sound}=c;if(!e.alive||P.dead||e.mode==='sleep')return;
@@ -7,6 +24,9 @@ export function updateBuriedDead(e,dt,c){
  const rest=()=>{e.mode='rest';e.modeT=2.2;e.open=2.2;};
  if(e.phase===1&&e.hp<=e.hp0*.5&&e.mode!=='burrow'&&e.mode!=='eruptTell'){e.phase=2;e.mode='rally';e.modeT=1.5;e.turn=0;say('THE GRAVES ANSWER',true);sound('roar');return;}
  e.brokeT=Math.max(0,(e.brokeT||0)-dt);
+ /* THE CAMP CLOCK: up on a tier (30 px is over the low step's lip) or out past his reach, and it runs; come down and close, and it stops */
+ const camping=P.y<A.floor-30||Math.abs(P.x-e.x)>SKULL.far;e.campT=camping?(e.campT||0)+dt:0;e.skullCd=Math.max(0,(e.skullCd??0)-dt);
+ if(e.skulls&&e.skulls.length)stepSkulls(e,dt,P,A,hit);
  if(e.flying){const q=e.flying;q.t+=dt;q.vy+=560*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.spin+=dt*9;
   if(q.y>=A.floor-2){e.flying=null;shake(3);sound('heavy');
    if(Math.abs(P.x-q.x)<22&&P.y>A.floor-30)hit(q.x,14,false);
@@ -30,12 +50,17 @@ export function updateBuriedDead(e,dt,c){
   /* SINK SITS SIXTH IN PHASE ONE, NOT THIRD (Daniel approved, docs/briefs/buried-dead-rotation.md option A). His one caused
      opening needs the slam to land while the ground he broke still lives (brokeT 14 s). Third, four turns stood between the
      erupt and the next slam - 21.0 s - so the arm-in-the-ground punish was never reachable before enrage. Sixth, it is 8.5 s. */
-  const m=turns[e.turn++%turns.length];e.mode=m;e.modeT=m==='callTell'?1.3:m==='novaTell'?1.2:m==='bodyTell'?1.05:m==='clawTell'?1:m==='throwTell'?.85:1;e.markX=m==='bodyTell'?clamp(P.x,A.x0+40,A.x1-40):m==='clawTell'?clamp(P.x,A.x0+20,A.x1-20):e.x;if(m==='clawTell')e.markY=Number.isFinite(P.y)?P.y:A.floor;   /* WHERE YOU ARE STANDING WHEN HE WINDS UP, floor or ledge: leaving is the answer, exactly as the erupt works */
-  say(({slamTell:'SLAM: JUMP',callTell:'THE DEAD RISE',sinkTell:'FOLLOW THE SHADOW',cleaveTell:'SWEEP: GUARD OR RETREAT',novaTell:'POISON NOVA: GET CLEAR',throwTell:'HE THROWS THE DEAD',bodyTell:'BODY SLAM: MOVE',clawTell:'THE HANDS COME UP: MOVE YOUR FEET'})[m],m==='slamTell'||m==='novaTell'||m==='bodyTell'||m==='clawTell');sound('charge');return;
+  const skull=e.campT>=SKULL.after&&e.skullCd<=0,m=skull?'skullTell':turns[e.turn++%turns.length];if(skull){e.skullCd=SKULL.cd;e.campT=0;}   /* the skull cuts in; it does not use up a turn */
+  e.mode=m;e.modeT=m==='skullTell'?SKULL.tell:m==='callTell'?1.3:m==='novaTell'?1.2:m==='bodyTell'?1.05:m==='clawTell'?1:m==='throwTell'?.85:1;e.markX=m==='bodyTell'?clamp(P.x,A.x0+40,A.x1-40):m==='clawTell'?clamp(P.x,A.x0+20,A.x1-20):e.x;if(m==='clawTell')e.markY=Number.isFinite(P.y)?P.y:A.floor;if(m==='skullTell'){e.skullAt={x:P.x,y:P.y-10};sound('clatter');}   /* its own mark: the hands' markY is a different promise */   /* WHERE YOU ARE STANDING WHEN HE WINDS UP, floor or ledge: leaving is the answer, exactly as the erupt works */
+  say(({slamTell:'SLAM: JUMP',callTell:'THE DEAD RISE',sinkTell:'FOLLOW THE SHADOW',cleaveTell:'SWEEP: GUARD OR RETREAT',novaTell:'POISON NOVA: GET CLEAR',throwTell:'HE THROWS THE DEAD',bodyTell:'BODY SLAM: MOVE',clawTell:'THE HANDS COME UP: MOVE YOUR FEET',skullTell:'SKULL: GUARD IT'})[m],m==='slamTell'||m==='novaTell'||m==='bodyTell'||m==='clawTell');sound('charge');return;
  }
  if(e.modeT>0||!e.mode.endsWith('Tell'))return;
  const m=e.mode;e.effect=m;e.effectT=.35;
  if(m==='sinkTell'){e.mode='burrow';e.modeT=.7;sound('hiss');return;}
+ if(m==='skullTell'){const n=e.phase===2?2:1,hx=e.x+(e.face||1)*6,hy=A.floor-96,at=e.skullAt||{x:P.x,y:P.y-10};e.skullAt=null;e.skulls=e.skulls||[];   /* a tell forced without its wind-up (the harness, A3) aims where you are */
+  for(let i=0;i<n;i++){const tx=at.x+(i?Math.sign(at.x-e.x||1)*32:0),ty=at.y,d=Math.hypot(tx-hx,ty-hy)||1;   /* the second, enraged, goes where you would step back to */
+   e.skulls.push({x:hx,y:hy,vx:(tx-hx)/d*SKULL.speed,vy:(ty-hy)/d*SKULL.speed,t:-i*.2});}
+  sound('skullThrow');}
  if(m==='novaTell'){ring(e.x,A.floor-20,112,'#a6e04a');sound('hiss');
   if(Math.abs(P.x-e.x)<112&&P.y>A.floor-80){hit(e.x,18,true);P.venomT=Math.max(P.venomT||0,2.4);}}
  if(m==='throwTell'){const tx=clamp(P.x,A.x0+30,A.x1-30),T=.85;e.flying={x:e.x+e.face*20,y:A.floor-70,vx:(tx-(e.x+e.face*20))/T,vy:(70-.5*560*T*T)/T,t:0,spin:0};   /* from 70 above the floor to the floor in T under 560 gravity: it lands where you were standing */sound('charge');}
@@ -105,6 +130,9 @@ export function drawBuriedDead(g,e,A,cx,cy,time){
  if(e.mode==='bodyTell'||e.mode==='bodyFly'){const mx=e.markX-cx;g.fillStyle='rgba(255,107,107,.3)';g.beginPath();g.ellipse(mx,y-2,78,7,0,0,7);g.fill();g.strokeStyle='#ff9a5c';g.lineWidth=2;g.stroke();}
  if(e.flying){const q=e.flying,fx=q.x-cx,fy=q.y-cy;g.save();g.translate(fx,fy);g.rotate(q.spin);g.fillStyle='#748459';g.fillRect(-5,-10,10,14);g.fillStyle='#98a374';g.fillRect(-4,-16,8,7);g.fillStyle='#575846';g.fillRect(-5,4,4,6);g.fillRect(1,4,4,6);g.restore();
   g.fillStyle='rgba(0,0,0,.25)';g.beginPath();g.ellipse(q.x+q.vx*.2-cx,y-1,10,3,0,0,7);g.fill();}
+ if(e.mode==='skullTell'&&e.skullAt){const k=1-Math.max(0,e.modeT)/SKULL.tell;g.strokeStyle='rgba(166,224,74,'+(.3+.5*k).toFixed(2)+')';g.lineWidth=1;g.beginPath();g.arc(e.skullAt.x-cx,e.skullAt.y-cy,6+8*(1-k),0,7);g.stroke();}   /* where it will go: a green ring closing on the spot you stood */
+ for(const q of e.skulls||[])if(q.t>=0){const sx=Math.round(q.x-cx),sy=Math.round(q.y-cy);g.fillStyle='rgba(166,224,74,.4)';g.fillRect(sx-Math.round(q.vx*.04)-2,sy-Math.round(q.vy*.04)-2,4,4);
+  g.fillStyle='#5c8a24';g.fillRect(sx-4,sy-4,8,7);g.fillStyle='#e8e0c4';g.fillRect(sx-3,sy-3,6,5);g.fillStyle='#5c8a24';g.fillRect(sx-2,sy-1,2,2);g.fillRect(sx+1,sy-1,2,2);g.fillStyle='#a89e80';g.fillRect(sx-2,sy+2,4,1);}
  if(e.mode==='slamTell'||e.effect==='slamTell'&&e.effectT>0){const r=e.phase===2?175:145;g.fillStyle='rgba(244,126,85,.28)';g.fillRect(x-r,y-25,r*2,25);g.strokeStyle='#ffc082';g.strokeRect(x-r,y-25,r*2,25);}
  g.restore();
 }
