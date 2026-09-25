@@ -2967,7 +2967,7 @@ function deepAndKeep() {
   ent('tideguard', 173, 179, { face: 1 }); ent('siren', 196, 172); ent('angler', 205, 182); ent('eel', 152, 178); ent('watch', 208, 198, { face: -1 });
   coins([150, 183], [155, 179], [150, 175], [155, 171], [150, 167], [164, 179], [172, 179], [178, 179], [190, 194], [202, 198], [191, 158], [160, 166]);
   rock(213, 216, 150, 198); cut(213, 216, 192, 198);               /* the keep's wall, and its door */
-  facades.push([162, 212, 150, 198, 'curtain', { sea: true }], [182, 185, 160, 198, 'tower', { sea: true, arch: [192, 198] }], [146, 157, 150, 187, 'tower', { sea: true, lit: false }]);
+  facades.push([162, 212, 150, 198, 'curtain', { sea: true }], [182, 185, 160, 198, 'tower', { sea: true, arch: [192, 198] }], [146, 157, 150, 198, 'tower', { sea: true, lit: false, arch: [188, 198] }]);   /* THE SUNKEN TOWER goes down to the bed, and the passage under it is its arch (it stopped at 187 and hung in clear water: tools/architecture.mjs, 2026-09-25) */
   D.masonry.push([140, 303, 140, 203]);
   zone('THE DROWNED WARD', 146, 212, 150, 198, [120, 175, 150], 0.10);
   darkZones.push({ x0: 146 * TS, x1: 213 * TS, y0: 150 * TS, y1: 199 * TS, dark: 0.22 });

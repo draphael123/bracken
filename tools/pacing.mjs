@@ -203,7 +203,16 @@ export function pacing(lv) {
   for (let i = 0; i < pts.length;) { if (activity[i]) { i++; continue; } let j = i; while (j < pts.length && !activity[j]) j++;
     const len = cum[j - 1] - cum[i]; if (len >= EMPTY_RUN && !regions.some(rg => inRect(pts[i][0], pts[i][1], rg.r))) empties.push({ from: pts[i], to: pts[j - 1], tiles: len }); i = j; }
   /* a tall level is floors: a checkpoint at the far end of the floor the route crosses is still on the way */
-  const checks = ents.filter(e => e.t === 'check').map(e => { const i = tall ? nearestRoute(e.x, e.y, 48, 4) : nearestRoute(e.x, e.y, 12, 8); return i < 0 ? null : cum[i]; }).filter(v => v !== null).sort((a, b) => a - b);
+  /* A SHRINE UNDER THE SWIM IS ON THE WAY. main.js shrineLights() lights one from anywhere in the open water over it (a swimmer
+     within twelve pixels of its column, with no rock between), so a route that SWIMS across a shrine's column above it has lit
+     it, however many rows up it swims. Asking only for a route point within a few rows called twelve of the Underwater Keep's
+     fifteen off the route (a worst gap of 495) while a swimmer on that route lights every one of them (tools/swim-shrines.mjs
+     proves the lighting; this is the same rule, measured). Every swim level, not the Keep: the rule, not the row. */
+  const SOLIDT = new Set([T.SOLID, T.CRATE, T.PALISADE, T.PORT, T.CLIMB, T.SOFT, T.ICE, T.WEB]);
+  const swumOver = e => { for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; if (e.x < Math.min(x0, x1) || e.x > Math.max(x0, x1)) continue;
+      const y = x1 === x0 ? Math.min(y0, y1) : Math.round(y0 + (y1 - y0) * (e.x - x0) / (x1 - x0)); if (y >= e.y || !water[y * W + e.x] || !water[Math.max(0, e.y - 1) * W + e.x]) continue;
+      let open = true; for (let yy = y; yy <= e.y && open; yy++) if (SOLIDT.has(at(e.x, yy))) open = false; if (open) return i; } return -1; };
+  const checks = ents.filter(e => e.t === 'check').map(e => { let i = tall ? nearestRoute(e.x, e.y, 48, 4) : nearestRoute(e.x, e.y, 12, 8); if (i < 0) i = swumOver(e); return i < 0 ? null : cum[i]; }).filter(v => v !== null).sort((a, b) => a - b);
   const endAt = (() => { if (!A) return total; const i = pts.findIndex(([x, y]) => x >= A.trigger / TS && inRect(x, y, regions[0].r)); return i < 0 ? total : cum[i]; })();
   const stops = [0, ...checks.filter(c => c < endAt), endAt]; let maxGap = 0, gapAt = 0;
   for (let i = 1; i < stops.length; i++) if (stops[i] - stops[i - 1] > maxGap) { maxGap = stops[i] - stops[i - 1]; gapAt = stops[i - 1]; }

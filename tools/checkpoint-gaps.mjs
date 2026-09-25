@@ -7,8 +7,13 @@
    checkpoint and a lie. The rule is about the way you WALK, so this measures it along the walked route - tools/pacing.mjs's main
    route, start to gate, rides on - and fails any level with a run longer than the playtest bot's own LONGGAP line (150).
 
-   KNOWN, NOT FORGIVEN. Two other levels are over the line today (Gale Moor was a third, 187 from its kite post, and left the list when the rework cut its Sky Road - docs/briefs/gale-moor-rework.md), both tall ones the same axis rule measures by rows, and both belong to
-   other work. They are named below with the number as measured; the check fails a listed level that no longer needs its entry, so the
+   A SWIMMER WAKES WHERE HE SWAM OVER. THE UNDERWATER KEEP was on the list below at 495, with 12 of its 15 shrines "off the route":
+   they stand on the bed of rooms seventeen rows deep and the route swims across the middle of them, and main.js lights a shrine from
+   the open water over it. pacing.mjs now counts a shrine the route swims over (2026-09-25, docs/briefs/keep-rework-2.md), and the
+   Keep left the list - the rule, for every swim level, not a checkpoint typed onto its route.
+
+   KNOWN, NOT FORGIVEN. One level is over the line today (Gale Moor was another, 187 from its kite post, and left the list when the rework cut its Sky Road - docs/briefs/gale-moor-rework.md), a tall one the same axis rule measures by rows, and it belongs to
+   other work. It is named below with the number as measured; the check fails a listed level that no longer needs its entry, so the
    list can only shrink. */
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/level.js';
@@ -16,7 +21,6 @@ import { pacing } from './pacing.mjs';
 
 const LIMIT = 150;   /* src/playtest.js LONGGAP: "more than 150 columns with no checkpoint" */
 const KNOWN = new Map([
-  ['keep', 'THE UNDERWATER KEEP, 760x64, measured 495: a 296-tile swim, and 12 of its 15 checkpoints are off the walked route by this measure. For the Keep\'s owner: a checkpoint on the swim, or teach pacing.mjs where a swimmer wakes.'],
   ['burial', 'THE BURIAL CAVERNS, 1140x112, measured 206 (from route 707): a wide level the filler measures by ROWS because it is taller than sixty. For the Burial rework\'s owner: one checkpoint near route 810, or make checkpoints() key a tall level on its route.'],
 ]);
 const bad = [], stale = [], rows = [];
