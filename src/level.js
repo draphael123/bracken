@@ -3472,7 +3472,7 @@ function highcrownWhole() {
   //                 falls, and the roof hears it: its watch comes down through the hatch.
   // Every one lifts when its watch is down or after twenty seconds (updateAlarms), and a death puts the hall back (resetCastle).
   R.alarms = (R.alarms || []).concat([
-    { id: 'ward', gates: [[321, 58, 63]], garrison: [{ t: 'soldier', x: 314, y: 63 }, { t: 'javelin', x: 312, y: 63 }, { t: 'soldier', x: 317, y: 63 }] },
+    { id: 'ward', gates: [[321, 58, 63]], garrison: [{ t: 'soldier', x: 315, y: 63 }, { t: 'javelin', x: 312, y: 63 }] },
     { id: 'hall', gates: [[735, 54, 63]], wake: [678, 735, 54, 63] },
     { id: 'chapel', gates: [[715, 10, 19]], garrison: [{ t: 'soldier', x: 747, y: 19 }, { t: 'javelin', x: 749, y: 19 }, { t: 'soldier', x: 751, y: 19 }] }]);
   return R;
