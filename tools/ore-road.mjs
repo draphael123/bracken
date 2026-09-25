@@ -17,7 +17,7 @@
 // usage: node tools/ore-road.mjs
 import { LEVELS, T } from '../src/level.js';
 import { readFileSync } from 'node:fs';
-import { OR, cableLines, makeCableway, stepCableway, bucketAt, pointAt, lineYAt, brakeStep, liftStep } from '../src/ore-road.js';
+import { OR, cableLines, makeCableway, stepCableway, bucketAt, pointAt, lineYAt, brakeStep, liftStep, mineBlocked } from '../src/ore-road.js';
 import { WINCH, updateWinchmaster, winchJam, winchTake, winchOpen, winchFrame } from '../src/winchmaster.js';
 
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
@@ -159,6 +159,21 @@ for (const l of C.lines) {
   const V = L.veins || [], badV = V.filter(v => !(at(v.x, v.y) === T.AIR && at(v.x, v.y - 1) === T.AIR && footing(at(v.x, v.y + 1)) && at(v.x, v.y + 1) !== T.NET) || L.ents.some(e => e.t !== 'coin' && e.x === v.x && e.y === v.y));
   ok(V.length >= 12 && !badV.length, `${V.length} seams to mine, each in the back wall over a floor its spill lands on, standing in nobody's way (the cell in front is clear and holds nothing)` + (badV.length ? ' - not ' + badV.map(v => v.x + ',' + v.y).join(' ') : ''));
   ok(OR.VEIN_HITS === 3 && V.every(v => v.coins === OR.VEIN_COINS) && /total \+= \(L\.veins \|\| \[\]\)\.reduce/.test(readFileSync(new URL('../src/main.js', import.meta.url), 'utf8')), `three blows a seam, ${OR.VEIN_COINS} coins each, and main.js counts them into the level's total the way it counts a crate's`); }
+
+/* ---- MORE ORE (docs/briefs/ore-road-mine-life.md, section 1): ore in every rock face the route shows, heaps, spills and carts
+   full of it on the floors - VARIED, not one stamp repeated, and NEVER OVER A HAZARD OR A TELL. Each floor prop is asked the
+   brief's whole list (mineBlocked: footing, open air, no rope, no spike, no rockfall column, no tippler's stream, no checkpoint,
+   sign, lamp, silver or start, no pit, no ambush room, no vein, and nothing in the Winchmaster's room) */
+{ const S = L.seams || [], M = L.mine || [];
+  const badS = S.filter(([x, y]) => at(x, y) !== T.SOLID || x * TS >= L.arena.x0 || [-1, 0, 1].some(dx => [-1, 0, 1].some(dy => at(x + dx, y + dy) === T.SPIKE)));
+  ok(S.length >= 150 && !badS.length, `${S.length} seams of ore in the rock faces, every one IN rock, none beside a spike and none in the Winchmaster's room` + (badS.length ? ' - not ' + JSON.stringify(badS.slice(0, 4)) : ''));
+  const combos = new Map(); for (const q of S) combos.set(q[2] + '/' + q[3], (combos.get(q[2] + '/' + q[3]) || 0) + 1);
+  const worst = Math.max(...combos.values()) / Math.max(1, S.length);
+  ok(new Set(S.map(q => q[2])).size === 4 && new Set(S.map(q => q[3])).size === 4 && worst < 0.2, `varied, not one stamp: four ores and four seam shapes in ${combos.size} pairings, the commonest ${Math.round(worst * 100)}% of them`);
+  ok(S.some(q => q[4]) && S.filter(q => q[4]).length < S.length / 2, `${S.filter(q => q[4]).length} of them glint`);
+  const why = M.map(it => [it, mineBlocked(L, T, it)]).filter(([, r]) => r);
+  ok(M.length >= 15 && !why.length, `${M.length} heaps, spills and carts of ore on the floors, every one on footing and clear of every hazard and every tell` + (why.length ? ' - NOT ' + why.map(([it, r]) => it.k + '@' + it.x + ',' + it.y + ': ' + r).join('; ') : ''));
+  ok(new Set(M.filter(q => q.k === 'heap').map(q => q.size)).size === 3 && M.some(q => q.k === 'cart' && q.load > 0) && new Set(M.map(q => q.ore)).size === 4, 'heaps of all three sizes, a cart full of ore, and all four ores on the floors'); }
 
 /* ---- THE PIT (Daniel's playtest, item 5): nowhere on the road can a fall reach the bottom of the level any more. Every column
    from the yard to the drum house, dropped down from the top, meets something - a floor, a ledge, or a span's spike bed - and

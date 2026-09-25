@@ -369,7 +369,9 @@ export function buildOreRoad({ painter, T }) {
      down - the ring is ALSO on the cable it crosses, which is where a rider is (lane: that line's height under it) */
   for (const e of L.ents) if (e.t === 'rockfall') { e.tell = OR.ROCK_TELL; e.seen = true;
     const ys = cable.map(l => lineYAt(l, e.x * TS + 8)).filter(y => y !== null && y > (e.y + 1) * TS); if (ys.length) e.lane = Math.min(...ys); }
+  const { seams, mine } = layMine(L.grid, W, H, T);   /* MINE LIFE (docs/briefs/ore-road-mine-life.md): ore in the rock, heaps and carts on the floors */
   return {
+    seams, mine,
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: YARD }, pools: [], falls: [], moversExtra: [], interiors: [], gusts: [],
     music: 'oreroad',   /* its own track at last (Daniel 2026-09-23): 'mineworks' was a sparse synth that played as silence. audio/CREDITS.txt */ duskStart: -1, duskLen: 1,
     /* ONE VAST CAVERN (Daniel, 2026-09-25): no sky. The engine's dark (black, with a hole for every lamp and the light you carry)
@@ -394,6 +396,99 @@ export function buildOreRoad({ painter, T }) {
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: surf(A.deck), y0: 0, trigger: (A.x0 + 3) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'winchmaster', music: 'boss3', tint: '#5a4a3a', tintA: 0.06, fx: 'dust' },
     noCoin: [[68, 135, 0, H - 1], [204, 261, 0, H - 1], [353, 375, 0, H - 1], [385, 407, 0, H - 1], [476, 523, 0, H - 1]],   /* over the drop: the sprinkler must not put coins where only a bucket goes */
   };
+}
+
+// ============================================================================================ MINE LIFE
+/* docs/briefs/ore-road-mine-life.md: THE ORE ROAD IS A WORKING MINE, AND YOU ARE THE INTERRUPTION. Nothing in this section
+   is solid, nothing moves the route, and NOTHING IS LAID PAST OR.MINE_EDGE - the Winchmaster's room is not dressed, so his
+   fight cannot change by accident. Every choice below is a HASH of where it is, never the dice: the boss pilot pins its
+   dice, and a draw or a build that rolled them would move his fight. */
+OR.MINE_EDGE = 475;
+/* THE FOUR ORES, each [shadow, body, shine]: copper green, iron rust, gold, and the violet gem. Varied, not one stamp */
+export const ORES = [['#1f3a32', '#3f8a66', '#9ae8bc'], ['#4a2418', '#a0522d', '#f0a070'], ['#5a4418', '#d0a030', '#ffe68a'], ['#34245a', '#9a6ae0', '#ecdcff']];
+export const hash = (a, b, s = 0) => { let h = (Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263) + Math.imul(s | 0, 1013904223)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+/* THE ORE ON THE FLOORS, placed by hand, place by place ([kind, column, standing row, a, b]): a HEAP [size 0-2, ore], a CART
+   parked full on its rail [load 0-2, ore], a SPILL where a station dropped some [ore]. tools/ore-road.mjs holds every one of them
+   off every hazard and every tell (mineBlocked) and on footing (B2) */
+const MINE_ORE = [
+  ['heap', 15, 36, 0, 1], ['heap', 11, 34, 1, 2], ['spill', 64, 32, 2], ['heap', 65, 32, 0, 2],   /* the ore yard and the loading house's loft */
+  ['spill', 98, 36, 1], ['spill', 127, 36, 3],                                                                         /* the pylons: what fell off the skips */
+  ['heap', 141, 36, 2, 2], ['cart', 156, 36, 1, 1], ['heap', 167, 36, 1, 3], ['heap', 180, 36, 1, 1], ['spill', 193, 36, 0],   /* the sorting yard, under the sorting floor */
+  ['heap', 139, 21, 1, 0], ['spill', 197, 21, 2],                                                                      /* the tower's top deck, where the chute is loaded */
+  ['heap', 268, 34, 1, 2], ['heap', 279, 34, 2, 0],                                                                    /* the chute's foot */
+  ['heap', 336, 30, 1, 2],                                                                                             /* the wreck's head: what was saved out of it */
+  ['heap', 418, 12, 1, 1], ['heap', 422, 12, 2, 1], ['heap', 451, 12, 1, 2]];   /* the winch house and the drum yard: the ore waiting for the drum */
+export function layMine(grid, W, H, T) {
+  const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : grid[y * W + x];
+  /* THE SEAMS IN THE ROCK. Every face of rock the route shows carries ore: a rock tile within six rows under a floor it is the
+     face of, or open to the air at its side. Veined in BANDS (a cell of 5x3 tiles either is a vein or is not, and has one ore),
+     so it reads as seams running through the rock and not as a sprinkle. Never next to a spike: the teeth are the tell */
+  const seams = [], spikeNear = (x, y) => { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (at(x + dx, y + dy) === T.SPIKE) return true; return false; };
+  for (let x = 0; x <= OR.MINE_EDGE; x++) for (let y = 1; y < H; y++) { if (at(x, y) !== T.SOLID || spikeNear(x, y)) continue;
+    let depth = 99; for (let k = 1; k <= 6; k++) if (at(x, y - k) !== T.SOLID) { depth = k; break; }
+    const side = at(x - 1, y) === T.AIR || at(x + 1, y) === T.AIR;
+    if (depth > 6 && !side) continue; if (depth === 1) continue;   /* not the floor's own top course: the lip stays clean */
+    const cx = Math.floor(x / 5), cy = Math.floor(y / 3), band = hash(cx, cy, 7);
+    if (band > 0.42 || hash(x, y, 11) > 0.5) continue;
+    seams.push([x, y, Math.floor(hash(cx, cy, 13) * 4), Math.floor(hash(x, y, 17) * 4), hash(x, y, 19) < 0.35]); }   /* [x, y, ore, shape, glints] */
+  const mine = MINE_ORE.map(([k, x, y, a, b]) => k === 'heap' ? { k, x, y, x0: x, x1: x + (a > 0 ? 1 : 0), size: a, ore: b }
+    : k === 'cart' ? { k, x, y, x0: x, x1: x + 1, load: a, ore: b, rail: [x - 2, x + 3] } : { k, x, y, x0: x, x1: x, ore: a });
+  return { seams, mine };
+}
+/* WHAT A PROP MAY NOT STAND ON OR IN FRONT OF (the brief's "never over a hazard or a tell"): the reason it may not, or null. Its
+   footing is floor under every column it spans; its tiles are open air (no rope, no spike); it is not under a rockfall (the red
+   ring lands in that column), not in a tippler's stream, not on a checkpoint, a sign, a lamp, a silver or the start, not over a
+   pit, not in the ambush room, not in front of a vein, and not in the Winchmaster's room. Pure, so the Node tool can ask it */
+export function mineBlocked(L, T, it) {
+  const at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x], fl = t => t === T.SOLID || t === T.PLANK || t === T.ONEWAY;
+  const x0 = Math.floor(it.x0), x1 = Math.ceil(it.x1), y = it.y;
+  if (x1 > OR.MINE_EDGE || (L.arena && (x1 + 1) * TS > L.arena.x0)) return 'in the Winchmaster\'s room';
+  for (let x = x0; x <= x1; x++) { if (!fl(at(x, y + 1))) return 'no footing at column ' + x; if (at(x, y) !== T.AIR) return 'not in open air at column ' + x;
+    if (at(x, y + 1) === T.SPIKE) return 'on spikes'; }
+  for (const e of L.ents) {
+    if (e.t === 'rockfall' && e.x >= x0 - 1 && e.x <= x1 + 1) return 'under the rockfall at ' + e.x;
+    if (e.t === 'tippler' && e.x >= x0 - 3 && e.x <= x1 + 3 && e.y <= y) return 'in the stream of the tippler at ' + e.x + ',' + e.y;
+    if (['check', 'sign', 'minerlamp', 'silver', 'mend'].includes(e.t) && e.x >= x0 - 1 && e.x <= x1 + 1 && Math.abs(e.y - y) <= 1) return 'on the ' + e.t + ' at ' + e.x + ',' + e.y; }
+  if (L.START && Math.abs(L.START.x - it.x) <= 2 && L.START.y === y) return 'on the start';
+  for (const q of (L.pits || OR.PITS)) if (x1 >= q.x0 && x0 <= q.x1 && y >= q.floor - 2) return 'in the ' + q.id + ' pit';
+  for (const a of (L.ambushes || [])) if (x1 >= a.wallL && x0 <= a.wallR && y <= a.row && y >= (a.y0 ?? a.row - 10)) return 'in the ambush room ' + a.name;
+  for (const v of (L.veins || [])) if (v.x >= x0 - 1 && v.x <= x1 + 1 && v.y === y) return 'in front of the vein at ' + v.x;
+  return null;
+}
+/* THE SEAMS, drawn over the rock after the tiles: a streak, a cluster, a run of flecks or a fat nugget, 3-6 bright pixels on the
+   dark - readable at 1x - and a few of each seam catching the light on their own slow clock */
+export function drawOreSeams(g, L, cx, cy, time, VW, VH) {
+  for (const [x, y, o, sh, gl] of (L.seams || [])) { const X = x * TS - cx, Y = y * TS - cy; if (X < -16 || X > VW || Y < -16 || Y > VH) continue;
+    const c = ORES[o], s = ((x * 7 + y * 3) % 5);
+    g.fillStyle = c[0];
+    if (sh === 0) { g.fillRect(X + 2, Y + 5 + s % 3, 11, 3); g.fillStyle = c[1]; g.fillRect(X + 3, Y + 6 + s % 3, 9, 1); g.fillRect(X + 6, Y + 5 + s % 3, 4, 1); }   /* a streak */
+    else if (sh === 1) { g.fillRect(X + 4 + s, Y + 4, 6, 6); g.fillStyle = c[1]; g.fillRect(X + 5 + s, Y + 5, 2, 2); g.fillRect(X + 8 + s, Y + 6, 1, 2); g.fillRect(X + 6 + s, Y + 8, 2, 1); }   /* a cluster */
+    else if (sh === 2) { g.fillStyle = c[1]; for (let k = 0; k < 4; k++) g.fillRect(X + 2 + k * 3, Y + 3 + ((k * 5 + s) % 9), 2, 2); }   /* a run of flecks */
+    else { g.fillRect(X + 3 + s, Y + 3 + (s % 2) * 4, 7, 5); g.fillStyle = c[1]; g.fillRect(X + 4 + s, Y + 4 + (s % 2) * 4, 5, 3); g.fillStyle = c[2]; g.fillRect(X + 5 + s, Y + 4 + (s % 2) * 4, 2, 1); }   /* a nugget */
+    if (gl) { const a = Math.max(0, Math.sin(time * 1.3 + x * 1.7 + y)); if (a > 0.6) { g.globalAlpha = (a - 0.6) * 2.5; g.fillStyle = c[2]; g.fillRect(X + 7, Y + 6, 1, 1); g.fillRect(X + 6, Y + 5, 3, 1); g.fillRect(X + 7, Y + 4, 1, 3); g.globalAlpha = 1; } } }
+}
+/* ONE HEAP OF ORE: chunky stones stacked into a mound, rock-grey with the ore in them (size 0-2: 12, 18, 26 px) */
+function drawHeap(g, X, Y, size, o, seed) { const c = ORES[o], w = [12, 18, 26][size], h = [5, 8, 11][size];
+  for (let r = 0; r < h; r += 2) { const ww = Math.round(w * (1 - r / (h + 2))), x0 = X + ((w - ww) >> 1);
+    for (let q = 0; q < ww; q += 3) { const k = hash(seed, r * 31 + q, 3); g.fillStyle = k < 0.3 ? c[1] : k < 0.38 ? c[2] : k < 0.7 ? '#5a525a' : '#3e3842'; g.fillRect(x0 + q, Y - r - 2, 3, 2); } }
+  g.fillStyle = '#2a2430'; g.fillRect(X, Y - 1, w, 1); }
+/* AN ORE CART on its rail: an iron tub on two wheels, loaded 0-2 */
+export function drawCart(g, X, Y, load, o, tip = 0, spin = 0) {
+  g.save(); g.translate(X + 12, Y - 4); g.rotate(tip); const c = ORES[o];
+  g.fillStyle = '#2a2a30'; g.fillRect(-12, -9, 24, 9); g.fillStyle = '#5a5a64'; g.fillRect(-11, -8, 22, 6); g.fillStyle = '#8a8a94'; g.fillRect(-12, -9, 24, 1);
+  g.fillStyle = '#3a3a42'; g.fillRect(-8, -7, 1, 5); g.fillRect(7, -7, 1, 5);
+  if (load > 0) { g.fillStyle = '#4a4450'; g.fillRect(-10, -11, 20, 2); g.fillStyle = c[1]; g.fillRect(-8, -12, 5, 2); g.fillRect(1, -12, 4, 2); g.fillStyle = c[2]; g.fillRect(-6, -12, 1, 1); g.fillRect(3, -12, 1, 1); }
+  if (load > 1) { g.fillStyle = '#5a525a'; g.fillRect(-6, -14, 12, 2); g.fillStyle = c[1]; g.fillRect(-3, -15, 5, 2); g.fillStyle = c[2]; g.fillRect(-1, -15, 1, 1); }
+  g.restore();
+  for (const wx of [X + 5, X + 19]) { g.fillStyle = '#1a1a20'; g.fillRect(wx - 3, Y - 4, 6, 4); g.fillStyle = '#6a6a74'; g.fillRect(wx - 1 + (Math.floor(spin) % 2), Y - 3, 2, 2); } }
+/* A RAIL: two iron lines on timber sleepers, on the floor's surface */
+export function drawRail(g, X0, X1, Y) { g.fillStyle = '#3a2818'; for (let x = X0; x < X1; x += 5) g.fillRect(x, Y - 1, 3, 1); g.fillStyle = '#6a6a74'; g.fillRect(X0, Y - 2, X1 - X0, 1); g.fillStyle = '#9a9aa4'; for (let x = X0 + 2; x < X1; x += 9) g.fillRect(x, Y - 2, 2, 1); }
+/* THE ORE ON THE FLOORS, drawn behind the tiles with the rest of the structures */
+export function drawOreMine(g, L, cx, cy, time, VW, VH) {
+  for (const it of (L.mine || [])) { const X = Math.round(it.x0 * TS - cx), Y = Math.round((it.y + 1) * TS - cy); if (X < -60 || X > VW + 60 || Y < -40 || Y > VH + 60) continue;
+    if (it.k === 'heap') drawHeap(g, X + (it.size === 0 ? 2 : it.size === 1 ? 7 : 3), Y, it.size, it.ore, it.x * 13 + it.y);
+    else if (it.k === 'cart') { drawRail(g, Math.round(it.rail[0] * TS - cx), Math.round((it.rail[1] + 1) * TS - cx), Y); drawCart(g, X + 4, Y - 1, it.load, it.ore); }
+    else if (it.k === 'spill') { const c = ORES[it.ore]; for (let q = 0; q < 6; q++) { const k = hash(it.x, q, 5); g.fillStyle = q % 3 === 0 ? c[1] : '#4a4450'; g.fillRect(X + 1 + Math.floor(k * 13), Y - 2 - (q % 2), 2, 2); } g.fillStyle = c[2]; g.fillRect(X + 6, Y - 3, 1, 1); } }
 }
 
 // ============================================================================================ THE LOOK
@@ -440,7 +535,7 @@ export function drawBucket(g, m, cx, cy, time) {
    is solid beyond the tiles). B9: everything out over the gorge is stepped into something - a leg down into the dark, or a
    bracket back into the rock. */
 export function drawOreStructures(g, L, cx, cy, time, VW, VH, drumAng) {
-  drawOreCeiling(g, L, cx, cy, time, VW, VH);   /* UNDERGROUND: the rock over it all, first, so every structure stands in front of it */
+  drawOreCeiling(g, L, cx, cy, time, VW, VH); drawOreMine(g, L, cx, cy, time, VW, VH);   /* (MINE LIFE: the ore on the floors, behind everything else) */   /* UNDERGROUND: the rock over it all, first, so every structure stands in front of it */
   const on = (x0, x1) => x1 * TS - cx > -60 && x0 * TS - cx < VW + 60;
   const beam = (x, y, w, h, c = TIMBER) => { g.fillStyle = c[1]; g.fillRect(x, y, w, h); g.fillStyle = c[2]; g.fillRect(x, y, w, 1); g.fillStyle = c[0]; g.fillRect(x, y + h - 1, w, 1); };
   const bottom = VH + 20;
@@ -546,6 +641,7 @@ export function drawOreCeiling(g, L, cx, cy, time, VW, VH) {
 /* THE VEINS, drawn over the tiles: a seam of ore in the back wall at chest height, its flecks glinting, cracking as it is struck,
    an empty scar when it is mined. A gem seam is violet and cyan; an ore seam is brass and rust. And what a miner carries */
 export function drawOreVeins(g, L, cx, cy, time, VW, VH) {
+  drawOreSeams(g, L, cx, cy, time, VW, VH);   /* MINE LIFE: the ore in the rock faces, over the tiles */
   for (const v of (L.veins || [])) { const x = v.x * TS - cx, y = v.y * TS - cy; if (x < -20 || x > VW + 20 || y < -20 || y > VH + 20) continue;
     const pal = v.gem ? ['#3a3048', '#c08aff', '#6fe0d8'] : ['#3a3028', '#e0a040', '#c07048'];
     g.fillStyle = '#1e1a20'; g.fillRect(x + 1, y - 2, 14, 13); g.fillRect(x - 1, y + 1, 18, 8);
