@@ -762,7 +762,7 @@ function sporewood() {
   sleeps.push({ x0: 226 * TS, x1: 233 * TS, y0: 8 * TS, y1: 14 * TS }); ent('sporeling', 229, 13, { face: -1 }); ent('glow', 227, 13);
   ent('shaman', 237, 13, { face: -1 }); ent('spitcap', 224, 13, { face: -1 }); ent('sporeling', 241, 13, { face: -1 }); ent('glow', 243, 13);
   ent('sign', 244, 13, { text: 'THE PILLARS. HOLD JUMP, OR PLUNGE INTO THE CAPS.' });
-  ent('deco', 205, 13, { kind: 'deadTree', v: 0 }); ent('deco', 238, 13, { kind: 'deadTree', v: 1 }); ent('deco', 292, 13, { kind: 'deadTree', v: 0 });
+  ent('deco', 205, 13, { kind: 'rootDecor', v: 0 }); ent('deco', 238, 13, { kind: 'rootDecor', v: 1 }); ent('deco', 292, 13, { kind: 'rootDecor', v: 2 });   /* roots, not the forest's dead trees: this wood is fungus (level review) */
   ent('sign', 201, 13, { text: 'THE CAPS GROW INTO STEPS. WAIT FOR THEM TO RISE, THEN CLIMB.' });
   coins([208, 12], [231, 11], [239, 11]);
 
@@ -787,7 +787,7 @@ function sporewood() {
   ent('deco', 310, 19, { kind: 'sporePod' }); ent('deco', 322, 19, { kind: 'sporePod' }); ent('deco', 348, 19, { kind: 'sporePod' }); ent('deco', 360, 19, { kind: 'sporePod' });
   ent('deco', 314, 19, { kind: 'skullPile', v: 0 }); ent('deco', 356, 19, { kind: 'skullPile', v: 1 });
   ent('glow', 300, 19); ent('glow', 370, 19); ent('glow', 314, 19); ent('glow', 356, 19);
-  ent('deco', 302, 19, { kind: 'deadTree', v: 1 }); ent('deco', 368, 19, { kind: 'deadTree', v: 0 });
+  ent('deco', 302, 19, { kind: 'sporePod' }); ent('deco', 368, 19, { kind: 'sporePod' });
   web(308, 14, 19); web(312, 14, 19); ent('spider', 310, 13, { drop: 110, big: true }); // THE LARDER: something big keeps the door
   ent('weaver', 316, 15, { face: -1 }); ent('spitcap', 300, 19, { face: 1 }); ent('spitcap', 372, 19, { face: -1 });
   coins([306, 17], [364, 17]);
@@ -795,9 +795,9 @@ function sporewood() {
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], sleeps,
     duskStart: -1, duskLen: 1, music: 'cave', night: false, glowNight: true,
-    palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(120,160,140,0.2)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
+    palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(120,160,140,0.2)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#2a1f38', '#3a2a4c', '#4e3a64', '#66507e'] },   /* its own violet canopy: the green one was the Marsh's, byte for byte (level review) */
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'drip' }],   /* the fungus drips; the hive's buzz was the Hornet Queen's (level review) */
     storm: { x0: 201 * TS, x1: 244 * TS, y: 14 * TS },
     rot: { x0: 44 * TS, x1: 296 * TS }, // the wood sickens the deeper you go: a violet wash that grows with x, and lifts when she dies
     quest: { n: 3, item: 'cap', name: 'CLEAN CAP', npc: 'elder', done: 'THE LIGHT IS GATHERED', thanks: "THE ELDER'S THANKS" },
@@ -808,7 +808,7 @@ function sporewood() {
   G.floor(245, 288, 14);
   for (const [x0, x1] of [[252, 255], [262, 266], [274, 278]]) { for (let x = x0; x <= x1; x++) for (let y = 14; y <= 19; y++) G.set(x, y, 0); for (let x = x0; x <= x1; x++) G.set(x, 19, T.BOUNCER); }
   G.ent('sign', 246, 13, { text: 'THE BOG KEEPS WHAT FALLS IN. PLUNGE THE FLOATING CAPS TO BOUNCE OUT.' });
-  G.ent('lurker', 249, 13); G.ent('deco', 257, 13, { kind: 'deadTree', v: 1 }); G.ent('puffball', 259, 13); G.ent('lurker', 260, 13); G.ent('puffball', 269, 13); G.ent('lurker', 271, 13); G.ent('puffball', 281, 13);
+  G.ent('lurker', 249, 13); G.ent('deco', 257, 13, { kind: 'rootDecor', v: 1 }); G.ent('puffball', 259, 13); G.ent('lurker', 260, 13); G.ent('puffball', 269, 13); G.ent('lurker', 271, 13); G.ent('puffball', 281, 13);
   G.ent('vent', 258, 13, { period: 4, on: 1.5, h: 90, phase: 1 }); G.ent('vent', 270, 13, { period: 5, on: 1.6, h: 90, phase: 3 });
   G.ent('drone', 254, 8); G.ent('drone', 264, 7); G.ent('drone', 276, 8);
   G.ent('glow', 247, 13); G.ent('glow', 257, 13); G.ent('glow', 268, 13); G.ent('glow', 280, 13); G.ent('glow', 287, 13);
@@ -7378,7 +7378,7 @@ const REVIEW = {
   marsh: L => { const R = rv(L); R.ent('check', 163, 17); for (const x of [115, 118, 121, 124, 127, 465, 468, 471, 474]) { R.ent('pad', x, 17); R.coin(x, 15); } },
   // and its own light in every part of it, so the long fungus wood stops being one colour from end to end
   spore: L => { rv(L).ent('check', 330, 13); L.ents = L.ents.filter(e => !(e.t === 'spitcap' && L.arena && e.x > L.arena.wallR));   /* a spitcap left past the Mother's east wall when the Deep Gills grew the wood: nothing out there to guard (level review, 2026-09-24) */
-    L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, 504, [200, 60, 150], 0.16]]; },
+    L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, L.W, [200, 60, 150], 0.16]]; },   /* to the level's end, whatever it grows to: it stopped at 504, the width before the Deep Gills grew */
   // the court's long runs went a hundred and twenty tiles without a checkpoint
   kings: L => { const R = rv(L); R.ent('check', 153, 21); R.ent('check', 405, 20); },   /* moved with the Knights' Road (+48 at 85) and the Hanging Roots (+42 at 191) */
   scree: L => { rv(L).ent('check', 330, 18); },
@@ -7407,7 +7407,7 @@ export const DRESS = {
   wood: [['beehive'], ['birdhouse'], ['trunk', 3], ['fence', 2], ['deadTree', 2], ['stump'], ['rock', 3], ['fern', 3], ['mushroom', 2], ['stump', 2], ['rock', 3], ['flower', 2], ['bushDeco', 3]],   /* the first wood was the thinnest: fences and stones */   /* (a crag's cairn and standing stone were in it - the stash props of the mountains: a stump and a mossy rock in their slots, same draws, level review 2026-09-24) */
   marsh: [['fishTrap', 2], ['lilyLantern'], ['deadTree', 2], ['fence', 2], ['barrels'], ['frogStatue', 1], ['cattail', 2], ['fern', 3], ['mushroom', 2], ['moss', 2], ['stump', 2]],
   stockade: [['barrels'], ['spearRack'], ['skullPile', 2], ['tent', 2], ['cart'], ['bones', 2], ['banner', 2], ['gobPennant', 3], ['warStandard', 2], ['ragBanner', 3], ['hideBanner', 2], ['skullTotem', 2], ['trophyRack', 2], ['stakeFence', 2], ['lootHeap', 2], ['cookSpit'], ['cauldron'], ['hideRack', 2], ['warnPost', 2], ['boneChime', 2]],   /* the war camp: every flag they have, and the camp's own mess */
-  spore: [['sporePod'], ['rootDecor', 3], ['cobweb', 3], ['deadTree', 2], ['bones', 2], ['mushroom', 2], ['moss', 2], ['fern', 3], ['stump', 2]],
+  spore: [['sporePod'], ['rootDecor', 3], ['cobweb', 3], ['mushroom', 2], ['bones', 2], ['mushroom', 2], ['moss', 2], ['fern', 3], ['stump', 2]],
   kings: [['banner', 2], ['barrels'], ['lanternPost'], ['spearRack'], ['hangCage'], ['trunk', 3], ['gobPennant', 3], ['ragBanner', 3], ['clothStrip', 3], ['skullTotem', 2], ['idol', 2], ['lootHeap', 2], ['trophyRack', 2], ['cauldron'], ['boneChime', 2], ['warnPost', 2]],   /* the court: idols, the king's takings, trophies */
   scree: [['stone', 3], ['cairn'], ['fence', 2], ['deadTree', 2], ['bones', 2]],
   hanging: [['lanternPost'], ['barrels'], ['birdhouse'], ['beehive']],

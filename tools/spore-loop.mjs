@@ -31,3 +31,11 @@ const noop=()=>{},mother={alive:true,mode:'idle',nodeRest:0,x:0,y:0},movers=[{ki
 {const vents=L.ents.filter(e=>e.t==='vent'&&((e.x>=175&&e.x<=209)||(e.x>=329&&e.x<=372)));assert.deepEqual(vents.map(e=>e.x),[],'vents with nothing to cross');
  const fire=L.ents.filter(e=>['spitcap','weaver'].includes(e.t)&&e.x>=329&&e.x<=372);assert(fire.length>=2,'the bog is crossed under fire: '+fire.length+' shooters');
  console.log('The empty sections are filled: no idle vents, '+fire.length+' shooters over the bog.');}
+/* ITS OWN LOOK (the rebuild's third chunk, from the level review): no forest dead trees in a fungus wood, a canopy that is not the Marsh's, an
+   ambient bed that is not the Hornet Queen's hive, the tint running to the level's end (it stopped at 504, the width before the Deep Gills
+   grew), and its snapping shelves drawn as shelf fungus rather than the forest's planks. */
+{const marsh=LEVELS.find(l=>l.id==='marsh').build();assert(!L.ents.some(e=>e.kind==='deadTree'),'no dead trees in the fungus wood');
+ assert.notDeepEqual(L.palette.canopy,marsh.palette.canopy,'a canopy of its own, not the Marsh\'s');assert(!(L.ambient||[]).some(z=>z.kind==='hive'),'not the hive\'s buzz');
+ assert(Math.max(...L.tints.map(t=>t[1]))>=L.W,'the tint runs to the level\'s end');
+ assert(/const shelfSpr = [^\n]*L\.palette\.myc \? TILE\.shelfMyc/.test(s),'a shelf in a mushroom wood is shelf fungus');
+ console.log('Its own look: no dead trees, its own canopy and bed, the tint to '+L.W+', shelf fungus.');}

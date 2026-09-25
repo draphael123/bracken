@@ -20,6 +20,9 @@ const SHOTS = [
   ['pillars', 380, ''],
   ['gills', 452, ''],
   ['mother-room', 511, 'BK.boss&&(BK.boss.mode="idle",BK.boss.modeT=99);'],
+  /* the rule in motion (the rebuild only): a hero halfway over the gap on a leaning cap, and her fold jammed on a grown room cap */
+  ['lean-ride', 177, 'const m=BK.movers().find(q=>q.lean&&Math.abs(q.bx/16-177)<1);if(m){m.state="grow";m.k=.55;BK.P.x=m.bx+m.k*m.lean+16;BK.P.y=m.y0-m.k*m.rise;BK.P.vy=0;BK.SET.speed=0.001;}'],
+  ['jam', 500, 'BK.god=true;BK.sim(240);const b=BK.boss,m=BK.movers().find(q=>q.mother&&q.x<b.x);if(b&&m){m.state=\"up\";m.k=1;m.upT=99;m.y=m.y0-m.rise;b.nodeRest=0;b.mode=\"capClapTell\";b.modeT=.05;BK.P.x=m.x-24;BK.P.y=m.y0+8;BK.sim(14);BK.SET.speed=0.02;}'],
 ].filter(s => !only || only.has(s[0]));
 const pg = await openPage();
 try {
