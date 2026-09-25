@@ -126,7 +126,9 @@ const L = lv.build();
 { const R = floodReach(L, T), st = [...R.seen].map(s => s.split(',').map(Number));
   const combat = new Set(['check', 'sign', 'coin', 'deco', 'torch', 'silver', 'key', 'stray', 'npc', 'stal', 'web', 'gate', 'lockgate', 'captive', 'watertrough', 'villagewell', 'mend']);
   const xmax = L.arena.x0 / TS, per = [], flat = [];
-  for (let x = 0; x + 24 <= xmax; x += 24) { per.push(L.ents.filter(e => e.x >= x && e.x < x + 24 && !combat.has(e.t) && !e.boss).length);
+  /* an AMBUSH ROOM is emptied when it is built and its crowd comes with the lock: they are the level's creatures all the same (RULES Q: curve.mjs and levelFoes count them) */
+  const waves = (L.ambushes || []).flatMap(A => A.waves.flat());
+  for (let x = 0; x + 24 <= xmax; x += 24) { per.push(L.ents.filter(e => e.x >= x && e.x < x + 24 && !combat.has(e.t) && !e.boss).length + waves.filter(([, wx]) => wx >= x && wx < x + 24).length);
     flat.push(new Set(st.filter(([sx]) => sx >= x && sx < x + 24).map(([, y]) => y)).size <= 2); }
   const avg = per.reduce((a, b) => a + b, 0) / per.length;
   assert.ok(avg >= 3.5 && avg <= 4.5, 'foes a screen ' + avg.toFixed(2) + ' (the bar is 3.5-4.5): ' + per.join(' '));
@@ -230,7 +232,16 @@ try {
    const G=V.G(),lit=G.cells.filter(c=>c.square&&c.s===2).sort((a,b)=>a.x-b.x);const tgt=lit[0];const b6=B().find(b=>b.kind==='pump');
    let sq=null;if(tgt){V.take(b6);BK.tp(tgt.x-2,tgt.y);BK.P.face=1;hold('right',20);const outNow=tgt.s!==2;for(let i=0;i<360;i++){pm.heat=100;pm.cd=99;pm.calmT=0;pm.mode='stalk';BK.sim(1);}sq={outNow,held:tgt.s!==2&&tgt.s!==1,after8:null};
      for(let i=0;i<240;i++){pm.heat=100;pm.cd=99;pm.calmT=0;BK.sim(1);}sq.after8=tgt.s;}
-   BK.god=false;out.bucket={took,slow:Math.round(slow),cellarOut,open,home,back,spilled,door,fallen,dormer,beam,sq};}
+   BK.god=false;out.bucketDone=true;out.bucket={took,slow:Math.round(slow),cellarOut,open,home,back,spilled,door,fallen,dormer,beam,sq};}
+  /* 9. THE BARN (RULES Q): it shuts on the floor, all four are there at once led by its captain, holding a way out (jumping and
+     rolling at both gates) keeps you in, killing the captain opens it and pays, and a death inside puts it back */
+  {boot('knight');clear();BK.god=true;const A=()=>BK.ambushes()[0];const a0=A();BK.tp(a0.wallL+4,a0.row);BK.P.face=1;for(let i=0;i<30&&!A().st;i++)BK.sim(1);
+   const lock={st:A().st,foes:(A().foes||[]).map(e=>e.t+(e.elite?'*':'')),hpMul:A().leader?+(A().leader.maxHp||0):0};
+   const kept=[];for(const [dir,col] of [['left',a0.wallL],['right',a0.wallR]]){BK.tp(dir==='left'?a0.wallL+2:a0.wallR-2,a0.row);BK.keys[dir]=true;
+     for(let i=0;i<180;i++){if(i%20===0)BK.press('jump');if(i%45===10)BK.press('dodge');BK.sim(1);}BK.keys[dir]=false;kept.push(BK.P.x>a0.wallL*16+8&&BK.P.x<a0.wallR*16);}
+   const c0=BKT.PROG.coins||0,hp0=BK.P.hp;BKT.hurtEnemy(A().leader,99999,A().leader.x-10,false);BK.sim(90);const opened=A().st==='done';
+   boot('knight');clear();const a1=A();BK.tp(a1.wallL+4,a1.row);for(let i=0;i<30&&!A().st;i++)BK.sim(1);const locked2=!!A().st;BK.P.hp=0;BK.damagePlayer(BK.P.x+5,999,{unblockable:true});BK.sim(400);
+   out.barn={lock,kept,opened,locked2,reset:A().st===null||A().st===undefined};BK.god=false;}
   return out;})()`, 600000);
   console.log(JSON.stringify(r));
 
@@ -273,6 +284,11 @@ try {
   assert.ok(K.beam.wet && !K.beam.down && K.beam.y <= 14, 'a doused beam holds a hero standing on it past its fuse: ' + JSON.stringify(K.beam));
   assert.ok(K.sq && K.sq.outNow && K.sq.held, 'the pump\'s bucket puts out a patch of his square and holds it out with his bar at the top: ' + JSON.stringify(K.sq));
   assert.equal(K.sq.after8, 2, 'and after its eight seconds his heat takes it back: ' + JSON.stringify(K.sq));
+  const Bn = r.barn;
+  assert.ok(Bn.lock.st && Bn.lock.foes.length >= 3 && Bn.lock.foes.filter(t => t.endsWith('*')).length === 1 && Bn.lock.foes.includes('brute*'), 'THE BARN shuts with its captain and his crew all there: ' + JSON.stringify(Bn));
+  assert.ok(Bn.kept.every(Boolean), 'jumping and rolling at both gates keeps the hero in the room: ' + JSON.stringify(Bn.kept));
+  assert.ok(Bn.opened, 'killing the captain opens it: ' + JSON.stringify(Bn));
+  assert.ok(Bn.locked2 && Bn.reset, 'a death inside puts it back to lock again: ' + JSON.stringify(Bn));
   assert.deepEqual(pg.errors, []);
   console.log('the burning village keeps its promises.');
 } finally { pg.close(); }

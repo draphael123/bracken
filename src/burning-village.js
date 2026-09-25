@@ -145,17 +145,24 @@ export function buildBurningVillage({ painter, T, TS }) {
   ent('sign', 378, 9, { text: 'THE ROOF IS ALIGHT. STRIKE THE WATER BUTT, THEN DROP THROUGH THE HATCH.' });
   const roofFire = [[385, 9], [386, 9], [387, 9]];              /* a ladder up the barn's near gable onto the roof, and what the roof holds pays for the climb; the far gable stands five rows over it, so the roof is a dead end and never a way round the captain's door */
   interiors.push([323, 397, 12, 25, 'timber']);
+  facades.push([323, 397, 12, 25, 'barn']);          /* its back wall, drawn: the barn read as open sky, and an ambush room has to be a place (RULES Q1) */
   plat(327, 20, 67); net(326, 20, 25); net(394, 20, 25);                       // the hayloft, a ladder at each end
-  plat(340, 16, 41); net(342, 16, 19);                                          // and the upper loft over it
+  /* THE HAY-SCREEN (docs/briefs/burning-village-rework.md §5): a wall of bound hay hung from the rafters at 358, down to the hayloft.
+     The barn's east half is its ambush room, and a gate only rises to the hayloft (ambushWall stops at a floor), so the screen shuts
+     the column from the loft to the roof: nobody leaves the room over the lofts. The upper loft is two lofts either side of it. */
+  block(358, 358, 12, 19);                             /* (inside the barn's own timber interior, so it is drawn as the barn's) */
+  set(358, 20, T.AIR);                                 /* (and the hayloft is cut under it: a board nobody can stand on is a board the audit rightly calls unreached) */
+  plat(340, 16, 18); net(342, 16, 19);                                          // the upper loft west of the screen
+  plat(359, 16, 22); net(376, 16, 19);                                          // and east of it, with its own ladder
   straw(323, 397, S, true); straw(327, 393, 19); straw(340, 380, 15);
   foe('sprig', 331, S);                               /* at the barn door: the rooftops' last screen had nobody in it (the density bar) */
-  ent('sign', 324, S, { text: 'THE BARN IS HAY FROM THE FLOOR TO THE RAFTERS. THE CAPTAIN HOLDS THE FAR DOOR.' });
+  ent('sign', 324, S, { text: 'THE BARN IS HAY FROM THE FLOOR TO THE RAFTERS. THE CAPTAIN AND HIS CREW WAIT PAST THE SCREEN.' });
   ent('check', 341, S);                                /* inside the barn: from the street's last checkpoint to the well yard's is ninety-five columns */
   foe('burngob', 336, S); foe('sprig', 345, S); ent('watertrough', 352, S); foe('burngob', 362, 19); foe('archer', 372, 19);
   foe('emberwisp', 358, 17); foe('sprig', 384, 19);
-  captive(372, 15); ent('silver', 379, 15); coins([346, 15], [352, 15], [358, 15]);
+  captive(372, 15); ent('silver', 379, 15); coins([346, 15], [352, 15], [356, 15]);
   captive(391, S, { hotNear: true });                 // the stall door: hot whenever the hay near it is burning
-  foe('brute', 386, S);                                // THE BARN CAPTAIN (the ELITES row makes him, and his gate)
+  /* THE BARN CAPTAIN leads the barn's ambush now (level.js AMBUSH.burning): the room is emptied when it is built and he comes with it */
   coins([330, 19], [338, 19], [366, 19], [380, 19]);
 
   // ---- 5. THE WELL YARD ----

@@ -16601,6 +16601,7 @@ function drawBurningTown(cx, cy) {
     if (lit >= 2) { const fx = x + w / 2, fy = y - peak + 2; for (let q = 0; q < 3; q++) { const fh = 8 + Math.round(Math.sin(time * 9 + k * 3 + q) * 3) + q * 2; g.fillStyle = q === 0 ? '#ffd36b' : q === 1 ? '#ff9a3c' : '#ff5a1c'; g.fillRect(Math.round(fx - 5 + q * 3 - 3), fy - fh, 5, fh); } }   /* the thatch burning */
     if ((k * 3) % 4 === 1 || (VG.heat || 0) > 0.5 && (k * 3) % 4 === 3) drawPixelSmoke(g, x + w / 2, y - peak - 10, time, k, VG.heat || 0);   /* pixel smoke, thicker as the fire grows */
   }
+  drawFacades(cx, cy);   /* THE VILLAGE'S OWN WALLS, over the town behind it: drawFacades runs before this backdrop, so the burning fronts and the barn's back wall were painted over by the sky (burning village rework, 2026-09-25) */
 }
 function updateVillage(dt) {
   updateUnburied(dt); updateCaravan(dt);
@@ -22497,10 +22498,21 @@ function bakeRoof(h) { const x0 = h.x0 - 1, x1 = h.x1 + 1, w = (x1 - x0 + 1) * T
 function drawRoofs(cx, cy) { for (const h of (L.houses || [])) { const x = (h.x0 - 1) * TS - 2 - cx, y = (h.y0 - 3) * TS - cy; if (x > VW || x + (h.x1 - h.x0 + 4) * TS < 0) continue; if (!h.roof) h.roof = h.tiles ? TWN.bakeTileRoof(h) : bakeRoof(h); g.drawImage(h.roof, Math.round(x), Math.round(y)); } }
 /* THE CASTLE BEHIND THE PLAY. L.facades: [x0, x1, y0, y1, kind, opts] in tiles, each a wall face baked once
    (crown_tiles.js bakeFacade) and drawn locked to the world, behind the rooms and the tiles. A burning one breathes. */
+/* THE BARN'S BACK WALL (burning village rework, 2026-09-25): upright boards, a post and a cross-brace every seven tiles, a row of
+   hay bales along the foot, and a hot seam of light where the boards have burned through. The barn was drawn as open sky */
+function bakeBarnWall(tw, th, seed) { const W = tw * TS, H = th * TS, rnd = mulberry(seed * 7 + 3), [c, q] = canvas(W, H);
+  q.fillStyle = '#2e1e14'; q.fillRect(0, 0, W, H);
+  for (let x = 0; x < W; x += 6) { q.fillStyle = (x / 6) % 2 ? '#3a2618' : '#34221a'; q.fillRect(x, 0, 5, H); q.fillStyle = '#22160e'; q.fillRect(x + 5, 0, 1, H); }
+  for (let x = 0; x < W; x += 7 * TS) { q.fillStyle = '#4a3222'; q.fillRect(x, 0, 6, H); q.fillStyle = '#5c3e28'; q.fillRect(x, 0, 2, H);
+    for (let k = 0; k < 7 * TS; k++) { const y = Math.round(H * 0.15 + k * (H * 0.6) / (7 * TS)); q.fillStyle = '#4a3222'; q.fillRect(x + k, y, 2, 3); } }
+  for (let x = 0; x < W; x += 22) { const y = H - 14 + Math.floor(rnd() * 3); q.fillStyle = '#8a7340'; q.fillRect(x, y, 20, H - y); q.fillStyle = '#b09256'; q.fillRect(x, y, 20, 2); q.fillStyle = '#6a5a30'; q.fillRect(x + 6, y + 3, 1, H - y - 3); q.fillRect(x + 13, y + 3, 1, H - y - 3); }
+  for (let k = 0; k < Math.max(2, tw / 12); k++) { const x = Math.floor(rnd() * (W - 20)), y = Math.floor(H * 0.2 + rnd() * H * 0.45); q.fillStyle = '#ff7a2c'; q.fillRect(x, y, 1, 8 + Math.floor(rnd() * 10)); q.fillStyle = '#7a2a14'; q.fillRect(x + 1, y + 2, 1, 6); }
+  return c; }
 function drawFacades(cx, cy) {
   for (const f of (L.facades || [])) { const [x0, x1, y0, y1, kind, o] = f;
     const sx = Math.round(x0 * TS - cx), sy = Math.round(y0 * TS - cy), w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
     if (sx > VW || sx + w < 0 || sy > VH || sy + h < 0) continue;
+    if (!f.spr && kind === 'barn') f.spr = bakeBarnWall(x1 - x0 + 1, y1 - y0 + 1, x0);   /* THE BURNING VILLAGE's barn: its back wall, so its ambush is a PLACE (RULES Q1) */
     if (!f.spr) f.spr = (String(kind).startsWith('monk') ? MON.bakeFacade : CRT.bakeFacade)(kind, x1 - x0 + 1, y1 - y0 + 1, x0 * 131 + y0 * 7, Object.assign({}, o || {}, o && o.arch ? { arch: [o.arch[0] - y0, o.arch[1] - y0] } : {}));
     g.drawImage(f.spr, sx, sy);
     if (kind === 'burning') { g.globalAlpha = 0.045 + 0.03 * Math.sin(time * 7 + x0) + 0.015 * Math.sin(time * 17 + y0); g.fillStyle = '#ff8a3c'; g.fillRect(Math.max(0, sx), Math.max(0, sy + (h >> 2)), Math.min(VW, sx + w) - Math.max(0, sx), h - (h >> 2)); g.globalAlpha = 1; }
