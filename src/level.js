@@ -3355,7 +3355,7 @@ function highcrownWhole() {
     block(X, X + 1, 20, 25); block(X + 2, X + 3, 22, 25); block(X + 4, X + 5, 24, 25);   // the chapel door's landing, and three steps down into the hall
     block(X, X + 43, 8, 9); block(X + 42, X + 43, 10, 19);                   // the hall's roof, and its east wall over the door to the leads
     block(X + 32, X + 39, 24, 25);                                             // the high table's dais
-    ent('sign', X + 1, 19, { text: 'HER BANQUET HALL. CUT A CHANDELIER DOWN ON WHOEVER IS UNDER IT.' });
+    ent('sign', X + 1, 19, { text: 'HER BANQUET HALL, AND HER CAPTAIN AT THE HIGH TABLE. CUT A CHANDELIER DOWN ON HIS GUARD.' });
     ent('deco', X + 12, 25, { kind: 'longTable', v: 0 }); ent('deco', X + 23, 25, { kind: 'longTable', v: 1 });
     ent('deco', X + 34, 23, { kind: 'candelabra' }); ent('deco', X + 38, 23, { kind: 'candelabra' }); ent('deco', X + 8, 25, { kind: 'caskRack' });
     for (const x of [X + 14, X + 25]) ent('weight', x, 10, { len: 12, lamp: true, hang: true });   /* hung to a jump's cut over the floor (row 22): a lamp on the dais would be at the head of anyone stood on it */
@@ -7757,6 +7757,15 @@ const AMBUSH = {
     waves: [[['scout', 486], ['scout', 514], ['wight', 500], ['crab', 492]], [['tideguard', 506], ['scout', 514], ['watch', 488], ['snuffer', 498]]] }],
   waymeet: [{ name: 'THE MARKET HALL', row: 35, wallL: 95, wallR: 123, check: [91, 35],
     waves: [[['swornsword', 100], ['runner', 118], ['swornsword', 110], ['hedgeknight', 114]], [['swornsword', 112], ['crossbow', 119], ['swornsword', 100], ['hedgeknight', 106]]] }],
+  /* THE BANQUET HALL (docs/briefs/highcrown-bells.md): her captain at the high table and his guard sat down to eat, and both doors
+     drop behind you. A hall sixteen rows high with two chandeliers on long chains over the floor: the room's own machinery, cut
+     down on whoever is under it. Led by THE GOBLIN CAPTAIN (a brute, the kitchen's kind): the storm's room is a pike's and the Long
+     Water's a tideguard's, and a heavy would be THE KING'S CHAMPION, whom the siege yard already has. Not the Captains Hall next
+     door: its balcony goblins are its own tested encounter (tools/gallery-runtime.mjs), and a room is emptied when it is built.
+     The west gate stands on the floor at the foot of the steps down from the Captains Hall; the east is the door to the leads.
+     The door checkpoint is the Captains Hall's east end, clear of the sign on the landing. */
+  crown: [{ name: 'THE BANQUET HALL', row: 25, wallL: 816, wallR: 852, check: [809, 19],
+    waves: [[['brute', 838, null, { elite: true }], ['soldier', 826], ['hearthgob', 830], ['javelin', 846, 23]]] }],
 };
 /* THE ROOM'S OWN MACHINERY STAYS: a firepit, a hanging ram or a rockfall is a hazard to knock them into, not a creature */
 const AMB_KEEP = new Set(['rockfall', 'catapult', 'towertop', 'dropcage', 'firepit', 'firevent', 'hotplate', 'hammer', 'skybolt', 'sweep', 'bale', 'ram', 'gas', 'timber', 'minerlamp', 'ballast']);

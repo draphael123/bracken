@@ -57,25 +57,34 @@ had a `section: 'works'` and a sign saying "everything below here can hear it" s
 never an alarm. It is wired the same way: rung, the gallery's end (85, rows 30-33, rock over it) drops shut over the
 shaft down, and the works come up it - a miner, a rock goblin and a sprig. Twenty seconds at most, like the rest.
 
-## THE AMBUSH ROOM (rule Q): THE CAPTAINS HALL
+## THE AMBUSH ROOM (rule Q): THE BANQUET HALL
 
-The review asked for one in the Outer Ward or the Captains Hall. **The Captains Hall** (762-809, floor row 19, a
-vaulted hall ten rows high with three balconies and three unstable lamps): it already reads as a place to be jumped,
-and the ward already carries the barracks bell, the road picket and the key fight - a fourth thing there would be the
-same lesson again.
+The review asked for one in the Outer Ward or the Captains Hall. **Neither, and why:**
+- **The Outer Ward** comes straight after the siege yard's elite (THE KING'S CHAMPION, 208), which would put the room
+  back to back with an elite (Q2). It also already carries the barracks bell, the road picket and the key fight, so a
+  fourth thing there would teach the same lesson again.
+- **The Captains Hall** (762-809) was the first choice. But its three balcony goblins are its own tested
+  encounter (`tools/gallery-runtime.mjs` wants all three), and `ambushRooms` empties a room of its creatures when it
+  is built.
 
-- **Gates 764 and 808** (44 tiles between, Q1), each ten rows to the vault. The door checkpoint is the chapel's (756),
-  outside the brass gate; the one at 764 inside the room is removed by `ambushRooms`.
-- **The captain: THE GOBLIN CAPTAIN** (`brute`, elite, its own moves). The storm's room is led by a pike and the Long
-  Water's by a tideguard, so adjacent rooms keep different captains (Q3). The brute is Highcrown's own (the kitchen's).
+**The banquet hall next door** (810-853; floor row 25; the vault is sixteen rows high; the high table stands on a dais
+at 842-849). It is a place, not a corridor. It has two chandeliers on long chains over its floor ("cut one down on
+whoever is under it"): these are the room's own machinery for knocking the crowd into. The story: when the bells ring,
+her captain and his guard are sitting down to eat.
+
+- **Gates 816 and 852** (36 tiles apart, Q1). West: on the floor at the foot of the steps down from the Captains Hall,
+  ten rows high. East: the door to the leads, under the hall's east wall.
+- **Door checkpoint 809,19**, at the Captains Hall's east end. It is outside the walls and clear of the sign on the landing.
+- **The captain: THE GOBLIN CAPTAIN** (`brute`, elite, with its own moves). Storm's room is led by a pike and the Long
+  Water's by a tideguard, so this is a different captain from both neighbours (Q3). The brute is Highcrown's own kind
+  (the kitchen's).
   A heavy was considered and rejected: its elite name is THE KING'S CHAMPION, which Highcrown's siege-yard elite
-  already carries, so the level would name two different men the same (E7).
-- **The crowd:** a soldier and a javelin on the floor, a javelin on a balcony - three, the roster's own.
-- **The lamps stay** (`unstable` weights are machinery, not creatures): knock the crowd under them.
-- **Measured with `BK.ambushLab`**, all six heroes, against Q's 15-35 s; `AMBUSH_HEALTH.crown` sets the captain's
-  budget if the room runs long or short. `ambush-reach` and `ambush-single` green.
-- Not back to back with an elite (Highcrown's are at 208 and 710) and not in a boss or mini room. The banquet hall and
-  the leads stand between it and the Queen.
+  already carries, so the level would give two different men the same name (E7).
+- **The crowd:** a soldier and a cook on the floor, and a javelin on the dais. That is three, all from the roster.
+- **Measured with `BK.ambushLab`** (all six heroes, three runs each), against Q's 15-35 s. `AMBUSH_HEALTH.crown` is
+  2.6: at 1 the room took 4-14 s, and at 3 two runs ran past 38 s.
+- It is not back to back with an elite (Highcrown's are at 208 and 710) and it is not in a boss or mini room. The leads
+  stand between it and the Queen.
 
 ## And from the review's list (what the level-fix lane did not already do)
 
@@ -86,7 +95,7 @@ same lesson again.
   tile box, so the next level that grows after its calm is written cannot drift.
 - **The Temperer brief** still says "Nothing is built": it is built (`tools/temperer.mjs`).
 - **The ELITES comment** says the Leads' alarm gate is at 792; it is at 880.
-- **Checkpoints bunched** at 756/764: the ambush room takes 764 out.
+- **Checkpoints bunched** at 756/764: 764 goes, now that the banquet room has its door checkpoint at 809.
 
 Not done here, and why: the Forgemaster's dark armoury (art, and his room is the polish lane's); the ten loot heaps
 (dressing counts, a question for Daniel).
