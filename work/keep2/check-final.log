@@ -1,0 +1,59 @@
+
+> check
+> node tools/check.mjs keep,keep-runtime,keep-expansion,keep-passages,keep-expansion-runtime,keep-rework,drowned-knights,whirlpools,breath,swim-chain,swim-shrines,sea-runtime,deadly-water,one-new-foe,tells,elites,spawns,floaters,architecture,audit,content-audit,traps,killzones,collectables,deadends,checkpoints,checkpoint-gaps,signs,textfit,dressing,skins,map-grammar,threat-holes,ambush-single,ambush-reach,mini-names,boss-openings,boss-fight-end,arena-supplies,readability,footing-art,comments,homepaths,dangling-paths,keys,slopes,burial-variety,gob-priest,levelling-runtime,ability-poses
+
+ ok  syntax             0ms  0 files parse
+ ok  tells            565ms  the mark over every windup on the screen comes from this table (src/marks.js, 539 rows).
+ ok  comments         171ms  no swallowed code found.
+ ok  homepaths        223ms  ok  homepaths     461 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths   307ms  ok  dangling-paths 1898 tracked files, every repo path they cite resolves in a fresh clone (6 known holes list
+ ok  floaters        3804ms  2782 standing things checked (48 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  audit           7181ms  == caravan (547x40) clean
+ ok  content-audit  15015ms  19 things to look at.
+ ok  traps          21612ms  1 trap to fix.
+ ok  signs          12612ms  no level says the same sentence on two signs (1 known).
+ ok  killzones       8941ms  no reachable tile kills a standing hero.
+ ok  collectables    8950ms  every pickup can be picked up from some ground.
+ ok  keys           14403ms  5 levels with lock gates flooded key by key. every key comes before its gate.
+ ok  elites         13887ms  40 elites. every elite can be fought and every gate it holds opens onto the route.
+ ok  spawns          4620ms  2328 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  deadends        8047ms  175 dead ends in 32 levels, and every one pays.
+ ok  map-grammar      239ms  The map grammar holds: no retraced road, required nodes resolve forward, the margin and spur bands hold, every
+ ok  checkpoints    10102ms  422 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  keep            1959ms  Deep/Keep crop metadata, tribute, rewards, arrival air, campaign order, four crab attacks and counters, two Be
+ ok  keep-runtime   31133ms  Deep crab and Keep king activate, attacks resolve, both defeats finish their stages, and Keep music decodes.
+ ok  keep-expansion  3383ms  Keep triples width and scoped breath; air refuges, sluices and ballast exist; no Vault Keeper; two dry halls w
+ ok  keep-passages  24213ms  Keep narrows: approach 560 tiles, 57% of the new stretch is passage (hall median 35), 8 siphons, 6 blights, 8 
+ ok  keep-expansion-runtime 33797ms  [{"h":"knight","breath":18,"refill":true,"verticalSwim":true},{"h":"warden","breath":18,"refill":true,"vertica
+ ok  skins          13548ms  ok  roofs          38 houses: every roof picture sits on the slab you stand on.
+ ok  threat-holes    3850ms  ok  threat-holes   165 creature kinds placed across 44 levels, every one weighed. Deliberately 0: dummy, folk,
+ ok  one-new-foe     4071ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  deadly-water    7664ms  21 harmful pools; deadly (and marked): fallingtower@21 TRAP deadly, fallingtower@26 TRAP deadly, fallingtower@
+ ok  sea-runtime    36682ms  Kraken final blow: reflected water, bell and cargo all trigger defeat.
+ ok  dressing       13854ms  no sprinkled decoration within three tiles of a fire on the floor.
+ ok  readability      435ms  Scenery behind tiles, softened outline-free art, wall-grip feedback, 13 homes and two landmarks.
+ ok  boss-openings  56808ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":
+ ok  arena-supplies  5422ms  ok  arena-supplies  46 boss rooms, 13 height conditions scored against the ground their arenas actually offer;
+ ok  ambush-single   5356ms  25 single-wave rooms: one captain, 2-4 minions, immediate roster, named lock and leader-only clear.
+ ok  swim-chain     34300ms  [{"hero":"knight","began":{"swim":true,"plunge":true,"chain":1,"st":72},"ended":{"swim":true,"plunge":false,"c
+ ok  ability-poses 179514ms  ability poses: 52 of 52 actives have a body of their own; known debt 0
+ ok  levelling-runtime517545ms  Levelling runtime: 3100 passive reads through tal() on from their level with nothing owned or slotted; the PAS
+ ok  boss-fight-end211372ms  Every one of 46 boss and mini fights (32 bosses, 14 minis) ends when its boss dies.
+ ok  burial-variety 42036ms  burial variety: two dark places lamp to lamp, two rotten spans that crack, drop, come back and never cut the r
+ ok  mini-names     62517ms  every mini has its own name (14 levels): kings=THE GREAT HOUND, hanging=THE WEAVER, spire=THE TEMPLE GUARDIAN,
+ ok  slopes         11197ms  slopes: all passed
+ ok  ambush-reach    5765ms  25 ambush rooms. every captain can be reached from where the room shuts.
+ ok  swim-shrines   10344ms  swim-shrines: 15 underwater shrines in 4 levels; every one the swum route crosses, it lights (5 not on it).
+ ok  checkpoint-gaps 11728ms  checkpoint-gaps  32 levels measured along their walked route; the longest run with no checkpoint outside the k
+ ok  architecture   12921ms  44 levels, 283 built pieces declared; 3 grandfathered (harbor, waymeet, unburied). everything that was built s
+ ok  gob-priest      1779ms  ok  gob-priest     the rite (quiet, broken by any blow), the censer (!, a lob onto your ring) and the bell (!,
+ ok  footing-art    65200ms  footing-art: every floor cell you can stand on is drawn, in 27 levels; painted by their own code: fields (fiel
+ ok  drowned-knights 24470ms  drowned-knights  {"drownedknight chase":69,"drownedcaptain chase":76,"combo":"two cuts, told"}  page: {"clippe
+ ok  whirlpools     30314ms  whirlpools  module: pull, drain, the niche lit on entry, the lever, the wind-down, kept through a respawn; pag
+ ok  keep-rework     3013ms  keep-rework  no Leadfoot, no Vault Keeper; 8 walls, 8 landmarks; 4 whirlpools (2 guarding air, 2 beside a knig
+ ok  slopes-trace   27567ms  slopes-trace: every frame of every level identical to the pre-slopes build
+ ok  textfit       186962ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-keep2\audits\readability\textfit
+
+51 of 156 checks pass - A SUBSET (keep, keep-runtime, keep-expansion, keep-passages, keep-expansion-runtime, keep-rework, drowned-knights, whirlpools, breath, swim-chain, swim-shrines, sea-runtime, deadly-water, one-new-foe, tells, elites, spawns, floaters, architecture, audit, content-audit, traps, killzones, collectables, deadends, checkpoints, checkpoint-gaps, signs, textfit, dressing, skins, map-grammar, threat-holes, ambush-single, ambush-reach, mini-names, boss-openings, boss-fight-end, arena-supplies, readability, footing-art, comments, homepaths, dangling-paths, keys, slopes, burial-variety, gob-priest, levelling-runtime, ability-poses), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.
+EXIT 0
