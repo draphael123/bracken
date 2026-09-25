@@ -2011,7 +2011,7 @@ function theMonastery() {
   ent('abbot', 72, 29);   /* THE FALSE ABBOT, at the far end of the ringing floor: the great bell is at 56, and getting him under it is the fight */
   // the last hop to the gate is over the thorns on two stones set on a pillar
   plat(79, 29, 5); block(85, 87, 27, 27); block(89, 91, 27, 27); block(87, 87, 28, 29);
-  ent('check', 18, 29); ent('gate', 92, 29);
+  ent('gate', 92, 29);   /* (no checkpoint on the ringing floor: 18,29 stood inside the Abbot's walls, B6; the one at 12,35 is the door) */
   ent('silver', 90, 26);
   ent('stray', 38, 29, { kind: 'bead' });
   // the crawl under the roof ends in a hollow either side, and the second chimney comes up into the right one
@@ -2205,7 +2205,7 @@ function stormhold() {
   // the bridgehead: the one column between the bone gate and the first pier was open to the gorge, and
   // anyone who walked through the gate without jumping fell out of the world on the way to the fight
   block(301, 301, BY, 45);
-  ent('check', 304, BY - 1);
+  /* (no checkpoint on the bridgehead: 304 stood inside the Lance's walls, B6 - 296 is outside the bone gate) */
   ent('sign', 302, BY - 1, { text: 'THE QUEEN\'S LANCE CANNOT TURN MID-CHARGE. STAND ON A LOOKOUT AND LET HIM PASS.' });
   const piers = [];
   for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4;
@@ -3382,7 +3382,7 @@ function highcrownWhole() {
   { const X=470, n=40, F=grow(R,R,X,n); shiftCrown(F.R,X,n);
     F.block(X,X+n-1,64,F.R.H-1); F.block(X,X+n-1,46,49);
     F.R.interiors.push([X,X+n-1,50,63,'forge']); F.R.masonry.push([X,X+n-1,46,49],[X,X+n-1,64,66]);
-    F.ent('check',X+2,63); F.ent('sign',X+3,63,{text:'THE FURNACE LINE. CROSS THE HOT PLATES BETWEEN THEIR BURSTS.'});
+    F.ent('sign',X+3,63,{text:'THE FURNACE LINE. CROSS THE HOT PLATES BETWEEN THEIR BURSTS.'});   /* (its checkpoint at X+2 went: this line was grown in behind the Forgemaster's west wall, so it stood inside his room, B6 - the armoury door's at 465 is seven columns back) */
     for(const dx of [12,24,33]) { F.ent('hotplate',X+dx,63); F.ent('deco',X+dx-3,63,{kind:'barrels'}); }
     for(const dx of [7,19,36]) F.ent('torch',X+dx,63);
     F.ent('hearthgob',X+17,63,{face:-1}); F.ent('heavy',X+29,63,{face:-1});
@@ -4552,7 +4552,7 @@ function theFlotilla() {
   for (const x of [252, 264, 276, 288, 316, 330]) ent('deco', x, 24, { kind: 'gunport', v: x % 2 });
   ent('deco', 246, 21, { kind: 'figurehead' }); ent('deco', 292, 18, { kind: 'wheel' });   /* on the deck: 296,21 was inside the quarterdeck */
   ent('deco', 244, 21, { kind: 'boardingNet' });
-  ent('check', 254, 21); ent('check', 304, 15); ent('silver', 300, 26);
+  ent('check', 254, 21); ent('silver', 300, 26);   /* (304,15 went: it was inside the Quartermaster's walls and PAST her trigger, B6's own case - 254 is outside) */
 
   coins([258, 21], [266, 21], [274, 21], [282, 21], [290, 21]);
   coins([252, 26], [266, 26], [278, 26], [296, 26]);
@@ -7451,13 +7451,21 @@ function checkpoints(L) {
       // Sunspire and this one never heard about it.)
       if (!stand(at(x - 1, y + 1)) && !stand(at(x + 1, y + 1))) continue;
       if (wet(x, y) || rooms.some(([a2, b2, c2, d2]) => x >= a2 && x <= b2 && (c2 === undefined || (y >= c2 && y <= d2)))) continue;
+      if (fly && x > fly[0] && x < fly[1]) continue;   /* never on the ride (A RIDE IS NOT A RUN, below) */
       const d = Math.abs((tall ? y : x) - want); if (d < bd) { bd = d; best = [x, y]; }
     }
     return bd < MAXRUN ? best : null;   /* the nearest ground that will hold one, even if it is most of a run away */
   };
   const marks = ch.map(key);
   const runs = [];
-  for (let i = 1; i < marks.length; i++) if (marks[i] - marks[i - 1] > MAXRUN) runs.push([marks[i - 1], marks[i]]);
+  /* A RIDE IS NOT A RUN. Gale Moor's kite carries you from its post to the Windcaller's ledge and never lets you stand,
+     so this filled the two hundred columns under it with two shrines on spire tops (level review, 2026-09-24) - which a
+     kite rider lit in passing, and a death after that stood you back up on a two-tile spire over spikes with no kite:
+     a soft-lock. The builder had taken the old ones out by hand (search "stood under the Sky Road") and this put them
+     back. The flight's own columns do not count toward a run and nothing is put in them; tools/checkpoints.mjs holds it. */
+  const fly = L.flight ? [Math.min(L.flight.x1, ...(L.ents || []).filter(e => e.t === 'stormkite').map(e => e.x)), L.flight.x1] : null;
+  const walked = (a2, b2) => (b2 - a2) - (fly && !tall ? Math.max(0, Math.min(b2, fly[1]) - Math.max(a2, fly[0])) : 0);
+  for (let i = 1; i < marks.length; i++) if (walked(marks[i - 1], marks[i]) > MAXRUN) runs.push([marks[i - 1], marks[i]]);
   if (marks.length && marks[0] > MAXRUN) runs.push([0, marks[0]]);
   const put = [];
   for (const [a2, b2] of runs) { const n = Math.ceil((b2 - a2) / MAXRUN);
