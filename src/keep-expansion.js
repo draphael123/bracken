@@ -25,7 +25,7 @@ export function expandKeep(R,T,TS,crop){
  const H1=KEEP_HALLS[0],H2=KEEP_HALLS[1];
  pool(0,H1.x0,23,true);pool(H1.x0,H1.x1+1,H1.floor,false);pool(H1.x1+1,H2.x0,23,true);pool(H2.x0,H2.x1+1,H2.floor,false);pool(H2.x1+1,N,23,true);
  // The bubbles are reliable resting places, not consumable charges - and fewer of them than there were (S6: the meter squeezes)
- for(const [x,y]of [[4,58],[60,58],[124,58],[259,58],[398,58]])ent('check',x,y);   /* and the two halls' (194, 326) and the exam's (634): S4, no two under forty route tiles apart */
+ for(const [x,y]of [[4,58],[60,58],[124,58],[398,58]])ent('check',x,y);   /* and the two halls' (194, 326) and the exam's (634): S4, no two under forty route tiles apart */
  for(const x of [4,52,124,248,316,388]){K.airRooms.push([x,x+3,53,58]);D.pockets.push([x,x+3,53,58]);D.vents.push({x:x+1,y:58,h:7,hot:false,drain:false});}
  const sign=(x,text,y=58)=>ent('sign',x,y,{text});
  sign(6,'THE DROWNED KEEP. THREE TIMES THE BREATH HERE. FOLLOW BUBBLES TO SAFE AIR.');
@@ -81,7 +81,7 @@ export function expandKeep(R,T,TS,crop){
  for(const x of [238,258]){box(x,x,36,58,T.PORT);D.gates.push({col:x,y0:36,y1:58,wheel:[x-5,58]});D.props.push({k:'brazier',x:x-8,y:58});}
  K.siphons.push({x:228,y:59});grate(255,59,1.5);   /* three blows on the wheel while a drain drinks you; a grate by the second */
  K.ents.push(drownedKnight(236,54));   /* S1: at the first wheel - you stand still to strike it three times, and he lunges */
- ent('check',259,58);
+ ent('check',262,58);   /* CLEAR OF THE GATE: a shrine is 20 px wide, and at 259 its left half stood in the second sluice gate's column (258, PORT from row 36): the picture ran 35 px through the portcullis (node tools/headless.mjs floats) */
  mark('wheel',247,58,'keepSluice');
 
  // ---- 6. THE THERMAL CISTERN (271-320). Ride the heat, carry the stone ----
@@ -120,7 +120,7 @@ export function expandKeep(R,T,TS,crop){
  sections.splice(3,0,[H1.name,H1.x0,H1.x1]);sections.splice(6,0,[H2.name,H2.x0,H2.x1]);
  const narrows=buildKeepNarrows(K,T,N,ent);sections.push(...narrows);
  for(const [name,a,b,col,al]of narrows){D.zones.push({name,x0:a,x1:b,y0:24,y1:58,col,a:al});K.interiors.push([a,b,24,58,'drowned']);D.noDress.push([a,b,24,58]);}
- for(const [t,x,y]of [['eel',35,39],['angler',55,54],['manta',127,34],['puffer',90,43],['jelly',140,41],['eel',150,47],['angler',180,30],['merrowspear',232,58],['merrowcaller',264,58],['puffer',276,38],['manta',290,30],['eel',317,40],['jelly',356,34],['jelly',380,50],['merrowbrute',390,58]])ent(t,x,y,{face:-1});
+ for(const [t,x,y]of [['eel',35,39],['angler',55,54],['manta',127,34],['puffer',90,43],['jelly',140,41],['eel',150,47],['angler',180,30],['merrowspear',232,58],['merrowcaller',267,58],['puffer',276,38],['manta',290,30],['eel',317,40],['jelly',356,34],['jelly',380,50],['merrowbrute',390,58]])ent(t,x,y,{face:-1});
  for(let x=12;x<399;x+=8){let y=51;while(y>26&&K.grid[y*K.W+x]!==T.AIR)y--;if(K.grid[y*K.W+x]===T.AIR)ent('coin',x,y);}
  for(const x of [16,64,92,134,262,376])D.props.push({k:'statue',x,y:58,v:x%2});
  for(const x of [12,56,127,136,256,360])D.shafts.push({x,y0:24,y1:58,w:4,lean:.1});
