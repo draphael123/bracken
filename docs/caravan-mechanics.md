@@ -13,6 +13,8 @@ preview `docs/desert-art.png` (`node tools/desert-art.mjs`).
   `zones = shadeZones(L)` once at load, from `wagon`/`awning` ents (spans in `SHADE_OF`, the same pixels the art
   paints violet) and `L.shade` rects.
 - Numbers: swim starts at 5.0 s of open sun, the first damage at 9.7 s (a 4.7 s warning); 1.2 s of shade resets it.
+  **Since 2026-09-25** (`docs/briefs/caravan-ruins-bandits.md`): full in 6 s, the swim at 3.3 s, the first damage at 6.5 s, and at
+  full it BUILDS - 3, then 5, then 8 a second - until shade takes it off full; the level rule is a 5 s walk.
   The level rule is `SUN.maxWalk` = 7.5 s: no stretch of the road longer than that without shade. `sunStretches(route, isShaded)`
   gives the level tool its numbers. DONE, under another name: the level tool is `tools/caravan-level.mjs`, and it does
   fail the road over `SUN.maxWalk` (verified 2026-09-23 by lowering the rule to 3 s and watching it fail on the 7.3 s

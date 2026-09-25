@@ -22,7 +22,10 @@ try {
   for(let i=0;i<200&&(b.mode==='wake'||!b.st);i++)BK.sim(1);
   const W=b.st,w=BK.caravan().winches.find(q=>q.hollow);
   /* A3: each attack forced from the chain's own index, a hero (not god) standing where it lands */
-  const force=(idx,what,stand)=>{BK.god=false;P.hp=P.maxHp;P.dead=0;P.inv=0;w.out=w.k=0;W.mode='under';W.t=0;W.i=idx;W.order=['spit','lunge','swallow'];W.ripples=[];let tell=null,mark=null,heard=false,blow=null,hp0=P.hp,took=0;
+  /* EACH TEST STARTS COOL: the sun keeps working in the hollow (its own test is below), and since it fills in 6 s and BUILDS at full
+     (2026-09-25) the sunstroke taken over the forced attacks before a test was being counted as that test's blow - the breach's C1
+     read 4 damage "one step off the spot" that was the sun's. P.sun is put back to cool where each test starts, so each measures its own blow */
+  const force=(idx,what,stand)=>{BK.god=false;P.hp=P.maxHp;P.dead=0;P.inv=0;P.sun={v:0};w.out=w.k=0;W.mode='under';W.t=0;W.i=idx;W.order=['spit','lunge','swallow'];W.ripples=[];let tell=null,mark=null,heard=false,blow=null,hp0=P.hp,took=0;
     for(let f=0;f<60*5;f++){P.inv=0;const tx=stand();if(tx!==null){P.x=tx;P.y=A.floor;P.vx=0;}const before=P.hp;BK.sim(1);took+=Math.max(0,before-P.hp);P.hp=Math.max(P.hp,40);
       if(/Tell$/.test(b.mode)&&!tell){tell=b.mode;mark=BK.markOf(b);heard=BK.telling(b);}
       if(tell&&!/Tell$/.test(b.mode)&&!blow)blow=b.mode;
@@ -33,7 +36,7 @@ try {
   out.lunge=force(3,'lunge',()=>W.mode==='lunge'||W.mode==='lungeTell'?W.lungeTo:A.x0+300);
   out.swallow=force(5,'swallow',()=>W.pit?W.pit.x:A.x0+250);
   /* C1: one step off the locked spot and the breach does not touch you */
-  {BK.god=false;P.hp=P.maxHp;P.dead=0;W.mode='under';W.t=0;W.i=0;W.ripples=[];let took=0,left=false;
+  {BK.god=false;P.hp=P.maxHp;P.dead=0;P.sun={v:0};W.mode='under';W.t=0;W.i=0;W.ripples=[];let took=0,left=false;
    for(let f=0;f<60*3&&W.mode!=='surfaced';f++){P.inv=0;if(!left){P.x=A.x0+220;P.y=A.floor;}if(!left&&W.ripples.some(q=>q.real&&q.commit)){left=true;P.x=A.x0+220+40;}const h0=P.hp;BK.sim(1);took+=Math.max(0,h0-P.hp);}
    out.offSpot={took};BK.god=true;}
   /* THE SUN in phase one: open sand builds it; under the rolled-out shade it does not */
