@@ -4392,23 +4392,24 @@ function longWater() {
   // ---- 1b. THE LINN: the last terrace pours into a deep pool, and river stones stand out of it ----
   { const { block, ent, coins, set } = G2, R = G2.R;
     R.calm.push([128, 167, 18, 39]);                                             // placed by hand: the sprinkler stood a scout on a river stone
-    block(128, 147, 38, H - 1);                                                  // the bed of the linn, eight rows under its surface
-    R.pools.push({ x0: 128 * TS, x1: 148 * TS, y: 30 * TS + 4, shallow: false, swim: true, clear: true, bottom: 38 * TS });
+    block(128, 150, 38, H - 1);                                                  // the bed of the linn, eight rows under its surface
+    R.pools.push({ x0: 128 * TS, x1: 151 * TS, y: 30 * TS + 4, shallow: false, swim: true, clear: true, bottom: 38 * TS });
     R.falls.push({ x0: 128 * TS - 6, x1: 128 * TS + 20, y0: 28 * TS + 1, y1: 30 * TS + 6 });   // off the terrace's lip into it
-    /* THE STONES, the dry way over (RULES S2, 2026-09-25): a real jump is about 3.2 tiles, so the two leaps DOWN a row are three tiles
-       (the most the main road may ask) and the steps back UP are two. A miss is the linn: eight rows of water, its eel, and the climb out
-       under a harpoon. The scout on the far lip covers every hop (S1). */
-    for (const [x, top] of [[131, 29], [135, 28], [140, 29], [144, 28]]) block(x, x + 1, top, 37);
-    ent('eel', 138, 35); ent('scout', 149, 27, { face: -1 });
-    coins([128, 37], [129, 37], [133, 37], [134, 37], [138, 37], [139, 37], [142, 37], [147, 37]);   // the hard road: a dive for eight on the bed, past the eel (S7)
-    coins([132, 27], [136, 26], [141, 27], [145, 26]);
+    /* THE STONES, the dry way over (RULES S2, 2026-09-25): five leaps of three tiles, the most the main road may ask (a real jump is
+       about 3.2), down a row, up a row, and level onto the bank. Every one was made by all six heroes in the page, jumping from the
+       edge; jump early and you are in the linn: eight rows of water, its eel, and the climb out onto the next stone under a harpoon.
+       The scout on the far lip covers every hop (S1). */
+    for (const [x, top] of [[131, 29], [136, 28], [141, 29], [146, 28]]) block(x, x + 1, top, 37);
+    ent('eel', 139, 35); ent('scout', 152, 27, { face: -1 });
+    coins([129, 37], [130, 37], [134, 37], [135, 37], [139, 37], [140, 37], [144, 37], [149, 37]);   // the hard road: a dive for eight on the bed, past the eel (S7)
+    coins([132, 27], [137, 26], [142, 27], [147, 26]);
     // the gravel run under the far bank: wading water, a heron in it, and the fishers' warning before the dock
-    block(148, 167, 28, H - 1); for (let x = 150; x <= 161; x++) set(x, 28, T.AIR);
-    R.pools.push({ x0: 150 * TS, x1: 162 * TS, y: 28 * TS + 2, shallow: true, depth: 14 });
-    ent('heronfoe', 153, 28, { face: -1 }); ent('turtle', 158, 28, { face: -1 }); ent('check', 165, 27);
+    block(151, 167, 28, H - 1); for (let x = 154; x <= 161; x++) set(x, 28, T.AIR);
+    R.pools.push({ x0: 154 * TS, x1: 162 * TS, y: 28 * TS + 2, shallow: true, depth: 14 });
+    ent('heronfoe', 156, 28, { face: -1 }); ent('turtle', 159, 28, { face: -1 }); ent('check', 165, 27);
     ent('sign', 163, 27, { text: "THE FISHERS' RULE: WHEN THE RIVER ROARS, THE BORE IS COMING UP IT. GET ON A ROCK." });
-    for (const [x, y, k, v] of [[148, 27, 'riverStone', 0], [151, 28, 'rushes', 1], [156, 28, 'riverStone', 2], [161, 28, 'rushes', 0], [167, 27, 'riverStone', 1]]) ent('deco', x, y, { kind: k, v });
-    coins([151, 27], [154, 26], [157, 27], [160, 26]);
+    for (const [x, y, k, v] of [[151, 27, 'riverStone', 0], [154, 28, 'rushes', 1], [158, 28, 'riverStone', 2], [161, 28, 'rushes', 0], [167, 27, 'riverStone', 1]]) ent('deco', x, y, { kind: k, v });
+    coins([153, 26], [155, 27], [157, 26], [160, 27]);
   }
   const G3 = riverGrow(G2.done(), 318, 48);
   // ---- 2b. THE BORE REACH: the raft lands at a staithe and the river spreads into tidal flats. The Bore comes in here from the sea. ----
