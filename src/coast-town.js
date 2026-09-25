@@ -2,10 +2,10 @@
 export function polishCoastAndTown(L,id,T){
  if(id==='reef'){
   // The old rectangles described unrelated gaps in open water. Only the actual enclosed carrack and stern cabin have walls.
-  L.interiors=[[122,209,8,31,'ship'],[384,397,18,20,'ship']];
+  L.interiors=[[122,209,8,31,'ship'],[266,300,14,32,'ship'],[464,477,18,20,'ship']];   /* the carrack, the hulk's hold (docs/briefs/reef-longer.md) and the stern cabin, in final columns */
   L.palette.ledges='cargo';
-  L.tints=[[0,119,[170,185,170],.06],[119,213,[166,113,58],.1],[213,331,[45,135,153],.12],[331,425,[172,128,82],.08]];
-  for(const [x,y,kind,v]of[[135,31,'coiledCable',0],[180,31,'seaChest',0],[205,31,'rumBarrels',0],[229,36,'brainCoral',1],[284,36,'coralFan',2],[314,36,'kelpTall',1],[368,23,'figurehead',0]])L.ents.push({t:'deco',x,y,kind,v});
+  L.tints=[[0,119,[170,185,170],.06],[119,213,[166,113,58],.1],[213,411,[45,135,153],.12],[411,505,[172,128,82],.08]];
+  for(const [x,y,kind,v]of[[135,31,'coiledCable',0],[180,31,'seaChest',0],[205,31,'rumBarrels',0],[249,36,'brainCoral',1],[364,36,'coralFan',2],[394,36,'kelpTall',1],[448,23,'figurehead',0]])L.ents.push({t:'deco',x,y,kind,v});
  }
  if(id==='waymeet'){
   L.palette.ledges='awning';

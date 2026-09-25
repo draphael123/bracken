@@ -1004,7 +1004,7 @@ GROUND_KITS.keep={...GROUND_KITS.deep};
 ALLOWED_DECORATIONS.keep=[...ALLOWED_DECORATIONS.deep];
 
 GROUND_KITS.waymeet={density:.2,kinds:['flower','tuft']};
-ALLOWED_DECORATIONS.reef.push('coiledCable','rumBarrels');
+ALLOWED_DECORATIONS.reef.push('coiledCable','rumBarrels','capstanWreck','bellWreck');   /* the wreck junk: a capstan and a bell nobody will turn or ring (docs/briefs/reef-longer.md) */
 
 ALLOWED_DECORATIONS.lamplit.push('kegStack','coiledCable','barrels','seaChest');
 ALLOWED_DECORATIONS.causeway.push('coiledCable','rumBarrels','pennant');

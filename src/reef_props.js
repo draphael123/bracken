@@ -1063,3 +1063,78 @@ export function bakeReefRock(v) {
   px(g, sx + 1, sy, R.crM); px(g, sx, sy + 1, R.cr); px(g, sx + 1, sy + 1, R.crM); px(g, sx + 2, sy + 1, R.cr); px(g, sx, sy + 2, R.crD); px(g, sx + 2, sy + 2, R.crD);
   return outline(c, OUT);
 }
+
+// ---------- WRECK JUNK (docs/briefs/reef-longer.md): the working capstan and the working bell each look like themselves, and the
+// broken ones that only dress the reef must not. These are what is left of a capstan and a bell nobody will ever turn or ring. ----------
+
+// A capstan drum torn off its spindle and lying on its side in the reef: staves sprung, no bars, the brass crown split off and
+// lying beside it, coral grown in at both ends. 24x12. Nothing on it says turn me: it is a barrel of wreck on its side.
+export function bakeCapstanWreck() {
+  const W = 24, H = 12; const [c, g] = canvas(W, H);
+  // the drum on its side: an elongated barrel from x 3 to 17, its staves running along it
+  for (let x = 3; x <= 17; x++) {
+    const bulge = Math.round(Math.sin((x - 3) / 14 * Math.PI) * 1.4), top = 3 - bulge, bot = 10;
+    for (let y = top; y <= bot; y++) {
+      const t = (y - top) / (bot - top);
+      px(g, x, y, t < 0.14 ? R.boneM : t > 0.8 ? R.woodDD : (y - top) % 3 === 0 ? R.woodD : hsh(x, y, 31) < 0.2 ? R.woodD : R.wood);
+    }
+  }
+  // two staves sprung loose: gaps showing the dark inside, and one stave standing off the drum
+  for (const sx of [8, 13]) for (let y = 4; y <= 8; y++) px(g, sx, y, R.tar);
+  for (let x = 12; x <= 16; x++) px(g, x, 2 - (x > 14 ? 1 : 0), R.boneD);
+  // the iron hoops, rusted through in places
+  for (const hx of [5, 15]) for (let y = 3; y <= 10; y++) if (hsh(hx, y, 33) < 0.8) px(g, hx, y, y < 5 ? R.rk3 : R.rk1);
+  // the brass crown, split off and lying at its foot, green all over
+  rect(g, 18, 8, 5, 3, R.brassD); rect(g, 18, 8, 5, 1, R.brass); px(g, 19, 8, R.brassL); px(g, 21, 9, R.tar);
+  verdigris(g, 18, 22, 9, 2, 9);
+  // the reef has it: coral at both ends and weed along the underside
+  coralNub(g, 1, 8, 1, true); coralNub(g, 16, 1, 2, false); coralNub(g, 10, 9, 0, false);
+  for (let x = 2; x < 22; x += 3) px(g, x, 11, R.kelpD);
+  return outline(c, OUT);
+}
+
+// A ship's bell with no bracket, fallen on its side with its crown in the coral: a crack up the waist, no clapper, the mouth
+// half full of weed. 16x11. Nothing hangs it: you cannot ring a bell lying on the ground.
+export function bakeBellWreck() {
+  const W = 16, H = 11; const [c, g] = canvas(W, H);
+  // the bell on its side, crown to the left, mouth flaring to the right
+  fillPoly(g, [[2, 4], [5, 3], [9, 2], [13, 1], [15, 1], [15, 10], [13, 10], [9, 9], [5, 8], [2, 7]], KEY);
+  recolor(g, W, H, KEY, (x, y) => y <= 3 ? R.brassL : y >= 8 ? R.brassD : hsh(x, y, 41) < 0.22 ? R.verdD : R.brass);
+  // the mouth: dark, and grown over
+  rect(g, 14, 2, 1, 8, R.tar); px(g, 14, 5, R.kelp); px(g, 14, 6, R.kelpD); px(g, 13, 7, R.kelpD);
+  // the crack, up the waist from the lip
+  for (const [x, y] of [[11, 2], [10, 3], [10, 4], [9, 5], [9, 6]]) px(g, x, y, R.tar);
+  verdigris(g, 3, 12, 6, 3, 17);
+  // the crown, sunk in the reef, and coral round it
+  rect(g, 0, 4, 2, 3, R.brassD); coralNub(g, 0, 8, 2, true); coralNub(g, 4, 9, 0, false); px(g, 7, 10, R.kelpD);
+  return outline(c, OUT);
+}
+
+// THE MANIFEST (the reef's own quest item): a page of the tribute ship's manifest, rolled and tied with tarred cord and sealed
+// with a blot of wax, the ink showing along its edge. 12x12. What she carried, and to whom.
+export function bakeManifest() {
+  const W = 12, H = 12; const [c, g] = canvas(W, H);
+  // the roll, lying a little slantwise: vellum gone the colour of the sea-bone
+  fillPoly(g, [[1, 7], [9, 2], [11, 4], [3, 10]], KEY);
+  recolor(g, W, H, KEY, (x, y) => (x + y) % 5 === 0 ? R.boneM : y <= x * -0.6 + 7.5 ? R.cb : R.bone);
+  // the end of the roll, curled, and the ink lines running round it
+  rect(g, 9, 2, 2, 2, R.boneD); px(g, 10, 3, R.woodDD); px(g, 1, 8, R.boneD); px(g, 2, 9, R.boneD);
+  for (const [x, y] of [[3, 7], [5, 6], [7, 5], [4, 8], [6, 7]]) px(g, x, y, R.tarL);
+  // the cord round its middle, and the wax on the knot
+  for (const [x, y] of [[5, 5], [6, 6], [7, 7]]) px(g, x, y, R.ropeD);
+  px(g, 6, 8, R.wax); px(g, 7, 8, R.wax); px(g, 6, 9, R.waxD); px(g, 5, 9, R.ropeD); px(g, 4, 10, R.rope);
+  // wet: a glint on the curl
+  px(g, 9, 3, R.cb); px(g, 8, 3, '#ffffff');
+  return outline(c, OUT);
+}
+
+// The HUD counter icon for the manifest: the same roll, flat and hard-edged so it reads at 10x10 in a corner of the screen.
+export function bakeManifestIcon() {
+  const [c, g] = canvas(10, 10);
+  fillPoly(g, [[0, 6], [7, 1], [9, 3], [2, 8]], R.bone);
+  px(g, 8, 2, R.boneD); px(g, 1, 7, R.boneD);
+  for (const [x, y] of [[3, 5], [5, 4], [4, 6]]) px(g, x, y, R.tarL);
+  px(g, 5, 6, R.wax); px(g, 6, 6, R.wax); px(g, 5, 7, R.waxD);
+  px(g, 7, 2, '#ffffff');
+  return outline(c, OUT);
+}
