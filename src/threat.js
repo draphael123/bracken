@@ -153,6 +153,10 @@ export function measureLevel(R, { T, TS = 16 }) {
   for (let i = 0; i < R.grid.length; i++) if (R.grid[i] === T.SPIKE) hazTiles++;
   for (const p of (R.pools || [])) { if (p.harm) hazTiles += Math.round((p.x1 - p.x0) / TS / 4); else if (p.swim) hazTiles += Math.round((p.x1 - p.x0) / TS / 8); }
   for (const c of (R.crumbles || [])) hazTiles += c.x1 - c.x0 + 1;
+  /* THE BORE (THE LONG WATER, 2026-09-25): a wave up the river every twenty seconds that knocks down anyone below a rock's top, for 12
+     and unblockable. It knocks you back, it does not drown you, so it is counted as a swim pool is, a tile in eight of its run. It was
+     never counted at all, so the level whose river it is read as having less in it than it has. */
+  if (R.bore) hazTiles += Math.round((R.bore.x1 - R.bore.x0) / TS / 8);
   for (const z of (R.deckBreaks || [])) hazTiles += z.x1 - z.x0 + 1;
   const span = spanOf(R.W, R.H), gap = worstGap(R.ents, R.W, R.H, R.arena);
   return { foes, threat, kinds: kinds.size, kindSet: kinds, checks, hazTiles, gap, span, unweighed, index: indexOf({ threat, kinds: kinds.size, hazTiles, gap, span }) };

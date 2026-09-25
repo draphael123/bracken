@@ -399,8 +399,17 @@ function lampOver(g, cx, cy, VW, VH, time) {
 // light, so nothing in it reads any less), eased across the middle of the level from WORLD x.
 // ============================================================================================
 const LWC = { fresh: '#8a8a2e', salt: '#2a6ab8', reed: ['#5a6a2a', '#7a8a3a', '#9aa84a'], head: '#5a3a20', stake: '#5a4630', stakeL: '#7a6246', wattle: '#8a7450', boat: '#4e3e2c', boatL: '#6a5640', boatD: '#2e241a', weed: '#4e6a2a' };
-const LW_FRESH = 150, LW_SALT = 330;   /* tiles: river water to here, the sea from here */
-const saltAt = wx => Math.max(0, Math.min(1, (wx / TS - LW_FRESH) / (LW_SALT - LW_FRESH)));
+const LW_TURN = () => (L && L.turn) || [150, 330];   /* tiles: river water to here, the sea from here (the level's L.turn, in final columns) */
+const saltAt = wx => { const [a, b] = LW_TURN(); return Math.max(0, Math.min(1, (wx / TS - a) / (b - a))); };
+const freshAt = tx => !!(L && L.fresh && tx >= L.fresh[0] && tx <= L.fresh[1]);
+/* A TROUT, 9x5 facing right: an olive back with dark speckle, the pink band along its side, a pale belly, the tail fork */
+function bakeTrout() {
+  const [c, g] = canvas(9, 5);
+  rect(g, 2, 1, 5, 1, '#5e6a3a'); rect(g, 1, 2, 6, 1, '#c8848a'); rect(g, 2, 3, 5, 1, '#e8e2cc'); px(g, 7, 2, '#5e6a3a'); px(g, 8, 2, '#4a5430');
+  px(g, 3, 1, '#2e3420'); px(g, 5, 1, '#2e3420'); px(g, 4, 2, '#8a5a50'); px(g, 7, 1, '#1b1626');
+  px(g, 0, 1, '#5e6a3a'); px(g, 0, 3, '#5e6a3a'); px(g, 1, 2, '#5e6a3a'); rect(g, 3, 0, 2, 1, '#5e6a3a');
+  return c;
+}
 function bakeReeds(v) {   /* a clump of reeds 14x30, standing from its foot, with a head on one stalk in two */
   const [c, g] = canvas(14, 30);
   for (let k = 0; k < 5 + v; k++) { const x = 2 + Math.floor(hsh(k, v, 111) * 10), h = 14 + Math.floor(hsh(v, k, 112) * 15), lean = (hsh(k, v, 113) - 0.5) * 4;
@@ -421,7 +430,13 @@ function bakeSunkBoat(v) {   /* a fishing boat on the river bed, 48x18: her stra
   return c;
 }
 function lwLook() {
-  const S0 = { id: 'longwater', back: lwBack, over: lwOver, wet: lwWet, reeds: [0, 1, 2].map(bakeReeds), boats: [bakeSunkBoat(0), bakeSunkBoat(1)], reedAt: [], boatAt: [], weirs: [] };
+  const S0 = { id: 'longwater', back: lwBack, over: lwOver, wet: lwWet, reeds: [0, 1, 2].map(bakeReeds), boats: [bakeSunkBoat(0), bakeSunkBoat(1)], reedAt: [], boatAt: [], weirs: [], trout: bakeTrout(), troutAt: [] };
+  /* TROUT (2026-09-25): a mountain river has fish that jump. Now and then one leaps out of fresh swim water and falls back in, where the
+     water is two tiles deep and open over it. Scenery: it touches nothing. */
+  for (const p of (L.pools || [])) { if (!p.swim || p.streetTide || p.arenaTide) continue;
+    for (let tx = Math.ceil(p.x0 / TS) + 1; tx < Math.floor(p.x1 / TS) - 1; tx += 5) { const ty = Math.floor((p.y + 6) / TS);
+      if (!freshAt(tx) || tileAt(tx, ty) !== 0 || tileAt(tx, ty + 1) !== 0 || tileAt(tx, ty - 1) !== 0 || tileAt(tx, ty - 2) !== 0 || hsh(tx, ty, 131) > 0.45) continue;
+      S0.troutAt.push({ x: tx * TS + 8, p, per: 5 + hsh(tx, ty, 132) * 6, ph: hsh(tx, ty, 133) * 11, dir: hsh(tx, ty, 134) < 0.5 ? -1 : 1 }); } }
   const swimAt = (x, y) => (L.pools || []).find(p => p.swim && !p.dry && x > p.x0 && x < p.x1 && y > p.y - 2 && (p.bottom === undefined || p.bottom === null || y <= p.bottom + 4));
   for (let tx = 1; tx < L.W - 1; tx++) for (let ty = 1; ty < L.H - 1; ty++) {
     if (tileAt(tx, ty) !== 0 || !SOLIDT.has(tileAt(tx, ty + 1))) continue;
@@ -455,7 +470,7 @@ function lwWet(g, cx, cy, VW, VH, time) {
   g.save(); g.globalCompositeOperation = 'color';
   /* ONE FILL A POOL: a gradient in world x from the river's colour to nothing at the turn and on to the sea's (a band a tile, with
      this blend, was three milliseconds a frame in a software canvas) */
-  const gr = g.createLinearGradient(LW_FRESH * TS - cx, 0, LW_SALT * TS - cx, 0);
+  const [tA, tB] = LW_TURN(), gr = g.createLinearGradient(tA * TS - cx, 0, tB * TS - cx, 0);
   gr.addColorStop(0, 'rgba(138,138,46,0.42)'); gr.addColorStop(0.5, 'rgba(138,138,46,0)'); gr.addColorStop(0.5, 'rgba(42,106,184,0)'); gr.addColorStop(1, 'rgba(42,106,184,0.3)');
   g.fillStyle = gr;
   for (const p of (L.pools || [])) { if (!p.swim || p.dry || p.fire || p.x1 < cx || p.x0 > cx + VW) continue;   /* swim water only: what is in it is put back over the tint (drawSwimmers), and a wader in a shallow pool is not */
@@ -469,6 +484,12 @@ function lwOver(g, cx, cy, VW, VH, time) {
     const k = Math.sin(time * 1.2 + r.ph) * 0.08;
     g.setTransform(1, 0, k, 1, Math.round(r.x - cx) - k * 30, Math.round(r.y - cy)); g.drawImage(S.reeds[r.v], 0, 0); }
   g.setTransform(1, 0, 0, 1, 0, 0);
+  // THE TROUT: 0.8 s out of every few seconds, up out of the water in an arc and back in, a ring of spray where it breaks the surface
+  for (const t of S.troutAt) { if (t.x < cx - 30 || t.x > cx + VW + 30 || t.p.dry) continue; const sy0 = t.p.y; if (sy0 < cy - 30 || sy0 > cy + VH + 10) continue;
+    const u = (time + t.ph) % t.per; if (u > 0.8) continue; const k = u / 0.8, x = t.x + (k - 0.5) * 22 * t.dir, y = sy0 + 2 - Math.sin(k * Math.PI) * 18;
+    g.save(); g.translate(Math.round(x - cx), Math.round(y - cy)); g.rotate(Math.atan2(-Math.cos(k * Math.PI) * 18 * Math.PI, 22 * t.dir) + (t.dir < 0 ? Math.PI : 0)); if (t.dir < 0) g.scale(1, -1); g.drawImage(S.trout, -4, -2); g.restore();
+    if (k < 0.18 || k > 0.82) { const sx = Math.round((k < 0.5 ? t.x - 11 * t.dir : t.x + 11 * t.dir) - cx), sy = Math.round(sy0 - cy); g.fillStyle = '#e8f4f0'; g.globalAlpha = 0.8;
+      g.fillRect(sx - 3, sy - 1, 1, 1); g.fillRect(sx + 3, sy - 1, 1, 1); g.fillRect(sx - 1, sy - 3, 1, 1); g.fillRect(sx + 1, sy - 2, 1, 1); g.fillRect(sx - 2, sy, 5, 1); g.globalAlpha = 1; } }
 }
 
 // ============================================================================================
@@ -532,7 +553,7 @@ function lifeLoad(id) {
     // A STRAND OF KELP on a floor under water, two to six tiles of it where the water is that deep
     if (floor && h < C.kelpP) { let room = 0; while (room < 6 && wet(tx, ty - room)) room++; if (room >= 2) kelp.push({ x: tx * TS + 3 + Math.floor(hsh(tx, ty, 42) * 10), y: (ty + 1) * TS, h: (Math.min(room, 2 + Math.floor(hsh(tx, ty, 43) * 5)) - 0.4) * TS, ph: hsh(tx, ty, 44) * 6, push: 0, tx, ty }); }
     // A CRAB on the ledge, walking its own stretch of it
-    else if (floor && h > 1 - C.crabP) { let a = tx, b = tx; while (a > tx - 4 && wet(a - 1, ty) && SOLIDT.has(tileAt(a - 1, ty + 1))) a--; while (b < tx + 4 && wet(b + 1, ty) && SOLIDT.has(tileAt(b + 1, ty + 1))) b++;
+    else if (floor && h > 1 - C.crabP && !freshAt(tx)) {   /* no crabs in a river (L.fresh) */ let a = tx, b = tx; while (a > tx - 4 && wet(a - 1, ty) && SOLIDT.has(tileAt(a - 1, ty + 1))) a--; while (b < tx + 4 && wet(b + 1, ty) && SOLIDT.has(tileAt(b + 1, ty + 1))) b++;
       if (b > a) crabs.push({ x0: a * TS + 4, x1: (b + 1) * TS - 11, y: (ty + 1) * TS - 4, ph: hsh(tx, ty, 45) * 20, sp: 6 + hsh(tx, ty, 46) * 8, col: C.crab, tx, ty }); }
     // A SCHOOL, where there is water round it: on a coarse grid of the world so two never start on top of each other
     if (tx % 9 === 4 && ty % 3 === 1 && hsh(tx, ty, 47) < 0.2 * C.schools && wet(tx - 2, ty) && wet(tx + 2, ty) && wet(tx, ty - 1) && wet(tx, ty + 1)) {
@@ -556,7 +577,7 @@ function lifeFar(g, cx, cy, VW, VH, time) {
       const h = hsh(i, j, 61); if (h > C.jellyP) continue;
       const sx = Math.round(i * cell + hsh(i, j, 62) * cell + Math.sin(time * 0.2 + h * 30) * 16 - fx0), sy = Math.round(j * cell + hsh(i, j, 63) * cell - ((time * (3 + h * 4)) % 40) + Math.sin(time * 0.5 + h * 9) * 3 - fy0);
       if (sx < -10 || sx > VW || sy < -12 || sy > VH) continue;
-      if (C.jellyFromX && sx + cx < C.jellyFromX * TS) continue;   /* only once the river is the sea */
+      if (C.jellyFromX && sx + cx < (L.turn ? L.turn[1] : C.jellyFromX) * TS) continue;   /* only once the river is the sea */
       if (!inSwim(sx + cx, sy + cy)) continue;
       g.globalAlpha = 0.28 + 0.12 * Math.sin(time + h * 20); g.drawImage(art[Math.floor(time * 2 + h * 9) % 3], sx, sy); }
     g.globalAlpha = 1; }

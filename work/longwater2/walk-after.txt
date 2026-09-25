@@ -1,0 +1,15 @@
+
+BRACKEN PLAYTEST   1 levels   19.6s
+  0 bug   1 odd   2 note
+
+level       size     reach  foes  kinds  thr/100  gap   walked  deaths  ms p90
+longwater   570x40   100%   76    16     28.6     90    36%     0       1.3
+
+== ODD ==
+  longwater   STUCK       the bot reached 36% and was neither killed nor lifted: it swims, rides and opens doors, but not well - look by hand
+
+== NOTES ==
+  longwater   ASSISTED    a silver is outside the fill   @474,17
+  longwater   ASSISTED    9 coins outside the fill
+
+errors []
