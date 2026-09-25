@@ -639,3 +639,48 @@ pass cannot pay one (no free tile at its end), hand-place something there in the
 If a pocket is not a dead end at all because the model cannot see the ride out of it, fix the model
 (`src/reachcore.js`), not the check. (The model once let a swimmer leap out of a "surface" under two
 rows of rock, and that alone hid the Deep's tunnel.)
+
+---
+
+## S. A LEVEL IS HARD BECAUSE OF WHERE THINGS ARE, NOT HOW MANY (Daniel, 2026-09-25)
+
+"The levels are generally pretty easy, but the bosses can be tough. How can we make the levels difficult without overwhelming
+players with tons of enemies?" A boss is measured (bossLab win rates); a level was only counted (`src/threat.js` INDEX is mostly
+bodies). So nothing pushed a level to ask anything of you. These rules do. A new level is built to them, and every level a lane
+reworks is brought up to them.
+
+**S1. PLACE A FOE WHERE IT MAKES THE GROUND HARDER.** At least five placements a level where a foe and the geometry make one
+problem together: an archer covering a jump, a shield on a bridge one tile wide, a lunger at the landing of a long jump, a
+spitter over a sinking pad, a blocker at the top of a ladder. A foe on open flat floor is a warm-up, not the level. More bodies
+is not the fix; a worse place for the same body is. (B8 still holds: three encounters, not one three times.)
+
+**S2. SOME JUMPS MUST BE ABLE TO FAIL.** A hero's real full jump is about 3.2 tiles across (measured in-game, 2026-09-25; the
+reach model's 6 is not a player's jump). Every level has at least six jumps of 2.5 tiles or more on the main route, and at least
+two of them over something that punishes a miss (a pit, spikes, a deadly pool, a fall to an earlier section). Measure them with
+the real jump, for every hero, not with the reach model. Nothing on the main route asks for more than 3.0.
+
+**S3. EVERY LEVEL ENDS IN AN EXAM.** The last stretch before the boss door (roughly the final 60-100 columns) combines the
+level's own mechanics under pressure - the rule (C2/F8) plus at least one other verb, with a foe placed to S1 - and it is the
+hardest stretch of the level. It rehearses what the boss will ask. A level's mechanic used once and then gone before the boss is
+the failure this rule was written from (the level review, 2026-09-24, found it in Sporewood, Kingswood, the Stockade and the Reef).
+The exam has a checkpoint before it and one outside the arena (B6), and none inside it.
+
+**S4. CHECKPOINTS ARE SPACED, NOT SPRINKLED.** B6 is the ceiling (100 columns); this is the floor: no two checkpoints closer than
+40 route tiles, except the one outside an arena or an ambush room door (Q5). Near-duplicate pairs (the Wood's 166/175, Kingswood's
+400/405) are removed, not kept. A section should cost you something to lose.
+
+**S5. HEALING IS EARNED.** A level carries at most one free heart (`mend`) per two checkpoints on the main route, and none in the
+exam (S3). Dead-end hearts (section R) do not count: you went out of your way for them. A heart sits after a hard stretch, never
+before it.
+
+**S6. THE METER SQUEEZES.** A level whose rule is a meter (sun, breath, air, wind, heat) tunes it so that the main route spends
+at least a third of its length above the meter's warning point, and the exam (S3) takes it to the edge. A meter the player never
+watches is decoration.
+
+**S7. THE HARD ROAD IS OPTIONAL AND PAYS.** Where a level forks, the high or far road is harder (tighter jumps, a worse
+placement) and pays for it (a silver, a relic, a quest stray, a coin cache of 8+). The main road stays fair: S2's limits are the
+main road's, not the hard road's.
+
+**S8. MEASURE IT.** A level's difficulty is walked, not guessed: the F9 playtest bot's damage taken, falls and deaths per section
+(the tool to measure it is being built; until then, report what the walk tool records). A level lane reports, before and after,
+the hardest section and what it cost the bot. Along the road the number rises, as the bosses' do.
