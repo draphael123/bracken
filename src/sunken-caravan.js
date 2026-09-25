@@ -9,7 +9,8 @@
 // and tools/caravan-level.mjs + tools/draft-level.mjs keep measuring it (seven sections, five landmarks, the sun stretches,
 // slopeLint). This file only turns the draft into a level the game can run:
 //   - the draft's own creature roster comes out; the level's GARRISON row in src/level.js puts the crowd down instead,
-//     so there is one source for who lives here (scorpion, sand goblin, vulture - all three new - and the camp's looters)
+//     so there is one source for who lives here (scorpion and vulture, and the looters: THE BANDITS - the cutthroat, the rooftop
+//     slinger and the sand-cloaked ambusher, in the goblins' place since 2026-09-25: docs/briefs/caravan-ruins-bandits.md)
 //   - the static shade (wagons, awnings, the ribcage, the caravanserai, the rim's overhang) is said as L.shade rects once,
 //     here, and the props that cast it become dressing (deco) the game already knows how to stand on the ground
 //   - the camp's machine is an 'awningwinch' (the name 'winch' is the Highcrown gate winch's)
@@ -21,8 +22,8 @@
 import { buildSunkenCaravan as buildDraft, CARAVAN_BASE } from './draft/sunken-caravan.js';
 import { shadeZones } from './sunstroke.js';
 
-export const CARAVAN_FOES = new Set(['scorpion', 'sandgob', 'vulture']);
-const DRAFT_FOES = new Set(['scorpion', 'sandgob', 'vulture', 'bandit', 'archer']);
+export const CARAVAN_FOES = new Set(['scorpion', 'vulture', 'cutthroat', 'slinger', 'ambusher']);
+const DRAFT_FOES = new Set(['scorpion', 'sandgob', 'vulture', 'bandit', 'archer', 'cutthroat', 'slinger', 'ambusher']);
 
 export function buildCaravan({ T, TS }) {
   const L = buildDraft(T);
@@ -32,7 +33,7 @@ export function buildCaravan({ T, TS }) {
   L.shadeArt = (L.shade || []).slice();   /* the shade no prop's art paints (the ribcage, the caravanserai, the overhang): main.js tints these */
   L.shade = shadeZones(L);
   /* 2. the draft's roster out (the GARRISON row puts the level's crowd down) */
-  L.ents = L.ents.filter(e => !DRAFT_FOES.has(e.t));
+  L.ents = L.ents.filter(e => !DRAFT_FOES.has(e.t) || e.placed);   /* ...but the ones the draft PLACES (e.placed: RULES S1, a foe where it makes the ground harder) stay where they are */
   /* 3. the props become dressing the game draws and grounds (deco kinds; src/main.js's caravan block bakes them) */
   let wv = 0;
   for (const e of L.ents) {
@@ -80,11 +81,12 @@ export function buildCaravan({ T, TS }) {
     L.ents.push({ t: 'sign', x: ax0 - 6, y: top(ax0 - 6) - 1, text: 'HE COMES UP UNDER YOU. WIND THE SHADE OUT AND LET HIM COME UP INTO IT.' });
     L.gateAfterBoss = true; }
   /* 7. THE TRADERS' YARD: the ambush room (RULES Q), the camp's flat under the great awning. The winch stands inside it on
-     purpose: wind the awning in and the looters are in the sun with you. */
+     purpose: wind the awning in and the looters are in the sun with you. The looters are bandits since 2026-09-25 (no goblins): two
+     cutthroats on the flat and a slinger up on the stacked cargo, under THE OLD STINGER */
   { const x0 = L.marks.winch, row = top(x0) - 1, wallL = x0, wallR = x0 + 32;
     const foot = x => top(x) - 1;
     L.ambushes = [{ name: "THE TRADERS' YARD", row, wallL, wallR, check: [x0 - 4, foot(x0 - 4)],
-      waves: [[['scorpion', x0 + 16, foot(x0 + 16)], ['thief', x0 + 5, foot(x0 + 5)], ['thief', x0 + 29, foot(x0 + 29)], ['sandgob', x0 + 23, foot(x0 + 23)]]] }]; }
+      waves: [[['scorpion', x0 + 16, foot(x0 + 16)], ['cutthroat', x0 + 5, foot(x0 + 5)], ['cutthroat', x0 + 29, foot(x0 + 29)], ['slinger', x0 + 26, foot(x0 + 26)]]] }]; }
   /* 8. dressing a desert has: scrub and a dead tree or two, bleached against the sky, placed on flats */
   L.palette = { set: 'desert', near: 'none', dress: 'desert', noFg: true, noNear: true, haze: 'rgba(236,206,160,0.12)' };   /* no grass strip in front of a desert (noFg), no bough or blades framing the lens (noNear), and a warm haze, not the wood's green default */   /* main.js's cvBackdrop lays the sky, the mesas and the dunes */
   /* THE ROCK: what the draft builds of sandstone rather than sand (the arch's lintel, the caravanserai, the rim's overhang), so it is

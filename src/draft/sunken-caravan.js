@@ -2,8 +2,10 @@
 // LEVELS and nothing loads it. It exists so the layout can be measured against the rules before a build session spends
 // time on it (tools/caravan-level.mjs), and so that session starts from a plan that already passes them.
 // Brief: .claude/briefs/sunken-caravan.md as amended by docs/desert-arc-brief.md (no storm act: the storm belongs to the
-// pyramids). Ent names for creatures that do not exist yet are the draft's own (scorpion, sandgob, vulture, bandit, archer);
-// the level batch maps them to real spawn cases.
+// pyramids). The creatures are the level's: the scorpion, the vulture and, since 2026-09-25 (no goblins: docs/briefs/caravan-ruins-
+// bandits.md), the bandits - the cutthroat, the rooftop slinger and the sand-cloaked ambusher. The roster below is for measuring
+// density only (the build takes it out and the GARRISON row puts the crowd down); an ent with placed: true is put where it is on
+// purpose (RULES S1) and the build keeps it.
 //
 // THE RULE: THE SUN. Open sand is sunlight and builds SUNSTROKE; shade resets it (src/sunstroke.js). Said three ways (C4):
 // the heat haze and the swimming view, the violet of every shade on the screen, and the signs and the lone awning in section 1.
@@ -132,19 +134,19 @@ export function buildSunkenCaravan(T) {
   const arena = { x0: ax0 * TS, x1: (ax1 + 1) * TS, floor: floor * TS, trigger: (ax0 + 5) * TS, wallL: ax0 - 1, wallR: ax1 + 1, boss: 'duneworm', music: 'boss2', tint: '#e2bb7a', tintA: 0.1, fx: 'sand' };
 
   // ---- THE GARRISON (a draft of the level's GARRISON row, placed so it can be measured): ~4 a screen, 3 in the first ----
-  const ROSTER = { waydown: ['scorpion', 'sandgob'], road: ['scorpion', 'sandgob', 'vulture', 'scorpion'], oxline: ['sandgob', 'scorpion', 'vulture', 'bandit'],
-    dunesea: ['vulture', 'scorpion', 'sandgob', 'vulture'], camp: ['bandit', 'archer', 'bandit', 'scorpion'], sinking: ['sandgob', 'scorpion', 'vulture', 'bandit'], rim: ['scorpion', 'sandgob', 'bandit', 'vulture'] };
+  const ROSTER = { waydown: ['scorpion', 'cutthroat'], road: ['scorpion', 'cutthroat', 'vulture', 'scorpion'], oxline: ['cutthroat', 'scorpion', 'vulture', 'cutthroat'],
+    dunesea: ['vulture', 'scorpion', 'cutthroat', 'vulture'], camp: ['cutthroat', 'scorpion', 'cutthroat', 'scorpion'], sinking: ['cutthroat', 'scorpion', 'vulture', 'cutthroat'], rim: ['scorpion', 'cutthroat', 'cutthroat', 'vulture'] };
   const secOf = x => { let s = 'waydown'; for (const [k, v] of Object.entries(sections)) if (k !== 'arena' && x >= v) s = k; return s; };
   const busy = new Set(ents.filter(e => ['check', 'sign', 'relic', 'standard', 'winch'].includes(e.t)).map(e => e.x));
   const standOK = x => { const c = cols[x]; if (!c || c.t === 'QS') return false; const r = top(x); for (let y = r - 3; y < r; y++) if (grid[y * W + x] !== T.AIR) return false; return ![x - 1, x, x + 1].some(v => busy.has(v)); };
   let k = 0;
   for (let w0 = 0; w0 + 24 <= ax0 - 1; w0 += 24) { const sec = secOf(w0), n = sec === 'waydown' ? 3 : 4;
     for (let i = 0; i < n; i++) { let x = w0 + 3 + Math.floor(i * 20 / n); while (x < w0 + 23 && !standOK(x)) x++; if (x >= w0 + 23) continue;
-      const t = ROSTER[sec][k++ % ROSTER[sec].length]; ent(t, x, t === 'vulture' ? top(x) - 7 : on(x), t === 'sandgob' ? { buried: true } : {}); busy.add(x); } }
+      const t = ROSTER[sec][k++ % ROSTER[sec].length]; ent(t, x, t === 'vulture' ? top(x) - 7 : on(x)); busy.add(x); } }
 
   return { W, H, grid, ents, START: { x: 6, y: on(6) }, pools: [], falls: [], moversExtra, interiors: [], sections, marks, arena, quicksand: qs, shade,
     draft: true, palette: { set: 'desert' }, rule: 'THE SUN', lengthCols: ax0 };
 }
 /* for tools/draft-level.mjs (tools/caravan-level.mjs is this level's own, older check; both must pass) */
 export const build = buildSunkenCaravan;
-export const meta = { name: 'THE SUNKEN CARAVAN', orientation: 'h', landmarks: ['leadwagon', 'ribcage', 'slide', 'winch', 'caravanserai'], sun: true, density: [3.5, 4.5], foes: ['scorpion', 'sandgob', 'vulture', 'bandit', 'archer'] };
+export const meta = { name: 'THE SUNKEN CARAVAN', orientation: 'h', landmarks: ['leadwagon', 'ribcage', 'slide', 'winch', 'caravanserai'], sun: true, density: [3.5, 4.5], foes: ['scorpion', 'vulture', 'cutthroat', 'slinger', 'ambusher'] };

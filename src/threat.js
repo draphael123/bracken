@@ -114,6 +114,11 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      module yet (src/desert-foes.js has the other three and nothing for him), so this weighs a looter with a blade
      against the human melee line - the cutlass at 2.5, under the soldier at 3. Re-weigh him when he is written. */
   scorpion: 3, vulture: 2, sandgob: 2.5, bandit: 2.5,
+  /* THE BANDITS, written (2026-09-25; src/desert-foes.js): the cutthroat is a soldier's 38 health with a 10 point cut, and the FEINT
+     in front of every other one is a read the soldier never asks for - a 3; the slinger is 24 health and a stone (! 8) from where you
+     cannot reach him, told long, and open when you climb to him - the archer's 2.5; the ambusher is the sand goblin's trick with more
+     health and a heavier knife - 2.5 as the sand goblin was */
+  cutthroat: 3, slinger: 2.5, ambusher: 2.5,
   /* THE DUNE WORM, the caravan's boss (2026-09-25): a boss is a 6. awningwinch is his trap and the camp's machine - furniture */
   duneworm: 6, awningwinch: 0,
 };

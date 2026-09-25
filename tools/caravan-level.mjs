@@ -61,7 +61,7 @@ const shaded = (x, y) => inShade(Z, x, y - 1) || roofShade((tx, ty) => at(tx, ty
 const st = sunStretches(route, shaded), shadeCount = (() => { let n = 0, was = false; for (const [x, y] of route) { const s = shaded(x, y); if (s && !was) n++; was = s; } return n; })();
 ok(st[0].s <= SUN.maxWalk, `THE SUN: ${shadeCount} shades along the road; the longest walk in the open is ${st[0].s.toFixed(1)} s (columns ${Math.round(st[0].x0 / TS)}-${Math.round(st[0].x1 / TS)}), the rule ${SUN.maxWalk} s; next ${st.slice(1, 4).map(s => s.s.toFixed(1)).join(', ')}`);
 // density + shape (shape.mjs's windows)
-const FOES = new Set(['scorpion', 'sandgob', 'vulture', 'bandit', 'archer']);
+const FOES = new Set(['scorpion', 'vulture', 'cutthroat', 'slinger', 'ambusher']);   /* the bandits in the goblins' place (2026-09-25) */
 const seen = [...R.seen].map(k => k.split(',').map(Number)); let win = 0, hs = 0, flat = 0, foes = 0, minF = 99;
 for (let x = 0; x + 24 <= ax0; x += 24) { win++; const ys = new Set(seen.filter(([sx]) => sx >= x && sx < x + 24).map(([, y]) => y)); hs += ys.size; if (ys.size <= 2) flat++;
   const n = L.ents.filter(e => FOES.has(e.t) && e.x >= x && e.x < x + 24).length; foes += n; minF = Math.min(minF, n); }

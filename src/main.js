@@ -17,7 +17,7 @@ import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, t
 import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */
 import { qsPatchAt, qsGameStep } from './quicksand.js';
 import * as DWM from './dune-worm.js'; import { newStorm, stormStep, gustDrift, STORM } from './desert-rules.js';   /* THE DUNE WORM, the caravan's boss (docs/briefs/dune-worm.md), and the storm he calls into his hollow */
-import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
+import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import * as CB from './redraw/caravan_bandits.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
 import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH} from './undead-mage.js';
 import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT,quench} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
@@ -239,7 +239,7 @@ const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, worm
   /* THE LEADFOOT. The sweep is the worst of the three because it is the one you take for standing on his ground;
      the plant is the price of crossing over him; and the anchor hurts least of all - what it costs you is where you are. */
   leadSweep: 18, leadPlant: 16, leadAnchor: 14 };
-const EHP = { sexton: SEXTON.hp, duneworm: DWM.WORM.hp, scorpion: DF.SCORPION.hp, vulture: DF.VULTURE.hp, sandgob: DF.SANDGOB.hp, bannerbearer:UNBF.UNB.hp.bannerbearer, corpse:UNBF.UNB.hp.corpse, barrowrider:UNBF.UNB.hp.barrowrider, deathknight:UNBF.UNB.hp.deathknight, winchmaster:WINCH.hp, abbot:ABBOT.hp, tome:TOME.hp, tidereaver:560, gargoyle:410, hedgewarden:420, gravewarden:380, burngob:26, emberwisp:8, pyromancer:510, bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22, temperer: 30,
+const EHP = { sexton: SEXTON.hp, duneworm: DWM.WORM.hp, scorpion: DF.SCORPION.hp, vulture: DF.VULTURE.hp, sandgob: DF.SANDGOB.hp, cutthroat: DF.CUTTHROAT.hp, slinger: DF.SLINGER.hp, ambusher: DF.AMBUSHER.hp, bannerbearer:UNBF.UNB.hp.bannerbearer, corpse:UNBF.UNB.hp.corpse, barrowrider:UNBF.UNB.hp.barrowrider, deathknight:UNBF.UNB.hp.deathknight, winchmaster:WINCH.hp, abbot:ABBOT.hp, tome:TOME.hp, tidereaver:560, gargoyle:410, hedgewarden:420, gravewarden:380, burngob:26, emberwisp:8, pyromancer:510, bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22, temperer: 30,
   prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, prince: 960, courtier: 22, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 360, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, seawitch: 20, crow: 6, horn: 22, bale: 12, shardling: 18, fledgling: 16, suncatcher: 430, roc: 1100, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, tippler: 26, sheargob: 30, gaffer: 44, bat: 8, forgemaster: 480, golem: 400, kite: 15, badger: 30, gar: 16, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 1450, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 8, mother: 8, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360, gobpriest: 14, merrowspear: 24, merrowcaller: 22, merrowbrute: 50, gobmage: 22, puffer: 12, jelly: 10, lamprey: 24, manta: 34,
   leadfoot: 64 };   /* THE LEADFOOT: over the Merrow Brute's 50 and the Tideguard's 44, under a heavy knight - he is the thing in the Keep you cannot simply leave */
 
@@ -1972,6 +1972,10 @@ function spawnEnt(e) {
       /* THE SUNKEN CARAVAN (desert-foes.js keeps each one's machine in e.st; updateDesertFoe is its hands) */
       case 'scorpion': { const st = DF.newScorpion(px, py); st.face = e.face || 1; enemies.push({ ...base, t: 'scorpion', w: DF.SCORPION.w, h: DF.SCORPION.h, hp: EHP.scorpion, mode: st.mode, st }); break; }
       case 'sandgob': { const st = DF.newSandGob(px, py); enemies.push({ ...base, t: 'sandgob', w: DF.SANDGOB.w, h: DF.SANDGOB.h, hp: EHP.sandgob, mode: st.mode, st }); break; }
+      /* THE BANDITS (2026-09-25, in the goblins' place: docs/briefs/caravan-ruins-bandits.md) */
+      case 'cutthroat': { const st = DF.newCutthroat(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'cutthroat', w: DF.CUTTHROAT.w, h: DF.CUTTHROAT.h, hp: EHP.cutthroat, mode: st.mode, st }); break; }
+      case 'slinger': { const st = DF.newSlinger(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'slinger', w: DF.SLINGER.w, h: DF.SLINGER.h, hp: EHP.slinger, mode: st.mode, st }); break; }
+      case 'ambusher': { const st = DF.newAmbusher(px, py); enemies.push({ ...base, t: 'ambusher', w: DF.AMBUSHER.w, h: DF.AMBUSHER.h, hp: EHP.ambusher, mode: st.mode, st }); break; }
       case 'vulture': { const st = DF.newVulture(px, py); st.a = (e.x % 7) * 0.9; enemies.push({ ...base, t: 'vulture', w: DF.VULTURE.w, h: DF.VULTURE.h, hp: EHP.vulture, noGrav: true, y: st.y, mode: st.mode, st }); break; }
       case 'awningwinch': props.push({ t: 'awningwinch', x: px, y: py, canopy: e.canopy, hollow: !!e.hollow, out: 1, k: 1, cd: 0 }); break;   /* hollow: THE DUNE WORM's (it only ever rolls OUT: a blow meant for him must not roll his trap in) */
       case 'relic': props.push({ t: 'relic', x: px, y: py, kind: e.kind, got: false, ph: Math.random() * 6 }); break;
@@ -2437,7 +2441,8 @@ const ELITE = {
   hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', own: true }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
   archer: { name: 'THE ARCHER CAPTAIN', hp: 17, own: true },
   apprentice: { name: 'THE HEAD NOVICE', rule: 'wall', hp: 3 },   /* THE FALLING TOWER's captain (THE ORRERY PIT, 2026-09-25): the Folly's apprentices led by their eldest, who wards the crowd round him - the tower's own casters, and not the Folly's armour again in the next room (rule Q) */
-  scorpion: { name: 'THE OLD STINGER', rule: 'lunge', hp: 2.5 },   /* THE SUNKEN CARAVAN's yard: a long rush pincers-first, and a shield taken on it leaves him open */   /* own: moves of its own (updateEliteArcher), no shared rule */
+  scorpion: { name: 'THE OLD STINGER', rule: 'lunge', hp: 2.5 },
+  cutthroat: { name: 'THE FIRST KNIFE', rule: 'lunge', hp: 2.2 },   /* THE SUNKEN CARAVAN's rim (2026-09-25, the goblin archer's place): the looters' best blade, a long rush with it out, and a shield taken on it leaves him open */   /* THE SUNKEN CARAVAN's yard: a long rush pincers-first, and a shield taken on it leaves him open */   /* own: moves of its own (updateEliteArcher), no shared rule */
   gaffer: { name: 'THE DECK FOREMAN', rule: 'lunge', hp: 2 },   /* THE ORE ROAD's captain: the lunge IS a gaffer - a long rush with the pole out, and a shield taken on it leaves him open. hp 2 because 44 x 3 x the room's own multiplier was a minute-long fight in a room rule Q wants over in thirty seconds */
   boarder: { name: 'THE BOARDING MASTER', rule: 'lunge' }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', rule: 'lunge', hp: 1.6 }, heavy: { name: "THE KING'S CHAMPION", rule: 'lunge', hp: 1.5 },
 };
@@ -4030,6 +4035,9 @@ const BEASTS = [
   { t: 'duneworm', name: 'THE DUNE WORM', sub: 'the caravan\'s grave keeps its keeper', desc: 'He hunts under the hollow\'s sand: a ripple runs at you and bursts up where it locks - step off it late. Up, he spits sand (a shield takes it), lunges where his shadow falls, and opens the sand under you: jump, and keep jumping. Wind the awning out and let him come up INTO it: tangled, he takes double. At half he calls the storm.' },
   { t: 'scorpion', name: 'THE DUNE SCORPION', sub: 'two answers in one shell', desc: 'Up close it lifts a claw - a yellow mark, and a shield turns it. Stand a little further off and the tail comes up over its back instead - a red mark, and nothing turns that: step out of it, then walk in and cut while the tail comes down.' },
   { t: 'sandgob', name: 'THE SAND GOBLIN', sub: 'a mound with eyes', desc: 'Buried, it is only sand and two eyes, and a blade goes straight through it. Walk past and it rises with the sand pouring off - that is the tell - and cuts twice with a knife a shield turns. Then it goes under and comes up again ahead of you.' },
+  { t: 'cutthroat', name: 'THE CUTTHROAT', sub: 'watch the mark, not the arm', desc: 'A veiled looter with a scimitar, and he feints: every other time he comes in, the blade half rises and he stamps - no mark, nothing behind it. Then the real one, high and back with a glint and a yellow mark, and a shield turns it. Hold your guard through the feint.' },
+  { t: 'slinger', name: 'THE ROOFTOP SLINGER', sub: 'he owns the tops of the ruins', desc: 'He stands on a tower\'s top and stones the road. As the sling whirls, a red arc falls to the spot you stand on: step off it, or take the stone on a shield. Climb the tower to him and he is only a man with a sling - up close he can do no more than kick.' },
+  { t: 'ambusher', name: 'THE SAND-CLOAK', sub: 'an ambusher under the dune', desc: 'Under his sand cloak he is a mound with two gold eyes, and a blade goes straight through. Walk past and he rises with the sand pouring off - that is the tell - and cuts twice with a knife a shield turns. Then he throws the cloak over himself and comes up ahead of you.' },
   { t: 'vulture', name: 'THE VULTURE', sub: 'it cools you while it hunts you', desc: 'It circles high over its patch of sand, and its shadow is shade. When it picks you its eye goes red and its shadow snaps onto your spot: move off the mark before it dives. On the ground it is open for a breath before it labours back up.' },
   { t: 'bannerbearer', name: 'THE BANNER-BEARER', sub: 'he carries what gets them up', desc: 'He walks his standard up to you and plants it, and the fallen round it rise. Guard his pole. Cut him and every man his standard raised lies down, and his stretch of the ridge stops firing.' },
   { t: 'barrowrider', name: 'THE BARROW RIDER', sub: 'the old order\'s last knight, and his horse', desc: 'Jump the ride-through: the ghost horse goes through you. Strike him as he passes and he is out of the saddle. Guard the trample and the grave-fire; step out of the lance line. When the horse falls apart, cut the bones crawling back to him.' },
@@ -4786,7 +4794,7 @@ function addHurtPose(set) { if (!set || !set.R || !set.R.length || set.hurtMade)
 const MADE_HURT = [];   /* every one of the ten has its hurt pose drawn in its baker now; addHurtPose stays for a creature that has none yet */
 for (const t of MADE_HURT) addHurtPose(SPR[t]);
 const HAS_HURT = new Set(['familiar','lanternshade','bonecorsair','tidemarauder','bellcrab', 'bellguard', 'topiary', 'armour', 'piece', 'broom', 'mimic', 'imp', 'tome', 'turret', 'homunculus', 'archmage', 'scarecrow', 'rook', 'farmhand', 'pumpkin', 'marshlight', 'haunt', 'boo', 'feeler', 'closedhelm', 'lancer', 'drunk', 'masthead', 'prince', 'courtier', 'sprig', 'pike', 'sporeling', 'cutlass', 'boarder', 'marine', 'watch', 'archer', 'rockgoblin', 'shield', 'wasp', 'harpy', 'swornsword', 'crab', 'scout', 'tideguard', 'brute', 'heavy', 'soldier', 'sailor', 'angler', 'goat', 'hearthgob', 'temperer', 'spider', 'thorn', 'gobpriest', 'gobmage', 'merrowspear', 'merrowbrute', 'leadfoot', ...MADE_HURT]);
-const COLS = { sexton:['#4e4460','#b07a2a','#d8d0bc'], duneworm:['#a8805a','#e2bb7a','#5a1e24'], scorpion:['#b8823a','#6e4a22','#e8c24a'], sandgob:['#6f8a3a','#d9b877','#9a7a4a'], vulture:['#3a2e2a','#c86a5a','#e3d2a8'], bannerbearer:['#8e2a26','#6e747e','#e8c35a'], corpse:['#7a8088','#7a2a28','#d8d2b8'], barrowrider:['#8e2a26','#c8d6ff','#9ff0c0'], deathknight:['#3e4a44','#9ff0c0','#b8c4bc'], winchmaster:['#5a3a22','#6faa4a','#9a9aa4'], abbot:['#8e3a32','#f2ecd8','#e8a83a'], hedgewarden:['#5ea050','#6e4a2c','#b07cf0'], gargoyle:['#6a6280','#8e86a4','#c8a0ff'], gravewarden:['#e0d6bc','#3a3040','#ffd36b'], burngob:['#ff9a5c','#6a2a1a','#ffd36b'], emberwisp:['#ffd36b','#ff6b2c'], pyromancer:['#3a3040','#c9463d','#ff9a5c'], bonegob:['#d9d6c0','#8c8869'], undeadmage:['#7597ad','#d7e5df','#657384'], burieddead:['#849769','#684244','#cab1a0'],zombie:['#98a374','#575846'], husk:['#8fb257','#5c8a24'], apprentice:['#4a4a7c','#9be2ff'], harbormaster: ['#427d79','#c1a05c','#81e6c0'], familiar:['#726a8a','#a09ab8','#c6b9e0'], lanternshade:['#8fc2c7','#a6f0e8'],bonecorsair:['#d2d1b1','#794352'],tidemarauder:['#39706c','#d2d1b1'], bellcrab: ['#b7833e','#ef9177','#8fd160'], bellguard: ['#b88b4a','#426661','#96e8e3'], topiary: ['#4a8a44', '#8ac060', '#b07cf0'], armour: ['#a0a8b8', '#6a707e', '#b07cf0'], piece: ['#a0a8b8', '#6a707e', '#3a3e4a'], broom: ['#9a6a34', '#7a8494', '#8ac0ff'], tome: ['#6e2a3a', '#efe4c8', '#e8c24a'], mimic: ['#9a6a34', '#e0b050', '#f0f0e0'], imp: ['#c04a7a', '#f090b0', '#ffa040'], turret: ['#e0b050', '#a8782a', '#b07cf0'], homunculus: ['#e0c0c8', '#c8e8f0', '#b08a9a'], archmage: ['#7a4ab8', '#e0c8ff', '#e0b050'], scarecrow: ['#c8b264', '#8a4a2a', '#5e5444'], rook: ['#2a2a3a', '#5a6a8a', '#e8dcc0'], farmhand: ['#c8dcf5', '#9ab8e0', '#4a5a80'], pumpkin: ['#e07a2a', '#ffd36b', '#3a5a2a'], marshlight: ['#7dff8a', '#d8ffd0', '#3fbf5f'], haunt: ['#9ab8e0', '#6a5238', '#8a8a90'], boo: ['#cfc8f4', '#8478c0', '#463a72'], ploughman: ['#c8b89a', '#6a5238', '#ffd36b'], strawking: ['#c8b264', '#9a2a2a', '#ffd36b'], kraken: ['#7c3a4a', '#e6c2a6', '#161018'], feeler: ['#7c3a4a', '#e6c2a6', '#3e1d2e'], masthead: ['#6faa4a', '#efe6d2', '#c9463d'], swornsword: ['#3a5a8a', '#c9d1dc', '#9a3a3a'], hedgeknight: ['#9a3a3a', '#c9d1dc', '#e0b040'],
+const COLS = { sexton:['#4e4460','#b07a2a','#d8d0bc'], duneworm:['#a8805a','#e2bb7a','#5a1e24'], scorpion:['#b8823a','#6e4a22','#e8c24a'], sandgob:['#6f8a3a','#d9b877','#9a7a4a'], cutthroat:['#35305a','#b8382c','#c9d1dc'], slinger:['#cfae74','#b8463a','#8a8278'], ambusher:['#d9b877','#2e2216','#ffd36b'], vulture:['#3a2e2a','#c86a5a','#e3d2a8'], bannerbearer:['#8e2a26','#6e747e','#e8c35a'], corpse:['#7a8088','#7a2a28','#d8d2b8'], barrowrider:['#8e2a26','#c8d6ff','#9ff0c0'], deathknight:['#3e4a44','#9ff0c0','#b8c4bc'], winchmaster:['#5a3a22','#6faa4a','#9a9aa4'], abbot:['#8e3a32','#f2ecd8','#e8a83a'], hedgewarden:['#5ea050','#6e4a2c','#b07cf0'], gargoyle:['#6a6280','#8e86a4','#c8a0ff'], gravewarden:['#e0d6bc','#3a3040','#ffd36b'], burngob:['#ff9a5c','#6a2a1a','#ffd36b'], emberwisp:['#ffd36b','#ff6b2c'], pyromancer:['#3a3040','#c9463d','#ff9a5c'], bonegob:['#d9d6c0','#8c8869'], undeadmage:['#7597ad','#d7e5df','#657384'], burieddead:['#849769','#684244','#cab1a0'],zombie:['#98a374','#575846'], husk:['#8fb257','#5c8a24'], apprentice:['#4a4a7c','#9be2ff'], harbormaster: ['#427d79','#c1a05c','#81e6c0'], familiar:['#726a8a','#a09ab8','#c6b9e0'], lanternshade:['#8fc2c7','#a6f0e8'],bonecorsair:['#d2d1b1','#794352'],tidemarauder:['#39706c','#d2d1b1'], bellcrab: ['#b7833e','#ef9177','#8fd160'], bellguard: ['#b88b4a','#426661','#96e8e3'], topiary: ['#4a8a44', '#8ac060', '#b07cf0'], armour: ['#a0a8b8', '#6a707e', '#b07cf0'], piece: ['#a0a8b8', '#6a707e', '#3a3e4a'], broom: ['#9a6a34', '#7a8494', '#8ac0ff'], tome: ['#6e2a3a', '#efe4c8', '#e8c24a'], mimic: ['#9a6a34', '#e0b050', '#f0f0e0'], imp: ['#c04a7a', '#f090b0', '#ffa040'], turret: ['#e0b050', '#a8782a', '#b07cf0'], homunculus: ['#e0c0c8', '#c8e8f0', '#b08a9a'], archmage: ['#7a4ab8', '#e0c8ff', '#e0b050'], scarecrow: ['#c8b264', '#8a4a2a', '#5e5444'], rook: ['#2a2a3a', '#5a6a8a', '#e8dcc0'], farmhand: ['#c8dcf5', '#9ab8e0', '#4a5a80'], pumpkin: ['#e07a2a', '#ffd36b', '#3a5a2a'], marshlight: ['#7dff8a', '#d8ffd0', '#3fbf5f'], haunt: ['#9ab8e0', '#6a5238', '#8a8a90'], boo: ['#cfc8f4', '#8478c0', '#463a72'], ploughman: ['#c8b89a', '#6a5238', '#ffd36b'], strawking: ['#c8b264', '#9a2a2a', '#ffd36b'], kraken: ['#7c3a4a', '#e6c2a6', '#161018'], feeler: ['#7c3a4a', '#e6c2a6', '#3e1d2e'], masthead: ['#6faa4a', '#efe6d2', '#c9463d'], swornsword: ['#3a5a8a', '#c9d1dc', '#9a3a3a'], hedgeknight: ['#9a3a3a', '#c9d1dc', '#e0b040'],
   badger: ['#8a8690', '#eeeae0', '#24202a'], gar: ['#5e6e34', '#d4d2a0', '#bfe6f5'],
   runner: ['#6a4a2a', '#e8dcc0', '#e0b040'], temperer: ['#6faa4a', '#6b4a2a', '#ffd36b'], crossbow: ['#3a5a8a', '#8a6a4a', '#c9d1dc'],
   closedhelm: ['#eef2f6', '#f2cc58', '#3d5eb0'], lancer: ['#3a5a8a', '#8a6a4a', '#c9d1dc'], drunk: ['#5e7a3a', '#c9a040', '#d0503e'],
@@ -5474,6 +5482,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'gravewarden' && graveOpen(e)) dmg = Math.round(dmg * GRAVE_W.kneelMul);
   if (e.t === 'duneworm' && e.st) { const k = DWM.wormTake(e.st); if (!k) return; if (k > 1) { dmg = Math.round(dmg * k); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 6); } }   /* THE DUNE WORM: the blade goes through sand; tangled in the awning he takes double (THE OPENING) */
   if (e.t === 'sandgob' && e.st && !DF.sandGobTouchable(e.st)) return;   /* THE SAND GOBLIN under its mound: the blade goes through sand */
+  if (e.t === 'ambusher' && e.st && !DF.ambusherTouchable(e.st)) return;   /* THE SAND-CLOAKED AMBUSHER under his cloak: the same */
   if (UNBF.UNB_FOES.has(e.t)) { const ud = unbHurt(e, dmg); if (ud === false) return; dmg = ud; }   /* THE UNBURIED FIELD: the fallen only fall under a banner; the Death Knight and the Barrow Rider open */   /* ON HIS KNEES IN THE GRAVE: double */
   if (e.t === 'pyromancer') { if (e.open > 0) dmg = Math.round(dmg * 1.5); e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0; }   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; overheated he takes half as much again */
   if (e.t === 'captain' && e.mode === 'beach') dmg = Math.round(dmg * 2); // beached on his own planking
@@ -16344,7 +16353,12 @@ function drawUnburied(cx, cy) { if (!UNB_FIELD) return; UNBF.drawField(g, UNB_FI
    THE SUN: open sand builds SUNSTROKE, shade resets it. The swim is drawn over the view, the meter is on the HUD, and every piece
    of shade on the screen is the same violet (C4). QUICKSAND holds you and never kills: jump, and keep jumping. THE AWNING WINCH
    rolls the camp's great awning out over the yard (the yard is shade) and back (the looters in the yard are in the sun). */
-const CV_FOES = new Set(['scorpion', 'sandgob', 'vulture']);
+const CV_FOES = new Set(['scorpion', 'sandgob', 'vulture', 'cutthroat', 'slinger', 'ambusher']);
+const CV_STEP = { scorpion: DF.scorpionStep, sandgob: DF.sandGobStep, vulture: DF.vultureStep, cutthroat: DF.cutthroatStep, slinger: DF.slingerStep, ambusher: DF.ambusherStep };
+const CV_HURT = { scorpion: 6, cutthroat: 6, slinger: 6, ambusher: 7 };   /* the frame each set is hurt in (the vulture's set ends perched and the goblin's burrowing) */
+const CV_BANDITS = new Set(['cutthroat', 'slinger', 'ambusher']);   /* THE LOOTERS: men, not desert creatures - the sun takes them too */
+SPR.cutthroat = CB.bakeCutthroat(); SPR.slinger = CB.bakeSlinger(); SPR.ambusher = CB.bakeAmbusher(); const CV_STONE = CB.bakeSlingStone();
+HAS_HURT.add('cutthroat'); HAS_HURT.add('slinger'); HAS_HURT.add('ambusher');
 let CV = null, CVART = null;
 SPR.scorpion = DFA.bakeScorpion(); SPR.vulture = DFA.bakeVulture(); SPR.sandgob = DFA.bakeSandGoblin();
 HAS_HURT.add('scorpion'); HAS_HURT.add('sexton');   /* THE SEXTON's set ends in his hurt pose (src/redraw/sexton.js) */   /* its set ends in its hurt pose; the vulture's ends perched and the goblin's burrowing, so they do not */
@@ -16421,7 +16435,7 @@ function updateCaravan(dt) {
     w.k += Math.sign(w.out - w.k) * Math.min(Math.abs(w.out - w.k), dt / 1.2);
     /* ROLL IT BACK AND THEY BURN: the looters working the yard are not desert creatures, and the sun takes them too */
     if (w.k < 0.05 && w.canopy && !w.hollow) { CV.burnT -= dt; if (CV.burnT <= 0) { CV.burnT = SUN.hurtEvery;
-      for (const e of enemies) if (e.alive && (e.t === 'thief' || e.t === 'archer') && e.x > w.canopy.x0 * TS && e.x < (w.canopy.x1 + 1) * TS) { hurtEnemy(e, 6, e.x, false); number(e.x, e.y - 22, 'SUNSTROKE', '#ff9a5c'); } } } }
+      for (const e of enemies) if (e.alive && CV_BANDITS.has(e.t) && e.x > w.canopy.x0 * TS && e.x < (w.canopy.x1 + 1) * TS) { hurtEnemy(e, 6, e.x, false); number(e.x, e.y - 22, 'SUNSTROKE', '#ff9a5c'); } } } }
   /* THE SUN */
   for (const pp of players) { if (!pp.sun) pp.sun = { v: 0 };
     if (pp.dead || state !== 'play') continue;
@@ -16452,11 +16466,11 @@ function updateDesertFoe(e, dt) {
   s.x = e.x; s.y = e.y;
   const w = { px: P.x, py: P.y, time, pface: P.face || 1 };
   const was = s.mode, x0 = e.x;
-  const evs = e.t === 'scorpion' ? DF.scorpionStep(s, w, dt) : e.t === 'sandgob' ? DF.sandGobStep(s, w, dt) : DF.vultureStep(s, w, dt);
+  const evs = CV_STEP[e.t](s, w, dt);
   if (e.t === 'vulture') { e.x = s.x; e.y = s.y; }
   else {
     let dx = s.x - x0;
-    if (e.t === 'sandgob' && was === 'under' && s.mode === 'buried') {   /* it comes up AHEAD of you, as a mound - where there is ground */
+    if ((e.t === 'sandgob' || e.t === 'ambusher') && was === 'under' && s.mode === 'buried') {   /* it comes up AHEAD of you, as a mound - where there is ground */
       if (!cvGround(s.x, e.y) || isSolid(Math.floor(s.x / TS), Math.floor((e.y - 8) / TS))) s.x = x0; dx = 0; e.x = s.x; }
     else if (dx !== 0 && !cvGround(e.x + Math.sign(dx) * (e.w / 2 + 3), e.y)) { dx = 0; s.x = x0; if (e.t === 'scorpion' && s.mode === 'walk') s.face = -s.face; }
     if (dx) { const r = moveBody(e, dx, 0, false); if (r.hitX && e.t === 'scorpion') s.face = -s.face; }
@@ -16464,8 +16478,14 @@ function updateDesertFoe(e, dt) {
   e.face = s.face || e.face; e.mode = s.mode === 'stingTell' ? 'tailTell' : s.mode;   /* tailTell: the wasp already owns 'stingTell' in the marks table, and its dart a shield turns */ e.vx = (e.x - x0) / Math.max(dt, 1e-4);
   if (s.mode !== was) e.cvHit = false;
   for (const v of evs) {
-    if (v.t === 'tell') { if (v.what === 'rise') { cvS('puff'); dust(e.x, e.y, 5); } else if (v.what === 'dive') cvS('screech'); continue; }
-    if (v.t !== 'hit' || e.cvHit || P.dead) continue;
+    if (v.t === 'tell') { if (v.what === 'rise') { cvS('puff'); dust(e.x, e.y, 5); } else if (v.what === 'dive') cvS('screech');
+      else if (v.what === 'feint') cvS('feintScrape'); else if (v.what === 'slash') cvS('bladeGlint'); else if (v.what === 'sling') cvS('slingWhirl');   /* the feint and the real cut do not sound alike either */
+      continue; }
+    if (v.t === 'feinted') { dust(e.x + (s.face || 1) * 5, e.y, 2); continue; }   /* the stamp */
+    if (v.t === 'land') { cvS('stoneThud'); dust(v.x, v.y, 3); continue; }
+    if (v.t !== 'hit' || P.dead) continue;
+    if (v.stone) { const [l, r, t, b] = v.box; if (s.stone && overlap({ l, r, t, b }, box(P))) { s.stone = null; damagePlayer(v.box[0] + 4, v.dmg, { who: e, name: 'A SLINGSTONE' }); } continue; }   /* a stone is spent on what it hits, blocked or not */
+    if (e.cvHit) continue;
     const [l, r, t, b] = v.box; if (!overlap({ l, r, t, b }, box(P))) continue;
     e.cvHit = true;
     damagePlayer(e.x, v.dmg, { unblockable: !v.blockable, who: e, name: v.what === 'sting' ? 'THE STING' : v.what === 'dive' ? 'THE DIVE' : null });
@@ -16486,6 +16506,16 @@ function drawCaravan(cx, cy) {
     const c = w.canopy; if (c && w.k > 0.02) { const x0 = c.x0 * TS, x1 = (c.x1 + 1) * TS, len = (x1 - x0) * w.k, y = c.row * TS;
       if (w.k > 0.95) { g.globalAlpha = 0.24; g.fillStyle = DZ.DESERT.shade; g.fillRect(Math.round(x0 - cx), Math.round(y + 10 - cy), Math.round(len), Math.round(LH * TS - y)); g.globalAlpha = 1; }
       for (let x = 0; x < len; x += A.canopy.width) g.drawImage(A.canopy, 0, 0, Math.min(A.canopy.width, len - x), A.canopy.height, Math.round(x0 + x - cx), Math.round(y - cy), Math.min(A.canopy.width, len - x), A.canopy.height); } }
+  /* THE SLINGERS (C3: where and when): while he whirls, a dotted arc grows from his sling to the spot he has marked and a red cross
+     stands on it; then the stone flies that arc. Step off the cross, or take it on the shield */
+  for (const e of enemies) { if (!e.alive || e.t !== 'slinger' || !e.st) continue; const s = e.st;
+    if (Math.abs(e.x - cx - VW / 2) > VW) continue;
+    if (s.mode === 'slingTell' || s.stone) { const k0 = s.mode === 'slingTell' ? 1 - Math.max(0, s.t) / DF.SLINGER.whirl : 1, arc = s.stone || { x0: e.x + (s.face || 1) * 6, y0: e.y - 14, tx: s.tx, ty: s.ty };
+      const blink = Math.floor(time * 12) % 2; g.fillStyle = blink ? '#ff6b6b' : '#fff6e0';
+      if (s.mode === 'slingTell') for (let i = 1; i < 14; i++) { if (i / 14 > k0 + 0.08) break; const [ax, ay] = DF.stoneAt(arc, i / 14); g.fillRect(Math.round(ax - cx), Math.round(ay - cy), 2, 2); }
+      const gx = Math.round(arc.tx - cx), gy = Math.round(arc.ty - cy); g.strokeStyle = blink ? '#ff6b6b' : '#fff6e0'; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(gx - 4, gy - 5); g.lineTo(gx + 4, gy + 1); g.moveTo(gx + 4, gy - 5); g.lineTo(gx - 4, gy + 1); g.stroke(); }
+    if (s.stone) g.drawImage(CV_STONE, Math.round(s.stone.x - 3 - cx), Math.round(s.stone.y - 3 - cy)); }
   /* THE VULTURES' SHADOWS on the sand: moving shade, and the mark of the dive */
   for (const e of enemies) { if (!e.alive || e.t !== 'vulture' || !e.st) continue; const s = e.st, gx = Math.round((s.mode === 'watch' || s.mode === 'dive' ? s.tx : e.x) - cx), gy = Math.round(s.groundY - cy);
     if (gx < -30 || gx > VW + 30) continue;
@@ -23215,7 +23245,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t !== 'wasp' && e.t !== 'queen' && e.t !== 'drone' && e.t !== 'vulture') g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, Math.round(e.y) - 2 - cy);
     let frame = 0;
     if (e.t === 'lancer') frame = lancerFrame(e);
-    else if (CV_FOES.has(e.t)) frame = e.hurtT > 0 && e.t === 'scorpion' ? 6 : e.st ? e.st.frame : 0;   /* THE SUNKEN CARAVAN: desert-foes.js names the frame */
+    else if (CV_FOES.has(e.t)) frame = e.hurtT > 0 && CV_HURT[e.t] !== undefined ? CV_HURT[e.t] : e.st ? e.st.frame : 0;   /* THE SUNKEN CARAVAN: desert-foes.js names the frame */
     else if (UNBF.UNB_FOES.has(e.t)) frame = UNBF.unbFrame(e);   /* THE UNBURIED FIELD: each set ends in its hurt pose, and a corpse lying down is not one */   /* mounted and on foot share one set: his hurt pose depends on which */
     /* THE ARCHMAGE'S LAST FRAME IS HIS BODY, not his hurt: his set ends hurt, dead, so every blow laid him out across the floor for a
        moment while his hurt box stood 34 px tall over him, and a swing over the fallen robe still cut him. And the familiar's set
