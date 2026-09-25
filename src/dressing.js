@@ -583,6 +583,7 @@ export const ALLOWED_DECORATIONS = {
     "kelp",
     "netPoles",
     "pierPost",
+    "riverStone",
     "rowboat",
     "rushes",
     "saltCrust",
