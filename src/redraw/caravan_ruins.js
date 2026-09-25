@@ -41,8 +41,8 @@ export function paintRuinRoom(g, st, sx, sy, w, h, tx0 = 0, ty0 = 0) {
   for (let y = sy, row = 0; y < sy + h; y += 8, row++) { g.fillStyle = RUIN.innerD; g.fillRect(sx, y + 7, w, 1);
     for (let x = sx - (row % 2 ? 6 : 0); x < sx + w; x += 12) { g.fillStyle = RUIN.innerD; g.fillRect(x, y, 1, 7); if (rnd() < 0.35) { g.fillStyle = RUIN.innerL; g.fillRect(x + 1, y, 10, 1); } } }
   for (let wy = sy + 12; wy < sy + h - 40; wy += 56) { const wx = sx + Math.floor(w / 2) - 2 + (((wy - sy) / 56) % 2 ? 6 : -6);   // a slit window every three and a half rows
-    g.fillStyle = RUIN.sky; g.fillRect(wx, wy, 4, 12); g.fillStyle = RUIN.sun; g.fillRect(wx, wy + 11, 4, 1);
-    g.globalAlpha = 0.14; g.fillStyle = RUIN.sun; g.beginPath(); g.moveTo(wx, wy + 12); g.lineTo(wx + 4, wy + 12); g.lineTo(wx + 16, wy + 40); g.lineTo(wx + 8, wy + 40); g.fill(); g.globalAlpha = 1; }
+    rect(g, wx, wy, 4, 12, RUIN.sky); rect(g, wx, wy + 11, 4, 1, RUIN.sun);
+    g.globalAlpha = 0.14; fillPoly(g, [[wx, wy + 12], [wx + 4, wy + 12], [wx + 16, wy + 40], [wx + 8, wy + 40]], RUIN.sun); g.globalAlpha = 1; }   /* the shaft of sun through it */
   for (let x = sx + 2; x < sx + w - 6; x += 7 + Math.floor(rnd() * 9)) { const bw = 4 + Math.floor(rnd() * 4), bh = 2 + Math.floor(rnd() * 3);   // the rubble at its foot
     g.fillStyle = RUIN.innerL; g.fillRect(x, sy + h - bh, bw, bh); g.fillStyle = RUIN.innerD; g.fillRect(x, sy + h - 1, bw, 1); }
   return true;
@@ -72,22 +72,22 @@ export function bakeRuinDoor(th = 3) {
 /* THE FAR TOWN: the ruins you are walking into, on the horizon behind the mesas' haze. Pale, flat, one step from the sky (no detail
    at this distance), so it reads as far: towers of different heights with broken tops, two domes, a broken arch and a colonnade */
 export function paintSkyline(g, w, h, seed = 7) {
-  const rnd = mulberry(seed * 977 + 3), base = h - 10, far = 'rgba(214,178,140,0.85)', near = 'rgba(196,156,118,0.9)', lit = 'rgba(240,214,176,0.9)';
+  const rnd = mulberry(seed * 977 + 3), base = h - 10, far = '#d6b28c', near = '#c89c76', lit = '#f0d6b0', slot = '#a88a90';   /* one step off the haze: far things are pale and flat */
   let x = 6;
   while (x < w - 20) { const kind = rnd();
     if (kind < 0.4) { const tw = 7 + Math.floor(rnd() * 6), th = 18 + Math.floor(rnd() * 22);                       // a tower, its top broken
-      g.fillStyle = far; g.fillRect(x, base - th, tw, th); g.fillStyle = lit; g.fillRect(x, base - th, 1, th);
-      for (let k = 0; k < tw; k += 2) if (rnd() < 0.6) { g.fillStyle = far; g.fillRect(x + k, base - th - 2 - Math.floor(rnd() * 3), 2, 3); }
-      g.fillStyle = 'rgba(120,96,110,0.5)'; g.fillRect(x + Math.floor(tw / 2) - 1, base - th + 5, 2, 4); x += tw + 4 + Math.floor(rnd() * 10); }
+      rect(g, x, base - th, tw, th, far); rect(g, x, base - th, 1, th, lit);
+      for (let k = 0; k < tw; k += 2) if (rnd() < 0.6) rect(g, x + k, base - th - 2 - Math.floor(rnd() * 3), 2, 3, far);
+      rect(g, x + Math.floor(tw / 2) - 1, base - th + 5, 2, 4, slot); x += tw + 4 + Math.floor(rnd() * 10); }
     else if (kind < 0.6) { const r = 7 + Math.floor(rnd() * 5);                                                     // a dome on its drum
-      g.fillStyle = near; g.fillRect(x, base - 8, r * 2, 8); g.beginPath(); g.ellipse(x + r, base - 8, r, r * 0.9, 0, Math.PI, 0); g.fill();
-      g.fillStyle = lit; g.fillRect(x + 2, base - 8 - Math.floor(r * 0.6), 2, 3); x += r * 2 + 5 + Math.floor(rnd() * 8); }
-    else if (kind < 0.8) { const aw = 18 + Math.floor(rnd() * 8), ah = 14 + Math.floor(rnd() * 8);                   // a broken arch
-      g.fillStyle = far; g.fillRect(x, base - ah, 4, ah); g.fillRect(x + aw - 4, base - ah + 5, 4, ah - 5);
-      g.beginPath(); g.moveTo(x, base - ah); g.quadraticCurveTo(x + aw / 2, base - ah - 10, x + aw * 0.7, base - ah - 2); g.lineTo(x + aw * 0.7, base - ah + 2); g.quadraticCurveTo(x + aw / 2, base - ah - 5, x + 4, base - ah + 2); g.fill();
+      ellipse(g, x + r, base - 8, r, r * 0.9, near); rect(g, x, base - 8, r * 2, 8, near); rect(g, x + 2, base - 8 - Math.floor(r * 0.6), 2, 3, lit);
+      x += r * 2 + 5 + Math.floor(rnd() * 8); }
+    else if (kind < 0.8) { const aw = 18 + Math.floor(rnd() * 8), ah = 14 + Math.floor(rnd() * 8), top = base - ah;   // a broken arch: one pier whole, the other fallen short
+      rect(g, x, top, 4, ah, far); rect(g, x + aw - 4, top + 5, 4, ah - 5, far);
+      fillPoly(g, [[x, top], [x + aw * 0.25, top - 6], [x + aw * 0.5, top - 8], [x + aw * 0.7, top - 5], [x + aw * 0.7, top - 1], [x + aw * 0.5, top - 4], [x + aw * 0.25, top - 2], [x + 4, top + 2]], far);
       x += aw + 6 + Math.floor(rnd() * 8); }
     else { const n = 3 + Math.floor(rnd() * 3);                                                                     // a colonnade, some of its columns down
-      for (let k = 0; k < n; k++) { const ch = rnd() < 0.3 ? 5 + Math.floor(rnd() * 5) : 14; g.fillStyle = near; g.fillRect(x + k * 5, base - ch, 3, ch); }
-      g.fillStyle = near; g.fillRect(x, base - 16, 5 * Math.min(2, n) + 3, 2); x += n * 5 + 6 + Math.floor(rnd() * 8); } }
-  g.fillStyle = 'rgba(214,178,140,0.6)'; g.fillRect(0, base, w, h - base);                                       // the sand they stand in, going into the haze
+      for (let k = 0; k < n; k++) { const ch = rnd() < 0.3 ? 5 + Math.floor(rnd() * 5) : 14; rect(g, x + k * 5, base - ch, 3, ch, near); }
+      rect(g, x, base - 16, 5 * Math.min(2, n) + 3, 2, near); x += n * 5 + 6 + Math.floor(rnd() * 8); } }
+  g.globalAlpha = 0.6; rect(g, 0, base, w, h - base, far); g.globalAlpha = 1;                                       // the sand they stand in, going into the haze
 }
