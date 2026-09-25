@@ -22190,8 +22190,8 @@ function drawFirePool(p, x0, x1, y, h, cx, cy, front) {
 /* DEADLY WATER: its own look, over the foul water's. Near-black, bones turning in it, a slow sick pulse, a skull post on each
    bank, and the first time it is on the screen, THIS WATER KILLS over it. Any pool can be drawn foul; this one is a death. */
 function drawDeadly(p, x0, x1, y, h, cx, cy) {
-  g.globalAlpha = 0.72; g.fillStyle = '#060c06'; g.fillRect(x0, y + 3, x1 - x0, Math.max(0, h - 3)); g.globalAlpha = 1;
-  g.globalAlpha = 0.22 + 0.12 * Math.sin(time * 1.6); g.fillStyle = '#6fe08a'; g.fillRect(x0, y - 3, x1 - x0, 3); g.globalAlpha = 1;
+  g.globalAlpha = 0.72; g.fillStyle = p.deepCol || '#060c06'; g.fillRect(x0, y + 3, x1 - x0, Math.max(0, h - 3)); g.globalAlpha = 1;   /* p.deepCol / p.glowCol: a deadly pool that is not green (the Falling Tower's witchwater) */
+  g.globalAlpha = 0.22 + 0.12 * Math.sin(time * 1.6); g.fillStyle = p.glowCol || '#6fe08a'; g.fillRect(x0, y - 3, x1 - x0, 3); g.globalAlpha = 1;
   for (let x = Math.floor(p.x0 / 30) * 30 + 11; x < p.x1; x += 30) {   /* the bones in it: skulls and a long bone, bobbing and turning */
     const sx = Math.round(x - cx + Math.sin(time * 0.6 + x) * 4), by = Math.round(y + 2 + Math.sin(time * 1.3 + x * 0.1) * 1.2); if (sx < x0 - 6 || sx > x1 + 6) continue;
     if (((x / 30) | 0) % 2) { g.fillStyle = '#d9d6c0'; g.fillRect(sx - 3, by - 3, 6, 4); g.fillRect(sx - 2, by + 1, 4, 1); g.fillStyle = '#0a100c'; g.fillRect(sx - 2, by - 2, 1, 1); g.fillRect(sx + 1, by - 2, 1, 1); }
@@ -22216,7 +22216,7 @@ function drawFoul(p, x0, x1, y, h, cx, cy) {
     if (sx < x0 - 8 || sx > x1) continue;
     g.fillStyle = ((x / 12) | 0) % 2 ? scumL : scum; g.fillRect(Math.round(sx), y + 1 + (Math.sin(time * 1.7 + x) > 0 ? 0 : 1), w, 2);
   }
-  g.fillStyle = p.poison ? 'rgba(170,255,90,0.85)' : 'rgba(180,210,110,0.75)';   // gas coming up out of it
+  g.fillStyle = p.gasCol || (p.poison ? 'rgba(170,255,90,0.85)' : 'rgba(180,210,110,0.75)');   // gas coming up out of it (p.gasCol: a pool that is not green - the Falling Tower's witchwater)
   for (let k = 0; k < (p.poison ? 11 : 7); k++) { const t = (time * 0.5 + k * 0.31) % 1, bx = p.x0 + 10 + ((k * 97) % Math.max(1, p.x1 - p.x0 - 20)) - cx, by = y + 26 - t * 24;
     if (bx > x0 && bx < x1 && by > y + 3) g.fillRect(bx, by, 2, 2); }
   /* POISON (the Undercrown's standing water, which kills): no wrecks in it, but bubbles that break on the surface and a sickly glow
@@ -23980,8 +23980,10 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
   drawRoomPaint(st, 0, 0, w, h, tx0, ty0);
   g.restore();
 }
+/* what stands in front of the tower's back wall, as BUILT (grid0): a floor that has fallen since is still where the wall was painted round it */
+const fallenBlocked = (tx, ty) => tx < 0 || ty < 0 || tx >= LW || ty >= LH || (grid0 || L.grid)[ty * LW + tx] !== T.AIR;
 function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
-  if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's */
+  if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time, fallenBlocked)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's - its holes and windows only where no tile stands in front of them (round 2) */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
   const hsh = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233 + tx0 * 0.7) * 43758.5453; return v - Math.floor(v); };

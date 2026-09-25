@@ -289,7 +289,10 @@ export function buildTowerAscent({ painter, T, TS }) {
      stones now: each four rows deep with a stone either side, so each is still a trap and still DEADLY (deadly-water.js). */
   if (cistern) { const { surf, bot } = cistern, open = x => L.grid[surf * W + x] === T.AIR && L.grid[(surf + 1) * W + x] === T.AIR;
     for (let x = X0; x <= X1; x++) { if (!open(x)) continue; let x1 = x; while (x1 + 1 <= X1 && open(x1 + 1)) x1++;
-      pools.push({ x0: x * TS, x1: (x1 + 1) * TS, y: surf * TS + 4, depth: 3 * TS, bottom: bot * TS, harm: true, poison: true, deadly: true, foulCol: '#5c8a24', foulColL: '#a6e04a', foulColD: '#1c3212' }); x = x1; } }
+      /* WITCHWATER, NOT A LAWN (round 2, docs/briefs/falling-tower-round2.md §1c). It was the Undercrown's green, and between the stones - a
+         bright flat top and the bubbles standing up off it - it read at play size as a row of GRASS TILES: the mistake the sanctum's fire
+         once made. The tower's own poison is violet-black under a pale scum, with its skull posts and its glow: still death, never grass. */
+      pools.push({ x0: x * TS, x1: (x1 + 1) * TS, y: surf * TS + 4, depth: 3 * TS, bottom: bot * TS, harm: true, poison: true, deadly: true, foulCol: '#5a2e6e', foulColL: '#b48ad8', foulColD: '#160a1e', gasCol: 'rgba(200,150,255,0.8)', deepCol: '#0c0612', glowCol: '#b48ad8' }); x = x1; } }
 
   /* THE PARAPET WAS GROWING GRASS. Every solid row in here is skinned as tower stone except this one, which nobody
      listed - so it fell through to the default ground kit and painted itself with palette.grass, a green mat lying on
@@ -329,7 +332,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     deckBreaks: breaks.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true })),   /* spine ledges: they come back (updateTowerAscent), or a fall into the water would be a soft-lock */
     mage: { shelves: [], skins, hedges: [], chains: [], hung, outside: 0, dais: [30, 40] },
     palette: { sky: 'mage', far: 'mage', mid: 'mage', near: 'mage', dress: 'village', haze: 'rgba(150,140,118,0.08)',
-      grass: '#4e6a52', grassL: '#6c8c70', grassD: '#34483a', dirt: '#4a4652', dirtL: '#645e6c', dirtD: '#2e2a36', canopy: ['#181428', '#221c36', '#2c2446', '#3a3058'] },
+      grass: '#46506a', grassL: '#56627e', grassD: '#343c52', dirt: '#4a4652', dirtL: '#645e6c', dirtD: '#2e2a36', canopy: ['#181428', '#221c36', '#2c2446', '#3a3058'] },   /* NO GRASS IN THE TOWER (round 2): its "grass" is the slate of its own stone, so any ground tile that ever shows is stone */
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hall' }],
     noCoin: [[0, W - 1, 0, SKY + 1]],
     /* THE SKY IS THE ARENA. trigger is never walked past: the carpet starts the fight when it is boarded (carpet.js) */
