@@ -60,6 +60,10 @@ function grow(L, ret, col, n) {
   if (R.interiors) R.interiors = R.interiors.map(([x0, x1, y0, y1, st]) => [sh(x0), sh(x1), y0, y1, st]); // keep the room's KIND: dropping it made every grown level's interior the default timber
   if (R.structures) R.structures = R.structures.map(z => ({...z,x0:sh(z.x0),x1:sh(z.x1)}));
   if (R.stone) R.stone = R.stone.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
+  /* AND THE CALMS, which are tile boxes like the stone. Nothing shifted them, so HIGHCROWN's - written before the furnace line and the
+     Captains Hall grew in - kept the banquet roof at 722-765 while the roof stood at 810-853, and the garrison stood a heavy on the
+     Captains Hall's slates at 797,7, out of everyone's reach (the level review, 2026-09-24). Here, so no level can drift again */
+  if (R.calm) R.calm = R.calm.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
   if (R.scree) R.scree = R.scree.map(z => ({ ...z, x0: sh(z.x0), x1: sh(z.x1) }));
   if (R.fog) R.fog = R.fog.map(z => ({ ...z, x0: shp(z.x0), x1: shpEnd(z.x1) }));
   if (R.slide) R.slide = { ...R.slide, x0: shp(R.slide.x0), x1: shpEnd(R.slide.x1) };
@@ -2662,6 +2666,10 @@ function undercrown() {
       grass: '#5a4a3a', grassL: '#6e5c48', grassD: '#3a2e22', dirt: '#3a3028', dirtL: '#4a3e32', dirtD: '#241d18',
       canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
+    /* THE WORKS BELL, which its own sign has promised since the day the level was built ("everything below here can hear it") and
+       which never had an alarm: rung, the gallery's end drops shut over the shaft down, and the works below come up it
+       (tools/bells.mjs found it, asking every level what it had asked of Highcrown) */
+    alarms: [{ id: 'works', gates: [[85, 30, 33]], garrison: [{ t: 'miner', x: 83, y: 33 }, { t: 'rockgoblin', x: 80, y: 33 }, { t: 'sprig', x: 82, y: 33 }] }],
     arena: { x0: 30 * TS, x1: 74 * TS, floor: 167 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'prince', music: 'musDungeon', tint: '#1e2420', tintA: 0.14, fx: 'dust', y0: 144 * TS, y1: 168 * TS },
   };
 }
@@ -3057,7 +3065,7 @@ function highcrown() {
   ent('hound', 64, 63, { face: -1 }); ent('soldier', 28, 63, { face: 1 });
   ent('sentry', 66, 63, { section: 'ward', range: 8, face: 1 });
   ent('bell', 84, 63, { section: 'ward' });
-  ent('sign', 26, 63, { text: 'CATCH THE SENTRY BEFORE HE RINGS THE BARRACKS BELL, OR BREAK THE BELL.' });
+  ent('sign', 26, 63, { text: 'CATCH THE SENTRY OR BREAK HIS BELL. RUNG, THE GRATE DROPS AND THE BARRACKS TURNS OUT.' });
   plat(91, 55, 6); ent('weight', 94, 55, { len: 6 }); // a counterweight over the barracks door (low enough to cut with a jump)
   ent('deco', 95, 63, { kind: 'cabin' });
   // the inner wall, its gate open until the alarm drops it
@@ -3082,7 +3090,7 @@ function highcrown() {
   ent('soldier', 138, 63, { face: -1 }); ent('javelin', 160, 63, { face: -1 });
   air(198, 201, 52, 53); lid(198, 201, 52);    // the stair up, through the floor above
   stair([[184, 62], [188, 60], [192, 58], [196, 56], [198, 54]]);
-  ent('sign', 134, 63, { text: 'HER WATCH WALKS THE HALL. THE GATE BY THE STAIR DROPS WHEN A BELL RINGS.' });
+  ent('sign', 134, 63, { text: 'HER WATCH WALKS THE HALL. RUNG, THE GATE BY THE STAIR STAYS DOWN UNTIL THE HALL IS CLEAR.' });
 
   // F1. THE KITCHENS (floor 52)
   ent('check', 196, 51);
@@ -3117,7 +3125,7 @@ function highcrown() {
   // F3. THE CHAPEL (floor 20) - the bell tower's own bell, two of the watch, the key on the altar
   ent('check', 202, 19);
   port(206, 14, 19); ent('lockgate', 206, 19, { needs: 'brass', h: 6 });
-  ent('sign', 198, 19, { text: 'THE CHAPEL. THE KEY TO HER ROOMS IS ON THE ALTAR. THIS BELL IS THE LOUDEST.' });
+  ent('sign', 198, 19, { text: 'THE CHAPEL. HER KEY IS ON THE ALTAR. THIS BELL IS THE LOUDEST: THE ROOF HEARS IT.' });
   ent('sentry', 186, 19, { section: 'chapel', range: 10, face: -1 }); ent('sentry', 166, 19, { section: 'chapel', range: 6, face: 1 });
   ent('bell', 176, 19, { section: 'chapel' });
   for (const x of [134, 154, 178, 196]) ent('torch', x, 19);
@@ -3176,7 +3184,7 @@ const crownReview = L => { const R = rv(L); R.ent('check', 62, 63);
     R.plat(149, 12, 3); R.plat(151, 10, 3);
     for (let x = 151; x <= 153; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
     for (let x = 194; x <= 196; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
-    R.ent('sign', 156, 7, { text: 'THE LEADS. THE HATCH AT THE FAR END DROPS YOU INTO THE CHAPEL: DOWN AND JUMP.' });
+    R.ent('sign', 156, 7, { text: 'THE KEEP ROOF. THE HATCH AT THE FAR END DROPS YOU INTO THE CHAPEL: DOWN AND JUMP.' });
     R.ent('deco', 170, 7, { kind: 'banner', v: 1 }); R.ent('deco', 182, 7, { kind: 'barrels' });
     // (the armoury gantry's ledges went out to the bailey with the armoury: they are laid in THE ARMOURY, below)
     // the far corner of the entrance hall past the stair, and the leads past the second hatch: something at the end of each
@@ -3197,7 +3205,7 @@ function growDown(L, n) { // add n rows under the level: each column carries on 
 }
 function shiftCrown(R, col, n) { // what grow() does not know about in the castle: the alarms, the smith's slag, the Queen's hall parts
   const sh = x => x >= col ? x + n : x, shp = p => p >= col * TS ? p + n * TS : p;
-  if (R.alarms) R.alarms = R.alarms.map(a => ({ ...a, gates: a.gates.map(([c, y0, y1]) => [sh(c), y0, y1]), garrison: a.garrison.map(gd => ({ ...gd, x: sh(gd.x) })) }));
+  if (R.alarms) R.alarms = R.alarms.map(a => ({ ...a, gates: a.gates.map(([c, y0, y1]) => [sh(c), y0, y1]), garrison: (a.garrison || []).map(gd => ({ ...gd, x: sh(gd.x) })), ...(a.wake ? { wake: [sh(a.wake[0]), sh(a.wake[1]), a.wake[2], a.wake[3]] } : {}) }));
   if (R.mini && R.mini.slag) R.mini = { ...R.mini, slag: R.mini.slag.map(shp) };
   /* AND HIS BEAM. beamL/beamR were never shifted, so once the castle grew round him they still said columns 142-182 while his armoury
      stood at 556-628: every time he took the beam he was clamped four hundred columns away, hanging at beam height outside his room. */
@@ -3440,7 +3448,7 @@ function highcrownWhole() {
     block(X, X + 1, 20, 25); block(X + 2, X + 3, 22, 25); block(X + 4, X + 5, 24, 25);   // the chapel door's landing, and three steps down into the hall
     block(X, X + 43, 8, 9); block(X + 42, X + 43, 10, 19);                   // the hall's roof, and its east wall over the door to the leads
     block(X + 32, X + 39, 24, 25);                                             // the high table's dais
-    ent('sign', X + 1, 19, { text: 'HER BANQUET HALL. CUT A CHANDELIER DOWN ON WHOEVER IS UNDER IT.' });
+    ent('sign', X + 1, 19, { text: 'HER BANQUET HALL, AND HER CAPTAIN AT THE HIGH TABLE. CUT A CHANDELIER DOWN ON HIS GUARD.' });
     ent('deco', X + 12, 25, { kind: 'longTable', v: 0 }); ent('deco', X + 23, 25, { kind: 'longTable', v: 1 });
     ent('deco', X + 34, 23, { kind: 'candelabra' }); ent('deco', X + 38, 23, { kind: 'candelabra' }); ent('deco', X + 8, 25, { kind: 'caskRack' });
     for (const x of [X + 14, X + 25]) ent('weight', x, 10, { len: 12, lamp: true, hang: true });   /* hung to a jump's cut over the floor (row 22): a lamp on the dais would be at the head of anyone stood on it */
@@ -3519,7 +3527,8 @@ function highcrownWhole() {
   { const X=762,n=48,F=grow(R,R,X,n);shiftCrown(F.R,X,n);
     F.block(X,X+n-1,20,F.R.H-1); F.block(X,X+n-1,8,9);
     F.R.interiors.push([X,X+n-1,10,19,'royal']); F.R.masonry.push([X,X+n-1,8,9],[X,X+n-1,20,26]);
-    F.ent('check',X+2,19);F.ent('sign',X+3,19,{text:'THE CAPTAINS HALL. GOBLINS DROP FROM THE BALCONIES. FALLING LAMPS STRIKE BOTH SIDES.'});
+    F.ent('sign',X+3,19,   /* (its checkpoint at X+2 went: eight tiles past the chapel's at 756, and the banquet room's door one stands at its far end, 809) */
+      {text:'THE CAPTAINS HALL. GOBLINS DROP FROM THE BALCONIES. FALLING LAMPS STRIKE BOTH SIDES.'});
     for(const dx of [12,28,40]) { F.ent('weight',X+dx,10,{len:6,lamp:true,hang:true,unstable:true});F.plat(X+dx+1,14,3); for(let y=14;y<20;y++)F.set(X+dx+3,y,T.NET); F.ent('soldier',X+dx+2,13,{face:-1,balcony:true}); }
     F.ent('heavy',X+23,19,{face:-1});
     for(const dx of [7,22,44])F.ent('torch',X+dx,19);
@@ -3537,6 +3546,24 @@ function highcrownWhole() {
   // THESE ARE FINAL COLUMNS. Nothing is grown after this line, so what is written here is what the built level
   // has; every grow() and shiftCrown() above is already done.
   for (const [x, y] of [[255, 63], [624, 61], [727, 51]]) R.ents.push({ t: 'temperer', x, y, face: -1 });
+
+  // ---- EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT (docs/briefs/highcrown-bells.md) ----
+  // The rule line promised it and only the Leads kept it: the ward's, the entrance hall's and the chapel's alarms went on
+  // 2026-09-11 when their gates became key portcullises ON THE SAME COLUMNS, and their bells, sentries and signs stayed behind,
+  // dead. An alarm gate lifts every PORT in its rows, so each of these stands on a column of its OWN, in front of its lock
+  // gate and never on it. Each hall answers its bell differently. FINAL COLUMNS: nothing is grown after this line.
+  //   THE WARD      the chase: one sentry, a long run to a bell in the open yard. The drop-grate in the inner gate's arch (the
+  //                 wall is over it) falls in front of the barred gate, and the barracks turns out of its own door - under the
+  //                 counterweight that hangs over that door.
+  //   THE HALL      the hall turns on you: nobody new comes; the watch already in it is marked, and the gate by the stair
+  //                 stays down in front of the iron gate until they are down.
+  //   THE CHAPEL    the loudest bell, with a sentry either side of it, so you catch one at most. The grate before the bone gate
+  //                 falls, and the roof hears it: its watch comes down through the hatch.
+  // Every one lifts when its watch is down or after twenty seconds (updateAlarms), and a death puts the hall back (resetCastle).
+  R.alarms = (R.alarms || []).concat([
+    { id: 'ward', gates: [[321, 58, 63]], garrison: [{ t: 'soldier', x: 315, y: 63 }, { t: 'javelin', x: 312, y: 63 }] },
+    { id: 'hall', gates: [[735, 54, 63]], wake: [678, 735, 54, 63] },
+    { id: 'chapel', gates: [[715, 10, 19]], garrison: [{ t: 'soldier', x: 747, y: 19 }, { t: 'javelin', x: 749, y: 19 }, { t: 'soldier', x: 751, y: 19 }] }]);
   return R;
 }
 
@@ -7824,6 +7851,15 @@ const AMBUSH = {
     waves: [[['scout', 486], ['scout', 514], ['wight', 500], ['crab', 492]], [['tideguard', 506], ['scout', 514], ['watch', 488], ['snuffer', 498]]] }],
   waymeet: [{ name: 'THE MARKET HALL', row: 35, wallL: 95, wallR: 123, check: [91, 35],
     waves: [[['swornsword', 100], ['runner', 118], ['swornsword', 110], ['hedgeknight', 114]], [['swornsword', 112], ['crossbow', 119], ['swornsword', 100], ['hedgeknight', 106]]] }],
+  /* THE BANQUET HALL (docs/briefs/highcrown-bells.md): her captain at the high table and his guard sat down to eat, and both doors
+     drop behind you. A hall sixteen rows high with two chandeliers on long chains over the floor: the room's own machinery, cut
+     down on whoever is under it. Led by THE GOBLIN CAPTAIN (a brute, the kitchen's kind): the storm's room is a pike's and the Long
+     Water's a tideguard's, and a heavy would be THE KING'S CHAMPION, whom the siege yard already has. Not the Captains Hall next
+     door: its balcony goblins are its own tested encounter (tools/gallery-runtime.mjs), and a room is emptied when it is built.
+     The west gate stands on the floor at the foot of the steps down from the Captains Hall; the east is the door to the leads.
+     The door checkpoint is the Captains Hall's east end, clear of the sign on the landing. */
+  crown: [{ name: 'THE BANQUET HALL', row: 25, wallL: 816, wallR: 852, check: [809, 19],
+    waves: [[['brute', 838, null, { elite: true }], ['soldier', 826], ['hearthgob', 830], ['javelin', 846, 23]]] }],
 };
 /* THE ROOM'S OWN MACHINERY STAYS: a firepit, a hanging ram or a rockfall is a hazard to knock them into, not a creature */
 const AMB_KEEP = new Set(['rockfall', 'catapult', 'towertop', 'dropcage', 'firepit', 'firevent', 'hotplate', 'hammer', 'skybolt', 'sweep', 'bale', 'ram', 'gas', 'timber', 'minerlamp', 'ballast']);
@@ -7870,7 +7906,7 @@ const ELITES = {
   moor: [['goat', 168, 21, { gate: 200 }], ['troll', 432, 13]],
   storm: [['pike', 250, 29, { gate: 257 }]],
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
-     its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 792 is left alone */
+     its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 880 is left alone */
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],
   longwater: [['tideguard', 419, 26, { gate: 427 }]],
   reef: [['tideguard', 355, 25, { gate: 361 }]],   /* on the dry ledge out of the last of the water, holding the climb to the wreck */

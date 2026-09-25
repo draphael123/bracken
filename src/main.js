@@ -17682,7 +17682,10 @@ function raiseAlarm(id) {
   const sec = (L.alarms || []).find(a => a.id === id); if (!sec || sec.on || sec.done) return;
   sec.on = true; sec.onT = 0; SFX.thunder(); SFX.clank(); SFX.bellow(); shakeCam(5); flash = Math.max(flash, 0.18);
   for (const [col, y0, y1] of sec.gates) closeGate(col, y0, y1);
-  for (const gd of sec.garrison) { const n0 = enemies.length; spawnEnt({ t: gd.t, x: gd.x, y: gd.y, face: gd.face || -1 }); for (let i = n0; i < enemies.length; i++) enemies[i].garrison = id; burst(gd.x * TS + 8, gd.y * TS, 8, ['#5a2a7a', '#e0b040'], 50, 0.4); }
+  for (const gd of (sec.garrison || [])) { const n0 = enemies.length; spawnEnt({ t: gd.t, x: gd.x, y: gd.y, face: gd.face || -1 }); for (let i = n0; i < enemies.length; i++) enemies[i].garrison = id; burst(gd.x * TS + 8, gd.y * TS, 8, ['#5a2a7a', '#e0b040'], 50, 0.4); }
+  /* A HALL THAT TURNS ON YOU (sec.wake, a tile box): nobody new comes - the bell turns out the watch already standing in it, each one
+     marked, and the gate stays down until they are down. Highcrown's entrance hall (docs/briefs/highcrown-bells.md) */
+  if (sec.wake) { const [x0, x1, y0, y1] = sec.wake; for (const e of enemies) if (e.alive && !e.elite && !e.harmless && !e.garrison && e.t !== 'folk' && e.x >= x0 * TS && e.x < (x1 + 1) * TS && e.y >= y0 * TS && e.y <= (y1 + 1) * TS + 2) { e.garrison = id; burst(e.x, e.y - 10, 5, ['#5a2a7a', '#e0b040'], 40, 0.35); } }
 }
 function updateAlarms(dt = 1 / 60) {
   // the gates lift when the garrison is down, or after twenty seconds whatever is left of it:
