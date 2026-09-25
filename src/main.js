@@ -43,7 +43,8 @@ import {updateGasVents,drawGasVents} from './burial-expansion.js'; import {updat
 import {updateKeepPassages,drawKeepPassages} from './keep-passages.js';
 import {whirlInit,updateWhirlpools,drawWhirlpools,strikeLever,whirlKey} from './whirlpools.js';   /* THE KEEP'S WHIRLPOOLS: the pull, the air they burn, and the lever each one shows you (docs/briefs/keep-rework-2.md) */
 import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js';
-import {bakeBellcrab,bakeBellguard} from './bellcrab.js';
+import {bakeBellcrab,bakeBellguard,bakeBellcrabOut,bakeBellShell,BELL,BELL_OUT_F,bellOutFrame} from './bellcrab.js';
+import * as DH from './deep-holds.js';
 import { lanceSupport, LANCE_SUPPORT } from './lance-support.js';   /* THE QUEEN'S BOWS: the archers he calls to the end lookouts (docs/briefs/lance-support.md) */
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import {fallBounds} from './waterfalls.js';
@@ -236,7 +237,7 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (1 + 0.075 * LV_GROW())); // (HEAVY PLUNGE and FIREDROP were two ranks of this: the level brings it now)
-const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, wormLunge: DWM.WORM.dmg.lunge, wormBite: DWM.WORM.dmg.bite, sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lever, minerPick:16, abbot:ABBOT.dmg.censer, abbotChain:ABBOT.dmg.cast, abbotProcess:ABBOT.dmg.process, abbotKnell:ABBOT.dmg.knell, tome:TOME.dmg, hedgewarden:18, gravewarden:20, pyroStaff:9, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroJet:10, pyroStep:14, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 20, bellSlam: 28, bellPressure: 18, bellCharge: 26, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 12, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 22, krakSweep: 18, krakGrip: 6, krakDrag: 20, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7, temperCut: 13, temperShove: 6, temperQuench: 20,
+const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, wormLunge: DWM.WORM.dmg.lunge, wormBite: DWM.WORM.dmg.bite, sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lever, minerPick:16, abbot:ABBOT.dmg.censer, abbotChain:ABBOT.dmg.cast, abbotProcess:ABBOT.dmg.process, abbotKnell:ABBOT.dmg.knell, tome:TOME.dmg, hedgewarden:18, gravewarden:20, pyroStaff:9, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroJet:10, pyroStep:14, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 26, bellSlam: 34, bellPressure: 24, bellCharge: 32, bellSnip: 18, bellLeap: 24, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 12, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 22, krakSweep: 18, krakGrip: 6, krakDrag: 20, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7, temperCut: 13, temperShove: 6, temperQuench: 20,
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16, drunkLob: 10, drunkStool: 14, drunkBottle: 12, drunkGlass: 8,
   priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, princeCut: 22, princeRise: 26, princeCrown: 16, princeWind: 12, courtier: 12, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, venomTick: 5, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawLunge: 22, mawTail: 18, mawRoll: 8, mawDrown: 20, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, fledgling: 10, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, tipplerBar: 15, tipplerOre: 14, shearSnip: 12, shearCut: 16, gafferHook: 16, gafferHaft: 13, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, badger: 12, gar: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20, gobpriest: 0, priestCenser: 10, priestBell: 7, gobmage: 0, gobBolt: 12, kingWhirl: 16, kingGulp: 10, merrowSpear: 12, merrowSurge: 8, merrowBrute: 16, gobRune: 16, pufferBurst: 10, jelly: 8, mantaDive: 16,
@@ -667,7 +668,7 @@ const skillPress = k => [P.fRelease || (throwPress && !(isReaper() && (P.harvest
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
 /* THE HEXED FIELDS' creatures, its family and its two big ones */ { try { SPR.scarecrow = FF.bakeScarecrow(); SPR.rook = FF.bakeRook(); SPR.farmhand = FF.bakeFarmhand(); SPR.pumpkin = FF.bakePumpkin(); SPR.marshlight = FF.bakeMarshlight(); SPR.haunt = FF.bakeHaunt(); SPR.boo = FF.bakeBoo(); const fg = FF.bakeFarmGhosts(); SPR.ghostfarmer = fg.farmer; SPR.ghostwife = fg.wife; SPR.ghostchild = fg.child; SPR.ploughman = SK.bakePloughman(); SPR.strawking = SK.bakeStrawKing(); SPR.ploughHead = SK.bakePloughHead(); } catch (err) { console.error('the fields art', err); } }
 /* THE MAGE'S FOLLY: what got loose in the tower, the mini, the boss and his familiar, and the apprentice */ { try { SPR.topiary = MF.bakeTopiary(); SPR.armour = MF.bakeArmour(); SPR.piece = MF.bakePiece(); SPR.broom = MF.bakeBroom(); SPR.mimic = MF.bakeMimic(); SPR.imp = MF.bakeImp(); SPR.turret = MF.bakeTurret(); SPR.homunculus = MF.bakeHomunculus(); SPR.archmage = MF.bakeArchmage(); SPR.undeadmage=bakeUndeadMage(); SPR.familiar = MF.bakeFamiliar(); SPR.familiarSmall=smallerFamiliar(SPR.familiar); SPR.apprentice = MF.bakeApprentice(); SPR.tome = bakeTome(); } catch (err) { console.error('the tower art', err); } }
-const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.crow = bakeCrow(); SPR.horn = bakeHornblower(); SPR.bale = bakeBale(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.tippler = bakeTippler(); SPR.sheargob = bakeSheargob(); SPR.gaffer = bakeGaffer();   /* THE ORE ROAD'S OWN THREE */ SPR.propman = bakePropman(); SPR.clinger = bakeClinger(); SPR.prince = bakeBuriedPrince(); SPR.courtier = bakeCourtier(); SPR.prise = bakePrise(); SPR.holdfast = bakeHoldfast(); SPR.bellcrab = bakeBellcrab(); SPR.harbormaster = bakeHarbormaster(); SPR.burieddead=bakeBuriedDeadKing(); SPR.bonegob=bakeBoneGob();SPR.bonearcher=bakeArcher({ H: '#3a3530', g: '#d9d6c0', G: '#8c8869', e: '#241f1a', b: '#4a4436', r: '#2e2a24', w: '#6a5a44' });SPR.husk=bakeDead(false,'husk');SPR.apprentice=bakeDead(false,'apprentice');SPR.zombie=bakeDead(); SPR.bellguard = bakeBellguard(); SPR.lanternshade = bakeCoastalFoe('lanternshade'); SPR.bonecorsair = bakeCoastalFoe('bonecorsair'); SPR.tidemarauder = bakeCoastalFoe('tidemarauder'); SPR.drownedking = bakeDrownedKing(); SPR.swornsword = bakeSwornSword(); SPR.hedgeknight = bakeHedgeKnight(); SPR.runner = bakeRunner(); SPR.crossbow = bakeCrossbowman(); SPR.closedhelm = bakePaladinBoss(); SPR.lancer = bakeLancer(false); SPR.lancerRed = bakeLancer(true); SPR.lancerHorse = bakeLancerHorse(); SPR.guests = bakeGuests(); SPR.barkeep = bakeBarkeep(); SPR.drunk = bakeDrunk(); /* THE PALADIN keeps the Closed Helm's id; the serjeants and the beer garden are Waymeet's own */ SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = MON.bakeGuardian(); SPR.fledgling = MON.bakeFledgling(); SPR.gobpriest = MON.bakeGoblinPriest(); SPR.gobmage = MON.bakeGoblinMage(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.cutlass = bakeCutlass(); SPR.boarder = bakeBoarder(); SPR.marine = bakeMarine(); SPR.bosun = bakeBosun(); SPR.lookout = bakeLookout(); SPR.captain = bakeCaptain(); SPR.captain = bakeCaptain(); SPR.quarter = bakeQuarter(); SPR.sailor = bakeSailor(); SPR.netter = bakeNetter(); SPR.netArt = bakeNet(); SPR.urchin = bakeUrchin(); SPR.angler = bakeAngler(); SPR.petrel = bakePetrel(); SPR.reefmaw = bakeReefmaw(); SPR.turtle = bakeTurtle(); SPR.eel = bakeEel(); SPR.heronfoe = bakeHeronFoe(); SPR.badger = bakeBadger(); SPR.gar = bakeGar(); SPR.crab = bakeCrab(); SPR.scout = bakeScout(); SPR.siren = bakeSiren(); SPR.tideguard = bakeTideguard(); SPR.herald = bakeHerald(); SPR.fisher = [bakeFisher(0), bakeFisher(1)]; SPR.fisherIcon = bakeFisherIcon(); SPR.soldier = bakeSoldier(); SPR.javelin = bakeJavelineer(); SPR.heavy = bakeHeavyKnight(); SPR.windcaller = bakeWindcaller(); SPR.stormshaman = bakeGoblinShaman(); /* the boss has his own sprite now; the storm shaman keeps the old one */ SPR.seawitch = bakeSeaWitch(); /* and the Hurricane's caster is the ship's own */ SPR.merrowspear = bakeMerrowSpear(); SPR.merrowcaller = bakeMerrowCaller(); SPR.merrowbrute = bakeMerrowBrute(); /* THE MERROW: the sea's own tribe */ SPR.drownedknight = DKN.bakeDrownedKnight(); SPR.drownedcaptain = DKN.bakeDrownedCaptain(); /* THE LEADFOOT: the drowned keep's man-at-arms, who walks */
+const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.crow = bakeCrow(); SPR.horn = bakeHornblower(); SPR.bale = bakeBale(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.tippler = bakeTippler(); SPR.sheargob = bakeSheargob(); SPR.gaffer = bakeGaffer();   /* THE ORE ROAD'S OWN THREE */ SPR.propman = bakePropman(); SPR.clinger = bakeClinger(); SPR.prince = bakeBuriedPrince(); SPR.courtier = bakeCourtier(); SPR.prise = bakePrise(); SPR.holdfast = bakeHoldfast(); SPR.bellcrab = bakeBellcrab(); SPR.bellcrabOut = bakeBellcrabOut(); SPR.bellShell = bakeBellShell(); SPR.harbormaster = bakeHarbormaster(); SPR.burieddead=bakeBuriedDeadKing(); SPR.bonegob=bakeBoneGob();SPR.bonearcher=bakeArcher({ H: '#3a3530', g: '#d9d6c0', G: '#8c8869', e: '#241f1a', b: '#4a4436', r: '#2e2a24', w: '#6a5a44' });SPR.husk=bakeDead(false,'husk');SPR.apprentice=bakeDead(false,'apprentice');SPR.zombie=bakeDead(); SPR.bellguard = bakeBellguard(); SPR.lanternshade = bakeCoastalFoe('lanternshade'); SPR.bonecorsair = bakeCoastalFoe('bonecorsair'); SPR.tidemarauder = bakeCoastalFoe('tidemarauder'); SPR.drownedking = bakeDrownedKing(); SPR.swornsword = bakeSwornSword(); SPR.hedgeknight = bakeHedgeKnight(); SPR.runner = bakeRunner(); SPR.crossbow = bakeCrossbowman(); SPR.closedhelm = bakePaladinBoss(); SPR.lancer = bakeLancer(false); SPR.lancerRed = bakeLancer(true); SPR.lancerHorse = bakeLancerHorse(); SPR.guests = bakeGuests(); SPR.barkeep = bakeBarkeep(); SPR.drunk = bakeDrunk(); /* THE PALADIN keeps the Closed Helm's id; the serjeants and the beer garden are Waymeet's own */ SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = MON.bakeGuardian(); SPR.fledgling = MON.bakeFledgling(); SPR.gobpriest = MON.bakeGoblinPriest(); SPR.gobmage = MON.bakeGoblinMage(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.cutlass = bakeCutlass(); SPR.boarder = bakeBoarder(); SPR.marine = bakeMarine(); SPR.bosun = bakeBosun(); SPR.lookout = bakeLookout(); SPR.captain = bakeCaptain(); SPR.captain = bakeCaptain(); SPR.quarter = bakeQuarter(); SPR.sailor = bakeSailor(); SPR.netter = bakeNetter(); SPR.netArt = bakeNet(); SPR.urchin = bakeUrchin(); SPR.angler = bakeAngler(); SPR.petrel = bakePetrel(); SPR.reefmaw = bakeReefmaw(); SPR.turtle = bakeTurtle(); SPR.eel = bakeEel(); SPR.heronfoe = bakeHeronFoe(); SPR.badger = bakeBadger(); SPR.gar = bakeGar(); SPR.crab = bakeCrab(); SPR.scout = bakeScout(); SPR.siren = bakeSiren(); SPR.tideguard = bakeTideguard(); SPR.herald = bakeHerald(); SPR.fisher = [bakeFisher(0), bakeFisher(1)]; SPR.fisherIcon = bakeFisherIcon(); SPR.soldier = bakeSoldier(); SPR.javelin = bakeJavelineer(); SPR.heavy = bakeHeavyKnight(); SPR.windcaller = bakeWindcaller(); SPR.stormshaman = bakeGoblinShaman(); /* the boss has his own sprite now; the storm shaman keeps the old one */ SPR.seawitch = bakeSeaWitch(); /* and the Hurricane's caster is the ship's own */ SPR.merrowspear = bakeMerrowSpear(); SPR.merrowcaller = bakeMerrowCaller(); SPR.merrowbrute = bakeMerrowBrute(); /* THE MERROW: the sea's own tribe */ SPR.drownedknight = DKN.bakeDrownedKnight(); SPR.drownedcaptain = DKN.bakeDrownedCaptain(); /* THE LEADFOOT: the drowned keep's man-at-arms, who walks */
 SPR.watch = bakeWatch(); SPR.lampreeve = bakeLampreeve(); SPR.tollmaster = bakeTollmaster();
 SPR.puffer = bakePuffer(); SPR.jelly = bakeJellyfish(); SPR.lamprey = bakeLamprey(); SPR.manta = bakeManta();   /* the sea's own new wildlife */
 SPR.dummy = (() => { const pal = { s: '#b8a888', S: '#8a7a60', e: '#2a2230', w: '#6a4a2c', W: '#4a3220', y: '#c9b27c', Y: '#9a8050', r: '#c9463d' };
@@ -2119,7 +2120,7 @@ function spawnEnt(e) {
       case 'timber': props.push({ t: 'timber', x: px, y: py, x0: e.x0, x1: e.x1, row: e.row, floor: e.floor,
         deep: e.deep || 2, hp: e.hp || (e.state === 'cracked' ? 1 : 3), hp0: e.hp || (e.state === 'cracked' ? 1 : 3), state: e.state || 'sound', broken: !e.tomb && marks.has('tim:' + e.x), tomb: !!e.tomb, mound: e.mound,   /* A TOMB SET is put back on every attempt, and the dead set it again in the fight */
         creakT: 0, shake: 0, armT: 0, dust: 0 }); break;
-      case 'ballast': props.push({ t: 'ballast', x: px, y: py, kind: e.kind || 'stone', held: false, vy: 0, ph: Math.random() * 6, home: py }); break;
+      case 'ballast': props.push({ t: 'ballast', x: px, y: py, kind: e.kind || 'stone', held: false, vy: 0, ph: Math.random() * 6, home: py, hx: px, rack: !!e.rack, rope: e.rope }); break;   /* rack: the Bell Grave's (src/tribute-ship.js): it is set back when spent */
       case 'load': props.push({ t: 'load', kind: e.kind || 'sack', hoist: e.hoist, x: px, y: e.peg ? e.hy * TS : py, home: [px, py], peg: !!e.peg, pegX: e.peg ? e.peg * TS + 8 : undefined, hy: e.peg ? e.hy * TS : undefined, ropeTop: e.ropeTop !== undefined ? e.ropeTop * TS : undefined, floorY: py, state: e.peg ? 'hung' : 'free', vy: 0, vx: 0, cd: 0 }); break;   /* THE HOIST's loads: a sack, a coil or a stone, carried to a well (or hung on a peg over one) */
       case 'support': props.push({ t: 'support', x: px, y: py, top: (e.top || e.y - 5) * TS + TS, hp: 4, broken: false, shake: 0 }); break;
       /* THE QUEEN'S PILLARS (docs/briefs/queen-pillars.md): cracked drums of stone from her hall floor to its ceiling. A prop, not tiles - only her charge breaks one */
@@ -4051,7 +4052,7 @@ const BEASTS = [
   { t: 'deathknight', name: 'THE FIRST DEATH KNIGHT', sub: 'the scythe the order left', desc: 'Close in under the Swathe. Jump the Reaping or stand on a tomb. Leave the mark the Passing leaves. Guard the short cut. Let his Reaping drag one of his own risen dead in: he cuts it, and he is open. Past half, what falls in his chapel gets up again - finish it on the floor.' },
   { t: 'zombie', name: 'ZOMBIE',sub:'earth in its hands',desc:'Moving soil warns before it rises. Guard its reaching hands or jump away. If caught, move, jump or strike to break the brief grab.' },
   { t: 'harbormaster', name: 'THE BREAKWATER WARDEN', sub: 'keeper of the sea gate', desc: 'Guard the anchor and harpoon. Jump the low surge; stay on the floor beneath the high surge. Leave the marked pressure columns. Each attack opens his helmet for a counterattack. At half strength he opens twin vents and calls the high tide.' },
-  { t: 'bellcrab', name: 'THE DIVING BELL', sub: 'a shell salvaged from the drowned', desc: 'The pincer can be guarded. Rise above the red floor ring before its ballast lands. Leave the yellow pressure circle before it bursts. Cross above a red scuttle and let it strike the wall. After each attack the bell VENTS: the exposed flesh takes a stronger blow. Half wounded, it scuttles faster.' },
+  { t: 'bellcrab', name: 'THE DIVING BELL', sub: 'a shell salvaged from the drowned', desc: 'The pincer can be guarded. Rise above the red floor ring before its ballast lands. Leave the yellow pressure circle before it bursts. Cross above a red scuttle. The shell is shut: let a stone go over the valve on its crown and the bell VENTS, open. Near the end the bell cracks and the crab comes out, fast and soft.' },
   { t: 'bellguard', name: 'THE BELLGUARD', sub: 'a diver who never came back', desc: 'His yellow hook can be guarded. His red knell cannot: get outside its ring. The heavy helmet turns light cuts; a held blow or plunge dents it. He rests after ringing, and that is the time to close.' },
   { t: 'drownedking', name: 'THE DROWNED KING', sub: 'the last one he could spare', desc: 'He has been down here the whole time, and the tribute was never going to the goblins. In his own water he SWIMS: he circles, comes in close, and marks a line before he runs you down it. Be across the line with a pillar at the end of it and he goes into the stone, open. THE FALL marks the floor under you and sticks in it. THE UNDERTOW takes anything LIGHT; a stone in your hands holds. THE ANCHOR goes round at his height and a shield fouls it. Stand on his floor and THE SLAM runs along it. THE MAELSTROM turns his water round himself and no shield turns a current: stroke away from it, or dash out of it, and cut him while he holds himself still in it. And he can drink the hall: DROWNED BREATH bursts the air you were going to, so go to another one.' },
   { t: 'propman', name: 'THE PROPMAN', sub: 'he holds the mine up', desc: 'He does not want to fight you. He wants to get to the nearest set of timber and PROP IT, and while he is standing by one that set will not come down - he puts the blow back in it faster than you can take it out. Kill the propman and then cut the timber; do it the other way round and you have done the work twice. He swings the prop itself, which is slow, wide and heavy. The Overman does not wait to be reached: he throws timber.' },
@@ -5023,7 +5024,7 @@ function spawnCorpse(e, dir) {
   if (e.t === 'burngob') villageAshes(e);
   if(e.t==='undeadmage')e.lastFrame=UNDEADMAGE_F.dead;
   if(e.t==='familiar')e.lastFrame=MF.FAMILIAR_F.dead;
-  if(e.t==='bellcrab') e.lastFrame=11;
+  if(e.t==='bellcrab') e.lastFrame=e.phase===3?BELL_OUT_F.hurt:11;
   if (e.t === 'closedhelm') e.lastFrame = 12;   /* he goes down on one knee, the sword in the ground */
   if (e.t === 'duneworm') { e.lastSet = SPR.duneworm; e.lastFrame = DFA.DW_F.dead; e.lastBigF = 1; if (L.arena) e.y = L.arena.floor; }   /* THE DUNE WORM goes down out along the sand, wherever he was */
   if ((e === boss || e.mini) && e.lastSet) { bossBodies.push({ set: e.lastSet, frame: e.t === 'prince' ? PRINCE_F.dead : e.t === 'archmage' ? (e.stage === 3 ? MF.FAMILIAR_F.dead : MF.ARCHMAGE_F.dead) : e.t === 'strawking' ? SK.STRAWKING_F.dead : (e.lastFrame || 0), x: e.x, y: e.y, face: e.face || 1, big: e.lastBigF || 1, t: 0, dur: 1.4, rider: e.lastRider || null }); (e.t==='bellcrab'?SFX.seaBell:SFX.gobDieLow)(); return; }   /* a boss leaves a body, not a tumble */
@@ -5454,7 +5455,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake')return;}   /* between two places, he is in neither */
   if(e.t==='burieddead'&&(e.mode==='burrow'||e.mode==='eruptTell'))return;
   if(e.t==='familiar')dmg*=e.open>0?1.8:.6;
-  if(e.t==='bellcrab') dmg*=e.open>0?1.35:.55;
+  if(e.t==='bellcrab') dmg*=e.phase===3?BELL.out.soft:e.open>0?BELL.openMul:BELL.shutMul;   /* shut, until a stone on his crown opens him; out of the bell, soft (src/bellcrab.js BELL) */
   if (e.t === 'grandmother' && (e.mode === 'vanish' || (e.alpha !== undefined && e.alpha < 0.35))) return;   /* nothing there to hit */
   if (e === boss && !bossActive && e.mode === 'sleep' && L.arena && e.alive) { bossStart(); SFX.clank(); return; } // a sleeping boss is not a free kill: the blow wakes the fight
   if (e.t === 'dummy') { if (dmg > 0) gainHeat(P.jetHit ? HEAT.jet : HEAT.hit); e.flash = 0.12; SFX.stone(); burst(e.x, e.y - 12, 6, COLS.dummy, 50, 0.4); if (dmg > 0) number(e.x, e.y - e.h - 6, Math.round(dmg), '#fff6e0'); return; } // straw takes it and stands
@@ -14909,20 +14910,52 @@ function updateBuriedDead(e,dt){
 function updateHarbormaster(e,dt){
  updateWarden(e,dt,{P,A:L.arena,hit:(x,dmg,hard)=>damagePlayer(x,dmg,{unblockable:hard,who:e}),seed:s=>seeds.push(s),say:(msg,hard)=>number(e.x,e.y-65,msg,hard?'#ff6b6b':'#8fd160'),sound:k=>SFX[k]()});
 }
+/* THE DIVING BELL (docs/briefs/deep-rework-2.md §4-5; numbers in src/bellcrab.js BELL). The ranking gave him 3: "vents after every
+   single attack" - his only opening was the rest he was always going to take (A11). Now his shell is SHUT, and the one thing that opens
+   it is the level's own verb: A BALLAST STONE, LET GO ABOVE HIM, LANDING ON THE VALVE ON HIS CROWN. The Bell Grave hangs two stone
+   racks over the floor he walks (A12), and when you are above him he comes to stand under you - he wants you in his pressure bell -
+   so the pressure tell is what pushes you off the rack and over his crown. He hits harder and rests less than he did, and at a third
+   of his health THE BELL CRACKS AND HE COMES OUT: the empty shell stays on the floor, and what wore it is fast, soft and desperate. */
 function updateBellcrab(e, dt) {
-  const A=L.arena,fl=A.floor,d=P.x-e.x,ad=Math.abs(d),dy=Math.abs(P.y-e.y);
+  const A=L.arena,fl=A.floor,d=P.x-e.x,ad=Math.abs(d),dy=Math.abs(P.y-e.y),B=BELL,O=B.out,p2=e.phase===2,p3=e.phase===3;
   e.modeT-=dt;e.open=Math.max(0,(e.open||0)-dt);e.vy=Math.min(300,e.vy+900*dt);let want=0;
-  const vent=()=>{e.mode = 'vent';e.modeT=1.8;e.open=1.8;e.vx=0;SFX.hiss();number(e.x,e.y-58,'THE BELL VENTS','#8fd160');};
+  const rest=t=>{e.mode = 'idle';e.modeT=t??(p3?O.rest:p2?B.rest2:B.rest);};
+  const vent=()=>{e.mode = 'vent';e.modeT=B.ventT;e.open=B.ventT;e.vx=0;e.crowned=(e.crowned||0)+1;SFX.hiss();SFX.seaBell();shakeCam(4);
+    number(e.x,e.y-58,'THE BELL VENTS','#8fd160');burst(e.x,e.y-e.h-4,18,['#e8f4f0','#bfe6f5','#8fd160'],90,0.8,-60,1);};
+  /* THE CROWN VALVE: a stone falling free (not in your hands) into the box over his crown. A rack's stone splits on it and the rack
+     sets another; any other stone is knocked off him onto the floor */
+  if(!p3&&!['sleep','wake','vent','crack'].includes(e.mode))for(const pr of props){
+    if(pr.t!=='ballast'||pr.held||pr.gone||!(pr.vy>20))continue;
+    if(Math.abs(pr.x-e.x)<B.valveW&&pr.y>e.y-e.h-B.valveUp&&pr.y<e.y-e.h+B.valveDown){
+      SFX.clank();SFX.stone();burst(pr.x,pr.y-4,10,['#8a919c','#5a6270'],70,0.5);
+      if(pr.rack){pr.gone=true;pr.backT=2.2;number(pr.x,pr.y-20,'IT SPLITS ON HIS VALVE','#bfe6f5');}else{pr.vx=(pr.x<e.x?-1:1)*90;pr.vy=-40;}
+      vent();break;}}
+  /* THE BELL CRACKS: a third of his health left, and the shell cannot hold him (a punctuation of 1.3 s, not a window) */
+  if(!p3&&e.phase>=2&&e.hp<=e.maxHp*B.crackAt&&!['crack','sleep','wake'].includes(e.mode)){e.mode = 'crack';e.modeT=B.crackT;e.vx=0;e.open=0;
+    number(e.x,e.y-62,'THE BELL CRACKS','#ff6b6b');SFX.crack();SFX.seaBell();shakeCam(8);burst(e.x,e.y-e.h+6,24,['#b7833e','#f3d28a','#e8f4f0'],120,0.9);}
   switch(e.mode){
     case 'sleep': break;
     case 'wake': if(e.modeT<=0){e.mode = 'idle';e.modeT=.6;}break;
+    case 'crack':
+      if(e.modeT<=0){e.phase=3;e.shell={x:e.x,y:fl,face:e.face};e.w=O.w;e.h=O.h;e.turn=0;e.open=0;rest(.3);
+        number(e.x,e.y-40,'HE COMES OUT','#ff6b6b');SFX.shoulder();burst(e.x,e.y-10,16,['#e58a78','#ffb8a4'],100,0.6);}break;
     case 'idle':
-      e.face=Math.sign(d)||e.face;want=ad>76?e.face*(e.phase===2?48:34):0;
-      if(e.modeT<=0&&!P.dead){const turn=e.turn++%4;
-        if(turn===0&&ad<115){e.mode = 'clawTell';e.modeT=.8;number(e.x,e.y-58,'!','#ffd36b');SFX.clank();}
-        else if(turn===1){e.mode = 'ballastTell';e.modeT=1;number(e.x,e.y-58,'!!','#ff6b6b');SFX.heavy();}
-        else if(turn===2||dy>60){e.bellMark={x:P.x,y:P.y-10};e.mode = 'pressureTell';e.modeT=.95;number(e.x,e.y-58,'!','#ffd36b');SFX.seaBell();}
-        else{e.mode = 'scuttleTell';e.modeT=.85;e.face=Math.sign(d)||e.face;number(e.x,e.y-58,'!!','#ff6b6b');SFX.charge();}
+      e.face=Math.sign(d)||e.face;
+      if(p3){want=ad>28?e.face*O.run:0;
+        if(e.modeT<=0&&!P.dead){const turn=e.turn++%3;
+          if(turn===0&&ad<70){e.mode = 'snipTell';e.modeT=O.snipTell;number(e.x,e.y-34,'!','#ffd36b');SFX.clank();}
+          else if(turn===2){e.mode = 'scuttleTell';e.modeT=O.scuttleTell;number(e.x,e.y-34,'!!','#ff6b6b');SFX.charge();}
+          else{e.mode = 'leapTell';e.modeT=O.leapTell;e.leapX=P.x;number(e.x,e.y-34,'!','#ffd36b');SFX.heavy();}}
+        break;}
+      /* WITH YOU OVER HIM he comes to stand under you; level with him he keeps his distance, as he always did */
+      /* over him and not yet under: he does not attack, he COMES - it is the one thing he does that the stone needs */
+      const over=P.y<e.y-B.overDy&&!P.dead;
+      if(over)want=ad>5?Math.sign(d)*B.under:0;else want=ad>76?e.face*(p2?B.walk2:B.walk):0;
+      if(e.modeT<=0&&!P.dead&&!(over&&ad>B.underReach)){const turn=e.turn++%4;
+        if(turn===0&&ad<115){e.mode = 'clawTell';e.modeT=B.tells.claw;number(e.x,e.y-58,'!','#ffd36b');SFX.clank();}
+        else if(turn===1){e.mode = 'ballastTell';e.modeT=B.tells.ballast;number(e.x,e.y-58,'!!','#ff6b6b');SFX.heavy();}
+        else if(turn===2||dy>60){e.bellMark={x:P.x,y:P.y-10};e.mode = 'pressureTell';e.modeT=B.tells.pressure;number(e.x,e.y-58,'!','#ffd36b');SFX.seaBell();}
+        else{e.mode = 'scuttleTell';e.modeT=B.tells.scuttle;e.face=Math.sign(d)||e.face;number(e.x,e.y-58,'!!','#ff6b6b');SFX.charge();}
       }break;
     case 'clawTell':
       if(e.modeT<=0){if(!P.dead&&Math.sign(d)===e.face&&ad<92&&dy<54)damagePlayer(e.x,DMG.bellClaw);SFX.slash();e.mode = 'claw';e.modeT=.18;}break;
@@ -14932,25 +14965,40 @@ function updateBellcrab(e, dt) {
     case 'pressureTell':
       if(e.modeT<=0){const m=e.bellMark;ringAt(m.x,m.y,34,'#bfe6f5',.5);burst(m.x,m.y,20,['#bfe6f5','#6cabb5'],90,.6,-40);SFX.splash();
         if(!P.dead&&Math.abs(P.x-m.x)<34&&Math.abs(P.y-10-m.y)<36)damagePlayer(e.x,DMG.bellPressure,{up:true});e.mode = 'pressure';e.modeT=.2;}break;
-    case 'scuttleTell': if(e.modeT<=0){e.mode = 'scuttle';e.modeT=1.5;e.hit=false;SFX.shoulder();}break;
+    case 'scuttleTell': if(e.modeT<=0){e.mode = 'scuttle';e.modeT=p3?O.scuttleT:1.5;e.hit=false;SFX.shoulder();}break;
     case 'scuttle':
-      want=e.face*(e.phase===2?270:230);e.vx=want;
-      if(!e.hit&&!P.dead&&ad<42&&dy<48){e.hit=true;damagePlayer(e.x,DMG.bellCharge,{ unblockable: true, up: true });}
-      if(e.modeT<=0)vent();break;
-    case 'claw': case 'slam': case 'pressure': if(e.modeT<=0)vent();break;
-    case 'vent': if(e.modeT<=0){e.mode = 'idle';e.modeT=.55;}break;
+      want=e.face*(p3?O.scuttle:p2?B.scuttle2:B.scuttle);e.vx=want;
+      if(!e.hit&&!P.dead&&ad<(p3?30:42)&&dy<48){e.hit=true;damagePlayer(e.x,DMG.bellCharge,{ unblockable: true, up: true });}
+      if(e.modeT<=0)rest();break;
+    /* PHASE THREE: the snip (two claws, close), and the leap at where you were */
+    case 'snipTell':
+      if(e.modeT<=0){if(!P.dead&&Math.sign(d)===e.face&&ad<O.snipReach&&dy<40)damagePlayer(e.x,DMG.bellSnip);SFX.slash();e.mode = 'snip';e.modeT=.16;}break;
+    case 'leapTell':
+      if(e.modeT<=0){const lx=Math.max(A.x0+28,Math.min(A.x1-28,e.leapX??P.x));e.vx=(lx-e.x)/O.leapT;e.vy=-O.leapV;e.mode = 'leap';e.modeT=O.leapT+.4;e.hit=false;SFX.shoulder();}break;
+    case 'leap':
+      want=e.vx;
+      if(!e.hit&&!P.dead&&ad<24&&dy<30){e.hit=true;damagePlayer(e.x,DMG.bellLeap,{up:true});}
+      if(e.modeT<=0){e.vx=0;rest();}break;
+    case 'claw': case 'slam': case 'pressure': case 'snip': if(e.modeT<=0)rest();break;
+    case 'vent': if(e.modeT<=0)rest(.55);break;
     default:e.mode = 'idle';e.modeT=.5;
   }
-  if(e.mode!=='scuttle')e.vx+=(want-e.vx)*Math.min(1,dt*7);
-  const r=moveBody(e,e.vx*dt,e.vy*dt,false);if(r.ground)e.vy=0;
+  if(e.mode!=='scuttle'&&e.mode!=='leap')e.vx+=(want-e.vx)*Math.min(1,dt*(p3?10:7));
+  if(['crack','vent'].includes(e.mode))e.vx=0;
+  const r=moveBody(e,e.vx*dt,e.vy*dt,false);if(r.ground){e.vy=0;if(e.mode==='leap'&&e.modeT<O.leapT+.25){ringAt(e.x,fl-2,26,'#ffd36b',.3);e.vx=0;rest();}}
   const edge=e.x<A.x0+28||e.x>A.x1-28;e.x=Math.max(A.x0+28,Math.min(A.x1-28,e.x));
-  if(e.mode==='scuttle'&&(r.hitX||edge)){vent();e.modeT=e.open=2;SFX.clank();shakeCam(5);}
+  /* HIS CHARGE INTO THE WALL is a clang and a stop - no longer an opening: the only way into the bell is through its valve */
+  if(e.mode==='scuttle'&&(r.hitX||edge)){rest(p3?O.rest:B.wallStun);e.vx=0;SFX.clank();shakeCam(5);}
 }
 function drawBellcrabMarks(e,cx,cy){
  const x=Math.round(e.x-cx),y=Math.round(e.y-cy),fl=Math.round(L.arena.floor-cy);
+ if(e.shell&&SPR.bellShell){const c=SPR.bellShell;g.drawImage(c,Math.round(e.shell.x-cx-c.width/2),Math.round(e.shell.y-cy-c.height));}   /* the bell he left, on the floor behind him */
  if(e.mode==='ballastTell'){g.globalAlpha=.55;g.strokeStyle='#ff6b6b';g.lineWidth=2;g.beginPath();g.ellipse(x,fl-2,110,9,0,0,7);g.stroke();g.globalAlpha=1;}
  if(e.mode==='pressureTell'&&e.bellMark){const m=e.bellMark;g.globalAlpha=.6;g.strokeStyle='#ffd36b';g.lineWidth=2;g.beginPath();g.arc(Math.round(m.x-cx),Math.round(m.y-cy),34,0,7);g.stroke();g.globalAlpha=1;}
  if(e.mode==='scuttleTell'){g.globalAlpha=.6;g.fillStyle='#ff6b6b';g.fillRect(e.face>0?x:x-160,fl-3,160,2);g.globalAlpha=1;}
+ if(e.mode==='leapTell'&&e.leapX!==undefined){g.globalAlpha=.55;g.strokeStyle='#ffd36b';g.lineWidth=1;g.beginPath();g.ellipse(Math.round(e.leapX-cx),fl-2,20,4,0,0,7);g.stroke();g.globalAlpha=1;}
+ /* THE VALVE, shown to a hero holding a stone: a cold ring on his crown, where it has to land */
+ if(e.phase!==3&&P.ballast&&e.mode!=='vent'){const k=.5+.5*Math.sin(time*6);g.globalAlpha=.35+.35*k;g.strokeStyle='#bfe6f5';g.lineWidth=1;g.beginPath();g.arc(x,y-e.h-3,7,0,7);g.stroke();g.globalAlpha=1;}
  if(e.open>0){g.strokeStyle='#8fd160';g.lineWidth=2;g.beginPath();g.ellipse(x,y-2,34,6,0,0,7);g.stroke();}
 }
 function updateLanternshade(e, dt){
@@ -18744,6 +18792,10 @@ const BALLAST_NAME = { stone: 'A STONE OFF THE BOTTOM', chain: 'A FATHOM OF HER 
 function updateBallast(dt) {
   for (const pr of props) {
     if (pr.t !== 'ballast') continue;
+    /* A RACK IS NEVER EMPTY (A12): the Bell Grave's stones are what open him, so one spent on his valve, or lying on the floor where
+       nobody can lift it back up, is set back on its rack */
+    if (pr.rack) { if (pr.gone) { pr.backT -= dt; if (pr.backT <= 0) { pr.gone = false; pr.x = pr.hx; pr.y = pr.home; pr.vy = 0; pr.vx = 0; pr.cd = 0.3; burst(pr.x, pr.y - 4, 6, ['#8a919c', '#bfe6f5'], 30, 0.4); } continue; }
+      if (!pr.held && !pr.vy && (Math.abs(pr.x - pr.hx) > 20 || Math.abs(pr.y - pr.home) > 20)) { pr.idleT = (pr.idleT || 0) + dt; if (pr.idleT > 3) { pr.gone = true; pr.backT = 0.6; pr.idleT = 0; } } else pr.idleT = 0; }
     if (pr.held) { pr.x = P.x + P.face * 5; pr.y = P.y - 3; continue; }
     /* it falls, in water or out of it, and it rests on whatever it finds */
     pr.vy = Math.min(140, pr.vy + (P.swim ? 160 : 900) * dt);
@@ -19162,6 +19214,9 @@ function deepHoles(hole, cx, cy) {   /* in the dark pass: every light down here 
 
 function drawBallast(cx, cy) {
   for (const pr of props) { if (pr.t !== 'ballast') continue;
+    if (pr.rope) { const [a, b, top] = pr.rope, yt = Math.round(top * TS - cy), yb = Math.round(pr.home - cy); for (const tx of [a, b]) { const x = Math.round(tx * TS + 8 - cx); g.fillStyle = '#6a5a3a'; g.fillRect(x, yt, 1, yb - yt); g.fillStyle = '#3a2e1e'; for (let yy = yt + 2; yy < yb; yy += 4) g.fillRect(x, yy, 1, 1); } }   /* the rack's ropes, to the rock over the grave (B9) */
+    if (pr.rack) { const rx = Math.round(pr.hx - cx), ry = Math.round(pr.home - cy); g.fillStyle = '#3a3e48'; for (const [ox, oy] of [[-9, 0], [9, 0], [-6, -3]]) { g.beginPath(); g.arc(rx + ox, ry - 3 + oy, 3, 0, 7); g.fill(); } g.fillStyle = '#5a4630'; g.fillRect(rx - 13, ry - 1, 26, 1); }   /* the rack: the rest of the pile */
+    if (pr.gone) continue;
     const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), k = pr.kind;
     if (k === 'chain') { g.fillStyle = '#5a6270'; for (let i = 0; i < 4; i++) { g.fillRect(x - 4 + (i % 2) * 3, y - 8 + i * 3, 5, 3); } g.fillStyle = '#8a919c'; for (let i = 0; i < 4; i++) g.fillRect(x - 4 + (i % 2) * 3, y - 8 + i * 3, 5, 1); }
     else if (k === 'chest') { g.fillStyle = '#3a2a1c'; g.fillRect(x - 6, y - 8, 12, 8); g.fillStyle = '#5a4026'; g.fillRect(x - 6, y - 8, 12, 2); g.fillStyle = '#8a919c'; g.fillRect(x - 6, y - 4, 12, 1); g.fillRect(x - 1, y - 8, 2, 8); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 4, 2, 2); }
@@ -23403,6 +23458,7 @@ function drawWorld(cx, cy, showPlayer) {
        moment while his hurt box stood 34 px tall over him, and a swing over the fallen robe still cut him. And the familiar's set
        has one frame fewer than his, so the same index ran past the end of it */
     else if (e.hurtT > 0 && e.t === 'archmage') frame = e.stage === 3 ? MF.FAMILIAR_F.hurt : MF.ARCHMAGE_F.hurt;
+    else if (e.hurtT > 0 && e.t === 'bellcrab' && e.phase === 3) frame = BELL_OUT_F.hurt;   /* out of the bell his hurt frame is his own set's */
     else if (e.hurtT > 0 && HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) frame = SPR[e.t].R.length - 1; // knocked about, and it shows
     else if (e.t === 'spit') frame = e.mouth > 0 ? 2 : (Math.floor(e.anim * 1.5) % 4 === 1 ? 1 : 0);
     else if (e.t === 'wasp') frame = Math.floor(e.anim * 30) % 3;
@@ -23460,6 +23516,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'crossbow') frame = e.mode === 'span' ? 0 : e.mode === 'loose' ? 2 : 1;
     else if (e.t === 'drunk') frame = e.mode === 'lobTell' ? 4 : e.mode === 'lob' ? 5 : e.mode === 'bottleTell' ? 6 : e.mode === 'down' ? 7 : e.mode === 'getup' ? 8 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 4) % 2 : Math.floor(e.anim * 1.6) % 2;   /* he sways where he stands, and the tell is on screen for all of it */
     else if (e.t === 'closedhelm') frame = e.open > 0 ? 11 : ({ oathTell: 3, radianceTell: 9, oathRecover: 11, cutTell: 3, cut: 4, thrustTell: 5, thrust: 6, bashTell: 7, bash: 8, judgeTell: 9, judge: 10, reward: 9 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 3) % 2 : 0);
+    else if (e.t === 'bellcrab' && e.phase === 3) frame = bellOutFrame(e);
     else if (e.t === 'bellcrab') frame=({clawTell:2,claw:3,ballastTell:4,slam:5,pressureTell:6,pressure:7,scuttleTell:8,scuttle:9,vent:10})[e.mode]??(Math.abs(e.vx)>2?1:0);
     else if (e.t === 'tidemarauder' && e.mini) frame = reaverFrame(e);
     else if (['lanternshade','bonecorsair','tidemarauder'].includes(e.t)) frame=e.mode==='rest'?4:e.mode?.endsWith('Tell')?(/cleave|rake/.test(e.mode)?3:2):Math.abs(e.vx)>2?1:0;
@@ -23649,7 +23706,7 @@ function drawWorld(cx, cy, showPlayer) {
     /* THE HURT FRAME (the redraw pass): a blow that lands shows on the body - but never over a windup, which is the tell */
     if (V2_HURT[e.t] !== undefined && e.flash > 0.06 && e.alive && !(typeof e.mode === 'string' && /Tell$|swing|swipe|dive|leap|aim|stab|cut/.test(e.mode))) frame = V2_HURT[e.t];
     /* THE HEXED FIELDS' BATS are the farm's dead ones, pale and red-eyed: baked the first time one is drawn, from the cave bat */
-    const sprSet = e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.stage === 3 ? SPR.familiar : SPR[e.t];
+    const sprSet = e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.stage === 3 ? SPR.familiar : SPR[e.t];
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
     const bigF = e.t === 'winchmaster' ? WINCH.scale : e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : e.elite ? EL.big : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
@@ -24064,6 +24121,7 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
 function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
+  if (L.deepHolds && DH.paintHold(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE DEEP: a cargo hold, a galley, a gun deck, the tribute hold (src/deep-holds.js) */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
   if (L.keepLook && KLK.paintKeepRoom(g, st, sx, sy, w, h, tx0, ty0, time, L)) return;   /* and THE UNDERWATER KEEP, section by section */
   const hsh = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233 + tx0 * 0.7) * 43758.5453; return v - Math.floor(v); };

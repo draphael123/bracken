@@ -18,6 +18,8 @@
      THE DUNE WORM     wind the hollow's awning out and let his breach come up under it: he comes up INTO the canvas, tangled, and
                        the awning comes down; the same breach in the open sand, or under the awning rolled IN, opens nothing (2026-09-25)
      THE SEXTON        make him rush you across a counting plank: it breaks under his charge and he is caught in the bell pit (2026-09-25)
+     THE DIVING BELL   let a ballast stone go over the valve on his crown: he vents, open; every attack of his left alone keeps the shell
+                       shut, and the rack sets its stone back (the Deep rework, docs/briefs/deep-rework-2.md)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -132,6 +134,12 @@ try {
    const rush=count=>{for(const c of planks){c.st='whole';c.t=0;}s.mode='stalk';s.cd=99;s.y=BK.L.mini.floor;s.x=24*16;s.face=1;BK.P.x=39*16+8;BK.P.y=D.deck*16-32;BK.sim(2);
      if(count){const c=planks.find(q=>q.x0===27);c.st='count';c.t=2.5;}s.mode='rushTell';s.modeT=0;let pit=0;for(let i=0;i<50;i++){BK.P.x=39*16+8;BK.sim(1);pit=Math.max(pit,s.mode==='pit'?s.open:0);}return{mode:s.mode,open:+pit.toFixed(1)};};
    out.sexton={whole:rush(false),counting:rush(true)};}
+  /* THE DIVING BELL: each attack forced and left to finish, then a rack's stone let go over his crown */
+  {const b=boot('deep');const alone={};
+   for(const m of ['clawTell','ballastTell','pressureTell','scuttleTell']){b.mode=m;b.modeT=0;b.open=0;b.bellMark={x:BK.P.x,y:BK.P.y-10};let op=0;for(let i=0;i<150;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);op=Math.max(op,b.open);}alone[m]=+op.toFixed(1);}
+   b.mode='pressure';b.modeT=2;b.vx=0;b.open=0;const st=BK.props().find(p=>p.t==='ballast'&&p.rack);st.held=false;st.x=b.x;st.y=b.y-b.h-30;st.vy=40;let op=0;for(let i=0;i<60;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);op=Math.max(op,b.open);}
+   const crowned={open:+op.toFixed(1),spent:!!st.gone};for(let i=0;i<200;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);}crowned.back=!st.gone&&Math.abs(st.x-st.hx)<2;
+   out.bell={alone,crowned};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -184,6 +192,9 @@ try {
   assert.equal(r.worm.rolledOut.awning, 0, 'and the awning comes down onto him: it has to be wound out again: ' + JSON.stringify(r.worm));
   assert.equal(r.sexton.whole.open, 0, 'THE SEXTON: a rush over whole planks opens nothing: ' + JSON.stringify(r.sexton));
   assert.ok(r.sexton.counting.open > 2, 'a rush over a counting plank breaks it and he is caught in the bell pit, open: ' + JSON.stringify(r.sexton));
+  for (const [m, op] of Object.entries(r.bell.alone)) assert.equal(op, 0, 'A11: THE DIVING BELL left alone through ' + m + ' keeps his shell shut: ' + JSON.stringify(r.bell));
+  assert.ok(r.bell.crowned.open > 2, 'a stone let go over his crown vents him, open: ' + JSON.stringify(r.bell));
+  assert.ok(r.bell.crowned.spent && r.bell.crowned.back, 'the rack\'s stone splits on his valve and the rack sets it back (A12): ' + JSON.stringify(r.bell));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

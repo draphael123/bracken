@@ -1,4 +1,5 @@
 import {expandKeep} from './keep-expansion.js';
+import {reworkDeep} from './tribute-ship.js';
 // Crop the authored trench and castle together with all of their water/air metadata.
 export function cropDeep(source, x0, y0, W, H, TS=16) {
  const x1=x0+W-1,y1=y0+H-1,R={...source,W,H,grid:new Uint8Array(W*H)};
@@ -54,6 +55,6 @@ export function crabTrench(source,T,TS=16){
  for(const x of [116,133,149]){R.airRooms.push([x,x+3,180,183]);R.deep.pockets.push([x,x+3,180,183]);R.deep.vents.push({x:x+1,y:198,h:9,hot:false,drain:false});}
  R.deep.zones.push({name:'THE BELL GRAVE',x0:112,x1:160,y0:180,y1:198,col:[120,195,190],a:0.12});
  R.arena={x0:112*TS,x1:155*TS,floor:199*TS,trigger:114*TS,wallL:111,wallR:155,boss:'bellcrab',music:'boss3',tint:'#14343a',tintA:0.12,fx:'motes',y0:180*TS,y1:199*TS};
- return R;
+ return reworkDeep(R,T,TS);   /* the holds, the tribute ship, the knights, the Bell's stone racks (src/tribute-ship.js) */
 }
 

@@ -4,7 +4,8 @@ import vm from 'node:vm';
 import {LEVELS,T} from '../src/level.js';
 import {floodReach} from '../src/reachcore.js';
 import {airBoxes} from '../src/deepair.js';
-import {SFX as REAL_SFX} from '../src/audio.js';   /* the real sound table: audio.js imports clean in Node, nothing is built until a sound is asked for */
+import {SFX as REAL_SFX} from '../src/audio.js';
+import {BELL} from '../src/bellcrab.js';   /* the real sound table: audio.js imports clean in Node, nothing is built until a sound is asked for */
 const deep=LEVELS.find(l=>l.id==='deep').build(),keep=LEVELS.find(l=>l.id==='keep').build();
 assert.equal(deep.arena.boss,'bellcrab');assert.equal(keep.arena.boss,'drownedking');assert.equal(LEVELS.find(l=>l.id==='keep').needs,'deep');assert.equal(LEVELS.find(l=>l.id==='causeway').needs,'keep');
 assert.equal(deep.ents.filter(e=>e.t==='stray').length,3);assert(!deep.ents.some(e=>e.t==='drownedking'));assert.equal(keep.ents.filter(e=>e.t==='bellguard').length,1);assert.equal(keep.ents.filter(e=>e.t==='silver').length,3);
@@ -16,10 +17,13 @@ for(const L of [deep,keep]){const reach=floodReach(L,T,{rides:true});for(const e
 const shut={...keep,grid:keep.grid.slice()};for(let y=52;y<=58;y++)shut.grid[y*keep.W+669]=T.SOLID;const closed=floodReach(shut,T,{rides:true});assert(closed.jumpNear(661,58),'the captain is reached with his door shut');assert(!closed.jumpNear(738,51),'his door blocks the throne room');
 const start={x:keep.START.x*16+8,y:(keep.START.y+1)*16-8};assert(airBoxes(keep).some(r=>start.x>r.l&&start.x<r.r&&start.y>r.t&&start.y<r.b),'Keep arrival breath');
 const s=fs.readFileSync(new URL('../src/main.js',import.meta.url),'utf8'),noop=()=>{},hits=[];
-const c=vm.createContext({L:{arena:{x0:0,x1:640,floor:320}},P:{x:330,y:320,dead:false},DMG:{bellClaw:20,bellSlam:28,bellPressure:18,bellCharge:26,bellHook:16,bellKnell:20},SFX:new Proxy({},{get:()=>noop}),number:noop,shakeCam:noop,ringAt:noop,burst:noop,moveBody:()=>({ground:true}),damagePlayer:(x,d,o)=>hits.push({x,d,o})});
+const c=vm.createContext({BELL,props:[],L:{arena:{x0:0,x1:640,floor:320}},P:{x:330,y:320,dead:false},DMG:{bellClaw:26,bellSlam:34,bellPressure:24,bellCharge:32,bellSnip:18,bellLeap:24,bellHook:16,bellKnell:20},SFX:new Proxy({},{get:()=>noop}),number:noop,shakeCam:noop,ringAt:noop,burst:noop,moveBody:()=>({ground:true}),damagePlayer:(x,d,o)=>hits.push({x,d,o})});
 vm.runInContext(s.slice(s.indexOf('function updateBellcrab('),s.indexOf('function drawBellcrabMarks('))+s.slice(s.indexOf('function updateBellguard('),s.indexOf('function updateDrownedKing(')),c);
-const enemy=mode=>({x:300,y:320,vx:0,vy:0,face:1,phase:1,mode,modeT:0,open:0,turn:0,cd:0,hit:false,bellMark:{x:330,y:310}});
-for(const [mode,hard]of[['clawTell',false],['ballastTell',true],['pressureTell',false],['scuttle',true]]){hits.length=0;c.P.x=330;c.P.y=320;const e=enemy(mode);c.updateBellcrab(e,.01);assert.equal(hits.length,1,mode);assert.equal(!!hits[0].o?.unblockable,hard,mode);for(let i=0;i<35;i++)c.updateBellcrab(e,.01);assert(e.open>0,mode+' must expose shell');}
+const enemy=mode=>({x:300,y:320,vx:0,vy:0,face:1,phase:1,mode,modeT:0,open:0,turn:0,cd:0,hit:false,bellMark:{x:330,y:310},w:42,h:43,hp:750,maxHp:750});
+for(const [mode,hard]of[['clawTell',false],['ballastTell',true],['pressureTell',false],['scuttle',true]]){hits.length=0;c.P.x=330;c.P.y=320;const e=enemy(mode);c.updateBellcrab(e,.01);assert.equal(hits.length,1,mode);assert.equal(!!hits[0].o?.unblockable,hard,mode);for(let i=0;i<35;i++)c.updateBellcrab(e,.01);assert(!(e.open>0),mode+' leaves the shell SHUT: he vents only for a stone on his crown (A11, docs/briefs/deep-rework-2.md)');}
+/* AND THE STONE OPENS HIM: one falling onto the valve on his crown vents him; the same stone falling beside him does not */
+{const e=enemy('idle');e.modeT=9;c.props.length=0;c.props.push({t:'ballast',x:302,y:320-43-2,vy:80,held:false});c.updateBellcrab(e,.01);assert.equal(e.mode,'vent','a stone on his crown vents him');assert(e.open>0,'and he is open');
+ const f=enemy('idle');f.modeT=9;c.props.length=0;c.props.push({t:'ballast',x:340,y:320-43-2,vy:80,held:false});c.updateBellcrab(f,.01);assert.notEqual(f.mode,'vent','a stone beside him does nothing');c.props.length=0;}
 for(const [mode,x,y]of[['ballastTell',330,280],['pressureTell',390,320],['clawTell',270,320],['scuttle',330,250]]){hits.length=0;c.P.x=x;c.P.y=y;c.updateBellcrab(enemy(mode),.01);assert.equal(hits.length,0,mode+' counter');}
 for(const[mode,hard]of[['hookTell',false],['knellTell',true]]){hits.length=0;c.P.x=330;c.P.y=320;const e=enemy(mode);c.updateBellguard(e,.01);assert.equal(hits.length,1);assert.equal(!!hits[0].o?.unblockable,hard);assert.equal(e.mode,'rest');}
 /* THE LEADFOOT IS GONE (Daniel, 2026-09-25: 'the single scuba enemy'), and THE DROWNED KNIGHTS stand where he stood - fewer than a
@@ -28,4 +32,4 @@ assert(!keep.ents.some(e=>e.t==='leadfoot'),'the Leadfoot is gone');
 {const dk=keep.ents.filter(e=>e.t==='drownedknight'),cap=keep.ents.filter(e=>e.t==='drownedcaptain');assert(dk.length>=5&&dk.length<=8,'drowned knights: '+dk.length);assert.equal(cap.length,1,'one captain');
  for(const e of [...dk,...cap]){assert(e.x<708,'not in the Drowned King arena');assert.notEqual(keep.grid[e.y*keep.W+e.x],T.SOLID,e.t+' in rock at '+e.x+','+e.y);}
  assert(cap[0].elite&&cap[0].gate===669,'the captain is an elite and holds the door at 669');}
-console.log('Deep/Keep crop metadata, tribute, rewards, arrival air, campaign order, four crab attacks and counters, two Bellguard tells, and the drowned knights\' places pass.');
+console.log('Deep/Keep crop metadata, tribute, rewards, arrival air, campaign order, four crab attacks and counters (none opens him; a stone on his crown does), two Bellguard tells, and the drowned knights\' places pass.');

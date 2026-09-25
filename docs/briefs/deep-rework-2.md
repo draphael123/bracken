@@ -41,7 +41,7 @@ would have none if the Deep met him first (a question for Daniel).
 
 ## 4. THE DIVING BELL: HE VENTS ONLY WHEN YOU DROP A STONE ON HIS CROWN (A11)
 - `vent()` comes off the end of every attack and off the wall-stop of his charge. The one way to open him: **a ballast stone,
-  let go above him, landing on the valve on his crown.** Then THE BELL VENTS (open 2.4 s, damage x1.6); shut, he takes x0.45.
+  let go above him, landing on the valve on his crown.** Then THE BELL VENTS (open 3 s, damage x2.2); shut, he takes x0.45.
 - **A12, the room supplies it:** three stone racks on hung platforms (rope to the ceiling, B9) over the floor he walks. A rack
   sets another stone on its platform whenever its last one is spent or lies on the floor. When you are above him he comes to
   stand under you (he wants you in his pressure bell), so the pressure tell pushes you off the rack and over his crown.

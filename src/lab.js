@@ -426,12 +426,28 @@ async function runbossLab(BK, opts) {
       /* THE DEEP: THE KING SWIMS. No stone - a stone is a man standing on the floor, and he is not there. The bot swims at him, up
          and down as well as along; it leaves a marked charge by going across its line and a marked fall by going aside, keeps a
          shield up for what a shield turns, and cuts him whenever he is in reach. */
-      if (boss.t === 'drownedking' || boss.t === 'bellcrab') { if (P.ballast) { P.ballast.held = false; P.ballast = null; }
+      if (boss.t === 'drownedking' || boss.t === 'bellcrab') { if (boss.t === 'drownedking' && P.ballast) { P.ballast.held = false; P.ballast = null; }
         k.left = k.right = k.up = k.down = k.jump = k.block = false;
         const by = boss.y - 16, dx = boss.x - P.x, dy = by - (P.y - 10), adx = Math.abs(dx), reach2 = LAB_REACH[h] + (boss.w || 20) / 2;
         if (OPEN(boss, BK) && boss.open > 0 && !wasOpen) opened++; wasOpen = boss.open > 0;
-        if (boss.t==='bellcrab' && ['ballastTell','scuttleTell','scuttle'].includes(boss.mode)) k.up=true;
-        else if (boss.t==='bellcrab' && boss.mode==='pressureTell' && Math.abs(P.x-boss.bellMark.x)<45) k[P.x<boss.bellMark.x?'left':'right']=true;
+        /* THE BELL. With a stone in hand his tells are answered by the stone (below); low and empty-handed his floor ring and his charge
+           are risen over; under the floor ring with a stone, up is not a stroke - it is letting go */
+        const bellGo = boss.t === 'bellcrab' && boss.phase !== 3 && !(boss.open > 0) && !['crack', 'wake', 'sleep'].includes(boss.mode), low = P.y > A.floor - 40;
+        if (bellGo && P.ballast && boss.mode === 'ballastTell' && low) BK.press('jump');
+        else if (boss.t === 'bellcrab' && !P.ballast && (low || !bellGo) && ['ballastTell', 'scuttleTell', 'scuttle'].includes(boss.mode)) k.up = true;
+        else if (boss.t === 'bellcrab' && !P.ballast && boss.mode === 'pressureTell' && Math.abs(P.x - boss.bellMark.x) < 45) k[P.x < boss.bellMark.x ? 'left' : 'right'] = true;
+        /* THE BELL IS SHUT UNTIL A STONE LANDS ON HIS CROWN (docs/briefs/deep-rework-2.md §4), and this is how the bot does it: swim up to a
+           rack's stone (walking onto it takes it), wait on the rack for him to come under, step off toward him, and let go (the jump key)
+           when the stone would fall onto his valve. A stone carried to the floor has missed: let it go and go back up. Open, it cuts him. */
+        else if (bellGo && (P.ballast || (P.breath ?? 6) >= 3)) { P.labAir = false; if (P.ballast && (P.breath ?? 6) < 2) BK.press('jump');   /* out of breath with a stone: let it go first */
+          const crownY = boss.y - boss.h, sy = P.y + 4;
+          if (!P.ballast) { const st = BK.props().filter(p => p.t === 'ballast' && p.rack && !p.gone && !p.held).sort((a, b) => Math.hypot(a.x - P.x, a.y - P.y) - Math.hypot(b.x - P.x, b.y - P.y))[0];
+            if (st) { if (Math.abs(st.x - P.x) > 3) k[st.x > P.x ? 'right' : 'left'] = true; if (P.y > st.y + 6) k.up = true; else if (P.y < st.y - 4) k.down = true;   /* the water floats you up past it: stop level with it */ }
+            if (adx <= reach2 && Math.abs(dy) < 22 && P.atk < 0 && f % 4 === 0) { P.face = Math.sign(dx) || P.face; k.up = k.down = false; BK.press('atk'); swings++; } }
+          else if ((P.ground || BK.L.grid[Math.floor(P.y / 16) * BK.L.W + Math.floor(P.x / 16)] === lvm.T.PLANK) && P.y < A.floor - 24) { if (adx < 40 || boss.mode === 'pressureTell') k[dx > 0 ? 'right' : 'left'] = true; }
+          else if (!P.ground) { if (adx > 2) k[dx > 0 ? 'right' : 'left'] = true;
+            if ((adx < 9 && sy < crownY - 2 && sy > crownY - 46) || sy > crownY + 6) BK.press('jump'); }
+          else BK.press('jump'); }
         else if (boss.mode === 'ramTell' || (boss.mode === 'ram' && Math.hypot(dx, dy) < 120)) { const nx = -(boss.rdy || 0), ny = boss.rdx || 1, s = ((P.x - boss.x) * nx + ((P.y - 10) - by) * ny) >= 0 ? 1 : -1;
           if (Math.abs(nx) > 0.35) k[nx * s > 0 ? 'right' : 'left'] = true; k[ny * s > 0 ? 'down' : 'up'] = true; }
         else if (boss.mode === 'diveTell' || boss.mode === 'dive') k[P.x < (boss.dcol !== undefined ? boss.dcol : boss.x) ? 'left' : 'right'] = true;
@@ -447,10 +463,13 @@ async function runbossLab(BK, opts) {
             if (Math.abs(gx - P.x) > 4) k[gx > P.x ? 'right' : 'left'] = true; if (gy < P.y - 4) k.up = true; else if (gy > P.y + 4) k.down = true;
             if (adx <= reach2 && Math.abs(dy) < 22 && P.atk < 0 && f % 3 === 0) { P.face = Math.sign(dx) || P.face; k.down = k.up = false; BK.press('atk'); swings++; } }
           else P.labAir = false; }
+        /* HE IS OPEN AND YOU ARE ON THE RACK OVER HIM: off it by its nearer end, and down to him */
+        else if (boss.t === 'bellcrab' && boss.open > 0 && P.y < A.floor - 24 && BK.L.grid[Math.floor(P.y / 16) * BK.L.W + Math.floor(P.x / 16)] === lvm.T.PLANK) { const tx = Math.floor(P.x / 16), ty = Math.floor(P.y / 16), G = BK.L.grid, W = BK.L.W;
+          let l = 0, r = 0; while (l < 8 && G[ty * W + tx - l - 1] === lvm.T.PLANK) l++; while (r < 8 && G[ty * W + tx + r + 1] === lvm.T.PLANK) r++; k[l < r ? 'left' : 'right'] = true; }
         else { P.labAir = false; if (adx > Math.max(10, LAB_REACH[h] * 0.6)) k[dx > 0 ? 'right' : 'left'] = true; if (dy < -10) k.up = true; else if (dy > 10) k.down = true;
           if (SHIELDED(h) && /Tell$/.test(boss.mode || '') && !HARD_TELLS.has(boss.t + '|' + boss.mode) && Math.hypot(dx, dy) < 120 && (h === 'paladin' || h === 'reaper' || boss.modeT < 0.2)) { k.block = true; k.left = k.right = k.up = k.down = false; P.face = Math.sign(dx) || P.face; }
           else if (adx <= reach2 && Math.abs(dy) < 22 && P.atk < 0) { P.face = Math.sign(dx) || P.face; k.down = k.up = false; BK.press('atk'); swings++; } }   /* a cut, not a plunge: down held under the swing is a down attack, and the lab was plunging him to death */
-        if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(dx), Math.round(dy), boss.open > 0 ? 'OPEN' : '', P.swim ? 'swim' : 'dry'].join(' ')); }
+        if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(dx), Math.round(dy), boss.open > 0 ? 'OPEN' : '', P.swim ? 'swim' : 'dry', P.ballast ? 'STONE' : '-', P.ground ? 'gnd' : 'air', Math.round(A.floor - P.y)].join(' ')); }
         const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp); if (P.dead) falls++;
         if (opts.onFrame) await opts.onFrame({ boss, P, f, h, lvl: lvId, open: boss.open > 0 });   /* THE CAMERA HOOK: with opts.draw the frame was rendered, and a recorder can take it */
         if (f % 600 === 599) await yieldNow();
@@ -1154,7 +1173,7 @@ async function runbossLab(BK, opts) {
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}) });
     await yieldNow();
     } finally { Math.random = realRandom; }
   }
