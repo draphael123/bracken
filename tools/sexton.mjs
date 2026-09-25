@@ -55,6 +55,14 @@ assert.equal(MARK['sexton|swingTell'], '!'); assert.equal(MARK['sexton|rushTell'
   assert.equal(sextonTake(b.e, 10), 10 * SEXTON.pitMul, 'double damage while he is caught'); assert.equal(sextonTake(a.e, 10), 10, 'and only then');
   step(b, SEXTON.pit + SEXTON.climb + 0.1); assert.equal(b.e.y, FLOOR, 'he climbs out onto a joist'); assert.notEqual(b.e.mode, 'pit');
   const w = rig({ planks: [{ x0: 520, x1: 700, st: 'count' }] }); w.e.cd = 99; w.P.x = 900; step(w, 3); assert.ok(w.e.x < 520, 'he will not WALK onto a counting plank: ' + Math.round(w.e.x)); }
+// ---- HE KNOWS WHERE THE ROCK IS (round 2, docs/briefs/falling-tower-round2.md §1a): a walk stops him, and he leaps it only to follow you ----
+{ const wall = x => !(x + 9 >= 608 && x - 9 < 656), inWall = x => !wall(x);
+  const r = rig(); r.c.stands = wall; r.e.x = 560; r.e.cd = 99; r.P.x = 590; step(r, 3); assert.ok(!inWall(r.e.x), 'he walked into the walk: ' + r.e.x); assert.notEqual(r.e.mode, 'leap', 'and he does not leap it to reach you on his own side');
+  const q = rig(); q.c.stands = wall; q.e.x = 560; q.e.cd = 99; q.P.x = 760; let top = 1e9, inside = 0; for (let i = 0; i < 240; i++) { updateSexton(q.e, 1 / 60, q.c); q.e.cd = 99; top = Math.min(top, q.e.y);
+    if (inWall(q.e.x) && q.e.y > FLOOR - 32 - 1) inside++; }
+  assert.ok(q.e.x > 656, 'you are past the walk and he never got over it: ' + Math.round(q.e.x)); assert.equal(inside, 0, 'over the walk he was lower than its top ' + inside + ' frames: through the stone, not over it');
+  assert.ok(top < FLOOR - 32, 'the leap never rose over the walk: ' + (FLOOR - top) + ' px');
+  const h = rig({ e: { mode: 'rushTell', modeT: 0, x: 560 } }); h.c.stands = wall; h.P.x = 760; step(h, 1); assert.ok(!inWall(h.e.x), 'his rush ran into the walk: ' + h.e.x); }
 // ---- ART ----
 { const { install } = await import('./node-canvas.mjs'); install(); const { bakeSexton } = await import('../src/redraw/sexton.js'); const S = bakeSexton();
   const idx = Object.values(SEXTON_F).flat(); assert.ok(idx.every(i => i < S.R.length), 'every pose in the table is in the set'); assert.equal(SEXTON_F.hurt, S.R.length - 1, 'hurt is the last frame (HAS_HURT)');

@@ -16,12 +16,18 @@
 // PHASE TWO (A10), at half: "HE RINGS THE WHOLE DECK." Every plank in the room counts on each toll, on a shorter count, and the bells
 // come down in pairs. The deck stops being somewhere to stand.
 // Touching him never hurts (the touch rule): his damage is his swing, his rush, his toll and his bells.
+// HE KNOWS WHERE THE ROCK IS (Falling Tower round 2, docs/briefs/falling-tower-round2.md §1a): his feet are the deck's, so he asks the
+// room where he can stand (c.stands: his box at the deck, clear of rock). A walk and a rush stop at a ringers' walk; to get past one
+// he LEAPS it - a committed hop that rises clear of the walk before it moves across; caught in the pit he stays inside the plank he
+// broke; he climbs out onto somewhere he can stand. Before this he walked, rushed and climbed straight into the stone walks
+// (Daniel: "gets stuck in walls a lot"); tools/mini-walls.mjs holds him to it.
 export const SEXTON = {
   hp: 520, walk: 28, keep: 34, cd: 1.25, cdP2: 0.95,
   tell: { swing: 0.8, rush: 0.85, toll: 1.0, drop: 0.95 },
   dmg: { swing: 17, rush: 14, toll: 14, drop: 16 },
   swingReach: 48, rushV: 150, rushT: 0.7, rushFrom: 80, tollR: 80, tollHit: 150, count: 3, countP2: 2,
   dropHalf: 14, pairGap: 44, pit: 3.2, pitMul: 2, climb: 0.55, pitDepth: 32,
+  leapT: 0.75, leapH: 50, leapReach: 150,   /* THE LEAP over a ringers' walk: its length, how high he goes (the walks stand 32 px), how far he looks for the far side */
   order: ['swing', 'toll', 'rush', 'swing', 'drop', 'rush', 'toll'],
 };
 const TELL = { swing: 'swingTell', rush: 'rushTell', toll: 'tollTell', drop: 'dropTell' };
@@ -29,7 +35,7 @@ const SAY = { swingTell: 'THE SWING', rushTell: 'HE CHARGES', tollTell: 'THE TOL
 export const sextonOpen = e => e.mode === 'pit';
 /* the frames of bakeSexton: 0 stand | 1,2 walk | 3 swing tell | 4 swing | 5 rush tell | 6 rush | 7 toll tell | 8 toll | 9 drop tell (hauling)
    | 10,11 caught in the pit (THE OPENING) | 12 climbing out | 13 hurt */
-export const SEXTON_F = { stand: 0, walk: [1, 2], swingTell: 3, swing: 4, rushTell: 5, rush: 6, tollTell: 7, toll: 8, dropTell: 9, drop: 9, pit: [10, 11], climb: 12, hurt: 13 };
+export const SEXTON_F = { stand: 0, walk: [1, 2], swingTell: 3, swing: 4, rushTell: 5, rush: 6, tollTell: 7, toll: 8, dropTell: 9, drop: 9, pit: [10, 11], climb: 12, leap: 12, hurt: 13 };
 export function sextonFrame(e) {
   const F = SEXTON_F, m = e.mode;
   if (m === 'pit') return F.pit[Math.floor((e.anim || 0) * 5) % 2];
@@ -44,10 +50,25 @@ function begin(e, what, c) {
   c.say(SAY[e.mode], what === 'toll' || what === 'drop');
 }
 /* into the pit: the plank under him is gone */
-function fall(e, c, why) {
+function fall(e, c, why, p) {
   e.mode = 'pit'; e.modeT = SEXTON.pit; e.open = SEXTON.pit; e.vx = 0; e.y = c.A.floor + SEXTON.pitDepth;
+  const span = c.pitSpan && c.pitSpan(p || c.plank(e.x)); if (span) e.x = Math.max(span[0], Math.min(span[1], e.x));   /* inside the hole he made, not in the joist beside it */
   c.say(why || 'CAUGHT IN THE BELL PIT', false, true); c.sound('crash'); c.shake(6); c.dust(e.x, c.A.floor);
 }
+/* THE LEAP: up clear of the walk first, then across, then down onto the far side (x moves only in the middle of the hop, when he is highest) */
+function leapStep(e, dt, floor) {
+  const J = e.leap; J.t += dt; const u = Math.min(1, J.t / SEXTON.leapT), k = Math.max(0, Math.min(1, (u - 0.3) / 0.4));
+  e.x = J.x0 + (J.x1 - J.x0) * k; e.y = floor - SEXTON.leapH * 4 * u * (1 - u); e.vx = (J.x1 - J.x0) / SEXTON.leapT;
+  if (u >= 1) { e.leap = null; e.mode = 'stalk'; e.y = floor; e.vx = 0; e.cd = Math.max(e.cd, 0.5); return true; } return false;
+}
+/* where the far side of whatever stops him is: the first place past it he can stand, within reach of a leap, and not on a counting or
+   fallen plank (he never walks onto one of those, and he does not jump onto one either) */
+const shaky = p => !!p && (p.st === 'count' || p.st === 'down');
+function farSide(e, c, dir) { let blocked = false;
+  for (let d = 2; d <= SEXTON.leapReach; d += 2) { const x = e.x + dir * d, q = x + dir * 4; if (x <= c.A.x0 + 16 || q >= c.A.x1 - 16 || q <= c.A.x0 + 16) return null;
+    if (!c.stands(x)) { blocked = true; continue; } if (blocked && c.stands(q) && !shaky(c.plank(q))) return q; }
+  return null; }
+const standsAt = (c, x) => !c.stands || c.stands(x);
 export function updateSexton(e, dt, c) {
   const { P, A, hit } = c, floor = A.floor, rnd = c.rnd || Math.random;
   if (!e.alive || e.mode === 'sleep') return;
@@ -57,10 +78,11 @@ export function updateSexton(e, dt, c) {
   if (e.phase !== 2 && e.hp <= e.maxHp / 2) { e.phase = 2; c.say('HE RINGS THE WHOLE DECK', true); c.sound('toll'); c.shake(5); }
   // ---- THE PIT: caught, open; then he heaves himself out onto the nearest joist ----
   if (e.mode === 'pit') { e.y = floor + SEXTON.pitDepth; if (e.modeT <= 0) { e.mode = 'climb'; e.modeT = SEXTON.climb; c.sound('heavy'); } return; }
-  if (e.mode === 'climb') { if (e.modeT <= 0) { const j = c.joist(e.x); if (j !== null) e.x = j; e.y = floor; e.mode = 'stalk'; e.cd = 0.7; c.dust(e.x, floor); } return; }
+  if (e.mode === 'climb') { if (e.modeT <= 0) { const j = c.joist(e.x); if (j !== null) e.x = j; e.y = floor; e.mode = 'stalk'; e.cd = 0.7; c.dust(e.x, floor); } return; }   /* c.joist: the nearest place he can STAND (main.js), never a walk's face */
+  if (e.mode === 'leap') { if (e.leap) leapStep(e, dt, floor); else e.mode = 'stalk'; return; }
   e.y = floor;
   /* a plank that goes under him for any reason takes him down with it */
-  const under = c.plank(e.x); if (under && under.st === 'down' && e.mode !== 'rush') { fall(e, c); return; }
+  const under = c.plank(e.x); if (under && under.st === 'down' && e.mode !== 'rush') { fall(e, c, null, under); return; }
   // ---- THE ATTACKS ----
   if (e.mode === 'swingTell' || e.mode === 'rushTell' || e.mode === 'tollTell' || e.mode === 'dropTell') {
     if (e.mode === 'swingTell' || e.mode === 'tollTell') e.face = Math.sign(P.x - e.x) || e.face;
@@ -77,9 +99,9 @@ export function updateSexton(e, dt, c) {
       e.spots = null; return; }
   }
   if (e.mode === 'rush') { const nx = e.x + e.face * SEXTON.rushV * dt; e.vx = e.face * SEXTON.rushV;
-    if (nx > A.x0 + 16 && nx < A.x1 - 16) e.x = nx; else e.modeT = 0;
+    if (nx > A.x0 + 16 && nx < A.x1 - 16 && standsAt(c, nx)) e.x = nx; else e.modeT = 0;   /* a ringers' walk ends the charge: he does not run into the stone */
     /* THE OPENING: a counting plank breaks under his charge; one already down he runs straight into */
-    const p = c.plank(e.x); if (p && (p.st === 'count' || p.st === 'down')) { if (p.st === 'count') c.breakPlank(p); fall(e, c, 'THE PLANKS GIVE UNDER HIS CHARGE'); return; }
+    const p = c.plank(e.x); if (p && (p.st === 'count' || p.st === 'down')) { if (p.st === 'count') c.breakPlank(p); fall(e, c, 'THE PLANKS GIVE UNDER HIS CHARGE', p); return; }
     if (!e.rushHit && !P.dead && Math.abs(P.x - e.x) < 20 && Math.abs(P.y - floor) < 34) { e.rushHit = true; hit(e.x, SEXTON.dmg.rush, false, 'THE RUSH'); }
     if (e.modeT <= 0) { e.mode = 'stalk'; e.vx = 0; e.cd = (e.phase === 2 ? SEXTON.cdP2 : SEXTON.cd) * (0.8 + 0.4 * rnd()); } return; }
   if (e.mode === 'swing' || e.mode === 'toll' || e.mode === 'drop') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = (e.phase === 2 ? SEXTON.cdP2 : SEXTON.cd) * (0.8 + 0.4 * rnd()); } return; }
@@ -87,6 +109,10 @@ export function updateSexton(e, dt, c) {
   const d = P.x - e.x, ad = Math.abs(d); e.face = Math.sign(d) || e.face;
   let want = ad > SEXTON.keep ? e.face : 0; const nx = e.x + want * SEXTON.walk * (e.phase === 2 ? 1.25 : 1) * dt, ahead = c.plank(nx + want * 8);
   if (want && ahead && ahead !== under && (ahead.st === 'count' || ahead.st === 'down')) want = 0;   /* he stops at the edge of it */
+  if (want && !standsAt(c, nx)) {   /* a ringers' walk in the way: LEAP it, if there is somewhere to come down beyond it and you are over there */
+    const to = c.stands ? farSide(e, c, want) : null;
+    if (to !== null && (P.x - e.x) * want > 56) {   /* you are over the walk or past it, not at its foot on his side */ e.mode = 'leap'; e.leap = { x0: e.x, x1: to, t: 0 }; e.face = want; c.sound('heavy'); return; }
+    want = 0; }
   if (want && nx > A.x0 + 16 && nx < A.x1 - 16) e.x = nx; e.vx = want * SEXTON.walk;
   if (e.cd > 0 || P.dead) return;
   let what = SEXTON.order[e.turn++ % SEXTON.order.length];
