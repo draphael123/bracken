@@ -26,3 +26,8 @@ const noop=()=>{},mother={alive:true,mode:'idle',nodeRest:0,x:0,y:0},movers=[{ki
  cap.state='up';cap.x=300;m.mode='capClapTell';m.modeT=0;m.nodeRest=0;c.updateMother(m,1/60);assert.notEqual(m.mode,'open','a cap out of her fold\'s reach is not jammed');
  m.mode='idle';m.nodeRest=0;c.wakeMycelium({x:-128,motherNode:true});assert.equal(m.mode,'open','the knot still opens her');assert.equal(bud.state,'bud','and never grows a room bud');
  console.log('The caps grow into steps: taught at '+Math.round(teach.x/16)+', a leaning cap at '+lean.map(q=>Math.round(q.x/16))+', a bud under a spore fall at '+dripped.map(q=>Math.round(q.x/16))+', '+room.length+' buds in her room; her fold jams on a grown one.');}
+/* WHAT THE STRIP LEFT EMPTY STAYS FILLED (the rebuild's second chunk): no vent lifts you over a floor with nothing to cross (the old vent marsh
+   175-209 and the bog 329-372), and the bog is crossed under fire - something that shoots stands over or beside its sinks. */
+{const vents=L.ents.filter(e=>e.t==='vent'&&((e.x>=175&&e.x<=209)||(e.x>=329&&e.x<=372)));assert.deepEqual(vents.map(e=>e.x),[],'vents with nothing to cross');
+ const fire=L.ents.filter(e=>['spitcap','weaver'].includes(e.t)&&e.x>=329&&e.x<=372);assert(fire.length>=2,'the bog is crossed under fire: '+fire.length+' shooters');
+ console.log('The empty sections are filled: no idle vents, '+fire.length+' shooters over the bog.');}

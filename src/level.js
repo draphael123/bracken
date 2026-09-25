@@ -904,6 +904,22 @@ function sporewood() {
   /* the rule's old sign stood on the lantern terrace (285), where no cap ever grew: it is in the glade now */
   R.ents = R.ents.filter(e => !(e.t === 'sign' && e.x === 285 && /GROW INTO STEPS/.test(e.text || '')));
   R.moversExtra = (R.moversExtra || []).concat(caps);
+  /* ==== WHAT THE STRIP LEFT EMPTY, AND ONE SENTENCE ON SEVEN SIGNS (the rebuild's second chunk) ====
+     The vent marsh and the Tumble carry the rule now (above). THE PUFFBALL BOG (329-372) kept its sinks and lost everything that made
+     crossing them a fight; its two geysers lift you over nothing. They go, and the crossing is under fire instead: a weaver hangs over the
+     middle sink and a spitcap stands on each far bank, so a jump between sinks is a jump someone is shooting at (B8's third shape). */
+  R.ents = R.ents.filter(e => !(e.t === 'vent' && e.x >= 329 && e.x <= 372));
+  R.ents.push({ t: 'weaver', x: 348, y: 9, face: -1 }, { t: 'spitcap', x: 343, y: 13, face: -1 });   /* (the garrison already stands one on the far bank) */
+  /* THE SIGNS. The strip's regex rewrote every sign that mentioned sleep, spores, puffballs, rollers, gills or nests to one sentence, so the
+     glade, the canyon, the fork and the Mother's door all said "FOLLOW THE CAPS...". Each says what stands beside it now, and nothing else. */
+  const SIGN = { 4: 'CAPS BOUNCE. HOLD JUMP FOR HEIGHT. THE DEEPER YOU GO, THE SICKER THE WOOD.',
+    31: 'SPITCAPS SWELL, THEN LOB SPORES. THE CLOUD EATS YOUR STAMINA: STEP OUT OF IT.',
+    46: 'A VENT LIFTS WHOEVER STANDS IN IT. PLUNGE A CAP AND IT SPRINGS YOU HIGHER.',
+    129: 'CAP CANOPY ABOVE, ROOT CELLAR BELOW. HOLD DOWN TO LOOK. THE CELLAR SHUTS BEHIND YOU.' };
+  for (const e of R.ents) if (e.t === 'sign' && SIGN[e.x] && /FOLLOW THE CAPS|ROT RUNS DOWNHILL/.test(e.text || '')) e.text = SIGN[e.x];
+  /* the pillars' sign stood at 328 - right when it was written, forty-five columns early since the bog grew in front of the pillars */
+  for (const e of R.ents) if (e.t === 'sign' && e.x === 328 && /THE PILLARS/.test(e.text || '')) { e.x = 369; e.text = 'THE PILLARS. JUMP CAP TO CAP; FALL, AND THE CAPS ON THE FLOOR SPRING YOU BACK UP.'; }
+  R.ents.push({ t: 'sign', x: 286, y: 13, text: 'SOME CAPS ARE LURKERS. THEY LUNGE WHEN YOU COME CLOSE: STRIKE FIRST.' });   /* the lantern terrace, where the rule's sign used to stand over no cap */
   return R;
 ;
 }
