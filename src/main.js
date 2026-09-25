@@ -95,6 +95,7 @@ import { bakeSoldier, bakeJavelineer, bakeHeavyKnight } from './redraw/soldiers.
 import { bakeRimewright } from './redraw/frost.js';
 import {updateSalvageCaptain,drawSalvageCaptain} from './salvage-captain.js';
 import {bakeHangingHouse,paintHouseSmoke} from './redraw/hanging-town.js';
+import * as HV from './hanging-village.js';   /* THE HANGING VILLAGE: each floor's own ground, the cliff behind them and their landmarks (docs/briefs/hanging-village-rework.md) */
 import * as MON from './redraw/monastery.js';   /* THE MONASTERY ON THE CLIFF: its stone, rooms, bells, wheels, baskets and braziers, the fledgling and the temple guardian */
 import { bakeVillageTiles } from './village_tiles.js';
 import { bakeSwornSword, bakeHedgeKnight, bakeRunner, bakeCrossbowman, bakeClosedHelm,
@@ -835,9 +836,11 @@ function resolveTiles() {
   const rnd = mulberry(7);
   const rockDeep = groundDepth(LW, LH, (x, y) => tileAt(x, y) === T.SOLID, 18), groundDeep = groundDepth(LW, LH, solidish, 9);
   const RDG = redressGround(), RDP = redressProps();   /* THE REDRESS: this level's own rock and dressing, where it has one */
+  /* A FLOOR'S OWN GROUND (L.groundZones: THE HANGING VILLAGE's seven floors and its hollow, by tile row) wins over the level's redress */
+  const zoneG = L.groundZones ? (y => { const z = L.groundZones.find(q => y >= q.y0 && y <= q.y1); return z ? HV.hvGround(z.look) : null; }) : () => null;   /* THE REDRESS: this level's own rock and dressing, where it has one */
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
-    const t = tileAt(x, y); let s = null;
+    const t = tileAt(x, y); let s = null; const ZG = zoneG(y);
     if (L.caravan && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock */
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
     const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = ((L.palette && L.palette.set === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
@@ -846,7 +849,7 @@ function resolveTiles() {
        ashlar with a coping, and the crag outside them stays crag, so a tower grows out of the mountain instead of both
        being the same grey rock with grass on it. */
     const crownT = CROWN && L.masonry && L.masonry.some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) && (L.monk ? (MONK || (MONK = MON.bakeMonkTiles())) : CROWN);   /* the monks laid warm limestone; the Queen laid granite */
-    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : RDG || null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
+    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : ZG || RDG || null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
     if (underPool) { tileSpr[y * LW + x] = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; continue; }
@@ -857,13 +860,13 @@ function resolveTiles() {
       if (up !== T.SOLID && up !== T.CRATE) {
         const villDrain = villT && linesDrain(x, y);
         s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? hullSpr(true, x, y, eL, eR, (rnd() * 4) | 0) : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
-        const kit = (RDP && RDP.kit) || GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
+        const kit = (ZG && ZG.kit) || (RDP && RDP.kit) || GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
         const dressFrom = decor.length;
         const clearGround = up === T.AIR && !(L.interiors || []).some(([a,b,c]) => x >= a && x <= b && y >= c-4 && y<c);
         if (L.snowLine !== undefined && y <= L.snowLine && rnd()<0.85) decor.push({k:'snow',kind:'snow',x:x*TS,y:y*TS-3,c:PROP.snowCap});
         if (clearGround && kit.kinds.length && rnd()<kit.density) {
           let kind=kit.kinds[Math.floor(rnd()*kit.kinds.length)]; if (L.fresh && x >= L.fresh[0] && x <= L.fresh[1] && FRESH_TWIN[kind]) kind = FRESH_TWIN[kind];   /* a river is not the sea (src/level.js FRESH_TWIN) */
-          const source=(RDP && RDP.props[kind]) || ({rushes:PROP.lw.rushes,shell:PROP.lw.shell,saltCrust:PROP.lw.saltCrust,driftwood:PROP.lw.driftwood,barnacleRock:PROP.lw.barnacleRock,coralTuft:PROP.lw.coralTuft,herbBed:mo().herbBed,stoneLantern:mo().stoneLantern})[kind] || PROP[kind];
+          const source=(ZG && ZG.kit.props[kind]) || (RDP && RDP.props[kind]) || ({rushes:PROP.lw.rushes,shell:PROP.lw.shell,saltCrust:PROP.lw.saltCrust,driftwood:PROP.lw.driftwood,barnacleRock:PROP.lw.barnacleRock,coralTuft:PROP.lw.coralTuft,herbBed:mo().herbBed,stoneLantern:mo().stoneLantern})[kind] || PROP[kind];
           const c=Array.isArray(source)?source[Math.floor(rnd()*source.length)]:source;
           if(c && (c.width<=16 || (tileAt(x+1,y)===T.SOLID && tileAt(x+1,y-1)===T.AIR))) {
             const k=({tinyCap:'tiny',campfire:'fire',skullPost:'skull',fallenLog:'log',heather:'tuft',gorse:'bush',thistle:'fern'})[kind]||kind;
@@ -885,7 +888,7 @@ function resolveTiles() {
       else { const dn = rockDeep[y * LW + x];   // how far under the open air this tile lies (blended across: groundDepth)
         s = dn < 3 ? TILE.dirt[(rnd() * TILE.dirt.length) | 0] : TILE.deep[dn < 7 ? 0 : dn < 13 ? 1 : 2][(rnd() * 8) | 0]; }
       if (L.palette && L.palette.myc && (eL || eR)) s = TILE.mycDirt[(rnd() * 3) | 0];
-      if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) !== T.SOLID) s = TILE.hall[(rnd() * 3) | 0]; // the underside of a hall's ceiling
+      if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) !== T.SOLID) s = ZG && ZG.under ? ZG.under[(rnd() * 3) | 0] : TILE.hall[(rnd() * 3) | 0];   /* (a floor's own underside, where it has one) */ // the underside of a hall's ceiling
       if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) === T.SOLID && y < 15 && rnd() < 0.5) s = TILE.hall[(rnd() * 3) | 0];
       for (const z of (L.stone || [])) if (x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) s = TILE.clear || (TILE.clear = canvas(TS, TS)[0]); // the menhir is drawn whole, over the column
       for (const z of (L.scree || [])) if (x >= z.x0 && x <= z.x1 && y === z.y) s = TILE.scree[z.dir];
@@ -901,7 +904,7 @@ function resolveTiles() {
       const crag = L.palette && L.palette.dress === 'crag', shoreOW = named || (L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
         : L.palette.myc ? { ledge: TILE.capLedge, ledgeL: TILE.capLedgeL, ledgeR: TILE.capLedgeR }
         : L.palette.dress === 'marsh' ? { ledge: TILE.duck, ledgeL: TILE.duckL, ledgeR: TILE.duckR } : null));
-      s = inHive ? (!l ? TILE.combL : !r ? TILE.combR : TILE.comb[(rnd() * 3) | 0]) : shoreOW ? (!l ? shoreOW.ledgeL : !r ? shoreOW.ledgeR : shoreOW.ledge[(rnd() * 3) | 0]) : RDG ? (!l ? RDG.ledgeL : !r ? RDG.ledgeR : RDG.ledge[(rnd() * 3) | 0]) : crag ? (!l ? TILE.ledgeL : !r ? TILE.ledgeR : TILE.ledge[(rnd() * 3) | 0]) : !l ? TILE.logL : !r ? TILE.logR : TILE.log[(rnd() * TILE.log.length) | 0];
+      s = inHive ? (!l ? TILE.combL : !r ? TILE.combR : TILE.comb[(rnd() * 3) | 0]) : shoreOW ? (!l ? shoreOW.ledgeL : !r ? shoreOW.ledgeR : shoreOW.ledge[(rnd() * 3) | 0]) : (ZG || RDG) ? (!l ? (ZG || RDG).ledgeL : !r ? (ZG || RDG).ledgeR : (ZG || RDG).ledge[(rnd() * 3) | 0]) : crag ? (!l ? TILE.ledgeL : !r ? TILE.ledgeR : TILE.ledge[(rnd() * 3) | 0]) : !l ? TILE.logL : !r ? TILE.logR : TILE.log[(rnd() * TILE.log.length) | 0];
     } else if (t === T.REED) s = TILE.reeds[(rnd() * 3) | 0];
     else if (t === T.PALISADE) s = TILE.palisade[(rnd() * 3) | 0];
     else if (t === T.BOUNCER) { s = TILE.bouncer[0];
@@ -2097,6 +2100,7 @@ function spawnEnt(e) {
         deep: e.deep || 2, hp: e.hp || (e.state === 'cracked' ? 1 : 3), hp0: e.hp || (e.state === 'cracked' ? 1 : 3), state: e.state || 'sound', broken: !e.tomb && marks.has('tim:' + e.x), tomb: !!e.tomb, mound: e.mound,   /* A TOMB SET is put back on every attempt, and the dead set it again in the fight */
         creakT: 0, shake: 0, armT: 0, dust: 0 }); break;
       case 'ballast': props.push({ t: 'ballast', x: px, y: py, kind: e.kind || 'stone', held: false, vy: 0, ph: Math.random() * 6, home: py }); break;
+      case 'load': props.push({ t: 'load', kind: e.kind || 'sack', hoist: e.hoist, x: px, y: e.peg ? e.hy * TS : py, home: [px, py], peg: !!e.peg, pegX: e.peg ? e.peg * TS + 8 : undefined, hy: e.peg ? e.hy * TS : undefined, ropeTop: e.ropeTop !== undefined ? e.ropeTop * TS : undefined, floorY: py, state: e.peg ? 'hung' : 'free', vy: 0, vx: 0, cd: 0 }); break;   /* THE HOIST's loads: a sack, a coil or a stone, carried to a well (or hung on a peg over one) */
       case 'support': props.push({ t: 'support', x: px, y: py, top: (e.top || e.y - 5) * TS + TS, hp: 4, broken: false, shake: 0 }); break;
       case 'rod': props.push({ t: 'rod', x: px, y: py }); break;
       case 'scaffold': props.push({ t: 'scaffold', x0: e.x * TS, x1: (e.x1 + 1) * TS, top: e.y * TS, crane: !!e.crane }); break;
@@ -2161,7 +2165,7 @@ function spawnEnt(e) {
          the Undercrown and had no row here, so the map lookup came back undefined and the whole case broke
          out - a prop in the level list, a prop in the entity count, and nothing on the screen. (The coffer
          even had its sprite baked and waiting in PROP.) tools/content-audit.mjs is what catches this. */
-      case 'deco': { const K = { ...cvDeco(e), hangingHouse: [hangingHouses()[0],true], villageHall: [hangingHouses()[1],true], fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
+      case 'deco': { const K = { ...cvDeco(e), hangingHouse: [hangingHouseOf(false,e.style),true], villageHall: [hangingHouseOf(true,e.style),true], ropeCoil: [HV.hvDeco('ropeCoil'), false], cocoon: [HV.hvDeco('cocoon' + ((e.v || 0) % 3)), false], hempBale: [HV.hvDeco('hempBale'), false], flourSacks: [HV.hvDeco('flourSacks'), false], fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
         longTable: [PROP.town.longTable[(e.v || 0) % 2], false], bench: [PROP.town.bench, false], hearth: [PROP.town.hearth[0], true], caskRack: [PROP.town.caskRack, true], mugShelf: [PROP.town.mugShelf, true], hayBale: [PROP.town.hayBale[(e.v || 0) % 2], false], bunting: [PROP.town.bunting, true], shopSign: [PROP.town.shopSign[(e.v || 0) % 4], false], innSign: [PROP.innSign, true], pot: [PROP.flot.cookPot, false], punt: [PROP.lw.rowboat, true], coffer: [PROP.coffer, false],
         gardenWall: [PROP.gardenWall[e.v || 0], false], beanpoles: [PROP.beanpoles[e.v || 0], false],
         scarePost: [fa().scarePost, false], deadCorn: [fa().corn[(e.v || 0) % 3], false], crookedFence: [fa().fence[(e.v || 0) % 2], false], pumpkinPatch: [fa().patch, false], hayStack: [fa().stack[(e.v || 0) % 2], false], farmLantern: [fa().lantern[1], false], leaningBarn: [fa().barn, true], brokenCart: [fa().cart, false], plough: [fa().plough, false], milkChurn: [fa().churn, false], waterPump: [fa().pump, false], fieldGrave: [fa().grave[(e.v || 0) % 3], false], portrait: [fa().portrait, true], candle: [fa().candle[1], false], ghostCow: [fa().cow[0], true, fa().cow],   /* THE HEXED FIELDS */
@@ -13255,6 +13259,8 @@ function updateGreatHound(e, dt) {
 // THE REEVE'S OIL IS RENEWED BY THE BLOW: every weapon uses the same wick.
 function lightOwlLamp(pr) { pr.lit = true; pr.lampT = 14; pr.wasBurning = true; pr.hits = 0; }
 function snuffOwlLamp(pr) { pr.lit = false; pr.lampT = 0; pr.wasBurning = false; pr.hits = 0; burst(pr.x, pr.y - 30, 8, ['#ffd36b', '#3a3444'], 40, 0.5); }
+/* the crown's hoist, while it still has a rope (THE HOIST, below; tools/owl-lamps.mjs runs this function with no movers at all) */
+const owlHoist = () => (typeof movers !== 'undefined' ? movers.find(m => m.hoist && m.arena && !(m.hs && m.hs.state === 'cut')) : null) || null;
 function updateOwl(e, dt) {
   // The Reeve sits on one of three perches. From a perch it screeches spiders down, fans feathers at you, beats a gust along the floor, or flushes into a swoop
   // through you and on to another perch. Cut it twice on its perch and it flushes. A perch whose lantern is lit is denied it; deny all three and it must come down.
@@ -13271,9 +13277,19 @@ function updateOwl(e, dt) {
   const openPerches = () => e.perches.map((p, k) => k).filter(k => !perchLit(k));
   const toward = (tx, ty, sp) => { const dx = tx - e.x, dy = ty - e.y, dd = Math.hypot(dx, dy) || 1; const st = Math.min(dd, sp * dt); e.x += dx / dd * st; e.y += dy / dd * st; return dd - st; };
   const flush = (why) => { const open = openPerches().filter(k => k !== e.perchI); e.hits = 0; if (!open.length && !openPerches().includes(e.perchI)) { e.mode = 'descend'; e.modeT = 1.4; e.tx = Math.max(A.x0 + 40, Math.min(A.x1 - 40, P.x + (Math.sign(e.x - P.x) || 1) * 40)); number(e.x, e.y - 24, 'NOWHERE TO SIT', '#ffd36b'); SFX.screech(); return; } e.next = open.length ? open[Math.floor(Math.random() * open.length)] : e.perchI; e.mode = 'takeoff'; e.modeT = 0.25; e.grab = why === 'swoop' && Math.random() < (p2 ? 0.4 : 0.25); e.willSwoop = why !== 'denied'; SFX.screech(); if (why === 'denied') number(e.x, e.y - 24, 'THE LIGHT', '#ffd36b'); };
+  /* PHASE TWO CUTS THE HOIST (docs/briefs/hanging-village-rework.md §4). The first thing she does past half blood is fly to the crown
+     hoist's wheel and saw through its rope: the ride up to her middle perch is gone for the rest of the fight, and the iron block it ran
+     through is left hanging over the floor by its brake line - cut that peg while she is low under it and it pins her (the deadfall rule, a
+     bigger weight, once). Told (THE ROPE, a ring on the wheel, 1.2 s on it) and fair (the deck lands, nobody is struck). A lit lantern near
+     the wheel dazzles her off it, and she comes back for it later: the rope can be defended. */
+  if (p2 && !e.ropeDone && (e.mode === 'sit' || e.mode === 'fly' || e.mode === 'land')) { const H = owlHoist(); if (H) { e.ropeH = H; e.mode = 'ropeGo'; e.modeT = 3; e.hits = 0; number(e.x, e.y - 30, 'SHE GOES FOR THE HOIST', '#ff9a5c'); SFX.screech(); } else e.ropeDone = true; }
   if (p2) { e.douseT = (e.douseT === undefined ? 8 : e.douseT-dt); if (e.douseT <= 0 && e.mode === 'sit') { const pr = lanterns.find(p=>p.lit); if(pr) {e.douseTarget=pr;e.douseT=10;e.mode='douseTell';e.modeT=0.65;number(e.x,e.y-40,'THE LAMP','#ffd36b');ringAt(pr.x,pr.y-30,20,'#ffd36b',0.65);} } }
   switch (e.mode) {
     case 'douseTell': if(e.modeT<=0){e.mode='douseDive';e.modeT=2;SFX.throwWhoosh();} break;
+    case 'ropeGo': { const H = e.ropeH; if (!H) { e.mode = 'fly'; e.modeT = 3; e.next = e.perchI; break; } e.face = Math.sign(H.wheelX - e.x) || e.face; const left = toward(H.wheelX, H.wheelY + 6, 260);
+      if (left <= 2 || e.modeT <= 0) { e.x = H.wheelX; e.y = H.wheelY + 6; e.mode = 'ropeTell'; e.modeT = 1.2; number(e.x, e.y - 22, 'THE ROPE', '#ff9a5c'); ringAt(H.wheelX, H.wheelY, 16, '#ff9a5c', 1.2); SFX.clank(); } break; }
+    case 'ropeTell': { const H = e.ropeH; if (H) { e.x = H.wheelX; e.y = H.wheelY + 6 + Math.round(Math.sin(e.anim * 30)); }
+      if (e.modeT <= 0) { e.ropeDone = true; if (H && typeof cutHoist === 'function') cutHoist(H); number(e.x, e.y - 34, 'SHE CUTS THE HOIST', '#ff6b6b'); e.next = e.perchI; e.mode = 'fly'; e.modeT = 3; SFX.screech(); } break; }
     case 'douseDive': {const pr=e.douseTarget;if(!pr){e.next=e.perchI;e.mode='fly';e.modeT=3;break;}const left=toward(pr.x,pr.y-30,320);if(left<110&&pr.lit){snuffOwlLamp(pr);ringAt(pr.x,pr.y-30,100,'#c9d1dc',0.4);SFX.owlHoot();}if(left<20||e.modeT<=0){e.next=e.perchI;e.mode='fly';e.modeT=3;}break;}
     case 'wake': if (e.modeT <= 0) { e.mode = 'sit'; e.modeT = 1.6; e.hits = 0; } break;
     case 'sit': { e.x = e.perches[e.perchI].x; e.y = e.perches[e.perchI].y; e.face = Math.sign(d) || e.face;
@@ -18068,6 +18084,131 @@ function updateBallast(dt) {
   }
 }
 // ============================================================================================
+// THE HOIST: THE HANGING VILLAGE's machine (docs/briefs/hanging-village-rework.md §3). A rope runs over a wheel under the bough
+// above: on one side a DECK you stand on, on the other a BASKET that sits in a well-head on the floor beside it. Carry a LOAD (a
+// sack, a coil of rope, a stone: a `load` prop) to the well and it goes in the basket; when the basket holds `need`, it sinks down
+// the well and the deck rises. The deck holds at the top while anyone stands on it; once they are off, the basket tips its load out
+// at the bottom of the well, the loads go home, and the deck comes back down - one carry, one ride, as often as you like. A load
+// can also hang on a PEG over the well (the mill's): cut the peg and it drops in. The deck is a `lift` mover with `hoist` set (so
+// the reach model rides it like any lift); its state lives on it as m.hs, and is new every time the level is spawned.
+// Carrying is the game's one carried weight, P.ballast: DOWN picks a load up and sets it down, you walk slowly with it, a blow knocks it out of your hands.
+// ============================================================================================
+const HOIST_RISE = 0.5, HOIST_HOLD = 1.4;   /* the basket creaks this long before the deck goes (time to hop on), and waits this long with the deck empty at the top */
+let hoistDownWas = false;
+const hoistDecks = () => movers.filter(m => m.hoist);
+const hoistOf = m => m.hs || (m.hs = { load: 0, state: 'rest', t: 0, k: 0 });
+function hoistDeck(m, dt) {
+  const s = hoistOf(m), on = (players || [P]).some(p => !p.dead && p.onMover === m);
+  if (s.state === 'cut') {   /* THE REEVE CUT IT: the deck drops to the floor and is firewood */
+    s.vy = (s.vy || 60) + 900 * dt; m.y = Math.min(m.y0, m.y + s.vy * dt);
+    if (m.y >= m.y0 && !s.landed) { s.landed = true; m.broken = true; m.gone = true; for (const p of (players || [P])) if (p.onMover === m) { p.onMover = null; p.vy = -60; }
+      SFX.heavy(); SFX.crack(); shakeCam(5); burst(m.x + 16, m.y + 4, 18, ['#725840', '#ab956c', '#3e2c1e'], 90, 0.7); }
+    s.k = 0; return; }
+  if (s.state === 'rest') { m.y = m.y0; if (s.load >= (m.need || 1)) { s.state = 'creak'; s.t = HOIST_RISE; SFX.clank(); number(m.wellX, m.floorY - 34, 'THE BASKET SINKS', '#c9b27c'); } }
+  else if (s.state === 'creak') { m.y = m.y0 + (Math.random() < 0.5 ? 1 : 0); if ((s.t -= dt) <= 0) { s.state = 'up'; m.y = m.y0; } }
+  else if (s.state === 'up') { m.y = Math.max(m.y1, m.y - m.speed * dt); if (Math.random() < dt * 5) SFX.stone(); if (m.y <= m.y1) { s.state = 'top'; s.t = 0; SFX.thud(); } }
+  else if (s.state === 'top') { m.y = m.y1; if (on) s.t = 0;
+    else if ((s.t += dt) > HOIST_HOLD) {   /* nobody on it: the basket tips at the bottom of the well, and the deck comes home */
+      for (const pr of props) if (pr.t === 'load' && pr.state === 'basket' && pr.basket === m) { pr.state = 'return'; pr.retT = 1.1; pr.basket = null; }
+      s.load = 0; s.state = 'down'; SFX.puff(); number(m.wellX, m.floorY - 20, 'THE BASKET TIPS', '#c9b27c'); } }
+  else if (s.state === 'down') { m.y = Math.min(m.y0, m.y + m.speed * 0.6 * dt); if (m.y >= m.y0) { s.state = 'rest'; SFX.thud(); } }
+  s.k = (m.y0 - m.y) / Math.max(1, m.y0 - m.y1);
+}
+/* THE REEVE'S CUT (updateOwl, phase two): the rope goes at the wheel. The deck falls, the basket and its load go down the well for good,
+   the loads left on the floor are no use to anyone, and the iron block the rope ran through is left hanging by its brake line over the
+   floor - a dead bough's rule on a bigger weight (the deadfall prop, `block`), cut once. */
+function cutHoist(m) {
+  const s = hoistOf(m); if (s.state === 'cut') return;
+  s.state = 'cut'; s.vy = 60; s.load = 0;
+  for (const pr of props) if (pr.t === 'load' && pr.hoist === m.hoist) { if (P.ballast === pr) P.ballast = null; pr.state = 'gone'; burst(pr.x, pr.y - 4, 6, ['#8a919c', '#c9b27c'], 40, 0.4); }
+  SFX.crack(); SFX.throwWhoosh(); shakeCam(4);
+  props.push({ t: 'deadfall', block: true, once: true, x: m.wheelX, y: m.wheelY, top: m.wheelY, by: m.wheelY + 34, pegX: m.wellX, floorY: m.floorY, state: 'hung', vy: 0, downT: 0, under: false, cutReq: false });
+  number(m.wheelX, m.wheelY + 50, 'THE BLOCK HANGS BY ITS BRAKE LINE', '#8fd160');
+  hintT = 5; hintMsg = 'SHE CUT THE HOIST. ITS IRON BLOCK HANGS OVER THE FLOOR: CUT ITS PEG WHEN SHE IS UNDER IT.';
+}
+function setLoadDown(pr, vx) { P.ballast = null; pr.state = 'free'; pr.vy = vx ? -80 : 0; pr.vx = vx || 0; pr.cd = 0.6; pr.x = P.x + (vx ? 0 : P.face * 6); pr.y = P.y - 2; }
+function updateHoists(dt) {
+  const decks = hoistDecks(), hb = attackBox();
+  for (const m of decks) if (m.wellX === undefined) { m.wellX = m.well * TS + 8; m.floorY = (Math.floor(m.y0 / TS) + 1) * TS; }
+  const downNow = !!keys.down && !hoistDownWas; hoistDownWas = !!keys.down; let pickedNow = false;
+  const wellAt = pr => decks.find(m => { const s = hoistOf(m); return s.state === 'rest' && Math.abs(pr.x - m.wellX) < 12 && pr.y > m.floorY - 34 && pr.y < m.floorY + 6; });
+  const intoBasket = (pr, m) => { const s = hoistOf(m); if (P.ballast === pr) P.ballast = null; pr.state = 'basket'; pr.basket = m; pr.vy = 0; pr.vx = 0; s.load++;
+    SFX.thud(); SFX.clank(); burst(m.wellX, m.floorY - 6, 6, ['#c9b27c', '#8a919c'], 40, 0.4);
+    const left = (m.need || 1) - s.load; number(m.wellX, m.floorY - 28, left > 0 ? left + ' MORE' : 'IN THE BASKET', '#c9b27c'); };
+  for (const pr of props) { if (pr.t !== 'load' || pr.state === 'gone') continue;
+    pr.cd = Math.max(0, (pr.cd || 0) - dt);
+    if (pr.state === 'hung') {   /* on its peg, over the well: cut the peg and it drops */
+      pr.x = pr.home[0]; pr.y = pr.hy;
+      if (hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.pegX - 7, r: pr.pegX + 7, t: pr.floorY - 22, b: pr.floorY })) { P.hitSet.add(pr); pr.state = 'fall'; pr.vy = 40; SFX.crack(); sparks(pr.pegX, pr.floorY - 10, P.face, 4); number(pr.pegX, pr.floorY - 28, 'THE ROPE GOES', '#ffd36b'); }
+      continue; }
+    if (pr.state === 'return') { if ((pr.retT -= dt) <= 0) { pr.x = pr.home[0]; pr.y = pr.home[1]; pr.vy = 0; pr.vx = 0; pr.state = pr.peg ? 'hung' : 'free'; burst(pr.x, pr.y - 4, 6, ['#e8dcc0', '#c9b27c'], 30, 0.4); if (pr.peg) number(pr.x, pr.hy - 12, 'HAULED BACK UP', '#c9b27c'); } continue; }
+    if (pr.state === 'basket') { const m = pr.basket; if (!m) { pr.state = 'return'; pr.retT = 0.5; continue; } pr.x = m.wellX; pr.y = m.floorY - 4 + hoistOf(m).k * (m.y0 - m.y1); continue; }
+    if (pr.state === 'held') {
+      if (P.ballast !== pr || P.dead) { pr.state = 'free'; pr.vy = 0; if (P.ballast === pr) P.ballast = null; continue; }
+      pr.x = P.x + P.face * 6; pr.y = P.y - 2;
+      if (P.hurt > 0 && !pr.hurtWas) { setLoadDown(pr, -P.face * 90); number(P.x, P.y - 30, 'DROPPED IT', '#ff9a5c'); pr.hurtWas = true; continue; }
+      pr.hurtWas = P.hurt > 0;
+      const m = wellAt(pr); if (m) { intoBasket(pr, m); continue; }
+      if (downNow && P.ground && !P.climb) { setLoadDown(pr, 0); pickedNow = true; SFX.stone(); number(P.x, P.y - 30, 'SET DOWN', '#c9b27c'); }   /* (and the same press does not pick it straight back up) */
+      continue; }
+    /* free or falling: it falls onto whatever is under it, and a well it lands in takes it */
+    pr.vy = Math.min(360, (pr.vy || 0) + 900 * dt);
+    if (pr.vx) { const nx = pr.x + pr.vx * dt; if (!isSolid(Math.floor(nx / TS), Math.floor((pr.y - 4) / TS))) pr.x = nx; else pr.vx = 0; pr.vx -= pr.vx * Math.min(1, dt * 3); if (Math.abs(pr.vx) < 4) pr.vx = 0; }
+    const ty = Math.floor((pr.y + pr.vy * dt) / TS), tx = Math.floor(pr.x / TS);
+    if (pr.vy >= 0 && (isSolid(tx, ty) || isOneWay(tileAt(tx, ty))) && pr.y <= ty * TS + 1) { pr.y = ty * TS; pr.vy = 0; if (pr.state === 'fall') { pr.state = 'free'; SFX.thud(); } }
+    else pr.y += pr.vy * dt;
+    const m = wellAt(pr); if (m) { intoBasket(pr, m); continue; }
+    /* LOST: off its floor or out of the level - it goes back to its pile, it is never gone for good */
+    if (pr.y > pr.home[1] + 3 * TS || pr.y > LH * TS || pr.x < 0 || pr.x > LW * TS) { pr.state = 'return'; pr.retT = 0.8; continue; }
+    /* DOWN PICKS IT UP. Walking onto it did, and a stone lying in the Reeve's crown slowed every hero who crossed it in the middle of a fight */
+    if (pr.state === 'free' && downNow && !pickedNow && !P.ballast && !P.dead && !(pr.cd > 0) && P.ground && Math.abs(pr.x - P.x) < 14 && Math.abs(pr.y - P.y) < 14) { pickedNow = true;
+      P.ballast = pr; pr.state = 'held'; pr.hurtWas = false; SFX.clank(); number(P.x, P.y - 30, LOAD_NAME[pr.kind] || 'A LOAD', '#c9b27c');
+      if (!(PROG.hoistTold > 1)) { PROG.hoistTold = (PROG.hoistTold || 0) + 1; hintT = 5; hintMsg = 'DOWN PICKS A LOAD UP OR SETS IT DOWN. CARRY IT TO A HOIST WELL AND THE DECK RISES.'; } }
+  }
+}
+const LOAD_NAME = { sack: 'A SACK', coil: 'A COIL OF ROPE', stone: 'A STONE' };
+function drawLoad(pr, x, y) {
+  if (pr.kind === 'coil') { for (let k = 0; k < 3; k++) { g.fillStyle = k % 2 ? '#a88848' : '#c8a860'; g.fillRect(x - 6 + k, y - 3 - k * 2, 12 - k * 2, 2); } g.fillStyle = '#6a5030'; g.fillRect(x - 2, y - 8, 4, 1); }
+  else if (pr.kind === 'stone') { g.fillStyle = '#5a6270'; g.beginPath(); g.arc(x, y - 4, 5, 0, 7); g.fill(); g.fillStyle = '#8a919c'; g.fillRect(x - 3, y - 7, 3, 2); g.fillStyle = '#3a3e48'; g.fillRect(x - 4, y - 1, 8, 1); }
+  else { g.fillStyle = '#c8b890'; g.fillRect(x - 5, y - 9, 10, 9); g.fillRect(x - 6, y - 6, 12, 5); g.fillStyle = '#e8dcc0'; g.fillRect(x - 4, y - 9, 5, 2); g.fillStyle = '#8a7a5a'; g.fillRect(x - 2, y - 11, 4, 2); g.fillRect(x - 5, y - 1, 10, 1); }
+}
+function drawHoistDeck(m, cx, cy) {
+  const x = Math.round(m.x - cx), y = Math.round(m.y - cy), s = hoistOf(m);
+  if (s.landed) { g.fillStyle = '#4e3a28'; for (const [dx, dy, w] of [[0, 4, 12], [14, 5, 9], [24, 3, 8]]) g.fillRect(x + dx, y + dy, w, 3); return; }   /* firewood */
+  g.fillStyle = '#5a4430'; g.fillRect(x, y, 32, 7); g.fillStyle = '#8a6a44'; g.fillRect(x, y, 32, 2); g.fillStyle = '#3e2c1e'; for (let k = 4; k < 32; k += 7) g.fillRect(x + k, y + 2, 1, 5);
+  g.fillStyle = '#725840'; g.fillRect(x + 1, y - 12, 2, 12); g.fillRect(x + 29, y - 12, 2, 12); g.fillRect(x + 1, y - 13, 30, 2);
+  g.fillStyle = '#c9b27c'; g.fillRect(x + 15, y - 17, 2, 5); g.fillStyle = '#3a2618'; g.fillRect(x + 13, y - 18, 6, 2);
+}
+function drawHoists(cx, cy) {
+  const R = Math.round;
+  for (const m of hoistDecks()) { if (m.wellX === undefined) continue; const s = hoistOf(m);
+    if (m.wellX - cx < -60 || m.wellX - cx > VW + 60) continue;
+    const wx = R(m.wellX - cx), fy = R(m.floorY - cy), wX = R(m.wheelX - cx), wY = R(m.wheelY - cy), deckTop = R(m.y - cy) - 18, drop = s.k * (m.y0 - m.y1);
+    /* the wheel on its bracket, and the rope: down to the deck on one side and the basket on the other */
+    if (s.state !== 'cut') {
+      g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(wX - 7.5, wY); g.lineTo(R(m.x + 16 - cx) + 0.5, deckTop); g.moveTo(wX + 7.5, wY); g.lineTo(wx + 0.5, fy - 12 + R(drop)); g.stroke();
+      const a = s.k * 9; g.strokeStyle = '#4a3624'; g.lineWidth = 2; g.beginPath(); g.arc(wX, wY, 8, 0, 7); g.stroke(); g.beginPath(); for (let k = 0; k < 4; k++) { const q = a + k * Math.PI / 2; g.moveTo(wX, wY); g.lineTo(wX + Math.cos(q) * 8, wY + Math.sin(q) * 8); } g.stroke(); g.lineWidth = 1;
+      g.fillStyle = '#3a2a1c'; g.fillRect(wX - 2, R(m.top - cy), 4, wY - R(m.top - cy)); }
+    /* THE BASKET, down the well: it is drawn only above the floor line, so it goes INTO the well-head and out of sight */
+    g.save(); g.beginPath(); g.rect(wx - 14, -50, 28, fy - 3 + 50); g.clip();
+    const by = fy - 12 + R(drop);
+    g.fillStyle = '#6a5034'; g.fillRect(wx - 7, by, 14, 10); g.fillStyle = '#8a6a44'; g.fillRect(wx - 7, by, 14, 2); g.fillStyle = '#4a3624'; for (let k = -5; k < 7; k += 4) g.fillRect(wx + k, by + 2, 1, 8);
+    for (const pr of props) if (pr.t === 'load' && pr.state === 'basket' && pr.basket === m) drawLoad(pr, wx, by + 3);
+    g.restore();
+    /* the well-head: a ring of stones and a winch post, in front of the basket */
+    g.fillStyle = '#5a5a60'; g.fillRect(wx - 11, fy - 7, 22, 7); g.fillStyle = '#7e7e86'; for (let k = -11; k < 11; k += 5) g.fillRect(wx + k, fy - 7, 4, 2); g.fillStyle = '#1b1626'; g.fillRect(wx - 8, fy - 5, 16, 1);
+    g.fillStyle = '#4a3624'; g.fillRect(wx + 9, fy - 16, 2, 16);
+  }
+  for (const pr of props) { if (pr.t !== 'load' || pr.state === 'gone' || pr.state === 'basket' || pr.state === 'return') continue;
+    const x = R(pr.x - cx), y = R(pr.y - cy); if (x < -20 || x > VW + 20) continue;
+    if (pr.state === 'hung') { const px2 = R(pr.pegX - cx), fy = R(pr.floorY - cy), ty = R(pr.ropeTop - cy);
+      g.fillStyle = '#3e2a16'; g.fillRect(px2 - 3, fy - 10, 6, 10); g.fillStyle = '#8b6a2a'; g.fillRect(px2 - 2, fy - 9, 4, 9);
+      g.fillStyle = '#c9b27c'; g.fillRect(px2, ty, 1, fy - 10 - ty); g.fillRect(Math.min(px2, x), ty, Math.abs(px2 - x) + 1, 1); g.fillRect(x, ty, 1, y - 10 - ty); }
+    drawLoad(pr, x, y);
+    if (pr.state === 'free' && !P.ballast && Math.abs(pr.x - P.x) < 40 && Math.abs(pr.y - P.y) < 40) { g.globalAlpha = 0.25 + 0.2 * Math.sin(time * 5 + pr.x); g.strokeStyle = '#c9b27c'; g.beginPath(); g.arc(x, y - 5, 9, 0, 7); g.stroke(); g.globalAlpha = 1; }
+  }
+}
+// ============================================================================================
 // THE DEEP'S WATER. Everything the trench does that the rest of the sea does not: vents whose bubbles are air, clams and
 // kelp bladders that let a lungful go when struck, diving bells on their sides, pockets of air under the rock, the cold
 // road's current along its floor and the leviathan's vents throwing you up, the jellies that are the only light in the
@@ -20293,9 +20434,9 @@ function updateProps(dt) {
       pr.under = !!(ow && A && Math.abs(ow.x - pr.x) < 30 && ow.y > A.floor - 40 && ow.mode !== 'pinned' && ow.mode !== 'wake' && ow.mode !== 'sleep');
       if (pr.state === 'hung') { pr.by = pr.top + 44; if (pr.cutReq || (hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.pegX - 6, r: pr.pegX + 6, t: pr.floorY - 14, b: pr.floorY }))) { if (hb) P.hitSet.add(pr); pr.cutReq = false; pr.state = 'fall'; pr.vy = 120; SFX.crack(); SFX.throwWhoosh(); sparks(pr.pegX, pr.floorY - 8, P.face, 4); number(pr.pegX, pr.floorY - 26, 'THE ROPE GOES', '#ffd36b'); } }
       else if (pr.state === 'fall') { pr.vy += 1400 * dt; pr.by += pr.vy * dt;
-        if (pr.under && pr.by > ow.y - 30) { pr.state = 'down'; pr.downT = 9; pr.by = pr.floorY - 5; ow.mode = 'pinned'; ow.modeT = ow.phase === 2 ? 2.6 : 3.2; ow.stagger = ow.modeT; ow.vx = 0; ow.vy = 0; ow.x = pr.x; ow.y = A.floor - 8; ow.hits = 0; ow.pinBy = pr; ow.hp -= Math.round(ow.maxHp * 0.05); ow.flash = 0.4; number(ow.x, ow.y - 40, 'THE BOUGH PINS IT', '#8fd160'); SFX.heavy(); SFX.crack(); SFX.screech(); shakeCam(8); zoomKick(1.1, 0.35); flash = Math.max(flash, 0.12); burst(pr.x, ow.y - 16, 20, ['#6a4a2a', '#3e2a16', '#7a8a4a', '#e8dcc0'], 90, 0.8); if (ow.hp <= 0) hurtEnemy(ow, 1, ow.x, false); }
+        if (pr.under && pr.by > ow.y - 30) { pr.state = 'down'; pr.downT = 9; pr.by = pr.floorY - 5; ow.mode = 'pinned'; ow.modeT = pr.block ? 3.4 : ow.phase === 2 ? 2.6 : 3.2; ow.stagger = ow.modeT; ow.vx = 0; ow.vy = 0; ow.x = pr.x; ow.y = A.floor - 8; ow.hits = 0; ow.pinBy = pr; ow.hp -= Math.round(ow.maxHp * (pr.block ? 0.08 : 0.05)); ow.flash = 0.4; number(ow.x, ow.y - 40, pr.block ? 'THE BLOCK PINS IT' : 'THE BOUGH PINS IT', '#8fd160');   /* (the hoist's iron block, once she has cut its rope: longer, and heavier) */ SFX.heavy(); SFX.crack(); SFX.screech(); shakeCam(8); zoomKick(1.1, 0.35); flash = Math.max(flash, 0.12); burst(pr.x, ow.y - 16, 20, ['#6a4a2a', '#3e2a16', '#7a8a4a', '#e8dcc0'], 90, 0.8); if (ow.hp <= 0) hurtEnemy(ow, 1, ow.x, false); }
         else if (pr.by >= pr.floorY - 5) { pr.by = pr.floorY - 5; pr.state = 'down'; pr.downT = 9; SFX.heavy(); SFX.stone(); shakeCam(4); dust(pr.x, pr.floorY, 10); } }
-      else if (pr.state === 'down') { pr.downT -= dt; if (ow && ow.pinBy === pr) pr.downT = Math.max(pr.downT, 1); if (pr.downT <= 0) { pr.state = 'haul'; SFX.clank(); number(pr.x, pr.floorY - 30, 'HAULED BACK UP', '#c9b27c'); } }
+      else if (pr.state === 'down') { pr.downT -= dt; if (ow && ow.pinBy === pr) pr.downT = Math.max(pr.downT, 1); if (pr.once) pr.downT = 9; if (pr.downT <= 0) { pr.state = 'haul'; SFX.clank(); number(pr.x, pr.floorY - 30, 'HAULED BACK UP', '#c9b27c'); } }
       else if (pr.state === 'haul') { pr.by -= 80 * dt; if (pr.by <= pr.top + 44) { pr.by = pr.top + 44; pr.state = 'hung'; SFX.clank(); } } }
     if (pr.t === 'mirror') { pr.turnT = Math.max(0, pr.turnT - dt); pr.glow = Math.max(0, (pr.glow || 0) - dt); if (!pr.fixed && hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 16, b: pr.y })) { P.hitSet.add(pr); pr.o = 1 - pr.o; pr.turnT = 0.25; SFX.clank(); SFX.spark(); sparks(pr.x, pr.y - 8, P.face, 5); number(pr.x, pr.y - 22, 'TURNED', '#bfe6f5'); } }
     if (pr.t === 'rack' && !pr.broken && hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 18, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hp--; SFX.clank(); sparks(pr.x, pr.y - 10, P.face, 4); if (pr.hp <= 0) { pr.broken = true; SFX.crack(); burst(pr.x, pr.y - 8, 12, ['#8b6a2a', '#c9b27c', '#5c3a1d'], 70, 0.6); number(pr.x, pr.y - 26, (pr.kind === 'club' ? 'THE CLUB' : 'THE BOW') + ' IS GONE', '#8fd160'); const ch = enemies.find(q => q.alive && q.t === 'chief'); if (ch && ch.mode === 'toRack' && ch.next === pr.kind) { ch.mode = 'swap'; ch.modeT = 0.6; chiefSwap(ch, 'sword'); } } }
@@ -20533,6 +20674,7 @@ function updateMovers(dt) {
       m.x -= m.speed * dt; if (m.x + m.w * 0.5 < m.x0) { m.x = m.x1; if (P.onMover === m) P.onMover = null; m.dx = 0; continue; }
       if (P.onMover === m && P.x < m.x0 + 4) P.onMover = null; // the log slides under the bank; you step off
     } else if (m.kind === 'lift') { // a pulley platform: rides toward the far stop while you stand on it, drifts home when you leave
+      if (m.hoist) { hoistDeck(m, dt); m.dy = m.y - oldY; m.dx = 0; continue; }   /* THE HOIST: it goes where its basket's load sends it, not where you stand */
       if (m.locked) { m.dx = 0; m.dy = 0; continue; }
       const on = P.onMover === m, mate = m.cw ? movers.find(q => q !== m && q.cw === m.cw) : null, mateOn = !!(mate && P.onMover === mate); const target = on ? m.y1 : mateOn ? m.yUp : m.y0; const dir = Math.sign(target - m.y);   /* A COUNTERWEIGHT: stood in, a basket sinks; its mate's weight lifts it; empty, both settle level at half the pace */
       if (dir) { m.y += dir * m.speed * (m.cw && !on && !mateOn ? 0.5 : 1) * dt; if ((dir > 0 && m.y > target) || (dir < 0 && m.y < target)) m.y = target; }
@@ -20986,7 +21128,7 @@ function update(dt) {
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
-  updateMovers(wdt); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -21965,6 +22107,8 @@ function drawFacades(cx, cy) {
 
 
 let HANGING_HOUSES=null;const hangingHouses=()=>HANGING_HOUSES||(HANGING_HOUSES=[bakeHangingHouse(),bakeHangingHouse(true)]);
+/* A HOUSE SAYS WHICH FLOOR IT IS ON: e.style names the Hanging Village floor's house (src/redraw/hanging-town.js); no style is the old market house */
+const HANGING_STYLED={};const hangingHouseOf=(hall,style)=>{if(!style)return hangingHouses()[hall?1:0];const k=(hall?'hall:':'')+style;return HANGING_STYLED[k]||(HANGING_STYLED[k]=bakeHangingHouse(hall,style));};
 const SOFT_SCENERY=new WeakMap();
 function softScenery(c){
   if(SOFT_SCENERY.has(c))return SOFT_SCENERY.get(c);
@@ -22055,6 +22199,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (!L.castle && !L.colosseum && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
   SEA.seaBack(g, cx, cy, VW, VH, time, state === 'play' && !P.dead ? P : null);   /* and its living water, behind the tiles and everything that matters */
   if (L.cloudSea !== undefined) drawSkyRig(cx, cy);   /* the sky ship: her cloud, her gasbags, her sails */
+  if (L.hangingTown && L.groundZones && SET.parallax !== 'off') HV.drawHangingBack(g, L, cx, cy, time, VW, VH);   /* THE CLIFF THE VILLAGE HANGS FROM, and each floor's landmark on it: behind the ropes, the rooms and the tiles */
   if (L.palette && L.palette.hall) { // Kingswood: every one-way ledge in the open hangs from the boughs on two ropes
     g.strokeStyle = 'rgba(160,120,70,0.75)'; g.lineWidth = 1; g.beginPath();
     const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(LW - 1, Math.ceil((cx + VW) / TS) + 1);
@@ -22124,6 +22269,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.kind === 'pad') { g.drawImage(PROP.pad[m.sink > 0.55 ? 1 : 0], Math.round(m.x) - cx, Math.round(m.y) - cy); if (Math.round(m.x0 / TS) % 3 === 0 && m.sink < 0.55) g.drawImage(PROP.lilyFlower, Math.round(m.x) + 4 - cx, Math.round(m.y) - 5 - cy); }
     else if (m.kind === 'cart') { if (!m.gone) g.drawImage(PROP.mineCart[Math.abs(m.vx) > 20 ? Math.floor(time * 12) % 2 : 0], Math.round(m.x) - 1 - cx, Math.round(m.y) - 4 - cy); }
     else if (m.kind === 'orelift') { g.fillStyle = '#8b8378'; g.fillRect(Math.round(m.x) + 2 - cx, 0, 2, Math.round(m.y) - cy); g.fillRect(Math.round(m.x) + 60 - cx, 0, 2, Math.round(m.y) - cy); g.drawImage(PROP.orePan, Math.round(m.x) - cx, Math.round(m.y) - 3 - cy); }
+    else if (m.kind === 'lift' && m.hoist) drawHoistDeck(m, cx, cy);   /* THE HANGING VILLAGE's hoists */
     else if (m.kind === 'lift' && m.cw) drawBasket(m, cx, cy);   /* THE MONASTERY's counterweight baskets */
     else if (m.kind === 'lift' && L.hangingTown) { const x=Math.round(m.x-cx),y=Math.round(m.y-cy),top=Math.round(m.top-cy);g.fillStyle='#ab956c';g.fillRect(x+15,top,2,y-top);g.fillStyle='#725840';g.fillRect(x,y,32,7);g.fillRect(x,y-10,2,12);g.fillRect(x+30,y-10,2,12);g.strokeStyle='#aa8d64';g.lineWidth=1;g.strokeRect(x+.5,y-10.5,31,16);g.beginPath();g.arc(x+16,top,5,0,7);g.stroke();} else if (m.kind === 'lift') { const ry = m.top !== undefined ? Math.round(m.top - cy) : 0; g.fillStyle = '#b8a888'; g.fillRect(Math.round(m.x) + 15 - cx, ry, 2, Math.round(m.y) - cy - ry); if (m.top !== undefined) { g.fillStyle = '#3a2618'; g.beginPath(); g.arc(Math.round(m.x) + 16 - cx, ry, 4, 0, 7); g.fill(); g.fillStyle = '#8a919c'; g.fillRect(Math.round(m.x) + 15 - cx, ry - 1, 2, 2); } g.drawImage(PROP.lift, Math.round(m.x) - cx, Math.round(m.y) - cy); }
     else if (m.kind === 'orelift' && m.player) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy); g.fillStyle = '#5a6270'; g.fillRect(x + 15, y - 200, 2, 200); g.fillStyle = '#3a3a44'; g.fillRect(x, y, m.w, 6); g.fillStyle = '#8a919c'; g.fillRect(x, y, m.w, 1); g.fillRect(x, y - 22, 2, 22); g.fillRect(x + m.w - 2, y - 22, 2, 22); g.fillRect(x, y - 22, m.w, 2); for (let k = 4; k < m.w - 4; k += 6) g.fillRect(x + k, y - 20, 1, 20); }
@@ -22395,7 +22541,8 @@ function drawWorld(cx, cy, showPlayer) {
       g.fillStyle = '#3e2a16'; g.fillRect(px2 - 3, fy - 10, 6, 10); g.fillStyle = '#8b6a2a'; g.fillRect(px2 - 2, fy - 9, 4, 9); g.fillStyle = '#c9b27c'; g.fillRect(px2 - 3, fy - 7, 6, 2);
       g.fillStyle = hot ? (Math.floor(time * 10) % 2 ? '#ffd36b' : '#fff6c8') : '#c9b27c'; g.fillRect(Math.min(x, px2), top, Math.abs(px2 - x) + 1, 1);
       if (taut) { g.fillRect(px2, top, 1, Math.max(0, fy - 10 - top)); g.fillRect(x, top, 1, Math.max(0, by - 5 - top)); } else { g.fillRect(px2, top, 1, 12); g.fillRect(x, top, 1, 16); }
-      if (!(boss && boss.alive && boss.pinBy === pr)) { g.fillStyle = '#1b1626'; g.fillRect(x - 23, by - 5, 46, 10); g.fillRect(x + 3, by - 11, 4, 7); g.fillStyle = '#6a4a2a'; g.fillRect(x - 22, by - 4, 44, 8); g.fillStyle = '#3e2a16'; g.fillRect(x - 22, by + 2, 44, 2); g.fillRect(x - 12, by - 2, 6, 1); g.fillRect(x + 9, by - 1, 7, 1); g.fillRect(x + 4, by - 10, 2, 6); g.fillStyle = '#7a8a4a'; g.fillRect(x - 17, by - 4, 5, 2); g.fillRect(x + 13, by - 4, 4, 2); if (taut) { g.fillStyle = '#c9b27c'; g.fillRect(x - 1, by - 6, 3, 3); } }
+      if (pr.block && !(boss && boss.alive && boss.pinBy === pr)) { g.fillStyle = '#1b1626'; g.fillRect(x - 11, by - 9, 22, 18); g.fillStyle = '#5a6270'; g.fillRect(x - 10, by - 8, 20, 16); g.fillStyle = '#8a919c'; g.fillRect(x - 10, by - 8, 20, 2); g.fillStyle = '#3a3e48'; g.beginPath(); g.arc(x, by, 5, 0, 7); g.fill(); g.fillStyle = '#c9b27c'; g.fillRect(x - 1, by - 1, 3, 3); }   /* THE HOIST'S IRON BLOCK */
+      else if (!(boss && boss.alive && boss.pinBy === pr)) { g.fillStyle = '#1b1626'; g.fillRect(x - 23, by - 5, 46, 10); g.fillRect(x + 3, by - 11, 4, 7); g.fillStyle = '#6a4a2a'; g.fillRect(x - 22, by - 4, 44, 8); g.fillStyle = '#3e2a16'; g.fillRect(x - 22, by + 2, 44, 2); g.fillRect(x - 12, by - 2, 6, 1); g.fillRect(x + 9, by - 1, 7, 1); g.fillRect(x + 4, by - 10, 2, 6); g.fillStyle = '#7a8a4a'; g.fillRect(x - 17, by - 4, 5, 2); g.fillRect(x + 13, by - 4, 4, 2); if (taut) { g.fillStyle = '#c9b27c'; g.fillRect(x - 1, by - 6, 3, 3); } }
       if (hot) { const k = 0.5 + 0.5 * Math.sin(time * 8); text('CUT', px2, fy - 22 + Math.round(k * 2), '#ffd36b', 'center', 6); } }
     else if (pr.t === 'works') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), k = pr.kind, f = Math.floor(time * 10 + pr.ph) % 3;
       if (k === 'kiln') { g.fillStyle = '#4a3a34'; g.fillRect(x - 12, y - 26, 24, 26); g.fillStyle = '#6a4a3a'; for (let yy = y - 24; yy < y; yy += 4) for (let xx = x - 11 + ((yy / 4) % 2 ? 3 : 0); xx < x + 11; xx += 6) g.fillRect(xx, yy, 5, 3); g.fillStyle = '#2a1a14'; g.fillRect(x - 7, y - 12, 14, 12); g.fillStyle = f === 1 ? '#ffb040' : '#ff8030'; g.fillRect(x - 6, y - 11, 12, 10); g.fillStyle = '#fff0a0'; g.fillRect(x - 3, y - 8, 6, 5); g.fillStyle = '#3a3a44'; g.fillRect(x - 3, y - 34, 6, 8); g.globalAlpha = 0.22 + 0.06 * Math.sin(time * 7 + pr.ph); g.fillStyle = '#ffb060'; g.beginPath(); g.arc(x, y - 6, 26, 0, 7); g.fill(); g.globalAlpha = 1; if (Math.random() < 0.15) parts.push({ x: pr.x + (Math.random() - 0.5) * 4, y: pr.y - 34, vx: (Math.random() - 0.5) * 8, vy: -30, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); }
@@ -22973,7 +23120,7 @@ function drawWorld(cx, cy, showPlayer) {
           g.fillStyle = '#c9d1dc'; g.fillRect(Math.round(h.x - cx) - 2, Math.round(h.y - cy) - 2, 4, 4); } }
       if (!coop() || P === players[0]) {   /* these are the LEVEL'S own lists, not this hero's: drawn once, or a second pass doubles their alpha */
       drawPortal(cx, cy);
-      drawWardenKit(cx, cy); drawKnightKit(cx, cy); if (GEO) GEO.draw(g, cx, cy); drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy); drawAirSigns(cx, cy); if (L.deep) drawDeepFront(cx, cy); }
+      drawWardenKit(cx, cy); drawKnightKit(cx, cy); if (GEO) GEO.draw(g, cx, cy); drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy); if (L.hoists) drawHoists(cx, cy); drawAirSigns(cx, cy); if (L.deep) drawDeepFront(cx, cy); }
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
@@ -24696,6 +24843,8 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   log: null, get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; },
   parts: () => parts, bossBodies: () => bossBodies, get PROP() { return PROP; }, get FLYERS() { return FLYERS; }, get HAS_HURT() { return HAS_HURT; }, get EHP() { return EHP; },
 };
+/* THE HOIST, for the harnesses: the decks (each with its state in .hs), a way to put n loads in one's basket, and the Reeve's cut */
+window.BK.hoists = () => hoistDecks(); window.BK.hoistLoad = (m, n) => { hoistOf(m).load += (n || 1); return hoistOf(m).load; }; window.BK.cutHoist = m => cutHoist(m);
 Object.defineProperty(window.BK, 'hint', { get: () => ({ t: hintT, msg: hintMsg, card: introCardUp() }) });   /* the tutorial hint, for the labs: how long it has left and what it says */
 // ?playtest=1 runs the whole thing as soon as the art is baked and leaves the report on the page
 if (q.get('playtest') === '1') setTimeout(async () => {
