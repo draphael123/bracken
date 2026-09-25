@@ -95,6 +95,7 @@ import { bakeSoldier, bakeJavelineer, bakeHeavyKnight } from './redraw/soldiers.
 import { bakeRimewright } from './redraw/frost.js';
 import {updateSalvageCaptain,drawSalvageCaptain} from './salvage-captain.js';
 import {bakeHangingHouse,paintHouseSmoke} from './redraw/hanging-town.js';
+import * as HV from './hanging-village.js';   /* THE HANGING VILLAGE: each floor's own ground, the cliff behind them and their landmarks (docs/briefs/hanging-village-rework.md) */
 import * as MON from './redraw/monastery.js';   /* THE MONASTERY ON THE CLIFF: its stone, rooms, bells, wheels, baskets and braziers, the fledgling and the temple guardian */
 import { bakeVillageTiles } from './village_tiles.js';
 import { bakeSwornSword, bakeHedgeKnight, bakeRunner, bakeCrossbowman, bakeClosedHelm,
@@ -804,10 +805,12 @@ function resolveTiles() {
   if(!LEDGE_SETS.cargo)Object.assign(LEDGE_SETS,bakeRouteLedges());
   if(!LEDGE_SETS.masonry){const [c,cg]=canvas(16,16);cg.fillStyle='#39362f';cg.fillRect(0,0,16,6);cg.fillStyle='#a69a82';cg.fillRect(0,1,16,3);cg.fillStyle='#cec0a0';cg.fillRect(0,1,16,1);cg.fillStyle='#766c59';cg.fillRect(7,2,1,3);LEDGE_SETS.masonry={ledge:[c],ledgeL:c,ledgeR:c};}
   const rnd = mulberry(7);
-  const RDG = redressGround(), RDP = redressProps();   /* THE REDRESS: this level's own rock and dressing, where it has one */
+  const RDG = redressGround(), RDP = redressProps();
+  /* A FLOOR'S OWN GROUND (L.groundZones: THE HANGING VILLAGE's seven floors and its hollow, by tile row) wins over the level's redress */
+  const zoneG = L.groundZones ? (y => { const z = L.groundZones.find(q => y >= q.y0 && y <= q.y1); return z ? HV.hvGround(z.look) : null; }) : () => null;   /* THE REDRESS: this level's own rock and dressing, where it has one */
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
-    const t = tileAt(x, y); let s = null;
+    const t = tileAt(x, y); let s = null; const ZG = zoneG(y);
     if (L.caravan && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock */
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
     const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = ((L.palette && L.palette.set === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
@@ -816,7 +819,7 @@ function resolveTiles() {
        ashlar with a coping, and the crag outside them stays crag, so a tower grows out of the mountain instead of both
        being the same grey rock with grass on it. */
     const crownT = CROWN && L.masonry && L.masonry.some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) && (L.monk ? (MONK || (MONK = MON.bakeMonkTiles())) : CROWN);   /* the monks laid warm limestone; the Queen laid granite */
-    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : RDG || null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
+    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : ZG || RDG || null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
     if (underPool) { tileSpr[y * LW + x] = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; continue; }
@@ -827,13 +830,13 @@ function resolveTiles() {
       if (up !== T.SOLID && up !== T.CRATE) {
         const villDrain = villT && linesDrain(x, y);
         s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? hullSpr(true, x, y, eL, eR, (rnd() * 4) | 0) : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
-        const kit = (RDP && RDP.kit) || GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
+        const kit = (ZG && ZG.kit) || (RDP && RDP.kit) || GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
         const dressFrom = decor.length;
         const clearGround = up === T.AIR && !(L.interiors || []).some(([a,b,c]) => x >= a && x <= b && y >= c-4 && y<c);
         if (L.snowLine !== undefined && y <= L.snowLine && rnd()<0.85) decor.push({k:'snow',kind:'snow',x:x*TS,y:y*TS-3,c:PROP.snowCap});
         if (clearGround && kit.kinds.length && rnd()<kit.density) {
           const kind=kit.kinds[Math.floor(rnd()*kit.kinds.length)];
-          const source=(RDP && RDP.props[kind]) || ({rushes:PROP.lw.rushes,shell:PROP.lw.shell,saltCrust:PROP.lw.saltCrust,driftwood:PROP.lw.driftwood,barnacleRock:PROP.lw.barnacleRock,coralTuft:PROP.lw.coralTuft,herbBed:mo().herbBed,stoneLantern:mo().stoneLantern})[kind] || PROP[kind];
+          const source=(ZG && ZG.kit.props[kind]) || (RDP && RDP.props[kind]) || ({rushes:PROP.lw.rushes,shell:PROP.lw.shell,saltCrust:PROP.lw.saltCrust,driftwood:PROP.lw.driftwood,barnacleRock:PROP.lw.barnacleRock,coralTuft:PROP.lw.coralTuft,herbBed:mo().herbBed,stoneLantern:mo().stoneLantern})[kind] || PROP[kind];
           const c=Array.isArray(source)?source[Math.floor(rnd()*source.length)]:source;
           if(c && (c.width<=16 || (tileAt(x+1,y)===T.SOLID && tileAt(x+1,y-1)===T.AIR))) {
             const k=({tinyCap:'tiny',campfire:'fire',skullPost:'skull',fallenLog:'log',heather:'tuft',gorse:'bush',thistle:'fern'})[kind]||kind;
@@ -855,7 +858,7 @@ function resolveTiles() {
       else { let dn = 0; while (dn < 18 && tileAt(x, y - 1 - dn) === T.SOLID) dn++;   // how far under the open air this tile lies
         s = dn < 3 ? TILE.dirt[(rnd() * TILE.dirt.length) | 0] : TILE.deep[dn < 7 ? 0 : dn < 13 ? 1 : 2][(rnd() * 8) | 0]; }
       if (L.palette && L.palette.myc && (eL || eR)) s = TILE.mycDirt[(rnd() * 3) | 0];
-      if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) !== T.SOLID) s = TILE.hall[(rnd() * 3) | 0]; // the underside of a hall's ceiling
+      if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) !== T.SOLID) s = ZG && ZG.under ? ZG.under[(rnd() * 3) | 0] : TILE.hall[(rnd() * 3) | 0];   /* (a floor's own underside, where it has one) */ // the underside of a hall's ceiling
       if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) === T.SOLID && y < 15 && rnd() < 0.5) s = TILE.hall[(rnd() * 3) | 0];
       for (const z of (L.stone || [])) if (x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) s = TILE.clear || (TILE.clear = canvas(TS, TS)[0]); // the menhir is drawn whole, over the column
       for (const z of (L.scree || [])) if (x >= z.x0 && x <= z.x1 && y === z.y) s = TILE.scree[z.dir];
@@ -871,7 +874,7 @@ function resolveTiles() {
       const crag = L.palette && L.palette.dress === 'crag', shoreOW = named || (L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
         : L.palette.myc ? { ledge: TILE.capLedge, ledgeL: TILE.capLedgeL, ledgeR: TILE.capLedgeR }
         : L.palette.dress === 'marsh' ? { ledge: TILE.duck, ledgeL: TILE.duckL, ledgeR: TILE.duckR } : null));
-      s = inHive ? (!l ? TILE.combL : !r ? TILE.combR : TILE.comb[(rnd() * 3) | 0]) : shoreOW ? (!l ? shoreOW.ledgeL : !r ? shoreOW.ledgeR : shoreOW.ledge[(rnd() * 3) | 0]) : RDG ? (!l ? RDG.ledgeL : !r ? RDG.ledgeR : RDG.ledge[(rnd() * 3) | 0]) : crag ? (!l ? TILE.ledgeL : !r ? TILE.ledgeR : TILE.ledge[(rnd() * 3) | 0]) : !l ? TILE.logL : !r ? TILE.logR : TILE.log[(rnd() * TILE.log.length) | 0];
+      s = inHive ? (!l ? TILE.combL : !r ? TILE.combR : TILE.comb[(rnd() * 3) | 0]) : shoreOW ? (!l ? shoreOW.ledgeL : !r ? shoreOW.ledgeR : shoreOW.ledge[(rnd() * 3) | 0]) : (ZG || RDG) ? (!l ? (ZG || RDG).ledgeL : !r ? (ZG || RDG).ledgeR : (ZG || RDG).ledge[(rnd() * 3) | 0]) : crag ? (!l ? TILE.ledgeL : !r ? TILE.ledgeR : TILE.ledge[(rnd() * 3) | 0]) : !l ? TILE.logL : !r ? TILE.logR : TILE.log[(rnd() * TILE.log.length) | 0];
     } else if (t === T.REED) s = TILE.reeds[(rnd() * 3) | 0];
     else if (t === T.PALISADE) s = TILE.palisade[(rnd() * 3) | 0];
     else if (t === T.BOUNCER) { s = TILE.bouncer[0];
@@ -2132,7 +2135,7 @@ function spawnEnt(e) {
          the Undercrown and had no row here, so the map lookup came back undefined and the whole case broke
          out - a prop in the level list, a prop in the entity count, and nothing on the screen. (The coffer
          even had its sprite baked and waiting in PROP.) tools/content-audit.mjs is what catches this. */
-      case 'deco': { const K = { ...cvDeco(e), hangingHouse: [hangingHouses()[0],true], villageHall: [hangingHouses()[1],true], fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
+      case 'deco': { const K = { ...cvDeco(e), hangingHouse: [hangingHouseOf(false,e.style),true], villageHall: [hangingHouseOf(true,e.style),true], ropeCoil: [HV.hvDeco('ropeCoil'), false], hempBale: [HV.hvDeco('hempBale'), false], flourSacks: [HV.hvDeco('flourSacks'), false], fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
         longTable: [PROP.town.longTable[(e.v || 0) % 2], false], bench: [PROP.town.bench, false], hearth: [PROP.town.hearth[0], true], caskRack: [PROP.town.caskRack, true], mugShelf: [PROP.town.mugShelf, true], hayBale: [PROP.town.hayBale[(e.v || 0) % 2], false], bunting: [PROP.town.bunting, true], shopSign: [PROP.town.shopSign[(e.v || 0) % 4], false], innSign: [PROP.innSign, true], pot: [PROP.flot.cookPot, false], punt: [PROP.lw.rowboat, true], coffer: [PROP.coffer, false],
         gardenWall: [PROP.gardenWall[e.v || 0], false], beanpoles: [PROP.beanpoles[e.v || 0], false],
         scarePost: [fa().scarePost, false], deadCorn: [fa().corn[(e.v || 0) % 3], false], crookedFence: [fa().fence[(e.v || 0) % 2], false], pumpkinPatch: [fa().patch, false], hayStack: [fa().stack[(e.v || 0) % 2], false], farmLantern: [fa().lantern[1], false], leaningBarn: [fa().barn, true], brokenCart: [fa().cart, false], plough: [fa().plough, false], milkChurn: [fa().churn, false], waterPump: [fa().pump, false], fieldGrave: [fa().grave[(e.v || 0) % 3], false], portrait: [fa().portrait, true], candle: [fa().candle[1], false], ghostCow: [fa().cow[0], true, fa().cow],   /* THE HEXED FIELDS */
@@ -21883,6 +21886,8 @@ function drawFacades(cx, cy) {
 
 
 let HANGING_HOUSES=null;const hangingHouses=()=>HANGING_HOUSES||(HANGING_HOUSES=[bakeHangingHouse(),bakeHangingHouse(true)]);
+/* A HOUSE SAYS WHICH FLOOR IT IS ON: e.style names the Hanging Village floor's house (src/redraw/hanging-town.js); no style is the old market house */
+const HANGING_STYLED={};const hangingHouseOf=(hall,style)=>{if(!style)return hangingHouses()[hall?1:0];const k=(hall?'hall:':'')+style;return HANGING_STYLED[k]||(HANGING_STYLED[k]=bakeHangingHouse(hall,style));};
 const SOFT_SCENERY=new WeakMap();
 function softScenery(c){
   if(SOFT_SCENERY.has(c))return SOFT_SCENERY.get(c);
@@ -21973,6 +21978,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (!L.castle && !L.colosseum && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
   SEA.seaBack(g, cx, cy, VW, VH, time, state === 'play' && !P.dead ? P : null);   /* and its living water, behind the tiles and everything that matters */
   if (L.cloudSea !== undefined) drawSkyRig(cx, cy);   /* the sky ship: her cloud, her gasbags, her sails */
+  if (L.hangingTown && L.groundZones && SET.parallax !== 'off') HV.drawHangingBack(g, L, cx, cy, time, VW, VH);   /* THE CLIFF THE VILLAGE HANGS FROM, and each floor's landmark on it: behind the ropes, the rooms and the tiles */
   if (L.palette && L.palette.hall) { // Kingswood: every one-way ledge in the open hangs from the boughs on two ropes
     g.strokeStyle = 'rgba(160,120,70,0.75)'; g.lineWidth = 1; g.beginPath();
     const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(LW - 1, Math.ceil((cx + VW) / TS) + 1);

@@ -14,6 +14,7 @@ import { floodReach } from './reachcore.js';
 import { findDeadEnds } from './deadends.js';
 import { spanOf, THREAT } from './threat.js';
 import { buildUnburiedField } from './unburied-field.js';
+import { HV_KIT_KINDS } from './hanging-village.js';   /* THE HANGING VILLAGE: what each floor scatters on its ground (the sprites are in the same file) */
 import { buildCaravan } from './sunken-caravan.js';   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
@@ -1592,8 +1593,9 @@ function hangingVillage() {
   const vine = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); }; // a hanging vine: climb it like a rope
   block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1); // the trunk walls either side
   const tops = { t0: 108, t1: 94, t2: 80, t3: 66, t4: 52, t5: 38, crown: 20 };
-  // the mountain itself: rock pillars behind every ledge, stacked so each reads as one cliff from the valley to the crown, with timber struts under the ledges
-  [108, 94, 80, 66, 52, 38, 20].forEach((top, i) => { for (const x of [16, 46, 76, 98]) { if (top > tops.crown) ent('deco', x, top - 1, { kind: 'pillar', v: (x + i) % 3 }); /* (the crown has nothing over it: its pillars stood up into the sky) */ if (top < 108) { ent('deco', x - 2, top + 4, { kind: 'strut', v: 0 }); ent('deco', x + 2, top + 4, { kind: 'strut', v: 1 }); } } });
+  /* THE CLIFF IS DRAWN NOW (src/hanging-village.js, L.groundZones below): the face behind every floor and the brackets that carry each
+     bough into it. The pillars and struts stamped at x 16/46/76/98 on every floor were how the level tried to say "cliff" before, and they
+     made every floor the same picture (the review, 2026-09-24). */
 
   // ---- Tier 0. THE ROOTS: goblin shanties among the roots, a hill-folk cottage, the first spider ----
   block(0, W - 1, tops.t0, H - 1);
@@ -1725,12 +1727,25 @@ function hangingVillage() {
 
   for(const m of movers)if(m.kind==='lift'){const tx=Math.floor((m.x+16)/TS);let row=Math.floor(Math.min(m.y0,m.y1)/TS)-1;while(row>0&&!L.grid[row*W+tx])row--;m.top=(row+1)*TS;}
   // A house for every inhabited door; two large public buildings mark the roots and market.
-  for(const d of [...L.ents].filter(e=>e.t==='door'))ent('deco',d.x,d.y,{kind:(d.x===60&&d.y===107)||(d.x===50&&d.y===79)?'villageHall':'hangingHouse'});
-  for(const [x,y,k] of [[23,107,'barrels'],[24,79,'stall'],[45,79,'shopSign'],[72,79,'stall'],[82,79,'barrels'],[27,93,'washing'],[63,51,'washing']])ent('deco',x,y,{kind:k});
+  /* ONE HOUSE A FLOOR (src/redraw/hanging-town.js): a turf shanty in the roots, a rope-maker's shed, the market house, a miller's cottage,
+     a rookery house with nest boxes, a lantern-maker's with every window lit */
+  const HOUSE = { 107: 'roots', 93: 'rope', 79: 'market', 65: 'mill', 51: 'rook', 37: 'lantern' };
+  for(const d of [...L.ents].filter(e=>e.t==='door'))ent('deco',d.x,d.y,{kind:(d.x===60&&d.y===107)||(d.x===50&&d.y===79)?'villageHall':'hangingHouse',style:HOUSE[d.y]});
+  /* and what each floor leaves lying about: roots and fungus, rope and hemp, the market's stalls, flour at the mill, the rooks' boxes */
+  for(const [x,y,k] of [[23,107,'stump'],[40,107,'mushroom'],[80,107,'fern'],[16,93,'ropeCoil'],[27,93,'washing'],[38,93,'hempBale'],[60,93,'ropeCoil'],[24,79,'stall'],[45,79,'shopSign'],[72,79,'stall'],[82,79,'barrels'],[58,65,'flourSacks'],[84,65,'flourSacks'],[26,51,'dovecote'],[48,51,'birdhouse'],[78,51,'beehive']])ent('deco',x,y,{kind:k});
   return {
     hangingTown:true, W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'town', night: false, glowNight: true,
-    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', hall: true, haze: 'rgba(140,90,150,0.12)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
+    /* SEVEN FLOORS, SEVEN GROUNDS (src/hanging-village.js): each band of rows wears its floor's look - its top, its rock, its underside, its
+       ledges, its scatter - and the cliff face behind it. ceilLook: whose bough is overhead, which is what carries the brackets. */
+    groundZones: [['crown', 0, 23, null, 19], ['lantern', 24, 41, 'crown', 37], ['rook', 42, 55, 'lantern', 51], ['mill', 56, 69, 'rook', 65], ['market', 70, 83, 'mill', 79], ['rope', 84, 97, 'market', 93], ['roots', 98, 115, 'rope', 107], ['hollow', 116, 131, null, 128]]
+      .map(([look, y0, y1, ceilLook, floor]) => ({ look, y0, y1, ceilLook, floor, kit: HV_KIT_KINDS[look], noFace: look === 'crown' || look === 'hollow' })),
+    /* THE LANDMARKS, one a floor, drawn on the face (in tiles): the ropewalk's frame and wheel, the mill's tower behind its sails, the
+       rookery's dovecote, the lantern stair's lamps, the root arch over the Web Hole, and the crown's dead pine with a limb or a rope to every ledge */
+    hvLandmarks: { ropewalk: [24, 62, 93], mill: [104, 58, 79], dovecote: [80, 51], rootArch: [64, 76, 107],
+      lanterns: [4, 9, 14, 19, 24, 29].map(n => [92 - 1.5 * n, (606 - 6 * n - 14) / 16]),
+      crown: { trunk: 57, bough: [22, 88, 3], ledges: [[24, 26, 17], [84, 86, 17], [29, 31, 14], [79, 81, 14], [34, 36, 11], [74, 76, 11], [40, 44, 9], [51, 56, 12], [63, 67, 9], [47, 48, 11], [60, 61, 10], [70, 71, 11]] } },
+    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', hall: true, haze: 'rgba(236,214,180,0.08)',   /* (the Scree Path's purple haze was copied here byte for byte) */ grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone: [], scree: [], snowLine: 52,
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
@@ -7203,7 +7218,7 @@ export const LEVELS = [
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS GROW INTO STEPS. CLIMB TO THE MOTHERS KNOT.', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'spore' },
   { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
-  { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'EIGHT FLOORS ON ONE CLIFF, AND THE WAY UP IS THROUGH THEM.', build: hangingVillage, needs: 'scree' },
+  { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'THE VILLAGE HANGS ON ROPES, AND A ROPE CAN BE CUT.', build: hangingVillage, needs: 'scree' },
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND IS THE VERB: IT CARRIES YOU, IT PINS YOU, IT LIFTS YOU.', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES, AND EVERY KEY IS INDOORS.', build: stormhold, needs: 'oreroad' },
@@ -7349,7 +7364,7 @@ export const DRESS = {
   spore: [['sporePod'], ['rootDecor', 3], ['cobweb', 3], ['deadTree', 2], ['bones', 2], ['mushroom', 2], ['moss', 2], ['fern', 3], ['stump', 2]],
   kings: [['banner', 2], ['barrels'], ['lanternPost'], ['spearRack'], ['hangCage'], ['trunk', 3], ['gobPennant', 3], ['ragBanner', 3], ['clothStrip', 3], ['skullTotem', 2], ['idol', 2], ['lootHeap', 2], ['trophyRack', 2], ['cauldron'], ['boneChime', 2], ['warnPost', 2]],   /* the court: idols, the king's takings, trophies */
   scree: [['stone', 3], ['cairn'], ['fence', 2], ['deadTree', 2], ['bones', 2]],
-  hanging: [['lanternPost'], ['barrels'], ['birdhouse'], ['beehive']],
+  hanging: [['lanternPost'], ['barrels']],   /* the birdhouses and hives were forest props strewn on every floor: they stand on the rookery now, placed by hand */
   /* THE SAND CASTLES (Daniel, 2026-09-22, with a screenshot of one): the stone lantern is a pale tan stack with a wide
      flat cap, and at 320x180 against the sky that silhouette is a sandcastle turret and nothing else - it was in this
      roster AND it was the level's dead-end stash, so eight of them stood along the mountain. The monastery has plenty
