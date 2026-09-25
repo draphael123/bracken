@@ -46,3 +46,11 @@ shelf rule that stops the hands striking a boss more than 24 px below them is lo
   rubble is floor and is drawn; the pillars stand again at her round change. RED FIRST on the build without them.
 - A11 (the opening is caused) and `arena-supplies` stay green; `queen-chandelier` stays green.
 - Re-pilot: bossLab crown, every hero, refill health, 300 s cap (6ac9c23's settings), before and after.
+
+## As built (2026-09-25, branch claude/queenpillars)
+- Built as above. One thing the brief took for granted was not true: `hurtEnemy` let blades through her plate while
+  she was `dazed` (a plain wall), although `gqOpen` and the ward shell drawn on her said pinned only. It asks `gqOpen`
+  now, so a wall really is only a stumble. That is a change a player will feel (the old hint said "bait her charge
+  into a wall"), so it is a question for Daniel in the lane report.
+- The shelf rule: it fired on the bot's own hops over her, mostly while she was pinned. For her it needs the bot to be
+  standing now. The numbers are in the lane report (`work/claude/lane-done/claude-queenpillars.md`).
