@@ -40,7 +40,6 @@ const LEDGE = new Set([T.ONEWAY, T.REED, T.PLANK, T.BOUNCER, T.SHELF, T.RAIL, T.
 
 // THE GRANDFATHER LIST: id -> [how many cells/pieces were in the air when the rule landed, why it was not fixed here]
 export const GRANDFATHERED = {
-  keep: [300, 'THE SUNKEN TOWER (facade 602-613, rows 10-47) stops at row 47 over the open water passage under it (48-56) and never reaches the bed: it hangs in clear water. The fix is to find its bed and carry it down, or cut the passage through an arch in it - a look for whoever owns the Keep, not a number to type'],
   harbor: [33, 'the jetty timber frame (478-510) ends at the water line (row 29) and the bed is at 40: its posts stop at the surface. STORMWRECK HARBOR is shelved on purpose (docs/DESIGN.md part three, 8) - left alone'],
   waymeet: [83, 'the arcade under the town wall (477-535, rows 36-37) is a FLAT two-row lintel over openings twelve tiles wide, carried by two-tile piers: a seven-tile span is the most a lintel carries here. And four town houses (358-443) stand on the canal (row 36 is water to the bed at 40). Both are the look of the town, not its route'],
   unburied: [52, 'the broken tower (348-350, rows 24-33) hovers two rows over the road with sky behind it, and the timber column at 363-364 stands over the pit. The road runs under the first, so grounding it is a route change (the levelfix lane left it as an art rework)'],

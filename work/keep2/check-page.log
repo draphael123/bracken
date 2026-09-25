@@ -1,0 +1,47 @@
+
+> check
+> node tools/check.mjs dangling-paths,keep-runtime,keep-expansion-runtime,swim-chain,sea-runtime,mini-names,boss-openings,boss-fight-end,arena-supplies,ambush-reach,readability,footing-art,skins,drowned-knights,whirlpools,swim-shrines
+
+ ok  syntax             0ms  0 files parse
+ ok  dangling-paths   262ms  ok  dangling-paths 1824 tracked files, every repo path they cite resolves in a fresh clone (6 known holes list
+FAIL keep-runtime   50569ms  Node.js v24.19.0
+FAIL keep-expansion-runtime 15703ms  Node.js v24.19.0
+ ok  skins          25137ms  ok  roofs          38 houses: every roof picture sits on the slab you stand on.
+ ok  sea-runtime    41751ms  Kraken final blow: reflected water, bell and cargo all trigger defeat.
+ ok  readability      312ms  Scenery behind tiles, softened outline-free art, wall-grip feedback, 13 homes and two landmarks.
+ ok  boss-openings  57768ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":
+ ok  arena-supplies  4529ms  ok  arena-supplies  46 boss rooms, 12 height conditions scored against the ground their arenas actually offer;
+ ok  swim-chain     29597ms  [{"hero":"knight","began":{"swim":true,"plunge":true,"chain":1,"st":72},"ended":{"swim":true,"plunge":false,"c
+ ok  boss-fight-end196507ms  Every one of 46 boss and mini fights (32 bosses, 14 minis) ends when its boss dies.
+ ok  mini-names     62203ms  every mini has its own name (14 levels): kings=THE GREAT HOUND, hanging=THE WEAVER, spire=THE TEMPLE GUARDIAN,
+ ok  ambush-reach    6377ms  25 ambush rooms. every captain can be reached from where the room shuts.
+ ok  swim-shrines    9079ms  swim-shrines: 15 underwater shrines in 4 levels; every one the swum route crosses, it lights (4 not on it).
+ ok  footing-art    71410ms  footing-art: every floor cell you can stand on is drawn, in 27 levels; painted by their own code: fields (fiel
+ ok  drowned-knights 20997ms  drowned-knights  {"drownedknight chase":69,"drownedcaptain chase":76,"combo":"two cuts, told"}  page: {"clippe
+ ok  whirlpools     18944ms  whirlpools  module: pull, drain, the niche lit on entry, the lever, the wind-down, kept through a respawn; pag
+
+---- keep-runtime ----
+file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-keep2/tools/cdp.mjs:48
+    if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
+                                                     ^
+
+Error: TypeError: Cannot read properties of undefined (reading 'trigger')
+    at <anonymous>:6:47
+    at Object.evalp (file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-keep2/tools/cdp.mjs:48:54)
+    at async file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-keep2/tools/keep-runtime.mjs:5:13
+
+Node.js v24.19.0
+
+---- keep-expansion-runtime ----
+file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-keep2/tools/cdp.mjs:48
+    if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
+                                                     ^
+
+Error: Error: knight swim waypoint 194,34 at 2987,542.4444444444533
+    at <anonymous>:3:336
+    at Object.evalp (file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-keep2/tools/cdp.mjs:48:54)
+    at async file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-keep2/tools/keep-expansion-runtime.mjs:3:13
+
+Node.js v24.19.0
+
+2 check(s) failed.

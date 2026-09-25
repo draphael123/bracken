@@ -166,7 +166,7 @@ for (const lv of LEVELS) {
     // what does not stand: swimmers, fliers, things that hang from a thread, and the traps that swing from a roof
     const swims = new Set(['clinger', 'eel', 'siren', 'urchin', 'angler', 'petrel', 'wasp', 'drone', 'spider', 'weaver', 'bat', 'crow', 'harpy', 'kite',
       'lookout', 'marine', 'spit', 'thorn', 'reefmaw', 'roc', 'owl', 'queen', 'gill', 'heart', 'mother', 'shardling', 'suncatcher', 'netter',
-      'ram', 'sailer', 'turtle', 'crab', 'heronfoe', 'scout', 'siren', 'rook', 'farmhand', 'marshlight', 'haunt', 'boo', 'broom', 'imp', 'gar', 'puffer', 'jelly', 'lamprey', 'manta', 'emberwisp']);   /* THE MAGE'S FOLLY's brooms and imps fly; the fields' boo drifts through walls; the marsh's gar lies in its hole */
+      'ram', 'sailer', 'turtle', 'crab', 'heronfoe', 'scout', 'siren', 'rook', 'farmhand', 'marshlight', 'haunt', 'boo', 'broom', 'imp', 'gar', 'puffer', 'jelly', 'lamprey', 'manta', 'emberwisp', 'drownedknight', 'drownedcaptain']);   /* THE MAGE'S FOLLY's brooms and imps fly; the fields' boo drifts through walls; the marsh's gar lies in its hole */
     const inWater = e => (L.pools || []).some(p => p.shallow && !p.dry && !p.harm && e.x * TS >= p.x0 - 8 && e.x * TS <= p.x1 + 8 && (e.y + 1) * TS >= p.y - 24 && (e.y + 1) * TS <= (p.bottom || p.y + 40) + 8); // WADING counts; floating over the deep does not
     const floaters = L.ents.filter(e => foeTypes.has(e.t) && !swims.has(e.t) && !solidish(L.grid[(e.y + 1) * L.W + e.x]) && !inWater(e));
     if (floaters.length) say(id, 'creatures standing on nothing: ' + floaters.slice(0, 6).map(e => e.t + '@' + e.x + ',' + e.y).join(' '));

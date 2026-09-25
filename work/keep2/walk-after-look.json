@@ -1,0 +1,152 @@
+{
+ "hero": "knight",
+ "frames": 0,
+ "reachedDoor": false,
+ "maxTile": 5,
+ "deaths": 0,
+ "secs": [
+  {
+   "name": "THE SUNKEN OUTER COURT",
+   "x0": 1,
+   "x1": 63,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE COUNTERCURRENT",
+   "x0": 64,
+   "x1": 128,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE FLOODED LIBRARY",
+   "x0": 129,
+   "x1": 186,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE DRY CLOISTER",
+   "x0": 187,
+   "x1": 222,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE SLUICE WORKS",
+   "x0": 223,
+   "x1": 270,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE THERMAL CISTERN",
+   "x0": 271,
+   "x1": 320,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE GUARDROOM",
+   "x0": 321,
+   "x1": 350,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE BELL APPROACH",
+   "x0": 351,
+   "x1": 399,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE SIPHON GALLERIES",
+   "x0": 400,
+   "x1": 479,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE BLIGHTED CISTERN",
+   "x0": 480,
+   "x1": 559,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE INNER KEEP",
+   "x0": 560,
+   "x1": 633,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE KING'S DOOR",
+   "x0": 634,
+   "x1": 672,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE THRONE ROAD",
+   "x0": 673,
+   "x1": 759,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  }
+ ]
+}
