@@ -421,6 +421,23 @@ const MINE_ORE = [
   ['heap', 268, 34, 1, 2], ['heap', 279, 34, 2, 0],                                                                    /* the chute's foot */
   ['heap', 336, 30, 1, 2],                                                                                             /* the wreck's head: what was saved out of it */
   ['heap', 418, 12, 1, 1], ['heap', 422, 12, 2, 1], ['heap', 451, 12, 1, 2]];   /* the winch house and the drum yard: the ore waiting for the drum */
+/* THE MINE'S FURNITURE (section 3), place by place in route order ([kind, column, standing row, extra]): the SPOIL heap of the
+   yard, the TOOL RACKS and the TALLY BOARD, the timber SHORING sets (a lantern hung from some of them, lit), the sorting tower's
+   ORE CHUTE (extra: [top column, top row]), the collapsed span's OVERTURNED CART, and THE MINE OFFICE in the winch house. Held to
+   the same mineBlocked rule as the ore (a chute by its foot), and every place along the route has its own landmark (MINE_PLACES) */
+const MINE_SETS = [
+  ['spoil', 10, 34, 2], ['rack', 53, 36, 1], ['tally', 55, 32, 0],                                             /* THE ORE YARD, THE LOADING HOUSE */
+  ['shore', 140, 36, 2], ['shore', 170, 36, 2, 'lit'], ['shore', 192, 36, 2], ['shore', 140, 21, 2, 'lit'], ['shore', 184, 21, 2],   /* THE SORTING TOWER */
+  ['chute', 150, 36, 0, [145, 21]],
+  ['shore', 268, 34, 2, 'lit'],                                                                                 /* the chute's foot */
+  ['wreckcart', 326, 30, 1],                                                                                    /* THE COLLAPSED SPAN */
+  ['rack', 411, 12, 1], ['shore', 418, 12, 2], ['office', 432, 12, 3, 'lit'], ['shore', 438, 12, 2, 'lit']];  /* THE WINCH HOUSE */
+/* THE PLACES AND WHAT YOU WOULD MEET SOMEONE BY (F2): each place's landmarks - its furniture, and 'work:<loop>' for the goblins at
+   work in it. tools/ore-road.mjs holds every place to its list, and no two places to the same one */
+export const MINE_PLACES = [['THE ORE YARD', 0, 50, ['spoil', 'work:cart']], ['THE LOADING HOUSE', 51, 67, ['rack', 'tally', 'work:sack']],
+  ['THE SORTING TOWER', 136, 203, ['chute', 'work:winch', 'work:sort', 'shore']], ['THE TIPPLE HOUSE', 228, 240, ['work:sack', 'work:pick']],
+  ['THE COLLAPSED SPAN', 272, 339, ['wreckcart', 'work:sack']], ["THE BRAKEMAN'S HUT", 340, 352, ['work:winch']],
+  ['THE WINCH HOUSE', 408, 445, ['office', 'rack', 'work:cart']], ['THE DRUM YARD', 446, 475, ['work:sort', 'work:sack']]];
 export function layMine(grid, W, H, T) {
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : grid[y * W + x];
   /* THE SEAMS IN THE ROCK. Every face of rock the route shows carries ore: a rock tile within six rows under a floor it is the
@@ -436,6 +453,7 @@ export function layMine(grid, W, H, T) {
     seams.push([x, y, Math.floor(hash(cx, cy, 13) * 4), Math.floor(hash(x, y, 17) * 4), hash(x, y, 19) < 0.35]); }   /* [x, y, ore, shape, glints] */
   const mine = MINE_ORE.map(([k, x, y, a, b]) => k === 'heap' ? { k, x, y, x0: x, x1: x + (a > 0 ? 1 : 0), size: a, ore: b }
     : k === 'cart' ? { k, x, y, x0: x, x1: x + 1, load: a, ore: b, rail: [x - 2, x + 3] } : { k, x, y, x0: x, x1: x, ore: a });
+  for (const [k, x, y, w, ex] of MINE_SETS) mine.push({ k, x, y, x0: x, x1: x + w, lit: ex === 'lit', top: Array.isArray(ex) ? ex : null, set: true });
   return { seams, mine };
 }
 /* WHAT A PROP MAY NOT STAND ON OR IN FRONT OF (the brief's "never over a hazard or a tell"): the reason it may not, or null. Its
@@ -470,6 +488,49 @@ export function drawOreSeams(g, L, cx, cy, time, VW, VH) {
     else { g.fillRect(X + 3 + s, Y + 3 + (s % 2) * 4, 7, 5); g.fillStyle = c[1]; g.fillRect(X + 4 + s, Y + 4 + (s % 2) * 4, 5, 3); g.fillStyle = c[2]; g.fillRect(X + 5 + s, Y + 4 + (s % 2) * 4, 2, 1); }   /* a nugget */
     if (gl) { const a = Math.max(0, Math.sin(time * 1.3 + x * 1.7 + y)); if (a > 0.6) { g.globalAlpha = (a - 0.6) * 2.5; g.fillStyle = c[2]; g.fillRect(X + 7, Y + 6, 1, 1); g.fillRect(X + 6, Y + 5, 3, 1); g.fillRect(X + 7, Y + 4, 1, 3); g.globalAlpha = 1; } } }
 }
+/* THE MINE'S FURNITURE, one piece: X, Y the left edge and the floor it stands on, w its width in pixels */
+function drawMineSet(g, it, X, Y, w, cx, cy, time) {
+  const T0 = ['#2e2014', '#4a321e', '#6a4a2c', '#8a6a44'], beam = (x, y, ww, h) => { g.fillStyle = T0[1]; g.fillRect(x, y, ww, h); g.fillStyle = T0[2]; g.fillRect(x, y, ww, 1); g.fillStyle = T0[0]; g.fillRect(x, y + h - 1, ww, 1); };
+  if (it.k === 'spoil') {   /* THE SPOIL HEAP: waste rock tipped off the carts, a big grey-brown mound with the odd lump of ore in it */
+    for (let r = 0; r < 16; r += 2) { const ww = Math.round(w * (1 - r / 18)), x0 = X + ((w - ww) >> 1);
+      for (let q = 0; q < ww; q += 3) { const k = hash(it.x * 7 + q, r, 29); g.fillStyle = k < 0.06 ? ORES[(q + r) % 4][1] : k < 0.5 ? '#4a4038' : k < 0.8 ? '#5c5046' : '#3a322c'; g.fillRect(x0 + q, Y - r - 2, 3, 2); } }
+    g.fillStyle = '#2a2420'; g.fillRect(X, Y - 1, w, 1); return; }
+  if (it.k === 'rack') {   /* A TOOL RACK: a frame with picks, a shovel and a coil of rope hung on it */
+    beam(X + 2, Y - 24, 3, 24); beam(X + w - 5, Y - 24, 3, 24); beam(X, Y - 25, w, 3); beam(X + 2, Y - 8, w - 4, 2);
+    for (let q = 0; q < 3; q++) { const tx = X + 8 + q * 8; g.fillStyle = '#6a4a2c'; g.fillRect(tx, Y - 22, 1, 12);
+      if (q === 1) { g.fillStyle = '#8a8a94'; g.fillRect(tx - 2, Y - 11, 5, 5); g.fillStyle = '#c8ccd4'; g.fillRect(tx - 2, Y - 11, 5, 1); }   /* a shovel */
+      else { g.fillStyle = '#8a8a94'; g.fillRect(tx - 4, Y - 23, 9, 2); g.fillStyle = '#c8ccd4'; g.fillRect(tx - 4, Y - 23, 3, 1); } }   /* a pick */
+    g.strokeStyle = '#a08a5a'; g.lineWidth = 1; g.beginPath(); g.arc(X + w - 7, Y - 15, 3, 0, Math.PI * 2); g.stroke(); return; }
+  if (it.k === 'tally' || it.k === 'office') {   /* THE TALLY BOARD: a slate of chalk strokes in fives, one row for every ore */
+    const board = (bx, by) => { g.fillStyle = '#2a2428'; g.fillRect(bx, by, 14, 11); g.fillStyle = '#3a3438'; g.fillRect(bx + 1, by + 1, 12, 9); g.fillStyle = T0[2]; g.fillRect(bx, by, 14, 1);
+      for (let r = 0; r < 3; r++) { g.fillStyle = ORES[r][1]; g.fillRect(bx + 2, by + 2 + r * 3, 1, 2); g.fillStyle = '#d8d4c8'; const n = 2 + ((it.x + r * 3) % 6);
+        for (let q = 0; q < n; q++) { const gx = bx + 4 + q * 2 - (q >= 4 ? 0 : 0); if (q === 4) { g.fillRect(bx + 4, by + 3 + r * 3, 7, 1); continue; } g.fillRect(gx, by + 2 + r * 3, 1, 2); } } };
+    if (it.k === 'tally') { beam(X + 7, Y - 12, 2, 12); board(X + 1, Y - 22); return; }
+    /* THE MINE OFFICE: a timber shed against the rock - planked back, two posts, a pitched roof, a lit window, the foreman's desk
+       and ledger, and the tally board on its wall */
+    g.fillStyle = '#2a1e14'; g.fillRect(X + 2, Y - 34, w - 4, 34); g.fillStyle = '#34261a'; for (let x = X + 4; x < X + w - 4; x += 6) g.fillRect(x, Y - 34, 1, 34);
+    beam(X, Y - 36, 4, 36); beam(X + w - 4, Y - 36, 4, 36);
+    g.fillStyle = T0[1]; for (let q = 0; q < 8; q++) g.fillRect(X - 3 + q, Y - 40 - q, w + 6 - q * 2, 1); g.fillStyle = T0[2]; g.fillRect(X - 3, Y - 40, w + 6, 1);
+    const wx = X + w - 22; g.fillStyle = '#1a1410'; g.fillRect(wx, Y - 28, 12, 10); const fl = 0.8 + 0.2 * Math.sin(time * 5 + it.x); g.globalAlpha = fl; g.fillStyle = '#ffb45a'; g.fillRect(wx + 1, Y - 27, 10, 8); g.globalAlpha = 1; g.fillStyle = '#1a1410'; g.fillRect(wx + 5, Y - 27, 1, 8); g.fillRect(wx + 1, Y - 24, 10, 1);
+    board(X + 8, Y - 30);
+    beam(X + 6, Y - 11, 22, 3); g.fillStyle = T0[0]; g.fillRect(X + 8, Y - 8, 2, 8); g.fillRect(X + 24, Y - 8, 2, 8);   /* the desk */
+    g.fillStyle = '#c8b890'; g.fillRect(X + 12, Y - 13, 7, 2); g.fillStyle = '#6a3420'; g.fillRect(X + 12, Y - 13, 1, 2); g.fillStyle = '#e8dcc8'; g.fillRect(X + 21, Y - 15, 1, 4); return; }   /* the ledger and a quill */
+  if (it.k === 'shore') {   /* A TIMBER SET: two posts stepped into the floor, a cap across them and a brace in each corner; some carry a lantern */
+    const h = 46; beam(X + 2, Y - h, 4, h); beam(X + w - 6, Y - h, 4, h); beam(X - 2, Y - h - 4, w + 4, 5);
+    g.fillStyle = T0[0]; for (let k = 0; k < 9; k++) { g.fillRect(X + 6 + k, Y - h + 1 + k, 2, 1); g.fillRect(X + w - 8 - k, Y - h + 1 + k, 2, 1); }
+    if (it.lit) { const lx = X + (w >> 1) + Math.round(Math.sin(time * 1.6 + it.x) * 1.5), ly = Y - h + 12; g.fillStyle = '#8a7a5a'; g.fillRect(X + (w >> 1), Y - h + 1, 1, 6);
+      g.fillStyle = '#2a2a30'; g.fillRect(lx - 3, ly - 5, 7, 2); g.fillRect(lx - 3, ly + 3, 7, 2); g.fillStyle = '#ffd36b'; g.fillRect(lx - 2, ly - 3, 5, 6); g.fillStyle = '#fff2c0'; g.fillRect(lx - 1, ly - 2, 2, 3); }
+    return; }
+  if (it.k === 'chute') {   /* AN ORE CHUTE: a timber trough from the deck above down to the bin by the sorting table, the ore sliding in it */
+    const tx = it.top[0] * TS + 8 - cx, ty = (it.top[1] + 1) * TS - cy, fx = X + 8, fyy = Y - 10, n = Math.max(1, Math.round(Math.hypot(fx - tx, fyy - ty) / 2));
+    for (let k = 0; k <= n; k++) { const x = tx + (fx - tx) * k / n, y = ty + (fyy - ty) * k / n; g.fillStyle = T0[1]; g.fillRect(Math.round(x) - 3, Math.round(y), 7, 3); g.fillStyle = T0[3]; g.fillRect(Math.round(x) - 3, Math.round(y), 1, 1); g.fillRect(Math.round(x) + 3, Math.round(y), 1, 1); }
+    for (let q = 0; q < 4; q++) { const t = ((time * 0.6 + q / 4) % 1), x = tx + (fx - tx) * t, y = ty + (fyy - ty) * t; g.fillStyle = ORES[q % 4][1]; g.fillRect(Math.round(x) - 1, Math.round(y) - 2, 2, 2); }
+    beam(fx - 6, fyy, 3, Y - fyy); beam(fx + 4, fyy, 3, Y - fyy); return; }   /* its foot on two legs */
+  if (it.k === 'wreckcart') {   /* THE OVERTURNED CART: a skip on its side off the broken rail, its ore across the deck */
+    drawRail(g, X - 6, X + 14, Y); g.fillStyle = '#6a6a74'; g.fillRect(X + 14, Y - 5, 8, 1); g.fillRect(X + 21, Y - 8, 1, 3);   /* the rail torn up at its end */
+    drawCart(g, X + 6, Y + 2, 0, 1, 1.9, 0);
+    const c = ORES[1]; for (let q = 0; q < 7; q++) { g.fillStyle = q % 2 ? c[1] : '#4a4450'; g.fillRect(X - 4 + q * 3, Y - 2 - (q % 3 === 0 ? 1 : 0), 2, 2); } return; }
+}
 /* ONE HEAP OF ORE: chunky stones stacked into a mound, rock-grey with the ore in them (size 0-2: 12, 18, 26 px) */
 function drawHeap(g, X, Y, size, o, seed) { const c = ORES[o], w = [12, 18, 26][size], h = [5, 8, 11][size];
   for (let r = 0; r < h; r += 2) { const ww = Math.round(w * (1 - r / (h + 2))), x0 = X + ((w - ww) >> 1);
@@ -491,6 +552,7 @@ export function drawOreMine(g, L, cx, cy, time, VW, VH) {
   for (const it of (L.mine || [])) { const X = Math.round(it.x0 * TS - cx), Y = Math.round((it.y + 1) * TS - cy); if (X < -60 || X > VW + 60 || Y < -40 || Y > VH + 60) continue;
     if (it.k === 'heap') drawHeap(g, X + (it.size === 0 ? 2 : it.size === 1 ? 7 : 3), Y, it.size, it.ore, it.x * 13 + it.y);
     else if (it.k === 'cart') { drawRail(g, Math.round(it.rail[0] * TS - cx), Math.round((it.rail[1] + 1) * TS - cx), Y); drawCart(g, X + 4, Y - 1, it.load, it.ore); }
+    else if (it.set) drawMineSet(g, it, X, Y, (it.x1 - it.x0 + 1) * TS, cx, cy, time);
     else if (it.k === 'spill') { const c = ORES[it.ore]; for (let q = 0; q < 6; q++) { const k = hash(it.x, q, 5); g.fillStyle = q % 3 === 0 ? c[1] : '#4a4450'; g.fillRect(X + 1 + Math.floor(k * 13), Y - 2 - (q % 2), 2, 2); } g.fillStyle = c[2]; g.fillRect(X + 6, Y - 3, 1, 1); } }
 }
 

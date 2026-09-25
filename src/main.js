@@ -14226,6 +14226,7 @@ function updateFalseAbbotBoss(e, dt) {
 function oreBuild() {
   L.works = enemies.filter(e => e.work).map(e => e.work);   /* MINE LIFE: every goblin at work, for the draw and for oreWorksAfter */
   for (const w of L.works) { const c = workLamp(w); if (c !== null) lights.push({ x: c * TS + 8, y: w.fy - 34, r: 64, glow: true, warm: true }); }   /* and the lantern over each one's work */
+  for (const it of (L.mine || [])) if (it.lit) lights.push({ x: (it.x0 + it.x1 + 1) / 2 * TS, y: (it.y + 1) * TS - 32, r: it.k === 'office' ? 56 : 60, glow: true, warm: true });   /* the shoring's lanterns and the office's window */
   L.cableway = makeCableway(L.cable);
   L.cableway.lines.forEach((ln, li) => { for (let i = 0; i < ln.n; i++) movers.push({ kind: 'bucket', line: li, i, w: OR.BUCKET.w, h: OR.BUCKET.h, x: 0, y: -9999, dx: 0, dy: 0, vis: false,
     cracked: !!(ln.cracked && i % ln.cracked === 0), crackT: 0, fallen: 0, ore: !ln.riders, lift: ln.riders ? OR.BUCKET.lift : 0, brake: 0, dump: 0 }); });

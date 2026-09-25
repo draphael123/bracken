@@ -80,17 +80,17 @@ A sapper struck dead before its alert drops no bomb: his bomb was never lit.
 
 Distinct places along the route, each with a landmark you would give as a meeting place (F2). In route order:
 
-| place | columns | landmark and dressing |
+| place | columns | landmark and dressing (as built; `MINE_PLACES` in src/ore-road.js is the list the check holds) |
 |---|---|---|
-| THE ORE YARD | 0–50 | **THE CRUSHER** (existing) with its feed rail: a cart on it, pushed to the crusher's lip and tipped; spoil heap, ore heaps, timber shoring |
-| THE LOADING HOUSE | 51–67 | **THE TOOL RACK** under its roof, sacks stacked, a hanging lantern, the tally board by the door |
-| THE FIRST SPAN | 68–135 | the pylons (existing) — lookouts, not workers |
-| THE SORTING TOWER | 136–203 | **THE LIFT CAGE** on the tower's hoist arm, worked from a winch; **sorting tables** and bins on the yard floor, ore chutes down the tower face |
-| THE TIPPLE HOUSE | 228–240 | an ore heap and spilled skip on the stage |
-| THE COLLAPSED SPAN | 272–339 | overturned carts and a broken rail in the wreck, timber down everywhere |
-| THE BRAKEMAN'S HUT | 340–352 | the brake winch and its lantern |
-| THE WINCH HOUSE | 408–445 | **THE MINE OFFICE**: a shed with a desk and a **TALLY BOARD** of chalk strokes; tool racks, a rail yard with carts |
-| THE DRUM YARD | 446–475 | spoil heaps and full carts waiting for the drum; the last loading house |
+| THE ORE YARD | 0–50 | **THE CRUSHER** (existing) and its feed rail: a rock goblin pushes a full cart to the lip and tips it in; the spoil heap on the spoil bank; ore heaps |
+| THE LOADING HOUSE | 51–67 | **THE TOOL RACK** under the wall, **THE TALLY BOARD** on the loft; a sapper hauling sacks off the stack |
+| THE FIRST SPAN | 68–135 | the pylons (existing) - lookouts, not workers; ore spilled off the skips |
+| THE SORTING TOWER | 136–203 | **THE LIFT CAGE** cranked up to the middle deck, a **SORTING TABLE** and its bins, **AN ORE CHUTE** from the top deck to the bin, timber sets (two with lanterns), a full cart, heaps |
+| THE TIPPLE HOUSE | 228–240 | a sapper and a miner at work on the stage |
+| THE COLLAPSED SPAN | 272–339 | **THE OVERTURNED CART** off its torn rail on the wreck's head; a sapper salvaging sacks off the fallen deck |
+| THE BRAKEMAN'S HUT | 340–352 | **THE BRAKEMAN'S HOIST**: a heavy cranking a cage up his pillar |
+| THE WINCH HOUSE | 408–445 | **THE MINE OFFICE**: a shed with a lit window, the foreman's desk and ledger, and a **TALLY BOARD**; a tool rack, timber sets, and the rail yard's cart tipped onto the spoil |
+| THE DRUM YARD | 446–475 | a sorting table (the javelin) and a sapper's sacks: the last loading house |
 
 Plus, all along: **timber props and shoring** (posts and caps against the ceiling, braces on the rock), **hanging lanterns**
 on chains from the timbers (lights, in the level's dark), and **rails** wherever a cart stands.

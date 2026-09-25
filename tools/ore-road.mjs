@@ -17,7 +17,7 @@
 // usage: node tools/ore-road.mjs
 import { LEVELS, T } from '../src/level.js';
 import { readFileSync } from 'node:fs';
-import { OR, cableLines, makeCableway, stepCableway, bucketAt, pointAt, lineYAt, brakeStep, liftStep, mineBlocked, WORKS, workSees } from '../src/ore-road.js';
+import { OR, cableLines, makeCableway, stepCableway, bucketAt, pointAt, lineYAt, brakeStep, liftStep, mineBlocked, WORKS, workSees, MINE_PLACES } from '../src/ore-road.js';
 import { WINCH, updateWinchmaster, winchJam, winchTake, winchOpen, winchFrame } from '../src/winchmaster.js';
 
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
@@ -172,8 +172,8 @@ for (const l of C.lines) {
   ok(new Set(S.map(q => q[2])).size === 4 && new Set(S.map(q => q[3])).size === 4 && worst < 0.2, `varied, not one stamp: four ores and four seam shapes in ${combos.size} pairings, the commonest ${Math.round(worst * 100)}% of them`);
   ok(S.some(q => q[4]) && S.filter(q => q[4]).length < S.length / 2, `${S.filter(q => q[4]).length} of them glint`);
   const why = M.map(it => [it, mineBlocked(L, T, it)]).filter(([, r]) => r);
-  ok(M.length >= 15 && !why.length, `${M.length} heaps, spills and carts of ore on the floors, every one on footing and clear of every hazard and every tell` + (why.length ? ' - NOT ' + why.map(([it, r]) => it.k + '@' + it.x + ',' + it.y + ': ' + r).join('; ') : ''));
-  ok(new Set(M.filter(q => q.k === 'heap').map(q => q.size)).size === 3 && M.some(q => q.k === 'cart' && q.load > 0) && new Set(M.map(q => q.ore)).size === 4, 'heaps of all three sizes, a cart full of ore, and all four ores on the floors'); }
+  ok(M.filter(q => !q.set).length >= 15 && !why.length, `${M.filter(q => !q.set).length} heaps, spills and carts of ore on the floors, every one on footing and clear of every hazard and every tell` + (why.length ? ' - NOT ' + why.map(([it, r]) => it.k + '@' + it.x + ',' + it.y + ': ' + r).join('; ') : ''));
+  ok(new Set(M.filter(q => q.k === 'heap').map(q => q.size)).size === 3 && M.some(q => q.k === 'cart' && q.load > 0) && new Set(M.filter(q => !q.set).map(q => q.ore)).size === 4, 'heaps of all three sizes, a cart full of ore, and all four ores on the floors'); }
 
 /* ---- THE WORK LOOPS (section 2), as geometry: every row of WORKS found its goblin (a row that silently matched nobody is a loop
    that does not exist), none of them is the level's own three, the elite or in his room, every miner at work has a seam on his
@@ -193,6 +193,21 @@ for (const l of C.lines) {
   const g0 = { x: 1000, y: 500, face: 1 };
   ok(workSees(g0, { x: 1000 + OR.WORK_SEE - 2, y: 500 }) && !workSees(g0, { x: 1000 - OR.WORK_SEE + 2, y: 500 }) && workSees(g0, { x: 1000 - OR.WORK_HEAR + 2, y: 500 }) && !workSees(g0, { x: 1010, y: 500 - OR.WORK_SEE_Y - 2 }) && !workSees(g0, { x: 1010, y: 500, dead: true }) && OR.WORK_HEAR < OR.WORK_SEE,
     `a goblin at work sees you ${OR.WORK_SEE} px ahead and hears you ${OR.WORK_HEAR} px behind, within ${OR.WORK_SEE_Y} px up or down`); }
+
+/* ---- MINE THEMING (section 3): the furniture keeps the ore's rule (a chute by its foot, and its top on a deck), there is
+   shoring, lanterns and an office, and EVERY PLACE HAS ITS OWN LANDMARKS - no place is dressed as another one */
+{ const M = L.mine || [], S = M.filter(q => q.set), W = L.ents.filter(e => e.work), fl = t => t === T.SOLID || t === T.PLANK || t === T.ONEWAY;
+  const bad = S.map(it => [it, it.k === 'chute' ? (mineBlocked(L, T, { ...it, x0: it.x, x1: it.x }) || (fl(at(it.top[0], it.top[1] + 1)) ? null : 'its top is not on a deck')) : mineBlocked(L, T, it)]).filter(([, r]) => r);
+  ok(S.length >= 12 && !bad.length, `${S.length} pieces of the mine's furniture, every one on footing and clear of every hazard and every tell` + (bad.length ? ' - NOT ' + bad.map(([it, r]) => it.k + '@' + it.x + ': ' + r).join('; ') : ''));
+  const kinds = new Set(S.map(q => q.k));
+  ok(['shore', 'rack', 'tally', 'office', 'chute', 'spoil', 'wreckcart'].every(k => kinds.has(k)) && S.filter(q => q.lit).length >= 3 && W.some(e => e.work.k === 'winch') && W.some(e => e.work.k === 'sort') && W.some(e => e.work.k === 'cart'),
+    'timber shoring, tool racks, a tally board, the mine office, an ore chute, a spoil heap, an overturned cart, hanging lanterns - and the lift cages, sorting tables and rails of the goblins at work');
+  const wx = e => e.work.k === 'cart' ? (e.work.load + e.work.tip) / 2 : e.work.k === 'sack' ? (e.work.from + e.work.to) / 2 : e.work.at ?? e.x;   /* where the work IS, not where the goblin was put down */
+  const has = (x0, x1, k) => k.startsWith('work:') ? W.some(e => e.work.k === k.slice(5) && wx(e) >= x0 && wx(e) <= x1) : S.some(q => q.k === k && q.x >= x0 && q.x <= x1);
+  for (const [name, x0, x1, marks] of MINE_PLACES) { const miss = marks.filter(k => !has(x0, x1, k)); ok(!miss.length, `${name} (${x0}-${x1}): ${marks.join(', ')}` + (miss.length ? ' - MISSING ' + miss.join(', ') : '')); }
+  const sig = MINE_PLACES.map(p => p[3].slice().sort().join('+'));
+  ok(new Set(sig).size === sig.length && MINE_PLACES.length >= 7, `${MINE_PLACES.length} places along the route, and no two of them are dressed alike (F2, F6)`);
+  ok(MINE_PLACES.every((p, i) => i === 0 || p[1] > MINE_PLACES[i - 1][2]) && MINE_PLACES[MINE_PLACES.length - 1][2] < L.arena.x0 / TS, "in route order, none overlapping, and all of them short of the Winchmaster's room"); }
 
 /* ---- THE PIT (Daniel's playtest, item 5): nowhere on the road can a fall reach the bottom of the level any more. Every column
    from the yard to the drum house, dropped down from the top, meets something - a floor, a ledge, or a span's spike bed - and
