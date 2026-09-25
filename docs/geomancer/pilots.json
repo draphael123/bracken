@@ -23,9 +23,9 @@
    "t": "swornsword",
    "kills": "2/2",
    "deaths": 0,
-   "ttk": 1.11,
+   "ttk": 1.42,
    "takenPct": 0,
-   "defends": 1
+   "defends": 30
   },
   {
    "h": "knight",
@@ -95,16 +95,16 @@
    "t": "sprig",
    "kills": "2/2",
    "deaths": 0,
-   "ttk": 5.47,
+   "ttk": 1.4,
    "takenPct": 0,
-   "defends": 133
+   "defends": 75
   },
   {
    "h": "geomancer",
    "t": "shield",
    "kills": "2/2",
    "deaths": 0,
-   "ttk": 0.59,
+   "ttk": 0.72,
    "takenPct": 0,
    "defends": 0
   },
@@ -113,7 +113,7 @@
    "t": "swornsword",
    "kills": "2/2",
    "deaths": 0,
-   "ttk": 0.64,
+   "ttk": 0.7,
    "takenPct": 0,
    "defends": 0
   },
@@ -122,7 +122,7 @@
    "t": "archer",
    "kills": "2/2",
    "deaths": 0,
-   "ttk": 0.61,
+   "ttk": 0.89,
    "takenPct": 0,
    "defends": 0
   },
@@ -131,9 +131,9 @@
    "t": "hedgeknight",
    "kills": "2/2",
    "deaths": 0,
-   "ttk": 7.07,
+   "ttk": 1.96,
    "takenPct": 0,
-   "defends": 106
+   "defends": 0
   }
  ],
  "errors": [],
@@ -317,5 +317,97 @@
     ]
    }
   ]
- }
+ },
+ "boss": [
+  {
+   "lvl": "wood",
+   "boss": "queen",
+   "h": "knight",
+   "outcome": "win",
+   "killed": true,
+   "secs": 75,
+   "hpLeftPct": 0,
+   "takenPerMin": 138
+  },
+  {
+   "lvl": "wood",
+   "boss": "queen",
+   "h": "warden",
+   "outcome": "win",
+   "killed": true,
+   "secs": 88.5,
+   "hpLeftPct": 0,
+   "takenPerMin": 85
+  },
+  {
+   "lvl": "wood",
+   "boss": "queen",
+   "h": "geomancer",
+   "outcome": "win",
+   "killed": true,
+   "secs": 43.5,
+   "hpLeftPct": 0,
+   "takenPerMin": 68
+  },
+  {
+   "lvl": "kings",
+   "boss": "king",
+   "h": "knight",
+   "outcome": "win",
+   "killed": true,
+   "secs": 23.6,
+   "hpLeftPct": 0,
+   "takenPerMin": 36
+  },
+  {
+   "lvl": "kings",
+   "boss": "king",
+   "h": "warden",
+   "outcome": "win",
+   "killed": true,
+   "secs": 18.7,
+   "hpLeftPct": 0,
+   "takenPerMin": 0
+  },
+  {
+   "lvl": "kings",
+   "boss": "king",
+   "h": "geomancer",
+   "outcome": "win",
+   "killed": true,
+   "secs": 34.6,
+   "hpLeftPct": 0,
+   "takenPerMin": 0
+  },
+  {
+   "lvl": "spire",
+   "boss": "abbot",
+   "h": "knight",
+   "outcome": "win",
+   "killed": true,
+   "secs": 80,
+   "hpLeftPct": 0,
+   "takenPerMin": 83
+  },
+  {
+   "lvl": "spire",
+   "boss": "abbot",
+   "h": "warden",
+   "outcome": "win",
+   "killed": true,
+   "secs": 60.6,
+   "hpLeftPct": 0,
+   "takenPerMin": 37
+  },
+  {
+   "lvl": "spire",
+   "boss": "abbot",
+   "h": "geomancer",
+   "outcome": "win",
+   "killed": true,
+   "secs": 58,
+   "hpLeftPct": 0,
+   "takenPerMin": 0
+  }
+ ]
 }

@@ -3535,14 +3535,15 @@ function trialYard(hero) {
       ['pin', 2, 'THE PIN: JUMP, THEN DOWN+X. THE POINT GOES THROUGH AND HOLDS IT. Z PULLS FREE. PIN TWO.', [['sprig', 13], ['sprig', 19]], 'A, THEN DOWN+X'],
       ['meter', 1, 'TIP HITS AND TURNED BLOWS FILL VIGIL. FULL, TAP C: THE PHALANX. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
       SKILL],
-    /* THE GEOMANCER'S YARD (2026-09-24, POLISH): she BUILDS SOMETHING IN ITS WAY. UPHEAVAL (the held X is a pillar out of the ground),
-       THE ROCK SHIELD on the beat (one only just raised bounces the blade: GEO.perfect, so in her yard the sword flashes at that beat), the
-       marks (the shield takes a yellow one; a red one shatters it), STONEFALL (she lands like a boulder and the ring knocks down
+    /* THE GEOMANCER'S YARD (2026-09-24, POLISH): she BUILDS SOMETHING IN ITS WAY. FAULT LINE (round 3: the held X is a crack along the
+       floor, a LINE - so the station stands two straw men in a row and asks for both in one crack; it was UPHEAVAL's pillar),
+       THE RUNE-WARD on the beat (round 3: it takes GEO.ward.raise to rise, so in her yard the sword flashes that much before the blow), the
+       marks (the ward takes a yellow one; a red one breaks through it), STONEFALL (she lands like a boulder and the ring knocks down
        both sides) and THE QUAKE (a full TREMOR, spent). */
     geomancer: [
-      ['upheaval', 2, 'UPHEAVAL: HOLD X, LET GO. A PILLAR ERUPTS AHEAD, FURTHER THE LONGER THE HOLD. HIT TWO.', [['dummy', 16], ['dummy', 21]], 'HOLD X, LET GO'],
-      ['flash', 2, 'ROCK SHIELD: TAP C AS HIS SWORD FLASHES WHITE AND HIS BLADE BOUNCES OFF. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
-      ['tells', 2, 'ONE YELLOW ! : THE SHIELD TAKES IT. TWO RED !! : IT SHATTERS, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
+      ['fault', 2, 'FAULT LINE: HOLD X, LET GO. A LONGER HOLD, A LONGER CRACK. CATCH BOTH IN ONE.', [['dummy', 12], ['dummy', 17]], 'HOLD X, LET GO'],
+      ['flash', 2, 'THE WARD: TAP C AS HIS SWORD FLASHES. IT RISES ON THE BEAT AND EMPOWERS YOU. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : THE WARD TAKES IT. TWO RED !! : IT BREAKS THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
       ['stonefall', 2, 'STONEFALL: JUMP, THEN DOWN+X BETWEEN THEM. THE RING KNOCKS DOWN BOTH SIDES. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
       ['meter', 1, 'WHAT SHE BUILDS AND BREAKS FILLS TREMOR. FULL, TAP C: THE QUAKE. IT IS FILLED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'LB WITH A FULL BAR'],
       SKILL],
@@ -7263,7 +7264,7 @@ export const LEVELS = [
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
   /* (2026-09-24, POLISH) the Warden's and the Geomancer's yards, APPENDED: LEVELS is an append log (map nodes and saves count by index) */
   { id: 'trial_warden', name: "THE WARDEN'S TRIAL", sub: 'point, shaft and pin', build: () => trialYard('warden'), hidden: true },
-  { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'pillar, wall and quake', build: () => trialYard('geomancer'), hidden: true },
+  { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'fault line, shield and quake', build: () => trialYard('geomancer'), hidden: true },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

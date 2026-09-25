@@ -15,6 +15,6 @@ try {
         g.fillStyle=i%2?'#465a46':'#4e624e';g.fillRect(x,y,cw,ch);g.drawImage(f,0,0,f.width,f.height,x,y+ch-f.height*SC,f.width*SC,f.height*SC);}
       g.fillStyle='#e8e2cc';g.fillText(r.k+' ('+r.f.length+')',4,y+ch/2);y+=ch+4;}
     return c.toDataURL();})()`);
-  const out = join(ROOT, 'docs/geomancer/frames.png'); writeFileSync(out, Buffer.from(png.split(',')[1], 'base64')); console.log('wrote ' + out);
+  const out = join(ROOT, process.argv[2] || 'docs/geomancer/frames.png');   /* (a path under the repo, for a before/after pair: `node tools/geomancer-sheet.mjs docs/geomancer/round3/frames-before.png`) */ writeFileSync(out, Buffer.from(png.split(',')[1], 'base64')); console.log('wrote ' + out);
   if (pg.errors.length) console.log(pg.errors);
 } finally { pg.close(); }

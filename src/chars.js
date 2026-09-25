@@ -125,32 +125,27 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     }
     px(g, ...at(len), '#ffffff');                                        // the point, the brightest pixel she owns
   }
-  if (stave) { /* THE GEOMANCER'S STAVE: short, thick and two-handed - an oak haft two pixels through, an iron-shod BUTT (the end
-       she strikes the ground with, so it is the end drawn brightest after the stone), rawhide lashing, and a raw STANDING
-       STONE for a head, wider than her own head and set along the haft. Grey stone, a tuft of moss, one faint amber rune.
-       Given butt first: [butt x, butt y, head x, head y]. */
+  if (stave) { /* THE GEOMANCER'S STAFF (round 3, 2026-09-24: Daniel played her and the standing stone on a shaft read as a CLUB, or a
+       SHOVEL). Now a TALL STAFF: a gnarled shaft one pixel through that wanders a pixel either way along its length, with knots
+       standing off it; an iron-shod BUTT (the end she strikes the ground with); and at the top an AMBER GEODE held in STONE CLAWS
+       - two grey prongs curling up round a bright amber stone, the brightest thing she owns, a moss tuft on one claw. The geode is
+       the read: at 1x it is an orange point at the top of a long thin line, which is a staff and nothing else.
+       Given butt first: [butt x, butt y, head x, head y]; nothing is drawn past len (the attack boxes were matched to it), and the
+       geode's centre is kept on the canvas (c.tip) so geomancer.js can set stones orbiting it while she casts. */
     const [x0, y0, x1, y1] = stave.map((v, i) => v + (i & 1 ? dy : dx));
     const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax;
     const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
-    /* (2026-09-24, POLISH: the head was a 6x5 ROUNDED SLAB, as wide as it was long and symmetric about the haft, on a thin
-       handle - which at 1x is a SHOVEL. A standing stone is TALLER THAN IT IS WIDE, lumpy and lopsided, and a lashed one has
-       the wood running up INTO its foot under two turns of rawhide. So: an eight-pixel stone, wider than her hood, that swells off one side of the
-       haft and ends in a BLUNT, lopsided crown (a point would make it a spearhead); the haft carried two pixels into its foot; two pale bands crossing it.
-       Nothing is drawn past `len`, so the reach every attack box was matched to is unchanged.) */
-    line(g, ...at(1), ...at(len - 5), '#6a4e30', 2);                     /* the haft, two through, run up into the foot of the stone */
-    for (let t = 2; t <= len - 6; t += 0.5) px(g, ...at(t, 1.5), '#4a3420');   /* its shadowed side, the whole way: a THICK shaft, not a handle */
-    px(g, ...at(0), '#8a929c'); px(g, ...at(0, 1), '#5a6068'); px(g, ...at(-1), '#c9d1dc');   /* the iron shoe of the butt */
-    /* THE STONE, its foot at len-8 and its crown at len: half-widths either side of the haft, one row a pixel, so it is
-       lopsided on purpose - it bellies out on the near side, and the crown is broad and flat-ish, never a point */
-    const NEAR = [1.5, 2, 2.5, 3, 3, 3, 3, 2.5, 1.5], FAR = [1.5, 2, 2, 2, 2, 2, 1.5, 1.5, 0.5];
-    for (let k = 0; k < NEAR.length; k++) { const t = len - 8 + k;
-      for (let o = -NEAR[k]; o <= FAR[k] + 0.01; o += 0.5) {
-        const edge = o <= -NEAR[k] + 0.5, lit = o >= FAR[k] - 0.5;
-        px(g, ...at(t, o), edge ? '#4e4c45' : lit ? '#a4a294' : k > 6 ? '#939184' : '#7c7a70'); } }
-    px(g, ...at(len - 3, -1), '#6c6a60'); px(g, ...at(len - 4, -1.5), '#6c6a60');   /* a crack down its face, so it reads as ROCK */
-    for (const t of [len - 7.5, len - 6]) for (let o = -1.5; o <= 1.5; o += 0.5) px(g, ...at(t, o), o > 0.5 ? '#6a5030' : '#9a7a4c');   /* THE LASHING: two dark turns of rawhide round the foot, the stone showing between */
-    px(g, ...at(len - 3.5, 0.5), '#e8a83a');                             /* the rune, faint amber in the grey */
-    px(g, ...at(len - 1, -1), '#6f9a4a'); px(g, ...at(len - 2, -2), '#557a38');   /* moss on the shoulder of it */
+    const bend = t => (t % 7 < 2 ? 0 : t % 7 < 4 ? 0.6 : t % 7 < 5 ? 0 : -0.6);   /* GNARLED: it wanders a pixel off the straight and back */
+    for (let t = 1; t <= len - 4; t += 0.5) px(g, ...at(t, bend(Math.floor(t))), '#6a4e30');   /* the shaft */
+    for (const t of [4, 9, 14, 19]) if (t < len - 5) { px(g, ...at(t, bend(t) + 1), '#7c5c38'); px(g, ...at(t + 1, bend(t + 1) - 1), '#4a3420'); }   /* the knots, lit on one side */
+    px(g, ...at(0), '#8a929c'); px(g, ...at(-1), '#c9d1dc');   /* the iron shoe of the butt */
+    /* THE CLAWS: two prongs of grey stone out of the head of the shaft, curling up and in round the geode */
+    for (const s of [-1, 1]) { px(g, ...at(len - 4, s), '#6c6a60'); px(g, ...at(len - 3, s * 2), '#8c8a7e'); px(g, ...at(len - 2, s * 2), '#8c8a7e'); px(g, ...at(len - 1, s * 2), '#a8a696'); px(g, ...at(len, s), '#a8a696'); }
+    px(g, ...at(len - 4, 0), '#4e4c45');   /* the socket */
+    /* THE GEODE: a knot of amber in the claws, a dark facet at its foot and one near-white spark of light in it */
+    for (const [t, o, col] of [[len - 3, 0, '#b8741c'], [len - 2, -1, '#e8a83a'], [len - 2, 0, '#e8a83a'], [len - 2, 1, '#d08a24'], [len - 1, -1, '#e8a83a'], [len - 1, 0, '#ffc860'], [len - 1, 1, '#e8a83a'], [len, 0, '#e8a83a'], [len - 1, -0.5, '#fff0c0']]) px(g, ...at(t, o), col);
+    px(g, ...at(len - 2, -2.5), '#6f9a4a');   /* moss on a claw */
+    const tp = at(len - 1.5); c.tip = [tp[0], tp[1] + top];   /* (the geode's centre, in this canvas - padHeroFrames carries it down with the headroom) */
   }
   /* (the head is inked from len-4 to len and the outline puts a dark ring a pixel past that, so a spear given a point
      at x lands its last lit pixel at x and its outline at x+1: the callers pull their endpoints back to suit, and the
@@ -289,7 +284,7 @@ function comboArcs(sh, key, len, extra = {}) {
    The new cuts can then travel overhead; the low blow bends at the knees and keeps its edge at ankle height. */
 const ATTACK_HEADROOM = 24;
 function padHeroFrames(F) {
-  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); memo.set(c, out); } return memo.get(c); };
+  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); if (c.tip) out.tip = [c.tip[0], c.tip[1] + ATTACK_HEADROOM]; memo.set(c, out); } return memo.get(c); };   /* (c.tip: the Geomancer's geode, carried down with the frame) */
   for (const key in F) F[key] = Array.isArray(F[key]) ? F[key].map(c => c ? pad(c) : c) : pad(F[key]);
 }
 function storeFrames(card, knight, mode) {
@@ -4146,7 +4141,7 @@ export function bakeTemperer() {
     f(grids.idle, true), f(grids.walkA, true), f(grids.cutTell, true), f(grids.cut, true),
     f(grids.hurt)], 8, 22, 10, 14);
 }
-/* ==== THE GEOMANCER (2026-09-24, docs/briefs/geomancer.md). A hood and a stone mantle, and THE STAVE held ACROSS her.
+/* ==== THE GEOMANCER (2026-09-24, docs/briefs/geomancer.md). A hood and a stone mantle, and (round 3) a TALL STAFF with an amber geode.
    The silhouette read, against everyone else on the knight's rig: a pointed moss-green HOOD (not a helm, not a brim), a
    MANTLE of rough stones on both shoulders that makes her the widest thing at shoulder height in the cast, and the short
    thick stave laid diagonally over the body with a standing stone for its head. The Pyromancer holds a thin staff upright
@@ -4186,8 +4181,9 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
   const sh = [BX + 8, BY + 7], [X, Y] = sh, OFF = [BX + 2, BY + 7], WIDE = 12;
   const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
   const A = '#e8a83a', D = '#c9b27c', M = '#8c8a7e';
-  /* AT GUARD, ACROSS HER: the stone head up and forward over the lead hand, the butt low behind her heel, both hands on it */
-  const guard = (d = 0) => ({ stave: [X - 7, Y + 7 + d, X + 5, Y - 10 + d], arm: [X, Y, X + 1, Y - 3 + d], arm2: [OFF[0], OFF[1], X - 3, Y + 2 + d] });
+  /* AT GUARD (round 3): the TALL STAFF held nearly upright at her lead side, butt by her front foot and the geode up over her hood, the
+     lead hand high on it and the off hand low (it was a short stave laid across her, which read as a club) */
+  const guard = (d = 0) => ({ stave: [X + 1, Y + 8 + d, X + 4, Y - 12 + d], arm: [X, Y, X + 2, Y - 2 + d], arm2: [OFF[0], OFF[1], X + 1, Y + 3 + d] });
   const card = {
     idle: () => ((previewOnly === 'icon' ? BREATH.slice(0, 1) : BREATH).map(([dy, hy, sho, plume]) => knightFrame({ dy, hy, sho, plume, ...guard(-dy) }))),
     atk: () => ([
@@ -4202,17 +4198,17 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
   const F = {
     idle: card.idle(),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) =>
-      knightFrame({ legs: l, dy, plume: i % 3, arm: [X, Y, X + 2, Y - 1], arm2: [OFF[0], OFF[1], X - 3, Y + 2], stave: [X - 8, Y + 5, X + 7, Y - 7] })),
-    jump: [knightFrame({ legs: 'jump', dy: -1, arm: [X, Y, X + 1, Y - 3], arm2: [OFF[0], OFF[1], X - 3, Y + 1], stave: [X - 7, Y + 6, X + 6, Y - 9], plume: 1 }),
-      knightFrame({ legs: 'jump2', arm: [X, Y, X + 1, Y - 3], arm2: [OFF[0], OFF[1], X - 3, Y + 1], stave: [X - 7, Y + 5, X + 7, Y - 9], plume: 1 })],
-    fall: [knightFrame({ legs: 'fall', arm: [X, Y, X + 2, Y - 2], arm2: [OFF[0], OFF[1], X - 4, Y], stave: [X - 8, Y + 3, X + 7, Y - 10], plume: 2 }),
-      knightFrame({ legs: 'fall2', dy: -1, arm: [X, Y, X + 2, Y - 3], arm2: [OFF[0], OFF[1], X - 4, Y - 1], stave: [X - 8, Y + 2, X + 8, Y - 10], plume: 2 })],
+      knightFrame({ legs: l, dy, plume: i % 3, arm: [X, Y, X + 2, Y - 1], arm2: [OFF[0], OFF[1], X, Y + 3], stave: [X - 1, Y + 8, X + 4, Y - 12] })),   /* (the staff carried upright, leaning into the run) */
+    jump: [knightFrame({ legs: 'jump', dy: -1, arm: [X, Y, X + 1, Y - 3], arm2: [OFF[0], OFF[1], X - 1, Y + 2], stave: [X - 2, Y + 7, X + 4, Y - 11], plume: 1 }),
+      knightFrame({ legs: 'jump2', arm: [X, Y, X + 1, Y - 3], arm2: [OFF[0], OFF[1], X - 1, Y + 2], stave: [X - 3, Y + 6, X + 5, Y - 12], plume: 1 })],
+    fall: [knightFrame({ legs: 'fall', arm: [X, Y, X + 2, Y - 2], arm2: [OFF[0], OFF[1], X - 1, Y + 1], stave: [X - 4, Y + 5, X + 5, Y - 12], plume: 2 }),
+      knightFrame({ legs: 'fall2', dy: -1, arm: [X, Y, X + 2, Y - 3], arm2: [OFF[0], OFF[1], X - 1, Y], stave: [X - 4, Y + 4, X + 6, Y - 12], plume: 2 })],
     /* THE LANDING is heavy: the butt jarred into the ground as she comes down on it, the settle, and up */
     land: [knightFrame({ legs: 'crouch', legsDy: 3, dy: 4, arm: [X, Y, X + 3, Y + 1], arm2: [OFF[0], OFF[1], X, Y + 3], stave: [X + 5, Y + 5, X + 1, Y - 12], plume: 2, bits: [o(5, 9, D), o(7, 9, D), o(3, 9, D)] }),
       knightFrame({ legs: 'land', dy: 2, ...guard(1), plume: 0 }),
       knightFrame({ legs: 'stand', dy: 1, ...guard(), plume: 1 })],
-    takeoff: knightFrame({ legs: 'push', dy: -2, sho: 1, arm: [X, Y, X + 1, Y - 4], arm2: [OFF[0], OFF[1], X - 2, Y], stave: [X - 6, Y + 8, X + 5, Y - 11], plume: 2 }),
-    apex: knightFrame({ legs: 'jump2', dy: -1, arm: [X, Y, X + 2, Y - 3], arm2: [OFF[0], OFF[1], X - 3, Y], stave: [X - 7, Y + 4, X + 8, Y - 9], plume: 0 }),
+    takeoff: knightFrame({ legs: 'push', dy: -2, sho: 1, arm: [X, Y, X + 1, Y - 4], arm2: [OFF[0], OFF[1], X, Y + 2], stave: [X - 1, Y + 8, X + 4, Y - 11], plume: 2 }),
+    apex: knightFrame({ legs: 'jump2', dy: -1, arm: [X, Y, X + 2, Y - 3], arm2: [OFF[0], OFF[1], X - 1, Y + 1], stave: [X - 3, Y + 5, X + 5, Y - 12], plume: 0 }),
     skid: knightFrame({ dx: -2, legs: 'wide', arm: [X, Y, X + 3, Y + 2], arm2: [OFF[0], OFF[1], X + 1, Y + 3], stave: [X - 5, Y - 6, X + 6, Y + 8], plume: 2 }),
     climb: [knightFrame({ legs: 'climbA', arm: [X, Y, X + 2, Y - 7], stave: [X + 3, Y + 6, X - 6, Y - 8], plume: 0 }),
       knightFrame({ legs: 'climbB', dy: 1, arm: [X, Y, X + 3, Y - 3], stave: [X + 3, Y + 7, X - 6, Y - 7], plume: 1 })],
@@ -4221,10 +4217,10 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
     plunge: knightFrame({ legs: 'fall2', dx: -1, arm: [X, Y, X, Y + 4], arm2: [OFF[0], OFF[1], X - 1, Y + 1], stave: [X - 1, Y + 15, X - 3, Y - 6], plume: 2 }),
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', arm: [X, Y, X - 1, Y + 3], stave: [X + 4, Y + 6, X - 8, Y - 5], plume: 2 }),
       knightFrame({ dx: -2, dy: 2, legs: 'land', arm: [X, Y, X - 2, Y + 4], stave: [X + 3, Y + 7, X - 9, Y - 2], plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [X, Y, X + 2, Y + 2], arm2: [OFF[0], OFF[1], X - 2, Y + 4], stave: [X - 6, Y + 6, X + 6, Y - 7] }),
-    /* THE ROCK SHIELD (C held, 2026-09-24 - it was RAISE WALL): the lead arm brought up and across her chest where the slab rides
-       (geomancer.js draws the stone on it), the stave drawn back low in the off hand, her weight settled behind it */
-    block: [0, 1].map(i => knightFrame({ dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y - 3 + i], arm2: [OFF[0], OFF[1], X - 3, Y + 2], stave: [X - 8, Y + 6, X + 1, Y - 9 + i], plume: i + 1 })),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [X, Y, X + 2, Y + 2], arm2: [OFF[0], OFF[1], X, Y + 4], stave: [X + 1, Y + 6, X + 4, Y - 12] }),   /* (down on her heels, the staff still upright by her) */
+    /* THE RUNE-WARD (C held, round 3 - it was the ROCK SHIELD): the stave PLANTED upright in front of her, butt in the ground, both hands
+       on it and her weight behind it - geomancer.js raises the ward out of the ground beyond it. She is rooted here, and it looks it */
+    block: [0, 1].map(i => knightFrame({ dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y - 2 + i], arm2: [OFF[0], OFF[1], X + 2, Y + i], stave: [X + 4, Y + 8, X + 4, Y - 12 + i], plume: i + 1 })),
   };
   /* ROLLING STONE (X early in a dash): the stave laid back as a lever and the boot put through a stone at her feet */
   F.dashAtk = [knightFrame({ dx: 2, dy: 1, legs: 'push', arm: [X, Y, X - 3, Y + 2], arm2: [OFF[0], OFF[1], X - 5, Y + 1], stave: [X - 10, Y + 6, X + 3, Y - 8], plume: 2 }),
@@ -4281,8 +4277,8 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
   directionalPoses(F, 'stave', {});
   /* THE TALL ONES, made after the padding with the headroom of their own: the stave goes up over the hood on these */
   const TK = f => knightFrame({ top: ATTACK_HEADROOM, ...f });
-  /* UPHEAVAL (her held X): the stave raised upright over her in both hands, then the BUTT struck down into the ground ahead of her
-     feet - where the pillar comes up - and her weight driven down on top of it. The same strike as the wall, taken higher and harder */
+  /* FAULT LINE (her held X, round 3 - it was UPHEAVAL): the stave raised upright over her in both hands, then the BUTT slammed down
+     into the ground ahead of her feet - where the crack starts - and her weight driven down on top of it while it runs */
   F.heavy = [TK({ dy: -1, legs: 'wide', sho: 1, arm: [X, Y, X + 3, Y - 7], arm2: [OFF[0], OFF[1], X + 2, Y - 6], stave: [X + 3, Y - 2, X + 2, Y - 18], plume: 1 }),
     TK({ wide: 4, dx: 1, dy: 2, legs: 'wide', arm: [X, Y, X + 5, Y - 2], arm2: [OFF[0], OFF[1], X + 4, Y], stave: [X + 7, Y + 9, X + 5, Y - 9], plume: 2, bits: [o(6, 9, D), o(10, 9, D), o(5, 8, M), o(11, 8, M)] }),
     TK({ wide: 4, dx: 1, dy: 3, legs: 'crouch', arm: [X, Y, X + 5, Y - 1], arm2: [OFF[0], OFF[1], X + 4, Y + 1], stave: [X + 7, Y + 9, X + 6, Y - 8], plume: 0, bits: [o(4, 9, D), o(12, 9, D), o(8, 7, A)] })];
@@ -4307,11 +4303,6 @@ function geoKitPoses(F, sh) {
   const [X, Y] = sh, OFF = [BX + 2, BY + 7], KF = f => knightFrame({ top: ATTACK_HEADROOM, ...f });
   const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
   const A = '#e8a83a', D = '#c9b27c', M = '#8c8a7e', MS = '#6f9a4a';
-  /* THE MEND (her shield's only refill, 2026-09-24): the stave lifted upright in both hands, the butt STRUCK into the ground at her feet
-     (the thud, and the dust ring off it), and her weight on it while the stone knits back onto her arm - the rune alight in its head */
-  F.gMend = [KF({ dy: -1, legs: 'wide', sho: 1, arm: [X, Y, X + 2, Y - 7], arm2: [OFF[0], OFF[1], X + 1, Y - 6], stave: [X + 3, Y - 1, X + 2, Y - 17], plume: 1 }),
-    KF({ wide: 4, dy: 2, legs: 'wide', arm: [X, Y, X + 4, Y - 1], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X + 5, Y + 9, X + 4, Y - 9], plume: 2, bits: [o(3, 9, D), o(7, 9, D), o(1, 8, M), o(9, 8, M)] }),
-    KF({ dy: 1, legs: 'stand', arm: [X, Y, X + 4, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y], stave: [X + 5, Y + 9, X + 5, Y - 8], plume: 0, bits: [o(6, -9, A)] })];
   /* STONE STEP: in the air, the stave jabbed straight down under her boots onto the stone that rises to meet it, knees up */
   F.gStep = [KF({ legs: 'tuck', dy: -2, arm: [X, Y, X, Y + 3], arm2: [OFF[0], OFF[1], X - 1, Y + 2], stave: [X, Y + 14, X - 2, Y - 7], plume: 1 }),
     KF({ legs: 'jump', dy: -3, sho: 1, arm: [X, Y, X + 1, Y + 1], arm2: [OFF[0], OFF[1], X, Y + 1], stave: [X + 1, Y + 11, X - 1, Y - 10], plume: 2, bits: [o(0, 12, M), o(2, 12, M), o(-2, 12, M)] })];
