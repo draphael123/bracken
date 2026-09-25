@@ -4,7 +4,9 @@
 import { install, newCanvas, sheet, savePNG } from './node-canvas.mjs';
 install();
 const D = await import('../src/redraw/desert_foes.js');
-const sprites = { scorpion: D.bakeScorpion(), vulture: D.bakeVulture(), sandGoblin: D.bakeSandGoblin(), duneWorm: D.bakeDuneWorm(), duneWormLunge: D.bakeDuneWormLunge(), duneWormRipple: D.bakeDuneWormRipple() };
+const B = await import('../src/redraw/caravan_bandits.js');   /* THE BANDITS (2026-09-25), in the sand goblin's place in the caravan */
+const sprites = { scorpion: D.bakeScorpion(), vulture: D.bakeVulture(), sandGoblin: D.bakeSandGoblin(), duneWorm: D.bakeDuneWorm(), duneWormLunge: D.bakeDuneWormLunge(), duneWormRipple: D.bakeDuneWormRipple(),
+  cutthroat: B.bakeCutthroat(), slinger: B.bakeSlinger(), ambusher: B.bakeAmbusher() };
 let bad = 0;
 for (const [k, s] of Object.entries(sprites)) {
   const w = s.R[0].width, h = s.R[0].height;

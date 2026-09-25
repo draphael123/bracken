@@ -7741,9 +7741,11 @@ const GARRISON = {
   burial: [['zombie', 16], ['husk', 16], ['wight', 14], ['bat', 13], ['bonegob', 8], ['bonearcher', 9], ['boo', 11], ['lanternshade', 5], ['haunt', 8], ['spider', 6]],   /* and something that SHOOTS: over 1,140 tiles nothing in here could reach the hero across a room */   /* NO PIRATES UNDER THE HILL (level review, 2026-09-24): its seven bone corsairs - tricorns and striped shirts, the drowned coast's own crew - are husks, the barrow's own dead of the same weight (threat 3 for 3), so the level's INDEX does not move */   /* forty-four zombies and nothing else was the whole roster under the hill */
   /* witchlight: NO ROW. The redesigned stair (2026-09-22) is authored ENCOUNTERS of 3-5 with quiet between - Daniel agreed to it over an even sprinkle (src/witchlight.js) */
   fallingtower: [['tome', 3], ['apprentice', 3], ['haunt', 2], ['bat', 2], ['imp', 1], ['armour', 1], ['boo', 1]],   /* the Folly's own staff, and what got loose in it. Small since the ascent (2026-09-21): the builder puts a creature on every tier, and this fills between them - on every floor (L.stackedFloors). NO ZOMBIE AND NO HUSK since the tower was made longer (2026-09-22): Daniel asked for FEWER of them, and the builder's own three zombies plus the cistern's elite husk are the whole count - a row here would quietly put more back. The TOMES lead it instead. */
-  /* THE SUNKEN CARAVAN: its three new creatures (the scorpion on the flats, the sand goblin under them, the vulture over them) and
-     the looters working the wrecks. ~3.8 a screen over 21 screens is what the greybox measured (tools/caravan-level.mjs) */
-  caravan: [['scorpion', 22], ['sandgob', 17], ['vulture', 14], ['thief', 11], ['archer', 4]],
+  /* THE SUNKEN CARAVAN: the scorpion on the flats, the vulture over them, and the looters working the wrecks - men, NOT GOBLINS
+     (Daniel, 2026-09-25: "I don't want goblins in the level"): the cutthroat's crowd. The slingers and the sand-cloaked ambushers are
+     put by hand where they make the ground harder (RULES S1: src/draft/sunken-caravan.js), not sprinkled. ~3.8 a screen over 21
+     screens is what the greybox measured (tools/caravan-level.mjs) */
+  caravan: [['scorpion', 22], ['cutthroat', 22], ['vulture', 14]],
   lamplit: [['watch', 6], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
@@ -8108,7 +8110,7 @@ const ELITES = {
   waymeet: [['hedgeknight', 465, 35], ['heavy', 548, 35]],
   fields: [['scarecrow', 230, 33]],
   mage: [['armour', 408, 39]],
-  caravan: [['archer', 486, 29, { face: -1, gate: 496 }]],   /* THE SUNKEN CARAVAN: the looters' bowman holds the way down the rim to the hollow, on the rim's last flat with the gate at the foot of the drop (tools/elites.mjs: at 455 he stood four tiles from his gate, with no room to fight him in front of it) */
+  caravan: [['cutthroat', 518, 30, { face: -1, gate: 528 }]],   /* THE SUNKEN CARAVAN: THE FIRST KNIFE (2026-09-25, a goblin bowman until the goblins left the level) holds the way down the rim to the hollow - since the ruins (2026-09-25) in the shade of the rim's last lintel, the gate at the foot of the slide into the hollow, on the rim's last flat with the gate at the foot of the drop (tools/elites.mjs: at 455 he stood four tiles from his gate, with no room to fight him in front of it) */
 };
 /* THE GATE AN ELITE HOLDS, the same shape as an ambush room's (ambushWall in main.js): it stands on its own column's floor
    near the elite's row, up to a ceiling or ten tiles, and a floor you can drop through under it is shut too. One function,

@@ -22,7 +22,7 @@ export const MATERIAL_OF = {
   chitin: ['wasp', 'weaver', 'drone', 'crab', 'scorpion', 'scarab', 'grub', 'queen'],
   slime: ['sporeling', 'spitcap', 'lurker', 'jelly', 'slime', 'hopper', 'hopper_yellow', 'hopper_blue', 'puffer', 'urchin'],
   glass: ['glassscorp', 'shardling', 'suncatcher', 'crystal', 'stalker'],
-  sand: ['sandgob', 'warden', 'sandwarden', 'golem'],
+  sand: ['sandgob', 'warden', 'sandwarden', 'golem', 'ambusher'],   /* THE SAND-CLOAKED AMBUSHER goes out as the sand he hid in */
   wood: ['broom', 'scarecrow', 'topiary', 'strawking', 'piece', 'bale', 'dummy'],
   paper: ['tome', 'mimic'],
   clockwork: ['construct', 'turret', 'hourglass'],
