@@ -294,6 +294,12 @@ export const SFX = {
   swingUp(k) { const r = 1 + Math.min(3, k) * 0.09; noise(0.07, 0.16, 1500 * r, 1.1); tone('triangle', 620 * r, 300 * r, 0.06, 0.05); }, // the run of blows climbs
   coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
   clank() { file('clang', 0.5) || (tone('square', 1500, 900, 0.05, 0.18), tone('sine', 2300, 2100, 0.16, 0.14), noise(0.05, 0.2, 3200)); },
+  /* THE ORE ROAD AT WORK (docs/briefs/ore-road-mine-life.md): what you hear before you see it. No vary() in any of them: vary rolls
+     the dice even with the sound off, and the Winchmaster's pilot pins its dice */
+  tink() { tone('triangle', 2400, 2250, 0.05, 0.07); tone('sine', 3600, 3500, 0.09, 0.03, 0.005); noise(0.03, 0.06, 5200, 2); },   /* a pick on rock: small and bright */
+  cartRoll() { noise(0.18, 0.05, 260, 0.9); tone('square', 70, 64, 0.12, 0.025); },   /* iron wheels on the rail */
+  ratchet() { tone('square', 1300, 1100, 0.02, 0.04); noise(0.02, 0.05, 3000, 2); },   /* a winch's pawl, one click */
+  sackThud() { noise(0.12, 0.12, 300, 0.7); tone('sine', 110, 60, 0.1, 0.08); },   /* a sack of ore put down */
   parry() { file('parry', 0.5) || tone('square', 1200, 1900, 0.08, 0.16); },
   /* THE KNIGHT'S PERFECT GUARD: a clang that rings like a bell - the steel knock high and bright, and two long clean partials over it.
      Nothing else in the game rings this long, so it is heard as THE thing, and never confused with a block's dull knock */
@@ -652,6 +658,14 @@ Object.assign(SFX, {
   gust() { noise(0.9, 0.09, 420, 0.4); noise(0.6, 0.05, 900, 0.6); }, // a gale coming down the bridge
   /* A TOLD GUST coming (Gale Moor): the wind rising through the stones for a second and a fifth, three swells and a whistle climbing over them */
   gustRise() { noise(0.35, 0.025, 500, 0.6); noise(0.4, 0.045, 720, 0.6, 0.35); noise(0.5, 0.07, 980, 0.6, 0.72); tone('sine', 880, 1760, 1.15, 0.022); },
+  /* THE DUNE WORM (src/dune-worm.js): every tell its own sound, so each is known off the screen as well as on it */
+  wormRipple() { noise(1.0, 0.14, 160, 0.35); noise(0.8, 0.07, 620, 0.7, 0.1); tone('sine', 46, 38, 0.9, 0.12); },   /* THE RIPPLE: sand rolling over something that size, low */
+  wormBreach() { noise(0.5, 0.4, 300, 0.4); noise(0.35, 0.22, 1800, 0.8, 0.03); tone('sawtooth', 70, 140, 0.25, 0.2); tone('sine', 50, 30, 0.5, 0.2, 0.05); },   /* up through the floor */
+  wormGurgle() { tone('sawtooth', 110, 170, 0.5, 0.12); noise(0.45, 0.16, 700, 0.6, 0.05); for (let i = 0; i < 3; i++) tone('sine', 240 + i * 60, 140, 0.08, 0.06, 0.12 + i * 0.1); },   /* THE SPIT TELL: a wet throat filling with sand */
+  wormSpit() { noise(0.2, 0.34, 900, 0.5); noise(0.35, 0.16, 2600, 0.9, 0.04); tone('sine', 300, 90, 0.2, 0.12); },
+  wormHiss() { noise(0.7, 0.2, 2400, 0.7); tone('sawtooth', 90, 60, 0.6, 0.1); },   /* THE LUNGE TELL: the coil drawing back, sand hissing off it */
+  wormSink() { noise(0.9, 0.18, 260, 0.35); tone('sine', 180, 50, 0.8, 0.12); for (let i = 0; i < 4; i++) noise(0.06, 0.1, 1200, 0.8, 0.15 + i * 0.16); },   /* THE SWALLOW TELL: the sand running away downward */
+  wormTangle() { for (let i = 0; i < 5; i++) noise(0.05, 0.22, 3400 - i * 300, 1.1, i * 0.04); tone('square', 900, 300, 0.14, 0.06); SFX.clank(); },   /* the awning tearing off its rollers */
   stormChant() { pad('sawtooth', 330, 392, 0.4, 0.06, 0, 1400); pad('sine', 990, 1320, 0.4, 0.04, 0.05, 3000); noise(0.4, 0.06, 600, 0.5); },
   stormZap() { noise(0.12, 0.22, 3200, 0.8); tone('square', 1800, 300, 0.15, 0.07); tone('sine', 700, 200, 0.22, 0.09); },
   /* THE SEA WITCH's call: not the shaman's rattle and chant. A held note over the hiss of a sea running, and her lantern ringing on its crook */
@@ -661,6 +675,10 @@ Object.assign(SFX, {
      its rite breaking is the bell dropped and the pot spilling on the flags */
   priestRite() { pad('sawtooth', 247, 247, 1.3, 0.05, 0, 900); pad('sawtooth', 330, 330, 1.1, 0.035, 0.25, 900); for (let i = 0; i < 3; i++) { bell(2093, 0.25, 0.03, 0.1 + i * 0.45); noise(0.05, 0.05, 4200, 2, 0.3 + i * 0.45); } },
   priestBless() { bell(1568, 0.7, 0.06); bell(2093, 0.6, 0.04, 0.06); pad('sine', 392, 523, 0.6, 0.05, 0, 2200); },
+  priestCenserTell() { for (let i = 0; i < 3; i++) noise(0.04, 0.05, 3600, 1.4, i * 0.09); pad('sawtooth', 220, 247, 0.5, 0.04, 0, 900); },   /* the chain rattles as the pot goes back over its shoulder, and it hums */
+  priestCenser() { noise(0.08, 0.12, 2200, 1.1); tone('triangle', 900, 420, 0.22, 0.06); bell(1760, 0.18, 0.02, 0.05); },          /* thrown: the whoosh, and the pot's own ring */
+  priestBellTell() { bell(2349, 0.2, 0.03); bell(2349, 0.2, 0.03, 0.14); },                                                          /* the hand bell lifted, rung twice small */
+  priestBell() { bell(1976, 0.35, 0.07); noise(0.06, 0.1, 1200, 0.8); tone('square', 300, 160, 0.1, 0.06); },                         /* and swung into you */
   priestBreak() { tone('sine', 2093, 1500, 0.2, 0.06); SFX.clatter(); noise(0.3, 0.12, 700, 0.5, 0.05); },
   /* THE GOBLIN MAGE reads out of a book it cannot read: pages riffled and a goblin's shout pitched up into something it thinks
      is a word. The bolt leaves the page with a papery crack; the rune is written low (a scratch along the flags and a
@@ -810,6 +828,7 @@ const DIE = {
   scorpion() { noise(0.1, 0.24, 3200, 0.4); for (let i = 0; i < 3; i++) noise(0.04, 0.16, 2400 - i * 400, 0.5, 0.05 + i * 0.05); /* the shell cracks */ },
   sandgob() { gob(0.9) || tone('square', 420, 100, 0.2, 0.16); noise(0.2, 0.12, 900, 0.6, 0.05); /* and the sand takes him back */ },
   vulture() { tone('sawtooth', 700, 180, 0.3, 0.14); noise(0.14, 0.12, 1800, 0.5, 0.04); /* a croak and a clatter of feathers */ },
+  duneworm() { tone('sawtooth', 80, 30, 1.6, 0.26); noise(1.6, 0.3, 200, 0.3); noise(1.0, 0.14, 900, 0.5, 0.3); tone('sine', 44, 26, 1.8, 0.2, 0.2); /* THE DUNE WORM: a long bellow going down into the sand, and the sand closing over it */ },
   crab() { noise(0.12, 0.3, 2800, 0.35); for (let i = 0; i < 4; i++) noise(0.05, 0.2, 2200 - i * 300, 0.5, 0.06 + i * 0.05); /* the shell comes apart in pieces */ },
   turtle() { noise(0.2, 0.3, 1200, 0.4); tone('square', 260, 90, 0.2, 0.14); tone('sine', 80, 40, 0.4, 0.12, 0.08); },
   heronfoe() { tone('sawtooth', 1000, 300, 0.2, 0.14); tone('square', 1400, 500, 0.14, 0.1, 0.04); noise(0.26, 0.2, 2000, 0.4, 0.1); },
@@ -907,6 +926,7 @@ const HURT = {
   scorpion() { noise(0.05, 0.22, 3000, 0.4); tone('square', 900, 700, 0.05, 0.08); },
   sandgob() { gobH(0.9) || tone('square', 500, 300, 0.08, 0.14); noise(0.08, 0.08, 900, 0.6); },
   vulture() { tone('sawtooth', 820, 420, 0.12, 0.12); },
+  duneworm() { tone('sawtooth', 120, 70, 0.22, 0.18); noise(0.2, 0.22, 380, 0.5); noise(0.1, 0.1, 1600, 0.7, 0.06); },   /* THE DUNE WORM: a grunt through a throat full of sand, and the sand coming off him */
   burngob() { gobH(0.95, 0.5) || tone('sawtooth', 260, 150, 0.14, 0.16); noise(0.1, 0.1, 2600, 0.6); },
   emberwisp() { noise(0.08, 0.1, 3600, 0.5); },
   pyromancer() { noise(0.18, 0.2, 1400, 0.5); tone('triangle', 200, 120, 0.2, 0.14); },

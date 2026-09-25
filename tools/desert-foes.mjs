@@ -4,7 +4,7 @@
 import { install, newCanvas, sheet, savePNG } from './node-canvas.mjs';
 install();
 const D = await import('../src/redraw/desert_foes.js');
-const sprites = { scorpion: D.bakeScorpion(), vulture: D.bakeVulture(), sandGoblin: D.bakeSandGoblin(), duneWorm: D.bakeDuneWorm(), duneWormLunge: D.bakeDuneWormLunge() };
+const sprites = { scorpion: D.bakeScorpion(), vulture: D.bakeVulture(), sandGoblin: D.bakeSandGoblin(), duneWorm: D.bakeDuneWorm(), duneWormLunge: D.bakeDuneWormLunge(), duneWormRipple: D.bakeDuneWormRipple() };
 let bad = 0;
 for (const [k, s] of Object.entries(sprites)) {
   const w = s.R[0].width, h = s.R[0].height;

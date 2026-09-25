@@ -16,6 +16,8 @@
                              left to run out opens nothing (2026-09-24: he fights with the class's kit)
      THE WINDCALLER    brace through his howl (the guard key held on the ground): his own wind fails him and he falls, open; the
                        same howl left to blow walks you to the wall and opens nothing (Gale Moor rework, 2026-09-25)
+     THE DUNE WORM     wind the hollow's awning out and let his breach come up under it: he comes up INTO the canvas, tangled, and
+                       the awning comes down; the same breach in the open sand, or under the awning rolled IN, opens nothing (2026-09-25)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -122,6 +124,17 @@ try {
      let fell=false,moved=0;const x0=BK.P.x;for(let i=0;i<60*3;i++){BK.keys.block=brace;BK.sim(1);moved=Math.max(moved,Math.abs(BK.P.x-x0));if(b.mode==='fallen'){fell=true;break;}if(b.mode==='blink'||b.mode==='appear')break;}
      BK.keys.block=false;const o={mode:b.mode,fell,moved:Math.round(moved),braceT:+(b.braceT||0).toFixed(2)};b.mode='cast';b.modeT=9;BK.sim(5);return o;};
    const left=howl(false),held=howl(true);out.windcaller={left,held};}
+
+  /* THE DUNE WORM: one breach, three ways. The hero stands where it will lock and leaves LATE (after the commit), as a player baits it */
+  {const b=boot('caravan');const A=BK.L.arena;const w=BK.caravan().winches.find(q=>q.hollow);
+   for(let i=0;i<200&&(b.mode==='wake'||!b.st);i++)BK.sim(1);
+   const mid=(w.canopy.x0+w.canopy.x1+1)*8,open=A.x1-90;
+   const breach=(x,rolled)=>{w.out=w.k=rolled;w.cd=0;const W=b.st;W.mode='under';W.t=0;W.i=0;W.ripples=[];let tangled=0,left=false,opened=0;
+     for(let f=0;f<60*5;f++){BK.P.hp=BK.P.maxHp;if(!left){BK.P.x=x;BK.P.y=A.floor;BK.P.vx=0;}
+       if(!left&&W.mode==='rippleTell'&&W.ripples.some(r=>r.real&&r.commit)){left=true;BK.P.x=x+60;}
+       BK.sim(1);if(b.mode==='tangled')tangled++;if(BK.bossOpen(b))opened++;if(W.mode==='dive'||W.mode==='surfaced'&&tangled===0&&f>60)break;}
+     return {tangled:+(tangled/60).toFixed(1),open:+(opened/60).toFixed(1),awning:w.out,mode:b.mode};};
+   out.worm={openSand:breach(open,1),rolledIn:breach(mid,0),rolledOut:breach(mid,1)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -171,6 +184,10 @@ try {
   assert.ok(!r.windcaller.left.fell, 'A11: a howl left to blow opens nothing: ' + JSON.stringify(r.windcaller));
   assert.ok(r.windcaller.left.moved > 40, 'and it walks an unbraced hero across the room: ' + JSON.stringify(r.windcaller));
   assert.ok(r.windcaller.held.fell, 'A11: braced through his howl, his own wind fails him and he falls, open: ' + JSON.stringify(r.windcaller));
+  assert.equal(r.worm.openSand.tangled, 0, 'THE DUNE WORM: a breach in the open sand opens nothing: ' + JSON.stringify(r.worm));
+  assert.equal(r.worm.rolledIn.tangled, 0, 'a breach under his awning ROLLED IN opens nothing: ' + JSON.stringify(r.worm));
+  assert.ok(r.worm.rolledOut.tangled >= 2.4 && r.worm.rolledOut.open >= 2.4, 'a breach under the awning rolled OUT comes up into it: tangled and open, the window: ' + JSON.stringify(r.worm));
+  assert.equal(r.worm.rolledOut.awning, 0, 'and the awning comes down onto him: it has to be wound out again: ' + JSON.stringify(r.worm));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

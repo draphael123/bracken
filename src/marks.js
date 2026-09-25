@@ -50,7 +50,7 @@ export const QUIET = new Set(['updateTollmaster|floodTell', 'updateTollmaster|da
   'updateEliteRule|rallyTell', 'updateEliteRule|wallTell', 'updateEliteRule|callTell',   // AN ELITE'S war cry, shield wall and call: the foes it rallies, covers or calls strike on their own marks
   'updateEliteShield|elWallTell',   // THE SHIELD CAPTAIN'S WALL: shields up round him, and nobody struck
   'updateEliteBrute|elCryTell',     // THE GOBLIN CAPTAIN'S WAR CRY: his goblins strike faster, and he strikes nobody
-  'updateGobPriest|riteTell',       // THE GOBLIN PRIEST'S RITE mends and blesses its own side and touches nobody: it says THE RITE, not a mark
+  'updateGobPriest|riteTell',       // THE GOBLIN PRIEST'S RITE mends and blesses its own side and touches nobody: it says THE RITE, not a mark (its CENSER and its BELL are blows, each a yellow ! the audit follows for itself)
   'updateGraveWarden|tollTell',
   'updateOwl|ropeTell',             // THE OWL REEVE CUTS THE HOIST (phase two): she saws at a rope, and nobody is struck - it says THE ROPE, not a mark
   'updatePyromancer|wispTell']);   /* THE PYROMANCER CALLS A WISP: it drifts off and burns whoever it touches on its own account, and he strikes nobody. A mark is a promise about your shield, and there is nothing here for the shield to do */   // THE GRAVE WARDEN TOLLS: the dead climb out and strike on their own marks; the bell strikes nobody     // THE GOBLIN PRIEST'S RITE mends and blesses its own side and touches nobody: it says THE RITE, not a mark
@@ -59,6 +59,7 @@ export const QUIET = new Set(['updateTollmaster|floodTell', 'updateTollmaster|da
 // cannot follow them to the blow; each row here was read off the code, and the audit still checks it against the mark
 // the creature calls where it calls one. 'type|mode' -> '!' | '!!' | '' ('draw' is the archer's bow, e.draw > 0.3).
 export const BY_HAND = {
+  'duneworm|rippleTell':'!!','duneworm|spitTell':'!','duneworm|lungeTell':'!!','duneworm|swallowTell':'!!',   /* THE DUNE WORM (dune-worm.js, by hand: a module-file boss the audit cannot follow). The breach comes up from under you and the swallow opens under you - no shield faces down; the lunge is his whole weight; his spit is grit thrown from the front, and a shield takes grit */
   'scorpion|clawTell':'!','scorpion|tailTell':'!!','sandgob|knifeTell':'!','vulture|watch':'!!',   /* THE SUNKEN CARAVAN (desert-foes.js, by hand): the claw and the knife a shield turns; the sting over its back and the vulture's dive nothing does */
   'corpse|cutTell':'!','corpse|riseTell':'','bannerbearer|plantTell':'','bannerbearer|poleTell':'!',   /* THE UNBURIED FIELD (unburied-foes.js, by hand): a dead man's cut and the standard's pole a shield turns; rising and planting strike nobody */
   'barrowrider|rideTell':'!!','barrowrider|trampleTell':'!','barrowrider|fireTell':'!','barrowrider|lanceTell':'!!','barrowrider|thrustTell':'!','barrowrider|remountTell':'',   /* THE BARROW RIDER (2026-09-24, in the Standard-Bearer's place): the ride-through and the lance line no shield turns; the trample, the grave-fire and the thrust it does; the bones crawling back strike nobody */
@@ -114,13 +115,14 @@ export const MARK = {
   'deathknight|boilTell': '!!', 'deathknight|callTell': '', 'deathknight|cleaveTell': '!', 'deathknight|gripTell': '!!', 'deathknight|novaTell': '!!', 'deathknight|passTell': '!!',
   'deathknight|raiseTell': '', 'deathknight|surgeTell': '!!', 'deathknight|wardTell': '', 'drownedking|anchorTell': '!', 'drownedking|debtTell': '!', 'drownedking|diveTell': '!!',
   'drownedking|gulpTell': '!!', 'drownedking|haulTell': '!', 'drownedking|ramTell': '!!', 'drownedking|slamTell': '!!', 'drownedking|whirlTell': '!!', 'drunk|bottleTell': '!!',
-  'drunk|lobTell': '!', 'eel|leapTell': '!', 'eel|lungeTell': '!', 'eel|pinchTell': '!', 'eel|snapTell': '!', 'eel|strikeTell': '!',
-  'eel|thrustTell': '!', 'familiar|slamTell': '!!', 'familiar|spitTell': '!', 'familiar|swipeTell': '!', 'familiar|walk': '!', 'farmhand|swingTell': '!',
-  'feeler|lashTell': '!', 'fledgling|peckTell': '!', 'forgemaster|anvilTell': '!!', 'forgemaster|bellowsTell': '!', 'forgemaster|breathTell': '!!', 'forgemaster|dragTell': '!!',
-  'forgemaster|dropTell': '!!', 'forgemaster|hurlTell': '!!', 'forgemaster|ladleTell': '!!', 'forgemaster|leapTell': '', 'forgemaster|pourTell': '!!', 'forgemaster|slamTell': '!!',
-  'forgemaster|sprayTell': '!', 'forgemaster|tongsTell': '!', 'forgemaster|whirlTell': '!!', 'frog|crouch': '!', 'frog|inhaleTell': '!', 'frog|tongueTell': '!',
-  'gaffer|haftTell': '!', 'gaffer|hookTell': '!!', 'gargoyle|diveTell': '!!', 'gargoyle|flareTell': '!!', 'gargoyle|gustTell': '!', 'gargoyle|spitTell': '!',
-  'gar|lungeTell': '!', 'goat|charge': '!', 'gobmage|boltTell': '!', 'gobmage|runeTell': '!!', 'gobpriest|riteTell': '', 'golem|shroudTell': '',
+  'drunk|lobTell': '!', 'duneworm|lungeTell': '!!', 'duneworm|rippleTell': '!!', 'duneworm|spitTell': '!', 'duneworm|swallowTell': '!!', 'eel|leapTell': '!',
+  'eel|lungeTell': '!', 'eel|pinchTell': '!', 'eel|snapTell': '!', 'eel|strikeTell': '!', 'eel|thrustTell': '!', 'familiar|slamTell': '!!',
+  'familiar|spitTell': '!', 'familiar|swipeTell': '!', 'familiar|walk': '!', 'farmhand|swingTell': '!', 'feeler|lashTell': '!', 'fledgling|peckTell': '!',
+  'forgemaster|anvilTell': '!!', 'forgemaster|bellowsTell': '!', 'forgemaster|breathTell': '!!', 'forgemaster|dragTell': '!!', 'forgemaster|dropTell': '!!', 'forgemaster|hurlTell': '!!',
+  'forgemaster|ladleTell': '!!', 'forgemaster|leapTell': '', 'forgemaster|pourTell': '!!', 'forgemaster|slamTell': '!!', 'forgemaster|sprayTell': '!', 'forgemaster|tongsTell': '!',
+  'forgemaster|whirlTell': '!!', 'frog|crouch': '!', 'frog|inhaleTell': '!', 'frog|tongueTell': '!', 'gaffer|haftTell': '!', 'gaffer|hookTell': '!!',
+  'gargoyle|diveTell': '!!', 'gargoyle|flareTell': '!!', 'gargoyle|gustTell': '!', 'gargoyle|spitTell': '!', 'gar|lungeTell': '!', 'goat|charge': '!',
+  'gobmage|boltTell': '!', 'gobmage|runeTell': '!!', 'gobpriest|bellTell': '!', 'gobpriest|censerTell': '!', 'gobpriest|riteTell': '', 'golem|shroudTell': '',
   'golem|stompTell': '!!', 'golem|sweepTell': '!!', 'golem|throwTell': '!', 'gqueen|chandTell': '!!', 'gqueen|chargeTell': '!!', 'gqueen|crownTell': '!',
   'gqueen|decreeTell': '!', 'gqueen|gDropTell': '!!', 'gqueen|gLeapTell': '', 'gqueen|leapTell': '!!', 'gqueen|sceptreTell': '!', 'gqueen|shadowTell': '!!',
   'gqueen|slamTell': '!!', 'gqueen|slateTell': '!', 'gqueen|sweepTell': '!!', 'grandmother|feelTell': '!', 'grandmother|fireTell': '!', 'grandmother|listenTell': '',

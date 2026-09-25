@@ -79,10 +79,8 @@ export const GROUND_KITS = {
     ]
   },
   "spire": {
-    "density": 0.32,
+    "density": 0.12,
     "kinds": [
-      "herbBed",
-      "skep",
       "rock"
     ]
   },
@@ -447,7 +445,19 @@ export const ALLOWED_DECORATIONS = {
   "spire": [
     "beanpoles",
     "bellFrame",
+    "bench",
     "bones",
+    "candle",
+    "cot",
+    "desk",
+    "dovecote",
+    "fruitTree",
+    "grave",
+    "hearth",
+    "longTable",
+    "lychgate",
+    "mugShelf",
+    "yew",
     "bookpile",
     "bookshelf",
     "candelabra",

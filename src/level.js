@@ -1785,8 +1785,8 @@ function hangingVillage() {
 // ============================================================================================
 // LEVEL 8 - THE MONASTERY ON THE CLIFF. Between the tree-city and the high moor, an old house of monks
 // built up the face of the mountain: a gatehouse at the foot, terraces, a scriptorium dug into the rock,
-// bell towers joined by bridges, a cloister on the ledge where the cloud ends, shrines, and a broken roof
-// at the top where the Roc nests. She drove the monks out. What they built still answers a blow: strike a
+// bell towers joined by bridges, a cloister on the ledge where the cloud ends, shrines, and the belfry at the
+// top where a goblin sits in the abbot's chair. The goblins drove the monks out. What they built still answers a blow: strike a
 // prayer wheel and its stair turns, strike a bell and its bridge comes down, stand in a basket and the
 // other one comes up past you. The incense they left still burns, and its smoke still carries you.
 // Halfway up you come out of the grey into the sun.
@@ -1878,7 +1878,9 @@ function theMonastery() {
     boards(!left ? x0 + 1 : x0 + 4, top, 3);
     masonry.push([x0, x0, top, floor], [x1, x1, top, floor], [x0, x1, top, top]);
     interiors.push([x0 + 1, x1 - 1, top + 1, floor, 'monkTower']);
-    facades.push([x0 - 1, x1 + 1, top - 7, top - 1, 'monkBelfry']);
+    /* THE BELFRY IS A STAGE IN THE TOWER, NOT A HUT ON TOP OF IT (Daniel, 2026-09-25: "towers ... with nothing under them"): the
+       shaft goes on up past the bell to the underside of the cloister's floor, and that floor stands on it (tools/architecture.mjs) */
+    facades.push([x0 - 1, x1 + 1, CLOUD + 3, top - 1, 'monkTower', { stage: 7 }]);
   };
 
   // ---- 1. THE GATEHOUSE: the pilgrims' door, the gate that fell, and the stair the pilgrims climbed ----
@@ -1886,30 +1888,39 @@ function theMonastery() {
   facades.push([1, 13, 203, 217, 'monkTower', { arch: [211, 217], roof: true }]);
   facades.push([14, 27, 209, 217, 'monkCurtain']);
   ent('npc', 8, 217, { kind: 'squire' });
-  ent('sign', 4, 217, { text: 'THE MONASTERY. THE ROC DROVE THE MONKS OUT. WHAT THEY BUILT STILL ANSWERS A BLOW.' });
+  ent('sign', 4, 217, { text: 'THE MONASTERY. GOBLINS DROVE THE MONKS OUT. WHAT THE MONKS BUILT STILL ANSWERS A BLOW.' });
   ent('deco', 17, 217, { kind: 'portcullis' }); ent('deco', 25, 217, { kind: 'shrine', v: 0 });   /* was a stoneLantern: see THE SAND CASTLES below */
   ent('check', 21, 217); coins([12, 216], [28, 216], [44, 216]);
   stair(218, 196, 30, 70, 34, 15);
   // Grounded arcades carry the first terrace; their open arches leave the stair visible.
   facades.push([1, 28, 196, 217, 'monkCurtain', {arch:[211,217]}], [72,94,196,217,'monkCurtain',{arch:[211,217]}]);
-  for(const [x,k] of [[13,'prayerFlags'],[76,'herbBed'],[81,'monkChores'],[90,'flagPost']]) ent('deco',x,217,{kind:k});
+  for(const [x,k] of [[13,'prayerFlags'],[31,'pilgrimLeanTo']]) ent('deco',x,217,{kind:k});   /* the pilgrims' shelter, by their stair */
+  // THE MONKS' GRAVEYARD, in the east yard: in by the lychgate, the brothers in their rows, the yew over them. The undercroft
+  // under the trapdoor is its ossuary, and the looter down there is going through the bones.
+  for (const [x, k, v] of [[75, 'lychgate', 0], [79, 'grave', 0], [82, 'grave', 1], [85, 'grave', 2], [88, 'yew', 0], [92, 'grave', 1]]) ent('deco', x, 217, { kind: k, v });
+  ent('deco', 72, 220, { kind: 'bones', v: 0 });
   ent('deco',46,195,{kind:'well'}); ent('deco',64,195,{kind:'incenseStand'});
   ent('fledgling', 42, 217, { face: -1 });
   ent('sign', 62, 217, { text: 'A TRAPDOOR IN THE FLAGS. PRESS DOWN TO DROP IN, JUMP UP THROUGH IT TO COME OUT.' });
   cellar(66, 74, 218); coins([70, 217], [67, 220], [69, 220], [71, 220], [73, 220]);
   ent('sprig', 68, 220, { face: 1 });                               // a looter in the undercroft: nobody has swept it for years
   ent('sprig', 54, 217, { face: -1 }); ent('sprig', 78, 217, { face: -1 });   // looters in the gate yard, going through the pilgrims' packs
-  ent('deco', 84, 217, { kind: 'pilgrimLeanTo' }); ent('deco', 89, 217, { kind: 'lanternPost' });
-  ent('deco', 92, 217, { kind: 'bones', v: 1 }); coins([80, 217], [87, 217]);
+  coins([80, 217], [87, 217]);
 
   // ---- 2. THE LOWER TERRACES: bean rows gone to seed, and the incense that still burns for nobody ----
   ent('rockgoblin', 20, 195, { face: 1 }); ent('rockgoblin', 86, 195, { face: -1 }); ent('fledgling', 30, 195, { face: 1 });
-  ent('sign', 6, 195, { text: 'THE LOWER TERRACES. THE MONKS GREW BEANS HERE. THE GOBLINS DIG FOR THEIR SILVER.' });
+  ent('sign', 6, 195, { text: 'THE HERB GARDEN. THE GOBLIN IN THE ROBE MENDS THE OTHERS: STRIKE IT BEFORE ITS RITE ENDS.' });
   ent('check', 8, 195); coins([21, 194], [75, 194]);
   cellar(14, 22, 196); coins([18, 195], [15, 198], [17, 198], [19, 198], [21, 198], [30, 195], [38, 195], [44, 195]);
   ent('sentry', 20, 198, { face: -1 }); ent('sprig', 66, 195, { face: -1 });   // a lookout posted on the root cellar, and a looter in the bean rows
-  for (const [x, k, v] of [[26, 'beanpoles', 0], [35, 'gardenWall', 1], [40, 'skep', 0], [54, 'beanpoles', 1], [58, 'gardenWall', 2]]) ent('deco', x, 195, { kind: k, v });
-  ent('deco', 91, 195, { kind: 'bones' }); coins([88, 195], [92, 195]);
+  /* THE GOBLIN PRIESTS, one lesson a floor and never without a flock to bless (tools/gob-priest.mjs): the first here in the garden
+     between two rock goblins, where the sign says what the robe does; then behind the troll among the copyists' desks, saying grace
+     in the refectory, and over the looters' bead in the dorter. The shrines keep their pair and the crawl its garrison's own. */
+  ent('gobpriest', 26, 195, { face: 1 });
+  // THE HERB GARDEN AND THE ORCHARD: the bean rows, the herb beds, three old fruit trees and the monks' bees in a row of skeps
+  for (const [x, k, v] of [[12, 'fruitTree', 0], [20, 'herbBed', 0], [26, 'beanpoles', 0], [30, 'fruitTree', 1], [35, 'gardenWall', 1], [38, 'skep', 0], [40, 'skep', 0], [42, 'skep', 0],
+    [54, 'beanpoles', 1], [58, 'gardenWall', 2], [68, 'herbBed', 0], [84, 'fruitTree', 2], [91, 'dovecote', 0]]) ent('deco', x, 195, { kind: k, v });
+  coins([88, 195], [92, 195]);
   ent('sign', 48, 195, { text: 'THE INCENSE STILL BURNS. STAND IN THE SMOKE AS IT RISES, AND STEER OFF AT THE TOP.' });
   brazier(74, 196, 10, { phase: 0 }); plat(76, 186, 5);
   brazier(79, 186, 8, { phase: 1.4 }); plat(73, 178, 5);
@@ -1928,8 +1939,9 @@ function theMonastery() {
   chimney(171, 152);
   ent('sign', 88, 171, { text: 'A CHIMNEY: HOLD INTO THE ROCK TO CLING, JUMP TO KICK OFF. SLOW, BUT IT STAYS.' });
   ent('fledgling', 64, 171, { face: -1 }); ent('rockgoblin', 84, 171, { face: -1 });
-  ent('gobmage', 34, 171, { face: 1 });   // THE GOBLIN MAGE at home among the shelves, under the prayer wheel's stair: it reads at you from the wheel all the way up the stair, and to stop it you go back down. (It holds the far end the chick at 24 and the bat at 44 did: the gallery is no harder for having a reader in it)
-  for (const [x, k, v] of [[10, 'bookshelf', 0], [15, 'bookshelf', 1], [19, 'lectern', 0], [30, 'bookpile', 0], [34, 'bookshelf', 0], [56, 'candelabra', 0], [70, 'bookpile', 1], [80, 'bookshelf', 1]]) ent('deco', x, 171, { kind: k, v });
+  ent('gobmage', 34, 171, { face: 1 }); ent('gobpriest', 67, 171, { face: -1 });   // THE GOBLIN MAGE at home among the shelves, under the prayer wheel's stair: it reads at you from the wheel all the way up the stair, and to stop it you go back down. (It holds the far end the chick at 24 and the bat at 44 did: the gallery is no harder for having a reader in it)
+  for (const [x, k, v] of [[10, 'bookshelf', 0], [15, 'bookshelf', 1], [19, 'lectern', 0], [24, 'desk', 0], [27, 'candle', 0], [30, 'bookpile', 0], [34, 'bookshelf', 0], [56, 'candelabra', 0],
+    [66, 'desk', 0], [68, 'candle', 0], [70, 'bookpile', 1], [76, 'desk', 0], [80, 'bookshelf', 1]]) ent('deco', x, 171, { kind: k, v });   /* THE COPYISTS' DESKS, each with its candle */
   coins([26, 171], [70, 171], [8, 171], [13, 171]);
   // THE READING LOFT: over the gallery's roof, where the wheel's other stair goes
   block(26, 26, 145, 151); block(41, 41, 145, 151); block(26, 41, 144, 144);
@@ -1945,10 +1957,12 @@ function theMonastery() {
   air(19, 40, 132, 134);                                            // broken through where the hoist rises
   chimneyL(151, 132);                                               // and the slow way up, that nothing can take away
   ent('sign', 52, 136, { text: 'STAND IN A BASKET AND IT SINKS, AND THE OTHER COMES UP PAST YOU. JUMP ACROSS AS IT GOES BY.' });
-  ent('rockgoblin', 12, 151, { face: 1 }); ent('bat', 12, 142); ent('bat', 70, 140);   /* a miner belongs in a mine; the rock goblin throws what this mountain is made of */
+  ent('rockgoblin', 12, 151, { face: 1 }); ent('gobpriest', 16, 151, { face: 1 }); ent('bat', 12, 142); ent('bat', 70, 140);   /* a miner belongs in a mine; the rock goblin throws what this mountain is made of */
   ent('gobmage', 40, 136, { face: 1 });   // and a second one out on the hanging walkway, reading over the stacks where the harpy was: it has the steps up from the check below it, and nowhere to walk off to but the walkway's end
   ent('check', 72, 151); coins([32, 136], [40, 136], [48, 136], [8, 151], [16, 151]);
-  for (const [x, k, v] of [[48, 'bookshelf', 0], [52, 'bookshelf', 1], [84, 'bookpile', 0]]) ent('deco', x, 151, { kind: k, v });
+  // THE REFECTORY: the long tables and their benches, the kitchen hearth at the far end, and the reader's pulpit up in the old
+  // reading loft (the lectern at 38), where one brother read aloud while the rest ate and said nothing
+  for (const [x, k, v] of [[46, 'bench', 0], [50, 'longTable', 0], [54, 'bench', 0], [59, 'bench', 0], [63, 'longTable', 1], [67, 'bench', 0], [86, 'hearth', 0], [91, 'mugShelf', 0]]) ent('deco', x, 151, { kind: k, v });
 
   // ---- 4. THE BELL TOWERS: three towers and a flue, a bell in each belfry, and the bridges between them ----
   tower(8, 118, 131);
@@ -1964,19 +1978,22 @@ function theMonastery() {
   brazier(90, 118, 8, { phase: 0 }); plat(85, 110, 4);
   brazier(86, 110, 10, { phase: 1.6 });
   coins([90, 112], [86, 104], [87, 116]);
-  ent('sign', 17, 131, { text: 'THE BELL TOWERS. NOBODY HAS RUNG THEM SINCE THE ROC CAME.' });
+  ent('sign', 17, 131, { text: 'THE BELL TOWERS. NOBODY HAS RUNG THEM SINCE THE GOBLINS CAME.' });
   ent('check', 13, 117); ent('check', 6, 131); coins([31, 117], [36, 117], [58, 117], [63, 117]);
   // THE BELL YARD under the bridges, where the looters camp: down a tower's hatch, and back up its stair
-  ent('stray', 60, 131, { kind: 'bead' }); ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 });
-  for (const [x, k, v] of [[52, 'herbBed', 0], [63, 'pilgrimLeanTo', 0], [81, 'incenseStand', 0]]) ent('deco', x, 131, { kind: k, v });
+  ent('stray', 60, 131, { kind: 'bead' }); ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 }); ent('gobpriest', 62, 131, { face: -1 });
+  // THE DORTER: the monks' cells between the towers, and the looters asleep in the monks' cots with what they took piled by the door
+  facades.push([49, 69, CLOUD + 18, 131, 'monkDorm']);
+  for (const [x, k, v] of [[52, 'cot', 0], [57, 'cot', 1], [64, 'lootHeap', 0], [81, 'incenseStand', 0]]) ent('deco', x, 131, { kind: k, v });
   ent('harpy', 30, 110); ent('fledgling', 58, 110); ent('harpy', 80, 106);   /* her chicks, not a kite: the eyrie is the one thing up here that was already hers */
 
   // ---- 5. THE CLOUD CLOISTER. You come out of the grey into the sun, onto the monks' cloister ----
   band(100, 85, 5);
-  facades.push([40, 74, 91, 99, 'monkCloister']);
+  facades.push([1, 94, 83, 99, 'monkCloister', { gallery: 8 }]);   /* THE CLOISTER RANGE, wall to wall: the walk, and the dorter over it - and the shrines' floor stands on it */
   wheel(99, 20, 97, 7, 'a');                                        // the second wheel: its stair goes up to the shrines, or round to the alcove
   set(18, 99, T.SOLID); set(19, 99, T.SOLID); masonry.push([18, 19, 99, 99]);   // a step up to the pivot board
   ent('check', 30, 99); ent('check', 80, 99);
+  for (const [x, k, v] of [[49, 'herbBed', 0], [57, 'well', 0], [65, 'herbBed', 0]]) ent('deco', x, 99, { kind: k, v });   /* THE CLOISTER GARTH: its well, and the physic beds either side */
   ent('sign', 84, 99, { text: 'THE CLOUD IS UNDER YOU NOW. SO IS EVERYTHING ELSE.' });
   // the goat path up the far wall, to a shrine with a string of beads on it
   for (let y = 86; y <= CLOUD - 1; y++) set(W - 2, y, T.CLIMB);
@@ -2023,7 +2040,7 @@ function theMonastery() {
   ent('tbell', 36, 51, { guard: true, hang: true }); ent('tbell', 45, 51, { guard: true, hang: true });
   ent('golem', 43, 55, { mini: true });
   coins([33, 55], [38, 55], [47, 55], [49, 55]);
-  ent('deco', 31, 55, { kind: 'statue', v: 0 });
+  ent('deco', 31, 55, { kind: 'statue', v: 0 }); ent('deco', 40, 55, { kind: 'candelabra', v: 0 }); ent('deco', 49, 55, { kind: 'candelabra', v: 0 });   /* THE CHAPEL: the founder's statue and the altar candles */
 
   // ---- 6c. THE LAST CLIMB, and the second chimney: the way up it that nothing turns ----
   stair(56, 36, 52, 84, 78, 15); // the stair to the nest starts at the FAR end of the ledge: the hall is on the road, not beside it
@@ -2092,15 +2109,33 @@ function theMonastery() {
   // THE FLOORS THE MONKS LAID: flagstones where there was a building, crag where there was only the mountain; and the stacks,
   // dug into the cliff under the bell yards, have their shelves behind them (the look pass saw open sky inside the rock)
   masonry.push([1, 40, 218, 221], [1, 94, 172, 174], [1, 94, 152, 154], [1, 94, 132, 134], [40, 74, 100, 102], [29, 51, 56, 58]);
-  interiors.push([1, 94, 135, 151, 'monkScript']);
+  interiors.unshift([1, 94, 135, 151, 'monkRefectory']);   /* THE REFECTORY, under the bell yards: the reading loft is its pulpit (first, so the loft's own shelves are painted over it) */
   // THE BELFRY'S BEAM WALK: a ladder from the ringing floor, with a sheltered landing either side.
   plat(43,24,9);plat(59,24,9);plat(47,27,4);plat(61,27,4);
   for(let y=24;y<30;y++)set(58,y,T.NET);
+  // ---- WHAT HOLDS IT ALL UP (Daniel, 2026-09-25: "a lot of the Monastery's architecture floats ... ground all of it") ----
+  // Every floor on this mountain is a floor the monks LAID, so every one is laid stone and tools/architecture.mjs judges it. And
+  // every storey has something behind the play that carries the floor over it, standing on the floor under it: each storey's
+  // wall face runs from the underside of the slab above down through its own floor slab, so a trapdoor or a stairwell in a
+  // floor is spanned by the wall behind it. None of it is a tile: the route, the reach and every check that reads the grid
+  // see exactly the level they saw before.
+  masonry.push([1, 94, 196, 198], [1, 94, 100, 102], [1, 94, 80, 82], [1, 94, 56, 58], [1, 94, 36, 38]);
+  facades.unshift(
+    [29, 71, 196, 217, 'monkArcade', { tiers: 2 }],                  /* THE GUEST HOUSE ARCADE behind the pilgrims' stair, between the gate tower's curtain and the east curtain */
+    [1, 94, 175, 195, 'monkWall', {}],                                /* THE GARDEN WALL: the terraces' retaining wall, buttressed, an espalier on it */
+    [1, 94, 59, 82, 'monkArcade', { tiers: 2, niche: true }],         /* THE SHRINE PIERS: a niche and a lamp in every pier, the flag lines strung between them */
+    [1, 94, 32, 58, 'monkArcade', { tiers: 2 }]);                     /* THE UNDERCROFT OF THE BELFRY: from the chapel's floor up through the crawl to the ringing floor's underside */
+  facades.push(
+    [0, 7, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true, spring: 6 }], [16, 40, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true }],   /* THE BELL ARCHES: tower to tower, each on its two springings */
+    [49, 69, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true }], [78, 84, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true, spring: 6 }],
+    [27, 53, 36, 58, 'monkChapel', { roseY: 104 }]);                 /* THE CHAPEL's clerestory over the golem's hall: the rose window */
   // NOTHING IS DUG AFTER THIS LINE: the goat path's rock face above is the last tile laid
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, cloudLine: CLOUD, snowLine: 28,   /* snow only on the stones over the roof: on the roof it hid the boards */
     belfry: {roofGone:false}, monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors,
+    /* THE GROUND KIT BY PLACE: bees and herb beds belong in the garden, not on the belfry floor (GROUND_KITS.spire is the rest) */
+    kits: [[1, 94, 196, 196, { density: 0.3, kinds: ['herbBed', 'skep'] }], [72, 94, 218, 218, { density: 0.25, kinds: ['bones'] }]],
     tall: { top: CLOUD * TS, bottom: 218 * TS, col: '64,70,84', deepest: 0.26 },
     quest: { n: 3, item: 'bead', name: 'PRAYER BEADS', npc: 'squire', done: 'THE BEADS ARE RESTRUNG', reward: 'relic', relic: 'sunshard' },
     palette: { sky: [[146, 156, 172], [230, 216, 196]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'beam',
@@ -7329,7 +7364,7 @@ export const LEVELS = [
   { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS}), needs: 'witchlight' },
   /* THE SUNKEN CARAVAN (lane Q, 2026-09-24): the first level of the desert, through the gold hole the Undead Archmage leaves when
      he falls. Appended so no index moves (the map's nodes and the saves count by index); brief .claude/briefs/sunken-caravan.md
-     as amended by docs/briefs/sunken-caravan-amendments.md. Its boss, THE DUNE WORM, is its own session: the hollow is built and empty */
+     as amended by docs/briefs/sunken-caravan-amendments.md. Its boss, THE DUNE WORM, lives in the hollow at its end (claude/duneworm, docs/briefs/dune-worm.md) */
   { id: 'caravan', arc: 'the desert', name: 'THE SUNKEN CARAVAN', sub: 'the road the storm buried', rule: 'THE SUN IS OUT HERE. SHADE IS LIFE.', build: () => buildCaravan({ T, TS }), needs: 'fallingtower' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
   /* (2026-09-24, POLISH) the Warden's and the Geomancer's yards, APPENDED: LEVELS is an append log (map nodes and saves count by index) */
@@ -7432,7 +7467,7 @@ export const DRESS = {
      flat cap, and at 320x180 against the sky that silhouette is a sandcastle turret and nothing else - it was in this
      roster AND it was the level's dead-end stash, so eight of them stood along the mountain. The monastery has plenty
      that reads: flags on a post, a shrine with a roof on it, a censer stand, the bee skeps. */
-  spire: [['prayerFlags', 2], ['herbBed'], ['skep'], ['incenseStand', 2], ['monkChores'], ['stone', 3], ['shrine', 2], ['flagPost', 2]],
+  spire: [['prayerFlags', 2], ['incenseStand', 2], ['monkChores'], ['stone', 3], ['shrine', 2], ['flagPost', 2]],   /* (the herb bed and the skep live in the garden now: its own kit, L.kits) */
   moor: [['stone', 3], ['cairn'], ['fence', 2], ['bones', 2], ['deadTree', 2]],
   storm: [['barrels'], ['lanternPost'], ['spearRack'], ['banner', 2], ['cart'], ['tent', 2], ['warStandard', 2], ['hideBanner', 2], ['gobPennant', 3], ['stakeFence', 2], ['hideRack', 2], ['cookSpit'], ['cauldron'], ['trophyRack', 2], ['clothStrip', 3], ['boneChime', 2], ['warnPost', 2]],   /* the hill clans' hold: hides, stakes, standards */
   crown: [['banner', 2], ['barrels'], ['spearRack'], ['lanternPost'], ['hangCage'], ['clothStrip', 4], ['warStandard', 2], ['gobPennant', 4], ['lootHeap', 2], ['trophyRack', 2], ['idol', 2], ['cauldron'], ['boneChime', 2]],   /* the Queen's castle: her strips in the halls, the loot of the whole wood */
