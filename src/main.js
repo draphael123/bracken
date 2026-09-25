@@ -857,7 +857,8 @@ function resolveTiles() {
       if (up !== T.SOLID && up !== T.CRATE) {
         const villDrain = villT && linesDrain(x, y);
         s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? hullSpr(true, x, y, eL, eR, (rnd() * 4) | 0) : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
-        const kit = (RDP && RDP.kit) || GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
+        const zoneKit = (L.kits || []).find(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);   /* A PLACE'S OWN KIT (L.kits): the Monastery's garden grows herbs and bees, its belfry does not */
+        const kit = zoneKit ? zoneKit[4] : (RDP && RDP.kit) || GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
         const dressFrom = decor.length;
         const clearGround = up === T.AIR && !(L.interiors || []).some(([a,b,c]) => x >= a && x <= b && y >= c-4 && y<c);
         if (L.snowLine !== undefined && y <= L.snowLine && rnd()<0.85) decor.push({k:'snow',kind:'snow',x:x*TS,y:y*TS-3,c:PROP.snowCap});
@@ -2165,7 +2166,7 @@ function spawnEnt(e) {
         longTable: [PROP.town.longTable[(e.v || 0) % 2], false], bench: [PROP.town.bench, false], hearth: [PROP.town.hearth[0], true], caskRack: [PROP.town.caskRack, true], mugShelf: [PROP.town.mugShelf, true], hayBale: [PROP.town.hayBale[(e.v || 0) % 2], false], bunting: [PROP.town.bunting, true], shopSign: [PROP.town.shopSign[(e.v || 0) % 4], false], innSign: [PROP.innSign, true], pot: [PROP.flot.cookPot, false], punt: [PROP.lw.rowboat, true], coffer: [PROP.coffer, false],
         gardenWall: [PROP.gardenWall[e.v || 0], false], beanpoles: [PROP.beanpoles[e.v || 0], false],
         scarePost: [fa().scarePost, false], deadCorn: [fa().corn[(e.v || 0) % 3], false], crookedFence: [fa().fence[(e.v || 0) % 2], false], pumpkinPatch: [fa().patch, false], hayStack: [fa().stack[(e.v || 0) % 2], false], farmLantern: [fa().lantern[1], false], leaningBarn: [fa().barn, true], brokenCart: [fa().cart, false], plough: [fa().plough, false], milkChurn: [fa().churn, false], waterPump: [fa().pump, false], fieldGrave: [fa().grave[(e.v || 0) % 3], false], portrait: [fa().portrait, true], candle: [fa().candle[1], false], ghostCow: [fa().cow[0], true, fa().cow],   /* THE HEXED FIELDS */
-        stoneLantern: [mo().stoneLantern, true], herbBed: [mo().herbBed, true], pilgrimLeanTo: [mo().pilgrimLeanTo, true], prayerFlags: [mo().prayerFlags, true], incenseStand: [mo().incenseStand, true], monkChores: [mo().monkChores[0], true, mo().monkChores], bellFrame: [mo().bellFrame, true], bookshelf: [mo().bookshelf[(e.v || 0) % 2], true], shrine: [mo().shrine[(e.v || 0) % 2], false], flagPost: [mo().flagPost[(e.v || 0) % 2], false], statue: [mo().statue, false], portcullis: [mo().portcullis, false],   /* THE MONASTERY's */
+        stoneLantern: [mo().stoneLantern, true], herbBed: [mo().herbBed, true], pilgrimLeanTo: [mo().pilgrimLeanTo, true], prayerFlags: [mo().prayerFlags, true], incenseStand: [mo().incenseStand, true], monkChores: [mo().monkChores[0], true, mo().monkChores], bellFrame: [mo().bellFrame, true], bookshelf: [mo().bookshelf[(e.v || 0) % 2], true], shrine: [mo().shrine[(e.v || 0) % 2], false], flagPost: [mo().flagPost[(e.v || 0) % 2], false], statue: [mo().statue, false], portcullis: [mo().portcullis, false], fruitTree: [mo().fruitTree[(e.v || 0) % 3], true], cot: [mo().cot[(e.v || 0) % 2], false],   /* THE MONASTERY's */
         topiaryUrn: [ma().urn, false], sundial: [ma().sundial, false], stall: [ma().stall, true], ivyWall: [ma().ivy, true], lamppost: [ma().lamppost, false], lectern: [ma().lectern, false], bookpile: [ma().bookpile[(e.v || 0) % 2], false], candelabra: [ma().candelabra, false], nest: [ma().nest, false], globe: [ma().globe, false], cauldron: [ma().cauldron, false], bench: [ma().bench, false], jars: [ma().jars[(e.v || 0) % 2], false], retorts: [ma().retorts, false], wineRack: [ma().wineRack[(e.v || 0) % 2], true], still: [ma().still, false], orreryBase: [ma().orreryBase, true], desk: [ma().desk, false], chimneypot: [ma().chimneypot[(e.v || 0) % 2], false], telescope: [ma().telescope, true], starChart: [ma().starChart, true], readingDesk: [ma().readingDesk, false], clockface: [ma().clockface, true], gears: [ma().gears, true],   /* THE MAGE'S FOLLY */
         tubeWorms: [SEA.seaDeco('tubeWorms', e.v), false], glowCoral: [SEA.seaDeco('glowCoral', e.v), false], seaLily: [SEA.seaDeco('seaLily', e.v), false], boneHeap: [SEA.seaDeco('boneHeap', e.v), false], tributeSpill: [SEA.seaDeco('tributeSpill', e.v), false],   /* THE DEEP's own (src/sea_looks.js) */
         skep: [PROP.skep, false], trough: [PROP.trough, false], stocks: [PROP.stocks, false], dovecote: [PROP.dovecote, false],
@@ -17178,9 +17179,9 @@ const TAM_LINES = {
   scree: [['THE HILL FOLK BAR THEIR DOORS. I DO NOT BLAME THEM. THE RAMS UP HERE HAVE A LORD.', 'THERE IS A SHEPHERD WHO LOST HER EWES. YOU FIND EVERYONE\'S LOST THINGS. IT IS A HABIT.'],
           ['THE RAM LORD BROKE HIS OWN HORNS ON THE WALL. I SAW IT FROM THE FOLD GATE.', 'THERE IS A TOWN ON THE CLIFF ABOVE. IT HANGS. I AM NOT CLIMBING THAT.']],
   hanging: [['A TOWN ON A CLIFF. THE REEVE IS AN OWL, AND THE OWL TAKES WHAT IT LIKES.', 'I WILL MIND THE MARKET. THE LAMPLIGHTER NEEDS A HAND.'],
-             ['THE REEVE IS FEATHERS. THE MARKET IS SINGING.', 'THE GOBLINS WENT UP THE GLASS MOUNTAIN. THE SUNSPIRE, THE LAMPLIGHTER CALLS IT. IT SHINES AT NIGHT.']],
-  spire: [['THE SUNSPIRE. THE WHOLE MOUNTAIN IS GLASS, AND THE GLASS GIVES UNDER A STANDING WEIGHT. DO NOT STAND.', 'SOMETHING NESTS ON THE TOP. THE HILL FOLK CALL IT THE ROC, AND THEY DO NOT GO UP.'],
-          ['THE ROC IS DOWN. I WATCHED IT FALL PAST THE CLOUD.', 'THE MOOR IS NEXT. THE WIND UP THERE COULD LIFT A HOUSE.']],
+             ['THE REEVE IS FEATHERS. THE MARKET IS SINGING.', 'THE GOBLINS WENT UP TO THE OLD MONASTERY ON THE CLIFF. THEY RING ITS BELLS ALL NIGHT, AND BADLY.']],
+  spire: [["THE MONASTERY. THE MONKS ARE GONE, AND A GOBLIN SITS IN THE ABBOT'S CHAIR IN THE ABBOT'S COPE.", "THE MONKS' BELLS STILL ANSWER A BLOW, THEY SAY. IF ANYTHING SHAKES HIM OUT OF THAT CHAIR, IT IS THE GREAT BELL."],
+          ['THE GREAT BELL RANG AND HE CAME DOWN UNDER IT. I HEARD IT FROM THE GATE.', 'THE MOOR IS NEXT. THE WIND UP THERE COULD LIFT A HOUSE.']],
   moor: [['THE MOOR. THE WIND UP HERE COULD LIFT A HOUSE. IT WILL LIFT YOU, IF YOU LET IT.', 'THERE IS A BOTHY IN THE LEE OF THE HILL. I WILL WAIT FOR YOU THERE.'],
          ['THE WIND IS QUIET. YOU DID THAT.', 'THE SUMMIT IS ABOVE THE CLOUD. I WILL BE AT THE BOTHY. COME DOWN.']],
   storm: [['STORMHOLD. THE GOBLINS HAVE A TOWN ON THE PEAK, AND THE QUEEN\'S OWN KNIGHT HOLDS THE BRIDGE.', 'THE GATES WANT KEYS. THE GOBLINS CARRY THEM. YOU KNOW WHAT TO DO.'],
@@ -17200,7 +17201,7 @@ const TAM_LINES = {
 };
 // the errand he gives you in the levels where he is also the one asking: nothing yet, some, all of it
 const TAM_QUEST = {
-  spire: [["THE ABBOT'S BEADS WERE SCATTERED WHEN THE ROC CAME. BRING ME THE THREE STRINGS AND I WILL KNOT THEM FOR YOU."], n => ['THAT IS ' + n + ' OF THE THREE STRINGS.'], ['THE BEADS ARE RESTRUNG. THEY STILL SMELL OF THE INCENSE.']],
+  spire: [["THE ABBOT'S BEADS WERE SCATTERED WHEN THE GOBLINS CAME. BRING ME THE THREE STRINGS AND I WILL KNOT THEM FOR YOU."], n => ['THAT IS ' + n + ' OF THE THREE STRINGS.'], ['THE BEADS ARE RESTRUNG. THEY STILL SMELL OF THE INCENSE.']],
   storm: [['THREE OF THE HILL FOLK ARE SHUT IN THEIR CELLARS. LET THEM OUT.'], n => ['THAT IS ' + n + ' OF THE THREE. THE OTHERS ARE STILL BELOW.'], ['THEY ARE OUT OF THEIR CELLARS. THE BAKER SENDS A LOAF.']],
   longwater: [['THE TIDEBOUND ARE WALKING THE FISHERFOLK DOWN INTO THE WATER. BRING THREE OF THEM BACK TO ME.'], n => ['THAT IS ' + n + ' OF THE THREE. THE OTHERS ARE STILL DOWN THE STREETS.'], ['THEY ARE SAFE. THE OLD WOMAN GAVE ME THIS FOR YOU: IT HELPS YOU HOLD YOUR BREATH.']],
   crown: [['THREE ROYAL SEALS SIGN HER ORDERS. TAKE THEM AND HER ORDERS MEAN NOTHING.'], n => ['THAT IS ' + n + ' OF HER THREE SEALS.'], ['HER ORDERS MEAN NOTHING NOW. THE BANNER IS YOURS.']],
@@ -17211,7 +17212,7 @@ const TAM_MAP = {
   wood: ['THE HIVE FIRST. I AM BEHIND YOU.', 'THE MARSH NEXT. A KING CROAKS.'], marsh: ['FERRY: PAY, OR BREAK THE SLUICE.', 'I WENT AHEAD. COME QUICKLY.'],
   stockade: ['TAM IS INSIDE. FOLLOW THE TRACKS.', 'MY KIT IS BACK. THE SPORES NEXT.'], spore: ['SOMETHING BREATHES DOWN THERE.', 'GORM HOLDS COURT PAST THE ROT.'],
   kings: ['GORM. ALL FIRE AND DOGS.', 'THEY RAN FOR THE CRAGS. SO DO WE'], scree: ['THE RAMS UP HERE HAVE A LORD.', 'A TOWN HANGS OFF THE CLIFF ABOVE'],
-  hanging: ['THE REEVE IS AN OWL. I AM NOT.', 'THEY WENT UP THE GLASS MOUNTAIN.'], spire: ['THE GLASS GIVES. DO NOT STAND.', 'THE ROC IS DOWN. THE MOOR NEXT.'], moor: ['THE WIND OWNS THE MOOR.', 'THE WIND IS QUIET. THE SUMMIT IS NEXT.'],
+  hanging: ['THE REEVE IS AN OWL. I AM NOT.', 'THEY WENT UP TO THE MONASTERY.'], spire: ["A GOBLIN IN THE ABBOT'S CHAIR.", 'THE GREAT BELL RANG. MOOR NEXT.'], moor: ['THE WIND OWNS THE MOOR.', 'THE WIND IS QUIET. THE SUMMIT IS NEXT.'],
   storm: ['HER KNIGHT HOLDS THE BRIDGE.', 'HER CASTLE IS ABOVE US.'], crown: ['THE QUEEN. THE LAST OF THEM.', 'IT IS DONE. WE CAN GO HOME.'], longwater: ['THE RIVER RUNS SALT.', 'THE GLAIVE POINTS OUT TO SEA.'], reef: ['THE FLEET IS ON THE REEF.', 'THREE SEALS, AND SOMETHING IN THE HOLE.'], flotilla: ['A TOWN BUILT ON SHIPS.', 'THE OARS ARE EMPTY AND THE FLAG IS OURS.'],
 };
 const NPC_LINES = pr => {

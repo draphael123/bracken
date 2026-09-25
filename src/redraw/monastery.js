@@ -6,6 +6,8 @@
 //   bakeMonkTiles()        { top, edge, fill, silt, wet } in the shape of the crown set, so the tile resolver swaps it in
 //   bakeFacade(kind, ...)  monkTower | monkCurtain | monkBelfry | monkCloister | monkArcade | monkArch | monkWall | monkChapel:
 //                          wall faces drawn behind the play. Every one of them is what holds a floor up (tools/architecture.mjs)
+//                          monkDorm: the dorter's range of cell doors, between the bell towers
+//   paintRoom: monkRefectory (whitewash, tall windows, the reader's texts) and the chapel's glass in monkHall
 //   paintRoom(g, st, ...)  monkScript | monkTower | monkFlue | monkHall | monkShrine: the back walls of the dug rooms
 //   bakeMonkProps()        the furniture: bells, a bell frame, the prayer wheel, basket, hoist wheel, brazier, loose
 //                          stone, rubble, shelves, shrines, flag posts, a guardian statue, the fallen portcullis, beads
@@ -191,8 +193,24 @@ function chapelFront(g, W, H, rnd, o) {
   rect(g, 0, cy + R + 10, W, 5, F.l); rect(g, 0, cy + R + 10, W, 1, F.hi);
   rect(g, 0, 0, W, 5, F.l); rect(g, 0, 0, W, 1, F.hi); rect(g, 0, 4, W, 1, F.mor);
 }
+/* THE DORTER: the monks' dormitory range - a row of cells, each a door and a slit of a window over it, under a pentice roof,
+   with the numbers painted over the doors the novices were given (the goblins sleep in the cots now) */
+function dorter(g, W, H, rnd) {
+  courses(g, 0, 0, W, H, rnd);
+  const cellW = 48, n = Math.max(1, Math.floor((W - 8) / cellW)), off = (W - n * cellW) >> 1, doorH = 34, doorW = 16;
+  for (let i = 0; i < n; i++) { const x = off + i * cellW + ((cellW - doorW) >> 1), y = H - doorH;
+    rect(g, x - 3, y - 3, doorW + 6, doorH + 3, F.hi); g.fillStyle = F.hi; g.beginPath(); g.arc(x + doorW / 2, y, doorW / 2 + 3, Math.PI, 0); g.fill();
+    rect(g, x, y, doorW, doorH, WD[1]); g.fillStyle = WD[1]; g.beginPath(); g.arc(x + doorW / 2, y, doorW / 2, Math.PI, 0); g.fill();
+    for (let k = 3; k < doorW; k += 4) rect(g, x + k, y - 5, 1, doorH + 5, WD[0]); rect(g, x, y + 8, doorW, 2, '#3a3a42'); rect(g, x, y + 24, doorW, 2, '#3a3a42'); px(g, x + doorW - 4, y + 16, BR[3]);
+    if (i % 3 === 1) { rect(g, x + 2, y + 2, doorW - 4, doorH - 2, '#140f0c'); rect(g, x - 3, y + 10, 3, doorH - 10, WD[1]); }   /* one in three stands open */
+    const wy = y - 34; rect(g, x + 5, wy, 6, 16, F.hi); rect(g, x + 6, wy + 1, 4, 14, (i * 7) % 4 === 1 ? '#ffb84a' : '#1a140f');
+    for (let k = 0; k < 3; k++) rect(g, x + 4 + k * 3, y - 12, 2, 5, '#c9a44a'); }                          /* the cell's number, in the old gilt */
+  const py = Math.max(8, H - doorH - 58); for (let y = 0; y < 8; y++) rect(g, 0, py + y, W, 1, y % 3 === 2 ? RF[0] : RF[1 + (y & 1)]);
+  rect(g, 0, py + 8, W, 2, WD[1]); for (let x = 12; x < W; x += 48) { line(g, x, py + 10, x + 10, py + 22, WD[1]); }   /* the pentice over the doors, on its brackets */
+}
 export function bakeFacade(kind, tw, th, seed, o = {}) {
   const W = tw * T, H = th * T, rnd = mulberry((seed | 0) + 7001), [c, g] = canvas(W, H);
+  if (kind === 'monkDorm') { dorter(g, W, H, rnd); return c; }
   if (kind === 'monkArcade') { arcade(g, W, H, rnd, o); return c; }
   if (kind === 'monkArch') { greatArch(g, W, H, rnd, o); return c; }
   if (kind === 'monkWall') { gardenWall(g, W, H, rnd, o); return c; }
@@ -275,12 +293,33 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time) {
     g.globalAlpha = 0.42; g.fillStyle = '#1a120c'; g.fillRect(sx, sy, w, h);
     g.globalAlpha = 0.05 + 0.02 * Math.sin(time * 2 + tx0); g.fillStyle = '#ffb84a'; g.fillRect(sx, sy, w, h); g.globalAlpha = 1;
     return true; }
+  if (st === 'monkRefectory') {
+    /* THE REFECTORY: whitewash gone the colour of old bread, a timber wainscot the benches were pushed back against, tall round
+       windows with the day in them, and between them the texts the reader read aloud while the brothers ate. Everything is on
+       the WALL (world-locked through tx0/ty0), and the upper wall is kept dim so the walkway's boards stand off it */
+    g.fillStyle = '#6e6252'; g.fillRect(sx, sy, w, h);
+    const wx = tx0 * 16, bay = 112, ph = ((wx % bay) + bay) % bay, wain = Math.min(h, 40);
+    for (let xx = sx - ph; xx < sx + w; xx += bay) {
+      const x = xx + 40; if (x + 30 > sx && x < sx + w) { const top = sy + 22, bot = sy + h - wain - 14, cx = x + 15;
+        g.fillStyle = '#4a4034'; g.fillRect(Math.max(sx, x - 3), top, 36, bot - top + 3); g.beginPath(); g.arc(cx, top, 18, Math.PI, 0); g.fill();
+        g.fillStyle = '#9ab4c8'; g.fillRect(Math.max(sx, x), top, 30, bot - top); g.beginPath(); g.arc(cx, top, 15, Math.PI, 0); g.fill();
+        g.fillStyle = '#c8dce8'; g.fillRect(Math.max(sx, x + 4), top - 6, 6, bot - top + 4);
+        g.fillStyle = '#4a4034'; g.fillRect(cx - 1, top - 14, 2, bot - top + 14); g.fillRect(Math.max(sx, x), top + ((bot - top) >> 1), 30, 2); }
+      const tx = xx + 94; if (tx + 10 > sx && tx < sx + w) { g.fillStyle = '#5a4a38'; g.fillRect(tx, sy + 30, 12, 26); g.fillStyle = '#c9b89a'; g.fillRect(tx + 1, sy + 31, 10, 24);
+        g.fillStyle = '#6a3a2a'; for (let k = 0; k < 6; k++) g.fillRect(tx + 2, sy + 34 + k * 3, 6 + ((k * 5 + tx0) % 3), 1); g.fillStyle = '#c9463d'; g.fillRect(tx + 2, sy + 33, 2, 2); } }
+    g.fillStyle = WD[1]; g.fillRect(sx, sy + h - wain, w, wain); g.fillStyle = WD[2]; for (let xx = sx - (ph % 28); xx < sx + w; xx += 28) g.fillRect(Math.max(sx, xx), sy + h - wain, 2, wain);
+    g.fillStyle = WD[3]; g.fillRect(sx, sy + h - wain, w, 2);
+    g.globalAlpha = 0.28; g.fillStyle = '#1a120c'; g.fillRect(sx, sy, w, h); g.globalAlpha = 1;
+    return true; }
   if (st === 'monkHall') {
-    /* THE TEMPLE HALL: dark stone, square pillars, and a band of faded painting where the guardian's story was told */
+    /* THE CHAPEL (the temple hall): dark stone, square pillars, a band of faded painting where the guardian's story was told,
+       and between the pillars lancets of stained glass, dimmed, so the golem and the bells still read in front of them */
     g.fillStyle = '#2e2822'; g.fillRect(sx, sy, w, h);
     g.fillStyle = '#3a322a'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1);
     g.fillStyle = '#5a3a2a'; g.fillRect(sx, sy + 8, w, 14); g.fillStyle = '#8a6a3a'; g.fillRect(sx, sy + 8, w, 1); g.fillRect(sx, sy + 21, w, 1);
     for (let xx = sx + 6; xx < sx + w - 10; xx += 18) { g.fillStyle = FLAG[((xx - sx) / 18 | 0) % 5]; g.globalAlpha = 0.45; g.fillRect(xx, sy + 11, 8, 8); g.globalAlpha = 1; g.fillStyle = '#c9a44a'; g.fillRect(xx + 3, sy + 14, 2, 2); }
+    for (let xx = sx + 50; xx < sx + w - 12; xx += 64) { const top = sy + 30, bot = sy + h - 12; g.fillStyle = '#6e6454'; g.fillRect(xx - 2, top - 2, 12, bot - top + 2);
+      g.globalAlpha = 0.7; for (let yy = top; yy < bot; yy++) for (let k = 0; k < 8; k++) { const lead = (yy - top) % 5 === 0 || k === 4; g.fillStyle = lead ? '#2a2420' : GLASS[(((yy - top) / 5 | 0) + (k > 4 ? 1 : 0) + (xx >> 4)) % GLASS.length]; g.fillRect(xx + k, yy, 1, 1); } g.globalAlpha = 1; }
     for (let xx = sx + 20; xx < sx + w - 6; xx += 64) { g.fillStyle = '#4a4038'; g.fillRect(xx, sy, 10, h); g.fillStyle = '#5e544a'; g.fillRect(xx, sy, 2, h); g.fillStyle = '#241e1a'; g.fillRect(xx + 9, sy, 1, h); }
     return true; }
   if (st === 'monkTower' || st === 'monkFlue' || st === 'monkShrine') {
@@ -377,6 +416,25 @@ export function bakeBeadIcon() {   /* a string of prayer beads with its tassel *
 }
 
 // Quiet work left on the terraces. These are scenery, painted without a collision outline.
+/* THE ORCHARD'S TREES: an old pear on the terrace, pruned into a round head, the fruit gold in it. v picks the tree. 36x46 */
+function fruitTree(v) {
+  const rnd = mulberry(4400 + v * 17), [c, g] = canvas(36, 46);
+  rect(g, 16, 26, 5, 20, WD[1]); rect(g, 16, 26, 2, 20, WD[2]); line(g, 18, 30, 10, 22, WD[1], 2); line(g, 19, 28, 27, 20, WD[1], 2); rect(g, 13, 43, 11, 3, '#5a4a38');
+  const blobs = [[18, 16, 12], [9, 20, 8], [27, 19, 8], [13, 10, 8], [24, 10, 8], [18, 6, 7]];
+  for (const [x, y, r] of blobs) circle(g, x, y + 1, r, '#3e5a2a');
+  for (const [x, y, r] of blobs) circle(g, x, y, r - 1, v % 2 ? '#5e8a3a' : '#567e36');
+  for (let i = 0; i < 40; i++) { const x = 4 + ((rnd() * 28) | 0), y = 2 + ((rnd() * 24) | 0); px(g, x, y, rnd() < 0.5 ? '#7eaa4a' : '#46682e'); }
+  for (let i = 0; i < 9; i++) { const x = 5 + ((rnd() * 26) | 0), y = 6 + ((rnd() * 18) | 0); rect(g, x, y, 2, 3, v === 1 ? '#c9463d' : '#d8b23a'); px(g, x, y, v === 1 ? '#e88a6a' : '#f2dc7a'); }
+  return outline(c, OUT);
+}
+/* A MONK'S COT: a plank bed on four short legs, a straw tick, a grey blanket and whatever the goblin left in it. 30x12 */
+function cot(v) {
+  const [c, g] = canvas(30, 12);
+  rect(g, 1, 6, 28, 3, WD[2]); rect(g, 1, 6, 28, 1, WD[3]); for (const x of [2, 26]) rect(g, x, 9, 2, 3, WD[1]);
+  rect(g, 2, 3, 26, 3, '#c8b070'); rect(g, 2, 3, 26, 1, '#e0cc90'); rect(g, 3, 2, 6, 2, '#e8dcc0');
+  rect(g, 9, 2, 19, 4, v ? '#6a4a3a' : '#5e6470'); rect(g, 9, 2, 19, 1, v ? '#8a6a52' : '#7a8290'); if (v) { rect(g, 20, 0, 4, 2, BR[3]); px(g, 21, 0, BR[4]); }
+  return outline(c, OUT);
+}
 function terraceProp(kind, frame=0) {
   const [c,g]=canvas(kind==='pilgrimLeanTo'?42:kind==='prayerFlags'?48:24,32);
   const r=(x,y,w,h,col)=>rect(g,x,y,w,h,col);
@@ -392,7 +450,8 @@ function terraceProp(kind, frame=0) {
 export function bakeMonkProps() {
   return { stoneLantern: terraceProp('stoneLantern'), herbBed: terraceProp('herbBed'), pilgrimLeanTo: terraceProp('pilgrimLeanTo'), prayerFlags: terraceProp('prayerFlags'), incenseStand: terraceProp('incenseStand'), monkChores: [terraceProp('monkChores'),terraceProp('monkChores',1)], bell: [bell(0), bell(-1), bell(1)], bellFrame: bellFrame(), wheel: [0, 1, 2, 3].map(prayerWheel), basket: basket(), hoist: hoist(),
     brazier: [brazierBowl(false), brazierBowl(true)], stone: looseStone(), bookshelf: [bookshelf(0), bookshelf(1)], shrine: [shrine(0), shrine(1)],
-    flagPost: [flagPost(0), flagPost(2)], statue: statue(), portcullis: portcullis(), bead: bakeBeadIcon(), rubble: bakeRubbleTile() };
+    flagPost: [flagPost(0), flagPost(2)], statue: statue(), portcullis: portcullis(), bead: bakeBeadIcon(), rubble: bakeRubbleTile(),
+    fruitTree: [0, 1, 2].map(fruitTree), cot: [cot(0), cot(1)] };
 }
 
 // ---------- the back pass: flags on their lines, the walkway's posts, and the cloud ----------
