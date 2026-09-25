@@ -66,8 +66,8 @@ export function audit(L) {
 
 if (import.meta.url === 'file:///' + process.argv[1].replace(/\\/g, '/').replace(/^\//, '') || process.argv[1].endsWith('route-breaks.mjs')) {
   /* THE AUDIT MUST SEE THE BUG IT WAS WRITTEN FOR: lay Gale Moor's lips back over its rope and it has to be found */
-  { const L = LEVELS.find(l => l.id === 'moor').build(); for (const row of [18, 14, 10]) L.grid[row * L.W + 583] = T.ONEWAY;
-    const f = audit(L).findings.filter(q => q.k === 'A' && q.x === 583);
+  { const L = LEVELS.find(l => l.id === 'moor').build(), D = L.downCliffs[0], rope = [...Array(L.W).keys()].find(x => x * 16 >= D.x0 && x * 16 <= D.x1 && L.grid[20 * L.W + x] === T.NET);   /* the cliff's rope, read off the level: the rework moved it (docs/briefs/gale-moor-rework.md) */ for (const row of [18, 14, 10]) L.grid[row * L.W + rope] = T.ONEWAY;
+    const f = audit(L).findings.filter(q => q.k === 'A' && q.x === rope);
     if (f.length < 3) { console.error('SELF-TEST FAILED: the old Gale Moor cut rope was not found: ' + JSON.stringify(f)); process.exit(2); } }
   let bad = 0, total = 0; const counts = {};
   for (const lv of LEVELS) { if (lv.hidden && !lv.secret) continue; if (only && lv.id !== only) continue;

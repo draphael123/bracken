@@ -24,9 +24,9 @@ console.log(`${n} checkpoints in ${LEVELS.length} levels, every one on floor und
 // (inside the Quartermaster's walls and past her trigger). Now every built checkpoint is asked:
 //   not inside a boss arena's walls, a mini's or an ambush room's (by height too: a tall level's floors share columns)
 //   not on a flight: the kite never lets you stand, and a death after lighting one there stands you on a spire with no kite
-/* INSIDE ON PURPOSE, SAID SO: Gale Moor's kite drops you inside the Windcaller's walls (wallL 948, the landing 952) and
-   there is no ground outside them nearer than the kite post 200 columns back. Question for Daniel (docs/levelfix). */
-const INSIDE_OK = { moor: [[952, 12]] };
+/* INSIDE ON PURPOSE, SAID SO: Gale Moor's kite drops you inside the Windcaller's walls (wallL 655, the landing 659 since the rework's cut; 948 and 952 before it) and
+   there is no ground outside them nearer than the kite post. Question for Daniel (docs/levelfix); answered by docs/briefs/gale-moor-rework.md §5. */
+const INSIDE_OK = { moor: [[659, 12]] };
 const TSZ = 16;
 export const roomsOf = L => { const r = [];
   for (const [n, A] of [['arena', L.arena], ['mini', L.mini]]) if (A) r.push([n, A.wallL !== undefined ? A.wallL : A.x0 / TSZ, A.wallR !== undefined ? A.wallR : (A.gate !== undefined ? A.gate : A.x1 / TSZ), A.y0 !== undefined ? A.y0 : A.floor - 20 * TSZ, A.floor + 4]);

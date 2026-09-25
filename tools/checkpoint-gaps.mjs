@@ -7,7 +7,7 @@
    checkpoint and a lie. The rule is about the way you WALK, so this measures it along the walked route - tools/pacing.mjs's main
    route, start to gate, rides on - and fails any level with a run longer than the playtest bot's own LONGGAP line (150).
 
-   KNOWN, NOT FORGIVEN. Two other levels are over the line today, both tall ones the same axis rule measures by rows, and both belong to
+   KNOWN, NOT FORGIVEN. Two other levels are over the line today (Gale Moor was a third, 187 from its kite post, and left the list when the rework cut its Sky Road - docs/briefs/gale-moor-rework.md), both tall ones the same axis rule measures by rows, and both belong to
    other work. They are named below with the number as measured; the check fails a listed level that no longer needs its entry, so the
    list can only shrink. */
 import assert from 'node:assert/strict';
@@ -16,7 +16,6 @@ import { pacing } from './pacing.mjs';
 
 const LIMIT = 150;   /* src/playtest.js LONGGAP: "more than 150 columns with no checkpoint" */
 const KNOWN = new Map([
-  ['moor', 'GALE MOOR, measured 187 from route 753: the level-fixes lane (97dc06f) took the two checkpoints off the Sky Road kite ride, where dying soft-locked you on a spire over spikes; nothing safe stands in their place yet. For the Gale Moor rework (queued, cutting it to ~700 columns): one checkpoint on firm ground past the ride, then delete this line.'],
   ['keep', 'THE UNDERWATER KEEP, 760x64, measured 495: a 296-tile swim, and 12 of its 15 checkpoints are off the walked route by this measure. For the Keep\'s owner: a checkpoint on the swim, or teach pacing.mjs where a swimmer wakes.'],
   ['burial', 'THE BURIAL CAVERNS, 1140x112, measured 206 (from route 707): a wide level the filler measures by ROWS because it is taller than sixty. For the Burial rework\'s owner: one checkpoint near route 810, or make checkpoints() key a tall level on its route.'],
 ]);

@@ -3677,219 +3677,216 @@ function theShop() {
   };
 }
 
-// ---------- Level 9. GALE MOOR: the high moor above the mine. The wind is the verb: it carries you, it pins you, it lifts you. ----------
+/* ---------- Level 9. GALE MOOR: the high moor above the mine. The wind is the verb: it carries you, it pins you, it lifts you. ---------- */
+/* THE REWORK (docs/briefs/gale-moor-rework.md, Daniel 2026-09-25): 996 columns with nineteen empty stretches cut to seven
+   sections and the summit, 703 wide. EVERY COLUMN BELOW IS FINAL. Each section is written from its own origin `o`, so a
+   section can be moved or cut by changing one number, and nothing is grown in afterwards: the old builder was 908 wide and
+   grew twice, and the ambush room, the elites and four tools held its grown columns by hand (the Wood lost twenty-six columns
+   that way). The ambush and the elites are built here now, and L.sections names every section for the tools that photograph
+   and walk it. Cut: the Ridge Run (its climb is the fourth section's), the Howling Gap and the Whistle Stones (the review: they
+   say what the Gallery says), and ninety columns of the Sky Road. */
 function galeMoor() {
-  const L = painter(908, 30);
+  const L = painter(703, 30);
   const { block, floor, plat, spikes, ent, coins, set } = L;
-  const movers = [], gusts = [], pools = [], hags = [], stone = [];
-  // a standing stone never walls off the walk: you pass in front of it, and only its crown is a ledge to land on
+  const movers = [], gusts = [], pools = [], hags = [], stone = [], sections = [], calm = [], ambushes = [];
+  /* a standing stone never walls off the walk: you pass in front of it, and only its crown is a ledge to land on */
   const menhir = (x, y0, y1) => { set(x, y0, T.ONEWAY); stone.push([x, x, y0, y1]); };
+  const pillar = (x, top, bottom = 26) => { set(x, top, T.ONEWAY); set(x + 1, top, T.ONEWAY); stone.push([x, x + 1, top, bottom]); };
   const plank = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
   const ladder = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
+  const gust = (x0, x1, y0, y1, o) => gusts.push(Object.assign({ x0: x0 * TS, x1: x1 * TS, y0: y0 * TS, y1: y1 * TS, dir: 1, period: 5, on: 3, phase: 0, moor: true, k: 1 }, o));
+  const section = (id, name, x0, x1, shot) => sections.push({ id, name, x0, x1, shot });
+  let o;
 
-  // ---- 1. THE MOOR GATE: heather, standing stones, the last still air before the causeway ----
-  floor(0, 40, 22);
-  ent('sign', 4, 21, { text: 'GALE MOOR. JUMP INTO A GUST AND IT CARRIES YOU FAR. THE FLAGS SHOW IT COMING.' });
-  ent('npc', 9, 21, { kind: 'squire' }); ent('flagpost', 14, 21); ent('deco', 20, 21, { kind: 'stone', v: 0 }); ent('deco', 30, 21, { kind: 'cairn' }); ent('flagpost', 34, 21);
-  ent('hare', 26, 21, { face: 1 }); coins([12, 20], [18, 19], [24, 20]);
-  ent('check', 38, 21);
+  /* ==== 1. THE MOOR GATE (0-27): heather, standing stones, the last still air before the causeway ==== */
+  o = 0; section('moor-gate', 'THE MOOR GATE', o, o + 27, [o + 18, 21]);
+  floor(o, o + 27, 22); calm.push([o, o + 27, 12, 22]);   /* the lee at the gate is a rest: the garrison stood a kite goblin in it */
+  ent('sign', o + 4, 21, { text: 'GALE MOOR. JUMP INTO A GUST AND IT CARRIES YOU FAR. THE FLAGS SHOW IT COMING.' });
+  ent('npc', o + 9, 21, { kind: 'squire' }); ent('flagpost', o + 13, 21); ent('deco', o + 17, 21, { kind: 'stone', v: 0 }); ent('deco', o + 22, 21, { kind: 'cairn' });
+  ent('hare', o + 20, 21, { face: 1 }); coins([o + 12, 20], [o + 16, 19], [o + 20, 20]);
+  ent('check', o + 25, 21);
 
-  // ---- 2. THE CAUSEWAY: posts and planks over the bog. The gaps are longer than a jump; the gusts make up the rest. Stand still in the bog and it stands up. ----
-  block(40, 111, 25, 29); pools.push({ x0: 41 * TS, x1: 111 * TS, y: 24 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: 41 * TS, x1: 111 * TS });
-  for (const [x0, x1] of [[41, 48], [52, 58], [62, 68], [72, 78], [82, 88], [92, 98], [102, 110]]) { plank(x0, x1, 21); for (const sx of [x0 + 1, x1 - 1]) ent('deco', sx, 24, { kind: 'stilt' }); } // three-tile gaps now, on stilts driven into the bog
-  gusts.push({ x0: 40 * TS, x1: 112 * TS, y0: 8 * TS, y1: 24 * TS, dir: 1, period: 5, on: 4.2, phase: 0, moor: true, k: 1.6 });
-  ent('flagpost', 44, 20); ent('flagpost', 76, 20); ent('flagpost', 108, 20);
-  ent('kite', 62, 11); ent('kite', 92, 11); ent('sign', 42, 20, { text: 'THE CAUSEWAY. WAIT FOR THE GUST, THEN JUMP. DO NOT STAND IN THE BOG.' });
-  coins([50, 18], [60, 17], [70, 18], [80, 17], [90, 18], [100, 18]);
+  /* ==== THE CAUSEWAY (28-91): posts and planks over the bog. Stand still in the bog and it stands up. ==== */
+  o = 28; section('causeway', 'THE CAUSEWAY', o, o + 63, [o + 40, 20]);
+  block(o, o + 63, 25, 29); pools.push({ x0: (o + 1) * TS, x1: (o + 64) * TS, y: 24 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: (o + 1) * TS, x1: (o + 64) * TS });
+  for (const [a, b] of [[1, 8], [12, 18], [22, 28], [32, 38], [42, 48], [52, 60]]) { plank(o + a, o + b, 21); for (const sx of [o + a + 1, o + b - 1]) ent('deco', sx, 24, { kind: 'stilt' }); }   /* three-tile gaps, on stilts driven into the bog */
+  gust(o, o + 64, 8, 24, { period: 5, on: 4.2, k: 1.6 });
+  ent('flagpost', o + 4, 20); ent('flagpost', o + 36, 20); ent('flagpost', o + 58, 20);
+  ent('kite', o + 22, 11); ent('kite', o + 52, 11); ent('sign', o + 2, 20, { text: 'THE CAUSEWAY. WAIT FOR THE GUST, THEN JUMP. DO NOT STAND IN THE BOG.' });
+  coins([o + 10, 18], [o + 20, 17], [o + 30, 18], [o + 40, 17], [o + 50, 18], [o + 58, 18]);
+  ent('check', o + 44, 24);   /* on the bog's floor under the planks: a fall from the causeway wakes you where you fell */
 
-  // ---- 3. THE STONE CIRCLE: the wind spins round the ring, every gust the other way. The silver is on the centre stone. ----
-  floor(111, 150, 22);
-  menhir(116, 19, 21); menhir(144, 19, 21); menhir(130, 17, 21); ent('silver', 130, 16); ent('vent', 126, 21, { period: 4, on: 2.4, h: 100, wind: true });
-  for (const x of [120, 124, 136, 140]) ent('deco', x, 21, { kind: 'stone', v: x % 3 });
-  gusts.push({ x0: 112 * TS, x1: 149 * TS, y0: 8 * TS, y1: 23 * TS, dir: 1, period: 2.8, on: 2.0, phase: 0.4, alt: true, moor: true, k: 1.25 });
-  ent('flagpost', 118, 21); ent('flagpost', 142, 21); ent('hare', 122, 21, { face: 1 }); ent('hare', 138, 21, { face: -1 });
-  ent('sign', 112, 21, { text: 'THE WIND CIRCLES THE STONES. THE CENTRE UPDRAFT AND A GUST PUT YOU ON TOP.' });
-  coins([118, 20], [123, 19], [127, 18], [134, 18], [138, 19], [147, 20]);
-  ent('check', 148, 21);
-  ent('check', 92, 24);   /* the opening gap was a hundred and ten */
+  /* ==== 2. THE STONE CIRCLE (92-127): the wind spins round the ring, every gust the other way. The silver is on the centre stone. ==== */
+  o = 92; section('stone-circle', 'THE STONE CIRCLE', o, o + 35, [o + 17, 21]);
+  floor(o, o + 35, 22);
+  menhir(o + 5, 19, 21); menhir(o + 31, 19, 21); menhir(o + 19, 17, 21); ent('silver', o + 19, 16); ent('vent', o + 15, 21, { period: 4, on: 2.4, h: 100, wind: true });
+  for (const x of [o + 9, o + 13, o + 25, o + 28]) ent('deco', x, 21, { kind: 'stone', v: x % 3 });
+  gust(o + 1, o + 35, 8, 23, { period: 2.8, on: 2.0, phase: 0.4, alt: true, k: 1.25 });
+  ent('flagpost', o + 7, 21); ent('flagpost', o + 30, 21); ent('hare', o + 11, 21, { face: 1 }); ent('hare', o + 26, 21, { face: -1 });
+  ent('sign', o + 1, 21, { text: 'THE WIND CIRCLES THE STONES. THE CENTRE UPDRAFT AND A GUST PUT YOU ON TOP.' });
+  coins([o + 7, 20], [o + 12, 19], [o + 16, 18], [o + 22, 18], [o + 26, 19], [o + 33, 20]);
 
-  // ---- 4. THE BOTHY: the lee of the hill. Still air, a warm door, and Tam, who goes no higher. ----
-  floor(150, 180, 22);
-  ent('deco', 158, 21, { kind: 'bothy' }); ent('npc', 164, 21, { kind: 'squire', bothy: true }); ent('torch', 161, 21); ent('deco', 172, 21, { kind: 'fence', v: 1 });
-  ent('sign', 153, 21, { text: 'NO WIND IN THE LEE. THREE LOST KITES HANG ON THE POSTS AHEAD: RIDE UP TO THEM.' });
-  ent('check', 176, 21); coins([156, 20], [168, 20]);
+  /* ==== THE BOTHY (128-149): the lee of the hill. Still air, a warm door, and Tam, who goes no higher. ==== */
+  o = 128; section('bothy', 'THE BOTHY', o, o + 21, [o + 10, 21]);
+  floor(o, o + 21, 22); calm.push([o, o + 21, 12, 22]);   /* THE LEE IS A REST (level review): a troll and an elite goat stood in it */
+  ent('deco', o + 6, 21, { kind: 'bothy' }); ent('npc', o + 12, 21, { kind: 'squire', bothy: true }); ent('torch', o + 9, 21); ent('deco', o + 18, 21, { kind: 'fence', v: 1 });
+  ent('sign', o + 2, 21, { text: 'NO WIND IN THE LEE. THREE LOST KITES HANG ON THE POSTS AHEAD: RIDE UP TO THEM.' });
+  ent('check', o + 16, 21); coins([o + 4, 20], [o + 15, 20]);
 
-  // ---- 5. THE KITE FIELD: goblins hang from box kites and drop stones. Three lost kites on tall posts, reached on the updrafts. ----
-  floor(180, 240, 22);
-  gusts.push({ x0: 180 * TS, x1: 240 * TS, y0: 4 * TS, y1: 23 * TS, dir: 1, period: 6, on: 4.4, phase: 2, moor: true, k: 1.4 });
-  menhir(190, 15, 21); ent('stray', 190, 14, { kind: 'kite' }); ent('vent', 186, 21, { period: 5, on: 3, h: 120, wind: true });
-  menhir(212, 13, 21); ent('stray', 212, 12, { kind: 'kite' }); ent('vent', 208, 21, { period: 5, on: 3, h: 150, wind: true, phase: 1.5 });
-  menhir(232, 16, 21); ent('stray', 232, 15, { kind: 'kite' }); ent('vent', 228, 21, { period: 5, on: 3, h: 110, wind: true, phase: 3 });
-  ent('kite', 197, 10); ent('kite', 220, 9); ent('kite', 236, 11); ent('harpy', 224, 7);
-  for (let x = 200; x <= 205; x++) set(x, 22, 0); block(200, 205, 24, 29); pools.push({ x0: 200 * TS, x1: 206 * TS, y: 22 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: 200 * TS, x1: 206 * TS });
-  ent('flagpost', 184, 21); ent('flagpost', 216, 21); ent('hare', 226, 21, { face: -1 }); ent('sailer', 202, 21, { face: -1 }); ent('sailer', 234, 21, { face: -1 });
-  ent('sign', 181, 21, { text: 'KITE GOBLINS DROP STONES. CUT THE STRING OR THE GOBLIN AND BOTH COME DOWN.' });
-  coins([188, 19], [194, 17], [210, 16], [217, 19], [230, 18], [237, 19]);
-  ent('check', 238, 21);
+  /* ==== 3. THE KITE FIELD (150-205): goblins hang from box kites and drop stones. Three lost kites on tall posts, reached on the updrafts. ==== */
+  o = 150; section('kite-field', 'THE KITE FIELD', o, o + 55, [o + 30, 21]);
+  floor(o, o + 55, 22);
+  gust(o, o + 56, 4, 23, { period: 6, on: 4.4, phase: 2, k: 1.4 });
+  menhir(o + 10, 15, 21); ent('stray', o + 10, 14, { kind: 'kite' }); ent('vent', o + 6, 21, { period: 5, on: 3, h: 120, wind: true });
+  menhir(o + 32, 13, 21); ent('stray', o + 32, 12, { kind: 'kite' }); ent('vent', o + 28, 21, { period: 5, on: 3, h: 150, wind: true, phase: 1.5 });
+  menhir(o + 50, 16, 21); ent('stray', o + 50, 15, { kind: 'kite' }); ent('vent', o + 46, 21, { period: 5, on: 3, h: 110, wind: true, phase: 3 });
+  ent('kite', o + 17, 10); ent('kite', o + 40, 9); ent('kite', o + 53, 11); ent('harpy', o + 44, 7);
+  for (let x = o + 20; x <= o + 25; x++) set(x, 22, 0); block(o + 20, o + 25, 24, 29); pools.push({ x0: (o + 20) * TS, x1: (o + 26) * TS, y: 22 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: (o + 20) * TS, x1: (o + 26) * TS });
+  ent('flagpost', o + 4, 21); ent('flagpost', o + 36, 21); ent('hare', o + 44, 21, { face: -1 }); ent('sailer', o + 22, 21, { face: -1 }); ent('sailer', o + 52, 21, { face: -1 });
+  ent('goat', o + 38, 21, { elite: true, gate: o + 43 });   /* the herd billy, in the open between the posts, and the field's gate held behind him (it stood in the Bothy's lee) */
+  ent('sign', o + 1, 21, { text: 'KITE GOBLINS DROP STONES. CUT THE STRING OR THE GOBLIN AND BOTH COME DOWN.' });
+  coins([o + 8, 19], [o + 14, 17], [o + 30, 16], [o + 37, 19], [o + 48, 18], [o + 54, 19]);
+  ent('check', o + 54, 21);
 
-  // ---- 6. THE RIDGE RUN: the wind against you the whole way up. The updrafts by each step are the only way to make ground. ----
-  block(240, 252, 22, 29); block(253, 264, 20, 29); block(265, 276, 18, 29); block(277, 288, 16, 29); block(289, 300, 14, 29);
-  gusts.push({ x0: 240 * TS, x1: 301 * TS, y0: 4 * TS, y1: 23 * TS, dir: -1, period: 6, on: 3.2, phase: 1, moor: true, k: 1.1 });
-  ent('vent', 250, 21, { period: 4, on: 2.6, h: 80, wind: true }); ent('vent', 262, 19, { period: 4, on: 2.6, h: 80, wind: true, phase: 1 }); ent('vent', 274, 17, { period: 4, on: 2.6, h: 80, wind: true, phase: 2 }); ent('vent', 286, 15, { period: 4, on: 2.6, h: 80, wind: true, phase: 3 });
-  ent('harpy', 262, 8); ent('harpy', 286, 5); ent('hare', 270, 17, { face: -1 }); ent('hare', 294, 13, { face: -1 }); ent('sailer', 258, 19, { face: 1 }); ent('sailer', 282, 15, { face: 1 });
-  ent('flagpost', 246, 21); ent('flagpost', 282, 15);
-  ent('sign', 242, 21, { text: 'THE RIDGE WIND HOLDS YOU BACK. WAIT BY AN UPDRAFT FOR THE LULL, RIDE IT, RUN ON.' });
-  coins([248, 20], [258, 18], [268, 16], [280, 14], [292, 12], [298, 12]);
-  ent('check', 298, 13);
+  /* ==== THE WIND RIVERS (206-253): the stream is the fast road; a bank ladder returns anyone who misses its exit. ==== */
+  o = 206; section('wind-rivers', 'WIND RIVERS', o, o + 47, [o + 20, 25]);
+  floor(o, o + 47, 26); floor(o, o + 4, 22); floor(o + 43, o + 47, 20);
+  ladder(o + 1, o + 1, 22, 25); ladder(o + 43, o + 43, 20, 25);
+  plat(o + 32, 17, 4); ent('sign', o + 2, 21, { text: 'WIND RIVERS. JUMP INTO THE WOOL STREAM. JUMP AGAIN TO LEAVE IT.' }); ent('check', o + 46, 19);
+  coins([o + 10, 18], [o + 19, 18], [o + 30, 18], [o + 34, 16], [o + 41, 19]);
+  const airRails = [{ x0: (o + 6) * TS, x1: (o + 42) * TS, y: 19 * TS, speed: 280 }];
 
-  // ---- 7. THE HOWLING GAP: the ridge ends at a chasm. Five standing stones rise out of the bog, and between them the air goes UP: step off into a gap, the updraft lifts you, the gust carries you to the next stone. ----
-  floor(301, 306, 14);
-  block(307, 365, 27, 29); pools.push({ x0: 307 * TS, x1: 366 * TS, y: 26 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: 307 * TS, x1: 366 * TS });
-  const pillar = (x, top, bottom = 26) => { set(x, top, T.ONEWAY); set(x + 1, top, T.ONEWAY); stone.push([x, x + 1, top, bottom]); };
-  pillar(312, 14); pillar(322, 12); pillar(334, 15); pillar(346, 11); pillar(358, 13);
-  floor(366, 396, 14);
-  for (const [x, h, w] of [[309, 230, 40], [318, 260, 64], [329, 220, 80], [341, 290, 80], [353, 250, 80], [363, 240, 48]]) ent('vent', x, 26, { period: 100, on: 100, h, wind: true, w }); // the whole gap is an updraft: the bog is a delay, never a trap
-  gusts.push({ x0: 300 * TS, x1: 366 * TS, y0: 2 * TS, y1: 26 * TS, dir: 1, period: 5, on: 4.2, phase: 0, moor: true, k: 1.6 });
-  ent('flagpost', 304, 13); ent('flagpost', 335, 14); ent('flagpost', 368, 13);
-  ent('harpy', 330, 6); ent('harpy', 350, 4);
-  ent('sign', 302, 13, { text: 'THE AIR GOES UP BETWEEN THE STONES. STEP OFF: THE UPDRAFT LIFTS, THE GUST CARRIES.' });
-  ent('silver', 346, 10); coins([313, 12], [323, 10], [335, 13], [347, 9], [359, 11], [318, 18], [341, 16], [353, 17]);
-  ent('check', 368, 13);
+  /* ==== 4. THE RIDGE STEPS (254-297): the wind against you the whole way up from the river to the high moor. The updrafts by each step are the way to make ground. ==== */
+  o = 254; section('ridge-steps', 'THE RIDGE STEPS', o, o + 43, [o + 16, 17]);
+  floor(o, o + 9, 20); floor(o + 10, o + 21, 18); floor(o + 22, o + 33, 16); floor(o + 34, o + 43, 14);
+  gust(o, o + 44, 4, 21, { dir: -1, period: 6, on: 3.2, phase: 1, k: 1.1 });
+  ent('vent', o + 8, 19, { period: 4, on: 2.6, h: 80, wind: true }); ent('vent', o + 20, 17, { period: 4, on: 2.6, h: 80, wind: true, phase: 1 }); ent('vent', o + 32, 15, { period: 4, on: 2.6, h: 80, wind: true, phase: 2 });
+  ent('harpy', o + 16, 8); ent('hare', o + 26, 15, { face: -1 }); ent('sailer', o + 14, 17, { face: 1 }); ent('sailer', o + 28, 15, { face: 1 });
+  ent('flagpost', o + 2, 19); ent('flagpost', o + 30, 15);
+  ent('troll', o + 26, 15, { elite: true });   /* the crag troll on the third step, clear of its updrafts, with the ridge wind behind him */
+  ent('sign', o + 3, 19, { text: 'THE RIDGE WIND HOLDS YOU BACK. WAIT BY AN UPDRAFT FOR THE LULL, RIDE IT, RUN ON.' });
+  coins([o + 6, 18], [o + 14, 16], [o + 24, 14], [o + 36, 12], [o + 41, 12]);
+  ent('check', o + 42, 13);
 
-  // ---- 8. THE GALLERY OF GUSTS: ledges over the thorns, the wind turning every three breaths. Jump with it and you fly; against it you fall short. A tall stone at the end, and an updraft to get over it. ----
-  block(397, 423, 15, 29); spikes(397, 423, 14);
-  for (const x of [402, 413]) plat(x, 12, 6); // six tiles between each: only the tailwind gets you there. Let go of the stick over the ledge or it carries you past.
-  floor(424, 476, 14); pillar(430, 8, 13);
-  ent('vent', 427, 13, { period: 4, on: 2.2, h: 150, wind: true, w: 20 });
-  gusts.push({ x0: 380 * TS, x1: 440 * TS, y0: 2 * TS, y1: 15 * TS, dir: 1, period: 3, on: 2.3, phase: 0, alt: true, moor: true, k: 1.5 });
-  ent('flagpost', 386, 13); ent('flagpost', 404, 11); ent('flagpost', 425, 13); ent('hare', 390, 13, { face: 1 }); ent('harpy', 405, 5);
-  ent('sign', 382, 13, { text: 'THE WIND TURNS EVERY THREE BREATHS. JUMP WITH IT AND FLY; AGAINST IT, THORNS.' });
-  coins([404, 10], [415, 10], [427, 8], [430, 7], [434, 12]);
-  ent('check', 436, 13);
+  /* ==== THE GALLERY OF GUSTS (298-361): ledges over the thorns, the wind turning every three breaths. Jump with it and you fly; against it you fall short. A tall stone at the end, and an updraft to get over it. ==== */
+  o = 298; section('gallery', 'THE GALLERY OF GUSTS', o, o + 63, [o + 40, 13]);
+  block(o, o + 26, 15, 29); spikes(o, o + 26, 14);
+  for (const x of [o + 5, o + 16]) plat(x, 12, 6);   /* six tiles between each: only the tailwind gets you there. Let go of the stick over the ledge or it carries you past. */
+  floor(o + 27, o + 63, 14); pillar(o + 33, 8, 13);
+  ent('vent', o + 30, 13, { period: 4, on: 2.2, h: 150, wind: true, w: 20 });
+  gust(o, o + 43, 2, 15, { period: 3, on: 2.3, alt: true, k: 1.5 });
+  ent('flagpost', o - 3, 13); ent('flagpost', o + 7, 11); ent('flagpost', o + 28, 13); ent('harpy', o + 8, 5);
+  ent('sign', o - 5, 13, { text: 'THE WIND TURNS EVERY THREE BREATHS. JUMP WITH IT AND FLY; AGAINST IT, THORNS.' });
+  coins([o + 7, 10], [o + 18, 10], [o + 30, 8], [o + 33, 7], [o + 37, 12]);
 
-  // ---- 9. THE WHISTLE STONES: the moor asks for everything it taught you at once. Four tall stones
-  // over the thorns with an updraft in every gap and a wind that turns, so each crossing is
-  // lift, then carry, then land - and the harpies work the gaps because they know you cannot stop. ----
-  block(437, 508, 15, 29); spikes(437, 508, 14);
-  floor(437, 444, 14);
-  const whistle = (x, top) => { pillar(x, top, 14); ent('flagpost', x, top - 1); }; // down through the thorns to the ground (it stood on the thorn tops, a tile in the air)
-  whistle(448, 9); whistle(464, 6); whistle(480, 10); whistle(496, 7);
-  for (const [x, h] of [[456, 190], [472, 210], [488, 180], [502, 200]]) ent('vent', x, 13, { period: 100, on: 100, h, wind: true, w: 26 });
-  gusts.push({ x0: 444 * TS, x1: 508 * TS, y0: 0, y1: 14 * TS, dir: 1, period: 3.6, on: 2.7, phase: 0, alt: true, moor: true, k: 1.5 });
-  ent('sign', 439, 13, { text: 'EVERY GAP LIFTS YOU AND THE WIND TURNS OFTEN. STEP OFF AND LET IT CARRY YOU.' });
-  ent('harpy', 456, 3); ent('harpy', 488, 2); ent('kite', 472, 4);
-  ent('sailer', 442, 13, { face: 1 }); ent('hare', 504, 13, { face: -1 });
-  coins([448, 8], [464, 5], [480, 9], [496, 6], [456, 4], [488, 3]);
-  ent('silver', 464, 5);
-  floor(504, 548, 14); ent('check', 506, 13);
+  ent('check', o + 42, 13);
 
-  // ---- 9. THE FLAG ROAD: the last walk to the summit. Stones, hares, and the flags all pointing one way. ----
-  for (const [x, top] of [[538, 10], [543, 12]]) pillar(x, top, 13);
-  ent('deco', 516, 13, { kind: 'cairn' }); ent('deco', 528, 13, { kind: 'stone', v: 1 }); ent('flagpost', 513, 13); ent('flagpost', 532, 13);
-  ent('hare', 540, 13, { face: 1 }); ent('harpy', 530, 4);
-  gusts.push({ x0: 510 * TS, x1: 536 * TS, y0: 4 * TS, y1: 14 * TS, dir: 1, period: 3.4, on: 2.5, phase: 0, alt: true, moor: true, k: 1.4 });
-  coins([518, 12], [530, 12]);
-  gusts.push({ x0: 512 * TS, x1: 548 * TS, y0: 2 * TS, y1: 15 * TS, dir: 1, period: 6, on: 2, phase: 1, moor: true, k: 1.2 });
-  ent('sign', 514, 13, { text: 'THE FLAGS POINT THE WAY: OVER THE MILLS AND THE TUMBLE TO THE KITE POST.' });
-  coins([518, 12], [524, 9], [530, 12], [536, 8], [544, 10]); ent('check', 546, 13);
+  /* ==== 5. THE DOWNDRAFT CLIFF (362-401): climb in the lull; rest on the sheltered stone lips. ==== */
+  o = 362; section('downdraft-cliff', 'DOWNDRAFT CLIFF', o, o + 39, [o + 14, 21]);
+  floor(o, o + 39, 22); floor(o, o + 4, 14); block(o + 26, o + 30, 7, 21); floor(o + 31, o + 39, 14);
+  ladder(o + 25, o + 25, 7, 21); ladder(o + 4, o + 4, 14, 21);
+  for (const row of [18, 14, 10]) plat(o + 22, row, 3);   /* THE LIPS STOP SHORT OF THE ROPE (Daniel 2026-09-22): four wide, they were laid over the rope and cut it in three - the climb stopped under every lip and the level could not be finished */
+  ent('sign', o + 3, 13, { text: 'DOWNDRAFT CLIFF. CLIMB IN THE LULL. REST ON THE SHELTERED STONE LIPS.' }); ent('check', o + 37, 13);
+  coins([o + 19, 21], [o + 23, 17], [o + 23, 13], [o + 23, 9], [o + 28, 6]);
+  const downCliffs = [{ x0: (o + 21) * TS, x1: (o + 27) * TS, y0: 7 * TS, y1: 22 * TS, period: 5, on: 2.5, shelters: [18, 14, 10].map(y => [(o + 22) * TS, (o + 26) * TS, y * TS]) }];
 
-  // ---- 10. THE MILLS: an old stone mill at the edge of a bog gully, and two more beyond it. The wind turns
-  // the sails, and turns them back when it turns: ride a sail up and over and step off at the top. ----
-  floor(548, 557, 14);
-  block(558, 590, 24, 29); pools.push({ x0: 558 * TS, x1: 591 * TS, y: 23 * TS + 4, shallow: true, depth: 12 }); // (no bog-wights under the mills: the sails are hard enough)
-  ladder(558, 558, 14, 23); // a rope ladder up the near bank for anyone the gully takes
-  plat(560, 12, 2);
-  for (const hx of [566, 575, 584]) for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', mill: true, first: i === 0, towerH: 14 * TS, px: hx * TS + 8, py: 9 * TS, r: 42, phase: i * Math.PI / 2, period: 6, x: 0, y: 0, w: 40, h: 6 }); // broad sails: riding a turning wheel is the whole test
-  floor(591, 600, 14);
-  gusts.push({ x0: 548 * TS, x1: 600 * TS, y0: 2 * TS, y1: 24 * TS, dir: 1, period: 4.6, on: 2.8, phase: 0, alt: true, moor: true, k: 0.35 }); // it turns the sails; it barely touches you
-  ent('sign', 549, 13, { text: 'THE MILL SAILS TURN WITH THE WIND: RIDE ONE UP. THE BANK LADDER LEAVES THE BOG.' });
-  ent('check', 552, 13); ent('flagpost', 555, 13); ent('flagpost', 594, 13);
-  coins([561, 11], [566, 6], [575, 6], [584, 6], [570, 22], [571, 22], [580, 22], [581, 22]);
+  /* ==== THE MILLS (402-454): an old stone mill at the edge of a bog gully, and two more beyond it. The wind turns the sails, */
+  /* and turns them back when it turns: ride a sail up and over and step off at the top. ==== */
+  o = 402; section('mills', 'THE MILLS', o, o + 52, [o + 12, 11]);
+  floor(o, o + 9, 14);
+  block(o + 10, o + 42, 24, 29); pools.push({ x0: (o + 10) * TS, x1: (o + 43) * TS, y: 23 * TS + 4, shallow: true, depth: 12 });   /* (no bog-wights under the mills: the sails are hard enough) */
+  ladder(o + 10, o + 10, 14, 23);   /* a rope ladder up the near bank for anyone the gully takes */
+  plat(o + 12, 12, 2);
+  for (const hx of [o + 18, o + 27, o + 36]) for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', mill: true, first: i === 0, towerH: 14 * TS, px: hx * TS + 8, py: 9 * TS, r: 42, phase: i * Math.PI / 2, period: 6, x: 0, y: 0, w: 40, h: 6 });   /* broad sails: riding a turning wheel is the whole test */
+  floor(o + 43, o + 52, 14);
+  gust(o, o + 52, 2, 24, { period: 4.6, on: 2.8, alt: true, k: 0.35 });   /* it turns the sails; it barely touches you */
+  ent('sign', o + 1, 13, { text: 'THE MILL SAILS TURN WITH THE WIND: RIDE ONE UP. THE BANK LADDER LEAVES THE BOG.' });
+  ent('check', o + 4, 13); ent('flagpost', o + 7, 13); ent('flagpost', o + 46, 13);
+  coins([o + 13, 11], [o + 18, 6], [o + 27, 6], [o + 36, 6], [o + 22, 22], [o + 23, 22], [o + 32, 22], [o + 33, 22]);
 
-  // ---- 11. THE TUMBLE: the last open moor, heather bales the wind rolls at you, and hornblowers on the
-  // mounds who wind their horns at you as you come. (The mounds are steps, never walls.) ----
-  floor(600, 650, 14);
-  block(612, 615, 12, 13); block(630, 634, 12, 13); block(642, 644, 13, 13);
-  ent('horn', 613, 11, { face: -1 }); ent('horn', 631, 11, { face: -1 });
-  for (const x of [604, 622, 640]) ent('bale', x, 13, { x0: 600, x1: 650 });
-  ent('hare', 626, 13, { face: -1 });
-  gusts.push({ x0: 600 * TS, x1: 650 * TS, y0: 2 * TS, y1: 14 * TS, dir: -1, period: 5, on: 2.6, phase: 1, alt: true, moor: true, k: 1 });
-  ent('sign', 601, 13, { text: 'BALES ROLL WITH THE WIND: JUMP OR CUT THEM. HORNBLOWERS BLOW YOU BACK.' });
-  ent('check', 603, 13); ent('flagpost', 608, 13); ent('flagpost', 637, 13); ent('deco', 620, 13, { kind: 'cairn' });
-  coins([606, 11], [613, 9], [620, 11], [631, 9], [638, 11], [646, 12]);
+  /* ==== 6. THE CAIRN RIDGE (455-494): the flags all point one way, and the herd waits at the cairns. The ambush room. ==== */
+  o = 455; section('cairn-ridge', 'THE CAIRN RIDGE', o, o + 39, [o + 18, 13]);
+  floor(o, o + 39, 14);
+  for (const [x, top] of [[o + 28, 10], [o + 33, 12]]) pillar(x, top, 13);
+  ent('deco', o + 6, 13, { kind: 'cairn' }); ent('deco', o + 18, 13, { kind: 'stone', v: 1 }); ent('flagpost', o + 3, 13); ent('flagpost', o + 22, 13);
+  ent('hare', o + 30, 13, { face: 1 }); ent('harpy', o + 20, 4);
+  gust(o, o + 39, 4, 14, { period: 3.4, on: 2.5, alt: true, k: 1.4 });   /* ONE zone: two overlapped here and stacked (level review) */
+  ent('sign', o + 4, 13, { text: 'THE FLAGS POINT THE WAY: OVER THE MILLS AND THE TUMBLE TO THE KITE POST.' });
+  coins([o + 8, 12], [o + 14, 9], [o + 20, 12], [o + 26, 8], [o + 34, 10]); ent('check', o + 39, 13);
+  ambushes.push({ name: 'THE CAIRN RIDGE', row: 13, wallL: o + 1, wallR: o + 37,
+    waves: [[['goat', o + 7], ['goat', o + 33], ['rockgoblin', o + 20], ['crow', o + 17, 7]], [['rockgoblin', o + 31], ['troll', o + 9, null, { elite: true }], ['goat', o + 25]]] });
 
-  // ---- 12. THE KITE POST: the edge of the moor, a wall of stone, and past it nothing but air. The shepherds'
-  // great kite is tethered here. ----
-  floor(650, 663, 14); block(664, 665, 5, 29);
-  ent('stormkite', 659, 13);
-  ent('sign', 652, 13, { text: 'TAKE HOLD OF THE GREAT KITE: ARROWS STEER, ROLL DARTS. IT WILL NOT WAIT.' });
-  ent('check', 655, 13); ent('flagpost', 662, 13);
-  // TWO HUNDRED AND NINE COLUMNS WITH NO CHECKPOINT IN THEM, the worst run in the game, and it is the last
-  // stretch before the Windcaller - so a death out here costs you the whole approach. Three now: fifty-five,
-  // forty, forty and seventy-four.
-  /* (the checkpoints at 704, 757 and 806 went: they stood under the Sky Road, where you fly on the kite from 659 to 864 and never touch the ground to take one) */
+  /* ==== THE TUMBLE (495-534): the last open moor, heather bales the wind rolls at you, and hornblowers on the */
+  /* mounds who wind their horns at you as you come. (The mounds are steps, never walls.) ==== */
+  o = 495; section('tumble', 'THE TUMBLE', o, o + 39, [o + 20, 13]);
+  floor(o, o + 39, 14);
+  block(o + 12, o + 15, 12, 13); block(o + 26, o + 30, 12, 13); block(o + 35, o + 37, 13, 13);
+  ent('horn', o + 13, 11, { face: -1 }); ent('horn', o + 27, 11, { face: -1 });
+  for (const x of [o + 4, o + 20, o + 33]) ent('bale', x, 13, { x0: o, x1: o + 39 });
+  ent('hare', o + 22, 13, { face: -1 });
+  gust(o, o + 39, 2, 14, { dir: -1, period: 5, on: 2.6, phase: 1, alt: true });
+  ent('sign', o + 1, 13, { text: 'BALES ROLL WITH THE WIND: JUMP OR CUT THEM. HORNBLOWERS BLOW YOU BACK.' });
+  ent('flagpost', o + 8, 13); ent('flagpost', o + 32, 13); ent('deco', o + 19, 13, { kind: 'cairn' });
+  coins([o + 6, 11], [o + 13, 9], [o + 19, 11], [o + 27, 9], [o + 33, 11], [o + 38, 12]);
 
-  // ---- 13. THE SKY ROAD: the kite carries you down the wind to the summit - through the teeth of the crags,
-  // the crow strings, the needle and the storm. The view does not wait. ----
-  block(666, 859, 26, 29); spikes(666, 859, 25);
-  const spire = (x, top) => { block(x, x + 1, top, 25); stone.push([x, x + 1, top, 25]); }, crag = (x, bot) => { block(x, x + 1, 0, bot); stone.push([x, x + 1, 0, bot]); };
-  const rock = (x0, x1, y0, y1) => { block(x0, x1, y0, y1); stone.push([x0, x1, y0, y1]); }; // loose stone in the air, not grass
-  const string = (x, y, n, gap, o) => { for (let i = 0; i < n; i++) ent('harpy', x + i * gap, y, Object.assign({ ph: i * 0.7 }, o || {})); };
+  /* ==== 7. THE KITE POST (535-550): the edge of the moor, a wall of stone, and past it nothing but air. The shepherds' great kite is tethered here. ==== */
+  o = 535; section('kite-post', 'THE KITE POST', o, o + 15, [o + 6, 13]);
+  floor(o, o + 13, 14); block(o + 14, o + 15, 5, 29);
+  ent('stormkite', o + 9, 13);
+  ent('sign', o + 2, 13, { text: 'TAKE HOLD OF THE GREAT KITE: ARROWS STEER, ROLL DARTS. IT WILL NOT WAIT.' });
+  ent('check', o + 5, 13); ent('flagpost', o + 12, 13);
+
+  /* ==== THE SKY ROAD (551-654): the kite carries you down the wind to the summit - through the teeth of the crags, the crow */
+  /* strings, the organ pipes and the storm. The view does not wait. (A hundred and four columns: the old road's best stretch */
+  /* of each of its four stretches, and never a checkpoint - you never touch the ground out here.) ==== */
+  o = 551; section('sky-road', 'THE SKY ROAD', o, o + 103, null);
+  block(o, o + 103, 26, 29); spikes(o, o + 103, 25);
+  const spire = (x, top) => { block(x, x + 1, top, 25); stone.push([x, x + 1, top, 25]); };
+  const string = (x, y, n, gap, s) => { for (let i = 0; i < n; i++) ent('harpy', x + i * gap, y, Object.assign({ ph: i * 0.7 }, s || {})); };
   const ribbon = (x0, x1, y, amp) => { for (let x = x0; x <= x1; x += 2) coins([x, Math.round(y + Math.sin((x - x0) * 0.35) * amp)]); };
-  // everything out here stands on the gorge floor: nothing hangs in the air (Daniel: no floating rocks)
+  /* everything out here stands on the gorge floor: nothing hangs in the air (Daniel: no floating rocks) */
   const tower = (x0, x1, top) => { block(x0, x1, top, 25); stone.push([x0, x1, top, 25]); };
-  // the teeth: spires of every height, so you go over the short ones low and the tall ones high
-  spire(704, 13); spire(709, 8); spire(714, 11); spire(719, 7); spire(724, 13); spire(729, 9); spire(734, 11);
-  // the flock, among the stacks
-  tower(742, 744, 11); tower(748, 749, 15); tower(756, 758, 12);
-  string(746, 7, 4, 2); string(754, 9, 4, 2); string(764, 5, 3, 3, { amp: 18 });
-  // the organ pipes: tall stacks shoulder to shoulder - you skim along over their tops
-  for (const [x, top] of [[766, 10], [770, 8], [774, 10], [778, 7], [782, 9], [786, 7], [790, 10]]) tower(x, x + 1, top);
-  string(784, 5, 3, 2, { amp: 3 });
-  // the storm: the shaman's weather, bolts out of the cloud on a beat
-  for (const [x, ph] of [[803, 0], [811, 1.1], [819, 2.2], [827, 0.5], [846, 1.6]]) ent('skybolt', x, 18, { top: 2, period: 3.2, phase: ph });
-  tower(806, 807, 12); tower(820, 822, 11); tower(838, 839, 9); spire(850, 14);
-  ent('harpy', 810, 5); ent('harpy', 832, 4); ent('kite', 800, 5); ent('kite', 828, 6);
-  string(815, 9, 4, 2); string(840, 12, 5, 2, { amp: 14 });
-  ribbon(670, 700, 10, 3); ribbon(736, 741, 9, 1); ribbon(766, 792, 5, 1); ribbon(852, 858, 8, 2);
-  gusts.push({ x0: 666 * TS, x1: 860 * TS, y0: 0, y1: 26 * TS, dir: -1, period: 7, on: 1.8, phase: 2, moor: true, k: 0.8 });
+  ribbon(o + 4, o + 20, 10, 3);
+  /* the teeth: spires of every height, so you go over the short ones low and the tall ones high */
+  spire(o + 24, 13); spire(o + 29, 8); spire(o + 34, 11); spire(o + 39, 7); spire(o + 44, 13);
+  /* the flock, among the stacks */
+  tower(o + 50, o + 52, 11); tower(o + 57, o + 58, 15); string(o + 54, 7, 4, 2); string(o + 60, 9, 3, 2, { amp: 18 });
+  /* the organ pipes: tall stacks shoulder to shoulder - you skim along over their tops */
+  for (const [x, top] of [[o + 66, 10], [o + 70, 8], [o + 74, 10], [o + 78, 7]]) tower(x, x + 1, top);
+  string(o + 72, 5, 3, 2, { amp: 3 }); ribbon(o + 66, o + 79, 5, 1);
+  /* the storm: the shaman's weather, bolts out of the cloud on a beat */
+  for (const [x, ph] of [[o + 84, 0], [o + 90, 1.1], [o + 96, 2.2]]) ent('skybolt', x, 18, { top: 2, period: 3.2, phase: ph });
+  tower(o + 87, o + 88, 12); tower(o + 97, o + 99, 11); spire(o + 102, 14);
+  ent('harpy', o + 89, 5); ent('kite', o + 82, 5); ent('kite', o + 95, 6); string(o + 92, 9, 4, 2);
+  gust(o, o + 104, 0, 26, { dir: -1, period: 7, on: 1.8, phase: 2, k: 0.8 });
 
-  // ---- 14. THE SUMMIT: three standing stones and two ledges in a ring of thorns. The shaman blinks between
-  // them and throws the sky at you. The kite's string goes over the near edge and puts you down on it. ----
-  block(860, 907, 13, 29);
-  pillar(866, 12, 12); pillar(868, 10, 12); pillar(882, 4, 12); pillar(897, 8, 12);
-  plat(875, 7, 2); plat(890, 6, 2);
-  ent('vent', 878, 12, { period: 100, on: 100, h: 108, wind: true, w: 18 }); ent('vent', 893, 12, { period: 100, on: 100, h: 94, wind: true, w: 18 }); // always on: the question is never WHEN, only where
-  gusts.push({ x0: 861 * TS, x1: 906 * TS, y0: 0, y1: 13 * TS, dir: 1, period: 5, on: 2.2, phase: 0, alt: true, moor: true, k: 1.5, arena: true });
-  ent('flagpost', 865, 12); ent('flagpost', 901, 12);
-  ent('windcaller', 882, 3);
-  ent('sign', 870, 12, { text: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR BLOCK ONE BACK TO KNOCK HIM DOWN.', pyro: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE ONE BACK WITH YOUR STAFF TO DROP HIM.', paladin: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR AEGIS ONE BACK TO KNOCK HIM DOWN.' });
-  ent('check', 864, 12); ent('gate', 905, 12);
-  const roosts = [[868, 9], [882, 3], [897, 7], [875, 6], [890, 5]]; // where he stands: a stone's top, a ledge
-  for (const e of L.ents) if (e.t === 'vent' && e.wind) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; } // the moor's wind lifts you well clear of whatever it is meant to lift you onto
+  /* ==== THE SUMMIT (655-702): three standing stones and two ledges in a ring of thorns. The shaman blinks between them and */
+  /* throws the sky at you. The kite's string goes over the near edge and puts you down on it. ==== */
+  o = 655; section('summit', 'THE SUMMIT', o, o + 47, null);
+  block(o, o + 47, 13, 29);
+  pillar(o + 6, 12, 12); pillar(o + 8, 10, 12); pillar(o + 22, 4, 12); pillar(o + 37, 8, 12);
+  plat(o + 15, 7, 2); plat(o + 30, 6, 2);
+  ent('vent', o + 18, 12, { period: 100, on: 100, h: 108, wind: true, w: 18 }); ent('vent', o + 33, 12, { period: 100, on: 100, h: 94, wind: true, w: 18 });   /* always on: the question is never WHEN, only where */
+  gust(o + 1, o + 46, 0, 13, { period: 5, on: 2.2, alt: true, k: 1.5, arena: true });
+  ent('flagpost', o + 5, 12); ent('flagpost', o + 41, 12);
+  ent('windcaller', o + 22, 3);
+  ent('sign', o + 10, 12, { text: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR BLOCK ONE BACK TO KNOCK HIM DOWN.', pyro: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE ONE BACK WITH YOUR STAFF TO DROP HIM.', paladin: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR AEGIS ONE BACK TO KNOCK HIM DOWN.' });
+  ent('check', o + 4, 12); ent('gate', o + 45, 12);
+  const roosts = [[o + 8, 9], [o + 22, 3], [o + 37, 7], [o + 15, 6], [o + 30, 5]];   /* where he stands: a stone's top, a ledge */
+  const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 8) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'musMountain', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' };
+  const flight = { x1: o + 4, speed: 78, camY: 2, down: [] };   /* the Sky Road: the kite lets go over the summit's near edge */
 
-  const base = {
+  for (const e of L.ents) if (e.t === 'vent' && e.wind) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; }   /* the moor's wind lifts you well clear of whatever it is meant to lift you onto */
+  return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, roosts, thermals: true,
     duskStart: -1, duskLen: 1, music: 'adventure', night: false, glowNight: false,
     palette: { sky: [[126, 148, 182], [214, 220, 214]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(200,210,220,0.18)', grass: '#7a8a3a', grassL: '#a8b84a', grassD: '#4a5a2a', dirt: '#5a5040', dirtL: '#6e6450', dirtD: '#3a3228', canopy: ['#5a6a7a', '#7a8a9a', '#9aa8b8', '#c8d0d8'] },
     quest: { n: 3, item: 'kite', name: 'KITE', npc: 'squire', done: 'THE KITES ARE HOME', reward: 'relic', relic: 'windcloak' },
-    weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 476 * TS, x1: 548 * TS, kind: 'mist' }],
+    weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 402 * TS, x1: 455 * TS, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 861 * TS, x1: 905 * TS, floor: 13 * TS, trigger: 868 * TS, wallL: 860, wallR: 906, boss: 'windcaller', music: 'musMountain', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' },
-    flight: { x1: 864, speed: 78, camY: 2, down: [] }, // the Sky Road: the kite lets go over the summit's near edge
+    arena, flight, airRails, downCliffs, ambushes, calm, sections, stormSummit: true,
+    playtestSections: sections.filter(s => s.id === 'wind-rivers' || s.id === 'downdraft-cliff').map(s => ({ name: s.name, x0: s.x0, x1: s.x1 })),
   };
-  // WIND RIVERS: the stream is the fast road; a bank ladder returns anyone who misses its exit.
-  const R=grow(base,base,240,48);R.floor(240,287,26);R.floor(240,244,22);R.floor(283,287,20);
-  for(let y=22;y<26;y++)R.set(241,y,T.NET);for(let y=20;y<26;y++)R.set(283,y,T.NET);
-  R.plat(272,17,4);R.ent('sign',242,21,{text:'WIND RIVERS. JUMP INTO THE WOOL STREAM. JUMP AGAIN TO LEAVE IT.'});R.ent('check',286,19);R.coins([250,18],[259,18],[270,18],[274,16],[281,19]);
-  R.R.airRails=[{x0:246*TS,x1:282*TS,y:19*TS,speed:280}];
-  const mid=R.done(),D=grow(mid,mid,558,40);D.floor(558,597,22);D.floor(558,562,14);D.block(584,588,7,21);D.floor(589,597,14);
-  for(let y=7;y<22;y++)D.set(583,y,T.NET);for(let y=14;y<22;y++)D.set(562,y,T.NET);
-  for(const row of [18,14,10])D.plat(580,row,3);   /* THE LIPS STOP SHORT OF THE ROPE (Daniel 2026-09-22): four wide, they were laid over column 583 and cut the rope in three - the climb stopped under every lip and the level could not be finished */
-  D.ent('sign',561,13,{text:'DOWNDRAFT CLIFF. CLIMB IN THE LULL. REST ON THE SHELTERED STONE LIPS.'});D.ent('check',595,13);D.coins([577,21],[581,17],[581,13],[581,9],[586,6]);
-  D.R.downCliffs=[{x0:579*TS,x1:585*TS,y0:7*TS,y1:22*TS,period:5,on:2.5,shelters:[18,14,10].map(y=>[580*TS,584*TS,y*TS])}];
-  D.R.stormSummit=true;D.R.playtestSections=[{name:'WIND RIVERS',x0:240,x1:287},{name:'DOWNDRAFT CLIFF',x0:558,x1:597}];
-  return D.done();
 }
 
 // MORE GOLD. Every real wood runs this after it is built: it finds the long walkable stretches that pay
@@ -7429,7 +7426,7 @@ export const DRESS = {
 const GARRISON = {
   marsh: [['hopper', 5], ['spit', 4], ['archer', 3], ['thorn', 3], ['turtle', 3], ['heronfoe', 3]],   // 46 was thirteen under the level before it
   spore: [['sporeling', 4], ['spitcap', 3], ['weaver', 2], ['thorn', 2], ['spider', 1]],   // eight kinds was the thinnest roster in the wood
-  moor: [['goat', 5], ['rockgoblin', 5], ['harpy', 4], ['kite', 4], ['troll', 2], ['sailer', 3]],   // seven kinds over NINE HUNDRED columns, and twenty-three of them crows
+  moor: [['goat', 4], ['rockgoblin', 3], ['harpy', 3], ['kite', 3], ['troll', 1], ['sailer', 2]],   /* twenty-three over NINE HUNDRED AND NINETY-SIX columns; sixteen over seven hundred and three, after the cut (docs/briefs/gale-moor-rework.md): the same density */
   scree: [['harpy', 4], ['goat', 4], ['rockgoblin', 3], ['troll', 1]],
   hanging: [['snuffer', 3], ['cutter', 2], ['rockgoblin', 2]],   // thirty-four creatures over eight floors: the thinnest level in the crags       // 58 sat twenty-two under Kingswood
   /* EIGHT KINDS, NOT ELEVEN (2026-09-22). The crow, the goat, the kite, the spider and the snuffer each landed once or
@@ -7712,8 +7709,7 @@ const AMBUSH = {
     waves: [[['sprig', 48], ['sprig', 65], ['snuffer', 58]], [['brute', 57, null, { elite: true }], ['archer', 66], ['cutter', 49]]] }],
   spire: [{ name: 'THE CLOISTER', row: 99, wallL: 40, wallR: 74, check: false,
     waves: [[['fledgling', 46], ['fledgling', 66], ['rockgoblin', 56], ['bat', 52, 94]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 93], ['fledgling', 68]]] }],
-  moor: [{ name: 'THE CAIRN RIDGE', row: 13, wallL: 596, wallR: 633,
-    waves: [[['goat', 602], ['goat', 628], ['rockgoblin', 615], ['crow', 612, 7]], [['rockgoblin', 626], ['troll', 604, null, { elite: true }], ['goat', 620]]] }],
+  /* moor: THE CAIRN RIDGE is built in galeMoor() in its final columns (docs/briefs/gale-moor-rework.md) */
   storm: [{ name: 'THE HEARTH HALL', row: 31, wallL: 98, wallR: 152, check: false,
     waves: [[['sprig', 104], ['sprig', 146], ['hearthgob', 128], ['cutter', 117]], [['shield', 140], ['archer', 148], ['pike', 126, null, { elite: true }]]] }],
   longwater: [{ name: 'THE SLUICE BRIDGE', row: 26, wallL: 293, wallR: 339, check: false,
@@ -7778,7 +7774,7 @@ const ELITES = {
      scriptorium, on the long walk from the trapdoor at 73-77 to the prayer wheel at 47, and the herd billy out on the
      shrines' ledge above the cloud, clear of the way up at 31-37, the cellar at 81-89 and the bellows at 14 */
   spire: [['troll', 61, 171], ['goat', 62, 79]],
-  moor: [['goat', 168, 21, { gate: 200 }], ['troll', 432, 13]],
+  /* moor: the Kite Field's herd billy and the Gallery's crag troll are built in galeMoor() in their final columns */
   storm: [['pike', 250, 29, { gate: 257 }]],
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 792 is left alone */
