@@ -14,6 +14,8 @@
                         the same dive on a solid slab opens nothing, and leaving early only moves his aim (the stair's top, 2026-09-22)
      THE FIRST DEATH KNIGHT  the hero's own rule: fill his BLOOD WARD and strike it again, and it breaks - he is open; a ward
                              left to run out opens nothing (2026-09-24: he fights with the class's kit)
+     THE WINDCALLER    brace through his howl (the guard key held on the ground): his own wind fails him and he falls, open; the
+                       same howl left to blow walks you to the wall and opens nothing (Gale Moor rework, 2026-09-25)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -113,6 +115,13 @@ try {
      return {mode:w.mode,open:+open.toFixed(1),mounted:w.mounted,swings};};
    const left=remount(false),cut=remount(true);
    out.rider={alone,struck,left,cut};}
+  /* THE WINDCALLER: his howl twice - left to blow (it walks you to the wall and he blinks away) and braced through, the guard key
+     held on the ground (his wind fails him and he falls, open): the moor's own lesson, docs/briefs/gale-moor-rework.md §4 */
+  {const b=boot('moor');const A=BK.L.arena;for(const e of BK.enemies())if(e!==b&&!e.maxHp)e.alive=false;
+   const howl=brace=>{b.mode='howlTell';b.modeT=0.01;b.hits=0;b.howlT=99;b.stoneT=99;b.wallT=99;b.specialT=99;b.braceT=0;BK.P.x=(A.x0+A.x1)/2+60;BK.P.y=A.floor;BK.P.vy=0;BK.P.vx=0;
+     let fell=false,moved=0;const x0=BK.P.x;for(let i=0;i<60*3;i++){BK.keys.block=brace;BK.sim(1);moved=Math.max(moved,Math.abs(BK.P.x-x0));if(b.mode==='fallen'){fell=true;break;}if(b.mode==='blink'||b.mode==='appear')break;}
+     BK.keys.block=false;const o={mode:b.mode,fell,moved:Math.round(moved),braceT:+(b.braceT||0).toFixed(2)};b.mode='cast';b.modeT=9;BK.sim(5);return o;};
+   const left=howl(false),held=howl(true);out.windcaller={left,held};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -159,6 +168,9 @@ try {
   assert.ok(r.rider.left.mounted, 'and puts him back in the saddle: ' + JSON.stringify(r.rider));
   assert.equal(r.rider.cut.mode, 'scattered', 'the crawling bones cut by the hero\'s swings scatter: ' + JSON.stringify(r.rider));
   assert.ok(r.rider.cut.open > 3, 'and he is open on foot: ' + JSON.stringify(r.rider));
+  assert.ok(!r.windcaller.left.fell, 'A11: a howl left to blow opens nothing: ' + JSON.stringify(r.windcaller));
+  assert.ok(r.windcaller.left.moved > 40, 'and it walks an unbraced hero across the room: ' + JSON.stringify(r.windcaller));
+  assert.ok(r.windcaller.held.fell, 'A11: braced through his howl, his own wind fails him and he falls, open: ' + JSON.stringify(r.windcaller));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

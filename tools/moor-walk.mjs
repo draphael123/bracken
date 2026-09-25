@@ -1,7 +1,7 @@
 /* tools/moor-walk.mjs [heroes] - F9 for GALE MOOR (docs/briefs/gale-moor-rework.md): the in-page play bot (src/playtest.js), NO god
    mode, start to gate, once per hero (default knight,warden), then the sweep for art and geometry findings. Prints how far it got,
    where it died and every finding. Not in the suite: it is long, and the bot cannot fight or read a tell (RULES M), so it proves
-   nothing crashes, floats or strands - not that the level is completable. */
+   nothing crashes, floats or strands - not that the level is completable. tools/moor-gusts-walk.mjs drives the gusts by hand. */
 import { openPage } from './cdp.mjs';
 const heroes = (process.argv[2] || 'knight,warden').split(',');
 const pg = await openPage({ audio: false, fonts: false });

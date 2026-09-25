@@ -12928,17 +12928,49 @@ function towerLever(pr){
   if(pr.openColumn){const [x,y0,y1]=pr.openColumn;for(let y=y0;y<=y1;y++){const i=y*LW+x;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}resolveTiles();SFX.gateDrop();number(pr.x,pr.y-26,'THE CAMP GATE OPENS','#8fd160');}
 }
 
+/* THE TOLD GUST (Gale Moor rework, docs/briefs/gale-moor-rework.md). A gust zone that says `told` is heard and seen coming: a
+   build-up of GUST_TELL seconds before it blows (the flags lift, heather streaks gather at its upwind edge and run in, a chevron
+   blinks the beats, SFX.gustRise plays), and the screen-edge warning runs for all of it instead of the last half second. A zone
+   that also says `shove` (px/s) is an OBSTACLE: while it blows your speed is pulled toward its own - on the ground it walks you
+   off a stone, in the air it carries you - unless you BRACE: on the ground with the guard key held, the same key for every
+   hero, and then it cannot move you at all. On the ground a gust used to be nothing: the legs' 1000 px/s2 beat its 320. */
+const GUST_TELL = 1.2, GUST_BRACED = 40;
+const gustDir = (z, t) => (z.alt ? (Math.floor((t + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir) * (z.flip ? -1 : 1);
+function gustNow(z) { const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, tl = z.told ? Math.min(GUST_TELL, z.period - z.on) : 0.5;
+  const tell = !on && ph > z.period - tl ? (ph - (z.period - tl)) / tl : -1;
+  return { on, tell, dir: gustDir(z, z.told && tell >= 0 ? time + tl + 0.01 : time) }; }   /* in a told build-up it is the COMING gust's way */
+const braced = () => !!(keys.block && P.ground && !P.dead && !P.climb && !P.swim);
+function gustShove(dir, speed, dt) { if (braced()) { if (Math.abs(P.vx) > GUST_BRACED) P.vx = Math.sign(P.vx) * GUST_BRACED; if (Math.random() < dt * 16) dust(P.x - dir * 4, P.y, 1); return false; }
+  P.vx += (dir * speed - P.vx) * Math.min(1, dt * (P.ground ? 20 : 6)); P.gustT = 0.25; return true; }   /* fast enough to beat the legs: the ground's friction and the stick have had the frame already */
 function updateMoorWind(dt) {
+  for (const z of (L.gusts || [])) if (z.shove && !P.dead && !P.fly && P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { if (z.arena && (!bossActive || callerCalm())) continue; const G = gustNow(z); if (G.on) gustShove(G.dir, z.shove, dt); }
+  /* THE WINDCALLER'S HOWL is the same shove, applied here for the same reason: from his own update it came after the ground's
+     friction had already had the frame, and 200 px/s became seventeen. Every second a brace holds against it is counted on him. */
+  if (boss && boss.t === 'windcaller' && boss.alive && boss.mode === 'howl' && !P.dead && L.arena && P.x > L.arena.x0 && P.x < L.arena.x1 && !gustShove(boss.howlDir, CALLER_SHOVE, dt)) boss.braceT = (boss.braceT || 0) + dt;
   P.railRelease=Math.max(0,(P.railRelease||0)-dt);
   for(const z of (L.airRails||[]))if(!P.dead&&P.x>z.x0&&P.x<z.x1&&Math.abs(P.y-8-z.y)<24){
     if(jumpPress){P.railRelease=.6;P.vy=-260;P.ground=false;SFX.pJump();}
     else if(!P.railRelease){P.vx=z.speed;P.vy=(z.y-(P.y-8))*12-18;P.ground=false;P.gustT=.25;}
   }
+  for(const z of (L.downCliffs||[]))if(z.told){const ph=time%z.period,near=!P.dead&&P.x>z.x0-260&&P.x<z.x1+260;if(ph>z.period-GUST_TELL&&!z.rose&&near){z.rose=true;SFX.gustRise();}if(ph<z.on)z.rose=false;}   /* the cliff's downdraft is the same wind, and says so the same way */
   for(const z of (L.downCliffs||[]))if(!P.dead&&P.x>z.x0&&P.x<z.x1&&P.y>z.y0&&P.y<z.y1&&time%z.period<z.on&&!z.shelters.some(([x0,x1,y])=>P.x>=x0&&P.x<=x1&&Math.abs(P.y-y)<25)){P.vy=Math.max(P.vy,100);P.gustT=.25;}
 }
+function drawToldGust(z, cx, cy) { const G = gustNow(z); if (!G.on && G.tell < 0) return;
+  const d = G.dir, w = z.x1 - z.x0, h = Math.min(z.y1 - z.y0, 10 * TS), y0 = z.y1 - h;   /* the band a hero moves through: the lowest ten rows of the zone */
+  if (G.on) { g.fillStyle = '#eef6f0'; for (let k = 0; k < 30; k++) { const sp = 260 + (k * 37) % 140, len = 10 + (k * 13) % 18; let x = (k * 97 + time * sp) % (w + 40); if (d < 0) x = w + 40 - x; const px = z.x0 + x - 20, py = y0 + (k * 53) % h;
+      if (isSolid(Math.floor(px / TS), Math.floor(py / TS))) continue; g.globalAlpha = 0.35 + (k % 3) * 0.12; g.fillRect(Math.round(px - cx - (d > 0 ? len : 0)), Math.round(py - cy), len, 1); } g.globalAlpha = 1; return; }
+  /* THE BUILD-UP: streaks gather at the edge it comes from and creep in over the pit, more and brighter as it comes */
+  const k = G.tell, edge = d > 0 ? z.x0 : z.x1, reach = Math.max(8, k * Math.min(w, 12 * TS)); g.fillStyle = '#dfe8c0';
+  for (let i = 0, n = Math.round(6 + 18 * k); i < n; i++) { const x = edge + d * ((i * 41 + time * 60) % reach), py = y0 + (i * 37) % h; if (isSolid(Math.floor(x / TS), Math.floor(py / TS))) continue;
+    g.globalAlpha = 0.15 + 0.45 * k; g.fillRect(Math.round(x - cx - (d > 0 ? 6 : 0)), Math.round(py - cy), 6, 1); }
+  /* and the beats: a chevron at that edge, at a standing hero's height, blinking three times before it blows */
+  if (Math.floor(k * 6) % 2 === 0) { const ex = edge - cx + d * 6, ey = z.y1 - 3 * TS - cy; g.globalAlpha = 0.9; g.fillStyle = '#ffd36b';
+    for (let j = 0; j < 2; j++) { const x = ex + d * j * 7; g.beginPath(); g.moveTo(x + d * 5, ey); g.lineTo(x - d * 2, ey - 6); g.lineTo(x - d * 2, ey + 6); g.closePath(); g.fill(); } }
+  g.globalAlpha = 1; }
 function drawMoorWeather(cx,cy) {
+  for (const z of (L.gusts || [])) if (z.told && z.x1 > cx && z.x0 < cx + VW && !(z.arena && (!bossActive || callerCalm()))) drawToldGust(z, cx, cy);
   for(const z of (L.airRails||[])){if(z.x1<cx||z.x0>cx+VW)continue;for(let k=0;k<65;k++){const x=z.x0+((time*z.speed+k*29)%(z.x1-z.x0)),y=z.y+Math.sin(k*2.1)*12;g.fillStyle=k%3?'#c5d3cd':'#f1eee0';g.fillRect(Math.round(x-cx),Math.round(y-cy),k%3?11:3,k%3?1:3);}}
-  for(const z of (L.downCliffs||[])){if(z.x1<cx||z.x0>cx+VW)continue;const on=time%z.period<z.on;g.globalAlpha=on?.65:.15;g.fillStyle='#dfe6e5';for(let k=0;k<24;k++){const x=z.x0+k*9%(z.x1-z.x0),y=z.y0+(time*(on?220:25)+k*27)%(z.y1-z.y0);g.fillRect(Math.round(x-cx),Math.round(y-cy),1,on?14:3);}g.globalAlpha=1;}
+  for(const z of (L.downCliffs||[])){if(z.x1<cx||z.x0>cx+VW)continue;const on=time%z.period<z.on,rise=z.told&&!on&&time%z.period>z.period-GUST_TELL?(time%z.period-(z.period-GUST_TELL))/GUST_TELL:0;g.globalAlpha=on?.65:.15+.4*rise;g.fillStyle='#dfe6e5';for(let k=0;k<24;k++){const x=z.x0+k*9%(z.x1-z.x0),y=z.y0+(time*(on?220:25+120*rise)+k*27)%(z.y1-z.y0);g.fillRect(Math.round(x-cx),Math.round(y-cy),1,on?14:3);}g.globalAlpha=1;}
   if(!L.stormSummit)return;const A=L.arena;if(A.x1<cx||A.x0>cx+VW)return;const fl=A.floor-cy;
   for(const [tx,ty] of L.roosts){const x=tx*TS+8-cx,y=(ty+1)*TS-cy,on=boss&&boss.alive&&Math.abs(boss.x-(tx*TS+8))<28;g.fillStyle=on?'#b9f0ff':'#6d8a94';for(let k=0;k<3;k++){g.fillRect(x-4,y+4+k*8,8,1);g.fillRect(x+(k%2?3:-4),y+4+k*8,1,6);}g.fillStyle='#b79174';for(let k=0;k<20;k++)g.fillRect(x+k,y+8+Math.round(Math.sin(time*7+k*.4)*3),1,3);}
   const altar=(A.x0+A.x1)/2-cx;g.fillStyle='#777f87';g.fillRect(altar-26,fl-12,21,12);g.fillRect(altar+4,fl-8,23,8);g.fillStyle='#b0b7b9';g.fillRect(altar-28,fl-14,27,3);
@@ -12981,7 +13013,7 @@ function updateWindcaller(e, dt) {
         else if (e.wallT <= 0 && p2 && !P.dead) { e.wallT = 9; e.mode = 'wallTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.9; number(e.x, e.y - 30, 'THE MOOR GOES WHITE', '#e8f0f8'); SFX.gasp(); }
         else goBlink(); }
       break; }
-    case 'howlTell': if (e.modeT <= 0) { e.mode = 'howl'; e.modeT = 2.2; e.howlDir = Math.sign(P.x - (A.x0 + A.x1) / 2) || 1; SFX.buzz(); shakeCam(3); } break;
+    case 'howlTell': if (!e.rose) { e.rose = true; SFX.gustRise(); } if (e.modeT <= 0) { e.rose = false; e.mode = 'howl'; e.modeT = HOWL_LEN; e.braceT = 0; e.howlDir = Math.sign(P.x - (A.x0 + A.x1) / 2) || 1; SFX.buzz(); shakeCam(3); } break;   /* the moor's own build-up whistle over his chant */
     case 'stoneTell': { // A STANDING STONE comes up out of the heather over his head, and then it comes at you
       if (Math.random() < dt * 40) parts.push({ x: e.x + (Math.random() - 0.5) * 26, y: e.y - 34 - Math.random() * 10, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#9aa39a' : '#c9a0ff', size: 2, grav: -20 });
       if (e.modeT <= 0) { e.mode = 'stone'; e.modeT = 0.4; SFX.throwWhoosh(); shakeCam(3);
@@ -12997,7 +13029,10 @@ function updateWindcaller(e, dt) {
       if (!P.dead && Math.abs(P.x - e.wallX) < 14 && Math.abs((P.y - 10) - e.wallGap) > 26 && !(P.wallT > 0)) { P.wallT = 1; damagePlayer(e.wallX, DMG.gas, { unblockable: true }); number(P.x, P.y - 30, 'THE HAIL', '#e8f0f8'); }
       P.wallT = Math.max(0, (P.wallT || 0) - dt);
       if (e.wallX < A.x0 - 30 || e.modeT <= 0) { e.mode = 'cast'; e.modeT = castLen; } break; }
-    case 'howl': { const dir = e.howlDir; if (!P.dead && P.x > A.x0 && P.x < A.x1) { P.vx += dir * (P.ground ? 210 : 260) * dt; P.gustT = 0.25; if (Math.random() < dt * 70) parts.push({ x: camX + Math.random() * VW, y: camY + Math.random() * VH, vx: dir * 320, vy: 0, life: 0.3, max: 0.3, col: '#e8f0f8', size: 1, grav: 0 }); } if ((e.hits || 0) >= (p2 ? 1 : 2)) goBlink(); else if (e.modeT <= 0) goBlink(); break; }
+    /* THE HOWL IS THE MOOR'S GUST (docs/briefs/gale-moor-rework.md §4): it shoves like one, and like one it cannot move a hero who
+       braces. Hold your ground through nearly all of it and his own wind fails him - he falls, open, as a bolt sent back drops him
+       (A11: the opening is caused). Left unbraced it walks you to the wall and he blinks away, as it always did. */
+    case 'howl': { const dir = e.howlDir;   /* (the shove itself is in updateMoorWind, with the moor's gusts: after the legs, before the move) */ if (!P.dead && P.x > A.x0 && P.x < A.x1) { if (Math.random() < dt * 70) parts.push({ x: camX + Math.random() * VW, y: camY + Math.random() * VH, vx: dir * 320, vy: 0, life: 0.3, max: 0.3, col: '#e8f0f8', size: 1, grav: 0 }); } if ((e.hits || 0) >= (p2 ? 1 : 2)) goBlink(); else if (e.modeT <= 0) { if ((e.braceT || 0) >= HOWL_BRACE) { number(e.x, e.y - 30, 'HIS WIND FAILS', '#bfe6f5'); SFX.gust(); knockCaller(e); } else goBlink(); } break; }
     case 'blink': if (e.modeT <= 0 && (e.blinks = (e.blinks || 0) + 1) % 3 === 0) { const gx = Math.max(A.x0 + 48, Math.min(A.x1 - 48, P.x + (P.x < (A.x0 + A.x1) / 2 ? 110 : -110))); e.x = gx; e.y = A.floor; e.grounded = true; e.mode = 'appear'; e.modeT = 0.45; burst(e.x, e.y - 12, 14, ['#c9a0ff', '#e8dcc0'], 60, 0.5, -40, 1); SFX.puff(); }
       else if (e.modeT <= 0) { e.grounded = false; const far = roosts.filter(r => Math.abs(r[0] * TS + 16 - e.x) > 20 && Math.abs(r[0] * TS + 16 - P.x) > 50); const pool = far.length ? far : roosts; const pick = pool[Math.floor(Math.random() * pool.length)]; if (pick) { e.x = pick[0] * TS + 16; e.y = (pick[1] + 1) * TS; } e.mode = 'appear'; e.modeT = 0.45; burst(e.x, e.y - 12, 14, ['#c9a0ff', '#e8dcc0'], 60, 0.5, -40, 1); SFX.puff(); } break;
     case 'appear': if (e.modeT <= 0) { if (e.grounded) { e.mode = 'ground'; e.modeT = 3.4; e.hits = 0; SFX.callerChant(); } else { e.mode = 'cast'; e.modeT = castLen; e.castT = 0.6; } } break;
@@ -13008,6 +13043,7 @@ function updateWindcaller(e, dt) {
     case 'fallen': { e.y = Math.min(A.floor, e.y + 360 * dt); e.hits = 0; if (e.y >= A.floor && !e.fellT) { e.fellT = 1; dust(e.x, e.y, 10); SFX.thud(); shakeCam(4); } if (e.modeT <= 0) { e.fellT = 0; goBlink(); } break; }
   }
 }
+const HOWL_LEN = 2.2, HOWL_BRACE = 1.6, CALLER_SHOVE = 200;   /* his howl: how long it blows, how much of it a brace must hold, and its shove */
 const callerOpen = e => e.mode === 'twister' || e.mode === 'lightning' || e.mode === 'cast' || e.mode === 'howlTell' || e.mode === 'howl' || e.mode === 'ground' || e.mode === 'fallen';
 // the wind in his arena drops while he is casting or down: the pushing is what the howl is for
 const callerCalm = () => !!(boss && boss.t === 'windcaller' && boss.alive && ['cast', 'ground', 'fallen', 'appear'].includes(boss.mode));
@@ -20307,8 +20343,10 @@ function updateProps(dt) {
   if (embers.length) updateEmbers(dt);
   if (meteors.length || fireRings.length || lanceBeams.length || moons.length) updateSkillFx(dt);
   for (const s of silvers) if (!s.got && !P.dead && Math.abs(s.x - P.x) < 13 && Math.abs(s.y - (P.y - 7)) < 15) { s.got = true; const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].silver = (PROG[id].silver || 0) | (1 << s.i); saveProgress(); const n = silvers.filter(q => q.got).length; SFX.medal(); SFX.sting(); number(s.x, s.y - 18, 'SILVER ' + n + '/' + silvers.length, '#dfe8ff'); burst(s.x, s.y, 12, ['#dfe8ff', '#ffffff'], 60, 0.6, -30, 1); ringAt(s.x, s.y, 20, '#dfe8ff', 0.4); slowT = 0.3; }
-  for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, soon = ph > z.period - 0.5; const zd = (z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir) * (z.flip ? -1 : 1); if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { if (!z.current) { windFx.dir = zd; windFx.on = on; windFx.soon = !on && soon; windFx.k = z.k || 1; windFx.t = 0.2; }
-    else if (Math.random() < dt * 26) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * (60 + Math.random() * 60), vy: -6, life: 1.1, max: 1.1, col: Math.random() < 0.5 ? '#bfe6f5' : '#7cc8c8', size: 1, grav: -4 }); if (on && !P.dead) { P.vx += zd * (P.ground ? 200 : 260) * (z.k || 1) * (P.relic === 'keelstone' ? 0.5 : 1) * (z.brace && (P.block || P.aegis || P.jet) ? 0.3 : 1) * dt; if (z.moor) P.gustT = 0.25; if (Math.random() < dt * 40) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 220, vy: 0, life: 0.35, max: 0.35, col: '#dfe8c0', size: 1, grav: 0 }); } else if (soon && Math.random() < dt * 12) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 90, vy: 0, life: 0.4, max: 0.4, col: '#c9d1a0', size: 1, grav: 0 }); } }
+  for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; const G = gustNow(z), on = G.on, soon = G.tell >= 0, zd = G.dir;
+    if (z.told) { const near = !P.dead && P.x > z.x0 - 260 && P.x < z.x1 + 260 && P.y > z.y0 - 120 && P.y < z.y1 + 120; if (soon && !z.rose && near) { z.rose = true; SFX.gustRise(); } if (!soon) z.rose = false; }   /* THE TOLD GUST's whistle, once a build-up, heard before you are in it */
+    if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { if (!z.current) { windFx.dir = zd; windFx.on = on; windFx.soon = !on && soon; windFx.k = z.k || 1; windFx.t = 0.2; }
+    else if (Math.random() < dt * 26) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * (60 + Math.random() * 60), vy: -6, life: 1.1, max: 1.1, col: Math.random() < 0.5 ? '#bfe6f5' : '#7cc8c8', size: 1, grav: -4 }); if (on && !P.dead && !z.shove && !(z.told && braced())) { P.vx += zd * (P.ground ? 200 : 260) * (z.k || 1) * (P.relic === 'keelstone' ? 0.5 : 1) * (z.brace && (P.block || P.aegis || P.jet) ? 0.3 : 1) * dt; if (z.moor) P.gustT = 0.25; if (Math.random() < dt * 40) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 220, vy: 0, life: 0.35, max: 0.35, col: '#dfe8c0', size: 1, grav: 0 }); } else if (soon && Math.random() < dt * 12) parts.push({ x: camX + Math.random() * VW, y: z.y0 + Math.random() * (z.y1 - z.y0), vx: zd * 90, vy: 0, life: 0.4, max: 0.4, col: '#c9d1a0', size: 1, grav: 0 }); } }
   for (const p of (L.pools || [])) if (p.streetTide) { // SALTREACH'S TIDE: in and out on a slow beat, the bell as it turns
     let k = 0.5 - 0.5 * Math.cos((time % p.tidePeriod) / p.tidePeriod * Math.PI * 2);
     if (p.drainT > 0) { p.drainT -= dt; k = Math.min(k, Math.max(0, (2 - p.drainT) * 0.5)); } // the sluice holds it out
@@ -22534,7 +22572,7 @@ function drawWorld(cx, cy, showPlayer) {
       { const ca = turn * 0.9; g.fillStyle = '#9ba5b3'; g.fillRect(x + 6 + Math.round(Math.cos(ca) * 3), y - 12 + Math.round(Math.sin(ca) * 3), 2, 2); }
       g.strokeStyle = 'rgba(224,204,156,0.85)'; g.lineWidth = 1; g.beginPath(); g.moveTo(x, y - 16); g.lineTo(x + wd * 6, y - 70); g.stroke();
       if (wd) { const ay = y - 24 + Math.round(Math.sin(time * 4)), k = 0.6 + 0.4 * Math.sin(time * 6); g.globalAlpha = k; g.fillStyle = '#bfe6f5'; g.fillRect(x - 5, ay, 10, 1); g.fillRect(x + wd * 3, ay - 1, 1, 3); g.fillRect(x + wd * 4, ay - 2, 1, 5); g.globalAlpha = 1; } }
-    else if (pr.t === 'flagpost') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); let wd = 0, on = false; for (const z of (L.gusts || [])) if (pr.x > z.x0 && pr.x < z.x1 && (!z.arena || bossActive)) { const ph = (time + (z.phase || 0)) % z.period; on = ph < z.on; wd = (z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir) * (z.flip ? -1 : 1); break; } g.fillStyle = '#5c3a1d'; g.fillRect(x - 1, y - 30, 2, 30); const len = on ? 12 : 5, wave = Math.sin(time * (on ? 14 : 3) + pr.ph) * (on ? 2 : 1); g.fillStyle = '#c9463d'; if (!wd) wd = 1; for (let k = 0; k < len; k++) g.fillRect(x + wd * k, y - 29 + Math.round(Math.sin(time * 12 + k * 0.8 + pr.ph) * (on ? 1.5 : 0.5)) + (on ? 0 : k * 0.6), 1, 6 - Math.floor(k / 3)); }
+    else if (pr.t === 'flagpost') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); let wd = 0, on = false, tl = -1; for (const z of (L.gusts || [])) if (pr.x > z.x0 && pr.x < z.x1 && (!z.arena || bossActive)) { const G = gustNow(z); on = G.on; wd = G.dir; tl = z.told ? G.tell : -1; break; } g.fillStyle = '#5c3a1d'; g.fillRect(x - 1, y - 30, 2, 30); const len = on ? 12 : tl >= 0 ? 5 + Math.round(7 * tl) : 5, wave = Math.sin(time * (on ? 14 : tl >= 0 ? 6 + 8 * tl : 3) + pr.ph) * (on ? 2 : 1);   /* a told gust lifts the flag through its build-up */ g.fillStyle = '#c9463d'; if (!wd) wd = 1; for (let k = 0; k < len; k++) g.fillRect(x + wd * k, y - 29 + Math.round(Math.sin(time * 12 + k * 0.8 + pr.ph) * (on ? 1.5 : 0.5)) + (on ? 0 : k * 0.6), 1, 6 - Math.floor(k / 3)); }
     else if (pr.t === 'tether') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); g.fillStyle = '#5c3a1d'; g.fillRect(x - 2, y - 10, 4, 10); g.fillStyle = '#8b6a2a'; g.fillRect(x - 3, y - 12, 6, 3); if (!pr.cut) { g.fillStyle = '#c9d1dc'; g.fillRect(x - 1, y - 14, 2, 2); if (!P.dead && Math.abs(P.x - pr.x) < 40 && Math.abs(P.y - pr.y) < 30) { const k = 0.5 + 0.5 * Math.sin(time * 8); text('CUT', x, y - 24 + Math.round(k * 2), '#bfe6f5', 'center', 6); } } else { g.fillStyle = '#3a2416'; g.fillRect(x - 3, y - 4, 6, 2); } }
     else if (pr.t === 'deadfall') { const x = Math.round(pr.x - cx), top = Math.round(pr.top - cy), px2 = Math.round(pr.pegX - cx), fy = Math.round(pr.floorY - cy), by = Math.round(pr.by - cy), hot = pr.state === 'hung' && pr.under, taut = pr.state === 'hung' || pr.state === 'haul';
       /* THE PEG AND THE LINE: up from the peg, along under the branch, down to the limb. Gold and flickering while the Reeve is under it */

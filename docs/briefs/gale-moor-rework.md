@@ -78,21 +78,24 @@ A gust zone may say `told: true`. Its clock is the old one (`period`, `on`, `pha
 - **The shove** (`shove` px/s): while it blows and you are inside it, your speed is pulled toward `dir × shove` (fast on
   the ground, a little slower in the air). Unbraced on a two-tile stone, a headwind walks you off it in a quarter of a
   second; jumping into a tailwind carries you nine or ten tiles instead of six.
-- **The brace**: on the ground with the guard key held, the gust cannot move you. The same key for every hero, so the
-  answer never depends on a kit (F3).
+- **The brace**: on the ground with the guard key held, the gust cannot move you (you can still shuffle at 40 px/s). The
+  same key for every hero, so the answer never depends on a kit (F3).
+- **Where it acts**: in the player's own update (`updateMoorWind`), after the legs and the ground's friction and before the
+  move. Anywhere later and the friction eats it: the Windcaller's old howl, applied from his own update, came to 17 px/s.
 
-**One rhythm.** Every told gust on the moor keeps the same beat, period 5: 1.2 s of build-up, 1.8 s of gust, 2 s of
+**One rhythm.** Every gust on the moor that shoves keeps the same beat, period 5: 1.2 s of build-up, 1.8 s of gust, 2 s of
 still air. Crossings differ in phase, direction and what they ask, not in tempo.
 
 **Four uses, in order:**
 
-1. **Taught, safely — THE CAUSEWAY.** Over the bog (a wade, never a wound). First a tailwind over a gap two tiles too
-   wide to jump: *ride it*. Then a headwind over narrow posts: *cross in the still air*.
-2. **Brace — THE BRACING STONES.** Four stone tops climbing out of a thorn gully into a headwind. The crossing takes
-   longer than one lull, so you stand on a stone through a gust: brace, or it puts you in the thorns (20, and a walk
-   back along the gully to the rope at the near bank).
-3. **Ride and cross — THE GALLERY OF GUSTS.** A thorn pit too wide to jump with a tailwind over it, then a row of posts
-   over a second pit into a headwind.
+1. **Taught, safely — THE CAUSEWAY.** Over the bog (a wade, never a wound). First a tailwind over an eight-tile gap, two
+   tiles wider than a jump: *ride it*. Then a headwind over two posts, three short hops that one still spell holds: *cross
+   in the still air*.
+2. **Brace — THE BRACING STONES.** Seven stone tops climbing out of a thorn gully into a headwind, eight short hops. The
+   crossing takes longer than one lull, so you stand on a stone through a gust: brace, or it puts you in the thorns (20, and a walk
+   back along the gully under the stones and a two-row climb to the near ledge).
+3. **Ride and cross — THE GALLERY OF GUSTS.** An eight-tile thorn pit with a tailwind over it, then three posts over a
+   second pit into a headwind (four hops: cross in one still spell if you are quick, or brace on a post).
 4. **The Downdraft Cliff** keeps its own clock, and gets the same build-up, so it reads as the same wind.
 
 **The reach model learns the ride.** A zone that says `carry: n` lets a jump inside it go `n` tiles further downwind

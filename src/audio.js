@@ -650,6 +650,8 @@ Object.assign(SFX, {
   waveCrash() { noise(0.7, 0.16, 900, 0.4); noise(0.5, 0.1, 2400, 0.6, 0.08); },
   sirenSong() { pad('sine', 660, 740, 1.2, 0.05, 0, 3000); pad('triangle', 990, 880, 1.2, 0.03, 0.1, 4000); },
   gust() { noise(0.9, 0.09, 420, 0.4); noise(0.6, 0.05, 900, 0.6); }, // a gale coming down the bridge
+  /* A TOLD GUST coming (Gale Moor): the wind rising through the stones for a second and a fifth, three swells and a whistle climbing over them */
+  gustRise() { noise(0.35, 0.025, 500, 0.6); noise(0.4, 0.045, 720, 0.6, 0.35); noise(0.5, 0.07, 980, 0.6, 0.72); tone('sine', 880, 1760, 1.15, 0.022); },
   stormChant() { pad('sawtooth', 330, 392, 0.4, 0.06, 0, 1400); pad('sine', 990, 1320, 0.4, 0.04, 0.05, 3000); noise(0.4, 0.06, 600, 0.5); },
   stormZap() { noise(0.12, 0.22, 3200, 0.8); tone('square', 1800, 300, 0.15, 0.07); tone('sine', 700, 200, 0.22, 0.09); },
   /* THE SEA WITCH's call: not the shaman's rattle and chant. A held note over the hiss of a sea running, and her lantern ringing on its crook */

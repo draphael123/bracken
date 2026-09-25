@@ -3694,7 +3694,14 @@ function galeMoor() {
   const pillar = (x, top, bottom = 26) => { set(x, top, T.ONEWAY); set(x + 1, top, T.ONEWAY); stone.push([x, x + 1, top, bottom]); };
   const plank = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
   const ladder = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
-  const gust = (x0, x1, y0, y1, o) => gusts.push(Object.assign({ x0: x0 * TS, x1: x1 * TS, y0: y0 * TS, y1: y1 * TS, dir: 1, period: 5, on: 3, phase: 0, moor: true, k: 1 }, o));
+  const gust = (x0, x1, y0, y1, o) => gusts.push(Object.assign({ x0: x0 * TS, x1: x1 * TS, y0: y0 * TS, y1: y1 * TS, dir: 1, period: 5, on: 3, phase: 0, moor: true, k: 1, told: true }, o));
+  /* THE TOLD GUST AS AN OBSTACLE (docs/briefs/gale-moor-rework.md §3): every gust on the moor is told - heard and seen building for
+     GUST_TELL before it blows (main.js) - and these ones SHOVE. One rhythm for all of them, so it is learned once: five seconds a
+     turn, a second and four fifths of gust, a second and a fifth of build-up in the three and a fifth of still air before it.
+     A RIDE carries a jump over a gap no jump crosses (the reach model's `carry`); a HEADWIND walks you off a stone unless you
+     cross in the still air or brace. Crossings differ in phase, direction and what they ask - never in tempo. */
+  const ride = (x0, x1, y0, y1, phase) => gust(x0, x1, y0, y1, { period: 5, on: 1.8, phase, shove: 240, carry: 5 });
+  const headwind = (x0, x1, y0, y1, phase) => gust(x0, x1, y0, y1, { period: 5, on: 1.8, phase, dir: -1, shove: 220 });
   const section = (id, name, x0, x1, shot) => sections.push({ id, name, x0, x1, shot });
   let o;
 
@@ -3706,15 +3713,21 @@ function galeMoor() {
   ent('hare', o + 20, 21, { face: 1 }); coins([o + 12, 20], [o + 16, 19], [o + 20, 20]);
   ent('check', o + 25, 21);
 
-  /* ==== THE CAUSEWAY (28-91): posts and planks over the bog. Stand still in the bog and it stands up. ==== */
-  o = 28; section('causeway', 'THE CAUSEWAY', o, o + 63, [o + 40, 20]);
-  block(o, o + 63, 25, 29); pools.push({ x0: (o + 1) * TS, x1: (o + 64) * TS, y: 24 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: (o + 1) * TS, x1: (o + 64) * TS });
-  for (const [a, b] of [[1, 8], [12, 18], [22, 28], [32, 38], [42, 48], [52, 60]]) { plank(o + a, o + b, 21); for (const sx of [o + a + 1, o + b - 1]) ent('deco', sx, 24, { kind: 'stilt' }); }   /* three-tile gaps, on stilts driven into the bog */
-  gust(o, o + 64, 8, 24, { period: 5, on: 4.2, k: 1.6 });
-  ent('flagpost', o + 4, 20); ent('flagpost', o + 36, 20); ent('flagpost', o + 58, 20);
-  ent('kite', o + 22, 11); ent('kite', o + 52, 11); ent('sign', o + 2, 20, { text: 'THE CAUSEWAY. WAIT FOR THE GUST, THEN JUMP. DO NOT STAND IN THE BOG.' });
-  coins([o + 10, 18], [o + 20, 17], [o + 30, 18], [o + 40, 17], [o + 50, 18], [o + 58, 18]);
-  ent('check', o + 44, 24);   /* on the bog's floor under the planks: a fall from the causeway wakes you where you fell */
+  /* ==== THE CAUSEWAY (28-91): posts and planks over the bog. THE GUST IS TAUGHT HERE, over a bog that cannot hurt you: a fall
+     is a wade and a two-row climb back onto the boards (stand still in it and a wight stands up). First a gap two tiles wider
+     than a jump with the wind behind you - ride it - then two posts into a headwind - cross in the still air. ==== */
+  o = 28; section('causeway', 'THE CAUSEWAY', o, o + 63, [o + 12, 21]);
+  block(o, o + 63, 24, 29); pools.push({ x0: (o + 1) * TS, x1: (o + 64) * TS, y: 23 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: (o + 1) * TS, x1: (o + 64) * TS });
+  calm.push([o, o + 63, 8, 24]);   /* a lesson is not a fight: nothing is sprinkled on the boards */
+  const boards = (a, b) => { plank(o + a, o + b, 22); for (const sx of (b - a > 2 ? [o + a + 1, o + b - 1] : [o + a])) ent('deco', sx, 23, { kind: 'stilt' }); };   /* on stilts driven into the bog */
+  boards(0, 9); boards(18, 26); for (const a of [29, 33]) boards(a, a + 1); boards(37, 63);
+  ride(o + 10, o + 18, 8, 24, 0);              /* RIDE IT: eight tiles of bog between the boards, two more than any jump */
+  headwind(o + 27, o + 37, 8, 24, 2.5);        /* CROSS IN THE STILL: three short hops over two posts, into the wind - one still spell holds them */
+  ent('flagpost', o + 8, 21); ent('flagpost', o + 22, 21); ent('flagpost', o + 55, 21);
+  ent('sign', o + 2, 21, { text: 'HEAR THE WIND RISE AND THE FLAGS LIFT. JUMP AS THE GUST BLOWS: IT CARRIES YOU OVER.' });
+  ent('sign', o + 20, 21, { text: 'WIND FROM AHEAD THROWS YOU BACK. CROSS THE POSTS IN THE STILL, BEFORE IT RISES.' });
+  coins([o + 12, 19], [o + 14, 18], [o + 16, 19], [o + 29, 20], [o + 33, 20], [o + 44, 20], [o + 52, 20], [o + 58, 21]);
+  ent('check', o + 24, 21);   /* on the boards between the two lessons */
 
   /* ==== 2. THE STONE CIRCLE (92-127): the wind spins round the ring, every gust the other way. The silver is on the centre stone. ==== */
   o = 92; section('stone-circle', 'THE STONE CIRCLE', o, o + 35, [o + 17, 21]);
@@ -3756,30 +3769,39 @@ function galeMoor() {
   coins([o + 10, 18], [o + 19, 18], [o + 30, 18], [o + 34, 16], [o + 41, 19]);
   const airRails = [{ x0: (o + 6) * TS, x1: (o + 42) * TS, y: 19 * TS, speed: 280 }];
 
-  /* ==== 4. THE RIDGE STEPS (254-297): the wind against you the whole way up from the river to the high moor. The updrafts by each step are the way to make ground. ==== */
-  o = 254; section('ridge-steps', 'THE RIDGE STEPS', o, o + 43, [o + 16, 17]);
-  floor(o, o + 9, 20); floor(o + 10, o + 21, 18); floor(o + 22, o + 33, 16); floor(o + 34, o + 43, 14);
-  gust(o, o + 44, 4, 21, { dir: -1, period: 6, on: 3.2, phase: 1, k: 1.1 });
-  ent('vent', o + 8, 19, { period: 4, on: 2.6, h: 80, wind: true }); ent('vent', o + 20, 17, { period: 4, on: 2.6, h: 80, wind: true, phase: 1 }); ent('vent', o + 32, 15, { period: 4, on: 2.6, h: 80, wind: true, phase: 2 });
-  ent('harpy', o + 16, 8); ent('hare', o + 26, 15, { face: -1 }); ent('sailer', o + 14, 17, { face: 1 }); ent('sailer', o + 28, 15, { face: 1 });
-  ent('flagpost', o + 2, 19); ent('flagpost', o + 30, 15);
-  ent('troll', o + 26, 15, { elite: true });   /* the crag troll on the third step, clear of its updrafts, with the ridge wind behind him */
-  ent('sign', o + 3, 19, { text: 'THE RIDGE WIND HOLDS YOU BACK. WAIT BY AN UPDRAFT FOR THE LULL, RIDE IT, RUN ON.' });
-  coins([o + 6, 18], [o + 14, 16], [o + 24, 14], [o + 36, 12], [o + 41, 12]);
+  /* ==== 4. THE BRACING STONES (254-297): the climb from the river to the high moor, seven stones out of a thorn gully into a
+     headwind. Eight hops take longer than one still spell, so somewhere on the way you stand on a stone through a gust:
+     hold the guard key and it cannot move you; stand there without it and it puts you in the thorns (a walk back along the
+     gully under the stones, and a two-row climb to the near ledge). Every stone is a crown you pass in front of, never a wall. ==== */
+  o = 254; section('bracing-stones', 'THE BRACING STONES', o, o + 43, [o + 2, 19]);
+  floor(o, o + 4, 20);
+  block(o + 5, o + 34, 22, 29); spikes(o + 5, o + 34, 21);
+  for (const [dx, top] of [[7, 18], [11, 17], [15, 16], [19, 15], [23, 14], [27, 14], [31, 14]]) { pillar(o + dx, top, 21); coins([o + dx, top - 2]); }   /* two tiles of gap between every pair: a short hop, eight of them, and a still spell holds two or three */
+  floor(o + 35, o + 43, 14);
+  headwind(o + 5, o + 35, 6, 22, 1);
+  ent('harpy', o + 20, 7);
+  ent('flagpost', o + 2, 19); ent('flagpost', o + 39, 13);
+  ent('sign', o + 1, 19, { text: 'ON A STONE, HOLD C AND THE GUST CANNOT MOVE YOU. HOP IN THE STILL, BRACE IN THE WIND.' });
   ent('check', o + 42, 13);
 
-  /* ==== THE GALLERY OF GUSTS (298-361): ledges over the thorns, the wind turning every three breaths. Jump with it and you fly; against it you fall short. A tall stone at the end, and an updraft to get over it. ==== */
-  o = 298; section('gallery', 'THE GALLERY OF GUSTS', o, o + 63, [o + 40, 13]);
-  block(o, o + 26, 15, 29); spikes(o, o + 26, 14);
-  for (const x of [o + 5, o + 16]) plat(x, 12, 6);   /* six tiles between each: only the tailwind gets you there. Let go of the stick over the ledge or it carries you past. */
-  floor(o + 27, o + 63, 14); pillar(o + 33, 8, 13);
-  ent('vent', o + 30, 13, { period: 4, on: 2.2, h: 150, wind: true, w: 20 });
-  gust(o, o + 43, 2, 15, { period: 3, on: 2.3, alt: true, k: 1.5 });
-  ent('flagpost', o - 3, 13); ent('flagpost', o + 7, 11); ent('flagpost', o + 28, 13); ent('harpy', o + 8, 5);
-  ent('sign', o - 5, 13, { text: 'THE WIND TURNS EVERY THREE BREATHS. JUMP WITH IT AND FLY; AGAINST IT, THORNS.' });
-  coins([o + 7, 10], [o + 18, 10], [o + 30, 8], [o + 33, 7], [o + 37, 12]);
-
-  ent('check', o + 42, 13);
+  /* ==== THE GALLERY OF GUSTS (298-361): the moor's exam, both halves of the lesson over thorns. A pit two tiles wider than any
+     jump with the wind behind it - go AS it blows, not before - then three posts over a second pit into a headwind. A tall stone
+     at the end, and an updraft to get over it. ==== */
+  o = 298; section('gallery', 'THE GALLERY OF GUSTS', o, o + 63, [o + 11, 13]);
+  block(o, o + 7, 16, 29); spikes(o, o + 7, 15);   /* thorns two rows down: a fall is a wound and a jump back out, never a trap */
+  floor(o + 8, o + 14, 14);
+  ride(o, o + 8, 4, 16, 3);
+  block(o + 15, o + 28, 16, 29); spikes(o + 15, o + 28, 15);
+  for (const dx of [17, 21, 25]) pillar(o + dx, 14, 15);
+  headwind(o + 15, o + 29, 4, 16, 0.5);
+  floor(o + 29, o + 63, 14); pillar(o + 40, 8, 13);
+  ent('vent', o + 37, 13, { period: 4, on: 2.2, h: 150, wind: true, w: 20 });
+  ent('flagpost', o + 12, 13); ent('flagpost', o + 36, 13); ent('harpy', o + 44, 5);
+  ent('sign', o - 6, 13, { text: 'A TAILWIND CARRIES YOU OVER WHAT NO JUMP CROSSES. GO AS IT BLOWS, NOT BEFORE.' });
+  ent('sign', o + 10, 13, { text: 'WIND FROM AHEAD OVER THE POSTS. CROSS IN THE STILL, OR HOLD C AND BRACE ON ONE.' });
+  coins([o + 2, 11], [o + 4, 10], [o + 6, 11], [o + 17, 12], [o + 21, 12], [o + 25, 12], [o + 40, 7], [o + 37, 8]);
+  ent('troll', o + 52, 13, { elite: true });   /* the crag troll on the gallery's far floor, the thorns behind you */
+  ent('check', o + 45, 13);
 
   /* ==== 5. THE DOWNDRAFT CLIFF (362-401): climb in the lull; rest on the sheltered stone lips. ==== */
   o = 362; section('downdraft-cliff', 'DOWNDRAFT CLIFF', o, o + 39, [o + 14, 21]);
@@ -3788,7 +3810,7 @@ function galeMoor() {
   for (const row of [18, 14, 10]) plat(o + 22, row, 3);   /* THE LIPS STOP SHORT OF THE ROPE (Daniel 2026-09-22): four wide, they were laid over the rope and cut it in three - the climb stopped under every lip and the level could not be finished */
   ent('sign', o + 3, 13, { text: 'DOWNDRAFT CLIFF. CLIMB IN THE LULL. REST ON THE SHELTERED STONE LIPS.' }); ent('check', o + 37, 13);
   coins([o + 19, 21], [o + 23, 17], [o + 23, 13], [o + 23, 9], [o + 28, 6]);
-  const downCliffs = [{ x0: (o + 21) * TS, x1: (o + 27) * TS, y0: 7 * TS, y1: 22 * TS, period: 5, on: 2.5, shelters: [18, 14, 10].map(y => [(o + 22) * TS, (o + 26) * TS, y * TS]) }];
+  const downCliffs = [{ x0: (o + 21) * TS, x1: (o + 27) * TS, y0: 7 * TS, y1: 22 * TS, period: 5, on: 2.5, told: true, shelters: [18, 14, 10].map(y => [(o + 22) * TS, (o + 26) * TS, y * TS]) }];
 
   /* ==== THE MILLS (402-454): an old stone mill at the edge of a bog gully, and two more beyond it. The wind turns the sails, */
   /* and turns them back when it turns: ride a sail up and over and step off at the top. ==== */
@@ -7246,7 +7268,7 @@ export const LEVELS = [
   { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'THE VILLAGE HANGS ON ROPES, AND A ROPE CAN BE CUT.', build: hangingVillage, needs: 'scree' },
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
-  { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND IS THE VERB: IT CARRIES YOU, IT PINS YOU, IT LIFTS YOU.', build: galeMoor, needs: 'spire' },
+  { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND COMES IN GUSTS, AND YOU CAN HEAR EACH ONE COMING.', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES, AND EVERY KEY IS INDOORS.', build: stormhold, needs: 'oreroad' },
   { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: 'storm' },   /* (2026-09-23: the Ore Road is the way to her gate now) */
   { id: 'longwater', arc: 'the sea', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: longWater, needs: 'crown' },

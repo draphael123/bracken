@@ -102,6 +102,12 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     for (const sh of (L.fields.shrinks || [])) assists.push({ kind: 'shrinking bales ' + sh.group, x0: sh.x0, x1: sh.x1, y0: sh.y0 - 1, y1: sh.y1 }); }
   /* one band per ride: a wheel's four paddles are one wheel, and were being written down as four climbs */
   { const had = new Set(); for (let i = assists.length - 1; i >= 0; i--) { const a = assists[i], k = [a.kind, a.x0, a.x1, a.y0, a.y1].join(); if (had.has(k)) assists.splice(i, 1); else had.add(k); } }
+  /* A GUST YOU RIDE (Gale Moor, docs/briefs/gale-moor-rework.md): a zone that says `carry: n` takes a jump that starts in it, or
+     one tile short of it, n tiles further downwind (both ways when it alternates). Its gap is wider than any jump on purpose, so
+     without this every tool called the far bank of a ride unreachable - and fixing that one row by hand would have been a lie.
+     opts.rides only, with the other rides: the plain fill is legs and nothing else. */
+  const carries = (opts.rides && !plain) ? (L.gusts || []).filter(z => z.carry > 0).map(z => ({ x0: Math.floor(z.x0 / TSZ) - 1, x1: Math.ceil(z.x1 / TSZ), y0: Math.floor(z.y0 / TSZ), y1: Math.ceil(z.y1 / TSZ), n: z.carry, dir: z.dir, alt: !!z.alt })) : [];
+  const carryAt = (x, y) => { let l = 0, r = 0; for (const c of carries) if (x >= c.x0 && x <= c.x1 && y >= c.y0 && y <= c.y1) { if (c.dir > 0 || c.alt) r = Math.max(r, c.n); if (c.dir < 0 || c.alt) l = Math.max(l, c.n); } return [l, r]; };
   const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.some(m => m.kind !== 'lift' && m.kind !== 'swing' && m.kind !== 'growcap' && m.kind !== 'hexvine')) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length));
 
   // every tile you could be standing on
@@ -166,7 +172,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
       const tight = head < up && -dy >= head;
       const span = tight ? 1 : Math.round(JUMP_ACROSS * (1 - Math.abs(dy) / (up + 1.5)));
       const apex = y - Math.min(up, head);
-      for (let dx = -span; dx <= span; dx++) if (!dx || across(x, dx, apex, Math.min(y, y + dy))) push(x + dx, y + dy);
+      const [cl, cr] = tight ? [0, 0] : carryAt(x, y);   /* a gust behind you: the same arc, further (above) */
+      for (let dx = -span - cl; dx <= span + cr; dx++) if (!dx || across(x, dx, apex, Math.min(y, y + dy))) push(x + dx, y + dy);
     }
     // fall: straight down, and out to either side
     for (const dx of [-JUMP_ACROSS, -2, 0, 2, JUMP_ACROSS]) { let ny = y;
