@@ -355,6 +355,8 @@ export const SFX = {
   bow() { tone('triangle', 700, 200, 0.12, 0.14); noise(0.08, 0.15, 3000); },
   bird() { tone('sine', 1800, 2600, 0.08, 0.06); tone('sine', 2400, 1900, 0.1, 0.05, 0.1); },
   splash() { noise(0.3, 0.4, 700, 0.5); tone('sine', 300, 120, 0.2, 0.15); },
+  whirlpool() { noise(0.8, 0.22, 380, 0.7); tone('sine', 180, 70, 0.8, 0.1); for (let i = 0; i < 3; i++) tone('sine', 420 - i * 70, 160, 0.1, 0.04, 0.15 + i * 0.18); },   /* THE KEEP'S WHIRLPOOL: the water going down a drain, with you in it */
+  whirlStill() { tone('sine', 90, 140, 0.6, 0.1); noise(0.5, 0.14, 900, 0.4, 0.1); },   /* and the drain shut: the pull letting go */
   coinUp(k) { const r = 1 + Math.min(k, 12) * 0.06; tone('triangle', 1046 * r, 1046 * r, 0.07, 0.11); tone('triangle', 1568 * r, 1568 * r, 0.13, 0.085, 0.045); tone('sine', 3136 * r, 3136 * r, 0.05, 0.03); noise(0.03, 0.03, 4200, 2.5); },
   heart() { tone('sine', 70, 40, 0.14, 0.35); tone('sine', 60, 35, 0.16, 0.28, 0.16); },
   cricket() { const f = 3800 + Math.random() * 600; for (let i = 0; i < 4; i++) tone('sine', f, f, 0.03, 0.035, i * 0.05); },
@@ -806,6 +808,10 @@ const DIE = {
   /* THE LEADFOOT has no voice: there has been nothing alive in that helm for a long time. What goes down is the armour -
      the plate opening, the last of his air leaving the seams at once, and the anchor hitting the stone after him. */
   leadfoot() { SFX.clank(); tone('sine', 90, 42, 0.55, 0.2, 0.05); noise(0.5, 0.34, 420, 0.6, 0.06); SFX.rattle(1.2); },
+  /* THE DROWNED KNIGHT: a man, once, so a voice - but under water and long gone: a low bubbled groan going down, the plate
+     knocking on the stone, and his last air leaving the helm. The captain's is deeper, and his blade rings as it falls. */
+  drownedknight() { SFX.clank(); tone('sine', 150, 55, 0.5, 0.16, 0.04); tone('triangle', 110, 70, 0.4, 0.08, 0.1); noise(0.45, 0.26, 520, 0.6, 0.12); },
+  drownedcaptain() { SFX.clank(); tone('sine', 120, 40, 0.7, 0.2, 0.04); tone('triangle', 90, 50, 0.6, 0.1, 0.12); noise(0.6, 0.3, 460, 0.6, 0.14); bell(392, 0.5, 0.05); },
   // the fish: no voice at all, so all of it is water and body
   eel() { noise(0.3, 0.3, 700, 0.5); tone('sine', 180, 60, 0.34, 0.16); noise(0.2, 0.22, 1800, 0.4, 0.12); },
   scarecrow() { noise(0.4, 0.26, 1200, 0.4); noise(0.3, 0.16, 600, 0.5, 0.1); },   /* it comes apart into what it was stuffed with */
@@ -1016,7 +1022,9 @@ const HURT = {
   merrowspear() { tone('sawtooth', 240, 150, 0.14, 0.14); noise(0.12, 0.16, 1200, 0.5); },
   merrowcaller() { tone('triangle', 300, 180, 0.14, 0.12); noise(0.1, 0.14, 700, 0.5); },
   merrowbrute() { SFX.clank(); tone('sawtooth', 180, 110, 0.16, 0.16); noise(0.14, 0.16, 500, 0.5); },
-  leadfoot() { SFX.clank(); tone('sine', 150, 100, 0.2, 0.14); noise(0.12, 0.2, 340, 0.5, 0.04); },   /* struck plate under water: a deep dull bell, and bubbles */
+  leadfoot() { SFX.clank(); tone('sine', 150, 100, 0.2, 0.14); noise(0.12, 0.2, 340, 0.5, 0.04); },
+  drownedknight() { SFX.clank(); tone('sine', 220, 150, 0.16, 0.12); noise(0.14, 0.18, 800, 0.5, 0.03); },   /* struck plate, and a grunt through water */
+  drownedcaptain() { SFX.clank(); tone('sine', 170, 110, 0.2, 0.14); noise(0.16, 0.2, 600, 0.5, 0.03); },   /* struck plate under water: a deep dull bell, and bubbles */
   cutlass() { file('hurt', 0.4, 1.18) || tone('square', 420, 260, 0.09, 0.14); },
   boarder() { file('hurt', 0.5, 0.86) || tone('square', 300, 180, 0.11, 0.16); },
   marine() { file('hurt', 0.4, 1.3) || tone('square', 480, 300, 0.08, 0.13); },

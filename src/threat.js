@@ -38,6 +38,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   /* THE LEADFOOT sits over both of the Keep's other heavies. He is slower than the Tideguard and the Merrow Brute and
      harder to LEAVE than either, because leaving him is the thing he charges for: the way round him costs you air. */
   leadfoot: 3.5,
+  drownedknight: 3.5, drownedcaptain: 6,   /* THE DROWNED KNIGHT swims after you with a told lunge (a Tideguard is 3); his captain adds a combo and holds a gate */
   // THE UNDERCROWN. The propman is worth more than he hits for, because what he costs you is TIME on a set
   // you already paid for; the clinger is worth almost nothing on its own and everything over a drop.
   propman: 2.5, clinger: 2, prince: 6, courtier: 0, minerlamp: 0, timber: 0, gas: 0,
