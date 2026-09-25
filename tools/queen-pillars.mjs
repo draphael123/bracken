@@ -7,6 +7,7 @@
 //   rubble   the pillar leaves one-way rubble that is drawn (a tile sprite on every cell) and that a hero stands on
 //   wall     a charge with no pillar in it ends at the hall's end DAZED, and her plate still turns a blade: a wall is no opening
 //   round    when her round changes the pillar stands again and its rubble goes
+//   lab      the boss-lab hands (src/lab.js) bait at least one charge into a pillar in sixty seconds, with the knight
 // PROVED RED FIRST (2026-09-25) on the build before them: no pillars, and the charge ran through to the wall.
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
@@ -45,6 +46,8 @@ try {
     res.every={};for(const h of ['knight','warden','geomancer','pyro','paladin','pirate','reaper'])for(const side of [-1,1]){const {q}=setup(h);const p=pillars()[1];
       ready(q,p.x+side*50,p.x-side*70,false);for(let i=0;i<260&&q.mode!=='pinned';i++){hold(p.x-side*70);BK.sim(1);}
       res.every[h+(side<0?'<':'>')]=q.mode==='pinned'&&q.pinBy==='pillar'&&p.broken;}
+    /* THE HANDS PLAY IT (src/lab.js): the boss lab, one knight, sixty seconds - it must bait at least one charge into a pillar by standing past it */
+    { const pins={pillar:0,chandelier:0};let last=null;const o=await BK.bossLab({bosses:['crown'],heroes:['knight'],maxSecs:60,onFrame:({boss})=>{if(boss.mode==='pinned'&&last!=='pinned')pins[boss.pinBy||'other']=(pins[boss.pinBy||'other']||0)+1;last=boss.mode;}});res.lab=pins; }
     return res;})()`);
   out.errors = pg.errors.slice(0, 3);
 } finally { pg.close(); }
@@ -64,6 +67,7 @@ if (!out.stood || !out.stood.ground || Math.abs(out.stood.y - out.stood.top) > 1
 if (!out.round || out.round.phase !== 2 || !out.round.standing || out.round.rubble.some(t => t !== 0)) fails.push('round: at her round change the pillar did not stand again and clear ' + JSON.stringify(out.round));
 if (out.wall !== 'dazed' || out.wallPinned) fails.push('wall: a charge into the hall\'s end left her ' + out.wall + (out.wallPinned ? ' (and pinned her)' : ''));
 if (out.dazedTook > 0) fails.push('wall: dazed, her plate let ' + out.dazedTook + ' through - a wall must be no opening');
+if (!(out.lab && out.lab.pillar >= 1)) fails.push('lab: in sixty seconds the boss-lab knight baited no charge into a pillar ' + JSON.stringify(out.lab));
 for (const [k, v] of Object.entries(out.every || {})) if (!v) fails.push('every: ' + k + ' could not bait her charge into a pillar');
 if (out.errors.length) fails.push('page errors ' + JSON.stringify(out.errors));
 assert.deepEqual(fails, []);
