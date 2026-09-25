@@ -20589,9 +20589,22 @@ function updateAir(dt) {
 // depth there is. Every two hundred pixels or so, something near the lens crosses the frame: a trunk in the wood,
 // a rock shoulder in the crags, a hanging rope at sea, a mast on the ships. Narrow and see-through, so they never
 // hide the fight - they just put something between you and it.
+/* EACH PLACE ITS OWN, AND NOTHING INDOORS (level review, 2026-09-24). Every dress this did not name fell through to the
+   forest's trunk and bough, so all eight village and desert levels - Underleaf, Waymeet, the Fields, the Folly, the
+   Falling Tower, Witchlight, the Burning Village and the Caravan - had a tree by the lens every few screens; and unlike
+   drawNear it never asked about rooms, so boughs hung inside the Folly's halls and the tower's floors. Now a dress
+   names its occluder here or gets NONE (fail closed), and inside an interior there is none at all.
+   tools/occluders.mjs reads this table and occluderFor and holds every level to both. */
+const OCCLUDER = { wood: 'trunk', camp: 'trunk', crag: 'rock', reef: 'rock', shore: 'rock', ship: 'mast', battlefield: 'pike', marsh: 'reeds', myc: 'reeds', village: 'sign', desert: 'standard' };
+function occluderFor(Lv, tx, ty) {
+  if (Lv.shop || Lv.trial) return null;
+  if ((Lv.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5)) return null;
+  const dress = (Lv.palette && (Lv.palette.dress || Lv.palette.set)) || 'wood';
+  return OCCLUDER[dress] || null;
+}
 function drawOccluders(cx, cy) {
-  const dress = (L.palette && (L.palette.dress || L.palette.set)) || 'wood';
-  if (L.shop || L.trial || dress === 'none' || SET.air === false) return;
+  const kind = occluderFor(L, P.x / TS, P.y / TS);
+  if (!kind || SET.air === false) return;
   const A = AIR[curId()], tint = A ? A.haze : '#c0c0c0';
   const px = cx * 1.14, step = 232;
   const i0 = Math.floor(px / step) - 1, i1 = Math.ceil((px + VW) / step) + 1;
@@ -20601,23 +20614,37 @@ function drawOccluders(cx, cy) {
     const x = Math.round(i * step + (h - 0.5) * 90 - px), w = 9 + Math.round(h * 8);
     if (x < -60 || x > VW + 60) continue;
     g.globalAlpha = 0.18 + h * 0.06;   /* distant scenery holds one soft value, even when the hero passes it */
-    if (dress === 'crag' || dress === 'reef' || dress === 'shore') { // a shoulder of rock leaning into the frame
+    if (kind === 'rock') { // a shoulder of rock leaning into the frame
       g.fillStyle = '#181c22'; g.beginPath(); g.moveTo(x - w, VH); g.lineTo(x - w + 3, VH - 60 - h * 40); g.lineTo(x + w, VH - 40 - h * 30); g.lineTo(x + w + 5, VH); g.closePath(); g.fill();
       g.globalAlpha *= 0.5; g.fillStyle = tint; g.fillRect(x - w + 2, VH - 58 - h * 40, 2, 58 + h * 40);
-    } else if (dress === 'ship') { // a mast and its rigging, right by the lens
+    } else if (kind === 'mast') { // a mast and its rigging, right by the lens
       g.fillStyle = '#20170f'; g.fillRect(x, 0, w - 3, VH);
       g.fillStyle = '#2c2116'; g.fillRect(x + w - 3, 0, 2, VH);
       g.globalAlpha *= 0.8; g.strokeStyle = '#2a2118'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 2, 0); g.lineTo(x + 26 + h * 20, VH); g.stroke();
-    } else if (dress === 'battlefield') { /* a pike left in the ground, leaning into the lens, with what is left of its pennant */
+    } else if (kind === 'pike') { /* a pike left in the ground, leaning into the lens, with what is left of its pennant */
       const lean = (h - 0.7) * 60; g.strokeStyle = '#1a1216'; g.lineWidth = 3; g.beginPath(); g.moveTo(x, VH + 4); g.lineTo(x + lean, -10); g.stroke(); g.lineWidth = 1;
       g.fillStyle = '#2a1216'; g.beginPath(); g.moveTo(x + lean * 0.8, VH * 0.2); g.lineTo(x + lean * 0.8 + 22, VH * 0.22); g.lineTo(x + lean * 0.78 + 16, VH * 0.3); g.lineTo(x + lean * 0.76 + 20, VH * 0.36); g.lineTo(x + lean * 0.76, VH * 0.34); g.closePath(); g.fill();
-    } else if (dress === 'marsh' || dress === 'myc') { // reeds and stems
+    } else if (kind === 'reeds') { // reeds and stems
       g.fillStyle = '#101a14'; for (let k = 0; k < 4; k++) { const sx = x + k * 5, bend = Math.sin(time * 0.6 + i + k) * 4; g.beginPath(); g.moveTo(sx, VH); g.lineTo(sx + bend, VH - 70 - h * 50); g.lineTo(sx + 3 + bend, VH - 70 - h * 50); g.lineTo(sx + 3, VH); g.closePath(); g.fill(); }
-    } else { // a trunk, and a bough over the top of the frame
+    } else if (kind === 'trunk') { // a trunk, and a bough over the top of the frame
       g.fillStyle = '#1a1410'; g.fillRect(x, 0, w, VH);
       g.fillStyle = '#241c14'; g.fillRect(x + w - 3, 0, 3, VH);
       g.globalAlpha *= 0.9; g.fillStyle = '#141a12';
       g.beginPath(); g.moveTo(x + w, 8 + h * 14); g.quadraticCurveTo(x + w + 40, 2 + h * 10, x + w + 74, 16 + h * 20); g.lineTo(x + w + 74, 22 + h * 20); g.quadraticCurveTo(x + w + 40, 10 + h * 10, x + w, 16 + h * 14); g.closePath(); g.fill();
+    } else if (kind === 'sign') { /* A VILLAGE: a squared post by the lens, an iron arm off it, and a house's board swinging from the arm */
+      const pw = w - 4, ay = 16 + Math.round(h * 16), sw = Math.round(Math.sin(time * 1.1 + i) * 1.5);
+      g.fillStyle = '#1c1612'; g.fillRect(x, 0, pw, VH); g.fillStyle = '#262019'; g.fillRect(x + pw - 2, 0, 2, VH);
+      g.fillStyle = '#15110e'; g.fillRect(x + pw, ay, 34, 3);
+      g.strokeStyle = '#15110e'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + pw, ay + 16); g.lineTo(x + pw + 14, ay + 2); g.stroke(); g.lineWidth = 1;
+      g.fillRect(x + pw + 8, ay + 3, 1, 6); g.fillRect(x + pw + 28, ay + 3, 1, 6);
+      g.fillStyle = '#211a13'; g.fillRect(x + pw + 5 + sw, ay + 9, 27, 16); g.fillStyle = '#2b2219'; g.fillRect(x + pw + 7 + sw, ay + 11, 23, 12);
+    } else if (kind === 'standard') { /* THE DESERT: a caravan's standard left leaning in the sand, its cloth gone to rags */
+      const lean = (h - 0.7) * 50, tx2 = x + lean, ty2 = 8 + h * 10;
+      g.strokeStyle = '#231910'; g.lineWidth = 3; g.beginPath(); g.moveTo(x, VH + 4); g.lineTo(tx2, ty2); g.stroke();
+      g.lineWidth = 2; g.beginPath(); g.moveTo(tx2 - 12, ty2 + 6); g.lineTo(tx2 + 14, ty2 + 3); g.stroke(); g.lineWidth = 1;
+      g.fillStyle = '#34201a';
+      for (let k = 0; k < 3; k++) { const sx = tx2 - 10 + k * 8, sy = ty2 + 5 - k, len = 26 + ((h * 97 + k * 13) % 1) * 22, fl = Math.sin(time * 0.9 + i + k) * 3;
+        g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx + 7, sy - 1); g.lineTo(sx + 6 + fl, sy + len); g.lineTo(sx + 2 + fl, sy + len - 5); g.closePath(); g.fill(); }
     }
     g.globalAlpha = 1;
   }
