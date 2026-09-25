@@ -18566,7 +18566,11 @@ const MOTHER_ROOTS = [-8, 10, -16, 17];
    thrown, and her gills drop sporelings (never more than two at once). (4) THE MYCELIUM creeps in from both walls in phase two
    and poisons whoever stands on it; it stops short of every knot, and it goes back when she dies. (5) PHASE THREE, under a
    quarter: seed rain the whole time, the roots come faster, the heart opens for less. (6) The zones and the clap hurt more. */
-const MOTHER_T = { idle: [2.5, 1.2, 0.9, 0.75], zoneTell: 0.92, zoneLive: 0.55, zoneDmg: 22, clap: 24, open: [8, 8, 8, 5.5],
+/* PHASE THREE'S WINDOW IS 6.5 s, not 5.5 (claude/dk2, approved by Daniel): the knot still walks all four anchors, and from the two far
+   ones (-16 and +17 tiles, ~300 px from the spring) 5.5 s was shorter than the Death Knight's strike, walk and spring - he missed every
+   such window and timed out at 180 s on one pinned roll. Measured against keeping the knot near in phase three, this moved the other
+   heroes least (mean 7.7 s refill / 7.6 s one-life, against 9.7 / 7.7). His swing, root and walk are his and were not touched. */
+const MOTHER_T = { idle: [2.5, 1.2, 0.9, 0.75], zoneTell: 0.92, zoneLive: 0.55, zoneDmg: 22, clap: 24, open: [8, 8, 8, 6.5],
   creepMax: 64, creepRate: 1.8, creepClear: 28, spores: 2, sporeEvery: 10, rainEvery: 3 };
 const MOTHER_POOL = [null, ['rootFan', 'capClap', 'rootStab', 'seedRain', 'sporeVolley', 'floorSurge', 'sporeSweep'],
   ['rootFan', 'capClap', 'rootStab', 'seedRain', 'sporeVolley', 'floorSurge', 'sporeSweep', 'rootColumns', 'sporeWheel']];

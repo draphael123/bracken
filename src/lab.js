@@ -376,7 +376,18 @@ async function runbossLab(BK, opts) {
     // ONE LIFE TELLS A DIFFERENT STORY: normal mode never refills health or clears death between blows.
     P.hp=P.maxHp;P.dead=0;
     const health={mode:healthMode,startHp:P.hp,damageTaken:0,healthRecovered:0};
-    const advance=(n,draw=false)=>{const before=P.hp;BK[draw?'step':'sim'](n);health.damageTaken+=Math.max(0,before-Math.max(0,P.hp));health.healthRecovered+=Math.max(0,P.hp-before);};
+    /* THE SMALL-FOE LEDGER (tools/small-adds.mjs asserts it). A swing STARTED with a small foe (FAMILY 'small' in main.js: a sporeling, a sprig)
+       in front of the hero and inside his reach is a swing at it; it counts as MISSED if it touched no small foe (P.hitSet) and the foe it was
+       aimed at lost nothing. A swing that struck something else instead (the boss, the Mother's heart, her knot) was aimed at that, and is not
+       counted. Found by claude/dkmother: the Mother pilot cut her sporelings with the Death Knight's late plain cut and 8 of his 14 swings
+       at them met air, and no number anywhere said so. It only watches: it presses nothing and draws no dice. */
+    const smallFoes=()=>BK.enemies().filter(e=>e!==boss&&e.alive&&BK.keyOf&&(BK.keyOf(e)||{}).family==='small');
+    let smallSw=null,smallSwings=0,smallMissed=0;
+    const smallAim=()=>{let best=null,bd=1e9;const bossEdge=Math.abs(boss.x-P.x)-(boss.w||20)/2,bossIn=bossEdge<=LAB_REACH[h]+8&&Math.abs(boss.y-P.y)<40;for(const e of smallFoes()){const dx=e.x-P.x,ad=Math.abs(dx);if(ad>LAB_REACH[h]+(e.w||12)/2+8||Math.abs(e.y-P.y)>=24||(ad>=6&&Math.sign(dx)!==P.face)||(bossIn&&ad-(e.w||12)/2>bossEdge))continue;if(ad<bd){bd=ad;best=e;}}return best;};   /* (and nearer than the boss, when he is in reach too: a swing at him with a hopper behind it is a swing at him) */
+    const smallEnd=()=>{const s=smallSw;smallSw=null;if(!s||(!s.hit&&s.other))return;smallSwings++;if(!s.hit)smallMissed++;};
+    const smallWatch=(a0,aim)=>{if(a0<0&&P.atk>=0){smallEnd();if(aim)smallSw={aim,hp:aim.hp,set:new Set(smallFoes().concat([aim])),hit:false,other:false};}
+      if(smallSw){for(const x of P.hitSet||[]){if(smallSw.set.has(x))smallSw.hit=true;else smallSw.other=true;}if(smallSw.aim.hp<smallSw.hp)smallSw.hit=true;if(P.atk<0)smallEnd();}};
+    const advance=(n,draw=false)=>{const before=P.hp,a0=P.atk,aim=a0<0?smallAim():null;BK[draw?'step':'sim'](n);health.damageTaken+=Math.max(0,before-Math.max(0,P.hp));health.healthRecovered+=Math.max(0,P.hp-before);smallWatch(a0,aim);};
     P.labPogo=0;P.labNextPogo=0;P.labPogoJump=-100;P.labHeavyAt=0;P.labShipVault=0;P.labRest=false;P.labJump=0;P.labMageLanding=null;P.labMageTap=-99;
     // the old roof boards in the roc's nest, once: her dive sticks in them
     const glass = []; if (boss.t === 'roc') for (const [x0, x1] of ((L.monk && L.monk.boards) || [])) for (let x = x0; x <= x1; x++) glass.push(x * TS + 8);
@@ -1056,7 +1067,11 @@ async function runbossLab(BK, opts) {
       const cutGo=h==='knight'&&P.atkHeld>=KNIGHT_CUT;   /* the heavy cut is let go at the guard-break */
       const mixedHeavy=(opts.attackStyle==='mixed'||h==='pirate'&&boss.t==='herald'&&P.loaded) && !cutGo && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&(h==='pirate'&&boss.t==='herald'?ad>40&&ad<140:ad<reach+8)&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));
       if(mixedHeavy){k.atk=true;if(!(P.charge>0||P.atkHeld>0))P.labHeavyAt=f+Math.round(4*60/(BK.SET.speed||1));}
-      if (!mixedHeavy && !cutGo && strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; BK.press('atk'); swings++; }
+      /* THE SWING GOES AT HIM, NOT BEHIND. Standing closer than its spot, the bot walks back to it - and the game turns a hero to the key he
+         holds before a swing starts (updatePlayer: if (!attacking) P.face = move), so a swing pressed on that frame went out behind him: on
+         the Reefmaw the Death Knight's first swing in every stuck jaw was cut facing away and rooted him 0.78 s of a 2.2 s window (claude/dk2).
+         On the frame it swings, the bot lets go of the key that points away. */
+      if (!mixedHeavy && !cutGo && strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; if (d > 0) k.left = false; else if (d < 0) k.right = false; BK.press('atk'); swings++; }
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
@@ -1072,11 +1087,11 @@ async function runbossLab(BK, opts) {
       if (P.dead) falls++;
       if (f % 600 === 599) await yieldNow();
     }
-    k.left = false; k.right = false; k.block = false;
+    k.left = false; k.right = false; k.block = false; smallEnd();
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}) });
     await yieldNow();
     } finally { Math.random = realRandom; }
   }
