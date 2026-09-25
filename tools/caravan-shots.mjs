@@ -4,7 +4,7 @@ import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
-const out = join(ROOT, 'docs/caravan'); mkdirSync(out, { recursive: true });
+const out = join(ROOT, process.env.SHOTS || 'docs/caravan'); mkdirSync(out, { recursive: true });   /* SHOTS=work/<lane>/before: somewhere else, for a before-and-after */
 const want = process.argv.slice(2);
 const pg = await openPage({ audio: false });
 try {
