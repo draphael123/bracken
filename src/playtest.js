@@ -231,6 +231,18 @@ export function makeBot(BK) {
     // JUMP - which is the whole marsh crossing, six lily pads three tiles apart, each one sinking under
     // you. The first version of this rule only knew how to stop, so the bot stood politely on a sinking
     // pad until it went under.
+    /* A BUD IS A STEP IF YOU STOP ON IT (THE SPROUTS, the Sporewood rebuild): a growcap rises only under a hero who stands still on it.
+       On a bud, or a sprout still growing, stand and let it carry you. Blocked by a wall or a gap with a bud close by, go and stand on it. */
+    { const m = P.onMover;
+      if (m && m.kind === 'growcap' && ((m.state === 'bud' && !(m.cd > 0)) || m.state === 'grow')) { keys.left = keys.right = false; keys.jump = false; hold = 0; tick.jumping = 0; still = 0; tick.budT = 0; return null; }
+      if (m && m.kind === 'growcap' && m.state === 'up' && dir) { keys.left = dir < 0; keys.right = dir > 0; keys.jump = false; hold = 0; still = 0; return null; }   /* grown: walk off the end onto what it grew you to - a leap from a cap is a leap over what it just carried you across */
+      if (!m && P.ground && (dir || tick.budT > 0)) {
+        const wall = dir && (at(fx + dir, fy - 1) === T.SOLID || at(fx + dir, fy - 2) === T.SOLID), gap = dir && !foot(fx + dir, fy) && !foot(fx + dir, fy + 1);
+        const bud = (wall || gap || tick.budT > 0) && BK.movers().find(q => q.kind === 'growcap' && q.state === 'bud' && !(q.cd > 0) && Math.abs(q.x + q.w / 2 - P.x) < 64 && Math.abs(q.y - P.y) < 14);
+        if (bud) { const bc = bud.x + bud.w / 2; tick.budT = tick.budT > 0 ? tick.budT - 1 : 90; keys.left = bc < P.x - 5; keys.right = bc > P.x + 5; keys.jump = false; hold = 0; still = 0;
+          if (!keys.left && !keys.right) { BK.press('jump'); keys.jump = true; tick.hopT = 8; } return null; } else tick.budT = 0; }
+      else if (!m && !P.ground && tick.budT > 0) { const bud = BK.movers().find(q => q.kind === 'growcap' && q.state === 'bud' && Math.abs(q.x + q.w / 2 - P.x) < 64 && Math.abs(q.y - P.y) < 40);
+        if (bud) { const bc = bud.x + bud.w / 2; keys.left = bc < P.x - 3; keys.right = bc > P.x + 3; keys.jump = (tick.hopT = (tick.hopT || 0) - 1) > 0; return null; } } }   /* (a held hop: a tapped one does not clear the bud's lip) */
     let leap = false;
     if (P.onMover) {
       const m = P.onMover, edge = dir && !foot(fx + dir, fy + 1) && !foot(fx + dir, fy + 2);
