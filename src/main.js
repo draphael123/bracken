@@ -3066,7 +3066,16 @@ function winLevel() {
 const timeLocked = lv => { const n = lv.needsTime; if (!n) return false; const p = PROG[n.id] || {}; return !(p.best !== undefined && p.best <= n.t); };
 const killLocked = lv => { const n = lv.needsKills; if (!n) return false; const p = PROG[n.id] || {}; return !((p.slain || 0) > 0 && (p.slainOf || 0) > 0 && p.slain / p.slainOf >= n.pct); };
 const killPct = lv => { const n = lv.needsKills; if (!n) return 1; const p = PROG[n.id] || {}; return p.slainOf ? (p.slain || 0) / p.slainOf : 0; };
-const levelLocked = lv => !godMode() && (!!lv.locked || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
+/* CLASS-LEVEL SIDE ROADS (2026-09-25, Daniel: "the pyromancer and deathknight level weren't accessible... They can
+   be side paths that are locked until you do this"). A GENERAL rule, not two special cases: any level may declare
+   `opensOn: { level: <id>, medal: 'bronze'|'silver'|'gold' }` and it stays locked until that level has been beaten
+   under that medal time - OR until it has itself already been cleared, so a save that finished it under the OLD
+   rule (needs: cleared only) keeps it open, and a save that already holds the required medal on the earlier level
+   is open the moment this code runs, no migration step needed - both read straight off saved PROG. */
+const MEDAL_RANK = { bronze: 1, silver: 2, gold: 3 };
+const medalMet = (id, rank) => { const p = PROG[id]; return !!(p && (p.medal || 0) >= rank); };
+const opensLocked = lv => { const o = lv.opensOn; if (!o) return false; if (PROG[lv.id] && PROG[lv.id].cleared) return false; return !medalMet(o.level, MEDAL_RANK[o.medal] || o.medal); };
+const levelLocked = lv => !godMode() && (!!lv.locked || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
 
 // ---------- world map ----------
 // Five sheets stacked into one tall canvas: the Desert on top, then the road inland, the coast, the crags, the wood at the
@@ -3154,6 +3163,13 @@ const DESERT_PATH = [[274, 174], [248, 158]];
 const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES.map(n => ({ ...n, y: n.y + COAST_Y })), INLAND_NODES.map(n => ({ ...n, y: n.y + INLAND_Y })), DESERT_NODES.map(n => ({ ...n, y: n.y + DESERT_Y })));
 const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[40, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]), DESERT_PATH.map(([x, y]) => [x, y + DESERT_Y]));
 const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.y)<Math.hypot(PATH[best][0]-n.x,PATH[best][1]-n.y)?i:best,0));
+/* THE SPUR OFF A JUNCTION, if it declares one (opensOn.level === nd.id). Any future class level just declares its
+   own opensOn and this finds it - nothing here names 'burning' or 'unburied'. Underleaf and the Undercrown have no
+   opensOn (they gate on needsTime/needsKills, unchanged), so they are never returned here and stay panel-only. */
+const spurAt = id => NODES.find(n => n.spur && n.kind === 'level' && LEVELS[n.level] && LEVELS[n.level].opensOn && LEVELS[n.level].opensOn.level === id);
+const spurReqText = lv => { const o = lv.opensOn; const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
+  const jn = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); const nm = jn ? jn.name : o.level.toUpperCase();
+  return 'BEAT ' + nm + ' IN ' + fmt(t) + ' TO OPEN THIS ROAD'; };
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']]);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id; }
@@ -3351,6 +3367,23 @@ function mapGo(dir) {
     SFX.buzz(); number(NODES[nx].x, NODES[nx].y - 14, lv.secret ? 'NOT YET' : 'LOCKED', '#9aa39a'); return; }
   map.target = nx; map.walking = dir; SFX.ui();
 }
+/* THE WALKABLE BRANCH (map-life-and-select, this task, 2026-09-25). UP or DOWN at a junction node - whichever
+   points at its spur on the map - steps onto a class-level side road and back, the same jump mapPanelJump already
+   makes (a spur is off the road, so there is nothing to walk: mapPos() already special-cases a spur as "stood on
+   the node, not the path" (see above)). The list panel keeps working; this is a second door onto the same room.
+   Returns true when it handled the press, so updateMap's difficulty toggle does not also fire on that keypress. */
+function branchStep(dir) {
+  const nd = NODES[map.node];
+  if (nd.spur) { const lv = nd.kind === 'level' ? LEVELS[nd.level] : null, o = lv && lv.opensOn; if (!o) return false;
+    const j = NODES.find(n => n.id === o.level); if (!j || dir !== (nd.y < j.y ? 1 : -1)) return false;   /* only the direction back the way in: the opposite of the one that led here */
+    map.node = NODES.indexOf(j); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
+    PROG.mapNode = map.node; PROG.mapNodeId = j.id; SFX.uiSel(); return true; }
+  const child = spurAt(nd.id); if (!child) return false;
+  if (dir !== (child.y < nd.y ? -1 : 1)) return false;
+  if (nodeLocked(child)) { SFX.buzz(); return true; }   /* the requirement text is drawn continuously at this junction (drawMap); no popup to lose */
+  map.node = NODES.indexOf(child); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
+  PROG.mapNode = map.node; PROG.mapNodeId = child.id; SFX.uiSel(); return true;
+}
 function updateMap(dt) {
   if (mapPress && !map.walking) mapPanelToggle();
   if (mapPanel.open) { updateMapPanel(dt); PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; return; }
@@ -3363,8 +3396,10 @@ function updateMap(dt) {
     if (Math.random() < dt * 10) { const [px, py] = mapPos(); parts.push({ x: px + camX + (Math.random() - 0.5) * 4, y: py + camY, vx: 0, vy: -8, life: 0.3, max: 0.3, col: '#c9b27c', size: 1, grav: 0 }); }
   }
   if (leftPress) mapGo(-1); if (rightPress) mapGo(1);
-  // up and down set the difficulty of the wood you are standing at
-  if ((upPress || downPress) && !map.walking) { const nd = NODES[map.node]; if (nd.kind !== 'store' && !nodeLocked(nd)) { const id = LEVELS[nd.level].id; PROG.diff = PROG.diff || {}; PROG.diff[id] = DIFFS[(DIFFS.indexOf(diffOf(id)) + (upPress ? 1 : -1) + DIFFS.length) % DIFFS.length]; SFX.ui(); saveProgress(); } }
+  // up and down set the difficulty of the wood you are standing at - UNLESS this press instead steps onto/off a class-level side road (branchStep)
+  if ((upPress || downPress) && !map.walking) { const dir = upPress ? -1 : 1; const nd = NODES[map.node];
+    if (nd.kind !== 'store' && branchStep(dir)) { /* handled: entered, left, or buzzed at a locked side road */ }
+    else if (nd.kind !== 'store' && !nodeLocked(nd)) { const id = LEVELS[nd.level].id; PROG.diff = PROG.diff || {}; PROG.diff[id] = DIFFS[(DIFFS.indexOf(diffOf(id)) + (upPress ? 1 : -1) + DIFFS.length) % DIFFS.length]; SFX.ui(); saveProgress(); } }
   if (confirmPress && !map.walking) { const nd = NODES[map.node]; if (nd.kind === 'store') { selI = LEVELS.findIndex(l => l.id === (nd.shop || 'shop')); selectStart(); } else { selI = nd.level; selectStart(); } }
   if (atkPress && !map.walking) { state = 'bestiary'; bestI = 0; SFX.uiSel(); }
   if (dodgePress && !map.walking) openEquip('map');
@@ -3425,6 +3460,14 @@ function drawMap() {
     else if (p && p.cleared) g.drawImage(FLAG, nd.x - 3, nd.y - 18);
     if (NODES[map.node] === nd && !map.walking) { g.globalAlpha = 0.25; g.fillStyle = '#8fd160'; g.beginPath(); g.arc(nd.x, nd.y, 11 + Math.sin(time * 6) * 1.5, 0, 7); g.fill(); g.globalAlpha = 1; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.beginPath(); g.arc(nd.x, nd.y, 9 + Math.sin(time * 6), 0, 7); g.stroke(); }
   }
+  /* STAND AT THE JUNCTION, READ WHAT THE SIDE ROAD IS OWED. Only for the node you are actually standing on (not
+     every junction on the sheet at once), and only while its own side road is still shut - once it opens this
+     plate has nothing to say and stops drawing itself. 320x180 buffer: fitText, never a guessed width. */
+  if (!map.walking) { const here = NODES[map.node], child = here && !here.spur && spurAt(here.id);
+    if (child && nodeLocked(child)) { const maxW = VW - 12, msg = fitText(spurReqText(LEVELS[child.level]), maxW, 6), tw = Math.min(maxW + 4, textW(msg, 6) + 6);
+      const lx = Math.max(tw / 2 + 4, Math.min(VW - tw / 2 - 4, child.x)), ly = child.y + (child.y < here.y ? -24 : 14);
+      g.fillStyle = 'rgba(18,14,24,0.85)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), 9);
+      text(msg, Math.round(lx), ly + 1, '#c9463d', 'center', 6); } }
   const [px, py] = mapPos();
   updateMapLife(0.016, px, py); drawMapLife();
   g.drawImage(PROP.shadow, Math.round(px) - 6, Math.round(py) - 1);
