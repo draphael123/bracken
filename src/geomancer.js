@@ -44,6 +44,7 @@ export const GEO = {
   roll: { sp: 230, r: 5, life: 1.0, dmg: 1.0 }, boulder: { sp: 190, r: 8, life: 3.2, dmg: 1.0, bounces: 2 },   /* (1.6 and a fresh hit on every bounce measured 120 at level 3 on the probe, four times Harrier's; each foe is hit ONCE now) */
 };
 const STONE = { base: '#7c7a6e', hi: '#a8a696', lo: '#5e5c54', dark: '#44423a', moss: '#6f9a4a', moss2: '#557a38', rune: '#e8a83a', crack: '#26241e' };
+const EARTH = { base: '#6e4c30', hi: '#8c6844', lo: '#4c3420' };   /* the packed soil her ward is bound in (the earth shield) */
 
 export function makeGeomancer(api) {
   let pieces = [], rollers = [], shards = [], falls = [], spikes = [], faults = [], golem = null, spurFx = null, shieldDrawn = false, spunAt = -9;   /* (spunAt: when the draw last set a stone round her geode - tools/geomancer.mjs `staff`) */   /* (shieldDrawn: whether the last draw put her shield on screen - tools/geomancer.mjs `drawn`) */
@@ -215,7 +216,7 @@ export function makeGeomancer(api) {
   const wardBoxes = () => { const P = api.P, f = P.face, fr = f > 0 ? { l: P.x + 6, r: P.x + 13 } : { l: P.x - 13, r: P.x - 6 }, lip = f > 0 ? { l: P.x - 7, r: P.x + 13 } : { l: P.x - 13, r: P.x + 7 };
     return [{ ...fr, t: P.y - 34, b: P.y + 1 }, { ...lip, t: P.y - 36, b: P.y - 29 }]; };
   function breakWard(how, col) { const P = api.P, [b] = wardBoxes(), x = (b.l + b.r) / 2, y = (b.t + b.b) / 2;
-    P.geoGuard = false; P.geoWardLock = api.time + WD.lock; api.burst(x, y, 18, [STONE.hi, STONE.base, STONE.lo, STONE.rune], 140, 0.5); api.SFX.geoCrumble && api.SFX.geoCrumble(); api.SFX.geoShard && api.SFX.geoShard(); api.shakeCam(3);
+    P.geoGuard = false; P.geoWardLock = api.time + WD.lock; api.burst(x, y, 18, [STONE.hi, STONE.base, EARTH.base, EARTH.lo, STONE.rune], 140, 0.5); api.SFX.geoCrumble && api.SFX.geoCrumble(); api.SFX.geoShard && api.SFX.geoShard(); api.shakeCam(3);
     api.number(x, y - 20, how, col);
     if (tal('shrapnel')) burstShards(x, y, P.face, 4); }   /* SHRAPNEL: what is left of it flies at them */
   function wardParry(foe) { const P = api.P, [b] = wardBoxes(), x = (b.l + b.r) / 2, y = b.t + 10;
@@ -435,21 +436,45 @@ export function makeGeomancer(api) {
       g.globalAlpha = 0.9; g.fillStyle = STONE.base; g.fillRect(x, y, w, h); g.fillStyle = STONE.hi; g.fillRect(x, y, w, 2); g.fillStyle = STONE.lo; g.fillRect(x, y, 2, h); g.fillStyle = STONE.dark; g.fillRect(x + w - 1, y, 1, h);
       g.fillStyle = STONE.moss; g.fillRect(x + 2, y - 1, 4, 1); g.fillStyle = STONE.crack; for (let k = 0; k < e.geoTomb.cracks * 3; k++) g.fillRect(x + 2 + (k * 5) % Math.max(3, w - 4), y + 3 + (k * 7) % Math.max(3, h - 5), 1, 3); g.globalAlpha = 1; }
     /* THE RUNE-WARD: NOT DRAWN AT ALL WHILE SHE WALKS OR STANDS (round 3, item 4) - only while C has it up. It RISES out of the ground in
-       front of her over GEO.ward.raise (the rune lines climbing it as it comes, C1: not a guard yet), then stands: a slab of worked stone
-       taller than she is, its top lipped back over her hood, amber runes cut down its face and a faint amber edge - lit bright for the
-       perfect window, and brighter still while she is EMPOWERED. Its break is the burst of shards. */
+       front of her over GEO.ward.raise (faint as it comes, C1: not a guard yet), then stands: an earth shield taller than she is (below),
+       its brow curled back over her hood, an amber rune boss at its heart and an amber rim - lit bright for the perfect window, and
+       brighter still while she is EMPOWERED. Its break is the burst of shards. */
     if (api.isGeo() && !P.dead && !P.geoBurrow && P.geoGuard) { shieldDrawn = true; const f = P.face, [fr, lip] = wardBoxes(), k = Math.min(1, (api.time - P.geoGuardAt) / WD.raise), beat = wardPerfect(), emp = empowered();
-      const H = fr.b - fr.t, h = Math.max(2, Math.round(H * k)), x = Math.round(fr.l - cx), y = Math.round(fr.b - cy) - h, w = fr.r - fr.l;
-      g.globalAlpha = k < 1 ? 0.55 + 0.35 * k : 0.92;
-      g.fillStyle = STONE.dark; g.fillRect(x - 1, y - 1, w + 2, h + 1); g.fillStyle = STONE.base; g.fillRect(x, y, w, h);
-      g.fillStyle = STONE.hi; g.fillRect(f > 0 ? x + w - 2 : x, y, 2, h); g.fillStyle = STONE.lo; g.fillRect(f > 0 ? x : x + w - 1, y, 1, h);
-      for (let yy = 4; yy < h - 2; yy += 7) { g.fillStyle = STONE.crack; g.fillRect(x + 1, y + yy + 3, w - 2, 1); }   /* the courses of the stone */
-      if (k >= 1) { const lx = Math.round(lip.l - cx), ly = Math.round(lip.t - cy), lw = lip.r - lip.l;
-        g.fillStyle = STONE.dark; g.fillRect(lx - 1, ly - 1, lw + 2, lip.b - lip.t + 2); g.fillStyle = STONE.base; g.fillRect(lx, ly, lw, lip.b - lip.t); g.fillStyle = STONE.hi; g.fillRect(lx, ly, lw, 1);
-        g.fillStyle = STONE.moss; g.fillRect(lx + 2, ly - 1, 4, 1); g.fillRect(lx + lw - 6, ly - 1, 3, 1); }
-      g.globalAlpha = (emp ? 0.95 : beat ? 0.9 : 0.55) * (k < 1 ? k : 1) + (emp || beat ? 0 : 0.2 * Math.sin(api.time * 5)); g.fillStyle = STONE.rune;   /* THE RUNES, cut down its face */
-      for (let yy = 3; yy < h - 3; yy += 7) { const rx = x + Math.floor(w / 2) - 1; g.fillRect(rx, y + yy, 3, 1); g.fillRect(rx + 1, y + yy - 1, 1, 4); }
-      if (beat || emp) { g.globalAlpha = beat ? 0.7 : 0.35 + 0.15 * Math.sin(api.time * 12); g.fillRect(f > 0 ? x + w : x - 1, y, 1, h); }   /* the amber edge: THE BEAT, and EMPOWERED */
+      /* AN EARTH SHIELD, NOT A COURSE OF BLOCKS (Daniel, 2026-09-25): a shield of cracked rock and packed earth, shaped like a heater
+         shield, its point driven into a heaped mound of soil at her feet and its top grown back over her hood as a brow with roots and
+         dirt hanging from its underside. It SURFACES out of the ground (the whole shield slides up over
+         GEO.ward.raise, clipped at the floor), and the amber rune boss at its heart is the guard's tell. The boxes it is drawn over
+         (wardBoxes) are the ones the blows and shots meet: only the look changed. `u` runs out from her side of the face, `v` down it. */
+      const H = fr.b - fr.t, x0 = Math.round(fr.l - cx), by = Math.round(fr.b - cy), w = fr.r - fr.l, sink = Math.round(H * (1 - k)), top = by - H + sink;
+      const px = (u, yy, ww, hh, col) => { g.fillStyle = col; g.fillRect(f > 0 ? x0 + u : x0 + w - u - ww, yy, ww, hh); };
+      /* ITS SHAPE, row by row: a heater shield - a rounded top, broad through the middle, tapering to a point driven into the mound -
+         with a rough rock edge (a notch here and there) */
+      const UC = 4, BV = 13, half = v => (v < 4 ? [3, 5, 6, 6][v] : v < 19 ? 6 : Math.max(1, Math.round(6 - 5 * (v - 19) / (H - 20)))), edge = v => [UC - half(v) + ((v * 7) % 9 === 3 ? 1 : 0), UC + half(v) - ((v * 5) % 11 === 7 ? 1 : 0)];
+      const CR = [[-4, 3], [5, 6], [-3, 26], [4, 23], [6, 14]], cracked = new Set();   /* THE CRACKS, run out from its boss to the rim */
+      for (const [du, dv] of CR) { const n = Math.max(Math.abs(du), Math.abs(dv - BV)); for (let i = 2; i <= n; i++) cracked.add(Math.round(UC + du * i / n) + ',' + Math.round(BV + (dv - BV) * i / n)); }
+      const bodyA = k < 1 ? 0.6 + 0.35 * k : 0.95; g.globalAlpha = bodyA;
+      g.save(); g.beginPath(); g.rect(x0 - 16, top - 4, w + 32, by - top + 4); g.clip();
+      for (let v = 0; v < H; v++) { const yy = top + v, [ul, ur] = edge(v);
+        for (let u = ul + 1; u < ur; u++) { const n = (u * 13 + v * 7) % 17, soil = (v > 20 && n < 6) || n === 0 || (v > H - 7);
+          px(u, yy, 1, 1, cracked.has(u + ',' + v) ? EARTH.lo : v === 1 || (v < 4 && u === ul + 1) ? STONE.hi : soil ? (n % 2 ? EARTH.base : EARTH.hi) : n === 5 ? STONE.lo : u >= ur - 2 ? STONE.hi : STONE.base); }
+        px(ul, yy, 1, 1, STONE.dark); px(ur, yy, 1, 1, v % 10 === 6 ? STONE.moss : v > H - 8 ? EARTH.hi : STONE.hi);   /* the rim: her side in shadow, the foe's side lit (a tuft of moss here and there) */
+        if (v === 0) px(ul + 1, yy, ur - ul - 1, 1, STONE.hi); if (v % 10 === 6) px(ur + 1, yy, 1, 1, STONE.moss2); }
+      px(UC - 1, top - 1, 3, 1, STONE.moss); px(UC + 3, top, 2, 1, STONE.moss2);   /* moss along its top */
+      if (k >= 1) for (let i = 0; i < 2; i++) { const t = (api.time * 1.3 + i * 0.5) % 1, v = 16 + Math.floor(t * (H - 18)); g.globalAlpha = 0.85 * (1 - t); px(edge(v)[1] + 1, top + v, 1, 1, EARTH.base); }   /* a grain of dirt trickling off its face */
+      const cv = top + BV; g.globalAlpha = bodyA;   /* THE BOSS at its heart: a round of worked stone */
+      px(UC - 2, cv - 1, 5, 3, STONE.dark); px(UC - 1, cv - 2, 3, 5, STONE.dark); px(UC - 1, cv - 1, 3, 3, STONE.hi); px(UC, cv, 2, 2, STONE.base);
+      g.globalAlpha = (emp ? 0.95 : beat ? 0.9 : 0.65) * (k < 1 ? k : 1) + (emp || beat ? 0 : 0.2 * Math.sin(api.time * 5));   /* ITS RUNE, and a glyph cut above and below it: the guard's tell */
+      px(UC, cv, 1, 1, STONE.rune); px(UC, top + 5, 1, 3, STONE.rune); px(UC - 1, top + 6, 3, 1, STONE.rune); px(UC, top + 20, 1, 2, STONE.rune); px(UC - 1, top + 21, 1, 1, STONE.rune); px(UC + 1, top + 21, 1, 1, STONE.rune);
+      if (beat || emp) { g.globalAlpha = beat ? 0.7 : 0.35 + 0.15 * Math.sin(api.time * 12); for (let v = 0; v < H; v++) px(edge(v)[1] + 1, top + v, 1, 1, STONE.rune); }   /* the amber rim: THE BEAT, and EMPOWERED */
+      g.restore(); g.globalAlpha = bodyA;
+      if (k > 0) {   /* THE MOUND its point is driven into, heaped either side, with a stone or two in it */
+        for (const [r, a, z] of [[1, -3, 11], [2, -1, 9], [3, 1, 7], [4, 3, 5]]) for (let u = a; u <= z; u++) px(u, by - r, 1, 1, r >= 3 ? EARTH.hi : (u * 3 + r) % 5 === 0 ? EARTH.lo : EARTH.base);
+        px(-3, by - 2, 1, 1, STONE.lo); px(10, by - 1, 2, 1, STONE.hi); px(0, by - 3, 1, 1, EARTH.hi); }
+      if (k >= 1) { const ly = Math.round(lip.t - cy), u0 = f > 0 ? lip.l - fr.l : fr.r - lip.r, uEnd = UC;   /* THE BROW: over her hood, grown from the shield's top, thinning and curling down behind her */
+        for (let u = u0; u <= uEnd; u++) { const q = (u - u0) / (uEnd - u0), th = 2 + Math.round(2 * q), dr = Math.round(3 * (1 - q) * (1 - q)), yt = ly + dr;
+          px(u, yt, 1, 1, u % 5 === 1 ? STONE.moss : STONE.hi); px(u, yt + 1, 1, th - 1, (u * 3) % 7 === 0 ? EARTH.base : (u + 1) % 5 === 0 ? STONE.lo : STONE.base); px(u, yt + th, 1, 1, EARTH.lo);
+          if (u % 4 === 2 && u < uEnd - 3) px(u, yt + th + 1, 1, 1 + (u % 3 === 0 ? 1 : 0), EARTH.lo); }   /* roots and dirt hanging under it */
+        px(u0 - 1, ly + 3, 1, 2, STONE.dark); }   /* its curled end */
       g.globalAlpha = 1; }
     /* EMPOWERED (a perfect ward): the runes on HER are alight - four amber marks turning slowly round her chest - and they gutter out
        over the last half second, so the end of it is told */
