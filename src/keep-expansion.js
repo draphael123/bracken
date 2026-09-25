@@ -120,7 +120,7 @@ export function expandKeep(R,T,TS,crop){
  sections.splice(3,0,[H1.name,H1.x0,H1.x1]);sections.splice(6,0,[H2.name,H2.x0,H2.x1]);
  const narrows=buildKeepNarrows(K,T,N,ent);sections.push(...narrows);
  for(const [name,a,b,col,al]of narrows){D.zones.push({name,x0:a,x1:b,y0:24,y1:58,col,a:al});K.interiors.push([a,b,24,58,'drowned']);D.noDress.push([a,b,24,58]);}
- for(const [t,x,y]of [['eel',35,39],['angler',60,54],['manta',127,34],['puffer',90,43],['jelly',140,41],['eel',150,47],['angler',180,30],['merrowspear',232,58],['merrowcaller',264,58],['puffer',276,38],['manta',290,30],['eel',317,40],['jelly',356,34],['jelly',380,50],['merrowbrute',390,58]])ent(t,x,y,{face:-1});
+ for(const [t,x,y]of [['eel',35,39],['angler',55,54],['manta',127,34],['puffer',90,43],['jelly',140,41],['eel',150,47],['angler',180,30],['merrowspear',232,58],['merrowcaller',264,58],['puffer',276,38],['manta',290,30],['eel',317,40],['jelly',356,34],['jelly',380,50],['merrowbrute',390,58]])ent(t,x,y,{face:-1});
  for(let x=12;x<399;x+=8){let y=51;while(y>26&&K.grid[y*K.W+x]!==T.AIR)y--;if(K.grid[y*K.W+x]===T.AIR)ent('coin',x,y);}
  for(const x of [16,64,92,134,262,376])D.props.push({k:'statue',x,y:58,v:x%2});
  for(const x of [12,56,127,136,256,360])D.shafts.push({x,y0:24,y1:58,w:4,lean:.1});
@@ -151,7 +151,7 @@ export function expandKeep(R,T,TS,crop){
     leaves it alone (L.calm) */
  const EXAM_KEEP=new Set(['tideguard@684,47','wight@692,58','angler@661,42']),SETTLED=new Set(['check','sign','silver','coin','deco','gate','drownedking','sea','clam']);
  K.ents=K.ents.filter(e=>e.x<632||e.x>707||SETTLED.has(e.t)||EXAM_KEEP.has(e.t+'@'+e.x+','+e.y));
- K.calm=[...(K.calm||[]),[636,707,24,58]];
+ K.calm=[...(K.calm||[]),[636,707,24,58],[199,209,36,44],[331,340,36,44]];   /* and nobody sprinkled onto the pillars or the failing floor: that stone is the problem, not a perch */
  ent('check',634,58);
  sign(636,'THE KING\'S DOOR. HIS CAPTAIN HOLDS IT. THE LAST AIR IS IN THE WHIRLPOOL: SHUT ITS SLUICE.');
  /* THE AIR IN THE HALL IS THE WHIRLPOOL'S (S6: the exam takes the meter to the edge): the old hall's pockets, vent and clams go, and

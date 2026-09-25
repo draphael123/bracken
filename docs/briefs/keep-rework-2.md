@@ -33,8 +33,9 @@ A man-at-arms of the King's court who drowned in his plate and did not stop: **h
 the water's own drain). **Entering its pull SHOWS ITS SWITCH**: a sluice lever in a wall niche just outside the pull lights
 up. Strike the lever and the whirlpool winds down over a second and **stays off, through a death**.
 Told three ways (C1/C4): the swirl itself, drag lines streaming into the eye, a sound while you are in it; the niche lit.
-Five of them, used differently (S1): the teaching one in the Countercurrent; one GUARDING an air pocket in the Library;
-one beside a knight in the Bell Approach; one over the Cistern's ballast road; one in the exam.
+Four of them, used differently (S1): the teaching one in the Countercurrent (gentle: the low current carries you out of it);
+one beside the Library's only pocket, which drags you OUT of the air (the drag works in air, the burn does not); one beside a knight in
+the Bell Approach; one beside the exam's only pocket. (A fifth over the Cistern's ballast road was planned and not built.)
 
 ## 4. The level's shape (760 x 64 kept; F1 sections, F2 landmarks, F4 alternation)
 | cols | section | wall | landmark |
