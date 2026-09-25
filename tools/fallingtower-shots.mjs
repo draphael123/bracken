@@ -13,9 +13,9 @@ const out = join(ROOT, 'docs/fallingtower', tag); mkdirSync(out, { recursive: tr
 const SPOTS = [
   ['library', 30, 299, 'THE LIBRARY STACKS: the way in'], ['library-stair', 27, 293, 'the stair up the stacks (after: the lesson ledge)'],
   ['reading', 24, 263, 'THE READING ROOM: its floor'], ['reading-gallery', 40, 239, 'the Reading Room gallery, over the flip'],
-  ['orrery', 40, 227, 'THE ORRERY CAGE: its floor (after: the pit)'], ['orrery-high', 44, 214, 'the orrery, halfway up (after: the failing stair)'],
+  ['orrery-gallery', 24, 218, 'after only: the gallery of the observers, its floor failing'], ['orrery', 40, 227, 'THE ORRERY CAGE: its floor (after: the pit)'], ['orrery-high', 44, 214, 'the orrery, halfway up (after: the failing stair)'],
   ['pendulum', 44, 191, 'THE PENDULUM GALLERY'], ['pendulum-landing', 22, 185, 'the first ride\'s landing'],
-  ['cistern', 14, 149, 'THE BURST CISTERN'], ['loft', 50, 119, 'THE BELL LOFT: its floor'], ['loft-high', 30, 98, 'the bell loft, high'],
+  ['cistern', 14, 149, 'THE BURST CISTERN'], ['loft', 50, 119, 'THE BELL LOFT: its floor (after: the bell pit, under the deck)'], ['loft-deck', 36, 117, 'after only: the bell deck, the Sexton and the ringing walks'], ['loft-high', 30, 98, 'the bell loft, high'],
   ['crown', 30, 83, 'THE OPEN CROWN'], ['parapet', 31, 50, 'the parapet, the door and the sky'],
 ];
 const pg = await openPage({ audio: false });
@@ -23,9 +23,11 @@ try {
   const r = await pg.evalp(`(async () => {
     const { LEVELS } = await import('/src/level.js'); const want = ${JSON.stringify(want)}, res = [];
     const snap = (name, note) => { const c = document.createElement('canvas'); c.width = 640; c.height = 360; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, 640, 360); res.push([name, c.toDataURL('image/png'), note]); };
-    BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'fallingtower')); BK.start(); BK.god = true; BK.sim(60);
+    BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'fallingtower')); BK.start(); BK.god = true; for (let k = 0; k < 300; k++) BK.step(1);   /* past the level's name card */
     for (const [name, x, row, note] of ${JSON.stringify(SPOTS)}) { if (want.length && !want.includes(name)) continue;
-      BK.tp(x, row - 1); BK.P.face = 1; for (let k = 0; k < 90; k++) BK.step(1); snap(name, note); }
+      BK.tp(x, row - 1); BK.P.face = 1; for (let k = 0; k < 90; k++) BK.step(1); snap(name, note);
+      /* a teleport out of an ambush room leaves it shut behind you and its banner up: close it, so the next picture is of its own place */
+      for (const A of (BK.ambushes ? BK.ambushes() : [])) if (A.st && A.st !== 'done') { for (const e of A.foes || []) e.alive = false; A.st = 'done'; } }
     return res;
   })()`, 900000);
   r.forEach(([name, d, note], j) => { writeFileSync(join(out, String(j).padStart(2, '0') + '-' + name + '.png'), Buffer.from(d.split(',')[1], 'base64')); console.log(tag + '/' + String(j).padStart(2, '0') + '-' + name, '-', note); });

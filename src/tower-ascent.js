@@ -301,11 +301,12 @@ export function buildTowerAscent({ painter, T, TS }) {
     for (let x = ix0; x <= ix1 + 1; x++) {
       const solid = x <= ix1 && L.grid[y * W + x] === T.SOLID;
       if (solid && run < 0) run = x;
-      else if (!solid && run >= 0) { indoor.push([run, x - 1, y, y, 'tower']); run = -1; }
+      else if (!solid && run >= 0) { indoor.push([run, x - 1, y, y, 'fallen']); run = -1; }
     }
   }
-  const skins = [[0, X0 - 1, SKY - 4, H - 1, 'tower'], [X1 + 1, W - 1, SKY - 4, H - 1, 'tower']].concat(floors.slice(0, N - 1).map(F => [X0, X1, F.divider, F.divider + 1, 'tower']),
-    [[X0, X1, H - 6, H - 1, 'tower'], [28, 43, SKY + 1, SKY + 1, 'tower'], [SAND.x0 - 2, SAND.x1 + 2, SAND.sky, SAND.deep, 'sand']], indoor);
+  /* THE TOWER'S OWN STONE since 2026-09-25 ('fallen': src/redraw/fallen_tower.js), not the Folly's 'tower' brick - F6, the review's first complaint */
+  const skins = [[0, X0 - 1, SKY - 4, H - 1, 'fallen'], [X1 + 1, W - 1, SKY - 4, H - 1, 'fallen']].concat(floors.slice(0, N - 1).map(F => [X0, X1, F.divider, F.divider + 1, 'fallen']),
+    [[X0, X1, H - 6, H - 1, 'fallen'], [28, 43, SKY + 1, SKY + 1, 'fallen'], [SAND.x0 - 2, SAND.x1 + 2, SAND.sky, SAND.deep, 'sand']], indoor);
   const START = { x: 20, y: floors[0].bot - 1 };
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra, interiors, gusts: [], flips, glyphBridges, crumbles,   /* FAILING STONE: src/tower-collapse.js */
@@ -318,11 +319,11 @@ export function buildTowerAscent({ painter, T, TS }) {
     bellDeck: bell,   /* THE SEXTON's deck: its row, the frame over it and the joists he climbs out onto (main.js) */
     mini: { x0: 12 * TS, x1: 52 * TS, floor: bell.deck * TS, y0: bell.frame * TS, y1: (bell.deck + 4) * TS, trigger: 14 * TS, wallL: 12, gate: 52, boss: 'sexton', name: 'THE SEXTON' },
     sanctum: { in: { x: 36 * TS, y: SKY * TS }, spawn: { x: 14 * TS, y: 40 * TS }, sand: { x: (SAND.x0 + 2) * TS, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
-    tall: { top: SKY * TS, bottom: floors[0].bot * TS, col: '26,20,40', deepest: 0.16 },
+    tall: { top: SKY * TS, bottom: floors[0].bot * TS, col: '16,20,32', deepest: 0.16 },   /* the gloom is cold slate, not the Folly's violet */
     towerFloors: floors.map((F, k) => ({ name: F.name, top: F.top, bot: F.bot, hole: F.hole || null, last: k === N - 1 })),
     deckBreaks: breaks.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true })),   /* spine ledges: they come back (updateTowerAscent), or a fall into the water would be a soft-lock */
     mage: { shelves: [], skins, hedges: [], chains: [], hung, outside: 0, dais: [30, 40] },
-    palette: { sky: 'mage', far: 'mage', mid: 'mage', near: 'mage', dress: 'village', haze: 'rgba(120,90,180,0.10)',
+    palette: { sky: 'mage', far: 'mage', mid: 'mage', near: 'mage', dress: 'village', haze: 'rgba(150,140,118,0.08)',
       grass: '#4e6a52', grassL: '#6c8c70', grassD: '#34483a', dirt: '#4a4652', dirtL: '#645e6c', dirtD: '#2e2a36', canopy: ['#181428', '#221c36', '#2c2446', '#3a3058'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hall' }],
     noCoin: [[0, W - 1, 0, SKY + 1]],
@@ -371,7 +372,9 @@ export function updateTowerAscent(L, P, dt, { change, crash, warn }) {
 // ---- carried over from tower-finish.js: the Folly's polish, the backdrop, the gate test ----
 export function polishTower(L, id, T) {
   if (!['mage', 'fallingtower'].includes(id)) return L;
-  L.palette.ledges = 'arcane'; L.towerBackdrop = true;
+  /* THE FALLING TOWER HAS ITS OWN LOOK since 2026-09-25 (docs/briefs/falling-tower-rework.md §5): slate ledges, and none of the Folly's
+     ribs and windows over its rooms - its rooms paint their own broken walls (src/redraw/fallen_tower.js) */
+  L.palette.ledges = id === 'fallingtower' ? 'slate' : 'arcane'; L.towerBackdrop = id === 'mage';
   if (id === 'mage') {
     L.mage.skins.unshift([118, L.W - 1, 0, L.H - 1, 'tower']);
     L.ents = L.ents.filter(e => !(e.t === 'deco' && ['gardenWall', 'campfire', 'cairn', 'fallenLog', 'tuft', 'flower', 'stone'].includes(e.kind) && e.x >= 118));

@@ -33,7 +33,7 @@ import {updateWarden,wardenFrame,bakeHarbormaster,drawWarden} from './harbor-bos
 import { attackPose } from './attack-animation.js';
 import { AMBUSH_HEALTH } from './ambush.js';
 import {drawTowerBackdrop,gateOccupied,updateTowerAscent,towerAscentReset} from './tower-ascent.js';
-import { crumbleStep, crackMarks } from './tower-collapse.js';   /* THE FALLING TOWER's FAILING STONE (docs/briefs/falling-tower-rework.md) */
+import { crumbleStep, crackMarks } from './tower-collapse.js'; import * as FTW from './redraw/fallen_tower.js';   /* THE FALLING TOWER's FAILING STONE (docs/briefs/falling-tower-rework.md) */
 import {bakeCoastalFoe} from './coastal-foes.js';
 import {drawClimbCues} from './haunted-coast.js';
 import {updateDeckBreaks,drawDeckBreaks} from './storm-ship.js';
@@ -842,6 +842,7 @@ function resolveTiles() {
     return set[k] ? set[k][i] : plain[i];
   };
   if(!LEDGE_SETS.cargo)Object.assign(LEDGE_SETS,bakeRouteLedges());
+  if(!LEDGE_SETS.slate)LEDGE_SETS.slate=FTW.bakeSlateLedge();   /* THE FALLING TOWER's cut slate */
   if(!LEDGE_SETS.masonry){const [c,cg]=canvas(16,16);cg.fillStyle='#39362f';cg.fillRect(0,0,16,6);cg.fillStyle='#a69a82';cg.fillRect(0,1,16,3);cg.fillStyle='#cec0a0';cg.fillRect(0,1,16,1);cg.fillStyle='#766c59';cg.fillRect(7,2,1,3);LEDGE_SETS.masonry={ledge:[c],ledgeL:c,ledgeR:c};}
   const rnd = mulberry(7);
   const rockDeep = groundDepth(LW, LH, (x, y) => tileAt(x, y) === T.SOLID, 18), groundDeep = groundDepth(LW, LH, solidish, 9);
@@ -11158,12 +11159,13 @@ function drawMageBack(cx, cy) {
     if (!m.arm) { g.fillStyle = '#3a2a1a'; g.fillRect(hx - 2, hy, 4, Math.max(0, Math.round(L.H * TS - cy) - hy)); } g.drawImage(A.hub, hx - 9, hy - 9); }
 }
 /* after the tiles: the skins on the tower, the hedges, the holes and the cracks */
+let FALLEN_SKINS = null;
 function drawMageTiles(cx, cy) {
   if(L.fallingTower)drawDeckBreaks(g,L,cx,cy,time);
   if (!MG || !L.mage) return; const A = ma(), S = A.skins; if (!S) return;
   const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(LW - 1, Math.ceil((cx + VW) / TS) + 1), ty0 = Math.max(0, Math.floor(cy / TS)), ty1 = Math.min(LH - 1, Math.floor((cy + VH) / TS) + 1);
   const lip = (x, y) => { g.fillStyle = 'rgba(236,224,255,0.55)'; g.fillRect(x, y, TS, 1); g.fillStyle = 'rgba(236,224,255,0.2)'; g.fillRect(x, y + 1, TS, 1); };
-  for (const [x0, x1, y0, y1, kind] of (L.mage.skins || [])) { if (x1 < tx0 || x0 > tx1 || y1 < ty0 || y0 > ty1) continue; const set = kind === 'gate' ? S.gate : kind === 'sand' ? S.sand : kind === 'witch' ? witchSkins().witch : kind === 'books' ? witchSkins().books : kind === 'ledge' ? witchSkins().ledge : S.tower, want = kind === 'ledge' ? T.ONEWAY : T.SOLID;   /* 'sand': the cutting past the second door (src/sanctum.js) */   /* (the Witchlight Stair's runed stone, its library books, and its stone ledges over the one-way tiles) */
+  for (const [x0, x1, y0, y1, kind] of (L.mage.skins || [])) { if (x1 < tx0 || x0 > tx1 || y1 < ty0 || y0 > ty1) continue; const set = kind === 'gate' ? S.gate : kind === 'sand' ? S.sand : kind === 'fallen' ? (FALLEN_SKINS || (FALLEN_SKINS = FTW.bakeFallenSkins())).fallen : kind === 'witch' ? witchSkins().witch : kind === 'books' ? witchSkins().books : kind === 'ledge' ? witchSkins().ledge : S.tower, want = kind === 'ledge' ? T.ONEWAY : T.SOLID;   /* 'sand': the cutting past the second door (src/sanctum.js) */   /* (the Witchlight Stair's runed stone, its library books, and its stone ledges over the one-way tiles) */
     for (let ty = Math.max(y0, ty0); ty <= Math.min(y1, ty1); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (L.grid[i] !== want) continue; g.drawImage(set[(tx * 7 + ty * 3) % set.length], tx * TS - cx, ty * TS - cy); if (want === T.SOLID && ty > 0 && L.grid[i - LW] === T.AIR) lip(tx * TS - cx, ty * TS - cy); } }
   for (const [x0, x1, y0, y1] of (L.mage.hedges || [])) { if (x1 < tx0 || x0 > tx1) continue;
     /* A HEDGE YOU GO UNDER GROWS ON SOMETHING (B9; level review, 2026-09-24): the Topiary Maze's tall hedges were slabs of leaf in the
@@ -23673,6 +23675,7 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
   g.restore();
 }
 function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
+  if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
   const hsh = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233 + tx0 * 0.7) * 43758.5453; return v - Math.floor(v); };
