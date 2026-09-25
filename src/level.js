@@ -3908,7 +3908,7 @@ function galeMoor() {
   headwind(o + 5, o + 35, 6, 22, 1);
   ent('harpy', o + 20, 7);
   ent('flagpost', o + 2, 19); ent('flagpost', o + 39, 13);
-  ent('sign', o + 1, 19, { text: 'ON A STONE, CROUCH OR HOLD C AND THE GUST CANNOT MOVE YOU. HOP IN THE STILL, BRACE IN THE WIND.' });
+  ent('sign', o + 1, 19, { text: 'ON A STONE, CROUCH OR HOLD C AND THE GUST CANNOT MOVE YOU. HOP IN THE STILL.' });
   ent('check', o + 42, 13);
 
   /* ==== THE GALLERY OF GUSTS (298-361): the moor's exam, both halves of the lesson over thorns. A pit two tiles wider than any
