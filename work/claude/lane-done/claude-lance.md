@@ -13,7 +13,9 @@ sits inside the list.
 | 1f109be | the build: slower, two end lookouts, the Queen's bows, the lab's hands, `tools/lance-support.mjs` (in the suite), bestiary line |
 | d40b45a | after: pilot numbers, a "slower only" control run, after captures (`work/lance/after-*.png`) |
 | a4224a6 | this report |
-| (next) | Daniel's answers: the three fire archers removed, THE QUEEN'S BOWS added to the move words, this report updated |
+| f9b4463 | Daniel's answers: the three fire archers removed, THE QUEEN'S BOWS added to the move words |
+| a407d2d | merge origin/master ab26448 (check.mjs: every name from both sides kept - `tower-collapse`, `sexton` and `lance-support`; spawn line verified; POISE_SKIP still starts with the Winchmaster) |
+| (this) | the words placed on the screen, final checks, re-pilot, captures, report |
 
 ## What I built
 
@@ -115,20 +117,33 @@ Read with care:
    stays. Static checks pass (below).
 2. Nearer lookout: kept as built.
 3. 15 s with at most 2: no change. He plays it first, and it goes to 20 s if it feels busy.
-4. **Done in code.** "THE QUEEN'S BOWS" is in `MOVE_WORDS`, so the arrival tell now shows it as floating text over the
-   lookout. **Not yet seen in the page:** textfit, tells and a capture wait for the machine to be free.
+4. **Done.** "THE QUEEN'S BOWS" is in `MOVE_WORDS` and shows as floating text when the call is made. The captures
+   showed two problems, both fixed: over the west lookout the words were clipped at the screen's left edge, and with
+   the lookout off the screen the words landed out of view. They now sit over the lookout, or at the screen edge
+   nearest it, clamped by their own `textW` width (`work/lance/after-04-bowman-called.png`, `after-06-bowman-called-offscreen.png`).
 5. **Stormhold port: to be done in the same batch when `claude/stormhold` ships.** Add one
    `lanceLookouts({ plat, ent }, P0, BY)` call in that branch's bridge builder and put `bows:` on its arena. Also drop
    that branch's copies of the three fire archers.
 6. No tuning.
 
-**Checks after the removal (static only; the coordinator held the browser checks because of load):** syntax, spawns,
-one-new-foe, elites, audit, content-audit, comments, homepaths, dangling-paths, floaters, architecture, traps,
-killzones, deadends, signs, keys, arena-supplies and checkpoints all pass. **Still to run when the machine is free:**
-textfit, tells, boss-openings, boss-fight-end, lance-support, the captures, and the re-pilot.
+**Final checks, after the merge with ab26448:** 29 of 29 named checks pass. That is: boss-openings, boss-fight-end,
+arena-supplies, tells, one-new-foe, elites, spawns, floaters, architecture, audit, content-audit, traps, killzones,
+deadends, signs, textfit, comments, syntax, homepaths, dangling-paths, watchtowers, keys, bridge-props, checkpoints,
+checkpoint-gaps, small-adds, runtime-footing, lance-support, and ore-road (A8). After the word-placement edit, syntax,
+comments, tells, lance-support and textfit were run again and pass.
 
-**The pilot numbers above should not move with the removal.** The boss lab kills every non-boss foe before the fight,
-so the fire archers were never in any pilot row. The re-pilot is pending anyway, to confirm that.
+**Final re-pilot** (all 7 heroes, same settings, `work/lance/pilot-final.json`):
+
+| | before | after (final) |
+|---|---|---|
+| refill wins | 8/14 | **12/14** (knight times out at 11%) |
+| refill median win | 131.7 s | **111.8 s** |
+| refill median damage taken | 429 | **312** |
+| normal-health wins | 0/7 | 0/7 (13-84 s) |
+
+Every row matches the earlier after-run except the reaper's (96.5 s and 252 damage, was 100 s and 276), and his is
+the one row that draws dice. That is expected: the boss lab removes every non-boss foe before it fights, so the fire
+archers were never in any pilot row. **The removal changes a player's fight, not the bot's.**
 
 ## QUESTIONS FOR DANIEL (answered, see above)
 

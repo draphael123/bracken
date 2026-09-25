@@ -17376,7 +17376,9 @@ function updateLance(e, dt) {
 /* what lanceSupport (src/lance-support.js) is allowed to touch: the call is TOLD (C1) - the horn, THE QUEEN'S BOWS over the lookout
    and a column of amber sparks on it for LANCE_SUPPORT.tell - and then the bowman drops onto it off the tower roof */
 const lanceIO = A => ({ P, TS, lookouts: A.bows, bows: () => enemies.filter(q => q.alive && q.lanceBow),
-  announce: c => { number(c.x, c.y - 30, "THE QUEEN'S BOWS", '#ffd36b'); SFX.hornDraw(); },
+  announce: c => { const half = textW("THE QUEEN'S BOWS") / 2 + 14;   /* on the screen, over the lookout or at the edge nearest it: a word
+      put at a lookout off the screen is a word nobody reads (and at the screen's edge it was clipped) */
+    number(Math.max(camX + half, Math.min(camX + VW - half, c.x)), c.y - 30, "THE QUEEN'S BOWS", '#ffd36b'); SFX.hornDraw(); },
   tellFx: (c, dt) => { if (Math.random() < dt * 45) parts.push({ x: c.x + (Math.random() - 0.5) * 70, y: c.y - Math.random() * 4, vx: 0, vy: -50 - Math.random() * 50, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ffd36b' : '#ff9a5c', size: 1, grav: 0 }); },
   arrive: c => { const n0 = enemies.length; spawnEnt({ t: 'archer', x: c.tx, y: c.row - 1, face: Math.sign(P.x - c.x) || 1 });
     for (let i = n0; i < enemies.length; i++) { const q = enemies[i]; q.lanceBow = true; q.seenP = true; q.woke = 1; q.sleeper = false; q.y -= LANCE_SUPPORT.drop; q.vy = 0; q.timer = LANCE_SUPPORT.quiet; }
