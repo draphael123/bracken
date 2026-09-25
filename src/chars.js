@@ -4281,8 +4281,8 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
   directionalPoses(F, 'stave', {});
   /* THE TALL ONES, made after the padding with the headroom of their own: the stave goes up over the hood on these */
   const TK = f => knightFrame({ top: ATTACK_HEADROOM, ...f });
-  /* UPHEAVAL (her held X): the stave raised upright over her in both hands, then the BUTT struck down into the ground ahead of her
-     feet - where the pillar comes up - and her weight driven down on top of it. The same strike as the wall, taken higher and harder */
+  /* FAULT LINE (her held X, round 3 - it was UPHEAVAL): the stave raised upright over her in both hands, then the BUTT slammed down
+     into the ground ahead of her feet - where the crack starts - and her weight driven down on top of it while it runs */
   F.heavy = [TK({ dy: -1, legs: 'wide', sho: 1, arm: [X, Y, X + 3, Y - 7], arm2: [OFF[0], OFF[1], X + 2, Y - 6], stave: [X + 3, Y - 2, X + 2, Y - 18], plume: 1 }),
     TK({ wide: 4, dx: 1, dy: 2, legs: 'wide', arm: [X, Y, X + 5, Y - 2], arm2: [OFF[0], OFF[1], X + 4, Y], stave: [X + 7, Y + 9, X + 5, Y - 9], plume: 2, bits: [o(6, 9, D), o(10, 9, D), o(5, 8, M), o(11, 8, M)] }),
     TK({ wide: 4, dx: 1, dy: 3, legs: 'crouch', arm: [X, Y, X + 5, Y - 1], arm2: [OFF[0], OFF[1], X + 4, Y + 1], stave: [X + 7, Y + 9, X + 6, Y - 8], plume: 0, bits: [o(4, 9, D), o(12, 9, D), o(8, 7, A)] })];

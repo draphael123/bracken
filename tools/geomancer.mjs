@@ -2,13 +2,16 @@
 // her real input in the real page:
 //   cap       five pieces raised as fast as she can: never more than three stand (four with THE FOURTH STONE)
 //   crumble   every piece is gone after its life, and the level's grid is byte-for-byte what it was before she touched it
-//   lift      a pillar that comes up under a small foe LIFTS it onto its top (nothing is ever inside the rock), and one that comes up
-//             under a boss stops short under it
+//   lift      stone that comes up under a small foe LIFTS it onto its top (nothing is ever inside the rock), and stone that comes up
+//             under a boss stops short under it (the eruption STONE STEP uses)
 //   body      a foe that turns up inside standing stone (spawned, thrown) crumbles that stone the next frame
 //   reload    a level left while stone stands takes the stone with it: the new level's grid is untouched
-//   heavy     UPHEAVAL, reworked (Daniel, 2026-09-24): the quickest release hits a foe TOUCHING her (a spike at her front foot, no
-//             rock written); a full wind comes up at twice the old reach (>= 120 px out, it was 66); and the pillar is gone - shattered -
-//             within half a second of rising (it stood four as a platform)
+//   heavy     FAULT LINE (her held X from round 3, 2026-09-24 - it was UPHEAVAL, a pillar on one spot): a crack races along the floor
+//             ahead of her and hits EVERYTHING along it. The quickest release hits a foe TOUCHING her at once; a full charge runs its
+//             full length (GEO.fault) and hits harder than the quickest; it stops at a gap (nothing past the pit is touched) and at a
+//             wall (nothing behind the rock is touched); every foe along the line is hit, not just the first; and a full charge ends
+//             in a rock spike that LAUNCHES what it hits. PROVED RED FIRST on the UPHEAVAL code: no crack, 0 px, the second and third
+//             foes untouched, nothing launched at the far end.
 //   shield    THE ROCK SHIELD (her C from 2026-09-24): two yellow blows break it (cracked after one), one red breaks it fresh or
 //             cracked, a perfect block (raised as it lands) costs it nothing, raising and holding it costs no wind, it never refills by
 //             itself (ten seconds idle), THE MEND (DOWN+C) restores it, and a blow in the middle of the mend breaks it off
@@ -19,10 +22,10 @@
 //             bought LODESTONE loads, owning STONE WALL in the same loadout slot
 //   dodges    BURROW IS THE FLOOR'S ONLY: swimming her dodge is the ordinary swimming dash (it fires, and never burrows); in the air
 //             nothing burrows (she has no air roll of her own); and the ceiling-walk dodge (magePlayer) has no burrow in it
-//   levels    in three real early levels, at every 5th tile of floor she can stand on: wall, pillar and step raised, and every frame
+//   levels    in three real early levels, at every 5th tile of floor she can stand on: wall, fault line and step raised, and every frame
 //             no living body is inside her rock and, eight seconds on, the level's grid is exactly what it was (no route blocked)
 // PROVED RED FIRST (2026-09-24): with the body test taken out of freeCell and RULE 4 disabled in src/geomancer.js, `lift` and `body`
-// fail (a sprig buried in the pillar; the stone that a foe was spawned into stood on) - the guards are what makes this green.
+// fail (a sprig buried in the stone; the stone that a foe was spawned into stood on) - the guards are what makes this green.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
@@ -41,24 +44,45 @@ try {
   const out = {};
   out.cap = await pg.evalp(`(()=>{const run=n=>{let most=0;for(let k=0;k<n;k++){BK.tp(5+k*5,21);BK.sim(3);BK.P.face=1;__raise();BK.sim(4);most=Math.max(most,BK.geo().pieces().length);}return most;};
     __geo([]);const three=run(5);__geo([],true,0,24);return {three,four:run(6)}})()`);
-  out.crumble = await pg.evalp(`(()=>{__geo([]);const g0=Array.from(BK.L.grid);__raise();BK.keys.atk=true;BK.sim(30);BK.keys.atk=false;BK.sim(5);const n=BK.geo().pieces().length;
+  out.crumble = await pg.evalp(`(()=>{__geo([]);const g0=Array.from(BK.L.grid);__raise();BK.sim(3);__raise();BK.sim(5);const n=BK.geo().pieces().length;
     for(let i=0;i<60*7;i++){BK.sim(1);}   /* seven seconds: BEDROCK (level 8, on at 20) makes a piece stand six */const g1=Array.from(BK.L.grid);return {raised:n,left:BK.geo().pieces().length,same:g0.every((v,i)=>v===g1[i])}})()`);
-  out.lift = await pg.evalp(`(()=>{__geo([]);BK.spawnEnt({t:'sprig',x:(BK.P.x+66)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;BK.sim(2);const y0=e.y;
-    BK.keys.atk=true;BK.sim(22);BK.keys.atk=false;let inside=false,top=0;   /* (22 frames: the wind that walks the point out to him, 66 px) */for(let i=0;i<40;i++){BK.sim(1);inside=inside||__inside();top=Math.max(top,y0-e.y);}
-    __geo([]);BK.spawnEnt({t:'sprig',x:(BK.P.x+66)/16,y:21});const b=BK.enemies().at(-1);b.hp=b.hp0=5000;b.cd=99;b.mini=true;BK.sim(2);BK.keys.atk=true;BK.sim(22);BK.keys.atk=false;let bin=false;for(let i=0;i<20;i++){BK.sim(1);bin=bin||__inside();}
+  out.lift = await pg.evalp(`(()=>{const up=e=>BK.geo().erupt(Math.floor(e.x/16),22,2,'step',{hurt:false,noHero:true});   /* (the eruption STONE STEP uses: stone out of the floor under a body) */
+    __geo([]);BK.spawnEnt({t:'sprig',x:(BK.P.x+66)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;BK.sim(2);const y0=e.y;
+    up(e);let inside=false,top=0;for(let i=0;i<40;i++){BK.sim(1);inside=inside||__inside();top=Math.max(top,y0-e.y);}
+    __geo([]);BK.spawnEnt({t:'sprig',x:(BK.P.x+66)/16,y:21});const b=BK.enemies().at(-1);b.hp=b.hp0=5000;b.cd=99;b.mini=true;BK.sim(2);up(b);let bin=false;for(let i=0;i<20;i++){BK.sim(1);bin=bin||__inside();}
     return {rose:Math.round(top),inside,bossInside:bin,pieces:BK.geo().pieces().length}})()`);
-  out.body = await pg.evalp(`(()=>{__geo([]);BK.keys.atk=true;BK.sim(40);BK.keys.atk=false;BK.sim(3);const p=BK.geo().pieces()[0];if(!p)return {none:true};const c=p.cells[0];
+  out.body = await pg.evalp(`(()=>{__geo([]);__raise();BK.sim(3);const p=BK.geo().pieces()[0];if(!p)return {none:true};const c=p.cells[0];
     BK.spawnEnt({t:'sprig',x:(c.tx*16+8)/16,y:c.ty+1});const e=BK.enemies().at(-1);e.x=c.tx*16+8;e.y=c.ty*16+12;BK.sim(1);return {stood:BK.geo().pieces().includes(p),inside:__inside()}})()`);
-  out.reload = await pg.evalp(`(()=>{__geo([]);__raise();BK.keys.atk=true;BK.sim(40);BK.keys.atk=false;BK.sim(2);const had=BK.geo().pieces().length;BK.load(0);const L=BK.L;const g0=Array.from(L.grid);BK.sim(5);
+  out.reload = await pg.evalp(`(()=>{__geo([]);__raise();BK.sim(3);__raise();BK.sim(2);const had=BK.geo().pieces().length;BK.load(0);const L=BK.L;const g0=Array.from(L.grid);BK.sim(5);
     return {had,after:BK.geo().pieces().length,same:g0.every((v,i)=>v===L.grid[i])}})()`);
-  out.heavy = await pg.evalp(`(()=>{__geo([]);const P=BK.P;BK.spawnEnt({t:'sprig',x:P.x/16+1,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;
-      const touch=()=>{e.x=P.x+P.w/2+e.w/2;e.vx=0;};BK.sim(2);touch();BK.sim(1);touch();const h0=e.hp,gap=Math.round(e.x-P.x-(P.w+e.w)/2);
-      let f=0;BK.keys.atk=true;while(!(P.charge>0)&&f++<60){touch();BK.sim(1);}BK.keys.atk=false;touch();BK.sim(1);for(let i=0;i<4;i++)BK.sim(1);
+  /* FAULT LINE: foes are sprigs held where they are put (hp 5000, no swing), so what is measured is only the crack */
+  out.heavy = await pg.evalp(`(()=>{const P=()=>BK.P,K=BK.keys,G=()=>BK.geo(),FL=BK.geoK&&BK.geoK.fault;
+      const foe=(dx,t='sprig')=>{BK.spawnEnt({t,x:(P().x+dx)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;e.px=P().x+dx;return e;};
+      const hold=(es,n)=>{const pin=()=>es.forEach(e=>{if(e.px!==undefined&&!(e.vy<0)&&!e.geoAirT){e.x=e.px;e.vx=0;}});let len=0,lift=0;const y0=es.map(e=>e.y);
+        const W=BK.geoK?BK.geoK.wind:0.5;K.atk=true;for(let i=0;i<90;i++){pin();BK.sim(1);if(n<1&&P().charge>=n*W)break;if(n>=1&&i>=45)break;}K.atk=false;   /* (n: how much of the wind to hold, 1 = all of it - it goes by itself at the full wind) */
+        for(let i=0;i<80;i++){pin();BK.sim(1);for(const fl of G().faults?G().faults():[])len=Math.max(len,fl.len||0);es.forEach((e,k)=>lift=Math.max(lift,y0[k]-e.y));}
+        return {len:Math.round(len),lift:Math.round(lift),hurt:es.map(e=>e.hp0-e.hp)};};
+      /* touching her: the quickest release there is */
+      __geo([]);const e=foe(12);BK.sim(2);const touch=()=>{e.x=P().x+P().w/2+e.w/2;e.vx=0;};touch();const h0=e.hp,gap=Math.round(e.x-P().x-(P().w+e.w)/2);
+      let f=0;K.atk=true;while(!(P().charge>0)&&f++<60){touch();BK.sim(1);}K.atk=false;touch();BK.sim(1);
       const contact={hurt:h0-e.hp,gap,held:f};
-      __geo([]);const x0=BK.P.x;let seen=-1,gone=-1,far=0;BK.keys.atk=true;
-      for(let i=0;i<200&&gone<0;i++){if(i===45)BK.keys.atk=false;BK.sim(1);const p=BK.geo().pieces().find(q=>q.kind==='pillar');
-        if(p&&seen<0){seen=i;far=Math.round((p.x0+p.x1)/2-x0);}if(!p&&seen>=0)gone=i;}BK.keys.atk=false;
-      return {contact,far,goneIn:gone<0?999:+((gone-seen)/60).toFixed(2)}})()`);
+      /* the same foe, a full charge: it hits harder */
+      __geo([]);const e2=foe(12);BK.sim(2);e2.x=P().x+P().w/2+e2.w/2;e2.px=e2.x;const full0=hold([e2],1);
+      /* a full charge on open floor: how far it runs */
+      __geo([]);const open=hold([],1);
+      /* a PIT 88 px ahead (tiles 16-18): a foe short of it is hit, a foe over it is not, and the crack ends at its edge */
+      __geo([]);for(let x=16;x<=18;x++)for(let y=22;y<BK.L.H;y++)BK.L.grid[y*BK.L.W+x]=0;BK.tp(10,21);BK.sim(5);P().face=1;
+      const pe=Math.round(16*16-P().x),pa=foe(40),pb=foe(20*16+8-P().x);BK.sim(2);const pit=hold([pa,pb],1);pit.edge=pe;
+      /* a WALL two tiles high 88 px ahead: the same */
+      __geo([]);for(let y=20;y<=21;y++)BK.L.grid[y*BK.L.W+16]=1;BK.tp(10,21);BK.sim(5);P().face=1;
+      const we=Math.round(16*16-P().x),wa=foe(40),wb=foe(18*16+8-P().x);BK.sim(2);const wall=hold([wa,wb],1);wall.edge=we;
+      /* three foes along the line, near, middle, far: all three are hit */
+      __geo([]);const la=foe(30),lb=foe(80),lc=foe(130);BK.sim(2);const line=hold([la,lb,lc],1);
+      /* (a swornsword: a sprig is rooted and nothing throws it) a foe at the full length: the rock spike at the end of a full charge launches it - and a crack from 0.6 of the wind, that runs past him and
+         stops short of its end, hits him but throws nothing */
+      __geo([]);const reachFull=FL?FL.len0+FL.lenK:160,sa=foe(reachFull-10,'swornsword');BK.sim(2);const spike=hold([sa],1);
+      __geo([]);const sb=foe(80,'swornsword');BK.sim(2);const halfway=hold([sb],0.6);   /* (0.6 of the wind runs the crack to about 105 px: past him, well short of its end) */
+      return {contact,full:full0.hurt[0],open,pit,wall,line,spike,halfway,reachFull}})()`);
   out.shield = await pg.evalp(`(()=>{const P=()=>BK.P,K=BK.keys,hit=red=>{P().inv=0;P().hurt=0;const r=BKT.damagePlayer(P().x+P().face*20,10,{unblockable:!!red});BK.sim(2);return r;};
       const up=()=>{K.block=true;BK.sim(20);},down=()=>{K.block=false;BK.sim(2);},fresh=()=>{__geo([]);P().face=1;};
       fresh();P().st=50;up();BK.sim(40);const st=P().st;const y1=hit(),c1=P().geoSh,y2=hit(),c2=P().geoSh,y3=hit();down();
@@ -102,10 +126,17 @@ try {
   assert.equal(out.cap.four, 4, 'THE FOURTH STONE: four (' + out.cap.four + ')');
   assert(out.crumble.raised >= 2 && out.crumble.left === 0, 'every piece crumbles on its own (' + JSON.stringify(out.crumble) + ')');
   assert(out.crumble.same, 'and the level is exactly what it was');
-  assert(out.lift.rose >= 20 && !out.lift.inside, 'a pillar under a small foe LIFTS it, never buries it (' + JSON.stringify(out.lift) + ')');
-  assert(!out.lift.bossInside, 'and one under a boss stops short under it');
-  assert(out.heavy.contact.gap <= 1 && out.heavy.contact.hurt > 0, 'UPHEAVAL: the quickest release hits a foe touching her (' + JSON.stringify(out.heavy.contact) + ')');
-  assert(out.heavy.far >= 120, 'UPHEAVAL: a full wind comes up at the new reach, twice the old 66 px (' + out.heavy.far + ' px)');
+  assert(out.lift.rose >= 20 && !out.lift.inside, 'stone under a small foe LIFTS it, never buries it (' + JSON.stringify(out.lift) + ')');
+  assert(!out.lift.bossInside, 'and stone under a boss stops short under it');
+  const H = out.heavy;
+  assert(H.contact.gap <= 1 && H.contact.hurt > 0, 'FAULT LINE: the quickest release hits a foe touching her, at once (' + JSON.stringify(H.contact) + ')');
+  assert(H.full > H.contact.hurt, 'FAULT LINE: the charge sets the damage - a full one hits the same foe harder (' + H.full + ' against ' + H.contact.hurt + ')');
+  assert(H.open.len >= H.reachFull - 2, 'FAULT LINE: a full charge runs its whole length (' + H.open.len + ' of ' + H.reachFull + ' px)');
+  assert(H.pit.hurt[0] > 0 && H.pit.hurt[1] === 0 && H.pit.len <= H.pit.edge + 1 && H.pit.len >= H.pit.edge - 8, 'FAULT LINE: it stops at a gap - never across a pit (' + JSON.stringify(H.pit) + ')');
+  assert(H.wall.hurt[0] > 0 && H.wall.hurt[1] === 0 && H.wall.len <= H.wall.edge + 1 && H.wall.len >= H.wall.edge - 8, 'FAULT LINE: it stops at a wall - never up through rock (' + JSON.stringify(H.wall) + ')');
+  assert(H.line.hurt.every(d => d > 0), 'FAULT LINE: every foe along the line is hit, not just the first (' + JSON.stringify(H.line) + ')');
+  assert(H.spike.hurt[0] > 0 && H.spike.lift >= 20, 'FAULT LINE: a full charge ends in a rock spike that launches what it hits (' + JSON.stringify(H.spike) + ')');
+  assert(H.halfway.hurt[0] > 0 && H.halfway.lift < 6, 'FAULT LINE: the spike is the FULL charge\'s: a crack that only just reaches him throws nothing (' + JSON.stringify(H.halfway) + ')');
   const S = out.shield;
   assert(S.y1 === 'blocked' && S.c1 === 1 && S.y2 === 'blocked' && S.c2 === 0 && S.y3 !== 'blocked', 'THE ROCK SHIELD: two yellow blows break it (' + JSON.stringify(S) + ')');
   assert(S.r1 !== 'blocked' && S.rf === 0 && S.cr === 1 && S.r2 !== 'blocked' && S.rc === 0, 'THE ROCK SHIELD: one red blow breaks it, fresh or cracked (' + JSON.stringify(S) + ')');
@@ -125,11 +156,10 @@ try {
   assert(!B.foe.inFoe && !B.foe.rock && B.foe.ground, 'BURROW: she never comes up inside a foe or rock (' + JSON.stringify(B.foe) + ')');
   assert(B.foe.under !== 'blocked' && B.foe.hurt === 0, 'BURROW: a blow along the ground passes over her while she is under (' + JSON.stringify(B.foe) + ')');
   assert(B.stone >= 1, 'BURROW: X as she surfaces kicks the ROLLING STONE (' + B.stone + ')');
-  assert(out.heavy.goneIn <= 0.5, 'UPHEAVAL: the pillar shatters within half a second (' + out.heavy.goneIn + ' s)');
   assert(!out.body.none && !out.body.stood && !out.body.inside, 'stone a foe turns up inside crumbles at once (' + JSON.stringify(out.body) + ')');
   assert(out.reload.had >= 1 && out.reload.after === 0 && out.reload.same, 'a level left takes its stone with it (' + JSON.stringify(out.reload) + ')');
   for (const r of out.levels) { assert(r.tried >= 5 && r.raised > 0, r.id + ': she raised stone there (' + JSON.stringify(r) + ')'); assert.equal(r.inside, 0, r.id + ': nobody was ever inside her rock'); assert(r.same && r.left === 0, r.id + ': and eight seconds on the level is exactly as it was: no route blocked'); }
   assert(out.oldSave.hp > 0, 'a save that never had her plays her (' + JSON.stringify(out.oldSave) + ')');
   assert.deepEqual(pg.errors, []);
-  console.log('geomancer: a quick UPHEAVAL hits what touches her, a full one reaches ' + out.heavy.far + ' px and is gone in ' + out.heavy.goneIn + ' s; the cap holds (3, 4 with the passive), every piece crumbles and gives the grid back, nothing is ever buried, and ' + out.levels.length + ' real levels end as they began');
+  console.log('geomancer: FAULT LINE hits what touches her at once, runs ' + H.open.len + ' px full, stops at a pit and a wall, hits all three in its line and launches at the end; the cap holds (3, 4 with the passive), every piece crumbles and gives the grid back, nothing is ever buried, and ' + out.levels.length + ' real levels end as they began');
 } finally { pg.close(); }

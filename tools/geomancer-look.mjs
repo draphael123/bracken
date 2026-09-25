@@ -5,7 +5,7 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { openPage, ROOT } from './cdp.mjs';
-const NAME = (process.argv[2] || 'after').replace(/[^a-z0-9-]/gi, '');
+const NAME = (process.argv[2] || 'after').replace(/[^a-z0-9-]/gi, ''), DIR = (process.argv[3] || 'docs/geomancer').replace(/[^a-z0-9/_-]/gi, '');   /* (a second argument puts it in another folder under docs: round 3's pairs are in docs/geomancer/round3) */
 const CW = 110, CH = 64, SC = 3;
 const pg = await openPage({ audio: false, fonts: false });
 try {
@@ -27,6 +27,6 @@ try {
   const png = await pg.evalp(`(async()=>{const S=${JSON.stringify(S)};const ims=[];for(const s of S){const im=new Image();im.src=s;await im.decode();ims.push(im);}
     const W=Math.max(ims[0].width,2*(${CW * SC}+4)),H=ims[0].height+4+2*(${CH * SC}+4);const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.fillStyle='#222';g.fillRect(0,0,W,H);
     g.drawImage(ims[0],0,0);ims.slice(1).forEach((im,i)=>g.drawImage(im,(i%2)*(${CW * SC}+4),ims[0].height+4+Math.floor(i/2)*(${CH * SC}+4)));return c.toDataURL();})()`);
-  const out = join(ROOT, 'docs/geomancer/look-' + NAME + '.png'); writeFileSync(out, Buffer.from(png.split(',')[1], 'base64'));
+  const out = join(ROOT, DIR, 'look-' + NAME + '.png'); writeFileSync(out, Buffer.from(png.split(',')[1], 'base64'));
   console.log('wrote ' + out + '; errors ' + JSON.stringify(pg.errors));
 } finally { pg.close(); }

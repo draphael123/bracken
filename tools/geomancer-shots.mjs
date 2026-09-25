@@ -30,19 +30,21 @@ try {
   await shot('5b SHIELD, CRACKED', `const [e]=__geo([],[[34,'sprig']]);BK.keys.block=true;__run(20);BKT.damagePlayer(e.x,10,{});__run(4);const r=__shot('ONE BLOW TAKEN: CRACKED');BK.keys.block=false;return r`);
   await shot('5c THE MEND (DOWN+C)', `__geo([]);BK.P.geoSh=0;BK.keys.down=true;BK.keys.block=true;__run(1);BK.keys.block=false;__run(18);BK.keys.down=false;return __shot('DOWN+C: THE MEND (the thud)')`);
   await shot('5d BURROW (dodge)', `__geo([]);BK.press('dodge');__run(9);return __shot('DODGE: BURROW, UNDER THE FLOOR')`);
-  await shot('6 UPHEAVAL (HOLD X) WIND', `__geo([],[[66,'sprig']]);BK.keys.atk=true;__run(14);return __shot('HOLD X: THE PILLAR IS MARKED')`);
-  await shot('7 UPHEAVAL LAUNCH', `__geo([],[[66,'sprig']]);BK.keys.atk=true;__run(18);BK.keys.atk=false;__run(8);return __shot('UPHEAVAL: LAUNCHED')`);
+  await shot('6 FAULT LINE (HOLD X) WIND', `__geo([],[[40,'sprig'],[110,'swornsword']]);BK.keys.atk=true;__run(22);return __shot('HOLD X: THE LINE IS MARKED')`);
+  await shot('7 FAULT LINE RUNS', `__geo([],[[40,'sprig'],[110,'swornsword']]);BK.keys.atk=true;__run(40);BK.keys.atk=false;__run(4);return __shot('FAULT LINE: THE CRACK RUNS')`);
+  await shot('7b FAULT LINE SPIKE', `__geo([],[[40,'sprig'],[150,'swornsword']]);BK.keys.atk=true;__run(40);BK.keys.atk=false;__run(22);return __shot('FULL: THE SPIKE LAUNCHES')`);
   await shot('8 SPUR (UP+X)', `__geo([]);BK.keys.up=true;BK.press('atk');__run(6);BK.keys.up=false;return __shot('UP+X: SPUR')`);
   await shot('9 STONEFALL (plunge)', `__geo([],[[34,'sprig'],[-34,'sprig']]);BK.press('jump');BK.keys.jump=true;__run(18);BK.keys.jump=false;BK.keys.down=true;BK.press('atk');let i=0;while(!BK.P.ground&&i++<60)__run(1);__run(1);BK.keys.down=false;return __shot('DOWN+X: STONEFALL')`);
   await shot('10 ROLLING STONE (dash X)', `__geo([],[[90,'sprig']]);BK.press('right');__run(2);BK.press('right');__run(1);BK.press('atk');__run(12);return __shot('DASH, X: ROLLING STONE')`);
   await shot('11 THE QUAKE (full TREMOR, C)', `__geo([],[[50,'sprig'],[-60,'sprig'],[110,'shield']]);BK.P.tremor=100;BK.keys.block=true;__run(1);BK.keys.block=false;__run(26);return __shot('FULL TREMOR, C: THE QUAKE')`);
   const AB = [['stoneStep', 8, 'STONE STEP (1)', ''], ['boulder', 20, 'BOULDER (3)', ''], ['spikeRow', 16, 'SPIKE ROW (5)', ''], ['archway', 16, 'ARCHWAY (7)', ''], ['stoneWall', 16, 'STONE WALL (9)', ''],
-    ['entomb', 20, 'ENTOMB (12)', ''], ['faultLine', 16, 'FAULT LINE (14)', ''], ['golem', 50, 'GOLEM (17)', ''], ['avalanche', 44, 'AVALANCHE (20)', '']];
+    ['entomb', 20, 'ENTOMB (12)', ''], ['faultLine', 16, 'THE RIFT (14)', ''], ['golem', 50, 'GOLEM (17)', ''], ['avalanche', 44, 'AVALANCHE (20)', '']];
   for (const [id, n, label] of AB) await shot('A ' + label, `__geo(['${id}'],[[40,'sprig'],[80,'shield']]);${id === 'archway' ? 'BK.P.x+=180;BK.sim(2);' : ''}${id === 'stoneStep' ? 'BK.press("jump");BK.keys.jump=true;__run(16);BK.keys.jump=false;' : ''}BK.press('throw');__run(${n});return __shot('${label}')`);
   const names = Object.keys(S);
   const png = await pg.evalp(`(async()=>{const S=${JSON.stringify(S)},names=Object.keys(S),per=4,W=${CW * SC},H=${CH * SC};const c=document.createElement('canvas');c.width=per*(W+4);c.height=Math.ceil(names.length/per)*(H+4);
     const g=c.getContext('2d');g.fillStyle='#222';g.fillRect(0,0,c.width,c.height);
     for(let i=0;i<names.length;i++){const im=new Image();im.src=S[names[i]];await im.decode();g.drawImage(im,(i%per)*(W+4),Math.floor(i/per)*(H+4));}return c.toDataURL();})()`);
-  writeFileSync(join(ROOT, 'docs/geomancer/moves.png'), Buffer.from(png.split(',')[1], 'base64'));
-  console.log('wrote docs/geomancer/moves.png: ' + names.length + ' moves; errors ' + JSON.stringify(pg.errors));
+  const OUT = process.argv[2] || 'docs/geomancer/moves.png';   /* (a path under the repo, given as the first argument: round 3 keeps its own pair beside its other pictures) */
+  writeFileSync(join(ROOT, OUT), Buffer.from(png.split(',')[1], 'base64'));
+  console.log('wrote ' + OUT + ': ' + names.length + ' moves; errors ' + JSON.stringify(pg.errors));
 } finally { pg.close(); }
