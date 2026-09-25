@@ -1,6 +1,6 @@
 /* tools/lance-pilot.mjs [passes=2] [label] - STORMHOLD's fight, THE QUEEN'S LANCE, through BK.bossLab (src/lab.js): every hero
    (the geomancer too), dice pinned per row, one salt per pass so pass two is not pass one again (docs/INTEGRATOR.md). The
-   ranking's settings (tools/audit-bosslab.mjs on claude/audit: refill health, a 150 s cap, speed 1, modes on) for passes 0..n-1,
+   ranking's settings (the ranking's audit-bosslab tool, on the claude/audit branch: refill health, a 150 s cap, speed 1, modes on) for passes 0..n-1,
    then one pass at NORMAL health (one life, 300 s) for a win rate a player would recognise. Prints a row per fight (outcome,
    seconds, damage taken, which modes did the damage, how many of his archers were up and how many the hands cut down) and a
    summary, and writes work/lance/pilot-<label>.json. Run before and after a change to him (docs/briefs/lance-support.md).

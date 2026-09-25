@@ -15,7 +15,8 @@ import { findDeadEnds } from './deadends.js';
 import { spanOf, THREAT } from './threat.js';
 import { buildUnburiedField } from './unburied-field.js';
 import { HV_KIT_KINDS } from './hanging-village.js';   /* THE HANGING VILLAGE: what each floor scatters on its ground (the sprites are in the same file) */
-import { buildCaravan } from './sunken-caravan.js';   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
+import { buildCaravan } from './sunken-caravan.js';
+import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
 export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17, CRYST: 18 };
@@ -2351,6 +2352,10 @@ function stormhold() {
     // a fire cage over the middle of every span, on a lamp-standard: cut its chain as he goes under it
     if (k > 0) ent('weight', px0 - 7, BY - 9, { len: 6, lamp: true });
   }
+  /* AND THE TWO ENDS (Daniel, 2026-09-25: "some platforms to be available to jump on"): the first pier and the last get a
+     lookout of their own, built like the five above, so a charge that runs you to either end of the bridge has something to
+     hop onto - and they are where his bowmen come down (src/lance-support.js) */
+  const lanceBows = lanceLookouts({ plat, ent }, P0, BY);
   // the last span, from the seventh pier to the gatehouse. Without it the bridge stopped nine tiles
   // short of the door and there was no way off it at all.
   span(415, 423, BY, { sway: 2 });
@@ -2419,7 +2424,7 @@ function stormhold() {
       canopy: ['#3a3a48', '#4a4a5a', '#5a5a6c', '#6a6a80'] },
     weather: [{ x0: 0, x1: 99999, kind: 'snow' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     castle: true, // the castle grows over the whole level: drawn behind everything
-    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'musCastle', tint: '#6a7a9a', tintA: 0.10, fx: 'dust' },
+    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'musCastle', tint: '#6a7a9a', tintA: 0.10, fx: 'dust', bows: lanceBows },
   };
 }
 

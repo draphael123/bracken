@@ -46,7 +46,9 @@ The new lookouts are added by `src/lance-support.js` from the arena's own first 
 - **Told (C1).** A horn on the tower (the Stockade's rising horn note), THE QUEEN'S BOWS over the end lookout it is
   coming to and a column of amber sparks on that lookout for 1.2 s. Then the bowman drops onto it from the tower
   roof with a thump and dust. He does not shoot for his first second on the boards.
-- **Which lookout:** the end one farther from you, unless one of his bowmen already holds it; never the one you stand on.
+- **Which lookout:** the end one nearer you, unless one of his bowmen already holds it; never the one you stand on.
+  (Nearer, not farther: a foe more than 420 px from you is not updated at all, and a bowman at the far end of the
+  bridge would stand there frozen.)
 - **What he is:** a plain goblin ARCHER (no new kind: one-new-foe and F10 are untouched; not a fire archer), with the
   archer's own 10 health and its told `!` draw. No XP (he has no placed key), so the call cannot be farmed.
 - **When the Lance dies** his bowmen throw down their bows and are gone with a puff (`bossEnd`). They are not bosses and

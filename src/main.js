@@ -38,6 +38,7 @@ import {updateGasVents,drawGasVents} from './burial-expansion.js'; import {updat
 import {updateKeepPassages,drawKeepPassages} from './keep-passages.js';
 import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js';
 import {bakeBellcrab,bakeBellguard} from './bellcrab.js';
+import { lanceSupport, LANCE_SUPPORT } from './lance-support.js';   /* THE QUEEN'S BOWS: the archers he calls to the end lookouts (docs/briefs/lance-support.md) */
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
@@ -3974,7 +3975,7 @@ const BEASTS = [
   { t: 'sweep', name: 'CHIMNEY SWEEP', sub: 'up the flue', desc: 'He lives in the stacks. Walk past and he comes up out of one with a handful of soot, throws it, and stays up a moment to watch it land: that moment is the only time you can reach him. Then he is back down the flue.' },
   { t: 'stormshaman', name: 'STORM SHAMAN', sub: 'the weather is his', desc: 'A goblin with a staff who stands at the far end of a span and throws the storm at whoever is crossing it. His bolts are slow: strike one, or take it on a shield, and it goes back at him.' },
   { t: 'seawitch', name: 'THE SEA WITCH', sub: 'she signed the articles too', desc: "The ship's conjuror, in the crew's own coat, with a storm lantern on her crook. She marks a spot on the deck and the sky finds it a second later: no shield turns lightning, so move. Out of the weather she throws it by hand instead, slow enough to strike out of the air or send back off a shield." },
-  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the bridge', desc: 'A goblin knight in plate the size of a door, and every blade turns on it except when he is committed. He cannot steer a charge: step off his line and the lance goes into a post and he goes with it, and that is when he bleeds. Or MAKE the opening: a DASH ATTACK into his guard takes his feet out and he reels - it draws no blood itself, and he sets his feet against the next one for a while. Not while he is coming at you. His thrust can be parried; the low sweep cannot, so jump it. His charges take the deck out behind him. Half dead he throws the lance away, takes a shield, and becomes the opposite problem.' },
+  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the bridge', desc: 'A goblin knight in plate the size of a door, and every blade turns on it except when he is committed. He cannot steer a charge: step off his line and the lance goes into a post and he goes with it, and that is when he bleeds. Or MAKE the opening: a DASH ATTACK into his guard takes his feet out and he reels - it draws no blood itself, and he sets his feet against the next one for a while. Not while he is coming at you. His thrust can be parried; the low sweep cannot, so jump it. When a horn goes on a tower, one of HER bowmen is coming down onto an end lookout: he is only an archer, so cut him down. Half dead he throws the lance away, takes a shield, and becomes the opposite problem.' },
   { t: 'snuffer', name: 'THE SNUFFER', sub: 'lamp-killer', desc: 'It is not hunting you. It walks the boughs putting the village out, one lantern at a time, and the Reeve is glad of it. It swings the pole if you crowd it. Light what it snuffs, or cut it and the lamps stay lit.' },
   { t: 'sailer', name: 'SAIL GOBLIN', sub: 'carried, not driven', desc: 'A plank of sail and no way to steer. In the lull she shuffles at you and is nothing. When the gust takes her she is a battering ram: block her and she spills, or step aside and let the stone take her. THE MASTHEAD is the biggest of them.' },
   { t: 'horn', name: 'HORNBLOWER', sub: 'a gale of his own', desc: 'A goblin on a mound with a ram\'s horn. He winds it at you and a horn\'s worth of wind comes with it: on the ground it slides you back, in the air it throws you. Get under it or get to him; one good cut and he stops blowing.' },
@@ -7874,6 +7875,8 @@ function bossEnd(e) {
       shakeCam(12); zoomKick(1.2, 0.8); killFlash = 0.14; rumble(90, 0.9);
       for (let i = 0; i < 30; i++) parts.push({ x: x + (Math.random() - 0.5) * 40, y: y - 10 - Math.random() * 34, vx: (Math.random() - 0.5) * 180, vy: -140 + Math.random() * 80, life: 1.5, max: 1.5, col: ['#9aa3b0', '#5a6270', '#c9463d', '#e0b040'][(Math.random() * 4) | 0], size: 2, grav: 420 });
       for (const dd of [-1, 1]) waves.push({ x: x + dd * 20, y: floor, dir: dd, life: 2.4, sp: 200 });
+      for (const q of enemies) if (q.alive && q.lanceBow) { q.alive = false; smoke(q.x, q.y - 6, 6, 8); }   /* his bowmen throw down their bows and are gone */
+      e.bowCall = null;
       SFX.bellow(); SFX.heavy(); SFX.crack(); say('THE BRIDGE IS YOURS', '#ffd36b'); break; }
     case 'duneworm': { shakeCam(12); zoomKick(1.16, 0.7); rumble(160, 0.9); if (CV) { CV.storm = null; CV.stormNow = null; }   /* the storm was his: it goes with him */
       for (let i = 0; i < 40; i++) parts.push({ x: x + (Math.random() - 0.5) * 80, y: floor - 2, vx: (Math.random() - 0.5) * 160, vy: -60 - Math.random() * 150, life: 1.4, max: 1.4, col: ['#e2bb7a', '#f2d79c', '#bf8f63'][(Math.random() * 3) | 0], size: 2, grav: 420 });
@@ -17065,6 +17068,9 @@ function updateLance(e, dt) {
   if (e.gust && (e.mode !== 'gale' || !e.alive)) { const gi = (L.gusts || []).indexOf(e.gust); if (gi >= 0) L.gusts.splice(gi, 1); e.gust = null; }
   e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt);
   e.vy += 1000 * dt; if (e.vy > 340) e.vy = 340;
+  /* THE QUEEN'S BOWS (Daniel, 2026-09-25: "occasional archer support since he lacks ranged moves"): every 15 s a horn on a
+     tower, and a plain archer drops onto the end lookout nearer you. Not in the Boss Rush, which is parked: nothing new goes in it */
+  if (bossActive && e.alive && e.mode !== 'sleep' && e.mode !== 'wake' && !rushOn()) lanceSupport(e, dt, lanceIO(A));
   const d = P.x - e.x, ad = Math.abs(d), p2 = e.phase === 2;
   let want = 0;
   const reach = (dist, dmg, opt) => { if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < dist && Math.abs(P.y - e.y) < 30) { const res = damagePlayer(e.x, dmg, opt); if (res === 'blocked' && !opt) { e.mode = 'reel'; e.modeT = 1.4; e.vx = -e.face * 60; number(e.x, e.y - e.h - 12, 'PARRIED', '#8fd160'); SFX.clank(); } return res || 'hit'; } return null; };
@@ -17077,7 +17083,7 @@ function updateLance(e, dt) {
     case 'pace': {
       e.face = Math.sign(d) || e.face; e.chargeT -= dt; e.thrustT -= dt; e.sweepT -= dt;
       e.bashT = (e.bashT ?? 1.5) - dt; e.vaultT = (e.vaultT ?? 4) - dt; e.javT = (e.javT ?? 3) - dt; e.galeT = (e.galeT ?? 2) - dt;
-      want = ad > 40 ? e.face * 52 : 0;
+      want = ad > 40 ? e.face * 44 : 0;   /* SLOWER (Daniel, 2026-09-25: docs/briefs/lance-support.md): every stride of him about 15% down - 52 to 44 here, the charge 250 to 212, 78 to 66 behind the shield, the rush 230 to 196 */
       // up close he mixes a low sweep (jump it) with a shield bash (roll away from it): you cannot answer both the same way
       if (ad < 34 && e.sweepT <= 0 && !e.lastBash) { e.sweepT = 3.5; e.lastBash = true; e.mode = 'sweepTell'; e.modeT = 0.45; number(e.x, e.y - e.h - 12, 'LOW', '#ff6b6b'); SFX.snort(); }
       else if (ad < 34 && e.bashT <= 0) { e.bashT = 4.5; e.lastBash = false; e.mode = 'bashTell'; e.modeT = 0.42; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.snort(); }
@@ -17089,9 +17095,9 @@ function updateLance(e, dt) {
       else if (ad > 150 && e.javT <= 0) { e.javT = 9; e.mode = 'javTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.6; SFX.snort(); }
       else if (ad > 70 && e.chargeT <= 0) { e.chargeT = p2 ? 5 : 6.5; e.mode = 'couch'; e.modeT = 0.8; number(e.x, e.y - e.h - 14, 'HE LEVELS IT', '#ff6b6b'); SFX.bellow(); shakeCam(2); }
       break; }
-    case 'couch': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 3.2; e.vx = e.face * 250; e.passT = -1; SFX.charge(); shakeCam(3); } break;
+    case 'couch': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 3.2; e.vx = e.face * 212; e.passT = -1; SFX.charge(); shakeCam(3); } break;
     case 'charge': {
-      want = e.face * 250;
+      want = e.face * 212;
       if (!P.dead && e.hitT <= 0 && ad < 26 && Math.abs(P.y - e.y) < 32) { e.hitT = 0.8; const res = damagePlayer(e.x, DMG.lanceCharge, { unblockable: true, up: true }); if (res === 'hit') { P.vx = e.face * 340; P.vy = -170;
         e.mode = 'pace'; e.modeT = 0.9; e.vx = e.face * 60; break; } } // it went through you: he pulls up, and that is not an opening
       // once he is past you he has nowhere to aim, and the lance goes into the deck a few strides on
@@ -17139,7 +17145,7 @@ function updateLance(e, dt) {
     case 'rise': if (e.modeT <= 0) { e.mode = 'guard'; e.modeT = 1; } break;
     case 'guard': {
       e.face = Math.sign(d) || e.face; e.sweepT -= dt; e.rushT = (e.rushT === undefined ? 2 : e.rushT) - dt;
-      want = ad > 22 ? e.face * 78 : 0;
+      want = ad > 22 ? e.face * 66 : 0;
       e.bashT = (e.bashT ?? 1.5) - dt;
       e.whirlT = (e.whirlT ?? 5) - dt;
       if (ad < 44 && e.whirlT <= 0) { e.whirlT = 7; e.mode = 'whirlTell'; e.modeT = 0.65; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.snort(); }
@@ -17148,9 +17154,9 @@ function updateLance(e, dt) {
       // back off him and he comes for you behind the shield: block it and he reels, jump it and he stumbles
       else if (ad > 44 && ad < 130 && e.rushT <= 0) { e.rushT = 3.4; e.mode = 'rushTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = 0.5; SFX.snort(); }
       break; }
-    case 'rushTell': e.face = Math.sign(d) || e.face; want = -e.face * 20; if (e.modeT <= 0) { e.mode = 'rush'; e.modeT = 0.55; e.vx = e.face * 230; e.hitT = 0; SFX.charge(); } break;
+    case 'rushTell': e.face = Math.sign(d) || e.face; want = -e.face * 20; if (e.modeT <= 0) { e.mode = 'rush'; e.modeT = 0.65; e.vx = e.face * 196; e.hitT = 0; SFX.charge(); } break;   /* 0.65 s at 196 runs the 126 px that 0.55 at 230 did: the rush still reaches the stride it was told at */
     case 'rush': {
-      want = e.face * 230;
+      want = e.face * 196;
       if (!P.dead && e.hitT <= 0 && ad < 22 && Math.abs(P.y - e.y) < 24) { e.hitT = 1;
         const res = damagePlayer(e.x, DMG.lanceRush);
         if (res === 'blocked') { e.mode = 'reel'; e.modeT = 1.5; e.vx = -e.face * 90; number(e.x, e.y - e.h - 12, 'PARRIED', '#8fd160'); SFX.clank(); shakeCam(3); break; }
@@ -17173,6 +17179,22 @@ function updateLance(e, dt) {
   if (r.hitX && e.mode === 'rush') { e.mode = 'stumble'; e.modeT = 1.2; e.vx = 0; SFX.heavy(); shakeCam(4); }
   if (r.hitX && e.mode === 'charge') { e.mode = 'planted'; e.modeT = 2.8; e.stagger = 2.8; e.vx = 0; SFX.heavy(); shakeCam(7); }
 }
+/* what lanceSupport (src/lance-support.js) is allowed to touch: the call is TOLD (C1) - the horn, THE QUEEN'S BOWS over the lookout
+   and a column of amber sparks on it for LANCE_SUPPORT.tell - and then the bowman drops onto it off the tower roof */
+const lanceIO = A => ({ P, TS, lookouts: A.bows, bows: () => enemies.filter(q => q.alive && q.lanceBow),
+  announce: c => { number(c.x, c.y - 30, "THE QUEEN'S BOWS", '#ffd36b'); SFX.hornDraw(); },
+  tellFx: (c, dt) => { if (Math.random() < dt * 45) parts.push({ x: c.x + (Math.random() - 0.5) * 70, y: c.y - Math.random() * 4, vx: 0, vy: -50 - Math.random() * 50, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ffd36b' : '#ff9a5c', size: 1, grav: 0 }); },
+  arrive: c => { const n0 = enemies.length; spawnEnt({ t: 'archer', x: c.tx, y: c.row - 1, face: Math.sign(P.x - c.x) || 1 });
+    for (let i = n0; i < enemies.length; i++) { const q = enemies[i]; q.lanceBow = true; q.seenP = true; q.woke = 1; q.sleeper = false; q.y -= LANCE_SUPPORT.drop; q.vy = 0; q.timer = LANCE_SUPPORT.quiet; }
+    dust(c.x, c.y, 10); smoke(c.x, c.y - LANCE_SUPPORT.drop, 4, 10); SFX.leap(); SFX.thud(); } });
+/* HIS BOWMAN IS COMING (C1): the lookout he will land on glows amber under a bar that fills to red, the horn's own bar
+   (drawHornTell) - held on the screen's edge with an arrow when the lookout is off it, so you can see where to look */
+function drawBowCall(c, cx, cy) { const k = Math.min(1, 1 - c.t / LANCE_SUPPORT.tell), pulse = 0.55 + 0.45 * Math.sin(time * (8 + k * 14));
+  const x0 = Math.round(c.x - cx), x = Math.max(16, Math.min(VW - 16, x0)), y = Math.max(34, Math.round(c.y - cy) - 26), w = 16;   /* VW: the fight is drawn zoomed out, wider than the 320 buffer */
+  g.globalAlpha = 0.3 + 0.4 * pulse; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x0, Math.round(c.y - cy) - 1, 38, 5, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+  g.fillStyle = ART.OUT; g.fillRect(x - w / 2 - 1, y - 1, w + 2, 4); g.fillStyle = k > 0.7 ? '#ff6b6b' : '#ff9a5c'; g.globalAlpha = pulse; g.fillRect(x - w / 2, y, Math.max(1, Math.round(w * k)), 2); g.globalAlpha = 1;
+  g.fillStyle = '#ffd36b'; if (x !== x0) { const s = x0 < x ? -1 : 1; for (let q = 0; q < 3; q++) g.fillRect(x + s * (w / 2 + 2 + q), y - 2 + q, 1, 5 - 2 * q); }   /* an arrow, point outward, toward the lookout */
+  else { g.fillRect(x, y + 5, 1, 3); g.fillRect(x - 1, y + 7, 3, 1); } }
 const lanceOpen = e => e.mode === 'planted' || e.mode === 'thrust' || e.mode === 'sweep' || e.mode === 'guardSwing' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'javThrow';
 /* WHEN A RUN AT HIM IS A RUN AT A WALL: coming at you, or with the shield already coming round. Everything else he
    is standing on his feet for, and a dash attack takes them out from under him (hurtEnemy0) */
@@ -22967,6 +22989,7 @@ function drawWorld(cx, cy, showPlayer) {
       drawRot(c.t === 'hopper' && c.color && c.color !== 'green' ? SPR['hopper_' + c.color] : SPR[c.t], c.frame, c.x - cx, c.y - cy + sink, c.face, c.rot, al, 1 + 0.3 * q, 1 - 0.3 * q); }
   }
   for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   /* what they were made of, after the bodies and before the living */
+  if (boss && boss.t === 'lance' && boss.alive && boss.bowCall) drawBowCall(boss.bowCall, cx, cy);   /* drawn whether he is on the screen or not: his bowman is coming to where YOU are */
   for (const e of enemies) {
     if (e.alive && (e.poise > 0 || e.broken > 0)) drawPoise(e, cx, cy);   /* the stagger bar over its head */
     if (e.t === 'kraken') { drawKraken(e, cx, cy); continue; }   /* most of it is off the screen and in the sea: it draws itself, dead or alive */

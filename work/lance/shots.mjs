@@ -24,9 +24,9 @@ try {
     save(name, d.png);
   }
   if (tag === 'after') {
-    for (const [name, frames] of [['bowman-called', 30], ['bowman-up', 200]]) {
+    for (const [name, frames, at] of [['bowman-called', 30, 312], ['bowman-up', 200, 312], ['bowman-called-offscreen', 30, 380]]) {
       const d = await pg.evalp(`(() => { ${boot}
-        BK.tp(312, 29); BK.sim(40);
+        BK.tp(312, 29); BK.sim(40); BK.tp(${at}, 29);
         for (const e of BK.enemies()) if (!e.maxHp) e.alive = false;
         for (let k = 0; k < 200; k++) { BK.P.inv = 9; BK.step(1); }
         const b = BK.boss; b.supportT = 0.01;
