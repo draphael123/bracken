@@ -128,6 +128,8 @@ export function cutthroatStep(e, w, dt) {
 export function newSlinger(x, y) { return { kind: 'slinger', x, y, hp: SLINGER.hp, mode: 'stand', t: 0, face: -1, cd: 1.2, frame: 0, stone: null, tx: x, ty: y }; }
 /* where the stone is at k (0..1) of its flight: a straight line from the sling to the mark, lifted by a parabola */
 export function stoneAt(s, k) { const arc = 30 + Math.abs(s.tx - s.x0) * 0.3; return [s.x0 + (s.tx - s.x0) * k, s.y0 + (s.ty - s.y0) * k - arc * 4 * k * (1 - k)]; }
+/* w.clear (from the game, which has the tiles): false when there is stone between his sling and you - you are inside his tower, or
+   under a roof - and then he does not throw. A stone that meets stone in flight is spent there (the game ends it: e.stone = null) */
 export function slingerStep(e, w, dt) {
   const out = [], d = w.px - e.x, ad = Math.abs(d), dy = w.py - e.y, S = SLINGER; e.t -= dt; e.cd -= dt;
   if (e.stone) { const s = e.stone; s.t += dt; const k = Math.min(1, s.t / s.T), [x, y] = stoneAt(s, k); s.x = x; s.y = y;   /* the stone flies on whatever he does next */
@@ -136,7 +138,7 @@ export function slingerStep(e, w, dt) {
   switch (e.mode) {
     case 'stand': e.frame = 0; if (ad < S.sight) e.face = Math.sign(d) || e.face;
       if (e.cd <= 0 && ad < S.kickR && Math.abs(dy) < 24) { e.mode = 'kickTell'; e.t = S.kickTell; e.frame = 4; ev(out, 'tell', { what: 'kick', mark: '!' }); }
-      else if (e.cd <= 0 && !e.stone && ad < S.sight && ad > S.minR && dy > -48 && dy < S.rise) { e.mode = 'slingTell'; e.t = S.whirl; e.tx = w.px; e.ty = w.py; e.frame = 1;
+      else if (e.cd <= 0 && !e.stone && w.clear !== false && ad < S.sight && ad > S.minR && dy > -48 && dy < S.rise) { e.mode = 'slingTell'; e.t = S.whirl; e.tx = w.px; e.ty = w.py; e.frame = 1;
         ev(out, 'tell', { what: 'sling', mark: '!', x: e.tx, y: e.ty }); }   /* THE MARK: the spot you stand on as he starts to whirl, and the arc to it is drawn */
       break;
     case 'slingTell': e.frame = 1 + (Math.floor(e.t * 10) % 2); if (e.t <= 0) { e.mode = 'loose'; e.t = S.loose; e.frame = 3;

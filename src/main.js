@@ -16534,6 +16534,11 @@ function updateDesertFoe(e, dt) {
   if (e.stagger > 0 && e.t !== 'vulture') { grav(); return; }   /* knocked about: its machine waits */
   s.x = e.x; s.y = e.y;
   const w = { px: P.x, py: P.y, time, pface: P.face || 1 };
+  /* THE SLINGER THROWS ONLY AT WHAT IS UNDER THE SKY: a hero with stone over his head between him and the sling - inside a tower (his
+     own), a house, under a lintel - is out of his arc. (A straight line of sight was tried first and was wrong: his stone goes UP and
+     over, and the line from a roof twelve rows up to the road below always ran through his own wall, so he never threw at all.) */
+  if (e.t === 'slinger') { const tx = Math.floor(P.x / TS); w.clear = true;
+    for (let ty = Math.floor((P.y - 16) / TS); ty > Math.floor((e.y - 14) / TS) && w.clear; ty--) if (tileAt(tx, ty) === T.SOLID) w.clear = false; }
   const was = s.mode, x0 = e.x;
   const evs = CV_STEP[e.t](s, w, dt);
   if (e.t === 'vulture') { e.x = s.x; e.y = s.y; }
@@ -16553,6 +16558,7 @@ function updateDesertFoe(e, dt) {
     if (v.t === 'feinted') { dust(e.x + (s.face || 1) * 5, e.y, 2); continue; }   /* the stamp */
     if (v.t === 'land') { cvS('stoneThud'); dust(v.x, v.y, 3); continue; }
     if (v.t !== 'hit' || P.dead) continue;
+    if (v.stone && s.stone && s.stone.t > 0.3 && tileAt(Math.floor(s.stone.x / TS), Math.floor(s.stone.y / TS)) === T.SOLID) {   /* (clear of his own parapet first) */ dust(s.stone.x, s.stone.y, 3); cvS('stoneThud'); s.stone = null; continue; }   /* it breaks on the stone it meets */
     if (v.stone) { const [l, r, t, b] = v.box; if (s.stone && overlap({ l, r, t, b }, box(P))) { s.stone = null; damagePlayer(v.box[0] + 4, v.dmg, { who: e, name: 'A SLINGSTONE' }); } continue; }   /* a stone is spent on what it hits, blocked or not */
     if (e.cvHit) continue;
     const [l, r, t, b] = v.box; if (!overlap({ l, r, t, b }, box(P))) continue;
