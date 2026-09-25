@@ -38,11 +38,11 @@ try {
   if (!only) { /* THE CROWN HOIST: loaded and ridden, then the rope cut in phase two (after the rework only) */
   const h = await pg.evalp(`(() => {
     const i = __LV.findIndex(l => l.id === 'hanging'); BK.load(i); BK.start(); BK.god = true; BK.sim(900);
-    const hz = (BK.hoists && BK.hoists()) || []; const H = hz.find(q => q.arena); if (!H) return { none: true };
-    BK.tp(Math.floor(H.deckX / 16), 19); BK.sim(30); const owl = BK.enemies().find(e => e.t === 'owl'); for (const e of BK.enemies()) if (e !== owl) e.alive = false;
-    BK.hoistLoad(H, H.need); BK.tp(Math.floor((H.deckX + 16) / 16), 19); BK.P.y = H.deck.y; for (let k = 0; k < 240; k++) BK.step(1);
+    const hz = (BK.hoists && BK.hoists()) || []; const H = hz.find(q => q.arena); if (!H) return { none: true }; const A = BK.L.arena;
+    BK.tp(Math.round(A.trigger / 16) + 1, 19); BK.sim(60); const owl = BK.enemies().find(e => e.t === 'owl'); for (const e of BK.enemies()) if (e !== owl) e.alive = false;
+    BK.P.x = H.x + 12; BK.P.y = H.y; BK.P.vy = 0; BK.P.onMover = H; BK.hoistLoad(H, H.need); for (let k = 0; k < 240; k++) BK.step(1);
     const up = ${snap()};
-    owl.hp = Math.floor(owl.maxHp * 0.49); for (let k = 0; k < 150 && owl.mode !== 'ropeTell'; k++) BK.step(1);
+    owl.hp = Math.floor(owl.maxHp * 0.49); owl.phase = 2;   /* (the phase turns in the hurt path: set it with the blood) */ for (let k = 0; k < 150 && owl.mode !== 'ropeTell'; k++) BK.step(1);
     for (let k = 0; k < 30; k++) BK.step(1); const tell = ${snap()};
     for (let k = 0; k < 150; k++) BK.step(1); const cut = ${snap()};
     return { up, tell, cut, mode: owl.mode };

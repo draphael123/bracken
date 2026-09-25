@@ -1591,6 +1591,12 @@ function hangingVillage() {
   const shelf = (x, y, n) => { for (let i = 0; i < n; i++) set(x + i, y, T.SHELF); };
   const pit = (x0, x1, top) => { for (let x = x0; x <= x1; x++) { set(x, top, 0); set(x, top + 1, T.SPIKE); } }; // a rotten stretch of bough with goblin spikes set under it
   const vine = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); }; // a hanging vine: climb it like a rope
+  /* THE HOIST (src/main.js, THE HOIST; docs/briefs/hanging-village-rework.md §3): a deck that rests on the floor it stands on (row `low`).
+     THE WELL IS ALWAYS ON THE FAR SIDE OF THE DECK FROM THE LOADS: carried the other way, a load went in as you walked past the well and
+     the deck left without you (measured, tools/hanging-hoist-walk.mjs).
+     and rises level with the floor at row `high`, and a well-head at column `well` whose basket takes `need` loads. The deck is a lift, so
+     the reach model rides it; the wheel hangs under whatever is over the top stop (or at `topRow`). Loads are ents: ent('load', x, row, { kind }) */
+  const hoist = (id, dx, low, high, well, need, o = {}) => movers.push({ kind: 'lift', hoist: id, x: dx * TS, y: (low + 1) * TS - 8, y0: (low + 1) * TS - 8, y1: (high + 1) * TS, w: 32, h: 8, speed: o.speed || 54, well, need, topRow: o.topRow, arena: !!o.arena });
   block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1); // the trunk walls either side
   const tops = { t0: 108, t1: 94, t2: 80, t3: 66, t4: 52, t5: 38, crown: 20 };
   /* THE CLIFF IS DRAWN NOW (src/hanging-village.js, L.groundZones below): the face behind every floor and the brackets that carry each
@@ -1635,14 +1641,15 @@ function hangingVillage() {
   hole(28, 33, tops.t1); ent('mover', 28, tops.t1, { len: 2, range: 4, speed: 44 }); ent('wasp', 30, 90); // a second gap: a bough that slides, and a wasp over it
   ent('sign', 74, 93, { text: 'THE BRANCH SNAPS UNDER A STANDING WEIGHT. KEEP MOVING. IT GROWS BACK IN A BREATH OR TWO.' });
   ent('spider', 84, 86, { drop: 100 }); ent('spider', 58, 86, { drop: 100 }); ent('spider', 36, 86, { drop: 100 });
-  ent('sprig', 46, 93, { face: 1 }); ent('thorn', 20, 93, { face: 1 }); plat(20, 90, 3); ent('archer', 21, 89, { face: 1 });
+  ent('sprig', 46, 93, { face: 1 }); ent('thorn', 38, 93, { face: 1 }); plat(38, 90, 3); ent('archer', 39, 89, { face: 1 });   /* the archer's nest stands east of the rope-makers' store now: the hoist is taught with nothing shooting at you */
   ent('door', 44, 93, { at: 44 }); ent('folk', 47, 93, { door: 44 });
-  coins([92, 91], [80, 91], [62, 91], [54, 91], [40, 91], [22, 88], [12, 91]);
+  coins([92, 91], [80, 91], [62, 91], [54, 91], [40, 91], [39, 88], [12, 91]);
   ent('check', 8, 93);
   // 1 -> 2: a counterweight lift at the trunk
-  band(1, W - 2, tops.t2); hole(2, 7, tops.t2);
-  movers.push({ kind: 'lift', x: 3 * TS, y: (tops.t1 - 1) * TS, y0: (tops.t1 - 1) * TS, y1: (tops.t2 - 1) * TS, w: 32, h: 8, speed: 34 });
-  ent('sign', 8, 93, { text: 'THE LIFT RISES WHILE YOU STAND ON IT AND SINKS WHEN YOU STEP OFF.' });
+  band(1, W - 2, tops.t2); hole(2, 5, tops.t2);   /* the hoist's shaft: the deck (3-4) and the well's rope (2) go up it, and the market floor starts a hop from the deck */
+  /* THE ROPEWALK HOIST, where the machine is TAUGHT: the only way up, a checkpoint beside it, three coils by it and nothing to fight */
+  hoist('rope', 3, tops.t1 - 1, tops.t2 - 1, 2, 1, { speed: 66 });   /* fourteen rows: about six seconds at the game's pace */ ent('load', 11, 93, { kind: 'coil', hoist: 'rope' }); ent('load', 13, 93, { kind: 'coil', hoist: 'rope' }); ent('load', 15, 93, { kind: 'coil', hoist: 'rope' });
+  ent('sign', 8, 93, { text: 'THE HOIST: DOWN PICKS UP A COIL. STAND ON THE DECK AND DROP IT IN THE WELL. UP YOU GO.' });
 
   // ---- Tier 2. THE MARKET (walk right): hill folk and goblins live door to door; the Lamplighter wants three lanterns lit ----
   ent('sign', 8, 79, { text: 'STRIKE A DARK LANTERN TWICE TO LIGHT IT. CUT THE SNUFFERS OR THEY PUT IT OUT.' });
@@ -1669,7 +1676,11 @@ function hangingVillage() {
   ent('spider', 80, 58, { drop: 100 }); ent('spider', 48, 58, { drop: 100 }); ent('snuffer', 34, 65, { face: 1 }); ent('sprig', 26, 65, { face: 1 }); ent('wasp', 56, 60);
   plat(70, 63, 3); plat(40, 61, 3); coins([71, 62],   /* the lamp's ledge was four rows off the floor */ [41, 60], [86, 63], [56, 63], [26, 63]);
   ent('door', 88, 65, { at: 88 }); ent('folk', 91, 65, { door: 88 }); ent('deco', 14, 65, { kind: 'lanternPost' }); ent('lantern', 14, 65); ent('lantern', 64, 65);
-  ent('check', 20, 65); ent('stray', 71, 62, { kind: 'lamp' });
+  ent('check', 20, 65);
+  /* THE MILL HOIST: a flour sack hangs on a peg over the well. Cut the peg and it drops in - the crown's peg-cut, taught where nothing is
+     trying to kill you - and the deck lifts you to the ledge the lamp was carried up to */
+  plat(72, 59, 4); ent('stray', 73, 58, { kind: 'lamp' }); hoist('mill', 76, 65, 58, 78, 1); ent('load', 78, 65, { kind: 'sack', hoist: 'mill', peg: 75, hy: 61, ropeTop: 56 });
+  ent('sign', 80, 65, { text: 'THE MILL HOIST: CUT THE PEG AND THE SACK DROPS IN. BE ON THE DECK WHEN IT DOES.' });
   // 3 -> 4: snapping branches up the trunk
   band(1, W - 2, tops.t4); hole(2, 9, tops.t4);
   shelf(8, 63, 2); shelf(4, 60, 2); shelf(8, 57, 2); shelf(4, 54, 2); shelf(7, 51, 2);
@@ -1682,7 +1693,9 @@ function hangingVillage() {
   ent('squirrel', 30, 51, { face: 1 }); ent('spider', 45, 44, { drop: 100 }); ent('spider', 65, 44, { drop: 100 });
   plat(56, 48, 3); ent('archer', 57, 47, { face: -1 }); plat(72, 46, 2); ent('silver', 73, 45); plat(76, 49, 3);
   set(40, tops.t4 - 1, T.BOUNCER); plat(38, 45, 2); plat(43, 43, 3); coins([39, 44], [44, 42], [45, 42]); ent('wasp', 48, 44); // a springy bough up to a high ledge
-  movers.push({ kind: 'lift', x: 62 * TS, y: (tops.t4 - 1) * TS, y0: (tops.t4 - 1) * TS, y1: 44 * TS, w: 32, h: 8, speed: 30 }); plat(66, 44, 3); coins([67, 43]); ent('relic', 68, 43, { kind: 'spurs' }); // a basket lift to a nest of coins
+  /* THE NEST HOIST, UNDER THREAT: it wants TWO sacks, and the second is up on the springy bough - you walk it back, slowly, under the spiders */
+  hoist('nest', 64, 51, 43, 66, 2);   /* the deck tops out level with the nest and against it: you walk off onto the relic */ plat(66, 44, 3); coins([67, 43]); ent('relic', 68, 43, { kind: 'spurs' }); ent('load', 58, 51, { kind: 'sack', hoist: 'nest' }); ent('load', 43, 42, { kind: 'sack', hoist: 'nest' });
+  ent('sign', 56, 51, { text: 'THE NEST HOIST WANTS TWO SACKS. THE SECOND IS UP ON THE SPRINGY BOUGH.' });
   ent('door', 84, 51, { at: 84 }); ent('folk', 87, 51, { door: 84 }); ent('thorn', 94, 51, { face: -1 });
   coins([26, 49], [38, 49], [50, 49], [60, 46], [80, 47], [98, 49]);
   ent('check', 12, 51);
@@ -1715,7 +1728,10 @@ function hangingVillage() {
   plat(47, 11, 2); plat(60, 10, 2); plat(70, 11, 2); // the links between them
   for (const [x, y] of [[42, 8], [54, 11], [65, 8]]) ent('lantern', x, y, { dark: true, perch: true, owl: true }); // a dark lantern on each perch: light it and the perch is denied
   vine(48, 12, 19); vine(61, 11, 19); // two vines from the floor up to the links
-  ent('deco', 38, 19, { kind: 'stone', v: 0 }); ent('deco', 68, 19, { kind: 'cairn' });
+  ent('deco', 38, 19, { kind: 'stone', v: 0 }); ent('deco', 70, 19, { kind: 'cairn' });
+  /* THE CROWN HOIST, PAID OFF: one stone and it lifts you level with her middle perch. At half blood she cuts its rope (updateOwl, ropeGo) */
+  hoist('crown', 57, 19, 11, 56, 1, { topRow: 5, arena: true }); ent('load', 65, 19, { kind: 'stone', hoist: 'crown' }); ent('load', 67, 19, { kind: 'stone', hoist: 'crown' });
+  ent('sign', 6, 19, { text: 'THE HOIST LIFTS YOU TO HER PERCH. SHE WILL NOT SUFFER IT FOR LONG.' });
   // THE DEAD BOUGHS: under each outer perch a dead limb hangs on a rope run along the branch to a peg on the floor. Cut the peg while the Reeve
   // is LOW under the limb (skimming, stuck in the boards, dazed) and it pins it: the one window the player makes. Placed on the row under the branch.
   ent('deadfall', 41, 10, { peg: 44, pegY: 19, hang: true }); ent('deadfall', 66, 10, { peg: 63, pegY: 19, hang: true });
@@ -1726,15 +1742,16 @@ function hangingVillage() {
 
 
   for(const m of movers)if(m.kind==='lift'){const tx=Math.floor((m.x+16)/TS);let row=Math.floor(Math.min(m.y0,m.y1)/TS)-1;while(row>0&&!L.grid[row*W+tx])row--;m.top=(row+1)*TS;}
+  for (const m of movers) if (m.hoist) { if (m.topRow !== undefined) m.top = m.topRow * TS; m.wheelX = Math.round((m.x + 16 + m.well * TS + 8) / 2); m.wheelY = m.top + 10; }   /* the wheel between the deck's rope and the basket's */
   // A house for every inhabited door; two large public buildings mark the roots and market.
   /* ONE HOUSE A FLOOR (src/redraw/hanging-town.js): a turf shanty in the roots, a rope-maker's shed, the market house, a miller's cottage,
      a rookery house with nest boxes, a lantern-maker's with every window lit */
   const HOUSE = { 107: 'roots', 93: 'rope', 79: 'market', 65: 'mill', 51: 'rook', 37: 'lantern' };
   for(const d of [...L.ents].filter(e=>e.t==='door'))ent('deco',d.x,d.y,{kind:(d.x===60&&d.y===107)||(d.x===50&&d.y===79)?'villageHall':'hangingHouse',style:HOUSE[d.y]});
   /* and what each floor leaves lying about: roots and fungus, rope and hemp, the market's stalls, flour at the mill, the rooks' boxes */
-  for(const [x,y,k] of [[23,107,'stump'],[40,107,'mushroom'],[80,107,'fern'],[16,93,'ropeCoil'],[27,93,'washing'],[38,93,'hempBale'],[60,93,'ropeCoil'],[24,79,'stall'],[45,79,'shopSign'],[72,79,'stall'],[82,79,'barrels'],[58,65,'flourSacks'],[84,65,'flourSacks'],[26,51,'dovecote'],[48,51,'birdhouse'],[78,51,'beehive']])ent('deco',x,y,{kind:k});
+  for(const [x,y,k] of [[23,107,'stump'],[40,107,'mushroom'],[80,107,'fern'],[16,93,'ropeCoil'],[27,93,'washing'],[18,93,'hempBale'],[60,93,'ropeCoil'],[24,79,'stall'],[45,79,'shopSign'],[72,79,'stall'],[82,79,'barrels'],[58,65,'flourSacks'],[84,65,'flourSacks'],[26,51,'dovecote'],[48,51,'birdhouse'],[78,51,'beehive']])ent('deco',x,y,{kind:k});
   return {
-    hangingTown:true, W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
+    hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'town', night: false, glowNight: true,
     /* SEVEN FLOORS, SEVEN GROUNDS (src/hanging-village.js): each band of rows wears its floor's look - its top, its rock, its underside, its
        ledges, its scatter - and the cliff face behind it. ceilLook: whose bough is overhead, which is what carries the brackets. */
