@@ -7683,7 +7683,13 @@ function miniEnd(e) {
   if (!rushOn()) { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].mini = true; saveProgress(); }
   number(e.x, e.y - 30, MINI_DONE[e.t] || 'THE WAY OPENS', '#8fd160'); SFX.heavy(); music.play(L.music || 'theme');
 }
-function setWallAt(col, solid, floorY) { const top = floorY / TS - 6, bot = floorY / TS - 1; for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.palisade[(ty + col) % 3] : null; } }
+/* A MINI'S WALL PUTS BACK WHAT IT STOOD ON (Falling Tower round 2). It wrote AIR over its whole column when it opened, so a wall raised
+   against rock took the rock with it: THE SEXTON's left wall cut a notch out of the ringers' walk it stands against. And in the tower it
+   was a wooden palisade on the tower's stone; a level that skins its stone ('fallen') raises that stone instead. */
+function setWallAt(col, solid, floorY) { const top = floorY / TS - 6, bot = floorY / TS - 1, was = L.wallWas || (L.wallWas = new Map());
+  for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col;
+    if (solid) { if (!was.has(i)) was.set(i, [L.grid[i], tileSpr[i]]); if (L.grid[i] === T.SOLID) continue; L.grid[i] = T.SOLID; tileSpr[i] = L.fallingTower ? (FALLEN_SKINS || (FALLEN_SKINS = FTW.bakeFallenSkins())).fallen[(ty + col) % 3] : TILE.palisade[(ty + col) % 3]; }
+    else { const w = was.get(i); was.delete(i); if (w) { L.grid[i] = w[0]; tileSpr[i] = w[1]; } else { L.grid[i] = T.AIR; tileSpr[i] = null; } } } }
 function setWall(col, solid) {
   const A = L.arena; const top = A.floor / TS - 6, bot = A.floor / TS - 1;
   for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? ((L.arena.boss === 'chief' || L.arena.boss === 'master') ? TILE.palisade[(ty + col) % 3] : L.arena.boss === 'suncatcher' ? (TILE.ice || (TILE.ice = bakeIceTile())) : (L.arena.boss === 'ram' || L.arena.boss === 'lance' || L.arena.boss === 'roc' || L.arena.boss === 'golem' || L.arena.boss === 'prince' || L.arena.boss === 'duneworm') ? TILE.drystone[(ty + col) % 3] : L.arena.boss === 'gqueen' ? TILE.port[(ty + col) % 2] : TILE.vine[(ty + col) % 4]) : null; }
@@ -14677,9 +14683,16 @@ function updateHedgeWardenBoss(e, dt) {
    he climbs out onto, the toll that sets the planks counting, the charge that breaks a counting one, and the bells off the frame */
 const bellPlanks = () => (L.crumbles || []).filter(c => c.kind === 'deck' && !c.gone);
 let sextonFx = { bells: [] };
+/* WHERE HE CAN STAND (Falling Tower round 2): his box on the deck - (w - 2) wide, h tall over his feet - clear of rock. The ringers'
+   walks and a shut gate are rock; a plank is not (he stands on it). tools/mini-walls.mjs fails any frame that ends with him in the rock. */
+const sextonStands = (e, x, floor) => { const hw = (e.w || 20) / 2 - 1, x0 = Math.floor((x - hw) / TS), x1 = Math.floor((x + hw) / TS), y0 = Math.floor((floor - (e.h || 46) + 1) / TS), y1 = Math.floor((floor - 1) / TS);
+  for (let y = y0; y <= y1; y++) for (let tx = x0; tx <= x1; tx++) { const t = tileAt(tx, y); if (t === T.SOLID || t === T.PORT) return false; } return true; };
 function updateSextonBoss(e, dt) {
   const A = L.mini && L.mini.boss === 'sexton' ? L.mini : L.arena, D = L.bellDeck; if (!A || !D) return;
   const plankAt = x => { const tx = Math.floor(x / TS); return bellPlanks().find(c => tx >= c.x0 && tx <= c.x1) || null; };
+  const stands = x => sextonStands(e, x, A.floor);
+  /* the planks will not come back into the pit while he is down in it (tower-collapse.js: a restore waits for its blockers) */
+  for (const c of bellPlanks()) if (!c.blockers) c.blockers = () => { const s = enemies.find(q => q.t === 'sexton' && q.alive); return s ? [{ x: s.x, y: s.mode === 'pit' || s.mode === 'climb' ? A.floor + 10 : s.y }] : []; };
   stepSexton(e, dt, { P, A: { x0: A.x0, x1: A.x1, floor: A.floor },
     hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }),
     say: (m, red, green) => number(e.x, e.y - 58, m, green ? '#8fd160' : red ? '#ff6b6b' : '#ffd36b'),
@@ -14687,11 +14700,15 @@ function updateSextonBoss(e, dt) {
     shake: n => shakeCam(n), dust: (x, y) => dust(x, y, 10), ring: (x, y, r) => { ringAt(x, y - 4, Math.min(r, 90), '#ff6b6b', 0.45); ringAt(x, y - 4, Math.min(r, 60), '#ffe7a0', 0.35); },
     plank: plankAt, breakPlank: c => { crumbleBreakAt(c); },
     count: (x, r, t) => { const own = plankAt(e.x); for (const c of bellPlanks()) if (c !== own && c.st === 'whole' && Math.abs((c.x0 + c.x1 + 1) * TS / 2 - x) <= r + 40) crumbleStartAt(c, t); },
-    joist: x => { let best = null; for (const j of D.joists) if (best === null || Math.abs(j - x) < Math.abs(best - x)) best = j; return best; },
+    /* out of the pit onto the nearest place he can STAND that is not a hole - two of the old "joists" were the ringers' walks, and he climbed into the stone */
+    joist: x => { for (let d = 0; d <= 12 * TS; d += 2) for (const s of [1, -1]) { const q = x + s * d; if (q > A.x0 + 16 && q < A.x1 - 16 && stands(q)) { const p = plankAt(q); if (!p || p.st !== 'down') return q; } } return null; },
+    stands, pitSpan: p => p ? [p.x0 * TS + (e.w || 20) / 2 + 1, (p.x1 + 1) * TS - (e.w || 20) / 2 - 1] : null,
     shadow: (spots, t) => { sextonFx.bells = spots.map(x => ({ x, t, T: t })); },
     bell: x => { burst(x, A.floor - 2, 10, ['#b07a2a', '#e2b050', '#5e3c14'], 70, 0.5); dust(x, A.floor, 8); } });
   for (const b of sextonFx.bells) b.t -= dt; sextonFx.bells = sextonFx.bells.filter(b => b.t > -0.3);
   e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x));
+  /* AND NEVER IN THE ROCK: if anything has put his feet on the deck inside a walk, he is set beside it (the leap and the pit keep their own heights) */
+  if (e.mode !== 'leap' && e.mode !== 'pit' && e.mode !== 'climb' && !stands(e.x)) { for (let d = 2; d <= 8 * TS; d += 2) { if (stands(e.x + d)) { e.x += d; break; } if (stands(e.x - d)) { e.x -= d; break; } } }
 }
 /* THE BELLS OFF THE FRAME: a shadow where it will land, darker as it comes, and the bell itself falling into it */
 function drawSextonFx(cx, cy) {
