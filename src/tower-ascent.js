@@ -331,7 +331,16 @@ export function drawTowerBackdrop(g, L, cx, cy) {
   const sky = L.skyRow !== undefined ? Math.max(0, L.skyRow * 16 - cy) : 0;   /* the tower's ribs stop where the tower does: over the crown is sky */
   g.save(); g.beginPath(); g.rect(lo * 16 - cx, sky, L.W * 16, g.canvas.height); g.clip();
   for (let x = Math.floor(start / 12) * 12; x < end; x += 12) { const px = x * 16 - cx; g.fillStyle = '#242135'; g.fillRect(px, 0, 12, g.canvas.height); g.fillStyle = '#3b344e'; g.fillRect(px + 2, 0, 2, g.canvas.height);
-    for (let y = Math.floor(cy / 192) * 192 - 192; y < cy + g.canvas.height; y += 192) { const py = y - cy + 38; g.fillStyle = '#161c36'; g.fillRect(px + 40, py, 35, 70); g.fillStyle = '#586087'; g.fillRect(px + 42, py + 2, 31, 1); g.fillStyle = '#3b395d'; g.fillRect(px + 56, py, 2, 70); g.fillRect(px + 40, py + 35, 35, 2); g.fillStyle = '#bec2d8'; g.fillRect(px + 47, py + 12, 2, 2); g.fillRect(px + 66, py + 25, 1, 1); } }
+    /* THE TOWER'S WINDOWS, AS WINDOWS (level review, 2026-09-24): a flat navy panel cut in four with two dots on it, and where a floor
+       cut it off at the foot it read as a blank cupboard door. A stone surround with a pointed head and a sill, the night lighter
+       toward the top of the glass, leaded lights, and a few stars. */
+    for (let y = Math.floor(cy / 192) * 192 - 192; y < cy + g.canvas.height; y += 192) { const py = y - cy + 38, wx = px + 40;
+      g.fillStyle = '#4a4464'; g.fillRect(wx - 3, py - 4, 41, 76); for (let k = 0; k < 8; k++) g.fillRect(wx + 17 - k * 2 - 3, py - 12 + k, k * 4 + 6, 1);   /* the surround, and its pointed head */
+      g.fillStyle = '#161c36'; g.fillRect(wx, py, 35, 70); for (let k = 0; k < 6; k++) g.fillRect(wx + 17 - k * 3, py - 6 + k, k * 6 + 1, 1);
+      g.fillStyle = '#1e2748'; g.fillRect(wx, py, 35, 22); g.fillStyle = '#26315a'; g.fillRect(wx + 2, py, 31, 8);                       /* the sky paler at the top of the glass */
+      g.fillStyle = '#3b395d'; g.fillRect(wx + 16, py - 4, 3, 74); g.fillRect(wx, py + 34, 35, 2); for (let k = 12; k < 70; k += 12) if (k !== 36) g.fillRect(wx, py + k, 35, 1);   /* mullion, transom and the leads */
+      g.fillStyle = '#6a6488'; g.fillRect(wx - 5, py + 70, 45, 3); g.fillStyle = '#827ca0'; g.fillRect(wx - 5, py + 70, 45, 1); g.fillRect(wx - 3, py - 4, 1, 74); /* the sill, lit edge */
+      g.fillStyle = '#bec2d8'; g.fillRect(wx + 7, py + 10, 2, 2); g.fillRect(wx + 26, py + 25, 1, 1); g.fillRect(wx + 22, py + 4, 1, 1); g.fillRect(wx + 5, py + 45, 1, 1); } }
   g.restore();
 }
 export function gateOccupied(col, rows, actors) { return actors.some(p => p && !p.dead && rows.some(y => p.x + (p.w || 10) / 2 > col * 16 - 4 && p.x - (p.w || 10) / 2 < (col + 1) * 16 + 4 && p.y > y * 16 && p.y - (p.h || 14) < (y + 1) * 16)); }
