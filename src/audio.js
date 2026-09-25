@@ -1111,6 +1111,9 @@ SFX.feintScrape = () => { if (!gate('feint', 0.2)) return; noise(0.07, 0.07, 260
 SFX.bladeGlint = () => { if (!gate('glint', 0.2)) return; tone('sine', 2600, 3100, 0.18, 0.05); tone('triangle', 1300, 1500, 0.2, 0.03, 0.02); noise(0.05, 0.05, 5000, 0.6); };
 SFX.slingWhirl = () => { if (!gate('whirl', 0.3)) return; for (let i = 0; i < 4; i++) noise(0.09, 0.05 + i * 0.01, 700 + i * 250, 0.4, i * 0.18); };
 SFX.stoneThud = () => { if (!gate('thud', 0.1)) return; noise(0.06, 0.14, 700, 0.5); tone('square', 180, 90, 0.05, 0.06); };
+/* THE SUN BUILDS (THE SUNKEN CARAVAN, 2026-09-25): a tick of sunstroke at full is a dry sizzle, and each stage of the build (1, 2, 3:
+   3, 5, 8 damage) is a step higher and harder than the last, so the ear hears it getting worse before the bar does */
+SFX.sunBurn = (st = 1) => { if (!gate('sunBurn', 0.3)) return; noise(0.16 + 0.04 * st, 0.07 + 0.03 * st, 2400 + 900 * st, 0.5); tone('sawtooth', 260 + 150 * st, 170 + 110 * st, 0.14 + 0.03 * st, 0.04 + 0.02 * st); if (st >= 3) tone('square', 1300, 900, 0.08, 0.03, 0.05); };
 SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.08, 0.05, 0.02); tone('sine', 620, 740, 0.22, 0.04, 0.06); };
 // THE CAST. A man in this game died on a square wave or on a goblin slowed down. Now: people REPLACE their synth
 // with a voice from a kit (bosses keep their synth under it, for the size of the moment), creatures LAYER a voice

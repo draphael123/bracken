@@ -95,7 +95,7 @@ export function buildCaravan({ T, TS }) {
     const archRow = (() => { for (let y = 0; y < H; y++) if (at(m.arch, y) === T.SOLID) return y; return 0; })();
     const cs = m.caravanserai, csRoof = (() => { for (let y = 0; y < H; y++) if (at(cs, y) === T.SOLID) return y; return 0; })();
     const ov = L.hollow.wallL + 3, ovRow = (() => { for (let y = 0; y < H; y++) if (at(ov, y) === T.SOLID) return y; return 0; })();
-    L.rockZones = [[m.arch - 3, m.arch + 7, archRow, archRow], [cs, cs + 6, csRoof, top(cs - 1) - 1], [ov - 1, ov + 5, ovRow, ovRow]];
+    L.rockZones = [[m.arch - 3, m.arch + 7, archRow, archRow], [ov - 1, ov + 5, ovRow, ovRow]];   /* the caravanserai is laid stone since 2026-09-25, like the town it stands in (L.masonry, the draft's) */
     /* AND IT IS A ROOM: the tower's inside gets a back wall (drawRoomPaint 'caravanserai' in main.js), so it reads as a place you
        climb through - door, shelf, shelf, hatch - and not as posts against the sky. The same rect is the reverb and the no-grass rule */
     L.interiors = (L.interiors || []).concat([[cs + 1, cs + 5, csRoof + 1, top(cs - 1) - 1, 'caravanserai']]); }

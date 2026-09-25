@@ -35,7 +35,7 @@ export const VULTURE = { hp: 22, alt: 90, circleR: 60, circleT: 4, watch: 0.8, d
 export const SANDGOB = { hp: 26, speed: 44, wake: 56, rise: 0.5, knifeTell: 0.45, knife: 0.18, cd: 0.8, cuts: 2, burrow: 0.45, under: 0.7, ahead: 70, w: 10, h: 16,
   tellMode: 'knifeTell', blowMode: 'knife', what: 'knife', reach: 26, hitW: 24, dmg: 7 };
 export const CUTTHROAT = { hp: 38, speed: 46, sight: 150, reach: 28, feintTell: 0.4, feintHold: 0.3, slashTell: 0.5, slash: 0.18, cd: 0.9, dmg: 10, w: 10, h: 18 };
-export const SLINGER = { hp: 24, sight: 230, minR: 30, rise: 170, whirl: 0.8, loose: 0.18, flight: 0.75, cd: 2.2, dmg: 8, kickR: 24, kickTell: 0.4, kick: 0.15, kickDmg: 6, w: 10, h: 16 };
+export const SLINGER = { hp: 24, sight: 230, minR: 30, rise: 240,   /* rise: how far below him he will throw - a tower's roof is twelve to fourteen rows over the road */ whirl: 0.8, loose: 0.18, flight: 0.75, cd: 2.2, dmg: 8, kickR: 24, kickTell: 0.4, kick: 0.15, kickDmg: 6, w: 10, h: 16 };
 export const AMBUSHER = { hp: 32, speed: 50, wake: 52, rise: 0.55, cutTell: 0.45, cut: 0.18, cd: 0.8, cuts: 2, burrow: 0.5, under: 0.8, ahead: 72, w: 12, h: 18,
   tellMode: 'cutTell', blowMode: 'cut', what: 'cut', reach: 28, hitW: 26, dmg: 9 };
 

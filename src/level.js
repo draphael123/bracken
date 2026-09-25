@@ -7608,7 +7608,7 @@ const GARRISON = {
      (Daniel, 2026-09-25: "I don't want goblins in the level"): the cutthroat's crowd. The slingers and the sand-cloaked ambushers are
      put by hand where they make the ground harder (RULES S1: src/draft/sunken-caravan.js), not sprinkled. ~3.8 a screen over 21
      screens is what the greybox measured (tools/caravan-level.mjs) */
-  caravan: [['scorpion', 22], ['cutthroat', 20], ['vulture', 14], ['ambusher', 8]],
+  caravan: [['scorpion', 22], ['cutthroat', 22], ['vulture', 14]],
   lamplit: [['watch', 6], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
@@ -7963,7 +7963,7 @@ const ELITES = {
   waymeet: [['hedgeknight', 465, 35], ['heavy', 548, 35]],
   fields: [['scarecrow', 230, 33]],
   mage: [['armour', 408, 39]],
-  caravan: [['cutthroat', 486, 29, { face: -1, gate: 496 }]],   /* THE SUNKEN CARAVAN: THE FIRST KNIFE (2026-09-25, a goblin bowman until the goblins left the level) holds the way down the rim to the hollow, on the rim's last flat with the gate at the foot of the drop (tools/elites.mjs: at 455 he stood four tiles from his gate, with no room to fight him in front of it) */
+  caravan: [['cutthroat', 518, 30, { face: -1, gate: 528 }]],   /* THE SUNKEN CARAVAN: THE FIRST KNIFE (2026-09-25, a goblin bowman until the goblins left the level) holds the way down the rim to the hollow - since the ruins (2026-09-25) in the shade of the rim's last lintel, the gate at the foot of the slide into the hollow, on the rim's last flat with the gate at the foot of the drop (tools/elites.mjs: at 455 he stood four tiles from his gate, with no room to fight him in front of it) */
 };
 /* THE GATE AN ELITE HOLDS, the same shape as an ambush room's (ambushWall in main.js): it stands on its own column's floor
    near the elite's row, up to a ceiling or ten tiles, and a floor you can drop through under it is shut too. One function,

@@ -17,7 +17,7 @@ import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, t
 import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */
 import { qsPatchAt, qsGameStep } from './quicksand.js';
 import * as DWM from './dune-worm.js'; import { newStorm, stormStep, gustDrift, STORM } from './desert-rules.js';   /* THE DUNE WORM, the caravan's boss (docs/briefs/dune-worm.md), and the storm he calls into his hollow */
-import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import * as CB from './redraw/caravan_bandits.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
+import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import * as CB from './redraw/caravan_bandits.js'; import * as CR from './redraw/caravan_ruins.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
 import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH} from './undead-mage.js';
 import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT,quench} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
@@ -16368,7 +16368,7 @@ function cvArt() {
   const B = DZ.bakeBones(), C = DZ.bakeCargo();
   CVART = { wagon: [DZ.bakeWagonWreck(0), DZ.bakeWagonWreck(1)], awning: [DZ.bakeAwning(0), DZ.bakeAwning(1)], bones: B, cargo: C, scrub: [DZ.bakeScrub(0), DZ.bakeScrub(1)],
     deadTree: DZ.bakeDeadTree(), standard: DZ.bakeStandard(), qs: DZ.bakeQuicksand(), pillar: DZ2.bakeArchPillar(), winch: DZ2.bakeWinch(), canopy: DZ2.bakeCanopy(), ui: DZ2.bakeUI(),
-    sand: bakeSandSlopes(), rock: DZ.bakeRockSlopes() };
+    sand: bakeSandSlopes(), rock: DZ.bakeRockSlopes(), ruin: CR.bakeRuinTiles() };
   return CVART;
 }
 /* THE DRESSING (the deco table in spawnEnt reads this): [canvas, stands, frames] like every other kind */
@@ -16385,6 +16385,9 @@ function bakeVeilIcon() { const [c, g2] = canvas(10, 12); g2.fillStyle = '#e8c24
   g2.fillStyle = '#b9a57e'; for (let y = 4; y < 10; y += 2) g2.fillRect(2, y, 6, 1); g2.fillStyle = '#b8463a'; g2.fillRect(1, 10, 8, 1); return outline(c, ART.OUT); }
 /* THE SKY AND THE FAR LAND: bleached at the horizon, mesas in the haze, the dune crests nearer (src/redraw/desert.js) */
 function cvBackdrop() { BG.sky = DZ.bakeDesertSky(VH); BG.far = DZ.bakeFarMesas(320, 70); BG.mid = DZ.bakeMidDunes(480, 80); BG.nearTrees = null;
+  /* THE FAR TOWN (2026-09-25): the ruins you are walking into, on the horizon in front of the mesas - towers with their tops broken,
+     domes, a broken arch, a colonnade - pale and flat, as far things are; the mid dunes cover their feet */
+  CR.paintSkyline(BG.far.getContext('2d'), BG.far.width, BG.far.height);
   /* THE HAZE ON THE HORIZON, AND ONLY A HAZE (docs/briefs/sunken-caravan-amendments.md: no storm act in level 1, "a haze on the
      horizon as a tease"). A low bank of dust standing behind the mesas, its top lumpy the way a far storm front is, baked into the far
      layer so it moves with the mesas and never with the hero. The storm itself belongs to THE SEALED PYRAMID. */
@@ -16397,6 +16400,10 @@ function cvBackdrop() { BG.sky = DZ.bakeDesertSky(VH); BG.far = DZ.bakeFarMesas(
    (sandstone) where the level says it is rock - the arch, the caravanserai, the rim's overhang */
 function cvTile(x, y, t) {
   const A = cvArt(), i = y * LW + x, h = ((x * 7 + y * 13) % 3 + 3) % 3;
+  /* THE RUINS (2026-09-25): what the masons laid (L.masonry) is coursed ashlar, not the rock's strata and not sand - a cracked block
+     now and then, and the sun-bleached, bitten top course wherever the stone meets the sky */
+  if (t === T.SOLID && (L.masonry || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3])) { const R = A.ruin, up = tileAt(x, y - 1);
+    tileSpr[i] = up === T.SOLID ? ((x * 5 + y * 3) % 7 === 0 ? R.crack[x % 2] : R.block[h]) : R.top[h]; return true; }
   const rock = (L.rockZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]), S = rock ? A.rock : A.sand;
   if (isSlope(t)) { tileSpr[i] = S[t][h]; return true; }
   if (t !== T.SOLID) return false;
@@ -16441,8 +16448,10 @@ function updateCaravan(dt) {
     if (pp.dead || state !== 'play') continue;
     const sh = cvShaded(pp.x, pp.y, pp.h || 14); if (pp === P) CV.shaded = sh;
     const r = sunStep(pp.sun, pp.relic === 'veil' && !sh ? dt * 0.5 : dt, sh);
-    if (pp === P) CV.swim = r.swim;
-    if (r.hurt) asPlayer(pp, () => damagePlayer(P.x, r.hurt, { unblockable: true, noKnock: true, name: 'SUNSTROKE' })); }
+    if (pp === P) { CV.swim = r.swim; CV.stage = r.stage; }
+    /* IT BUILDS, AND IT SAYS SO (C1): each tick at full is a sizzle a step higher than the last - 3, then 5, then 8 - and the HUD
+       names the stage the next one will be (drawCaravanHud) */
+    if (r.hurt) { if (pp === P && SFX.sunBurn) SFX.sunBurn(SUN.build.indexOf(r.hurt) + 1); asPlayer(pp, () => damagePlayer(P.x, r.hurt, { unblockable: true, noKnock: true, name: 'SUNSTROKE' })); } }
   /* QUICKSAND: it holds you and slows you; a jump heaves you up it, and at the surface a jump takes you out */
   for (const pp of players) asPlayer(pp, () => { if (P.dead) return;
     const q = qsPatchAt(L, P.x, P.y); if (!q && !P.qsDepth) return;
@@ -16526,12 +16535,17 @@ function drawCaravan(cx, cy) {
 function drawCaravanHud() {
   if (!CV) return;
   const A = cvArt(), v = (P.sun && P.sun.v) || 0, sw = CV.swim;
-  if (sw > 0 && !SET.reduceMotion) { g.globalAlpha = 0.1 + 0.18 * sw; g.fillStyle = '#ffb060'; g.fillRect(0, 0, VW, VH);
+  const stg = CV.stage || 0;   /* at full, the stage of the build (sunStep): the glare deepens with it */
+  if (sw > 0 && !SET.reduceMotion) { g.globalAlpha = 0.1 + 0.18 * sw + 0.06 * stg; g.fillStyle = stg >= 3 ? '#ff7a40' : '#ffb060'; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.12 * sw; g.fillStyle = '#fff1c8'; for (let y = 0; y < VH; y += 6) { const o = Math.sin(time * 7 + y * 0.3) * 3 * sw; g.fillRect(Math.round(o), y, VW, 2); } g.globalAlpha = 1; }
   const x = 22, y = 50, k = v >= 1 ? 3 : v >= SUN.swimAt ? 2 : v > 0.2 ? 1 : 0;
   g.drawImage(A.ui.sun[k], x - 14, y - 3); g.drawImage(A.ui.meter, x, y);
   g.fillStyle = v >= 1 ? '#ff5a3c' : v >= SUN.swimAt ? '#ff9a4c' : '#ffd36b'; g.fillRect(x + 1, y + 2, Math.round(42 * v), 3);
   if (CV.shaded) text(inHollowStorm(P.x) ? 'STORM' : 'SHADE', x + 22, y + 9, '#c9b0e0', 'center', 6);
+  else if (stg) {   /* THE BUILD, TOLD: a pip a stage beside the meter and the word under it, faster and redder as it climbs */
+    const on = Math.floor(time * (3 + 3 * stg)) % 2 === 0, col = ['#ff9a4c', '#ff5a3c', '#ff2a2a'][stg - 1];
+    for (let i = 0; i < 3; i++) { g.fillStyle = i < stg ? (on || i < stg - 1 ? col : '#fff1c8') : 'rgba(40,20,10,0.5)'; g.fillRect(x + 47 + i * 5, y + 1, 3, 5); }
+    text(['BURNING', 'HOTTER', 'SCORCHING'][stg - 1], x + 22, y + 9, on ? col : '#fff1c8', 'center', 6); }
   drawDuneStorm();
 }
 
@@ -22660,6 +22674,8 @@ function drawFacades(cx, cy) {
     const sx = Math.round(x0 * TS - cx), sy = Math.round(y0 * TS - cy), w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
     if (sx > VW || sx + w < 0 || sy > VH || sy + h < 0) continue;
     if (!f.spr && kind === 'barn') f.spr = bakeBarnWall(x1 - x0 + 1, y1 - y0 + 1, x0);   /* THE BURNING VILLAGE's barn: its back wall, so its ambush is a PLACE (RULES Q1) */
+    if (!f.spr && kind === 'ruin') f.spr = CR.bakeRuinFace(x1 - x0 + 1, y1 - y0 + 1, x0 * 7 + y0);
+    if (!f.spr && kind === 'ruindoor') f.spr = CR.bakeRuinDoor(y1 - y0 + 1);   /* the foot of a ruin's wall either side of its door */   /* THE SUNKEN CARAVAN's ruins: a lintel's piers, and the old town's walls behind the dunes */
     if (!f.spr) f.spr = (String(kind).startsWith('monk') ? MON.bakeFacade : CRT.bakeFacade)(kind, x1 - x0 + 1, y1 - y0 + 1, x0 * 131 + y0 * 7, Object.assign({}, o || {}, o && o.arch ? { arch: [o.arch[0] - y0, o.arch[1] - y0] } : {}));
     g.drawImage(f.spr, sx, sy);
     if (kind === 'burning') { g.globalAlpha = 0.045 + 0.03 * Math.sin(time * 7 + x0) + 0.015 * Math.sin(time * 17 + y0); g.fillStyle = '#ff8a3c'; g.fillRect(Math.max(0, sx), Math.max(0, sy + (h >> 2)), Math.min(VW, sx + w) - Math.max(0, sx), h - (h >> 2)); g.globalAlpha = 1; }
@@ -23910,7 +23926,8 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
 function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
-  if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
+  if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;
+  if (L.caravan && CR.paintRuinRoom(g, st, sx, sy, w, h, tx0, ty0)) return;   /* and THE SUNKEN CARAVAN its ruins: the inside of a tower or a house, in the violet of the shade */   /* and so does THE MONASTERY */
   const hsh = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233 + tx0 * 0.7) * 43758.5453; return v - Math.floor(v); };
   if(st==='ossuary'){
     g.fillStyle='#30333b';g.fillRect(sx,sy,w,h);
