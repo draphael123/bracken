@@ -24,9 +24,12 @@ export const GEO = {
      and that one is hit AT ONCE, in the release frame - to 160 at a full wind), at mul0 + mulK * wound of her blow. A FULL wind
      (fullAt) ends in a ROCK SPIKE at the tip that launches what it hits (spikeMul, spikeVy). It FOLLOWS THE FLOOR: it stops at the
      first gap (no floor under it) and at the first wall (rock at her feet' height), so it never crosses a pit and never goes up
-     through rock (A12). While she winds, the line it will take is drawn on the floor (C1). Her wind stays the longer 0.5 s. */
+     through rock (A12). While she winds, the line it will take is drawn on the floor (C1). Her wind stays the longer 0.5 s.
+     THE DAMAGE IS AT THE END (Daniel, 2026-09-25: it was spammable - 1.0-1.4x to everything along it, 0.6x more from the spike): the
+     crack is half that (mul0/mulK), and the full wind's spike is the big hit (spikeMul), so a foe at its tip takes about what it did
+     and a crowd along it takes half. */
   wind: 0.5,
-  fault: { len0: 22, lenK: 138, speed: 520, mul0: 1.0, mulK: 0.4, fullAt: 0.98, spikeMul: 0.6, spikeVy: -360, spikeVyTall: -440, linger: 0.35 },
+  fault: { len0: 22, lenK: 138, speed: 520, mul0: 0.5, mulK: 0.2, fullAt: 0.98, spikeMul: 1.2, spikeVy: -360, spikeVyTall: -440, linger: 0.35 },
   /* THE RUNE-WARD (her C from round 3, Daniel, 2026-09-24 - it replaces the two-hit ROCK SHIELD and THE MEND). The Knight's guard,
      SIDEGRADED: the same rules (hold to block, YELLOW blocked, RED breaks through, a blocked blow costs wind, out of wind is a
      GUARD BREAK at half the blow), but a projected slab of rune-cut stone, taller than she is and lipped over her head. Against his:
