@@ -59,8 +59,9 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   feeler: 2.5, kraken: 6, krakenarm: 0, tidebell: 0, knell: 0,
   /* THE MONASTERY: a bell and a prayer wheel are furniture */
   tbell: 0, pwheel: 0,
-  /* and the goblins who moved in: the priest throws no blow at all, but a blessed room takes twice the killing, so it is worth what it costs you */
-  gobpriest: 2,
+  /* and the goblins who moved in: a blessed room takes twice the killing, and since 2026-09-25 the priest throws its censer at range and
+     rings you back with its bell up close - the drunk's price for the drunk's lob, on top of the rite */
+  gobpriest: 2.5,
   /* THE FALSE ABBOT: a boss, and one whose ward makes every other thing in the room worth more */
   abbot: 6,
   /* THE WINCHMASTER: a boss, on a housing no jump reaches */

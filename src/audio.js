@@ -659,6 +659,10 @@ Object.assign(SFX, {
      its rite breaking is the bell dropped and the pot spilling on the flags */
   priestRite() { pad('sawtooth', 247, 247, 1.3, 0.05, 0, 900); pad('sawtooth', 330, 330, 1.1, 0.035, 0.25, 900); for (let i = 0; i < 3; i++) { bell(2093, 0.25, 0.03, 0.1 + i * 0.45); noise(0.05, 0.05, 4200, 2, 0.3 + i * 0.45); } },
   priestBless() { bell(1568, 0.7, 0.06); bell(2093, 0.6, 0.04, 0.06); pad('sine', 392, 523, 0.6, 0.05, 0, 2200); },
+  priestCenserTell() { for (let i = 0; i < 3; i++) noise(0.04, 0.05, 3600, 1.4, i * 0.09); pad('sawtooth', 220, 247, 0.5, 0.04, 0, 900); },   /* the chain rattles as the pot goes back over its shoulder, and it hums */
+  priestCenser() { noise(0.08, 0.12, 2200, 1.1); tone('triangle', 900, 420, 0.22, 0.06); bell(1760, 0.18, 0.02, 0.05); },          /* thrown: the whoosh, and the pot's own ring */
+  priestBellTell() { bell(2349, 0.2, 0.03); bell(2349, 0.2, 0.03, 0.14); },                                                          /* the hand bell lifted, rung twice small */
+  priestBell() { bell(1976, 0.35, 0.07); noise(0.06, 0.1, 1200, 0.8); tone('square', 300, 160, 0.1, 0.06); },                         /* and swung into you */
   priestBreak() { tone('sine', 2093, 1500, 0.2, 0.06); SFX.clatter(); noise(0.3, 0.12, 700, 0.5, 0.05); },
   /* THE GOBLIN MAGE reads out of a book it cannot read: pages riffled and a goblin's shout pitched up into something it thinks
      is a word. The bolt leaves the page with a papery crack; the rune is written low (a scratch along the flags and a

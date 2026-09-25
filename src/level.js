@@ -1869,10 +1869,14 @@ function theMonastery() {
 
   // ---- 2. THE LOWER TERRACES: bean rows gone to seed, and the incense that still burns for nobody ----
   ent('rockgoblin', 20, 195, { face: 1 }); ent('rockgoblin', 86, 195, { face: -1 }); ent('fledgling', 30, 195, { face: 1 });
-  ent('sign', 6, 195, { text: 'THE LOWER TERRACES. THE MONKS GREW BEANS HERE. THE GOBLINS DIG FOR THEIR SILVER.' });
+  ent('sign', 6, 195, { text: 'THE HERB GARDEN. THE GOBLIN IN THE ROBE MENDS THE OTHERS: STRIKE IT BEFORE ITS RITE ENDS.' });
   ent('check', 8, 195); coins([21, 194], [75, 194]);
   cellar(14, 22, 196); coins([18, 195], [15, 198], [17, 198], [19, 198], [21, 198], [30, 195], [38, 195], [44, 195]);
   ent('sentry', 20, 198, { face: -1 }); ent('sprig', 66, 195, { face: -1 });   // a lookout posted on the root cellar, and a looter in the bean rows
+  /* THE GOBLIN PRIESTS, one lesson a floor and never without a flock to bless (tools/gob-priest.mjs): the first here in the garden
+     between two rock goblins, where the sign says what the robe does; then behind the troll among the copyists' desks, saying grace
+     in the refectory, and over the looters' bead in the dorter. The shrines keep their pair and the crawl its garrison's own. */
+  ent('gobpriest', 26, 195, { face: 1 });
   // THE HERB GARDEN AND THE ORCHARD: the bean rows, the herb beds, three old fruit trees and the monks' bees in a row of skeps
   for (const [x, k, v] of [[12, 'fruitTree', 0], [20, 'herbBed', 0], [26, 'beanpoles', 0], [30, 'fruitTree', 1], [35, 'gardenWall', 1], [38, 'skep', 0], [40, 'skep', 0], [42, 'skep', 0],
     [54, 'beanpoles', 1], [58, 'gardenWall', 2], [68, 'herbBed', 0], [84, 'fruitTree', 2], [91, 'dovecote', 0]]) ent('deco', x, 195, { kind: k, v });
@@ -1895,7 +1899,7 @@ function theMonastery() {
   chimney(171, 152);
   ent('sign', 88, 171, { text: 'A CHIMNEY: HOLD INTO THE ROCK TO CLING, JUMP TO KICK OFF. SLOW, BUT IT STAYS.' });
   ent('fledgling', 64, 171, { face: -1 }); ent('rockgoblin', 84, 171, { face: -1 });
-  ent('gobmage', 34, 171, { face: 1 });   // THE GOBLIN MAGE at home among the shelves, under the prayer wheel's stair: it reads at you from the wheel all the way up the stair, and to stop it you go back down. (It holds the far end the chick at 24 and the bat at 44 did: the gallery is no harder for having a reader in it)
+  ent('gobmage', 34, 171, { face: 1 }); ent('gobpriest', 67, 171, { face: -1 });   // THE GOBLIN MAGE at home among the shelves, under the prayer wheel's stair: it reads at you from the wheel all the way up the stair, and to stop it you go back down. (It holds the far end the chick at 24 and the bat at 44 did: the gallery is no harder for having a reader in it)
   for (const [x, k, v] of [[10, 'bookshelf', 0], [15, 'bookshelf', 1], [19, 'lectern', 0], [24, 'desk', 0], [27, 'candle', 0], [30, 'bookpile', 0], [34, 'bookshelf', 0], [56, 'candelabra', 0],
     [66, 'desk', 0], [68, 'candle', 0], [70, 'bookpile', 1], [76, 'desk', 0], [80, 'bookshelf', 1]]) ent('deco', x, 171, { kind: k, v });   /* THE COPYISTS' DESKS, each with its candle */
   coins([26, 171], [70, 171], [8, 171], [13, 171]);
@@ -1913,7 +1917,7 @@ function theMonastery() {
   air(19, 40, 132, 134);                                            // broken through where the hoist rises
   chimneyL(151, 132);                                               // and the slow way up, that nothing can take away
   ent('sign', 52, 136, { text: 'STAND IN A BASKET AND IT SINKS, AND THE OTHER COMES UP PAST YOU. JUMP ACROSS AS IT GOES BY.' });
-  ent('rockgoblin', 12, 151, { face: 1 }); ent('bat', 12, 142); ent('bat', 70, 140);   /* a miner belongs in a mine; the rock goblin throws what this mountain is made of */
+  ent('rockgoblin', 12, 151, { face: 1 }); ent('gobpriest', 16, 151, { face: 1 }); ent('bat', 12, 142); ent('bat', 70, 140);   /* a miner belongs in a mine; the rock goblin throws what this mountain is made of */
   ent('gobmage', 40, 136, { face: 1 });   // and a second one out on the hanging walkway, reading over the stacks where the harpy was: it has the steps up from the check below it, and nowhere to walk off to but the walkway's end
   ent('check', 72, 151); coins([32, 136], [40, 136], [48, 136], [8, 151], [16, 151]);
   // THE REFECTORY: the long tables and their benches, the kitchen hearth at the far end, and the reader's pulpit up in the old
@@ -1937,7 +1941,7 @@ function theMonastery() {
   ent('sign', 17, 131, { text: 'THE BELL TOWERS. NOBODY HAS RUNG THEM SINCE THE GOBLINS CAME.' });
   ent('check', 13, 117); ent('check', 6, 131); coins([31, 117], [36, 117], [58, 117], [63, 117]);
   // THE BELL YARD under the bridges, where the looters camp: down a tower's hatch, and back up its stair
-  ent('stray', 60, 131, { kind: 'bead' }); ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 });
+  ent('stray', 60, 131, { kind: 'bead' }); ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 }); ent('gobpriest', 62, 131, { face: -1 });
   // THE DORTER: the monks' cells between the towers, and the looters asleep in the monks' cots with what they took piled by the door
   facades.push([49, 69, CLOUD + 18, 131, 'monkDorm']);
   for (const [x, k, v] of [[52, 'cot', 0], [57, 'cot', 1], [64, 'lootHeap', 0], [81, 'incenseStand', 0]]) ent('deco', x, 131, { kind: k, v });

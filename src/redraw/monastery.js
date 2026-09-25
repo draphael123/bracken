@@ -12,7 +12,7 @@
 //   bakeMonkProps()        the furniture: bells, a bell frame, the prayer wheel, basket, hoist wheel, brazier, loose
 //                          stone, rubble, shelves, shrines, flag posts, a guardian statue, the fallen portcullis, beads
 //   bakeFledgling()        the Roc's chicks, a sprite set   bakeGuardian()   the temple guardian, a sprite set (9 frames)
-//   bakeGoblinPriest()     the goblin in the monks' robe, a sprite set (6)   bakeGoblinMage()   the goblin with the book (7)
+//   bakeGoblinPriest()     the goblin in the monks' robe, a sprite set (10)   bakeGoblinMage()   the goblin with the book (7)
 import { canvas, px, rect, fillPoly, line, circle, outline, mulberry, flipX, whiten, fromGrid } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -553,7 +553,8 @@ export function bakeGuardian() {
 // goblin on the mountain whose outline comes to a point over its head and spreads to the floor - with a brass pot
 // hanging off one hand, where the rock goblin is a rock and the looter is two ears.
 // 16x23 grid on an 18x25 canvas, facing RIGHT. Frames: 0 idle, 1 walk A, 2 walk B, 3 the rite (censer up, bell out),
-// 4 the rite's swing, 5 hurt (last). Anchor: ax 8, ay 23 (the feet); hit box w 10, h 16.
+// 4 the rite's swing, 5 the censer swung back (its throw's tell), 6 the censer thrown (the arm out, the chain paying out),
+// 7 the hand bell raised (its shove's tell), 8 the bell rung out low, 9 hurt (last). Anchor: ax 8, ay 23; hit box w 10, h 16.
 const putRow = (rows, y, x, str) => { while (rows.length <= y) rows.push(''); rows[y] = rows[y].padEnd(x, '.'); rows[y] = rows[y].slice(0, x) + str + rows[y].slice(x + str.length); };
 export function bakeGoblinPriest() {
   const P = { g: '#6faa4a', G: '#3f6e2c', e: '#f3f0d2', o: OUT, m: '#8e3a32', M: '#5a1e1e', h: '#b8584a', y: '#e8a83a', Y: '#a8681c',
@@ -565,9 +566,17 @@ export function bakeGoblinPriest() {
   const feet = ['..GG....GG', '...GG..GG', '..GG...GG'];
   const frame = pose => {
     const rows = ['', '', '', '', ''];   /* five rows over the hood, for the censer when it goes up */
-    for (const r of hood) rows.push(pose === 5 ? '.' + r : r);
+    for (const r of hood) rows.push(pose === 9 ? '.' + r : r);
     for (const r of robe(pose < 3)) rows.push(r);
-    if (pose === 5) {   /* HURT: the hood knocked back, the pot flung out on its chain */
+    if (pose === 5) {   /* THE CENSER, BACK: swung up over its shoulder behind it, smoking - the whole pot on show, the tell of the throw */
+      put(rows, 12, 0, 'mmm'); put(rows, 11, 0, 'g'); put(rows, 10, 0, 'c'); put(rows, 9, 1, 'c'); censer(rows, 1, 6, true); }
+    else if (pose === 6) {   /* THE CENSER, OUT: the arm flung forward, the chain paying out after a pot that has gone */
+      put(rows, 13, 12, 'mmm'); put(rows, 13, 15, 'g'); put(rows, 12, 15, 'c'); put(rows, 11, 15, 'c'); }
+    else if (pose === 7) {   /* THE BELL, UP: the hand bell raised over the hood, the tell of the shove */
+      put(rows, 12, 12, 'm'); put(rows, 11, 12, 'm'); put(rows, 10, 12, 'm'); put(rows, 9, 12, 'g'); put(rows, 6, 12, 'kb'); put(rows, 7, 12, 'bB'); put(rows, 8, 12, 'c'); }
+    else if (pose === 8) {   /* THE BELL, RUNG: swung out low in front with its mouth to you */
+      put(rows, 14, 12, 'mm'); put(rows, 14, 14, 'g'); put(rows, 13, 15, 'k'); put(rows, 14, 15, 'b'); put(rows, 15, 15, 'B'); }
+    else if (pose === 9) {   /* HURT: the hood knocked back, the pot flung out on its chain */
       put(rows, 12, 12, 'mm'); put(rows, 11, 14, 'c'); censer(rows, 15, 8, false); }
     else if (pose === 3 || pose === 4) {   /* THE RITE: the censer held up over the hood on a short chain, the bell rung out to the side */
       const sw = pose === 4 ? 1 : 0;
@@ -579,7 +588,7 @@ export function bakeGoblinPriest() {
       put(rows, 14, 13, 'c'); put(rows, 15, 13 + sw, 'c'); censer(rows, 13 + sw, 16, false); }
     while (rows.length < 22) rows.push(''); rows.length = 22; rows.push(feet[pose === 1 ? 1 : pose === 2 ? 2 : 0]);
     return outline(fromGrid(rows.map(r => (r || '').padEnd(16, '.').slice(0, 16)), P, 1), OUT); };
-  return pack([0, 1, 2, 3, 4, 5].map(frame), 8, 23, 10, 16);
+  return pack([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(frame), 8, 23, 10, 16);
 }
 
 // ---------- THE GOBLIN MAGE ----------
