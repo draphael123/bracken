@@ -3716,8 +3716,8 @@ function galeMoor() {
   /* ==== THE CAUSEWAY (28-91): posts and planks over the bog. THE GUST IS TAUGHT HERE, over a bog that cannot hurt you: a fall
      is a wade and a two-row climb back onto the boards (stand still in it and a wight stands up). First a gap two tiles wider
      than a jump with the wind behind you - ride it - then two posts into a headwind - cross in the still air. ==== */
-  o = 28; section('causeway', 'THE CAUSEWAY', o, o + 63, [o + 12, 21]);
-  block(o, o + 63, 24, 29); pools.push({ x0: (o + 1) * TS, x1: (o + 64) * TS, y: 23 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: (o + 1) * TS, x1: (o + 64) * TS });
+  o = 28; section('causeway', 'THE CAUSEWAY', o, o + 63, [o + 5, 21]);
+  block(o, o + 63, 24, 29); pools.push({ x0: (o + 1) * TS, x1: (o + 64) * TS, y: 23 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: (o + 1) * TS, x1: (o + 64) * TS, y: 23 * TS });   /* in the bog, not on the boards */
   calm.push([o, o + 63, 8, 24]);   /* a lesson is not a fight: nothing is sprinkled on the boards */
   const boards = (a, b) => { plank(o + a, o + b, 22); for (const sx of (b - a > 2 ? [o + a + 1, o + b - 1] : [o + a])) ent('deco', sx, 23, { kind: 'stilt' }); };   /* on stilts driven into the bog */
   boards(0, 9); boards(18, 26); for (const a of [29, 33]) boards(a, a + 1); boards(37, 63);
@@ -3754,7 +3754,7 @@ function galeMoor() {
   menhir(o + 32, 13, 21); ent('stray', o + 32, 12, { kind: 'kite' }); ent('vent', o + 28, 21, { period: 5, on: 3, h: 150, wind: true, phase: 1.5 });
   menhir(o + 50, 16, 21); ent('stray', o + 50, 15, { kind: 'kite' }); ent('vent', o + 46, 21, { period: 5, on: 3, h: 110, wind: true, phase: 3 });
   ent('kite', o + 17, 10); ent('kite', o + 40, 9); ent('kite', o + 53, 11); ent('harpy', o + 44, 7);
-  for (let x = o + 20; x <= o + 25; x++) set(x, 22, 0); block(o + 20, o + 25, 24, 29); pools.push({ x0: (o + 20) * TS, x1: (o + 26) * TS, y: 22 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: (o + 20) * TS, x1: (o + 26) * TS });
+  for (let x = o + 20; x <= o + 25; x++) set(x, 22, 0); block(o + 20, o + 25, 24, 29); pools.push({ x0: (o + 20) * TS, x1: (o + 26) * TS, y: 22 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: (o + 20) * TS, x1: (o + 26) * TS, y: 22 * TS });
   ent('flagpost', o + 4, 21); ent('flagpost', o + 36, 21); ent('hare', o + 44, 21, { face: -1 }); ent('sailer', o + 22, 21, { face: -1 }); ent('sailer', o + 52, 21, { face: -1 });
   ent('goat', o + 38, 21, { elite: true, gate: o + 43 });   /* the herd billy, in the open between the posts, and the field's gate held behind him (it stood in the Bothy's lee) */
   ent('sign', o + 1, 21, { text: 'KITE GOBLINS DROP STONES. CUT THE STRING OR THE GOBLIN AND BOTH COME DOWN.' });
@@ -3879,7 +3879,7 @@ function galeMoor() {
   /* the storm: the shaman's weather, bolts out of the cloud on a beat - and six clear columns before the shelf, so the
      string is never cut over a stack */
   for (const [x, ph] of [[o + 81, 0], [o + 85, 1.1], [o + 89, 2.2]]) ent('skybolt', x, 18, { top: 2, period: 3.2, phase: ph });
-  tower(o + 83, o + 84, 12); tower(o + 88, o + 89, 11);
+  tower(o + 82, o + 83, 12); tower(o + 86, o + 87, 11);   /* (and never over a bolt's own column) */
   ent('harpy', o + 86, 5); ent('kite', o + 80, 5); ent('kite', o + 90, 6); string(o + 84, 9, 3, 2); ribbon(o + 90, o + 95, 8, 2);
   gust(o, o + 96, 0, 26, { dir: -1, period: 7, on: 1.8, phase: 2, k: 0.8 });
 

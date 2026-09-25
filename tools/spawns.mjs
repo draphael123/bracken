@@ -9,6 +9,7 @@
 //   HARM    a creature that walks starts standing in a harmful pool (level review, 2026-09-24: a sailor in the Hurricane's oil)
 //   THORNS  a creature that walks starts on a spike bed (the Wood's Bramble Ride, left 26 columns short, dropped a thorn goblin
 //           into its own brambles)
+//   STUCK   (and a skybolt, which is a prop: the tile it strikes must be open)
 //   LESSON  THE MIX (src/level.js) swapped a creature from another wood into a lesson strip (a Sporewood lurker in the down attack)
 // Ambush waves are read too, on the floor they are dropped onto. Exit code 1 on any hit.
 import { readFileSync } from 'fs';
@@ -58,6 +59,10 @@ for (const lv of LEVELS) {
       out.push('DRY siren@' + x + ',' + y + from + ' has no water to sit by');
   };
   for (const e of L.ents) look(e.t, e.x, e.y, e.garrison ? ' (garrison)' : '', !!e.big, !!e.leap, e.t === 'armour' && !!e.ceiling);
+  /* A BOLT OUT OF THE CLOUD STRIKES OPEN AIR (Gale Moor rework, 2026-09-25): a skybolt is a column from its top row to the tile it is
+     placed on, and the play bot found one planted inside a rock stack on the cut Sky Road (INSOLID at 640,18) - a creature box
+     never saw it, because a skybolt is a prop and not a creature. The tile it strikes must be open. */
+  for (const e of L.ents) if (e.t === 'skybolt' && solid(e.x, e.y)) out.push('STUCK skybolt@' + e.x + ',' + e.y + ': the bolt is planted in rock');
   for (const e of L.ents) if (e.mixed && (L.lessons || []).some(z => e.x >= z.x0 && e.x <= z.x1)) out.push('LESSON ' + e.t + '@' + e.x + ',' + e.y + ' was a ' + e.mixed + ': THE MIX swapped it into the ' + (L.lessons.find(z => e.x >= z.x0 && e.x <= z.x1) || {}).kind + ' lesson');
   for (const A of (L.ambushes || [])) for (const wv of A.waves) for (const [t, x, y] of wv) look(t, x, y === undefined || y === null ? A.row : y, ' (ambush ' + A.name + ')');
   if (out.length) { bad += out.length; console.log('  ' + lv.id.padEnd(11) + out.length + ': ' + out.join('  ')); }
