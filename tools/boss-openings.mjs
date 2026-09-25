@@ -14,6 +14,8 @@
                         the same dive on a solid slab opens nothing, and leaving early only moves his aim (the stair's top, 2026-09-22)
      THE FIRST DEATH KNIGHT  the hero's own rule: fill his BLOOD WARD and strike it again, and it breaks - he is open; a ward
                              left to run out opens nothing (2026-09-24: he fights with the class's kit)
+     THE DUNE WORM     wind the hollow's awning out and let his breach come up under it: he comes up INTO the canvas, tangled, and
+                       the awning comes down; the same breach in the open sand, or under the awning rolled IN, opens nothing (2026-09-25)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -113,6 +115,17 @@ try {
      return {mode:w.mode,open:+open.toFixed(1),mounted:w.mounted,swings};};
    const left=remount(false),cut=remount(true);
    out.rider={alone,struck,left,cut};}
+
+  /* THE DUNE WORM: one breach, three ways. The hero stands where it will lock and leaves LATE (after the commit), as a player baits it */
+  {const b=boot('caravan');const A=BK.L.arena;const w=BK.caravan().winches.find(q=>q.hollow);
+   for(let i=0;i<200&&(b.mode==='wake'||!b.st);i++)BK.sim(1);
+   const mid=(w.canopy.x0+w.canopy.x1+1)*8,open=A.x1-90;
+   const breach=(x,rolled)=>{w.out=w.k=rolled;w.cd=0;const W=b.st;W.mode='under';W.t=0;W.i=0;W.ripples=[];let tangled=0,left=false,opened=0;
+     for(let f=0;f<60*5;f++){BK.P.hp=BK.P.maxHp;if(!left){BK.P.x=x;BK.P.y=A.floor;BK.P.vx=0;}
+       if(!left&&W.mode==='rippleTell'&&W.ripples.some(r=>r.real&&r.commit)){left=true;BK.P.x=x+60;}
+       BK.sim(1);if(b.mode==='tangled')tangled++;if(BK.bossOpen(b))opened++;if(W.mode==='dive'||W.mode==='surfaced'&&tangled===0&&f>60)break;}
+     return {tangled:+(tangled/60).toFixed(1),open:+(opened/60).toFixed(1),awning:w.out,mode:b.mode};};
+   out.worm={openSand:breach(open,1),rolledIn:breach(mid,0),rolledOut:breach(mid,1)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -159,6 +172,10 @@ try {
   assert.ok(r.rider.left.mounted, 'and puts him back in the saddle: ' + JSON.stringify(r.rider));
   assert.equal(r.rider.cut.mode, 'scattered', 'the crawling bones cut by the hero\'s swings scatter: ' + JSON.stringify(r.rider));
   assert.ok(r.rider.cut.open > 3, 'and he is open on foot: ' + JSON.stringify(r.rider));
+  assert.equal(r.worm.openSand.tangled, 0, 'THE DUNE WORM: a breach in the open sand opens nothing: ' + JSON.stringify(r.worm));
+  assert.equal(r.worm.rolledIn.tangled, 0, 'a breach under his awning ROLLED IN opens nothing: ' + JSON.stringify(r.worm));
+  assert.ok(r.worm.rolledOut.tangled >= 2.4 && r.worm.rolledOut.open >= 2.4, 'a breach under the awning rolled OUT comes up into it: tangled and open, the window: ' + JSON.stringify(r.worm));
+  assert.equal(r.worm.rolledOut.awning, 0, 'and the awning comes down onto him: it has to be wound out again: ' + JSON.stringify(r.worm));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

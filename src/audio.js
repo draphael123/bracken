@@ -650,6 +650,14 @@ Object.assign(SFX, {
   waveCrash() { noise(0.7, 0.16, 900, 0.4); noise(0.5, 0.1, 2400, 0.6, 0.08); },
   sirenSong() { pad('sine', 660, 740, 1.2, 0.05, 0, 3000); pad('triangle', 990, 880, 1.2, 0.03, 0.1, 4000); },
   gust() { noise(0.9, 0.09, 420, 0.4); noise(0.6, 0.05, 900, 0.6); }, // a gale coming down the bridge
+  /* THE DUNE WORM (src/dune-worm.js): every tell its own sound, so each is known off the screen as well as on it */
+  wormRipple() { noise(1.0, 0.14, 160, 0.35); noise(0.8, 0.07, 620, 0.7, 0.1); tone('sine', 46, 38, 0.9, 0.12); },   /* THE RIPPLE: sand rolling over something that size, low */
+  wormBreach() { noise(0.5, 0.4, 300, 0.4); noise(0.35, 0.22, 1800, 0.8, 0.03); tone('sawtooth', 70, 140, 0.25, 0.2); tone('sine', 50, 30, 0.5, 0.2, 0.05); },   /* up through the floor */
+  wormGurgle() { tone('sawtooth', 110, 170, 0.5, 0.12); noise(0.45, 0.16, 700, 0.6, 0.05); for (let i = 0; i < 3; i++) tone('sine', 240 + i * 60, 140, 0.08, 0.06, 0.12 + i * 0.1); },   /* THE SPIT TELL: a wet throat filling with sand */
+  wormSpit() { noise(0.2, 0.34, 900, 0.5); noise(0.35, 0.16, 2600, 0.9, 0.04); tone('sine', 300, 90, 0.2, 0.12); },
+  wormHiss() { noise(0.7, 0.2, 2400, 0.7); tone('sawtooth', 90, 60, 0.6, 0.1); },   /* THE LUNGE TELL: the coil drawing back, sand hissing off it */
+  wormSink() { noise(0.9, 0.18, 260, 0.35); tone('sine', 180, 50, 0.8, 0.12); for (let i = 0; i < 4; i++) noise(0.06, 0.1, 1200, 0.8, 0.15 + i * 0.16); },   /* THE SWALLOW TELL: the sand running away downward */
+  wormTangle() { for (let i = 0; i < 5; i++) noise(0.05, 0.22, 3400 - i * 300, 1.1, i * 0.04); tone('square', 900, 300, 0.14, 0.06); SFX.clank(); },   /* the awning tearing off its rollers */
   stormChant() { pad('sawtooth', 330, 392, 0.4, 0.06, 0, 1400); pad('sine', 990, 1320, 0.4, 0.04, 0.05, 3000); noise(0.4, 0.06, 600, 0.5); },
   stormZap() { noise(0.12, 0.22, 3200, 0.8); tone('square', 1800, 300, 0.15, 0.07); tone('sine', 700, 200, 0.22, 0.09); },
   /* THE SEA WITCH's call: not the shaman's rattle and chant. A held note over the hiss of a sea running, and her lantern ringing on its crook */
@@ -808,6 +816,7 @@ const DIE = {
   scorpion() { noise(0.1, 0.24, 3200, 0.4); for (let i = 0; i < 3; i++) noise(0.04, 0.16, 2400 - i * 400, 0.5, 0.05 + i * 0.05); /* the shell cracks */ },
   sandgob() { gob(0.9) || tone('square', 420, 100, 0.2, 0.16); noise(0.2, 0.12, 900, 0.6, 0.05); /* and the sand takes him back */ },
   vulture() { tone('sawtooth', 700, 180, 0.3, 0.14); noise(0.14, 0.12, 1800, 0.5, 0.04); /* a croak and a clatter of feathers */ },
+  duneworm() { tone('sawtooth', 80, 30, 1.6, 0.26); noise(1.6, 0.3, 200, 0.3); noise(1.0, 0.14, 900, 0.5, 0.3); tone('sine', 44, 26, 1.8, 0.2, 0.2); /* THE DUNE WORM: a long bellow going down into the sand, and the sand closing over it */ },
   crab() { noise(0.12, 0.3, 2800, 0.35); for (let i = 0; i < 4; i++) noise(0.05, 0.2, 2200 - i * 300, 0.5, 0.06 + i * 0.05); /* the shell comes apart in pieces */ },
   turtle() { noise(0.2, 0.3, 1200, 0.4); tone('square', 260, 90, 0.2, 0.14); tone('sine', 80, 40, 0.4, 0.12, 0.08); },
   heronfoe() { tone('sawtooth', 1000, 300, 0.2, 0.14); tone('square', 1400, 500, 0.14, 0.1, 0.04); noise(0.26, 0.2, 2000, 0.4, 0.1); },
@@ -905,6 +914,7 @@ const HURT = {
   scorpion() { noise(0.05, 0.22, 3000, 0.4); tone('square', 900, 700, 0.05, 0.08); },
   sandgob() { gobH(0.9) || tone('square', 500, 300, 0.08, 0.14); noise(0.08, 0.08, 900, 0.6); },
   vulture() { tone('sawtooth', 820, 420, 0.12, 0.12); },
+  duneworm() { tone('sawtooth', 120, 70, 0.22, 0.18); noise(0.2, 0.22, 380, 0.5); noise(0.1, 0.1, 1600, 0.7, 0.06); },   /* THE DUNE WORM: a grunt through a throat full of sand, and the sand coming off him */
   burngob() { gobH(0.95, 0.5) || tone('sawtooth', 260, 150, 0.14, 0.16); noise(0.1, 0.1, 2600, 0.6); },
   emberwisp() { noise(0.08, 0.1, 3600, 0.5); },
   pyromancer() { noise(0.18, 0.2, 1400, 0.5); tone('triangle', 200, 120, 0.2, 0.14); },
