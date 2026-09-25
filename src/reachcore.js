@@ -106,7 +106,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     for (const sh of (L.fields.shrinks || [])) assists.push({ kind: 'shrinking bales ' + sh.group, x0: sh.x0, x1: sh.x1, y0: sh.y0 - 1, y1: sh.y1 }); }
   /* one band per ride: a wheel's four paddles are one wheel, and were being written down as four climbs */
   { const had = new Set(); for (let i = assists.length - 1; i >= 0; i--) { const a = assists[i], k = [a.kind, a.x0, a.x1, a.y0, a.y1].join(); if (had.has(k)) assists.splice(i, 1); else had.add(k); } }
-  const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.some(m => m.kind !== 'lift' && m.kind !== 'swing' && m.kind !== 'growcap' && m.kind !== 'hexvine')) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length));
+  const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.some(m => m.kind !== 'lift' && m.kind !== 'swing' && m.kind !== 'growcap' && m.kind !== 'hexvine')) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length)
+    || !!L.sanctum);   /* A PORTAL IS A RIDE THE FILL CANNOT FOLLOW: the Falling Tower's gate stands past the sanctum's second door, on purpose (tools/tower-ascent.mjs). The tower read ASSISTED only because the bell loft had lifts in it; when the lifts became the Sexton's deck (2026-09-25) the bot called its gate UNREACHABLE */
 
   // every tile you could be standing on
   const key = (x, y) => x + ',' + y;
