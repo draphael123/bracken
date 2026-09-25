@@ -3908,7 +3908,7 @@ function galeMoor() {
   headwind(o + 5, o + 35, 6, 22, 1);
   ent('harpy', o + 20, 7);
   ent('flagpost', o + 2, 19); ent('flagpost', o + 39, 13);
-  ent('sign', o + 1, 19, { text: 'ON A STONE, HOLD C AND THE GUST CANNOT MOVE YOU. HOP IN THE STILL, BRACE IN THE WIND.' });
+  ent('sign', o + 1, 19, { text: 'ON A STONE, CROUCH OR HOLD C AND THE GUST CANNOT MOVE YOU. HOP IN THE STILL, BRACE IN THE WIND.' });
   ent('check', o + 42, 13);
 
   /* ==== THE GALLERY OF GUSTS (298-361): the moor's exam, both halves of the lesson over thorns. A pit two tiles wider than any
@@ -3925,7 +3925,7 @@ function galeMoor() {
   ent('vent', o + 37, 13, { period: 4, on: 2.2, h: 150, wind: true, w: 20 });
   ent('flagpost', o + 12, 13); ent('flagpost', o + 36, 13); ent('harpy', o + 44, 5);
   ent('sign', o - 6, 13, { text: 'A TAILWIND CARRIES YOU OVER WHAT NO JUMP CROSSES. GO AS IT BLOWS, NOT BEFORE.' });
-  ent('sign', o + 10, 13, { text: 'WIND FROM AHEAD OVER THE POSTS. CROSS IN THE STILL, OR HOLD C AND BRACE ON ONE.' });
+  ent('sign', o + 10, 13, { text: 'WIND FROM AHEAD OVER THE POSTS. CROSS IN THE STILL, OR CROUCH OR HOLD C AND BRACE ON ONE.' });
   coins([o + 2, 11], [o + 4, 10], [o + 6, 11], [o + 17, 12], [o + 21, 12], [o + 25, 12], [o + 40, 7], [o + 37, 8]);
   ent('troll', o + 52, 13, { elite: true });   /* the crag troll on the gallery's far floor, the thorns behind you */
   ent('check', o + 45, 13);

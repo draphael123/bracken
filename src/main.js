@@ -13146,7 +13146,7 @@ const gustDir = (z, t) => (z.alt ? (Math.floor((t + (z.phase || 0)) / z.period) 
 function gustNow(z) { const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, tl = z.told ? Math.min(GUST_TELL, z.period - z.on) : 0.5;
   const tell = !on && ph > z.period - tl ? (ph - (z.period - tl)) / tl : -1;
   return { on, tell, dir: gustDir(z, z.told && tell >= 0 ? time + tl + 0.01 : time) }; }   /* in a told build-up it is the COMING gust's way */
-const braced = () => !!(keys.block && P.ground && !P.dead && !P.climb && !P.swim);
+const braced = () => !!((keys.block || keys.down) && P.ground && !P.dead && !P.climb && !P.swim);   /* CROUCH OR BLOCK (Daniel, 2026-09-25): holding DOWN on the ground braces too - the Pyromancer's C is her ember and the Freebooter has no shield, so block-only left them no way to stand in a gust (a drop through a one-way board still wants a jump) */
 function gustShove(dir, speed, dt) { if (braced()) { if (Math.abs(P.vx) > GUST_BRACED) P.vx = Math.sign(P.vx) * GUST_BRACED; if (Math.random() < dt * 16) dust(P.x - dir * 4, P.y, 1); return false; }
   P.vx += (dir * speed - P.vx) * Math.min(1, dt * (P.ground ? 20 : 6)); P.gustT = 0.25; return true; }   /* fast enough to beat the legs: the ground's friction and the stick have had the frame already */
 function updateMoorWind(dt) {
