@@ -164,6 +164,12 @@ The colour scheme is GOOD and kept. One commit per item.
   spike launches (93 px) and a 0.6 crack that runs past a foe throws nothing. RED on the UPHEAVAL code (no crack: 0 px,
   full 0 damage, [0, 0, 68] along the line, the far foe not hit).
 
+### 4. HER GUARD IS NOT DRAWN WHILE SHE WALKS
+- Daniel: the shield showed on her arm all the time. Now nothing of it is drawn unless C has it up (and its break is the
+  burst of shards): src/geomancer.js draws it only while `P.geoGuard`. Walking, standing, jumping - nothing on her arm.
+- Proved: tools/geomancer.mjs `drawn` - counted off the real render (BK.step), frame by frame: 0 of 30 walking, 0 of 30
+  standing, 30 of 30 with C held. RED on the old code: 30 of 30 walking and standing (the plate strapped on her forearm).
+
 ## Open (decide when she is built, not now)
 - Her name and look beyond the stave. (Built as THE GEOMANCER; the look is now THE REWORK 2, above.)
 - ~~Whether she is a starter (free) or a cheap early unlock.~~ **DECIDED (Daniel, 2026-09-24): a STARTER - free from the

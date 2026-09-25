@@ -38,7 +38,7 @@ export const GEO = {
 const STONE = { base: '#7c7a6e', hi: '#a8a696', lo: '#5e5c54', dark: '#44423a', moss: '#6f9a4a', moss2: '#557a38', rune: '#e8a83a', crack: '#26241e' };
 
 export function makeGeomancer(api) {
-  let pieces = [], rollers = [], shards = [], falls = [], spikes = [], faults = [], golem = null, spurFx = null;
+  let pieces = [], rollers = [], shards = [], falls = [], spikes = [], faults = [], golem = null, spurFx = null, shieldDrawn = false;   /* (shieldDrawn: whether the last draw put her shield on screen - tools/geomancer.mjs `drawn`) */
   const TS = api.TS;
   const T = () => api.T;
   const grid = () => api.L.grid;
@@ -363,7 +363,7 @@ export function makeGeomancer(api) {
   }
   function draw(g, cx, cy) { g.save(); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; try { draw0(g, cx, cy); } finally { g.restore(); } }   /* whatever alpha the hero's draw left behind is not the stone's */
   function draw0(g, cx, cy) {
-    const P = api.P;
+    const P = api.P; shieldDrawn = false;
     /* GRIT AND PEBBLES LIFT OFF THE GROUND AND FLOAT ROUND HER WHILE SHE CASTS (the rework's sprite item): winding FAULT LINE (rising
        with the wind), any of her nine, THE MEND and THE QUAKE. Drawn behind nothing and touching nothing: it is how she reads as
        the one who MOVES STONE, before any stone has moved */
@@ -411,9 +411,10 @@ export function makeGeomancer(api) {
     for (const e of foes()) if (e.geoTomb) { const b = api.box(e), x = Math.round(b.l - cx) - 2, y = Math.round(b.t - cy) - 2, w = Math.round(b.r - b.l) + 4, h = Math.round(b.b - b.t) + 3;
       g.globalAlpha = 0.9; g.fillStyle = STONE.base; g.fillRect(x, y, w, h); g.fillStyle = STONE.hi; g.fillRect(x, y, w, 2); g.fillStyle = STONE.lo; g.fillRect(x, y, 2, h); g.fillStyle = STONE.dark; g.fillRect(x + w - 1, y, 1, h);
       g.fillStyle = STONE.moss; g.fillRect(x + 2, y - 1, 4, 1); g.fillStyle = STONE.crack; for (let k = 0; k < e.geoTomb.cracks * 3; k++) g.fillRect(x + 2 + (k * 5) % Math.max(3, w - 4), y + 3 + (k * 7) % Math.max(3, h - 5), 1, 3); g.globalAlpha = 1; }
-    /* THE ROCK SHIELD, on her lead arm: raised, a slab as tall as her chest in front of her; lowered, a plate strapped along the forearm.
-       Cracked after one blow (C1: a thing about to change is told), and nothing at all once it is broken - until she mends it */
-    if (api.isGeo() && !P.dead && shieldHp() > 0 && !P.geoBurrow) { const f = P.face, up = !!P.geoGuard, cr = P.geoSh < SH.hp;
+    /* THE ROCK SHIELD, on her lead arm: raised, a slab as tall as her chest in front of her. NOT DRAWN AT ALL WHILE SHE WALKS OR STANDS
+       (round 3, item 4, Daniel: nothing on her arm otherwise) - only while it is up, and its break is the burst of shards.
+       Cracked after one blow (C1: a thing about to change is told) */
+    if (api.isGeo() && !P.dead && shieldHp() > 0 && !P.geoBurrow && P.geoGuard) { const f = P.face, up = true, cr = P.geoSh < SH.hp; shieldDrawn = true;
       const w = up ? 6 : 3, h = up ? 15 : 7, x = Math.round(P.x - cx) + (up ? (f > 0 ? 4 : -10) : (f > 0 ? 2 : -5)), y = Math.round(P.y - cy) - (up ? 21 : 14);
       g.fillStyle = STONE.dark; g.fillRect(x - 1, y - 1, w + 2, h + 2); g.fillStyle = STONE.base; g.fillRect(x, y, w, h); g.fillStyle = STONE.hi; g.fillRect(x, y, w, 1); g.fillRect(f > 0 ? x + w - 1 : x, y, 1, h);
       g.fillStyle = STONE.lo; g.fillRect(f > 0 ? x : x + w - 1, y + 1, 1, h - 1);
@@ -430,5 +431,5 @@ export function makeGeomancer(api) {
     const a = spin || 0; g.fillStyle = STONE.lo; g.fillRect(Math.round(x + Math.cos(a) * r * 0.5), Math.round(y + Math.sin(a) * r * 0.5), 2, 2); g.fillStyle = STONE.moss; g.fillRect(Math.round(x + Math.cos(a + 2.5) * r * 0.6), Math.round(y + Math.sin(a + 2.5) * r * 0.6), 2, 1); }
 
   return { update, draw, clear, faultHeavy, faultPath, guard, shieldTakes, startMend, mendUpdate, shieldHp, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
-    pieces: () => pieces, rollers: () => rollers, falls: () => falls, spikes: () => spikes, faults: () => faults, golem: () => golem, freeCell, erupt, place, crumble };
+    shieldDrawn: () => shieldDrawn, pieces: () => pieces, rollers: () => rollers, falls: () => falls, spikes: () => spikes, faults: () => faults, golem: () => golem, freeCell, erupt, place, crumble };
 }

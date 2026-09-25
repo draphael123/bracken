@@ -22,6 +22,9 @@
 //             bought LODESTONE loads, owning STONE WALL in the same loadout slot
 //   dodges    BURROW IS THE FLOOR'S ONLY: swimming her dodge is the ordinary swimming dash (it fires, and never burrows); in the air
 //             nothing burrows (she has no air roll of her own); and the ceiling-walk dodge (magePlayer) has no burrow in it
+//   drawn     THE SHIELD IS NOT DRAWN WHILE WALKING (round 3, item 4): drawn by the real render (BK.step) while she walks and while she
+//             stands, nothing of it is on screen; held up, it is. PROVED RED FIRST: the rock shield drew a plate on her forearm while she
+//             walked (30 of 30 frames) and stood (30 of 30).
 //   levels    in three real early levels, at every 5th tile of floor she can stand on: wall, fault line and step raised, and every frame
 //             no living body is inside her rock and, eight seconds on, the level's grid is exactly what it was (no route blocked)
 // PROVED RED FIRST (2026-09-24): with the body test taken out of freeCell and RULE 4 disabled in src/geomancer.js, `lift` and `body`
@@ -118,6 +121,10 @@ try {
         raised+=BK.geo().pieces().length;for(let f=0;f<60*8;f++){BK.sim(1);if(f%6===0&&__inside())inside++;}}
       rows.push({id,tried,raised,inside,same:g0.every((v,k)=>v===L.grid[k]),left:BK.geo().pieces().length});}
     return rows})()`);
+  /* THE SHIELD IS NOT DRAWN WHILE WALKING: counted off the real render, frame by frame */
+  out.drawn = await pg.evalp(`(()=>{__geo([]);const K=BK.keys,d=()=>BK.geo().shieldDrawn&&BK.geo().shieldDrawn()?1:0;let walk=0,idle=0,up=0;
+    K.right=true;for(let i=0;i<30;i++){BK.step(1);walk+=d();}K.right=false;for(let i=0;i<30;i++){BK.step(1);idle+=d();}
+    BK.P.st=BK.P.maxSt;K.block=true;for(let i=0;i<30;i++){BK.step(1);up+=d();}K.block=false;BK.step(10);return {walk,idle,up}})()`);
   /* A SAVE FROM BEFORE HER (version 1 migrated, or a version 2 made before she existed): no XP, nothing owned, no loadout for her */
   out.oldSave = await pg.evalp(`(()=>{__geo([]);const PR=BKT.PROG;delete PR.xp.geomancer;delete PR.skillOwned.geomancer;delete PR.loadouts.geomancer;BK.applyUpgrades();
     for(const k of ['atk','block','throw','skill2','jump'])BK.press(k);BK.sim(60);BK.state='map';BK.sim(2);BK.state='play';return {hp:BK.P.maxHp,lv:BKT.heroLevel('geomancer')}})()`);
@@ -159,6 +166,8 @@ try {
   assert(!out.body.none && !out.body.stood && !out.body.inside, 'stone a foe turns up inside crumbles at once (' + JSON.stringify(out.body) + ')');
   assert(out.reload.had >= 1 && out.reload.after === 0 && out.reload.same, 'a level left takes its stone with it (' + JSON.stringify(out.reload) + ')');
   for (const r of out.levels) { assert(r.tried >= 5 && r.raised > 0, r.id + ': she raised stone there (' + JSON.stringify(r) + ')'); assert.equal(r.inside, 0, r.id + ': nobody was ever inside her rock'); assert(r.same && r.left === 0, r.id + ': and eight seconds on the level is exactly as it was: no route blocked'); }
+  assert(out.drawn.walk === 0 && out.drawn.idle === 0, 'her shield is not drawn while she walks or stands (' + JSON.stringify(out.drawn) + ')');
+  assert(out.drawn.up >= 20, 'and it is drawn while she guards (' + JSON.stringify(out.drawn) + ')');
   assert(out.oldSave.hp > 0, 'a save that never had her plays her (' + JSON.stringify(out.oldSave) + ')');
   assert.deepEqual(pg.errors, []);
   console.log('geomancer: FAULT LINE hits what touches her at once, runs ' + H.open.len + ' px full, stops at a pit and a wall, hits all three in its line and launches at the end; the cap holds (3, 4 with the passive), every piece crumbles and gives the grid back, nothing is ever buried, and ' + out.levels.length + ' real levels end as they began');
