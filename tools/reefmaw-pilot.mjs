@@ -12,7 +12,7 @@ const one = async (p, mode, secs) => {
   await pg.reload();
   const r = await pg.evalp(`(async()=>{BK.SET.speed=1;const o=await BK.bossLab({bosses:['reef'],heroes:${JSON.stringify(HEROES)},healthMode:'${mode}',maxSecs:${secs},modes:true${p ? `,salt:'reefmaw-pass-${p}'` : ''}});
     return o.rows.map(r=>({pass:${JSON.stringify(p)},mode:'${mode}',h:r.h,out:r.outcome||r.skipped,secs:r.secs,hp:r.bossHp,taken:r.health?Math.round(r.health.damageTaken):null,tpm:r.takenPerMin,left:r.hpLeftPct,
-      stuck:(r.modes||{}).stuck||0,beached:(r.modes||{}).beached||0,lunges:(r.modes||{}).lunge||0,rolls:(r.modes||{}).roll||0,land:(r.modes||{}).haul||0,hitBy:r.hitBy}));})()`, 1800000);
+      stuck:(r.modes||{}).stuck||0,beached:(r.modes||{}).beached||0,lunges:(r.modes||{}).lunge||0,rolls:(r.modes||{}).roll||0,land:((r.modes||{}).crawl||0)>0?1:0,smash:(r.modes||{}).smash||0,hitBy:r.hitBy,modes:r.modes}));})()`, 1800000);
   rows.push(...r); for (const x of r) console.log(JSON.stringify(x));
 };
 try {

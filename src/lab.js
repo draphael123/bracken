@@ -931,14 +931,36 @@ async function runbossLab(BK, opts) {
         if (!k.block && SA.strike !== null && Math.abs(SA.strike - P.x) <= LAB_REACH[h] + 14 && P.atk < 0) { P.face = Math.sign(SA.strike - P.x) || P.face; BK.press('atk'); swings++; }
         if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 15 === 0) { BK.press('jump'); P.labJump = 14; }
         if (P.labJump > 0) { P.labJump--; k.jump = true; } }   /* a held jump: a tap does not clear a bale */
+      /* THE REEFMAW ON LAND (docs/briefs/reef-longer.md): the tide is out and he is on the reef. Stand in front of him on the floor and let
+         him lunge; JUMP IT as the head comes (or be up on a ledge), and he beaches himself - that is when to cut. Stay out from behind him: the
+         tail comes round (a shield turns it, so the shielded heroes guard it). Caught, swing to tear free. Up on a ledge in his reach, get off it. */
+      else if (boss.t==='reefmaw' && boss.land) {
+        const mawIn=boss.x+(Math.sign(boss.x-P.x)||1)*6;   /* (see below) */
+        const fc=boss.face||1, headX=boss.x+fc*40, ahead=(P.x-boss.x)*fc>0, hd=(P.x-headX)*fc;
+        const lo=A.x0+20, hi=A.x1-20, clampX=x=>Math.max(lo,Math.min(hi,x));
+        if (boss.mode==='roll') { goal=null; strike=false; if (f%4===0) BK.press('atk'); }
+        else if (boss.mode==='lungeTell'||boss.mode==='lunge') { goal=null; strike=false; k.block=false;
+          if (ahead && P.ground && ((boss.mode==='lunge'&&hd>36&&hd<150)||(boss.mode==='lungeTell'&&boss.modeT<0.12&&hd<70))) { BK.press('jump'); P.labJump=26; } }
+        else if (boss.mode==='tailTell'||boss.mode==='tail') { strike=false;
+          if (!ahead && SHIELDED(h)) { k.block=true; P.face=Math.sign(boss.x-P.x)||P.face; goal=null; if (h==='paladin') holdC=f+30; }
+          else if (!ahead) { goal=clampX(boss.x-fc*150); if (P.ground&&boss.mode==='tail') { BK.press('jump'); P.labJump=26; } }
+          else goal=null; }
+        else if (boss.mode==='thrashTell'||boss.mode==='thrash') { strike=false; { const r1=boss.x+120, r2=boss.x-120; goal=r1<=hi&&(r2<lo||Math.abs(P.x-r1)<=Math.abs(P.x-r2))?r1:r2; } if (P.y<A.floor-20&&P.ground&&[T.ONEWAY,T.PLANK].includes(P.groundTile)) { k.down=true; BK.press('jump'); } }
+        else if (boss.mode==='beached'||boss.mode==='haul') { goal=mawIn; strike=boss.mode==='beached'; }
+        else if (!ahead && Math.abs(P.x-boss.x)<110) { goal=mawIn; strike=true; }   /* behind him after a beaching: a cut or two, and off at the tell */
+        else { const g0=boss.x+fc*105; goal=Math.abs(clampX(g0)-g0)<30?clampX(g0):clampX(boss.x-fc*150); strike=false; }   /* in front, on the floor, in his reach: bait the lunge (and with a wall in front of him, go round behind: he turns) */
+      }
       // BAIT THE JAW, THEN CLOSE: clear the bite volume before returning to its recovery.
-      else if (boss.t==='reefmaw') {
+      /* mawIn: the spot to strike from is six pixels INSIDE the hero's stand. The stand is LAB_STAND out and the walk stops within four of
+         it, so the warden (stand 38 + half the eel 15 = 53, reach 40 + 15 = 55) parked at 56 on the reef's flat floor, one pixel out of his
+         own reach, and swung at nothing for a whole phase - the old coral stools kept him hopping, which hid it (claude/reef2). */
+      else if (boss.t==='reefmaw') { const mawIn=boss.x+(Math.sign(boss.x-P.x)||1)*6;
         let side=Math.sign(P.x-boss.x)||1;if(boss.x+side*116>A.x1-14||boss.x+side*116<A.x0+14)side=-side;
         if(['biteTell','bite','thrashTell','thrash'].includes(boss.mode)){
           goal=boss.mode==='bite'&&P.y<boss.y-65?boss.x+side*40:boss.x+side*116;strike=false;k.block=false;
           if(P.ground||P.swim){BK.press('jump');P.labJump=24;}if(P.swim)k.up=true;
-        }else if(['stuck','reel','recoil'].includes(boss.mode)){goal=boss.x;strike=true;}
-        else {goal=boss.x;strike=true;}
+        }else if(['stuck','reel','recoil'].includes(boss.mode)){goal=mawIn;strike=true;}
+        else {goal=mawIn;strike=true;}
       }
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : h === 'geomancer' ? 0.17 : 0.14)))) {   /* (THE GEOMANCER's ward takes a tenth of a second to rise: she plants it that much sooner, so it is up on the beat) */

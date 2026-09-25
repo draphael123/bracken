@@ -1,0 +1,150 @@
+{
+ "label": "after2",
+ "at": "2026-09-25T15:58:29.709Z",
+ "summary": {
+  "label": "after2",
+  "fights": 7,
+  "wins": 7,
+  "medianWin": 53,
+  "medianTaken": 70,
+  "stuck": 27,
+  "beached": 9,
+  "reachedLand": 5,
+  "bossHp": 630
+ },
+ "rows": [
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "knight",
+   "out": "win",
+   "secs": 68.4,
+   "hp": 630,
+   "taken": 147,
+   "tpm": 129,
+   "left": 0,
+   "stuck": 5,
+   "beached": 2,
+   "lunges": 2,
+   "rolls": 0,
+   "land": 1,
+   "hitBy": {
+    "bite": 56,
+    "thrash": 21,
+    "tail": 42
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "warden",
+   "out": "win",
+   "secs": 72.6,
+   "hp": 630,
+   "taken": 70,
+   "tpm": 58,
+   "left": 0,
+   "stuck": 5,
+   "beached": 3,
+   "lunges": 3,
+   "rolls": 0,
+   "land": 1,
+   "hitBy": {
+    "tail": 21
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "pyro",
+   "out": "win",
+   "secs": 23,
+   "hp": 630,
+   "taken": 0,
+   "tpm": 0,
+   "left": 0,
+   "stuck": 3,
+   "beached": 0,
+   "lunges": 0,
+   "rolls": 0,
+   "land": 0,
+   "hitBy": {}
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "paladin",
+   "out": "win",
+   "secs": 44.5,
+   "hp": 630,
+   "taken": 56,
+   "tpm": 75,
+   "left": 0,
+   "stuck": 3,
+   "beached": 1,
+   "lunges": 1,
+   "rolls": 0,
+   "land": 1,
+   "hitBy": {
+    "bite": 56
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "pirate",
+   "out": "win",
+   "secs": 64,
+   "hp": 630,
+   "taken": 161,
+   "tpm": 151,
+   "left": 0,
+   "stuck": 3,
+   "beached": 1,
+   "lunges": 1,
+   "rolls": 0,
+   "land": 1,
+   "hitBy": {
+    "bite": 140,
+    "thrash": 21
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "reaper",
+   "out": "win",
+   "secs": 40.1,
+   "hp": 630,
+   "taken": 0,
+   "tpm": 0,
+   "left": 0,
+   "stuck": 4,
+   "beached": 1,
+   "lunges": 1,
+   "rolls": 0,
+   "land": 1,
+   "hitBy": {}
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "geomancer",
+   "out": "win",
+   "secs": 53,
+   "hp": 630,
+   "taken": 70,
+   "tpm": 79,
+   "left": 0,
+   "stuck": 4,
+   "beached": 1,
+   "lunges": 1,
+   "rolls": 0,
+   "land": 0,
+   "hitBy": {
+    "bite": 28,
+    "thrash": 42
+   }
+  }
+ ]
+}
