@@ -53,7 +53,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   // the rides the model CAN follow, from L.moversExtra: a pulley lift (stand on it anywhere along its run and step
   // off anywhere along it) and a swinging bucket (board it near any point of its arc, get off near any other)
   const lifts = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'lift' || m.kind === 'growcap' || (m.kind === 'hexvine' && !opts.fairVines)).map(m => m.cwBand ? { kind: 'counterweight', ...m.cwBand }   /* A COUNTERWEIGHT PAIR is one ride: board either basket, get off the other anywhere from the top of its rise to the foot of its fall */
-    : ({ kind: m.kind + (m.group ? ' ' + m.group : ''), x0: Math.floor(m.x / TSZ), x1: Math.floor((m.x + m.w - 1) / TSZ), y0: Math.floor(Math.min(m.y0, m.y1) / TSZ), y1: Math.floor(Math.max(m.y0, m.y1) / TSZ) }));
+    : ({ kind: m.kind + (m.group ? ' ' + m.group : ''), x0: Math.floor(Math.min(m.x, m.x + (m.lean || 0)) / TSZ), x1: Math.floor((Math.max(m.x, m.x + (m.lean || 0)) + m.w - 1) / TSZ), y0: Math.floor(Math.min(m.y0, m.y1) / TSZ), y1: Math.floor(Math.max(m.y0, m.y1) / TSZ) }));   /* a LEANING sprout (Sporewood) rides its whole footprint, from its root to where it sets you down */
   /* THE OTHER RIDES. A platform mover (ent 'mover': a run of `range` tiles, or a rise of `rise` tiles when vertical) and
      a ferry raft (x0..x1 along one row) are a band of footing: step on anywhere along the run, step off anywhere along it.
      They were why a third of the rivers and decks came back ASSISTED with their silver in doubt. */

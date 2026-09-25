@@ -866,6 +866,44 @@ function sporewood() {
   R.ents=R.ents.filter(e=>e.t==='mother'||e.x<mx-23||e.x>mx+24||['deco','glow','coin'].includes(e.t));
   R.ents.push({t:'glowbud',x:mx-8,y:fy-1,motherNode:true},{t:'sign',x:mx-22,y:fy-1,text:'STRIKE THE MARKED ROOT. SPRING TO THE HEART. THE ROOT MOVES AFTER EACH OPENING.'});
   for(const x of [450,456])R.ents.push({t:'glowbud',x:x-1,y:x===450?21:17,mycelium:true});
+  /* ==== THE CAPS GROW INTO STEPS, said again (the rebuild, docs/briefs/sporewood-rebuild.md) - in FINAL columns, like the strip above ====
+     The strip left the rule as two sprouts in the Deep Gills, 160 columns after the only sign that named it, and none in her room. It is
+     said here in route order: TAUGHT in the glade (a root step), a cap that LEANS over a gap (the old vent marsh), a STAIR grown between
+     spore falls (the old Tumble), the Gills' sprouts woken by a struck glowbud (above), and her room, where her fold JAMS on a grown one. */
+  const RS = (x0, x1, y0, y1, t) => { for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) R.grid[y * R.W + x] = t; };
+  const solidAt = (x, y) => R.grid[y * R.W + x] === T.SOLID;
+  const sprout = (x, row, o = {}) => { const rise = o.rise ?? 56, y0 = row * 16 - 8; return { kind: 'growcap', x: x * 16, y: y0, y0, y1: y0 - rise, w: 32, h: 8, rise, state: 'bud', k: 0, ...(o.lean ? { bx: x * 16 } : {}), ...o }; };   /* `row` is the ground row the bud sits on */
+  const drop = (x0, x1, y0, y1, keep = () => false) => { R.ents = R.ents.filter(e => keep(e) || !(e.x >= x0 && e.x <= x1 && e.y >= y0 && e.y <= y1)); };
+  const caps = [];
+  /* -- 0. THE ROOT STEP (the glade, 34-44): a root four rows high across the way before the canyon; a bud at its foot. Nothing else on it. */
+  drop(33, 44, 15, 19, e => e.t === 'coin' || e.t === 'spitcap');   /* the puffball sign (41) and the sporeling that walked the step (33) */
+  RS(39, 44, 16, 19, T.SOLID); caps.push(sprout(37, 20));   /* against the root, so the grown cap sets you straight onto it */
+  R.ents.push({ t: 'sign', x: 33, y: 19, text: 'THE CAPS GROW INTO STEPS. STOP ON A BUD AND IT RISES UNDER YOU.' }, { t: 'sporeling', x: 24, y: 19, face: -1 },
+    { t: 'glow', x: 42, y: 15 }, { t: 'coin', x: 40, y: 14 }, { t: 'coin', x: 43, y: 14 });
+  /* -- 1. THE LEANING CAPS (the old vent marsh, 175-209): two gaps with a stump between; a bud on each lip leans out over its gap as it grows
+     and sets you by the far side. The gaps have a floor with caps on it that spring you back out: nothing here is bottomless. */
+  drop(175, 209, 0, 19, e => e.t === 'check' || (e.t === 'glow' && (e.x < 179 || e.x > 204 || (e.x >= 189 && e.x <= 193))));
+  for (let x = 180; x <= 209; x++) for (let y = 0; y <= 13; y++) if (R.grid[y * R.W + x] === T.SHELF || R.grid[y * R.W + x] === T.ONEWAY) R.grid[y * R.W + x] = T.AIR;   /* the snapping shelves and the ledge the vents lifted you to */
+  RS(179, 188, 14, 19, T.AIR); RS(194, 204, 14, 19, T.AIR);
+  for (const x of [180, 185, 196, 202]) R.grid[19 * R.W + x] = T.BOUNCER;
+  caps.push(sprout(177, 14, { rise: 16, lean: 160, growT: 1.6 }), sprout(192, 14, { rise: 16, lean: 176, growT: 1.7 }));
+  R.ents.push({ t: 'sign', x: 176, y: 13, text: 'SOME CAPS LEAN AS THEY GROW. STOP ON ONE AT THE EDGE AND IT CARRIES YOU OVER.' },
+    { t: 'spitcap', x: 190, y: 13, face: -1 }, { t: 'shield', x: 207, y: 13, face: -1 }, { t: 'sporeling', x: 186, y: 19, face: -1 }, { t: 'sporeling', x: 199, y: 19, face: -1 });
+  /* -- 2. THE DRIPPING STAIR (the old Tumble, 245-284): the two-row steps become two four-row tiers, a bud at the foot of each, and a clump
+     of spores lets go of the canopy over each bud on a count. Grow your step between clumps: ride it up in the column and it finds you. */
+  RS(252, 258, 10, 11, T.SOLID); RS(259, 272, 6, 9, T.SOLID);
+  for (const e of R.ents) if (e.x >= 245 && e.x <= 284) while (e.y > 0 && solidAt(e.x, e.y)) e.y--;   /* whatever stood on the old steps stands on the new ones */
+  caps.push(sprout(250, 14), sprout(257, 10));
+  for (const e of R.ents) if (e.t === 'sign' && e.x === 246 && e.y === 13) e.text = 'SPORES FALL ON THE BUDS. LET ONE BURST, THEN STOP ON THE BUD AND GROW YOUR STEP.';
+  R.ents.push({ t: 'rockfall', x: 251, y: 0, spore: true, every: 2.6, tell: 0.9 }, { t: 'rockfall', x: 258, y: 0, spore: true, every: 2.9, tell: 0.9 });
+  /* -- 3. THE DEEP GILLS (424-471) keep their sprouts; their sign says both halves of them. */
+  for (const e of R.ents) if (e.t === 'sign' && e.x === 425 && e.y === 13) e.text = 'STRIKE A GLOWBUD: IT LIGHTS THE DARK AND WAKES THE SPROUTS BESIDE IT.';
+  /* -- 4. HER ROOM: a bud each side of her, inside her fold's reach and clear of the springs, the shelves and every knot anchor. */
+  caps.push(sprout(mx - 6, fy, { mother: true }), sprout(mx + 5, fy, { mother: true }));
+  for (const e of R.ents) if (e.t === 'sign' && e.x === 474) e.text = 'GROW A BUD BY HER AND DROP OFF IT: HER FOLDING CAP JAMS, AND HER HEART OPENS.';
+  /* the rule's old sign stood on the lantern terrace (285), where no cap ever grew: it is in the glade now */
+  R.ents = R.ents.filter(e => !(e.t === 'sign' && e.x === 285 && /GROW INTO STEPS/.test(e.text || '')));
+  R.moversExtra = (R.moversExtra || []).concat(caps);
   return R;
 ;
 }
