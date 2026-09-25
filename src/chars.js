@@ -4222,9 +4222,9 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', arm: [X, Y, X - 1, Y + 3], stave: [X + 4, Y + 6, X - 8, Y - 5], plume: 2 }),
       knightFrame({ dx: -2, dy: 2, legs: 'land', arm: [X, Y, X - 2, Y + 4], stave: [X + 3, Y + 7, X - 9, Y - 2], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [X, Y, X + 2, Y + 2], arm2: [OFF[0], OFF[1], X - 2, Y + 4], stave: [X - 6, Y + 6, X + 6, Y - 7] }),
-    /* THE ROCK SHIELD (C held, 2026-09-24 - it was RAISE WALL): the lead arm brought up and across her chest where the slab rides
-       (geomancer.js draws the stone on it), the stave drawn back low in the off hand, her weight settled behind it */
-    block: [0, 1].map(i => knightFrame({ dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y - 3 + i], arm2: [OFF[0], OFF[1], X - 3, Y + 2], stave: [X - 8, Y + 6, X + 1, Y - 9 + i], plume: i + 1 })),
+    /* THE RUNE-WARD (C held, round 3 - it was the ROCK SHIELD): the stave PLANTED upright in front of her, butt in the ground, both hands
+       on it and her weight behind it - geomancer.js raises the ward out of the ground beyond it. She is rooted here, and it looks it */
+    block: [0, 1].map(i => knightFrame({ dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y - 2 + i], arm2: [OFF[0], OFF[1], X + 2, Y + i], stave: [X + 4, Y + 9, X + 4, Y - 10 + i], plume: i + 1 })),
   };
   /* ROLLING STONE (X early in a dash): the stave laid back as a lever and the boot put through a stone at her feet */
   F.dashAtk = [knightFrame({ dx: 2, dy: 1, legs: 'push', arm: [X, Y, X - 3, Y + 2], arm2: [OFF[0], OFF[1], X - 5, Y + 1], stave: [X - 10, Y + 6, X + 3, Y - 8], plume: 2 }),
@@ -4307,11 +4307,6 @@ function geoKitPoses(F, sh) {
   const [X, Y] = sh, OFF = [BX + 2, BY + 7], KF = f => knightFrame({ top: ATTACK_HEADROOM, ...f });
   const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
   const A = '#e8a83a', D = '#c9b27c', M = '#8c8a7e', MS = '#6f9a4a';
-  /* THE MEND (her shield's only refill, 2026-09-24): the stave lifted upright in both hands, the butt STRUCK into the ground at her feet
-     (the thud, and the dust ring off it), and her weight on it while the stone knits back onto her arm - the rune alight in its head */
-  F.gMend = [KF({ dy: -1, legs: 'wide', sho: 1, arm: [X, Y, X + 2, Y - 7], arm2: [OFF[0], OFF[1], X + 1, Y - 6], stave: [X + 3, Y - 1, X + 2, Y - 17], plume: 1 }),
-    KF({ wide: 4, dy: 2, legs: 'wide', arm: [X, Y, X + 4, Y - 1], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X + 5, Y + 9, X + 4, Y - 9], plume: 2, bits: [o(3, 9, D), o(7, 9, D), o(1, 8, M), o(9, 8, M)] }),
-    KF({ dy: 1, legs: 'stand', arm: [X, Y, X + 4, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y], stave: [X + 5, Y + 9, X + 5, Y - 8], plume: 0, bits: [o(6, -9, A)] })];
   /* STONE STEP: in the air, the stave jabbed straight down under her boots onto the stone that rises to meet it, knees up */
   F.gStep = [KF({ legs: 'tuck', dy: -2, arm: [X, Y, X, Y + 3], arm2: [OFF[0], OFF[1], X - 1, Y + 2], stave: [X, Y + 14, X - 2, Y - 7], plume: 1 }),
     KF({ legs: 'jump', dy: -3, sho: 1, arm: [X, Y, X + 1, Y + 1], arm2: [OFF[0], OFF[1], X, Y + 1], stave: [X + 1, Y + 11, X - 1, Y - 10], plume: 2, bits: [o(0, 12, M), o(2, 12, M), o(-2, 12, M)] })];

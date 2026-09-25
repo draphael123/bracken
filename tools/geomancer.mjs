@@ -12,9 +12,15 @@
 //             wall (nothing behind the rock is touched); every foe along the line is hit, not just the first; and a full charge ends
 //             in a rock spike that LAUNCHES what it hits. PROVED RED FIRST on the UPHEAVAL code: no crack, 0 px, the second and third
 //             foes untouched, nothing launched at the far end.
-//   shield    THE ROCK SHIELD (her C from 2026-09-24): two yellow blows break it (cracked after one), one red breaks it fresh or
-//             cracked, a perfect block (raised as it lands) costs it nothing, raising and holding it costs no wind, it never refills by
-//             itself (ten seconds idle), THE MEND (DOWN+C) restores it, and a blow in the middle of the mend breaks it off
+//   ward      THE RUNE-WARD (her C from round 3 - it replaces the ROCK SHIELD and THE MEND): the Knight's guard, sidegraded. It takes
+//             GEO.ward.raise to rise (a blow the frame after C goes down finds her); up, a YELLOW blow is blocked for GEO.ward.hitSt wind
+//             (more than his 11) and there is NO hit count (ten in a row, wind topped up, all blocked); she is ROOTED while it stands
+//             (C and RIGHT held: she does not move); a RED blow breaks through (it lands, and the ward is down); a blow from just behind
+//             her head is taken (it covers OVERHEAD) and one from behind her is not; out of wind it is a GUARD BREAK (half the blow);
+//             raised as the blow lands it is PERFECT - free, and she is EMPOWERED (her blow x1.25, TREMOR x2); a shot met on the beat is
+//             thrown back; and DOWN+C casts nothing (THE MEND is gone). PROVED RED FIRST on the ROCK SHIELD: the blow the frame after C
+//             was blocked (no raise), the third yellow found her (the hit count), RIGHT walked her 24 px, holding and blocking cost no
+//             wind, a blow over her head found her, out of wind it still blocked, and no EMPOWERED.
 //   burrow    HER DODGE IS BURROW: from the floor toward a pit she comes up at the last solid cell, on her feet, never across it;
 //             onto a foe standing where she would come up, she comes up clear of it and never inside rock; a blow along the ground
 //             while she is under does not land; and X as she surfaces kicks the ROLLING STONE
@@ -86,15 +92,27 @@ try {
       __geo([]);const reachFull=FL?FL.len0+FL.lenK:160,sa=foe(reachFull-10,'swornsword');BK.sim(2);const spike=hold([sa],1);
       __geo([]);const sb=foe(80,'swornsword');BK.sim(2);const halfway=hold([sb],0.6);   /* (0.6 of the wind runs the crack to about 105 px: past him, well short of its end) */
       return {contact,full:full0.hurt[0],open,pit,wall,line,spike,halfway,reachFull}})()`);
-  out.shield = await pg.evalp(`(()=>{const P=()=>BK.P,K=BK.keys,hit=red=>{P().inv=0;P().hurt=0;const r=BKT.damagePlayer(P().x+P().face*20,10,{unblockable:!!red});BK.sim(2);return r;};
-      const up=()=>{K.block=true;BK.sim(20);},down=()=>{K.block=false;BK.sim(2);},fresh=()=>{__geo([]);P().face=1;};
-      fresh();P().st=50;up();BK.sim(40);const st=P().st;const y1=hit(),c1=P().geoSh,y2=hit(),c2=P().geoSh,y3=hit();down();
-      BK.sim(600);const idle=P().geoSh;K.down=true;K.block=true;BK.sim(1);K.block=false;BK.sim(2);K.down=false;BK.sim(50);const mended=P().geoSh;
-      fresh();up();const r1=hit(true),rf=P().geoSh;down();
-      fresh();up();hit();const cr=P().geoSh,r2=hit(true),rc=P().geoSh;down();
-      fresh();K.block=true;BK.sim(3);const p1=hit(),pc=P().geoSh;down();
-      fresh();P().geoSh=0;K.block=true;BK.sim(1);K.block=false;BK.sim(10);const mending=P().geoMendT>0;hit();BK.sim(60);const broken=P().geoSh;
-      return {st,y1,c1,y2,c2,y3,idle,mended,r1,rf,cr,r2,rc,p1,pc,mending,broken}})()`);
+  /* THE RUNE-WARD: every blow is 20 from 20 px in front unless it says otherwise; wind is topped up unless the case is about wind */
+  out.ward = await pg.evalp(`(()=>{const P=()=>BK.P,K=BK.keys,W=(BK.geoK&&BK.geoK.ward)||{raise:0.1,perfect:0.09,hitSt:16};
+      const hit=(o={})=>{P().inv=0;P().hurt=0;const st=P().st,hp=P().hp;const r=BKT.damagePlayer(o.x!==undefined?o.x:P().x+P().face*20,20,{unblockable:!!o.red});BK.sim(1);return {r,st:Math.round(st-P().st),hp:hp-P().hp};};
+      const fresh=()=>{for(const k in K)K[k]=false;__geo([]);P().face=1;P().st=P().maxSt;BK.sim(2);},up=n=>{K.block=true;BK.sim(n);};
+      fresh();K.block=true;BK.sim(1);const rising=hit();
+      fresh();up(40);const st0=P().st;BK.sim(30);const held=Math.round(st0-P().st);P().st=P().maxSt;const y1=hit();
+      fresh();up(40);let ten=0;for(let i=0;i<10;i++){P().st=P().maxSt;if(hit().r==='blocked')ten++;BK.sim(3);}
+      fresh();const x0=P().x;K.block=true;K.right=true;BK.sim(45);const moved=Math.round(P().x-x0);
+      fresh();up(40);const red=hit({red:true}),redUp=!!P().geoGuard;
+      fresh();up(40);const over=hit({x:P().x-4});
+      fresh();up(40);const back=hit({x:P().x-24});
+      fresh();up(40);P().st=5;const gb=hit();
+      fresh();up(40);const bolt=BKT.damagePlayer(P().x+20,20,{pierce:true});
+      fresh();const d0=BKT.swordDmg();K.block=true;BK.sim(Math.round(W.raise*60)+2);const pf=hit();const emp=!!(BK.geo().empowered&&BK.geo().empowered());const d1=BKT.swordDmg();
+        K.block=false;BK.sim(2);P().tremor=0;BK.geo().gainTremor(10);const trem=Math.round(P().tremor);P().geoEmpT=0;P().tremor=0;BK.geo().gainTremor(10);const trem0=Math.round(P().tremor);
+      fresh();BK.spawnEnt({t:'archer',x:(P().x+120)/16,y:21});const ar=BK.enemies().at(-1);ar.hp=ar.hp0=5000;ar.cd=99;BK.sim(2);
+        const s={x:P().x+36,y:P().y-12,vx:-160,vy:0,g:0,life:3,arrow:true,owner:ar};BK.seeds().push(s);K.block=true;let refl=false;
+        for(let i=0;i<40;i++){BK.sim(1);if(s.reflected)refl=true;if(s.dead||s.reflected)break;}
+      fresh();K.down=true;K.block=true;BK.sim(4);const cast=P().geoMendT>0||(P().kPoseK==='gMend'&&P().kPoseT>0);
+      fresh();
+      return {rising,held,y1,ten,moved,red,redUp,over,back,gb,bolt,pf,emp,dmg:[d0,d1],trem,trem0,refl,cast}})()`);
   out.burrow = await pg.evalp(`(()=>{const P=()=>BK.P,L=()=>BK.L,solidIn=()=>{const p=P(),b={l:p.x-p.w/2,r:p.x+p.w/2,t:p.y-p.h,b:p.y};for(let tx=Math.floor((b.l+1)/16);tx<=Math.floor((b.r-1)/16);tx++)for(let ty=Math.floor((b.t+1)/16);ty<=Math.floor((b.b-1)/16);ty++)if(L().grid[ty*L().W+tx]===1)return true;return false;};
       __geo([]);for(let x=12;x<=14;x++)for(let y=22;y<L().H;y++)L().grid[y*L().W+x]=0;BK.tp(10,21);BK.sim(5);P().face=1;const y0=P().y;BK.press('dodge');BK.sim(40);
       const pit={x:Math.round(P().x),edge:12*16,right:Math.round(P().x+P().w/2),y:Math.round(P().y-y0),ground:P().ground,rock:solidIn()};
@@ -144,14 +162,21 @@ try {
   assert(H.line.hurt.every(d => d > 0), 'FAULT LINE: every foe along the line is hit, not just the first (' + JSON.stringify(H.line) + ')');
   assert(H.spike.hurt[0] > 0 && H.spike.lift >= 20, 'FAULT LINE: a full charge ends in a rock spike that launches what it hits (' + JSON.stringify(H.spike) + ')');
   assert(H.halfway.hurt[0] > 0 && H.halfway.lift < 6, 'FAULT LINE: the spike is the FULL charge\'s: a crack that only just reaches him throws nothing (' + JSON.stringify(H.halfway) + ')');
-  const S = out.shield;
-  assert(S.y1 === 'blocked' && S.c1 === 1 && S.y2 === 'blocked' && S.c2 === 0 && S.y3 !== 'blocked', 'THE ROCK SHIELD: two yellow blows break it (' + JSON.stringify(S) + ')');
-  assert(S.r1 !== 'blocked' && S.rf === 0 && S.cr === 1 && S.r2 !== 'blocked' && S.rc === 0, 'THE ROCK SHIELD: one red blow breaks it, fresh or cracked (' + JSON.stringify(S) + ')');
-  assert(S.p1 === 'blocked' && S.pc === 2, 'THE ROCK SHIELD: a perfect block costs it nothing (' + JSON.stringify(S) + ')');
-  assert(S.st >= 50, 'THE ROCK SHIELD: raising and holding it costs no wind (' + S.st + ')');
-  assert(S.idle === 0, 'THE ROCK SHIELD: it never refills by itself (' + S.idle + ' after ten seconds)');
-  assert(S.mended === 2, 'THE MEND restores it (' + S.mended + ')');
-  assert(S.mending && S.broken === 0, 'THE MEND is broken off by a blow (' + JSON.stringify(S) + ')');
+  const S = out.ward, SW = JSON.stringify(S);
+  assert(S.rising.r !== 'blocked' && S.rising.hp > 0, 'THE RUNE-WARD takes a tenth of a second to rise: a blow the frame after C finds her (' + SW + ')');
+  assert(S.y1.r === 'blocked' && S.y1.hp === 0 && S.y1.st >= 14, 'a YELLOW blow on it is blocked, for more wind than the Knight\'s 11 (' + SW + ')');
+  assert(S.held >= 5, 'holding it costs wind once the beat has passed (' + SW + ')');
+  assert.equal(S.ten, 10, 'no hit count: ten yellow blows in a row, wind topped up, are all blocked (' + SW + ')');
+  assert(Math.abs(S.moved) <= 1, 'she is ROOTED while it stands: C and RIGHT held, she does not walk (' + SW + ')');
+  assert(S.red.r !== 'blocked' && S.red.hp > 0 && !S.redUp, 'a RED blow breaks through: it lands, and the ward is down (' + SW + ')');
+  assert(S.over.r === 'blocked', 'it covers OVERHEAD: a blow from just behind her head is taken (' + SW + ')');
+  assert(S.back.r !== 'blocked' && S.back.hp > 0, 'a blow from behind her finds her (' + SW + ')');
+  assert(S.gb.r !== 'blocked' && S.gb.hp > 0 && S.gb.hp <= Math.ceil(S.back.hp / 2) + 1, 'out of wind it is a GUARD BREAK: half the blow finds her (' + SW + ')');
+  assert(S.pf.r === 'blocked' && S.pf.st <= 0 && S.emp, 'raised as the blow lands it is PERFECT: free, and she is EMPOWERED (' + SW + ')');
+  assert(S.dmg[1] >= Math.round(S.dmg[0] * 1.2) && S.trem === 2 * S.trem0, 'EMPOWERED: her blow a quarter harder, TREMOR twice as fast (' + SW + ')');
+  assert(S.bolt === 'blocked', 'a bolt does not pierce it (it goes through a raised Knight guard) (' + SW + ')');
+  assert(S.refl, 'a shot met on the beat is thrown back (' + SW + ')');
+  assert(!S.cast, 'DOWN+C casts nothing: THE MEND is gone (' + SW + ')');
   assert(out.wall.kinds.includes('wall'), 'STONE WALL: the bought ability raises a wall (' + JSON.stringify(out.wall) + ')');
   assert(!out.wall.mig.err && out.wall.mig.own.join() === 'stoneWall' && out.wall.mig.lo.join() === 'stoneWall', 'a save that bought LODESTONE owns STONE WALL in its slot (' + JSON.stringify(out.wall.mig) + ')');
   const D = out.dodges;

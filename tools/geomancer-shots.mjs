@@ -25,10 +25,10 @@ try {
   await shot('1 HEAD-STRIKE (X)', `__geo([]);BK.press('atk');__run(7);return __shot('X: HEAD-STRIKE')`);
   await shot('2 BUTT-JAB (X X)', `__geo([]);BK.press('atk');__run(14);BK.press('atk');__run(7);return __shot('X X: BUTT-JAB')`);
   await shot('3 THE SPIN (X X X) SHATTERS', `__geo([],[[110,'sprig']]);BK.geo().raiseWall();__run(4);BK.press('atk');__run(18);BK.press('atk');__run(18);BK.press('atk');__run(9);return __shot('X X X: THE SPIN shatters stone (a parked wall)')`);
-  await shot('4 ROCK SHIELD (C held)', `__geo([]);BK.keys.block=true;__run(12);const r=__shot('HOLD C: THE ROCK SHIELD');BK.keys.block=false;return r`);
-  await shot('5 SHIELD, PERFECT', `const [e]=__geo([],[[34,'sprig']]);BK.keys.block=true;__run(2);BKT.damagePlayer(e.x,10,{});__run(3);const r=__shot('A BLOW ON THE BEAT: BOUNCED OFF');BK.keys.block=false;return r`);
-  await shot('5b SHIELD, CRACKED', `const [e]=__geo([],[[34,'sprig']]);BK.keys.block=true;__run(20);BKT.damagePlayer(e.x,10,{});__run(4);const r=__shot('ONE BLOW TAKEN: CRACKED');BK.keys.block=false;return r`);
-  await shot('5c THE MEND (DOWN+C)', `__geo([]);BK.P.geoSh=0;BK.keys.down=true;BK.keys.block=true;__run(1);BK.keys.block=false;__run(18);BK.keys.down=false;return __shot('DOWN+C: THE MEND (the thud)')`);
+  await shot('4 RUNE-WARD RISING (C)', `__geo([]);BK.keys.block=true;__run(3);const r=__shot('C: THE WARD RISES');BK.keys.block=false;return r`);
+  await shot('4b RUNE-WARD (C held)', `__geo([]);BK.keys.block=true;__run(20);const r=__shot('HOLD C: THE RUNE-WARD, PLANTED');BK.keys.block=false;return r`);
+  await shot('5 WARD, PERFECT: EMPOWERED', `const [e]=__geo([],[[34,'sprig']]);BK.keys.block=true;__run(7);BKT.damagePlayer(e.x,10,{});__run(6);const r=__shot('ON THE BEAT: EMPOWERED');BK.keys.block=false;return r`);
+  await shot('5b WARD, BROKEN THROUGH (RED)', `const [e]=__geo([],[[34,'sprig']]);BK.keys.block=true;__run(20);BKT.damagePlayer(e.x,10,{unblockable:true});__run(3);const r=__shot('A RED BLOW: BROKEN THROUGH');BK.keys.block=false;return r`);
   await shot('5d BURROW (dodge)', `__geo([]);BK.press('dodge');__run(9);return __shot('DODGE: BURROW, UNDER THE FLOOR')`);
   await shot('6 FAULT LINE (HOLD X) WIND', `__geo([],[[40,'sprig'],[110,'swornsword']]);BK.keys.atk=true;__run(22);return __shot('HOLD X: THE LINE IS MARKED')`);
   await shot('7 FAULT LINE RUNS', `__geo([],[[40,'sprig'],[110,'swornsword']]);BK.keys.atk=true;__run(40);BK.keys.atk=false;__run(4);return __shot('FAULT LINE: THE CRACK RUNS')`);

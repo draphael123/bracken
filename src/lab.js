@@ -20,7 +20,7 @@ const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
    one of them is wrong and nobody knows which - so there is one, and it lives here with the bot that earned it. */
 export const threatOf = e => e.alive && ((e.mode && /Tell|tell|wind|aim|draw|charge|lunge|raise/.test(e.mode)) || e.draw > 0 || e.liftT > 0);
 const yieldNow = () => new Promise(r => setTimeout(r, 0));
-export const SHIELDED = h => h === 'knight' || h === 'paladin' || h === 'reaper';   // C holds a guard; the others roll
+export const SHIELDED = h => h === 'knight' || h === 'paladin' || h === 'reaper' || h === 'geomancer';   // C holds a guard; the others roll (THE GEOMANCER's RUNE-WARD, round 3: a held guard like his)
 /* THE WARDEN'S C IS NOT A GUARD EITHER. It is a TAP - a sweep of the shaft that turns any yellow blow met on the beat
    and swats what flies at her - so the bot answers anything the marks do not call red with it, and gives ground from
    the rest. It is edge-triggered, so the bot must let the key UP again between sweeps: DEFLECT_TAP is that beat.
@@ -138,11 +138,8 @@ function labBotFrame(BK, h, e, f) {
     else if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
     else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
     else if (h === 'warden') { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); }
-    else if (h === 'geomancer') { if (P.geoSh > 0) k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); else if (ON_THE_BEAT(e) && f % 14 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }   /* THE GEOMANCER: her ROCK SHIELD raised on the beat of a yellow blow (a tap: the perfect block costs it nothing); red is dodged above, and with the shield broken she rolls */   /* sweep at a yellow blow, step back off a red one */
     else k.block = true;
-  } else if (h === 'geomancer' && P.geoMendT > 0) { /* THE MEND: she stands on it until it is done */ }
-  else if (h === 'geomancer' && P.geoSh < 2 && ad > 60 && P.ground && P.atk < 0 && !(P.charge > 0)) { k.down = true; k.block = true; }   /* clear of it with a cracked or broken shield: strike the stave in and mend it */
-  else {
+  } else {
     const s = strike(BK, h, e, f); swing = s.swing;
     /* THE WARDEN KEEPS HER POINT OUT: inside the haft she only shoves, so she steps back out of it (her step goes backward by itself) */
     if (h === 'warden' && ad < 20 && P.atk < 0 && !(P.charge > 0) && !(P.dodge > 0) && P.st >= 20 && f % 10 === 0) BK.press('dodge');
@@ -898,10 +895,9 @@ async function runbossLab(BK, opts) {
         else {goal=boss.x;strike=true;}
       }
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
-      else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : 0.14)))) {
+      else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : h === 'geomancer' ? 0.17 : 0.14)))) {   /* (THE GEOMANCER's ward takes a tenth of a second to rise: she plants it that much sooner, so it is up on the beat) */
         P.face = Math.sign(d) || P.face;
         if ((h === 'warden' || h === 'pirate' && boss.t === 'herald') && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = DEFLECT_TAP(f); }   /* THE DEFLECT, at any blow of his the marks do not call red */
-        else if (h === 'geomancer' && P.geoSh > 0 && ad < 50 && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = DEFLECT_TAP(f); goal = null; }   /* THE GEOMANCER'S ROCK SHIELD, TAPPED on the beat of a yellow blow: raised that late it is a perfect block and costs the stone nothing (held, every blow would crack it). With it broken she rolls, below */
         else if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = true; if (h === 'paladin') holdC = f + 40;
           if (h === 'reaper') { dkHold = f + dkF(0.5); const lg = dkLag[boss.mode];
             if (tell && lg !== undefined && lg <= 0.15) { if (dkRel.mode !== boss.mode || boss.modeT > dkRel.t0 + 0.05) dkRel = { mode: boss.mode, t0: boss.modeT, at: 0.03 + Math.random() * 0.16 + (Math.random() < 0.1 ? 0.25 : 0) - lg }; dkRel.t0 = boss.modeT;
@@ -1048,10 +1044,6 @@ async function runbossLab(BK, opts) {
       if(descending){const gx=boss.t==='reefmaw'?boss.x:lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;P.labJump=0;k.jump=false;if(P.ground&&[T.ONEWAY,T.PLANK,T.SHELF,T.RAIL].includes(P.groundTile)){k.down=true;BK.press('jump');}}
       if(!descending&&P.ground&&Math.abs(P.vx)<4&&(k.left||k.right)&&f%15===0){BK.press('jump');P.labJump=18;}
       if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}
-      /* THE GEOMANCER MENDS BETWEEN HIS ATTACKS: a cracked or broken shield, nothing winding up or coming at her, well clear of him (110 px: closer, a stalking boss walks into her while she stands on the stave) and
-         on her feet - DOWN+C, and she stands on it until the stone is whole (a swing or a step would break the mend off) */
-      if (h === 'geomancer' && (P.geoMendT > 0 || (P.geoSh < 2 && !tell && !rushing && !incoming && !(boss.mode && /Tell$/.test(boss.mode)) && ad > 110 && P.ground && P.atk < 0 && !(P.charge > 0) && !(P.dodge > 0)))) {
-        k.left = k.right = k.up = k.jump = k.atk = false; k.down = true; k.block = !(P.geoMendT > 0) && f % 6 < 2; strike = false; P.labJump = 0; }
       // THE HERALD'S STONES LEAVE PISTOL ROOM: a loaded shot reaches across them; the short C release answers his yellow thrust.
       const cutGo=h==='knight'&&P.atkHeld>=KNIGHT_CUT;   /* the heavy cut is let go at the guard-break */
       const mixedHeavy=(opts.attackStyle==='mixed'||h==='pirate'&&boss.t==='herald'&&P.loaded) && !cutGo && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&(h==='pirate'&&boss.t==='herald'?ad>40&&ad<140:ad<reach+8)&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));

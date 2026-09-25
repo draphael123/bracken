@@ -356,7 +356,7 @@ const HEROES = [
   { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, coinPrice: 800, coinNeeds: 'unburied', desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. Buy skills with coins and equip them in Skills & Loadout. At full blood, TAP F for the equipped skill or HOLD F for Blood Surge. the plunge drives the blade down into a GRAVE BURST. X early in a dodge: THE GREATSWORD RUSH, through small foes, and a guard is thrown wide." },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dodge: THE BOARDING LUNGE, through small foes, and a guard is thrown wide. no shield: he PARRIES" },
   { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. X early in a dodge: THE SHIELDLESS CHARGE, through small foes, and a guard is thrown wide. the dead take double' },
-  { id: 'geomancer', name: 'THE GEOMANCER', price: 10, silver: true, desc: 'a stave with a standing stone for a head, and 95 health. slower on foot, and every blow of hers is heavy. SHE BUILDS SOMETHING IN ITS WAY: hold C for her ROCK SHIELD - it takes two YELLOW blows, cracked after one; raised as a blow lands, their weapon bounces off and it costs nothing. A RED blow shatters it. It never mends itself: DOWN+C strikes the stave into the ground to make it whole. HOLD X and let go: FAULT LINE, a crack that races along the floor ahead of her and hits everything on it - the longer the hold, the longer and harder, and a full one ends in a spike that launches. UP+X is a stone SPUR for what is over her. Her third blow is a full spin that SHATTERS any stone of hers it hits into shards. Her plunge is STONEFALL: it knocks down what stands beside her. X early in a dodge kicks a ROLLING STONE. Blows the shield stops and foes her stone launches fill TREMOR: full, tap C on the ground for THE QUAKE. Only three stones stand at once, and each crumbles in four seconds' },
+  { id: 'geomancer', name: 'THE GEOMANCER', price: 10, silver: true, desc: 'a stave with a standing stone for a head, and 95 health. slower on foot, and every blow of hers is heavy. SHE BUILDS SOMETHING IN ITS WAY: hold C and she plants the stave and a RUNE-WARD of stone rises in front of her and over her head. It turns YELLOW blows and shots for wind, but she cannot walk while it stands; a RED blow breaks through. Raised as a blow lands it throws a shot back and EMPOWERS her for three seconds: harder blows, and TREMOR twice as fast. HOLD X and let go: FAULT LINE, a crack that races along the floor ahead of her and hits everything on it - the longer the hold, the longer and harder, and a full one ends in a spike that launches. UP+X is a stone SPUR for what is over her. Her third blow is a full spin that SHATTERS any stone of hers it hits into shards. Her plunge is STONEFALL: it knocks down what stands beside her. X early in a dodge kicks a ROLLING STONE. Blows the ward stops and foes her stone launches fill TREMOR: full, tap C on the ground for THE QUAKE. Only three stones stand at once, and each crumbles in four seconds' },
   { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 100 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it. X early in a dodge: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
 ];
 /* THE LOOP, IN ONE SENTENCE A HERO: what the pick screen and the hero card say under the name - how this hero is PLAYED,
@@ -373,7 +373,7 @@ const HERO_LOOP = {
   pirate: 'THE PISTOL GOES THROUGH ANY GUARD, THEN IT IS EMPTY: THE WOOD\'S GOLD IS HIS POWDER.',
   reaper: 'THE WARD TAKES BLOWS FOR BLOOD; LET GO BEFORE IT BREAKS AND THE NOVA PAYS IT BACK.',
   warden: 'THE POINT PAYS, NOT THE HAFT: KEEP THEM OUT THERE. TAP C AND THE SHAFT TURNS A BLOW.',
-  geomancer: 'HOLD X: A FAULT LINE ALONG THE FLOOR, LONGER THE LONGER YOU HOLD. THREE STONES AT ONCE.',   /* the deflect, not the old brace; 504 px, two lines on the card's 270 (the brace wording took three) */
+  geomancer: 'HOLD C: A RUNE-WARD. SHE IS PLANTED, AND ON THE BEAT IT EMPOWERS HER. HOLD X: A FAULT LINE.',   /* the deflect, not the old brace; 504 px, two lines on the card's 270 (the brace wording took three) */
 };
 const TRAINING = [
   { id: 'vigour', name: 'VIGOUR', per: '+10 health a rank', max: 5, prices: [40, 60, 90, 130, 180] },
@@ -405,16 +405,16 @@ const WARDEN_KEYS = { deflect: 'TAP C: THE DEFLECT. THE SHAFT TURNS A YELLOW BLO
   pin: 'DOWN+X IN THE AIR PINS WHAT YOU LAND ON: X TO STAB IT, Z TO PULL FREE',
   vault: 'JUMP OUT OF A STEP FORWARD AND SHE PLANTS THE SPEAR AND VAULTS',
   controls: { block: ['the deflect', 'TAP C  (FULL: PHALANX)', 'LB RB'], dodge: ['step', 'V BACK, OR TAP A WAY TWICE', 'B'] } };
-/* ==== THE GEOMANCER'S KEYS, IN WORDS (her controls card): her held swing is FAULT LINE, a crack along the floor ==== */
-const GEO_KEYS = { controls: { block: ['rock shield', 'HOLD C  (DOWN+C: MEND)', 'LB RB'], 'heavy blow': ['fault line', 'HOLD SWING, LET GO', 'HOLD X'] } };
-const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'GRAVELORD', 'WARD'], warden: ['SPEARHEAD', 'THE DEFLECT', 'SKIRMISHER'], geomancer: ['EARTH', 'SHIELD', 'TREMOR'] };
+/* ==== THE GEOMANCER'S KEYS, IN WORDS (her controls card): C is her RUNE-WARD (planted), and her held swing is FAULT LINE ==== */
+const GEO_KEYS = { controls: { block: ['rune-ward', 'HOLD C  (SHE IS PLANTED)', 'LB RB'], 'heavy blow': ['fault line', 'HOLD SWING, LET GO', 'HOLD X'] } };
+const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'GRAVELORD', 'WARD'], warden: ['SPEARHEAD', 'THE DEFLECT', 'SKIRMISHER'], geomancer: ['EARTH', 'WARD', 'TREMOR'] };
 const TREE_WHO = { knight: ['COMBOS, BLEEDS AND FINISHERS', 'THE SHIELD: TURN IT, THEN ANSWER', 'THE AIR AND THE RUN: KEEP MOVING'],
   pyro: ['THROWN EMBERS: SKIP, SPLIT AND SPREAD', 'THE JET AND THE HEAT', 'FIGHT IN THE FIRE AND WALK OUT'],
   paladin: ['THE LIGHT, AND WHAT IT JUDGES', 'THE AEGIS: A WALL THAT WALKS', 'THE MAUL AND THE GROUND IT SHAKES'],
   pirate: ['THE PISTOL: ONE BALL, MADE TO COUNT', 'GOLD: THE PURSE IS A WEAPON', 'CUTLASS AND HOOK: CLOSE, AND CLOSER'],
   reaper: ['THE GREATSWORD, THE MARK, THE WOUND', 'SUMMON SKELETON (F): THE DEAD ON CALL', 'THE WARD STOPS, THE NOVA PAYS'],
   warden: ['THE POINT: REACH, AND WHAT IT PAYS', 'THE SHAFT: TURN IT, AND HOLD THEM OFF', 'FOOTWORK: GIVE GROUND, KEEP THE POINT'],
-  geomancer: ['THE STONES: MORE, TALLER, LONGER', 'THE SHIELD: WHAT IT TURNS BACK', 'THE TREMOR: THE QUAKE AND THE FALL'] };
+  geomancer: ['THE STONES: MORE, TALLER, LONGER', 'THE WARD: WHAT IT TURNS BACK', 'THE TREMOR: THE QUAKE AND THE FALL'] };
 const ROW_LV = [0, 2, 5, 10];        // the level a row opens at
 const ROW_NEED = [0, 2, 5, 10];      // and the points it wants spent in its own tree
 const CAP_NEED = 18, PTS_CAP = 30;   /* what a capstone asks of its tree, and the most points a hero ever has */
@@ -469,7 +469,7 @@ function openEquip(from) { storeMode = 'equip'; equipFrom = from; storeTab = 0; 
 const skinById = id => SKINS.find(k => k.id === id) || SKINS[0];
 const swordById = id => SWORDS.find(k => k.id === id) || SWORDS[0];
 const sword = () => swordById(PROG.sword);
-const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : isGeo() ? 13 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + growthAt(hero(), heroLevel()).damage) * (isPyro() ? 0.7 : 1)); // +1 damage every second level
+const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : isGeo() ? 13 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + growthAt(hero(), heroLevel()).damage) * (isPyro() ? 0.7 : 1) * (isGeo() && GEO && GEO.empowered() ? GEO_K.ward.empMul : 1));   /* (EMPOWERED: a perfect RUNE-WARD, geomancer.js) */ // +1 damage every second level
 const footTal = () => LV_GROW();   /* SURE FOOTING, FLEET, IRON LUNGS and SWASHBUCKLE were two ranks of this: the woods give it now */
 const dodgeCost = () => Math.max(6, ST.dodge - Math.round(2 * footTal()) - 3*tal('lightStep')), plungeCost = () => chainCost(Math.max(12, ST.plunge - Math.round(2 * footTal())), P.plungeN || 0);
 /* ==== THE WARDEN'S BACK-STEP. Not the shared roll played backwards: about HALF the ground, out of it sooner, for
@@ -4636,7 +4636,7 @@ function hudMeterLabel() {
   if (isPyro()) return P.full ? { s: 'PYRE: C', col: blink ? '#ffd36b' : '#fff6c8' } : null;
   if (isPaladin()) return (P.light || 0) >= 100 ? { s: 'JUDGEMENT: C', col: blink ? '#ffd36b' : '#fff6c8' } : null;
   if (isPirate()) return (P.plunder || 0) >= 100 ? { s: 'BLACK FLAG: C', col: blink ? '#ffd34a' : '#fff6c8' } : null;
-  if (isGeo()) return (P.tremor || 0) >= 100 ? { s: 'QUAKE: C', col: blink ? '#e8a83a' : '#fff0c0' } : null;
+  if (isGeo()) return (P.tremor || 0) >= 100 ? { s: 'QUAKE: C', col: blink ? '#e8a83a' : '#fff0c0' } : GEO && GEO.empowered() ? { s: 'EMPOWERED', col: '#e8a83a' } : null;   /* (EMPOWERED: a perfect ward's three seconds, said where her bar is) */
   if (isWarden()) { if (state !== 'play' && state !== 'talk') return null;
     if (P.pinning) return { s: 'X STAB   Z FREE', col: blink ? '#dff0d8' : '#8fd160' };   /* on the spear: the two ways off it */
     if ((P.vigil || 0) >= 100) return { s: 'PHALANX: C', col: blink ? '#8fd160' : '#dff0d8' };
@@ -4800,11 +4800,12 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     sparks(P.x + P.face * 12, P.y - 10, P.face, 9); number(P.x, P.y - 28, 'TURNED IT', '#ffd36b'); parryBurst();
     return 'blocked';
   }
-  /* THE GEOMANCER'S ROCK SHIELD: raised on her arm, it takes two yellow blows (one raised on the beat costs it nothing and bounces
-     the weapon); a RED blow shatters it and goes on into her - at half its force with BULWARK (geomancer.js shieldTakes) */
-  const geoSh = isGeo() && GEO ? GEO.shieldTakes(fromX, unblockable, nearFoe(fromX)) : null;
-  if (geoSh === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; }
-  if (geoSh === 'half') dmg = Math.ceil(dmg / 2);
+  /* THE GEOMANCER'S RUNE-WARD (round 3): the Knight's rules, sidegraded - a yellow blow from the front or from overhead costs her wind (a
+     bolt does not pierce it, and nothing pushes her back); on the beat it is free and EMPOWERS her; out of wind it breaks and half the
+     blow finds her; a RED blow breaks through (half with BULWARK). geomancer.js wardTakes */
+  const geoW = isGeo() && GEO ? GEO.wardTakes(fromX, unblockable, nearFoe(fromX)) : null;
+  if (geoW === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; }
+  if (geoW === 'half') dmg = Math.ceil(dmg / 2);
   /* (a WALL stood between her and the blow - PARKED, raised only by the kit now - still stops a yellow one: geomancer.js wallTakes) */
   if (isGeo() && GEO && GEO.wallTakes(fromX, unblockable, nearFoe(fromX)) === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; }
   /* A PIERCING BLOW (the crossbow bolt) goes through a guard that was already up: only a guard raised as it lands - a parry - turns it */
@@ -6970,14 +6971,12 @@ function updatePlayer(dt) {
        line in front of her, so neither spits anything. */
     if (P.atk >= 0 && P.swingKind !== 'rise' && P.swingKind !== 'sweep') impaleWatch();
   }
-  if (isGeo() && GEO) {   /* THE GEOMANCER'S C: held, THE ROCK SHIELD on her arm (no wind, two blows); DOWN+C - or C with nothing on her arm - THE MEND; a full TREMOR and a tap on the ground is THE QUAKE */
+  if (isGeo() && GEO) {   /* THE GEOMANCER'S C: held, THE RUNE-WARD (she is planted while it stands); a full TREMOR and a tap on the ground is THE QUAKE */
     P.tremor = Math.max(0, Math.min(100, P.tremor || 0)); P.blastT = Math.max(0, (P.blastT || 0) - dt);
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0) && !(P.charge > 0);
-    if (cDown && free && (P.ground || P.swim) && (P.tremor || 0) >= 100) GEO.quake();
-    else if (cDown && free && P.ground && !(P.geoMendT > 0) && (keys.down || !(GEO.shieldHp() > 0))) GEO.startMend();
-    GEO.guard(!!keys.block && !keys.down, free && (P.ground || P.swim));
-    GEO.mendUpdate(dt);
+    const quake = cDown && free && (P.ground || P.swim) && (P.tremor || 0) >= 100; if (quake) GEO.quake();
+    GEO.guard(!!keys.block && !quake, free && !quake && (P.ground || P.swim) && !thrown, dt, (keys.right ? 1 : 0) - (keys.left ? 1 : 0));
   }
   if (hero() === 'knight') { // C held = the shield. A full RESOLVE and a tap of C on the ground is THE LAST CHARGE.
     P.resolve = Math.max(0, Math.min(100, P.resolve || 0));
@@ -13798,7 +13797,7 @@ function updateRoadman(e, dt) {
     // on the beat - which is the only way this town teaches it, because nothing here explains anything.
     switch (e.mode) {
       case 'cutTell': want = 0;
-        if ((L.trial || e.lesson) && !e.glint && e.modeT <= (e.lesson && hero() === 'knight' ? RIPOSTE.beat : L.trial && isGeo() ? GEO_K.perfect : PAL_BEAT)) { e.glint = 1;   /* (THE GEOMANCER'S YARD: a wall bounces a blade only inside GEO.perfect of rising, so there the flash IS that beat) */   /* THE WOOD'S LESSON (e.lesson): his sword flashes too, and for a knight at HIS beat - a reaction's length before the blow, so raising the shield as it flashes is a perfect guard */ ringAt(e.x + e.face * 12, e.y - e.h + 4, 9, '#ffffff', 0.3); burst(e.x + e.face * 12, e.y - e.h + 4, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); }   /* IN A TRIAL HIS SWORD FLASHES as the Paladin's does: the beat, drawn and heard */
+        if ((L.trial || e.lesson) && !e.glint && e.modeT <= (e.lesson && hero() === 'knight' ? RIPOSTE.beat : L.trial && isGeo() ? GEO_K.ward.raise + GEO_K.ward.perfect : PAL_BEAT)) { e.glint = 1;   /* (THE GEOMANCER'S YARD: her ward takes GEO.ward.raise to rise and is perfect for GEO.ward.perfect after, so the flash comes that much before the blow: pressed as it flashes, it is up on the beat) */   /* THE WOOD'S LESSON (e.lesson): his sword flashes too, and for a knight at HIS beat - a reaction's length before the blow, so raising the shield as it flashes is a perfect guard */ ringAt(e.x + e.face * 12, e.y - e.h + 4, 9, '#ffffff', 0.3); burst(e.x + e.face * 12, e.y - e.h + 4, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); }   /* IN A TRIAL HIS SWORD FLASHES as the Paladin's does: the beat, drawn and heard */
         if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.22; SFX.slash(); e.vx = e.face * 70;
           if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 22) {
             const res = damagePlayer(e.x, DMG.swornCut);
@@ -23517,7 +23516,7 @@ const YARD_DRILLS = {
   pirate: 'parry, black flag, dash attack, rise and sweep',
   reaper: 'ward, blood surge, dash attack, rise and sweep',
   warden: 'the point, the deflect, run-through and the pin',
-  geomancer: 'fault line, the shield on the beat, stonefall, quake',
+  geomancer: 'fault line, the ward on the beat, stonefall, quake',
   open: 'straw men, steps, a gap, a wall, two guards',
 };
 // the open yard is not a hero: it is the fourth row, and it takes whoever you are in as you are
