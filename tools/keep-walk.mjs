@@ -24,7 +24,7 @@ try {
       if(A&&P.x>=A.trigger){reached=true;break;}}
     const walk={hero:'${hero}',frames:f,reachedDoor:reached,maxTile:Math.round(maxX/TS),deaths:BK.stats().deaths,secs:secs.map(s=>({name:s.name,x0:s.x0,x1:s.x1,blows:s.blows,lost:Math.round(s.lost),deaths:s.deaths,lifts:s.lifts,seconds:+(s.frames/60).toFixed(1),minBreath:s.minBreath===99?null:s.minBreath}))};
     /* THE LOOK: one frame a section, the level as built, nothing killed */
-    const shots={};const spot=(x0,x1)=>{const mid=Math.round((x0+x1)/2);for(let d=0;d<30;d++)for(const x of [mid+d,mid-d]){for(let y=L.H-3;y>2;y--){if(L.grid[(y+1)*L.W+x]!==0&&L.grid[y*L.W+x]===0&&L.grid[(y-1)*L.W+x]===0)return[x,y];}}return[mid,40];};
+    const shots={};const spot=(x0,x1)=>{const c=L.ents.find(e=>e.t==='check'&&e.x>=x0&&e.x<=x1&&e.y<50);if(c)return[c.x+3,c.y];   /* a hall: stand on its floor, by its shrine */const mid=Math.round((x0+x1)/2);for(let d=0;d<30;d++)for(const x of [mid+d,mid-d]){for(let y=3;y<L.H-2;y++){if(L.grid[(y+1)*L.W+x]!==0&&L.grid[y*L.W+x]===0&&L.grid[(y-1)*L.W+x]===0)return[x,y];}}return[mid,40];};
     for(const s of secs){boot();BK.god=true;const[x,y]=spot(s.x0,s.x1);BK.tp(x,y);BK.sim(420);BK.tp(x,y);for(let i=0;i<70;i++)BK.step(1);shots[s.name.replace(/[^A-Z]+/g,'-').replace(/^-|-$/g,'').toLowerCase()]=document.querySelector('canvas').toDataURL('image/png');}
     return {walk,shots};})()`, 1500000);
   for (const [k, v] of Object.entries(r.shots)) writeFileSync(new URL(tag + '-' + k + '.png', out), Buffer.from(v.split(',')[1], 'base64'));

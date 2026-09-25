@@ -115,7 +115,7 @@ export function expandKeep(R,T,TS,crop){
  whirl(364,48,4,357,58);
  K.ents.push(drownedKnight(361,43));   /* S1: fight him at the edge of the pull and it drags you onto his point */
  box(372,396,24,44,T.SOLID);K.blight.push([372,386,55,58]);K.siphons.push({x:380,y:44});   /* drawn up toward the roof's drain or down into the dead water */
- mark('window',378,44,'keepChapel');
+ mark('window',357,58,'keepChapel');   /* in the open water before the low slot, not behind its rock */
 
  sections.splice(3,0,[H1.name,H1.x0,H1.x1]);sections.splice(6,0,[H2.name,H2.x0,H2.x1]);
  const narrows=buildKeepNarrows(K,T,N,ent);sections.push(...narrows);
