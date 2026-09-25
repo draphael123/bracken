@@ -16,6 +16,7 @@
                              left to run out opens nothing (2026-09-24: he fights with the class's kit)
      THE DUNE WORM     wind the hollow's awning out and let his breach come up under it: he comes up INTO the canvas, tangled, and
                        the awning comes down; the same breach in the open sand, or under the awning rolled IN, opens nothing (2026-09-25)
+     THE SEXTON        make him rush you across a counting plank: it breaks under his charge and he is caught in the bell pit (2026-09-25)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -126,6 +127,12 @@ try {
        BK.sim(1);if(b.mode==='tangled')tangled++;if(BK.bossOpen(b))opened++;if(W.mode==='dive'||W.mode==='surfaced'&&tangled===0&&f>60)break;}
      return {tangled:+(tangled/60).toFixed(1),open:+(opened/60).toFixed(1),awning:w.out,mode:b.mode};};
    out.worm={openSand:breach(open,1),rolledIn:breach(mid,0),rolledOut:breach(mid,1)};}
+  /* THE SEXTON (the Falling Tower's mini): his rush over WHOLE planks is only a rush; over a COUNTING plank it breaks it and he is caught in the bell pit */
+  {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;const D=BK.L.bellDeck;BK.tp(43,D.deck+2);BK.sim(120);
+   const s=BK.enemies().find(e=>e.alive&&e.t==='sexton');if(!s)return{error:'no sexton',mini:BK.miniActive};const planks=BK.L.crumbles.filter(c=>c.kind==='deck');
+   const rush=count=>{for(const c of planks){c.st='whole';c.t=0;}s.mode='stalk';s.cd=99;s.y=BK.L.mini.floor;s.x=24*16;s.face=1;BK.P.x=39*16+8;BK.P.y=D.deck*16-32;BK.sim(2);
+     if(count){const c=planks.find(q=>q.x0===27);c.st='count';c.t=2.5;}s.mode='rushTell';s.modeT=0;let pit=0;for(let i=0;i<50;i++){BK.P.x=39*16+8;BK.sim(1);pit=Math.max(pit,s.mode==='pit'?s.open:0);}return{mode:s.mode,open:+pit.toFixed(1)};};
+   out.sexton={whole:rush(false),counting:rush(true)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -176,6 +183,8 @@ try {
   assert.equal(r.worm.rolledIn.tangled, 0, 'a breach under his awning ROLLED IN opens nothing: ' + JSON.stringify(r.worm));
   assert.ok(r.worm.rolledOut.tangled >= 2.4 && r.worm.rolledOut.open >= 2.4, 'a breach under the awning rolled OUT comes up into it: tangled and open, the window: ' + JSON.stringify(r.worm));
   assert.equal(r.worm.rolledOut.awning, 0, 'and the awning comes down onto him: it has to be wound out again: ' + JSON.stringify(r.worm));
+  assert.equal(r.sexton.whole.open, 0, 'THE SEXTON: a rush over whole planks opens nothing: ' + JSON.stringify(r.sexton));
+  assert.ok(r.sexton.counting.open > 2, 'a rush over a counting plank breaks it and he is caught in the bell pit, open: ' + JSON.stringify(r.sexton));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

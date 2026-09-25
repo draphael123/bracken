@@ -95,6 +95,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      crowd, with a told pole of his own. THE BARROW RIDER is a mini like the grave warden (4); THE FIRST DEATH KNIGHT a boss (6). */
   corpse: 2, bannerbearer: 3, barrowrider: 4, deathknight: 6, cover: 0, ballista: 0, trebuchet: 0, oilbarrel: 0,
   burieddead: 6, undeadmage: 6, harbormaster: 6, hedgewarden: 6, gargoyle: 6, gravewarden: 4,
+  sexton: 4,   /* THE SEXTON, the Falling Tower's mini (2026-09-25): a mini like the grave warden and the barrow rider */
   /* SEA WILDLIFE: a puffer is nearly nothing until it swells, a jelly is a timing problem more than a fight, a
      lamprey costs you air rather than health, and a manta is a diving strike off her own open water */
   puffer: 1, jelly: 1, lamprey: 2.5, manta: 2.5,
@@ -132,6 +133,30 @@ export const indexOf = ({ threat, kinds, hazTiles = 0, gap, span }) =>
 // the crags and the Long Water opens the sea, and the river is meant to breathe. What the rule is for is a
 // COLLAPSE - a level that gives back half of what the one before it asked - and a WALL, a step so big the
 // player has nowhere to have learned it.
+/* WHAT A LEVEL CONTAINS, COUNTED ONCE (2026-09-25). tools/curve.mjs and the bot (src/playtest.js) each counted a built level's
+   foes, threat, kinds and hazard for themselves - the same drift the THREAT table had before it lived here - and they had
+   drifted again: the bot never counted an AMBUSH room's crowd at all, and neither counted a floor that gives way. Both call
+   this now. What it counts:
+     - every weighed creature; a mini twice its weight and an elite three times
+     - an AMBUSH ROOM's crowd, which is not in the entity list until the room shuts - and its CAPTAIN as the elite it is
+       (it was counted as a common one, so a room's elite was worth a third of the same elite stood on the road)
+     - HAZARD: spike tiles, harmful pools (a tile in four), swim pools (a tile in eight: breath), and FLOOR THAT GIVES WAY -
+       the Falling Tower's failing stone (L.crumbles), the Hurricane's splitting deck and the Burning Village's logs
+       (L.deckBreaks), one tile each, as a spike is. A floor that drops you costs the climb back and the fight you were in;
+       it was invisible to the index, so the level whose whole rule it is read as having almost no hazard in it. */
+export function measureLevel(R, { T, TS = 16 }) {
+  let foes = 0, threat = 0, checks = 0, hazTiles = 0; const kinds = new Set(), unweighed = new Set();
+  for (const e of (R.ents || [])) { if (e.t === 'check') { checks++; continue; }
+    const w = THREAT[e.t]; if (w === undefined) { unweighed.add(e.t); continue; }
+    if (w > 0) { foes++; threat += w * (e.mini ? 2 : e.elite ? 3 : 1); kinds.add(e.t); } }
+  for (const A of (R.ambushes || [])) for (const w of A.waves) for (const [t, , , o] of w) { const v = THREAT[t]; if (v > 0) { foes++; threat += v * (o && o.elite ? 3 : 1); kinds.add(t); } }
+  for (let i = 0; i < R.grid.length; i++) if (R.grid[i] === T.SPIKE) hazTiles++;
+  for (const p of (R.pools || [])) { if (p.harm) hazTiles += Math.round((p.x1 - p.x0) / TS / 4); else if (p.swim) hazTiles += Math.round((p.x1 - p.x0) / TS / 8); }
+  for (const c of (R.crumbles || [])) hazTiles += c.x1 - c.x0 + 1;
+  for (const z of (R.deckBreaks || [])) hazTiles += z.x1 - z.x0 + 1;
+  const span = spanOf(R.W, R.H), gap = worstGap(R.ents, R.W, R.H, R.arena);
+  return { foes, threat, kinds: kinds.size, kindSet: kinds, checks, hazTiles, gap, span, unweighed, index: indexOf({ threat, kinds: kinds.size, hazTiles, gap, span }) };
+}
 export const RAMP_DROP = -8;   // a step down bigger than this is a collapse, not an act opening
 export const RAMP_WALL = 26;   // a step up bigger than this is a wall
 

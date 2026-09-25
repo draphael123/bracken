@@ -51,6 +51,7 @@ A **failing section** is a run of floor tiles (`L.crumbles`: `{ x0, x1, row, cou
 | 3 | THE ORRERY CAGE (the shaft) | **A RACE UP A FAILING STAIR** | out of the pit, the stair up the shaft fails from the bottom up once you step on it: each tier's count starts when the one under it goes. Fall and you land on the tiers below and the pit's roof; the stair is back 4 s after it finished |
 | 4 | THE PENDULUM GALLERY | **A FLOOR YOU MUST LEAVE IN TIME** | the landing after the first ride counts the moment you land (2.5 s): step up the wall stair before it goes. Under it is the gallery floor, clear of the gear pit, with a rope back up (C5) |
 | 5 | THE BELL LOFT | **THE MINI'S ROOM** | the bell deck is failing planks over a shallow bell pit. The mini's toll starts them counting; your weight starts them too; and his charge breaks a counting plank outright - see §3 |
+| 6 | THE OPEN CROWN | **THE CROWN BREAKING UP** | *(added while building, 2026-09-25)* one ledge in four of the last climb is failing stone on a shorter count (2.5 s): the rule at its hardest, where the tower is most gone, just before the sky. A fall is one tier |
 
 The whole-floor fall ("every floor you leave falls") stays as the tower's frame: a floor goes once you are above it and
 its rope is sealed. It was never dangerous and is not made so.
@@ -61,8 +62,8 @@ The tower's bell-ringer, dead and still on duty: a tall, stooped figure in a gre
 on a short chain. He replaces the Bell Loft's elite warden. Id `sexton`, `L.mini.name = 'THE SEXTON'`, THREAT 4 (a mini,
 as the Grave Warden and the Barrow Rider), a bestiary row, `BEAST_SHORT`, his own death and hurt voices, `MINI_DONE`.
 
-**His room (A12):** the bell deck spans the loft, planks over a three-row bell pit on joists. Two stone **ringers' walks**
-stand three rows over the deck (the height his toll cannot reach). The way up is shut by a portcullis (the mini gate)
+**His room (A12):** the bell deck spans the loft, planks over a two-row bell pit on joists. Two stone **ringers' walks**
+stand two rows over the deck (the height his toll cannot reach). The way up is shut by a portcullis (the mini gate)
 until he falls; the bell frame over the deck is the room's roof.
 
 **His kit - four told attacks, every one in `windingUp()` (A1/A2), colours to the MARK:**
@@ -114,6 +115,11 @@ Today it is the Folly's library and brick. The tower gets its own, distinct from
 Checked by `skins`, `occluders`, `dressing`, `floaters`, `pixels`; captured before and after under `docs/fallingtower/`.
 
 ## 6. THE INDEX (§4 of the ask)
+
+**As built:** the counting moved into one place, `measureLevel()` in `src/threat.js`, which both `tools/curve.mjs` and the bot
+(`src/playtest.js`) now call - the bot had never counted an ambush room's crowd at all. Two rule fixes ride with it, for every
+level: an ambush CAPTAIN counts as the elite it is (x3, as an elite on the road does), and floor that gives way (`L.crumbles`,
+`L.deckBreaks`) counts as hazard, a tile each. The Folly moves 122 -> 124 on the first; the tower lands at **119 (-5)**.
 
 The dip is closed by what the level now contains, not by padding: THE SEXTON (a mini is counted twice its weight and is
 a new kind), the ambush's crowd, and the failing stone, which is a hazard the index cannot see today - `tools/curve.mjs`

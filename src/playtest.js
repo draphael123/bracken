@@ -21,7 +21,7 @@
 // Everything it finds is a FINDING: a kind, a severity, where it happened and what it was. Nothing here
 // changes the game; the bot restores the save, the hero and the settings it borrowed when it is done.
 import { LEVELS, T, TS } from './level.js';
-import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf, worstGap } from './threat.js';
+import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf, worstGap, measureLevel } from './threat.js';
 import { floodReach } from './reachcore.js';
 import { checkDrawables } from './floatlab.js';
 
@@ -496,16 +496,9 @@ export async function run(BK, opts = {}) {
     } catch (e) { F('CRASH', SEV.bug, 'reach model threw: ' + e.message); }
 
     // the shape of the fight, so balance is in the same report as everything else
-    { let foes = 0, threat = 0, checks = 0; const kinds = new Set();
-      for (const e of (built.ents || [])) { if (e.t === 'check') { checks++; continue; }
-        const w = THREAT[e.t]; if (w === undefined) { if (!NOT_A_FOE.test(e.t)) F('UNWEIGHED', SEV.note, 'no threat weight for "' + e.t + '"'); continue; }
-        if (w > 0) { foes++; threat += w * (e.mini ? 2 : e.elite ? 3 : 1); kinds.add(e.t); } }
-      const span = spanOf(W, H);
-      let hazTiles = 0;
-      for (let i = 0; i < built.grid.length; i++) if (built.grid[i] === T.SPIKE) hazTiles++;
-      for (const p of (built.pools || [])) { if (p.harm) hazTiles += Math.round((p.x1 - p.x0) / TS / 4);
-        else if (p.swim) hazTiles += Math.round((p.x1 - p.x0) / TS / 8); }   /* breath is a hazard with nothing in it */
-      const gap = worstGap(built.ents, W, H, built.arena);
+    { /* COUNTED IN src/threat.js (measureLevel), the same count tools/curve.mjs makes - this used to be its own copy, and it had drifted: it never counted an ambush room's crowd */
+      const M = measureLevel(built, { T, TS }), { foes, threat, checks, hazTiles, gap, span } = M, kinds = M.kindSet;
+      for (const t of M.unweighed) if (!NOT_A_FOE.test(t)) F('UNWEIGHED', SEV.note, 'no threat weight for "' + t + '"');
       Object.assign(row.stats, { foes, threat: Math.round(threat), kinds: kinds.size, checks, worstGap: gap, haz: hazTiles, thr100: +(threat / (span / 100)).toFixed(1), index: indexOf({ threat, kinds: kinds.size, hazTiles, gap, span }) });
       if (gap > 150) F('LONGGAP', SEV.odd, gap + ' columns with no checkpoint in them');
       if (kinds.size < 3) F('THIN', SEV.odd, 'only ' + kinds.size + ' kind(s) of creature in the whole level');

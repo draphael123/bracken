@@ -5,7 +5,7 @@
      SAFE     a fall off every section lands on footing that is not a spike or a deadly pool, and the climb back is there (C5)
      VARIED   its uses in route order, each a different question: taught safe over the library floor, the gallery floor that is
               the only way down into the orrery pit (`opens`, and the reach model is told), a stair that fails from the bottom up,
-              a landing you must leave in time
+              a landing you must leave in time, the Sexton's bell deck (tools/sexton.mjs), and the crown breaking up on the last climb
      IN PLAY  the page: the lesson drops you and comes back, the gallery drops you into the pit, the stair fails behind a climber
               and stands again, the landing counts on landing, and a death puts every section back */
 import assert from 'node:assert/strict';
@@ -19,7 +19,7 @@ const C = crumbleInit(L), kinds = C.map(c => c.kind);
 const floorOf = y => L.towerFloors.find(f => y >= f.top && y < f.bot);
 // ---- VARIED: the uses, in route order (bottom of the tower to the top) ----
 const order = [...new Set(C.slice().sort((a, b) => b.row - a.row).map(c => c.kind))];
-assert.deepEqual(order.slice(0, 4), ['teach', 'gallery', 'stair', 'landing'], 'the uses in route order: ' + order);
+assert.deepEqual(order, ['teach', 'gallery', 'stair', 'landing', 'deck', 'crown'], 'the uses in route order: ' + order);
 assert.equal(floorOf(C.find(c => c.kind === 'teach').row).name, 'THE LIBRARY STACKS', 'the rule is taught on the first floor');
 assert.ok(C.filter(c => c.kind === 'stair').length >= 5 && new Set(C.filter(c => c.kind === 'stair').map(c => c.chain)).size === 1, 'the failing stair is one chain of five or more');
 for (const c of C) for (let x = c.x0; x <= c.x1; x++) assert.notEqual(at(x, c.row), T.AIR, c.kind + ': a failing section is built as floor');
@@ -66,6 +66,10 @@ try {
    const t=C.find(c=>c.kind==='teach');BK.tp(t.x0+2,t.row-1);BK.sim(20);out.teach=[t.st];BK.sim(200);out.teach.push(t.st,at(t.x0+1,t.row),row()>t.row);
    BK.tp(t.x1+4,t.row+2);BK.sim(300);out.teach.push(t.st,at(t.x0+1,t.row)!==0);
    const gl=C.find(c=>c.opens);BK.tp(gl.x0+2,gl.row-1);BK.sim(400);out.gallery=[gl.st,row(),BK.P.ground];
+   /* ...and THE ORRERY PIT shuts on you (rule Q): its captain, held in by both gates whatever you hold, and his fall opens it */
+   {const A=BK.ambushes()[0];out.amb=[A.st,A.leader&&A.leader.t,!!(A.leader&&A.leader.elite)];const K=BK.keys;let lo=9e9,hi=0;
+    for(const d of ['right','left'])for(let i=0;i<200;i++){K[d]=true;K.jump=i%20<10;if(i%20===0)BK.press('jump');BK.sim(1);lo=Math.min(lo,BK.P.x);hi=Math.max(hi,BK.P.x);K[d]=false;}K.jump=false;
+    out.held=[Math.floor(lo/16)>A.wallL,Math.floor(hi/16)<A.wallR];for(const e of A.foes||[])if(e.alive&&e.elite)BKT.hurtEnemy(e,9999,e.x-10,false);BK.sim(120);out.ambDone=A.st;}
    const st=C.filter(c=>c.chain).sort((a,b)=>b.row-a.row);BK.tp(st[0].x0+2,st[0].row-1);BK.sim(20);out.race=[st.map(c=>c.st).join()];
    const fell=new Set();for(let i=0;i<60*(1.8+1.1*st.length)+30;i++){BK.sim(1);st.forEach((c,k)=>{if(c.st==='down')fell.add(k);});}out.race.push(fell.size===st.length,row());BK.sim(60*6);out.race.push(st.map(c=>c.st).join());
    const ld=C.find(c=>c.kind==='landing');BK.tp(ld.x0+2,ld.row-1);BK.sim(5);out.landing=[ld.st,ld.t];
@@ -74,6 +78,9 @@ try {
    BK.god=false;BK.P.hp=0;BK.P.dead=0.01;BK.sim(400);out.after=C.map(c=>c.st).join();out.tiles=C.every(c=>at(c.x0,c.row)!==0);
    return out;})()`, 240000);
   assert.deepEqual(r.teach, ['count', 'down', 0, true, 'whole', true], 'the lesson: counts, goes, drops you, comes back: ' + JSON.stringify(r.teach));
+  assert.deepEqual(r.amb, ['fight', 'apprentice', true], 'the drop shuts THE ORRERY PIT on you, led by its elite: ' + JSON.stringify(r.amb));
+  assert.deepEqual(r.held, [true, true], 'and both gates hold a hero who runs and jumps at them');
+  assert.equal(r.ambDone, 'done', 'and the fall of its captain opens it');
   assert.equal(r.gallery[0], 'down'); assert.ok(r.gallery[1] > 220 && r.gallery[2], 'the gallery floor put you in the pit: ' + JSON.stringify(r.gallery));
   assert.ok(r.race[0].startsWith('count,whole'), 'the stair starts at its foot: ' + r.race[0]); assert.ok(r.race[1], 'and a hero who stands still is left behind: all of it goes');
   assert.ok(!r.race[3].includes('down') || r.race[3].split(',').filter(s => s === 'whole').length >= 4, 'and it stands again after: ' + r.race[3]);

@@ -30,7 +30,11 @@ for (const lv of LEVELS) {
   while (q.length) { const k = q.pop(); for (const p of back.get(k) || []) if (!out.has(p)) { out.add(p); q.push(p); } }
   // a boss arena locks behind you on purpose: inside it the fight is the way out
   const inArena = (x) => L.arena && x >= L.arena.x0 && x <= L.arena.x1;
-  const stuck = [...seen].filter(k => !out.has(k) && !inArena(+k.split(',')[0]));
+  /* A DEADLY POOL IS NOT A POCKET: its floor kills whoever reaches it (src/deadly-water.js), and a death is a way out - the checkpoint.
+     The Falling Tower's burst cistern had seven of these under its poison, reported only as ASSISTED? while the bell loft had lifts in it;
+     when the lifts went (the Sexton's deck, 2026-09-25) they read as TRAPS. The rule, not the row: under deadly water is not stuck. */
+  const inDeadly = k => { const [x, y] = k.split(',').map(Number); return (L.pools || []).some(p => p.deadly && x * 16 >= p.x0 && x * 16 < p.x1 && (y + 1) * 16 > p.y && y * 16 <= (p.bottom ?? p.y + (p.depth || 0))); };
+  const stuck = [...seen].filter(k => !out.has(k) && !inArena(+k.split(',')[0]) && !inDeadly(k));
   if (!stuck.length) { if (want) console.log(`== ${lv.id}: every reachable tile can still reach the ${boss ? 'boss' : 'gate'}.`); continue; }
   // group into pockets
   const left = new Set(stuck), pockets = [];

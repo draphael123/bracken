@@ -750,6 +750,7 @@ const DIE = {
   winchmaster() { gob(0.6, 0.8) || tone('sawtooth', 140, 30, 1.0, 0.24); noise(0.9, 0.3, 700, 0.5); },
   /* THE MAGE'S FOLLY: a hedge falling to bits, a suit coming apart, a bucket over, a chest breaking, a jar's worth of squeal, glass, and the tower's two */
   gargoyle() { noise(1.0, 0.38, 600, 0.5); tone('square', 120, 40, 0.9, 0.18); noise(0.5, 0.25, 1800, 0.4, 0.3); },   /* THE GATE GARGOYLE: a gate's worth of stone coming down */
+  sexton() { bell(147, 3.2, 0.12); bell(73, 3.8, 0.08, 0.05); noise(0.5, 0.22, 500, 0.5, 0.1); tone('sawtooth', 110, 40, 0.7, 0.1, 0.15); },   /* THE SEXTON: his bell hits the deck and rings out under him, and the rest of him goes down after it */
   hedgewarden() { noise(0.7, 0.3, 1400, 0.4); noise(0.4, 0.22, 700, 0.5, 0.2); tone('square', 170, 60, 0.6, 0.1, 0.1); },   /* THE HEDGE WARDEN: a whole hedge coming down */
   topiary() { noise(0.3, 0.24, 1600, 0.4); noise(0.2, 0.16, 700, 0.5, 0.1); tone('square', 200, 90, 0.16, 0.06, 0.05); },
   armour() { file('clang', 0.3, 0.55) || tone('sine', 500, 300, 0.2, 0.14); for (let i = 0; i < 4; i++) { tone('square', 1400 - i * 200, 900 - i * 150, 0.14, 0.08, 0.15 + i * 0.12); noise(0.06, 0.2, 2000, 0.5, 0.15 + i * 0.12); } },
@@ -943,6 +944,7 @@ const HURT = {
   familiar() { tone('sawtooth',120,65,.25,.13);noise(.24,.22,350,.5); },
   /* THE MAGE'S FOLLY: leaves, plate, a slopped bucket, a wooden jaw, a thing out of a jar, brass, and the two at the top */
   gargoyle() { noise(0.14, 0.22, 900, 0.5); tone('square', 150, 90, 0.08, 0.06); },
+  sexton() { bell(392, 0.5, 0.05); noise(0.1, 0.16, 900, 0.5); tone('square', 150, 90, 0.08, 0.06, 0.01); },   /* the hand-bell jangles on its chain when he is struck */
   hedgewarden() { noise(0.16, 0.2, 1500, 0.4); noise(0.1, 0.14, 800, 0.5, 0.05); tone('square', 210, 140, 0.1, 0.05, 0.02); },
   topiary() { noise(0.12, 0.2, 1800, 0.4); noise(0.08, 0.14, 900, 0.5, 0.05); tone('square', 260, 180, 0.06, 0.04, 0.02); },
   armour() { file('clang', 0.2, 0.7) || tone('sine', 700, 500, 0.12, 0.1); noise(0.08, 0.14, 1400, 0.5); },
