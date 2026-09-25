@@ -1,0 +1,16 @@
+
+BRACKEN PLAYTEST   1 levels   23.3s
+  0 bug   1 odd   3 note
+
+level       size     reach  foes  kinds  thr/100  gap   walked  deaths  ms p90
+reef        460x44   98%    66    17     28.3     70    56%     1       0.9
+
+== ODD ==
+  reef        STUCK       the bot reached 56% and was neither killed nor lifted: it swims, rides and opens doors, but not well - look by hand
+
+== NOTES ==
+  reef        ASSISTED    a silver is outside the fill   @170,35
+  reef        ASSISTED    52 coins outside the fill
+  reef        UNWEIGHED   no threat weight for "mend"
+
+errors []

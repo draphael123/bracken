@@ -258,17 +258,17 @@ function bakeReefCoral(v) {
   return c;
 }
 function reefLook() {
-  const S0 = { id: 'reef', far: reefFar, back: reefBack, wet: reefWet, galleon: bakeGalleon(), caus: bakeCaustics(), shaft: bakeShaft(), coral: [0, 1, 2, 3, 4, 5, 6, 7].map(bakeReefCoral), galleonAt: { x: 272 * TS, y: 37 * TS }, corals: [], shafts: [] };
+  const S0 = { id: 'reef', far: reefFar, back: reefBack, wet: reefWet, galleon: bakeGalleon(), caus: bakeCaustics(), shaft: bakeShaft(), coral: [0, 1, 2, 3, 4, 5, 6, 7].map(bakeReefCoral), galleonAt: { x: 370 * TS, y: 37 * TS }, corals: [], shafts: [] };
   // coral on the floors under the water: one in five of them, hashed off the tile
   for (let tx = 13; tx < L.W - 1; tx++) for (let ty = 2; ty < L.H - 1; ty++) {
     if (tileAt(tx, ty) !== 0 || !SOLIDT.has(tileAt(tx, ty + 1)) || !inSwim(tx * TS + 8, ty * TS + 12)) continue;
-    const onBed = ty >= 30 || (tx > 212 && tx < 331);   /* the reef bed and the shelf, not a deck of the carrack that the tide covers */
+    const onBed = ty >= 30 || (tx > 212 && tx < 411);   /* (the shelf ran to 331 before the bell-pool and the hulk grew it: docs/briefs/reef-longer.md) */   /* the reef bed and the shelf, not a deck of the carrack that the tide covers */
     if (onBed && hsh(tx, ty, 81) < 0.34) S0.corals.push({ x: tx * TS + 1 + Math.floor(hsh(tx, ty, 82) * 4), y: (ty + 1) * TS - 14, v: Math.floor(hsh(tx, ty, 83) * 8), ph: hsh(tx, ty, 84) * 6 });
     if (onBed && hsh(tx, ty, 85) < 0.2) S0.corals.push({ x: tx * TS + 8 + Math.floor(hsh(tx, ty, 86) * 5), y: (ty + 1) * TS - 14, v: Math.floor(hsh(tx, ty, 87) * 8), ph: hsh(tx, ty, 88) * 6 });
   }
   // shafts: every so often along the tideway and the carrack, down from wherever the water's top is; and on the shelf from the hollows in its roof
   for (let tx = 14; tx < 210; tx += 5) if (hsh(tx, 1, 89) < 0.5) S0.shafts.push({ x: tx * TS + Math.floor(hsh(tx, 2, 90) * 60), w: 10 + Math.floor(hsh(tx, 3, 91) * 16), ph: hsh(tx, 4, 92) * 6, roof: null });
-  for (const [x0, x1, y0] of (L.deep && L.deep.pockets) || []) if (x0 > 212 && x0 < 331) S0.shafts.push({ x: (x0 + x1 + 1) / 2 * TS, w: 26, ph: x0 * 0.3, roof: (y0 + 2) * TS });
+  for (const [x0, x1, y0] of (L.deep && L.deep.pockets) || []) if (x0 > 212 && x0 < 411) S0.shafts.push({ x: (x0 + x1 + 1) / 2 * TS, w: 26, ph: x0 * 0.3, roof: (y0 + 2) * TS });
   return S0;
 }
 function reefFar(g, cx, cy, VW, VH, time) {

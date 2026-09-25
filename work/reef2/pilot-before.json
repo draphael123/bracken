@@ -1,0 +1,157 @@
+{
+ "label": "before",
+ "at": "2026-09-25T15:11:01.710Z",
+ "summary": {
+  "label": "before",
+  "fights": 7,
+  "wins": 7,
+  "medianWin": 53.3,
+  "medianTaken": 175,
+  "stuck": 22,
+  "beached": 0,
+  "reachedLand": 0,
+  "bossHp": 454
+ },
+ "rows": [
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "knight",
+   "out": "win",
+   "secs": 53.3,
+   "hp": 454,
+   "taken": 147,
+   "tpm": 166,
+   "left": 0,
+   "stuck": 2,
+   "beached": 0,
+   "lunges": 0,
+   "rolls": 0,
+   "land": 0,
+   "hitBy": {
+    "sink": 14,
+    "thrash": 21,
+    "bite": 28
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "warden",
+   "out": "win",
+   "secs": 73.5,
+   "hp": 454,
+   "taken": 182,
+   "tpm": 148,
+   "left": 0,
+   "stuck": 5,
+   "beached": 0,
+   "lunges": 0,
+   "rolls": 0,
+   "land": 0,
+   "hitBy": {
+    "bite": 140,
+    "thrash": 42
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "pyro",
+   "out": "win",
+   "secs": 30.9,
+   "hp": 454,
+   "taken": 28,
+   "tpm": 54,
+   "left": 0,
+   "stuck": 4,
+   "beached": 0,
+   "lunges": 0,
+   "rolls": 0,
+   "land": 0,
+   "hitBy": {
+    "bite": 28
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "paladin",
+   "out": "win",
+   "secs": 58.9,
+   "hp": 454,
+   "taken": 182,
+   "tpm": 185,
+   "left": 0,
+   "stuck": 4,
+   "beached": 0,
+   "lunges": 0,
+   "rolls": 0,
+   "land": 0,
+   "hitBy": {
+    "bite": 84,
+    "thrash": 42
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "pirate",
+   "out": "win",
+   "secs": 36.9,
+   "hp": 454,
+   "taken": 98,
+   "tpm": 159,
+   "left": 0,
+   "stuck": 2,
+   "beached": 0,
+   "lunges": 0,
+   "rolls": 0,
+   "land": 0,
+   "hitBy": {
+    "bite": 56,
+    "thrash": 42
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "reaper",
+   "out": "win",
+   "secs": 49.3,
+   "hp": 454,
+   "taken": 175,
+   "tpm": 213,
+   "left": 0,
+   "stuck": 3,
+   "beached": 0,
+   "lunges": 0,
+   "rolls": 0,
+   "land": 0,
+   "hitBy": {
+    "bite": 154,
+    "thrash": 21
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "geomancer",
+   "out": "win",
+   "secs": 60.1,
+   "hp": 454,
+   "taken": 245,
+   "tpm": 245,
+   "left": 0,
+   "stuck": 2,
+   "beached": 0,
+   "lunges": 0,
+   "rolls": 0,
+   "land": 0,
+   "hitBy": {
+    "bite": 140,
+    "thrash": 21
+   }
+  }
+ ]
+}
