@@ -17,7 +17,7 @@ for(const [i,lv] of LEVELS.entries()){let b;try{b=lv.build();}catch{continue;}
   if(A.carpet){BK.board();BK.sim(30);}else{BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);BK.sim(200);}
   if(!live()&&e.alive){BKT.hurtEnemy(e,1,e.x-10,false);BK.sim(120);}
   const started=live();let n=0;
-  for(;n<1000&&e.alive;n++){BK.P.inv=99;BK.P.hp=BK.P.maxHp;e.hp=Math.min(e.hp,1);e.inv=0;/* every boss's own opening, held open: a cage on the king, the gallery on the queen, the helm's ward down, a kraken arm's last cut */e.open=9;e.passThrough=true;if(e.t==='king')e.mode='held';if(e.t==='gqueen')e.mode='dazed';BKT.hurtEnemy(e,1e6,e.x+(n%2?10:-10),n%3===0);if(e.alive)BK.sim(6);}
+  for(;n<1000&&e.alive;n++){BK.P.inv=99;BK.P.hp=BK.P.maxHp;e.hp=Math.min(e.hp,1);e.inv=0;/* every boss's own opening, held open: a cage on the king, a pillar or a chandelier on the queen (her only opening since 2026-09-25: a wall's daze turns blades), the helm's ward down, a kraken arm's last cut */e.open=9;e.passThrough=true;if(e.t==='king')e.mode='held';if(e.t==='gqueen')e.mode='pinned';BKT.hurtEnemy(e,1e6,e.x+(n%2?10:-10),n%3===0);if(e.alive)BK.sim(6);}
   if(e.alive){rows.push({lv:lv.id,kind,t:e.t,started,res:'UNKILLABLE BY SCRIPT'});continue;}
   let f=0;for(;f<300&&live();f++){BK.P.inv=99;BK.sim(1);}
   rows.push({lv:lv.id,kind,t:e.t,started,blows:n,res:live()?'FIGHT RUNS ON':'ended',frames:f});

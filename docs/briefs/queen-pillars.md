@@ -23,7 +23,8 @@ makes her stumble (`dazed`, no opening), as now. The chandeliers stay, as the se
 - When she winds up a charge (`chargeTell`, 0.8 s, the `!!` she already has), the first standing pillar in her line
   SHAKES and sheds dust for the whole tell: the player can see which pillar is about to go.
 - The sign at the door (209 source / 891 final), in the game's voice:
-  `HER PLATE TURNS BLADES. STAND A PILLAR BETWEEN YOU AND HER CHARGE: IT COMES DOWN ON HER. OR CUT A CHANDELIER DOWN.`
+  `HER PLATE TURNS BLADES. STAND BEHIND A PILLAR AND LET HER CHARGE: IT COMES DOWN ON HER.` (the hint that
+  follows her first warded blow adds the chandelier)
   (measured with `textfit`).
 
 ## Her side

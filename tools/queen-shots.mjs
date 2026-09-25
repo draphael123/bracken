@@ -28,6 +28,15 @@ try {
     /* the hall in the fight: her awake and on the floor, the hero in the middle of it */
     d = await pg.evalp(`(() => { ${boot} const A = BK.L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); for (let k = 0; k < 420; k++) { BK.P.hp = BK.P.maxHp; BK.step(1); } return { png: ${snap}, mode: (BK.boss || {}).mode }; })()`);
     save('hall-fight', d.png);
+    /* her pillars, if the hall has them: one baited charge, photographed in its tell (the pillar shaking) and after it (her pinned, the rubble) */
+    const bait = `const A = BK.L.arena, q = BK.boss, ps = BK.props().filter(p => p.t === 'qpillar').sort((a, b) => a.x - b.x), p = ps[2];
+      if (p) { q.x = p.x + 60; q.y = A.floor; q.mode = 'stand'; q.modeT = 0; q.slamT = q.sweepT = q.chandT = q.shadowT = q.decreeT = q.throwT2 = 99; q.chargeT = 0; }
+      const hold = () => { if (p) { BK.P.x = p.x - 70; BK.P.vx = 0; } BK.P.hp = BK.P.maxHp; BK.P.inv = 9; };`;
+    d = await pg.evalp(`(() => { ${boot} const A0 = BK.L.arena; BK.tp(Math.round(A0.trigger / 16) + 1, Math.round(A0.floor / 16) - 1); for (let k = 0; k < 300; k++) { BK.P.hp = BK.P.maxHp; BK.step(1); } ${bait}
+      for (let k = 0; k < 90 && q.mode !== 'chargeTell'; k++) { hold(); BK.step(1); } for (let k = 0; k < 30; k++) { hold(); BK.step(1); } const tell = ${snap};
+      for (let k = 0; k < 200 && q.mode !== 'pinned'; k++) { hold(); BK.step(1); } for (let k = 0; k < 50; k++) { hold(); BK.step(1); }
+      return { tell, pinned: ${snap}, mode: q.mode, has: !!p }; })()`);
+    if (d.has) { save('pillar-tell', d.tell); save('pillar-pinned', d.pinned); console.log('her mode after the bait: ' + d.mode); }
   }
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }
