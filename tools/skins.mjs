@@ -92,3 +92,21 @@ assert.deepEqual(bareKit, [], 'these levels name no palette dress, so they paint
   assert.deepEqual(wrong, [], 'the sea\'s dead stand in a level that is not the sea: ' + wrong.join(' '));
   console.log('ok  under the hill ' + under.length + ' levels below the ground (' + under.join(', ') + ') grow no roots; the sea\'s dead stand only in the sea\'s levels.');
 }
+
+/* A ROOF'S PICTURE COVERS ITS ROOF. drawRoofs paints every house's roof (thatch, slate or tile) over the three rows above
+   the house's front - (h.y0 - 3) to (h.y0 - 1) - and the tiles under that picture are what you walk on. If the slab a
+   builder laid sits anywhere else, the picture hangs under it and the rows you stand on paint as the ground kit: THE
+   BURNING VILLAGE laid its slabs two rows higher than its houses said, so every roof in the level was a strip of street
+   cobble floating over a thatch that nobody could stand on (level review, 2026-09-25, the rooftops rework). Every level
+   with houses: the three rows under the picture are solid across the house, and the row over them is not. */
+{
+  const bad = []; let roofs = 0;
+  const SOLIDISH = new Set([T.SOLID, T.SOFT]);
+  for (const lv of LEVELS) { let L; try { L = lv.build(); } catch { continue; }
+    for (const h of L.houses || []) { roofs++; const top = h.y0 - 3, at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x];
+      const holes = [], over = [];
+      for (let x = h.x0; x <= h.x1; x++) { for (let y = top; y <= top + 2; y++) if (!SOLIDISH.has(at(x, y))) holes.push(x + ',' + y); if (SOLIDISH.has(at(x, top - 1))) over.push(x + ',' + (top - 1)); }
+      if (holes.length || over.length) bad.push(lv.id + ' house ' + h.x0 + '-' + h.x1 + ': roof picture rows ' + top + '-' + (top + 2) + (holes.length ? ', open under it at ' + holes.slice(0, 3).join(' ') : '') + (over.length ? ', slab above it at ' + over.slice(0, 3).join(' ') : '')); } }
+  if (bad.length) { console.log('FAIL roofs: ' + bad.length + ' of ' + roofs + ' houses whose roof picture does not sit on their slab\n  ' + bad.join('\n  ')); process.exitCode = 1; }
+  else console.log('ok  roofs          ' + roofs + ' houses: every roof picture sits on the slab you stand on.');
+}

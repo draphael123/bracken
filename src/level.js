@@ -7894,6 +7894,12 @@ const AMBUSH = {
      door: its balcony goblins are its own tested encounter (tools/gallery-runtime.mjs), and a room is emptied when it is built.
      The west gate stands on the floor at the foot of the steps down from the Captains Hall; the east is the door to the leads.
      The door checkpoint is the Captains Hall's east end, clear of the sign on the landing. */
+  /* THE BARN (docs/briefs/burning-village-rework.md §5): the barn's east half, from the hay-screen (358) to its far door (398). Its
+     captain was already at that door; the Stockade's room is an archer's and Sporewood's a shield's, so a brute leads this one. His
+     crew: a burning goblin that lights the hay they fight in (knock them into it: Q4), a sprig, an archer on the hayloft. The door
+     checkpoint is the barn's own at 341, outside the screen. */
+  burning: [{ name: 'THE BARN', row: 25, wallL: 358, wallR: 398, check: false,
+    waves: [[['brute', 388, null, { elite: true }], ['burngob', 368], ['sprig', 378], ['archer', 370, 19]]] }],
   crown: [{ name: 'THE BANQUET HALL', row: 25, wallL: 816, wallR: 852, check: [809, 19],
     waves: [[['brute', 838, null, { elite: true }], ['soldier', 826], ['hearthgob', 830], ['javelin', 846, 23]]] }],
 };
@@ -7920,7 +7926,8 @@ function ambushRooms(L, id) {
    gate actually holds the route, and that nothing counted stands in the gate. */
 const ELITES = {
   /* and the same four had no elite either: every other level has its one big fight on the way to the boss */
-  burning: [['brute', 386, 25, { face: -1, gate: 398 }]],   /* THE BARN CAPTAIN holds the barn's far door */
+  burning: [['shield', 156, 25, { face: -1, gate: 166 }]],   /* THE CROFTS' shield holds the lane out of the crofts. The barn captain who held the barn's far door
+     leads the barn's ambush now (AMBUSH.burning), and Q2 keeps an elite off an ambush's doorstep (docs/briefs/burning-village-rework.md §5) */
   harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
   keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
   burial: [['husk', 300, 33, { face: -1 }], ['wight', 396, 31, { face: -1 }], ['husk', 958, 31, { face: -1 }]],   /* (the third husk holds THE ROTTEN BRIDGES' pier since 2026-09-24: 950 is a board now) (the wight left the Falling Gallery's road, walled up in batch 4b, for the Grave Causeway before its green water) */
