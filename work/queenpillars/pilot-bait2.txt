@@ -1,0 +1,9 @@
+{"h":"knight","out":"win","secs":135.6,"left":0,"perMin":209,"swings":77,"pins":{"pillar":5,"chandelier":2},"charges":6,"hitBy":{"sceptreWait":60,"stand":86,"slamTell":54,"slamRec":32,"decree":66,"charge":16,"pinned":96,"crownRain":24,"slam":38}}
+{"h":"warden","out":"win","secs":115.1,"left":0,"perMin":254,"swings":104,"pins":{"pillar":5,"chandelier":1},"charges":5,"hitBy":{"sceptreWait":62,"stand":86,"slamTell":38,"slamRec":16,"pinned":140,"decree":44,"crownTell":16}}
+{"h":"geomancer","out":"win","secs":122.7,"left":0,"perMin":178,"swings":59,"pins":{"pillar":4,"chandelier":1},"charges":5,"hitBy":{"sceptreWait":75,"stand":124,"slamTell":54,"slamRec":38,"decree":44,"charge":16,"crownRain":12}}
+{"h":"pyro","out":"win","secs":126.1,"left":0,"perMin":144,"swings":63,"pins":{"pillar":6},"charges":6,"hitBy":{"sceptreWait":60,"stand":70,"slamTell":16,"slamRec":32,"decree":66,"slam":16,"crownRain":9}}
+{"h":"paladin","out":"win","secs":167.3,"left":0,"perMin":170,"swings":82,"pins":{"pillar":5,"chandelier":2},"charges":6,"hitBy":{"sceptreWait":47,"stand":48,"sweepTell":96,"slamTell":76,"sceptreTell":16,"crownRain":24,"shadowTell":16,"pinned":64}}
+{"h":"pirate","out":"win","secs":113.1,"left":0,"perMin":167,"swings":69,"pins":{"pillar":5},"charges":5,"hitBy":{"sceptreWait":60,"stand":48,"slamTell":32,"slamRec":76,"pinned":32,"decree":22,"sweepTell":32,"crownRain":12}}
+{"h":"reaper","out":"win","secs":113.7,"left":0,"perMin":206,"swings":43,"pins":{"chandelier":2,"pillar":4},"charges":4,"hitBy":{"sceptreWait":45,"stand":99,"slamRec":45,"sweepTell":76,"pinned":96,"decree":22,"crownRain":8}}
+fights 7, wins 7 (100%), median win 122.7 s, range 113.1-167.3 s
+errors []

@@ -1,0 +1,65 @@
+
+> check
+> node tools/check.mjs boss-openings,boss-fight-end,arena-supplies,tells,one-new-foe,elites,spawns,floaters,architecture,audit,content-audit,traps,killzones,deadends,signs,textfit,comments,syntax,homepaths,dangling-paths,watchtowers,keys,bridge-props,checkpoints,checkpoint-gaps,small-adds,runtime-footing
+
+ ok  syntax             0ms  4 files parse
+ ok  tells            495ms  the mark over every windup on the screen comes from this table (src/marks.js, 537 rows).
+ ok  comments         156ms  no swallowed code found.
+ ok  homepaths        200ms  ok  homepaths     429 source and tool files, none hardcodes a path under a user's home directory.
+FAIL dangling-paths   238ms  Node.js v24.19.0
+ ok  floaters        3287ms  2713 standing things checked (49 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  audit           7442ms  == caravan (547x40) clean
+ ok  content-audit  12635ms  19 things to look at.
+ ok  traps          17864ms  no traps.
+ ok  signs          12818ms  no level says the same sentence on two signs (1 known).
+ ok  killzones       9056ms  no reachable tile kills a standing hero.
+ ok  keys           10570ms  5 levels with lock gates flooded key by key. every key comes before its gate.
+ ok  elites         12670ms  41 elites. every elite can be fought and every gate it holds opens onto the route.
+ ok  spawns         10983ms  2329 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  deadends        7205ms  170 dead ends in 32 levels, and every one pays.
+ ok  checkpoints    14721ms  424 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  one-new-foe     8192ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  runtime-footing 56105ms  fields wight: fell 80.0px after support loss outside the active range
+ ok  bridge-props   13834ms  3289 standing props clear of breakable spans; both Kingswood sections and cuttable stand present.
+ ok  watchtowers      800ms  Three tower climbs, payoffs and rope slides; grab and jump-release verified.
+ ok  boss-openings  65579ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":
+ ok  arena-supplies  9875ms  ok  arena-supplies  46 boss rooms, 11 height conditions scored against the ground their arenas actually offer;
+ ok  boss-fight-end225038ms  Every one of 46 boss and mini fights (32 bosses, 14 minis) ends when its boss dies.
+ ok  small-adds    177547ms  25 rows swung at small foes; 4 of 144 swings missed (3%); worst judged row 20% (limit 33%)
+ ok  checkpoint-gaps  9487ms  checkpoint-gaps  32 levels measured along their walked route; the longest run with no checkpoint outside the k
+ ok  architecture    4057ms  44 levels, 282 built pieces declared; 4 grandfathered (keep, harbor, waymeet, unburied). everything that was b
+ ok  textfit        58278ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-lance\audits\readability\textfit
+
+---- dangling-paths ----
+    KNOWN HOLE  src/tower-return.js  (1 citation)
+      STALE CITATION - docs/audit-new-levels-0920.md:47 names a module that is in no commit. Correct the reference or say what replaced it; do not create the file to satisfy the check.
+      cited by: docs/audit-new-levels-0920.md
+    KNOWN HOLE  docs/audit/ranking-2026-09-24.md  (2 citations)
+      ON A BRANCH, SAID SO. docs/INTEGRATOR.md cites the ranking and says it is on claude/audit, which has not merged. Delete this line when it does.
+      cited by: docs/INTEGRATOR.md, work/claude/lane-done/claude-desert1.md
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: 3 path(s) cited by tracked files are in no commit:
+    src/level.js:2357  ->  src/lance-support.js
+    src/main.js:17182  ->  src/lance-support.js
+    tools/lance-pilot.mjs:3  ->  tools/audit-bosslab.mjs
+  A fresh clone cannot open these. Either commit the file, or correct the citation. If it is ignored on
+  purpose and the citation is still right, narrow the ignore rather than force-adding it, and add the path
+  to MISSING in tools/dangling-paths.mjs with the reason - never delete the check to make it quiet.
+    at file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-lance/tools/dangling-paths.mjs:123:10
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:643:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: undefined,
+  operator: 'fail',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
+
+1 check(s) failed.

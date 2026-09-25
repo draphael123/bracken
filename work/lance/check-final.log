@@ -1,0 +1,35 @@
+
+> check
+> node tools/check.mjs boss-openings,boss-fight-end,arena-supplies,tells,one-new-foe,elites,spawns,floaters,architecture,audit,content-audit,traps,killzones,deadends,signs,textfit,comments,syntax,homepaths,dangling-paths,watchtowers,keys,bridge-props,checkpoints,checkpoint-gaps,small-adds,runtime-footing,lance-support
+
+ ok  syntax             0ms  0 files parse
+ ok  tells           1109ms  the mark over every windup on the screen comes from this table (src/marks.js, 537 rows).
+ ok  comments         334ms  no swallowed code found.
+ ok  homepaths        412ms  ok  homepaths     430 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths   554ms  ok  dangling-paths 1665 tracked files, every repo path they cite resolves in a fresh clone (6 known holes list
+ ok  floaters        6855ms  2713 standing things checked (49 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  audit           7441ms  == caravan (547x40) clean
+ ok  content-audit  21467ms  19 things to look at.
+ ok  traps           8382ms  no traps.
+ ok  signs          15860ms  no level says the same sentence on two signs (1 known).
+ ok  killzones      11131ms  no reachable tile kills a standing hero.
+ ok  keys            5885ms  5 levels with lock gates flooded key by key. every key comes before its gate.
+ ok  elites         18828ms  41 elites. every elite can be fought and every gate it holds opens onto the route.
+ ok  spawns          9783ms  2329 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  deadends       11091ms  170 dead ends in 32 levels, and every one pays.
+ ok  checkpoints    12262ms  424 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  one-new-foe     7500ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  runtime-footing 31382ms  fields wight: fell 80.0px after support loss outside the active range
+ ok  bridge-props    7159ms  3289 standing props clear of breakable spans; both Kingswood sections and cuttable stand present.
+ ok  watchtowers      334ms  Three tower climbs, payoffs and rope slides; grab and jump-release verified.
+ ok  boss-openings  65173ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":
+ ok  arena-supplies  6966ms  ok  arena-supplies  46 boss rooms, 11 height conditions scored against the ground their arenas actually offer;
+ ok  boss-fight-end199811ms  Every one of 46 boss and mini fights (32 bosses, 14 minis) ends when its boss dies.
+ ok  small-adds    207549ms  25 rows swung at small foes; 4 of 144 swings missed (3%); worst judged row 20% (limit 33%)
+ ok  checkpoint-gaps 20838ms  checkpoint-gaps  32 levels measured along their walked route; the longest run with no checkpoint outside the k
+ ok  architecture    6554ms  44 levels, 282 built pieces declared; 4 grandfathered (keep, harbor, waymeet, unburied). everything that was b
+ ok  lance-support  25727ms  THE QUEEN'S LANCE: slower, two end lookouts, his bowmen told and cleared - all hold.
+ ok  textfit        69912ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-lance\audits\readability\textfit
+
+28 of 146 checks pass - A SUBSET (boss-openings, boss-fight-end, arena-supplies, tells, one-new-foe, elites, spawns, floaters, architecture, audit, content-audit, traps, killzones, deadends, signs, textfit, comments, syntax, homepaths, dangling-paths, watchtowers, keys, bridge-props, checkpoints, checkpoint-gaps, small-adds, runtime-footing, lance-support), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.

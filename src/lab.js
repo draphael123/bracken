@@ -274,7 +274,8 @@ export async function fightLab(BK, opts = {}) {
 // THE BOSS LAB. Each hero into each boss's room. A boss that has an OPENING is played the way its room teaches it:
 //   the paladin       - meet his sword ON THE BEAT, each hero its own way (see below); roll the bash; step off judgement's mark
 //   the king          - stand beside one of his cages until it comes down on him, then cut him while he is held or open
-//   the goblin queen  - lead her under one of her chandeliers, jump and cut its chain, then cut her while she is pinned (2026-09-24: it was her gallery's pillars)
+//   the goblin queen  - bait her charge into one of her pillars (stand past it, away from her); with none standing, lead her under a chandelier, jump
+//                       and cut its chain; then cut her while she is pinned (2026-09-25; before that it was the chandelier alone, and before THAT her gallery)
 //   the roc           - stand on the glass so her dive sticks in it, then cut her while she is down
 //   the buried prince - in the dark, light a lamp; with him under a timber set, cut its post; off the red mark when he is under the floor
 // Every other boss is cut whenever it is in reach. All of them are defended against on their tells. The hero's health is
@@ -282,7 +283,7 @@ export async function fightLab(BK, opts = {}) {
 /* AND THE ONES WHOSE GATE LIVES IN main.js ASK IT (BK.bossOpen): the Queen's Lance turns every blade until he is
    committed, so a bot that treated him as open swung at his plate for the whole fight. */
 const OPEN = (b, BK) => { const g = BK && BK.bossOpen ? BK.bossOpen(b) : null; return g === null || g === undefined ? OPEN0(b) : g; };
-const OPEN0 = b => b.t === 'ploughman' ? b.open > 0 : b.t === 'master' ? b.open > 0 : b.t === 'troll' && b.hill ? b.mode === 'pinned' : b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || b.mode === 'dazed') : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
+const OPEN0 = b => b.t === 'ploughman' ? b.open > 0 : b.t === 'master' ? b.open > 0 : b.t === 'troll' && b.hill ? b.mode === 'pinned' : b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? b.mode === 'pinned' : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
 /* THE RED MARKS, from tools/tells.mjs (scratchpad hardtells.mjs writes this line): a tell no shield turns is dodged, never guarded */
 export const HARD_TELLS = new Set(["troll|slamTell","troll|ripTell","assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|bashTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|ladleTell","forgemaster|pourTell","forgemaster|slamTell","forgemaster|whirlTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","master|leapTell","masthead|boomTell","masthead|dropTell","owl|hootTell","prince|sinkTell","prince|snuffTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","suncatcher|frostTell","suncatcher|hailTell","suncatcher|spireTell","roc|shriekTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
 HARD_TELLS.add('owl|skimTell');
@@ -393,7 +394,7 @@ async function runbossLab(BK, opts) {
     /* THE MODE LEDGER (opts.modes): how often the boss ENTERED each mode, and how much of the hero's health was lost while it was in each - which attacks fired at all, and which ones did the damage */
     const modeN = {}, hitBy = {}; let lastMode = null;
     const ledger = (m0, lost) => { if (!opts.modes) return; if (boss.mode !== lastMode) { lastMode = boss.mode; modeN[lastMode] = (modeN[lastMode] || 0) + 1; } if (lost > 0) hitBy[m0] = (hitBy[m0] || 0) + lost; };
-    let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0;
+    let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
        time behind it, so it is RETURNED. One release in ten is early. dkHold keeps the ward up a little past the end of a tell. */
@@ -878,6 +879,12 @@ async function runbossLab(BK, opts) {
       const rushing = ((boss.mode === 'rush' || (boss.t === 'masthead' && boss.mode === 'sail')) && ad < 46) || (boss.t === 'master' && boss.mode === 'charge' && ad < 64 && (boss.x - P.x) * boss.vx < 0);   /* THE HOUND MASTER's charge is no Tell by the time it reaches you either */   /* THE RAM is answered as it arrives, like the shoulder */
       /* whatever is thrown and about to arrive - rubble, spit, a shot - is taken on the shield */
       const incoming = BK.seeds().find(s => (s.rubble || s.mawSpit || s.timber || s.shot || s.bolt) && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 34 && Math.abs(s.y - (P.y - 8)) < 30 && (s.x - P.x) * (s.vx || 0) < 0);
+      /* THE QUEEN'S BOWS (docs/briefs/lance-support.md): the archers he calls to the end lookouts. An arrow of theirs about to
+         arrive goes on a shield, like the rest of what is thrown; and a bowman is CUT DOWN when the hands can get to him - on a
+         lookout within 200 px, with the Lance neither open (cut HIM) nor coming at you (his charge, vault, rush and gale are
+         answered first). Up on his lookout, it jumps from under it: the lookouts are one-way decks three rows up. */
+      const bowArrow = boss.t === 'lance' ? BK.seeds().find(s => s.arrow && !s.jav && s.owner && s.owner.lanceBow && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 40 && Math.abs(s.y - (P.y - 8)) < 30 && (s.x - P.x) * (s.vx || 0) < 0) : null;
+      const bowT = boss.t === 'lance' && !open && !['couch', 'charge', 'vaultTell', 'vault', 'rushTell', 'rush', 'galeTell', 'gale'].includes(boss.mode) ? BK.enemies().filter(q => q.alive && q.lanceBow && Math.abs(q.x - P.x) < 200).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] || null : null;
       // THE ANSWER, on the beat. The paladin's aegis and the death knight's blood ward take a moment to come up, so they hold C from the start of the tell
       /* THE PALADIN'S WARD only breaks to his own sword met on the beat: the knight's guard in its last tenth of a second, the
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
@@ -949,7 +956,7 @@ async function runbossLab(BK, opts) {
             if (tell && lg !== undefined && lg <= 0.15) { if (dkRel.mode !== boss.mode || boss.modeT > dkRel.t0 + 0.05) dkRel = { mode: boss.mode, t0: boss.modeT, at: 0.03 + Math.random() * 0.16 + (Math.random() < 0.1 ? 0.25 : 0) - lg }; dkRel.t0 = boss.modeT;
               if (boss.modeT < dkRel.at) { k.block = false; dkHold = 0; } } } }
         else if (f % 6 === 0 && !P.climb) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }   /* YOU CANNOT ROLL ON A ROPE: a dodge lets go of the rungs, and the Quartermaster shoots at a climber every two seconds - the pyromancer rolled off her shrouds all the way back down into the hold */
-      } else if (incoming && SHIELDED(h)) { P.face = Math.sign(incoming.x - P.x) || P.face; k.block = true; }
+      } else if ((incoming || bowArrow) && SHIELDED(h)) { P.face = Math.sign((incoming || bowArrow).x - P.x) || P.face; k.block = true; }
       /* THE QUARTERMASTER BEHIND HER GUARD: nothing a hero carries gets through it - a round shot is the only thing that does
          (updateBalls), which is what the deck guns and her own sign are for. So the hands do what the room says: to the nearest
          cold gun on HER deck, and strike the breech. A bot that only swung at her measured 0 kills for all six heroes and a
@@ -972,6 +979,10 @@ async function runbossLab(BK, opts) {
           if (dyw < -26 && P.ground) { BK.press('jump'); P.labJump = 10; }
           if (dyw < -8) k.up = true; BK.press('atk'); swings++; }
         if (P.labJump > 0) { P.labJump--; k.jump = true; } }
+      else if (bowT) { const up = bowT.y < P.y - 20, side = Math.sign(bowT.x - P.x) || 1;
+        goal = up ? bowT.x : bowT.x - side * Math.max(8, LAB_REACH[h] * 0.6); strike = false;
+        if (up && P.ground && Math.abs(bowT.x - P.x) < 36) { BK.press('jump'); P.labJump = 20; }
+        if (!up && Math.abs(bowT.y - P.y) < 16 && Math.abs(bowT.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) { P.face = side; BK.press('atk'); swings++; } }
       else if (open) { goal = boss.x; strike = true; }
       /* THE PLATE THAT TURNS EVERY BLADE (the Queen's Lance): chipping at it does nothing at all, so the hands MAKE the
          opening the way a player does - stand a dash's length off and come at his guard at a run. His own gate says a
@@ -1025,9 +1036,22 @@ async function runbossLab(BK, opts) {
       /* THE GOBLIN QUEEN, played as her hall teaches it now: she walks to within 56 px of you, so stand that far past a hanging chandelier
          and she comes to stand under it; then step in, JUMP and cut the chain (a real jump and a real swing: nothing is dropped for the bot) */
       else if (boss.t === 'gqueen') { const cs = BK.props().filter(p => p.t === 'weight' && p.gq && p.state === 'hang');
-        if (P.labCut > 0) { P.labCut--; k.jump = true; if (P.labCut === 6 && P.atk < 0) { BK.press('atk'); swings++; } goal = null; }
+        /* THE BAIT (docs/briefs/queen-pillars.md). She charges a hero more than 100 px off, and a pillar in the way comes down on her: so go and
+           stand PAST the nearest standing pillar, on the side away from her and far enough off, and wait. A spot the bot would have to cross her
+           to reach costs more than any other. Her charge is ridden out by standing still (it stops at the pillar); if she is coming and nothing
+           is between, it is jumped. Nothing is broken for the bot: the pillar falls because she ran into it. */
+        const ps = BK.props().filter(p => p.t === 'qpillar' && !p.broken), AX0 = A.x0 + 24, fr = Math.floor(A.floor / 16) - 1;
+        let fx = Math.floor(A.x0 / 16); while (fx < Math.floor(A.x1 / 16) && L.grid[fr * L.W + fx + 1] !== T.SOLID) fx++; const AX1 = Math.min(A.x1 - 24, (fx + 1) * 16 - 10);   /* the hall floor ends at her dais: bait on the floor, not up its step */
+        let bait = null, bc = 1e9; for (const p of ps) { const side = Math.sign(p.x - boss.x) || 1, gx = Math.max(AX0, Math.min(AX1, p.x + side * Math.max(30, 118 - Math.abs(p.x - boss.x))));
+          if ((gx - boss.x) * side <= 104 || (p.x - boss.x) * side <= 8) continue; const cost = Math.abs(gx - P.x) + (Math.sign(P.x - boss.x) !== side ? 400 : 0); if (cost < bc) { bc = cost; bait = gx; } }
+        const coming = boss.mode === 'charge' && (P.x - boss.x) * boss.face > 0 && Math.abs(P.x - boss.x) < 70 && !ps.some(p => (p.x - boss.x) * boss.face > 0 && (P.x - p.x) * boss.face > 0);
+        /* HER DECREE runs along the floor both ways, three beats: a wave coming at the hands is jumped (it only takes a hero standing on the floor) */
+        const wave = !OPEN(boss, BK) && BK.waves().some(w => w.royal && w.life > 0 && Math.abs(w.x - P.x) < 34 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 4);
+        if ((coming || wave) && P.ground) { BK.press('jump'); P.labJump = coming ? 18 : 12; goal = null; strike = false; }
+        else if (P.labCut > 0) { P.labCut--; k.jump = true; if (P.labCut === 6 && P.atk < 0) { BK.press('atk'); swings++; } goal = null; }
         else { const under = cs.find(c => Math.abs(c.x - boss.x) < boss.w / 2 + 6 && Math.abs(c.x - P.x) < 28);
           if (under) { strike = false; goal = null; if (P.ground) { P.face = Math.sign(under.x - P.x) || P.face; BK.press('jump'); P.labCut = 16; } }
+          else if (bait !== null) { goal = bait; strike = false; if (Math.abs(bait - P.x) < 6) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face; } }
           /* wait just on HER side of the nearest one: she stops 56 px short of you, which is right under it */
           else { const c = cs.sort((a, b) => Math.abs(a.x - boss.x) - Math.abs(b.x - boss.x))[0]; goal = c ? c.x - (Math.sign(boss.x - c.x) || 1) * 22 : boss.x - Math.sign(d || 1) * 70; strike = false; } } }
       else { goal = boss.x; strike = true; }
@@ -1085,8 +1109,11 @@ async function runbossLab(BK, opts) {
         if(P.labShipVault>0){P.labShipVault--;k.left=false;k.right=true;k.up=k.down=k.block=false;k.jump=true;}
       }
       // A blade cannot reach down from a step: leave the shelf and land beside the foe before choosing sword range.
-      if(!walker&&!P.swim&&boss.y>P.y+24&&['chief','frog','king','ram','windcaller','gqueen','closedhelm','prince','strawking'].includes(boss.t)){const gx=lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;}
-      const descending=!P.swim&&boss.y>P.y+24&&(boss.t==='lance'||boss.t==='reefmaw'&&strike&&(P.ground||P.vy>=0));
+      /* (2026-09-25, the Goblin Queen: Daniel, "FIX THE BOT, not the Queen"). A SHELF IS SOMETHING YOU STAND ON. This fired for her on the hands' own hops as well:
+         measured on the pillar build, 700-1700 frames a fight were cancelled strikes in the air over her, and half of them (288-843) while she was PINNED -
+         the window the whole fight is for. She is 52 px tall, so a hop does reach her. For her it asks for the ground now; for the others it is as it was. */
+      if(!walker&&!P.swim&&boss.y>P.y+24&&(boss.t!=='gqueen'||P.ground)&&['chief','frog','king','ram','windcaller','gqueen','closedhelm','prince','strawking'].includes(boss.t)){const gx=lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;}
+      const descending=!P.swim&&boss.y>P.y+24&&(boss.t==='lance'&&!bowT||boss.t==='reefmaw'&&strike&&(P.ground||P.vy>=0));
       if(descending){const gx=boss.t==='reefmaw'?boss.x:lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;P.labJump=0;k.jump=false;if(P.ground&&[T.ONEWAY,T.PLANK,T.SHELF,T.RAIL].includes(P.groundTile)){k.down=true;BK.press('jump');}}
       if(!descending&&P.ground&&Math.abs(P.vx)<4&&(k.left||k.right)&&f%15===0){BK.press('jump');P.labJump=18;}
       if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}
@@ -1106,6 +1133,7 @@ async function runbossLab(BK, opts) {
       // A BANKED PYRE IS FOR SPENDING: release the full heat meter toward a clear target between committed swings.
       if (h==='pyro' && P.full && !tell && !rushing && ad<140 && Math.abs(boss.y-P.y)<30 && !P.plunge && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.block=true; }
       const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
+      if (boss.t === 'lance') for (const q of BK.enemies()) if (q.lanceBow) bowSeen.add(q);
       if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }
         /* the ward took something: learn how late that tell's blow came, and let go now - the nova */
         if ((P.wardG || 0) > dkG + 0.5 && !(P.parryT > 0)) { if (dkEndM && f - dkEndF <= dkF(0.8)) dkLag[dkEndM] = Math.min(dkLag[dkEndM] ?? 9, (f - dkEndF) * (BK.SET.speed || 1) / 60); dkHold = 0; }
@@ -1118,7 +1146,7 @@ async function runbossLab(BK, opts) {
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}) });
     await yieldNow();
     } finally { Math.random = realRandom; }
   }

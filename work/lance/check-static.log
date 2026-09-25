@@ -1,0 +1,56 @@
+
+> check
+> node tools/check.mjs syntax,spawns,one-new-foe,elites,audit,content-audit,comments,homepaths,dangling-paths,floaters,architecture,traps,killzones,deadends,signs,keys,arena-supplies,checkpoints
+
+ ok  syntax             0ms  2 files parse
+ ok  comments         166ms  no swallowed code found.
+ ok  homepaths        210ms  ok  homepaths     430 source and tool files, none hardcodes a path under a user's home directory.
+FAIL dangling-paths   247ms  Node.js v24.19.0
+ ok  floaters        3999ms  2713 standing things checked (49 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  audit           6043ms  == caravan (547x40) clean
+ ok  content-audit   9261ms  19 things to look at.
+ ok  traps           6102ms  no traps.
+ ok  signs           6260ms  no level says the same sentence on two signs (1 known).
+ ok  killzones       4874ms  no reachable tile kills a standing hero.
+ ok  keys            4885ms  5 levels with lock gates flooded key by key. every key comes before its gate.
+ ok  elites         12920ms  41 elites. every elite can be fought and every gate it holds opens onto the route.
+ ok  spawns          4408ms  2326 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  deadends        8412ms  170 dead ends in 32 levels, and every one pays.
+ ok  checkpoints    13544ms  424 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  one-new-foe     9659ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  arena-supplies 31151ms  ok  arena-supplies  46 boss rooms, 11 height conditions scored against the ground their arenas actually offer;
+ ok  architecture    7666ms  44 levels, 282 built pieces declared; 4 grandfathered (keep, harbor, waymeet, unburied). everything that was b
+
+---- dangling-paths ----
+      GENERATED. tools/audit-lib.mjs writes it; ignored by audits/*/ on purpose.
+      cited by: tools/audit-lib.mjs
+    KNOWN HOLE  src/tower-return.js  (1 citation)
+      STALE CITATION - docs/audit-new-levels-0920.md:47 names a module that is in no commit. Correct the reference or say what replaced it; do not create the file to satisfy the check.
+      cited by: docs/audit-new-levels-0920.md
+    KNOWN HOLE  docs/audit/ranking-2026-09-24.md  (2 citations)
+      ON A BRANCH, SAID SO. docs/INTEGRATOR.md cites the ranking and says it is on claude/audit, which has not merged. Delete this line when it does.
+      cited by: docs/INTEGRATOR.md, work/claude/lane-done/claude-desert1.md
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: 1 path(s) cited by tracked files are in no commit:
+    work/claude/lane-done/claude-lance.md:107  ->  src/stormhold-town.js
+  A fresh clone cannot open these. Either commit the file, or correct the citation. If it is ignored on
+  purpose and the citation is still right, narrow the ignore rather than force-adding it, and add the path
+  to MISSING in tools/dangling-paths.mjs with the reason - never delete the check to make it quiet.
+    at file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-lance/tools/dangling-paths.mjs:123:10
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:643:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: undefined,
+  operator: 'fail',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
+
+1 check(s) failed.

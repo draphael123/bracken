@@ -15,7 +15,8 @@ import { findDeadEnds } from './deadends.js';
 import { spanOf, THREAT } from './threat.js';
 import { buildUnburiedField } from './unburied-field.js';
 import { HV_KIT_KINDS } from './hanging-village.js';   /* THE HANGING VILLAGE: what each floor scatters on its ground (the sprites are in the same file) */
-import { buildCaravan } from './sunken-caravan.js';   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
+import { buildCaravan } from './sunken-caravan.js';
+import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
 export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17, CRYST: 18 };
@@ -2351,12 +2352,16 @@ function stormhold() {
     // a fire cage over the middle of every span, on a lamp-standard: cut its chain as he goes under it
     if (k > 0) ent('weight', px0 - 7, BY - 9, { len: 6, lamp: true });
   }
+  /* AND THE TWO ENDS (Daniel, 2026-09-25: "some platforms to be available to jump on"): the first pier and the last get a
+     lookout of their own, built like the five above, so a charge that runs you to either end of the bridge has something to
+     hop onto - and they are where his bowmen come down (src/lance-support.js) */
+  const lanceBows = lanceLookouts({ plat, ent }, P0, BY);
   // the last span, from the seventh pier to the gatehouse. Without it the bridge stopped nine tiles
   // short of the door and there was no way off it at all.
   span(415, 423, BY, { sway: 2 });
-  // the towers loose at you on the open spans
-  ent('archer', 322, BY - 1, { face: 1, fire: true }); ent('archer', 358, BY - 1, { face: -1, fire: true });
-  ent('rockgoblin', 394, BY - 1, { face: -1 }); ent('archer', 412, BY - 1, { face: -1, fire: true });
+  /* (THE THREE FIRE ARCHERS WENT, Daniel 2026-09-25: the bowmen HE calls to the end lookouts are his ranged support now, told
+     and at a pace - three more standing on the boards inside his walls made up to five bows at once. The rock goblin stays.) */
+  ent('rockgoblin', 394, BY - 1, { face: -1 });
   // (no rope cutter out here: a span dropping out from under a duel on a timer nobody can see is not a fight)
   for (const x of [310, 328, 346, 364, 382, 400]) { ent('deco', x, BY - 1, { kind: 'lanternPost' }); coins([x + 4, BY - 2]); }
   ent('silver', 373, BY - 2);
@@ -2419,7 +2424,7 @@ function stormhold() {
       canopy: ['#3a3a48', '#4a4a5a', '#5a5a6c', '#6a6a80'] },
     weather: [{ x0: 0, x1: 99999, kind: 'snow' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     castle: true, // the castle grows over the whole level: drawn behind everything
-    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'musCastle', tint: '#6a7a9a', tintA: 0.10, fx: 'dust' },
+    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'musCastle', tint: '#6a7a9a', tintA: 0.10, fx: 'dust', bows: lanceBows },
   };
 }
 
@@ -3150,9 +3155,13 @@ function highcrown() {
      and the chandelier that comes down on her PINS her exactly as the gallery did (main.js, the weight's fall). */
   for (const x of [212, 224, 236]) ent('deco', x, 13, { kind: 'hallWindow' });
   ent('deco', 219, 19, { kind: 'banner', v: 0 }); ent('deco', 233, 19, { kind: 'banner', v: 1 });
-  for (const x of [210, 229]) ent('torch', x, 19);
+  for (const x of [210, 234]) ent('torch', x, 19);   /* (the second was at 229 until 2026-09-25: a pillar stands there now) */
+  /* HER PILLARS (Daniel, 2026-09-25: "we need some mechanic like that"; docs/briefs/queen-pillars.md). Three cracked, load-bearing drums of stone,
+     floor to ceiling, between her chandeliers and clear of her windows (final columns 899, 904, 911). Bait her charge into one and it comes down on
+     her: pinned, as the chandelier pins her (main.js gqPin), and a heap of rubble to stand on until her next round props it up again. */
+  for (const x of [217, 222, 229]) ent('qpillar', x, 19, { top: 10 });
   for (const x of [214, 220, 226, 232, 238, 245]) ent('weight', x, 10, { len: 6, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them - and a jump and a swing cuts one down on HER
-  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. CUT A CHANDELIER DOWN ON HER: PINNED UNDER IT, SHE BLEEDS.' });
+  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. STAND BEHIND A PILLAR AND LET HER CHARGE: IT COMES DOWN ON HER.' });
   // the roof: three peaks with an iron rod on each, and a step up to each
   block(214, 218, 4, 7); block(228, 232, 4, 7); block(242, 246, 4, 7);
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
@@ -3545,7 +3554,9 @@ function highcrownWhole() {
   //
   // THESE ARE FINAL COLUMNS. Nothing is grown after this line, so what is written here is what the built level
   // has; every grow() and shiftCrown() above is already done.
-  for (const [x, y] of [[255, 63], [624, 61], [727, 51]]) R.ents.push({ t: 'temperer', x, y, face: -1 });
+  /* (2026-09-25) the second stood at 624, three tiles past the end of the forge stair's boards (615-621): nothing under him to the bottom of
+     the level, so he hung in the air until you came near and then fell out of it. He stands on the boards' end now, by the 619 brazier. */
+  for (const [x, y] of [[255, 63], [621, 61], [727, 51]]) R.ents.push({ t: 'temperer', x, y, face: -1 });
 
   // ---- EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT (docs/briefs/highcrown-bells.md) ----
   // The rule line promised it and only the Leads kept it: the ward's, the entrance hall's and the chapel's alarms went on
