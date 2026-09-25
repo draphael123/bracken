@@ -95,6 +95,7 @@ import { bakeSoldier, bakeJavelineer, bakeHeavyKnight } from './redraw/soldiers.
 import { bakeRimewright } from './redraw/frost.js';
 import {updateSalvageCaptain,drawSalvageCaptain} from './salvage-captain.js';
 import {bakeHangingHouse,paintHouseSmoke} from './redraw/hanging-town.js';
+import * as HV from './hanging-village.js';   /* THE HANGING VILLAGE: each floor's own ground, the cliff behind them and their landmarks (docs/briefs/hanging-village-rework.md) */
 import * as MON from './redraw/monastery.js';   /* THE MONASTERY ON THE CLIFF: its stone, rooms, bells, wheels, baskets and braziers, the fledgling and the temple guardian */
 import { bakeVillageTiles } from './village_tiles.js';
 import { bakeSwornSword, bakeHedgeKnight, bakeRunner, bakeCrossbowman, bakeClosedHelm,
@@ -356,7 +357,7 @@ const HEROES = [
   { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, coinPrice: 800, coinNeeds: 'unburied', desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. Buy skills with coins and equip them in Skills & Loadout. At full blood, TAP F for the equipped skill or HOLD F for Blood Surge. the plunge drives the blade down into a GRAVE BURST. X early in a dodge: THE GREATSWORD RUSH, through small foes, and a guard is thrown wide." },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dodge: THE BOARDING LUNGE, through small foes, and a guard is thrown wide. no shield: he PARRIES" },
   { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. X early in a dodge: THE SHIELDLESS CHARGE, through small foes, and a guard is thrown wide. the dead take double' },
-  { id: 'geomancer', name: 'THE GEOMANCER', price: 10, silver: true, desc: 'a stave with a standing stone for a head, and 95 health. slower on foot, and every blow of hers is heavy. SHE BUILDS SOMETHING IN ITS WAY: hold C for her ROCK SHIELD - it takes two YELLOW blows, cracked after one; raised as a blow lands, their weapon bounces off and it costs nothing. A RED blow shatters it. It never mends itself: DOWN+C strikes the stave into the ground to make it whole. HOLD X and let go: UPHEAVAL, a spike at her front foot, or held longer a pillar further out that launches what stands there and shatters. UP+X is a stone SPUR for what is over her. Her third blow is a full spin that SHATTERS any stone of hers it hits into shards. Her plunge is STONEFALL: it knocks down what stands beside her. X early in a dodge kicks a ROLLING STONE. Blows the shield stops and pillars that launch fill TREMOR: full, tap C on the ground for THE QUAKE. Only three stones stand at once, and each crumbles in four seconds' },
+  { id: 'geomancer', name: 'THE GEOMANCER', price: 10, silver: true, desc: 'a tall staff with an amber geode in stone claws, and 95 health. slower on foot, and every blow of hers is heavy. SHE BUILDS SOMETHING IN ITS WAY: hold C and she plants the stave and a RUNE-WARD of stone rises in front of her and over her head. It turns YELLOW blows and shots for wind, but she cannot walk while it stands; a RED blow breaks through. Raised as a blow lands it throws a shot back and EMPOWERS her for three seconds: harder blows, and TREMOR twice as fast. HOLD X and let go: FAULT LINE, a crack that races along the floor ahead of her and hits everything on it - the longer the hold, the longer and harder, and a full one ends in a spike that launches. UP+X is a stone SPUR for what is over her. Her third blow is a full spin that SHATTERS any stone of hers it hits into shards. Her plunge is STONEFALL: it knocks down what stands beside her. X early in a dodge kicks a ROLLING STONE. Blows the ward stops and foes her stone launches fill TREMOR: full, tap C on the ground for THE QUAKE. Only three stones stand at once, and each crumbles in four seconds' },
   { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 100 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it. X early in a dodge: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
 ];
 /* THE LOOP, IN ONE SENTENCE A HERO: what the pick screen and the hero card say under the name - how this hero is PLAYED,
@@ -373,7 +374,7 @@ const HERO_LOOP = {
   pirate: 'THE PISTOL GOES THROUGH ANY GUARD, THEN IT IS EMPTY: THE WOOD\'S GOLD IS HIS POWDER.',
   reaper: 'THE WARD TAKES BLOWS FOR BLOOD; LET GO BEFORE IT BREAKS AND THE NOVA PAYS IT BACK.',
   warden: 'THE POINT PAYS, NOT THE HAFT: KEEP THEM OUT THERE. TAP C AND THE SHAFT TURNS A BLOW.',
-  geomancer: 'TAP C: A WALL IN THE BLOW\'S WAY. HOLD X: A PILLAR. THREE STONES AT ONCE, AND THEY CRUMBLE.',   /* the deflect, not the old brace; 504 px, two lines on the card's 270 (the brace wording took three) */
+  geomancer: 'HOLD C: A RUNE-WARD. SHE IS PLANTED, AND ON THE BEAT IT EMPOWERS HER. HOLD X: A FAULT LINE.',   /* the deflect, not the old brace; 504 px, two lines on the card's 270 (the brace wording took three) */
 };
 const TRAINING = [
   { id: 'vigour', name: 'VIGOUR', per: '+10 health a rank', max: 5, prices: [40, 60, 90, 130, 180] },
@@ -405,16 +406,16 @@ const WARDEN_KEYS = { deflect: 'TAP C: THE DEFLECT. THE SHAFT TURNS A YELLOW BLO
   pin: 'DOWN+X IN THE AIR PINS WHAT YOU LAND ON: X TO STAB IT, Z TO PULL FREE',
   vault: 'JUMP OUT OF A STEP FORWARD AND SHE PLANTS THE SPEAR AND VAULTS',
   controls: { block: ['the deflect', 'TAP C  (FULL: PHALANX)', 'LB RB'], dodge: ['step', 'V BACK, OR TAP A WAY TWICE', 'B'] } };
-/* ==== THE GEOMANCER'S KEYS, IN WORDS (her controls card): C is a WALL, never a shield, and her held swing is a pillar ==== */
-const GEO_KEYS = { controls: { block: ['rock shield', 'HOLD C  (DOWN+C: MEND)', 'LB RB'], 'heavy blow': ['upheaval', 'HOLD SWING, LET GO', 'HOLD X'] } };
-const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'GRAVELORD', 'WARD'], warden: ['SPEARHEAD', 'THE DEFLECT', 'SKIRMISHER'], geomancer: ['EARTH', 'SHIELD', 'TREMOR'] };
+/* ==== THE GEOMANCER'S KEYS, IN WORDS (her controls card): C is her RUNE-WARD (planted), and her held swing is FAULT LINE ==== */
+const GEO_KEYS = { controls: { block: ['rune-ward', 'HOLD C  (SHE IS PLANTED)', 'LB RB'], 'heavy blow': ['fault line', 'HOLD SWING, LET GO', 'HOLD X'] } };
+const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'GRAVELORD', 'WARD'], warden: ['SPEARHEAD', 'THE DEFLECT', 'SKIRMISHER'], geomancer: ['EARTH', 'WARD', 'TREMOR'] };
 const TREE_WHO = { knight: ['COMBOS, BLEEDS AND FINISHERS', 'THE SHIELD: TURN IT, THEN ANSWER', 'THE AIR AND THE RUN: KEEP MOVING'],
   pyro: ['THROWN EMBERS: SKIP, SPLIT AND SPREAD', 'THE JET AND THE HEAT', 'FIGHT IN THE FIRE AND WALK OUT'],
   paladin: ['THE LIGHT, AND WHAT IT JUDGES', 'THE AEGIS: A WALL THAT WALKS', 'THE MAUL AND THE GROUND IT SHAKES'],
   pirate: ['THE PISTOL: ONE BALL, MADE TO COUNT', 'GOLD: THE PURSE IS A WEAPON', 'CUTLASS AND HOOK: CLOSE, AND CLOSER'],
   reaper: ['THE GREATSWORD, THE MARK, THE WOUND', 'SUMMON SKELETON (F): THE DEAD ON CALL', 'THE WARD STOPS, THE NOVA PAYS'],
   warden: ['THE POINT: REACH, AND WHAT IT PAYS', 'THE SHAFT: TURN IT, AND HOLD THEM OFF', 'FOOTWORK: GIVE GROUND, KEEP THE POINT'],
-  geomancer: ['THE PILLARS: MORE, TALLER, LONGER', 'THE SHIELD: WHAT IT TURNS BACK', 'THE TREMOR: THE QUAKE AND THE FALL'] };
+  geomancer: ['THE STONES: MORE, TALLER, LONGER', 'THE WARD: WHAT IT TURNS BACK', 'THE TREMOR: THE QUAKE AND THE FALL'] };
 const ROW_LV = [0, 2, 5, 10];        // the level a row opens at
 const ROW_NEED = [0, 2, 5, 10];      // and the points it wants spent in its own tree
 const CAP_NEED = 18, PTS_CAP = 30;   /* what a capstone asks of its tree, and the most points a hero ever has */
@@ -469,7 +470,7 @@ function openEquip(from) { storeMode = 'equip'; equipFrom = from; storeTab = 0; 
 const skinById = id => SKINS.find(k => k.id === id) || SKINS[0];
 const swordById = id => SWORDS.find(k => k.id === id) || SWORDS[0];
 const sword = () => swordById(PROG.sword);
-const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : isGeo() ? 13 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + growthAt(hero(), heroLevel()).damage) * (isPyro() ? 0.7 : 1)); // +1 damage every second level
+const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : isGeo() ? 13 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + growthAt(hero(), heroLevel()).damage) * (isPyro() ? 0.7 : 1) * (isGeo() && GEO && GEO.empowered() ? GEO_K.ward.empMul : 1));   /* (EMPOWERED: a perfect RUNE-WARD, geomancer.js) */ // +1 damage every second level
 const footTal = () => LV_GROW();   /* SURE FOOTING, FLEET, IRON LUNGS and SWASHBUCKLE were two ranks of this: the woods give it now */
 const dodgeCost = () => Math.max(6, ST.dodge - Math.round(2 * footTal()) - 3*tal('lightStep')), plungeCost = () => chainCost(Math.max(12, ST.plunge - Math.round(2 * footTal())), P.plungeN || 0);
 /* ==== THE WARDEN'S BACK-STEP. Not the shared roll played backwards: about HALF the ground, out of it sooner, for
@@ -835,9 +836,11 @@ function resolveTiles() {
   const rnd = mulberry(7);
   const rockDeep = groundDepth(LW, LH, (x, y) => tileAt(x, y) === T.SOLID, 18), groundDeep = groundDepth(LW, LH, solidish, 9);
   const RDG = redressGround(), RDP = redressProps();   /* THE REDRESS: this level's own rock and dressing, where it has one */
+  /* A FLOOR'S OWN GROUND (L.groundZones: THE HANGING VILLAGE's seven floors and its hollow, by tile row) wins over the level's redress */
+  const zoneG = L.groundZones ? (y => { const z = L.groundZones.find(q => y >= q.y0 && y <= q.y1); return z ? HV.hvGround(z.look) : null; }) : () => null;   /* THE REDRESS: this level's own rock and dressing, where it has one */
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
-    const t = tileAt(x, y); let s = null;
+    const t = tileAt(x, y); let s = null; const ZG = zoneG(y);
     if (L.caravan && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock */
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
     const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = ((L.palette && L.palette.set === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
@@ -846,7 +849,7 @@ function resolveTiles() {
        ashlar with a coping, and the crag outside them stays crag, so a tower grows out of the mountain instead of both
        being the same grey rock with grass on it. */
     const crownT = CROWN && L.masonry && L.masonry.some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) && (L.monk ? (MONK || (MONK = MON.bakeMonkTiles())) : CROWN);   /* the monks laid warm limestone; the Queen laid granite */
-    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : RDG || null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
+    const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : ZG || RDG || null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
     if (underPool) { tileSpr[y * LW + x] = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; continue; }
@@ -857,13 +860,13 @@ function resolveTiles() {
       if (up !== T.SOLID && up !== T.CRATE) {
         const villDrain = villT && linesDrain(x, y);
         s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? hullSpr(true, x, y, eL, eR, (rnd() * 4) | 0) : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
-        const kit = (RDP && RDP.kit) || GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
+        const kit = (ZG && ZG.kit) || (RDP && RDP.kit) || GROUND_KITS[(LEVELS[levelIndex] || {}).id] || GROUND_KITS.custom;
         const dressFrom = decor.length;
         const clearGround = up === T.AIR && !(L.interiors || []).some(([a,b,c]) => x >= a && x <= b && y >= c-4 && y<c);
         if (L.snowLine !== undefined && y <= L.snowLine && rnd()<0.85) decor.push({k:'snow',kind:'snow',x:x*TS,y:y*TS-3,c:PROP.snowCap});
         if (clearGround && kit.kinds.length && rnd()<kit.density) {
           let kind=kit.kinds[Math.floor(rnd()*kit.kinds.length)]; if (L.fresh && x >= L.fresh[0] && x <= L.fresh[1] && FRESH_TWIN[kind]) kind = FRESH_TWIN[kind];   /* a river is not the sea (src/level.js FRESH_TWIN) */
-          const source=(RDP && RDP.props[kind]) || ({rushes:PROP.lw.rushes,shell:PROP.lw.shell,saltCrust:PROP.lw.saltCrust,driftwood:PROP.lw.driftwood,barnacleRock:PROP.lw.barnacleRock,coralTuft:PROP.lw.coralTuft,herbBed:mo().herbBed,stoneLantern:mo().stoneLantern})[kind] || PROP[kind];
+          const source=(ZG && ZG.kit.props[kind]) || (RDP && RDP.props[kind]) || ({rushes:PROP.lw.rushes,shell:PROP.lw.shell,saltCrust:PROP.lw.saltCrust,driftwood:PROP.lw.driftwood,barnacleRock:PROP.lw.barnacleRock,coralTuft:PROP.lw.coralTuft,herbBed:mo().herbBed,stoneLantern:mo().stoneLantern})[kind] || PROP[kind];
           const c=Array.isArray(source)?source[Math.floor(rnd()*source.length)]:source;
           if(c && (c.width<=16 || (tileAt(x+1,y)===T.SOLID && tileAt(x+1,y-1)===T.AIR))) {
             const k=({tinyCap:'tiny',campfire:'fire',skullPost:'skull',fallenLog:'log',heather:'tuft',gorse:'bush',thistle:'fern'})[kind]||kind;
@@ -885,7 +888,7 @@ function resolveTiles() {
       else { const dn = rockDeep[y * LW + x];   // how far under the open air this tile lies (blended across: groundDepth)
         s = dn < 3 ? TILE.dirt[(rnd() * TILE.dirt.length) | 0] : TILE.deep[dn < 7 ? 0 : dn < 13 ? 1 : 2][(rnd() * 8) | 0]; }
       if (L.palette && L.palette.myc && (eL || eR)) s = TILE.mycDirt[(rnd() * 3) | 0];
-      if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) !== T.SOLID) s = TILE.hall[(rnd() * 3) | 0]; // the underside of a hall's ceiling
+      if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) !== T.SOLID) s = ZG && ZG.under ? ZG.under[(rnd() * 3) | 0] : TILE.hall[(rnd() * 3) | 0];   /* (a floor's own underside, where it has one) */ // the underside of a hall's ceiling
       if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) === T.SOLID && y < 15 && rnd() < 0.5) s = TILE.hall[(rnd() * 3) | 0];
       for (const z of (L.stone || [])) if (x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) s = TILE.clear || (TILE.clear = canvas(TS, TS)[0]); // the menhir is drawn whole, over the column
       for (const z of (L.scree || [])) if (x >= z.x0 && x <= z.x1 && y === z.y) s = TILE.scree[z.dir];
@@ -901,7 +904,7 @@ function resolveTiles() {
       const crag = L.palette && L.palette.dress === 'crag', shoreOW = named || (L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
         : L.palette.myc ? { ledge: TILE.capLedge, ledgeL: TILE.capLedgeL, ledgeR: TILE.capLedgeR }
         : L.palette.dress === 'marsh' ? { ledge: TILE.duck, ledgeL: TILE.duckL, ledgeR: TILE.duckR } : null));
-      s = inHive ? (!l ? TILE.combL : !r ? TILE.combR : TILE.comb[(rnd() * 3) | 0]) : shoreOW ? (!l ? shoreOW.ledgeL : !r ? shoreOW.ledgeR : shoreOW.ledge[(rnd() * 3) | 0]) : RDG ? (!l ? RDG.ledgeL : !r ? RDG.ledgeR : RDG.ledge[(rnd() * 3) | 0]) : crag ? (!l ? TILE.ledgeL : !r ? TILE.ledgeR : TILE.ledge[(rnd() * 3) | 0]) : !l ? TILE.logL : !r ? TILE.logR : TILE.log[(rnd() * TILE.log.length) | 0];
+      s = inHive ? (!l ? TILE.combL : !r ? TILE.combR : TILE.comb[(rnd() * 3) | 0]) : shoreOW ? (!l ? shoreOW.ledgeL : !r ? shoreOW.ledgeR : shoreOW.ledge[(rnd() * 3) | 0]) : (ZG || RDG) ? (!l ? (ZG || RDG).ledgeL : !r ? (ZG || RDG).ledgeR : (ZG || RDG).ledge[(rnd() * 3) | 0]) : crag ? (!l ? TILE.ledgeL : !r ? TILE.ledgeR : TILE.ledge[(rnd() * 3) | 0]) : !l ? TILE.logL : !r ? TILE.logR : TILE.log[(rnd() * TILE.log.length) | 0];
     } else if (t === T.REED) s = TILE.reeds[(rnd() * 3) | 0];
     else if (t === T.PALISADE) s = TILE.palisade[(rnd() * 3) | 0];
     else if (t === T.BOUNCER) { s = TILE.bouncer[0];
@@ -1718,9 +1721,9 @@ function trialEvent(kind) { if (!L || !L.trial) return; const st = L.trial.find(
   if (st.got >= st.n) { st.done = true; PROG.taught = PROG.taught || {}; PROG.taught[st.kind] = 1;   /* the yard TAUGHT this (lessonHint reads it: the wood does not say again what the yard already said) */ openGate(st.gate, 0, LH - 1); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); hintT = 3; hintMsg = 'YOU HAVE ' + trialName(st.kind) + '. THE GATE AHEAD IS UP.'; } }
 function updateTrial() { if (!L || !L.trial) return; for (const st of L.trial) if (!st.done && st.fill && !st.filled && P.x / TS >= st.x0 && P.x / TS < st.gate) { st.filled = true; fillMeter(st.fill); motes(P.x, P.y - 12, 12, 10); } }
 /* WHAT A TRIAL CALLS A STEP WHEN IT IS DONE, and the hero's own meter, filled for the step that spends it */
-const TRIAL_NAME = { hit: 'THE SWING', third: 'THE THIRD CUT', block: 'THE SHIELD', parry: 'THE PARRY', flash: 'THE BEAT', tells: 'THE MARKS', pogo: 'THE PLUNGE', heavyblow: 'THE HEAVY BLOW', dodge: 'THE DODGE', dashatk: 'THE DASH ATTACK', rise: 'THE RISING CUT', sweep: 'THE LOW SWEEP', skill: 'THE SKILLS', ember: 'THE EMBER', heat: 'THE HEAT', firedrop: 'THE FIREDROP', hook: 'THE HOOK', aegis: 'THE AEGIS', mend: 'MEND', hammerfall: 'HAMMERFALL', judgement: 'JUDGEMENT', ward: 'THE WARD', tip: 'THE POINT', runthrough: 'THE RUN-THROUGH', pin: 'THE PIN', upheaval: 'UPHEAVAL', stonefall: 'STONEFALL' };
+const TRIAL_NAME = { hit: 'THE SWING', third: 'THE THIRD CUT', block: 'THE SHIELD', parry: 'THE PARRY', flash: 'THE BEAT', tells: 'THE MARKS', pogo: 'THE PLUNGE', heavyblow: 'THE HEAVY BLOW', dodge: 'THE DODGE', dashatk: 'THE DASH ATTACK', rise: 'THE RISING CUT', sweep: 'THE LOW SWEEP', skill: 'THE SKILLS', ember: 'THE EMBER', heat: 'THE HEAT', firedrop: 'THE FIREDROP', hook: 'THE HOOK', aegis: 'THE AEGIS', mend: 'MEND', hammerfall: 'HAMMERFALL', judgement: 'JUDGEMENT', ward: 'THE WARD', tip: 'THE POINT', runthrough: 'THE RUN-THROUGH', pin: 'THE PIN', fault: 'FAULT LINE', stonefall: 'STONEFALL' };
 /* WHAT THE PANEL SAYS AS IT COUNTS ONE. Words never float over a fight (see number()), so a yard's confirmation is written on its step panel */
-const TRIAL_SAY = { hit: 'HIT', third: 'THIRD CUT', block: 'BLOCKED', parry: 'PARRIED', flash: 'ON THE BEAT: HE IS OPEN', tellY: 'YELLOW ! TAKEN', tellR: 'RED !! CLEARED', pogo: 'BOUNCED', heavyblow: 'HEAVY BLOW', dodge: 'ROLLED', dashatk: 'DASH ATTACK', rise: 'LAUNCHED', sweep: 'TRIPPED', skillF: 'F: USED', skillG: 'G: USED', ember: 'ALIGHT', heat: 'HEAT FULL', firedrop: 'FIREDROP', hook: 'HOOKED', aegis: 'TURNED', mend: 'MENDED', hammerfall: 'QUAKED', judgement: 'JUDGEMENT', ward: 'WARDED', tip: 'THE POINT RINGS', runthrough: 'SKEWERED', pin: 'PINNED', upheaval: 'ERUPTED', stonefall: 'KNOCKED DOWN' };
+const TRIAL_SAY = { hit: 'HIT', third: 'THIRD CUT', block: 'BLOCKED', parry: 'PARRIED', flash: 'ON THE BEAT: HE IS OPEN', tellY: 'YELLOW ! TAKEN', tellR: 'RED !! CLEARED', pogo: 'BOUNCED', heavyblow: 'HEAVY BLOW', dodge: 'ROLLED', dashatk: 'DASH ATTACK', rise: 'LAUNCHED', sweep: 'TRIPPED', skillF: 'F: USED', skillG: 'G: USED', ember: 'ALIGHT', heat: 'HEAT FULL', firedrop: 'FIREDROP', hook: 'HOOKED', aegis: 'TURNED', mend: 'MENDED', hammerfall: 'QUAKED', judgement: 'JUDGEMENT', ward: 'WARDED', tip: 'THE POINT RINGS', runthrough: 'SKEWERED', pin: 'PINNED', fault: 'BOTH IN ONE LINE', stonefall: 'KNOCKED DOWN' };
 function trialSay(msg, col, st) { st = st || ((L && L.trial) || []).find(q => P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st) return; st.said = msg; st.saidCol = col || '#8fd160'; st.saidT = time + 1.5; }
 function trialName(k) { if (k === 'heavyblow' && hero() === 'knight') return 'THE HEAVY CUT'; if (k === 'meter') return hero() === 'knight' ? 'THE LAST CHARGE' : isPyro() ? 'THE PYRE' : isPirate() ? 'THE BLACK FLAG' : isReaper() ? 'BLOOD SURGE' : isWarden() ? 'THE PHALANX' : isGeo() ? 'THE QUAKE' : 'JUDGEMENT'; return TRIAL_NAME[k] || 'THAT'; }
 function fillMeter(n) { if (isPaladin()) P.light = Math.max(P.light || 0, n); else if (hero() === 'knight') P.resolve = Math.max(P.resolve || 0, n); else if (isPirate()) P.plunder = Math.max(P.plunder || 0, n); else if (isReaper()) P.harvest = Math.max(P.harvest || 0, n); else if (isWarden()) P.vigil = Math.max(P.vigil || 0, n); else if (isGeo()) P.tremor = Math.max(P.tremor || 0, n); }
@@ -2097,6 +2100,7 @@ function spawnEnt(e) {
         deep: e.deep || 2, hp: e.hp || (e.state === 'cracked' ? 1 : 3), hp0: e.hp || (e.state === 'cracked' ? 1 : 3), state: e.state || 'sound', broken: !e.tomb && marks.has('tim:' + e.x), tomb: !!e.tomb, mound: e.mound,   /* A TOMB SET is put back on every attempt, and the dead set it again in the fight */
         creakT: 0, shake: 0, armT: 0, dust: 0 }); break;
       case 'ballast': props.push({ t: 'ballast', x: px, y: py, kind: e.kind || 'stone', held: false, vy: 0, ph: Math.random() * 6, home: py }); break;
+      case 'load': props.push({ t: 'load', kind: e.kind || 'sack', hoist: e.hoist, x: px, y: e.peg ? e.hy * TS : py, home: [px, py], peg: !!e.peg, pegX: e.peg ? e.peg * TS + 8 : undefined, hy: e.peg ? e.hy * TS : undefined, ropeTop: e.ropeTop !== undefined ? e.ropeTop * TS : undefined, floorY: py, state: e.peg ? 'hung' : 'free', vy: 0, vx: 0, cd: 0 }); break;   /* THE HOIST's loads: a sack, a coil or a stone, carried to a well (or hung on a peg over one) */
       case 'support': props.push({ t: 'support', x: px, y: py, top: (e.top || e.y - 5) * TS + TS, hp: 4, broken: false, shake: 0 }); break;
       case 'rod': props.push({ t: 'rod', x: px, y: py }); break;
       case 'scaffold': props.push({ t: 'scaffold', x0: e.x * TS, x1: (e.x1 + 1) * TS, top: e.y * TS, crane: !!e.crane }); break;
@@ -2161,7 +2165,7 @@ function spawnEnt(e) {
          the Undercrown and had no row here, so the map lookup came back undefined and the whole case broke
          out - a prop in the level list, a prop in the entity count, and nothing on the screen. (The coffer
          even had its sprite baked and waiting in PROP.) tools/content-audit.mjs is what catches this. */
-      case 'deco': { const K = { ...cvDeco(e), hangingHouse: [hangingHouses()[0],true], villageHall: [hangingHouses()[1],true], fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
+      case 'deco': { const K = { ...cvDeco(e), hangingHouse: [hangingHouseOf(false,e.style),true], villageHall: [hangingHouseOf(true,e.style),true], ropeCoil: [HV.hvDeco('ropeCoil'), false], cocoon: [HV.hvDeco('cocoon' + ((e.v || 0) % 3)), false], hempBale: [HV.hvDeco('hempBale'), false], flourSacks: [HV.hvDeco('flourSacks'), false], fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
         longTable: [PROP.town.longTable[(e.v || 0) % 2], false], bench: [PROP.town.bench, false], hearth: [PROP.town.hearth[0], true], caskRack: [PROP.town.caskRack, true], mugShelf: [PROP.town.mugShelf, true], hayBale: [PROP.town.hayBale[(e.v || 0) % 2], false], bunting: [PROP.town.bunting, true], shopSign: [PROP.town.shopSign[(e.v || 0) % 4], false], innSign: [PROP.innSign, true], pot: [PROP.flot.cookPot, false], punt: [PROP.lw.rowboat, true], coffer: [PROP.coffer, false],
         gardenWall: [PROP.gardenWall[e.v || 0], false], beanpoles: [PROP.beanpoles[e.v || 0], false],
         scarePost: [fa().scarePost, false], deadCorn: [fa().corn[(e.v || 0) % 3], false], crookedFence: [fa().fence[(e.v || 0) % 2], false], pumpkinPatch: [fa().patch, false], hayStack: [fa().stack[(e.v || 0) % 2], false], farmLantern: [fa().lantern[1], false], leaningBarn: [fa().barn, true], brokenCart: [fa().cart, false], plough: [fa().plough, false], milkChurn: [fa().churn, false], waterPump: [fa().pump, false], fieldGrave: [fa().grave[(e.v || 0) % 3], false], portrait: [fa().portrait, true], candle: [fa().candle[1], false], ghostCow: [fa().cow[0], true, fa().cow],   /* THE HEXED FIELDS */
@@ -4244,7 +4248,7 @@ function drawHeroPick() {
     pirate: ['cutlass and pistol', 'gold is his powder', '90 health'],
     reaper: ['a greatsword: slow, and it cuts them ALL', 'his ward banks what it stops', '95 health', 'HARDER'],
     warden: ['a spear: everything at its point', 'C PLANTS IT: a charge dies on it', '100 health'],
-    geomancer: ['a stave and the stone under her', 'C: A WALL. HOLD X: A PILLAR', '95 health'] };
+    geomancer: ['a tall staff and the stone under her', 'HOLD X: A FAULT LINE', '95 health'] };
   const n = PICK.length, cw = Math.floor((VW - 12 - (n - 1) * 3) / n), top = 24, ch = 62;
   PICK.forEach((h, k) => { const x = 6 + k * (cw + 3), sel = k === heroPick.i, H = HEROES.find(q => q.id === h);
     g.fillStyle = sel ? 'rgba(30,40,30,0.8)' : 'rgba(20,18,28,0.8)'; g.fillRect(x, top, cw, ch);
@@ -4681,7 +4685,7 @@ function hudMeterLabel() {
   if (isPyro()) return P.full ? { s: 'PYRE: C', col: blink ? '#ffd36b' : '#fff6c8' } : null;
   if (isPaladin()) return (P.light || 0) >= 100 ? { s: 'JUDGEMENT: C', col: blink ? '#ffd36b' : '#fff6c8' } : null;
   if (isPirate()) return (P.plunder || 0) >= 100 ? { s: 'BLACK FLAG: C', col: blink ? '#ffd34a' : '#fff6c8' } : null;
-  if (isGeo()) return (P.tremor || 0) >= 100 ? { s: 'QUAKE: C', col: blink ? '#e8a83a' : '#fff0c0' } : null;
+  if (isGeo()) return (P.tremor || 0) >= 100 ? { s: 'QUAKE: C', col: blink ? '#e8a83a' : '#fff0c0' } : GEO && GEO.empowered() ? { s: 'EMPOWERED', col: '#e8a83a' } : null;   /* (EMPOWERED: a perfect ward's three seconds, said where her bar is) */
   if (isWarden()) { if (state !== 'play' && state !== 'talk') return null;
     if (P.pinning) return { s: 'X STAB   Z FREE', col: blink ? '#dff0d8' : '#8fd160' };   /* on the spear: the two ways off it */
     if ((P.vigil || 0) >= 100) return { s: 'PHALANX: C', col: blink ? '#8fd160' : '#dff0d8' };
@@ -4845,11 +4849,12 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     sparks(P.x + P.face * 12, P.y - 10, P.face, 9); number(P.x, P.y - 28, 'TURNED IT', '#ffd36b'); parryBurst();
     return 'blocked';
   }
-  /* THE GEOMANCER'S ROCK SHIELD: raised on her arm, it takes two yellow blows (one raised on the beat costs it nothing and bounces
-     the weapon); a RED blow shatters it and goes on into her - at half its force with BULWARK (geomancer.js shieldTakes) */
-  const geoSh = isGeo() && GEO ? GEO.shieldTakes(fromX, unblockable, nearFoe(fromX)) : null;
-  if (geoSh === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; }
-  if (geoSh === 'half') dmg = Math.ceil(dmg / 2);
+  /* THE GEOMANCER'S RUNE-WARD (round 3): the Knight's rules, sidegraded - a yellow blow from the front or from overhead costs her wind (a
+     bolt does not pierce it, and nothing pushes her back); on the beat it is free and EMPOWERS her; out of wind it breaks and half the
+     blow finds her; a RED blow breaks through (half with BULWARK). geomancer.js wardTakes */
+  const geoW = isGeo() && GEO ? GEO.wardTakes(fromX, unblockable, nearFoe(fromX)) : null;
+  if (geoW === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; }
+  if (geoW === 'half') dmg = Math.ceil(dmg / 2);
   /* (a WALL stood between her and the blow - PARKED, raised only by the kit now - still stops a yellow one: geomancer.js wallTakes) */
   if (isGeo() && GEO && GEO.wallTakes(fromX, unblockable, nearFoe(fromX)) === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; }
   /* A PIERCING BLOW (the crossbow bolt) goes through a guard that was already up: only a guard raised as it lands - a parry - turns it */
@@ -5679,7 +5684,7 @@ const inJet = (x, y, pad = 6) => { const j = jetBox(); return !!j && x > j.l - p
 // pyromancer gathers the flame back low, the paladin stands the maul straight up. Let go and it lands. It
 // costs twice the stamina of a swing, it goes through a guard, and it is slower than mashing on purpose.
 const HEAVY_START = 0.14;                                     // how long the key is down before the wind-up shows
-const heavyWind = () => (isPirate() && (P.hotT || 0) > time) || spearheadReady() ? 0.04 : (isGeo() ? GEO_K.wind : 0.32) - 0.05 * Math.max(0, tal('heavy') - 1);   /* (THE GEOMANCER winds longer: her wind walks UPHEAVAL out, geomancer.js) */ // and how long the wind-up itself takes (HOT BARREL: next to none)
+const heavyWind = () => (isPirate() && (P.hotT || 0) > time) || spearheadReady() ? 0.04 : (isGeo() ? GEO_K.wind : 0.32) - 0.05 * Math.max(0, tal('heavy') - 1);   /* (THE GEOMANCER winds longer: her wind runs FAULT LINE out, geomancer.js) */ // and how long the wind-up itself takes (HOT BARREL: next to none)
 const heavyMul = () => 2 + 0.15 * Math.max(0, tal('heavy') - 1);
 const heavyCost = () => Math.round((isPaladin() ? 22 : sword().cost) * 2.2);
 const PISTOL_RELOAD = 8;                          // it loads itself in eight seconds, or the moment gold reaches him
@@ -6015,7 +6020,7 @@ function updateCharge(dt) {
   const quick = isPirate() && tal('quickHands'), can = (P.ground || P.swim || quick) && !P.plunge && (!(P.dodge > 0) || quick) && !P.aegis && !P.block && !(P.hurt > 0) && !(P.asleep > 0) && !P.heavy && !(hero() === 'knight' && (thrown || rushing())) && !(isWarden() && wardJav);   /* QUICK HANDS: from the air, and out of a roll */   /* (the knight braces behind a shield: not while it is thrown, nor while he is still charging) */
   if (!keys.atk || !can) { // let go (or lost the footing for it): if it was wound up, it lands
     if (hero() === 'knight') { const st = cutStage(P.atkHeld || 0); P.cutShown = 0; if (st && can) { P.cutWant = st; fireHeavy(); } else if (P.charge > 0) SFX.ui(); P.atkHeld = 0; P.charge = 0; return; }   /* THE HEAVY CUT: what stage it reached is what comes down */
-    if (P.charge > (isGeo() ? 0 : heavyWind() * 0.55) && can) fireHeavy();   /* (THE GEOMANCER: any wind at all fires - the quickest is the spike at her front foot) */
+    if (P.charge > (isGeo() ? 0 : heavyWind() * 0.55) && can) fireHeavy();   /* (THE GEOMANCER: any wind at all fires - the quickest is a short crack that hits what touches her) */
     else if (P.charge > 0) { SFX.ui(); }
     P.atkHeld = 0; P.charge = 0; return;
   }
@@ -6493,7 +6498,7 @@ function fireHeavy() { noteVerb('heavy');
   P.atkHeld = 0; P.charge = 0; P.chargeFull = false;
   if (!spend((P.relic === 'gauntlet' ? 0.5 : 1) * (heavyCost()))) { SFX.clank(); number(P.x, P.y - 26, 'NO WIND FOR IT', '#9aa39a'); return; }
   if (hero() === 'knight') { heavyCut(P.cutWant || 1); P.cutWant = 0; return; }   /* THE HEAVY CUT (it was shieldCharge(wound): THE SHIELD CHARGE) */
-  if (isGeo() && GEO) { P.atk = 0; P.hitSet.clear(); P.heavy = true; P.heavySwing = false; P.vx = 0; P.combo = 3; GEO.upheaval(wound); shakeCam(3); return; }   /* UPHEAVAL: the butt struck into the ground, and the pillar does the hitting (attackBox is shut for it) */
+  if (isGeo() && GEO) { P.atk = 0; P.hitSet.clear(); P.heavy = true; P.heavySwing = false; P.vx = 0; P.combo = 3; GEO.faultHeavy(wound); shakeCam(3); return; }   /* FAULT LINE: the butt struck into the ground, and the crack does the hitting (attackBox is shut for it) */
   P.atk = 0; P.hitSet.clear(); P.heavy = true;
   P.vx = P.face * (isPaladin() ? 40 : 110);
   startSwing(); P.combo = 3;            // a heavy blow counts as the end of a run, not the start of one
@@ -6590,8 +6595,8 @@ function attackBox() {
   if (isWarden() && wardJav) { if (P.atk < 0.04 || P.atk >= 0.16 || P.plunge) return P.plunge ? { l: P.x - 8, r: P.x + 8, t: P.y - 6, b: P.y + 10 } : null;   /* BARE-HANDED (the JAVELIN is out): a short jab */
     return P.face > 0 ? { l: P.x + 2, r: P.x + 15, t: P.y - 16, b: P.y - 4 } : { l: P.x - 15, r: P.x - 2, t: P.y - 16, b: P.y - 4 }; }
   /* ==== THE GEOMANCER. The stave's boxes, cut to her frames (chars.js bakeGeomancer): the head-strike lands the stone 21 px out and
-     over her hood, the butt-jab 21 px out at the belt, the spin sweeps behind her and 23 out in front. Her held X is a pillar and
-     not a blow (UPHEAVAL: the eruption hits, geomancer.js), and her UP+X is the SPUR - a spike of stone in front of her. ==== */
+     over her hood, the butt-jab 21 px out at the belt, the spin sweeps behind her and 23 out in front. Her held X is a crack along
+     the floor and not a blow (FAULT LINE: the crack hits, geomancer.js), and her UP+X is the SPUR - a spike of stone in front of her. ==== */
   if (isGeo() && P.heavy) return null;
   if (isGeo() && P.swingKind === 'rise' && P.atk >= 0.02 && P.atk < 0.17) return P.face > 0 ? { l: P.x + 8, r: P.x + 24, t: P.y - 36, b: P.y + 2 } : { l: P.x - 24, r: P.x - 8, t: P.y - 36, b: P.y + 2 };
   if (isGeo() && P.atk >= 0.05 && P.atk < 0.18 && P.swingKind !== 'sweep') { const cm = (P.combo || 1) % 3;
@@ -7015,14 +7020,12 @@ function updatePlayer(dt) {
        line in front of her, so neither spits anything. */
     if (P.atk >= 0 && P.swingKind !== 'rise' && P.swingKind !== 'sweep') impaleWatch();
   }
-  if (isGeo() && GEO) {   /* THE GEOMANCER'S C: held, THE ROCK SHIELD on her arm (no wind, two blows); DOWN+C - or C with nothing on her arm - THE MEND; a full TREMOR and a tap on the ground is THE QUAKE */
+  if (isGeo() && GEO) {   /* THE GEOMANCER'S C: held, THE RUNE-WARD (she is planted while it stands); a full TREMOR and a tap on the ground is THE QUAKE */
     P.tremor = Math.max(0, Math.min(100, P.tremor || 0)); P.blastT = Math.max(0, (P.blastT || 0) - dt);
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0) && !(P.charge > 0);
-    if (cDown && free && (P.ground || P.swim) && (P.tremor || 0) >= 100) GEO.quake();
-    else if (cDown && free && P.ground && !(P.geoMendT > 0) && (keys.down || !(GEO.shieldHp() > 0))) GEO.startMend();
-    GEO.guard(!!keys.block && !keys.down, free && (P.ground || P.swim));
-    GEO.mendUpdate(dt);
+    const quake = cDown && free && (P.ground || P.swim) && (P.tremor || 0) >= 100; if (quake) GEO.quake();
+    GEO.guard(!!keys.block && !quake, free && !quake && (P.ground || P.swim) && !thrown, dt, (keys.right ? 1 : 0) - (keys.left ? 1 : 0));
   }
   if (hero() === 'knight') { // C held = the shield. A full RESOLVE and a tap of C on the ground is THE LAST CHARGE.
     P.resolve = Math.max(0, Math.min(100, P.resolve || 0));
@@ -13259,6 +13262,8 @@ function updateGreatHound(e, dt) {
 // THE REEVE'S OIL IS RENEWED BY THE BLOW: every weapon uses the same wick.
 function lightOwlLamp(pr) { pr.lit = true; pr.lampT = 14; pr.wasBurning = true; pr.hits = 0; }
 function snuffOwlLamp(pr) { pr.lit = false; pr.lampT = 0; pr.wasBurning = false; pr.hits = 0; burst(pr.x, pr.y - 30, 8, ['#ffd36b', '#3a3444'], 40, 0.5); }
+/* the crown's hoist, while it still has a rope (THE HOIST, below; tools/owl-lamps.mjs runs this function with no movers at all) */
+const owlHoist = () => (typeof movers !== 'undefined' ? movers.find(m => m.hoist && m.arena && !(m.hs && m.hs.state === 'cut')) : null) || null;
 function updateOwl(e, dt) {
   // The Reeve sits on one of three perches. From a perch it screeches spiders down, fans feathers at you, beats a gust along the floor, or flushes into a swoop
   // through you and on to another perch. Cut it twice on its perch and it flushes. A perch whose lantern is lit is denied it; deny all three and it must come down.
@@ -13275,9 +13280,19 @@ function updateOwl(e, dt) {
   const openPerches = () => e.perches.map((p, k) => k).filter(k => !perchLit(k));
   const toward = (tx, ty, sp) => { const dx = tx - e.x, dy = ty - e.y, dd = Math.hypot(dx, dy) || 1; const st = Math.min(dd, sp * dt); e.x += dx / dd * st; e.y += dy / dd * st; return dd - st; };
   const flush = (why) => { const open = openPerches().filter(k => k !== e.perchI); e.hits = 0; if (!open.length && !openPerches().includes(e.perchI)) { e.mode = 'descend'; e.modeT = 1.4; e.tx = Math.max(A.x0 + 40, Math.min(A.x1 - 40, P.x + (Math.sign(e.x - P.x) || 1) * 40)); number(e.x, e.y - 24, 'NOWHERE TO SIT', '#ffd36b'); SFX.screech(); return; } e.next = open.length ? open[Math.floor(Math.random() * open.length)] : e.perchI; e.mode = 'takeoff'; e.modeT = 0.25; e.grab = why === 'swoop' && Math.random() < (p2 ? 0.4 : 0.25); e.willSwoop = why !== 'denied'; SFX.screech(); if (why === 'denied') number(e.x, e.y - 24, 'THE LIGHT', '#ffd36b'); };
+  /* PHASE TWO CUTS THE HOIST (docs/briefs/hanging-village-rework.md §4). The first thing she does past half blood is fly to the crown
+     hoist's wheel and saw through its rope: the ride up to her middle perch is gone for the rest of the fight, and the iron block it ran
+     through is left hanging over the floor by its brake line - cut that peg while she is low under it and it pins her (the deadfall rule, a
+     bigger weight, once). Told (THE ROPE, a ring on the wheel, 1.2 s on it) and fair (the deck lands, nobody is struck). A lit lantern near
+     the wheel dazzles her off it, and she comes back for it later: the rope can be defended. */
+  if (p2 && !e.ropeDone && (e.mode === 'sit' || e.mode === 'fly' || e.mode === 'land')) { const H = owlHoist(); if (H) { e.ropeH = H; e.mode = 'ropeGo'; e.modeT = 3; e.hits = 0; number(e.x, e.y - 30, 'SHE GOES FOR THE HOIST', '#ff9a5c'); SFX.screech(); } else e.ropeDone = true; }
   if (p2) { e.douseT = (e.douseT === undefined ? 8 : e.douseT-dt); if (e.douseT <= 0 && e.mode === 'sit') { const pr = lanterns.find(p=>p.lit); if(pr) {e.douseTarget=pr;e.douseT=10;e.mode='douseTell';e.modeT=0.65;number(e.x,e.y-40,'THE LAMP','#ffd36b');ringAt(pr.x,pr.y-30,20,'#ffd36b',0.65);} } }
   switch (e.mode) {
     case 'douseTell': if(e.modeT<=0){e.mode='douseDive';e.modeT=2;SFX.throwWhoosh();} break;
+    case 'ropeGo': { const H = e.ropeH; if (!H) { e.mode = 'fly'; e.modeT = 3; e.next = e.perchI; break; } e.face = Math.sign(H.wheelX - e.x) || e.face; const left = toward(H.wheelX, H.wheelY + 6, 260);
+      if (left <= 2 || e.modeT <= 0) { e.x = H.wheelX; e.y = H.wheelY + 6; e.mode = 'ropeTell'; e.modeT = 1.2; number(e.x, e.y - 22, 'THE ROPE', '#ff9a5c'); ringAt(H.wheelX, H.wheelY, 16, '#ff9a5c', 1.2); SFX.clank(); } break; }
+    case 'ropeTell': { const H = e.ropeH; if (H) { e.x = H.wheelX; e.y = H.wheelY + 6 + Math.round(Math.sin(e.anim * 30)); }
+      if (e.modeT <= 0) { e.ropeDone = true; if (H && typeof cutHoist === 'function') cutHoist(H); number(e.x, e.y - 34, 'SHE CUTS THE HOIST', '#ff6b6b'); e.next = e.perchI; e.mode = 'fly'; e.modeT = 3; SFX.screech(); } break; }
     case 'douseDive': {const pr=e.douseTarget;if(!pr){e.next=e.perchI;e.mode='fly';e.modeT=3;break;}const left=toward(pr.x,pr.y-30,320);if(left<110&&pr.lit){snuffOwlLamp(pr);ringAt(pr.x,pr.y-30,100,'#c9d1dc',0.4);SFX.owlHoot();}if(left<20||e.modeT<=0){e.next=e.perchI;e.mode='fly';e.modeT=3;}break;}
     case 'wake': if (e.modeT <= 0) { e.mode = 'sit'; e.modeT = 1.6; e.hits = 0; } break;
     case 'sit': { e.x = e.perches[e.perchI].x; e.y = e.perches[e.perchI].y; e.face = Math.sign(d) || e.face;
@@ -13849,7 +13864,7 @@ function updateRoadman(e, dt) {
     // on the beat - which is the only way this town teaches it, because nothing here explains anything.
     switch (e.mode) {
       case 'cutTell': want = 0;
-        if ((L.trial || e.lesson) && !e.glint && e.modeT <= (e.lesson && hero() === 'knight' ? RIPOSTE.beat : L.trial && isGeo() ? GEO_K.perfect : PAL_BEAT)) { e.glint = 1;   /* (THE GEOMANCER'S YARD: a wall bounces a blade only inside GEO.perfect of rising, so there the flash IS that beat) */   /* THE WOOD'S LESSON (e.lesson): his sword flashes too, and for a knight at HIS beat - a reaction's length before the blow, so raising the shield as it flashes is a perfect guard */ ringAt(e.x + e.face * 12, e.y - e.h + 4, 9, '#ffffff', 0.3); burst(e.x + e.face * 12, e.y - e.h + 4, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); }   /* IN A TRIAL HIS SWORD FLASHES as the Paladin's does: the beat, drawn and heard */
+        if ((L.trial || e.lesson) && !e.glint && e.modeT <= (e.lesson && hero() === 'knight' ? RIPOSTE.beat : L.trial && isGeo() ? GEO_K.ward.raise + GEO_K.ward.perfect : PAL_BEAT)) { e.glint = 1;   /* (THE GEOMANCER'S YARD: her ward takes GEO.ward.raise to rise and is perfect for GEO.ward.perfect after, so the flash comes that much before the blow: pressed as it flashes, it is up on the beat) */   /* THE WOOD'S LESSON (e.lesson): his sword flashes too, and for a knight at HIS beat - a reaction's length before the blow, so raising the shield as it flashes is a perfect guard */ ringAt(e.x + e.face * 12, e.y - e.h + 4, 9, '#ffffff', 0.3); burst(e.x + e.face * 12, e.y - e.h + 4, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); }   /* IN A TRIAL HIS SWORD FLASHES as the Paladin's does: the beat, drawn and heard */
         if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.22; SFX.slash(); e.vx = e.face * 70;
           if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 22) {
             const res = damagePlayer(e.x, DMG.swornCut);
@@ -18076,6 +18091,131 @@ function updateBallast(dt) {
   }
 }
 // ============================================================================================
+// THE HOIST: THE HANGING VILLAGE's machine (docs/briefs/hanging-village-rework.md §3). A rope runs over a wheel under the bough
+// above: on one side a DECK you stand on, on the other a BASKET that sits in a well-head on the floor beside it. Carry a LOAD (a
+// sack, a coil of rope, a stone: a `load` prop) to the well and it goes in the basket; when the basket holds `need`, it sinks down
+// the well and the deck rises. The deck holds at the top while anyone stands on it; once they are off, the basket tips its load out
+// at the bottom of the well, the loads go home, and the deck comes back down - one carry, one ride, as often as you like. A load
+// can also hang on a PEG over the well (the mill's): cut the peg and it drops in. The deck is a `lift` mover with `hoist` set (so
+// the reach model rides it like any lift); its state lives on it as m.hs, and is new every time the level is spawned.
+// Carrying is the game's one carried weight, P.ballast: DOWN picks a load up and sets it down, you walk slowly with it, a blow knocks it out of your hands.
+// ============================================================================================
+const HOIST_RISE = 0.5, HOIST_HOLD = 1.4;   /* the basket creaks this long before the deck goes (time to hop on), and waits this long with the deck empty at the top */
+let hoistDownWas = false;
+const hoistDecks = () => movers.filter(m => m.hoist);
+const hoistOf = m => m.hs || (m.hs = { load: 0, state: 'rest', t: 0, k: 0 });
+function hoistDeck(m, dt) {
+  const s = hoistOf(m), on = (players || [P]).some(p => !p.dead && p.onMover === m);
+  if (s.state === 'cut') {   /* THE REEVE CUT IT: the deck drops to the floor and is firewood */
+    s.vy = (s.vy || 60) + 900 * dt; m.y = Math.min(m.y0, m.y + s.vy * dt);
+    if (m.y >= m.y0 && !s.landed) { s.landed = true; m.broken = true; m.gone = true; for (const p of (players || [P])) if (p.onMover === m) { p.onMover = null; p.vy = -60; }
+      SFX.heavy(); SFX.crack(); shakeCam(5); burst(m.x + 16, m.y + 4, 18, ['#725840', '#ab956c', '#3e2c1e'], 90, 0.7); }
+    s.k = 0; return; }
+  if (s.state === 'rest') { m.y = m.y0; if (s.load >= (m.need || 1)) { s.state = 'creak'; s.t = HOIST_RISE; SFX.clank(); number(m.wellX, m.floorY - 34, 'THE BASKET SINKS', '#c9b27c'); } }
+  else if (s.state === 'creak') { m.y = m.y0 + (Math.random() < 0.5 ? 1 : 0); if ((s.t -= dt) <= 0) { s.state = 'up'; m.y = m.y0; } }
+  else if (s.state === 'up') { m.y = Math.max(m.y1, m.y - m.speed * dt); if (Math.random() < dt * 5) SFX.stone(); if (m.y <= m.y1) { s.state = 'top'; s.t = 0; SFX.thud(); } }
+  else if (s.state === 'top') { m.y = m.y1; if (on) s.t = 0;
+    else if ((s.t += dt) > HOIST_HOLD) {   /* nobody on it: the basket tips at the bottom of the well, and the deck comes home */
+      for (const pr of props) if (pr.t === 'load' && pr.state === 'basket' && pr.basket === m) { pr.state = 'return'; pr.retT = 1.1; pr.basket = null; }
+      s.load = 0; s.state = 'down'; SFX.puff(); number(m.wellX, m.floorY - 20, 'THE BASKET TIPS', '#c9b27c'); } }
+  else if (s.state === 'down') { m.y = Math.min(m.y0, m.y + m.speed * 0.6 * dt); if (m.y >= m.y0) { s.state = 'rest'; SFX.thud(); } }
+  s.k = (m.y0 - m.y) / Math.max(1, m.y0 - m.y1);
+}
+/* THE REEVE'S CUT (updateOwl, phase two): the rope goes at the wheel. The deck falls, the basket and its load go down the well for good,
+   the loads left on the floor are no use to anyone, and the iron block the rope ran through is left hanging by its brake line over the
+   floor - a dead bough's rule on a bigger weight (the deadfall prop, `block`), cut once. */
+function cutHoist(m) {
+  const s = hoistOf(m); if (s.state === 'cut') return;
+  s.state = 'cut'; s.vy = 60; s.load = 0;
+  for (const pr of props) if (pr.t === 'load' && pr.hoist === m.hoist) { if (P.ballast === pr) P.ballast = null; pr.state = 'gone'; burst(pr.x, pr.y - 4, 6, ['#8a919c', '#c9b27c'], 40, 0.4); }
+  SFX.crack(); SFX.throwWhoosh(); shakeCam(4);
+  props.push({ t: 'deadfall', block: true, once: true, x: m.wheelX, y: m.wheelY, top: m.wheelY, by: m.wheelY + 34, pegX: m.wellX, floorY: m.floorY, state: 'hung', vy: 0, downT: 0, under: false, cutReq: false });
+  number(m.wheelX, m.wheelY + 50, 'THE BLOCK HANGS BY ITS BRAKE LINE', '#8fd160');
+  hintT = 5; hintMsg = 'SHE CUT THE HOIST. ITS IRON BLOCK HANGS OVER THE FLOOR: CUT ITS PEG WHEN SHE IS UNDER IT.';
+}
+function setLoadDown(pr, vx) { P.ballast = null; pr.state = 'free'; pr.vy = vx ? -80 : 0; pr.vx = vx || 0; pr.cd = 0.6; pr.x = P.x + (vx ? 0 : P.face * 6); pr.y = P.y - 2; }
+function updateHoists(dt) {
+  const decks = hoistDecks(), hb = attackBox();
+  for (const m of decks) if (m.wellX === undefined) { m.wellX = m.well * TS + 8; m.floorY = (Math.floor(m.y0 / TS) + 1) * TS; }
+  const downNow = !!keys.down && !hoistDownWas; hoistDownWas = !!keys.down; let pickedNow = false;
+  const wellAt = pr => decks.find(m => { const s = hoistOf(m); return s.state === 'rest' && Math.abs(pr.x - m.wellX) < 12 && pr.y > m.floorY - 34 && pr.y < m.floorY + 6; });
+  const intoBasket = (pr, m) => { const s = hoistOf(m); if (P.ballast === pr) P.ballast = null; pr.state = 'basket'; pr.basket = m; pr.vy = 0; pr.vx = 0; s.load++;
+    SFX.thud(); SFX.clank(); burst(m.wellX, m.floorY - 6, 6, ['#c9b27c', '#8a919c'], 40, 0.4);
+    const left = (m.need || 1) - s.load; number(m.wellX, m.floorY - 28, left > 0 ? left + ' MORE' : 'IN THE BASKET', '#c9b27c'); };
+  for (const pr of props) { if (pr.t !== 'load' || pr.state === 'gone') continue;
+    pr.cd = Math.max(0, (pr.cd || 0) - dt);
+    if (pr.state === 'hung') {   /* on its peg, over the well: cut the peg and it drops */
+      pr.x = pr.home[0]; pr.y = pr.hy;
+      if (hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.pegX - 7, r: pr.pegX + 7, t: pr.floorY - 22, b: pr.floorY })) { P.hitSet.add(pr); pr.state = 'fall'; pr.vy = 40; SFX.crack(); sparks(pr.pegX, pr.floorY - 10, P.face, 4); number(pr.pegX, pr.floorY - 28, 'THE ROPE GOES', '#ffd36b'); }
+      continue; }
+    if (pr.state === 'return') { if ((pr.retT -= dt) <= 0) { pr.x = pr.home[0]; pr.y = pr.home[1]; pr.vy = 0; pr.vx = 0; pr.state = pr.peg ? 'hung' : 'free'; burst(pr.x, pr.y - 4, 6, ['#e8dcc0', '#c9b27c'], 30, 0.4); if (pr.peg) number(pr.x, pr.hy - 12, 'HAULED BACK UP', '#c9b27c'); } continue; }
+    if (pr.state === 'basket') { const m = pr.basket; if (!m) { pr.state = 'return'; pr.retT = 0.5; continue; } pr.x = m.wellX; pr.y = m.floorY - 4 + hoistOf(m).k * (m.y0 - m.y1); continue; }
+    if (pr.state === 'held') {
+      if (P.ballast !== pr || P.dead) { pr.state = 'free'; pr.vy = 0; if (P.ballast === pr) P.ballast = null; continue; }
+      pr.x = P.x + P.face * 6; pr.y = P.y - 2;
+      if (P.hurt > 0 && !pr.hurtWas) { setLoadDown(pr, -P.face * 90); number(P.x, P.y - 30, 'DROPPED IT', '#ff9a5c'); pr.hurtWas = true; continue; }
+      pr.hurtWas = P.hurt > 0;
+      const m = wellAt(pr); if (m) { intoBasket(pr, m); continue; }
+      if (downNow && P.ground && !P.climb) { setLoadDown(pr, 0); pickedNow = true; SFX.stone(); number(P.x, P.y - 30, 'SET DOWN', '#c9b27c'); }   /* (and the same press does not pick it straight back up) */
+      continue; }
+    /* free or falling: it falls onto whatever is under it, and a well it lands in takes it */
+    pr.vy = Math.min(360, (pr.vy || 0) + 900 * dt);
+    if (pr.vx) { const nx = pr.x + pr.vx * dt; if (!isSolid(Math.floor(nx / TS), Math.floor((pr.y - 4) / TS))) pr.x = nx; else pr.vx = 0; pr.vx -= pr.vx * Math.min(1, dt * 3); if (Math.abs(pr.vx) < 4) pr.vx = 0; }
+    const ty = Math.floor((pr.y + pr.vy * dt) / TS), tx = Math.floor(pr.x / TS);
+    if (pr.vy >= 0 && (isSolid(tx, ty) || isOneWay(tileAt(tx, ty))) && pr.y <= ty * TS + 1) { pr.y = ty * TS; pr.vy = 0; if (pr.state === 'fall') { pr.state = 'free'; SFX.thud(); } }
+    else pr.y += pr.vy * dt;
+    const m = wellAt(pr); if (m) { intoBasket(pr, m); continue; }
+    /* LOST: off its floor or out of the level - it goes back to its pile, it is never gone for good */
+    if (pr.y > pr.home[1] + 3 * TS || pr.y > LH * TS || pr.x < 0 || pr.x > LW * TS) { pr.state = 'return'; pr.retT = 0.8; continue; }
+    /* DOWN PICKS IT UP. Walking onto it did, and a stone lying in the Reeve's crown slowed every hero who crossed it in the middle of a fight */
+    if (pr.state === 'free' && downNow && !pickedNow && !P.ballast && !P.dead && !(pr.cd > 0) && P.ground && Math.abs(pr.x - P.x) < 14 && Math.abs(pr.y - P.y) < 14) { pickedNow = true;
+      P.ballast = pr; pr.state = 'held'; pr.hurtWas = false; SFX.clank(); number(P.x, P.y - 30, LOAD_NAME[pr.kind] || 'A LOAD', '#c9b27c');
+      if (!(PROG.hoistTold > 1)) { PROG.hoistTold = (PROG.hoistTold || 0) + 1; hintT = 5; hintMsg = 'DOWN PICKS A LOAD UP OR SETS IT DOWN. CARRY IT TO A HOIST WELL AND THE DECK RISES.'; } }
+  }
+}
+const LOAD_NAME = { sack: 'A SACK', coil: 'A COIL OF ROPE', stone: 'A STONE' };
+function drawLoad(pr, x, y) {
+  if (pr.kind === 'coil') { for (let k = 0; k < 3; k++) { g.fillStyle = k % 2 ? '#a88848' : '#c8a860'; g.fillRect(x - 6 + k, y - 3 - k * 2, 12 - k * 2, 2); } g.fillStyle = '#6a5030'; g.fillRect(x - 2, y - 8, 4, 1); }
+  else if (pr.kind === 'stone') { g.fillStyle = '#5a6270'; g.beginPath(); g.arc(x, y - 4, 5, 0, 7); g.fill(); g.fillStyle = '#8a919c'; g.fillRect(x - 3, y - 7, 3, 2); g.fillStyle = '#3a3e48'; g.fillRect(x - 4, y - 1, 8, 1); }
+  else { g.fillStyle = '#c8b890'; g.fillRect(x - 5, y - 9, 10, 9); g.fillRect(x - 6, y - 6, 12, 5); g.fillStyle = '#e8dcc0'; g.fillRect(x - 4, y - 9, 5, 2); g.fillStyle = '#8a7a5a'; g.fillRect(x - 2, y - 11, 4, 2); g.fillRect(x - 5, y - 1, 10, 1); }
+}
+function drawHoistDeck(m, cx, cy) {
+  const x = Math.round(m.x - cx), y = Math.round(m.y - cy), s = hoistOf(m);
+  if (s.landed) { g.fillStyle = '#4e3a28'; for (const [dx, dy, w] of [[0, 4, 12], [14, 5, 9], [24, 3, 8]]) g.fillRect(x + dx, y + dy, w, 3); return; }   /* firewood */
+  g.fillStyle = '#5a4430'; g.fillRect(x, y, 32, 7); g.fillStyle = '#8a6a44'; g.fillRect(x, y, 32, 2); g.fillStyle = '#3e2c1e'; for (let k = 4; k < 32; k += 7) g.fillRect(x + k, y + 2, 1, 5);
+  g.fillStyle = '#725840'; g.fillRect(x + 1, y - 12, 2, 12); g.fillRect(x + 29, y - 12, 2, 12); g.fillRect(x + 1, y - 13, 30, 2);
+  g.fillStyle = '#c9b27c'; g.fillRect(x + 15, y - 17, 2, 5); g.fillStyle = '#3a2618'; g.fillRect(x + 13, y - 18, 6, 2);
+}
+function drawHoists(cx, cy) {
+  const R = Math.round;
+  for (const m of hoistDecks()) { if (m.wellX === undefined) continue; const s = hoistOf(m);
+    if (m.wellX - cx < -60 || m.wellX - cx > VW + 60) continue;
+    const wx = R(m.wellX - cx), fy = R(m.floorY - cy), wX = R(m.wheelX - cx), wY = R(m.wheelY - cy), deckTop = R(m.y - cy) - 18, drop = s.k * (m.y0 - m.y1);
+    /* the wheel on its bracket, and the rope: down to the deck on one side and the basket on the other */
+    if (s.state !== 'cut') {
+      g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(wX - 7.5, wY); g.lineTo(R(m.x + 16 - cx) + 0.5, deckTop); g.moveTo(wX + 7.5, wY); g.lineTo(wx + 0.5, fy - 12 + R(drop)); g.stroke();
+      const a = s.k * 9; g.strokeStyle = '#4a3624'; g.lineWidth = 2; g.beginPath(); g.arc(wX, wY, 8, 0, 7); g.stroke(); g.beginPath(); for (let k = 0; k < 4; k++) { const q = a + k * Math.PI / 2; g.moveTo(wX, wY); g.lineTo(wX + Math.cos(q) * 8, wY + Math.sin(q) * 8); } g.stroke(); g.lineWidth = 1;
+      g.fillStyle = '#3a2a1c'; g.fillRect(wX - 2, R(m.top - cy), 4, wY - R(m.top - cy)); }
+    /* THE BASKET, down the well: it is drawn only above the floor line, so it goes INTO the well-head and out of sight */
+    g.save(); g.beginPath(); g.rect(wx - 14, -50, 28, fy - 3 + 50); g.clip();
+    const by = fy - 12 + R(drop);
+    g.fillStyle = '#6a5034'; g.fillRect(wx - 7, by, 14, 10); g.fillStyle = '#8a6a44'; g.fillRect(wx - 7, by, 14, 2); g.fillStyle = '#4a3624'; for (let k = -5; k < 7; k += 4) g.fillRect(wx + k, by + 2, 1, 8);
+    for (const pr of props) if (pr.t === 'load' && pr.state === 'basket' && pr.basket === m) drawLoad(pr, wx, by + 3);
+    g.restore();
+    /* the well-head: a ring of stones and a winch post, in front of the basket */
+    g.fillStyle = '#5a5a60'; g.fillRect(wx - 11, fy - 7, 22, 7); g.fillStyle = '#7e7e86'; for (let k = -11; k < 11; k += 5) g.fillRect(wx + k, fy - 7, 4, 2); g.fillStyle = '#1b1626'; g.fillRect(wx - 8, fy - 5, 16, 1);
+    g.fillStyle = '#4a3624'; g.fillRect(wx + 9, fy - 16, 2, 16);
+  }
+  for (const pr of props) { if (pr.t !== 'load' || pr.state === 'gone' || pr.state === 'basket' || pr.state === 'return') continue;
+    const x = R(pr.x - cx), y = R(pr.y - cy); if (x < -20 || x > VW + 20) continue;
+    if (pr.state === 'hung') { const px2 = R(pr.pegX - cx), fy = R(pr.floorY - cy), ty = R(pr.ropeTop - cy);
+      g.fillStyle = '#3e2a16'; g.fillRect(px2 - 3, fy - 10, 6, 10); g.fillStyle = '#8b6a2a'; g.fillRect(px2 - 2, fy - 9, 4, 9);
+      g.fillStyle = '#c9b27c'; g.fillRect(px2, ty, 1, fy - 10 - ty); g.fillRect(Math.min(px2, x), ty, Math.abs(px2 - x) + 1, 1); g.fillRect(x, ty, 1, y - 10 - ty); }
+    drawLoad(pr, x, y);
+    if (pr.state === 'free' && !P.ballast && Math.abs(pr.x - P.x) < 40 && Math.abs(pr.y - P.y) < 40) { g.globalAlpha = 0.25 + 0.2 * Math.sin(time * 5 + pr.x); g.strokeStyle = '#c9b27c'; g.beginPath(); g.arc(x, y - 5, 9, 0, 7); g.stroke(); g.globalAlpha = 1; }
+  }
+}
+// ============================================================================================
 // THE DEEP'S WATER. Everything the trench does that the rest of the sea does not: vents whose bubbles are air, clams and
 // kelp bladders that let a lungful go when struck, diving bells on their sides, pockets of air under the rock, the cold
 // road's current along its floor and the leviathan's vents throwing you up, the jellies that are the only light in the
@@ -19584,6 +19724,7 @@ GEO = makeGeomancer({ get P() { return P; }, get L() { return L; }, get enemies(
   hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), floorFoe: (e, s) => floorFoe(e, s), lcBig: e => lcBig(e), knockSkip: e => KNOCK_SKIP.has(e.t), box: b => box(b), overlap: (a, b) => overlap(a, b),
   swordDmg: () => swordDmg(), amul: k => amul(k), number: (x, y, t, c) => number(x, y, t, c), sparks: (x, y, d, n) => sparks(x, y, d, n), dust: (x, y, n) => dust(x, y, n), ringAt: (x, y, r, c, l) => ringAt(x, y, r, c, l),
   shakeCam: (n, k) => shakeCam(n, k), hitstop: t => hitstop(t), zoomKick: (a, b) => zoomKick(a, b), burst: (...a) => burst(...a), squash: (a, b, c) => squash(a, b, c), reflectSeed: s => reflectSeed(s),
+  staffTip: () => { const c = K && P.lastKey ? pickFrame(K, P.lastKey, P.lastFrame || 0, 1) : null; return c && c.tip ? { x: P.x + P.face * (c.tip[0] - K.ax), y: P.y - K.ay + c.tip[1] } : null; },   /* HER GEODE, in the world: where the frame last drawn put it (chars.js keeps it on the canvas) */
   kitPose: (p, k, t) => kitPose(p, k, t), SFX, attackBox: () => attackBox(), heavyWind: () => heavyWind(), isGeo: () => isGeo(), tal: geoTal,
   meterFull: () => { meterReady('#e8a83a'); SFX.vigilFull(); }, trialEvent: k => trialEvent(k), noteParry: () => { noteVerb('parry'); parries++; } });
 /* HER DODGE IS BURROW (2026-09-24, docs/briefs/geomancer.md THE REWORK 4). She sinks into the floor for the dodge's grace, travels
@@ -20313,9 +20454,9 @@ function updateProps(dt) {
       pr.under = !!(ow && A && Math.abs(ow.x - pr.x) < 30 && ow.y > A.floor - 40 && ow.mode !== 'pinned' && ow.mode !== 'wake' && ow.mode !== 'sleep');
       if (pr.state === 'hung') { pr.by = pr.top + 44; if (pr.cutReq || (hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.pegX - 6, r: pr.pegX + 6, t: pr.floorY - 14, b: pr.floorY }))) { if (hb) P.hitSet.add(pr); pr.cutReq = false; pr.state = 'fall'; pr.vy = 120; SFX.crack(); SFX.throwWhoosh(); sparks(pr.pegX, pr.floorY - 8, P.face, 4); number(pr.pegX, pr.floorY - 26, 'THE ROPE GOES', '#ffd36b'); } }
       else if (pr.state === 'fall') { pr.vy += 1400 * dt; pr.by += pr.vy * dt;
-        if (pr.under && pr.by > ow.y - 30) { pr.state = 'down'; pr.downT = 9; pr.by = pr.floorY - 5; ow.mode = 'pinned'; ow.modeT = ow.phase === 2 ? 2.6 : 3.2; ow.stagger = ow.modeT; ow.vx = 0; ow.vy = 0; ow.x = pr.x; ow.y = A.floor - 8; ow.hits = 0; ow.pinBy = pr; ow.hp -= Math.round(ow.maxHp * 0.05); ow.flash = 0.4; number(ow.x, ow.y - 40, 'THE BOUGH PINS IT', '#8fd160'); SFX.heavy(); SFX.crack(); SFX.screech(); shakeCam(8); zoomKick(1.1, 0.35); flash = Math.max(flash, 0.12); burst(pr.x, ow.y - 16, 20, ['#6a4a2a', '#3e2a16', '#7a8a4a', '#e8dcc0'], 90, 0.8); if (ow.hp <= 0) hurtEnemy(ow, 1, ow.x, false); }
+        if (pr.under && pr.by > ow.y - 30) { pr.state = 'down'; pr.downT = 9; pr.by = pr.floorY - 5; ow.mode = 'pinned'; ow.modeT = pr.block ? 3.4 : ow.phase === 2 ? 2.6 : 3.2; ow.stagger = ow.modeT; ow.vx = 0; ow.vy = 0; ow.x = pr.x; ow.y = A.floor - 8; ow.hits = 0; ow.pinBy = pr; ow.hp -= Math.round(ow.maxHp * (pr.block ? 0.08 : 0.05)); ow.flash = 0.4; number(ow.x, ow.y - 40, pr.block ? 'THE BLOCK PINS IT' : 'THE BOUGH PINS IT', '#8fd160');   /* (the hoist's iron block, once she has cut its rope: longer, and heavier) */ SFX.heavy(); SFX.crack(); SFX.screech(); shakeCam(8); zoomKick(1.1, 0.35); flash = Math.max(flash, 0.12); burst(pr.x, ow.y - 16, 20, ['#6a4a2a', '#3e2a16', '#7a8a4a', '#e8dcc0'], 90, 0.8); if (ow.hp <= 0) hurtEnemy(ow, 1, ow.x, false); }
         else if (pr.by >= pr.floorY - 5) { pr.by = pr.floorY - 5; pr.state = 'down'; pr.downT = 9; SFX.heavy(); SFX.stone(); shakeCam(4); dust(pr.x, pr.floorY, 10); } }
-      else if (pr.state === 'down') { pr.downT -= dt; if (ow && ow.pinBy === pr) pr.downT = Math.max(pr.downT, 1); if (pr.downT <= 0) { pr.state = 'haul'; SFX.clank(); number(pr.x, pr.floorY - 30, 'HAULED BACK UP', '#c9b27c'); } }
+      else if (pr.state === 'down') { pr.downT -= dt; if (ow && ow.pinBy === pr) pr.downT = Math.max(pr.downT, 1); if (pr.once) pr.downT = 9; if (pr.downT <= 0) { pr.state = 'haul'; SFX.clank(); number(pr.x, pr.floorY - 30, 'HAULED BACK UP', '#c9b27c'); } }
       else if (pr.state === 'haul') { pr.by -= 80 * dt; if (pr.by <= pr.top + 44) { pr.by = pr.top + 44; pr.state = 'hung'; SFX.clank(); } } }
     if (pr.t === 'mirror') { pr.turnT = Math.max(0, pr.turnT - dt); pr.glow = Math.max(0, (pr.glow || 0) - dt); if (!pr.fixed && hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 16, b: pr.y })) { P.hitSet.add(pr); pr.o = 1 - pr.o; pr.turnT = 0.25; SFX.clank(); SFX.spark(); sparks(pr.x, pr.y - 8, P.face, 5); number(pr.x, pr.y - 22, 'TURNED', '#bfe6f5'); } }
     if (pr.t === 'rack' && !pr.broken && hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 18, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hp--; SFX.clank(); sparks(pr.x, pr.y - 10, P.face, 4); if (pr.hp <= 0) { pr.broken = true; SFX.crack(); burst(pr.x, pr.y - 8, 12, ['#8b6a2a', '#c9b27c', '#5c3a1d'], 70, 0.6); number(pr.x, pr.y - 26, (pr.kind === 'club' ? 'THE CLUB' : 'THE BOW') + ' IS GONE', '#8fd160'); const ch = enemies.find(q => q.alive && q.t === 'chief'); if (ch && ch.mode === 'toRack' && ch.next === pr.kind) { ch.mode = 'swap'; ch.modeT = 0.6; chiefSwap(ch, 'sword'); } } }
@@ -20553,6 +20694,7 @@ function updateMovers(dt) {
       m.x -= m.speed * dt; if (m.x + m.w * 0.5 < m.x0) { m.x = m.x1; if (P.onMover === m) P.onMover = null; m.dx = 0; continue; }
       if (P.onMover === m && P.x < m.x0 + 4) P.onMover = null; // the log slides under the bank; you step off
     } else if (m.kind === 'lift') { // a pulley platform: rides toward the far stop while you stand on it, drifts home when you leave
+      if (m.hoist) { hoistDeck(m, dt); m.dy = m.y - oldY; m.dx = 0; continue; }   /* THE HOIST: it goes where its basket's load sends it, not where you stand */
       if (m.locked) { m.dx = 0; m.dy = 0; continue; }
       const on = P.onMover === m, mate = m.cw ? movers.find(q => q !== m && q.cw === m.cw) : null, mateOn = !!(mate && P.onMover === mate); const target = on ? m.y1 : mateOn ? m.yUp : m.y0; const dir = Math.sign(target - m.y);   /* A COUNTERWEIGHT: stood in, a basket sinks; its mate's weight lifts it; empty, both settle level at half the pace */
       if (dir) { m.y += dir * m.speed * (m.cw && !on && !mateOn ? 0.5 : 1) * dt; if ((dir > 0 && m.y > target) || (dir < 0 && m.y < target)) m.y = target; }
@@ -21011,7 +21153,7 @@ function update(dt) {
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
-  updateMovers(wdt); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -21990,6 +22132,8 @@ function drawFacades(cx, cy) {
 
 
 let HANGING_HOUSES=null;const hangingHouses=()=>HANGING_HOUSES||(HANGING_HOUSES=[bakeHangingHouse(),bakeHangingHouse(true)]);
+/* A HOUSE SAYS WHICH FLOOR IT IS ON: e.style names the Hanging Village floor's house (src/redraw/hanging-town.js); no style is the old market house */
+const HANGING_STYLED={};const hangingHouseOf=(hall,style)=>{if(!style)return hangingHouses()[hall?1:0];const k=(hall?'hall:':'')+style;return HANGING_STYLED[k]||(HANGING_STYLED[k]=bakeHangingHouse(hall,style));};
 const SOFT_SCENERY=new WeakMap();
 function softScenery(c){
   if(SOFT_SCENERY.has(c))return SOFT_SCENERY.get(c);
@@ -22080,6 +22224,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (!L.castle && !L.colosseum && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
   SEA.seaBack(g, cx, cy, VW, VH, time, state === 'play' && !P.dead ? P : null);   /* and its living water, behind the tiles and everything that matters */
   if (L.cloudSea !== undefined) drawSkyRig(cx, cy);   /* the sky ship: her cloud, her gasbags, her sails */
+  if (L.hangingTown && L.groundZones && SET.parallax !== 'off') HV.drawHangingBack(g, L, cx, cy, time, VW, VH);   /* THE CLIFF THE VILLAGE HANGS FROM, and each floor's landmark on it: behind the ropes, the rooms and the tiles */
   if (L.palette && L.palette.hall) { // Kingswood: every one-way ledge in the open hangs from the boughs on two ropes
     g.strokeStyle = 'rgba(160,120,70,0.75)'; g.lineWidth = 1; g.beginPath();
     const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(LW - 1, Math.ceil((cx + VW) / TS) + 1);
@@ -22149,6 +22294,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.kind === 'pad') { g.drawImage(PROP.pad[m.sink > 0.55 ? 1 : 0], Math.round(m.x) - cx, Math.round(m.y) - cy); if (Math.round(m.x0 / TS) % 3 === 0 && m.sink < 0.55) g.drawImage(PROP.lilyFlower, Math.round(m.x) + 4 - cx, Math.round(m.y) - 5 - cy); }
     else if (m.kind === 'cart') { if (!m.gone) g.drawImage(PROP.mineCart[Math.abs(m.vx) > 20 ? Math.floor(time * 12) % 2 : 0], Math.round(m.x) - 1 - cx, Math.round(m.y) - 4 - cy); }
     else if (m.kind === 'orelift') { g.fillStyle = '#8b8378'; g.fillRect(Math.round(m.x) + 2 - cx, 0, 2, Math.round(m.y) - cy); g.fillRect(Math.round(m.x) + 60 - cx, 0, 2, Math.round(m.y) - cy); g.drawImage(PROP.orePan, Math.round(m.x) - cx, Math.round(m.y) - 3 - cy); }
+    else if (m.kind === 'lift' && m.hoist) drawHoistDeck(m, cx, cy);   /* THE HANGING VILLAGE's hoists */
     else if (m.kind === 'lift' && m.cw) drawBasket(m, cx, cy);   /* THE MONASTERY's counterweight baskets */
     else if (m.kind === 'lift' && L.hangingTown) { const x=Math.round(m.x-cx),y=Math.round(m.y-cy),top=Math.round(m.top-cy);g.fillStyle='#ab956c';g.fillRect(x+15,top,2,y-top);g.fillStyle='#725840';g.fillRect(x,y,32,7);g.fillRect(x,y-10,2,12);g.fillRect(x+30,y-10,2,12);g.strokeStyle='#aa8d64';g.lineWidth=1;g.strokeRect(x+.5,y-10.5,31,16);g.beginPath();g.arc(x+16,top,5,0,7);g.stroke();} else if (m.kind === 'lift') { const ry = m.top !== undefined ? Math.round(m.top - cy) : 0; g.fillStyle = '#b8a888'; g.fillRect(Math.round(m.x) + 15 - cx, ry, 2, Math.round(m.y) - cy - ry); if (m.top !== undefined) { g.fillStyle = '#3a2618'; g.beginPath(); g.arc(Math.round(m.x) + 16 - cx, ry, 4, 0, 7); g.fill(); g.fillStyle = '#8a919c'; g.fillRect(Math.round(m.x) + 15 - cx, ry - 1, 2, 2); } g.drawImage(PROP.lift, Math.round(m.x) - cx, Math.round(m.y) - cy); }
     else if (m.kind === 'orelift' && m.player) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy); g.fillStyle = '#5a6270'; g.fillRect(x + 15, y - 200, 2, 200); g.fillStyle = '#3a3a44'; g.fillRect(x, y, m.w, 6); g.fillStyle = '#8a919c'; g.fillRect(x, y, m.w, 1); g.fillRect(x, y - 22, 2, 22); g.fillRect(x + m.w - 2, y - 22, 2, 22); g.fillRect(x, y - 22, m.w, 2); for (let k = 4; k < m.w - 4; k += 6) g.fillRect(x + k, y - 20, 1, 20); }
@@ -22422,7 +22568,8 @@ function drawWorld(cx, cy, showPlayer) {
       g.fillStyle = '#3e2a16'; g.fillRect(px2 - 3, fy - 10, 6, 10); g.fillStyle = '#8b6a2a'; g.fillRect(px2 - 2, fy - 9, 4, 9); g.fillStyle = '#c9b27c'; g.fillRect(px2 - 3, fy - 7, 6, 2);
       g.fillStyle = hot ? (Math.floor(time * 10) % 2 ? '#ffd36b' : '#fff6c8') : '#c9b27c'; g.fillRect(Math.min(x, px2), top, Math.abs(px2 - x) + 1, 1);
       if (taut) { g.fillRect(px2, top, 1, Math.max(0, fy - 10 - top)); g.fillRect(x, top, 1, Math.max(0, by - 5 - top)); } else { g.fillRect(px2, top, 1, 12); g.fillRect(x, top, 1, 16); }
-      if (!(boss && boss.alive && boss.pinBy === pr)) { g.fillStyle = '#1b1626'; g.fillRect(x - 23, by - 5, 46, 10); g.fillRect(x + 3, by - 11, 4, 7); g.fillStyle = '#6a4a2a'; g.fillRect(x - 22, by - 4, 44, 8); g.fillStyle = '#3e2a16'; g.fillRect(x - 22, by + 2, 44, 2); g.fillRect(x - 12, by - 2, 6, 1); g.fillRect(x + 9, by - 1, 7, 1); g.fillRect(x + 4, by - 10, 2, 6); g.fillStyle = '#7a8a4a'; g.fillRect(x - 17, by - 4, 5, 2); g.fillRect(x + 13, by - 4, 4, 2); if (taut) { g.fillStyle = '#c9b27c'; g.fillRect(x - 1, by - 6, 3, 3); } }
+      if (pr.block && !(boss && boss.alive && boss.pinBy === pr)) { g.fillStyle = '#1b1626'; g.fillRect(x - 11, by - 9, 22, 18); g.fillStyle = '#5a6270'; g.fillRect(x - 10, by - 8, 20, 16); g.fillStyle = '#8a919c'; g.fillRect(x - 10, by - 8, 20, 2); g.fillStyle = '#3a3e48'; g.beginPath(); g.arc(x, by, 5, 0, 7); g.fill(); g.fillStyle = '#c9b27c'; g.fillRect(x - 1, by - 1, 3, 3); }   /* THE HOIST'S IRON BLOCK */
+      else if (!(boss && boss.alive && boss.pinBy === pr)) { g.fillStyle = '#1b1626'; g.fillRect(x - 23, by - 5, 46, 10); g.fillRect(x + 3, by - 11, 4, 7); g.fillStyle = '#6a4a2a'; g.fillRect(x - 22, by - 4, 44, 8); g.fillStyle = '#3e2a16'; g.fillRect(x - 22, by + 2, 44, 2); g.fillRect(x - 12, by - 2, 6, 1); g.fillRect(x + 9, by - 1, 7, 1); g.fillRect(x + 4, by - 10, 2, 6); g.fillStyle = '#7a8a4a'; g.fillRect(x - 17, by - 4, 5, 2); g.fillRect(x + 13, by - 4, 4, 2); if (taut) { g.fillStyle = '#c9b27c'; g.fillRect(x - 1, by - 6, 3, 3); } }
       if (hot) { const k = 0.5 + 0.5 * Math.sin(time * 8); text('CUT', px2, fy - 22 + Math.round(k * 2), '#ffd36b', 'center', 6); } }
     else if (pr.t === 'works') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), k = pr.kind, f = Math.floor(time * 10 + pr.ph) % 3;
       if (k === 'kiln') { g.fillStyle = '#4a3a34'; g.fillRect(x - 12, y - 26, 24, 26); g.fillStyle = '#6a4a3a'; for (let yy = y - 24; yy < y; yy += 4) for (let xx = x - 11 + ((yy / 4) % 2 ? 3 : 0); xx < x + 11; xx += 6) g.fillRect(xx, yy, 5, 3); g.fillStyle = '#2a1a14'; g.fillRect(x - 7, y - 12, 14, 12); g.fillStyle = f === 1 ? '#ffb040' : '#ff8030'; g.fillRect(x - 6, y - 11, 12, 10); g.fillStyle = '#fff0a0'; g.fillRect(x - 3, y - 8, 6, 5); g.fillStyle = '#3a3a44'; g.fillRect(x - 3, y - 34, 6, 8); g.globalAlpha = 0.22 + 0.06 * Math.sin(time * 7 + pr.ph); g.fillStyle = '#ffb060'; g.beginPath(); g.arc(x, y - 6, 26, 0, 7); g.fill(); g.globalAlpha = 1; if (Math.random() < 0.15) parts.push({ x: pr.x + (Math.random() - 0.5) * 4, y: pr.y - 34, vx: (Math.random() - 0.5) * 8, vy: -30, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); }
@@ -22934,7 +23081,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.rushRec > 0 && K.R.recover) key = 'recover';
       else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < (isReaper() ? 0.16 : 0.2) ? 1 : 2;
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
-        if (P.atk >= (isReaper() ? 0.36 : isWarden() ? 0.30 : isGeo() ? 0.34 : 0.26) && K.R.atk && K.R.atk[3]) { key = isGeo() ? 'heavy' : 'atk'; frame = isGeo() ? 2 : 3; } }   /* (she stays down on the stave while her pillar rises) */
+        if (P.atk >= (isReaper() ? 0.36 : isWarden() ? 0.30 : isGeo() ? 0.34 : 0.26) && K.R.atk && K.R.atk[3]) { key = isGeo() ? 'heavy' : 'atk'; frame = isGeo() ? 2 : 3; } }   /* (she stays down on the stave while her crack runs) */
       else if (hero() === 'knight' && knightWinding() && K.R.windup) { key = 'windup'; frame = Math.max(0, cutStage(P.atkHeld || 0) - 1); }   /* THE HEAVY CUT: the sword up over the shield, a frame a stage */
       else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
@@ -23000,7 +23147,7 @@ function drawWorld(cx, cy, showPlayer) {
           g.fillStyle = '#c9d1dc'; g.fillRect(Math.round(h.x - cx) - 2, Math.round(h.y - cy) - 2, 4, 4); } }
       if (!coop() || P === players[0]) {   /* these are the LEVEL'S own lists, not this hero's: drawn once, or a second pass doubles their alpha */
       drawPortal(cx, cy);
-      drawWardenKit(cx, cy); drawKnightKit(cx, cy); if (GEO) GEO.draw(g, cx, cy); drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy); drawAirSigns(cx, cy); if (L.deep) drawDeepFront(cx, cy); }
+      drawWardenKit(cx, cy); drawKnightKit(cx, cy); if (GEO) GEO.draw(g, cx, cy); drawUnholy(cx, cy); drawWakes(cx, cy); drawRisen(cx, cy); drawGrips(cx, cy); drawSevers(cx, cy); if (L.ballast) drawBallast(cx, cy); if (L.hoists) drawHoists(cx, cy); drawAirSigns(cx, cy); if (L.deep) drawDeepFront(cx, cy); }
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
@@ -23630,7 +23777,7 @@ const YARD_DRILLS = {
   pirate: 'parry, black flag, dash attack, rise and sweep',
   reaper: 'ward, blood surge, dash attack, rise and sweep',
   warden: 'the point, the deflect, run-through and the pin',
-  geomancer: 'upheaval, the wall on the beat, stonefall, quake',
+  geomancer: 'fault line, the ward on the beat, stonefall, quake',
   open: 'straw men, steps, a gap, a wall, two guards',
 };
 // the open yard is not a hero: it is the fourth row, and it takes whoever you are in as you are
@@ -23684,7 +23831,7 @@ function drawControls() {
   if (isReaper()) rows.forEach((r, i) => { const o = DK_KEYS.controls[r[0]]; if (o) rows[i] = o; });
   /* THE WARDEN'S KEYS: C is not a shield, it is a planted spear, and her dodge goes backward */
   if (isWarden()) rows.forEach((r, i) => { const o = WARDEN_KEYS.controls[r[0]]; if (o) rows[i] = o; });
-  if (isGeo()) rows.forEach((r, i) => { const o = GEO_KEYS.controls[r[0]]; if (o) rows[i] = o; });   /* THE GEOMANCER'S KEYS: C is a wall, and her held swing is a pillar */   /* THE DEATH KNIGHT'S KEYS (DK_KEYS): C is his ward, F raises the dead, G is his chosen skill */
+  if (isGeo()) rows.forEach((r, i) => { const o = GEO_KEYS.controls[r[0]]; if (o) rows[i] = o; });   /* THE GEOMANCER'S KEYS: C is her guard, and her held swing is FAULT LINE */   /* THE DEATH KNIGHT'S KEYS (DK_KEYS): C is his ward, F raises the dead, G is his chosen skill */
   const step = Math.min(8, (h - 26) / rows.length);   /* THE CARD FITS ITS ROWS: at 8 apiece, drop and to shrine had run off its foot (twenty rows), and one dodge takes two */
   rows.forEach(([a, b, c], i) => { const yy = y + 24 + Math.round(i * step);
     text(a, x + 8, yy, UI.text, 'left', 6); text(b, x + 80, yy, '#c9d1dc', 'left', 6);
@@ -24654,7 +24801,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   flyers: () => FLYERS,   /* the creatures that legitimately have no floor under them: src/playtest.js's runtime floater sample reads this instead of keeping a second list */
   waterKin: () => HEEL_SWIMS,   /* what the sea does not drown: it lives IN or BY the water, not on a floor tile - the same list the runtime floater sample reads instead of keeping a second one */
   risen: () => risen, bodies: () => bodies,
-  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, wardJav: () => wardJav, spearRain: () => spearRain, geo: () => GEO, realmWaves: () => realmWaves, damagePlayer: (x, d, o) => damagePlayer(x, d, o), skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'skill3') skill3Press = true; if (k === 'skill4') skill4Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; if (k === 'left') leftPress = true; if (k === 'right') rightPress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get front() { return { fade: frontFade, covered: frontCovered }; }, set hideHero(v) { heroHidden = !!v; }, set frontOff(v) { frontOff = !!v; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, vines: () => vines, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
+  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, wardJav: () => wardJav, spearRain: () => spearRain, geo: () => GEO, geoK: GEO_K, realmWaves: () => realmWaves, damagePlayer: (x, d, o) => damagePlayer(x, d, o), skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'skill3') skill3Press = true; if (k === 'skill4') skill4Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; if (k === 'left') leftPress = true; if (k === 'right') rightPress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get front() { return { fade: frontFade, covered: frontCovered }; }, set hideHero(v) { heroHidden = !!v; }, set frontOff(v) { frontOff = !!v; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, vines: () => vines, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   /* LOCAL CO-OP, for a harness driving the page: the list, whether it is on, and a way to arm and start it */
   players: () => players, get coop() { return coop(); }, coopArm(h, ally) { coopWant = h ? { hero: h, ally: !!ally } : null; return coopWant; },
@@ -24723,6 +24870,8 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   log: null, get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; },
   parts: () => parts, bossBodies: () => bossBodies, get PROP() { return PROP; }, get FLYERS() { return FLYERS; }, get HAS_HURT() { return HAS_HURT; }, get EHP() { return EHP; },
 };
+/* THE HOIST, for the harnesses: the decks (each with its state in .hs), a way to put n loads in one's basket, and the Reeve's cut */
+window.BK.hoists = () => hoistDecks(); window.BK.hoistLoad = (m, n) => { hoistOf(m).load += (n || 1); return hoistOf(m).load; }; window.BK.cutHoist = m => cutHoist(m);
 Object.defineProperty(window.BK, 'hint', { get: () => ({ t: hintT, msg: hintMsg, card: introCardUp() }) });   /* the tutorial hint, for the labs: how long it has left and what it says */
 // ?playtest=1 runs the whole thing as soon as the art is baked and leaves the report on the page
 if (q.get('playtest') === '1') setTimeout(async () => {

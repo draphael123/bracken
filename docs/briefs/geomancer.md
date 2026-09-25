@@ -14,14 +14,13 @@ shortcuts (never required: B4).
 ## Stats and the one rule
 - **95 health**, slightly slower on foot than the other starters, heavy blows.
 - **At most 3 stone pieces** (walls, steps, arches) exist at once; a fourth crumbles the oldest. Every piece crumbles on
-  its own after ~4 s. Without this cap she walls off the level. (UPHEAVAL's pillar is not under the cap: it shatters in
-  under half a second - see the rework below.)
+  its own after ~4 s. Without this cap she walls off the level. (Her held X, FAULT LINE, writes no stone at all: see ROUND 3.)
 
-## The weapon: THE STAVE (not the Pyromancer's staff)
+## The weapon: THE STAVE (not the Pyromancer's staff) - **ROUND 3: now a TALL STAFF with an amber geode (ROUND 3, 3, below)**
 Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and USE:
 - **Short, thick, two-handed:** a raw standing stone lashed to the head (wider than her own head), an iron-shod butt.
 - **Held across her body like a quarterstaff**, both ends used. (The Pyromancer holds hers upright, one-handed, like a wand.)
-- **Magic comes out of the GROUND, not the tip:** every pillar, wall and quake starts with the **butt struck into the
+- **Magic comes out of the GROUND, not the tip:** every crack, wall and quake starts with the **butt struck into the
   earth** — a thud and a dust ring. The Pyromancer *points*; the Geomancer *strikes the ground*. This is her silhouette.
 - **She plants it and it stands upright by itself:** her cast pose, and where the Quake radiates from.
 - Palette: grey stone, moss green, faint amber runes in the stone. Sound: thud, crack, grinding stone.
@@ -31,13 +30,12 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 |---|---|---|
 | X x3 | **stave combo** | head-strike, butt-jab, a full quarterstaff SPIN. The third **shatters any stone piece it hits**, spraying shards forward — her "finish the combo HERE" decision |
 | UP+X | **Spur** | a stone spike juts up in front of her (anti-air) |
-| hold X | **UPHEAVAL** | **the charge sets the distance** (rework, 2026-09-24): let go at once and a STONE SPIKE juts up at her front foot and hits whatever is touching her (it writes no rock, so it can never trap her); hold, and the eruption point walks out to ~132 px (twice the old 66) with a mark on the floor where it will come up (C1). The pillar LAUNCHES whatever stands there and SHATTERS ~0.4 s later - a crack frame, then a burst of shards. It is a blow, not a platform |
-| hold C | **ROCK SHIELD** (her defence, from 2026-09-24; it was RAISE WALL) | a stone slab on her lead arm that moves with her (at guard pace). It takes TWO blows - visibly cracked after the first, broken by the second (a burst of shards). A RED blow shatters it at once, fresh or cracked: red still means move. Raised as a blow lands = PERFECT BLOCK: the weapon bounces off, the attacker staggers, and it costs the shield nothing. No wind to raise or hold, and NO refill by itself |
-| DOWN+C (or C with nothing on her arm) | **THE MEND** | the only refill: the stave struck into the ground - 0.6 s, the thud at 0.3 s with a dust ring, her own pose (gMend) - and the shield is whole. A blow, a jump or a roll breaks it off |
+| hold X | **FAULT LINE** (from round 3, 2026-09-24; it replaces UPHEAVAL) | she slams the stave and a CRACK RACES ALONG THE FLOOR ahead of her, hitting everything along its length once - a LINE, not a spot. The charge sets its LENGTH (22 px at the quickest release to 160 at a full wind) and its DAMAGE (1.0x to 1.4x); a foe touching her is hit at once by the quickest. A FULL charge ends in a ROCK SPIKE that launches what it hits. It follows the floor: it stops at a gap and at a wall (never across a pit, never up through rock: A12), and the line it will take is drawn on the floor while she winds (C1). It writes no rock |
+| hold C | **THE RUNE-WARD** (her guard from round 3; it replaces the ROCK SHIELD and THE MEND) | she plants the staff and a projected slab of rune-cut stone rises in front of her, taller than she is and lipped over her head. The Knight's rules, sidegraded: hold to block, a YELLOW blow costs wind, a RED blow breaks through. It takes 0.1 s to rise, she is ROOTED while it stands, and a blocked blow costs 16 wind (his 11) - but it covers overhead, a bolt does not pierce it and nothing pushes her back. Raised as the blow lands = PERFECT: free, a shot is thrown back, and she is EMPOWERED for 3 s (her blows x1.25, TREMOR x2, runes alight round her). No riposte (that is his). See ROUND 3, 2 |
 | plunge | **STONEFALL** | lands like a boulder: a short shockwave that knocks down grounded foes |
 | X in a dash | **ROLLING STONE** | kicks a small boulder forward that bowls through little foes (and X as she surfaces from a BURROW, the same) |
 | dodge | **BURROW** (from 2026-09-24; it was a shoulder roll) | she sinks into the floor (invulnerable for the dodge's grace), travels a short way under it with the ground heaving over her, and bursts up ahead in a spray of rock. Passes UNDER a blow along the ground, never across a pit or gap: no floor under her leading foot and she comes up at the last solid cell. Never comes up inside rock or a foe (A12). Poses: sink, under, burst |
-| meter **TREMOR** | fills from blows the shield stops (a perfect block most) and pillars that launch foes | full, tap C on the ground: **THE QUAKE** — the floor heaves, every grounded foe is knocked down, loose rock falls, each told by a shadow (C1/C3) |
+| meter **TREMOR** | fills from blows the ward stops (a perfect ward most; twice as fast while EMPOWERED) and foes her stone launches | full, tap C on the ground: **THE QUAKE** — the floor heaves, every grounded foe is knocked down, loose rock falls, each told by a shadow (C1/C3) |
 
 ## Abilities (bought; the same ladder and PRICE_AT table as the Knight and Warden)
 | lv | ability | |
@@ -48,15 +46,16 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 | 7 | **ARCHWAY** | a stone bridge across a gap for ~6 s; shelter from falling things beneath it |
 | 9 | **STONE WALL** (from 2026-09-24; LODESTONE is gone) | her old C, bought back: a wall of stone rises in front of her for four seconds - it stops a YELLOW blow and a shot, one raised as the blow lands bounces their weapon off, and a RED blow smashes through it. Its own pose (gWall) |
 | 12 | **ENTOMB** | seals a foe in stone ~3 s; hits on the tomb crack it for bonus damage. Bosses: a short open window instead |
-| 14 | **FAULT LINE** | a crack runs along the floor and the ground each side lurches, launching foes |
+| 14 | **THE RIFT** (renamed in round 3: FAULT LINE is her held X now; the ability is unchanged - see ROUND 3, open question) | a crack runs along the floor and the ground each side lurches, launching foes |
 | 17 | **GOLEM** | a small stone golem fights beside her for 10 s |
 | 20 | **AVALANCHE** (capstone) | boulders rain across the room, each with a warning shadow |
 
 ## Passives (arrive with hero level, per Daniel's levelling decision) — three branches
-- **EARTH (the pillars):** 4 pieces instead of 3; her step and arch last longer (BEDROCK no longer keeps a pillar: it is a blow); pillars rise taller; a launched foe lands harder.
-- **SHIELD (the defence; was WALL, reworded 2026-09-24):** STONEFACE - a shield raised on the beat throws an arrow back the
-  way it came; SHRAPNEL - a shield that is broken or shattered bursts into shards that fly at the nearest foe; BULWARK - a
-  RED blow that shatters her shield finds her at half its force (it can no longer keep the shield whole: red still means move).
+- **EARTH (the stones; it was "the pillars" until round 3):** 4 pieces instead of 3 (THE FOURTH STONE); every stone piece lasts two seconds longer (BEDROCK - the pillar exception is gone with the pillar); HIGHER GROUND: her step rises a stone taller and a full FAULT LINE's spike throws higher; THROWN DOWN: a foe her stone throws into the air lands harder.
+- **WARD (the defence; was WALL, then SHIELD; reworded for the RUNE-WARD in round 3):** STONEFACE - her ward throws back
+  EVERY shot that strikes it, not only one met on the beat (throwing back on the beat is the ward's own now); SHRAPNEL - a
+  ward that breaks (out of wind, or a RED blow through it) bursts into shards that fly at the nearest foe; BULWARK - a RED
+  blow that breaks through her ward finds her at half its force.
 - **TREMOR (the meter):** fills faster; the Quake reaches further; Stonefall's knockdown lasts longer.
 
 ## Rules she must satisfy when built
@@ -70,6 +69,7 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
 
 ## THE REWORK (Daniel played her; all four items approved 2026-09-24, lane geo2)
 ### 1. UPHEAVAL: the charge sets the distance, and close foes are hittable
+**SUPERSEDED in round 3: UPHEAVAL is gone, and FAULT LINE is her held X (ROUND 3, 1, below).** Kept as the record of what it was.
 - Was: `upheavalX() = 26 + 40*wound` px ahead, and a release under 55% of the wind did nothing - so even the quickest
   heavy landed a body-length away and a foe touching her was never hit; the pillar then stood ~4 s as a platform.
 - Now (`GEO.wind/reach0/reachK/spikeUpTo/pillarLife` in src/geomancer.js): her wind is 0.5 s (the others' 0.32) and ANY
@@ -99,6 +99,7 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
   `node tools/geomancer-look.mjs before|after`).
 
 ### 3. THE ROCK SHIELD replaces RAISE WALL as her guard
+**SUPERSEDED in round 3: the RUNE-WARD is her guard and THE MEND is gone (ROUND 3, 2, below).** STONE WALL at level 9 stands.
 - src/geomancer.js `guard / shieldTakes / startMend / mendUpdate`, GEO.shield `{ hp: 2, hold: 0.2, mend: 0.6, mendAt: 0.3 }`;
   main.js damagePlayer asks it first. A tap still guards for `hold` (0.2 s), so a tap on the beat is a perfect block.
 - Shots: a shot that reaches her is a blow on the shield like any other (it costs a hit); with STONEFACE one met on the beat
@@ -128,12 +129,98 @@ Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and
   and the stone (none); the "blow passes over her" line was already true of the roll's grace.
 
 ### Decided after the rework (Daniel, 2026-09-24)
-- ARROWS use up a shield hit (unless STONEFACE throws them back): kept as built.
+- ARROWS use up a shield hit (unless STONEFACE throws them back): kept as built. (Round 3: a shot costs the ward wind like a blow.)
 - The pillar's SHATTER does not hurt foes: kept as built (it is a visual; the blow is the eruption).
-- THE BOSS BOT uses her shield (src/lab.js runbossLab): a yellow tell within 50 px is TAPPED on the beat (DEFLECT_TAP - a
+- (Superseded in round 3: the bot holds her RUNE-WARD like the Knight's guard.) THE BOSS BOT uses her shield (src/lab.js runbossLab): a yellow tell within 50 px is TAPPED on the beat (DEFLECT_TAP - a
   perfect block, which costs the stone nothing), a red one or a far one is rolled as before, and with a cracked or broken
   shield, nothing winding up and the boss 110 px clear, she MENDS (DOWN+C) and stands on it. In the three pinned boss fights
   (wood / kings / spire) no blow ever cracked it, so the mend never ran there.
+
+## ROUND 3 (Daniel played her live, 2026-09-24; every item approved by him; lane geo3)
+The colour scheme is GOOD and kept. One commit per item.
+
+### 1. HEAVY BECOMES FAULT LINE (it replaces UPHEAVAL, hold X)
+- **Why:** Upheaval bet on a SPOT and the foe walked off it, so it was unreliable. FAULT LINE is a LINE: she slams the stave
+  and a crack races along the floor ahead of her, hitting everything along its length (once each).
+- **Numbers** (`GEO.fault` in src/geomancer.js): length `22 + 138 * wound` px (22 at the quickest release, 160 at a full
+  wind); damage `1.0 + 0.4 * wound` of her blow; the crack runs at 520 px/s (160 px in 0.31 s) and its seam stays 0.35 s
+  more. Her wind stays 0.5 s and any release past the first beat fires. The quickest release covers a foe touching her, and
+  that foe is hit IN THE RELEASE FRAME. A FULL wind (98%+) ends in a rock SPIKE at the tip: +0.6 of her blow and a launch
+  (vy -360; -440 with HIGHER GROUND) of what it hits; a boss, a flyer or a pinned thing is hit and staggered, not thrown.
+- **It follows the floor (A12):** `faultPath` walks the floor under her two pixels at a time and stops at the first GAP (no
+  solid or one-way floor) and the first WALL (rock one row up, at her feet' height). It never crosses a pit, never climbs a
+  step, never goes up through rock. It writes no rock anywhere: the spike is drawn, not built, and gone in 0.6 s.
+- **Told (C1):** while she winds, the line it will take is drawn on the floor in amber dashes, out to where it will stop,
+  ending in a bar at a wall or a gap and in the spike's point at a full wind (the same `faultPath` the blow uses).
+- **What went with the pillar:** UPHEAVAL, its pillar kind and its shatter, the foot spike, BEDROCK's pillar exception; the
+  yard's UPHEAVAL station is now a FAULT LINE station (two straw men five tiles apart, "catch both in one", twice); the
+  controls card, the hero card and the hero pick line, the yard's drill line, the trial's subtitle and the move sheet
+  (tools/geomancer-shots.mjs) say FAULT LINE. EARTH is re-worded: HIGHER GROUND (her step, and the spike throws higher),
+  BEDROCK (every piece), THROWN DOWN (a foe her stone throws). The branch title is THE STONES, not THE PILLARS.
+- **The bought FAULT LINE (level 14) is renamed THE RIFT** so two things are not called the same; its id (`faultLine`),
+  price and behaviour are unchanged, so saves keep it. OPEN for Daniel: the two are now close cousins - see the lane report.
+- The lab bot (src/lab.js strike) lets go when the crack will run past the foe's near edge.
+- Proved: tools/geomancer.mjs `heavy` - contact hit at once; full > quickest damage; full runs 160 px; stops at a pit
+  (the foe over it untouched) and at a wall (the foe behind it untouched); three foes in a line all hit; a full charge's
+  spike launches (93 px) and a 0.6 crack that runs past a foe throws nothing. RED on the UPHEAVAL code (no crack: 0 px,
+  full 0 damage, [0, 0, 68] along the line, the far foe not hit).
+
+### 2. THE GUARD BECOMES A RUNE-WARD (it replaces the two-hit ROCK SHIELD and the DOWN+C MEND)
+- A projected shield of rune-cut stone, BIGGER than the Knight's guard: a slab in front of her (7 x 35 px) with a lip back
+  over her hood (20 x 7 px). It rises out of the ground over its 0.1 s (drawn growing, faint - not a guard yet), then stands
+  with amber runes cut down its face; the runes and an amber edge flare for the perfect window. The hit count and the mend
+  are gone (`geoSh`, `startMend`, `mendUpdate`, the gMend pose); DOWN+C casts nothing.
+- **Numbers** (`GEO.ward` in src/geomancer.js): raise 0.10 s; perfect 0.07 s, opening once it has risen; a blocked blow
+  or shot 16 wind; holding 15 wind a second once the beat has passed (his rate); a tap stays up 0.15 s after it has risen;
+  out of wind it breaks (GUARD BREAK, half the blow) and will not rise for 0.6 s; a RED blow breaks through (half with
+  BULWARK). EMPOWERED 3 s: `swordDmg` x1.25 (every blow of hers reads it) and TREMOR x2.
+- **Side by side** (tools/ward-vs-guard.mjs, level 1, Math.random pinned; docs/geomancer/round3/ward-vs-guard.json):
+
+  | | Knight's guard | her RUNE-WARD |
+  |---|---|---|
+  | raise (frames to the first block) | 1 | 7 |
+  | perfect window (frames after C) | 1-6 (0.11 s) | 7-11 (0.07 s) |
+  | wind per blocked blow / per second held | 11 / 14 | 16 / 15 |
+  | coverage | the front | the front and overhead (a lip over her head); not behind |
+  | a piercing bolt into a raised guard | goes through | blocked |
+  | a 40-damage blow pushes her | 29 px | 0 |
+  | walking with it up (px a second) | 32 | 0 (rooted) |
+  | CLOSE MELEE: 10 blows of 12, 0.2 s apart | lost 25 | lost 45 (worse) |
+  | RANGED: 6 arrows + 2 dropped on the head | lost 14 | lost 7 (better) |
+  | BIG: three 40s, a second apart | lost 0, pushed 86 px | lost 0, pushed 0 |
+
+- **The boss bot** (src/lab.js): she is in `SHIELDED` now, so every boss branch holds her ward the way it holds his guard;
+  in the generic branch she plants it at 0.17 s before a yellow blow (his 0.14) so it has risen on the beat. The tap-and-mend
+  rules are gone. The fight bot holds it through a foe's tell like his.
+- Her yard: THE WARD station ("tap C as his sword flashes: it rises on the beat and empowers you") flashes at raise+perfect
+  before the blow; the marks station reads "the ward takes it / it breaks through".
+- Proved: tools/geomancer.mjs `ward` - RED on the ROCK SHIELD (the blow the frame after C was blocked, the third yellow found
+  her, RIGHT walked her 24 px, holding cost no wind, a blow over her head found her, out of wind it still blocked, no
+  EMPOWERED); green now.
+
+### 3. THE STAFF (it was the standing stone on a shaft, which read as a club or a shovel)
+- A TALL STAFF that rises above her hood: a gnarled shaft one pixel through that wanders a pixel either way along its length,
+  with lit knots standing off it; the iron-shod butt; and at the top an AMBER GEODE held in two curling STONE CLAWS, a moss
+  tuft on one claw - the geode is the brightest thing she owns, so at 1x it is an orange point on top of a long thin line.
+  (src/chars.js, the `stave` renderer; nothing drawn past the end the attack boxes were matched to.)
+- She carries it nearly upright at her lead side (standing, running, jumping, falling, landing, crouching), the geode over
+  her hood, and plants it upright for the ward. Her swings keep their endpoints, so every attack box is unchanged.
+- Every frame and pose keeps its count and timing (the test holds all 40 keys to master's counts; gMend went with the mend).
+- While she casts (winding FAULT LINE, any of her nine, the ward up, THE QUAKE) two small stones and a grain of grit ORBIT THE
+  GEODE - wherever the frame drawn put it (`c.tip` on each baked frame, read by main.js `staffTip`). They replaced the grit
+  that floated round her body.
+- Proved: tools/geomancer.mjs `staff` - off the baked pixels, 4+ amber pixels over the hood's top row in 8 locomotion and
+  guard frames, the highest 3+ rows above it, and a tip on each; the frame counts; stones orbit while she casts (C held) and
+  not while she walks. RED on the old stave (0 amber pixels over the hood, no tip).
+- Pictures: docs/geomancer/round3/frames-before.png / frames-after.png (every frame), look-before.png / look-after.png
+  (5x beside the Pyromancer and the Knight, and in the first level standing, running, winding, C held), moves-before.png /
+  moves-after.png (every move from the real page).
+
+### 4. HER GUARD IS NOT DRAWN WHILE SHE WALKS
+- Daniel: the shield showed on her arm all the time. Now nothing of it is drawn unless C has it up (and its break is the
+  burst of shards): src/geomancer.js draws it only while `P.geoGuard`. Walking, standing, jumping - nothing on her arm.
+- Proved: tools/geomancer.mjs `drawn` - counted off the real render (BK.step), frame by frame: 0 of 30 walking, 0 of 30
+  standing, 30 of 30 with C held. RED on the old code: 30 of 30 walking and standing (the plate strapped on her forearm).
 
 ## Open (decide when she is built, not now)
 - Her name and look beyond the stave. (Built as THE GEOMANCER; the look is now THE REWORK 2, above.)

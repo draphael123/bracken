@@ -4,7 +4,7 @@
 //   every   every hero on the hero list (main.js HEROES) has a LEVELS entry 'trial_<id>', and no practice line says "not built"
 //   played  the Warden's and the Geomancer's yards, PLAYED through the real input in the real page, station by station: each
 //           station's own thing is done to it (the point rung at the spear's length, the deflect / the wall on the flash, the marks,
-//           the run-through, the pin, the pillar, STONEFALL, the full bar spent) until its gate lifts. A station nothing can finish
+//           the run-through, the pin, the fault line, STONEFALL, the full bar spent) until its gate lifts. A station nothing can finish
 //           is a wall across the yard, so every one must end `done`.
 // PROVED RED FIRST: before the two yards were built, `every` failed on warden and geomancer (no trial level) and `played` had
 // nothing to play.
@@ -37,7 +37,7 @@ try {
       const F=()=>__foes(st),kind=st.kind;let tries=0;
       if(kind==='tip'){for(let d=30;d<=44&&!st.done;d+=2)for(let k=0;k<2&&!st.done;k++){const e=F()[0];P.x=e.x-e.w/2-d;P.face=1;P.vx=0;BK.sim(12);__fresh();BK.press('atk');run(30);}}
       else if(kind==='runthrough'){while(!st.done&&tries++<6){const e=F()[0];P.x=e.x-30;P.face=1;P.vx=0;BK.sim(20);__fresh();K.atk=true;run(45);K.atk=false;run(50);}}
-      else if(kind==='upheaval'){while(!st.done&&tries++<6){const e=F()[0];P.x=e.x-60;P.face=1;P.vx=0;BK.sim(10);__fresh();K.atk=true;run(21);K.atk=false;run(80);}}   /* (21 frames: the wind walks the point out to 60 px; held to the end it comes up at 132, past him) */
+      else if(kind==='fault'){while(!st.done&&tries++<6){const e=F()[0];P.x=e.x-24;P.face=1;P.vx=0;BK.sim(10);__fresh();K.atk=true;run(45);K.atk=false;run(60);}}   /* (a full wind: the crack runs 160 px, through both straw men five tiles apart) */
       else if(kind==='pin'){while(!st.done&&tries++<8){const e=F()[tries%2]||F()[0];BK.sim(20);P.x=e.x;P.y=e.y-(e.h||8)-30;P.vx=0;P.vy=40;P.ground=false;P.face=1;__fresh();K.down=true;BK.press('atk');
           let f=0;while(!P.pinning&&f++<60)BK.sim(1);K.down=false;run(10);BK.press('jump');run(40);}}
       else if(kind==='stonefall'){while(!st.done&&tries++<6){const [a,b]=F();BK.sim(10);P.x=(a.x+b.x)/2;P.y=a.y-50;P.vx=0;P.vy=40;P.ground=false;P.face=1;__fresh();K.down=true;BK.press('atk');
