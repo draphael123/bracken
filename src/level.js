@@ -2573,6 +2573,10 @@ function undercrown() {
       grass: '#5a4a3a', grassL: '#6e5c48', grassD: '#3a2e22', dirt: '#3a3028', dirtL: '#4a3e32', dirtD: '#241d18',
       canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
+    /* THE WORKS BELL, which its own sign has promised since the day the level was built ("everything below here can hear it") and
+       which never had an alarm: rung, the gallery's end drops shut over the shaft down, and the works below come up it
+       (tools/bells.mjs found it, asking every level what it had asked of Highcrown) */
+    alarms: [{ id: 'works', gates: [[85, 30, 33]], garrison: [{ t: 'miner', x: 83, y: 33 }, { t: 'rockgoblin', x: 80, y: 33 }, { t: 'sprig', x: 82, y: 33 }] }],
     arena: { x0: 30 * TS, x1: 74 * TS, floor: 167 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'prince', music: 'musDungeon', tint: '#1e2420', tintA: 0.14, fx: 'dust', y0: 144 * TS, y1: 168 * TS },
   };
 }
@@ -2968,7 +2972,7 @@ function highcrown() {
   ent('hound', 64, 63, { face: -1 }); ent('soldier', 28, 63, { face: 1 });
   ent('sentry', 66, 63, { section: 'ward', range: 8, face: 1 });
   ent('bell', 84, 63, { section: 'ward' });
-  ent('sign', 26, 63, { text: 'CATCH THE SENTRY BEFORE HE RINGS THE BARRACKS BELL, OR BREAK THE BELL.' });
+  ent('sign', 26, 63, { text: 'CATCH THE SENTRY OR BREAK HIS BELL. RUNG, THE GRATE DROPS AND THE BARRACKS TURNS OUT.' });
   plat(91, 55, 6); ent('weight', 94, 55, { len: 6 }); // a counterweight over the barracks door (low enough to cut with a jump)
   ent('deco', 95, 63, { kind: 'cabin' });
   // the inner wall, its gate open until the alarm drops it
@@ -2993,7 +2997,7 @@ function highcrown() {
   ent('soldier', 138, 63, { face: -1 }); ent('javelin', 160, 63, { face: -1 });
   air(198, 201, 52, 53); lid(198, 201, 52);    // the stair up, through the floor above
   stair([[184, 62], [188, 60], [192, 58], [196, 56], [198, 54]]);
-  ent('sign', 134, 63, { text: 'HER WATCH WALKS THE HALL. THE GATE BY THE STAIR DROPS WHEN A BELL RINGS.' });
+  ent('sign', 134, 63, { text: 'HER WATCH WALKS THE HALL. RUNG, THE GATE BY THE STAIR STAYS DOWN UNTIL THE HALL IS CLEAR.' });
 
   // F1. THE KITCHENS (floor 52)
   ent('check', 196, 51);
@@ -3028,7 +3032,7 @@ function highcrown() {
   // F3. THE CHAPEL (floor 20) - the bell tower's own bell, two of the watch, the key on the altar
   ent('check', 202, 19);
   port(206, 14, 19); ent('lockgate', 206, 19, { needs: 'brass', h: 6 });
-  ent('sign', 198, 19, { text: 'THE CHAPEL. THE KEY TO HER ROOMS IS ON THE ALTAR. THIS BELL IS THE LOUDEST.' });
+  ent('sign', 198, 19, { text: 'THE CHAPEL. HER KEY IS ON THE ALTAR. THIS BELL IS THE LOUDEST: THE ROOF HEARS IT.' });
   ent('sentry', 186, 19, { section: 'chapel', range: 10, face: -1 }); ent('sentry', 166, 19, { section: 'chapel', range: 6, face: 1 });
   ent('bell', 176, 19, { section: 'chapel' });
   for (const x of [134, 154, 178, 196]) ent('torch', x, 19);
@@ -3108,7 +3112,7 @@ function growDown(L, n) { // add n rows under the level: each column carries on 
 }
 function shiftCrown(R, col, n) { // what grow() does not know about in the castle: the alarms, the smith's slag, the Queen's hall parts
   const sh = x => x >= col ? x + n : x, shp = p => p >= col * TS ? p + n * TS : p;
-  if (R.alarms) R.alarms = R.alarms.map(a => ({ ...a, gates: a.gates.map(([c, y0, y1]) => [sh(c), y0, y1]), garrison: a.garrison.map(gd => ({ ...gd, x: sh(gd.x) })) }));
+  if (R.alarms) R.alarms = R.alarms.map(a => ({ ...a, gates: a.gates.map(([c, y0, y1]) => [sh(c), y0, y1]), garrison: (a.garrison || []).map(gd => ({ ...gd, x: sh(gd.x) })), ...(a.wake ? { wake: [sh(a.wake[0]), sh(a.wake[1]), a.wake[2], a.wake[3]] } : {}) }));
   if (R.mini && R.mini.slag) R.mini = { ...R.mini, slag: R.mini.slag.map(shp) };
   /* AND HIS BEAM. beamL/beamR were never shifted, so once the castle grew round him they still said columns 142-182 while his armoury
      stood at 556-628: every time he took the beam he was clamped four hundred columns away, hanging at beam height outside his room. */
@@ -3448,6 +3452,24 @@ function highcrownWhole() {
   // THESE ARE FINAL COLUMNS. Nothing is grown after this line, so what is written here is what the built level
   // has; every grow() and shiftCrown() above is already done.
   for (const [x, y] of [[255, 63], [624, 61], [727, 51]]) R.ents.push({ t: 'temperer', x, y, face: -1 });
+
+  // ---- EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT (docs/briefs/highcrown-bells.md) ----
+  // The rule line promised it and only the Leads kept it: the ward's, the entrance hall's and the chapel's alarms went on
+  // 2026-09-11 when their gates became key portcullises ON THE SAME COLUMNS, and their bells, sentries and signs stayed behind,
+  // dead. An alarm gate lifts every PORT in its rows, so each of these stands on a column of its OWN, in front of its lock
+  // gate and never on it. Each hall answers its bell differently. FINAL COLUMNS: nothing is grown after this line.
+  //   THE WARD      the chase: one sentry, a long run to a bell in the open yard. The drop-grate in the inner gate's arch (the
+  //                 wall is over it) falls in front of the barred gate, and the barracks turns out of its own door - under the
+  //                 counterweight that hangs over that door.
+  //   THE HALL      the hall turns on you: nobody new comes; the watch already in it is marked, and the gate by the stair
+  //                 stays down in front of the iron gate until they are down.
+  //   THE CHAPEL    the loudest bell, with a sentry either side of it, so you catch one at most. The grate before the bone gate
+  //                 falls, and the roof hears it: its watch comes down through the hatch.
+  // Every one lifts when its watch is down or after twenty seconds (updateAlarms), and a death puts the hall back (resetCastle).
+  R.alarms = (R.alarms || []).concat([
+    { id: 'ward', gates: [[321, 58, 63]], garrison: [{ t: 'soldier', x: 314, y: 63 }, { t: 'javelin', x: 312, y: 63 }, { t: 'soldier', x: 317, y: 63 }] },
+    { id: 'hall', gates: [[735, 54, 63]], wake: [678, 735, 54, 63] },
+    { id: 'chapel', gates: [[715, 10, 19]], garrison: [{ t: 'soldier', x: 747, y: 19 }, { t: 'javelin', x: 749, y: 19 }, { t: 'soldier', x: 751, y: 19 }] }]);
   return R;
 }
 
