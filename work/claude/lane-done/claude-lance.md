@@ -12,7 +12,8 @@ sits inside the list.
 | 442510f | before: `tools/lance-pilot.mjs`, before pilot numbers, before captures (`work/lance/before-*.png`) |
 | 1f109be | the build: slower, two end lookouts, the Queen's bows, the lab's hands, `tools/lance-support.mjs` (in the suite), bestiary line |
 | d40b45a | after: pilot numbers, a "slower only" control run, after captures (`work/lance/after-*.png`) |
-| (this) | this report |
+| a4224a6 | this report |
+| (next) | Daniel's answers: the three fire archers removed, THE QUEEN'S BOWS added to the move words, this report updated |
 
 ## What I built
 
@@ -104,11 +105,32 @@ Read with care:
   real player faces them plus his bowmen.
 - **The Boss Rush.** The lookouts are level geometry, so they would appear there too if the Rush uses this arena. The
   bowmen are switched off there. I didn't open the Rush.
-- **The held Stormhold rebuild.** `claude/stormhold` moves the bridge to 544 in `src/stormhold-town.js`. It does not
+- **The held Stormhold rebuild.** `claude/stormhold` moves the bridge to 544, in its stormhold-town module. It does not
   get any of this until someone adds one `lanceLookouts({ plat, ent }, P0, BY)` call there and `bows:` on its arena.
   I didn't touch that branch.
 
-## QUESTIONS FOR DANIEL
+## DANIEL'S ANSWERS (2026-09-25: "recs fine, remove the fire archers")
+
+1. **Done.** The three fire archers on the bridge (322, 358, 412) are gone from `stormhold()`. The rock goblin at 394
+   stays. Static checks pass (below).
+2. Nearer lookout: kept as built.
+3. 15 s with at most 2: no change. He plays it first, and it goes to 20 s if it feels busy.
+4. **Done in code.** "THE QUEEN'S BOWS" is in `MOVE_WORDS`, so the arrival tell now shows it as floating text over the
+   lookout. **Not yet seen in the page:** textfit, tells and a capture wait for the machine to be free.
+5. **Stormhold port: to be done in the same batch when `claude/stormhold` ships.** Add one
+   `lanceLookouts({ plat, ent }, P0, BY)` call in that branch's bridge builder and put `bows:` on its arena. Also drop
+   that branch's copies of the three fire archers.
+6. No tuning.
+
+**Checks after the removal (static only; the coordinator held the browser checks because of load):** syntax, spawns,
+one-new-foe, elites, audit, content-audit, comments, homepaths, dangling-paths, floaters, architecture, traps,
+killzones, deadends, signs, keys, arena-supplies and checkpoints all pass. **Still to run when the machine is free:**
+textfit, tells, boss-openings, boss-fight-end, lance-support, the captures, and the re-pilot.
+
+**The pilot numbers above should not move with the removal.** The boss lab kills every non-boss foe before the fight,
+so the fire archers were never in any pilot row. The re-pilot is pending anyway, to confirm that.
+
+## QUESTIONS FOR DANIEL (answered, see above)
 
 1. **The bridge already has three fire archers and a rock goblin inside his walls when he wakes.** With his bowmen
    added, that's up to five archers at once. Should the fire archers go, so the bowmen he calls are his only ranged

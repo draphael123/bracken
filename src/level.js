@@ -2359,9 +2359,9 @@ function stormhold() {
   // the last span, from the seventh pier to the gatehouse. Without it the bridge stopped nine tiles
   // short of the door and there was no way off it at all.
   span(415, 423, BY, { sway: 2 });
-  // the towers loose at you on the open spans
-  ent('archer', 322, BY - 1, { face: 1, fire: true }); ent('archer', 358, BY - 1, { face: -1, fire: true });
-  ent('rockgoblin', 394, BY - 1, { face: -1 }); ent('archer', 412, BY - 1, { face: -1, fire: true });
+  /* (THE THREE FIRE ARCHERS WENT, Daniel 2026-09-25: the bowmen HE calls to the end lookouts are his ranged support now, told
+     and at a pace - three more standing on the boards inside his walls made up to five bows at once. The rock goblin stays.) */
+  ent('rockgoblin', 394, BY - 1, { face: -1 });
   // (no rope cutter out here: a span dropping out from under a duel on a timer nobody can see is not a fight)
   for (const x of [310, 328, 346, 364, 382, 400]) { ent('deco', x, BY - 1, { kind: 'lanternPost' }); coins([x + 4, BY - 2]); }
   ent('silver', 373, BY - 2);
