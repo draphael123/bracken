@@ -45,7 +45,7 @@ try {
     const d = await pg.evalp(`(() => { const o = {}; ${boot}
       const B = BK.village && BK.village().buckets ? BK.village().buckets() : [];
       const b0 = B[0]; if (b0) { BK.tp(Math.round(b0.x / 16), Math.round(b0.y / 16) - 1); BK.sim(20); for (const e of BK.enemies()) if (!e.elite) e.alive = false; BK.village().take(b0); BK.P.face = 1; BK.keys.right = true; for (let k = 0; k < 50; k++) BK.step(1); BK.keys.right = false; for (let k = 0; k < 30; k++) BK.step(1); o.bucket = ${snap()}; }
-      const z = (BK.L.deckBreaks || []).find(q => q.beam); if (z) { BK.tp(z.x0 - 1, z.row - 1); BK.sim(10); for (const e of BK.enemies()) if (!e.elite) e.alive = false; z.t = 1.1; for (let k = 0; k < 20; k++) BK.step(1); o.beam = ${snap()}; }
+      const z = (BK.L.deckBreaks || []).find(q => q.beam); if (z) { BK.tp(z.x0 - 1, z.row - 1); BK.sim(10); for (const e of BK.enemies()) if (!e.elite) e.alive = false; for (let k = 0; k < 90; k++) BK.step(1); BK.tp(z.x0 + 2, z.row - 1); for (let k = 0; k < 12; k++) BK.step(1); o.beam = ${snap()}; }
       const s = (BK.L.smoke || [])[0]; if (s) { BK.tp(s.x, s.y1 - 1); BK.sim(10); for (const e of BK.enemies()) if (!e.elite) e.alive = false; for (let k = 0; k < 400 && !(BK.village().smokeUp && BK.village().smokeUp(s)); k++) BK.step(1); for (let k = 0; k < 30; k++) BK.step(1); o.smoke = ${snap()}; }
       const A = BK.ambushes && BK.ambushes()[0]; if (A) { BK.tp(A.wallL + 4, A.row); for (let k = 0; k < 90; k++) BK.step(1); o.ambush = ${snap()}; }
       return o; })()`);

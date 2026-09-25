@@ -156,3 +156,18 @@ its captain already stands at it: **he stops being an ELITE and leads the ambush
   elites, ambush-single, ambush-reach, occluders, ground-depth, architecture), pyre-pilot, tells, boss-openings,
   boss-fight-end, arena-supplies, textfit, comments, syntax, homepaths, dangling-paths, burning-village,
   village-stakes, and every new check.
+
+---
+
+## 8. As built (corrections to the plan above)
+
+- **Gaps are three tiles, four with a drop, not five.** Walking it found the reach model's six-tile jump is not the
+  game's: in the page a running jump carries the knight 4.0 tiles, the paladin 3.6, the pyromancer 3.0. THE FALLEN HOUSE
+  is at 229–231 with the next roof from 232; the Hall's ledge is 250–253; the second house starts at 272.
+- **The root cellar's hatch is the road itself** (smouldering timber, no flame), not a burning heap a row proud of it:
+  that put a fire on the street every hero had to jump through at the croft well.
+- **The Hall's dormer villager is behind a hot door** so the rain butt's pail has a job.
+- **The barn's back wall is drawn** ('barn' facade), and village facades now draw after the town backdrop (they were
+  painted over by it, the burning house fronts included).
+- **The boss plate:** `bossPlate(nm, col, lift)`; the Pyromancer's lift is 7 rows. textfit's new `plates` screen runs in
+  the suite with the new OVERDRAWN rule.
