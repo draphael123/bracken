@@ -6,7 +6,10 @@ import { openPage } from './cdp.mjs';
 const heroes = (process.argv[2] || 'knight,warden').split(',');
 const pg = await openPage({ audio: false, fonts: false });
 try {
-  const r = await pg.evalp(`(async()=>{const rep=await BK.playtest({levels:['oreroad'],heroes:${JSON.stringify(heroes)},mode:'both',quiet:true,log:false});return rep.text;})()`, 1800000);
+  /* BK.playtest plays whoever is the hero (its 'heroes' option is read by nothing), so each hero is set before its own run */
+  const r = await pg.evalp(`(async()=>{ const out = [];
+    for (const h of ${JSON.stringify(heroes)}) { BK.setHero(h); const rep = await BK.playtest({ levels: ['oreroad'], mode: 'both', quiet: true, log: false }); out.push('==== ' + h.toUpperCase(), rep.text); }
+    return out.join(String.fromCharCode(10)); })()`, 1800000);
   console.log(r);
   console.log('errors', JSON.stringify(pg.errors.slice(0, 5)));
 } finally { pg.close(); }
