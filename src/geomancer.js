@@ -46,7 +46,7 @@ export const GEO = {
 const STONE = { base: '#7c7a6e', hi: '#a8a696', lo: '#5e5c54', dark: '#44423a', moss: '#6f9a4a', moss2: '#557a38', rune: '#e8a83a', crack: '#26241e' };
 
 export function makeGeomancer(api) {
-  let pieces = [], rollers = [], shards = [], falls = [], spikes = [], faults = [], golem = null, spurFx = null, shieldDrawn = false;   /* (shieldDrawn: whether the last draw put her shield on screen - tools/geomancer.mjs `drawn`) */
+  let pieces = [], rollers = [], shards = [], falls = [], spikes = [], faults = [], golem = null, spurFx = null, shieldDrawn = false, spunAt = -9;   /* (spunAt: when the draw last set a stone round her geode - tools/geomancer.mjs `staff`) */   /* (shieldDrawn: whether the last draw put her shield on screen - tools/geomancer.mjs `drawn`) */
   const TS = api.TS;
   const T = () => api.T;
   const grid = () => api.L.grid;
@@ -386,13 +386,14 @@ export function makeGeomancer(api) {
   function draw(g, cx, cy) { g.save(); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; try { draw0(g, cx, cy); } finally { g.restore(); } }   /* whatever alpha the hero's draw left behind is not the stone's */
   function draw0(g, cx, cy) {
     const P = api.P; shieldDrawn = false;
-    /* GRIT AND PEBBLES LIFT OFF THE GROUND AND FLOAT ROUND HER WHILE SHE CASTS (the rework's sprite item): winding FAULT LINE (rising
-       with the wind), any of her nine, THE MEND and THE QUAKE. Drawn behind nothing and touching nothing: it is how she reads as
-       the one who MOVES STONE, before any stone has moved */
-    if (api.isGeo() && !P.dead && !P.geoBurrow) { const kit = P.kPoseT > 0 && /^g[A-Z]/.test(P.kPoseK || ''), k = P.charge > 0 ? Math.min(1, P.charge / api.heavyWind()) : (kit || P.geoMendT > 0 || P.blastT > 0) ? 1 : 0;
-      if (k > 0) for (let i = 0; i < 5; i++) { const a = api.time * (2.2 + i * 0.3) + i * 1.26, r = 8 + (i % 3) * 3, x = Math.round(P.x - cx + Math.cos(a) * r), y = Math.round(P.y - cy - 2 - k * (6 + (i % 3) * 5) + Math.sin(a * 1.7) * 2);
-        g.fillStyle = i % 2 ? STONE.lo : STONE.hi; if (i < 3) g.fillRect(x, y, 2, 2); else g.fillRect(x, y, 1, 1);
-        if (i < 3) { g.fillStyle = STONE.dark; g.fillRect(x, y + 2, 2, 1); } } }
+    /* STONES ORBIT THE GEODE WHILE SHE CASTS (round 3, the staff item: they floated round her body before): winding FAULT LINE (closing
+       in and speeding up with the wind), any of her nine, her ward and THE QUAKE - two small stones and a grain of grit going round the
+       amber geode at the top of her staff, wherever the pose has put it (api.staffTip reads it off the frame drawn). Drawn touching
+       nothing: it is how she reads as the one who MOVES STONE, before any stone has moved */
+    if (api.isGeo() && !P.dead && !P.geoBurrow) { const kit = P.kPoseT > 0 && /^g[A-Z]/.test(P.kPoseK || ''), k = P.charge > 0 ? Math.min(1, P.charge / api.heavyWind()) : (kit || P.geoGuard || P.blastT > 0) ? 1 : 0, tip = k > 0 && api.staffTip ? api.staffTip() : null;
+      if (tip) for (let i = 0; i < 3; i++) { const a = api.time * (4 + 3 * k) + i * 2.1, r = i === 2 ? 7 : 5 + (1 - k) * 2, x = Math.round(tip.x - cx + Math.cos(a) * r), y = Math.round(tip.y - cy + Math.sin(a) * r * 0.6);
+        g.fillStyle = i === 0 ? STONE.hi : i === 1 ? STONE.base : STONE.lo; if (i < 2) { g.fillRect(x, y, 2, 2); g.fillStyle = STONE.dark; g.fillRect(x, y + 2, 2, 1); } else g.fillRect(x, y, 1, 1);
+        spunAt = api.time; } }
     for (const p of pieces) { const k = Math.min(1, p.age / GEO.rise), left = p.life - p.age, crackK = left < p.crack ? 1 - left / p.crack : 0;
       const jit = left < 0.25 ? (Math.floor(api.time * 40) % 2 ? 1 : -1) : 0, rise = Math.round((1 - k) * (p.y1 - p.y0)), set = new Set(p.cells.map(c => c.i));
       g.save(); g.beginPath(); g.rect(Math.round(p.x0 - cx) - 2, Math.round(p.y0 - cy) - 4, p.x1 - p.x0 + 4, p.y1 - p.y0 + 4); g.clip();
@@ -467,5 +468,5 @@ export function makeGeomancer(api) {
     const a = spin || 0; g.fillStyle = STONE.lo; g.fillRect(Math.round(x + Math.cos(a) * r * 0.5), Math.round(y + Math.sin(a) * r * 0.5), 2, 2); g.fillStyle = STONE.moss; g.fillRect(Math.round(x + Math.cos(a + 2.5) * r * 0.6), Math.round(y + Math.sin(a + 2.5) * r * 0.6), 2, 1); }
 
   return { update, draw, clear, faultHeavy, faultPath, guard, wardTakes, wardUp, wardPerfect, empowered, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
-    shieldDrawn: () => shieldDrawn, pieces: () => pieces, rollers: () => rollers, falls: () => falls, spikes: () => spikes, faults: () => faults, golem: () => golem, freeCell, erupt, place, crumble };
+    shieldDrawn: () => shieldDrawn, spunAt: () => spunAt, pieces: () => pieces, rollers: () => rollers, falls: () => falls, spikes: () => spikes, faults: () => faults, golem: () => golem, freeCell, erupt, place, crumble };
 }

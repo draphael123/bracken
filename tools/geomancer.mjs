@@ -31,6 +31,12 @@
 //   drawn     THE SHIELD IS NOT DRAWN WHILE WALKING (round 3, item 4): drawn by the real render (BK.step) while she walks and while she
 //             stands, nothing of it is on screen; held up, it is. PROVED RED FIRST: the rock shield drew a plate on her forearm while she
 //             walked (30 of 30 frames) and stood (30 of 30).
+//   staff     HER STAFF IS A STAFF (round 3, item 3): in every locomotion frame (standing, running, jumping, falling, landing,
+//             crouching) and her guard, read off the baked pixels, the amber geode stands clear over her hood - at least four amber
+//             pixels above the hood's top row, the highest of them three rows above it - and the frame knows where its geode is (tip);
+//             every key of her set keeps the frame count it had before the staff (FRAMES, below; THE MEND's gMend is gone with the
+//             mend); and while she casts - C held - the draw sets stones going round the geode, and walking it does not.
+//             PROVED RED FIRST on the standing-stone stave: 0 amber pixels over the hood in the standing frame, no tip, no stones.
 //   levels    in three real early levels, at every 5th tile of floor she can stand on: wall, fault line and step raised, and every frame
 //             no living body is inside her rock and, eight seconds on, the level's grid is exactly what it was (no route blocked)
 // PROVED RED FIRST (2026-09-24): with the body test taken out of freeCell and RULE 4 disabled in src/geomancer.js, `lift` and `body`
@@ -38,6 +44,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
+/* HER SET'S FRAME COUNTS, key by key, as they were before the staff (master 52cfebb, less THE MEND's gMend): the staff redraws every
+   frame and must not add or drop one */
+const STAFF_FRAMES = {"idle":8, "run":6, "jump":2, "fall":2, "land":3, "takeoff":1, "apex":1, "skid":1, "climb":2, "atk":5, "plunge":1, "hurt":2, "crouch":1, "block":2, "dashAtk":3, "atkB":5, "atkC":5, "air":5, "cast":2, "fidget":15, "dance":8, "slump":2, "swim":4, "tread":4, "roll":4, "burrow":3, "rise":5, "sweep":5, "heavy":3, "windup":3, "blast":2, "gStep":2, "gHeave":3, "gSpikes":2, "gArch":2, "gWall":3, "gTomb":2, "gFault":2, "gGolem":2, "gAval":2};
 const pg = await openPage({ audio: false, fonts: false });
 try {
   await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');
@@ -139,6 +148,16 @@ try {
         raised+=BK.geo().pieces().length;for(let f=0;f<60*8;f++){BK.sim(1);if(f%6===0&&__inside())inside++;}}
       rows.push({id,tried,raised,inside,same:g0.every((v,k)=>v===L.grid[k]),left:BK.geo().pieces().length});}
     return rows})()`);
+  /* HER STAFF, off the baked pixels of her own set */
+  out.staff = await pg.evalp(`(()=>{__geo([]);const R=BK.heroSet.R,AMBER=new Set(['e8a83a','ffc860','fff0c0','d08a24','b8741c']),HOOD='353735';
+    const scan=c=>{const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,W=c.width;let hood=999,amb=[];
+      for(let i=0;i<d.length;i+=4){if(d[i+3]<200)continue;const h=[d[i],d[i+1],d[i+2]].map(v=>v.toString(16).padStart(2,'0')).join(''),y=Math.floor(i/4/W);if(h===HOOD)hood=Math.min(hood,y);if(AMBER.has(h))amb.push(y);}
+      return {hood,above:amb.filter(y=>y<hood).length,top:amb.length?Math.min(...amb):999,tip:!!c.tip};};
+    const rows={};for(const [k,i] of [['idle',0],['run',0],['run',3],['jump',0],['fall',1],['land',2],['crouch',0],['block',0]]){const f=Array.isArray(R[k])?R[k][i]:R[k];rows[k+i]=scan(f);}
+    const counts=Object.fromEntries(Object.keys(R).map(k=>[k,Array.isArray(R[k])?R[k].length:1]));
+    const K=BK.keys,spun=()=>Math.abs(BK.geo().spunAt?BK.geo().spunAt()-BK.time:9)<0.05;BK.P.st=BK.P.maxSt;K.block=true;let cast=0;for(let i=0;i<20;i++){BK.step(1);if(spun())cast++;}K.block=false;BK.step(20);
+    K.right=true;let walk=0;for(let i=0;i<20;i++){BK.step(1);if(spun())walk++;}K.right=false;
+    return {rows,counts,cast,walk}})()`);
   /* THE SHIELD IS NOT DRAWN WHILE WALKING: counted off the real render, frame by frame */
   out.drawn = await pg.evalp(`(()=>{__geo([]);const K=BK.keys,d=()=>BK.geo().shieldDrawn&&BK.geo().shieldDrawn()?1:0;let walk=0,idle=0,up=0;
     K.right=true;for(let i=0;i<30;i++){BK.step(1);walk+=d();}K.right=false;for(let i=0;i<30;i++){BK.step(1);idle+=d();}
@@ -193,6 +212,10 @@ try {
   for (const r of out.levels) { assert(r.tried >= 5 && r.raised > 0, r.id + ': she raised stone there (' + JSON.stringify(r) + ')'); assert.equal(r.inside, 0, r.id + ': nobody was ever inside her rock'); assert(r.same && r.left === 0, r.id + ': and eight seconds on the level is exactly as it was: no route blocked'); }
   assert(out.drawn.walk === 0 && out.drawn.idle === 0, 'her shield is not drawn while she walks or stands (' + JSON.stringify(out.drawn) + ')');
   assert(out.drawn.up >= 20, 'and it is drawn while she guards (' + JSON.stringify(out.drawn) + ')');
+  for (const [k, r] of Object.entries(out.staff.rows)) assert(r.above >= 4 && r.top <= r.hood - 3 && r.tip, 'her staff: the amber geode stands over her hood in ' + k + ' (' + JSON.stringify(r) + ')');
+  { const FRAMES = STAFF_FRAMES, got = out.staff.counts; for (const k of Object.keys(FRAMES)) assert.equal(got[k], FRAMES[k], 'her ' + k + ' keeps its ' + FRAMES[k] + ' frames (' + got[k] + ')');
+    assert.deepEqual(Object.keys(got).filter(k => !(k in FRAMES)), [], 'no new keys on her set (' + JSON.stringify(got) + ')'); }
+  assert(out.staff.cast >= 15 && out.staff.walk === 0, 'stones orbit the geode while she casts, and not while she walks (' + JSON.stringify({ cast: out.staff.cast, walk: out.staff.walk }) + ')');
   assert(out.oldSave.hp > 0, 'a save that never had her plays her (' + JSON.stringify(out.oldSave) + ')');
   assert.deepEqual(pg.errors, []);
   console.log('geomancer: FAULT LINE hits what touches her at once, runs ' + H.open.len + ' px full, stops at a pit and a wall, hits all three in its line and launches at the end; the cap holds (3, 4 with the passive), every piece crumbles and gives the grid back, nothing is ever buried, and ' + out.levels.length + ' real levels end as they began');

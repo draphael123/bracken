@@ -16,7 +16,7 @@ shortcuts (never required: B4).
 - **At most 3 stone pieces** (walls, steps, arches) exist at once; a fourth crumbles the oldest. Every piece crumbles on
   its own after ~4 s. Without this cap she walls off the level. (Her held X, FAULT LINE, writes no stone at all: see ROUND 3.)
 
-## The weapon: THE STAVE (not the Pyromancer's staff)
+## The weapon: THE STAVE (not the Pyromancer's staff) - **ROUND 3: now a TALL STAFF with an amber geode (ROUND 3, 3, below)**
 Daniel wanted a staff, made unmistakably hers. The difference is shape, grip and USE:
 - **Short, thick, two-handed:** a raw standing stone lashed to the head (wider than her own head), an iron-shod butt.
 - **Held across her body like a quarterstaff**, both ends used. (The Pyromancer holds hers upright, one-handed, like a wand.)
@@ -197,6 +197,24 @@ The colour scheme is GOOD and kept. One commit per item.
 - Proved: tools/geomancer.mjs `ward` - RED on the ROCK SHIELD (the blow the frame after C was blocked, the third yellow found
   her, RIGHT walked her 24 px, holding cost no wind, a blow over her head found her, out of wind it still blocked, no
   EMPOWERED); green now.
+
+### 3. THE STAFF (it was the standing stone on a shaft, which read as a club or a shovel)
+- A TALL STAFF that rises above her hood: a gnarled shaft one pixel through that wanders a pixel either way along its length,
+  with lit knots standing off it; the iron-shod butt; and at the top an AMBER GEODE held in two curling STONE CLAWS, a moss
+  tuft on one claw - the geode is the brightest thing she owns, so at 1x it is an orange point on top of a long thin line.
+  (src/chars.js, the `stave` renderer; nothing drawn past the end the attack boxes were matched to.)
+- She carries it nearly upright at her lead side (standing, running, jumping, falling, landing, crouching), the geode over
+  her hood, and plants it upright for the ward. Her swings keep their endpoints, so every attack box is unchanged.
+- Every frame and pose keeps its count and timing (the test holds all 40 keys to master's counts; gMend went with the mend).
+- While she casts (winding FAULT LINE, any of her nine, the ward up, THE QUAKE) two small stones and a grain of grit ORBIT THE
+  GEODE - wherever the frame drawn put it (`c.tip` on each baked frame, read by main.js `staffTip`). They replaced the grit
+  that floated round her body.
+- Proved: tools/geomancer.mjs `staff` - off the baked pixels, 4+ amber pixels over the hood's top row in 8 locomotion and
+  guard frames, the highest 3+ rows above it, and a tip on each; the frame counts; stones orbit while she casts (C held) and
+  not while she walks. RED on the old stave (0 amber pixels over the hood, no tip).
+- Pictures: docs/geomancer/round3/frames-before.png / frames-after.png (every frame), look-before.png / look-after.png
+  (5x beside the Pyromancer and the Knight, and in the first level standing, running, winding, C held), moves-before.png /
+  moves-after.png (every move from the real page).
 
 ### 4. HER GUARD IS NOT DRAWN WHILE SHE WALKS
 - Daniel: the shield showed on her arm all the time. Now nothing of it is drawn unless C has it up (and its break is the
