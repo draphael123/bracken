@@ -1,13 +1,15 @@
 /* tools/pyromancer-pilot.mjs [passes=4] — THE PYROMANCER at NORMAL health: all six heroes, `passes` seeded passes each (four is
    twenty-four fights, over the brief's twenty-one). One life per fight, no refills: what the bot loses it keeps. Prints a row
    per fight (outcome, seconds, health left, how often he OVERHEATED, which of his attacks did the damage) and the summary the
-   brief asks for - the win rate and the median time of a win against the 90-150 s band. Not in the suite: it is too long. */
+   brief asks for - the win rate and the median time of a win against the 90-150 s band. Not in the suite: it is too long.
+   EVERY PASS IS SALTED (opts.salt = pass + 1): bossLab pins its own dice per row, so the Math.random seeded above is replaced
+   inside it, and without a salt pass two was pass one again, fight for fight (docs/INTEGRATOR.md section 6). */
 import { openPage } from './cdp.mjs';
 const passes = +(process.argv[2] || 4), pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
   for (let p = 0; p < passes; p++) { await pg.reload();
     const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;let seed=${2024 + p * 131};Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
-      const o=await BK.bossLab({bosses:['burning'],healthMode:'normal',maxSecs:240,modes:true});
+      const o=await BK.bossLab({bosses:['burning'],healthMode:'normal',maxSecs:240,modes:true,salt:${p + 1}});
       return o.rows.map(r=>({h:r.h,won:r.outcome==='win',out:r.outcome,secs:r.secs,hp:r.health&&Math.round(r.health.endHp),taken:Math.round(r.health?r.health.damageTaken:0),opened:r.opened,left:r.hpLeftPct,hitBy:r.hitBy,modes:r.modes}));})()`, 1200000);
     rows.push(...r); for (const x of r) console.log(JSON.stringify(x)); }
   const wins = rows.filter(r => r.won), secs = wins.map(r => r.secs).sort((a, b) => a - b), med = secs.length ? secs[secs.length >> 1] : null;

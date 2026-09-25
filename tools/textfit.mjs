@@ -7,6 +7,7 @@
 //   OVERFLOW   text runs past the smallest plate under its anchor
 //   OFFSCREEN  text runs off the screen
 //   COLLIDE    two different strings drawn over one another
+//   OVERDRAWN  a meter (a thin bar) drawn after a word, through the middle of it: the Pyromancer's heat bar across his name
 //   TRUNCATED  fitText cut the string (the player never sees the end of it)
 //   CLIPPED    wrap() made more lines than were drawn
 //   SMUDGE     a 6px string with lower case: drawn in the resampled canvas font, not the pixel caps (B, D, 8, 0 all smear)
@@ -16,6 +17,7 @@
 // the HUD with every meter full, and every boss and mini name card as the fight starts.
 //   node tools/textfit.mjs                  everything (report mode: prints, writes textfit.json, exits 0)
 //   node tools/textfit.mjs hints,talk       only those screens (hints talk bestiary store tree menu hud boss pick practice)
+//   plates    every boss and mini's plate at the foot of the screen, in its fight (only the band under VH - 40): in the suite
 //   pick      THE HERO PICK, with each of its cards selected in turn: every hero's name under its card, and the words for the selected one
 //   practice  THE PRACTICE YARDS list, each row selected in turn
 //   node tools/textfit.mjs --strict         exit 1 on any OVERFLOW, OFFSCREEN, CLIPPED, TRUNCATED, COVERS, COLLIDE or SMUDGE (LONGHINT only reports)
@@ -56,13 +58,15 @@ async function pageTextFit(input) {
   const yieldNow = () => new Promise(r => setTimeout(r, 0));
   /* THE PLATES: every filled or stroked rectangle drawn while recording */
   const orig = {};
-  for (const m of ['fillRect', 'roundRect', 'strokeRect']) { orig[m] = G[m]; G[m] = function (x, y, w, h, ...rest) { const r = window.__textRec; if (r && Math.abs(w) >= 6 && Math.abs(h) >= 6) r.push({ kind: 'rect', m, x0: Math.min(x, x + w), y0: Math.min(y, y + h), w: Math.abs(w), h: Math.abs(h) }); return orig[m].call(this, x, y, w, h, ...rest); }; }
+  for (const m of ['fillRect', 'roundRect', 'strokeRect']) { orig[m] = G[m]; G[m] = function (x, y, w, h, ...rest) { const r = window.__textRec; if (r && Math.abs(w) >= 6 && Math.abs(h) >= 6) r.push({ kind: 'rect', m, x0: Math.min(x, x + w), y0: Math.min(y, y + h), w: Math.abs(w), h: Math.abs(h) });
+    else if (r && m === 'fillRect' && Math.abs(w) >= 12 && Math.abs(h) >= 1 && this.globalAlpha >= 0.3) r.push({ kind: 'bar', x0: Math.min(x, x + w), y0: Math.min(y, y + h), w: Math.abs(w), h: Math.abs(h) });   /* a METER: too thin to be a plate, wide enough to lie across a word (OVERDRAWN) */
+    return orig[m].call(this, x, y, w, h, ...rest); }; }
   const report = (type, screen, t, extra = {}) => { const key = type + '|' + t.s + '|' + t.at + '|' + (extra.other || ''); if (seenIssue.has(key)) { const it = issues.find(q => q.key === key); if (it) it.n++; return; }
     seenIssue.add(key); issues.push(Object.assign({ key, type, screen, s: t.s, at: t.at, via: t.via, n: 1 }, extra)); };
   function analyse(screen, rec, opts = {}) {
     stats.frames++; const VW = BK.view.VW, VH = BK.view.VH;
     rec.forEach((r, i) => { r.i = i; });
-    const texts = rec.filter(r => r.kind === 'text' && r.s.trim() && r.alpha > 0.05);
+    const texts = rec.filter(r => r.kind === 'text' && r.s.trim() && r.alpha > 0.05 && (opts.band === undefined || r.y0 >= opts.band));   /* opts.band: only the words from that row down (the boss plate) */
     stats.texts += texts.length;
     for (const t of texts) {
       if (t.x0 < -1 || t.x0 + t.w > VW + 1 || t.y0 < -1 || t.y0 + t.h > VH + 1) report('OFFSCREEN', screen, t, { box: [t.x0, t.y0, t.w, t.h], VW, VH });
@@ -81,6 +85,11 @@ async function pageTextFit(input) {
         const over = Math.max(p.x0 - t.x0, t.x0 + t.w - (p.x0 + p.w), p.y0 - t.y0, t.y0 + t.h - (p.y0 + p.h));
         if (over > 2) report('OVERFLOW', screen, t, { by: Math.round(over), plate: [Math.round(p.x0), Math.round(p.y0), Math.round(p.w), Math.round(p.h)], text: [t.x0, t.y0, t.w, t.h] }); }
     }
+    /* OVERDRAWN: a meter drawn AFTER a word, across it. The Pyromancer's heat bar was laid over the middle of his own name on the boss
+       plate, and no rule looked: COLLIDE only compares words with words (level review, 2026-09-24; the burning village rework) */
+    for (const t of texts) { const b = rec.find(q => q.kind === 'bar' && q.i > t.i && Math.min(t.x0 + t.w, q.x0 + q.w) - Math.max(t.x0, q.x0) > 2 && Math.min(t.y0 + t.h, q.y0 + q.h) - Math.max(t.y0, q.y0) >= 1 && q.y0 > t.y0 && q.y0 < t.y0 + t.h - 1);
+      const hidden = b && rec.some(q => q.kind === 'rect' && q.i > t.i && q.i < b.i && q.x0 <= t.x0 + 1 && q.x0 + q.w >= t.x0 + t.w - 1 && q.y0 <= t.y0 + 1 && q.y0 + q.h >= t.y0 + t.h - 1);   /* (a word a later panel covers - the HUD under the pause menu - is not the word the panel's meter crosses) */
+      if (b && !hidden) report('OVERDRAWN', screen, t, { bar: [Math.round(b.x0), Math.round(b.y0), Math.round(b.w), Math.round(b.h)], text: [t.x0, t.y0, t.w, t.h] }); }
     for (let a = 0; a < texts.length; a++) for (let b = a + 1; b < texts.length; b++) { const A = texts[a], B = texts[b];
       if (A.s === B.s && Math.abs(A.x0 - B.x0) <= 1 && Math.abs(A.y0 - B.y0) <= 1) continue;
       const ix = Math.min(A.x0 + A.w, B.x0 + B.w) - Math.max(A.x0, B.x0), iy = Math.min(A.y0 + A.h, B.y0 + B.h) - Math.max(A.y0, B.y0);
@@ -164,6 +173,14 @@ async function pageTextFit(input) {
     frame('hud [' + h + '] swimming, no air', () => { BK.state = 'play'; Object.assign(P, { swim: true, breath: 0 }); });
     P.swim = false; await yieldNow(); }
 
+  /* THE BOSS PLATES, every boss and mini fight in the campaign: its name, its health and any meter of its own, at the foot of the
+     screen - the band under VH - 40 only, so the fights' own world captions (the long run, 'boss') are not asked here. In the suite. */
+  if (want('plates')) for (const [l, i] of campaign) { try { toPlay(i, 'knight'); } catch (e) { continue; } const Lb = BK.L;
+    for (const [nm, A] of [['arena', Lb.arena], ['mini', Lb.mini]]) { if (!A) continue; const boss = BK.enemies().find(e => e.t === A.boss && e.alive); if (!boss) continue;
+      for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
+      BK.tp(Math.round((A.trigger || (A.x0 + A.x1) / 2) / 16) + 1, Math.round(A.floor / 16) - 1);
+      for (let f = 0; f < 24; f++) { BK.sim(12); if (boss.heat !== undefined) boss.heat = 20 + f * 3; frame('boss plate ' + l.id + ' ' + nm, () => { BK.state = 'play'; }, { band: BK.view.VH - 40 }); if (BK.P.dead) BK.reset(); } }
+    await yieldNow(); }
   if (want('boss')) { const meas = document.createElement('canvas').getContext('2d');
     for (const [l, i] of campaign) { let Lb; try { toPlay(i, 'knight'); Lb = BK.L; } catch (e) { continue; }
       for (const [nm, A] of [['arena', Lb.arena], ['mini', Lb.mini]]) { if (!A) continue;
@@ -191,7 +208,7 @@ async function main() {
   const t0 = Date.now();
   const r = await pg.evalp('(' + pageTextFit.toString() + ')(' + JSON.stringify(input) + ')');
   const by = {}; for (const it of r.issues) (by[it.type] = by[it.type] || []).push(it);
-  const ORDER = ['OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'LONGHINT', 'SMUDGE', 'ERROR'];
+  const ORDER = ['OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'OVERDRAWN', 'LONGHINT', 'SMUDGE', 'ERROR'];
   for (const ty of ORDER) { const list = by[ty] || []; if (!list.length) continue;
     console.log('\n== ' + ty + ' (' + list.length + ')');
     for (const it of list.slice(0, 60)) console.log('  ' + (it.at || '').padEnd(15) + ' ' + it.screen.slice(0, 60).padEnd(60) + ' ' + JSON.stringify(String(it.s).slice(0, 70)) +
@@ -208,7 +225,7 @@ async function main() {
   console.log(r.shots.length + ' pictures in ' + SHOTS);
   if (pg.errors.length) console.log('page errors:\n  ' + [...new Set(pg.errors)].slice(0, 8).join('\n  '));
   pg.close();
-  const hard = ['OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'SMUDGE'].reduce((n, ty) => n + (by[ty] || []).length, 0);   /* LONGHINT is reported, not failed */
+  const hard = ['OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'OVERDRAWN', 'SMUDGE'].reduce((n, ty) => n + (by[ty] || []).length, 0);   /* LONGHINT is reported, not failed */
   process.exit(strict && hard ? 1 : 0);
 }
 main().catch(e => { console.error(e.message); process.exit(1); });

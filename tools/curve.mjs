@@ -29,9 +29,8 @@
 // how the THREAT table drifted by twenty entries.
 import { LEVELS, T, TS } from '../src/level.js';
 import { chainOf, gateOf } from './campaign-order.mjs';
-import { THREAT, spanOf, indexOf, worstGap, RAMP_DROP, RAMP_WALL } from '../src/threat.js';
+import { THREAT, spanOf, indexOf, worstGap, measureLevel, RAMP_DROP, RAMP_WALL } from '../src/threat.js';
 
-const HAZ = new Set([T.SPIKE]);
 
 const rows = [];
 for (const lv of LEVELS) {
@@ -39,24 +38,9 @@ for (const lv of LEVELS) {
   // seventeenth step of a sixteen-step slope, and counting it makes every reading after it a lie.
   if (lv.hidden) continue;
   const R = lv.build();
-  const cols = R.W;
-  let foes = 0, threat = 0, kinds = new Set(), checks = 0, hazTiles = 0;
-  for (const e of (R.ents || [])) {
-    if (e.t === 'check') { checks++; continue; }
-    const w = THREAT[e.t];
-    if (w === undefined) continue;
-    if (w > 0) { foes++; threat += w * (e.mini ? 2 : e.elite ? 3 : 1);   /* an elite is three of its kind */ kinds.add(e.t); }
-  }
-  /* AN AMBUSH IS IN THE LEVEL even though it is not in the entity list until the room shuts */
-  for (const A of (R.ambushes || [])) for (const w of A.waves) for (const [t] of w) { const v = THREAT[t]; if (v > 0) { foes++; threat += v; kinds.add(t); } }
-  for (let i = 0; i < R.grid.length; i++) if (HAZ.has(R.grid[i])) hazTiles++;
-  for (const p of (R.pools || [])) { if (p.harm) hazTiles += Math.round((p.x1 - p.x0) / TS / 4);
-    else if (p.swim) hazTiles += Math.round((p.x1 - p.x0) / TS / 8); }   // breath is a hazard with nothing in it
-  // the worst run of level with no checkpoint in it
-  const gap = worstGap(R.ents, cols, R.H, R.arena);
-  const span = spanOf(cols, R.H);
+  /* COUNTED IN src/threat.js (measureLevel), the same count the bot makes: ambush crowds with their captain as an elite, and floor that gives way as hazard */
+  const M = measureLevel(R, { T, TS }), { foes, threat, kinds: nk, checks, hazTiles, gap, span, index } = M, kinds = { size: nk };
   const per100 = threat / (span / 100);
-  const index = indexOf({ threat, kinds: kinds.size, hazTiles, gap, span });
   rows.push({ id: lv.id, needs: gateOf(lv), arc: lv.arc || null, cols: span, foes, threat: Math.round(threat), kinds: kinds.size, per100: +per100.toFixed(1), haz: hazTiles, checks, gap, index });
 }
 
