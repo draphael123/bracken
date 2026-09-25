@@ -8,7 +8,9 @@
      1. BK.playtest, both passes: the sweep's art and geometry findings, and how far a plain run gets (the yard).
      2. THE LEGS: the same bot, no god mode, walked between the locks - start -> the yard, the yard's door -> the elite's
         gate, the gate -> the level's own gate - each leg until it arrives, dies three times, or runs out of frames.
-   The locks themselves are measured by the tool made for them: node tools/combat-acceptance.mjs ambush <out> caravan. */
+   The locks themselves are measured by the tool made for them: node tools/combat-acceptance.mjs ambush <out> caravan.
+   The last leg ends in THE WORM'S HOLLOW since the worm moved in (claude/duneworm): it arrives when it has crossed his trigger and
+   the walls have shut behind it. His fight is the boss lab's (node tools/duneworm-pilot.mjs); the gate after him, tools/dune-worm.mjs's. */
 import { openPage } from './cdp.mjs';
 const heroes = (process.argv[2] || 'knight,warden').split(',');
 const steps = +(process.argv[3] || 20000);
@@ -25,7 +27,7 @@ try {
       BK.load(idx); BK.start(); BK.god = false;
       const L = BK.L, A = L.ambushes[0], el = L.ents.find(e => e.elite && e.gate !== undefined), gate = L.ents.find(e => e.t === 'gate' && !e.elite);
       const foot = x => { for (let y = 1; y < L.H - 1; y++) { const t = L.grid[y * L.W + x]; if (t !== 0 && !(t >= 20 && t <= 25) && t !== 2 && t !== 8) return y - 1; if (t >= 20 && t <= 25) return y; } return 20; };
-      const LEGS = [['start -> the Traders\\' Yard', null, A.wallL + 2], ['the yard\\'s far door -> the elite archer\\'s gate', A.wallR + 4, el.gate - 1], ['the elite\\'s gate -> the level\\'s gate (a WIN)', el.gate + 2, gate.x + 4]];
+      const LEGS = [['start -> the Traders\\' Yard', null, A.wallL + 2], ['the yard\\'s far door -> the elite archer\\'s gate', A.wallR + 4, el.gate - 1], ['the elite\\'s gate -> THE WORM\\'S HOLLOW, into his fight', el.gate + 2, Math.round(L.arena.trigger / 16) + 2]];
       for (const [name, from, to] of LEGS) {
         if (from !== null) { BK.load(idx); BK.start(); BK.god = false; BK.tp(from, foot(from)); }
         const bot = makeBot(BK); const d0 = BK.stats().deaths; let s = 0, arrived = false, best = BK.P.x;

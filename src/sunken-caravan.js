@@ -13,9 +13,10 @@
 //   - the static shade (wagons, awnings, the ribcage, the caravanserai, the rim's overhang) is said as L.shade rects once,
 //     here, and the props that cast it become dressing (deco) the game already knows how to stand on the ground
 //   - the camp's machine is an 'awningwinch' (the name 'winch' is the Highcrown gate winch's)
-//   - THE WORM'S HOLLOW is built but holds NO BOSS YET: THE DUNE WORM (src/dune-worm.js) is its own session (the brief's
-//     build order: "level, then boss"), so the level ends at a gate at the far side of the hollow. L.hollow keeps the
-//     arena's numbers for that session.
+//   - THE WORM'S HOLLOW is the arena, and THE DUNE WORM IS IN IT (2026-09-25, claude/duneworm; docs/briefs/dune-worm.md): the
+//     level's machine comes back as his opening - THE HOLLOW WINCH rolls a second great awning out over the middle of the
+//     hollow, and his breach that comes up under it comes up into the canvas. The level still ends at the gate at the far side
+//     of the hollow: it opens when he dies (L.gateAfterBoss), and you walk to it. L.hollow is the arena, by its old name.
 //   - one ambush room (RULES Q): THE TRADERS' YARD, under the great awning, led by THE OLD STINGER
 import { buildSunkenCaravan as buildDraft, CARAVAN_BASE } from './draft/sunken-caravan.js';
 import { shadeZones } from './sunstroke.js';
@@ -59,10 +60,25 @@ export function buildCaravan({ T, TS }) {
   L.quest = { n: 3, item: 'coffer', name: "TRADER'S COFFER", done: "THE CARAVAN'S TAKINGS ARE FOUND", thanks: "THE TRADER'S THANKS" };
   /* 5. the relic, in the trader's tent: a veil against the sun (RELICS.veil in src/main.js) */
   for (const e of L.ents) if (e.t === 'relic') e.kind = 'veil';
-  /* 6. THE HOLLOW: no boss yet. The arena's numbers are kept for the worm's session, and the gate stands at the far wall */
-  L.hollow = L.arena; delete L.arena;
-  { const ax1 = L.hollow.wallR - 2, gy = top(ax1) - 1; L.ents.push({ t: 'gate', x: ax1, y: gy });
-    L.ents.push({ t: 'sign', x: L.hollow.wallL + 12, y: top(L.hollow.wallL + 12) - 1, text: 'SOMETHING LIVES UNDER THIS HOLLOW. NOT TODAY.' }); }
+  /* 6. THE HOLLOW: THE DUNE WORM's arena (docs/briefs/dune-worm.md). Forty tiles, entered from the left (RULES I).
+       +2..+8   the rim's overhang (the draft's): the one shade he can never take
+       +8, +32  two wagon wrecks: dressing and sun-shade. The greybox's middle wreck at +20 goes - the awning stands there now
+       +12      THE HOLLOW WINCH (the level's machine, F5, a second time) and +14..+26 THE GREAT SHADE it rolls out, 5 rows up on
+                two posts: his breach that comes up under it comes up INTO it - TANGLED, double damage (THE OPENING, A11). It
+                starts OUT: the sun sends you under it, and the first ripple teaches the rest. He tears it down each time, and
+                the winch winds it out again
+       +37      the level's GATE: it ends the level after his death (L.gateAfterBoss), not before
+     The worm sleeps under the middle of it and wakes when you cross the trigger. His music is boss2 (the greybox's: no desert
+     track in audio/, and nothing is downloaded - see the lane report). */
+  L.hollow = L.arena; L.arena.music = 'boss2';
+  { const ax0 = L.arena.x0 / TS, ax1 = L.arena.wallR - 2, gy = top(ax1) - 1, floorRow = L.arena.floor / TS;
+    L.ents = L.ents.filter(e => !(e.t === 'deco' && (e.kind === 'wagon' || e.kind === 'wagonSunk') && e.x === ax0 + 20));
+    L.ents.push({ t: 'gate', x: ax1, y: gy });
+    L.ents.push({ t: 'awningwinch', x: ax0 + 12, y: top(ax0 + 12) - 1, hollow: true, canopy: { x0: ax0 + 14, x1: ax0 + 26, row: floorRow - 5 } });
+    L.ents.push({ t: 'deco', x: ax0 + 14, y: top(ax0 + 14) - 1, kind: 'canopyPost', behind: true }, { t: 'deco', x: ax0 + 26, y: top(ax0 + 26) - 1, kind: 'canopyPost', behind: true });
+    L.ents.push({ t: 'duneworm', x: ax0 + 20, y: top(ax0 + 20) - 1, face: -1 });
+    L.ents.push({ t: 'sign', x: ax0 - 6, y: top(ax0 - 6) - 1, text: 'HE COMES UP UNDER YOU. WIND THE SHADE OUT AND LET HIM COME UP INTO IT.' });
+    L.gateAfterBoss = true; }
   /* 7. THE TRADERS' YARD: the ambush room (RULES Q), the camp's flat under the great awning. The winch stands inside it on
      purpose: wind the awning in and the looters are in the sun with you. */
   { const x0 = L.marks.winch, row = top(x0) - 1, wallL = x0, wallR = x0 + 32;

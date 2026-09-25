@@ -401,7 +401,7 @@ async function runbossLab(BK, opts) {
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
-      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'){   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -774,6 +774,41 @@ async function runbossLab(BK, opts) {
         if(!k.block&&P.atk<0){if(add){P.face=Math.sign(add.x-P.x)||1;BK.press('atk');swings++;}else if(!rest&&Math.abs(dx)<reach&&Math.abs(P.y-boss.y)<40&&m!=='diveTell'){P.face=side;BK.press('atk');swings++;}}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
         if(f%600===599)await yieldNow();continue;
+      }
+      /* THE DUNE WORM, played as his hollow teaches it (docs/briefs/dune-worm.md). With the awning DOWN, wind it (to THE HOLLOW WINCH, strike it);
+         with it OUT, wait under it while the ripple tracks, and when it COMMITS - a human beat later, 0.2 s - get off the locked spot, so he comes
+         up INTO the canvas; cut him while he is up, twice as hard tangled. Every red tell is walked off (the lunge's shadow, the sinkhole - jumped
+         out of while it pulls); his spit is taken on a shield, or got behind. In the storm a gust is braced for with block. It reads the REAL
+         ripple only at the commit, where a player reads the bulge: before it both look the same and it follows neither. */
+      if(boss.t==='duneworm'){
+        k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=false;
+        const W=boss.st,m=boss.mode,cv=BK.caravan?BK.caravan():null,wn=cv&&cv.winches?cv.winches.find(q=>q.hollow):null;
+        const can=wn&&wn.canopy?[wn.canopy.x0*TS+8,(wn.canopy.x1+1)*TS-8]:null,out=!!(wn&&wn.k>=0.95),mid=can?(can[0]+can[1])/2:(A.x0+A.x1)/2;
+        const reach=LAB_REACH[h]+(boss.w||30)/2,dx=boss.x-P.x,side=Math.sign(dx)||1,touch=!!W&&['breach','tangled','surfaced','spitTell','spit','lungeTell','swallow','dive'].includes(m);
+        const rest=P.labRest;let gx=null,swing=false,brace=false,wind=false;
+        const real=W&&W.ripples.find(r=>r.real&&r.commit);
+        const G=cv&&cv.stormNow&&cv.stormNow.phase==='gust'?cv.stormNow.dir:0;   /* in a gust, the way the arrow points */
+        if(real){ P.dwSeen=P.dwSeen||f; if(f-P.dwSeen>=12){ const away=G||Math.sign(P.x-real.tx)||(P.x<mid?-1:1),room=(away>0?A.x1-P.x:P.x-A.x0)>60?away:-away;
+            gx=real.tx+room*48; if(Math.abs(P.x-real.tx)<22&&P.ground&&!(P.dodge>0)&&P.st>20){k[room>0?'right':'left']=true;BK.press('dodge');} } }
+        else P.dwSeen=0;
+        if(gx===null&&(m==='swallowTell'||m==='swallow')&&W&&W.pit){ const away=Math.sign(P.x-W.pit.x)||(P.x<mid?1:-1),room=(away>0?A.x1-P.x:P.x-A.x0)>70?away:-away; gx=W.pit.x+room*70;
+            if(m==='swallow'&&Math.abs(P.x-W.pit.x)<50&&P.ground){BK.press('jump');P.labJump=12;} }
+        if(gx===null&&(m==='lungeTell'||m==='lunge')&&W){ const away=Math.sign(W.lungeTo-W.lungeFrom)||Math.sign(P.x-W.x)||1,room=(away>0?A.x1-P.x:P.x-A.x0)>70?away:-away; if(Math.abs(P.x-W.lungeTo)<52)gx=W.lungeTo+room*60; }   /* on, the way he is coming: away from the shadow AND from him */
+        if(gx===null&&(m==='spitTell'||m==='spit')&&Math.abs(dx)<160){ if(SHIELDED(h)){k.block=true;P.face=side;}else if(h==='warden'){k.block=DEFLECT_TAP(f);P.face=side;}else gx=boss.x+side*24; }   /* the fan lands 35-145 px in front of him: shield it, or be behind him */
+        if(gx===null&&!k.block){
+          if(m==='tangled'||(touch&&!rest)){gx=boss.x-side*Math.max(12,Math.min(LAB_STAND[h]||14,reach-6));swing=!rest;}
+          else if(wn&&!out&&wn.out===0&&!(wn.cd>0.2)){gx=wn.x-(P.x<wn.x?10:-10);wind=true;}
+          else if(m==='rippleTell'||m==='under'||m==='dive'||m==='sleep'||m==='wake')gx=out?mid:P.x;
+          else gx=P.x; }
+        if(wind&&Math.abs(wn.x-P.x)<16&&P.atk<0&&P.ground){P.face=Math.sign(wn.x-P.x)||P.face;BK.press('atk');swings++;}
+        const S=cv&&cv.stormNow;if(S&&S.phase==='gust'&&P.ground&&!real&&!(m==='swallow'||m==='swallowTell'||m==='lunge'||m==='lungeTell')&&!swing){brace=true;}
+        if(brace&&(h==='knight'||h==='paladin'||h==='reaper'||h==='warden'||h==='pirate'))k.block=true;
+        if(gx!==null&&!k.block&&Math.abs(gx-P.x)>4){gx=Math.max(A.x0+10,Math.min(A.x1-10,gx));k[gx>P.x?'right':'left']=true;}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(swing&&!k.block&&P.atk<0&&Math.abs(dx)<=reach&&Math.abs(boss.y-P.y)<70){P.face=side;if(dx>0)k.left=false;else k.right=false;BK.press('atk');swings++;}
+        const was=P.hp,m0=m;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));
+        { const op=!!(boss.st&&boss.st.mode==='tangled'); if(op&&!wasOpen)opened++; wasOpen=op; }
+        if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:wasOpen});if(P.dead)falls++;if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='burieddead'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;

@@ -7299,7 +7299,7 @@ export const LEVELS = [
   { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS}), needs: 'witchlight' },
   /* THE SUNKEN CARAVAN (lane Q, 2026-09-24): the first level of the desert, through the gold hole the Undead Archmage leaves when
      he falls. Appended so no index moves (the map's nodes and the saves count by index); brief .claude/briefs/sunken-caravan.md
-     as amended by docs/briefs/sunken-caravan-amendments.md. Its boss, THE DUNE WORM, is its own session: the hollow is built and empty */
+     as amended by docs/briefs/sunken-caravan-amendments.md. Its boss, THE DUNE WORM, lives in the hollow at its end (claude/duneworm, docs/briefs/dune-worm.md) */
   { id: 'caravan', arc: 'the desert', name: 'THE SUNKEN CARAVAN', sub: 'the road the storm buried', rule: 'THE SUN IS OUT HERE. SHADE IS LIFE.', build: () => buildCaravan({ T, TS }), needs: 'fallingtower' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
   /* (2026-09-24, POLISH) the Warden's and the Geomancer's yards, APPENDED: LEVELS is an append log (map nodes and saves count by index) */

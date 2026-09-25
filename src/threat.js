@@ -112,6 +112,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      module yet (src/desert-foes.js has the other three and nothing for him), so this weighs a looter with a blade
      against the human melee line - the cutlass at 2.5, under the soldier at 3. Re-weigh him when he is written. */
   scorpion: 3, vulture: 2, sandgob: 2.5, bandit: 2.5,
+  /* THE DUNE WORM, the caravan's boss (2026-09-25): a boss is a 6. awningwinch is his trap and the camp's machine - furniture */
+  duneworm: 6, awningwinch: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
