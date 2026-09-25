@@ -888,7 +888,7 @@ function sporewood() {
   for (const x of [180, 185, 196, 202]) R.grid[19 * R.W + x] = T.BOUNCER;
   caps.push(sprout(177, 14, { rise: 16, lean: 160, growT: 1.6 }), sprout(192, 14, { rise: 16, lean: 176, growT: 1.7 }));
   R.ents.push({ t: 'sign', x: 176, y: 13, text: 'SOME CAPS LEAN AS THEY GROW. STOP ON ONE AT THE EDGE AND IT CARRIES YOU OVER.' },
-    { t: 'spitcap', x: 190, y: 13, face: -1 }, { t: 'shield', x: 207, y: 13, face: -1 }, { t: 'sporeling', x: 186, y: 19, face: -1 }, { t: 'sporeling', x: 199, y: 19, face: -1 });
+    { t: 'spitcap', x: 190, y: 13, face: -1 }, { t: 'sporeling', x: 186, y: 19, face: -1 }, { t: 'sporeling', x: 199, y: 19, face: -1 });
   /* -- 2. THE DRIPPING STAIR (the old Tumble, 245-284): the two-row steps become two four-row tiers, a bud at the foot of each, and a clump
      of spores lets go of the canopy over each bud on a count. Grow your step between clumps: ride it up in the column and it finds you. */
   RS(252, 258, 10, 11, T.SOLID); RS(259, 272, 6, 9, T.SOLID);

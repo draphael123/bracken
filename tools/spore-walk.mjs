@@ -23,12 +23,12 @@ try {
       const L = BK.L, el = L.ents.find(e => e.elite && e.gate !== undefined), door = L.arena.wallL;
       const foot = x => { for (let y = 1; y < L.H - 1; y++) { const t = L.grid[y * L.W + x], u = L.grid[(y + 1) * L.W + x]; if (t === 0 && u !== 0 && u !== 17) return y; } return 13; };
       const LEGS = [['start -> the fork (the glade\\'s root step, the canyon, the grove, the shelf climb)', null, 130],
-        ['the old vent marsh -> the Tumble (the leaning caps, the web tunnels)', 175, 244],
+        ['the old vent marsh -> the Tumble (the leaning caps, the web tunnels)', [176, 13], 244],
         ['the Tumble -> the bog (the dripping stair, the lantern terrace)', 245, 328],
         ['the bog -> the elite\\'s gate (the bog, the pillars)', 329, el.gate - 20],
         ['past the elite -> the Mother\\'s door (the Deep Gills, the sprouts, the hollow)', el.gate + 2, door - 2]];
       for (const [name, from, to] of LEGS) {
-        BK.load(idx); BK.start(); BK.god = false; if (from !== null) BK.tp(from, foot(from));
+        BK.load(idx); BK.start(); BK.god = false; if (from !== null) BK.tp(...(Array.isArray(from) ? from : [from, foot(from)]));   /* [x, row]: the marsh leg starts on the lip, not the canopy's exit ledge over it - the bot jumps off that into the gap and hangs on the stump's wall (spurs), which a player lets go of */
         const bot = makeBot(BK); const d0 = BK.stats().deaths; let s = 0, arrived = false, best = BK.P.x;
         for (; s < ${steps}; s++) { if (BK.state !== 'play') break; bot(to * 16 + 8); BK.sim(1); best = Math.max(best, BK.P.x);
           if (BK.P.x >= to * 16 - 8) { arrived = true; break; } if (BK.stats().deaths - d0 >= 3) break; }
