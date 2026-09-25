@@ -81,9 +81,12 @@ in while you stand on the deck, because the well-head is at your elbow. The deck
 on it. Once you have stepped off, the basket tips its load out at the bottom of the well, the load goes back to its
 pile, and the deck comes back down. So every ride costs one carry, and the hoist can be used any number of times.
 
-**Carrying.** A load is picked up by walking onto it, and you carry one at a time. You walk slowly while you carry
+**Carrying.** DOWN picks a load up and sets it down. (It was walking onto it, until a stone in the crown slowed every
+hero who crossed it mid-fight.) You carry one at a time. You walk slowly while you carry
 it; this is the game's existing `P.ballast` weight, so there is nothing new to learn. **DOWN sets it down.** A blow
 that lands knocks it out of your hands. A load that falls off its floor, or is lost, goes back to its pile.
+**As built,** every well stands on the FAR side of its deck from its loads. Carried the other way, a load dropped in as
+you walked past the well, and the deck left without you.
 
 **Where it is used, and how each use differs:**
 
@@ -102,8 +105,9 @@ that lands knocks it out of your hands. A load that falls off its floor, or is l
 
 **Physics, honestly.** The basket sinks into a well that is drawn, not dug. The floor stays solid rock, so no hoist
 opens a pit anyone can fall into. The basket is clipped at the floor line. The reach model already counts a `lift`
-as a ride. The playtest bot is taught to fetch a load for a deck that will not go, the same way it was taught to go
-back for a key.
+as a ride. **As built:** the playtest bot walks toward the gate's column, so a switchback level defeats it before any
+hoist, and it was NOT taught to load one. `tools/hanging-hoist-walk.mjs` walks all four hoists in the page with
+real keys instead, once per hero.
 
 ## 4. THE OWL REEVE: phase two cuts the hoist (A10, A11, A12)
 
@@ -155,13 +159,15 @@ taking them through the roots and webbing them to her ceiling. Her larder is the
 checkpoints fourteen rows apart, so the filler never saw the gap. The same key misjudges the wide tall levels (the
 Keep, the Burial Caverns).
 
-**The fix, as a rule.** A new check, **checkpoint-gaps**, measures every level along its walked route
+**The fix, as a rule.** A new check, `tools/checkpoint-gaps.mjs`, measures every level along its walked route
 (`tools/pacing.mjs`'s route) and fails any gap over **150 route tiles**, the playtest bot's `LONGGAP` line. It proves
 red first, on this level. Two levels are over the line today and belong to other work, so they go on a named list
 with a reason each. The tool fails any listed level that no longer needs its entry, so the list can only shrink.
 
-**For this level:** two hand-placed checkpoints, at the top of the rookery climb (the lantern stair's east end) and
-in the middle of the rookery. Both are on three tiles of floor, clear of the ambush room, and not at a landing.
+**For this level (as built):** two hand-placed checkpoints, one at the top of the rookery climb (the lantern stair's
+east end, 96,37) and one in the middle of the market (43,79). The market one closes a 103-tile run that the first one
+exposed. Both stand on three tiles of floor, clear of the ambush room, and not at a landing. The worst walked gap
+went from 162 to 85.
 
 ## 7. What this does not do
 
@@ -178,4 +184,4 @@ in the middle of the rookery. Both are on three tiles of floor, clear of the amb
 - **F9:** the in-page bot walks it with the knight and the warden, no god mode.
 - **Pilots:** `BK.bossLab`, dice pinned, one salt per pass, for the Reeve and the Weaver, before and after.
 - **INDEX** before and after (`tools/curve.mjs`).
-- Real-page captures of every floor, both rooms and the rope cut, before and after, in a `hanging` folder under docs.
+- Real-page captures of every floor, both rooms and the rope cut, before and after, in `docs/hanging/`.
