@@ -10,16 +10,25 @@
 //
 //   0-90     THE ROAD IN      the first burning goblin on a strip of straw, a wisp, a cart alight
 //   90-190   THE CROFTS       the first villager behind a HOT DOOR, and the trough that cools it
-//   190-320  THE LONG STREET  roofs at three heights, beams over the street that fall when their thatch burns out
+//   190-250  THE LONG STREET  roofs at three heights, beams over the street that fall when their thatch burns out, and THE
+//                             FALLEN HOUSE burning across the street: over the roofs, or (the bucket) through it
+//   250-320  THE ROOFTOPS     the street has fallen into its cellars: the Hall's roof, burning beams over the gaps that go
+//                             a moment after you step on them, and smoke out of the cellars that carries you up
+//                             (docs/briefs/burning-village-rework.md, 2026-09-25)
 //   320-400  THE BARN         one big room of hay, two villagers, the fire crossing it; its captain holds the far door
 //   400-450  THE WELL YARD    the well, the last villager, the way up to the square
 //   450-508  THE SQUARE       THE PYROMANCER. The square burns as his heat climbs and clears when he vents.
 export const VILLAGE = { W: 508, H: 34, R: 26 };
+/* THE BURNING BEAM's fuse: from the moment you stand on it. Nine tiles at the paladin's pace (the slowest) is 1.73 s */
+export const BEAM = { fuse: 1.8, back: 5 };
+/* THE SMOKE: a plume rises for `up` seconds of every period, after `tell` seconds of thickening; airborne in it you rise at `lift` px/s */
+export const SMOKE = { up: 1.6, tell: 0.8, lift: 190, half: 12 };
 
 export function buildBurningVillage({ painter, T, TS }) {
   const { W, H, R } = VILLAGE, S = R - 1;             // R: the street's floor row; S: the row you stand in on it
   const L = painter(W, H), { set, block, floor, plat, crate, ent, coins } = L;
   const roofs = [], burn = [], facades = [], stillFires = [], beams = [], interiors = [];
+  const heaps = [], trench = [], beamSpans = [], cellarFires = [], smoke = [];   /* THE ROOFTOPS and THE FALLEN HOUSE (2026-09-25) */
   const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: -1 }, o || {}));
   /* STRAW ON THE STREET lies in bales of five with two tiles of bare road between: a fire runs the length of a bale and stops,
      so a burning goblin can shut a stretch of the road but never all of it (one unbroken strip of twenty-three burning at once
@@ -29,8 +38,10 @@ export function buildBurningVillage({ painter, T, TS }) {
   /* A HOUSE: a thatch roof (three courses, as the Hanging Village builds them) with its front under it, straw on its top,
      and a stair of ledges up its gable three rows at a time - the knight's whole jump, and each ledge overlapping the
      next so the climb reads at a glance. side -1 puts the stair at the left gable, +1 at the right. */
-  const house = (x0, x1, y, side = -1) => {
-    block(x0, x1, y - 2, y); roofs.push([x0, x1, y]); straw(x0, x1, y - 3);
+  /* side 0 lays no stair (THE ROOFTOPS hangs its own); `deep` is how many rows the front runs on below the street, down to the
+     floor of a cellar the street has fallen into */
+  const house = (x0, x1, y, side = -1, deep = 0) => {
+    block(x0, x1, y - 2, y); roofs.push([x0, x1, y - 2, deep]);   /* the roof row is the slab's TOP course: drawRoofs paints the three rows from it (tools/skins.mjs) */ straw(x0, x1, y - 3); if (!side) return;
     const n = Math.ceil((S - (y - 3)) / 3) - 1;          // ledges between the street and the roof top
     for (let k = 0; k < n; k++) { const row = S - 3 * (k + 1) + 1, off = 2 * (n - 1 - k);
       if (side < 0) plat(x0 - 3 - off, row, 3); else plat(x1 + 1 + off, row, 3); } };
@@ -47,19 +58,30 @@ export function buildBurningVillage({ painter, T, TS }) {
   ent('sign', 5, S, { text: 'THE GOBLINS CAME DOWN FROM THE STOCKADE AND FIRED THE VILLAGE. GET ITS PEOPLE OUT.' });
   ent('deco', 13, S, { kind: 'brokenCart', v: 0 }); still(15, S);
   ent('sign', 19, S, { text: 'A BURNING GOBLIN SETS ALIGHT THE STRAW IT WALKS ON. KILL IT ON BARE GROUND.' }); foe('sprig', 22, S);
-  straw(26, 44); foe('burngob', 38, S); coins([24, S - 1], [28, S - 2], [46, S - 1]);
+  straw(26, 44); foe('burngob', 38, S); foe('sprig', 31, S);   /* (the croft yard's sprig, moved down the road: the density bar) */ coins([24, S - 1], [28, S - 2], [46, S - 1]);
   house(50, 62, 19);                                   // a cottage: its thatch is the first roof
   foe('archer', 57, 16); coins([52, 15], [56, 15], [60, 15]);
   facades.push([64, 74, 18, 25, 'burning']); still(69, S);
   foe('emberwisp', 72, 21); foe('sprig', 78, S);
   plat(80, 23, 4); plat(84, 20, 4); coins([81, 22], [85, 19], [87, 19]);
-  foe('sprig', 88, S);
+  /* (the sprig that stood at 88 went: the croft well's yard, where the bucket is taught, is kept empty) */
 
   pit(45, 48);
   // ---- 2. THE CROFTS ----
-  ent('sign', 92, S, { text: 'A HOT DOOR BLOWS OUT WHEN IT IS OPENED. STRIKE THE TROUGH AND WATER IT FIRST.' });
+  /* THE CROFT WELL (docs/briefs/burning-village-rework.md §4): the bucket is TAUGHT here, and safely - the yard is kept calm, and
+     nothing stands in it. The well keeps a bucket on its rim; beside it a ROOT CELLAR's hatch is buried under burning timber.
+     Carry the bucket into the timber: it goes out, falls in as ash, and the cellar under it holds a stash. Seven tiles on, the
+     first HOT DOOR: the bucket cools it as the trough does. */
+  ent('sign', 87, S, { text: 'DOWN TAKES THE BUCKET. CARRY IT INTO A FIRE TO PUT IT OUT. A BLOW SPILLS IT.' });
+  ent('villagewell', 90, S, { bucket: true, kind: 'well', splash: false });
+  for (let x = 93; x <= 94; x++) for (let y = R + 1; y <= R + 2; y++) set(x, y, T.AIR);   /* the root cellar under the road, two rows deep: a jump gets you back out */
+  /* its hatch is the road itself, smouldering timber too hot to lift: walked over, it is floor (a flame on the road would be a toll
+     on everyone who passes, and the F9 walk found a lid standing a row proud of it stopped the street); watered, it falls in */
+  heaps.push({ x0: 93, x1: 94, y0: R, y1: R, name: 'THE ROOT CELLAR', lid: true });
+  for (const [x, y] of [[93, R + 2], [94, R + 2], [93, R + 1], [94, R + 1]]) ent('coin', x, y, { under: 'THE ROOT CELLAR' });   /* a cache of four, the lesson's pay: under a lid only water opens, so the fill never reaches it (playtest's LOSTGOLD knows `under`) */
+  ent('sign', 97, S, { text: 'A HOT DOOR BLOWS OUT WHEN IT IS OPENED. WATER IT FIRST: THE BUCKET, OR STRIKE THE TROUGH.' });
   house(96, 108, 19, 1); captive(101, S, { hot: true }); ent('watertrough', 106, S);
-  straw(114, 128); foe('burngob', 122, S); foe('sprig', 127, S); foe('emberwisp', 118, 20);
+  straw(114, 128); foe('burngob', 122, S); foe('hound', 116, S); foe('sprig', 127, S); foe('emberwisp', 118, 20);
   house(134, 150, 16);                                 // two storeys
   foe('archer', 142, 13); foe('sapper', 147, 13); ent('silver', 149, 12); coins([136, 12], [139, 12]);
   foe('shield', 156, S); facades.push([158, 168, 17, 25, 'burning']); still(163, S);
@@ -70,19 +92,49 @@ export function buildBurningVillage({ painter, T, TS }) {
   pit(188, 191);
   // ---- 3. THE LONG STREET ----
   house(194, 206, 19, -1); captive(200, S);
-  foe('sprig', 204, S); foe('thief', 209, S);
-  house(214, 228, 16, -1); straw(208, 230); foe('burngob', 220, 13); foe('archer', 225, 13);
+  foe('sprig', 204, S); foe('thief', 213, S);
+  /* THE STREET WELL: a bucket twenty tiles short of THE FALLEN HOUSE, under the burning goblin and the archer on the roof over the
+     street. Carried into the heap it burns it down to a step, and the street is open - the other way past it */
+  ent('villagewell', 210, S, { bucket: true, kind: 'well', splash: false });
+  house(214, 228, 16, -1); straw(208, 226); foe('burngob', 222, 13); foe('archer', 225, 13);   /* (222: the garrison stood a second burning goblin on 220) */
   beams.push([221, 17, 221, 13]);                      // [x, hanging row, the thatch cell it hangs from (x, row)]
-  ent('watertrough', 232, S);
-  house(236, 246, 19, 1); foe('pike', 241, S); foe('emberwisp', 241, 20);
-  house(254, 268, 13, -1);                             // THE HALL: the street's tallest roof, and a villager in its dormer
-  captive(263, 10); ent('silver', 267, 9); foe('archer', 258, 10); coins([256, 9], [260, 9]);
-  foe('sprig', 252, S); foe('burngob', 262, S); straw(250, 270);
-  house(274, 286, 16, 1); straw(272, 288, S); foe('burngob', 280, 13); beams.push([277, 17, 277, 13]);
-  foe('thief', 283, S); foe('shield', 290, S);
-  house(294, 306, 19, 1); foe('emberwisp', 300, 20); foe('sprig', 303, 16);
-  facades.push([308, 318, 16, 25, 'burning']); still(313, S);
-  ent('check', 309, S); coins([296, 15], [300, 15], [304, 15]);
+  /* THE FALLEN HOUSE (docs/briefs/burning-village-rework.md §3): a house has come down across the street, a heap of burning
+     timber four rows high - one more than any jump - alight on top. The way past it with no water is the ROOFS: up the gable
+     of the house before it, along its roof, and three tiles over the fire onto the next roof. (Every gap on this route is three tiles, or four with a drop: a real
+     running jump carries the knight four tiles and the paladin three and a half - measured in the page, not the reach model's six) */
+  block(229, 231, S - 3, S); heaps.push({ x0: 229, x1: 231, y0: S - 3, y1: S, name: 'THE FALLEN HOUSE', step: true });   /* doused, it burns down to a step (its bottom row) */
+  house(232, 246, 16, 1); foe('pike', 241, S); foe('emberwisp', 241, 20);
+
+  // ---- 3b. THE ROOFTOPS ----
+  /* THE STREET HAS FALLEN INTO ITS CELLARS from 248 to 314: a trench four rows deep (one more than a jump), fire on its floor in
+     patches and smoke rising out of it. The way on is the ROOFS. The houses' fronts run down to the cellar floor, so nothing
+     stands on nothing (B9). Two cellars, split under the second house's east gable: the first has a ladder out at each end
+     (back to the street, up the second house), the second a ladder up to the street beyond. Fire, not death - the ember pits' rule. */
+  const T0 = 248, T1 = 314, DEEP = 4;
+  for (let x = T0; x <= T1; x++) for (let y = R; y < R + DEEP; y++) set(x, y, T.AIR);
+  block(286, 287, R, R + DEEP - 1);                    // the cellar wall under the second house's east gable
+  trench.push([T0, T1, R, R + DEEP - 1]);
+  house(254, 268, 13, 0, DEEP);                        // THE HALL: the street's tallest roof, and a villager in its dormer
+  plat(250, 14, 4);                                    // the Hall's one ledge, three tiles off the last house's roof
+  /* THE HALL'S RAIN BUTT, and its pail: the villager in the dormer is behind a HOT door, and the only water on the roofs is here */
+  captive(263, 10, { hot: true }); ent('silver', 267, 9); foe('archer', 259, 10); coins([256, 9], [261, 9]);
+  ent('villagewell', 255, 10, { bucket: true, kind: 'butt', splash: false });
+  house(272, 286, 16, 0, DEEP); foe('burngob', 280, 13); foe('sapper', 284, 13); beams.push([277, 17, 277, 13]);
+  /* THE BURNING BEAM: nine tiles over the second cellar, too wide to jump. It holds you for BEAM.fuse seconds from the moment
+     you stand on it - told: it flashes and a ! stands over every tile - then burns through into the cellar, and is back five
+     seconds later. Run it and it holds; stop on it and it does not. */
+  for (let x = 287; x <= 295; x++) set(x, 14, T.ONEWAY);
+  beamSpans.push([287, 295, 14]);
+  house(296, 308, 16, 0, DEEP); foe('emberwisp', 300, 10); foe('sprig', 303, 13); foe('thief', 306, 13);
+  plat(309, 17, 3); plat(311, 20, 3); plat(313, 23, 3);            // down the last gable to the street
+  coins([298, 12], [302, 12], [306, 12]);
+  net(T0, R, R + DEEP - 1); net(271, 14, R + DEEP - 1); net(T1, R, R + DEEP - 1);   /* THE LADDERS OUT, hung last: nothing is dug after them */
+  for (const x of [256, 266, 280, 292, 304]) cellarFires.push([x, R + DEEP - 1]);
+  /* THE SMOKE RISES out of the cellars, in the gaps between the roofs, on a clock: thin, thickening (the tell), then a plume
+     that carries a hero in the air up with it. A second way out of a cellar, never the only one (B4) */
+  for (const [x, per, ph] of [[250, 4.4, 0], [270, 4.8, 1.5], [291, 4.2, 2.6], [311, 4.6, 0.8]]) smoke.push({ x, y0: 8, y1: R + DEEP - 1, per, ph });
+  facades.push([310, 318, 16, R + DEEP - 1, 'burning']);
+  ent('check', 316, S);
 
   // ---- 4. THE BARN ----
   block(322, 322, 12, 22); block(398, 398, 12, 22); block(322, 398, 10, 11);
@@ -96,22 +148,29 @@ export function buildBurningVillage({ painter, T, TS }) {
   ent('sign', 378, 9, { text: 'THE ROOF IS ALIGHT. STRIKE THE WATER BUTT, THEN DROP THROUGH THE HATCH.' });
   const roofFire = [[385, 9], [386, 9], [387, 9]];              /* a ladder up the barn's near gable onto the roof, and what the roof holds pays for the climb; the far gable stands five rows over it, so the roof is a dead end and never a way round the captain's door */
   interiors.push([323, 397, 12, 25, 'timber']);
+  facades.push([323, 397, 12, 25, 'barn']);          /* its back wall, drawn: the barn read as open sky, and an ambush room has to be a place (RULES Q1) */
   plat(327, 20, 67); net(326, 20, 25); net(394, 20, 25);                       // the hayloft, a ladder at each end
-  plat(340, 16, 41); net(342, 16, 19);                                          // and the upper loft over it
+  /* THE HAY-SCREEN (docs/briefs/burning-village-rework.md §5): a wall of bound hay hung from the rafters at 358, down to the hayloft.
+     The barn's east half is its ambush room, and a gate only rises to the hayloft (ambushWall stops at a floor), so the screen shuts
+     the column from the loft to the roof: nobody leaves the room over the lofts. The upper loft is two lofts either side of it. */
+  block(358, 358, 12, 19);                             /* (inside the barn's own timber interior, so it is drawn as the barn's) */
+  set(358, 20, T.AIR);                                 /* (and the hayloft is cut under it: a board nobody can stand on is a board the audit rightly calls unreached) */
+  plat(340, 16, 18); net(342, 16, 19);                                          // the upper loft west of the screen
+  plat(359, 16, 22); net(376, 16, 19);                                          // and east of it, with its own ladder
   straw(323, 397, S, true); straw(327, 393, 19); straw(340, 380, 15);
-  ent('sign', 324, S, { text: 'THE BARN IS HAY FROM THE FLOOR TO THE RAFTERS. THE CAPTAIN HOLDS THE FAR DOOR.' });
+  foe('sprig', 331, S);                               /* at the barn door: the rooftops' last screen had nobody in it (the density bar) */
+  ent('sign', 324, S, { text: 'THE BARN IS HAY FROM THE FLOOR TO THE RAFTERS. THE CAPTAIN AND HIS CREW WAIT PAST THE SCREEN.' });
   ent('check', 341, S);                                /* inside the barn: from the street's last checkpoint to the well yard's is ninety-five columns */
   foe('burngob', 336, S); foe('sprig', 345, S); ent('watertrough', 352, S); foe('burngob', 362, 19); foe('archer', 372, 19);
   foe('emberwisp', 358, 17); foe('sprig', 384, 19);
-  captive(372, 15); ent('silver', 379, 15); coins([346, 15], [352, 15], [358, 15]);
+  captive(372, 15); ent('silver', 379, 15); coins([346, 15], [352, 15], [356, 15]);
   captive(391, S, { hotNear: true });                 // the stall door: hot whenever the hay near it is burning
-  foe('brute', 386, S);                                // THE BARN CAPTAIN (the ELITES row makes him, and his gate)
+  /* THE BARN CAPTAIN leads the barn's ambush now (level.js AMBUSH.burning): the room is emptied when it is built and he comes with it */
   coins([330, 19], [338, 19], [366, 19], [380, 19]);
 
-  pit(290, 293);
   // ---- 5. THE WELL YARD ----
   ent('check', 404, S);
-  ent('villagewell', 414, S);
+  ent('villagewell', 414, S, { bucket: true });              /* struck, it splashes (as it always did); DOWN, and its bucket is yours */
   ent('sign', 408, S, { text: 'THE WELL PUTS OUT WHAT IS NEAR IT. IN HIS SQUARE, THE FLOOR BURNS AS HE RUNS HOT.' });
   house(420, 432, 19, 1); captive(422, S, { hot: true });
   foe('sprig', 428, S); foe('emberwisp', 436, 20); coins([418, S - 1], [426, 15], [430, 15]);
@@ -120,6 +179,9 @@ export function buildBurningVillage({ painter, T, TS }) {
   // ---- 6. THE SQUARE ----
   const F = R - 2;                                     // the square's floor row
   ent('check', 446, F - 1);
+  /* THE SQUARE'S PUMP, just inside his door: its bucket carried into his burning floor puts a patch out and holds it out for
+     QUENCH.secs, even while his heat is high (fire-spread.js quench). The room's own water (A4, A12); it opens nothing on him */
+  ent('villagewell', 456, F - 1, { bucket: true, kind: 'pump', splash: false });
   plat(461, F - 3, 5); plat(475, F - 3, 5); plat(488, F - 3, 5);            // three market stalls: somewhere off the burning floor
   burn.push([455, 495, F - 1, { square: true }]);
   foe('pyromancer', 484, F - 1, { boss: true });
@@ -129,17 +191,21 @@ export function buildBurningVillage({ painter, T, TS }) {
   /* FLAME PILLARS, not campfires (Daniel): the village's own fire is columns that ROAR up and drop back to embers on a clock,
      so the road through them is timed, and every screen has fire on it. Placed on bare ground (never on straw: the village's
      fire does not spread) and never on a sign, door, trough or checkpoint; each is [x, y, period, phase]. */
-  const busyAt = x => L.ents.some(e => Math.abs(e.x - x) <= 1 && e.y >= S - 1 && e.y <= S && ['sign', 'captive', 'watertrough', 'villagewell', 'check', 'gate', 'deco'].includes(e.t)) || burn.some(([a, b, r]) => r === S && x >= a - 1 && x <= b + 1) || pits.some(([a, b]) => x >= a - 1 && x <= b + 1);
-  const pillarsAt = [15, 36, 69, 88, 118, 131, 163, 190, 213, 232, 248, 289, 313, 408, 436];
+  const busyAt = x => L.ents.some(e => Math.abs(e.x - x) <= 1 && e.y >= S - 1 && e.y <= S && ['sign', 'captive', 'watertrough', 'villagewell', 'check', 'gate', 'deco'].includes(e.t)) || burn.some(([a, b, r]) => r === S && x >= a - 1 && x <= b + 1) || pits.some(([a, b]) => x >= a - 1 && x <= b + 1) || trench.some(([a, b]) => x >= a - 1 && x <= b + 1) || heaps.some(h => x >= h.x0 - 1 && x <= h.x1 + 1);
+  const pillarsAt = [15, 36, 69, 118,   /* (not 88: the croft well's yard, where the bucket is taught, has no fire in it) */
+    131, 163, 190, 213, 232, 248, 289, 313, 408, 436];
   const pillars = [];
   for (const want of pillarsAt) { let x = want; for (let k = 0; k < 6 && busyAt(x); k++) x = want + (k % 2 ? -1 : 1) * (1 + (k >> 1)); if (!busyAt(x)) pillars.push([x, S, 3.6 + (x % 3) * 0.4, (x * 0.37) % 3.6]); }
   stillFires.length = 0; stillFires.push(...pillars);
-  const houses = roofs.map(([x0, x1, y]) => ({ x0: x0 + 1, x1: x1 - 1, y0: y + 3, y1: S, door: null, door2: null, seed: x0, thatch: true, burning: true }))
+  const houses = roofs.map(([x0, x1, y, deep]) => ({ x0: x0 + 1, x1: x1 - 1, y0: y + 3, y1: S + (deep || 0), door: null, door2: null, seed: x0, thatch: true, burning: true }))
     .filter(h => h.y1 >= h.y0 && h.x1 > h.x0);
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: S }, pools: [], falls: [], moversExtra: [], interiors, roofs, houses, facades,
-    burn, stillFires, beams, roofFire, village: true, emberPits: pits, deckBreaks: logs.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true, log: true })),
+    burn, stillFires, beams, roofFire, village: true, emberPits: pits, deckBreaks: logs.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true, log: true }))
+      .concat(beamSpans.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true, beam: true, onTop: true, fuse: BEAM.fuse }))),
+    heaps, trench, cellarFires, smoke,
+    calm: trench.map(([a, b, y0, y1]) => [a, b, y0, y1]).concat([[80, 100, 14, S]]),   /* and the croft well's yard, where the bucket is taught */   /* nobody is garrisoned on a cellar floor: it is on fire */
     quest: { n: 6, item: 'folk', name: 'SAVED', done: 'THE VILLAGE IS OUT', thanks: 'THE VILLAGE THANKS YOU' },   /* the villagers are the level's quest: the count on the HUD and on the card */ night: true, glowNight: true, nightA: 0.18, duskStart: -1, duskLen: 1,
     music: 'quarry',                                    /* "Cavern and Blade" (zesona, CC0): the Quarry Pass's, benched with it */
     palette: { set: 'village', sky: 'night', far: 'village', mid: 'village', near: 'village', dress: 'village', haze: 'rgba(255,120,48,0.14)',
@@ -197,6 +263,21 @@ export function drawBurningBackdrop(g, VW, VH, base, off, time, heat) {
     const h = 14 + ((q * 29) % 4) * 4, w = 20 + ((q * 17) % 3) * 6, x = Math.round(q * 30 - off2), y = base - 10 - h, peak = 6 + ((q * 5) % 3) * 3;
     g.fillStyle = '#2a1014'; g.fillRect(x, y, w, h + 12); g.beginPath(); g.moveTo(x - 2, y + 1); g.lineTo(x + w / 2, y - peak); g.lineTo(x + w + 2, y + 1); g.fill();
     if ((q * 7) % 5 === 0) { g.fillStyle = k > 0.3 ? '#ff9a3c' : '#7a3a1c'; g.fillRect(x + 6, y + 6, 2, 3); } }
+}
+/* THE THATCH BURNING on a roof behind the town (level review, 2026-09-24: "the fires on the village silhouettes are flat two-colour
+   orange rectangles"). It was three solid 5 px bars bobbing: a box, not a fire. Now a row of TONGUES, each on its own clock: drawn a
+   pixel row at a time, wide at the root and tapering to a point, leaning with a slow wind and licking sideways near the tip, white-
+   yellow at the root through orange to a red tip; a glow on the roof under them, and sparks that lift off. `w` is the roof's width it
+   burns along, `heat` (0..1) the village's fire near the camera: a hotter fire stands taller. */
+const FLAME_COL = ['#fff0b0', '#ffd36b', '#ff9a3c', '#ff6b2c', '#c8401c'];
+export function drawTownFlame(g, fx, fy, w, time, seed, heat) {
+  const n = Math.max(3, Math.round(w / 6)), tall = 1 + 0.5 * Math.max(0, Math.min(1, heat));
+  g.globalAlpha = 0.28 + 0.1 * Math.sin(time * 7 + seed); g.fillStyle = '#ff7a2c'; g.fillRect(Math.round(fx - w / 2 - 2), fy - 3, w + 4, 4); g.globalAlpha = 1;   /* the glow on the thatch */
+  for (let i = 0; i < n; i++) { const s = seed * 3.1 + i * 1.7, cx = fx - w / 2 + (i + 0.5) * w / n;
+    const h = Math.round((11 + ((seed * 7 + i * 5) % 8) - Math.abs(i - (n - 1) / 2) * 2 + Math.sin(time * (6 + (i % 3)) + s) * 3 + Math.sin(time * 13 + s * 2) * 1.5) * tall), base = Math.max(2, Math.round(w / n) + 1);
+    for (let r = 0; r < h; r++) { const k = r / h, ww = Math.max(1, Math.round(base * Math.pow(1 - k, 0.75))), lean = Math.sin(time * 1.3 + seed) * k * 3 + Math.sin(time * 9 + s + r * 0.5) * k * k * 2;
+      g.fillStyle = FLAME_COL[Math.min(FLAME_COL.length - 1, Math.floor(k * FLAME_COL.length * 0.95 + (i % 2) * 0.4))]; g.fillRect(Math.round(cx - ww / 2 + lean), fy - 1 - r, ww, 1); }
+    if (((time * 3 + s) % 1) < 0.5) { const k = (time * 1.1 + s * 0.3) % 1; g.globalAlpha = 1 - k; g.fillStyle = i % 2 ? '#ffd36b' : '#ff9a3c'; g.fillRect(Math.round(cx + Math.sin(time * 2 + s) * 4), Math.round(fy - h - 2 - k * 16), 1, 1); g.globalAlpha = 1; } }
 }
 /* SMOKE, in pixels: squares that rise, drift and thin from a roof - 2 px near the fire, 3 px as they spread */
 export function drawPixelSmoke(g, x, y, time, seed, heat) {

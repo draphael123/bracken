@@ -34,7 +34,7 @@ for (const f of L.towerFloors.slice(0, 6)) { const [x, y0, y1] = f.hole; for (le
 assert.ok(!L.calm || !L.calm.length, 'no blanket calm (the rule the Codex levels broke)');
 const garrison = L.ents.filter(e => e.garrison); assert.ok(garrison.length >= 8, 'the GARRISON row places: ' + garrison.length);
 const gRows = new Set(garrison.map(e => L.towerFloors.findIndex(f => e.y >= f.top && e.y < f.bot))); assert.ok(gRows.size >= 3, 'and on more than the top floor (stackedFloors): ' + [...gRows]);
-const elites = L.ents.filter(e => e.elite); assert.equal(elites.length, 3);
+const elites = L.ents.filter(e => e.elite); assert.equal(elites.length, 1, 'one elite, the cistern husk: the orrery armour captains the ambush and the loft warden is THE SEXTON since the rework (2026-09-25)');
 for (const e of elites) { assert.ok(e.x > TOWER.X0 && e.x < TOWER.X1 && e.y > TOWER.SKY && e.y < L.H, 'elite inside the tower: ' + JSON.stringify(e)); assert.notEqual(at(e.x, e.y + 1), T.AIR, 'elite stands on something'); }
 assert.equal(L.ents.filter(e => e.t === 'silver').length, 3);
 /* A GLYPH IS A RUNE ON THE FLOOR AND A MEND IS A HEALING SHRINE: neither is a creature, and counting them as foes
