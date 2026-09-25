@@ -65,12 +65,22 @@ export function douse(G, x, y, r) {
   for (const c of G.cells) if (!c.square && (c.s === CATCHING || c.s === ALIGHT) && Math.abs(c.x - x) <= r && Math.abs(c.y - y) <= 2) { c.s = UNLIT; c.t = 0; c.spread = false; n++; }
   return n;
 }
-/* THE SQUARE follows his bar: a patch catches once his heat is past its mark, and goes out when the heat falls five under it */
-export function squareHeat(G, heat) {
+/* THE SQUARE follows his bar: a patch catches once his heat is past its mark, and goes out when the heat falls five under it.
+   A patch a bucket has QUENCHED (quench, below) stays out for its seconds whatever the bar says: dt runs them down. */
+export function squareHeat(G, heat, dt = 0) {
   if (!G) return;
   for (const c of G.cells) { if (!c.square) continue;
+    if (c.outT > 0) { c.outT = Math.max(0, c.outT - dt); c.s = UNLIT; c.t = 0; continue; }
     if (heat >= c.thr && c.s === UNLIT) { c.s = CATCHING; c.t = 0; c.src = 'pyromancer'; }
     else if (heat < c.thr - 5 && c.s !== UNLIT) { c.s = UNLIT; c.t = 0; } }
+}
+/* THE BUCKET ON HIS SQUARE (docs/briefs/burning-village-rework.md §4): every square cell within r tiles of the water goes out and
+   is held out for secs, even while his heat stands over its mark. The rest of the grid is douse()'s. */
+export const QUENCH = { secs: 8 };
+export function quench(G, x, y, r, secs = QUENCH.secs) {
+  if (!G) return 0; let n = 0;
+  for (const c of G.cells) if (c.square && Math.abs(c.x - x) <= r && Math.abs(c.y - y) <= 2) { if (c.s !== UNLIT) n++; c.s = UNLIT; c.t = 0; c.outT = secs; }
+  return n;
 }
 export const burning = c => c && (c.s === ALIGHT);
 export const count = (G, s) => G ? G.cells.filter(c => c.s === s).length : 0;
