@@ -705,7 +705,7 @@ function bakeAll(pal = {}) {
     staging: [0, 1, 2].map(i => ART.bakeStaging(710 + i, null)), stagingL: ART.bakeStaging(713, 'L'), stagingR: ART.bakeStaging(714, 'R'),
     lashed: [0, 1, 2].map(i => ART.bakeLashed(720 + i, null)), lashedL: ART.bakeLashed(723, 'L'), lashedR: ART.bakeLashed(724, 'R'), duck: [0, 1, 2].map(i => ART.bakeDuckboard(580 + i, null)), duckL: ART.bakeDuckboard(583, 'L'), duckR: ART.bakeDuckboard(584, 'R'), capLedge: [0, 1, 2].map(i => ART.bakeCapLedge(590 + i, null)), capLedgeL: ART.bakeCapLedge(593, 'L'), capLedgeR: ART.bakeCapLedge(594, 'R'), climb: [ART.bakeClimbFace(0), ART.bakeClimbFace(1)],
     thorns: [0, 1, 2, 3].map(i => ART.bakeThorns(70 + i)), crate: ART.bakeCrate(), roots: [0, 1, 2].map(i => ART.bakeDirtRoots(80 + i)),
-    reeds: [0, 1, 2].map(i => ART.bakeReeds(90 + i)), silt: [0, 1, 2].map(i => ART.bakeSilt(85 + i)), palisade: [0, 1, 2].map(i => ART.bakePalisade(300 + i)), palisadeTop: ART.bakePalisadeTop(), bouncer: ART.bakeBouncer(), shelf: [0, 1].map(i => ART.bakeShelf(330 + i)), looseRock: [0, 1].map(i => ART.bakeLooseRock(340 + i)), cryst: [0, 1].map(l => [0, 1, 2].map(st => ART.bakeCrystalTile(st, !!l))), spire: [0, 1].map(l => [0, 1].map(v => ART.bakeSpire(v, !!l))), port: [0, 1].map(i => ART.bakePortcullis(600 + i)), drystone: [0, 1, 2].map(i => ART.bakeDrystone(700 + i)), drystoneTop: [0, 1].map(i => ART.bakeDrystoneTop(710 + i)), scree: { 1: ART.bakeScreeTop(720, 1), '-1': ART.bakeScreeTop(721, -1) }, hall: [0, 1, 2].map(i => ART.bakeHallWall(610 + i)), mycTop: {}, mycDirt: [0, 1, 2].map(i => ART.bakeMycDirt(340 + i)), plank: [0, 1].map(i => ART.bakeBridgePlank(310 + i)), plankL: ART.bakeBridgePlankEnd(312, -1), plankR: ART.bakeBridgePlankEnd(313, 1), net: ART.bakeNet(), vine: [0, 1, 2, 3].map(i => ART.bakeVineWall(95 + i)),
+    reeds: [0, 1, 2].map(i => ART.bakeReeds(90 + i)), silt: [0, 1, 2].map(i => ART.bakeSilt(85 + i)), palisade: [0, 1, 2].map(i => ART.bakePalisade(300 + i)), palisadeTop: ART.bakePalisadeTop(), bouncer: ART.bakeBouncer(), shelf: [0, 1].map(i => ART.bakeShelf(330 + i)), shelfMyc: [0, 1].map(i => ART.bakeShelfFungus(332 + i)), looseRock: [0, 1].map(i => ART.bakeLooseRock(340 + i)), cryst: [0, 1].map(l => [0, 1, 2].map(st => ART.bakeCrystalTile(st, !!l))), spire: [0, 1].map(l => [0, 1].map(v => ART.bakeSpire(v, !!l))), port: [0, 1].map(i => ART.bakePortcullis(600 + i)), drystone: [0, 1, 2].map(i => ART.bakeDrystone(700 + i)), drystoneTop: [0, 1].map(i => ART.bakeDrystoneTop(710 + i)), scree: { 1: ART.bakeScreeTop(720, 1), '-1': ART.bakeScreeTop(721, -1) }, hall: [0, 1, 2].map(i => ART.bakeHallWall(610 + i)), mycTop: {}, mycDirt: [0, 1, 2].map(i => ART.bakeMycDirt(340 + i)), plank: [0, 1].map(i => ART.bakeBridgePlank(310 + i)), plankL: ART.bakeBridgePlankEnd(312, -1), plankR: ART.bakeBridgePlankEnd(313, 1), net: ART.bakeNet(), vine: [0, 1, 2, 3].map(i => ART.bakeVineWall(95 + i)),
   };
   for (const eL of [0, 1]) for (const eR of [0, 1]) {
     TILE.mycTop[eL + '' + eR] = [0, 1, 2].map(i => ART.bakeMycTop(350 + i + eL * 7 + eR * 13, eL, eR));
@@ -922,7 +922,7 @@ function resolveTiles() {
         const h = d * TS - 4; if (h > 6) decor.push({ k: 'stem', bg: true, x: x * TS, y: y * TS + 12, c: bakeStem(h, x * 31 + y) }); }
     }
     else if (t === T.PORT) s = TILE.port[(x + y) % 2];
-    else if (t === T.SHELF) s = (L.palette && L.palette.set === 'ship' && FLOT) ? FLOT.rotTop[(rnd() * 3) | 0] : L.looseRock ? TILE.looseRock[(rnd() * 2) | 0] : TILE.shelf[(rnd() * 2) | 0];   /* THE SCREE PATH's loose rock is the shelf in stone */
+    else if (t === T.SHELF) s = shelfSpr((rnd() * 6) | 0);   /* THE SCREE PATH's loose rock is the shelf in stone */
     else if (t === T.CRYST) s = TILE.cryst[litRow(y) ? 1 : 0][Math.max(0, Math.min(2, crackAt[y * LW + x] || 0))];
     else if (t === T.PLANK) { const l = tileAt(x - 1, y) === T.PLANK, r = tileAt(x + 1, y) === T.PLANK; s = L.towerBackdrop ? LEDGE_SETS.arcane.ledge[x%3] : !l ? TILE.plankL : !r ? TILE.plankR : TILE.plank[(rnd() * 2) | 0];
       /* A DECK THE TIDE COVERS is bleached and salt-crusted, and the pale crust is what you see of it under the water: the bridge
@@ -2166,7 +2166,7 @@ function spawnEnt(e) {
       case 'npc': props.push({ t: 'npc', x: px, y: py, kind: e.kind, ride: !!e.ride, anim: Math.random() * 6, lines: e.lines, name: e.name }); break;
       case 'exit': props.push({ t: 'exit', x: px, y: py }); break;
       case 'stray': props.push({ t: 'stray', kind: e.kind || 'sheep', x: px, y: py, got: straysGot.has(px), anim: Math.random() * 6 }); if (e.kind === 'folk' && straysGot.has(px)) props.push(camper([...straysGot].indexOf(px))); break;
-      case 'rockfall': props.push({ t: 'rockfall', x: px, y: py, every: e.every || 2.5, timer: 1 + (e.x % 3) * 0.5, apple: !!e.apple, tellT: e.tell || 0.8, seen: !!e.seen, lane: e.lane }); break;   /* tell/seen/lane: opt-in (THE ORE ROAD) - a longer tell, only on screen, and a mark on the cable it crosses */ /* a steady beat, no dice: learn it and walk it */
+      case 'rockfall': props.push({ t: 'rockfall', x: px, y: py, every: e.every || 2.5, timer: 1 + (e.x % 3) * 0.5, apple: !!e.apple, spore: !!e.spore, tellT: e.tell || 0.8, seen: !!e.seen, lane: e.lane }); break;   /* spore: SPOREWOOD's canopy lets go of a clump of spores instead of a rock (docs/briefs/sporewood-rebuild.md) */   /* tell/seen/lane: opt-in (THE ORE ROAD) - a longer tell, only on screen, and a mark on the cable it crosses */ /* a steady beat, no dice: learn it and walk it */
       case 'crusher': props.push({ t: 'crusher', x: px, y: py, every: e.every || 3, timer: 1 + (e.phase || 0), st: 'up', h: 0, D: 7 * TS }); break;
       case 'beam': props.push({ t: 'beam', x: px, y: py, cd: 0 }); break;
       case 'torchbracket': props.push({ t: 'torchbracket', x: px, y: py, taken: false, respawnT: 0 }); lights.push({ x: px, y: py - 14, r: 40, glow: true, warm: true, bracket: props[props.length - 1] }); break;
@@ -4038,7 +4038,7 @@ const BEASTS = [
   { t: 'owl', name: 'THE OWL REEVE', sub: 'lord of the crown', desc: 'Perches out of reach and swoops in straight lines: step aside by a lit lantern and it crashes into the light. When it skims the boards, leave them. Cut a dead bough\'s peg while it is low beneath and the bough pins it. Past half its blood it beats out lanterns: strike them twice.' },
   { t: 'king', name: 'KING GORM UNDERLEAF', sub: 'lord of the court', desc: 'Three times the goblin. Rides a litter that four bearers can barely lift: cut them and the throne falls. Then the sceptre sweeps, the hand reaches for you and hurls you the length of the hall, cages drop from the rafters, and the court throws when he shouts. At the end he stands, the roof comes down where he walks, and he throws the throne itself.' },
   { t: 'chief', name: 'GOBLIN CHIEFTAIN', sub: 'lord of the stockade', desc: 'Red tells and a stamp: the club. Blue tells and a glint: sword and shield. Green: the bow. He swaps at the racks by the walls; break a rack and that weapon is out of the fight. The dais is beyond his club and sword, not his arrows or his leap. He swaps weapons every few swings. Club: dodge the slam and hit him while it is planted. Sword and shield: block his slash to parry it, or get behind the shield. Bow: parry the arrows back at him. Whatever he holds, when he crouches he is about to leap on you: move.' },
-  { t: 'mother', name: 'THE MOTHER CAP', sub: 'root of the wood', desc: 'Strike the diamond-marked root to open her heart, then spring up and cut it. The root relocates between openings. The heart closes after a hit; the knot rests ten seconds before it can open her again. Use the stepped shelves to escape floor roots, duck the spore sweep, and leave marked columns. At half health she gains root columns and a radial spore burst.' },
+  { t: 'mother', name: 'THE MOTHER CAP', sub: 'root of the wood', desc: 'Strike the diamond-marked root, or grow a bud beside her and get off before her cap folds: it jams on yours. Either opens her heart; spring up and cut it. It closes after a hit, and the root rests ten seconds and moves. Take the shelves over floor roots, duck the spore sweep, leave marked columns. At half health: root columns and a spore burst.' },
   { t: 'harpy', name: 'CRAG HARPY', sub: 'diver of the cliffs', desc: 'Hangs in the wind above you, screams, and dives in a straight line. Block the dive and she hits the ground stunned: plunge her there. A sword hit sends her back to her perch.' },
   { t: 'goat', name: 'CRAG RAM', sub: 'the hill charger', desc: 'A wild ram of the scree. It charges and hops walls and ledges. Block the charge and it rears, turned and open for a moment.' },
   { t: 'troll', name: 'HILL TROLL', sub: 'boulder-thrower', desc: 'Slow, mossy, taller than a door. From range it hurls a boulder in an arc at where you are going: watch the shadow and the whistle. Up close it swats, heavy but blockable. Its hide is soft: the sword and the plunge both bite.' },
@@ -4552,6 +4552,9 @@ function bakeWebTile() { const [c, g] = canvas(16, 16);
     line(x0, y0, mx, my, 'rgba(214,216,228,0.7)'); line(mx, my, x1, y1, 'rgba(214,216,228,0.7)'); }
   px(hx, hy, '#ffffff'); px(11, 4, 'rgba(255,255,255,0.95)'); px(12, 4, 'rgba(180,220,255,0.6)');
   return c; }
+/* THE SNAPPING SHELF LOOKS LIKE THE PLACE IT IS IN, when it is laid and when it grows back (one answer, not two copies that drift):
+   rotten deck on a ship, loose rock on the Scree Path, bracket fungus in a mushroom wood, the plank everywhere else. */
+const shelfSpr = k => (L.palette && L.palette.set === 'ship' && FLOT) ? FLOT.rotTop[k % 3] : L.looseRock ? TILE.looseRock[k % 2] : L.palette && L.palette.myc ? TILE.shelfMyc[k % 2] : TILE.shelf[k % 2];
 const isOneWay = t => t === T.ONEWAY || t === T.REED || t === T.PLANK || t === T.NET || t === T.BOUNCER || t === T.SHELF || t === T.RAIL || t === T.CRYST;
 /* THE SLOPES, WIRED IN (docs/slopes-integration.md §1.1). moveBody KEEPS ITS NAME - about 138 call sites use it - and
    becomes a two-way switch. A level whose grid holds no slope tile runs moveBodySquare, which is the function that used
@@ -17424,7 +17427,8 @@ function updateRocks(dt) {
   for (const r of rocks) { if (r.delay > 0) { r.delay = Math.max(0, r.delay - dt); continue; } r.vy = Math.min(420, r.vy + 700 * dt); r.y += r.vy * dt; r.x += (r.vx || 0) * dt; r.t += dt;
     const tx = Math.floor(r.x / TS), ty = Math.floor((r.y + 1) / TS), t = tileAt(tx, ty);
     if (t === T.SOLID || (isOneWay(t) && r.vy > 0 && (r.y % TS) < 7) || r.y > LH * TS) { r.dead = true; shatterRock(r); continue; }
-    if (!P.dead && !r.mine && Math.abs(P.x - r.x) < (r.hammerRock ? 11 : 9) && P.y > r.y - 4 && P.y - 16 < r.y + 6) { r.dead = true; damagePlayer(r.x, r.roof ? 12 : r.comb ? 10 : r.ore ? DMG.tipplerOre : r.hammerRock ? DMG.anvilHammer : DMG.rock, { up: true, unblockable: !!r.hammerRock, name: r.roof ? 'ROOF TILE' : r.comb ? 'FALLING COMB' : r.ore ? 'THE ORE' : r.hammerRock ? 'THE HAMMER' : 'THE ROCKFALL' }); shatterRock(r); continue; }   /* r.mine: the ore YOU tipped out of your own skip goes past you, not through you */
+    if (!P.dead && !r.mine && Math.abs(P.x - r.x) < (r.hammerRock ? 11 : 9) && P.y > r.y - 4 && P.y - 16 < r.y + 6) { r.dead = true; damagePlayer(r.x, r.spore ? DMG.sporeRain : r.roof ? 12 : r.comb ? 10 : r.ore ? DMG.tipplerOre : r.hammerRock ? DMG.anvilHammer : DMG.rock, { up: true, unblockable: !!r.hammerRock, name: r.spore ? 'THE SPORE FALL' : r.roof ? 'ROOF TILE' : r.comb ? 'FALLING COMB' : r.ore ? 'THE ORE' : r.hammerRock ? 'THE HAMMER' : 'THE ROCKFALL' }); shatterRock(r); continue; }   /* r.mine: the ore YOU tipped out of your own skip goes past you, not through you */
+    if (r.vy > 0 && capRoof(r.x, r.y, r.vy * dt)) { r.dead = true; shatterRock(r); continue; }   /* A GROWN CAP IS A ROOF: under it, what falls stops on it (after the hero check, so a hero riding the cap in the column is still found first) */
     for (const e of enemies) if (e.alive && e.t !== 'ram' && e.t !== 'harpy' && !(r.comb && e.t === 'queen') && !(r.roof && e.t === 'roc') && !(e.t === 'troll' && r.thrown) && !e.harmless && Math.abs(e.x - r.x) < 9 && e.y > r.y - 4 && e.y - e.h < r.y + 6) { r.dead = true; hurtEnemy(e, 15, r.x, false); shatterRock(r); break; }
   }
   rocks = rocks.filter(r => !r.dead);
@@ -17435,7 +17439,10 @@ function drawQuarryStone(x, yb, rot) { g.save(); g.translate(x, yb - 7); if (rot
   g.fillStyle = '#8a7e68'; g.fillRect(-8, 3, 16, 3); g.fillRect(3, -4, 1, 6); g.fillStyle = '#6e6454'; g.fillRect(-5, -2, 4, 1); g.fillRect(-3, 1, 1, 1); g.fillRect(5, -1, 2, 1);
   g.restore(); }
 function drawHammerRock(r, cx, cy) { const x = Math.round(r.x - cx), y = Math.round(r.y - cy); g.fillStyle = '#5c3a1d'; g.fillRect(x - 1, y - 12, 2, 10); g.fillStyle = '#3a3a44'; g.fillRect(x - 6, y - 16, 12, 6); g.fillStyle = '#8a919c'; g.fillRect(x - 6, y - 16, 12, 1); }
-function shatterRock(r) { burst(r.x, r.y - 2, 8, ['#8a919c', '#5a6270', '#b0b8c4'], 60, 0.5); SFX.crumble ? SFX.crumble() : SFX.stone(); if (Math.abs(r.x - P.x) < 160) shakeCam(2); }
+function shatterRock(r) { if (r.spore) { burst(r.x, r.y - 2, 10, ['#c9a0ff', '#9a5aa8', '#e0b0f0'], 50, 0.6); SFX.puff(); return; } burst(r.x, r.y - 2, 8, ['#8a919c', '#5a6270', '#b0b8c4'], 60, 0.5); SFX.crumble ? SFX.crumble() : SFX.stone(); if (Math.abs(r.x - P.x) < 160) shakeCam(2); }
+/* A GROWN CAP IS A ROOF (the Sporewood rebuild): something falling onto a sprout that has grown past half its height bursts on the cap's
+   top. `dy` is how far it fell this frame, so a fast clump cannot step through the cap between two frames. */
+function capRoof(x, y, dy) { for (const m of movers) if (m.kind === 'growcap' && m.k > 0.5 && x > m.x && x < m.x + m.w && y >= m.y - 2 && y - Math.max(8, dy || 0) <= m.y + 3) return m; return null; }
 // Tam, the squire: at the trailhead of every level, before and after it is cleared. Caged in the Stockade (that level keeps the kit quest).
 const TAM_LINES = {
   wood: [['SIR KNIGHT. I AM TAM. I CARRY YOUR SPARE BLADE AND I WILL KEEP THE TRAIL BEHIND YOU.', 'THE HIVE TOOK THE HONEY AND THE WOODSMAN\'S NERVE. THE QUEEN IS PAST THE BADGER SETT.'],
@@ -18996,7 +19003,7 @@ function ringBell(b) {
 // ---------- boss: the Mother Cap ----------
 // THE ROOT KNOT: the same living knot opens each window; it never summons another creature.
 function wakeMycelium(pr){
-  for(const m of movers)if(m.kind==='growcap'&&Math.abs(m.x-pr.x)<130){m.state='grow';m.k=Math.max(0,m.k||0);m.cd=0;}
+  for(const m of movers)if(m.kind==='growcap'&&!m.mother&&Math.abs(m.x-pr.x)<130){m.state='grow';m.k=Math.max(0,m.k||0);m.cd=0;}   /* (not her room's buds: only a hero standing on one grows it - see motherJam) */
   if(pr.motherNode&&mother&&mother.alive&&bossActive&&!(mother.nodeRest>0)&&mother.mode!=='open'&&mother.mode!=='phaseRise'){
     mother.mode = 'open';mother.modeT=MOTHER_T.open[mother.phase||1];mother.tipped=true;mother.gillsOpen=true;mother.zones=[];
     number(mother.x,mother.y-110,'THE HEART OPENS. TAKE THE SPRING.','#ff7a9a');SFX.gillOpen();shakeCam(5);burst(mother.x,L.arena.floor-70,34,['#ff7a9a','#fff1a8','#e0b0f0'],150,.8);   /* the cap tears open: the moment she becomes cuttable is a thing you see */
@@ -19017,7 +19024,7 @@ const MOTHER_ROOTS = [-8, 10, -16, 17];
    ones (-16 and +17 tiles, ~300 px from the spring) 5.5 s was shorter than the Death Knight's strike, walk and spring - he missed every
    such window and timed out at 180 s on one pinned roll. Measured against keeping the knot near in phase three, this moved the other
    heroes least (mean 7.7 s refill / 7.6 s one-life, against 9.7 / 7.7). His swing, root and walk are his and were not touched. */
-const MOTHER_T = { idle: [2.5, 1.2, 0.9, 0.75], zoneTell: 0.92, zoneLive: 0.55, zoneDmg: 22, clap: 24, open: [8, 8, 8, 6.5],
+const MOTHER_T = { idle: [2.5, 1.2, 0.9, 0.75], zoneTell: 0.92, zoneLive: 0.55, zoneDmg: 22, clap: 24, open: [8, 8, 8, 6.5], jamReach: 110,
   creepMax: 64, creepRate: 1.8, creepClear: 28, spores: 2, sporeEvery: 10, rainEvery: 3 };
 const MOTHER_POOL = [null, ['rootFan', 'capClap', 'rootStab', 'seedRain', 'sporeVolley', 'floorSurge', 'sporeSweep'],
   ['rootFan', 'capClap', 'rootStab', 'seedRain', 'sporeVolley', 'floorSurge', 'sporeSweep', 'rootColumns', 'sporeWheel']];
@@ -19057,6 +19064,18 @@ function motherCreep(e,dt,node){
   e.creep=Math.min(max,(e.creep||0)+MOTHER_T.creepRate*(e.phase>=3?1.5:1)*dt);
   const c=e.creep;if(c>1&&!P.dead&&P.y>=A.floor-3&&(P.x<A.x0+c||P.x>A.x1-c)){if(!(P.venomT>0)){number(P.x,P.y-30,'THE MYCELIUM POISONS','#a6e04a');SFX.hiss();}P.venomT=Math.max(P.venomT||0,1.2);}
 }
+/* HER CAP JAMS ON A GROWN ONE (the Sporewood rebuild, docs/briefs/sporewood-rebuild.md - the rule's payoff, A11/A12). Two buds stand in her
+   room inside the clap's reach. Stop on one and it lifts you into the height she answers with the clap; get off before it folds and her
+   cap comes down on yours and sticks: the heart opens exactly as the knot opens it - the same window, the same spring, the same single cut -
+   and only when the knot could (its rest spent), so it is the other key to the same lock, not a second lock. What it saves you is the walk
+   to a FAR knot. Whoever stayed on the cap was already hit by the clap's own check, which is unchanged; the jam spares nobody. */
+function motherJam(e){
+  const cap=movers.find(m=>m.kind==='growcap'&&m.mother&&m.state==='up'&&Math.abs(m.x+m.w/2-e.x)<MOTHER_T.jamReach);if(!cap)return false;
+  cap.state='wither';cap.crushed=true;burst(cap.x+cap.w/2,cap.y,16,['#2a8a90','#bff0f0','#e0b0f0'],90,.6);shakeCam(5);SFX.crack();
+  if(e.nodeRest>0){number(e.x,L.arena.floor-110,'SHE CRUSHES IT. THE ROOT IS RESTING','#c9b8e8');return true;}
+  e.mode='open';e.modeT=MOTHER_T.open[e.phase||1];e.tipped=true;e.gillsOpen=true;e.zones=[];e.jams=(e.jams||0)+1;
+  number(e.x,L.arena.floor-110,'HER CAP JAMS. THE HEART OPENS.','#ff7a9a');SFX.gillOpen();burst(e.x,L.arena.floor-70,34,['#ff7a9a','#fff1a8','#e0b0f0'],150,.8);return true;
+}
 function updateMother(e,dt){
   const A=L.arena,floor=A.floor;e.anim+=dt;e.modeT-=dt;e.nodeRest=Math.max(0,(e.nodeRest||0)-dt);
   if(e.mode==='sleep')return;
@@ -19093,7 +19112,7 @@ function updateMother(e,dt){
     SFX.buzz();}
   if(e.mode==='rootStabTell'&&e.modeT<=0){e.mode = 'rootStab';e.modeT=.5;burst(e.rootMark,floor,18,['#8fd160','#4a4050'],90,.5);SFX.crack();if(Math.abs(P.x-e.rootMark)<18&&P.y>floor-24)damagePlayer(e.rootMark,DMG.root,{up:true,unblockable:true});}
   if(e.mode==='rootFanTell'&&e.modeT<=0){e.mode = 'rootFan';e.modeT=.8;for(const dir of [-1,1])vines.push({x:e.x,dir,y:floor,tell:.1,t:0,len:28,end:dir>0?A.x1-4:A.x0+4,hitT:0});SFX.crack();}
-  if(e.mode==='capClapTell'&&e.modeT<=0){e.mode = 'capClap';e.modeT=.4;shakeCam(4);SFX.thud();if(Math.abs(P.x-e.x)<110&&P.y<floor-28&&P.y>floor-112)damagePlayer(e.x,MOTHER_T.clap,{unblockable:true});burst(e.x,floor-65,22,['#9a5aa8','#e0b0f0'],140,.5);}
+  if(e.mode==='capClapTell'&&e.modeT<=0){e.mode = 'capClap';e.modeT=.4;shakeCam(4);SFX.thud();if(Math.abs(P.x-e.x)<110&&P.y<floor-28&&P.y>floor-112)damagePlayer(e.x,MOTHER_T.clap,{unblockable:true});burst(e.x,floor-65,22,['#9a5aa8','#e0b0f0'],140,.5);motherJam(e);}
   if(e.mode==='seedRainTell'&&e.modeT<=0){e.mode = 'seedRain';e.modeT=.5;motherRain(e,[-96,-48,0,48,96]);SFX.crack();}
   if(['sporeVolleyTell','floorSurgeTell','sporeSweepTell','rootColumnsTell','sporeWheelTell'].includes(e.mode)&&e.modeT<=0){
     const kind=e.mode.slice(0,-4);e.mode=kind;e.modeT=.65;
@@ -19798,6 +19817,7 @@ function updateEnemies(dt) {
   updateJavHolds(dt); if (realmWaves.length) updateKnightKit(dt);
   for (const s of seeds) {
     if (s.dead) continue; if (s.g) s.vy += s.g * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
+    if (!s.reflected && s.vy > 0 && movers.length && capRoof(s.x, s.y, s.vy * dt)) { s.dead = true; burst(s.x, s.y, 4, ['#c9a0ff', '#e0b0f0'], 30, 0.3, 0, 1); continue; }   /* A GROWN CAP IS A ROOF: her seed rain and her volleys burst on one */
     /* A RICOCHET: a shot that can skip turns off the first thing it meets, once */
     if (s.rico > 0 && s.life > 0 && isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) { const rx = s.x - s.vx * dt, ry = s.y - s.vy * dt, hx = Math.floor(rx / TS) !== Math.floor(s.x / TS), hy = Math.floor(ry / TS) !== Math.floor(s.y / TS);
       if (hx) s.vx = -s.vx * 0.85; if (hy) s.vy = -s.vy * 0.85; if (!hx && !hy) { s.vx = -s.vx; s.vy = -s.vy; }
@@ -20752,7 +20772,7 @@ function updateProps(dt) {
          arriving under it - tools/ore-ride.mjs was knocked off the chute by it - so the beat keeps its own time.) */
       if (pr.seen) { const inV = pr.x > camX + 8 && pr.x < camX + VW - 8 && (pr.lane || pr.gy || pr.y) > camY + 8 && pr.y < camY + VH; pr.seenT = inV ? (pr.seenT || 0) + dt : 0;
         if (pr.timer <= 0 && pr.seenT < (pr.tellT || 0.8)) pr.timer = pr.every; }
-      if (pr.timer < (pr.tellT || 0.8) && Math.random() < dt * (pr.seen ? 90 : 45)) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every; rocks.push({ x: pr.x, y: pr.y, vy: 0, t: 0, dead: false, apple: !!pr.apple }); if (!pr.apple) SFX.stone(); } }
+      if (pr.timer < (pr.tellT || 0.8) && Math.random() < dt * (pr.seen ? 90 : 45)) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y + 2, vx: (Math.random() - 0.5) * 20, vy: 20 + Math.random() * 30, life: 0.4, max: 0.4, col: pr.spore ? '#c9a0ff' : '#8a919c', size: 1, grav: 200 }); if (pr.timer <= 0) { pr.timer = pr.every; rocks.push({ x: pr.x, y: pr.y, vy: 0, t: 0, dead: false, apple: !!pr.apple, spore: !!pr.spore }); if (pr.spore) SFX.puff(); else if (!pr.apple) SFX.stone(); } }
     /* THE COUNTER BELONGS TO THE STORE, AND TO NOTHING ELSE. This fired on any keeper anywhere, and eight of them stood
        about in real levels selling to passers-by: press UP at the miller in the Hexed Fields and the run you were in the
        middle of was left standing while the shop menu came up over it. The keepers are gone from every level now, and the
@@ -20815,7 +20835,7 @@ function updateProps(dt) {
     if (pr.t === 'glowbud') { if (pr.lit > 0) pr.lit -= dt; pr.light.r = pr.lit > 0 ? (pr.lit < 2 ? 18 + 58 * (pr.lit / 2) : 76) : 18; if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 16, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.lit = 14; wakeMycelium(pr); SFX.sting(); burst(pr.x, pr.y - 8, 10, ['#4aa0b0', '#bff0f0', '#ffffff'], 60, 0.5); } }
     if (pr.t === 'glow') { if (pr.dark > 0) pr.dark -= dt; else if (hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.dark = 8; SFX.ui(); burst(pr.x, pr.y - 8, 6, ['#4aa0b0', '#bff0f0'], 40, 0.4); } }
   }
-  for (const k in shelfT) { if (shelfT[k] < 0) { shelfT[k] += dt; if (shelfT[k] >= 0) { const i = +k; if (L.grid[i] === T.AIR && grid0[i] === T.SHELF && !(Math.abs(P.x - ((i % LW) * TS + 8)) < 14 && Math.abs(P.y - Math.floor(i / LW) * TS) < 20)) { L.grid[i] = T.SHELF; tileSpr[i] = (L.palette && L.palette.set === 'ship' && FLOT) ? FLOT.rotTop[i % 3] : L.looseRock ? TILE.looseRock[i % 2] : TILE.shelf[i % 2]; shelfT[k] = 0; burst((i % LW) * TS + 8, Math.floor(i / LW) * TS + 4, 4, ['#f0d090'], 30, 0.3); } else shelfT[k] = -0.5; } } }
+  for (const k in shelfT) { if (shelfT[k] < 0) { shelfT[k] += dt; if (shelfT[k] >= 0) { const i = +k; if (L.grid[i] === T.AIR && grid0[i] === T.SHELF && !(Math.abs(P.x - ((i % LW) * TS + 8)) < 14 && Math.abs(P.y - Math.floor(i / LW) * TS) < 20)) { L.grid[i] = T.SHELF; tileSpr[i] = shelfSpr(i); shelfT[k] = 0; burst((i % LW) * TS + 8, Math.floor(i / LW) * TS + 4, 4, ['#f0d090'], 30, 0.3); } else shelfT[k] = -0.5; } } }
   if (L.storm && !P.dead && P.x > L.storm.x0 - 240 && P.x < L.storm.x1 + 60) { stormT -= dt; if (stormT <= 0) { stormT = 1.4; clouds2.push({ x: L.storm.x1 - 20, y: L.storm.y - 12 - Math.random() * 10, r: 17, life: 14, sleep: false, vx: -36, storm: true }); } }
   for (const c of clouds2) { c.life -= dt; if (c.vx) { c.x += c.vx * dt; if (c.arena && L.arena && (c.x < L.arena.x0 + 10 || c.x > L.arena.x1 - 10)) c.life = 0; if (c.storm && c.x < L.storm.x0 - 20) c.life = 0; }
  if (Math.random() < dt * 12) parts.push({ x: c.x + (Math.random() - 0.5) * c.r * 1.6, y: c.y + (Math.random() - 0.5) * c.r, vx: (Math.random() - 0.5) * 10, vy: -8, life: 0.8, max: 0.8, col: c.sleep ? '#c9a0ff' : '#d8d0c8', size: 1, grav: 0 }); }
@@ -20945,13 +20965,18 @@ function updateMovers(dt) {
       if (m.moving && m.frogs) { m.frogT = (m.frogT || 2) - dt; const nAb = enemies.filter(e => e.alive && e.t === 'hopper' && e.raft === m).length; if (m.frogT <= 0 && nAb < (m.frogMax || 3)) { m.frogT = (m.frogEvery || 3) + Math.random() * 2; const side = Math.random() < 0.5 ? -1 : 1; const fx = m.x + m.w / 2 + side * (m.w / 2 + 20); const target = m.x + m.w / 2 + side * (m.w / 2 - 22); const col = ['green', 'green', 'yellow', 'blue'][(Math.random() * 4) | 0]; enemies.push({ t: 'hopper', color: col, x: fx, y: m.y + 26, vx: (target - fx) / 0.58, vy: -330, w: 8, h: 6, hp: HOP[col].hp, face: -side, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 1.4, air: true, raft: m, drone: true }); burst(fx, m.y + 26, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); SFX.splash(); number(fx, m.y + 10, 'FROG', '#8fd160'); } }
       if (dir) { m.x = Math.max(m.x0, Math.min(m.x1, m.x + dir * m.speed * dt)); if (Math.random() < dt * 10) parts.push({ x: dir > 0 ? m.x : m.x + m.w, y: m.y + 6, vx: -dir * 30, vy: -10, life: 0.4, max: 0.4, col: '#eefaff', size: 2, grav: 0 }); }
       if (aboard) P.x = Math.max(m.x + 5, Math.min(m.x + m.w - 5, P.x));
-    } else if (m.kind === 'growcap') { // THE SPROUTS: stand on a bud and it shoots up under you, holds, wobbles, and withers back to a bud
+    } else if (m.kind === 'growcap') { // THE SPROUTS: stop on a bud and it shoots up under you, holds, wobbles, and withers back to a bud
+      /* THE SPOREWOOD REBUILD (docs/briefs/sporewood-rebuild.md). IT GROWS UNDER A HERO WHO STOPS ON IT: a bud brushed in passing stays
+         a bud, so one in the Mother's room does not go up behind a hero running for the knot. And three numbers of its own - `lean`
+         (px it grows SIDEWAYS as well as up, from its base `bx`: a cap that carries you over a gap), `growT` (how long the growth
+         takes; a leaning cap grows at walking pace, not in 0.6 s) and `hold` (how long it stands before it withers). A cap her fold
+         jammed on is `crushed`: it goes down at once. */
       if (m.cd > 0) m.cd -= dt;
-      if (m.state === 'bud') { if (P.onMover === m && !(m.cd > 0)) { m.stood = (m.stood || 0) + dt; if (m.stood > 0.2) { m.state = 'grow'; m.stood = 0; SFX.puff(); SFX.pJump(); burst(m.x + m.w / 2, m.y + 4, 8, ['#4aa0b0', '#bff0f0'], 50, 0.4); } } else m.stood = 0; }
-      else if (m.state === 'grow') { m.k = Math.min(1, m.k + dt / 0.6); if (m.k >= 1) { m.state = 'up'; m.upT = 7; SFX.thud(); } }
+      if (m.state === 'bud') { if (P.onMover === m && !(m.cd > 0) && Math.abs(P.vx) < 25) { m.stood = (m.stood || 0) + dt; if (m.stood > 0.2) { m.state = 'grow'; m.stood = 0; SFX.puff(); SFX.pJump(); burst(m.x + m.w / 2, m.y + 4, 8, ['#4aa0b0', '#bff0f0'], 50, 0.4); } } else m.stood = 0; }
+      else if (m.state === 'grow') { m.k = Math.min(1, m.k + dt / (m.growT || 0.6)); if (m.k >= 1) { m.state = 'up'; m.upT = m.hold || 7; SFX.thud(); } }
       else if (m.state === 'up') { m.upT -= dt; if (m.upT <= 0) { m.state = 'wither'; SFX.puff(); } }
-      else if (m.state === 'wither') { m.k = Math.max(0, m.k - dt / 0.8); if (m.k <= 0) { m.state = 'bud'; m.cd = 1; } }
-      m.y = m.y0 - m.k * m.rise; m.dy = m.y - oldY;
+      else if (m.state === 'wither') { m.k = Math.max(0, m.k - dt / (m.crushed ? 0.3 : (m.growT || 0.6) * 4 / 3)); if (m.k <= 0) { m.state = 'bud'; m.cd = m.crushed ? 2 : 1; m.crushed = false; } }
+      m.y = m.y0 - m.k * m.rise; if (m.lean) m.x = m.bx + m.k * m.lean; m.dy = m.y - oldY;
     } else if (m.kind === 'lifeboat') { updateLifeboat(m, dt);
     } else if (m.kind === 'raft') { // waits at the dock until you board, then poles downstream
       // THE POLE COMES BACK FOR THE LIVING: a swimmer has no respawn to bring the raft home. Give a jump
@@ -22533,7 +22558,9 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.kind === 'lift' && L.hangingTown) { const x=Math.round(m.x-cx),y=Math.round(m.y-cy),top=Math.round(m.top-cy);g.fillStyle='#ab956c';g.fillRect(x+15,top,2,y-top);g.fillStyle='#725840';g.fillRect(x,y,32,7);g.fillRect(x,y-10,2,12);g.fillRect(x+30,y-10,2,12);g.strokeStyle='#aa8d64';g.lineWidth=1;g.strokeRect(x+.5,y-10.5,31,16);g.beginPath();g.arc(x+16,top,5,0,7);g.stroke();} else if (m.kind === 'lift') { const ry = m.top !== undefined ? Math.round(m.top - cy) : 0; g.fillStyle = '#b8a888'; g.fillRect(Math.round(m.x) + 15 - cx, ry, 2, Math.round(m.y) - cy - ry); if (m.top !== undefined) { g.fillStyle = '#3a2618'; g.beginPath(); g.arc(Math.round(m.x) + 16 - cx, ry, 4, 0, 7); g.fill(); g.fillStyle = '#8a919c'; g.fillRect(Math.round(m.x) + 15 - cx, ry - 1, 2, 2); } g.drawImage(PROP.lift, Math.round(m.x) - cx, Math.round(m.y) - cy); }
     else if (m.kind === 'orelift' && m.player) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy); g.fillStyle = '#5a6270'; g.fillRect(x + 15, y - 200, 2, 200); g.fillStyle = '#3a3a44'; g.fillRect(x, y, m.w, 6); g.fillStyle = '#8a919c'; g.fillRect(x, y, m.w, 1); g.fillRect(x, y - 22, 2, 22); g.fillRect(x + m.w - 2, y - 22, 2, 22); g.fillRect(x, y - 22, m.w, 2); for (let k = 4; k < m.w - 4; k += 6) g.fillRect(x + k, y - 20, 1, 20); }
     else if (m.kind === 'growcap') { const x = Math.round(m.x - cx), cxm = x + m.w / 2, top = Math.round(m.y - cy), base = Math.round(m.y0 + 8 - cy), wob = m.state === 'up' && m.upT < 1.5 ? Math.round(Math.sin(time * 30)) : 0;
-      g.fillStyle = '#d8e0c0'; g.fillRect(cxm - 3 + wob, top + 6, 6, Math.max(0, base - top - 6)); g.fillStyle = '#a8b090'; g.fillRect(cxm + 1 + wob, top + 6, 2, Math.max(0, base - top - 6)); // the stalk
+      if (m.lean) { const bxm = Math.round(m.bx - cx) + m.w / 2, dx = cxm - bxm, dy = top + 6 - base, n = Math.ceil(Math.max(Math.abs(dx), Math.abs(dy)) / 2) + 1;   /* A LEANING STALK: up from its root, then bending out over the gap it is carrying you across */
+        for (let i = 0; i <= n; i++) { const t = i / n, sx = Math.round(bxm + dx * t * t), sy = Math.round(base + dy * t); g.fillStyle = '#d8e0c0'; g.fillRect(sx - 3 + wob, sy - 2, 6, 3); g.fillStyle = '#a8b090'; g.fillRect(sx + 1 + wob, sy - 2, 2, 3); } }
+      else { g.fillStyle = '#d8e0c0'; g.fillRect(cxm - 3 + wob, top + 6, 6, Math.max(0, base - top - 6)); g.fillStyle = '#a8b090'; g.fillRect(cxm + 1 + wob, top + 6, 2, Math.max(0, base - top - 6)); } // the stalk
       g.fillStyle = m.state === 'wither' ? '#3a6a70' : '#2a8a90'; g.beginPath(); g.ellipse(cxm + wob, top + 4, m.w / 2, 6, 0, Math.PI, 0); g.fill(); g.fillRect(x + wob, top + 3, m.w, 3); // the cap
       g.fillStyle = '#bff0f0'; for (const dx of [-9, -2, 6]) g.fillRect(cxm + dx + wob, top + 1 - (dx === -2 ? 2 : 0), 2, 2); g.fillStyle = '#1b1626'; g.fillRect(x + wob, top + 6, m.w, 1);
       if (m.state === 'bud' && !(m.cd > 0) && Math.floor(time * 2) % 2) { g.globalAlpha = 0.5; g.strokeStyle = '#bff0f0'; g.lineWidth = 1; g.beginPath(); g.moveTo(cxm - 3, top - 5); g.lineTo(cxm, top - 9); g.lineTo(cxm + 3, top - 5); g.stroke(); g.globalAlpha = 1; } } // an up-arrow over a bud that is ready
@@ -23257,7 +23284,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (throneBlock) g.drawImage(PROP.palanquin, Math.round(throneBlock.x) - 36 - cx, Math.round(throneBlock.y) - 45 - cy, 72, 45);
   drawDrunkMarks(cx, cy);
   for (const r of rocks) if (r.thrown && r.tx !== undefined && !r.dead) { let gy = Math.floor(r.y / TS); while (gy < LH && !isSolid(Math.floor(r.tx / TS), gy) && !isOneWay(tileAt(Math.floor(r.tx / TS), gy))) gy++; const k = 0.5 + 0.5 * Math.sin(time * 16); g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#ff6b4a'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(r.tx - cx), gy * TS - 1 - cy, 11, 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
-  for (const r of rocks) { let gy = Math.floor(r.y / TS); while (gy < LH && !isSolid(Math.floor(r.x / TS), gy) && !isOneWay(tileAt(Math.floor(r.x / TS), gy))) gy++; const k = Math.max(0.3, 1 - (gy * TS - r.y) / 200); g.globalAlpha = 0.35 * k; g.drawImage(PROP.shadow, Math.round(r.x - cx) - 6, gy * TS - 2 - cy, 12, 3); g.globalAlpha = 1; if (r.comb) { drawWax(Math.round(r.x - cx), Math.round(r.y - cy)); if (r.delay > 0) { g.globalAlpha = 0.4; g.fillStyle = '#ffd36b'; g.fillRect(Math.round(r.x - cx) - 7, gy * TS - 2 - cy, 14, 2); g.globalAlpha = 1; text('!', Math.round(r.x - cx), gy * TS - 20 - cy, '#ffd36b', 'center'); } } else if (r.lamp) g.drawImage(SPR.chandelier, Math.round(r.x - cx) - 12, Math.round(r.y - cy) - 14); else if (r.apple) { const ax = Math.round(r.x - cx), ay = Math.round(r.y - cy); g.fillStyle = '#1b1626'; g.fillRect(ax - 4, ay - 5, 8, 8); g.fillStyle = '#8a2a1a'; g.fillRect(ax - 3, ay - 4, 6, 6); g.fillStyle = '#c85a3a'; g.fillRect(ax - 2, ay - 3, 2, 2); g.fillStyle = '#4a3020'; g.fillRect(ax, ay - 6, 1, 2); }   /* THE DEAD ORCHARD'S APPLES */ else if (r.hammerRock) drawHammerRock(r, cx, cy); else g.drawImage(PROP.boulder, Math.round(r.x - cx) - 7, Math.round(r.y - cy) - 11); }
+  for (const r of rocks) { let gy = Math.floor(r.y / TS); while (gy < LH && !isSolid(Math.floor(r.x / TS), gy) && !isOneWay(tileAt(Math.floor(r.x / TS), gy))) gy++; const k = Math.max(0.3, 1 - (gy * TS - r.y) / 200); g.globalAlpha = 0.35 * k; g.drawImage(PROP.shadow, Math.round(r.x - cx) - 6, gy * TS - 2 - cy, 12, 3); g.globalAlpha = 1; if (r.comb) { drawWax(Math.round(r.x - cx), Math.round(r.y - cy)); if (r.delay > 0) { g.globalAlpha = 0.4; g.fillStyle = '#ffd36b'; g.fillRect(Math.round(r.x - cx) - 7, gy * TS - 2 - cy, 14, 2); g.globalAlpha = 1; text('!', Math.round(r.x - cx), gy * TS - 20 - cy, '#ffd36b', 'center'); } } else if (r.lamp) g.drawImage(SPR.chandelier, Math.round(r.x - cx) - 12, Math.round(r.y - cy) - 14); else if (r.apple) { const ax = Math.round(r.x - cx), ay = Math.round(r.y - cy); g.fillStyle = '#1b1626'; g.fillRect(ax - 4, ay - 5, 8, 8); g.fillStyle = '#8a2a1a'; g.fillRect(ax - 3, ay - 4, 6, 6); g.fillStyle = '#c85a3a'; g.fillRect(ax - 2, ay - 3, 2, 2); g.fillStyle = '#4a3020'; g.fillRect(ax, ay - 6, 1, 2); }   /* THE DEAD ORCHARD'S APPLES */ else if (r.hammerRock) drawHammerRock(r, cx, cy); else if (r.spore) { const ax = Math.round(r.x - cx), ay = Math.round(r.y - cy); g.fillStyle = '#1b1626'; g.fillRect(ax - 5, ay - 6, 10, 9); g.fillStyle = '#7a3a8a'; g.fillRect(ax - 4, ay - 5, 8, 7); g.fillStyle = '#c9a0ff'; g.fillRect(ax - 3, ay - 4, 3, 2); g.fillRect(ax + 1, ay - 1, 2, 2); g.fillStyle = '#e0b0f0'; g.fillRect(ax - 2, ay - 4, 1, 1); }   /* SPOREWOOD'S SPORE FALL: a violet clump, not a stone */ else g.drawImage(PROP.boulder, Math.round(r.x - cx) - 7, Math.round(r.y - cy) - 11); }
   for (const v of vines) { if (v.t < v.tell) continue; const x1 = Math.round(v.x - cx), y = Math.round(v.y - cy), x0 = Math.round(v.x - v.dir * v.len - cx); const lo = Math.min(x0, x1), hi = Math.max(x0, x1); g.fillStyle = '#3f6e2c'; g.fillRect(lo, y - 4, hi - lo, 3); g.fillStyle = '#8fd160'; g.fillRect(lo, y - 4, hi - lo, 1); for (let x = lo; x < hi; x += 6) { g.fillStyle = '#dfffa0'; g.fillRect(x + ((y + x) % 3), y - 7, 1, 3); } g.fillStyle = '#3f6e2c'; g.fillRect(x1 - 2, y - 8, 4, 8); }
   for (const b of bolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), k = b.life / 0.28; if (b.storm) { g.globalAlpha = Math.min(1, k); g.fillStyle = b.holy ? '#ffd36b' : '#9ab8ff'; g.fillRect(x - 3, y - 220, 7, 220); g.fillStyle = b.holy ? '#fff6c8' : '#eef4ff'; for (let s = 0; s < 220; s += 14) g.fillRect(x - 1 + ((s * 7) % 5) - 2, y - s - 14, 3, 15); g.globalAlpha = 1; continue; } g.globalAlpha = k; g.fillStyle = '#dfffa0'; g.fillRect(x - 1, y - 200, 3, 200); g.fillStyle = '#8fd160'; g.fillRect(x - 3, y - 200, 7, 200); g.globalAlpha = 1; g.fillStyle = '#fff6e0'; g.fillRect(x - 1, y - 200, 2, 200); }
   for (const r of rain) { if (r.fired) continue; const x = Math.round(r.x - cx), y = Math.round(r.y - cy), hot = Math.floor(time * 10) % 2 === 0; g.fillStyle = r.bolt ? (hot ? '#8fd160' : '#dfffa0') : hot ? '#ff6b6b' : '#ffd36b'; g.fillRect(x - 4, y - 8, 2, 2); g.fillRect(x + 2, y - 8, 2, 2); g.fillRect(x - 2, y - 6, 2, 2); g.fillRect(x, y - 6, 2, 2); g.fillRect(x - 1, y - 4, 2, 2); g.globalAlpha = 0.25; g.fillRect(x - 6, y - 1, 12, 1); g.globalAlpha = 1; }
