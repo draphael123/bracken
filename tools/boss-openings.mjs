@@ -5,7 +5,6 @@
    the same attack, must NOT open.
      THE BURIED DEAD   slam him down on the ground he already erupted through
      THE BREAKWATER WARDEN  turn the anchor on the shield
-     THE VAULT KEEPER  cut him while the bell is swinging
      THE UNDEAD ARCHMAGE  fly out of his DEATH MARK: the mark that finds no one comes back on him (batch 4, the sky fight)
      THE PYROMANDER    keep hitting him while he runs hot: he cannot vent, and his own fire takes him over the top (batch 5)
      THE GRAVE WARDEN  let his dig mark you beside an open grave and leave late: the spade goes in and he kneels (batch 4b)
@@ -48,15 +47,6 @@ try {
    b.open=0;BK.keys.block=true;BK.sim(10);for(let i=0;i<10&&b.open===0;i++){b.mode='anchorTell';b.modeT=0;BK.P.hp=BK.P.maxHp;BK.P.dead=0;BK.P.x=b.x+40*b.face;BK.P.face=-b.face;BK.keys.block=true;BK.sim(1);}
    out.warden={unguarded,guarded:+b.open.toFixed(1),mode:b.mode};BK.keys.block=false;BK.god=true;}
 
-  /* THE VAULT KEEPER: the bell cut out of his hands */
-  {/* he is the keep's MINI, in his own room: the arena here belongs to the Drowned King */
-   BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='keep'));BK.state='play';BK.god=true;
-   const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+(M.reverse?-1:1),Math.round(M.floor/16)-1);BK.sim(240);
-   const b=BK.enemies().find(e=>e.alive&&e.vaultKeeper);
-   if(!b)return{error:'no vault keeper',mini:BK.miniActive};
-   b.mode='vaultRingTell';b.modeT=.6;BK.sim(3);const ringing=b.mode;
-   BKT.hurtEnemy(b,3,b.x-20,false);for(let i=0;i<10&&b.mode!=='vaultStunned';i++)BK.sim(1);
-   out.keeper={ringing,mode:b.mode,open:+b.open.toFixed(1),mini:BK.miniActive};}
 
   /* THE UNDEAD ARCHMAGE: the death mark, left to land and then flown out of */
   {const b=boot('fallingtower');const hold=()=>{BK.P.vx=BK.P.vy=0;};
@@ -151,9 +141,6 @@ try {
   assert.ok(r.warden.unguarded < 2.1, 'an anchor nobody turned is only his own rest: ' + r.warden.unguarded);
   assert.ok(r.warden.guarded > 3, 'turning the anchor must tear it loose: ' + r.warden.guarded);
 
-  assert.equal(r.keeper.ringing, 'vaultRingTell', 'the bell must still be swinging when it is struck');
-  assert.equal(r.keeper.mode, 'vaultStunned', 'cutting him through the bell must break the note');
-  assert.ok(r.keeper.open > 2.5, 'the cracked bell is the window: ' + r.keeper.open);
 
   assert.ok(r.mage.laid, 'the death mark must be laid');
   assert.ok(r.mage.landed.hurt, 'left on it, the mark must land: ' + JSON.stringify(r.mage.landed));

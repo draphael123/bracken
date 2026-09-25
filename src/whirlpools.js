@@ -42,10 +42,12 @@ export function updateWhirlpools(L, P, dt, io) {
     w.inT = inside ? w.inT + dt : 0;
   }
   P.whirled = 0;
-  if (at && !io.inAir(P.x, P.y - 8)) {
+  /* THE DRAG IS EVERYWHERE IN ITS REACH, air or not: a whirlpool by a pocket pulls you OUT of the air to its eye, which is how
+     it guards one. The air it burns is only burnt where there is no air to breathe. */
+  if (at) {
     const { w, d, k } = at, e = eyeOf(w), s = w.k;
     P.whirled = k * s;
-    P.breath = Math.max(0, (P.breath ?? io.breathMax) - dt * WHIRL.drain * (0.4 + 0.6 * k) * s);
+    if (!io.inAir(P.x, P.y - 8)) P.breath = Math.max(0, (P.breath ?? io.breathMax) - dt * WHIRL.drain * (0.4 + 0.6 * k) * s);
     /* THE DRAG: toward the eye, and round it - a swimmer caught at the edge is carried in a spiral, not simply sucked in */
     const pull = WHIRL.pull * (0.35 + 0.65 * k) * s * (P.block || P.aegis ? 0.55 : 1), dx = (e.x - P.x) / (d || 1), dy = (e.y - cy) / (d || 1);
     if (d > 5) { w.acc[0] += (dx * 0.8 - dy * 0.6) * pull * dt; w.acc[1] += (dy * 0.8 + dx * 0.6) * pull * dt; }

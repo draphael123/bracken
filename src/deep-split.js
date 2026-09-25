@@ -31,9 +31,7 @@ export function underwaterKeep(source,T,TS=16){
  const R=cropDeep(source,104,140,200,64,TS);R.START={x:3,y:58};delete R.quest;R.music='underkeep';R.deep.vents.push({x:3,y:58,h:6,hot:false,drain:false});
  R.ents=R.ents.filter(e=>e.t!=='stray');
  for(const [x,y] of [[51,31],[105,35],[130,58]])R.ents.push({t:'silver',x,y});
- for(const [x,y] of [[60,58],[101,58],[135,58]])R.ents.push({t:'bellguard',x,y,face:-1,mini:x===101});
- R.mini={x0:82*TS,x1:109*TS,floor:59*TS,trigger:84*TS,wallL:81,gate:109,swim:true,y0:14*TS,y1:60*TS,boss:'bellguard',name:'THE KEEPER OF THE VAULT'};
- for(let y=52;y<=58;y++)R.grid[y*R.W+109]=T.PORT;
+ R.ents.push({t:'bellguard',x:60,y:58,face:-1});   /* one diver left at his post. The mini who kept the hall past him is gone: his hall is THE KING'S DOOR now (docs/briefs/keep-rework-2.md) */
  R.ents.push({t:'sign',x:4,y:58,text:'THE UNDERWATER KEEP. THE KING WAITS BEYOND HIS FLOODED COURTS. AIR HIDES UNDER THE VAULTS.'});
  return expandKeep(R,T,TS,cropDeep);
 }

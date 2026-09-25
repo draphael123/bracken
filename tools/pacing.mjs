@@ -238,7 +238,7 @@ export function pacing(lv) {
   return {
     id: lv.id, name: lv.name, W, H, tall, strip, marks,
     stats: { routeTiles: total, stretches: nb, bridged, longest: { type: longest.c, stretches: longest.n, tiles: longest.n * STEP, atRoute: longest.at * STEP, x: B[longest.at] && B[longest.at].x },
-      empties, maxCheckGap: maxGap, checkGapAtRoute: gapAt, checksOnRoute: checks.length, checksTotal: ents.filter(e => e.t === 'check').length,
+      empties, maxCheckGap: maxGap, checkGapAtRoute: gapAt, checksOnRoute: checks.length, checkAt: checks, checksTotal: ents.filter(e => e.t === 'check').length,
       setPieces, setKinds: [...setKinds], ambushes: (L.ambushes || []).map(q => q.name), mini: L.mini ? L.mini.boss : null, boss: A ? A.boss : null, systems,
       backtrack: back, backtrackPct: total ? Math.round(back / total * 100) : 0, backRuns, offRoutePct: reach ? Math.round(off / reach * 100) : 0,
       pockets: pockets.length, offLoot, foesOnRoute: foesOn, foesOffRoute: foesOff, mix, alternations, landingFoes, blindDrops },

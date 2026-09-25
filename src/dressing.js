@@ -1001,7 +1001,7 @@ export const ALLOWED_DECORATIONS = {
 };
 
 GROUND_KITS.keep={...GROUND_KITS.deep};
-ALLOWED_DECORATIONS.keep=[...ALLOWED_DECORATIONS.deep];
+ALLOWED_DECORATIONS.keep=[...ALLOWED_DECORATIONS.deep,'brokenPillar','stuckShield','fallenBanner','brokenSpears','shieldPile','bookpile','lectern','candelabra','bookshelf'];   /* A CASTLE UNDER THE SEA: the keep's own arms, books and fittings, drowned where they stood (docs/briefs/keep-rework-2.md) */
 
 GROUND_KITS.waymeet={density:.2,kinds:['flower','tuft']};
 ALLOWED_DECORATIONS.reef.push('coiledCable','rumBarrels');

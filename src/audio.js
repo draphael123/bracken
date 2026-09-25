@@ -805,9 +805,6 @@ const DIE = {
   merrowspear() { tone('sawtooth', 210, 70, 0.3, 0.2); tone('sine', 140, 50, 0.32, 0.16, 0.04); noise(0.2, 0.24, 1400, 0.4, 0.08); },   /* the harpoon goes down with her */
   merrowcaller() { tone('triangle', 260, 90, 0.34, 0.16); noise(0.3, 0.22, 500, 0.5, 0.08); pad('sine', 300, 120, 0.6, 0.04, 0.1, 1400); },   /* the current she was holding goes out of the water with her */
   merrowbrute() { tone('sawtooth', 160, 50, 0.4, 0.24); noise(0.3, 0.3, 300, 0.6, 0.08); SFX.crack(); },   /* the shell splits */
-  /* THE LEADFOOT has no voice: there has been nothing alive in that helm for a long time. What goes down is the armour -
-     the plate opening, the last of his air leaving the seams at once, and the anchor hitting the stone after him. */
-  leadfoot() { SFX.clank(); tone('sine', 90, 42, 0.55, 0.2, 0.05); noise(0.5, 0.34, 420, 0.6, 0.06); SFX.rattle(1.2); },
   /* THE DROWNED KNIGHT: a man, once, so a voice - but under water and long gone: a low bubbled groan going down, the plate
      knocking on the stone, and his last air leaving the helm. The captain's is deeper, and his blade rings as it falls. */
   drownedknight() { SFX.clank(); tone('sine', 150, 55, 0.5, 0.16, 0.04); tone('triangle', 110, 70, 0.4, 0.08, 0.1); noise(0.45, 0.26, 520, 0.6, 0.12); },
@@ -1022,7 +1019,6 @@ const HURT = {
   merrowspear() { tone('sawtooth', 240, 150, 0.14, 0.14); noise(0.12, 0.16, 1200, 0.5); },
   merrowcaller() { tone('triangle', 300, 180, 0.14, 0.12); noise(0.1, 0.14, 700, 0.5); },
   merrowbrute() { SFX.clank(); tone('sawtooth', 180, 110, 0.16, 0.16); noise(0.14, 0.16, 500, 0.5); },
-  leadfoot() { SFX.clank(); tone('sine', 150, 100, 0.2, 0.14); noise(0.12, 0.2, 340, 0.5, 0.04); },
   drownedknight() { SFX.clank(); tone('sine', 220, 150, 0.16, 0.12); noise(0.14, 0.18, 800, 0.5, 0.03); },   /* struck plate, and a grunt through water */
   drownedcaptain() { SFX.clank(); tone('sine', 170, 110, 0.2, 0.14); noise(0.16, 0.2, 600, 0.5, 0.03); },   /* struck plate under water: a deep dull bell, and bubbles */
   cutlass() { file('hurt', 0.4, 1.18) || tone('square', 420, 260, 0.09, 0.14); },

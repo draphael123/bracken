@@ -504,20 +504,6 @@ async function runbossLab(BK, opts) {
         else if(!tired&&!hopSoon&&!bad(P.x)&&!descend&&!column&&boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&Math.abs(P.y-node.y)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
         if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp,m0=boss.mode;advance(1);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
-      if(boss.vaultKeeper){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
-        const dx=boss.x-P.x,side=Math.sign(dx)||1,mode=boss.mode;let gx=boss.x-side*Math.max(20,LAB_REACH[h]*.65),gy=boss.y;
-        if(mode==='vaultRingTell'){gx=boss.x+(P.x<boss.x?-120:120);gy=boss.y-55;}
-        if(mode==='vaultPressureTell'){gx=boss.aimX+(P.x<boss.aimX?-52:52);gy=boss.aimY-45;}
-        if(mode==='vaultBandTell')gy=boss.aimY-48;
-        const mx=breathCapacity(L,P.relic);if(P.breath<4||(P.labAir&&P.breath<mx-.3)){P.labAir=true;const xs=[484.5,494.5,504.5].map(x=>x*TS);gx=xs.sort((a,b)=>Math.abs(a-P.x)-Math.abs(b-P.x))[0];gy=A.floor-12;}else P.labAir=false;
-        gx=Math.max(A.x0+20,Math.min(A.x1-20,gx));gy=Math.max(A.floor-125,Math.min(A.floor-5,gy));
-        if(Math.abs(gx-P.x)>4)k[gx>P.x?'right':'left']=true;if(gy<P.y-4)k.up=true;else if(gy>P.y+4)k.down=true;
-        const guard=['vaultHookTell','vaultSpearTell'].includes(mode);
-        if(guard&&SHIELDED(h)){k.block=true;k.left=k.right=k.up=k.down=false;P.face=side;}else if(guard&&boss.modeT<.2)BK.press('dodge');
-        if(!guard&&!P.labAir&&!mode.endsWith('Tell')&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<27&&P.atk<0){P.face=side;k.down=k.up=false;BK.press('atk');swings++;}
-        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
-      }
       /* THE UNDEAD ARCHMAGE, FROM THE CARPET (batch 4). The bot flies: out of the storm column sideways, straight out of a death
          mark's ring, around the poison clouds, across the line of anything thrown at it (or onto the shield, for the three who
          carry one), and away from the death hand. Otherwise it closes on him and cuts - and when the mark has come back on him
