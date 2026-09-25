@@ -154,6 +154,16 @@ export function drawSanctum(g, L, A, cx, cy, time, box) {
   }
 }
 
+/* UNDER THE FIRE IS STONE, NOT THE TOWER (round 2). The hall is painted at the carpet box, and the fight's camera looks some 70 px
+   below its floor - where the parapet, its sign and the crown's last checkpoint are real tiles and real props, drawn in the world
+   over everything the hall had painted. So the hall is closed at the bottom too: the vault under the burning floor, drawn after the
+   world's props, from the foot of the fire to the bottom of the screen. */
+export function drawSanctumUnder(g, A, cx, cy) {
+  const top = Math.round(A.floor + 12 - cy), H = g.canvas.height, VW = g.canvas.width; if (top >= H) return;
+  g.fillStyle = STONE[3]; g.fillRect(0, top, VW, H - top);
+  g.fillStyle = STONE[5]; for (let y = top + 6; y < H; y += 9) g.fillRect(0, y, VW, 1);
+  g.fillStyle = FIRE[4]; g.fillRect(0, top, VW, 2);
+}
 // ---------------------------------------------------------------- the doors
 /* [spark, hot spark, and the THREE COLOURS OF WHAT IS THROUGH IT, rim inward]. The two doors are opposites on purpose:
    the first is a well going down into his tower and gets darker towards the middle; the second is a hole full of

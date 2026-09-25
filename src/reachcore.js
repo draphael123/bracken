@@ -13,7 +13,7 @@ const JUMP_ACROSS = 6;                                        // with a run-up, 
 const BOUNCE_UP = Math.ceil((480 * 480) / (2 * G) / TSZ);     // a spring throws you much higher
 const BUD_UP = Math.floor((420 * 420) / (2 * G) / TSZ);       // a bud pad throws you a tier: five rows (floor, not ceil: 89 px is not six rows)
 
-export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's rise (2 = only the comfortable ones)
+export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's rise (2 = only the comfortable ones); opts.across: a real hero's jump, not the model's six (tools/checkpoint-stand.mjs)
   /* SLOPES, and it has to be the FIRST line: a slope tile is the cell you stand in, ON THE ROCK UNDER IT, so the fill
      reads slopes as AIR and stands on that rock. Pessimistic by up to 16 px and never optimistic - the reasoning is in
      src/reach-slopes.js. A level with no slopes gets the SAME OBJECT back, so nothing about today's 30 levels changes,
@@ -175,13 +175,13 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
       // a ledge right under a ceiling: your head hits the rock just as your feet clear the lip, and you drop
       // straight back - there is no float left to cross with (the Sunspire's side routes found this one)
       const tight = head < up && -dy >= head;
-      const span = tight ? 1 : Math.round(JUMP_ACROSS * (1 - Math.abs(dy) / (up + 1.5)));
+      const span = tight ? 1 : Math.round((opts.across || JUMP_ACROSS) * (1 - Math.abs(dy) / (up + 1.5)));
       const apex = y - Math.min(up, head);
       const [cl, cr] = tight ? [0, 0] : carryAt(x, y);   /* a gust behind you: the same arc, further (above) */
       for (let dx = -span - cl; dx <= span + cr; dx++) if (!dx || across(x, dx, apex, Math.min(y, y + dy))) push(x + dx, y + dy);
     }
     // fall: straight down, and out to either side
-    for (const dx of [-JUMP_ACROSS, -2, 0, 2, JUMP_ACROSS]) { let ny = y;
+    const fa = opts.across || JUMP_ACROSS; for (const dx of [-fa, -2, 0, 2, fa]) { let ny = y;
       if (dx && (wall(at(x + dx, y)) || !across(x, dx, y, y))) continue; // walk off the edge: nothing in the way, and not into a wall
       while (ny < H - 1 && !footing.has(key(x + dx, ny)) && !wall(at(x + dx, ny))) ny++;
       if (footing.has(key(x + dx, ny))) push(x + dx, ny); }

@@ -22,7 +22,7 @@ import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smaller
 import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT,quench} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
 import {carpetBox,stepCarpet,knockCarpet,updateCarpet,resetCarpet,drawRug,drawCarpetWorld,drawStormWalls,mountCarpet} from './carpet.js';
-import {burnSanctum,drawSanctum,drawSanctumDoors,drawSandDawn,updateSanctum,openSanctumDoor} from './sanctum.js';   /* THE ARCHMAGE'S SANCTUM: the room behind the door, its floor of fire, and the path out */
+import {burnSanctum,drawSanctum,drawSanctumDoors,drawSanctumUnder,drawSandDawn,updateSanctum,openSanctumDoor} from './sanctum.js';   /* THE ARCHMAGE'S SANCTUM: the room behind the door, its floor of fire, and the path out */
 import {updateBuriedDead as stepBuriedDead,updateZombie,bakeDead,deadFrame,drawBuriedDead} from './buried-dead.js';
 import {bakeBuriedDeadKing,kingFrame as deadKingFrame} from './buried-dead-art.js';   /* THE BURIED DEAD'S OWN SPRITE (2026-09-24): a half-risen corpse-king, not the zombie's baker at x3 */
 import {updateVaultKeeper,drawVaultKeeper} from './vault-keeper.js';
@@ -23619,6 +23619,7 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
+  if(L.sanctum&&L.carpetUp&&!L.sandWalk)drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
   drawCarpetWorld(g,L,P,cx,cy,time);drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}{const tr=L.mini&&L.mini.boss==='tidemarauder'&&enemies.find(q=>q.t==='tidemarauder'&&q.mini&&q.alive);if(tr)drawTideReaver(g,tr,cx,cy,time,L.mini.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage')drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if(L.witch)drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time);
   drawBuriedDead(g,boss?.t==='burieddead'?boss:null,L.arena,cx,cy,time);

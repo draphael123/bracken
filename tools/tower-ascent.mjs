@@ -68,7 +68,10 @@ assert.ok(![...R.seen].some(s => +s.split(',')[1] < TOWER.SKY - 1), 'the climb r
 assert.equal(at(SAND.x0 + 4, SAND.row), T.SOLID, 'the sandy path is gone, so the line above passes for the wrong reason');
 assert.ok(![...R.seen].some(s => +s.split(',')[1] === SAND.row - 1), 'the sandy path can be WALKED to: it is meant to be reached only through the second door');
 const checks = L.ents.filter(e => e.t === 'check').map(e => e.y).sort((a, b) => a - b);
-for (const f of L.towerFloors) assert.ok(checks.some(y => y >= f.top - 2 && y < f.bot), 'a checkpoint on ' + f.name); assert.ok(checks[0] <= TOWER.SKY, 'and one on the parapet, for the sky fight');
+for (const f of L.towerFloors) assert.ok(checks.some(y => y >= f.top - 2 && y < f.bot), 'a checkpoint on ' + f.name);
+/* and one on the crown's last climb, for the sky fight - NOT on the parapet any more, where the fight saw it under the fire and could never reach it
+   (round 2; tools/checkpoint-stand.mjs holds every flight arena to that) */
+assert.ok(checks[0] > TOWER.SKY + 1 && checks[0] <= TOWER.SKY + 8, "the last checkpoint before the sky is on the crown's last climb: row " + checks[0]);
 // ---- THE TWO NEW FLOORS (2026-09-22) ----
 { const F = Object.fromEntries(L.towerFloors.map(f => [f.name, f]));
   const R2 = L.ents.filter(e => e.t === 'glyph');

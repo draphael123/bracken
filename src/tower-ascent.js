@@ -246,7 +246,12 @@ export function buildTowerAscent({ painter, T, TS }) {
     F.tiers.forEach(([x0, len, row], j) => { if (j % 4 === 1) crumbles.push({ x0, x1: x0 + len - 1, row, count: 2.5, kind: 'crown' }); });
     rect(28, 43, SKY + 1, SKY + 1, T.SOLID);                              /* THE PARAPET WALK, three over the last tier: the carpet waits over it */
     ent('check', 30, F.bot - 1); ent('sign', 26, F.bot - 1, { text: 'THE CROWN. THE ROOF IS GONE. A DOOR STANDS OPEN ON THE PARAPET: HIS ROOM IS THROUGH IT.' });
-    ent('check', 31, SKY); ent('sign', 40, SKY, { text: 'HIS CARPET FLIES WHERE YOU STEER IT. THE FLOOR BURNS. EVERY SPELL CAN BE OUT-FLOWN.' });
+    /* THE LAST CHECKPOINT BEFORE HIM IS ON THE CROWN'S LAST CLIMB, two tiers under the parapet (round 2, docs/briefs/falling-tower-round2.md
+       §1b). It stood on the parapet, one row under his hall's floor, and the fight's camera looks that far down: all fight long there was a
+       lit lantern under the fire that the carpet can never reach (Daniel: "a checkpoint that is unreachable when you fight the skeletal
+       mage"). Here it is below everything the fight shows (tools/checkpoint-stand.mjs), and a death in the sky still wakes you by the door. */
+    /* (its sign with it: on the parapet the fight saw that too, a signpost standing under the fire) */
+    { const [x0, len, row] = F.tiers[F.tiers.length - 2]; ent('check', x0 + (len >> 1) + 1, row - 1); ent('sign', x0 + 2, row - 1, { text: 'HIS CARPET FLIES WHERE YOU STEER IT. THE FLOOR BURNS. EVERY SPELL CAN BE OUT-FLOWN.' }); }
     deco('telescope', 36, F.bot - 1); deco('starChart', 24, F.top + 1, { hang: true });
     const who = ['imp', 'apprentice', 'bat', 'armour', 'tome', 'apprentice', 'haunt', 'imp', 'tome', 'bat', 'armour'];
     F.tiers.forEach(([x0, len, row], j) => put(who[j % who.length], x0, len, row));
