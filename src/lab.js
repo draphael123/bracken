@@ -1067,7 +1067,11 @@ async function runbossLab(BK, opts) {
       const cutGo=h==='knight'&&P.atkHeld>=KNIGHT_CUT;   /* the heavy cut is let go at the guard-break */
       const mixedHeavy=(opts.attackStyle==='mixed'||h==='pirate'&&boss.t==='herald'&&P.loaded) && !cutGo && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&(h==='pirate'&&boss.t==='herald'?ad>40&&ad<140:ad<reach+8)&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));
       if(mixedHeavy){k.atk=true;if(!(P.charge>0||P.atkHeld>0))P.labHeavyAt=f+Math.round(4*60/(BK.SET.speed||1));}
-      if (!mixedHeavy && !cutGo && strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; BK.press('atk'); swings++; }
+      /* THE SWING GOES AT HIM, NOT BEHIND. Standing closer than its spot, the bot walks back to it - and the game turns a hero to the key he
+         holds before a swing starts (updatePlayer: if (!attacking) P.face = move), so a swing pressed on that frame went out behind him: on
+         the Reefmaw the Death Knight's first swing in every stuck jaw was cut facing away and rooted him 0.78 s of a 2.2 s window (claude/dk2).
+         On the frame it swings, the bot lets go of the key that points away. */
+      if (!mixedHeavy && !cutGo && strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; if (d > 0) k.left = false; else if (d < 0) k.right = false; BK.press('atk'); swings++; }
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */

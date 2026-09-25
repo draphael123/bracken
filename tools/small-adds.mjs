@@ -11,7 +11,8 @@
 // or more swings at small foes missed 20% (the warden on the Bullfrog, 1 of 5; the pirate on the Abbot 2 of 11, the pyromancer 3 of 21),
 // and all 12 misses in 119 swings are 10%. The pre-dkmother pilot (the plain cut at sporelings) makes the Death Knight miss 5 of 12 on
 // the Mother, 42%. A row fails above ONE IN THREE, and only a row with at least four such swings is judged (one miss in two swings is
-// noise, not a habit). Proved red: with the pilot's sweep taken out again, this fails on exactly that row.
+// noise, not a habit). Proved red: with the pilot's sweep taken out again, this fails on exactly that row. (After the generic strike
+// stopped swinging facing away, same lane: 7 of 124 miss, worst judged row 23% - the limit still stands clear of both.)
 //   node tools/small-adds.mjs            SMALL_ADDS_OUT=file.json keeps the table
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
