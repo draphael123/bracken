@@ -1159,6 +1159,13 @@ export function bakeBouncer() {
   return [mk(false), mk(true)];
 }
 // Shelf fungus: a one-way ledge that snaps after you stand on it.
+/* SHELF FUNGUS IN A MUSHROOM WOOD (the Sporewood rebuild, level review 2026-09-24: "orange board ledges in a violet fungus cave"). The
+   snapping shelf is named for a bracket fungus and was drawn as the forest's planks; in a wood whose palette says `myc` it is the fungus:
+   a pale rounded lip, a violet body, gills under it. Same rows as the plank (2-7), so it stands and snaps exactly where the plank did. */
+export function bakeShelfFungus(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  rect(g, 0, 3, T, 4, '#8a5a9a'); rect(g, 1, 2, T - 2, 1, '#e8d4f0'); rect(g, 0, 3, T, 1, '#c9a8d8'); rect(g, 0, 7, T, 1, '#3e2a4a');
+  for (let i = 1; i < T; i += 3) rect(g, i, 5, 1, 2, '#5e3e70');   /* the gills, underneath */
+  for (let i = 0; i < 2 + ((rnd() * 2) | 0); i++) px(g, 2 + ((rnd() * (T - 4)) | 0), 4, '#f4e8ff'); return c; }
 export function bakeShelf(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 2, T, 5, '#d9a55b'); rect(g, 0, 2, T, 1, '#f0d090'); rect(g, 0, 6, T, 1, '#8a5a32'); for (let i = 0; i < 4; i++) rect(g, 2 + i * 4, 4, 1, 2, '#b8813a'); if (rnd() < 0.5) px(g, (rnd() * T) | 0, 3, '#fff1c0'); return c; }
 /* LOOSE ROCK (THE SCREE PATH, 2026-09-23): the snapping shelf in stone - a slab of the hill split off its bed, a crack across it,
    grit already trickling off its underside. It must read as footing AND as a slab that is not holding. */

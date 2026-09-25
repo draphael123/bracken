@@ -60,6 +60,10 @@ function grow(L, ret, col, n) {
   if (R.interiors) R.interiors = R.interiors.map(([x0, x1, y0, y1, st]) => [sh(x0), sh(x1), y0, y1, st]); // keep the room's KIND: dropping it made every grown level's interior the default timber
   if (R.structures) R.structures = R.structures.map(z => ({...z,x0:sh(z.x0),x1:sh(z.x1)}));
   if (R.stone) R.stone = R.stone.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
+  /* AND THE CALMS, which are tile boxes like the stone. Nothing shifted them, so HIGHCROWN's - written before the furnace line and the
+     Captains Hall grew in - kept the banquet roof at 722-765 while the roof stood at 810-853, and the garrison stood a heavy on the
+     Captains Hall's slates at 797,7, out of everyone's reach (the level review, 2026-09-24). Here, so no level can drift again */
+  if (R.calm) R.calm = R.calm.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
   if (R.scree) R.scree = R.scree.map(z => ({ ...z, x0: sh(z.x0), x1: sh(z.x1) }));
   if (R.fog) R.fog = R.fog.map(z => ({ ...z, x0: shp(z.x0), x1: shpEnd(z.x1) }));
   if (R.slide) R.slide = { ...R.slide, x0: shp(R.slide.x0), x1: shpEnd(R.slide.x1) };
@@ -763,7 +767,7 @@ function sporewood() {
   sleeps.push({ x0: 226 * TS, x1: 233 * TS, y0: 8 * TS, y1: 14 * TS }); ent('sporeling', 229, 13, { face: -1 }); ent('glow', 227, 13);
   ent('shaman', 237, 13, { face: -1 }); ent('spitcap', 224, 13, { face: -1 }); ent('sporeling', 241, 13, { face: -1 }); ent('glow', 243, 13);
   ent('sign', 244, 13, { text: 'THE PILLARS. HOLD JUMP, OR PLUNGE INTO THE CAPS.' });
-  ent('deco', 205, 13, { kind: 'deadTree', v: 0 }); ent('deco', 238, 13, { kind: 'deadTree', v: 1 }); ent('deco', 292, 13, { kind: 'deadTree', v: 0 });
+  ent('deco', 205, 13, { kind: 'rootDecor', v: 0 }); ent('deco', 238, 13, { kind: 'rootDecor', v: 1 }); ent('deco', 292, 13, { kind: 'rootDecor', v: 2 });   /* roots, not the forest's dead trees: this wood is fungus (level review) */
   ent('sign', 201, 13, { text: 'THE CAPS GROW INTO STEPS. WAIT FOR THEM TO RISE, THEN CLIMB.' });
   coins([208, 12], [231, 11], [239, 11]);
 
@@ -788,7 +792,7 @@ function sporewood() {
   ent('deco', 310, 19, { kind: 'sporePod' }); ent('deco', 322, 19, { kind: 'sporePod' }); ent('deco', 348, 19, { kind: 'sporePod' }); ent('deco', 360, 19, { kind: 'sporePod' });
   ent('deco', 314, 19, { kind: 'skullPile', v: 0 }); ent('deco', 356, 19, { kind: 'skullPile', v: 1 });
   ent('glow', 300, 19); ent('glow', 370, 19); ent('glow', 314, 19); ent('glow', 356, 19);
-  ent('deco', 302, 19, { kind: 'deadTree', v: 1 }); ent('deco', 368, 19, { kind: 'deadTree', v: 0 });
+  ent('deco', 302, 19, { kind: 'sporePod' }); ent('deco', 368, 19, { kind: 'sporePod' });
   web(308, 14, 19); web(312, 14, 19); ent('spider', 310, 13, { drop: 110, big: true }); // THE LARDER: something big keeps the door
   ent('weaver', 316, 15, { face: -1 }); ent('spitcap', 300, 19, { face: 1 }); ent('spitcap', 372, 19, { face: -1 });
   coins([306, 17], [364, 17]);
@@ -796,9 +800,9 @@ function sporewood() {
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], sleeps,
     duskStart: -1, duskLen: 1, music: 'cave', night: false, glowNight: true,
-    palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(120,160,140,0.2)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
+    palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(120,160,140,0.2)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#2a1f38', '#3a2a4c', '#4e3a64', '#66507e'] },   /* its own violet canopy: the green one was the Marsh's, byte for byte (level review) */
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'hive' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'drip' }],   /* the fungus drips; the hive's buzz was the Hornet Queen's (level review) */
     storm: { x0: 201 * TS, x1: 244 * TS, y: 14 * TS },
     rot: { x0: 44 * TS, x1: 296 * TS }, // the wood sickens the deeper you go: a violet wash that grows with x, and lifts when she dies
     quest: { n: 3, item: 'cap', name: 'CLEAN CAP', npc: 'elder', done: 'THE LIGHT IS GATHERED', thanks: "THE ELDER'S THANKS" },
@@ -809,7 +813,7 @@ function sporewood() {
   G.floor(245, 288, 14);
   for (const [x0, x1] of [[252, 255], [262, 266], [274, 278]]) { for (let x = x0; x <= x1; x++) for (let y = 14; y <= 19; y++) G.set(x, y, 0); for (let x = x0; x <= x1; x++) G.set(x, 19, T.BOUNCER); }
   G.ent('sign', 246, 13, { text: 'THE BOG KEEPS WHAT FALLS IN. PLUNGE THE FLOATING CAPS TO BOUNCE OUT.' });
-  G.ent('lurker', 249, 13); G.ent('deco', 257, 13, { kind: 'deadTree', v: 1 }); G.ent('puffball', 259, 13); G.ent('lurker', 260, 13); G.ent('puffball', 269, 13); G.ent('lurker', 271, 13); G.ent('puffball', 281, 13);
+  G.ent('lurker', 249, 13); G.ent('deco', 257, 13, { kind: 'rootDecor', v: 1 }); G.ent('puffball', 259, 13); G.ent('lurker', 260, 13); G.ent('puffball', 269, 13); G.ent('lurker', 271, 13); G.ent('puffball', 281, 13);
   G.ent('vent', 258, 13, { period: 4, on: 1.5, h: 90, phase: 1 }); G.ent('vent', 270, 13, { period: 5, on: 1.6, h: 90, phase: 3 });
   G.ent('drone', 254, 8); G.ent('drone', 264, 7); G.ent('drone', 276, 8);
   G.ent('glow', 247, 13); G.ent('glow', 257, 13); G.ent('glow', 268, 13); G.ent('glow', 280, 13); G.ent('glow', 287, 13);
@@ -867,6 +871,60 @@ function sporewood() {
   R.ents=R.ents.filter(e=>e.t==='mother'||e.x<mx-23||e.x>mx+24||['deco','glow','coin'].includes(e.t));
   R.ents.push({t:'glowbud',x:mx-8,y:fy-1,motherNode:true},{t:'sign',x:mx-22,y:fy-1,text:'STRIKE THE MARKED ROOT. SPRING TO THE HEART. THE ROOT MOVES AFTER EACH OPENING.'});
   for(const x of [450,456])R.ents.push({t:'glowbud',x:x-1,y:x===450?21:17,mycelium:true});
+  /* ==== THE CAPS GROW INTO STEPS, said again (the rebuild, docs/briefs/sporewood-rebuild.md) - in FINAL columns, like the strip above ====
+     The strip left the rule as two sprouts in the Deep Gills, 160 columns after the only sign that named it, and none in her room. It is
+     said here in route order: TAUGHT in the glade (a root step), a cap that LEANS over a gap (the old vent marsh), a STAIR grown between
+     spore falls (the old Tumble), the Gills' sprouts woken by a struck glowbud (above), and her room, where her fold JAMS on a grown one. */
+  const RS = (x0, x1, y0, y1, t) => { for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) R.grid[y * R.W + x] = t; };
+  const solidAt = (x, y) => R.grid[y * R.W + x] === T.SOLID;
+  const sprout = (x, row, o = {}) => { const rise = o.rise ?? 56, y0 = row * 16 - 8; return { kind: 'growcap', x: x * 16, y: y0, y0, y1: y0 - rise, w: 32, h: 8, rise, state: 'bud', k: 0, ...(o.lean ? { bx: x * 16 } : {}), ...o }; };   /* `row` is the ground row the bud sits on */
+  const drop = (x0, x1, y0, y1, keep = () => false) => { R.ents = R.ents.filter(e => keep(e) || !(e.x >= x0 && e.x <= x1 && e.y >= y0 && e.y <= y1)); };
+  const caps = [];
+  /* -- 0. THE ROOT STEP (the glade, 34-44): a root four rows high across the way before the canyon; a bud at its foot. Nothing else on it. */
+  drop(33, 44, 15, 19, e => e.t === 'coin' || e.t === 'spitcap');   /* the puffball sign (41) and the sporeling that walked the step (33) */
+  RS(39, 44, 16, 19, T.SOLID); caps.push(sprout(37, 20));   /* against the root, so the grown cap sets you straight onto it */
+  R.ents.push({ t: 'sign', x: 33, y: 19, text: 'THE CAPS GROW INTO STEPS. STOP ON A BUD AND IT RISES UNDER YOU.' }, { t: 'sporeling', x: 24, y: 19, face: -1 },
+    { t: 'glow', x: 42, y: 15 }, { t: 'coin', x: 40, y: 14 }, { t: 'coin', x: 43, y: 14 });
+  /* -- 1. THE LEANING CAPS (the old vent marsh, 175-209): two gaps with a stump between; a bud on each lip leans out over its gap as it grows
+     and sets you by the far side. The gaps have a floor with caps on it that spring you back out: nothing here is bottomless. */
+  drop(175, 209, 0, 19, e => e.t === 'check' || (e.t === 'glow' && (e.x < 179 || e.x > 204 || (e.x >= 189 && e.x <= 193))));
+  for (let x = 180; x <= 209; x++) for (let y = 0; y <= 13; y++) if (R.grid[y * R.W + x] === T.SHELF || R.grid[y * R.W + x] === T.ONEWAY) R.grid[y * R.W + x] = T.AIR;   /* the snapping shelves and the ledge the vents lifted you to */
+  RS(179, 188, 14, 19, T.AIR); RS(194, 204, 14, 19, T.AIR);
+  for (const x of [180, 185, 196, 202]) R.grid[19 * R.W + x] = T.BOUNCER;
+  caps.push(sprout(177, 14, { rise: 16, lean: 160, growT: 1.6 }), sprout(192, 14, { rise: 16, lean: 176, growT: 1.7 }));
+  R.ents.push({ t: 'sign', x: 176, y: 13, text: 'SOME CAPS LEAN AS THEY GROW. STOP ON ONE AT THE EDGE AND IT CARRIES YOU OVER.' },
+    { t: 'spitcap', x: 190, y: 13, face: -1 }, { t: 'sporeling', x: 186, y: 19, face: -1 }, { t: 'sporeling', x: 199, y: 19, face: -1 });
+  /* -- 2. THE DRIPPING STAIR (the old Tumble, 245-284): the two-row steps become two four-row tiers, a bud at the foot of each, and a clump
+     of spores lets go of the canopy over each bud on a count. Grow your step between clumps: ride it up in the column and it finds you. */
+  RS(252, 258, 10, 11, T.SOLID); RS(259, 272, 6, 9, T.SOLID);
+  for (const e of R.ents) if (e.x >= 245 && e.x <= 284) while (e.y > 0 && solidAt(e.x, e.y)) e.y--;   /* whatever stood on the old steps stands on the new ones */
+  caps.push(sprout(250, 14), sprout(257, 10));
+  for (const e of R.ents) if (e.t === 'sign' && e.x === 246 && e.y === 13) e.text = 'SPORES FALL ON THE BUDS. LET ONE BURST, THEN STOP ON THE BUD AND GROW YOUR STEP.';
+  R.ents.push({ t: 'rockfall', x: 251, y: 0, spore: true, every: 2.6, tell: 0.9 }, { t: 'rockfall', x: 258, y: 0, spore: true, every: 2.9, tell: 0.9 });
+  /* -- 3. THE DEEP GILLS (424-471) keep their sprouts; their sign says both halves of them. */
+  for (const e of R.ents) if (e.t === 'sign' && e.x === 425 && e.y === 13) e.text = 'STRIKE A GLOWBUD: IT LIGHTS THE DARK AND WAKES THE SPROUTS BESIDE IT.';
+  /* -- 4. HER ROOM: a bud each side of her, inside her fold's reach and clear of the springs, the shelves and every knot anchor. */
+  caps.push(sprout(mx - 6, fy, { mother: true }), sprout(mx + 5, fy, { mother: true }));
+  for (const e of R.ents) if (e.t === 'sign' && e.x === 474) e.text = 'GROW A BUD BY HER AND DROP OFF IT: HER FOLDING CAP JAMS, AND HER HEART OPENS.';
+  /* the rule's old sign stood on the lantern terrace (285), where no cap ever grew: it is in the glade now */
+  R.ents = R.ents.filter(e => !(e.t === 'sign' && e.x === 285 && /GROW INTO STEPS/.test(e.text || '')));
+  R.moversExtra = (R.moversExtra || []).concat(caps);
+  /* ==== WHAT THE STRIP LEFT EMPTY, AND ONE SENTENCE ON SEVEN SIGNS (the rebuild's second chunk) ====
+     The vent marsh and the Tumble carry the rule now (above). THE PUFFBALL BOG (329-372) kept its sinks and lost everything that made
+     crossing them a fight; its two geysers lift you over nothing. They go, and the crossing is under fire instead: a weaver hangs over the
+     middle sink and a spitcap stands on each far bank, so a jump between sinks is a jump someone is shooting at (B8's third shape). */
+  R.ents = R.ents.filter(e => !(e.t === 'vent' && e.x >= 329 && e.x <= 372));
+  R.ents.push({ t: 'weaver', x: 348, y: 9, face: -1 }, { t: 'spitcap', x: 343, y: 13, face: -1 });   /* (the garrison already stands one on the far bank) */
+  /* THE SIGNS. The strip's regex rewrote every sign that mentioned sleep, spores, puffballs, rollers, gills or nests to one sentence, so the
+     glade, the canyon, the fork and the Mother's door all said "FOLLOW THE CAPS...". Each says what stands beside it now, and nothing else. */
+  const SIGN = { 4: 'CAPS BOUNCE. HOLD JUMP FOR HEIGHT. THE DEEPER YOU GO, THE SICKER THE WOOD.',
+    31: 'SPITCAPS SWELL, THEN LOB SPORES. THE CLOUD EATS YOUR STAMINA: STEP OUT OF IT.',
+    46: 'A VENT LIFTS WHOEVER STANDS IN IT. PLUNGE A CAP AND IT SPRINGS YOU HIGHER.',
+    129: 'CAP CANOPY ABOVE, ROOT CELLAR BELOW. HOLD DOWN TO LOOK. THE CELLAR SHUTS BEHIND YOU.' };
+  for (const e of R.ents) if (e.t === 'sign' && SIGN[e.x] && /FOLLOW THE CAPS|ROT RUNS DOWNHILL/.test(e.text || '')) e.text = SIGN[e.x];
+  /* the pillars' sign stood at 328 - right when it was written, forty-five columns early since the bog grew in front of the pillars */
+  for (const e of R.ents) if (e.t === 'sign' && e.x === 328 && /THE PILLARS/.test(e.text || '')) { e.x = 369; e.text = 'THE PILLARS. JUMP CAP TO CAP; FALL, AND THE CAPS ON THE FLOOR SPRING YOU BACK UP.'; }
+  R.ents.push({ t: 'sign', x: 286, y: 13, text: 'SOME CAPS ARE LURKERS. THEY LUNGE WHEN YOU COME CLOSE: STRIKE FIRST.' });   /* the lantern terrace, where the rule's sign used to stand over no cap */
   return R;
 ;
 }
@@ -2608,6 +2666,10 @@ function undercrown() {
       grass: '#5a4a3a', grassL: '#6e5c48', grassD: '#3a2e22', dirt: '#3a3028', dirtL: '#4a3e32', dirtD: '#241d18',
       canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
+    /* THE WORKS BELL, which its own sign has promised since the day the level was built ("everything below here can hear it") and
+       which never had an alarm: rung, the gallery's end drops shut over the shaft down, and the works below come up it
+       (tools/bells.mjs found it, asking every level what it had asked of Highcrown) */
+    alarms: [{ id: 'works', gates: [[85, 30, 33]], garrison: [{ t: 'miner', x: 83, y: 33 }, { t: 'rockgoblin', x: 80, y: 33 }, { t: 'sprig', x: 82, y: 33 }] }],
     arena: { x0: 30 * TS, x1: 74 * TS, floor: 167 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'prince', music: 'musDungeon', tint: '#1e2420', tintA: 0.14, fx: 'dust', y0: 144 * TS, y1: 168 * TS },
   };
 }
@@ -3003,7 +3065,7 @@ function highcrown() {
   ent('hound', 64, 63, { face: -1 }); ent('soldier', 28, 63, { face: 1 });
   ent('sentry', 66, 63, { section: 'ward', range: 8, face: 1 });
   ent('bell', 84, 63, { section: 'ward' });
-  ent('sign', 26, 63, { text: 'CATCH THE SENTRY BEFORE HE RINGS THE BARRACKS BELL, OR BREAK THE BELL.' });
+  ent('sign', 26, 63, { text: 'CATCH THE SENTRY OR BREAK HIS BELL. RUNG, THE GRATE DROPS AND THE BARRACKS TURNS OUT.' });
   plat(91, 55, 6); ent('weight', 94, 55, { len: 6 }); // a counterweight over the barracks door (low enough to cut with a jump)
   ent('deco', 95, 63, { kind: 'cabin' });
   // the inner wall, its gate open until the alarm drops it
@@ -3028,7 +3090,7 @@ function highcrown() {
   ent('soldier', 138, 63, { face: -1 }); ent('javelin', 160, 63, { face: -1 });
   air(198, 201, 52, 53); lid(198, 201, 52);    // the stair up, through the floor above
   stair([[184, 62], [188, 60], [192, 58], [196, 56], [198, 54]]);
-  ent('sign', 134, 63, { text: 'HER WATCH WALKS THE HALL. THE GATE BY THE STAIR DROPS WHEN A BELL RINGS.' });
+  ent('sign', 134, 63, { text: 'HER WATCH WALKS THE HALL. RUNG, THE GATE BY THE STAIR STAYS DOWN UNTIL THE HALL IS CLEAR.' });
 
   // F1. THE KITCHENS (floor 52)
   ent('check', 196, 51);
@@ -3063,7 +3125,7 @@ function highcrown() {
   // F3. THE CHAPEL (floor 20) - the bell tower's own bell, two of the watch, the key on the altar
   ent('check', 202, 19);
   port(206, 14, 19); ent('lockgate', 206, 19, { needs: 'brass', h: 6 });
-  ent('sign', 198, 19, { text: 'THE CHAPEL. THE KEY TO HER ROOMS IS ON THE ALTAR. THIS BELL IS THE LOUDEST.' });
+  ent('sign', 198, 19, { text: 'THE CHAPEL. HER KEY IS ON THE ALTAR. THIS BELL IS THE LOUDEST: THE ROOF HEARS IT.' });
   ent('sentry', 186, 19, { section: 'chapel', range: 10, face: -1 }); ent('sentry', 166, 19, { section: 'chapel', range: 6, face: 1 });
   ent('bell', 176, 19, { section: 'chapel' });
   for (const x of [134, 154, 178, 196]) ent('torch', x, 19);
@@ -3122,7 +3184,7 @@ const crownReview = L => { const R = rv(L); R.ent('check', 62, 63);
     R.plat(149, 12, 3); R.plat(151, 10, 3);
     for (let x = 151; x <= 153; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
     for (let x = 194; x <= 196; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
-    R.ent('sign', 156, 7, { text: 'THE LEADS. THE HATCH AT THE FAR END DROPS YOU INTO THE CHAPEL: DOWN AND JUMP.' });
+    R.ent('sign', 156, 7, { text: 'THE KEEP ROOF. THE HATCH AT THE FAR END DROPS YOU INTO THE CHAPEL: DOWN AND JUMP.' });
     R.ent('deco', 170, 7, { kind: 'banner', v: 1 }); R.ent('deco', 182, 7, { kind: 'barrels' });
     // (the armoury gantry's ledges went out to the bailey with the armoury: they are laid in THE ARMOURY, below)
     // the far corner of the entrance hall past the stair, and the leads past the second hatch: something at the end of each
@@ -3143,7 +3205,7 @@ function growDown(L, n) { // add n rows under the level: each column carries on 
 }
 function shiftCrown(R, col, n) { // what grow() does not know about in the castle: the alarms, the smith's slag, the Queen's hall parts
   const sh = x => x >= col ? x + n : x, shp = p => p >= col * TS ? p + n * TS : p;
-  if (R.alarms) R.alarms = R.alarms.map(a => ({ ...a, gates: a.gates.map(([c, y0, y1]) => [sh(c), y0, y1]), garrison: a.garrison.map(gd => ({ ...gd, x: sh(gd.x) })) }));
+  if (R.alarms) R.alarms = R.alarms.map(a => ({ ...a, gates: a.gates.map(([c, y0, y1]) => [sh(c), y0, y1]), garrison: (a.garrison || []).map(gd => ({ ...gd, x: sh(gd.x) })), ...(a.wake ? { wake: [sh(a.wake[0]), sh(a.wake[1]), a.wake[2], a.wake[3]] } : {}) }));
   if (R.mini && R.mini.slag) R.mini = { ...R.mini, slag: R.mini.slag.map(shp) };
   /* AND HIS BEAM. beamL/beamR were never shifted, so once the castle grew round him they still said columns 142-182 while his armoury
      stood at 556-628: every time he took the beam he was clamped four hundred columns away, hanging at beam height outside his room. */
@@ -3386,7 +3448,7 @@ function highcrownWhole() {
     block(X, X + 1, 20, 25); block(X + 2, X + 3, 22, 25); block(X + 4, X + 5, 24, 25);   // the chapel door's landing, and three steps down into the hall
     block(X, X + 43, 8, 9); block(X + 42, X + 43, 10, 19);                   // the hall's roof, and its east wall over the door to the leads
     block(X + 32, X + 39, 24, 25);                                             // the high table's dais
-    ent('sign', X + 1, 19, { text: 'HER BANQUET HALL. CUT A CHANDELIER DOWN ON WHOEVER IS UNDER IT.' });
+    ent('sign', X + 1, 19, { text: 'HER BANQUET HALL, AND HER CAPTAIN AT THE HIGH TABLE. CUT A CHANDELIER DOWN ON HIS GUARD.' });
     ent('deco', X + 12, 25, { kind: 'longTable', v: 0 }); ent('deco', X + 23, 25, { kind: 'longTable', v: 1 });
     ent('deco', X + 34, 23, { kind: 'candelabra' }); ent('deco', X + 38, 23, { kind: 'candelabra' }); ent('deco', X + 8, 25, { kind: 'caskRack' });
     for (const x of [X + 14, X + 25]) ent('weight', x, 10, { len: 12, lamp: true, hang: true });   /* hung to a jump's cut over the floor (row 22): a lamp on the dais would be at the head of anyone stood on it */
@@ -3465,7 +3527,8 @@ function highcrownWhole() {
   { const X=762,n=48,F=grow(R,R,X,n);shiftCrown(F.R,X,n);
     F.block(X,X+n-1,20,F.R.H-1); F.block(X,X+n-1,8,9);
     F.R.interiors.push([X,X+n-1,10,19,'royal']); F.R.masonry.push([X,X+n-1,8,9],[X,X+n-1,20,26]);
-    F.ent('check',X+2,19);F.ent('sign',X+3,19,{text:'THE CAPTAINS HALL. GOBLINS DROP FROM THE BALCONIES. FALLING LAMPS STRIKE BOTH SIDES.'});
+    F.ent('sign',X+3,19,   /* (its checkpoint at X+2 went: eight tiles past the chapel's at 756, and the banquet room's door one stands at its far end, 809) */
+      {text:'THE CAPTAINS HALL. GOBLINS DROP FROM THE BALCONIES. FALLING LAMPS STRIKE BOTH SIDES.'});
     for(const dx of [12,28,40]) { F.ent('weight',X+dx,10,{len:6,lamp:true,hang:true,unstable:true});F.plat(X+dx+1,14,3); for(let y=14;y<20;y++)F.set(X+dx+3,y,T.NET); F.ent('soldier',X+dx+2,13,{face:-1,balcony:true}); }
     F.ent('heavy',X+23,19,{face:-1});
     for(const dx of [7,22,44])F.ent('torch',X+dx,19);
@@ -3483,6 +3546,24 @@ function highcrownWhole() {
   // THESE ARE FINAL COLUMNS. Nothing is grown after this line, so what is written here is what the built level
   // has; every grow() and shiftCrown() above is already done.
   for (const [x, y] of [[255, 63], [624, 61], [727, 51]]) R.ents.push({ t: 'temperer', x, y, face: -1 });
+
+  // ---- EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT (docs/briefs/highcrown-bells.md) ----
+  // The rule line promised it and only the Leads kept it: the ward's, the entrance hall's and the chapel's alarms went on
+  // 2026-09-11 when their gates became key portcullises ON THE SAME COLUMNS, and their bells, sentries and signs stayed behind,
+  // dead. An alarm gate lifts every PORT in its rows, so each of these stands on a column of its OWN, in front of its lock
+  // gate and never on it. Each hall answers its bell differently. FINAL COLUMNS: nothing is grown after this line.
+  //   THE WARD      the chase: one sentry, a long run to a bell in the open yard. The drop-grate in the inner gate's arch (the
+  //                 wall is over it) falls in front of the barred gate, and the barracks turns out of its own door - under the
+  //                 counterweight that hangs over that door.
+  //   THE HALL      the hall turns on you: nobody new comes; the watch already in it is marked, and the gate by the stair
+  //                 stays down in front of the iron gate until they are down.
+  //   THE CHAPEL    the loudest bell, with a sentry either side of it, so you catch one at most. The grate before the bone gate
+  //                 falls, and the roof hears it: its watch comes down through the hatch.
+  // Every one lifts when its watch is down or after twenty seconds (updateAlarms), and a death puts the hall back (resetCastle).
+  R.alarms = (R.alarms || []).concat([
+    { id: 'ward', gates: [[321, 58, 63]], garrison: [{ t: 'soldier', x: 315, y: 63 }, { t: 'javelin', x: 312, y: 63 }] },
+    { id: 'hall', gates: [[735, 54, 63]], wake: [678, 735, 54, 63] },
+    { id: 'chapel', gates: [[715, 10, 19]], garrison: [{ t: 'soldier', x: 747, y: 19 }, { t: 'javelin', x: 749, y: 19 }, { t: 'soldier', x: 751, y: 19 }] }]);
   return R;
 }
 
@@ -7430,7 +7511,7 @@ const REVIEW = {
   marsh: L => { const R = rv(L); R.ent('check', 163, 17); for (const x of [115, 118, 121, 124, 127, 465, 468, 471, 474]) { R.ent('pad', x, 17); R.coin(x, 15); } },
   // and its own light in every part of it, so the long fungus wood stops being one colour from end to end
   spore: L => { rv(L).ent('check', 330, 13); L.ents = L.ents.filter(e => !(e.t === 'spitcap' && L.arena && e.x > L.arena.wallR));   /* a spitcap left past the Mother's east wall when the Deep Gills grew the wood: nothing out there to guard (level review, 2026-09-24) */
-    L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, 504, [200, 60, 150], 0.16]]; },
+    L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, L.W, [200, 60, 150], 0.16]]; },   /* to the level's end, whatever it grows to: it stopped at 504, the width before the Deep Gills grew */
   // the court's long runs went a hundred and twenty tiles without a checkpoint
   kings: L => { const R = rv(L); R.ent('check', 153, 21); R.ent('check', 405, 20); },   /* moved with the Knights' Road (+48 at 85) and the Hanging Roots (+42 at 191) */
   scree: L => { rv(L).ent('check', 330, 18); },
@@ -7459,7 +7540,7 @@ export const DRESS = {
   wood: [['beehive'], ['birdhouse'], ['trunk', 3], ['fence', 2], ['deadTree', 2], ['stump'], ['rock', 3], ['fern', 3], ['mushroom', 2], ['stump', 2], ['rock', 3], ['flower', 2], ['bushDeco', 3]],   /* the first wood was the thinnest: fences and stones */   /* (a crag's cairn and standing stone were in it - the stash props of the mountains: a stump and a mossy rock in their slots, same draws, level review 2026-09-24) */
   marsh: [['fishTrap', 2], ['lilyLantern'], ['deadTree', 2], ['fence', 2], ['barrels'], ['frogStatue', 1], ['cattail', 2], ['fern', 3], ['mushroom', 2], ['moss', 2], ['stump', 2]],
   stockade: [['barrels'], ['spearRack'], ['skullPile', 2], ['tent', 2], ['cart'], ['bones', 2], ['banner', 2], ['gobPennant', 3], ['warStandard', 2], ['ragBanner', 3], ['hideBanner', 2], ['skullTotem', 2], ['trophyRack', 2], ['stakeFence', 2], ['lootHeap', 2], ['cookSpit'], ['cauldron'], ['hideRack', 2], ['warnPost', 2], ['boneChime', 2]],   /* the war camp: every flag they have, and the camp's own mess */
-  spore: [['sporePod'], ['rootDecor', 3], ['cobweb', 3], ['deadTree', 2], ['bones', 2], ['mushroom', 2], ['moss', 2], ['fern', 3], ['stump', 2]],
+  spore: [['sporePod'], ['rootDecor', 3], ['cobweb', 3], ['mushroom', 2], ['bones', 2], ['mushroom', 2], ['moss', 2], ['fern', 3], ['stump', 2]],
   kings: [['banner', 2], ['barrels'], ['lanternPost'], ['spearRack'], ['hangCage'], ['trunk', 3], ['gobPennant', 3], ['ragBanner', 3], ['clothStrip', 3], ['skullTotem', 2], ['idol', 2], ['lootHeap', 2], ['trophyRack', 2], ['cauldron'], ['boneChime', 2], ['warnPost', 2]],   /* the court: idols, the king's takings, trophies */
   scree: [['stone', 3], ['cairn'], ['fence', 2], ['deadTree', 2], ['bones', 2]],
   hanging: [['lanternPost'], ['barrels']],   /* the birdhouses and hives were forest props strewn on every floor: they stand on the rookery now, placed by hand */
@@ -7799,6 +7880,15 @@ const AMBUSH = {
     waves: [[['scout', 486], ['scout', 514], ['wight', 500], ['crab', 492]], [['tideguard', 506], ['scout', 514], ['watch', 488], ['snuffer', 498]]] }],
   waymeet: [{ name: 'THE MARKET HALL', row: 35, wallL: 95, wallR: 123, check: [91, 35],
     waves: [[['swornsword', 100], ['runner', 118], ['swornsword', 110], ['hedgeknight', 114]], [['swornsword', 112], ['crossbow', 119], ['swornsword', 100], ['hedgeknight', 106]]] }],
+  /* THE BANQUET HALL (docs/briefs/highcrown-bells.md): her captain at the high table and his guard sat down to eat, and both doors
+     drop behind you. A hall sixteen rows high with two chandeliers on long chains over the floor: the room's own machinery, cut
+     down on whoever is under it. Led by THE GOBLIN CAPTAIN (a brute, the kitchen's kind): the storm's room is a pike's and the Long
+     Water's a tideguard's, and a heavy would be THE KING'S CHAMPION, whom the siege yard already has. Not the Captains Hall next
+     door: its balcony goblins are its own tested encounter (tools/gallery-runtime.mjs), and a room is emptied when it is built.
+     The west gate stands on the floor at the foot of the steps down from the Captains Hall; the east is the door to the leads.
+     The door checkpoint is the Captains Hall's east end, clear of the sign on the landing. */
+  crown: [{ name: 'THE BANQUET HALL', row: 25, wallL: 816, wallR: 852, check: [809, 19],
+    waves: [[['brute', 838, null, { elite: true }], ['soldier', 826], ['hearthgob', 830], ['javelin', 846, 23]]] }],
 };
 /* THE ROOM'S OWN MACHINERY STAYS: a firepit, a hanging ram or a rockfall is a hazard to knock them into, not a creature */
 const AMB_KEEP = new Set(['rockfall', 'catapult', 'towertop', 'dropcage', 'firepit', 'firevent', 'hotplate', 'hammer', 'skybolt', 'sweep', 'bale', 'ram', 'gas', 'timber', 'minerlamp', 'ballast']);
@@ -7845,7 +7935,7 @@ const ELITES = {
   /* moor: the Kite Field's herd billy and the Gallery's crag troll are built in galeMoor() in their final columns */
   storm: [['pike', 250, 29, { gate: 257 }]],
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
-     its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 792 is left alone */
+     its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 880 is left alone */
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],
   longwater: [['tideguard', 419, 26, { gate: 427 }]],
   reef: [['tideguard', 355, 25, { gate: 361 }]],   /* on the dry ledge out of the last of the water, holding the climb to the wreck */

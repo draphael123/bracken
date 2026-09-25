@@ -31,3 +31,25 @@ if (bad.length) {
   console.log('\n' + bad.length + ' of ' + all.length + ' signs run past ' + MAX_LINES + ' lines.');
   process.exitCode = 1;
 } else console.log(all.length + ' signs, every one fits on ' + MAX_LINES + ' lines.');
+
+/* ONE SENTENCE, ONE SIGN (the Sporewood rebuild, 2026-09-25). A sign says what stands beside IT. SPOREWOOD's strip pass rewrote every sign
+   that mentioned a removed thing to the same sentence with one regex, so the glade, the canyon, the fork and the Mother's door all said
+   "FOLLOW THE CAPS...", and nothing noticed: each one fitted on two lines. The level review found it by reading them. Now a level that says the
+   same words on two signs fails. KNOWN, NOT FORGIVEN: a level named here is over the line today and belongs to other work; the check fails an
+   entry that is no longer needed, so the list can only shrink. */
+const SAME_KNOWN = new Map([
+  ['hurricane', 'THE HURRICANE DECK says "THE DECK IS SPLITTING. FOLLOW THE HOLD AFT; THE ROPES LEAD BACK UP." at 88, 235 and 570 - three splits, one warning. For the Hurricane\'s owner (and Daniel): a line each that says which split, or keep it as a refrain on purpose and say so here.'],
+]);
+const same = [], sameStale = [];
+for (const lv of LEVELS) {
+  if (!lv.build) continue;
+  let L; try { L = lv.build(); } catch (e) { continue; }
+  const seen = new Map();
+  for (const e of L.ents || []) if (e.t === 'sign' && typeof e.text === 'string') seen.set(e.text, (seen.get(e.text) || []).concat(e.x));
+  const dup = [...seen].filter(([, xs]) => xs.length > 1);
+  if (dup.length && !SAME_KNOWN.has(lv.id)) for (const [t, xs] of dup) same.push(lv.id + ' @' + xs.join(',') + ': "' + t.slice(0, 80) + '"');
+  if (!dup.length && SAME_KNOWN.has(lv.id)) sameStale.push(lv.id + ': no sign repeats any more - delete its SAME_KNOWN line in tools/signs.mjs');
+}
+for (const [id, why] of SAME_KNOWN) console.log('  known  ' + id.padEnd(10) + why);
+if (same.length || sameStale.length) { for (const s of [...same, ...sameStale]) console.log('SAME SIGN  ' + s); process.exitCode = 1; }
+else console.log('no level says the same sentence on two signs (' + SAME_KNOWN.size + ' known).');
