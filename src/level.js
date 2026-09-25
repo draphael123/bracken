@@ -3684,7 +3684,7 @@ function theShop() {
    grew twice, and the ambush room, the elites and four tools held its grown columns by hand (the Wood lost twenty-six columns
    that way). The ambush and the elites are built here now, and L.sections names every section for the tools that photograph
    and walk it. Cut: the Ridge Run (its climb is the fourth section's), the Howling Gap and the Whistle Stones (the review: they
-   say what the Gallery says), and ninety columns of the Sky Road. */
+   say what the Gallery says), and ninety-eight columns of the Sky Road - eight of them given back as the landing shelf. */
 function galeMoor() {
   const L = painter(703, 30);
   const { block, floor, plat, spikes, ent, coins, set } = L;
@@ -3858,11 +3858,11 @@ function galeMoor() {
   ent('sign', o + 2, 13, { text: 'TAKE HOLD OF THE GREAT KITE: ARROWS STEER, ROLL DARTS. IT WILL NOT WAIT.' });
   ent('check', o + 5, 13); ent('flagpost', o + 12, 13);
 
-  /* ==== THE SKY ROAD (551-654): the kite carries you down the wind to the summit - through the teeth of the crags, the crow */
-  /* strings, the organ pipes and the storm. The view does not wait. (A hundred and four columns: the old road's best stretch */
-  /* of each of its four stretches, and never a checkpoint - you never touch the ground out here.) ==== */
-  o = 551; section('sky-road', 'THE SKY ROAD', o, o + 103, null);
-  block(o, o + 103, 26, 29); spikes(o, o + 103, 25);
+  /* ==== THE SKY ROAD (551-646): the kite carries you down the wind to the summit - through the teeth of the crags, the crow
+     strings, the organ pipes and the storm. The view does not wait. (Ninety-six columns: the old road's best stretch of each
+     of its four parts, and never a checkpoint - you never touch the ground out here.) ==== */
+  o = 551; section('sky-road', 'THE SKY ROAD', o, o + 95, null);
+  block(o, o + 95, 26, 29); spikes(o, o + 95, 25);
   const spire = (x, top) => { block(x, x + 1, top, 25); stone.push([x, x + 1, top, 25]); };
   const string = (x, y, n, gap, s) => { for (let i = 0; i < n; i++) ent('harpy', x + i * gap, y, Object.assign({ ph: i * 0.7 }, s || {})); };
   const ribbon = (x0, x1, y, amp) => { for (let x = x0; x <= x1; x += 2) coins([x, Math.round(y + Math.sin((x - x0) * 0.35) * amp)]); };
@@ -3876,14 +3876,26 @@ function galeMoor() {
   /* the organ pipes: tall stacks shoulder to shoulder - you skim along over their tops */
   for (const [x, top] of [[o + 66, 10], [o + 70, 8], [o + 74, 10], [o + 78, 7]]) tower(x, x + 1, top);
   string(o + 72, 5, 3, 2, { amp: 3 }); ribbon(o + 66, o + 79, 5, 1);
-  /* the storm: the shaman's weather, bolts out of the cloud on a beat */
-  for (const [x, ph] of [[o + 84, 0], [o + 90, 1.1], [o + 96, 2.2]]) ent('skybolt', x, 18, { top: 2, period: 3.2, phase: ph });
-  tower(o + 87, o + 88, 12); tower(o + 97, o + 99, 11); spire(o + 102, 14);
-  ent('harpy', o + 89, 5); ent('kite', o + 82, 5); ent('kite', o + 95, 6); string(o + 92, 9, 4, 2);
-  gust(o, o + 104, 0, 26, { dir: -1, period: 7, on: 1.8, phase: 2, k: 0.8 });
+  /* the storm: the shaman's weather, bolts out of the cloud on a beat - and six clear columns before the shelf, so the
+     string is never cut over a stack */
+  for (const [x, ph] of [[o + 81, 0], [o + 85, 1.1], [o + 89, 2.2]]) ent('skybolt', x, 18, { top: 2, period: 3.2, phase: ph });
+  tower(o + 83, o + 84, 12); tower(o + 88, o + 89, 11);
+  ent('harpy', o + 86, 5); ent('kite', o + 80, 5); ent('kite', o + 90, 6); string(o + 84, 9, 3, 2); ribbon(o + 90, o + 95, 8, 2);
+  gust(o, o + 96, 0, 26, { dir: -1, period: 7, on: 1.8, phase: 2, k: 0.8 });
 
-  /* ==== THE SUMMIT (655-702): three standing stones and two ledges in a ring of thorns. The shaman blinks between them and */
-  /* throws the sky at you. The kite's string goes over the near edge and puts you down on it. ==== */
+  /* ==== THE LANDING (647-654): an eight-tile shelf of the summit rock west of the Windcaller's wall. The storm cuts the kite's
+     string over it (L.flight.x1), and its checkpoint is the one B6 asks for OUTSIDE the arena walls. Before the rework the only
+     ground out here was the kite post a Sky Road back, so the landing checkpoint stood inside the walls (it was listed as on
+     purpose, the levelfix report's first question); the shelf answers it (docs/briefs/gale-moor-rework.md §5). A death in
+     the fight wakes you here, at the door; the kite ride is not asked again. ==== */
+  o = 647; section('landing', 'THE LANDING', o, o + 7, [o + 3, 12]);
+  block(o, o + 7, 13, 29);
+  ent('check', o + 5, 12); ent('flagpost', o + 7, 12);
+  ent('sign', o + 3, 12, { text: 'HE CALLS THE WIND AT YOU. HOLD C THROUGH HIS HOWL AND HIS OWN WIND FAILS HIM.' });
+  const flight = { x1: o + 2, speed: 78, camY: 2, down: [] };   /* the Sky Road: the kite lets go over the shelf */
+
+  /* ==== THE SUMMIT (655-702): three standing stones and two ledges. The shaman blinks between them and throws the sky at
+     you. You walk in off the landing, from the west (RULES I: an arena is entered from the left). ==== */
   o = 655; section('summit', 'THE SUMMIT', o, o + 47, null);
   block(o, o + 47, 13, 29);
   pillar(o + 6, 12, 12); pillar(o + 8, 10, 12); pillar(o + 22, 4, 12); pillar(o + 37, 8, 12);
@@ -3893,10 +3905,9 @@ function galeMoor() {
   ent('flagpost', o + 5, 12); ent('flagpost', o + 41, 12);
   ent('windcaller', o + 22, 3);
   ent('sign', o + 10, 12, { text: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR BLOCK ONE BACK TO KNOCK HIM DOWN.', pyro: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE ONE BACK WITH YOUR STAFF TO DROP HIM.', paladin: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR AEGIS ONE BACK TO KNOCK HIM DOWN.' });
-  ent('check', o + 4, 12); ent('gate', o + 45, 12);
+  ent('gate', o + 45, 12);
   const roosts = [[o + 8, 9], [o + 22, 3], [o + 37, 7], [o + 15, 6], [o + 30, 5]];   /* where he stands: a stone's top, a ledge */
   const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 8) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'musMountain', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' };
-  const flight = { x1: o + 4, speed: 78, camY: 2, down: [] };   /* the Sky Road: the kite lets go over the summit's near edge */
 
   for (const e of L.ents) if (e.t === 'vent' && e.wind) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; }   /* the moor's wind lifts you well clear of whatever it is meant to lift you onto */
   return {

@@ -57,11 +57,12 @@ no table outside it holds a Gale Moor column.
 | 4 | THE BRACING STONES & THE GALLERY OF GUSTS | 254–361 | **new**: the climb from row 20 to 14 on stones over a thorn gully, into a headwind; then the gallery |
 | 5 | THE DOWNDRAFT CLIFF & THE MILLS | 362–454 | the review's "move the cliff next to the mills so they read as one windy section" |
 | 6 | THE CAIRN RIDGE & THE TUMBLE | 455–534 | the ambush room, then bales and hornblowers |
-| 7 | THE KITE POST & THE SKY ROAD | 535–654 | the ride, cut from 194 columns to 104 |
+| 7 | THE KITE POST & THE SKY ROAD | 535–646 | the ride, cut from 194 columns to 96 |
+| – | THE LANDING | 647–654 | part three: the shelf the string is cut over, and its checkpoint |
 | – | THE SUMMIT | 655–702 | the Windcaller's room, 48 wide as before |
 
 **Cut:** the Ridge Run (60; its climb is the Bracing Stones now), the Howling Gap (96) and the Whistle Stones (72) —
-the review's own finding that they say the same thing as the Gallery — and 90 columns of the Sky Road (the teeth, the
+the review's own finding that they say the same thing as the Gallery — and 98 columns of the Sky Road (the teeth, the
 flock, the organ pipes and the storm each keep their best stretch). **Kept whole:** everything in "what works" above.
 
 **Density.** The garrison is a fixed count, so a level cut by 30% with the same garrison is 40% denser. It is cut in

@@ -12,6 +12,8 @@ assert(L.W>=650&&L.W<=720,'Gale Moor is '+L.W+' columns: the rework cut it to ab
  for(let i=1;i<S.length;i++)assert.equal(S[i].x0,S[i-1].x1+1,'section '+S[i].id+' starts where '+S[i-1].id+' ends');}
 /* the kite lets go over ground: the column under the string's cut has footing within the view */
 {const x=L.flight.x1;let y=0;while(y<L.H&&at(x,y)===T.AIR)y++;assert(y<L.H&&at(x,y)!==T.SPIKE,'the kite lets go at '+x+' over ground');}
+/* and on that ground, west of the Windcaller's wall, a checkpoint (B6: one OUTSIDE the arena walls; the rework's part three) */
+assert(L.ents.some(e=>e.t==='check'&&e.x>=L.flight.x1&&e.x<L.arena.wallL),'a checkpoint on the landing, between the cut of the kite string ('+L.flight.x1+') and the arena wall ('+L.arena.wallL+')');
 assert(L.roosts.every(([x])=>x*16>L.arena.x0&&x*16<L.arena.x1));assert(L.ambushes.every(a=>a.waves.flat().every(e=>e[1]>a.wallL&&e[1]<a.wallR)));
 /* THE WIND RIVERS' BANK LADDER: a rope stands at the rail's far end, down to the river bed, for anyone who misses the exit */
 const R=L.airRails[0];{const x1=col(R.x1);assert([0,1,2].some(d=>at(x1+d,col(R.y)+6)===T.NET),'a bank ladder at the rail\'s exit, '+x1);}
