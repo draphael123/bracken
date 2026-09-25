@@ -31,6 +31,7 @@ import {updateWarden,wardenFrame,bakeHarbormaster,drawWarden} from './harbor-bos
 import { attackPose } from './attack-animation.js';
 import { AMBUSH_HEALTH } from './ambush.js';
 import {drawTowerBackdrop,gateOccupied,updateTowerAscent,towerAscentReset} from './tower-ascent.js';
+import { crumbleStep, crackMarks } from './tower-collapse.js';   /* THE FALLING TOWER's FAILING STONE (docs/briefs/falling-tower-rework.md) */
 import {bakeCoastalFoe} from './coastal-foes.js';
 import {drawClimbCues} from './haunted-coast.js';
 import {updateDeckBreaks,drawDeckBreaks} from './storm-ship.js';
@@ -14666,6 +14667,34 @@ function carpetPlayer(dt){
  if(L.sanctum&&burnSanctum(P,L.arena,dt,{ember:(x,y)=>{if(Math.random()<dt*24)parts.push({x:x+(Math.random()-.5)*26,y:y+2,vx:(Math.random()-.5)*30,vy:-40-Math.random()*50,life:.5,max:.5,col:Math.random()<.5?'#c88aff':'#ffe9ff',size:1,grav:-40});}}))
   {damagePlayer(P.x,DMG.sanctumFire,{unblockable:true,blow:'THE FLOOR BURNS'});SFX.sizzle?SFX.sizzle():SFX.crack();shakeCam(3);burst(P.x,P.y+4,10,['#c88aff','#9a52e0','#ffe9ff'],90,.6,-30,1);}
 }
+/* FAILING STONE (src/tower-collapse.js is the rule; this is its hands). Weight on a cracked section starts its count: a crack on
+   every second and dust thickening under it, then the crash. It comes back four seconds later, never into anybody. The dust it
+   trickles while it holds is the tell you get before you ever stand on it (C1). */
+function updateCrumbles(dt){
+ if(!L.crumbles||!L.crumbles.length)return;
+ const bodies=(players&&players.length?players:[P]).filter(b=>b&&!b.dead);
+ let re=false;
+ for(const v of crumbleStep(L,bodies,dt,(x,y,how)=>cellSet(x,y,how==='fall'?T.AIR:grid0[y*LW+x]))){const c=v.c,mx=(c.x0+c.x1+1)*TS/2,my=c.row*TS;
+  if(v.t==='start'){SFX.crack();shakeCam(1.5);lastTellT=time;dust(mx,my+TS*c.rows,6);}
+  else if(v.t==='tick'){SFX.crack();shakeCam(v.n===1?3:2);dust(mx,my+TS*c.rows,v.n===1?12:7);if(v.n===1&&SFX.rumble)SFX.rumble();}
+  else if(v.t==='fall'){re=true;SFX.stone();shakeCam(5);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+8,3,['#8a8e9c','#5c6070','#b8b4a8'],60,.9,420,2);}
+  else if(v.t==='back'){re=true;SFX.clank&&SFX.clank();dust(mx,my,8);}}
+ if(re)resolveTiles();
+ for(const c of L.crumbles){if(c.gone||c.st==='down')continue;if(Math.random()<dt*(c.st==='count'?16:1.1))parts.push({x:(c.x0+Math.random()*(c.x1-c.x0+1))*TS,y:(c.row+c.rows)*TS,vx:(Math.random()-.5)*6,vy:12,life:.9,max:.9,col:Math.random()<.5?'#a8a498':'#7c7a74',size:1,grav:150});}
+}
+/* ...and its drawing: cracks on every tile of a section that holds, brighter and wider as it counts, and the count itself over it */
+function drawCrumbles(cx,cy){
+ if(!L.crumbles||!L.crumbles.length)return;
+ for(const c of L.crumbles){if(c.gone||c.st==='down')continue;const sx=c.x0*TS-cx,sy=c.row*TS-cy,w=(c.x1-c.x0+1)*TS;if(sx>VW||sx+w<0||sy>VH+16||sy<-40)continue;
+  const counting=c.st==='count',k=counting?Math.min(1,1-c.t/c.count):0,jig=counting&&c.t<1?Math.round(Math.sin(time*50)):0;
+  g.strokeStyle=counting?(c.t<1?'#ff6b6b':'#ffb070'):'rgba(20,16,26,0.85)';g.lineWidth=1;g.beginPath();
+  for(let x=c.x0;x<=c.x1;x++)for(let y=c.row;y<c.row+c.rows;y++)for(const [a,b,e,f] of crackMarks(x,y)){g.moveTo(x*TS-cx+a+.5+jig,y*TS-cy+b+.5);g.lineTo(x*TS-cx+e+.5+jig,y*TS-cy+f+.5);}
+  g.stroke();
+  if(!counting){g.fillStyle='rgba(20,16,26,0.5)';g.fillRect(Math.round(sx),Math.round(sy)+1,w,1);continue;}
+  g.globalAlpha=0.25+0.35*k;g.fillStyle=c.t<1?'#ff6b6b':'#ffb070';g.fillRect(Math.round(sx),Math.round(sy)-1,w,2);g.globalAlpha=1;
+  const n=Math.max(1,Math.ceil(c.t)),col=n>=3?'#ffd36b':n===2?'#ff9a5c':'#ff6b6b',pop=1+Math.max(0,(c.t%1)-0.8)*2;
+  text(String(n),Math.round(sx+w/2),Math.round(sy-22-4*pop),col,'center',n===1?16:12);}
+}
 /* THE FALLING TOWER, every frame: the floors going under you, and the carpet at the top */
 function updateAscent(dt){
  if(!L.towerAscent)return;
@@ -14676,6 +14705,7 @@ function updateAscent(dt){
    if(t===T.AIR)return false;cellSet(x,y,T.AIR);if(Math.random()<0.08)parts.push({x:x*TS+8,y:y*TS+8,vx:(Math.random()-.5)*60,vy:-20,life:1.2,max:1.2,col:Math.random()<.5?'#726a8a':'#c0b4d0',size:2,grav:420});return true;},
   crash:(f,y)=>{shakeCam(4);if(Math.abs(y*TS-P.y)<VH)SFX.stone();},
   warn:f=>{shakeCam(3);SFX.rumble&&SFX.rumble();if(!f.last)number(P.x,P.y-40,f.name+' GOES DOWN BEHIND YOU','#ff9a5c');}});
+ updateCrumbles(dt);
  updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();number(P.x,P.y-30,L.sanctum?'THROUGH THE DOOR':'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(L.sanctum){shakeCam(6);zoomKick(1.12,.5);flash=Math.max(flash,.3);burst(P.x,P.y,26,['#b07cf0','#e0c8ff','#4a2a7a'],150,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;}   /* A DOOR SNAPS. Without this the camera panned the 160px from the parapet up to the spawn, which reads as flying there - the one thing a portal is not */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();}});
  /* THE SECOND DOOR: through it the carpet is left behind, the sky goes warm, and the last walk of the world is on sand */
  updateSanctum(L,P,dt,{leave:out=>{burst(out.x,out.y,26,['#e0b050','#ffe9b0','#8a5a1a'],150,.9,0,2);
@@ -22503,6 +22533,7 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (L.fields) drawFieldsTiles(cx, cy);   /* the phantom planks, the bales, the buildings' skins */
   if (L.mage) drawMageTiles(cx, cy);   /* THE MAGE'S FOLLY: the tower's skins, the hedges, the holes, the cracks, the stacks and the ice */
+  drawCrumbles(cx, cy);   /* THE FALLING TOWER's failing stone: over its own skin, so its cracks are never painted out */
   /* HIS HALL GOES ON AFTER THE TILES, NOT BEFORE THEM. Drawn first, the level's own tiles painted straight back over it -
      and the tower keeps two rows of CRENELLATIONS at rows 46-49, which are inside the room's box, so the merlons stood up
      through the floor of a sealed hall like masonry floating in mid-air. Nothing up here is supposed to be tiles at all

@@ -43,6 +43,10 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
        plain fill has the stair as it was built and nothing else: a climb that needs it turned is a climb on the --plain list */
     if (e.t === 'pwheel' && !plain) for (const [x0, y, w] of [...(e.a || []), ...(e.b || [])]) for (let x = x0; x < x0 + w; x++) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
   }
+  /* FAILING STONE THAT IS THE WAY ON (the Falling Tower's observers' gallery, src/tower-collapse.js): stand on it and it counts
+     down and goes, every time, so it is a floor you can go DOWN through and nothing else - a one-way to the model. Only `opens`:
+     every other failing section is footing that comes back, and the model is right to stand on it. */
+  for (const c of (L.crumbles || [])) if (c.opens) for (let y = c.row; y < c.row + (c.rows || 1); y++) for (let x = c.x0; x <= c.x1; x++) { const i = y * W + x; if (g[i] === T.SOLID) g[i] = y === c.row ? T.ONEWAY : T.AIR; }
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
   const climbable = t => t === T.CLIMB; // a NET is one-way rungs: a rope ladder is climbed by hopping rung to rung, so it is footing, not a ladder
