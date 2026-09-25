@@ -2717,6 +2717,19 @@ function drawElitePlate(e, cx, cy, bigF) {
   g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, w + 2, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, w, 2); g.fillStyle = k > 0.34 ? '#e0b040' : '#ff6b6b'; g.fillRect(bx, by, Math.round(w * k), 2);
   { const nw = textW(ELITE[e.t].name, 6); crown(bx - 7, by + 1); text(ELITE[e.t].name, Math.max(nw / 2 + 2, Math.min(VW - nw / 2 - 2, x)), by - 9, '#ffd36b', 'center', 6); }   /* the name kept on the screen: a captain at the edge of the view was THE SHIELD CAPTAI */
 }
+/* WHERE A SHRINE IS LIT FROM. By touch - within 12 px across and 20 px up of its foot - and, UNDER WATER, from anywhere in
+   the open water over it. The Underwater Keep stands its shrines on the bed of rooms seventeen rows deep, and a swimmer
+   crosses those rooms in the middle: in the page a route-following swim lit 1 of its 15 (the start), so a death sent you
+   back to the door (level review, 2026-09-24). Swimming over one lights it if nothing solid is between you and it, the
+   same way a walker lights one by passing it. tools/swim-shrines.mjs reads this and asks every swum route. */
+function shrineLights(s, px, py, swim) {
+  if (Math.abs(s.x - px) >= 12) return false;
+  if (Math.abs(s.y - py) < 20) return true;
+  if (!swim || py >= s.y) return false;
+  const tx = Math.floor(s.x / TS);
+  for (let ty = Math.floor((py - 8) / TS); ty < Math.floor(s.y / TS); ty++) if (isSolid(tx, ty)) return false;
+  return (L.pools || []).some(p => p.swim && !p.dry && s.x >= p.x0 && s.x <= p.x1 && py - 8 >= p.y);
+}
 function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
@@ -7550,7 +7563,7 @@ function updatePlayer(dt) {
     if (Math.abs(a.x - P.x) < 10 && Math.abs(a.y - (P.y - 7)) < 12) { a.got = true; got++; if (P.score) P.score.coins++;   /* the purse is the SAVE'S and stays shared: this line is only who bent down for it */
       if (isPirate()) { gainPlunder(4); if (tal('shareOut')) P.hp = Math.min(P.maxHp, P.hp + 2); if (tal('greased')) P.st = Math.min(P.maxSt, P.st + 6); if (tal('paidInGold') && P.cds) for (const k in P.cds) P.cds[k] = Math.max(0, P.cds[k] - 0.33); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
-  for (const s of shrines) if (!s.lit && Math.abs(s.x - P.x) < 12 && Math.abs(s.y - P.y) < 20) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
+  for (const s of shrines) if (!s.lit && shrineLights(s, P.x, P.y, P.swim)) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
   if (gate && (!L.arena || escape || L.sandWalk) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
   // boss arena trigger
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 40 * TS) music.preload(L.arena.music || 'boss');
@@ -10564,7 +10577,7 @@ function magePlayer(dt) {
   if (P.y > LH * TS + 30 && !P.dead) { P.hp = 0; P.dead = 1.2; SFX.pDie(); }
   /* the coins, the hearts and the shrines */
   for (const a of acorns) if (!a.got && Math.abs(a.x - P.x) < 12 && Math.abs(a.y - (P.y - P.h / 2 * gs)) < 14) collectAcorn(a);
-  for (const s of shrines) if (!s.lit && Math.abs(s.x - P.x) < 12 && Math.abs(s.y - P.y) < 20) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
+  for (const s of shrines) if (!s.lit && shrineLights(s, P.x, P.y, P.swim)) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
   return true;
 }
 /* ---------- the props and the machinery, every frame ---------- */
@@ -24577,7 +24590,8 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   allyReady: () => allyLoad(),   /* AWAIT THIS BEFORE MEASURING AN ALLY: a synchronous run of sim() never lets its import resolve */
   /* EVERYTHING DRAWN WITH A BASE OR A TOP, as the draw code places it: the sprite, where its top-left lands, and whether it
      stands or hangs. src/floatlab.js reads the pixels of these to find what is in the air. */
-  drawables() { const out = [], sh = (PROP.shrineOf && PROP.shrineOf[shrineKind()]) || PROP.shrine;
+  shrines: () => shrines,   /* which checkpoints are lit: a harness that swims a level reads it */
+  drawables() { const out = [], sh =(PROP.shrineOf && PROP.shrineOf[shrineKind()]) || PROP.shrine;
     for (const d of deco) out.push({ what: d.kind, c: d.anim ? d.anim[0] : d.c, x: d.x, y: d.y, bg: !!d.bg, stand: !!d.stand, hang: !!d.hang });
     for (const s of signs) out.push({ what: 'sign', c: PROP.sign, x: s.x - 9, y: s.y - 18, stand: true });
     for (const s of shrines) out.push({ what: 'checkpoint', c: sh[0], x: s.x - 10, y: s.y - 34, stand: true });
