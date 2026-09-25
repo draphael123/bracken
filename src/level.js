@@ -60,6 +60,10 @@ function grow(L, ret, col, n) {
   if (R.interiors) R.interiors = R.interiors.map(([x0, x1, y0, y1, st]) => [sh(x0), sh(x1), y0, y1, st]); // keep the room's KIND: dropping it made every grown level's interior the default timber
   if (R.structures) R.structures = R.structures.map(z => ({...z,x0:sh(z.x0),x1:sh(z.x1)}));
   if (R.stone) R.stone = R.stone.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
+  /* AND THE CALMS, which are tile boxes like the stone. Nothing shifted them, so HIGHCROWN's - written before the furnace line and the
+     Captains Hall grew in - kept the banquet roof at 722-765 while the roof stood at 810-853, and the garrison stood a heavy on the
+     Captains Hall's slates at 797,7, out of everyone's reach (the level review, 2026-09-24). Here, so no level can drift again */
+  if (R.calm) R.calm = R.calm.map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
   if (R.scree) R.scree = R.scree.map(z => ({ ...z, x0: sh(z.x0), x1: sh(z.x1) }));
   if (R.fog) R.fog = R.fog.map(z => ({ ...z, x0: shp(z.x0), x1: shpEnd(z.x1) }));
   if (R.slide) R.slide = { ...R.slide, x0: shp(R.slide.x0), x1: shpEnd(R.slide.x1) };
@@ -3091,7 +3095,7 @@ const crownReview = L => { const R = rv(L); R.ent('check', 62, 63);
     R.plat(149, 12, 3); R.plat(151, 10, 3);
     for (let x = 151; x <= 153; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
     for (let x = 194; x <= 196; x++) { R.tile(x, 9, T.AIR); R.tile(x, 8, T.ONEWAY); }
-    R.ent('sign', 156, 7, { text: 'THE LEADS. THE HATCH AT THE FAR END DROPS YOU INTO THE CHAPEL: DOWN AND JUMP.' });
+    R.ent('sign', 156, 7, { text: 'THE KEEP ROOF. THE HATCH AT THE FAR END DROPS YOU INTO THE CHAPEL: DOWN AND JUMP.' });
     R.ent('deco', 170, 7, { kind: 'banner', v: 1 }); R.ent('deco', 182, 7, { kind: 'barrels' });
     // (the armoury gantry's ledges went out to the bailey with the armoury: they are laid in THE ARMOURY, below)
     // the far corner of the entrance hall past the stair, and the leads past the second hatch: something at the end of each
@@ -3434,7 +3438,8 @@ function highcrownWhole() {
   { const X=762,n=48,F=grow(R,R,X,n);shiftCrown(F.R,X,n);
     F.block(X,X+n-1,20,F.R.H-1); F.block(X,X+n-1,8,9);
     F.R.interiors.push([X,X+n-1,10,19,'royal']); F.R.masonry.push([X,X+n-1,8,9],[X,X+n-1,20,26]);
-    F.ent('check',X+2,19);F.ent('sign',X+3,19,{text:'THE CAPTAINS HALL. GOBLINS DROP FROM THE BALCONIES. FALLING LAMPS STRIKE BOTH SIDES.'});
+    F.ent('sign',X+3,19,   /* (its checkpoint at X+2 went: eight tiles past the chapel's at 756, and the banquet room's door one stands at its far end, 809) */
+      {text:'THE CAPTAINS HALL. GOBLINS DROP FROM THE BALCONIES. FALLING LAMPS STRIKE BOTH SIDES.'});
     for(const dx of [12,28,40]) { F.ent('weight',X+dx,10,{len:6,lamp:true,hang:true,unstable:true});F.plat(X+dx+1,14,3); for(let y=14;y<20;y++)F.set(X+dx+3,y,T.NET); F.ent('soldier',X+dx+2,13,{face:-1,balcony:true}); }
     F.ent('heavy',X+23,19,{face:-1});
     for(const dx of [7,22,44])F.ent('torch',X+dx,19);
@@ -7812,7 +7817,7 @@ const ELITES = {
   moor: [['goat', 168, 21, { gate: 200 }], ['troll', 432, 13]],
   storm: [['pike', 250, 29, { gate: 257 }]],
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
-     its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 792 is left alone */
+     its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 880 is left alone */
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],
   longwater: [['tideguard', 419, 26, { gate: 427 }]],
   reef: [['tideguard', 355, 25, { gate: 361 }]],   /* on the dry ledge out of the last of the water, holding the climb to the wreck */

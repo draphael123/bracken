@@ -1,6 +1,7 @@
 # THE TEMPERER — a new foe for HIGHCROWN (brief)
 
-Daniel, 2026-09-24: *"I like the temperer goblin."* **Nothing is built.**
+Daniel, 2026-09-24: *"I like the temperer goblin."* **Built** (cc9dd41, e964fc3): three in Highcrown, at 255, 624 and 727,
+proved by `tools/temperer.mjs`. What follows is the brief as it was approved.
 
 Rule it satisfies: **F10** — every level brings at least one foe the game has never seen, and it is not its boss.
 Highcrown currently fails F10: its only new creatures are the Goblin Queen and the Forgemaster.
