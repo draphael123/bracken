@@ -1,0 +1,26 @@
+
+> check
+> node tools/check.mjs textfit,content-audit,ability-poses,burial-variety,gob-priest,levelling-runtime,slopes,progression,campaign-order,keep-passages,deep,audit,newlevel
+
+ ok  syntax             0ms  0 files parse
+ ok  audit           4299ms  == caravan (547x40) clean
+ ok  content-audit   5605ms  19 things to look at.
+ ok  progression      140ms  Progression: all 181 node destinations, 36 legacy hero/version fixtures, exact refunds, preserved ownership, b
+ ok  progression-runtime 26999ms  Six heroes bought and equipped two skills (a third is refused) and cast slot two; touch, controller, rebinding
+ ok  keep-passages  18292ms  Keep narrows: approach 560 tiles, 57% of the new stretch is passage (hall median 35), 8 siphons, 6 blights, 8 
+ ok  ability-poses 175864ms  ability poses: 52 of 52 actives have a body of their own; known debt 0
+ ok  levelling-runtime562997ms  Levelling runtime: 3100 passive reads through tal() on from their level with nothing owned or slotted; the PAS
+ ok  burial-variety 51103ms  burial variety: two dark places lamp to lamp, two rotten spans that crack, drop, come back and never cut the r
+ ok  slopes         24642ms  slopes: all passed
+ ok  gob-priest       505ms  ok  gob-priest     the rite (quiet, broken by any blow), the censer (!, a lob onto your ring) and the bell (!,
+FAIL slopes-trace   38008ms  slopes-trace: 1 of 4 levels DIFFER from the pre-slopes build
+ ok  textfit       234068ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-keep2\audits\readability\textfit
+
+---- slopes-trace ----
+ok   wood: 1960 frames identical (x, y, vx, vy, ground) — 22 walks of 60 and 8 lips at 4 depths
+ok   kings: 1900 frames identical (x, y, vx, vy, ground) — 21 walks of 60 and 8 lips at 4 depths
+FAIL keep: first difference at frame 231 of 2080 (walk 3) — was [1739.3200000000008,906.237,54,-128,0], now [1740.3200000000008,906.237,54,-128,0]
+ok   burial: 1960 frames identical (x, y, vx, vy, ground) — 22 walks of 60 and 8 lips at 4 depths
+slopes-trace: 1 of 4 levels DIFFER from the pre-slopes build
+
+1 check(s) failed.

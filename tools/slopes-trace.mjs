@@ -39,6 +39,11 @@ import { portFor } from './ports.mjs';
 
 const BASE = new URL('../docs/slopes-trace.json', import.meta.url);
 const RECORD = process.argv.includes('--record');
+/* --rebase=<id>: re-record ONE level's baseline, the rest untouched. For a level whose GEOMETRY was rebuilt on purpose (THE
+   UNDERWATER KEEP, 2026-09-25, docs/briefs/keep-rework-2.md: new walls, halls, whirlpools), a trace against the old rooms differs
+   for reasons that have nothing to do with the mover. That level's entry is then a regression baseline on the current mover,
+   not the pre-slopes one - the other three still hold the pre-slopes equivalence. Say which level and why in the commit. */
+const REBASE = (process.argv.find(a => a.startsWith('--rebase=')) || '').slice(9);
 const IDS = ['wood', 'kings', 'keep', 'burial'];   /* §8.3's four: a wood, a castle, an underwater one, a cavern */
 const STARTS = 24, PER = 60;
 
@@ -148,7 +153,11 @@ try {
      report a green that covers less than it looks like it covers */
   for (const id of IDS) if (!got[id + ':steps']) throw new Error(`${id}: the lip probe found no one-tile step — the LEDGE ASSIST is not being exercised on this level`);
 
-  if (RECORD) {
+  if (REBASE) {
+    const base = JSON.parse(readFileSync(BASE, 'utf8')); if (!IDS.includes(REBASE)) throw new Error('--rebase: ' + REBASE + ' is not one of ' + IDS);
+    base[REBASE] = got[REBASE]; base[REBASE + ':steps'] = got[REBASE + ':steps']; writeFileSync(BASE, JSON.stringify(base));
+    console.log('slopes-trace: rebased ' + REBASE + ' only (' + got[REBASE].length + ' frames); ' + IDS.filter(i => i !== REBASE).join(', ') + ' keep the pre-slopes baseline');
+  } else if (RECORD) {
     writeFileSync(BASE, JSON.stringify(got));
     for (const id of IDS) console.log(`recorded ${id}: ${got[id].length} frames (walks of ${PER} plus ${got[id + ':steps']} lips at 4 depths)`);
     console.log('slopes-trace: baseline written to docs/slopes-trace.json — this is the OLD side. Re-run without --record after the swap.');
