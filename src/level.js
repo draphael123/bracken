@@ -3545,7 +3545,9 @@ function highcrownWhole() {
   //
   // THESE ARE FINAL COLUMNS. Nothing is grown after this line, so what is written here is what the built level
   // has; every grow() and shiftCrown() above is already done.
-  for (const [x, y] of [[255, 63], [624, 61], [727, 51]]) R.ents.push({ t: 'temperer', x, y, face: -1 });
+  /* (2026-09-25) the second stood at 624, three tiles past the end of the forge stair's boards (615-621): nothing under him to the bottom of
+     the level, so he hung in the air until you came near and then fell out of it. He stands on the boards' end now, by the 619 brazier. */
+  for (const [x, y] of [[255, 63], [621, 61], [727, 51]]) R.ents.push({ t: 'temperer', x, y, face: -1 });
 
   // ---- EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT (docs/briefs/highcrown-bells.md) ----
   // The rule line promised it and only the Leads kept it: the ward's, the entrance hall's and the chapel's alarms went on
