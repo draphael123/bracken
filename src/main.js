@@ -16528,7 +16528,7 @@ function villageReset() {
   /* THE ROOFTOPS (2026-09-25): fire on the cellar floors, and THE FALLEN HOUSE alight on top - a barrier of its own (villageSplash's
      water for the barn roof does not reach it: only a bucket carried into it does) */
   for (const [x, y] of L.cellarFires || []) for (const dx of [0, 1]) fires.push({ x: (x + dx) * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, dmg: DMG.squareFire });
-  for (const h of L.heaps || []) { if (h.out) continue; for (let x = h.x0; x <= h.x1; x++) fires.push({ x: x * TS + 8, y: h.y0 * TS, life: 1e9, delay: 0, still: true, barrier: true, heap: h, tall: 30 }); }
+  for (const h of L.heaps || []) { if (h.out || h.lid) continue; for (let x = h.x0; x <= h.x1; x++) fires.push({ x: x * TS + 8, y: h.y0 * TS, life: 1e9, delay: 0, still: true, barrier: true, heap: h, tall: 30 }); }
   for (const [x, y, bx, by] of L.beams || []) props.push({ t: 'vbeam', x: x * TS + 8, y: y * TS + 6, cx: bx, cy: by, state: 'hung', vy: 0, tellT: 0 });
 }
 function villageAshes(e) {   /* where a burning goblin falls, the ground catches: that is its whole idea */
@@ -16755,6 +16755,11 @@ function drawSmoke(cx, cy) {
 function drawHeaps(cx, cy) {
   for (const h of L.heaps || []) { const x = Math.round(h.x0 * TS - cx), top = Math.round(h.y0 * TS - cy), w = (h.x1 - h.x0 + 1) * TS, ht = (h.y1 - h.y0 + 1) * TS, foot = top + ht; if (x > VW + 30 || x + w < -30) continue;
     const hot = !h.out, ember = k => hot ? (Math.floor(time * 6 + k) % 3 ? '#ff6b2c' : '#ffd36b') : '#4a4442';
+    if (h.lid) { if (h.out) continue;   /* THE ROOT CELLAR's hatch: charred planks in the road, embers between them, smoke off it - no flame to walk through */
+      for (let k = 0; k < w; k += 6) { g.fillStyle = k % 12 ? '#2a1a12' : '#3a2616'; g.fillRect(x + k, top - 3, 5, 5); g.fillStyle = '#4a2e1a'; g.fillRect(x + k, top - 3, 5, 1); g.fillStyle = ember(k); g.fillRect(x + k + 5, top - 1, 1, 2); }
+      g.fillStyle = '#6a4424'; g.fillRect(x + 3, top - 5, w - 6, 2);   /* the hatch's iron-less handle bar */
+      if (Math.random() < 0.25) parts.push({ x: h.x0 * TS + Math.random() * w, y: h.y0 * TS - 4, vx: (Math.random() - 0.5) * 8, vy: -25 - Math.random() * 20, life: 1.2, max: 1.2, col: Math.random() < 0.3 ? '#ff9a5c' : '#5a4a4a', size: 2, grav: -10 });
+      continue; }
     for (let r = 0; r < ht; r++) { const k = r / ht, spill = Math.round(k * k * 14), jag = (r * 7 + h.x0) % 3;   /* the mound: widens toward the street */
       g.fillStyle = r < 3 ? '#2a1a12' : '#1a1210'; g.fillRect(x - spill + jag, top + r, w + spill * 2 - jag * 2, 1); }
     g.fillStyle = hot ? '#6a5a36' : '#3e3a30'; for (let r = 0; r < 18; r++) g.fillRect(x + w - 6 + Math.round(r * 0.9), top + 8 + r, 10 - (r >> 2), 1);   /* its thatch, slid off the east side */

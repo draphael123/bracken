@@ -503,7 +503,7 @@ export async function run(BK, opts = {}) {
       const WANT = { gate: 'THE GATE', check: 'a checkpoint', silver: 'a silver', stray: 'a quest item', relic: 'the relic', key: 'a key' };
       for (const e of (built.ents || [])) { const w = WANT[e.t]; if (!w) continue;
         if (!near(e.x, e.y)) F(assisted ? 'ASSISTED' : 'UNREACHABLE', assisted ? SEV.note : SEV.bug, w + ' is outside the fill', e.x + ',' + e.y); }
-      const lost = (built.ents || []).filter(e => e.t === 'coin' && !jumpNear(e.x, e.y));
+      const lost = (built.ents || []).filter(e => e.t === 'coin' && !e.under && !jumpNear(e.x, e.y));   /* (`under`: laid under a lid the level opens - THE BURNING VILLAGE's root cellar, opened by a bucket - so no fill reaches it by design) */
       if (lost.length) F(assisted ? 'ASSISTED' : 'LOSTGOLD', assisted ? SEV.note : SEV.odd, lost.length + ' coins outside the fill');
     } catch (e) { F('CRASH', SEV.bug, 'reach model threw: ' + e.message); }
 
