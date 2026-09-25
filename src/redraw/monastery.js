@@ -4,7 +4,8 @@
 // snow on the tops above its snow line itself), timber the colour of old tar, faded tile roofs, bronze bells.
 // Same conventions as crown_tiles.js: 16x16 tiles, crisp px.js primitives, fixed seeds.
 //   bakeMonkTiles()        { top, edge, fill, silt, wet } in the shape of the crown set, so the tile resolver swaps it in
-//   bakeFacade(kind, ...)  monkTower | monkCurtain | monkBelfry | monkCloister: wall faces drawn behind the play
+//   bakeFacade(kind, ...)  monkTower | monkCurtain | monkBelfry | monkCloister | monkArcade | monkArch | monkWall | monkChapel:
+//                          wall faces drawn behind the play. Every one of them is what holds a floor up (tools/architecture.mjs)
 //   paintRoom(g, st, ...)  monkScript | monkTower | monkFlue | monkHall | monkShrine: the back walls of the dug rooms
 //   bakeMonkProps()        the furniture: bells, a bell frame, the prayer wheel, basket, hoist wheel, brazier, loose
 //                          stone, rubble, shelves, shrines, flag posts, a guardian statue, the fallen portcullis, beads
@@ -91,8 +92,111 @@ function arch(g, ax0, ax1, ay0, ay1, inside) {   /* a round-headed opening */
   for (let y = ay0; y < ay1; y++) { const dy = y - ay0; let inset = 0; if (dy < r) inset = Math.round(r - Math.sqrt(Math.max(0, r * r - (r - dy) * (r - dy))));
     rect(g, ax0 - 2 + inset, y, ax1 - ax0 + 4 - inset * 2, 1, F.hi); rect(g, ax0 + inset, y, ax1 - ax0 - inset * 2, 1, inside || F.dark); }
 }
+/* CUT A HOLE: what is behind the wall shows through it (the sky, the cloud, the cliff) */
+const cut = (g, fn) => { g.save(); g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000'; fn(); g.restore(); };
+/* a round-headed opening from x0 to x1, springing at ys, its foot at yb: cut, then its ring of voussoirs and its imposts */
+function roundOpening(g, x0, x1, ys, yb, o = {}) {
+  const w = x1 - x0, r = w / 2, cx = x0 + r;
+  cut(g, () => { g.fillRect(x0, ys, w, yb - ys); g.beginPath(); g.arc(cx, ys, r, Math.PI, 0); g.fill(); });
+  if (o.fill) { g.fillStyle = o.fill; g.fillRect(x0, ys, w, yb - ys); g.beginPath(); g.arc(cx, ys, r, Math.PI, 0); g.fill(); }
+  const ring = o.ring || 5;
+  for (let a = 0; a <= 64; a++) { const th = Math.PI + a / 64 * Math.PI; for (let k = 0; k < ring; k++) px(g, Math.round(cx + Math.cos(th) * (r + k)), Math.round(ys + Math.sin(th) * (r + k)), k === ring - 1 ? F.mor : k === 0 ? F.hi : F.l); }
+  for (let a = 1; a < 9; a++) { const th = Math.PI + a / 9 * Math.PI; line(g, Math.round(cx + Math.cos(th) * r), Math.round(ys + Math.sin(th) * r), Math.round(cx + Math.cos(th) * (r + ring - 1)), Math.round(ys + Math.sin(th) * (r + ring - 1)), F.mor); }
+  rect(g, x0 - 3, ys - 1, 5, 3, F.hi); rect(g, x1 - 2, ys - 1, 5, 3, F.hi); rect(g, x0 - 3, ys + 2, 5, 1, F.mor); rect(g, x1 - 2, ys + 2, 5, 1, F.mor);
+}
+/* a pier's face: its lit arris, its shadowed side, a base and a cap */
+function pierFace(g, x, y0, y1, pw) {
+  rect(g, x, y0, 1, y1 - y0, F.hi); rect(g, x + pw - 1, y0, 1, y1 - y0, F.dark); rect(g, x + pw - 2, y0, 1, y1 - y0, F.d);
+  rect(g, x - 2, y1 - 6, pw + 4, 6, F.l); rect(g, x - 2, y1 - 6, pw + 4, 1, F.hi); rect(g, x - 2, y1 - 1, pw + 4, 1, F.mor);
+}
+/* THE ARCADE: piers every o.step tiles (8: a seven-tile arch between them, as far as a lintel carries), one tier or two with a
+   string course between, the openings cut through to whatever is behind. o.niche puts a lamp-lit niche in every pier (the
+   upper shrines), o.dark fills the openings with a shadowed walk instead of the sky (a covered cloister walk) */
+function arcade(g, W, H, rnd, o) {
+  courses(g, 0, 0, W, H, rnd);
+  const pw = o.pw || 20, step = (o.step || 8) * T, n = Math.max(1, Math.round((W - pw) / step)), sp = (W - pw) / n;
+  const tiers = o.tiers || (H > 16 * T ? 2 : 1), top = o.top || 12;
+  const tierH = [], avail = H - top; if (tiers === 1) tierH.push(avail); else { const lo = Math.round(avail * 0.58); tierH.push(lo, avail - lo); }
+  let yb = H;
+  for (let t = 0; t < tiers; t++) { const th = tierH[t], yt = yb - th + (t === tiers - 1 ? 0 : 8);
+    for (let i = 0; i < n; i++) { const x0 = Math.round(i * sp + pw), x1 = Math.round((i + 1) * sp);
+      const r = (x1 - x0) / 2, ys = Math.max(yt + r + 6, yb - th + r + 10);
+      if (ys < yb - 8) roundOpening(g, x0, x1, ys, t === 0 ? yb - (o.sill || 0) : yb - 6, { fill: o.dark ? '#2a2119' : null }); }
+    for (let i = 0; i <= n; i++) pierFace(g, Math.round(i * sp), yb - th, yb, pw);
+    if (t < tiers - 1) { rect(g, 0, yb - th, W, 6, F.l); rect(g, 0, yb - th, W, 1, F.hi); rect(g, 0, yb - th + 5, W, 1, F.mor); }
+    yb -= th; }
+  rect(g, 0, top - 4, W, 4, F.l); rect(g, 0, top - 4, W, 1, F.hi); rect(g, 0, top - 1, W, 1, F.mor);   /* the cornice under the floor it carries */
+  if (o.niche) for (let i = 0; i <= n; i++) { const x = Math.round(i * sp) + (pw >> 1), y = H - Math.round(tierH[0] * 0.55);
+    rect(g, x - 5, y - 8, 10, 14, F.dark); g.fillStyle = F.dark; g.beginPath(); g.arc(x, y - 8, 5, Math.PI, 0); g.fill();
+    rect(g, x - 1, y + 1, 3, 4, BR[3]); px(g, x, y - 1, '#ffd070'); px(g, x, y, '#ffb040'); rect(g, x - 6, y + 6, 12, 2, F.hi); }
+}
+/* THE GREAT ARCH: one span from springing to springing (spans: true in the level, and tools/architecture.mjs stands it on its
+   two ends): a segmental ring of voussoirs, the spandrels coursed, a parapet course under the floor it carries */
+function greatArch(g, W, H, rnd, o) {
+  courses(g, 0, 0, W, H, rnd);
+  const spring = o.spring || 10, top = o.top || 14, x0 = spring, x1 = W - spring, half = (x1 - x0) / 2, rise = Math.max(12, H - top - 4);
+  const R = (half * half + rise * rise) / (2 * rise), cx = x0 + half, cy = H + (R - rise) - 0;   /* the circle through both springings and the crown */
+  const yAt = x => cy - Math.sqrt(Math.max(0, R * R - (x - cx) * (x - cx)));
+  cut(g, () => { for (let x = x0; x < x1; x++) g.fillRect(x, Math.round(yAt(x + 0.5)), 1, H); });
+  for (let x = x0 - 6; x < x1 + 6; x++) { const y = Math.round(yAt(Math.min(x1, Math.max(x0, x)) + 0.5)); for (let k = 1; k <= 7; k++) px(g, x, y - k, k === 7 ? F.mor : k === 1 ? F.hi : F.l); }
+  for (let x = x0 + 6; x < x1 - 4; x += 10) { const y = Math.round(yAt(x)); line(g, x, y - 1, x + Math.round((x - cx) / R * 6), y - 7, F.mor); }
+  rect(g, 0, 0, spring, H, F.f); rect(g, W - spring, 0, spring, H, F.f); rect(g, 0, 0, 1, H, F.hi); rect(g, W - 1, 0, 1, H, F.dark);
+  rect(g, 0, top - 4, W, 4, F.l); rect(g, 0, top - 4, W, 1, F.hi); rect(g, 0, top - 1, W, 1, F.mor);
+}
+/* THE GARDEN WALL: the terrace's retaining wall, the mountain behind it - buttresses every o.step tiles, a coping, an espalier
+   fanned out between the buttresses with fruit on it, and a weep hole low down in every bay */
+function gardenWall(g, W, H, rnd, o) {
+  courses(g, 0, 0, W, H, rnd);
+  const step = (o.step || 8) * T, n = Math.max(1, Math.round(W / step)), sp = W / n, bw = 20;
+  /* between every two buttresses a BLIND ARCH, recessed and in shadow, and a trained pear fanned out on the wall inside it */
+  for (let i = 0; i < n; i++) { const x0 = Math.round(i * sp + bw / 2 + 4), x1 = Math.round((i + 1) * sp - bw / 2 - 4), w = x1 - x0, r = w / 2, ys = 30 + r;
+    g.fillStyle = '#4a4238'; g.fillRect(x0, ys, w, H - 8 - ys); g.beginPath(); g.arc(x0 + r, ys, r, Math.PI, 0); g.fill();
+    for (let y = ys - r; y < H - 8; y += 8) rect(g, x0, y, w, 1, '#3e372f');
+    for (let a2 = 0; a2 <= 48; a2++) { const th = Math.PI + a2 / 48 * Math.PI; for (let k = 0; k < 4; k++) px(g, Math.round(x0 + r + Math.cos(th) * (r + k)), Math.round(ys + Math.sin(th) * (r + k)), k === 0 ? F.dark : k === 3 ? F.mor : F.hi); }
+    rect(g, x0 - 2, H - 10, w + 4, 3, F.hi); rect(g, x0 - 2, H - 7, w + 4, 1, F.mor);
+    if (o.espalier !== false) { const mid = x0 + r, base = H - 10, tops = Math.min(H - 40, ys - r + 10);
+      rect(g, mid - 1, base - 16, 3, 16, WD[1]); rect(g, mid - 1, base - 16, 1, 16, WD[2]);
+      for (let a = -3; a <= 3; a++) { if (!a) continue; const tx = mid + a * Math.round(w / 8), ty = base - 16 - (H - tops) * (0.35 + (3 - Math.abs(a)) * 0.2);
+        line(g, mid, base - 16, tx, Math.round(ty), WD[2]);
+        for (let k = 0.25; k < 1.01; k += 0.125) { const lx = Math.round(mid + (tx - mid) * k), ly = Math.round(base - 16 + (ty - base + 16) * k);
+          rect(g, lx - 2, ly - 1, 2, 2, '#5e7a3a'); px(g, lx + 1, ly - 2, '#8aa65a'); if (((a + 4) * 11 + ((k * 8) | 0)) % 4 === 0) { rect(g, lx, ly + 1, 3, 3, '#d8b23a'); px(g, lx, ly + 1, '#f2dc7a'); } } }
+      line(g, mid, base - 16, mid, Math.round(tops), WD[2]); }
+    rect(g, x0 + 6, H - 22, 3, 3, F.dark); }
+  /* the buttresses, stepped back twice, their offsets weathered, standing proud of the wall */
+  for (let i = 0; i <= n; i++) { const x = Math.round(i * sp - bw / 2);
+    for (let y = 18; y < H; y++) { const inset = y < 50 ? 6 : y < 110 ? 3 : 0; rect(g, x + inset, y, bw - inset * 2, 1, (y & 7) === 7 ? F.mor : F.l); px(g, x + inset, y, F.hi); px(g, x + bw - inset - 1, y, F.dark); px(g, x + bw - inset - 2, y, F.d); }
+    for (const y of [50, 110]) { rect(g, x, y - 3, bw, 3, F.hi); rect(g, x, y, bw, 1, F.mor); } rect(g, x + 6, 15, bw - 12, 4, F.hi); }
+  for (let y = 0; y < H; y += 3) { const k = y / H; g.globalAlpha = 0.14 * k; rect(g, 0, y, W, 3, '#1a140e'); } g.globalAlpha = 1;   /* darker low down, where the damp is */
+  rect(g, 0, 0, W, 6, F.hi); rect(g, 0, 0, W, 1, '#a89a80'); rect(g, 0, 5, W, 1, F.mor);
+}
+/* THE CHAPEL: its clerestory over the hall - a rose window of stained glass between two lancets, lead between the panes */
+const GLASS = ['#c9463d', '#3f7fdf', '#e8c84a', '#4a9a5a', '#8a4ab8', '#e87a3a'];
+function stainedLancet(g, x, y, w, h, k) {
+  rect(g, x - 2, y, w + 4, h, F.hi); g.fillStyle = F.hi; g.beginPath(); g.arc(x + w / 2, y, w / 2 + 2, Math.PI, 0); g.fill();
+  for (let yy = -((w / 2) | 0); yy < h; yy++) for (let xx = 0; xx < w; xx++) { const dy = yy < 0 ? yy : 0, dx = xx - w / 2 + 0.5; if (yy < 0 && dx * dx + dy * dy > (w / 2) * (w / 2)) continue;
+    const pane = (((yy + 40) / 6 | 0) + (xx / 3 | 0) + k) % GLASS.length, lead = (yy + 40) % 6 === 0 || xx % 3 === 0;
+    px(g, x + xx, y + yy, lead ? '#2a2420' : GLASS[pane]); }
+}
+function chapelFront(g, W, H, rnd, o) {
+  courses(g, 0, 0, W, H, rnd);
+  const cx = W >> 1, cy = o.roseY || Math.round(H * 0.42), R = Math.min(38, Math.round(W * 0.14));
+  circle(g, cx, cy, R + 4, F.hi); circle(g, cx, cy, R + 2, F.mor);
+  for (let yy = -R; yy <= R; yy++) for (let xx = -R; xx <= R; xx++) { const d = Math.sqrt(xx * xx + yy * yy); if (d > R) continue;
+    const a = (Math.atan2(yy, xx) + Math.PI) / (Math.PI * 2), ring = d < R * 0.3 ? 0 : d < R * 0.68 ? 1 : 2, petals = [1, 8, 16][ring];
+    const spoke = Math.abs(((a * petals) % 1) - 0.5) > 0.44 && ring > 0, rim = Math.abs(d - R * 0.3) < 0.8 || Math.abs(d - R * 0.68) < 0.8;
+    px(g, cx + xx, cy + yy, spoke || rim ? '#2a2420' : GLASS[(ring * 3 + ((a * petals) | 0)) % GLASS.length]); }
+  circle(g, cx, cy, 3, BR[3]);
+  const lw = 12, lh = Math.round(H * 0.34);
+  for (const lx of [cx - R - 36, cx + R + 24]) stainedLancet(g, lx, cy - 4, lw, lh, lx & 3);
+  rect(g, 0, cy + R + 10, W, 5, F.l); rect(g, 0, cy + R + 10, W, 1, F.hi);
+  rect(g, 0, 0, W, 5, F.l); rect(g, 0, 0, W, 1, F.hi); rect(g, 0, 4, W, 1, F.mor);
+}
 export function bakeFacade(kind, tw, th, seed, o = {}) {
   const W = tw * T, H = th * T, rnd = mulberry((seed | 0) + 7001), [c, g] = canvas(W, H);
+  if (kind === 'monkArcade') { arcade(g, W, H, rnd, o); return c; }
+  if (kind === 'monkArch') { greatArch(g, W, H, rnd, o); return c; }
+  if (kind === 'monkWall') { gardenWall(g, W, H, rnd, o); return c; }
+  if (kind === 'monkChapel') { chapelFront(g, W, H, rnd, o); return c; }
   if (kind === 'monkBelfry') {
     /* THE BELFRY: an open stage on two piers under a tiled roof, dark behind the arch so the bell reads against it */
     const roofH = Math.min(40, Math.round(H * 0.42));
@@ -105,7 +209,13 @@ export function bakeFacade(kind, tw, th, seed, o = {}) {
     return c;
   }
   if (kind === 'monkCloister') {
-    /* THE CLOISTER: a walk of round arches on paired columns, a lean-to roof over it, the painted wall dim behind */
+    /* THE CLOISTER: a walk of round arches on paired columns, a lean-to roof over it, the painted wall dim behind. o.gallery: the
+       DORMITORY over the walk (the dorter was always over the cloister: the monks came down to the night office by the day stair) -
+       a coursed range with a row of cell windows, some of them still lit by whoever sleeps there now */
+    if (o.gallery) { const GH = o.gallery * T; courses(g, 0, 0, W, GH, rnd);
+      for (let x = 20; x < W - 20; x += 48) { const lit = ((x * 7) % 5) === 1; rect(g, x, 34, 14, 22, F.hi); rect(g, x + 2, 36, 10, 18, lit ? '#8a5a2a' : '#1a140f'); if (lit) { rect(g, x + 4, 40, 6, 12, '#ffb84a'); rect(g, x + 6, 42, 2, 8, '#fff0c0'); } rect(g, x + 6, 36, 2, 18, WD[1]); rect(g, x - 2, 56, 18, 3, F.l); }
+      rect(g, 0, GH - 4, W, 4, F.l); rect(g, 0, GH - 4, W, 1, F.hi);
+      const low = bakeFacade('monkCloister', tw, th - o.gallery, seed, {}); g.drawImage(low, 0, GH); return c; }
     const roofH = 18; rect(g, 0, roofH, W, H - roofH, '#2e241c');
     for (let x = 0; x < W; x += 2) rect(g, x, roofH + 6, 1, H - roofH - 10, '#3a2e24');
     for (let x = 12; x < W - 8; x += 40) { rect(g, x, roofH + 16, 22, 20, '#4a3a2c'); rect(g, x + 2, roofH + 18, 18, 16, ['#6a4a3a', '#3a4a5a', '#5a5a3a'][(x >> 3) % 3]); circle(g, x + 11, roofH + 26, 5, '#c9a44a'); }
@@ -125,7 +235,11 @@ export function bakeFacade(kind, tw, th, seed, o = {}) {
   if (roofH) { roof(g, -3, W + 6, roofH); rect(g, 0, roofH - 1, W, 2, WD[1]); }
   if (kind === 'monkTower') {
     for (let y = by; y < H; y++) { const long = (((y - by) >> 3) & 1) === 0; rect(g, 0, y, long ? 6 : 3, 1, ((y - by) & 7) === 7 ? F.mor : F.hi); rect(g, W - (long ? 6 : 3), y, long ? 6 : 3, 1, ((y - by) & 7) === 7 ? F.mor : F.d); }
-    const mx = W >> 1; if (H - by > 60) { arch(g, mx - 5, mx + 5, by + 10, by + 24, F.win); rect(g, mx - 1, by + 16, 2, 8, F.winL); }
+    const mx = W >> 1; if (H - by > 60 && !o.stage) { arch(g, mx - 5, mx + 5, by + 10, by + 24, F.win); rect(g, mx - 1, by + 16, 2, 8, F.winL); }
+    if (o.stage) { /* THE BELL STAGE: the bottom o.stage rows are open, dark behind so the bell reads, the headstock across the top of it,
+       and over it the shaft goes on up to the floor it carries - a belfry IN a tower, not a hut on top of one */
+      const sy = H - o.stage * T; arch(g, 7, W - 7, sy + 6, H, '#241c16'); rect(g, 9, sy + 14, W - 18, 3, WD[1]); rect(g, 9, sy + 14, W - 18, 1, WD[3]);
+      for (let y = 6; y < sy - 10; y += 22) { rect(g, mx - 4, y, 8, 12, F.dark); for (let k = 0; k < 4; k++) rect(g, mx - 4, y + 2 + k * 3, 8, 1, WD[2]); } }
   } else for (let x = 18; x < W - 12; x += 40) { const y = by + 12; if (y + 14 < H) arch(g, x, x + 8, y, y + 14, '#241c16'); }
   if (o.arch) { const ay0 = o.arch[0] * T, ay1 = (o.arch[1] + 1) * T; arch(g, 8, W - 8, ay0, ay1, '#140f0c');
     for (let y = ay0 + 14; y < ay1; y += 6) rect(g, 10, y, W - 20, 1, '#2a2018'); }   /* the passage in under the gate */

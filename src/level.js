@@ -1838,7 +1838,9 @@ function theMonastery() {
     boards(!left ? x0 + 1 : x0 + 4, top, 3);
     masonry.push([x0, x0, top, floor], [x1, x1, top, floor], [x0, x1, top, top]);
     interiors.push([x0 + 1, x1 - 1, top + 1, floor, 'monkTower']);
-    facades.push([x0 - 1, x1 + 1, top - 7, top - 1, 'monkBelfry']);
+    /* THE BELFRY IS A STAGE IN THE TOWER, NOT A HUT ON TOP OF IT (Daniel, 2026-09-25: "towers ... with nothing under them"): the
+       shaft goes on up past the bell to the underside of the cloister's floor, and that floor stands on it (tools/architecture.mjs) */
+    facades.push([x0 - 1, x1 + 1, CLOUD + 3, top - 1, 'monkTower', { stage: 7 }]);
   };
 
   // ---- 1. THE GATEHOUSE: the pilgrims' door, the gate that fell, and the stair the pilgrims climbed ----
@@ -1933,7 +1935,7 @@ function theMonastery() {
 
   // ---- 5. THE CLOUD CLOISTER. You come out of the grey into the sun, onto the monks' cloister ----
   band(100, 85, 5);
-  facades.push([40, 74, 91, 99, 'monkCloister']);
+  facades.push([1, 94, 83, 99, 'monkCloister', { gallery: 8 }]);   /* THE CLOISTER RANGE, wall to wall: the walk, and the dorter over it - and the shrines' floor stands on it */
   wheel(99, 20, 97, 7, 'a');                                        // the second wheel: its stair goes up to the shrines, or round to the alcove
   set(18, 99, T.SOLID); set(19, 99, T.SOLID); masonry.push([18, 19, 99, 99]);   // a step up to the pivot board
   ent('check', 30, 99); ent('check', 80, 99);
@@ -2056,6 +2058,22 @@ function theMonastery() {
   // THE BELFRY'S BEAM WALK: a ladder from the ringing floor, with a sheltered landing either side.
   plat(43,24,9);plat(59,24,9);plat(47,27,4);plat(61,27,4);
   for(let y=24;y<30;y++)set(58,y,T.NET);
+  // ---- WHAT HOLDS IT ALL UP (Daniel, 2026-09-25: "a lot of the Monastery's architecture floats ... ground all of it") ----
+  // Every floor on this mountain is a floor the monks LAID, so every one is laid stone and tools/architecture.mjs judges it. And
+  // every storey has something behind the play that carries the floor over it, standing on the floor under it: each storey's
+  // wall face runs from the underside of the slab above down through its own floor slab, so a trapdoor or a stairwell in a
+  // floor is spanned by the wall behind it. None of it is a tile: the route, the reach and every check that reads the grid
+  // see exactly the level they saw before.
+  masonry.push([1, 94, 196, 198], [1, 94, 100, 102], [1, 94, 80, 82], [1, 94, 56, 58], [1, 94, 36, 38]);
+  facades.unshift(
+    [29, 71, 196, 217, 'monkArcade', { tiers: 2 }],                  /* THE GUEST HOUSE ARCADE behind the pilgrims' stair, between the gate tower's curtain and the east curtain */
+    [1, 94, 175, 195, 'monkWall', {}],                                /* THE GARDEN WALL: the terraces' retaining wall, buttressed, an espalier on it */
+    [1, 94, 59, 82, 'monkArcade', { tiers: 2, niche: true }],         /* THE SHRINE PIERS: a niche and a lamp in every pier, the flag lines strung between them */
+    [1, 94, 32, 58, 'monkArcade', { tiers: 2 }]);                     /* THE UNDERCROFT OF THE BELFRY: from the chapel's floor up through the crawl to the ringing floor's underside */
+  facades.push(
+    [0, 7, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true, spring: 6 }], [16, 40, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true }],   /* THE BELL ARCHES: tower to tower, each on its two springings */
+    [49, 69, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true }], [78, 84, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true, spring: 6 }],
+    [27, 53, 36, 58, 'monkChapel', { roseY: 104 }]);                 /* THE CHAPEL's clerestory over the golem's hall: the rose window */
   // NOTHING IS DUG AFTER THIS LINE: the goat path's rock face above is the last tile laid
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
