@@ -7863,7 +7863,11 @@ function dressLevel(L, id) {
   const KEEP = new Set(['firepit', 'firevent', 'hotplate', 'cover', 'ballista', 'trebuchet', 'oilbarrel', 'sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier',   /* a fire on the floor is kept clear like a brazier: Kingswood's Fired Wood grew a skull totem in its firepits' reach (level review, 2026-09-24) */ 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade', 'sheet', 'balloon', 'sail']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   const placed = [];
-  const clear = (x, y) => keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 7 || Math.abs(py - y) > 4);
+  /* AND A GATE THE GAME DROPS AT RUN TIME IS NOT OPEN GROUND. An elite's gate, a winch's gate and the hulk's grate (e.gate, a column)
+     are PORT laid over AIR when the level loads, so the built grid shows open floor where a portcullis will stand: the Reef's tideguard
+     gate at 441 grew a coral fan inside itself, standing on nothing once the gate was down (tools/headless.mjs floats, batch24). */
+  const gateCols = L.ents.filter(e => typeof e.gate === 'number').map(e => e.gate);
+  const clear = (x, y) => gateCols.every(gx => Math.abs(gx - x) > 1) && keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 7 || Math.abs(py - y) > 4);
   /* AND A POOL THAT IS NOT THE SEA IS NOT A FLOOR (level review, 2026-09-24): the Marsh's ferry channel is a swim pool, so its bed
      grew moss and a frog statue two rows under the water, and the Wood's tarn a stump. Only a level dressed as the sea dresses its
      sea bed (tools/dressing.mjs holds it). */
