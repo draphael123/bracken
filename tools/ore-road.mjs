@@ -17,7 +17,7 @@
 // usage: node tools/ore-road.mjs
 import { LEVELS, T } from '../src/level.js';
 import { readFileSync } from 'node:fs';
-import { OR, cableLines, makeCableway, stepCableway, bucketAt, pointAt, lineYAt, brakeStep, liftStep, mineBlocked } from '../src/ore-road.js';
+import { OR, cableLines, makeCableway, stepCableway, bucketAt, pointAt, lineYAt, brakeStep, liftStep, mineBlocked, WORKS, workSees } from '../src/ore-road.js';
 import { WINCH, updateWinchmaster, winchJam, winchTake, winchOpen, winchFrame } from '../src/winchmaster.js';
 
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
@@ -174,6 +174,25 @@ for (const l of C.lines) {
   const why = M.map(it => [it, mineBlocked(L, T, it)]).filter(([, r]) => r);
   ok(M.length >= 15 && !why.length, `${M.length} heaps, spills and carts of ore on the floors, every one on footing and clear of every hazard and every tell` + (why.length ? ' - NOT ' + why.map(([it, r]) => it.k + '@' + it.x + ',' + it.y + ': ' + r).join('; ') : ''));
   ok(new Set(M.filter(q => q.k === 'heap').map(q => q.size)).size === 3 && M.some(q => q.k === 'cart' && q.load > 0) && new Set(M.map(q => q.ore)).size === 4, 'heaps of all three sizes, a cart full of ore, and all four ores on the floors'); }
+
+/* ---- THE WORK LOOPS (section 2), as geometry: every row of WORKS found its goblin (a row that silently matched nobody is a loop
+   that does not exist), none of them is the level's own three, the elite or in his room, every miner at work has a seam on his
+   own floor to work, every rail and every sack run is floor all the way, and every lift cage has open air to run in. The loops
+   themselves - and the rule that a working goblin never hurts you before its alert - are proved in the page (tools/ore-work.mjs) */
+{ const W = L.ents.filter(e => e.work), fl = t => t === T.SOLID || t === T.PLANK || t === T.ONEWAY || t === T.NET;
+  ok(W.length === WORKS.length && new Set(W.map(e => e.work.key)).size === W.length, `${W.length} goblins at work, one for every row of WORKS (${WORKS.length})`);
+  ok(!W.some(e => ['tippler', 'sheargob', 'gaffer'].includes(e.t) || e.elite || e.x * TS >= L.arena.x0), "none of them the level's own three, the elite, or in the Winchmaster's room");
+  const idle = W.filter(e => e.work.k === 'pick' && !(L.veins || []).some(v => v.y === e.y && Math.abs(v.x - e.x) <= 6));
+  ok(!idle.length, 'every miner at work has a seam on his own floor within six columns' + (idle.length ? ' - not ' + idle.map(e => e.x).join(',') : ''));
+  const span = w => w.k === 'cart' ? [Math.floor(Math.min(w.load, w.tip) - 1.3), Math.ceil(Math.max(w.load, w.tip) + 1.3) - 1] : w.k === 'sack' ? [Math.min(w.from, w.to), Math.max(w.from, w.to)] : w.k === 'sort' ? [w.at - 2, w.at + 2] : w.k === 'winch' ? [Math.min(w.at, w.shaft), Math.max(w.at, w.shaft) + 1] : null;
+  const gaps = W.filter(e => span(e.work)).filter(e => { const [a, b] = span(e.work); for (let x = a; x <= b; x++) if (!fl(at(x, e.y + 1)) || at(x, e.y) === T.SOLID) return true; return false; });
+  ok(!gaps.length, 'every rail, sack run, table and winch stands on floor from end to end' + (gaps.length ? ' - not ' + gaps.map(e => e.work.key).join(', ') : ''));
+  const shafts = W.filter(e => e.work.k === 'winch').filter(e => { for (let y = e.work.top + 1; y <= e.y; y++) if (at(e.work.shaft, y) === T.SOLID || at(e.work.shaft, y) === T.NET) return true; return false; });
+  ok(W.some(e => e.work.k === 'winch') && !shafts.length, 'every lift cage runs in open air from its floor to its top' + (shafts.length ? ' - not ' + shafts.map(e => e.work.key).join(', ') : ''));
+  /* and the rule of the eye: ahead he sees you at the distance every goblin notices you; behind, only close */
+  const g0 = { x: 1000, y: 500, face: 1 };
+  ok(workSees(g0, { x: 1000 + OR.WORK_SEE - 2, y: 500 }) && !workSees(g0, { x: 1000 - OR.WORK_SEE + 2, y: 500 }) && workSees(g0, { x: 1000 - OR.WORK_HEAR + 2, y: 500 }) && !workSees(g0, { x: 1010, y: 500 - OR.WORK_SEE_Y - 2 }) && !workSees(g0, { x: 1010, y: 500, dead: true }) && OR.WORK_HEAR < OR.WORK_SEE,
+    `a goblin at work sees you ${OR.WORK_SEE} px ahead and hears you ${OR.WORK_HEAR} px behind, within ${OR.WORK_SEE_Y} px up or down`); }
 
 /* ---- THE PIT (Daniel's playtest, item 5): nowhere on the road can a fall reach the bottom of the level any more. Every column
    from the yard to the drum house, dropped down from the top, meets something - a floor, a ledge, or a span's spike bed - and

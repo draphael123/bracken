@@ -11,7 +11,9 @@ const out = join(ROOT, 'docs/oremine'); mkdirSync(out, { recursive: true });
 /* [name, the hero's column, the row he stands on] - in route order */
 const SPOTS = [['yard', 6, 36], ['crusher', 26, 34], ['loading-house', 47, 36], ['first-span', 100, 36], ['sorting-yard', 137, 36],
   ['sorting-floor', 150, 28], ['tower-top', 186, 21], ['tipple-house', 229, 27], ['collapsed-span', 286, 32], ['wreck-head', 326, 30],
-  ['brakemans-hut', 350, 20], ['winch-house', 412, 12], ['drum-yard', 446, 12], ['drum-house', 478, 12]];
+  ['brakemans-hut', 350, 20], ['winch-house', 412, 12], ['drum-yard', 446, 12], ['drum-house', 478, 12],
+  /* AT WORK: stood just BEHIND a goblin at work (he hears you only within OR.WORK_HEAR behind him), so the picture has him working */
+  ['at-work-sorting-table', 154, 36], ['at-work-lift-cage', 193, 36], ['at-work-brake-hoist', 347, 29], ['at-work-rail-yard', 447, 12]];
 const pg = await openPage({ audio: false });
 try {
   const r = await pg.evalp(`(async () => {

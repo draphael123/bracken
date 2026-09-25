@@ -45,11 +45,15 @@ the elite and the ambush crowd never work.
 
 | loop | who | what it looks and sounds like |
 |---|---|---|
-| **PICK** | miners | at a seam: the pick up and down, chips flying, a *tink* on every blow; six blows and he carries the ore to a station (existing) |
-| **CART** | rock goblins | pushing an ore cart along its rail to the end, tipping it (ore tumbles), and pushing it back empty; wheels rumble |
-| **SACK** | sappers, sprigs | hauling a sack from a heap to a cart and back, bent under it; a thud as it is dropped |
-| **SORT** | javelins | at a sorting table, picking ore off the pile and flicking it into the bins at each end |
-| **WINCH** | heavies | cranking a winch; the rope runs up to a hoist and a lift cage rises and falls; the ratchet clicks |
+| **PICK** | six miners (the pick line, the loading house, the sorting yard, the upper decks, the tipple house, the wreck's head) | at a seam: the pick up and down, chips flying, a *tink* on the blow; six blows and he carries the ore to a station (round three's loop) |
+| **CART** | two rock goblins: the ore yard (tipped into THE CRUSHER) and the winch house's rail yard (tipped onto the spoil) | pushing an ore cart along its rail, tipping it (the ore tumbles out), pulling it back and filling it; wheels rumble |
+| **SACK** | four sappers: the loading house, the tipple house, the collapsed span (salvage), the drum yard | hauling a sack from its stack to its drop and back; a thud as it goes down |
+| **SORT** | the sorting yard's rock goblin, the drum yard's javelin | at a sorting table, flicking ore off the pile into the bins at each end |
+| **WINCH** | two heavies: THE LIFT CAGE up the sorting tower, the brakeman's hoist up his pillar | cranking a winch; the rope runs over a hoist beam and a lift cage rises and falls; the ratchet clicks |
+
+Every workplace has **a lantern on a gallows post** over it, and a light: in this level's dark, timber and iron that are not
+under a light are not seen at all (found the hard way - the first lift cage was drawn and invisible). The pylon's miner is a
+lookout and the winch house's has no seam on his floor: they stand guard, as they always did.
 
 **THE ALERT, AND THE RULE THAT MAKES IT FAIR.** A working goblin is not fighting, and **nothing about a working goblin may hurt
 you before its alert.** While it works, its own update does not run at all — the loop owns it — so no swing, throw, bomb or

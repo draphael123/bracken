@@ -1,7 +1,7 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
-import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
+import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins, ORES, workSees, workLamp, hash as oreHash } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
 import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { updateGraveWarden as stepGraveWarden, drawGraveWarden, wardenFrame as graveFrame, wardenOpen as graveOpen, WARDEN as GRAVE_W } from './grave-warden.js';   /* (named apart: harbor-boss.js's Breakwater Warden owns updateWarden and wardenFrame) */   /* THE GRAVE WARDEN (batch 4b) */
@@ -2220,6 +2220,7 @@ function spawnEnt(e) {
   if (e.elite && enemies.length > n0) eliteMake(enemies[n0], e);   /* before the tier scales it, like a mini's health */
   for (let i = n0; i < enemies.length; i++) if (AMPHIB.has(enemies[i].t)) enemies[i].shore = shoreOf(enemies[i].x, enemies[i].y);   /* an amphibious thing is given the water it was put down by (see shoreLeash) */
   const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.xpRole = !isBoss ? '' : (L.arena && L.arena.boss === e2.t) ? 'boss' : 'mini'; e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr) * (coop() ? 2 : 1)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }   /* CO-OP DOUBLES EVERYTHING THAT FIGHTS. Two heroes, twice the health - and it is done HERE, on the one line every creature, mini and boss in the game already comes through, never per creature. (The other half is in damagePlayer0.) */
+  if (e.work && L.oreRoad) for (let i = n0; i < enemies.length; i++) oreWorkBind(enemies[i], e.work);   /* MINE LIFE: a goblin at work (docs/briefs/ore-road-mine-life.md) */
   if (e.lesson) for (let i = n0; i < enemies.length; i++) enemies[i].lesson = e.lesson;   /* a lesson's foe (the wood's swordsman): slow, and his sword flashes */
   if (e.trainer || e.lx0) for (let i = n0; i < enemies.length; i++) Object.assign(enemies[i], { trainer: e.trainer, lx0: e.lx0 * TS + 8, lx1: e.lx1 * TS + 8, leapT: 1.5, trialSt: (L.trial || []).find(q => q.x0 + 1 === e.lx0) || null });   /* A TRIAL'S MAN: he never goes down and he keeps to his own yard */
 }
@@ -4771,7 +4772,7 @@ function sndAt(x, y, big) { const dx = x - (camX + VW / 2), dy = y - (camY + VH 
 function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { const r = damagePlayer0(fromX, dmg, o);
   if (r === 'blocked') creditTurn(fromX);   /* and whether that was a blow turned for the PARTNER (the co-op block) */
   /* THE AUDITS' EAR (tools/audit-*.mjs): when a tool has set BK.log to an array, every blow on the hero is written down with the line it came from. Off (null) in play; it changes nothing. */
-  if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgP', fromX, dmg, res: r, t: time, who: o && o.who ? o.who.t : null, blow: o && o.blow || null, unblockable: !!(o && o.unblockable), stack: new Error().stack });
+  if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgP', fromX, dmg, res: r, t: time, who: o && o.who ? o.who.t : null, by: (o && o.who) || updFoe || null, blow: o && o.blow || null, unblockable: !!(o && o.unblockable), stack: new Error().stack });
   return r; } finally { emitAt(was); } }
 // whoever is near the blow that just landed (for the talents that answer it)
 const nearFoe = x => { let b = null, bd = 60; for (const e of enemies) if (e.alive && !e.harmless) { const d = Math.abs(e.x - x) + Math.abs(e.y - P.y) * 0.5; if (d < bd && Math.abs(e.x - P.x) < 70) { bd = d; b = e; } } return b; };
@@ -4985,7 +4986,7 @@ function spawnCorpse(e, dir) {
     case 'bellguard': Object.assign(c,{vx:dir*25,vy:-65,spin:0,life:1.5,max:1.5});SFX.seaBell();break;
     case 'sprig': case 'archer': case 'soldier': case 'javelin': Object.assign(c, { vx: dir * 90, vy: -190, spin: dir * 14, life: 1.0, max: 1.0 }); SFX.gobDie(); break;
     case 'hopper': Object.assign(c, { vx: dir * 70, vy: -160, spin: dir * 10, life: 0.9, max: 0.9 }); SFX.ribbit(); break;
-    case 'sapper': Object.assign(c, { vx: dir * 90, vy: -190, spin: dir * 14, life: 1.0, max: 1.0 }); SFX.gobDie(); bombs.push({ x: e.x, y: e.y - 4, vx: 0, vy: -30, fuse: 0.6 }); break;
+    case 'sapper': Object.assign(c, { vx: dir * 90, vy: -190, spin: dir * 14, life: 1.0, max: 1.0 }); SFX.gobDie(); if (!(e.work && e.work.st === 'work')) bombs.push({ x: e.x, y: e.y - 4, vx: 0, vy: -30, fuse: 0.6 }); break;   /* (a sapper cut down at his work had not lit it) */
     case 'grandmother': Object.assign(c, { vx: dir * 20, vy: -70, spin: dir * 1, life: 1.6, max: 1.6 }); SFX.gobDie(); break;
     case 'assassin': Object.assign(c, { vx: dir * 20, vy: -60, spin: dir * 2, life: 0.7, max: 0.7 }); SFX.puff(); break;
     case 'drunk': c.frame = 7; Object.assign(c, { vx: dir * 40, vy: -120, spin: 0, life: 1.4, max: 1.4 }); SFX.slur(); break;   /* out cold on his back, not flung: he was falling over anyway */
@@ -14223,6 +14224,8 @@ function updateFalseAbbotBoss(e, dt) {
 /* ---------- THE ORE ROAD (src/ore-road.js is the cableway; this is it in the world) ---------- */
 /* every bucket on every line is a mover, so the engine's own rider code carries you: this places them on the clock */
 function oreBuild() {
+  L.works = enemies.filter(e => e.work).map(e => e.work);   /* MINE LIFE: every goblin at work, for the draw and for oreWorksAfter */
+  for (const w of L.works) { const c = workLamp(w); if (c !== null) lights.push({ x: c * TS + 8, y: w.fy - 34, r: 64, glow: true, warm: true }); }   /* and the lantern over each one's work */
   L.cableway = makeCableway(L.cable);
   L.cableway.lines.forEach((ln, li) => { for (let i = 0; i < ln.n; i++) movers.push({ kind: 'bucket', line: li, i, w: OR.BUCKET.w, h: OR.BUCKET.h, x: 0, y: -9999, dx: 0, dy: 0, vis: false,
     cracked: !!(ln.cracked && i % ln.cracked === 0), crackT: 0, fallen: 0, ore: !ln.riders, lift: ln.riders ? OR.BUCKET.lift : 0, brake: 0, dump: 0 }); });
@@ -14236,7 +14239,7 @@ function oreBuild() {
    which is the whole point. MOVING IS PROGRESS; STOPPED IS WHERE YOU CAN FIGHT, and everything that flies over this
    gorge keeps coming while you are stopped. The drum line is not brakeable: the Winchmaster drives that one. */
 function oreBrake(dt) {
-  oreVeinsStep(dt); orePitStep(dt);   /* (the ore road's per-frame hook: the veins, the miners working them, and the pit ride on it) */
+  oreVeinsStep(dt); orePitStep(dt); oreWorksAfter(dt);   /* (the ore road's per-frame hook: the veins, the miners working them, the pit ride on it, and the work a goblin dropped) */
   const m = P.onMover;
   for (const l of L.cableway.lines) {
     const held = !l.drum && !P.dead && !!keys.block && !!m && m.kind === 'bucket' && L.cableway.lines[m.line] === l && m.vis && !(m.fallen > 0);
@@ -14252,6 +14255,79 @@ function oreBrake(dt) {
    flying), and after OR.WORK_CHIPS blows he carries the ore to the nearest bucket station on his floor and tips it in, and goes
    back. Come near and he drops it and is a miner again - updateMiner has him from then on */
 const oreFloorY = v => (v.y + 1) * TS;
+/* ======== MINE LIFE: THE WORK LOOPS (docs/briefs/ore-road-mine-life.md, section 2; the rules in src/ore-road.js WORKS) ========
+   While a goblin works, this owns it: its own update does not run (updateEnemies skips it), so no swing, throw, bomb or bite of
+   its can begin, and what it works with is drawn, not a mover. NOTHING HERE ROLLS THE DICE (no burst, no dust, no vary): the
+   Winchmaster's pilot pins its dice, and a worker in view of his room must not move his fight. */
+const oreX = c => c * TS + 8, oreOn = e => e.x > camX - 40 && e.x < camX + VW + 40 && e.y > camY - 40 && e.y < camY + VH + 60;
+function oreWorkBind(e, w) {
+  Object.assign(w, { e, st: 'work', t: 0, anim: 0, carry: false, flicks: 0, chips: 0, dropped: null, alertAt: undefined, called: false, hp0: e.hp, mode0: e.mode, tipA: 0, tipped: false, cage: 0, crank: 0, fy: e.y, sackX: undefined, oreK: Math.floor(oreHash(e.x, e.y, 23) * 4) });
+  delete e.workAlertAt; e.work = w;
+  if (w.k === 'cart') { w.s = Math.sign(w.load - w.tip) || 1; w.cx = oreX(w.load); e.x = w.cx + w.s * 16; w.ph = 'fill'; w.t = 0.8; w.ore = 1; e.face = -w.s; }
+  else if (w.k === 'sack') { e.x = oreX(w.from); w.ph = 'lift'; w.t = 0.6; }
+  else if (w.k === 'sort') { e.x = oreX(w.at) + 18; e.face = -1; w.t = 0.5; }
+  else if (w.k === 'winch') { e.x = oreX(w.at) + 22; e.face = -1; w.ph = 'up'; }   /* (clear of the winch, or his body hides it) */
+  if (w.k !== 'pick') { e.mode = 'work'; e.modeT = 0; }
+}
+function oreAlert(e) {
+  const w = e.work; w.st = 'startle'; w.t = OR.WORK_STARTLE; w.alertAt = time; e.workAlertAt = time;
+  e.seenP = true; e.popT = 0.35; e.emote = 'alert'; e.emoteT = 0.9; e.face = Math.sign(P.x - e.x) || e.face; e.vx = 0;
+  number(e.x, e.y - e.h - 12, 'OI', '#e8dcc8'); SFX.foeNotice(e.t);
+  w.dropped = w.k === 'cart' ? 'the cart stands where it was' : w.k === 'sack' ? (w.carry ? 'the sack hits the floor' : 'he leaves the sacks') : w.k === 'sort' ? 'he leaves the table' : w.k === 'winch' ? 'the cage runs back down' : 'he stops picking';
+  if (w.k === 'sack' && w.carry) { w.carry = false; w.sackX = e.x - (e.face || 1) * 6; SFX.sackThud(); }
+  if (w.k === 'cart') w.tipA = 0;
+  if (w.k === 'winch') w.ph = 'fall';
+  /* and he shouts it: every goblin at work within earshot drops his too */
+  for (const o of enemies) if (o !== e && o.alive && o.work && o.work.st === 'work' && Math.abs(o.x - e.x) < OR.WORK_CALL && Math.abs(o.y - e.y) < 60) o.work.called = true;
+}
+function oreWorkStep(e, dt) {
+  const w = e.work; if (!w || w.st === 'fight') return false;
+  const fall = () => { e.vy = Math.min(320, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r && r.ground) e.vy = 0; };
+  const go = vx => { e.vx = vx; const r = vx ? moveBody(e, vx * dt, 0, false) : null; fall(); return r; }, on = oreOn(e);
+  if (w.st === 'startle') { w.t -= dt; e.vx = 0; fall(); if (w.t <= 0) { w.st = 'fight'; e.mode = w.mode0; e.modeT = 0.2; e.oreWork = null; } return true; }
+  /* THE ALERT: struck (or thrown, or a goblin beside him fell), called, or the hero seen ahead or heard behind */
+  const struck = e.hp < w.hp0 || e.flash > 0 || e.stagger > 0 || e.knock > 0 || (e.emote === 'shock' && e.emoteT > 0);
+  if (struck || w.called || workSees(e, P)) { oreAlert(e); return true; }
+  w.t -= dt; w.anim += dt;
+  if (w.k === 'pick') { fall(); return true; }   /* the miner's seam work is oreVeinsStep's; this only keeps his blows in until he alerts */
+  if (w.k === 'cart') {
+    if (w.ph === 'push' || w.ph === 'back') { const want = oreX(w.ph === 'push' ? w.tip : w.load) + w.s * 16, d = want - e.x; e.face = -w.s;
+      if (Math.abs(d) < 1.5) { go(0); if (w.ph === 'push') { w.ph = 'tip'; w.t = 1.2; } else { w.ph = 'fill'; w.t = 1.6; } }
+      else { const r = go(Math.sign(d) * (w.ph === 'push' ? 20 : 30)); if (r && r.hitX) { w.ph = w.ph === 'push' ? 'tip' : 'fill'; w.t = 1; }
+        if (on && Math.floor(w.anim * 2.5) !== Math.floor((w.anim - dt) * 2.5)) SFX.cartRoll(); }
+      w.cx = e.x - w.s * 16; }
+    else if (w.ph === 'tip') { go(0); w.tipA = Math.min(1, (1.2 - w.t) / 0.35, Math.max(0, w.t) / 0.35);
+      if (!w.tipped && w.t < 0.8) { w.tipped = true; w.ore = 0; w.chips++;
+        if (on) { for (let k = 0; k < 12; k++) parts.push({ x: w.cx - w.s * 10, y: e.y - 14, vx: -w.s * (30 + k * 8), vy: -50 - (k % 4) * 22, life: 0.8, max: 0.8, col: ORES[w.oreK][k % 3], size: k % 3 ? 1 : 2, grav: 520 }); SFX.stone(); } }
+      if (w.t <= 0) { w.ph = 'back'; w.tipA = 0; w.tipped = false; } }
+    else { go(0); w.ore = w.t < 0.8 ? 2 : 1; if (w.t <= 0) { w.ph = 'push'; w.ore = 2; } }
+    return true; }
+  if (w.k === 'sack') {
+    if (w.ph === 'walk') { const d = oreX(w.carry ? w.to : w.from) - e.x;
+      if (Math.abs(d) < 2) { go(0); w.ph = w.carry ? 'drop' : 'lift'; w.t = w.carry ? 0.5 : 0.7; }
+      else { e.face = Math.sign(d); const r = go(Math.sign(d) * (w.carry ? 15 : 26)); if (r && r.hitX) { w.ph = w.carry ? 'drop' : 'lift'; w.t = 0.5; } } }
+    else { go(0); if (w.t <= 0) { if (w.ph === 'drop') { w.carry = false; w.flicks++; if (on) SFX.sackThud(); } else w.carry = true; w.ph = 'walk'; } }
+    return true; }
+  if (w.k === 'sort') { go(0); e.face = -1;
+    if (w.t <= 0) { w.flicks++; w.t = 0.6 + (w.flicks % 3) * 0.15; const bin = w.flicks % 2 ? -1 : 1;
+      if (on) { parts.push({ x: oreX(w.at) + 2, y: e.y - 14, vx: bin * 20 / 0.4, vy: -110, life: 0.42, max: 0.42, col: ORES[(w.flicks * 5) % 4][1], size: 2, grav: 560 }); if (w.flicks % 3 === 0) SFX.tink(); } }
+    return true; }
+  if (w.k === 'winch') { go(0); e.face = -1;
+    if (w.ph === 'up') { w.cage = Math.min(1, w.cage + dt / 4); if (w.cage >= 1) { w.ph = 'rest'; w.t = 1.4; w.next = 'down'; w.flicks++; } }
+    else if (w.ph === 'down') { w.cage = Math.max(0, w.cage - dt / 4); if (w.cage <= 0) { w.ph = 'rest'; w.t = 1.4; w.next = 'up'; if (on) SFX.clank(); } }
+    else if (w.t <= 0) w.ph = w.next;
+    if (w.ph === 'up' || w.ph === 'down') { w.crank += dt * 5 * (w.ph === 'up' ? 1 : -1); if (on && Math.floor(w.anim * 4) !== Math.floor((w.anim - dt) * 4)) SFX.ratchet(); }
+    return true; }
+  return true;
+}
+/* WHAT A GOBLIN DROPPED goes on without him: the cage runs back down its hoist and bangs on the floor, and a sack on the back of a
+   goblin cut down at his work falls where he fell */
+function oreWorksAfter(dt) {
+  for (const w of (L.works || [])) { const e = w.e; if (!e) continue;
+    if (w.k === 'winch' && w.ph === 'fall') { w.cage = Math.max(0, w.cage - dt * 2.2); if (w.cage <= 0) { w.ph = 'down0'; if (oreOn(e)) { SFX.clank(); SFX.stone(); } } }
+    if (w.k === 'winch' && !e.alive && w.st === 'work') w.ph = 'fall';
+    if (w.k === 'sack' && w.carry && !e.alive) { w.carry = false; w.sackX = e.x; } }
+}
 function oreVeinsStep(dt) {
   const V = L.veins || [];
   for (const v of V) { v.flash = Math.max(0, (v.flash || 0) - dt); if (v.mined || P.dead) continue;
@@ -14265,7 +14341,7 @@ function oreVeinsStep(dt) {
       const lt = lights.find(q => q.vein === v); if (lt) lt.r = 0; } }
   L.carrying = [];
   for (const e of enemies) { if (!e.alive || e.t !== 'miner') continue;
-    const far = Math.abs(P.x - e.x) > OR.WORK_FAR || Math.abs(P.y - e.y) > 90 || P.dead, armed = !e.pk && e.mode !== 'bare' && e.mode !== 'lost' && e.mode !== 'grab' && e.pick !== 'lost';
+    const far = e.work ? e.work.st === 'work' : Math.abs(P.x - e.x) > OR.WORK_FAR || Math.abs(P.y - e.y) > 90 || P.dead, armed = !e.pk && e.mode !== 'bare' && e.mode !== 'lost' && e.mode !== 'grab' && e.pick !== 'lost';
     const w = e.oreWork;
     if (!far || !armed || e.stagger > 0 || !(e.mode === 'walk' || e.mode === 'idle' || e.mode === undefined || w)) { if (w) { e.oreWork = null; if (e.mode === 'dig' || e.mode === 'swing') { e.mode = 'walk'; e.modeT = 0.3; } } continue; }
     if (!w) { const v = V.filter(q => !q.mined && Math.abs(oreFloorY(q) - e.y) < 6 && Math.abs(q.x * TS + 8 - e.x) < 6 * TS).sort((a, b) => Math.abs(a.x * TS - e.x) - Math.abs(b.x * TS - e.x))[0];
@@ -14287,7 +14363,7 @@ function oreVeinsStep(dt) {
     /* AT THE FACE: the pick goes up and comes down, turn about, and the chips fly */
     e.face = Math.sign(d) || e.face; e.vx = 0; w.t -= dt;
     if (w.t <= 0) { w.t = OR.WORK_CHIP; const down = e.mode !== 'dig'; e.mode = down ? 'dig' : 'swing'; e.modeT = 9; e.digT = 9;
-      if (down) { w.chips++; v.flash = 0.06; if (vx > camX - 20 && vx < camX + VW + 20 && Math.abs(v.y * TS - camY - VH / 2) < VH) { burst(vx - e.face * 4, v.y * TS + 4, 3, v.gem ? ['#c08aff', '#6fe0d8'] : ['#e0a040', '#7a7080'], 40, 0.3); if (Math.random() < 0.5) SFX.clank(); } }
+      if (down) { w.chips++; v.flash = 0.06; if (vx > camX - 20 && vx < camX + VW + 20 && Math.abs(v.y * TS - camY - VH / 2) < VH) { burst(vx - e.face * 4, v.y * TS + 4, 3, v.gem ? ['#c08aff', '#6fe0d8'] : ['#e0a040', '#7a7080'], 40, 0.3); if (Math.random() < 0.5) SFX.clank(); else SFX.tink(); } }
       if (w.chips >= OR.WORK_CHIPS && e.mode === 'swing') { w.carry = true; e.mode = 'walk'; e.modeT = 0.3; } } }
 }
 /* THE PIT (Daniel's playtest, 2026-09-25, item 5). A hero falling into the spikes at the bottom of a span is the LEVEL's to
@@ -18804,6 +18880,7 @@ const HEAVY = new Set(['heavy', 'brute', 'hearthgob', 'troll', 'master', 'shield
 function temper(e, dt) {
   e.popT = Math.max(0, (e.popT || 0) - dt); e.jeerT = Math.max(0, (e.jeerT || 0) - dt); e.emoteT = Math.max(0, (e.emoteT || 0) - dt); e.lookT = Math.max(0, (e.lookT || 0) - dt); e.relT = Math.max(0, (e.relT || 0) - dt);
   if (e.harmless || e.gone > 0 || e.maxHp || e.mini || e.t === 'dummy') return;
+  if (e.work && e.work.st === 'work') return;   /* (a goblin at work notices you by oreWorkStep's rule: ahead, behind, struck or called) */
   const dx = P.x - e.x, dy = P.y - e.y;
   if (!e.seenP) {
     if (!P.dead && Math.abs(dx) < 150 && Math.abs(dy) < 60 && !['sleep', 'asleep', 'hide'].includes(e.mode)) { e.seenP = true; e.popT = 0.35; e.emote = 'alert'; e.emoteT = 0.7; SFX.foeNotice(e.t); }
@@ -18974,6 +19051,7 @@ function updateEnemies(dt) {
     if (e.wallT > 0) e.wallT -= dt;
     if (e.blessT > 0) e.blessT -= dt;   /* A PRIEST'S BLESSING wears off */
     if (e.elite && updateElite(e, dt)) continue;
+    if (e.work && oreWorkStep(e, dt)) continue;   /* MINE LIFE: a goblin at work is not fighting - nothing of his runs until his told alert has played out */
     if (e.t === 'dummy') { e.vx = 0; e.hp = e.hp0; continue; } // a straw man stands there
     if(e.t==='undeadmage'){if(bossActive){beastSeen(e.t);updateUndeadMage(e,dt);}continue;}
     if(e.t==='burieddead'){if(bossActive){beastSeen(e.t);updateBuriedDead(e,dt);}continue;}

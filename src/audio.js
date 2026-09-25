@@ -294,6 +294,12 @@ export const SFX = {
   swingUp(k) { const r = 1 + Math.min(3, k) * 0.09; noise(0.07, 0.16, 1500 * r, 1.1); tone('triangle', 620 * r, 300 * r, 0.06, 0.05); }, // the run of blows climbs
   coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
   clank() { file('clang', 0.5) || (tone('square', 1500, 900, 0.05, 0.18), tone('sine', 2300, 2100, 0.16, 0.14), noise(0.05, 0.2, 3200)); },
+  /* THE ORE ROAD AT WORK (docs/briefs/ore-road-mine-life.md): what you hear before you see it. No vary() in any of them: vary rolls
+     the dice even with the sound off, and the Winchmaster's pilot pins its dice */
+  tink() { tone('triangle', 2400, 2250, 0.05, 0.07); tone('sine', 3600, 3500, 0.09, 0.03, 0.005); noise(0.03, 0.06, 5200, 2); },   /* a pick on rock: small and bright */
+  cartRoll() { noise(0.18, 0.05, 260, 0.9); tone('square', 70, 64, 0.12, 0.025); },   /* iron wheels on the rail */
+  ratchet() { tone('square', 1300, 1100, 0.02, 0.04); noise(0.02, 0.05, 3000, 2); },   /* a winch's pawl, one click */
+  sackThud() { noise(0.12, 0.12, 300, 0.7); tone('sine', 110, 60, 0.1, 0.08); },   /* a sack of ore put down */
   parry() { file('parry', 0.5) || tone('square', 1200, 1900, 0.08, 0.16); },
   /* THE KNIGHT'S PERFECT GUARD: a clang that rings like a bell - the steel knock high and bright, and two long clean partials over it.
      Nothing else in the game rings this long, so it is heard as THE thing, and never confused with a block's dull knock */
