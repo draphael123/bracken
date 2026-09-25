@@ -4384,29 +4384,30 @@ function longWater() {
 }
 
 // THE SHIPWRECK REEF. The Herald's glaive pointed out to sea, and this is what it pointed at: the reef where the
-// tribute fleet went down, and the ROYAL SEALS with it. Four ways of moving, one after the other. THE TIDEWAY: the
+// tribute fleet went down, and her MANIFEST with it. Four ways of moving, one after the other. THE TIDEWAY: the
 // backs of wrecked hulls, crossed between tides, with the rigging as the high road when the sea is up. THE WRECKS:
 // the inside of a carrack lying on her side, decks to climb while the hold fills. THE REEF SHELF: all underwater,
 // where breath is the clock, air bells are the safe beats and the currents decide what you can reach. THE KEEL: the
 // tribute ship herself, up her ribs to the stern cabin. Then the hole at the end of it, and what lives in the hole.
+// LONGER (docs/briefs/reef-longer.md, 2026-09-25): THE BELL-POOL between the carrack and the shelf teaches the breath
+// clock with a floor under you, and THE HULK half-way over the shelf is a place in the empty swim - her deck up in a
+// hollow of the reef roof, dry, with a checkpoint and a capstan on it, and her flooded hold the only way on, through
+// a grate the capstan lifts. The Reefmaw's hole is forty tiles now: in his third phase the tide goes out and he comes
+// up out of it onto the dry reef. The sections are built in the level's OLD columns and then grown open (grow(), D5):
+// everything after the grows is written in FINAL columns, and the fields grow() does not know are set there too.
 function shipwreckReef() {
-  const W = 460, H = 44; const L = painter(W, H);
+  const W = 472, H = 44; const L = painter(W, H);
   const { block, plat, ent, coins, set } = L;
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const net = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
-  const pools = [], movers = [], gusts = [], darkZones = [];
+  const pools = [], movers = [], gusts = [];
   const deep = (x0, x1, top, bottom, extra) => pools.push(Object.assign({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, shallow: false, swim: true, clear: true, bottom: bottom * TS }, extra || {}));
   const current = (x0, x1, y0, y1, dir) => gusts.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y0: y0 * TS, y1: y1 * TS, dir, period: 1e9, on: 1e9, phase: 0, k: 1, current: true });
-  /* WHERE THE AIR IS, in the one list the breath clock and tools/breath.mjs both read (src/deepair.js) */
-  const airRooms = [], D = { vents: [], clams: [], bulbs: [], wrecks: [], pockets: [] };
-  const pocket = (x0, x1, y0, y1) => { airRooms.push([x0, x1, y0, y1]); D.pockets.push([x0, x1, y0, y1]); };
-  const vent = (x, y, h) => D.vents.push({ x, y, h });
-  const clam = (x, y) => D.clams.push({ x, y });
 
   // ---- 1. THE TIDEWAY: the backs of the wrecks, and the sea coming and going over them ----
   block(0, 12, 28, H - 1);
   ent('npc', 4, 27, { kind: 'squire' });
-  ent('sign', 2, 27, { text: 'THE REEF. BRING BACK THE THREE ROYAL SEALS. WHEN THE TIDE RISES, TAKE THE RIGGING.' });
+  ent('sign', 2, 27, { text: 'THE REEF. BRING BACK HER THREE MANIFEST PAGES. AT HIGH TIDE, TAKE THE RIGGING.' });
   ent('check', 9, 27);
   block(13, 118, 33, H - 1); // the reef bed under it all
   block(16, 26, 26, 32); block(30, 42, 27, 32); block(46, 58, 25, 32); block(62, 74, 27, 32); block(78, 92, 26, 32); block(96, 118, 24, 32);
@@ -4415,7 +4416,7 @@ function shipwreckReef() {
   plat(30, 18, 12); plat(50, 16, 10); plat(76, 17, 18); // spars across, from shroud to shroud
   ent('deco', 22, 25, { kind: 'mastStump' }); ent('deco', 52, 24, { kind: 'mastStump' });
   ent('deco', 36, 26, { kind: 'sailRag', v: 0 }); ent('deco', 84, 25, { kind: 'sailRag', v: 1 });
-  ent('deco', 66, 26, { kind: 'wreckBow' }); ent('deco', 104, 23, { kind: 'capstan' });
+  ent('deco', 66, 26, { kind: 'wreckBow' }); ent('deco', 104, 23, { kind: 'capstanWreck' });   /* wreck junk, not a machine: the working capstan is in the carrack (the level review) */
   for (const [x, y, v] of [[20, 25, 0], [48, 24, 1], [88, 25, 2], [108, 23, 0]]) ent('deco', x, y, { kind: 'coralFan', v });
   for (const [x, y, r] of [[43, 22, 5], [59, 21, 5], [75, 22, 6]]) ent('mover', x, y, { len: 2, range: r, speed: 26 }); // wreckage still afloat: the high road between the shrouds
   ent('seabell', 100, 23); ent('sign', 98, 23, { text: "STRIKE THE SHIP'S BELL: THE BIRDS GO UP AND THE DROWNED STOP TO LISTEN." });
@@ -4441,10 +4442,10 @@ function shipwreckReef() {
   ent('silver', 170, 35); coins([164, 35], [166, 34], [168, 35], [171, 34]);
   ent('sign', 164, 35, { text: 'THE STRONGROOM. THE LOCK IS STILL SET FROM THE INSIDE.' });
   ent('capstan', 198, 27, { link: 'hoist' }); ent('sign', 194, 27, { text: 'TURN THE CAPSTAN THREE TIMES, THEN STAND ON THE PALLET TO RIDE UP HER DECKS.' });
-  ent('deco', 133, 31, { kind: 'seaChest' }); ent('stray', 150, 31, { kind: 'seal' });
+  ent('deco', 133, 31, { kind: 'seaChest' }); ent('stray', 150, 31, { kind: 'manifest' });
   ent('deco', 160, 31, { kind: 'wheel' }); ent('deco', 190, 27, { kind: 'rigging', v: 0 }); ent('deco', 172, 22, { kind: 'rigging', v: 1 });
-  ent('deco', 142, 12, { kind: 'shipBell' }); ent('deco', 200, 12, { kind: 'figurehead' });
-  ent('check', 130, 12); ent('check', 200, 27); ent('sign', 128, 12, { text: 'THE FIRST SEAL IS IN THE HOLD. GO DOWN WHEN THE WATER DROPS; CLIMB WHEN IT RISES.' });
+  ent('deco', 142, 12, { kind: 'bellWreck' }); ent('deco', 200, 12, { kind: 'figurehead' });   /* a bell fallen off her bracket: the only bell that rings is the ship's bell on the tideway */
+  ent('check', 152, 17); ent('check', 200, 27); ent('sign', 128, 12, { text: 'THE FIRST PAGE IS IN THE HOLD. GO DOWN WHEN THE WATER DROPS; CLIMB WHEN IT RISES.' });
   movers.push({ kind: 'lift', link: 'hoist', locked: true, x: 202 * TS, y: 27 * TS, y0: 27 * TS, y1: 12 * TS, w: 32, h: 8, speed: 34 }); // the pallet: it runs her whole side once the capstan is turned
   pools.push({ x0: 122 * TS, x1: 210 * TS, y: 32 * TS - 8, base: 32 * TS, tideLo: -8, tideHi: -272, tidePeriod: 26, swim: true, shallow: true, depth: 0, bottom: 32 * TS, streetTide: true, bell: false });
   ent('sailor', 136, 27, { face: 1 }); ent('scout', 176, 22, { face: -1 }); ent('sailor', 196, 17, { face: -1 });
@@ -4456,18 +4457,16 @@ function shipwreckReef() {
   coins([128, 17], [134, 17], [154, 17], [160, 17], [190, 17], [196, 17]);
   coins([130, 12], [136, 12], [148, 12], [174, 12], [182, 12], [196, 12]);
 
-  // ---- 3. THE REEF SHELF: under the whole way, on one breath at a time ----
+  // ---- 3. THE REEF SHELF: under the whole way, on one breath at a time (old columns: the bell-pool opens at 213, the hulk at 235) ----
   block(213, 330, 0, 12); block(213, 330, 37, H - 1);
   block(232, 234, 20, 36); block(258, 260, 13, 24); block(258, 260, 30, 36); block(286, 288, 21, 36); block(310, 312, 13, 26);
   // coral pillars, and the way through weaves: over the first, through the window in the second, over the third, under the fourth
   block(262, 280, 34, 36); block(296, 308, 33, 36);
   deep(210, 330, 13, 37, { reef: true, capped: true, flow: -26 }); // rock all the way over it: there is no surface to breathe at, and the sea under it sets you back the way you came
-  darkZones.push({ x0: 262 * TS, x1: 331 * TS, y0: 12 * TS, y1: 38 * TS, dark: 0.42 }); // the deep half of the shelf: the anglers are the only lights in it (0.72 put the footing under the 20 L* it needs to read)
   current(236, 256, 14, 36, 1); current(290, 308, 14, 32, -1); // one carries you on, one stands in your way
-  ent('check', 270, 33); ent('check', 302, 32);
+  ent('check', 262, 33);   /* (S4, 2026-09-25: checkpoints spaced, not sprinkled - the one at 302 stood 32 columns from this one; this one moved back to 262 so the hulk's and the keel's are each within 72) */
   ent('sign', 264, 33, { text: 'THE LIGHTS IN THE DEEP ARE NOT LANTERNS. THEY ARE ON STALKS, ON SOMETHING.' }); // the two coral humps you can stand on, down here
   for (const [x, y] of [[226, 36], [244, 36], [262, 33], [278, 33], [298, 32], [316, 36]]) ent('deco', x, y, { kind: 'airBell' }); // a bell every few strokes: the breath is the clock down here
-  ent('sign', 218, 36, { text: 'THE ONLY AIR IS IN THE DIVING BELLS: REACH ONE BEFORE YOUR BREATH GOES.' });
   for (const [x, y, v] of [[220, 36, 0], [244, 36, 1], [266, 33, 2], [300, 32, 0], [322, 36, 1]]) ent('deco', x, y, { kind: 'kelpTall', v });
   for (const [x, y, v] of [[238, 36, 0], [276, 33, 1], [316, 36, 0]]) ent('deco', x, y, { kind: 'brainCoral', v });
   ent('deco', 250, 36, { kind: 'urchinRock', v: 0 }); ent('deco', 294, 36, { kind: 'urchinRock', v: 1 });
@@ -4476,7 +4475,7 @@ function shipwreckReef() {
   ent('angler', 264, 30, { face: -1 }); ent('angler', 292, 24, { face: -1 }); ent('angler', 320, 28, { face: -1 });
   ent('eel', 224, 34); ent('eel', 276, 32);
   block(320, 328, 16, 19); air(321, 327, 17, 18); // the alcove the adverse current guards
-  ent('stray', 324, 18, { kind: 'seal' });
+  ent('stray', 324, 18, { kind: 'manifest' });
   ent('silver', 255, 15);
   coins([218, 33], [224, 30], [230, 27], [238, 24], [244, 22], [250, 18], [256, 16], [264, 20], [272, 26], [280, 30], [290, 28], [298, 24], [306, 20], [314, 18], [322, 22], [328, 30]);
 
@@ -4489,29 +4488,96 @@ function shipwreckReef() {
   net(376, 377, 14, 23); net(364, 365, 19, 25); // her ribs, standing out of the reef and up past her cabin roof
   block(331, 340, 38, H - 1); // (a pool used to be carved here, entirely inside solid rock: it did nothing but cost a draw)
   ent('check', 334, 29); ent('deco', 338, 29, { kind: 'wreckStern' });
-  ent('sign', 336, 29, { text: 'THE LAST SEAL IS IN THE STERN CABIN, THE ONLY DRY ROOM LEFT. CLIMB HER RIBS.' });
+  ent('sign', 336, 29, { text: 'THE LAST PAGE IS IN THE STERN CABIN, THE ONLY DRY ROOM LEFT. CLIMB HER RIBS.' });
   ent('deco', 356, 25, { kind: 'anchor' }); ent('deco', 370, 23, { kind: 'spar', v: 0 }); ent('deco', 390, 20, { kind: 'seaChest' });
-  ent('deco', 344, 29, { kind: 'lanternBuoy', v: 1 }); ent('deco', 388, 20, { kind: 'shipBell' });
-  ent('sign', 386, 20, { text: "THE CAPTAIN'S SEAL, UNBROKEN. SHE WENT DOWN RATHER THAN HAND IT OVER." });
-  ent('stray', 392, 20, { kind: 'seal' });
+  ent('deco', 344, 29, { kind: 'lanternBuoy', v: 1 }); ent('deco', 388, 20, { kind: 'bellWreck' });
+  ent('sign', 386, 20, { text: "THE LAST LINE IS IN THE CAPTAIN'S HAND: SHE WENT DOWN RATHER THAN DELIVER." });
+  ent('stray', 392, 20, { kind: 'manifest' });
   ent('sailor', 348, 27, { face: -1 }); ent('sailor', 370, 23, { face: -1 }); ent('netter', 358, 25, { face: -1 });
   ent('petrel', 360, 18); ent('petrel', 386, 14);
   movers.push({ kind: 'lift', x: 404 * TS, y: 25 * TS, y0: 25 * TS, y1: 14 * TS, w: 32, h: 8, speed: 30 }); // the stern tackle, still rigged
   coins([404, 13], [408, 13], [396, 14], [392, 14]);
   ent('check', 404, 25);
   block(387, 412, 26, H - 1); block(413, 424, 28, H - 1); // the broken deck under her cabin, running on to the hole
-  ent('sign', 406, 25, { text: 'SOMETHING LIVES IN THE HOLE AT THE REEF\'S END. WHEN THE WATER RISES, TAKE THE STONES.' });
+  ent('sign', 406, 25, { text: 'SOMETHING LIVES IN THE HOLE AT THE REEF\'S END. WHEN THE TIDE GOES OUT, IT COMES OUT.' });
   coins([334, 29], [340, 29], [348, 27], [356, 25], [362, 25], [368, 23], [374, 23], [380, 21], [386, 21], [396, 20], [404, 25], [410, 25], [418, 27]);
 
-  // ---- THE MAW: the arena, and the holes it lives in ----
-  block(425, 456, 34, H - 1);
-  block(430, 433, 31, 33); block(438, 442, 30, 33); block(447, 450, 31, 33); // coral stools: dry ground when the water comes up
-  block(453, 456, 30, H - 1); block(457, W - 1, 29, H - 1);
-  pools.push({ x0: 425 * TS, x1: 453 * TS, y: 34 * TS + 6, base: 34 * TS, swim: true, shallow: true, depth: 0, bottom: 34 * TS, arenaTide: true });
-  ent('deco', 427, 33, { kind: 'airBell' }); ent('deco', 444, 33, { kind: 'airBell' });   /* not in the two-tile slot at 452: the bell is twice that wide and stood in the rock both sides */
-  for (const x of [429, 437, 445, 451]) ent('deco', x, 33, { kind: 'bubbleVent' }); // its four holes, each one venting: watch which one is breathing
-  ent('reefmaw', 440, 33);
-  ent('gate', 458, 28);
+  // ---- THE MAW: the arena, and the holes it lives in. FORTY TILES (A7) since he fights on land in his third phase: the three coral
+  // stools were four and five tiles of solid rock, and a moray hauled out onto the reef could not have got past one of them. They are
+  // three long coral LEDGES now, two rows up on their posts: dry ground over the rising water, room to land after jumping his lunge,
+  // and he goes under them. Old columns, like the rest: the arena's own fields are set again in final columns after the grows. ----
+  block(425, 468, 34, H - 1);
+  plat(431, 32, 7); plat(441, 32, 8); plat(453, 32, 7);
+  block(465, 468, 32, H - 1); block(469, W - 1, 30, H - 1);   /* two steps of two rows up out of the hole to the gate (E4): the right-hand ledge no longer stands next to the bank the old stool did */
+  pools.push({ x0: 425 * TS, x1: 465 * TS, y: 34 * TS + 6, base: 34 * TS, swim: true, shallow: true, depth: 0, bottom: 34 * TS, arenaTide: true });
+  ent('deco', 426, 33, { kind: 'airBell' }); ent('deco', 463, 33, { kind: 'airBell' });   /* not in the gaps between the ledges: the bell is two tiles wide and his holes are there */
+  for (const x of [429, 439, 451, 461]) ent('deco', x, 33, { kind: 'bubbleVent' }); // its four holes, each one venting: watch which one is breathing
+  ent('reefmaw', 451, 33);
+  ent('gate', 470, 29);
+
+  const R0 = {
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 27 }, pools, falls: [], moversExtra: movers, gusts,
+    duskStart: 99999, duskLen: 1, music: 'reef', night: false,
+    interiors: [[116, 177, 22, 29, 'ship'], [247, 300, 24, 26, 'ship'], [302, 371, 17, 21, 'ship']], // ONLY the enclosed spaces (polishCoastAndTown sets the real ones; the Flotilla's oar-deck rectangle that used to lead this list is gone)
+    wetZone: [0, 119], storm: true, dark: 0.01, edgeLit: 'rgba(210,244,244,0.7)',   /* the readability pass: at high tide her decks were teal under teal; a cold lit lip on every edge you can stand on reads through the water */
+    quest: { n: 3, item: 'manifest', name: 'MANIFEST PAGES', npc: 'squire', done: 'THE MANIFEST IS WHOLE', reward: 'relic', relic: 'diverlamp' },   /* the reef's own: ROYAL SEALS is Highcrown's (the level review) */
+    palette: { set: 'reef', sky: 'storm', far: 'reef', mid: 'wrecks', near: 'reef', fg: 'reef', dress: 'reef', haze: 'rgba(180,200,205,0.12)',
+      grass: '#5f7a68', grassL: '#88a890', grassD: '#40564a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e3a3a', '#2c4e4a', '#3a6258', '#548070'] },
+    weather: [{ x0: 0, x1: 213 * TS, kind: 'rain' }, { x0: 331 * TS, x1: 99999, kind: 'rain' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'shore' }],
+    arena: { x0: 425 * TS, x1: 465 * TS, floor: 34 * TS, y0: 24 * TS, trigger: 426 * TS, wallL: 424, wallR: 465, boss: 'reefmaw', music: 'reefmaw', tint: '#2a5a60', tintA: 0.1, fx: 'motes' },
+  };
+  // the hulk's sixty columns open first (old 235), then the bell-pool's twenty (old 213): everything below is in FINAL columns
+  const G1 = grow({ W: R0.W, H, grid: R0.grid, ents: R0.ents }, R0, 235, 60), R1 = G1.done();
+  const G = grow({ W: R1.W, H, grid: R1.grid, ents: R1.ents }, R1, 213, 20), R = G.R;
+  { const { block, plat, ent, coins, set } = G;
+    const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+
+    // ---- THE BELL-POOL (213-229): out of the carrack's breach, a basin with a floor, an open surface and a diving bell standing
+    // in it. Wade in and the breath gauge drains with the ground under your feet; stand in the bell and it fills; walk out. It is
+    // the lesson the shelf will ask for, taught where nothing is at stake - the sign used to stand at the bottom of the sea. ----
+    block(213, 229, 0, 24);                        // the rock over it: a cave between her hull and the reef
+    block(213, 215, 32, H - 1);                    // her floor, carried on out of the breach
+    block(216, 217, 34, H - 1); block(218, 227, 36, H - 1); block(228, 229, 34, H - 1);   // down two steps, the basin, and up again
+    block(230, 232, 0, 28); block(230, 232, 33, H - 1);   // the reef wall, and the mouth in it out onto the shelf (rows 29-32: its sill is under the pool's surface, so you can swim out of it)
+    R.pools.push({ x0: 216 * TS, x1: 230 * TS, y: 32 * TS + 4, shallow: false, swim: true, clear: true, bottom: 37 * TS, bellPool: true });
+    ent('deco', 222, 35, { kind: 'airBell' });
+    ent('sign', 213, 31, { text: 'WADE IN AND WATCH YOUR BREATH GO. OUT THERE THE ONLY AIR IS IN THE BELLS.' });
+    ent('deco', 226, 35, { kind: 'kelpTall', v: 2 }); ent('deco', 219, 35, { kind: 'brainCoral', v: 1 });
+    coins([219, 34], [225, 34], [220, 35], [224, 35]);
+
+    // ---- THE HULK (255-314): a trader lying on the shelf with her deck stood up into a hollow in the reef roof. The deck is dry
+    // (the only surface on the shelf you can breathe at), with a checkpoint and a CAPSTAN on it; her hold under it is flooded, and
+    // the one way on out of it, through her stern, has a GRATE down across it. Three turns of the capstan lift the grate - the
+    // reef's second capstan, and the only way on: the grotto's far wall is her stern, and her keel sits on the bed. ----
+    block(255, 314, 0, 2); block(255, 256, 3, 12); block(301, 314, 3, 12);   // the hollow in the roof: rows 3-12 are air over her
+    block(255, 314, 37, H - 1);                                                // the bed
+    block(262, 265, 12, 32);                                                   // her bow, up to her deck
+    block(262, 302, 33, 36);                                                   // her keel and bottom, sat on the bed
+    block(266, 300, 12, 13); air(283, 284, 12, 13);                           // her deck, and the hatch in it down into the hold
+    block(301, 302, 13, 32); air(301, 302, 28, 31);                           // her stern, with the grate's opening low in it
+    for (const x of [270, 276, 290, 296]) for (let y = 31; y <= 32; y++) set(x, y, T.CRATE);   // her cargo, still stacked on the hold floor
+    ent('check', 272, 11);
+    ent('capstan', 292, 11, { link: 'grate', gate: 302, gy0: 28, gy1: 31 });
+    ent('sign', 268, 11, { text: 'HER HOLD IS THE WAY ON. TURN THE CAPSTAN THREE TIMES TO LIFT THE GRATE.' });
+    ent('deco', 275, 11, { kind: 'mastStump' }); ent('deco', 297, 11, { kind: 'rigging', v: 1 }); ent('deco', 267, 11, { kind: 'coiledCable', v: 0 });
+    ent('sailor', 287, 11, { face: -1 }); ent('eel', 290, 22); ent('crab', 280, 32);
+    ent('angler', 306, 30, { face: -1 });   /* S1: out through the grate on a spent breath, and the next thing in the dark is a lure between you and the air under the roof */
+    coins([272, 11], [277, 11], [283, 16], [284, 20], [288, 24], [293, 27], [298, 29], [304, 29], [308, 29]);
+    ent('deco', 259, 36, { kind: 'coralFan', v: 1 }); ent('deco', 308, 36, { kind: 'brainCoral', v: 0 }); ent('deco', 311, 36, { kind: 'kelpTall', v: 0 });
+
+    // ---- THE MAW, in final columns (holes are pixels along the floor) ----
+    R.arena.holes = [509, 519, 531, 541].map(x => x * TS);
+  }
+  const ret = G.done();
+  // THE SHELF's water, in three: the capped sea before and after the hulk, and in the hollow over her the one open surface on the shelf
+  { const i = ret.pools.findIndex(p => p.reef && p.capped), p = ret.pools[i];
+    ret.pools.splice(i, 1, { ...p, x0: 230 * TS, x1: 257 * TS }, { ...p, x0: 257 * TS, x1: 301 * TS, capped: false, wash: 0.42, hulk: true }, { ...p, x0: 301 * TS }); }
+  ret.calm = [[213, 232, 24, 37], [257, 300, 3, 11], [296, 306, 24, 33]];   /* the garrison leaves alone: the lesson, the hulk's deck (the one dry rest on the shelf: its own sailor is enough) and the grate's passage */
+  ret.darkZones = [{ x0: 342 * TS, x1: 411 * TS, y0: 12 * TS, y1: 38 * TS, dark: 0.42 }]; // the deep half of the shelf: the anglers are the only lights in it (0.72 put the footing under the 20 L* it needs to read)
+  ret.hullZones = [[16, 26, 26, 30], [30, 42, 27, 31], [46, 58, 25, 29], [62, 74, 27, 31], [78, 92, 26, 30], [96, 118, 24, 28], [119, 212, 6, 34], [262, 302, 12, 36], [458, 480, 15, 25]]; // her timbers (and the hulk's); below them the reef takes over again
+  ret.sections = [{ id: 'tideway', shot: [60, 25] }, { id: 'carrack', shot: [150, 27] }, { id: 'bell-pool', shot: [221, 35] }, { id: 'hulk-deck', shot: [278, 11] },
+    { id: 'hulk-hold', shot: [296, 29] }, { id: 'swim', shot: [320, 30] }, { id: 'deep-shelf', shot: [370, 30] }, { id: 'keel', shot: [440, 25] }, { id: 'arena', shot: [514, 33] }];
 
   // ================= THE AIR ON THE SHELF (nothing is dug after this: it reads the finished grid) =================
   // Her own sign says THE ONLY AIR IS IN THE DIVING BELLS, and there were six of them strung through a hundred and
@@ -4521,33 +4587,27 @@ function shipwreckReef() {
   //   UNDER THE ROOF  the rock over the shelf is not flat, and air has gathered in the hollows of it
   //   OFF THE BED     cracks in the reef floor, each with its column of gas standing over it
   //   IN THE CLAMS    shut on a lungful until something strikes them
-  // Every placement asks the grid first, so none of it lands inside a coral pillar or a hump of the bed.
-  { const gat = (x, y) => L.grid[y * W + x];
+  // Every placement asks the grid first, so none of it lands inside a coral pillar or a hump of the bed. The candidates are the
+  // old columns the shelf was laid out in, carried to where the grows put them (F), so the old air stands where it stood.
+  { const gW = ret.W, gat = (x, y) => ret.grid[y * gW + x], F = x => x + (x >= 235 ? 80 : 20);
+    const airRooms = [], D = { vents: [], clams: [], bulbs: [], wrecks: [], pockets: [] };
+    const pocket = (x0, x1, y0, y1) => { airRooms.push([x0, x1, y0, y1]); D.pockets.push([x0, x1, y0, y1]); };
     const bed = x => gat(x, 35) === T.AIR && gat(x, 36) === T.AIR && gat(x, 37) === T.SOLID;
     const roof = (x, n) => { for (let q = 0; q < n; q++) if (!(gat(x + q, 12) === T.SOLID && gat(x + q, 13) === T.AIR && gat(x + q, 14) === T.AIR)) return false; return true; };
-    for (let x = 216; x <= 320; x += 18) if (roof(x, 6)) pocket(x, x + 5, 13, 14);
-    for (let x = 218; x <= 326; x += 12) if (bed(x)) vent(x, 36, 8);
-    for (const x of [228, 246, 290, 318]) if (bed(x)) clam(x, 36);
-    /* THE ALCOVE the adverse current guards. The last royal seal is in it and there was not one breath of air in the
-       room: seven tiles of water walled in on all four sides. Now the pocket the seal was left in has air in it. */
-    { let ok = true; for (let x = 321; x <= 327; x++) if (gat(x, 17) !== T.AIR || gat(x, 18) !== T.AIR) ok = false;
-      if (ok) pocket(321, 327, 17, 18); }
+    for (let x = 216; x <= 320; x += 18) if (roof(F(x), 6)) pocket(F(x), F(x) + 5, 13, 14);
+    for (let x = 218; x <= 326; x += 12) if (bed(F(x))) D.vents.push({ x: F(x), y: 36, h: 8 });
+    for (const x of [228, 246, 290, 318]) if (bed(F(x))) D.clams.push({ x: F(x), y: 36 });
+    /* THE ALCOVE the adverse current guards. The last page is in it and there was not one breath of air in the room: seven
+       tiles of water walled in on all four sides. Now the pocket it was left in has air in it. */
+    { let ok = true; for (let x = F(321); x <= F(327); x++) if (gat(x, 17) !== T.AIR || gat(x, 18) !== T.AIR) ok = false;
+      if (ok) pocket(F(321), F(327), 17, 18); }
+    /* THE HULK's HOLD: air trapped under her deck at both ends of her - at the stern, by the grate, so the swim out through it starts
+       on a full breath, and up in her bow, which is the furthest corner of her from the hatch */
+    pocket(292, 299, 14, 15); pocket(267, 273, 14, 15);
+    /* and out of her stern, air gathered under the roof where it comes down to meet her: the next breath after the grate */
+    pocket(305, 312, 13, 14);
+    ret.airRooms = airRooms; ret.deep = D;
   }
-
-  const ret = {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 27 }, pools, falls: [], moversExtra: movers, gusts, darkZones, airRooms, deep: D,
-    duskStart: 99999, duskLen: 1, music: 'reef', night: false,
-    interiors: [[34, 93, 26, 29, 'ship'], [116, 177, 22, 29, 'ship'], [247, 300, 24, 26, 'ship'], [302, 371, 17, 21, 'ship']], // ONLY the enclosed spaces: a backdrop that reaches above a deck hangs a stone wall in the sky
-    wetZone: [0, 119], storm: true, dark: 0.01, edgeLit: 'rgba(210,244,244,0.7)',   /* the readability pass: at high tide her decks were teal under teal; a cold lit lip on every edge you can stand on reads through the water */
-    hullZones: [[16, 26, 26, 30], [30, 42, 27, 31], [46, 58, 25, 29], [62, 74, 27, 31], [78, 92, 26, 30], [96, 118, 24, 28], [119, 212, 6, 34], [378, 400, 15, 25]], // her timbers; below them the reef takes over again
-    quest: { n: 3, item: 'seal', name: 'ROYAL SEALS', npc: 'squire', done: 'THE SEALS ARE FOUND', reward: 'relic', relic: 'diverlamp' },
-    palette: { set: 'reef', sky: 'storm', far: 'reef', mid: 'wrecks', near: 'reef', fg: 'reef', dress: 'reef', haze: 'rgba(180,200,205,0.12)',
-      grass: '#5f7a68', grassL: '#88a890', grassD: '#40564a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e3a3a', '#2c4e4a', '#3a6258', '#548070'] },
-    weather: [{ x0: 0, x1: 213 * TS, kind: 'rain' }, { x0: 331 * TS, x1: 99999, kind: 'rain' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'shore' }],
-    arena: { x0: 425 * TS, x1: 453 * TS, floor: 34 * TS, y0: 24 * TS, trigger: 426 * TS, wallL: 424, wallR: 453, boss: 'reefmaw', music: 'reefmaw', tint: '#2a5a60', tintA: 0.1, fx: 'motes',
-      holes: [429 * TS, 437 * TS, 445 * TS, 451 * TS] },
-  };
   return ret;
 }
 
@@ -7803,7 +7863,11 @@ function dressLevel(L, id) {
   const KEEP = new Set(['firepit', 'firevent', 'hotplate', 'cover', 'ballista', 'trebuchet', 'oilbarrel', 'sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier',   /* a fire on the floor is kept clear like a brazier: Kingswood's Fired Wood grew a skull totem in its firepits' reach (level review, 2026-09-24) */ 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade', 'sheet', 'balloon', 'sail']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   const placed = [];
-  const clear = (x, y) => keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 7 || Math.abs(py - y) > 4);
+  /* AND A GATE THE GAME DROPS AT RUN TIME IS NOT OPEN GROUND. An elite's gate, a winch's gate and the hulk's grate (e.gate, a column)
+     are PORT laid over AIR when the level loads, so the built grid shows open floor where a portcullis will stand: the Reef's tideguard
+     gate at 441 grew a coral fan inside itself, standing on nothing once the gate was down (tools/headless.mjs floats, batch24). */
+  const gateCols = L.ents.filter(e => typeof e.gate === 'number').map(e => e.gate);
+  const clear = (x, y) => gateCols.every(gx => Math.abs(gx - x) > 1) && keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 7 || Math.abs(py - y) > 4);
   /* AND A POOL THAT IS NOT THE SEA IS NOT A FLOOR (level review, 2026-09-24): the Marsh's ferry channel is a swim pool, so its bed
      grew moss and a frog statue two rows under the water, and the Wood's tarn a stump. Only a level dressed as the sea dresses its
      sea bed (tools/dressing.mjs holds it). */
@@ -7963,7 +8027,7 @@ const ELITES = {
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 880 is left alone */
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],
   longwater: [['tideguard', 419, 26, { gate: 427 }]],
-  reef: [['tideguard', 355, 25, { gate: 361 }]],   /* on the dry ledge out of the last of the water, holding the climb to the wreck */
+  reef: [['tideguard', 435, 25, { gate: 441 }]],   /* (final columns: the bell-pool and the hulk grew the reef by 80 before the keel) */   /* on the dry ledge out of the last of the water, holding the climb to the wreck */
   flotilla: [['boarder', 162, 21, { gate: 175 }]],
   hurricane: [['boarder', 38, 19, { gate: 46 }], ['cutlass', 456, 18]],   /* the only column on the ship a gate holds is the passage out of the cabin: everything past it has three ways round */
   lamplit: [['watch', 595, 21]],
