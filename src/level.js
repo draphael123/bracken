@@ -7876,8 +7876,8 @@ function bankBridgeProps(L) {
       if(L.grid[y*L.W+x]!==T.AIR||![T.SOLID,T.ONEWAY].includes(L.grid[(y+1)*L.W+x])||bridgeSpanUnder(L,{x,y}))continue;
       if(e.t==='deco'&&L.ents.some(o=>o!==e&&o.t==='deco'&&o.y===y&&Math.abs(o.x-x)<2))continue;   /* not onto another prop: the bank is not a stack */
       const d=Math.abs(x-e.x)+Math.abs(y-e.y)*3;if(d<dist){best={x,y};dist=d;}}
-    if(best)Object.assign(e,best);else if(e.dressed)e.drop=true;   /* the sprinkler's own, with no free bank near: it goes */
-  }L.ents=L.ents.filter(e=>!e.drop);return L;
+    if(best)Object.assign(e,best);else if(e.dressed)e.bankGone=true;   /* the sprinkler's own, with no free bank near: it goes */
+  }L.ents=L.ents.filter(e=>!e.bankGone);return L;   /* bankGone, NOT drop: a spider's own `drop` (it falls from the ceiling) is a different thing, and filtering on it deleted every dropping spider in the game - the Weaver with them */
 }
 
 for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return polishTower(hauntedCoast(stormShipPolish(polishCoastAndTown(bankBridgeProps(dressLevel(payDeadEnds(sprinkleCoins(silverTrim(checkpoints(elites(garrison(ambushRooms(L, id), id), id)))), id), id)),id,T),id,T),id,T),id,T); }; }
