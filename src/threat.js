@@ -114,6 +114,11 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      module yet (src/desert-foes.js has the other three and nothing for him), so this weighs a looter with a blade
      against the human melee line - the cutlass at 2.5, under the soldier at 3. Re-weigh him when he is written. */
   scorpion: 3, vulture: 2, sandgob: 2.5, bandit: 2.5,
+  /* THE BANDITS, written (2026-09-25; src/desert-foes.js): the cutthroat is a soldier's 38 health with a 10 point cut, and the FEINT
+     in front of every other one is a read the soldier never asks for - a 3; the slinger is 24 health and a stone (! 8) from where you
+     cannot reach him, told long, and open when you climb to him - the archer's 2.5; the ambusher is the sand goblin's trick with more
+     health and a heavier knife - 2.5 as the sand goblin was */
+  cutthroat: 3, slinger: 2.5, ambusher: 2.5,
   /* THE DUNE WORM, the caravan's boss (2026-09-25): a boss is a 6. awningwinch is his trap and the camp's machine - furniture */
   duneworm: 6, awningwinch: 0,
 };
@@ -153,6 +158,10 @@ export function measureLevel(R, { T, TS = 16 }) {
   for (let i = 0; i < R.grid.length; i++) if (R.grid[i] === T.SPIKE) hazTiles++;
   for (const p of (R.pools || [])) { if (p.harm) hazTiles += Math.round((p.x1 - p.x0) / TS / 4); else if (p.swim) hazTiles += Math.round((p.x1 - p.x0) / TS / 8); }
   for (const c of (R.crumbles || [])) hazTiles += c.x1 - c.x0 + 1;
+  /* THE BORE (THE LONG WATER, 2026-09-25): a wave up the river every twenty seconds that knocks down anyone below a rock's top, for 12
+     and unblockable. It knocks you back, it does not drown you, so it is counted as a swim pool is, a tile in eight of its run. It was
+     never counted at all, so the level whose river it is read as having less in it than it has. */
+  if (R.bore) hazTiles += Math.round((R.bore.x1 - R.bore.x0) / TS / 8);
   for (const z of (R.deckBreaks || [])) hazTiles += z.x1 - z.x0 + 1;
   const span = spanOf(R.W, R.H), gap = worstGap(R.ents, R.W, R.H, R.arena);
   return { foes, threat, kinds: kinds.size, kindSet: kinds, checks, hazTiles, gap, span, unweighed, index: indexOf({ threat, kinds: kinds.size, hazTiles, gap, span }) };

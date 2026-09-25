@@ -4231,21 +4231,21 @@ function longWater() {
   ent('sign', 2, 7, { text: 'THE LONG WATER. THE MOUNTAIN MELT RUNS SALT. FOLLOW THE WATER DOWN.' });
   ent('check', 4, 7); shallow(8, 13, 8, 16); // the stream on the top ledge, running for the lip
   fall(13, 8, 12);
-  block(14, 33, 12, H - 1); plunge(14, 18, 12, 3); ent('eel', 16, 14);
+  block(14, 33, 12, H - 1); plunge(14, 18, 12, 3);   /* THE FIRST POOL IS EMPTY (the level review, 2026-09-25): it comes before the swim sign, so the first water you fall in is only water. Its eel went to the second pool, and L.calm keeps the garrison out of both */
   shallow(22, 33, 12, 16); ent('turtle', 27, 12, { face: -1 });
   for (const x of [24, 29]) ent('deco', x, 12, { kind: 'rushes', v: x % 3 });
   ent('sign', 20, 11, { text: 'YOU CAN SWIM: UP TO RISE, DOWN TO DIVE, JUMP AT THE SURFACE TO CLIMB OUT.' });
   coins([16, 13], [17, 13], [19, 10], [22, 10], [24, 9], [26, 9], [28, 9], [30, 10]); ent('turtle', 31, 11, { face: -1 });
   fall(33, 12, 16);
   block(34, 55, 16, H - 1); plunge(34, 38, 16, 3);
-  ent('eel', 36, 18); coins([35, 18], [37, 18]); // the second pool, for anyone who dives
+  ent('eel', 35, 18); ent('eel', 37, 18); coins([36, 18], [38, 18]); // the second pool, for anyone who dives: the first pool's eel is here now
   air(30, 33, 13, 15); ent('silver', 31, 15); coins([32, 15], [30, 15]); // the cave behind the second fall
   shallow(41, 55, 16, 16); ent('heronfoe', 47, 15, { face: -1 });
   ent('deco', 40, 15, { kind: 'driftwood', v: 0 }); ent('deco', 53, 16, { kind: 'saltCrust', v: 1 });
   coins([41, 14], [44, 15], [45, 13], [47, 13], [49, 13], [51, 15], [54, 14], [36, 15], [38, 15], [43, 13], [52, 13]);
   fall(55, 16, 20);
   block(56, 79, 20, H - 1); plunge(56, 60, 20, 3); ent('eel', 58, 22);
-  ent('deco', 66, 19, { kind: 'drownedHut' }); ent('check', 63, 19);
+  ent('deco', 66, 19, { kind: 'drownedHut' });   /* no checkpoint here: 31 tiles short of the one at 95 (RULES S4) */
   ent('sign', 70, 19, { text: 'THE SCOUTS ARE NOT GOBLINS. THEY THROW A HARPOON HARDER THAN A MAN CAN.' });
   ent('sign', 62, 19, { text: 'THE WATER CAME UP THE HILL IN THE NIGHT. THERE ARE FISH IN THE CHIMNEY.' });
   block(73, 79, 18, 19); shallow(74, 79, 18, 16); ent('scout', 69, 19, { face: 1 }); ent('scout', 77, 17, { face: -1 });
@@ -4262,13 +4262,13 @@ function longWater() {
   /* THE MELTFALLS ARE A MOUNTAIN RIVER (level review, 2026-09-24): Highcrown's melt, a hundred miles from the sea, was dressed with coral,
      barnacles and crabs. Its own now - rushes and driftwood, turtles and herons - and the sea's things start at Saltreach (L.fresh keeps
      the sprinklers to it). One of the two stacked on 124,27 went. */
-  for (const [x, y, k, v] of [[21, 11, 'driftwood', 0], [46, 16, 'rushes', 2], [68, 19, 'driftwood', 1], [101, 24, 'saltCrust', 1], [97, 24, 'rushes', 0], [124, 27, 'driftwood', 0]]) ent('deco', x, y, { kind: k, v });
+  for (const [x, y, k, v] of [[21, 11, 'driftwood', 0], [46, 16, 'rushes', 2], [68, 19, 'driftwood', 1], [101, 24, 'saltCrust', 1], [97, 24, 'rushes', 0], [126, 27, 'driftwood', 0]]) ent('deco', x, y, { kind: k, v });   /* 126, not 124: the scout stands on 124 */
   block(128, 139, 27, H - 1); // the ferry dock
-  ent('sign', 129, 26, { text: 'STAND ON THE RAFT AND IT GOES. JUMP THE ROCKS. DO NOT LISTEN TO THE SINGING.' });
+  ent('sign', 129, 26, { text: 'STAND ON THE RAFT AND IT GOES. JUMP THE ROCKS, AND MIND WHO STANDS ON THEM.' });
   air(132, 138, 30, 32); air(139, 139, 29, 32); // THE SMUGGLERS' CUT: a dry room under the dock, its mouth in the river
   ent('coin', 134, 32); coins([136, 31], [137, 32], [133, 31]);
   ent('sign', 136, 32, { text: 'A DRY ROOM UNDER THE DOCK, A CUT LADDER, AND A CHEST PRISED OPEN.' });
-  ent('check', 132, 26); ent('deco', 138, 26, { kind: 'seaLantern', v: 1 }); ent('deco', 136, 26, { kind: 'netPoles' }); // (the Ferryman used to stand here: the raft goes without him)
+  ent('deco', 138, 26, { kind: 'seaLantern', v: 1 });   /* the dock's checkpoint is at the end of the Linn now, seven tiles back (RULES S4) */ ent('deco', 136, 26, { kind: 'netPoles' }); // (the Ferryman used to stand here: the raft goes without him)
   coins([108, 26], [110, 26], [112, 25], [114, 25], [117, 24], [120, 25], [123, 26], [124, 25], [126, 26], [130, 25], [134, 25], [137, 25]); ent('scout', 124, 27, { face: -1 });
 
   // ---- 2. THE FERRY RUN: the river, the raft, the rocks, the sirens and the Bore ----
@@ -4278,13 +4278,16 @@ function longWater() {
   ent('sign', 137, 26, { text: 'AIR UNDER THE ROCKS DOWNSTREAM WILL SAVE YOU. THE RIVER WILL NOT WAIT.' });
   ent('deco', 196, 31, { kind: 'airBell' }); ent('deco', 228, 31, { kind: 'airBell' });
   ent('deco', 210, 33, { kind: 'rowboat' }); ent('deco', 220, 33, { kind: 'netPoles' });
-  ent('eel', 206, 33, { big: true }); ent('eel', 222, 33); ent('siren', 200, 31); // THE OLD EEL is what the cart went in with
+  ent('eel', 206, 33, { big: true }); ent('eel', 222, 33); // THE OLD EEL is what the cart went in with
   ent('silver', 212, 33); coins([192, 30], [200, 32], [208, 33], [216, 32], [224, 31], [232, 30]);
 
   movers.push({ kind: 'raft', ferry: true, free: true, x0: 140 * TS, x1: 272 * TS, x: 140 * TS, y: 28 * TS - 4, w: 96, h: 8, speed: 58, big: true });
   for (const x of [166, 198, 232, 258]) block(x, x + 1, 26, 33); // rocks in the stream: jump them on the raft, stand on them in the water
-  ent('check', 232, 25); // the middle rock: somewhere to come back to on a long river
-  ent('siren', 166, 25, { face: -1 }); ent('siren', 198, 25, { face: -1 }); ent('siren', 258, 25, { face: -1 });
+  /* the middle rock held a checkpoint too, 34 tiles after the one on the second rock: one is enough (RULES S4) */
+  /* ONE THING TO A ROCK, AND NOTHING FROM THE SEA (2026-09-25): three sirens sang from these, and the sprinkler stood a crab or a scout on
+     the same tile, with the filler's checkpoint beside them on the first. A heron fishes off the first, the second is the checkpoint,
+     the third the old one, and a drowned fisher throws his net at the raft from the last. */
+  ent('heronfoe', 166, 25, { face: -1 }); ent('check', 198, 25); ent('netter', 258, 25, { face: -1 });
   ent('mover', 210, 24, { len: 3, range: 12, speed: 30 }); // a hatch cover, still drifting
   coins([212, 22], [216, 22], [220, 22]);
   ent('eel', 176, 31); ent('eel', 214, 31); ent('eel', 246, 31);
@@ -4310,10 +4313,11 @@ function longWater() {
   for (const [x, v] of [[336, 0], [344, 1], [352, 0], [360, 1]]) ent('deco', x, 26, { kind: 'fishCottage', v });
   for (const x of [334, 349, 365]) ent('deco', x, 26, { kind: 'seaLantern', v: 1 });
   ent('stray', 341, 26, { kind: 'fisher' }); ent('tideguard', 345, 26, { face: -1 });
-  ent('stray', 358, 26, { kind: 'fisher' }); ent('tideguard', 355, 26, { face: 1 }); ent('scout', 363, 26, { face: -1 });
+  ent('stray', 358, 26, { kind: 'fisher' }); ent('tideguard', 355, 26, { face: 1 }); ent('scout', 361, 26, { face: -1 });   /* 361, not 363: it stood beside the Herald door's checkpoint (tools/longwater-river.mjs) */
   ent('deco', 333, 26, { kind: 'bellTower' });
   ent('check', 364, 26); ent('sign', 350, 26, { text: 'THE TRIBUTE CHEST STANDS OPEN AND UNTOUCHED. WHAT THEY TAKE IS NOT GOLD.' });
   ent('deco', 339, 26, { kind: 'buoy' }); ent('deco', 353, 26, { kind: 'tributeChest' });
+  ent('crab', 348, 26, { face: 1 }); ent('crab', 351, 26, { face: -1 });   /* the first crabs on the road: the sea is in the town */
   coins([335, 24], [338, 25], [340, 24], [343, 25], [348, 25], [351, 24], [356, 25], [359, 24], [362, 25], [366, 25], [333, 25], [346, 24], [354, 24], [364, 24]);
 
   // ---- 4. THE SQUARE: the Tide Herald. The sea comes up the square in three steps; the stones in it are the dry ground ----
@@ -4340,7 +4344,8 @@ function longWater() {
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 7 }, pools, falls, moversExtra: movers, airRooms, deep: D,
     duskStart: 99999, duskLen: 1, music: 'longwater', night: false,
-    wetZone: [0, 107], fresh: [0, 127], bore: { x0: 140 * TS, x1: 278 * TS, surface: 28 * TS + 4, period: 12, speed: 280, h: 30 },
+    checkRun: 100, noStack: true, calm: [[13, 19, 9, 15], [33, 39, 13, 19], [122, 127, 22, 28], [164, 169, 21, 26], [256, 261, 21, 26]],   /* the sprinkler steps past a hand-placed foe's tile, and leaves the two swim-lesson pools, the scout by the last lip and the two manned rocks alone (the Linn and the Bore Reach add their own) */
+    wetZone: [0, 107], fresh: [0, 277], bore: { x0: 140 * TS, x1: 278 * TS, surface: 28 * TS + 4, period: 12, speed: 280, h: 30 },
     quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE FISHERFOLK ARE SAFE', reward: 'relic', relic: 'tidecharm' },
     palette: { set: 'shore', sky: 'sea', far: 'sea', mid: 'coast', near: 'shore', fg: 'shore', dress: 'shore', haze: 'rgba(248,220,176,0.10)',
       grass: '#7a9a5a', grassL: '#a8c47a', grassD: '#5a7a44', dirt: '#555e68', dirtL: '#6f7a84', dirtD: '#3e454e', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
@@ -4377,10 +4382,71 @@ function longWater() {
     // who is holding it
     ent('scout', 411, 26, { face: -1 }); ent('scout', 413, 26, { face: -1 }); ent('tideguard', 409, 26, { face: -1 });
     ent('siren', 370, 32); ent('siren', 390, 33); ent('eel', 382, 34);
+    /* THE SEA'S LIFE STARTS HERE (2026-09-25): the river above Saltreach is fresh now (L.fresh), so what the sprinkler used to put in the
+       ferry run - the anglers, a lamprey, a puffer - is put in the first salt water on the road, the channel under the piers */
+    ent('angler', 375, 35); ent('angler', 397, 35); ent('lamprey', 362, 34); ent('puffer', 383, 32);
     ent('silver', 386, 17);
     ent('sign', 410, 26, { text: 'PAST THE STAIR. THE SQUARE IS AHEAD AND THE SEA IS STANDING IN IT.' });
   }
-  return G.done();
+  /* ==== THE RIVER, LONGER (docs/briefs/long-water-river.md, Daniel 2026-09-25): 482 -> 570 columns. Two grows, and everything written
+     after each is in FINAL columns: THE LINN at 128 (40), then THE BORE REACH at 318 (48). grow() does not carry the Bore, the fresh
+     water, the falls or the air in the river, so riverGrow moves them; the AMBUSH and REVIEW rows for this level are written +88. ==== */
+  const riverGrow = (R, col, n) => {
+    const sh = x => x >= col ? x + n : x, shp = p => p >= col * TS ? p + n * TS : p;
+    R.falls = R.falls.map(f => ({ ...f, x0: shp(f.x0), x1: shp(f.x1) }));
+    R.fresh = [R.fresh[0], sh(R.fresh[1])];
+    for (const k of ['vents', 'clams', 'bulbs', 'wrecks']) R.deep[k] = R.deep[k].map(o => ({ ...o, x: sh(o.x) }));
+    R.deep.pockets = R.deep.pockets.map(([a, b, c, d]) => [sh(a), sh(b), c, d]); R.airRooms = R.airRooms.map(([a, b, c, d]) => [sh(a), sh(b), c, d]);
+    return grow({ W: R.W, H: R.H, grid: R.grid, ents: R.ents }, R, col, n);
+  };
+  const G2 = riverGrow(G.done(), 128, 40);
+  // ---- 1b. THE LINN: the last terrace pours into a deep pool, and river stones stand out of it ----
+  { const { block, ent, coins, set } = G2, R = G2.R;
+    R.calm.push([128, 167, 18, 39]);                                             // placed by hand: the sprinkler stood a scout on a river stone
+    block(128, 150, 38, H - 1);                                                  // the bed of the linn, eight rows under its surface
+    R.pools.push({ x0: 128 * TS, x1: 151 * TS, y: 30 * TS + 4, shallow: false, swim: true, clear: true, bottom: 38 * TS });
+    R.falls.push({ x0: 128 * TS - 6, x1: 128 * TS + 20, y0: 28 * TS + 1, y1: 30 * TS + 6 });   // off the terrace's lip into it
+    /* THE STONES, the dry way over (RULES S2, 2026-09-25): five leaps of three tiles, the most the main road may ask (a real jump is
+       about 3.2), down a row, up a row, and level onto the bank. Every one was made by all six heroes in the page, jumping from the
+       edge; jump early and you are in the linn: eight rows of water, its eel, and the climb out onto the next stone under a harpoon.
+       The scout on the far lip covers every hop (S1). */
+    for (const [x, top] of [[131, 29], [136, 28], [141, 29], [146, 28]]) block(x, x + 1, top, 37);
+    ent('eel', 139, 35); ent('scout', 152, 27, { face: -1 });
+    coins([129, 37], [130, 37], [134, 37], [135, 37], [139, 37], [140, 37], [144, 37], [149, 37]);   // the hard road: a dive for eight on the bed, past the eel (S7)
+    coins([132, 27], [137, 26], [142, 27], [147, 26]);
+    // the gravel run under the far bank: wading water, a heron in it, and the fishers' warning before the dock
+    block(151, 167, 28, H - 1); for (let x = 154; x <= 161; x++) set(x, 28, T.AIR);
+    R.pools.push({ x0: 154 * TS, x1: 162 * TS, y: 28 * TS + 2, shallow: true, depth: 14 });
+    ent('heronfoe', 156, 28, { face: -1 }); ent('turtle', 159, 28, { face: -1 }); ent('check', 165, 27);
+    ent('sign', 163, 27, { text: "THE FISHERS' RULE: WHEN THE RIVER ROARS, THE BORE IS COMING UP IT. GET ON A ROCK." });
+    for (const [x, y, k, v] of [[151, 27, 'riverStone', 0], [154, 28, 'rushes', 1], [158, 28, 'riverStone', 2], [161, 28, 'rushes', 0], [167, 27, 'riverStone', 1]]) ent('deco', x, y, { kind: k, v });
+    coins([153, 26], [155, 27], [157, 26], [160, 27]);
+  }
+  const G3 = riverGrow(G2.done(), 318, 48);
+  // ---- 2b. THE BORE REACH: the raft lands at a staithe and the river spreads into tidal flats. The Bore comes in here from the sea. ----
+  { const { block, ent, coins, set } = G3, R = G3.R;
+    R.calm.push([318, 365, 18, 30]);                                             // placed by hand: a bore stone is somewhere to stand, not a perch for the garrison
+    block(318, 323, 26, H - 1);                                                  // the staithe the raft lands at: as high as a stone, so a checkpoint on it is out of the Bore
+    block(324, 361, 29, H - 1);                                                  // the flats, wading deep between the stones, at the Bore's own surface
+    for (const [a, b] of [[324, 326], [331, 335], [340, 344], [349, 353], [358, 361]]) R.pools.push({ x0: a * TS, x1: (b + 1) * TS, y: 28 * TS + 4, shallow: true, depth: 12 });
+    block(362, 365, 27, H - 1); block(364, 365, 26, 26);                         // and the bank up into Saltreach, its top out of the Bore
+    /* THE BORE STONES: a step and a stone, its top two rows over the step and clear of the wave (it knocks down anything lower) */
+    for (const x of [327, 336, 345, 354]) { block(x, x + 3, 28, 28); block(x + 1, x + 2, 26, 27); coins([x + 1, 24], [x + 2, 24]); }
+    ent('check', 319, 25);
+    ent('sign', 321, 25, { text: 'THE BORE STONES. WHEN THE RIVER ROARS, STAND ON ONE AND LET THE SEA GO UNDER YOU.' });
+    /* THE TIDEBOUND WALK UP BEHIND THE SEA: a crowd in the open on the flats, a harpooner on the far bank over them, and the Bore
+       through the lot of them every twenty seconds: it only knocks down the hero, so they stand their ground in it */
+    ent('tideguard', 333, 28, { face: -1 }); ent('tideguard', 343, 28, { face: -1 }); ent('heronfoe', 351, 28, { face: -1 });
+    ent('scout', 363, 26, { face: -1 }); ent('netter', 365, 25, { face: -1 }); ent('netter', 325, 28, { face: 1 }); ent('tideguard', 359, 28, { face: -1 });
+    for (const [x, y, k, v] of [[323, 25, 'pierPost', 0], [326, 28, 'riverStone', 0], [341, 28, 'riverStone', 1], [352, 28, 'rushes', 2], [360, 28, 'rowboat', 0]]) ent('deco', x, y, { kind: k, v });
+    coins([325, 27], [332, 27], [341, 27], [350, 27], [359, 27]);
+  }
+  /* the ferry run gave its sirens back to the sea: two more eels in the river where they sang (final columns) */
+  G3.ent('eel', 196, 32); G3.ent('eel', 302, 31);
+  const R4 = G3.done();
+  R4.bore = { ...R4.bore, x0: 180 * TS, x1: 366 * TS };   /* from the dock to the mouth: the ferry run and the reach */
+  R4.fresh = [0, 365]; R4.turn = [230, 430];              /* river water to the reach, the sea by the Sluice Stair (src/sea_looks.js) */
+  return R4;
 }
 
 // THE SHIPWRECK REEF. The Herald's glaive pointed out to sea, and this is what it pointed at: the reef where the
@@ -7502,7 +7568,12 @@ export const LEVELS = [
   { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way up', rule: 'CLIMB. EVERY FLOOR YOU LEAVE FALLS. THE DEAD MAGE WAITS IN THE SKY.', build: ()=>buildTowerAscent({painter,T,TS}), needs: 'mage' },
   /* THE BURNING VILLAGE (batch 5): the Pyromancer's class level, off the Stockade on the road to Sporewood. Appended here, not
      between them, so no level's index moves (the map's nodes and the saves count by index) */
-  { id: 'burning', name: 'THE BURNING VILLAGE', sub: 'the goblins came down the road', rule: 'ONLY HIS FIRE SPREADS. WATER PUTS IT OUT. GET THE VILLAGE OUT.', build: ()=>buildBurningVillage({painter,T,TS}), needs: 'stockade' },
+  /* CLASS-LEVEL SIDE ROAD (2026-09-25, Daniel: "they weren't accessible... side paths that are locked until you do
+     this"): `classFor` names the hero this class level unlocks, `opensOn` the level and medal that opens the road
+     to it - the general rule every future class level (the Cathedral off Waymeet, the Saint's Purse off the
+     Hurricane Deck) declares the same two fields for. `needs: 'stockade'` stays: it is what the side panel and
+     mapPanelIdx group this spur under, and opensOn is the STRICTER gate on top of it. */
+  { id: 'burning', name: 'THE BURNING VILLAGE', sub: 'the goblins came down the road', rule: 'ONLY HIS FIRE SPREADS. WATER PUTS IT OUT. GET THE VILLAGE OUT.', build: ()=>buildBurningVillage({painter,T,TS}), needs: 'stockade', classFor: 'pyro', opensOn: { level: 'stockade', medal: 'silver' } },
   /* THE WITCHLIGHT STAIR (batch 4c): the run up the tower's hill between the Burial Caverns and the Folly. Appended, like the
      village, so no index moves; the Folly needs it now */
   { id: 'witchlight', name: 'THE WITCHLIGHT STAIR', sub: 'the road up the tower hill', rule: 'SLABS DRIFT, RUNES LIFT, GLYPHS TURN YOU OVER. CLIMB TO THE GATE.', build: ()=>buildWitchlight({painter,T,TS}), needs: 'burial' },
@@ -7513,7 +7584,7 @@ export const LEVELS = [
      Appended so no index moves; brief .claude/briefs/unburied-field.md, gate on hero 'reaper' via coinNeeds: 'unburied'
      in src/main.js's hero table. Map node NOT placed here (docs/briefs/map-redesign.md 4.2: node (158,46), spur: true) -
      that is Lane B's, per the Lane C report. */
-  { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS}), needs: 'witchlight' },
+  { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS}), needs: 'witchlight', classFor: 'reaper', opensOn: { level: 'witchlight', medal: 'silver' } },
   /* THE SUNKEN CARAVAN (lane Q, 2026-09-24): the first level of the desert, through the gold hole the Undead Archmage leaves when
      he falls. Appended so no index moves (the map's nodes and the saves count by index); brief .claude/briefs/sunken-caravan.md
      as amended by docs/briefs/sunken-caravan-amendments.md. Its boss, THE DUNE WORM, lives in the hollow at its end (claude/duneworm, docs/briefs/dune-worm.md) */
@@ -7675,9 +7746,11 @@ const GARRISON = {
   burial: [['zombie', 16], ['husk', 16], ['wight', 14], ['bat', 13], ['bonegob', 8], ['bonearcher', 9], ['boo', 11], ['lanternshade', 5], ['haunt', 8], ['spider', 6]],   /* and something that SHOOTS: over 1,140 tiles nothing in here could reach the hero across a room */   /* NO PIRATES UNDER THE HILL (level review, 2026-09-24): its seven bone corsairs - tricorns and striped shirts, the drowned coast's own crew - are husks, the barrow's own dead of the same weight (threat 3 for 3), so the level's INDEX does not move */   /* forty-four zombies and nothing else was the whole roster under the hill */
   /* witchlight: NO ROW. The redesigned stair (2026-09-22) is authored ENCOUNTERS of 3-5 with quiet between - Daniel agreed to it over an even sprinkle (src/witchlight.js) */
   fallingtower: [['tome', 3], ['apprentice', 3], ['haunt', 2], ['bat', 2], ['imp', 1], ['armour', 1], ['boo', 1]],   /* the Folly's own staff, and what got loose in it. Small since the ascent (2026-09-21): the builder puts a creature on every tier, and this fills between them - on every floor (L.stackedFloors). NO ZOMBIE AND NO HUSK since the tower was made longer (2026-09-22): Daniel asked for FEWER of them, and the builder's own three zombies plus the cistern's elite husk are the whole count - a row here would quietly put more back. The TOMES lead it instead. */
-  /* THE SUNKEN CARAVAN: its three new creatures (the scorpion on the flats, the sand goblin under them, the vulture over them) and
-     the looters working the wrecks. ~3.8 a screen over 21 screens is what the greybox measured (tools/caravan-level.mjs) */
-  caravan: [['scorpion', 22], ['sandgob', 17], ['vulture', 14], ['thief', 11], ['archer', 4]],
+  /* THE SUNKEN CARAVAN: the scorpion on the flats, the vulture over them, and the looters working the wrecks - men, NOT GOBLINS
+     (Daniel, 2026-09-25: "I don't want goblins in the level"): the cutthroat's crowd. The slingers and the sand-cloaked ambushers are
+     put by hand where they make the ground harder (RULES S1: src/draft/sunken-caravan.js), not sprinkled. ~3.8 a screen over 21
+     screens is what the greybox measured (tools/caravan-level.mjs) */
+  caravan: [['scorpion', 22], ['cutthroat', 22], ['vulture', 14]],
   lamplit: [['watch', 6], ['wight', 9], ['snuffer', 8], ['tideguard', 8], ['scout', 8], ['crab', 4], ['angler', 5], ['sailor', 4], ['netter', 3], ['urchin', 2], ['siren', 2], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],  // the LAST level must be the hardest thing in the game, and it was reading EASIER than Highcrown
 };
 // ============ THE CHECKPOINTS, LOOKED AT AS A SET ============
@@ -7705,7 +7778,9 @@ function checkpoints(L) {
   L.ents = L.ents.filter(e => e.t !== 'check' || kept.includes(e));
   ch = kept;
   // 2. and no run longer than seventy-two
-  const MAXRUN = 72;
+  /* A LEVEL MAY ASK FOR THE CEILING (L.checkRun): B6 says a hundred columns, and RULES S4 (2026-09-25) says no two closer than forty, so
+     a level spaced to S4 by hand must not have this put one back between two of them. THE LONG WATER asks for 100. */
+  const MAXRUN = L.checkRun || 72;
   const place = (want) => {
     let best = null, bd = 1e9;
     for (let x = 4; x < W - 4; x++) for (let y = 2; y < H - 2; y++) {
@@ -7850,8 +7925,11 @@ const HUNG_H = { clothStrip: 62, boneChime: 40 };
 const TALL_ROWS = { warStandard: 5, hideBanner: 4, skullTotem: 4 };
 /* THE SEA'S THINGS AND THEIR RIVER TWINS (L.fresh: the columns of a level that are fresh water - the Long Water's Meltfalls). The
    dressing and the ground kit swap them where they land, so every draw falls where it did; the garrison leaves SEA_ONLY out. */
-export const FRESH_TWIN = { coralTuft: 'rushes', kelp: 'rushes', barnacleRock: 'driftwood', shell: 'driftwood' };
-export const SEA_ONLY = new Set(['crab', 'siren', 'angler', 'urchin', 'puffer', 'jelly', 'lamprey', 'manta']);
+export const FRESH_TWIN = { coralTuft: 'rushes', kelp: 'rushes', barnacleRock: 'riverStone', shell: 'riverStone' };
+/* AND ON THE BED OF A RIVER, stones (2026-09-25): the ferry run's bed grew rushes and driftwood five rows under the water once the whole
+   river was fresh. What a twin becomes when the spot is under swim water. */
+export const FRESH_BED = { rushes: 'riverStone', driftwood: 'riverStone' };
+export const SEA_ONLY = new Set(['crab', 'siren', 'angler', 'urchin', 'puffer', 'jelly', 'lamprey', 'manta', 'merrowspear', 'merrowbrute', 'merrowcaller']);   /* the merrow are the reef's tribe: they come up with the sea, from Saltreach on */
 function dressLevel(L, id) {
   const set = DRESS[id]; if (!set) return L;
   for (const [kind, x, y, v, hang] of GOBLIN_CAMP[id] || []) L.ents.push(Object.assign({ t: 'deco', x, y, kind, v: v || 0 }, hang ? { hang: true } : {}));
@@ -7887,7 +7965,8 @@ function dressLevel(L, id) {
     /* L.noDress: boxes [x0, x1, y0, y1] in tiles that get nothing (a lamp gallery is a floor by the tile rule, and it grew a mooring post) */
     if (!ok || rnd() > (id === 'marsh' || id === 'moor' ? 0.4 : id === 'wood' || id === 'spore' ? 0.3 : 0.2) || wet(x, y) || stoneAt(x, y) || !clear(x, y) || (L.interiors || []).some(([a, b, c, d]) => x >= a - 1 && x <= b + 1 && y >= c - 7 && y <= d + 1) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d) || (L.noDress || []).some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
     let [kind, nv] = set[(rnd() * set.length) | 0]; const v = nv ? (rnd() * nv) | 0 : 0;
-    if (L.fresh && x >= L.fresh[0] && x <= L.fresh[1] && FRESH_TWIN[kind]) kind = FRESH_TWIN[kind];   /* a river is not the sea (same draws) */
+    if (L.fresh && x >= L.fresh[0] && x <= L.fresh[1]) { if (FRESH_TWIN[kind]) kind = FRESH_TWIN[kind];   /* a river is not the sea (same draws) */
+      if (FRESH_BED[kind] && (L.pools || []).some(p => p.swim && !p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS + 8 > p.y)) kind = FRESH_BED[kind]; }
     if (HUNG_H[kind]) { const need = Math.ceil(HUNG_H[kind] / TS) + 2; let top = 0;
       for (let k = 3; k <= 10 && y - k >= 1; k++) if (at(x, y - k) !== T.AIR) { if (at(x, y - k) === T.SOLID && k >= need) top = y - k + 1; break; }
       if (!top || !clear(x, top) || !clear(x, top - 2)) continue;   /* clear where it HANGS too, and over it: the floor under a bell is not the bell */
@@ -7936,8 +8015,8 @@ const AMBUSH = {
   /* moor: THE CAIRN RIDGE is built in galeMoor() in its final columns (docs/briefs/gale-moor-rework.md) */
   storm: [{ name: 'THE HEARTH HALL', row: 31, wallL: 98, wallR: 152, check: false,
     waves: [[['sprig', 104], ['sprig', 146], ['hearthgob', 128], ['cutter', 117]], [['shield', 140], ['archer', 148], ['pike', 126, null, { elite: true }]]] }],
-  longwater: [{ name: 'THE SLUICE BRIDGE', row: 26, wallL: 293, wallR: 339, check: false,
-    waves: [[['scout', 297], ['scout', 336], ['crab', 316, 25], ['crab', 324, 25]], [['tideguard', 330, 25], ['scout', 336], ['netter', 298], ['heronfoe', 316, 25]]] }],
+  longwater: [{ name: 'THE SLUICE BRIDGE', row: 26, wallL: 381, wallR: 427, check: false,   /* +88: the Linn and the Bore Reach grew in upstream (2026-09-25) */
+    waves: [[['scout', 385], ['scout', 424], ['crab', 404, 25], ['crab', 412, 25]], [['tideguard', 418, 25], ['scout', 424], ['netter', 386], ['heronfoe', 404, 25]]] }],
   flotilla: [{ name: 'THE WAIST', row: 23, wallL: 62, wallR: 92, check: [57, 23],
     waves: [[['cutlass', 66], ['cutlass', 88], ['scout', 76], ['crab', 83]], [['boarder', 84], ['marine', 90], ['bosun', 68], ['cutlass', 75]]] }],
   /* THE DROWNED CHAPEL: the doors are the gates (the door columns under the two walls), its floor is over the high water */
@@ -8026,7 +8105,7 @@ const ELITES = {
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 880 is left alone */
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],
-  longwater: [['tideguard', 419, 26, { gate: 427 }]],
+  longwater: [['tideguard', 507, 26, { gate: 515 }]],   /* +88 (the river grew, 2026-09-25) */
   reef: [['tideguard', 435, 25, { gate: 441 }]],   /* (final columns: the bell-pool and the hulk grew the reef by 80 before the keel) */   /* on the dry ledge out of the last of the water, holding the climb to the wreck */
   flotilla: [['boarder', 162, 21, { gate: 175 }]],
   hurricane: [['boarder', 38, 19, { gate: 46 }], ['cutlass', 456, 18]],   /* the only column on the ship a gate holds is the passage out of the cabin: everything past it has three ways round */
@@ -8036,7 +8115,7 @@ const ELITES = {
   waymeet: [['hedgeknight', 465, 35], ['heavy', 548, 35]],
   fields: [['scarecrow', 230, 33]],
   mage: [['armour', 408, 39]],
-  caravan: [['archer', 486, 29, { face: -1, gate: 496 }]],   /* THE SUNKEN CARAVAN: the looters' bowman holds the way down the rim to the hollow, on the rim's last flat with the gate at the foot of the drop (tools/elites.mjs: at 455 he stood four tiles from his gate, with no room to fight him in front of it) */
+  caravan: [['cutthroat', 518, 30, { face: -1, gate: 528 }]],   /* THE SUNKEN CARAVAN: THE FIRST KNIFE (2026-09-25, a goblin bowman until the goblins left the level) holds the way down the rim to the hollow - since the ruins (2026-09-25) in the shade of the rim's last lintel, the gate at the foot of the slide into the hollow, on the rim's last flat with the gate at the foot of the drop (tools/elites.mjs: at 455 he stood four tiles from his gate, with no room to fight him in front of it) */
 };
 /* THE GATE AN ELITE HOLDS, the same shape as an ambush room's (ambushWall in main.js): it stands on its own column's floor
    near the elite's row, up to a ceiling or ten tiles, and a floor you can drop through under it is shut too. One function,

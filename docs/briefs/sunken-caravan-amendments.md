@@ -7,5 +7,5 @@ The original brief stands, except where the desert arc (`docs/desert-arc-brief.m
 - **The machine:** THE AWNING WINCH at the traders' camp rolls the great awning out over the yard, which makes the yard shade.
 - **Built ahead:** sunstroke, quicksand, the Dune Worm's state machine, the scorpion, vulture and sand goblin behaviour, the art
   (`docs/caravan-mechanics.md` lists it all).
-- **Numbers the build must keep:** shade resets sunstroke in 1.2 s; no walk in the sun over 7.5 s; quicksand escapes at 6 presses
+- **Numbers the build must keep:** shade resets sunstroke in 1.2 s; no walk in the sun over 5 s (7.5 s until 2026-09-25, when the sun filled in 9 s: see `docs/briefs/caravan-ruins-bandits.md`); quicksand escapes at 6 presses
   a second in 0.5 s and never at 2; the worm's commit always bursts where it locked; its lunge lands at least 48 px off a wall.

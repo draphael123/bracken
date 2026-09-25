@@ -1,0 +1,44 @@
+caravan       ok
+caravan-level ok
+desert-foes   ok
+desert-rules  ok
+desert-art    ok
+desert-art2   ok
+newlevel      ok
+draft-level   ok
+ ok  syntax             0ms  0 files parse
+ ok  tells           1157ms  the mark over every windup on the screen comes from this table (src/marks.js, 546 rows).
+ ok  comments         286ms  no swallowed code found.
+ ok  homepaths        504ms  ok  homepaths     453 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths   493ms  ok  dangling-paths 1847 tracked files, every repo path they cite resolves in a fresh clone (6 known holes list
+ ok  floaters        5874ms  2721 standing things checked (46 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  audit           5081ms  == caravan (578x40) clean
+ ok  content-audit   8840ms  20 things to look at.
+ ok  traps          11284ms  no traps.
+ ok  signs          11333ms  no level says the same sentence on two signs (1 known).
+ ok  killzones       7464ms  no reachable tile kills a standing hero.
+ ok  collectables    6428ms  every pickup can be picked up from some ground.
+ ok  keys            4796ms  5 levels with lock gates flooded key by key. every key comes before its gate.
+ ok  elites         12659ms  39 elites. every elite can be fought and every gate it holds opens onto the route.
+ ok  spawns          7219ms  2310 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  deadends        9279ms  172 dead ends in 32 levels, and every one pays.
+ ok  map-grammar      243ms  The map grammar holds: no retraced road, required nodes resolve forward, the margin and spur bands hold, every
+ ok  checkpoints     9676ms  423 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  skins          15343ms  ok  roofs          38 houses: every roof picture sits on the slab you stand on.
+ ok  threat-holes    3986ms  ok  threat-holes   166 creature kinds placed across 44 levels, every one weighed. Deliberately 0: dummy, folk,
+ ok  one-new-foe     5374ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  dressing       12441ms  no sprinkled decoration within three tiles of a fire on the floor.
+ ok  readability      304ms  Scenery behind tiles, softened outline-free art, wall-grip feedback, 13 homes and two landmarks.
+ ok  boss-openings  59891ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":
+ ok  arena-supplies  6011ms  ok  arena-supplies  47 boss rooms, 12 height conditions scored against the ground their arenas actually offer;
+ ok  ambush-single   5137ms  25 single-wave rooms: one captain, 2-4 minions, immediate roster, named lock and leader-only clear.
+ ok  boss-fight-end198960ms  Every one of 47 boss and mini fights (32 bosses, 15 minis) ends when its boss dies.
+ ok  slopes         10043ms  slopes: all passed
+ ok  ambush-reach    6133ms  25 ambush rooms. every captain can be reached from where the room shuts.
+ ok  occluders       5822ms  occluders: 44 levels, 146 rooms; nothing indoors, a tree only in the forest. trunk 4, reeds 2, rock 11, none 1
+ ok  checkpoint-gaps 10998ms  checkpoint-gaps  32 levels measured along their walked route; the longest run with no checkpoint outside the k
+ ok  dune-worm      21017ms  dune-worm: four told attacks forced and landed, the breach true to its spot, the storm his and phase two's, th
+ ok  architecture    4422ms  44 levels, 321 built pieces declared; 4 grandfathered (keep, harbor, waymeet, unburied). everything that was b
+ ok  bandits          205ms  bandits: all passed
+ ok  slopes-trace   33597ms  slopes-trace: every frame of every level identical to the pre-slopes build
+ ok  textfit       221890ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-caravan2\audits\readability\textfit

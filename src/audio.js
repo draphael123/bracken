@@ -832,6 +832,9 @@ const DIE = {
   scorpion() { noise(0.1, 0.24, 3200, 0.4); for (let i = 0; i < 3; i++) noise(0.04, 0.16, 2400 - i * 400, 0.5, 0.05 + i * 0.05); /* the shell cracks */ },
   sandgob() { gob(0.9) || tone('square', 420, 100, 0.2, 0.16); noise(0.2, 0.12, 900, 0.6, 0.05); /* and the sand takes him back */ },
   vulture() { tone('sawtooth', 700, 180, 0.3, 0.14); noise(0.14, 0.12, 1800, 0.5, 0.04); /* a croak and a clatter of feathers */ },
+  cutthroat() { tone('square', 260, 90, 0.26, 0.16); noise(0.2, 0.2, 1400, 0.5, 0.04); tone('sine', 2200, 1500, 0.12, 0.04, 0.06); /* a man going down, and his steel ringing on the stone */ },
+  slinger() { tone('square', 340, 120, 0.22, 0.14); noise(0.16, 0.14, 900, 0.5, 0.05); for (let i = 0; i < 3; i++) noise(0.03, 0.14, 1800, 0.6, 0.1 + i * 0.06); /* and the stones spilling out of his bag */ },
+  ambusher() { tone('sawtooth', 240, 80, 0.3, 0.14); noise(0.5, 0.16, 700, 0.6, 0.08); noise(0.3, 0.08, 2400, 0.4, 0.3); /* and the sand runs off the cloak for good */ },
   duneworm() { tone('sawtooth', 80, 30, 1.6, 0.26); noise(1.6, 0.3, 200, 0.3); noise(1.0, 0.14, 900, 0.5, 0.3); tone('sine', 44, 26, 1.8, 0.2, 0.2); /* THE DUNE WORM: a long bellow going down into the sand, and the sand closing over it */ },
   crab() { noise(0.12, 0.3, 2800, 0.35); for (let i = 0; i < 4; i++) noise(0.05, 0.2, 2200 - i * 300, 0.5, 0.06 + i * 0.05); /* the shell comes apart in pieces */ },
   turtle() { noise(0.2, 0.3, 1200, 0.4); tone('square', 260, 90, 0.2, 0.14); tone('sine', 80, 40, 0.4, 0.12, 0.08); },
@@ -930,6 +933,9 @@ const HURT = {
   scorpion() { noise(0.05, 0.22, 3000, 0.4); tone('square', 900, 700, 0.05, 0.08); },
   sandgob() { gobH(0.9) || tone('square', 500, 300, 0.08, 0.14); noise(0.08, 0.08, 900, 0.6); },
   vulture() { tone('sawtooth', 820, 420, 0.12, 0.12); },
+  cutthroat() { tone('square', 380, 240, 0.08, 0.12); noise(0.06, 0.08, 1200, 0.5); },
+  slinger() { tone('square', 460, 300, 0.07, 0.11); },
+  ambusher() { tone('square', 340, 220, 0.08, 0.12); noise(0.1, 0.08, 800, 0.6); },
   duneworm() { tone('sawtooth', 120, 70, 0.22, 0.18); noise(0.2, 0.22, 380, 0.5); noise(0.1, 0.1, 1600, 0.7, 0.06); },   /* THE DUNE WORM: a grunt through a throat full of sand, and the sand coming off him */
   burngob() { gobH(0.95, 0.5) || tone('sawtooth', 260, 150, 0.14, 0.16); noise(0.1, 0.1, 2600, 0.6); },
   emberwisp() { noise(0.08, 0.1, 3600, 0.5); },
@@ -1103,6 +1109,15 @@ SFX.snore = () => { if (!gate('snore', 0.4)) return; if (voice('vo_snore', 0.2, 
 /* THE DRUNK. A hiccup: a gulp of air stopped short in the throat. And the slur: a man's shout dragged down and muffled. */
 SFX.hic = () => { if (!gate('hic', 0.35)) return; tone('square', 520, 880, 0.05, 0.07); noise(0.04, 0.06, 1400, 0.5, 0.01); tone('sine', 300, 180, 0.06, 0.04, 0.04); };
 SFX.slur = () => { if (!gate('slur', 0.7)) return; if (voice(VOK('m3', 'alert'), 0.34, 0.66, 1300)) return; tone('sawtooth', 210, 120, 0.32, 0.08); tone('sine', 160, 110, 0.3, 0.05, 0.08); };
+/* THE CARAVAN'S BANDITS' tells: the cutthroat's FEINT is a light scrape and a stamp, his REAL cut a bright ring off the blade (the two
+   must not sound alike); the slinger's whirl is the cord humming round, and his stone lands with a dry knock */
+SFX.feintScrape = () => { if (!gate('feint', 0.2)) return; noise(0.07, 0.07, 2600, 0.5); tone('sine', 110, 70, 0.08, 0.06, 0.08); };
+SFX.bladeGlint = () => { if (!gate('glint', 0.2)) return; tone('sine', 2600, 3100, 0.18, 0.05); tone('triangle', 1300, 1500, 0.2, 0.03, 0.02); noise(0.05, 0.05, 5000, 0.6); };
+SFX.slingWhirl = () => { if (!gate('whirl', 0.3)) return; for (let i = 0; i < 4; i++) noise(0.09, 0.05 + i * 0.01, 700 + i * 250, 0.4, i * 0.18); };
+SFX.stoneThud = () => { if (!gate('thud', 0.1)) return; noise(0.06, 0.14, 700, 0.5); tone('square', 180, 90, 0.05, 0.06); };
+/* THE SUN BUILDS (THE SUNKEN CARAVAN, 2026-09-25): a tick of sunstroke at full is a dry sizzle, and each stage of the build (1, 2, 3:
+   3, 5, 8 damage) is a step higher and harder than the last, so the ear hears it getting worse before the bar does */
+SFX.sunBurn = (st = 1) => { if (!gate('sunBurn', 0.3)) return; noise(0.16 + 0.04 * st, 0.07 + 0.03 * st, 2400 + 900 * st, 0.5); tone('sawtooth', 260 + 150 * st, 170 + 110 * st, 0.14 + 0.03 * st, 0.04 + 0.02 * st); if (st >= 3) tone('square', 1300, 900, 0.08, 0.03, 0.05); };
 SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.08, 0.05, 0.02); tone('sine', 620, 740, 0.22, 0.04, 0.06); };
 // THE CAST. A man in this game died on a square wave or on a goblin slowed down. Now: people REPLACE their synth
 // with a voice from a kit (bosses keep their synth under it, for the size of the moment), creatures LAYER a voice
@@ -1120,6 +1135,7 @@ const CAST = {
   merrowspear: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, merrowcaller: { kit: 'f3', rate: 0.95, mat: 'cloth', human: true },   /* fish-folk, not goblins: no gibberish, no goblin laugh */
   watch: { kit: 'm5', rate: 0.9, lp: 1800, mat: 'plate', human: true }, lampreeve: { kit: 'm1', rate: 0.82, mat: 'cloth', human: true, boss: true }, tollmaster: { kit: 'm4', rate: 0.72, mat: 'cloth', human: true, boss: true },
   folk: { kit: 'hd', rate: 1, human: true, alert: 'vo_hum_alert' },
+  cutthroat: { kit: 'm2', rate: 1.06, mat: 'cloth', human: true }, slinger: { kit: 'm6', rate: 1.16, mat: 'cloth', human: true }, ambusher: { kit: 'm3', rate: 0.9, lp: 1900, mat: 'cloth', human: true },   /* THE CARAVAN'S BANDITS: men of the desert, not goblins */
   troll: { kit: 'ogre', rate: 1 }, prince: { kit: 'zom', rate: 0.62, lp: 1500, mat: 'cloth' }, courtier: { kit: 'zom', rate: 1.3, lp: 2600 }, berserker: { kit: 'gobbig', rate: 1.1 }, drownedking: { kit: 'ogre', rate: 0.75, lp: 1400 },
   harbormaster: { kit: 'm4', rate: .62, lp: 1300, mat: 'plate', human: true, boss: true },
   forgemaster: { kit: 'ogre', rate: 0.85, mat: 'plate' }, reefmaw: { kit: 'ogre', rate: 0.7 },

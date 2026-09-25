@@ -19,14 +19,29 @@ const DT = 1 / 60;
 log('SUNSTROKE');
 { const s = { v: 0 }; let t = 0, swimAt = null, hurtAt = null;
   while (t < 20 && hurtAt === null) { const r = sunStep(s, DT, false); t += DT; if (swimAt === null && r.swim > 0) swimAt = t; if (r.hurt) hurtAt = t; }
-  ok(swimAt > 4 && hurtAt > swimAt + 3, `open sun from cool: the view starts to swim at ${swimAt.toFixed(1)} s, the first ${SUN.dmg} damage at ${hurtAt.toFixed(1)} s - the warning comes ${(hurtAt - swimAt).toFixed(1)} s before the harm`);
+  ok(swimAt > 3 && hurtAt > swimAt + 3, `open sun from cool: the view starts to swim at ${swimAt.toFixed(1)} s, the first ${SUN.dmg} damage at ${hurtAt.toFixed(1)} s - the warning comes ${(hurtAt - swimAt).toFixed(1)} s before the harm`);
   let c = 0; while (s.v > 0) { sunStep(s, DT, true); c += DT; }
   ok(c <= SUN.cool + 0.05, `shade cools it from full in ${c.toFixed(1)} s: a stop, not a rest`);
   const w = { v: 0 }; let hurt = 0, swim = 0; for (let k = 0; k < SUN.maxWalk / DT; k++) { const r = sunStep(w, DT, false); hurt += r.hurt; swim = Math.max(swim, r.swim); }
   ok(hurt === 0 && swim > 0, `the longest walk the level rule allows (${SUN.maxWalk} s of sun) hurts nothing but swims the view (${(swim * 100).toFixed(0)}%): walking shade to shade is safe, and it tells you`);
-  // repeated: 7.5 s of sun, 1.5 s of shade, over and over - does it creep up?
+  // repeated: the longest walk, 1.5 s of shade, over and over - does it creep up?
   const r2 = { v: 0 }; let h2 = 0; for (let k = 0; k < 20; k++) { for (let i = 0; i < SUN.maxWalk / DT; i++) h2 += sunStep(r2, DT, false).hurt; for (let i = 0; i < 1.5 / DT; i++) sunStep(r2, DT, true); }
-  ok(h2 === 0, `twenty stretches of ${SUN.maxWalk} s sun with only 1.5 s of shade between: ${h2} damage (it does not creep)`); }
+  ok(h2 === 0, `twenty stretches of ${SUN.maxWalk} s sun with only 1.5 s of shade between: ${h2} damage (it does not creep)`);
+  /* THE SUN, MORE PUNISHING (Daniel, 2026-09-25; docs/briefs/caravan-ruins-bandits.md): six seconds to full, and at full the harm
+     BUILDS - 3, then 5, then 8 a tick, a tick a second - and the stage is said (sunStep's stage, drawn on the HUD) before each tick */
+  ok(SUN.fill === 6 && SUN.cool === 1.2 && SUN.maxWalk <= 5.2, `the sun fills in ${SUN.fill} s (was 9), shade still cools it in ${SUN.cool} s, and the level rule is a walk of ${SUN.maxWalk} s (was 7.5)`);
+  const b = { v: 0 }, ticks = [], stageAt = []; let tt = 0, fullAt = null;
+  for (; tt < SUN.fill + 6; tt += DT) { const r = sunStep(b, DT, false); if (b.v >= 1 && fullAt === null) fullAt = tt; if (r.hurt) { ticks.push([r.hurt, +(tt - fullAt).toFixed(2)]); stageAt.push(r.stage); } }
+  const want = [3, 5, 8, 8, 8];
+  ok(ticks.slice(0, 5).map(t => t[0]).join() === want.join() && ticks.every((t, i) => !i || Math.abs(t[1] - ticks[i - 1][1] - SUN.hurtEvery) < 0.05),
+    `six seconds out at full: the ticks go ${ticks.map(t => t[0] + '@' + t[1] + 's').join(', ')} - it BUILDS the longer you stay (the rule: 3, then 5, then 8 a second)`);
+  { const s3 = { v: 0 }, seen = new Set(); let prevStage = 0, toldFirst = true;
+    for (let k = 0; k < (SUN.fill + 4) / DT; k++) { const r = sunStep(s3, DT, false); if (r.hurt && r.hurt !== SUN.build[Math.max(0, prevStage - 1)]) toldFirst = false; prevStage = r.hurt ? r.stage : r.stage; if (r.stage) seen.add(r.stage); }
+    ok(seen.size === 3 && toldFirst, `the HUD's stage (${[...seen].join(', ')}) says which tick is coming before it lands: it is told building (C1)`); }
+  { const s4 = { v: 0 }; for (let k = 0; k < (SUN.fill + 3.2) / DT; k++) sunStep(s4, DT, false);   /* three ticks in: the next is an 8 */
+    for (let k = 0; k < 0.2 / DT; k++) sunStep(s4, DT, true);                                          /* a fifth of a second of shade (a vulture passing over) */
+    let first = 0; for (let k = 0; k < 3 / DT && !first; k++) first = sunStep(s4, DT, false).hurt;
+    ok(first === SUN.build[0], `a moment's shade takes it off full and the build starts again: the next tick after it is ${first}, not 8`); } }
 { // shade zones: an awning and a wagon placed as ents, and a rock overhang
   const L = { ents: [{ t: 'awning', x: 10, y: 21 }, { t: 'wagon', x: 30, y: 21 }], shade: [[800, 900, 300, 353]] };
   const Z = shadeZones(L), foot = 22 * 16;

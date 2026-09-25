@@ -4,7 +4,7 @@ import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
-const out = join(ROOT, 'docs/caravan'); mkdirSync(out, { recursive: true });
+const out = join(ROOT, process.env.SHOTS || 'docs/caravan'); mkdirSync(out, { recursive: true });   /* SHOTS=work/<lane>/before: somewhere else, for a before-and-after */
 const want = process.argv.slice(2);
 const pg = await openPage({ audio: false });
 try {
@@ -14,7 +14,11 @@ try {
     const L = BK.L, m = L.marks, s = L.sections;
     const foot = x => { for (let y = 1; y < L.H - 1; y++) { const t = L.grid[y * L.W + x]; if (t !== 0) return y - 1; } return 20; };
     const SPOTS = [['start', 8], ['awning', m.awning1 + 2], ['leadwagon', m.leadwagon + 2], ['ribcage', m.ribcage + 6], ['arch', m.arch + 2],
-      ['slide', m.slide + 2], ['camp', m.winch + 10], ['caravanserai', m.caravanserai - 2], ['sinking', s.sinking + 8], ['rim', s.rim + 20], ['hollow', s.arena + 12]];
+      ['slide', m.slide + 2], ['camp', m.winch + 10], ['caravanserai', m.caravanserai - 2], ['sinking', s.sinking + 8], ['rim', s.rim + 20], ['hollow', s.arena + 12]]
+      /* THE RUINS (2026-09-25; docs/briefs/caravan-ruins-bandits.md), where the level has them: a tower's roof is its column's first
+         floor from the top, so a spot ON one is its roof and a spot beside one is the road at its door */
+      .concat(m.towerA === undefined ? [] : [['watchtower', m.towerA - 3], ['watchtower-roof', m.towerA + 4], ['house', m.house1 + 3], ['town', m.towerB - 3],
+        ['rooftops', m.towerB + 5], ['twin-roof', m.towerC + 4], ['last-tower', m.towerD - 3], ['exam', m.exland + 1], ['lintel', m.lintel + 3]]);
     const res = [];
     for (const [name, x] of SPOTS) { if (${JSON.stringify(want)}.length && !${JSON.stringify(want)}.includes(name)) continue;
       BK.load(i); BK.start(); BK.god = true; BK.sim(420);   /* a fresh level (and the title card gone) for every picture: once the Traders' Yard has shut, it pens a hero teleported past it */
