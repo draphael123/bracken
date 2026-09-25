@@ -38,9 +38,11 @@
 // the Folly's gravity glyphs, falling stones.
 import { crumbleInit, crumbleGone } from './tower-collapse.js';
 export const TOWER = { W: 72, H: 306, X0: 12, X1: 59, SKY: 50, FLOOR: 36, N: 7 };
-/* THE SANDY PATH's rows, high in the empty sky rows where nothing else is built and no camera ever reaches except
-   through the portal: sixteen rows over the sanctum's vault, which is itself painted and not built (src/sanctum.js). */
-export const SAND = { x0: 14, x1: 58, row: 18, deep: 24, step: 46, sky: 8 };
+/* THE DESERT's rows (round 2, docs/briefs/falling-tower-round2.md §2), high in the empty sky rows where nothing else is built and no
+   camera ever reaches except through the portal: sixteen rows over the sanctum's vault, which is itself painted and not built
+   (src/sanctum.js). It was a sandstone cutting walled at both ends; it is open sand now, from one edge of the world to the other,
+   under THE SUNKEN CARAVAN's sky. `arrive` is where the second door puts you, `gate` the level's end. */
+export const SAND = { x0: 0, x1: TOWER.W - 1, row: 18, deep: 24, arrive: 20, gate: 34 };
 // [name, interior kind], bottom (k 0) to top (k 6). Every floor's rows come off the pitch, so inserting one moves each
 // floor under it and nothing here is re-typed; what DOES have to move by hand is everything keyed to a row somewhere
 // else - the GARRISON row, level.js's ELITES coords, L.tall and START (docs/briefs/falling-tower-longer.md).
@@ -246,7 +248,12 @@ export function buildTowerAscent({ painter, T, TS }) {
     F.tiers.forEach(([x0, len, row], j) => { if (j % 4 === 1) crumbles.push({ x0, x1: x0 + len - 1, row, count: 2.5, kind: 'crown' }); });
     rect(28, 43, SKY + 1, SKY + 1, T.SOLID);                              /* THE PARAPET WALK, three over the last tier: the carpet waits over it */
     ent('check', 30, F.bot - 1); ent('sign', 26, F.bot - 1, { text: 'THE CROWN. THE ROOF IS GONE. A DOOR STANDS OPEN ON THE PARAPET: HIS ROOM IS THROUGH IT.' });
-    ent('check', 31, SKY); ent('sign', 40, SKY, { text: 'HIS CARPET FLIES WHERE YOU STEER IT. THE FLOOR BURNS. EVERY SPELL CAN BE OUT-FLOWN.' });
+    /* THE LAST CHECKPOINT BEFORE HIM IS ON THE CROWN'S LAST CLIMB, two tiers under the parapet (round 2, docs/briefs/falling-tower-round2.md
+       §1b). It stood on the parapet, one row under his hall's floor, and the fight's camera looks that far down: all fight long there was a
+       lit lantern under the fire that the carpet can never reach (Daniel: "a checkpoint that is unreachable when you fight the skeletal
+       mage"). Here it is below everything the fight shows (tools/checkpoint-stand.mjs), and a death in the sky still wakes you by the door. */
+    /* (its sign with it: on the parapet the fight saw that too, a signpost standing under the fire) */
+    { const [x0, len, row] = F.tiers[F.tiers.length - 2]; ent('check', x0 + (len >> 1) + 1, row - 1); ent('sign', x0 + 2, row - 1, { text: 'HIS CARPET FLIES WHERE YOU STEER IT. THE FLOOR BURNS. EVERY SPELL CAN BE OUT-FLOWN.' }); }
     deco('telescope', 36, F.bot - 1); deco('starChart', 24, F.top + 1, { hang: true });
     const who = ['imp', 'apprentice', 'bat', 'armour', 'tome', 'apprentice', 'haunt', 'imp', 'tome', 'bat', 'armour'];
     F.tiers.forEach(([x0, len, row], j) => put(who[j % who.length], x0, len, row));
@@ -254,16 +261,11 @@ export function buildTowerAscent({ painter, T, TS }) {
   /* THE SEAMS between floors, where a screen was empty: books over the cistern's poison, the gallery's top, the loft's floor, the crown's parapet */
   for (const [t, x, y] of [['tome', 28, floors[4].bot - 6], ['tome', 42, floors[4].bot - 7], ['tome', 26, floors[3].top + 3], ['bat', 50, floors[3].top + 2], ['apprentice', 14, floors[3].bot - 1],
     ['tome', 20, floors[0].top + 3], ['boo', 46, floors[0].top + 2], ['imp', 22, SKY + 3], ['tome', 48, SKY + 2]]) foe(t, x, y);
-  /* THE SANDY PATH. Through the second door, and the only ground in the sky rows: a cutting of warm sandstone with the
-     gate at the far end of it. It is DRESSING - no map node, no `needs:`, nothing behind the gate - and it is here
-     because the next set of levels is a desert and this is where the world first says so (Daniel: "wink at the
-     desert"). Reached only by the portal, so it is walled at both ends and nothing can be walked off. */
-  rect(SAND.x0, SAND.x1, SAND.row, SAND.deep, T.SOLID);                     /* the bank itself, five rows thick: a path, not a slab */
-  rect(SAND.step, SAND.x1, SAND.row - 2, SAND.row - 1, T.SOLID);            /* it rises to the gate, so the last walk is upward */
-  rect(SAND.x0 - 2, SAND.x0 - 1, SAND.sky, SAND.deep, T.SOLID); rect(SAND.x1 + 1, SAND.x1 + 2, SAND.sky, SAND.deep, T.SOLID);   /* the walls of the cutting */
-  ent('gate', SAND.x1 - 4, SAND.row - 3); ent('sign', SAND.x0 + 5, SAND.row - 1, { text: 'THE TOWER IS BEHIND YOU. THE SAND GOES ON SOUTH, AND SO DOES THE ROAD.' });
-  for (const [k, x] of [['stone', SAND.x0 + 9], ['tuft', SAND.x0 + 16], ['stone', SAND.x0 + 25], ['tuft', SAND.x0 + 31]]) deco(k, x, SAND.row - 1);
-  deco('sundial', SAND.step + 6, SAND.row - 3);   /* his, and the first thing in the game that is going to want a sun */
+  /* THE DESERT. Through the second door, and the only ground in the sky rows: open sand from one edge of the world to the other,
+     under the Caravan's sky (src/sanctum.js drawDesertEnd), with the level's end a few steps on. THE SUNKEN CARAVAN needs this level:
+     this is the road into it. Reached only by the portal; the world's own edges end it, not walls. */
+  rect(SAND.x0, SAND.x1, SAND.row, SAND.deep, T.SOLID);                     /* the sand itself, seven rows deep: the camera never sees under it */
+  ent('gate', SAND.gate, SAND.row - 1); ent('sign', SAND.arrive + 4, SAND.row - 1, { text: 'THE TOWER IS BEHIND YOU. AHEAD IS THE SAND, AND THE ROAD TO THE SUNKEN CARAVAN.' });
   ent('undeadmage', 36, 42, { face: -1 });
   // ---- THE DIVIDERS AND THEIR ROPES. Each floor's rope hangs from its last tier, through the divider over it, to its top. ----
   for (let k = 0; k < floors.length - 1; k++) {
@@ -284,7 +286,10 @@ export function buildTowerAscent({ painter, T, TS }) {
      stones now: each four rows deep with a stone either side, so each is still a trap and still DEADLY (deadly-water.js). */
   if (cistern) { const { surf, bot } = cistern, open = x => L.grid[surf * W + x] === T.AIR && L.grid[(surf + 1) * W + x] === T.AIR;
     for (let x = X0; x <= X1; x++) { if (!open(x)) continue; let x1 = x; while (x1 + 1 <= X1 && open(x1 + 1)) x1++;
-      pools.push({ x0: x * TS, x1: (x1 + 1) * TS, y: surf * TS + 4, depth: 3 * TS, bottom: bot * TS, harm: true, poison: true, deadly: true, foulCol: '#5c8a24', foulColL: '#a6e04a', foulColD: '#1c3212' }); x = x1; } }
+      /* WITCHWATER, NOT A LAWN (round 2, docs/briefs/falling-tower-round2.md §1c). It was the Undercrown's green, and between the stones - a
+         bright flat top and the bubbles standing up off it - it read at play size as a row of GRASS TILES: the mistake the sanctum's fire
+         once made. The tower's own poison is violet-black under a pale scum, with its skull posts and its glow: still death, never grass. */
+      pools.push({ x0: x * TS, x1: (x1 + 1) * TS, y: surf * TS + 4, depth: 3 * TS, bottom: bot * TS, harm: true, poison: true, deadly: true, foulCol: '#5a2e6e', foulColL: '#b48ad8', foulColD: '#160a1e', gasCol: 'rgba(200,150,255,0.8)', deepCol: '#0c0612', glowCol: '#b48ad8' }); x = x1; } }
 
   /* THE PARAPET WAS GROWING GRASS. Every solid row in here is skinned as tower stone except this one, which nobody
      listed - so it fell through to the default ground kit and painted itself with palette.grass, a green mat lying on
@@ -306,7 +311,7 @@ export function buildTowerAscent({ painter, T, TS }) {
   }
   /* THE TOWER'S OWN STONE since 2026-09-25 ('fallen': src/redraw/fallen_tower.js), not the Folly's 'tower' brick - F6, the review's first complaint */
   const skins = [[0, X0 - 1, SKY - 4, H - 1, 'fallen'], [X1 + 1, W - 1, SKY - 4, H - 1, 'fallen']].concat(floors.slice(0, N - 1).map(F => [X0, X1, F.divider, F.divider + 1, 'fallen']),
-    [[X0, X1, H - 6, H - 1, 'fallen'], [28, 43, SKY + 1, SKY + 1, 'fallen'], [SAND.x0 - 2, SAND.x1 + 2, SAND.sky, SAND.deep, 'sand']], indoor);
+    [[X0, X1, H - 6, H - 1, 'fallen'], [28, 43, SKY + 1, SKY + 1, 'fallen'], [SAND.x0, SAND.x1, SAND.row, SAND.deep, 'dune']], indoor);
   const START = { x: 20, y: floors[0].bot - 1 };
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra, interiors, gusts: [], flips, glyphBridges, crumbles,   /* FAILING STONE: src/tower-collapse.js */
@@ -318,13 +323,16 @@ export function buildTowerAscent({ painter, T, TS }) {
        the way out opens WHERE HE FALLS. */
     bellDeck: bell,   /* THE SEXTON's deck: its row, the frame over it and the joists he climbs out onto (main.js) */
     mini: { x0: 12 * TS, x1: 52 * TS, floor: bell.deck * TS, y0: bell.frame * TS, y1: (bell.deck + 4) * TS, trigger: 14 * TS, wallL: 12, gate: 52, boss: 'sexton', name: 'THE SEXTON' },
-    sanctum: { in: { x: 36 * TS, y: SKY * TS }, spawn: { x: 14 * TS, y: 40 * TS }, sand: { x: (SAND.x0 + 2) * TS, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
+    sanctum: { in: { x: 36 * TS, y: SKY * TS }, spawn: { x: 14 * TS, y: 40 * TS }, sand: { x: SAND.arrive * TS + 8, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
     tall: { top: SKY * TS, bottom: floors[0].bot * TS, col: '16,20,32', deepest: 0.16 },   /* the gloom is cold slate, not the Folly's violet */
     towerFloors: floors.map((F, k) => ({ name: F.name, top: F.top, bot: F.bot, hole: F.hole || null, last: k === N - 1 })),
     deckBreaks: breaks.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true })),   /* spine ledges: they come back (updateTowerAscent), or a fall into the water would be a soft-lock */
     mage: { shelves: [], skins, hedges: [], chains: [], hung, outside: 0, dais: [30, 40] },
-    palette: { sky: 'mage', far: 'mage', mid: 'mage', near: 'mage', dress: 'village', haze: 'rgba(150,140,118,0.08)',
-      grass: '#4e6a52', grassL: '#6c8c70', grassD: '#34483a', dirt: '#4a4652', dirtL: '#645e6c', dirtD: '#2e2a36', canopy: ['#181428', '#221c36', '#2c2446', '#3a3058'] },
+    /* noNear (round 2): the near layer is a bough over the lens and BLADES OF GRASS along the foot of the screen. Indoors it is not drawn,
+       but the tower is not all indoors - the sky fight, the ropes through the dividers and the desert are not in a room - and there it
+       ran a fringe of grass along the bottom of the picture. Nothing in this level grows grass (the Caravan says the same, for sand). */
+    palette: { sky: 'mage', far: 'mage', mid: 'mage', near: 'mage', noNear: true, dress: 'village', haze: 'rgba(150,140,118,0.08)',
+      grass: '#46506a', grassL: '#56627e', grassD: '#343c52', dirt: '#4a4652', dirtL: '#645e6c', dirtD: '#2e2a36', canopy: ['#181428', '#221c36', '#2c2446', '#3a3058'] },   /* NO GRASS IN THE TOWER (round 2): its "grass" is the slate of its own stone, so any ground tile that ever shows is stone */
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hall' }],
     noCoin: [[0, W - 1, 0, SKY + 1]],
     /* THE SKY IS THE ARENA. trigger is never walked past: the carpet starts the fight when it is boarded (carpet.js) */

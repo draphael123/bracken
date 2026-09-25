@@ -22,7 +22,7 @@ import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smaller
 import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT,quench} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
 import {carpetBox,stepCarpet,knockCarpet,updateCarpet,resetCarpet,drawRug,drawCarpetWorld,drawStormWalls,mountCarpet} from './carpet.js';
-import {burnSanctum,drawSanctum,drawSanctumDoors,drawSandDawn,updateSanctum,openSanctumDoor} from './sanctum.js';   /* THE ARCHMAGE'S SANCTUM: the room behind the door, its floor of fire, and the path out */
+import {burnSanctum,drawSanctum,drawSanctumDoors,drawSanctumUnder,drawDesertEnd,updateSanctum,openSanctumDoor} from './sanctum.js';   /* THE ARCHMAGE'S SANCTUM: the room behind the door, its floor of fire, and the path out */
 import {updateBuriedDead as stepBuriedDead,updateZombie,bakeDead,deadFrame,drawBuriedDead} from './buried-dead.js';
 import {bakeBuriedDeadKing,kingFrame as deadKingFrame} from './buried-dead-art.js';   /* THE BURIED DEAD'S OWN SPRITE (2026-09-24): a half-risen corpse-king, not the zombie's baker at x3 */
 import * as DKN from './drowned-knights.js';
@@ -4088,7 +4088,7 @@ const BEASTS = [
   { t: 'closedhelm', name: 'THE PALADIN', sub: 'sworn to the chapel', desc: 'A holy ward stands round him and every blade, bolt and flame comes off it. His own SWORD opens him: the cut and the thrust are single marks - meet them on the beat (a parry, a ward raised or let go as it lands, or a roll through it) and the ward breaks for a breath. THE BASH is a double mark along a red line: roll through it or be gone. JUDGEMENT marks where you stand: guard it or step off the mark. Enraged, his red OATH sweeps low: jump it. RADIANCE fixes three red columns: step into a gap. Neither can be blocked; both leave his ward open.' },
   { t: 'drunk', name: 'THE DRUNK', sub: 'a regular, gone rowdy', desc: 'He has been at the Broken Lance since noon and he has found a balcony. He throws what is to hand - a tankard, a turnip, a stool - and a yellow mark means the shield turns it. A red mark is a bottle: it cannot be blocked and it leaves glass. Watch the ring on the ground. One blow puts him on his back.' },
   { t: 'lancer', name: 'SERJEANT', sub: 'mounted, on the bridge', desc: 'A man-at-arms on a barded horse, riding his beat end to end. The charge is a single mark: take it on the shield and he goes over the back of his horse, or jump or roll it. Close to him he swipes with his sword. Mounted, the barding takes some of every cut; in the road he is a man with a sword and no horse.' },
-  { t: 'undeadmage', name: 'THE UNDEAD ARCHMAGE',sub:'the last spell outlives him',desc:'Fought from the carpet over the fallen tower. Guard or fly from the fire, fly across the ice, leave the lightning mark, keep out of the poison cloud and out-fly the death hand. Fly out of the DEATH MARK before it goes off: when it finds no one it comes back on him, and he hangs open. Burning, he is faster, blinks more and the storm closes the sky.'},
+  { t: 'undeadmage', name: 'THE UNDEAD ARCHMAGE',sub:'the last spell outlives him',desc:'Fought from the carpet in his burning hall. Guard or fly from fire and ice, leave the lightning mark, keep out of the poison, out-fly the death hand. A DEATH MARK that finds no one comes back on him. His RINGS work both ways: dodge through the one he opens by you and come out beside him, open. Burning, he fights ring to ring.'},
   { t: 'burieddead', name: 'THE BURIED DEAD',sub:'the whole grave wakes',desc:'Jump the marked slam or climb a grave shelf. Guard the arm sweep. Follow the moving shadow, then leave the bright crack before he erupts. Cut down the zombies he calls. Wait on a ledge or far off and he throws a lit skull: guard it. Each attack leaves him open; at half health his slam reaches farther and more dead answer.' },
   { t: 'corpse', name: 'THE FALLEN', sub: 'the battle is still being fought', desc: 'A soldier of a war nobody buried. It lies where it fell until a banner stands over it, then it gets up and cuts - guard it. Cut down under a banner it only falls again: strike it while it lies there, or burn it, and it stays down.' },
   { t: 'duneworm', name: 'THE DUNE WORM', sub: 'the caravan\'s grave keeps its keeper', desc: 'He hunts under the hollow\'s sand: a ripple runs at you and bursts up where it locks - step off it late. Up, he spits sand (a shield takes it), lunges where his shadow falls, and opens the sand under you: jump, and keep jumping. Wind the awning out and let him come up INTO it: tangled, he takes double. At half he calls the storm.' },
@@ -5653,7 +5653,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (dmg > 0 && !e.trainer && !glance && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
   if (e.broken > 0 && dmg > 0 && e.offBalAt !== time) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body (and not the blow that threw it OFF BALANCE: that one is paid once, as a key) */
   if (!glance) addPoise(e, dmg, fromX, plunge);   /* a glancing blow moves nothing, the bar included */
-  if(e.t==='undeadmage'&&e.mode==='gather')dmg=Math.round(dmg*LICH.openMul);
+  if(e.t==='undeadmage'&&(e.mode==='gather'||e.mode==='breached'))dmg=Math.round(dmg*LICH.openMul);   /* the mark come back on him, or a dodge through his own ring (round 2) */
   if(e.t==='owl'&&e.lampT>0)dmg=Math.round(dmg*2);   /* THE OWL REEVE, lamp-struck: double (Daniel, 2026-09-21) */   /* THE OPENING: the mark came back on him, and he is open while he gathers himself */
   /* HIS HEALTH IS GATED BY THE STAGE, so while he holds the floor down no blow can take any of it - which left the one
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
@@ -7742,7 +7742,13 @@ function miniEnd(e) {
   if (!rushOn()) { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].mini = true; saveProgress(); }
   number(e.x, e.y - 30, MINI_DONE[e.t] || 'THE WAY OPENS', '#8fd160'); SFX.heavy(); music.play(L.music || 'theme');
 }
-function setWallAt(col, solid, floorY) { const top = floorY / TS - 6, bot = floorY / TS - 1; for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.palisade[(ty + col) % 3] : null; } }
+/* A MINI'S WALL PUTS BACK WHAT IT STOOD ON (Falling Tower round 2). It wrote AIR over its whole column when it opened, so a wall raised
+   against rock took the rock with it: THE SEXTON's left wall cut a notch out of the ringers' walk it stands against. And in the tower it
+   was a wooden palisade on the tower's stone; a level that skins its stone ('fallen') raises that stone instead. */
+function setWallAt(col, solid, floorY) { const top = floorY / TS - 6, bot = floorY / TS - 1, was = L.wallWas || (L.wallWas = new Map());
+  for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col;
+    if (solid) { if (!was.has(i)) was.set(i, [L.grid[i], tileSpr[i]]); if (L.grid[i] === T.SOLID) continue; L.grid[i] = T.SOLID; tileSpr[i] = L.fallingTower ? (FALLEN_SKINS || (FALLEN_SKINS = FTW.bakeFallenSkins())).fallen[(ty + col) % 3] : TILE.palisade[(ty + col) % 3]; }
+    else { const w = was.get(i); was.delete(i); if (w) { L.grid[i] = w[0]; tileSpr[i] = w[1]; } else { L.grid[i] = T.AIR; tileSpr[i] = null; } } } }
 function setWall(col, solid) {
   const A = L.arena; const top = A.floor / TS - 6, bot = A.floor / TS - 1;
   for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? ((L.arena.boss === 'chief' || L.arena.boss === 'master') ? TILE.palisade[(ty + col) % 3] : L.arena.boss === 'suncatcher' ? (TILE.ice || (TILE.ice = bakeIceTile())) : (L.arena.boss === 'ram' || L.arena.boss === 'lance' || L.arena.boss === 'roc' || L.arena.boss === 'golem' || L.arena.boss === 'prince' || L.arena.boss === 'duneworm') ? TILE.drystone[(ty + col) % 3] : L.arena.boss === 'gqueen' ? TILE.port[(ty + col) % 2] : TILE.vine[(ty + col) % 4]) : null; }
@@ -11231,12 +11237,19 @@ function drawMageBack(cx, cy) {
 }
 /* after the tiles: the skins on the tower, the hedges, the holes and the cracks */
 let FALLEN_SKINS = null;
+/* THE DESERT past the Falling Tower's second door (round 2): the Caravan's sky, mesas and dunes, and the road's first wreck, baked once */
+let DESERT_END = null;
+function desertEndArt() { if (DESERT_END) return DESERT_END; const A = cvArt(), one = c => (Array.isArray(c) ? c[0] : c);
+  return (DESERT_END = { sky: DZ.bakeDesertSky(VH), far: DZ.bakeFarMesas(320, 70), mid: DZ.bakeMidDunes(480, 80), wagon: A.wagon[0], skull: one(A.bones.skull), tree: A.deadTree }); }
 function drawMageTiles(cx, cy) {
   if(L.fallingTower)drawDeckBreaks(g,L,cx,cy,time);
   if (!MG || !L.mage) return; const A = ma(), S = A.skins; if (!S) return;
   const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(LW - 1, Math.ceil((cx + VW) / TS) + 1), ty0 = Math.max(0, Math.floor(cy / TS)), ty1 = Math.min(LH - 1, Math.floor((cy + VH) / TS) + 1);
   const lip = (x, y) => { g.fillStyle = 'rgba(236,224,255,0.55)'; g.fillRect(x, y, TS, 1); g.fillStyle = 'rgba(236,224,255,0.2)'; g.fillRect(x, y + 1, TS, 1); };
-  for (const [x0, x1, y0, y1, kind] of (L.mage.skins || [])) { if (x1 < tx0 || x0 > tx1 || y1 < ty0 || y0 > ty1) continue; const set = kind === 'gate' ? S.gate : kind === 'sand' ? S.sand : kind === 'fallen' ? (FALLEN_SKINS || (FALLEN_SKINS = FTW.bakeFallenSkins())).fallen : kind === 'witch' ? witchSkins().witch : kind === 'books' ? witchSkins().books : kind === 'ledge' ? witchSkins().ledge : S.tower, want = kind === 'ledge' ? T.ONEWAY : T.SOLID;   /* 'sand': the cutting past the second door (src/sanctum.js) */   /* (the Witchlight Stair's runed stone, its library books, and its stone ledges over the one-way tiles) */
+  for (const [x0, x1, y0, y1, kind] of (L.mage.skins || [])) { if (x1 < tx0 || x0 > tx1 || y1 < ty0 || y0 > ty1) continue; const set = kind === 'dune' ? null : kind === 'gate' ? S.gate : kind === 'sand' ? S.sand : kind === 'fallen' ? (FALLEN_SKINS || (FALLEN_SKINS = FTW.bakeFallenSkins())).fallen : kind === 'witch' ? witchSkins().witch : kind === 'books' ? witchSkins().books : kind === 'ledge' ? witchSkins().ledge : S.tower, want = kind === 'ledge' ? T.ONEWAY : T.SOLID;   /* 'sand': the cutting past the second door (src/sanctum.js) */   /* (the Witchlight Stair's runed stone, its library books, and its stone ledges over the one-way tiles) */
+    if (kind === 'dune') { const D = cvArt().sand;   /* THE DESERT (round 2): the Caravan's own sand, its skin on the top and its fill under it */
+      for (let ty = Math.max(y0, ty0); ty <= Math.min(y1, ty1); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.SOLID) continue; const h = ((tx * 7 + ty * 13) % 3 + 3) % 3; g.drawImage(ty > 0 && L.grid[i - LW] === T.SOLID ? D.fill[h] : D.top[h], tx * TS - cx, ty * TS - cy); }
+      continue; }
     for (let ty = Math.max(y0, ty0); ty <= Math.min(y1, ty1); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (L.grid[i] !== want) continue; g.drawImage(set[(tx * 7 + ty * 3) % set.length], tx * TS - cx, ty * TS - cy); if (want === T.SOLID && ty > 0 && L.grid[i - LW] === T.AIR) lip(tx * TS - cx, ty * TS - cy); } }
   for (const [x0, x1, y0, y1] of (L.mage.hedges || [])) { if (x1 < tx0 || x0 > tx1) continue;
     /* A HEDGE YOU GO UNDER GROWS ON SOMETHING (B9; level review, 2026-09-24): the Topiary Maze's tall hedges were slabs of leaf in the
@@ -13134,7 +13147,7 @@ const gustDir = (z, t) => (z.alt ? (Math.floor((t + (z.phase || 0)) / z.period) 
 function gustNow(z) { const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, tl = z.told ? Math.min(GUST_TELL, z.period - z.on) : 0.5;
   const tell = !on && ph > z.period - tl ? (ph - (z.period - tl)) / tl : -1;
   return { on, tell, dir: gustDir(z, z.told && tell >= 0 ? time + tl + 0.01 : time) }; }   /* in a told build-up it is the COMING gust's way */
-const braced = () => !!(keys.block && P.ground && !P.dead && !P.climb && !P.swim);
+const braced = () => !!((keys.block || keys.down) && P.ground && !P.dead && !P.climb && !P.swim);   /* CROUCH OR BLOCK (Daniel, 2026-09-25): holding DOWN on the ground braces too - the Pyromancer's C is her ember and the Freebooter has no shield, so block-only left them no way to stand in a gust (a drop through a one-way board still wants a jump) */
 function gustShove(dir, speed, dt) { if (braced()) { if (Math.abs(P.vx) > GUST_BRACED) P.vx = Math.sign(P.vx) * GUST_BRACED; if (Math.random() < dt * 16) dust(P.x - dir * 4, P.y, 1); return false; }
   P.vx += (dir * speed - P.vx) * Math.min(1, dt * (P.ground ? 20 : 6)); P.gustT = 0.25; return true; }   /* fast enough to beat the legs: the ground's friction and the stick have had the frame already */
 function updateMoorWind(dt) {
@@ -14830,9 +14843,16 @@ function updateHedgeWardenBoss(e, dt) {
    he climbs out onto, the toll that sets the planks counting, the charge that breaks a counting one, and the bells off the frame */
 const bellPlanks = () => (L.crumbles || []).filter(c => c.kind === 'deck' && !c.gone);
 let sextonFx = { bells: [] };
+/* WHERE HE CAN STAND (Falling Tower round 2): his box on the deck - (w - 2) wide, h tall over his feet - clear of rock. The ringers'
+   walks and a shut gate are rock; a plank is not (he stands on it). tools/mini-walls.mjs fails any frame that ends with him in the rock. */
+const sextonStands = (e, x, floor) => { const hw = (e.w || 20) / 2 - 1, x0 = Math.floor((x - hw) / TS), x1 = Math.floor((x + hw) / TS), y0 = Math.floor((floor - (e.h || 46) + 1) / TS), y1 = Math.floor((floor - 1) / TS);
+  for (let y = y0; y <= y1; y++) for (let tx = x0; tx <= x1; tx++) { const t = tileAt(tx, y); if (t === T.SOLID || t === T.PORT) return false; } return true; };
 function updateSextonBoss(e, dt) {
   const A = L.mini && L.mini.boss === 'sexton' ? L.mini : L.arena, D = L.bellDeck; if (!A || !D) return;
   const plankAt = x => { const tx = Math.floor(x / TS); return bellPlanks().find(c => tx >= c.x0 && tx <= c.x1) || null; };
+  const stands = x => sextonStands(e, x, A.floor);
+  /* the planks will not come back into the pit while he is down in it (tower-collapse.js: a restore waits for its blockers) */
+  for (const c of bellPlanks()) if (!c.blockers) c.blockers = () => { const s = enemies.find(q => q.t === 'sexton' && q.alive); return s ? [{ x: s.x, y: s.mode === 'pit' || s.mode === 'climb' ? A.floor + 10 : s.y }] : []; };
   stepSexton(e, dt, { P, A: { x0: A.x0, x1: A.x1, floor: A.floor },
     hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }),
     say: (m, red, green) => number(e.x, e.y - 58, m, green ? '#8fd160' : red ? '#ff6b6b' : '#ffd36b'),
@@ -14840,11 +14860,15 @@ function updateSextonBoss(e, dt) {
     shake: n => shakeCam(n), dust: (x, y) => dust(x, y, 10), ring: (x, y, r) => { ringAt(x, y - 4, Math.min(r, 90), '#ff6b6b', 0.45); ringAt(x, y - 4, Math.min(r, 60), '#ffe7a0', 0.35); },
     plank: plankAt, breakPlank: c => { crumbleBreakAt(c); },
     count: (x, r, t) => { const own = plankAt(e.x); for (const c of bellPlanks()) if (c !== own && c.st === 'whole' && Math.abs((c.x0 + c.x1 + 1) * TS / 2 - x) <= r + 40) crumbleStartAt(c, t); },
-    joist: x => { let best = null; for (const j of D.joists) if (best === null || Math.abs(j - x) < Math.abs(best - x)) best = j; return best; },
+    /* out of the pit onto the nearest place he can STAND that is not a hole - two of the old "joists" were the ringers' walks, and he climbed into the stone */
+    joist: x => { for (let d = 0; d <= 12 * TS; d += 2) for (const s of [1, -1]) { const q = x + s * d; if (q > A.x0 + 16 && q < A.x1 - 16 && stands(q)) { const p = plankAt(q); if (!p || p.st !== 'down') return q; } } return null; },
+    stands, pitSpan: p => p ? [p.x0 * TS + (e.w || 20) / 2 + 1, (p.x1 + 1) * TS - (e.w || 20) / 2 - 1] : null,
     shadow: (spots, t) => { sextonFx.bells = spots.map(x => ({ x, t, T: t })); },
     bell: x => { burst(x, A.floor - 2, 10, ['#b07a2a', '#e2b050', '#5e3c14'], 70, 0.5); dust(x, A.floor, 8); } });
   for (const b of sextonFx.bells) b.t -= dt; sextonFx.bells = sextonFx.bells.filter(b => b.t > -0.3);
   e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x));
+  /* AND NEVER IN THE ROCK: if anything has put his feet on the deck inside a walk, he is set beside it (the leap and the pit keep their own heights) */
+  if (e.mode !== 'leap' && e.mode !== 'pit' && e.mode !== 'climb' && !stands(e.x)) { for (let d = 2; d <= 8 * TS; d += 2) { if (stands(e.x + d)) { e.x += d; break; } if (stands(e.x - d)) { e.x -= d; break; } } }
 }
 /* THE BELLS OFF THE FRAME: a shadow where it will land, darker as it comes, and the bell itself falling into it */
 function drawSextonFx(cx, cy) {
@@ -14884,9 +14908,12 @@ function updateGargoyleBoss(e, dt) {
 function updateUndeadMage(e,dt){
  e.hp0??=e.maxHp;const A=L.arena,box=carpetBox(A,e.squeeze||0);
  stepUndeadMage(e,dt,{P,box,rnd:Math.random,
-  hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
+  hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK',bent:'BENT BOLT'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
   venom:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);},
-  say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)()});
+  say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),
+  /* HIS RINGS WORK BOTH WAYS (round 2): a dodge on the carpet through an open exit ring carries you out beside him */
+  dodging:()=>!!P.carpet&&P.dodge>0,
+  carry:(x,y)=>{burst(P.x,P.y-8,18,['#6fe08a','#f2d79c','#e2bb7a'],110,.6,0,2);P.x=x;P.y=y+8;P.vx=P.vy=0;P.dodge=0;P.inv=Math.max(P.inv||0,0.3);burst(x,y,18,['#6fe08a','#f2d79c','#e2bb7a'],110,.6,0,2);shakeCam(3);}});
  e.x=Math.max(A.x0,Math.min(A.x1,e.x));e.y=Math.max(A.y0+30,Math.min(A.floor+10,e.y));
 }
 /* THE CARPET, the player's half: the kite's controls in all eight directions, the kite's air swing, a dash */
@@ -14954,9 +14981,9 @@ function updateAscent(dt){
  updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();number(P.x,P.y-30,L.sanctum?'THROUGH THE DOOR':'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(L.sanctum){shakeCam(6);zoomKick(1.12,.5);flash=Math.max(flash,.3);burst(P.x,P.y,26,['#b07cf0','#e0c8ff','#4a2a7a'],150,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;}   /* A DOOR SNAPS. Without this the camera panned the 160px from the parapet up to the spawn, which reads as flying there - the one thing a portal is not */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();}});
  /* THE SECOND DOOR: through it the carpet is left behind, the sky goes warm, and the last walk of the world is on sand */
  updateSanctum(L,P,dt,{leave:out=>{burst(out.x,out.y,26,['#e0b050','#ffe9b0','#8a5a1a'],150,.9,0,2);
-  P.carpet=null;P.vx=0;P.vy=0;P.x=L.sanctum.sand.x;P.y=L.sanctum.sand.y;P.ground=true;P.face=1;L.sandWalk=true;L.sanctum.open=false;
+  P.carpet=null;P.vx=0;P.vy=0;P.x=L.sanctum.sand.x;P.y=L.sanctum.sand.y;P.ground=true;P.face=1;L.sandWalk=true;L.sanctum.open=false;L.nightA=0;L.palette.noFg=true;   /* the desert is daylight: the tower's night wash is not laid over it, and the level's foreground grass strip is not drawn along the bottom of it (round 2) */
   checkpoint={x:P.x,y:P.y};camX=P.x-VW/2;camY=P.y-VH/2;setView('normal');camLock=null;
-  music.play('theme');SFX.leap();number(P.x,P.y-30,'THE SAND GOES ON SOUTH','#f2c98a');}});
+  music.play('theme');SFX.leap();number(P.x,P.y-30,'THE DESERT','#f2c98a');}});
 }
 function updateBuriedDead(e,dt){
  stepBuriedDead(e,dt,{P,A:L.arena,hit:(x,d,hard)=>damagePlayer(x,d,{unblockable:hard,who:e}),summon:n=>summonGraveZombies(e,n),say:(msg,hard)=>number(e.x,e.y-95,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>(SFX[k]||SFX.charge)(),
@@ -22433,8 +22460,8 @@ function drawFirePool(p, x0, x1, y, h, cx, cy, front) {
 /* DEADLY WATER: its own look, over the foul water's. Near-black, bones turning in it, a slow sick pulse, a skull post on each
    bank, and the first time it is on the screen, THIS WATER KILLS over it. Any pool can be drawn foul; this one is a death. */
 function drawDeadly(p, x0, x1, y, h, cx, cy) {
-  g.globalAlpha = 0.72; g.fillStyle = '#060c06'; g.fillRect(x0, y + 3, x1 - x0, Math.max(0, h - 3)); g.globalAlpha = 1;
-  g.globalAlpha = 0.22 + 0.12 * Math.sin(time * 1.6); g.fillStyle = '#6fe08a'; g.fillRect(x0, y - 3, x1 - x0, 3); g.globalAlpha = 1;
+  g.globalAlpha = 0.72; g.fillStyle = p.deepCol || '#060c06'; g.fillRect(x0, y + 3, x1 - x0, Math.max(0, h - 3)); g.globalAlpha = 1;   /* p.deepCol / p.glowCol: a deadly pool that is not green (the Falling Tower's witchwater) */
+  g.globalAlpha = 0.22 + 0.12 * Math.sin(time * 1.6); g.fillStyle = p.glowCol || '#6fe08a'; g.fillRect(x0, y - 3, x1 - x0, 3); g.globalAlpha = 1;
   for (let x = Math.floor(p.x0 / 30) * 30 + 11; x < p.x1; x += 30) {   /* the bones in it: skulls and a long bone, bobbing and turning */
     const sx = Math.round(x - cx + Math.sin(time * 0.6 + x) * 4), by = Math.round(y + 2 + Math.sin(time * 1.3 + x * 0.1) * 1.2); if (sx < x0 - 6 || sx > x1 + 6) continue;
     if (((x / 30) | 0) % 2) { g.fillStyle = '#d9d6c0'; g.fillRect(sx - 3, by - 3, 6, 4); g.fillRect(sx - 2, by + 1, 4, 1); g.fillStyle = '#0a100c'; g.fillRect(sx - 2, by - 2, 1, 1); g.fillRect(sx + 1, by - 2, 1, 1); }
@@ -22459,7 +22486,7 @@ function drawFoul(p, x0, x1, y, h, cx, cy) {
     if (sx < x0 - 8 || sx > x1) continue;
     g.fillStyle = ((x / 12) | 0) % 2 ? scumL : scum; g.fillRect(Math.round(sx), y + 1 + (Math.sin(time * 1.7 + x) > 0 ? 0 : 1), w, 2);
   }
-  g.fillStyle = p.poison ? 'rgba(170,255,90,0.85)' : 'rgba(180,210,110,0.75)';   // gas coming up out of it
+  g.fillStyle = p.gasCol || (p.poison ? 'rgba(170,255,90,0.85)' : 'rgba(180,210,110,0.75)');   // gas coming up out of it (p.gasCol: a pool that is not green - the Falling Tower's witchwater)
   for (let k = 0; k < (p.poison ? 11 : 7); k++) { const t = (time * 0.5 + k * 0.31) % 1, bx = p.x0 + 10 + ((k * 97) % Math.max(1, p.x1 - p.x0 - 20)) - cx, by = y + 26 - t * 24;
     if (bx > x0 && bx < x1 && by > y + 3) g.fillRect(bx, by, 2, 2); }
   /* POISON (the Undercrown's standing water, which kills): no wrecks in it, but bubbles that break on the surface and a sickly glow
@@ -23107,7 +23134,7 @@ function drawWorld(cx, cy, showPlayer) {
   /* THE SAND'S OWN SKY, over the level's violet night and under everything else: the camera is only ever up here after
      the second door, and when it is, the world is warm. Then his hall, which is PAINTED at the carpet box's own edges
      and built of no tiles at all - see the head of src/sanctum.js for why. */
-  if (L.sandWalk) drawSandDawn(g, L, cx, cy, time);   /* PAST THE SECOND DOOR AND NOWHERE ELSE. Gating this on the camera height instead put it within a pixel or two of flashing above the vault at the top of the fight, where the room is 24px shallower than the screen is tall. */
+  if (L.sandWalk) drawDesertEnd(g, L, cx, cy, time, desertEndArt());   /* (round 2) THE DESERT past the second door, the Caravan's own sky and land */   /* PAST THE SECOND DOOR AND NOWHERE ELSE. Gating this on the camera height instead put it within a pixel or two of flashing above the vault at the top of the fight, where the room is 24px shallower than the screen is tall. */
   drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); drawRouteSupports(g,L,cx,cy); drawClimbCues(g,L,cx,cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
@@ -23868,6 +23895,7 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
+  if(L.sanctum&&L.carpetUp&&!L.sandWalk)drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
   drawCarpetWorld(g,L,P,cx,cy,time);drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}{const tr=L.mini&&L.mini.boss==='tidemarauder'&&enemies.find(q=>q.t==='tidemarauder'&&q.mini&&q.alive);if(tr)drawTideReaver(g,tr,cx,cy,time,L.mini.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage')drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if(L.witch)drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time);
   drawBuriedDead(g,boss?.t==='burieddead'?boss:null,L.arena,cx,cy,time);
@@ -24228,8 +24256,10 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
   drawRoomPaint(st, 0, 0, w, h, tx0, ty0);
   g.restore();
 }
+/* what stands in front of the tower's back wall, as BUILT (grid0): a floor that has fallen since is still where the wall was painted round it */
+const fallenBlocked = (tx, ty) => tx < 0 || ty < 0 || tx >= LW || ty >= LH || (grid0 || L.grid)[ty * LW + tx] !== T.AIR;
 function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
-  if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's */
+  if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time, fallenBlocked)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's - its holes and windows only where no tile stands in front of them (round 2) */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
   if (L.deepHolds && DH.paintHold(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE DEEP: a cargo hold, a galley, a gun deck, the tribute hold (src/deep-holds.js) */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
