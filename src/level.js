@@ -3155,9 +3155,13 @@ function highcrown() {
      and the chandelier that comes down on her PINS her exactly as the gallery did (main.js, the weight's fall). */
   for (const x of [212, 224, 236]) ent('deco', x, 13, { kind: 'hallWindow' });
   ent('deco', 219, 19, { kind: 'banner', v: 0 }); ent('deco', 233, 19, { kind: 'banner', v: 1 });
-  for (const x of [210, 229]) ent('torch', x, 19);
+  for (const x of [210, 234]) ent('torch', x, 19);   /* (the second was at 229 until 2026-09-25: a pillar stands there now) */
+  /* HER PILLARS (Daniel, 2026-09-25: "we need some mechanic like that"; docs/briefs/queen-pillars.md). Three cracked, load-bearing drums of stone,
+     floor to ceiling, between her chandeliers and clear of her windows (final columns 899, 904, 911). Bait her charge into one and it comes down on
+     her: pinned, as the chandelier pins her (main.js gqPin), and a heap of rubble to stand on until her next round props it up again. */
+  for (const x of [217, 222, 229]) ent('qpillar', x, 19, { top: 10 });
   for (const x of [214, 220, 226, 232, 238, 245]) ent('weight', x, 10, { len: 6, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them - and a jump and a swing cuts one down on HER
-  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. CUT A CHANDELIER DOWN ON HER: PINNED UNDER IT, SHE BLEEDS.' });
+  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. STAND BEHIND A PILLAR AND LET HER CHARGE: IT COMES DOWN ON HER.' });
   // the roof: three peaks with an iron rod on each, and a step up to each
   block(214, 218, 4, 7); block(228, 232, 4, 7); block(242, 246, 4, 7);
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
@@ -3550,7 +3554,9 @@ function highcrownWhole() {
   //
   // THESE ARE FINAL COLUMNS. Nothing is grown after this line, so what is written here is what the built level
   // has; every grow() and shiftCrown() above is already done.
-  for (const [x, y] of [[255, 63], [624, 61], [727, 51]]) R.ents.push({ t: 'temperer', x, y, face: -1 });
+  /* (2026-09-25) the second stood at 624, three tiles past the end of the forge stair's boards (615-621): nothing under him to the bottom of
+     the level, so he hung in the air until you came near and then fell out of it. He stands on the boards' end now, by the 619 brazier. */
+  for (const [x, y] of [[255, 63], [621, 61], [727, 51]]) R.ents.push({ t: 'temperer', x, y, face: -1 });
 
   // ---- EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT (docs/briefs/highcrown-bells.md) ----
   // The rule line promised it and only the Leads kept it: the ward's, the entrance hall's and the chapel's alarms went on

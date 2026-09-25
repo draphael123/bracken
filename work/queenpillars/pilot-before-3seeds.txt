@@ -1,0 +1,23 @@
+{"h":"knight","out":"win","secs":234.4,"left":0,"perMin":130,"swings":237,"pins":{"other":7},"charges":0,"hitBy":{"slamTell":122,"sweepTell":130,"pinned":80,"rec":38,"chargeTell":16,"crownRain":36,"sceptreWait":30,"decree":22}}
+{"h":"warden","out":"timeout","secs":300,"left":31,"perMin":147,"swings":275,"pins":{"other":3},"charges":0,"hitBy":{"sweepTell":216,"sweep":38,"slamTell":254,"sceptreWait":30,"slam":44,"slamRec":44}}
+{"h":"geomancer","out":"win","secs":57.6,"left":0,"perMin":156,"swings":111,"pins":{"other":5},"charges":0,"hitBy":{"pinned":150}}
+{"h":"pyro","out":"win","secs":180.2,"left":0,"perMin":102,"swings":213,"pins":{"other":3},"charges":0,"hitBy":{"slamTell":117,"pinned":80,"sweepTell":28,"sweep":16,"stand":16,"decree":22,"sceptreWait":15}}
+{"h":"paladin","out":"win","secs":129.9,"left":0,"perMin":237,"swings":114,"pins":{"other":6},"charges":0,"hitBy":{"sweepTell":48,"pinned":197,"crownRain":122,"sweep":16,"stand":54,"slamRec":44,"crownTell":15}}
+{"h":"pirate","out":"timeout","secs":300,"left":7,"perMin":173,"swings":486,"pins":{"other":6},"charges":0,"hitBy":{"pinned":144,"sweepTell":92,"stand":38,"slamRec":66,"slamTell":225,"decree":44,"crownRain":36,"sceptreWait":15}}
+{"h":"reaper","out":"win","secs":40.6,"left":0,"perMin":167,"swings":33,"pins":{"other":5},"charges":0,"hitBy":{"sweepTell":32,"pinned":77,"crownRain":4}}
+{"h":"knight","out":"win","secs":264.8,"left":0,"perMin":154,"swings":311,"pins":{"other":7},"charges":0,"hitBy":{"slamTell":190,"pinned":96,"sceptreWait":45,"sweepTell":80,"slamRec":22,"rec":76,"crownRain":93,"decree":44}}
+{"h":"warden","out":"timeout","secs":300,"left":31,"perMin":154,"swings":283,"pins":{"other":3},"charges":0,"hitBy":{"sweepTell":236,"sweep":38,"slamTell":244,"sceptreWait":15,"slam":44,"decree":44}}
+{"h":"geomancer","out":"win","secs":38.7,"left":0,"perMin":118,"swings":60,"pins":{"other":5},"charges":0,"hitBy":{"pinned":64,"crownRain":12}}
+{"h":"pyro","out":"win","secs":245.1,"left":0,"perMin":108,"swings":241,"pins":{"other":2},"charges":0,"hitBy":{"slamTell":173,"sweepTell":72,"stand":48,"rec":16,"sceptreWait":15,"decree":16,"crownRain":46}}
+{"h":"paladin","out":"win","secs":63,"left":0,"perMin":328,"swings":174,"pins":{"other":7},"charges":0,"hitBy":{"sweepTell":48,"pinned":258}}
+{"h":"pirate","out":"win","secs":105.8,"left":0,"perMin":222,"swings":202,"pins":{"other":8},"charges":0,"hitBy":{"pinned":236,"sweepTell":28,"stand":38,"slamRec":22,"crownRain":12,"decree":22}}
+{"h":"reaper","out":"win","secs":159.4,"left":0,"perMin":155,"swings":31,"pins":{"other":5},"charges":0,"hitBy":{"sweepTell":96,"pinned":72,"sceptreWait":30,"rec":16,"slamRec":110,"slam":22,"crownRain":36,"sweep":29}}
+{"h":"knight","out":"timeout","secs":300,"left":9,"perMin":130,"swings":402,"pins":{"other":5},"charges":0,"hitBy":{"slamTell":144,"pinned":112,"sceptreWait":30,"sweepTell":86,"decree":132,"stand":16,"slam":16,"slamRec":16,"crownRain":12}}
+{"h":"warden","out":"win","secs":171.8,"left":0,"perMin":146,"swings":189,"pins":{"other":7},"charges":0,"hitBy":{"sweepTell":120,"slam":67,"slamTell":83,"rec":16,"crownRain":25,"decree":44,"sceptreWait":15,"slamRec":16}}
+{"h":"geomancer","out":"win","secs":50.2,"left":0,"perMin":198,"swings":91,"pins":{"other":6},"charges":0,"hitBy":{"pinned":166}}
+{"h":"pyro","out":"win","secs":151.5,"left":0,"perMin":91,"swings":170,"pins":{"other":2},"charges":0,"hitBy":{"slamTell":111,"sweepTell":56,"rec":16,"sceptreTell":16}}
+{"h":"paladin","out":"win","secs":86.2,"left":0,"perMin":296,"swings":181,"pins":{"other":6},"charges":0,"hitBy":{"sweepTell":64,"pinned":258,"crownRain":12}}
+{"h":"pirate","out":"timeout","secs":300,"left":14,"perMin":123,"swings":456,"pins":{"other":5},"charges":0,"hitBy":{"pinned":172,"sweepTell":68,"slamTell":173,"stand":54,"crownRain":72,"decree":22,"slamRec":16}}
+{"h":"reaper","out":"win","secs":38.7,"left":0,"perMin":175,"swings":31,"pins":{"other":5},"charges":0,"hitBy":{"sweepTell":32,"pinned":77,"crownRain":4}}
+fights 21, wins 16 (76%), median win 129.9 s, range 38.7-264.8 s
+errors []
