@@ -12976,12 +12976,12 @@ function updateMoorWind(dt) {
 }
 function drawToldGust(z, cx, cy) { const G = gustNow(z); if (!G.on && G.tell < 0) return;
   const d = G.dir, w = z.x1 - z.x0, h = Math.min(z.y1 - z.y0, 10 * TS), y0 = z.y1 - h;   /* the band a hero moves through: the lowest ten rows of the zone */
-  if (G.on) { g.fillStyle = '#eef6f0'; for (let k = 0; k < 30; k++) { const sp = 260 + (k * 37) % 140, len = 10 + (k * 13) % 18; let x = (k * 97 + time * sp) % (w + 40); if (d < 0) x = w + 40 - x; const px = z.x0 + x - 20, py = y0 + (k * 53) % h;
-      if (isSolid(Math.floor(px / TS), Math.floor(py / TS))) continue; g.globalAlpha = 0.35 + (k % 3) * 0.12; g.fillRect(Math.round(px - cx - (d > 0 ? len : 0)), Math.round(py - cy), len, 1); } g.globalAlpha = 1; return; }
+  if (G.on) { g.fillStyle = '#f4faf6'; for (let k = 0; k < 44; k++) { const sp = 260 + (k * 37) % 140, len = 10 + (k * 13) % 18; let x = (k * 97 + time * sp) % (w + 40); if (d < 0) x = w + 40 - x; const px = z.x0 + x - 20, py = y0 + (k * 53) % h;
+      if (isSolid(Math.floor(px / TS), Math.floor(py / TS))) continue; g.globalAlpha = 0.5 + (k % 3) * 0.15; g.fillRect(Math.round(px - cx - (d > 0 ? len : 0)), Math.round(py - cy), len, k % 4 ? 1 : 2); } g.globalAlpha = 1; return; }   /* seen from the bank: a gust you can only feel is a memory test (C3) */
   /* THE BUILD-UP: streaks gather at the edge it comes from and creep in over the pit, more and brighter as it comes */
   const k = G.tell, edge = d > 0 ? z.x0 : z.x1, reach = Math.max(8, k * Math.min(w, 12 * TS)); g.fillStyle = '#dfe8c0';
   for (let i = 0, n = Math.round(6 + 18 * k); i < n; i++) { const x = edge + d * ((i * 41 + time * 60) % reach), py = y0 + (i * 37) % h; if (isSolid(Math.floor(x / TS), Math.floor(py / TS))) continue;
-    g.globalAlpha = 0.15 + 0.45 * k; g.fillRect(Math.round(x - cx - (d > 0 ? 6 : 0)), Math.round(py - cy), 6, 1); }
+    g.globalAlpha = 0.25 + 0.6 * k; g.fillRect(Math.round(x - cx - (d > 0 ? 8 : 0)), Math.round(py - cy), 8, i % 3 ? 1 : 2); }
   /* and the beats: a chevron at that edge, at a standing hero's height, blinking three times before it blows */
   if (Math.floor(k * 6) % 2 === 0) { const ex = edge - cx + d * 6, ey = z.y1 - 3 * TS - cy; g.globalAlpha = 0.9; g.fillStyle = '#ffd36b';
     for (let j = 0; j < 2; j++) { const x = ex + d * j * 7; g.beginPath(); g.moveTo(x + d * 5, ey); g.lineTo(x - d * 2, ey - 6); g.lineTo(x - d * 2, ey + 6); g.closePath(); g.fill(); } }

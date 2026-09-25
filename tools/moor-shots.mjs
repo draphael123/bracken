@@ -30,7 +30,7 @@ try {
   for (const [name, x, y] of spots) { if (only && !only.includes(name)) continue;
     const d = await pg.evalp(`(() => { ${boot}
       BK.tp(${x}, ${y}); BK.sim(40);
-      for (const e of BK.enemies()) e.alive = false;
+      for (const e of BK.enemies()) if (!e.elite) e.alive = false;
       for (let k = 0; k < 300; k++) BK.step(1);   /* the hint toast only runs down while it is drawn: 300 drawn frames, and it is gone */
       return { png: ${snap()} };
     })()`);
@@ -46,8 +46,8 @@ try {
   if (!only || only.includes('told-gust')) {   /* A TOLD GUST at the height of its build-up, and then blowing (after the rework only) */
     const d = await pg.evalp(`(() => { ${boot}
       const z = (BK.L.gusts || []).find(q => q.told && !q.arena); if (!z) return { none: true };
-      const x = Math.round((z.x0 + z.x1) / 32), y = Math.round(z.y1 / 16) - 1; BK.tp(z.dir > 0 ? Math.round(z.x0 / 16) + 2 : Math.round(z.x1 / 16) - 2, y); BK.sim(20);
-      for (const e of BK.enemies()) e.alive = false;
+      const bx = z.dir > 0 ? Math.floor(z.x0 / 16) - 2 : Math.ceil(z.x1 / 16) + 1, G = BK.L.grid, W = BK.L.W; let y = 1; while (y < BK.L.H && !G[y * W + bx]) y++; BK.tp(bx, y - 1); BK.sim(20);   /* on the bank, waiting for it, as the sign says */
+      for (const e of BK.enemies()) if (!e.elite) e.alive = false;   /* (an elite's death calls THE WAY IS OPEN over the picture) */
       const ph = () => (BK.time + (z.phase || 0)) % z.period;
       for (let q = 0; q < 900 && !(ph() > z.period - 0.4); q++) BK.step(1); const tell = ${snap()};
       for (let q = 0; q < 900 && !(ph() > 0.5 && ph() < z.on); q++) BK.step(1); const on = ${snap()};
