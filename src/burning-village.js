@@ -260,6 +260,21 @@ export function drawBurningBackdrop(g, VW, VH, base, off, time, heat) {
     g.fillStyle = '#2a1014'; g.fillRect(x, y, w, h + 12); g.beginPath(); g.moveTo(x - 2, y + 1); g.lineTo(x + w / 2, y - peak); g.lineTo(x + w + 2, y + 1); g.fill();
     if ((q * 7) % 5 === 0) { g.fillStyle = k > 0.3 ? '#ff9a3c' : '#7a3a1c'; g.fillRect(x + 6, y + 6, 2, 3); } }
 }
+/* THE THATCH BURNING on a roof behind the town (level review, 2026-09-24: "the fires on the village silhouettes are flat two-colour
+   orange rectangles"). It was three solid 5 px bars bobbing: a box, not a fire. Now a row of TONGUES, each on its own clock: drawn a
+   pixel row at a time, wide at the root and tapering to a point, leaning with a slow wind and licking sideways near the tip, white-
+   yellow at the root through orange to a red tip; a glow on the roof under them, and sparks that lift off. `w` is the roof's width it
+   burns along, `heat` (0..1) the village's fire near the camera: a hotter fire stands taller. */
+const FLAME_COL = ['#fff0b0', '#ffd36b', '#ff9a3c', '#ff6b2c', '#c8401c'];
+export function drawTownFlame(g, fx, fy, w, time, seed, heat) {
+  const n = Math.max(3, Math.round(w / 6)), tall = 1 + 0.5 * Math.max(0, Math.min(1, heat));
+  g.globalAlpha = 0.28 + 0.1 * Math.sin(time * 7 + seed); g.fillStyle = '#ff7a2c'; g.fillRect(Math.round(fx - w / 2 - 2), fy - 3, w + 4, 4); g.globalAlpha = 1;   /* the glow on the thatch */
+  for (let i = 0; i < n; i++) { const s = seed * 3.1 + i * 1.7, cx = fx - w / 2 + (i + 0.5) * w / n;
+    const h = Math.round((11 + ((seed * 7 + i * 5) % 8) - Math.abs(i - (n - 1) / 2) * 2 + Math.sin(time * (6 + (i % 3)) + s) * 3 + Math.sin(time * 13 + s * 2) * 1.5) * tall), base = Math.max(2, Math.round(w / n) + 1);
+    for (let r = 0; r < h; r++) { const k = r / h, ww = Math.max(1, Math.round(base * Math.pow(1 - k, 0.75))), lean = Math.sin(time * 1.3 + seed) * k * 3 + Math.sin(time * 9 + s + r * 0.5) * k * k * 2;
+      g.fillStyle = FLAME_COL[Math.min(FLAME_COL.length - 1, Math.floor(k * FLAME_COL.length * 0.95 + (i % 2) * 0.4))]; g.fillRect(Math.round(cx - ww / 2 + lean), fy - 1 - r, ww, 1); }
+    if (((time * 3 + s) % 1) < 0.5) { const k = (time * 1.1 + s * 0.3) % 1; g.globalAlpha = 1 - k; g.fillStyle = i % 2 ? '#ffd36b' : '#ff9a3c'; g.fillRect(Math.round(cx + Math.sin(time * 2 + s) * 4), Math.round(fy - h - 2 - k * 16), 1, 1); g.globalAlpha = 1; } }
+}
 /* SMOKE, in pixels: squares that rise, drift and thin from a roof - 2 px near the fire, 3 px as they spread */
 export function drawPixelSmoke(g, x, y, time, seed, heat) {
   const n = 5 + Math.round(heat * 4);

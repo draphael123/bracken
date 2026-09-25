@@ -1,6 +1,6 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
-import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
+import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins, ORES, workSees, workLamp, hash as oreHash } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
 import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
@@ -4689,9 +4689,12 @@ function drawTells() {
   g.globalAlpha = 1; tellQ.length = 0;
 }
 /* THE BOSS BAR'S NAME, on its plate: the plate is as wide as the name, and a name too long for the screen drops a size before it is ever cut */
-function bossPlate(nm, col) { const z = fitSize(nm, VW - 20, [8, 6]), w = Math.max(152, inkW(nm, z) + 16), x0 = Math.round(VW / 2 - w / 2);
-  g.fillStyle = 'rgba(10,8,20,0.62)'; g.beginPath(); g.roundRect(x0, VH - 28, w, 26, 4); g.fill(); if (window.__textRec) textRec('rect', { m: 'board', x0, y0: VH - 28, w, h: 26 });
-  text(nm, VW / 2, VH - 22 + (z < 8 ? 1 : 0), col, 'center', z); }
+/* lift: rows added over the health bar for a meter of the boss's own (the Pyromancer's heat): the plate grows up by that much and the
+   name rises with it, so the name, the meter and the health each have a line (his heat bar used to sit across the middle of his name) */
+function bossPlate(nm, col, lift = 0) { const z = fitSize(nm, VW - 20, [8, 6]), w = Math.max(152, inkW(nm, z) + 16), x0 = Math.round(VW / 2 - w / 2);
+  g.fillStyle = 'rgba(10,8,20,0.62)'; g.beginPath(); g.roundRect(x0, VH - 28 - lift, w, 26 + lift, 4); g.fill(); if (window.__textRec) textRec('rect', { m: 'board', x0, y0: VH - 28 - lift, w, h: 26 + lift });
+  text(nm, VW / 2, VH - 22 - lift + (z < 8 ? 1 : 0), col, 'center', z); }
+const PYRO_PLATE_LIFT = 7;
 const coinPlateW = lab => Math.max(52, textW(lab, 8) + 16);
 /* WHAT C DOES, ON THE PLATE: every hero's meter prompt, measured before the plate is laid so the plate is wide enough for it */
 function hudMeterLabel() {
@@ -16598,7 +16601,7 @@ function drawBurningTown(cx, cy) {
     g.fillStyle = '#1a0e10'; g.fillRect(x, y, w, h + 30); g.beginPath(); g.moveTo(x - 3, y + 1); g.lineTo(x + w / 2, y - peak); g.lineTo(x + w + 3, y + 1); g.fill();
     if ((k * 5) % 3 === 0) { g.fillRect(x + w - 9, y - peak - 6, 5, peak + 6); }   /* a chimney */
     g.fillStyle = Math.floor(time * 6 + k) % 3 ? '#ff9a3c' : '#ffd36b'; for (let q = 0; q < 1 + lit; q++) g.fillRect(x + 5 + q * 9, y + 8 + (q % 2) * 7, 3, 4);   /* windows alight */
-    if (lit >= 2) { const fx = x + w / 2, fy = y - peak + 2; for (let q = 0; q < 3; q++) { const fh = 8 + Math.round(Math.sin(time * 9 + k * 3 + q) * 3) + q * 2; g.fillStyle = q === 0 ? '#ffd36b' : q === 1 ? '#ff9a3c' : '#ff5a1c'; g.fillRect(Math.round(fx - 5 + q * 3 - 3), fy - fh, 5, fh); } }   /* the thatch burning */
+    if (lit >= 2) drawTownFlame(g, x + w / 2, y - peak + 4, 16 + (k % 3) * 6, time, k, VG.heat || 0);   /* the thatch burning: tongues of fire, not boxes (burning-village.js) */
     if ((k * 3) % 4 === 1 || (VG.heat || 0) > 0.5 && (k * 3) % 4 === 3) drawPixelSmoke(g, x + w / 2, y - peak - 10, time, k, VG.heat || 0);   /* pixel smoke, thicker as the fire grows */
   }
   drawFacades(cx, cy);   /* THE VILLAGE'S OWN WALLS, over the town behind it: drawFacades runs before this backdrop, so the burning fronts and the barn's back wall were painted over by the sky (burning village rework, 2026-09-25) */
@@ -16947,12 +16950,12 @@ function drawPyromancer(e, cx, cy) {
   const white = e.flash > 0 || (e.mode === 'overheat' && Math.floor(time * 10) % 2 === 0) || (/Tell$/.test(e.mode) && Math.floor(time * 12) % 3 === 0);
   drawSet(set, key, frame, x, y, e.face, white, 1.4, 1.4);
 }
-function drawPyroHeat(b) {   /* HIS HEAT, over his bar: the class's own meter, and the fight's clock */
-  const k = (b.heat || 0) / 100, over = b.mode === 'overheat', y = VH - 18;
+function drawPyroHeat(b) {   /* HIS HEAT, over his bar: the class's own meter, and the fight's clock - on its own line of the plate, under his name */
+  const k = (b.heat || 0) / 100, over = b.mode === 'overheat', y = VH - 17;
   g.fillStyle = 'rgba(10,8,20,0.55)'; g.fillRect(VW / 2 - 61, y - 1, 122, 5);
   bar(VW / 2 - 60, y, 120, 3, k, over ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : k >= PYRO_VENT_AT / 100 ? '#ff6b2c' : '#ff9a5c');
   g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(VW / 2 - 60 + Math.round(120 * PYRO_VENT_AT / 100), y - 1, 1, 5);
-  g.drawImage(PROP.fire[Math.floor(time * 12) % 3], VW / 2 - 74, y - 7, 9, 11);
+  g.drawImage(PROP.fire[Math.floor(time * 12) % 3], VW / 2 + 62, y - 4, 7, 8);   /* (on the right: the skull stands at the left of the health bar under it) */
 }
 
 function updateHearthGob(e, dt) {
@@ -24999,7 +25002,7 @@ function render() {
    : boss.t === 'troll' ? (boss.mode === 'pinned' ? 'THE HILL TROLL  PINNED' : 'THE HILL TROLL')
    : boss.t === 'archmage' ? archBarName(boss)
    : boss.t === 'strawking' ? strawBarName(boss)
-   : boss.t === 'queen' ? 'HORNET QUEEN' : bossTitle(boss); bossPlate(boss.t === 'king' ? (boss.mode === 'held' ? nm + '  HELD' : boss.open > 0 ? nm + '  OPEN' : nm + '  CROWNED') : boss.phase === 2 && boss.t !== 'strawking' && !(boss.t === 'prince' && nm.includes('  ')) ? nm + '  ENRAGED' : nm, boss.phase >= 2 ? '#ff6b6b' : '#ffd36b'); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); if (boss.t === 'king' && (boss.mode === 'held' || boss.open > 0)) { bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.mode === 'held' ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#e0b040') : '#8fd160'); if (boss.open > 0) { g.fillStyle = '#8fd160'; g.fillRect(VW / 2 - 60, VH - 5, Math.round(120 * boss.open / 7), 1); } } else if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, VH - 11, 120, 5, ht ? ht.hp / EHP.heart : 1, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, (boss.t === 'ram' && ramOpen(boss)) || (boss.t === 'prince' && boss.mode === 'buried') ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#fff6c8') : boss.phase === 2 ? '#ff6b6b' : '#e0b040'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } }
+   : boss.t === 'queen' ? 'HORNET QUEEN' : bossTitle(boss); bossPlate(boss.t === 'king' ? (boss.mode === 'held' ? nm + '  HELD' : boss.open > 0 ? nm + '  OPEN' : nm + '  CROWNED') : boss.phase === 2 && boss.t !== 'strawking' && !(boss.t === 'prince' && nm.includes('  ')) ? nm + '  ENRAGED' : nm, boss.phase >= 2 ? '#ff6b6b' : '#ffd36b', boss.t === 'pyromancer' ? PYRO_PLATE_LIFT : 0); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); if (boss.t === 'king' && (boss.mode === 'held' || boss.open > 0)) { bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.mode === 'held' ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#e0b040') : '#8fd160'); if (boss.open > 0) { g.fillStyle = '#8fd160'; g.fillRect(VW / 2 - 60, VH - 5, Math.round(120 * boss.open / 7), 1); } } else if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, VH - 11, 120, 5, ht ? ht.hp / EHP.heart : 1, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, (boss.t === 'ram' && ramOpen(boss)) || (boss.t === 'prince' && boss.mode === 'buried') ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#fff6c8') : boss.phase === 2 ? '#ff6b6b' : '#e0b040'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } }
     if (bossActive && boss && boss.alive && boss.t === 'pyromancer' && state !== 'menu' && state !== 'win' && state !== 'gameover') drawPyroHeat(boss);   /* HIS HEAT, over his bar */
   }
   if (state === 'title') {

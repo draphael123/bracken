@@ -30,7 +30,8 @@
 //   pixels    (headless) no sprite floats, hangs from nothing or runs through a ledge, by its own pixels; no water
 //             creature leaves its water over a tide (src/floatlab.js)
 //   deadends  every dead end pays: loot, a heart or a coin cache at the far end of every pocket (land, water, up high)
-//   textfit   (headless) no text runs past its plate or off the screen, is cut, clipped, smeared, overprinted or laid over the hero
+//   textfit   (headless) no text runs past its plate or off the screen, is cut, clipped, smeared, overprinted or laid over the hero,
+//             and no meter is drawn across a word (every boss plate is drawn in its fight: 'plates')
 //   rafts     an empty raft returns slowly, keeps its toll and passengers, and can cross again
 //   bells     every signed bell is live: a sentry runs for it, it drops its hall's gate (never on a lock gate), turns out the watch, and the gate lifts
 //   arena-supplies a fight written for height is fought in a room that has some: every boss attack that only lands
@@ -97,7 +98,7 @@ if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headles
 if (take('slopes-trace')) results.push(run('slopes-trace', process.execPath, ['tools/slopes-trace.mjs'], { PORT: String(portFor(7)) }));
 /* THE WORDS FIT: every hint, the bestiary, the store, the talent trees, the pause menu and every hero's HUD, drawn and measured (tools/textfit.mjs;
    the talk pages of every level and the boss fights are the long run: node tools/textfit.mjs --strict) */
-if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,pick,practice', '--strict'], { PORT: String(portFor(4)) }));
+if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,pick,practice,plates', '--strict'], { PORT: String(portFor(4)) }));
 if (!SUBSET) results.push(run('profile-cleanup', process.execPath, ['tools/profile-cleanup.mjs']));   /* every way a tool can end leaves nothing in Temp */   /* the full run only: a subset did not make the mess and must not be failed by it */
 if (!SUBSET) results.push(run('profile-leaks', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(SUITE_T0), '--run', process.env.BRACKEN_RUN, '--check']));
 
