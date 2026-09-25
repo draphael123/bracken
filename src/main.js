@@ -18,7 +18,7 @@ import * as DWM from './dune-worm.js'; import { newStorm, stormStep, gustDrift, 
 import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
 import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH} from './undead-mage.js';
 import {poolTraps} from './deadly-water.js'; void poolTraps;
-import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
+import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT,quench} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
 import {carpetBox,stepCarpet,knockCarpet,updateCarpet,resetCarpet,drawRug,drawCarpetWorld,drawStormWalls,mountCarpet} from './carpet.js';
 import {burnSanctum,drawSanctum,drawSanctumDoors,drawSandDawn,updateSanctum,openSanctumDoor} from './sanctum.js';   /* THE ARCHMAGE'S SANCTUM: the room behind the door, its floor of fire, and the path out */
 import {updateBuriedDead as stepBuriedDead,updateZombie,bakeDead,deadFrame,drawBuriedDead} from './buried-dead.js';
@@ -2144,7 +2144,8 @@ function spawnEnt(e) {
       case 'pyromancer': boss = { ...base, t: 'pyromancer', w: 14, h: 32, hp: EHP.pyromancer, maxHp: EHP.pyromancer, mode: 'sleep', modeT: 0, heat: 0, open: 0, phase: 1, cd: 1, turn: 0, calmT: 0 }; enemies.push(boss); break;
       case 'captive': props.push({ t: 'captive', x: px, y: py, hot: !!e.hot, hotNear: !!e.hotNear, boards: 2, freed: straysGot.has(px), alt: (e.x & 1) === 1, coolT: 0, blowT: 0 }); break;
       case 'watertrough': props.push({ t: 'vtrough', x: px, y: py, water: 1, refillT: 0 }); break;
-      case 'villagewell': props.push({ t: 'vwell', x: px, y: py, cd: 0 }); break;
+      case 'villagewell': props.push({ t: 'vwell', x: px, y: py, cd: 0, kind: e.kind || 'well', noSplash: e.splash === false });
+        if (e.bucket) props.push({ t: 'vbucket', x: px + 12, y: py, hx: px + 12, hy: py, state: 'rest', kind: e.kind || 'well' }); break;   /* THE BUCKET (burning village rework, 2026-09-25) */
       case 'sweep': enemies.push({ ...base, t: 'sweep', w: 8, h: 12, hp: EHP.sweep, mode: 'hide', modeT: Math.random(), gone: 1 }); break;
       case 'chimpot': props.push({ t: 'chimpot', x: px, y: py, ph: Math.random() * 3 }); break;
       case 'dummy': enemies.push({ ...base, t: 'dummy', w: 12, h: 22, hp: 9999, hp0: 9999, face: -1 }); break;
@@ -16524,7 +16525,7 @@ function villageReset() {
   /* THE ROOFTOPS (2026-09-25): fire on the cellar floors, and THE FALLEN HOUSE alight on top - a barrier of its own (villageSplash's
      water for the barn roof does not reach it: only a bucket carried into it does) */
   for (const [x, y] of L.cellarFires || []) for (const dx of [0, 1]) fires.push({ x: (x + dx) * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, dmg: DMG.squareFire });
-  for (const h of L.heaps || []) { h.out = false; for (let x = h.x0; x <= h.x1; x++) fires.push({ x: x * TS + 8, y: h.y0 * TS, life: 1e9, delay: 0, still: true, barrier: true, heap: h, tall: 30 }); }
+  for (const h of L.heaps || []) { if (h.out) continue; for (let x = h.x0; x <= h.x1; x++) fires.push({ x: x * TS + 8, y: h.y0 * TS, life: 1e9, delay: 0, still: true, barrier: true, heap: h, tall: 30 }); }
   for (const [x, y, bx, by] of L.beams || []) props.push({ t: 'vbeam', x: x * TS + 8, y: y * TS + 6, cx: bx, cy: by, state: 'hung', vy: 0, tellT: 0 });
 }
 function villageAshes(e) {   /* where a burning goblin falls, the ground catches: that is its whole idea */
@@ -16612,7 +16613,8 @@ function updateVillage(dt) {
   stepFire(VG, dt);
   { let n = 0; for (const c of VG.cells) if (c.s === ALIGHT && !c.square && Math.abs(c.x * TS - (camX + VW / 2)) < VW) n++; VG.heat = (VG.heat || 0) + (Math.min(1, 0.15 + n / 24) - (VG.heat || 0)) * Math.min(1, dt * 1.5); }   /* THE SKY BEHIND THE TOWN follows the fire that is burning near you */
   const pm = boss && boss.t === 'pyromancer' ? boss : null;
-  if (pm) squareHeat(VG, pm.alive && bossActive ? (pm.heat || 0) : 0);
+  if (pm) squareHeat(VG, pm.alive && bossActive ? (pm.heat || 0) : 0, dt);
+  updateBuckets(dt);
   for (const c of VG.cells) {
     const on = c.s === ALIGHT;
     if (on && !(c.f && c.f.life > 0)) { c.f = { x: c.x * TS + 8, y: (c.y + 1) * TS, life: 1e9, delay: 0, grid: true, dmg: c.square ? DMG.squareFire : DMG.fire };   /* the square's own floor is a scorch: in his fight you stand beside it the whole time */ fires.push(c.f); }
@@ -16646,7 +16648,7 @@ function updateVillage(dt) {
     else if (pr.t === 'vtrough') { if (pr.water < 1) { pr.refillT -= dt; if (pr.refillT <= 0) pr.water = 1; }
       if (pr.water >= 1 && hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.x - 12, r: pr.x + 12, t: pr.y - 14, b: pr.y })) { P.hitSet.add(pr); pr.water = 0; pr.refillT = 8; villageSplash(pr.x, pr.y, 4, 7); } }
     else if (pr.t === 'vwell') { pr.cd = Math.max(0, pr.cd - dt);
-      if (pr.cd <= 0 && hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.x - 14, r: pr.x + 14, t: pr.y - 30, b: pr.y })) { P.hitSet.add(pr); pr.cd = 4; villageSplash(pr.x, pr.y, 7, 9); } }
+      if (!pr.noSplash && pr.cd <= 0 && hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.x - 14, r: pr.x + 14, t: pr.y - 30, b: pr.y })) { P.hitSet.add(pr); pr.cd = 4; villageSplash(pr.x, pr.y, 7, 9); } }
     else if (pr.t === 'vbeam') { const c = VG.get(pr.cx, pr.cy);
       if (pr.state === 'hung') { if (c && (c.s === BURNT || (c.s === ALIGHT && c.t > 4))) { pr.state = 'tell'; pr.tellT = 0.7; SFX.crack(); number(pr.x, pr.y + 4, '!!', '#ff6b6b'); } }
       else if (pr.state === 'tell') { pr.tellT -= dt; if (Math.random() < dt * 20) parts.push({ x: pr.x + (Math.random() - 0.5) * 24, y: pr.y, vx: 0, vy: 30, life: 0.5, max: 0.5, col: '#ff9a5c', size: 1, grav: 200 }); if (pr.tellT <= 0) { pr.state = 'fall'; pr.vy = 60; } }
@@ -16654,6 +16656,80 @@ function updateVillage(dt) {
         if (!P.dead && Math.abs(P.x - pr.x) < 17 && P.y > pr.y - 4 && P.y - 26 < pr.y + 4) damagePlayer(pr.x, DMG.beamFall, { unblockable: true, up: true, name: 'THE BEAM' });
         const bx = Math.floor(pr.x / TS), by = Math.floor((pr.y + 3) / TS); if (isSolid(bx, by)) { pr.y = by * TS - 3; pr.state = 'down'; SFX.heavy(); shakeCam(3); dust(pr.x, pr.y, 8); } } }
   }
+}
+// ============================================================================================ THE BUCKET (2026-09-25)
+// docs/briefs/burning-village-rework.md §4. Every well in the village keeps a bucket on its rim. DOWN takes it, full; it is carried
+// as the game carries a weight (P.ballast: the load speed), a blow SPILLS it, and DOWN again sets it down. Carry it INTO a fire:
+// the first thing water puts out a step in front of you takes the whole bucket - a heap, a hot door, his fire in the grid (and on
+// his square, held out for QUENCH seconds), the barn roof's fire, a burning beam (which then holds). No new button: the move that
+// would burn you puts the fire out. A spent or spilled bucket goes back to its well by itself (a villager fetches it).
+const BUCKET = { reach: 16, back: 4, lost: 20, beamWet: 12, cool: 30 };
+let bucketDownWas = false;
+function bucketTargets(fx, fy) {   /* what the water would go on, from a hand at fx and feet at fy: the nearest thing first */
+  const heap = (L.heaps || []).find(h => !h.out && fx >= h.x0 * TS - 6 && fx <= (h.x1 + 1) * TS + 6 && fy > h.y0 * TS - 10 && fy <= (h.y1 + 1) * TS + 4);
+  if (heap) return { heap };
+  const cap = props.find(q => q.t === 'captive' && !q.freed && !q.lost && (q.hot || q.hotNear) && !(q.coolT > 0) && Math.abs(q.x - fx) < BUCKET.reach && Math.abs(q.y - fy) < 20);
+  if (cap) return { cap };
+  const beam = (L.deckBreaks || []).find(z => z.beam && !z.down && !(z.wet > 0) && Math.abs(fy - z.row * TS) < 6 && fx >= z.x0 * TS - 4 && fx <= (z.x1 + 1) * TS + 4);
+  if (beam) return { beam };
+  const bar = fires.find(f => f.barrier && !f.heap && !(f.delay > 0) && Math.abs(f.x - fx) < BUCKET.reach && Math.abs(f.y - fy) < 30);
+  if (bar) return { bar };
+  const cell = VG && VG.cells.find(c => (c.s === ALIGHT || c.s === CATCHING) && Math.abs(c.x * TS + 8 - fx) < BUCKET.reach && Math.abs((c.y + 1) * TS - fy) < 20);
+  if (cell) return { cell };
+  return null;
+}
+function putOutHeap(h) {
+  h.out = true; for (const f of fires) if (f.heap === h) f.life = 0;
+  const keep = h.step ? h.y1 : h.y1 + 1;   /* THE FALLEN HOUSE burns down to a step; the root cellar's timber falls in whole */
+  for (let x = h.x0; x <= h.x1; x++) for (let y = h.y0; y < keep; y++) { const i = y * LW + x; L.grid[i] = T.AIR; tileSpr[i] = null; }
+  SFX.hiss(); SFX.crumble ? SFX.crumble() : SFX.crack(); shakeCam(2); burst((h.x0 + h.x1 + 1) * 8, h.y0 * TS + 8, 22, ['#3a3036', '#6e6266', '#ff9a5c'], 70, 0.8, -30, 2);
+  number((h.x0 + h.x1 + 1) * 8, h.y0 * TS - 12, h.step ? 'IT BURNS DOWN - THE STREET IS OPEN' : 'IT FALLS IN', '#9ad0ff');
+}
+function pourBucket(pr, tg) {
+  const fx = P.x + P.face * 12, fy = P.y;
+  if (tg.heap) putOutHeap(tg.heap);
+  else if (tg.cap) { tg.cap.coolT = BUCKET.cool; tg.cap.cooled = true; number(tg.cap.x, tg.cap.y - 40, 'COOLED', '#9ad0ff'); }
+  else if (tg.beam) { tg.beam.wet = BUCKET.beamWet; tg.beam.t = -1; number((tg.beam.x0 + tg.beam.x1 + 1) * 8, tg.beam.row * TS - 20, 'THE BEAM HOLDS', '#9ad0ff'); }
+  else if (tg.bar) { const bs = fires.filter(f => f.barrier && !f.heap); for (const f of bs) f.delay = 12; number(tg.bar.x, tg.bar.y - 40, 'THE FIRE IS OUT - GO', '#9ad0ff'); }
+  else if (tg.cell) { const cx0 = tg.cell.x, cy0 = tg.cell.y; const n = douse(VG, cx0, cy0, 2) + quench(VG, cx0, cy0, 2); number(fx, fy - 30, n ? 'PUT OUT' : 'SPLASH', '#9ad0ff'); }
+  for (let i = 0; i < 22; i++) parts.push({ x: fx, y: fy - 10, vx: P.face * (60 + Math.random() * 90), vy: -90 - Math.random() * 90, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
+  SFX.splash(); if (P.ballast === pr) P.ballast = null; pr.state = 'return'; pr.retT = BUCKET.back; pr.spent = (pr.spent || 0) + 1;
+}
+function updateBuckets(dt) {
+  const downNow = !!keys.down && !bucketDownWas; bucketDownWas = !!keys.down; let took = false;
+  for (const pr of props) { if (pr.t !== 'vbucket') continue;
+    if (pr.state === 'return') { if ((pr.retT -= dt) <= 0) { pr.state = 'rest'; pr.x = pr.hx; pr.y = pr.hy; burst(pr.x, pr.y - 6, 6, ['#9ad0ff', '#e8f6ff'], 30, 0.4); } continue; }
+    if (pr.state === 'held') {
+      if (P.ballast !== pr || P.dead) { pr.state = 'return'; pr.retT = BUCKET.back; if (P.ballast === pr) P.ballast = null; continue; }
+      pr.x = P.x + P.face * 7; pr.y = P.y - 3;
+      /* A BLOW SPILLS IT: the water goes on the ground at your feet, wasted, and the bucket goes home */
+      if (P.hp < (pr.hpWas ?? P.hp)) { P.ballast = null; pr.state = 'return'; pr.retT = BUCKET.back; SFX.splash(); number(P.x, P.y - 30, 'SPILLED', '#ff9a5c');
+        for (let i = 0; i < 14; i++) parts.push({ x: P.x, y: P.y - 4, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 40, life: 0.5, max: 0.5, col: '#9ad0ff', size: 2, grav: 500 }); continue; }
+      pr.hpWas = P.hp;   /* A BLOW is any hit that costs blood: a knight swinging through one is not flinched (P.hurt stays 0), and it still spills */
+      const tg = bucketTargets(P.x + P.face * 12, P.y); if (tg) { pourBucket(pr, tg); continue; }
+      if (downNow && P.ground && !took) { took = true; P.ballast = null; pr.state = 'free'; pr.idle = 0; pr.x = P.x + P.face * 8; pr.y = P.y; SFX.stone(); number(P.x, P.y - 30, 'SET DOWN', '#9ad0ff'); }
+      continue; }
+    if (pr.state === 'free') { pr.idle = (pr.idle || 0) + dt;
+      pr.vy = Math.min(360, (pr.vy || 0) + 900 * dt); const ty = Math.floor((pr.y + pr.vy * dt) / TS), tx = Math.floor(pr.x / TS);
+      if (pr.vy >= 0 && (isSolid(tx, ty) || isOneWay(tileAt(tx, ty)))) { pr.y = ty * TS; pr.vy = 0; } else pr.y += pr.vy * dt;
+      if (pr.idle > BUCKET.lost || pr.y > LH * TS) { pr.state = 'return'; pr.retT = 0.5; continue; } }
+    /* DOWN TAKES IT - at its well, or where it was set down */
+    if ((pr.state === 'rest' || pr.state === 'free') && downNow && !took && !P.ballast && !P.dead && P.ground && Math.abs(pr.x - P.x) < 18 && Math.abs(pr.y - P.y) < 14) { took = true;
+      P.ballast = pr; pr.state = 'held'; pr.hpWas = P.hp; SFX.clank(); number(P.x, P.y - 30, 'THE BUCKET', '#9ad0ff');
+      if (!(PROG.bucketTold > 1)) { PROG.bucketTold = (PROG.bucketTold || 0) + 1; hintT = 5; hintMsg = 'CARRY THE BUCKET INTO A FIRE AND IT GOES OUT. A BLOW SPILLS IT. DOWN SETS IT DOWN.'; } }
+  }
+  for (const z of L.deckBreaks || []) if (z.wet > 0) { z.wet -= dt; if (!z.down) z.t = -1; }   /* A DOUSED BEAM HOLDS: its fuse cannot start while it is wet */
+}
+function drawPail(x, y, full) {   /* a wooden pail: staves, two iron hoops, a rope handle, and water in it when it is full */
+  g.fillStyle = '#4a3222'; g.fillRect(x - 4, y - 8, 8, 8); g.fillStyle = '#6a4a2a'; g.fillRect(x - 3, y - 8, 2, 8); g.fillRect(x + 1, y - 8, 2, 8);
+  g.fillStyle = '#8a919c'; g.fillRect(x - 4, y - 7, 8, 1); g.fillRect(x - 4, y - 2, 8, 1);
+  g.fillStyle = '#c9b27c'; g.fillRect(x - 4, y - 11, 1, 3); g.fillRect(x + 3, y - 11, 1, 3); g.fillRect(x - 3, y - 12, 6, 1);
+  if (full) { g.fillStyle = '#4a8ac0'; g.fillRect(x - 3, y - 8, 6, 1); g.fillStyle = '#bfe6f5'; g.fillRect(x - 2, y - 8, 2, 1); }
+}
+function drawBuckets(cx, cy) {
+  for (const pr of props) { if (pr.t !== 'vbucket' || pr.state === 'return') continue; const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -20 || x > VW + 20) continue;
+    drawPail(x, y, true);
+    if (pr.state !== 'held' && !P.ballast && Math.abs(pr.x - P.x) < 48 && Math.abs(pr.y - P.y) < 32) { g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 5 + pr.hx); g.strokeStyle = '#9ad0ff'; g.beginPath(); g.arc(x, y - 6, 9, 0, 7); g.stroke(); g.globalAlpha = 1; } }   /* take me */
 }
 /* THE SMOKE's clock: up for SMOKE.up seconds of its period, thickening for SMOKE.tell seconds before it */
 const smokePh = s => (time + s.ph) % s.per, smokeUp = s => smokePh(s) < SMOKE.up, smokeTell = s => smokePh(s) > s.per - SMOKE.tell;
@@ -16688,7 +16764,7 @@ function drawHeaps(cx, cy) {
 function drawVillage(cx, cy) {
   drawUnburied(cx, cy); drawCaravan(cx, cy);
   if (!VG) return;
-  drawSmoke(cx, cy); drawHeaps(cx, cy);
+  drawSmoke(cx, cy); drawHeaps(cx, cy); drawBuckets(cx, cy);
   for (const f of fires) if (f.pillar && f.delay > 0 && f.x > cx - 20 && f.x < cx + VW + 20) { const x = Math.round(f.x - cx), y = Math.round(f.y - cy), soon = f.delay < PILLAR.warn;   /* a pillar at rest: its vent glowing, and brighter just before it goes */
     g.fillStyle = '#2a1410'; g.fillRect(x - 6, y - 2, 12, 2); g.fillStyle = soon ? (Math.floor(time * 16) % 2 ? '#ffd36b' : '#ff6b2c') : '#8a2a14'; g.fillRect(x - 4, y - 3, 8, 1); g.fillRect(x - 2 + Math.round(Math.sin(time * 7 + f.x) * 2), y - 5, 3, 2); }
   for (const z of L.deckBreaks || []) { if (!(z.log || z.beam) || z.down) continue; const x = Math.round(z.x0 * TS - cx), y = Math.round(z.row * TS - cy), w = (z.x1 - z.x0 + 1) * TS; if (x > VW || x + w < 0) continue;   /* THE BURNING LOG */
@@ -16719,6 +16795,8 @@ function drawVillage(cx, cy) {
     else if (pr.t === 'vrunner' && !pr.home) drawSet(pr.alt ? SPR.folk2 : SPR.folk, null, pr.cower ? 2 : Math.floor(pr.anim * 12) % 2, pr.x - cx, pr.y - cy, -1, false);
     else if (pr.t === 'vtrough') { g.fillStyle = '#4a3222'; g.fillRect(x - 12, y - 9, 24, 9); g.fillStyle = '#2a1c12'; g.fillRect(x - 12, y - 9, 24, 1); g.fillRect(x - 10, y - 1, 3, 1); g.fillRect(x + 7, y - 1, 3, 1);
       const lvl = pr.water >= 1 ? 1 : Math.max(0, 1 - pr.refillT / 8); if (lvl > 0.05) { g.fillStyle = '#4a8ac0'; g.fillRect(x - 10, y - 8 + Math.round((1 - lvl) * 5), 20, Math.max(1, Math.round(lvl * 5))); g.fillStyle = '#bfe6f5'; g.fillRect(x - 10, y - 8 + Math.round((1 - lvl) * 5), 20, 1); } }
+    else if (pr.t === 'vwell' && pr.kind === 'butt') { g.fillStyle = '#3a2616'; g.fillRect(x - 7, y - 15, 14, 15); g.fillStyle = '#5a3a22'; for (let k = -6; k < 7; k += 4) g.fillRect(x + k, y - 15, 2, 15); g.fillStyle = '#8a919c'; g.fillRect(x - 7, y - 13, 14, 1); g.fillRect(x - 7, y - 4, 14, 1); g.fillStyle = '#4a8ac0'; g.fillRect(x - 6, y - 15, 12, 1); }   /* THE RAIN BUTT on the Hall's roof */
+    else if (pr.t === 'vwell' && pr.kind === 'pump') { g.fillStyle = '#4a4a52'; g.fillRect(x - 3, y - 26, 6, 26); g.fillStyle = '#6a6a74'; g.fillRect(x - 3, y - 26, 2, 26); g.fillRect(x - 12, y - 25, 10, 2); g.fillStyle = '#3a3a42'; g.fillRect(x + 3, y - 18, 6, 3); g.fillRect(x + 7, y - 15, 2, 3); g.fillStyle = '#5a5850'; g.fillRect(x - 8, y - 3, 22, 3); g.fillStyle = '#4a8ac0'; if (Math.floor(time * 2) % 3 === 0) g.fillRect(x + 7, y - 11, 1, 2); }   /* THE SQUARE'S PUMP */
     else if (pr.t === 'vwell') { g.fillStyle = '#5a5850'; g.fillRect(x - 12, y - 14, 24, 14); g.fillStyle = '#6e6c62'; for (let k = 0; k < 4; k++) g.fillRect(x - 12 + k * 6 + (k % 2), y - 12, 5, 3); g.fillStyle = '#3a3830'; g.fillRect(x - 12, y - 14, 24, 1);
       g.fillStyle = '#4a3222'; g.fillRect(x - 11, y - 36, 2, 22); g.fillRect(x + 9, y - 36, 2, 22); g.fillRect(x - 13, y - 38, 26, 3); g.fillStyle = '#8a8478'; g.fillRect(x - 1, y - 35, 1, 12 + (pr.cd > 0 ? 6 : 0));
       g.fillStyle = pr.cd > 0 ? '#6a5a4a' : '#8a6a3a'; g.fillRect(x - 3, y - 24 + (pr.cd > 0 ? 6 : 0), 6, 5); if (pr.cd <= 0) { g.fillStyle = '#4a8ac0'; g.fillRect(x - 2, y - 24, 4, 1); } }
@@ -25073,7 +25151,7 @@ function frame(now) { rafQueued = false; tick(now); if (!rafQueued) { rafQueued 
 setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now()); }, 125);
 loadLevel(0);
 document.getElementById('boot').remove();
-window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s) }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id) }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
+window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.ballast = pr; pr.state = 'held'; pr.hpWas = P.hp; } }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id) }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
   xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false),   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */

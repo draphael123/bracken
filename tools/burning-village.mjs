@@ -18,6 +18,7 @@ import { openPage } from './cdp.mjs';
 import { pacing } from './pacing.mjs';
 
 const TS = 16, lv = LEVELS.find(l => l.id === 'burning');
+const COMBAT = new Set(['check', 'sign', 'coin', 'deco', 'torch', 'silver', 'key', 'stray', 'npc', 'stal', 'web', 'gate', 'lockgate', 'captive', 'watertrough', 'villagewell', 'mend']), THREATLESS = new Set(['folk']);
 assert.ok(lv, 'THE BURNING VILLAGE is in LEVELS');
 assert.equal(lv.needs, 'stockade', 'it opens off the Stockade');
 const L = lv.build();
@@ -93,6 +94,32 @@ const L = lv.build();
   assert.ok(up >= 20, 'the walked route goes up onto the roofs between 200 and 320: ' + up + ' tiles');
   assert.ok(P.stats.mix.P + P.stats.mix.H >= 2 && P.stats.alternations >= 4, 'the strip has platforming on it and alternates: ' + P.strip + ' (' + P.stats.alternations + ')');
   console.log('rooftops: ' + P.strip + '  (alternations ' + P.stats.alternations + ')');
+}
+
+// ---- 8. THE BUCKET (docs/briefs/burning-village-rework.md §4): where the water is, and what it is for ----
+{ const wells = L.ents.filter(e => e.t === 'villagewell' && e.bucket), R0 = floodReach(L, T, { rides: true });
+  const kinds = wells.map(w => w.kind || 'well');
+  assert.ok(wells.length >= 5, 'a bucket at the croft well, the street well, the Hall\'s butt, the well yard and his pump: ' + wells.map(w => w.x).join(','));
+  for (const w of wells) assert.ok(R0.seen.has(w.x + ',' + w.y), 'the bucket at ' + w.x + ',' + w.y + ' stands where a hero can get to it');
+  const near = (x, y, d) => wells.some(w => Math.abs(w.x - x) <= d && Math.abs(w.y - y) <= 1);
+  const byName = n => (L.heaps || []).find(h => h.name === n);
+  const cellar = byName('THE ROOT CELLAR'), fallen = byName('THE FALLEN HOUSE');
+  /* 1. TAUGHT SAFELY: the first well and the stash beside it, in a yard nothing stands in */
+  assert.ok(cellar && near(cellar.x0, cellar.y1, 6), 'the root cellar lies beside the first well');
+  const first = wells.slice().sort((a, b) => a.x - b.x)[0];
+  const foesNear = L.ents.filter(e => (THREATLESS.has(e.t) ? false : !COMBAT.has(e.t)) && !e.boss && Math.abs(e.x - first.x) <= 10 && Math.abs(e.y - first.y) <= 8);
+  assert.equal(foesNear.length, 0, 'the bucket is taught safely: nothing stands within ten tiles of the first well: ' + foesNear.map(e => e.t + '@' + e.x).join(' '));
+  const coinsIn = L.ents.filter(e => e.t === 'coin' && e.x >= cellar.x0 && e.x <= cellar.x1 && e.y > cellar.y1).length;
+  assert.ok(coinsIn >= 4, 'and the cellar under the burning timber holds a stash: ' + coinsIn + ' coins');
+  /* 2. SAVE A VILLAGER: the first hot door is in the first well's reach; 3. OPEN A WAY: the fallen house has a well up the street */
+  const hot = L.ents.filter(e => e.t === 'captive' && e.hot).sort((a, b) => a.x - b.x);
+  assert.ok(near(hot[0].x, hot[0].y, 12), 'the first hot door is a short carry from the first well');
+  assert.ok(fallen.step && near(fallen.x0, fallen.y1, 22), 'the fallen house has a well up the street, and burns down to a step');
+  /* 4. UP HIGH: the Hall's butt stands on the same roof as the dormer's hot door */
+  const dormer = hot.find(e => e.y < 20); assert.ok(dormer && wells.some(w => w.kind === 'butt' && w.y === dormer.y && Math.abs(w.x - dormer.x) <= 10), 'the Hall\'s rain butt is on the dormer villager\'s roof');
+  /* 5. PAID OFF: a pump inside his arena */
+  const A = L.arena; assert.ok(wells.some(w => w.kind === 'pump' && w.x * TS > A.x0 && w.x * TS < A.x1), 'a pump inside the Pyromancer\'s square');
+  console.log('buckets: ' + wells.map(w => (w.kind || 'well') + '@' + w.x + ',' + w.y).join(' '));
 }
 
 // ---- 6. THE LEVEL ----
@@ -174,6 +201,36 @@ try {
    for(let i=0;i<600&&V.smokeUp(s);i++)BK.sim(1);for(let i=0;i<600&&!V.smokeUp(s);i++)BK.sim(1);
    const y0=BK.P.y;BK.press('jump');BK.keys.jump=true;let top=y0;for(let i=0;i<120;i++){BK.sim(1);top=Math.min(top,BK.P.y);}BK.keys.jump=false;
    out.smoke={from:Math.round(y0/16),top:Math.round(top/16),limit:s.y0};}
+  /* 8. THE BUCKET, in the page */
+  {const V=BK.village(),hold=(k,n)=>{BK.keys[k]=true;for(let i=0;i<n;i++)BK.sim(1);BK.keys[k]=false;},down=()=>{BK.keys.down=true;BK.sim(2);BK.keys.down=false;BK.sim(2);};
+   const B=()=>V.buckets(),at=x=>B().find(b=>Math.abs(b.hx/16-x)<3);
+   /* taught: DOWN at the croft well takes it; you walk slower; walked into the root cellar's timber it goes out and falls in */
+   boot('knight');clear();const b1=B().sort((a,b)=>a.hx-b.hx)[0];BK.tp(Math.floor(b1.hx/16),Math.round(b1.hy/16)-1);BK.P.face=1;BK.sim(5);down();
+   const took=BK.P.ballast===b1;BK.P.face=-1;BK.keys.left=true;BK.sim(40);const slow=Math.abs(BK.P.vx);BK.keys.left=false;BK.sim(10);
+   const cel=BK.L.heaps.find(h=>h.name==='THE ROOT CELLAR');BK.P.face=1;hold('right',80);
+   const cellarOut=!!cel.out,open=BK.L.grid[cel.y0*BK.L.W+cel.x0]===0,home=b1.state;BK.sim(300);const back=b1.state==='rest';
+   /* a blow spills it: nothing is put out, and it goes home */
+   boot('knight');clear();const b2=B().sort((a,b)=>a.hx-b.hx)[0];BK.tp(Math.floor(b2.hx/16),Math.round(b2.hy/16)-1);BK.sim(5);down();const had=BK.P.ballast===b2;
+   BK.P.inv=0;BK.P.inv=0;BK.P.hurt=0;BK.sim(1);const hp2=BK.P.hp;BK.damagePlayer(BK.P.x+10,5,{});BK.sim(15);   /* (past the hitstop, which holds the world still) */const spilled={hit:hp2-BK.P.hp,had,dropped:BK.P.ballast!==b2,state:b2.state,cellar:!BK.L.heaps.find(h=>h.name==='THE ROOT CELLAR').out};
+   /* the hot door cooled by the bucket opens quietly */
+   boot('knight');clear();BK.god=true;const b3=B().sort((a,b)=>a.hx-b.hx)[0];const cap=BK.props().find(p=>p.t==='captive'&&p.hot);BK.tp(Math.floor(b3.hx/16),Math.round(b3.hy/16)-1);BK.sim(5);down();
+   BK.tp(Math.round(cap.x/16)-2,Math.round(cap.y/16)-1);BK.P.face=1;hold("right",30);const cooled=!!cap.cooled;BK.tp(Math.round(cap.x/16)-1,Math.round(cap.y/16)-1);BK.P.face=1;BK.sim(5);const hp1=BK.P.hp;for(let i=0;i<10&&!cap.freed;i++){BK.press('atk');BK.sim(24);}BK.sim(60);
+   const door={cooled,freed:cap.freed,lost:hp1-BK.P.hp};
+   /* the fallen house: from the street well, carried up the street into the heap, and the street beyond is walked */
+   boot('knight');clear();BK.god=true;const fh=BK.L.heaps.find(h=>h.name==='THE FALLEN HOUSE'),b4=at(210);BK.tp(Math.floor(b4.hx/16),Math.round(b4.hy/16)-1);BK.sim(5);down();
+   BK.P.face=1;hold('right',600);const fallen={out:!!fh.out,step:BK.L.grid[fh.y1*BK.L.W+fh.x0]===1&&BK.L.grid[(fh.y1-1)*BK.L.W+fh.x0]===0};BK.sim(30);BK.keys.right=true;for(let i=0;i<160;i++){if(i%20===0)BK.press("jump");BK.sim(1);}BK.keys.right=false;   /* (a hop up the step) */fallen.beyond=BK.P.x>(fh.x1+2)*16&&BK.P.y>=24*16;
+   /* the roof: the Hall's pail cools the dormer's hot door */
+   boot('knight');clear();BK.god=true;const dor=BK.props().find(p=>p.t==='captive'&&p.hot&&p.y<20*16),b5=B().find(b=>b.kind==='butt');BK.tp(Math.floor(b5.hx/16),Math.round(b5.hy/16)-1);BK.sim(5);down();BK.P.face=1;hold('right',240);
+   const dormer={cooled:!!dor.cooled,held:BK.P.ballast===b5};
+   /* the beam: doused, it holds a hero standing on it well past its fuse */
+   boot('knight');clear();BK.god=true;const Z=BK.L.deckBreaks.find(q=>q.beam);BK.tp(Z.x0-3,Z.row-1);BK.sim(5);const b7=B().find(b=>b.kind==='butt');V.take(b7);BK.P.face=1;hold('right',50);const wet=Z.wet>0;BK.tp(Z.x0+1,Z.row-1);BK.sim(Math.round((Z.fuse+1.5)*60));
+   const beam={wet,down:Z.down,y:Math.round(BK.P.y/16)};
+   /* his square: the pump's bucket into a burning patch puts it out and holds it out, with his bar at the top */
+   boot('knight');BK.god=true;const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);const pm=BK.boss;pm.heat=100;pm.calmT=0;pm.cd=99;pm.mode='stalk';BK.sim(150);
+   const G=V.G(),lit=G.cells.filter(c=>c.square&&c.s===2).sort((a,b)=>a.x-b.x);const tgt=lit[0];const b6=B().find(b=>b.kind==='pump');
+   let sq=null;if(tgt){V.take(b6);BK.tp(tgt.x-2,tgt.y);BK.P.face=1;hold('right',20);const outNow=tgt.s!==2;for(let i=0;i<360;i++){pm.heat=100;pm.cd=99;pm.calmT=0;pm.mode='stalk';BK.sim(1);}sq={outNow,held:tgt.s!==2&&tgt.s!==1,after8:null};
+     for(let i=0;i<240;i++){pm.heat=100;pm.cd=99;pm.calmT=0;BK.sim(1);}sq.after8=tgt.s;}
+   BK.god=false;out.bucket={took,slow:Math.round(slow),cellarOut,open,home,back,spilled,door,fallen,dormer,beam,sq};}
   return out;})()`, 600000);
   console.log(JSON.stringify(r));
 
@@ -206,6 +263,16 @@ try {
   assert.ok(r.beam.stood.down && r.beam.stood.y > (r.beam.stood.row + 2) * 16, 'stand still on it and it burns through into the cellar: ' + JSON.stringify(r.beam.stood));
   assert.ok(r.beam.back, 'and it is back after it has burned through');
   assert.ok(r.smoke.top <= 12 && r.smoke.from - r.smoke.top >= 12, 'the smoke carries a hero up out of the cellar, past the eaves: ' + JSON.stringify(r.smoke));
+  const K = r.bucket;
+  assert.ok(K.took && K.slow > 0 && K.slow <= 60, 'DOWN takes the bucket, and you walk at the load speed with it: ' + JSON.stringify(K));
+  assert.ok(K.cellarOut && K.open && K.home === 'return' && K.back, 'carried into the root cellar\'s burning timber it puts it out, the hatch opens, and the bucket goes home: ' + JSON.stringify(K));
+  assert.ok(K.spilled.had && K.spilled.dropped && K.spilled.state === 'return' && K.spilled.cellar, 'a blow spills it, and puts nothing out: ' + JSON.stringify(K.spilled));
+  assert.ok(K.door.cooled && K.door.freed && K.door.lost === 0, 'the bucket cools a hot door and it opens quietly: ' + JSON.stringify(K.door));
+  assert.ok(K.fallen.out && K.fallen.step && K.fallen.beyond, 'carried up the street into the fallen house it burns it down to a step, and the street beyond is walked: ' + JSON.stringify(K.fallen));
+  assert.ok(K.dormer.cooled, 'the Hall\'s pail cools the dormer\'s hot door: ' + JSON.stringify(K.dormer));
+  assert.ok(K.beam.wet && !K.beam.down && K.beam.y <= 14, 'a doused beam holds a hero standing on it past its fuse: ' + JSON.stringify(K.beam));
+  assert.ok(K.sq && K.sq.outNow && K.sq.held, 'the pump\'s bucket puts out a patch of his square and holds it out with his bar at the top: ' + JSON.stringify(K.sq));
+  assert.equal(K.sq.after8, 2, 'and after its eight seconds his heat takes it back: ' + JSON.stringify(K.sq));
   assert.deepEqual(pg.errors, []);
   console.log('the burning village keeps its promises.');
 } finally { pg.close(); }
