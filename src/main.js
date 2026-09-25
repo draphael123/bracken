@@ -106,7 +106,7 @@ import { bakeGrub, bakeDrone, bakeGreatHound, bakeTroll } from './redraw/foes2.j
 import { bakeHoundMaster } from './redraw/hunt.js';
 import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_F } from './redraw/prince.js';
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
-import { LEVELS, T, TS, CUSTOM, eliteGate } from './level.js';
+import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
 
@@ -321,7 +321,7 @@ const UPGRADES = [
   { id: 'edge', name: 'KEEN EDGE', price: 90, desc: '+3 sword damage' },
   { id: 'edge2', name: 'RAZOR EDGE', price: 160, desc: '+3 more sword damage', needs: 'spore', needsName: 'Sporewood' },
   // THE SMITH's new work, for the gold the training used to take: better edges and armour as the woods open, and tonics to carry
-  { id: 'edge3', name: 'MASTERWORK EDGE', price: 260, desc: '+3 more damage: the best the smith can do', needs: 'spire', needsName: 'the Sunspire' },
+  { id: 'edge3', name: 'MASTERWORK EDGE', price: 260, desc: '+3 more damage: the best the smith can do', needs: 'spire', needsName: 'the Monastery' },
   { id: 'mail', name: 'RINGMAIL', price: 150, desc: 'a tenth less damage from every blow', needs: 'kings', needsName: 'Kingswood' },
   { id: 'plate', name: 'PLATE', price: 280, desc: 'another tenth less damage', needs: 'moor', needsName: 'Gale Moor' },
   { id: 'tonic', name: 'RED TONIC', price: 40, consumable: true, max: 3, desc: 'carry up to three. when a blow leaves you under a quarter of your health you drink one at once: +45 health. it will even save you from a killing blow.' },
@@ -686,6 +686,8 @@ function redressProps() { const r = redressOf(); if (!r) return null; const k = 
   if (!(k in REDRESS_PROPS)) REDRESS_PROPS[k] = { kit: r[0] === 'crag' ? CRR.CRAG_KITS[r[1]] : RD2.REDRESS_KITS[r[1]], props: r[0] === 'crag' ? CRR.bakeCragProps(r[1]) : RD2.bakeRedressProps(r[1]) };
   return REDRESS_PROPS[k]; }
 let TILE, PROP, BG, VILL = null, SHORE = null, REEF = null, FLOT = null, CITY = null, CROWN = null, MONK = null, RAINART = null;
+/* UNDER THE GROUND: a level that is all cave (L.underground) and the Ore Road's mine, which draws its own cave */
+function belowGround(Lv) { return !!(Lv && (Lv.underground || Lv.oreRoad)); }
 function bakeAll(pal = {}) {
   Object.assign(ART.C, PAL0, pal);
   TILE = {
@@ -731,6 +733,11 @@ function bakeAll(pal = {}) {
   /* THE DEAD ARE IN THE GROUND (THE UNBURIED FIELD): a share of this level's own dirt tiles get a rib cage, a skull, a long bone or a helm painted
      into them. The tiles are rebaked on every level load, so no other level's earth is touched. */
   if (pal.boneSoil) { UW.boneSoil(TILE.dirt, 5, 0.2); TILE.deep.forEach((band, i) => UW.boneSoil(band, 11 + i, 0.14 - i * 0.04)); TILE.roots = TILE.dirt.slice(0, 3); }   /* and no tree roots: nothing grew here (the tiles are swapped, not the dice, so the level's scatter lands where it did) */
+  /* AND NOTHING GROWS UNDER THE HILL (level review, 2026-09-24). The root tile - wood-brown roots reaching down from the grass
+     line - was laid under every floor of the Burial Caverns and the Ore Road's mine, thirty to ninety rows under the ground.
+     A level below the ground swaps it for its own plain earth, the same way. tools/skins.mjs holds every level to it. */
+  { let below = false; try { below = belowGround(L); } catch { }   /* the first bakeAll runs before L exists */
+    if (below) TILE.roots = TILE.dirt.slice(0, 3); }
   const sky = (pal.sky === 'unburied' || pal.sky === 'mage' || pal.sky === 'fields' || pal.sky === 'night' || pal.sky === 'teal' || pal.sky === 'autumn' || pal.sky === 'crag' || pal.sky === 'sea' || pal.sky === 'storm' || pal.sky === 'glare') ? null : (pal.sky || [[104, 170, 220], [205, 232, 210]]);
   CROWN = CROWN || CRT.bakeCrownTiles(); VILL = VILL || bakeVillageTiles(); SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };
   BG = { sky: pal.sky === 'unburied' ? UW.bakeSkyUnburied(VH) : pal.sky === 'mage' && MW.bakeSkyMage ? MW.bakeSkyMage(VH) : pal.sky === 'fields' && FW.bakeSkyFields ? FW.bakeSkyFields(VH) : pal.sky === 'drowned' ? CTT.bakeSkyDrowned(VH) : pal.sky === 'harbour' ? HB.bakeSkyHarbour(VH) : pal.sky === 'glare' ? FLT.bakeSkyGlare(VH) : pal.sky === 'storm' ? RFT.bakeSkyStorm(VH) : pal.sky === 'sea' ? LWT.bakeSkySea(VH) : sky ? ART.bakeSky(VH, sky[0], sky[1]) : pal.sky === 'teal' ? ART.bakeSkyTeal(VH) : pal.sky === 'autumn' ? ART.bakeSkyAutumn(VH) : pal.sky === 'crag' ? ART.bakeSkyCrag(VH) : ART.bakeSkyNight(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: pal.far === 'unburied' ? UW.bakeFarUnburied(320, 90, 1) : pal.far === 'mage' && MW.bakeFarMage ? MW.bakeFarMage(320, 90, 1) : pal.far === 'fields' && FW.bakeFarFields ? FW.bakeFarFields(320, 90, 1) : pal.far === 'causeway' ? KRA.bakeFarCauseway(320, 90, 1) : pal.far === 'city' ? CTT.bakeFarCity(320, 90, 1) : pal.far === 'harbour' ? HB.bakeFarHarbour() : pal.far === 'stormsea' ? SM.bakeStormSea() : pal.far === 'fleet' ? FLT.bakeFarFleet(320, 90, 1) : pal.far === 'reef' ? RFT.bakeFarReef(320, 90, 1) : pal.far === 'sea' ? LWT.bakeFarSea(320, 90, 1) : pal.far === 'town' ? TWN.bakeFarTown(320, 90, 1) : pal.far === 'village' ? ART.bakeFarVillage(320, 90, 1) : pal.far === 'crag' ? ART.bakeFarCrags(320, 90, 1) : ART.bakeFar(320, 90, 1), mid: pal.mid === 'unburied' ? UW.bakeMidUnburied(480, 140, 1) : pal.mid === 'mage' && MW.bakeMidMage ? MW.bakeMidMage(480, 140, 2) : pal.mid === 'fields' && FW.bakeMidFields ? FW.bakeMidFields(480, 140, 2) : pal.mid === 'causeway' ? KRA.bakeMidCauseway(480, 140, 2) : pal.mid === 'crown' ? CRT.bakeMidCrown(480, 140, 2) : pal.mid === 'city' ? CTT.bakeMidCity(480, 140, 2) : pal.mid === 'harbour' ? HB.bakeMidHarbour() : pal.mid === 'swells' ? SM.bakeSwells() : pal.mid === 'ships' ? FLT.bakeMidShips(480, 140, 2) : pal.mid === 'wrecks' ? RFT.bakeMidWrecks(480, 140, 2) : pal.mid === 'coast' ? LWT.bakeMidCoast(480, 140, 2) : pal.mid === 'town' ? TWN.bakeMidTown(480, 140, 2) : pal.mid === 'village' ? ART.bakeMidVillage(480, 140, 2) : pal.mid === 'crag' ? ART.bakeMidCrags(480, 140, 2) : ART.bakeMid(480, 140, 2), near: pal.near === 'unburied' ? UW.bakeNearUnburied(640, 300, 1) : pal.near === 'mage' && MW.bakeNearMage ? MW.bakeNearMage(640, 300, 3) : pal.near === 'fields' && FW.bakeNearFields ? FW.bakeNearFields(640, 300, 3) : pal.near === 'city' ? CTT.bakeNearCity(640, 300, 3) : pal.near === 'harbour' ? HB.bakeNearHarbour() : pal.near === 'none' ? canvas(VW, 1)[0] : pal.near === 'hulls' ? FLT.bakeNearHulls(640, 300, 3) : pal.near === 'reef' ? RFT.bakeNearReef(640, 300, 3) : pal.near === 'shore' ? LWT.bakeNearShore(640, 300, 3) : pal.near === 'town' ? TWN.bakeYardsTown(640, 300, 3) : pal.near === 'village' ? ART.bakeNearVillage(640, 300, 3) : pal.near === 'crag' ? ART.bakeNearCrag(640, 300, 3) : pal.near === 'mushroom' ? ART.bakeNearMushrooms(640, 300, 3) : pal.near === 'autumn' ? ART.bakeNearAutumn(640, 300, 3) : ART.bakeNear(640, 300, 3, pal.canopy), nearTrees: pal.near === 'mushroom' ? ART.bakeNear(640, 300, 5, pal.canopy) : null, fg: pal.dress === 'battlefield' ? UW.bakeFGUnburied(640, VH, 4) : pal.fg === 'city' ? CTT.bakeFGCity(640, VH, 4) : pal.fg === 'rig' ? FLT.bakeFGRig(640, VH, 4) : pal.fg === 'reef' ? RFT.bakeFGReef(640, VH, 4) : pal.fg === 'shore' ? LWT.bakeFGShore(640, VH, 4) : ART.bakeFG(640, VH, 4) };
@@ -779,6 +786,28 @@ const linesDrain = (x, y) => {
   return false;
 };
 const LEDGE_SETS = {};   /* filled once the tiles are baked: a level's palette can name one of these */
+/* HOW FAR UNDER THE OPEN AIR A TILE LIES, BLENDED ACROSS (level review, 2026-09-24). It was counted down each column from
+   that column's own surface, so every block raised two or three rows over its neighbours was deeper at the same row than
+   the ground beside it: the dirt under it turned to the dark fill sooner and was shaded heavier, and every step left a
+   darker stripe from the step to the bottom of the screen (the Wood, the Marsh, the Stockade, Kingswood). Now a tile is
+   as deep as the SHALLOWEST ground within four columns of it along the same row (through rock only: never across a pit),
+   and past that it deepens a row per column - so a pillar or a step has no shadow of its own under it, a wide hill
+   darkens in on a diagonal, and no two tiles side by side differ by more than one row. tools/ground-depth.mjs reads this and holds every level to that. */
+function groundDepth(W, H, solidAt, cap) {
+  const D = new Uint8Array(W * H);
+  for (let x = 0; x < W; x++) for (let y = 0; y < H; y++) { if (!solidAt(x, y)) continue;
+    D[y * W + x] = !solidAt(x, y - 1) ? 0 : y === 0 ? cap : Math.min(cap, D[(y - 1) * W + x] + 1); }
+  const R = 4, M = new Uint8Array(D);
+  for (let y = 0; y < H; y++) { const r = y * W;
+    for (let x = 0; x < W; x++) { if (!solidAt(x, y)) continue;
+      for (let k = 1; k <= R && x - k >= 0 && solidAt(x - k, y); k++) M[r + x] = Math.min(M[r + x], D[r + x - k]);
+      for (let k = 1; k <= R && x + k < W && solidAt(x + k, y); k++) M[r + x] = Math.min(M[r + x], D[r + x + k]); } }
+  D.set(M);
+  for (let y = 0; y < H; y++) { const r = y * W;
+    for (let x = 1; x < W; x++) if (solidAt(x, y) && solidAt(x - 1, y)) D[r + x] = Math.min(D[r + x], D[r + x - 1] + 1);
+    for (let x = W - 2; x >= 0; x--) if (solidAt(x, y) && solidAt(x + 1, y)) D[r + x] = Math.min(D[r + x], D[r + x + 1] + 1); }
+  return D;
+}
 function resolveTiles() {
   if (!LEDGE_SETS.beam) { LEDGE_SETS.beam = { ledge: TILE.beam, ledgeL: TILE.beamL, ledgeR: TILE.beamR };
     LEDGE_SETS.staging = { ledge: TILE.staging, ledgeL: TILE.stagingL, ledgeR: TILE.stagingR };
@@ -804,6 +833,7 @@ function resolveTiles() {
   if(!LEDGE_SETS.cargo)Object.assign(LEDGE_SETS,bakeRouteLedges());
   if(!LEDGE_SETS.masonry){const [c,cg]=canvas(16,16);cg.fillStyle='#39362f';cg.fillRect(0,0,16,6);cg.fillStyle='#a69a82';cg.fillRect(0,1,16,3);cg.fillStyle='#cec0a0';cg.fillRect(0,1,16,1);cg.fillStyle='#766c59';cg.fillRect(7,2,1,3);LEDGE_SETS.masonry={ledge:[c],ledgeL:c,ledgeR:c};}
   const rnd = mulberry(7);
+  const rockDeep = groundDepth(LW, LH, (x, y) => tileAt(x, y) === T.SOLID, 18), groundDeep = groundDepth(LW, LH, solidish, 9);
   const RDG = redressGround(), RDP = redressProps();   /* THE REDRESS: this level's own rock and dressing, where it has one */
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
@@ -832,7 +862,7 @@ function resolveTiles() {
         const clearGround = up === T.AIR && !(L.interiors || []).some(([a,b,c]) => x >= a && x <= b && y >= c-4 && y<c);
         if (L.snowLine !== undefined && y <= L.snowLine && rnd()<0.85) decor.push({k:'snow',kind:'snow',x:x*TS,y:y*TS-3,c:PROP.snowCap});
         if (clearGround && kit.kinds.length && rnd()<kit.density) {
-          const kind=kit.kinds[Math.floor(rnd()*kit.kinds.length)];
+          let kind=kit.kinds[Math.floor(rnd()*kit.kinds.length)]; if (L.fresh && x >= L.fresh[0] && x <= L.fresh[1] && FRESH_TWIN[kind]) kind = FRESH_TWIN[kind];   /* a river is not the sea (src/level.js FRESH_TWIN) */
           const source=(RDP && RDP.props[kind]) || ({rushes:PROP.lw.rushes,shell:PROP.lw.shell,saltCrust:PROP.lw.saltCrust,driftwood:PROP.lw.driftwood,barnacleRock:PROP.lw.barnacleRock,coralTuft:PROP.lw.coralTuft,herbBed:mo().herbBed,stoneLantern:mo().stoneLantern})[kind] || PROP[kind];
           const c=Array.isArray(source)?source[Math.floor(rnd()*source.length)]:source;
           if(c && (c.width<=16 || (tileAt(x+1,y)===T.SOLID && tileAt(x+1,y-1)===T.AIR))) {
@@ -848,11 +878,11 @@ function resolveTiles() {
       } else if (shipT) s = deckZ ? FLOT.deck[(rnd() * 4) | 0] : FLOT.hull[(rnd() * 4) | 0];
       else if (timber) s = hullSpr(false, x, y, eL, eR, (rnd() * 4) | 0);
       else if (eL || eR) s = SET2 ? SET2.edge[eL + '' + eR][(rnd() * 2) | 0] : TILE.edge[eL + '' + eR][(rnd() * 2) | 0];
-      else if (villT) s = linesDrain(x, y) ? VILL.silt[(rnd() * 3) | 0] : VILL.fill[(rnd() * 4) | 0];
+      else if (villT && !crownT) s = linesDrain(x, y) ? VILL.silt[(rnd() * 3) | 0] : VILL.fill[(rnd() * 4) | 0];   /* NOT INSIDE WHAT THE MASONS LAID (level review, 2026-09-24): a village's earth fill won over L.masonry, so Waymeet's half-built wall was an ashlar frame round a box of dirt */
       else if (SET2) s = SET2.fill[(rnd() * 4) | 0];
       else if (!(L.palette && L.palette.myc) && tileAt(x, y - 2) !== T.SOLID && rnd() < 0.4) s = TILE.roots[(rnd() * 3) | 0];
       else if (L.palette && L.palette.myc) s = TILE.mycDirt[(rnd() * 3) | 0];
-      else { let dn = 0; while (dn < 18 && tileAt(x, y - 1 - dn) === T.SOLID) dn++;   // how far under the open air this tile lies
+      else { const dn = rockDeep[y * LW + x];   // how far under the open air this tile lies (blended across: groundDepth)
         s = dn < 3 ? TILE.dirt[(rnd() * TILE.dirt.length) | 0] : TILE.deep[dn < 7 ? 0 : dn < 13 ? 1 : 2][(rnd() * 8) | 0]; }
       if (L.palette && L.palette.myc && (eL || eR)) s = TILE.mycDirt[(rnd() * 3) | 0];
       if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) !== T.SOLID) s = TILE.hall[(rnd() * 3) | 0]; // the underside of a hall's ceiling
@@ -902,8 +932,7 @@ function resolveTiles() {
     else if (t === T.CRATE) s = TILE.crate;
     tileSpr[y * LW + x] = s;
     { // how far under the open air this tile sits: the ground gets heavier the deeper it goes
-      let d = 0; if (solidish(x, y)) { while (d < 9 && solidish(x, y - 1 - d)) d++; }
-      tileDeep[y * LW + x] = d; }
+      tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; }
   }
   // a boss floor is a fighting floor: no fallen logs, stumps, fences, bushes, carts or campfires scattered on it (they read as things to jump or hide behind)
   const BULKY = new Set(['log', 'stump', 'fence', 'bush', 'cart', 'tent', 'fire', 'skull']);
@@ -2143,7 +2172,7 @@ function spawnEnt(e) {
         grave: [PROP.grave[e.v || 0], false], lychgate: [PROP.lychgate, false], yew: [PROP.yew[e.v || 0], false],
         crookedCross: [ub().cross[(e.v || 0) % 2], false], brokenSpears: [ub().spears[(e.v || 0) % 3], false], stuckShield: [ub().shield[(e.v || 0) % 2], false], fallenBanner: [ub().banner, false], siegeWreck: [ub().wreck, true], brokenPillar: [ub().pillar[(e.v || 0) % 2], true], oldStandard: [ub().standard, true],   /* THE UNBURIED FIELD (src/redraw/unburied_world.js) */
         plantedSpears: [ub().pikes[(e.v || 0) % 2], false], shieldPile: [ub().shieldPile[(e.v || 0) % 2], false], catapultWreck: [ub().catapult, true], batteringRam: [ub().ram, true], barrowMound: [ub().mound[(e.v || 0) % 2], false], armyBanner: [ub().armyBanner[(e.v || 0) % 2], true], trenchRevet: [ub().revet[(e.v || 0) % 2], true],   /* and its rework's */
-        hiveBg: [e.v ? PROP.hiveBgs[e.v % 3] : PROP.hiveBg, true], drip: [PROP.honeyDrip[0], false, PROP.honeyDrip], frogStatue: [PROP.frogStatue[e.v || 0], true], lilyLantern: [PROP.lilyLantern[0], false, PROP.lilyLantern], banner: [(e.hang ? PROP.bannerHung : PROP.banner)[e.v || 0], true], gobPennant: [PROP.gobPennant[(e.v || 0) % 4][0], true, PROP.gobPennant[(e.v || 0) % 4]], warStandard: [PROP.warStandard[(e.v || 0) % 2], true], ragBanner: [PROP.ragBanner[(e.v || 0) % 3], true], clothStrip: [PROP.clothStrip[(e.v || 0) % 4], true], hideBanner: [PROP.hideBanner[(e.v || 0) % 2], true], skullTotem: [PROP.skullTotem[(e.v || 0) % 2], true], trophyRack: [PROP.trophyRack[(e.v || 0) % 2], true], idol: [PROP.idol[(e.v || 0) % 2], true], stakeFence: [PROP.stakeFence[(e.v || 0) % 2], true], lootHeap: [PROP.lootHeap[(e.v || 0) % 2], true], cookSpit: [PROP.cookSpit[0], true, PROP.cookSpit], cauldron: [PROP.cauldron[0], true, PROP.cauldron], boneChime: [PROP.boneChime[(e.v || 0) % 2][0], true, PROP.boneChime[(e.v || 0) % 2]], hideRack: [PROP.hideRack[(e.v || 0) % 2], true], warnPost: [PROP.warnPost[(e.v || 0) % 2], true], boneThrone: [PROP.boneThrone, true], skullPile: [PROP.skullPile[e.v || 0], false], hangCage: [e.hang ? PROP.hangCage : PROP.gibbet, true], eyrie: [PROP.eyrie, false], siege: [PROP.siege, true], bough: [PROP.bough, true], bothy: [PROP.bothy, true], cabin: [PROP.cabin, true], trunk: [PROP.trunk[e.v || 0], true], bracket: [PROP.bracket[e.v || 0], true], axle: [PROP.axle, true], pillar: [PROP.pillar[e.v || 0], true], strut: [PROP.strut[e.v || 0], true], deadTree: [PROP.deadTree[e.v || 0], true], counter: [PROP.counter, false], wares: [PROP.wares[e.v || 0], true], barrels: [PROP.barrelStack, true], lanternPost: [PROP.lanternPost, true], beehive: [PROP.beehive, true], birdhouse: [PROP.birdhouse, true], fishTrap: [PROP.fishTrap[e.v || 0], true], spearRack: [PROP.spearRack, true], bones: [PROP.bones[e.v || 0], false], well: [PROP.well, true], cart: [PROP.cart, true], fence: [PROP.fence[e.v || 0], true], mill: [PROP.mill, true], stone: [PROP.standingStone[e.v || 0], true], cairn: [PROP.cairn, false], foldGate: [PROP.foldGate, true], rootDecor: [PROP.rootDecor[e.v || 0], false], sporePod: [PROP.sporePod[0], false, PROP.sporePod], timber: [PROP.timber[e.v || 0], true], cobweb: [PROP.cobweb[e.v || 0], true], tent: [PROP.tent[e.v || 0], true], spire: [TILE.spire[0][e.v || 0], true], throne: [SPR.throne, true], hallWindow: [HALLWIN || (HALLWIN = bakeHallWindow()), true], bridgepost: [PROP.bridgePost, false], bridgetower: [PROP.bridgeTower, true], gatehouse: [PROP.gatehouse, true], forge: [PROP.forge, true], anvil: [PROP.anvil, false], stilt: [PROP.stilt, true], frozen: [PROP.frozen[e.v || 0], true], cannon: [PROP.flot.cannon[0], false], oarBench: [PROP.flot.oarBench, false], oar: [PROP.flot.oar, false], hammock: [PROP.flot.hammock[(e.v || 0) % 2], true], washing: [PROP.flot.washing, true], cookPot: [PROP.flot.cookPot, false], rumBarrels: [PROP.flot.rumBarrels[(e.v || 0) % 2], false], chickenCoop: [PROP.flot.chickenCoop, false], chartTable: [PROP.flot.chartTable, false], plunder: [PROP.flot.plunder[(e.v || 0) % 3], false], crowNest: [PROP.flot.crowNest, true], mastTall: [PROP.flot.mastTall[(e.v || 0) % 2], true], pennant: [PROP.flot.pennant[(e.v || 0) % 3], true], boardingNet: [PROP.flot.boardingNet, true], lanternDeck: [PROP.flot.lanternDeck[e.v === 0 ? 0 : 1], false], waterButt: [PROP.flot.waterButt, false], coiledCable: [PROP.flot.coiledCable[(e.v || 0) % 2], false], gunport: [PROP.flot.gunport[e.v === 0 ? 0 : 1], true], sternWindows: [PROP.flot.sternWindows, true], kegStack: [PROP.flot.kegStack, false], mastStump: [PROP.reef.mastStump, false], rigging: [PROP.reef.rigging[(e.v || 0) % 2], true], sailRag: [PROP.reef.sailRag[(e.v || 0) % 2], true], wreckBow: [PROP.reef.wreckBow, true], wreckStern: [PROP.reef.wreckStern, true], figurehead: [PROP.reef.figurehead, false], capstan: [PROP.reef.capstan, false], anchor: [PROP.reef.anchor, false], seaChest: [PROP.reef.seaChest, false], shipBell: [PROP.reef.shipBell, false], lanternBuoy: [PROP.reef.lanternBuoy[e.v === 0 ? 0 : 1], false], coralFan: [PROP.reef.coralFan[(e.v || 0) % 3], false], brainCoral: [PROP.reef.brainCoral[(e.v || 0) % 2], false], urchinRock: [PROP.reef.urchinRock[(e.v || 0) % 2], false], spar: [PROP.reef.spar[(e.v || 0) % 2], false], bubbleVent: [PROP.reef.bubbleVent, false], cityWeed: [PROP.city.cityWeed[(e.v || 0) % 3], false], shellDrift: [PROP.city.shellDrift[(e.v || 0) % 2], false], lampWreck: [PROP.city.lampWreck[(e.v || 0) % 2], false], stall: [PROP.city.stall[(e.v || 0) % 2], true], column: [PROP.city.column[(e.v || 0) % 2], true], clerkDesk: [PROP.city.clerkDesk, false], sealDrift: [PROP.city.sealDrift[(e.v || 0) % 2], false], bellows: [PROP.city.bellows, true], tollPost: [PROP.city.tollPost, true], magistrate: [PROP.city.magistrate, true], drownedCart: [PROP.city.drownedCart, false], grating: [PROP.city.grating, true], lampMain: [PROP.city.lampMain[(e.v || 0) % 2], true], airBell: [PROP.reef.airBell, false], kelpTall: [PROP.reef.kelpTall[(e.v || 0) % 3], false], wheel: [PROP.reef.wheel, false], reefRock: [PROP.reef.reefRock[(e.v || 0) % 2], false], coralTuft: [PROP.lw.coralTuft[(e.v || 0) % 3], false], barnacleRock: [PROP.lw.barnacleRock[(e.v || 0) % 2], false], saltCrust: [PROP.lw.saltCrust[(e.v || 0) % 2], false], drownedHut: [PROP.lw.drownedHut, true], fishCottage: [PROP.lw.cottage[(e.v || 0) % 2], true], bellTower: [PROP.lw.bellTower, true], seaLantern: [PROP.lw.seaLantern[e.v === 0 ? 0 : 1], false], buoy: [PROP.lw.buoy, false], tributeChest: [PROP.lw.tributeChest, false], rowboat: [PROP.lw.rowboat, false], netPoles: [PROP.lw.netPoles, true], pierPost: [PROP.lw.pierPost, false], tidePool: [PROP.lw.tidePool, false], kelp: [PROP.lw.kelp[(e.v || 0) % 3], false], waystone: [krkArt().waystone[(e.v || 0) % 2], true], wayShrine: [krkArt().wayShrine, true], brokenArch: [krkArt().brokenArch, true], drownedTree: [krkArt().drownedTree, true], fencePosts: [krkArt().fencePosts, false] }[e.kind]; if (!K) break; const c = K[0]; let gy = e.y;
+        hiveBg: [e.v ? PROP.hiveBgs[e.v % 3] : PROP.hiveBg, true], drip: [PROP.honeyDrip[0], false, PROP.honeyDrip], frogStatue: [PROP.frogStatue[e.v || 0], true], lilyLantern: [PROP.lilyLantern[0], false, PROP.lilyLantern], banner: [(e.hang ? PROP.bannerHung : PROP.banner)[e.v || 0], true], gobPennant: [PROP.gobPennant[(e.v || 0) % 4][0], true, PROP.gobPennant[(e.v || 0) % 4]], warStandard: [PROP.warStandard[(e.v || 0) % 2], true], ragBanner: [PROP.ragBanner[(e.v || 0) % 3], true], clothStrip: [PROP.clothStrip[(e.v || 0) % 4], true], hideBanner: [PROP.hideBanner[(e.v || 0) % 2], true], skullTotem: [PROP.skullTotem[(e.v || 0) % 2], true], trophyRack: [PROP.trophyRack[(e.v || 0) % 2], true], idol: [PROP.idol[(e.v || 0) % 2], true], stakeFence: [PROP.stakeFence[(e.v || 0) % 2], true], lootHeap: [PROP.lootHeap[(e.v || 0) % 2], true], cookSpit: [PROP.cookSpit[0], true, PROP.cookSpit], cauldron: [PROP.cauldron[0], true, PROP.cauldron], boneChime: [PROP.boneChime[(e.v || 0) % 2][0], true, PROP.boneChime[(e.v || 0) % 2]], hideRack: [PROP.hideRack[(e.v || 0) % 2], true], warnPost: [PROP.warnPost[(e.v || 0) % 2], true], boneThrone: [PROP.boneThrone, true], skullPile: [PROP.skullPile[e.v || 0], false], hangCage: [e.hang ? PROP.hangCage : PROP.gibbet, true], eyrie: [PROP.eyrie, false], siege: [PROP.siege, true], bough: [PROP.bough, true], bothy: [PROP.bothy, true], cabin: [PROP.cabin, true], trunk: [PROP.trunk[e.v || 0], true], bracket: [PROP.bracket[e.v || 0], true], axle: [PROP.axle, true], pillar: [PROP.pillar[e.v || 0], true], strut: [PROP.strut[e.v || 0], true], deadTree: [PROP.deadTree[e.v || 0], true], counter: [PROP.counter, false], wares: [PROP.wares[e.v || 0], true], barrels: [PROP.barrelStack, true], lanternPost: [PROP.lanternPost, true], beehive: [PROP.beehive, true], birdhouse: [PROP.birdhouse, true], fishTrap: [PROP.fishTrap[e.v || 0], true], spearRack: [PROP.spearRack, true], bones: [PROP.bones[e.v || 0], false], well: [PROP.well, true], cart: [PROP.cart, true], fence: [PROP.fence[e.v || 0], true], mill: [PROP.mill, true], stone: [PROP.standingStone[e.v || 0], true], cairn: [PROP.cairn, false], foldGate: [PROP.foldGate, true], rootDecor: [PROP.rootDecor[e.v || 0], false], sporePod: [PROP.sporePod[0], false, PROP.sporePod], timber: [PROP.timber[e.v || 0], true], cobweb: [PROP.cobweb[e.v || 0], true], tent: [PROP.tent[e.v || 0], true], spire: [TILE.spire[0][e.v || 0], true], throne: [SPR.throne, true], hallWindow: [HALLWIN || (HALLWIN = bakeHallWindow()), true], bridgepost: [PROP.bridgePost, false], bridgetower: [PROP.bridgeTower, true], gatehouse: [PROP.gatehouse, true], forge: [PROP.forge, true], anvil: [PROP.anvil, false], stilt: [PROP.stilt, true], frozen: [PROP.frozen[e.v || 0], true], cannon: [PROP.flot.cannon[0], false], oarBench: [PROP.flot.oarBench, false], oar: [PROP.flot.oar, false], hammock: [PROP.flot.hammock[(e.v || 0) % 2], true], washing: [PROP.flot.washing, true], cookPot: [PROP.flot.cookPot, false], rumBarrels: [PROP.flot.rumBarrels[(e.v || 0) % 2], false], chickenCoop: [PROP.flot.chickenCoop, false], chartTable: [PROP.flot.chartTable, false], plunder: [PROP.flot.plunder[(e.v || 0) % 3], false], crowNest: [PROP.flot.crowNest, true], mastTall: [PROP.flot.mastTall[(e.v || 0) % 2], true], pennant: [PROP.flot.pennant[(e.v || 0) % 3], true], boardingNet: [PROP.flot.boardingNet, true], lanternDeck: [PROP.flot.lanternDeck[e.v === 0 ? 0 : 1], false], waterButt: [PROP.flot.waterButt, false], coiledCable: [PROP.flot.coiledCable[(e.v || 0) % 2], false], gunport: [PROP.flot.gunport[e.v === 0 ? 0 : 1], true], sternWindows: [PROP.flot.sternWindows, true], kegStack: [PROP.flot.kegStack, false], mastStump: [PROP.reef.mastStump, false], rigging: [PROP.reef.rigging[(e.v || 0) % 2], true], sailRag: [PROP.reef.sailRag[(e.v || 0) % 2], true], wreckBow: [PROP.reef.wreckBow, true], wreckStern: [PROP.reef.wreckStern, true], figurehead: [PROP.reef.figurehead, false], capstan: [PROP.reef.capstan, false], anchor: [PROP.reef.anchor, false], seaChest: [PROP.reef.seaChest, false], shipBell: [PROP.reef.shipBell, false], lanternBuoy: [PROP.reef.lanternBuoy[e.v === 0 ? 0 : 1], false], coralFan: [PROP.reef.coralFan[(e.v || 0) % 3], false], brainCoral: [PROP.reef.brainCoral[(e.v || 0) % 2], false], urchinRock: [PROP.reef.urchinRock[(e.v || 0) % 2], false], spar: [PROP.reef.spar[(e.v || 0) % 2], false], bubbleVent: [PROP.reef.bubbleVent, false], cityWeed: [PROP.city.cityWeed[(e.v || 0) % 3], false], shellDrift: [PROP.city.shellDrift[(e.v || 0) % 2], false], lampWreck: [PROP.city.lampWreck[(e.v || 0) % 2], false], stall: [PROP.city.stall[(e.v || 0) % 2], true], column: [PROP.city.column[(e.v || 0) % 2], true], clerkDesk: [PROP.city.clerkDesk, false], sealDrift: [PROP.city.sealDrift[(e.v || 0) % 2], false], bellows: [PROP.city.bellows, true], tollPost: [PROP.city.tollPost, true], magistrate: [PROP.city.magistrate, true], drownedCart: [PROP.city.drownedCart, false], grating: [PROP.city.grating, true], lampMain: [PROP.city.lampMain[(e.v || 0) % 2], true], airBell: [PROP.reef.airBell, false], kelpTall: [PROP.reef.kelpTall[(e.v || 0) % 3], false], wheel: [PROP.reef.wheel, false], reefRock: [PROP.reef.reefRock[(e.v || 0) % 2], false], coralTuft: [PROP.lw.coralTuft[(e.v || 0) % 3], false], rushes: [PROP.lw.rushes[(e.v || 0) % 3], false], driftwood: [PROP.lw.driftwood[(e.v || 0) % 2], false], barnacleRock: [PROP.lw.barnacleRock[(e.v || 0) % 2], false], saltCrust: [PROP.lw.saltCrust[(e.v || 0) % 2], false], drownedHut: [PROP.lw.drownedHut, true], fishCottage: [PROP.lw.cottage[(e.v || 0) % 2], true], bellTower: [PROP.lw.bellTower, true], seaLantern: [PROP.lw.seaLantern[e.v === 0 ? 0 : 1], false], buoy: [PROP.lw.buoy, false], tributeChest: [PROP.lw.tributeChest, false], rowboat: [PROP.lw.rowboat, false], netPoles: [PROP.lw.netPoles, true], pierPost: [PROP.lw.pierPost, false], tidePool: [PROP.lw.tidePool, false], kelp: [PROP.lw.kelp[(e.v || 0) % 3], false], waystone: [krkArt().waystone[(e.v || 0) % 2], true], wayShrine: [krkArt().wayShrine, true], brokenArch: [krkArt().brokenArch, true], drownedTree: [krkArt().drownedTree, true], fencePosts: [krkArt().fencePosts, false] }[e.kind]; if (!K) break; const c = K[0]; let gy = e.y;
         // A THING THAT HANGS, HANGS OFF SOMETHING. The crystal spires of the Sunspire are drawn from the top
         // down, and they were placed on rows with open sky over them, so five of them hung in the middle of
         // the air. Anything hung is pulled up to the rock above it; if there is no rock within four tiles it
@@ -2717,6 +2746,19 @@ function drawElitePlate(e, cx, cy, bigF) {
   g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, w + 2, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, w, 2); g.fillStyle = k > 0.34 ? '#e0b040' : '#ff6b6b'; g.fillRect(bx, by, Math.round(w * k), 2);
   { const nw = textW(ELITE[e.t].name, 6); crown(bx - 7, by + 1); text(ELITE[e.t].name, Math.max(nw / 2 + 2, Math.min(VW - nw / 2 - 2, x)), by - 9, '#ffd36b', 'center', 6); }   /* the name kept on the screen: a captain at the edge of the view was THE SHIELD CAPTAI */
 }
+/* WHERE A SHRINE IS LIT FROM. By touch - within 12 px across and 20 px up of its foot - and, UNDER WATER, from anywhere in
+   the open water over it. The Underwater Keep stands its shrines on the bed of rooms seventeen rows deep, and a swimmer
+   crosses those rooms in the middle: in the page a route-following swim lit 1 of its 15 (the start), so a death sent you
+   back to the door (level review, 2026-09-24). Swimming over one lights it if nothing solid is between you and it, the
+   same way a walker lights one by passing it. tools/swim-shrines.mjs reads this and asks every swum route. */
+function shrineLights(s, px, py, swim) {
+  if (Math.abs(s.x - px) >= 12) return false;
+  if (Math.abs(s.y - py) < 20) return true;
+  if (!swim || py >= s.y) return false;
+  const tx = Math.floor(s.x / TS);
+  for (let ty = Math.floor((py - 8) / TS); ty < Math.floor(s.y / TS); ty++) if (isSolid(tx, ty)) return false;
+  return (L.pools || []).some(p => p.swim && !p.dry && s.x >= p.x0 && s.x <= p.x1 && py - 8 >= p.y);
+}
 function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
@@ -3015,7 +3057,7 @@ const CRAG_NODES = [
   { id: 'scree', kind: 'level', level: 5, x: 48, y: 136, name: 'THE SCREE PATH' },
   { id: 'hanging', kind: 'level', level: 6, x: 72, y: 121, name: 'THE HANGING VILLAGE' },
   { id: 'highstore', kind: 'store', shop: 'shopCrag', needs: 'scree', x: 108, y: 105, name: 'THE HIGH STORE' },
-  { id: 'spire', kind: 'level', level: 7, x: 150, y: 89, name: 'THE SUNSPIRE' },
+  { id: 'spire', kind: 'level', level: 7, x: 150, y: 89, name: 'THE MONASTERY' },   /* the Sunspire and its Roc went in the monastery rework; the map had not heard */
   { id: 'moor', kind: 'level', level: 8, x: 192, y: 73, name: 'GALE MOOR' },
   { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 228, y: 58, name: 'THE ORE ROAD' },   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
   { id: 'storm', kind: 'level', level: 9, x: 252, y: 42, name: 'STORMHOLD' },
@@ -7550,7 +7592,7 @@ function updatePlayer(dt) {
     if (Math.abs(a.x - P.x) < 10 && Math.abs(a.y - (P.y - 7)) < 12) { a.got = true; got++; if (P.score) P.score.coins++;   /* the purse is the SAVE'S and stays shared: this line is only who bent down for it */
       if (isPirate()) { gainPlunder(4); if (tal('shareOut')) P.hp = Math.min(P.maxHp, P.hp + 2); if (tal('greased')) P.st = Math.min(P.maxSt, P.st + 6); if (tal('paidInGold') && P.cds) for (const k in P.cds) P.cds[k] = Math.max(0, P.cds[k] - 0.33); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
-  for (const s of shrines) if (!s.lit && Math.abs(s.x - P.x) < 12 && Math.abs(s.y - P.y) < 20) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
+  for (const s of shrines) if (!s.lit && shrineLights(s, P.x, P.y, P.swim)) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
   if (gate && (!L.arena || escape || L.sandWalk) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
   // boss arena trigger
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 40 * TS) music.preload(L.arena.music || 'boss');
@@ -10564,7 +10606,7 @@ function magePlayer(dt) {
   if (P.y > LH * TS + 30 && !P.dead) { P.hp = 0; P.dead = 1.2; SFX.pDie(); }
   /* the coins, the hearts and the shrines */
   for (const a of acorns) if (!a.got && Math.abs(a.x - P.x) < 12 && Math.abs(a.y - (P.y - P.h / 2 * gs)) < 14) collectAcorn(a);
-  for (const s of shrines) if (!s.lit && Math.abs(s.x - P.x) < 12 && Math.abs(s.y - P.y) < 20) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
+  for (const s of shrines) if (!s.lit && shrineLights(s, P.x, P.y, P.swim)) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
   return true;
 }
 /* ---------- the props and the machinery, every frame ---------- */
@@ -11094,6 +11136,12 @@ function drawMageTiles(cx, cy) {
   for (const [x0, x1, y0, y1, kind] of (L.mage.skins || [])) { if (x1 < tx0 || x0 > tx1 || y1 < ty0 || y0 > ty1) continue; const set = kind === 'gate' ? S.gate : kind === 'sand' ? S.sand : kind === 'witch' ? witchSkins().witch : kind === 'books' ? witchSkins().books : kind === 'ledge' ? witchSkins().ledge : S.tower, want = kind === 'ledge' ? T.ONEWAY : T.SOLID;   /* 'sand': the cutting past the second door (src/sanctum.js) */   /* (the Witchlight Stair's runed stone, its library books, and its stone ledges over the one-way tiles) */
     for (let ty = Math.max(y0, ty0); ty <= Math.min(y1, ty1); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (L.grid[i] !== want) continue; g.drawImage(set[(tx * 7 + ty * 3) % set.length], tx * TS - cx, ty * TS - cy); if (want === T.SOLID && ty > 0 && L.grid[i - LW] === T.AIR) lip(tx * TS - cx, ty * TS - cy); } }
   for (const [x0, x1, y0, y1] of (L.mage.hedges || [])) { if (x1 < tx0 || x0 > tx1) continue;
+    /* A HEDGE YOU GO UNDER GROWS ON SOMETHING (B9; level review, 2026-09-24): the Topiary Maze's tall hedges were slabs of leaf in the
+       air. Each end stands on a trained stem - a thin trunk with a lashed stake, drawn in the hedge's own shade, down to the floor. */
+    if (!isSolid(x0, y1 + 1)) for (const [px, lean] of [[x0 * TS + 3, 1], [(x1 + 1) * TS - 6, -1]]) { const tx = Math.floor(px / TS); let fy = y1 + 1; while (fy < LH && fy <= y1 + 12 && !isSolid(tx, fy) && !isOneWay(tileAt(tx, fy))) fy++;
+      if (fy > y1 + 12 || fy >= LH) continue; const top = (y1 + 1) * TS - cy, bot = fy * TS - cy, x = px - cx;
+      g.fillStyle = '#243018'; g.fillRect(x, top, 3, bot - top); g.fillStyle = '#3a4a26'; g.fillRect(x + (lean > 0 ? 0 : 2), top, 1, bot - top);
+      g.fillStyle = '#5a4a32'; g.fillRect(x + (lean > 0 ? 3 : -1), top + 2, 1, bot - top - 2); for (let yy = top + 8; yy < bot - 2; yy += 12) { g.fillStyle = '#6e5a3a'; g.fillRect(x - 1, yy, 5, 1); } }
     for (let ty = Math.max(y0, ty0); ty <= Math.min(y1, ty1); ty++) for (let tx = Math.max(x0, tx0); tx <= Math.min(x1, tx1); tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.SOLID) continue; g.drawImage((ty === y0 ? S.hedgeTop : S.hedge)[(tx * 5 + ty) % 3], tx * TS - cx, ty * TS - cy); } }
   for (const s of MG.shelves) { if (s.x1 < tx0 || s.x0 > tx1) continue; const yTop = s.up ? s.yDown - (s.yDown - s.yUp) * s.k : s.yDown; const x = s.x0 * TS - cx, y = Math.round(yTop * TS - cy), w = (s.x1 - s.x0 + 1) * TS, hh = s.h * TS;
     /* the stack itself: shelves and spines, and the recess behind it */
@@ -17945,7 +17993,10 @@ function drawTimberSet(pr, cx, cy) {
   const sh = pr.shake > 0 ? Math.round(Math.sin(time * 70) * 1.5) : 0, px = Math.round(pr.x - cx) + sh;
   if (px < -120 || px > VW + 120) return;
   let top = (pr.row + 1) * TS, bot = (pr.floor + 1) * TS;
-  const hung = bot - top < 24; if (hung) { top = (pr.row + 1) * TS; bot = top + 44; }
+  const hung = bot - top < 24; if (hung) { top = (pr.row + 1) * TS; bot = top + 44;
+    /* A SET UNDER A SPAN STANDS ON SOMETHING (B9; level review, 2026-09-24): hung under a plank it was a post forty-four pixels long ending
+       in the air over the drift. It runs down to the first floor under it, if there is one within fourteen rows. */
+    const tx = Math.floor(pr.x / TS); for (let r = pr.row + 1; r <= pr.row + 14; r++) if (isSolid(tx, r) || isOneWay(tileAt(tx, r))) { bot = r * TS; break; } }
   const y0 = Math.round(top - cy), y1 = Math.round(bot - cy), cl = Math.min(Math.round(pr.x0 * TS - cx), px - 5), cr = Math.max(Math.round((pr.x1 + 1) * TS - cx), px + 5);
   if (!hung) { g.fillStyle = '#1e140c'; g.fillRect(cl - 1, y0 - 1, cr - cl + 2, 8); g.fillStyle = '#5c3a1d'; g.fillRect(cl, y0, cr - cl, 6); g.fillStyle = '#8a5a32'; g.fillRect(cl, y0, cr - cl, 1); g.fillStyle = '#3a2414'; g.fillRect(cl, y0 + 5, cr - cl, 1); }
   g.fillStyle = '#1e140c'; g.fillRect(px - 5, y0 + (hung ? 0 : 5), 10, y1 - y0 - (hung ? 0 : 5));
@@ -20593,9 +20644,22 @@ function updateAir(dt) {
 // depth there is. Every two hundred pixels or so, something near the lens crosses the frame: a trunk in the wood,
 // a rock shoulder in the crags, a hanging rope at sea, a mast on the ships. Narrow and see-through, so they never
 // hide the fight - they just put something between you and it.
+/* EACH PLACE ITS OWN, AND NOTHING INDOORS (level review, 2026-09-24). Every dress this did not name fell through to the
+   forest's trunk and bough, so all eight village and desert levels - Underleaf, Waymeet, the Fields, the Folly, the
+   Falling Tower, Witchlight, the Burning Village and the Caravan - had a tree by the lens every few screens; and unlike
+   drawNear it never asked about rooms, so boughs hung inside the Folly's halls and the tower's floors. Now a dress
+   names its occluder here or gets NONE (fail closed), and inside an interior there is none at all.
+   tools/occluders.mjs reads this table and occluderFor and holds every level to both. */
+const OCCLUDER = { wood: 'trunk', camp: 'trunk', crag: 'rock', reef: 'rock', shore: 'rock', ship: 'mast', battlefield: 'pike', marsh: 'reeds', myc: 'reeds', village: 'sign', desert: 'standard' };
+function occluderFor(Lv, tx, ty) {
+  if (Lv.shop || Lv.trial) return null;
+  if ((Lv.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5)) return null;
+  const dress = (Lv.palette && (Lv.palette.dress || Lv.palette.set)) || 'wood';
+  return OCCLUDER[dress] || null;
+}
 function drawOccluders(cx, cy) {
-  const dress = (L.palette && (L.palette.dress || L.palette.set)) || 'wood';
-  if (L.shop || L.trial || dress === 'none' || SET.air === false) return;
+  const kind = occluderFor(L, P.x / TS, P.y / TS);
+  if (!kind || SET.air === false) return;
   const A = AIR[curId()], tint = A ? A.haze : '#c0c0c0';
   const px = cx * 1.14, step = 232;
   const i0 = Math.floor(px / step) - 1, i1 = Math.ceil((px + VW) / step) + 1;
@@ -20605,23 +20669,37 @@ function drawOccluders(cx, cy) {
     const x = Math.round(i * step + (h - 0.5) * 90 - px), w = 9 + Math.round(h * 8);
     if (x < -60 || x > VW + 60) continue;
     g.globalAlpha = 0.18 + h * 0.06;   /* distant scenery holds one soft value, even when the hero passes it */
-    if (dress === 'crag' || dress === 'reef' || dress === 'shore') { // a shoulder of rock leaning into the frame
+    if (kind === 'rock') { // a shoulder of rock leaning into the frame
       g.fillStyle = '#181c22'; g.beginPath(); g.moveTo(x - w, VH); g.lineTo(x - w + 3, VH - 60 - h * 40); g.lineTo(x + w, VH - 40 - h * 30); g.lineTo(x + w + 5, VH); g.closePath(); g.fill();
       g.globalAlpha *= 0.5; g.fillStyle = tint; g.fillRect(x - w + 2, VH - 58 - h * 40, 2, 58 + h * 40);
-    } else if (dress === 'ship') { // a mast and its rigging, right by the lens
+    } else if (kind === 'mast') { // a mast and its rigging, right by the lens
       g.fillStyle = '#20170f'; g.fillRect(x, 0, w - 3, VH);
       g.fillStyle = '#2c2116'; g.fillRect(x + w - 3, 0, 2, VH);
       g.globalAlpha *= 0.8; g.strokeStyle = '#2a2118'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 2, 0); g.lineTo(x + 26 + h * 20, VH); g.stroke();
-    } else if (dress === 'battlefield') { /* a pike left in the ground, leaning into the lens, with what is left of its pennant */
+    } else if (kind === 'pike') { /* a pike left in the ground, leaning into the lens, with what is left of its pennant */
       const lean = (h - 0.7) * 60; g.strokeStyle = '#1a1216'; g.lineWidth = 3; g.beginPath(); g.moveTo(x, VH + 4); g.lineTo(x + lean, -10); g.stroke(); g.lineWidth = 1;
       g.fillStyle = '#2a1216'; g.beginPath(); g.moveTo(x + lean * 0.8, VH * 0.2); g.lineTo(x + lean * 0.8 + 22, VH * 0.22); g.lineTo(x + lean * 0.78 + 16, VH * 0.3); g.lineTo(x + lean * 0.76 + 20, VH * 0.36); g.lineTo(x + lean * 0.76, VH * 0.34); g.closePath(); g.fill();
-    } else if (dress === 'marsh' || dress === 'myc') { // reeds and stems
+    } else if (kind === 'reeds') { // reeds and stems
       g.fillStyle = '#101a14'; for (let k = 0; k < 4; k++) { const sx = x + k * 5, bend = Math.sin(time * 0.6 + i + k) * 4; g.beginPath(); g.moveTo(sx, VH); g.lineTo(sx + bend, VH - 70 - h * 50); g.lineTo(sx + 3 + bend, VH - 70 - h * 50); g.lineTo(sx + 3, VH); g.closePath(); g.fill(); }
-    } else { // a trunk, and a bough over the top of the frame
+    } else if (kind === 'trunk') { // a trunk, and a bough over the top of the frame
       g.fillStyle = '#1a1410'; g.fillRect(x, 0, w, VH);
       g.fillStyle = '#241c14'; g.fillRect(x + w - 3, 0, 3, VH);
       g.globalAlpha *= 0.9; g.fillStyle = '#141a12';
       g.beginPath(); g.moveTo(x + w, 8 + h * 14); g.quadraticCurveTo(x + w + 40, 2 + h * 10, x + w + 74, 16 + h * 20); g.lineTo(x + w + 74, 22 + h * 20); g.quadraticCurveTo(x + w + 40, 10 + h * 10, x + w, 16 + h * 14); g.closePath(); g.fill();
+    } else if (kind === 'sign') { /* A VILLAGE: a squared post by the lens, an iron arm off it, and a house's board swinging from the arm */
+      const pw = w - 4, ay = 16 + Math.round(h * 16), sw = Math.round(Math.sin(time * 1.1 + i) * 1.5);
+      g.fillStyle = '#1c1612'; g.fillRect(x, 0, pw, VH); g.fillStyle = '#262019'; g.fillRect(x + pw - 2, 0, 2, VH);
+      g.fillStyle = '#15110e'; g.fillRect(x + pw, ay, 34, 3);
+      g.strokeStyle = '#15110e'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + pw, ay + 16); g.lineTo(x + pw + 14, ay + 2); g.stroke(); g.lineWidth = 1;
+      g.fillRect(x + pw + 8, ay + 3, 1, 6); g.fillRect(x + pw + 28, ay + 3, 1, 6);
+      g.fillStyle = '#211a13'; g.fillRect(x + pw + 5 + sw, ay + 9, 27, 16); g.fillStyle = '#2b2219'; g.fillRect(x + pw + 7 + sw, ay + 11, 23, 12);
+    } else if (kind === 'standard') { /* THE DESERT: a caravan's standard left leaning in the sand, its cloth gone to rags */
+      const lean = (h - 0.7) * 50, tx2 = x + lean, ty2 = 8 + h * 10;
+      g.strokeStyle = '#231910'; g.lineWidth = 3; g.beginPath(); g.moveTo(x, VH + 4); g.lineTo(tx2, ty2); g.stroke();
+      g.lineWidth = 2; g.beginPath(); g.moveTo(tx2 - 12, ty2 + 6); g.lineTo(tx2 + 14, ty2 + 3); g.stroke(); g.lineWidth = 1;
+      g.fillStyle = '#34201a';
+      for (let k = 0; k < 3; k++) { const sx = tx2 - 10 + k * 8, sy = ty2 + 5 - k, len = 26 + ((h * 97 + k * 13) % 1) * 22, fl = Math.sin(time * 0.9 + i + k) * 3;
+        g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx + 7, sy - 1); g.lineTo(sx + 6 + fl, sy + len); g.lineTo(sx + 2 + fl, sy + len - 5); g.closePath(); g.fill(); }
     }
     g.globalAlpha = 1;
   }
@@ -23133,7 +23211,11 @@ function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (st === 'crystal') { g.fillStyle = '#3a3c5a'; g.fillRect(sx, sy, w, h);
     g.fillStyle = '#4a4e74'; for (let yy = sy; yy < sy + h; yy += 8) for (let xx = sx + ((yy / 8) % 2 ? 12 : 0); xx < sx + w; xx += 24) g.fillRect(xx, yy, 22, 7);
     g.fillStyle = '#2a2c44'; for (let yy = sy + 7; yy < sy + h; yy += 8) g.fillRect(sx, yy, w, 1);
-    g.fillStyle = '#7a8ac8'; for (let i = 0; i < w * h / 700; i++) { const rx = sx + ((i * 97) % w), ry = sy + ((i * 61) % h); g.fillRect(rx, ry, 1, 3 + (i % 3) * 2); g.fillRect(rx + 1, ry + 2, 1, 2); }
+    /* THE VEIN'S GLASS, AS FACETS (level review, 2026-09-24): these were one-pixel streaks three to seven long with a tail stepped off
+       them, and a hundred and twenty rows underground they read as RAIN. A seam of glass is a little diamond with a lit face. */
+    for (let i = 0; i < w * h / 700; i++) { const rx = sx + ((i * 97) % w), ry = sy + ((i * 61) % h);
+      g.fillStyle = '#7a8ac8'; g.fillRect(rx, ry, 1, 1); g.fillRect(rx - 1, ry + 1, 3, 1); g.fillRect(rx, ry + 2, 1, 1); if (i % 3 === 0) g.fillRect(rx + 2, ry + 2, 1, 1);
+      g.fillStyle = '#b8c4ee'; g.fillRect(rx, ry + 1, 1, 1); }
     for (let i = 0; i < w * h / 500; i++) { const rx = sx + ((i * 131 + 7) % w), ry = sy + ((i * 71 + 3) % h); const tw = 0.5 + 0.5 * Math.sin(time * 3 + i * 1.7);
       if (tw > 0.75) { g.fillStyle = tw > 0.92 ? '#eefaff' : '#7aa8c8'; g.fillRect(rx, ry, 1, 1); } }
     return; }
@@ -24554,7 +24636,8 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   allyReady: () => allyLoad(),   /* AWAIT THIS BEFORE MEASURING AN ALLY: a synchronous run of sim() never lets its import resolve */
   /* EVERYTHING DRAWN WITH A BASE OR A TOP, as the draw code places it: the sprite, where its top-left lands, and whether it
      stands or hangs. src/floatlab.js reads the pixels of these to find what is in the air. */
-  drawables() { const out = [], sh = (PROP.shrineOf && PROP.shrineOf[shrineKind()]) || PROP.shrine;
+  shrines: () => shrines,   /* which checkpoints are lit: a harness that swims a level reads it */
+  drawables() { const out = [], sh =(PROP.shrineOf && PROP.shrineOf[shrineKind()]) || PROP.shrine;
     for (const d of deco) out.push({ what: d.kind, c: d.anim ? d.anim[0] : d.c, x: d.x, y: d.y, bg: !!d.bg, stand: !!d.stand, hang: !!d.hang });
     for (const s of signs) out.push({ what: 'sign', c: PROP.sign, x: s.x - 9, y: s.y - 18, stand: true });
     for (const s of shrines) out.push({ what: 'checkpoint', c: sh[0], x: s.x - 10, y: s.y - 34, stand: true });

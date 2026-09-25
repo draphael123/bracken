@@ -76,3 +76,19 @@ assert.deepEqual(bareKit, [], 'these levels name no palette dress, so they paint
   for (const k of ['fieldGrave', 'crookedCross', 'brokenSpears', 'stuckShield', 'fallenBanner', 'bones']) assert.ok(kinds.has(k), 'unburied: its dressing has no ' + k);
   console.log('ok  forest kit     ' + (LEVELS.length - FOREST_OWNS.size) + ' levels name their own dress; THE UNBURIED FIELD resolves its own sky, layers, ground, ledges, chapel stone and dressing.');
 }
+{ /* NOTHING GROWS UNDER THE HILL, AND NOBODY WAS BURIED THERE IN A TRICORN (level review, 2026-09-24). The forest's root tile -
+     wood-brown roots reaching down from the grass - was laid under every floor of the Burial Caverns and the Ore Road's mine,
+     thirty to ninety rows underground; and the barrow's garrison stood up the drowned coast's bone corsairs, tricorns and striped
+     shirts, in a hill crypt. main.js's belowGround() swaps the roots out; the sea's dead belong to a level dressed as the sea. */
+  const MAIN = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const m = MAIN.match(/function belowGround\(Lv\) \{[^\n]*\}/); assert.ok(m, 'cannot read belowGround out of src/main.js');
+  const belowGround = new Function('return ' + m[0])();
+  assert.ok(/below = belowGround\(L\)/.test(MAIN) && /if \(below\) TILE\.roots = TILE\.dirt\.slice\(0, 3\)/.test(MAIN), 'bakeAll does not take the root tile out of a level below the ground');
+  const SEA_DEAD = new Set(['bonecorsair', 'tidemarauder']), SEA_SET = new Set(['ship', 'reef', 'shore', 'city']);
+  const under = [], wrong = [];
+  for (const lv of LEVELS) { let L; try { L = lv.build(); } catch { continue; } const p = L.palette || {};
+    if (L.underground || L.oreRoad) { under.push(lv.id); assert.ok(belowGround(L), lv.id + ' is under the ground and still grows the forest\'s roots'); }
+    if (!SEA_SET.has(p.set) && !SEA_SET.has(p.dress)) for (const e of L.ents) if (SEA_DEAD.has(e.t)) wrong.push(`${lv.id} ${e.t}@${e.x},${e.y}`); }
+  assert.deepEqual(wrong, [], 'the sea\'s dead stand in a level that is not the sea: ' + wrong.join(' '));
+  console.log('ok  under the hill ' + under.length + ' levels below the ground (' + under.join(', ') + ') grow no roots; the sea\'s dead stand only in the sea\'s levels.');
+}

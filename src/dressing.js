@@ -82,7 +82,6 @@ export const GROUND_KITS = {
     "density": 0.32,
     "kinds": [
       "herbBed",
-      "stoneLantern",
       "skep",
       "rock"
     ]

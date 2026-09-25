@@ -240,7 +240,7 @@ function brackenWood() {
   // THE LEVEL THAT TEACHES THE GAME HAD THE LEAST TO SAY IN IT: eight signs, and a hundred and fifty-one
   // columns of silence through the hive, the crown and the whole run home. There is no tutorial in this
   // game, there are signs. (These columns were final when G2 was the last grow; the three lesson grows below
-  // come after and slide them, like every entity, by 78.)
+  // come after and slide them, like every entity, by 104: four lessons of 26.)
   G2.ent('sign', 200, 11, { text: 'THE HIVE IS A CEILING, AND ALL UNDER IT IS ANGRY. DO NOT STAND UNDER A HOLE.' });
   G2.ent('sign', 249, 11, { text: 'A CROWN IN A WOOD, AND NOBODY LEFT TO WEAR IT. WHAT LIES HERE IS YOURS.' });
   G2.ent('sign', 288, 11, { text: 'THORNS NEVER MOVE: GO OVER THEM. A HELD JUMP IS HIGHER THAN A TAPPED ONE.' });
@@ -623,7 +623,7 @@ function theStockade() {
   ent('rack', 331, 19, { kind: 'club' }); ent('rack', 358, 19, { kind: 'bow' }); block(336, 339, 18, 19); coins([337, 17]); // the racks he swaps at, and a stone dais his club and sword cannot reach
   ent('deco', 331, 19, { kind: 'banner', v: 0 }); ent('deco', 358, 19, { kind: 'banner', v: 1 }); ent('deco', 344, 19, { kind: 'boneThrone' });
   ent('deco', 334, 19, { kind: 'skullPile', v: 0 }); ent('deco', 351, 19, { kind: 'skullPile', v: 1 });
-  ent('deco', 344, 6, { kind: 'bough', hang: true }); ent('deco', 338, 8, { kind: 'hangCage', hang: true }); ent('deco', 349, 8, { kind: 'hangCage', hang: true });
+  ent('deco', 338, 8, { kind: 'hangCage', hang: true });   /* (a tree's bough hung in the Chieftain's hall, among its racks: it went - level review, 2026-09-24) */ ent('deco', 349, 8, { kind: 'hangCage', hang: true });
   ent('chief', 343, 19);
 
   const ret = {
@@ -1551,7 +1551,7 @@ function underleaf() {
   floor(470, 519, R);
   boards(470, 519, R);   /* HER ROOM IS ONE LONG BRIDGE. It was boards, moss and loose planks, and the loose ones gave way under her own feet. */
   ent('sign', 472, R - 1, { text: 'SHE HUNTS BY SOUND. A RAISED SHIELD IS SILENT, BUT SHE DOES NOT ONLY LISTEN.' });
-  ent('deco', 476, R - 1, { kind: 'yew', v: 1 });   /* (470 grew through the lock gate beside it) */   /* (the garden wall, the skeps and the beanpoles are gone: the bridge is the room) */
+  /* (the yew that stood here went: 470 grew through the lock gate, and 476 put a tree's roots through the bridge's boards - level review, 2026-09-24) */   /* (the garden wall, the skeps and the beanpoles are gone: the bridge is the room) */
   coins([480, R - 2], [492, R - 2], [512, R - 2], [486, R - 2], [500, R - 2], [508, R - 2], [474, R - 2]);
   ent('grandmother', 504, R - 1);
   ent('gate', 518, R - 1);
@@ -2011,7 +2011,7 @@ function theMonastery() {
   ent('abbot', 72, 29);   /* THE FALSE ABBOT, at the far end of the ringing floor: the great bell is at 56, and getting him under it is the fight */
   // the last hop to the gate is over the thorns on two stones set on a pillar
   plat(79, 29, 5); block(85, 87, 27, 27); block(89, 91, 27, 27); block(87, 87, 28, 29);
-  ent('check', 18, 29); ent('gate', 92, 29);
+  ent('gate', 92, 29);   /* (no checkpoint on the ringing floor: 18,29 stood inside the Abbot's walls, B6; the one at 12,35 is the door) */
   ent('silver', 90, 26);
   ent('stray', 38, 29, { kind: 'bead' });
   // the crawl under the roof ends in a hollow either side, and the second chimney comes up into the right one
@@ -2043,11 +2043,11 @@ function theMonastery() {
   // ---- THE RINGING FLOOR. It was a NEST while the Roc had it - heaped rafters, bones she did not finish, the shells
   // of what she hatched - and with her gone the roof stays ON (she is what tore it off, mid-fight), so this is a ROOM
   // again: the floor the monks rang their bells from, with the goblins' own squalor spread over the top of it.
-  for (const [x, v] of [[10, 0], [86, 1]]) ent('deco', x, 29, { kind: 'bellFrame', v });      /* the two lesser bells' frames, empty: those bells went down the mountain */
+  for (const [x, v] of [[15, 0], [77, 1]]) ent('deco', x, 29, { kind: 'bellFrame', v });      /* the two lesser bells' frames, empty: those bells went down the mountain. (Off the thorn beds at 4-12 and 84-90, where they stood IN the spikes: level review, 2026-09-24) */
   for (const [x, v] of [[20, 0], [44, 1], [72, 0]]) ent('deco', x, 29, { kind: 'incenseStand', v });   /* what he fills the censer from */
   for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'bookshelf', v });      /* the psalters, still on their shelf */
-  ent('deco', 34, 29, { kind: 'statue' }); ent('deco', 80, 29, { kind: 'monkChores', v: 0 });
-  for (const [x, v] of [[6, 0], [90, 1]]) ent('deco', x, 29, { kind: 'prayerFlags', v });
+  ent('deco', 34, 29, { kind: 'statue' }); ent('deco', 69, 29, { kind: 'monkChores', v: 0 });   /* 69: at 80 it stood inside the board at 79-83 */
+  for (const [x, v] of [[2, 0], [93, 1]]) ent('deco', x, 29, { kind: 'prayerFlags', v });   /* past the thorn beds, against the walls */
   ent('sign', 30, 29, { text: 'HE WILL NOT STAND UNDER IT. GUARD HIS CHAIN AND IT HAULS HIM THERE.' });
   // THE FLOORS THE MONKS LAID: flagstones where there was a building, crag where there was only the mountain; and the stacks,
   // dug into the cliff under the bell yards, have their shelves behind them (the look pass saw open sky inside the rock)
@@ -2154,7 +2154,7 @@ function stormhold() {
   // (the span over the sootworks gorge came down: THE CHIMNEYS, below, are the crossing now)
   ent('stormshaman', 181, 31, { face: -1 }); // (the rope cutter could drop the only way on: a shaman holds the far end instead)
   ent('archer', 151, 31, { face: 1, fire: true }); ent('rockgoblin', 179, 31, { face: -1 }); // (her floor there is row 32: these two were standing two rows over it)
-  ent('sign', 148, 31, { text: 'AN AXE GOBLIN ON THE ROPE WILL CUT IT. THROW THE SHIELD AT HIM.', pyro: 'AN AXE GOBLIN ON THE ROPE WILL CUT IT. AN EMBER REACHES HIM.', paladin: 'AN AXE GOBLIN ON THE ROPE WILL CUT IT. THE BLESSED HAMMER REACHES HIM.' });
+  /* (its sign - AN AXE GOBLIN ON THE ROPE WILL CUT IT - went with the span it was about: the one beside it says the span is down. Level review, 2026-09-24) */
   ent('deco', 152, 31, { kind: 'lanternPost' }); ent('deco', 179, 31, { kind: 'lanternPost' }); // a lamp on each bank of the chimneys (they stood in the air over the old span)
   floor(180, 208, 32); ent('sprig', 190, 31, { face: -1 }); ent('shield', 200, 31, { face: -1 });
   coins([184, 31], [194, 30], [204, 31]);
@@ -2205,7 +2205,7 @@ function stormhold() {
   // the bridgehead: the one column between the bone gate and the first pier was open to the gorge, and
   // anyone who walked through the gate without jumping fell out of the world on the way to the fight
   block(301, 301, BY, 45);
-  ent('check', 304, BY - 1);
+  /* (no checkpoint on the bridgehead: 304 stood inside the Lance's walls, B6 - 296 is outside the bone gate) */
   ent('sign', 302, BY - 1, { text: 'THE QUEEN\'S LANCE CANNOT TURN MID-CHARGE. STAND ON A LOOKOUT AND LET HIM PASS.' });
   const piers = [];
   for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4;
@@ -3382,7 +3382,7 @@ function highcrownWhole() {
   { const X=470, n=40, F=grow(R,R,X,n); shiftCrown(F.R,X,n);
     F.block(X,X+n-1,64,F.R.H-1); F.block(X,X+n-1,46,49);
     F.R.interiors.push([X,X+n-1,50,63,'forge']); F.R.masonry.push([X,X+n-1,46,49],[X,X+n-1,64,66]);
-    F.ent('check',X+2,63); F.ent('sign',X+3,63,{text:'THE FURNACE LINE. CROSS THE HOT PLATES BETWEEN THEIR BURSTS.'});
+    F.ent('sign',X+3,63,{text:'THE FURNACE LINE. CROSS THE HOT PLATES BETWEEN THEIR BURSTS.'});   /* (its checkpoint at X+2 went: this line was grown in behind the Forgemaster's west wall, so it stood inside his room, B6 - the armoury door's at 465 is seven columns back) */
     for(const dx of [12,24,33]) { F.ent('hotplate',X+dx,63); F.ent('deco',X+dx-3,63,{kind:'barrels'}); }
     for(const dx of [7,19,36]) F.ent('torch',X+dx,63);
     F.ent('hearthgob',X+17,63,{face:-1}); F.ent('heavy',X+29,63,{face:-1});
@@ -4035,15 +4035,15 @@ function longWater() {
   fall(13, 8, 12);
   block(14, 33, 12, H - 1); plunge(14, 18, 12, 3); ent('eel', 16, 14);
   shallow(22, 33, 12, 16); ent('turtle', 27, 12, { face: -1 });
-  for (const x of [24, 29]) ent('deco', x, 12, { kind: 'coralTuft', v: x % 3 });
+  for (const x of [24, 29]) ent('deco', x, 12, { kind: 'rushes', v: x % 3 });
   ent('sign', 20, 11, { text: 'YOU CAN SWIM: UP TO RISE, DOWN TO DIVE, JUMP AT THE SURFACE TO CLIMB OUT.' });
-  coins([16, 13], [17, 13], [19, 10], [22, 10], [24, 9], [26, 9], [28, 9], [30, 10]); ent('crab', 31, 11, { face: -1 });
+  coins([16, 13], [17, 13], [19, 10], [22, 10], [24, 9], [26, 9], [28, 9], [30, 10]); ent('turtle', 31, 11, { face: -1 });
   fall(33, 12, 16);
   block(34, 55, 16, H - 1); plunge(34, 38, 16, 3);
   ent('eel', 36, 18); coins([35, 18], [37, 18]); // the second pool, for anyone who dives
   air(30, 33, 13, 15); ent('silver', 31, 15); coins([32, 15], [30, 15]); // the cave behind the second fall
   shallow(41, 55, 16, 16); ent('heronfoe', 47, 15, { face: -1 });
-  ent('deco', 40, 15, { kind: 'barnacleRock', v: 0 }); ent('deco', 53, 16, { kind: 'saltCrust', v: 1 });
+  ent('deco', 40, 15, { kind: 'driftwood', v: 0 }); ent('deco', 53, 16, { kind: 'saltCrust', v: 1 });
   coins([41, 14], [44, 15], [45, 13], [47, 13], [49, 13], [51, 15], [54, 14], [36, 15], [38, 15], [43, 13], [52, 13]);
   fall(55, 16, 20);
   block(56, 79, 20, H - 1); plunge(56, 60, 20, 3); ent('eel', 58, 22);
@@ -4055,13 +4055,16 @@ function longWater() {
   fall(79, 18, 24);
   block(80, 105, 24, H - 1); plunge(80, 91, 24, 4); ent('eel', 84, 27); ent('eel', 89, 27);
   shallow(96, 105, 24, 16); ent('check', 95, 23); ent('sign', 92, 23, { text: 'TWO EELS IN THIS POOL. THE COINS ON THE BOTTOM ARE WORTH ONE BREATH, NOT TWO.' });
-  ent('crab', 99, 23, { face: -1 }); ent('turtle', 103, 23, { face: -1 });
-  ent('deco', 93, 23, { kind: 'barnacleRock', v: 1 }); ent('deco', 103, 24, { kind: 'coralTuft', v: 1 });
+  ent('turtle', 99, 23, { face: -1 }); ent('turtle', 103, 23, { face: -1 });
+  ent('deco', 93, 23, { kind: 'driftwood', v: 1 }); ent('deco', 103, 24, { kind: 'rushes', v: 1 });
   coins([81, 26], [83, 25], [86, 25], [87, 26], [89, 25], [90, 26], [92, 22], [96, 22], [100, 21], [103, 21], [104, 22]);
   fall(105, 24, 28);
   block(106, 127, 28, H - 1); shallow(110, 122, 28, 16); ent('heronfoe', 116, 27, { face: -1 });
-  for (const x of [112, 119]) ent('deco', x, 28, { kind: 'coralTuft', v: x % 3 });
-  for (const [x, y, k, v] of [[21, 11, 'barnacleRock', 0], [46, 16, 'coralTuft', 2], [68, 19, 'barnacleRock', 1], [101, 24, 'saltCrust', 1], [97, 24, 'coralTuft', 0], [124, 27, 'barnacleRock', 0], [124, 27, 'saltCrust', 1]]) ent('deco', x, y, { kind: k, v });
+  for (const x of [112, 119]) ent('deco', x, 28, { kind: 'rushes', v: x % 3 });
+  /* THE MELTFALLS ARE A MOUNTAIN RIVER (level review, 2026-09-24): Highcrown's melt, a hundred miles from the sea, was dressed with coral,
+     barnacles and crabs. Its own now - rushes and driftwood, turtles and herons - and the sea's things start at Saltreach (L.fresh keeps
+     the sprinklers to it). One of the two stacked on 124,27 went. */
+  for (const [x, y, k, v] of [[21, 11, 'driftwood', 0], [46, 16, 'rushes', 2], [68, 19, 'driftwood', 1], [101, 24, 'saltCrust', 1], [97, 24, 'rushes', 0], [124, 27, 'driftwood', 0]]) ent('deco', x, y, { kind: k, v });
   block(128, 139, 27, H - 1); // the ferry dock
   ent('sign', 129, 26, { text: 'STAND ON THE RAFT AND IT GOES. JUMP THE ROCKS. DO NOT LISTEN TO THE SINGING.' });
   air(132, 138, 30, 32); air(139, 139, 29, 32); // THE SMUGGLERS' CUT: a dry room under the dock, its mouth in the river
@@ -4139,7 +4142,7 @@ function longWater() {
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 7 }, pools, falls, moversExtra: movers, airRooms, deep: D,
     duskStart: 99999, duskLen: 1, music: 'longwater', night: false,
-    wetZone: [0, 107], bore: { x0: 140 * TS, x1: 278 * TS, surface: 28 * TS + 4, period: 12, speed: 280, h: 30 },
+    wetZone: [0, 107], fresh: [0, 127], bore: { x0: 140 * TS, x1: 278 * TS, surface: 28 * TS + 4, period: 12, speed: 280, h: 30 },
     quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE FISHERFOLK ARE SAFE', reward: 'relic', relic: 'tidecharm' },
     palette: { set: 'shore', sky: 'sea', far: 'sea', mid: 'coast', near: 'shore', fg: 'shore', dress: 'shore', haze: 'rgba(248,220,176,0.10)',
       grass: '#7a9a5a', grassL: '#a8c47a', grassD: '#5a7a44', dirt: '#555e68', dirtL: '#6f7a84', dirtD: '#3e454e', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
@@ -4405,7 +4408,7 @@ function theFlotilla() {
   ent('sailor', 44, 23, { face: -1 }); ent('netter', 50, 23, { face: -1 }); ent('crab', 56, 23, { face: 1 });
   ent('cutlass', 61, 23, { face: 1 }); ent('cutlass', 68, 23, { face: -1 }); ent('cutlass', 74, 23, { face: -1 });
   ent('sailor', 84, 23, { face: 1 }); ent('cutlass', 90, 23, { face: -1 });
-  ent('bosun', 78, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 }); ent('scout', 51, 10, { face: -1 });
+  ent('bosun', 78, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 }); ent('lookout', 51, 10, { face: -1 });   /* the crow's nest's own: a lookout, not a merrow scout off the tide (level review, 2026-09-24) */
   ent('sign', 42, 23, { text: 'THE PRESS GANG: BACK TO THE MAST AND SWING WIDE, OR KILL THE BOSUN FIRST.' });
   ent('sign', 56, 23, { text: 'THEIR GALLEY FIRE IS STILL LIT. WHOEVER WAS COOKING LEFT IN A HURRY.' });
   ent('deco', 54, 23, { kind: 'cookPot' }); ent('deco', 84, 23, { kind: 'washing' }); ent('deco', 88, 23, { kind: 'waterButt' });
@@ -4473,7 +4476,7 @@ function theFlotilla() {
   // ---- 3. THE POWDER HOY: what they blast wrecks open with ----
   block(183, 240, 25, 37); hullZones.push([183, 240, 25, 37]);
   rail(183, 186, 24);
-  ent('keg', 192, 24); ent('keg', 206, 24); ent('keg', 220, 24);
+  ent('keg', 196, 24); ent('keg', 206, 24); ent('keg', 220, 24);   /* 196: at 192 the first keg stood in the deck gun's own tile (level review, 2026-09-24) */
   ent('deco', 198, 24, { kind: 'kegStack' }); ent('deco', 212, 24, { kind: 'chickenCoop' });
   ent('deco', 206, 24, { kind: 'mastTall', v: 0 }); ent('deco', 200, 17, { kind: 'sailRag', v: 0 });
   ent('deco', 206, 11, { kind: 'pennant', v: 2 }); ent('deco', 228, 22, { kind: 'rigging', v: 0 });
@@ -4482,7 +4485,7 @@ function theFlotilla() {
   ent('cannon', 232, 24, { hole: [245, 247, 24, 26] });
   ent('sign', 228, 24, { text: 'STRIKE THE GUN TO OPEN THE FLAGSHIP\'S SIDE. KEGS BLOW IF HIT: MIND YOUR FEET.' });
   // THE RIGGING: three marines above her deck, shooting down it while you cross, and a spar to go up after them
-  ent('marine', 198, 14, { face: -1 }); ent('marine', 210, 14, { face: -1 }); ent('scout', 222, 14, { face: -1 });
+  ent('marine', 198, 14, { face: -1 }); ent('marine', 210, 14, { face: -1 }); ent('lookout', 222, 14, { face: -1 });
   ent('crab', 200, 24, { face: -1 }); ent('cutlass', 224, 24, { face: -1 }); ent('bosun', 214, 24, { face: 1 });
   ent('boarder', 236, 24, { face: -1 }); ent('sailor', 190, 24, { face: 1 });
   net(196, 197, 15, 23); net(210, 211, 15, 23); net(224, 225, 15, 23);
@@ -4552,7 +4555,7 @@ function theFlotilla() {
   for (const x of [252, 264, 276, 288, 316, 330]) ent('deco', x, 24, { kind: 'gunport', v: x % 2 });
   ent('deco', 246, 21, { kind: 'figurehead' }); ent('deco', 292, 18, { kind: 'wheel' });   /* on the deck: 296,21 was inside the quarterdeck */
   ent('deco', 244, 21, { kind: 'boardingNet' });
-  ent('check', 254, 21); ent('check', 304, 15); ent('silver', 300, 26);
+  ent('check', 254, 21); ent('silver', 300, 26);   /* (304,15 went: it was inside the Quartermaster's walls and PAST her trigger, B6's own case - 254 is outside) */
 
   coins([258, 21], [266, 21], [274, 21], [282, 21], [290, 21]);
   coins([252, 26], [266, 26], [278, 26], [296, 26]);
@@ -4602,7 +4605,7 @@ function theFlotilla() {
 // One ship, one storm, and no second ship to jump to. The sea does the moving here: a wall of water builds to
 // windward, you get a breath of warning, and when it breaks over her anything not holding a line goes over the
 // side. The rigging is the level: every line, shroud and ratline is a handhold, and the hold below is shelter
-// that costs you time. (IN PROGRESS: no boss yet, no music of its own, hidden from the map.)
+// that costs you time. (The Captain is her boss; she has her own music and her own node on the map.)
 function theHurricane() {
   const W = 760, H = 44; const L = painter(W, H);
   const { block, plat, ent, coins, set } = L;
@@ -4634,7 +4637,7 @@ function theHurricane() {
   // ================= 1. THE FORECASTLE: you come up out of her head =================
   block(16, 52, 16, 19); air(22, 50, 17, 19); air(51, 52, 17, 19);
   plat(53, 16, 4); net(53, 54, 15, 19);
-  ent('deco', 14, 17, { kind: 'figurehead', hang: true });                 // her head, hung off the bow under your feet
+  ent('deco', 15, 17, { kind: 'figurehead', hang: true });   /* 15: against the stem - at 14 she hung eight pixels off the bow in the air (level review, 2026-09-24) */                 // her head, hung off the bow under your feet
   ent('deco', 20, 15, { kind: 'shipBell' }); ent('deco', 46, 15, { kind: 'anchor' });
   ent('sign', 18, 15, { text: 'HER BELL. THEY RANG IT FOR THE WATCH AND FOR THE DEAD, AND IT IS STILL RINGING ITSELF.' });
   ent('sign', 26, 19, { text: 'THE WAVE COMES FROM WINDWARD. TAKE A LINE, CLIMB, OR GO BELOW. ON DECK, JUMP IT.' });
@@ -4711,13 +4714,13 @@ function theHurricane() {
   for (const x of [228, 240, 252]) ent('cannon', x, 26, { deck: true });
   ent('cannon', 264, 26, { hole: [268, 271, 22, 25] });
   ent('sign', 224, 26, { text: 'STRIKE A BREECH AND THE GUN FIRES. THE LAST ONE AIMS AT THE MAGAZINE WALL.' });
-  ent('deco', 276, 26, { kind: 'kegStack' }); ent('deco', 280, 26, { kind: 'plunder', v: 1 });
-  ent('deco', 278, 26, { kind: 'coiledCable', v: 1 });   /* 284 is inside the bulkhead: it was pushed out against it */ coins([273, 25], [278, 25], [282, 25]);
-  ent('pump', 244, 19, { pool: 424 }); ent('sign', 240, 19, { text: 'WORK THE PUMP BRAKE TO DRAIN THE HOLD. THE ORLOP HIDES SOMETHING WHEN DRY.' });
+  ent('deco', 276, 25, { kind: 'kegStack' }); ent('deco', 280, 25, { kind: 'plunder', v: 1 });   /* on the magazine's floor, row 25: at 26 they were laid IN it (level review, 2026-09-24) */
+  ent('deco', 278, 25, { kind: 'coiledCable', v: 1 });   /* 284 is inside the bulkhead: it was pushed out against it */ coins([273, 25], [278, 25], [282, 25]);
+  ent('pump', 246, 19, { pool: 424 });   /* 246, on the deck: 244 is the rope ladder out of the hold (src/storm-ship.js nets 243-244), and it stood on the rope (level review, 2026-09-24) */ ent('sign', 240, 19, { text: 'WORK THE PUMP BRAKE TO DRAIN THE HOLD. THE ORLOP HIDES SOMETHING WHEN DRY.' });
   ent('deco', 250, 19, { kind: 'kegStack' }); ent('deco', 252, 19, { kind: 'waterButt' });   /* not on the shroud's foot at 248: a net is no floor, and it sank a row into the rail */
   ent('sign', 226, 19, { text: 'THE WAIST IS THE WORST OF HER: NO RAIL WORTH THE NAME AND NOTHING TO HOLD BUT THE SHROUDS.' });
   air(236, 237, 20, 20); net(236, 237, 20, 26);
-  ent('deco', 228, 19, { kind: 'washing' }); ent('deco', 320, 19, { kind: 'boardingNet' }); ent('deco', 246, 19, { kind: 'kegStack' }); ent('deco', 264, 19, { kind: 'rumBarrels', v: 1 }); ent('deco', 308, 19, { kind: 'washing' }); ent('deco', 286, 19, { kind: 'hammock', v: 0 });
+  ent('deco', 228, 19, { kind: 'washing' }); ent('deco', 320, 19, { kind: 'boardingNet' }); ent('deco', 264, 19, { kind: 'rumBarrels', v: 1 }); ent('deco', 308, 19, { kind: 'washing' }); ent('deco', 286, 19, { kind: 'hammock', v: 0 });
   movers.push({ kind: 'swing', px: 276 * TS, py: 8 * TS, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.4 });
   movers.push({ kind: 'swing', px: 296 * TS, py: 8 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.6, phase: 2 });
   coins([230, 18], [244, 18], [258, 18], [274, 18], [288, 18], [304, 18], [318, 18], [278, 10], [298, 11], [236, 18], [252, 18], [266, 18], [282, 18], [296, 18], [312, 18], [240, 25], [256, 25], [272, 25], [290, 25]);
@@ -4929,7 +4932,7 @@ function theHurricane() {
     // THE LIGHTNING: it picks somewhere near you, says so, and hits it. Over water it runs along the surface.
     storm2: { every: 9, tell: 1.2, y: 20 * TS, zones: [[330 * TS, 424 * TS], [486 * TS, 558 * TS], [560 * TS, 744 * TS]] },
     hullZones, darkZones, airRooms, deep: D,
-    interiors: [[20, 740, 21, 26, 'ship'], [186, 214, 17, 19, 'ship'], [504, 540, 25, 26, 'ship'], [662, 742, 17, 19, 'ship']],
+    interiors: [[20, 485, 21, 26, 'ship'], [557, 740, 21, 26, 'ship'], [186, 214, 17, 19, 'ship'],   /* the hold is two: from 486 to 556 there is no hull, only the sea, and the hold's wall was hung over it (B5; level review, 2026-09-24) */ [504, 540, 25, 26, 'ship'], [662, 742, 17, 19, 'ship']],
     // ROOMS OF THEIR OWN in her hold and her deckhouses (dressing only: [x0, x1, top row, floor row, kind]): the galley forward,
     // the brig, the powder room aft of the mainmast, the chart room in the first deckhouse and the Captain's cabin under his deck
     cabins: [[22, 64, 21, 27, 'galley'], [70, 124, 21, 27, 'brig'], [184, 216, 17, 20, 'chart'], [292, 366, 21, 27, 'magazine'], [664, 700, 17, 20, 'cabin']],
@@ -5256,7 +5259,7 @@ function theLamplitStreet() {
     palette: { set: 'city', sky: 'drowned', far: 'city', mid: 'city', near: 'city', fg: 'city', dress: 'none', haze: 'rgba(20,70,66,0.22)',
       grass: '#4e7a58', grassL: '#7e9490', grassD: '#24402c', dirt: '#46595c', dirtL: '#58706f', dirtD: '#243036',
       canopy: ['#0d2826', '#113331', '#16403d', '#1b4c48'] },
-    weather: [{ x0: 0, x1: 99999, kind: 'pollen' }],
+    weather: [],   /* no pollen in a drowned city at night: it drifted through the flooded street as bright motes under the water (level review, 2026-09-24) */
     ambient: [{ x0: 0, x1: 99999, kind: 'drip' }],
     mini: { x0: 198 * TS, x1: 238 * TS, floor: UP * TS, y0: 13 * TS, y1: 23 * TS, trigger: 204 * TS, wallL: 197, gate: 240, boss: 'lampreeve' },
     arena: { x0: 650 * TS, x1: 694 * TS, floor: UP * TS, y0: 8 * TS, trigger: 658 * TS, wallL: 649, wallR: 694, boss: 'tollmaster', music: 'tollmaster', tint: '#2a4a5a', tintA: 0.14, fx: 'motes' },
@@ -7283,7 +7286,8 @@ for (const lv of LEVELS) {
   const build = lv.build;
   lv.build = (...a) => { const out = build(...a);
     for (const [from, to, every] of mix) { let n = 0;
-      for (const e of out.ents) if (e.t === from && !e.boss && !e.mini && ++n % every === 0 && !e.pogo && !e.fat) { e.t = to; delete e.sleeper; if (to === 'crow') { e.speed = 90; e.wake = 260; } } }
+      const lesson = e => (out.lessons || []).some(z => e.x >= z.x0 && e.x <= z.x1);   /* A LESSON STRIP IS LEFT ALONE (level review, 2026-09-24): the down-attack lesson's first sprig became a Sporewood lurker */
+      for (const e of out.ents) if (e.t === from && !e.boss && !e.mini && ++n % every === 0 && !e.pogo && !e.fat && !lesson(e)) { e.t = to; e.mixed = from; delete e.sleeper; if (to === 'crow') { e.speed = 90; e.wake = 260; } } }
     return out; };
   lv.build.mixed = true;
 }
@@ -7300,23 +7304,26 @@ const REVIEW = {
   // a checkpoint in the long run between the thorn cut and the high path
   wood: L => { const R = rv(L); R.ent('check', 166, 21);
     /* THE BADGER's own ground: one in the sett's dark run, where the corridor is four rows tall and a jump over it is still
-       a jump (it is met alone on the flat at 191 first, and it is in the Bramble Ride's first wave) */
-    R.ent('badger', 209, 21, { face: -1 });
+       a jump (it is met alone on the flat at 217 first, and it is in the Bramble Ride's first wave) */
+    /* EVERY COLUMN IN THIS TABLE PAST 173 IS 26 ON FROM WHERE IT WAS WRITTEN (level review, 2026-09-24): the perfect-guard lesson was grown
+       at 173 after this table was laid, and nothing moved it - the badger stood on the badger LESSON's flat beside its own (so the
+       lesson was not met alone) and two combs hung in the air. Re-derived against the pre-lesson build, column for column. */
+    R.ent('badger', 235, 21, { face: -1 });
     /* THE HIVE IS FELT FROM THE START ("most of these honeycombs added throughout the level with wasps around them"). Its
        paper combs hang in the trees behind five stretches of the wood, not only in the Queen's hall and the giant's glade,
        and each keeps a couple of wasps posted high over it: never over a landing, a crate hop or the mover's gap, and at
        least five rows over the floor, so the hop that reaches a crate does not reach them. The sett ridge and the helm
        ridge have wasps of their own already, so their combs bring none. */
     R.ent('deco', 38, 21, { kind: 'hiveBg', v: 1 }); R.ent('wasp', 37, 15); R.ent('wasp', 39, 14);
-    R.ent('deco', 214, 13, { kind: 'hiveBg', v: 2 });
-    R.ent('deco', 348, 11, { kind: 'hiveBg', v: 1 }); R.ent('wasp', 344, 7); R.ent('wasp', 347, 6);
-    R.ent('deco', 432, 14, { kind: 'hiveBg', v: 2 }); R.ent('wasp', 430, 9); R.ent('wasp', 435, 8);
-    R.ent('deco', 452, 8, { kind: 'hiveBg', v: 0 }); },   /* not 171: the log step is right over it there, and the shrine ran up through it. (114 before THE THREE LESSONS grew the wood by 78 columns ahead of it) */
+    R.ent('deco', 240, 13, { kind: 'hiveBg', v: 2 });
+    R.ent('deco', 374, 11, { kind: 'hiveBg', v: 1 }); R.ent('wasp', 370, 7); R.ent('wasp', 373, 6);
+    R.ent('deco', 458, 14, { kind: 'hiveBg', v: 2 }); R.ent('wasp', 456, 9); R.ent('wasp', 461, 8);
+    R.ent('deco', 478, 8, { kind: 'hiveBg', v: 0 }); },   /* not 171: the log step is right over it there, and the shrine ran up through it. (114 before the four lessons grew the wood by 104 columns ahead of it) */
   // a checkpoint by the old stones, and lily pads over the two long shallows (hop them and you are across
   // before a wader is halfway), with gold on the way
   marsh: L => { const R = rv(L); R.ent('check', 163, 17); for (const x of [115, 118, 121, 124, 127, 465, 468, 471, 474]) { R.ent('pad', x, 17); R.coin(x, 15); } },
   // and its own light in every part of it, so the long fungus wood stops being one colour from end to end
-  spore: L => { rv(L).ent('check', 330, 13);
+  spore: L => { rv(L).ent('check', 330, 13); L.ents = L.ents.filter(e => !(e.t === 'spitcap' && L.arena && e.x > L.arena.wallR));   /* a spitcap left past the Mother's east wall when the Deep Gills grew the wood: nothing out there to guard (level review, 2026-09-24) */
     L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, 504, [200, 60, 150], 0.16]]; },
   // the court's long runs went a hundred and twenty tiles without a checkpoint
   kings: L => { const R = rv(L); R.ent('check', 153, 21); R.ent('check', 405, 20); },   /* moved with the Knights' Road (+48 at 85) and the Hanging Roots (+42 at 191) */
@@ -7343,7 +7350,7 @@ const REVIEW = {
 // castle. Only on open ground with room over it, spaced out, never in a boss room, never on a sign, a door,
 // a gate or a friend, and the same every time. (The per-100 dressing count was the thinnest number we had.)
 export const DRESS = {
-  wood: [['beehive'], ['birdhouse'], ['trunk', 3], ['fence', 2], ['deadTree', 2], ['cairn'], ['stone', 3], ['fern', 3], ['mushroom', 2], ['stump', 2], ['rock', 3], ['flower', 2], ['bushDeco', 3]],   /* the first wood was the thinnest: fences and stones */
+  wood: [['beehive'], ['birdhouse'], ['trunk', 3], ['fence', 2], ['deadTree', 2], ['stump'], ['rock', 3], ['fern', 3], ['mushroom', 2], ['stump', 2], ['rock', 3], ['flower', 2], ['bushDeco', 3]],   /* the first wood was the thinnest: fences and stones */   /* (a crag's cairn and standing stone were in it - the stash props of the mountains: a stump and a mossy rock in their slots, same draws, level review 2026-09-24) */
   marsh: [['fishTrap', 2], ['lilyLantern'], ['deadTree', 2], ['fence', 2], ['barrels'], ['frogStatue', 1], ['cattail', 2], ['fern', 3], ['mushroom', 2], ['moss', 2], ['stump', 2]],
   stockade: [['barrels'], ['spearRack'], ['skullPile', 2], ['tent', 2], ['cart'], ['bones', 2], ['banner', 2], ['gobPennant', 3], ['warStandard', 2], ['ragBanner', 3], ['hideBanner', 2], ['skullTotem', 2], ['trophyRack', 2], ['stakeFence', 2], ['lootHeap', 2], ['cookSpit'], ['cauldron'], ['hideRack', 2], ['warnPost', 2], ['boneChime', 2]],   /* the war camp: every flag they have, and the camp's own mess */
   spore: [['sporePod'], ['rootDecor', 3], ['cobweb', 3], ['deadTree', 2], ['bones', 2], ['mushroom', 2], ['moss', 2], ['fern', 3], ['stump', 2]],
@@ -7407,7 +7414,7 @@ const GARRISON = {
   harbor: [['cutlass', 11], ['boarder', 10], ['scout', 11], ['tideguard', 10], ['petrel', 11], ['marine', 8], ['sailor', 8], ['netter', 6], ['crab', 8], ['angler', 8], ['eel', 6], ['lookout', 4], ['bosun', 4], ['bonecorsair', 6], ['lanternshade', 4], ['puffer', 2]],   /* the wrecked harbour's own: the crews the storm put ashore, the birds over them, and what the Lamplit Street's dead washed in with */
   keep: [['wight', 14], ['tideguard', 10], ['watch', 9], ['eel', 9], ['angler', 7], ['siren', 5], ['merrowspear', 5], ['jelly', 5], ['merrowbrute', 3], ['manta', 3], ['urchin', 3], ['puffer', 3], ['lamprey', 3]],   /* a drowned castle: its own garrison still at their posts, and the deep water's wildlife moved in over them */
   burning: [['sprig', 10], ['archer', 4], ['burngob', 4], ['emberwisp', 4], ['thief', 3], ['hound', 3], ['sapper', 3], ['shield', 2], ['pike', 2]],   /* THE BURNING VILLAGE: the Stockade's goblins down the road, his burning ones, and his wisps */
-  burial: [['zombie', 16], ['husk', 9], ['wight', 14], ['bat', 13], ['bonegob', 8], ['bonearcher', 9], ['bonecorsair', 7], ['boo', 11], ['lanternshade', 5], ['haunt', 8], ['spider', 6]],   /* and something that SHOOTS: over 1,140 tiles nothing in here could reach the hero across a room */   /* forty-four zombies and nothing else was the whole roster under the hill */
+  burial: [['zombie', 16], ['husk', 16], ['wight', 14], ['bat', 13], ['bonegob', 8], ['bonearcher', 9], ['boo', 11], ['lanternshade', 5], ['haunt', 8], ['spider', 6]],   /* and something that SHOOTS: over 1,140 tiles nothing in here could reach the hero across a room */   /* NO PIRATES UNDER THE HILL (level review, 2026-09-24): its seven bone corsairs - tricorns and striped shirts, the drowned coast's own crew - are husks, the barrow's own dead of the same weight (threat 3 for 3), so the level's INDEX does not move */   /* forty-four zombies and nothing else was the whole roster under the hill */
   /* witchlight: NO ROW. The redesigned stair (2026-09-22) is authored ENCOUNTERS of 3-5 with quiet between - Daniel agreed to it over an even sprinkle (src/witchlight.js) */
   fallingtower: [['tome', 3], ['apprentice', 3], ['haunt', 2], ['bat', 2], ['imp', 1], ['armour', 1], ['boo', 1]],   /* the Folly's own staff, and what got loose in it. Small since the ascent (2026-09-21): the builder puts a creature on every tier, and this fills between them - on every floor (L.stackedFloors). NO ZOMBIE AND NO HUSK since the tower was made longer (2026-09-22): Daniel asked for FEWER of them, and the builder's own three zombies plus the cistern's elite husk are the whole count - a row here would quietly put more back. The TOMES lead it instead. */
   /* THE SUNKEN CARAVAN: its three new creatures (the scorpion on the flats, the sand goblin under them, the vulture over them) and
@@ -7451,13 +7458,21 @@ function checkpoints(L) {
       // Sunspire and this one never heard about it.)
       if (!stand(at(x - 1, y + 1)) && !stand(at(x + 1, y + 1))) continue;
       if (wet(x, y) || rooms.some(([a2, b2, c2, d2]) => x >= a2 && x <= b2 && (c2 === undefined || (y >= c2 && y <= d2)))) continue;
+      if (fly && x > fly[0] && x < fly[1]) continue;   /* never on the ride (A RIDE IS NOT A RUN, below) */
       const d = Math.abs((tall ? y : x) - want); if (d < bd) { bd = d; best = [x, y]; }
     }
     return bd < MAXRUN ? best : null;   /* the nearest ground that will hold one, even if it is most of a run away */
   };
   const marks = ch.map(key);
   const runs = [];
-  for (let i = 1; i < marks.length; i++) if (marks[i] - marks[i - 1] > MAXRUN) runs.push([marks[i - 1], marks[i]]);
+  /* A RIDE IS NOT A RUN. Gale Moor's kite carries you from its post to the Windcaller's ledge and never lets you stand,
+     so this filled the two hundred columns under it with two shrines on spire tops (level review, 2026-09-24) - which a
+     kite rider lit in passing, and a death after that stood you back up on a two-tile spire over spikes with no kite:
+     a soft-lock. The builder had taken the old ones out by hand (search "stood under the Sky Road") and this put them
+     back. The flight's own columns do not count toward a run and nothing is put in them; tools/checkpoints.mjs holds it. */
+  const fly = L.flight ? [Math.min(L.flight.x1, ...(L.ents || []).filter(e => e.t === 'stormkite').map(e => e.x)), L.flight.x1] : null;
+  const walked = (a2, b2) => (b2 - a2) - (fly && !tall ? Math.max(0, Math.min(b2, fly[1]) - Math.max(a2, fly[0])) : 0);
+  for (let i = 1; i < marks.length; i++) if (walked(marks[i - 1], marks[i]) > MAXRUN) runs.push([marks[i - 1], marks[i]]);
   if (marks.length && marks[0] > MAXRUN) runs.push([0, marks[0]]);
   const put = [];
   for (const [a2, b2] of runs) { const n = Math.ceil((b2 - a2) / MAXRUN);
@@ -7515,7 +7530,10 @@ function garrison(L, id) {
   /* AND WATER IS NOT ROOM: a swim pool's spot can still have rock in it, and the Long Water put an eel a tile inside the bank
      the moment the new wildlife shifted the draw. A swimmer needs its own tile and the one over it clear. */
   const clearHere = (x, y) => [x - 1, x, x + 1].every(cx => cx < 0 || cx >= L.W || (!solid(L.grid[y * L.W + cx]) && !solid(L.grid[Math.max(0, y - 1) * L.W + cx])));   /* its own column is not enough: a fish is wider than a tile, and the reef put an angler's nose in the rock */
-  const fits = (kind, x, y, isWet) => (!SWIMS.has(kind) || clearHere(x, y)) && (!isWet || SWIMS.has(kind)) && (!INWATER.has(kind) || swimIn(x, y)) && (kind !== 'siren' || bySwim(x, y)) && (!BYWATER.has(kind) || !pools.length || isWet || byWater(x, y));
+  /* NOBODY IS PUT IN A HARMFUL POOL (level review, 2026-09-24): a sailor swims, so the Hurricane's burning oil was water to him and he was
+     stood in it. tools/spawns.mjs (HARM) holds every level to it. */
+  const harmHere = (x, y) => pools.some(p => p.harm && !p.dry && x * TS + 8 > p.x0 && x * TS + 8 < p.x1 && (y + 1) * TS - 4 > p.y && (y + 1) * TS - 4 <= (p.bottom !== undefined ? p.bottom : p.y + 64) + TS);
+  const fits = (kind, x, y, isWet) => !harmHere(x, y) && !(L.fresh && x >= L.fresh[0] && x <= L.fresh[1] && SEA_ONLY.has(kind)) && (!SWIMS.has(kind) || clearHere(x, y)) && (!isWet || SWIMS.has(kind)) && (!INWATER.has(kind) || swimIn(x, y)) && (kind !== 'siren' || bySwim(x, y)) && (!BYWATER.has(kind) || !pools.length || isWet || byWater(x, y));
   const tall = W < 220, minDX = tall ? 4 : 8, minDY = tall ? 9 : 6;
   const taken = [], left = [];
   const squads = set.some(([k]) => k === 'shield' || k === 'soldier'); let squadN = 0;
@@ -7572,6 +7590,10 @@ const HUNG_H = { clothStrip: 62, boneChime: 40 };
 /* AND WHAT STANDS TALLER THAN THREE ROWS. The sprinkler asks for three rows of air, which is a barrel's worth: a war
    standard put under a gallery three rows up ran its skull through the boards. */
 const TALL_ROWS = { warStandard: 5, hideBanner: 4, skullTotem: 4 };
+/* THE SEA'S THINGS AND THEIR RIVER TWINS (L.fresh: the columns of a level that are fresh water - the Long Water's Meltfalls). The
+   dressing and the ground kit swap them where they land, so every draw falls where it did; the garrison leaves SEA_ONLY out. */
+export const FRESH_TWIN = { coralTuft: 'rushes', kelp: 'rushes', barnacleRock: 'driftwood', shell: 'driftwood' };
+export const SEA_ONLY = new Set(['crab', 'siren', 'angler', 'urchin', 'puffer', 'jelly', 'lamprey', 'manta']);
 function dressLevel(L, id) {
   const set = DRESS[id]; if (!set) return L;
   for (const [kind, x, y, v, hang] of GOBLIN_CAMP[id] || []) L.ents.push(Object.assign({ t: 'deco', x, y, kind, v: v || 0 }, hang ? { hang: true } : {}));
@@ -7580,11 +7602,15 @@ function dressLevel(L, id) {
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
   /* 'cover' and the siege engines (THE UNBURIED FIELD): a shield wall that stops a volley must never have a dressed shield or a
      wreck set down beside it, or the thing that saves you and the thing that does not look alike */
-  const KEEP = new Set(['cover', 'ballista', 'trebuchet', 'oilbarrel', 'sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier', 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade', 'sheet', 'balloon', 'sail']);
+  const KEEP = new Set(['firepit', 'firevent', 'hotplate', 'cover', 'ballista', 'trebuchet', 'oilbarrel', 'sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'relic', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier',   /* a fire on the floor is kept clear like a brazier: Kingswood's Fired Wood grew a skull totem in its firepits' reach (level review, 2026-09-24) */ 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade', 'sheet', 'balloon', 'sail']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   const placed = [];
   const clear = (x, y) => keep.every(([kx, ky]) => Math.abs(kx - x) > 3 || Math.abs(ky - y) > 3) && placed.every(([px, py]) => Math.abs(px - x) > 7 || Math.abs(py - y) > 4);
-  const wet = (x, y) => (L.pools || []).some(p => (p.shallow || p.harm) && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // in a WADING pool, not by it: a fish trap wants a bank. Coral belongs under the sea, so a swim pool is not a reason to leave a floor bare
+  /* AND A POOL THAT IS NOT THE SEA IS NOT A FLOOR (level review, 2026-09-24): the Marsh's ferry channel is a swim pool, so its bed
+     grew moss and a frog statue two rows under the water, and the Wood's tarn a stump. Only a level dressed as the sea dresses its
+     sea bed (tools/dressing.mjs holds it). */
+  const seaBed = ['reef', 'shore', 'ship', 'city'].some(k => L.palette && (L.palette.set === k || L.palette.dress === k));
+  const wet = (x, y) => (L.pools || []).some(p => (p.shallow || p.harm || !seaBed) && x * TS >= p.x0 && x * TS <= p.x1 && y * TS + 8 > p.y - 2); // in a WADING pool, not by it: a fish trap wants a bank. Coral belongs under the sea, so a swim pool is not a reason to leave a floor bare
   const stoneAt = (x, y) => (L.stone || []).some(z => x >= z[0] - 1 && x <= z[1] + 1 && y >= z[2] - 1 && y <= z[3] + 1);
   // A PLANK IS A FLOOR ONLY WHEN SOMETHING IS UNDER IT. A one-tile bridge board reads as ground the same as a
   // mountain by this test, so the sprinkler dressed the Monastery's own rope bridge with a standing stone and a
@@ -7598,7 +7624,8 @@ function dressLevel(L, id) {
     let ok = true; for (let dx = -1; dx <= 1 && ok; dx++) { const b = at(x + dx, y + 1); if (b !== T.SOLID && b !== T.PLANK) ok = false; else if (b === T.PLANK && plankFloats(x + dx, y + 1)) ok = false; for (let dy = 0; dy < 3 && ok; dy++) if (at(x + dx, y - dy) !== T.AIR) ok = false; }
     /* L.noDress: boxes [x0, x1, y0, y1] in tiles that get nothing (a lamp gallery is a floor by the tile rule, and it grew a mooring post) */
     if (!ok || rnd() > (id === 'marsh' || id === 'moor' ? 0.4 : id === 'wood' || id === 'spore' ? 0.3 : 0.2) || wet(x, y) || stoneAt(x, y) || !clear(x, y) || (L.interiors || []).some(([a, b, c, d]) => x >= a - 1 && x <= b + 1 && y >= c - 7 && y <= d + 1) || rooms.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d) || (L.noDress || []).some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) continue;
-    const [kind, nv] = set[(rnd() * set.length) | 0], v = nv ? (rnd() * nv) | 0 : 0;
+    let [kind, nv] = set[(rnd() * set.length) | 0]; const v = nv ? (rnd() * nv) | 0 : 0;
+    if (L.fresh && x >= L.fresh[0] && x <= L.fresh[1] && FRESH_TWIN[kind]) kind = FRESH_TWIN[kind];   /* a river is not the sea (same draws) */
     if (HUNG_H[kind]) { const need = Math.ceil(HUNG_H[kind] / TS) + 2; let top = 0;
       for (let k = 3; k <= 10 && y - k >= 1; k++) if (at(x, y - k) !== T.AIR) { if (at(x, y - k) === T.SOLID && k >= need) top = y - k + 1; break; }
       if (!top || !clear(x, top) || !clear(x, top - 2)) continue;   /* clear where it HANGS too, and over it: the floor under a bell is not the bell */
@@ -7627,8 +7654,9 @@ const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul
    the room put back. check: [x, y] places that checkpoint by hand; false when one already stands at the door. The engine
    is updateAmbush in src/main.js, and section Q of RULES-LEVELS-AND-BOSSES.md says what makes a good one. */
 const AMBUSH = {
-  wood: [{ name: 'THE BRAMBLE RIDE', row: 11, wallL: 288, wallR: 325, check: [278, 11],   /* (every column here is 78 past what it was: THE THREE LESSONS grew the wood ahead of the giant) */
-    waves: [[['sprig', 294], ['sprig', 321], ['thorn', 308], ['badger', 300]], [['shield', 316], ['spit', 322], ['thorn', 294], ['crow', 306, 6]]] }],
+  wood: [{ name: 'THE BRAMBLE RIDE', row: 11, wallL: 314, wallR: 351, check: [304, 11],   /* (every column here is 104 past what it was: the FOUR lessons grew the wood ahead of the giant. It said 78 and stood
+     26 short for a day after the perfect-guard lesson went in - its walls shut round the bramble bed itself and put a thorn goblin in the thorns) */
+    waves: [[['sprig', 320], ['sprig', 347], ['thorn', 334], ['badger', 326]], [['shield', 342], ['spit', 348], ['thorn', 320], ['crow', 332, 6]]] }],
   marsh: [{ name: 'THE REED ISLAND', row: 17, wallL: 371, wallR: 389, check: false,
     waves: [[['hopper', 386], ['turtle', 380]], [['thorn', 384], ['archer', 387], ['heronfoe', 381], ['spit', 373]]] }],
   stockade: [{ name: 'THE KENNEL YARD', row: 19, wallL: 170, wallR: 209, check: [167, 16],
@@ -7695,14 +7723,14 @@ const ELITES = {
   keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
   burial: [['husk', 300, 33, { face: -1 }], ['wight', 396, 31, { face: -1 }], ['husk', 958, 31, { face: -1 }]],   /* (the third husk holds THE ROTTEN BRIDGES' pier since 2026-09-24: 950 is a board now) (the wight left the Falling Gallery's road, walled up in batch 4b, for the Grave Causeway before its green water) */
   oreroad: [['heavy', 455, 12, { face: -1, gate: 472 }]],   /* THE ORE ROAD: the drum yard's foreman holds the last gate onto the drum house's deck (the rework of 2026-09-25 moved the whole level east, so his column moved with it) */
-  witchlight: [['husk', 108, 76, { face: -1 }], ['armour', 286, 34, { face: -1 }]],   /* the redesign: the second pier's captain calls up the gorge's dead; the warden armour on the tall hedge guards its silver */
+  witchlight: [['husk', 110, 76, { face: -1 }], ['armour', 286, 34, { face: -1 }]],   /* the redesign: the second pier's captain calls up the gorge's dead; the warden armour on the tall hedge guards its silver */
   fallingtower: [['armour', 28, 215, { face: -1 }], ['husk', 52, 146, { face: -1 }], ['armour', 38, 119, { face: 1, gate: 30 }]],   /* the ascent (2026-09-21): the orrery's guard, the cistern's husk over the poison, and the bell loft's warden, whose gate shuts the way to the first lift. The orrery moved 36 rows up when the Reading Room and the Pendulum Gallery went in (2026-09-22) and its guard came with it; the cistern and the loft did not move. The husk sits ON the cistern's own first-tier husk, so it is UPGRADED, not added: one husk in the tower, and it is this one. */
   wood: [['shield', 147, 21, { gate: 157 }]],
   marsh: [['thorn', 65, 15, { gate: 72 }]],
   stockade: [['brute', 302, 19, { gate: 317 }]],
   spore: [['shield', 412, 13, { gate: 430 }]],
   kings: [['brute', 433, 20]],
-  scree: [['troll', 403, 18, { gate: 414 }]],
+  scree: [['troll', 409, 18, { gate: 414 }]],   /* 409: at 403 he stood a tile from the checkpoint at 404 - the landing (level review, 2026-09-24) */
   hanging: [['shield', 85, 107]],
   /* THE MONASTERY keeps the Temple Guardian in its hall, so neither of its two holds a gate. Both stand on a floor the
      level walks the LENGTH of, and neither stands at the trapdoor either end of it: a crag troll loose in the
@@ -7800,16 +7828,21 @@ function payDeadEnds(L, id) {
 }
 
 export const BRIDGE_STANDING = new Set(['deco','torch','brazier','lantern','firepit','sign','npc','check','bell','carpet']);
-export function bridgeSpanUnder(L,e) {return (L.ents||[]).find(b=>b.t==='bridge' && e!==b && e.x>=b.x && e.x<=(b.x1??b.x) && Math.abs(e.y+1-b.y)<0.01);}
+/* ON THE SPAN, NOT ONLY OVER ITS END ROW (level review, 2026-09-24): a rope bridge sags, so a prop standing IN its deck row - the Stockade's
+   trophy rack, midway along the planks - was never asked about: this tested only the row over the deck. Any row from the one over
+   the deck down through the sag counts. */
+export const BRIDGE_SAG = 3;
+export function bridgeSpanUnder(L,e) {return (L.ents||[]).find(b=>b.t==='bridge' && e!==b && e.x>=b.x && e.x<=(b.x1??b.x) && e.y+1>=b.y && e.y<=b.y+BRIDGE_SAG);}
 function bankBridgeProps(L) {
   for(const e of L.ents){if(!BRIDGE_STANDING.has(e.t)||e.hang||e.perch)continue;const b=bridgeSpanUnder(L,e);if(!b)continue;
     let best=null,dist=Infinity;
     for(const edge of [b.x-2,(b.x1??b.x)+2])for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++){
       const x=edge+dx,y=e.y+dy;if(x<1||x>=L.W-1||y<1||y>=L.H-1)continue;
       if(L.grid[y*L.W+x]!==T.AIR||![T.SOLID,T.ONEWAY].includes(L.grid[(y+1)*L.W+x])||bridgeSpanUnder(L,{x,y}))continue;
+      if(e.t==='deco'&&L.ents.some(o=>o!==e&&o.t==='deco'&&o.y===y&&Math.abs(o.x-x)<2))continue;   /* not onto another prop: the bank is not a stack */
       const d=Math.abs(x-e.x)+Math.abs(y-e.y)*3;if(d<dist){best={x,y};dist=d;}}
-    if(best)Object.assign(e,best);
-  }return L;
+    if(best)Object.assign(e,best);else if(e.dressed)e.drop=true;   /* the sprinkler's own, with no free bank near: it goes */
+  }L.ents=L.ents.filter(e=>!e.drop);return L;
 }
 
 for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return polishTower(hauntedCoast(stormShipPolish(polishCoastAndTown(bankBridgeProps(dressLevel(payDeadEnds(sprinkleCoins(silverTrim(checkpoints(elites(garrison(ambushRooms(L, id), id), id)))), id), id)),id,T),id,T),id,T),id,T); }; }

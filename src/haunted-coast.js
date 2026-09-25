@@ -1,6 +1,8 @@
 export function hauntedCoast(L,id,T){
  if(id==='lamplit'){
   L.ents=L.ents.filter(e=>e.t!=='archer');let n=0;for(const e of L.ents)if(e.t==='wight'){e.t=n++%2?'bonecorsair':'lanternshade';}
+  /* AND THE AMBUSH'S (level review, 2026-09-24): the Lamp Island's wave still carried a bog's Peat Wight - the rule turned the placed ones and never read a wave */
+  for(const A of L.ambushes||[])for(const w of A.waves)for(const c of w)if(c[0]==='wight')c[0]=n++%2?'bonecorsair':'lanternshade';
   for(const [x,top]of[[62,18],[106,18],[142,18],[618,18]])for(let y=top;y<=21;y++)L.grid[y*L.W+x-1]=T.NET;
   L.climbCues=[[40,13],[58,22],[94,22],[168,22],[273,18],[305,18],[335,18]];
   L.ents.push({t:'sign',x:54,y:21,text:'HOLD DOWN ON A CHAIN TO DESCEND. HOLD UP TO CLIMB BACK OUT.'},{t:'sign',x:96,y:21,text:'THE LANTERN GHOST MARKS YOUR FEET. STEP CLEAR, OR GUARD THE FLASH.'});
