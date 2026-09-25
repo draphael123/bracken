@@ -11,17 +11,20 @@
 //
 //   rows 0-49      THE SKY: the carpet's arena (L.arena.carpet, rows 34-50), nothing to stand on by design
 //   rows 50-83   7 THE OPEN CROWN        broken ledges, the sky showing through, the carpet at the top
-//   rows 86-119  6 THE BELL LOFT         lifts and bell ropes
+//   rows 86-119  6 THE BELL LOFT         (2026-09-25) the bell deck over its pit, and THE SEXTON, the tower's mini
 //   rows 122-155 5 THE BURST CISTERN     a floor of poison water, stepping stones
 //   rows 158-191 4 THE PENDULUM GALLERY  NEW: three clock pendulums ('swing' movers, as Marsh Wood and Kingswood use)
 //                                        cross a 21-tile gap over a spiked gear pit, a wall stair between each ride
-//   rows 194-227 3 THE ORRERY CAGE       brass ledges and crystal ones that craze underfoot, a rope up the middle
+//   rows 194-227 3 THE ORRERY CAGE       (2026-09-25) a shaft, the observers' gallery whose floor gives way into the pit, and a failing stair
 //   rows 230-263 2 THE READING ROOM      NEW: the Folly's gravity. The tiers climb halfway, to a GLYPH; stand on it and
 //                                        the room turns over - you fall UP onto the underside of a stone gallery, walk
 //                                        the ceiling to its gap, fall up through it, walk to the ceiling glyph, and the
 //                                        room rights itself and drops you on the gallery. (L.mage must stay set: MG is
 //                                        what makes a glyph turn the room over - main.js setFlip, the glyph prop.)
 //   rows 266-299 1 THE LIBRARY STACKS    shelves to the ceiling, a plank stair between them; the TOMES are met here
+// FAILING STONE (src/tower-collapse.js, docs/briefs/falling-tower-rework.md): cracked sections that count 3-2-1 under your weight and go,
+// then come back. Taught on the library stair, the way down into the orrery pit, its failing stair, the pendulum's first landing,
+// the Sexton's bell deck, and one ledge in four of the crown's last climb.
 // Each floor is capped by a two-row stone divider with ONE rope through it. When you stand on the first tier over a divider
 // the floor under it collapses from its bottom row up, and the rope's hole in the divider is filled with rubble.
 //
@@ -33,6 +36,7 @@
 // Verbs used are the game's own (rule: obstacles fit the verbs you have): ledges, ropes (NET), crystal (T.CRYST, which
 // L.hasCryst lets craze), authored crumbling ledges (deckBreaks), vertical movers, swing movers, poison water, spikes,
 // the Folly's gravity glyphs, falling stones.
+import { crumbleInit, crumbleGone } from './tower-collapse.js';
 export const TOWER = { W: 72, H: 306, X0: 12, X1: 59, SKY: 50, FLOOR: 36, N: 7 };
 /* THE SANDY PATH's rows, high in the empty sky rows where nothing else is built and no camera ever reaches except
    through the portal: sixteen rows over the sanctum's vault, which is itself painted and not built (src/sanctum.js). */
@@ -64,8 +68,8 @@ export function buildTowerAscent({ painter, T, TS }) {
   const rect = (x0, x1, y0, y1, t) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, t); };
   rect(0, W - 1, 0, H - 1, T.SOLID);
   rect(0, W - 1, 0, SKY - 1, T.AIR);                                   // the sky over the crown
-  const interiors = [], pools = [], moversExtra = [], nets = [], floors = [], breaks = [], hung = [], flips = [], glyphBridges = [];
-  let cistern = null;
+  const interiors = [], pools = [], moversExtra = [], nets = [], floors = [], breaks = [], hung = [], flips = [], glyphBridges = [], crumbles = [];
+  let cistern = null, bell = null;
   const net = (x, y0, y1) => nets.push([x, y0, y1]);
   const deco = (kind, x, y, o) => ent('deco', x, y, Object.assign({ kind }, o || {}));
   const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: x < 36 ? 1 : -1 }, o || {}));
@@ -91,8 +95,13 @@ export function buildTowerAscent({ painter, T, TS }) {
   // ---- 1. THE LIBRARY STACKS. Shelves stand to the ceiling on both walls; the stair between them is plank. ----
   { const F = floors[0];
     for (const [x0, x1, h] of [[X0, X0 + 1, 22], [X1 - 1, X1, 18], [X0, X0 + 3, 6], [X1 - 3, X1, 8]]) rect(x0, x1, F.bot - h, F.bot - 1, T.SOLID);   /* the stacks: solid bookcase, painted as library wall */
-    spine(F, 0, () => T.PLANK);
+    spine(F, 0, j => j === 1 ? T.ONEWAY : T.PLANK);
+    /* FAILING STONE, TAUGHT SAFE (use 1 of 5, docs/briefs/falling-tower-rework.md): the stair's second tier is a cracked stone
+       ledge three rows over the library floor and the first tier. Stand on it and it counts; leave it late and you drop onto the
+       plank under it, which costs nothing. The rule is learned where it cannot hurt you. */
+    { const [x0, len, row] = F.tiers[1]; crumbles.push({ x0, x1: x0 + len - 1, row, kind: 'teach' }); }
     ent('check', 30, F.bot - 1); ent('sign', 26, F.bot - 1, { text: 'THE TOWER IS FALLING. CLIMB. EVERY FLOOR YOU LEAVE GOES DOWN BEHIND YOU.' });
+    ent('sign', 34, F.bot - 1, { text: 'CRACKED STONE COUNTS DOWN UNDER YOU - 3, 2, 1 - AND GOES. STEP OFF IT IN TIME.' });
     deco('lectern', 22, F.bot - 1); deco('bookpile', 38, F.bot - 1); deco('desk', 44, F.bot - 1); deco('candelabra', 50, F.bot - 1);
     const who = ['tome', 'apprentice', 'broom', 'armour', 'tome', 'zombie', 'apprentice', 'tome', 'imp', 'broom', 'tome'];
     F.tiers.forEach(([x0, len, row], j) => { put(who[j % who.length], x0, len, row); if (j % 3 === 1) deco('bookpile', x0 + 1, row - 1); });
@@ -112,24 +121,47 @@ export function buildTowerAscent({ painter, T, TS }) {
        the flip joins everything between the glyph's own tier and the top of the gallery (reachcore, L.glyphBridges with a
        fourth number). Take this away and the fill stops here - which is the point: the flip is the floor. */
     glyphBridges.push([gap[1] + 1, g2.x + 2, slab - 1, g1.y]);
-    /* the upper half, on the gallery: two tiers to the rope */
-    for (const [x0, len, row] of [[32, 10, slab - 3], [22, 10, slab - 6]]) { F.tiers.push([x0, len, row]); ledge(x0, len, row); }
+    /* the upper half, on the gallery: two tiers to the rope. The rope comes up at column 22 since 2026-09-25: over it is THE
+       ORRERY's shaft, walled off from its pit, so the way on is up to the observers' gallery and down through its failing floor */
+    for (const [x0, len, row] of [[28, 10, slab - 3], [18, 9, slab - 6]]) { F.tiers.push([x0, len, row]); ledge(x0, len, row); }
     for (let x = g1.x - 2; x >= gap[1] + 1; x -= 3) ent('coin', x, under);                         /* a trail along the ceiling walk: the way, said in coins */
     ent('check', 24, F.bot - 1); ent('sign', 20, F.bot - 1, { text: 'THE READING ROOM. THE GLYPHS TURN THE ROOM OVER: STAND ON ONE, AND FALL UP.' });
     ent('check', 40, slab - 1);                                                                     /* on the gallery: the flip is not asked twice */
     deco('readingDesk', 30, F.bot - 1); deco('globe', 52, F.bot - 1); deco('candelabra', 26, slab - 1); deco('bookpile', 34, slab - 1);
     for (const [t, x, y] of [['tome', 24, F.bot - 7], ['apprentice', 32, F.bot - 7], ['tome', 40, F.bot - 12], ['armour', 48, F.bot - 13], ['tome', 30, under + 3], ['imp', 20, under + 4],
-      ['tome', 36, under + 5], ['armour', 46, slab - 1], ['tome', 28, slab - 8], ['apprentice', 26, slab - 7], ['tome', 52, slab - 4], ['boo', 18, F.bot - 12]]) foe(t, x, y);
+      ['tome', 36, under + 5], ['armour', 46, slab - 1], ['tome', 28, slab - 8], ['apprentice', 22, slab - 7], ['tome', 52, slab - 4], ['boo', 18, F.bot - 12]]) foe(t, x, y);
   }
   // ---- 3. THE ORRERY CAGE. Brass ledges and crystal ones, and a rope up the middle past the model's arms. ----
-  { const F = floors[2];
-    spine(F, 4, j => j % 3 === 2 ? T.CRYST : T.ONEWAY);
-    ent('check', 20, F.bot - 1); ent('sign', 16, F.bot - 1, { text: 'THE ORRERY. CRYSTAL CRAZES UNDER YOU: DO NOT STAND ON IT LONG.' });
-    deco('orreryBase', 36, F.bot - 1); deco('globe', 50, F.bot - 1); deco('telescope', 28, F.bot - 1);
-    const who = ['imp', 'apprentice', 'tome', 'armour', 'bat', 'apprentice', 'haunt', 'tome', 'zombie', 'boo', 'apprentice'];
-    F.tiers.forEach(([x0, len, row], j) => put(who[j % who.length], x0, len, row));
-    hung.push([24, F.top], [46, F.top]);                                  /* turrets under the divider, hung by mageReset */
-    pocket(F.tiers[5]);                                                   /* a pocket off the sixth tier */
+  /* REBUILT 2026-09-25 (docs/briefs/falling-tower-rework.md, uses 2 and 3 of the failing stone). It was a spine of brass and
+     crystal like every other floor. Now it is three places, stacked:
+       THE SHAFT        (cols 12-23) the Reading Room's rope comes up here, walled off from the pit, and goes on up through
+                        the pit's roof into -
+       THE OBSERVERS' GALLERY (cols 12-33, rows bot-20..bot-11) a closed room over the pit. ITS FLOOR IS THE WAY ON: a failing
+                        section of it takes you down into the pit (`opens`: src/reachcore.js drops through it)
+       THE ORRERY PIT   (cols 25-54, the pit's roof 8 rows over its floor) where the model stands - and THE AMBUSH, since it
+                        is a place and the gallery floor is its door
+       THE SHAFT UP     (cols 35-59) out of the pit by a rope at col 58, and up A FAILING STAIR: six tiers that go from the
+                        bottom up once you are on them, each 1.1 s after the one under it. A fall lands you on the pit's roof
+                        and the stair is back four seconds after it finished (B4, C5). */
+  { const F = floors[2], b = F.bot, roof = b - 10;                     /* the pit's roof: rows roof..roof+1; the pit is b-8..b-1 */
+    const G = { x0: X0, x1: 33, top: b - 20 };                         /* the gallery: over the roof, under a mass of masonry */
+    rect(X0, X1, roof, roof + 1, T.SOLID);                             /* the roof of the pit, which is the floor of everything over it */
+    rect(24, 24, roof + 2, b - 1, T.SOLID);                            /* the shaft's wall: the pit is not walked into from the rope */
+    rect(G.x0, G.x1, F.top, G.top - 1, T.SOLID); rect(G.x1 + 1, G.x1 + 1, G.top, roof - 1, T.SOLID);   /* the gallery's ceiling and its far wall */
+    net(22, roof, b - 1); net(58, roof, b - 1);                        /* the shaft's rope up to the gallery, and the rope out of the pit */
+    crumbles.push({ x0: 27, x1: 32, row: roof, rows: 2, opens: true, kind: 'gallery' });   /* THE GALLERY FLOOR GIVES: the only way on */
+    ent('check', 16, roof - 1); ent('sign', 19, roof - 1, { text: 'THE OBSERVERS\' GALLERY IS GIVING WAY. THE ONLY WAY ON IS DOWN THROUGH IT.' });
+    deco('telescope', 14, roof - 1); deco('starChart', 26, G.top, { hang: true });
+    /* THE PIT: the model stands in the middle of it */
+    deco('orreryBase', 40, b - 1); deco('globe', 50, b - 1);
+    for (const [t, x, y] of [['apprentice', 44, b - 1], ['tome', 34, b - 5], ['apprentice', 50, b - 1]]) foe(t, x, y);
+    /* THE FAILING STAIR, from the roof by the rope out of the pit to the rope up through the divider */
+    const stair = [[49, 10, roof - 3], [39, 9, roof - 6], [46, 10, roof - 9], [36, 9, roof - 12], [45, 10, roof - 15], [36, 9, roof - 18], [41, 9, roof - 21]];
+    stair.forEach(([x0, len, row], j) => { ledge(x0, len, row); F.tiers.push([x0, len, row]); if (j < stair.length - 1) crumbles.push({ x0, x1: x0 + len - 1, row, chain: 'orrery', count: j === 0 ? 1.8 : 1.1, kind: 'stair' }); });
+    ent('check', 54, roof - 1); ent('sign', 51, roof - 1, { text: 'THE STAIR IS FAILING. ONCE YOU ARE ON IT, IT GOES FROM THE BOTTOM UP. CLIMB.' });
+    for (const [t, x, y] of [['zombie', 42, roof - 1], ['tome', 24, G.top + 4], ['imp', 56, roof - 10], ['bat', 38, roof - 16], ['tome', 52, roof - 19], ['haunt', 40, roof - 3]]) foe(t, x, y);
+    hung.push([37, F.top], [56, F.top]);                                  /* turrets under the divider, hung by mageReset */
+    pocket(F.tiers[4]);                                                   /* a pocket off the fifth tier, against the stair's own wall */
   }
   // ---- 4. THE PENDULUM GALLERY. The clock still keeps time, but what rides its arms are the Folly's own loose books,
   //      not weights: three tomes drift the gear pit on a faint arcane tether. EASED 2026-09-23 (Daniel's playtest,
@@ -152,6 +184,10 @@ export function buildTowerAscent({ painter, T, TS }) {
       const yb = row + rise; moversExtra.push({ kind: 'swing', px: mid * TS + 8, py: (yb - 12) * TS, arm: SWING.arm, x: 0, y: 0, w: bw, h: 8, period: 3.8 + s * 0.3, phase: s * 1.3, book: true });
       swings.push({ row, yb, land: fromLeft ? stairR[1] : stairL[1] }); if (s === 0 || s === 1) ent('check', 50, row - 1); row -= 3;
     }
+    /* A FLOOR YOU MUST LEAVE IN TIME (use 4 of 5): the first ride's landing is failing stone and counts the moment you land on
+       it - two and a half seconds to take the step up the wall stair. Under it is the gallery's floor, clear of the gear pit,
+       and a rope up the wall from there to that step (C5): a fall costs a climb, not a life. */
+    { const [lx, ll] = swings[0].land, r0 = swings[0].row; crumbles.push({ x0: lx, x1: lx + ll - 1, row: r0, count: 2.5, kind: 'landing' }); net(stairL[0][0], r0 - 3, F.bot - 1); }
     const endL = swings[2].land === stairL[1], lt = endL ? [15, 8] : [49, 8]; ledge(lt[0], lt[1], row); F.tiers.push([lt[0], lt[1], row]);   /* the last tier, off the third landing: the rope */
     ent('check', 15, F.bot - 1); ent('sign', 20, F.bot - 1, { text: 'THE PENDULUM GALLERY. THE CLOCK STILL KEEPS TIME. RIDE THE BOOKS OVER THE GEARS.' });
     deco('clockface', 36, F.top + 3, { hang: true }); deco('gears', 32, F.bot - 2);                  /* the face high over the pit, the wheels turning behind it */
@@ -175,22 +211,39 @@ export function buildTowerAscent({ painter, T, TS }) {
     for (const [j, kind] of [[1, 'still'], [3, 'retorts'], [5, 'jars']]) { const t = F.tiers[j]; if (t) deco(kind, t[0] + 2, t[2] - 1); }   /* on the tier's own ledge */
     const who = ['husk', 'apprentice', 'imp', 'tome', 'zombie', 'apprentice', 'broom', 'tome', 'apprentice', 'imp'];
     F.tiers.forEach(([x0, len, row], j) => put(who[j % who.length], x0, len, row));
+    { const [x0, , row] = F.tiers[F.tiers.length - 1]; ent('check', x0 + 1, row - 1); }   /* by the rope up to the bell loft: outside the Sexton's walls (B6) */
   }
-  // ---- 6. THE BELL LOFT. The bells are gone through the floor; their frames carry lifts, and the ropes still hang. ----
-  { const F = floors[5], b = F.bot;
-    /* the loft is laid by hand: the bell frames carry two lifts, one over the other, and the stair takes up above them */
-    F.tiers = [[21, 10, b - 12], [34, 10, b - 21], [42, 10, b - 24], [34, 9, b - 27], [26, 9, b - 30]];
+  // ---- 6. THE BELL LOFT, and THE SEXTON (src/sexton.js; docs/briefs/falling-tower-rework.md §3). Rebuilt 2026-09-25: it was a lift
+  //      shaft with an elite armour holding a gate. Now its floor is THE BELL DECK - failing planks (use 5 of 5) on joists over a
+  //      two-row bell pit - and the tower's dead bell-ringer is fought on it. Two stone piers stand two rows proud of the deck (THE
+  //      RINGERS' WALKS: the height his toll cannot reach, A12). The bell frame over the deck is the room's roof; the way on is the
+  //      portcullis at col 52 (the mini's gate) and the rope beyond it up through the frame to the loft's upper stair.
+  { const F = floors[5], b = F.bot, deck = b - 3, frame = b - 18;
+    rect(X0, X1, deck, deck, T.PLANK);                                              /* the bell deck; under it the pit, rows deck+1..b-1 */
+    const piers = [[12, 14], [38, 40]], joists = [20, 26, 32, 46, 52];
+    for (const [a, z] of piers) rect(a, z, deck - 2, b - 1, T.SOLID);                /* the ringers' walks, standing on the pit's floor */
+    for (const x of joists) rect(x, x, deck, b - 1, T.SOLID);
+    rect(53, X1, deck, b - 1, T.SOLID);                                              /* the landing past the gate */
+    rect(X0, X1, frame, frame + 1, T.SOLID);                                         /* the bell frame: the room's roof */
+    rect(52, 52, frame + 2, deck - 1, T.PORT);                                       /* the mini's gate: it lifts when he falls */
+    net(56, frame, deck - 1);                                                        /* and the rope up through the frame beyond it */
+    for (const [x0, x1] of [[15, 19], [21, 25], [27, 31], [33, 37], [41, 45], [47, 51]]) crumbles.push({ x0, x1, row: deck, kind: 'deck' });
+    bell = { deck, frame, joists: [13, 20, 26, 32, 39, 46].map(x => x * TS + 8) };
+    ent('sexton', 30, deck - 1, { mini: true, face: -1 });
+    ent('sign', 13, deck - 3, { text: 'THE BELL LOFT. HIS TOLL SETS THE DECK COUNTING: GET OFF THE PLANKS.' });
+    ent('check', 56, deck - 1);                                                      /* past the gate: somewhere to go the moment he falls */
+    /* THE UPPER LOFT, over the frame: four tiers to the rope into the crown, and a pocket */
+    F.tiers = [[44, 9, frame - 3], [34, 9, frame - 6], [24, 10, frame - 9], [14, 9, frame - 12]];
     for (const [x0, len, row] of F.tiers) ledge(x0, len, row);
-    ent('mover', 18, b - 1, { len: 3, vert: true, rise: 11, period: 4.6 });   /* off the floor to the first frame */
-    ent('mover', 31, b - 12, { len: 3, vert: true, rise: 9, period: 4.2 });   /* and from its end to the second */
-    ledge(46, 8, b - 9); ledge(12, 6, b - 18);                                   /* the bell-ringers' walks: somewhere to stand and fight */
-    ent('check', 50, b - 1); ent('sign', 54, b - 1, { text: 'THE BELL LOFT. ITS WARDEN HOLDS THE GATE TO THE FRAMES. RIDE THEM UP.' });   /* by the rope up from the cistern, clear of the warden's gate (ELITES, col 30) */
-    for (const [t, x, y] of [['armour', 50, b - 10], ['apprentice', 14, b - 19], ['bat', 24, b - 8], ['boo', 40, b - 16], ['haunt', 52, b - 20], ['tome', 26, b - 15], ['armour', 38, b - 22], ['tome', 46, b - 28], ['apprentice', 30, b - 31], ['tome', 20, b - 33]]) foe(t, x, y);
-    pocket(F.tiers[2]);
+    for (const [t, x, y] of [['apprentice', 48, frame - 4], ['armour', 28, frame - 10], ['bat', 20, frame - 8], ['haunt', 40, frame - 9], ['tome', 30, frame - 13], ['tome', 50, frame - 2], ['boo', 18, frame - 15], ['apprentice', 38, frame - 7]]) foe(t, x, y);
+    pocket(F.tiers[1]);
   }
   // ---- 7. THE OPEN CROWN. The roof is gone. Broken ledges up the last floor to the parapet, and the carpet. ----
   { const F = floors[6];
     spine(F, 12, j => j % 4 === 3 ? T.CRYST : T.ONEWAY);
+    /* THE CROWN IS BREAKING UP (use 6 of the failing stone, the last climb before the sky): one ledge in four is failing stone on a
+       shorter count. The rule at its hardest, where the tower is most gone - and a fall is one tier, never the floor. */
+    F.tiers.forEach(([x0, len, row], j) => { if (j % 4 === 1) crumbles.push({ x0, x1: x0 + len - 1, row, count: 2.5, kind: 'crown' }); });
     rect(28, 43, SKY + 1, SKY + 1, T.SOLID);                              /* THE PARAPET WALK, three over the last tier: the carpet waits over it */
     ent('check', 30, F.bot - 1); ent('sign', 26, F.bot - 1, { text: 'THE CROWN. THE ROOF IS GONE. A DOOR STANDS OPEN ON THE PARAPET: HIS ROOM IS THROUGH IT.' });
     ent('check', 31, SKY); ent('sign', 40, SKY, { text: 'HIS CARPET FLIES WHERE YOU STEER IT. THE FLOOR BURNS. EVERY SPELL CAN BE OUT-FLOWN.' });
@@ -200,7 +253,7 @@ export function buildTowerAscent({ painter, T, TS }) {
   }
   /* THE SEAMS between floors, where a screen was empty: books over the cistern's poison, the gallery's top, the loft's floor, the crown's parapet */
   for (const [t, x, y] of [['tome', 28, floors[4].bot - 6], ['tome', 42, floors[4].bot - 7], ['tome', 26, floors[3].top + 3], ['bat', 50, floors[3].top + 2], ['apprentice', 14, floors[3].bot - 1],
-    ['armour', 40, floors[5].bot - 1], ['tome', 30, floors[5].bot - 4], ['tome', 20, floors[0].top + 3], ['boo', 46, floors[0].top + 2], ['imp', 22, SKY + 3], ['tome', 48, SKY + 2]]) foe(t, x, y);
+    ['tome', 20, floors[0].top + 3], ['boo', 46, floors[0].top + 2], ['imp', 22, SKY + 3], ['tome', 48, SKY + 2]]) foe(t, x, y);
   /* THE SANDY PATH. Through the second door, and the only ground in the sky rows: a cutting of warm sandstone with the
      gate at the far end of it. It is DRESSING - no map node, no `needs:`, nothing behind the gate - and it is here
      because the next set of levels is a desert and this is where the world first says so (Daniel: "wink at the
@@ -248,26 +301,29 @@ export function buildTowerAscent({ painter, T, TS }) {
     for (let x = ix0; x <= ix1 + 1; x++) {
       const solid = x <= ix1 && L.grid[y * W + x] === T.SOLID;
       if (solid && run < 0) run = x;
-      else if (!solid && run >= 0) { indoor.push([run, x - 1, y, y, 'tower']); run = -1; }
+      else if (!solid && run >= 0) { indoor.push([run, x - 1, y, y, 'fallen']); run = -1; }
     }
   }
-  const skins = [[0, X0 - 1, SKY - 4, H - 1, 'tower'], [X1 + 1, W - 1, SKY - 4, H - 1, 'tower']].concat(floors.slice(0, N - 1).map(F => [X0, X1, F.divider, F.divider + 1, 'tower']),
-    [[X0, X1, H - 6, H - 1, 'tower'], [28, 43, SKY + 1, SKY + 1, 'tower'], [SAND.x0 - 2, SAND.x1 + 2, SAND.sky, SAND.deep, 'sand']], indoor);
+  /* THE TOWER'S OWN STONE since 2026-09-25 ('fallen': src/redraw/fallen_tower.js), not the Folly's 'tower' brick - F6, the review's first complaint */
+  const skins = [[0, X0 - 1, SKY - 4, H - 1, 'fallen'], [X1 + 1, W - 1, SKY - 4, H - 1, 'fallen']].concat(floors.slice(0, N - 1).map(F => [X0, X1, F.divider, F.divider + 1, 'fallen']),
+    [[X0, X1, H - 6, H - 1, 'fallen'], [28, 43, SKY + 1, SKY + 1, 'fallen'], [SAND.x0 - 2, SAND.x1 + 2, SAND.sky, SAND.deep, 'sand']], indoor);
   const START = { x: 20, y: floors[0].bot - 1 };
   return {
-    W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra, interiors, gusts: [], flips, glyphBridges,
+    W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra, interiors, gusts: [], flips, glyphBridges, crumbles,   /* FAILING STONE: src/tower-collapse.js */
     music: 'fallingtower', night: true, nightA: 0.12, edgeLit: true, duskStart: 99999, duskLen: 1, hasCryst: true,
     towerAscent: true, carpetAt: { x: 36 * TS, y: SKY * TS }, fallingTower: true, stackedFloors: true, skyRow: SKY,
     /* THE ARCHMAGE'S SANCTUM (src/sanctum.js). `in` is the door on the parapet and stands exactly where the carpet used
        to lie, so the carpet's own board check opens it; `spawn` is where you come out, inside his hall and well over the
        fire; `sand` is where the second door puts you when he is down. `out` is not here because it is not decided here:
        the way out opens WHERE HE FALLS. */
+    bellDeck: bell,   /* THE SEXTON's deck: its row, the frame over it and the joists he climbs out onto (main.js) */
+    mini: { x0: 12 * TS, x1: 52 * TS, floor: bell.deck * TS, y0: bell.frame * TS, y1: (bell.deck + 4) * TS, trigger: 14 * TS, wallL: 12, gate: 52, boss: 'sexton', name: 'THE SEXTON' },
     sanctum: { in: { x: 36 * TS, y: SKY * TS }, spawn: { x: 14 * TS, y: 40 * TS }, sand: { x: (SAND.x0 + 2) * TS, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
-    tall: { top: SKY * TS, bottom: floors[0].bot * TS, col: '26,20,40', deepest: 0.16 },
+    tall: { top: SKY * TS, bottom: floors[0].bot * TS, col: '16,20,32', deepest: 0.16 },   /* the gloom is cold slate, not the Folly's violet */
     towerFloors: floors.map((F, k) => ({ name: F.name, top: F.top, bot: F.bot, hole: F.hole || null, last: k === N - 1 })),
     deckBreaks: breaks.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true })),   /* spine ledges: they come back (updateTowerAscent), or a fall into the water would be a soft-lock */
     mage: { shelves: [], skins, hedges: [], chains: [], hung, outside: 0, dais: [30, 40] },
-    palette: { sky: 'mage', far: 'mage', mid: 'mage', near: 'mage', dress: 'village', haze: 'rgba(120,90,180,0.10)',
+    palette: { sky: 'mage', far: 'mage', mid: 'mage', near: 'mage', dress: 'village', haze: 'rgba(150,140,118,0.08)',
       grass: '#4e6a52', grassL: '#6c8c70', grassD: '#34483a', dirt: '#4a4652', dirtL: '#645e6c', dirtD: '#2e2a36', canopy: ['#181428', '#221c36', '#2c2446', '#3a3058'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hall' }],
     noCoin: [[0, W - 1, 0, SKY + 1]],
@@ -281,11 +337,12 @@ export function buildTowerAscent({ painter, T, TS }) {
    row up. The rope's hole in the divider is filled the moment it goes, so there is no dropping back into it - but
    never while he is under the divider: then it waits and re-arms when he is above again. */
 export function towerAscentReset(L, restore, cpRow = Infinity, clear = null, seal = null) {
+  crumbleInit(L);   /* every failing section is whole again: the tiles come back with the floors below */
   for (const f of L.towerFloors || []) { f.t = -1; f.front = null; f.done = false; f.sealed = false;
     for (let y = f.top - 2; y < f.bot; y++) for (let x = TOWER.X0; x <= TOWER.X1; x++) restore(x, y);
     /* a floor wholly under the checkpoint you come back to is already gone: put it straight back the way you left it */
     if (clear && !f.last && f.top - 6 > cpRow) { for (let y = f.top; y < f.bot; y++) for (let x = TOWER.X0; x <= TOWER.X1; x++) clear(x, y);
-      if (f.hole && seal) for (let y = f.hole[1]; y <= f.hole[2]; y++) seal(f.hole[0], y); f.done = true; f.sealed = true; } }
+      if (f.hole && seal) for (let y = f.hole[1]; y <= f.hole[2]; y++) seal(f.hole[0], y); f.done = true; f.sealed = true; crumbleGone(L, f.top, f.bot); } }
 }
 export function updateTowerAscent(L, P, dt, { change, crash, warn }) {
   if (!L.towerFloors || P.dead) return;
@@ -302,7 +359,7 @@ export function updateTowerAscent(L, P, dt, { change, crash, warn }) {
     if (f.t < 0 && f.front === null) { if (above) { f.t = f.last ? 0.6 : 2.2; warn(f); } continue; }
     if (f.t >= 0) { f.t -= dt; if (f.t > 0) continue; f.t = -1;
       if (!above) continue;                                              /* he went back down through the hole: wait for him */
-      f.front = f.bot - 1;
+      f.front = f.bot - 1; crumbleGone(L, f.top, f.bot);   /* its failing sections go with it and do not grow back into the air */
       if (f.hole && !f.last) { const [x, y0, y1] = f.hole; for (let y = y0; y <= y1; y++) change(x, y, 'seal'); f.sealed = true; } }
     if (f.front !== null) {
       const to = Math.max(f.top, f.front - dt * 20);
@@ -315,7 +372,9 @@ export function updateTowerAscent(L, P, dt, { change, crash, warn }) {
 // ---- carried over from tower-finish.js: the Folly's polish, the backdrop, the gate test ----
 export function polishTower(L, id, T) {
   if (!['mage', 'fallingtower'].includes(id)) return L;
-  L.palette.ledges = 'arcane'; L.towerBackdrop = true;
+  /* THE FALLING TOWER HAS ITS OWN LOOK since 2026-09-25 (docs/briefs/falling-tower-rework.md §5): slate ledges, and none of the Folly's
+     ribs and windows over its rooms - its rooms paint their own broken walls (src/redraw/fallen_tower.js) */
+  L.palette.ledges = id === 'fallingtower' ? 'slate' : 'arcane'; L.towerBackdrop = id === 'mage';
   if (id === 'mage') {
     L.mage.skins.unshift([118, L.W - 1, 0, L.H - 1, 'tower']);
     L.ents = L.ents.filter(e => !(e.t === 'deco' && ['gardenWall', 'campfire', 'cairn', 'fallenLog', 'tuft', 'flower', 'stone'].includes(e.kind) && e.x >= 118));

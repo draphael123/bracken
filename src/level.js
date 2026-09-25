@@ -7878,6 +7878,13 @@ const AMBUSH = {
     waves: [[['sailor', 394], ['cutlass', 422], ['scout', 408]], [['boarder', 414], ['marine', 422], ['bosun', 396], ['lookout', 404]]] }],
   lamplit: [{ name: 'THE LAMP ISLAND', row: 21, wallL: 481, wallR: 519, check: false,
     waves: [[['scout', 486], ['scout', 514], ['wight', 500], ['crab', 492]], [['tideguard', 506], ['scout', 514], ['watch', 488], ['snuffer', 498]]] }],
+  /* THE FALLING TOWER (docs/briefs/falling-tower-rework.md §4): THE ORRERY PIT, under the observers' gallery. Its door is the gallery's
+     failing floor - you come DOWN into it - and the room is walled by the shaft's wall (col 24) and the gate at col 55 before the rope out.
+     Its roof is the gallery, eight rows up, so the gates reach it and the room holds. The door checkpoint is on the gallery (check: false):
+     a death inside wakes you over the room with its floor whole again. The captain is THE HEAD NOVICE, an elite apprentice who wards the crowd round him - the tower's own casters
+     (the Folly's room next door is led by an armour; rule Q wants the neighbours to teach different things). */
+  fallingtower: [{ name: 'THE ORRERY PIT', row: 227, wallL: 24, wallR: 55, y0: 220, trigger: 27, check: false,
+    waves: [[['apprentice', 44, 227, { elite: true }], ['armour', 34], ['tome', 38, 224], ['broom', 50, 225]]] }],
   waymeet: [{ name: 'THE MARKET HALL', row: 35, wallL: 95, wallR: 123, check: [91, 35],
     waves: [[['swornsword', 100], ['runner', 118], ['swornsword', 110], ['hedgeknight', 114]], [['swornsword', 112], ['crossbow', 119], ['swornsword', 100], ['hedgeknight', 106]]] }],
   /* THE BANQUET HALL (docs/briefs/highcrown-bells.md): her captain at the high table and his guard sat down to eat, and both doors
@@ -7919,7 +7926,7 @@ const ELITES = {
   burial: [['husk', 300, 33, { face: -1 }], ['wight', 396, 31, { face: -1 }], ['husk', 958, 31, { face: -1 }]],   /* (the third husk holds THE ROTTEN BRIDGES' pier since 2026-09-24: 950 is a board now) (the wight left the Falling Gallery's road, walled up in batch 4b, for the Grave Causeway before its green water) */
   oreroad: [['heavy', 455, 12, { face: -1, gate: 472 }]],   /* THE ORE ROAD: the drum yard's foreman holds the last gate onto the drum house's deck (the rework of 2026-09-25 moved the whole level east, so his column moved with it) */
   witchlight: [['husk', 110, 76, { face: -1 }], ['armour', 286, 34, { face: -1 }]],   /* the redesign: the second pier's captain calls up the gorge's dead; the warden armour on the tall hedge guards its silver */
-  fallingtower: [['armour', 28, 215, { face: -1 }], ['husk', 52, 146, { face: -1 }], ['armour', 38, 119, { face: 1, gate: 30 }]],   /* the ascent (2026-09-21): the orrery's guard, the cistern's husk over the poison, and the bell loft's warden, whose gate shuts the way to the first lift. The orrery moved 36 rows up when the Reading Room and the Pendulum Gallery went in (2026-09-22) and its guard came with it; the cistern and the loft did not move. The husk sits ON the cistern's own first-tier husk, so it is UPGRADED, not added: one husk in the tower, and it is this one. */
+  fallingtower: [['husk', 52, 146, { face: -1 }]],   /* the cistern's husk over the poison: it sits ON the cistern's own first-tier husk, so it is UPGRADED, not added - one husk in the tower, and it is this one. Since the rework of 2026-09-25 (docs/briefs/falling-tower-rework.md) the tower's other two elites are gone into its named fights: the orrery's armour CAPTAINS THE ORRERY PIT (AMBUSH, below) and the bell loft's warden became THE SEXTON, its mini - an elite beside either would be back to back with it (rule Q). */
   wood: [['shield', 147, 21, { gate: 157 }]],
   marsh: [['thorn', 65, 15, { gate: 72 }]],
   stockade: [['brute', 302, 19, { gate: 317 }]],
