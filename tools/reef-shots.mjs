@@ -37,7 +37,7 @@ try {
     const d = await pg.evalp(`(() => { ${boot}
       const A = BK.L.arena; BK.tp(Math.round(A.trigger / 16) + 2, Math.round(A.floor / 16) - 1); BK.sim(120);
       const b = BK.enemies().find(e => e.t === 'reefmaw'); if (!b) return { none: 'no boss' };
-      if (${land} && !('land' in b) && !b.landReady) return { none: 'no land phase' };
+      if (${land} && !(BK.SPR && BK.SPR.reefmaw && BK.SPR.reefmaw.land)) return { none: 'no land phase' };
       for (const e of BK.enemies()) if (e !== b && !e.elite) e.alive = false;
       b.phase = ${phase}; if (${land}) { b.hp = Math.round(b.maxHp * 0.3); b.land = true; b.rise = 0; const pl = (BK.L.pools || []).find(q => q.arenaTide); if (pl) { pl.tideY = A.floor + 40; } }
       BK.P.x = b.x + (${land} ? 70 : 60) * (${JSON.stringify(mode)} === 'tailTell' ? -1 : 1); if (${land} && b.x > A.x1 - 120) BK.P.x = b.x - 70;

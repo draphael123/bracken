@@ -4434,7 +4434,7 @@ function shipwreckReef() {
   ent('deco', 133, 31, { kind: 'seaChest' }); ent('stray', 150, 31, { kind: 'manifest' });
   ent('deco', 160, 31, { kind: 'wheel' }); ent('deco', 190, 27, { kind: 'rigging', v: 0 }); ent('deco', 172, 22, { kind: 'rigging', v: 1 });
   ent('deco', 142, 12, { kind: 'bellWreck' }); ent('deco', 200, 12, { kind: 'figurehead' });   /* a bell fallen off her bracket: the only bell that rings is the ship's bell on the tideway */
-  ent('check', 130, 12); ent('check', 200, 27); ent('sign', 128, 12, { text: 'THE FIRST PAGE IS IN THE HOLD. GO DOWN WHEN THE WATER DROPS; CLIMB WHEN IT RISES.' });
+  ent('check', 152, 17); ent('check', 200, 27); ent('sign', 128, 12, { text: 'THE FIRST PAGE IS IN THE HOLD. GO DOWN WHEN THE WATER DROPS; CLIMB WHEN IT RISES.' });
   movers.push({ kind: 'lift', link: 'hoist', locked: true, x: 202 * TS, y: 27 * TS, y0: 27 * TS, y1: 12 * TS, w: 32, h: 8, speed: 34 }); // the pallet: it runs her whole side once the capstan is turned
   pools.push({ x0: 122 * TS, x1: 210 * TS, y: 32 * TS - 8, base: 32 * TS, tideLo: -8, tideHi: -272, tidePeriod: 26, swim: true, shallow: true, depth: 0, bottom: 32 * TS, streetTide: true, bell: false });
   ent('sailor', 136, 27, { face: 1 }); ent('scout', 176, 22, { face: -1 }); ent('sailor', 196, 17, { face: -1 });
@@ -4453,7 +4453,7 @@ function shipwreckReef() {
   block(262, 280, 34, 36); block(296, 308, 33, 36);
   deep(210, 330, 13, 37, { reef: true, capped: true, flow: -26 }); // rock all the way over it: there is no surface to breathe at, and the sea under it sets you back the way you came
   current(236, 256, 14, 36, 1); current(290, 308, 14, 32, -1); // one carries you on, one stands in your way
-  ent('check', 270, 33); ent('check', 302, 32);
+  ent('check', 262, 33);   /* (S4, 2026-09-25: checkpoints spaced, not sprinkled - the one at 302 stood 32 columns from this one; this one moved back to 262 so the hulk's and the keel's are each within 72) */
   ent('sign', 264, 33, { text: 'THE LIGHTS IN THE DEEP ARE NOT LANTERNS. THEY ARE ON STALKS, ON SOMETHING.' }); // the two coral humps you can stand on, down here
   for (const [x, y] of [[226, 36], [244, 36], [262, 33], [278, 33], [298, 32], [316, 36]]) ent('deco', x, y, { kind: 'airBell' }); // a bell every few strokes: the breath is the clock down here
   for (const [x, y, v] of [[220, 36, 0], [244, 36, 1], [266, 33, 2], [300, 32, 0], [322, 36, 1]]) ent('deco', x, y, { kind: 'kelpTall', v });
@@ -4497,12 +4497,12 @@ function shipwreckReef() {
   // and he goes under them. Old columns, like the rest: the arena's own fields are set again in final columns after the grows. ----
   block(425, 468, 34, H - 1);
   plat(431, 32, 7); plat(441, 32, 8); plat(453, 32, 7);
-  block(465, 468, 30, H - 1); block(469, W - 1, 29, H - 1);
+  block(465, 468, 32, H - 1); block(469, W - 1, 30, H - 1);   /* two steps of two rows up out of the hole to the gate (E4): the right-hand ledge no longer stands next to the bank the old stool did */
   pools.push({ x0: 425 * TS, x1: 465 * TS, y: 34 * TS + 6, base: 34 * TS, swim: true, shallow: true, depth: 0, bottom: 34 * TS, arenaTide: true });
   ent('deco', 426, 33, { kind: 'airBell' }); ent('deco', 463, 33, { kind: 'airBell' });   /* not in the gaps between the ledges: the bell is two tiles wide and his holes are there */
   for (const x of [429, 439, 451, 461]) ent('deco', x, 33, { kind: 'bubbleVent' }); // its four holes, each one venting: watch which one is breathing
   ent('reefmaw', 451, 33);
-  ent('gate', 470, 28);
+  ent('gate', 470, 29);
 
   const R0 = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 27 }, pools, falls: [], moversExtra: movers, gusts,
@@ -4528,10 +4528,9 @@ function shipwreckReef() {
     block(213, 229, 0, 24);                        // the rock over it: a cave between her hull and the reef
     block(213, 215, 32, H - 1);                    // her floor, carried on out of the breach
     block(216, 217, 34, H - 1); block(218, 227, 36, H - 1); block(228, 229, 34, H - 1);   // down two steps, the basin, and up again
-    block(230, 232, 0, 28); block(230, 232, 32, H - 1);   // the reef wall, and the mouth in it out onto the shelf (rows 29-31)
+    block(230, 232, 0, 28); block(230, 232, 33, H - 1);   // the reef wall, and the mouth in it out onto the shelf (rows 29-32: its sill is under the pool's surface, so you can swim out of it)
     R.pools.push({ x0: 216 * TS, x1: 230 * TS, y: 32 * TS + 4, shallow: false, swim: true, clear: true, bottom: 37 * TS, bellPool: true });
     ent('deco', 222, 35, { kind: 'airBell' });
-    ent('check', 215, 31);   /* the door of the lesson, and the carrack's checkpoint to the hulk's was too far (tools/checkpoint-gaps) */
     ent('sign', 213, 31, { text: 'WADE IN AND WATCH YOUR BREATH GO. OUT THERE THE ONLY AIR IS IN THE BELLS.' });
     ent('deco', 226, 35, { kind: 'kelpTall', v: 2 }); ent('deco', 219, 35, { kind: 'brainCoral', v: 1 });
     coins([219, 34], [225, 34], [220, 35], [224, 35]);
@@ -4547,11 +4546,12 @@ function shipwreckReef() {
     block(266, 300, 12, 13); air(283, 284, 12, 13);                           // her deck, and the hatch in it down into the hold
     block(301, 302, 13, 32); air(301, 302, 28, 31);                           // her stern, with the grate's opening low in it
     for (const x of [270, 276, 290, 296]) for (let y = 31; y <= 32; y++) set(x, y, T.CRATE);   // her cargo, still stacked on the hold floor
-    ent('check', 280, 11);
+    ent('check', 272, 11);
     ent('capstan', 292, 11, { link: 'grate', gate: 302, gy0: 28, gy1: 31 });
-    ent('sign', 270, 11, { text: 'HER HOLD IS THE WAY ON. TURN THE CAPSTAN THREE TIMES TO LIFT THE GRATE.' });
+    ent('sign', 268, 11, { text: 'HER HOLD IS THE WAY ON. TURN THE CAPSTAN THREE TIMES TO LIFT THE GRATE.' });
     ent('deco', 275, 11, { kind: 'mastStump' }); ent('deco', 297, 11, { kind: 'rigging', v: 1 }); ent('deco', 267, 11, { kind: 'coiledCable', v: 0 });
     ent('sailor', 287, 11, { face: -1 }); ent('eel', 290, 22); ent('crab', 280, 32);
+    ent('angler', 306, 30, { face: -1 });   /* S1: out through the grate on a spent breath, and the next thing in the dark is a lure between you and the air under the roof */
     coins([272, 11], [277, 11], [283, 16], [284, 20], [288, 24], [293, 27], [298, 29], [304, 29], [308, 29]);
     ent('deco', 259, 36, { kind: 'coralFan', v: 1 }); ent('deco', 308, 36, { kind: 'brainCoral', v: 0 }); ent('deco', 311, 36, { kind: 'kelpTall', v: 0 });
 
