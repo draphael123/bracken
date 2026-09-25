@@ -4302,11 +4302,11 @@ function longWater() {
   for (const [x, v] of [[336, 0], [344, 1], [352, 0], [360, 1]]) ent('deco', x, 26, { kind: 'fishCottage', v });
   for (const x of [334, 349, 365]) ent('deco', x, 26, { kind: 'seaLantern', v: 1 });
   ent('stray', 341, 26, { kind: 'fisher' }); ent('tideguard', 345, 26, { face: -1 });
-  ent('stray', 358, 26, { kind: 'fisher' }); ent('tideguard', 355, 26, { face: 1 }); ent('scout', 363, 26, { face: -1 });
+  ent('stray', 358, 26, { kind: 'fisher' }); ent('tideguard', 355, 26, { face: 1 }); ent('scout', 361, 26, { face: -1 });   /* 361, not 363: it stood beside the Herald door's checkpoint (tools/longwater-river.mjs) */
   ent('deco', 333, 26, { kind: 'bellTower' });
   ent('check', 364, 26); ent('sign', 350, 26, { text: 'THE TRIBUTE CHEST STANDS OPEN AND UNTOUCHED. WHAT THEY TAKE IS NOT GOLD.' });
   ent('deco', 339, 26, { kind: 'buoy' }); ent('deco', 353, 26, { kind: 'tributeChest' });
-  ent('crab', 348, 26, { face: 1 }); ent('crab', 361, 26, { face: -1 });   /* the first crabs on the road: the sea is in the town */
+  ent('crab', 348, 26, { face: 1 }); ent('crab', 351, 26, { face: -1 });   /* the first crabs on the road: the sea is in the town */
   coins([335, 24], [338, 25], [340, 24], [343, 25], [348, 25], [351, 24], [356, 25], [359, 24], [362, 25], [366, 25], [333, 25], [346, 24], [354, 24], [364, 24]);
 
   // ---- 4. THE SQUARE: the Tide Herald. The sea comes up the square in three steps; the stones in it are the dry ground ----
@@ -4418,7 +4418,7 @@ function longWater() {
     block(318, 323, 26, H - 1);                                                  // the staithe the raft lands at: as high as a stone, so a checkpoint on it is out of the Bore
     block(324, 361, 29, H - 1);                                                  // the flats, wading deep between the stones, at the Bore's own surface
     for (const [a, b] of [[324, 326], [331, 335], [340, 344], [349, 353], [358, 361]]) R.pools.push({ x0: a * TS, x1: (b + 1) * TS, y: 28 * TS + 4, shallow: true, depth: 12 });
-    block(362, 365, 27, H - 1);                                                  // and the bank up into Saltreach
+    block(362, 365, 27, H - 1); block(364, 365, 26, 26);                         // and the bank up into Saltreach, its top out of the Bore
     /* THE BORE STONES: a step and a stone, its top two rows over the step and clear of the wave (it knocks down anything lower) */
     for (const x of [327, 336, 345, 354]) { block(x, x + 3, 28, 28); block(x + 1, x + 2, 26, 27); coins([x + 1, 24], [x + 2, 24]); }
     ent('check', 319, 25);
@@ -4426,7 +4426,7 @@ function longWater() {
     /* THE TIDEBOUND WALK UP BEHIND THE SEA: a crowd in the open on the flats, a harpooner on the far bank over them, and the Bore
        through the lot of them every twenty seconds: it only knocks down the hero, so they stand their ground in it */
     ent('tideguard', 333, 28, { face: -1 }); ent('tideguard', 343, 28, { face: -1 }); ent('heronfoe', 351, 28, { face: -1 });
-    ent('scout', 363, 26, { face: -1 }); ent('netter', 365, 26, { face: -1 }); ent('netter', 325, 28, { face: 1 }); ent('tideguard', 359, 28, { face: -1 });
+    ent('scout', 363, 26, { face: -1 }); ent('netter', 365, 25, { face: -1 }); ent('netter', 325, 28, { face: 1 }); ent('tideguard', 359, 28, { face: -1 });
     for (const [x, y, k, v] of [[323, 25, 'pierPost', 0], [326, 28, 'riverStone', 0], [341, 28, 'riverStone', 1], [352, 28, 'rushes', 2], [360, 28, 'rowboat', 0]]) ent('deco', x, y, { kind: k, v });
     coins([325, 27], [332, 27], [341, 27], [350, 27], [359, 27]);
   }
