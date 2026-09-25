@@ -16,6 +16,7 @@ import { pacing } from './pacing.mjs';
 
 const LIMIT = 150;   /* src/playtest.js LONGGAP: "more than 150 columns with no checkpoint" */
 const KNOWN = new Map([
+  ['moor', 'GALE MOOR, measured 187 from route 753: the level-fixes lane (97dc06f) took the two checkpoints off the Sky Road kite ride, where dying soft-locked you on a spire over spikes; nothing safe stands in their place yet. For the Gale Moor rework (queued, cutting it to ~700 columns): one checkpoint on firm ground past the ride, then delete this line.'],
   ['keep', 'THE UNDERWATER KEEP, 760x64, measured 495: a 296-tile swim, and 12 of its 15 checkpoints are off the walked route by this measure. For the Keep\'s owner: a checkpoint on the swim, or teach pacing.mjs where a swimmer wakes.'],
   ['burial', 'THE BURIAL CAVERNS, 1140x112, measured 206 (from route 707): a wide level the filler measures by ROWS because it is taller than sixty. For the Burial rework\'s owner: one checkpoint near route 810, or make checkpoints() key a tall level on its route.'],
 ]);
