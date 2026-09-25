@@ -530,6 +530,12 @@ async function runbossLab(BK, opts) {
         if(m==='stormTell'&&Math.abs(P.x-boss.markX)<44){vx+=P.x>=boss.markX?1:-1;threat=true;}
         if(boss.deathMark)away(boss.deathMark.x,boss.deathMark.y,boss.deathMark.r+18,2);
         for(const c of boss.clouds||[])away(c.x,c.y,c.r+30,3);
+        /* HIS RINGS (Falling Tower round 2): a FLARED exit by you is his step coming - with the stamina for it the bot DODGES THROUGH it
+           (his rings work both ways: the opening), without it it gets out of the ring's reach; an exit GLOWING a bolt's colour is a bent
+           bolt coming - it flies across the line from the ring to itself */
+        for(const r of boss.rings||[]){if(r.kind!=='exit'||r.used||r.t>=r.life||r.on<0.5)continue;const rx=P.x-r.x,ry=py-r.y,d=Math.hypot(rx,ry)||1;
+          if(r.flare){if(P.st>25&&d<110){vx-=rx/d*2.2;vy-=ry/d*2.2;threat=true;if(d<46&&!(P.dodge>0)){P.face=Math.sign(r.x-P.x)||P.face;BK.press('dodge');}}else away(r.x,r.y,80,2.5);}
+          else if(r.glow){const s4=Math.sign(((A.y0+A.floor)/2-py)*(rx/d))||1;   /* across the line, toward the middle of the sky */vx+=(-ry/d)*1.5*s4+rx/d*0.4;vy+=(rx/d)*1.5*s4+ry/d*0.4;threat=true;}}
         let block=false;
         for(const q of boss.shots||[]){const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>(q.kind==='hand'?120:130))continue;
           if(q.kind==='hand'){const hs=Math.hypot(q.vx,q.vy)||1,nx=-q.vy/hs,ny=q.vx/hs,s3=((P.x-q.x)*nx+(py-q.y)*ny)>=0?1:-1;vx+=(nx*s3+(P.x-q.x)/d*0.6)*1.8;vy+=(ny*s3+(py-q.y)/d*0.6)*1.8;threat=true;if(d<26&&P.st>20)BK.press('dodge');continue;}   /* across its line: it turns slower than the carpet does */

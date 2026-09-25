@@ -16,8 +16,10 @@ try {
   for (const salt of salts) {
     await pg.reload();
     const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;
-      const o=await BK.bossLab({bosses:['fallingtower'],heroes:${JSON.stringify(heroes)},healthMode:${JSON.stringify(health)},maxSecs:${cap},modes:true,salt:${salt}});
-      return o.rows.map(r=>({h:r.h,salt:${salt},out:r.outcome||r.skipped,secs:r.secs,taken:r.health&&Math.round(r.health.damageTaken),opened:r.opened,left:r.hpLeftPct,swings:r.swings,hitBy:r.hitBy,portal:r.portal}));})()`, 3600000);
+      const seen={};let was=null;   /* how many of the openings were THE DODGE THROUGH (breached) and how many the mark (gather) */
+      const onFrame=({boss,h})=>{const s=seen[h]||(seen[h]={breached:0,gather:0});if(boss.mode!==was&&(boss.mode==='breached'||boss.mode==='gather'))s[boss.mode]++;was=boss.mode;};
+      const o=await BK.bossLab({bosses:['fallingtower'],heroes:${JSON.stringify(heroes)},healthMode:${JSON.stringify(health)},maxSecs:${cap},modes:true,salt:${salt},onFrame});
+      return o.rows.map(r=>({h:r.h,salt:${salt},out:r.outcome||r.skipped,secs:r.secs,taken:r.health&&Math.round(r.health.damageTaken),opened:r.opened,left:r.hpLeftPct,swings:r.swings,hitBy:r.hitBy,portal:seen[r.h]}));})()`, 3600000);
     for (const x of r) console.log(JSON.stringify(x));
     rows.push(...r);
   }
@@ -27,6 +29,7 @@ try {
   const left = rows.filter(r => r.out !== 'win' && typeof r.left === 'number').map(r => r.left).sort((a, b) => a - b);
   console.log(JSON.stringify({ health, cap, fights: rows.length, wins: wins.length, pct: Math.round(100 * wins.length / Math.max(1, rows.length)), medianWin: secs.length ? secs[secs.length >> 1] : null,
     medianLeftOnLoss: left.length ? left[left.length >> 1] : null, openedAvg: +(rows.reduce((a, r) => a + (r.opened || 0), 0) / Math.max(1, rows.length)).toFixed(1),
+    breachedAvg: +(rows.reduce((a, r) => a + ((r.portal && r.portal.breached) || 0), 0) / Math.max(1, rows.length)).toFixed(1), markOpenAvg: +(rows.reduce((a, r) => a + ((r.portal && r.portal.gather) || 0), 0) / Math.max(1, rows.length)).toFixed(1),
     byHero: Object.fromEntries(Object.entries(by).map(([h, [w, n]]) => [h, w + '/' + n])), hitBy: Object.fromEntries(Object.entries(hit).map(([k, v]) => [k, Math.round(v)])) }));
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }
