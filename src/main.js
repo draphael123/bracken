@@ -779,6 +779,28 @@ const linesDrain = (x, y) => {
   return false;
 };
 const LEDGE_SETS = {};   /* filled once the tiles are baked: a level's palette can name one of these */
+/* HOW FAR UNDER THE OPEN AIR A TILE LIES, BLENDED ACROSS (level review, 2026-09-24). It was counted down each column from
+   that column's own surface, so every block raised two or three rows over its neighbours was deeper at the same row than
+   the ground beside it: the dirt under it turned to the dark fill sooner and was shaded heavier, and every step left a
+   darker stripe from the step to the bottom of the screen (the Wood, the Marsh, the Stockade, Kingswood). Now a tile is
+   as deep as the SHALLOWEST ground within four columns of it along the same row (through rock only: never across a pit),
+   and past that it deepens a row per column - so a pillar or a step has no shadow of its own under it, a wide hill
+   darkens in on a diagonal, and no two tiles side by side differ by more than one row. tools/ground-depth.mjs reads this and holds every level to that. */
+function groundDepth(W, H, solidAt, cap) {
+  const D = new Uint8Array(W * H);
+  for (let x = 0; x < W; x++) for (let y = 0; y < H; y++) { if (!solidAt(x, y)) continue;
+    D[y * W + x] = !solidAt(x, y - 1) ? 0 : y === 0 ? cap : Math.min(cap, D[(y - 1) * W + x] + 1); }
+  const R = 4, M = new Uint8Array(D);
+  for (let y = 0; y < H; y++) { const r = y * W;
+    for (let x = 0; x < W; x++) { if (!solidAt(x, y)) continue;
+      for (let k = 1; k <= R && x - k >= 0 && solidAt(x - k, y); k++) M[r + x] = Math.min(M[r + x], D[r + x - k]);
+      for (let k = 1; k <= R && x + k < W && solidAt(x + k, y); k++) M[r + x] = Math.min(M[r + x], D[r + x + k]); } }
+  D.set(M);
+  for (let y = 0; y < H; y++) { const r = y * W;
+    for (let x = 1; x < W; x++) if (solidAt(x, y) && solidAt(x - 1, y)) D[r + x] = Math.min(D[r + x], D[r + x - 1] + 1);
+    for (let x = W - 2; x >= 0; x--) if (solidAt(x, y) && solidAt(x + 1, y)) D[r + x] = Math.min(D[r + x], D[r + x + 1] + 1); }
+  return D;
+}
 function resolveTiles() {
   if (!LEDGE_SETS.beam) { LEDGE_SETS.beam = { ledge: TILE.beam, ledgeL: TILE.beamL, ledgeR: TILE.beamR };
     LEDGE_SETS.staging = { ledge: TILE.staging, ledgeL: TILE.stagingL, ledgeR: TILE.stagingR };
@@ -804,6 +826,7 @@ function resolveTiles() {
   if(!LEDGE_SETS.cargo)Object.assign(LEDGE_SETS,bakeRouteLedges());
   if(!LEDGE_SETS.masonry){const [c,cg]=canvas(16,16);cg.fillStyle='#39362f';cg.fillRect(0,0,16,6);cg.fillStyle='#a69a82';cg.fillRect(0,1,16,3);cg.fillStyle='#cec0a0';cg.fillRect(0,1,16,1);cg.fillStyle='#766c59';cg.fillRect(7,2,1,3);LEDGE_SETS.masonry={ledge:[c],ledgeL:c,ledgeR:c};}
   const rnd = mulberry(7);
+  const rockDeep = groundDepth(LW, LH, (x, y) => tileAt(x, y) === T.SOLID, 18), groundDeep = groundDepth(LW, LH, solidish, 9);
   const RDG = redressGround(), RDP = redressProps();   /* THE REDRESS: this level's own rock and dressing, where it has one */
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
@@ -852,7 +875,7 @@ function resolveTiles() {
       else if (SET2) s = SET2.fill[(rnd() * 4) | 0];
       else if (!(L.palette && L.palette.myc) && tileAt(x, y - 2) !== T.SOLID && rnd() < 0.4) s = TILE.roots[(rnd() * 3) | 0];
       else if (L.palette && L.palette.myc) s = TILE.mycDirt[(rnd() * 3) | 0];
-      else { let dn = 0; while (dn < 18 && tileAt(x, y - 1 - dn) === T.SOLID) dn++;   // how far under the open air this tile lies
+      else { const dn = rockDeep[y * LW + x];   // how far under the open air this tile lies (blended across: groundDepth)
         s = dn < 3 ? TILE.dirt[(rnd() * TILE.dirt.length) | 0] : TILE.deep[dn < 7 ? 0 : dn < 13 ? 1 : 2][(rnd() * 8) | 0]; }
       if (L.palette && L.palette.myc && (eL || eR)) s = TILE.mycDirt[(rnd() * 3) | 0];
       if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) !== T.SOLID) s = TILE.hall[(rnd() * 3) | 0]; // the underside of a hall's ceiling
@@ -902,8 +925,7 @@ function resolveTiles() {
     else if (t === T.CRATE) s = TILE.crate;
     tileSpr[y * LW + x] = s;
     { // how far under the open air this tile sits: the ground gets heavier the deeper it goes
-      let d = 0; if (solidish(x, y)) { while (d < 9 && solidish(x, y - 1 - d)) d++; }
-      tileDeep[y * LW + x] = d; }
+      tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; }
   }
   // a boss floor is a fighting floor: no fallen logs, stumps, fences, bushes, carts or campfires scattered on it (they read as things to jump or hide behind)
   const BULKY = new Set(['log', 'stump', 'fence', 'bush', 'cart', 'tent', 'fire', 'skull']);
