@@ -33,8 +33,8 @@ try {
       for (let k = 0; k < 90; k++) { BK.keys.down = true; BK.step(1); } BK.keys.down = false; for (let k = 0; k < 10; k++) BK.step(1); snap('fight-low', 'the bottom of his room');
       for (let k = 0; k < 70; k++) { BK.keys.up = true; BK.keys.right = true; BK.step(1); } BK.keys.up = BK.keys.right = false; for (let k = 0; k < 30; k++) BK.step(1); snap('fight-mid', 'mid-fight');
       const b = BK.boss; if (b) { BK.god = true; b.hp = 1; BKT.hurtEnemy(b, 50, b.x - 10, false); } for (let k = 0; k < 240; k++) BK.step(1); snap('portal-open', 'he is down: the way out opens');
-      const S = BK.L.sanctum, o = S && S.out; if (o) { BK.P.x = o.x; BK.P.y = o.y; } for (let k = 0; k < 150; k++) BK.step(1); snap('after-portal', 'through the way out');
-      for (let k = 0; k < 120; k++) { BK.keys.right = true; BK.step(1); } BK.keys.right = false; for (let k = 0; k < 30; k++) BK.step(1); snap('after-walk', 'walking on');
+      for (let k = 0; k < 400 && !BK.L.sandWalk; k++) { const S = BK.L.sanctum, o = S && S.out; if (o && S.outOpen >= 1) { BK.P.x = o.x; BK.P.y = o.y; } BK.step(1); } for (let k = 0; k < 90; k++) BK.step(1); snap('after-portal', 'through the way out');
+      for (let k = 0; k < 80; k++) { BK.keys.right = true; BK.step(1); } BK.keys.right = false; for (let k = 0; k < 30; k++) BK.step(1); snap('after-walk', 'walking on: the level’s end');
     }
     return res;
   })()`, 900000);

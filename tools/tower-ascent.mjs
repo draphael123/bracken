@@ -184,6 +184,18 @@ try {
   assert.ok(r.carpet && r.active, 'boarding the carpet starts the fight'); assert.ok(r.crownGone, 'the crown falls away under the carpet');
   assert.ok(r.floorHeld && r.fellNot, 'there is no falling off the carpet'); assert.ok(r.flew > 40, 'it flies up: ' + r.flew); assert.ok(r.sank > 10, 'and it sinks when you hold down: ' + r.sank);
   assert.ok(!r.retry.carpet && r.retry.crown && r.retry.below && r.retry.boss, 'a retry: the carpet waits again, the crown stands, the floors under it stay gone: ' + JSON.stringify(r.retry));
+  /* THE ENDING (round 2, docs/briefs/falling-tower-round2.md §2): he falls, the way out opens where he fell with the desert in it, and
+     through it you stand on the sand under the Caravan's sky and WALK to the level's end - the level is won at the gate, not on the kill */
+  const e2 = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
+    BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;BK.sim(10);
+    BK.tp(36,${TOWER.SKY - 1});BK.sim(5);BK.board();BK.sim(30);const b=BK.boss||BK.enemies().find(e=>e.t==='undeadmage'&&e.alive);out.fought=!!BK.bossActive;for(let i=0;i<300&&b.mode==='wake';i++)BK.sim(1);b.hp=1;BKT.hurtEnemy(b,99,b.x-10,false);
+    const S=BK.L.sanctum;for(let i=0;i<600&&!(S.open&&S.outOpen>=1);i++)BK.sim(1);out.open=!!S.open;out.stillPlaying=BK.state==='play';
+    for(let i=0;i<120&&!BK.L.sandWalk;i++){BK.P.x=S.out.x;BK.P.y=S.out.y;BK.sim(1);}out.sand=!!BK.L.sandWalk;out.onFoot=!BK.carpet();out.row=Math.round(BK.P.y/16);out.night=BK.L.nightA;
+    for(let i=0;i<900&&BK.state==='play';i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;out.won=BK.state;return out;})()`, 240000);
+  assert.ok(e2.open && e2.stillPlaying, 'his death opens the way out and does not end the level: ' + JSON.stringify(e2));
+  assert.ok(e2.sand && e2.onFoot && e2.row === SAND.row, 'through the way out you stand on the desert, off the carpet: ' + JSON.stringify(e2));
+  assert.equal(e2.night, 0, 'the desert is daylight: the tower night wash is still on it');
+  assert.equal(e2.won, 'win', 'walking on over the sand does not reach the level end: ' + JSON.stringify(e2));
   assert.deepEqual(pg.errors, []);
-  console.log(JSON.stringify(r));
+  console.log(JSON.stringify(r), JSON.stringify(e2));
 } finally { pg.close(); }

@@ -22,9 +22,12 @@
 // 26 px of the room burn. You can go in (it hurts, it does not kill: SANCTUM.dmg a tick and a shove back up, and the
 // way out is up, always) but you cannot live there. That is what makes the height you fly at a decision.
 //
+// THE DESERT (round 2, 2026-09-25) replaced THE SANDY PATH: the second door opens onto open sand under THE SUNKEN CARAVAN's own sky, with
+// the level's end on it - see "the desert" at the foot of this file. What follows is the path's history.
 // THE SANDY PATH is the last ten seconds of this world, and it is warm and full of sand, because the next world is. It used
 // to be dressing and nothing else; since 2026-09-24 the gold hole LEADS somewhere: THE SUNKEN CARAVAN needs 'fallingtower'
 // and is the desert sheet's first map node (map-redesign §5, reading (a) of §7.4: a needs link and a node, no fight change).
+import { DESERT } from './redraw/desert.js';   /* the Caravan's own palette: the desert through the second door and in his rings */
 export const SANCTUM = {
   fire: 26,          /* how deep the witchfire lies on the floor of the hall, in px */
   dmg: 12, tick: 0.55, lift: 190,   /* a bite, a breath between bites, and the shove that gives you a chance to leave */
@@ -178,7 +181,9 @@ export function drawPortal(g, x, y, time, kind = 'in', on = 1) {
   const C = PORT[kind] || PORT.in, k = Math.max(0, Math.min(1, on));
   x = Math.round(x); y = Math.round(y);
   const rw = Math.round(13 * k), rh = Math.round(19 * k); if (rw < 1 || rh < 1) return;
-  for (let dy = -rh; dy <= rh; dy++) {
+  /* THE WAY OUT IS FULL OF DESERT (round 2): what is through it is what you will stand in */
+  if (kind === 'out') drawDesertOval(g, x, y - rh, rw, rh, time, 1.3);
+  else for (let dy = -rh; dy <= rh; dy++) {
     const f = 1 - (dy / rh) * (dy / rh); if (f <= 0) continue;
     const half = Math.round(rw * Math.sqrt(f) + Math.sin(time * 4 + dy * 0.5) * 0.8);
     if (half < 1) continue;
@@ -228,41 +233,45 @@ export function drawSanctumDoors(g, L, cx, cy, time) {
   if (S.open && S.out) drawPortal(g, S.out.x - cx, S.out.y - cy, time, 'out', S.outOpen);
 }
 
-// ---------------------------------------------------------------- the sand
-/* THE PATH OUT. A warm dawn over dunes, where the whole level has been violet night - the first thing the next world
-   will look like, seen for ten seconds at the end of this one. Drawn behind the sand tiles, camera-parallaxed. */
-export function drawSandDawn(g, L, cx, cy, time) {
-  const H = g.canvas.height, W = g.canvas.width;
-  /* THE SKY IS A RAMP, NOT A FLAG. Five equal bands of flat colour read as a test card; a dawn is dark for most of its
-     height and does all its work in the last third, so the stops are WEIGHTED towards the horizon and every boundary
-     is dithered a row at a time instead of ruled. */
-  const sky = [[0, '#1e1830'], [0.34, '#3a2842'], [0.56, '#6e3e56'], [0.72, '#a8635a'], [0.84, '#d4835a'], [0.93, '#e8a866'], [1, '#f2c98a']];
-  for (let i = 0; i < sky.length - 1; i++) {
-    const y0 = Math.round(H * sky[i][0]), y1 = Math.round(H * sky[i + 1][0]);
-    g.fillStyle = sky[i][1]; g.fillRect(0, y0, W, y1 - y0 + 1);
-    const n = Math.min(6, Math.max(2, (y1 - y0) >> 2));                         /* a dithered seam into the next stop */
-    for (let k = 0; k < n; k++) { g.fillStyle = sky[i + 1][1]; for (let x = (k & 1); x < W; x += 2) g.fillRect(x, y1 - n + k, 1, 1); }
+// ---------------------------------------------------------------- the desert
+/* THE WAY OUT OPENS ONTO THE DESERT (round 2, docs/briefs/falling-tower-round2.md §2). The sandy path - a sandstone cutting walled at
+   both ends, a rise and a sundial - is gone. Through the second door you stand on open sand under THE SUNKEN CARAVAN's own sky, with
+   the level's end a few steps on, and the same desert is what you see inside the door before you go through it, and inside every
+   ring the Archmage opens in the fight (src/undead-mage.js). One desert, drawn from the Caravan's own palette (src/redraw/desert.js). */
+
+/* A HOLE FULL OF DESERT: an upright oval centred on (cx, cy), rw x rh, with the Caravan's sky, a sun low in it, and dunes under a
+   horizon that rolls. Drawn a COLUMN at a time (a few fillRects a column, not one a pixel), so three rings and a door cost little. */
+export function drawDesertOval(g, cx, cy, rw, rh, time, seed = 0) {
+  cx = Math.round(cx); cy = Math.round(cy); if (rw < 2 || rh < 2) return;
+  const b1 = cy - rh * 0.5, b2 = cy - rh * 0.12, b3 = cy + rh * 0.08, sky = [DESERT.sky0, DESERT.sky1, DESERT.sky2, DESERT.sky3];
+  for (let dx = -rw; dx <= rw; dx++) {
+    const f = 1 - (dx / rw) * (dx / rw); if (f <= 0) continue;
+    const hh = Math.round(rh * Math.sqrt(f)), y0 = cy - hh, y1 = cy + hh, x = cx + dx;
+    const hz = Math.round(cy + rh * 0.18 + Math.sin(dx * 0.33 + seed + time * 0.4) * rh * 0.07);          /* the far dune line */
+    const hz2 = Math.round(cy + rh * 0.52 + Math.sin(dx * 0.21 - seed * 1.7 - time * 0.3) * rh * 0.06);   /* a nearer crest */
+    const cuts = [y0, Math.max(y0, Math.min(b1, hz)), Math.max(y0, Math.min(b2, hz)), Math.max(y0, Math.min(b3, hz)), Math.max(y0, Math.min(y1, hz))];
+    for (let k = 0; k < 4; k++) if (cuts[k + 1] > cuts[k]) { g.fillStyle = sky[k]; g.fillRect(x, cuts[k], 1, cuts[k + 1] - cuts[k]); }
+    if (hz < y1) { g.fillStyle = DESERT.dune; g.fillRect(x, hz, 1, y1 - hz); g.fillStyle = DESERT.duneL; g.fillRect(x, hz, 1, 1);
+      if (hz2 < y1 && hz2 > hz) { g.fillStyle = DESERT.duneD; g.fillRect(x, hz2, 1, Math.min(2, y1 - hz2)); g.fillStyle = DESERT.duneL; g.fillRect(x, hz2 - 1, 1, 1); } }
   }
-  g.fillStyle = sky[sky.length - 1][1]; g.fillRect(0, Math.round(H * sky[sky.length - 1][0]) - 1, W, H);
-  /* THE HORIZON IS THE PATH'S OWN, not a fraction of the screen. Placed by screen fraction, every dune sat BELOW the
-     top of the sand bank you are walking on and was hidden behind it - the whole backdrop was doing its work off the
-     bottom of the picture. It hangs off the world row the bank stands at, so the dunes are always in the gap between
-     the sky and the ground, wherever the camera is. */
-  const horizon = (L.sanctum ? L.sanctum.sand.y : H * 0.8 + cy) - cy - 6;
-  const sunX = Math.round(W * 0.68 - cx * 0.02), sunY = Math.round(horizon - 16);
-  for (const [r, col] of [[22, 'rgba(255,233,176,0.10)'], [16, 'rgba(255,233,176,0.16)'], [11, '#ffe9b0'], [8, '#fff6e0']])
-    for (let dy = -r; dy <= r; dy++) { const half = Math.round(Math.sqrt(Math.max(0, r * r - dy * dy))); if (!half) continue; g.fillStyle = col; g.fillRect(sunX - half, sunY + dy, half * 2, 1); }
-  /* THREE bands of dune, the far one barely moving, each with a lit crest and a shadowed face: a sine-edged slab of
-     flat colour is a hill on a graph, and the crest line is what makes it sand */
-  for (const [par, col, lit, drop, amp] of [[0.05, '#7a4e52', '#9a6660', 26, 7], [0.11, '#a86a54', '#c8886a', 14, 9], [0.2, '#c08a5e', '#e0ae7e', 2, 11]]) {
-    const y0 = Math.round(horizon - drop);
-    for (let x = 0; x < W; x++) {
-      const wx = x + cx * par, y = y0 + Math.round(Math.sin(wx * 0.011) * amp + Math.sin(wx * 0.027 + 1.3) * (amp * 0.45) + Math.sin(wx * 0.061) * 2);
-      g.fillStyle = col; g.fillRect(x, y, 1, H);
-      g.fillStyle = lit; g.fillRect(x, y, 1, 2);
-    }
-  }
-  /* sand on the wind, blowing the way you are walking */
+  /* the sun, low over the sand, and the heat off it */
+  const sx = cx + Math.round(rw * 0.3), sy = Math.round(cy - rh * 0.05), sr = Math.max(1, Math.round(Math.min(rw, rh) * 0.2));
+  for (let dy = -sr; dy <= sr; dy++) { const half = Math.round(Math.sqrt(sr * sr - dy * dy)); if (Math.abs(sx - cx) + half >= rw * 0.9) continue; g.fillStyle = '#fff6e0'; g.fillRect(sx - half, sy + dy, half * 2 + 1, 1); }
+  g.fillStyle = 'rgba(242,215,156,0.8)'; for (let i = 0; i < 3; i++) { const t = (time * 0.7 + i * 0.37 + seed) % 1, px = cx - rw * 0.6 + t * rw * 1.2, py = cy + rh * (0.25 + i * 0.12); if (Math.abs(px - cx) < rw * 0.8) g.fillRect(Math.round(px), Math.round(py), 2, 1); }
+}
+
+/* THE DESERT ITSELF, behind the sand tiles past the second door: the Caravan's sky and far mesas and middle dunes (baked by main.js
+   from src/redraw/desert.js and handed in as D), laid on the horizon of the sand you are standing on, and the road's first wreck
+   on it - so the last seconds of the tower look like the first of THE SUNKEN CARAVAN, because they are the road into it. */
+export function drawDesertEnd(g, L, cx, cy, time, D) {
+  const H = g.canvas.height, W = g.canvas.width, S = L.sanctum, horizon = Math.round((S && S.sand ? S.sand.y : H * 0.8 + cy) - cy);
+  g.drawImage(D.sky, 0, 0, 1, D.sky.height, 0, 0, W, H);
+  const lay = (c, par, bottom) => { if (!c) return; const w = c.width, y = Math.round(bottom - c.height); let x = -(((cx * par) % w) + w) % w; for (; x < W; x += w) g.drawImage(c, Math.round(x), y); };
+  lay(D.far, 0.08, horizon - 14); lay(D.mid, 0.2, horizon + 6);
+  /* the road into the next level: a caravan's wreck half in the sand, a skull, a dead tree - where they stand in the world */
+  for (const [c, wx] of [[D.tree, S ? S.sand.x - 7 * 16 : 0], [D.wagon, S ? S.sand.x + 24 * 16 : 0], [D.skull, S ? S.sand.x + 8 * 16 : 0]]) { if (!c) continue;
+    const x = Math.round(wx - cx - c.width / 2); if (x > W || x + c.width < 0) continue; g.drawImage(c, x, horizon - c.height + 3); }
+  /* sand on the wind, the way you are walking */
   for (let i = 0; i < 30; i++) { const px = ((i * 137 + time * 42) % (W + 40)) - 20, py = (i * 53 + Math.sin(time + i) * 6) % H;
     g.fillStyle = i % 3 ? 'rgba(242,201,138,0.30)' : 'rgba(255,233,176,0.45)'; g.fillRect(Math.round(px), Math.round(py), 2, 1); }
 }
