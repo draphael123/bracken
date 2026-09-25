@@ -4414,19 +4414,19 @@ function longWater() {
   // ---- 2b. THE BORE REACH: the raft lands at a staithe and the river spreads into tidal flats. The Bore comes in here from the sea. ----
   { const { block, ent, coins, set } = G3, R = G3.R;
     R.calm.push([318, 365, 18, 30]);                                             // placed by hand: a bore stone is somewhere to stand, not a perch for the garrison
-    block(318, 323, 27, H - 1);                                                  // the staithe the raft lands at
+    block(318, 323, 26, H - 1);                                                  // the staithe the raft lands at: as high as a stone, so a checkpoint on it is out of the Bore
     block(324, 361, 29, H - 1);                                                  // the flats, wading deep between the stones, at the Bore's own surface
     for (const [a, b] of [[324, 326], [331, 335], [340, 344], [349, 353], [358, 361]]) R.pools.push({ x0: a * TS, x1: (b + 1) * TS, y: 28 * TS + 4, shallow: true, depth: 12 });
     block(362, 365, 27, H - 1);                                                  // and the bank up into Saltreach
     /* THE BORE STONES: a step and a stone, its top two rows over the step and clear of the wave (it knocks down anything lower) */
     for (const x of [327, 336, 345, 354]) { block(x, x + 3, 28, 28); block(x + 1, x + 2, 26, 27); coins([x + 1, 24], [x + 2, 24]); }
-    ent('check', 319, 26);
-    ent('sign', 321, 26, { text: 'THE BORE STONES. WHEN THE RIVER ROARS, STAND ON ONE AND LET THE SEA GO UNDER YOU.' });
+    ent('check', 319, 25);
+    ent('sign', 321, 25, { text: 'THE BORE STONES. WHEN THE RIVER ROARS, STAND ON ONE AND LET THE SEA GO UNDER YOU.' });
     /* THE TIDEBOUND WALK UP BEHIND THE SEA: a crowd in the open on the flats, a harpooner on the far bank over them, and the Bore
        through the lot of them every twenty seconds: it only knocks down the hero, so they stand their ground in it */
     ent('tideguard', 333, 28, { face: -1 }); ent('tideguard', 343, 28, { face: -1 }); ent('heronfoe', 351, 28, { face: -1 });
     ent('scout', 363, 26, { face: -1 }); ent('netter', 365, 26, { face: -1 }); ent('netter', 325, 28, { face: 1 }); ent('tideguard', 359, 28, { face: -1 });
-    for (const [x, y, k, v] of [[323, 26, 'pierPost', 0], [326, 28, 'riverStone', 0], [341, 28, 'riverStone', 1], [352, 28, 'rushes', 2], [360, 28, 'rowboat', 0]]) ent('deco', x, y, { kind: k, v });
+    for (const [x, y, k, v] of [[323, 25, 'pierPost', 0], [326, 28, 'riverStone', 0], [341, 28, 'riverStone', 1], [352, 28, 'rushes', 2], [360, 28, 'rowboat', 0]]) ent('deco', x, y, { kind: k, v });
     coins([325, 27], [332, 27], [341, 27], [350, 27], [359, 27]);
   }
   /* the ferry run gave its sirens back to the sea: two more eels in the river where they sang (final columns) */

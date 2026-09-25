@@ -1,0 +1,14 @@
+hero      section        cols      hits  hp lost  deaths  falls  got    secs
+knight    MELTFALLS      3-127     0     0        0       0      78%    60
+knight    DOCK           128-139   1     12       0       0      end    5.7
+knight    FERRY RUN      140-277   2     26       0       0      19%    60
+knight    SALTREACH      278-349   2     22       0       0      85%    60
+knight    SLUICE STAIR   350-415   1     12       0       0      end    28.9
+knight    SQUARE ROAD    416-433   1     12       0       0      63%    60
+warden    MELTFALLS      3-127     2     26       0       0      85%    60
+warden    DOCK           128-139   0     0        0       0      end    8.4
+warden    FERRY RUN      140-277   2     26       0       0      19%    60
+warden    SALTREACH      278-349   9     113      1       0      64%    60
+warden    SLUICE STAIR   350-415   1     12       0       0      end    26.1
+warden    SQUARE ROAD    416-433   0     0        0       0      63%    60
+errors []
