@@ -444,6 +444,8 @@ async function runbossLab(BK, opts) {
           if (!P.ballast) { const st = BK.props().filter(p => p.t === 'ballast' && p.rack && !p.gone && !p.held).sort((a, b) => Math.hypot(a.x - P.x, a.y - P.y) - Math.hypot(b.x - P.x, b.y - P.y))[0];
             if (st) { if (Math.abs(st.x - P.x) > 3) k[st.x > P.x ? 'right' : 'left'] = true; if (P.y > st.y + 6) k.up = true; else if (P.y < st.y - 4) k.down = true;   /* the water floats you up past it: stop level with it */ }
             if (adx <= reach2 && Math.abs(dy) < 22 && P.atk < 0 && f % 4 === 0) { P.face = Math.sign(dx) || P.face; k.up = k.down = false; BK.press('atk'); swings++; } }
+          else if (P.ballast && BK.enemies().some(q => q.alive && q.brood && Math.abs(q.x - P.x) < 34 && Math.abs(q.y - P.y) < 24)) {   /* THE BROOD (phase two): cut the prise off before it takes the stone */
+            const q = BK.enemies().filter(q => q.alive && q.brood).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; P.face = Math.sign(q.x - P.x) || P.face; if (P.atk < 0) { BK.press('atk'); swings++; } }
           else if ((P.ground || BK.L.grid[Math.floor(P.y / 16) * BK.L.W + Math.floor(P.x / 16)] === lvm.T.PLANK) && P.y < A.floor - 24) { if (adx < 40 || boss.mode === 'pressureTell') k[dx > 0 ? 'right' : 'left'] = true; }
           else if (!P.ground) { if (adx > 2) k[dx > 0 ? 'right' : 'left'] = true;
             if ((adx < 9 && sy < crownY - 2 && sy > crownY - 46) || sy > crownY + 6) BK.press('jump'); }

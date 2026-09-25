@@ -51,10 +51,13 @@ export function bakeBellguard(){
    valveUp over his crown to valveDown into it. Shut he takes shutMul; venting, openMul, for ventT. Rests between blows are short now
    there is no vent after each one. With you over him he
    walks to stand under you (under, px/s) and does not attack until he is within underReach of it. At crackAt of his health THE BELL CRACKS (crackT, a punctuation, not a window) and he comes out:
-   fast, soft (out.soft, always), and desperate (out.rest). Times in s, speeds in px/s, reach in px. */
+   fast, soft (out.soft, always), and desperate (out.rest). PHASE TWO, at half: THE PRISE POUR OUT OF HIS BELL (brood) - a told
+   broodTell (brood.tell s: his rim lifts and bubbles pour), then brood.n prise that swim for the stone in your hands; each vent in
+   phase two tops them back up to brood.keep (never over brood.cap). They are prise: struck, they die; a stone they reach they take. Times in s, speeds in px/s, reach in px. */
 export const BELL = { valveW: 15, valveUp: 12, valveDown: 10, ventT: 3, openMul: 2.2, shutMul: 0.45, rest: 0.42, rest2: 0.32, overDy: 44,
   walk: 36, walk2: 50, under: 78, underReach: 22, tells: { claw: 0.62, ballast: 0.85, pressure: 0.8, scuttle: 0.7 }, scuttle: 250, scuttle2: 290, wallStun: 0.6,
   crackAt: 1 / 3, crackT: 1.3,
+  brood: { tell: 1.1, n: 3, keep: 2, cap: 3, swim: 70, run: 58, sight: 160 },   /* PHASE TWO (Daniel, 2026-09-25): the prise pour out of his bell */
   out: { w: 30, h: 22, soft: 1.3, rest: 0.26, run: 96, snipTell: 0.42, snipReach: 44, scuttleTell: 0.5, scuttle: 330, scuttleT: 0.9, leapTell: 0.5, leapV: 320, leapT: 0.8 } };
 
 /* THE CRAB OUT OF HIS SHELL (phase three). What wore the bell: a soft hermit's body the colour of a skinned thing, the tail still

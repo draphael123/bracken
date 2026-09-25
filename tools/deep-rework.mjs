@@ -10,7 +10,8 @@
      THE RACKS     the Bell Grave hangs stone racks over his floor (A12): each platform hung by rope to the rock (B9), high enough over
                    the floor that he stands under it, and its stone a rack's
      THE BELL      updateBellcrab vents in exactly one place (the crown valve); every attack he makes, forced and left alone, leaves him
-                   shut; a stone on his crown opens him; at a third of his health he CRACKS, comes out (his own frame table, smaller,
+                   shut; a stone on his crown opens him; at half THE PRISE POUR OUT (told, once, topped up after a vent) and swim for
+                   the stone in your hands; at a third of his health he CRACKS, comes out (his own frame table, smaller,
                    soft) and his three told attacks of phase three each land when forced (A1, A11) */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -96,7 +97,7 @@ const s = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const fn = s.slice(s.indexOf('function updateBellcrab('), s.indexOf('function drawBellcrabMarks('));
 assert.equal(fn.split('vent();').length - 1, 1, 'A11: he vents in exactly one place (the crown valve), not after every attack');
 const noop = () => {}, hits = [];
-const c = vm.createContext({ BELL, props: [], L: { arena: { x0: 0, x1: 640, floor: 320 } }, P: { x: 330, y: 320, dead: false },
+const c = vm.createContext({ BELL, props: [], enemies: [], TS: 16, spawnEnt: q => c.enemies.push({ ...q, alive: true, x: q.x * 16 + 8, y: (q.y + 1) * 16 }), L: { arena: { x0: 0, x1: 640, floor: 320 } }, P: { x: 330, y: 320, dead: false },
   DMG: { bellClaw: 26, bellSlam: 34, bellPressure: 24, bellCharge: 32, bellSnip: 18, bellLeap: 24 }, SFX: new Proxy({}, { get: () => noop }),
   number: noop, shakeCam: noop, ringAt: noop, burst: noop, moveBody: () => ({ ground: true }), damagePlayer: (x, d, o) => hits.push({ x, d, o }) });
 vm.runInContext(fn, c);
@@ -106,6 +107,23 @@ for (const m of ['clawTell', 'ballastTell', 'pressureTell', 'scuttle']) { const 
   assert.equal(e.mode, 'vent'); assert.ok(e.open >= BELL.ventT - 0.02, 'a stone on his crown opens him for ' + BELL.ventT + ' s'); c.props.length = 0; }
 { const e = bell('idle', { modeT: 9 }); c.props.push({ t: 'ballast', x: 301, y: 320 - 43 - 3, vy: 70, held: true }); c.updateBellcrab(e, 0.01);
   assert.notEqual(e.mode, 'vent', 'a stone still in your hands opens nothing: it has to be let go'); c.props.length = 0; }
+/* PHASE TWO (Daniel, 2026-09-25): THE PRISE POUR OUT OF HIS BELL - told, then a brood that goes for your stone, topped up after a vent */
+{ c.enemies.length = 0; const e = bell('idle', { modeT: 9, phase: 2, hp: 370 }); c.updateBellcrab(e, 0.01);
+  assert.equal(e.mode, 'broodTell', 'at half health his rim lifts first: the brood is TOLD'); assert.equal(c.enemies.length, 0, 'and nothing has come out yet');
+  for (let i = 0; i < 130 && !c.enemies.length; i++) c.updateBellcrab(e, 0.01);
+  assert.equal(c.enemies.filter(q => q.t === 'prise' && q.brood).length, BELL.brood.n, 'then ' + BELL.brood.n + ' prise pour out');
+  for (let i = 0; i < 300; i++) c.updateBellcrab(e, 0.01); assert.equal(c.enemies.length, BELL.brood.n, 'once only: they do not keep coming on his clock');
+  c.enemies.forEach(q => { q.alive = false; }); e.mode = 'vent'; e.modeT = 0.01; c.updateBellcrab(e, 0.02);
+  assert.equal(c.enemies.filter(q => q.alive && q.brood).length, BELL.brood.keep, 'a vent in phase two tops the brood back up to ' + BELL.brood.keep);
+  const p1 = bell('idle', { modeT: 9 }); c.enemies.length = 0; for (let i = 0; i < 200; i++) c.updateBellcrab(p1, 0.01); assert.equal(c.enemies.length, 0, 'phase one pours nothing'); c.enemies.length = 0; }
+/* AND THE BROOD SWIMS FOR THE STONE: a brood prise rises to a carrier over it; a plain prise does not */
+{ const pf = s.slice(s.indexOf('function updatePrise('), s.indexOf('\n}', s.indexOf('function updatePrise(')) + 2);
+  const cx = vm.createContext({ BELL, P: { x: 200, y: 100, swim: true, ballast: {}, dead: false }, time: 0, SFX: new Proxy({}, { get: () => noop }), number: noop, shakeCam: noop, damagePlayer: noop, dropBallast: noop, DMG: {},
+    moveBody: (q, dx, dy) => { q.x += dx; q.y += dy; return { ground: false }; } });
+  vm.runInContext(pf, cx);
+  const pr = o => ({ t: 'prise', x: 180, y: 200, vx: 0, vy: 0, mode: 'walk', modeT: 1, hitT: 0, snapT: 2, home: 180, ...o });
+  const b = pr({ brood: true }), w = pr({}); for (let i = 0; i < 120; i++) { cx.updatePrise(b, 1 / 60); cx.updatePrise(w, 1 / 60); }
+  assert.ok(b.y < 150, 'a brood prise swims up to the stone in your hands (' + Math.round(b.y) + ')'); assert.ok(w.y >= 200, 'a plain prise stays on its floor'); }
 /* PHASE THREE: the crack, and what comes out */
 { const e = bell('idle', { modeT: 9, phase: 2, hp: 240 }); c.updateBellcrab(e, 0.01); assert.equal(e.mode, 'crack', 'at a third of his health the bell cracks');
   for (let i = 0; i < 140; i++) c.updateBellcrab(e, 0.01);
@@ -118,4 +136,4 @@ c.P.x = 330;
 for (const k of ['snipTell', 'snip', 'scuttleTell', 'scuttle', 'leapTell', 'leap', 'hurt']) assert.ok(Number.isInteger(BELL_OUT_F[k]), 'his own frame for ' + k);
 assert.equal(BELL_OUT_F.hurt, 8, 'the hurt frame is his set\'s last');
 console.log('THE DEEP, REWORKED: ' + HOLD_KINDS.length + ' hold kinds (' + HOLD_KINDS.join(', ') + '), every deck on a strake, the tribute ship (+' + SHIP.rows + ' rows, ' + SHIP.hatches.length +
-  ' hot hatches), ' + L.ents.filter(e => e.t === 'drownedknight').length + ' drowned knights by the ways down, ' + RACKS.length + ' hung stone racks, and a Bell that opens only to a stone and cracks at a third.');
+  ' hot hatches), ' + L.ents.filter(e => e.t === 'drownedknight').length + ' drowned knights by the ways down, ' + RACKS.length + ' hung stone racks, and a Bell that opens only to a stone, pours out his prise at half and cracks at a third.');

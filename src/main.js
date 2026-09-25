@@ -13900,15 +13900,18 @@ function drawPrinceFx(e, cx, cy) {
 // not choose to go, which down here is the same as winning.
 function updatePrise(e, dt) {
   e.modeT -= dt; e.hitT = Math.max(0, e.hitT - dt); e.anim = (e.anim || 0) + dt;
-  e.vy += (P.swim ? 180 : 900) * dt; if (e.vy > 200) e.vy = 200;
+  /* THE DIVING BELL'S BROOD swims after a hero who is carrying a stone (src/bellcrab.js BELL.brood); every other prise walks */
+  const swimmer = e.brood && P.swim && P.ballast && !P.dead && Math.abs(P.x - e.x) < BELL.brood.sight * 1.5;
+  if (swimmer) { const vw = Math.max(-BELL.brood.swim, Math.min(BELL.brood.swim, (P.y - 4 - e.y) * 3)); e.vy += (vw - e.vy) * Math.min(1, dt * 4); }
+  else { e.vy += (P.swim ? 180 : 900) * dt; if (e.vy > 200) e.vy = 200; }
   const d = P.x - e.x, ad = Math.abs(d);
   if (e.stagger > 0) { e.vx *= 0.5; const r0 = moveBody(e, e.vx * dt, e.vy * dt, false); if (r0.ground) e.vy = 0; return; }
   let want = 0;
   switch (e.mode) {
     case 'walk': { e.snapT -= dt;
       /* it comes for you FASTER when you are carrying something: it can see the thing it wants */
-      const greed = P.ballast ? 200 : 90;
-      if (!P.dead && ad < greed && Math.abs(P.y - e.y) < 40) { e.face = Math.sign(d) || e.face; want = e.face * (P.ballast ? 46 : 30);
+      const greed = P.ballast ? (e.brood ? BELL.brood.sight : 200) : 90;
+      if (!P.dead && ad < greed && Math.abs(P.y - e.y) < (swimmer ? BELL.brood.sight : 40)) { e.face = Math.sign(d) || e.face; want = e.face * (P.ballast ? (e.brood ? BELL.brood.run : 46) : 30);
         if (ad < 26 && e.snapT <= 0) { e.snapT = 2.4; e.mode = 'reachTell'; e.modeT = 0.55; number(e.x, e.y - 16, P.ballast ? 'IT WANTS THAT' : '!', '#ffd36b'); SFX.rattle(0.5); } }
       else { want = Math.sin(time * 0.6 + e.home) * 24; e.face = Math.sign(want) || e.face; }
       break; }
@@ -14982,12 +14985,24 @@ function updateBellcrab(e, dt) {
       SFX.clank();SFX.stone();burst(pr.x,pr.y-4,10,['#8a919c','#5a6270'],70,0.5);
       if(pr.rack){pr.gone=true;pr.backT=2.2;number(pr.x,pr.y-20,'IT SPLITS ON HIS VALVE','#bfe6f5');}else{pr.vx=(pr.x<e.x?-1:1)*90;pr.vy=-40;}
       vent();break;}}
+  /* PHASE TWO: THE PRISE POUR OUT OF HIS BELL (Daniel, 2026-09-25). At half health his rim lifts - told, a second's warning, bubbles
+     boiling out under it - and a brood of prise pours out and goes for the STONE IN YOUR HANDS: from here the stone has to be kept
+     on the way to his crown. They are ordinary prise (struck, they die) that swim after a hero who is carrying; each vent in phase
+     two sends out more, up to the number he started with. */
+  const brood=()=>enemies.filter(q=>q.alive&&q.brood).length;
+  const pour=n=>{for(let i=0;i<n&&brood()<B.brood.cap;i++){spawnEnt({t:'prise',x:Math.floor(e.x/TS),y:Math.floor(fl/TS)-1,face:i%2?1:-1});const q=enemies[enemies.length-1];
+    q.brood=true;q.x=e.x+(i-1)*12;q.y=fl-4;q.vy=-110;q.vx=(i-1)*70;q.snapT=0.9;burst(q.x,q.y-6,6,['#e58a78','#bfe6f5'],60,0.4);}};
+  if(e.phase===2&&!e.brooded&&!['crack','vent','sleep','wake','broodTell'].includes(e.mode)){e.brooded=true;e.mode = 'broodTell';e.modeT=B.brood.tell;e.vx=0;
+    number(e.x,e.y-62,'HIS RIM LIFTS','#ffd36b');SFX.hiss();}
   /* THE BELL CRACKS: a third of his health left, and the shell cannot hold him (a punctuation of 1.3 s, not a window) */
   if(!p3&&e.phase>=2&&e.hp<=e.maxHp*B.crackAt&&!['crack','sleep','wake'].includes(e.mode)){e.mode = 'crack';e.modeT=B.crackT;e.vx=0;e.open=0;
     number(e.x,e.y-62,'THE BELL CRACKS','#ff6b6b');SFX.crack();SFX.seaBell();shakeCam(8);burst(e.x,e.y-e.h+6,24,['#b7833e','#f3d28a','#e8f4f0'],120,0.9);}
   switch(e.mode){
     case 'sleep': break;
     case 'wake': if(e.modeT<=0){e.mode = 'idle';e.modeT=.6;}break;
+    case 'broodTell':
+      if(Math.random()<dt*30)burst(e.x+(Math.random()-.5)*40,fl-4,2,['#e8f4f0','#bfe6f5'],40,.5,-80,1);
+      if(e.modeT<=0){pour(B.brood.n);number(e.x,e.y-62,'THE PRISE POUR OUT','#ff6b6b');SFX.rattle&&SFX.rattle(0.8);shakeCam(4);rest(.4);}break;
     case 'crack':
       if(e.modeT<=0){e.phase=3;e.shell={x:e.x,y:fl,face:e.face};e.w=O.w;e.h=O.h;e.turn=0;e.open=0;rest(.3);
         number(e.x,e.y-40,'HE COMES OUT','#ff6b6b');SFX.shoulder();burst(e.x,e.y-10,16,['#e58a78','#ffb8a4'],100,0.6);}break;
@@ -15032,11 +15047,11 @@ function updateBellcrab(e, dt) {
       if(!e.hit&&!P.dead&&ad<24&&dy<30){e.hit=true;damagePlayer(e.x,DMG.bellLeap,{up:true});}
       if(e.modeT<=0){e.vx=0;rest();}break;
     case 'claw': case 'slam': case 'pressure': case 'snip': if(e.modeT<=0)rest();break;
-    case 'vent': if(e.modeT<=0)rest(.55);break;
+    case 'vent': if(e.modeT<=0){if(p2)pour(Math.max(0,B.brood.keep-brood()));rest(.55);}break;
     default:e.mode = 'idle';e.modeT=.5;
   }
   if(e.mode!=='scuttle'&&e.mode!=='leap')e.vx+=(want-e.vx)*Math.min(1,dt*(p3?10:7));
-  if(['crack','vent'].includes(e.mode))e.vx=0;
+  if(['crack','vent','broodTell'].includes(e.mode))e.vx=0;
   const r=moveBody(e,e.vx*dt,e.vy*dt,false);if(r.ground){e.vy=0;if(e.mode==='leap'&&e.modeT<O.leapT+.25){ringAt(e.x,fl-2,26,'#ffd36b',.3);e.vx=0;rest();}}
   const edge=e.x<A.x0+28||e.x>A.x1-28;e.x=Math.max(A.x0+28,Math.min(A.x1-28,e.x));
   /* HIS CHARGE INTO THE WALL is a clang and a stop - no longer an opening: the only way into the bell is through its valve */
@@ -23612,7 +23627,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'drunk') frame = e.mode === 'lobTell' ? 4 : e.mode === 'lob' ? 5 : e.mode === 'bottleTell' ? 6 : e.mode === 'down' ? 7 : e.mode === 'getup' ? 8 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 4) % 2 : Math.floor(e.anim * 1.6) % 2;   /* he sways where he stands, and the tell is on screen for all of it */
     else if (e.t === 'closedhelm') frame = e.open > 0 ? 11 : ({ oathTell: 3, radianceTell: 9, oathRecover: 11, cutTell: 3, cut: 4, thrustTell: 5, thrust: 6, bashTell: 7, bash: 8, judgeTell: 9, judge: 10, reward: 9 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 3) % 2 : 0);
     else if (e.t === 'bellcrab' && e.phase === 3) frame = bellOutFrame(e);
-    else if (e.t === 'bellcrab') frame=({clawTell:2,claw:3,ballastTell:4,slam:5,pressureTell:6,pressure:7,scuttleTell:8,scuttle:9,vent:10})[e.mode]??(Math.abs(e.vx)>2?1:0);
+    else if (e.t === 'bellcrab') frame=({clawTell:2,claw:3,ballastTell:4,slam:5,pressureTell:6,pressure:7,scuttleTell:8,scuttle:9,vent:10,broodTell:10})[e.mode]??(Math.abs(e.vx)>2?1:0);
     else if (e.t === 'tidemarauder' && e.mini) frame = reaverFrame(e);
     else if (['lanternshade','bonecorsair','tidemarauder'].includes(e.t)) frame=e.mode==='rest'?4:e.mode?.endsWith('Tell')?(/cleave|rake/.test(e.mode)?3:2):Math.abs(e.vx)>2?1:0;
     else if (e.t === 'familiar') frame=MF.FAMILIAR_F[{dashTell:'swipeTell',dash:'swipe',volleyTell:'spitTell'}[e.mode]||e.mode]??MF.FAMILIAR_F.idle;
