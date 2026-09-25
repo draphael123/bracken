@@ -18,7 +18,7 @@ try {
     const shots = [], A = L.ambushes[0];
     BK.tp(A.wallL + 12, foot(A.wallL + 12)); for (let k = 0; k < 150; k++) BK.step(1); shots.push(['yard', snap()]);
     const yard = BK.enemies ? BK.enemies().filter(e => e.alive).map(e => e.t + (e.st ? ':' + e.st.mode : '')) : [];
-    BK.load(i); BK.start(); BK.god = true; BK.sim(300); BK.tp(100, foot(100));
+    BK.load(i); BK.start(); BK.god = true; BK.sim(300); BK.tp(20, foot(20));   /* the open sand between the old gate and the lone awning */
     let peak = 0, stages = new Set(); for (let k = 0; k < 60 * 9; k++) { BK.step(1); const cv = BK.caravan && BK.caravan(); if (cv) { stages.add(cv.stage || 0); peak = Math.max(peak, cv.stage || 0); } if (peak >= 3 && k % 60 === 0) break; }
     shots.push(['sun', snap()]);
     return { kinds, yard, stages: [...stages], shots };

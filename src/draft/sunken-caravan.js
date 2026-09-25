@@ -114,7 +114,7 @@ export function buildSunkenCaravan(T) {
   house('house1', marks.house1); house('house2', marks.house2, { crown: [1, 0] }); house('house3', marks.house3 + 0, { crown: [2, 0] }); house('house5', marks.house5, { crown: [1, 2] });
   tower('towerA', marks.towerA + 1, 12, { crown: [2, 4] });                 // THE WATCHTOWER, alone at the end of the caravan road
   tower('towerB', marks.towerB, 12, { crown: [3, 0] });                     // THE TWIN TOWERS of the ruined town, the caravanserai between them:
-  tower('towerC', marks.towerC, 8, { crown: [0, 6] });                      //   B's roof (12), the caravanserai's (9) and C's (8, its far corner standing six more) are THE ROOFTOP ROUTE, three tiles apart
+  tower('towerC', marks.towerC, 8, { crown: [0, 1] });                      //   B's roof (12), the caravanserai's (9) and C's (8: its top fell) are THE ROOFTOP ROUTE, three tiles apart. C's far corner is one course high, so its roof is a way on (hop it and drop to the road) - at six it walled the roof's end, and the play bot died of the sun against it three times
   tower('towerD', marks.towerD, 14, { crown: [2, 3] });                     // THE LAST TOWER, over the exam on the rim
   lintel(marks.lintel, marks.lintel + 5);                                   // the rim's last shade before the hollow: THE FIRST KNIFE holds it
   lintel(marks.towngate, marks.towngate + 5);                               // THE TOWN GATE, out of the camp and into the ruined town

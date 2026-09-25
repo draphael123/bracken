@@ -33,15 +33,16 @@ try {
       for (const [name, from, to] of LEGS) {
         if (from !== null) { BK.load(idx); BK.start(); BK.god = false; BK.tp(from, foot(from)); }
         const bot = makeBot(BK); const d0 = BK.stats().deaths; let s = 0, arrived = false, best = BK.P.x;
-        let hp0 = BK.P.hp, dN = d0;
+        let hp0 = BK.P.hp, dN = d0, lastX = 0, lastHit = null;
         for (; s < ${steps}; s++) { if (BK.state !== 'play') { arrived = BK.state === 'win'; break; } bot(to * 16 + 8); BK.sim(1); best = Math.max(best, BK.P.x);
           { const sec = secAt(Math.floor(BK.P.x / 16)), r = S8[sec] || (S8[sec] = { hurt: 0, deaths: 0, frames: 0, warm: 0, full: 0 }), v = (BK.P.sun || {}).v || 0;   /* RULES S8: what each section cost the bot */
-            r.frames++; if (v >= SW) r.warm++; if (v >= 1) r.full++; if (BK.P.hp < hp0) r.hurt += hp0 - BK.P.hp; hp0 = BK.P.hp; const dd = BK.stats().deaths; if (dd > dN) { r.deaths += dd - dN; dN = dd; } }
+            r.frames++; if (v >= SW) r.warm++; if (v >= 1) r.full++; if (BK.P.hp < hp0) r.hurt += hp0 - BK.P.hp; hp0 = BK.P.hp; const dd = BK.stats().deaths; if (dd > dN) { r.deaths += dd - dN; dN = dd; (r.at = r.at || []).push(lastX + (lastHit ? ' (' + lastHit + ')' : '')); } lastX = Math.floor(BK.P.x / 16);
+            const dk = BK.P.killer && BK.P.killer.name; if (dk) lastHit = dk; }
           if (BK.P.x >= to * 16 - 8) { arrived = true; break; } if (BK.stats().deaths - d0 >= 3) break; }
         out.push(name.padEnd(56) + (arrived ? 'ARRIVED' : 'stopped at col ' + Math.round(best / 16)) + ' in ' + (s / 60).toFixed(0) + ' s (60 frames a second), ' + (BK.stats().deaths - d0) + ' deaths, hp ' + Math.round(BK.P.hp) + ', state ' + BK.state);
       }
       out.push('  RULES S8, per section (hp lost, deaths, share of the time over the sun meter warning / at full):');
-      for (const [n] of SEC) { const r = S8[n]; if (r) out.push('    ' + n.padEnd(10) + ' hurt ' + String(Math.round(r.hurt)).padStart(4) + '  deaths ' + r.deaths + '  warm ' + Math.round(100 * r.warm / r.frames) + '%  full ' + Math.round(100 * r.full / r.frames) + '%  (' + (r.frames / 60).toFixed(0) + ' s)'); }
+      for (const [n] of SEC) { const r = S8[n]; if (r) out.push('    ' + n.padEnd(10) + ' hurt ' + String(Math.round(r.hurt)).padStart(4) + '  deaths ' + r.deaths + '  warm ' + Math.round(100 * r.warm / r.frames) + '%  full ' + Math.round(100 * r.full / r.frames) + '%  (' + (r.frames / 60).toFixed(0) + ' s)' + (r.at ? '  died at col ' + r.at.join(', ') : '')); }
       BK.PROG.hero = keep; return out.join('\\n');
     })()`, 1800000);
     console.log('\n' + hero.toUpperCase() + ', no god mode, legs between the locks:\n' + legs);
