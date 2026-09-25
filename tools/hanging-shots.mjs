@@ -14,7 +14,7 @@ const out = join(ROOT, 'docs/hanging'); mkdirSync(out, { recursive: true });
 const SPOTS = [
   ['roots', 40, 107], ['roots-east', 88, 107], ['ropewalk', 10, 93], ['ropewalk-mid', 44, 93], ['market', 30, 79], ['market-east', 70, 79],
   ['mill', 94, 65], ['mill-hall', 30, 65], ['rookery', 30, 51], ['rookery-nest', 64, 51], ['lantern-stair', 80, 37], ['lantern-west', 30, 37],
-  ['crown-door', 12, 19], ['web-hollow', 34, 128, 'mini'], ['owl-arena', 40, 19, 'boss']];
+  ['crown-door', 12, 19], ['web-hollow', 36, 128, 'mini'], ['web-bridge', 49, 122, 'mini'], ['owl-arena', 40, 19, 'boss']];
 const pg = await openPage();
 const snap = () => `(() => { const c = document.createElement('canvas'); c.width = 640; c.height = 360; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, 640, 360); return c.toDataURL('image/png'); })()`;
 let n = 0;

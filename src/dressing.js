@@ -406,6 +406,7 @@ export const ALLOWED_DECORATIONS = {
     "birdhouse",
     "cairn",
     "cobweb",
+    "cocoon",
     "dovecote",
     "fence",
     "fern",

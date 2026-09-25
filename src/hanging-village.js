@@ -125,6 +125,13 @@ export function hvDeco(kind) {
   let c = null;
   if (kind === 'ropeCoil') c = mk(16, 11, g => { for (let k = 0; k < 4; k++) ellipse(g, 8, 8 - k * 2, 7 - k * 0.5, 2.4, k % 2 ? '#c8a860' : '#a88848'); ellipse(g, 8, 2, 3, 1, '#6a5030'); line(g, 14, 8, 16, 10, '#c8a860'); });
   else if (kind === 'hempBale') c = mk(20, 13, g => { rect(g, 0, 2, 20, 11, '#c8b070'); rect(g, 0, 2, 20, 1, '#e8d498'); for (let y = 4; y < 13; y += 3) rect(g, 0, y, 20, 1, '#a89050'); for (const x of [5, 14]) rect(g, x, 2, 1, 11, '#6a5030'); line(g, 2, 1, 6, 0, '#e8d498'); });
+  else if (kind === 'cocoon0' || kind === 'cocoon1' || kind === 'cocoon2') {   /* THE WEAVER'S LARDER: a webbed sack, a webbed goat, a small bundle - each on its thread from the top row */
+    const v = +kind.slice(-1), w = [14, 22, 10][v], h = [30, 34, 20][v];
+    c = mk(w, h, g => { rect(g, (w >> 1), 0, 1, h - [18, 20, 12][v], '#d8d0c0'); const cy = h - [9, 10, 6][v], rx = w / 2 - 1, ry = [9, 10, 6][v];
+      ellipse(g, w / 2, cy, rx, ry, '#c8c0b0'); ellipse(g, w / 2 - 1, cy - 2, rx - 2, ry - 3, '#e0d8c8');
+      for (let k = -ry; k < ry; k += 3) rect(g, 2, cy + k, w - 4, 1, '#a8a090');
+      if (v === 0) { rect(g, w / 2 - 3, cy - 2, 6, 5, '#b8a878'); px(g, w / 2, cy - 5, '#8a7a5a'); }   /* a sack showing through */
+      if (v === 1) { rect(g, 3, cy - 3, 3, 2, '#5a4a3a'); px(g, 4, cy - 5, '#3a2e24'); px(g, w - 5, cy + 6, '#3a2e24'); } }); }   /* a horn and a hoof */
   else if (kind === 'flourSacks') c = mk(22, 14, g => { for (const [x, y, w] of [[0, 4, 10], [9, 3, 11], [4, 0, 10]]) { ellipse(g, x + w / 2, y + 5, w / 2, 5, '#e0dccc'); rect(g, x + 2, y + 3, w - 4, 6, '#ece8da'); px(g, x + w / 2, y + 1, '#8a7a5a'); rect(g, x + w / 2 - 1, y + 5, 3, 2, '#b8a878'); } rect(g, 0, 13, 22, 1, '#8a8474'); });
   return (DECO[kind] = c);
 }

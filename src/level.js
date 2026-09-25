@@ -1616,20 +1616,28 @@ function hangingVillage() {
   ent('doorway', 66, 107, { id: 'hollow-out', to: 'hollow-in', kind: 'goblin' });
   ent('doorway', 74, 107, { id: 'hollow-far', to: 'hollow-back', kind: 'goblin' });
   ent('sign', 62, 107, { text: 'SOMETHING WENT DOWN THROUGH THE ROOTS AND DID NOT COME BACK. THE HOLE IS FULL OF WEB.' });
-  for (let y = 116; y <= 128; y++) for (let x = 20; x <= 74; x++) set(x, y, 0);
-  interiors.push([20, 74, 116, 128, 'earth']);
-  ent('doorway', 24, 128, { id: 'hollow-in', to: 'hollow-out', lock: [20, 74], label: 'THE WEB HOLLOW' });
-  ent('doorway', 71, 128, { id: 'hollow-back', to: 'hollow-far', lock: [20, 74], label: 'OUT THE FAR SPLIT' });
-  for (const x of [28, 36, 44, 52, 60, 68]) { ent('deco', x, 116, { kind: 'cobweb', v: x % 3, hang: true }); }
-  for (const x of [32, 48, 64]) ent('deco', x, 128, { kind: 'cobweb', v: (x + 1) % 3 });
-  ent('torch', 26, 128); ent('spider', 34, 118, { drop: 90 }); ent('spider', 58, 118, { drop: 90 });
-  ent('spider', 46, 116, { drop: 110 });
-  ent('sign', 22, 128, { text: 'THE WEAVER DROPS FROM HER THREAD. HIT HER ON THE FLOOR; KEEP OUT FROM UNDER HER.' });
-  ent('spider', 48, 118, { drop: 170, big: true, mini: true });
-  for (let y = 122; y <= 128; y++) set(75, y, T.PORT); // her larder, shut until she is dead
-  for (let y = 122; y <= 128; y++) for (let x = 76; x <= 84; x++) set(x, y, 0);
-  interiors.push([76, 84, 122, 128, 'earth']);
-  ent('silver', 82, 128); ent('stray', 79, 128, { kind: 'lamp' }); coins([78, 127], [80, 127], [83, 127]);
+  /* THE LARDER HOLLOW (docs/briefs/hanging-village-rework.md §5). It was an empty box fifty-five tiles wide with the Weaver waiting off
+     screen (the review). The REASON: the hoists' loads have been going missing for a month, and they are down here, webbed to her ceiling
+     beside a goat. The SHAPE: a low web tunnel in, then her room at thirty-eight wide (A7), with ROOTS THROUGH THE CEILING you can climb -
+     her own code says "stand on a net and the line holds", and her reel had never had a net in its room to answer it (A12) - two low web
+     shelves at the sides, and a web bridge between the middle roots. Her kit is unchanged: the room now supplies what it assumes. */
+  for (let y = 124; y <= 128; y++) for (let x = 20; x <= 31; x++) set(x, y, 0);   // the web tunnel in: five rows, low
+  for (let y = 116; y <= 128; y++) for (let x = 32; x <= 69; x++) set(x, y, 0);   // her larder
+  interiors.push([20, 31, 124, 128, 'earth'], [32, 69, 116, 128, 'earth']);
+  ent('doorway', 22, 128, { id: 'hollow-in', to: 'hollow-out', lock: [20, 69], label: 'THE WEB HOLLOW' });
+  ent('torch', 26, 128); ent('spider', 29, 124, { drop: 50 });
+  ent('sign', 24, 128, { text: 'HOLD A ROOT-NET AND HER LINE CANNOT REEL YOU. HIT HER WHEN SHE DROPS TO THE FLOOR.' });
+  plat(33, 127, 4); plat(65, 127, 4); plat(47, 123, 5);   // the web shelves either side, and the web bridge between the middle roots
+  for (const x of [34, 44, 60, 68]) ent('deco', x, 116, { kind: 'cobweb', v: x % 3, hang: true });
+  for (const x of [38, 56]) ent('deco', x, 128, { kind: 'cobweb', v: (x + 1) % 3 });
+  for (const [x, v] of [[37, 0], [45, 1], [57, 0], [67, 2], [49, 0]]) ent('deco', x, 116, { kind: 'cocoon', v, hang: true });   // the missing loads, and a goat
+  ent('spider', 46, 118, { drop: 170, big: true, mini: true });
+  for (let y = 122; y <= 128; y++) set(70, y, T.PORT); // her larder door, shut until she is dead
+  for (let y = 122; y <= 128; y++) for (let x = 71; x <= 79; x++) set(x, y, 0);
+  interiors.push([71, 79, 122, 128, 'earth']);
+  ent('silver', 77, 128); ent('stray', 74, 128, { kind: 'lamp' }); coins([73, 127], [75, 127], [78, 127]);
+  ent('doorway', 79, 128, { id: 'hollow-back', to: 'hollow-far', lock: [20, 69], label: 'OUT THE FAR SPLIT' });   /* out through her larder: somewhere to go the moment she falls */
+  for (const x of [41, 52, 63]) for (let y = 116; y <= 126; y++) set(x, y, T.NET);   /* THE ROOTS, HUNG LAST (RULES I): nothing is cut or laid over them after this */
   // 0 -> 1: a rope ladder through the first bough
   band(1, W - 2, tops.t1); hole(100, 105, tops.t1); ladder(102, 103, tops.t1, tops.t0 - 1); // the first ladder stands in the open: nothing between the roots road and its foot
   ent('sign', 93, 107, { text: 'JUMP UP THROUGH ROPE LADDERS; DOWN+JUMP TO DROP. SEVEN TIERS, THEN THE CROWN.' });
@@ -1751,7 +1759,7 @@ function hangingVillage() {
   /* and what each floor leaves lying about: roots and fungus, rope and hemp, the market's stalls, flour at the mill, the rooks' boxes */
   for(const [x,y,k] of [[23,107,'stump'],[40,107,'mushroom'],[80,107,'fern'],[16,93,'ropeCoil'],[27,93,'washing'],[18,93,'hempBale'],[60,93,'ropeCoil'],[24,79,'stall'],[45,79,'shopSign'],[72,79,'stall'],[82,79,'barrels'],[58,65,'flourSacks'],[84,65,'flourSacks'],[26,51,'dovecote'],[48,51,'birdhouse'],[78,51,'beehive']])ent('deco',x,y,{kind:k});
   return {
-    hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
+    hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61, 41, 63], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'town', night: false, glowNight: true,
     /* SEVEN FLOORS, SEVEN GROUNDS (src/hanging-village.js): each band of rows wears its floor's look - its top, its rock, its underside, its
        ledges, its scatter - and the cliff face behind it. ceilLook: whose bough is overhead, which is what carries the brackets. */
@@ -1768,7 +1776,7 @@ function hangingVillage() {
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     quest: { n: 3, item: 'lamp', name: 'LAMP', npc: 'lamplighter', done: 'THE LAMPS ARE LIT', thanks: "THE LAMPLIGHTER'S THANKS" },
     arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 21 * TS, y0: 4 * TS, wallL: 19, wallR: 90, boss: 'owl', music: 'owlreeve', tint: '#ffd36b', tintA: 0.08, fx: 'motes' },
-    mini: { x0: 20 * TS, x1: 75 * TS, floor: 129 * TS, trigger: 30 * TS, wallL: 19, gate: 75, boss: 'spider', y0: 114 * TS, y1: 131 * TS },
+    mini: { x0: 32 * TS, x1: 70 * TS, floor: 129 * TS, trigger: 35 * TS, wallL: 31, gate: 70, boss: 'spider', y0: 114 * TS, y1: 131 * TS },   /* thirty-eight wide (A7); the tunnel's mouth shuts behind you */
   };
 }
 

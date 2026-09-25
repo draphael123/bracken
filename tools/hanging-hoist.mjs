@@ -130,4 +130,15 @@ function owlBox(phase, lamp) {
   for (let i = 0; i < 60 * 12 && !c.cuts.length; i++) { if (e.mode === 'ropeTell' && !dazzled) { lamp.lit = true; lamp.lampT = 14; } c.updateOwl(e, 1 / 60); if (e.mode === 'dazzled') { dazzled = true; lamp.lit = false; } }
   assert(dazzled, 'a lamp lit by the wheel dazzles her off the rope'); assert(!e.ropeDone || c.cuts.length, 'dazzled off it, she has not given the rope up');
   for (let i = 0; i < 60 * 40 && !c.cuts.length; i++) c.updateOwl(e, 1 / 60); assert.equal(c.cuts.length, 1, 'and she comes back for it'); }
-console.log('hanging-hoist  ' + decks.length + ' hoists (' + decks.map(m => m.hoist + (m.arena ? '*' : '') + ':' + (m.need || 1)).join(', ') + '), every well on the far side of its deck from its loads; the rules run; the Reeve cuts the crown\'s rope once, told and fair, in phase two only.');
+/* ---- 4. THE WEAVER'S ROOM (§5): a room, not a box. Thirty-eight wide against the fifty-five it was (A7); she starts where the door can see
+   her; and her reel - which a hero on a net beats ("THE LINE HOLDS", src/main.js) - has nets in her room to beat it with (A12) ---- */
+{ const M = L.mini, W0 = M.x0 / TS, W1 = M.x1 / TS, fy = M.floor / TS - 1, wv = L.ents.find(e => e.t === 'spider' && e.big && e.mini);
+  assert.equal(M.boss, 'spider'); assert(W1 - W0 <= 40, 'the Weaver\'s room is ' + (W1 - W0) + ' wide: about forty (A7), it was fifty-five');
+  assert(wv && wv.x > W0 && wv.x < W1 && Math.abs(wv.x - M.trigger / TS) <= 18, 'she hangs where the doorway can see her: within 18 tiles of where the fight starts');
+  assert(/THE LINE HOLDS/.test(src) && /t === T\.NET \|\| t === T\.CLIMB/.test(src), 'a hero on a net beats her line');
+  const R = floodReach({ ...L, START: { x: Math.round(M.trigger / TS) + 1, y: fy } }, T);
+  const nets = []; for (let x = W0; x < W1; x++) for (let y = fy - 12; y <= fy; y++) if (at(x, y) === T.NET && R.seen.has(x + ',' + y)) { nets.push(x); break; }
+  assert(new Set(nets).size >= 2, 'her room has nets a hero can reach from its floor (' + nets.join(',') + '): the answer to her line is in the room');
+  let ledges = 0; for (let x = W0; x < W1; x++) for (let y = fy - 6; y < fy; y++) if (at(x, y + 1) === T.ONEWAY && R.seen.has(x + ',' + y)) ledges++;
+  assert(ledges >= 6, 'and footing off her webbed boards (' + ledges + ' reachable ledge tiles)'); }
+console.log('hanging-hoist  ' + decks.length + ' hoists (' + decks.map(m => m.hoist + (m.arena ? '*' : '') + ':' + (m.need || 1)).join(', ') + '), every well on the far side of its deck from its loads; the rules run; the Reeve cuts the crown\'s rope once, told and fair, in phase two only; the Weaver\'s room is ' + (L.mini.x1 - L.mini.x0) / TS + ' wide with its nets in reach.');
