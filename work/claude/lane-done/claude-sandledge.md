@@ -97,7 +97,7 @@ Added to `tools/check.mjs`'s list (append, not front - checked the grep the less
 
 15 named + the new one, all green. `caravan-level` and `draft-level` are unaffected (art-only change; the greybox and its
 measurements never touched a pixel). One caught-and-fixed mistake along the way: my first version of the code comment in
-`main.js` read `src/redraw/desert.js/caravan_ruins.js` (two paths run together with a slash) and `dangling-paths` correctly
+`main.js` read `src/redraw/desert.js and src/redraw/caravan_ruins.js` (two paths run together with a slash) and `dangling-paths` correctly
 called it a citation to a path that resolves nowhere - fixed to two separate names in the comment, re-ran, green.
 
 ## Captures
