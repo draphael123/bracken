@@ -1140,7 +1140,7 @@ function coopSoftStop() {
   if (players.some(p => p.x < camX - VW / 2 || p.x > camX + VW * 1.5)) {
     const [mx, my] = coopCamTarget();
     camX = Math.max(0, Math.min(LW * TS - VW, mx - VW / 2));
-    camY = Math.max(0, Math.min(LH * TS - VH, my - VH * 0.58));
+    camY = Math.max(0, Math.min(LH * TS - VH, my - VH * CAM_FOOT));
   }
   const lo = camX + COOP_EDGE, hi = camX + VW - COOP_EDGE;
   for (const p of players) {
@@ -1355,6 +1355,12 @@ const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t 
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
 let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
 let stop = 0, shake = 0, kick = 0, camX = 0, camY = 0, flash = 0, killFlash = 0, introSeen = false, earned = 0;
+/* THE HERO'S FEET, DOWN THE SCREEN (look-and-feel review, 2026-09-26): on flat ground the follow camera used to hold them at
+   58% down the buffer, so about 40% of every ordinary screen was fill under the floor and the backdrop - where the polish
+   lives - got squeezed into the top third. 0.68 gives the ground room to read as GROUND without drowning the sky; every
+   ordinary camY read below (the fresh spawn, a co-op catch-up, a warp landing) uses the same number so a level never
+   snaps between two different framings. Falls and climbs still peek past it (lookDown, below) - this only moves the rest point. */
+const CAM_FOOT = 0.68;
 let boss = null, bossActive = false, bossWon = 0, camLock = null, bossMusicT = 0;
 let zoomT = 0, zoomAmt = 1, bossZoom = 0, birds = [], drops = [], pollen = [], lightT = 8, lightFlash = 0, thunderT = 0, pogoChain = 0, tongue = null;
 let burnT = {}; // per-tile burn timers for stake walls
@@ -1390,7 +1396,7 @@ function updateWarp(dt) {
     warp.half = true;
     const d = warp.dest;
     P.x = d.x; P.y = d.y; P.vx = 0; P.vy = 0; P.onMover = null;
-    camX = P.x - VW / 2; camY = P.y - VH * 0.6;
+    camX = P.x - VW / 2; camY = P.y - VH * CAM_FOOT;
     camLock = d.lock ? { x0: d.lock[0] * TS, x1: d.lock[1] * TS } : null;
     setReverb(d.lock ? 0.22 : (L.dark ? 0.34 : 0.04));
     if (d.label) number(P.x, P.y - 34, d.label, '#ffd36b');
@@ -21918,10 +21924,10 @@ function updateCamera(dt) {
   if (P.fly && flight) { camX = Math.max(0, Math.min(LW * TS - VW, flight.cx)); camY = Math.max(0, Math.min(LH * TS - VH, flight.cy)); shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt); return; }
   const lookDown = !SET.lookDown ? 0 : !P.ground && P.vy > 120 ? Math.min(60, (P.vy - 120) * 0.4) : (P.ground && keys.down && !P.block && P.atk < 0 ? 48 : 0);
   // the camera leads your speed as well as your shoulders, so a hard turn does not snap
-  let tx = P.x + P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28)) - VW / 2, ty = P.y - (VH * 0.58) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0); // falling or crouching peeks below; the hollow looks up at her gills
+  let tx = P.x + P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28)) - VW / 2, ty = P.y - (VH * CAM_FOOT) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0); // falling or crouching peeks below; the hollow looks up at her gills
   /* THE SHARED SCREEN: the MIDPOINT of the two of them, and no shoulder lead - a lead that follows one hero's face
      is a lead that pushes the other one off the edge of the picture. */
-  if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * 0.58 + lookDown; }
+  if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * CAM_FOOT + lookDown; }
   /* THE GATE GARGOYLE's fight frames him and you together, and keeps the garden floor he crashes onto in the picture (gate-gargoyle.js) */
   else if (bossActive && boss && boss.alive && boss.t === 'gargoyle' && L.arena) { [tx, ty] = gargCam(P, boss, L.arena, VW, VH); ty += lookDown * 0.5; }
   camX += (tx - camX) * Math.min(1, dt * 5); camY += (ty - camY) * Math.min(1, dt * 4);
@@ -22971,6 +22977,13 @@ const SUNS = { wood: [1, '#ffe9b0', 0.16], marsh: [-1, '#cfe0d0', 0.12], stockad
   moor: [-1, '#dfe6f0', 0.12], storm: [-1, '#e0e8ff', 0.12], crown: [-1, '#ffc0a0', 0.14],
   longwater: [1, '#ffd9a8', 0.18], reef: [1, '#d8e8e4', 0.12], flotilla: [-1, '#fff4d0', 0.2] };
 const swellY = () => (L.swell ? Math.sin(time * (2 * Math.PI / L.swell.period)) * L.swell.amp * (1 - 0.8 * seaCalm()) : 0);
+/* HOW FAR UNDER THE SURFACE BEFORE IT READS AS DEPTH, NOT DIRT (look-and-feel review, 2026-09-26): the first two rows
+   barely darkened (0.05 a row, capped at 0.34), so on a flat stretch the fill under the walkable ground stayed one
+   noisy texture almost to the bottom of the screen - it read as a wall, not a drop. Past two rows this now falls
+   away fast toward a near-black plateau, so the bottom of a tall drop goes quiet instead of busy, whatever the
+   level's own ground art underneath it (this multiplies the SAME tileDeep every level's fill already carries -
+   the redress kits, the crag rock, the village earth - not a new texture of its own). */
+function groundFillAlpha(d) { return d < 3 ? d * 0.04 : Math.min(0.62, 0.12 + (d - 2) * 0.09); }
 function drawGroundLight(cx, cy, tx0, ty0) {
   if (SET.groundLight === false) return;
   const sun = SUNS[curId()] || [1, '#ffe9b0', 0.14], dir = sun[0];
@@ -22979,7 +22992,7 @@ function drawGroundLight(cx, cy, tx0, ty0) {
   for (let ty = ty0; ty <= ty0 + H; ty++) for (let tx = tx0; tx <= tx0 + W; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
     const d = tileDeep[ty * LW + tx]; if (!d) continue;
-    g.globalAlpha = Math.min(0.34, d * 0.05); g.fillRect(tx * TS - cx, ty * TS - cy, TS, TS);
+    g.globalAlpha = groundFillAlpha(d); g.fillRect(tx * TS - cx, ty * TS - cy, TS, TS);
   }
   g.globalAlpha = 1;
   for (let ty = ty0; ty <= ty0 + H; ty++) for (let tx = tx0; tx <= tx0 + W; tx++) {

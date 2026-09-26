@@ -1634,7 +1634,11 @@ function underleaf() {
       grass: '#3a5a46', grassL: '#4e7a58', grassD: '#263a2e', dirt: '#3a3444', dirtL: '#4a4458', dirtD: '#26222e',
       canopy: ['#1c2430', '#242e3c', '#2c3848', '#36445a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
-    arena: { x0: 472 * TS, x1: 516 * TS, floor: R * TS, trigger: 478 * TS, wallL: 471, wallR: 517, boss: 'grandmother', camBelow: 1, music: 'grandmother', tint: '#2a3444', tintA: 0.12, fx: 'motes' },
+    /* camBelow lifted 1 -> 4 (look-and-feel review, 2026-09-26): at 1, the worst-case frame put the bridge's floor only
+       one tile off the bottom edge - inside the boss plate's own 28px band (bossPlate, ~VH-28..VH), so THE GRANDMOTHER's
+       nameplate sat on the hero standing in front of her. 4 keeps the plate clear at any camera position this arena can
+       reach, and with CAM_FOOT raised to 0.68 the ordinary frame rarely even meets this clamp any more. */
+    arena: { x0: 472 * TS, x1: 516 * TS, floor: R * TS, trigger: 478 * TS, wallL: 471, wallR: 517, boss: 'grandmother', camBelow: 4, music: 'grandmother', tint: '#2a3444', tintA: 0.12, fx: 'motes' },
   };
 }
 
