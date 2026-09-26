@@ -51,7 +51,7 @@ const silvers = L.ents.filter(e => e.t === 'silver'); assert.equal(silvers.lengt
 for (const s of silvers) assert.ok(near(s), 'silver reachable at ' + s.x + ',' + s.y);
 for (const c of L.ents.filter(e => e.t === 'check')) assert.ok(near(c), 'checkpoint reachable at ' + c.x + ',' + c.y);
 const band = Math.max(...rows) - Math.min(...rows); assert.ok(band >= 45, 'the stair climbs: a band of ' + band + ' rows');
-{ const up = seen.filter(([x]) => (x >= 220 && x <= 249) || (x >= 336 && x <= 425)).length / seen.length;
+{ const up = seen.filter(([x]) => (x >= 220 && x <= 249) || (x >= WL.PLACES.battlements[0] && x <= WL.PLACES.battlements[1])).length / seen.length;   /* the rune stair and the battlements' climb (it read 336-425, the old stair's top and arena, before the battlements moved the top on) */
   assert.ok(up > 0.15 && up < 0.45, 'about a third of it vertical, not half: ' + Math.round(100 * up) + '%'); }
 { const f = audit(L).findings; for (const q of f) console.log('  route-break ' + q.k + ' ' + q.what); assert.equal(f.length, 0, 'route-breaks finds nothing on the stair'); }
 // 2b. the Gate Gargoyle
@@ -112,7 +112,7 @@ assert.equal(L.music, 'witchlight', 'its own music');
 assert.ok(L.duskLen && (L.W * TS) / L.duskLen < 0.45, 'the dusk grade stays under 0.45: ' + ((L.W * TS) / L.duskLen).toFixed(2));
 assert.ok(L.tints.some(([a, b]) => a === 140) && L.tints.some(([a, b]) => b === L.W - 1), 'the light changes by place: twilight from the cloister, witchlight night from the garden');
 assert.ok(L.mage.skins.filter(s => s[4] === 'witch').length >= 5, 'its own runed stone');
-assert.equal(Object.keys(L.marks).length, 6, 'one landmark a place and the tower');
+assert.equal(Object.keys(L.marks).length, 7, 'one landmark a place and the tower (the battlements, 2026-09-26, are the sixth place)');
 
 // 7. on the page
 const I = idx('witchlight');

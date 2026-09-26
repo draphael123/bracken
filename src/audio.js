@@ -623,6 +623,8 @@ Object.assign(SFX, {
   chiefBark() { file('roar', 0.4, 1.55) || tone('sawtooth', 300, 140, 0.18, 0.22); tone('square', 420, 200, 0.1, 0.12, 0.02); noise(0.1, 0.18, 1200, 0.7); }, // a bark: short, high, clipped
   owlHoot() { tone('sine', 520, 440, 0.18, 0.16); tone('sine', 480, 400, 0.22, 0.14, 0.2); },
   frogBoom() { tone('sawtooth', 60, 90, 0.5, 0.3); tone('square', 120, 80, 0.4, 0.12, 0.05); noise(0.2, 0.12, 300, 0.6); },
+  /* THE WHELP'S SCREECH (its tell): thin and high, a stone throat - a small thing's version of its sire's, and quicker */
+  whelpScreech() { tone('sawtooth', 2600, 3400, 0.16, 0.08); tone('square', 1900, 1200, 0.2, 0.05, 0.05); noise(0.08, 0.1, 4200, 1.2); },
   queenShriek() { tone('sawtooth', 900, 1600, 0.3, 0.14); tone('sawtooth', 1200, 700, 0.3, 0.1, 0.1); noise(0.2, 0.1, 3000, 0.8); },
 });
 // ---------- the paladin's light ----------
@@ -748,6 +750,8 @@ export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, cu
 const gob = (rate, v = 0.5) => (rate < 0.8 && voice('vo_gobbig_die', v, rate * 1.3)) || file('gobDie', v, rate);     /* a brute is not a sprig slowed down */
 const gobH = (rate, v = 0.4) => (rate < 0.8 && voice('vo_gobbig_hurt', v, rate * 1.3)) || file('gobHurt', v, rate);
 const DIE = {
+  /* THE GARGOYLE WHELP crumbles: a stone crack (the body), its screech cut short (the vent), and the pebbles going down after it (the tail) */
+  whelp() { SFX.crack(); tone('sawtooth', 2400, 900, 0.12, 0.07, 0.02); noise(0.35, 0.16, 1400, 0.5, 0.08); for (let i = 0; i < 4; i++) noise(0.04, 0.09, 2600 - i * 300, 0.8, 0.18 + i * 0.07); },
   bonearcher() { noise(.45,.24,1200,.6);tone('triangle',240,60,.3,.1);noise(.2,.12,2800,.5,.18); },   /* the bone archer comes apart: a spill of bone, the bow last */
   barrowrider() { noise(1.0, 0.34, 500, 0.5); tone('sawtooth', 110, 30, 1.1, 0.2); SFX.bellow(); },   /* THE UNBURIED FIELD: the old banner coming down with him, and the horse going with it */
   deathknight() { noise(1.4, 0.38, 380, 0.5); tone('sine', 80, 24, 1.6, 0.26); tone('triangle', 220, 60, 1.2, 0.1, 0.2); },
@@ -930,6 +934,7 @@ const DIE = {
 // theirs: shelled things click, fish snap and splash, birds squawk, the drowned elves gasp cold and thin, the
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
+  whelp() { tone('square', 700, 380, 0.07, 0.08); noise(0.06, 0.14, 1800, 0.6); tone('sawtooth', 2200, 1500, 0.06, 0.04, 0.02); },   /* soft stone struck, and a squawk */
   corpse() { noise(.14,.16,700,.4);tone('triangle',130,70,.16,.1); },   /* THE UNBURIED FIELD: rotten mail and a dry throat */
   bannerbearer() { noise(.16,.18,600,.4);tone('triangle',110,60,.2,.12); },
   barrowrider() { noise(.22,.26,420,.5);tone('sawtooth',90,50,.26,.14); },
