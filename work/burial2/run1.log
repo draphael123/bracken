@@ -1,0 +1,114 @@
+ ok  syntax             0ms  24 files parse
+ ok  tells            539ms  the mark over every windup on the screen comes from this table (src/marks.js, 555 rows).
+ ok  ore-road        3534ms  all ore road checks pass
+ ok  ore-ride       55112ms  every line of the ore road carries you across
+ ok  comments         188ms  no swallowed code found.
+ ok  homepaths        276ms  ok  homepaths     493 source and tool files, none hardcodes a path under a user's home directory.
+FAIL dangling-paths   299ms  Node.js v24.19.0
+ ok  floaters        3773ms  2720 standing things checked (47 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  audit           5486ms  == caravan (578x40) clean
+ ok  content-audit   7418ms  21 things to look at.
+ ok  traps           6338ms  1 trap to fix.
+ ok  signs           7368ms  no level says the same sentence on two signs (1 known).
+ ok  killzones       5001ms  no reachable tile kills a standing hero.
+ ok  collectables    4669ms  every pickup can be picked up from some ground.
+ ok  elites          9397ms  40 elites. every elite can be fought and every gate it holds opens onto the route.
+ ok  spawns          3794ms  2247 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  deadends        5798ms  160 dead ends in 32 levels, and every one pays.
+ ok  map-grammar      162ms  The map grammar holds: no retraced road, required nodes resolve forward, the margin and spur bands hold, every
+ ok  checkpoints     7847ms  412 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  additional-areas   607ms  Both areas have reachable rewards; Burial has its final boss and Harbor retains its guardian; all map nodes me
+ ok  additional-areas-runtime 27992ms  Harbor bosses and Buried Dead activate, death opens exits, summons clear, both levels finish and music decodes
+ ok  haunted-coast    517ms  Five coastal attack tells, range counters, mandatory Tide Reaver gate, flooded hold and four Lamplit rope alte
+ ok  haunted-coast-runtime 22140ms  Three new foes, roof chains, flooded hold and Tide Reaver activation/defeat gate work in game.
+ ok  skins          16178ms  ok  roofs          38 houses: every roof picture sits on the slab you stand on.
+ ok  threat-holes    3805ms  ok  threat-holes   167 creature kinds placed across 44 levels, every one weighed. Deliberately 0: dummy, folk,
+ ok  one-new-foe     4037ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  witchlight     38056ms  THE WITCHLIGHT STAIR: five places, one verb each, encounters not a sprinkle, its own light - the Hedge Warden 
+ ok  dressing       11545ms  no sprinkled decoration within three tiles of a fire on the floor.
+ ok  runtime-footing 25771ms  fields wight: fell 80.0px after support loss outside the active range
+ ok  readability      268ms  Scenery behind tiles, softened outline-free art, wall-grip feedback, 13 homes and two landmarks.
+ ok  buried-dead      251ms  THE GAS: a burning vent scorches him once a lighting (open 3.4 s); a cold vent never; the buried stay down in 
+ ok  burial-route  109236ms  burial-route  every hero makes all 7 three-tile jumps over green water on the road, dry; the stone falls, the 
+ ok  burial-geometry 20663ms  burial geometry: the gallery drop and the gassed low pass are the ways on, vents are grates, a cold vent hurts
+ ok  burial-rework    426ms  the caverns go down: band 11-72, zombies 14, archers 10, skull-throwers 6, spiders 8
+ ok  boss-openings  57646ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"buriedGas":{"rest":{"mode":"rest","open":0},"c
+ ok  arena-supplies  5170ms  ok  arena-supplies  46 boss rooms, 13 height conditions scored against the ground their arenas actually offer;
+ ok  undead-foes    22700ms  {"huskCount":5,"husk":{"hp":425,"w":18,"sprite":true,"walked":true,"burst":{"alive":false,"hpLost":27,"venom":
+FAIL buried-attacks 35848ms  Node.js v24.19.0
+ ok  ambush-single   4016ms  25 single-wave rooms: one captain, 2-4 minions, immediate roster, named lock and leader-only clear.
+ ok  unburied        3677ms        NOT SEEN HERE: the map spur (Lane B), and the music as heard (its track is asserted above); the look is 
+ ok  unburied-fights   277ms  ok  unburied-fights the banner rule, the Barrow Rider, the Death Knight (and the benched Reaper), the bridges 
+ ok  boss-fight-end195594ms  Every one of 46 boss and mini fights (32 bosses, 14 minis) ends when its boss dies.
+ ok  burial-variety 32425ms  burial variety: two dark places lamp to lamp, two rotten spans that crack, drop, come back and never cut the r
+ ok  buried-dead-art   567ms  buried dead art: 18 frames 112x118, every tell its own pose; sheet order (six to a row): DRAG, DRAG 2, SWEEP T
+ ok  mini-names     51046ms  every mini has its own name (14 levels): kings=THE GREAT HOUND, hanging=THE WEAVER, spire=THE TEMPLE GUARDIAN,
+ ok  ambush-reach    4096ms  25 ambush rooms. every captain can be reached from where the room shuts.
+ ok  checkpoint-gaps  8762ms  checkpoint-gaps  32 levels measured along their walked route; the longest run with no checkpoint outside the k
+ ok  architecture    3557ms  44 levels, 315 built pieces declared; 2 grandfathered (harbor, waymeet). everything that was built stands on s
+ ok  ore-work      193174ms  every goblin at work in the mine is told before it fights
+ ok  footing-art    67770ms  footing-art: every floor cell you can stand on is drawn, in 27 levels; painted by their own code: fields (fiel
+ ok  mini-walls    101247ms  ok  mini-walls   sexton, gravewarden, hedgewarden, barrowrider: 6 seeded runs each, 30 s chased round the room
+ ok  checkpoint-stand 19592ms  ok  checkpoint-stand   412 checkpoints in 44 levels: every one stood at with a real jump (5 columns, not 6; 3 
+ ok  burial2          494ms  burial2  660 cols (528x74), 7 sections; 5 backdrops, 4 seams pillared; 11 vents, 6 candles, 6 of the dead in a
+ ok  burial-vents   42146ms  burial-vents  fire from a candle, a vent lit by a swing and not without fire, no gas while it burns, the dead 
+FAIL slopes-trace   48793ms  slopes-trace: 1 of 4 levels DIFFER from the pre-slopes build
+ ok  textfit       256238ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-burial2\audits\readability\textfit
+
+---- dangling-paths ----
+      cited by: tools/audit-lib.mjs
+    KNOWN HOLE  src/tower-return.js  (1 citation)
+      STALE CITATION - docs/audit-new-levels-0920.md:47 names a module that is in no commit. Correct the reference or say what replaced it; do not create the file to satisfy the check.
+      cited by: docs/audit-new-levels-0920.md
+    KNOWN HOLE  docs/audit/ranking-2026-09-24.md  (3 citations)
+      ON A BRANCH, SAID SO. docs/INTEGRATOR.md cites the ranking and says it is on claude/audit, which has not merged. Delete this line when it does.
+      cited by: docs/INTEGRATOR.md, work/claude/lane-done/claude-desert1.md, work/claude/lane-done/claude-spurs.md
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: 2 path(s) cited by tracked files are in no commit:
+    tools/burial-rework.mjs:10  ->  tools/burial2.mjs
+    tools/burial-route.mjs:3  ->  tools/burial2.mjs
+  A fresh clone cannot open these. Either commit the file, or correct the citation. If it is ignored on
+  purpose and the citation is still right, narrow the ignore rather than force-adding it, and add the path
+  to MISSING in tools/dangling-paths.mjs with the reason - never delete the check to make it quiet.
+    at file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-burial2/tools/dangling-paths.mjs:123:10
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:643:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: undefined,
+  operator: 'fail',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
+
+---- buried-attacks ----
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: and its landing is a window
+    at file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-burial2/tools/buried-attacks.mjs:47:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
+
+---- slopes-trace ----
+ok   wood: 1960 frames identical (x, y, vx, vy, ground) — 22 walks of 60 and 8 lips at 4 depths
+ok   kings: 1900 frames identical (x, y, vx, vy, ground) — 21 walks of 60 and 8 lips at 4 depths
+ok   keep: 2080 frames identical (x, y, vx, vy, ground) — 24 walks of 60 and 8 lips at 4 depths
+FAIL burial: 2020 frames against 1960
+slopes-trace: 1 of 4 levels DIFFER from the pre-slopes build
+
+3 check(s) failed.

@@ -1,0 +1,33 @@
+==== THE PLAY BOT (knight, warden)
+
+BRACKEN PLAYTEST   1 levels   5.9s
+  0 bug   2 odd   2 note
+
+level       size     reach  foes  kinds  thr/100  gap   walked  deaths  ms p90
+burial      528x74   99%    69    11     28.2     23    17%     3       
+
+== ODD ==
+  burial      STUCK       a plain run could not get past 1 place(s)   @tiles 63
+  burial      BRUTAL      the bot died 3 times and still only got 17% of the way
+
+== NOTES ==
+  burial      ASSISTED    4 coins outside the fill
+  burial      UNWEIGHED   no threat weight for "mend"
+
+==== THE ROUTE, knight: reached the door false, deaths 7, lifted over THE CANDLE PATH, THE OSSUARY, THE CHARNEL GALLERIES, THE DROWNED OSSUARY, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE ROTTEN BRIDGES, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, THE GRAVEYARD KEEPER, 900 s
+  THE CANDLE PATH          blows  17  health  140  deaths 1  lifts 1  43 s
+  THE OSSUARY              blows  17  health  214  deaths 2  lifts 1  51.3 s
+  THE CHARNEL GALLERIES    blows  15  health  274  deaths 2  lifts 1  46.3 s
+  THE DROWNED OSSUARY      blows   9  health   73  deaths 0  lifts 1  53.3 s
+  THE GRAVEYARD KEEPER     blows  12  health  304  deaths 2  lifts 18  581.3 s
+  THE ROTTEN BRIDGES       blows  10  health   99  deaths 0  lifts 1  124.1 s
+  THE BURIED DEAD'S LAIR   blows   0  health    0  deaths 0  lifts 0  0.8 s
+==== THE ROUTE, warden: reached the door false, deaths 3, lifted over THE CANDLE PATH, THE OSSUARY, THE CHARNEL GALLERIES, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, THE DROWNED OSSUARY, 900 s
+  THE CANDLE PATH          blows  20  health  197  deaths 1  lifts 1  48 s
+  THE OSSUARY              blows  16  health  195  deaths 1  lifts 1  56.8 s
+  THE CHARNEL GALLERIES    blows  13  health  261  deaths 1  lifts 1  112.4 s
+  THE DROWNED OSSUARY      blows   0  health    0  deaths 0  lifts 22  682.8 s
+  THE GRAVEYARD KEEPER     blows   0  health    0  deaths 0  lifts 0  0 s
+  THE ROTTEN BRIDGES       blows   0  health    0  deaths 0  lifts 0  0 s
+  THE BURIED DEAD'S LAIR   blows   0  health    0  deaths 0  lifts 0  0 s
+11 captures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-burial2\work\burial2/after-*.png

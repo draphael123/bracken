@@ -51,15 +51,16 @@ function crypt(g, sx, sy, w, h, tx0, ty0) {
   for (let x = 30; x < w; x += 71) R(g, sx + x, sy + top + 30, 1, tl - top - 30, 'rgba(120,150,150,0.18)');   /* water that runs down the stone */
 }
 function bonestair(g, sx, sy, w, h, tx0, ty0) {
-  R(g, sx, sy, w, h, '#2a2528');
-  for (let i = 0; i < w * h / 180; i++) { const x = Math.floor(hsh(i, tx0 + 5) * w), y = Math.floor(hsh(i + 3, ty0) * h); R(g, sx + x, sy + y, 2, 1, hsh(i, 9) < 0.5 ? '#221e20' : '#36302f'); }
-  /* THE STAIR: flights of stacked long bones climbing the rock, a skull set in every riser */
-  const flight = 64, rise = 12, run = 14;
-  for (let fy = h + ((ty0 * 16) % flight); fy > -flight; fy -= flight) { const dir = (Math.floor((fy + ty0 * 16) / flight) & 1) ? 1 : -1;
-    for (let s = 0; s < 5; s++) { const x = dir > 0 ? 8 + s * run * 2 : w - 8 - (s + 1) * run * 2, y = fy - s * rise;
-      for (let rep = 0; rep < w; rep += 190) { const bx = sx + x + rep;
-        R(g, bx, sy + y, run * 2, 3, '#b8ae98'); R(g, bx, sy + y, run * 2, 1, '#d8cfb8'); R(g, bx - 1, sy + y - 1, 3, 5, '#d8cfb8'); R(g, bx + run * 2 - 2, sy + y - 1, 3, 5, '#d8cfb8');
-        R(g, bx, sy + y + 3, run * 2, 8, '#433b37'); for (let k = 3; k < run * 2 - 4; k += 9) { R(g, bx + k, sy + y + 5, 6, 5, '#a89e88'); R(g, bx + k + 1, sy + y + 6, 1, 2, '#2a2528'); R(g, bx + k + 4, sy + y + 6, 1, 2, '#2a2528'); } } } }
+  /* A WALL BUILT OF THE DEAD, the charnel way: courses of long bones laid end-on, and bands of skulls set in them that climb the wall in
+     flights - the stair the diggers built as they stacked. All of it one mass on the rock and kept dim: an earlier cut drew the flights as
+     lit bars on a dark wall, and in the first capture they read as ledges you could stand on. */
+  R(g, sx, sy, w, h, '#2b2524');
+  const ox = (tx0 * 16) % 10, oy = (ty0 * 16) % 6;
+  for (let y = -oy; y < h; y += 6) for (let x = -ox + ((y / 6 | 0) % 2) * 5; x < w; x += 10) { R(g, sx + x + 1, sy + y + 2, 8, 2, '#4a433b'); R(g, sx + x, sy + y + 1, 2, 4, '#57504a'); R(g, sx + x + 8, sy + y + 1, 2, 4, '#57504a'); }
+  const flight = 72, rise = 6, run = 18;
+  for (let fy = h + ((ty0 * 16) % flight); fy > -flight; fy -= flight) for (let rep = -(tx0 * 16 % 240); rep < w; rep += 240) for (let st = 0; st < 8; st++) {
+    const x = sx + rep + st * run, y = sy + fy - st * rise; R(g, x, y, run, 7, '#221d1c');
+    for (let k = 2; k < run - 5; k += 8) { R(g, x + k, y + 1, 6, 5, '#6a6254'); R(g, x + k + 1, y + 2, 1, 2, '#221d1c'); R(g, x + k + 4, y + 2, 1, 2, '#221d1c'); R(g, x + k + 2, y + 5, 2, 1, '#221d1c'); } }
 }
 function procession(g, sx, sy, w, h, tx0, ty0, time) {
   R(g, sx, sy, w, h, '#37323b');
