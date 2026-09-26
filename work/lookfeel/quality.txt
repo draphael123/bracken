@@ -1,0 +1,42 @@
+level     len   foesPer100   kinds        coinsPer100  signs        decoPer100   checks       worstGap     
+  wood    554   9.7          11           38.1         16           7.6          13           65           
+  marsh   502   10           11           36.9         12           4.4          10           62           
+  stockade494   6.5          11           34.2         10           6.9          11           57           
+  spore   552   10.9         9            33.9         14           8            11           64           
+  kings   714   13           19           36.7         17           5.7          13           65           
+  scree   552   13.2         13           35.3         10           9.4          10           68           
+  hanging 416   9.1          12           44.7         20           17.5         9            19           
+* spire   672   10.3         12           43.6         17           14.6         11           44           
+  moor    703   6.7          11           31.4         17           5            14           112          
+* storm   478   11.3         17           44.1         13           13.4         7            56           
+  crown   1150  10           21           36.3         21           9.4          18           28           
+  longwater600   12           16           47           17           10.2         8            90           
+  reef    594   13           18           37.4         12           15.2         9            72           
+  flotilla430   8.8          10           44.9         16           20           7            67           
+  hurricane802   12.1         16           37.7         30           12.1         17           70           
+  lamplit 748   13.4         19           34           18           14.2         19           68           
+  underleaf568   10.4         13           45.8         15           14.4         13           66           
+  deep    816   14.2         26           37.9         20           9.8          17           28           
+  keep    862   13.5         19           36.1         18           5.6          11           43           
+  causeway654   15           23           41.3         16           7.5          13           63           
+  harbor  1122  13.4         17           33.2         12           6.9          21           72           
+  waymeet 824   8            9            31.8         18           13.1         15           71           
+  undercrown652   12           12           39.3         13           7.5          13           50           
+  fields  754   9.5          16           34.2         17           5.3          16           62           
+  burial  1386  13.1         12           42.4         23           6.3          19           43           
+  mage    766   11.4         14           32.2         17           7.4          26           63           
+  fallingtower900   9.8          12           35.7         11           2.4          13           56           
+  burning 520   12.3         10           33.5         7            7.5          8            65           
+  witchlight581   8.1          11           28.4         8            3.6          10           40           
+  oreroad 614   11.2         13           37.1         8            2.1          17           37           
+  unburied534   9            10           31.6         12           8.6          12           62           
+  caravan 608   9.2          6            32.4         6            7.6          10           71           
+
+(the established levels sit in these ranges)
+  foesPer100   low 6.5    typical 11.2   high 15
+  kinds        low 6      typical 13     high 26
+  coinsPer100  low 28.4   typical 36.3   high 47
+  signs        low 6      typical 16     high 30
+  decoPer100   low 2.1    typical 7.6    high 20
+  checks       low 7      typical 13     high 26
+  worstGap     low 19     typical 64     high 112

@@ -1,0 +1,191 @@
+THE PACING MAP — one character per 8 tiles of the main route
+F fight  P platforming  H both  W swim  A ambush  M mini  B boss  X set-piece  R rest  S quiet+optional  - light  . EMPTY
+marks: c checkpoint  s dead-end pocket  $ loot off-route  < route doubles back  ~ bridged ride (the model cannot see it)
+
+== WOOD  BRACKEN WOOD  (554x28)  route 536 tiles, 1 ride(s) bridged
+     0 -R----R---P--F-R----RR-FR-----S-RPPR--PAAAAA-RF-F---R-XFRFP--F--RBBB   x3,y21
+             c      c c    cc  c     $ c  c  c   $  c      c  ~c       c   
+  mix      fight 7  platform 5  set-piece 9  rest 12  optional 1  light 34  EMPTY 0   (alternations 10)
+  longest  5 x "-" = 40 tiles from route 200 (x208)
+  empty    none of 40+ tiles
+  checks   13/13 on the route, worst gap 64 route tiles (from route 199)
+  set      3 distinct: felltree, ambush THE BRAMBLE RIDE, boss queen
+  systems  -
+  back     2 tiles against the direction of travel (0%)
+  landings 5 with a creature within 2 tiles: hopper@243,20 thorn@389,11 wasp@439,12 wasp@442,12 wasp@448,14   blind drops (8+ rows) 0
+  optional 10% of reachable footing is off the route, 0 dead-end pocket(s), loot off-route: relic@344,4 stray@248,8
+
+== MARSH  MARSH WOOD  (502x28)  route 433 tiles
+     0 -R-PPRPFF-FFRPFP--F-X.RR-PP-PPP-P-PPFP-F-FRAAX.S-R.-BBB   x3,y21
+            c      c  $    c cc     c     c      c sc s c     
+  mix      fight 9  platform 14  set-piece 7  rest 7  optional 1  light 14  EMPTY 3   (alternations 12)
+  longest  3 x "P" = 24 tiles from route 224 (x251)
+  empty    none of 40+ tiles
+  checks   10/10 on the route, worst gap 59 route tiles (from route 44)
+  set      4 distinct: sluice, crank, ambush THE REED ISLAND, boss frog
+  systems  ropes
+  back     0 tiles against the direction of travel (0%)
+  landings 3 with a creature within 2 tiles: wasp@339,14 wasp@355,14 hopper@426,17   blind drops (8+ rows) 0
+  optional 7% of reachable footing is off the route, 2 dead-end pocket(s), loot off-route: relic@125,10 stray@185,21 mend@407,9
+
+== STOCKADE  THE STOCKADE  (494x28)  route 479 tiles
+     0 ---R--FPX-RP-X.-X---RAAAAAARX---HXFX-FX--RF-F--PP-X--RPF-RBB   x3,y19
+          c      c  $  c   c      c    c    c   c     c     c   c  
+  mix      fight 7  platform 6  set-piece 16  rest 7  optional 0  light 24  EMPTY 1   (alternations 17)
+  longest  3 x "-" = 24 tiles from route 0 (x3)
+  empty    none of 40+ tiles
+  checks   11/11 on the route, worst gap 54 route tiles (from route 166)
+  set      6 distinct: cage, bridge, crank, cart, ambush THE KENNEL YARD, boss chief
+  systems  -
+  back     0 tiles against the direction of travel (0%)
+  landings 4 with a creature within 2 tiles: archer@95,13 archer@258,13 archer@287,14 brute@439,11   blind drops (8+ rows) 1: 439,11+8
+  optional 8% of reachable footing is off the route, 0 dead-end pocket(s), loot off-route: silver@113,24
+
+== SPORE  SPOREWOOD  (552x28)  route 522 tiles
+     0 -RF-PPPR--F--P-FR-AAAAP.H.P-FFFRPP-FR--FFR--F--R--.HR---FPFRP-BBBB   x3,y19
+              c       sc $ $c    c    c    c    c  $  c    c      c      
+  mix      fight 14  platform 12  set-piece 8  rest 9  optional 0  light 22  EMPTY 3   (alternations 16)
+  longest  3 x "P" = 24 tiles from route 32 (x35)
+  empty    none of 40+ tiles
+  checks   10/11 on the route, worst gap 69 route tiles (from route 63)
+  set      2 distinct: ambush THE UNDERCAP, boss mother
+  systems  darkZones
+  back     0 tiles against the direction of travel (0%)
+  landings 4 with a creature within 2 tiles: weaver@280,5 sporeling@371,13 lurker@440,24 spitcap@476,19   blind drops (8+ rows) 1: 280,5+8
+  optional 14% of reachable footing is off the route, 2 dead-end pocket(s), loot off-route: silver@125,11 stray@348,18 stray@157,3 stray@145,19
+
+== KINGS  KINGSWOOD  (714x28)  route 627 tiles
+     0 -RR-RPP-H-----F.-.P--PS----MMMPH-PAAAAA-P-P------XP--PFSPRSXSF--RP-F-XH-FSRBBBB   x3,y19
+           c   $             $    c  c  c      $ c       c    $ css$   c     c  $c    
+  mix      fight 8  platform 15  set-piece 15  rest 6  optional 5  light 31  EMPTY 2   (alternations 20)
+  longest  6 x "-" = 48 tiles from route 344 (x346)
+  empty    none of 40+ tiles
+  checks   12/13 on the route, worst gap 130 route tiles (from route 87)
+  set      7 distinct: cage, timber, bridge, lever, ambush THE KING'S ROAD, mini greathound, boss king
+  systems  timber
+  back     0 tiles against the direction of travel (0%)
+  landings 5 with a creature within 2 tiles: archer@117,9 stormshaman@255,13 sprig@346,11 archer@352,13 brute@561,13   blind drops (8+ rows) 0
+  optional 34% of reachable footing is off the route, 4 dead-end pocket(s), loot off-route: stray@72,19 stray@182,21 stray@442,20 relic@592,6 silver@326,24 mend@245,19 mend@408,20 mend@272,23 mend@481,25
+
+== SCREE  THE SCREE PATH  (552x28)  route 512 tiles
+     0 -R-----RFFF-F--F-F-FRAAAA-F--SPFF--F--F--R----P--FF--PHR-S----RBB   x3,y19
+              c $  c       c        s  c        c       cc    c $    c  
+  mix      fight 15  platform 4  set-piece 6  rest 6  optional 2  light 33  EMPTY 0   (alternations 10)
+  longest  5 x "-" = 40 tiles from route 16 (x23)
+  empty    none of 40+ tiles
+  checks   9/10 on the route, worst gap 96 route tiles (from route 162)
+  set      2 distinct: ambush THE GOAT TRACK, boss ram
+  systems  slide, scree, ropes
+  back     2 tiles against the direction of travel (0%)
+  landings 3 with a creature within 2 tiles: rockgoblin@242,2 goat@294,14 harpy@306,15   blind drops (8+ rows) 0
+  optional 15% of reachable footing is off the route, 2 dead-end pocket(s), loot off-route: silver@85,14 silver@456,3
+
+== HANGING  THE HANGING VILLAGE  (110x132, tall)  route 539 tiles
+     0 R----S-PF-PS-RP--R-RP-----RPP-PPA.AAHP----S---PR-F-SFF-PSFPP--RBBBBB   x3,y107
+            $     s c     c      c         s     $    c   $    $ c   c     
+  mix      fight 6  platform 14  set-piece 8  rest 7  optional 5  light 28  EMPTY 1   (alternations 11)
+  longest  5 x "-" = 40 tiles from route 168 (x59)
+  empty    none of 40+ tiles
+  checks   9/9 on the route, worst gap 85 route tiles (from route 208)
+  set      3 distinct: ambush THE CLIFF HALL, mini spider, boss owl
+  systems  gusts, vines, perches
+  back     3 tiles against the direction of travel (1%)
+  landings 2 with a creature within 2 tiles: sprig@50,107 thorn@92,51   blind drops (8+ rows) 0
+  optional 36% of reachable footing is off the route, 4 dead-end pocket(s), loot off-route: silver@77,128 stray@74,128 silver@73,45 relic@68,43 silver@28,32 mend@107,107
+
+== SPIRE  THE MONASTERY  (96x222, tall)  route 491 tiles
+     0 R-R-PPPPP.PPPFXPPPPFS-F-PPX-------X--PPAAAAA-XHPHHHP-PPPPHXSBB   x4,y217
+       $ c    cs  s  s sc $s $  cc       s   $c     cs s     s    s$ 
+  mix      fight 8  platform 27  set-piece 12  rest 2  optional 2  light 15  EMPTY 1   (alternations 15)
+  longest  7 x "-" = 56 tiles from route 216 (x17)
+  empty    none of 40+ tiles
+  checks   9/11 on the route, worst gap 98 route tiles (from route 215)
+  set      5 distinct: pwheel, tbell, ambush THE CLOISTER, mini golem, boss abbot
+  systems  -
+  back     0 tiles against the direction of travel (0%)
+  landings 0 with a creature within 2 tiles   blind drops (8+ rows) 0
+  optional 51% of reachable footing is off the route, 12 dead-end pocket(s), loot off-route: silver@29,151 stray@60,131 stray@82,89 mend@10,79 silver@90,26 mend@2,35 mend@93,35 mend@2,55 mend@2,131 mend@4,193 mend@91,217
+
+== MOOR  GALE MOOR  (703x30)  route 681 tiles, 11 ride(s) bridged
+     0 R-R---R-----PS-.PR-P-.P-P------R-PP--R-P-PRF----P-FRRP.PPPA.AAARP-PF-X-.P-PF-FHF   x3,y21
+         c   c     c$   c $  $ c      c     c    c        ccs   c     c     c~ ~ ~~ ~~~
+   640 F-BBBB   x638,y10
+        ~c   
+  mix      fight 8  platform 19  set-piece 9  rest 10  optional 1  light 35  EMPTY 5   (alternations 12)
+  longest  6 x "-" = 48 tiles from route 200 (x210)
+  empty    none of 40+ tiles
+  checks   14/14 on the route, worst gap 105 route tiles (from route 552)
+  set      3 distinct: stormkite, ambush THE CAIRN RIDGE, boss windcaller
+  systems  gusts, flight, hags, thermals
+  back     0 tiles against the direction of travel (0%)
+  landings 10 with a creature within 2 tiles: goat@216,25 bale@498,13 horn@507,11 bale@513,13 horn@522,11 bale@528,13 rockgoblin@601,10 rockgoblin@603,10   blind drops (8+ rows) 0
+  optional 5% of reachable footing is off the route, 1 dead-end pocket(s), loot off-route: silver@111,16 stray@160,14 stray@182,12 stray@200,15
+
+== STORM  STORMHOLD  (430x46)  route 363 tiles
+     0 F-R---R-F--XAAAAAAASF-FFFX-F-FF--F-FRBBBBBBBBB   x3,y33
+         c   c    c   $$ sss    c   c      c        $
+  mix      fight 11  platform 0  set-piece 18  rest 3  optional 1  light 13  EMPTY 0   (alternations 6)
+  longest  3 x "-" = 24 tiles from route 24 (x28)
+  empty    none of 40+ tiles
+  checks   6/7 on the route, worst gap 112 route tiles (from route 91)
+  set      3 distinct: lockgate, ambush THE HEARTH HALL, boss lance
+  systems  ropes
+  back     0 tiles against the direction of travel (0%)
+  landings 2 with a creature within 2 tiles: stormshaman@179,31 stormshaman@271,29   blind drops (8+ rows) 0
+  optional 39% of reachable footing is off the route, 7 dead-end pocket(s), loot off-route: silver@128,25 stray@56,9 stray@95,13 stray@130,7 silver@373,28
+
+== CROWN  HIGHCROWN  (940x100, tall)  route 1192 tiles
+     0 P---P--F-PF--PRP-P---F-PR--P--H-H--RF-X-RFF-FRFFXFX-PH--P-FPP-HP.P--P.P-R-PFH-MM   x12,y95
+       c   $    $    c      s  c          c  s c$   c    c     c   c         $ c       
+   640 MMMMMMM-RPPFFPFHRFXRFF---XXHPFFFFFFR-PPF-FXFF--PPX-FFFFRAAAAAPPPX-BBBB   x530,y63
+       $       c       c sc        cs $   c   $        cs     c  s       c   
+  mix      fight 39  platform 35  set-piece 27  rest 11  optional 0  light 43  EMPTY 2   (alternations 42)
+  longest  6 x "F" = 48 tiles from route 872 (x745)
+  empty    none of 40+ tiles
+  checks   18/18 on the route, worst gap 125 route tiles (from route 579)
+  set      10 distinct: winch, bell, key, lockgate, cart, boiler, weight, ambush THE BANQUET HALL, mini forgemaster, boss gqueen
+  systems  -
+  back     44 tiles against the direction of travel (4%)
+  landings 5 with a creature within 2 tiles: soldier@174,59 archer@384,45 javelin@446,39 hearthgob@639,55 heavy@787,19   blind drops (8+ rows) 0
+  optional 19% of reachable footing is off the route, 12 dead-end pocket(s), loot off-route: stray@246,51 stray@730,45 stray@695,13 silver@445,55 silver@533,51 mend@759,63 mend@1,71 mend@39,95
+
+== UNDERLEAF  UNDERLEAF  (520x46)  route 491 tiles
+     0 RR--F-R-FF-F-----FHX-F--FF---RF-FR-F-F--FXF.FRF-FFRFFR-FFFXBBB   x3,y33
+        c    c    c     cc  $  c    c$  c      $c   c    c  c   c    
+  mix      fight 24  platform 1  set-piece 6  rest 8  optional 0  light 23  EMPTY 1   (alternations 6)
+  longest  5 x "-" = 40 tiles from route 96 (x100)
+  empty    none of 40+ tiles
+  checks   13/13 on the route, worst gap 66 route tiles (from route 264)
+  set      2 distinct: lockgate, boss grandmother
+  systems  hush, roofs
+  back     0 tiles against the direction of travel (0%)
+  landings 1 with a creature within 2 tiles: archer@94,33   blind drops (8+ rows) 0
+  optional 33% of reachable footing is off the route, 1 dead-end pocket(s), loot off-route: silver@204,26 stray@246,24 silver@170,10 stray@326,20 stray@368,27
+
+== BURNING  THE BURNING VILLAGE  (508x34)  route 477 tiles
+     0 ----FF--F-----F--S-FF-FP-F-F---R---F-F--PFR--AAAAAR---FR-BBB   x3,y25
+                     c  $     c       c        csc    $ sc    c    
+  mix      fight 13  platform 2  set-piece 8  rest 4  optional 1  light 32  EMPTY 0   (alternations 8)
+  longest  5 x "-" = 40 tiles from route 72 (x80)
+  empty    none of 40+ tiles
+  checks   7/8 on the route, worst gap 119 route tiles (from route 0)
+  set      2 distinct: ambush THE BARN, boss pyromancer
+  systems  roofs
+  back     0 tiles against the direction of travel (0%)
+  landings 1 with a creature within 2 tiles: thief@306,13   blind drops (8+ rows) 0
+  optional 34% of reachable footing is off the route, 2 dead-end pocket(s), loot off-route: silver@149,12 silver@379,15
+
+== OREROAD  THE ORE ROAD  (524x60)  route 357 tiles
+     0 R---R-FF.FF---SF-SS.P--FSF-F-HF.PF--RFFF-B.BB   x3,y36
+       c   c  c s    s  s$ c  c$  c sc  c  c  c     
+  mix      fight 14  platform 3  set-piece 3  rest 3  optional 4  light 15  EMPTY 4   (alternations 6)
+  longest  3 x "-" = 24 tiles from route 8 (x13)
+  empty    none of 40+ tiles
+  checks   12/17 on the route, worst gap 39 route tiles (from route 121)
+  set      2 distinct: ambush THE SORTING FLOOR, boss winchmaster
+  systems  -
+  back     0 tiles against the direction of travel (0%)
+  landings 5 with a creature within 2 tiles: rockgoblin@65,36 miner@138,36 heavy@343,29 sapper@350,20 miner@410,12   blind drops (8+ rows) 0
+  optional 38% of reachable footing is off the route, 7 dead-end pocket(s), loot off-route: silver@206,25 silver@304,25 mend@355,49
+
+wrote work/lookfeel/pacing.json

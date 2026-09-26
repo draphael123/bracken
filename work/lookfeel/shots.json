@@ -1,0 +1,3216 @@
+{
+ "wood": [
+  {
+   "f": "wood-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    22
+   ],
+   "state": "play",
+   "spread": 71.1,
+   "meanL": 35.3,
+   "chroma": 14.8,
+   "warmth": 0.11,
+   "music": "theme",
+   "amb": "forest"
+  },
+  {
+   "f": "wood-01-route1.png",
+   "what": "route1",
+   "at": [
+    36,
+    22
+   ],
+   "state": "play",
+   "spread": 61.8,
+   "meanL": 43.4,
+   "chroma": 20,
+   "warmth": 0.27,
+   "music": "theme",
+   "amb": "forest",
+   "routeTile": 27
+  },
+  {
+   "f": "wood-02-route2.png",
+   "what": "route2",
+   "at": [
+    85,
+    20
+   ],
+   "state": "play",
+   "spread": 62.8,
+   "meanL": 46.8,
+   "chroma": 21.7,
+   "warmth": 0.06,
+   "music": "theme",
+   "amb": "forest",
+   "routeTile": 80
+  },
+  {
+   "f": "wood-03-route3.png",
+   "what": "route3",
+   "at": [
+    137,
+    22
+   ],
+   "state": "play",
+   "spread": 65.7,
+   "meanL": 44.5,
+   "chroma": 18.6,
+   "warmth": 0.14,
+   "music": "theme",
+   "amb": "forest",
+   "routeTile": 133
+  },
+  {
+   "f": "wood-04-route4.png",
+   "what": "route4",
+   "at": [
+    191,
+    22
+   ],
+   "state": "play",
+   "spread": 62.9,
+   "meanL": 42.6,
+   "chroma": 18.6,
+   "warmth": 0.17,
+   "music": "theme",
+   "amb": "forest",
+   "routeTile": 186
+  },
+  {
+   "f": "wood-05-route5.png",
+   "what": "route5",
+   "at": [
+    244,
+    21
+   ],
+   "state": "play",
+   "spread": 27.4,
+   "meanL": 29.3,
+   "chroma": 17.4,
+   "warmth": 0.82,
+   "music": "theme",
+   "amb": "hall",
+   "routeTile": 239
+  },
+  {
+   "f": "wood-06-route6.png",
+   "what": "route6",
+   "at": [
+    289,
+    12
+   ],
+   "state": "play",
+   "spread": 65.7,
+   "meanL": 42.9,
+   "chroma": 18.9,
+   "warmth": 0.2,
+   "music": "theme",
+   "amb": "forest",
+   "routeTile": 292
+  },
+  {
+   "f": "wood-07-route7.png",
+   "what": "route7",
+   "at": [
+    341,
+    12
+   ],
+   "state": "play",
+   "spread": 60.3,
+   "meanL": 35.8,
+   "chroma": 18.6,
+   "warmth": 0.23,
+   "music": "theme",
+   "amb": "forest",
+   "routeTile": 345
+  },
+  {
+   "f": "wood-08-route8.png",
+   "what": "route8",
+   "at": [
+    396,
+    15
+   ],
+   "state": "play",
+   "spread": 43.9,
+   "meanL": 34.3,
+   "chroma": 20.5,
+   "warmth": 0.37,
+   "music": "theme",
+   "amb": "water",
+   "routeTile": 398
+  },
+  {
+   "f": "wood-09-route9.png",
+   "what": "route9",
+   "at": [
+    443,
+    22
+   ],
+   "state": "play",
+   "spread": 7.9,
+   "meanL": 7.7,
+   "chroma": 6.1,
+   "warmth": -0.04,
+   "music": "theme",
+   "amb": "water",
+   "routeTile": 451
+  },
+  {
+   "f": "wood-10-route10.png",
+   "what": "route10",
+   "at": [
+    494,
+    5
+   ],
+   "state": "play",
+   "spread": 36.6,
+   "meanL": 34.4,
+   "chroma": 20.7,
+   "warmth": 0.52,
+   "music": "theme",
+   "amb": "forest",
+   "routeTile": 504
+  },
+  {
+   "f": "wood-11-boss.png",
+   "what": "boss",
+   "at": [
+    526,
+    9
+   ],
+   "state": "play",
+   "spread": 25.8,
+   "meanL": 30.7,
+   "chroma": 20.2,
+   "warmth": 0.84,
+   "music": "boss",
+   "amb": "hive"
+  },
+  {
+   "f": "wood-12-kill.png",
+   "what": "kill",
+   "at": [
+    526,
+    9
+   ],
+   "state": "play",
+   "spread": 38.8,
+   "meanL": 32.9,
+   "chroma": 23.5,
+   "warmth": 0.74,
+   "music": "theme",
+   "amb": "hive",
+   "slay": "queen alive=false"
+  },
+  {
+   "f": "wood-13-after.png",
+   "what": "after",
+   "at": [
+    526,
+    9
+   ],
+   "state": "win",
+   "spread": 14.2,
+   "meanL": 14,
+   "chroma": 8.9,
+   "warmth": 0.11,
+   "music": "theme",
+   "amb": "hive"
+  }
+ ],
+ "marsh": [
+  {
+   "f": "marsh-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    22
+   ],
+   "state": "play",
+   "spread": 60.7,
+   "meanL": 33,
+   "chroma": 8.2,
+   "warmth": -0.07,
+   "music": "theme2",
+   "amb": "rain"
+  },
+  {
+   "f": "marsh-01-route1.png",
+   "what": "route1",
+   "at": [
+    4,
+    22
+   ],
+   "state": "play",
+   "spread": 55.2,
+   "meanL": 41.9,
+   "chroma": 9.6,
+   "warmth": -0.09,
+   "music": "theme2",
+   "amb": "rain",
+   "routeTile": 23
+  },
+  {
+   "f": "marsh-02-route2.png",
+   "what": "route2",
+   "at": [
+    75,
+    16
+   ],
+   "state": "play",
+   "spread": 54.6,
+   "meanL": 40.2,
+   "chroma": 9.8,
+   "warmth": -0.32,
+   "music": "theme2",
+   "amb": "rain",
+   "routeTile": 69
+  },
+  {
+   "f": "marsh-03-route3.png",
+   "what": "route3",
+   "at": [
+    118,
+    19
+   ],
+   "state": "play",
+   "spread": 49,
+   "meanL": 35.9,
+   "chroma": 10.9,
+   "warmth": -0.07,
+   "music": "theme2",
+   "amb": "rain",
+   "routeTile": 115
+  },
+  {
+   "f": "marsh-04-route4.png",
+   "what": "route4",
+   "at": [
+    166,
+    18
+   ],
+   "state": "play",
+   "spread": 54.5,
+   "meanL": 39.5,
+   "chroma": 11.8,
+   "warmth": -0.42,
+   "music": "theme2",
+   "amb": "rain",
+   "routeTile": 160
+  },
+  {
+   "f": "marsh-05-route5.png",
+   "what": "route5",
+   "at": [
+    212,
+    18
+   ],
+   "state": "play",
+   "spread": 54.8,
+   "meanL": 39,
+   "chroma": 10,
+   "warmth": -0.12,
+   "music": "theme2",
+   "amb": "rain",
+   "routeTile": 206
+  },
+  {
+   "f": "marsh-06-route6.png",
+   "what": "route6",
+   "at": [
+    257,
+    19
+   ],
+   "state": "play",
+   "spread": 56.9,
+   "meanL": 34.9,
+   "chroma": 14.8,
+   "warmth": -0.76,
+   "music": "theme2",
+   "amb": "rain",
+   "routeTile": 252
+  },
+  {
+   "f": "marsh-07-route7.png",
+   "what": "route7",
+   "at": [
+    302,
+    19
+   ],
+   "state": "play",
+   "spread": 56.7,
+   "meanL": 35.7,
+   "chroma": 12.4,
+   "warmth": -0.51,
+   "music": "theme2",
+   "amb": "rain",
+   "routeTile": 298
+  },
+  {
+   "f": "marsh-08-route8.png",
+   "what": "route8",
+   "at": [
+    346,
+    16
+   ],
+   "state": "play",
+   "spread": 51.6,
+   "meanL": 56.9,
+   "chroma": 10.6,
+   "warmth": -0.67,
+   "music": "theme2",
+   "amb": "rain",
+   "routeTile": 344
+  },
+  {
+   "f": "marsh-09-route9.png",
+   "what": "route9",
+   "at": [
+    392,
+    18
+   ],
+   "state": "play",
+   "spread": 57.1,
+   "meanL": 38.3,
+   "chroma": 12.3,
+   "warmth": -0.45,
+   "music": "theme2",
+   "amb": "rain",
+   "routeTile": 389
+  },
+  {
+   "f": "marsh-10-route10.png",
+   "what": "route10",
+   "at": [
+    439,
+    18
+   ],
+   "state": "play",
+   "spread": 54.8,
+   "meanL": 40.6,
+   "chroma": 9.7,
+   "warmth": -0.16,
+   "music": "theme2",
+   "amb": "rain",
+   "routeTile": 435
+  },
+  {
+   "f": "marsh-11-boss.png",
+   "what": "boss",
+   "at": [
+    467,
+    19
+   ],
+   "state": "play",
+   "spread": 58.4,
+   "meanL": 37.9,
+   "chroma": 11.9,
+   "warmth": -0.2,
+   "music": "frogking",
+   "amb": "rain"
+  },
+  {
+   "f": "marsh-12-kill.png",
+   "what": "kill",
+   "at": [
+    467,
+    19
+   ],
+   "state": "play",
+   "spread": 55,
+   "meanL": 37,
+   "chroma": 10.7,
+   "warmth": -0.09,
+   "music": "theme2",
+   "amb": "rain",
+   "slay": "frog alive=false"
+  },
+  {
+   "f": "marsh-13-after.png",
+   "what": "after",
+   "at": [
+    467,
+    19
+   ],
+   "state": "win",
+   "spread": 18.7,
+   "meanL": 14.5,
+   "chroma": 8.4,
+   "warmth": -0.08,
+   "music": "theme2",
+   "amb": "rain"
+  }
+ ],
+ "stockade": [
+  {
+   "f": "stockade-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    20
+   ],
+   "state": "play",
+   "spread": 17.5,
+   "meanL": 15.5,
+   "chroma": 7.5,
+   "warmth": -0.12,
+   "music": "stockade",
+   "amb": "forest"
+  },
+  {
+   "f": "stockade-01-route1.png",
+   "what": "route1",
+   "at": [
+    34,
+    20
+   ],
+   "state": "play",
+   "spread": 23,
+   "meanL": 17.9,
+   "chroma": 9,
+   "warmth": 0.05,
+   "music": "stockade",
+   "amb": "forest",
+   "routeTile": 24
+  },
+  {
+   "f": "stockade-02-route2.png",
+   "what": "route2",
+   "at": [
+    82,
+    20
+   ],
+   "state": "play",
+   "spread": 23.9,
+   "meanL": 18.2,
+   "chroma": 9,
+   "warmth": 0.13,
+   "music": "stockade",
+   "amb": "forest",
+   "routeTile": 73
+  },
+  {
+   "f": "stockade-03-route3.png",
+   "what": "route3",
+   "at": [
+    126,
+    23
+   ],
+   "state": "play",
+   "spread": 26.8,
+   "meanL": 19.9,
+   "chroma": 10.2,
+   "warmth": -0.02,
+   "music": "stockade",
+   "amb": "forest",
+   "routeTile": 121
+  },
+  {
+   "f": "stockade-04-route4.png",
+   "what": "route4",
+   "at": [
+    168,
+    17
+   ],
+   "state": "play",
+   "spread": 30.3,
+   "meanL": 19.7,
+   "chroma": 10.3,
+   "warmth": -0.08,
+   "music": "stockade",
+   "amb": "forest",
+   "routeTile": 170
+  },
+  {
+   "f": "stockade-05-route5.png",
+   "what": "route5",
+   "at": [
+    216,
+    20
+   ],
+   "state": "play",
+   "spread": 45.3,
+   "meanL": 23.2,
+   "chroma": 10.3,
+   "warmth": 0.26,
+   "music": "stockade",
+   "amb": "forest",
+   "routeTile": 219
+  },
+  {
+   "f": "stockade-06-route6.png",
+   "what": "route6",
+   "at": [
+    265,
+    20
+   ],
+   "state": "play",
+   "spread": 27.5,
+   "meanL": 20.1,
+   "chroma": 9.5,
+   "warmth": 0.24,
+   "music": "stockade",
+   "amb": "forest",
+   "routeTile": 267
+  },
+  {
+   "f": "stockade-07-route7.png",
+   "what": "route7",
+   "at": [
+    306,
+    20
+   ],
+   "state": "play",
+   "spread": 38.3,
+   "meanL": 22.2,
+   "chroma": 10.1,
+   "warmth": 0.29,
+   "music": "stockade",
+   "amb": "forest",
+   "routeTile": 316
+  },
+  {
+   "f": "stockade-08-route8.png",
+   "what": "route8",
+   "at": [
+    356,
+    25
+   ],
+   "state": "play",
+   "spread": 27.3,
+   "meanL": 20.6,
+   "chroma": 6.9,
+   "warmth": 0.26,
+   "music": "stockade",
+   "amb": "forest",
+   "routeTile": 364
+  },
+  {
+   "f": "stockade-09-route9.png",
+   "what": "route9",
+   "at": [
+    394,
+    12
+   ],
+   "state": "play",
+   "spread": 20.5,
+   "meanL": 16.6,
+   "chroma": 10.3,
+   "warmth": -0.19,
+   "music": "stockade",
+   "amb": "forest",
+   "routeTile": 413
+  },
+  {
+   "f": "stockade-10-route10.png",
+   "what": "route10",
+   "at": [
+    440,
+    12
+   ],
+   "state": "play",
+   "spread": 23.3,
+   "meanL": 17.2,
+   "chroma": 11.2,
+   "warmth": -0.18,
+   "music": "stockade",
+   "amb": "forest",
+   "routeTile": 461
+  },
+  {
+   "f": "stockade-11-boss.png",
+   "what": "boss",
+   "at": [
+    464,
+    20
+   ],
+   "state": "play",
+   "spread": 26.6,
+   "meanL": 19.9,
+   "chroma": 11.1,
+   "warmth": 0.37,
+   "music": "boss2",
+   "amb": "forest"
+  },
+  {
+   "f": "stockade-12-kill.png",
+   "what": "kill",
+   "at": [
+    464,
+    20
+   ],
+   "state": "play",
+   "spread": 34,
+   "meanL": 24.5,
+   "chroma": 17.3,
+   "warmth": 0.4,
+   "music": "stockade",
+   "amb": "forest",
+   "slay": "chief alive=false"
+  },
+  {
+   "f": "stockade-13-after.png",
+   "what": "after",
+   "at": [
+    464,
+    20
+   ],
+   "state": "play",
+   "spread": 28.5,
+   "meanL": 23.3,
+   "chroma": 17.9,
+   "warmth": 0.62,
+   "music": "stockade",
+   "amb": "forest"
+  }
+ ],
+ "burning": [
+  {
+   "f": "burning-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    26
+   ],
+   "state": "play",
+   "spread": 22.5,
+   "meanL": 15.9,
+   "chroma": 8.4,
+   "warmth": 0.16,
+   "music": "quarry",
+   "amb": "forest"
+  },
+  {
+   "f": "burning-01-route1.png",
+   "what": "route1",
+   "at": [
+    33,
+    26
+   ],
+   "state": "play",
+   "spread": 27.5,
+   "meanL": 14.7,
+   "chroma": 8.6,
+   "warmth": 0.25,
+   "music": "quarry",
+   "amb": "forest",
+   "routeTile": 23
+  },
+  {
+   "f": "burning-02-route2.png",
+   "what": "route2",
+   "at": [
+    75,
+    26
+   ],
+   "state": "play",
+   "spread": 25.9,
+   "meanL": 15.2,
+   "chroma": 8.9,
+   "warmth": 0.3,
+   "music": "quarry",
+   "amb": "forest",
+   "routeTile": 70
+  },
+  {
+   "f": "burning-03-route3.png",
+   "what": "route3",
+   "at": [
+    123,
+    26
+   ],
+   "state": "play",
+   "spread": 28.9,
+   "meanL": 15,
+   "chroma": 8.6,
+   "warmth": 0.24,
+   "music": "quarry",
+   "amb": "forest",
+   "routeTile": 117
+  },
+  {
+   "f": "burning-04-route4.png",
+   "what": "route4",
+   "at": [
+    171,
+    26
+   ],
+   "state": "play",
+   "spread": 30.1,
+   "meanL": 16.2,
+   "chroma": 9.2,
+   "warmth": 0.31,
+   "music": "quarry",
+   "amb": "forest",
+   "routeTile": 164
+  },
+  {
+   "f": "burning-05-route5.png",
+   "what": "route5",
+   "at": [
+    213,
+    17
+   ],
+   "state": "play",
+   "spread": 35,
+   "meanL": 20,
+   "chroma": 13.4,
+   "warmth": 0.64,
+   "music": "quarry",
+   "amb": "forest",
+   "routeTile": 211
+  },
+  {
+   "f": "burning-06-route6.png",
+   "what": "route6",
+   "at": [
+    255,
+    11
+   ],
+   "state": "play",
+   "spread": 34.1,
+   "meanL": 21.2,
+   "chroma": 21,
+   "warmth": 0.65,
+   "music": "quarry",
+   "amb": "forest",
+   "routeTile": 258
+  },
+  {
+   "f": "burning-07-route7.png",
+   "what": "route7",
+   "at": [
+    301,
+    14
+   ],
+   "state": "play",
+   "spread": 39.2,
+   "meanL": 22.3,
+   "chroma": 20.7,
+   "warmth": 0.61,
+   "music": "quarry",
+   "amb": "forest",
+   "routeTile": 305
+  },
+  {
+   "f": "burning-08-route8.png",
+   "what": "route8",
+   "at": [
+    346,
+    26
+   ],
+   "state": "play",
+   "spread": 25.5,
+   "meanL": 14.8,
+   "chroma": 8.2,
+   "warmth": 0.46,
+   "music": "quarry",
+   "amb": "hall",
+   "routeTile": 352
+  },
+  {
+   "f": "burning-09-route9.png",
+   "what": "route9",
+   "at": [
+    388,
+    26
+   ],
+   "state": "play",
+   "spread": 33.2,
+   "meanL": 16,
+   "chroma": 8.2,
+   "warmth": 0.27,
+   "music": "quarry",
+   "amb": "hall",
+   "routeTile": 399
+  },
+  {
+   "f": "burning-10-route10.png",
+   "what": "route10",
+   "at": [
+    436,
+    26
+   ],
+   "state": "play",
+   "spread": 26.9,
+   "meanL": 15.6,
+   "chroma": 8.8,
+   "warmth": 0.28,
+   "music": "quarry",
+   "amb": "forest",
+   "routeTile": 445
+  },
+  {
+   "f": "burning-11-boss.png",
+   "what": "boss",
+   "at": [
+    462,
+    24
+   ],
+   "state": "play",
+   "spread": 27.9,
+   "meanL": 18.5,
+   "chroma": 12.2,
+   "warmth": 0.8,
+   "music": "hilltroll",
+   "amb": "forest"
+  },
+  {
+   "f": "burning-12-kill.png",
+   "what": "kill",
+   "at": [
+    462,
+    24
+   ],
+   "state": "play",
+   "spread": 25.5,
+   "meanL": 15.1,
+   "chroma": 8.9,
+   "warmth": 0.43,
+   "music": "quarry",
+   "amb": "forest",
+   "slay": "pyromancer alive=false"
+  },
+  {
+   "f": "burning-13-after.png",
+   "what": "after",
+   "at": [
+    462,
+    24
+   ],
+   "state": "win",
+   "spread": 15.6,
+   "meanL": 12.7,
+   "chroma": 8.4,
+   "warmth": -0.01,
+   "music": "quarry",
+   "amb": "forest"
+  }
+ ],
+ "spore": [
+  {
+   "f": "spore-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    20
+   ],
+   "state": "play",
+   "spread": 22.8,
+   "meanL": 18.5,
+   "chroma": 10.6,
+   "warmth": 0.23,
+   "music": "cave",
+   "amb": "drip"
+  },
+  {
+   "f": "spore-01-route1.png",
+   "what": "route1",
+   "at": [
+    36,
+    20
+   ],
+   "state": "play",
+   "spread": 22.9,
+   "meanL": 21.2,
+   "chroma": 11.5,
+   "warmth": 0.26,
+   "music": "cave",
+   "amb": "drip",
+   "routeTile": 26
+  },
+  {
+   "f": "spore-02-route2.png",
+   "what": "route2",
+   "at": [
+    80,
+    12
+   ],
+   "state": "play",
+   "spread": 30.1,
+   "meanL": 22.9,
+   "chroma": 11.2,
+   "warmth": 0.29,
+   "music": "cave",
+   "amb": "drip",
+   "routeTile": 78
+  },
+  {
+   "f": "spore-03-route3.png",
+   "what": "route3",
+   "at": [
+    128,
+    4
+   ],
+   "state": "play",
+   "spread": 23.4,
+   "meanL": 23.2,
+   "chroma": 11.6,
+   "warmth": 0.26,
+   "music": "cave",
+   "amb": "drip",
+   "routeTile": 130
+  },
+  {
+   "f": "spore-04-route4.png",
+   "what": "route4",
+   "at": [
+    176,
+    14
+   ],
+   "state": "play",
+   "spread": 23.1,
+   "meanL": 22.9,
+   "chroma": 13.6,
+   "warmth": 0.31,
+   "music": "cave",
+   "amb": "drip",
+   "routeTile": 183
+  },
+  {
+   "f": "spore-05-route5.png",
+   "what": "route5",
+   "at": [
+    226,
+    14
+   ],
+   "state": "play",
+   "spread": 41.5,
+   "meanL": 23,
+   "chroma": 12.5,
+   "warmth": 0.2,
+   "music": "cave",
+   "amb": "drip",
+   "routeTile": 235
+  },
+  {
+   "f": "spore-06-route6.png",
+   "what": "route6",
+   "at": [
+    275,
+    6
+   ],
+   "state": "play",
+   "spread": 22.8,
+   "meanL": 22.8,
+   "chroma": 12.5,
+   "warmth": 0.33,
+   "music": "cave",
+   "amb": "drip",
+   "routeTile": 287
+  },
+  {
+   "f": "spore-07-route7.png",
+   "what": "route7",
+   "at": [
+    323,
+    14
+   ],
+   "state": "play",
+   "spread": 31.1,
+   "meanL": 24.7,
+   "chroma": 12.7,
+   "warmth": 0.2,
+   "music": "cave",
+   "amb": "drip",
+   "routeTile": 339
+  },
+  {
+   "f": "spore-08-route8.png",
+   "what": "route8",
+   "at": [
+    378,
+    17
+   ],
+   "state": "play",
+   "spread": 23.1,
+   "meanL": 23,
+   "chroma": 14.9,
+   "warmth": 0.22,
+   "music": "cave",
+   "amb": "drip",
+   "routeTile": 391
+  },
+  {
+   "f": "spore-09-route9.png",
+   "what": "route9",
+   "at": [
+    423,
+    14
+   ],
+   "state": "play",
+   "spread": 25.8,
+   "meanL": 22.4,
+   "chroma": 13.8,
+   "warmth": 0.31,
+   "music": "cave",
+   "amb": "drip",
+   "routeTile": 443
+  },
+  {
+   "f": "spore-10-route10.png",
+   "what": "route10",
+   "at": [
+    471,
+    14
+   ],
+   "state": "play",
+   "spread": 20.4,
+   "meanL": 22.5,
+   "chroma": 21.4,
+   "warmth": 0.39,
+   "music": "cave",
+   "amb": "drip",
+   "routeTile": 496
+  },
+  {
+   "f": "spore-11-boss.png",
+   "what": "boss",
+   "at": [
+    494,
+    20
+   ],
+   "state": "play",
+   "spread": 21.2,
+   "meanL": 24.2,
+   "chroma": 22.1,
+   "warmth": 0.33,
+   "music": "sporemother",
+   "amb": "drip"
+  },
+  {
+   "f": "spore-12-kill.png",
+   "what": "kill",
+   "at": [
+    494,
+    20
+   ],
+   "state": "play",
+   "spread": 21.2,
+   "meanL": 24.2,
+   "chroma": 22.1,
+   "warmth": 0.33,
+   "music": "sporemother",
+   "amb": "drip",
+   "slay": "mother"
+  },
+  {
+   "f": "spore-13-after.png",
+   "what": "after",
+   "at": [
+    494,
+    20
+   ],
+   "state": "play",
+   "spread": 21.4,
+   "meanL": 24.3,
+   "chroma": 22.1,
+   "warmth": 0.33,
+   "music": "sporemother",
+   "amb": "drip"
+  }
+ ],
+ "kings": [
+  {
+   "f": "kings-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    20
+   ],
+   "state": "play",
+   "spread": 32.9,
+   "meanL": 22.6,
+   "chroma": 17.5,
+   "warmth": 0.78,
+   "music": "theme3",
+   "amb": "forest"
+  },
+  {
+   "f": "kings-01-route1.png",
+   "what": "route1",
+   "at": [
+    36,
+    20
+   ],
+   "state": "play",
+   "spread": 34.7,
+   "meanL": 25.8,
+   "chroma": 23.2,
+   "warmth": 0.86,
+   "music": "theme3",
+   "amb": "forest",
+   "routeTile": 31
+  },
+  {
+   "f": "kings-02-route2.png",
+   "what": "route2",
+   "at": [
+    97,
+    12
+   ],
+   "state": "play",
+   "spread": 38.7,
+   "meanL": 36.6,
+   "chroma": 30.5,
+   "warmth": 0.73,
+   "music": "theme3",
+   "amb": "forest",
+   "routeTile": 93
+  },
+  {
+   "f": "kings-03-route3.png",
+   "what": "route3",
+   "at": [
+    157,
+    13
+   ],
+   "state": "play",
+   "spread": 36.1,
+   "meanL": 27.5,
+   "chroma": 24.5,
+   "warmth": 0.87,
+   "music": "theme3",
+   "amb": "forest",
+   "routeTile": 155
+  },
+  {
+   "f": "kings-04-route4.png",
+   "what": "route4",
+   "at": [
+    218,
+    14
+   ],
+   "state": "play",
+   "spread": 39.3,
+   "meanL": 28.4,
+   "chroma": 24.4,
+   "warmth": 0.87,
+   "music": "theme3",
+   "amb": "forest",
+   "routeTile": 217
+  },
+  {
+   "f": "kings-05-route5.png",
+   "what": "route5",
+   "at": [
+    272,
+    12
+   ],
+   "state": "play",
+   "spread": 34.9,
+   "meanL": 34.2,
+   "chroma": 30,
+   "warmth": 0.77,
+   "music": "theme3",
+   "amb": "forest",
+   "routeTile": 279
+  },
+  {
+   "f": "kings-06-route6.png",
+   "what": "route6",
+   "at": [
+    334,
+    14
+   ],
+   "state": "play",
+   "spread": 40.4,
+   "meanL": 35,
+   "chroma": 27.3,
+   "warmth": 0.73,
+   "music": "theme3",
+   "amb": "forest",
+   "routeTile": 341
+  },
+  {
+   "f": "kings-07-route7.png",
+   "what": "route7",
+   "at": [
+    395,
+    14
+   ],
+   "state": "play",
+   "spread": 34.1,
+   "meanL": 25.7,
+   "chroma": 23.8,
+   "warmth": 0.87,
+   "music": "theme3",
+   "amb": "forest",
+   "routeTile": 404
+  },
+  {
+   "f": "kings-08-route8.png",
+   "what": "route8",
+   "at": [
+    455,
+    12
+   ],
+   "state": "play",
+   "spread": 35.5,
+   "meanL": 27.3,
+   "chroma": 25.3,
+   "warmth": 0.87,
+   "music": "theme3",
+   "amb": "forest",
+   "routeTile": 466
+  },
+  {
+   "f": "kings-09-route9.png",
+   "what": "route9",
+   "at": [
+    520,
+    14
+   ],
+   "state": "play",
+   "spread": 39.2,
+   "meanL": 31.7,
+   "chroma": 20.1,
+   "warmth": 0.84,
+   "music": "theme3",
+   "amb": "forest",
+   "routeTile": 528
+  },
+  {
+   "f": "kings-10-route10.png",
+   "what": "route10",
+   "at": [
+    574,
+    14
+   ],
+   "state": "play",
+   "spread": 35.8,
+   "meanL": 27.3,
+   "chroma": 23.8,
+   "warmth": 0.87,
+   "music": "theme3",
+   "amb": "forest",
+   "routeTile": 590
+  },
+  {
+   "f": "kings-11-mini.png",
+   "what": "mini",
+   "at": [
+    224,
+    14
+   ],
+   "state": "play",
+   "spread": 43.5,
+   "meanL": 28.9,
+   "chroma": 24.4,
+   "warmth": 0.84,
+   "music": "boss",
+   "amb": "forest"
+  },
+  {
+   "f": "kings-12-boss.png",
+   "what": "boss",
+   "at": [
+    610,
+    14
+   ],
+   "state": "play",
+   "spread": 29.9,
+   "meanL": 27,
+   "chroma": 25.8,
+   "warmth": 0.96,
+   "music": "king",
+   "amb": "forest"
+  },
+  {
+   "f": "kings-13-kill.png",
+   "what": "kill",
+   "at": [
+    610,
+    14
+   ],
+   "state": "play",
+   "spread": 37.1,
+   "meanL": 30.8,
+   "chroma": 23.1,
+   "warmth": 0.87,
+   "music": "theme3",
+   "amb": "forest",
+   "slay": "king alive=false"
+  },
+  {
+   "f": "kings-14-after.png",
+   "what": "after",
+   "at": [
+    610,
+    14
+   ],
+   "state": "win",
+   "spread": 14.9,
+   "meanL": 13.5,
+   "chroma": 9,
+   "warmth": 0.1,
+   "music": "theme3",
+   "amb": "forest"
+  }
+ ],
+ "underleaf": [
+  {
+   "f": "underleaf-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    34
+   ],
+   "state": "play",
+   "spread": 19.1,
+   "meanL": 15.2,
+   "chroma": 10.4,
+   "warmth": 0.01,
+   "music": "sleepers",
+   "amb": "forest"
+  },
+  {
+   "f": "underleaf-01-route1.png",
+   "what": "route1",
+   "at": [
+    29,
+    34
+   ],
+   "state": "play",
+   "spread": 25.4,
+   "meanL": 17.2,
+   "chroma": 9.9,
+   "warmth": 0.29,
+   "music": "sleepers",
+   "amb": "forest",
+   "routeTile": 23
+  },
+  {
+   "f": "underleaf-02-route2.png",
+   "what": "route2",
+   "at": [
+    77,
+    34
+   ],
+   "state": "play",
+   "spread": 22,
+   "meanL": 16.8,
+   "chroma": 11.8,
+   "warmth": 0.19,
+   "music": "sleepers",
+   "amb": "forest",
+   "routeTile": 70
+  },
+  {
+   "f": "underleaf-03-route3.png",
+   "what": "route3",
+   "at": [
+    124,
+    34
+   ],
+   "state": "play",
+   "spread": 28.1,
+   "meanL": 17.6,
+   "chroma": 9.8,
+   "warmth": 0.31,
+   "music": "sleepers",
+   "amb": "forest",
+   "routeTile": 117
+  },
+  {
+   "f": "underleaf-04-route4.png",
+   "what": "route4",
+   "at": [
+    172,
+    34
+   ],
+   "state": "play",
+   "spread": 26.9,
+   "meanL": 17.5,
+   "chroma": 10.2,
+   "warmth": 0.32,
+   "music": "sleepers",
+   "amb": "forest",
+   "routeTile": 164
+  },
+  {
+   "f": "underleaf-05-route5.png",
+   "what": "route5",
+   "at": [
+    220,
+    34
+   ],
+   "state": "play",
+   "spread": 23.6,
+   "meanL": 15.6,
+   "chroma": 9.7,
+   "warmth": 0.31,
+   "music": "sleepers",
+   "amb": "forest",
+   "routeTile": 210
+  },
+  {
+   "f": "underleaf-06-route6.png",
+   "what": "route6",
+   "at": [
+    262,
+    34
+   ],
+   "state": "play",
+   "spread": 21.4,
+   "meanL": 16.6,
+   "chroma": 11.6,
+   "warmth": 0.17,
+   "music": "sleepers",
+   "amb": "forest",
+   "routeTile": 257
+  },
+  {
+   "f": "underleaf-07-route7.png",
+   "what": "route7",
+   "at": [
+    310,
+    34
+   ],
+   "state": "play",
+   "spread": 22.6,
+   "meanL": 16.5,
+   "chroma": 10,
+   "warmth": 0.27,
+   "music": "sleepers",
+   "amb": "forest",
+   "routeTile": 304
+  },
+  {
+   "f": "underleaf-08-route8.png",
+   "what": "route8",
+   "at": [
+    358,
+    34
+   ],
+   "state": "play",
+   "spread": 27.5,
+   "meanL": 17.6,
+   "chroma": 9.9,
+   "warmth": 0.34,
+   "music": "sleepers",
+   "amb": "forest",
+   "routeTile": 351
+  },
+  {
+   "f": "underleaf-09-route9.png",
+   "what": "route9",
+   "at": [
+    406,
+    34
+   ],
+   "state": "play",
+   "spread": 21.9,
+   "meanL": 16.5,
+   "chroma": 12,
+   "warmth": 0.18,
+   "music": "sleepers",
+   "amb": "forest",
+   "routeTile": 397
+  },
+  {
+   "f": "underleaf-10-route10.png",
+   "what": "route10",
+   "at": [
+    453,
+    34
+   ],
+   "state": "play",
+   "spread": 27.6,
+   "meanL": 18.3,
+   "chroma": 10.4,
+   "warmth": 0.33,
+   "music": "sleepers",
+   "amb": "forest",
+   "routeTile": 444
+  },
+  {
+   "f": "underleaf-11-boss.png",
+   "what": "boss",
+   "at": [
+    482,
+    34
+   ],
+   "state": "play",
+   "spread": 18.1,
+   "meanL": 18.2,
+   "chroma": 19,
+   "warmth": 0.25,
+   "music": "grandmother",
+   "amb": "forest"
+  },
+  {
+   "f": "underleaf-12-kill.png",
+   "what": "kill",
+   "at": [
+    482,
+    34
+   ],
+   "state": "play",
+   "spread": 19.6,
+   "meanL": 18.6,
+   "chroma": 19.8,
+   "warmth": 0.27,
+   "music": "sleepers",
+   "amb": "forest",
+   "slay": "grandmother alive=false"
+  },
+  {
+   "f": "underleaf-13-after.png",
+   "what": "after",
+   "at": [
+    482,
+    34
+   ],
+   "state": "win",
+   "spread": 13.6,
+   "meanL": 12.8,
+   "chroma": 9,
+   "warmth": -0.08,
+   "music": "sleepers",
+   "amb": "forest"
+  }
+ ],
+ "scree": [
+  {
+   "f": "scree-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    20
+   ],
+   "state": "play",
+   "spread": 38.2,
+   "meanL": 28.5,
+   "chroma": 15,
+   "warmth": 0.62,
+   "music": "theme4",
+   "amb": "wind"
+  },
+  {
+   "f": "scree-01-route1.png",
+   "what": "route1",
+   "at": [
+    36,
+    20
+   ],
+   "state": "play",
+   "spread": 31.9,
+   "meanL": 34.3,
+   "chroma": 17.1,
+   "warmth": 0.73,
+   "music": "theme4",
+   "amb": "wind",
+   "routeTile": 26
+  },
+  {
+   "f": "scree-02-route2.png",
+   "what": "route2",
+   "at": [
+    83,
+    20
+   ],
+   "state": "play",
+   "spread": 32.4,
+   "meanL": 34.3,
+   "chroma": 16.7,
+   "warmth": 0.72,
+   "music": "theme4",
+   "amb": "wind",
+   "routeTile": 78
+  },
+  {
+   "f": "scree-03-route3.png",
+   "what": "route3",
+   "at": [
+    135,
+    16
+   ],
+   "state": "play",
+   "spread": 34.3,
+   "meanL": 35.3,
+   "chroma": 17.7,
+   "warmth": 0.74,
+   "music": "theme4",
+   "amb": "wind",
+   "routeTile": 131
+  },
+  {
+   "f": "scree-04-route4.png",
+   "what": "route4",
+   "at": [
+    189,
+    13
+   ],
+   "state": "play",
+   "spread": 46.2,
+   "meanL": 33.1,
+   "chroma": 16.6,
+   "warmth": 0.63,
+   "music": "theme4",
+   "amb": "wind",
+   "routeTile": 183
+  },
+  {
+   "f": "scree-05-route5.png",
+   "what": "route5",
+   "at": [
+    238,
+    4
+   ],
+   "state": "play",
+   "spread": 50.8,
+   "meanL": 43.1,
+   "chroma": 30.6,
+   "warmth": 0.75,
+   "music": "theme4",
+   "amb": "wind",
+   "routeTile": 235
+  },
+  {
+   "f": "scree-06-route6.png",
+   "what": "route6",
+   "at": [
+    288,
+    15
+   ],
+   "state": "play",
+   "spread": 36,
+   "meanL": 35.1,
+   "chroma": 18.3,
+   "warmth": 0.68,
+   "music": "theme4",
+   "amb": "wind",
+   "routeTile": 288
+  },
+  {
+   "f": "scree-07-route7.png",
+   "what": "route7",
+   "at": [
+    339,
+    19
+   ],
+   "state": "play",
+   "spread": 35.3,
+   "meanL": 32.4,
+   "chroma": 19,
+   "warmth": 0.71,
+   "music": "theme4",
+   "amb": "wind",
+   "routeTile": 340
+  },
+  {
+   "f": "scree-08-route8.png",
+   "what": "route8",
+   "at": [
+    389,
+    26
+   ],
+   "state": "play",
+   "spread": 34.2,
+   "meanL": 33,
+   "chroma": 17.4,
+   "warmth": 0.76,
+   "music": "theme4",
+   "amb": "wind",
+   "routeTile": 392
+  },
+  {
+   "f": "scree-09-route9.png",
+   "what": "route9",
+   "at": [
+    429,
+    13
+   ],
+   "state": "play",
+   "spread": 32.8,
+   "meanL": 31.5,
+   "chroma": 13.1,
+   "warmth": 0.76,
+   "music": "theme4",
+   "amb": "wind",
+   "routeTile": 445
+  },
+  {
+   "f": "scree-10-route10.png",
+   "what": "route10",
+   "at": [
+    480,
+    9
+   ],
+   "state": "play",
+   "spread": 31.3,
+   "meanL": 34.8,
+   "chroma": 17.7,
+   "warmth": 0.73,
+   "music": "theme4",
+   "amb": "wind",
+   "routeTile": 497
+  },
+  {
+   "f": "scree-11-boss.png",
+   "what": "boss",
+   "at": [
+    507,
+    9
+   ],
+   "state": "play",
+   "spread": 34.3,
+   "meanL": 32.5,
+   "chroma": 15.8,
+   "warmth": 0.7,
+   "music": "ramlord",
+   "amb": "wind"
+  },
+  {
+   "f": "scree-12-kill.png",
+   "what": "kill",
+   "at": [
+    507,
+    9
+   ],
+   "state": "play",
+   "spread": 33.8,
+   "meanL": 34.7,
+   "chroma": 17.1,
+   "warmth": 0.72,
+   "music": "theme4",
+   "amb": "wind",
+   "slay": "ram alive=false"
+  },
+  {
+   "f": "scree-13-after.png",
+   "what": "after",
+   "at": [
+    507,
+    9
+   ],
+   "state": "win",
+   "spread": 14.7,
+   "meanL": 14.9,
+   "chroma": 9,
+   "warmth": 0.07,
+   "music": "theme4",
+   "amb": "wind"
+  }
+ ],
+ "hanging": [
+  {
+   "f": "hanging-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    108
+   ],
+   "state": "play",
+   "spread": 24.3,
+   "meanL": 20.9,
+   "chroma": 5.5,
+   "warmth": 0.05,
+   "music": "town",
+   "amb": "wind"
+  },
+  {
+   "f": "hanging-01-route1.png",
+   "what": "route1",
+   "at": [
+    33,
+    108
+   ],
+   "state": "play",
+   "spread": 18.6,
+   "meanL": 23.1,
+   "chroma": 4.8,
+   "warmth": 0.08,
+   "music": "town",
+   "amb": "wind",
+   "routeTile": 26
+  },
+  {
+   "f": "hanging-02-route2.png",
+   "what": "route2",
+   "at": [
+    36,
+    94
+   ],
+   "state": "play",
+   "spread": 31.4,
+   "meanL": 28.6,
+   "chroma": 12.5,
+   "warmth": 0.81,
+   "music": "town",
+   "amb": "wind",
+   "routeTile": 77
+  },
+  {
+   "f": "hanging-03-route3.png",
+   "what": "route3",
+   "at": [
+    18,
+    80
+   ],
+   "state": "play",
+   "spread": 40.6,
+   "meanL": 36.1,
+   "chroma": 12.4,
+   "warmth": 0.81,
+   "music": "town",
+   "amb": "wind",
+   "routeTile": 128
+  },
+  {
+   "f": "hanging-04-route4.png",
+   "what": "route4",
+   "at": [
+    72,
+    80
+   ],
+   "state": "play",
+   "spread": 39,
+   "meanL": 34.6,
+   "chroma": 11.8,
+   "warmth": 0.8,
+   "music": "town",
+   "amb": "wind",
+   "routeTile": 180
+  },
+  {
+   "f": "hanging-05-route5.png",
+   "what": "route5",
+   "at": [
+    100,
+    66
+   ],
+   "state": "play",
+   "spread": 42.8,
+   "meanL": 38,
+   "chroma": 8.8,
+   "warmth": 0.82,
+   "music": "town",
+   "amb": "wind",
+   "routeTile": 231
+  },
+  {
+   "f": "hanging-06-route6.png",
+   "what": "route6",
+   "at": [
+    45,
+    66
+   ],
+   "state": "play",
+   "spread": 45.8,
+   "meanL": 37.8,
+   "chroma": 8.2,
+   "warmth": 0.8,
+   "music": "town",
+   "amb": "wind",
+   "routeTile": 283
+  },
+  {
+   "f": "hanging-07-route7.png",
+   "what": "route7",
+   "at": [
+    63,
+    52
+   ],
+   "state": "play",
+   "spread": 25.1,
+   "meanL": 28.8,
+   "chroma": 7.5,
+   "warmth": 0.64,
+   "music": "town",
+   "amb": "wind",
+   "routeTile": 334
+  },
+  {
+   "f": "hanging-08-route8.png",
+   "what": "route8",
+   "at": [
+    99,
+    38
+   ],
+   "state": "play",
+   "spread": 15.5,
+   "meanL": 20.1,
+   "chroma": 9.1,
+   "warmth": 0.2,
+   "music": "town",
+   "amb": "wind",
+   "routeTile": 385
+  },
+  {
+   "f": "hanging-09-route9.png",
+   "what": "route9",
+   "at": [
+    51,
+    38
+   ],
+   "state": "play",
+   "spread": 32.2,
+   "meanL": 23.5,
+   "chroma": 8.9,
+   "warmth": 0.19,
+   "music": "town",
+   "amb": "wind",
+   "routeTile": 437
+  },
+  {
+   "f": "hanging-10-route10.png",
+   "what": "route10",
+   "at": [
+    4,
+    31
+   ],
+   "state": "play",
+   "spread": 12.2,
+   "meanL": 19.5,
+   "chroma": 7.5,
+   "warmth": 0.21,
+   "music": "town",
+   "amb": "wind",
+   "routeTile": 488
+  },
+  {
+   "f": "hanging-11-mini.png",
+   "what": "mini",
+   "at": [
+    39,
+    129
+   ],
+   "state": "play",
+   "spread": 14.6,
+   "meanL": 18.5,
+   "chroma": 11.2,
+   "warmth": 0.8,
+   "music": "boss",
+   "amb": "hall"
+  },
+  {
+   "f": "hanging-12-boss.png",
+   "what": "boss",
+   "at": [
+    25,
+    20
+   ],
+   "state": "play",
+   "spread": 46.2,
+   "meanL": 40.9,
+   "chroma": 11.2,
+   "warmth": 0.2,
+   "music": "owlreeve",
+   "amb": "wind"
+  },
+  {
+   "f": "hanging-13-kill.png",
+   "what": "kill",
+   "at": [
+    25,
+    20
+   ],
+   "state": "play",
+   "spread": 59.8,
+   "meanL": 42.5,
+   "chroma": 12.6,
+   "warmth": 0.19,
+   "music": "town",
+   "amb": "wind",
+   "slay": "owl alive=false"
+  },
+  {
+   "f": "hanging-14-after.png",
+   "what": "after",
+   "at": [
+    25,
+    20
+   ],
+   "state": "win",
+   "spread": 18.7,
+   "meanL": 15.1,
+   "chroma": 8.9,
+   "warmth": -0.12,
+   "music": "town",
+   "amb": "wind"
+  }
+ ],
+ "shopCrag": [
+  {
+   "f": "shopCrag-00-opening.png",
+   "what": "opening",
+   "at": [
+    5,
+    20
+   ],
+   "state": "play",
+   "spread": 17.2,
+   "meanL": 14.6,
+   "chroma": 9.9,
+   "warmth": -0.26,
+   "music": "store",
+   "amb": "hall"
+  },
+  {
+   "f": "shopCrag-01-inside.png",
+   "what": "inside",
+   "at": [
+    5,
+    20
+   ],
+   "state": "play",
+   "spread": 17.6,
+   "meanL": 15.2,
+   "chroma": 10.5,
+   "warmth": -0.15,
+   "music": "store",
+   "amb": "hall"
+  }
+ ],
+ "spire": [
+  {
+   "f": "spire-00-opening.png",
+   "what": "opening",
+   "at": [
+    5,
+    218
+   ],
+   "state": "play",
+   "spread": 44,
+   "meanL": 24.7,
+   "chroma": 6.2,
+   "warmth": 0.06,
+   "music": "sunspire",
+   "amb": "wind"
+  },
+  {
+   "f": "spire-01-route1.png",
+   "what": "route1",
+   "at": [
+    34,
+    218
+   ],
+   "state": "play",
+   "spread": 46.1,
+   "meanL": 41.5,
+   "chroma": 10,
+   "warmth": -0.09,
+   "music": "sunspire",
+   "amb": "wind",
+   "routeTile": 26
+  },
+  {
+   "f": "spire-02-route2.png",
+   "what": "route2",
+   "at": [
+    78,
+    186
+   ],
+   "state": "play",
+   "spread": 29.6,
+   "meanL": 34.8,
+   "chroma": 4.1,
+   "warmth": 0.13,
+   "music": "sunspire",
+   "amb": "wind",
+   "routeTile": 77
+  },
+  {
+   "f": "spire-03-route3.png",
+   "what": "route3",
+   "at": [
+    50,
+    169
+   ],
+   "state": "play",
+   "spread": 33.7,
+   "meanL": 32.9,
+   "chroma": 7,
+   "warmth": 0.48,
+   "music": "sunspire",
+   "amb": "hall",
+   "routeTile": 128
+  },
+  {
+   "f": "spire-04-route4.png",
+   "what": "route4",
+   "at": [
+    51,
+    137
+   ],
+   "state": "play",
+   "spread": 42.5,
+   "meanL": 38.2,
+   "chroma": 6.7,
+   "warmth": 0.24,
+   "music": "sunspire",
+   "amb": "hall",
+   "routeTile": 180
+  },
+  {
+   "f": "spire-05-route5.png",
+   "what": "route5",
+   "at": [
+    13,
+    124
+   ],
+   "state": "play",
+   "spread": 58.1,
+   "meanL": 46.5,
+   "chroma": 12.3,
+   "warmth": -0.37,
+   "music": "sunspire",
+   "amb": "hall",
+   "routeTile": 231
+  },
+  {
+   "f": "spire-06-route6.png",
+   "what": "route6",
+   "at": [
+    60,
+    118
+   ],
+   "state": "play",
+   "spread": 48.1,
+   "meanL": 44.1,
+   "chroma": 8.9,
+   "warmth": -0.15,
+   "music": "sunspire",
+   "amb": "wind",
+   "routeTile": 283
+  },
+  {
+   "f": "spire-07-route7.png",
+   "what": "route7",
+   "at": [
+    84,
+    100
+   ],
+   "state": "play",
+   "spread": 58.9,
+   "meanL": 38.6,
+   "chroma": 5.5,
+   "warmth": 0.2,
+   "music": "sunspire",
+   "amb": "wind",
+   "routeTile": 334
+  },
+  {
+   "f": "spire-08-route8.png",
+   "what": "route8",
+   "at": [
+    31,
+    100
+   ],
+   "state": "play",
+   "spread": 45.5,
+   "meanL": 38.9,
+   "chroma": 5.3,
+   "warmth": 0.27,
+   "music": "sunspire",
+   "amb": "wind",
+   "routeTile": 385
+  },
+  {
+   "f": "spire-09-route9.png",
+   "what": "route9",
+   "at": [
+    55,
+    74
+   ],
+   "state": "play",
+   "spread": 64.3,
+   "meanL": 55.5,
+   "chroma": 11,
+   "warmth": -0.36,
+   "music": "sunspire",
+   "amb": "wind",
+   "routeTile": 437
+  },
+  {
+   "f": "spire-10-route10.png",
+   "what": "route10",
+   "at": [
+    76,
+    51
+   ],
+   "state": "play",
+   "spread": 58.1,
+   "meanL": 56.3,
+   "chroma": 15.2,
+   "warmth": -0.49,
+   "music": "sunspire",
+   "amb": "wind",
+   "routeTile": 488
+  },
+  {
+   "f": "spire-11-mini.png",
+   "what": "mini",
+   "at": [
+    38,
+    56
+   ],
+   "state": "play",
+   "spread": 44.9,
+   "meanL": 37.4,
+   "chroma": 6.1,
+   "warmth": 0.36,
+   "music": "boss",
+   "amb": "hall"
+  },
+  {
+   "f": "spire-12-boss.png",
+   "what": "boss",
+   "at": [
+    44,
+    30
+   ],
+   "state": "play",
+   "spread": 60,
+   "meanL": 50.2,
+   "chroma": 14.9,
+   "warmth": -0.22,
+   "music": "roc",
+   "amb": "wind"
+  },
+  {
+   "f": "spire-13-kill.png",
+   "what": "kill",
+   "at": [
+    44,
+    30
+   ],
+   "state": "play",
+   "spread": 55.6,
+   "meanL": 49,
+   "chroma": 15.2,
+   "warmth": -0.3,
+   "music": "sunspire",
+   "amb": "wind",
+   "slay": "abbot alive=false"
+  },
+  {
+   "f": "spire-14-after.png",
+   "what": "after",
+   "at": [
+    44,
+    30
+   ],
+   "state": "win",
+   "spread": 23.5,
+   "meanL": 16.4,
+   "chroma": 9,
+   "warmth": -0.19,
+   "music": "sunspire",
+   "amb": "wind"
+  }
+ ],
+ "moor": [
+  {
+   "f": "moor-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    22
+   ],
+   "state": "play",
+   "spread": 33.3,
+   "meanL": 24.6,
+   "chroma": 12.2,
+   "warmth": 0.52,
+   "music": "adventure",
+   "amb": "wind"
+  },
+  {
+   "f": "moor-01-route1.png",
+   "what": "route1",
+   "at": [
+    47,
+    22
+   ],
+   "state": "play",
+   "spread": 33.1,
+   "meanL": 33.3,
+   "chroma": 16,
+   "warmth": 0.58,
+   "music": "adventure",
+   "amb": "wind",
+   "routeTile": 35
+  },
+  {
+   "f": "moor-02-route2.png",
+   "what": "route2",
+   "at": [
+    113,
+    22
+   ],
+   "state": "play",
+   "spread": 37.6,
+   "meanL": 31,
+   "chroma": 13.4,
+   "warmth": 0.68,
+   "music": "adventure",
+   "amb": "wind",
+   "routeTile": 105
+  },
+  {
+   "f": "moor-03-route3.png",
+   "what": "route3",
+   "at": [
+    181,
+    22
+   ],
+   "state": "play",
+   "spread": 38.2,
+   "meanL": 31.4,
+   "chroma": 14,
+   "warmth": 0.7,
+   "music": "adventure",
+   "amb": "wind",
+   "routeTile": 175
+  },
+  {
+   "f": "moor-04-route4.png",
+   "what": "route4",
+   "at": [
+    250,
+    24
+   ],
+   "state": "play",
+   "spread": 31.9,
+   "meanL": 27.7,
+   "chroma": 12.3,
+   "warmth": 0.68,
+   "music": "adventure",
+   "amb": "wind",
+   "routeTile": 245
+  },
+  {
+   "f": "moor-05-route5.png",
+   "what": "route5",
+   "at": [
+    316,
+    14
+   ],
+   "state": "play",
+   "spread": 39.5,
+   "meanL": 33.7,
+   "chroma": 21.4,
+   "warmth": 0.72,
+   "music": "adventure",
+   "amb": "wind",
+   "routeTile": 315
+  },
+  {
+   "f": "moor-06-route6.png",
+   "what": "route6",
+   "at": [
+    380,
+    22
+   ],
+   "state": "play",
+   "spread": 36.7,
+   "meanL": 28.8,
+   "chroma": 13.2,
+   "warmth": 0.69,
+   "music": "adventure",
+   "amb": "wind",
+   "routeTile": 384
+  },
+  {
+   "f": "moor-07-route7.png",
+   "what": "route7",
+   "at": [
+    439,
+    24
+   ],
+   "state": "play",
+   "spread": 33.5,
+   "meanL": 26.6,
+   "chroma": 11.4,
+   "warmth": 0.57,
+   "music": "adventure",
+   "amb": "wind",
+   "routeTile": 454
+  },
+  {
+   "f": "moor-08-route8.png",
+   "what": "route8",
+   "at": [
+    505,
+    14
+   ],
+   "state": "play",
+   "spread": 36.7,
+   "meanL": 30.4,
+   "chroma": 13.4,
+   "warmth": 0.74,
+   "music": "adventure",
+   "amb": "wind",
+   "routeTile": 524
+  },
+  {
+   "f": "moor-09-route9.png",
+   "what": "route9",
+   "at": [
+    576,
+    13
+   ],
+   "state": "play",
+   "spread": 38.2,
+   "meanL": 37,
+   "chroma": 21.9,
+   "warmth": 0.65,
+   "music": "adventure",
+   "amb": "wind",
+   "routeTile": 594
+  },
+  {
+   "f": "moor-10-route10.png",
+   "what": "route10",
+   "at": [
+    626,
+    10
+   ],
+   "state": "play",
+   "spread": 41.3,
+   "meanL": 36.7,
+   "chroma": 22.1,
+   "warmth": 0.61,
+   "music": "adventure",
+   "amb": "wind",
+   "routeTile": 664
+  },
+  {
+   "f": "moor-11-boss.png",
+   "what": "boss",
+   "at": [
+    667,
+    13
+   ],
+   "state": "play",
+   "spread": 31.7,
+   "meanL": 31.6,
+   "chroma": 18,
+   "warmth": 0.58,
+   "music": "musMountain",
+   "amb": "wind"
+  },
+  {
+   "f": "moor-12-kill.png",
+   "what": "kill",
+   "at": [
+    667,
+    13
+   ],
+   "state": "play",
+   "spread": 36.8,
+   "meanL": 31.1,
+   "chroma": 13.7,
+   "warmth": 0.68,
+   "music": "adventure",
+   "amb": "wind",
+   "slay": "windcaller alive=false"
+  },
+  {
+   "f": "moor-13-after.png",
+   "what": "after",
+   "at": [
+    667,
+    13
+   ],
+   "state": "win",
+   "spread": 17.7,
+   "meanL": 13.9,
+   "chroma": 8.9,
+   "warmth": -0.02,
+   "music": "adventure",
+   "amb": "wind"
+  }
+ ],
+ "oreroad": [
+  {
+   "f": "oreroad-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    37
+   ],
+   "state": "play",
+   "spread": 25.6,
+   "meanL": 15,
+   "chroma": 5.3,
+   "warmth": -0.09,
+   "music": "oreroad",
+   "amb": "cave"
+  },
+  {
+   "f": "oreroad-01-route1.png",
+   "what": "route1",
+   "at": [
+    30,
+    35
+   ],
+   "state": "play",
+   "spread": 17.2,
+   "meanL": 11.1,
+   "chroma": 4.2,
+   "warmth": 0.04,
+   "music": "oreroad",
+   "amb": "cave",
+   "routeTile": 24
+  },
+  {
+   "f": "oreroad-02-route2.png",
+   "what": "route2",
+   "at": [
+    139,
+    37
+   ],
+   "state": "play",
+   "spread": 19.2,
+   "meanL": 12.1,
+   "chroma": 4.8,
+   "warmth": 0.07,
+   "music": "oreroad",
+   "amb": "cave",
+   "routeTile": 73
+  },
+  {
+   "f": "oreroad-03-route3.png",
+   "what": "route3",
+   "at": [
+    139,
+    37
+   ],
+   "state": "play",
+   "spread": 19,
+   "meanL": 12.2,
+   "chroma": 4.8,
+   "warmth": 0.07,
+   "music": "oreroad",
+   "amb": "cave",
+   "routeTile": 122
+  },
+  {
+   "f": "oreroad-04-route4.png",
+   "what": "route4",
+   "at": [
+    176,
+    37
+   ],
+   "state": "play",
+   "spread": 23,
+   "meanL": 13.7,
+   "chroma": 5,
+   "warmth": 0.06,
+   "music": "oreroad",
+   "amb": "cave",
+   "routeTile": 171
+  },
+  {
+   "f": "oreroad-05-route5.png",
+   "what": "route5",
+   "at": [
+    271,
+    35
+   ],
+   "state": "play",
+   "spread": 34.6,
+   "meanL": 17.7,
+   "chroma": 5.2,
+   "warmth": -0.09,
+   "music": "oreroad",
+   "amb": "cave",
+   "routeTile": 219
+  },
+  {
+   "f": "oreroad-06-route6.png",
+   "what": "route6",
+   "at": [
+    271,
+    35
+   ],
+   "state": "play",
+   "spread": 34.6,
+   "meanL": 17.7,
+   "chroma": 5.1,
+   "warmth": -0.09,
+   "music": "oreroad",
+   "amb": "cave",
+   "routeTile": 268
+  },
+  {
+   "f": "oreroad-07-route7.png",
+   "what": "route7",
+   "at": [
+    323,
+    33
+   ],
+   "state": "play",
+   "spread": 21.3,
+   "meanL": 12.8,
+   "chroma": 4.3,
+   "warmth": -0.01,
+   "music": "oreroad",
+   "amb": "cave",
+   "routeTile": 317
+  },
+  {
+   "f": "oreroad-08-route8.png",
+   "what": "route8",
+   "at": [
+    411,
+    13
+   ],
+   "state": "play",
+   "spread": 27.1,
+   "meanL": 15,
+   "chroma": 4.8,
+   "warmth": -0.01,
+   "music": "oreroad",
+   "amb": "cave",
+   "routeTile": 366
+  },
+  {
+   "f": "oreroad-09-route9.png",
+   "what": "route9",
+   "at": [
+    411,
+    13
+   ],
+   "state": "play",
+   "spread": 27.2,
+   "meanL": 15,
+   "chroma": 4.9,
+   "warmth": -0.01,
+   "music": "oreroad",
+   "amb": "cave",
+   "routeTile": 414
+  },
+  {
+   "f": "oreroad-10-route10.png",
+   "what": "route10",
+   "at": [
+    456,
+    13
+   ],
+   "state": "play",
+   "spread": 35,
+   "meanL": 17.4,
+   "chroma": 5.4,
+   "warmth": -0.03,
+   "music": "oreroad",
+   "amb": "cave",
+   "routeTile": 463
+  },
+  {
+   "f": "oreroad-11-boss.png",
+   "what": "boss",
+   "at": [
+    483,
+    13
+   ],
+   "state": "play",
+   "spread": 13.9,
+   "meanL": 11.2,
+   "chroma": 4.2,
+   "warmth": 0.09,
+   "music": "boss3",
+   "amb": "cave"
+  },
+  {
+   "f": "oreroad-12-kill.png",
+   "what": "kill",
+   "at": [
+    483,
+    13
+   ],
+   "state": "play",
+   "spread": 12.5,
+   "meanL": 10,
+   "chroma": 4.1,
+   "warmth": 0.07,
+   "music": "oreroad",
+   "amb": "cave",
+   "slay": "winchmaster alive=false"
+  },
+  {
+   "f": "oreroad-13-after.png",
+   "what": "after",
+   "at": [
+    483,
+    13
+   ],
+   "state": "win",
+   "spread": 16.3,
+   "meanL": 12.4,
+   "chroma": 8.4,
+   "warmth": -0.04,
+   "music": "oreroad",
+   "amb": "cave"
+  }
+ ],
+ "storm": [
+  {
+   "f": "storm-00-opening.png",
+   "what": "opening",
+   "at": [
+    4,
+    34
+   ],
+   "state": "play",
+   "spread": 20.2,
+   "meanL": 19,
+   "chroma": 8.7,
+   "warmth": -0.13,
+   "music": "stormhold",
+   "amb": "wind"
+  },
+  {
+   "f": "storm-01-route1.png",
+   "what": "route1",
+   "at": [
+    23,
+    34
+   ],
+   "state": "play",
+   "spread": 19.9,
+   "meanL": 22.4,
+   "chroma": 9.5,
+   "warmth": -0.02,
+   "music": "stormhold",
+   "amb": "wind",
+   "routeTile": 15
+  },
+  {
+   "f": "storm-02-route2.png",
+   "what": "route2",
+   "at": [
+    53,
+    34
+   ],
+   "state": "play",
+   "spread": 19.7,
+   "meanL": 20.5,
+   "chroma": 8.7,
+   "warmth": 0.02,
+   "music": "stormhold",
+   "amb": "wind",
+   "routeTile": 45
+  },
+  {
+   "f": "storm-03-route3.png",
+   "what": "route3",
+   "at": [
+    83,
+    34
+   ],
+   "state": "play",
+   "spread": 17.7,
+   "meanL": 21.9,
+   "chroma": 10.3,
+   "warmth": -0.09,
+   "music": "stormhold",
+   "amb": "wind",
+   "routeTile": 75
+  },
+  {
+   "f": "storm-04-route4.png",
+   "what": "route4",
+   "at": [
+    109,
+    32
+   ],
+   "state": "play",
+   "spread": 33.9,
+   "meanL": 21.5,
+   "chroma": 8.1,
+   "warmth": 0.08,
+   "music": "stormhold",
+   "amb": "wind",
+   "routeTile": 105
+  },
+  {
+   "f": "storm-05-route5.png",
+   "what": "route5",
+   "at": [
+    139,
+    32
+   ],
+   "state": "play",
+   "spread": 24.8,
+   "meanL": 20.1,
+   "chroma": 7.9,
+   "warmth": 0.04,
+   "music": "stormhold",
+   "amb": "wind",
+   "routeTile": 135
+  },
+  {
+   "f": "storm-06-route6.png",
+   "what": "route6",
+   "at": [
+    171,
+    30
+   ],
+   "state": "play",
+   "spread": 24.6,
+   "meanL": 23.3,
+   "chroma": 12.3,
+   "warmth": -0.02,
+   "music": "stormhold",
+   "amb": "wind",
+   "routeTile": 165
+  },
+  {
+   "f": "storm-07-route7.png",
+   "what": "route7",
+   "at": [
+    200,
+    32
+   ],
+   "state": "play",
+   "spread": 19.4,
+   "meanL": 21,
+   "chroma": 8.5,
+   "warmth": -0.02,
+   "music": "stormhold",
+   "amb": "wind",
+   "routeTile": 195
+  },
+  {
+   "f": "storm-08-route8.png",
+   "what": "route8",
+   "at": [
+    230,
+    30
+   ],
+   "state": "play",
+   "spread": 21.2,
+   "meanL": 20,
+   "chroma": 8.2,
+   "warmth": 0.09,
+   "music": "stormhold",
+   "amb": "wind",
+   "routeTile": 225
+  },
+  {
+   "f": "storm-09-route9.png",
+   "what": "route9",
+   "at": [
+    260,
+    41
+   ],
+   "state": "play",
+   "spread": 16.7,
+   "meanL": 19.7,
+   "chroma": 11.5,
+   "warmth": -0.17,
+   "music": "stormhold",
+   "amb": "wind",
+   "routeTile": 255
+  },
+  {
+   "f": "storm-10-route10.png",
+   "what": "route10",
+   "at": [
+    290,
+    30
+   ],
+   "state": "play",
+   "spread": 21.8,
+   "meanL": 22.1,
+   "chroma": 10,
+   "warmth": -0.05,
+   "music": "stormhold",
+   "amb": "wind",
+   "routeTile": 285
+  },
+  {
+   "f": "storm-11-boss.png",
+   "what": "boss",
+   "at": [
+    312,
+    30
+   ],
+   "state": "play",
+   "spread": 16,
+   "meanL": 23,
+   "chroma": 12.3,
+   "warmth": -0.12,
+   "music": "musCastle",
+   "amb": "wind"
+  },
+  {
+   "f": "storm-12-kill.png",
+   "what": "kill",
+   "at": [
+    312,
+    30
+   ],
+   "state": "play",
+   "spread": 40.3,
+   "meanL": 24.8,
+   "chroma": 11.6,
+   "warmth": -0.03,
+   "music": "stormhold",
+   "amb": "wind",
+   "slay": "lance alive=false"
+  },
+  {
+   "f": "storm-13-after.png",
+   "what": "after",
+   "at": [
+    312,
+    30
+   ],
+   "state": "win",
+   "spread": 14.5,
+   "meanL": 13.2,
+   "chroma": 8.9,
+   "warmth": -0.12,
+   "music": "stormhold",
+   "amb": "wind"
+  }
+ ],
+ "crown": [
+  {
+   "f": "crown-00-opening.png",
+   "what": "opening",
+   "at": [
+    13,
+    96
+   ],
+   "state": "play",
+   "spread": 25.4,
+   "meanL": 17.3,
+   "chroma": 9,
+   "warmth": -0.27,
+   "music": "highcrown",
+   "amb": "wind"
+  },
+  {
+   "f": "crown-01-route1.png",
+   "what": "route1",
+   "at": [
+    16,
+    84
+   ],
+   "state": "play",
+   "spread": 19.9,
+   "meanL": 17.9,
+   "chroma": 10.9,
+   "warmth": -0.08,
+   "music": "highcrown",
+   "amb": "wind",
+   "routeTile": 62
+  },
+  {
+   "f": "crown-02-route2.png",
+   "what": "route2",
+   "at": [
+    97,
+    72
+   ],
+   "state": "play",
+   "spread": 22.7,
+   "meanL": 18.9,
+   "chroma": 11,
+   "warmth": 0.03,
+   "music": "highcrown",
+   "amb": "wind",
+   "routeTile": 185
+  },
+  {
+   "f": "crown-03-route3.png",
+   "what": "route3",
+   "at": [
+    217,
+    64
+   ],
+   "state": "play",
+   "spread": 24.7,
+   "meanL": 20.9,
+   "chroma": 11,
+   "warmth": 0.03,
+   "music": "highcrown",
+   "amb": "wind",
+   "routeTile": 309
+  },
+  {
+   "f": "crown-04-route4.png",
+   "what": "route4",
+   "at": [
+    337,
+    62
+   ],
+   "state": "play",
+   "spread": 22.1,
+   "meanL": 20.8,
+   "chroma": 10.8,
+   "warmth": -0.15,
+   "music": "highcrown",
+   "amb": "wind",
+   "routeTile": 432
+  },
+  {
+   "f": "crown-05-route5.png",
+   "what": "route5",
+   "at": [
+    425,
+    40
+   ],
+   "state": "play",
+   "spread": 19,
+   "meanL": 20.8,
+   "chroma": 12.8,
+   "warmth": 0.1,
+   "music": "highcrown",
+   "amb": "wind",
+   "routeTile": 556
+  },
+  {
+   "f": "crown-06-route6.png",
+   "what": "route6",
+   "at": [
+    531,
+    64
+   ],
+   "state": "play",
+   "spread": 34.4,
+   "meanL": 20.4,
+   "chroma": 9,
+   "warmth": -0.14,
+   "music": "boss",
+   "amb": "hall",
+   "routeTile": 680
+  },
+  {
+   "f": "crown-07-route7.png",
+   "what": "route7",
+   "at": [
+    648,
+    60
+   ],
+   "state": "play",
+   "spread": 29.3,
+   "meanL": 18.2,
+   "chroma": 11.6,
+   "warmth": 0.55,
+   "music": "highcrown",
+   "amb": "forest",
+   "routeTile": 803
+  },
+  {
+   "f": "crown-08-route8.png",
+   "what": "route8",
+   "at": [
+    740,
+    52
+   ],
+   "state": "play",
+   "spread": 26.4,
+   "meanL": 14.2,
+   "chroma": 8.2,
+   "warmth": 0.24,
+   "music": "highcrown",
+   "amb": "hall",
+   "routeTile": 927
+  },
+  {
+   "f": "crown-09-route9.png",
+   "what": "route9",
+   "at": [
+    746,
+    40
+   ],
+   "state": "play",
+   "spread": 26.4,
+   "meanL": 16.1,
+   "chroma": 9.5,
+   "warmth": 0.5,
+   "music": "highcrown",
+   "amb": "hall",
+   "routeTile": 1050
+  },
+  {
+   "f": "crown-10-route10.png",
+   "what": "route10",
+   "at": [
+    842,
+    26
+   ],
+   "state": "play",
+   "spread": 37.6,
+   "meanL": 19.9,
+   "chroma": 9.5,
+   "warmth": 0.17,
+   "music": "highcrown",
+   "amb": "hall",
+   "routeTile": 1174
+  },
+  {
+   "f": "crown-11-mini.png",
+   "what": "mini",
+   "at": [
+    522,
+    64
+   ],
+   "state": "play",
+   "spread": 26.9,
+   "meanL": 18.9,
+   "chroma": 9.2,
+   "warmth": -0.03,
+   "music": "boss",
+   "amb": "hall"
+  },
+  {
+   "f": "crown-12-boss.png",
+   "what": "boss",
+   "at": [
+    910,
+    20
+   ],
+   "state": "play",
+   "spread": 21.2,
+   "meanL": 16.2,
+   "chroma": 13,
+   "warmth": 0.15,
+   "music": "queen",
+   "amb": "hall"
+  },
+  {
+   "f": "crown-13-kill.png",
+   "what": "kill",
+   "at": [
+    910,
+    20
+   ],
+   "state": "play",
+   "spread": 42.9,
+   "meanL": 71.3,
+   "chroma": 2.7,
+   "warmth": 0.03,
+   "music": "highcrown",
+   "amb": "hall",
+   "slay": "gqueen alive=false"
+  },
+  {
+   "f": "crown-14-after.png",
+   "what": "after",
+   "at": [
+    910,
+    20
+   ],
+   "state": "win",
+   "spread": 15.6,
+   "meanL": 12.9,
+   "chroma": 8.4,
+   "warmth": -0.03,
+   "music": "highcrown",
+   "amb": "hall"
+  }
+ ]
+}
