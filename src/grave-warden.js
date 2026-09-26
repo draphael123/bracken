@@ -1,6 +1,6 @@
 // grave-warden.js — THE GRAVE WARDEN, the Burial Caverns' mini (batch 4b, 2026-09-22). Brief: .claude/briefs/burial-rework.md.
 // The ossuary's keeper: huge, slow, an armoured skeleton in a gravedigger's hood, a spade and a bell-lantern on a chain.
-// Fought in his round bone vault with OPEN GRAVES in the floor (burial-rework.js). His art: src/redraw/queue_bosses.js.
+// Fought in his round bone vault with OPEN GRAVES in the floor (src/burial-caverns.js since claude/burial2). His art: src/redraw/queue_bosses.js.
 //   SPADE CLEAVE   !    a wide overhead chop, a long windup (the spade behind his head): guard it, or step back
 //   GRAVE TOSS     !    he scoops grave dirt and flings three arcing clods: guard, or jump between them
 //   LANTERN SWING  ✕    the lantern whirled low round him, twice (three times in phase two): too heavy to guard - jump it

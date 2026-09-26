@@ -1,7 +1,8 @@
-/* tools/burial-variety.mjs — THE BLIND VAULT, THE UNLIT CRYPT and THE ROTTEN BRIDGES (Daniel, 2026-09-24; src/burial-variety.js).
+/* tools/burial-variety.mjs — THE BLIND VAULT and THE ROTTEN BRIDGES (Daniel, 2026-09-24; src/burial-variety.js; the dark crypt under the
+   Restless Rows went with them in claude/burial2, and THE ROTTEN BRIDGES is dark now: the level's exam).
    By the map:
      1. two dark places, each a darkZone, each lit by pockets no further apart than a screen can show two of (from the dark
-        there is always a lamp ahead), and a sign at its door that says what it is
+        there is always a lamp ahead - a torch, a candle, or a vent you can light), and a sign at its door that says what it is
      2. two rotten spans over green water; the water is told (poison, harm, foul colour), every end of it has a chain that
         reaches its bed and climbs above the road (C5), nobody is garrisoned on a board, and with EVERY board gone the Buried
         Dead can still be reached (B4: the bridges are the quick way, never the only way)
@@ -21,11 +22,13 @@ const L = build(), at = (x, y) => L.grid[y * L.W + x];
 const reachesArena = S => { const s = floodReach(S, T, { rides: true }).seen, t = Math.floor(S.arena.trigger / 16); return [...s].some(k => +k.split(',')[0] >= t); };
 // 1. the dark places
 const zones = (L.darkZones || []).filter(z => z.name);
-assert.deepEqual(zones.map(z => z.name).sort(), ['THE BLIND VAULT', 'THE UNLIT CRYPT'], 'two named dark places');
+assert.deepEqual(zones.map(z => z.name).sort(), ['THE BLIND VAULT', 'THE ROTTEN BRIDGES'], 'two named dark places');
 for (const z of zones) {
   assert.ok(z.dark >= 0.5 && z.dark <= 0.7, z.name + ': dark enough to be a place, not so dark the footing goes (0.72 lost the Reef its footing): ' + z.dark);
-  const x0 = z.x0 / TS, x1 = z.x1 / TS, lamps = L.ents.filter(e => e.t === 'torch' && e.x >= x0 - 6 && e.x <= x1 + 6 && e.y * TS >= z.y0 && e.y * TS < z.y1).map(e => e.x).sort((a, b) => a - b);
-  assert.ok(lamps.length >= 4, z.name + ' has its lamps: ' + lamps);
+  const x0 = z.x0 / TS, x1 = z.x1 / TS, inZ = (x, y) => x >= x0 - 6 && x <= x1 + 6 && y * TS >= z.y0 && y * TS < z.y1;
+  const all = L.ents.filter(e => e.t === 'torch' && inZ(e.x, e.y)).map(e => e.x).concat((L.candles || []).filter(c => inZ(c.x, c.y)).map(c => c.x), (L.gasVents || []).filter(v => inZ(v.x, v.y - 1)).map(v => v.x)).sort((a, b) => a - b);
+  const lamps = all.filter((x, i) => i === all.length - 1 || all[i + 1] - x >= 6);   /* a pocket: lights within six tiles of each other are one, counted where it ends */
+  assert.ok(lamps.length >= 3 && x1 - lamps[lamps.length - 1] <= 22, z.name + ' has its lamps, and one near its far end: ' + lamps);
   const gaps = lamps.slice(1).map((x, i) => x - lamps[i]);
   assert.ok(Math.max(...gaps) <= 22, z.name + ': from the dark a lamp is always on the screen ahead (gaps ' + gaps + ')');
   assert.ok(Math.min(...gaps) >= 8, z.name + ': the pockets have dark between them (gaps ' + gaps + ')');
@@ -38,7 +41,7 @@ for (const z of L.crumble) {
   const pool = L.pools.find(p => p.x0 <= z.x0 * TS && p.x1 >= (z.x1 + 1) * TS && p.y > z.row * TS);
   assert.ok(pool && pool.poison && pool.harm && pool.foulCol, 'green water under the span at ' + z.x0 + ' (C1)');
   const bed = Math.round(pool.bottom / TS) - 1;
-  for (const x of [z.x0 - 1, z.x1 + 1]) { for (let y = 30; y <= bed; y++) assert.equal(at(x, y), T.NET, 'a chain out of the poison at ' + x + ',' + y + ' (C5)'); }
+  for (const x of [z.x0 - 1, z.x1 + 1]) { for (let y = z.row - 1; y <= bed; y++) assert.equal(at(x, y), T.NET, 'a chain out of the poison at ' + x + ',' + y + ' (C5)'); }
   assert.ok(L.ents.filter(e => !['coin', 'deco', 'torch'].includes(e.t) && e.x >= z.x0 && e.x <= z.x1 && e.y >= z.row - 4 && e.y <= z.row + 8).length === 0, 'nothing placed on or under the boards at ' + z.x0);
   assert.ok(L.ents.some(e => e.t === 'sign' && e.text.startsWith('THE ROTTEN BRIDGES')), 'the bridges are named');
 }
@@ -53,20 +56,20 @@ try {
     const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='burial'));BK.state='play';BK.god=false;for(const e of BK.enemies())e.alive=false;return BK.L;};
     const P=()=>BK.P,board=(L,x)=>L.grid[L.crumble[0].row*L.W+x];
     /* 3a. WALK IT: from the west bank, holding right, to the pier */
-    {const L=boot(),z=L.crumble[0];BK.tp(z.x0-3,31);BK.sim(20);let low=0,cracked=0;const seen=new Set();
-     while(P().x<(z.x1+3)*16&&low<1){BK.keys.right=true;BK.sim(1);if(P().y>32*16)low++;for(const k in L.crumbleState||{}){const s=L.crumbleState[k];if(s.st==='crack'&&!seen.has(k)){seen.add(k);cracked++;}}}
+    {const L=boot(),z=L.crumble[0];BK.tp(z.x0-3,z.row-1);BK.sim(20);let low=0,cracked=0;const seen=new Set();
+     while(P().x<(z.x1+3)*16&&low<1){BK.keys.right=true;BK.sim(1);if(P().y>z.row*16)low++;for(const k in L.crumbleState||{}){const s=L.crumbleState[k];if(s.st==='crack'&&!seen.has(k)){seen.add(k);cracked++;}}}
      BK.keys.right=false;BK.sim(40);let gone=0;for(let x=z.x0;x<=z.x1;x++)if(board(L,x)!==8)gone++;
      out.walk={fell:low>0,cracked,gone,of:z.x1-z.x0+1,venom:+(P().venomT||0).toFixed(2),x:Math.round(P().x/16)};}
     /* 3b. STAND ON ONE: the board holds while it cracks, then it goes and so do you */
-    {const L=boot(),z=L.crumble[0],x=z.x0+6;BK.tp(x,31);BK.sim(3);const y0=P().y;let heldFor=0,fellAt=null;
+    {const L=boot(),z=L.crumble[0],x=z.x0+6;BK.tp(x,z.row-1);BK.sim(3);const y0=P().y;let heldFor=0,fellAt=null;
      for(let f=0;f<120;f++){BK.sim(1);if(fellAt===null&&P().y>y0+4)fellAt=f;else if(fellAt===null)heldFor=f;}
-     BK.sim(60);out.stand={heldFor:+(heldFor/60).toFixed(2),fellAt,venom:+(P().venomT||0).toFixed(2),inWater:P().y>33*16};}
+     BK.sim(60);out.stand={heldFor:+(heldFor/60).toFixed(2),fellAt,venom:+(P().venomT||0).toFixed(2),inWater:P().y>(z.row+1)*16};}
     /* 4a. IT COMES BACK: out of its way on the pier, the span is whole again after it has been quiet */
-    {const L=boot(),z=L.crumble[0];BK.tp(z.x0+4,31);BK.sim(90);BK.tp(z.x1+3,31);let backAt=null;
+    {const L=boot(),z=L.crumble[0];BK.tp(z.x0+4,z.row-1);BK.sim(90);BK.tp(z.x1+3,z.row-1);let backAt=null;
      for(let f=0;f<60*10;f++){BK.sim(1);let whole=true;for(let x=z.x0;x<=z.x1;x++)if(board(L,x)!==8)whole=false;if(whole){backAt=f;break;}}
      out.back={secs:backAt===null?null:+(backAt/60).toFixed(1)};}
     /* 4b. AND A DEATH PUTS IT BACK: break boards, die, respawn */
-    {const L=boot(),z=L.crumble[0];BK.tp(z.x0+4,31);BK.sim(90);let broke=0;for(let x=z.x0;x<=z.x1;x++)if(board(L,x)!==8)broke++;
+    {const L=boot(),z=L.crumble[0];BK.tp(z.x0+4,z.row-1);BK.sim(90);let broke=0;for(let x=z.x0;x<=z.x1;x++)if(board(L,x)!==8)broke++;
      BKT.respawn();BK.sim(5);
      let whole=0;for(let x=z.x0;x<=z.x1;x++)if(board(L,x)===8)whole++;out.respawn={broke,whole,of:z.x1-z.x0+1,alive:!BK.P.dead};}
     /* 5. THE DARK, by the pixels: the same place, zone on and zone off */
@@ -75,8 +78,8 @@ try {
     const buf=()=>BK.view.buf.getContext('2d'),lum=()=>{const d=buf().getImageData(0,48,320,132).data;let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*.3+d[i+1]*.59+d[i+2]*.11;return s/(d.length/4);};
     /* the dark EASES in the draw, and BK.step(n) draws once: so a frame at a time, or it has moved 8% (the first run of this measured 28 against 29 and blamed the dark) */
     const walk=n=>{for(let i=0;i<n;i++)BK.step(1);};
-    {const L=boot();BK.tp(355,31);walk(90);const on=lum();const keep=L.darkZones;L.darkZones=[];walk(90);const off=lum();L.darkZones=keep;out.dark={on:Math.round(on),off:Math.round(off)};}
-    {const L=boot();const v=L.gasVents.find(v=>v.x===540);BK.tp(534,38);BK.step(30);let idle=null,puff=null;
+    {const L=boot();BK.tp(158,21);walk(90);const on=lum();const keep=L.darkZones;L.darkZones=[];walk(90);const off=lum();L.darkZones=keep;out.dark={on:Math.round(on),off:Math.round(off)};}
+    {const L=boot();const v=L.gasVents.find(v=>v.x===435);BK.tp(433,21);BK.step(30);let idle=null,puff=null;
      for(let f=0;f<400&&(idle===null||puff===null);f++){BK.step(1);const sx=Math.round(v.x*16+8-BK.cam[0]),sy=Math.round(v.y*16-24-BK.cam[1]);
        const d=buf().getImageData(Math.max(0,sx-8),Math.max(0,sy-8),16,16).data;let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*.3+d[i+1]*.59+d[i+2]*.11;s/=d.length/4;
        if(v.state==='idle'&&idle===null)idle=s;if(v.state==='puff'&&puff===null&&f>30)puff=s;}

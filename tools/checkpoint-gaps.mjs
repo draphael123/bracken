@@ -21,7 +21,6 @@ import { pacing } from './pacing.mjs';
 
 const LIMIT = 150;   /* src/playtest.js LONGGAP: "more than 150 columns with no checkpoint" */
 const KNOWN = new Map([
-  ['burial', 'THE BURIAL CAVERNS, 1140x112, measured 206 (from route 707): a wide level the filler measures by ROWS because it is taller than sixty. For the Burial rework\'s owner: one checkpoint near route 810, or make checkpoints() key a tall level on its route.'],
 ]);
 const bad = [], stale = [], rows = [];
 for (const lv of LEVELS) {

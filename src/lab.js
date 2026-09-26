@@ -834,6 +834,15 @@ async function runbossLab(BK, opts) {
         const target=add&&Math.abs(add.x-P.x)<130?add:boss,dx=target.x-P.x,side=Math.sign(dx)||1,mode=boss.mode;let gx=target.x-side*(target.graveAdd?12:Math.max(20,LAB_REACH[h]*.65));
         const eruption=mode==='burrow'||mode==='eruptTell';
         if(eruption){const near=Math.abs(P.x-boss.x)<65;gx=near?boss.x+(P.x>boss.x?1:-1)*80:P.x;if(gx<A.x0+20)gx=boss.x+80;if(gx>A.x1-20)gx=boss.x-80;}
+        /* THE GAS (claude/burial2): his rest opens nothing now, so the bot makes his opening the way a player does - fire from a wall
+           candle, the vent he is nearest struck with it, then stand past the flame so he walks into it. Open, it fights him. */
+        let ventHit=null;
+        if(!eruption&&!(boss.open>0)&&!(target.graveAdd&&Math.abs(target.x-P.x)<40)&&!['slamTell','novaTell','bodyTell','bodyFly','clawTell'].includes(mode)){
+          const vents=(BK.L.gasVents||[]).filter(v=>v.x*16>A.x0&&v.x*16<A.x1),vx=v=>v.x*16+8,burning=vents.find(v=>v.litT>1&&!v.burnt);
+          if(burning){const side=Math.sign(vx(burning)-boss.x)||1;gx=vx(burning)+side*44;if(gx<A.x0+14||gx>A.x1-14)gx=vx(burning)-side*44;}
+          else if(P.candle>0){const v=vents.slice().sort((a,b)=>Math.abs(vx(a)-boss.x)-Math.abs(vx(b)-boss.x))[0];if(v){const from=Math.sign(P.x-vx(v))||1;gx=vx(v)+from*12;if(Math.abs(P.x-gx)<8&&P.ground)ventHit=v;}}
+          else{const c=(BK.L.candles||[]).filter(c=>c.x*16>A.x0-24&&c.x*16<A.x1+24).sort((a,b)=>Math.abs(a.x*16+8-P.x)-Math.abs(b.x*16+8-P.x))[0];if(c)gx=c.x*16+8;}}
+        if(ventHit&&P.atk<0){P.face=Math.sign(ventHit.x*16+8-P.x)||1;BK.press('atk');}
         if(mode==='slamTell'&&boss.modeT<.3&&P.ground){BK.press('jump');P.labJump=18;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(P.ground&&P.y<A.floor-20&&mode!=='slamTell'){k.down=true;BK.press('jump');}

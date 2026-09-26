@@ -1,62 +1,16 @@
-// burial-variety.js — THE BURIAL CAVERNS GET PLACES (Daniel, 2026-09-24): "more variety - some dark areas, lamp-lit pockets with
-// darkness between, like the Ore Road's cavern; and bridges over poison water that disintegrate a moment after you step on them".
-// The level's problem is SHAPE, not density (docs/briefs/burial-caverns-rework.md): 1,140 columns and ~230 of them a place. These
-// three break the two longest undivided stretches into places you would name to somebody:
+// burial-variety.js — THE BURIAL CAVERNS' DARK AND THE ROTTEN BRIDGES, at run time (2026-09-24; the level is src/burial-caverns.js since
+// claude/burial2). The builder places the boards (L.crumble) and the dark (L.darkZones); this file makes them behave.
 //
-//   THE BLIND VAULT      cols 322-405, the old vault and the road to the Grave Causeway. Lamps every ~17 columns, dark between
-//                        them, the dead buried in the dark stretches. You walk it lamp to lamp.
-//   THE UNLIT CRYPT      the Restless Rows' lower crypt (504-588, rows 34-38): the way under the fallen wall. Half its torches out,
-//                        and its three gas vents GLOW when they hiss and when they puff - the poison is its own warning light.
-//   THE ROTTEN BRIDGES   the Bone Stairs' east end (933-978): two spans of rotten board over green water, a stone pier between.
-//                        A board holds a moment and no more: it cracks (you see it and hear it) and drops half a second later,
-//                        so you cross at a walk and never stop on one. Chains at every end of the poison climb you out (C5), and
-//                        a span puts itself back five seconds after its last board fell, and whole on every respawn (B4).
+// THE ROTTEN BRIDGES: two spans of rotten board over green water. A board holds a moment and no more: it cracks (you see it and hear
+// it) and drops half a second later, so you cross at a walk and never stop on one. Chains at every end of the poison climb you out
+// (C5), and a span puts itself back five seconds after its last board fell, and whole on every respawn (B4).
 //
-// THE DARK IS FAIR (C1/C3), on four counts: the dark is a darkZone (the engine's own - main.js eases into it as you walk), so
-// a foe inside it gets a rim whatever the setting says; every mark over a head is drawn after the dark (drawTells); a lamp
-// is never more than ~17 columns from the next, so from the dark there is always one on the screen ahead; and anything that
-// flies at you in the dark carries a little light (burialHoles), as does a vent about to puff.
-
+// THE DARK IS FAIR (C1/C3): the dark is a darkZone (the engine's own - main.js eases into it as you walk), so a foe inside it gets a
+// rim whatever the setting says; every mark over a head is drawn after the dark (drawTells); and anything that is about to hurt you
+// carries a little light (burialHoles): a vent that hisses or puffs, and anything thrown or loosed. A BURNING VENT is a lamp, and the
+// fire in your hand is a small one.
 export const BURIAL_DARK = 0.6;                     /* the Ore Road is 0.34 over everything; a zone can go darker because it ends */
 export const CRUMBLE = { hold: 0.55, back: 5 };     /* seconds a cracked board holds; seconds a span waits, after its last board fell, to come back */
-export const BLIND = [322, 405], CRYPT = [503, 590], BRIDGES = [[933, 953], [966, 978]];
-
-export function varyBurial({ L, T, TS, rw }) {
-  const { set, ent, coins } = L, W = L.W;
-  const net = (x, a, b) => { for (let y = a; y <= b; y++) set(x, y, T.NET); };
-  const drop = pred => { for (let i = L.ents.length - 1; i >= 0; i--) if (pred(L.ents[i])) L.ents.splice(i, 1); };
-  const darkZones = [], pools = [], crumble = [], calm = [];
-
-  // ---- 1. THE BLIND VAULT ----
-  darkZones.push({ x0: BLIND[0] * TS, x1: (BLIND[1] + 1) * TS, y0: 12 * TS, y1: 34 * TS, dark: BURIAL_DARK, name: 'THE BLIND VAULT' });
-  for (const x of [346, 380]) ent('torch', x, 31);                                   /* with 311, 328, 364 and the Causeway's 392: a pocket every ~17 */
-  for (const x of [337, 355, 372]) ent('zombie', x, 31, { buried: true, face: -1 });  /* in the dark between the pockets: MOVING EARTH is a mark, and marks are drawn over the dark */
-  { const s = L.ents.find(e => e.t === 'sign' && e.x === 321); if (s) s.text = 'THE BLIND VAULT. WALK LAMP TO LAMP: THE DEAD LIE IN THE DARK BETWEEN.'; }
-
-  // ---- 2. THE UNLIT CRYPT ----
-  darkZones.push({ x0: CRYPT[0] * TS, x1: (CRYPT[1] + 1) * TS, y0: 32 * TS, y1: 40 * TS, dark: BURIAL_DARK, name: 'THE UNLIT CRYPT' });
-  drop(e => e.t === 'torch' && e.y === 38 && [523, 545, 567].includes(e.x));          /* every other torch out: pockets at 512, 534, 556, 578 */
-  ent('sign', 500, 31, { text: 'THE UNLIT CRYPT. THE GAS GLOWS BEFORE IT BURNS: WAIT FOR THE GREEN TO GO OUT.' });
-
-  // ---- 3. THE ROTTEN BRIDGES ----
-  for (const [a, b] of BRIDGES) {
-    for (let y = 32; y <= 39; y++) for (let x = a; x <= b; x++) set(x, y, T.AIR);
-    pools.push({ x0: a * TS, x1: (b + 1) * TS, y: 33 * TS, depth: 7 * TS, bottom: 40 * TS, swim: true, clear: true, harm: true, poison: true, foulCol: '#5c8a24', foulColL: '#a6e04a', foulColD: '#1c3212' });
-    for (const x of [a, b]) net(x, L.grid[23 * W + x] === T.NET ? 23 : 30, 39);    /* a chain at each end, into the water: the arch ropes at 933 and 966 already hang there, and go down now */
-    for (let x = a + 1; x < b; x++) set(x, 32, T.PLANK);
-    crumble.push({ x0: a + 1, x1: b - 1, row: 32, tile: T.PLANK, quiet: 0 });
-    calm.push([a - 1, b + 1, 20, 40]);                                                 /* nobody is garrisoned on a board that drops */
-    drop(e => e.t !== 'coin' && e.x >= a && e.x <= b && e.y <= 32 && e.y >= 28);      /* the road's torch, bones and walker over the new water */
-    for (let x = a + 3; x < b - 1; x += 4) coins([x, 30]);
-  }
-  ent('torch', 931, 31); ent('torch', 956, 31);
-  ent('sign', 928, 31, { text: 'THE ROTTEN BRIDGES. A BOARD HOLDS A MOMENT: KEEP WALKING. THE CHAINS CLIMB OUT.' });
-  /* the pier between the spans is held: the level's third elite husk stands on it (level.js ELITES) with the bone archer the
-     road already had, who shoots down the first span - and you cannot stop to block on a board */
-  ent('boo', 972, 27, { face: -1 });                                                    /* and a pale face over the second */
-
-  return { pools: rw.pools.concat(pools), darkZones, crumble, calm, burialPlaces: [['THE BLIND VAULT', ...BLIND], ['THE UNLIT CRYPT', ...CRYPT], ['THE ROTTEN BRIDGES', BRIDGES[0][0], BRIDGES[1][1]]] };
-}
 
 /* ---- THE BOARDS, at run time. io: { air, spr(i) -> sprite, setSpr(i, s), crack(tx, ty), fall(tx, ty), back(z), emit(p) } ---- */
 const onSpan = (L, tx, ty) => (L.crumble || []).find(z => z.row === ty && tx >= z.x0 && tx <= z.x1);
@@ -108,8 +62,11 @@ export function burialHoles(L, hole, cx, cy, time, seeds, P) {
   if (!L.darkZones || !L.gasVents) return;
   const inDark = (x, y) => L.darkZones.some(z => x > z.x0 - 32 && x < z.x1 + 32 && y > z.y0 - 32 && y < z.y1 + 32);
   if (!inDark(P.x, P.y)) return;
-  for (const v of L.gasVents) { if (v.state !== 'warn' && v.state !== 'puff') continue; const x = v.x * 16 + 8, y = v.y * 16;
-    if (x - cx < -60 || x - cx > 380 || !inDark(x, y)) continue;
-    if (v.state === 'warn') hole(x - cx, y - 10 - cy, 30, 0.7); else hole(x - cx, y - 28 - cy, 46, 0.9); }
+  for (const v of L.gasVents) { const x = v.x * 16 + 8, y = v.y * 16;
+    if (x - cx < -120 || x - cx > 440 || !inDark(x, y)) continue;
+    if (v.litT > 0) { hole(x - cx, y - 16 - cy, 96 * (v.litT < 3 ? 0.7 + 0.3 * Math.abs(Math.sin(time * 9)) : 1), 1); continue; }   /* A BURNING VENT IS A LAMP (VENT.light) */
+    if (v.state === 'warn') hole(x - cx, y - 10 - cy, 30, 0.7); else if (v.state === 'puff') hole(x - cx, y - 28 - cy, 46, 0.9); }
+  for (const c of L.candles || []) { const x = c.x * 16 + 8, y = c.y * 16 - 8; if (x - cx > -60 && x - cx < 380 && inDark(x, y)) hole(x - cx, y - cy, 40, 0.8); }
+  if (P.candle > 0 && !P.dead) hole(P.x - cx, P.y - 14 - cy, 44, 0.85);
   for (const s of seeds || []) if (!s.dead && inDark(s.x, s.y)) hole(s.x - cx, s.y - cy, 18, 0.8);
 }
