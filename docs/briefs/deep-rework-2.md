@@ -52,7 +52,7 @@ would have none if the Deep met him first (a question for Daniel).
   attacks 0.35 s now there is no vent after each). Health stays 750 unless the pilots say otherwise (reported, not tuned).
 - **PHASE 3, THE BELL CRACKS AND HE COMES OUT** (a third of his health): the cracked bell stays on the floor and the crab runs
   out of it - fast, soft (x1.3 always, no vent), desperate: told snips (claw), a told scuttle, and a told LEAP at you. Own art.
-- **Phase 2 is NOT changed in this lane** (Daniel did not choose one): two proposals go to him as a question.
+- **PHASE 2 (Daniel, option (a)): THE PRISE POUR OUT OF HIS BELL** at half health - told (his rim lifts, 1.1 s), three prise that swim for the stone in your hands; each vent in phase two tops them back up to two.
 
 ## 6. Measured (S8)
 The Bell piloted with all 7 heroes (bossLab, refill, 150 s, 3 seeds) before and after (`tools/bell-pilot.mjs`), the level walked

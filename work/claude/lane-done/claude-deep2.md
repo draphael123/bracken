@@ -12,7 +12,10 @@ A1/A2/A6/A10/A11/A12, B9, C1, E, F10, N and S.
 | `4a80c31` | the build, in one commit (see "Deviations"): the holds, the tribute ship, the knights, the Bell's opening, the harder Bell, phase 3 and its art, the bot, the checks |
 | `4ae8cf9` | the AFTER numbers and captures |
 | `646d3d5` | merge `origin/master`: `check.mjs` every name from both sides; `main.js` keep2's DMG tail and HAS_HURT with master's EHP and COLS, `drawRoom` takes all four painters; `marks.js` hand-written part identical but the Vault Keeper's row, MARK regenerated |
-| (this) | this report and the post-merge check log |
+| `1382790` | this report (first version) and the post-merge check log |
+| `8674dd9` | **PHASE TWO** (Daniel's answer, option (a)): THE PRISE POUR OUT OF HIS BELL; deep-rework assertions for it, seen red first |
+| `ddc926d` | merge `origin/claude/keep2` (the pixels shrine fix) and `origin/master` (check.mjs every name from both sides: mini-walls, checkpoint-stand, tower-cutouts, archmage-rings added; marks regenerated) |
+| (this) | this report updated, the phase-two re-pilot and the final check log |
 
 ## What I built
 
@@ -52,7 +55,12 @@ A1/A2/A6/A10/A11/A12, B9, C1, E, F10, N and S.
    tell/leap, hurt; contact sheet `work/deep2/bell-out-sheet.png`): low, soft (x1.3 always), fast (96 px/s), desperate (0.26 s rests),
    three told attacks - SNIP (yellow `!`), SCUTTLE (red `!!`), LEAP at where you were (yellow `!`, its landing ring marked). Marks
    regenerated.
-8. **Phase 2 is not changed** (Daniel did not choose one): two proposals below.
+8. **PHASE 2: THE PRISE POUR OUT OF HIS BELL** (Daniel, 2026-09-25, option (a)). At half health his rim lifts - told: "HIS RIM
+   LIFTS", 1.1 s, bubbles boiling out under it (`broodTell`, QUIET: it throws no blow) - and three prise pour out and **swim for the
+   stone in your hands** (a brood prise swims after a carrier; a plain prise stays on its floor). They are ordinary prise: struck, they
+   die; a stone they reach they take (their own told `reachTell`, "IT WANTS THAT"). The pour happens once on his clock; after that each
+   vent in phase two tops the brood back up to two (never over three) - so the more you open him, the more you have to guard the next
+   stone. The bot cuts a brood prise in reach before it takes the stone. One sentence: "now something is after my stone."
 9. **The bot** (`src/lab.js`) plays the stone: swims up to a rack's stone (stops level with it: the water floats you past), waits on the
    rack for him to come under, steps off toward him, lets go over the valve, walks off the rack to cut him while he vents, lets a
    missed stone go on the floor.
@@ -79,6 +87,7 @@ A1/A2/A6/A10/A11/A12, B9, C1, E, F10, N and S.
 | median damage taken | 32 | **408** |
 | vents | 550 (26 a fight, every one on his own clock) | 220 (10.5 a fight, every one a stone on his crown) |
 | cracked (phase 3 reached) | - | 9 / 21 |
+| **with phase 2 (prise brood), final** | | **4 / 21 wins** (geomancer 3, pirate 1), median win 98.7 s, median taken 392, 212 vents, phase 2 reached 9/21, phase 3 9/21, median health left 38% (`pilot-after-p2.json`) |
 
 The timeouts end with him at 5-65% (median ~43%). The bot is still a poor stone-player: most of its damage comes from standing on a
 rack in his pressure bell. **I did not tune to a number** and did not raise his health; the pilots say the opposite - if anything
@@ -120,9 +129,10 @@ SHUT, a stone on his crown opens him), `normal-health` (its winnable normal-heal
 `boss-openings` (the Bell case). The keep2 report's citation of its deleted `vault-keeper` module reworded (dangling-paths).
 
 Run after the merge (`work/deep2/check-final.log`): every check named in the prompt plus deep-rework, room-patterns, pixels,
-whirlpools, the merged longwater-river, bandits, class-spurs and `tools/breath.mjs`: **57 green, 1 red**. **pixels is
-red on the Keep's `checkpoint@259,59` only, and it is red on `f19d236` too** - claude/keep2's, not this lane's. The full suite was not
-run (lane rule).
+whirlpools, the merged longwater-river, bandits, class-spurs, mini-walls, checkpoint-stand and `tools/breath.mjs`: **60 of 60 green**
+(pixels too, since keep2's shrine fix merged in). The full suite was not run (lane rule). Phase two's assertions in `deep-rework` (told
+brood, once only, the top-up, none in phase one, the brood swims where a plain prise does not) were each seen red: on `1382790`, and
+with the swim switched off.
 
 ## Deviations
 
@@ -142,25 +152,14 @@ run (lane rule).
 - Node renders lie about light; the holds were checked in page captures, not played.
 - The walker never carried a stone down a hot hatch; a person has not either.
 
+## DANIEL'S ANSWERS (2026-09-25) AND WHAT IS LEFT
+
+Answered: phase 2 = (a), BUILT above; play before tuning; the Captain stays the Keep's; the +57% route stays; he holds his attacks
+while walking under you; the floor stones stay removed.
+
 ## QUESTIONS FOR DANIEL
 
-1. **Phase 2 (A10): which change?** Two proposals, neither built:
-   - **(a) THE PRISE COME OUT OF HIS BELL.** At half health he vents a brood of prise that go for YOUR stone (the level's third thing,
-     "the prise that steal your stone"): from then on a stone has to be protected on the way to his crown. One sentence: "now
-     something is after my stone."
-   - **(b) HE PLUGS HIS OWN VALVE.** At half health he heaves a ballast stone of his own onto his crown: a dropped stone bounces off
-     until you knock his plug loose (a told blow to his crown from above - a plunge), then the stone works. One sentence: "now I have
-     to unplug him first."
-   *Recommendation:* **(a)** - it uses the level's own foe and rule, and it asks something new without a second step to learn.
-2. **Is he now too hard?** The bot wins 5 of 21 (it won 20 of 21), and takes a median 408 damage (was 32). The bot is a poor
-   stone-player, so a person should do better. *Recommendation:* play it first; if it is too hard, raise the vent's damage (x2.2 ->
-   x2.6) or reset the racks faster (2.2 s -> 1.5 s) before touching his health or his hits.
-3. **The Drowned Captain in the Deep?** You said the knights also go in the Deep, and three do. The Captain is the Keep's new foe (F10:
-   the Keep would introduce nothing new if the Deep met him first), so I left him out. *Recommendation:* keep him the Keep's.
-4. **The route is +57% (the level's length +19%).** You asked for longer; the ship is crossed four times. *Recommendation:* keep it;
-   if it drags, drop the orlop crossing (the second hatch moves over the third).
-5. **With you over him, he comes to stand under you and does not attack until he gets there.** That is what makes the stone land;
-   the cost is that hovering over him postpones his attacks for as long as he takes to walk under you. *Recommendation:* keep it; if
-   it reads as passive, let him keep his pressure attack while walking.
-6. **The two loose stones on his floor are gone** (only the rack stones remain). *Recommendation:* keep it - a floor stone was a trap
-   under his ring.
+1. **After you have played it: too hard?** With the brood the bot wins 4 of 21 (it won 20 of 21 before this lane) and only the
+   geomancer wins reliably; the bot is a poor stone-carrier, so a person should do better. *Recommendation:* if it is too hard, first
+   make the vent hit harder (x2.2 -> x2.6) or reset the racks faster (2.2 s -> 1.5 s); then trim the brood (3 -> 2 poured, top-up 2 -> 1);
+   leave his health and his hits alone.
