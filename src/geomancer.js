@@ -34,13 +34,13 @@ export const GEO = {
      SIDEGRADED: the same rules (hold to block, YELLOW blocked, RED breaks through, a blocked blow costs wind, out of wind is a
      GUARD BREAK at half the blow), but a projected slab of rune-cut stone, taller than she is and lipped over her head. Against his:
      `raise` - it takes a tenth of a second to rise (his is up the frame C goes down), and the PERFECT window (`perfect`) opens only
-     once it has risen, so her beat is earlier (0.10-0.17 s after C, his 0-0.11) and tighter (0.07 s to his 0.11); `hitSt` - a blocked blow costs 20 wind (his 14); she is ROOTED
+     once it has risen, so her beat is earlier (0.10-0.17 s after C, his 0-0.11) and tighter (0.07 s to his 0.11); `hitSt` - a blocked blow costs 16 wind (his 11); she is ROOTED
      while it stands (the stave planted: she can turn, not walk - he walks at guard pace); `holdSt` - holding it drains as his does
      once the perfect window has passed; no riposte and no wind back on a perfect guard. For that: it covers OVERHEAD, a bolt does not
      pierce it, a blow does not push her back, and a PERFECT guard throws a shot back the way it came and EMPOWERS her for `emp` s -
      her blows `empMul` as hard and TREMOR filling `empTremor` times as fast, the runes on her alight so it reads. `hold`: a tap
      keeps it up this long after it has risen (a tap on the beat is a guard). `lock`: after it breaks, how long before it will rise. */
-  ward: { raise: 0.1, perfect: 0.07, hold: 0.15, hitSt: 20, holdSt: 19, lock: 0.6, emp: 3, empMul: 1.25, empTremor: 2 },
+  ward: { raise: 0.1, perfect: 0.07, hold: 0.15, hitSt: 16, holdSt: 15, lock: 0.6, emp: 3, empMul: 1.25, empTremor: 2 },
   tremor: { wall: 18, perfect: 28, launch: 14, shot: 6 },
   launchVy: -330, heroLaunchVy: -430, stepVy: -400,
   quakeR: 200, quakeWideMul: 1.5,
