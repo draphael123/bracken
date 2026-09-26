@@ -214,3 +214,34 @@ export function bakeStandard() {
    from its left edge; the shade reaches from the ground up to `h` px. The art paints exactly this span in DESERT.shade, so what
    the player sees as shade and what the game counts as shade are the same pixels. */
 export const SHADE_OF = { wagon: { x0: 14, x1: 50, h: 14 }, awning: { x0: 3, x1: 49, h: 24 } };
+
+/* THE DESERT'S OWN ONE-WAY LEDGES (Daniel, 2026-09-26: "it should use sand platforms or more appropriate terrain" - the
+   Sunken Caravan's ONEWAY/PLANK tiles used the game's default felled-log/plank art at a point, which reads as sawn timber
+   standing in the middle of open sand or a natural cliff). L.ledgeKit = 'desert' (src/sunken-caravan.js) is the level
+   option any desert level can set; main.js's resolveTiles picks one of three kits by where the tile actually sits
+   (L.masonry -> the ruin's own lintel, src/redraw/caravan_ruins.js bakeRuinLedge; L.rockZones -> bakeRockShelf, below;
+   neither -> bakeSandstoneLip). Same 16x16, same L/R end-cap shape as ART.bakeLedge, so a run tiles the same way.
+   THE ROCK SHELF is layered sandstone (ROCK, the same palette as bakeRockSlopes: the arch, the caravanserai, the rim's
+   overhang), a shade darker and cooler than the lip so a shelf jutting off natural stone never reads as more of the sand. */
+export function bakeSandstoneLip(seed, end) {
+  const rnd = mulberry(seed); const [c, g] = canvas(16, 16), D = DESERT;
+  const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? 14 : 16, w = x1 - x0;
+  rect(g, x0, 3, w, 6, D.dune); rect(g, x0, 3, w, 1, D.duneL); rect(g, x0, 8, w, 1, D.duneD);
+  rect(g, x0 + 1, 9, Math.max(0, w - 2), 2, D.duneS);                                 // the undercut, in shadow
+  for (let i = 0; i < 3; i++) px(g, x0 + 1 + ((rnd() * Math.max(1, w - 2)) | 0), 4 + ((rnd() * 4) | 0), rnd() < 0.5 ? D.duneD : D.duneL);   // wind-pitting
+  if (rnd() < 0.5) { const cx = x0 + 2 + ((rnd() * Math.max(1, w - 4)) | 0); px(g, cx, 8, D.duneS); px(g, cx + 1, 9, D.duneS); }   // a crack in the lip's underside
+  if (end === 'L') rect(g, x0 - 1 >= 0 ? x0 - 1 : 0, 4, 1, 5, D.duneL);
+  if (end === 'R') rect(g, x1, 5, 1, 4, D.duneD);
+  return outline(c, OUT);
+}
+export function bakeRockShelf(seed, end) {
+  const rnd = mulberry(seed); const [c, g] = canvas(16, 16), R = ROCK;
+  const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? 14 : 16, w = x1 - x0;
+  rect(g, x0, 3, w, 6, R.base); rect(g, x0, 3, w, 1, R.lit); rect(g, x0, 8, w, 1, R.grain);
+  rect(g, x0 + 1, 9, Math.max(0, w - 2), 2, R.fill);
+  for (let y = 5; y < 8; y++) if (rnd() < 0.55) rect(g, x0, y, w, 1, R.ripple);        // the strata running through it, same as the cliff it comes off
+  for (let i = 0; i < 2; i++) px(g, x0 + 1 + ((rnd() * Math.max(1, w - 2)) | 0), 4 + ((rnd() * 3) | 0), R.pebble);
+  if (end === 'L') rect(g, x0 - 1 >= 0 ? x0 - 1 : 0, 4, 1, 5, R.lit);
+  if (end === 'R') rect(g, x1, 5, 1, 4, R.grain);
+  return outline(c, OUT);
+}

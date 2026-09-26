@@ -1,0 +1,23 @@
+{"h":"knight","salt":1,"out":"win","secs":78.7,"taken":82,"opened":9,"left":0,"swings":80,"hitBy":{"hover":35,"iceTell":19,"markTell":7,"breached":14,"blinkOut":7},"portal":{"breached":5,"gather":4}}
+{"h":"warden","salt":1,"out":"death","secs":123.5,"taken":100,"opened":12,"left":23,"swings":111,"hitBy":{"hover":33,"markTell":19,"fireTell":29,"poisonTell":19},"portal":{"breached":4,"gather":8}}
+{"h":"pyro","salt":1,"out":"win","secs":129.1,"taken":78,"opened":14,"left":0,"swings":97,"hitBy":{"blinkIn":38,"hover":33,"blinkOut":7},"portal":{"breached":6,"gather":8}}
+{"h":"paladin","salt":1,"out":"death","secs":71.7,"taken":120,"opened":7,"left":22,"swings":50,"hitBy":{"hover":35,"markWait":52,"markTell":14,"iceTell":19},"portal":{"breached":3,"gather":4}}
+{"h":"pirate","salt":1,"out":"win","secs":86.4,"taken":85,"opened":10,"left":0,"swings":82,"hitBy":{"hover":33,"fireTell":19,"stepTell":19,"markWait":7,"gather":7},"portal":{"breached":4,"gather":6}}
+{"h":"reaper","salt":1,"out":"win","secs":44.6,"taken":59,"opened":5,"left":0,"swings":40,"hitBy":{"hover":40,"markWait":19},"portal":{"breached":2,"gather":3}}
+{"h":"geomancer","salt":1,"out":"win","secs":70.3,"taken":83,"opened":7,"left":0,"swings":62,"hitBy":{"hover":35,"iceTell":19,"stormTell":29},"portal":{"breached":3,"gather":4}}
+{"h":"knight","salt":2,"out":"win","secs":59.3,"taken":87,"opened":7,"left":0,"swings":75,"hitBy":{"hover":49,"fireTell":19,"markWait":19},"portal":{"breached":3,"gather":4}}
+{"h":"warden","salt":2,"out":"death","secs":105.5,"taken":100,"opened":10,"left":29,"swings":96,"hitBy":{"hover":28,"markTell":19,"markWait":19,"fireTell":19,"blinkOut":15},"portal":{"breached":4,"gather":6}}
+{"h":"pyro","salt":2,"out":"win","secs":104.8,"taken":71,"opened":12,"left":0,"swings":95,"hitBy":{"hover":14,"markWait":38,"fireTell":19},"portal":{"breached":6,"gather":6}}
+{"h":"paladin","salt":2,"out":"death","secs":88.8,"taken":120,"opened":9,"left":4,"swings":81,"hitBy":{"hover":73,"markWait":14,"gather":14,"fireTell":19},"portal":{"breached":4,"gather":5}}
+{"h":"pirate","salt":2,"out":"win","secs":89.1,"taken":71,"opened":10,"left":0,"swings":81,"hitBy":{"hover":33,"markWait":19,"gather":19},"portal":{"breached":4,"gather":6}}
+{"h":"reaper","salt":2,"out":"death","secs":32.3,"taken":95,"opened":3,"left":31,"swings":27,"hitBy":{"hover":54,"markWait":7,"gather":7,"iceTell":19,"blinkOut":8},"portal":{"breached":1,"gather":2}}
+{"h":"geomancer","salt":2,"out":"win","secs":61.5,"taken":73,"opened":7,"left":0,"swings":64,"hitBy":{"hover":73},"portal":{"breached":3,"gather":4}}
+{"h":"knight","salt":3,"out":"win","secs":56.1,"taken":75,"opened":6,"left":0,"swings":85,"hitBy":{"hover":54,"gather":21},"portal":{"breached":3,"gather":3}}
+{"h":"warden","salt":3,"out":"death","secs":128.7,"taken":100,"opened":13,"left":10,"swings":115,"hitBy":{"stepTell":38,"markWait":33,"hover":19,"iceTell":10},"portal":{"breached":5,"gather":8}}
+{"h":"pyro","salt":3,"out":"death","secs":70,"taken":88,"opened":6,"left":31,"swings":71,"hitBy":{"markTell":19,"hover":14,"markWait":38,"fireTell":17},"portal":{"breached":2,"gather":4}}
+{"h":"paladin","salt":3,"out":"death","secs":69.5,"taken":120,"opened":7,"left":33,"swings":60,"hitBy":{"hover":54,"iceTell":19,"markWait":14,"gather":14,"stepTell":19},"portal":{"breached":3,"gather":4}}
+{"h":"pirate","salt":3,"out":"win","secs":89,"taken":85,"opened":9,"left":0,"swings":91,"hitBy":{"hover":14,"markWait":45,"gather":7,"fireTell":19},"portal":{"breached":4,"gather":5}}
+{"h":"reaper","salt":3,"out":"win","secs":36,"taken":38,"opened":4,"left":0,"swings":43,"hitBy":{"hover":38},"portal":{"breached":2,"gather":2}}
+{"h":"geomancer","salt":3,"out":"death","secs":56.5,"taken":95,"opened":5,"left":4,"swings":63,"hitBy":{"hover":42,"fireTell":19,"stepTell":19,"blinkOut":7,"markTell":7,"breached":1},"portal":{"breached":2,"gather":3}}
+{"health":"normal","cap":300,"fights":21,"wins":12,"pct":57,"medianWin":78.7,"medianLeftOnLoss":23,"openedAvg":8.2,"breachedAvg":3.5,"markOpenAvg":4.7,"byHero":{"knight":"3/3","warden":"0/3","pyro":"2/3","paladin":"0/3","pirate":"3/3","reaper":"2/3","geomancer":"2/3"},"hitBy":{"hover":803,"iceTell":105,"markTell":85,"breached":15,"blinkOut":44,"fireTell":179,"poisonTell":19,"blinkIn":38,"markWait":324,"stepTell":95,"gather":89,"stormTell":29}}
+errors []

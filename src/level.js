@@ -2967,7 +2967,7 @@ function deepAndKeep() {
   ent('tideguard', 173, 179, { face: 1 }); ent('siren', 196, 172); ent('angler', 205, 182); ent('eel', 152, 178); ent('watch', 208, 198, { face: -1 });
   coins([150, 183], [155, 179], [150, 175], [155, 171], [150, 167], [164, 179], [172, 179], [178, 179], [190, 194], [202, 198], [191, 158], [160, 166]);
   rock(213, 216, 150, 198); cut(213, 216, 192, 198);               /* the keep's wall, and its door */
-  facades.push([162, 212, 150, 198, 'curtain', { sea: true }], [182, 185, 160, 198, 'tower', { sea: true, arch: [192, 198] }], [146, 157, 150, 187, 'tower', { sea: true, lit: false }]);
+  facades.push([162, 212, 150, 198, 'curtain', { sea: true }], [182, 185, 160, 198, 'tower', { sea: true, arch: [192, 198] }], [146, 157, 150, 198, 'tower', { sea: true, lit: false, arch: [188, 198] }]);   /* THE SUNKEN TOWER goes down to the bed, and the passage under it is its arch (it stopped at 187 and hung in clear water: tools/architecture.mjs, 2026-09-25) */
   D.masonry.push([140, 303, 140, 203]);
   zone('THE DROWNED WARD', 146, 212, 150, 198, [120, 175, 150], 0.10);
   darkZones.push({ x0: 146 * TS, x1: 213 * TS, y0: 150 * TS, y1: 199 * TS, dark: 0.22 });
@@ -3908,7 +3908,7 @@ function galeMoor() {
   headwind(o + 5, o + 35, 6, 22, 1);
   ent('harpy', o + 20, 7);
   ent('flagpost', o + 2, 19); ent('flagpost', o + 39, 13);
-  ent('sign', o + 1, 19, { text: 'ON A STONE, HOLD C AND THE GUST CANNOT MOVE YOU. HOP IN THE STILL, BRACE IN THE WIND.' });
+  ent('sign', o + 1, 19, { text: 'ON A STONE, CROUCH OR HOLD C AND THE GUST CANNOT MOVE YOU. HOP IN THE STILL.' });
   ent('check', o + 42, 13);
 
   /* ==== THE GALLERY OF GUSTS (298-361): the moor's exam, both halves of the lesson over thorns. A pit two tiles wider than any
@@ -3925,7 +3925,7 @@ function galeMoor() {
   ent('vent', o + 37, 13, { period: 4, on: 2.2, h: 150, wind: true, w: 20 });
   ent('flagpost', o + 12, 13); ent('flagpost', o + 36, 13); ent('harpy', o + 44, 5);
   ent('sign', o - 6, 13, { text: 'A TAILWIND CARRIES YOU OVER WHAT NO JUMP CROSSES. GO AS IT BLOWS, NOT BEFORE.' });
-  ent('sign', o + 10, 13, { text: 'WIND FROM AHEAD OVER THE POSTS. CROSS IN THE STILL, OR HOLD C AND BRACE ON ONE.' });
+  ent('sign', o + 10, 13, { text: 'WIND FROM AHEAD OVER THE POSTS. CROSS IN THE STILL, OR CROUCH OR HOLD C AND BRACE ON ONE.' });
   coins([o + 2, 11], [o + 4, 10], [o + 6, 11], [o + 17, 12], [o + 21, 12], [o + 25, 12], [o + 40, 7], [o + 37, 8]);
   ent('troll', o + 52, 13, { elite: true });   /* the crag troll on the gallery's far floor, the thorns behind you */
   ent('check', o + 45, 13);
@@ -7584,7 +7584,7 @@ export const LEVELS = [
      Appended so no index moves; brief .claude/briefs/unburied-field.md, gate on hero 'reaper' via coinNeeds: 'unburied'
      in src/main.js's hero table. Map node NOT placed here (docs/briefs/map-redesign.md 4.2: node (158,46), spur: true) -
      that is Lane B's, per the Lane C report. */
-  { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS}), needs: 'witchlight', classFor: 'reaper', opensOn: { level: 'witchlight', medal: 'silver' } },
+  { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS,grow}), needs: 'witchlight', classFor: 'reaper', opensOn: { level: 'witchlight', medal: 'silver' } },
   /* THE SUNKEN CARAVAN (lane Q, 2026-09-24): the first level of the desert, through the gold hole the Undead Archmage leaves when
      he falls. Appended so no index moves (the map's nodes and the saves count by index); brief .claude/briefs/sunken-caravan.md
      as amended by docs/briefs/sunken-caravan-amendments.md. Its boss, THE DUNE WORM, lives in the hollow at its end (claude/duneworm, docs/briefs/dune-worm.md) */

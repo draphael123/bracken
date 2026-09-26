@@ -107,7 +107,7 @@ export function buildKeepNarrows(K, T, N, ent) {
   // what lives in it
   for (const [t, x, y] of [['eel', 405, 53], ['puffer', 420, 40], ['eel', 437, 35], ['angler', 450, 45], ['jelly', 460, 52], ['puffer', 472, 52],
     ['merrowspear', 488, 49], ['eel', 495, 38], ['angler', 511, 32], ['merrowcaller', 516, 49], ['jelly', 530, 52], ['eel', 548, 53], ['merrowbrute', 553, 58]]) ent(t, x, y, { face: -1 });
-  ent('check', 403, 55); ent('check', 488, 49);
+  ent('check', 488, 49);   /* (the galleries' own, at 403, moved back to 398 in keep-expansion.js: 23 tiles from the Bell Approach's was a pair, not two - rule S4) */
   ent('sign', 402, 55, { text: 'THE SIPHON GALLERIES. DRAINS DRINK YOUR AIR. FOLLOW THE BUBBLES TO SEE THEM.' });
   ent('sign', 482, 54, { text: 'THE BLIGHTED CISTERN. THE DEAD WATER POISONS. STAND ON THE STONES.' });
   for (const [x, y] of [[410, 53], [428, 34], [444, 34], [462, 52], [498, 36], [525, 52], [552, 55]]) ent('coin', x, y);

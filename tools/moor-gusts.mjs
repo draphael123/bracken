@@ -100,6 +100,8 @@ const onAt = z => { c.time = z.period * 6 - (z.phase || 0) + 0.2; };
 onAt(H); put(H, 40); P.vx = 0; c.keys.block = false; const x0 = P.x; run(0.3, false); assert(P.x - x0 < -24 && P.vx < -100, 'unbraced, a headwind walks you back: ' + Math.round(P.x - x0) + ' px, ' + Math.round(P.vx) + ' px/s');
 /* braced, it cannot move you */
 onAt(H); put(H, 40); P.vx = 0; c.keys.block = true; const x1 = P.x; run(1.0, false); assert(Math.abs(P.x - x1) < 2 && Math.abs(P.vx) <= 40, 'braced, a headwind cannot move you: ' + Math.round(P.x - x1) + ' px'); c.keys.block = false;
+/* CROUCHED, it cannot move you either: DOWN braces for every hero (Daniel, 2026-09-25 - the Pyromancer's C is her ember, so block-only left her nothing) */
+onAt(H); put(H, 40); P.vx = 0; c.keys.block = false; c.keys.down = true; const x2 = P.x; run(1.0, false); assert(Math.abs(P.x - x2) < 2 && Math.abs(P.vx) <= 40, 'crouched, a headwind cannot move you: ' + Math.round(P.x - x2) + ' px'); c.keys.down = false;
 /* a jumping hero in a tailwind is carried past any jump's speed (RUN 92, and the sprint's +15%) */
 onAt(R); put(R, 8); P.vx = 92; run(0.5, true); assert(P.vx > 180, 'a tailwind carries a jump: ' + Math.round(P.vx) + ' px/s');
 /* in the still spell nothing pushes */

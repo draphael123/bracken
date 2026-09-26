@@ -43,7 +43,9 @@ const near = e => { for (let dy = -2; dy <= 5; dy++) for (let dx = -3; dx <= 3; 
 const at = (x, y) => L.grid[y * L.W + x];
 // 2. five places
 for (const [name, [a, b]] of Object.entries(WL.PLACES)) { const n = seen.filter(([x]) => x >= a && x <= b).length; assert.ok(n > 25, name + ' is walked: ' + n); }
-const onSlabs = Rs => [...Rs.seen].some(k => { const [x, y] = k.split(',').map(Number); return x >= WL.ARENA.x0 && x <= WL.ARENA.x1 && y <= 31; });
+/* THE ARENA'S LIP is reached (the reach model does not ride his slabs; the slab chain itself - its gaps and the rune columns up to it - is
+   asked by tools/gargoyle-smash.mjs). The row comes from WL.TOP: the rework lowered the room, and the fixed row 31 it replaced went stale */
+const onSlabs = Rs => [...Rs.seen].some(k => { const [x, y] = k.split(',').map(Number); return x >= WL.ARENA.x0 && x <= WL.ARENA.x1 && y <= WL.TOP - 2; });
 assert.ok(onSlabs(R), "the Gargoyle's slabs are reached from the cavern mouth");
 const silvers = L.ents.filter(e => e.t === 'silver'); assert.equal(silvers.length, 3, 'three silvers');
 for (const s of silvers) assert.ok(near(s), 'silver reachable at ' + s.x + ',' + s.y);
@@ -55,9 +57,9 @@ const band = Math.max(...rows) - Math.min(...rows); assert.ok(band >= 45, 'the s
 // 2b. the Gate Gargoyle
 { const A = L.arena, TSZ = 16; assert.equal(A.boss, 'gargoyle'); const g = L.ents.find(e => e.t === 'gargoyle'); assert.ok(g && g.x > WL.ARENA.x1 - 6, 'he is bolted over the tower gate');
   assert.ok(!L.ents.some(e => e.t === 'gate'), 'no gate: the level ends on his kill');
-  const sl = L.ents.filter(e => e.t === 'mover' && e.arena), cr = sl.filter(e => e.cracked); assert.ok(sl.length >= 8 && cr.length >= 3, 'slabs, some cracked: ' + sl.length + '/' + cr.length);
+  const sl = L.ents.filter(e => e.t === 'mover' && e.arena), cr = sl.filter(e => e.cracked); assert.ok(sl.length >= 6 && cr.length >= 3, 'slabs, some cracked (six in the 44-tile room since the rework; ten in the old 79): ' + sl.length + '/' + cr.length);
   assert.ok(cr.every(e => !e.range), 'a cracked slab holds still: his opening is a place you choose to stand');
-  for (const e of sl) assert.ok(e.y < A.floor / TSZ - 8, 'every slab is over the terrace, not on it');
+  for (const e of sl) assert.ok(e.y <= A.floor / TSZ - 6, 'every slab is over the terrace, not on it (six rows at least: the rework lowered them from 11-13, tools/gargoyle-smash.mjs)');
   const lifts = L.ents.filter(e => e.t === 'vent' && e.rune && e.x > WL.ARENA.x0 && e.x < WL.ARENA.x1); assert.ok(lifts.length >= 3, 'rune columns from the terrace back up');
   for (const v of lifts) { assert.ok(v.y === A.floor / TSZ - 1 && v.y + 1 - v.h / TSZ < Math.min(...sl.map(e => e.y)), 'the column at ' + v.x + ' lifts from the terrace past the slabs');
     assert.ok(!sl.some(e => v.x >= e.x && v.x < e.x + (e.len || 3)), 'nothing over the column at ' + v.x); }

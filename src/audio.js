@@ -355,6 +355,8 @@ export const SFX = {
   bow() { tone('triangle', 700, 200, 0.12, 0.14); noise(0.08, 0.15, 3000); },
   bird() { tone('sine', 1800, 2600, 0.08, 0.06); tone('sine', 2400, 1900, 0.1, 0.05, 0.1); },
   splash() { noise(0.3, 0.4, 700, 0.5); tone('sine', 300, 120, 0.2, 0.15); },
+  whirlpool() { noise(0.8, 0.22, 380, 0.7); tone('sine', 180, 70, 0.8, 0.1); for (let i = 0; i < 3; i++) tone('sine', 420 - i * 70, 160, 0.1, 0.04, 0.15 + i * 0.18); },   /* THE KEEP'S WHIRLPOOL: the water going down a drain, with you in it */
+  whirlStill() { tone('sine', 90, 140, 0.6, 0.1); noise(0.5, 0.14, 900, 0.4, 0.1); },   /* and the drain shut: the pull letting go */
   coinUp(k) { const r = 1 + Math.min(k, 12) * 0.06; tone('triangle', 1046 * r, 1046 * r, 0.07, 0.11); tone('triangle', 1568 * r, 1568 * r, 0.13, 0.085, 0.045); tone('sine', 3136 * r, 3136 * r, 0.05, 0.03); noise(0.03, 0.03, 4200, 2.5); },
   heart() { tone('sine', 70, 40, 0.14, 0.35); tone('sine', 60, 35, 0.16, 0.28, 0.16); },
   cricket() { const f = 3800 + Math.random() * 600; for (let i = 0; i < 4; i++) tone('sine', f, f, 0.03, 0.035, i * 0.05); },
@@ -645,6 +647,9 @@ Object.assign(SFX, {
   bowShot() { tone('square', 900, 500, 0.05, 0.1); noise(0.09, 0.16, 2600, 0.7); tone('sine', 320, 200, 0.08, 0.06, 0.01); },
   grapple() { noise(0.12, 0.14, 900, 0.6); tone('triangle', 420, 260, 0.1, 0.08); },
   ropeHaul() { noise(0.5, 0.09, 500, 0.9); tone('sawtooth', 120, 90, 0.45, 0.05); },
+  /* THE BROKEN BRIDGES' TOLD VOLLEY (2026-09-25): a flight of arrows in the air over you - three falling whistles, the last one
+     lowest, for the second and a fifth the shadows are on the planks. Not the horn of the ridge's volleys: you hear which one it is */
+  arrowWhistle() { tone('sine', 3300, 1500, 1.0, 0.05); tone('sine', 2900, 1250, 1.05, 0.04, 0.1); tone('sine', 3600, 1700, 0.9, 0.035, 0.22); noise(0.9, 0.025, 5200, 0.5, 0.1); },
   whistleCall() { tone('sine', 2100, 2600, 0.16, 0.09); tone('sine', 2600, 2200, 0.2, 0.08, 0.15); tone('sine', 2400, 3000, 0.14, 0.07, 0.34); },
   fuse() { noise(0.5, 0.07, 4200, 0.5); noise(0.4, 0.05, 6000, 0.4, 0.12); },
   crumble() { noise(0.4, 0.16, 420, 0.5); noise(0.3, 0.1, 900, 0.6, 0.06); tone('square', 150, 70, 0.2, 0.07); },
@@ -746,6 +751,7 @@ const DIE = {
   bonearcher() { noise(.45,.24,1200,.6);tone('triangle',240,60,.3,.1);noise(.2,.12,2800,.5,.18); },   /* the bone archer comes apart: a spill of bone, the bow last */
   barrowrider() { noise(1.0, 0.34, 500, 0.5); tone('sawtooth', 110, 30, 1.1, 0.2); SFX.bellow(); },   /* THE UNBURIED FIELD: the old banner coming down with him, and the horse going with it */
   deathknight() { noise(1.4, 0.38, 380, 0.5); tone('sine', 80, 24, 1.6, 0.26); tone('triangle', 220, 60, 1.2, 0.1, 0.2); },
+  bloodknight() { noise(1.2, 0.36, 420, 0.5); tone('sine', 70, 22, 1.8, 0.28); tone('sawtooth', 160, 40, 1.0, 0.1, 0.15); SFX.dkSurge && SFX.dkSurge(); },   /* THE DEATH KNIGHT: the plate going down, and the blood going out of him */
   burngob() { gob(0.95, 0.7) || tone('sawtooth', 260, 60, 0.35, 0.2); noise(0.5, 0.2, 2600, 0.5, 0.12); },   /* THE BURNING VILLAGE */
   emberwisp() { noise(0.3, 0.18, 3200, 0.6); tone('sine', 900, 200, 0.25, 0.08); },
   pyromancer() { noise(1.2, 0.36, 1800, 0.5); tone('sawtooth', 160, 40, 1.4, 0.22); },
@@ -803,9 +809,10 @@ const DIE = {
   merrowspear() { tone('sawtooth', 210, 70, 0.3, 0.2); tone('sine', 140, 50, 0.32, 0.16, 0.04); noise(0.2, 0.24, 1400, 0.4, 0.08); },   /* the harpoon goes down with her */
   merrowcaller() { tone('triangle', 260, 90, 0.34, 0.16); noise(0.3, 0.22, 500, 0.5, 0.08); pad('sine', 300, 120, 0.6, 0.04, 0.1, 1400); },   /* the current she was holding goes out of the water with her */
   merrowbrute() { tone('sawtooth', 160, 50, 0.4, 0.24); noise(0.3, 0.3, 300, 0.6, 0.08); SFX.crack(); },   /* the shell splits */
-  /* THE LEADFOOT has no voice: there has been nothing alive in that helm for a long time. What goes down is the armour -
-     the plate opening, the last of his air leaving the seams at once, and the anchor hitting the stone after him. */
-  leadfoot() { SFX.clank(); tone('sine', 90, 42, 0.55, 0.2, 0.05); noise(0.5, 0.34, 420, 0.6, 0.06); SFX.rattle(1.2); },
+  /* THE DROWNED KNIGHT: a man, once, so a voice - but under water and long gone: a low bubbled groan going down, the plate
+     knocking on the stone, and his last air leaving the helm. The captain's is deeper, and his blade rings as it falls. */
+  drownedknight() { SFX.clank(); tone('sine', 150, 55, 0.5, 0.16, 0.04); tone('triangle', 110, 70, 0.4, 0.08, 0.1); noise(0.45, 0.26, 520, 0.6, 0.12); },
+  drownedcaptain() { SFX.clank(); tone('sine', 120, 40, 0.7, 0.2, 0.04); tone('triangle', 90, 50, 0.6, 0.1, 0.12); noise(0.6, 0.3, 460, 0.6, 0.14); bell(392, 0.5, 0.05); },
   // the fish: no voice at all, so all of it is water and body
   eel() { noise(0.3, 0.3, 700, 0.5); tone('sine', 180, 60, 0.34, 0.16); noise(0.2, 0.22, 1800, 0.4, 0.12); },
   scarecrow() { noise(0.4, 0.26, 1200, 0.4); noise(0.3, 0.16, 600, 0.5, 0.1); },   /* it comes apart into what it was stuffed with */
@@ -927,6 +934,7 @@ const HURT = {
   bannerbearer() { noise(.16,.18,600,.4);tone('triangle',110,60,.2,.12); },
   barrowrider() { noise(.22,.26,420,.5);tone('sawtooth',90,50,.26,.14); },
   deathknight() { noise(.24,.3,300,.5);tone('sine',70,34,.3,.2); },
+  bloodknight() { noise(.22,.3,340,.5);tone('sine',76,38,.28,.2);tone('triangle',180,90,.12,.06); },
   scorpion() { noise(0.05, 0.22, 3000, 0.4); tone('square', 900, 700, 0.05, 0.08); },
   sandgob() { gobH(0.9) || tone('square', 500, 300, 0.08, 0.14); noise(0.08, 0.08, 900, 0.6); },
   vulture() { tone('sawtooth', 820, 420, 0.12, 0.12); },
@@ -1022,7 +1030,8 @@ const HURT = {
   merrowspear() { tone('sawtooth', 240, 150, 0.14, 0.14); noise(0.12, 0.16, 1200, 0.5); },
   merrowcaller() { tone('triangle', 300, 180, 0.14, 0.12); noise(0.1, 0.14, 700, 0.5); },
   merrowbrute() { SFX.clank(); tone('sawtooth', 180, 110, 0.16, 0.16); noise(0.14, 0.16, 500, 0.5); },
-  leadfoot() { SFX.clank(); tone('sine', 150, 100, 0.2, 0.14); noise(0.12, 0.2, 340, 0.5, 0.04); },   /* struck plate under water: a deep dull bell, and bubbles */
+  drownedknight() { SFX.clank(); tone('sine', 220, 150, 0.16, 0.12); noise(0.14, 0.18, 800, 0.5, 0.03); },   /* struck plate, and a grunt through water */
+  drownedcaptain() { SFX.clank(); tone('sine', 170, 110, 0.2, 0.14); noise(0.16, 0.2, 600, 0.5, 0.03); },   /* struck plate under water: a deep dull bell, and bubbles */
   cutlass() { file('hurt', 0.4, 1.18) || tone('square', 420, 260, 0.09, 0.14); },
   boarder() { file('hurt', 0.5, 0.86) || tone('square', 300, 180, 0.11, 0.16); },
   marine() { file('hurt', 0.4, 1.3) || tone('square', 480, 300, 0.08, 0.13); },
@@ -1119,7 +1128,7 @@ SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.
 // with a voice from a kit (bosses keep their synth under it, for the size of the moment), creatures LAYER a voice
 // over their own, and whatever the body is made of - plate, mail, cloth - is heard under both.
 const CAST = {
-  corpse: { kit: 'zom', rate: 1.05, lp: 2000, mat: 'mail' }, bannerbearer: { kit: 'zom', rate: 0.92, lp: 1900, mat: 'mail' }, barrowrider: { kit: 'zom', rate: 0.7, lp: 1400, mat: 'plate', boss: true }, deathknight: { kit: 'zom', rate: 0.6, lp: 1200, mat: 'plate', boss: true },   /* THE UNBURIED FIELD */
+  corpse: { kit: 'zom', rate: 1.05, lp: 2000, mat: 'mail' }, bannerbearer: { kit: 'zom', rate: 0.92, lp: 1900, mat: 'mail' }, barrowrider: { kit: 'zom', rate: 0.7, lp: 1400, mat: 'plate', boss: true }, deathknight: { kit: 'zom', rate: 0.6, lp: 1200, mat: 'plate', boss: true }, bloodknight: { kit: 'zom', rate: 0.55, lp: 1100, mat: 'plate', boss: true },   /* THE UNBURIED FIELD */
   swornsword: { kit: 'm2', rate: 1, mat: 'mail', human: true }, hedgeknight: { kit: 'm4', rate: 0.92, lp: 1600, mat: 'plate', human: true },
   closedhelm: { kit: 'm4', rate: 0.78, lp: 1100, mat: 'plate', human: true, boss: true }, runner: { kit: 'm6', rate: 1.12, mat: 'cloth', human: true, alert: 'vo_hum_alert' },
   crossbow: { kit: 'm5', rate: 1.05, mat: 'mail', human: true }, lancer: { kit: 'm3', rate: 0.95, mat: 'mail', human: true },

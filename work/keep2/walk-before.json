@@ -1,0 +1,108 @@
+{
+ "hero": "knight",
+ "frames": 16000,
+ "reachedDoor": false,
+ "maxTile": 400,
+ "deaths": 8,
+ "secs": [
+  {
+   "name": "THE SUNKEN OUTER COURT",
+   "x0": 1,
+   "x1": 65,
+   "blows": 1,
+   "lost": 23,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 10.8,
+   "minBreath": 12.9
+  },
+  {
+   "name": "THE COUNTERCURRENT",
+   "x0": 66,
+   "x1": 130,
+   "blows": 7,
+   "lost": 100,
+   "deaths": 1,
+   "lifts": 0,
+   "seconds": 25.6,
+   "minBreath": 6.6
+  },
+  {
+   "name": "THE FLOODED LIBRARY",
+   "x0": 131,
+   "x1": 195,
+   "blows": 30,
+   "lost": 300,
+   "deaths": 3,
+   "lifts": 1,
+   "seconds": 90.3,
+   "minBreath": 0
+  },
+  {
+   "name": "THE SLUICE WORKS",
+   "x0": 196,
+   "x1": 260,
+   "blows": 7,
+   "lost": 35,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 12.3,
+   "minBreath": 0
+  },
+  {
+   "name": "THE THERMAL CISTERN",
+   "x0": 261,
+   "x1": 330,
+   "blows": 10,
+   "lost": 50,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 17.2,
+   "minBreath": 0
+  },
+  {
+   "name": "THE BELL APPROACH",
+   "x0": 331,
+   "x1": 399,
+   "blows": 37,
+   "lost": 319,
+   "deaths": 3,
+   "lifts": 1,
+   "seconds": 91,
+   "minBreath": 0
+  },
+  {
+   "name": "THE SIPHON GALLERIES",
+   "x0": 400,
+   "x1": 479,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE BLIGHTED CISTERN",
+   "x0": 480,
+   "x1": 559,
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE INNER KEEP",
+   "x0": 560,
+   "x1": 759,
+   "blows": 14,
+   "lost": 76,
+   "deaths": 1,
+   "lifts": 0,
+   "seconds": 19.4,
+   "minBreath": 0
+  }
+ ]
+}
