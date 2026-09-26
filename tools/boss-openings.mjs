@@ -9,8 +9,9 @@
      THE PYROMANDER    keep hitting him while he runs hot: he cannot vent, and his own fire takes him over the top (batch 5)
      THE GRAVE WARDEN  let his dig mark you beside an open grave and leave late: the spade goes in and he kneels (batch 4b)
      THE HEDGE WARDEN  cut him down beside a witchlight brazier: the stump burns, open, and cannot regrow while it does (batch 4c)
-     THE GATE GARGOYLE  stand on a CRACKED slab and leave it late: his dive goes through it and he hangs from the next one's edge;
-                        the same dive on a solid slab opens nothing, and leaving early only moves his aim (the stair's top, 2026-09-22)
+     THE GATE GARGOYLE  be on the slab his shadow finds and leave it late: his dive smashes through it - a solid slab as well as a
+                        CRACKED one (GARG.smashAny) - and he crashes to the garden floor, stunned; leaving early only moves his aim
+                        (the stair's top, 2026-09-22; the smash and the stun, 2026-09-25: tools/gargoyle-smash.mjs asks the rest)
      THE FIRST DEATH KNIGHT  the hero's own rule: fill his BLOOD WARD and strike it again, and it breaks - he is open; a ward
                              left to run out opens nothing (2026-09-24: he fights with the class's kit)
      THE WINDCALLER    brace through his howl (the guard key held on the ground): his own wind fails him and he falls, open; the
@@ -87,7 +88,7 @@ try {
    const next=m=>sl.filter(q=>q!==m&&!q.broken&&!q.cracked).sort((a,b)=>Math.abs(a.x-m.x)-Math.abs(b.x-m.x))[0];
    const dive=(m,late)=>{g.mode='hover';g.hp=g.maxHp;g.phase=1;BK.sim(2);on(m);g.mode='diveTell';g.modeT=0.4;g.tgt=m;g.off=m.w/2;g.cd=99;g.queue=[];
      if(!late)on(next(m));for(let i=0;i<120&&g.mode==='diveTell';i++){if(late)on(m);BK.sim(1);}
-     if(late)on(next(m));for(let i=0;i<120&&g.mode==='dive';i++)BK.sim(1);const o={mode:g.mode,open:+(g.open||0).toFixed(1),broken:!!m.broken,aim:g.tgt===m};g.mode='hover';g.modeT=0;return o;};
+     if(late)on(next(m));for(let i=0;i<240&&['dive','smash','crash'].includes(g.mode);i++)BK.sim(1);const o={mode:g.mode,open:+(g.open||0).toFixed(1),broken:!!m.broken,aim:g.tgt===m};g.mode='hover';g.modeT=0;return o;};
    const solid=dive(sl.find(m=>!m.cracked),true),early=dive(sl.find(m=>m.cracked&&!m.broken),false),cracked=dive(sl.find(m=>m.cracked&&!m.broken),true);
    out.gargoyle={solid,early,cracked};}
   /* THE FIRST DEATH KNIGHT: the BLOOD WARD twice - left to run out into its nova, then filled and struck once more through the
@@ -166,9 +167,9 @@ try {
   assert.equal(r.hedgeWarden.lawn.mode, 'felled', 'a blow through his root fells him: ' + JSON.stringify(r.hedgeWarden));
   assert.equal(r.hedgeWarden.lawn.open, 0, 'felled on the open lawn, the stump is not open: ' + JSON.stringify(r.hedgeWarden));
   assert.ok(!['felled', 'stump'].includes(r.hedgeWarden.grew.mode) && r.hedgeWarden.grew.hp === r.hedgeWarden.grew.full, 'a stump left alone grows him back whole: ' + JSON.stringify(r.hedgeWarden));
-  assert.ok(r.gargoyle.solid.mode === 'land' && r.gargoyle.solid.open === 0 && !r.gargoyle.solid.broken, 'his dive on a solid slab opens nothing: ' + JSON.stringify(r.gargoyle));
+  assert.ok(r.gargoyle.solid.mode === 'stunned' && r.gargoyle.solid.open > 2 && r.gargoyle.solid.broken, 'left late, even a solid slab breaks under him and he lies stunned on the garden floor, open: ' + JSON.stringify(r.gargoyle));
   assert.ok(!r.gargoyle.early.aim && !r.gargoyle.early.broken && r.gargoyle.early.open === 0, 'leaving a cracked slab early only moves his aim: ' + JSON.stringify(r.gargoyle));
-  assert.ok(r.gargoyle.cracked.mode === 'hang' && r.gargoyle.cracked.open > 2 && r.gargoyle.cracked.broken, 'left late, a cracked slab breaks under him and he hangs, open: ' + JSON.stringify(r.gargoyle));
+  assert.ok(r.gargoyle.cracked.mode === 'stunned' && r.gargoyle.cracked.open > 2 && r.gargoyle.cracked.broken, 'left late, a cracked slab breaks under him and he lies stunned on the garden floor, open: ' + JSON.stringify(r.gargoyle));
   assert.ok(r.hedgeWarden.fire.open > 2, 'felled beside a brazier, the stump burns open: ' + JSON.stringify(r.hedgeWarden));
   assert.ok(r.hedgeWarden.burning.mode === 'stump' && r.hedgeWarden.burning.open > 0, 'a burning stump does not regrow: ' + JSON.stringify(r.hedgeWarden));
 
