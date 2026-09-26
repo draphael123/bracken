@@ -24,6 +24,8 @@ const TS = 16, I = LEVELS.findIndex(l => l.id === 'witchlight'), L = LEVELS[I].b
 const wide = (A.x1 - A.x0) / TS, floorRow = A.floor / TS, sl = L.ents.filter(e => e.t === 'mover' && e.arena);
 ok(wide <= 46 && wide >= 34, 'A7: the arena is about forty tiles, not 79: ' + wide);
 const ups = sl.map(e => floorRow - e.y); ok(sl.length >= 5 && ups.every(u => u >= 5 && u <= 7), 'his slabs are 5-7 rows over the garden floor: ' + ups.join(' '));
+{ const xs = sl.map(e => [e.x, e.x + e.len - 1 + (e.range || 0), e.x + e.len - 1]).sort((a, b) => a[0] - b[0]), gaps = xs.slice(1).map((q, i) => q[0] - xs[i][2] - 1);   /* the widest a gap gets: the left slab at rest, not drifted */
+  ok(gaps.every(g => g >= 0 && g <= 3), 'the slab chain has no gap over three tiles (the real jump is 3.2): ' + gaps.join(' ')); }
 const lifts = L.ents.filter(e => e.t === 'vent' && e.rune && e.x > A.x0 / TS && e.x < A.x1 / TS);
 ok(lifts.length >= 3 && lifts.every(v => v.y === floorRow - 1 && v.y + 1 - v.h / TS < Math.min(...sl.map(e => e.y))), 'three rune columns lift from the garden floor past the slabs: ' + lifts.map(v => v.x).join(' '));
 { const R = floodReach(L, T, { rides: true }), at = (x, y) => R.seen.has(x + ',' + y);
@@ -55,7 +57,7 @@ try {
       const g=BK.enemies().find(e=>e.t==='gargoyle');for(const e of BK.enemies())if(e!==g)e.alive=false;return g;};
     let g=boot();const sl=()=>BK.movers().filter(m=>m.arena).sort((a,b)=>a.x-b.x),A=BK.L.arena;
     const on=m=>{BK.P.x=m.x+m.w/2;BK.P.y=m.y;BK.P.vy=0;BK.P.onMover=m;BK.P.ground=true;};
-    const v0=BK.view.VW;on(sl()[1]);BK.sim(150);out.wake={active:!!BK.bossActive,VW0:v0,VW:BK.view.VW,VH:BK.view.VH,w:g.w,h:g.h};
+    const v0=BK.view.VW;on(sl()[1]);BK.sim(150);BK.step(2);out.wake={active:!!BK.bossActive,VW0:v0,VW:BK.view.VW,VH:BK.view.VH,w:g.w,h:g.h};
     const next=m=>sl().filter(q=>q!==m&&!q.broken).sort((a,b)=>Math.abs(a.x-m.x)-Math.abs(b.x-m.x))[0];
     const dive=(m,how,phase)=>{g.mode='hover';g.hp=phase===2?Math.floor(g.maxHp*0.4):g.maxHp;g.phase=phase||1;g.cd=99;g.queue=[];g.paired=true;BK.sim(2);on(m);
       g.mode='diveTell';g.modeT=0.4;g.tgt=m;g.off=m.w/2;g.cd=99;BK.god=false;BK.P.hp=BK.P.maxHp;BK.P.inv=0;const hp0=BK.P.hp;
@@ -64,14 +66,15 @@ try {
       if(how==='late')on(next(m));const seen=new Set();let low=-1e9;
       for(let i=0;i<240&&['dive','smash','crash','diveTell'].includes(g.mode);i++){if(how==='stay')on(m);if(how==='under'&&!BK.P.dead){BK.P.x=g.x;}BK.sim(1);seen.add(g.mode);low=Math.max(low,g.y);}
       const o={mode:g.mode,seen:[...seen],open:+(g.open||0).toFixed(2),broken:!!m.broken,aim:g.tgt===m,dy:Math.round(A.floor-g.y),low:Math.round(A.floor-low),hit:hp0-BK.P.hp};BK.god=true;BK.P.hp=BK.P.maxHp;return o;};
-    const regrowAll=()=>{for(const m of sl())if(m.broken){m.brokenT=0;}BK.sim(3);};
+    const sp=()=>BK.SET.speed||1;const regrowAll=()=>{for(const m of sl())if(m.broken){m.brokenT=0;}BK.sim(3);};
     /* LEFT LATE: he goes through it to the garden, stunned */
     {const m=sl().find(q=>!q.cracked)||sl()[0];const o=dive(m,'late');out.late=o;
-     const hold=()=>{g.cd=99;};const hp1=g.hp;BKT.hurtEnemy(g,10,g.x-20,false);out.late.dmgOpen=hp1-g.hp;
-     let f=0;for(;f<400&&g.mode==='stunned';f++){hold();BK.sim(1);}out.late.stunSecs=+(f/60+(${GARG.stun || 0}-(o.open||0))).toFixed(2);out.late.after=g.mode;
-     g.mode='hover';g.modeT=1;g.cd=99;BK.sim(5);const hp2=g.hp;BKT.hurtEnemy(g,10,g.x-20,false);out.late.dmgShut=hp2-g.hp;
-     /* and the slab he broke comes back */
-     let t=0;for(;t<60*20&&m.broken;t++){g.mode='hover';g.cd=99;BK.sim(1);}out.late.regrow=+(t/60).toFixed(1);}
+     let f=0;for(;f<600&&g.mode==='stunned';f++){g.cd=99;BK.sim(1);}out.late.stunSecs=+(f*sp()/60+(${GARG.stun || 0}-(o.open||0))).toFixed(2);out.late.after=g.mode;
+     /* and the slab he broke comes back (world seconds: frames at the game's speed) */
+     let t=0;for(;t<60*40&&m.broken;t++){g.mode='hover';g.cd=99;BK.sim(1);}out.late.regrow=+(t*sp()/60+(${GARG.stun || 0})).toFixed(1);
+     /* stunned again, every blow counts twice */
+     regrowAll();dive(m,'late');const hp1=g.hp;BKT.hurtEnemy(g,10,g.x-20,false);out.late.dmgOpen=hp1-g.hp;
+     g.mode='hover';g.modeT=1;g.cd=99;BK.sim(5);const hp2=g.hp;BKT.hurtEnemy(g,10,g.x-20,false);out.late.dmgShut=hp2-g.hp;}
     /* KEPT: a hit, a landing, nothing open */
     regrowAll();{const m=sl().find(q=>!q.cracked)||sl()[0];out.stay=dive(m,'stay');}
     /* EARLY: only his aim moves */
@@ -79,7 +82,7 @@ try {
     /* UNDER IT: a hero on the garden floor under the slab he comes through is hit */
     regrowAll();{const m=sl()[2];out.under=dive(m,'under');}
     /* PHASE TWO: a broken slab takes longer to come back */
-    regrowAll();{const m=sl().find(q=>!q.cracked)||sl()[0];const o=dive(m,'late',2);let t=0;for(;t<60*30&&m.broken;t++){g.mode='hover';g.cd=99;BK.sim(1);}o.regrow=+(t/60).toFixed(1);out.p2=o;}
+    regrowAll();{const m=sl().find(q=>!q.cracked)||sl()[0];const o=dive(m,'late',2);let t=0;for(;t<60*60&&m.broken;t++){g.mode='hover';g.cd=99;BK.sim(1);}o.regrow=+(t*sp()/60).toFixed(1);out.p2=o;}
     /* NEVER FEWER THAN minLive STAND */
     regrowAll();{let least=99;for(const m of sl()){g.mode='hover';g.cd=99;const s=sl();if(BK.gargBreak)BK.gargBreak(m);least=Math.min(least,sl().filter(q=>!q.broken).length);BK.sim(1);}out.live={least,n:sl().length,api:!!BK.gargBreak};}
     out.errors=(window.__errs||[]).slice(0,3);return out;})()`, 600000);
