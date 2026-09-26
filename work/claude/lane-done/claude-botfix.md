@@ -145,51 +145,69 @@ the campaign regardless of this lane's changes: **longwater (the Herald)**, at 4
 **causeway (the Kraken)**, at 3/7 before and 2/7 after. I did not tune either boss - Daniel's standing instruction
 here is to report, not tune.
 
-## The herald-pirate check: root-caused, still red, not patched
+## The herald-pirate check: root-caused AND fixed (follow-up, same day)
 
-Of the required checks, everything is green except `herald-pirate`, confirmed real by re-running it alone (not a
-load artifact - `textfit`'s failure in the batch run WAS a load artifact: green alone, 1831 screens, 0 real
-findings, LONGHINT 7 which is an existing odd-note, not new).
+Daniel, after the first report: "fix the cause, never weaken the test" - do the follow-up in this lane, not tune the
+check. `herald-pirate` is now green.
 
 `tools/herald-pirate.mjs` runs one fixed-seed (1919) pirate-vs-Herald fight and asserts `killed === true` within its
-own 180 s cap. On this branch it times out (67% of his HP left at 180 s, and still only at 62% left with the cap
-raised to 300 s in a throwaway test - not merely slower, genuinely stuck for long stretches: one trace showed his HP
-frozen for 30+ real seconds while the bot cycled through `stride/sweepTell/sweep/rec/raise/wave/ebb/mired` without
-landing a hit). The Herald only takes full damage in `mired` (the muck phase after the tide goes out) or `reel`
-(just parried) - everywhere else a hit is cut to 0.35x (`src/main.js` ~5623) - and the generic pilot in `src/lab.js`
-has no herald-specific attack logic at all (only a shared warden/pirate deflect-timing branch for his blocks); it
-relies on the same distance/reach heuristics every fight uses, with no awareness of his damage window.
+own 180 s cap. It was timing out (67% of his HP left at 180 s). The Herald only takes full damage in `mired` (the
+muck phase after the tide goes out) or `reel` (just parried) - everywhere else a hit is cut to 0.35x (`src/main.js`
+~5623) - and the generic pilot in `src/lab.js` had no idea: `BK.bossOpen` (the same "is this boss open" gate every
+other boss-specific branch already asks) had no `herald` case at all, so `OPEN()`'s fallback (`OPEN0`) read that as
+**always open**, every frame, not only in `mired`/`reel`.
 
-**What I ruled out, and what's left standing:**
-- Confirmed present already at `af10a4a`, before any merge with origin/master - not a merge artifact.
-- Reverting `LAB_STAND.pirate` alone back to the old value (12, from the derived 14) recovers most of the gap at
-  `436827c` alone (92.8 s baseline on master -> 170.8 s at `436827c` -> 108.9 s with the revert) - BOT BUG A's
-  uniform margin costs this specific fight real time - but with STAMINA's numbers also in, the same revert barely
-  moves the needle (still times out). Reverting the whole `ST` table back to its old values (keeping every other
-  +25% cost) fixes it outright (103.3 s, a clean win) - so the base `ST.dodge`/`ST.blockHit`/`ST.plunge`/`ST.hold`
-  increases are the larger of the two contributors when both are present, not `LAB_STAND`.
-  - **But**: an *unseeded* run of the general pilot shows the Herald was already a coin-flip fight on master, before
-    any of this lane's changes - in the `before` row above, pirate, warden AND geomancer all timeout (56%, 7%, 6% HP
-    left respectively) against him in that one random run, same as several heroes still do after. **The fixed-seed
-    check was sitting close to its own edge already; this lane's changes tipped that one specific seed over it.**
-    This is a real, measurable side effect of an approved fix, not a bug invented from nothing.
-- I did not attempt a source fix. Teaching the pilot to recognise and press the `mired` window is the honest fix,
-  but it is a real feature addition to `src/lab.js` (a boss-specific attack-priority branch, the same shape as the
-  existing warden/pirate deflect branch just above it), not a one-line change, and I was not confident I could add
-  it and prove it safe for the other checks that also fight the Herald (`pyre-pilot` currently passes) inside this
-  lane's remaining budget.
+**Two real bugs, not one, chased down with `opts.samples` and a purpose-built frame tracer:**
+1. **`BK.bossOpen` didn't know the Herald.** Added `e.t === 'herald' ? (e.mode === 'mired' || e.mode === 'reel') :
+   null` (`src/main.js`, `bossOpen()`). A new `src/lab.js` branch for `boss.t === 'herald'` (placed *before* the
+   generic `else if (open) { goal = boss.x; strike = true; }` - that generic branch would otherwise catch every
+   mired/reel frame first now that "open" is honestly gated, and the herald-specific code right after it would never
+   run at all; traced with `opts.samples` and confirmed: it fired zero times in 180 s before the reorder) drops the
+   guard the instant he is open (`if (open) k.block = false`) and otherwise plays him exactly as before - approach
+   and swing on the beat. Retreating from his raise/wave was tried first (hold off, then close on ebb) and measured
+   **worse**, not better: the 4+ seconds a cycle spent running from the wave and walking back cost more kill time
+   than the 0.35x chip damage it gave up was worth, so it was dropped in favour of the plain default for every mode.
+2. **The general stuck-recovery (`436827c`, `P.labStuckF`) held `k.jump` down forever.** This is the one that
+   actually mattered. Every other jump in `src/lab.js` taps `BK.press('jump')` once and holds `k.jump` for a counted
+   number of frames (`P.labJump`); the stuck-recovery instead set `k.jump = true` directly, with nothing to ever let
+   it go again while `P.labStuckF >= 3` - and being stuck is exactly the condition that never clears itself. Traced
+   frame-by-frame on the herald-pirate check's own seed: the pirate parked at 30 px (one pixel past
+   `LAB_REACH.pirate` + half the Herald's width) for whole `mired` windows, `k.jump` and `k.left` both `true` on
+   *every single frame*, `P.vx` pinned at exactly 0 the entire time - not because he could not reach, but because
+   holding jump down forever, with no ground contact to ever release it on, meant the walk code below never got a
+   frame to move him at all. **This bug is general** (every boss's stuck-recovery held jump the same way, not only
+   the Herald's) and is fixed the same way everywhere: tap and hold for a bounded `P.labJump`, exactly like the rest
+   of the file.
 
-## Checks, after the merge with origin/master (eeaad91)
+**Result:** killed in 71.9 s (was: timeout at 180 s, 67% HP left), taking only 54 damage (was: over 400). Sampled 3
+more rolls (`opts.seed`-less external reseed, so not as clean a control as the check's own pinned seed, but a real
+sanity check) against pirate/warden/geomancer: 4 of 9 clear wins under 180 s, the rest between 13% and 70% HP left -
+the fight is still genuinely hard for some rolls (matches the before/after table above: `longwater` was 4/7 before
+this lane and 5/7 after task 1-3 alone, still the second-roughest arena fight in the campaign), but no longer stuck
+dead in the water on any of them the way the un-fixed jump-hold bug made every long fight.
 
-Ran as one named subset (`npm run check -- ...`), the full list in the task plus `lab-reach`:
-**32 of 34 named checks green.** `herald-pirate` - real, see above. `textfit` - failed in the batch run (load: the
-suite ran alongside other checks and possibly another lane's Chrome), confirmed green re-run alone. Full log:
-`work/claude/pilot-after.log` and the checks output is not separately saved to a file in this repo, only reported
-here (34 named: boss-openings, boss-fight-end, arena-supplies, hero-trials, starter-kits, knight-rework, geomancer,
-combat-feel, attack-buffer, skill-balance-probe, pilot-actions, lab-clock, combat-replay, combat-results-test,
-queen-pillars, queen-chandelier, reefmaw-land, lance-support, moor-gusts, gargoyle-smash, deathknight-unlock,
-one-dodge, reaper-input, heat, paladin-enrage, pyre-pilot, herald-pirate, textfit, comments, syntax, homepaths,
-dangling-paths, lab-reach).
+Every touched line is in `src/lab.js` (the pilot) and one added case in `src/main.js`'s `bossOpen()` (a read of
+existing state, not a rule change) - nothing about the Herald's own fight, damage, or timing changed.
+
+## Checks, after the merge with origin/master (eeaad91), and again after the herald-pirate follow-up
+
+First pass, one named subset (`npm run check -- ...`), the full list in the task plus `lab-reach`: **32 of 34 named
+checks green.** `textfit` - failed in the batch run (load: the suite ran alongside other checks and possibly another
+lane's Chrome), confirmed green re-run alone. `herald-pirate` - real, root-caused above, fixed in the follow-up.
+
+Second pass, after the herald-window fix (`herald-pirate` alone, three extra rolls of it, plus `boss-openings`,
+`boss-fight-end`, `lab-reach`, `pilot-actions`, `comments`, `syntax`): **all green.** `herald-pirate` alone: killed in
+71.9 s. `boss-openings` and `boss-fight-end` (which both exercise every boss including the Herald) still pass, so the
+`bossOpen` addition and the stuck-recovery fix did not regress any other fight's opening-window accounting or
+end-of-fight detection. `lab-reach` still passes (56/56) - the Herald was never in its 9-boss sample, so BOT BUG A's
+own check is unaffected by this follow-up. `pilot-actions`, `comments` and `syntax` are unrelated sanity checks, all
+green.
+
+Full list for the first pass (34 named): boss-openings, boss-fight-end, arena-supplies, hero-trials, starter-kits,
+knight-rework, geomancer, combat-feel, attack-buffer, skill-balance-probe, pilot-actions, lab-clock, combat-replay,
+combat-results-test, queen-pillars, queen-chandelier, reefmaw-land, lance-support, moor-gusts, gargoyle-smash,
+deathknight-unlock, one-dodge, reaper-input, heat, paladin-enrage, pyre-pilot, herald-pirate, textfit, comments,
+syntax, homepaths, dangling-paths, lab-reach.
 
 ## The merge with origin/master (eeaad91)
 
@@ -201,25 +219,31 @@ fix, and every STAMINA number were all still intact.
 
 ## UNVERIFIED
 
-- **`herald-pirate` is red** (see above) - a real, root-caused, unresolved finding, not a shortcut taken.
 - Nobody has played the new stamina numbers by hand. The measurement above is bot-only; whether "easier to run dry,
   quicker to fill back up" *feels* right (rather than just measuring faster/cheaper on average) is a person question.
 - `arena:causeway` (the Kraken) got measurably worse (3/7 -> 2/7) alongside this lane's changes. I have not
-  root-caused it - it may be the same `ST` sensitivity as the Herald, or unrelated. Flagging, not fixing (out of
-  this lane's scope, and Daniel's "report, don't tune bosses").
-- The stuck-recovery block added in `436827c` (position+boss.hp checked every 30 frames, forces a jump/dodge after
-  1.5 s of no progress) is a general floor under every boss fight, not tested against every boss - only found via
-  the Herald's bouncer-tile freeze.
+  root-caused it - it may be the same jump-hold stuck-recovery bug now fixed for the Herald, since the mechanism
+  (a hero pinned in place, unable to close) is identical in shape; I have not re-measured causeway after the
+  follow-up fix. Flagging, not re-tuning (out of this lane's scope, and Daniel's "report, don't tune bosses").
+- The 3-extra-seed sample of the herald-window fix (pirate/warden/geomancer, 3 rolls each) won 4 of 9 outright and
+  left the rest between 13% and 70% HP at the 180 s mark - the Herald is still a genuinely hard fight for some rolls.
+  The one seed the check actually pins (1919, pirate) is a clean, comfortable win (72 s), but this is not a claim
+  that every hero beats him inside 180 s on every roll.
+- The stuck-recovery's jump-hold fix (`P.labStuckF` >= 3) is general, not herald-specific, and I only verified it
+  against the one boss it was chasing plus `boss-openings`/`boss-fight-end` (which touch every boss but don't measure
+  fight duration). It is very unlikely to make any other fight worse - it only shortens how long jump is held per
+  trigger, from unbounded to 18 frames, matching the file's own convention everywhere else - but nobody has re-run a
+  full boss-lab pilot specifically looking for OTHER bosses whose stuck-recovery episodes used to (accidentally)
+  benefit from the unbounded hold.
 
 ## QUESTIONS FOR DANIEL
 
-1. **`herald-pirate` (and possibly `arena:causeway`/the Kraken): tune the pilot, raise the check's cap, or leave it
-   red and let a future lane teach the bot the Herald's `mired` window?** Recommendation: a small follow-up lane
-   scoped exactly to "teach `src/lab.js` the Herald's damage window" (mirroring the existing warden/pirate deflect
-   branch) - it is a real bot gap (0.35x damage everywhere but `mired`/`reel`, and the generic pilot has zero
-   awareness of it), not a balance question, and fixing it should help every hero's Herald fight, not only the
-   pirate's.
-2. **Does the new stamina economy feel right?** The bot measurement says fights are a little faster and a little
+1. **Does the new stamina economy feel right?** The bot measurement says fights are a little faster and a little
    cheaper on average - the opposite of "harder," even though every cost went up ~25%, because ST.regen/delay make
    recovery so much quicker that more blocking and dodging is affordable. If the goal was a harder-feeling game
    rather than a snappier one, this may need a person's playtest, not another bot number.
+2. **`arena:causeway` (the Kraken) is still the campaign's other rough fight** (3/7 -> 2/7 across this lane's first
+   three tasks, not re-measured after the herald-window follow-up). Worth a dedicated look with the same
+   `opts.samples`-and-frame-tracer approach that found the Herald's two bugs? Recommendation: yes, if it turns out to
+   share the jump-hold pattern the fix already covers, re-measuring it might turn out to be free; if not, it likely
+   wants its own small lane.
