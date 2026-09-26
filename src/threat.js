@@ -87,8 +87,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      king and the rest all are. closedhelm, bellcrab, drownedking and prince were written 0 with nothing explaining
      why, and were left alone and flagged because which convention was right was Daniel's call rather than a thing to
      settle inside a bug fix. HE RULED ON 2026-09-23: A BOSS IS A 6, and those four are 6 now like the rest, so this
-     table says one thing instead of two. The grave warden stays a mini, and the Tide Reaver, the only other mini
-     here, is a 4. Every INDEX taken before this - and before 77a559a, which gave the five common dead any weight at
+     table says one thing instead of two. The grave warden stays a mini, a 4 (the Tide Reaver, the other
+     mini here then, was removed 2026-09-25). Every INDEX taken before this - and before 77a559a, which gave the five common dead any weight at
      all - was read off a table that scored part of its own input as nothing, so it is SMALLER THAN THE TRUTH. */
   /* THE UNBURIED FIELD. THE FALLEN are a zombie's weight (2): a told cut and 30 health, inert alone, but under a banner
      they come back, so they cost more than their health says. THE BANNER-BEARER is the shaman's 3: a support that makes the

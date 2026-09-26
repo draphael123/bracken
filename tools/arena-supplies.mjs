@@ -33,7 +33,7 @@
        walks and climbs, not the room, so the room cannot be judged from them.
      - GUARDS INSIDE A BAND (`P.y < floor - 28 && P.y > floor - 112`) are read and NOT scored: the floor itself is
        already outside the band, so the room answers them by existing.
-     - GUARDS WHOSE NUMBER IS NOT A NUMBER (`floor - REAVER.waveH`) are UNREAD and every one is named.
+     - GUARDS WHOSE NUMBER IS NOT A NUMBER (`floor - SOME.table.h`) are UNREAD and every one is named.
      - DISTANCES, WALLS, HAZARDS AND PROPS are not read at all. A12 covers those too; this tool covers height only.
    Run it and read the coverage block: rooms found, rooms whose code was read, rooms scored, and what was skipped. */
 import assert from 'node:assert/strict';

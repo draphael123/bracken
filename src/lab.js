@@ -607,26 +607,6 @@ async function runbossLab(BK, opts) {
       /* THE HEDGE WARDEN (batch 4c): the bot plays him as a player does - fights him BESIDE A BRAZIER (it stands past the nearest
          one, so he follows it there and is felled by the fire), gets clear of the thorns, guards the cut and the rush (or backs
          off / jumps the rush without a shield), cuts the cuttings he throws off, and puts everything into a stump. */
-      /* THE TIDE REAVER (2026-09-22): played as a player plays him - it JUMPS the low rake as its tell runs out, jumps the wave and jumps
-         his cast (which sticks the harpoon in the wall and disarms him: it then puts everything into him), guards the thrust with a
-         shield or steps back out of it without one, and otherwise stands in reach and cuts. */
-      if(boss.t==='tidemarauder'&&boss.mini){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
-        const open=boss.mode==='disarmed'||boss.mode==='fetch'||boss.mode==='wrench';if(open&&!wasOpen)opened++;wasOpen=open;
-        const m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1,hp=boss.harpoon,wv=boss.wave;
-        const rest=!open&&(P.st<14||(P.labRest&&P.st<44));P.labRest=rest;
-        let gx=rest?boss.x-side*120:boss.x-side*Math.max(14,LAB_REACH[h]*.7);
-        if((m==='thrustTell'||m==='reelThrust')&&!SHIELDED(h))gx=boss.x-side*110;   /* no shield: out of the thrust, the reeled one too */
-        gx=Math.max(A.x0+18,Math.min(A.x1-18,gx));
-        if(Math.abs(gx-P.x)>4)k[gx>P.x?'right':'left']=true;
-        const jumpNow=(m==='rakeTell'&&boss.modeT<0.2&&Math.abs(dx)<110)||(wv&&Math.abs(wv.x-P.x)<40&&Math.sign(P.x-wv.x)===wv.dir)||(m==='cast'&&hp&&!hp.stuck&&Math.abs(hp.x-P.x)<46&&Math.sign(P.x-hp.x)===hp.dir);
-        if(jumpNow&&P.ground){BK.press('jump');P.labJump=16;}
-        if(P.labJump>0){P.labJump--;k.jump=true;}
-        if((m==='thrustTell'||m==='reelThrust')&&SHIELDED(h)&&Math.abs(dx)<120){k.block=true;k.left=k.right=false;P.face=side;}
-        else if(!rest&&m!=='rakeTell'&&!(m==='thrustTell'&&!SHIELDED(h))&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<40&&P.atk<0){P.face=side;BK.press('atk');swings++;}
-        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
-        if(f%600===599)await yieldNow();continue;
-      }
       if(boss.t==='hedgewarden'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
