@@ -60,7 +60,7 @@ export function insertRows(R, at, n, T, TS = 16) {
 // hatch, where you arrive heavy and slow, and another in the orlop. She is FLOODED: her holds are not air, as the wrecks' are. What
 // air she has is a bell in her crow's nest, what her deck beams kept, a clam in her bilge, a kelp bladder off her rail, and the
 // hatches themselves - their bubbles are still air, and they are the one place in her you cannot stay.
-//   rows (Y = 158):  Y..Y+7     HER RIGGING       three masts jammed into the garden's floor, two yards, the crow's nest
+//   rows (Y = 158):  Y..Y+7     HER RIGGING       two masts stepped clear of the way, the fore yard, the crow's nest
 //                    Y+8        THE WEATHER DECK  (strake Y+9, Y+10)  the main hatch at 54-55
 //                    Y+11..Y+18 THE TRIBUTE HOLD  the 'tween deck, her tribute lashed in rows; the hatch west at 16-17
 //                    Y+19       its floor         (strake Y+20, Y+21)
@@ -81,26 +81,32 @@ export function tributeShip(R, T, TS = 16) {
      itself, so there is no edge of it to slip down unweighted */
   const hotHatch = (a, b, top, floorRow) => { D.vents.push({ x: a, y: floorRow - 1, h: floorRow - top, hot: true, drain: false });
     D.currents.push({ x0: a, x1: b, y0: top, y1: floorRow - 1, fx: 0, fy: -150, kind: 'hot' }); };
-  const stone = (x, y, kind) => ent('ballast', x, y, { kind: kind || 'stone' });
+  /* HER BALLAST IS RACKED, and a racked stone goes home (main.js updateBallast, `rack`): one a prise knocked away, one dropped off the way,
+     one that fell down a hatch, is set back on its deck. Loose, the deck over the first hatch could be left with no stone at all - three
+     stones, a prise, a hatch - and a stoneless hero cannot go down a hot hatch: a softlock (Daniel, 2026-09-25: "there is no way down") */
+  const stone = (x, y, kind) => ent('ballast', x, y, { kind: kind || 'stone', rack: true });
   const deco = (kind, x, y, o) => ent('deco', x, y, { kind, ...(o || {}) });
   const pocket = (a, b, c, d) => { R.airRooms.push([a, b, c, d]); D.pockets.push([a, b, c, d]); };
   fill(X0, X1, Y, Y + 43, T.AIR);
   // ---- HER RIGGING (Y .. Y+7): masts stepped in her deck and jammed into the rock she sank under ----
   /* (their tops stop two rows short of the rock: a mast to the ceiling is a wall across the trench, and the first cut of this sealed the
      throat's landing off from the rest of her - tools/deep-rework.mjs now floods the start to the door) */
-  for (const mx of [30, 48, 84]) { fill(mx, mx, Y + 2, Y + 7, T.SOLID); hull(mx, mx, Y + 2, Y + 7); }
-  fill(45, 47, Y + 2, Y + 2, T.ONEWAY); fill(49, 51, Y + 2, Y + 2, T.ONEWAY); deco('airBell', 46, Y + 1);   /* the crow's nest, and the bell they kept in it */
-  fill(41, 47, Y + 5, Y + 5, T.ONEWAY); fill(49, 55, Y + 5, Y + 5, T.ONEWAY);   /* the main yard, either side of her mast */
-  fill(78, 83, Y + 4, Y + 4, T.ONEWAY); fill(85, 90, Y + 4, Y + 4, T.ONEWAY);   /* the fore yard */
+  /* THE MASTS STAND CLEAR OF THE WAY: a mast stepped in her deck is a wall a man carrying a stone cannot climb (he cannot swim up, and
+     the jump key lets the stone go), so none stands between a stone and the hatch. The first cut had her mainmast between two of the
+     deck's stones and the hatch, and a third stone inside her mizzen: the only way down the weather deck was the chest beyond the hatch
+     (tools/deep-descent.mjs, played with the real keys, found it). */
+  for (const mx of [12, 90]) { fill(mx, mx, Y + 2, Y + 7, T.SOLID); hull(mx, mx, Y + 2, Y + 7); }
+  fill(87, 89, Y + 2, Y + 2, T.ONEWAY); fill(91, 93, Y + 2, Y + 2, T.ONEWAY); deco('airBell', 88, Y + 1);   /* the crow's nest on her foremast, and the bell they kept in it */
+  fill(84, 89, Y + 4, Y + 4, T.ONEWAY); fill(91, 96, Y + 4, Y + 4, T.ONEWAY);   /* the fore yard */
   ent('check', 20, Y + 7);   /* where you land on her, under the garden's throat */
   ent('sign', 17, Y + 7, { text: 'THE TRIBUTE SHIP. HER HATCHES BLOW HOT: ONLY A STONE WILL CARRY YOU DOWN ONE.' });
-  ent('silver', 89, Y + 3);   /* S7: out on the fore yard's end, off the way down */
-  coin([43, Y + 4], [53, Y + 4], [80, Y + 3]);
+  ent('silver', 95, Y + 3);   /* S7: out on the fore yard's end, off the way down */
+  coin([43, Y + 4], [53, Y + 4], [86, Y + 3]);
   ent('angler', 36, Y + 3); ent('angler', 70, Y + 5);
   // ---- THE WEATHER DECK (Y+8), and the main hatch in it ----
   deck(Y + 8, [[54, 55]]);
   hotHatch(54, 55, Y + 5, Y + 19);
-  stone(30, Y + 7); stone(44, Y + 7); stone(72, Y + 7, 'chest');
+  stone(32, Y + 7); stone(44, Y + 7); stone(72, Y + 7, 'chest');
   ent('prise', 40, Y + 7, { face: 1 });
   ent('merrowspear', 66, Y + 7, { face: -1 });   /* S1: her harpoon covers the hatch, and you cross to it heavy */
   D.wrecks.push({ x: 36, y: Y + 7 });   /* a diving bell on her side on the deck, with the air still in her */

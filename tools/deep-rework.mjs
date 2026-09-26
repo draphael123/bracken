@@ -58,6 +58,9 @@ for (const [a, b, dy] of SHIP.hatches) {
   const hot = L.deep.currents.find(c => c.kind === 'hot' && c.x0 <= a && c.x1 >= b && c.y0 <= deck - 2 && c.y1 >= deck + 3 && c.fy < -100);
   assert.ok(hot, 'the hatch at ' + a + '-' + b + ' blows hot across its whole width');
   const stones = L.ents.filter(e => e.t === 'ballast' && e.y === deck - 1 && e.x >= SHIP.x0 && e.x <= SHIP.x1);
+  for (const st of stones) { assert.ok(st.rack, 'the stone at ' + st.x + ' over a hatch is racked: it goes home, so the deck is never left without one');
+    assert.notEqual(at(st.x, st.y), T.SOLID, 'the stone at ' + st.x + ',' + st.y + ' is not inside the timber');
+    for (let x = Math.min(st.x, a); x <= Math.max(st.x, b); x++) assert.ok(at(x, deck - 1) !== T.SOLID && at(x, deck - 2) !== T.SOLID, 'nothing a heavy hero cannot climb between the stone at ' + st.x + ' and the hatch at ' + a + ' (' + x + ')'); }
   assert.ok(stones.length >= 2, 'the deck over the hatch at ' + a + '-' + b + ' has stones to carry down it (' + stones.length + ')');
 }
 { const [a, b] = SHIP.breach, keel = Y + SHIP.rows - 5; for (let x = a; x <= b; x++) assert.equal(at(x, keel), T.AIR, 'her bilge is stove in at ' + x); }
@@ -80,7 +83,7 @@ assert.ok(L.ents.filter(e => e.t === 'check' && e.y >= Y && e.y < Y + SHIP.rows)
 
 // ---- THE RACKS ----
 { const A = L.arena, top = Math.round(A.y0 / 16), floorRow = Math.round(A.floor / 16);
-  const racks = L.ents.filter(e => e.t === 'ballast' && e.rack);
+  const racks = L.ents.filter(e => e.t === 'ballast' && e.rack && e.rope);
   assert.equal(racks.length, RACKS.length, 'a stone a rack');
   for (const [a, b] of RACKS) { let row = -1; for (let y = top; y < floorRow; y++) if (at(a, y) === T.PLANK) { row = y; break; }
     assert.ok(row > 0, 'the rack at ' + a + ' has a platform');
