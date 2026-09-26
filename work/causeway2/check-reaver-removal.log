@@ -44,7 +44,7 @@
  ok  architecture    5547ms  44 levels, 321 built pieces declared; 3 grandfathered (harbor, waymeet, unburied). everything that was built s
  ok  keep-rework     2441ms  keep-rework  no Leadfoot, no Vault Keeper; 8 walls, 8 landmarks; 4 whirlpools (2 guarding air, 2 beside a knig
  ok  checkpoint-stand  7758ms  ok  checkpoint-stand   417 checkpoints in 44 levels: every one stood at with a real jump (5 columns, not 6; 3 
- ok  textfit       237821ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-causeway2\audits\readability\textfit
+ ok  textfit       237821ms  0 pictures in <repo>\audits\readability\textfit
 
 43 of 162 checks pass - A SUBSET (additional-areas, arena-supplies, boss-fight-end, burial-geometry, haunted-coast, haunted-coast-runtime, keep, map-grammar, one-new-foe, sea-requests, sea-runtime, skins, boss-openings, mini-names, tells, elites, spawns, floaters, architecture, audit, content-audit, traps, killzones, deadends, checkpoints, checkpoint-gaps, checkpoint-stand, signs, textfit, readability, swim-chain, deadly-water, ore-road, comments, syntax, homepaths, dangling-paths), NOT THE SUITE.
 Run `npm run check` with no arguments before a commit that matters, and before any deploy.
