@@ -235,7 +235,7 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (1 + 0.075 * LV_GROW())); // (HEAVY PLUNGE and FIREDROP were two ranks of this: the level brings it now)
-const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, wormLunge: DWM.WORM.dmg.lunge, wormBite: DWM.WORM.dmg.bite, sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lever, minerPick:16, abbot:ABBOT.dmg.censer, abbotChain:ABBOT.dmg.cast, abbotProcess:ABBOT.dmg.process, abbotKnell:ABBOT.dmg.knell, tome:TOME.dmg, hedgewarden:18, gravewarden:20, pyroStaff:9, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroJet:10, pyroStep:14, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 20, bellSlam: 28, bellPressure: 18, bellCharge: 26, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 12, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 22, krakSweep: 18, krakGrip: 6, krakDrag: 20, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7, temperCut: 13, temperShove: 6, temperQuench: 20,
+const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, wormLunge: DWM.WORM.dmg.lunge, wormBite: DWM.WORM.dmg.bite, sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lever, minerPick:16, abbot:ABBOT.dmg.censer, abbotChain:ABBOT.dmg.cast, abbotProcess:ABBOT.dmg.process, abbotKnell:ABBOT.dmg.knell, tome:TOME.dmg, hedgewarden:18, gravewarden:20, pyroStaff:9, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroJet:10, pyroStep:14, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 20, bellSlam: 28, bellPressure: 18, bellCharge: 26, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 12, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 22, krakSweep: 18, krakGrip: 6, krakDrag: 20, krakTide: 14, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7, temperCut: 13, temperShove: 6, temperQuench: 20,
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16, drunkLob: 10, drunkStool: 14, drunkBottle: 12, drunkGlass: 8,
   priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, princeCut: 22, princeRise: 26, princeCrown: 16, princeWind: 12, courtier: 12, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, venomTick: 5, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawLunge: 22, mawTail: 18, mawRoll: 8, mawDrown: 20, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, fledgling: 10, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, tipplerBar: 15, tipplerOre: 14, shearSnip: 12, shearCut: 16, gafferHook: 16, gafferHaft: 13, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, badger: 12, gar: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20, gobpriest: 0, priestCenser: 10, priestBell: 7, gobmage: 0, gobBolt: 12, kingWhirl: 16, kingGulp: 10, merrowSpear: 12, merrowSurge: 8, merrowBrute: 16, gobRune: 16, pufferBurst: 10, jelly: 8, mantaDive: 16,
@@ -9981,7 +9981,7 @@ function causeTurn(ph) {
 }
 function causeBell(pr) {
   SFX.seaBell(); SFX.clank(); hitstop(0.05); ringAt(pr.x, pr.y - 20, 30, '#7cc8b8', 0.5); sparks(pr.x, pr.y - 20, P.face, 4);
-  if (pr.t === 'knell') { ringAt(pr.x, pr.y - 20, 60, '#8fd160', 0.6); shakeCam(3); if (boss && boss.t === 'kraken' && boss.alive && krakenBreathing(boss)) boss.knellHit = true; return; }
+  if (pr.t === 'knell') { ringAt(pr.x, pr.y - 20, 60, '#8fd160', 0.6); shakeCam(3); if (boss && boss.t === 'kraken' && boss.alive && bossActive && boss.arms) krakenBellRung(boss, pr); return; }
   if (!CT) return; const C = L.causeTide;
   if (CT.ph === 'low') { CT.ph = 'warn'; CT.t = Math.min(C.warn, 1.8); CT.toll = 2; }
   else if (CT.ph === 'high') { CT.ph = 'ebb'; CT.t = 0.5; causeTurn('ebb'); }
@@ -11380,7 +11380,7 @@ function krakenInit(e) {
   e.stage = 1; e.stageFloor = Math.round(e.maxHp * 0.7); e.skyT = 0; e.inkT = 0; e.back = 'stride';
   e.seaY = fl + 2 * TS; e.seaWant = fl + 2 * TS; e.T = { grab: 4, sweep: 6.5, slam: 1.2, hurl: 0, beat: 99, arm: 99, lunge: 0, roar: 0, roll: 0, crate: 1.2, rake: 99, look: 99 };
   e.far = 0; e.farWant = 0; e.farQ = []; e.cargo = []; e.crates = []; e.bridges = []; e.orbs = []; e.geys = []; e.hurls = []; e.brimT = 0; e.hurlN = 0; e.slam2 = null;
-  e.shards = []; e.drift = []; e.headX = A.rest;   /* what is going back at him, and what the flood is bringing in. headX is only WHERE HE IS - the end of the road - never a body on it */
+  e.shards = []; e.drift = []; e.headX = A.rest; e.tideN = 0; e.tideShow = A.x1; e.tideWarn = 0; e.tideSurge = null; e.T.tide = KRK_TIDE_EVERY[1];   /* what is going back at him, and what the flood is bringing in. headX is only WHERE HE IS - the end of the road - never a body on it */
   /* HIS BODY, in the background: NEAR is up close behind the last stones (the breath, the look, the maw), LURK is low in the far water
      with the dome and the eyes out (watching his arms work). FAR (above) is the far-water beat. RECOIL is a thrown crate landing on him */
   e.near = 0; e.nearWant = 0; e.lurk = 0; e.lurkWant = 0; e.recoil = 0;
@@ -11460,6 +11460,8 @@ function krakenHurt(e, dmg, fromX, plunge) {
   if (e.t === 'feeler') return e.mode === 'hide' || e.mode === 'sink' ? false : e.mode === 'stuck' ? Math.round(dmg * 1.5) : dmg;
   if (e.t === 'krakenarm') { const a = e.arm, K = e.parent;
     if (!a || !a.low || a.st === 'gone' || !K || !K.alive) { SFX.clank(); return false; }
+    /* UNDER THE TIDE: an arm lying on stones the sea has taken is out of reach of a blade (THE TIDE RISES) */
+    { const bx = fromX + (Math.sign(e.x - fromX) || 1) * 14; if (krakenFlooded(K, bx)) { SFX.splash(); number(bx, A0y(K) - 20, 'UNDER THE TIDE', '#9ad8d8'); return false; } }
     /* THE OPENINGS ARE IN HIS ARMS NOW, because his arms are all of him that is on the road. KNELLED, both lie limp across the stones and
        a cut goes through to him two and a half times without costing the arm (it is not a race to sever them). PINNED in a waystone,
        the spear the same. While he LOOKS, a cut goes through at a third again, up to KRK_LOOK_TAKE of him */
@@ -11518,6 +11520,7 @@ function krakenArmsUp(e) { const fl = L.arena.floor;
 function krakenFreeCol(c) { const A = L.arena, fy = A.floor / TS;
   if (c < Math.floor(A.x0 / TS) + 2 || c > Math.floor(A.x1 / TS) - 3 || !isSolid(c, fy) || tileAt(c, fy - 1) !== T.AIR || tileAt(c, fy - 2) !== T.AIR) return false;
   if (A.holes.some(([a, b]) => c >= a - 1 && c <= b + 1)) return false;
+  if (boss && boss.t === 'kraken' && krakenFlooded(boss, c * TS + 8)) return false;   /* nor on stones the tide has */
   if (props.some(p => p.t === 'knell' && Math.abs(p.x - (c * TS + 8)) < 22) || A.stones.some(s => Math.abs(s - (c * TS + 8)) < 14)) return false;  return true; }
 /* THREE OR FOUR PIECES OUT OF THE WRECK FIELD: a crate at you, a crate beside you, then a chest (one at a time), a barrel, or every other
    throw the mast, across the break nearest you */
@@ -11568,6 +11571,51 @@ const KRK_PIN_TAKE = 0.06;    /* the spear pinned in a waystone: the maw's one o
    knight 122.9/122.9, warden 132.6/132.6, pyro 151.9/156.6, paladin 123.5/140.3, pirate 119.5/119, reaper 141.7/133.3 - slower than the
    cargo run for every hero (the pyro's walk-past clears 150 either way, same as round one; only the played, cargo-working route has to
    sit in the window). The cargo is worth roughly 15 to 41 seconds a hero; the walk-past run is only the thing it has to beat. */
+/* ================= THE TIDE RISES (Daniel, 2026-09-25) =================
+   Through the whole fight he drags the sea up the road a SECTION at a time, from his end: the flood line stands at KRK_TIDE_AT[tideN]
+   (a tile; the road seaward of it is his). It never takes the tower, the twelve stones in front of it or the landward waystone (583:
+   the spear still sticks there). TOLD three ways: the bells toll by themselves (three strokes), a foam line stands up where the water
+   will stand, and the bar says THE TIDE COMES. Caught on the stones it takes, you are hit and SWEPT to its edge; the flooded road will
+   not hold your feet, and an arm lying under it cannot be cut. The plinth, the tower and the wreck stand out of it. THE BELLS ARE
+   YOURS (the level's own rule): a knell bell struck pushes it back a section. Each stage starts with the road clear, and it comes
+   faster: KRK_TIDE_EVERY is by stage. */
+const KRK_TIDE_AT = [610, 601, 591, 584];
+const KRK_TIDE_EVERY = [0, 15, 12, 10];
+const KRK_TIDE_WARN = 2.4;
+const KRK_TIDE_PUSH = 150;   /* px/s: the current on flooded road, carrying you out to its edge */
+const krakenTideLine = e => KRK_TIDE_AT[Math.max(0, Math.min(3, (e && e.tideN) || 0))] * TS;
+/* a spot on the road the tide has: seaward of its line and down on the stones (y left out: anywhere on that stretch) */
+const krakenFlooded = (e, x, y) => !!e && (e.tideN || 0) > 0 && x >= krakenTideLine(e) && (y === undefined || y > L.arena.floor - 12);
+function krakenTideClear(e, t) { if (e.tideN) SFX.wave(); e.tideN = 0; e.tideWarn = 0; e.tideSurge = null; e.tideToll = 0; if (e.T) e.T.tide = t; }
+function krakenTideTick(e, dt) {
+  const A = L.arena, fl = A.floor;
+  e.tideShow = (e.tideShow || A.x1) + (((e.tideN ? krakenTideLine(e) : A.x1)) - (e.tideShow || A.x1)) * Math.min(1, dt * 3);   /* the drawn water line eases after it */
+  if (e.mode === 'rise1' || e.mode === 'rise2' || e.mode === 'wake' || e.mode === 'emerge') return;
+  if (e.tideSurge) { const s = e.tideSurge; s.x -= 230 * dt;
+    /* THE SURGE: the sea comes in over the section it takes, a curl of white running landward. Caught on the stones in front of it, you
+       are hit and swept to its edge. Up on something - or in the air over it, as over a breaker - it goes under you */
+    if (!s.hit && !P.dead && Math.abs(P.x - s.x) < 12 && P.y > fl - 14 && P.y <= fl + 2) { s.hit = true; e.tideHits = (e.tideHits || 0) + 1; const res = damagePlayer(s.x, DMG.krakTide, { unblockable: true });
+      if (res === 'hit' || res === 'blocked') { P.vx = -260; P.vy = -150; P.ground = false; } krakenSplash(P.x, fl, 10); SFX.splash(); }
+    if (s.x <= s.to) e.tideSurge = null; }
+  else if (e.tideWarn > 0) { e.tideWarn -= dt;
+    const n = 1 + Math.floor((KRK_TIDE_WARN - e.tideWarn) / (KRK_TIDE_WARN / 3)); if (n > (e.tideToll || 0) && n <= 3) { e.tideToll = n; SFX.seaBell(); shakeCam(1); for (const pr of props) if (pr.t === 'knell') pr.swing = Math.max(pr.swing || 0, 0.6); }
+    if (e.tideWarn <= 0) { const from = krakenTideLine(e); e.tideN = Math.min(3, (e.tideN || 0) + 1); (e.tideLog = e.tideLog || []).push(Math.round(e.fightT || 0));
+      e.tideSurge = { x: Math.min(from, A.x1 - 8), to: krakenTideLine(e), hit: false }; e.T.tide = KRK_TIDE_EVERY[e.stage] || 12;
+      for (const k of e.crates || []) if (k.c * TS >= krakenTideLine(e)) k.life = 0;   /* the crates it takes wash off the road */
+      SFX.waveCrash(); SFX.splash(); shakeCam(4); } }
+  else if ((e.tideN || 0) < 3 && e.T.tide <= 0) { e.tideWarn = KRK_TIDE_WARN; e.tideToll = 0; }
+  /* THE FLOODED ROAD will not hold your feet: the sea carries you out to its edge (a swimmer in a break is the sea's already) */
+  if (!P.dead && !P.swim && !e.tideSurge && krakenFlooded(e, P.x, P.y)) { KRS.tideAcc = (KRS.tideAcc || 0) - KRK_TIDE_PUSH * dt; const st = Math.trunc(KRS.tideAcc); if (st) { KRS.tideAcc -= st; moveBody(P, st, 0, false); } }
+}
+/* A KNELL BELL STRUCK: THE BELLS ARE YOURS. While he breathes it knells him; and whenever it is struck the tide goes back a section (or,
+   struck while the bells are tolling for it, it does not come) */
+function krakenBellRung(e, pr) {
+  if (krakenBreathing(e)) e.knellHit = true;
+  if (e.mode === 'rise1' || e.mode === 'rise2' || e.mode === 'wake' || e.mode === 'emerge' || e.tideSurge) return;
+  if ((e.tideN || 0) > 0) { e.tideN--; e.tideWarn = 0; e.tideToll = 0; e.T.tide = KRK_TIDE_EVERY[e.stage] || 12; e.tideRung = (e.tideRung || 0) + 1; pr.cool = Math.max(pr.cool || 0, 3);
+    SFX.waveCrash(); SFX.wave(); number(pr.x, pr.y - 40, 'THE TIDE GOES BACK', '#7cc8b8'); shakeCam(3); krakenSplash(krakenTideLine(e) + 8, L.arena.floor, 12); }
+  else if (e.tideWarn > 0) { e.tideWarn = 0; e.tideToll = 0; e.T.tide = KRK_TIDE_EVERY[e.stage] || 12; e.tideRung = (e.tideRung || 0) + 1; pr.cool = Math.max(pr.cool || 0, 3); number(pr.x, pr.y - 40, 'THE TIDE HOLDS', '#7cc8b8'); SFX.wave(); }
+}
 let KRK_CARGO = true;          /* BK.krakCargo(false) makes the LAB'S BOT walk past the cargo - the run the crate route has to beat. It changes nothing a player can do */
 /* IT COMES IN ON THE FLOOD, not out of his arm: three to eight stones off the hero, never on his own stone, never on the drain, in a
    break, on a bell or on a waystone (krakenFreeCol). It throws no blow and wears no mark - it thumps down, and then it is footing */
@@ -11675,7 +11723,7 @@ function krakenTideOut(e) {
   if ((e.crates || []).length || (e.bridges || []).length) resolveTiles();
   e.crates = []; e.bridges = []; e.cargo = []; e.orbs = []; e.geys = []; e.hurls = []; e.shards = []; e.drift = []; e.farWant = 0; e.brimT = 0; e.jetFront = null;
   for (const a of e.arms || []) if (a.two && !krkLost(a)) { a.st = 'retreat'; a.t = 1; a.low = false; if (a.ae) a.ae.alive = false; }
-  const sea = (L.pools || []).find(p => p.krakenSea); if (sea) sea.flow = 0; }
+  const sea = (L.pools || []).find(p => p.krakenSea); if (sea) sea.flow = 0; krakenTideClear(e, KRK_TIDE_EVERY[3] + 4); }
 /* THE WATER IT SHOOTS. The far water has three shapes, always a jet first, never the same shape twice running */
 const KRK_FAR_Q = [['jet', 'orbs', 'jetHigh'], ['jet', 'geyser', 'orbs'], ['jetHigh', 'orbs', 'jet']];
 function krakenFarQueue(e) { const n = e.farN = (e.farN || 0) + 1, q = KRK_FAR_Q[(n - 1) % 3].slice(); if (e.hp < e.maxHp * 0.525) q.push(q[q.length - 1] === 'geyser' ? 'orbs' : 'geyser'); return q; }
@@ -11735,7 +11783,7 @@ function updateKraken(e, dt) {
   const pick = arr => arr.slice().sort((a, b) => near(a) - near(b))[0], onRoad = P.y > fl - 20;
   if (e.inkT > 0) e.inkT -= dt;
   /* THE TURNS OF THE FIGHT */
-  if (e.stage === 1 && e.mode !== 'wake' && e.mode !== 'emerge' && e.arms.every(a => a.st === 'gone')) { e.mode = 'rise1'; e.modeT = 3.6; e.stage = 2; e.turnAt = [e.fightT]; e.phase = 2; e.hp = Math.min(e.hp, e.stageFloor); e.stageFloor = 0; e.back = 'stride2'; }
+  if (e.stage === 1 && e.mode !== 'wake' && e.mode !== 'emerge' && e.arms.every(a => a.st === 'gone')) { e.mode = 'rise1'; e.modeT = 3.6; e.stage = 2; e.turnAt = [e.fightT]; e.phase = 2; krakenTideClear(e, KRK_TIDE_EVERY[2] + 4); e.hp = Math.min(e.hp, e.stageFloor); e.stageFloor = 0; e.back = 'stride2'; }
   if (e.stage === 2 && e.arms.some(a => !a.severed) && e.hp <= e.stageFloor && e.mode !== 'rise1' && e.mode !== 'rise2') { krakenTideOut(e); (e.turnAt = e.turnAt || []).push(e.fightT); e.mode = 'rise2'; e.modeT = 3.8; e.stage = 3; e.phase = 3; e.stageFloor = 0; e.back = 'stride3'; }
   /* THE CARGO ARRIVES ON ITS OWN CLOCK, NOT ON HIS. Whatever he happens to be doing - arms on the road, out in the far water, up for
      air, up out of the drain - the flood is still running landward over the wreck field and still laying cargo on the stones. That is
@@ -11940,7 +11988,7 @@ function updateKraken(e, dt) {
   e.far += ((e.farWant || 0) - e.far) * Math.min(1, dt * (e.farWant > e.far ? 1.2 : 2));
   /* A BREAK FILLED TO THE BRIM by its jet or its spout: the sea stands at the road's edge a moment, and runs landward with a swimmer in it */
   if (e.stage === 2) { if (e.mode === 'jet' || e.mode === 'jetTell') { e.seaWant = fl - 18; } else if (e.brimT > 0) { e.brimT -= dt; e.seaWant = fl + 3; if (sea) sea.flow = P.swim ? -90 : 0; } else if (e.mode !== 'rise2') { e.seaWant = fl + 2 * TS; if (sea && sea.flow) sea.flow = 0; } }
-  krakenCargoTick(e, dt);
+  krakenCargoTick(e, dt); krakenTideTick(e, dt);
   e.seaY += (e.seaWant - e.seaY) * Math.min(1, dt * 2.2); if (sea) poolLevel(sea, e.seaY);
   e.near += ((e.nearWant || 0) - e.near) * Math.min(1, dt * (e.nearWant > e.near ? 2.5 : 3));
   e.lurk += ((e.lurkWant || 0) - e.lurk) * Math.min(1, dt * (e.lurkWant > e.lurk ? 1.5 : 3));
@@ -11950,7 +11998,7 @@ function updateKraken(e, dt) {
   e.x = A.x1 + 48; e.y = fl + 40; e.w = 40; e.h = 30;
   if (e.stage < 2) e.seaWant = fl + 2 * TS;
 }
-const krakenBarName = b => b.stage === 1 ? 'THE KRAKEN  ' + b.arms.filter(a => a.st !== 'gone').length + ' ARMS' : b.mode === 'knelled' ? 'THE KRAKEN  KNELLED' : b.mode === 'look' || b.mode === 'lookTell' ? 'THE KRAKEN  HE LOOKS' : b.mode === 'stuck' ? 'THE KRAKEN  PINNED' : b.stage === 2 ? (krakenBreathing(b) ? 'THE KRAKEN  BREATHES' : (b.far || 0) > 0.3 ? 'THE KRAKEN  AT SEA' : 'THE KRAKEN  THE TIDE') : 'THE KRAKEN  THE MAW';
+const krakenBarName = b => b.tideWarn > 0 ? 'THE KRAKEN  THE TIDE COMES' : b.stage === 1 ? 'THE KRAKEN  ' + b.arms.filter(a => a.st !== 'gone').length + ' ARMS' : b.mode === 'knelled' ? 'THE KRAKEN  KNELLED' : b.mode === 'look' || b.mode === 'lookTell' ? 'THE KRAKEN  HE LOOKS' : b.mode === 'stuck' ? 'THE KRAKEN  PINNED' : b.stage === 2 ? (krakenBreathing(b) ? 'THE KRAKEN  BREATHES' : (b.far || 0) > 0.3 ? 'THE KRAKEN  AT SEA' : 'THE KRAKEN  THE TIDE') : 'THE KRAKEN  THE MAW';
 // FOR THE BOSS LAB: what a player standing here can see coming, and what is open. It reads the same things the marks are drawn from.
 function krakenAdvice() {
   const e = boss; if (!e || e.t !== 'kraken' || !e.alive || !L.arena || !e.arms) return null;
@@ -12009,6 +12057,14 @@ function krakenAdvice() {
     else if (e.stage === 2) { const a = e.arms.filter(q => q.two && !krkLost(q)).sort((p, q) => Math.abs(p.bx - P.x) - Math.abs(q.bx - P.x))[0]; o.goal = a ? a.bx + (a.bx < (A.x0 + A.x1) / 2 ? 50 : -50) : plinth - 40; }
     else o.goal = (A.x0 + A.x1) / 2;
   }
+  /* THE TIDE (2026-09-25): off the stones it is about to take, never onto the ones it has - the plinth, the tower and the wreck stand out
+     of it - and when it has two sections of the road and nothing is coming, go and ring it back */
+  { const line = krakenTideLine(e), next = e.tideWarn > 0 ? KRK_TIDE_AT[Math.min(3, (e.tideN || 0) + 1)] * TS : e.tideSurge ? line : 1e9;
+    if (!P.swim && P.y > fl - 12 && P.x > next - 12) { o.goal = next - 40; o.strike = null; o.kind = null; }
+    else if (!P.swim && (e.tideN || 0) > 0 && o.goal !== null && o.goal > line - 12 && !(o.kind === 'bell' && P.y < fl - 12)) { o.goal = line - 20; if (o.strike !== null && o.strike > line) o.strike = null; }
+    if ((e.tideN || 0) >= 2 && !krakenBreathing(e) && o.kind !== 'arm' && o.kind !== 'spear' && !o.dodge && !o.jump && !o.duck && e.mode !== 'held') {
+      const bell = props.filter(q => q.t === 'knell' && !(q.cool > 0)).sort((p, q) => Math.abs(p.x - P.x) - Math.abs(q.x - P.x))[0];
+      if (bell) { o.goal = bell.x + 4; o.kind = 'bell'; o.climb = Math.abs(P.x - bell.x) < 80; o.strike = P.y < fl - 30 && Math.abs(P.x - bell.x) < 30 ? bell.x : null; } } }
   /* A PLAYER GETS OUT OF THE SEA AND OVER A HOLE: in the water, under the middle of the break and jump for the road; on the road,
      jump the broken stretch ahead. (A bot swimming for the tower bumped its head on the underside of the road all fight) */
   if (P.swim || P.y > fl + 4) { let hc = null, hd = 1e9; for (const [a, b] of A.holes) { const c = (a + b + 1) / 2 * TS; if (Math.abs(c - P.x) < hd) { hd = Math.abs(c - P.x); hc = c; } } if (hc !== null) o.goal = hc + (P.x < hc ? -20 : 20); o.strike = null; o.jump = true; o.climb = true; o.up = true; }   /* to the iron at the side of the break, and up it */
@@ -12058,6 +12114,7 @@ function drawCauseProps(cx, cy) {
     const sx = Math.round(pr.x - cx), sy = Math.round(pr.y - cy); if (sx < -30 || sx > VW + 30 || sy < -40 || sy > VH + 40) continue;
     const sw = pr.swing > 0 ? Math.sin(time * 14) * pr.swing : 0; g.drawImage(art.bell[sw > 0.3 ? 2 : sw < -0.3 ? 1 : 0], sx - 13, sy - 36);
     if (pr.t === 'knell' && boss && boss.t === 'kraken' && boss.alive && krakenBreathing(boss)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.arc(sx, sy - 20, 16 + k * 3, 0, 7); g.stroke(); g.globalAlpha = 1; }
+    else if (pr.t === 'knell' && boss && boss.t === 'kraken' && boss.alive && bossActive && ((boss.tideN || 0) > 0 || boss.tideWarn > 0) && !(pr.cool > 0)) { const k = 0.5 + 0.5 * Math.sin(time * 6); g.globalAlpha = 0.3 + 0.3 * k; g.strokeStyle = '#7cc8b8'; g.lineWidth = 1; g.beginPath(); g.arc(sx, sy - 20, 15 + k * 2, 0, 7); g.stroke(); g.globalAlpha = 1; }   /* THE TIDE IS UP: this bell turns it */
     else if (pr.t === 'tidebell' && CT && pr.cool <= 0 && Math.abs(pr.x - P.x) < 60) { g.globalAlpha = 0.25 + 0.15 * Math.sin(time * 5); g.strokeStyle = '#7cc8b8'; g.lineWidth = 1; g.beginPath(); g.arc(sx, sy - 20, 15, 0, 7); g.stroke(); g.globalAlpha = 1; } }
   causeDrawLife(cx, cy); krakenDrawCargo(cx, cy);
 }
@@ -12140,6 +12197,17 @@ function drawCauseOverlay(cx, cy) {
       text({ low: 'LOW WATER', warn: 'THE TIDE COMES', rise: 'RISING', high: 'HIGH WATER', ebb: 'IT TURNS', fall: 'FALLING' }[CT.ph], VW / 2, y + 3, warn ? '#ffd36b' : '#dff0f5', 'center', 6); } }
   const e = boss; if (!e || e.t !== 'kraken' || !e.arms || !L.arena) return;
   const A = L.arena, fl = A.floor, fy = Math.round(fl - cy), pulse = 0.5 + 0.5 * Math.sin(time * 20);
+  /* THE TIDE ON THE ROAD: the sea over the stones seaward of its line, broken white at the front; while the bells toll, a foam line and a
+     pale band where it will stand; and the surge, a curl of white running landward over the section it takes */
+  if (e.alive) { const tx = e.tideShow || A.x1;
+    if (tx < A.x1 - 2) { const x0 = Math.round(tx - cx), w = Math.round(A.x1 - tx);
+      g.globalAlpha = 0.72; g.fillStyle = '#2e5a5c'; g.fillRect(x0, fy - 7, w, 9); g.fillStyle = '#4a9aa0'; g.fillRect(x0, fy - 7, w, 3); g.globalAlpha = 0.9; g.fillStyle = '#dff0f5';
+      for (let x = Math.ceil(tx / 9) * 9; x < A.x1; x += 9) g.fillRect(Math.round(x - cx + Math.sin(time * 2 + x) * 2), fy - 7, 4, 1);
+      g.fillStyle = '#ffffff'; for (let q = 0; q < 4; q++) g.fillRect(x0 - 1 + ((q * 3 + Math.floor(time * 20)) % 5), fy - 9 - q * 2, 2, 2 + q); g.globalAlpha = 1; }
+    if (e.tideWarn > 0) { const nx = KRK_TIDE_AT[Math.min(3, (e.tideN || 0) + 1)] * TS, k = 1 - e.tideWarn / KRK_TIDE_WARN, sx = Math.round(nx - cx);
+      g.globalAlpha = 0.12 + 0.14 * pulse * k; g.fillStyle = '#bfe6f5'; g.fillRect(sx, fy - 8, Math.max(0, Math.round(tx - nx)), 8);
+      g.globalAlpha = 0.5 + 0.45 * pulse; g.fillStyle = '#f4fbff'; g.fillRect(sx - 1, fy - 22, 2, 22); for (let x = nx; x < tx; x += 12) g.fillRect(Math.round(x - cx + Math.sin(time * 3 + x) * 2), fy - 9, 8, 2); g.globalAlpha = 1; }
+    if (e.tideSurge) { const c = krkArt().breaker[Math.floor(time * 10) % 3]; g.drawImage(c, Math.round(e.tideSurge.x - cx) - 10, fy - c.height + 3); } }
   if (e.alive && e.inkT > 0) { const k = Math.min(1, e.inkT / 0.6, (6.5 - e.inkT) / 0.5 + 0.1), px0 = Math.round(P.x - cx), py0 = Math.round(P.y - 10 - cy), gr = g.createRadialGradient(px0, py0, 30, px0, py0, 80);
     gr.addColorStop(0, 'rgba(10,6,14,0)'); gr.addColorStop(1, 'rgba(10,6,14,' + (0.94 * k).toFixed(2) + ')'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }   /* THE INK: the dark comes over the road, and only what is near you is lit */
   if (!e.alive) return;
@@ -25580,7 +25648,7 @@ setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now
 loadLevel(0);
 document.getElementById('boot').remove();
 window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.ballast = pr; pr.state = 'held'; pr.hpWas = P.hp; } }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id) }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
-  xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false),   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
+  xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false), krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
