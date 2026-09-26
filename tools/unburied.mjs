@@ -115,6 +115,15 @@ assert.ok(L.cavalry.x0 >= UF.LOW[0] * TS - TS && L.cavalry.x1 <= (UF.LOW[1] + 1)
 assert.ok(of('oilbarrel').length >= 2 && of('oilbarrel').every(b => b.spill), 'BURNING PITCH: siege-oil barrels that spill a line of fire');
 ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake lines, volleys');
 
+/* ---- 4b. ONE TRACK, FIELD AND FIGHT (Daniel, 2026-09-25: "the level plays deathknight and the boss fight keeps the SAME track,
+   no switch or restart"). The arena names the track the level already plays, and music.play of the track that is playing returns
+   without touching it (playFile in src/audio.js), so the chapel door neither switches nor restarts the music. ---- */
+{ const AUD = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
+  assert.equal(L.music, 'deathknight', 'the level plays Night on Bald Mountain (deathknight), not ' + L.music);
+  assert.equal(L.arena.music, L.music, 'the arena switches the music to ' + L.arena.music + ': the fight must keep the level\'s own track');
+  assert.ok(/function playFile\(name\) \{\s*if \(!ac \|\| !trackBuf\[name\] \|\| currentTrack === name\) return;/.test(AUD), 'playFile no longer returns on the track already playing: the same name would restart it');
+  ok('one track, field and fight', L.music); }
+
 /* ---- 5. THE MINI, THE BOSS AND THEIR ROOMS ---- */
 { const m = L.mini, a = L.arena;
   assert.equal(m.boss, 'barrowrider'); assert.equal(a.boss, 'deathknight');
@@ -195,4 +204,4 @@ assert.ok(L.pools.every(p => p.shallow && !p.harm && !p.poison), 'no deadly wate
   assert.equal(f.length, 0, 'route-breaks finds nothing'); }
 
 console.log('ok  unburied       THE UNBURIED FIELD matches its brief, read off the ' + SOURCE);
-console.log('      NOT SEEN HERE: the map spur (Lane B) and the music; the look is tools/skins.mjs (forest kit), the fights tools/unburied-fights.mjs.');
+console.log('      NOT SEEN HERE: the map spur (Lane B), and the music as heard (its track is asserted above); the look is tools/skins.mjs (forest kit), the fights tools/unburied-fights.mjs.');

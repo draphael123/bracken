@@ -156,7 +156,8 @@ levelled to -15 LUFS like the rest, three of them from packs already credited he
 
 - unburied.ogg = "Haunting Chiptune Loop [Void Estate]" by Zane Little Music, CC0 -
   https://opengameart.org/content/haunting-chiptune-loop-void-estate - THE UNBURIED FIELD. Lowpassed at 9 kHz, loudness-normalised
-  (-12.6 LUFS, a touch under its neighbours for a haunted field), loop untouched (86.5 s).
+  (-12.6 LUFS, a touch under its neighbours for a haunted field), loop untouched (86.5 s). Retired from the level 2026-09-25 (the
+  whole field plays deathknight.ogg now); kept in the library and the sound test.
 - deathknight.ogg = Mussorgsky, "Night on Bald Mountain" (1867), chiptune arrangement by TheOuterLinux, CC0 -
-  https://opengameart.org/content/mussorgsky-night-on-bald-mountain - THE FIRST DEATH KNIGHT's fight: the climax, 4:00-6:00 of the
+  https://opengameart.org/content/mussorgsky-night-on-bald-mountain - THE UNBURIED FIELD, start to finish, and THE DEATH KNIGHT's fight on the same loop (2026-09-25): the climax, 4:00-6:00 of the
   LMMS render, faded in and out for a loop, lowpassed at 9 kHz, -11.2 LUFS.
