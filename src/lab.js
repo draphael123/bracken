@@ -10,9 +10,21 @@ import { MARK } from './marks.js';
 import { GEO as GEO_K } from './geomancer.js';   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
 import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
-// each hero's real reach (attackBox in main.js), so the bot swings from where the blow actually lands
-const LAB_STAND = {knight:12,warden:38,pyro:18,paladin:14,pirate:12,reaper:18,geomancer:16};
+// LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
 export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24 };   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
+/* LAB_STAND, THE HAND'S CHOSEN DISTANCE (BOT BUG A, Daniel, 2026-09-25: "stands one pixel outside its own reach").
+   It used to be a second, independently hand-set table - close to LAB_REACH for six heroes, but off by only 2 px
+   for the warden (stand 38, reach 40). The generic goal math (below, "desired") walks to boss.x +/- (LAB_STAND[h] +
+   half the boss's width) and STOPS once it is within WALK_DEADBAND of that spot, so the hand can rest as far as
+   LAB_STAND[h] + WALK_DEADBAND out - and on a flat floor, with nothing to make it hop closer, it often does. Once
+   that rested distance passes LAB_REACH[h] the hand is parked outside its own swing and cuts at the air; the Reef
+   lane found this on the Reefmaw's flat arena floor (claude/reef2) and fixed it for him alone, standing his hands
+   six pixels further in. It was never his bug: it is this formula, for every hero and every boss that uses it.
+   LAB_STAND is now DERIVED from LAB_REACH, not hand-set beside it, so the rested distance (stand + deadband) can
+   never reach the edge of the swing: STAND_MARGIN leaves two pixels of reach still spare after the deadband. */
+export const WALK_DEADBAND = 4;   /* exported for tools/lab-reach.mjs: the worst-case rested distance is LAB_STAND + WALK_DEADBAND, and that is the distance a reach check has to prove, not LAB_STAND alone */
+const STAND_MARGIN = 6;   /* > WALK_DEADBAND, so the worst rested spot (stand + deadband) is still 2 px inside reach */
+export const LAB_STAND = Object.fromEntries(Object.keys(LAB_REACH).map(h => [h, LAB_REACH[h] - STAND_MARGIN]));
 export const LAB_FOES = ['sprig', 'shield', 'swornsword', 'archer', 'hedgeknight', 'cutlass', 'harpy', 'crab', 'tideguard', 'scout'];
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
 /* THE CO-OP ALLY IS THIS BOT. main.js imports threatOf, SHIELDED and HARD_TELLS below and plays a hero
@@ -962,9 +974,11 @@ async function runbossLab(BK, opts) {
         else { const g0=boss.x+fc*105; goal=Math.abs(clampX(g0)-g0)<30?clampX(g0):clampX(boss.x-fc*150); strike=false; }   /* in front, on the floor, in his reach: bait the lunge (and with a wall in front of him, go round behind: he turns) */
       }
       // BAIT THE JAW, THEN CLOSE: clear the bite volume before returning to its recovery.
-      /* mawIn: the spot to strike from is six pixels INSIDE the hero's stand. The stand is LAB_STAND out and the walk stops within four of
-         it, so the warden (stand 38 + half the eel 15 = 53, reach 40 + 15 = 55) parked at 56 on the reef's flat floor, one pixel out of his
-         own reach, and swung at nothing for a whole phase - the old coral stools kept him hopping, which hid it (claude/reef2). */
+      /* mawIn: the spot to strike from is six pixels INSIDE the hero's stand. The stand used to be LAB_STAND out with the walk stopping
+         within four of it, so the warden (stand 38 + half the eel 15 = 53, reach 40 + 15 = 55) parked at 56 on the reef's flat floor,
+         one pixel out of his own reach, and swung at nothing for a whole phase - the old coral stools kept him hopping, which hid it
+         (claude/reef2). LAB_STAND is now derived from LAB_REACH with its own margin (claude/botfix, BOT BUG A), so this fixed six-pixel
+         approach is redundant for the warden today, but it is left as it was: harmless, and this arena has its own long straight walls. */
       else if (boss.t==='reefmaw') { const mawIn=boss.x+(Math.sign(boss.x-P.x)||1)*6;
         let side=Math.sign(P.x-boss.x)||1;if(boss.x+side*116>A.x1-14||boss.x+side*116<A.x0+14)side=-side;
         if(['biteTell','bite','thrashTell','thrash'].includes(boss.mode)){
@@ -1034,6 +1048,34 @@ async function runbossLab(BK, opts) {
         goal = up ? bowT.x : bowT.x - side * Math.max(8, LAB_REACH[h] * 0.6); strike = false;
         if (up && P.ground && Math.abs(bowT.x - P.x) < 36) { BK.press('jump'); P.labJump = 20; }
         if (!up && Math.abs(bowT.y - P.y) < 16 && Math.abs(bowT.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) { P.face = side; BK.press('atk'); swings++; } }
+      /* THE TIDE HERALD (claude/botfix follow-up, Daniel: "fix the cause, never weaken the test"). He takes full damage
+         only while mired (the tide out, stuck in the mud) or reel (just parried) - BK.bossOpen now reports both (it
+         used to return null for him, which the generic OPEN() fallback, OPEN0, reads as ALWAYS open, so "open" was
+         true for him every frame, not only in mired/reel). Everywhere else a hit is cut to 0.35x (main.js ~5623). This
+         has to run BEFORE the generic "else if (open)" right below, which would otherwise catch every mired/reel frame
+         first now that "open" is honestly gated to them, and never let the block-clearing below run at all (traced with
+         opts.samples: before this reorder it never fired once in 180 s, because control never reached it).
+         Retreating from his raise/wave was tried first and made the herald-pirate check WORSE, not better: the 4+ s a
+         cycle spent running from the wave and walking back cost more kill time than the 0.35x chip damage it gave up
+         was worth, so the plain default holds for every one of his modes - approach and swing on the beat, mired or
+         not - and now that "open" is honest it also lets the pirate's own mixedHeavy (below: ad 40-140, open,
+         P.loaded) hold for a full-power heavy from range the instant he is truly vulnerable, instead of firing on
+         almost every frame the way the old always-open bug let it.
+         DROP THE GUARD WHILE HE IS OPEN. mired and reel throw nothing - he is stuck, or just parried - but the shared
+         tap-block above (line ~1031, the deflect that answers "any blow of his the marks do not call red") taps on a
+         rhythm keyed to his TELLS, not to whether a blow is actually coming, and kept tapping through mired too - the
+         walker skips its own frame outright while k.block is held ("else if (goal !== null && !k.block)" below).
+         Clearing k.block whenever OPEN(boss, BK) is true costs nothing here - nothing is thrown to guard against.
+         THE REAL FIND, though, was one frame away: the general stuck-recovery just below (P.labStuckF, "HOLDING
+         JUMP DOWN FOREVER IS ITS OWN STUCK STATE") held k.jump true forever once triggered, with no bounded release like
+         every other jump in this file - and being stuck is exactly the condition that never clears itself, so once it
+         fired here it never let go. Traced on the herald-pirate check's own seed: the pirate parked at 30 px (one
+         pixel past LAB_REACH.pirate + half his width) for whole mired windows, k.jump and k.left both true on every
+         single frame and P.vx pinned at exactly 0 the entire time - not because he could not reach, but because
+         holding jump down forever, with no ground contact to ever let go on, meant this file's own walk code never
+         got a frame to move him at all. That bug is general (every boss's stuck-recovery held jump the same way),
+         not herald-specific - fixed once, below, for all of them. */
+      else if (boss.t === 'herald') { goal = boss.x; strike = true; if (open) k.block = false; }
       else if (open) { goal = boss.x; strike = true; }
       /* THE PLATE THAT TURNS EVERY BLADE (the Queen's Lance): chipping at it does nothing at all, so the hands MAKE the
          opening the way a player does - stand a dash's length off and come at his guard at a run. His own gate says a
@@ -1160,10 +1202,13 @@ async function runbossLab(BK, opts) {
         if(P.labShipVault>0){P.labShipVault--;k.left=false;k.right=true;k.up=k.down=k.block=false;k.jump=true;}
       }
       // A blade cannot reach down from a step: leave the shelf and land beside the foe before choosing sword range.
-      /* (2026-09-25, the Goblin Queen: Daniel, "FIX THE BOT, not the Queen"). A SHELF IS SOMETHING YOU STAND ON. This fired for her on the hands' own hops as well:
-         measured on the pillar build, 700-1700 frames a fight were cancelled strikes in the air over her, and half of them (288-843) while she was PINNED -
-         the window the whole fight is for. She is 52 px tall, so a hop does reach her. For her it asks for the ground now; for the others it is as it was. */
-      if(!walker&&!P.swim&&boss.y>P.y+24&&(boss.t!=='gqueen'||P.ground)&&['chief','frog','king','ram','windcaller','gqueen','closedhelm','prince','strawking'].includes(boss.t)){const gx=lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;}
+      /* (2026-09-25, the Goblin Queen: Daniel, "FIX THE BOT, not the Queen"). A SHELF IS SOMETHING YOU STAND ON. This fired on the
+         hands' own hops as well as on a real shelf: measured on the pillar build, 700-1700 frames a fight were cancelled strikes
+         in the air over her, and half of them (288-843) while she was PINNED - the window the whole fight is for. She is 52 px
+         tall, so a hop does reach her, and the same is true of the other eight on this list: a jump apex is well under 24 px of
+         hang time before it is falling again, so "boss.y>P.y+24" was reading the bot's OWN HOP as a step it had climbed. It asks
+         for the ground now, for every boss here, not only her (Daniel, "apply the same fix to the other eight", 2026-09-25). */
+      if(!walker&&!P.swim&&boss.y>P.y+24&&P.ground&&['chief','frog','king','ram','windcaller','gqueen','closedhelm','prince','strawking'].includes(boss.t)){const gx=lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;}
       const descending=!P.swim&&boss.y>P.y+24&&(boss.t==='lance'&&!bowT||boss.t==='reefmaw'&&strike&&(P.ground||P.vy>=0));
       if(descending){const gx=boss.t==='reefmaw'?boss.x:lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;P.labJump=0;k.jump=false;if(P.ground&&[T.ONEWAY,T.PLANK,T.SHELF,T.RAIL].includes(P.groundTile)){k.down=true;BK.press('jump');}}
       if(!descending&&P.ground&&Math.abs(P.vx)<4&&(k.left||k.right)&&f%15===0){BK.press('jump');P.labJump=18;}
@@ -1183,6 +1228,31 @@ async function runbossLab(BK, opts) {
       if (h === 'knight' && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.block = true; }
       // A BANKED PYRE IS FOR SPENDING: release the full heat meter toward a clear target between committed swings.
       if (h==='pyro' && P.full && !tell && !rushing && ad<140 && Math.abs(boss.y-P.y)<30 && !P.plunge && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.block=true; }
+      /* A HAND CAUGHT ON A SPRING DOES NOT KNOW IT: nothing here has ever asked a bouncer a question, so a knockback that lands
+         one on T.BOUNCER bounces it straight up forever - no swing starts (every one of them wants P.ground or P.swim), and every
+         bounce touches down for the one frame that resets a simple "has it been airborne" counter before launching it again, so
+         that reads as never stuck at all. Found on the Herald's river arena (claude/botfix): a changed action order upstream
+         shifted the seeded roll enough to land the Freebooter on one that a different roll never touched, and he hung there
+         bouncing for the rest of a 600 s fight, boss.hp frozen the whole time. This checks PROGRESS instead of ground state - has
+         he actually moved, or the boss actually taken a hit, in the last three seconds - which a bounce that never carries him
+         anywhere fails and ordinary footwork never does. It is a general floor under every boss fight, not a Herald fix. */
+      /* CHECKED ONCE EVERY 30 FRAMES, NOT EVERY FRAME: a bounce's own period is close enough to any short sampling window that
+         asking "is it grounded RIGHT NOW" lines up with the bounce's one grounded instant almost every time and never sees the
+         stall at all (measured: adding !P.ground here brought back the exact frozen numbers this was written to fix). Position
+         and boss.hp across three checks (1.5 s) is asked instead, which a bounce that carries him nowhere and lands nothing
+         still fails, and which ordinary play - moving, or hitting something - still passes even through a long held guard. */
+      if (f % 30 === 0) { const stuck = Math.abs(P.x - (P.labStuckX ?? P.x)) < 6 && boss.hp === (P.labStuckHp ?? boss.hp);
+        P.labStuckF = stuck ? (P.labStuckF || 0) + 1 : 0; P.labStuckX = P.x; P.labStuckHp = boss.hp; }
+      /* HOLDING JUMP DOWN FOREVER IS ITS OWN STUCK STATE (found chasing this same herald-pirate check, claude/botfix
+         follow-up): this used to set k.jump = true directly, with nothing to ever let it go again while P.labStuckF
+         stayed at 3 or more - and being stuck is exactly the condition that never clears itself. Every other jump in
+         this file taps BK.press('jump') once and holds k.jump only for a counted P.labJump frames; held down forever
+         instead, a hero who is already airborne (which the alternating left/right below usually keeps him, hopping
+         off the last thing he landed on) never gets the ground contact this file's own walk code needs to move him
+         at all - traced on the Herald's mired window, pinned 30 px out of reach for 30+ real seconds, k.jump and
+         k.left both true on every single frame and P.vx pinned at 0 throughout. Tap it instead, on the same bounded
+         hold as everywhere else. */
+      if ((P.labStuckF || 0) >= 3) { k.block = false; k[f % 40 < 20 ? 'left' : 'right'] = true; if (P.ground) { BK.press('jump'); P.labJump = 18; BK.press('dodge'); } }
       const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
       if (boss.t === 'lance') for (const q of BK.enemies()) if (q.lanceBow) bowSeen.add(q);
       if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }
