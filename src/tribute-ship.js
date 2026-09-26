@@ -79,7 +79,7 @@ export function tributeShip(R, T, TS = 16) {
     for (const [a, b] of hatches) fill(a, b, y, y + 2, T.AIR); };
   /* A HATCH THAT BLOWS HOT: the vent on the deck under it (its bubbles, its air, its own heat) and a current as wide as the hatch
      itself, so there is no edge of it to slip down unweighted */
-  const hotHatch = (a, b, top, floorRow) => { D.vents.push({ x: a, y: floorRow - 1, h: floorRow - top, hot: true, drain: false });
+  const hotHatch = (a, b, top, floorRow) => { D.vents.push({ x: a, y: floorRow - 1, h: floorRow - top, hot: false, drain: false }); return;   /* HOTFIX (Daniel, 2026-09-26: 'Deep still can't be beat - there's a vent blocking the passage down'): the hatches no longer blow - no upward current, the vent is warm air only - so every hero can go down every hatch with or without a stone */
     D.currents.push({ x0: a, x1: b, y0: top, y1: floorRow - 1, fx: 0, fy: -150, kind: 'hot' }); };
   /* HER BALLAST IS RACKED, and a racked stone goes home (main.js updateBallast, `rack`): one a prise knocked away, one dropped off the way,
      one that fell down a hatch, is set back on its deck. Loose, the deck over the first hatch could be left with no stone at all - three
@@ -99,7 +99,7 @@ export function tributeShip(R, T, TS = 16) {
   fill(87, 89, Y + 2, Y + 2, T.ONEWAY); fill(91, 93, Y + 2, Y + 2, T.ONEWAY); deco('airBell', 88, Y + 1);   /* the crow's nest on her foremast, and the bell they kept in it */
   fill(84, 89, Y + 4, Y + 4, T.ONEWAY); fill(91, 96, Y + 4, Y + 4, T.ONEWAY);   /* the fore yard */
   ent('check', 20, Y + 7);   /* where you land on her, under the garden's throat */
-  ent('sign', 17, Y + 7, { text: 'THE TRIBUTE SHIP. HER HATCHES BLOW HOT: ONLY A STONE WILL CARRY YOU DOWN ONE.' });
+  ent('sign', 17, Y + 7, { text: 'THE TRIBUTE SHIP. DOWN THROUGH HER HATCHES; HER VENTS STILL BREATHE WARM AIR.' });
   ent('silver', 95, Y + 3);   /* S7: out on the fore yard's end, off the way down */
   coin([43, Y + 4], [53, Y + 4], [86, Y + 3]);
   ent('angler', 36, Y + 3); ent('angler', 70, Y + 5);
