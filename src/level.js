@@ -2202,7 +2202,7 @@ function theMonastery() {
       dirt: '#6a625a', dirtL: '#827a70', dirtD: '#4a443e', canopy: ['#5a5650', '#6e6a62', '#86806e', '#a89c84'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'abbot', music: 'roc', tint: '#e8c88a', tintA: 0.10, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest. THE FALSE ABBOT has it now (2026-09-22): the Roc was a giant bird in a bell tower, and this level's own rule is that what the monks built answers a blow. Her code is untouched and she is placed nowhere - restorable, as the Harbor was. (The track is still hers: he has not got one of his own yet.) */
-    mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS },
+    mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS, music: 'monasterygolem' },   /* "Boss Battle #6 [8-bit]" V1 by nene, CC0, converted WAV -> OGG - the Monastery's Golem mini's own track (audio/CREDITS.txt) */
   };
 }
 
@@ -2424,7 +2424,7 @@ function stormhold() {
       canopy: ['#3a3a48', '#4a4a5a', '#5a5a6c', '#6a6a80'] },
     weather: [{ x0: 0, x1: 99999, kind: 'snow' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     castle: true, // the castle grows over the whole level: drawn behind everything
-    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'musCastle', tint: '#6a7a9a', tintA: 0.10, fx: 'dust', bows: lanceBows },
+    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'lance', tint: '#6a7a9a', tintA: 0.10, fx: 'dust', bows: lanceBows },   /* "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0, converted WAV -> OGG - THE QUEEN'S LANCE's own boss track, benching musCastle (audio/CREDITS.txt) */
   };
 }
 

@@ -182,3 +182,13 @@ MORE APPROVED (Daniel, 2026-09-26):
   https://opengameart.org/content/dark-shrine-loop - THE HANGING VILLAGE's level track, benching town.mp3 (kept, still sold at the store).
 - sporewood.mp3 = "Mysterious Ambience (song21)" by cynicmusic -
   https://opengameart.org/content/mysterious-ambience-song21 - the page is multi-licensed (CC0, GPL, CC-BY-SA); the CC0 option was the one used - SPOREWOOD's level track, benching cave.mp3 (kept, still the Mineworks' theme).
+
+CONVERTED TO OGG FROM THE ORIGINAL WAV (ffmpeg, libvorbis q3, no fades, loop points kept), Daniel 2026-09-26:
+- duneworm.ogg = "Negev Fight Loop" from "Desert Calmness and Fighting (Orchestral)" by Dizzy Crow, CC0 -
+  https://opengameart.org/content/desert-calmness-and-fighting-orchestral-141 - THE DUNE WORM's boss track (Sunken Caravan's hollow), benching boss2.ogg (kept, still the Goblin Chieftain's).
+- lance.ogg = "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0 -
+  https://opengameart.org/content/boss-battle-3-8-bit-re-upload - THE QUEEN'S LANCE's own boss track (Stormhold's arena), benching musCastle.ogg (kept, part of MintoDog's stage-select set).
+- caravan.ogg = "Desert Theme - 8bit Chiptune Theme" by Wolfgang_, CC0 -
+  https://opengameart.org/content/desert-theme-8bit-chiptune-theme - THE SUNKEN CARAVAN's own level track, benching musBeach.ogg (kept, part of the same stage-select set).
+- monasterygolem.ogg = "Boss Battle #6 [8-bit]" V1 by nene, CC0 -
+  https://opengameart.org/content/boss-battle-6-8-bit - THE MONASTERY's GOLEM mini's own track, overriding the shared mini fallback (minicharge.ogg).
