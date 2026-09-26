@@ -207,12 +207,12 @@ export function buildBurningVillage({ painter, T, TS }) {
     heaps, trench, cellarFires, smoke,
     calm: trench.map(([a, b, y0, y1]) => [a, b, y0, y1]).concat([[80, 100, 14, S]]),   /* and the croft well's yard, where the bucket is taught */   /* nobody is garrisoned on a cellar floor: it is on fire */
     quest: { n: 6, item: 'folk', name: 'SAVED', done: 'THE VILLAGE IS OUT', thanks: 'THE VILLAGE THANKS YOU' },   /* the villagers are the level's quest: the count on the HUD and on the card */ night: true, glowNight: true, nightA: 0.18, duskStart: -1, duskLen: 1,
-    music: 'quarry',                                    /* "Cavern and Blade" (zesona, CC0): the Quarry Pass's, benched with it */
+    music: 'burning',                                   /* "Fire Level" (Danish Mega Pony v.4 OST track 02) by Spring Spring, CC0 - THE BURNING VILLAGE's own theme (audio/CREDITS.txt) */
     palette: { set: 'village', sky: 'night', far: 'village', mid: 'village', near: 'village', dress: 'village', haze: 'rgba(255,120,48,0.14)',
       grass: '#4a4a2e', grassL: '#6a6436', grassD: '#2e2c1c', dirt: '#4a3a2e', dirtL: '#5e4a38', dirtD: '#2e241c',
       canopy: ['#2a1a16', '#3a221a', '#4a2c1e', '#5e3822'] },
     weather: [{ x0: 0, x1: 99999, kind: 'embers' }], ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
-    arena: { x0: 454 * TS, x1: 496 * TS, floor: F * TS, trigger: 458 * TS, wallL: 453, wallR: 497, boss: 'pyromancer', music: 'hilltroll',
+    arena: { x0: 454 * TS, x1: 496 * TS, floor: F * TS, trigger: 458 * TS, wallL: 453, wallR: 497, boss: 'pyromancer', music: 'pyroboss',
       tint: '#ff6b2c', tintA: 0.1, fx: 'embers' },
   };
 }

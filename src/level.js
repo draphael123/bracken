@@ -800,7 +800,7 @@ function sporewood() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], sleeps,
-    duskStart: -1, duskLen: 1, music: 'cave', night: false, glowNight: true,
+    duskStart: -1, duskLen: 1, music: 'sporewood', night: false, glowNight: true,   /* "Mysterious Ambience (song21)" by cynicmusic, CC0 option - SPOREWOOD's own theme, benching cave (audio/CREDITS.txt) */
     palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(120,160,140,0.2)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#2a1f38', '#3a2a4c', '#4e3a64', '#66507e'] },   /* its own violet canopy: the green one was the Marsh's, byte for byte (level review) */
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'drip' }],   /* the fungus drips; the hive's buzz was the Hornet Queen's (level review) */
@@ -1823,7 +1823,7 @@ function hangingVillage() {
   for(const [x,y,k] of [[23,107,'stump'],[40,107,'mushroom'],[80,107,'fern'],[16,93,'ropeCoil'],[27,93,'washing'],[18,93,'hempBale'],[60,93,'ropeCoil'],[24,79,'stall'],[45,79,'shopSign'],[72,79,'stall'],[82,79,'barrels'],[58,65,'flourSacks'],[84,65,'flourSacks'],[26,51,'dovecote'],[48,51,'birdhouse'],[78,51,'beehive']])ent('deco',x,y,{kind:k});
   return {
     hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61, 41, 63], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
-    duskStart: -1, duskLen: 1, music: 'town', night: false, glowNight: true,
+    duskStart: -1, duskLen: 1, music: 'hangingvillage', night: false, glowNight: true,   /* "Dark Shrine Loop" by qubodup, CC0 - THE HANGING VILLAGE's own theme, benching town (audio/CREDITS.txt) */
     /* SEVEN FLOORS, SEVEN GROUNDS (src/hanging-village.js): each band of rows wears its floor's look - its top, its rock, its underside, its
        ledges, its scatter - and the cliff face behind it. ceilLook: whose bough is overhead, which is what carries the brackets. */
     groundZones: [['crown', 0, 23, null, 19], ['lantern', 24, 41, 'crown', 37], ['rook', 42, 55, 'lantern', 51], ['mill', 56, 69, 'rook', 65], ['market', 70, 83, 'mill', 79], ['rope', 84, 97, 'market', 93], ['roots', 98, 115, 'rope', 107], ['hollow', 116, 131, null, 128]]
@@ -2195,7 +2195,7 @@ function theMonastery() {
   // NOTHING IS DUG AFTER THIS LINE: the goat path's rock face above is the last tile laid
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, cloudLine: CLOUD, snowLine: 28,   /* snow only on the stones over the roof: on the roof it hid the boards */
+    duskStart: 99999, duskLen: 1, music: 'monastery', night: false, cloudLine: CLOUD, snowLine: 28,   /* "rpgchip07_the_shrine_of_mysteries" from 15 Melodic RPG Chiptunes by Aureolus_Omicron, CC0 - THE MONASTERY's own theme, benching sunspire (audio/CREDITS.txt) */
     belfry: {roofGone:false}, monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors,
     /* THE GROUND KIT BY PLACE: bees and herb beds belong in the garden, not on the belfry floor (GROUND_KITS.spire is the rest) */
     kits: [[1, 94, 196, 196, { density: 0.3, kinds: ['herbBed', 'skep'] }], [72, 94, 218, 218, { density: 0.25, kinds: ['bones'] }]],
@@ -2206,7 +2206,7 @@ function theMonastery() {
       dirt: '#6a625a', dirtL: '#827a70', dirtD: '#4a443e', canopy: ['#5a5650', '#6e6a62', '#86806e', '#a89c84'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'abbot', music: 'roc', tint: '#e8c88a', tintA: 0.10, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest. THE FALSE ABBOT has it now (2026-09-22): the Roc was a giant bird in a bell tower, and this level's own rule is that what the monks built answers a blow. Her code is untouched and she is placed nowhere - restorable, as the Harbor was. (The track is still hers: he has not got one of his own yet.) */
-    mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS },
+    mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS, music: 'monasterygolem' },   /* "Boss Battle #6 [8-bit]" V1 by nene, CC0, converted WAV -> OGG - the Monastery's Golem mini's own track (audio/CREDITS.txt) */
   };
 }
 
@@ -2428,7 +2428,7 @@ function stormhold() {
       canopy: ['#3a3a48', '#4a4a5a', '#5a5a6c', '#6a6a80'] },
     weather: [{ x0: 0, x1: 99999, kind: 'snow' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     castle: true, // the castle grows over the whole level: drawn behind everything
-    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'musCastle', tint: '#6a7a9a', tintA: 0.10, fx: 'dust', bows: lanceBows },
+    arena: { x0: 302 * TS, x1: 429 * TS, floor: 30 * TS, trigger: 308 * TS, wallL: 301, wallR: 429, boss: 'lance', music: 'lance', tint: '#6a7a9a', tintA: 0.10, fx: 'dust', bows: lanceBows },   /* "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0, converted WAV -> OGG - THE QUEEN'S LANCE's own boss track, benching musCastle (audio/CREDITS.txt) */
   };
 }
 
@@ -4038,12 +4038,12 @@ function galeMoor() {
   ent('sign', o + 10, 12, { text: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR BLOCK ONE BACK TO KNOCK HIM DOWN.', pyro: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE ONE BACK WITH YOUR STAFF TO DROP HIM.', paladin: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR AEGIS ONE BACK TO KNOCK HIM DOWN.' });
   ent('gate', o + 45, 12);
   const roosts = [[o + 8, 9], [o + 22, 3], [o + 37, 7], [o + 15, 6], [o + 30, 5]];   /* where he stands: a stone's top, a ledge */
-  const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 8) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'musMountain', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' };
+  const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 8) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'windcaller', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' };
 
   for (const e of L.ents) if (e.t === 'vent' && e.wind) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; }   /* the moor's wind lifts you well clear of whatever it is meant to lift you onto */
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, roosts, thermals: true,
-    duskStart: -1, duskLen: 1, music: 'adventure', night: false, glowNight: false,
+    duskStart: -1, duskLen: 1, music: 'northumberland', night: false, glowNight: false,   /* "The Fair Flower of Northumberland" by Spring Spring, CC0 - GALE MOOR's own theme, benching adventure (audio/CREDITS.txt) */
     palette: { sky: [[126, 148, 182], [214, 220, 214]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(200,210,220,0.18)', grass: '#7a8a3a', grassL: '#a8b84a', grassD: '#4a5a2a', dirt: '#5a5040', dirtL: '#6e6450', dirtD: '#3a3228', canopy: ['#5a6a7a', '#7a8a9a', '#9aa8b8', '#c8d0d8'] },
     quest: { n: 3, item: 'kite', name: 'KITE', npc: 'squire', done: 'THE KITES ARE HOME', reward: 'relic', relic: 'windcloak' },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 402 * TS, x1: 455 * TS, kind: 'mist' }],
