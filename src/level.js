@@ -800,7 +800,7 @@ function sporewood() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], sleeps,
-    duskStart: -1, duskLen: 1, music: 'cave', night: false, glowNight: true,
+    duskStart: -1, duskLen: 1, music: 'sporewood', night: false, glowNight: true,   /* "Mysterious Ambience (song21)" by cynicmusic, CC0 option - SPOREWOOD's own theme, benching cave (audio/CREDITS.txt) */
     palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(120,160,140,0.2)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#2a1f38', '#3a2a4c', '#4e3a64', '#66507e'] },   /* its own violet canopy: the green one was the Marsh's, byte for byte (level review) */
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'drip' }],   /* the fungus drips; the hive's buzz was the Hornet Queen's (level review) */
@@ -1819,7 +1819,7 @@ function hangingVillage() {
   for(const [x,y,k] of [[23,107,'stump'],[40,107,'mushroom'],[80,107,'fern'],[16,93,'ropeCoil'],[27,93,'washing'],[18,93,'hempBale'],[60,93,'ropeCoil'],[24,79,'stall'],[45,79,'shopSign'],[72,79,'stall'],[82,79,'barrels'],[58,65,'flourSacks'],[84,65,'flourSacks'],[26,51,'dovecote'],[48,51,'birdhouse'],[78,51,'beehive']])ent('deco',x,y,{kind:k});
   return {
     hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61, 41, 63], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
-    duskStart: -1, duskLen: 1, music: 'town', night: false, glowNight: true,
+    duskStart: -1, duskLen: 1, music: 'hangingvillage', night: false, glowNight: true,   /* "Dark Shrine Loop" by qubodup, CC0 - THE HANGING VILLAGE's own theme, benching town (audio/CREDITS.txt) */
     /* SEVEN FLOORS, SEVEN GROUNDS (src/hanging-village.js): each band of rows wears its floor's look - its top, its rock, its underside, its
        ledges, its scatter - and the cliff face behind it. ceilLook: whose bough is overhead, which is what carries the brackets. */
     groundZones: [['crown', 0, 23, null, 19], ['lantern', 24, 41, 'crown', 37], ['rook', 42, 55, 'lantern', 51], ['mill', 56, 69, 'rook', 65], ['market', 70, 83, 'mill', 79], ['rope', 84, 97, 'market', 93], ['roots', 98, 115, 'rope', 107], ['hollow', 116, 131, null, 128]]

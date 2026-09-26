@@ -176,3 +176,9 @@ THE MUSIC LANE, 2026-09-26 (six tracks, each CC0-confirmed on its own OpenGameAr
   https://opengameart.org/content/northumberland - GALE MOOR's level track, benching adventure.ogg (kept, still sold at the store). The MP3 was used, not the page's 54 MB FLAC.
 - windcaller.ogg = "hard_boss_battle_1_bpm200.ogg" from "Hard Boss Battle 1" by MintoDog, CC0 -
   https://opengameart.org/content/hard-boss-battle-1 - THE WINDCALLER's boss track (Gale Moor's summit arena), benching musMountain.ogg (kept, part of MintoDog's stage-select set).
+
+MORE APPROVED (Daniel, 2026-09-26):
+- hangingvillage.ogg = "Dark Shrine Loop" (qubodup-yd-DarkShrineLoop-OpenGameArt.ogg) by qubodup, CC0 -
+  https://opengameart.org/content/dark-shrine-loop - THE HANGING VILLAGE's level track, benching town.mp3 (kept, still sold at the store).
+- sporewood.mp3 = "Mysterious Ambience (song21)" by cynicmusic -
+  https://opengameart.org/content/mysterious-ambience-song21 - the page is multi-licensed (CC0, GPL, CC-BY-SA); the CC0 option was the one used - SPOREWOOD's level track, benching cave.mp3 (kept, still the Mineworks' theme).
