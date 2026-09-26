@@ -29,6 +29,25 @@ try {
    e.tideN=2;e.tideSurge=null;e.tideWarn=0;BK.sim(1);BK.krakRing(0);out.tide.rungTo=e.tideN;
    /* and it stops short of the waystone the spear sticks in */
    e.tideN=3;out.tide.line=[610,601,591,584][e.tideN];out.tide.stone=Math.floor(A.stones[0]/TS);}
+  /* ---- THE OPENINGS: new arms for stage 2 and the maw; a cut left regrows; the look lays the arms still only if caused; the tower bell once a stage ---- */
+  {const e=boot(),A=BK.L.arena,fl=A.floor,P=BK.P;out.open={};stand(575*TS);
+   const cut=(a,d,x)=>{a.st='down';a.t=9;a.low=true;a.tx=a.bx+(a.side||1)*30;a.ty=fl-6;BK.sim(1);const h=a.hp;BKT.hurtEnemy(a.ae,d,x===undefined?a.bx:x,false);return h-a.hp;};
+   for(const a of e.arms.slice())if(!a.severed){a.hp=1;a.ae.hp=1;cut(a,5);}
+   for(let i=0;i<600&&e.mode!=='stride2';i++)BK.sim(1);hush(e);
+   const two=()=>e.arms.filter(a=>a.two&&!a.severed);out.open.stage=e.stage;out.open.two=two().length;out.open.floorPct=Math.round(100*e.stageFloor/e.maxHp);
+   /* a cut left regrows */
+   {const a=two()[0];out.open.cutBy=cut(a,6,a.bx);const h=a.hp;for(let i=0;i<300;i++){a.st='down';a.t=9;BK.sim(1);}out.open.regrew=a.hp===a.max&&h<a.max;}
+   /* the look: arms still only if something stung him since the last look */
+   const look=st=>{hush(e);for(const a of two()){a.st='idle';a.low=false;}e.stungSince=st;e.mode='lookTell';e.modeT=0;BK.sim(2);return two().some(a=>a.st==='stun');};
+   out.open.lookFree=look(false);out.open.lookCaused=look(true);
+   /* the tower bell knells him once a stage; after that only the shrine's */
+   const breathe=()=>{hush(e);e.mode='breath';e.modeT=9;e.knellHit=false;for(const q of BK.props())if(q.t==='knell')q.cool=0;};
+   /* (a bell struck stops the world a beat - hitstop - so each is given ten frames) */breathe();BK.krakRing(0);BK.sim(10);out.open.tower1=e.mode;breathe();BK.krakRing(0);BK.sim(10);out.open.tower2=e.mode;breathe();BK.krakRing(1);BK.sim(10);out.open.shrine=e.mode;
+   /* and the maw is reached: at its floor stage 2 turns, the spear and two new arms come */
+   hush(e);e.hp=e.stageFloor;for(let i=0;i<600&&e.mode!=='stride3';i++)BK.sim(1);hush(e);out.open.maw=e.stage;
+   const rg=()=>e.arms.filter(a=>a.regrown&&!a.severed);out.open.spear=e.arms.some(a=>a.spear&&!a.severed);out.open.regrown=rg().length;
+   /* in the maw a cut arm comes back - as a new one */
+   {const a=rg()[0];a.hp=1;a.ae.hp=1;e.hp=Math.max(e.hp,200);cut(a,5);out.open.cutOne=rg().length;for(let i=0;i<500;i++){BK.sim(1);if(i%60===0)for(const k in e.T)e.T[k]=999;}out.open.back=rg().length;}}
   return out;})()`);
   console.log(JSON.stringify(r));
   const T = r.tide;
@@ -40,5 +59,18 @@ try {
   assert(T.dryCut > 0, 'an arm out of the tide could not be cut');
   assert.equal(T.rungTo, 1, 'a knell bell pushes the tide back a section');
   assert(T.line > T.stone, 'the tide takes the waystone the spear sticks in');
-  console.log('The Kraken, reworked: the tide rises, sweeps, carries, hides his arms, and goes back to the bells.');
+  const O = r.open;
+  assert.equal(O.stage, 2, 'the four arms cut, he goes out to sea');
+  assert.equal(O.two, 2, 'two new arms come back up out of the sea in stage 2');
+  assert.equal(O.floorPct, 35, 'stage 2 ends at 35%');
+  assert(O.cutBy > 0 && O.regrew, 'an arm cut and left regrows');
+  assert.equal(O.lookFree, false, 'his arms lay still for a look nobody caused');
+  assert.equal(O.lookCaused, true, 'a caused look does not lay his arms still');
+  assert.equal(O.tower1, 'knelled', 'the tower bell knells him the first time');
+  assert.equal(O.tower2, 'breath', 'the tower bell knells him twice in a stage');
+  assert.equal(O.shrine, 'knelled', 'the shrine bell does not knell him after the tower has');
+  assert.equal(O.maw, 3, 'the maw is not reached');
+  assert(O.spear && O.regrown === 2, 'the maw has no spear or no arms');
+  assert(O.cutOne === 1 && O.back === 2, 'in the maw a cut arm does not come back');
+  console.log('The Kraken, reworked: the tide rises, sweeps, carries, hides his arms, and goes back to the bells; stage 2 has arms and ends in the maw; a cut left regrows; the look is caused; the tower bell once a stage.');
 } finally { pg.close(); }
