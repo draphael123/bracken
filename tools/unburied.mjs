@@ -150,7 +150,8 @@ ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake l
 
 /* ---- 5. THE MINI, THE BOSS AND THEIR ROOMS ---- */
 { const m = L.mini, a = L.arena;
-  assert.equal(m.boss, 'barrowrider'); assert.equal(a.boss, 'deathknight');
+  assert.equal(m.boss, 'barrowrider'); assert.equal(a.boss, 'bloodknight', 'the field ends in THE DEATH KNIGHT (the hero as the boss, 2026-09-25)');
+  assert.ok(!ents.some(e => e.t === 'deathknight'), 'THE REAPER (the old scythe) is benched: placed in no level (RULES P)');
   const mw = (m.x1 - m.x0) / TS, aw = (a.x1 - a.x0) / TS;
   assert.ok(aw >= 34 && aw <= 44, 'A7: an arena is about forty tiles - the Death Knight\'s is ' + aw);
   assert.ok(mw <= 44, 'A7: the Barrow Rider\'s room is ' + mw + ' tiles');

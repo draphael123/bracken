@@ -12,8 +12,9 @@
      THE GATE GARGOYLE  be on the slab his shadow finds and leave it late: his dive smashes through it - a solid slab as well as a
                         CRACKED one (GARG.smashAny) - and he crashes to the garden floor, stunned; leaving early only moves his aim
                         (the stair's top, 2026-09-22; the smash and the stun, 2026-09-25: tools/gargoyle-smash.mjs asks the rest)
-     THE FIRST DEATH KNIGHT  the hero's own rule: fill his BLOOD WARD and strike it again, and it breaks - he is open; a ward
-                             left to run out opens nothing (2026-09-24: he fights with the class's kit)
+     THE DEATH KNIGHT  the hero turned boss (2026-09-25): be under his CLEAVE when he commits it and dodge out of it, and the blade
+                       sticks in the chapel floor - he is open; a Cleave taken, or one nobody was under, sticks nothing. (THE FIRST
+                       DEATH KNIGHT's ward-break, renamed THE REAPER and benched, is asked in Node by tools/unburied-fights.mjs)
      THE WINDCALLER    brace through his howl (the guard key held on the ground): his own wind fails him and he falls, open; the
                        same howl left to blow walks you to the wall and opens nothing (Gale Moor rework, 2026-09-25)
      THE DUNE WORM     wind the hollow's awning out and let his breach come up under it: he comes up INTO the canvas, tangled, and
@@ -91,13 +92,19 @@ try {
      if(late)on(next(m));for(let i=0;i<240&&['dive','smash','crash'].includes(g.mode);i++)BK.sim(1);const o={mode:g.mode,open:+(g.open||0).toFixed(1),broken:!!m.broken,aim:g.tgt===m};g.mode='hover';g.modeT=0;return o;};
    const solid=dive(sl.find(m=>!m.cracked),true),early=dive(sl.find(m=>m.cracked&&!m.broken),false),cracked=dive(sl.find(m=>m.cracked&&!m.broken),true);
    out.gargoyle={solid,early,cracked};}
-  /* THE FIRST DEATH KNIGHT: the BLOOD WARD twice - left to run out into its nova, then filled and struck once more through the
-     game's own hurtEnemy (so unbHurt's wiring is asked too) */
-  {const b=boot('unburied');const A=BK.L.arena;for(const e of BK.enemies())if(e!==b&&e.t==='corpse')e.alive=false;b.cd=99;
-   const ward=hits=>{b.mode='stalk';b.open=0;b.cd=99;BK.P.x=b.x-140;BK.P.y=A.floor-40;BK.P.vy=0;BK.unbU.dkForce(b,'ward',{P:BK.P,A,say:()=>{},sound:()=>{}});b.modeT=0.02;
-     for(let i=0;i<10&&b.mode!=='ward';i++)BK.sim(1);const hp0=b.hp;let open=0;for(let k=0;k<hits;k++){BKT.hurtEnemy(b,10,b.x-20,true);BK.sim(2);}
-     for(let i=0;i<60*4&&b.mode!=='open'&&b.mode!=='stalk';i++){BK.sim(1);b.cd=99;}open=b.open||0;return {mode:b.mode,open:+open.toFixed(1),kept:hp0-b.hp};};
-   const alone=ward(0),broke=ward(BK.unbU.UNB.dk.wardFull+1);out.deathKnight={alone,broke};}
+  /* THE DEATH KNIGHT: THE CLEAVE three times - taken (the hero stays under it), with nobody under it, and committed on the hero and
+     DODGED with the game's own dodge key. Only the last sticks the blade in the floor. Then a blow on the stuck man through the game's
+     own hurtEnemy (so unbHurt's wiring is asked too): open, he takes more */
+  {const b=boot('unburied');const A=BK.L.arena;const kill=()=>{for(const e of BK.enemies())if(e!==b&&e.t==='corpse')e.alive=false;};kill();
+   const c={P:BK.P,A:{x0:A.x0,x1:A.x1,floor:A.floor},say:()=>{},sound:()=>{}};
+   const cleave=how=>{kill();b.mode='stalk';b.open=0;b.cd=99;b.x=(A.x0+A.x1)/2;BK.P.y=A.floor;BK.P.vy=0;BK.P.vx=0;BK.P.x=b.x+(how==='far'?-200:-40);BK.sim(20);b.cd=99;
+     BK.unbU.bkForce(b,'cleave',c);let open=0,dodged=false,hurt=null;
+     for(let i=0;i<60*4&&b.mode!=='stalk';i++){if(how==='dodge'&&b.committed&&!dodged){dodged=true;BK.keys.left=true;BK.press('dodge');}
+       BK.sim(1);BK.keys.left=false;b.cd=99;open=Math.max(open,b.open||0);
+       if(how==='dodge'&&b.mode==='stuck'&&hurt===null){const hp0=b.hp;BKT.hurtEnemy(b,10,b.x-20,false);hurt=hp0-b.hp;}}
+     if(how==='under'){const hp0=b.hp;BKT.hurtEnemy(b,10,b.x-20,false);hurt=hp0-b.hp;}
+     return {mode:b.mode,open:+open.toFixed(1),hurt};};
+   out.deathKnight={taken:cleave('under'),far:cleave('far'),dodged:cleave('dodge'),boss:b.t};}
   /* THE BARROW RIDER: a ride left alone, then a ride struck as it passes (the game's own hurtEnemy, so unbHurt's wiring is asked
      too); then, past half, a remount left alone and a remount whose crawling bones are cut twice by the hero's own swings */
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='unburied'));BK.state='play';BK.god=true;
@@ -173,10 +180,11 @@ try {
   assert.ok(r.hedgeWarden.fire.open > 2, 'felled beside a brazier, the stump burns open: ' + JSON.stringify(r.hedgeWarden));
   assert.ok(r.hedgeWarden.burning.mode === 'stump' && r.hedgeWarden.burning.open > 0, 'a burning stump does not regrow: ' + JSON.stringify(r.hedgeWarden));
 
-  assert.notEqual(r.deathKnight.alone.mode, 'open', 'A11: a blood ward left to run out opens nothing: ' + JSON.stringify(r.deathKnight));
-  assert.equal(r.deathKnight.broke.mode, 'open', 'A11: a FULL ward struck again breaks and leaves him open: ' + JSON.stringify(r.deathKnight));
-  assert.ok(r.deathKnight.broke.open > 3, 'the window: ' + JSON.stringify(r.deathKnight));
-  assert.equal(r.deathKnight.broke.kept, 0, 'the blows on the ward are kept, not taken: ' + JSON.stringify(r.deathKnight));
+  assert.equal(r.deathKnight.boss, 'bloodknight', 'the Unburied Field ends in THE DEATH KNIGHT: ' + JSON.stringify(r.deathKnight));
+  assert.equal(r.deathKnight.taken.open, 0, 'A11: a Cleave taken sticks nothing: ' + JSON.stringify(r.deathKnight));
+  assert.equal(r.deathKnight.far.open, 0, 'A11: a Cleave nobody was under sticks nothing: ' + JSON.stringify(r.deathKnight));
+  assert.ok(r.deathKnight.dodged.open >= 1.8, 'A11: a Cleave committed on you and dodged sticks the blade, and he is open ~2 s: ' + JSON.stringify(r.deathKnight));
+  assert.ok(r.deathKnight.dodged.hurt > r.deathKnight.taken.hurt, 'stuck, a blow takes more: ' + JSON.stringify(r.deathKnight));
   assert.equal(r.rider.alone.open, 0, 'a ride-through left alone opens nothing: ' + JSON.stringify(r.rider));
   assert.ok(r.rider.alone.mounted, 'and leaves him in the saddle: ' + JSON.stringify(r.rider));
   assert.ok(r.rider.struck.open > 3, 'struck as he rides through, he is out of the saddle and open: ' + JSON.stringify(r.rider));

@@ -17,7 +17,9 @@
 //                                     trebuchet shot that knocks its top deck loose
 //   c 266-299  5 THE STANDARD         open field and THE BARROW RIDER (mini) at the gate - the old banner is his lance now
 //   c 300-373  6 THE CHAPEL OF THE FALLEN ORDER   the ruined chapel and THE SEALED CRYPT ambush (one wave, one captain)
-//   c 374-419  7 THE FIRST DEATH KNIGHT   forty tiles of chapel floor, two tomb ledges, and the dead he can raise off it
+//   c 374-419  7 THE DEATH KNIGHT         forty tiles of chapel floor, two tomb ledges, and the hero himself: the class you buy, as
+//                                     the boss (2026-09-25; THE FIRST DEATH KNIGHT, the scythe, is THE REAPER on the bench, RULES P)
+//   (and since 2026-09-25 THE BROKEN BRIDGES, c 265-324 in final columns, grown in between the tower and the Rider: see below)
 //
 // NEW FLAGS a build/renderer must answer (NONE of them exist in src/main.js yet - see the Lane C report for the exact
 // list): 'corpse' ents (the fallen, until a banner puts them back up), 'bannerbearer' foes, volley zones bound to the
@@ -25,7 +27,7 @@
 // 'cover' props that stop a volley, the cavalry lane hazard, 'ballista'/'trebuchet'/'oilbarrel' engines, ARROW PEGS
 // (L.pegs: a volley into a palisade leaves its arrows standing a few seconds - climbable, and never the only way on;
 // tools/unburied.mjs proves the level still crosses with all four peg walls deleted), 'barrowrider' (mini, in the Standard-Bearer's place since 2026-09-24) and
-// 'deathknight' (boss). EHP has no entries for any of these: F10 (a level must bring a foe the game has never fought,
+// 'bloodknight' (boss: THE DEATH KNIGHT; 'deathknight', the old scythe, is benched). EHP has no entries for any of these: F10 (a level must bring a foe the game has never fought,
 // and its boss does not count) is satisfied by that fact alone.
 import { UF as GEOM } from './draft/unburied-field.js';
 /* THE BROKEN BRIDGES (2026-09-25, docs/briefs/unburied-deathknight.md): sixty columns cut in at 265 with grow(), between the
@@ -166,9 +168,9 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
   meet('THE CHAPEL YARD', 303, 316, [['corpse', 308, G + 1], ['bannerbearer', 311, G + 1], ['corpse', 313, G], ['wight', 316, G]]);   /* 308 and 311 stand IN the crater (308-312 is a row down): at G they stood over its air and dropped a row on the first frame (tools/newlevel.mjs) */
   meet('THE BROKEN NAVE', 352, 370, [['bonearcher', 354, G], ['husk', 357, G], ['zombie', 364, G + 4], ['corpse', 369, G]]);   /* the zombie keeps the crypt stair */
 
-  // ---- 7. THE FIRST DEATH KNIGHT (c 374-419): forty tiles, two tomb ledges, and the dead he raises off the floor ----
+  // ---- 7. THE DEATH KNIGHT (c 374-419): forty tiles, two tomb ledges, and the dead that get up for him ----
   const A = UF.ARENA; plat(382, G - 2, 4); plat(402, G - 2, 4);                                                // A12: the room has footing off the floor as well as on it
-  ent('deathknight', 396, G, { face: -1 });
+  ent('bloodknight', 396, G, { face: -1 });   /* THE DEATH KNIGHT, the hero himself (src/unburied-foes.js updateBloodKnight) */
   ent('deco', 377, G, { kind: 'brokenPillar', v: 0 }); ent('deco', 411, G, { kind: 'brokenPillar', v: 0 });   /* the chapel's last two columns, at the walls of his room */
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);                         /* ropes hung LAST */
   /* THE GRAVES THE BATTLE LEFT (look pass 2026-09-24). The field is dense with the fight - cover every dozen tiles, stakes, signs,
@@ -215,7 +217,7 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
     ambushes: [{ name: 'THE SEALED CRYPT', row: G, wallL: A2.wallL, wallR: A2.wallR, check: [302, G],
       waves: [[['husk', 338, G, { elite: true }], ['wight', 328, G], ['zombie', 324, G], ['corpse', 342, G]]] }],
     mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'barrowrider', name: 'THE BARROW RIDER' },
-    arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'deathknight', music: 'deathknight' },   /* Night on Bald Mountain: the dead rise for one night - the level's own track, kept (L.music) */
+    arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'bloodknight', music: 'deathknight' },   /* Night on Bald Mountain: the dead rise for one night - the level's own track, kept (L.music) */
   };
 
   // ---- 4b. THE BROKEN BRIDGES (c 265-324, final columns; 2026-09-25) ----

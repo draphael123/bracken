@@ -986,6 +986,32 @@ async function runbossLab(BK, opts) {
         }else if(['stuck','reel','recoil'].includes(boss.mode)){goal=mawIn;strike=true;}
         else {goal=mawIn;strike=true;}
       }
+      /* THE DEATH KNIGHT (the hero as the boss, 2026-09-25), played the way his fight teaches it. THE CLEAVE: stand in its reach while he
+         lifts it (that is what makes him commit), and the moment he has COMMITTED - the reach goes red - dodge out of it, away from him:
+         the blade goes into the floor, and the bot goes in and cuts the stuck blade's man. A hero who would rather take it on a guard
+         (the knight, the paladin) guards the Cleave he cannot get out of. THE PLANTED BLADE: walk to the middle of the widest gap
+         between the spots the bolts will land on, or out past the end of the fan. THE RUSH: jump it as it arrives. THE WARD: its face
+         stops the blow - go round and cut his back, or wait it out. THE SURGE: get out of its ring. His dead are cut when they come close. */
+      else if (boss.t === 'bloodknight') { const S = BK.unbU ? BK.unbU.UNB.bk : null, side = Math.sign(P.x - boss.x) || 1, m = boss.mode;
+        if (boss.open > 0 && !wasOpen) opened++; wasOpen = boss.open > 0;
+        const add = BK.enemies().filter(q => q.alive && q.t === 'corpse' && q.from === boss && q.mode !== 'down' && Math.abs(q.y - P.y) < 24).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+        if (m === 'stuck' || m === 'wrench') { goal = boss.x; strike = true; }
+        else if (m === 'cleaveTell') { strike = false;
+          if (!boss.committed) goal = boss.x + side * 36;   /* in its reach: bait the commit */
+          else if (!(P.dodge > 0) && P.st >= 10) { k.left = side < 0; k.right = side > 0; BK.press('dodge'); goal = null; }
+          else goal = boss.x + side * 120; }
+        else if (m === 'cleave') { goal = boss.x + side * 90; strike = false; }
+        else if (m === 'bladeTell' || m === 'blade') { strike = false; const xs = (boss.boltAt || []).slice().sort((a, b) => a - b), spots = [];
+          for (let i = 0; i + 1 < xs.length; i++) spots.push((xs[i] + xs[i + 1]) / 2); if (xs.length) { spots.push(xs[0] - 44, xs[xs.length - 1] + 44); }
+          goal = spots.filter(x => x > A.x0 + 20 && x < A.x1 - 20).sort((a, b) => Math.abs(a - P.x) - Math.abs(b - P.x))[0] ?? P.x; }
+        else if (m === 'rushTell' || m === 'rush') { strike = false; goal = null;
+          if (P.ground && ((m === 'rushTell' && boss.modeT < 0.12) || (m === 'rush' && Math.abs(boss.x - P.x) < 70 && (P.x - boss.x) * boss.face > 0))) { BK.press('jump'); P.labJump = 20; } }
+        else if (m === 'wardTell' || m === 'ward') { const back = (P.x - boss.x) * (boss.wardFace || boss.face) < 0;
+          if (back) { goal = boss.x; strike = true; } else { goal = boss.x + side * 70; strike = false; } }
+        else if (m === 'surgeTell' || m === 'surge') { strike = false; goal = boss.x + side * ((S ? S.surgeR : 90) + 40); }
+        else if (add && Math.abs(add.x - P.x) < 60) { goal = add.x; strike = false; if (Math.abs(add.x - P.x) < LAB_REACH[h] + 6 && P.atk < 0) { P.face = Math.sign(add.x - P.x) || P.face; BK.press('atk'); swings++; } }
+        else { goal = boss.x; strike = !(P.labRest); }
+        if (goal !== null) goal = Math.max(A.x0 + 18, Math.min(A.x1 - 18, goal)); }
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : h === 'geomancer' ? 0.17 : 0.14)))) {   /* (THE GEOMANCER's ward takes a tenth of a second to rise: she plants it that much sooner, so it is up on the beat) */
         P.face = Math.sign(d) || P.face;

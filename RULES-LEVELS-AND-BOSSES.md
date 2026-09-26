@@ -542,7 +542,7 @@ thirty rows of the mine and everything they led to.
 
 ## P. THE BENCH — BOSSES KEPT FOR LEVELS THAT DO NOT EXIST YET
 
-Four fights are still in the code and placed in no level. They are not dead code and they are not
+Five fights are still in the code and placed in no level. They are not dead code and they are not
 finished: each is waiting for a level that asks its question. Do not delete them, and do not drop
 one into an existing level to fill a gap — that is how the Suncatcher ended up on a scree path it
 did not belong on.
@@ -552,6 +552,7 @@ did not belong on.
 | THE HOUND MASTER | `t: 'master'`, `updateMaster` (mounted, whistles pups, flank/pincer calls) | Kingswood already has the Great Hound; two kennel fights in one arc | A kennel or hunt level of its own; its CHARGE is now a yellow `!` (blockable) |
 | THE MASTHEAD | `t: 'sailer'` mini, `MINI_NAME.sailer` | The flotilla has the Quartermaster and the Captain already | **Came back** as his own boss, `t: 'masthead'` / `updateMasthead`, at the end of THE SKY SHIP (the sheet winches turn the arena's wind on him). The big `sailer` mini stays benched |
 | THE HILL TROLL (big) | `t: 'troll', big: true` (30x36, 3.4x HP) | The scree and moor trolls are regulars; the big one had no room to throw in | A quarry or pass with boulders to answer his |
+| THE REAPER (was THE FIRST DEATH KNIGHT) | `t: 'deathknight'`, `updateDeathKnight` / `dkHurt` / `bakeDeathKnight` (src/unburied-foes.js), the scythe, fighting with the Death Knight's kit: the cleave, death grip, blood boil, the long passing, the ward that breaks when full, the nova, summon and gravecall | Benched 2026-09-25: THE UNBURIED FIELD's boss is THE DEATH KNIGHT now, the playable hero himself (`bloodknight`), and a scythe-and-ward duel beside him was the same fight twice | A level of his own - a harvest, a plague pit, a reaping - where his ward and his raised dead are the room's question; tools/unburied-fights.mjs keeps his fight honest in Node meanwhile |
 | THE SUNCATCHER | `updateSuncatcher` | Removed from the Scree: it did not fit the path and its model is poor | A FROST level, a heavy rework, and a new sprite — not a reskin |
 | THE PIT WARDEN | **RETIRED, code removed** (last in git before the Buried Prince commit: `updatePitWarden`, `breakPitFloor`, `bakePitWarden`) | Too small to read, a poor sprite, and he floated; his floor-breaking pick was a rule nobody could see happen. THE BURIED PRINCE (`t: 'prince'`, `updatePrince`, `src/redraw/prince.js`) holds THE UNDERCROWN's tomb now | Nothing: if a level ever wants a pick that spends its floor, take the idea from git, not the sprite |
 
