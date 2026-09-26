@@ -47,6 +47,13 @@ for (const m of main.matchAll(/coinNeeds: *'([a-z0-9]+)'/g)) {
   if (!ids.has(m[1])) bad.push({ line: lineOf(m.index), kind: 'coinNeeds', id: m[1], shown: '' });
 }
 
+/* a feat that asks for a level's BOSS beaten ('boss:<level id>', featDone in src/main.js): the level must exist, and something in
+   main.js must set PROG.bossDown for it - a flag nothing sets is a lock nothing opens (THE DEATH KNIGHT, 2026-09-25) */
+for (const m of main.matchAll(/feat: *'boss:([a-z0-9]+)'/g)) {
+  seen.push(m[1]);
+  if (!ids.has(m[1])) bad.push({ line: lineOf(m.index), kind: 'feat boss:', id: m[1], shown: '' });
+  else if (!main.includes('PROG.bossDown.' + m[1] + ' = true')) bad.push({ line: lineOf(m.index), kind: 'feat boss: (nothing sets PROG.bossDown.' + m[1] + ')', id: m[1], shown: '' });
+}
 assert.ok(seen.length >= 6, 'only ' + seen.length + ' gates found in src/main.js: the scan has stopped working and this check is guarding nothing');
 
 if (bad.length) {

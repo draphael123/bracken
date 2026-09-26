@@ -1,0 +1,108 @@
+{
+ "hero": "knight",
+ "frames": 30000,
+ "reachedDoor": false,
+ "deepestRow": 154,
+ "deaths": 15,
+ "lifted": [
+  "THE SHELF",
+  "THE WRECK STACK",
+  "THE KELP FOREST",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN",
+  "THE CORAL GARDEN"
+ ],
+ "secs": [
+  {
+   "name": "THE SHELF",
+   "rows": "10-33",
+   "blows": 3,
+   "lost": 33,
+   "deaths": 0,
+   "lifts": 1,
+   "seconds": 25,
+   "minBreath": null
+  },
+  {
+   "name": "THE WRECK STACK",
+   "rows": "34-73",
+   "blows": 3,
+   "lost": 42,
+   "deaths": 0,
+   "lifts": 1,
+   "seconds": 27.9,
+   "minBreath": 5.3
+  },
+  {
+   "name": "THE KELP FOREST",
+   "rows": "74-113",
+   "blows": 9,
+   "lost": 100,
+   "deaths": 1,
+   "lifts": 1,
+   "seconds": 27,
+   "minBreath": 5.9
+  },
+  {
+   "name": "THE CORAL GARDEN",
+   "rows": "114-157",
+   "blows": 229,
+   "lost": 1778,
+   "deaths": 14,
+   "lifts": 14,
+   "seconds": 393.8,
+   "minBreath": 0
+  },
+  {
+   "name": "THE GLOWING DROP",
+   "rows": "158-186",
+   "blows": 5,
+   "lost": 25,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 26.3,
+   "minBreath": 0
+  },
+  {
+   "name": "THE BELL GRAVE",
+   "rows": "180-198",
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE COLD ROAD",
+   "rows": "184-198",
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE LEVIATHAN'S BED",
+   "rows": "187-198",
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  }
+ ]
+}

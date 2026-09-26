@@ -1,0 +1,118 @@
+{
+ "hero": "knight",
+ "frames": 30000,
+ "reachedDoor": false,
+ "deepestRow": 191,
+ "deaths": 19,
+ "lifted": [
+  "THE SHELF",
+  "THE WRECK STACK",
+  "THE KELP FOREST",
+  "THE CORAL GARDEN",
+  "THE TRIBUTE SHIP",
+  "THE TRIBUTE SHIP",
+  "THE TRIBUTE SHIP",
+  "THE TRIBUTE SHIP",
+  "THE TRIBUTE SHIP",
+  "THE TRIBUTE SHIP",
+  "THE GLOWING DROP",
+  "THE TRIBUTE SHIP",
+  "THE TRIBUTE SHIP",
+  "THE GLOWING DROP",
+  "THE TRIBUTE SHIP",
+  "THE GLOWING DROP",
+  "THE TRIBUTE SHIP"
+ ],
+ "secs": [
+  {
+   "name": "THE SHELF",
+   "rows": "10-33",
+   "blows": 6,
+   "lost": 100,
+   "deaths": 1,
+   "lifts": 1,
+   "seconds": 25,
+   "minBreath": null
+  },
+  {
+   "name": "THE WRECK STACK",
+   "rows": "34-73",
+   "blows": 4,
+   "lost": 69,
+   "deaths": 0,
+   "lifts": 1,
+   "seconds": 26.9,
+   "minBreath": 5.3
+  },
+  {
+   "name": "THE KELP FOREST",
+   "rows": "74-113",
+   "blows": 10,
+   "lost": 109,
+   "deaths": 1,
+   "lifts": 1,
+   "seconds": 27,
+   "minBreath": 5.8
+  },
+  {
+   "name": "THE CORAL GARDEN",
+   "rows": "114-157",
+   "blows": 11,
+   "lost": 189,
+   "deaths": 1,
+   "lifts": 1,
+   "seconds": 31.3,
+   "minBreath": 5.4
+  },
+  {
+   "name": "THE TRIBUTE SHIP",
+   "rows": "158-201",
+   "blows": 180,
+   "lost": 1375,
+   "deaths": 16,
+   "lifts": 10,
+   "seconds": 245.2,
+   "minBreath": 0
+  },
+  {
+   "name": "THE GLOWING DROP",
+   "rows": "202-230",
+   "blows": 60,
+   "lost": 496,
+   "deaths": 0,
+   "lifts": 3,
+   "seconds": 136.3,
+   "minBreath": 0
+  },
+  {
+   "name": "THE LEVIATHAN'S BED",
+   "rows": "231-242",
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 8.2,
+   "minBreath": 3.2
+  },
+  {
+   "name": "THE COLD ROAD",
+   "rows": "228-242",
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  },
+  {
+   "name": "THE BELL GRAVE",
+   "rows": "224-242",
+   "blows": 0,
+   "lost": 0,
+   "deaths": 0,
+   "lifts": 0,
+   "seconds": 0,
+   "minBreath": null
+  }
+ ]
+}

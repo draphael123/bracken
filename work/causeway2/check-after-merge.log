@@ -1,0 +1,42 @@
+ ok  syntax             0ms  41 files parse
+ ok  tells            589ms  the mark over every windup on the screen comes from this table (src/marks.js, 551 rows).
+ ok  ore-road        6124ms  all ore road checks pass
+ ok  comments        1001ms  no swallowed code found.
+ ok  homepaths        682ms  ok  homepaths     487 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths   354ms  ok  dangling-paths 2146 tracked files, every repo path they cite resolves in a fresh clone (6 known holes list
+ ok  floaters        6945ms  2812 standing things checked (47 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  signs          15767ms  no level says the same sentence on two signs (1 known).
+ ok  elites         16108ms  40 elites. every elite can be fought and every gate it holds opens onto the route.
+ ok  spawns          4976ms  2343 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  map-grammar      170ms  The map grammar holds: no retraced road, required nodes resolve forward, the margin and spur bands hold, every
+ ok  checkpoints    10774ms  421 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  additional-areas   987ms  Both areas have reachable rewards; Burial has its final boss and Harbor retains its guardian; all map nodes me
+ ok  additional-areas-runtime 31610ms  Harbor bosses and Buried Dead activate, death opens exits, summons clear, both levels finish and music decodes
+ ok  keep            1878ms  Deep/Keep crop metadata, tribute, rewards, arrival air, campaign order, four crab attacks and counters (none o
+ ok  keep-runtime   29114ms  Deep crab and Keep king activate, attacks resolve, both defeats finish their stages, and Keep music decodes.
+ ok  keep-expansion  5675ms  Keep triples width and scoped breath; air refuges, sluices and ballast exist; no Vault Keeper; two dry halls w
+ ok  keep-passages  23150ms  Keep narrows: approach 560 tiles, 57% of the new stretch is passage (hall median 35), 8 siphons, 6 blights, 8 
+ ok  keep-expansion-runtime 39552ms  [{"h":"knight","breath":18,"refill":true,"verticalSwim":true},{"h":"warden","breath":18,"refill":true,"vertica
+ ok  haunted-coast   1124ms  Five coastal attack tells, range counters, no mini or gate on the last mile, flooded hold and four Lamplit rop
+ ok  haunted-coast-runtime 30270ms  Three new foes, roof chains, flooded hold and a last mile with no mini on it work in game.
+ ok  skins          24703ms  ok  roofs          38 houses: every roof picture sits on the slab you stand on.
+ ok  one-new-foe    13726ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  deadly-water   15278ms  21 harmful pools; deadly (and marked): fallingtower@21 TRAP deadly, fallingtower@26 TRAP deadly, fallingtower@
+ ok  sea-requests     273ms  Sea: permanent tentacles across all phases, block/dodge wave responses, half Deep breath drain, no Tollmaster 
+ ok  sea-runtime    36322ms  Kraken final blow: reflected water, bell and cargo all trigger defeat.
+ ok  readability      309ms  Scenery behind tiles, softened outline-free art, wall-grip feedback, 13 homes and two landmarks.
+ ok  boss-openings  60132ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":
+ ok  arena-supplies 12484ms  ok  arena-supplies  45 boss rooms, 13 height conditions scored against the ground their arenas actually offer;
+ ok  swim-chain     34211ms  [{"hero":"knight","began":{"swim":true,"plunge":true,"chain":1,"st":72},"ended":{"swim":true,"plunge":false,"c
+ ok  boss-fight-end204375ms  Every one of 45 boss and mini fights (32 bosses, 13 minis) ends when its boss dies.
+ ok  mini-names     57643ms  every mini has its own name (13 levels): kings=THE GREAT HOUND, hanging=THE WEAVER, spire=THE TEMPLE GUARDIAN,
+ ok  checkpoint-gaps 11954ms  checkpoint-gaps  32 levels measured along their walked route; the longest run with no checkpoint outside the k
+ ok  architecture    4527ms  44 levels, 327 built pieces declared; 2 grandfathered (harbor, waymeet). everything that was built stands on s
+ ok  footing-art    55725ms  footing-art: every floor cell you can stand on is drawn, in 27 levels; painted by their own code: fields (fiel
+ ok  keep-rework     3487ms  keep-rework  no Leadfoot, no Vault Keeper; 8 walls, 8 landmarks; 4 whirlpools (2 guarding air, 2 beside a knig
+ ok  checkpoint-stand  8933ms  ok  checkpoint-stand   421 checkpoints in 44 levels: every one stood at with a real jump (5 columns, not 6; 3 
+ ok  kraken-rework  37147ms  The Kraken, reworked: the tide rises, sweeps, carries, hides his arms, and goes back to the bells; stage 2 has
+ ok  textfit       218100ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-causeway2\audits\readability\textfit
+
+39 of 169 checks pass - A SUBSET (kraken-rework, haunted-coast, haunted-coast-runtime, additional-areas, map-grammar, keep, sea-requests, sea-runtime, skins, boss-fight-end, boss-openings, arena-supplies, mini-names, tells, one-new-foe, elites, spawns, floaters, architecture, footing-art, checkpoint-stand, checkpoints, checkpoint-gaps, signs, textfit, readability, swim-chain, deadly-water, ore-road, comments, syntax, homepaths, dangling-paths), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.

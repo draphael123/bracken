@@ -103,6 +103,7 @@ export function buildCaravan({ T, TS }) {
                              stage theme is the warmest one there is; tools/newlevel.mjs flags it as shared, deliberately */
   L.ambient = [{ x0: 0, x1: 99999, kind: 'wind' }];
   L.sun = true; L.caravan = true;
+  L.ledgeKit = 'desert';   /* main.js: ONEWAY/PLANK art picked per tile (ruin lintel / rock shelf / sandstone lip), real timber (L.timberPlanks, the draft's) kept as wood - any desert level can set this, not just this one */
   L.base = CARAVAN_BASE;
   return L;
 }

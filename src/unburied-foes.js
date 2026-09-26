@@ -34,8 +34,8 @@
 import { canvas, rect, line, circle, fillPoly, outline, flipX, whiten } from './px.js';
 
 export const UNB = {
-  hp: { bannerbearer: 56, corpse: 30, barrowrider: 720, deathknight: 1000 },
-  dmg: { pole: 12, corpseCut: 10, brRide: 18, brTrample: 14, brFire: 10, brLance: 16, brThrust: 14, cleave: 12, grip: 6, boil: 6, pass: 12, nova: 10, novaPer: 3, surge: 10, volley: 8, cavalry: 18 },
+  hp: { bannerbearer: 56, corpse: 30, barrowrider: 720, deathknight: 1000, bloodknight: 850 },
+  dmg: { bkCleave: 16, bkBolt: 8, bkRush: 12, bkSurge: 10, pole: 12, corpseCut: 10, brRide: 18, brTrample: 14, brFire: 10, brLance: 16, brThrust: 14, cleave: 12, grip: 6, boil: 6, pass: 12, nova: 10, novaPer: 3, surge: 10, volley: 8, cavalry: 18 },
   bannerR: 120,        /* a planted standard raises the fallen within this many pixels of its foot */
   riseT: 1.1, downT: 3.2, plantRange: 150, tether: 44,
   corpseSpeed: 21, bearerSpeed: 26,
@@ -51,8 +51,17 @@ export const UNB = {
     openT: 3.4, openMul: 1.5, raise: 1, call: 3, adds: 2, addsP2: 4,
     order: ['cleave', 'grip', 'ward', 'raise', 'boil', 'pass', 'cleave', 'ward', 'boil', 'pass'],
     orderP2: ['call', 'surge', 'ward', 'grip', 'boil', 'pass', 'cleave', 'surge', 'ward', 'pass'] },
+  /* THE DEATH KNIGHT (the hero as the boss, 2026-09-25): tells in seconds (phase two multiplies them by p2); the Cleave commits
+     tell.commit before it lands and reaches cleaveR in front; stuck, the blade holds him stuckT at openMul; the planted blade throws
+     bolts (boltsP2 in phase two) to land gap (gapP2) apart round where you stand, boltT in the air; the ward stands wardT; the rush
+     runs rushV for up to rushT; the surge reaches surgeR; he raises two dead at a time and never keeps more than addsMax */
+  bk: { walk: 34, walkP2: 1.3, keep: 40, cd: 1.1, p2: 0.75, tell: { cleave: 1.1, commit: 0.35, blade: 0.95, ward: 0.45, rush: 0.9, raise: 0.9, surge: 1.2 },
+    cleaveR: 62, cleaveBack: 8, stuckT: 2.0, openMul: 1.6, bolts: 3, boltsP2: 5, gap: 46, gapP2: 40, boltT: 0.85, boltG: 300,
+    wardT: 2.4, rushV: 320, rushT: 1.2, surgeR: 90, raise: 2, addsMax: 3,
+    order: ['cleave', 'blade', 'cleave', 'ward', 'rush', 'cleave', 'blade', 'raise'],
+    orderP2: ['cleave', 'blade', 'rush', 'cleave', 'ward', 'blade', 'cleave', 'rush', 'raise'] },
 };
-export const UNB_FOES = new Set(['bannerbearer', 'corpse', 'barrowrider', 'deathknight']);
+export const UNB_FOES = new Set(['bannerbearer', 'corpse', 'barrowrider', 'deathknight', 'bloodknight']);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const tells = e => typeof e.mode === 'string' && e.mode.endsWith('Tell');
 
@@ -325,6 +334,111 @@ export function dkFrame(e) {
   if (e.hurtT > 0) return 16;
   return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 5) % 2 : 0;
 }
+/* ---------------- THE DEATH KNIGHT (boss, 2026-09-25) ---------------- */
+/* THE HERO HIMSELF, TURNED ON YOU (Daniel, 2026-09-25: "the playable hero 'reaper' as a boss: his own sprite and animations at 1.5x,
+   darkened a touch; his moveset as told boss attacks"). Five things he does, and every one is the hero's own:
+     THE CLEAVE          !   slow, over the shoulder and down - the hero's cleave: a guard turns it
+     THE PLANTED BLADE   !!  the hero's held blow: he drives the blade in and the ground throws a fan of blood bolts that come down
+                             round where you stand, through any guard: stand in a gap, or get out of the fan
+     THE BLOOD WARD          (quiet) the hero's ward: it stands in front of him and a blow on its FACE is stopped - behind him it is
+                             not there
+     THE GREATSWORD RUSH !!  the hero's dash attack: the blade levelled at a dead run the room's length - jump it, or be on a tomb
+     RISE                    (quiet) a few of the field's dead get up and fight for him (two at a time, never more than three)
+   THE OPENING IS CAUSED (A11): he COMMITS the Cleave to where you stand a moment before it comes down. Be in its reach when he
+   commits and out of it - or dodging through it - when it lands, and the blade goes into the chapel floor and STICKS: he is open.
+   A Cleave you guard, or take, or were never under, sticks nothing.
+   PHASE TWO (A10), BLOOD SURGE !!: at half health the surge rings out of him, and from then on every move comes sooner and the
+   bolts fan wider. The one sentence: at half health he surges, and everything he does comes sooner and wider. */
+const BK_TELL = { cleave: 'cleaveTell', blade: 'bladeTell', ward: 'wardTell', rush: 'rushTell', raise: 'raiseTell', surge: 'surgeTell' };
+const BK_SAY = { cleaveTell: 'THE CLEAVE: GUARD, OR DODGE IT LATE', bladeTell: 'THE PLANTED BLADE: FIND THE GAP', wardTell: 'BLOOD WARD: GET BEHIND HIM',
+  rushTell: 'THE GREATSWORD RUSH: JUMP IT', raiseTell: 'THE DEAD GET UP FOR HIM', surgeTell: 'BLOOD SURGE: GET AWAY' };
+const BK_SND = { cleaveTell: 'charge', bladeTell: 'plant', wardTell: 'plant', rushTell: 'pass', raiseTell: 'rise', surgeTell: 'roar' };
+const BK_COL = { cleaveTell: '#ffd36b', wardTell: '#8fd160', raiseTell: '#c8b6ff' };
+export const bkOpen = e => e.mode === 'stuck';
+/* is this blow on the ward's FACE? (the side he stood it up facing; a blow from behind finds the man) */
+export const bkWardFaces = (e, fromX) => e.mode === 'ward' && (Math.sign(fromX - e.x) || e.wardFace) === e.wardFace;
+/* A BLOW ON HIM: the ward's face keeps it (0), the blade in the floor lets more in */
+export function bkHurt(e, dmg, fromX) { if (bkWardFaces(e, fromX ?? e.x + (e.wardFace || 1))) { e.wardEvt = (e.wardEvt || 0) + 1; return 0; } return bkOpen(e) ? Math.round(dmg * UNB.bk.openMul) : dmg; }
+const bkMul = e => e.phase === 2 ? UNB.bk.p2 : 1;
+export const bkReach = (e, P, floor) => { const f = (P.x - e.x) * (e.face || 1); return f > -UNB.bk.cleaveBack && f < UNB.bk.cleaveR && P.y > floor - 50; };
+export function updateBloodKnight(e, dt, c) {
+  const { P, A } = c, S = UNB.bk, floor = A.floor;
+  if (!e.alive || e.mode === 'sleep') return;
+  e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.turn ??= 0; e.bolts ??= []; e.phase ??= 1; e.arenaX ??= [A.x0 + 24, A.x1 - 24]; e.y = floor; e.vx = 0;
+  e.open = bkOpen(e) ? Math.max(0, e.modeT) : 0;
+  /* THE BOLTS IN THE AIR: each finds you once, through any guard, and bursts on the floor or on a tomb ledge */
+  for (const b of e.bolts) { b.vy += S.boltG * dt; b.x += b.vx * dt; b.y += b.vy * dt; b.t += dt;
+    if (!P.dead && Math.abs(P.x - b.x) < 8 && b.y > P.y - 26 && b.y < P.y + 2) { b.done = true; c.hit(b.x, UNB.dmg.bkBolt, true, 'THE PLANTED BLADE'); }
+    if (b.y >= floor - 2 || b.x < A.x0 + 4 || b.x > A.x1 - 4 || (b.vy > 0 && b.t > 0.2 && c.stand && c.stand(b.x, b.y))) b.done = true; }
+  e.bolts = e.bolts.filter(b => !b.done);
+  /* PHASE TWO: BLOOD SURGE, told, the moment he is free to */
+  if (e.phase === 1 && e.hp <= e.maxHp * 0.5 && !tells(e) && !bkOpen(e) && e.mode !== 'rush' && e.mode !== 'ward' && e.mode !== 'wake') { e.phase = 2; beginBK(e, 'surge', c); return; }
+  if (e.mode === 'wake') { if (e.modeT <= 0) beginBK(e, 'raise', c); return; }
+  if (e.mode === 'stuck') { if (e.modeT <= 0) { e.mode = 'wrench'; e.modeT = 0.35; c.say('HE WRENCHES IT FREE', '#ffd36b'); c.sound('crack'); } return; }
+  if (e.mode === 'ward') { if (e.wardEvt) { e.wardEvt = 0; c.sound('crank'); }
+    if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.4; } return; }
+  if (e.mode === 'rush') { const was = e.x; e.x = clamp(e.x + e.face * S.rushV * dt, A.x0 + 24, A.x1 - 24); e.vx = e.face * S.rushV;
+    if (!e.rushHit && !P.dead && P.y > floor - 30 && (P.x - was) * (P.x - e.x) <= 0) { e.rushHit = true; c.hit(e.x, UNB.dmg.bkRush, true, 'THE GREATSWORD RUSH'); }
+    if (e.modeT <= 0 || e.x <= A.x0 + 24 || e.x >= A.x1 - 24) { e.mode = 'rest'; e.modeT = 0.6; c.shake(3); c.sound('heavy'); } return; }
+  if (e.mode === 'cleave' || e.mode === 'blade' || e.mode === 'raise' || e.mode === 'surge' || e.mode === 'wrench' || e.mode === 'rest') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = S.cd * bkMul(e); } return; }
+  if (tells(e)) {
+    if (e.mode === 'cleaveTell') {
+      /* he turns on you while he lifts it, and COMMITS a moment before it comes down: after that it goes where you WERE */
+      if (!e.committed) { e.face = Math.sign(P.x - e.x) || e.face;
+        if (e.modeT <= S.tell.commit * bkMul(e)) { e.committed = true; e.threat = !P.dead && bkReach(e, P, floor); c.sound('whoosh'); } }
+    } else if (e.mode !== 'rushTell' && e.mode !== 'bladeTell') e.face = Math.sign(P.x - e.x) || e.face;
+    if (e.modeT > 0) return;
+    const ad = Math.abs(P.x - e.x);
+    if (e.mode === 'cleaveTell') { c.shake(4); c.sound('heavy');
+      const under = !P.dead && bkReach(e, P, floor);
+      /* A11: he was on you when he committed, and you are not there (or you are dodging through it) - the blade goes into the floor */
+      if (e.threat && (!under || (c.dodging && c.dodging()))) { e.mode = 'stuck'; e.modeT = S.stuckT; e.open = S.stuckT; c.say('THE BLADE IS IN THE FLOOR: HE IS OPEN', '#8fd160'); c.sound('crack'); c.ring(e.x + e.face * 30, floor - 2, 20, '#8fd160'); return; }
+      e.mode = 'cleave'; e.modeT = 0.55; if (under) c.hit(e.x, UNB.dmg.bkCleave, false, 'THE CLEAVE'); return; }
+    if (e.mode === 'bladeTell') { e.mode = 'blade'; e.modeT = 0.6; c.sound('crack'); c.shake(5);
+      const sx = e.x + e.face * 22, sy = floor - 6;
+      (e.boltAt || []).forEach((tx, k) => { const T = S.boltT + 0.05 * k; e.bolts.push({ x: sx, y: sy, t: 0, vx: (tx - sx) / T, vy: ((floor - 12) - sy - 0.5 * S.boltG * T * T) / T }); });
+      return; }
+    if (e.mode === 'wardTell') { e.mode = 'ward'; e.modeT = S.wardT; e.wardFace = e.face; e.wardEvt = 0; c.sound('plant'); return; }
+    if (e.mode === 'rushTell') { e.mode = 'rush'; e.modeT = S.rushT; e.rushHit = false; c.sound('charge'); return; }
+    if (e.mode === 'raiseTell') { e.mode = 'raise'; e.modeT = 0.5; c.sound('rise');
+      const n = Math.min(S.raise, S.addsMax - c.adds(e).filter(q => q.mode !== 'down').length);
+      for (let i = 0; i < n; i++) { const side = i % 2 ? -1 : 1, x = clamp(e.x + side * (70 + 30 * (i >> 1)), A.x0 + 30, A.x1 - 30); c.raise(x, floor, e); }
+      return; }
+    if (e.mode === 'surgeTell') { e.mode = 'surge'; e.modeT = 0.6; c.sound('pass'); c.shake(6); c.ring(e.x, floor - 12, S.surgeR, '#ff6b6b');
+      if (!P.dead && ad < S.surgeR && P.y > floor - 44) c.hit(e.x, UNB.dmg.bkSurge, true, 'BLOOD SURGE');
+      c.say('HE SURGES: EVERYTHING COMES SOONER', '#ff6b6b'); e.turn = 0; e.raiseNext = true; return; }
+  }
+  /* STALKING: a greatsword's length off you, slower than you are - and quicker once he has surged */
+  const d = P.x - e.x, ad = Math.abs(d); e.face = Math.sign(d) || e.face;
+  const sp = S.walk * (e.phase === 2 ? S.walkP2 : 1), want = ad > S.keep ? e.face : 0, nx = e.x + want * sp * dt; if (nx > A.x0 + 20 && nx < A.x1 - 20) e.x = nx; e.vx = want * sp;
+  if (e.cd > 0 || P.dead) return;
+  if (e.raiseNext) { e.raiseNext = false; beginBK(e, 'raise', c); return; }
+  const order = e.phase === 2 ? S.orderP2 : S.order;
+  let what = order[e.turn++ % order.length];
+  if (what === 'cleave' && ad > S.cleaveR + 40) what = ad > 150 ? 'rush' : 'blade';   /* out of a greatsword's reach it is the bolts, or the rush */
+  if (what === 'raise' && c.adds(e).filter(q => q.mode !== 'down').length >= S.addsMax) what = 'blade';
+  beginBK(e, what, c);
+}
+function beginBK(e, what, c) { const { P, A } = c, S = UNB.bk; e.mode = BK_TELL[what]; e.modeT = S.tell[what] * (what === 'surge' ? 1 : bkMul(e)); e.face = Math.sign(P.x - e.x) || e.face || 1; e.committed = false; e.threat = false;
+  if (what === 'blade') { const n = e.phase === 2 ? S.boltsP2 : S.bolts, gap = e.phase === 2 ? S.gapP2 : S.gap; e.boltAt = []; for (let i = 0; i < n; i++) e.boltAt.push(clamp(P.x + (i - (n - 1) / 2) * gap, A.x0 + 8, A.x1 - 8)); }
+  c.say(BK_SAY[e.mode], BK_COL[e.mode] || '#ff6b6b'); c.sound?.(BK_SND[e.mode]); }
+export const bkForce = (e, what, c) => beginBK(e, what, c);   /* for the harness: A3, every attack forced */
+/* HIS SPRITE IS THE HERO'S OWN KIT (bakeReaper, src/chars.js), a pose per frame - main.js bakes this list into SPR.bloodknight at 1.5x,
+   a touch darker. [pose, frame] into the kit; the LAST row is his hurt (HAS_HURT reads the last frame of a set as the hurt pose).
+   0 idle | 1-3 walk | 4 cleave: the blade back | 5 cleave: overhead, committed | 6 the cleave down | 7 the blade in the floor (stuck,
+   and the planted blade driven in) | 8,9 the planted blade: lifted, overhead | 10,11 the blood ward | 12 rush tell | 13,14 the rush |
+   15 its end | 16,17 raise | 18 surge tell | 19 the surge | 20 wrenching it free | 21 hurt */
+export const BK_POSES = [['idle', 0], ['run', 0], ['run', 2], ['run', 4], ['atk', 0], ['atk', 1], ['atk', 3], ['heavy', 2], ['heavy', 0], ['heavy', 1], ['block', 0], ['block', 1],
+  ['skid', 0], ['dashAtk', 0], ['dashAtk', 1], ['dashAtk', 2], ['call', 1], ['call', 2], ['boil', 0], ['boil', 1], ['slump', 0], ['hurt', 0]];
+export const BK_SCALE = 1.5;
+export function bkFrame(e) {
+  switch (e.mode) { case 'cleaveTell': return e.committed ? 5 : 4; case 'cleave': return 6; case 'stuck': case 'blade': return 7; case 'wrench': return 20;
+    case 'bladeTell': return e.modeT > UNB.bk.tell.blade * bkMul(e) * 0.5 ? 8 : 9; case 'wardTell': case 'ward': return 10 + Math.floor((e.anim || 0) * 3) % 2;
+    case 'rushTell': return 12; case 'rush': return 13 + Math.floor((e.anim || 0) * 10) % 2; case 'raiseTell': case 'raise': return 16 + Math.floor((e.anim || 0) * 4) % 2;
+    case 'surgeTell': return 18; case 'surge': return 19; case 'sleep': case 'wake': return 0; }
+  if (e.hurtT > 0) return 21;
+  return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 6) % 3 : 0;
+}
 /* 0 idle carrying | 1,2 walk | 3 plant tell | 4 guard (planted, pole in hand) | 5 pole tell | 6 pole | 7 hurt */
 export function bbFrame(e) {
   if (e.mode === 'plantTell') return 3; if (e.mode === 'poleTell') return 5; if (e.mode === 'pole') return 6;
@@ -338,7 +452,7 @@ export function corpseFrame(e) {
   if (e.mode === 'cutTell') return 5; if (e.mode === 'cut') return 6; if (e.hurtT > 0) return 7;
   return Math.abs(e.vx || 0) > 3 ? 3 + Math.floor((e.anim || 0) * 5) % 2 : 2;
 }
-export const unbFrame = e => e.t === 'deathknight' ? dkFrame(e) : e.t === 'barrowrider' ? brFrame(e) : e.t === 'bannerbearer' ? bbFrame(e) : corpseFrame(e);
+export const unbFrame = e => e.t === 'bloodknight' ? bkFrame(e) : e.t === 'deathknight' ? dkFrame(e) : e.t === 'barrowrider' ? brFrame(e) : e.t === 'bannerbearer' ? bbFrame(e) : corpseFrame(e);
 
 /* ---------------- THE BATTLE ROUND YOU: volleys, cover, the cavalry, arrow pegs, the engines ---------------- */
 /* F is built once a (re)spawn from the level and its placed props, and stepped every frame with the world's hands in c. */
@@ -354,6 +468,8 @@ export function newField(L, TS = 16) {
     pegs: (L.pegs || []).map(p => ({ ...p, up: 0, zone: null, stray: 0 })),
     covers: props.filter(p => p.t === 'cover'), engines: props.filter(p => p.t !== 'cover'),
     bolts: [], stones: [], arrows: [], breach: false, surf: groundLine(L, G),
+    /* THE BROKEN BRIDGES' TOLD VOLLEY: its clock, the shadows it has laid (marks) and the arrows left standing in the planks */
+    bv: L.bridgeVolley ? { ...L.bridgeVolley, t: 0, t2: 0, n: 0, marks: [], stuck: [], hits: 0, turned: 0 } : null,
   };
 }
 /* WHERE THE GROUND IS, column by column: the first solid-or-ledge row from above the field down (for the mist to lie on) */
@@ -413,6 +529,29 @@ export function stepField(F, dt, c) {
   for (const s of F.stones) { s.vy += 400 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.t -= dt; if (s.t <= 0 && !s.done) { s.done = true; if (s.knocks === 'tower') { F.breach = true; c.breach(); } } }
   F.stones = F.stones.filter(s => s.t > -0.1);
   for (const a of F.arrows) { a.y += a.vy * dt; a.t -= dt; } F.arrows = F.arrows.filter(a => a.t > 0);
+  stepBridgeVolley(F, dt, c);
+}
+/* THE TOLD VOLLEY OVER THE BROKEN BRIDGES (2026-09-25). Out on the bridges the clock runs; a WHISTLE, and the shadows go down on
+   the planks - one where you stand and one either side of it, never the same three twice running - and bv.whistle seconds later
+   the arrows come down on the shadows. Out of your shadow, or behind cover, or under a guard held up (a blow from straight overhead
+   is a blow from the front: c.arrowP), and nothing finds you. Off the bridges the clock waits, so the first whistle is never on the
+   first plank. Returns nothing; bv.hits and bv.turned count what it did (for the harness). */
+export const BV_OFFS = [[0, -1, 1], [0, -1.3, 0.9], [0, -0.9, 1.3]];   /* times spread: never closer than 0.9 of it, so the ground between two shadows is a place to stand */
+export function stepBridgeVolley(F, dt, c) {
+  const bv = F && F.bv; if (!bv) return;
+  const { P } = c, on = !P.dead && P.x > bv.x0 && P.x < bv.x1;
+  for (const s of bv.stuck) s.t -= dt; bv.stuck = bv.stuck.filter(s => s.t > 0);
+  if (bv.marks.length) { bv.t2 -= dt; if (bv.t2 > 0) return;
+    c.sound('volley'); for (const m of bv.marks) bv.stuck.push({ x: m.x, y: m.y, t: 1.6 });
+    const m = bv.marks.find(q => Math.abs(P.x - q.x) < bv.r && P.y > q.y - 80 && P.y <= q.y + 4);
+    if (m && !P.dead && !sheltered(F, P)) { const r = c.arrowP(P.x, UNB.dmg.volley, 'THE ARROWS'); if (r === 'blocked') bv.turned++; else if (r !== false) bv.hits++; }
+    bv.marks = []; bv.t = 0; return; }
+  if (!on) { bv.t = Math.min(bv.t, bv.period - bv.whistle - 0.8); return; }
+  bv.t += dt; if (bv.t < bv.period - bv.whistle) return;
+  const offs = BV_OFFS[bv.n++ % BV_OFFS.length];
+  bv.marks = offs.map(o => { const x = clamp(P.x + o * bv.spread, bv.x0 + 8, bv.x1 - 8); return { x, y: c.surface(x, P.y) }; });
+  bv.t2 = bv.whistle; c.sound('whistle');
+  if (bv.n <= 2) c.say(P.x, P.y - 40, 'A WHISTLE: THE SHADOWS ARE WHERE THEY LAND', '#ff6b6b');
 }
 
 /* ---------------- DRAWING (the world's parts; the creatures are sprites) ---------------- */
@@ -479,7 +618,29 @@ export function drawUnbWorld(g, foes, cx, cy, time) {
         for (let i = 0; i < 6; i++) { const a = time * 3 + i, rr = D.surgeR * (1 - ((time * 0.8 + i / 6) % 1)); R(g, x + Math.cos(a) * rr, fy - 12 + Math.sin(a) * 8, 2, 2, '#c0283a'); } }
       if (e.mode === 'open') { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 26 + k * 3, 7, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
     }
+    if (e.t === 'bloodknight') drawBloodKnightWorld(g, e, x, fy, cx, cy, time);
   }
+}
+/* THE DEATH KNIGHT'S MARKS ON THE CHAPEL FLOOR (C3: where and when): the Cleave's reach while it is lifted (gold, then red once he has
+   committed), the spots the bolts will come down on, the bolts, the ward on its face, the rush's lane, the surge closing in - and the
+   blade in the floor, outlined green, because that is the window */
+function drawBloodKnightWorld(g, e, x, fy, cx, cy, time) {
+  const S = UNB.bk, f = e.face || 1, k = 0.5 + 0.5 * Math.sin(time * 14);
+  if (e.mode === 'cleaveTell') { g.globalAlpha = (e.committed ? 0.35 : 0.18) + 0.2 * k; R(g, f > 0 ? x - S.cleaveBack : x - S.cleaveR, fy - 2, S.cleaveR + S.cleaveBack, 2, e.committed ? '#ff6b6b' : '#ffd36b'); g.globalAlpha = 1; }
+  if (e.mode === 'bladeTell') for (const tx of e.boltAt || []) { const sx = Math.round(tx - cx); g.globalAlpha = 0.35 + 0.45 * k; R(g, sx - 5, fy - 2, 11, 2, '#ff6b6b'); R(g, sx - 1, fy - 6, 3, 4, '#c0283a'); g.globalAlpha = 1; }
+  for (const b of e.bolts || []) { const bx = Math.round(b.x - cx), by = Math.round(b.y - cy); g.globalAlpha = 0.6; R(g, bx - 3 - Math.sign(b.vx) * 5, by - 1, 5, 2, '#7a1020'); g.globalAlpha = 1;
+    R(g, bx - 3, by - 3, 6, 6, '#7a1020'); R(g, bx - 2, by - 2, 4, 4, '#c0283a'); R(g, bx - 1, by - 1, 2, 2, '#ff9a9a'); }
+  if (e.mode === 'wardTell' || e.mode === 'ward') { const wf = e.mode === 'ward' ? e.wardFace || f : f, wx = x + wf * 20, H = 56, top = fy - H - 2;
+    for (let i = 0; i < H; i++) { const t = (i + 0.5) / H * 2 - 1, off = Math.max(1, Math.round(Math.sqrt(1 - t * t) * 8)), y = top + i;
+      g.globalAlpha = e.mode === 'ward' ? 0.55 : 0.25; g.fillStyle = '#c0283a'; g.fillRect(wf > 0 ? wx : wx - off, y, off, 1);
+      g.globalAlpha = 0.95; g.fillStyle = i < H * 0.3 ? '#ffc0c8' : '#ff4a5a'; g.fillRect(wf > 0 ? wx + off : wx - off - 1, y, 1, 1); }
+    g.globalAlpha = 1; }
+  if (e.mode === 'rushTell') { const A = e.arenaX; g.globalAlpha = 0.14 + 0.2 * k; const x1 = A ? Math.round((f > 0 ? A[1] : A[0]) - cx) : x + f * 400; R(g, Math.min(x, x1), fy - 30, Math.abs(x1 - x), 30, '#ff6b6b'); g.globalAlpha = 1; }
+  if (e.mode === 'surgeTell') { const t = 1 - Math.max(0, e.modeT) / S.tell.surge; g.globalAlpha = 0.2 + 0.45 * t; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 12, S.surgeR, 14, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
+    for (let i = 0; i < 6; i++) { const a = time * 3 + i, rr = S.surgeR * (1 - ((time * 0.8 + i / 6) % 1)); R(g, x + Math.cos(a) * rr, fy - 12 + Math.sin(a) * 8, 2, 2, '#c0283a'); } }
+  if (e.phase === 2 && e.mode !== 'sleep') { g.globalAlpha = 0.12 + 0.08 * Math.sin(time * 6); g.fillStyle = '#c0283a'; g.beginPath(); g.ellipse(x, fy - 26, 20, 30, 0, 0, 7); g.fill(); g.globalAlpha = 1; }   /* surged: the blood hangs round him */
+  if (bkOpen(e)) { const kk = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * kk; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 26 + kk * 3, 7, 0, 0, 7); g.stroke();
+    g.globalAlpha = 0.6 + 0.3 * kk; R(g, x + f * 30 - 1, fy - 10, 3, 10, '#dfffc0'); g.globalAlpha = 1; }
 }
 export function drawField(g, F, cx, cy, time, VW, VH) {
   if (!F) return; const TS = F.TS;
@@ -504,8 +665,28 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
   for (const cv of F.covers) { const x = Math.round(cv.x - cx), y = Math.round(cv.y - cy); if (x < -40 || x > VW + 40) continue;
     if (cv.kind === 'wagon') { R(g, x - 14, y - 18, 28, 12, '#5a3e26'); R(g, x - 14, y - 18, 28, 2, '#7a5634'); R(g, x - 10, y - 8, 7, 7, '#2e2016'); R(g, x + 4, y - 8, 7, 7, '#2e2016'); R(g, x - 8, y - 6, 3, 3, '#7a5634'); R(g, x + 6, y - 6, 3, 3, '#7a5634'); }
     else if (cv.kind === 'mantlet') { R(g, x - 12, y - 24, 24, 22, '#6a4a2c'); for (let q = -10; q < 12; q += 5) R(g, x + q, y - 24, 1, 22, '#3e2a18'); R(g, x - 12, y - 25, 24, 2, '#8a6a44'); R(g, x - 10, y - 3, 3, 3, '#3e2a18'); R(g, x + 7, y - 3, 3, 3, '#3e2a18'); }
+    else if (cv.kind === 'brokenMantlet') {   /* THE BRIDGES: a siege mantlet with its top shot away and one leg gone, propped where it fell */
+      R(g, x - 12, y - 18, 22, 16, '#5e4228'); for (let q = -10; q < 10; q += 5) R(g, x + q, y - 18 + (q > 2 ? 3 : 0), 1, 16 - (q > 2 ? 3 : 0), '#3a2716');
+      R(g, x - 12, y - 19, 14, 2, '#80603c'); R(g, x + 2, y - 16, 8, 2, '#80603c'); R(g, x - 10, y - 3, 3, 3, '#3a2716'); R(g, x + 9, y - 6, 2, 6, '#3a2716');
+      for (let q = 0; q < 3; q++) { R(g, x - 8 + q * 7, y - 24 + (q % 2) * 2, 1, 8, '#5a4a36'); R(g, x - 9 + q * 7, y - 25 + (q % 2) * 2, 3, 2, '#c8b6ff'); } }   /* and the last volley's arrows still in it */
+    else if (cv.kind === 'cart') {   /* an overturned cart: bed on its side, one wheel in the air */
+      R(g, x - 14, y - 16, 26, 14, '#4e3622'); R(g, x - 14, y - 16, 26, 2, '#6e4e30'); for (let q = -10; q < 12; q += 6) R(g, x + q, y - 14, 1, 12, '#34241a');
+      g.fillStyle = '#2e2016'; g.beginPath(); g.arc(x + 10, y - 18, 6, 0, 7); g.fill(); g.fillStyle = '#7a5634'; g.beginPath(); g.arc(x + 10, y - 18, 2, 0, 7); g.fill();
+      R(g, x - 16, y - 4, 6, 2, '#6e4e30'); }
     else { for (let q = 0; q < 3; q++) { const sx = x - 12 + q * 8; R(g, sx, y - 16 + (q % 2) * 2, 8, 14, q % 2 ? '#7a6a58' : '#6a5a48'); R(g, sx + 3, y - 11 + (q % 2) * 2, 2, 4, '#c8a44a'); } }   /* upturned shields */
   }
+  /* THE BRIDGES' VOLLEY, TOLD: every shadow darkening and closing as the arrows come down onto it, a red rim round it, the arrows
+     themselves in the last half of the whistle; the cover in reach lit green (C5); and the arrows left standing in the planks */
+  if (F.bv) { const bv = F.bv;
+    for (const m of bv.marks) { const k = 1 - Math.max(0, bv.t2) / bv.whistle, x = Math.round(m.x - cx), y = Math.round(m.y - cy), rr = bv.r + 2 - Math.round(3 * k);
+      g.globalAlpha = 0.3 + 0.45 * k; g.fillStyle = '#0c0608'; g.beginPath(); g.ellipse(x, y - 1, rr, 2 + 1.5 * k, 0, 0, 7); g.fill();
+      g.globalAlpha = 0.45 + 0.4 * (0.5 + 0.5 * Math.sin(time * 22)); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 1, rr + 2, 3.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
+      if (k > 0.5) for (let i = 0; i < 3; i++) { const ax = x - 6 + i * 6, ay = Math.round(y - 10 - (1 - k) * 220 - i * 9); R(g, ax, ay - 8, 1, 8, '#5a4a36'); R(g, ax - 1, ay, 3, 2, '#c8b6ff'); } }
+    if (bv.marks.length) { const k = 0.5 + 0.5 * Math.sin(time * 16);
+      for (const cv of F.covers) { if (cv.x < bv.x0 || cv.x > bv.x1) continue; const sx = Math.round(cv.x - cx); if (sx < -30 || sx > VW + 30) continue;
+        g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(sx - 14, Math.round(cv.y - cy) - 26, 28, 26); g.globalAlpha = 1; } }
+    for (const s of bv.stuck) { if (s.t < 0.4 && Math.floor(time * 14) % 2) continue; const x = Math.round(s.x - cx), y = Math.round(s.y - cy);
+      for (let i = 0; i < 3; i++) { R(g, x - 6 + i * 6, y - 7 + (i % 2), 1, 7, '#6a5236'); R(g, x - 7 + i * 6, y - 8 + (i % 2), 3, 2, '#c8b6ff'); } } }
   /* PEGS: the arrows standing in the palisade, going out in the last second */
   for (const p of F.pegs) { if (!(p.up > 0)) continue; const x = Math.round(p.x * TS - cx), blink = p.up < 1 && Math.floor(time * 14) % 2;
     if (blink) continue; for (const r of p.rows) { const y = Math.round(r * TS - cy); for (let k = 0; k < 3; k++) { R(g, x - 13 + k * 4, y + k % 2, 12 - k * 3, 2, '#6a5236'); R(g, x - 15 + k * 4, y - 1 + k % 2, 3, 3, '#c8b6ff'); } } }

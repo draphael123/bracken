@@ -17,7 +17,9 @@
 //                                     trebuchet shot that knocks its top deck loose
 //   c 266-299  5 THE STANDARD         open field and THE BARROW RIDER (mini) at the gate - the old banner is his lance now
 //   c 300-373  6 THE CHAPEL OF THE FALLEN ORDER   the ruined chapel and THE SEALED CRYPT ambush (one wave, one captain)
-//   c 374-419  7 THE FIRST DEATH KNIGHT   forty tiles of chapel floor, two tomb ledges, and the dead he can raise off it
+//   c 374-419  7 THE DEATH KNIGHT         forty tiles of chapel floor, two tomb ledges, and the hero himself: the class you buy, as
+//                                     the boss (2026-09-25; THE FIRST DEATH KNIGHT, the scythe, is THE REAPER on the bench, RULES P)
+//   (and since 2026-09-25 THE BROKEN BRIDGES, c 265-324 in final columns, grown in between the tower and the Rider: see below)
 //
 // NEW FLAGS a build/renderer must answer (NONE of them exist in src/main.js yet - see the Lane C report for the exact
 // list): 'corpse' ents (the fallen, until a banner puts them back up), 'bannerbearer' foes, volley zones bound to the
@@ -25,13 +27,34 @@
 // 'cover' props that stop a volley, the cavalry lane hazard, 'ballista'/'trebuchet'/'oilbarrel' engines, ARROW PEGS
 // (L.pegs: a volley into a palisade leaves its arrows standing a few seconds - climbable, and never the only way on;
 // tools/unburied.mjs proves the level still crosses with all four peg walls deleted), 'barrowrider' (mini, in the Standard-Bearer's place since 2026-09-24) and
-// 'deathknight' (boss). EHP has no entries for any of these: F10 (a level must bring a foe the game has never fought,
+// 'bloodknight' (boss: THE DEATH KNIGHT; 'deathknight', the old scythe, is benched). EHP has no entries for any of these: F10 (a level must bring a foe the game has never fought,
 // and its boss does not count) is satisfied by that fact alone.
 import { UF as GEOM } from './draft/unburied-field.js';
-export const UF = GEOM;
+/* THE BROKEN BRIDGES (2026-09-25, docs/briefs/unburied-deathknight.md): sixty columns cut in at 265 with grow(), between the
+   toppled tower and the Barrow Rider's barrow. Everything below is still written in the greybox's columns (the draft's 420) and
+   grow() slides the Rider, the chapel and the arena sixty east; UF, exported here, is the level's FINAL geometry, and the tools
+   read that one (tools/unburied.mjs). The bridges themselves are written in final columns (D5). */
+const BRG = { at: 265, n: 60, ravine: [273, 316], bed: 46,
+  /* the decks, flush with the field, on timber trestles; the gaps between them are what the jumps are (S2: 2 and 3 tiles) */
+  spans: [[273, 275], [279, 284], [287, 291], [295, 300], [304, 307], [310, 313]],
+  trestles: [[274, 275], [280, 283], [288, 290], [296, 299], [305, 306], [311, 312]],
+  /* the stream bed's stakes, under the east end of every three-tile gap - where a short jump comes down */
+  stakes: [[277, 278], [293, 294], [302, 303], [315, 316]] };
+const X = x => x >= BRG.at ? x + BRG.n : x;
+export const UF = Object.assign({}, GEOM, {
+  W: GEOM.W + BRG.n,
+  ACTS: { barrow: [0, 129], charge: [130, X(299)], chapel: [X(300), GEOM.W + BRG.n - 1] },
+  SECTIONS: { barrowline: [0, 69], shieldcrossing: [70, 129], brokencharge: [130, 229], toppledtower: [230, 264], bridges: [265, 324], standard: [325, X(299)], chapel: [X(300), X(373)], arena: [X(374), X(419)] },
+  PEGS: GEOM.PEGS.filter(p => p[0] < 300),   /* the chapel's peg wall is gone (it stood on nothing over the crypt stair) */
+  MINI: { x0: X(GEOM.MINI.x0), x1: X(GEOM.MINI.x1), gate: X(GEOM.MINI.gate), wallL: X(GEOM.MINI.wallL) },
+  AMBUSH: { wallL: X(GEOM.AMBUSH.wallL), wallR: X(GEOM.AMBUSH.wallR) },
+  ARENA: { x0: X(GEOM.ARENA.x0), x1: X(GEOM.ARENA.x1) },
+  ENGINES: GEOM.ENGINES.map(([x, t]) => [X(x), t]),
+  BRIDGES: BRG,
+});
 
-export function buildUnburiedField({ painter, T, TS }) {
-  const { W, H, G } = UF;
+export function buildUnburiedField({ painter, T, TS, grow }) {
+  const UF = GEOM, { W, H, G } = GEOM;   /* the greybox's columns, all of them: the bridges are grown in at the end */
   const L = painter(W, H), { set, block, floor, plat, ent, coins } = L;
   const encounters = [], ropes = [], pools = [], moversExtra = [], pegs = [], garrison = [], elites = [];
   const region = (x0, x1, y0, y1, t) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, t); };
@@ -125,28 +148,29 @@ export function buildUnburiedField({ painter, T, TS }) {
   ent('sign', 268, G, { text: 'HIS BARROW, AND HIS HORSE IN IT. WHEN HE RIDES, GET OFF THE GROUND.' });
 
   // ---- 6. THE CHAPEL OF THE FALLEN ORDER (c 300-373) ----
-  ent('check', 302, G); block(348, 350, G - 12, G - 3);                                                        // the chapel's broken arch (walked under)
+  ent('check', 302, G); block(348, 350, G - 1, G);   /* THE CHAPEL'S ARCH, FALLEN (2026-09-25). Its crown hung here at rows 24-33, two rows over the
+     road with sky behind it and nothing under it (tools/architecture.mjs listed it); it lies on the nave floor now, two rows of it, and
+     you step over it between its two broken columns */
   /* THE LOOK PASS (2026-09-24): what is left of the nave's columns, either side of the arch and along the far wall. Scenery
      only - deco stands behind the play and nothing collides with it. */
   ent('deco', 347, G, { kind: 'brokenPillar', v: 0 }); ent('deco', 351, G, { kind: 'brokenPillar', v: 1 }); ent('deco', 355, G, { kind: 'brokenPillar', v: 1 });
   const A2 = UF.AMBUSH; ent('sign', 314, G, { text: 'THE FALLEN ORDER\'S CRYPT. THE DOOR SHUTS BEHIND YOU.' });
   ent('silver', 322, G - 3); plat(320, G - 2, 5);                                                              // silver 3: on the crypt's tomb
-  /* THE CHAPEL'S PEG WALL LEFT THE CRYPT (2026-09-24). It stood at 330, rows 26-36, on solid floor: across the ONLY way on (the
-     pegs or nothing) and across the middle of THE SEALED CRYPT, with the room's captain locked east of it and the hero west.
-     It stands in the nave now, over THE CRYPT STAIR - the way down under it and up again - as every other peg wall on this field
-     stands over a trench. tools/unburied.mjs crosses the field with every stake wall as rock; tools/ambush-reach.mjs asks the room. */
+  /* THE CHAPEL'S PEG WALL IS GONE (2026-09-25). It stood at 330 across the only way on and the middle of THE SEALED CRYPT, then
+     (2026-09-24) at 363 over THE CRYPT STAIR - hung over the stair's pit on nothing, a timber wall standing in the air
+     (tools/architecture.mjs). Three peg walls are left on the field; its gallery and the gallery's coins went with it. */
   ent('oilbarrel', 336, G, { spill: [329, 344] });   /* the crypt's pitch: burn the crowd where it stands */
   ent('ballista', 358, G, { aim: [372, G] });
   ent('check', 352, G); ent('check', 370, G);                                                                   // B6: one outside the arena walls
   air(360, 367, G + 1, G + 4); plat(360, G + 2, 2); plat(366, G + 2, 2);                                      /* THE CRYPT STAIR: down under the wall, and up */
-  pegWall(363, 26, [34, 32, 30, 28], 'the chapel\'s gallery and its coins'); plat(365, 25, 4); coins([366, 24], [368, 24]);
+  coins([363, G + 4], [364, G + 4]);   /* the stair's own coins, at the bottom of it */
   coins([307, G], [316, G], [326, G], [344, G], [356, G], [366, G]);
   meet('THE CHAPEL YARD', 303, 316, [['corpse', 308, G + 1], ['bannerbearer', 311, G + 1], ['corpse', 313, G], ['wight', 316, G]]);   /* 308 and 311 stand IN the crater (308-312 is a row down): at G they stood over its air and dropped a row on the first frame (tools/newlevel.mjs) */
   meet('THE BROKEN NAVE', 352, 370, [['bonearcher', 354, G], ['husk', 357, G], ['zombie', 364, G + 4], ['corpse', 369, G]]);   /* the zombie keeps the crypt stair */
 
-  // ---- 7. THE FIRST DEATH KNIGHT (c 374-419): forty tiles, two tomb ledges, and the dead he raises off the floor ----
+  // ---- 7. THE DEATH KNIGHT (c 374-419): forty tiles, two tomb ledges, and the dead that get up for him ----
   const A = UF.ARENA; plat(382, G - 2, 4); plat(402, G - 2, 4);                                                // A12: the room has footing off the floor as well as on it
-  ent('deathknight', 396, G, { face: -1 });
+  ent('bloodknight', 396, G, { face: -1 });   /* THE DEATH KNIGHT, the hero himself (src/unburied-foes.js updateBloodKnight) */
   ent('deco', 377, G, { kind: 'brokenPillar', v: 0 }); ent('deco', 411, G, { kind: 'brokenPillar', v: 0 });   /* the chapel's last two columns, at the walls of his room */
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);                         /* ropes hung LAST */
   /* THE GRAVES THE BATTLE LEFT (look pass 2026-09-24). The field is dense with the fight - cover every dozen tiles, stakes, signs,
@@ -167,8 +191,11 @@ export function buildUnburiedField({ painter, T, TS }) {
      No blanket calm. A build reads it off L.garrison the way GARRISON in src/level.js is read. */
   garrison.push(['corpse', 10], ['zombie', 6], ['bonearcher', 4], ['bonegob', 3], ['wight', 2], ['husk', 2]);
   elites.push(['bannerbearer', 128, G, { face: -1 }], ['wight', 260, 21, { face: -1 }]);
-  return {
-    music: 'unburied',
+  const R0 = {
+    /* ONE TRACK, FIELD AND FIGHT (Daniel, 2026-09-25): the whole level plays Night on Bald Mountain, and the arena names the same
+       track, so the chapel door neither switches nor restarts it (playFile returns on the track already playing). The field's own
+       loop, audio/unburied.ogg ("Haunting Chiptune Loop"), stays in the library and the sound test; no level plays it now. */
+    music: 'deathknight',
     /* THE LOOK (Daniel 2026-09-24: "it uses the forest theme/tiles ... it needs a graveyard theme, something similar to the level
        that is after Waymeet"). The Hexed Fields' graveyard family - its graves and crosses, fog in the hollows, rim-lit dark
        layers, a night wash - but its own hour and its own horizon: an EMBER DUSK over a ridge where the ghost army still stands,
@@ -180,7 +207,7 @@ export function buildUnburiedField({ painter, T, TS }) {
     night: true, nightA: 0.1,   /* a light wash, so the lamps and the hero's glow read; the dusk is in the sky, not in a navy blanket */
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }],   /* low ground fog, the whole field */
     tints: [[318, 419, [34, 28, 52], 0.14]],   /* under the chapel's walls the light goes cold and grey */
-    masonry: [[318, W - 1, 20, H - 1], [295, 297, G - 9, G - 5]],   /* THE CHAPEL OF THE FALLEN ORDER is laid stone from its crypt door to the Death Knight's back wall, and so is the gate's lintel */   /* its own sound (Daniel 2026-09-24): "Haunting Chiptune Loop [Void Estate]", CC0 - audio/CREDITS.txt */
+    masonry: [[318, W - 1, 20, H - 1], [295, 297, G - 9, G - 5]],   /* THE CHAPEL OF THE FALLEN ORDER is laid stone from its crypt door to the Death Knight's back wall, and so is the gate's lintel */   /* (its old loop, "Haunting Chiptune Loop [Void Estate]", CC0 - audio/CREDITS.txt - is retired from the level: see music below) */
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G }, pools, falls: [], moversExtra, interiors: [], gusts: [], encounters, pegs, garrison, elites,
     volleys: UF.VOLLEYS.map(([a, b], i) => ({ x0: a * TS, x1: b * TS, period: 6, horn: 1.5, bearer: UF.VOLLEY_BEARER[i] })),
     cavalry: { x0: UF.LANE[0] * TS, x1: UF.LANE[1] * TS, row: G, period: 14 },
@@ -190,6 +217,44 @@ export function buildUnburiedField({ painter, T, TS }) {
     ambushes: [{ name: 'THE SEALED CRYPT', row: G, wallL: A2.wallL, wallR: A2.wallR, check: [302, G],
       waves: [[['husk', 338, G, { elite: true }], ['wight', 328, G], ['zombie', 324, G], ['corpse', 342, G]]] }],
     mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'barrowrider', name: 'THE BARROW RIDER' },
-    arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'deathknight', music: 'deathknight' },   /* Night on Bald Mountain: the dead rise for one night */
+    arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'bloodknight', music: 'deathknight' },   /* Night on Bald Mountain: the dead rise for one night - the level's own track, kept (L.music) */
   };
+
+  // ---- 4b. THE BROKEN BRIDGES (c 265-324, final columns; 2026-09-25) ----
+  /* THE LEVEL'S SENTENCE FOR THIS STRETCH: the old army's bridges over the ravine are broken, and the ridge's archers have the range on
+     every plank. Nine rows down to a stream bed, stone-cold and staked where a short jump comes down; the decks lie flush with the field
+     on timber trestles, and the gaps between them are two and three tiles (S2: a real jump is 3.2, so a three can be missed). A miss is
+     a fall to the bed and a walk back to the ladder at the west wall - the bridgehead, before the first gap: the whole crossing again.
+     THE TOLD VOLLEY is the bridges' own: a WHISTLE, then SHADOWS on the planks where the arrows come down (one on you, one either
+     side), then the arrows. Step out of your shadow (often that is a jump), get behind a broken mantlet or an overturned cart, or hold
+     a guard up: a blow from straight overhead is a blow from the front for every guard in the game (damagePlayer: fromX === P.x). */
+  const Bp = grow(L, R0, BRG.at, BRG.n), R = Bp.R;
+  /* what grow() cannot know to move: this level's own fields, in tiles */
+  R.masonry = R0.masonry.map(([a, b, y0, y1]) => [X(a), X(b), y0, y1]);
+  R.tints = R0.tints.map(([a, b, c, k]) => [X(a), X(b), c, k]);
+  R.encounters = R0.encounters.map(e => ({ ...e, x0: X(e.x0), x1: X(e.x1) }));
+  R.pegs = R0.pegs.map(p => ({ ...p, x: X(p.x) }));
+  R.elites = R0.elites.map(([t, x, y, o]) => [t, X(x), y, o]);
+  for (const e of L.ents) { if (Array.isArray(e.aim)) e.aim = [X(e.aim[0]), e.aim[1]]; if (Array.isArray(e.spill)) e.spill = [X(e.spill[0]), X(e.spill[1])]; }   /* an engine's mark */
+  /* the stretch itself */
+  const [r0, r1] = BRG.ravine, bed = BRG.bed, c0 = BRG.at, c1 = BRG.at + BRG.n - 1;
+  Bp.floor(c0, c1, G + 1);                                                                          // the field, bank to bank
+  for (let y = G + 1; y < bed; y++) for (let x = r0; x <= r1; x++) Bp.set(x, y, T.AIR);            // THE RAVINE
+  for (const [a, b] of BRG.spans) for (let x = a; x <= b; x++) Bp.set(x, G + 1, T.PLANK);           // the decks that are left
+  for (const [a, b] of BRG.stakes) for (let x = a; x <= b; x++) Bp.set(x, bed, T.SPIKE);            // stakes in the stream bed
+  for (let y = G + 2; y < bed; y++) Bp.set(r0, y, T.NET);                                           // THE WAY OUT: a rope ladder up the west wall, under the first deck
+  R.structures = BRG.trestles.map(([a, b]) => ({ x0: a, x1: b, top: G + 2, floor: bed, kind: 'timber' }));   /* B9: every deck stands on its trestle */
+  const bent = (t, x, y, o = {}) => Bp.ent(t, x, y, o);
+  for (const [x, kind] of [[269, 'cart'], [281, 'brokenMantlet'], [297, 'cart'], [311, 'brokenMantlet'], [319, 'brokenMantlet']]) bent('cover', x, G, { kind });   /* COVER: what the first army left on its bridges */
+  bent('check', 318, G);   /* the far bank, outside the Barrow Rider's barrow: a fall in the ravine costs the crossing, not the tower */
+  bent('sign', 266, G, { text: 'THE BRIDGES. A WHISTLE, THEN SHADOWS: STEP OUT, GET UNDER COVER, OR RAISE A SHIELD.' });
+  /* S1: bodies where the ground is already hard - two bowmen on the far bank covering the last gap, a bone goblin on the middle deck */
+  const enc = [['bonearcher', 321, G], ['bonearcher', 323, G], ['bonegob', 298, G]];
+  R.encounters.push({ name: 'THE FAR BANK', x0: 295, x1: 324, n: enc.length });
+  for (const [t, x, y] of enc) bent(t, x, y, { face: -1, enc: 'THE FAR BANK' });
+  Bp.coins([274, G], [283, G], [290, G], [299, G], [306, G], [312, G]);                              // along the decks: every gap has a coin past it
+  for (const [kind, x, y, v] of [['brokenSpears', 268, G, 0], ['fallenBanner', 322, G, 1], ['bones', 285, bed - 1, 0], ['bones', 308, bed - 1, 1], ['stuckShield', 291, bed - 1, 0]]) bent('deco', x, y, { kind, v });
+  /* THE TOLD VOLLEY over the bridges (stepField in src/unburied-foes.js): px, the stretch it covers; period, whistle and fall in seconds */
+  R.bridgeVolley = { x0: c0 * TS, x1: (c1 + 1) * TS, period: 4.6, whistle: 1.2, spread: 44, r: 12 };
+  return Bp.done();
 }

@@ -56,6 +56,22 @@ export function bakeRuinFace(tw, th, seed = 1) {
   rect(g, 0, H - 3, W, 3, RUIN.d);                                                                 // its footing course
   return c;
 }
+/* A BROKEN COURSE, STILL A SHELF: the ledges inside a tower or a house (the climb up to its hatch) and the caravanserai's
+   floors are ruin masonry (L.masonry), so they draw as a shelf of the same laid ashlar the walls are - not the game's
+   default felled log (Daniel, 2026-09-26: the caravan "uses wood platforms at a point... should use sand platforms or
+   more appropriate terrain"). Same 16x16 shape as ART.bakeLedge/desert.js's bakeSandstoneLip, so a run of them tiles the
+   same way; main.js picks this one over the open-ground lip wherever the tile sits inside L.masonry. */
+export function bakeRuinLedge(seed, end) {
+  const rnd = mulberry(seed); const [c, g] = canvas(16, 16);
+  const x0 = end === 'L' ? 2 : 0, x1 = end === 'R' ? 14 : 16, w = x1 - x0;
+  rect(g, x0, 3, w, 6, RUIN.b); rect(g, x0, 3, w, 1, RUIN.l); rect(g, x0, 8, w, 1, RUIN.d);
+  rect(g, x0 + 1, 9, Math.max(0, w - 2), 2, RUIN.s);
+  for (let k = 0; k < 3; k++) { const jx = x0 + 2 + k * 4; if (jx < x1) px(g, jx, 3, RUIN.m); }   // the joints of the course it was cut from
+  if (rnd() < 0.4) { const cx = x0 + 1 + ((rnd() * Math.max(1, w - 2)) | 0); px(g, cx, 5, RUIN.crack); px(g, cx, 6, RUIN.crack); }
+  if (end === 'L') rect(g, x0 - 1 >= 0 ? x0 - 1 : 0, 4, 1, 5, RUIN.l);
+  if (end === 'R') rect(g, x1, 5, 1, 4, RUIN.d);
+  return c;
+}
 /* A DOORWAY, seen edge on: the wall's two jambs of dressed stone either side of the dark way through, a round head on it and a worn
    threshold. Drawn BEHIND the play (L.facades 'ruindoor') at the foot of a tower's or a house's wall, so the wall is seen to come down
    to the ground on either side of the door and the building stands on its own feet (B9) - without it the wall ended three rows over

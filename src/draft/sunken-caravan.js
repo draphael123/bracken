@@ -76,6 +76,12 @@ export function buildSunkenCaravan(T) {
   for (let y = 0; y < H; y++) { set(W - 2, y, T.SOLID); set(W - 1, y, T.SOLID); }
   const ents = [], ent = (t, x, y, extra = {}) => ents.push({ t, x, y, ...extra }), on = x => top(x) - 1;   // the cell a thing stands in on column x
   const shade = [], moversExtra = [];
+  /* THE ONLY REAL TIMBER IN THE LEVEL: a wagon top, a stall board, a trader's platform - built things, not ground. Recorded
+     as it is laid (timber(x0, x1, y)) so main.js's tile art can tell "wood because it IS wood" from a ONEWAY/PLANK tile
+     that only happened to use the default plank picture (Daniel, 2026-09-26: the level "uses wood platforms at a point...
+     should use sand platforms or more appropriate terrain"). Everything else the level lays in T.PLANK or T.ONEWAY is
+     ground - sandstone, rock or ruin - and L.ledgeKit = 'desert' (src/sunken-caravan.js) says so. */
+  const timberPlanks = [], timber = (x0, x1, y) => timberPlanks.push([x0, x1, y, y]);
   // ---- THE RUINS: laid stone (L.masonry), their insides rooms (L.interiors 'ruin') and shade, the garrison kept off them (L.calm) ----
   const masonry = [], facades = [], interiors = [], calm = [], roofs = {};
   /* A TOWER, w wide and h rows tall on its column's ground: two walls and a roof, a door at the foot of each wall (you walk through it
@@ -132,7 +138,7 @@ export function buildSunkenCaravan(T) {
   // ---- 2 THE CARAVAN ROAD ----
   ent('wagon', marks.wagon1 + 3, on(marks.wagon1 + 3));
   { const x = marks.leadwagon; ent('wagon', x + 3, on(x + 3), { lead: true });                 // THE LEAD WAGON: its tipped bed is a ledge
-    for (let i = 0; i < 4; i++) set(x + 1 + i, top(x) - 3, T.PLANK); ent('silver', x + 3, top(x) - 7);   // a silver over the bed: up on the wagon, then a jump
+    for (let i = 0; i < 4; i++) set(x + 1 + i, top(x) - 3, T.PLANK); timber(x + 1, x + 4, top(x) - 3); ent('silver', x + 3, top(x) - 7);   // a silver over the bed: up on the wagon, then a jump
     }
   ent('wagon', marks.wagon3 + 3, on(marks.wagon3 + 3)); ent('check', sections.road - 5, on(sections.road - 5)); ent('check', marks.wagon3 - 4, on(marks.wagon3 - 4));
   // ---- 3 THE OX LINE: bones, the first quicksand, THE GREAT RIBCAGE ----
@@ -158,12 +164,12 @@ export function buildSunkenCaravan(T) {
     ent('winch', x0 + 2, on(x0 + 2), { canopy: { x0: yard[0], x1: yard[1], row: top(x0) - 5 } });                        // THE AWNING WINCH (F5): rolls the canopy out over the yard
     ent('deco', yard[0], on(yard[0]), { kind: 'canopyPost', behind: true }); ent('deco', yard[1], on(yard[1]), { kind: 'canopyPost', behind: true });   // its posts, drawn behind (B9)
     for (const [cx, hgt] of [[yard[0] + 5, 1], [yard[0] + 6, 2], [yard[0] + 14, 1], [yard[0] + 20, 2], [yard[0] + 21, 1]]) for (let y = top(cx) - hgt; y < top(cx); y++) set(cx, y, T.CRATE);   // the cargo, stacked: steps
-    for (let x = yard[0] + 9; x <= yard[0] + 12; x++) set(x, top(x) - 3, T.PLANK);                                      // a market stall's board
+    for (let x = yard[0] + 9; x <= yard[0] + 12; x++) set(x, top(x) - 3, T.PLANK); timber(yard[0] + 9, yard[0] + 12, top(yard[0] + 9) - 3);                                      // a market stall's board
     ent('awning', x0 - 3, on(x0 - 3)); ent('awning', marks.tent + 10, on(marks.tent + 10)); ent('check', x0, on(x0));
-    const t0 = marks.tent; for (let i = 0; i < 5; i++) set(t0 + i, top(t0) - 3, T.PLANK); ent('relic', t0 + 2, top(t0) - 4);   // the trader's platform, the relic on it
+    const t0 = marks.tent; for (let i = 0; i < 5; i++) set(t0 + i, top(t0) - 3, T.PLANK); timber(t0, t0 + 4, top(t0) - 3); ent('relic', t0 + 2, top(t0) - 4);   // the trader's platform, the relic on it
     ent('sign', x0 + 4, on(x0 + 4), { text: 'THE CAMP WINCH ROLLS THE GREAT AWNING OUT. ROLL IT BACK AND THEY BURN.' }); }
   // ---- 6 THE SINKING WAY: wagon tops over the quicksand, THE SINKING CARAVANSERAI ----
-  for (const q of qs.filter(q => q.x0 >= sections.sinking * TS && q.x1 <= sections.rim * TS)) { const a = q.x0 / TS, b = q.x1 / TS; if (b - a >= 5) { const mid = Math.floor((a + b) / 2) - 1; for (let i = 0; i < 3; i++) set(mid + i, q.y / TS - 2, T.PLANK); ent('wagon', mid + 1, q.y / TS, { sunk: true }); } }   // a sunk wagon's top to stand on
+  for (const q of qs.filter(q => q.x0 >= sections.sinking * TS && q.x1 <= sections.rim * TS)) { const a = q.x0 / TS, b = q.x1 / TS; if (b - a >= 5) { const mid = Math.floor((a + b) / 2) - 1; for (let i = 0; i < 3; i++) set(mid + i, q.y / TS - 2, T.PLANK); timber(mid, mid + 2, q.y / TS - 2); ent('wagon', mid + 1, q.y / TS, { sunk: true }); } }   // a sunk wagon's top to stand on
   /* THE ISLANDS (2026-09-25): three firm tiles between two three-tile pits, a jump each way (RULES S2), a sunk wagon's roof showing on
      each (dressing, not a wagon's lee: it is under the sand to its eaves) */
   for (const k of ['isle1', 'isle2', 'isle3', 'isle4']) ents.push({ t: 'deco', x: marks[k] + 1, y: on(marks[k] + 1), kind: 'wagonSunk', v: 1 });
@@ -224,7 +230,7 @@ export function buildSunkenCaravan(T) {
     for (let i = 0; i < n; i++) { let x = w0 + 3 + Math.floor(i * 20 / n); while (x < w0 + 23 && !standOK(x)) x++; if (x >= w0 + 23) continue;
       const t = ROSTER[sec][k++ % ROSTER[sec].length]; ent(t, x, t === 'vulture' ? top(x) - 7 : on(x)); busy.add(x); } }
 
-  return { W, H, grid, ents, START: { x: 6, y: on(6) }, pools: [], falls: [], moversExtra, interiors, masonry, facades, calm, roofs, sections, marks, arena, quicksand: qs, shade,
+  return { W, H, grid, ents, START: { x: 6, y: on(6) }, pools: [], falls: [], moversExtra, interiors, masonry, facades, calm, roofs, sections, marks, arena, quicksand: qs, shade, timberPlanks,
     draft: true, palette: { set: 'desert' }, rule: 'THE SUN', lengthCols: ax0 };
 }
 /* for tools/draft-level.mjs (tools/caravan-level.mjs is this level's own, older check; both must pass) */

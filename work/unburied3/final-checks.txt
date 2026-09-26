@@ -1,0 +1,50 @@
+
+> check
+> node tools/check.mjs unburied,boss-openings,boss-fight-end,arena-supplies,tells,mini-names,one-new-foe,elites,spawns,floaters,architecture,footing-art,checkpoint,audit,traps,killzones,deadends,signs,textfit,readability,shop-gates,store-preview,progression,class-spurs,hero-trials,reaper-input,ore-road,comments,homepaths,dangling-paths,ambush-reach,skins,small-adds,ability-poses,tower-ascent,mini-walls,deathknight-unlock
+
+ ok  syntax             0ms  0 files parse
+ ok  tells            484ms  the mark over every windup on the screen comes from this table (src/marks.js, 555 rows).
+ ok  hero-trials    26091ms  hero trials: all 7 heroes have a yard; the Warden's and the Geomancer's are played to the last gate
+ ok  ore-road        3295ms  all ore road checks pass
+ ok  comments         159ms  no swallowed code found.
+ ok  homepaths        184ms  ok  homepaths     488 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths   283ms  ok  dangling-paths 2140 tracked files, every repo path they cite resolves in a fresh clone (6 known holes list
+ ok  shop-gates       107ms  ok  shop-gates     15 store and hero gates, every one naming a real level of the 47 in src/level.js
+ ok  floaters        3410ms  2813 standing things checked (47 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  audit           4550ms  == caravan (578x40) clean
+ ok  content-audit   7767ms  21 things to look at.
+ ok  progression      130ms  Progression: all 181 node destinations, 36 legacy hero/version fixtures, exact refunds, preserved ownership, b
+ ok  progression-runtime 33763ms  Six heroes bought and equipped two skills (a third is refused) and cast slot two; touch, controller, rebinding
+ ok  reaper-input   20896ms  Full-blood tap casts equipped F skill, hold spends only Surge, and co-op inputs remain independent.
+ ok  traps           6431ms  1 trap to fix.
+ ok  signs           7688ms  no level says the same sentence on two signs (1 known).
+ ok  killzones       4843ms  no reachable tile kills a standing hero.
+ ok  elites          9905ms  40 elites. every elite can be fought and every gate it holds opens onto the route.
+ ok  spawns          3538ms  2340 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  deadends        6079ms  186 dead ends in 32 levels, and every one pays.
+ ok  checkpoints     7635ms  421 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  tower-ascent   24291ms  {"stoodAt":240,"armedOver":true,"done":true,"sealed":1,"cleared":0,"waited":true,"carpet":true,"active":true,"
+ ok  skins          16375ms  ok  roofs          38 houses: every roof picture sits on the slab you stand on.
+ ok  one-new-foe     3504ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  store-preview  39822ms  {"pixels":{"frames":156,"maxCanvases":26},"tabs":[{"pass":0,"tab":0,"ms":443.20000000298023,"canvases":139},{"
+ ok  readability      269ms  Scenery behind tiles, softened outline-free art, wall-grip feedback, 13 homes and two landmarks.
+ ok  boss-openings  63972ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":
+ ok  arena-supplies  4840ms  ok  arena-supplies  46 boss rooms, 13 height conditions scored against the ground their arenas actually offer;
+ ok  unburied        3179ms        NOT SEEN HERE: the map spur (Lane B), and the music as heard (its track is asserted above); the look is 
+ ok  unburied-fights   249ms  ok  unburied-fights the banner rule, the Barrow Rider, the Death Knight (and the benched Reaper), the bridges 
+ ok  ability-poses 206202ms  ability poses: 52 of 52 actives have a body of their own; known debt 0
+ ok  boss-fight-end206221ms  Every one of 46 boss and mini fights (32 bosses, 14 minis) ends when its boss dies.
+ ok  mini-names     58023ms  every mini has its own name (14 levels): kings=THE GREAT HOUND, hanging=THE WEAVER, spire=THE TEMPLE GUARDIAN,
+ ok  ambush-reach    3844ms  25 ambush rooms. every captain can be reached from where the room shuts.
+ ok  small-adds    197917ms  26 rows swung at small foes; 5 of 143 swings missed (3%); worst judged row 20% (limit 33%)
+ ok  checkpoint-gaps  9067ms  checkpoint-gaps  32 levels measured along their walked route; the longest run with no checkpoint outside the k
+ ok  architecture    3685ms  44 levels, 327 built pieces declared; 2 grandfathered (harbor, waymeet). everything that was built stands on s
+ ok  footing-art    64943ms  footing-art: every floor cell you can stand on is drawn, in 27 levels; painted by their own code: fields (fiel
+ ok  class-spurs    22231ms  Class-level side roads: walkable from their junction, shut until the parent level is beaten under its silver m
+ ok  mini-walls     83005ms  ok  mini-walls   sexton, gravewarden, hedgewarden, barrowrider: 6 seeded runs each, 30 s chased round the room
+ ok  checkpoint-stand  4681ms  ok  checkpoint-stand   421 checkpoints in 44 levels: every one stood at with a real jump (5 columns, not 6; 3 
+ ok  deathknight-unlock 20622ms  ok  deathknight-unlock  locked on a fresh save and on a clear; his death opens him (feat and gold route); owne
+ ok  textfit       224797ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-unburied3\audits\readability\textfit
+
+43 of 169 checks pass - A SUBSET (unburied, boss-openings, boss-fight-end, arena-supplies, tells, mini-names, one-new-foe, elites, spawns, floaters, architecture, footing-art, checkpoint, audit, traps, killzones, deadends, signs, textfit, readability, shop-gates, store-preview, progression, class-spurs, hero-trials, reaper-input, ore-road, comments, homepaths, dangling-paths, ambush-reach, skins, small-adds, ability-poses, tower-ascent, mini-walls, deathknight-unlock), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.

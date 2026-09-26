@@ -15,6 +15,7 @@
    discovered, not listed: any level that grows a skins table is covered the moment it does. */
 import assert from 'node:assert/strict';
 import { LEVELS, T } from '../src/level.js';
+import { UF } from '../src/unburied-field.js';
 
 let checked = 0, cells = 0;
 const report = [];
@@ -71,7 +72,8 @@ assert.deepEqual(bareKit, [], 'these levels name no palette dress, so they paint
   assert.ok(P.grass && P.grass !== '#5aa33e' && P.dirt && P.dirt !== '#7a5230', 'unburied: its ground wears the forest turf (palette.grass/dirt unset)');
   assert.ok(P.boneSoil && MAIN.includes('pal.boneSoil'), 'unburied: the dead are not in its soil');
   assert.ok(P.ledges && P.ledges !== 'log', 'unburied: its ledges are the wood\'s felled logs');
-  assert.ok((U.masonry || []).some(([a, b]) => a <= 320 && b >= 419), 'unburied: THE CHAPEL OF THE FALLEN ORDER is not laid in stone (L.masonry)');
+  { const [c0] = UF.SECTIONS.chapel;   /* the chapel's own columns (THE BROKEN BRIDGES moved it sixty east, 2026-09-25) */
+    assert.ok((U.masonry || []).some(([a, b]) => a <= c0 + 20 && b >= U.W - 1), 'unburied: THE CHAPEL OF THE FALLEN ORDER is not laid in stone (L.masonry)'); }
   const kinds = new Set((DRESS.unburied || []).map(d => d[0]));
   for (const k of ['fieldGrave', 'crookedCross', 'brokenSpears', 'stuckShield', 'fallenBanner', 'bones']) assert.ok(kinds.has(k), 'unburied: its dressing has no ' + k);
   console.log('ok  forest kit     ' + (LEVELS.length - FOREST_OWNS.size) + ' levels name their own dress; THE UNBURIED FIELD resolves its own sky, layers, ground, ledges, chapel stone and dressing.');
