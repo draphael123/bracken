@@ -3900,6 +3900,7 @@ function drawStore() {
     : tab.key === 'skin' ? skinPreview(k, true).R.idle[0]
     : tab.key === 'sword' ? weaponPreview(k, true).R.atk[1]
     : k.practice ? PORTAL_ICON : tab.talent ? treeIcon(treeNodes()[0]) : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
+    : k.active ? skillIcon(k.id)   /* EVERY HERO'S ABILITIES SHOW THEIR OWN ICON IN THE STORE (Daniel, 2026-09-26: "can the store have icons for the abilities") - it only knew the Pyromancer's set, so the rest showed a bolt */
     : PYRO_ICONS[k.id] ? PYRO_ICONS[k.id] : GEO_ICONS[k.id] ? GEO_ICONS[k.id]
     : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt;
   const lockedOf = k => (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat));
