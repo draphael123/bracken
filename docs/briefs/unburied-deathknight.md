@@ -44,9 +44,10 @@ The playable hero `reaper` as the boss: his own baked kit (`bakeReaper`) drawn a
 - The bot (`src/playtest.js`): dodge the Cleave when it commits, then swing at the stuck blade.
 
 ## 4. Unlock
-The shop's gold route for THE DEATH KNIGHT (800 coins; the silver price stays) opens on `PROG.unburied.dkDown`, set when he
-dies - not on clearing the level (`coinNeeds: 'unburied'` stays the level id the shop-gates check reads; `coinBoss: true` asks
-for the flag). A save that already owns him keeps him.
+THE DEATH KNIGHT is LOCKED in the shop (feat `boss:unburied`, "beat the Death Knight in the Unburied Field") until he dies in his
+own arena: his death sets `PROG.bossDown.unburied` (not the level clear, not a boss rush). Then both prices stand as they were - 10
+silver, or 800 gold (`coinBoss: true`: the gold route asks for the same flag). A save that already owns him keeps him.
+`tools/deathknight-unlock.mjs` proves it in the page; `tools/shop-gates.mjs` fails a `boss:` feat nothing sets.
 
 ## 5. The old boss to THE BENCH
 THE FIRST DEATH KNIGHT (the scythe, `t: 'deathknight'`) is renamed THE REAPER and benched (RULES section P): his code, sprite,
