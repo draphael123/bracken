@@ -1,7 +1,7 @@
 # claude/camera — the lane report (2026-09-26)
 
 Daniel's ask (from the review): "the levels should feel more polished and look better." This lane took the three
-game-wide items from `docs/look-and-feel/wood-to-highcrown.md` that are cheap and one number/formula at a time:
+game-wide items from `the look-and-feel review (branch claude/lookfeel)` that are cheap and one number/formula at a time:
 the camera's flat-ground foot line, the ground fill fading to dark by depth, and the two boss plates that sit on
 a fighter.
 
