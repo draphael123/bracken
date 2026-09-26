@@ -4,6 +4,7 @@
                       swept to its edge; the flooded road carries you out; an arm lying under it cannot be cut; a knell bell struck
                       pushes it back a section; it never takes the waystone at 583 */
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false });
 try {
@@ -62,13 +63,13 @@ try {
    for(const a of e.arms.slice())if(!a.severed){a.st='down';a.t=9;a.low=true;a.hp=1;a.ae.hp=1;BK.sim(1);BKT.hurtEnemy(a.ae,5,a.bx,false);}
    for(let i=0;i<600&&e.mode!=='stride2';i++)BK.sim(1);hush(e);stand(575*TS);
    e.T.ink=0;BK.sim(1);out.ink.told=e.inkTell>0&&!(e.inkT>0);
-   let f=0;while(!(e.inkT>0)&&f<200){BK.sim(1);f++;}out.ink.tellS=+(f/60).toFixed(2);
+   let f=0;while(!(e.inkT>0)&&f<200){BK.sim(1);f++;}out.ink.tellS=+(f/60).toFixed(2);if(!(e.inkT>0)){out.ink.never=true;}else{
    const own=()=>{const t=(Math.floor(P.x/TS)+0.5)*TS;return BK.krakInk().some(([a,b])=>t>=a&&t<=b);};
    const dark=()=>BK.krakInk().reduce((n,[a,b])=>n+(b-a),0);
    out.ink.width=Math.round(dark()/TS);let onOwn=own();
    /* he walks into the band: it still leaves his own tile lit */
    const mid=(e.inkBand[0]+e.inkBand[1])/2;stand(mid);BK.sim(1);onOwn=onOwn||own();out.ink.inBand=dark()>0;
-   let g=0;while(e.inkT>0&&g<600){for(const k in e.T)e.T[k]=999;BK.sim(1);g++;onOwn=onOwn||own();}out.ink.darkS=+((g+2)/60).toFixed(2);out.ink.onOwn=onOwn;}
+   let g=0;while(e.inkT>0&&g<600){for(const k in e.T)e.T[k]=999;BK.sim(1);g++;onOwn=onOwn||own();}out.ink.darkS=+((g+2)/60).toFixed(2);out.ink.onOwn=onOwn;}}
   return out;})()`);
   console.log(JSON.stringify(r));
   const T = r.tide;
@@ -100,10 +101,13 @@ try {
   assert(H.heldS > 1 && H.heldS <= 2.3, 'held ' + H.heldS + ' s: the grab is a stun-lock');
   assert(H.sweepS > 0.3 && H.sweepS <= 0.72, 'the low sweep takes ' + H.sweepS + ' s');
   const I = r.ink;
+  /* THE INK IS OFF (hotfix 2026-09-26, KRK_INK_ON in main.js: Daniel, 'the ink looks weird') - then it must never come; when it is back on, every rule below holds again */
+  const INK_ON = !/const KRK_INK_ON = false/.test(readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'));
+  if (!INK_ON) { assert.equal(I.stage1, false, 'ink in stage 1'); assert(I.never === true && !I.told, 'the ink is switched off but it still comes'); } else {
   assert.equal(I.stage1, false, 'ink in stage 1');
   assert(I.told && I.tellS >= 0.8, 'the ink is not told first (' + I.tellS + ' s)');
   assert(I.width >= 4 && I.inBand, 'the ink holds no band of road (' + I.width + ' tiles)');
   assert(I.darkS >= 3 && I.darkS <= 4.2, 'the ink lasts ' + I.darkS + ' s');
-  assert.equal(I.onOwn, false, "the ink covered the hero's own tile");
+  assert.equal(I.onOwn, false, "the ink covered the hero's own tile"); }
   console.log('The Kraken, reworked: the tide rises, sweeps, carries, hides his arms, and goes back to the bells; stage 2 has arms and ends in the maw; a cut left regrows; the look is caused; the tower bell once a stage; the sweep is quicker and the grab drags you seaward, escapably; stage 2 puts ink over the road, told, never on your own tile.');
 } finally { pg.close(); }

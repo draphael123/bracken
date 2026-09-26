@@ -556,8 +556,19 @@ function bakeFlameIcon() { const [c, g] = canvas(10, 12); g.fillStyle = '#ff6b2c
 const FLAME_ICON = bakeFlameIcon();
 const TONIC_ICON = (() => { const [c, q] = canvas(7, 9); q.fillStyle = '#c9d1dc'; q.fillRect(2, 0, 3, 3); q.fillStyle = '#c9463d'; q.fillRect(1, 3, 5, 5); q.fillRect(0, 4, 7, 3); q.fillStyle = '#ff9a9a'; q.fillRect(2, 4, 1, 2); return outline(c, '#1b1626'); })();
 // the pyromancer's five skills each get a picture of what they do, not the same flame five times
-const PIX_PAL = { o: '#ff6b2c', y: '#ffd36b', w: '#fff6c8', r: '#c9463d', R: '#8f2f28', d: '#1b1626', b: '#5c3a1d', s: '#7c8797' };
+const PIX_PAL = { o: '#ff6b2c', y: '#ffd36b', w: '#fff6c8', r: '#c9463d', R: '#8f2f28', d: '#1b1626', b: '#5c3a1d', s: '#7c8797', g: '#a8a696', n: '#7c7a6e', k: '#5e5c54', m: '#6f9a4a', a: '#e8a83a' };   /* g n k m a: stone light/base/dark, moss, rune amber (the Geomancer's icons) */
 function pixIcon(rows) { const [c, g] = canvas(rows[0].length, rows.length); rows.forEach((row, y) => [...row].forEach((ch, x) => { if (PIX_PAL[ch]) { g.fillStyle = PIX_PAL[ch]; g.fillRect(x, y, 1, 1); } })); return outline(c, '#1b1626'); }
+const GEO_ICONS = {   /* THE GEOMANCER'S OWN: stone, moss and her amber runes (Daniel, 2026-09-26: "the geomancer's spell icons use the pyromancer's logo" - her abilities fell through skillIcon to FLAME_ICON) */
+  stoneStep: pixIcon(['..........', '......a...', '.....aaa..', '......a...', '.....gggg.', '.....nnnk.', '..gggnnnk.', '..nnnnnnk.', '..nnnnnnk.', '..kkkkkkk.', '..........', '..........']),
+  boulder: pixIcon(['..........', '....ggg...', '...gnnnk..', '..gnnnnnk.', 's.gnnknnk.', '..gnnnnnk.', 's.gnnnnnk.', '...knnnk..', '....kkk...', '..........', 'bbbbbbbbbb', '..........']),
+  spikeRow: pixIcon(['..........', '..........', '.g...g....', '.gn..gn..g', '.gn..gn..g', 'gnnkgnnkgn', 'gnnkgnnkgn', 'gnnkgnnkgn', 'bbbbbbbbbb', 'bbbbbbbbbb', '..........', '..........']),
+  archway: pixIcon(['..........', '..gggggg..', '.gnnnnnnk.', '.gnk..gnk.', '.gnk..gnk.', '.gnk..gnk.', '.gnk..gnk.', '.gnk..gnk.', '.gnk..gnk.', 'bbbbbbbbbb', '..........', '..........']),
+  stoneWall: pixIcon(['..........', '.gggggggg.', '.nnnknnnk.', '.kkkkkkkk.', '.nknnnknn.', '.kkkkkkkk.', '.nnnknnnk.', '.kkkkkkkk.', '.nknnnknn.', 'bbbbbbbbbb', '..........', '..........']),
+  entomb: pixIcon(['..........', '..gggggg..', '.gnnnnnnk.', '.gnddnddk.', '.gnnnnnnk.', '.gnnkknnk.', '.gnnnnnnk.', '.gnnnnnnk.', '.kkkkkkkk.', '..........', '..........', '..........']),
+  faultLine: pixIcon(['..........', '..........', '........g.', '.......gnk', '.......gnk', '.......gnk', 'gggggggnnk', 'nndnnndnnn', 'nnndnddnnk', 'kkkkdkkkkk', '..........', '..........']),
+  golem: pixIcon(['...gggg...', '..gnnnnk..', '..gnanak..', '..gnnnnk..', '.ggnnnnkk.', 'gnnnnnnnnk', 'gn.gnnk.nk', '...gnnk...', '...gk.gk..', '..ggk.ggk.', '..........', '..........']),
+  avalanche: pixIcon(['.g....g...', 'gnk..gnk..', '.k....k.g.', '...g....gn', '..gnk....k', '...k..g...', '.g...gnk..', 'gnk...k...', '.k........', 'bbbbbbbbbb', '..........', '..........']),
+};
 const PYRO_ICONS = {
   fireWall: pixIcon(['....o.....', '....o.....', '.o..oo..o.', '.oo.oyo.o.', 'oyo.oyo.oo', 'oyooyyooyo', 'oyyoyyoyyo', 'oywyywyywo', 'oyyyyyyyyo', 'ssssssssss', 'bbbbbbbbbb', '..........']),
   cinderStep: pixIcon(['..........', '......oo..', '.....oyyo.', '....oywyyo', 'yy..oywwyo', '...oyywyo.', 'oo.oyyyo..', '..oyyoo...', 'yyoo......', '.o..o.....', '...o......', '..........']),
@@ -601,7 +612,7 @@ const MORE_ICONS = {
 // the new actives borrow the icon of their nearest kin: a flame on a Reaper's tree reads as a bug
 const SKILL_KIN = { harvestMoon: 'scytheThrown', gravecall: 'graveTide', broadside: 'grapeshot', blackSpot: 'grapeshot', keelhaul: 'boarding',
   skewer: 'lightLance', setSpears: 'graveTide', harrier: 'boarding' };   /* a lance, a row of points out of the floor, and a leap: the nearest kin each of hers has */
-const skillIcon = k => k === 'groundSlam' ? SLAM_ICON : k === 'shieldThrow' ? SHIELD_ICON : k === 'risingCut' ? RISE_ICON : PYRO_ICONS[k] || PAL_ICONS[k] || MORE_ICONS[k] || MORE_ICONS[SKILL_KIN[k]] || FLAME_ICON;
+const skillIcon = k => k === 'groundSlam' ? SLAM_ICON : k === 'shieldThrow' ? SHIELD_ICON : k === 'risingCut' ? RISE_ICON : PYRO_ICONS[k] || GEO_ICONS[k] || PAL_ICONS[k] || MORE_ICONS[k] || MORE_ICONS[SKILL_KIN[k]] || FLAME_ICON;
 let wisp = null; // the pyromancer's flame familiar
 let meteors = [], fireRings = [], lanceBeams = [], moons = []; // METEOR, RING OF FIRE, SPEAR OF LIGHT in flight, and the HARVEST MOON standing where he planted it
 function updateSkillFx(dt) {
@@ -3889,7 +3900,7 @@ function drawStore() {
     : tab.key === 'skin' ? skinPreview(k, true).R.idle[0]
     : tab.key === 'sword' ? weaponPreview(k, true).R.atk[1]
     : k.practice ? PORTAL_ICON : tab.talent ? treeIcon(treeNodes()[0]) : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
-    : PYRO_ICONS[k.id] ? PYRO_ICONS[k.id]
+    : PYRO_ICONS[k.id] ? PYRO_ICONS[k.id] : GEO_ICONS[k.id] ? GEO_ICONS[k.id]
     : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt;
   const lockedOf = k => (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat));
   items.forEach((k, i) => {
@@ -11647,6 +11658,7 @@ const KRK_TIDE_PUSH = 150;   /* px/s: the current on flooded road, carrying you 
    tiles wide, on his side of you if there is room - goes dark for KRK_INK_DARK. It NEVER holds the hero's own tile: wherever you stand,
    the tile under you and one each side are left lit (krakenInkSpans cuts them out every frame). It does no harm of itself; it hides his
    arms. The marks of his blows are drawn over it, so a told blow still shows through. */
+const KRK_INK_ON = false;   /* HOTFIX (Daniel, 2026-09-26: "the Kraken's ink looks weird"): off until it is redesigned */
 const KRK_INK_EVERY = 13;
 const KRK_INK_TELL = 1.1;
 const KRK_INK_DARK = 3.5;
@@ -11662,7 +11674,7 @@ function krakenInkTick(e, dt) {
   if (e.inkTell > 0) { e.inkTell -= dt;
     if (Math.random() < dt * 30) { const m = krakenMouth(e); parts.push({ x: m.x + (Math.random() - 0.5) * 16, y: m.y + (Math.random() - 0.5) * 8, vx: (Math.random() - 0.5) * 20, vy: -10 - Math.random() * 20, life: 0.5, max: 0.5, col: Math.random() < 0.7 ? '#140c1c' : '#3a2a4a', size: 2, grav: 0 }); }
     if (e.inkTell <= 0) { e.inkT = KRK_INK_DARK; e.inks = (e.inks || 0) + 1; SFX.splash(); SFX.hiss(); } return; }
-  if (!(e.inkT > 0) && e.T.ink <= 0 && e.mode === 'stride2' && !P.dead) { e.T.ink = KRK_INK_EVERY; e.inkTell = KRK_INK_TELL;
+  if (KRK_INK_ON && !(e.inkT > 0) && e.T.ink <= 0 && e.mode === 'stride2' && !P.dead) { e.T.ink = KRK_INK_EVERY; e.inkTell = KRK_INK_TELL;
     let x0 = P.x + 1.5 * TS; if (x0 + KRK_INK_W > A.x1) { x0 = P.x - 1.5 * TS - KRK_INK_W; }   /* his side of you if there is room, else yours */
     x0 = Math.max(A.x0, Math.min(A.x1 - KRK_INK_W, x0)); e.inkBand = [x0, x0 + KRK_INK_W];
     number((x0 + x0 + KRK_INK_W) / 2, A.floor - 60, 'INK', '#b9a6e0'); SFX.gutter(); SFX.hiss(); }
