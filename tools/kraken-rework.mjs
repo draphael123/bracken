@@ -52,6 +52,7 @@ try {
   {const e=boot(),A=BK.L.arena,fl=A.floor,P=BK.P;out.hit={};
    const a=e.arms.find(q=>!q.severed&&q.st==='idle');const hold=()=>{hush(e);stand(576*TS+8);P.st=P.maxSt||100;e.armI=a.i;a.st='hold';a.low=true;e.mode='held';e.modeT=2.2;e.grip=5;};
    hold();const x0=P.x;BK.sim(30);out.hit.dragged=Math.round(P.x-x0);
+   /* seaward of the arm that has you, it still drags you on out to sea - not back to the arm */hold();P.x=a.bx+40;const x1=P.x;BK.sim(30);out.hit.draggedPast=Math.round(P.x-x1);
    hold();BK.sim(1);BK.press('dodge');BK.sim(3);out.hit.rolled=e.mode!=='held';
    hold();let f=0;for(;f<300&&e.mode==='held';f++)BK.sim(1);out.hit.heldS=+(f/60).toFixed(2);
    hush(e);stand(569*TS+8);P.y=20*TS;/* up on the tower, out of its way: a sweep that lands stops the world a beat */const b=e.arms.find(q=>!q.severed&&q.st==='idle');e.armI=b.i;b.st='lower';e.sweepFrom=A.x0+20;e.sweepTo=A.x1-20;e.mode='sweepTell';e.modeT=0;for(let i=0;i<30&&e.mode!=='sweep';i++)BK.sim(1);let n=0;while(e.mode==='sweep'&&n<200){BK.sim(1);n++;}out.hit.sweepS=+(n/60).toFixed(2);}
@@ -81,6 +82,7 @@ try {
   assert(O.cutOne === 1 && O.back === 2, 'in the maw a cut arm does not come back');
   const H = r.hit;
   assert(H.dragged > 20, 'the grab does not drag you toward the sea (' + H.dragged + ' px)');
+  assert(H.draggedPast > 20, 'seaward of the arm, the grab drags you back to it, not toward the sea (' + H.draggedPast + ' px)');
   assert(H.rolled, 'a dodge does not roll you out of his grip');
   assert(H.heldS > 1 && H.heldS <= 2.3, 'held ' + H.heldS + ' s: the grab is a stun-lock');
   assert(H.sweepS > 0.3 && H.sweepS <= 0.72, 'the low sweep takes ' + H.sweepS + ' s');
