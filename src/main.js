@@ -11607,6 +11607,32 @@ const KRK_TIDE_AT = [610, 601, 591, 584];
 const KRK_TIDE_EVERY = [0, 15, 12, 10];
 const KRK_TIDE_WARN = 2.4;
 const KRK_TIDE_PUSH = 150;   /* px/s: the current on flooded road, carrying you out to its edge */
+/* ================= THE INK (Daniel, 2026-09-25: stage 2) =================
+   Out at the second stage he puts ink over part of the road. TOLD first: the ink gathers black at his mouth with a gurgle and a hiss,
+   INK stands over the stretch it will take and two dark edges mark it (KRK_INK_TELL); then that band of the road - full height, a few
+   tiles wide, on his side of you if there is room - goes dark for KRK_INK_DARK. It NEVER holds the hero's own tile: wherever you stand,
+   the tile under you and one each side are left lit (krakenInkSpans cuts them out every frame). It does no harm of itself; it hides his
+   arms. The marks of his blows are drawn over it, so a told blow still shows through. */
+const KRK_INK_EVERY = 13;
+const KRK_INK_TELL = 1.1;
+const KRK_INK_DARK = 3.5;
+const KRK_INK_W = 7 * TS;
+/* the stretches of road the ink holds this frame, in world x: the band, less the hero's own tile and one each side */
+function krakenInkSpans(e) {
+  if (!e || !(e.inkT > 0) || !e.inkBand) return [];
+  const [b0, b1] = e.inkBand, h0 = (Math.floor(P.x / TS) - 1) * TS, h1 = h0 + 3 * TS;
+  return [[b0, Math.min(b1, h0)], [Math.max(b0, h1), b1]].filter(([a, b]) => b - a > 1); }
+function krakenInkTick(e, dt) {
+  const A = L.arena;
+  if (e.stage !== 2 || e.mode === 'rise1' || e.mode === 'rise2') { e.inkTell = 0; return; }
+  if (e.inkTell > 0) { e.inkTell -= dt;
+    if (Math.random() < dt * 30) { const m = krakenMouth(e); parts.push({ x: m.x + (Math.random() - 0.5) * 16, y: m.y + (Math.random() - 0.5) * 8, vx: (Math.random() - 0.5) * 20, vy: -10 - Math.random() * 20, life: 0.5, max: 0.5, col: Math.random() < 0.7 ? '#140c1c' : '#3a2a4a', size: 2, grav: 0 }); }
+    if (e.inkTell <= 0) { e.inkT = KRK_INK_DARK; e.inks = (e.inks || 0) + 1; SFX.splash(); SFX.hiss(); } return; }
+  if (!(e.inkT > 0) && e.T.ink <= 0 && e.mode === 'stride2' && !P.dead) { e.T.ink = KRK_INK_EVERY; e.inkTell = KRK_INK_TELL;
+    let x0 = P.x + 1.5 * TS; if (x0 + KRK_INK_W > A.x1) { x0 = P.x - 1.5 * TS - KRK_INK_W; }   /* his side of you if there is room, else yours */
+    x0 = Math.max(A.x0, Math.min(A.x1 - KRK_INK_W, x0)); e.inkBand = [x0, x0 + KRK_INK_W];
+    number((x0 + x0 + KRK_INK_W) / 2, A.floor - 60, 'INK', '#b9a6e0'); SFX.gutter(); SFX.hiss(); }
+}
 const krakenTideLine = e => KRK_TIDE_AT[Math.max(0, Math.min(3, (e && e.tideN) || 0))] * TS;
 /* a spot on the road the tide has: seaward of its line and down on the stones (y left out: anywhere on that stretch) */
 const krakenFlooded = (e, x, y) => !!e && (e.tideN || 0) > 0 && x >= krakenTideLine(e) && (y === undefined || y > L.arena.floor - 12);
@@ -11811,7 +11837,7 @@ function updateKraken(e, dt) {
   const pick = arr => arr.slice().sort((a, b) => near(a) - near(b))[0], onRoad = P.y > fl - 20;
   if (e.inkT > 0) e.inkT -= dt;
   /* THE TURNS OF THE FIGHT */
-  if (e.stage === 1 && e.mode !== 'wake' && e.mode !== 'emerge' && e.arms.every(a => a.st === 'gone')) { e.mode = 'rise1'; e.modeT = 3.6; e.stage = 2; e.turnAt = [e.fightT]; e.phase = 2; krakenTideClear(e, KRK_TIDE_EVERY[2] + 4); e.hp = Math.min(e.hp, e.stageFloor); e.stageFloor = Math.round(e.maxHp * KRK_MAW_AT); e.back = 'stride2'; }
+  if (e.stage === 1 && e.mode !== 'wake' && e.mode !== 'emerge' && e.arms.every(a => a.st === 'gone')) { e.mode = 'rise1'; e.modeT = 3.6; e.stage = 2; e.turnAt = [e.fightT]; e.phase = 2; krakenTideClear(e, KRK_TIDE_EVERY[2] + 4); e.T.ink = KRK_INK_EVERY * 0.6; e.inkTell = 0; e.hp = Math.min(e.hp, e.stageFloor); e.stageFloor = Math.round(e.maxHp * KRK_MAW_AT); e.back = 'stride2'; }
   if (e.stage === 2 && e.hp <= e.stageFloor && e.mode !== 'rise1' && e.mode !== 'rise2') { krakenTideOut(e); (e.turnAt = e.turnAt || []).push(e.fightT); e.mode = 'rise2'; e.modeT = 3.8; e.stage = 3; e.phase = 3; e.stageFloor = 0; e.back = 'stride3'; }
   /* THE CARGO ARRIVES ON ITS OWN CLOCK, NOT ON HIS. Whatever he happens to be doing - arms on the road, out in the far water, up for
      air, up out of the drain - the flood is still running landward over the wreck field and still laying cargo on the stones. That is
@@ -12023,7 +12049,7 @@ function updateKraken(e, dt) {
   e.far += ((e.farWant || 0) - e.far) * Math.min(1, dt * (e.farWant > e.far ? 1.2 : 2));
   /* A BREAK FILLED TO THE BRIM by its jet or its spout: the sea stands at the road's edge a moment, and runs landward with a swimmer in it */
   if (e.stage === 2) { if (e.mode === 'jet' || e.mode === 'jetTell') { e.seaWant = fl - 18; } else if (e.brimT > 0) { e.brimT -= dt; e.seaWant = fl + 3; if (sea) sea.flow = P.swim ? -90 : 0; } else if (e.mode !== 'rise2') { e.seaWant = fl + 2 * TS; if (sea && sea.flow) sea.flow = 0; } }
-  krakenCargoTick(e, dt); krakenTideTick(e, dt);
+  krakenCargoTick(e, dt); krakenTideTick(e, dt); krakenInkTick(e, dt);
   e.seaY += (e.seaWant - e.seaY) * Math.min(1, dt * 2.2); if (sea) poolLevel(sea, e.seaY);
   e.near += ((e.nearWant || 0) - e.near) * Math.min(1, dt * (e.nearWant > e.near ? 2.5 : 3));
   e.lurk += ((e.lurkWant || 0) - e.lurk) * Math.min(1, dt * (e.lurkWant > e.lurk ? 1.5 : 3));
@@ -12233,6 +12259,13 @@ function drawCauseOverlay(cx, cy) {
       text({ low: 'LOW WATER', warn: 'THE TIDE COMES', rise: 'RISING', high: 'HIGH WATER', ebb: 'IT TURNS', fall: 'FALLING' }[CT.ph], VW / 2, y + 3, warn ? '#ffd36b' : '#dff0f5', 'center', 6); } }
   const e = boss; if (!e || e.t !== 'kraken' || !e.arms || !L.arena) return;
   const A = L.arena, fl = A.floor, fy = Math.round(fl - cy), pulse = 0.5 + 0.5 * Math.sin(time * 20);
+  /* THE INK: the band it holds, dark to the top of the screen, less the hero's own tile; and while it gathers, the band's two edges */
+  if (e.alive && e.inkT > 0) { const k = Math.min(1, (KRK_INK_DARK - e.inkT) / 0.3, e.inkT / 0.4);
+    for (const [a, b] of krakenInkSpans(e)) { const x0 = Math.round(a - cx), w = Math.round(b - a);
+      g.fillStyle = 'rgba(12,7,18,' + (0.93 * k).toFixed(2) + ')'; g.fillRect(x0, 0, w, VH);
+      g.fillStyle = 'rgba(12,7,18,' + (0.45 * k).toFixed(2) + ')'; g.fillRect(x0 - 3, 0, 3, VH); g.fillRect(x0 + w, 0, 3, VH); } }
+  if (e.alive && e.inkTell > 0 && e.inkBand) { g.globalAlpha = 0.35 + 0.4 * pulse; g.fillStyle = '#140c1c';
+    for (const x of e.inkBand) g.fillRect(Math.round(x - cx) - 2, 0, 4, VH); g.globalAlpha = 1; }
   /* THE TIDE ON THE ROAD: the sea over the stones seaward of its line, broken white at the front; while the bells toll, a foam line and a
      pale band where it will stand; and the surge, a curl of white running landward over the section it takes */
   if (e.alive) { const tx = e.tideShow || A.x1;
@@ -12244,8 +12277,6 @@ function drawCauseOverlay(cx, cy) {
       g.globalAlpha = 0.12 + 0.14 * pulse * k; g.fillStyle = '#bfe6f5'; g.fillRect(sx, fy - 8, Math.max(0, Math.round(tx - nx)), 8);
       g.globalAlpha = 0.5 + 0.45 * pulse; g.fillStyle = '#f4fbff'; g.fillRect(sx - 1, fy - 22, 2, 22); for (let x = nx; x < tx; x += 12) g.fillRect(Math.round(x - cx + Math.sin(time * 3 + x) * 2), fy - 9, 8, 2); g.globalAlpha = 1; }
     if (e.tideSurge) { const c = krkArt().breaker[Math.floor(time * 10) % 3]; g.drawImage(c, Math.round(e.tideSurge.x - cx) - 10, fy - c.height + 3); } }
-  if (e.alive && e.inkT > 0) { const k = Math.min(1, e.inkT / 0.6, (6.5 - e.inkT) / 0.5 + 0.1), px0 = Math.round(P.x - cx), py0 = Math.round(P.y - 10 - cy), gr = g.createRadialGradient(px0, py0, 30, px0, py0, 80);
-    gr.addColorStop(0, 'rgba(10,6,14,0)'); gr.addColorStop(1, 'rgba(10,6,14,' + (0.94 * k).toFixed(2) + ')'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }   /* THE INK: the dark comes over the road, and only what is near you is lit */
   if (!e.alive) return;
   const dash = (x0, x1, y, col) => { g.globalAlpha = 0.35 + 0.45 * pulse; g.strokeStyle = col; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(Math.round(x0 - cx), y); g.lineTo(Math.round(x1 - cx), y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; };
   const ring = (x, y, rx, ry, col) => { g.globalAlpha = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(time * 10)); g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(x - cx), Math.round(y - cy), rx, ry, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; };
@@ -25684,7 +25715,7 @@ setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now
 loadLevel(0);
 document.getElementById('boot').remove();
 window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.ballast = pr; pr.state = 'held'; pr.hpWas = P.hp; } }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id) }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
-  xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false), krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
+  xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
