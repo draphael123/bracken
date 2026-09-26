@@ -879,6 +879,13 @@ async function runbossLab(BK, opts) {
          things its marks are drawn from) - cut the arms where they lie, get up out of the surge, ring the bell while it breathes,
          and stand behind a waystone for the spear */
       if (KA) { goal = KA.goal; if (KA.up) k.up = true;
+        /* WHERE EACH HERO'S OWN BLOW LANDS (2026-09-25): the advice points at the thing - an arm lying on the road, a crate, a chest, the pinned
+           spear - and the lab stands this hero off it by its own reach (LAB_STAND). The warden's point lands 38 out: stood ON a crate she swung
+           over it, and the first pilot had her 90 s on the four arms the knight cut in 28. A CHEST is struck from the landward side only (it
+           has to go out to him), and the swing waits until the hero is there. */
+        const stand = (LAB_STAND[h] || 12) - 4, far = (LAB_STAND[h] || 12) >= 18;   /* (only the heroes whose blow lands further out than a stride: the knight's cut from on top of an arm was already right) */
+        if (far && KA.strike !== null && KA.kind === 'arm') { const s = Math.sign(KA.strike - P.x) || P.face || 1; goal = KA.strike - s * stand; }
+        if (KA.kind === 'chest') { goal = KA.strike - Math.max(13, stand); if (Math.abs(goal - P.x) > 7) KA.strike = null; }
         if (KA.block && SHIELDED(h)) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face; k.block = true; if (h === 'paladin') holdC = f + 30; }   /* the snap the shield turns: a shielded hero takes it on the shield */
         if (KA.dodge && f % 6 === 0) { k.left = KA.dodgeDir < 0; k.right = KA.dodgeDir > 0; BK.press('dodge'); }   /* a blow that has chosen you is rolled through */ if (KA.jump && (P.ground || (P.swim && f % 10 === 0))) { BK.press('jump'); k.jump = true; } else if (KA.hold && P.vy < 0) k.jump = true;   /* a climb the Kraken's advice asks for is held while it rises: let go and it is a hop */ if (KA.mash && f % 3 === 0) BK.press(f % 6 ? 'atk' : 'jump');
         if (KA.climb && P.ground && Math.abs(P.vx) < 8 && goal !== null && Math.abs(goal - P.x) > 6 && f % 8 === 0) BK.press('jump');

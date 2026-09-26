@@ -11954,7 +11954,7 @@ const krakenBarName = b => b.stage === 1 ? 'THE KRAKEN  ' + b.arms.filter(a => a
 // FOR THE BOSS LAB: what a player standing here can see coming, and what is open. It reads the same things the marks are drawn from.
 function krakenAdvice() {
   const e = boss; if (!e || e.t !== 'kraken' || !e.alive || !L.arena || !e.arms) return null;
-  const A = L.arena, fl = A.floor, o = { goal: null, strike: null, jump: false, mash: false, climb: false, mode: e.mode, stage: e.stage };
+  const A = L.arena, fl = A.floor, o = { goal: null, strike: null, jump: false, mash: false, climb: false, mode: e.mode, stage: e.stage, kind: null };   /* kind: what the strike is at (arm, spear, crate, chest, bell), so the lab stands each hero where its own blow lands */
   const beak = e.headX - 46, plinth = (A.plinth[0] + A.plinth[1]) / 2;
   if (e.mode === 'held') { o.mash = true; return o; }
   if (e.mode === 'sweep' || (e.mode === 'sweepTell' && e.modeT < 0.2)) { const a = e.arms[e.armI], tip = e.mode === 'sweep' ? a.tx : e.sweepFrom, dir = Math.sign(e.sweepTo - e.sweepFrom); if ((P.x - tip) * dir > -4 && Math.abs(P.x - tip) < 70) o.jump = true; }
@@ -11992,19 +11992,19 @@ function krakenAdvice() {
   else if (e.mode === 'lungeTell' || e.mode === 'lunge') { const s = A.stones.filter(q => q < beak).reduce((m, q) => Math.max(m, q), -1); o.goal = s > 0 ? Math.min(P.x, s - 30) : A.x0 + 30; }
   else if (e.mode === 'rollTell' || e.mode === 'roll') o.goal = A.x0 + 60;
   if (o.goal === null && !o.jump) {
-    if ((e.mode === 'stuck' || e.mode === 'recover') && e.arms.some(q => q.spear && q.low)) { const a = e.arms.find(q => q.spear); o.goal = a.tx - 10; o.strike = a.tx + 8; o.climb = true; }   /* PINNED: the spear where it went into the stone - hop the stone to it */
+    if ((e.mode === 'stuck' || e.mode === 'recover') && e.arms.some(q => q.spear && q.low)) { const a = e.arms.find(q => q.spear); o.goal = a.tx - 10; o.strike = a.tx + 8; o.climb = true; o.kind = 'spear'; }   /* PINNED: the spear where it went into the stone - hop the stone to it */
     else if (e.arms.some(a => a.low && a.st !== 'sweep' && a.st !== 'spear' && !krkLost(a))) { const a = e.arms.filter(q => q.low && q.st !== 'sweep' && q.st !== 'spear' && !krkLost(q)).sort((p, q) => Math.abs(p.tx - P.x) - Math.abs(q.tx - P.x))[0];
-      const x0 = Math.min(a.tx, a.bx) + 8, x1 = Math.max(a.tx, a.bx) - 8, sx = Math.max(x0, Math.min(x1, P.x)); o.goal = sx; o.strike = sx; }
+      const x0 = Math.min(a.tx, a.bx) + 8, x1 = Math.max(a.tx, a.bx) - 8, sx = Math.max(x0, Math.min(x1, P.x)); o.goal = sx; o.strike = sx; o.kind = 'arm'; }
     else if (krakenBreathing(e) && (e.cargo || []).some(q => q.k === 'chest' && q.st === 'rest' && q.x < e.headX - 90 && q.x > e.headX - 300 && Math.abs(q.x - P.x) < 150)) {   /* A CHEST TO KNOCK INTO ITS FACE: behind it, and strike */
-      const ch = e.cargo.filter(q => q.k === 'chest' && q.st === 'rest' && q.x < e.headX - 90).sort((p, q) => Math.abs(p.x - P.x) - Math.abs(q.x - P.x))[0]; o.goal = ch.x - 13; if (Math.abs(ch.x - 13 - P.x) < 7) o.strike = ch.x; }
+      const ch = e.cargo.filter(q => q.k === 'chest' && q.st === 'rest' && q.x < e.headX - 90).sort((p, q) => Math.abs(p.x - P.x) - Math.abs(q.x - P.x))[0]; o.goal = ch.x - 13; o.kind = 'chest'; o.strike = ch.x; }
     else if (krakenBreathing(e)) { const bell = props.filter(q => q.t === 'knell').sort((p, q) => Math.abs(p.x - P.x) - Math.abs(q.x - P.x))[0], bx = bell ? bell.x : A.tower;
-      o.goal = bx + 4; o.climb = Math.abs(P.x - bx) < 80; if (P.y < fl - 30 && Math.abs(P.x - bx) < 30) o.strike = bx; }
+      o.goal = bx + 4; o.kind = 'bell'; o.climb = Math.abs(P.x - bx) < 80; if (P.y < fl - 30 && Math.abs(P.x - bx) < 30) o.strike = bx; }
     else if (e.stage === 3) o.goal = A.stones[A.stones.length - 1] - 36;
     /* THE CARGO, whenever nothing better is open. This is the second stage's own verb now: go to the nearest crate and break it, and
        what is left of it goes back into whatever of him is in reach - an arm on the road, the head if it is up, the far water if he
        is out in it. (BK.krakCargo(false) takes this branch away, and that is the run the crate route has to beat.) */
     else if (e.stage === 2 && KRK_CARGO && krakenCargoPays(e) && (e.crates || []).length) { const k = e.crates.slice().sort((p, q) => Math.abs(p.c * TS + 8 - P.x) - Math.abs(q.c * TS + 8 - P.x))[0], kx = k.c * TS + 8;
-      o.goal = kx + (P.x < kx ? -14 : 14); o.strike = kx; }
+      o.goal = kx + (P.x < kx ? -14 : 14); o.strike = kx; o.kind = 'crate'; }
     else if (e.stage === 2 && (e.far || 0) > 0.2) { const onStone = x => L.grid[Math.floor(fl / TS) * LW + Math.floor(x / TS)] !== T.AIR; o.goal = onStone(P.x) ? P.x : plinth - 40; }   /* out at sea: keep your feet on the road and wait for its water */
     else if (e.stage === 2) { const a = e.arms.filter(q => q.two && !krkLost(q)).sort((p, q) => Math.abs(p.bx - P.x) - Math.abs(q.bx - P.x))[0]; o.goal = a ? a.bx + (a.bx < (A.x0 + A.x1) / 2 ? 50 : -50) : plinth - 40; }
     else o.goal = (A.x0 + A.x1) / 2;
