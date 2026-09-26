@@ -10866,17 +10866,21 @@ function updatePiece(e, dt) {
 /* THE BROOM: it bobs round you, tips back for a beat, and rams */
 function updateBroom(e, dt) {
   e.modeT -= dt; e.cd = (e.cd || 0) - dt; if (e.hx === undefined) { e.hx = e.x; e.hy = e.y; }
+  /* HOTFIX (Daniel, 2026-09-26: 'the brooms chase too long and can go through platforms'): a LEASH - after 5 s on your tail, or 260 px from home, a broom gives up for 3 s and flies home; and a broom never flies into rock or a board (below) */
+  const P_near = !P.dead && Math.abs(P.x - e.x) < 200; if (P_near && !(e.giveUp > 0)) e.chaseT = (e.chaseT || 0) + dt; else e.chaseT = Math.max(0, (e.chaseT || 0) - dt);
+  if (e.chaseT > 5 || Math.abs(e.x - e.hx) > 260) { e.giveUp = 3; e.chaseT = 0; } e.giveUp = Math.max(0, (e.giveUp || 0) - dt);
+  const bBlock = (x, y) => { const t = tileAt(Math.floor(x / TS), Math.floor(y / TS)); return isSolid(Math.floor(x / TS), Math.floor(y / TS)) || t === T.ONEWAY || t === T.PLANK; };
   const d = P.x - e.x, ad = Math.abs(d), dy = (P.y - 10) - e.y;
   if (e.sweep && sweepBroom(e, dt, d, ad)) return;
   switch (e.mode) {
     case 'dashTell': e.vx *= Math.pow(0.05, dt); e.vy *= Math.pow(0.05, dt); if (e.modeT <= 0) { e.mode = 'dash'; e.modeT = 0.5; const dd = Math.hypot(d, dy) || 1; e.vx = d / dd * 260; e.vy = dy / dd * 260; e.hitP = false; SFX.throwWhoosh(); } break;
-    case 'dash': e.x += e.vx * dt; e.y += e.vy * dt; if (!e.hitP && !P.dead && Math.abs(P.x - e.x) < 12 && Math.abs((P.y - 8) - e.y) < 14) { e.hitP = true; const res = damagePlayer(e.x, DMG.broom); if (res !== 'blocked') { P.vx += Math.sign(e.vx) * 120; } else { e.vx = -e.vx * 0.6; e.stagger = 0.6; } }
+    case 'dash': { const ox = e.x, oy = e.y; e.x += e.vx * dt; e.y += e.vy * dt; if (bBlock(e.x, e.y)) { e.x = ox; e.y = oy; e.modeT = 0; } } if (!e.hitP && !P.dead && Math.abs(P.x - e.x) < 12 && Math.abs((P.y - 8) - e.y) < 14) { e.hitP = true; const res = damagePlayer(e.x, DMG.broom); if (res !== 'blocked') { P.vx += Math.sign(e.vx) * 120; } else { e.vx = -e.vx * 0.6; e.stagger = 0.6; } }
       if (e.modeT <= 0 || isSolid(Math.floor((e.x + Math.sign(e.vx) * 6) / TS), Math.floor(e.y / TS))) { e.mode = 'fly'; e.cd = 1.8; } break;
     default: e.mode = 'fly';
-      { const tx = !P.dead && ad < 200 ? P.x - Math.sign(d) * 40 : e.hx, ty = !P.dead && ad < 200 ? P.y - 30 + Math.sin(e.anim * 3) * 8 : e.hy + Math.sin(e.anim * 2) * 4;
-        e.vx += ((tx - e.x) * 2.2 - e.vx) * Math.min(1, dt * 3); e.vy += ((ty - e.y) * 2.2 - e.vy) * Math.min(1, dt * 3); e.vx = Math.max(-110, Math.min(110, e.vx)); e.vy = Math.max(-90, Math.min(90, e.vy)); e.x += e.vx * dt; e.y += e.vy * dt; e.face = Math.sign(d) || e.face; }
+      { const chase = !P.dead && ad < 200 && !(e.giveUp > 0), tx = chase ? P.x - Math.sign(d) * 40 : e.hx, ty = chase ? P.y - 30 + Math.sin(e.anim * 3) * 8 : e.hy + Math.sin(e.anim * 2) * 4;
+        e.vx += ((tx - e.x) * 2.2 - e.vx) * Math.min(1, dt * 3); e.vy += ((ty - e.y) * 2.2 - e.vy) * Math.min(1, dt * 3); e.vx = Math.max(-110, Math.min(110, e.vx)); e.vy = Math.max(-90, Math.min(90, e.vy)); { const ox = e.x, oy = e.y; e.x += e.vx * dt; if (bBlock(e.x, e.y - 4)) { e.x = ox; e.vx = 0; } e.y += e.vy * dt; if (bBlock(e.x, e.y - 4) || bBlock(e.x, e.y + 4)) { e.y = oy; e.vy = 0; } } e.face = Math.sign(d) || e.face; }
       if (isSolid(Math.floor(e.x / TS), Math.floor((e.y - 4) / TS))) e.y += 40 * dt;
-      if (!P.dead && ad < 90 && Math.abs(dy) < 60 && e.cd <= 0) { e.mode = 'dashTell'; e.modeT = 0.5; number(e.x, e.y - 14, '!', '#ffd36b'); SFX.rattle(); }
+      if (!(e.giveUp > 0) && !P.dead && ad < 90 && Math.abs(dy) < 60 && e.cd <= 0) { e.mode = 'dashTell'; e.modeT = 0.5; number(e.x, e.y - 14, '!', '#ffd36b'); SFX.rattle(); }
   }
 }
 /* THE TOME (src/tome.js is the whole creature; this is only its hands on the world). It drifts by its shelf, tells with
@@ -11496,6 +11500,8 @@ function krakenAim(e) { const A = L.arena, beak0 = e.headX - 46; let stop = Math
 function krakenArmsTick(e, dt) {
   const fl = L.arena.floor, ease = (a, x, y, k) => { a.tx += (x - a.tx) * Math.min(1, dt * k); a.ty += (y - a.ty) * Math.min(1, dt * k); };
   for (const a of e.arms) { if (a.severed) { a.st = 'gone'; a.low = false; a.cutT = (a.cutT || 0) + dt; if (a.ae) a.ae.alive = false; continue; } if (a.flash > 0) a.flash -= dt;
+    /* HOTFIX SAFETY NET (Daniel, 2026-09-26: 'he can softlock by getting his tentacles stuck in platforms'): an arm whose tip stays inside rock or a board for 2 s draws back into the sea and comes up again as normal. The cause is next week's; this only makes sure a fight can never hang on it */
+    if (a.st !== 'hid' && a.st !== 'retreat' && a.st !== 'gone') { const tt = tileAt(Math.floor(a.tx / TS), Math.floor(a.ty / TS)); if (isSolid(Math.floor(a.tx / TS), Math.floor(a.ty / TS)) || tt === T.ONEWAY || tt === T.PLANK) a.stuckT = (a.stuckT || 0) + dt; else a.stuckT = 0; if (a.stuckT > 2) { a.stuckT = 0; a.st = 'retreat'; a.t = 1; a.low = false; if (a.ae) a.ae.alive = false; } }
     /* A CUT LEFT TOO LONG CLOSES: KRK_REGROW seconds after the last cut the arm is whole again (the damage it cost him stays) */
     if (a.healT > 0 && a.hp > 0 && a.hp < a.max) { a.healT -= dt; if (a.healT <= 0) { a.hp = a.max; if (a.ae) a.ae.hp = a.max; a.flash = 0.2; e.heals = (e.heals || 0) + 1; if (a.st !== 'hid' && typeof number === 'function') { number(a.tx, fl - 44, 'IT HEALS', '#9aa39a'); SFX.hiss(); } } }
     switch (a.st) {

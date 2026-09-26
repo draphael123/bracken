@@ -491,7 +491,7 @@ function marshWood() {
   F.plat(200, 20, 2); F.block(203, 208, 18, 27); F.ent('check', 206, 17);
   // AND THE MARSH WENT QUIET FOR A HUNDRED AND THIRTY COLUMNS: the whole pad crossing and the archers
   // after it, which is where both of its rules are actually asked for.
-  F.ent('sign', 274, 15, { text: 'SPITTERS THROW IN ARCS. STAND WHERE THE LAST ONE LANDED.' });   /* on the reed bed: at 286 it stood five rows up over the open lake */
+  F.ent('sign', 58, 15, { text: 'SPITTERS THROW IN ARCS. STAND WHERE THE LAST ONE LANDED.' });   /* HOTFIX 2026-09-26: it stood at 274, after every spitter in the wood (66, 136, 195) - now it comes before the first */   /* on the reed bed: at 286 it stood five rows up over the open lake */
   F.ent('sign', 335, 10, { text: 'THE BOARDS HOLD. THE WATER UNDER THEM BITES, AND A GAR WILL COME UP ONTO THEM.' });
   F.ent('sign', 405, 10, { text: 'ARCHERS ACROSS THE WATER. GO WHEN AN ARROW FLIES: THE NEXT IS A MOMENT AWAY.' });
   // A BUD LANDS YOU ON THE STAGES AND THE BANK'S LIP, and the garrison read all three as fresh floor and stood a spitter and
@@ -1567,7 +1567,7 @@ function underleaf() {
   ent('doorway', 255, 15, { id: 'school-back', to: 'school-far', lock: [210, 258], label: 'OUT AT THE BELL-COTE' });
   for (const bx of [220, 230, 240]) { plat(bx, 13, 5); ent('deco', bx + 1, 12, { kind: 'counter' }); }
   plat(243, 12, 3); plat(246, 10, 6);
-  ent('key', 250, 9, { kind: 'bone' });
+  ent('key', 250, 9, { kind: 'bone' }); ent('deco', 248, 9, { kind: 'counter' });   /* HOTFIX 2026-09-26: the master's DESK the sign names, on the dais beside the key */
   ent('deco', 248, 9, { kind: 'clerkDesk' }); ent('torch', 216, 15);
   ent('assassin', 244, 12, { face: -1 }); ent('sprig', 222, 12, { face: 1, sleeper: true });
   ent('cutter', 236, 15, { face: -1, sleeper: true }); ent('thief', 218, 15, { face: 1, sleeper: true });
