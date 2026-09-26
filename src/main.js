@@ -847,6 +847,23 @@ function resolveTiles() {
   if(!LEDGE_SETS.cargo)Object.assign(LEDGE_SETS,bakeRouteLedges());
   if(!LEDGE_SETS.slate)LEDGE_SETS.slate=FTW.bakeSlateLedge();   /* THE FALLING TOWER's cut slate */
   if(!LEDGE_SETS.masonry){const [c,cg]=canvas(16,16);cg.fillStyle='#39362f';cg.fillRect(0,0,16,6);cg.fillStyle='#a69a82';cg.fillRect(0,1,16,3);cg.fillStyle='#cec0a0';cg.fillRect(0,1,16,1);cg.fillStyle='#766c59';cg.fillRect(7,2,1,3);LEDGE_SETS.masonry={ledge:[c],ledgeL:c,ledgeR:c};}
+  /* THE DESERT'S OWN LEDGES (L.ledgeKit = 'desert', src/redraw/desert.js and src/redraw/caravan_ruins.js): three kits picked per tile by
+     where it sits (desertLedgeAt, below), not one name for the whole level - a ruin's ledges, a natural cliff's shelves and
+     the open sand's lip all read differently even inside the same level (Daniel, 2026-09-26, of the Sunken Caravan). */
+  if (!LEDGE_SETS.sandLip) {
+    LEDGE_SETS.sandLip = { ledge: [0, 1, 2].map(v => DZ.bakeSandstoneLip(9401 + v)), ledgeL: DZ.bakeSandstoneLip(9404, 'L'), ledgeR: DZ.bakeSandstoneLip(9405, 'R') };
+    LEDGE_SETS.rockShelf = { ledge: [0, 1, 2].map(v => DZ.bakeRockShelf(9411 + v)), ledgeL: DZ.bakeRockShelf(9414, 'L'), ledgeR: DZ.bakeRockShelf(9415, 'R') };
+    LEDGE_SETS.ruinLedge = { ledge: [0, 1, 2].map(v => CR.bakeRuinLedge(9421 + v)), ledgeL: CR.bakeRuinLedge(9424, 'L'), ledgeR: CR.bakeRuinLedge(9425, 'R') };
+  }
+  /* which of the three: inside what the masons laid (a tower, a house, the caravanserai) -> the ruin's own broken shelf;
+     against the natural rock (L.rockZones: the arch, the rim's overhang) -> a shelf of the same layered sandstone;
+     neither -> the open sand's own weathered lip. Real timber (a wagon top, a stall board, a tent platform: L.timberPlanks)
+     is excluded before this is even asked - it is wood because it IS wood, not because nothing else applies. */
+  const inZones = (zs, x, y) => (zs || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
+  const desertLedgeAt = (x, y) => L.ledgeKit !== 'desert' ? null
+    : inZones(L.masonry, x, y) ? LEDGE_SETS.ruinLedge
+    : inZones(L.rockZones, x, y) ? LEDGE_SETS.rockShelf
+    : LEDGE_SETS.sandLip;
   const rnd = mulberry(7);
   const rockDeep = groundDepth(LW, LH, (x, y) => tileAt(x, y) === T.SOLID, 18), groundDeep = groundDepth(LW, LH, solidish, 9);
   const RDG = redressGround(), RDP = redressProps();   /* THE REDRESS: this level's own rock and dressing, where it has one */
@@ -915,7 +932,8 @@ function resolveTiles() {
          their own ledge off their palette; the castle, the mine and the goblin camp had no palette that
          said so and stood on the WOOD'S FELLED LOGS - three hundred of them inside Highcrown alone. A
          level names its own now. */
-      const named = curId()==='waymeet' ? LEDGE_SETS.awning : crownT ? LEDGE_SETS.masonry : L.palette && L.palette.ledges && LEDGE_SETS[L.palette.ledges];
+      const desertKit = desertLedgeAt(x, y);   /* the desert's own ledges win over the generic castle masonry (crownT): a ruin is not a keep */
+      const named = curId()==='waymeet' ? LEDGE_SETS.awning : desertKit ? desertKit : crownT ? LEDGE_SETS.masonry : L.palette && L.palette.ledges && LEDGE_SETS[L.palette.ledges];
       const crag = L.palette && L.palette.dress === 'crag', shoreOW = named || (L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
         : L.palette.myc ? { ledge: TILE.capLedge, ledgeL: TILE.capLedgeL, ledgeR: TILE.capLedgeR }
         : L.palette.dress === 'marsh' ? { ledge: TILE.duck, ledgeL: TILE.duckL, ledgeR: TILE.duckR } : null));
@@ -935,7 +953,11 @@ function resolveTiles() {
     else if (t === T.PORT) s = TILE.port[(x + y) % 2];
     else if (t === T.SHELF) s = shelfSpr((rnd() * 6) | 0);   /* THE SCREE PATH's loose rock is the shelf in stone */
     else if (t === T.CRYST) s = TILE.cryst[litRow(y) ? 1 : 0][Math.max(0, Math.min(2, crackAt[y * LW + x] || 0))];
-    else if (t === T.PLANK) { const l = tileAt(x - 1, y) === T.PLANK, r = tileAt(x + 1, y) === T.PLANK; s = L.towerBackdrop ? LEDGE_SETS.arcane.ledge[x%3] : !l ? TILE.plankL : !r ? TILE.plankR : TILE.plank[(rnd() * 2) | 0];
+    else if (t === T.PLANK) { const l = tileAt(x - 1, y) === T.PLANK, r = tileAt(x + 1, y) === T.PLANK;
+      /* REAL TIMBER STAYS WOOD (L.timberPlanks: the wagon tops, a stall board, a trader's platform - RULES B9, it must look
+         like what it is). Everything else that is a PLANK in a desert level is the same ledge a ONEWAY tile there would be. */
+      const plankKit = !inZones(L.timberPlanks, x, y) ? desertLedgeAt(x, y) : null;
+      s = L.towerBackdrop ? LEDGE_SETS.arcane.ledge[x%3] : plankKit ? (!l ? plankKit.ledgeL : !r ? plankKit.ledgeR : plankKit.ledge[(rnd() * plankKit.ledge.length) | 0]) : !l ? TILE.plankL : !r ? TILE.plankR : TILE.plank[(rnd() * 2) | 0];
       /* A DECK THE TIDE COVERS is bleached and salt-crusted, and the pale crust is what you see of it under the water: the bridge
          plank's one light line went to nothing under the flood (the look pass read the wreck's deck at 12 of 15 tiles lost) */
       if ((L.pools || []).some(p => p.causeTide && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.hiY)) s = krkArt().deck[(rnd() * 2) | 0]; }
@@ -25675,7 +25697,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
-  tileSpr: () => tileSpr, resolve: () => resolveTiles(),
+  tileSpr: () => tileSpr, resolve: () => resolveTiles(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
      drawn from, so a bot reading it is reading exactly what a player is shown and nothing more. */
   telling: e => !!e && windingUp(e), markOf: e => markOf(e), marksMissed: () => marksMissed(),   /* the mark the screen holds over a windup, and every windup the table had no row for */
