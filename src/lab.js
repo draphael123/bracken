@@ -993,7 +993,6 @@ async function runbossLab(BK, opts) {
          between the spots the bolts will land on, or out past the end of the fan. THE RUSH: jump it as it arrives. THE WARD: its face
          stops the blow - go round and cut his back, or wait it out. THE SURGE: get out of its ring. His dead are cut when they come close. */
       else if (boss.t === 'bloodknight') { const S = BK.unbU ? BK.unbU.UNB.bk : null, side = Math.sign(P.x - boss.x) || 1, m = boss.mode;
-        if (boss.open > 0 && !wasOpen) opened++; wasOpen = boss.open > 0;
         const add = BK.enemies().filter(q => q.alive && q.t === 'corpse' && q.from === boss && q.mode !== 'down' && Math.abs(q.y - P.y) < 24).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
         if (m === 'stuck' || m === 'wrench') { goal = boss.x; strike = true; }
         else if (m === 'cleaveTell') { strike = false;
