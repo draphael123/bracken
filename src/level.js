@@ -2191,7 +2191,7 @@ function theMonastery() {
   // NOTHING IS DUG AFTER THIS LINE: the goat path's rock face above is the last tile laid
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: 99999, duskLen: 1, music: 'sunspire', night: false, cloudLine: CLOUD, snowLine: 28,   /* snow only on the stones over the roof: on the roof it hid the boards */
+    duskStart: 99999, duskLen: 1, music: 'monastery', night: false, cloudLine: CLOUD, snowLine: 28,   /* "rpgchip07_the_shrine_of_mysteries" from 15 Melodic RPG Chiptunes by Aureolus_Omicron, CC0 - THE MONASTERY's own theme, benching sunspire (audio/CREDITS.txt) */
     belfry: {roofGone:false}, monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors,
     /* THE GROUND KIT BY PLACE: bees and herb beds belong in the garden, not on the belfry floor (GROUND_KITS.spire is the rest) */
     kits: [[1, 94, 196, 196, { density: 0.3, kinds: ['herbBed', 'skep'] }], [72, 94, 218, 218, { density: 0.25, kinds: ['bones'] }]],
@@ -4034,12 +4034,12 @@ function galeMoor() {
   ent('sign', o + 10, 12, { text: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR BLOCK ONE BACK TO KNOCK HIM DOWN.', pyro: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE ONE BACK WITH YOUR STAFF TO DROP HIM.', paladin: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR AEGIS ONE BACK TO KNOCK HIM DOWN.' });
   ent('gate', o + 45, 12);
   const roosts = [[o + 8, 9], [o + 22, 3], [o + 37, 7], [o + 15, 6], [o + 30, 5]];   /* where he stands: a stone's top, a ledge */
-  const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 8) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'musMountain', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' };
+  const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 8) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'windcaller', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' };
 
   for (const e of L.ents) if (e.t === 'vent' && e.wind) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; }   /* the moor's wind lifts you well clear of whatever it is meant to lift you onto */
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, roosts, thermals: true,
-    duskStart: -1, duskLen: 1, music: 'adventure', night: false, glowNight: false,
+    duskStart: -1, duskLen: 1, music: 'northumberland', night: false, glowNight: false,   /* "The Fair Flower of Northumberland" by Spring Spring, CC0 - GALE MOOR's own theme, benching adventure (audio/CREDITS.txt) */
     palette: { sky: [[126, 148, 182], [214, 220, 214]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(200,210,220,0.18)', grass: '#7a8a3a', grassL: '#a8b84a', grassD: '#4a5a2a', dirt: '#5a5040', dirtL: '#6e6450', dirtD: '#3a3228', canopy: ['#5a6a7a', '#7a8a9a', '#9aa8b8', '#c8d0d8'] },
     quest: { n: 3, item: 'kite', name: 'KITE', npc: 'squire', done: 'THE KITES ARE HOME', reward: 'relic', relic: 'windcloak' },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 402 * TS, x1: 455 * TS, kind: 'mist' }],
