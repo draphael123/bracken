@@ -53,7 +53,7 @@ FAIL buried-attacks 35848ms  Node.js v24.19.0
  ok  burial2          494ms  burial2  660 cols (528x74), 7 sections; 5 backdrops, 4 seams pillared; 11 vents, 6 candles, 6 of the dead in a
  ok  burial-vents   42146ms  burial-vents  fire from a candle, a vent lit by a swing and not without fire, no gas while it burns, the dead 
 FAIL slopes-trace   48793ms  slopes-trace: 1 of 4 levels DIFFER from the pre-slopes build
- ok  textfit       256238ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-burial2\audits\readability\textfit
+ ok  textfit       256238ms  0 pictures in <local path> Raphael\.claude\bracken-lanes\bracken-burial2\audits\readability\textfit
 
 ---- dangling-paths ----
       cited by: tools/audit-lib.mjs
@@ -73,7 +73,7 @@ AssertionError [ERR_ASSERTION]: 2 path(s) cited by tracked files are in no commi
   A fresh clone cannot open these. Either commit the file, or correct the citation. If it is ignored on
   purpose and the citation is still right, narrow the ignore rather than force-adding it, and add the path
   to MISSING in tools/dangling-paths.mjs with the reason - never delete the check to make it quiet.
-    at file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-burial2/tools/dangling-paths.mjs:123:10
+    at file:///<repo>/tools/dangling-paths.mjs:123:10
     at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:643:26)
     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
@@ -93,7 +93,7 @@ node:internal/modules/run_main:107
     ^
 
 AssertionError [ERR_ASSERTION]: and its landing is a window
-    at file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-burial2/tools/buried-attacks.mjs:47:10 {
+    at file:///<repo>/tools/buried-attacks.mjs:47:10 {
   generatedMessage: false,
   code: 'ERR_ASSERTION',
   actual: false,
