@@ -12,7 +12,7 @@ import { SEXTON, updateSexton as stepSexton, sextonFrame, sextonTake } from './s
 import { crumbleStart as crumbleStartAt, crumbleBreak as crumbleBreakAt } from './tower-collapse.js';   /* THE HEDGE WARDEN (batch 4c) */
 import { drawWitchTower, towerStep, stairProgress, drawWitchSky, drawWitchLandmarks, witchMotes, libraryBooks } from './witchlight.js';   /* THE WITCHLIGHT STAIR: its tower, its sky, its landmarks, its loose magic */
 import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed stone */
-import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, aheadTile } from './slopes.js';
+import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, aheadTile, slopeRise, slopeGrade } from './slopes.js';
 import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, the vulture and the sand goblin, as pure state machines */
 import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */
 import { qsPatchAt, qsGameStep } from './quicksand.js';
@@ -7269,10 +7269,12 @@ function updatePlayer(dt) {
   if (sprinting && P.ground && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
   const cap = (P.ballast ? (P.swim ? 54 : 58) : (P.block || P.jet || P.geoGuard) ? 32 : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (isReaper() && P.ground ? 0.8 : isGeo() && P.ground ? 0.92 : 1) /* heavy on his feet, not in the air: the levels' gaps are measured for the knight's jump */ * (PROG.charm === 'swift' ? 1.12 : 1) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
   const onSlick = P.ground && P.relic !== 'crampons' && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]) || (P.ground && L.iceLedges && tileAt(Math.floor(P.x / TS), Math.floor((P.y + 2) / TS)) === T.CRYST); /* and its crystal ledges, which look like ice and held like rock */ // the Sunspire's ice: slow to get going, slower to stop
+  /* UPHILL IS SLOWER (Daniel, 2026-09-25: "going up a slope doesn't really slow you down"): walking up a dune the legs cap at 0.6 of a run on a steep slope, 0.8 on a gentle one, and down it they run a little free (1.1). Walking only - the slide (below) keeps its own speeds. */
+  const slopeK = SLOPES_ON && P.ground && move && !P.swim ? footSlope(tileAt, P) : 0, capW = slopeK ? cap * (slopeRise(slopeK) === move ? (slopeGrade(slopeK) === 1 ? UPHILL.steep : UPHILL.gentle) : UPHILL.down) : cap;
   if (move && !groundAtk) {
     const acc = P.swim ? 900 : P.ground ? (onSlick ? 260 : 1000) : 700;   /* ICE: 360 and a brake of 150 read as a sticky floor, not a slide */
-    if (Math.abs(P.vx) > cap && Math.sign(P.vx) === move) P.vx = move * Math.max(cap, Math.abs(P.vx) - 400 * dt);
-    else { P.vx += move * acc * dt; if (Math.abs(P.vx) > cap) P.vx = move * cap; }
+    if (Math.abs(P.vx) > capW && Math.sign(P.vx) === move) P.vx = move * Math.max(capW, Math.abs(P.vx) - 400 * dt);
+    else { P.vx += move * acc * dt; if (Math.abs(P.vx) > capW) P.vx = move * capW; }
     if (!attacking) P.face = move;
     if (P.ground) P.airHang = false;
   } else if (!dodging) {
@@ -13143,6 +13145,7 @@ function towerLever(pr){
    off a stone, in the air it carries you - unless you BRACE: on the ground with the guard key held, the same key for every
    hero, and then it cannot move you at all. On the ground a gust used to be nothing: the legs' 1000 px/s2 beat its 320. */
 const GUST_TELL = 1.2, GUST_BRACED = 40;
+const UPHILL = { steep: 0.6, gentle: 0.8, down: 1.1 };   /* a walk up a dune: the share of a run the legs keep (the movement cap, updatePlayer) */
 const gustDir = (z, t) => (z.alt ? (Math.floor((t + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir) * (z.flip ? -1 : 1);
 function gustNow(z) { const ph = (time + (z.phase || 0)) % z.period, on = ph < z.on, tl = z.told ? Math.min(GUST_TELL, z.period - z.on) : 0.5;
   const tell = !on && ph > z.period - tl ? (ph - (z.period - tl)) / tl : -1;
