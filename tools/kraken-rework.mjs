@@ -48,6 +48,13 @@ try {
    const rg=()=>e.arms.filter(a=>a.regrown&&!a.severed);out.open.spear=e.arms.some(a=>a.spear&&!a.severed);out.open.regrown=rg().length;
    /* in the maw a cut arm comes back - as a new one */
    {const a=rg()[0];a.hp=1;a.ae.hp=1;e.hp=Math.max(e.hp,200);cut(a,5);out.open.cutOne=rg().length;for(let i=0;i<500;i++){BK.sim(1);if(i%60===0)for(const k in e.T)e.T[k]=999;}out.open.back=rg().length;}}
+  /* ---- HE HITS HARDER: a quicker sweep, and the grab drags you toward the sea - pressed or rolled out of, never held past ~2 s ---- */
+  {const e=boot(),A=BK.L.arena,fl=A.floor,P=BK.P;out.hit={};
+   const a=e.arms.find(q=>!q.severed&&q.st==='idle');const hold=()=>{hush(e);stand(576*TS+8);P.st=P.maxSt||100;e.armI=a.i;a.st='hold';a.low=true;e.mode='held';e.modeT=2.2;e.grip=5;};
+   hold();const x0=P.x;BK.sim(30);out.hit.dragged=Math.round(P.x-x0);
+   hold();BK.sim(1);BK.press('dodge');BK.sim(3);out.hit.rolled=e.mode!=='held';
+   hold();let f=0;for(;f<300&&e.mode==='held';f++)BK.sim(1);out.hit.heldS=+(f/60).toFixed(2);
+   hush(e);stand(569*TS+8);P.y=20*TS;/* up on the tower, out of its way: a sweep that lands stops the world a beat */const b=e.arms.find(q=>!q.severed&&q.st==='idle');e.armI=b.i;b.st='lower';e.sweepFrom=A.x0+20;e.sweepTo=A.x1-20;e.mode='sweepTell';e.modeT=0;for(let i=0;i<30&&e.mode!=='sweep';i++)BK.sim(1);let n=0;while(e.mode==='sweep'&&n<200){BK.sim(1);n++;}out.hit.sweepS=+(n/60).toFixed(2);}
   return out;})()`);
   console.log(JSON.stringify(r));
   const T = r.tide;
@@ -72,5 +79,10 @@ try {
   assert.equal(O.maw, 3, 'the maw is not reached');
   assert(O.spear && O.regrown === 2, 'the maw has no spear or no arms');
   assert(O.cutOne === 1 && O.back === 2, 'in the maw a cut arm does not come back');
-  console.log('The Kraken, reworked: the tide rises, sweeps, carries, hides his arms, and goes back to the bells; stage 2 has arms and ends in the maw; a cut left regrows; the look is caused; the tower bell once a stage.');
+  const H = r.hit;
+  assert(H.dragged > 20, 'the grab does not drag you toward the sea (' + H.dragged + ' px)');
+  assert(H.rolled, 'a dodge does not roll you out of his grip');
+  assert(H.heldS > 1 && H.heldS <= 2.3, 'held ' + H.heldS + ' s: the grab is a stun-lock');
+  assert(H.sweepS > 0.3 && H.sweepS <= 0.72, 'the low sweep takes ' + H.sweepS + ' s');
+  console.log('The Kraken, reworked: the tide rises, sweeps, carries, hides his arms, and goes back to the bells; stage 2 has arms and ends in the maw; a cut left regrows; the look is caused; the tower bell once a stage; the sweep is quicker and the grab drags you seaward, escapably.');
 } finally { pg.close(); }
