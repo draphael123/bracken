@@ -16607,7 +16607,7 @@ let UNB_FIELD = null;
 SPR.bannerbearer = UNBF.bakeBannerbearer(); SPR.corpse = UNBF.bakeCorpse(); SPR.barrowrider = UNBF.bakeBarrowRider(); UNBF.bakeBarrowHorse(); SPR.deathknight = UNBF.bakeDeathKnight();
 for (const t of ['bannerbearer', 'corpse', 'barrowrider', 'deathknight']) HAS_HURT.add(t);
 for (const t of ['barrowrider', 'deathknight']) { POISE_SKIP.add(t); KNOCK_SKIP.add(t); }
-const unbSnd = k => { const f = ({ rise: SFX.wightMoan, plant: SFX.dkPlant, horn: SFX.hornBlast, cavhorn: SFX.hornBlast, gallop: SFX.rumble, volley: SFX.bowShot, slash: SFX.foeSlash, whoosh: SFX.throwWhoosh, crack: SFX.crack, heavy: SFX.heavy, boom: SFX.boom, pass: SFX.dkSurge, charge: SFX.charge, bolt: SFX.bowShot, crank: SFX.clank, fire: SFX.fuse, roar: SFX.roar, snort: SFX.snort, bellow: SFX.bellow, bones: SFX.clank })[k]; if (typeof f === 'function') f(); };
+const unbSnd = k => { const f = ({ rise: SFX.wightMoan, plant: SFX.dkPlant, horn: SFX.hornBlast, cavhorn: SFX.hornBlast, gallop: SFX.rumble, volley: SFX.bowShot, slash: SFX.foeSlash, whoosh: SFX.throwWhoosh, crack: SFX.crack, heavy: SFX.heavy, boom: SFX.boom, pass: SFX.dkSurge, charge: SFX.charge, bolt: SFX.bowShot, crank: SFX.clank, fire: SFX.fuse, roar: SFX.roar, snort: SFX.snort, bellow: SFX.bellow, bones: SFX.clank, whistle: SFX.arrowWhistle })[k]; if (typeof f === 'function') f(); };
 const unbStruck = (x, y, w, h, key) => { const hb = attackBox(); if (!hb || P.hitSet.has(key) || !overlap(hb, { l: x, r: x + w, t: y, b: y + h })) return false; P.hitSet.add(key); sparks(x + w / 2, y + h / 2, P.face || 1, 4); return true; };
 const unbBearers = () => enemies.filter(q => q.alive && (q.t === 'bannerbearer' || q.t === 'deathknight'));
 const unbCover = q => UNBF.coverOf(q, unbBearers(), { bossLive: bossActive, arena: L.arena });
@@ -16652,7 +16652,11 @@ function updateUnburied(dt) {
   const F = UNB_FIELD; if (!F) return;
   UNBF.stepField(F, dt, { P, sound: unbSnd, say: (x, y, m, col) => number(x, y, m, col), foes: () => enemies,
     bearerAlive: name => enemies.some(q => q.alive && q.t === 'bannerbearer' && q.enc === name),
-    hurtP: (x, d, name) => damagePlayer(x, d, { unblockable: true, name }), hurtFoe: (q, d, fx) => hurtEnemy(q, d, fx, false), struck: unbStruck,
+    hurtP: (x, d, name) => damagePlayer(x, d, { unblockable: true, name }),
+    /* THE BRIDGES' ARROWS come from straight overhead: fromX is the hero's own x, so every guard held up turns them (damagePlayer) */
+    arrowP: (x, d, name) => { const r = damagePlayer(P.x, d, { name }); if (r === 'blocked') number(P.x, P.y - 30, 'TURNED OVERHEAD', '#8fd160'); return r; },
+    surface: (x, y) => { const tx = Math.floor(x / TS); for (let ty = Math.max(0, Math.floor((y - 8) / TS)); ty < Math.min(LH, Math.floor(y / TS) + 14); ty++) { const t = tileAt(tx, ty); if (isSolid(tx, ty) || isOneWay(t)) return ty * TS; } return y; },
+    hurtFoe: (q, d, fx) => hurtEnemy(q, d, fx, false), struck: unbStruck,
     wallStands: p => L.grid[p.top * LW + p.x] === T.PALISADE,
     pegs: (p, on) => { for (const r of p.rows) { const i = r * LW + p.x - 1; if (on) { if (!(r in p.orig)) p.orig[r] = L.grid[i]; if (L.grid[i] === T.AIR) L.grid[i] = T.ONEWAY; } else if (r in p.orig) { L.grid[i] = p.orig[r]; delete p.orig[r]; } tileSpr[i] = null; } },
     spill: (x0, x1, y) => { const mid = (x0 + x1) / 2; for (let x = x0; x < x1; x += TS) fires.push({ x: x + 8, y, life: 7, delay: 0.1 + Math.abs(x - mid) / 500, dmg: DMG.fire, unb: true });

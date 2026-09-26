@@ -354,6 +354,8 @@ export function newField(L, TS = 16) {
     pegs: (L.pegs || []).map(p => ({ ...p, up: 0, zone: null, stray: 0 })),
     covers: props.filter(p => p.t === 'cover'), engines: props.filter(p => p.t !== 'cover'),
     bolts: [], stones: [], arrows: [], breach: false, surf: groundLine(L, G),
+    /* THE BROKEN BRIDGES' TOLD VOLLEY: its clock, the shadows it has laid (marks) and the arrows left standing in the planks */
+    bv: L.bridgeVolley ? { ...L.bridgeVolley, t: 0, t2: 0, n: 0, marks: [], stuck: [], hits: 0, turned: 0 } : null,
   };
 }
 /* WHERE THE GROUND IS, column by column: the first solid-or-ledge row from above the field down (for the mist to lie on) */
@@ -413,6 +415,29 @@ export function stepField(F, dt, c) {
   for (const s of F.stones) { s.vy += 400 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.t -= dt; if (s.t <= 0 && !s.done) { s.done = true; if (s.knocks === 'tower') { F.breach = true; c.breach(); } } }
   F.stones = F.stones.filter(s => s.t > -0.1);
   for (const a of F.arrows) { a.y += a.vy * dt; a.t -= dt; } F.arrows = F.arrows.filter(a => a.t > 0);
+  stepBridgeVolley(F, dt, c);
+}
+/* THE TOLD VOLLEY OVER THE BROKEN BRIDGES (2026-09-25). Out on the bridges the clock runs; a WHISTLE, and the shadows go down on
+   the planks - one where you stand and one either side of it, never the same three twice running - and bv.whistle seconds later
+   the arrows come down on the shadows. Out of your shadow, or behind cover, or under a guard held up (a blow from straight overhead
+   is a blow from the front: c.arrowP), and nothing finds you. Off the bridges the clock waits, so the first whistle is never on the
+   first plank. Returns nothing; bv.hits and bv.turned count what it did (for the harness). */
+export const BV_OFFS = [[0, -1, 1], [0, -1.3, 0.9], [0, -0.9, 1.3]];   /* times spread: never closer than 0.9 of it, so the ground between two shadows is a place to stand */
+export function stepBridgeVolley(F, dt, c) {
+  const bv = F && F.bv; if (!bv) return;
+  const { P } = c, on = !P.dead && P.x > bv.x0 && P.x < bv.x1;
+  for (const s of bv.stuck) s.t -= dt; bv.stuck = bv.stuck.filter(s => s.t > 0);
+  if (bv.marks.length) { bv.t2 -= dt; if (bv.t2 > 0) return;
+    c.sound('volley'); for (const m of bv.marks) bv.stuck.push({ x: m.x, y: m.y, t: 1.6 });
+    const m = bv.marks.find(q => Math.abs(P.x - q.x) < bv.r && P.y > q.y - 80 && P.y <= q.y + 4);
+    if (m && !P.dead && !sheltered(F, P)) { const r = c.arrowP(P.x, UNB.dmg.volley, 'THE ARROWS'); if (r === 'blocked') bv.turned++; else if (r !== false) bv.hits++; }
+    bv.marks = []; bv.t = 0; return; }
+  if (!on) { bv.t = Math.min(bv.t, bv.period - bv.whistle - 0.8); return; }
+  bv.t += dt; if (bv.t < bv.period - bv.whistle) return;
+  const offs = BV_OFFS[bv.n++ % BV_OFFS.length];
+  bv.marks = offs.map(o => { const x = clamp(P.x + o * bv.spread, bv.x0 + 8, bv.x1 - 8); return { x, y: c.surface(x, P.y) }; });
+  bv.t2 = bv.whistle; c.sound('whistle');
+  if (bv.n <= 2) c.say(P.x, P.y - 40, 'A WHISTLE: THE SHADOWS ARE WHERE THEY LAND', '#ff6b6b');
 }
 
 /* ---------------- DRAWING (the world's parts; the creatures are sprites) ---------------- */
@@ -504,8 +529,28 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
   for (const cv of F.covers) { const x = Math.round(cv.x - cx), y = Math.round(cv.y - cy); if (x < -40 || x > VW + 40) continue;
     if (cv.kind === 'wagon') { R(g, x - 14, y - 18, 28, 12, '#5a3e26'); R(g, x - 14, y - 18, 28, 2, '#7a5634'); R(g, x - 10, y - 8, 7, 7, '#2e2016'); R(g, x + 4, y - 8, 7, 7, '#2e2016'); R(g, x - 8, y - 6, 3, 3, '#7a5634'); R(g, x + 6, y - 6, 3, 3, '#7a5634'); }
     else if (cv.kind === 'mantlet') { R(g, x - 12, y - 24, 24, 22, '#6a4a2c'); for (let q = -10; q < 12; q += 5) R(g, x + q, y - 24, 1, 22, '#3e2a18'); R(g, x - 12, y - 25, 24, 2, '#8a6a44'); R(g, x - 10, y - 3, 3, 3, '#3e2a18'); R(g, x + 7, y - 3, 3, 3, '#3e2a18'); }
+    else if (cv.kind === 'brokenMantlet') {   /* THE BRIDGES: a siege mantlet with its top shot away and one leg gone, propped where it fell */
+      R(g, x - 12, y - 18, 22, 16, '#5e4228'); for (let q = -10; q < 10; q += 5) R(g, x + q, y - 18 + (q > 2 ? 3 : 0), 1, 16 - (q > 2 ? 3 : 0), '#3a2716');
+      R(g, x - 12, y - 19, 14, 2, '#80603c'); R(g, x + 2, y - 16, 8, 2, '#80603c'); R(g, x - 10, y - 3, 3, 3, '#3a2716'); R(g, x + 9, y - 6, 2, 6, '#3a2716');
+      for (let q = 0; q < 3; q++) { R(g, x - 8 + q * 7, y - 24 + (q % 2) * 2, 1, 8, '#5a4a36'); R(g, x - 9 + q * 7, y - 25 + (q % 2) * 2, 3, 2, '#c8b6ff'); } }   /* and the last volley's arrows still in it */
+    else if (cv.kind === 'cart') {   /* an overturned cart: bed on its side, one wheel in the air */
+      R(g, x - 14, y - 16, 26, 14, '#4e3622'); R(g, x - 14, y - 16, 26, 2, '#6e4e30'); for (let q = -10; q < 12; q += 6) R(g, x + q, y - 14, 1, 12, '#34241a');
+      g.fillStyle = '#2e2016'; g.beginPath(); g.arc(x + 10, y - 18, 6, 0, 7); g.fill(); g.fillStyle = '#7a5634'; g.beginPath(); g.arc(x + 10, y - 18, 2, 0, 7); g.fill();
+      R(g, x - 16, y - 4, 6, 2, '#6e4e30'); }
     else { for (let q = 0; q < 3; q++) { const sx = x - 12 + q * 8; R(g, sx, y - 16 + (q % 2) * 2, 8, 14, q % 2 ? '#7a6a58' : '#6a5a48'); R(g, sx + 3, y - 11 + (q % 2) * 2, 2, 4, '#c8a44a'); } }   /* upturned shields */
   }
+  /* THE BRIDGES' VOLLEY, TOLD: every shadow darkening and closing as the arrows come down onto it, a red rim round it, the arrows
+     themselves in the last half of the whistle; the cover in reach lit green (C5); and the arrows left standing in the planks */
+  if (F.bv) { const bv = F.bv;
+    for (const m of bv.marks) { const k = 1 - Math.max(0, bv.t2) / bv.whistle, x = Math.round(m.x - cx), y = Math.round(m.y - cy), rr = bv.r + 2 - Math.round(3 * k);
+      g.globalAlpha = 0.3 + 0.45 * k; g.fillStyle = '#0c0608'; g.beginPath(); g.ellipse(x, y - 1, rr, 2 + 1.5 * k, 0, 0, 7); g.fill();
+      g.globalAlpha = 0.45 + 0.4 * (0.5 + 0.5 * Math.sin(time * 22)); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 1, rr + 2, 3.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
+      if (k > 0.5) for (let i = 0; i < 3; i++) { const ax = x - 6 + i * 6, ay = Math.round(y - 10 - (1 - k) * 220 - i * 9); R(g, ax, ay - 8, 1, 8, '#5a4a36'); R(g, ax - 1, ay, 3, 2, '#c8b6ff'); } }
+    if (bv.marks.length) { const k = 0.5 + 0.5 * Math.sin(time * 16);
+      for (const cv of F.covers) { if (cv.x < bv.x0 || cv.x > bv.x1) continue; const sx = Math.round(cv.x - cx); if (sx < -30 || sx > VW + 30) continue;
+        g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(sx - 14, Math.round(cv.y - cy) - 26, 28, 26); g.globalAlpha = 1; } }
+    for (const s of bv.stuck) { if (s.t < 0.4 && Math.floor(time * 14) % 2) continue; const x = Math.round(s.x - cx), y = Math.round(s.y - cy);
+      for (let i = 0; i < 3; i++) { R(g, x - 6 + i * 6, y - 7 + (i % 2), 1, 7, '#6a5236'); R(g, x - 7 + i * 6, y - 8 + (i % 2), 3, 2, '#c8b6ff'); } } }
   /* PEGS: the arrows standing in the palisade, going out in the last second */
   for (const p of F.pegs) { if (!(p.up > 0)) continue; const x = Math.round(p.x * TS - cx), blink = p.up < 1 && Math.floor(time * 14) % 2;
     if (blink) continue; for (const r of p.rows) { const y = Math.round(r * TS - cy); for (let k = 0; k < 3; k++) { R(g, x - 13 + k * 4, y + k % 2, 12 - k * 3, 2, '#6a5236'); R(g, x - 15 + k * 4, y - 1 + k % 2, 3, 3, '#c8b6ff'); } } }

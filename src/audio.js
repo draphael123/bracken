@@ -647,6 +647,9 @@ Object.assign(SFX, {
   bowShot() { tone('square', 900, 500, 0.05, 0.1); noise(0.09, 0.16, 2600, 0.7); tone('sine', 320, 200, 0.08, 0.06, 0.01); },
   grapple() { noise(0.12, 0.14, 900, 0.6); tone('triangle', 420, 260, 0.1, 0.08); },
   ropeHaul() { noise(0.5, 0.09, 500, 0.9); tone('sawtooth', 120, 90, 0.45, 0.05); },
+  /* THE BROKEN BRIDGES' TOLD VOLLEY (2026-09-25): a flight of arrows in the air over you - three falling whistles, the last one
+     lowest, for the second and a fifth the shadows are on the planks. Not the horn of the ridge's volleys: you hear which one it is */
+  arrowWhistle() { tone('sine', 3300, 1500, 1.0, 0.05); tone('sine', 2900, 1250, 1.05, 0.04, 0.1); tone('sine', 3600, 1700, 0.9, 0.035, 0.22); noise(0.9, 0.025, 5200, 0.5, 0.1); },
   whistleCall() { tone('sine', 2100, 2600, 0.16, 0.09); tone('sine', 2600, 2200, 0.2, 0.08, 0.15); tone('sine', 2400, 3000, 0.14, 0.07, 0.34); },
   fuse() { noise(0.5, 0.07, 4200, 0.5); noise(0.4, 0.05, 6000, 0.4, 0.12); },
   crumble() { noise(0.4, 0.16, 420, 0.5); noise(0.3, 0.1, 900, 0.6, 0.06); tone('square', 150, 70, 0.2, 0.07); },

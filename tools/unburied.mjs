@@ -26,7 +26,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { T, LEVELS } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
-import { UF } from '../src/draft/unburied-field.js';
+import { UF } from '../src/unburied-field.js';   /* the level's FINAL geometry (the bridges grown in at 265); the draft is the greybox record */
 import { audit } from './route-breaks.mjs';
 
 const SOURCE = 'LEVELS src/unburied-field.js';
@@ -43,11 +43,11 @@ const ok = (what, extra = '') => console.log('  ok  ' + what.padEnd(46) + extra)
 /* ---- 1. THE SHAPE: three acts (the brief) and seven sections (F1), every one of them walked ---- */
 for (const [k, [a, b]] of Object.entries(UF.ACTS)) assert.ok(box(a, b, 0, H) > 60, 'act ' + k + ' is walked');
 { const S = Object.entries(UF.SECTIONS).sort((p, q) => p[1][0] - q[1][0]);
-  assert.equal(S.length, 7, 'F1: seven named sections, not one stretch - ' + S.length + ' named');
+  assert.ok(S.length >= 7, 'F1: seven named sections, not one stretch - ' + S.length + ' named');   /* eight since THE BROKEN BRIDGES (2026-09-25) */
   assert.equal(S[0][1][0], 0); assert.equal(S[S.length - 1][1][1], W - 1);
   for (let i = 1; i < S.length; i++) assert.equal(S[i][1][0], S[i - 1][1][1] + 1, 'the sections tile the level with no gap: ' + S[i][0]);
   for (const [k, [a, b]] of S) { assert.ok(b - a + 1 >= 34, k + ' is ' + (b - a + 1) + ' columns'); assert.ok(box(a, b, 0, H) > 20, k + ' is walked'); }
-  ok('F1 seven sections, all walked', S.map(s => s[0]).join(' ')); }
+  ok('F1 ' + S.length + ' sections, all walked', S.map(s => s[0]).join(' ')); }
 
 /* ---- 2. THE BRIEF'S FIVE DISTINCT FEATURES ---- */
 /* 1 THE VOLLEYS: horn-warned zones, and cover to stop them */
@@ -108,6 +108,30 @@ assert.ok(tiles(T.SOFT) > 0, 'a corpse mound that gives way (the Burial\'s crumb
 { let found = false; for (let x = 0; x < W; x++) if (L.grid[(G - 1) * W + x] === T.SOFT && seen.some(([sx, sy]) => sx === x && sy > G)) found = true;
   assert.ok(found, 'the pit under the corpse mound is entered'); }
 ok('platforming', 'tower, ' + L.pegs.length + ' peg walls, ' + L.moversExtra.length + ' swings, a mound that gives way');
+
+/* ---- 3b. THE BROKEN BRIDGES (2026-09-25, docs/briefs/unburied-deathknight.md): section S - arrows and jumps that can fail ---- */
+{ const B = UF.BRIDGES, bed = B.bed, row = G + 1, standOn = x => [T.PLANK, T.SOLID].includes(L.grid[row * W + x]);
+  /* S2 with the REAL jump (3.2 tiles), not the reach model's: walk the deck row across the ravine and measure every gap */
+  const gaps = []; let run = 0; for (let x = B.ravine[0] - 1; x <= B.ravine[1] + 1; x++) { if (standOn(x)) { if (run) gaps.push(run); run = 0; } else run++; }
+  assert.ok(gaps.length >= 5, 'the bridges are broken: ' + gaps.length + ' gaps');
+  assert.ok(gaps.every(n => n <= 3), 'S2: nothing on the main route asks for more than 3.0 - the gaps are ' + gaps.join(','));
+  assert.ok(gaps.filter(n => n >= 3).length >= 4, 'S2: at least four of the gaps are three tiles, a jump that can be missed: ' + gaps.join(','));
+  /* a miss is punished and never a softlock: the bed is staked under the three-tile gaps, and the one way out is the ladder at the
+     WEST wall - back before the first gap (B3; RULE S2's "a fall to an earlier section") */
+  assert.ok(B.stakes.every(([a, b]) => L.grid[bed * W + a] === T.SPIKE && L.grid[bed * W + b] === T.SPIKE), 'the stream bed is staked where a short jump comes down');
+  { let up = 0; for (let y = G + 2; y < bed; y++) if (L.grid[y * W + B.ravine[0]] === T.NET) up++; assert.ok(up >= bed - G - 2, 'the ladder out runs the west wall from the bed to the first deck'); }
+  { let east = 0; for (let y = G + 2; y < bed; y++) if (L.grid[y * W + B.ravine[1]] === T.NET) east++; assert.equal(east, 0, 'no way up at the EAST wall: a fall is a fall back'); }
+  assert.ok(seen.some(([x, y]) => x === B.ravine[0] + 3 && y === bed - 1), 'the stream bed is reached (a fall lands somewhere)');
+  /* B9: every deck on a trestle that stands on the bed */
+  for (const [a, b] of B.spans) assert.ok((L.structures || []).some(z => z.kind === 'timber' && z.x0 >= a && z.x1 <= b && z.floor === bed), 'the deck at ' + a + '-' + b + ' stands on a trestle');
+  /* THE TOLD VOLLEY: whistle, shadows, then arrows - and cover on the bridges to take them behind */
+  const V = L.bridgeVolley; assert.ok(V && V.whistle >= 1 && V.period > V.whistle + 2, 'the bridges\' volley is told: a whistle of ' + (V && V.whistle) + ' s');
+  assert.ok(V.x0 <= B.ravine[0] * TS && V.x1 >= (B.ravine[1] + 1) * TS, 'the volley covers the whole ravine');
+  const bc = covers.filter(c => c.x >= B.at && c.x < B.at + B.n); assert.ok(bc.length >= 4 && bc.some(c => c.kind === 'cart') && bc.some(c => c.kind === 'brokenMantlet'), 'broken mantlets and overturned carts on the bridges: ' + bc.length);
+  for (const c of bc) assert.ok(standOn(c.x), 'cover at ' + c.x + ' stands on a deck or a bank');
+  /* S1: the foes are placed to make the ground harder, not added to it */
+  const bf = ents.filter(e => e.enc === 'THE FAR BANK'); assert.ok(bf.length >= 2 && bf.length <= 4, 'the far bank is a few bowmen, not a crowd: ' + bf.length);
+  ok('the broken bridges', gaps.length + ' gaps (' + gaps.join(',') + '), ' + bc.length + ' cover, a whistle of ' + V.whistle + ' s'); }
 
 /* ---- 4. HAZARDS ---- */
 assert.ok(L.cavalry && L.cavalry.x1 > L.cavalry.x0 && L.cavalry.period > 0, 'THE GHOST CAVALRY CHARGE has a lane and a rhythm');

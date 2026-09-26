@@ -42,7 +42,8 @@ const LEDGE = new Set([T.ONEWAY, T.REED, T.PLANK, T.BOUNCER, T.SHELF, T.RAIL, T.
 export const GRANDFATHERED = {
   harbor: [33, 'the jetty timber frame (478-510) ends at the water line (row 29) and the bed is at 40: its posts stop at the surface. STORMWRECK HARBOR is shelved on purpose (docs/DESIGN.md part three, 8) - left alone'],
   waymeet: [83, 'the arcade under the town wall (477-535, rows 36-37) is a FLAT two-row lintel over openings twelve tiles wide, carried by two-tile piers: a seven-tile span is the most a lintel carries here. And four town houses (358-443) stand on the canal (row 36 is water to the bed at 40). Both are the look of the town, not its route'],
-  unburied: [52, 'the broken tower (348-350, rows 24-33) hovers two rows over the road with sky behind it, and the timber column at 363-364 stands over the pit. The road runs under the first, so grounding it is a route change (the levelfix lane left it as an art rework)'],
+  /* unburied left the list 2026-09-25 (claude/unburied3): the chapel's arch crown (348-350, rows 24-33) came down onto the nave floor, and
+     the timber peg wall over the crypt stair's pit (363-364) was taken out */
 };
 
 export function architecture(R) {
