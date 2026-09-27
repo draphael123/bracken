@@ -12,9 +12,23 @@ Brief: `docs/briefs/burial-rework-2.md`.
 | `31363d5` | the cut, the five backdrops, the gas-vent machine, the Buried Dead's caused opening, the earth floor tile, barrow soldiers, the checkpoint fix, rule S, and the new checks |
 | `b0c7dae` | the real-keys walk tool, the bone-wall backdrop redraw, and the before/after pilots, walks and captures |
 | `01fb49d` | local paths scrubbed from the committed logs |
-| (report) | this file |
+| `39d3c9f` | this report (saved as a WIP when the lane stopped for credits; it was the only uncommitted thing) |
+| `8acfea9` | merge of `origin/master` (`119d8ae`) |
+| `235b9f8` | the tail of a local path scrubbed out of five more logs (dangling-paths caught it after the merge) |
+| (final) | this report, updated after the merge |
 
-`origin/master` had not moved since `eeaad91`, so there was nothing to merge.
+## The merge (resumed lane, 2026-09-27)
+
+`origin/master` moved from `eeaad91` to `119d8ae` while the lane was stopped. It brought the Kraken rework (the Tide Reaver deleted), the camera foot line and ground fade, twelve music tracks, the Causeway lane, and three hotfixes.
+
+- **One conflict: the `tools/check.mjs` name list.** I took master's list, which drops the deleted `tide-reaver` and adds `kraken-rework` and `camera-fill`, and appended `burial2` and `burial-vents` before `]) if (take(t))`.
+- **`src/marks.js`, `src/main.js`, `src/lab.js` and `src/level.js` merged on their own.** `tells` is green on the merged table (551 rows; the Tide Reaver's rows left with him).
+- **Nothing master changed touches the Buried Dead's fight.**
+  - The lab change is the Kraken's advice only.
+  - The `main.js` changes are the camera (`CAM_FOOT` 0.58 -> 0.68, the ground fade), the Kraken, the Tide Reaver's removal and the store's icons.
+  - So I ran **no new pilot**; the BEFORE/AFTER pilots above stand. `buried-dead`, `boss-openings`, `buried-attacks`, `additional-areas-runtime` and `boss-fight-end` are all green on the merged tree.
+- **curve.mjs after the merge:** burial still 660 cols, INDEX 97, "32 easier than fields". That is unchanged.
+- **Fixed after the merge:** `dangling-paths` was red. The earlier scrub had turned the home directory into `<local path>` but left the rest of the lane's path, which the check read as a citation. Five logs in `work/burial2/` now say `<repo>/...` instead. No other file changed.
 
 ## What I built
 
@@ -115,7 +129,18 @@ These are named checks only, never the full suite. There were **56 green** on th
 - textfit;
 - the two new checks, `burial2` and `burial-vents`. Both are registered inside the `check.mjs` list, before `]) if (take(t))`.
 
-The baseline on master was all green. A final re-run of the same set was started after this report was written; see the last commit.
+The baseline on master was all green. The final re-run that had been started before the lane stopped never finished. It is replaced by the run below.
+
+**After the merge (2026-09-27): 63 named checks, all green.** Rows are in `work/burial2/merge-checks.log`. The set is:
+- the 52 from the baseline;
+- `slopes-trace` and `textfit`;
+- `burial2` and `burial-vents`;
+- `pixels` (`headless.mjs floats`), `occluders`, `swim-shrines` and `ground-depth`;
+- the level-reading checks that are new on master or that I had not run before: `uphill`, `desert-ledge-art` and `camera-fill`.
+
+How two of them went green:
+- `dangling-paths` was red on the first pass, for the reason in "The merge" above. It is green after `235b9f8`.
+- `syntax` covers only uncommitted files when the run is a subset, so I ran `node --check` by hand over all 492 files in `src/` and `tools/`. They all parse.
 
 **Red first**, run against the old tree:
 - `buried-dead`: "slamTell left him open on his own timer: 2.2" and "scorched 0 times".
