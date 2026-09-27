@@ -27,7 +27,7 @@ could last around a minute. Boss is good, but he should summon those minis rathe
   usual range freeze left them asleep and they never swooped. Whelps he called are now always updated. `tools/whelps.mjs`
   had caught this (red before the fix, green after).
 - Merged origin/master (119d8ae). I hand-resolved the conflicts in main.js (the DMG/EHP rows, where master dropped the Tide
-  Reaver) and in the generated block of marks.js, then regenerated the marks. The debug tool `tools/_wl2dbg.mjs` is deleted.
+  Reaver) and in the generated block of marks.js, then regenerated the marks. The throwaway debug script it used is deleted.
 - `tools/whelps.mjs` is new and registered in `tools/check.mjs`.
 
 ## Numbers: the Gate Gargoyle pilot (refill, 150 s cap, seed pass0)
