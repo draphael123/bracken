@@ -8,7 +8,7 @@ import {SFX as REAL_SFX} from '../src/audio.js';
 import {BELL} from '../src/bellcrab.js';   /* the real sound table: audio.js imports clean in Node, nothing is built until a sound is asked for */
 const deep=LEVELS.find(l=>l.id==='deep').build(),keep=LEVELS.find(l=>l.id==='keep').build();
 assert.equal(deep.arena.boss,'bellcrab');assert.equal(keep.arena.boss,'drownedking');assert.equal(LEVELS.find(l=>l.id==='keep').needs,'deep');assert.equal(LEVELS.find(l=>l.id==='causeway').needs,'keep');
-assert.equal(deep.ents.filter(e=>e.t==='stray').length,3);assert(!deep.ents.some(e=>e.t==='drownedking'));assert.equal(keep.ents.filter(e=>e.t==='bellguard').length,1);assert.equal(keep.ents.filter(e=>e.t==='silver').length,3);
+assert.equal(deep.ents.filter(e=>e.t==='stray').length,0);/* claude/npcs: the Deep's lamp quest (thanks only) was removed with its NPC */assert(!deep.ents.some(e=>e.t==='drownedking'));assert.equal(keep.ents.filter(e=>e.t==='bellguard').length,1);assert.equal(keep.ents.filter(e=>e.t==='silver').length,3);
 for(const L of [deep,keep]){const reach=floodReach(L,T,{rides:true});for(const e of L.ents.filter(e=>['gate','silver','stray','check'].includes(e.t)))assert(reach.jumpNear(e.x,e.y),e.t+' '+e.x+','+e.y);
  for(const e of L.ents)assert(e.x>=0&&e.x<L.W&&e.y>=0&&e.y<L.H,e.t+' outside crop');
  for(const z of L.deep.zones)assert(z.x0>=0&&z.x1<L.W&&z.y0>=0&&z.y1<L.H);
