@@ -51,6 +51,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      but what he costs you is ATTENTION in somebody else's fight, which is the Runner's argument exactly, and
      unlike the Runner the thing he comes back with is unblockable. A soldier's weight, no more. */
   temperer: 3,
+  whelp: 2.5,   /* THE GARGOYLE WHELP: 28 health and a 9 point swoop, but the swoop is a SHOVE placed over a fall, and it is stone until it moves (an imp is 2.5) */
   /* THE SERJEANT: a charge down a bridge you cannot walk round, and a man with a sword when he is off the horse */
   lancer: 5,
   /* THE DRUNK: 22 health and a lob you can see the ring of - but he is always above the thing you are crossing */

@@ -1,0 +1,108 @@
+{
+ "refill": true,
+ "secs": 150,
+ "passes": 1,
+ "rows": [
+  {
+   "pass": 0,
+   "h": "knight",
+   "won": true,
+   "out": "win",
+   "secs": 52.8,
+   "taken": 24,
+   "opened": 5,
+   "left": 0,
+   "hitBy": {
+    "gustTell": 8,
+    "crash": 16
+   },
+   "modes": {
+    "wake": 1,
+    "hover": 14,
+    "spitTell": 4,
+    "spit": 4,
+    "recover": 7,
+    "gustTell": 3,
+    "gust": 3,
+    "diveTell": 5,
+    "dive": 5,
+    "smash": 5,
+    "crash": 5,
+    "stunned": 5,
+    "rise": 4,
+    "perchFly": 1,
+    "shriek": 1,
+    "flareTell": 1
+   }
+  },
+  {
+   "pass": 0,
+   "h": "warden",
+   "won": true,
+   "out": "win",
+   "secs": 53.2,
+   "taken": 57,
+   "opened": 5,
+   "left": 0,
+   "hitBy": {
+    "recover": 9,
+    "gustTell": 8,
+    "dive": 24,
+    "crash": 16
+   },
+   "modes": {
+    "wake": 1,
+    "hover": 13,
+    "spitTell": 5,
+    "spit": 5,
+    "recover": 6,
+    "diveTell": 6,
+    "dive": 6,
+    "smash": 5,
+    "crash": 5,
+    "stunned": 5,
+    "rise": 4,
+    "perchFly": 2,
+    "shriek": 2,
+    "gustTell": 1,
+    "gust": 1,
+    "land": 1
+   }
+  },
+  {
+   "pass": 0,
+   "h": "pyro",
+   "won": true,
+   "out": "win",
+   "secs": 89.2,
+   "taken": 166,
+   "opened": 5,
+   "left": 0,
+   "hitBy": {
+    "gustTell": 16,
+    "dive": 72,
+    "recover": 54,
+    "stunned": 24
+   },
+   "modes": {
+    "wake": 1,
+    "hover": 29,
+    "spitTell": 15,
+    "spit": 15,
+    "recover": 18,
+    "flareTell": 3,
+    "gustTell": 3,
+    "gust": 3,
+    "perchFly": 1,
+    "shriek": 1,
+    "diveTell": 8,
+    "dive": 8,
+    "land": 3,
+    "rise": 6,
+    "smash": 5,
+    "crash": 5,
+    "stunned": 5
+   }
+  }
+ ]
+}

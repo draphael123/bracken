@@ -9,7 +9,8 @@
 //   THE RUBBLE SPIT  !  head back, throat lit; three chunks of masonry in a spread. Guard them or go between them.
 //   THE GLYPH FLARE  ✕  (no damage) a glyph lights under the slab you stand on: still on it when it goes, and you fall UP onto its
 //                        underside for three seconds - and he likes to dive on that slab while you hang there.
-//   THE PERCH SHRIEK    back to the gate; two or three imps pour out of the tower's windows (three at most).
+//   THE PERCH SHRIEK    back to the gate; two or three GARGOYLE WHELPS come out of the tower's cornices (three at most): stone on
+//                        its face until they swoop (src/gargoyle-whelp.js; docs/briefs/witchlight-whelps.md). They crumble when he does.
 // THE OPENING IS YOURS (tools/boss-openings.mjs and tools/gargoyle-smash.mjs prove it; Daniel, 2026-09-25: "smash through platforms
 // and fall on the floor and get stunned"): be on the slab his shadow finds and leave it LATE - after he has dropped - and nothing
 // takes his weight: HE SMASHES THROUGH IT (the crack runs across it first), CRASHES TO THE GARDEN FLOOR and lies there STUNNED for
@@ -27,7 +28,7 @@ export const GARG = {
   diveV: 430, diveUp: 150, land: 1.1, recover: 0.9, rise: 0.55,
   smashAny: true, smashT: 0.24, crashG: 1500, stun: 2.5, stunMul: 2,
   gustV: 215, gustT: 0.6, gustReach: 170, spitV: 190, spitG: 320, spread: 0.3,
-  flareT: 3.0, imps: 3, shriekEvery: 13, regrow: 6, regrowP2: 11, minLive: 3, slabP2: 1.6,
+  flareT: 3.0, whelps: 3, shriekEvery: 13, regrow: 6, regrowP2: 11, minLive: 3, slabP2: 1.6,
   hoverUp: 60, hoverDX: 52, high: 64,
 };
 const K = GARG.K;
@@ -72,8 +73,8 @@ function begin(e, what, c) { e.mode = TELL[what]; e.modeT = GARG.tell[what] * (e
 /* HIS CHOICE is weighted and random, and never the same thing three times running (the Hedge Warden's first pilot had no dice in it,
    and its four passes were one fight four times) */
 function choose(e, c, slab, terrace) {
-  const r = c.rnd, w = terrace ? { spit: 3, shriek: e.shriekCd <= 0 && c.adds() < GARG.imps ? 1.2 : 0 }
-    : { dive: 3, gust: 2, spit: 2, flare: slab && e.flareCd <= 0 ? 1.4 : 0, shriek: e.shriekCd <= 0 && c.adds() < GARG.imps ? 0.8 : 0 };
+  const r = c.rnd, w = terrace ? { spit: 3, shriek: e.shriekCd <= 0 && c.adds() < GARG.whelps ? 1.2 : 0 }
+    : { dive: 3, gust: 2, spit: 2, flare: slab && e.flareCd <= 0 ? 1.4 : 0, shriek: e.shriekCd <= 0 && c.adds() < GARG.whelps ? 0.8 : 0 };
   if (e.last && e.last === e.last2 && w[e.last]) w[e.last] = 0;
   else if (e.last && w[e.last]) w[e.last] *= 0.45;
   const tot = Object.values(w).reduce((s, v) => s + v, 0); let k = r() * tot;
@@ -156,7 +157,7 @@ export function updateGargoyle(e, dt, c) {
         else c.say('THE GLYPH FIZZLES', false, true); } return;
     /* THE PERCH SHRIEK */
     case 'perchFly': toward(e, e.px0, e.py0, dt, 2.2); if (Math.hypot(e.x - e.px0, e.y - e.py0) < 10 || e.modeT <= 0) { e.mode = 'shriek'; e.modeT = 1.1; e.shrieked = false; c.sound('screech'); c.shake(4); } return;
-    case 'shriek': e.face = -1; if (!e.shrieked && e.modeT < 0.7) { e.shrieked = true; const n = Math.min(GARG.imps - c.adds(), 2 + (rnd() < 0.5 ? 1 : 0)); for (let i = 0; i < n; i++) c.imp(A.x1 - 8, top - 40 - i * 26); e.shriekCd = GARG.shriekEvery; }
+    case 'shriek': e.face = -1; if (!e.shrieked && e.modeT < 0.7) { e.shrieked = true; const n = Math.min(GARG.whelps - c.adds(), 2 + (rnd() < 0.5 ? 1 : 0)); for (let i = 0; i < n; i++) c.whelp(A.x1 - 8, top - 40 - i * 26); e.shriekCd = GARG.shriekEvery; }
       if (e.modeT <= 0) { e.mode = 'hover'; e.cd = 0.8; } return;
   }
   e.mode = 'hover';
