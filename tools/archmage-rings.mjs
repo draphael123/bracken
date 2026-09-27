@@ -7,6 +7,11 @@
 //            taking double; the same ring with no dodge through it opens nothing
 //   STAGES   (A10) two: "HIS RINGS STAY OPEN" - a spare exit stays by you, three rings at once, his fire comes out of it; three: "HE FIGHTS
 //            RING TO RING" - the blink is a ring pair and the fire comes across the room from a ring behind you
+//   DECOY    (round 3) decoyTell opens TWO flared rings either side of you, only one with the desert in it (the decoy is hollow); he comes
+//            out of the real one mid-cast; a dodge through the real one breaches him, through the decoy opens nothing; both sides get used
+//   TRAP     (round 3) trapTell opens a ring OVER YOU glowing the bolt's colour (with his hand's ring); the bolts DROP out of it on the
+//            spot it opened - stay under it and they land (guarded: '!'), step out from under it in the tell and they miss
+//   ROUND 3 KEPT the opening, his health and the length of his order as they were (Daniel: his difficulty is fine)
 //   KIT      every tell of his, old and new, is reached in a long fight (A3), and the death mark still opens him (his identity is kept)
 //   IN PLAY  on the carpet, a real dodge through the flared exit breaches him and a real swing lands double
 import assert from 'node:assert/strict';
@@ -47,6 +52,38 @@ const exitOf = r => r.e.rings.find(q => q.kind === 'exit' && !q.spare);
     for (const q of b) { assert.ok(Math.hypot(q.x - ex.x, q.y - ex.y) < 12, 'out of the EXIT ring, not his hand'); assert.ok(q.vx * (r.P.x - q.x) + q.vy * (r.P.y - 8 - q.y) > 0, 'at you'); }
     run(r, 3); assert.ok(r.hits.some(h => h.blow === 'bent' && !h.hard), 'a bent bolt lands, and it is guarded (' + JSON.stringify(r.hits) + ')'); }
   assert.equal(MARK['undeadmage|bendTell'], '!'); assert.equal(MARK['undeadmage|stepTell'], ''); }
+// ---- DECOY RING (round 3) ----
+{ const sides = new Set();
+  for (const coin of [0.2, 0.8]) { const r = rig(); r.c.rnd = () => coin; force(r, 'decoy'); const real = exitOf(r), dec = r.e.rings.find(q => q.kind === 'decoy');
+    assert.ok(real && dec, 'the decoy opens a real exit and a decoy'); assert.ok(real.flare && dec.flare, 'BOTH flare: that is the tell');
+    assert.ok(!real.hollow && dec.hollow, 'only the real one has the desert in it: the decoy is hollow (the told difference)');
+    assert.ok(Math.sign(real.x - r.P.x) === -Math.sign(dec.x - r.P.x), 'they open either side of you: ' + [real.x, dec.x, r.P.x]);
+    assert.ok(Math.abs(real.x - r.P.x) < 80 && Math.abs(dec.x - r.P.x) < 80, 'both near you'); sides.add(Math.sign(real.x - r.P.x));
+    assert.ok(r.said.includes('TWO RINGS: ONLY ONE HOLDS THE DESERT'), 'it is announced');
+    let opened = 0; for (let i = 0; i < 60 * (MAGE.tell.decoy + 0.05); i++) { updateUndeadMage(r.e, 1 / 60, r.c); if (r.e.open > 0) opened++; }
+    assert.ok(Math.abs(r.e.x - real.x) < 1 && Math.abs(r.e.y - (real.y + 24)) < 1, 'he comes out of the REAL ring');
+    assert.ok(r.e.mode.endsWith('Tell') && !['stepTell', 'bendTell', 'decoyTell', 'trapTell'].includes(r.e.mode) && r.e.modeT <= MAGE.tell[r.e.spell] * 0.55, 'mid-cast, a spell: ' + r.e.mode);
+    assert.equal(opened, 0, 'left alone, the decoy opens nothing'); }
+  assert.equal(sides.size, 2, 'the real ring is on either side of you by the coin: read, not learned');
+  const q = rig(); force(q, 'decoy'); run(q, 0.3); const dec = q.e.rings.find(x => x.kind === 'decoy'); q.P.x = dec.x; q.P.y = dec.y + 8; q.c.dodging = () => true; updateUndeadMage(q.e, 1 / 60, q.c); q.c.dodging = () => false;
+  assert.notEqual(q.e.mode, 'breached', 'a dodge through the DECOY opens nothing'); assert.equal(q.carried.length, 0, 'and carries you nowhere');
+  const t = rig(); force(t, 'decoy'); run(t, 0.3); const re = exitOf(t); t.P.x = re.x; t.P.y = re.y + 8; t.c.dodging = () => true; updateUndeadMage(t.e, 1 / 60, t.c);
+  assert.equal(t.e.mode, 'breached', 'a dodge through the REAL ring breaches him, as the step'); assert.ok(t.e.open > MAGE.breachT - 0.1, 'for the whole window'); }
+// ---- RING TRAP (round 3) ----
+{ const r = rig(); force(r, 'trap'); const ex = exitOf(r), en = r.e.rings.find(q => q.kind === 'entry');
+  assert.ok(ex && en && ex.glow === RING_COL.fire && en.glow === RING_COL.fire, "the trap ring and his hand's ring glow the bolt's colour: the tell");
+  assert.ok(Math.abs(ex.x - r.P.x) < 4 && ex.y < r.P.y - 50, 'the ring opens OVER you: ' + [ex.x - r.P.x, ex.y - r.P.y]);
+  assert.ok(r.said.includes('A RING OVER YOU: GET OUT FROM UNDER'), 'it is announced');
+  const x0 = ex.x; run(r, MAGE.tell.trap + 0.02); const d = r.e.shots.filter(q => q.kind === 'trap');
+  assert.equal(d.length, MAGE.trapN[0], 'stage one drops ' + MAGE.trapN[0]); assert.equal(ex.x, x0, 'the ring does not follow you');
+  for (const q of d) { assert.ok(Math.hypot(q.x - ex.x, q.y - ex.y) < 12, 'out of the ring over you'); assert.ok(q.vy > Math.abs(q.vx) * 3, 'and DOWN'); }
+  run(r, 2); assert.ok(r.hits.some(h => h.blow === 'trap' && !h.hard), 'under it, it lands - and a shield turns it (' + JSON.stringify(r.hits) + ')');
+  const s = rig(); force(s, 'trap'); for (let i = 0; i < 60 * (MAGE.tell.trap + 2); i++) { if (i === 20) s.P.x += 60; updateUndeadMage(s.e, 1 / 60, s.c); }
+  assert.ok(!s.hits.some(h => h.blow === 'trap'), 'stepped out from under it in the tell: it misses');
+  const s2 = rig({ hp: 650 }); run(s2, 0.02); force(s2, 'trap'); run(s2, MAGE.tell.trap + 0.02); assert.equal(s2.e.shots.filter(q => q.kind === 'trap').length, MAGE.trapN[1], 'stage two: a heavier drop');
+  assert.equal(MARK['undeadmage|trapTell'], '!'); assert.equal(MARK['undeadmage|decoyTell'], ''); }
+// ---- ROUND 3 KEPT HIS DIFFICULTY ----
+{ assert.equal(MAGE.order.length, 12, 'his order is as long as it was'); assert.equal(MAGE.breachT, 2.0, 'the dodge-through opening is not shortened'); assert.equal(MAGE.openMul, 2); }
 // ---- STAGES ----
 { const r = rig({ hp: 650 }); run(r, 0.02); assert.equal(mageStage(r.e), 2); assert.ok(r.said.includes('HIS RINGS STAY OPEN'), 'stage two is announced');
   force(r, 'step'); run(r, MAGE.tell.step + 0.05); const spare = r.e.rings.find(q => q.spare); assert.ok(spare && spare.life >= MAGE.spareLife, 'stage two: a spare exit stays open by you');
@@ -58,7 +95,7 @@ const exitOf = r => r.e.rings.find(q => q.kind === 'exit' && !q.spare);
   const a3 = rig({ hp: 300 }); run(a3, 0.05); a3.e.rings = []; force(a3, 'fire'); const far = a3.e.rings.find(q => q.across); assert.ok(far && Math.abs(far.x - a3.P.x) > 150 && Math.sign(far.x - a3.P.x) !== Math.sign(a3.e.x - a3.P.x), 'stage three: the fire comes across the room from a ring behind you'); }
 // ---- KIT: every tell, old and new; the death mark still opens him ----
 { const r = rig(), seen = new Set(); for (let i = 0; i < 60 * 90; i++) { updateUndeadMage(r.e, 1 / 60, r.c); if (r.e.mode.endsWith('Tell')) seen.add(r.e.mode); r.P.x = 300 + (i % 500); if (r.e.hp < 500) r.e.hp = 1000; }
-  for (const m of ['fireTell', 'iceTell', 'stormTell', 'poisonTell', 'handTell', 'markTell', 'stepTell', 'bendTell']) assert.ok(seen.has(m), 'he never casts ' + m + ' in a long fight (A3)');
+  for (const m of ['fireTell', 'iceTell', 'stormTell', 'poisonTell', 'handTell', 'markTell', 'stepTell', 'bendTell', 'decoyTell', 'trapTell']) assert.ok(seen.has(m), 'he never casts ' + m + ' in a long fight (A3)');
   const q = rig({ mode: 'markTell', modeT: 0, spell: 'mark' }); updateUndeadMage(q.e, 0.01, q.c); q.P.x += 90; run(q, MAGE.markFuse + 0.1); assert.equal(q.e.mode, 'gather', 'the death mark that finds no one still opens him');
   const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); assert.ok(/e\.t==='undeadmage'&&\(e\.mode==='gather'\|\|e\.mode==='breached'\)\)dmg=Math\.round\(dmg\*LICH\.openMul\)/.test(src), 'main.js doubles a blow on him when he is breached'); }
 console.log('the rings in Node: the step and its flared exit, bent bolts from above and behind, the dodge through that breaches him, the stages');

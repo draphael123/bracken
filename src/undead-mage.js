@@ -25,6 +25,14 @@
 //   THE STAGES (A10) 1 over 70%: one pair at a time. 2 (70-40%) "HIS RINGS STAY OPEN": rings live 1.6x longer, a spare exit stays
 //                    open near you after a step or a bent bolt (three rings at once), and his fire comes out of it. 3 (his enrage)
 //                    "HE FIGHTS RING TO RING": his blink is a ring pair, and his fire comes across the room out of a ring behind you.
+// ROUND 3 (docs/briefs/falling-tower-round3.md, Daniel 2026-09-27): two more told moves on the same kit. His difficulty was called
+// fine, so they take the places of the SECOND step and the SECOND bent bolt in his order - the rotation is as long as it was, and the
+// dodge-through opening, his health and every old tell are untouched.
+//   DECOY RING       decoyTell TWO exit rings open either side of you and BOTH flare - but only the real one has THE DESERT in it;
+//                    the decoy is hollow, his green fog and nothing through it. He steps out of the real one mid-cast. Read the
+//                    desert: dodge through the real ring and he is breached as ever; the decoy opens nothing and costs you the dodge
+//   RING TRAP        trapTell  a ring opens OVER YOU and glows the bolt's colour, his hand's ring with it; he casts in and the bolts
+//                    DROP out of it on the spot it opened over - it does not follow you. Get out from under it, or guard      !
 import { canvas, flipX, whiten } from './px.js';
 import { drawDesertOval } from './sanctum.js';
 export { bakeUndeadMage, UNDEADMAGE_F } from './redraw/lich.js';
@@ -37,17 +45,21 @@ void flipX; void whiten;
 
 export const MAGE = {
   enrageAt: 0.4, fast: 1.6, blinkEvery: 8, blinkEnraged: 3, openT: 2.5, openMul: 2,
-  order: ['fire', 'ice', 'step', 'poison', 'mark', 'bend', 'storm', 'hand', 'step', 'fire', 'mark', 'bend'],
-  tell: { fire: 0.9, ice: 0.9, storm: 1.2, poison: 1.0, hand: 0.9, mark: 0.6, step: 1.0, bend: 1.0 },
-  dmg: { fire: 14, ice: 12, storm: 22, orb: 8, hand: 16, mark: 28, bent: 13 },
+  order: ['fire', 'ice', 'step', 'poison', 'mark', 'bend', 'storm', 'hand', 'decoy', 'fire', 'mark', 'trap'],   /* (round 3: the second step is the DECOY, the second bend the TRAP) */
+  tell: { fire: 0.9, ice: 0.9, storm: 1.2, poison: 1.0, hand: 0.9, mark: 0.6, step: 1.0, bend: 1.0, decoy: 1.1, trap: 1.0 },
+  dmg: { fire: 14, ice: 12, storm: 22, orb: 8, hand: 16, mark: 28, bent: 13, trap: 13 },
+  /* THE TRAP: how high over you the ring opens, and its drop - a column of bolts, three and then five, fanned so a side-step clears them */
+  trapUp: 70, trapN: [3, 5, 5], trapFan: 0.16,
   markR: 36, markFuse: 2.0, cloudR: 26, cloudLife: 4, handSpeed: 72, hover: 1.0, boltV: 150,   /* the bolt is slower than the carpet: every spell can be out-flown */
   /* THE RINGS: stage 2 below 70%; a ring's size; how near you the step's exit opens; how long a used ring stays; the spare's life; the
      breach (the opening a dodge through a ring makes); how far through a ring you come out beside him */
   stage2: 0.7, ringW: 12, ringH: 17, stepNear: 56, ringStay: 0.5, spareLife: 3.2, stayMul: 1.6, breachT: 2.0, beside: 30,
 };
-const TELL = { fire: 'fireTell', ice: 'iceTell', storm: 'stormTell', poison: 'poisonTell', hand: 'handTell', mark: 'markTell', step: 'stepTell', bend: 'bendTell' };
+const TELL = { fire: 'fireTell', ice: 'iceTell', storm: 'stormTell', poison: 'poisonTell', hand: 'handTell', mark: 'markTell', step: 'stepTell', bend: 'bendTell', decoy: 'decoyTell', trap: 'trapTell' };
 const SAY = { fireTell: 'FIRE: GUARD OR FLY', iceTell: 'FROST: FLY ACROSS IT', stormTell: 'LIGHTNING: LEAVE THE MARK', poisonTell: 'POISON: KEEP OUT OF THE CLOUD', handTell: 'DEATH: OUT-FLY THE HAND', markTell: 'THE DEATH MARK: FLY OUT OF THE RING',
-  stepTell: 'HE OPENS A RING BY YOU', bendTell: 'HIS BOLTS BEND THROUGH THE RINGS' };
+  stepTell: 'HE OPENS A RING BY YOU', bendTell: 'HIS BOLTS BEND THROUGH THE RINGS', decoyTell: 'TWO RINGS: ONLY ONE HOLDS THE DESERT', trapTell: 'A RING OVER YOU: GET OUT FROM UNDER' };
+/* the ring moves - the ones that open a ring, and so never come straight out of one (a step comes out casting a spell, not a ring) */
+const RINGED = new Set(['step', 'bend', 'decoy', 'trap']);
 export const RING_COL = { rim: '#6fe08a', rimL: '#c8ffd8', fire: '#ff9b49', flare: '#ffffff' };
 export const mageOpen = e => e.mode === 'gather' || e.mode === 'breached';
 export const mageSpeed = e => e.enraged ? MAGE.fast : 1;
@@ -76,6 +88,12 @@ function begin(e, spell, c, half) {
   if (spell === 'storm') e.markX = P.x;                 /* the column is where you were when he raised his hands */
   if (spell === 'step') { const toward = Math.sign(e.x - P.x) || 1, [xx, xy] = inBox(box, P.x + toward * MAGE.stepNear, py - 8);
     const [, b] = pair(e, e.x, e.y - 24, xx, xy, e.modeT + stayOf(e)); b.flare = true; }   /* THE EXIT FLARES FIRST: that is the tell */
+  if (spell === 'decoy') { const side = (c.rnd || Math.random)() < 0.5 ? -1 : 1;   /* which side of you the real one is: a coin, so it is READ, not learned */
+    const [rx, ry] = inBox(box, P.x + side * MAGE.stepNear, py - 8), [fx, fy] = inBox(box, P.x - side * MAGE.stepNear, py - 8);
+    const [, b] = pair(e, e.x, e.y - 24, rx, ry, e.modeT + stayOf(e)); b.flare = true;
+    ring(e, 'decoy', fx, fy, e.modeT + 0.2, { flare: true, hollow: true }); }   /* THE DECOY: it flares the same, and there is nothing through it */
+  if (spell === 'trap') { const [xx, xy] = inBox(box, P.x, py - MAGE.trapUp);   /* OVER YOU, where you are now: it stays there */
+    const [a, b] = pair(e, e.x + e.face * 16, e.y - 34, xx, xy, e.modeT + stayOf(e)); a.glow = b.glow = RING_COL.fire; b.trap = true; }
   if (spell === 'bend') { const toward = Math.sign(e.x - P.x) || 1, above = ((e.bendN = (e.bendN || 0) + 1) % 2) === 1;
     const [xx, xy] = inBox(box, above ? P.x + ((c.rnd || Math.random)() - 0.5) * 40 : P.x - toward * 64, above ? py - 72 : py - 6);
     const [a, b] = pair(e, e.x + e.face * 16, e.y - 34, xx, xy, e.modeT + stayOf(e)); a.glow = b.glow = RING_COL.fire; }   /* BOTH RINGS GLOW THE BOLT'S COLOUR */
@@ -162,8 +180,20 @@ export function updateUndeadMage(e, dt, c) {
   else if (spell === 'mark') { e.deathMark = { x: P.x, y: py, r: MAGE.markR, t: MAGE.markFuse / (e.enraged ? 1.25 : 1), T: MAGE.markFuse / (e.enraged ? 1.25 : 1) }; e.mode = 'markWait'; e.modeT = 99; sound('crack'); return; }
   else if (spell === 'step') {   /* HE STEPS THROUGH: out of the exit, mid-cast - the next spell's tell is already half gone */
     const b = e.rings.find(r => r.kind === 'exit' && r.flare && !r.used); if (b) { e.x = b.x; e.y = b.y + 24; b.flare = false; b.life = b.t + stayOf(e); keepSpare(e, b); if (b.to) b.to.life = b.t + 0.2; }
-    let next = MAGE.order[e.turn++ % MAGE.order.length]; if (next === 'step' || next === 'bend') next = 'fire';   /* out of a ring, a spell - never another ring */
+    let next = MAGE.order[e.turn++ % MAGE.order.length]; if (RINGED.has(next)) next = 'fire';   /* out of a ring, a spell - never another ring */
     sound('mageBolt'); e.chained = false; begin(e, next, c, true); return; }
+  else if (spell === 'decoy') {   /* OUT OF THE REAL ONE, mid-cast, as the step; the decoy just goes out */
+    const b = e.rings.find(r => r.kind === 'exit' && r.flare && !r.used); for (const d of e.rings) if (d.kind === 'decoy') { d.flare = false; d.life = Math.min(d.life, d.t + 0.15); }
+    if (b) { e.x = b.x; e.y = b.y + 24; b.flare = false; b.life = b.t + stayOf(e); keepSpare(e, b); if (b.to) b.to.life = b.t + 0.2; }
+    let next = MAGE.order[e.turn++ % MAGE.order.length]; if (RINGED.has(next)) next = 'fire';
+    sound('mageBolt'); e.chained = false; begin(e, next, c, true); return; }
+  else if (spell === 'trap') {   /* INTO HIS HAND'S RING, AND DOWN OUT OF THE ONE OVER YOU */
+    const b = e.rings.find(r => r.kind === 'exit' && r.trap && !r.used), a = b && b.to;
+    if (b) { const n = MAGE.trapN[mageStage(e) - 1];
+      if (a) shot(Math.atan2(a.y - hy, a.x - hx), 260, 4, 0, 'feed', RING_COL.fire, Math.hypot(a.x - hx, a.y - hy) / 260);
+      for (let i = 0; i < n; i++) shot(Math.PI / 2 + (i - (n - 1) / 2) * MAGE.trapFan, MAGE.boltV, 5, MAGE.dmg.trap, 'trap', '#ff9b49', 2.5, b);
+      b.glow = null; b.trap = false; if (a) { a.glow = null; a.life = a.t + 0.2; } b.life = b.t + stayOf(e); keepSpare(e, b); }
+    sound('mageBolt'); }
   else if (spell === 'bend') {   /* INTO ONE RING AND OUT OF THE OTHER: from above you, or from behind */
     const b = e.rings.find(r => r.kind === 'exit' && r.glow && !r.used && !r.spare), a = b && b.to;
     if (b) { const n = mageStage(e) === 1 ? 1 : mageStage(e) === 2 ? 2 : 3, a0 = Math.atan2(py - b.y, P.x - b.x);
@@ -177,7 +207,7 @@ export function updateUndeadMage(e, dt, c) {
 }
 export function undeadFrame(e, F) {
   if (e.hurtT > 0) return F.hurt;
-  return ({ fireTell: F.fire, iceTell: F.ice, stormTell: F.storm, poisonTell: F.poison, handTell: F.death, markTell: F.death, markWait: F.death, stepTell: F.blinkOut, bendTell: F.fire, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
+  return ({ fireTell: F.fire, iceTell: F.ice, stormTell: F.storm, poisonTell: F.poison, handTell: F.death, markTell: F.death, markWait: F.death, stepTell: F.blinkOut, bendTell: F.fire, decoyTell: F.blinkOut, trapTell: F.fire, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
     ?? (e.enraged ? F.enraged[Math.floor(e.anim * 4) % 2] : F.idle[Math.floor(e.anim * 2.5) % 2]);
 }
 /* ONE RING: the desert inside it, and a rim of sparks in his green - the bolt's colour when a bolt is coming through it, and bright and
@@ -186,7 +216,9 @@ export function drawMageRing(g, r, cx, cy, time) {
   const k = Math.max(0, Math.min(1, r.on)), rw = Math.round(MAGE.ringW * k), rh = Math.round(MAGE.ringH * k); if (rw < 2 || rh < 2) return;
   const x = Math.round(r.x - cx), y = Math.round(r.y - cy);
   if (r.flare || r.glow) { g.globalCompositeOperation = 'lighter'; g.fillStyle = r.flare ? 'rgba(200,255,220,' + (0.10 + 0.08 * Math.sin(time * 18)).toFixed(3) + ')' : 'rgba(255,155,73,0.14)'; const R = rh + 5, Q = rw + 5; for (let dy = -R; dy <= R; dy++) { const half = Math.round(Q * Math.sqrt(Math.max(0, 1 - (dy / R) * (dy / R)))); if (half > 0) g.fillRect(x - half, y + dy, half * 2, 1); } g.globalCompositeOperation = 'source-over'; }   /* an oval of light round it, not a box */
-  drawDesertOval(g, x, y, rw, rh, time, r.x * 0.01);
+  if (r.hollow) { g.fillStyle = '#0c1410'; for (let dy = -rh; dy <= rh; dy++) { const half = Math.round(rw * Math.sqrt(Math.max(0, 1 - (dy / rh) * (dy / rh)))); if (half > 0) g.fillRect(x - half, y + dy, half * 2, 1); }
+    g.fillStyle = 'rgba(111,224,138,0.35)'; for (let i = 0; i < 5; i++) g.fillRect(x + Math.round(Math.sin(time * 1.7 + i * 1.9) * rw * 0.6), y + Math.round(Math.cos(time * 1.3 + i * 2.3) * rh * 0.6), 2, 1); }   /* THE DECOY: hollow - his fog, and nothing through it */
+  else drawDesertOval(g, x, y, rw, rh, time, r.x * 0.01);
   const col = r.flare ? (Math.floor(time * 14) % 2 ? RING_COL.flare : RING_COL.rim) : r.glow || RING_COL.rim, n = 24;
   for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 + time * (r.flare ? 4 : 1.6) * (r.kind === 'entry' ? -1 : 1);
     g.fillStyle = i % 6 === 0 ? RING_COL.rimL : col; g.fillRect(x + Math.round(Math.cos(a) * (rw + 1)), y + Math.round(Math.sin(a) * (rh + 1)), r.flare ? 2 : 1, r.flare ? 2 : 1); }

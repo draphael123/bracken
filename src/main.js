@@ -15149,7 +15149,7 @@ function updateGargoyleBoss(e, dt) {
 function updateUndeadMage(e,dt){
  e.hp0??=e.maxHp;const A=L.arena,box=carpetBox(A,e.squeeze||0);
  stepUndeadMage(e,dt,{P,box,rnd:Math.random,
-  hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK',bent:'BENT BOLT'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
+  hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK',bent:'BENT BOLT',trap:'RING TRAP'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
   venom:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);},
   say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),
   /* HIS RINGS WORK BOTH WAYS (round 2): a dodge on the carpet through an open exit ring carries you out beside him */
