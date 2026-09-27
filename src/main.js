@@ -3604,7 +3604,6 @@ function drawMap() {
   const nd = NODES[map.node];
   if (!map.walking) {
     const store = nd.kind === 'store';
-    const tamLine = !store && TAM_MAP[LEVELS[nd.level].id] ? ('TAM: ' + TAM_MAP[LEVELS[nd.level].id][(PROG[LEVELS[nd.level].id] || {}).cleared ? 1 : 0]) : '';
     const cw = Math.min(VW - 12, 218), ch = store ? 26 : 58;
     const onRight = nd.x < VW / 2;                                   // the card goes to the far side of the node
     const cx0 = onRight ? VW - cw - 6 : 6, low = nd.y - mapCamY > VH * 0.55, cy0 = low ? 21 : VH - 12 - ch;
@@ -3642,7 +3641,6 @@ function drawMap() {
       if (PROP.relic[p.relic] || p.relic) { g.drawImage(PROP.relic[p.relic] || PROP.lampIcon, bx, by - 2); bx += 12; }
       if (p.noHit) { g.drawImage(PROP.heart, bx, by - 1); bx += 12; }
       if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(bx + 1, by - 1, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(bx + 1, by + 5, 7, 2); g.fillStyle = ART.OUT; g.fillRect(bx + 4, by, 1, 6); g.fillRect(bx + 2, by + 2, 5, 1); bx += 12; }
-      const tm = TAM_MAP[id]; if (tm && !nodeLocked(nd)) text(fitText('TAM: ' + tm[p.cleared ? 1 : 0], cw - 16, 6), cx0 + 8, cy0 + 47, '#c9d1dc', 'left', 6);
       }
     }
   }
@@ -18313,80 +18311,12 @@ function shatterRock(r) { if (r.spore) { burst(r.x, r.y - 2, 10, ['#c9a0ff', '#9
 /* A GROWN CAP IS A ROOF (the Sporewood rebuild): something falling onto a sprout that has grown past half its height bursts on the cap's
    top. `dy` is how far it fell this frame, so a fast clump cannot step through the cap between two frames. */
 function capRoof(x, y, dy) { for (const m of movers) if (m.kind === 'growcap' && m.k > 0.5 && x > m.x && x < m.x + m.w && y >= m.y - 2 && y - Math.max(8, dy || 0) <= m.y + 3) return m; return null; }
-// Tam, the squire: at the trailhead of every level, before and after it is cleared. Caged in the Stockade (that level keeps the kit quest).
-const TAM_LINES = {
-  wood: [['SIR KNIGHT. I AM TAM. I CARRY YOUR SPARE BLADE AND I WILL KEEP THE TRAIL BEHIND YOU.', 'THE HIVE TOOK THE HONEY AND THE WOODSMAN\'S NERVE. THE QUEEN IS PAST THE BADGER SETT.'],
-         ['THE QUEEN IS DEAD AND THE WOOD HUMS QUIETER. WELL STRUCK.', 'THE MARSH IS NEXT. THEY SAY A KING CROAKS THERE AND HIS COURT SITS ON A DAIS.']],
-  marsh: [['THE FERRYMAN WANTS COIN FOR THE CROSSING. I HAVE NONE. I HAVE YOUR SPARE BLADE.', 'GOBLINS CAME THROUGH LAST NIGHT, BOUND FOR THEIR STOCKADE. I WILL SCOUT AHEAD AND COUNT THEM.'],
-          ['THE FROG KING IS FROG SOUP. I WENT AHEAD TO COUNT GOBLINS.', 'THAT WAS A MISTAKE. COME QUICKLY.']],
-  spore: [['THEY TOOK MY HELM, HORN AND BLADE. YOU TOOK THEM BACK. I OWE YOU A WOOD\'S WORTH.', 'THE SPOREWOOD IS SICK. THE ELDER SAYS SOMETHING BREATHES AT THE BOTTOM OF IT.'],
-          ['THE WOOD BREATHES EASIER. THE ELDER WEPT.', 'THE GOBLIN KING HOLDS COURT PAST THE ROT. THEY SAY HE KEEPS A HOUND THE SIZE OF A CART.']],
-  kings: [['KINGSWOOD. GORM CALLS HIMSELF KING OF ALL OF IT. HIS COURT IS ALL FIRE AND DOGS.', 'IF YOU FALL, I WILL SAY YOU TRIPPED.'],
-          ['GORM IS DONE. THE GOBLINS ARE RUNNING FOR THE HILLS. THE CRAGS, THEY CALL THEM.', 'THE KEEPER SAYS THERE IS A HIGH ROAD, AND A HIGH STORE ON IT.']],
-  scree: [['THE HILL FOLK BAR THEIR DOORS. I DO NOT BLAME THEM. THE RAMS UP HERE HAVE A LORD.', 'THERE IS A SHEPHERD WHO LOST HER EWES. YOU FIND EVERYONE\'S LOST THINGS. IT IS A HABIT.'],
-          ['THE RAM LORD BROKE HIS OWN HORNS ON THE WALL. I SAW IT FROM THE FOLD GATE.', 'THERE IS A TOWN ON THE CLIFF ABOVE. IT HANGS. I AM NOT CLIMBING THAT.']],
-  hanging: [['A TOWN ON A CLIFF. THE REEVE IS AN OWL, AND THE OWL TAKES WHAT IT LIKES.', 'I WILL MIND THE MARKET. THE LAMPLIGHTER NEEDS A HAND.'],
-             ['THE REEVE IS FEATHERS. THE MARKET IS SINGING.', 'THE GOBLINS WENT UP TO THE OLD MONASTERY ON THE CLIFF. THEY RING ITS BELLS ALL NIGHT, AND BADLY.']],
-  spire: [["THE MONASTERY. THE MONKS ARE GONE, AND A GOBLIN SITS IN THE ABBOT'S CHAIR IN THE ABBOT'S COPE.", "THE MONKS' BELLS STILL ANSWER A BLOW, THEY SAY. IF ANYTHING SHAKES HIM OUT OF THAT CHAIR, IT IS THE GREAT BELL."],
-          ['THE GREAT BELL RANG AND HE CAME DOWN UNDER IT. I HEARD IT FROM THE GATE.', 'THE MOOR IS NEXT. THE WIND UP THERE COULD LIFT A HOUSE.']],
-  moor: [['THE MOOR. THE WIND UP HERE COULD LIFT A HOUSE. IT WILL LIFT YOU, IF YOU LET IT.', 'THERE IS A BOTHY IN THE LEE OF THE HILL. I WILL WAIT FOR YOU THERE.'],
-         ['THE WIND IS QUIET. YOU DID THAT.', 'THE SUMMIT IS ABOVE THE CLOUD. I WILL BE AT THE BOTHY. COME DOWN.']],
-  storm: [['STORMHOLD. THE GOBLINS HAVE A TOWN ON THE PEAK, AND THE QUEEN\'S OWN KNIGHT HOLDS THE BRIDGE.', 'THE GATES WANT KEYS. THE GOBLINS CARRY THEM. YOU KNOW WHAT TO DO.'],
-          ['THE LANCE IS IN THE RIVER AND THE BRIDGE IS YOURS.', 'HER CASTLE IS ABOVE US. HIGHCROWN. SHE IS THE LAST OF THEM.']],
-  crown: [['HIGHCROWN. THE GOBLIN QUEEN. THE LAST OF THE LINE, AND SHE HAS NEVER FOUGHT ALONE.', 'HER SENTRIES RUN FOR THE BELLS. CATCH ONE BEFORE HE RINGS, OR THE GATES COME DOWN BEHIND YOU.'],
-          ['SHE IS GONE, AND HER CROWN WENT OVER THE EDGE. THE MOUNTAIN IS QUIET.', 'THAT IS ALL OF THEM, SIR KNIGHT. I THINK WE CAN GO HOME.']],
-  longwater: [['THE MELT OFF THE MOUNTAIN RUNS SALT. I TASTED IT. A HUNDRED MILES FROM THE SEA.', 'THOSE SEALS WE TOOK OFF HER, SIR: THE WAX HAS A SHIP ON IT. SHE WAS PAYING SOMEONE. SOMEONE DOWN THERE.'],
-              ['HE WENT UNDER WITHOUT A WORD. THE GLAIVE POINTS OUT TO SEA.', 'THE FERRYMAN SAYS THERE IS A REEF OUT THERE, AND WRECKS, AND UNDER THE WRECKS A CITY.']],
-  hurricane: [['WE TOOK THEIR SHIP AND THE SEA TOOK EXCEPTION, SIR. THERE IS NOTHING TO WINDWARD BUT MORE OF THIS.', 'THE CREW SAY THE BOSUN WENT OVER THE SIDE IN THE LAST BLOW. THEY SAY HE HAS NOT FINISHED HIS WATCH.'],
-              ['HE WENT BACK INTO IT AND THE WIND WENT WITH HIM.', 'THE SEA IS FLAT AHEAD, SIR, AND THERE ARE LIGHTS UNDER IT IN ROWS. THAT IS THE STREET THE FLOTILLA WAS PAYING.']],
-  flotilla: [['THERE IS A TOWN OUT HERE, SIR, AND IT IS MADE OF SHIPS. THEY WORK THE WRECKS AND THEY PAY THE SEA A SHARE OF WHAT THEY TAKE.', 'AND THE FISHERFOLK WE COULD NOT FIND IN SALTREACH ARE ON THE OARS OF THE FIRST SHIP.'],
-             ['THE OARS ARE EMPTY. THEY ARE ROWING THEMSELVES HOME, AND THEY TOOK THE BLACK FLAG DOWN FOR US.', 'THE QUARTERMASTER SAID ONE THING BEFORE SHE WENT OVER: THAT THE SHARE WAS NOT FOR THE SEA. IT WAS FOR SOMETHING UNDER IT, IN A STREET WITH LIGHTS.']],
-  reef: [['THE TRIBUTE NEVER STOPPED BEING SENT. IT STOPPED ARRIVING. THE SHIP IS OUT ON THAT REEF WITH HER MANIFEST STILL IN HER.', 'THE WATER IS OVER MY HEAD OUT THERE, SIR. I WILL HOLD THE BOAT.'],
-         ['THE WHOLE MANIFEST. NOT ONE LINE OF IT IS GOLD.', 'THE REEF IS QUIET NOW. THERE ARE LIGHTS UNDER IT, DEEPER DOWN, IN ROWS. LIKE A STREET.']],
-  undercrown: [['THE MINERS HAD A STORY, SIR: A GOBLIN PRINCE WAS WALLED UP AT THE BOTTOM OF THIS HOLE, AND NOBODY WENT BACK DOWN FOR HIM.', 'THREE DEAD MEN\'S LAMPS ARE STILL DOWN THERE. BRING THEM UP AND I WILL SEE THEY GET HOME.'],
-               ['HE IS LET LIE. I FELT THE WHOLE HILL SETTLE WHEN HE WENT DOWN.', 'NOBODY SHOULD BE FORGOTTEN THAT LONG, SIR. NOT EVEN A GOBLIN.']],
-};
-// the errand he gives you in the levels where he is also the one asking: nothing yet, some, all of it
-const TAM_QUEST = {
-  spire: [["THE ABBOT'S BEADS WERE SCATTERED WHEN THE GOBLINS CAME. BRING ME THE THREE STRINGS AND I WILL KNOT THEM FOR YOU."], n => ['THAT IS ' + n + ' OF THE THREE STRINGS.'], ['THE BEADS ARE RESTRUNG. THEY STILL SMELL OF THE INCENSE.']],
-  storm: [['THREE OF THE HILL FOLK ARE SHUT IN THEIR CELLARS. LET THEM OUT.'], n => ['THAT IS ' + n + ' OF THE THREE. THE OTHERS ARE STILL BELOW.'], ['THEY ARE OUT OF THEIR CELLARS. THE BAKER SENDS A LOAF.']],
-  longwater: [['THE TIDEBOUND ARE WALKING THE FISHERFOLK DOWN INTO THE WATER. BRING THREE OF THEM BACK TO ME.'], n => ['THAT IS ' + n + ' OF THE THREE. THE OTHERS ARE STILL DOWN THE STREETS.'], ['THEY ARE SAFE. THE OLD WOMAN GAVE ME THIS FOR YOU: IT HELPS YOU HOLD YOUR BREATH.']],
-  crown: [['THREE ROYAL SEALS SIGN HER ORDERS. TAKE THEM AND HER ORDERS MEAN NOTHING.'], n => ['THAT IS ' + n + ' OF HER THREE SEALS.'], ['HER ORDERS MEAN NOTHING NOW. THE BANNER IS YOURS.']],
-  flotilla: [["THEY PRESSED THREE OF SALTREACH'S OWN ONTO THE OARS OF THAT GALLEY. GET THE SHACKLES OFF THEM AND THEY WILL FIND THEIR OWN WAY HOME."], n => ['THAT IS ' + n + ' OFF THE OARS. THE OTHERS ARE STILL CHAINED.'], ['ALL THREE, AND THEY TOOK THE BLACK FLAG DOWN OFF THE MAST AND GAVE IT TO ME FOR YOU.']],
-  reef: [['THE TRIBUTE SHIP BROKE OVER THIS REEF WITH HER MANIFEST ABOARD: THREE PAGES OF WHAT SHE CARRIED, AND TO WHOM. ONE IS IN HER HOLD, ONE IS OUT ON THE SHELF, ONE IS IN THE STERN CABIN.'], n => ['THAT IS ' + n + ' OF THE THREE PAGES. THE INK HAS HELD.'], ['ALL THREE. THE DIVERS LEFT THIS ON THE BELL: IT BURNS UNDER WATER.']],
-};
-const TAM_MAP = {
-  wood: ['THE HIVE FIRST. I AM BEHIND YOU.', 'THE MARSH NEXT. A KING CROAKS.'], marsh: ['FERRY: PAY, OR BREAK THE SLUICE.', 'I WENT AHEAD. COME QUICKLY.'],
-  stockade: ['TAM IS INSIDE. FOLLOW THE TRACKS.', 'MY KIT IS BACK. THE SPORES NEXT.'], spore: ['SOMETHING BREATHES DOWN THERE.', 'GORM HOLDS COURT PAST THE ROT.'],
-  kings: ['GORM. ALL FIRE AND DOGS.', 'THEY RAN FOR THE CRAGS. SO DO WE'], scree: ['THE RAMS UP HERE HAVE A LORD.', 'A TOWN HANGS OFF THE CLIFF ABOVE'],
-  hanging: ['THE REEVE IS AN OWL. I AM NOT.', 'THEY WENT UP TO THE MONASTERY.'], spire: ["A GOBLIN IN THE ABBOT'S CHAIR.", 'THE GREAT BELL RANG. MOOR NEXT.'], moor: ['THE WIND OWNS THE MOOR.', 'THE WIND IS QUIET. THE SUMMIT IS NEXT.'],
-  storm: ['HER KNIGHT HOLDS THE BRIDGE.', 'HER CASTLE IS ABOVE US.'], crown: ['THE QUEEN. THE LAST OF THEM.', 'IT IS DONE. WE CAN GO HOME.'], longwater: ['THE RIVER RUNS SALT.', 'THE GLAIVE POINTS OUT TO SEA.'], reef: ['THE FLEET IS ON THE REEF.', 'THREE PAGES, AND SOMETHING IN THE HOLE.'], flotilla: ['A TOWN BUILT ON SHIPS.', 'THE OARS ARE EMPTY AND THE FLAG IS OURS.'],
-};
-const NPC_LINES = pr => {
-  if (pr.lines) return pr.lines;   /* a level can give one of its folk their own words */
-  const n = straysGot.size, need = questOf().n;
-  if (pr.kind === 'barkeep') return ['THE BROKEN LANCE POURS FOR ANYONE WITH A COIN. EVEN YOU.', 'THEY ARE DRINKING TO YOUR HEALTH. THE PURSE SAYS ALIVE.', 'THE ONE AT THE CHAPEL NEVER DRINKS. MEET HIS SWORD AS IT FALLS AND HIS LIGHT GOES OUT.'];
-  if (pr.kind === 'foreman' && curId() === 'quarry') { if (n >= need) return ['ALL THREE, AND SINGING. THE GALLERY IS SAFE TO WORK AGAIN.', 'TAKE MY LAMP. A MAN WHO WALKS THAT GALLERY SHOULD SEE IT.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE BIRDS.', 'THE SUMMIT, THE GANTRY, AND THE ROPE OVER THE SADDLE.'];
-    return ['THE TROLL CAME DOWN OFF THE TOP AND MY MEN WENT BACK DOWN THE ROAD WITHOUT ME.', 'THEY LEFT MY CANARIES. THREE CAGES: THE SUMMIT, THE GANTRY, AND THE ROPE OVER THE SADDLE.', 'A TROLL THROWS WHAT IT CAN LIFT. THE CRANES OVER HIS BOWL LIFT MORE THAN HE DOES.']; }
-  if (pr.kind === 'foreman' && curId() === 'spire') return ['WE CAME UP FOR THE GLASS AND THE GLASS CAME UP FOR US. SIT BY THE FIRE A MINUTE.', 'ABOVE THE CLOUD THE SUN IS ON IT ALL DAY. A LEDGE THAT HOLDS YOU FOR A BREATH DOWN HERE HOLDS YOU FOR HALF OF ONE UP THERE, AND THE VENTS BREATHE TWICE AS OFTEN.', 'SOME OF MY MEN WENT OVER TO THE GOBLINS. THEY SMASH THE GLASS UNDER ANYONE STANDING ON IT. DO NOT STAND ON IT NEAR THEM.'];
-  if (pr.kind === 'foreman') return ['WE DUG FOR ORE AND HIT GLASS. THE CRYSTALS THROW LIGHT DOWN THE HALLS. STRIKE A MIRROR AND THE LIGHT TURNS.', 'THE BEAM BURNS WEB AND MELTS ICE AND OPENS THE DOORS WE SEALED. MY LAMP IS DOWN IN THE OLD WORKINGS, PAST A WEB.', 'SOMETHING GREW IN THE HEART OF IT. THE MEN WHO SAW IT SAY IT ONLY BLEEDS IN THE LIGHT.'];
-  if (pr.kind === 'bard') { const seen = Object.values(PROG.beasts || {}).filter(b => b && b.seen).length; const cleared = LEVELS.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length; const pool = ['THEY SAY THE HORNET QUEEN HATES A THIEF. WHO DOES NOT?', 'THE FROG KING DRAWS BREATH BEFORE HE PULLS. HOLD YOUR SHIELD UP.', 'CUT THE CHAINED HOUND LOOSE IN THE KENNELS. IT HAS OPINIONS.', 'THE OWL REEVE CANNOT ABIDE A LIT LANTERN.', 'A SONG FOR THE KNIGHT WHO FOUND ' + silverTotal() + ' SILVER. THE CROWD GOES WILD.']; return [cleared === 0 ? 'A NEW FACE. I SING OF THE WOODS. ASK ME ANYTHING, I WILL SING IT WRONG.' : 'YOU HAVE MET ' + seen + ' BEASTS AND CLEARED ' + cleared + ' WOODS. THAT IS A BALLAD.', pool[Math.floor(time / 8) % pool.length]]; }
-  if (pr.kind === 'oldknight') { const sv = silverAvail(); return [sv >= 15 ? 'FIFTEEN SILVER. THE KEEPER HAS A HERO FOR THAT. A HOT ONE.' : 'THREE SILVER COINS HIDE IN EVERY WOOD, ' + numWord(3 * LEVELS.filter(lv => !lv.hidden || lv.secret).length) + ' IN ALL. THE KEEPER TAKES THEM FOR A HERO, A BLADE AND A COAT.', PROG.hero === 'pyro' ? 'A PYROMANCER. IN MY DAY WE HAD SHIELDS. YOURS IS ON FIRE.' : 'BLOCK EARLY, PLUNGE LATE. I LIVED THIS LONG.', 'THE HIGH BOUGHS ARE MINE NO MORE. MY KNEES. GO UP FOR ME.']; }
-  if (pr.kind === 'shepherd') { if (n >= need) return ['BLESS YOU, KNIGHT.', 'MIND THE OLD RAM ON THE TOP.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE.', 'THE OTHERS WENT HIGHER.']; return ['MY THREE EWES STRAYED UP THE HILL.', 'BRING THEM AND THE FLEECE IS YOURS.']; }
-  if (pr.kind === 'woodsman' && L.quest && L.quest.item === 'fox') { if (n >= need) return ['ALL THREE, AND NOT A TOOTH ON THEM.', 'TAKE THE FLEECE. A HUNTED MAN NEEDS HIS WIND.']; if (n > 0) return ['THAT IS ' + n + ' OF THE THREE CUBS.', 'THE KENNELS, THE PARK, THE LODGE.']; return ['I KEPT THIS PARK BEFORE HIM. HE BAGGED THREE CUBS TO BLOOD HIS PUPS.', 'THE KENNELS, THE PARK, THE LODGE. BRING THEM BACK.']; }
-  if (pr.kind === 'woodsman') { if (n >= need) return ['SWEET AS SUMMER. MY THANKS, KNIGHT.', 'MIND THE QUEEN. SHE HATES A THIEF.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE POTS.', 'THE SETT, THE RIDGE, THE FALLEN GIANT.']; return ['THE HORNETS CARRIED OFF MY HONEY. THREE POTS.', 'BRING THEM BACK AND I WILL SEE YOU RIGHT.']; }
-  if (pr.kind === 'ferryman') { const fm = movers.find(mv => mv.ferry), toll = fm ? fm.toll : 10; const pay = !fm || fm.paid ? ['HOLD ON. THE CURRENT IS QUICK TODAY.'] : PROG.coins >= toll ? [toll + ' GOLD AND I POLE YOU OVER. UP TO PAY.', 'OR BREAK THE SLUICE AND WADE. YOUR FUNERAL.'] : [toll + ' GOLD, KNIGHT. YOU HAVE ' + PROG.coins + '.', 'THE SLUICE WHEEL IS FREE. THE FROGS ARE NOT.']; const q = n >= need ? ['MY TRAPS! THERE IS A GOOD LAD.'] : n > 0 ? ['THAT IS ' + n + ' OF MY THREE TRAPS.'] : ['THE FLOOD TOOK MY EEL TRAPS. THREE OF THEM.', 'ONE IS UNDER THE CHANNEL, I SWEAR IT.']; return pay.concat(q); }
-  if (pr.kind === 'hillfolk') return [['YOU CAME FOR US. I THOUGHT A GOBLIN WOULD BE THE LAST FACE I SAW.'], ['THE CELLAR DOOR WAS NEVER LOCKED. I WAS TOO FRIGHTENED TO TRY IT.'], ['TAM SAYS YOU ARE GOING UP TO THE CASTLE. SHE HAS OUR KIN UP THERE TOO.'], ['THANK YOU, KNIGHT.']][Math.min(3, pr.i || 0)];
-  if (pr.kind === 'squire' && pr.bothy) return ['THIS IS AS HIGH AS I GO, KNIGHT. THE BOTHY IS WARM AND THE WIND IS NOT.', 'THE SHEPHERD\'S CHILDREN LOST THEIR KITES ON THE FIELD. BRING THEM AND THE OLD MAN WILL GIVE YOU HIS CLOAK. IT CATCHES THE WIND.', 'I WILL BE HERE WHEN YOU COME DOWN. COME DOWN.'];
-  if (pr.kind === 'squire' && curId() !== 'stockade') { const cl = !!(PROG[curId()] && PROG[curId()].cleared); const T2 = TAM_LINES[curId()], TQ = TAM_QUEST[curId()];
-    if (T2) return (cl ? T2[1] : T2[0]).concat(TQ ? (n >= need ? TQ[2] : n > 0 ? TQ[1](n) : TQ[0]) : []); }
-  if (pr.kind === 'squire') { if (n >= need) return ['MY KIT! I OWE YOU, SIR KNIGHT.', 'THE CHIEFTAIN SWAPS WEAPONS. WATCH HIS HANDS.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE COFFERS.', 'THE WALL, THE DITCH, THE TUNNEL.']; return ['THEY TOOK MY KIT. HELM, HORN AND BLADE.', 'THREE COFFERS. THE WALL, THE DITCH, THE TUNNEL.']; }
-  if (pr.kind === 'cook') { if (n >= need) return ['THE KING\'S OWN CUPS. HE WILL MISS THEM. I WILL NOT.', 'HE DRINKS BEFORE HE THROWS. WATCH HIS HAND.']; if (n > 0) return ['THAT IS ' + n + ' OF THE THREE.', 'THE HALL, THE BURROW, THE ROOTS.']; return ['I SCOURED GORM\'S PLATE NINE YEARS. I TOOK THREE CUPS AND RAN.', 'HIS THIEVES TOOK THEM OFF ME: THE HALL, THE BURROW, THE ROOTS. BRING THEM AND I WILL SEE YOU RIGHT.']; }
-  if (pr.kind === 'lamplighter' && L.lampAir) { if (n >= need) return ['THREE MORE LIT. THAT IS THREE MORE BREATHS ON THAT STREET.', 'TAKE MY WICK. A BLOW WILL NOT PUT IT OUT.']; if (n > 0) return ['THAT IS ' + n + ' OF THE THREE I DROPPED.', 'THE MARKET STONES, A VAULT CROWN, AND THIS FLOOR.']; return ['I LIT THIS STREET FOR FORTY YEARS AND I WILL NOT LEAVE IT DARK.', 'THREE OF MY LAMPS ARE DOWN OUT THERE. UNDER EVERY HOOD THERE IS AIR: THAT IS THE WHOLE OF IT.']; }
-  if (pr.kind === 'lamplighter') { if (n >= need) return ['EVERY LAMP BACK ON ITS POST. THE REEVE WILL HATE THAT.', 'IT WILL NOT SIT WHERE THE LIGHT IS. LIGHT THE PERCHES.']; if (n > 0) return ['THAT IS ' + n + ' OF MY THREE LAMPS.', 'THE LOW STREET, THE BOUGHS, THE LANTERN STAIR.']; return ['THE WIND TOOK THREE OF MY LAMPS UP THE BOUGHS.', 'A DARK TOWN IS THE REEVE\'S TOWN. BRING THEM BACK.']; }
-  if (pr.kind === 'elder') { if (n >= need) return ['CLEAN LIGHT. THE WOOD REMEMBERS.', 'SHE HOLDS HER BREATH WHEN SHE PULLS. STRIKE WHEN SHE BREATHES OUT.']; if (n > 0) return ['THAT IS ' + n + ' OF THREE CLEAN CAPS.', 'THE CELLAR, THE CANOPY, THE BOG.']; return ['THE MOTHER IS SICK. HER SPORES ROT THE WOOD.', 'THREE CAPS STILL BURN CLEAN. BRING ME THEIR LIGHT.']; }
-  return ['...'];
-};
+// Every decorative talker and quest-giver NPC outside the shops was removed (Daniel, 2026-09-26: "they don't
+// add much"). Tam, the wandering squire, is gone from every level and from the map. What is left that can be
+// talked to: nothing with a `kind` branch here any more - only an ent that carries its own `lines` (there are
+// none left either), so this always falls through to '...'. Kept as a function, not inlined, in case a future
+// NPC-with-dialogue is added inside a shop or similar.
+const NPC_LINES = pr => pr.lines || ['...'];
 function updateMaster(e, dt) {
   /* THE HOUND MASTER. The goblin lord's huntsman never leaves the saddle and never fights alone. His war-hound takes the
      cut for him while it stands square under him (see hurtEnemy0), and every opening is the HOUND's: block his CHARGE
@@ -21433,17 +21363,18 @@ function updateEmbers(dt) {
   }
   embers = embers.filter(b => b.life > 0);
 }
-// ---------- talk: signs, folk and the caged squire. One press opens the words; the world waits until they close. ----------
-/* No `keeper` here: he stands in the three store rooms only, where UP at his counter opens the shop instead of talking. */
-const NPC_NAME = { barkeep: 'THE TAPSTER', hillfolk: 'HILL FOLK', squire: 'TAM', cook: 'THE SCULLION', bard: 'THE BARD', oldknight: 'THE OLD KNIGHT', shepherd: 'THE SHEPHERD', ferryman: 'THE FERRYMAN', foreman: 'THE FOREMAN', lamplighter: 'THE LAMPLIGHTER', woodsman: 'THE WOODSMAN', hermit: 'THE HERMIT', miller: 'THE MILLER', elder: 'THE ELDER' };
+// ---------- talk: signs. One press opens the words; the world waits until they close. ----------
+/* No `keeper` here: he stands in the three store rooms only, where UP at his counter opens the shop instead of talking.
+   No `ferryman` either (Daniel, 2026-09-26: NPCs outside the shops keep only the ones that are a mechanic, without
+   dialogue): he still poles you over for a toll or lets you drain the sluice, but he never talks. */
+const NPC_NAME = { ferryman: 'THE FERRYMAN' };
 function talkers() { // everything that can be talked to and is in reach, nearest first
   const out = [];
   for (const sg of signs) if (Math.abs(sg.x - P.x) < 28 && Math.abs(sg.y - P.y) < 48) out.push({ x: sg.x, y: sg.y, lines: [sg.text], who: sg, name: null });
   for (const pr of props) {
     if (pr.raftCall && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y, who: pr, raftCall: true });
-    if (pr.t === 'npc' && pr.kind !== 'keeper' && (pr.kind !== 'ferryman' || (movers.find(mv => mv.ferry) || {}).free) && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y, lines: NPC_LINES(pr), who: pr, name: pr.name || NPC_NAME[pr.kind] || null });
+    if (pr.t === 'npc' && pr.kind !== 'keeper' && pr.kind !== 'ferryman' && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y, lines: NPC_LINES(pr), who: pr, name: pr.name || NPC_NAME[pr.kind] || null });
     if (pr.t === 'torchbracket' && !pr.taken && Math.abs(P.x - pr.x) < 16 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y - 6, lines: ['TORCH'], who: pr, name: null, take: true });
-    if (pr.t === 'cage' && pr.kind === 'squire' && !pr.open && Math.abs(P.x - pr.x) < 28 && Math.abs(P.y - pr.y) < 48) out.push({ x: pr.x, y: pr.y, lines: ['KNIGHT! BREAK THE BARS!', 'THEY TOOK MY KIT. THREE COFFERS, SOMEWHERE IN THE CAMP.'], who: pr, name: 'TAM' });
   }
   return out.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x));
 }
