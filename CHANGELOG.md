@@ -2,6 +2,15 @@
 
 Newest first. Play it at https://bracken-nine.vercel.app
 
+## 27 September 2026
+- **The Burial Caverns, reworked:** shorter and no longer repetitive - five places each with their own backdrop, gas vents you
+  have to time, barrow soldiers, and **the Buried Dead now opens up because of something you do**, not on a timer.
+- **The Witchlight Stair - the Battlements:** a new wall-walk section before the Gate Gargoyle, with **Gargoyle Whelps** that
+  sit as stone, screech, and swoop at you (guard them and they clang off, dazed). **The Gate Gargoyle now summons whelps**
+  instead of demons.
+- **Stamina for every hero:** it runs out sooner and comes back quickly.
+- Behind the scenes: the level design guide, and fixes to the test bots.
+
 ## 26 September 2026
 **Fixes from playtesting**
 - **The Deep can be finished.** The sunk tribute ship's hatches no longer blow you back up, and its masts no longer block the way down.
