@@ -84,9 +84,9 @@ function brackenWood() {
 
   // ---- 1. Glade: learn to move, jump, swing ----
   floor(0, 30, 22);
-  ent('sign', 5, 21, { text: 'ARROWS/WASD MOVE   Z JUMP   X SWING', pyro: 'ARROWS/WASD MOVE   Z JUMP   X STAFF   TAP C: AN EMBER   HOLD C: THE JET', paladin: 'ARROWS/WASD MOVE   Z JUMP   X MAUL, SLOW AND HEAVY' }); ent('npc', 10, 21, { kind: 'squire' });
+  ent('sign', 5, 21, { text: 'ARROWS/WASD MOVE   Z JUMP   X SWING', pyro: 'ARROWS/WASD MOVE   Z JUMP   X STAFF   TAP C: AN EMBER   HOLD C: THE JET', paladin: 'ARROWS/WASD MOVE   Z JUMP   X MAUL, SLOW AND HEAVY' }); 
   ent('sign', 284, 8, { text: 'THE HIVE. THE QUEEN DIVES TO STING: JUMP IT, THEN CUT HER WHILE SHE PULLS FREE.' });
-  ent('deco', 10, 21, { kind: 'cabin' }); ent('npc', 16, 21, { kind: 'woodsman' }); // the woodsman's cabin: he wants his honey back
+  ent('deco', 10, 21, { kind: 'cabin' }); // the woodsman's cabin: an empty cabin now, deep in the wood
   coins([12, 20], [13, 19], [14, 20]);
   ent('sprig', 22, 21, { face: -1 }); ent('sign', 26, 21, { text: 'TAP A WAY TWICE TO DODGE: IT CLEARS A GAP.' });   /* the gap, and a sprig past the crates. (The dash ATTACK is the Stockade's lesson now: the first wood teaches two keys, the heavy and the down attack) */
   floor(34, 49, 22);
@@ -192,7 +192,7 @@ function brackenWood() {
     pools: [{ x0: 85 * TS, x1: 98 * TS, y: 23 * TS }, { x0: 161 * TS, x1: 172 * TS, y: 13 * TS }, { x0: 215 * TS, x1: 218 * TS, y: 16 * TS }, { x0: 251 * TS, x1: 255 * TS, y: 10 * TS }],
     falls: [],
     duskStart: 2700, duskLen: 1000, music: 'theme',
-    quest: { n: 3, item: 'pot', name: 'HONEY POT', npc: 'woodsman', done: 'THE POTS ARE HOME', thanks: "THE WOODSMAN'S THANKS" },
+
     weather: [{ x0: 0, x1: 1500, kind: 'pollen' }, { x0: 3150, x1: 3800, kind: 'mist' }, { x0: 4540, x1: 99999, kind: 'rain' }],
     ambient: [{ x0: 0, x1: 3150, kind: 'forest' }, { x0: 3150, x1: 3800, kind: 'water' }, { x0: 3800, x1: 4540, kind: 'forest' }, { x0: 4540, x1: 99999, kind: 'hive' }],
     arena: { x0: 288 * TS, x1: 321 * TS, floor: 9 * TS, trigger: 292 * TS, wallL: 287, wallR: 321, boss: 'queen', tint: '#e0b040', tintA: 0.12, fx: 'bees' },
@@ -223,7 +223,7 @@ function brackenWood() {
   G.spikes(159, 167, 11); G.block(161, 162, 10, 11); G.block(165, 166, 10, 11); // a bed of thorns under the hives, and two mounds of earth up out of it to hop across
   G.ent('wasp', 163, 7); G.ent('wasp', 167, 7); G.coins([161, 9], [165, 9], [163, 5], [167, 5]); // the wasps over the gaps are for the gold above them
   G.ent('shield', 171, 11, { face: -1 }); G.crate(174, 11); G.coins([170, 9], [173, 10]);
-  G.ent('stray', 148, 7, { kind: 'pot' }); // the first honey pot, on top of the giant among the wasps
+  // (the honey pot quest was removed: this cache is empty scenery now)
   const R1 = G.done();
   // ---- 3b. THE BADGER SETT: the road forks. Below, a dug run under the ridge: dark, spitters and thorns, a pot. Above, the ridge itself: wasps, a spitter on a hump, spikes, a cache with the third pot. ----
   const G2 = grow(R1, R1, 121, 44);
@@ -235,12 +235,12 @@ function brackenWood() {
   G2.ent('glow', 129, 21); G2.ent('glow', 145, 21); G2.ent('glow', 156, 21);
   G2.ent('thorn', 133, 21, { face: -1 }); G2.block(139, 141, 21, 21); G2.ent('spit', 140, 20, { face: -1 });
   G2.spikes(146, 147, 22); G2.crate(150, 21); G2.crate(151, 21); G2.crate(151, 20); G2.ent('sprig', 154, 21, { face: -1 });
-  G2.ent('stray', 157, 21, { kind: 'pot' });
+  
   G2.coins([131, 20], [137, 20], [144, 19], [149, 19], [155, 19]);
   // the ridge
   G2.block(133, 135, 13, 13); G2.ent('spit', 134, 12, { face: -1 });
   G2.ent('wasp', 141, 10); G2.ent('wasp', 149, 10); G2.spikes(145, 146, 13); G2.ent('thorn', 152, 13, { face: -1 });
-  G2.plat(140, 11, 2); G2.plat(143, 9, 3); G2.ent('stray', 144, 8, { kind: 'pot' });
+  G2.plat(140, 11, 2); G2.plat(143, 9, 3);
   G2.coins([130, 12], [138, 12], [143, 8], [145, 8], [151, 11], [157, 12]);
   G2.ent('check', 162, 21); G2.coins([160, 20], [163, 20]);
   // THE LEVEL THAT TEACHES THE GAME HAD THE LEAST TO SAY IN IT: eight signs, and a hundred and fifty-one
@@ -312,7 +312,7 @@ function marshWood() {
 
   // ---- 1. The bank ----
   floor(0, 24, 22);
-  ent('sign', 5, 21, { text: 'PADS SINK UNDER YOU.  KEEP MOVING.' }); ent('npc', 10, 21, { kind: 'squire' });
+  ent('sign', 5, 21, { text: 'PADS SINK UNDER YOU.  KEEP MOVING.' });
   ent('sign', 357, 17, { text: 'THE FROG KING. A BREATH: SHIELD UP. HIS CROAK RAISES THE POND: GET TO THE REEDS.', pyro: 'THE FROG KING. A BREATH: GET OUT OF LINE. A CROAK RAISES THE POND: TO THE REEDS.', paladin: 'THE FROG KING. A BREATH: RAISE THE AEGIS. A CROAK RAISES THE POND: TO THE REEDS.' });
   ent('sprig', 16, 21, { face: -1 });
   coins([9, 20], [12, 19]);
@@ -422,7 +422,7 @@ function marshWood() {
   // a fight at a landing, the last thing before the King's court. Both went - the flats are a breath before the boss now -
   // and what they carried paid for the river's eels; the landing is kept calm at the end of this builder.)
   for (let x = 351; x <= 355; x++) L.set(x, 18, 0); water(351, 355, 18, true);
-  reeds(356, 15, 2); coins([357, 14], [352, 15]); ent('stray', 356, 14, { kind: 'trap' });
+  reeds(356, 15, 2); coins([357, 14], [352, 15]);
 
   // ---- 10. The Croaking Court: a shallow pond, reed perches, and the King on his mud dais ----
   block(359, 405, 18, 27);
@@ -437,7 +437,7 @@ function marshWood() {
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers,
     duskStart: undefined, music: 'theme2', waterHurts: true, noStack: true,   /* the garrison steps past a tile a creature already holds (see garrison) */
-    quest: { n: 3, item: 'trap', name: 'EEL TRAP', npc: 'ferryman', done: 'THE TRAPS ARE BACK', thanks: "THE FERRYMAN'S THANKS" },
+
     palette: { dress: 'marsh', haze: 'rgba(172,192,178,0.24)', grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5400, x1: 5760, kind: 'mist' }],
     fog: [],   /* (the foggy stream is the gar hole now: the fog is the drowned village's) */
@@ -472,7 +472,7 @@ function marshWood() {
   G.R.fog = (G.R.fog || []).concat([{ x0: 278 * TS, x1: 322 * TS, alpha: 0.58 }]); G.ent('wisp', 291, 12); G.ent('wisp', 306, 13); G.ent('wisp', 318, 12); // the village drowns in fog too; three wisps light it
   G.reeds(283, 15, 2); G.reeds(299, 14, 2); G.reeds(316, 15, 2);
   G.coins([280, 14], [288, 13], [296, 14], [304, 13], [313, 14], [320, 15], [284, 16], [309, 16]);
-  G.ent('check', 321, 16); G.ent('stray', 296, 15, { kind: 'trap' });
+  G.ent('check', 321, 16);
   const R1 = G.done();
   // ---- 6b. THE FERRY: a deep channel. Pay the ferryman and ride his raft under the archers, or break the sluice, drain the channel to shallows, and wade it with the frogs. ----
   const F = grow(R1, R1, 161, 48);
@@ -486,7 +486,7 @@ function marshWood() {
   F.block(167, 202, 22, 27);
   F.plat(181, 12, 3); F.ent('archer', 182, 11, { face: -1 }); F.plat(193, 12, 3); F.ent('archer', 194, 11, { face: -1 });
   F.ent('wasp', 176, 15); F.ent('wasp', 188, 15); F.ent('wasp', 199, 15);
-  F.ent('hopper', 179, 21, { face: -1, ifDrained: 167 }); F.ent('hopper', 191, 21, { face: 1, color: 'yellow', ifDrained: 167 }); F.ent('stray', 185, 21, { kind: 'trap', ifDrained: 167 });
+  F.ent('hopper', 179, 21, { face: -1, ifDrained: 167 }); F.ent('hopper', 191, 21, { face: 1, color: 'yellow', ifDrained: 167 });
   F.coins([172, 16], [178, 16], [186, 16], [192, 16], [198, 16], [175, 21], [196, 21]);
   F.plat(200, 20, 2); F.block(203, 208, 18, 27); F.ent('check', 206, 17);
   // AND THE MARSH WENT QUIET FOR A HUNDRED AND THIRTY COLUMNS: the whole pad crossing and the archers
@@ -520,7 +520,7 @@ function theStockade() {
   // ---- 1. The outer wood: first signs of the goblins ----
   floor(0, 70, 20);
   ent('sign', 4, 19, { text: 'THE GOBLINS BUILT HERE. BREAK IT.' });
-  ent('sign', 324, 19, { text: 'CHIEFTAIN: RED IS THE CLUB, BLUE THE SWORD, GREEN THE BOW. BREAK A RACK TO END ONE.' }); ent('sign', 9, 19, { text: 'TAM WENT AHEAD TO COUNT GOBLINS. HIS TRACKS STOP AT THE GATE. A CAGE HANGS PAST IT.' });
+  ent('sign', 324, 19, { text: 'CHIEFTAIN: RED IS THE CLUB, BLUE THE SWORD, GREEN THE BOW. BREAK A RACK TO END ONE.' });
   /* THE DASH ATTACK, taught (the wood teaches the heavy and the down attack; this is the third key). One guard alone on the flat
      road with room to run at him: a light cut rings off his shield, a dash with a swing out of it knocks him OFF BALANCE
      (the guard family's unbalance in main.js), and the hint says so once (lessonHint 'dashatk'). The shield at the siege
@@ -638,7 +638,7 @@ function theStockade() {
     palette: { dress: 'camp', ledges: 'lashed', haze: 'rgba(24,18,44,0.3)', sky: 'night',   /* nothing in a goblin camp is sawn: split poles, laid side by side and lashed */ canopy: ['#16301f', '#1f4a2a', '#2a5e36', '#3a7a48'] },
     weather: [{ x0: 1900, x1: 99999, kind: 'smoke' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
-    quest: { n: 3, item: 'coffer', name: 'COFFER', npc: 'squire', done: 'THE KIT IS WHOLE', thanks: "THE SQUIRE'S THANKS" },
+
     escapeGate: 344, arena: { x0: 327 * TS, x1: 361 * TS, floor: 20 * TS, trigger: 332 * TS, wallL: 326, wallR: 362, boss: 'chief', music: 'boss2', tint: '#c9463d', tintA: 0.1, fx: 'embers' },
   }
   // ---- 5c. THE SAPPERS' TUNNEL: the goblins dug under their own inner wall. A mound blocks the surface; the tunnel is the way. ----
@@ -656,13 +656,13 @@ function theStockade() {
   G.coins([255, 23], [260, 23], [268, 23], [275, 22], [283, 23], [289, 23]);
   G.ent('check', 292, 19); G.ent('torch', 293, 19);
   G.ent('treehouse', 262, 8); G.ent('treehouse', 278, 8); G.coins([266, 12], [274, 12]);   /* (a goblin stood on the mound, out of reach and out of the way: a body the count paid for and the level did not) */
-  G.ent('stray', 267, 24, { kind: 'coffer' });
+  
   const R1 = G.done();
-  // ---- 5d. THE WALL WALK: a caged squire at the fork. Above, planks along the top of a stake wall under archers, with a breach to jump. Below, the ditch: sappers, a hound, spikes, a brute. ----
+  // ---- 5d. THE WALL WALK: the road forks here. Above, planks along the top of a stake wall under archers, with a breach to jump. Below, the ditch: sappers, a hound, spikes, a brute. ----
   const W2 = grow(R1, R1, 186, 44);
   W2.block(186, 191, 20, 27);
-  W2.ent('sign', 187, 19, { text: 'THE WALL WALK HAS ARCHERS. THE DITCH HAS SPIKES AND A COFFER. BOTH GO ON.' });
-  W2.ent('cage', 189, 19, { kind: 'squire' });
+  W2.ent('sign', 187, 19, { text: 'THE WALL WALK HAS ARCHERS. THE DITCH HAS SPIKES. BOTH GO ON.' });
+  
   for (let y = 14; y <= 19; y++) { W2.set(190, y, T.NET); W2.set(191, y, T.NET); }
   const pal2 = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) W2.set(x, y, T.PALISADE); };
   pal2(192, 204, 15, 17); pal2(207, 223, 15, 17);
@@ -670,12 +670,12 @@ function theStockade() {
   W2.block(192, 223, 22, 27);
   W2.R.interiors = (W2.R.interiors || []).concat([[192, 223, 18, 21, 'earth']]);
   W2.ent('torch', 197, 13); W2.ent('torch', 213, 13); W2.ent('archer', 199, 13, { face: -1 }); W2.ent('archer', 216, 13, { face: -1 }); W2.ent('thorn', 221, 13, { face: -1 });   /* the wall walk is its archers */
-  W2.ent('stray', 212, 13, { kind: 'coffer' }); W2.coins([195, 12], [202, 12], [209, 12], [214, 12], [219, 12]);
+  W2.coins([195, 12], [202, 12], [209, 12], [214, 12], [219, 12]);
   // THE DITCH'S BRAMBLES ARE A THROW TARGET: the hound and the brute stand two tiles off either edge of the spike
   // bed, close enough that a heavy blow or a dash sends either one into it (combat-variety-brief #8) - they used
   // to stand five tiles off, which asked for a blow harder than most heroes throw at 203/214 range.
   W2.ent('torch', 194, 21); W2.ent('torch', 210, 21); W2.ent('hound', 206, 21, { face: -1 }); W2.spikes(208, 209, 22); W2.ent('brute', 211, 21, { face: -1 }); W2.ent('sapper', 219, 21, { face: -1 });
-  W2.ent('stray', 222, 21, { kind: 'coffer' }); W2.coins([200, 20], [206, 20], [212, 20], [218, 20]);
+  W2.coins([200, 20], [206, 20], [212, 20], [218, 20]);
   W2.block(224, 229, 20, 27); W2.ent('check', 227, 19); W2.coins([225, 18]);
   const R2 = W2.done();
   // ---- 1b. THE SIEGE ENGINE: a catapult lobs barrels down the path as you come. Dodge them, close in, and wreck it. ----
@@ -701,9 +701,9 @@ function sporewood() {
 
   // ---- 1. The mycelium glade: caps bounce, puffballs burst ----
   floor(0, 44, 20);
-  ent('sign', 4, 19, { text: 'CAPS BOUNCE. HOLD JUMP FOR HEIGHT. THE ROT RUNS DOWNHILL.' }); ent('npc', 9, 19, { kind: 'squire' });
+  ent('sign', 4, 19, { text: 'CAPS BOUNCE. HOLD JUMP FOR HEIGHT. THE ROT RUNS DOWNHILL.' });
   ent('sign', 298, 19, { text: 'MOTHER CAP: CUT THE GILLS WHEN SHE OPENS, SPRING OFF THE STUMP, PLUNGE THE HEART.' });
-  ent('npc', 11, 19, { kind: 'elder' }); // the elder myconid wants clean light
+  // (the elder myconid's clean-cap quest was removed)
   ent('glow', 8, 19); ent('puffball', 14, 19); ent('sporeling', 18, 19, { face: -1 }); ent('puffball', 22, 19);
   bouncer(27, 19); coins([27, 15], [27, 12], [27, 9]);
   ent('spitcap', 30, 19, { face: -1 }); ent('sign', 31, 19, { text: 'SPITCAPS THROW SLEEP CLOUDS. A SWOLLEN ONE IS AT ITS WEAKEST.' });
@@ -806,7 +806,7 @@ function sporewood() {
     ambient: [{ x0: 0, x1: 99999, kind: 'drip' }],   /* the fungus drips; the hive's buzz was the Hornet Queen's (level review) */
     storm: { x0: 201 * TS, x1: 244 * TS, y: 14 * TS },
     rot: { x0: 44 * TS, x1: 296 * TS }, // the wood sickens the deeper you go: a violet wash that grows with x, and lifts when she dies
-    quest: { n: 3, item: 'cap', name: 'CLEAN CAP', npc: 'elder', done: 'THE LIGHT IS GATHERED', thanks: "THE ELDER'S THANKS" },
+
     arena: { x0: 297 * TS, x1: 374 * TS, floor: 20 * TS, trigger: 306 * TS, wallL: 296, wallR: 375, boss: 'mother', music: 'sporemother', tint: '#9a5aa8', tintA: 0.1 },
   }
   // ---- 6c. THE PUFFBALL BOG: three sinks in the ground with caps at the bottom, lurkers between, drones above, a geyser, a shaman ----
@@ -820,7 +820,7 @@ function sporewood() {
   G.ent('glow', 247, 13); G.ent('glow', 257, 13); G.ent('glow', 268, 13); G.ent('glow', 280, 13); G.ent('glow', 287, 13);
   G.ent('shaman', 284, 13, { face: -1 }); G.ent('sporeling', 286, 13, { face: -1 });
   G.coins([253, 11], [254, 10], [263, 11], [264, 10], [265, 11], [275, 11], [276, 10], [277, 11], [250, 12], [272, 12], [283, 12]);
-  G.ent('check', 288, 13); G.ent('stray', 264, 18, { kind: 'cap' }); // a clean cap at the bottom of the middle sink
+  G.ent('check', 288, 13);
   const R1 = G.done();
   // ---- 6d. THE TUMBLE: a stepped hill. A puffball nest at the top rolls them down tier by tier; jump them, or stomp one and ride the bounce up. ----
   const Tm = grow(R1, R1, 201, 40);
@@ -835,12 +835,12 @@ function sporewood() {
   const Fk = grow(R2, R2, 131, 44);
   Fk.ent('sign', 129, 3, { text: 'CAP CANOPY ABOVE, ROOT CELLAR BELOW. HOLD DOWN TO LOOK. LURKERS SLEEP BELOW.' });
   Fk.plat(132, 10, 2); Fk.plat(131, 15, 2); // steps down the shaft, so the cellar is a descent and not a blind drop
-  Fk.plat(133, 6, 3); Fk.set(139, 9, T.BOUNCER); Fk.plat(143, 4, 3); Fk.ent('puffball', 144, 3); Fk.plat(148, 6, 3); Fk.ent('drone', 151, 3); Fk.set(153, 8, T.BOUNCER); Fk.plat(156, 4, 3); Fk.ent('stray', 157, 3, { kind: 'cap' });
+  Fk.plat(133, 6, 3); Fk.set(139, 9, T.BOUNCER); Fk.plat(143, 4, 3); Fk.ent('puffball', 144, 3); Fk.plat(148, 6, 3); Fk.ent('drone', 151, 3); Fk.set(153, 8, T.BOUNCER); Fk.plat(156, 4, 3);
   Fk.plat(160, 7, 3); Fk.ent('sporeling', 161, 6, { face: -1 }); Fk.ent('mover', 164, 6, { len: 2, range: 4, cap: true, speed: 30 }); Fk.plat(169, 8, 3); Fk.ent('puffball', 170, 7);
   Fk.coins([134, 5], [139, 5], [149, 5], [153, 4], [162, 6], [171, 7]);
   Fk.block(135, 170, 10, 13); Fk.block(131, 174, 20, 27);
   Fk.R.interiors = (Fk.R.interiors || []).concat([[135, 170, 14, 19, 'earth']]);
-  Fk.ent('glow', 133, 19); Fk.ent('lurker', 140, 19); Fk.ent('stray', 145, 19, { kind: 'cap' }); Fk.ent('glow', 148, 19); Fk.ent('sporeling', 150, 19, { face: -1 }); Fk.ent('roller', 156, 19, { face: -1, speed: 60 }); Fk.ent('puffball', 160, 19);
+  Fk.ent('glow', 133, 19); Fk.ent('lurker', 140, 19); Fk.ent('glow', 148, 19); Fk.ent('sporeling', 150, 19, { face: -1 }); Fk.ent('roller', 156, 19, { face: -1, speed: 60 }); Fk.ent('puffball', 160, 19);
   Fk.R.sleeps.push({ x0: 162 * TS, x1: 169 * TS, y0: 14 * TS, y1: 20 * TS }); Fk.ent('drone', 165, 16); Fk.ent('glow', 170, 19); Fk.ent('lurker', 171, 19);
   Fk.set(173, 19, T.BOUNCER); Fk.plat(171, 17, 2); Fk.plat(171, 14, 2); Fk.plat(174, 8, 2);
   Fk.coins([137, 18], [143, 18], [153, 18], [158, 18], [166, 18], [172, 13]);
@@ -940,10 +940,10 @@ function kingswood() {
 
   // ---- 1. The rust wood: goblins live here. Townsfolk bolt for their doors. ----
   floor(0, 44, 20);
-  ent('sign', 4, 19, { text: 'THE GOBLINS LIVE HERE. YOU ARE NOT WELCOME.' }); ent('npc', 9, 19, { kind: 'squire' });
+  ent('sign', 4, 19, { text: 'THE GOBLINS LIVE HERE. YOU ARE NOT WELCOME.' });
   ent('sign', 313, 13, { text: 'KING GORM\'S CROWN TURNS BLADES. DROP A CAGE ON HIM FROM THE PLATES, THEN CUT.' });
   ent('door', 12, 19, { at: 12 }); ent('folk', 9, 19, { door: 12 }); ent('folk', 17, 19, { door: 12, alt: true }); ent('deco', 20, 19, { kind: 'well' });
-  ent('sprig', 22, 19, { face: -1 }); coins([8, 18], [15, 17], [26, 18]); ent('npc', 26, 19, { kind: 'cook' });
+  ent('sprig', 22, 19, { face: -1 }); coins([8, 18], [15, 17], [26, 18]);
   ent('sign', 29, 19, { text: 'COURT THIEVES SNATCH GOLD AND RUN. CATCH ONE AND IT PAYS YOU BACK MORE.' });
   ent('thief', 34, 19, { face: -1 }); ent('door', 40, 19); ent('folk', 38, 19, { door: 40 });
   // the canopy road over the pasture, and a rope ladder up onto the first hall's roof
@@ -959,7 +959,7 @@ function kingswood() {
   ent('sign', 47, 19, { text: 'PIKES BRACE WHEN YOU CHARGE. JUMP THE PIKE AND CUT BEHIND, OR THROW THE SHIELD.', pyro: 'PIKES BRACE WHEN YOU CHARGE. JUMP THE PIKE AND BURN BEHIND, OR ARC EMBERS OVER.', paladin: 'PIKES BRACE WHEN YOU CHARGE. JUMP THE PIKE AND STRIKE BEHIND, OR CHARGE IT.' });
   ent('pike', 56, 19, { face: -1 }); ent('sprig', 62, 19, { face: -1 }); ent('sprig', 68, 19, { face: -1 });
   ent('brazier', 53, 19); ent('brazier', 66, 19); // oil braziers: tip them onto the line, or get burned
-  ent('bell', 80, 19, { gate: 84 }); ent('sprig', 76, 19, { face: 1, ringer: true, bell: 80 }); ent('stray', 72, 19, { kind: 'cup' });
+  ent('bell', 80, 19, { gate: 84 }); ent('sprig', 76, 19, { face: 1, ringer: true, bell: 80 });
   /* (the gate under the bell starts open: the bell drops it, and it lifts again - it was shut from the start, and nothing on the road side opened it) */
   coins([52, 18], [58, 17], [65, 18], [74, 17]);
   // the way around the gate if the bell rings: a two-wide hatch through the roof with ledges up it, onto the high road
@@ -990,7 +990,7 @@ function kingswood() {
   ent('firepit', 93, 21, { period: 3.2, on: 1.4, phase: 0 }); ent('brazier', 114, 21); ent('firepit', 127, 21, { period: 3.2, on: 1.4, phase: 1.6 }); // the burrow burns in gouts
   ent('sprig', 118, 21, { face: -1 }); ent('plate', 124, 21, { cage: 128 }); ent('dropcage', 128, 17); ent('brute', 132, 21, { face: -1 });
   ent('sign', 90, 21, { text: 'THEIR TRAPS WORK ON THEM: THE LEVER SWINGS THE RAM, THE PLATE DROPS THE CAGE.' });
-  ent('sprig', 142, 21, { face: -1 }); ent('stray', 134, 21, { kind: 'cup' }); ent('gobmage', 137, 21, { face: -1 });   /* a composed pair: the reader keeps its distance behind the brute at 132, so closing on one means passing the other */
+  ent('sprig', 142, 21, { face: -1 }); ent('gobmage', 137, 21, { face: -1 });   /* a composed pair: the reader keeps its distance behind the brute at 132, so closing on one means passing the other */
   coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
   // the roads rejoin at 150: a slope of ledges from the burrow up to the yard
   block(150, 152, 18, 27); block(153, 158, 16, 27); block(159, 164, 14, 27); block(165, 190, 14, 27);
@@ -1020,7 +1020,7 @@ function kingswood() {
   ent('firepit', 216, 20, { period: 3.4, on: 1.5, phase: 0.8 }); ent('brazier', 224, 20); ent('firepit', 265, 20, { period: 3.4, on: 1.5, phase: 2.4 });
   ent('hound', 220, 20, { face: -1 }); ent('pike', 228, 20, { face: -1 }); ent('lever', 234, 20, { ram: 240 }); ent('ram', 240, 16, { hang: true }); ent('sprig', 244, 20, { face: -1 }); ent('sprig', 248, 20, { face: -1 });
   ent('plate', 254, 20, { cage: 258 }); ent('dropcage', 258, 16); ent('brute', 262, 20, { face: -1 }); ent('thief', 268, 20, { face: -1 });
-  ent('stray', 250, 20, { kind: 'cup' }); coins([218, 19], [236, 19], [252, 19], [266, 19], [273, 19]);
+  coins([218, 19], [236, 19], [252, 19], [266, 19], [273, 19]);
   block(275, 277, 17, 27); block(278, 281, 15, 27); block(282, 300, 14, 27);
   block(273, 274, 19, 20);   /* THE STEP OUT OF THE ROOTS: the way up was four tiles from the burrow floor and a jump is three */
   ent('check', 284, 13);
@@ -1064,7 +1064,7 @@ function kingswood() {
     palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.16)', grass: '#8a7a2a', grassL: '#c9a83a', grassD: '#5a4a1a', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', canopy: ['#7a2a1a', '#a83a2a', '#c9463d', '#e07060'], hall: true },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
-    quest: { n: 3, item: 'cup', name: 'GOLD CUP', npc: 'cook', done: 'THE CUPS ARE OFF HIS TABLE', thanks: "THE SCULLION'S THANKS" },
+
     arena: { x0: 316 * TS, x1: 370 * TS, floor: 14 * TS, trigger: 322 * TS, wallL: 315, wallR: 371, boss: 'king', music: 'king', tint: '#c9463d', tintA: 0.12, fx: 'embers' },
     mini: { x0: 168 * TS, x1: 189 * TS, floor: 14 * TS, trigger: 172 * TS, wallL: 167, gate: 190, boss: 'greathound' },
   }
@@ -1200,21 +1200,21 @@ function screePath() {
   const movers = [], stone = [], scree = [];
   const wall = (x, y) => { block(x, x, y, y); stone.push([x, x, y, y]); };
 
-  // ---- 1. The lower pasture: sheep, walls, the bothy and the shepherd ----
+  // ---- 1. The lower pasture: sheep, walls, the bothy ----
   floor(0, 60, 20);
   ent('deco', 8, 19, { kind: 'bothy' }); ent('torch', 14, 19);
-  ent('npc', 13, 19, { kind: 'shepherd' }); ent('dog', 16, 19); // the shepherd's dog walks with you and barks when a ewe is near
-  ent('sign', 4, 19, { text: 'THE SCREE PATH. THE HILL TAKES THE CARELESS.' }); ent('npc', 9, 19, { kind: 'squire' });
+  
+  ent('sign', 4, 19, { text: 'THE SCREE PATH. THE HILL TAKES THE CARELESS.' });
   wall(18, 19); wall(30, 19); wall(44, 19); ent('deco', 26, 19, { kind: 'fence', v: 0 }); ent('deco', 40, 19, { kind: 'fence', v: 1 });
   ent('goat', 36, 19, { face: -1 }); ent('harpy', 50, 14);
   coins([12, 17], [24, 18], [40, 18], [48, 17]);
-  ent('sign', 22, 19, { text: 'THREE EWES STRAYED. WALK INTO ONE AND IT FOLLOWS. THE SHEPHERD PAYS IN FLEECE.' });
+  ent('sign', 22, 19, { text: 'AN OLD FLEECE LIES SOMEWHERE UP THE HILL, IF YOU CAN FIND IT.' });
   ent('check', 58, 19);
 
   // ---- 2. The terraces: three steps up the hill, a rockfall, the first stray ----
   block(61, 80, 18, 27); block(81, 100, 16, 27); block(101, 120, 14, 27);
   wall(62, 17); wall(82, 15); wall(102, 13);
-  plat(70, 14, 3); plat(66, 16, 2); ent('stray', 71, 13); coins([70, 13], [72, 13]);
+  plat(70, 14, 3); plat(66, 16, 2); coins([70, 13], [72, 13]);
   ent('goat', 72, 17, { face: -1 }); ent('shield', 78, 17, { face: -1 }); ent('rockfall', 90, 4, { every: 2.4 }); ent('rockfall', 94, 4, { every: 3.1 });
   ent('deco', 84, 15, { kind: 'stone' }); ent('deco', 106, 13, { kind: 'stone' }); ent('deco', 112, 13, { kind: 'cairn' });
   ent('troll', 92, 15, { face: -1 }); ent('harpy', 110, 8);
@@ -1226,7 +1226,7 @@ function screePath() {
   block(121, 176, 14, 27);
   ent('deco', 150, 13, { kind: 'mill' });
   for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', px: 150 * TS + 8, py: 13 * TS - 58, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 });
-  plat(156, 6, 4); ent('stray', 158, 5); coins([157, 5], [159, 5]);
+  plat(156, 6, 4); coins([157, 5], [159, 5]);
   plat(162, 8, 3); plat(167, 9, 3); plat(172, 10, 3); ent('archer', 168, 8, { face: -1 }); ent('harpy', 162, 3);
   coins([163, 7], [168, 7], [173, 9]);
   wall(128, 13); wall(140, 13); ent('goat', 134, 13, { face: -1 }); ent('thorn', 138, 13, { face: -1 }); ent('sprig', 160, 13, { face: -1 });
@@ -1241,7 +1241,7 @@ function screePath() {
   ent('sign', 180, 13, { text: 'SCREE SLIDES YOU DOWN: BLOCK TO BRACE, OR BOUNCE ACROSS. IF THE HILL FALLS, RUN.', pyro: 'SCREE SLIDES YOU DOWN: BOUNCE ACROSS IT OR RUN. IF THE HILL FALLS, DO NOT STOP.', paladin: 'SCREE SLIDES YOU DOWN: BOUNCE ACROSS IT OR RUN. IF THE HILL FALLS, DO NOT STOP.' });
   ent('rockfall', 205, 5, { every: 2.6 }); ent('rockfall', 220, 5, { every: 2.2 }); ent('rockfall', 232, 5, { every: 2.9 });
   ent('harpy', 200, 9); ent('harpy', 235, 11);
-  plat(246, 16, 3); ent('stray', 247, 15); coins([246, 15], [248, 15]);
+  plat(246, 16, 3); ent('relic', 247, 15, { kind: 'fleece' }); coins([246, 15], [248, 15]);
   plat(195, 13, 2); plat(200, 14, 2); plat(206, 15, 2); plat(212, 16, 2); plat(218, 16, 3); coins([195, 12], [206, 14], [219, 15]); // stepping ledges down the scree: a dry route for those who would rather hop than slide
   coins([186, 13], [196, 14], [208, 15], [218, 16], [230, 17], [242, 18]);
   ent('deco', 184, 13, { kind: 'stone' }); ent('deco', 244, 18, { kind: 'stone' });
@@ -1279,7 +1279,7 @@ function screePath() {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
     duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: false,
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(140,90,150,0.14)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
-    stone, scree, strays: 3, slide: { x0: 184 * TS, x1: 252 * TS, speed: 118 },
+    stone, scree, slide: { x0: 184 * TS, x1: 252 * TS, speed: 118 },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 312 * TS, x1: 328 * TS, floor: 9 * TS, trigger: 315 * TS, wallL: 311, wallR: 329, boss: 'ram', music: 'ramlord', tint: '#6a4a7a', tintA: 0.12, fx: 'dust' },
@@ -1392,7 +1392,7 @@ function underleaf() {
   floor(0, 74, R);
   moss(0, 20, R); boards(40, 52, R); moss(56, 74, R);
   ent('sign', 4, R - 1, { text: 'UNDERLEAF SLEEPS, BUT HEARS. MOSS AND THATCH ARE QUIET; BOARDS AND KILLS ARE NOT.' });
-  ent('npc', 10, R - 1, { kind: 'elder' });
+  
   ent('check', 15, R - 1);
   ent('deco', 6, R - 1, { kind: 'gardenWall', v: 0 }); ent('deco', 24, R - 1, { kind: 'waterButt' });
   ent('deco', 14, R - 1, { kind: 'beanpoles', v: 0 }); ent('deco', 28, R - 1, { kind: 'skep' });
@@ -1492,7 +1492,7 @@ function underleaf() {
   for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', px: 247 * TS + 8, py: 22 * TS, r: 34, phase: i * Math.PI / 2, period: 7.5, x: 0, y: 0, w: 22, h: 6 });
   ladder(242, 24);
   ent('sign', 236, R - 1, { text: 'RIDE A WINDMILL SAIL UP TO THE HIGH BOARDS. NOBODY SLEEPS UP THERE.' });
-  ent('stray', 246, 24, { kind: 'lamp' });
+  
   ent('check', 238, R - 1);
 
   // ---- 4. THE CHURCHYARD AND THE CHURCH. The high line comes down onto the nave. ----
@@ -1544,7 +1544,7 @@ function underleaf() {
   ent('deco', 320, 20, { kind: 'bellTower' });
   ent('bell', 320, 20);   /* THE ROOF IS A REWARD, NOT A FIGHT: the Bellringer mini that held it was cut after a playtest, and his portcullis at column 330 with him. What is left up here is quiet straw, a coin run, the lamp and a bell nobody rings */
   coins([316, 20], [324, 20], [320, 20], [311, 26], [331, 26]);
-  ent('stray', 326, 20, { kind: 'lamp' });
+  
   ent('check', 334, R - 1);
   gateCol(336, 26, R - 1); ent('lockgate', 336, R - 1, { needs: 'iron', h: 8 });
 
@@ -1578,7 +1578,7 @@ function underleaf() {
   ent('shield', 348, R - 1, { face: 1, sleeper: true }); ent('sapper', 360, 27, { face: 1, sleeper: true });
   ent('sprig', 378, R - 1, { face: -1, sleeper: true }); ent('thief', 342, R - 1, { face: 1, sleeper: true });
   ent('cutter', 386, 27, { face: -1, sleeper: true });
-  ent('stray', 368, 27, { kind: 'lamp' });
+  ent('relic', 368, 27, { kind: 'soles' });
   ent('check', 366, R - 1); ent('check', 404, R - 1);
   coins([344, R - 2], [396, R - 2], [402, R - 2], [338, R - 2], [350, R - 2], [358, R - 2], [366, R - 2], [382, R - 2], [392, R - 2], [406, R - 2]);
 
@@ -1629,7 +1629,7 @@ function underleaf() {
     duskStart: -1, duskLen: 1, music: 'sleepers', night: true, glowNight: true, nightA: 0.24,
     // the mill's own din: inside this, nothing you do can be heard over the wheel
     din: [{ x0: 108 * TS, x1: 136 * TS }],
-    quest: { n: 3, item: 'lamp', name: 'CANDLES', npc: 'elder', done: 'THE DEAD ARE LIT', reward: 'relic', relic: 'soles' },
+
     palette: { set: 'village', sky: 'night', far: 'village', mid: 'village', near: 'village', dress: 'village', haze: 'rgba(40,44,70,0.20)',
       grass: '#3a5a46', grassL: '#4e7a58', grassD: '#263a2e', dirt: '#3a3444', dirtL: '#4a4458', dirtD: '#26222e',
       canopy: ['#1c2430', '#242e3c', '#2c3848', '#36445a'] },
@@ -1668,7 +1668,7 @@ function hangingVillage() {
 
   // ---- Tier 0. THE ROOTS: goblin shanties among the roots, a hill-folk cottage, the first spider ----
   block(0, W - 1, tops.t0, H - 1);
-  ent('npc', 9, 107, { kind: 'squire' }); ent('sign', 4, 107, { text: 'THE HANGING VILLAGE. UP IS THE ONLY WAY: ROPES, ROCK, WHEELS AND SWINGS.' });
+  ent('sign', 4, 107, { text: 'THE HANGING VILLAGE. UP IS THE ONLY WAY: ROPES, ROCK, WHEELS AND SWINGS.' });
   ent('door', 14, 107, { at: 14 }); ent('folk', 11, 107, { door: 14 }); ent('sprig', 22, 107, { face: -1 });
   ent('door', 34, 107, { at: 34 }); ent('folk', 31, 107, { door: 34 }); ent('deco', 44, 107, { kind: 'well' });
   ent('door', 60, 107, { kind: 'cottage', at: 60 }); ent('folk', 57, 107, { door: 60, alt: true });
@@ -1698,7 +1698,7 @@ function hangingVillage() {
   for (let y = 122; y <= 128; y++) set(70, y, T.PORT); // her larder door, shut until she is dead
   for (let y = 122; y <= 128; y++) for (let x = 71; x <= 79; x++) set(x, y, 0);
   interiors.push([71, 79, 122, 128, 'earth']);
-  ent('silver', 77, 128); ent('stray', 74, 128, { kind: 'lamp' }); coins([73, 127], [75, 127], [78, 127]);
+  ent('silver', 77, 128); coins([73, 127], [75, 127], [78, 127]);
   ent('doorway', 79, 128, { id: 'hollow-back', to: 'hollow-far', lock: [20, 69], label: 'OUT THE FAR SPLIT' });   /* out through her larder: somewhere to go the moment she falls */
   for (const x of [41, 52, 63]) for (let y = 116; y <= 126; y++) set(x, y, T.NET);   /* THE ROOTS, HUNG LAST (RULES I): nothing is cut or laid over them after this */
   // 0 -> 1: a rope ladder through the first bough
@@ -1724,7 +1724,7 @@ function hangingVillage() {
 
   // ---- Tier 2. THE MARKET (walk right): hill folk and goblins live door to door; the Lamplighter wants three lanterns lit ----
   ent('sign', 8, 79, { text: 'STRIKE A DARK LANTERN TWICE TO LIGHT IT. CUT THE SNUFFERS OR THEY PUT IT OUT.' });
-  ent('door', 14, 79, { kind: 'cottage', at: 14 }); ent('folk', 11, 79, { door: 14, alt: true }); ent('npc', 22, 79, { kind: 'lamplighter' }); ent('deco', 26, 79, { kind: 'lanternPost' }); ent('lantern', 26, 79); ent('lantern', 56, 79); ent('lantern', 80, 79);
+  ent('door', 14, 79, { kind: 'cottage', at: 14 }); ent('folk', 11, 79, { door: 14, alt: true }); ent('deco', 26, 79, { kind: 'lanternPost' }); ent('lantern', 26, 79); ent('lantern', 56, 79); ent('lantern', 80, 79);
   ent('door', 32, 79, { kind: 'cottage', at: 32 }); ent('folk', 35, 79, { door: 32, alt: true }); ent('deco', 40, 79, { kind: 'well' });
   ent('door', 50, 79, { at: 50 }); ent('folk', 47, 79, { door: 50 }); ent('deco', 56, 79, { kind: 'fence', v: 0 }); ent('door', 64, 79, { at: 64 }); ent('folk', 67, 79, { door: 64 });
   ent('squirrel', 74, 79, { face: -1 }); ent('snuffer', 62, 79, { face: -1 }); ent('shield', 92, 79, { face: -1 });
@@ -1750,7 +1750,7 @@ function hangingVillage() {
   ent('check', 20, 65);
   /* THE MILL HOIST: a flour sack hangs on a peg over the well. Cut the peg and it drops in - the crown's peg-cut, taught where nothing is
      trying to kill you - and the deck lifts you to the ledge the lamp was carried up to */
-  plat(72, 59, 4); ent('stray', 73, 58, { kind: 'lamp' }); hoist('mill', 76, 65, 58, 78, 1); ent('load', 78, 65, { kind: 'sack', hoist: 'mill', peg: 75, hy: 61, ropeTop: 56 });
+  plat(72, 59, 4); hoist('mill', 76, 65, 58, 78, 1); ent('load', 78, 65, { kind: 'sack', hoist: 'mill', peg: 75, hy: 61, ropeTop: 56 });
   ent('sign', 80, 65, { text: 'THE MILL HOIST: CUT THE PEG AND THE SACK DROPS IN. BE ON THE DECK WHEN IT DOES.' });
   // 3 -> 4: snapping branches up the trunk
   band(1, W - 2, tops.t4); hole(2, 9, tops.t4);
@@ -1781,7 +1781,7 @@ function hangingVillage() {
   ent('sign', 93, 37, { text: 'THE REEVE HATES LIGHT. LIGHT EVERY LANTERN; KILL WHAT COMES TO PUT THEM OUT.' });
   ent('door', 88, 37, { kind: 'cottage', at: 88 }); ent('folk', 91, 37, { door: 88, alt: true }); ent('deco', 84, 37, { kind: 'lanternPost' });
   ent('spider', 70, 30, { drop: 100 }); ent('brute', 50, 37, { face: 1 }); ent('door', 60, 37, { kind: 'cottage', at: 60 }); ent('folk', 63, 37, { door: 60, alt: true });
-  ent('spider', 40, 30, { drop: 100 }); ent('snuffer', 54, 37, { face: -1 }); ent('snuffer', 24, 37, { face: 1 }); ent('stray', 30, 37, { kind: 'lamp' }); ent('deco', 48, 37, { kind: 'lanternPost' }); ent('deco', 20, 37, { kind: 'lanternPost' }); ent('lantern', 20, 37); ent('lantern', 48, 37); ent('lantern', 84, 37);
+  ent('spider', 40, 30, { drop: 100 }); ent('snuffer', 54, 37, { face: -1 }); ent('snuffer', 24, 37, { face: 1 }); ent('deco', 48, 37, { kind: 'lanternPost' }); ent('deco', 20, 37, { kind: 'lanternPost' }); ent('lantern', 20, 37); ent('lantern', 48, 37); ent('lantern', 84, 37);
   plat(76, 34, 3); plat(26, 33, 3); ent('silver', 28, 32); coins([77, 33], [27, 32], [66, 35], [44, 35], [12, 35]);
   pit(42, 43, tops.t5); pit(72, 73, tops.t5);
   hole(52, 57, tops.t5); shelf(52, tops.t5, 6); hole(14, 18, tops.t5); ent('mover', 14, tops.t5, { len: 2, range: 3, speed: 40 }); ent('wasp', 55, 33); ent('thorn', 36, 37, { face: 1 }); // snapping branch and a sliding bough on the way to the crown
@@ -1837,7 +1837,7 @@ function hangingVillage() {
     stone: [], scree: [], snowLine: 52,
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    quest: { n: 3, item: 'lamp', name: 'LAMP', npc: 'lamplighter', done: 'THE LAMPS ARE LIT', thanks: "THE LAMPLIGHTER'S THANKS" },
+
     arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 21 * TS, y0: 4 * TS, wallL: 19, wallR: 90, boss: 'owl', music: 'owlreeve', tint: '#ffd36b', tintA: 0.08, fx: 'motes' },
     mini: { x0: 32 * TS, x1: 70 * TS, floor: 129 * TS, trigger: 35 * TS, wallL: 31, gate: 70, boss: 'spider', y0: 114 * TS, y1: 131 * TS },   /* thirty-eight wide (A7); the tunnel's mouth shuts behind you */
   };
@@ -1950,7 +1950,7 @@ function theMonastery() {
   block(0, W - 1, 218, H - 1);
   facades.push([1, 13, 203, 217, 'monkTower', { arch: [211, 217], roof: true }]);
   facades.push([14, 27, 209, 217, 'monkCurtain']);
-  ent('npc', 8, 217, { kind: 'squire' });
+  
   ent('sign', 4, 217, { text: 'THE MONASTERY. GOBLINS DROVE THE MONKS OUT. WHAT THE MONKS BUILT STILL ANSWERS A BLOW.' });
   ent('deco', 17, 217, { kind: 'portcullis' }); ent('deco', 25, 217, { kind: 'shrine', v: 0 });   /* was a stoneLantern: see THE SAND CASTLES below */
   ent('check', 21, 217); coins([12, 216], [28, 216], [44, 216]);
@@ -2044,7 +2044,7 @@ function theMonastery() {
   ent('sign', 17, 131, { text: 'THE BELL TOWERS. NOBODY HAS RUNG THEM SINCE THE GOBLINS CAME.' });
   ent('check', 13, 117); ent('check', 6, 131); coins([31, 117], [36, 117], [58, 117], [63, 117]);
   // THE BELL YARD under the bridges, where the looters camp: down a tower's hatch, and back up its stair
-  ent('stray', 60, 131, { kind: 'bead' }); ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 }); ent('gobpriest', 62, 131, { face: -1 });
+  ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 }); ent('gobpriest', 62, 131, { face: -1 });
   // THE DORTER: the monks' cells between the towers, and the looters asleep in the monks' cots with what they took piled by the door
   facades.push([49, 69, CLOUD + 18, 131, 'monkDorm']);
   for (const [x, k, v] of [[52, 'cot', 0], [57, 'cot', 1], [64, 'lootHeap', 0], [81, 'incenseStand', 0]]) ent('deco', x, 131, { kind: k, v });
@@ -2062,7 +2062,7 @@ function theMonastery() {
   for (let y = 86; y <= CLOUD - 1; y++) set(W - 2, y, T.CLIMB);
   for (const [x, y] of [[91, 98], [88, 96], [91, 94], [88, 92]]) plat(x, y, 3);
   plat(78, 90, 13); coins([92, 97], [89, 95], [92, 93]);
-  ent('stray', 82, 89, { kind: 'bead' }); ent('deco', 86, 89, { kind: 'shrine', v: 0 }); ent('harpy', 72, 84);
+  ent('deco', 86, 89, { kind: 'shrine', v: 0 }); ent('harpy', 72, 84);
 
   // ---- 6. THE UPPER SHRINES: prayer flags on every line, shrines on the ledges, and the bellows ----
   const s7gap = [31, 37];
@@ -2133,7 +2133,7 @@ function theMonastery() {
   plat(79, 29, 5); block(85, 87, 27, 27); block(89, 91, 27, 27); block(87, 87, 28, 29);
   ent('gate', 92, 29);   /* (no checkpoint on the ringing floor: 18,29 stood inside the Abbot's walls, B6; the one at 12,35 is the door) */
   ent('silver', 90, 26);
-  ent('stray', 38, 29, { kind: 'bead' });
+  ent('relic', 38, 29, { kind: 'sunshard' });
   // the crawl under the roof ends in a hollow either side, and the second chimney comes up into the right one
   for (let y = 32; y <= 34; y++) { for (let x = 70; x <= 93; x++) set(x, y, T.AIR); for (let x = 3; x <= 16; x++) set(x, y, T.AIR); }
   coins([74, 35], [78, 35], [86, 35], [90, 35]); ent('deco', 82, 35, { kind: 'bones', v: 1 });
@@ -2200,7 +2200,7 @@ function theMonastery() {
     /* THE GROUND KIT BY PLACE: bees and herb beds belong in the garden, not on the belfry floor (GROUND_KITS.spire is the rest) */
     kits: [[1, 94, 196, 196, { density: 0.3, kinds: ['herbBed', 'skep'] }], [72, 94, 218, 218, { density: 0.25, kinds: ['bones'] }]],
     tall: { top: CLOUD * TS, bottom: 218 * TS, col: '64,70,84', deepest: 0.26 },
-    quest: { n: 3, item: 'bead', name: 'PRAYER BEADS', npc: 'squire', done: 'THE BEADS ARE RESTRUNG', reward: 'relic', relic: 'sunshard' },
+
     palette: { sky: [[146, 156, 172], [230, 216, 196]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'beam',
       haze: 'rgba(222,208,190,0.14)', grass: '#7c8a56', grassL: '#9aa86c', grassD: '#5a6640',
       dirt: '#6a625a', dirtL: '#827a70', dirtD: '#4a443e', canopy: ['#5a5650', '#6e6a62', '#86806e', '#a89c84'] },
@@ -2235,7 +2235,7 @@ function stormhold() {
 
   // ---- 1. THE UNDER STREET: the market gone to a war camp. Snow, stalls, and the castle above it all. ----
   floor(0, 60, 34);
-  ent('npc', 8, 33, { kind: 'squire' });
+  
   ent('sign', 4, 33, { text: 'STORMHOLD. THE GATES ARE LOCKED AND THE KEYS ARE INDOORS. PRESS UP AT A DOOR.' });
   ent('deco', 16, 33, { kind: 'cairn' }); ent('torch', 12, 33); ent('deco', 24, 33, { kind: 'barrels' });
   ent('sprig', 30, 33, { face: -1 }); ent('shield', 40, 33, { face: -1 }); ent('torch', 34, 33);
@@ -2284,7 +2284,7 @@ function stormhold() {
   ent('brazier', 46, 14); ent('deco', 52, 14, { kind: 'anvil' }); ent('torch', 60, 14);
   ent('hearthgob', 50, 14, { face: -1 }); ent('hearthgob', 58, 14, { face: -1 }); ent('miner', 62, 14, { face: -1 });
   plat(47, 13, 3); plat(50, 11, 3); plat(54, 10, 4); coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13], [63, 13], [64, 13]); // steps to the shelf: it was five rows off the floor (the coins at the end of it are where the iron key lay)
-  ent('stray', 56, 9, { kind: 'folk' });
+  
   ent('doorway', 65, 14, { id: 'smithy-back', to: 'smithy-far', lock: [38, 66], label: 'OUT THE SLACK-TUB DOOR' });
   ent('sign', 39, 14, { text: 'THE SMITHY. THE BACK DOOR IS PAST THE SHELF.' });
   // the second span: long, watched from both ends, and a cutter on the far post
@@ -2303,7 +2303,7 @@ function stormhold() {
   ent('doorway', 77, 13, { id: 'tan-in', to: 'tan-out', lock: [74, 98], label: 'THE TANNERY' });
   ent('torch', 82, 13); ent('hearthgob', 88, 13, { face: -1 }); ent('spider', 92, 7, { drop: 90 });
   ent('key', 93, 13, { kind: 'iron' });   /* under the spider's thread: you take it past the goblin and the drop */
-  ent('stray', 95, 13, { kind: 'folk' }); coins([80, 12], [84, 12], [88, 12], [90, 12]);
+  coins([80, 12], [84, 12], [88, 12], [90, 12]);
   ent('doorway', 97, 13, { id: 'tan-back', to: 'tan-far', lock: [74, 98], label: 'OUT PAST THE PITS' });
   ent('lockgate', 208, 31, { needs: 'iron', h: 6 }); gateCol(208, 26, 31);
   ent('check', 204, 31);
@@ -2323,7 +2323,7 @@ function stormhold() {
   ent('torch', 114, 15); ent('brazier', 124, 15); ent('brazier', 142, 15); ent('torch', 154, 15);
   ent('hearthgob', 120, 15, { face: -1 }); ent('hearthgob', 134, 15, { face: 1 }); ent('brute', 146, 15, { face: -1 });
   plat(112, 14, 3); plat(115, 12, 3); plat(118, 11, 4); plat(123, 10, 3); plat(128, 8, 5); plat(136, 10, 4); ent('archer', 129, 7, { face: -1 }); // a real way into the rafters
-  ent('stray', 130, 7, { kind: 'folk' }); ent('key', 156, 15, { kind: 'bone' });
+  ent('relic', 130, 7, { kind: 'shoes' }); ent('key', 156, 15, { kind: 'bone' });
   ent('doorway', 159, 15, { id: 'long-back', to: 'long-far', lock: [106, 160], label: 'OUT THE GABLE END' });
   coins([116, 10], [120, 10], [126, 7], [130, 7], [137, 9], [139, 9], [150, 14], [154, 14]);
   ent('sign', 107, 15, { text: 'THE LONGHOUSE. THE BONE KEY AND THE WAY OUT ARE BOTH AT THE FAR END.' });
@@ -2422,7 +2422,7 @@ function stormhold() {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 }, pools: [], falls: [], moversExtra: movers, interiors, bridges, houses,
     indoorRow: 18, // rows 0-18 are the insides of the houses: the camera never shows them from the street, nor the street from inside
     duskStart: -1, duskLen: 1, music: 'stormhold', night: true, glowNight: true, nightA: 0.26,
-    quest: { n: 3, item: 'folk', name: 'HILL FOLK', npc: 'squire', done: 'THEY ARE OUT OF THEIR CELLARS', reward: 'relic', relic: 'shoes' },
+
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(150,160,200,0.16)',
       grass: '#cfd8e2', grassL: '#eef4ff', grassD: '#9aa8bc', dirt: '#4a4a58', dirtL: '#62626e', dirtD: '#32323c',
       canopy: ['#3a3a48', '#4a4a5a', '#5a5a6c', '#6a6a80'] },
@@ -2492,7 +2492,7 @@ function undercrown() {
   ent('rockgoblin', 40, 23, { face: -1 }); ent('miner', 44, 23, { face: -1 }); ent('sprig', 36, 23, { face: -1 });
   ent('bat', 22, 20); ent('bat', 38, 20);
   ent('deco', 26, 23, { kind: 'barrels' }); ent('deco', 38, 23, { kind: 'wares' }); ent('deco', 12, 23, { kind: 'coffer' });
-  ent('stray', 16, 23, { kind: 'lamp' });                          /* the first lamp: somebody put it down and did not pick it up */
+  
   ent('check', 22, 23);
   cut(24, 36, 15, 18); interiors.push([24, 36, 15, 18, 'mine']);   /* the working above it, and row 19 between them is the roof the set holds */
   coins([26, 17], [30, 17], [34, 17], [28, 17], [32, 17]); ent('silver', 30, 17);
@@ -2520,7 +2520,7 @@ function undercrown() {
   coins([54, 32], [60, 32], [66, 32], [72, 32], [78, 32], [84, 32], [42, 32], [46, 32], [50, 32], [57, 32], [63, 32], [69, 32], [75, 32], [81, 32]);
   cut(56, 84, 25, 28); interiors.push([56, 84, 25, 28, 'mine']);   /* row 29 is the roof over the gallery below */
   coins([58, 27], [64, 27], [70, 27], [76, 27], [82, 27], [61, 27], [67, 27], [73, 27], [79, 27]);
-  ent('stray', 66, 28, { kind: 'lamp' });                          /* the second: up in the old working, where nobody goes */
+  
   ent('deco', 57, 28, { kind: 'barrels' }); ent('minerlamp', 72, 28, { lit: false });
   ent('bat', 60, 27); ent('bat', 76, 27);
 
@@ -2547,7 +2547,7 @@ function undercrown() {
   ent('check', 62, 55);
   ent('deco', 70, 55, { kind: 'barrels' }); ent('deco', 16, 55, { kind: 'wares' }); ent('deco', 84, 55, { kind: 'coffer' });
   ent('sign', 66, 55, { text: 'GAS SITS IN THE LOW PLACES. SOMETHING OLD LIVES IN THE WATER.' });
-  ent('stray', 80, 55, { kind: 'lamp' });                          /* the third: still burning, which is the worst of the three */
+  ent('relic', 80, 55, { kind: 'soles' });                          /* still burning, which is the worst of the three */
   ent('minerlamp', 62, 55, { lit: true }); ent('minerlamp', 78, 55, { lit: true });
   ent('gas', 44, 55); ent('gas', 30, 55);
   coins([26, 51], [30, 51], [40, 51], [46, 51], [60, 54], [68, 54], [76, 54], [86, 54], [28, 51], [42, 51], [56, 54], [64, 54], [72, 54], [82, 54], [12, 54], [16, 54]);
@@ -2670,7 +2670,7 @@ function undercrown() {
     timber: true, hasCryst: true, dark: 0.14, edgeLit: true, underground: true,   /* hasCryst: the Glitter Vein's ledges craze under you (updateCrystal) */   /* it was too dark to see the floor: less black, and every edge you can stand on is lit */
     duskStart: -1, duskLen: 1, music: 'barrows', night: true, glowNight: true, nightA: 0.12,   /* the readability pass: under the night wash, the tall gloom and the murk the open air measured L* 6-9 (a walkway needs 20 to read): the washes thinner, the far wall a lit brown, and the gloom a mine's grey, not the canopy's green */
     tall: { top: 10 * TS, bottom: 168 * TS, col: '18,16,22', deepest: 0.12 },
-    quest: { n: 3, item: 'lamp', name: 'DEAD MEN\'S LAMPS', npc: 'squire', done: 'THEY ARE ALL ACCOUNTED FOR', reward: 'relic', relic: 'soles' },
+
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(30,26,34,0.2)', murkCol: '#3e3846', murkLit: '#7a5a34',   /* a mine's platform is staging: sawn boards over a joist, not a felled tree */
       grass: '#5a4a3a', grassL: '#6e5c48', grassD: '#3a2e22', dirt: '#3a3028', dirtL: '#4a3e32', dirtD: '#241d18',
       canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
@@ -2804,7 +2804,7 @@ function deepAndKeep() {
   ent('deco', 33, 41, { kind: 'lanternDeck', v: 1 }); ent('deco', 94, 47, { kind: 'lanternDeck', v: 1 }); ent('deco', 17, 55, { kind: 'lanternDeck', v: 1 }); ent('deco', 88, 63, { kind: 'lanternDeck', v: 1 });
   rope(100, 34, 70); rope(8, 40, 70);
   ent('silver', 92, 38);
-  ent('stray', 94, 47, { kind: 'coffer' });
+  
   /* THE FIRST VENT, on a lip of the east wall, and the first bell on her side, over the throat: the stack's two gaps */
   rock(102, 105, 60, 61); vent(104, 59, 9);
   ent('sign', 102, 59, { text: 'A CRACK THAT BUBBLES IS BREATHING FOR YOU. SWIM INTO THE COLUMN.' });
@@ -2843,7 +2843,7 @@ function deepAndKeep() {
   ent('deco', 18, 81, { kind: 'kelpTall' }); ent('deco', 92, 87, { kind: 'coralFan' });
   ent('deco', 28, 95, { kind: 'brainCoral' }); ent('deco', 84, 103, { kind: 'kelpTall' });
   rope(10, 76, 110); ent('silver', 30, 78);
-  ent('stray', 50, 95, { kind: 'coffer' });
+  
   /* THE FOREST: strands off every deck and the bed, swaying, and the fish that live in it. The bladders at the tops of
      some of them are full of air, and a blade opens them. */
   for (const [x, y, h, b] of [[8, 112, 7], [15, 112, 9], [22, 112, 6], [26, 112, 8, 1], [34, 112, 5], [54, 112, 6], [66, 112, 5], [78, 112, 6], [92, 112, 7], [100, 112, 9, 1],
@@ -2889,7 +2889,7 @@ function deepAndKeep() {
   ent('deco', 66, 121, { kind: 'wreckStern' }); ent('deco', 24, 129, { kind: 'figurehead' });
   ent('deco', 88, 137, { kind: 'anchor' }); ent('deco', 44, 145, { kind: 'seaChest' });
   ent('silver', 92, 118);
-  ent('stray', 20, 145, { kind: 'coffer' });
+  ent('relic', 20, 145, { kind: 'gauntlet' });
   rock(10, 96, 151, 157); cut(14, 22, 151, 157);                    /* the last throat, down into the drop */
   /* THE GARDEN'S COLOUR, and its breath: a lip on each wall with a clam on it, and a vent on the floor by the throat */
   for (const [x, y, v] of [[60, 121, 0], [80, 121, 2], [96, 121, 1], [16, 129, 1], [50, 129, 0], [58, 137, 2], [92, 137, 0], [18, 145, 2], [52, 145, 1], [30, 150, 0], [60, 150, 1], [86, 150, 2], [44, 150, 2], [74, 150, 0]]) prop('coral', x, y, { v });
@@ -3024,7 +3024,7 @@ function deepAndKeep() {
     ballast: true, dark: 0.08, edgeLit: 'rgba(200,236,240,0.6)',   /* the readability pass: the open water sat under the 20 L* a walkway needs to read, so less black in the zones, and a cold lit lip on every edge you can stand on */
     duskStart: -1, duskLen: 1, music: 'trench', night: true, glowNight: true, nightA: 0.1,
     tall: { top: 20 * TS, bottom: 199 * TS, col: '6,16,28', deepest: 0.18 },   /* the deeper you go the less there is, and down here it is blue-black, not the canopy's green */
-    quest: { n: 3, item: 'coffer', name: 'TRIBUTE COFFERS', npc: 'squire', done: 'THIRTY YEARS OF IT, AND NONE OF IT EVER GOT THERE', reward: 'relic', relic: 'gauntlet' },
+
     palette: { set: 'reef', sky: 'drowned', far: 'sea', mid: 'wrecks', near: 'reef', dress: 'reef', haze: 'rgba(10,24,34,0.34)', murkCol: '#265260', murkLit: '#4a949c',   /* (the readability pass: the wrecks behind the water are the open water's own colour, and at '#183440' they measured L* 19 under the washes) */
       grass: '#2e4a4a', grassL: '#3e5e5c', grassD: '#1c3030', dirt: '#22343c', dirtL: '#2e444c', dirtD: '#14222a',
       canopy: ['#0c1820', '#122230', '#182c3c', '#1e3648'] },
@@ -3053,7 +3053,7 @@ function highcrown() {
   // ---- 1. THE OUTER WARD: over the drawbridge, through the gatehouse, across the courtyard under the walls ----
   block(0, W - 1, 64, H - 1);
   air(3, 10, 64, H - 1); for (let x = 3; x <= 10; x++) set(x, 64, T.PLANK); // the drawbridge over the moat
-  ent('npc', 1, 63, { kind: 'squire' });
+  
   ent('sign', 0, 63, { text: 'HIGHCROWN. HER CASTLE, AND THE LAST OF THEM IN IT. THE WATCH CARRY BELLS: A SENTRY WHO SEES YOU RUNS FOR HIS, AND A RUNG BELL SHUTS THAT HALL AND TURNS OUT THE GARRISON. SEE HIM FIRST.' });
   // the gatehouse: a tower over an arch, and a portcullis on a winch
   block(11, 21, 44, 57); port(16, 58, 63);
@@ -3065,7 +3065,7 @@ function highcrown() {
   stair([[30, 62], [34, 60], [38, 58], [42, 56], [46, 54]]);
   ent('archer', 60, 51, { face: -1 }); ent('javelin', 72, 51, { face: -1 });
   ent('sign', 50, 51, { text: 'A SPEAR THAT MISSES YOU AND HITS THE WALL STAYS THERE A WHILE. STAND ON IT.' });
-  ent('stray', 26, 51, { kind: 'seal' });
+  
   // the gatehouse top, off the wall walk: a silver among the crenels
   plat(22, 50, 3); plat(22, 48, 3); plat(22, 46, 3); coins([13, 43], [16, 43], [19, 43]); // (its silver went to the watchtower on the road up)
   // the courtyard: stables, a kennel, a well, the barracks door
@@ -3108,7 +3108,7 @@ function highcrown() {
   ent('folk', 180, 51, { door: 206 }); ent('folk', 156, 51, { door: 124, alt: true });
   ent('brute', 160, 51, { face: 1 }); plat(157, 43, 6); ent('weight', 160, 43, { len: 6 }); // the meat hook's counterweight, over the cook's brute
   ent('gobmage', 152, 51, { face: -1 });   /* a composed pair: the reader keeps to the larder side of the cook's brute, so closing on one crosses the other's ground */
-  stair([[184, 50, 3], [180, 48, 3], [175, 46, 4]]); ent('stray', 176, 45, { kind: 'seal' }); // the larder's high shelf
+  stair([[184, 50, 3], [180, 48, 3], [175, 46, 4]]); // the larder's high shelf
   air(125, 128, 40, 41); lid(125, 128, 40);    // the stair up to her gallery
   stair([[138, 50], [134, 48], [130, 46], [126, 44], [125, 42]]);
   ent('check', 142, 51);
@@ -3140,7 +3140,7 @@ function highcrown() {
   for (const x of [134, 154, 178, 196]) ent('torch', x, 19);
   ent('deco', 144, 19, { kind: 'banner', v: 0 }); ent('deco', 188, 19, { kind: 'banner', v: 1 });
   for (const x of [140, 164, 184]) ent('deco', x, 13, { kind: 'hallWindow' });
-  plat(140, 14, 16); ent('javelin', 152, 13, { face: 1 }); ent('stray', 141, 13, { kind: 'seal' }); // the choir loft
+  plat(140, 14, 16); ent('javelin', 152, 13, { face: 1 }); ent('relic', 141, 13, { kind: 'banner' }); // the choir loft
   stair([[158, 17, 3], [154, 15, 3]]);
   plat(128, 12, 4); coins([128, 11], [130, 11]); stair([[134, 16, 3], [131, 14, 2]]); // up in the rafters (its silver went to the scaffolds)
   ent('deco', 127, 19, { kind: 'counter' }); ent('key', 128, 19, { kind: 'brass' });
@@ -3180,7 +3180,7 @@ function highcrown() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 1, y: 63 }, pools: [], falls: [], moversExtra: [], interiors,
     reachExact: true, // the carts are the Forgemaster's props, not a way around the castle
     duskStart: -1, duskLen: 1, music: 'highcrown', night: true, glowNight: true, nightA: 0.3,   /* (L.mini is laid with his armoury, in highcrownWhole) */
-    quest: { n: 3, item: 'seal', name: 'ROYAL SEALS', npc: 'squire', done: 'HER ORDERS MEAN NOTHING NOW', reward: 'relic', relic: 'banner' },
+
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'beam', haze: 'rgba(150,140,190,0.14)',   /* three hundred ledges inside a castle, and every one of them was a log off the forest floor */
       grass: '#8a8a98', grassL: '#a8a8b8', grassD: '#5a5a66', dirt: '#4a4a58', dirtL: '#5e5e6c', dirtD: '#32323c',
       canopy: ['#2a2a38', '#3a3a4a', '#4a4a5c', '#5a5a6e'] },
@@ -3281,7 +3281,7 @@ function highcrownWhole() {
     block(36, 40, 76, 77); block(38, 40, 74, 75);        // T4 -> the top, on the right
     block(0, 35, 72, 73);                                // T5: a spur back over the gully (a gibbet, and gold)
     ent('check', 12, 95);
-    ent('npc', 15, 95, { kind: 'squire' });
+    
     ent('sign', 18, 95, { text: 'HIGHCROWN IS UP THIS ROAD. SENTRIES RUN FOR THEIR BELLS: SEE THEM FIRST.' });
     ent('goat', 30, 89, { face: -1 }); ent('soldier', 20, 83, { face: 1 }); ent('goat', 26, 77, { face: -1 }); ent('javelin', 22, 71, { face: 1 });
     ent('deco', 23, 95, { kind: 'cairn' }); ent('deco', 28, 95, { kind: 'deadTree', v: 0 }); ent('deco', 12, 83, { kind: 'stone', v: 1 }); ent('deco', 20, 89, { kind: 'bones', v: 0 });
@@ -3740,7 +3740,7 @@ function trialYard(hero) {
   };
 }
 
-// THE HIGH STORE: the same trade in a stone cellar under the crags, with the shepherd and the old knight for company.
+// THE HIGH STORE: the same trade in a stone cellar under the crags.
 function theShopSea() {
   const L = painter(44, 30);
   const { block, floor, ent, set, plat } = L;
@@ -3756,7 +3756,7 @@ function theShopSea() {
   ent('deco', 13, 21, { kind: 'coiledCable', v: 0 }); ent('deco', 39, 21, { kind: 'plunder', v: 1 });
   ent('deco', 9, 21, { kind: 'lanternDeck', v: 1 }); ent('deco', 31, 21, { kind: 'chartTable' });
   ent('deco', 21, 21, { kind: 'seaChest' }); ent('deco', 35, 21, { kind: 'waterButt' });
-  ent('npc', 17, 21, { kind: 'ferryman' }); ent('npc', 28, 21, { kind: 'squire' });
+  
   plat(6, 18, 4); plat(12, 18, 3);                        // her upper shelf, where the dear stuff lives
   ent('deco', 7, 17, { kind: 'seaChest' }); ent('deco', 13, 17, { kind: 'plunder', v: 0 });
   return {
@@ -3776,7 +3776,7 @@ function theShopCrag() {
   ent('deco', 14, 19, { kind: 'wares', v: 1 }); ent('deco', 34, 19, { kind: 'wares', v: 0 });
   ent('deco', 23, 19, { kind: 'counter' }); ent('npc', 24, 19, { kind: 'keeper' });
   ent('deco', 29, 19, { kind: 'cart' }); ent('deco', 18, 19, { kind: 'lanternPost' }); ent('deco', 8, 19, { kind: 'bones', v: 0 });
-  ent('npc', 12, 19, { kind: 'shepherd' }); ent('npc', 35, 19, { kind: 'oldknight' });
+  
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [],
     duskStart: -1, duskLen: 1, music: 'store', night: true, shop: true, interiors: [[2, 37, 13, 19, 'stone']],
@@ -3799,7 +3799,7 @@ function theShop() {
   ent('deco', 23, 19, { kind: 'counter' }); ent('npc', 24, 19, { kind: 'keeper' });
   for (let x = 12; x <= 30; x++) ent('carpet', x, 19);
   ent('deco', 29, 19, { kind: 'barrels' }); ent('deco', 18, 19, { kind: 'lanternPost' });
-  ent('npc', 12, 19, { kind: 'bard' }); ent('npc', 34, 19, { kind: 'oldknight' }); // company in the store: a bard who sings the news and an old knight who knows the price of silver
+  // (the store is quiet now: no bard, no old knight)
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [],
     duskStart: -1, duskLen: 1, music: 'store', night: true, shop: true, interiors: [[2, 37, 13, 19]],
@@ -3840,7 +3840,7 @@ function galeMoor() {
   o = 0; section('moor-gate', 'THE MOOR GATE', o, o + 27, [o + 18, 21]);
   floor(o, o + 27, 22); calm.push([o, o + 27, 12, 22]);   /* the lee at the gate is a rest: the garrison stood a kite goblin in it */
   ent('sign', o + 4, 21, { text: 'GALE MOOR. JUMP INTO A GUST AND IT CARRIES YOU FAR. THE FLAGS SHOW IT COMING.' });
-  ent('npc', o + 9, 21, { kind: 'squire' }); ent('flagpost', o + 13, 21); ent('deco', o + 17, 21, { kind: 'stone', v: 0 }); ent('deco', o + 22, 21, { kind: 'cairn' });
+  ent('flagpost', o + 13, 21); ent('deco', o + 17, 21, { kind: 'stone', v: 0 }); ent('deco', o + 22, 21, { kind: 'cairn' });
   ent('hare', o + 20, 21, { face: 1 }); coins([o + 12, 20], [o + 16, 19], [o + 20, 20]);
   ent('check', o + 25, 21);
 
@@ -3873,7 +3873,7 @@ function galeMoor() {
   /* ==== THE BOTHY (128-149): the lee of the hill. Still air, a warm door, and Tam, who goes no higher. ==== */
   o = 128; section('bothy', 'THE BOTHY', o, o + 21, [o + 10, 21]);
   floor(o, o + 21, 22); calm.push([o, o + 21, 12, 22]);   /* THE LEE IS A REST (level review): a troll and an elite goat stood in it */
-  ent('deco', o + 6, 21, { kind: 'bothy' }); ent('npc', o + 12, 21, { kind: 'squire', bothy: true }); ent('torch', o + 9, 21); ent('deco', o + 18, 21, { kind: 'fence', v: 1 });
+  ent('deco', o + 6, 21, { kind: 'bothy' }); ent('torch', o + 9, 21); ent('deco', o + 18, 21, { kind: 'fence', v: 1 });
   ent('sign', o + 2, 21, { text: 'NO WIND IN THE LEE. THREE LOST KITES HANG ON THE POSTS AHEAD: RIDE UP TO THEM.' });
   ent('check', o + 16, 21); coins([o + 4, 20], [o + 15, 20]);
 
@@ -3881,9 +3881,9 @@ function galeMoor() {
   o = 150; section('kite-field', 'THE KITE FIELD', o, o + 55, [o + 30, 21]);
   floor(o, o + 55, 22);
   gust(o, o + 56, 4, 23, { period: 6, on: 4.4, phase: 2, k: 1.4 });
-  menhir(o + 10, 15, 21); ent('stray', o + 10, 14, { kind: 'kite' }); ent('vent', o + 6, 21, { period: 5, on: 3, h: 120, wind: true });
-  menhir(o + 32, 13, 21); ent('stray', o + 32, 12, { kind: 'kite' }); ent('vent', o + 28, 21, { period: 5, on: 3, h: 150, wind: true, phase: 1.5 });
-  menhir(o + 50, 16, 21); ent('stray', o + 50, 15, { kind: 'kite' }); ent('vent', o + 46, 21, { period: 5, on: 3, h: 110, wind: true, phase: 3 });
+  menhir(o + 10, 15, 21); ent('vent', o + 6, 21, { period: 5, on: 3, h: 120, wind: true });
+  menhir(o + 32, 13, 21); ent('vent', o + 28, 21, { period: 5, on: 3, h: 150, wind: true, phase: 1.5 });
+  menhir(o + 50, 16, 21); ent('relic', o + 50, 15, { kind: 'windcloak' }); ent('vent', o + 46, 21, { period: 5, on: 3, h: 110, wind: true, phase: 3 });
   ent('kite', o + 17, 10); ent('kite', o + 40, 9); ent('kite', o + 53, 11); ent('harpy', o + 44, 7);
   for (let x = o + 20; x <= o + 25; x++) set(x, 22, 0); block(o + 20, o + 25, 24, 29); pools.push({ x0: (o + 20) * TS, x1: (o + 26) * TS, y: 22 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: (o + 20) * TS, x1: (o + 26) * TS, y: 22 * TS });
   ent('flagpost', o + 4, 21); ent('flagpost', o + 36, 21); ent('hare', o + 44, 21, { face: -1 }); ent('sailer', o + 22, 21, { face: -1 }); ent('sailer', o + 52, 21, { face: -1 });
@@ -4045,7 +4045,7 @@ function galeMoor() {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, roosts, thermals: true,
     duskStart: -1, duskLen: 1, music: 'northumberland', night: false, glowNight: false,   /* "The Fair Flower of Northumberland" by Spring Spring, CC0 - GALE MOOR's own theme, benching adventure (audio/CREDITS.txt) */
     palette: { sky: [[126, 148, 182], [214, 220, 214]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(200,210,220,0.18)', grass: '#7a8a3a', grassL: '#a8b84a', grassD: '#4a5a2a', dirt: '#5a5040', dirtL: '#6e6450', dirtD: '#3a3228', canopy: ['#5a6a7a', '#7a8a9a', '#9aa8b8', '#c8d0d8'] },
-    quest: { n: 3, item: 'kite', name: 'KITE', npc: 'squire', done: 'THE KITES ARE HOME', reward: 'relic', relic: 'windcloak' },
+
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 402 * TS, x1: 455 * TS, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena, flight, airRails, downCliffs, ambushes, calm, sections, stormSummit: true,
@@ -4231,7 +4231,7 @@ function longWater() {
 
   // ---- 1. THE MELTFALLS: Highcrown's back face, five terraces and a fall off every lip ----
   block(0, 13, 8, H - 1);
-  ent('npc', 4, 7, { kind: 'squire' });
+  
   ent('sign', 2, 7, { text: 'THE LONG WATER. THE MOUNTAIN MELT RUNS SALT. FOLLOW THE WATER DOWN.' });
   ent('check', 4, 7); shallow(8, 13, 8, 16); // the stream on the top ledge, running for the lip
   fall(13, 8, 12);
@@ -4301,7 +4301,7 @@ function longWater() {
 
   // ---- 3. SALTREACH: the fishing town at the river mouth, half in the water ----
   block(278, 299, 27, H - 1);
-  ent('check', 282, 26); ent('npc', 287, 26, { kind: 'squire' });
+  ent('check', 282, 26);
   ent('sign', 280, 26, { text: 'SALTREACH. THE LOW STREET FLOODS WITH THE TIDE; THE JETTY STAYS DRY.' });
   for (const [x, v] of [[291, 0], [297, 1]]) ent('deco', x, 26, { kind: 'fishCottage', v });
   block(300, 331, 29, H - 1); plat(300, 26, 32); // the low street, and the jetty over it
@@ -4309,15 +4309,15 @@ function longWater() {
   ent('sign', 300, 25, { text: 'AT HIGH WATER THE LOW STREET IS A CANAL. AT LOW WATER, SILVER ON THE FLATS.' });
   ent('sluice', 302, 25); ent('sign', 305, 25, { text: 'STRIKE THE SLUICE WHEEL TO DRAIN THE STREET A WHILE, BEFORE THE SEA RETURNS.' });
   ent('deco', 303, 28, { kind: 'rowboat' }); ent('deco', 327, 28, { kind: 'netPoles' }); ent('coin', 330, 28); // the sand flats under the jetty's far end: walk them at low tide, swim them at high
-  ent('stray', 305, 28, { kind: 'fisher' }); ent('tideguard', 309, 28, { face: -1 });
+  ent('tideguard', 309, 28, { face: -1 });
   ent('crab', 319, 28, { face: -1 }); ent('crab', 325, 28, { face: 1 });
   ent('urchin', 313, 28, { stays: true }); ent('urchin', 316, 28, { stays: true }); ent('urchin', 322, 28, { stays: true }); ent('urchin', 329, 28, { stays: true });   /* on the flats: at high water they are in the canal with you, at low water they are the floor you walk. By hand (the garrison's water test fails where the street's surface sits on it), and they STAY when the Sluice Bridge room is emptied for its ambush: they are the flats, not the ambushers */
   coins([284, 25], [289, 25], [294, 25], [302, 25], [304, 27], [312, 27], [314, 25], [320, 27], [322, 28], [308, 24], [318, 24], [324, 25], [328, 24]);
   block(332, 367, 27, H - 1);
   for (const [x, v] of [[336, 0], [344, 1], [352, 0], [360, 1]]) ent('deco', x, 26, { kind: 'fishCottage', v });
   for (const x of [334, 349, 365]) ent('deco', x, 26, { kind: 'seaLantern', v: 1 });
-  ent('stray', 341, 26, { kind: 'fisher' }); ent('tideguard', 345, 26, { face: -1 });
-  ent('stray', 358, 26, { kind: 'fisher' }); ent('tideguard', 355, 26, { face: 1 }); ent('scout', 361, 26, { face: -1 });   /* 361, not 363: it stood beside the Herald door's checkpoint (tools/longwater-river.mjs) */
+  ent('tideguard', 345, 26, { face: -1 });
+  ent('relic', 358, 26, { kind: 'tidecharm' }); ent('tideguard', 355, 26, { face: 1 }); ent('scout', 361, 26, { face: -1 });   /* 361, not 363: it stood beside the Herald door's checkpoint (tools/longwater-river.mjs) */
   ent('deco', 333, 26, { kind: 'bellTower' });
   ent('check', 364, 26); ent('sign', 350, 26, { text: 'THE TRIBUTE CHEST STANDS OPEN AND UNTOUCHED. WHAT THEY TAKE IS NOT GOLD.' });
   ent('deco', 339, 26, { kind: 'buoy' }); ent('deco', 353, 26, { kind: 'tributeChest' });
@@ -4350,7 +4350,7 @@ function longWater() {
     duskStart: 99999, duskLen: 1, music: 'longwater', night: false,
     checkRun: 100, noStack: true, calm: [[13, 19, 9, 15], [33, 39, 13, 19], [122, 127, 22, 28], [164, 169, 21, 26], [256, 261, 21, 26]],   /* the sprinkler steps past a hand-placed foe's tile, and leaves the two swim-lesson pools, the scout by the last lip and the two manned rocks alone (the Linn and the Bore Reach add their own) */
     wetZone: [0, 107], fresh: [0, 277], bore: { x0: 140 * TS, x1: 278 * TS, surface: 28 * TS + 4, period: 12, speed: 280, h: 30 },
-    quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE FISHERFOLK ARE SAFE', reward: 'relic', relic: 'tidecharm' },
+
     palette: { set: 'shore', sky: 'sea', far: 'sea', mid: 'coast', near: 'shore', fg: 'shore', dress: 'shore', haze: 'rgba(248,220,176,0.10)',
       grass: '#7a9a5a', grassL: '#a8c47a', grassD: '#5a7a44', dirt: '#555e68', dirtL: '#6f7a84', dirtD: '#3e454e', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     weather: [{ x0: 0, x1: 108 * TS, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'shore' }],
@@ -4476,7 +4476,7 @@ function shipwreckReef() {
 
   // ---- 1. THE TIDEWAY: the backs of the wrecks, and the sea coming and going over them ----
   block(0, 12, 28, H - 1);
-  ent('npc', 4, 27, { kind: 'squire' });
+  
   ent('sign', 2, 27, { text: 'THE REEF. BRING BACK HER THREE MANIFEST PAGES. AT HIGH TIDE, TAKE THE RIGGING.' });
   ent('check', 9, 27);
   block(13, 118, 33, H - 1); // the reef bed under it all
@@ -4512,7 +4512,7 @@ function shipwreckReef() {
   ent('silver', 170, 35); coins([164, 35], [166, 34], [168, 35], [171, 34]);
   ent('sign', 164, 35, { text: 'THE STRONGROOM. THE LOCK IS STILL SET FROM THE INSIDE.' });
   ent('capstan', 198, 27, { link: 'hoist' }); ent('sign', 194, 27, { text: 'TURN THE CAPSTAN THREE TIMES, THEN STAND ON THE PALLET TO RIDE UP HER DECKS.' });
-  ent('deco', 133, 31, { kind: 'seaChest' }); ent('stray', 150, 31, { kind: 'manifest' });
+  ent('deco', 133, 31, { kind: 'seaChest' });
   ent('deco', 160, 31, { kind: 'wheel' }); ent('deco', 190, 27, { kind: 'rigging', v: 0 }); ent('deco', 172, 22, { kind: 'rigging', v: 1 });
   ent('deco', 142, 12, { kind: 'bellWreck' }); ent('deco', 200, 12, { kind: 'figurehead' });   /* a bell fallen off her bracket: the only bell that rings is the ship's bell on the tideway */
   ent('check', 152, 17); ent('check', 200, 27); ent('sign', 128, 12, { text: 'THE FIRST PAGE IS IN THE HOLD. GO DOWN WHEN THE WATER DROPS; CLIMB WHEN IT RISES.' });
@@ -4545,7 +4545,7 @@ function shipwreckReef() {
   ent('angler', 264, 30, { face: -1 }); ent('angler', 292, 24, { face: -1 }); ent('angler', 320, 28, { face: -1 });
   ent('eel', 224, 34); ent('eel', 276, 32);
   block(320, 328, 16, 19); air(321, 327, 17, 18); // the alcove the adverse current guards
-  ent('stray', 324, 18, { kind: 'manifest' });
+  
   ent('silver', 255, 15);
   coins([218, 33], [224, 30], [230, 27], [238, 24], [244, 22], [250, 18], [256, 16], [264, 20], [272, 26], [280, 30], [290, 28], [298, 24], [306, 20], [314, 18], [322, 22], [328, 30]);
 
@@ -4562,7 +4562,7 @@ function shipwreckReef() {
   ent('deco', 356, 25, { kind: 'anchor' }); ent('deco', 370, 23, { kind: 'spar', v: 0 }); ent('deco', 390, 20, { kind: 'seaChest' });
   ent('deco', 344, 29, { kind: 'lanternBuoy', v: 1 }); ent('deco', 388, 20, { kind: 'bellWreck' });
   ent('sign', 386, 20, { text: "THE LAST LINE IS IN THE CAPTAIN'S HAND: SHE WENT DOWN RATHER THAN DELIVER." });
-  ent('stray', 392, 20, { kind: 'manifest' });
+  ent('relic', 392, 20, { kind: 'diverlamp' });
   ent('sailor', 348, 27, { face: -1 }); ent('sailor', 370, 23, { face: -1 }); ent('netter', 358, 25, { face: -1 });
   ent('petrel', 360, 18); ent('petrel', 386, 14);
   movers.push({ kind: 'lift', x: 404 * TS, y: 25 * TS, y0: 25 * TS, y1: 14 * TS, w: 32, h: 8, speed: 30 }); // the stern tackle, still rigged
@@ -4590,7 +4590,7 @@ function shipwreckReef() {
     duskStart: 99999, duskLen: 1, music: 'reef', night: false,
     interiors: [[116, 177, 22, 29, 'ship'], [247, 300, 24, 26, 'ship'], [302, 371, 17, 21, 'ship']], // ONLY the enclosed spaces (polishCoastAndTown sets the real ones; the Flotilla's oar-deck rectangle that used to lead this list is gone)
     wetZone: [0, 119], storm: true, dark: 0.01, edgeLit: 'rgba(210,244,244,0.7)',   /* the readability pass: at high tide her decks were teal under teal; a cold lit lip on every edge you can stand on reads through the water */
-    quest: { n: 3, item: 'manifest', name: 'MANIFEST PAGES', npc: 'squire', done: 'THE MANIFEST IS WHOLE', reward: 'relic', relic: 'diverlamp' },   /* the reef's own: ROYAL SEALS is Highcrown's (the level review) */
+
     palette: { set: 'reef', sky: 'storm', far: 'reef', mid: 'wrecks', near: 'reef', fg: 'reef', dress: 'reef', haze: 'rgba(180,200,205,0.12)',
       grass: '#5f7a68', grassL: '#88a890', grassD: '#40564a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e3a3a', '#2c4e4a', '#3a6258', '#548070'] },
     weather: [{ x0: 0, x1: 213 * TS, kind: 'rain' }, { x0: 331 * TS, x1: 99999, kind: 'rain' }],
@@ -4707,7 +4707,7 @@ function theFlotilla() {
 
   // ---- THE ROCK: the Ferryman will not go closer than this ----
   block(0, 22, 26, 37);
-  ent('npc', 4, 25, { kind: 'squire' });
+  
   ent('sign', 2, 25, { text: 'THE FLOTILLA: FOUR SHIPS LASHED INTO A TOWN. PRESSED FISHERFOLK WORK THE OARS.' });
   ent('check', 8, 25); ent('deco', 17, 25, { kind: 'rowboat' });
   ent('sign', 14, 25, { text: 'CLIMB THE NETS ON THE HULLS TO GET OUT OF THE WATER. YOU WILL BE SEEN.' });
@@ -4728,7 +4728,7 @@ function theFlotilla() {
   net(50, 51, 12, 23); plat(47, 11, 7); // her shrouds and the crow's nest
   ent('lookout', 50, 10, { face: 1 });
   ent('sign', 36, 23, { text: 'THE GALLEY. STOP THE LOOKOUT BEFORE HIS WHISTLE WAKES THE TOWN.' });
-  for (const [x, y] of [[40, 29], [62, 29], [82, 29]]) ent('stray', x, y, { kind: 'fisher' });
+  ent('relic', 82, 29, { kind: 'blackflag' });
   for (const x of [38, 60, 80]) ent('deco', x, 29, { kind: 'oarBench' });
   ent('deco', 44, 29, { kind: 'oar' }); ent('deco', 70, 29, { kind: 'oar' });
   // THE PRESS GANG: eight of them in the open with a bosun whistling them onto you. They come in a crowd
@@ -4918,7 +4918,7 @@ function theFlotilla() {
     // ROOMS OF THEIR OWN (dressing only: [x0, x1, top row, floor row, kind]): the first hull's galley, the second's flooded brig,
     // the powder room under the Quartermaster's deck, and her own cabin up under her poop with the charts on the table
     cabins: [[36, 70, 26, 30, 'galley'], [118, 172, 26, 30, 'brig'], [288, 338, 24, 27, 'magazine'], [341, 371, 12, 16, 'cabin']],
-    quest: { n: 3, item: 'fisher', name: 'FISHERFOLK', npc: 'squire', done: 'THE OARS ARE EMPTY', reward: 'relic', relic: 'blackflag' },
+
     palette: { set: 'ship', sky: 'harbour', far: 'harbour', mid: 'harbour', near: 'harbour', fg: 'rig', dress: 'ship', haze: 'rgba(255,196,140,0.08)',   /* a town of ships at the end of the day (src/redraw/harbour.js) */
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
@@ -4969,7 +4969,7 @@ function theHurricane() {
   ent('deco', 20, 15, { kind: 'shipBell' }); ent('deco', 46, 15, { kind: 'anchor' });
   ent('sign', 18, 15, { text: 'HER BELL. THEY RANG IT FOR THE WATCH AND FOR THE DEAD, AND IT IS STILL RINGING ITSELF.' });
   ent('sign', 26, 19, { text: 'THE WAVE COMES FROM WINDWARD. TAKE A LINE, CLIMB, OR GO BELOW. ON DECK, JUMP IT.' });
-  ent('check', 30, 19); ent('npc', 34, 19, { kind: 'squire' });
+  ent('check', 30, 19);
   ent('sign', 44, 19, { text: 'HER LANTERNS ROLLED INTO THE CORNERS. BRING THEM BACK FOR HER LIGHTS.' });
   ent('sign', 50, 19, { text: 'SHE ROLLS. WHEN SHE HEELS, HOLD A LINE, PUT A BITT AT YOUR BACK, OR STAND ON THE SAND.' });
   ent('deco', 40, 19, { kind: 'kegStack' }); ent('deco', 24, 19, { kind: 'hammock', v: 0 }); ent('deco', 32, 19, { kind: 'rumBarrels', v: 1 }); ent('deco', 46, 19, { kind: 'washing' }); ent('deco', 28, 19, { kind: 'hammock', v: 1 });
@@ -4997,7 +4997,7 @@ function theHurricane() {
   ent('torch', 38, 26); ent('silver', 24, 26);
   coins([58, 25], [54, 25], [50, 25], [46, 25], [42, 25], [38, 25], [30, 25], [28, 25], [22, 25], [20, 25]);
   ent('deco', 56, 19, { kind: 'rumBarrels', v: 0 }); ent('deco', 116, 19, { kind: 'boardingNet' });
-  ent('stray', 90, 26, { kind: 'lamp' }); ent('torch', 84, 26); // her third lantern, rolled forward into her fore hold
+  ent('torch', 84, 26);
   ent('check', 96, 19);
   coins([64, 18], [76, 18], [90, 18], [104, 18], [66, 10], [82, 10], [106, 11], [58, 18], [70, 18], [84, 18], [98, 18], [112, 18], [74, 10], [94, 25], [78, 25], [110, 25]);
 
@@ -5022,7 +5022,7 @@ function theHurricane() {
   ent('torch', 190, 19); ent('deco', 194, 19, { kind: 'kegStack' }); ent('deco', 206, 19, { kind: 'chickenCoop' });
   ent('sign', 188, 19, { text: 'HER GALLEY. THE STOVE IS OUT AND THE COOK IS GONE AND THE KETTLE IS STILL SWINGING.' });
   ent('bosun', 202, 19, { face: -1 }); ent('cutlass', 210, 19, { face: -1 }); ent('sailor', 194, 19, { face: 1 }); ent('marine', 218, 15, { face: -1 });
-  ent('check', 186, 19); ent('stray', 212, 19, { kind: 'lamp' });
+  ent('check', 186, 19);
   ent('deco', 198, 15, { kind: 'lanternDeck', v: 1 });
   coins([192, 18], [200, 18], [208, 18], [196, 15], [212, 15]);
 
@@ -5101,7 +5101,7 @@ function theHurricane() {
   ent('torch', 430, 26); ent('torch', 460, 26);
   ent('deco', 436, 26, { kind: 'kegStack' }); ent('deco', 452, 26, { kind: 'rumBarrels', v: 1 }); ent('deco', 472, 26, { kind: 'hammock', v: 1 }); ent('deco', 430, 26, { kind: 'plunder', v: 2 });
   ent('deco', 444, 26, { kind: 'hammock', v: 0 }); ent('deco', 468, 26, { kind: 'plunder', v: 1 });
-  ent('stray', 448, 26, { kind: 'lamp' }); ent('coin', 464, 26); ent('deco', 456, 26, { kind: 'plunder', v: 1 }); coins([446, 26], [454, 26], [462, 26], [470, 26]); // (under the water until the pumps run)
+  ent('relic', 448, 26, { kind: 'stormline' }); ent('coin', 464, 26); ent('deco', 456, 26, { kind: 'plunder', v: 1 }); coins([446, 26], [454, 26], [462, 26], [470, 26]); // (under the water until the pumps run)
   ent('netter', 440, 26, { face: 1 }); ent('marine', 470, 26, { face: -1 }); ent('boarder', 456, 26, { face: -1 }); ent('crab', 464, 26, { face: -1 });
   ent('sign', 426, 26, { text: 'THE PUMPS HAVE STOPPED. WADING IS SLOW, AND SHE IS SINKING FASTER.' });
   ent('check', 432, 26);
@@ -5113,7 +5113,7 @@ function theHurricane() {
   // gone quiet, and nobody on her deck but a hand who has sat down to die. It is the only quiet place in her, and a
   // promise about the rest of her: past it the wash comes quicker and harder and the sky strikes more often.
   ent('sign', 436, 19, { text: 'THE EYE. THE WIND HAS DROPPED AND THE STARS ARE OUT. IT WILL NOT LAST.' });
-  ent('npc', 452, 19, { kind: 'cook', name: 'HER COOK', lines: ['IT IS THE EYE OF IT. IT GOES QUIET LIKE THIS, AND THEN IT COMES BACK THE OTHER WAY, AND WORSE.', 'HER BOAT IS ON THE DAVITS ABAFT HERE. STRIKE THE WINCH AND SHE GOES DOWN TO THE OIL. SHE WILL CARRY YOU UNDER THE WRECK.', 'MIND THE BEAM IN THE WRECK. GET DOWN UNDER IT. I AM NOT GETTING UP, KNIGHT. TELL THE CAPTAIN I KEPT MY WATCH.'] });
+
   ent('deco', 446, 19, { kind: 'waterButt' }); ent('deco', 458, 19, { kind: 'coiledCable', v: 0 });
   coins([440, 17], [444, 16], [448, 17], [460, 17], [464, 16], [468, 17]);
   ent('check', 474, 19);
@@ -5264,7 +5264,7 @@ function theHurricane() {
     // ROOMS OF THEIR OWN in her hold and her deckhouses (dressing only: [x0, x1, top row, floor row, kind]): the galley forward,
     // the brig, the powder room aft of the mainmast, the chart room in the first deckhouse and the Captain's cabin under his deck
     cabins: [[22, 64, 21, 27, 'galley'], [70, 124, 21, 27, 'brig'], [184, 216, 17, 20, 'chart'], [292, 366, 21, 27, 'magazine'], [664, 700, 17, 20, 'cabin']],
-    quest: { n: 3, item: 'lamp', name: 'HER LANTERNS', npc: 'squire', done: 'SHE HAS HER LIGHTS BACK', reward: 'relic', relic: 'stormline' },
+
     palette: { set: 'ship', sky: 'storm', far: 'stormsea', mid: 'swells', near: 'none', fg: 'rig', dress: 'ship', haze: 'rgba(150,170,180,0.16)',   /* one ship and the sea (src/redraw/storm.js) */
       grass: '#5f6a68', grassL: '#88928f', grassD: '#40484a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e2a3a', '#2c3a4a', '#3a4a5a', '#54687a'] },
     weather: [{ x0: 0, x1: 431 * TS, kind: 'rain' }, { x0: 477 * TS, x1: 99999, kind: 'rain' }],   /* and none in the eye */
@@ -5325,7 +5325,7 @@ function theLamplitStreet() {
   ent('sign', 18, 12, { text: 'THE TRIBUTE SHIP SANK ON THE CITY SHE WAS PAYING. HER CARGO IS STILL ABOARD.' });
   ent('deco', 20, 9, { kind: 'mastStump' }); ent('deco', 12, 9, { kind: 'wreckBow' }); ent('deco', 30, 9, { kind: 'sternWindows' });
   ent('sign', 8, 9, { text: 'THE DROWNED CITY\'S LAMPS STILL BURN. UNDER EVERY HOOD THERE IS AIR.' });
-  ent('check', 10, 9); ent('npc', 14, 9, { kind: 'squire' });
+  ent('check', 10, 9);
   ent('sign', 26, 9, { text: 'TAKE FIRE FROM A BURNING LAMP, CARRY IT, AND STRIKE A DEAD ONE TO LIGHT IT.' });
   plat(37, 10, 3); net(40, 41, 6, ST - 1);      // the diver's line: off the wreck and down through the surface
   ent('sign', 44, UP - 1, { text: 'THE ROOFS ARE DRY AND SLOW. THE STREET IS FAST AND LEAVES YOU NO AIR.' });
@@ -5356,7 +5356,7 @@ function theLamplitStreet() {
   ent('sign', 108, ST - 1, { text: 'THE WATCH THRUSTS FROM RANGE. GET INSIDE AND HE SWEEPS YOUR FEET: JUMP IT.' });
   ent('eel', 158, 33); ent('eel', 172, 31); ent('urchin', 164, ST - 1); ent('crab', 178, ST - 1); ent('urchin', 186, ST - 1);
   ent('snuffer', 120, UP - 1, { face: -1 });    // it only comes where the light has gone, and it takes more of it
-  ent('stray', 128, ST - 1, { kind: 'lamp' });  // the first of his three lamps, down on the stones
+  
   ent('deco', 156, ST - 1, { kind: 'plunder', v: 1 });
   ent('check', 88, UP - 1); ent('check', 134, 22); ent('check', 180, ST - 1);   /* (at 130 the step over the ledge went through the lamp on it) */
   ent('sign', 148, ST - 1, { text: 'THE TIDE RUNS THIS STREET, THEN TURNS. GO WITH IT AND IT CARRIES YOU TWO LAMPS.' });
@@ -5408,7 +5408,7 @@ function theLamplitStreet() {
   port(326, 28, ST - 1); ent('lockgate', 326, ST - 1, { needs: 'bone', h: 10 });
   ent('deco', 336, ST - 1, { kind: 'grating' });
   ent('deco', 330, ST - 1, { kind: 'plunder', v: 0 }); ent('silver', 334, ST - 1); ent('deco', 338, ST - 1, { kind: 'plunder', v: 2 }); ent('deco', 344, ST - 1, { kind: 'sealDrift', v: 1 });
-  ent('stray', 333, 22, { kind: 'lamp' });                              // the second lamp, up in a vault
+  
   ent('watch', 276, ST - 1, { face: -1 }); ent('watch', 312, ST - 1, { face: 1 }); ent('watch', 346, ST - 1, { face: -1 });
   ent('wight', 290, UP - 1, { face: -1 }); ent('tideguard', 324, UP - 1, { face: 1 });
   ent('eel', 296, 33); ent('angler', 316, 30); ent('angler', 330, 34); ent('urchin', 300, ST - 1); ent('crab', 320, ST - 1);
@@ -5432,8 +5432,8 @@ function theLamplitStreet() {
   for (const x of [368, 388, 412, 422]) lampUp(x);
   ent('scout', 374, UP - 1, { face: 1 }); ent('watch', 410, UP - 1, { face: -1 });
   ent('snuffer', 418, UP - 1, { face: -1 });
-  ent('stray', 386, UP - 1, { kind: 'lamp' });                          // the third lamp, on the bellows floor
-  ent('npc', 372, UP - 1, { kind: 'lamplighter' });                     // the last lamplighter, and he will not leave
+  ent('relic', 386, UP - 1, { kind: 'wick' });                          // on the bellows floor
+  
   ent('check', 366, UP - 1); ent('check', 420, UP - 1);
   ent('deco', 408, UP - 1, { kind: 'plunder', v: 1 }); ent('deco', 398, UP - 1, { kind: 'sealDrift', v: 0 });
   coins([366, 21], [374, 19], [382, 21], [390, 19], [398, 21], [406, 19], [414, 21], [422, 19]);
@@ -5583,7 +5583,7 @@ function theLamplitStreet() {
     noCoin: [[194, 242, 0, 12], [362, 426, 0, 10], [574, 698, 0, 6]],
     streetTide: { every: 14, tell: 2.4, flow: 34 },
     interiors,
-    quest: { n: 3, item: 'lamp', name: 'HIS LAMPS', npc: 'lamplighter', done: 'THE STREET HAS ITS LIGHTS', reward: 'relic', relic: 'wick' },
+
     palette: { set: 'city', sky: 'drowned', far: 'city', mid: 'city', near: 'city', fg: 'city', dress: 'none', haze: 'rgba(20,70,66,0.22)',
       grass: '#4e7a58', grassL: '#7e9490', grassD: '#24402c', dirt: '#46595c', dirtL: '#58706f', dirtD: '#243036',
       canopy: ['#0d2826', '#113331', '#16403d', '#1b4c48'] },
@@ -5635,7 +5635,7 @@ function waymeet() {
   sign(4, 'WAYMEET. THREE ROADS MEET, SO THE INN IS FULL OF MEN WITH NOTHING TO DO.');
   ent('check', 8, R - 1);
   ent('deco', 6, R - 1, { kind: 'fence', v: 0 });   /* a cairn stood here: a stepped stone pile reads as a beach sandcastle in this dusty road light, so it is gone, not reskinned */
-  ent('npc', 16, R - 1, { kind: 'shepherd' }); ent('dog', 20, R - 1); ent('deco', 24, R - 1, { kind: 'fence', v: 1 });
+  ent('dog', 20, R - 1); ent('deco', 24, R - 1, { kind: 'fence', v: 1 });
   coins([10, R - 2], [14, R - 2], [18, R - 2], [22, R - 2], [28, R - 2]);
   /* THE GATEHOUSE: a wall with an arch through it. You do not go round a town wall. */
   block(30, 49, 24, R - 1);
@@ -5658,7 +5658,7 @@ function waymeet() {
   ent('deco', 110, R - 1, { kind: 'stall', v: 1 }); ent('deco', 118, R - 1, { kind: 'wares' });
   ent('deco', 188, R - 1, { kind: 'waterButt' }); ent('deco', 196, R - 1, { kind: 'dovecote' });
   post(96); post(186);
-  ent('npc', 104, R - 1, { kind: 'bard' }); ent('dog', 122, R - 1); ent('dog', 200, R - 1);
+  ent('dog', 122, R - 1); ent('dog', 200, R - 1);
   sign(88, 'THE MARKET CROSS. NOBODY HERE IS YOUR ENEMY, AND EVERYONE IS IN THE WAY.');
   /* THE MARKET HALL (x 95-123) is the square's crowd, locked in by AMBUSH; the men placed in it here stand down when the room
      fills. THE HORSE FAIR (x 181-209) was a second room and is ground again: its men are the fair's own crowd. */
@@ -5681,7 +5681,7 @@ function waymeet() {
        TEST       the long pen again with both of them in reach of it, the balcony behind you and the bottle ahead. */
   ent('check', 127, R - 1);
   sign(129, 'FAIR DAY, AND THE DRUNKS ARE OUT. THE RING ON THE ROAD IS WHERE IT LANDS.');
-  ent('npc', 130, R - 1, { kind: 'cook' });
+  
   /* THE CARTER'S WAGON, left standing in the road with a drinker up on its bed: over your head, one jump from the road
      for whoever wants to put him on his back, and on nobody's landing */
   board(132, 136, R - 4); ent('deco', 134, R - 1, { kind: 'cart' });   /* the tilt on its poles, a hay wagon's height */
@@ -5721,7 +5721,7 @@ function waymeet() {
   ent('doorway', 224, R - 1, { id: 'lance-out', to: 'lance-in' });
   ent('doorway', 252, R - 1, { id: 'lance-back', to: 'lance-far' });
   ent('deco', 230, R - 1, { kind: 'barrels' }); ent('deco', 246, R - 1, { kind: 'waterButt' });
-  ent('npc', 218, R - 1, { kind: 'oldknight' });
+  
   coins([220, R - 2], [228, R - 2], [240, R - 2], [256, R - 2]);
   coins([216, R - 9], [230, R - 9], [244, R - 9], [258, R - 9]);
   for (const x of [220, 234, 248, 260]) ent('swornsword', x, R - 8, { face: -1 });   /* they are on her roof too */
@@ -5738,7 +5738,7 @@ function waymeet() {
   ent('guest', 273, R - 1, { v: 0, face: 1 }); ent('guest', 279, R - 1, { v: 1, face: -1 });
   ent('guest', 285, R - 1, { v: 2, face: 1 }); ent('guest', 291, R - 1, { v: 1, face: -1 });
   ent('guest', 282, R - 1, { v: 3, face: 1 }); ent('guest', 270, R - 1, { v: 4, face: 1 });
-  ent('npc', 297, R - 1, { kind: 'barkeep' });
+  
   sign(266, 'THE BEER GARDEN. THEY DRINK TO YOUR HEALTH HERE: THE PURSE IS FOR YOU ALIVE.');
   coins([274, R - 2], [286, R - 2], [296, R - 2]);
   /* THE COMMON ROOM. Two doors, so you come out the far end and do not walk the same street twice. */
@@ -5769,7 +5769,7 @@ function waymeet() {
   ent('runner', 26, 20, { face: 1 }); ent('swornsword', 60, 20, { face: -1 });
   coins([26, 19], [30, 19], [36, 19], [44, 19], [50, 19], [56, 19], [34, 13], [40, 13], [46, 13]);
   ent('check', 60, 20); ent('silver', 40, 12);
-  ent('stray', 50, 12, { kind: 'cup' });   /* over the gallery's own boards, so the gallery is the way to it */
+  
 
   // ---------------- 4. THE TILT-YARD (x 301-350). The lists, and the man who keeps them. -----------------
   /* THE MINI. A yard between two gates with a rail down it and benches either side, and the Serjeant of the Lists
@@ -5811,7 +5811,7 @@ function waymeet() {
   ent('deco', 362, R - 12, { kind: 'bunting', hang: true });   /* the dyed cloth, strung out to dry */ ent('deco', 404, R - 7, { kind: 'shopSign', v: 2 });
   coins([354, R - 3], [360, R - 5], [364, R - 5], [373, R - 5], [382, R - 7], [392, R - 8], [402, R - 7], [415, R - 4], [422, R - 6], [427, R - 8], [436, R - 6], [441, R - 6]);
   ent('silver', 427, R - 9);
-  ent('stray', 405, R - 8, { kind: 'cup' });
+  
   ent('check', 448, R - 1);
   coins([362, R + 2], [400, R + 2], [436, R + 2]);   /* in the run-off: something for whoever falls in */
 
@@ -5855,7 +5855,7 @@ function waymeet() {
   ent('crossbow', 624, R - 7, { face: -1 }); ent('swornsword', 638, R - 7, { face: -1 });
   ent('hedgeknight', 594, R - 5, { face: -1 }); ent('swornsword', 568, R - 1, { face: -1 }); ent('swornsword', 580, R - 1, { face: -1 }); ent('crossbow', 583, R - 5, { face: -1 }); ent('swornsword', 606, R - 7, { face: -1 }); ent('hedgeknight', 650, R - 1, { face: -1 }); ent('crossbow', 645, R - 4, { face: -1 });
   coins([569, R - 3], [582, R - 5], [593, R - 5], [604, R - 7], [610, R - 7], [622, R - 7], [636, R - 7], [644, R - 4]);
-  ent('stray', 626, R - 7, { kind: 'cup' });
+  ent('relic', 626, R - 7, { kind: 'spurs' });
 
   // ---------------- 8. THE CHAPEL YARD (x 651-775). Under the bell, with the town watching. -----------
   floor(651, W - 1, R);
@@ -5939,7 +5939,7 @@ function waymeet() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs, houses,
     indoorRow: 24,                                 /* rows 0-24 are insides: never shown from the street */
     music: 'waymeet', duskStart: 0.55, duskLen: 0.45,
-    quest: { n: 3, item: 'cup', name: 'HIS CUPS', done: 'THE HOUSE IS SQUARE AGAIN', reward: 'relic', relic: 'spurs' },
+
     palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town',
       haze: 'rgba(210,190,160,0.12)', murkCol: '#2e2a34',
       grass: '#6a8a46', grassL: '#8fb060', grassD: '#47612e', dirt: '#7a6248', dirtL: '#8f7458', dirtD: '#54402c',
@@ -5981,7 +5981,7 @@ function theHunt() {
   // ---------------- 1. THE MEET (x 0-84). The lawn before the kennels, where the lord's hunt gathers. ----------------
   sign(3, 'THE LORD HUNTS TODAY. THE WHISTLE LOOSES THE PACK, SO THE WHISTLE IS THE TELL.');
   ent('check', 7, R - 1);
-  ent('npc', 12, R - 1, { kind: 'woodsman' });
+  
   ent('deco', 21, R - 1, { kind: 'tent', v: 0 }); ent('deco', 28, R - 1, { kind: 'banner', v: 0 }); ent('deco', 33, R - 1, { kind: 'cart' });
   ent('deco', 40, R - 1, { kind: 'hayBale', v: 0 }); ent('deco', 44, R - 1, { kind: 'spearRack' }); ent('deco', 50, R - 1, { kind: 'trough' });
   ent('sprig', 26, R - 1, { face: -1 }); ent('thief', 37, R - 1, { face: -1 });
@@ -6005,7 +6005,7 @@ function theHunt() {
   block(122, 136, R - 6, R - 6); interiors.push([122, 136, R - 5, R - 1, 'timber']); ladders.push([121, R - 7, R - 1]);
   held(126, 130); whip(133, R - 7); ent('pike', 139, R - 1, { face: -1 }); ent('brute', 128, R - 1, { face: -1 });
   ent('deco', 124, R - 1, { kind: 'trough' }); ent('deco', 135, R - 1, { kind: 'barrels' });
-  ent('stray', 131, R - 1, { kind: 'fox' });
+  
   coins([114, R - 2], [124, R - 7], [128, R - 7], [132, R - 7], [138, R - 2]);
   sign(141, 'THE GATE WINDS ITSELF BACK UP. STRIKE THE WINCH AGAIN.');
   kennelWall(144);
@@ -6033,7 +6033,7 @@ function theHunt() {
   // ---------------- 4. THE DEER PARK (x 230-350). Open grass, the high seats, and everything in it runs. ------------
   sign(232, 'THE DEER PARK. THE LORD SHOOTS FROM THE HIGH SEATS. CLIMB ONE.');
   block(244, 256, R - 2, R - 1); block(247, 253, R - 4, R - 3);   /* the park rolls, two rows at a time */
-  ent('stray', 250, R - 5, { kind: 'fox' });
+  
   ent('hare', 240, R - 1); ent('hare', 259, R - 1); ent('crow', 252, R - 8, { face: -1 });
   ent('check', 252, R - 5);
   sign(259, 'A HOUND WILL NOT CLIMB A LADDER. A BOWMAN WILL WAIT AT THE TOP OF ONE.');
@@ -6072,7 +6072,7 @@ function theHunt() {
   ent('soldier', 364, R - 1, { face: -1 }); ent('soldier', 378, R - 1, { face: -1 }); ent('pike', 398, R - 1, { face: -1 });
   ent('soldier', 404, R - 1, { face: -1 }); ent('brute', 418, R - 1, { face: -1 }); ent('heavy', 428, R - 1, { face: -1 });
   ent('javelin', 372, R - 6, { face: -1 }); ent('javelin', 414, R - 6, { face: -1 }); ent('thief', 395, R - 8, { face: -1 });
-  ent('stray', 424, R - 6, { kind: 'fox' });
+  ent('relic', 424, R - 6, { kind: 'fleece' });
   ent('silver', 390, R - 9);
   coins([362, R - 2], [370, R - 6], [378, R - 6], [386, R - 8], [394, R - 8], [402, R - 2], [410, R - 6], [420, R - 6], [430, R - 2]);
 
@@ -6110,7 +6110,7 @@ function theHunt() {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors,
     music: 'marketday', duskStart: -1, duskLen: 1,
-    quest: { n: 3, item: 'fox', name: 'FOX CUBS', npc: 'woodsman', done: 'THE CUBS ARE BACK IN THE BRACKEN', reward: 'relic', relic: 'fleece' },
+
     /* a morning park: a pale gold sky, bracken-green and gold on the ground, and the trees a darker green than any wood before */
     palette: { sky: [[168, 196, 178], [242, 226, 180]], dress: 'wood', haze: 'rgba(236,222,170,0.14)',
       grass: '#7a9a3a', grassL: '#a8c050', grassD: '#4e6a28', dirt: '#6a5238', dirtL: '#80664a', dirtD: '#463624',
@@ -6154,7 +6154,7 @@ function quarryPass() {
   floor(0, 79, R);
   sign(5, R - 1, 'THE QUARRY PASS. THE ROAD INLAND GOES THROUGH THE HILL, AND THEY ARE CUTTING IT.');
   ent('check', 8, R - 1);
-  ent('deco', 11, R - 1, { kind: 'tent', v: 0 }); ent('npc', 15, R - 1, { kind: 'foreman' }); ent('brazier', 18, R - 1);
+  ent('deco', 11, R - 1, { kind: 'tent', v: 0 }); ent('brazier', 18, R - 1);
   ent('deco', 22, R - 1, { kind: 'cart' }); ent('deco', 26, R - 1, { kind: 'barrels' }); ent('deco', 32, R - 1, { kind: 'cairn' });
   sign(29, R - 1, 'A GOAT COMES DOWN THE ROAD AT A RUN. TAKE IT ON THE SHIELD AND IT REARS.');
   heap(44, 52, 2); heap(56, 66, 2);
@@ -6171,7 +6171,7 @@ function quarryPass() {
   ent('rockfall', 110, 3, { every: 2.6 }); ent('rockfall', 119, 3, { every: 3.1 }); ent('rockfall', 127, 3, { every: 2.3 });
   plat(112, R - 10, 4); plat(117, R - 12, 4);                                 /* the old staging up the face, two rows a board */
   ent('silver', 119, R - 14);
-  ent('stray', 124, R - 9, { kind: 'canary' });                               /* the first: in its cage on the summit, under the stones */
+  
   ent('goat', 88, R - 3, { face: -1 }); ent('rockgoblin', 100, R - 7, { face: -1 }); ent('archer', 108, R - 9, { face: -1 });
   ent('rockgoblin', 130, R - 9, { face: -1 }); ent('goat', 136, R - 7, { face: -1 }); ent('sapper', 144, R - 5, { face: -1 });
   ent('horn', 150, R - 3, { face: -1 }); ent('miner', 158, R - 1, { face: -1 }); ent('brute', 164, R - 1, { face: -1 });
@@ -6209,7 +6209,7 @@ function quarryPass() {
   ent('brute', 290, B - 1, { face: -1 }); ent('sapper', 332, B - 1, { face: -1 }); ent('rockgoblin', 310, B - 1, { face: -1 }); ent('goat', 326, B - 1, { face: -1 }); ent('gobmage', 285, B - 1, { face: -1 });   /* a composed pair on the gantry floor: the reader holds behind the brute, so the fast way to it runs past him first */
   ent('archer', 296, B - 11, { face: -1 }); ent('archer', 312, B - 11, { face: 1 });
   ent('silver', 306, B - 12);
-  ent('stray', 276, B - 11, { kind: 'canary' });                              /* the second: on the gantry, where the crane man left it */
+  
   ent('deco', 274, B - 1, { kind: 'barrels' }); ent('deco', 324, B - 1, { kind: 'wares', v: 0 });
   /* THE MASON'S LODGE: the one roof on the hill, and the counter the masons left standing under it */
   sign(334, B - 1, 'THE MASON\'S LODGE. THE COUNTER IS BARE AND NOBODY CAME BACK UP FOR IT.');
@@ -6245,7 +6245,7 @@ function quarryPass() {
   ent('check', 444, B - 1);
   sign(447, B - 1, 'THE SADDLE. THE PALLET STILL RUNS ON ITS ROPE. RIDE IT, AND DO NOT WAIT ON IT.');
   ent('mover', 453, B, { len: 3, range: 13, stone: true, speed: 30 });
-  ent('stray', 471, B - 1, { kind: 'canary' });                               /* the third: where the rope over the gap comes in */
+  ent('relic', 471, B - 1, { kind: 'lamp' });                               /* where the rope over the gap comes in */
   ent('harpy', 462, B - 8); ent('harpy', 480, B - 7); ent('kite', 470, B - 6); ent('kite', 488, B - 5);
   ent('goat', 478, B - 1, { face: -1 }); ent('rockgoblin', 486, B - 1, { face: -1 }); ent('archer', 494, B + 1, { face: -1 });
   ent('deco', 472, B - 1, { kind: 'cairn' }); ent('deco', 484, B - 1, { kind: 'stone', v: 0 });
@@ -6273,7 +6273,7 @@ function quarryPass() {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, stone,
     music: 'quarry', duskStart: 0.7, duskLen: 0.3,
-    quest: { n: 3, item: 'canary', name: 'CANARIES', npc: 'foreman', done: 'THE CAGES SING AGAIN', reward: 'relic', relic: 'lamp' },
+
     palette: { sky: [[146, 172, 196], [236, 218, 184]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'staging',
       haze: 'rgba(236,220,180,0.14)', murkCol: '#3a342c',
       grass: '#8a9446', grassL: '#b0ba62', grassD: '#5a6230', dirt: '#a0947c', dirtL: '#bcb098', dirtD: '#6e6454',
@@ -6324,7 +6324,7 @@ function theFrostfell() {
   // ---------------- 1. THE COL (x 0-79). The way up, and the first ice underfoot. ----------------
   floor(0, 79, G);
   sign(4, G - 1, 'THE FROSTFELL. FIRE TAKES THE ICE, AND THE COLD GIVES IT BACK.');
-  ent('check', 7, G - 1); ent('npc', 10, G - 1, { kind: 'squire' });
+  ent('check', 7, G - 1);
   ent('deco', 14, G - 1, { kind: 'cairn' }); ent('hare', 20, G - 1);
   block(26, 33, G - 2, G - 1); block(34, 45, G - 4, G - 1); block(46, 51, G - 2, G - 1);   /* the rise: two rows a step */
   ent('goat', 40, G - 5, { face: -1 }); ent('harpy', 37, G - 10); ent('deco', 44, G - 5, { kind: 'frozen', v: 0 });
@@ -6348,7 +6348,7 @@ function theFrostfell() {
   ice(132, 132, G - 4, G - 1);
   firebox(134, G - 1, [132, 132, G - 4, G - 1]);
   sign(144, G - 1, 'STRIKE THE FIREBOX. THE ICE BY IT GOES, AND WHEN THE FIRE DOES, IT COMES BACK.');
-  ent('stray', 124, G - 1, { kind: 'pick' }); ent('deco', 121, G - 1, { kind: 'barrels' });
+  ent('deco', 121, G - 1, { kind: 'barrels' });
   coins([122, G - 1], [127, G - 1], [129, G - 3]);
   /* the smoke hole in the roof: the slow way in, for whoever will not wait on a fire */
   for (const x of [125, 126]) { set(x, G - 6, T.ONEWAY); set(x, G - 5, T.AIR); }
@@ -6406,7 +6406,7 @@ function theFrostfell() {
   air(352, 362, G - 5, G - 1); interiors.push([352, 362, G - 5, G - 1, 'crystal']);
   firebox(346, G - 1, [350, 351, G - 5, G - 1]);
   sign(333, G - 1, 'THE FROZEN FALL. THERE IS A CAVE BEHIND IT, AND A FIREBOX IN FRONT OF IT.');
-  ent('stray', 360, G - 1, { kind: 'pick' }); ent('silver', 357, G - 3); ent('bat', 356, G - 5);
+  ent('silver', 357, G - 3); ent('bat', 356, G - 5);
   /* up the face on the snow ledges, two rows at a time */
   plat(332, G - 2, 4); plat(338, G - 4, 4); plat(344, G - 6, 4); plat(338, G - 8, 4); plat(332, G - 10, 4); plat(338, G - 12, 4); plat(344, 13, 6);
   ent('harpy', 335, G - 14); ent('harpy', 347, G - 17); ent('crow', 342, G - 16);
@@ -6425,7 +6425,7 @@ function theFrostfell() {
   for (const cx of [425, 447, 471]) { air(cx, cx + 2, FS, H - 1); pools.push({ x0: cx * TS, x1: (cx + 3) * TS, y: (H - 4) * TS, bottom: H * TS }); }
   ent('shardling', 437, FS - 1, { face: -1 }); ent('wight', 444, FS - 1, { face: -1 }); ent('kite', 438, FS - 8);
   spikes(432, 434, FS); spikes(456, 458, FS); spikes(463, 465, FS); spikes(490, 491, FS);   /* the snow hides ice teeth: they show as a ridge, and they are jumped */
-  ent('stray', 452, FS - 1, { kind: 'pick' }); ent('deco', 454, FS - 1, { kind: 'cart' });
+  ent('relic', 452, FS - 1, { kind: 'crampons' }); ent('deco', 454, FS - 1, { kind: 'cart' });
   ent('shardling', 458, FS - 1, { face: -1 }); ent('crow', 456, FS - 6); ent('kite', 462, FS - 8); ent('wight', 468, FS - 1, { face: -1 }); ent('troll', 440, FS - 1, { face: -1 });
   ent('check', 478, FS - 1);
   /* THE WAYMARK: a pillar of old ice the cutters used for a sighting post, with the last silver on it */
@@ -6469,7 +6469,7 @@ function theFrostfell() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G - 1 }, pools, falls: [], moversExtra: [], interiors, slick,
     hags: [{ x0: 430 * TS, x1: 468 * TS }],        /* the buried cutters: stand still on the snowfield and one gets up */
     duskStart: 99999, duskLen: 1, music: 'snow', night: false, frost: true, snowLine: 999,
-    quest: { n: 3, item: 'pick', name: 'ICE PICKS', npc: 'squire', done: 'THE CUTTERS HAVE THEIR PICKS BACK', reward: 'relic', relic: 'crampons' },
+
     palette: { sky: [[118, 132, 158], [206, 214, 228]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(214,224,240,0.22)',
       grass: '#dfe8f2', grassL: '#ffffff', grassD: '#a4b4c8', dirt: '#525c74', dirtL: '#68748c', dirtD: '#383f52',
       canopy: ['#46506a', '#5a6680', '#76849c', '#a6b4c8'] },
@@ -6512,7 +6512,7 @@ function theSkyShip() {
   block(0, 64, R, R + 3); block(3, 61, R + 4, R + 5); block(9, 55, R + 6, R + 6);   /* an old hull moored as a quay */
   ent('balloon', 14, R - 12, { r: 4 }); ent('balloon', 58, R - 13, { r: 4 }); net(14, 14, R - 8, R - 1); net(58, 58, R - 8, R - 1);   /* and the gasbags that hold her up */
   sign(3, R - 1, 'THE CLOUD HARBOUR. THE SAILS SAY WHERE THE WIND GOES. GO WITH IT, OR TURN IT.');
-  ent('check', 7, R - 1); ent('npc', 11, R - 1, { kind: 'squire' });
+  ent('check', 7, R - 1);
   sign(15, R - 1, 'HER PIGEONS GOT LOOSE WHEN THEY BOARDED HER. THREE OF THEM ARE STILL ON HER.');
   ent('deco', 19, R - 1, { kind: 'stall', v: 1 });
   sign(27, R - 1, 'THE HARBOUR CHANDLER. HIS STALL IS UP AND HIS SHUTTERS ARE DOWN.');
@@ -6535,7 +6535,7 @@ function theSkyShip() {
   sign(81, R - 1, 'A SHEET WINCH. STRIKE IT AND THE SAILS COME ROUND, AND SO DOES THE WIND.');
   gust(76, 101, 8, R + 2, { dir: -1, period: 6, on: 3.6, k: 1.2, helm: 'gangway' });
   block(93, 100, R, R + 1); ent('balloon', 96, 12, { r: 3 }); plat(94, 16, 5); net(96, 96, 17, R - 1);   /* a basket under this one: somebody keeps birds */
-  ent('stray', 95, 15, { kind: 'pigeon' }); ent('check', 99, R - 1); ent('flagpost', 94, R - 1);
+  ent('check', 99, R - 1); ent('flagpost', 94, R - 1);
   pontoon(106, 112); ent('mover', 114, R - 1, { len: 2, range: 0, bob: true });
   pontoon(118, 124);
   /* a rope off a gasbag across the last of it, for anyone who would rather swing than wait */
@@ -6592,7 +6592,7 @@ function theSkyShip() {
   ent('check', 251, R + 5);
   ent('sapper', 273, R + 5, { face: -1 }); ent('javelin', 254, R + 5, { face: -1 });   /* a powder monkey with a lit fuse, in a corridor with her guns in it */
   ent('boarder', 257, R + 5, { face: -1 }); ent('cutlass', 262, R + 5, { face: -1 }); ent('boarder', 274, R + 5, { face: -1 }); ent('cutlass', 279, R + 5, { face: -1 });
-  ent('deco', 283, R + 5, { kind: 'chickenCoop' }); ent('stray', 281, R + 5, { kind: 'pigeon' });
+  ent('deco', 283, R + 5, { kind: 'chickenCoop' });
   for (const x of [220, 236, 256, 270]) ent('deco', x, R + 3, { kind: 'gunport', v: x % 2 });
   coins([218, R + 5], [226, R + 5], [248, R + 5], [254, R + 5], [270, R + 5], [276, R + 5]);
   air(286, 287, R, R + 1); net(286, 287, R, R + 5);             /* and up out of it aft of the deckhouse */
@@ -6643,7 +6643,7 @@ function theSkyShip() {
   ent('vent', 477, R - 1, { period: 100, on: 100, h: 170, wind: true, w: 14, lift: 270 });
   ent('balloon', 505, 6, { r: 11 });                            /* HER CARGO BALLOON, and the gondola slung under it */
   plat(492, 17, 26); net(496, 496, 12, 16); net(514, 514, 12, 16);
-  ent('stray', 504, 16, { kind: 'pigeon' }); ent('marine', 511, 16, { face: -1 }); ent('silver', 497, 10);
+  ent('relic', 504, 16, { kind: 'keelstone' }); ent('marine', 511, 16, { face: -1 }); ent('silver', 497, 10);
   net(537, 538, 9, R - 1); plat(522, 8, 17);                    /* the far derrick */
   plat(522, 19, 5); net(524, 524, 9, 18);
   gust(476, 534, 0, R, { dir: 1, period: 5, on: 2.4, alt: true, k: 0.9 });
@@ -6674,7 +6674,7 @@ function theSkyShip() {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools: [], falls: [], moversExtra: movers, gusts, stone, interiors,
     music: 'skysail', duskStart: 99999, duskLen: 1, night: false, cloudSea: (R + 4) * TS, noCoin: [[212, 287, 8, R - 9]],
-    quest: { n: 3, item: 'pigeon', name: 'HER PIGEONS', npc: 'squire', done: 'THE PIGEONS ARE HOME', reward: 'relic', relic: 'keelstone' },
+
     palette: { set: 'ship', dress: 'ship', sky: [[58, 104, 186], [255, 206, 158]], far: 'crag', mid: 'crag', near: 'crag', noFg: true, haze: 'rgba(255,236,200,0.10)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#6a7a9a', '#8a9ab8', '#b0bcd4', '#dfe6f0'] },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
@@ -6725,10 +6725,10 @@ function theDrownedCauseway() {
   const bell = (x, y) => ent('tidebell', x, y);
   block(0, W - 1, 40, H - 1);   /* the bed of the flats, under everything */
 
-  // ---------------- 1. THE LANDING (x 0-44). The sea wall, the squire who lost his pilgrims, the first tide bell. ----------------
+  // ---------------- 1. THE LANDING (x 0-44). The sea wall, the first tide bell. ----------------
   block(0, 40, RH, 39);
   sign(2, RH - 1, 'THE DROWNED CAUSEWAY. THE TIDE TAKES THE ROAD TWICE A MINUTE, AND THE BELLS SAY WHEN.');
-  ent('npc', 6, RH - 1, { kind: 'squire' }); ent('check', 9, RH - 1);
+  ent('check', 9, RH - 1);
   sign(12, RH - 1, 'THREE PILGRIMS WENT OUT ON THE ROAD AT LOW WATER. THE TIDE CAME IN BEHIND THEM.');
   bell(18, RH - 1); sign(15, RH - 1, 'A TIDE BELL. STRIKE IT AND THE TIDE TURNS NOW, NOT WHEN IT LIKES.');
   deco('wayShrine', 24, RH - 1); deco('fencePosts', 30, RH - 1); deco('drownedTree', 36, RH - 1);
@@ -6747,9 +6747,9 @@ function theDrownedCauseway() {
   net(82, 82, 18, 27); net(93, 93, 18, 27);
   ent('mover', 86, 28, { len: 3, vert: true, rise: 8, tide: true });   /* THE BOAT: on the mud at low water, up at the boards at high */
   deco('fishCottage', 89, 17); deco('netPoles', 84, 17); deco('fishTrap', 92, 17, { v: 1 });
-  ent('npc', 86, 17, { kind: 'shepherd', name: 'THE FISHWIFE', lines: ['THREE BELLS, THEN THE FOAM, THEN THE SEA. TWICE A MINUTE ON THIS ROAD, AND THE SAME WAY EVERY TIME.',
-    'MY BOAT SITS IN THE MUD AT LOW WATER AND RIDES UP TO MY DOOR AT HIGH. ANYTHING MOORED ON THIS ROAD DOES THE SAME. USE THEM.',
-    'PAST THE WRECKS THE SEA RUNS OUT UNDER THE OLD ARCH WHEN IT FALLS. IT WILL CARRY A SWIMMER THROUGH, IF THE SWIMMER LETS IT.'] });
+
+
+
   ent('feeler', 90, 27); coins([83, 26], [92, 26], [86, 15], [90, 15]);
   road(97, 120); ent('check', 100, R - 1); deco('waystone', 110, R - 1);
   deco('fishCottage', 104, R - 1, { v: 1 }); deco('barrels', 98, R - 1);   /* the smokehouse on the road end of the hamlet: its chimney smokes (causeLife) */
@@ -6762,7 +6762,7 @@ function theDrownedCauseway() {
   ent('urchin', 127, 36); ent('urchin', 139, 35); ent('eel', 131, 37);
   ent('mover', 129, 28, { len: 2, vert: true, rise: 8, tide: true });   /* A RAFT moored on the second stone: a dry deck over the urchins at high water (not on the pilgrim's stone) */
   coins([126, 27], [130, 27], [134, 27], [138, 27], [142, 27]);
-  ent('stray', 134, 27, { kind: 'fisher' });
+  
   road(147, 160); ent('feeler', 152, R - 1); ent('crab', 157, R - 1, { face: -1 });
 
   // ---------------- 3. THE ARCADE (x 160-250). A roofed gallery that floods to its roof, with vaults where the air stays. ----------------
@@ -6795,7 +6795,7 @@ function theDrownedCauseway() {
   ent('check', 256, R - 1);
   bell(281, 19); sign(278, 19, 'THE CHAPEL BELL IS A TIDE BELL TOO. THE CROWD INSIDE WILL NOT WAIT FOR IT.');
   deco('wayShrine', 272, 19); deco('wayShrine', 290, 19);
-  ent('stray', 294, 19, { kind: 'fisher' });
+  
   coins([268, 18], [276, 18], [286, 18], [292, 18]);
   /* THE CRYPT, under the road past the chapel. Always half full; at high water full to the vault, and one bell of air */
   air(309, 311, R, R + 2); air(306, 326, 27, 37); net(310, 310, R, 34);   /* the ladder down the hole, for the way out at low water */
@@ -6822,7 +6822,7 @@ function theDrownedCauseway() {
   plat(359, 27, 1); plat(358, 25, 2);
   net(374, 374, 12, 22); plat(366, 12, 17); plat(386, 16, 5);
   ent('silver', 380, 10); deco('rigging', 368, 22, { v: 0 });
-  ent('stray', 372, 28, { kind: 'fisher' });
+  
   coins([364, 28], [370, 28], [378, 28], [382, 28], [368, 11], [376, 11], [388, 15]);
   /* WRECK THREE: her bow, stood up out of the flats */
   block(400, 401, 28, 29); block(402, 405, 26, 29); block(406, 409, 24, 29); block(410, 413, 22, 29);   /* up her bow in two-row steps */
@@ -6854,8 +6854,8 @@ function theDrownedCauseway() {
   block(487, 488, 22, 23); block(489, 490, 20, 23); block(491, 505, 19, 23); block(506, 507, 21, 23);
   deco('tent', 493, 18); ent('brazier', 498, 18); deco('lanternPost', 504, 18); deco('waystone', 501, 18, { v: 1 });
   ent('check', 499, 18);
-  ent('npc', 495, 18, { kind: 'oldknight', name: 'A PILGRIM', lines: ['WE CAME OUT AT LOW WATER, SIX OF US. THE BELLS RANG AND WE RAN FOR THE HIGH STONE. THREE OF US DID NOT RUN FAST ENOUGH.', 'IF YOU FIND THEM ON THE ROAD, SEND THEM BACK TO THE BOY AT THE SEA WALL. HE CAME ALL THIS WAY FOR US.'] });
-  ent('npc', 502, 18, { kind: 'ferryman', name: 'A PILGRIM', lines: ['THE FIRE IS DRIFTWOOD AND THE DRIFTWOOD IS WRECK. WE DO NOT ASK WHOSE.', 'THE LIGHT PAST HERE IS STILL KEPT. BEYOND THE LIGHT THE SEA STANDS UP AT THE END OF THE ROAD. WE PRAY HERE, AND WE GO NO FURTHER.'] });
+  
+  
   coins([435, 21], [454, 21], [473, 21], [464, 15], [480, 23], [492, 17], [505, 17]);
 
   // ---------------- 7. THE LAST MILE (x 511-565). The road into the open sea, and the fog. ----------------
@@ -6872,9 +6872,9 @@ function theDrownedCauseway() {
   for (let x = 544; x <= 545; x++) set(x, 18, T.PLANK);   /* the stair door, on the sea side, over the high water */
   net(544, 544, 8, 17);
   ent('mover', 546, R, { len: 2, vert: true, rise: 4, tide: true });   /* THE TENDER: it lies on the road at low water and floats up to the stair door at high */
-  ent('npc', 537, R - 1, { kind: 'lamplighter', name: 'THE KEEPER OF THE LIGHT', lines: ['THE LIGHT IS FOR SHIPS. THERE HAVE BEEN NO SHIPS IN TEN YEARS. I KEEP IT FOR WHATEVER IS OUT THERE, SO I SEE IT COMING.',
-    'THE SEA BREAKS OVER THIS MILE FROM THE END OF THE ROAD. A WAVE CANNOT TOUCH WHAT STANDS IN THE LEE OF A STONE. REMEMBER THAT AT THE END.',
-    'MY TENDER RIDES UP TO THE STAIR DOOR AT HIGH WATER, AND THE STAIR GOES UP TO THE LAMP. THE VIEW FROM THE TOP IS NOT ONE I RECOMMEND.'] });
+
+
+
   coins([538, 6], [545, 6], [546, 6]);
   ent('sailor', 521, R - 1, { face: -1 }); ent('tideguard', 530, R - 1, { face: -1 }); ent('feeler', 536, R - 1); ent('netter', 555, R - 1, { face: -1 });
   ent('check', 561, R - 1);
@@ -6927,7 +6927,7 @@ function theDrownedCauseway() {
     causeLife: { gulls: [[88, 11], [150, 13], [372, 7], [498, 12], [541, 2]], smoke: [[106, 19]], seals: [[472, 475, 30]], crabs: [[81, 94, 28], [335, 338, 30], [389, 391, 30], [414, 420, 30]],
       buoys: [127, 135, 355, 395, 436, 453], stilts: [[85, 18, 28], [90, 18, 28]] },
     music: 'causeway', duskStart: 99999, duskLen: 1, night: false,
-    quest: { n: 3, item: 'fisher', name: 'THE PILGRIMS', npc: 'squire', done: 'THE PILGRIMS ARE ACROSS', thanks: 'THEY PRAY FOR YOU' },
+
     palette: { set: 'shore', sky: 'storm', far: 'causeway', mid: 'causeway', near: 'reef', noFg: true, dress: 'shore', haze: 'rgba(120,150,140,0.14)',
       grass: '#5f7a68', grassL: '#7e9a86', grassD: '#40564a', dirt: '#4e5856', dirtL: '#66706c', dirtD: '#343c3a', canopy: ['#1e2e2c', '#2c403c', '#3a524c', '#506a62'] },
     weather: [{ x0: 0, x1: 510 * TS, kind: 'rain' }, { x0: 510 * TS, x1: 99999, kind: 'mist' }],
@@ -6975,8 +6975,8 @@ function theHexedFields() {
   ground(0, 93);
   sign(2, G - 1, 'THE HEXED FIELDS. THE ARCHMAGE\'S RUNOFF IS IN THE DITCHES, AND THE FARMS HAVE GONE WRONG.');
   ent('check', 6, G - 1);
-  ent('npc', 10, G - 1, { kind: 'shepherd', name: 'THE FARMER', lines: ['THREE OF MY EWES BOLTED INTO THE FIELDS WHEN THE SCARECROWS GOT UP.', 'ONE IN THE DEAD ORCHARD, ONE IN THE HOLLIS HOUSE, AND ONE WENT UP THE MILL.', 'BRING THEM HOME AND MY OLD LAMP IS YOURS. YOU WILL WANT A LIGHT OUT THERE.'] });
-  ent('npc', 16, G - 1, { kind: 'hillfolk', name: 'A FARMHAND', lines: ['NOT ME. I AM GOING HOME, AND I AM BOLTING THE DOOR.', 'THE CLOUD COMES OVER THE MOON AND THE PLANKS OVER THE BOG ARE NOT THERE. I SAW IT.'] });
+  
+  
   sign(20, G - 1, 'IF IT GLOWS GREEN, YOU CAN USE IT. MOST OF THE REST OUT HERE WANTS YOU DEAD.');
   air(24, 26, G, G + 1); spikes(24, 26, G + 1);                    /* the first ditch: a hop, and the brambles in it */
   air(34, 37, G, G + 2); spikes(34, 37, G + 2);                    /* the second: brambles in the bottom */
@@ -7018,7 +7018,7 @@ function theHexedFields() {
      ever rode it. Two rows up is a jump onto the leaf from the limb and a jump off it onto the silver's bough */
   spill('bucket', 131, 22, 'bough'); vine(134, 23, 2, 'bough');
   plat(137, 18, 4); trunk(139, 19, 23); ent('silver', 138, 17);
-  ent('stray', 150, 22, { kind: 'sheep' });
+  
   coins([122, 22], [126, 22], [132, 21], [141, 23], [148, 22]);
   ent('check', 156, O - 1);
   ent('scarecrow', 183, O - 1, { face: -1 }); spikes(165, 166, O - 1);   /* brambles through the floor of the supper: something light thrown into them stays there */ ent('haunt', 190, O - 4, { face: -1 }); ent('crow', 135, 19, { face: -1 }); ent('crow', 151, 18, { face: -1 });
@@ -7063,20 +7063,20 @@ function theHexedFields() {
   interiors.push([341, 399, 27, 33, 'kitchen'], [341, 399, 20, 25, 'hall'], [341, 399, 13, 18, 'hall']);
   /* THE KITCHEN: the family at home, and the table that goes up through the ceiling */
   deco('hearth', 346, G - 1); ent('check', 343, G - 1);
-  ent('npc', 351, G - 1, { kind: 'ghostfarmer', name: 'OLD HOLLIS', lines: ['YOU CAN SEE ME. THEN YOU CAN SEE WHAT HIS WATER DID TO US.', 'THE TABLE WILL TAKE YOU UP. IT TAKES EVERYONE UP, THESE DAYS.'] });
+  
   deco('portrait', 348, 27, { hang: true }); deco('portrait', 353, 27, { hang: true }); deco('candle', 363, G - 1); ent('haunt', 361, 30, { face: -1 });
   air(356, 359, 26, 26); ghost('table', 357, 33, 2, { vert: true, rise: 7, period: 5, ph: 0 });
   /* THE BEDROOMS: the floor fallen through, and the bed that goes back and forth over the hole */
   air(366, 376, 26, 26); ghost('bed', 364, 26, 3, { range: 10, speed: 30 });
   ent('farmhand', 346, 24, { face: 1 }); ent('wight', 368, G - 1); ent('bat', 349, 14); ent('bat', 372, 20);
   ent('boo', 390, 23, { face: -1 });   /* THE HALLWAY TO THE CHIMNEY: walked along, back to it, the whole length of the bedroom hall */
-  ent('npc', 393, 25, { kind: 'ghostwife', name: 'MISTRESS HOLLIS', lines: ['MIND THE CHAIRS. THEY MEAN NO HARM. THE FORK IN THE ATTIC DOES.', 'THE MOON COMES AND GOES OUT IN THE PASTURE. SO DO WE.'] });
+  
   air(386, 389, 19, 19); ghost('chair', 387, 25, 2, { vert: true, rise: 6, period: 5.5, ph: 0.5 });
   /* THE ATTIC: a hole in the boards, two chairs bobbing over it, and a fork that knows you are there */
   air(361, 371, 19, 19); ghost('chair', 362, 18, 2, { range: 8, speed: 24 }); ghost('table', 366, 15, 2, { bob: true, ph: 1.4 });
   ent('haunt', 378, 16, { face: -1 });
-  ent('npc', 350, 18, { kind: 'ghostchild', name: 'LITTLE HOLLIS', lines: ['MY EWE CAME UP HERE. SHE IS FRIGHTENED OF THE FORK.', 'DADDY SAYS NOT TO GO UP THE CHIMNEY. EVERYBODY GOES UP THE CHIMNEY.'] });
-  ent('stray', 382, 18, { kind: 'sheep' });
+  
+  
   deco('portrait', 385, 13, { hang: true });
   /* THE CHIMNEY: up the flue on its rungs, out over the roof, and down the ladder on the gable end */
   block(391, 394, 6, 10); air(392, 393, 6, 12); net(392, 6, 18);
@@ -7093,7 +7093,7 @@ function theHexedFields() {
   for (let i = 0; i < 4; i++) moversExtra.push({ kind: 'wheel', gear: true, px: 422 * TS + 8, py: 24 * TS, r: 26, phase: i * Math.PI / 2, period: 9, x: 0, y: 0, w: 18, h: 6 });
   plat(424, 21, 4); plat(418, 19, 3);
   air(421, 421, 14, 14);
-  ent('stray', 418, 13, { kind: 'sheep' }); ent('rook', 426, 13, { face: -1 });
+  ent('relic', 418, 13, { kind: 'lamp' }); ent('rook', 426, 13, { face: -1 });
   ent('boo', 423, 25, { face: 1 });   /* THE GEAR CLIMB: turn your back on it going up the mill's stairs and it closes the gap */
   /* THE SAILS: four torn arms turning slowly round a hub over the roof, from the roof to the top of the sky */
   for (let i = 0; i < 4; i++) moversExtra.push({ kind: 'wheel', torn: true, first: i === 0, px: 422 * TS + 8, py: 9 * TS, r: 56, phase: i * Math.PI / 2, period: 16, x: 0, y: 0, w: 22, h: 6 });
@@ -7193,7 +7193,7 @@ function theHexedFields() {
     music: 'fields', duskStart: 99999, duskLen: 1, night: true, nightA: 0.16, edgeLit: true,
     fields: { moon: { lit: 7, warn: 2.8, dark: 3.4, first: 9 }, phantoms, shrinks, trunks, dusk: [30, 150], crypt: [659, 28],
       skins: [[340, 400, 11, 12, 'thatch'], [391, 394, 6, 10, 'stone'], [340, 400, 13, 33, 'timber'], [416, 428, 14, 33, 'stone'], [464, 538, 4, 8, 'thatch'], [464, 538, 9, 35, 'timber'], [666, 667, 24, 33, 'stone'], [327, 331, 22, 33, 'thatch'], [679, 680, 32, 33, 'bale'], [690, 691, 32, 33, 'bale'], [702, 703, 32, 33, 'bale'], [474, 475, 32, 33, 'bale'], [57, 59, 30, 33, 'bale'], [55, 56, 32, 33, 'bale']] },
-    quest: { n: 3, item: 'sheep', name: 'THE LOST EWES', npc: 'shepherd', done: 'THE EWES ARE HOME', reward: 'relic', relic: 'lamp' },
+
     palette: { sky: [[40, 48, 96], [104, 120, 164]], far: 'fields', mid: 'fields', near: 'fields', dress: 'village', haze: 'rgba(130,150,210,0.10)',
       grass: '#7a946e', grassL: '#a4bc8e', grassD: '#4a6048', dirt: '#5e5444', dirtL: '#7a6c54', dirtD: '#3c3428', canopy: ['#161a2a', '#1e2436', '#262e44', '#303a52'] },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
@@ -7254,7 +7254,7 @@ function theMagesFolly() {
   ground(0, 700);
   sign(2, G - 1, 'THE MAGE\'S FOLLY. HIS SPILLS RUINED THE FARMS BELOW. WHAT GOT LOOSE UP HERE IS WORSE.');
   ent('check', 6, G - 1);
-  ent('npc', 10, G - 1, { kind: 'apprentice', name: 'THE APPRENTICE', lines: ['I RAN. HE TURNED THE BUTLER INTO A CHAIR AND THE CHAIR INTO A DOG.', 'THREE LENSES CAME OUT OF THE GREAT TELESCOPE WHEN THE ROOM WENT OVER. ONE IN THE HEDGES, ONE IN THE STACKS, ONE UP THE ORRERY.', 'BRING THEM AND HIS CLOAK IS YOURS. HE WILL NOT WANT IT WHERE HE IS GOING.'] });
+  
   sign(14, G - 1, 'NOTHING UP HERE STAYS WHERE HE PUT IT. STRIKE WHAT GLOWS, AND WATCH THE FLOOR.');
   /* THE HEDGE MAZE: low hedges to walk the tops of, tall ones to go under, and the topiary standing in the lanes */
   hedge(18, 19, G - 2, G - 1);
@@ -7274,7 +7274,7 @@ function theMagesFolly() {
   hedge(66, 66, G - 2, G - 1); hedge(67, 76, G - 4, G - 1);
   ent('topiary', 74, G - 5, { face: -1 });
   coins([69, G - 6], [71, G - 6], [75, G - 6]);
-  ent('stray', 76, G - 5, { kind: 'lens' });                       /* the lens in the hedges: on the far end of the wall hedge, past the beast */
+  
   ent('check', 79, G - 1);
   /* THE GATEKEEPER'S STALL: the last built thing before the gate, and it is as empty as the tower */
   deco('stall', 84, G - 1); sign(82, G - 1, 'THE GATEKEEPER\'S STALL. HE LEFT WHEN THE HEDGES STARTED WALKING.');
@@ -7325,7 +7325,7 @@ function theMagesFolly() {
   book(193, 201, G - 15, { ph: 1 });
   plat(206, G - 10, 8); block(206, 213, G - 9, G - 9); chain(207, 14, G - 10); chain(212, 14, G - 10);
   coins([191, G - 13], [197, G - 14], [203, G - 13], [211, G - 12], [212, G - 12], [213, G - 12]);
-  ent('stray', 190, 16, { kind: 'lens' }); plat(189, 17, 3);        /* the lens in the stacks: on a rafter ledge, up a rope from the gallery's end (or a bat that lets go of the roof) */
+  plat(189, 17, 3);
   /* THE FLOOR UNDER IT: one armour and its broom, and a haunt at the far gallery's foot. It had two armours, a broom, a haunt and
      an imp over them, with the roof's turret and bat in the same twenty columns: a fall off a shelf landed in nine */
   ent('armour', 196, G - 1, { face: -1 }); ent('broom', 201, G - 1, { face: 1 }); ent('haunt', 205, G - 6, { face: -1 }); ent('bat', 196, 18); ent('imp', 168, G - 9, { face: 1 });
@@ -7411,7 +7411,7 @@ function theMagesFolly() {
   plat(469, 11, 6); block(469, 474, 12, 12);                         /* the balcony */
   ent('check', 471, 10);
   ent('haunt', 474, 8, { face: -1 });                                /* a haunt under the dome at the balcony's end, over the brackets */
-  ent('stray', 466, 8, { kind: 'lens' }); plat(465, 9, 3);         /* the lens up the orrery: on a bracket over the far planet's arc */
+  ent('relic', 466, 8, { kind: 'windcloak' }); plat(465, 9, 3);         /* on a bracket over the far planet's arc */
   ent('broom', 450, 14, { face: -1 }); ent('broom', 462, 24, { face: 1 });
   coins([445, 26], [448, 27], [456, 17], [460, 18], [466, 5], [472, 10]);
   /* THE DROP: the balcony ends and the pit under it is spiked. Two brass brackets hang off the dome over it, a jump
@@ -7508,7 +7508,7 @@ function theMagesFolly() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G - 1 }, pools, falls: [], moversExtra, interiors, gusts: [],
     music: 'musUnder', night: true, nightA: 0.14, edgeLit: true, duskStart: 99999, duskLen: 1,
     mage: { shelves, skins, hedges, chains, dais: [686, 694], flood: [665, 686], stacks: [668, 673, 678, 683], weight: 670, cage: [[687, 2], [695, 2]], hung: [[574, 6], [624, 2]], outside: 118 },
-    quest: { n: 3, item: 'lens', name: 'THE LOST LENSES', npc: 'apprentice', done: 'THE LENSES ARE FOUND', reward: 'relic', relic: 'windcloak' },
+
     palette: { sky: 'mage', far: 'mage', mid: 'mage', near: 'mage', dress: 'village', haze: 'rgba(120,90,180,0.10)',
       grass: '#4e6a52', grassL: '#6c8c70', grassD: '#34483a', dirt: '#4a4652', dirtL: '#645e6c', dirtD: '#2e2a36', canopy: ['#181428', '#221c36', '#2c2446', '#3a3058'] },
     weather: [{ x0: 0, x1: 118 * TS, kind: 'leaves' }],
@@ -7670,7 +7670,7 @@ const REVIEW = {
   hanging: L => { let n = 0; for (let i = L.ents.length - 1; i >= 0; i--) { const e = L.ents[i]; if (e.t === 'spider' && !e.big && !e.mini && (n++ % 4) === 3) L.ents.splice(i, 1); } },
   // THE CLOUD CAMP: a foreman's tent and fire in the cloister's corner, and someone to tell you about the sun; and
   // the looters, digging in the terraces and under the stacks for whatever the monks buried
-  spire: L => { const R = rv(L); R.ent('deco', 4, 99, { kind: 'pilgrimLeanTo', v: 0 }); R.ent('npc', 8, 99, { kind: 'foreman' }); R.ent('brazier', 11, 99);
+  spire: L => { const R = rv(L); R.ent('deco', 4, 99, { kind: 'pilgrimLeanTo', v: 0 }); R.ent('brazier', 11, 99);
     R.ent('sign', 14, 99, { text: 'THE CLOUD CLOISTER. ABOVE THE CLOUD THE SMOKE GOES HIGHER AND THE BIRDS GET BOLDER.' });
     R.ent('rockgoblin', 32, 195, { face: -1 }); R.ent('sentry', 20, 151, { face: 1 }); },   /* were MINERS: the pick is about to be the Ore Road's own thing (a throw that disarms him), and two of them up here diluted both levels */
   // the castle had the fewest foes of anywhere: a watch in the ward, a hall guard, the kitchens staffed. And THE

@@ -4,7 +4,7 @@
    knight,warden):
      ROPEWALK  walk onto a coil, carry it to the deck, hop on, walk into the well - the deck must rise to the market floor, and the
                hero must be able to step off onto it
-     MILL      stand on the deck and cut the peg - the sack must drop in, the deck rise to the lamp ledge, and the lamp be taken
+     MILL      stand on the deck and cut the peg - the sack must drop in, the deck rise, and the hero step off onto the ledge
      NEST      carry the near sack in, fetch the far one off the springy bough's ledge, carry it back - the deck must wait for two
      CROWN     carry a stone in and ride up level with the Reeve's middle perch
    Each hoist must also TIP and come home once the hero is off it. Not in the suite: it is a minute of the page. */
@@ -38,7 +38,7 @@ try {
       if (P().onMover !== m && m.hs && m.hs.state === 'creak') { hop(null); }
       BK.sim(40); note('mill: the peg cut dropped the sack in the basket', m.hs && m.hs.load >= 1, { sack: sack && sack.state, ...at(m) });
       until(() => m.hs.state === 'top'); BK.sim(10); note('mill: the deck rose to the lamp ledge with the hero on it', m.y === m.y1 && Math.abs(P().y - m.y) < 2 && Math.abs(P().x - m.x - 16) < 20, at(m));
-      const lampsBefore = BK.strays(); hold('left', 60); note('mill: stepped onto the ledge and took the lamp', BK.strays() > lampsBefore && Math.floor(P().y / TS) === 59, { strays: BK.strays(), ...at(m) });
+      hold('left', 60); note('mill: stepped off the deck onto the ledge the sack was carried up to (the lamplighter quest is gone: this checked the pickup that stood here; now it checks the ledge itself)', P().ground && Math.floor(P().y / TS) === 59, at(m));
       until(() => sack.state === 'hung' && m.hs.state === 'rest'); note('mill: the sack was hauled back up onto its peg and the deck came home', sack.state === 'hung' && m.hs.state === 'rest', { sack: sack.state, ...at(m) });
       /* NEST: two sacks, one near, one up on the springy bough's ledge; the well at 64, east of the deck */
       fresh(); m = H('nest'); BK.tp(58, 51); BK.sim(10); take(); hold('right', 90, () => P().x > 62 * TS + 8); hop('right'); hold('right', 240, () => m.hs && m.hs.load > 0);
