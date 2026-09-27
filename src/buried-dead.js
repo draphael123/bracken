@@ -1,4 +1,5 @@
 import {canvas,outline,flipX,whiten} from './px.js';
+import {VENT} from './burial-expansion.js';
 /* THE SKULLS (Daniel, 2026-09-24: "a ranged skull throw when the player platform-camps or stays far away"). The ossuary's
    high tier is nova-safe on purpose and THE HANDS were the only thing that reached it, once a rotation: so a hero who
    climbed and waited, or stood off at the far wall, could let most of the fight go by. Stay up there, or stay away, for
@@ -21,7 +22,13 @@ export function updateBuriedDead(e,dt,c){
  const{P,A,hit,summon,say,sound}=c;if(!e.alive||P.dead||e.mode==='sleep')return;
  const ring=c.ring||(()=>{}),throwZombie=c.throwZombie||(()=>{}),shake=c.shake||(()=>{});
  e.anim+=dt;e.modeT-=dt;e.open=Math.max(0,(e.open||0)-dt);e.effectT=Math.max(0,(e.effectT||0)-dt);e.y=A.floor;e.vx=e.vy=0;
- const rest=()=>{e.mode='rest';e.modeT=2.2;e.open=2.2;};
+ /* HIS REST OPENS NOTHING (claude/burial2, A11). It used to: every attack ended in 2.2 s of open, the window arriving on his own timer
+    whatever you did. His openings now are the two you make: THE GAS (a vent burning under him, below) and his arm in the ground. */
+ const rest=()=>{e.mode='rest';e.modeT=2.2;};
+ /* SCORCHED: a burning vent in his floor, and he walks into its flame (or you light it under him). Once a lighting (v.burnt), not while
+    he is under the ground or in the air, and never over a window already open. */
+ if(!['burrow','eruptTell','bodyFly','stuck','scorched','wake','rally'].includes(e.mode)&&!(e.open>0))for(const v of c.vents||[])if(v.litT>0&&!v.burnt&&Math.abs(e.x-(v.x*16+8))<VENT.scorchR){
+  v.burnt=true;e.mode='scorched';e.modeT=VENT.scorch;e.open=VENT.scorch;e.effect=null;say('THE GAS TAKES HIM: STRIKE',true);sound('roar');ring(e.x,A.floor-30,40,'#ffd36b');shake(4);break;}
  if(e.phase===1&&e.hp<=e.hp0*.5&&e.mode!=='burrow'&&e.mode!=='eruptTell'){e.phase=2;e.mode='rally';e.modeT=1.5;e.turn=0;say('THE GRAVES ANSWER',true);sound('roar');return;}
  e.brokeT=Math.max(0,(e.brokeT||0)-dt);
  /* THE CAMP CLOCK: up on a tier (30 px is over the low step's lip) or out past his reach, and it runs; come down and close, and it stops */
@@ -34,8 +41,9 @@ export function updateBuriedDead(e,dt,c){
  /* THE BODY SLAM IN THE AIR: he goes up and over to where you were standing, and comes down on it */
  if(e.mode==='bodyFly'){const k=1-Math.max(0,e.modeT)/.6;e.x=e.flyX0+(e.markX-e.flyX0)*k;e.y=A.floor-Math.sin(Math.min(1,k)*Math.PI)*56;
   if(e.modeT<=0){e.x=e.markX;e.y=A.floor;shake(9);sound('heavy');ring(e.x,A.floor-6,80,'#ff9a5c');
-   if(Math.abs(P.x-e.x)<78&&P.y>A.floor-44)hit(e.x,28,true);e.mode='rest';e.modeT=2.4;e.open=2.4;}return;}
+   if(Math.abs(P.x-e.x)<78&&P.y>A.floor-44)hit(e.x,28,true);e.mode='rest';e.modeT=2.4;}return;}
  if(e.mode==='stuck'){if(e.modeT<=0){e.mode='walk';e.modeT=.9;say('HE TEARS IT FREE',false);}return;}
+ if(e.mode==='scorched'){if(e.modeT<=0){e.mode='walk';e.modeT=.9;say('THE FIRE DIES ON HIM',false);}return;}
  if(['wake','rest','rally'].includes(e.mode)){if(e.modeT<=0){e.mode='walk';e.modeT=.9;}return;}
  if(e.mode==='burrow'){
   e.x=clamp(e.x+Math.sign(P.x-e.x)*Math.min(Math.abs(P.x-e.x),120*dt),A.x0+38,A.x1-38);
@@ -90,7 +98,8 @@ export function updateZombie(e,dt,c){
   if(e.mode==='walk'&&ad>52&&ad<190&&Math.abs(P.y-e.y)<40&&!P.dead&&(e.castCd=(e.castCd||0)-dt)<=0){
    e.castCd=3.2+Math.random();e.face=Math.sign(P.x-e.x)||e.face;e.mode='castTell';e.modeT=.75;say&&say('EMBER',false);return;}
  }
- if(e.mode==='buried'){if(Math.abs(P.x-e.x)<85&&Math.abs(P.y-e.y)<60){e.mode='riseTell';e.modeT=1.1;say('MOVING EARTH',false);}return;}
+ if(e.mode==='buried'){if(c.lit&&c.lit(e.x,e.y))return;   /* THE DEAD WILL NOT RISE INSIDE A BURNING VENT'S LIGHT (burial-expansion.js) */
+  if(Math.abs(P.x-e.x)<85&&Math.abs(P.y-e.y)<60){e.mode='riseTell';e.modeT=1.1;say('MOVING EARTH',false);}return;}
  if(e.mode==='riseTell'){if(e.modeT<=0){e.mode='walk';e.modeT=.7;}return;}
  if(e.mode==='grabTell'){if(e.modeT<=0){if(Math.abs(P.x-e.x)<28&&Math.abs(P.y-e.y)<28){if(hit(e.x,12,false)==='hit')snare(.75);}e.mode='rest';e.modeT=1;}return;}
  if(e.mode==='rest'){if(e.modeT<=0)e.mode='walk';return;}
@@ -98,7 +107,7 @@ export function updateZombie(e,dt,c){
  if(Math.abs(P.x-e.x)<25&&Math.abs(P.y-e.y)<25){e.mode='grabTell';e.modeT=.7;say('GRAB',false);return;}
  e.vx=solid(e.x+e.face*16,e.y+4)?e.face*(e.husk?17:e.apprentice?22:25):0;if(move(e,e.vx*dt,e.vy*dt)?.ground)e.vy=0;
 }
-export function deadFrame(e){return e.mode==='novaTell'?4:e.mode==='throwTell'||e.mode==='bodyTell'?3:e.mode==='bodyFly'?2:e.mode==='stuck'?5:e.mode==='burrow'||e.mode==='eruptTell'||e.mode==='buried'||e.mode==='riseTell'?6:e.open>0?5:e.mode==='slamTell'?3:e.mode==='callTell'?4:e.mode?.endsWith('Tell')?2:Math.abs(e.vx)>2?Math.floor(e.anim*5)%2:0;}
+export function deadFrame(e){return e.mode==='novaTell'?4:e.mode==='throwTell'||e.mode==='bodyTell'?3:e.mode==='bodyFly'?2:e.mode==='stuck'||e.mode==='scorched'?5:e.mode==='burrow'||e.mode==='eruptTell'||e.mode==='buried'||e.mode==='riseTell'?6:e.open>0?5:e.mode==='slamTell'?3:e.mode==='callTell'?4:e.mode?.endsWith('Tell')?2:Math.abs(e.vx)>2?Math.floor(e.anim*5)%2:0;}
 /* THE SAME DEAD MAN, RAISED SOMEWHERE ELSE. kind picks who got up: the caverns' bloated husk, swollen and green and
    a head taller, and the tower's apprentice, still in the robe he died in. One silhouette is not two enemies, so the
    husk carries its own bulk and the apprentice his hood - the tint alone would only have made a recoloured zombie. */

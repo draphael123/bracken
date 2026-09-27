@@ -86,13 +86,24 @@ assert.deepEqual(bareKit, [], 'these levels name no palette dress, so they paint
   const m = MAIN.match(/function belowGround\(Lv\) \{[^\n]*\}/); assert.ok(m, 'cannot read belowGround out of src/main.js');
   const belowGround = new Function('return ' + m[0])();
   assert.ok(/below = belowGround\(L\)/.test(MAIN) && /if \(below\) TILE\.roots = TILE\.dirt\.slice\(0, 3\)/.test(MAIN), 'bakeAll does not take the root tile out of a level below the ground');
+  /* NO TURF UNDER THE HILL EITHER (claude/burial2, 2026-09-26). The roots went on 2026-09-24 and the floor's own top tile did not: every
+     floor of the caverns and the mine still wore the surface's grass-top dirt, its turf in the level's grass colour and a root end in its
+     lip. bakeAll gives a level below the ground its own packed-earth top and cut face - and that tile, baked here in Node with the
+     caverns' own palette, carries not one pixel of the level's grass or of the root's wood. */
+  assert.ok(MAIN.includes("if (below) for (const eL of [0, 1]) for (const eR of [0, 1]) { TILE.top[eL + '' + eR] = [0, 1, 2, 3].map(i => ART.bakeEarthTop("), 'bakeAll still lays the surface\'s grass-top tile on the floor of a level below the ground');
+  { const NC = await import('./node-canvas.mjs'); NC.install(); const ART = await import('../src/art.js'), bur = LEVELS.find(l => l.id === 'burial').build().palette;
+    Object.assign(ART.C, { grass: bur.grass, grassL: bur.grassL, grassD: bur.grassD, dirt: bur.dirt, dirtL: bur.dirtL, dirtD: bur.dirtD });
+    const bad = new Set([bur.grass, bur.grassL, bur.grassD, ART.C.woodD].map(h => h.toLowerCase())), hex = (d, k) => '#' + [0, 1, 2].map(j => d[k + j].toString(16).padStart(2, '0')).join('');
+    let n = 0; for (const eL of [0, 1]) for (const eR of [0, 1]) for (let i = 0; i < 4; i++) { const c = ART.bakeEarthTop(900 + i + eL * 7 + eR * 13, eL, eR), d = c.getContext('2d').getImageData(0, 0, 16, 16).data;
+      for (let k = 0; k < d.length; k += 4) if (bad.has(hex(d, k))) n++; }
+    assert.equal(n, 0, 'the floor under the hill has ' + n + ' pixels of turf or root in it'); }
   const SEA_DEAD = new Set(['bonecorsair', 'tidemarauder']), SEA_SET = new Set(['ship', 'reef', 'shore', 'city']);
   const under = [], wrong = [];
   for (const lv of LEVELS) { let L; try { L = lv.build(); } catch { continue; } const p = L.palette || {};
     if (L.underground || L.oreRoad) { under.push(lv.id); assert.ok(belowGround(L), lv.id + ' is under the ground and still grows the forest\'s roots'); }
     if (!SEA_SET.has(p.set) && !SEA_SET.has(p.dress)) for (const e of L.ents) if (SEA_DEAD.has(e.t)) wrong.push(`${lv.id} ${e.t}@${e.x},${e.y}`); }
   assert.deepEqual(wrong, [], 'the sea\'s dead stand in a level that is not the sea: ' + wrong.join(' '));
-  console.log('ok  under the hill ' + under.length + ' levels below the ground (' + under.join(', ') + ') grow no roots; the sea\'s dead stand only in the sea\'s levels.');
+  console.log('ok  under the hill ' + under.length + ' levels below the ground (' + under.join(', ') + ') grow no roots and walk on earth, not turf; the sea\'s dead stand only in the sea\'s levels.');
 }
 
 /* A ROOF'S PICTURE COVERS ITS ROOF. drawRoofs paints every house's roof (thatch, slate or tile) over the three rows above

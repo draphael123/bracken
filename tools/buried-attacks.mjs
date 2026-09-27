@@ -44,7 +44,7 @@ try { const r = await pg.evalp(`(${page})()`, 300000);
   assert.equal(r.throw.addsAfter, r.throw.addsBefore + 1, 'a zombie gets up where it lands');
   assert.ok(Math.abs(r.throw.landX) < 30, 'and it lands where the hero stood: ' + r.throw.landX);
   assert.ok(r.body.rose > 30 && Math.abs(r.body.moved) > 60, 'the body slam must leave the ground and cross to the mark: ' + JSON.stringify(r.body));
-  assert.ok(r.body.open > 2, 'and its landing is a window');
+  assert.ok(!(r.body.open > 0), 'its landing opens nothing on his own timer (claude/burial2, A11: his openings are a burning vent and his arm in the ground): ' + r.body.open);
   assert.ok(r.rotation.phase1.includes('novaTell') && r.rotation.phase1.includes('throwTell'), 'nova and the throw from the start');
   assert.ok(!r.rotation.phase1.includes('bodyTell'), 'no body slam before he enrages');
   assert.ok(r.rotation.phase2.includes('bodyTell'), 'and the body slam once he does');

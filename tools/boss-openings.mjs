@@ -3,7 +3,8 @@
    timed rest after every one of them, so nothing the player did ever opened anything: docs/audit-new-levels-0920.md.
    Each of them now has one opening the player causes, and this proves it is caused - the same boss, left alone through
    the same attack, must NOT open.
-     THE BURIED DEAD   slam him down on the ground he already erupted through
+     THE BURIED DEAD   slam him down on the ground he already erupted through; and (claude/burial2) light a gas vent under him - he is
+                       SCORCHED, open, where the same vent cold, or his rest after any blow, opens nothing
      THE BREAKWATER WARDEN  turn the anchor on the shield
      THE UNDEAD ARCHMAGE  fly out of his DEATH MARK: the mark that finds no one comes back on him (batch 4, the sky fight)
      THE PYROMANDER    keep hitting him while he runs hot: he cannot vent, and his own fire takes him over the top (batch 5)
@@ -42,6 +43,12 @@ try {
    for(let i=0;i<8&&!(b.brokeT>0);i++){b.mode='eruptTell';b.markX=b.x;b.modeT=0;BK.sim(1);}const broke=b.brokeX;
    for(let i=0;i<8&&b.mode!=='stuck';i++){b.mode='slamTell';b.modeT=0;BK.sim(1);}
    out.buried={alone,broke:Math.round(broke-b.x),mode:b.mode,open:+b.open.toFixed(1)};}
+  /* THE BURIED DEAD: a vent under him, cold and then lit (his rest, after a blow nobody answered, is the control: it opens nothing) */
+  {const b=boot('burial');const A=BK.L.arena,v=BK.L.gasVents.filter(v=>v.x*16>A.x0&&v.x*16<A.x1).sort((p,q)=>Math.abs(p.x*16-(A.x0+A.x1)/2)-Math.abs(q.x*16-(A.x0+A.x1)/2))[0];
+   BK.P.x=b.x-200;b.x=v.x*16+8;b.mode='cleaveTell';b.modeT=0;b.open=0;BK.sim(3);const rest={mode:b.mode,open:+(b.open||0).toFixed(1)};
+   b.mode='walk';b.modeT=3;b.open=0;v.litT=0;let coldOpen=0;for(let i=0;i<60;i++){b.x=v.x*16+8;BK.sim(1);coldOpen=Math.max(coldOpen,b.open||0);}
+   b.mode='walk';b.modeT=3;b.open=0;v.litT=20;v.burnt=false;let mode=null,open=0;for(let i=0;i<30;i++){BK.sim(1);if(b.mode==='scorched')mode='scorched';open=Math.max(open,b.open||0);}
+   out.buriedGas={rest,coldOpen:+coldOpen.toFixed(1),mode,open:+open.toFixed(1)};}
 
   /* THE BREAKWATER WARDEN: the anchor turned on the shield */
   {const b=boot('harbor');
@@ -71,7 +78,7 @@ try {
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='burial'));BK.state='play';BK.god=true;
    const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=BK.enemies().find(e=>e.t==='gravewarden');
    const dig=markX=>{w.mode='digTell';w.modeT=0;w.markX=markX;w.cd=99;BK.P.x=markX+90;BK.sim(3);return {mode:w.mode,open:+(w.open||0).toFixed(1)};};
-   const solid=dig(734*16);w.mode='stalk';w.modeT=0;BK.sim(2);const grave=dig((742+1)*16+6);
+   const G=BK.L.graves,solid=dig(((G[0]+G[1])/2|0)*16);w.mode='stalk';w.modeT=0;BK.sim(2);const grave=dig((G[1]+1)*16+6);   /* (read off the level: claude/burial2 moved his vault) */
    out.graveWarden={solid,grave};}
   /* THE HEDGE WARDEN: felled on the open lawn, then felled beside a brazier - the same blow, the hero standing off both times */
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='witchlight'));BK.state='play';BK.god=true;
@@ -153,6 +160,10 @@ try {
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
   assert.equal(r.buried.mode, 'stuck', 'slamming onto his own broken ground must bury his arm');
   assert.ok(r.buried.open > 3, 'the arm in the ground is the long window: ' + r.buried.open);
+  assert.ok(!(r.buriedGas.rest.open > 0), 'his rest after a blow opened him on his own timer (A11): ' + JSON.stringify(r.buriedGas));
+  assert.equal(r.buriedGas.coldOpen, 0, 'a cold vent under him opened him: ' + JSON.stringify(r.buriedGas));
+  assert.equal(r.buriedGas.mode, 'scorched', 'a burning vent under him did not scorch him: ' + JSON.stringify(r.buriedGas));
+  assert.ok(r.buriedGas.open >= 3, 'scorched is a window: ' + JSON.stringify(r.buriedGas));
 
   assert.ok(r.warden.unguarded < 2.1, 'an anchor nobody turned is only his own rest: ' + r.warden.unguarded);
   assert.ok(r.warden.guarded > 3, 'turning the anchor must tear it loose: ' + r.warden.guarded);

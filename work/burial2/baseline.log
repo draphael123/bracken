@@ -1,0 +1,56 @@
+ ok  syntax             0ms  1 files parse
+ ok  tells            546ms  the mark over every windup on the screen comes from this table (src/marks.js, 555 rows).
+ ok  ore-road        8664ms  all ore road checks pass
+ ok  ore-ride       65972ms  every line of the ore road carries you across
+ ok  comments         716ms  no swallowed code found.
+ ok  homepaths        764ms  ok  homepaths     489 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths   868ms  ok  dangling-paths 2141 tracked files, every repo path they cite resolves in a fresh clone (6 known holes list
+ ok  floaters        8094ms  2813 standing things checked (47 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  audit          17982ms  == caravan (578x40) clean
+ ok  content-audit  17096ms  21 things to look at.
+ ok  traps          15422ms  1 trap to fix.
+ ok  signs          10684ms  no level says the same sentence on two signs (1 known).
+ ok  killzones      11392ms  no reachable tile kills a standing hero.
+ ok  collectables    9324ms  every pickup can be picked up from some ground.
+ ok  elites         16719ms  40 elites. every elite can be fought and every gate it holds opens onto the route.
+ ok  spawns         12333ms  2340 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  deadends       14083ms  186 dead ends in 32 levels, and every one pays.
+ ok  map-grammar      200ms  The map grammar holds: no retraced road, required nodes resolve forward, the margin and spur bands hold, every
+ ok  checkpoints     8342ms  421 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  additional-areas   937ms  Both areas have reachable rewards; Burial has its final boss and Harbor retains its guardian; all map nodes me
+ ok  additional-areas-runtime 37124ms  Harbor bosses and Buried Dead activate, death opens exits, summons clear, both levels finish and music decodes
+ ok  haunted-coast    624ms  Five coastal attack tells, range counters, mandatory Tide Reaver gate, flooded hold and four Lamplit rope alte
+ ok  haunted-coast-runtime 28658ms  Three new foes, roof chains, flooded hold and Tide Reaver activation/defeat gate work in game.
+ ok  skins          22340ms  ok  roofs          38 houses: every roof picture sits on the slab you stand on.
+ ok  threat-holes    5032ms  ok  threat-holes   167 creature kinds placed across 44 levels, every one weighed. Deliberately 0: dummy, folk,
+ ok  one-new-foe     7542ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  witchlight     45035ms  THE WITCHLIGHT STAIR: five places, one verb each, encounters not a sprinkle, its own light - the Hedge Warden 
+ ok  dressing       14919ms  no sprinkled decoration within three tiles of a fire on the floor.
+ ok  runtime-footing 35107ms  fields wight: fell 80.0px after support loss outside the active range
+ ok  readability      386ms  Scenery behind tiles, softened outline-free art, wall-grip feedback, 13 homes and two landmarks.
+ ok  buried-dead      930ms  Burial 3x length, poison crossings, zombies, falling stone, boss attacks/counters, THE HANDS and the two tiers
+ ok  burial-route   33054ms  {"out":[{"h":"knight","graveCrossing":true,"boneStairs":true,"alive":true},{"h":"warden","graveCrossing":true,
+ ok  burial-geometry 21882ms  burial geometry: crypt and arch are the only ways on, pits poison, vents hurt only when puffing {"hits":{"idle
+ ok  burial-rework   2538ms  the caverns go down: band 22-102, zombies 45, archers 19, skull-throwers 17, spiders 13
+ ok  boss-openings  58308ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":
+ ok  arena-supplies  8628ms  ok  arena-supplies  46 boss rooms, 13 height conditions scored against the ground their arenas actually offer;
+ ok  undead-foes    25793ms  {"huskCount":16,"husk":{"hp":142,"w":12,"sprite":true,"walked":true,"burst":{"alive":false,"hpLost":27,"venom"
+ ok  buried-attacks 48864ms  {"novaClose":{"lost":23,"venom":2.4},"novaFar":{"lost":0,"venom":0},"throw":{"flew":true,"landed":true,"addsBe
+ ok  ambush-single   8849ms  25 single-wave rooms: one captain, 2-4 minions, immediate roster, named lock and leader-only clear.
+ ok  unburied        4564ms        NOT SEEN HERE: the map spur (Lane B), and the music as heard (its track is asserted above); the look is 
+ ok  unburied-fights   315ms  ok  unburied-fights the banner rule, the Barrow Rider, the Death Knight (and the benched Reaper), the bridges 
+ ok  boss-fight-end206628ms  Every one of 46 boss and mini fights (32 bosses, 14 minis) ends when its boss dies.
+ ok  burial-variety 37511ms  burial variety: two dark places lamp to lamp, two rotten spans that crack, drop, come back and never cut the r
+ ok  buried-dead-art   509ms  buried dead art: 18 frames 112x118, every tell its own pose; sheet order (six to a row): DRAG, DRAG 2, SWEEP T
+ ok  mini-names     60011ms  every mini has its own name (14 levels): kings=THE GREAT HOUND, hanging=THE WEAVER, spire=THE TEMPLE GUARDIAN,
+ ok  ambush-reach    7145ms  25 ambush rooms. every captain can be reached from where the room shuts.
+ ok  checkpoint-gaps 14132ms  checkpoint-gaps  32 levels measured along their walked route; the longest run with no checkpoint outside the k
+ ok  architecture    5118ms  44 levels, 327 built pieces declared; 2 grandfathered (harbor, waymeet). everything that was built stands on s
+ ok  ore-work      196647ms  every goblin at work in the mine is told before it fights
+ ok  footing-art    56100ms  footing-art: every floor cell you can stand on is drawn, in 27 levels; painted by their own code: fields (fiel
+ ok  mini-walls     78561ms  ok  mini-walls   sexton, gravewarden, hedgewarden, barrowrider: 6 seeded runs each, 30 s chased round the room
+ ok  checkpoint-stand  5388ms  ok  checkpoint-stand   421 checkpoints in 44 levels: every one stood at with a real jump (5 columns, not 6; 3 
+
+52 of 169 checks pass - A SUBSET (--, additional-areas, arena-supplies, boss-openings, burial-geometry, burial-rework, burial-route, burial-variety, buried-attacks, buried-dead-art, buried-dead, checkpoint-gaps, elites, haunted-coast, mini-names, mini-walls, runtime-footing, skins, threat-holes, unburied-fights, unburied, undead-foes, witchlight, boss-fight-end, tells, one-new-foe, spawns, floaters, architecture, footing-art, checkpoint-stand, checkpoints, audit, content-audit, traps, killzones, collectables, deadends, signs, dressing, map-grammar, ambush-single, ambush-reach, readability, ore-road, ore-ride, ore-work, comments, homepaths, dangling-paths), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.
+done
