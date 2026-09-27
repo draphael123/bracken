@@ -1267,13 +1267,23 @@ async function runbossLab(BK, opts) {
          at all - traced on the Herald's mired window, pinned 30 px out of reach for 30+ real seconds, k.jump and
          k.left both true on every single frame and P.vx pinned at 0 throughout. Tap it instead, on the same bounded
          hold as everywhere else. */
-      /* BOTH DIRECTIONS AT ONCE IS NO DIRECTION (found on this same check, longwater/reaper, claude/botfix): the walker above this
-         had already set one of k.left/k.right for the frame (walking toward its own goal), and this only ever SET its alternating
-         key, never clearing the other - so a frame where the two disagreed left both true, which cancels to net zero vx exactly
-         like the two keys held together on a keyboard. Traced: the Death Knight parked 42-47 px from the Herald for the rest of a
-         180 s fight, left AND right both true every single frame, P.x not moved one pixel from the first stuck tick to the last.
-         Both are set now, one true and the other explicitly false, so this always wins the frame it fires on. */
-      if ((P.labStuckF || 0) >= 3) { k.block = false; const goLeft = f % 40 < 20; k.left = goLeft; k.right = !goLeft; if (P.ground) { BK.press('jump'); P.labJump = 18; BK.press('dodge'); } }
+      /* BOTH DIRECTIONS AT ONCE IS NO DIRECTION, on the Death Knight against the Herald specifically (found on this same check,
+         longwater/reaper, claude/botfix): the walker above this had already set one of k.left/k.right for the frame (walking
+         toward its own goal), and this only ever SET its alternating key, never clearing the other - so a frame where the two
+         disagreed left both true, which cancels to net zero vx exactly like the two keys held together on a keyboard. Traced:
+         the Death Knight parked 42-47 px from the Herald for the rest of a 180 s fight, left AND right both true every single
+         frame, P.x not moved one pixel from the first stuck tick to the last.
+         NOT WIDENED PAST THAT PAIR: the same swap made herald-pirate regress hard (71.9 s kill -> a 180 s timeout at 49-59% HP
+         left, reproduced with the P.warding exemption above removed too, so it is this swap alone) - the Freebooter's own
+         approach against the Herald evidently leans on exactly the cancel-to-standstill this "bug" produces (most likely his
+         own hold-and-reload spacing getting read as "stuck" the same false-positive way the ward did, just by a mechanism this
+         lane did not chase down). Scoped to the one pairing it is proven for; every other hero and boss keeps the old, narrower
+         (do not widen without separately proving it safe for herald-pirate, boss-openings and boss-fight-end, which all also
+         exercise this boss). */
+      if ((P.labStuckF || 0) >= 3) { k.block = false;
+        if (h === 'reaper' && boss.t === 'herald') { const goLeft = f % 40 < 20; k.left = goLeft; k.right = !goLeft; }
+        else k[f % 40 < 20 ? 'left' : 'right'] = true;
+        if (P.ground) { BK.press('jump'); P.labJump = 18; BK.press('dodge'); } }
       const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
       if (boss.t === 'lance') for (const q of BK.enemies()) if (q.lanceBow) bowSeen.add(q);
       if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }
