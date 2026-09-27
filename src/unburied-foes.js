@@ -34,7 +34,7 @@
 import { canvas, rect, line, circle, fillPoly, outline, flipX, whiten } from './px.js';
 
 export const UNB = {
-  hp: { bannerbearer: 56, corpse: 30, barrowrider: 720, deathknight: 1000, bloodknight: 850 },
+  hp: { bannerbearer: 56, corpse: 30, barrowrider: 720, deathknight: 1000, bloodknight: 950 },
   dmg: { bkCleave: 16, bkBolt: 8, bkRush: 12, bkSurge: 10, pole: 12, corpseCut: 10, brRide: 18, brTrample: 14, brFire: 10, brLance: 16, brThrust: 14, cleave: 12, grip: 6, boil: 6, pass: 12, nova: 10, novaPer: 3, surge: 10, volley: 8, cavalry: 18 },
   bannerR: 120,        /* a planted standard raises the fallen within this many pixels of its foot */
   riseT: 1.1, downT: 3.2, plantRange: 150, tether: 44,

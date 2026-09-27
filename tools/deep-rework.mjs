@@ -4,7 +4,7 @@
      THE STRAKE    every deck board in the Deep laid on a slab with water under it has HULL under it: that slab is in L.hullZones (B9,
                    rule N) - the rule, for every deck, not the review's one screenshot
      THE SHIP      THE SUNK TRIBUTE SHIP's band is in the level (+44 rows), each of her decks runs wall to wall so a hatch is the only
-                   way down, every hatch blows hot across its whole width, and every deck with a hatch has a stone on it to carry down
+                   way down, no hatch pushes a hero back up (hotfix 2026-09-26), and every deck with a hatch has a stone on it to carry down
      THE KNIGHTS   drowned knights in the Deep (Daniel: "they'll also be in the Deep level"), each by a hatch or a throat (S1), and no
                    Drowned Captain: he is the Keep's new foe (F10) and would not be if the Deep met him first
      THE RACKS     the Bell Grave hangs stone racks over his floor (A12): each platform hung by rope to the rock (B9), high enough over
@@ -55,8 +55,9 @@ for (const [a, b, dy] of SHIP.hatches) {
   const deck = Y + dy;
   for (let x = SHIP.x0; x <= SHIP.x1; x++) { const open = x >= a && x <= b; assert.equal(at(x, deck) === T.AIR, open, 'deck ' + deck + ' at ' + x + (open ? ' is the hatch' : ' is deck')); }
   assert.ok(at(SHIP.x0 - 1, deck) === T.SOLID && at(SHIP.x1 + 1, deck) === T.SOLID, 'deck ' + deck + ' is wedged wall to wall');
-  const hot = L.deep.currents.find(c => c.kind === 'hot' && c.x0 <= a && c.x1 >= b && c.y0 <= deck - 2 && c.y1 >= deck + 3 && c.fy < -100);
-  assert.ok(hot, 'the hatch at ' + a + '-' + b + ' blows hot across its whole width');
+  /* HOTFIX 2026-09-26 (Daniel: 'a vent blocking the passage down'): a hatch no longer blows - nothing may push a hero back up one */
+  const hot = L.deep.currents.find(c => c.x0 <= b && c.x1 >= a && c.y0 <= deck + 3 && c.y1 >= deck - 2 && c.fy < 0);
+  assert.ok(!hot, 'nothing pushes a hero back up the hatch at ' + a + '-' + b);
   const stones = L.ents.filter(e => e.t === 'ballast' && e.y === deck - 1 && e.x >= SHIP.x0 && e.x <= SHIP.x1);
   for (const st of stones) { assert.ok(st.rack, 'the stone at ' + st.x + ' over a hatch is racked: it goes home, so the deck is never left without one');
     assert.notEqual(at(st.x, st.y), T.SOLID, 'the stone at ' + st.x + ',' + st.y + ' is not inside the timber');

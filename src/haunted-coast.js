@@ -12,10 +12,9 @@ export function hauntedCoast(L,id,T){
   L.shipZones=[[339,350,24,29],[360,388,23,29]];L.hullZones=L.shipZones;L.interiors.push([340,348,26,28,'ship'],[362,385,25,28,'ship']);
   L.pools.push({x0:362*16,x1:389*16,y:26*16,bottom:29*16,swim:true,clear:true});
   for(const e of L.ents)if(e.t==='sailor'&&e.x>=330&&e.x<=390)e.t='bonecorsair';
-  L.ents.push({t:'bonecorsair',x:366,y:28,face:1},{t:'bonecorsair',x:382,y:28,face:-1},{t:'cutlass',x:202,y:17,face:-1},{t:'marine',x:239,y:15,face:-1},{t:'tidemarauder',x:118,y:23,face:-1},{t:'tidemarauder',x:326,y:23,face:-1},{t:'tidemarauder',x:526,y:23,face:-1,mini:true}, {t:'sign',x:512,y:23,text:'THE TIDE REAVER HOLDS THE ROAD. GUARD THE HARPOON. JUMP HIS RED LOW RAKE.'},{t:'sign',x:337,y:29,text:'A PIRATE HULL, FLOODED TO THE GUNPORTS. THE BONES STILL KEEP WATCH.'});
-  for(let y=0;y<24;y++)L.grid[y*L.W+533]=T.PORT;
-  L.mini={x0:514*16,x1:532*16,floor:24*16,trigger:516*16,wallL:513,gate:533,y0:0,y1:25*16,swim:true,boss:'tidemarauder',name:'THE TIDE REAVER'};
-  L.ents=L.ents.filter(e=>!(e.x>=514&&e.x<=533&&['sailor','tideguard','feeler'].includes(e.t)));
+  L.ents.push({t:'bonecorsair',x:366,y:28,face:1},{t:'bonecorsair',x:382,y:28,face:-1},{t:'cutlass',x:202,y:17,face:-1},{t:'marine',x:239,y:15,face:-1},{t:'tidemarauder',x:118,y:23,face:-1},{t:'tidemarauder',x:326,y:23,face:-1},{t:'sign',x:337,y:29,text:'A PIRATE HULL, FLOODED TO THE GUNPORTS. THE BONES STILL KEEP WATCH.'});
+  /* (THE TIDE REAVER, the elite marauder who held the last mile behind a gate at column 533, is gone: Daniel, 2026-09-25, "we can do
+     without the mini-boss". The last mile is the road again - its parapet stone at 533 and the foes the gate had cleared) */
   L.deep.vents.push({x:374,y:28,h:3});
   for(const[x,y,kind]of[[343,28,'coiledCable'],[364,28,'rumBarrels'],[386,22,'pennant']])L.ents.push({t:'deco',x,y,kind,v:1});
  }
