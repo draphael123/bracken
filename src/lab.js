@@ -1111,7 +1111,7 @@ async function runbossLab(BK, opts) {
             else if (boss.mode === 'castTell' && boss.modeT < 0.12 && P.ground) { BK.press('jump'); P.labJump = 14; } }   /* the chain is judged the frame it flies: be off the boards by then */
           else if (proc) { if (P.ground) { BK.press('jump'); P.labJump = 16; } goal = boss.x + (boss.procDir || boss.face) * 30; }
           else if (arrow) { goal = null; P.face = Math.sign(arrow.x - P.x) || P.face; if (SHIELDED(h)) k.block = true; else if (h === 'warden') k.block = DEFLECT_TAP(f); else if (P.ground) { BK.press('jump'); P.labJump = 10; } }
-          else if (add) { P.face = Math.sign(add.x - P.x) || P.face; goal = Math.abs(add.x - P.x) > LAB_REACH[h] ? add.x - P.face * (LAB_REACH[h] - 4) : null; if (Math.abs(add.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) { BK.press('atk'); swings++; } }
+          else if (add) { P.face = Math.sign(add.x - P.x) || P.face; goal = Math.abs(add.x - P.x) > LAB_REACH[h] ? add.x - P.face * (LAB_REACH[h] - 4) : null; if (Math.abs(add.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) { if (keyVerb(BK, h, add) === 'sweep') k.down = true; BK.press('atk'); swings++; } }   /* HIS CONGREGATION IS SMALL (family 'small'): the low sweep, same as the Mother's sporelings (see the ledger's own comment) - this is the spire/abbot pilot's own add-branch, and the plain cut it threw before missed the knight 6 of 16 (tools/small-adds.mjs) */
           else goal = bl.x + (boss.x > bl.x ? -20 : 20);                          /* wait on the far side, so his chain hauls him under it */
           if (P.labJump > 0) { P.labJump--; k.jump = true; }
         } else { goal = boss.x; strike = true; } }
@@ -1221,7 +1221,13 @@ async function runbossLab(BK, opts) {
          holds before a swing starts (updatePlayer: if (!attacking) P.face = move), so a swing pressed on that frame went out behind him: on
          the Reefmaw the Death Knight's first swing in every stuck jaw was cut facing away and rooted him 0.78 s of a 2.2 s window (claude/dk2).
          On the frame it swings, the bot lets go of the key that points away. */
-      if (!mixedHeavy && !cutGo && strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; if (d > 0) k.left = false; else if (d < 0) k.right = false; BK.press('atk'); swings++; }
+      if (!mixedHeavy && !cutGo && strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; if (d > 0) k.left = false; else if (d < 0) k.right = false;
+        /* A SMALL FOE IN FRONT WANTS THE LOW SWEEP, not the plain cut this generic swing otherwise throws (tools/small-adds.mjs):
+           smallAim() is the same "what is this swing really aimed at" pick the ledger below judges it against, so asking it here,
+           before the press, makes the bot actually throw the blow the ledger expects rather than a cut that glances the family table
+           calls wrong for it (marsh: the frog king's hoppers, generic fallback path - no boss-specific branch of its own). */
+        const nearSmall = smallAim(); if (nearSmall && keyVerb(BK, h, nearSmall) === 'sweep') k.down = true;
+        BK.press('atk'); swings++; }
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
@@ -1241,7 +1247,16 @@ async function runbossLab(BK, opts) {
          stall at all (measured: adding !P.ground here brought back the exact frozen numbers this was written to fix). Position
          and boss.hp across three checks (1.5 s) is asked instead, which a bounce that carries him nowhere and lands nothing
          still fails, and which ordinary play - moving, or hitting something - still passes even through a long held guard. */
-      if (f % 30 === 0) { const stuck = Math.abs(P.x - (P.labStuckX ?? P.x)) < 6 && boss.hp === (P.labStuckHp ?? boss.hp);
+      /* THE DEATH KNIGHT'S WARD IS THE ONE HELD GUARD THIS DOES NOT SEE THROUGH (found on tools/boss-navigation.mjs, longwater/reaper,
+         claude/botfix): WARD WALK (src/main.js, the reaper's C) sets P.vx = 0 outright while it is held, by design ("the blade comes
+         with him, slowly"), so a Death Knight correctly turtling through a run of the Herald's tells - not moving, and taking nothing
+         himself while the boss is not open to land a blow on - reads as no different from a bot truly stuck bouncing on a spring.
+         Three checks of that (1.5 s) tripped P.labStuckF and the line below it dropped his guard (k.block = false) mid-tell, which is
+         exactly the frame the Herald's sweep or thrust then landed clean: traced, every hit in the failing run had P.warding false and
+         P.st untouched, so it was never a stamina question - the ward was ripped down by this check, not run dry. Excluded here, not
+         removed: every OTHER stuck state (the spring, a jump held with no ground contact) never sets P.warding, so this still catches
+         them exactly as before. */
+      if (f % 30 === 0) { const stuck = !P.warding && Math.abs(P.x - (P.labStuckX ?? P.x)) < 6 && boss.hp === (P.labStuckHp ?? boss.hp);
         P.labStuckF = stuck ? (P.labStuckF || 0) + 1 : 0; P.labStuckX = P.x; P.labStuckHp = boss.hp; }
       /* HOLDING JUMP DOWN FOREVER IS ITS OWN STUCK STATE (found chasing this same herald-pirate check, claude/botfix
          follow-up): this used to set k.jump = true directly, with nothing to ever let it go again while P.labStuckF
@@ -1252,7 +1267,13 @@ async function runbossLab(BK, opts) {
          at all - traced on the Herald's mired window, pinned 30 px out of reach for 30+ real seconds, k.jump and
          k.left both true on every single frame and P.vx pinned at 0 throughout. Tap it instead, on the same bounded
          hold as everywhere else. */
-      if ((P.labStuckF || 0) >= 3) { k.block = false; k[f % 40 < 20 ? 'left' : 'right'] = true; if (P.ground) { BK.press('jump'); P.labJump = 18; BK.press('dodge'); } }
+      /* BOTH DIRECTIONS AT ONCE IS NO DIRECTION (found on this same check, longwater/reaper, claude/botfix): the walker above this
+         had already set one of k.left/k.right for the frame (walking toward its own goal), and this only ever SET its alternating
+         key, never clearing the other - so a frame where the two disagreed left both true, which cancels to net zero vx exactly
+         like the two keys held together on a keyboard. Traced: the Death Knight parked 42-47 px from the Herald for the rest of a
+         180 s fight, left AND right both true every single frame, P.x not moved one pixel from the first stuck tick to the last.
+         Both are set now, one true and the other explicitly false, so this always wins the frame it fires on. */
+      if ((P.labStuckF || 0) >= 3) { k.block = false; const goLeft = f % 40 < 20; k.left = goLeft; k.right = !goLeft; if (P.ground) { BK.press('jump'); P.labJump = 18; BK.press('dodge'); } }
       const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
       if (boss.t === 'lance') for (const q of BK.enemies()) if (q.lanceBow) bowSeen.add(q);
       if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }
