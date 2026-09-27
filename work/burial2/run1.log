@@ -53,7 +53,7 @@ FAIL buried-attacks 35848ms  Node.js v24.19.0
  ok  burial2          494ms  burial2  660 cols (528x74), 7 sections; 5 backdrops, 4 seams pillared; 11 vents, 6 candles, 6 of the dead in a
  ok  burial-vents   42146ms  burial-vents  fire from a candle, a vent lit by a swing and not without fire, no gas while it burns, the dead 
 FAIL slopes-trace   48793ms  slopes-trace: 1 of 4 levels DIFFER from the pre-slopes build
- ok  textfit       256238ms  0 pictures in <local path> Raphael\.claude\bracken-lanes\bracken-burial2\audits\readability\textfit
+ ok  textfit       256238ms  0 pictures in <repo>/audits/readability/textfit
 
 ---- dangling-paths ----
       cited by: tools/audit-lib.mjs
