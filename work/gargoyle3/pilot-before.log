@@ -1,0 +1,9 @@
+{"pass":0,"h":"knight","won":false,"out":"death","secs":53.8,"taken":100,"opened":3,"left":29,"hitBy":{"recover":39,"dive":61},"modes":{"wake":1,"hover":15,"spitTell":5,"spit":5,"recover":7,"gustTell":2,"gust":2,"flareTell":1,"diveTell":6,"dive":6,"smash":3,"crash":3,"stunned":3,"rise":4,"perchFly":2,"shriek":2,"land":3}}
+{"pass":0,"h":"pyro","won":true,"out":"win","secs":76.5,"taken":65,"opened":6,"left":0,"hitBy":{"recover":36,"gustTell":8,"stunned":12,"spit":9},"modes":{"wake":1,"hover":24,"spitTell":12,"spit":12,"recover":14,"flareTell":3,"gustTell":2,"gust":2,"perchFly":1,"shriek":1,"diveTell":6,"dive":6,"smash":6,"crash":6,"stunned":6,"rise":5}}
+{"pass":0,"h":"pirate","won":false,"out":"death","secs":63.4,"taken":90,"opened":3,"left":27,"hitBy":{"dive":24,"spit":9,"gustTell":20,"recover":9,"stunned":12,"crash":16},"modes":{"wake":1,"hover":20,"spitTell":7,"spit":7,"recover":11,"flareTell":2,"gustTell":5,"gust":4,"diveTell":4,"dive":4,"land":1,"rise":4,"perchFly":2,"shriek":2,"smash":3,"crash":3,"stunned":3}}
+NORMAL 300 s cap: fights 3, wins 1 (33%), median win 76.5 s, median taken 90, median taken/min 85, median openings 3; by hero knight 0/1, pyro 1/1, pirate 0/1
+errors []
+
+real	0m33.993s
+user	0m0.015s
+sys	0m0.000s
