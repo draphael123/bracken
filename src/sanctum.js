@@ -8,7 +8,7 @@
 // of levels."
 //
 // So the crown of the tower no longer ends at a rug lying on a mat. It ends at a DOOR. Through it is his sanctum:
-// a sealed stone hall with a vault over it and a floor of ARCANE FIRE - the last working he had going when he died,
+// a sealed stone hall with a vault over it and a floor of ARCANE FIRE (round 3: no longer sealed - the top of the tower, open to the night, see drawSanctum) - the last working he had going when he died,
 // still burning, wall to wall. The carpet is how you stay off it.
 //
 // WHY THE ROOM IS DRAWN AND NOT BUILT. The fight is carpet flight, and a carpet is held by carpetBox() and by nothing
@@ -64,7 +64,6 @@ const STONE = ['#1a1428', '#2a2238', '#352c46', '#141020', '#4a4058', '#0e0a18']
    read as vegetation at any size, it belongs to the tower, and it buys a second thing for nothing: THE ARCHMAGE'S OWN
    SPELLS ARE GREEN, so on a green floor half his telegraphs were camouflaged against the hazard. */
 const FIRE = ['#c88aff', '#9a52e0', '#ffe9ff', '#5a2a8a', '#2a1040'];
-const NIGHT = ['#241c3c', '#9a8fd0'];   /* what shows through his windows: the tower's own violet night, and a star in it */
 /* a steady per-column wobble, so the fire's edge is a line of flame and not a ruled edge */
 const lick = (x, t) => Math.sin(x * 0.21 + t * 3.1) * 2 + Math.sin(x * 0.07 - t * 1.7) * 2;
 
@@ -78,42 +77,55 @@ export function drawSanctum(g, L, A, cx, cy, time, box) {
   const L0 = x0 - SANCTUM.wall, R0 = x1 + SANCTUM.wall;
   const vx0 = Math.max(L0, -8), vx1 = Math.min(R0, VW + 8);              /* nothing is drawn past the edges of the screen */
   const band = (x, y, ww, hh, col) => { const a = Math.max(x, -8), b = Math.min(x + ww, VW + 8); if (b > a) { g.fillStyle = col; g.fillRect(a, y, b - a, hh); } };
-  // the room's own dark, over the level's sky: inside here there is no sky
-  band(L0 - 40, top - SANCTUM.vault - 40, w + SANCTUM.wall * 2 + 80, (flr - top) + SANCTUM.vault + 80, STONE[0]);
-  // THE BACK WALL: ashlar courses, a string course, and the tower's night showing through tall lancet windows
-  band(x0, top, w, flr - top, STONE[1]);
-  for (let y = top; y < flr; y += 11) band(x0, y, w, 1, STONE[2]);
-  /* WINDOWS, NOT A BLIND ARCADE. The arcade was dark recesses standing on the floor, and at play size it read as a row
-     of gravestones on a lawn. An opening with a LIT JAMB and the night behind it reads as a wall from the first frame,
-     and it puts the one cold colour in the room where it can do some good. They sit high, clear of the fire. */
-  { const wy = top + 22, wh = Math.min(70, Math.max(24, (ft - 30) - wy));
-    for (let ax = x0 + 30 + (((-(x0 + 30) + vx0 - 100) / 86 | 0) * 86); ax < vx1 + 40; ax += 86) {
-      if (ax < x0 + 20 || ax + 18 > x1 - 20 || ax > VW + 20 || ax + 18 < -20) continue;
-      g.fillStyle = STONE[3]; g.fillRect(ax, wy + 9, 14, wh - 9);
-      for (let k = 0; k < 9; k++) g.fillRect(ax + k, wy + 9 - k, 14 - k * 2, 1);          /* the lancet's point, stepped */
-      g.fillStyle = NIGHT[0]; g.fillRect(ax + 2, wy + 11, 10, wh - 13);                    /* the night outside his tower */
-      g.fillStyle = NIGHT[1]; g.fillRect(ax + 4 + ((ax >> 2) % 5), wy + 16 + ((ax >> 1) % 17), 1, 1);   /* one star in some of them */
-      g.fillStyle = STONE[4]; g.fillRect(ax - 2, wy + 8, 2, wh - 8); g.fillRect(ax + 14, wy + 8, 2, wh - 8);   /* the lit jamb */
-      g.fillRect(ax - 3, wy + wh - 2, 20, 2);                                              /* and a sill under it */
-    } }
-  // THE SIDE WALLS, with a lit inner course: the room has to read as held in, not cropped
+  /* THE TOP OF THE TOWER, OPEN TO THE NIGHT (round 3, Daniel 2026-09-27: "the top of the tower open to the night with the moon
+     behind"). It was a sealed hall - ashlar, lancet windows, a vault over it. Now there is no roof and no back wall: the night fills
+     the whole screen over the fire (so nothing of the level up here - the desert's sand, ten rows over - ever shows in it), the MOON
+     stands behind him, the tower's far parapet runs along the back of the burning floor against the sky, and the side walls are what
+     is left of the tower's own: broken stumps with a merlon or two, still holding the carpet in. */
+  const skyTo = Math.min(H, flr + 8);
+  { const bands = ['#0a0818', '#100d24', '#16122e', '#1e1a3c', '#26204a'];   /* deepest overhead, a little lighter toward the horizon */
+    const y0 = top - SANCTUM.vault - 40, span = Math.max(1, ft - y0);
+    for (let i = 0; i < bands.length; i++) { const a = i === 0 ? 0 : Math.round(y0 + span * i / bands.length), b = i === bands.length - 1 ? skyTo : Math.round(y0 + span * (i + 1) / bands.length);
+      if (b > a) { g.fillStyle = bands[i]; g.fillRect(0, Math.max(0, a), VW, Math.min(skyTo, b) - Math.max(0, a)); } } }
+  /* the stars, a little parallax so the sky is far */
+  { const px = cx * 0.2, py = cy * 0.2, cell = 23;
+    for (let gy = Math.floor(py / cell) - 1; gy * cell - py < ft; gy++) for (let gx = Math.floor(px / cell) - 1; gx * cell - px < VW + cell; gx++) {
+      const h = Math.sin(gx * 127.1 + gy * 311.7) * 43758.5453, r = h - Math.floor(h); if (r > 0.34) continue;
+      const sx = Math.round(gx * cell - px + r * 60), sy = Math.round(gy * cell - py + r * 37); if (sy < 0 || sy > ft - 8) continue;
+      g.fillStyle = r < 0.04 ? '#fff6e0' : r < 0.14 ? '#bcb6e0' : '#6a6494'; g.fillRect(sx, sy, 1, 1);
+      if (r < 0.02 && Math.sin(time * 3 + gx) > 0.6) { g.fillRect(sx - 1, sy, 3, 1); g.fillRect(sx, sy - 1, 1, 3); } } }
+  /* THE MOON, behind him: big, pale, pitted, a ring of cold light round it and a rag of cloud across its foot */
+  { const mx = Math.round(x0 + w * 0.62 - (cx - (A.x0 + A.x1) / 2 + VW / 2) * 0.06), my = Math.round(top + 46 - (cy - A.y0) * 0.05), R = 30;
+    if (mx > -R * 3 && mx < VW + R * 3) {
+      g.globalCompositeOperation = 'lighter';
+      for (let k = 3; k >= 1; k--) { g.fillStyle = 'rgba(150,150,210,' + (0.035 * (4 - k)).toFixed(3) + ')'; g.beginPath(); g.arc(mx, my, R + k * 12, 0, Math.PI * 2); g.fill(); }
+      g.globalCompositeOperation = 'source-over';
+      g.fillStyle = '#e8e4d0'; g.beginPath(); g.arc(mx, my, R, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#d2cdb6'; g.beginPath(); g.arc(mx + 6, my + 4, R - 4, 0, Math.PI * 2); g.fill();   /* the shade on its far side */
+      g.fillStyle = '#e8e4d0'; g.beginPath(); g.arc(mx - 3, my - 2, R - 6, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#c2bca4'; for (const [ox, oy, r] of [[-9, -8, 5], [6, -12, 3], [9, 5, 6], [-4, 9, 3], [-14, 4, 2], [2, -2, 2]]) { g.beginPath(); g.arc(mx + ox, my + oy, r, 0, Math.PI * 2); g.fill(); }
+      g.fillStyle = 'rgba(16,13,36,0.85)'; const drift = Math.round((time * 3) % 90) - 45;
+      g.fillRect(mx - 44 + drift, my + 14, 70, 3); g.fillRect(mx - 30 + drift, my + 17, 52, 2); g.fillRect(mx - 20 - drift, my - 20, 40, 2); } }
+  /* THE FAR PARAPET: the tower's own wall along the back of the floor, merlons against the sky, the moon's light on their tops */
+  { const py = ft - 30, pv = 0.85, off = ((cx * (1 - pv)) % 28 + 28) % 28;
+    band(L0, py, w + SANCTUM.wall * 2, ft - py + 12, STONE[3]);
+    for (let y = py + 5; y < ft + 12; y += 7) band(L0, y, w + SANCTUM.wall * 2, 1, STONE[5]);
+    for (let mx = Math.max(L0, -28) - off; mx < Math.min(R0, VW + 28); mx += 28) { if (mx + 14 < x0 || mx > x1) continue;
+      g.fillStyle = STONE[3]; g.fillRect(mx, py - 9, 14, 9); g.fillStyle = STONE[4]; g.fillRect(mx, py - 9, 14, 1); g.fillStyle = STONE[5]; g.fillRect(mx + 13, py - 8, 1, 8); }
+    band(L0, py, w + SANCTUM.wall * 2, 1, STONE[4]); }
+  // THE SIDE WALLS: what is left of the tower's own, broken off at the top - the room still reads as held in, not cropped
   for (const [sx, dir] of [[L0, 1], [x1, -1]]) {
     if (sx > VW + 8 || sx + SANCTUM.wall < -8) continue;
-    g.fillStyle = STONE[1]; g.fillRect(sx, top - SANCTUM.vault, SANCTUM.wall, (flr - top) + SANCTUM.vault + 8);
-    g.fillStyle = STONE[3]; for (let y = top - SANCTUM.vault; y < flr; y += 9) g.fillRect(sx, y, SANCTUM.wall, 1);
+    const wt = top - 10;
+    g.fillStyle = STONE[1]; g.fillRect(sx, wt, SANCTUM.wall, (flr - wt) + 8);
+    for (let k = 0; k < SANCTUM.wall; k += 4) { const bite = [0, 7, 3, 12, 5, 9][(k / 4 + (dir > 0 ? 0 : 3)) % 6]; g.fillStyle = STONE[1]; g.fillRect(sx + k, wt - 14 + bite, 4, 14 - bite); g.fillStyle = STONE[4]; g.fillRect(sx + k, wt - 14 + bite, 4, 1); }   /* the broken top, lit by the moon */
+    g.fillStyle = STONE[3]; for (let y = wt; y < flr; y += 9) g.fillRect(sx, y, SANCTUM.wall, 1);
     const inner = dir > 0 ? sx + SANCTUM.wall - 2 : sx;
-    g.fillStyle = STONE[4]; g.fillRect(inner, top - SANCTUM.vault, 2, (flr - top) + SANCTUM.vault);
+    g.fillStyle = STONE[4]; g.fillRect(inner, wt - 6, 2, (flr - wt) + 6);
     g.fillStyle = 'rgba(200,138,255,0.12)'; g.fillRect(inner - (dir > 0 ? 0 : 2), ft - 40, 4, 40);   /* firelight up the wall */
   }
-  // THE VAULT: ribs springing off both walls to a ridge, and black above it
-  band(L0, top - SANCTUM.vault - 40, w + SANCTUM.wall * 2, 40, STONE[5]);
-  band(x0, top - SANCTUM.vault, w, SANCTUM.vault, STONE[1]);
-  g.fillStyle = STONE[3];
-  for (let rx = L0 - 40 + ((((vx0 - (L0 - 40)) / 64 | 0)) * 64); rx < vx1 + 64; rx += 64)
-    for (let k = 0; k < SANCTUM.vault; k++) { const s = Math.round(k * 1.1); g.fillRect(rx + s, top - SANCTUM.vault + k, 2, 1); g.fillRect(rx + 64 - s - 2, top - SANCTUM.vault + k, 2, 1); }
-  band(L0, top - SANCTUM.vault, w + SANCTUM.wall * 2, 1, STONE[4]);
   // THE BRAZIERS on the side walls, burning the same green: the only light in here is his
-  for (const [bx, by] of [[x0 + 6, top + 40], [x1 - 10, top + 40], [x0 + 6, ft - 66], [x1 - 10, ft - 66]]) {
+  for (const [bx, by] of [[x0 + 6, ft - 66], [x1 - 10, ft - 66]]) {   /* (round 3: only the low pair - the high pair hung on the vault's walls) */
     if (by < -20 || by > H + 20 || bx < -20 || bx > VW + 20) continue;
     g.fillStyle = STONE[4]; g.fillRect(bx, by, 4, 12); g.fillRect(bx - 2, by - 3, 8, 3);
     const f = Math.sin(time * 7 + bx) * 1.5;

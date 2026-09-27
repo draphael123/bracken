@@ -9,7 +9,8 @@
 // and there is no going back down. At the crown the roof is gone and the carpet waits on the parapet (src/carpet.js);
 // the Undead Archmage is fought in the open sky (src/undead-mage.js).
 //
-//   rows 0-49      THE SKY: the carpet's arena (L.arena.carpet, rows 34-50), nothing to stand on by design
+//   rows 0-49      THE SKY: the desert (SAND, rows 6-12), his hall at the top of the tower (HALL, rows 22-38: the carpet's
+//                  arena), and nothing to stand on by design between the hall's floor and the crown
 //   rows 50-83   7 THE OPEN CROWN        broken ledges, the sky showing through, the carpet at the top
 //   rows 86-119  6 THE BELL LOFT         (2026-09-25) the bell deck over its pit, and THE SEXTON, the tower's mini
 //   rows 122-155 5 THE BURST CISTERN     a floor of poison water, stepping stones
@@ -42,7 +43,14 @@ export const TOWER = { W: 72, H: 306, X0: 12, X1: 59, SKY: 50, FLOOR: 36, N: 7 }
    camera ever reaches except through the portal: sixteen rows over the sanctum's vault, which is itself painted and not built
    (src/sanctum.js). It was a sandstone cutting walled at both ends; it is open sand now, from one edge of the world to the other,
    under THE SUNKEN CARAVAN's sky. `arrive` is where the second door puts you, `gate` the level's end. */
-export const SAND = { x0: 0, x1: TOWER.W - 1, row: 18, deep: 24, arrive: 20, gate: 34 };
+export const SAND = { x0: 0, x1: TOWER.W - 1, row: 6, deep: 12, arrive: 20, gate: 34 };
+/* HIS HALL, THE TOP OF THE TOWER (round 3, Daniel 2026-09-27: "move his arena higher so walking foes cannot wander in", its backdrop
+   "the top of the tower open to the night with the moon behind"). It sat on the crown: its burning floor was row 50 and the parapet
+   walk row 51, so anything that walked the crown's last tiers stood with its head in his fire. It is TWELVE ROWS higher now - its floor
+   eight rows over the tower's merlons and thirteen over the parapet, more than twice the best jump any walker has - and the desert moved up with it (still ten rows over it).
+   The door on the parapet puts you in it as before. tools/tower-hall.mjs holds the gap, and main.js keeps the crown's creatures out
+   of the hall while the fight is on (a hall you reach through a door is not reached by what is outside it). */
+export const HALL = { y0: 22, floor: 38 };
 // [name, interior kind], bottom (k 0) to top (k 6). Every floor's rows come off the pitch, so inserting one moves each
 // floor under it and nothing here is re-typed; what DOES have to move by hand is everything keyed to a row somewhere
 // else - the GARRISON row, level.js's ELITES coords, L.tall and START (docs/briefs/falling-tower-longer.md).
@@ -266,7 +274,7 @@ export function buildTowerAscent({ painter, T, TS }) {
      this is the road into it. Reached only by the portal; the world's own edges end it, not walls. */
   rect(SAND.x0, SAND.x1, SAND.row, SAND.deep, T.SOLID);                     /* the sand itself, seven rows deep: the camera never sees under it */
   ent('gate', SAND.gate, SAND.row - 1); ent('sign', SAND.arrive + 4, SAND.row - 1, { text: 'THE TOWER IS BEHIND YOU. AHEAD IS THE SAND, AND THE ROAD TO THE SUNKEN CARAVAN.' });
-  ent('undeadmage', 36, 42, { face: -1 });
+  ent('undeadmage', 36, HALL.floor - 8, { face: -1 });
   // ---- THE DIVIDERS AND THEIR ROPES. Each floor's rope hangs from its last tier, through the divider over it, to its top. ----
   for (let k = 0; k < floors.length - 1; k++) {
     const F = floors[k], [x0, len, row] = F.tiers[F.tiers.length - 1], rx = x0 + (len >> 1);
@@ -323,7 +331,7 @@ export function buildTowerAscent({ painter, T, TS }) {
        the way out opens WHERE HE FALLS. */
     bellDeck: bell,   /* THE SEXTON's deck: its row, the frame over it and the joists he climbs out onto (main.js) */
     mini: { x0: 12 * TS, x1: 52 * TS, floor: bell.deck * TS, y0: bell.frame * TS, y1: (bell.deck + 4) * TS, trigger: 14 * TS, wallL: 12, gate: 52, boss: 'sexton', name: 'THE SEXTON' },
-    sanctum: { in: { x: 36 * TS, y: SKY * TS }, spawn: { x: 14 * TS, y: 40 * TS }, sand: { x: SAND.arrive * TS + 8, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
+    sanctum: { in: { x: 36 * TS, y: SKY * TS }, spawn: { x: 14 * TS, y: (HALL.floor - 10) * TS }, sand: { x: SAND.arrive * TS + 8, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
     tall: { top: SKY * TS, bottom: floors[0].bot * TS, col: '16,20,32', deepest: 0.16 },   /* the gloom is cold slate, not the Folly's violet */
     towerFloors: floors.map((F, k) => ({ name: F.name, top: F.top, bot: F.bot, hole: F.hole || null, last: k === N - 1 })),
     deckBreaks: breaks.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true })),   /* spine ledges: they come back (updateTowerAscent), or a fall into the water would be a soft-lock */
@@ -336,7 +344,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hall' }],
     noCoin: [[0, W - 1, 0, SKY + 1]],
     /* THE SKY IS THE ARENA. trigger is never walked past: the carpet starts the fight when it is boarded (carpet.js) */
-    arena: { x0: 4 * TS, x1: 68 * TS, y0: 34 * TS, floor: SKY * TS,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: 0, wallR: W - 1, boss: 'undeadmage', carpet: true, music: 'boss4', tint: '#30334e', tintA: 0.06 },
+    arena: { x0: 4 * TS, x1: 68 * TS, y0: HALL.y0 * TS, floor: HALL.floor * TS, hall: true,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: 0, wallR: W - 1, boss: 'undeadmage', carpet: true, music: 'boss4', tint: '#30334e', tintA: 0.06 },
   };
 }
 

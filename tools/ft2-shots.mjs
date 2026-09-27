@@ -35,7 +35,11 @@ try {
       /* HIS RINGS (round 2), where the level has them: the step's exit flaring by you, and a bent bolt's pair glowing */
       { const b = BK.boss; if (b && b.rings !== undefined) { const O = (await import('/src/undead-mage.js')).MAGE.order;
         b.mode = 'hover'; b.modeT = 0; b.blinkT = 99; b.turn = O.indexOf('step'); for (let k = 0; k < 24; k++) BK.step(1); snap('ring-step', 'the portal step: the exit ring flares by you');
-        for (let k = 0; k < 90 && b.mode !== 'hover'; k++) BK.step(1); b.mode = 'hover'; b.modeT = 0; b.turn = O.indexOf('bend'); for (let k = 0; k < 30; k++) BK.step(1); snap('ring-bend', 'bent bolts: both rings glow the bolt colour'); } }
+        for (let k = 0; k < 90 && b.mode !== 'hover'; k++) BK.step(1); b.mode = 'hover'; b.modeT = 0; b.turn = O.indexOf('bend'); for (let k = 0; k < 30; k++) BK.step(1); snap('ring-bend', 'bent bolts: both rings glow the bolt colour');
+        /* (round 3) THE DECOY: two flared rings, one hollow; THE TRAP: a ring over you, glowing */
+        if (O.includes('decoy')) { for (let k = 0; k < 90 && b.mode !== 'hover'; k++) BK.step(1); b.mode = 'hover'; b.modeT = 0; b.turn = O.indexOf('decoy'); for (let k = 0; k < 24; k++) BK.step(1); snap('ring-decoy', 'the decoy: two rings flare, only one holds the desert');
+          for (let k = 0; k < 90 && b.mode !== 'hover'; k++) BK.step(1); b.mode = 'hover'; b.modeT = 0; b.turn = O.indexOf('trap'); for (let k = 0; k < 30; k++) BK.step(1); snap('ring-trap', 'the trap: a ring over you, glowing');
+          for (let k = 0; k < 40; k++) BK.step(1); snap('ring-trap-drop', 'the trap drops'); } } }
       const b = BK.boss; if (b) { BK.god = true; b.hp = 1; BKT.hurtEnemy(b, 50, b.x - 10, false); } for (let k = 0; k < 240; k++) BK.step(1); snap('portal-open', 'he is down: the way out opens');
       for (let k = 0; k < 400 && !BK.L.sandWalk; k++) { const S = BK.L.sanctum, o = S && S.out; if (o && S.outOpen >= 1) { BK.P.x = o.x; BK.P.y = o.y; } BK.step(1); } for (let k = 0; k < 90; k++) BK.step(1); snap('after-portal', 'through the way out');
       for (let k = 0; k < 80; k++) { BK.keys.right = true; BK.step(1); } BK.keys.right = false; for (let k = 0; k < 30; k++) BK.step(1); snap('after-walk', 'walking on: the level’s end');

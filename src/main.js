@@ -94,7 +94,8 @@ import * as HB from './redraw/harbour.js';   /* THE FLOTILLA in harbour light: t
 import * as CAB from './redraw/cabins.js';   /* rooms of their own below decks: the galley, the magazine, the brig, the cabin and the chart room */
 import * as SM from './redraw/storm.js';   /* THE HURRICANE DECK: one ship in a storm - the open sea, the swells, the rain, the rags, the spray and the lightning */
 import * as CRT from './crown_tiles.js';
-import { bossZooms, miniZooms } from './boss-view.js';   /* WHICH FIGHTS ARE FOUGHT ZOOMED OUT: one list for the wake and for desiredView() */
+import { bossZooms, miniZooms } from './boss-view.js';
+import { hallHolds } from './tower-hall.js';   /* THE FALLING TOWER's hall at the top of the tower: nothing from the crown wanders into it (round 3) */   /* WHICH FIGHTS ARE FOUGHT ZOOMED OUT: one list for the wake and for desiredView() */
 import * as DPP from './deep_props.js';
 import { airBoxes } from './deepair.js';
 import * as SEA from './sea_looks.js';   /* EVERY SEA LEVEL A LOOK OF ITS OWN: the trench, the living water, the reef's sun, the drowned city, the river into the sea */
@@ -7787,6 +7788,7 @@ const introCardUp = () => !!(SET.bossIntro && ((bossActive && boss && boss.mode 
 const MINI_NAME = { lancer: 'THE SERJEANT', propman: 'THE OVERMAN', forgemaster: 'THE FORGEMASTER', greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD', lampreeve: 'THE LAMPREEVE', suncatcher: 'THE RIMEWRIGHT', golem: 'THE TEMPLE GUARDIAN', gravewarden: 'THE GRAVEYARD KEEPER' };
 const MINI_DONE = { sexton: 'THE BELL FRAME IS OPEN', barrowrider: 'THE GATE STANDS OPEN', hedgewarden: 'THE GARDEN GATE OPENS', gravewarden: 'THE OSSUARY DOOR LIFTS', homunculus: 'THE LAB DOOR LIFTS', ploughman: 'THE HEDGE GATE LIFTS', propman: 'NOTHING HOLDS IT UP NOW', forgemaster: 'THE FORGE GOES COLD', greathound: 'THE KENNELS OPEN', troll: 'THE GULLY IS CLEAR', spider: 'THE WEB COMES DOWN', sailer: 'THE ROAD IS OPEN', lampreeve: 'THE STREET KEEPS ITS LIGHTS', suncatcher: 'THE RIME COMES OFF THE ROAD', golem: 'THE HALL DOOR OPENS', assassin: 'THE PARK GATE IS OPEN' };
 const miniName = () => (L.mini && (L.mini.name || MINI_NAME[L.mini.boss] || (BEASTS.find(q => q.t === L.mini.boss) || {}).name)) || 'THE BEAST';   /* a level can name its own (THE STALKER, THE QUARRY DOG): the table is only the fallback. AND THEN THE BESTIARY, the way bossTitle asks it (E7): the Burial Caverns' mini was in neither, so his card and his bar both said THE BEAST - which is the name Daniel asked to have changed (2026-09-24) */
+const hallSealed = e => hallHolds(L.arena, bossActive, e, boss);
 const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss && (e.mini || e.t === 'greathound')) : null;
 // A mini dies: the wall it closed behind you opens, and so does the gate it was standing in front of.
 function miniEnd(e) {
@@ -20255,6 +20257,7 @@ function updateEnemies(dt) {
     if ((e.t === 'eel' || e.t === 'angler' || e.t === 'urchin' || e.t === 'puffer' || e.t === 'jelly' || e.t === 'lamprey') && e.pool && !e.leap) {   /* (a river eel leaves its water on purpose: updateRiverEel keeps it in its column) */ const p = e.pool, bot = (p.bottom !== undefined ? p.bottom : p.y + 60) - 4; e.y = Math.min(bot, Math.max(p.y + 10, e.y));
       if (isSolid(Math.floor(e.x / TS), Math.floor((e.y - (e.h || 8) / 2) / TS))) sendHome(e, p.y + 10, bot); }   /* and not down into the wreck it was over */
     if (e.t === 'whelp' && e.fromGarg) { updateWhelp(e, dt); continue; }   /* ONE HE CALLED never sleeps at range: it sits on the tower's face across his 44-tile room, more than 420 px from a hero at its far end */
+    if (hallSealed(e)) continue;   /* THE TOP OF THE TOWER (round 3): while his fight is on, what is below his hall's floor is not in it (src/tower-hall.js) */
     if (Math.abs(e.x - P.x) > 420 && (!SETTLED_FOES.has(e.t) || foeHasFooting(e))) continue; // (bosses above never sleep at range: the Ram Lord used to freeze mid-charge when the fold was wide)
     { const bt = e.squirrel ? 'squirrel' : e.t; if (Math.abs(e.x - P.x) < 190 && !(PROG.beasts && PROG.beasts[bt] && PROG.beasts[bt].seen)) beastSeen(bt); }
     if(e.t==='zombie'||e.t==='husk'||e.t==='apprentice'){beastSeen(e.t);updateZombie(e,dt,{P,lit:L.gasVents?(x,y)=>!!inVentLight(L,x,y):null,move:(q,x,y)=>moveBody(q,x,y,false),hit:(x,d,hard)=>damagePlayer(x,d,{unblockable:hard,who:e}),snare:t=>{P.snare=Math.max(P.snare||0,t);},say:(msg,hard)=>number(e.x,e.y-34,msg,hard?'#ff6b6b':'#ffd36b'),solid:(x,y)=>isSolid(Math.floor(x/TS),Math.floor(y/TS)),
