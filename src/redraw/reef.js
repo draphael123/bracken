@@ -887,5 +887,45 @@ export function bakeReefmaw() {
   const recoil = frame({ cp: [[40, 80], [47, 58], [41, 47]], at: [45, 45], ang: 48, gape: 26, crest: 0.5, eye: 'dim' });
   const sink = frame({ cp: [[42, 80], [44, 70], [47, 65]], at: [51, 72], ang: -6, gape: 2, crest: 1.2, eye: 'dim' });
   const death = frame({ cp: [[40, 80], [49, 63], [43, 55]], at: [47, 53], ang: 62, gape: 38, crest: 0.35, eye: 'out' });
-  return pack([lurk, riseA, riseB, tell, bite, thrash, recoil, sink, death], X + 1, H + 1, 30, 48);
+  const set = pack([lurk, riseA, riseB, tell, bite, thrash, recoil, sink, death], X + 1, H + 1, 30, 48);
+
+  // ---- ON LAND (docs/briefs/reef-longer.md): his third phase, when the tide has gone out and he has hauled himself up out of his
+  // hole onto the dry reef. The same hide, the same head and the same jaw, laid down along the ground the length of a mast: a
+  // heavy thing that drags itself, not a snake that glides. The body is a tube along a curve like the rises (moray), but lying
+  // down, thin at the tail and fattest behind the head; its back is up, so the mottled hide is on top and the pale belly underneath,
+  // and settle() puts the belly on the floor row. BELLY-UP frames are the same drawing turned over, top to bottom: the pale belly
+  // on top, the crest under him against the reef, the jaw on the wrong side - which is what a beached eel looks like.
+  //   frames: 0, 1 crawl (the body in an S, the two phases of it), 2 LUNGE TELL (bunched back on itself, head drawn back low, jaw
+  //           parting, crest up), 3 LUNGE (stretched out straight, head driven forward, jaw wide), 4 TAIL TELL (tail reared up high
+  //           over his back), 5 TAIL (the tail swept out flat along the ground behind him, a smear on its arc), 6 ROLL A (jaw
+  //           clamped, body twisting), 7 ROLL B (the same, turned over), 8 BEACHED (belly-up, jaw slack, eye dim), 9 HAUL (half out of
+  //           his hole, head up, the rear still going down into it), 10 DEAD (belly-up, jaw open, eye out)
+  //   canvas 130x44 (grid 128x42)   anchor ax 65, ay 43 (the body's middle; the head is forward of it, at about ax+28..ax+56)
+  //   reach: crawl teeth ax+34..ax+50, ay-6..ay-14; LUNGE teeth ax+44..ax+60, ay-2..ay-18 (low: a jump clears it); TAIL tip
+  //          ax-60..ax-48, ay-1..ay-6 in the sweep, ax-36..ax-24, ay-36..ay-40 reared in the tell
+  const LW2 = 128, LH2 = 42, LX = 64;
+  const curveR = (cp, rf, steps = 60) => curve(cp, 0, 0, steps).map(([x, y], i) => [x, y, rf(i / steps)]);
+  const bodyR = t => 1.6 + 6.4 * Math.min(1, t * 2.1);   /* a thin tail tip, full by about half way, fattest at the neck */
+  const land = o => {
+    const G = blank(LW2, LH2);
+    moray(G, curveR(o.cp, o.rf || bodyR), o.crest === undefined ? 1 : o.crest);
+    layer(G, g => head(g, { at: o.at, ang: o.ang || 0, gape: o.gape, eye: o.eye || 'lit', up: o.up, dn: o.dn }));
+    if (o.over) G.reverse();
+    return q(G);
+  };
+  const crawlA = land({ cp: [[8, 30], [34, 38], [60, 28], [88, 33]], at: [95, 32], ang: 2, gape: 6 });
+  const crawlB = land({ cp: [[8, 38], [34, 29], [60, 37], [88, 33]], at: [95, 32], ang: -2, gape: 8 });
+  const coil = land({ cp: [[26, 36], [50, 24], [64, 40], [80, 30]], at: [86, 31], ang: 6, gape: 30, crest: 1.9 });
+  const lunge = land({ cp: [[4, 35], [40, 35], [80, 34], [100, 34]], at: [106, 33], ang: 0, gape: 64, crest: 1.3 });
+  const tailUp = land({ cp: [[36, 4], [12, 14], [40, 38], [88, 33]], at: [95, 32], ang: -4, gape: 12, crest: 1.4 });
+  const tailSw = land({ cp: [[0, 39], [22, 40], [52, 33], [88, 33]], at: [95, 32], ang: 4, gape: 14, crest: 1.4 });
+  const rollA = land({ cp: [[14, 34], [38, 28], [64, 38], [88, 33]], at: [95, 33], ang: 0, gape: 4, crest: 0.8 });
+  const rollB = land({ cp: [[14, 34], [38, 28], [64, 38], [88, 33]], at: [95, 33], ang: 0, gape: 4, crest: 0.8, over: true });
+  const beached = land({ cp: [[10, 34], [42, 35], [72, 33], [90, 34]], at: [97, 34], ang: 8, gape: 24, crest: 0.6, eye: 'dim', over: true });
+  const haul = land({ cp: [[44, 60], [52, 38], [70, 30], [88, 30]], at: [95, 28], ang: -12, gape: 18, crest: 1.2 });
+  const dead = land({ cp: [[10, 34], [42, 35], [72, 33], [90, 34]], at: [97, 34], ang: 14, gape: 40, crest: 0.4, eye: 'out', over: true });
+  /* THE TAIL's arc, in foam, behind him: the one frame that has to read from across the room as 'not behind him' */
+  smear(tailSw, 54, 38, 48, 185, 250, 40);
+  set.land = pack([crawlA, crawlB, coil, lunge, tailUp, tailSw, rollA, rollB, beached, haul, dead], LX + 1, LH2 + 1, 64, 20);
+  return set;
 }

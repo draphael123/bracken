@@ -17,7 +17,7 @@
 // usage: node tools/ore-road.mjs
 import { LEVELS, T } from '../src/level.js';
 import { readFileSync } from 'node:fs';
-import { OR, cableLines, makeCableway, stepCableway, bucketAt, pointAt, lineYAt, brakeStep, liftStep } from '../src/ore-road.js';
+import { OR, cableLines, makeCableway, stepCableway, bucketAt, pointAt, lineYAt, brakeStep, liftStep, mineBlocked, WORKS, workSees, MINE_PLACES } from '../src/ore-road.js';
 import { WINCH, updateWinchmaster, winchJam, winchTake, winchOpen, winchFrame } from '../src/winchmaster.js';
 
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
@@ -160,6 +160,55 @@ for (const l of C.lines) {
   ok(V.length >= 12 && !badV.length, `${V.length} seams to mine, each in the back wall over a floor its spill lands on, standing in nobody's way (the cell in front is clear and holds nothing)` + (badV.length ? ' - not ' + badV.map(v => v.x + ',' + v.y).join(' ') : ''));
   ok(OR.VEIN_HITS === 3 && V.every(v => v.coins === OR.VEIN_COINS) && /total \+= \(L\.veins \|\| \[\]\)\.reduce/.test(readFileSync(new URL('../src/main.js', import.meta.url), 'utf8')), `three blows a seam, ${OR.VEIN_COINS} coins each, and main.js counts them into the level's total the way it counts a crate's`); }
 
+/* ---- MORE ORE (docs/briefs/ore-road-mine-life.md, section 1): ore in every rock face the route shows, heaps, spills and carts
+   full of it on the floors - VARIED, not one stamp repeated, and NEVER OVER A HAZARD OR A TELL. Each floor prop is asked the
+   brief's whole list (mineBlocked: footing, open air, no rope, no spike, no rockfall column, no tippler's stream, no checkpoint,
+   sign, lamp, silver or start, no pit, no ambush room, no vein, and nothing in the Winchmaster's room) */
+{ const S = L.seams || [], M = L.mine || [];
+  const badS = S.filter(([x, y]) => at(x, y) !== T.SOLID || x * TS >= L.arena.x0 || [-1, 0, 1].some(dx => [-1, 0, 1].some(dy => at(x + dx, y + dy) === T.SPIKE)));
+  ok(S.length >= 150 && !badS.length, `${S.length} seams of ore in the rock faces, every one IN rock, none beside a spike and none in the Winchmaster's room` + (badS.length ? ' - not ' + JSON.stringify(badS.slice(0, 4)) : ''));
+  const combos = new Map(); for (const q of S) combos.set(q[2] + '/' + q[3], (combos.get(q[2] + '/' + q[3]) || 0) + 1);
+  const worst = Math.max(...combos.values()) / Math.max(1, S.length);
+  ok(new Set(S.map(q => q[2])).size === 4 && new Set(S.map(q => q[3])).size === 4 && worst < 0.2, `varied, not one stamp: four ores and four seam shapes in ${combos.size} pairings, the commonest ${Math.round(worst * 100)}% of them`);
+  ok(S.some(q => q[4]) && S.filter(q => q[4]).length < S.length / 2, `${S.filter(q => q[4]).length} of them glint`);
+  const why = M.map(it => [it, mineBlocked(L, T, it)]).filter(([, r]) => r);
+  ok(M.filter(q => !q.set).length >= 15 && !why.length, `${M.filter(q => !q.set).length} heaps, spills and carts of ore on the floors, every one on footing and clear of every hazard and every tell` + (why.length ? ' - NOT ' + why.map(([it, r]) => it.k + '@' + it.x + ',' + it.y + ': ' + r).join('; ') : ''));
+  ok(new Set(M.filter(q => q.k === 'heap').map(q => q.size)).size === 3 && M.some(q => q.k === 'cart' && q.load > 0) && new Set(M.filter(q => !q.set).map(q => q.ore)).size === 4, 'heaps of all three sizes, a cart full of ore, and all four ores on the floors'); }
+
+/* ---- THE WORK LOOPS (section 2), as geometry: every row of WORKS found its goblin (a row that silently matched nobody is a loop
+   that does not exist), none of them is the level's own three, the elite or in his room, every miner at work has a seam on his
+   own floor to work, every rail and every sack run is floor all the way, and every lift cage has open air to run in. The loops
+   themselves - and the rule that a working goblin never hurts you before its alert - are proved in the page (tools/ore-work.mjs) */
+{ const W = L.ents.filter(e => e.work), fl = t => t === T.SOLID || t === T.PLANK || t === T.ONEWAY || t === T.NET;
+  ok(W.length === WORKS.length && new Set(W.map(e => e.work.key)).size === W.length, `${W.length} goblins at work, one for every row of WORKS (${WORKS.length})`);
+  ok(!W.some(e => ['tippler', 'sheargob', 'gaffer'].includes(e.t) || e.elite || e.x * TS >= L.arena.x0), "none of them the level's own three, the elite, or in the Winchmaster's room");
+  const idle = W.filter(e => e.work.k === 'pick' && !(L.veins || []).some(v => v.y === e.y && Math.abs(v.x - e.x) <= 6));
+  ok(!idle.length, 'every miner at work has a seam on his own floor within six columns' + (idle.length ? ' - not ' + idle.map(e => e.x).join(',') : ''));
+  const span = w => w.k === 'cart' ? [Math.floor(Math.min(w.load, w.tip) - 1.3), Math.ceil(Math.max(w.load, w.tip) + 1.3) - 1] : w.k === 'sack' ? [Math.min(w.from, w.to), Math.max(w.from, w.to)] : w.k === 'sort' ? [w.at - 2, w.at + 2] : w.k === 'winch' ? [Math.min(w.at, w.shaft), Math.max(w.at, w.shaft) + 1] : null;
+  const gaps = W.filter(e => span(e.work)).filter(e => { const [a, b] = span(e.work); for (let x = a; x <= b; x++) if (!fl(at(x, e.y + 1)) || at(x, e.y) === T.SOLID) return true; return false; });
+  ok(!gaps.length, 'every rail, sack run, table and winch stands on floor from end to end' + (gaps.length ? ' - not ' + gaps.map(e => e.work.key).join(', ') : ''));
+  const shafts = W.filter(e => e.work.k === 'winch').filter(e => { for (let y = e.work.top + 1; y <= e.y; y++) if (at(e.work.shaft, y) === T.SOLID || at(e.work.shaft, y) === T.NET) return true; return false; });
+  ok(W.some(e => e.work.k === 'winch') && !shafts.length, 'every lift cage runs in open air from its floor to its top' + (shafts.length ? ' - not ' + shafts.map(e => e.work.key).join(', ') : ''));
+  /* and the rule of the eye: ahead he sees you at the distance every goblin notices you; behind, only close */
+  const g0 = { x: 1000, y: 500, face: 1 };
+  ok(workSees(g0, { x: 1000 + OR.WORK_SEE - 2, y: 500 }) && !workSees(g0, { x: 1000 - OR.WORK_SEE + 2, y: 500 }) && workSees(g0, { x: 1000 - OR.WORK_HEAR + 2, y: 500 }) && !workSees(g0, { x: 1010, y: 500 - OR.WORK_SEE_Y - 2 }) && !workSees(g0, { x: 1010, y: 500, dead: true }) && OR.WORK_HEAR < OR.WORK_SEE,
+    `a goblin at work sees you ${OR.WORK_SEE} px ahead and hears you ${OR.WORK_HEAR} px behind, within ${OR.WORK_SEE_Y} px up or down`); }
+
+/* ---- MINE THEMING (section 3): the furniture keeps the ore's rule (a chute by its foot, and its top on a deck), there is
+   shoring, lanterns and an office, and EVERY PLACE HAS ITS OWN LANDMARKS - no place is dressed as another one */
+{ const M = L.mine || [], S = M.filter(q => q.set), W = L.ents.filter(e => e.work), fl = t => t === T.SOLID || t === T.PLANK || t === T.ONEWAY;
+  const bad = S.map(it => [it, it.k === 'chute' ? (mineBlocked(L, T, { ...it, x0: it.x, x1: it.x }) || (fl(at(it.top[0], it.top[1] + 1)) ? null : 'its top is not on a deck')) : mineBlocked(L, T, it)]).filter(([, r]) => r);
+  ok(S.length >= 12 && !bad.length, `${S.length} pieces of the mine's furniture, every one on footing and clear of every hazard and every tell` + (bad.length ? ' - NOT ' + bad.map(([it, r]) => it.k + '@' + it.x + ': ' + r).join('; ') : ''));
+  const kinds = new Set(S.map(q => q.k));
+  ok(['shore', 'rack', 'tally', 'office', 'chute', 'spoil', 'wreckcart'].every(k => kinds.has(k)) && S.filter(q => q.lit).length >= 3 && W.some(e => e.work.k === 'winch') && W.some(e => e.work.k === 'sort') && W.some(e => e.work.k === 'cart'),
+    'timber shoring, tool racks, a tally board, the mine office, an ore chute, a spoil heap, an overturned cart, hanging lanterns - and the lift cages, sorting tables and rails of the goblins at work');
+  const wx = e => e.work.k === 'cart' ? (e.work.load + e.work.tip) / 2 : e.work.k === 'sack' ? (e.work.from + e.work.to) / 2 : e.work.at ?? e.x;   /* where the work IS, not where the goblin was put down */
+  const has = (x0, x1, k) => k.startsWith('work:') ? W.some(e => e.work.k === k.slice(5) && wx(e) >= x0 && wx(e) <= x1) : S.some(q => q.k === k && q.x >= x0 && q.x <= x1);
+  for (const [name, x0, x1, marks] of MINE_PLACES) { const miss = marks.filter(k => !has(x0, x1, k)); ok(!miss.length, `${name} (${x0}-${x1}): ${marks.join(', ')}` + (miss.length ? ' - MISSING ' + miss.join(', ') : '')); }
+  const sig = MINE_PLACES.map(p => p[3].slice().sort().join('+'));
+  ok(new Set(sig).size === sig.length && MINE_PLACES.length >= 7, `${MINE_PLACES.length} places along the route, and no two of them are dressed alike (F2, F6)`);
+  ok(MINE_PLACES.every((p, i) => i === 0 || p[1] > MINE_PLACES[i - 1][2]) && MINE_PLACES[MINE_PLACES.length - 1][2] < L.arena.x0 / TS, "in route order, none overlapping, and all of them short of the Winchmaster's room"); }
+
 /* ---- THE PIT (Daniel's playtest, item 5): nowhere on the road can a fall reach the bottom of the level any more. Every column
    from the yard to the drum house, dropped down from the top, meets something - a floor, a ledge, or a span's spike bed - and
    every spike bed has its turbines, a recovery ledge on the wall at the START of its span, a clear path for the lift from any
@@ -171,7 +220,7 @@ for (const l of C.lines) {
   ok(!hole, 'no fall anywhere from the yard to the drum house reaches the bottom of the level' + (hole !== null ? ' - column ' + hole + ' falls through' : ''));
   for (const q of L.pits) { const why = [];
     for (let x = q.x0; x <= q.x1; x++) if (q.bed ? (at(x, q.floor) !== T.SPIKE || at(x, q.floor + 1) !== T.SOLID) : [...Array(L.H - q.floor).keys()].some(k => at(x, q.floor + k) !== T.AIR)) { why.push((q.bed ? 'no spike bed at ' : 'tiles in the pit floor at ') + x); break; }
-    if (!(q.turbines.length >= 6 && q.turbines.every(t => t > q.x0 && t < q.x1) && q.turbines.every((t, i) => !i || t - q.turbines[i - 1] <= OR.TURBINE_EVERY))) why.push('turbines');
+    if (!(q.turbines.length >= 5 && q.turbines.every(t => t > q.x0 && t < q.x1) && q.turbines.every((t, i) => !i || t - q.turbines[i - 1] <= OR.TURBINE_EVERY))) why.push('turbines');
     const [l0, l1, lr] = q.ledge; if (!(at(l0, lr + 1) === T.SOLID && at(l1, lr + 1) === T.SOLID && at(l0 + 1, lr) !== T.SOLID)) why.push('ledge');
     const [lx, ly0, ly1] = q.ladder; for (let y = ly0; y <= ly1; y++) if (at(lx, y) !== T.NET) { why.push('ladder broken at ' + y); break; }
     if (ly1 !== lr || !(lx >= l0 && lx <= l1)) why.push('the ladder does not stand on the ledge');
@@ -236,20 +285,20 @@ const AR = OR.ARENA;
     for (let y = ly0; y <= ly1; y++) if (at(lx, y) !== T.NET) { why.push('broken at row ' + y); break; }
     if (!(lx === h.x0 - 1 || lx === h.x1 + 1)) why.push('not beside the housing');
     if (ly0 !== h.top + 1 || at(lx + (lx < h.x0 ? 1 : -1), h.top + 1) !== T.SOLID) why.push('its top is not level with the housing');
-    if (ly1 !== AR.spoil || at(lx, ly1 + 1) !== T.SOLID) why.push('its foot is not on the spoil');
-    if (lx >= h.ledge[0] && lx <= h.ledge[1]) why.push('it stands on the mouth\'s ledge (the gauntlet the lab could not climb)');
-    ok(at(h.x0, h.top + 1) === T.SOLID && at(h.x1, h.top + 1) === T.SOLID && !why.length, `${h.name}: a ladder straight up onto it from the spoil (column ${lx}, rows ${ly0}-${ly1}), beside the drum's mouth and not through it` + (why.length ? ' - ' + why.join('; ') : ''));
+    if (at(lx, ly1 + 1) !== T.SOLID) why.push('its foot stands on nothing');
+    ok(at(h.x0, h.top + 1) === T.SOLID && at(h.x1, h.top + 1) === T.SOLID && !why.length, `${h.name}: a ladder up onto it (column ${lx}, rows ${ly0}-${ly1}), its foot on ${lx >= h.ledge[0] && lx <= h.ledge[1] ? 'its ledge' : 'the pit\'s recovery ledge'}` + (why.length ? ' - ' + why.join('; ') : ''));
+    ok(h.x1 - h.x0 + 1 >= 6, `and it is a platform to fight on: ${h.x1 - h.x0 + 1} tiles wide (round three: "a bit bigger" - the Head Frame was 5, the Tail Wheel 4)`);
     ok(h.ledgeTop - h.top === 4 && at(h.ledge[0], h.ledgeTop + 1) === T.SOLID && at(h.ledge[1], h.ledgeTop + 1) === T.SOLID, `and its ledge (${h.ledge[0]}-${h.ledge[1]}, row ${h.ledgeTop}) is four rows under it: where a jam throws him`);
     const l = lines.find(q => q.id === h.line), end = h.at === 'end' ? l.pts[l.pts.length - 1] : l.pts[0];
     ok(Math.floor(end[0] / TS) >= h.ledge[0] && Math.floor(end[0] / TS) <= h.ledge[1] && Math.abs(end[1] - (h.ledgeTop + 1) * TS) < 1, `and the ${l.id} line's ${h.at} is ON that ledge, at its height: the drum's mouth is where the ride ends`); } }
-/* THE WAY ROUND: out of the spoil by rope to the deck (the low line) and to both high ledges (the high line) - and the spoil is
-   under the whole room, so every fall off either line costs a climb and never a life (B3) */
-{ const [r1, r2, r3] = AR.ropes;
-  ok(AR.ropes.every(([x, y0, y1]) => at(x, y0) === T.NET && at(x, y1) === T.NET && at(x, y1 + 1) === T.SOLID), 'three ropes, each standing on the spoil');
-  ok(r1[1] === AR.deck + 1 && at(r1[0] - 1, r1[1]) === T.SOLID && at(r1[0] - 1, r1[1] - 1) === T.AIR, 'one to the entrance deck, where the low line starts, its top level with the deck');
-  ok([AR.housings[1], AR.housings[2]].every(h => [r2, r3].some(([x, y0]) => y0 === h.ledgeTop + 1 && (x === h.ledge[0] - 1 || x === h.ledge[1] + 1))), 'and one up beside each high ledge, where the high line is boarded, its top level with the ledge');
-  let hole = null; for (let x = 481; x < AR.house[0]; x++) if (at(x, AR.spoil + 1) !== T.SOLID) hole = x;
-  ok(hole === null, 'the spoil heap runs under the whole room: a fall is a climb, not a death'); }
+/* THE WAY ROUND (round three): the room's floor is the PIT, like every span's - so every housing is reached by a ladder or a ride,
+   never by walking the floor. From the entrance deck: the Head Frame's ladder (the deck runs to its foot), the low line to the Great
+   Drum's ledge, and from the Head Frame's ledge the high line to the Tail Wheel's. No ledge is a dead end: the low line runs back
+   to the deck whenever he is not on or bound for the Great Drum (checked in THE WINCHMASTER below) */
+{ const B = AR.housings[1], pit = L.pits.find(q => q.id === 'drum');
+  ok(pit && pit.x0 <= AR.x0 + 6 && pit.x1 >= AR.house[0] - 1 && [...Array(pit.x1 - pit.x0 + 1).keys()].every(k => at(pit.x0 + k, pit.floor) === T.AIR), 'the drum house\'s floor is the pit, like every span\'s: spikes, turbines, a recovery ledge and a ladder home');
+  ok(footing(at(B.ladder[0] - 1, AR.deck + 1)) && at(B.ladder[0] - 1, AR.deck) === T.AIR && B.ladder[1] <= AR.deck && B.ladder[2] >= AR.deck, 'the entrance deck runs to the Head Frame\'s ladder, and the ladder passes it: step off the deck onto it');
+  ok(AR.ropes.length === 0 && [...Array(AR.house[0] - 482).keys()].every(k => at(482 + k, AR.spoil + 1) !== T.SOLID), 'and there is no spoil floor left to walk on (and no ropes up out of it)'); }
 
 console.log('\nTHE WINCHMASTER');
 /* THE STUB WORLD: the room's two drum lines as the level builds them, its three housings in pixels exactly as main.js's
@@ -380,14 +429,29 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
   const gaps = t0.slice(1).map((t, i) => (t - t0[i]) / 60);
   ok(n >= 3 && gaps.every(g => Math.abs(g - WINCH.rockEvery) < 0.2), `phase one: ${n} rocks in 30 s, one every ${WINCH.rockEvery} s (${gaps.map(g => g.toFixed(1)).join(', ')})`);
   const w2 = world({ noRoof: true }); w2.run(20); ok(!w2.log.some(q => q[0] === 'rock'), 'with nowhere on the screen for one to land, the roof waits'); }
-/* ---- A10: PHASE TWO CHANGES SOMETHING YOU CAN NAME: "at half health he drives the drums harder - every line runs a quarter faster,
-   he lets two buckets go at a time, and the drums shake rock off the roof twice as often" */
+/* ---- A10: PHASE TWO CHANGES SOMETHING YOU CAN NAME (round three): "at half health he will not stay on one housing - he crouches and
+   leaps to another, told by a red ring where he will land - while every line runs a quarter faster, he lets two buckets go at a
+   time, and the drums shake rock off the roof twice as often". The leap is proved in ROUND THREE below; the drums here */
 { const w = world(); w.run(0.3); w.e.revCd = w.e.sendCd = w.e.hookCd = w.e.leverCd = 999; w.e.qMark = -1e9; w.e.hp = w.e.maxHp * 0.45; w.run(0.1);
-  ok(w.e.phase === 2 && w.log.some(q => q[0] === 'say' && /DRIVES THE DRUMS HARDER/.test(q[1])), 'PHASE TWO, said over him: HE DRIVES THE DRUMS HARDER');
+  ok(w.e.phase === 2 && w.log.some(q => q[0] === 'say' && /HE LEAPS DRUM TO DRUM/.test(q[1])), 'PHASE TWO, said over him: ENRAGED, HE LEAPS DRUM TO DRUM');
   const t0 = []; let n = 0; for (let t = 0; t < 20 * 60; t++) { w.step(); const m = w.log.filter(q => q[0] === 'rock').length; if (m > n) { n = m; t0.push(t); } }
   const gaps = t0.slice(1).map((t, i) => (t - t0[i]) / 60);
   ok(gaps.length >= 3 && gaps.every(g => Math.abs(g - WINCH.rockEveryP2) < 0.2) && WINCH.rockEveryP2 * 2 === WINCH.rockEvery, `the roof comes down twice as often (every ${WINCH.rockEveryP2} s: ${gaps.map(g => g.toFixed(1)).join(', ')})`);
   ok(w.log.some(q => q[0] === 'drive' && q[2] === 1 && Math.abs(q[3] - WINCH.p2Mul) < 1e-9), `and every line he drives runs ${WINCH.p2Mul}x as fast (the two buckets a SEND are checked above)`); }
+/* ---- ROUND THREE, A10: ENRAGED HE LEAPS - told (the crouch, HE CROUCHES TO LEAP, a ring on the housing he will land on), to the
+   housing you are up on, and the landing hurts you there; in phase one he never leaps */
+{ const w = world(); w.run(0.3); w.e.revCd = w.e.sendCd = w.e.hookCd = w.e.leverCd = 999; w.run(30); done(w); ok(!w.modes.has('leapTell') && w.e.at === 0, 'phase one: thirty seconds on the Great Drum and not one leap');
+  const w2 = world(); w2.run(0.3); w2.e.revCd = w2.e.sendCd = w2.e.hookCd = w2.e.leverCd = 999; w2.e.qMark = -1e9; w2.e.hp = w2.e.maxHp * 0.45; w2.upOn = 2; w2.c.P.x = w2.H[2].homeX + 4; w2.c.P.y = w2.H[2].topY;
+  let t0 = null, tl = null, ring = false; for (let t = 0; t < (WINCH.leapEvery + 3) * 60; t++) { w2.step(); if (w2.e.mode === 'leapTell' && t0 === null) t0 = t; if (w2.e.mode === 'leapTell' && w2.e.leapTo === 2) ring = true; if (w2.e.mode === 'leap' && tl === null) tl = t; if (tl !== null && w2.e.mode !== 'leap') break; }
+  done(w2);
+  ok(t0 !== null && tl !== null && (tl - t0) / 60 >= WINCH.tell.leap - 0.02 && ring, `phase two: he crouches ${((tl - t0) / 60).toFixed(2)} s with the ring on the Tail Wheel (where you are), then leaps`);
+  ok(w2.e.at === 2 && w2.log.some(q => q[0] === 'hit' && q[1] === 'HIS LANDING' && q[3] === true), 'and lands on the Tail Wheel, and the landing hurts you there (no shield turns it)');
+  const w3 = world(); w3.run(0.3); w3.e.qMark = -1e9; w3.e.hp = w3.e.maxHp * 0.45; w3.e.leapCd = 0; w3.e.cd = 0; w3.c.P.x = 9999; w3.run(0.1); ok(w3.e.mode === 'leapTell' && w3.e.leapTo === 1, 'with you on no housing, he leaps on to the next one'); }
+/* ---- NO LEDGE IS A DEAD END: the low line runs into the Great Drum only while he is on it, and back to the deck otherwise */
+{ const w = world(); w.run(0.3); ok(w.H[0].ln.dir === 1, 'on the Great Drum the low line runs into it');
+  w.e.hp = w.e.qMark - w.e.maxHp * (WINCH.retreat + 0.01); w.run(WINCH.tell.letgo + WINCH.swingT + 0.3); ok(w.e.at === 1 && w.H[0].ln.dir === -1, "on the Head Frame it runs back to the deck: a hero on the Great Drum's ledge rides home");
+  w.e.hp = w.e.qMark - w.e.maxHp * (WINCH.retreat + 0.01); w.run(WINCH.tell.letgo + WINCH.swingT + 0.3); ok(w.e.at === 2 && w.H[0].ln.dir === -1, "and on the Tail Wheel, bound for the Great Drum next, it STILL runs back: the Great Drum's ledge is never a wait with no way off but the spikes");
+  w.e.hp = w.e.qMark - w.e.maxHp * (WINCH.retreat + 0.01); w.run(WINCH.tell.letgo + WINCH.swingT + 0.3); ok(w.e.at === 0 && w.H[0].ln.dir === 1, 'and back on the Great Drum it runs in again'); }
 /* ---- A12: THE ROOM SUPPLIES WHAT THE ATTACKS ASSUME, read off the room and not off this file's hopes */
 { const H = world().H;
   ok(H.every(q => Math.abs(q.mouthY - q.ledgeY) < 1), 'THE BRAKE BAR lands at the drum\'s mouth, and every mouth has its ledge at the line\'s own height: there is somewhere to be barred and somewhere to shield it');
@@ -403,12 +467,12 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
 { const wsrc = readFileSync(new URL('../src/winchmaster.js', import.meta.url), 'utf8'), msrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   const { BY_HAND, MARK } = await import('../src/marks.js');
   const tells = [...new Set([...wsrc.matchAll(/begin\(e, '([a-z]+)'|can\.push\('([a-z]+)'\)/g)].map(m => (m[1] || m[2]) + 'Tell'))].sort();
-  ok(tells.join() === 'hookTell,leverTell,reverseTell,sendTell', 'A1: FOUR TOLD ATTACKS, each a named Tell with its own say: ' + tells.join(', '));
+  ok(tells.join() === 'hookTell,leapTell,leverTell,reverseTell,sendTell', 'A1: FIVE TOLD ATTACKS (the leap is phase two\'s), each a named Tell with its own say: ' + tells.join(', '));
   ok(tells.every(t => ('winchmaster|' + t) in BY_HAND) && !Object.keys(BY_HAND).some(k => k.startsWith('winchmaster|') && !tells.includes(k.split('|')[1])), 'and every one has a mark row (and there is no row for an attack he no longer has)');
-  ok(BY_HAND['winchmaster|leverTell'] === '!' && ['sendTell', 'hookTell'].every(t => BY_HAND['winchmaster|' + t] === '!!') && BY_HAND['winchmaster|reverseTell'] === '', 'exactly one blow a shield turns (the brake bar, yellow), two it does not (red), and a quiet reverse');
+  ok(BY_HAND['winchmaster|leverTell'] === '!' && ['sendTell', 'hookTell', 'leapTell'].every(t => BY_HAND['winchmaster|' + t] === '!!') && BY_HAND['winchmaster|reverseTell'] === '', 'exactly one blow a shield turns (the brake bar, yellow), two it does not (red), and a quiet reverse');
   ok(!MARK || !('winchmaster|cutTell' in MARK), 'the mark table the screen reads no longer shows a cut he does not make');
   ok(/e\.t === 'winchmaster' && typeof e\.mode === 'string' && e\.mode\.endsWith\('Tell'\)/.test(msrc), 'A2: every Tell of his is in windingUp(), so every windup is heard off screen');
-  const frames = ['stalk', 'leverTell', 'lever', 'reverseTell', 'reverse', 'sendTell', 'send', 'hookTell', 'hook', 'thrown', 'downed', 'letgo', 'swing', 'sleep', 'wake'];
+  const frames = ['leapTell', 'leap', 'stalk', 'leverTell', 'lever', 'reverseTell', 'reverse', 'sendTell', 'send', 'hookTell', 'hook', 'thrown', 'downed', 'letgo', 'swing', 'sleep', 'wake'];
   ok(frames.every(m => winchFrame({ mode: m }) >= 0 && winchFrame({ mode: m }) <= 12), 'the frame table answers every mode from his 13-frame sheet (0-12)');
   const need = ['hookTell', 'hook', 'leverTell', 'lever', 'sendTell', 'send', 'reverseTell', 'reverse', 'thrown', 'downed', 'letgo', 'swing'];
   const never = need.filter(m => !EVERY.has(m));

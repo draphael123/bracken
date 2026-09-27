@@ -27,6 +27,9 @@ export function updateDeckBreaks(L,P,dt,change,crash){
      on this floor and then gone off its left end, and the shorter fuse is the tower closing the way back. */
   if(z.behind){if(z.t<0){if(!z.seen&&P.x>=(z.x0-1)*16&&P.x<=(z.x1+1)*16&&P.y>=(z.row-4)*16&&P.y<=(z.row+1)*16)z.seen=true;
    if(z.seen&&P.x<(z.x0-3)*16&&P.y<=(z.row+2)*16)z.t=1.1;}}
+  /* ON TOP (THE BURNING VILLAGE's beams): the fuse starts when you STAND on it, not when you come near it - a beam nine tiles
+     long over a cellar has to be run, and a fuse lit from the roof before it would drop a hero who had not yet stepped on */
+  else if(z.onTop){if(z.t<0&&P.ground&&P.x>=z.x0*16&&P.x<(z.x1+1)*16&&Math.abs(P.y-z.row*16)<3)z.t=z.fuse||1.5;}
   else if(z.t<0&&P.x>=(z.x0-2)*16&&P.x<=(z.x1+2)*16&&P.y>=(z.row-3)*16&&P.y<=(z.row+1)*16)z.t=1.5;
   if(z.t>=0){z.t-=dt;if(z.t<=0){z.down=true;for(let x=z.x0;x<=z.x1;x++)for(let y=z.row-1;y<=z.row;y++)change(x,y);crash(z);}}
  }

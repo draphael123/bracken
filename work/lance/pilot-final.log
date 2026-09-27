@@ -1,0 +1,24 @@
+{"pass":0,"mode":"refill","h":"knight","out":"timeout","secs":150,"taken":444,"tpm":178,"left":11,"archers":6,"archersCut":4,"hitBy":{"charge":96,"pace":70,"planted":19,"vault":17,"rush":38,"reel":37}}
+{"pass":0,"mode":"refill","h":"warden","out":"win","secs":111.8,"taken":385,"tpm":207,"left":0,"archers":5,"archersCut":3,"hitBy":{"charge":96,"thrustTell":24,"bashTell":22,"planted":21,"rush":57}}
+{"pass":0,"mode":"refill","h":"pyro","out":"win","secs":104.2,"taken":298,"tpm":172,"left":0,"archers":5,"archersCut":4,"hitBy":{"charge":64,"thrust":19,"planted":16,"whirlTell":13,"rush":38,"reel":14}}
+{"pass":0,"mode":"refill","h":"paladin","out":"win","secs":143.3,"taken":291,"tpm":122,"left":0,"archers":8,"archersCut":6,"hitBy":{"sweepTell":19,"planted":21,"pace":19,"bashTell":11,"whirlTell":13}}
+{"pass":0,"mode":"refill","h":"pirate","out":"win","secs":125.1,"taken":371,"tpm":178,"left":0,"archers":4,"archersCut":2,"hitBy":{"planted":21,"charge":96,"vault":17,"rush":19,"guard":35,"rushTell":16,"recover":14}}
+{"pass":0,"mode":"refill","h":"reaper","out":"win","secs":96.5,"taken":252,"tpm":157,"left":0,"archers":2,"archersCut":0,"hitBy":{"thrustTell":32,"guardTell":16,"rush":7}}
+{"pass":0,"mode":"refill","h":"geomancer","out":"win","secs":70.1,"taken":141,"tpm":121,"left":0,"archers":4,"archersCut":3,"hitBy":{"thrustTell":24,"pace":19,"bashTell":22,"whirlTell":13,"rush":19}}
+{"pass":1,"mode":"refill","h":"knight","out":"timeout","secs":150,"taken":444,"tpm":178,"left":11,"archers":6,"archersCut":4,"hitBy":{"charge":96,"pace":70,"planted":19,"vault":17,"rush":38,"reel":37}}
+{"pass":1,"mode":"refill","h":"warden","out":"win","secs":111.8,"taken":385,"tpm":207,"left":0,"archers":5,"archersCut":3,"hitBy":{"charge":96,"thrustTell":24,"bashTell":22,"planted":21,"rush":57}}
+{"pass":1,"mode":"refill","h":"pyro","out":"win","secs":104.2,"taken":298,"tpm":172,"left":0,"archers":5,"archersCut":4,"hitBy":{"charge":64,"thrust":19,"planted":16,"whirlTell":13,"rush":38,"reel":14}}
+{"pass":1,"mode":"refill","h":"paladin","out":"win","secs":143.3,"taken":291,"tpm":122,"left":0,"archers":8,"archersCut":6,"hitBy":{"sweepTell":19,"planted":21,"pace":19,"bashTell":11,"whirlTell":13}}
+{"pass":1,"mode":"refill","h":"pirate","out":"win","secs":125.1,"taken":371,"tpm":178,"left":0,"archers":4,"archersCut":2,"hitBy":{"planted":21,"charge":96,"vault":17,"rush":19,"guard":35,"rushTell":16,"recover":14}}
+{"pass":1,"mode":"refill","h":"reaper","out":"win","secs":121,"taken":312,"tpm":155,"left":0,"archers":3,"archersCut":3,"hitBy":{"thrustTell":8,"rush":64,"bash":12,"guard":28,"guardTell":16}}
+{"pass":1,"mode":"refill","h":"geomancer","out":"win","secs":70.1,"taken":141,"tpm":121,"left":0,"archers":4,"archersCut":3,"hitBy":{"thrustTell":24,"pace":19,"bashTell":22,"whirlTell":13,"rush":19}}
+{"pass":"normal","mode":"normal","h":"knight","out":"death","secs":26.4,"taken":100,"tpm":227,"left":85,"archers":1,"archersCut":1,"hitBy":{"charge":32,"pace":32}}
+{"pass":"normal","mode":"normal","h":"warden","out":"death","secs":28.8,"taken":103,"tpm":156,"left":74,"archers":1,"archersCut":1,"hitBy":{"charge":32}}
+{"pass":"normal","mode":"normal","h":"pyro","out":"death","secs":28.6,"taken":91,"tpm":191,"left":77,"archers":1,"archersCut":1,"hitBy":{"planted":21,"charge":32}}
+{"pass":"normal","mode":"normal","h":"paladin","out":"death","secs":83.8,"taken":183,"tpm":131,"left":29,"archers":4,"archersCut":3,"hitBy":{"pace":16,"rush":19,"guard":37}}
+{"pass":"normal","mode":"normal","h":"pirate","out":"death","secs":19.1,"taken":90,"tpm":283,"left":91,"archers":1,"archersCut":0,"hitBy":{"vault":17,"charge":32}}
+{"pass":"normal","mode":"normal","h":"reaper","out":"death","secs":16.4,"taken":95,"tpm":252,"left":80,"archers":1,"archersCut":0,"hitBy":{}}
+{"pass":"normal","mode":"normal","h":"geomancer","out":"death","secs":13,"taken":95,"tpm":439,"left":93,"archers":0,"archersCut":0,"hitBy":{"sweepTell":19}}
+{"mode":"refill","fights":14,"wins":12,"medianWin":111.8,"medianTaken":312,"byHero":{"knight":"timeout 150s 444 | timeout 150s 444","warden":"win 111.8s 385 | win 111.8s 385","pyro":"win 104.2s 298 | win 104.2s 298","paladin":"win 143.3s 291 | win 143.3s 291","pirate":"win 125.1s 371 | win 125.1s 371","reaper":"win 96.5s 252 | win 121s 312","geomancer":"win 70.1s 141 | win 70.1s 141"}}
+{"mode":"normal","fights":7,"wins":0,"medianWin":null,"medianTaken":95,"byHero":{"knight":"death 26.4s 100","warden":"death 28.8s 103","pyro":"death 28.6s 91","paladin":"death 83.8s 183","pirate":"death 19.1s 90","reaper":"death 16.4s 95","geomancer":"death 13s 95"}}
+errors []

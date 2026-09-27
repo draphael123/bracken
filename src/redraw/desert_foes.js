@@ -11,9 +11,14 @@
 //                             | 4 DIVE (wings tucked, pitched down) | 5 perched, hunched
 // bakeSandGoblin() SAND GOBLIN 0 buried (eyes in a mound) | 1 rising (sand pouring off) | 2,3 walk | 4 KNIFE TELL (!, blade up)
 //                             | 5 KNIFE (cut) | 6 burrowing (head first, into it)
-// bakeDuneWorm()   THE DUNE WORM (boss) 0 surfaced | 1 SPRAY TELL (!, reared back, throat lit) | 2 SPRAY (mouth wide, thrust)
-//                             | 3 BREACH (bursting up, sand flying) | 4 STUCK (jammed in timbers, dazed: THE OPENING) | 5 diving
+// bakeDuneWorm()   THE DUNE WORM (boss, docs/briefs/dune-worm.md) DW_F names them: 0 surfaced | 1 SPIT TELL (!, reared back, throat
+//                             lit) | 2 SPIT (mouth wide, thrust) | 3 BREACH (bursting up, sand flying) | 4 TANGLED (THE OPENING: the
+//                             awning's striped canvas wrapped round his head, blind, lolling) | 5 diving (going back in) | 6 LUNGE TELL
+//                             (!!, coiled low, head drawn back over the sand) | 7 SWALLOW (the maw up out of the sinkhole, jaws wide)
+//                             | 8 surfacing (the crown just breaking the sand) | 9 dead (slumped out along the sand) | 10 hurt
 //                             bakeDuneWormLunge(): 0 rising arc | 1 over the top | 2 going in (the LUNGE's body, drawn long)
+//                             bakeDuneWormRipple(): 0,1 the ripple running (a travelling hump, two phases) | 2 COMMITTED (the dome
+//                             rising, cracking: the breach is 0.45 s off) | 3 the sinkhole (the SWALLOW's ring of turning sand)
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten, shade as tint } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -138,21 +143,59 @@ function wormHead(g, x, y, open, glow, dazed = false) {
 const sandBurst = (g, cx, gy, n, spread, h, seed) => { let s = seed; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
   for (let i = 0; i < n; i++) { const a = Math.PI * (0.1 + r() * 0.8), d = r() * spread; px(g, Math.round(cx + Math.cos(a) * d * 1.6 - spread * 0.1), Math.round(gy - Math.sin(a) * d * h / spread), r() < 0.5 ? DW.sandL : DW.sand); } };
 const duneFoot = (g, cx, gy, w, h) => { fillPoly(g, [[cx - w, gy], [cx - w * 0.5, gy - h], [cx + w * 0.5, gy - h], [cx + w, gy]], DW.sand); rect(g, Math.round(cx - w * 0.5), gy - h, Math.round(w), 1, DW.sandL); for (let x = -w + 2; x < w; x += 5) px(g, Math.round(cx + x), gy - 1, DW.sandD); };
+/* the awning's canvas, stripes and all (the same cloth and red as src/redraw/desert.js's awnings), wrapped round the head in folds */
+const CANVAS = ['#e3d2a8', '#b8463a'], CANVAS_D = ['#b9a57e', '#8a3028'];
+function wrapCloth(g, x, y) {
+  for (let k = 0; k < 5; k++) { const yy = y - 12 + k * 5, w = 17 - Math.abs(k - 2) * 2, c = k & 1;   // five folds, fattest over the eyes
+    ellipse(g, x + 1 + (k % 2), yy, w, 3.2, CANVAS_D[c]); ellipse(g, x + (k % 2), yy - 1, w - 1, 2.6, CANVAS[c]); }
+  line(g, x + 14, y - 4, x + 26, y + 10, CANVAS_D[0], 2); line(g, x + 26, y + 10, x + 22, y + 18, CANVAS_D[1], 2);   // a torn end hanging off the jaw
+  line(g, x - 15, y - 6, x - 24, y + 4, CANVAS_D[1], 2);                                                               // and one down his back
+  for (const [rx, ry] of [[x + 8, y - 16], [x - 10, y - 14], [x + 18, y - 2]]) { line(g, rx, ry, rx + 3, ry - 3, '#7a5232'); px(g, rx + 3, ry - 4, '#9c6d43'); }   // splinters of the roller
+}
+export const DW_F = { surfaced: 0, spitTell: 1, spit: 2, breach: 3, tangled: 4, dive: 5, lungeTell: 6, swallow: 7, surface: 8, dead: 9, hurt: 10 };
 export function bakeDuneWorm() {
   const W = 72, H = 84, gy = 82, cx = 30;
-  const F = frames(W, H, 6, (g, f) => {
+  const F = frames(W, H, 11, (g, f) => {
     if (f === 0) { const [hx, hy] = wormNeck(g, cx, gy - 4, 46, 0.2); wormHead(g, hx + 2, hy - 6, 0, false); duneFoot(g, cx, gy, 22, 6); }                                // surfaced
     if (f === 1) { const [hx, hy] = wormNeck(g, cx, gy - 4, 50, -0.6); wormHead(g, hx - 2, hy - 8, 0.7, true); duneFoot(g, cx, gy, 22, 6); }                            // SPRAY TELL: reared back, throat lit
     if (f === 2) { const [hx, hy] = wormNeck(g, cx, gy - 4, 44, 0.9); wormHead(g, hx + 6, hy - 4, 1, true); duneFoot(g, cx, gy, 22, 6);                                 // SPRAY: thrust, wide
       sandBurst(g, hx + 26, hy - 4, 22, 14, 10, 7); }
     if (f === 3) { const [hx, hy] = wormNeck(g, cx, gy - 4, 58, 0.05); wormHead(g, hx, hy - 8, 0.8, false); duneFoot(g, cx, gy, 26, 9); sandBurst(g, cx, gy - 8, 60, 30, 40, 3); }   // BREACH
-    if (f === 4) { // STUCK: jammed up through a wagon's timbers, head lolling, eyes dazed - THE OPENING
-      const [hx, hy] = wormNeck(g, cx, gy - 4, 40, 0.3); wormHead(g, hx + 3, hy - 4, 0.35, false, true); duneFoot(g, cx, gy, 26, 7);
-      for (const [x0, y0, x1, y1] of [[cx - 22, gy - 30, cx + 20, gy - 38], [cx - 18, gy - 20, cx + 22, gy - 14], [cx - 8, gy - 44, cx + 4, gy - 10]]) { line(g, x0, y0, x1, y1, DW.wood); line(g, x0, y0 + 1, x1, y1 + 1, DW.woodD); px(g, x0, y0 - 1, DW.woodL); }   // the timbers across it
-      for (let i = 0; i < 6; i++) { const sx = cx - 14 + i * 6, sy = gy - 50 + (i % 3) * 4; line(g, sx, sy, sx + 2, sy - 3, DW.woodL); } }                                   // splinters in the air
+    if (f === 4) { // TANGLED: up through the awning, the canvas over his head, lolling blind - THE OPENING (double damage)
+      const [hx, hy] = wormNeck(g, cx, gy - 4, 42, 0.45); wormHead(g, hx + 4, hy - 2, 0.2, false, true); wrapCloth(g, hx + 4, hy - 2); duneFoot(g, cx, gy, 26, 7); }
     if (f === 5) { const [hx, hy] = wormNeck(g, cx, gy - 4, 22, 0.8); wormHead(g, hx + 8, hy + 4, 0.1, false); duneFoot(g, cx, gy, 26, 8); sandBurst(g, cx + 10, gy - 6, 20, 16, 10, 11); }   // diving
+    if (f === 6) { // LUNGE TELL: coiled low and long, the head drawn back and down over the sand, the throat shut - all his weight behind it
+      const [hx, hy] = wormNeck(g, cx + 8, gy - 4, 26, -1.1, 17); wormHead(g, hx - 2, hy - 2, 0.25, false); duneFoot(g, cx + 4, gy, 28, 9);
+      for (let i = 0; i < 3; i++) line(g, cx + 14 + i * 5, gy - 6 - i * 3, cx + 20 + i * 5, gy - 8 - i * 3, DW.sandL); }   // sand streaming off the coil
+    if (f === 7) { // SWALLOW: the maw straight up out of the sinkhole, jaws wide, the throat dark
+      const [hx, hy] = wormNeck(g, cx, gy - 4, 30, 0, 16); ellipse(g, hx, hy - 6, 14, 9, DW.h); ellipse(g, hx, hy - 7, 11, 6, DW.mouth); ellipse(g, hx, hy - 7, 6, 3, '#2a0e12');
+      for (let t = -10; t <= 10; t += 3) { px(g, hx + t, hy - 13 + Math.abs(t) * 0.25, DW.tooth); px(g, hx + t, hy - 1 - Math.abs(t) * 0.25, DW.tooth); }   // a ring of teeth round the throat
+      duneFoot(g, cx, gy, 30, 6); sandBurst(g, cx, gy - 10, 26, 22, 14, 19); }
+    if (f === 8) { // SURFACING: the crown plates just breaking the sand, the sand heaving off them
+      const [hx, hy] = wormNeck(g, cx, gy - 4, 8, 0.1, 16); wormHead(g, hx + 2, hy - 2, 0, false); duneFoot(g, cx, gy, 26, 10); sandBurst(g, cx, gy - 8, 30, 24, 16, 23); }
+    if (f === 9) { // DEAD: slumped out along the sand, head down, the jaw slack
+      for (let i = 0; i < 9; i++) { const x = cx - 26 + i * 6, y = gy - 5 - Math.sin(i / 8 * Math.PI) * 5, r = 6 + i * 0.4; ellipse(g, x, y, 4, r * 0.6, DW.hd); ellipse(g, x - 0.5, y - 0.5, 3.4, r * 0.55, DW.h); px(g, Math.round(x - 2), Math.round(y - r * 0.5), DW.H); }
+      wormHead(g, cx + 30, gy - 8, 0.45, false, false); rect(g, cx + 28, gy - 12, 8, 1, DW.hD); duneFoot(g, cx - 26, gy, 10, 3); }
+    if (f === 10) { const [hx, hy] = wormNeck(g, cx, gy - 4, 44, -0.35); wormHead(g, hx - 3, hy - 5, 0.5, false); duneFoot(g, cx, gy, 22, 6); }   // hurt: recoiling
   });
   return pack(F, cx, H, 30, 60);
+}
+/* THE RIPPLE under the sand, and the SWALLOW's sinkhole: 40 x 14, the floor on the last row (ay = H), centred (ax = 20). The ripple is
+   the TELL of his signature, so it is drawn bigger than any sand foe's mound and it CHANGES at the commit: a travelling hump while it
+   tracks, a rising, cracking dome once it has locked */
+export function bakeDuneWormRipple() {
+  const W = 40, H = 14, gy = 13, cx = 20;
+  const F = [0, 1, 2, 3].map(f => { const [c, g] = canvas(W, H);
+    if (f < 2) { for (let x = -16; x <= 16; x++) { const k = 1 - Math.abs(x) / 17, h = Math.round(6 * k * k + (f ? Math.sin(x * 0.6) : Math.cos(x * 0.6)) * k); rect(g, cx + x, gy - h, 1, h + 1, x < 0 ? DW.sandL : DW.sand); px(g, cx + x, gy - h, DW.sandL); }
+      for (let i = 0; i < 5; i++) px(g, cx - 12 + i * 6 + f * 2, gy - 1, DW.sandD); }                                         // a hump that runs: two phases
+    else if (f === 2) { for (let x = -14; x <= 14; x++) { const k = 1 - (x / 15) ** 2, h = Math.round(10 * Math.sqrt(Math.max(0, k))); rect(g, cx + x, gy - h, 1, h + 1, DW.sand); px(g, cx + x, gy - h, DW.sandL); }
+      for (const [x0, x1] of [[-6, -2], [1, 6], [-2, 1]]) line(g, cx + x0, gy - 9, cx + x1, gy - 3, DW.hD);                   // the dome cracking over his crown
+      for (let i = 0; i < 8; i++) px(g, cx - 14 + i * 4, gy - 11 - (i % 3), DW.sandL); }                                    // sand jumping off it
+    else { for (let x = -18; x <= 18; x++) rect(g, cx + x, gy - 1, 1, 2, DW.sandD);                                          // the sinkhole: rings turning in to a dark centre
+      ellipse(g, cx, gy - 1, 17, 3, DW.sandD); ellipse(g, cx, gy - 1, 12, 2.2, '#9a7050'); ellipse(g, cx, gy - 1, 6, 1.4, '#5e4030');
+      for (let a = 0; a < 6; a++) px(g, cx + Math.cos(a) * 14, gy - 1 + Math.sin(a) * 2.5, DW.sandL); }
+    return outline(c, OUT); });   /* OUTLINED: sand on sand does not read (the first page capture lost the dome against the dunes behind it) */
+  return pack(F, cx, H, 32, 12);
 }
 /* THE LUNGE's body in flight, drawn long: an arc of rings out of the sand and back in (the game moves the sprite along the
    arc WORM.lungeH high; these three frames are its pose at the start, the top and the end) */

@@ -1,0 +1,9 @@
+{"h":"knight","out":"win","secs":234.4,"left":0,"perMin":130,"swings":237,"pins":{"other":7},"charges":0,"hitBy":{"slamTell":122,"sweepTell":130,"pinned":80,"rec":38,"chargeTell":16,"crownRain":36,"sceptreWait":30,"decree":22}}
+{"h":"warden","out":"timeout","secs":300,"left":31,"perMin":147,"swings":275,"pins":{"other":3},"charges":0,"hitBy":{"sweepTell":216,"sweep":38,"slamTell":254,"sceptreWait":30,"slam":44,"slamRec":44}}
+{"h":"geomancer","out":"win","secs":57.6,"left":0,"perMin":156,"swings":111,"pins":{"other":5},"charges":0,"hitBy":{"pinned":150}}
+{"h":"pyro","out":"win","secs":180.2,"left":0,"perMin":102,"swings":213,"pins":{"other":3},"charges":0,"hitBy":{"slamTell":117,"pinned":80,"sweepTell":28,"sweep":16,"stand":16,"decree":22,"sceptreWait":15}}
+{"h":"paladin","out":"win","secs":129.9,"left":0,"perMin":237,"swings":114,"pins":{"other":6},"charges":0,"hitBy":{"sweepTell":48,"pinned":197,"crownRain":122,"sweep":16,"stand":54,"slamRec":44,"crownTell":15}}
+{"h":"pirate","out":"timeout","secs":300,"left":7,"perMin":173,"swings":486,"pins":{"other":6},"charges":0,"hitBy":{"pinned":144,"sweepTell":92,"stand":38,"slamRec":66,"slamTell":225,"decree":44,"crownRain":36,"sceptreWait":15}}
+{"h":"reaper","out":"win","secs":40.6,"left":0,"perMin":167,"swings":33,"pins":{"other":5},"charges":0,"hitBy":{"sweepTell":32,"pinned":77,"crownRain":4}}
+fights 7, wins 5 (71%), median win 129.9 s, range 40.6-234.4 s
+errors []

@@ -1,0 +1,25 @@
+{"seed":1,"h":"knight","won":true,"out":"win","secs":82.6,"left":0,"opened":{"stuck":1},"perMin":118,"swings":235,"hitBy":{"rest":28,"clawTell":52,"bodyFly":37}}
+{"seed":1,"h":"warden","won":true,"out":"win","secs":99.1,"left":0,"opened":{"stuck":1},"perMin":174,"swings":307,"hitBy":{"novaTell":46,"rest":46,"clawTell":46,"walk":16,"bodyFly":37}}
+{"seed":1,"h":"pyro","won":true,"out":"win","secs":116.6,"left":0,"opened":{"stuck":1},"perMin":163,"swings":356,"hitBy":{"novaTell":46,"rest":49,"clawTell":46,"bodyFly":65}}
+{"seed":1,"h":"paladin","won":true,"out":"win","secs":93.5,"left":0,"opened":{"stuck":2},"perMin":133,"swings":121,"hitBy":{"rest":78,"novaTell":46,"clawTell":46,"bodyFly":37}}
+{"seed":1,"h":"pirate","won":true,"out":"win","secs":80.9,"left":0,"opened":{"stuck":1},"perMin":134,"swings":352,"hitBy":{"novaTell":46,"rest":46,"clawTell":52,"bodyFly":37}}
+{"seed":1,"h":"reaper","won":true,"out":"win","secs":104.7,"left":0,"opened":{"stuck":2},"perMin":131,"swings":100,"hitBy":{"rest":72,"novaTell":51,"clawTell":60,"cleaveTell":18,"bodyFly":28}}
+{"seed":1,"h":"geomancer","won":true,"out":"win","secs":67.7,"left":0,"opened":{"stuck":1},"perMin":155,"swings":197,"hitBy":{"novaTell":46,"rest":46,"clawTell":46,"bodyFly":37}}
+{"seed":2,"h":"knight","won":true,"out":"win","secs":82.6,"left":0,"opened":{"stuck":1},"perMin":118,"swings":235,"hitBy":{"rest":28,"clawTell":52,"bodyFly":37}}
+{"seed":2,"h":"warden","won":true,"out":"win","secs":99.1,"left":0,"opened":{"stuck":1},"perMin":174,"swings":307,"hitBy":{"novaTell":46,"rest":46,"clawTell":46,"walk":16,"bodyFly":37}}
+{"seed":2,"h":"pyro","won":true,"out":"win","secs":116.6,"left":0,"opened":{"stuck":1},"perMin":163,"swings":356,"hitBy":{"novaTell":46,"rest":49,"clawTell":46,"bodyFly":65}}
+{"seed":2,"h":"paladin","won":true,"out":"win","secs":93.5,"left":0,"opened":{"stuck":2},"perMin":133,"swings":121,"hitBy":{"rest":78,"novaTell":46,"clawTell":46,"bodyFly":37}}
+{"seed":2,"h":"pirate","won":true,"out":"win","secs":80.9,"left":0,"opened":{"stuck":1},"perMin":134,"swings":352,"hitBy":{"novaTell":46,"rest":46,"clawTell":52,"bodyFly":37}}
+{"seed":2,"h":"reaper","won":true,"out":"win","secs":104.7,"left":0,"opened":{"stuck":2},"perMin":131,"swings":100,"hitBy":{"rest":72,"novaTell":51,"clawTell":60,"cleaveTell":18,"bodyFly":28}}
+{"seed":2,"h":"geomancer","won":true,"out":"win","secs":67.7,"left":0,"opened":{"stuck":1},"perMin":155,"swings":197,"hitBy":{"novaTell":46,"rest":46,"clawTell":46,"bodyFly":37}}
+{"seed":3,"h":"knight","won":true,"out":"win","secs":82.6,"left":0,"opened":{"stuck":1},"perMin":118,"swings":235,"hitBy":{"rest":28,"clawTell":52,"bodyFly":37}}
+{"seed":3,"h":"warden","won":true,"out":"win","secs":99.1,"left":0,"opened":{"stuck":1},"perMin":174,"swings":307,"hitBy":{"novaTell":46,"rest":46,"clawTell":46,"walk":16,"bodyFly":37}}
+{"seed":3,"h":"pyro","won":true,"out":"win","secs":116.6,"left":0,"opened":{"stuck":1},"perMin":163,"swings":356,"hitBy":{"novaTell":46,"rest":49,"clawTell":46,"bodyFly":65}}
+{"seed":3,"h":"paladin","won":true,"out":"win","secs":93.5,"left":0,"opened":{"stuck":2},"perMin":133,"swings":121,"hitBy":{"rest":78,"novaTell":46,"clawTell":46,"bodyFly":37}}
+{"seed":3,"h":"pirate","won":true,"out":"win","secs":80.9,"left":0,"opened":{"stuck":1},"perMin":134,"swings":352,"hitBy":{"novaTell":46,"rest":46,"clawTell":52,"bodyFly":37}}
+{"seed":3,"h":"reaper","won":true,"out":"win","secs":104.7,"left":0,"opened":{"stuck":2},"perMin":131,"swings":100,"hitBy":{"rest":72,"novaTell":51,"clawTell":60,"cleaveTell":18,"bodyFly":28}}
+{"seed":3,"h":"geomancer","won":true,"out":"win","secs":67.7,"left":0,"opened":{"stuck":1},"perMin":155,"swings":197,"hitBy":{"novaTell":46,"rest":46,"clawTell":46,"bodyFly":37}}
+THE BURIED DEAD: fights 21, kills in 150 s 21 (100%), median kill 93.5 s, opened {"stuck":27}
+by hero knight 3/3 (118 hp/min), warden 3/3 (174 hp/min), pyro 3/3 (163 hp/min), paladin 3/3 (133 hp/min), pirate 3/3 (134 hp/min), reaper 3/3 (131 hp/min), geomancer 3/3 (155 hp/min)
+damage by his mode: {"rest":1095,"clawTell":1044,"novaTell":843,"bodyFly":834,"cleaveTell":54,"walk":48}
+errors []

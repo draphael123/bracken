@@ -1,5 +1,9 @@
 # THE LEADFOOT — a new foe for THE UNDERWATER KEEP (brief)
 
+> **REMOVED 2026-09-25.** Daniel: "the single scuba enemy" - he is out of the Keep and out of the code. THE DROWNED KNIGHT
+> (docs/briefs/keep-rework-2.md) is the Keep's new foe. This brief is kept as the history of why he was built.
+
+
 Daniel, 2026-09-24, on the Keep and Highcrown: *"underwater keep should probably bring a new foe, as should
 highcrown's level."* This is the Keep's.
 

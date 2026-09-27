@@ -1,0 +1,12 @@
+
+> check
+> node tools/check.mjs syntax,comments,tells,lance-support,textfit
+
+ ok  syntax             0ms  1 files parse
+ ok  tells           1198ms  the mark over every windup on the screen comes from this table (src/marks.js, 541 rows).
+ ok  comments         374ms  no swallowed code found.
+ ok  lance-support  27763ms  THE QUEEN'S LANCE: slower, two end lookouts, his bowmen told and cleared - all hold.
+ ok  textfit       257505ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-lance\audits\readability\textfit
+
+5 of 148 checks pass - A SUBSET (syntax, comments, tells, lance-support, textfit), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.

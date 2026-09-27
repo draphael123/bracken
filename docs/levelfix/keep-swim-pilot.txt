@@ -1,0 +1,19 @@
+THE UNDERWATER KEEP, SWUM IN THE PAGE (levelfix lane, 2026-09-24)
+
+A route-following swimmer: headless Chrome, the knight in god mode, steering with real key events toward each point of
+tools/pacing.mjs's main route for the Keep (the reach fill's cheapest way from the start to the Drowned King). Where it
+stalled on a machine the model rides through (a sluice, a gate), it was moved two route points on (14 times, listed).
+
+BEFORE (batch16's touch rule: within 12 px across and 20 px up of the shrine's foot), applied to every frame of the swim:
+  reached x 705; lit 1 of 15 - the start (4,58). Passed unlit: 60, 124, 194, 252, 320, 380, 403, 488, 562, 606, 621,
+  640, 674, 705.
+
+AFTER (shrineLights: the touch rule, or swimming anywhere in the open water over it), read from the game's own shrines
+(BK.shrines()) after the swim:
+  reached x 705; lit 9 of 15 - 4, 60, 124, 194, 380, 403, 488, 606, 640 (each lit while swimming, 4 to 18 rows over it).
+  Not lit by this pilot: 252 and 320 (the pilot was moved past them at 245 and 316), 562 (moved past at 549), 674 and
+  705 (the pilot stalled at 669 and stopped at 705), and 621,39, which stands in an upper room the route passes UNDER.
+  tools/swim-shrines.mjs asks the same question of the whole route with no skips: every underwater shrine the route
+  swims over is lit (Keep 12, Reef 2, Deep 1); on the old rule it finds 14 of them unlit.
+
+skips (x,y where the pilot was moved on): 146,42 188,39 219,52 245,51 316,50 514,54 532,53 549,52 616,53 669,53 x5

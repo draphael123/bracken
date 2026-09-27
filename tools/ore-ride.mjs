@@ -108,7 +108,7 @@ try {
      recovery ledge at the start of that span, and he climbs the ladder back onto the deck the span starts from */
   const PIT = await pg.evalp(`(async()=>{
     const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'oreroad'), out = [];
-    for (const [k, hp0] of [[0, 100], [1, 100], [2, 100], [3, 100], [0, 6]]) {
+    for (const [k, hp0] of [[0, 100], [1, 100], [2, 100], [3, 100], [4, 100], [0, 6]]) {
       BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = false; BK.sim(5);
       for (const e of BK.enemies()) if (!e.maxHp) e.alive = false;
       const L = BK.L, P = BK.P, q = L.pits[k], kk = BK.keys; P.hp = hp0;
@@ -119,7 +119,8 @@ try {
       /* the ladder home: to it, up it, and off it onto the deck */
       for (let g = 0; g < 60 * 30 && !P.dead; g++) { kk.left = kk.right = kk.up = kk.down = false;
         const lx = q.ladder[0] * 16 + 8;
-        if (P.climb) kk.up = true; else if (Math.abs(P.y - (q.start[1] + 1) * 16) < 3 && P.x < (q.start[0] + 1) * 16 + 2) break;
+        if (P.climb) { if (q.id === 'drum' && Math.abs(P.y - (q.start[1] + 1) * 16) < 3) kk.left = true; else kk.up = true; }   /* level with the deck: step off onto it (the drum house's ladder goes on up past it) */
+        else if (Math.abs(P.y - (q.start[1] + 1) * 16) < 3 && P.x < (q.start[0] + 1) * 16 + 2) break;
         else if (P.y < (q.ladder[1] + 1) * 16 + 2) kk.left = true; else if (Math.abs(lx - P.x) > 3) kk[lx > P.x ? 'right' : 'left'] = true; else kk.up = true;
         BK.sim(1); }
       out.push({ span: q.id, hp0: hpIn, lost: hpIn - lowest, dead: !!P.dead, lifted, onLedge, home: Math.abs(P.y - (q.start[1] + 1) * 16) < 3 && P.x < (q.start[0] + 1) * 16 + 2, secs: +(f / 60).toFixed(1) }); }

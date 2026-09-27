@@ -119,7 +119,7 @@ node off the road on a dashed branch. The map is currently wrong in both directi
    DELIBERATE EXCEPTION** and stays unlocked from the start.
 2. **THE PALADIN'S CHARGE STAYS AS IT IS.** *"Paladins slow is fine."* 145px/s behind a 1.6s tell, 4.7s of total
    warning. Live in production. Do not re-tune it.
-3. **THE DEATH KNIGHT'S ART GROWS TO MEET HIS HITBOX.** *"Lengthen the art."* The blade box reaches 24px past the
+3. **THE DEATH KNIGHT'S ART GROWS TO MEET HIS HITBOX.** *(BUILT 2026-09-24 on claude/polish, 07d27eb: atk:2 and heavy:2 now drawn to 31.7 px against the 31 px box.)* *"Lengthen the art."* The blade box reaches 24px past the
    blade drawn on its live frame (28px on the planted heavy); the fix is the sprite, NOT the box. His reach does not
    change - only the picture of it becomes honest.
 
@@ -140,7 +140,7 @@ node off the road on a dashed branch. The map is currently wrong in both directi
    It now also folds in the Archmage's stage gate (which can refuse a blow outright — so burn does nothing while he
    is invulnerable) and the Undead Archmage's `gather` bonus (so burn is doubled while he is open). Damage is damage,
    whether it arrives from a sword or over time.
-7. **THE QUEEN'S WALKWAY GOES, AND THE CHANDELIER REPLACES IT.** Her gallery on three breakable pillars is currently
+7. **THE QUEEN'S WALKWAY GOES, AND THE CHANDELIER REPLACES IT.** *(BUILT 2026-09-24 on claude/polish: no gallery; six low chandeliers, a jump and a swing cuts one, it pins her 4.6 s and 7% as the gallery did; tools/queen-chandelier.mjs.)* Her gallery on three breakable pillars is currently
    her ONLY damage window (`gqOpen` is `mode === 'pinned'`). Remove it and **cut the chandelier's chain to drop it on
    her**, which pins her exactly as the gallery did. She already has a chandelier attack (`chandTell`), so the room
    already owns the prop — this needs a cuttable chain, not a new idea. It also makes her opening something you

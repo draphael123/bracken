@@ -7,6 +7,7 @@
 import fs from 'fs';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
+import { MARK } from '../src/marks.js';   /* the table every windup's mark is drawn from (tools/tells.mjs writes it) */
 
 const main = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const audio = fs.readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
@@ -98,8 +99,14 @@ for (const lv of LEVELS) {
   if (L.arena && L.arena.boss) {
     const b = L.arena.boss, fn = updateOf(b);
     if (!fn) say(id, `boss '${b}' has no update function in main.js that the tool can find`);
-    else { const tells = [...new Set([...fn.matchAll(/'(\w*[Tt]ell)'/g)].map(m => m[1]))];
-      if (tells.length && !windUp.includes(`e.t === '${b}'`)) say(id, `boss '${b}' has tells (${tells.join(', ')}) but is not in windingUp() in main.js: it winds up in silence`);
+    /* A BOSS WHOSE FIGHT LIVES IN ITS OWN MODULE (THE FIRST DEATH KNIGHT: src/unburied-foes.js) has only its hands in main.js - the
+       update there names one tell (the Reaping's zoom) and passes the rest through. Its tells are REGISTERED where tools/tells.mjs
+       and the screen read them, the MARK table in src/marks.js, so they are counted from there as well as from the update: reading
+       main.js alone called a five-attack fight "one told attack". */
+    else { const inUpdate = [...new Set([...fn.matchAll(/'(\w*[Tt]ell)'/g)].map(m => m[1]))];
+      const tells = [...new Set(inUpdate.concat(Object.keys(MARK).filter(k => k.startsWith(b + '|') && /Tell$/.test(k)).map(k => k.split('|')[1])))];
+      /* the windingUp() test stays on what the update itself names: the table is only asked HOW MANY ideas the fight has */
+      if (inUpdate.length && !windUp.includes(`e.t === '${b}'`)) say(id, `boss '${b}' has tells (${inUpdate.join(', ')}) but is not in windingUp() in main.js: it winds up in silence`);
       else if (tells.length === 1) say(id, `boss '${b}' has one told attack: one idea is not a fight`); }
   }
 
@@ -154,11 +161,12 @@ for (const lv of LEVELS) {
   // 14. NOTHING STANDS IN THE AIR
   // (four hands on the Flotilla, two of them in the Quartermaster's arena, and the audit's whitelist hid them)
   { const solidish = t => t === T.SOLID || t === T.ONEWAY || t === T.CRATE || t === T.PALISADE || t === T.PLANK || t === T.NET
-      || t === T.BOUNCER || t === T.SHELF || t === T.PORT || t === T.RAIL || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CRYST || t === T.REED || t === T.CLIMB;
+      || t === T.BOUNCER || t === T.SHELF || t === T.PORT || t === T.RAIL || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CRYST || t === T.REED || t === T.CLIMB
+      || (t >= 20 && t <= 25);   /* a SLOPE is floor (src/slopes.js): the garrison puts THE SUNKEN CARAVAN's creatures in the air cell over a dune, and they settle onto it */
     // what does not stand: swimmers, fliers, things that hang from a thread, and the traps that swing from a roof
     const swims = new Set(['clinger', 'eel', 'siren', 'urchin', 'angler', 'petrel', 'wasp', 'drone', 'spider', 'weaver', 'bat', 'crow', 'harpy', 'kite',
       'lookout', 'marine', 'spit', 'thorn', 'reefmaw', 'roc', 'owl', 'queen', 'gill', 'heart', 'mother', 'shardling', 'suncatcher', 'netter',
-      'ram', 'sailer', 'turtle', 'crab', 'heronfoe', 'scout', 'siren', 'rook', 'farmhand', 'marshlight', 'haunt', 'boo', 'broom', 'imp', 'gar', 'puffer', 'jelly', 'lamprey', 'manta', 'emberwisp']);   /* THE MAGE'S FOLLY's brooms and imps fly; the fields' boo drifts through walls; the marsh's gar lies in its hole */
+      'ram', 'sailer', 'turtle', 'crab', 'heronfoe', 'scout', 'siren', 'rook', 'farmhand', 'marshlight', 'haunt', 'boo', 'broom', 'imp', 'gar', 'puffer', 'jelly', 'lamprey', 'manta', 'emberwisp', 'drownedknight', 'drownedcaptain']);   /* THE MAGE'S FOLLY's brooms and imps fly; the fields' boo drifts through walls; the marsh's gar lies in its hole */
     const inWater = e => (L.pools || []).some(p => p.shallow && !p.dry && !p.harm && e.x * TS >= p.x0 - 8 && e.x * TS <= p.x1 + 8 && (e.y + 1) * TS >= p.y - 24 && (e.y + 1) * TS <= (p.bottom || p.y + 40) + 8); // WADING counts; floating over the deep does not
     const floaters = L.ents.filter(e => foeTypes.has(e.t) && !swims.has(e.t) && !solidish(L.grid[(e.y + 1) * L.W + e.x]) && !inWater(e));
     if (floaters.length) say(id, 'creatures standing on nothing: ' + floaters.slice(0, 6).map(e => e.t + '@' + e.x + ',' + e.y).join(' '));

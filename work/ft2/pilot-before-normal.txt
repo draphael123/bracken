@@ -1,0 +1,23 @@
+{"h":"knight","salt":1,"out":"death","secs":38.2,"taken":100,"opened":2,"left":81,"swings":46,"hitBy":{"hover":84,"markWait":16},"portal":{"breached":0,"gather":2}}
+{"h":"warden","salt":1,"out":"death","secs":110.7,"taken":100,"opened":8,"left":67,"swings":45,"hitBy":{"hover":76,"markWait":19,"poisonTell":5},"portal":{"breached":0,"gather":8}}
+{"h":"pyro","salt":1,"out":"death","secs":73.2,"taken":88,"opened":5,"left":66,"swings":41,"hitBy":{"hover":69,"fireTell":19},"portal":{"breached":0,"gather":5}}
+{"h":"paladin","salt":1,"out":"death","secs":46.9,"taken":120,"opened":3,"left":33,"swings":64,"hitBy":{"hover":75,"markWait":26,"markTell":19},"portal":{"breached":0,"gather":3}}
+{"h":"pirate","salt":1,"out":"death","secs":70.7,"taken":90,"opened":5,"left":39,"swings":57,"hitBy":{"hover":33,"blinkOut":7,"poisonTell":19,"markWait":31},"portal":{"breached":0,"gather":5}}
+{"h":"reaper","salt":1,"out":"death","secs":50.6,"taken":95,"opened":3,"left":42,"swings":33,"hitBy":{"hover":69,"blinkOut":7,"markWait":19},"portal":{"breached":0,"gather":3}}
+{"h":"geomancer","salt":1,"out":"death","secs":47.9,"taken":95,"opened":3,"left":14,"swings":80,"hitBy":{"hover":75,"blinkOut":14,"markTell":6},"portal":{"breached":0,"gather":3}}
+{"h":"knight","salt":2,"out":"death","secs":38.8,"taken":100,"opened":2,"left":58,"swings":71,"hitBy":{"hover":96,"markWait":4},"portal":{"breached":0,"gather":2}}
+{"h":"warden","salt":2,"out":"death","secs":132.8,"taken":100,"opened":10,"left":39,"swings":91,"hitBy":{"hover":33,"poisonTell":29,"markWait":19,"markTell":19},"portal":{"breached":0,"gather":10}}
+{"h":"pyro","salt":2,"out":"death","secs":98.7,"taken":88,"opened":7,"left":37,"swings":82,"hitBy":{"hover":52,"fireTell":19,"markWait":17},"portal":{"breached":0,"gather":7}}
+{"h":"paladin","salt":2,"out":"death","secs":63.9,"taken":120,"opened":4,"left":43,"swings":58,"hitBy":{"hover":101,"markWait":19},"portal":{"breached":0,"gather":4}}
+{"h":"pirate","salt":2,"out":"death","secs":127.6,"taken":90,"opened":10,"left":23,"swings":72,"hitBy":{"hover":52,"blinkOut":7,"markWait":31},"portal":{"breached":0,"gather":10}}
+{"h":"reaper","salt":2,"out":"win","secs":56.7,"taken":90,"opened":5,"left":0,"swings":46,"hitBy":{"hover":64,"blinkOut":7,"iceTell":14,"markTell":5},"portal":{"breached":0,"gather":5}}
+{"h":"geomancer","salt":2,"out":"death","secs":32.1,"taken":95,"opened":2,"left":42,"swings":59,"hitBy":{"hover":57,"markWait":38},"portal":{"breached":0,"gather":2}}
+{"h":"knight","salt":3,"out":"death","secs":49,"taken":100,"opened":3,"left":60,"swings":60,"hitBy":{"hover":100},"portal":{"breached":0,"gather":3}}
+{"h":"warden","salt":3,"out":"death","secs":110.7,"taken":100,"opened":8,"left":51,"swings":76,"hitBy":{"hover":62,"markTell":38},"portal":{"breached":0,"gather":8}}
+{"h":"pyro","salt":3,"out":"death","secs":108.3,"taken":88,"opened":8,"left":40,"swings":77,"hitBy":{"hover":50,"poisonTell":19,"markTell":19},"portal":{"breached":0,"gather":8}}
+{"h":"paladin","salt":3,"out":"win","secs":85.6,"taken":119,"opened":8,"left":0,"swings":63,"hitBy":{"hover":65,"markWait":19,"poisonTell":16,"blinkOut":19},"portal":{"breached":0,"gather":8}}
+{"h":"pirate","salt":3,"out":"death","secs":100.6,"taken":90,"opened":8,"left":9,"swings":87,"hitBy":{"hover":83,"blinkOut":7},"portal":{"breached":0,"gather":8}}
+{"h":"reaper","salt":3,"out":"death","secs":54.1,"taken":95,"opened":4,"left":38,"swings":31,"hitBy":{"hover":52,"blinkOut":7,"markWait":19,"stormTell":17},"portal":{"breached":0,"gather":4}}
+{"h":"geomancer","salt":3,"out":"death","secs":53.8,"taken":95,"opened":4,"left":36,"swings":66,"hitBy":{"hover":79,"iceTell":16},"portal":{"breached":0,"gather":4}}
+{"health":"normal","cap":300,"fights":21,"wins":2,"pct":10,"medianWin":85.6,"medianLeftOnLoss":40,"openedAvg":5.3,"breachedAvg":0,"markOpenAvg":5.3,"byHero":{"knight":"0/3","warden":"0/3","pyro":"0/3","paladin":"1/3","pirate":"0/3","reaper":"1/3","geomancer":"0/3"},"hitBy":{"hover":1427,"markWait":277,"poisonTell":88,"fireTell":38,"markTell":106,"blinkOut":75,"iceTell":30,"stormTell":17}}
+errors []

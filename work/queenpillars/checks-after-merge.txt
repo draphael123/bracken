@@ -1,0 +1,35 @@
+
+> check
+> node tools/check.mjs queen-pillars,footing-art,queen-chandelier,crown-requests,crown-route,queen-comb,arena-supplies,boss-openings,boss-fight-end,bells,floaters,spawns,audit,content-audit,traps,killzones,collectables,deadends,checkpoints,signs,textfit,tells,comments,syntax,homepaths,dangling-paths,lab-clock,temperer
+
+ ok  syntax             0ms  0 files parse
+ ok  tells            518ms  the mark over every windup on the screen comes from this table (src/marks.js, 541 rows).
+ ok  comments         170ms  no swallowed code found.
+ ok  homepaths        202ms  ok  homepaths     445 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths   234ms  ok  dangling-paths 1757 tracked files, every repo path they cite resolves in a fresh clone (6 known holes list
+ ok  floaters        4892ms  2716 standing things checked (48 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  audit          20226ms  == caravan (547x40) clean
+ ok  content-audit  17055ms  19 things to look at.
+ ok  traps           7688ms  no traps.
+ ok  signs          15797ms  no level says the same sentence on two signs (1 known).
+ ok  killzones       6121ms  no reachable tile kills a standing hero.
+ ok  collectables    8414ms  every pickup can be picked up from some ground.
+ ok  spawns          4862ms  2326 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  deadends        7066ms  170 dead ends in 32 levels, and every one pays.
+ ok  queen-comb       339ms  Queen: no ceiling footing, three told falling-comb pieces, unchanged grid and persistent wider view.
+ ok  crown-route    37976ms  [{"h":"knight","landings":[{"x":5434.194444444457,"y":160},{"x":5467.366666666687,"y":128},{"x":5425.355555555
+ ok  crown-requests  4859ms  Highcrown: two additional encounters, three unstable chandeliers; the Queen's gallery is gone and her six chan
+ ok  checkpoints    15150ms  426 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  boss-openings  61329ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":
+ ok  arena-supplies 13694ms  ok  arena-supplies  47 boss rooms, 12 height conditions scored against the ground their arenas actually offer;
+ ok  lab-clock      26606ms  Manual combat simulation isolates yielding labs and restores the normal loop after errors.
+ ok  temperer        3767ms  ok  temperer       3 in Highcrown, each by a brazier and in company; he shoulders off, runs, heats, and comes 
+ ok  boss-fight-end249319ms  Every one of 47 boss and mini fights (32 bosses, 15 minis) ends when its boss dies.
+ ok  queen-chandelier 68355ms  queen-chandelier: no gallery; every hero cuts a chain from the floor, and it pins her as the gallery did (4.6 
+ ok  bells         100735ms  bells: 5 alarm(s) (crown leads, crown ward, crown hall, crown chapel, undercrown works): every signed bell has
+ ok  footing-art    58652ms  footing-art: every floor cell you can stand on is drawn, in 27 levels; painted by their own code: fields (fiel
+ ok  queen-pillars  68262ms  queen-pillars: three pillars; her charge goes first at a hero behind one, breaks it and pins her as the chande
+ ok  textfit       184372ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-queenpillars\audits\readability\textfit
+
+28 of 149 checks pass - A SUBSET (queen-pillars, footing-art, queen-chandelier, crown-requests, crown-route, queen-comb, arena-supplies, boss-openings, boss-fight-end, bells, floaters, spawns, audit, content-audit, traps, killzones, collectables, deadends, checkpoints, signs, textfit, tells, comments, syntax, homepaths, dangling-paths, lab-clock, temperer), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.

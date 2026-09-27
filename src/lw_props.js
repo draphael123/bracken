@@ -228,6 +228,20 @@ export function bakeDriftwood(v) {
   return outline(c, OUT);
 }
 
+// RIVER STONES: water-worn cobbles on a mountain river's bed or bank, grey-brown, a cap of moss on the dry side and a dark wet foot.
+// 14x7, v 0..2 (0 = a big stone and a small one, 1 = a heap of three, 2 = one flat slab with a pebble on it). The river's twin of the
+// sea's barnacle rock and shells (level.js FRESH_TWIN / FRESH_BED).
+export function bakeRiverStone(v) {
+  v = ((v % 3) + 3) % 3; const W = 14, H = 7; const [c, g] = canvas(W, H);
+  const blobs = [[[5, 3.6, 4.6, 3.2], [11, 4.8, 2.6, 2.1]], [[4, 4.6, 3.4, 2.3], [9.6, 4.8, 3.2, 2.1], [7, 2.6, 2.8, 2.2]], [[6.5, 4.6, 6, 2.2], [9, 2.2, 1.8, 1.4]]][v];
+  for (const [x, y, rx, ry] of blobs) ellipse(g, x, y, rx, ry, KEY);
+  const m = shadeRock(g, W, H, KEY), at = (x, y) => x >= 0 && y >= 0 && x < W && y < H && m[y * W + x];
+  for (let x = 0; x < W; x++) { let y = 0; while (y < H && !at(x, y)) y++; if (y >= H) continue;
+    if (x < W * 0.6 && hsh(x, y, 21 + v) < 0.6) { px(g, x, y, hsh(x, y, 22) < 0.5 ? L.grass : L.grassD); if (hsh(x, 3, v) < 0.35) px(g, x, y + 1, L.grassD); }
+    if (at(x, H - 1)) px(g, x, H - 1, L.tar); }
+  return outline(c, OUT);
+}
+
 // Small shells for the sand. 5x4, v 0..2: a pink scallop, a white cockle, a blue-black mussel. No outline (edged by hand).
 export function bakeShell(v) {
   const grids = [

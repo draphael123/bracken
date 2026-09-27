@@ -1,0 +1,8 @@
+  ok   knight     a full running jump carries 3.97 tiles against the widest pit, 3
+  ok   warden     a full running jump carries 3.97 tiles against the widest pit, 3
+  ok   pyro       a full running jump carries 4.56 tiles against the widest pit, 3
+  ok   paladin    a full running jump carries 3.57 tiles against the widest pit, 3
+  ok   pirate     a full running jump carries 3.97 tiles against the widest pit, 3
+  ok   reaper     a full running jump carries 3.96 tiles against the widest pit, 3
+  ok   geomancer  a full running jump carries 3.97 tiles against the widest pit, 3
+errors []

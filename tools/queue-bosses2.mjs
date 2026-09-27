@@ -1,10 +1,10 @@
-// tools/queue-bosses2.mjs — three more bosses baked ahead of their batches (src/redraw/queue_bosses2.js) rendered in Node: every
+// tools/queue-bosses2.mjs — two more bosses baked ahead of their batches (src/redraw/queue_bosses2.js) rendered in Node: every
 // frame, right-facing then the flip, on a sand-coloured sheet, x3. Also checks the contract: each sprite's frames share
 // one canvas size and put their lowest pixel on ay-1 (so the anchor holds). usage: node tools/queue-bosses.mjs [out.png]
 import { install, newCanvas, sheet, savePNG } from './node-canvas.mjs';
 install();
 const D = await import('../src/redraw/queue_bosses2.js');
-const sprites = { standardBearer: D.bakeStandardBearer(), deathKnight: D.bakeDeathKnight(), gateSerjeant: D.bakeGateSerjeant() };
+const sprites = { deathKnight: D.bakeDeathKnight(), gateSerjeant: D.bakeGateSerjeant() };
 let bad = 0;
 for (const [k, s] of Object.entries(sprites)) {
   const w = s.R[0].width, h = s.R[0].height;

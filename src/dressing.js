@@ -5,7 +5,9 @@ export const GROUND_KITS = {
   "burning": {"density":0.34,"kinds":["tuft","rock","stump"]},   /* THE BURNING VILLAGE: a farming street on the road, and the fires they cooked on */
   "harbor": {"density":0,"kinds":[]},
   "burial": {"density":0,"kinds":[]},
-  "unburied": {"density":0.22,"kinds":["tuft","rock","stone"]},   /* THE UNBURIED FIELD: a trampled battlefield - dead grass, thrown stones, no flowers */
+  "unburied": {"density":0.22,"kinds":["tuft","rock","stone","tuft","bones"]},   /* THE UNBURIED FIELD: a trampled battlefield - dead grass, thrown stones, no flowers, and bones in the turf */
+  "trial_warden": {"density":0.38,"kinds":["tuft","fern"]},   /* THE WARDEN'S TRIAL (2026-09-24) */
+  "trial_geomancer": {"density":0.38,"kinds":["rock","stone"]},   /* THE GEOMANCER'S TRIAL: her yard is stony */
   "wood": {
     "density": 0.7,
     "kinds": [
@@ -77,11 +79,8 @@ export const GROUND_KITS = {
     ]
   },
   "spire": {
-    "density": 0.32,
+    "density": 0.12,
     "kinds": [
-      "herbBed",
-      "stoneLantern",
-      "skep",
       "rock"
     ]
   },
@@ -262,7 +261,7 @@ export const ALLOWED_DECORATIONS = {
   "burning": ["tuft","rock","stump","campfire","barrels","fence","cart","hayBale","brokenCart","milkChurn","waterPump","crookedFence","lanternPost"],
   "harbor": ["stall","pierPost","rumBarrels","wreckBow","anchor","mastStump","kegStack","chartTable","seaChest","plunder","capstan","coiledCable","lanternDeck","waterButt","cannon","netPoles","snow","stem"],
   "burial": ["grave","bones","coffer","candelabra","snow","stem"],
-  "unburied": ["tuft","rock","stone","grave","bones","coffer","brokenCart","crookedFence"],
+  "unburied": ["tuft","rock","stone","grave","bones","coffer","brokenCart","crookedFence","fieldGrave","crookedCross","brokenSpears","stuckShield","fallenBanner","siegeWreck","brokenPillar","oldStandard","plantedSpears","shieldPile","catapultWreck","batteringRam","barrowMound","armyBanner","trenchRevet"],   /* the look pass (2026-09-24): the Hexed Fields' graves, the battle's wreckage, the chapel's columns */
   "wood": [
     "beehive",
     "birdhouse",
@@ -404,18 +403,40 @@ export const ALLOWED_DECORATIONS = {
     "birdhouse",
     "cairn",
     "cobweb",
+    "cocoon",
+    "dovecote",
     "fence",
+    "fern",
+    "flourSacks",
     "flower",
     "gardenWall",
     "hangingHouse",
+    "hempBale",
+    "hvBone",
+    "hvCabbage",
+    "hvCandle",
+    "hvCrate",
+    "hvEgg",
+    "hvFeather",
+    "hvFern",
+    "hvFlint",
+    "hvHemp",
+    "hvNeedles",
+    "hvPeg",
+    "hvShroom",
+    "hvTuft",
+    "hvWindGrass",
     "lanternPost",
+    "mushroom",
     "pillar",
+    "ropeCoil",
     "shopSign",
     "snow",
     "stall",
     "stem",
     "stone",
     "strut",
+    "stump",
     "tuft",
     "villageHall",
     "washing",
@@ -424,7 +445,19 @@ export const ALLOWED_DECORATIONS = {
   "spire": [
     "beanpoles",
     "bellFrame",
+    "bench",
     "bones",
+    "candle",
+    "cot",
+    "desk",
+    "dovecote",
+    "fruitTree",
+    "grave",
+    "hearth",
+    "longTable",
+    "lychgate",
+    "mugShelf",
+    "yew",
     "bookpile",
     "bookshelf",
     "candelabra",
@@ -561,6 +594,7 @@ export const ALLOWED_DECORATIONS = {
     "kelp",
     "netPoles",
     "pierPost",
+    "riverStone",
     "rowboat",
     "rushes",
     "saltCrust",
@@ -762,6 +796,18 @@ export const ALLOWED_DECORATIONS = {
     "mushroom",
     "snow",
     "stem"
+  ],
+  "trial_warden": [
+    "fern",
+    "snow",
+    "stem",
+    "tuft"
+  ],
+  "trial_geomancer": [
+    "rock",
+    "snow",
+    "stem",
+    "stone"
   ],
   "shopCrag": [
     "bones",
@@ -967,10 +1013,10 @@ export const ALLOWED_DECORATIONS = {
 };
 
 GROUND_KITS.keep={...GROUND_KITS.deep};
-ALLOWED_DECORATIONS.keep=[...ALLOWED_DECORATIONS.deep];
+ALLOWED_DECORATIONS.keep=[...ALLOWED_DECORATIONS.deep,'brokenPillar','stuckShield','fallenBanner','brokenSpears','shieldPile','bookpile','lectern','candelabra','bookshelf'];   /* A CASTLE UNDER THE SEA: the keep's own arms, books and fittings, drowned where they stood (docs/briefs/keep-rework-2.md) */
 
 GROUND_KITS.waymeet={density:.2,kinds:['flower','tuft']};
-ALLOWED_DECORATIONS.reef.push('coiledCable','rumBarrels');
+ALLOWED_DECORATIONS.reef.push('coiledCable','rumBarrels','capstanWreck','bellWreck');   /* the wreck junk: a capstan and a bell nobody will turn or ring (docs/briefs/reef-longer.md) */
 
 ALLOWED_DECORATIONS.lamplit.push('kegStack','coiledCable','barrels','seaChest');
 ALLOWED_DECORATIONS.causeway.push('coiledCable','rumBarrels','pennant');
@@ -978,3 +1024,5 @@ ALLOWED_DECORATIONS.causeway.push('coiledCable','rumBarrels','pennant');
 GROUND_KITS.mage={density:0,kinds:[]};
 GROUND_KITS.fallingtower={density:0,kinds:[]};
 ALLOWED_DECORATIONS.fallingtower=ALLOWED_DECORATIONS.mage.slice().concat(['readingDesk','clockface','gears']);   /* THE READING ROOM's desk and THE PENDULUM GALLERY's clock face and wheels: the two floors the tower grew in 2026-09-22 (src/tower-ascent.js). They are the tower's own, not the Folly's, so they are added here and not to the mage's list. */
+GROUND_KITS.caravan={density:0,kinds:[]};   /* THE SUNKEN CARAVAN: no grass kit on sand - the draft's own props and its DRESS row are the whole dressing */
+ALLOWED_DECORATIONS.caravan=['wagon','wagonSunk','awning','awningTorn','caravanStandard','oxRibs','oxSkull','oxHorn','archPillar','canopyPost','scrub','deadTreeD','amphora','cargoSack','cargoChest','rug'];   /* the caravan's own: its wrecks, its awnings, the beasts' bones and what they carried (the bakers are src/redraw/desert.js, wired in main.js's caravan block) */

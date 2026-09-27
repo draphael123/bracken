@@ -34,7 +34,7 @@ for (const f of L.towerFloors.slice(0, 6)) { const [x, y0, y1] = f.hole; for (le
 assert.ok(!L.calm || !L.calm.length, 'no blanket calm (the rule the Codex levels broke)');
 const garrison = L.ents.filter(e => e.garrison); assert.ok(garrison.length >= 8, 'the GARRISON row places: ' + garrison.length);
 const gRows = new Set(garrison.map(e => L.towerFloors.findIndex(f => e.y >= f.top && e.y < f.bot))); assert.ok(gRows.size >= 3, 'and on more than the top floor (stackedFloors): ' + [...gRows]);
-const elites = L.ents.filter(e => e.elite); assert.equal(elites.length, 3);
+const elites = L.ents.filter(e => e.elite); assert.equal(elites.length, 1, 'one elite, the cistern husk: the orrery armour captains the ambush and the loft warden is THE SEXTON since the rework (2026-09-25)');
 for (const e of elites) { assert.ok(e.x > TOWER.X0 && e.x < TOWER.X1 && e.y > TOWER.SKY && e.y < L.H, 'elite inside the tower: ' + JSON.stringify(e)); assert.notEqual(at(e.x, e.y + 1), T.AIR, 'elite stands on something'); }
 assert.equal(L.ents.filter(e => e.t === 'silver').length, 3);
 /* A GLYPH IS A RUNE ON THE FLOOR AND A MEND IS A HEALING SHRINE: neither is a creature, and counting them as foes
@@ -68,7 +68,10 @@ assert.ok(![...R.seen].some(s => +s.split(',')[1] < TOWER.SKY - 1), 'the climb r
 assert.equal(at(SAND.x0 + 4, SAND.row), T.SOLID, 'the sandy path is gone, so the line above passes for the wrong reason');
 assert.ok(![...R.seen].some(s => +s.split(',')[1] === SAND.row - 1), 'the sandy path can be WALKED to: it is meant to be reached only through the second door');
 const checks = L.ents.filter(e => e.t === 'check').map(e => e.y).sort((a, b) => a - b);
-for (const f of L.towerFloors) assert.ok(checks.some(y => y >= f.top - 2 && y < f.bot), 'a checkpoint on ' + f.name); assert.ok(checks[0] <= TOWER.SKY, 'and one on the parapet, for the sky fight');
+for (const f of L.towerFloors) assert.ok(checks.some(y => y >= f.top - 2 && y < f.bot), 'a checkpoint on ' + f.name);
+/* and one on the crown's last climb, for the sky fight - NOT on the parapet any more, where the fight saw it under the fire and could never reach it
+   (round 2; tools/checkpoint-stand.mjs holds every flight arena to that) */
+assert.ok(checks[0] > TOWER.SKY + 1 && checks[0] <= TOWER.SKY + 8, "the last checkpoint before the sky is on the crown's last climb: row " + checks[0]);
 // ---- THE TWO NEW FLOORS (2026-09-22) ----
 { const F = Object.fromEntries(L.towerFloors.map(f => [f.name, f]));
   const R2 = L.ents.filter(e => e.t === 'glyph');
@@ -127,7 +130,10 @@ for (const f of L.towerFloors) assert.ok(checks.some(y => y >= f.top - 2 && y < 
   { const r = rig({ mode: 'handTell', modeT: 0, spell: 'hand' }); updateUndeadMage(r.e, 0.01, r.c); const h = r.e.shots.find(q => q.kind === 'hand'); assert.ok(h && h.sp < CARPET.speed * 0.7, 'the hand can be out-flown');
     r.P.y = 300; run(r, 1); assert.ok(h.vy < 0, 'it turns after you'); }
   // THE OPENING IS CAUSED: the same mark, landed on you, opens nothing; flown out of, it opens him
-  { const r = rig({ mode: 'markTell', modeT: 0, spell: 'mark' }); updateUndeadMage(r.e, 0.01, r.c); assert.ok(r.e.mark, 'the mark is laid');
+  /* THE DEATH KNIGHT'S MARK MUST NOT CRASH HIM (audit 2026-09-24): the hero's markFoe() writes e.mark = 6 on what he strikes;
+     the Archmage's own death mark lived on the same field and a number there threw on `.t`. It is e.deathMark now. */
+  { const r = rig({ mode: 'hover', modeT: 1 }); r.e.mark = 6; assert.doesNotThrow(() => { for (let i = 0; i < 30; i++) updateUndeadMage(r.e, 1 / 60, r.c); }, 'a Death-Knight-marked Undead Archmage keeps fighting'); }
+  { const r = rig({ mode: 'markTell', modeT: 0, spell: 'mark' }); updateUndeadMage(r.e, 0.01, r.c); assert.ok(r.e.deathMark, 'the mark is laid');
     run(r, MAGE.markFuse + 0.1); assert.ok(r.hits.some(h => h.blow === 'mark' && h.hard), 'left on it, the mark lands, unblockable'); assert.notEqual(r.e.mode, 'gather', 'and he is NOT open');
     const q = rig({ mode: 'markTell', modeT: 0, spell: 'mark' }); updateUndeadMage(q.e, 0.01, q.c); q.P.x += 90; run(q, MAGE.markFuse + 0.1);
     assert.equal(q.hits.length, 0); assert.equal(q.e.mode, 'gather', 'flown out of, it comes back on him'); assert.ok(q.e.open > 2, 'the window: ' + q.e.open); }
@@ -178,6 +184,18 @@ try {
   assert.ok(r.carpet && r.active, 'boarding the carpet starts the fight'); assert.ok(r.crownGone, 'the crown falls away under the carpet');
   assert.ok(r.floorHeld && r.fellNot, 'there is no falling off the carpet'); assert.ok(r.flew > 40, 'it flies up: ' + r.flew); assert.ok(r.sank > 10, 'and it sinks when you hold down: ' + r.sank);
   assert.ok(!r.retry.carpet && r.retry.crown && r.retry.below && r.retry.boss, 'a retry: the carpet waits again, the crown stands, the floors under it stay gone: ' + JSON.stringify(r.retry));
+  /* THE ENDING (round 2, docs/briefs/falling-tower-round2.md §2): he falls, the way out opens where he fell with the desert in it, and
+     through it you stand on the sand under the Caravan's sky and WALK to the level's end - the level is won at the gate, not on the kill */
+  const e2 = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
+    BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;BK.sim(10);
+    BK.tp(36,${TOWER.SKY - 1});BK.sim(5);BK.board();BK.sim(30);const b=BK.boss||BK.enemies().find(e=>e.t==='undeadmage'&&e.alive);out.fought=!!BK.bossActive;for(let i=0;i<300&&b.mode==='wake';i++)BK.sim(1);b.hp=1;BKT.hurtEnemy(b,99,b.x-10,false);
+    const S=BK.L.sanctum;for(let i=0;i<600&&!(S.open&&S.outOpen>=1);i++)BK.sim(1);out.open=!!S.open;out.stillPlaying=BK.state==='play';
+    for(let i=0;i<120&&!BK.L.sandWalk;i++){BK.P.x=S.out.x;BK.P.y=S.out.y;BK.sim(1);}out.sand=!!BK.L.sandWalk;out.onFoot=!BK.carpet();out.row=Math.round(BK.P.y/16);out.night=BK.L.nightA;
+    for(let i=0;i<900&&BK.state==='play';i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;out.won=BK.state;return out;})()`, 240000);
+  assert.ok(e2.open && e2.stillPlaying, 'his death opens the way out and does not end the level: ' + JSON.stringify(e2));
+  assert.ok(e2.sand && e2.onFoot && e2.row === SAND.row, 'through the way out you stand on the desert, off the carpet: ' + JSON.stringify(e2));
+  assert.equal(e2.night, 0, 'the desert is daylight: the tower night wash is still on it');
+  assert.equal(e2.won, 'win', 'walking on over the sand does not reach the level end: ' + JSON.stringify(e2));
   assert.deepEqual(pg.errors, []);
-  console.log(JSON.stringify(r));
+  console.log(JSON.stringify(r), JSON.stringify(e2));
 } finally { pg.close(); }

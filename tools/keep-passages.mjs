@@ -45,7 +45,9 @@ assert(L.blight.length >= 5 && L.gasVents.length >= 7);
 const kinds = (a, b) => { const k = new Set();
   if (L.siphons.some(s => s.x >= a && s.x <= b)) k.add('siphon'); if (L.blight.some(r => r[0] <= b && r[1] >= a)) k.add('blight');
   if (L.gasVents.some(v => v.x >= a && v.x <= b)) k.add('grate'); if (L.deep.currents.some(c => c.x0 <= b && c.x1 >= a)) k.add('current');
-  if (L.deep.vents.some(v => v.hot && v.x >= a && v.x <= b)) k.add('lift'); if (L.deep.gates.some(g => g.col >= a && g.col <= b)) k.add('sluice'); return k; };
+  if (L.deep.vents.some(v => v.hot && v.x >= a && v.x <= b)) k.add('lift'); if (L.deep.gates.some(g => g.col >= a && g.col <= b)) k.add('sluice');
+  /* and the rework's (docs/briefs/keep-rework-2.md): a whirlpool, failing stone, a roof that drops */
+  if ((L.whirlpools || []).some(w => w.x >= a && w.x <= b)) k.add('whirlpool'); if ((L.crumbles || []).some(c => c.x0 <= b && c.x1 >= a)) k.add('failing stone'); if (L.ents.some(e => e.t === 'rockfall' && e.x >= a && e.x <= b)) k.add('rockfall'); return k; };
 for (const s of L.keepSections.filter(s => s.x0 >= 66 && s.x0 < N)) { const k = kinds(s.x0, s.x1), need = s.x0 >= 400 ? 3 : 2; assert(k.size >= need, s.name + ' has only ' + [...k]); }
 
 // AIR IS NEVER FAR: a flood through the narrows' water from every air cell, in tiles

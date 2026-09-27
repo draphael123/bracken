@@ -15,6 +15,10 @@ const table = name => { const m = main.match(new RegExp('const ' + name + ' = \\
 
 const spawnCases = list(/case '(\w+)':/g);
 const decoKinds = new Set([...(main.match(/const K = \{([\s\S]*?)\}\[e\.kind\]/) || ['', ''])[1].matchAll(/(\w+):\s*\[/g)].map(m => m[1]));
+/* THE SPREADS INTO THAT MAP: `...cvDeco(e)` (THE SUNKEN CARAVAN's own dressing) is a function returning more rows, so its rows are
+   read out of that function's `return { ... }` too, or fourteen kinds that draw read as fourteen that silently do not */
+for (const [, fn] of (main.match(/const K = \{([\s\S]*?)\}\[e\.kind\]/) || ['', ''])[1].matchAll(/\.\.\.(\w+)\(e\)/g))
+  for (const m of ((main.match(new RegExp('function ' + fn + '\\(e\\) \\{[\\s\\S]*?return \\{\\s*(\\w+:[\\s\\S]*?)\\};'))|| ['', ''])[1]).matchAll(/(\w+):\s*\[/g)) decoKinds.add(m[1]);
 const EHP = table('EHP'), DMG = table('DMG'), COLS = table('COLS');
 const beasts = new Set([...main.matchAll(/\{ t: '(\w+)', name: ["']/g)].map(m => m[1]));
 const sprites = new Set([...main.matchAll(/SPR\.(\w+)\s*=/g)].map(m => m[1]));
@@ -77,9 +81,13 @@ for (const lv of LEVELS) {
   // light up, make their noise and never reach the ledger, because a silver's bit is 1 << i and it reads three
   if (L.silverExtra) flags.push(`${L.silverExtra} silver over three, turned into gold`);
   if (!MEDALS.has(lv.id)) flags.push('NO MEDALS');
+  // NO QUEST IS THE NORM NOW (Daniel, 2026-09-26: every decorative talker and quest-giver NPC outside the shops
+  // is gone, and their former relic rewards are pickups in the level instead of a collect-three-for-an-NPC
+  // errand). A level with no `L.quest`/`L.strays` is not a gap any more; only a level that still HAS one and
+  // whose stray count does not match it is a real mismatch (the Burial Caverns' candles, the Burning Village's
+  // rescue count).
   const q = L.quest || (L.strays ? { n: L.strays } : null);
-  if (!q) flags.push('no quest');
-  else if (n('stray') !== q.n) flags.push(`quest wants ${q.n}, level has ${n('stray')}`);
+  if (q && n('stray') !== q.n && q.item !== 'folk') flags.push(`quest wants ${q.n}, level has ${n('stray')}`);   /* 'folk' quests (the Burning Village) count captives, not strays */
   if (!n('gate') && !L.escapeGate && !(L.arena && L.arena.boss)) flags.push('no gate'); // a boss level ends when the boss does
   if (flags.length) say(`${lv.id}: ${flags.join('   ')}`);
 }

@@ -97,6 +97,26 @@ export function bakeGrassTop(seed, eL, eR) {
   if (eL) side(0, 1); if (eR) side(T - 1, -1);
   return c;
 }
+/* THE FLOOR UNDER THE HILL (level review, 2026-09-24: "the floor carries the orange sprout and root ticks of the surface dirt tile, 30 to
+   90 rows underground" - the Burial Caverns and the Ore Road's mine). A level below the ground walks on packed earth: a trodden lip paler
+   than the fill, grit and a stone or two pressed into it, and nothing growing - no turf, no root, no moss. eL/eR: a cut face on that side. */
+export function bakeEarthTop(seed, eL, eR) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T); dirtBase(g, rnd);
+  const lip = shade(C.dirtL, 0.08), trod = shade(C.dirt, 0.06), dark = shade(C.dirtD, -0.2);
+  for (let x = 0; x < T; x++) { px(g, x, 0, rnd() < 0.3 ? lip : shade(lip, 0.12)); px(g, x, 1, rnd() < 0.5 ? trod : lip); px(g, x, 2, rnd() < 0.35 ? dark : trod); if (rnd() < 0.5) px(g, x, 3, dark); }
+  for (let i = 0; i < 4; i++) { const x = (rnd() * T) | 0; px(g, x, (rnd() * 2) | 0, C.stoneL); }                  /* grit trodden into it */
+  if (rnd() < 0.5) { const sx = 1 + ((rnd() * 11) | 0); rect(g, sx, 0, 3, 2, C.stone); px(g, sx, 0, C.stoneL); px(g, sx + 2, 1, C.stoneD); }   /* a stone set in the path */
+  const side = (x0, dir) => { for (let y = 0; y < T; y++) { px(g, x0, y, rnd() < 0.7 ? C.stoneD : dark); if (y < 6 || rnd() < 0.4) px(g, x0 + dir, y, dark); } };
+  if (eL) side(0, 1); if (eR) side(T - 1, -1);
+  return c;
+}
+export function bakeEarthEdge(seed, eL, eR) {
+  const rnd = mulberry(seed); const [c, g] = canvas(T, T); dirtBase(g, rnd);
+  const side = (x0, dir) => { for (let y = 0; y < T; y++) { px(g, x0, y, rnd() < 0.7 ? C.stoneD : C.dirtD); if (rnd() < 0.4) px(g, x0 + dir, y, C.dirtD); }
+    if (rnd() < 0.6) { const y = 3 + ((rnd() * 9) | 0); px(g, x0 + dir * 2, y, C.stone); px(g, x0 + dir * 3, y, C.stoneL); } };
+  if (eL) side(0, 1); if (eR) side(T - 1, -1);
+  return c;
+}
 // Side edges on inner dirt (air beside but not above) get a darker fringe.
 export function bakeDirtEdge(seed, eL, eR) {
   const rnd = mulberry(seed); const [c, g] = canvas(T, T); dirtBase(g, rnd);
@@ -1159,6 +1179,13 @@ export function bakeBouncer() {
   return [mk(false), mk(true)];
 }
 // Shelf fungus: a one-way ledge that snaps after you stand on it.
+/* SHELF FUNGUS IN A MUSHROOM WOOD (the Sporewood rebuild, level review 2026-09-24: "orange board ledges in a violet fungus cave"). The
+   snapping shelf is named for a bracket fungus and was drawn as the forest's planks; in a wood whose palette says `myc` it is the fungus:
+   a pale rounded lip, a violet body, gills under it. Same rows as the plank (2-7), so it stands and snaps exactly where the plank did. */
+export function bakeShelfFungus(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T);
+  rect(g, 0, 3, T, 4, '#8a5a9a'); rect(g, 1, 2, T - 2, 1, '#e8d4f0'); rect(g, 0, 3, T, 1, '#c9a8d8'); rect(g, 0, 7, T, 1, '#3e2a4a');
+  for (let i = 1; i < T; i += 3) rect(g, i, 5, 1, 2, '#5e3e70');   /* the gills, underneath */
+  for (let i = 0; i < 2 + ((rnd() * 2) | 0); i++) px(g, 2 + ((rnd() * (T - 4)) | 0), 4, '#f4e8ff'); return c; }
 export function bakeShelf(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 2, T, 5, '#d9a55b'); rect(g, 0, 2, T, 1, '#f0d090'); rect(g, 0, 6, T, 1, '#8a5a32'); for (let i = 0; i < 4; i++) rect(g, 2 + i * 4, 4, 1, 2, '#b8813a'); if (rnd() < 0.5) px(g, (rnd() * T) | 0, 3, '#fff1c0'); return c; }
 /* LOOSE ROCK (THE SCREE PATH, 2026-09-23): the snapping shelf in stone - a slab of the hill split off its bed, a crack across it,
    grit already trickling off its underside. It must read as footing AND as a slab that is not holding. */

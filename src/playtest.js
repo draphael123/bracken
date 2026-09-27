@@ -21,18 +21,22 @@
 // Everything it finds is a FINDING: a kind, a severity, where it happened and what it was. Nothing here
 // changes the game; the bot restores the save, the hero and the settings it borrowed when it is done.
 import { LEVELS, T, TS } from './level.js';
-import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf, worstGap } from './threat.js';
+import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf, worstGap, measureLevel } from './threat.js';
 import { floodReach } from './reachcore.js';
 import { checkDrawables } from './floatlab.js';
 
 const SEV = { bug: 3, odd: 2, note: 1 };
 const solidT = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
-const standT = t => solidT(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
+/* A SLOPE IS A FLOOR (ids 20-25, src/slopes.js): its surface runs across its own cell, so a thing standing on a slope stands IN
+   the slope's cell and on the slope under it. Without this every checkpoint, prop and walker on THE SUNKEN CARAVAN's dunes
+   read as standing on nothing. No other level has a slope tile, so nothing else reads differently. */
+const slopeT = t => t >= 20 && t <= 25;
+const standT = t => solidT(t) || slopeT(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
 
 // what each creature is worth as a threat - the same table tools/curve.mjs uses, so the two agree
 // props that hang on purpose: a banner is meant to be in the air
 // the furniture, the scenery and the machinery: none of it is a creature and none of it weighs anything
-const NOT_A_FOE = /^(coin|sign|deco|npc|guest|folk|torch|silver|stray|relic|gate|mover|check|spawn|prop|shrine|key|door|plate|exit|bell|cage|capstan|seabell|lockgate|felltree|vent|doorway|cart|plank|cannon|crate|squire|fisher|bale|dummy|stormcloud|lamp|lever|hive|nest|rune|shard|brazier|well|seed|pad|raft|tide|wind|buoy|glow|glowbud|puffball|roller|lantern|wisp|throne|treehouse|sluice|sceptre|chandelier|barrel|spike|rock|weight|support|rod|crank|winch|flagpost|stormkite|hag|fox|squirrel|bird|acorn|tonic|shop|sign2|banner|anvil|forge|pump|bellows|gong|drum|pile|web|egg|urn|statue|pillar|grave|sack|keg|rope|hook|chain|ladder|bridge|post|sluicegate|wheel|mill|tank|pipe|valve|hearth|stove|table|chair|bed|chest|shelf|rack|crate2|barricade|window|well|crystal|mirror|receiver|resonance|bulkhead|stal|chimpot|scaffold|cascade|boiler|carpet|chainpost|sheet|sail|balloon|deadfall|font|runearch|glyph|gplate|vatspit|rune)$/;
+const NOT_A_FOE = /^(coin|sign|deco|npc|guest|folk|torch|silver|stray|relic|gate|mover|check|spawn|prop|shrine|key|door|plate|exit|bell|cage|capstan|seabell|lockgate|felltree|vent|doorway|cart|plank|cannon|crate|squire|fisher|bale|dummy|stormcloud|lamp|lever|hive|nest|rune|shard|brazier|well|seed|pad|raft|tide|wind|buoy|glow|glowbud|puffball|roller|lantern|wisp|throne|treehouse|sluice|sceptre|chandelier|barrel|spike|rock|weight|support|rod|crank|winch|flagpost|stormkite|hag|fox|squirrel|bird|acorn|tonic|shop|sign2|banner|anvil|forge|pump|bellows|gong|drum|pile|web|egg|urn|statue|pillar|grave|sack|keg|rope|hook|chain|ladder|bridge|post|sluicegate|wheel|mill|tank|pipe|valve|hearth|stove|table|chair|bed|chest|shelf|rack|crate2|barricade|window|well|crystal|mirror|receiver|resonance|bulkhead|stal|chimpot|scaffold|cascade|boiler|carpet|chainpost|sheet|sail|balloon|deadfall|font|runearch|glyph|gplate|vatspit|rune|awningwinch|load)$/;
 const HANGS = new Set(['banner', 'axle', 'timber', 'pillar', 'strut', 'sailRag', 'rigging', 'pennant', 'gunport',
   'hallWindow', 'hammock', 'washing', 'boardingNet', 'sternWindows', 'crowNest', 'mastTall', 'buoy',
   'lanternBuoy', 'airBell', 'hangCage', 'cobweb', 'bough', 'drip', 'hiveBg', 'eyrie', 'spire', 'rootDecor']);
@@ -213,7 +217,7 @@ export function makeBot(BK) {
       if (tick.climbX === undefined && portNear) for (let d = 0; d <= 12 && tick.climbX === undefined; d++) for (const sd of [-1, 1]) if (ledgeOver(fx + sd * d)) { tick.climbX = fx + sd * d; break; }
       if (tick.climbX !== undefined) {
         if (P.ground && ![-1, 0, 1].some(d => ledgeOver(tick.climbX + d))) tick.climbX = undefined;
-        else { goalX = tick.climbX * TS + 8; if (P.ground && Math.abs(P.x - goalX) < 12) { hold = Math.max(hold, 14); still = 0; }   /* a held jump, pressed where the bot presses all its jumps */ } } }
+        else { goalX = tick.climbX * TS + 8; if (P.ground && Math.abs(P.x - goalX) < 12) { hold = Math.max(hold, 26); still = 0; }   /* a held jump, pressed where the bot presses all its jumps. FULL height (26, "up is always the full jump" below): at 14 frames it rose 41 px, and a shelf three rows up needs 48 - THE SUNKEN CARAVAN's tower is two of them, and the bot hopped under the first one for a whole run */ } } }
     const dir = P.x < goalX - 10 ? 1 : P.x > goalX + 10 ? -1 : 0;
     fx = Math.floor(P.x / TS); fy = Math.floor(P.y / TS);
     keys.left = dir < 0; keys.right = dir > 0; keys.down = false;
@@ -230,11 +234,28 @@ export function makeBot(BK) {
     }
     keys.up = false;
 
+    // ---- THE QUICKSAND (THE SUNKEN CARAVAN). A held jump is ONE press, and the sand only lets go of someone who keeps
+    // pressing: the bot sat chest-deep at column 187 holding the button until the sun killed it, six times over. So in the
+    // sand it taps, about five a second, and walks the way on while it does - what the sign tells a player to do.
+    if (P.qsDepth > 0) { keys.jump = false; tick.jumping = 0; hold = 0; if ((tick.qsT = (tick.qsT || 0) + 1) % 7 === 0) BK.press('jump'); return null; }
+
     // ---- THE MOVERS. There are two things to do on one and they are opposites. If it is CARRYING you
     // the right way, stand still and let it. If it is not, the edge of it is a gap and the answer is to
     // JUMP - which is the whole marsh crossing, six lily pads three tiles apart, each one sinking under
     // you. The first version of this rule only knew how to stop, so the bot stood politely on a sinking
     // pad until it went under.
+    /* A BUD IS A STEP IF YOU STOP ON IT (THE SPROUTS, the Sporewood rebuild): a growcap rises only under a hero who stands still on it.
+       On a bud, or a sprout still growing, stand and let it carry you. Blocked by a wall or a gap with a bud close by, go and stand on it. */
+    { const m = P.onMover;
+      if (m && m.kind === 'growcap' && ((m.state === 'bud' && !(m.cd > 0)) || m.state === 'grow')) { keys.left = keys.right = false; keys.jump = false; hold = 0; tick.jumping = 0; still = 0; tick.budT = 0; return null; }
+      if (m && m.kind === 'growcap' && m.state === 'up' && dir) { keys.left = dir < 0; keys.right = dir > 0; keys.jump = false; hold = 0; still = 0; return null; }   /* grown: walk off the end onto what it grew you to - a leap from a cap is a leap over what it just carried you across */
+      if (!m && P.ground && (dir || tick.budT > 0)) {
+        const wall = dir && (at(fx + dir, fy - 1) === T.SOLID || at(fx + dir, fy - 2) === T.SOLID), gap = dir && !foot(fx + dir, fy) && !foot(fx + dir, fy + 1);
+        const bud = (wall || gap || tick.budT > 0) && BK.movers().find(q => q.kind === 'growcap' && q.state === 'bud' && !(q.cd > 0) && Math.abs(q.x + q.w / 2 - P.x) < 64 && Math.abs(q.y - P.y) < 14);
+        if (bud) { const bc = bud.x + bud.w / 2; tick.budT = tick.budT > 0 ? tick.budT - 1 : 90; keys.left = bc < P.x - 5; keys.right = bc > P.x + 5; keys.jump = false; hold = 0; still = 0;
+          if (!keys.left && !keys.right) { BK.press('jump'); keys.jump = true; tick.hopT = 8; } return null; } else tick.budT = 0; }
+      else if (!m && !P.ground && tick.budT > 0) { const bud = BK.movers().find(q => q.kind === 'growcap' && q.state === 'bud' && Math.abs(q.x + q.w / 2 - P.x) < 64 && Math.abs(q.y - P.y) < 40);
+        if (bud) { const bc = bud.x + bud.w / 2; keys.left = bc < P.x - 3; keys.right = bc > P.x + 3; keys.jump = (tick.hopT = (tick.hopT || 0) - 1) > 0; return null; } } }   /* (a held hop: a tapped one does not clear the bud's lip) */
     let leap = false;
     if (P.onMover) {
       const m = P.onMover, edge = dir && !foot(fx + dir, fy + 1) && !foot(fx + dir, fy + 2);
@@ -266,10 +287,10 @@ export function makeBot(BK) {
     // look two tiles on: a wall to clear, a hole to cross, or thorns to hop. A jump has to START two tiles
     // before the hole and be HELD past the apex, or it lands a third of a tile short - which is exactly what
     // it did at the first gap in Bracken Wood until the hold went from eleven frames to twenty-six.
-    let need = false;
+    let need = false, wall = false;
     if (dir) {
       // a WALL is jumped two tiles out, so the rise starts before you are against it
-      for (let k = 1; k <= 2; k++) if (solidT(at(fx + dir * k, fy - 1))) need = true;
+      for (let k = 1; k <= 2; k++) if (solidT(at(fx + dir * k, fy - 1))) need = wall = true;
       // a HOLE is jumped at the LAST tile: a jump two tiles early lands a third of a tile short of the far
       // side, which is precisely how the bot spent forty deaths on the first gap in Bracken Wood
       const nx = fx + dir;
@@ -291,6 +312,10 @@ export function makeBot(BK) {
         if (ty === null) continue;
         want = ty < fy ? 26 : Math.max(9, Math.min(26, 6 + k * 4));   /* up is always the full jump */
         break; }
+      /* AND A WALL IS UP. The search above looks for footing ON THE FAR SIDE of a wall at the bot's own height and found it: a
+         short hop "to" floor it can never reach over a tower's wall (THE SUNKEN CARAVAN, 2026-09-24: 14 frames, 41 px of rise, under
+         a shelf three rows up, for a whole run). A wall in the way always gets the full jump. */
+      if (wall) want = 26;
       hold = want;
     }
     if (hold > 0) { if (!tick.jumping) { BK.press('jump'); tick.jumping = 1; } keys.jump = true; hold--; } else { keys.jump = false; tick.jumping = 0; }
@@ -472,7 +497,7 @@ export async function run(BK, opts = {}) {
       const inRock = solidT(at(e.x, e.y)) && solidT(at(e.x, e.y - 1));
       if (inRock && THREAT[e.t] > 0 && !INROCK_FOE.has(e.t)) F('INSOLID', SEV.bug, e.t + ' spawned inside rock', e.x + ',' + e.y);
       else if (inRock && GROUNDED.has(e.t) && !INROCK_OK.has(e.kind)) F('INSOLID', SEV.bug, (e.t + (e.kind ? ':' + e.kind : '')) + ' inside rock', e.x + ',' + e.y);
-      if (GROUNDED.has(e.t) && !HANGS.has(e.kind) && !standT(at(e.x, e.y + 1)))
+      if (GROUNDED.has(e.t) && !HANGS.has(e.kind) && !standT(at(e.x, e.y + 1)) && !slopeT(at(e.x, e.y)))
         F('FLOAT', SEV.odd, (e.t + (e.kind ? ':' + e.kind : '')) + ' stands on nothing', e.x + ',' + e.y);
       // A TORCH CAN HANG ON A WALL, so the ground under it is not the test: the test is ground under it OR
       // rock beside it. (tools/audit.mjs exempts torches outright, which is how one spent months in the air
@@ -495,21 +520,14 @@ export async function run(BK, opts = {}) {
       const WANT = { gate: 'THE GATE', check: 'a checkpoint', silver: 'a silver', stray: 'a quest item', relic: 'the relic', key: 'a key' };
       for (const e of (built.ents || [])) { const w = WANT[e.t]; if (!w) continue;
         if (!near(e.x, e.y)) F(assisted ? 'ASSISTED' : 'UNREACHABLE', assisted ? SEV.note : SEV.bug, w + ' is outside the fill', e.x + ',' + e.y); }
-      const lost = (built.ents || []).filter(e => e.t === 'coin' && !jumpNear(e.x, e.y));
+      const lost = (built.ents || []).filter(e => e.t === 'coin' && !e.under && !jumpNear(e.x, e.y));   /* (`under`: laid under a lid the level opens - THE BURNING VILLAGE's root cellar, opened by a bucket - so no fill reaches it by design) */
       if (lost.length) F(assisted ? 'ASSISTED' : 'LOSTGOLD', assisted ? SEV.note : SEV.odd, lost.length + ' coins outside the fill');
     } catch (e) { F('CRASH', SEV.bug, 'reach model threw: ' + e.message); }
 
     // the shape of the fight, so balance is in the same report as everything else
-    { let foes = 0, threat = 0, checks = 0; const kinds = new Set();
-      for (const e of (built.ents || [])) { if (e.t === 'check') { checks++; continue; }
-        const w = THREAT[e.t]; if (w === undefined) { if (!NOT_A_FOE.test(e.t)) F('UNWEIGHED', SEV.note, 'no threat weight for "' + e.t + '"'); continue; }
-        if (w > 0) { foes++; threat += w * (e.mini ? 2 : e.elite ? 3 : 1); kinds.add(e.t); } }
-      const span = spanOf(W, H);
-      let hazTiles = 0;
-      for (let i = 0; i < built.grid.length; i++) if (built.grid[i] === T.SPIKE) hazTiles++;
-      for (const p of (built.pools || [])) { if (p.harm) hazTiles += Math.round((p.x1 - p.x0) / TS / 4);
-        else if (p.swim) hazTiles += Math.round((p.x1 - p.x0) / TS / 8); }   /* breath is a hazard with nothing in it */
-      const gap = worstGap(built.ents, W, H, built.arena);
+    { /* COUNTED IN src/threat.js (measureLevel), the same count tools/curve.mjs makes - this used to be its own copy, and it had drifted: it never counted an ambush room's crowd */
+      const M = measureLevel(built, { T, TS }), { foes, threat, checks, hazTiles, gap, span } = M, kinds = M.kindSet;
+      for (const t of M.unweighed) if (!NOT_A_FOE.test(t)) F('UNWEIGHED', SEV.note, 'no threat weight for "' + t + '"');
       Object.assign(row.stats, { foes, threat: Math.round(threat), kinds: kinds.size, checks, worstGap: gap, haz: hazTiles, thr100: +(threat / (span / 100)).toFixed(1), index: indexOf({ threat, kinds: kinds.size, hazTiles, gap, span }) });
       if (gap > 150) F('LONGGAP', SEV.odd, gap + ' columns with no checkpoint in them');
       if (kinds.size < 3) F('THIN', SEV.odd, 'only ' + kinds.size + ' kind(s) of creature in the whole level');

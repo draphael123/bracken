@@ -19,7 +19,7 @@
 //                                     catapult arms to swing the trench gaps; the ballista and the trebuchet you work
 //   c 230-265  4 THE TOPPLED TOWER    a wrecked siege tower lying at an angle: ladders, ropes and broken decks, and the trebuchet
 //                                     shot that knocks its upper deck loose
-//   c 266-299  5 THE STANDARD         open field and THE STANDARD-BEARER (mini) at the gate
+//   c 266-299  5 THE STANDARD         open field and THE BARROW RIDER (mini; the Standard-Bearer until 2026-09-24) at the gate
 //   c 300-373  6 THE CHAPEL OF THE FALLEN ORDER   the ruined chapel and the SEALED CRYPT ambush (the one ambush, one wave, a
 //                                     captain at its head)
 //   c 374-419  7 THE FIRST DEATH KNIGHT   forty tiles of chapel floor, two tomb ledges, and the dead he can raise off it
@@ -144,7 +144,7 @@ export function build(T) {
 
   // ---- 5. THE STANDARD (c 266-299): open field, the gate behind him ----
   const M = UF.MINI; for (let y = G - 4; y <= G; y++) set(M.gate, y, T.PORT); block(M.gate - 1, M.gate + 1, G - 9, G - 5);
-  ent('standardbearer', 284, G, { face: -1, mini: true });
+  ent('barrowrider', 284, G, { face: -1, mini: true });
   ent('sign', 268, G, { text: 'THE ARMY\'S GREAT BANNER. EVERY TIME HE PLANTS IT, THE FIELD RISES. TAKE IT FROM HIM.' });
 
   // ---- 6. THE CHAPEL OF THE FALLEN ORDER (c 300-373) ----
@@ -175,7 +175,7 @@ export function build(T) {
        draft had two waves and no captain, which is the shape rule Q was rewritten to stop. */
     ambushes: [{ name: 'THE SEALED CRYPT', row: G, wallL: A2.wallL, wallR: A2.wallR, check: [302, G], captain: 'wight',
       waves: [[['wight', 330, G, { captain: true, name: 'THE CRYPT WARDEN' }], ['zombie', 324, G], ['husk', 338, G], ['corpse', 342, G]]] }],
-    mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'standardbearer' },
+    mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'barrowrider' },
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'deathknight' },
   };
 }

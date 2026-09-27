@@ -1,0 +1,24 @@
+{"pass":0,"mode":"refill","h":"knight","out":"timeout","secs":150,"taken":505,"tpm":202,"left":19,"hitBy":{"charge":128,"vault":17,"planted":21,"rush":57,"whirlTell":13,"bashTell":11}}
+{"pass":0,"mode":"refill","h":"warden","out":"timeout","secs":150,"taken":534,"tpm":214,"left":19,"hitBy":{"charge":128,"planted":42,"thrustTell":72,"guardTell":21,"whirlTell":26,"rush":19}}
+{"pass":0,"mode":"refill","h":"pyro","out":"win","secs":143.9,"taken":496,"tpm":207,"left":0,"hitBy":{"charge":160,"thrustTell":24,"planted":21,"reel":37,"rush":76}}
+{"pass":0,"mode":"refill","h":"paladin","out":"timeout","secs":150,"taken":429,"tpm":172,"left":19,"hitBy":{"planted":21,"reel":37,"sweepTell":19,"whirlTell":13}}
+{"pass":0,"mode":"refill","h":"pirate","out":"win","secs":131.7,"taken":384,"tpm":175,"left":0,"hitBy":{"planted":63,"charge":64,"guardTell":63,"rush":19,"reel":14}}
+{"pass":0,"mode":"refill","h":"reaper","out":"win","secs":108.8,"taken":351,"tpm":194,"left":0,"hitBy":{"thrustTell":32,"sweepTell":19,"rush":26,"guardTell":28,"reel":28}}
+{"pass":0,"mode":"refill","h":"geomancer","out":"win","secs":80.7,"taken":218,"tpm":162,"left":0,"hitBy":{"thrustTell":48,"planted":21,"bashTell":22,"rush":38,"guardTell":21}}
+{"pass":1,"mode":"refill","h":"knight","out":"timeout","secs":150,"taken":505,"tpm":202,"left":19,"hitBy":{"charge":128,"vault":17,"planted":21,"rush":57,"whirlTell":13,"bashTell":11}}
+{"pass":1,"mode":"refill","h":"warden","out":"timeout","secs":150,"taken":534,"tpm":214,"left":19,"hitBy":{"charge":128,"planted":42,"thrustTell":72,"guardTell":21,"whirlTell":26,"rush":19}}
+{"pass":1,"mode":"refill","h":"pyro","out":"win","secs":143.9,"taken":496,"tpm":207,"left":0,"hitBy":{"charge":160,"thrustTell":24,"planted":21,"reel":37,"rush":76}}
+{"pass":1,"mode":"refill","h":"paladin","out":"timeout","secs":150,"taken":429,"tpm":172,"left":19,"hitBy":{"planted":21,"reel":37,"sweepTell":19,"whirlTell":13}}
+{"pass":1,"mode":"refill","h":"pirate","out":"win","secs":131.7,"taken":384,"tpm":175,"left":0,"hitBy":{"planted":63,"charge":64,"guardTell":63,"rush":19,"reel":14}}
+{"pass":1,"mode":"refill","h":"reaper","out":"win","secs":112.8,"taken":248,"tpm":132,"left":0,"hitBy":{"thrustTell":8,"sweepTell":19,"vault":21,"guardTell":28,"rush":7}}
+{"pass":1,"mode":"refill","h":"geomancer","out":"win","secs":80.7,"taken":218,"tpm":162,"left":0,"hitBy":{"thrustTell":48,"planted":21,"bashTell":22,"rush":38,"guardTell":21}}
+{"pass":"normal","mode":"normal","h":"knight","out":"death","secs":36.4,"taken":100,"tpm":160,"left":79,"hitBy":{"charge":32,"vault":17}}
+{"pass":"normal","mode":"normal","h":"warden","out":"death","secs":18.2,"taken":100,"tpm":254,"left":84,"hitBy":{"charge":32,"planted":21}}
+{"pass":"normal","mode":"normal","h":"pyro","out":"death","secs":28.3,"taken":88,"tpm":170,"left":87,"hitBy":{"charge":32,"thrustTell":24}}
+{"pass":"normal","mode":"normal","h":"paladin","out":"death","secs":25.2,"taken":120,"tpm":286,"left":76,"hitBy":{"vault":17,"thrustTell":24}}
+{"pass":"normal","mode":"normal","h":"pirate","out":"death","secs":36.9,"taken":90,"tpm":146,"left":78,"hitBy":{"planted":21,"charge":32}}
+{"pass":"normal","mode":"normal","h":"reaper","out":"death","secs":42.1,"taken":103,"tpm":147,"left":73,"hitBy":{"thrustTell":8}}
+{"pass":"normal","mode":"normal","h":"geomancer","out":"death","secs":31.6,"taken":95,"tpm":158,"left":59,"hitBy":{"sweepTell":19,"planted":16}}
+{"mode":"refill","fights":14,"wins":8,"medianWin":131.7,"medianTaken":429,"byHero":{"knight":"timeout 150s 505 | timeout 150s 505","warden":"timeout 150s 534 | timeout 150s 534","pyro":"win 143.9s 496 | win 143.9s 496","paladin":"timeout 150s 429 | timeout 150s 429","pirate":"win 131.7s 384 | win 131.7s 384","reaper":"win 108.8s 351 | win 112.8s 248","geomancer":"win 80.7s 218 | win 80.7s 218"}}
+{"mode":"normal","fights":7,"wins":0,"medianWin":null,"medianTaken":100,"byHero":{"knight":"death 36.4s 100","warden":"death 18.2s 100","pyro":"death 28.3s 88","paladin":"death 25.2s 120","pirate":"death 36.9s 90","reaper":"death 42.1s 103","geomancer":"death 31.6s 95"}}
+errors []

@@ -4,8 +4,9 @@
              through to the default ground kit and painting itself with palette.grass. The parapet was one. THE
              CRENELLATIONS WERE ANOTHER, and nobody had noticed those at all. A per-row assert would have fixed the row
              I was told about and left the merlons green, so this asserts the RULE instead of the instance.
-     SAND    the cutting past the second door is solid, walled at both ends, and the gate stands on it - and the gate is
-             no longer on the parapet, because the level does not end on the kill any more
+     DESERT  (round 2) past the second door is open sand from one edge of the world to the other, skinned as the Caravan's
+             sand; the gate - the level's end - stands on it a few steps from where you arrive, and not on the parapet,
+             because the level does not end on the kill
      ROOM    the spawn is inside the carpet box and clear of the fire; the fire lies INSIDE the box (a hazard you cannot
              reach is not a hazard) and does not fill it (a hazard you cannot leave is not a hazard either)
      DOOR    the way out is clamped into the room wherever he happens to fall - including into the fire, and into a wall
@@ -32,12 +33,13 @@ const claimed = (x, y) => skins.some(([a, b, c, d]) => x >= a && x <= b && y >= 
   assert.ok(claimed(X0 - 2, SKY - 3) && claimed(X1 + 2, SKY - 3), 'the crenellations are unskinned again');
 }
 
-// ---------------------------------------------------------------- 2. THE SANDY PATH
-{ for (let x = SAND.x0; x <= SAND.x1; x++) assert.equal(at(x, SAND.row), T.SOLID, 'the sand bank has a hole at x' + x);
-  for (let x = SAND.step; x <= SAND.x1; x++) assert.equal(at(x, SAND.row - 1), T.SOLID, 'the rise to the gate has a hole at x' + x);
-  assert.equal(at(SAND.x0 - 1, SAND.row - 1), T.SOLID, 'the cutting is open at its near end: you can walk off the world');
-  assert.equal(at(SAND.x1 + 1, SAND.row - 2), T.SOLID, 'the cutting is open at its far end');
+// ---------------------------------------------------------------- 2. THE DESERT (round 2: it was a walled sandstone cutting)
+{ assert.equal(SAND.x0, 0, "the desert does not start at the world's edge"); assert.equal(SAND.x1, W - 1, "the desert does not run to the world's far edge");
+  for (let x = SAND.x0; x <= SAND.x1; x++) assert.equal(at(x, SAND.row), T.SOLID, 'the sand has a hole at x' + x);
+  for (let x = SAND.x0; x <= SAND.x1; x++) assert.equal(at(x, SAND.row - 1), T.AIR, 'something stands on the open sand at x' + x + ': a wall or the old cutting');
+  assert.ok(skins.some(([a, b, c, d, k]) => k === 'dune' && a <= SAND.x0 && b >= SAND.x1 && c <= SAND.row && d >= SAND.deep), "the desert is not skinned as the Caravan's sand");
   const gate = L.ents.find(e => e.t === 'gate');
+  assert.ok(Math.abs(gate.x - SAND.arrive) >= 6 && Math.abs(gate.x - SAND.arrive) <= 18, "the level's end is not a few steps from where the door puts you: " + gate.x + ' vs ' + SAND.arrive);
   assert.ok(gate, 'no gate');
   assert.ok(gate.y < SAND.row && gate.y >= SAND.row - 3, 'the gate is not on the sand (y ' + gate.y + ')');
   assert.ok(gate.y < SKY, 'the gate is still up on the parapet: the level would end where the fight does');

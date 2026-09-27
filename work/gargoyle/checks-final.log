@@ -1,0 +1,33 @@
+
+> check
+> node tools/check.mjs gargoyle-smash,witchlight,boss-openings,boss-fight-end,arena-supplies,tells,mini-names,floaters,architecture,footing-art,checkpoint-stand,checkpoints,audit,content-audit,textfit,readability,ore-road,comments,syntax,homepaths,dangling-paths,one-new-foe
+
+ ok  syntax             0ms  0 files parse
+ ok  tells            474ms  the mark over every windup on the screen comes from this table (src/marks.js, 549 rows).
+ ok  ore-road        3008ms  all ore road checks pass
+ ok  comments         155ms  no swallowed code found.
+ ok  homepaths        325ms  ok  homepaths     484 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths   370ms  ok  dangling-paths 2107 tracked files, every repo path they cite resolves in a fresh clone (6 known holes list
+ ok  floaters        3484ms  2805 standing things checked (47 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  audit           4801ms  == caravan (578x40) clean
+ ok  content-audit   7500ms  20 things to look at.
+ ok  checkpoints     7945ms  420 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  one-new-foe     3466ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  witchlight     39916ms  THE WITCHLIGHT STAIR: five places, one verb each, encounters not a sprinkle, its own light - the Hedge Warden 
+ ok  readability      250ms  Scenery behind tiles, softened outline-free art, wall-grip feedback, 13 homes and two landmarks.
+ ok  boss-openings  63934ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":
+ ok  arena-supplies  4741ms  ok  arena-supplies  46 boss rooms, 13 height conditions scored against the ground their arenas actually offer;
+ ok  boss-fight-end223885ms  Every one of 46 boss and mini fights (32 bosses, 14 minis) ends when its boss dies.
+ ok  mini-names     57233ms  every mini has its own name (14 levels): kings=THE GREAT HOUND, hanging=THE WEAVER, spire=THE TEMPLE GUARDIAN,
+ ok  architecture    3328ms  44 levels, 321 built pieces declared; 3 grandfathered (harbor, waymeet, unburied). everything that was built s
+ ok  footing-art    64295ms  footing-art: every floor cell you can stand on is drawn, in 27 levels; painted by their own code: fields (fiel
+ ok  checkpoint-stand  4845ms  ok  checkpoint-stand   420 checkpoints in 44 levels: every one stood at with a real jump (5 columns, not 6; 3 
+ ok  gargoyle-smash 20692ms  THE GATE GARGOYLE: zoomed out, in a room of forty tiles with its slabs lowered, half as big again, and a slab 
+ ok  textfit       217447ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-gargoyle\audits\readability\textfit
+
+22 of 167 checks pass - A SUBSET (gargoyle-smash, witchlight, boss-openings, boss-fight-end, arena-supplies, tells, mini-names, floaters, architecture, footing-art, checkpoint-stand, checkpoints, audit, content-audit, textfit, readability, ore-road, comments, syntax, homepaths, dangling-paths, one-new-foe), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.
+
+real	12m13.914s
+user	0m0.121s
+sys	0m0.199s

@@ -1,0 +1,23 @@
+{"h":"knight","salt":1,"out":"win","secs":79.6,"taken":162,"opened":7,"left":0,"swings":97,"hitBy":{"hover":98,"markWait":26,"markTell":19,"iceTell":19}}
+{"h":"warden","salt":1,"out":"timeout","secs":150,"taken":152,"opened":12,"left":40,"swings":77,"hitBy":{"hover":57,"poisonTell":19,"markWait":57,"iceTell":19}}
+{"h":"pyro","salt":1,"out":"timeout","secs":150,"taken":185,"opened":13,"left":5,"swings":112,"hitBy":{"hover":57,"markWait":64,"gather":26,"markTell":19,"poisonTell":19}}
+{"h":"paladin","salt":1,"out":"win","secs":95.5,"taken":174,"opened":8,"left":0,"swings":83,"hitBy":{"hover":84,"markWait":45,"gather":7,"markTell":19,"poisonTell":19}}
+{"h":"pirate","salt":1,"out":"win","secs":128.5,"taken":59,"opened":12,"left":0,"swings":88,"hitBy":{"hover":14,"blinkOut":7,"poisonTell":19,"markWait":19}}
+{"h":"reaper","salt":1,"out":"win","secs":118.8,"taken":178,"opened":12,"left":0,"swings":58,"hitBy":{"hover":64,"blinkOut":7,"markWait":52,"stormTell":29,"handTell":7,"iceTell":14,"markTell":5}}
+{"h":"geomancer","salt":1,"out":"win","secs":92.5,"taken":125,"opened":8,"left":0,"swings":77,"hitBy":{"hover":87,"markTell":19,"poisonTell":19}}
+{"h":"knight","salt":2,"out":"win","secs":110.3,"taken":170,"opened":10,"left":0,"swings":84,"hitBy":{"hover":54,"poisonTell":38,"markWait":38,"gather":40}}
+{"h":"warden","salt":2,"out":"timeout","secs":150,"taken":152,"opened":11,"left":51,"swings":68,"hitBy":{"hover":76,"markWait":19,"poisonTell":38,"fireTell":19}}
+{"h":"pyro","salt":2,"out":"timeout","secs":150,"taken":243,"opened":14,"left":5,"swings":102,"hitBy":{"hover":59,"markTell":19,"stormTell":87,"handTell":21,"iceTell":19,"poisonTell":38}}
+{"h":"paladin","salt":2,"out":"timeout","secs":150,"taken":298,"opened":14,"left":0,"swings":103,"hitBy":{"hover":191,"markWait":45,"gather":26,"stormTell":29,"handTell":7}}
+{"h":"pirate","salt":2,"out":"win","secs":115.3,"taken":203,"opened":11,"left":0,"swings":86,"hitBy":{"hover":40,"blinkOut":21,"markTell":7,"poisonTell":19,"markWait":57,"gather":26,"stormTell":19,"handTell":7,"fireTell":7}}
+{"h":"reaper","salt":2,"out":"win","secs":79.7,"taken":191,"opened":8,"left":0,"swings":49,"hitBy":{"hover":125,"blinkOut":7,"markWait":40,"markTell":19}}
+{"h":"geomancer","salt":2,"out":"win","secs":100.2,"taken":181,"opened":10,"left":0,"swings":91,"hitBy":{"hover":84,"markTell":26,"markWait":33,"iceTell":19,"poisonTell":19}}
+{"h":"knight","salt":3,"out":"win","secs":98.4,"taken":195,"opened":9,"left":0,"swings":98,"hitBy":{"hover":117,"markWait":59,"poisonTell":19}}
+{"h":"warden","salt":3,"out":"timeout","secs":150,"taken":76,"opened":11,"left":52,"swings":72,"hitBy":{"markTell":19,"hover":38,"poisonTell":19}}
+{"h":"pyro","salt":3,"out":"timeout","secs":150,"taken":90,"opened":12,"left":27,"swings":83,"hitBy":{"poisonTell":38,"hover":33,"markWait":19}}
+{"h":"paladin","salt":3,"out":"timeout","secs":150,"taken":186,"opened":14,"left":0,"swings":102,"hitBy":{"hover":73,"markWait":35,"gather":7,"poisonTell":19,"iceTell":38,"markTell":14}}
+{"h":"pirate","salt":3,"out":"timeout","secs":150,"taken":230,"opened":13,"left":9,"swings":80,"hitBy":{"hover":109,"markTell":19,"markWait":26,"iceTell":38,"poisonTell":38}}
+{"h":"reaper","salt":3,"out":"win","secs":62.1,"taken":142,"opened":6,"left":0,"swings":54,"hitBy":{"hover":83,"blinkOut":7,"fireTell":19,"iceTell":14,"markTell":5,"markWait":14}}
+{"h":"geomancer","salt":3,"out":"win","secs":75.5,"taken":113,"opened":7,"left":0,"swings":93,"hitBy":{"hover":87,"blinkOut":7,"markTell":19}}
+{"health":"refill","cap":150,"fights":21,"wins":12,"pct":57,"medianWin":98.4,"medianLeftOnLoss":9,"openedAvg":10.6,"byHero":{"knight":"3/3","warden":"0/3","pyro":"0/3","paladin":"1/3","pirate":"2/3","reaper":"3/3","geomancer":"3/3"},"hitBy":{"hover":1630,"markWait":648,"markTell":228,"iceTell":180,"poisonTell":380,"gather":132,"blinkOut":56,"stormTell":164,"handTell":42,"fireTell":45}}
+errors []

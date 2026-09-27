@@ -1,0 +1,49 @@
+
+> check
+> node tools/check.mjs reef-hulk,reefmaw-land,reefmaw-art,tells,arena-supplies,boss-openings,boss-fight-end,boss-navigation,sea-requests,sea-runtime,swim-chain,swim-shrines,one-new-foe,spawns,floaters,audit,content-audit,traps,killzones,collectables,deadends,checkpoints,checkpoint-gaps,signs,textfit,dressing,skins,map-grammar,threat-holes,comments,homepaths,dangling-paths,keys,architecture,elites,keep,ore-road
+
+ ok  syntax             0ms  0 files parse
+ ok  tells            596ms  the mark over every windup on the screen comes from this table (src/marks.js, 543 rows).
+ ok  ore-road        4812ms  all ore road checks pass
+ ok  comments         265ms  no swallowed code found.
+ ok  homepaths        324ms  ok  homepaths     447 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths   362ms  ok  dangling-paths 1752 tracked files, every repo path they cite resolves in a fresh clone (6 known holes list
+ ok  floaters        5680ms  2733 standing things checked (48 set down a row or more at load; 33 hung ones with no rock over them are left 
+ ok  audit           7342ms  == caravan (547x40) clean
+ ok  content-audit   9914ms  19 things to look at.
+ ok  traps           8463ms  no traps.
+ ok  signs           9242ms  no level says the same sentence on two signs (1 known).
+ ok  killzones      19431ms  no reachable tile kills a standing hero.
+ ok  collectables   22390ms  every pickup can be picked up from some ground.
+ ok  keys            5072ms  5 levels with lock gates flooded key by key. every key comes before its gate.
+ ok  elites         20202ms  39 elites. every elite can be fought and every gate it holds opens onto the route.
+ ok  spawns          4036ms  2337 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  deadends        7910ms  172 dead ends in 32 levels, and every one pays.
+ ok  map-grammar      235ms  The map grammar holds: no retraced road, required nodes resolve forward, the margin and spur bands hold, every
+ ok  checkpoints    10257ms  426 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  keep            2587ms  Deep/Keep crop metadata, tribute, rewards, arrival air, campaign order, four crab attacks and counters, two Be
+ ok  keep-runtime   28558ms  Deep crab and Keep king activate, attacks resolve, both defeats finish their stages, and Keep music decodes.
+ ok  keep-expansion  6336ms  Keep triples width and scoped breath; air refuges, sluices and ballast exist; five Keeper tells, counters, ope
+ ok  keep-passages  36773ms  Keep narrows: approach 560 tiles, 57% of the new stretch is passage (hall median 35), 9 siphons, 6 blights, 8 
+ ok  keep-expansion-runtime 40563ms  [{"h":"knight","breath":18,"refill":true,"verticalSwim":true},{"h":"warden","breath":18,"refill":true,"vertica
+ ok  skins          26801ms  ok  roofs          38 houses: every roof picture sits on the slab you stand on.
+ ok  threat-holes    7838ms  ok  threat-holes   164 creature kinds placed across 44 levels, every one weighed. Deliberately 0: dummy, folk,
+ ok  one-new-foe     7326ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  sea-requests     404ms  Sea: permanent tentacles across all phases, block/dodge wave responses, half Deep breath drain, no Tollmaster 
+ ok  sea-runtime    30066ms  Kraken final blow: reflected water, bell and cargo all trigger defeat.
+ ok  dressing       10888ms  no sprinkled decoration within three tiles of a fire on the floor.
+ ok  boss-openings  55622ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":
+ ok  arena-supplies  7509ms  ok  arena-supplies  47 boss rooms, 13 height conditions scored against the ground their arenas actually offer;
+ ok  boss-navigation 61240ms  {"lvl":"flotilla","boss":"quarter","h":"knight","killed":true,"secs":72.5,"bossHp":725,"hpLeftPct":0,"health":
+ ok  swim-chain     42080ms  [{"hero":"knight","began":{"swim":true,"plunge":true,"chain":1,"st":72},"ended":{"swim":true,"plunge":false,"c
+ ok  boss-fight-end205489ms  Every one of 47 boss and mini fights (32 bosses, 15 minis) ends when its boss dies.
+ ok  swim-shrines   15043ms  swim-shrines: 20 underwater shrines in 4 levels; every one the swum route crosses, it lights (6 not on it).
+ ok  checkpoint-gaps 10848ms  checkpoint-gaps  32 levels measured along their walked route; the longest run with no checkpoint outside the k
+ ok  architecture    7356ms  44 levels, 283 built pieces declared; 4 grandfathered (keep, harbor, waymeet, unburied). everything that was b
+ ok  reefmaw-land   40527ms  ok  reefmaw-land  the tide goes out (told), he comes ashore; a dodged lunge beaches him (jumped or from a ledg
+ ok  reefmaw-art      589ms  reefmaw land art: 11 frames 130x44, grounded, every tell its own pose; sheet order (four to a row): CRAWL, CRA
+ ok  reef-hulk      20220ms  ok  reef-hulk  the grate is down at load, three turns lift it, it stays up through a death, the hold swims out
+ ok  textfit       206548ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-reef2\audits\readability\textfit
+
+42 of 150 checks pass - A SUBSET (reef-hulk, reefmaw-land, reefmaw-art, tells, arena-supplies, boss-openings, boss-fight-end, boss-navigation, sea-requests, sea-runtime, swim-chain, swim-shrines, one-new-foe, spawns, floaters, audit, content-audit, traps, killzones, collectables, deadends, checkpoints, checkpoint-gaps, signs, textfit, dressing, skins, map-grammar, threat-holes, comments, homepaths, dangling-paths, keys, architecture, elites, keep, ore-road), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.

@@ -15,6 +15,7 @@
    discovered, not listed: any level that grows a skins table is covered the moment it does. */
 import assert from 'node:assert/strict';
 import { LEVELS, T } from '../src/level.js';
+import { UF } from '../src/unburied-field.js';
 
 let checked = 0, cells = 0;
 const report = [];
@@ -48,3 +49,77 @@ for (const lv of LEVELS) {
 assert.ok(checked >= 3, 'only ' + checked + ' levels with a skins table were found: this check has stopped covering things it used to');
 console.log(report.join('\n'));
 console.log('ok  skins          ' + checked + ' levels paint their own stone, ' + cells.toLocaleString() + ' solid cells, and nothing indoors grows grass.');
+
+/* AND NOTHING FALLS THROUGH TO THE FOREST (Daniel 2026-09-24, THE UNBURIED FIELD: "it uses the forest theme/tiles ... it
+   needs a graveyard theme"). The same bug class one level out: a level that names no palette does not fail, it paints
+   with the DEFAULT KIT - src/art.js's green turf, the wood's felled-log ledges, its oaks, beehives and butterflies (dress
+   'wood' is what main.js assumes when none is named), its leafy bough over the lens and a blue day sky. The wood is the
+   one level that kit belongs to; `custom` is the parked editor's blank page. Everything else must say what it is. */
+import { readFileSync } from 'node:fs';
+import { DRESS } from '../src/level.js';
+const FOREST_OWNS = new Set(['wood', 'custom']);
+const bareKit = [];
+for (const lv of LEVELS) { if (FOREST_OWNS.has(lv.id)) continue; let L; try { L = lv.build(); } catch { continue; }
+  if (!L.palette || !L.palette.dress) bareKit.push(lv.id); }
+assert.deepEqual(bareKit, [], 'these levels name no palette dress, so they paint with the forest kit: ' + bareKit.join(', '));
+{ /* THE UNBURIED FIELD resolves its own look, and main.js has a branch for every name it asks for */
+  const U = LEVELS.find(l => l.id === 'unburied').build(), P = U.palette || {}, MAIN = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  for (const k of ['sky', 'far', 'mid', 'near']) {
+    assert.equal(P[k], 'unburied', "unburied: palette." + k + " is not its own ('" + P[k] + "'): it falls through to the default forest layer");
+    assert.ok(MAIN.includes("pal." + k + " === 'unburied'"), "unburied: main.js has no branch for pal." + k + " === 'unburied', so the name resolves to the forest layer");
+  }
+  assert.equal(P.dress, 'battlefield', 'unburied: its dress is not the battlefield');
+  assert.ok(P.grass && P.grass !== '#5aa33e' && P.dirt && P.dirt !== '#7a5230', 'unburied: its ground wears the forest turf (palette.grass/dirt unset)');
+  assert.ok(P.boneSoil && MAIN.includes('pal.boneSoil'), 'unburied: the dead are not in its soil');
+  assert.ok(P.ledges && P.ledges !== 'log', 'unburied: its ledges are the wood\'s felled logs');
+  { const [c0] = UF.SECTIONS.chapel;   /* the chapel's own columns (THE BROKEN BRIDGES moved it sixty east, 2026-09-25) */
+    assert.ok((U.masonry || []).some(([a, b]) => a <= c0 + 20 && b >= U.W - 1), 'unburied: THE CHAPEL OF THE FALLEN ORDER is not laid in stone (L.masonry)'); }
+  const kinds = new Set((DRESS.unburied || []).map(d => d[0]));
+  for (const k of ['fieldGrave', 'crookedCross', 'brokenSpears', 'stuckShield', 'fallenBanner', 'bones']) assert.ok(kinds.has(k), 'unburied: its dressing has no ' + k);
+  console.log('ok  forest kit     ' + (LEVELS.length - FOREST_OWNS.size) + ' levels name their own dress; THE UNBURIED FIELD resolves its own sky, layers, ground, ledges, chapel stone and dressing.');
+}
+{ /* NOTHING GROWS UNDER THE HILL, AND NOBODY WAS BURIED THERE IN A TRICORN (level review, 2026-09-24). The forest's root tile -
+     wood-brown roots reaching down from the grass - was laid under every floor of the Burial Caverns and the Ore Road's mine,
+     thirty to ninety rows underground; and the barrow's garrison stood up the drowned coast's bone corsairs, tricorns and striped
+     shirts, in a hill crypt. main.js's belowGround() swaps the roots out; the sea's dead belong to a level dressed as the sea. */
+  const MAIN = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const m = MAIN.match(/function belowGround\(Lv\) \{[^\n]*\}/); assert.ok(m, 'cannot read belowGround out of src/main.js');
+  const belowGround = new Function('return ' + m[0])();
+  assert.ok(/below = belowGround\(L\)/.test(MAIN) && /if \(below\) TILE\.roots = TILE\.dirt\.slice\(0, 3\)/.test(MAIN), 'bakeAll does not take the root tile out of a level below the ground');
+  /* NO TURF UNDER THE HILL EITHER (claude/burial2, 2026-09-26). The roots went on 2026-09-24 and the floor's own top tile did not: every
+     floor of the caverns and the mine still wore the surface's grass-top dirt, its turf in the level's grass colour and a root end in its
+     lip. bakeAll gives a level below the ground its own packed-earth top and cut face - and that tile, baked here in Node with the
+     caverns' own palette, carries not one pixel of the level's grass or of the root's wood. */
+  assert.ok(MAIN.includes("if (below) for (const eL of [0, 1]) for (const eR of [0, 1]) { TILE.top[eL + '' + eR] = [0, 1, 2, 3].map(i => ART.bakeEarthTop("), 'bakeAll still lays the surface\'s grass-top tile on the floor of a level below the ground');
+  { const NC = await import('./node-canvas.mjs'); NC.install(); const ART = await import('../src/art.js'), bur = LEVELS.find(l => l.id === 'burial').build().palette;
+    Object.assign(ART.C, { grass: bur.grass, grassL: bur.grassL, grassD: bur.grassD, dirt: bur.dirt, dirtL: bur.dirtL, dirtD: bur.dirtD });
+    const bad = new Set([bur.grass, bur.grassL, bur.grassD, ART.C.woodD].map(h => h.toLowerCase())), hex = (d, k) => '#' + [0, 1, 2].map(j => d[k + j].toString(16).padStart(2, '0')).join('');
+    let n = 0; for (const eL of [0, 1]) for (const eR of [0, 1]) for (let i = 0; i < 4; i++) { const c = ART.bakeEarthTop(900 + i + eL * 7 + eR * 13, eL, eR), d = c.getContext('2d').getImageData(0, 0, 16, 16).data;
+      for (let k = 0; k < d.length; k += 4) if (bad.has(hex(d, k))) n++; }
+    assert.equal(n, 0, 'the floor under the hill has ' + n + ' pixels of turf or root in it'); }
+  const SEA_DEAD = new Set(['bonecorsair', 'tidemarauder']), SEA_SET = new Set(['ship', 'reef', 'shore', 'city']);
+  const under = [], wrong = [];
+  for (const lv of LEVELS) { let L; try { L = lv.build(); } catch { continue; } const p = L.palette || {};
+    if (L.underground || L.oreRoad) { under.push(lv.id); assert.ok(belowGround(L), lv.id + ' is under the ground and still grows the forest\'s roots'); }
+    if (!SEA_SET.has(p.set) && !SEA_SET.has(p.dress)) for (const e of L.ents) if (SEA_DEAD.has(e.t)) wrong.push(`${lv.id} ${e.t}@${e.x},${e.y}`); }
+  assert.deepEqual(wrong, [], 'the sea\'s dead stand in a level that is not the sea: ' + wrong.join(' '));
+  console.log('ok  under the hill ' + under.length + ' levels below the ground (' + under.join(', ') + ') grow no roots and walk on earth, not turf; the sea\'s dead stand only in the sea\'s levels.');
+}
+
+/* A ROOF'S PICTURE COVERS ITS ROOF. drawRoofs paints every house's roof (thatch, slate or tile) over the three rows above
+   the house's front - (h.y0 - 3) to (h.y0 - 1) - and the tiles under that picture are what you walk on. If the slab a
+   builder laid sits anywhere else, the picture hangs under it and the rows you stand on paint as the ground kit: THE
+   BURNING VILLAGE laid its slabs two rows higher than its houses said, so every roof in the level was a strip of street
+   cobble floating over a thatch that nobody could stand on (level review, 2026-09-25, the rooftops rework). Every level
+   with houses: the three rows under the picture are solid across the house, and the row over them is not. */
+{
+  const bad = []; let roofs = 0;
+  const SOLIDISH = new Set([T.SOLID, T.SOFT]);
+  for (const lv of LEVELS) { let L; try { L = lv.build(); } catch { continue; }
+    for (const h of L.houses || []) { roofs++; const top = h.y0 - 3, at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x];
+      const holes = [], over = [];
+      for (let x = h.x0; x <= h.x1; x++) { for (let y = top; y <= top + 2; y++) if (!SOLIDISH.has(at(x, y))) holes.push(x + ',' + y); if (SOLIDISH.has(at(x, top - 1))) over.push(x + ',' + (top - 1)); }
+      if (holes.length || over.length) bad.push(lv.id + ' house ' + h.x0 + '-' + h.x1 + ': roof picture rows ' + top + '-' + (top + 2) + (holes.length ? ', open under it at ' + holes.slice(0, 3).join(' ') : '') + (over.length ? ', slab above it at ' + over.slice(0, 3).join(' ') : '')); } }
+  if (bad.length) { console.log('FAIL roofs: ' + bad.length + ' of ' + roofs + ' houses whose roof picture does not sit on their slab\n  ' + bad.join('\n  ')); process.exitCode = 1; }
+  else console.log('ok  roofs          ' + roofs + ' houses: every roof picture sits on the slab you stand on.');
+}

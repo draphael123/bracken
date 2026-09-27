@@ -1,0 +1,619 @@
+{
+ "label": "before",
+ "at": "2026-09-25T20:49:24.555Z",
+ "summary": {
+  "label": "before",
+  "fights": 21,
+  "wins": 20,
+  "medianWin": 123.6,
+  "medianTaken": 32,
+  "vents": 550,
+  "crowned": 0,
+  "cracked": 0,
+  "bossHp": 1046
+ },
+ "rows": [
+  {
+   "seed": 0,
+   "h": "knight",
+   "out": "win",
+   "secs": 109.1,
+   "hp": 1046,
+   "taken": 26,
+   "tpm": 14,
+   "left": 0,
+   "vents": 23,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 26
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 22,
+    "scuttleTell": 5,
+    "scuttle": 4,
+    "vent": 23,
+    "ballastTell": 6,
+    "slam": 6,
+    "pressureTell": 8,
+    "pressure": 8,
+    "clawTell": 4,
+    "claw": 4
+   }
+  },
+  {
+   "seed": 0,
+   "h": "warden",
+   "out": "win",
+   "secs": 133,
+   "hp": 1046,
+   "taken": 124,
+   "tpm": 56,
+   "left": 0,
+   "vents": 29,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 124
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 29,
+    "scuttleTell": 5,
+    "scuttle": 2,
+    "vent": 29,
+    "ballastTell": 7,
+    "slam": 7,
+    "pressureTell": 10,
+    "pressure": 10,
+    "clawTell": 6,
+    "claw": 6
+   }
+  },
+  {
+   "seed": 0,
+   "h": "pyro",
+   "out": "win",
+   "secs": 113.3,
+   "hp": 1046,
+   "taken": 52,
+   "tpm": 28,
+   "left": 0,
+   "vents": 23,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 52
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 24,
+    "scuttleTell": 5,
+    "scuttle": 5,
+    "vent": 23,
+    "ballastTell": 6,
+    "slam": 6,
+    "pressureTell": 8,
+    "pressure": 8,
+    "clawTell": 4,
+    "claw": 2
+   }
+  },
+  {
+   "seed": 0,
+   "h": "paladin",
+   "out": "win",
+   "secs": 131.2,
+   "hp": 1046,
+   "taken": 0,
+   "tpm": 0,
+   "left": 0,
+   "vents": 30,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {},
+   "modes": {
+    "wake": 1,
+    "idle": 30,
+    "scuttleTell": 5,
+    "scuttle": 3,
+    "vent": 30,
+    "ballastTell": 8,
+    "slam": 8,
+    "pressureTell": 9,
+    "pressure": 9,
+    "clawTell": 7,
+    "claw": 7
+   }
+  },
+  {
+   "seed": 0,
+   "h": "pirate",
+   "out": "win",
+   "secs": 105,
+   "hp": 1046,
+   "taken": 98,
+   "tpm": 56,
+   "left": 0,
+   "vents": 21,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 98
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 21,
+    "scuttleTell": 4,
+    "scuttle": 4,
+    "vent": 21,
+    "ballastTell": 5,
+    "slam": 5,
+    "pressureTell": 7,
+    "pressure": 7,
+    "clawTell": 5,
+    "claw": 5
+   }
+  },
+  {
+   "seed": 0,
+   "h": "reaper",
+   "out": "win",
+   "secs": 125.2,
+   "hp": 1046,
+   "taken": 32,
+   "tpm": 15,
+   "left": 0,
+   "vents": 28,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 9,
+    "pressureTell": 23
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 28,
+    "scuttleTell": 3,
+    "scuttle": 3,
+    "vent": 28,
+    "ballastTell": 7,
+    "slam": 7,
+    "pressureTell": 12,
+    "pressure": 12,
+    "clawTell": 6,
+    "claw": 6
+   }
+  },
+  {
+   "seed": 0,
+   "h": "geomancer",
+   "out": "win",
+   "secs": 105.4,
+   "hp": 1046,
+   "taken": 26,
+   "tpm": 15,
+   "left": 0,
+   "vents": 23,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 26
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 23,
+    "scuttleTell": 5,
+    "scuttle": 5,
+    "vent": 23,
+    "ballastTell": 6,
+    "slam": 6,
+    "pressureTell": 7,
+    "pressure": 7,
+    "clawTell": 5,
+    "claw": 5
+   }
+  },
+  {
+   "seed": 1,
+   "h": "knight",
+   "out": "win",
+   "secs": 126.8,
+   "hp": 1046,
+   "taken": 0,
+   "tpm": 0,
+   "left": 0,
+   "vents": 27,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {},
+   "modes": {
+    "wake": 1,
+    "idle": 27,
+    "scuttleTell": 5,
+    "scuttle": 5,
+    "vent": 27,
+    "ballastTell": 7,
+    "slam": 7,
+    "pressureTell": 11,
+    "pressure": 11,
+    "clawTell": 4,
+    "claw": 4
+   }
+  },
+  {
+   "seed": 1,
+   "h": "warden",
+   "out": "win",
+   "secs": 121.4,
+   "hp": 1046,
+   "taken": 124,
+   "tpm": 61,
+   "left": 0,
+   "vents": 26,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 124
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 26,
+    "scuttleTell": 5,
+    "scuttle": 2,
+    "vent": 26,
+    "ballastTell": 7,
+    "slam": 7,
+    "pressureTell": 8,
+    "pressure": 8,
+    "clawTell": 6,
+    "claw": 6
+   }
+  },
+  {
+   "seed": 1,
+   "h": "pyro",
+   "out": "win",
+   "secs": 113.3,
+   "hp": 1046,
+   "taken": 52,
+   "tpm": 28,
+   "left": 0,
+   "vents": 23,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 52
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 24,
+    "scuttleTell": 5,
+    "scuttle": 5,
+    "vent": 23,
+    "ballastTell": 6,
+    "slam": 6,
+    "pressureTell": 8,
+    "pressure": 8,
+    "clawTell": 4,
+    "claw": 2
+   }
+  },
+  {
+   "seed": 1,
+   "h": "paladin",
+   "out": "win",
+   "secs": 135.9,
+   "hp": 1046,
+   "taken": 0,
+   "tpm": 0,
+   "left": 0,
+   "vents": 31,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {},
+   "modes": {
+    "wake": 1,
+    "idle": 31,
+    "scuttleTell": 7,
+    "scuttle": 6,
+    "vent": 31,
+    "ballastTell": 8,
+    "slam": 8,
+    "pressureTell": 10,
+    "pressure": 10,
+    "clawTell": 6,
+    "claw": 6
+   }
+  },
+  {
+   "seed": 1,
+   "h": "pirate",
+   "out": "win",
+   "secs": 123.6,
+   "hp": 1046,
+   "taken": 20,
+   "tpm": 10,
+   "left": 0,
+   "vents": 27,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 20
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 26,
+    "scuttleTell": 8,
+    "scuttle": 8,
+    "vent": 27,
+    "ballastTell": 7,
+    "slam": 7,
+    "pressureTell": 8,
+    "pressure": 8,
+    "clawTell": 4,
+    "claw": 4
+   }
+  },
+  {
+   "seed": 1,
+   "h": "reaper",
+   "out": "win",
+   "secs": 128.7,
+   "hp": 1046,
+   "taken": 9,
+   "tpm": 4,
+   "left": 0,
+   "vents": 28,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 9
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 28,
+    "scuttleTell": 3,
+    "scuttle": 3,
+    "vent": 28,
+    "ballastTell": 7,
+    "slam": 7,
+    "pressureTell": 12,
+    "pressure": 12,
+    "clawTell": 6,
+    "claw": 6
+   }
+  },
+  {
+   "seed": 1,
+   "h": "geomancer",
+   "out": "win",
+   "secs": 105.4,
+   "hp": 1046,
+   "taken": 26,
+   "tpm": 15,
+   "left": 0,
+   "vents": 23,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 26
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 23,
+    "scuttleTell": 5,
+    "scuttle": 5,
+    "vent": 23,
+    "ballastTell": 6,
+    "slam": 6,
+    "pressureTell": 7,
+    "pressure": 7,
+    "clawTell": 5,
+    "claw": 5
+   }
+  },
+  {
+   "seed": 2,
+   "h": "knight",
+   "out": "win",
+   "secs": 133.3,
+   "hp": 1046,
+   "taken": 78,
+   "tpm": 35,
+   "left": 0,
+   "vents": 29,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 78
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 29,
+    "scuttleTell": 6,
+    "scuttle": 6,
+    "vent": 29,
+    "ballastTell": 7,
+    "slam": 7,
+    "pressureTell": 10,
+    "pressure": 10,
+    "clawTell": 5,
+    "claw": 4
+   }
+  },
+  {
+   "seed": 2,
+   "h": "warden",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 1046,
+   "taken": 98,
+   "tpm": 39,
+   "left": 9,
+   "vents": 33,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 98
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 31,
+    "scuttleTell": 8,
+    "scuttle": 6,
+    "vent": 33,
+    "ballastTell": 8,
+    "slam": 8,
+    "pressureTell": 10,
+    "pressure": 10,
+    "clawTell": 7,
+    "claw": 6
+   }
+  },
+  {
+   "seed": 2,
+   "h": "pyro",
+   "out": "win",
+   "secs": 121.5,
+   "hp": 1046,
+   "taken": 52,
+   "tpm": 26,
+   "left": 0,
+   "vents": 26,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 52
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 27,
+    "scuttleTell": 5,
+    "scuttle": 5,
+    "vent": 26,
+    "ballastTell": 6,
+    "slam": 6,
+    "pressureTell": 8,
+    "pressure": 8,
+    "clawTell": 5,
+    "claw": 5
+   }
+  },
+  {
+   "seed": 2,
+   "h": "paladin",
+   "out": "win",
+   "secs": 128.6,
+   "hp": 1046,
+   "taken": 0,
+   "tpm": 0,
+   "left": 0,
+   "vents": 29,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {},
+   "modes": {
+    "wake": 1,
+    "idle": 29,
+    "scuttleTell": 7,
+    "scuttle": 6,
+    "vent": 29,
+    "ballastTell": 7,
+    "slam": 7,
+    "pressureTell": 9,
+    "pressure": 9,
+    "clawTell": 6,
+    "claw": 6
+   }
+  },
+  {
+   "seed": 2,
+   "h": "pirate",
+   "out": "win",
+   "secs": 97.7,
+   "hp": 1046,
+   "taken": 78,
+   "tpm": 48,
+   "left": 0,
+   "vents": 20,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 78
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 21,
+    "scuttleTell": 4,
+    "scuttle": 4,
+    "vent": 20,
+    "ballastTell": 5,
+    "slam": 5,
+    "pressureTell": 7,
+    "pressure": 7,
+    "clawTell": 5,
+    "claw": 4
+   }
+  },
+  {
+   "seed": 2,
+   "h": "reaper",
+   "out": "win",
+   "secs": 142.5,
+   "hp": 1046,
+   "taken": 9,
+   "tpm": 4,
+   "left": 0,
+   "vents": 31,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 9
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 32,
+    "scuttleTell": 6,
+    "scuttle": 6,
+    "vent": 31,
+    "ballastTell": 8,
+    "slam": 8,
+    "pressureTell": 12,
+    "pressure": 12,
+    "clawTell": 5,
+    "claw": 5
+   }
+  },
+  {
+   "seed": 2,
+   "h": "geomancer",
+   "out": "win",
+   "secs": 93.8,
+   "hp": 1046,
+   "taken": 52,
+   "tpm": 33,
+   "left": 0,
+   "vents": 20,
+   "crowned": 0,
+   "cracked": 0,
+   "hitBy": {
+    "clawTell": 52
+   },
+   "modes": {
+    "wake": 1,
+    "idle": 20,
+    "scuttleTell": 3,
+    "scuttle": 3,
+    "vent": 20,
+    "ballastTell": 5,
+    "slam": 5,
+    "pressureTell": 8,
+    "pressure": 8,
+    "clawTell": 4,
+    "claw": 4
+   }
+  }
+ ]
+}

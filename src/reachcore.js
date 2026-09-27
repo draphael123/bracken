@@ -6,13 +6,20 @@
 // It follows doorways (each names the doorway it lets out at) and vents (ride the column, steer off the
 // top). It cannot model a mover, a swing or a gust, so a level that leans on those comes back ASSISTED and
 // its misses may be a ride away. A level can say L.reachExact when its movers are only boss props.
+import { slopeReachGrid } from './reach-slopes.js';   /* THE SLOPES REACH RULE, one line inside floodReach below */
 const RUN = 92, JUMPV = -320, G = 1000, TSZ = 16;        // the knight's numbers from main.js
 const JUMP_UP = Math.floor((JUMPV * JUMPV) / (2 * G) / TSZ);  // 3 tiles of rise (ceil made it 4: a jump nobody can make)
 const JUMP_ACROSS = 6;                                        // with a run-up, about six tiles of float
 const BOUNCE_UP = Math.ceil((480 * 480) / (2 * G) / TSZ);     // a spring throws you much higher
 const BUD_UP = Math.floor((420 * 420) / (2 * G) / TSZ);       // a bud pad throws you a tier: five rows (floor, not ceil: 89 px is not six rows)
 
-export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's rise (2 = only the comfortable ones)
+export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's rise (2 = only the comfortable ones); opts.across: a real hero's jump, not the model's six (tools/checkpoint-stand.mjs)
+  /* SLOPES, and it has to be the FIRST line: a slope tile is the cell you stand in, ON THE ROCK UNDER IT, so the fill
+     reads slopes as AIR and stands on that rock. Pessimistic by up to 16 px and never optimistic - the reasoning is in
+     src/reach-slopes.js. A level with no slopes gets the SAME OBJECT back, so nothing about today's 30 levels changes,
+     and the mapping is IDEMPOTENT (a second pass finds no slopes left), so a caller that already wrapped its level -
+     tools/caravan-level.mjs and tools/draft-level.mjs both do - is not harmed by this one. tools/slopes.mjs asserts both. */
+  L = slopeReachGrid(L, T);
   const W = L.W, H = L.H, g = L.grid.slice(); // a copy: the things the PLAYER can open are opened in it first
   /* opts.noAssist: THE PLAIN MODEL. Nothing that moves and nothing that is only there sometimes - no hex vine, no
      grown cap, no ghost furniture, no cart, no wheel, no swing, no lily pad, and the fields' phantom planks are air
@@ -36,6 +43,10 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
        plain fill has the stair as it was built and nothing else: a climb that needs it turned is a climb on the --plain list */
     if (e.t === 'pwheel' && !plain) for (const [x0, y, w] of [...(e.a || []), ...(e.b || [])]) for (let x = x0; x < x0 + w; x++) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
   }
+  /* FAILING STONE THAT IS THE WAY ON (the Falling Tower's observers' gallery, src/tower-collapse.js): stand on it and it counts
+     down and goes, every time, so it is a floor you can go DOWN through and nothing else - a one-way to the model. Only `opens`:
+     every other failing section is footing that comes back, and the model is right to stand on it. */
+  for (const c of (L.crumbles || [])) if (c.opens) for (let y = c.row; y < c.row + (c.rows || 1); y++) for (let x = c.x0; x <= c.x1; x++) { const i = y * W + x; if (g[i] === T.SOLID) g[i] = y === c.row ? T.ONEWAY : T.AIR; }
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
   const climbable = t => t === T.CLIMB; // a NET is one-way rungs: a rope ladder is climbed by hopping rung to rung, so it is footing, not a ladder
@@ -46,7 +57,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   // the rides the model CAN follow, from L.moversExtra: a pulley lift (stand on it anywhere along its run and step
   // off anywhere along it) and a swinging bucket (board it near any point of its arc, get off near any other)
   const lifts = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'lift' || m.kind === 'growcap' || (m.kind === 'hexvine' && !opts.fairVines)).map(m => m.cwBand ? { kind: 'counterweight', ...m.cwBand }   /* A COUNTERWEIGHT PAIR is one ride: board either basket, get off the other anywhere from the top of its rise to the foot of its fall */
-    : ({ kind: m.kind + (m.group ? ' ' + m.group : ''), x0: Math.floor(m.x / TSZ), x1: Math.floor((m.x + m.w - 1) / TSZ), y0: Math.floor(Math.min(m.y0, m.y1) / TSZ), y1: Math.floor(Math.max(m.y0, m.y1) / TSZ) }));
+    : ({ kind: m.kind + (m.group ? ' ' + m.group : ''), x0: Math.floor(Math.min(m.x, m.x + (m.lean || 0)) / TSZ), x1: Math.floor((Math.max(m.x, m.x + (m.lean || 0)) + m.w - 1) / TSZ), y0: Math.floor(Math.min(m.y0, m.y1) / TSZ), y1: Math.floor(Math.max(m.y0, m.y1) / TSZ) }));   /* a LEANING sprout (Sporewood) rides its whole footprint, from its root to where it sets you down */
   /* THE OTHER RIDES. A platform mover (ent 'mover': a run of `range` tiles, or a rise of `rise` tiles when vertical) and
      a ferry raft (x0..x1 along one row) are a band of footing: step on anywhere along the run, step off anywhere along it.
      They were why a third of the rivers and decks came back ASSISTED with their silver in doubt. */
@@ -95,7 +106,14 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     for (const sh of (L.fields.shrinks || [])) assists.push({ kind: 'shrinking bales ' + sh.group, x0: sh.x0, x1: sh.x1, y0: sh.y0 - 1, y1: sh.y1 }); }
   /* one band per ride: a wheel's four paddles are one wheel, and were being written down as four climbs */
   { const had = new Set(); for (let i = assists.length - 1; i >= 0; i--) { const a = assists[i], k = [a.kind, a.x0, a.x1, a.y0, a.y1].join(); if (had.has(k)) assists.splice(i, 1); else had.add(k); } }
-  const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.some(m => m.kind !== 'lift' && m.kind !== 'swing' && m.kind !== 'growcap' && m.kind !== 'hexvine')) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length));
+  /* A GUST YOU RIDE (Gale Moor, docs/briefs/gale-moor-rework.md): a zone that says `carry: n` takes a jump that starts in it, or
+     one tile short of it, n tiles further downwind (both ways when it alternates). Its gap is wider than any jump on purpose, so
+     without this every tool called the far bank of a ride unreachable - and fixing that one row by hand would have been a lie.
+     opts.rides only, with the other rides: the plain fill is legs and nothing else. */
+  const carries = (opts.rides && !plain) ? (L.gusts || []).filter(z => z.carry > 0).map(z => ({ x0: Math.floor(z.x0 / TSZ) - 1, x1: Math.ceil(z.x1 / TSZ), y0: Math.floor(z.y0 / TSZ), y1: Math.ceil(z.y1 / TSZ), n: z.carry, dir: z.dir, alt: !!z.alt })) : [];
+  const carryAt = (x, y) => { let l = 0, r = 0; for (const c of carries) if (x >= c.x0 && x <= c.x1 && y >= c.y0 && y <= c.y1) { if (c.dir > 0 || c.alt) r = Math.max(r, c.n); if (c.dir < 0 || c.alt) l = Math.max(l, c.n); } return [l, r]; };
+  const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.some(m => m.kind !== 'lift' && m.kind !== 'swing' && m.kind !== 'growcap' && m.kind !== 'hexvine')) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length)
+    || !!L.sanctum);   /* A PORTAL IS A RIDE THE FILL CANNOT FOLLOW: the Falling Tower's gate stands past the sanctum's second door, on purpose (tools/tower-ascent.mjs). The tower read ASSISTED only because the bell loft had lifts in it; when the lifts became the Sexton's deck (2026-09-25) the bot called its gate UNREACHABLE */
 
   // every tile you could be standing on
   const key = (x, y) => x + ',' + y;
@@ -157,12 +175,13 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
       // a ledge right under a ceiling: your head hits the rock just as your feet clear the lip, and you drop
       // straight back - there is no float left to cross with (the Sunspire's side routes found this one)
       const tight = head < up && -dy >= head;
-      const span = tight ? 1 : Math.round(JUMP_ACROSS * (1 - Math.abs(dy) / (up + 1.5)));
+      const span = tight ? 1 : Math.round((opts.across || JUMP_ACROSS) * (1 - Math.abs(dy) / (up + 1.5)));
       const apex = y - Math.min(up, head);
-      for (let dx = -span; dx <= span; dx++) if (!dx || across(x, dx, apex, Math.min(y, y + dy))) push(x + dx, y + dy);
+      const [cl, cr] = tight ? [0, 0] : carryAt(x, y);   /* a gust behind you: the same arc, further (above) */
+      for (let dx = -span - cl; dx <= span + cr; dx++) if (!dx || across(x, dx, apex, Math.min(y, y + dy))) push(x + dx, y + dy);
     }
     // fall: straight down, and out to either side
-    for (const dx of [-JUMP_ACROSS, -2, 0, 2, JUMP_ACROSS]) { let ny = y;
+    const fa = opts.across || JUMP_ACROSS; for (const dx of [-fa, -2, 0, 2, fa]) { let ny = y;
       if (dx && (wall(at(x + dx, y)) || !across(x, dx, y, y))) continue; // walk off the edge: nothing in the way, and not into a wall
       while (ny < H - 1 && !footing.has(key(x + dx, ny)) && !wall(at(x + dx, ny))) ny++;
       if (footing.has(key(x + dx, ny))) push(x + dx, ny); }

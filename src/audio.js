@@ -1,7 +1,7 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
-const TRACKS = { oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
+const TRACKS = { unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
   ambWind: './audio/ambWind.ogg', ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
   /* CC0: MintoDog's stage-select set, skrjablin's Sailor Waltz, Memoraphile's Spooky Dungeon (audio/CREDITS.txt) */
   musForest: './audio/musForest.ogg', musCastle: './audio/musCastle.ogg', musMountain: './audio/musMountain.ogg', musUnder: './audio/musUnder.ogg',
@@ -9,7 +9,8 @@ const TRACKS = { oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight
   /* ONE THEME PER LEVEL, ONE PER BOSS: all CC0 from OpenGameArt, levelled to the rest (audio/CREDITS.txt) */
   sleepers: './audio/sleepers.ogg', trench: './audio/trench.ogg', barrows: './audio/barrows.ogg', quarry: './audio/quarry.ogg', skysail: './audio/skysail.ogg',
   frogking: './audio/frogking.ogg', sporemother: './audio/sporemother.ogg', ramlord: './audio/ramlord.ogg', owlreeve: './audio/owlreeve.ogg', herald: './audio/herald.ogg', reefmaw: './audio/reefmaw.ogg', closedhelm: './audio/closedhelm.ogg',
-  quartermaster: './audio/quartermaster.ogg', houndmaster: './audio/houndmaster.ogg', masthead: './audio/masthead.ogg', causeway: './audio/causeway.ogg', kraken: './audio/kraken.ogg', hilltroll: './audio/hilltroll.ogg', rimewright: './audio/rimewright.ogg', captain: './audio/captain.ogg', tollmaster: './audio/tollmaster.ogg', grandmother: './audio/grandmother.ogg', fields: './audio/fields.ogg', scarecrowking: './audio/scarecrowking.ogg' };
+  quartermaster: './audio/quartermaster.ogg', houndmaster: './audio/houndmaster.ogg', masthead: './audio/masthead.ogg', causeway: './audio/causeway.ogg', kraken: './audio/kraken.ogg', hilltroll: './audio/hilltroll.ogg', rimewright: './audio/rimewright.ogg', captain: './audio/captain.ogg', tollmaster: './audio/tollmaster.ogg', grandmother: './audio/grandmother.ogg', fields: './audio/fields.ogg', scarecrowking: './audio/scarecrowking.ogg',
+  burning: './audio/burning.mp3', pyroboss: './audio/pyroboss.ogg', minicharge: './audio/minicharge.ogg', monastery: './audio/monastery.ogg', northumberland: './audio/northumberland.mp3', windcaller: './audio/windcaller.ogg', hangingvillage: './audio/hangingvillage.ogg', sporewood: './audio/sporewood.mp3', duneworm: './audio/duneworm.ogg', lance: './audio/lance.ogg', caravan: './audio/caravan.ogg', monasterygolem: './audio/monasterygolem.ogg' };
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -100,7 +101,7 @@ function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
 const VOK = (kit, act) => { const fb = { alert: 'attack', effort: 'heavy', heavy: 'attack', jump: 'attack', die: 'hurt', attack: 'alert' };
   for (const a of [act, fb[act]]) { const n = 'vo_' + kit + '_' + a; if (clips[n] && clips[n].some(Boolean)) return n; } return 'vo_' + kit; };
 // THE HEROES' OWN VOICES. The knight grunted with a pitched goblin; now each hero is a person.
-const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 } };   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
+const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 }, geomancer: { kit: 'f3', rate: 0.82, lp: 3200 } };   /* THE GEOMANCER: the same woman's kit again, pitched lowest and darkened: the heaviest of the three */   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
 function heroVo(act, v) { const k = HERO_KIT[heroVoice] || HERO_KIT.knight; return voice(VOK(k.kit, act), v, k.rate, k.lp || 0); }
 
 // ---------- synth ----------
@@ -140,7 +141,7 @@ function bell(f, dur = 0.8, v = 0.1, delay = 0) { tone('sine', f, f * 0.998, dur
 // robe that flutters, soft steps, a staff that whooshes and crackles, embers that pop, a jet that roars
 // for as long as she holds it. Enemies keep the shared sounds; only the player's calls come through here.
 let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
-export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' ? h : 'knight'; }
+export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' ? h : 'knight'; }
 const vary = f => f * (0.94 + Math.random() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
@@ -294,7 +295,21 @@ export const SFX = {
   swingUp(k) { const r = 1 + Math.min(3, k) * 0.09; noise(0.07, 0.16, 1500 * r, 1.1); tone('triangle', 620 * r, 300 * r, 0.06, 0.05); }, // the run of blows climbs
   coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
   clank() { file('clang', 0.5) || (tone('square', 1500, 900, 0.05, 0.18), tone('sine', 2300, 2100, 0.16, 0.14), noise(0.05, 0.2, 3200)); },
+  /* THE ORE ROAD AT WORK (docs/briefs/ore-road-mine-life.md): what you hear before you see it. No vary() in any of them: vary rolls
+     the dice even with the sound off, and the Winchmaster's pilot pins its dice */
+  tink() { tone('triangle', 2400, 2250, 0.05, 0.07); tone('sine', 3600, 3500, 0.09, 0.03, 0.005); noise(0.03, 0.06, 5200, 2); },   /* a pick on rock: small and bright */
+  cartRoll() { noise(0.18, 0.05, 260, 0.9); tone('square', 70, 64, 0.12, 0.025); },   /* iron wheels on the rail */
+  ratchet() { tone('square', 1300, 1100, 0.02, 0.04); noise(0.02, 0.05, 3000, 2); },   /* a winch's pawl, one click */
+  sackThud() { noise(0.12, 0.12, 300, 0.7); tone('sine', 110, 60, 0.1, 0.08); },   /* a sack of ore put down */
   parry() { file('parry', 0.5) || tone('square', 1200, 1900, 0.08, 0.16); },
+  /* THE KNIGHT'S PERFECT GUARD: a clang that rings like a bell - the steel knock high and bright, and two long clean partials over it.
+     Nothing else in the game rings this long, so it is heard as THE thing, and never confused with a block's dull knock */
+  /* THE KNIGHT'S THIRD CUT, PAID: a body driven into something. Stone and a deep knock for a wall, a wet crack for the spikes, a
+     wooden clatter of two bodies for a foe, a splash and a fall for water and a drop - over the one low thump they all share */
+  thirdCrunch(k) { file('imp_stone', 0.5, k === 'foe' ? 1.2 : 0.8); tone('sine', 120, 45, 0.3, 0.2); noise(0.12, 0.3, 900, 0.8);
+    if (k === 'spikes') { file('crack', 0.35, 1.3); noise(0.08, 0.2, 3200, 1.5, 0.03); } else if (k === 'foe') { file('imp_wood', 0.3, 1.1); tone('square', 220, 140, 0.08, 0.06, 0.05); }
+    else if (k === 'water' || k === 'pit') tone('triangle', 520, 160, 0.35, 0.06, 0.04); else file('imp_steelH', 0.2, 0.7); },
+  perfectGuard() { file('clang', 0.55, 1.35); tone('sine', 2637, 2610, 0.55, 0.09); tone('sine', 3951, 3920, 0.4, 0.05, 0.01); tone('triangle', 1319, 1312, 0.35, 0.07); noise(0.04, 0.22, 6400, 1.2); },
   /* THE GLANCE: the wrong tool for that body (main.js, the family table). Not the clank of a guard ringing and not a cut going in: the
      edge skating off something it could not bite - a dry scrape sliding DOWN, a dull knock under it, and no ring left after. Every
      wrong-verb hit in the game makes this one sound, so it is learned once. */
@@ -341,6 +356,8 @@ export const SFX = {
   bow() { tone('triangle', 700, 200, 0.12, 0.14); noise(0.08, 0.15, 3000); },
   bird() { tone('sine', 1800, 2600, 0.08, 0.06); tone('sine', 2400, 1900, 0.1, 0.05, 0.1); },
   splash() { noise(0.3, 0.4, 700, 0.5); tone('sine', 300, 120, 0.2, 0.15); },
+  whirlpool() { noise(0.8, 0.22, 380, 0.7); tone('sine', 180, 70, 0.8, 0.1); for (let i = 0; i < 3; i++) tone('sine', 420 - i * 70, 160, 0.1, 0.04, 0.15 + i * 0.18); },   /* THE KEEP'S WHIRLPOOL: the water going down a drain, with you in it */
+  whirlStill() { tone('sine', 90, 140, 0.6, 0.1); noise(0.5, 0.14, 900, 0.4, 0.1); },   /* and the drain shut: the pull letting go */
   coinUp(k) { const r = 1 + Math.min(k, 12) * 0.06; tone('triangle', 1046 * r, 1046 * r, 0.07, 0.11); tone('triangle', 1568 * r, 1568 * r, 0.13, 0.085, 0.045); tone('sine', 3136 * r, 3136 * r, 0.05, 0.03); noise(0.03, 0.03, 4200, 2.5); },
   heart() { tone('sine', 70, 40, 0.14, 0.35); tone('sine', 60, 35, 0.16, 0.28, 0.16); },
   cricket() { const f = 3800 + Math.random() * 600; for (let i = 0; i < 4; i++) tone('sine', f, f, 0.03, 0.035, i * 0.05); },
@@ -573,6 +590,7 @@ Object.assign(SFX, {
   bellow() { file('roar', 0.6, 0.62) || tone('sawtooth', 110, 60, 0.4, 0.3); tone('sawtooth', 70, 44, 0.5, 0.2, 0.04); noise(0.3, 0.3, 220, 0.6); }, // a ram: lower, and it carries
   snort() { noise(0.14, 0.3, 420, 0.6); tone('sawtooth', 140, 70, 0.16, 0.16); },
   clatter() { tone('square', 1100, 320, 0.06, 0.1); noise(0.06, 0.2, 2600, 1.1); tone('square', 800, 260, 0.05, 0.08, 0.05); },
+  skullThrow() { noise(0.2, 0.2, 1400, 0.5); tone('triangle', 320, 140, 0.18, 0.08); tone('square', 900, 300, 0.05, 0.05, 0.04); },   /* THE BURIED DEAD'S SKULL leaves his hand: a hollow rattle going away */
   ribbit() { file('croak', 0.45, 1.5) || (tone('sawtooth', 200, 300, 0.09, 0.14), tone('sawtooth', 280, 170, 0.1, 0.12, 0.09)); },
   thump() { tone('sine', 110, 40, 0.16, 0.3); noise(0.08, 0.25, 250, 0.7); },
   gobDieLow() { file('gobDie', 0.7, 0.72) || (tone('sawtooth', 220, 60, 0.3, 0.22), noise(0.2, 0.2, 500, 0.6)); },
@@ -606,6 +624,8 @@ Object.assign(SFX, {
   chiefBark() { file('roar', 0.4, 1.55) || tone('sawtooth', 300, 140, 0.18, 0.22); tone('square', 420, 200, 0.1, 0.12, 0.02); noise(0.1, 0.18, 1200, 0.7); }, // a bark: short, high, clipped
   owlHoot() { tone('sine', 520, 440, 0.18, 0.16); tone('sine', 480, 400, 0.22, 0.14, 0.2); },
   frogBoom() { tone('sawtooth', 60, 90, 0.5, 0.3); tone('square', 120, 80, 0.4, 0.12, 0.05); noise(0.2, 0.12, 300, 0.6); },
+  /* THE WHELP'S SCREECH (its tell): thin and high, a stone throat - a small thing's version of its sire's, and quicker */
+  whelpScreech() { tone('sawtooth', 2600, 3400, 0.16, 0.08); tone('square', 1900, 1200, 0.2, 0.05, 0.05); noise(0.08, 0.1, 4200, 1.2); },
   queenShriek() { tone('sawtooth', 900, 1600, 0.3, 0.14); tone('sawtooth', 1200, 700, 0.3, 0.1, 0.1); noise(0.2, 0.1, 3000, 0.8); },
 });
 // ---------- the paladin's light ----------
@@ -630,6 +650,9 @@ Object.assign(SFX, {
   bowShot() { tone('square', 900, 500, 0.05, 0.1); noise(0.09, 0.16, 2600, 0.7); tone('sine', 320, 200, 0.08, 0.06, 0.01); },
   grapple() { noise(0.12, 0.14, 900, 0.6); tone('triangle', 420, 260, 0.1, 0.08); },
   ropeHaul() { noise(0.5, 0.09, 500, 0.9); tone('sawtooth', 120, 90, 0.45, 0.05); },
+  /* THE BROKEN BRIDGES' TOLD VOLLEY (2026-09-25): a flight of arrows in the air over you - three falling whistles, the last one
+     lowest, for the second and a fifth the shadows are on the planks. Not the horn of the ridge's volleys: you hear which one it is */
+  arrowWhistle() { tone('sine', 3300, 1500, 1.0, 0.05); tone('sine', 2900, 1250, 1.05, 0.04, 0.1); tone('sine', 3600, 1700, 0.9, 0.035, 0.22); noise(0.9, 0.025, 5200, 0.5, 0.1); },
   whistleCall() { tone('sine', 2100, 2600, 0.16, 0.09); tone('sine', 2600, 2200, 0.2, 0.08, 0.15); tone('sine', 2400, 3000, 0.14, 0.07, 0.34); },
   fuse() { noise(0.5, 0.07, 4200, 0.5); noise(0.4, 0.05, 6000, 0.4, 0.12); },
   crumble() { noise(0.4, 0.16, 420, 0.5); noise(0.3, 0.1, 900, 0.6, 0.06); tone('square', 150, 70, 0.2, 0.07); },
@@ -641,6 +664,16 @@ Object.assign(SFX, {
   waveCrash() { noise(0.7, 0.16, 900, 0.4); noise(0.5, 0.1, 2400, 0.6, 0.08); },
   sirenSong() { pad('sine', 660, 740, 1.2, 0.05, 0, 3000); pad('triangle', 990, 880, 1.2, 0.03, 0.1, 4000); },
   gust() { noise(0.9, 0.09, 420, 0.4); noise(0.6, 0.05, 900, 0.6); }, // a gale coming down the bridge
+  /* A TOLD GUST coming (Gale Moor): the wind rising through the stones for a second and a fifth, three swells and a whistle climbing over them */
+  gustRise() { noise(0.35, 0.025, 500, 0.6); noise(0.4, 0.045, 720, 0.6, 0.35); noise(0.5, 0.07, 980, 0.6, 0.72); tone('sine', 880, 1760, 1.15, 0.022); },
+  /* THE DUNE WORM (src/dune-worm.js): every tell its own sound, so each is known off the screen as well as on it */
+  wormRipple() { noise(1.0, 0.14, 160, 0.35); noise(0.8, 0.07, 620, 0.7, 0.1); tone('sine', 46, 38, 0.9, 0.12); },   /* THE RIPPLE: sand rolling over something that size, low */
+  wormBreach() { noise(0.5, 0.4, 300, 0.4); noise(0.35, 0.22, 1800, 0.8, 0.03); tone('sawtooth', 70, 140, 0.25, 0.2); tone('sine', 50, 30, 0.5, 0.2, 0.05); },   /* up through the floor */
+  wormGurgle() { tone('sawtooth', 110, 170, 0.5, 0.12); noise(0.45, 0.16, 700, 0.6, 0.05); for (let i = 0; i < 3; i++) tone('sine', 240 + i * 60, 140, 0.08, 0.06, 0.12 + i * 0.1); },   /* THE SPIT TELL: a wet throat filling with sand */
+  wormSpit() { noise(0.2, 0.34, 900, 0.5); noise(0.35, 0.16, 2600, 0.9, 0.04); tone('sine', 300, 90, 0.2, 0.12); },
+  wormHiss() { noise(0.7, 0.2, 2400, 0.7); tone('sawtooth', 90, 60, 0.6, 0.1); },   /* THE LUNGE TELL: the coil drawing back, sand hissing off it */
+  wormSink() { noise(0.9, 0.18, 260, 0.35); tone('sine', 180, 50, 0.8, 0.12); for (let i = 0; i < 4; i++) noise(0.06, 0.1, 1200, 0.8, 0.15 + i * 0.16); },   /* THE SWALLOW TELL: the sand running away downward */
+  wormTangle() { for (let i = 0; i < 5; i++) noise(0.05, 0.22, 3400 - i * 300, 1.1, i * 0.04); tone('square', 900, 300, 0.14, 0.06); SFX.clank(); },   /* the awning tearing off its rollers */
   stormChant() { pad('sawtooth', 330, 392, 0.4, 0.06, 0, 1400); pad('sine', 990, 1320, 0.4, 0.04, 0.05, 3000); noise(0.4, 0.06, 600, 0.5); },
   stormZap() { noise(0.12, 0.22, 3200, 0.8); tone('square', 1800, 300, 0.15, 0.07); tone('sine', 700, 200, 0.22, 0.09); },
   /* THE SEA WITCH's call: not the shaman's rattle and chant. A held note over the hiss of a sea running, and her lantern ringing on its crook */
@@ -650,6 +683,10 @@ Object.assign(SFX, {
      its rite breaking is the bell dropped and the pot spilling on the flags */
   priestRite() { pad('sawtooth', 247, 247, 1.3, 0.05, 0, 900); pad('sawtooth', 330, 330, 1.1, 0.035, 0.25, 900); for (let i = 0; i < 3; i++) { bell(2093, 0.25, 0.03, 0.1 + i * 0.45); noise(0.05, 0.05, 4200, 2, 0.3 + i * 0.45); } },
   priestBless() { bell(1568, 0.7, 0.06); bell(2093, 0.6, 0.04, 0.06); pad('sine', 392, 523, 0.6, 0.05, 0, 2200); },
+  priestCenserTell() { for (let i = 0; i < 3; i++) noise(0.04, 0.05, 3600, 1.4, i * 0.09); pad('sawtooth', 220, 247, 0.5, 0.04, 0, 900); },   /* the chain rattles as the pot goes back over its shoulder, and it hums */
+  priestCenser() { noise(0.08, 0.12, 2200, 1.1); tone('triangle', 900, 420, 0.22, 0.06); bell(1760, 0.18, 0.02, 0.05); },          /* thrown: the whoosh, and the pot's own ring */
+  priestBellTell() { bell(2349, 0.2, 0.03); bell(2349, 0.2, 0.03, 0.14); },                                                          /* the hand bell lifted, rung twice small */
+  priestBell() { bell(1976, 0.35, 0.07); noise(0.06, 0.1, 1200, 0.8); tone('square', 300, 160, 0.1, 0.06); },                         /* and swung into you */
   priestBreak() { tone('sine', 2093, 1500, 0.2, 0.06); SFX.clatter(); noise(0.3, 0.12, 700, 0.5, 0.05); },
   /* THE GOBLIN MAGE reads out of a book it cannot read: pages riffled and a goblin's shout pitched up into something it thinks
      is a word. The bolt leaves the page with a papery crack; the rune is written low (a scratch along the flags and a
@@ -714,14 +751,19 @@ export const debugAudio = () => ({ ac, musicGain, sfxGain, ambGain, musicSrc, cu
 const gob = (rate, v = 0.5) => (rate < 0.8 && voice('vo_gobbig_die', v, rate * 1.3)) || file('gobDie', v, rate);     /* a brute is not a sprig slowed down */
 const gobH = (rate, v = 0.4) => (rate < 0.8 && voice('vo_gobbig_hurt', v, rate * 1.3)) || file('gobHurt', v, rate);
 const DIE = {
-  standardbearer() { noise(1.0, 0.34, 500, 0.5); tone('sawtooth', 110, 30, 1.1, 0.2); },   /* THE UNBURIED FIELD: the great banner coming down with him */
+  /* THE GARGOYLE WHELP crumbles: a stone crack (the body), its screech cut short (the vent), and the pebbles going down after it (the tail) */
+  whelp() { SFX.crack(); tone('sawtooth', 2400, 900, 0.12, 0.07, 0.02); noise(0.35, 0.16, 1400, 0.5, 0.08); for (let i = 0; i < 4; i++) noise(0.04, 0.09, 2600 - i * 300, 0.8, 0.18 + i * 0.07); },
+  bonearcher() { noise(.45,.24,1200,.6);tone('triangle',240,60,.3,.1);noise(.2,.12,2800,.5,.18); },   /* the bone archer comes apart: a spill of bone, the bow last */
+  barrowrider() { noise(1.0, 0.34, 500, 0.5); tone('sawtooth', 110, 30, 1.1, 0.2); SFX.bellow(); },   /* THE UNBURIED FIELD: the old banner coming down with him, and the horse going with it */
   deathknight() { noise(1.4, 0.38, 380, 0.5); tone('sine', 80, 24, 1.6, 0.26); tone('triangle', 220, 60, 1.2, 0.1, 0.2); },
+  bloodknight() { noise(1.2, 0.36, 420, 0.5); tone('sine', 70, 22, 1.8, 0.28); tone('sawtooth', 160, 40, 1.0, 0.1, 0.15); SFX.dkSurge && SFX.dkSurge(); },   /* THE DEATH KNIGHT: the plate going down, and the blood going out of him */
   burngob() { gob(0.95, 0.7) || tone('sawtooth', 260, 60, 0.35, 0.2); noise(0.5, 0.2, 2600, 0.5, 0.12); },   /* THE BURNING VILLAGE */
   emberwisp() { noise(0.3, 0.18, 3200, 0.6); tone('sine', 900, 200, 0.25, 0.08); },
   pyromancer() { noise(1.2, 0.36, 1800, 0.5); tone('sawtooth', 160, 40, 1.4, 0.22); },
   winchmaster() { gob(0.6, 0.8) || tone('sawtooth', 140, 30, 1.0, 0.24); noise(0.9, 0.3, 700, 0.5); },
   /* THE MAGE'S FOLLY: a hedge falling to bits, a suit coming apart, a bucket over, a chest breaking, a jar's worth of squeal, glass, and the tower's two */
   gargoyle() { noise(1.0, 0.38, 600, 0.5); tone('square', 120, 40, 0.9, 0.18); noise(0.5, 0.25, 1800, 0.4, 0.3); },   /* THE GATE GARGOYLE: a gate's worth of stone coming down */
+  sexton() { bell(147, 3.2, 0.12); bell(73, 3.8, 0.08, 0.05); noise(0.5, 0.22, 500, 0.5, 0.1); tone('sawtooth', 110, 40, 0.7, 0.1, 0.15); },   /* THE SEXTON: his bell hits the deck and rings out under him, and the rest of him goes down after it */
   hedgewarden() { noise(0.7, 0.3, 1400, 0.4); noise(0.4, 0.22, 700, 0.5, 0.2); tone('square', 170, 60, 0.6, 0.1, 0.1); },   /* THE HEDGE WARDEN: a whole hedge coming down */
   topiary() { noise(0.3, 0.24, 1600, 0.4); noise(0.2, 0.16, 700, 0.5, 0.1); tone('square', 200, 90, 0.16, 0.06, 0.05); },
   armour() { file('clang', 0.3, 0.55) || tone('sine', 500, 300, 0.2, 0.14); for (let i = 0; i < 4; i++) { tone('square', 1400 - i * 200, 900 - i * 150, 0.14, 0.08, 0.15 + i * 0.12); noise(0.06, 0.2, 2000, 0.5, 0.15 + i * 0.12); } },
@@ -772,9 +814,10 @@ const DIE = {
   merrowspear() { tone('sawtooth', 210, 70, 0.3, 0.2); tone('sine', 140, 50, 0.32, 0.16, 0.04); noise(0.2, 0.24, 1400, 0.4, 0.08); },   /* the harpoon goes down with her */
   merrowcaller() { tone('triangle', 260, 90, 0.34, 0.16); noise(0.3, 0.22, 500, 0.5, 0.08); pad('sine', 300, 120, 0.6, 0.04, 0.1, 1400); },   /* the current she was holding goes out of the water with her */
   merrowbrute() { tone('sawtooth', 160, 50, 0.4, 0.24); noise(0.3, 0.3, 300, 0.6, 0.08); SFX.crack(); },   /* the shell splits */
-  /* THE LEADFOOT has no voice: there has been nothing alive in that helm for a long time. What goes down is the armour -
-     the plate opening, the last of his air leaving the seams at once, and the anchor hitting the stone after him. */
-  leadfoot() { SFX.clank(); tone('sine', 90, 42, 0.55, 0.2, 0.05); noise(0.5, 0.34, 420, 0.6, 0.06); SFX.rattle(1.2); },
+  /* THE DROWNED KNIGHT: a man, once, so a voice - but under water and long gone: a low bubbled groan going down, the plate
+     knocking on the stone, and his last air leaving the helm. The captain's is deeper, and his blade rings as it falls. */
+  drownedknight() { SFX.clank(); tone('sine', 150, 55, 0.5, 0.16, 0.04); tone('triangle', 110, 70, 0.4, 0.08, 0.1); noise(0.45, 0.26, 520, 0.6, 0.12); },
+  drownedcaptain() { SFX.clank(); tone('sine', 120, 40, 0.7, 0.2, 0.04); tone('triangle', 90, 50, 0.6, 0.1, 0.12); noise(0.6, 0.3, 460, 0.6, 0.14); bell(392, 0.5, 0.05); },
   // the fish: no voice at all, so all of it is water and body
   eel() { noise(0.3, 0.3, 700, 0.5); tone('sine', 180, 60, 0.34, 0.16); noise(0.2, 0.22, 1800, 0.4, 0.12); },
   scarecrow() { noise(0.4, 0.26, 1200, 0.4); noise(0.3, 0.16, 600, 0.5, 0.1); },   /* it comes apart into what it was stuffed with */
@@ -795,6 +838,13 @@ const DIE = {
   jelly() { pad('sine', 340, 180, 0.6, 0.04, 0, 1600); noise(0.3, 0.16, 900, 0.4, 0.08); /* it comes apart into the water it was mostly made of */ },
   lamprey() { noise(0.2, 0.3, 500, 0.5); tone('sawtooth', 140, 50, 0.3, 0.16); noise(0.14, 0.14, 1600, 0.4, 0.1); /* a wet mouth losing its hold */ },
   manta() { noise(0.4, 0.36, 500, 0.6); tone('sine', 90, 40, 0.5, 0.14, 0.05); SFX.splash && SFX.splash(); /* a big flat body going down into her own water */ },
+  scorpion() { noise(0.1, 0.24, 3200, 0.4); for (let i = 0; i < 3; i++) noise(0.04, 0.16, 2400 - i * 400, 0.5, 0.05 + i * 0.05); /* the shell cracks */ },
+  sandgob() { gob(0.9) || tone('square', 420, 100, 0.2, 0.16); noise(0.2, 0.12, 900, 0.6, 0.05); /* and the sand takes him back */ },
+  vulture() { tone('sawtooth', 700, 180, 0.3, 0.14); noise(0.14, 0.12, 1800, 0.5, 0.04); /* a croak and a clatter of feathers */ },
+  cutthroat() { tone('square', 260, 90, 0.26, 0.16); noise(0.2, 0.2, 1400, 0.5, 0.04); tone('sine', 2200, 1500, 0.12, 0.04, 0.06); /* a man going down, and his steel ringing on the stone */ },
+  slinger() { tone('square', 340, 120, 0.22, 0.14); noise(0.16, 0.14, 900, 0.5, 0.05); for (let i = 0; i < 3; i++) noise(0.03, 0.14, 1800, 0.6, 0.1 + i * 0.06); /* and the stones spilling out of his bag */ },
+  ambusher() { tone('sawtooth', 240, 80, 0.3, 0.14); noise(0.5, 0.16, 700, 0.6, 0.08); noise(0.3, 0.08, 2400, 0.4, 0.3); /* and the sand runs off the cloak for good */ },
+  duneworm() { tone('sawtooth', 80, 30, 1.6, 0.26); noise(1.6, 0.3, 200, 0.3); noise(1.0, 0.14, 900, 0.5, 0.3); tone('sine', 44, 26, 1.8, 0.2, 0.2); /* THE DUNE WORM: a long bellow going down into the sand, and the sand closing over it */ },
   crab() { noise(0.12, 0.3, 2800, 0.35); for (let i = 0; i < 4; i++) noise(0.05, 0.2, 2200 - i * 300, 0.5, 0.06 + i * 0.05); /* the shell comes apart in pieces */ },
   turtle() { noise(0.2, 0.3, 1200, 0.4); tone('square', 260, 90, 0.2, 0.14); tone('sine', 80, 40, 0.4, 0.12, 0.08); },
   heronfoe() { tone('sawtooth', 1000, 300, 0.2, 0.14); tone('square', 1400, 500, 0.14, 0.1, 0.04); noise(0.26, 0.2, 2000, 0.4, 0.1); },
@@ -886,10 +936,19 @@ const DIE = {
 // theirs: shelled things click, fish snap and splash, birds squawk, the drowned elves gasp cold and thin, the
 // drowned crew groan waterlogged, and the pirates are plain sunburnt people who swear and go down hard.
 const HURT = {
+  whelp() { tone('square', 700, 380, 0.07, 0.08); noise(0.06, 0.14, 1800, 0.6); tone('sawtooth', 2200, 1500, 0.06, 0.04, 0.02); },   /* soft stone struck, and a squawk */
   corpse() { noise(.14,.16,700,.4);tone('triangle',130,70,.16,.1); },   /* THE UNBURIED FIELD: rotten mail and a dry throat */
   bannerbearer() { noise(.16,.18,600,.4);tone('triangle',110,60,.2,.12); },
-  standardbearer() { noise(.22,.26,420,.5);tone('sawtooth',90,50,.26,.14); },
+  barrowrider() { noise(.22,.26,420,.5);tone('sawtooth',90,50,.26,.14); },
   deathknight() { noise(.24,.3,300,.5);tone('sine',70,34,.3,.2); },
+  bloodknight() { noise(.22,.3,340,.5);tone('sine',76,38,.28,.2);tone('triangle',180,90,.12,.06); },
+  scorpion() { noise(0.05, 0.22, 3000, 0.4); tone('square', 900, 700, 0.05, 0.08); },
+  sandgob() { gobH(0.9) || tone('square', 500, 300, 0.08, 0.14); noise(0.08, 0.08, 900, 0.6); },
+  vulture() { tone('sawtooth', 820, 420, 0.12, 0.12); },
+  cutthroat() { tone('square', 380, 240, 0.08, 0.12); noise(0.06, 0.08, 1200, 0.5); },
+  slinger() { tone('square', 460, 300, 0.07, 0.11); },
+  ambusher() { tone('square', 340, 220, 0.08, 0.12); noise(0.1, 0.08, 800, 0.6); },
+  duneworm() { tone('sawtooth', 120, 70, 0.22, 0.18); noise(0.2, 0.22, 380, 0.5); noise(0.1, 0.1, 1600, 0.7, 0.06); },   /* THE DUNE WORM: a grunt through a throat full of sand, and the sand coming off him */
   burngob() { gobH(0.95, 0.5) || tone('sawtooth', 260, 150, 0.14, 0.16); noise(0.1, 0.1, 2600, 0.6); },
   emberwisp() { noise(0.08, 0.1, 3600, 0.5); },
   pyromancer() { noise(0.18, 0.2, 1400, 0.5); tone('triangle', 200, 120, 0.2, 0.14); },
@@ -897,6 +956,7 @@ const HURT = {
   zombie() { noise(.2,.2,400,.4);tone('triangle',100,50,.2,.12); },
   husk() { noise(.26,.26,300,.5);tone('triangle',78,40,.26,.14); },
   bonegob() { noise(.1,.1,900,.3);tone('square',420,180,.1,.07); },
+  bonearcher() { noise(.12,.14,1400,.55);tone('triangle',300,140,.1,.06);noise(.06,.08,2600,.4,.07); },   /* a skeleton's ribs knocked together, then the bow clattering after (it was a goblin's squeal: main.js voiceOf) */
   apprentice() { noise(.16,.18,520,.35);tone('triangle',150,90,.18,.1); },
   undeadmage() { noise(.2,.16,550,.7);tone('triangle',180,70,.3,.14); },
   burieddead() { noise(.3,.3,250,.5);tone('sine',80,30,.3,.2); },
@@ -907,6 +967,7 @@ const HURT = {
   familiar() { tone('sawtooth',120,65,.25,.13);noise(.24,.22,350,.5); },
   /* THE MAGE'S FOLLY: leaves, plate, a slopped bucket, a wooden jaw, a thing out of a jar, brass, and the two at the top */
   gargoyle() { noise(0.14, 0.22, 900, 0.5); tone('square', 150, 90, 0.08, 0.06); },
+  sexton() { bell(392, 0.5, 0.05); noise(0.1, 0.16, 900, 0.5); tone('square', 150, 90, 0.08, 0.06, 0.01); },   /* the hand-bell jangles on its chain when he is struck */
   hedgewarden() { noise(0.16, 0.2, 1500, 0.4); noise(0.1, 0.14, 800, 0.5, 0.05); tone('square', 210, 140, 0.1, 0.05, 0.02); },
   topiary() { noise(0.12, 0.2, 1800, 0.4); noise(0.08, 0.14, 900, 0.5, 0.05); tone('square', 260, 180, 0.06, 0.04, 0.02); },
   armour() { file('clang', 0.2, 0.7) || tone('sine', 700, 500, 0.12, 0.1); noise(0.08, 0.14, 1400, 0.5); },
@@ -976,7 +1037,8 @@ const HURT = {
   merrowspear() { tone('sawtooth', 240, 150, 0.14, 0.14); noise(0.12, 0.16, 1200, 0.5); },
   merrowcaller() { tone('triangle', 300, 180, 0.14, 0.12); noise(0.1, 0.14, 700, 0.5); },
   merrowbrute() { SFX.clank(); tone('sawtooth', 180, 110, 0.16, 0.16); noise(0.14, 0.16, 500, 0.5); },
-  leadfoot() { SFX.clank(); tone('sine', 150, 100, 0.2, 0.14); noise(0.12, 0.2, 340, 0.5, 0.04); },   /* struck plate under water: a deep dull bell, and bubbles */
+  drownedknight() { SFX.clank(); tone('sine', 220, 150, 0.16, 0.12); noise(0.14, 0.18, 800, 0.5, 0.03); },   /* struck plate, and a grunt through water */
+  drownedcaptain() { SFX.clank(); tone('sine', 170, 110, 0.2, 0.14); noise(0.16, 0.2, 600, 0.5, 0.03); },   /* struck plate under water: a deep dull bell, and bubbles */
   cutlass() { file('hurt', 0.4, 1.18) || tone('square', 420, 260, 0.09, 0.14); },
   boarder() { file('hurt', 0.5, 0.86) || tone('square', 300, 180, 0.11, 0.16); },
   marine() { file('hurt', 0.4, 1.3) || tone('square', 480, 300, 0.08, 0.13); },
@@ -1060,12 +1122,21 @@ SFX.snore = () => { if (!gate('snore', 0.4)) return; if (voice('vo_snore', 0.2, 
 /* THE DRUNK. A hiccup: a gulp of air stopped short in the throat. And the slur: a man's shout dragged down and muffled. */
 SFX.hic = () => { if (!gate('hic', 0.35)) return; tone('square', 520, 880, 0.05, 0.07); noise(0.04, 0.06, 1400, 0.5, 0.01); tone('sine', 300, 180, 0.06, 0.04, 0.04); };
 SFX.slur = () => { if (!gate('slur', 0.7)) return; if (voice(VOK('m3', 'alert'), 0.34, 0.66, 1300)) return; tone('sawtooth', 210, 120, 0.32, 0.08); tone('sine', 160, 110, 0.3, 0.05, 0.08); };
+/* THE CARAVAN'S BANDITS' tells: the cutthroat's FEINT is a light scrape and a stamp, his REAL cut a bright ring off the blade (the two
+   must not sound alike); the slinger's whirl is the cord humming round, and his stone lands with a dry knock */
+SFX.feintScrape = () => { if (!gate('feint', 0.2)) return; noise(0.07, 0.07, 2600, 0.5); tone('sine', 110, 70, 0.08, 0.06, 0.08); };
+SFX.bladeGlint = () => { if (!gate('glint', 0.2)) return; tone('sine', 2600, 3100, 0.18, 0.05); tone('triangle', 1300, 1500, 0.2, 0.03, 0.02); noise(0.05, 0.05, 5000, 0.6); };
+SFX.slingWhirl = () => { if (!gate('whirl', 0.3)) return; for (let i = 0; i < 4; i++) noise(0.09, 0.05 + i * 0.01, 700 + i * 250, 0.4, i * 0.18); };
+SFX.stoneThud = () => { if (!gate('thud', 0.1)) return; noise(0.06, 0.14, 700, 0.5); tone('square', 180, 90, 0.05, 0.06); };
+/* THE SUN BUILDS (THE SUNKEN CARAVAN, 2026-09-25): a tick of sunstroke at full is a dry sizzle, and each stage of the build (1, 2, 3:
+   3, 5, 8 damage) is a step higher and harder than the last, so the ear hears it getting worse before the bar does */
+SFX.sunBurn = (st = 1) => { if (!gate('sunBurn', 0.3)) return; noise(0.16 + 0.04 * st, 0.07 + 0.03 * st, 2400 + 900 * st, 0.5); tone('sawtooth', 260 + 150 * st, 170 + 110 * st, 0.14 + 0.03 * st, 0.04 + 0.02 * st); if (st >= 3) tone('square', 1300, 900, 0.08, 0.03, 0.05); };
 SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.08, 0.05, 0.02); tone('sine', 620, 740, 0.22, 0.04, 0.06); };
 // THE CAST. A man in this game died on a square wave or on a goblin slowed down. Now: people REPLACE their synth
 // with a voice from a kit (bosses keep their synth under it, for the size of the moment), creatures LAYER a voice
 // over their own, and whatever the body is made of - plate, mail, cloth - is heard under both.
 const CAST = {
-  corpse: { kit: 'zom', rate: 1.05, lp: 2000, mat: 'mail' }, bannerbearer: { kit: 'zom', rate: 0.92, lp: 1900, mat: 'mail' }, standardbearer: { kit: 'zom', rate: 0.7, lp: 1400, mat: 'plate', boss: true }, deathknight: { kit: 'zom', rate: 0.6, lp: 1200, mat: 'plate', boss: true },   /* THE UNBURIED FIELD */
+  corpse: { kit: 'zom', rate: 1.05, lp: 2000, mat: 'mail' }, bannerbearer: { kit: 'zom', rate: 0.92, lp: 1900, mat: 'mail' }, barrowrider: { kit: 'zom', rate: 0.7, lp: 1400, mat: 'plate', boss: true }, deathknight: { kit: 'zom', rate: 0.6, lp: 1200, mat: 'plate', boss: true }, bloodknight: { kit: 'zom', rate: 0.55, lp: 1100, mat: 'plate', boss: true },   /* THE UNBURIED FIELD */
   swornsword: { kit: 'm2', rate: 1, mat: 'mail', human: true }, hedgeknight: { kit: 'm4', rate: 0.92, lp: 1600, mat: 'plate', human: true },
   closedhelm: { kit: 'm4', rate: 0.78, lp: 1100, mat: 'plate', human: true, boss: true }, runner: { kit: 'm6', rate: 1.12, mat: 'cloth', human: true, alert: 'vo_hum_alert' },
   crossbow: { kit: 'm5', rate: 1.05, mat: 'mail', human: true }, lancer: { kit: 'm3', rate: 0.95, mat: 'mail', human: true },
@@ -1077,6 +1148,7 @@ const CAST = {
   merrowspear: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, merrowcaller: { kit: 'f3', rate: 0.95, mat: 'cloth', human: true },   /* fish-folk, not goblins: no gibberish, no goblin laugh */
   watch: { kit: 'm5', rate: 0.9, lp: 1800, mat: 'plate', human: true }, lampreeve: { kit: 'm1', rate: 0.82, mat: 'cloth', human: true, boss: true }, tollmaster: { kit: 'm4', rate: 0.72, mat: 'cloth', human: true, boss: true },
   folk: { kit: 'hd', rate: 1, human: true, alert: 'vo_hum_alert' },
+  cutthroat: { kit: 'm2', rate: 1.06, mat: 'cloth', human: true }, slinger: { kit: 'm6', rate: 1.16, mat: 'cloth', human: true }, ambusher: { kit: 'm3', rate: 0.9, lp: 1900, mat: 'cloth', human: true },   /* THE CARAVAN'S BANDITS: men of the desert, not goblins */
   troll: { kit: 'ogre', rate: 1 }, prince: { kit: 'zom', rate: 0.62, lp: 1500, mat: 'cloth' }, courtier: { kit: 'zom', rate: 1.3, lp: 2600 }, berserker: { kit: 'gobbig', rate: 1.1 }, drownedking: { kit: 'ogre', rate: 0.75, lp: 1400 },
   harbormaster: { kit: 'm4', rate: .62, lp: 1300, mat: 'plate', human: true, boss: true },
   forgemaster: { kit: 'ogre', rate: 0.85, mat: 'plate' }, reefmaw: { kit: 'ogre', rate: 0.7 },
@@ -1118,6 +1190,15 @@ Object.assign(SFX, {
   cutQuake() { SFX.stone && SFX.stone(); tone('sine', 90, 36, 0.4, 0.3); noise(0.3, 0.28, 520, 0.5); },
   /* THE WARDEN'S SIX: ash through air low along the floor; a spear leaving the hand, going into wood or stone, whistling home and
      slapped into the palm; the spring's landing, the stretch's rising note, the dance's short whips, the rain called and landing. */
+  /* THE GEOMANCER: thud, crack, grinding stone. geoThud is the butt struck into the ground - the start of every spell of hers -
+     geoRise the stone grinding up out of it, geoCrumble a piece coming apart, geoQuake the floor heaving, geoBounce a blow
+     turned off the face of a wall raised on the beat. */
+  geoThud() { tone('sine', vary(95), 38, 0.22, 0.34); tone('triangle', vary(190), 90, 0.1, 0.12); noise(0.1, 0.2, 260, 0.6); },
+  geoRise() { noise(0.26, 0.2, 480, 0.8); tone('sawtooth', vary(66), vary(132), 0.24, 0.07); tone('sine', 80, 50, 0.2, 0.16); },
+  geoCrumble() { noise(0.34, 0.16, 1100, 0.5); tone('square', vary(170), 60, 0.1, 0.1); noise(0.2, 0.1, 380, 0.7, 0.08); },
+  geoBounce() { tone('square', vary(260), 130, 0.08, 0.1); noise(0.08, 0.18, 1500, 0.9); tone('sine', 120, 60, 0.18, 0.2); },
+  geoQuake() { noise(0.9, 0.34, 170, 0.4); tone('sine', 55, 30, 0.9, 0.34); noise(0.5, 0.14, 700, 0.6, 0.2); },
+  geoShard() { noise(0.12, 0.14, 2200, 1.1); tone('square', vary(900), 300, 0.05, 0.05); },
   wheel() { noise(0.3, 0.18, 700, 0.5); tone('triangle', vary(180), vary(420), 0.28, 0.07); SFX.shaftTurn(); },
   javThrow() { noise(0.18, 0.2, 2600, 1.2); tone('triangle', vary(900), vary(400), 0.16, 0.06); },
   javStick() { tone('square', vary(220), 120, 0.07, 0.07); noise(0.06, 0.14, 900, 0.8); tone('sine', 140, 70, 0.14, 0.12); },
@@ -1137,5 +1218,5 @@ Object.assign(SFX, {
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother'];
+export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];

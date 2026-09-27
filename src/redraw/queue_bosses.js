@@ -11,8 +11,8 @@
 // bakeHedgeWarden()  0 stand | 1,2 walk | 3 CUT TELL (the clipped sword up) | 4 CUT | 5 THORN TELL (arms flung wide, thorns
 //                    bristling red) | 6 THORNS | 7 STUMP (cut down: roots and a stump) | 8,9 REGROWING (half, nearly)
 // bakeGateGargoyle() 0 PERCHED (on the gate, wings folded) | 1,2 fly | 3 DIVE TELL (high, wings wide) | 4 DIVE | 5 GUST TELL
-//                    (wings drawn back) | 6 GUST | 7 SPIT TELL (head back, throat lit) | 8 SPIT | 9 SHRIEK | 10 HANGING
-//                    (THE OPENING: clinging by the claws to a broken slab's edge)
+//                    (wings drawn back) | 6 GUST | 7 SPIT TELL (head back, throat lit) | 8 SPIT | 9 SHRIEK | 10 STUNNED
+//                    (THE OPENING: through a slab and flat on the garden floor) | 11 CRASH (going through it). Drawn at 1.5x (2026-09-25)
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten, shade as tint } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -132,53 +132,75 @@ export function bakeHedgeWarden() {
 
 // ================= THE GATE GARGOYLE =================
 /* a huge stone gargoyle bolted over the tower's outer gate, woken by the loose magic: carved stone, moss in the cracks, an
-   iron collar with a broken chain, and the witchlight in its eyes and throat */
-const GG = { s: '#8a8a94', S: '#a6a6b0', sd: '#6e6e78', sD: '#4e4e58', moss: '#6a8a4a', mossL: '#8aaa5a', iron: '#4a4a52', ironL: '#7a7a84', witch: '#b8ff9a', witchL: '#effff0', claw: '#3e3e46', slab: '#7a7a84', slabL: '#9a9aa4', slabD: '#5a5a64' };
+   iron collar with a broken chain, and the witchlight in its eyes and throat.
+   REDRAWN AT HALF AS BIG AGAIN (2026-09-25, docs/briefs/gargoyle-rework.md: Daniel, "I'd like the boss to be bigger"): every
+   shape is laid out at K = 1.5 on a 132x100 sheet, not scaled from the old one - the wing's fingers are two pixels of bone, the
+   horns are ridged, each foot has three claws, the moss sits in real cracks. His opening changed with the fight: frame 10 is
+   STUNNED (crashed through a slab onto the garden floor, sprawled, wings flat) and frame 11 is THE CRASH (going through it). */
+const GG = { s: '#8a8a94', S: '#a6a6b0', sd: '#6e6e78', sD: '#4e4e58', moss: '#6a8a4a', mossL: '#8aaa5a', iron: '#4a4a52', ironL: '#7a7a84', witch: '#b8ff9a', witchL: '#effff0', claw: '#3e3e46', slab: '#7a7a84', slabL: '#9a9aa4', slabD: '#5a5a64', tooth: '#e8e4d8', dim: '#5e7a52' };
+export const GARG_K = 1.5;
 export function bakeGateGargoyle() {
-  const W = 84, H = 64, cx = 40;
+  const K = GARG_K, W = 132, H = 100, cx = 62;
   /* A BAT'S WING IN STONE: the arm up from the shoulder to the WRIST, three fingers FANNING from the wrist - up-back, back,
-     down-back - and the membrane between them scalloped toward the wrist. (The first pass ran the fingers from the wrist down to
-     the body, so a raised wing was a tall slab.) `lift` raises the wrist; `spread` is how long the fingers are. */
-  const wing = (g, x, y, lift, spread, far = false) => { const wx = x - spread * 0.45, wy = y - Math.max(-4, lift) * 0.5 - 4, col = far ? GG.sd : GG.s, bone = far ? GG.sD : GG.S;   /* the wrist goes up AND BACK */
-    const th0 = lift > 12 ? -0.72 * Math.PI : lift < 0 ? -0.95 * Math.PI : -0.8 * Math.PI, tips = [0, 1, 2].map(k => { const th = th0 - k * 0.24 * Math.PI, len = spread * (0.85 - k * 0.12); return [wx + Math.cos(th) * len, wy + Math.sin(th) * len]; });   /* the fingers sweep behind: a sail, not a column */
-    const pull = (a, b) => [(a[0] + b[0]) / 2 + (wx - (a[0] + b[0]) / 2) * 0.35, (a[1] + b[1]) / 2 + (wy - (a[1] + b[1]) / 2) * 0.35];   // the scallop, drawn in toward the wrist
-    fillPoly(g, [[x, y - 2], [wx, wy], tips[0], pull(tips[0], tips[1]), tips[1], pull(tips[1], tips[2]), tips[2], [x - 3, y + 6]], col);
-    thick(g, x, y - 1, wx, wy, bone, 2); for (const t of tips) line(g, wx, wy, t[0], t[1], bone); px(g, wx, wy - 1, GG.claw); px(g, wx + 1, wy - 2, GG.claw); };
-  const body = (g, x, y, crouch = 0, head = 0) => {
-    ellipse(g, x, y, 11, 9 - crouch, GG.s); ellipse(g, x - 2, y - 3, 8, 5, GG.S);                                        // the hunched torso
-    rect(g, x + 2, y - 10, 10, 3, GG.iron); rect(g, x + 2, y - 10, 10, 1, GG.ironL); line(g, x + 3, y - 8, x - 4, y - 2, GG.iron);   // the collar and its broken chain
-    const hx = x + 11, hy = y - 12 - head * 3;
-    ellipse(g, hx, hy, 7, 6, GG.s); ellipse(g, hx - 1, hy - 2, 5, 3, GG.S);
-    for (const [ox, len] of [[-3, 11], [1, 9]]) { let hx0 = hx + ox, hy0 = hy - 4; for (let k = 0; k < len; k++) { const a = -Math.PI / 2 - 0.9 - k * 0.09; hx0 += Math.cos(a) * 1.1; hy0 += Math.sin(a) * 1.1; ellipse(g, hx0, hy0, 1.6 - k * 0.1, 1.6 - k * 0.1, k % 3 ? GG.sd : GG.sD); } }
-    rect(g, hx - 3, hy - 4, 9, 2, GG.sD);
-    fillPoly(g, [[hx + 3, hy - 2], [hx + 12, hy + 1 - head * 2], [hx + 11, hy + 4 - head], [hx + 3, hy + 4]], GG.S); px(g, hx + 11, hy + 1 - head * 2, GG.sD);
-    line(g, hx + 4, hy + 4, hx + 10, hy + 4 - head, GG.sD); for (const fx of [5, 8]) { px(g, hx + fx, hy + 5 - head * 0.5, '#e8e4d8'); px(g, hx + fx, hy + 6 - head * 0.5, '#e8e4d8'); }
-    rect(g, hx + 1, hy - 2, 3, 2, GG.sD); px(g, hx + 2, hy - 2, GG.witch); px(g, hx + 3, hy - 2, GG.witchL);
-    for (let k = 0; k < 5; k++) px(g, x - 8 + k * 4, y + 2 + (k % 2) * 2, k % 2 ? GG.moss : GG.mossL);                      // moss in the cracks
-    line(g, x - 3, y - 6, x + 1, y + 1, GG.sD);                                                                          // a crack across the chest
+     down-back - and the membrane between them scalloped toward the wrist. `lift` raises the wrist; `spread` is how long the
+     fingers are (both in the old sheet's units: K lays them out). */
+  const wing = (g, x, y, lift, spread, far = false) => { lift *= K; spread *= K; const wx = x - spread * 0.45, wy = y - Math.max(-6, lift) * 0.5 - 6, col = far ? GG.sd : GG.s, bone = far ? GG.sD : GG.S, web = far ? GG.sD : GG.sd;
+    const th0 = lift > 18 ? -0.72 * Math.PI : lift < 0 ? -0.95 * Math.PI : -0.8 * Math.PI, tips = [0, 1, 2].map(k => { const th = th0 - k * 0.24 * Math.PI, len = spread * (0.85 - k * 0.12); return [wx + Math.cos(th) * len, wy + Math.sin(th) * len]; });
+    const pull = (a, b) => [(a[0] + b[0]) / 2 + (wx - (a[0] + b[0]) / 2) * 0.35, (a[1] + b[1]) / 2 + (wy - (a[1] + b[1]) / 2) * 0.35];
+    fillPoly(g, [[x, y - 3], [wx, wy], tips[0], pull(tips[0], tips[1]), tips[1], pull(tips[1], tips[2]), tips[2], [x - 4, y + 9]], col);
+    for (let k = 0; k < 2; k++) { const a = tips[k], b = tips[k + 1], m = pull(a, b); line(g, (a[0] * 2 + wx) / 3, (a[1] * 2 + wy) / 3, m[0], m[1], web); }   /* the membrane's folds */
+    thick(g, x, y - 2, wx, wy, bone, 3); for (const t of tips) { line(g, wx, wy, t[0], t[1], bone); line(g, wx + 1, wy, t[0] + 1, t[1], bone); }
+    rect(g, wx - 1, wy - 3, 2, 2, GG.claw); px(g, wx + 1, wy - 4, GG.claw); };
+  const horn = (g, x0, y0, len, dir = 1) => { let hx = x0, hy = y0; for (let k = 0; k < len; k++) { const a = -Math.PI / 2 - 0.9 * dir - k * 0.085 * dir; hx += Math.cos(a) * 1.15; hy += Math.sin(a) * 1.15; const r = 2.4 - k * 0.1; ellipse(g, hx, hy, r, r, k % 4 === 3 ? GG.sD : GG.sd); } };
+  const body = (g, x, y, crouch = 0, head = 0, eye = GG.witch) => {
+    ellipse(g, x, y, 16.5, (9 - crouch) * K, GG.s); ellipse(g, x - 3, y - 4, 12, 7.5, GG.S); ellipse(g, x - 1, y + 6, 12, 4, GG.sd);     // the hunched torso, lit from above, the belly in shade
+    for (let k = 0; k < 4; k++) line(g, x - 12 + k * 3, y - 10 + k, x - 10 + k * 3, y - 11 + k, GG.sd);                                    // the ridge of the spine
+    const cy0 = y - 15 + (head < -1 ? 6 : 0); rect(g, x + 3, cy0, 15, 5, GG.iron); rect(g, x + 3, cy0, 15, 1, GG.ironL); for (let k = 0; k < 3; k++) px(g, x + 6 + k * 5, cy0 + 2, GG.ironL);   // the collar and its rivets
+    for (let k = 0; k < 4; k++) { const lx = x + 4 - k * 3, ly = y - 12 + k * 3; rect(g, lx - 1, ly, 3, 2, k % 2 ? GG.iron : GG.ironL); }                  // its broken chain
+    const hx = x + 16, hy = y - 18 - head * 4.5;
+    ellipse(g, x + 10, y - 11 - head * 2.5, 7.5, 6 + Math.max(0, head) * 1.8, GG.s); ellipse(g, x + 9, y - 13 - head * 2.5, 4.5, 3, GG.S);   /* the neck: the head is carried, never floating */
+    ellipse(g, hx, hy, 10.5, 9, GG.s); ellipse(g, hx - 1.5, hy - 3, 7.5, 4.5, GG.S);
+    horn(g, hx - 4.5, hy - 6, 13); horn(g, hx + 1.5, hy - 6, 11);
+    rect(g, hx - 5, hy - 6, 13, 3, GG.sD);                                                                                               // the brow
+    fillPoly(g, [[hx + 4, hy - 3], [hx + 18, hy + 1.5 - head * 3], [hx + 16.5, hy + 6 - head * 1.5], [hx + 4, hy + 6]], GG.S); rect(g, hx + 16, hy + 1 - head * 3, 2, 2, GG.sD);   // the snout
+    px(g, hx + 13, hy - head * 2.5, GG.sD); px(g, hx + 14, hy - head * 2.5, GG.sD);                                                     // a nostril
+    line(g, hx + 5, hy + 6, hx + 15, hy + 6 - head * 1.5, GG.sD); for (const fx of [6, 9, 12]) { rect(g, hx + fx, hy + 7 - head * 0.8, 1, 3, GG.tooth); }   // the jaw and its teeth
+    rect(g, hx + 1, hy - 3, 5, 3, GG.sD); rect(g, hx + 2, hy - 3, 2, 2, eye); px(g, hx + 4, hy - 3, eye === GG.witch ? GG.witchL : eye);    // the eye, witchlit
+    for (let k = 0; k < 7; k++) { px(g, x - 12 + k * 4, y + 3 + (k % 2) * 3, k % 2 ? GG.moss : GG.mossL); if (k % 3 === 0) px(g, x - 11 + k * 4, y + 4 + (k % 2) * 3, GG.moss); }   // moss in the cracks
+    line(g, x - 5, y - 9, x + 1, y + 1, GG.sD); line(g, x + 1, y + 1, x - 1, y + 5, GG.sD); px(g, x - 2, y - 3, GG.mossL);                 // a crack across the chest, moss in it
     return [hx, hy]; };
-  const legs = (g, x, y, reach = 0) => { for (const dx of [-6, 5]) { thick(g, x + dx, y + 4, x + dx + 1 + reach, y + 11, GG.sd, 3); for (let t = 0; t < 3; t++) line(g, x + dx + reach + t * 2 - 1, y + 12, x + dx + reach + t * 2, y + 14, GG.claw); } };
-  const F = frames(W, H, 11, (g, f) => {
-    const floor = H - 3, y = floor - 16;
-    if (f === 0) { rect(g, cx - 16, floor - 2, 32, 3, GG.slabD); rect(g, cx - 16, floor - 3, 32, 1, GG.slabL);   // PERCHED on the gate's ledge, wings folded like a cloak
-      wing(g, cx - 2, y - 2, -4, 12, true); legs(g, cx, y - 1); body(g, cx, y, 2); wing(g, cx, y, -6, 10); return; }
-    if (f === 10) { // HANGING - THE OPENING: smashed through a cracked slab, clinging by the claws to the broken edge
-      const ey = 14; rect(g, cx - 30, ey, 26, 6, GG.slab); rect(g, cx - 30, ey, 26, 1, GG.slabL); for (let k = 0; k < 4; k++) line(g, cx - 6 - k, ey + k * 2, cx - 2 + k, ey + 6, GG.slabD);   // the broken slab
-      for (let t = 0; t < 4; t++) line(g, cx - 8 + t * 2, ey - 1, cx - 6 + t * 2, ey + 3, GG.claw);
-      thick(g, cx - 6, ey + 2, cx - 2, ey + 14, GG.sd, 3); body(g, cx + 2, ey + 24, 0, -2); wing(g, cx, ey + 22, -18, 14, true); wing(g, cx + 2, ey + 24, -20, 16);   // dangling, wings limp
-      for (let k = 0; k < 6; k++) px(g, cx - 12 + k * 4, ey + 34 + (k % 3) * 3, GG.slabD); return; }                                                    // grit falling
+  const legs = (g, x, y, reach = 0) => { for (const dx of [-9, 7]) { thick(g, x + dx, y + 6, x + dx + 1.5 + reach * K, y + 16, GG.sd, 4); ellipse(g, x + dx + 1, y + 8, 4, 3, GG.s);
+    for (let t = 0; t < 3; t++) { line(g, x + dx + reach * K + t * 3 - 2, y + 17, x + dx + reach * K + t * 3 - 1, y + 20, GG.claw); px(g, x + dx + reach * K + t * 3, y + 20, GG.claw); } } };
+  const grit = (g, x, y, n, spread) => { for (let k = 0; k < n; k++) { const gx = x - spread / 2 + ((k * 37) % spread), gy = y + ((k * 13) % 11); rect(g, gx, gy, 1 + (k % 2), 1 + (k % 2), k % 3 ? GG.slabD : GG.sd); } };
+  const chunk = (g, x, y, w, h) => { rect(g, x, y, w, h, GG.slab); rect(g, x, y, w, 1, GG.slabL); rect(g, x, y + h - 1, w, 1, GG.slabD); };
+  const F = frames(W, H, 12, (g, f) => {
+    const floor = H - 4, y = floor - 24;
+    if (f === 0) { rect(g, cx - 24, floor - 3, 48, 4, GG.slabD); rect(g, cx - 24, floor - 4, 48, 1, GG.slabL);   // PERCHED on the gate's ledge, wings folded like a cloak
+      wing(g, cx - 3, y - 3, -4, 12, true); legs(g, cx, y - 2); body(g, cx, y, 2); wing(g, cx, y, -6, 10); return; }
+    if (f === 10) { // STUNNED - THE OPENING: through the slab and flat on the garden floor, wings splayed, the witchlight in his eye gone dim
+      for (const [dx, w] of [[-50, 12], [34, 10], [-30, 8], [44, 7]]) chunk(g, cx + dx, floor - 5, w, 5);                                  // the slab, in pieces round him
+      wing(g, cx - 6, floor - 14, -10, 28, true);                                                                                         // the far wing flung out flat behind him
+      for (const dx of [-12, 4]) { thick(g, cx + dx, floor - 8, cx + dx - 7, floor - 1, GG.sd, 4); for (let t = 0; t < 3; t++) line(g, cx + dx - 10 + t * 3, floor - 1, cx + dx - 9 + t * 3, floor + 1, GG.claw); }   // the legs buckled under him
+      body(g, cx - 2, floor - 16, 3, -2.5, GG.dim);                                                                                        // slumped, chin on the stones, the witchlight in his eye gone dim
+      wing(g, cx + 2, floor - 10, -12, 22);                                                                                              // the near wing slack along the ground
+      line(g, cx - 12, floor - 26, cx - 4, floor - 18, GG.sD); line(g, cx - 4, floor - 18, cx + 2, floor - 22, GG.sD);                    // a new crack down his back
+      grit(g, cx, floor - 2, 14, 70); return; }
+    if (f === 11) { // THE CRASH: going through the slab, wings thrown up over him, the slab breaking round his claws
+      wing(g, cx - 2, y - 4, 26, 24, true); legs(g, cx + 2, y + 2, -2); body(g, cx, y + 2, 1, -1); wing(g, cx + 2, y - 2, 30, 22);         // tipped forward, the wings thrown up and back by the fall
+      chunk(g, cx - 40, y + 12, 16, 6); chunk(g, cx + 22, y + 10, 14, 6); chunk(g, cx - 16, y + 20, 10, 5); chunk(g, cx + 8, y + 21, 8, 4);   // the slab going to pieces round him
+      grit(g, cx, y + 16, 16, 72); return; }
     const lift = [0, 0, 22, -8, 30, 4, 26, 0, 0, 20][f] ?? 0, spread = [0, 0, 26, 24, 30, 16, 30, 20, 20, 26][f] ?? 22;
     if (f === 4) { // DIVE: plummeting, wings swept back, claws first
-      wing(g, cx + 6, y - 14, 18, 14, true); body(g, cx, y - 4, 0, -2); wing(g, cx + 8, y - 12, 22, 16); legs(g, cx + 2, y + 2, 3); return; }
-    wing(g, cx - 2, y - 4, lift + 4, spread, true);
+      wing(g, cx + 9, y - 21, 18, 14, true); body(g, cx, y - 6, 0, -2); wing(g, cx + 12, y - 18, 22, 16); legs(g, cx + 3, y + 3, 3); return; }
+    wing(g, cx - 3, y - 6, lift + 4, spread, true);
     legs(g, cx, y, f === 3 ? -1 : 0);
     const [hx, hy] = body(g, cx, y, 0, f === 7 ? 2 : f === 9 ? 3 : 0);
-    wing(g, cx, y - 2, lift, spread);
-    if (f === 7) { ellipse(g, hx + 7, hy, 2.5, 2.5, GG.witch); px(g, hx + 7, hy, GG.witchL); }                                   // SPIT TELL: head back, the throat lit
-    if (f === 8) for (const [dx, dy] of [[18, -6], [24, 0], [20, 6]]) { rect(g, hx + dx, hy + dy, 4, 4, GG.sd); px(g, hx + dx, hy + dy, GG.S); }   // SPIT: three chunks of masonry
-    if (f === 9) { fillPoly(g, [[hx + 4, hy - 1], [hx + 12, hy - 7], [hx + 12, hy + 3]], GG.sD); for (let k = 0; k < 3; k++) line(g, hx + 14 + k * 3, hy - 6 - k * 2, hx + 16 + k * 3, hy - 9 - k * 2, GG.witch); }   // SHRIEK
-    if (f === 5) for (let k = 0; k < 3; k++) px(g, cx + 20 + k * 4, y - 20 + k * 3, GG.witchL);                                // GUST TELL: the air gathering
-    if (f === 6) for (let k = 0; k < 6; k++) line(g, cx + 16, y - 16 + k * 5, cx + 34, y - 18 + k * 5, GG.slabL);                // GUST: the blast
+    wing(g, cx, y - 3, lift, spread);
+    if (f === 7) { ellipse(g, hx + 10, hy + 1, 4, 4, GG.witch); ellipse(g, hx + 10, hy + 1, 2, 2, GG.witchL); }                              // SPIT TELL: head back, the throat lit
+    if (f === 8) for (const [dx, dy] of [[26, -9], [34, 0], [28, 9]]) { chunk(g, hx + dx, hy + dy, 6, 6); px(g, hx + dx + 1, hy + dy + 1, GG.S); }   // SPIT: three chunks of masonry
+    if (f === 9) { fillPoly(g, [[hx + 6, hy - 1], [hx + 18, hy - 10], [hx + 18, hy + 5]], GG.sD); for (let k = 0; k < 3; k++) thick(g, hx + 21 + k * 4, hy - 9 - k * 3, hx + 24 + k * 4, hy - 13 - k * 3, GG.witch, 2); }   // SHRIEK
+    if (f === 5) for (let k = 0; k < 4; k++) { px(g, cx + 30 + k * 5, y - 30 + k * 4, GG.witchL); px(g, cx + 31 + k * 5, y - 29 + k * 4, GG.witchL); }   // GUST TELL: the air gathering
+    if (f === 6) for (let k = 0; k < 7; k++) { line(g, cx + 24, y - 24 + k * 6, cx + 52, y - 27 + k * 6, GG.slabL); line(g, cx + 30, y - 23 + k * 6, cx + 46, y - 25 + k * 6, '#eefaff'); }   // GUST: the blast
   }, true);
-  return pack(F, cx, H, 30, 30);
+  return pack(F, cx, H, 45, 45);
 }

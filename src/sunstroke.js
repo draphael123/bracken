@@ -4,7 +4,8 @@
 // awnings, a wagon's lee, a rock overhang, the moving shadow of a vulture. Every screen asks "where is the next shade?"
 // Named SUNSTROKE, never heat: the pyromancer already owns P.heat. The player's field is P.sun = { v, tick }.
 //
-//   sunStep(s, dt, shaded)      -> { swim, hurt }   advance the meter; swim 0..1 drives the haze, hurt is damage to deal now
+//   sunStep(s, dt, shaded)      -> { swim, hurt, stage }   advance the meter; swim 0..1 drives the haze, hurt is damage to deal
+//                                  now, stage 0 (not full) or 1..3: which of SUN.build the next tick deals (the HUD says it)
 //   roofShade(tileAt, x, headY) -> true when rock hangs over the head within SUN.roof rows (an overhang, a cave, a bridge)
 //   shadeZones(L)               -> the level's static shade as [x0, x1, y0, y1] px boxes (props via SHADE_OF, L.shade rects)
 //   inShade(zones, x, y)        -> is (x, y) inside one
@@ -13,21 +14,27 @@
 import { SHADE_OF } from './redraw/desert.js';
 
 export const SUN = {
-  fill: 9,        // seconds of open sun from cool to the swim's peak (1.0)
+  fill: 6,        // seconds of open sun from cool to the swim's peak (1.0). 9 until Daniel, 2026-09-25: "the sun, more punishing"
   swimAt: 0.55,   // the view starts to swim here: the WARNING, a good few seconds before anything hurts
   cool: 1.2,      // seconds of shade from full to cool: SHADE RESETS IT (at 2.2 s a run of long walks with short stops crept up to harm)
-  hurtEvery: 1.4, dmg: 3,   // at 1.0, this much every this often (unblockable, no knock; name SUNSTROKE)
+  hurtEvery: 1, dmg: 3,     // at 1.0, a tick this often (unblockable, no knock; name SUNSTROKE); dmg is the first tick's
+  build: [3, 5, 8],         // AND IT BUILDS: the ticks at full deal 3, then 5, then 8 (and 8 after that) - the longer you stay out,
+                            // the worse it gets. Any shade that takes the meter off full starts it again at 3 (Daniel, 2026-09-25)
   roof: 5,        // rock this many rows over the head is shade
-  maxWalk: 7.5,   // the level rule: no walk in the sun longer than this (s at RUN) between two shades
+  maxWalk: 5,     // the level rule: no walk in the sun longer than this (s at RUN) between two shades. 7.5 with a 9 s fill; the
+                  // ruins (docs/briefs/caravan-ruins-bandits.md) are the extra shade that lets it be 5 with a 6 s one
   RUN: 92,
 };
 export function sunStep(s, dt, shaded) {
-  if (shaded) { s.v = Math.max(0, s.v - dt / SUN.cool); s.tick = SUN.hurtEvery * 0.5; }
+  if (shaded) s.v = Math.max(0, s.v - dt / SUN.cool);
   else s.v = Math.min(1, s.v + dt / SUN.fill);
   let hurt = 0;
-  if (s.v >= 1) { s.tick = (s.tick ?? SUN.hurtEvery * 0.5) - dt; if (s.tick <= 0) { s.tick += SUN.hurtEvery; hurt = SUN.dmg; } }
+  if (s.v >= 1) { s.tick = (s.tick ?? SUN.hurtEvery * 0.5) - dt;
+    if (s.tick <= 0) { s.tick += SUN.hurtEvery; hurt = SUN.build[Math.min(s.n || 0, SUN.build.length - 1)]; s.n = (s.n || 0) + 1; } }
+  else { s.tick = SUN.hurtEvery * 0.5; s.n = 0; }   /* off full (any shade does it): the build starts again at its first tick */
   const swim = s.v <= SUN.swimAt ? 0 : (s.v - SUN.swimAt) / (1 - SUN.swimAt);
-  return { swim, hurt };
+  const stage = s.v >= 1 ? Math.min(SUN.build.length, (s.n || 0) + 1) : 0;
+  return { swim, hurt, stage };
 }
 export function roofShade(tileAt, x, headY, rockish) {
   const tx = Math.floor(x / 16), r0 = Math.floor(headY / 16) - 1;

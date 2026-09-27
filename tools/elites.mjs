@@ -39,6 +39,9 @@ for (const lv of LEVELS) {
     const tag = e.t + '@' + e.x + ',' + e.y;
     if (rooms.some(([a, b, c, d]) => e.x >= a && e.x <= b && e.y >= c && e.y <= d)) out.push(tag + ' stands in a boss, mini or ambush room');
     if (at(e.x, e.y) !== T.AIR || at(e.x, e.y + 1) === T.AIR) out.push(tag + ' is not stood on footing');
+    /* NEVER AT A LANDING, and a shrine is the landing you come back to (level review, 2026-09-24: the Scree Path's elite troll stood a tile
+       from its checkpoint, and the Witchlight Stair's pier husk ON it - lit it and he was in your face; die and you woke under him) */
+    { const c = L.ents.find(q => q.t === 'check' && Math.abs(q.x - e.x) <= 2 && Math.abs(q.y - e.y) <= 2); if (c) out.push(tag + ' stands ' + Math.abs(c.x - e.x) + ' tile(s) from the checkpoint @' + c.x + ',' + c.y + ': a landing'); }
     if (!near(open, e.x, e.y)) out.push(tag + ' is out of reach');
     if (e.gate === undefined) continue;
     const G = eliteGate(L, e.gate, e.y);

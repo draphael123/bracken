@@ -1,5 +1,29 @@
 # SLOPES — phase 2 wiring plan
 
+> **PHASE 2 PROGRESS — 2026-09-23, branch `claude/slopes`.** Done and checked: **§5** (the six ids in `T`, the
+> `slopeReachGrid` line in `floodReach`), **§1.1** (moveBody is the wrapper, `SLOPES_ON` set in `loadLevel`),
+> **§1.2** (the mantle takes `&& !r.slope`), **§8.1** (`tools/slopes.mjs` now cuts its OLD side out of git at
+> `9e0e28a` with the extraction sha pinned, because main.js no longer HAS an old side of its own), and **§8.3**
+> (`tools/slopes-trace.mjs` with its baseline `docs/slopes-trace.json`). Both are registered in `tools/check.mjs`.
+>
+> **Two corrections to this document, learned by doing it:**
+>
+> 1. **§8.3 says to record the OLD traces from `9e0e28a`. Do not.** `src/main.js` has moved +1151/-142 lines since,
+>    so a trace from there differs everywhere for reasons that are not slopes. `moveBody` itself is byte-for-byte
+>    identical between `9e0e28a` and the branch point, so recording the baseline from the CURRENT pre-swap build
+>    tests the same mover in current surroundings. That is the stricter reading, and it is what was done.
+> 2. **§2 defers a slide-jump question to the Sunken Caravan that is already answered by construction.** The desert
+>    lane measured it, and wrote a handover that is committed on the `claude/desert` branch and NOT on master, so it
+>    is deliberately not cited as a path here - read it with `git show` against that branch. What it measured: the
+>    caravan has NO bottomless pit in 505 columns, its widest hazard is 8 columns of survivable quicksand on swing
+>    movers, and it passes its own reach check at `JUMP_ACROSS` 6 with no slide credit. So put no slide jump in,
+>    leave `JUMP_ACROSS` at 6, and the level loses nothing. From the same lane: only FOUR desert drafts use slope
+>    tiles (caravan 131, glass-sea 102, buried-city 48, well-town 4), so this batch gates three levels, not eight.
+>
+> **Still to do:** §2 (the slide), §3 (the walker edge probes, the footing probes, corpses, `groundEnts`), §4 (the
+> tile art and the minimap), §6 (the tools), §7 (listing THE DUNE YARD), §8.2 and §8.4. **No level has a slope tile
+> in it yet, so `SLOPES_ON` is false everywhere and the whole slope path is dead code in the shipped game today.**
+
 Phase 1 (branch `claude/slopes`, built off `codex/playtest-0919` at `9e0e28a`) built the engine in isolation, and none of it
 is wired in yet:
 

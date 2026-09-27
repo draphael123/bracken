@@ -3,6 +3,7 @@ const LIGHT = {
   knight: [.04, .10, .16, .24], warden: [.04, .10, .18, .24],
   pyro: [.04, .10, .18, .24], paladin: [.06, .10, .18, .25],
   pirate: [.03, .07, .15, .24], reaper: [.12, .15, .24, .28],
+  geomancer: [.05, .10, .18, .25],   /* the stave: a beat longer to lift than a sword, the stone lands on the same frame as the spear */
 };
 export function attackPose(hero, p, frames) {
   const directional = p.swingKind === 'rise' || p.swingKind === 'sweep';

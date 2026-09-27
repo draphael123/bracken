@@ -1,6 +1,6 @@
 /* tools/unburied-field-draft.mjs — measures the DRAFT Unburied Field (src/draft/unburied-field.js), Node only: every act walked;
    BOTH act-two routes walked (the high one over the wrecks, the low one in the trench) and each alone still carries you on;
-   the siege tower climbed to its top; the Standard-Bearer's gate holds the way on; the Death Knight's arena reached; three
+   the siege tower climbed to its top; the mini's gate holds the way on; the Death Knight's arena reached; three
    silvers and every checkpoint reached; encounters 3-5; route-breaks clean.
    THIS TOOL MEASURES THE GEOMETRY ONLY. tools/unburied.mjs measures the same draft against the BRIEF - its features, its
    hazards, its rooms and the rules the brief's last line names - and that is the one in the suite. */
@@ -20,7 +20,7 @@ const past = s => s.some(([x]) => x > UF.TOWER[0]);
 { const S = build(T); for (let x = UF.LOW[0]; x <= UF.LOW[1]; x++) for (let y = UF.G + 1; y <= UF.G + 5; y++) S.grid[y * S.W + x] = T.SOLID; assert.ok(past(fill(S).seen), 'the high route alone carries you on'); }
 { const S = build(T); for (let i = 0; i < S.grid.length; i++) { const x = i % S.W, y = (i / S.W) | 0; if (x >= UF.HIGH[0] && x <= UF.HIGH[1] && y < UF.G - 3 && S.grid[i] === T.ONEWAY) S.grid[i] = T.AIR; } assert.ok(past(fill(S).seen), 'the low route alone carries you on'); }
 assert.ok(box(UF.TOWER[0], UF.TOWER[1] + 4, 18, 21) > 3, 'the siege tower is climbed to its top');
-{ const S = build(T); for (let y = 0; y < S.H; y++) if (S.grid[y * S.W + UF.MINI.gate] === T.PORT) S.grid[y * S.W + UF.MINI.gate] = T.SOLID; assert.ok(!fill(S).seen.some(([x]) => x > UF.MINI.gate + 1), 'the Standard-Bearer holds the way on'); }
+{ const S = build(T); for (let y = 0; y < S.H; y++) if (S.grid[y * S.W + UF.MINI.gate] === T.PORT) S.grid[y * S.W + UF.MINI.gate] = T.SOLID; assert.ok(!fill(S).seen.some(([x]) => x > UF.MINI.gate + 1), 'the mini holds the way on'); }
 assert.ok(seen.some(([x, y]) => x >= UF.ARENA.x0 + 4 && y === UF.G), 'the Death Knight\'s arena is reached');
 const silvers = L.ents.filter(e => e.t === 'silver'); assert.equal(silvers.length, 3); for (const s of silvers) assert.ok(near(s), 'silver reached at ' + s.x + ',' + s.y);
 for (const c of L.ents.filter(e => e.t === 'check')) assert.ok(near(c), 'checkpoint reached at ' + c.x + ',' + c.y);

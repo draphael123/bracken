@@ -1,0 +1,25 @@
+  FAIL A7: the arena is about forty tiles, not 79: 79
+  FAIL his slabs are 5-7 rows over the garden floor: 11 13 12 13 11 13 12 13 11 12
+  ok   three rune columns lift from the garden floor past the slabs: 362 392 407
+  ok   the garden floor under the slabs is walked: 78 of 79 columns
+  FAIL drawn at 45 px (he was 30): box 30x30, sheet 84x64
+  ok   E6: no frame touches the top or the sides of its canvas: none
+  FAIL a STUNNED pose and a CRASH pose of his own
+  FAIL his opening is the stun on the floor, not the hang
+  FAIL the numbers: smashAny undefined, stun undefined, xundefined, regrow 8/undefined, minLive undefined
+  FAIL gargCam frames him and you
+{"wake":{"active":true,"VW0":320,"VW":320,"VH":180,"w":30,"h":30},"late":{"mode":"land","seen":["dive","land"],"open":0,"broken":false,"aim":true,"dy":176,"low":176,"hit":0,"dmgOpen":10,"stunSecs":0,"after":"land","dmgShut":10,"regrow":0},"stay":{"mode":"land","seen":["dive","land"],"open":0,"broken":false,"aim":true,"dy":176,"low":176,"hit":24},"early":{"mode":"land","seen":["dive","land"],"open":0,"broken":false,"aim":false,"dy":176,"low":176,"hit":24},"under":{"mode":"land","seen":["dive","land"],"open":0,"broken":false,"aim":true,"dy":192,"low":192,"hit":0},"p2":{"mode":"land","seen":["dive","land"],"open":0,"broken":false,"aim":true,"dy":176,"low":176,"hit":0,"regrow":0},"live":{"least":10,"n":10,"api":false},"errors":[]}
+  FAIL the zoomed-out view comes on when he wakes: 320 -> 320x180
+  FAIL his body is 45 px: 30x30
+  FAIL LEFT LATE: the slab breaks, he crashes to the garden floor and lies there stunned, open: {"mode":"land","seen":["dive","land"],"open":0,"broken":false,"aim":true,"dy":176,"low":176,"hit":0,"dmgOpen":10,"stunSecs":0,"after":"land","dmgShut":10,"regrow":0}
+  FAIL stunned, every blow counts twice: 10 vs 10
+  FAIL the stun lasts about undefined s and ends: 0
+  FAIL the slab grows back after about 8 s: 0
+  ok   KEPT: his dive hits you and he lands on the slab; nothing opens: {"mode":"land","seen":["dive","land"],"open":0,"broken":false,"aim":true,"dy":176,"low":176,"hit":24}
+  ok   LEFT EARLY: only his aim moves: {"mode":"land","seen":["dive","land"],"open":0,"broken":false,"aim":false,"dy":176,"low":176,"hit":24}
+  FAIL a hero under the slab he comes through is hit: {"mode":"land","seen":["dive","land"],"open":0,"broken":false,"aim":true,"dy":192,"low":192,"hit":0}
+  FAIL phase two: a broken slab comes back slower (0 s, was 0)
+  FAIL never fewer than undefined slabs stand: {"least":10,"n":10,"api":false}
+  ok   no errors on the page: []
+
+16 FAILED

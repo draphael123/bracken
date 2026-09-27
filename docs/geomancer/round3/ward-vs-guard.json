@@ -1,0 +1,151 @@
+{
+ "knight@1": {
+  "raise": 1,
+  "perfect": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "hitSt": 11,
+  "holdSt": 14,
+  "push": 29,
+  "covers": {
+   "front": true,
+   "over": false,
+   "behind": false
+  },
+  "bolt": false,
+  "walk": 32,
+  "flurry": {
+   "lost": 25,
+   "st": 0,
+   "thrown": 0
+  },
+  "volley": {
+   "lost": 14,
+   "st": 12,
+   "thrown": 0
+  },
+  "big": {
+   "lost": 0,
+   "pushed": 86,
+   "st": 27
+  }
+ },
+ "geomancer@1": {
+  "raise": 7,
+  "perfect": [
+   7,
+   8,
+   9,
+   10,
+   11
+  ],
+  "hitSt": 16,
+  "holdSt": 15,
+  "push": 0,
+  "covers": {
+   "front": true,
+   "over": true,
+   "behind": false
+  },
+  "bolt": true,
+  "walk": 0,
+  "flurry": {
+   "lost": 45,
+   "st": 4,
+   "thrown": 0
+  },
+  "volley": {
+   "lost": 7,
+   "st": 0,
+   "thrown": 0
+  },
+  "big": {
+   "lost": 0,
+   "pushed": 0,
+   "st": 10
+  }
+ },
+ "knight@20": {
+  "raise": 1,
+  "perfect": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13
+  ],
+  "hitSt": 9,
+  "holdSt": 7,
+  "push": 29,
+  "covers": {
+   "front": true,
+   "over": true,
+   "behind": true
+  },
+  "bolt": false,
+  "walk": 32,
+  "flurry": {
+   "lost": 0,
+   "st": 99,
+   "thrown": 0
+  },
+  "volley": {
+   "lost": 0,
+   "st": 124,
+   "thrown": 7
+  },
+  "big": {
+   "lost": 0,
+   "pushed": 86,
+   "st": 152
+  }
+ },
+ "geomancer@20": {
+  "raise": 7,
+  "perfect": [
+   7,
+   8,
+   9,
+   10,
+   11
+  ],
+  "hitSt": 16,
+  "holdSt": 15,
+  "push": 0,
+  "covers": {
+   "front": true,
+   "over": true,
+   "behind": false
+  },
+  "bolt": true,
+  "walk": 0,
+  "flurry": {
+   "lost": 0,
+   "st": 8,
+   "thrown": 0
+  },
+  "volley": {
+   "lost": 0,
+   "st": 168,
+   "thrown": 8
+  },
+  "big": {
+   "lost": 0,
+   "pushed": 0,
+   "st": 105
+  }
+ }
+}

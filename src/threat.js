@@ -37,7 +37,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   merrowspear: 2.5, merrowcaller: 3, merrowbrute: 3,
   /* THE LEADFOOT sits over both of the Keep's other heavies. He is slower than the Tideguard and the Merrow Brute and
      harder to LEAVE than either, because leaving him is the thing he charges for: the way round him costs you air. */
-  leadfoot: 3.5,
+  drownedknight: 3.5, drownedcaptain: 6,   /* THE DROWNED KNIGHT swims after you with a told lunge (a Tideguard is 3; the Leadfoot he replaced was 3.5); his captain adds a combo and holds a gate */
   // THE UNDERCROWN. The propman is worth more than he hits for, because what he costs you is TIME on a set
   // you already paid for; the clinger is worth almost nothing on its own and everything over a drop.
   propman: 2.5, clinger: 2, prince: 6, courtier: 0, minerlamp: 0, timber: 0, gas: 0,
@@ -53,6 +53,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   temperer: 3,
   /* THE SCALDER: an archer's reach, aimed down a column instead of across a floor, on a creature that never leaves his post */
   scalder: 2.5,
+  whelp: 2.5,   /* THE GARGOYLE WHELP: 28 health and a 9 point swoop, but the swoop is a SHOVE placed over a fall, and it is stone until it moves (an imp is 2.5) */
   /* THE SERJEANT: a charge down a bridge you cannot walk round, and a man with a sword when he is off the horse */
   lancer: 5,
   /* THE DRUNK: 22 health and a lob you can see the ring of - but he is always above the thing you are crossing */
@@ -61,8 +62,9 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   feeler: 2.5, kraken: 6, krakenarm: 0, tidebell: 0, knell: 0,
   /* THE MONASTERY: a bell and a prayer wheel are furniture */
   tbell: 0, pwheel: 0,
-  /* and the goblins who moved in: the priest throws no blow at all, but a blessed room takes twice the killing, so it is worth what it costs you */
-  gobpriest: 2,
+  /* and the goblins who moved in: a blessed room takes twice the killing, and since 2026-09-25 the priest throws its censer at range and
+     rings you back with its bell up close - the drunk's price for the drunk's lob, on top of the rite */
+  gobpriest: 2.5,
   /* THE FALSE ABBOT: a boss, and one whose ward makes every other thing in the room worth more */
   abbot: 6,
   /* THE WINCHMASTER: a boss, on a housing no jump reaches */
@@ -88,17 +90,40 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      king and the rest all are. closedhelm, bellcrab, drownedking and prince were written 0 with nothing explaining
      why, and were left alone and flagged because which convention was right was Daniel's call rather than a thing to
      settle inside a bug fix. HE RULED ON 2026-09-23: A BOSS IS A 6, and those four are 6 now like the rest, so this
-     table says one thing instead of two. The grave warden stays a mini, and the Tide Reaver, the only other mini
-     here, is a 4. Every INDEX taken before this - and before 77a559a, which gave the five common dead any weight at
+     table says one thing instead of two. The grave warden stays a mini, a 4 (the Tide Reaver, the other
+     mini here then, was removed 2026-09-25). Every INDEX taken before this - and before 77a559a, which gave the five common dead any weight at
      all - was read off a table that scored part of its own input as nothing, so it is SMALLER THAN THE TRUTH. */
   /* THE UNBURIED FIELD. THE FALLEN are a zombie's weight (2): a told cut and 30 health, inert alone, but under a banner
      they come back, so they cost more than their health says. THE BANNER-BEARER is the shaman's 3: a support that makes the
-     crowd, with a told pole of his own. THE STANDARD-BEARER is a mini like the grave warden (4); THE FIRST DEATH KNIGHT a boss (6). */
-  corpse: 2, bannerbearer: 3, standardbearer: 4, deathknight: 6, cover: 0, ballista: 0, trebuchet: 0, oilbarrel: 0,
+     crowd, with a told pole of his own. THE BARROW RIDER is a mini like the grave warden (4); THE FIRST DEATH KNIGHT a boss (6). */
+  corpse: 2, bannerbearer: 3, barrowrider: 4, deathknight: 6, bloodknight: 6, cover: 0, ballista: 0, trebuchet: 0, oilbarrel: 0,
   burieddead: 6, undeadmage: 6, harbormaster: 6, hedgewarden: 6, gargoyle: 6, gravewarden: 4,
+  sexton: 4,   /* THE SEXTON, the Falling Tower's mini (2026-09-25): a mini like the grave warden and the barrow rider */
   /* SEA WILDLIFE: a puffer is nearly nothing until it swells, a jelly is a timing problem more than a fight, a
      lamprey costs you air rather than health, and a manta is a diving strike off her own open water */
   puffer: 1, jelly: 1, lamprey: 2.5, manta: 2.5,
+  /* THE SUNKEN CARAVAN's four, weighed BEFORE the level is placed rather than after. A creature missing from this table
+     is silently worth nothing (`undefined > 0` is false), so the first desert level would have read easier than it is -
+     which is the exact bug tools/threat-holes.mjs exists to catch, and it cannot catch this one until the level is in
+     LEVELS. Weighed off src/desert-foes.js's real numbers against the soldier, who is 34 health and a 14 point swing
+     and is a 3:
+       scorpion  34 health, and TWO tells with two different answers - the claw (! 8, the shield turns it) and the
+                 sting (X 12, over its own back, you move). A soldier's health and one more thing to read.
+       vulture   22 health, one told dive (X 10) at a spot it marks - and it LANDS OPEN afterwards, every time, so it
+                 hands back a free punish. Below the harpy at 2.5 for that; the fledgling's price.
+       sandgob   26 health and a small knife (! 7, twice), but untouchable while it is a mound and it burrows to come
+                 up AHEAD of you. What it costs is position and time, not health: the lurker's job, the lurker's price.
+     bandit is the odd one out and its number is PROVISIONAL: it is a roster name in the greybox with NO behaviour
+     module yet (src/desert-foes.js has the other three and nothing for him), so this weighs a looter with a blade
+     against the human melee line - the cutlass at 2.5, under the soldier at 3. Re-weigh him when he is written. */
+  scorpion: 3, vulture: 2, sandgob: 2.5, bandit: 2.5,
+  /* THE BANDITS, written (2026-09-25; src/desert-foes.js): the cutthroat is a soldier's 38 health with a 10 point cut, and the FEINT
+     in front of every other one is a read the soldier never asks for - a 3; the slinger is 24 health and a stone (! 8) from where you
+     cannot reach him, told long, and open when you climb to him - the archer's 2.5; the ambusher is the sand goblin's trick with more
+     health and a heavier knife - 2.5 as the sand goblin was */
+  cutthroat: 3, slinger: 2.5, ambusher: 2.5,
+  /* THE DUNE WORM, the caravan's boss (2026-09-25): a boss is a 6. awningwinch is his trap and the camp's machine - furniture */
+  duneworm: 6, awningwinch: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
@@ -116,6 +141,34 @@ export const indexOf = ({ threat, kinds, hazTiles = 0, gap, span }) =>
 // the crags and the Long Water opens the sea, and the river is meant to breathe. What the rule is for is a
 // COLLAPSE - a level that gives back half of what the one before it asked - and a WALL, a step so big the
 // player has nowhere to have learned it.
+/* WHAT A LEVEL CONTAINS, COUNTED ONCE (2026-09-25). tools/curve.mjs and the bot (src/playtest.js) each counted a built level's
+   foes, threat, kinds and hazard for themselves - the same drift the THREAT table had before it lived here - and they had
+   drifted again: the bot never counted an AMBUSH room's crowd at all, and neither counted a floor that gives way. Both call
+   this now. What it counts:
+     - every weighed creature; a mini twice its weight and an elite three times
+     - an AMBUSH ROOM's crowd, which is not in the entity list until the room shuts - and its CAPTAIN as the elite it is
+       (it was counted as a common one, so a room's elite was worth a third of the same elite stood on the road)
+     - HAZARD: spike tiles, harmful pools (a tile in four), swim pools (a tile in eight: breath), and FLOOR THAT GIVES WAY -
+       the Falling Tower's failing stone (L.crumbles), the Hurricane's splitting deck and the Burning Village's logs
+       (L.deckBreaks), one tile each, as a spike is. A floor that drops you costs the climb back and the fight you were in;
+       it was invisible to the index, so the level whose whole rule it is read as having almost no hazard in it. */
+export function measureLevel(R, { T, TS = 16 }) {
+  let foes = 0, threat = 0, checks = 0, hazTiles = 0; const kinds = new Set(), unweighed = new Set();
+  for (const e of (R.ents || [])) { if (e.t === 'check') { checks++; continue; }
+    const w = THREAT[e.t]; if (w === undefined) { unweighed.add(e.t); continue; }
+    if (w > 0) { foes++; threat += w * (e.mini ? 2 : e.elite ? 3 : 1); kinds.add(e.t); } }
+  for (const A of (R.ambushes || [])) for (const w of A.waves) for (const [t, , , o] of w) { const v = THREAT[t]; if (v > 0) { foes++; threat += v * (o && o.elite ? 3 : 1); kinds.add(t); } }
+  for (let i = 0; i < R.grid.length; i++) if (R.grid[i] === T.SPIKE) hazTiles++;
+  for (const p of (R.pools || [])) { if (p.harm) hazTiles += Math.round((p.x1 - p.x0) / TS / 4); else if (p.swim) hazTiles += Math.round((p.x1 - p.x0) / TS / 8); }
+  for (const c of (R.crumbles || [])) hazTiles += c.x1 - c.x0 + 1;
+  /* THE BORE (THE LONG WATER, 2026-09-25): a wave up the river every twenty seconds that knocks down anyone below a rock's top, for 12
+     and unblockable. It knocks you back, it does not drown you, so it is counted as a swim pool is, a tile in eight of its run. It was
+     never counted at all, so the level whose river it is read as having less in it than it has. */
+  if (R.bore) hazTiles += Math.round((R.bore.x1 - R.bore.x0) / TS / 8);
+  for (const z of (R.deckBreaks || [])) hazTiles += z.x1 - z.x0 + 1;
+  const span = spanOf(R.W, R.H), gap = worstGap(R.ents, R.W, R.H, R.arena);
+  return { foes, threat, kinds: kinds.size, kindSet: kinds, checks, hazTiles, gap, span, unweighed, index: indexOf({ threat, kinds: kinds.size, hazTiles, gap, span }) };
+}
 export const RAMP_DROP = -8;   // a step down bigger than this is a collapse, not an act opening
 export const RAMP_WALL = 26;   // a step up bigger than this is a wall
 

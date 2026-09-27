@@ -1,0 +1,40 @@
+
+BRACKEN PLAYTEST   1 levels   22.3s
+  0 bug   2 odd   0 note
+
+level       size     reach  foes  kinds  thr/100  gap   walked  deaths  ms p90
+caravan     547x40   99%    50    6      21.9     48    65%     0       0.9
+
+== ODD ==
+  caravan     RUNTIMEFLOATthief floating   @302,28
+  caravan     STUCK       a plain run could not get past 3 place(s)   @tiles 347, 347, 347
+
+
+KNIGHT, no god mode, legs between the locks:
+start -> the Traders' Yard                              ARRIVED in 167 s (60 frames a second), 0 deaths, hp 104, state play
+the yard's far door -> the elite archer's gate          ARRIVED in 66 s (60 frames a second), 0 deaths, hp 64, state play
+the elite's gate -> THE WORM'S HOLLOW, into his fight   ARRIVED in 4 s (60 frames a second), 0 deaths, hp 104, state play
+  RULES S8, per section (hp lost, deaths, share of the time over the sun meter warning / at full):
+    waydown    hurt   12  deaths 0  warm 81%  full 28%  (46 s)
+    road       hurt   16  deaths 0  warm 69%  full 27%  (45 s)
+    oxline     hurt   16  deaths 0  warm 64%  full 29%  (37 s)
+    dunesea    hurt   13  deaths 0  warm 16%  full 0%  (36 s)
+    camp       hurt    0  deaths 0  warm 20%  full 0%  (9 s)
+    sinking    hurt    0  deaths 0  warm 43%  full 1%  (31 s)
+    rim        hurt   51  deaths 0  warm 94%  full 65%  (31 s)
+    arena      hurt    0  deaths 0  warm 0%  full 0%  (2 s)
+
+WARDEN, no god mode, legs between the locks:
+start -> the Traders' Yard                              ARRIVED in 179 s (60 frames a second), 0 deaths, hp 100, state play
+the yard's far door -> the elite archer's gate          ARRIVED in 83 s (60 frames a second), 0 deaths, hp 96, state play
+the elite's gate -> THE WORM'S HOLLOW, into his fight   ARRIVED in 4 s (60 frames a second), 0 deaths, hp 100, state play
+  RULES S8, per section (hp lost, deaths, share of the time over the sun meter warning / at full):
+    waydown    hurt   17  deaths 0  warm 49%  full 9%  (36 s)
+    road       hurt   40  deaths 0  warm 73%  full 44%  (56 s)
+    oxline     hurt   15  deaths 0  warm 57%  full 23%  (45 s)
+    dunesea    hurt   34  deaths 0  warm 34%  full 0%  (39 s)
+    camp       hurt   16  deaths 0  warm 14%  full 0%  (21 s)
+    sinking    hurt    0  deaths 0  warm 0%  full 0%  (33 s)
+    rim        hurt    4  deaths 0  warm 83%  full 21%  (34 s)
+    arena      hurt    0  deaths 0  warm 0%  full 0%  (2 s)
+errors []

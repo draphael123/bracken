@@ -17,7 +17,14 @@ import { fileURLToPath } from 'node:url';
 export const ROOT = fileURLToPath(new URL('..', import.meta.url));
 /* the path decides it: lower-cased because Windows hands the same checkout back with different capitalisation */
 const digest = s => parseInt(createHash('sha1').update(s.toLowerCase()).digest('hex').slice(0, 8), 16);
-export const PORT_BASE = +(process.env.BRACKEN_PORT_BASE || 6100 + (digest(ROOT) % 80) * 10);
+/* FETCH REFUSES SOME PORTS. Node's fetch (and every browser) blocks the WHATWG "bad ports" - in this range 6566, 6665-6669 and 6697 -
+   with "bad port", so a checkout whose path hashed to the 6660 block could never reach its own server on slots 5-9: additional-areas-runtime
+   and slopes-trace died with "dev server did not come up" in bracken-batch23 and passed in every other folder (2026-09-25). A block that holds
+   one is skipped for the next. */
+const BAD_PORTS = new Set([6566, 6665, 6666, 6667, 6668, 6669, 6697]);
+const blockOk = b => ![...Array(10).keys()].some(i => BAD_PORTS.has(b + i));
+const hashed = () => { let k = digest(ROOT) % 80; for (let n = 0; n < 80 && !blockOk(6100 + k * 10); n++) k = (k + 1) % 80; return 6100 + k * 10; };
+export const PORT_BASE = +(process.env.BRACKEN_PORT_BASE || hashed());
 /* one port out of this checkout's ten. n is a slot, not a port: portFor(3) is this checkout's third. */
 export const portFor = (n = 0) => PORT_BASE + (((n % 10) + 10) % 10);
 
