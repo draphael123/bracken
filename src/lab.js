@@ -517,9 +517,17 @@ async function runbossLab(BK, opts) {
           for(const [l,r] of cuts){if(l>lo)free.push([lo,l]);lo=Math.max(lo,r);}if(lo<A.x1-14)free.push([lo,A.x1-14]);
           const pick=free.map(([l,r])=>{const x=r-l<40?(l+r)/2:Math.max(l+12,Math.min(r-12,P.x));return x;}).sort((a,b)=>Math.abs(a-P.x)-Math.abs(b-P.x))[0];
           if(pick!==undefined){gx=pick;safe=true;}}
-        /* HER SPORELINGS (batch 4a) are cut down when they come close, the way a player clears an add before going back to the knot */
+        /* HER SPORELINGS (batch 4a) are cut down when they come close, the way a player clears an add before going back to the knot.
+           THE STAND-OFF (batch34): reach*.6 stood the pilot too close to a sporeling still walking in - the low sweep carries every
+           hero forward on its own (lowSweep's vx), and closing that on top of a sporeling already closing the last few px sent the
+           swing clean past it before the blow landed (measured after claude/npcs: the removed decorative NPCs and quest strays
+           shifted the pinned dice enough that the Mother's own attack timing left a sporeling walking in right as the pyromancer
+           swung, and her wide reach (30, LAB_REACH) meant the old *.6 stand-off - 18 px - left less room than the lunge covers).
+           reach-2 stands it right at the edge of its own reach - as close as the strike still lands from - instead of the *.6 (or
+           the other branches' reach-4) that left slack for the lunge and a closing foe to eat between them: measured (batch34),
+           reach-4 still left the Mother's warden row at the limit (2 of 6, 33%); reach-2 clears every row with room to spare. */
         const add=BK.enemies().filter(q=>q.alive&&q.fromMother&&Math.abs(q.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0],addNear=add&&boss.mode!=='open'&&Math.abs(add.x-P.x)<110;
-        if(addNear&&!bad(add.x)){gx=add.x-(Math.sign(add.x-P.x)||1)*LAB_REACH[h]*.6;safe=false;}
+        if(addNear&&!bad(add.x)){gx=add.x-(Math.sign(add.x-P.x)||1)*(LAB_REACH[h]-2);safe=false;}
         const shelf=P.ground&&P.y<fl-20;
         const clap=m==='capClapTell'&&Math.abs(P.x-boss.x)<125,sweep=m==='sporeSweepTell'&&P.y<fl-30&&P.y>fl-80;
         const vine=(BK.vines?BK.vines():[]).find(v=>v.t>=v.tell-.05&&(P.x-v.x)*v.dir>-6&&(P.x-v.x)*v.dir<34);
