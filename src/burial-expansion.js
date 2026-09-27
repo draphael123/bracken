@@ -19,8 +19,10 @@ export function gasVentState(v, time) {
 }
 export const ventX = v => v.x * 16 + 8, ventY = v => v.y * 16;
 /* IS THIS SPOT IN A BURNING VENT'S LIGHT? The one question the dead ask before they get up. */
-export function inVentLight(L, x, y, r = VENT.light) {
-  for (const v of L.gasVents || []) if (v.litT > 0 && Math.hypot(x - ventX(v), (y - 8) - (ventY(v) - 16)) < r) return v;
+export function inVentLight(L, x, y, r = VENT.light) { return ventLit(L.gasVents, x, y, r); }
+/* the same question asked of a list (the Buried Dead's fight is handed the vents, not the level): the burning vent whose light it is, or null */
+export function ventLit(vents, x, y, r = VENT.light) {
+  for (const v of vents || []) if (v.litT > 0 && Math.hypot(x - ventX(v), (y - 8) - (ventY(v) - 16)) < r) return v;
   return null;
 }
 /* THE FIRE IN YOUR HAND AND THE GAS IT LIGHTS, every frame.
@@ -77,4 +79,39 @@ export function drawHandFire(g, P, cx, cy, time) {
   const x = Math.round(P.x - cx) + (P.face || 1) * 7, y = Math.round(P.y - cy) - 13, f = Math.round(Math.sin(time * 14) * 1);
   g.fillStyle = '#d8ccb0'; g.fillRect(x - 1, y, 3, 5); g.fillStyle = '#ff9a5c'; g.fillRect(x - 1 + f, y - 4, 3, 4); g.fillStyle = '#fff6c8'; g.fillRect(x + f, y - 3, 1, 2);
   if (P.candle < 4 && Math.floor(time * 6) % 2) { g.fillStyle = '#ff9a5c'; g.fillRect(x - 3, y - 8, 7, 1); }
+}
+// ======================================================================== THE DROWNED OSSUARY (claude/burial3, Daniel 2026-09-27: "has nothing going on")
+/* FLOATING BIERS: a bier afloat on the black water, a shrouded body on it. Land on one and it holds A MOMENT (BIER.hold, a creak and a
+   shudder: the tell), then goes under with you (BIER.depth px, into the water where the hands are); left empty on the bottom it waits
+   BIER.back s and floats back up. So a crossing on them is a run, not a rest. m: a moversExtra entry { kind: 'bier', bier: true, x, y, y0, w, h }.
+   `on` is whether anyone stands on it this frame. Returns the state; sets m.y and m.dy the way every mover does. */
+export const BIER = { hold: 0.55, sinkV: 70, depth: 40, back: 1.6, riseV: 26 };
+export function stepBier(m, on, dt, time) {
+  const old = m.y; m.state = m.state || 'float';
+  if (m.state === 'float') { m.y = m.y0 + Math.round(Math.sin(time * 1.6 + (m.phase || 0)) * 1); if (on) { m.state = 'hold'; m.t = BIER.hold; } }
+  else if (m.state === 'hold') { m.t -= dt; m.y = m.y0 + (Math.sin(time * 40) > 0 ? 1 : 0); if (m.t <= 0) m.state = 'sink'; }
+  else if (m.state === 'sink') { m.y = Math.min(m.y0 + BIER.depth, m.y + BIER.sinkV * dt); if (m.y >= m.y0 + BIER.depth && !on) { m.state = 'down'; m.t = BIER.back; } }
+  else if (m.state === 'down') { m.y = m.y0 + BIER.depth; if (on) m.t = BIER.back; else if ((m.t -= dt) <= 0) m.state = 'rise'; }
+  else if (m.state === 'rise') { m.y = Math.max(m.y0, m.y - BIER.riseV * dt); if (on) { m.state = 'hold'; m.t = BIER.hold; } else if (m.y <= m.y0) m.state = 'float'; }
+  m.dy = m.y - old; return m.state;
+}
+/* DROWNED HANDS: the ossuary's dead under the black water. Swim over one, or stand on a bier at the surface near it, and it is TOLD -
+   the water boils and a pale hand shows under it (DROWN.tell s) - then it grabs up: a hero still over it is hurt and pulled under.
+   Standing on a pier, a lift or the walkway is out of its reach. L.drownedHands: [{ x, y }] in px (y the water's surface). */
+export const DROWN = { tell: 0.9, wake: 44, reach: 22, over: 14, cd: 3, dmg: 10 };
+export function updateDrownedHands(L, P, dt, io = {}) {
+  for (const h of L.drownedHands || []) { h.cd = Math.max(0, (h.cd || 0) - dt);
+    const near = r => !P.dead && Math.abs(P.x - h.x) < r && (P.swim ? P.y > h.y - 8 : P.y > h.y - DROWN.over && P.y <= h.y + 2);
+    if (h.tellT > 0) { h.tellT -= dt; if (h.tellT <= 0) { h.grabT = 0.4; h.cd = DROWN.cd; if (near(DROWN.reach) && io.grab) io.grab(h); } continue; }
+    if (h.grabT > 0) { h.grabT -= dt; continue; }
+    if (h.cd <= 0 && near(DROWN.wake)) { h.tellT = DROWN.tell; if (io.tell) io.tell(h); } }
+}
+export function drawDrownedHands(g, L, cx, cy, time) {
+  for (const h of L.drownedHands || []) { const x = Math.round(h.x - cx), y = Math.round(h.y - cy); if (x < -30 || x > g.canvas.width + 30) continue;
+    if (h.tellT > 0) { const k = 1 - h.tellT / DROWN.tell;   /* the tell: the water boils, and something pale comes up under it */
+      g.globalAlpha = 0.25 + 0.4 * k; g.fillStyle = '#c8d4c8'; g.fillRect(x - 4, y + 14 - Math.round(k * 10), 8, 6); g.fillRect(x - 5, y + 10 - Math.round(k * 10), 1, 4); g.fillRect(x + 4, y + 10 - Math.round(k * 10), 1, 4);
+      g.globalAlpha = 0.8; g.fillStyle = '#dff0f5'; for (let i = 0; i < 5; i++) { const ph = (time * 3 + i * 0.21) % 1; g.fillRect(x - 9 + ((i * 7) % 18), y - Math.round(ph * 5), 2, 2); } g.globalAlpha = 1; }
+    else if (h.grabT > 0) { const k = Math.sin(Math.PI * Math.min(1, h.grabT / 0.4)), up = Math.round(22 * k);   /* the grab: an arm out of the water to the elbow */
+      g.fillStyle = '#6a7a70'; g.fillRect(x - 2, y - up, 5, up + 2); g.fillStyle = '#c8d4c8'; g.fillRect(x - 1, y - up, 2, up); for (let j = -3; j <= 3; j += 2) g.fillRect(x + j, y - up - 5, 1, 5); g.fillRect(x - 4, y - up - 1, 9, 2);
+      g.fillStyle = '#dff0f5'; g.fillRect(x - 7, y - 1, 14, 1); } }
 }

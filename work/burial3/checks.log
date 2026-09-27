@@ -1,0 +1,35 @@
+ ok  syntax             0ms  13 files parse
+ ok  tells            526ms  the mark over every windup on the screen comes from this table (src/marks.js, 554 rows).
+ ok  comments         157ms  no swallowed code found.
+ ok  dangling-paths   256ms  ok  dangling-paths 2251 tracked files, every repo path they cite resolves in a fresh clone (6 known holes list
+FAIL signs           5526ms  no level says the same sentence on two signs (1 known).
+ ok  collectables    4082ms  every pickup can be picked up from some ground.
+ ok  deadends        4858ms  163 dead ends in 32 levels, and every one pays.
+ ok  additional-areas   599ms  Both areas have reachable rewards; Burial has its final boss and Harbor retains its guardian; all map nodes me
+ ok  additional-areas-runtime 23813ms  Harbor bosses and Buried Dead activate, death opens exits, summons clear, both levels finish and music decodes
+ ok  buried-dead      307ms  THE GAS: a burning vent scorches him once a lighting (open 3.4 s); a cold vent never; the buried stay down in 
+ ok  burial-route   97825ms  burial-route  every hero makes all 7 three-tile jumps over green water on the road, dry; the stone falls, the 
+ ok  burial-geometry 17722ms  burial geometry: the gallery drop and the gassed low pass are the ways on, vents are grates, a cold vent hurts
+ ok  burial-rework    515ms  the caverns go down: band 11-72, zombies 14, archers 10, skull-throwers 6, spiders 8
+ ok  boss-openings  50276ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"buriedGas":{"rest":{"mode":"rest","open":0},"c
+ ok  arena-supplies  4396ms  ok  arena-supplies  45 boss rooms, 14 height conditions scored against the ground their arenas actually offer;
+ ok  buried-attacks 39767ms  {"novaClose":{"lost":23,"venom":2.4},"novaFar":{"lost":0,"venom":0},"throw":{"flew":true,"landed":true,"addsBe
+ ok  boss-fight-end187208ms  Every one of 45 boss and mini fights (32 bosses, 13 minis) ends when its boss dies.
+ ok  burial-variety 37784ms  burial variety: two dark places lamp to lamp, two rotten spans that crack, drop, come back and never cut the r
+ ok  buried-dead-art  1135ms  buried dead art: 20 frames 112x118, every tell its own pose; sheet order (six to a row): DRAG, DRAG 2, SWEEP T
+ ok  checkpoint-gaps 12198ms  checkpoint-gaps  32 levels measured along their walked route; the longest run with no checkpoint outside the k
+ ok  footing-art    53146ms  footing-art: every floor cell you can stand on is drawn, in 27 levels; painted by their own code: fields (fiel
+ ok  burial2          848ms  burial2  660 cols (528x74), 7 sections; 5 backdrops, 4 seams pillared; 11 vents, 6 candles, 6 of the dead in a
+ ok  burial-vents   45316ms  burial-vents  fire from a candle, a vent lit by a swing and not without fire, no gas while it burns, the dead 
+ ok  burial3          504ms  burial3  GRAVE HANDS: told 1.1 s along the line, unblockable, none in a lit vent's light, cleared by a jump; G
+ ok  burial3-keys   32327ms  burial3-keys  THE ARCADE WALK crossed with real keys by knight (22.3 s, 24 coins), pyro (20.3 s, 21 coins), pi
+ ok  textfit       236392ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-burial3\audits\readability\textfit
+
+---- signs ----
+burial @192            3 lines THE ARCADE WALK. THE LONG WAY ROUND, OVER THE WATER: THE DEAD KEPT THEIR HOARD AT THE END ...
+
+1 of 601 signs run past 2 lines.
+  known  hurricane THE HURRICANE DECK says "THE DECK IS SPLITTING. FOLLOW THE HOLD AFT; THE ROPES LEAD BACK UP." at 88, 235 and 570 - three splits, one warning. For the Hurricane's owner (and Daniel): a line each that says which split, or keep it as a refrain on purpose and say so here.
+no level says the same sentence on two signs (1 known).
+
+1 check(s) failed.

@@ -5,7 +5,7 @@
 import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
-const tag = process.argv[2] || '', seeds = +(process.argv[3] || 3), HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];
+const tag = process.argv[2] || '', seeds = +(process.argv[3] || 3), HEROES = (process.argv[4] || 'knight,warden,pyro,paladin,pirate,reaper,geomancer').split(',');   /* argv[4]: a hero list (claude/burial3 pilots three) */
 const pg = await openPage({ audio: false, fonts: false }), rows = [], lines = [];
 const say = s => { console.log(s); lines.push(s); };
 try {

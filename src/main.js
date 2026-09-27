@@ -40,7 +40,7 @@ import { crumbleStep, crackMarks } from './tower-collapse.js'; import * as FTW f
 import {bakeCoastalFoe} from './coastal-foes.js';
 import {drawClimbCues} from './haunted-coast.js';
 import {updateDeckBreaks,drawDeckBreaks} from './storm-ship.js';
-import {updateGasVents,drawGasVents,updateGraveFire,drawHandFire,inVentLight,VENT as BVENT} from './burial-expansion.js'; import {paintBurialRoom,drawSeam as drawBurialSeam} from './burial-looks.js'; import {updateCrumble,drawCrumble,crumbleReset,burialHoles} from './burial-variety.js';
+import {updateGasVents,drawGasVents,updateGraveFire,drawHandFire,inVentLight,VENT as BVENT,stepBier,updateDrownedHands,drawDrownedHands,DROWN} from './burial-expansion.js'; import {paintBurialRoom,drawSeam as drawBurialSeam,drawBurialMover,bakeCryptLedge,drawCryptPier} from './burial-looks.js'; import {updateCrumble,drawCrumble,crumbleReset,burialHoles} from './burial-variety.js';
 import {updateKeepPassages,drawKeepPassages} from './keep-passages.js';
 import {whirlInit,updateWhirlpools,drawWhirlpools,strikeLever,whirlKey} from './whirlpools.js';   /* THE KEEP'S WHIRLPOOLS: the pull, the air they burn, and the lever each one shows you (docs/briefs/keep-rework-2.md) */
 import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js';
@@ -861,6 +861,7 @@ function resolveTiles() {
   };
   if(!LEDGE_SETS.cargo)Object.assign(LEDGE_SETS,bakeRouteLedges());
   if(!LEDGE_SETS.slate)LEDGE_SETS.slate=FTW.bakeSlateLedge();   /* THE FALLING TOWER's cut slate */
+  if(!LEDGE_SETS.cryptStone)LEDGE_SETS.cryptStone={ledge:[0,1,2].map(v=>bakeCryptLedge(canvas,v)),ledgeL:bakeCryptLedge(canvas,3,'L'),ledgeR:bakeCryptLedge(canvas,4,'R')};   /* THE DROWNED OSSUARY's stone (burial-looks.js) */
   if(!LEDGE_SETS.masonry){const [c,cg]=canvas(16,16);cg.fillStyle='#39362f';cg.fillRect(0,0,16,6);cg.fillStyle='#a69a82';cg.fillRect(0,1,16,3);cg.fillStyle='#cec0a0';cg.fillRect(0,1,16,1);cg.fillStyle='#766c59';cg.fillRect(7,2,1,3);LEDGE_SETS.masonry={ledge:[c],ledgeL:c,ledgeR:c};}
   /* THE DESERT'S OWN LEDGES (L.ledgeKit = 'desert', src/redraw/desert.js and src/redraw/caravan_ruins.js): three kits picked per tile by
      where it sits (desertLedgeAt, below), not one name for the whole level - a ruin's ledges, a natural cliff's shelves and
@@ -948,7 +949,8 @@ function resolveTiles() {
          said so and stood on the WOOD'S FELLED LOGS - three hundred of them inside Highcrown alone. A
          level names its own now. */
       const desertKit = desertLedgeAt(x, y);   /* the desert's own ledges win over the generic castle masonry (crownT): a ruin is not a keep */
-      const named = curId()==='waymeet' ? LEDGE_SETS.awning : desertKit ? desertKit : crownT ? LEDGE_SETS.masonry : L.palette && L.palette.ledges && LEDGE_SETS[L.palette.ledges];
+      const zoneLedge = (L.ledgeZones || []).find(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);   /* A PLACE'S OWN LEDGE (L.ledgeZones: [x0, x1, y0, y1, set]) - the Burial Caverns' crypt is stone, its mine-staging elsewhere */
+      const named = zoneLedge && LEDGE_SETS[zoneLedge[4]] ? LEDGE_SETS[zoneLedge[4]] : curId()==='waymeet' ? LEDGE_SETS.awning : desertKit ? desertKit : crownT ? LEDGE_SETS.masonry : L.palette && L.palette.ledges && LEDGE_SETS[L.palette.ledges];
       const crag = L.palette && L.palette.dress === 'crag', shoreOW = named || (L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
         : L.palette.myc ? { ledge: TILE.capLedge, ledgeL: TILE.capLedgeL, ledgeR: TILE.capLedgeR }
         : L.palette.dress === 'marsh' ? { ledge: TILE.duck, ledgeL: TILE.duckL, ledgeR: TILE.duckR } : null));
@@ -4136,7 +4138,7 @@ const BEASTS = [
   { t: 'drunk', name: 'THE DRUNK', sub: 'a regular, gone rowdy', desc: 'He has been at the Broken Lance since noon and he has found a balcony. He throws what is to hand - a tankard, a turnip, a stool - and a yellow mark means the shield turns it. A red mark is a bottle: it cannot be blocked and it leaves glass. Watch the ring on the ground. One blow puts him on his back.' },
   { t: 'lancer', name: 'SERJEANT', sub: 'mounted, on the bridge', desc: 'A man-at-arms on a barded horse, riding his beat end to end. The charge is a single mark: take it on the shield and he goes over the back of his horse, or jump or roll it. Close to him he swipes with his sword. Mounted, the barding takes some of every cut; in the road he is a man with a sword and no horse.' },
   { t: 'undeadmage', name: 'THE UNDEAD ARCHMAGE',sub:'the last spell outlives him',desc:'Fought from the carpet in his burning hall. Guard or fly from fire and ice, leave the lightning mark, keep out of the poison, out-fly the death hand. A DEATH MARK that finds no one comes back on him. His RINGS work both ways: dodge through the one he opens by you and come out beside him, open. Burning, he fights ring to ring.'},
-  { t: 'burieddead', name: 'THE BURIED DEAD',sub:'the whole grave wakes',desc:'Jump the marked slam or climb a grave shelf. Guard the arm sweep. Follow the moving shadow, then leave the bright crack before he erupts. Cut down the zombies he calls. Wait on a ledge or far off and he throws a lit skull: guard it. Each attack leaves him open; at half health his slam reaches farther and more dead answer.' },
+  { t: 'burieddead', name: 'THE BURIED DEAD',sub:'the whole grave wakes',desc:'Jump the marked slam or climb a grave shelf. Guard the arm sweep. Follow the moving shadow, then leave the bright crack before he erupts. Cut down the zombies he calls. Wait on a ledge or far off and he throws a lit skull: guard it. When the earth cracks in a line towards you the GRAVE HANDS follow it: jump them, or stand in the light of a burning vent, where the dead cannot rise. Light a vent under him and the gas opens him. At half health his slam reaches farther, more dead answer, and his GRAVE BREATH puts out every fire in the room, yours too: take fire again from the candles at the walls.' },
   { t: 'corpse', name: 'THE FALLEN', sub: 'the battle is still being fought', desc: 'A soldier of a war nobody buried. It lies where it fell until a banner stands over it, then it gets up and cuts - guard it. Cut down under a banner it only falls again: strike it while it lies there, or burn it, and it stays down.' },
   { t: 'duneworm', name: 'THE DUNE WORM', sub: 'the caravan\'s grave keeps its keeper', desc: 'He hunts under the hollow\'s sand: a ripple runs at you and bursts up where it locks - step off it late. Up, he spits sand (a shield takes it), lunges where his shadow falls, and opens the sand under you: jump, and keep jumping. Wind the awning out and let him come up INTO it: tangled, he takes double. At half he calls the storm.' },
   { t: 'scorpion', name: 'THE DUNE SCORPION', sub: 'two answers in one shell', desc: 'Up close it lifts a claw - a yellow mark, and a shield turns it. Stand a little further off and the tail comes up over its back instead - a red mark, and nothing turns that: step out of it, then walk in and cut while the tail comes down.' },
@@ -8574,7 +8576,7 @@ function updateGullFlock(e, dt) {
 // ---- WHAT YOU SEE OF IT ----
 function drawSea(cx, cy) {
   drawDeckBreaks(g,L,cx,cy,time);
-  drawGasVents(g,L,cx,cy,time); drawCrumble(g,L,cx,cy,time);   /* THE ROTTEN BRIDGES: the rot on every board, and the crack in the one you stood on */
+  drawGasVents(g,L,cx,cy,time); drawDrownedHands(g,L,cx,cy,time); drawCrumble(g,L,cx,cy,time);   /* THE ROTTEN BRIDGES: the rot on every board, and the crack in the one you stood on */
   drawKeepPassages(g,L,cx,cy,time,VW,VH); drawWhirlpools(g,L,cx,cy,time,VW,VH);
   const R = L.roll, F = L.felled;
   if (!R && !F) return;
@@ -15228,6 +15230,7 @@ function updateAscent(dt){
 /* THE BURIAL CAVERNS' MACHINE (src/burial-expansion.js): the fire in your hand, the vents it lights, and what a burning vent does to
    the dead standing in it. The Buried Dead's own answer to a burning vent is in buried-dead.js (SCORCHED). */
 function updateBurialFire(dt, hb){
+ updateDrownedHands(L,P,dt,{tell:h=>{number(h.x,h.y-20,'!!','#ff6b6b');SFX.splash&&SFX.splash();},grab:h=>{damagePlayer(h.x,DROWN.dmg,{unblockable:true,noKnock:true,name:'THE DROWNED'});P.vy=Math.max(P.vy||0,160);P.snare=Math.max(P.snare||0,.5);number(P.x,P.y-30,'PULLED UNDER','#bfe6f5');}});   /* THE DROWNED OSSUARY's hands under the black water (burial-expansion.js) */
  updateGraveFire(L,P,dt,time,{strikes:v=>!!hb&&!P.plunge&&hb.r>v.x*TS-2&&hb.l<v.x*TS+TS+2&&hb.b>v.y*TS-26&&hb.t<v.y*TS+4,
   fireAt:(x,y)=>(isPyro()&&P.jet&&inJet(x,y,10))||embers.some(b=>Math.abs(b.x-x)<14&&Math.abs(b.y-y)<22),
   wet:()=>!!P.swim,say:(x,y,t,c)=>number(x,y,t,c),sound:k=>(SFX[k]||SFX.spark)(),
@@ -15237,7 +15240,8 @@ function updateBurialFire(dt, hb){
 }
 function updateBuriedDead(e,dt){
  stepBuriedDead(e,dt,{P,A:L.arena,hit:(x,d,hard)=>damagePlayer(x,d,{unblockable:hard,who:e}),summon:n=>summonGraveZombies(e,n),say:(msg,hard)=>number(e.x,e.y-95,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>(SFX[k]||SFX.charge)(),
-  ring:(x,y,r,col)=>ringAt(x,y,r,col,.4),shake:n=>shakeCam(n),throwZombie:x=>throwGraveZombie(x),vents:L.gasVents||[]});
+  ring:(x,y,r,col)=>ringAt(x,y,r,col,.4),shake:n=>shakeCam(n),throwZombie:x=>throwGraveZombie(x),vents:L.gasVents||[],   /* GRAVE BREATH (claude/burial3): what the cold puts out */
+  snuff:v=>{burst(v.x*TS+8,v.y*TS-10,8,['#bfe6f5','#6a6a60'],40,.5,-30,1);SFX.puff();},snuffHand:()=>{number(P.x,P.y-30,'THE COLD TAKES YOUR FIRE: A CANDLE AT THE WALL','#bfe6f5');SFX.puff();}});
 }
 function updateHarbormaster(e,dt){
  updateWarden(e,dt,{P,A:L.arena,hit:(x,dmg,hard)=>damagePlayer(x,dmg,{unblockable:hard,who:e}),seed:s=>seeds.push(s),say:(msg,hard)=>number(e.x,e.y-65,msg,hard?'#ff6b6b':'#8fd160'),sound:k=>SFX[k]()});
@@ -21818,6 +21822,7 @@ function updateMovers(dt) {
       // had an x of NaN from its first frame: invisible rope, invisible log, and a platform whose box was
       // NaN so nobody could ever stand on it. (The playtest bot found this by watching for a draw at NaN.)
       if (m.kind === 'swing') { const th = Math.sin(time * 2 * Math.PI / m.period + m.phase) * 0.9; m.x = m.px + Math.sin(th) * m.arm - m.w / 2; m.y = m.py + Math.cos(th) * m.arm; m.dy = m.y - oldY; }
+      else if (m.bier) stepBier(m, (players || [P]).some(p => !p.dead && p.onMover === m), dt, time);   /* THE DROWNED OSSUARY's floating biers: a moment, then under (burial-expansion.js) */
       else if (m.bob) { m.y = m.y0 + Math.sin(time * 1.5 + (m.phase || 0)) * 5; m.dy = m.y - oldY; }
       else if (m.tide) causeFloat(m, oldY);   /* THE DROWNED CAUSEWAY: a moored boat rides the tide's surface (the causeway block) */
       else if (m.vert) { // A RISING PILLAR: the water pushes it up out of itself and lets it back down
@@ -23254,7 +23259,8 @@ function drawScenery(cx,cy){
 
 function drawStructures(cx,cy) {
   for(const z of L.structures||[]){const l=z.x0*TS-cx,r=(z.x1+1)*TS-cx,t=z.top*TS-cy,b=z.floor*TS-cy;if(r<0||l>VW||b<0||t>VH)continue;
-    if(z.kind==='seam'){drawBurialSeam(g,l,r,t,b);continue;}   /* a pillar where two of the Burial Caverns' backdrops meet (src/burial-looks.js) */
+    if(z.kind==='seam'){drawBurialSeam(g,l,r,t,b);continue;}
+    if(z.kind==='cryptPier'){drawCryptPier(g,l,r,t,b);continue;}   /* a pier of the Drowned Ossuary's arcade under its stone walkway */   /* a pillar where two of the Burial Caverns' backdrops meet (src/burial-looks.js) */
     if(z.kind==='chains'){for(const x of [l+4,r-5])for(let yy=t;yy<b;yy+=4){g.fillStyle=(yy/4)&1?'#5d594e':'#9a958c';g.fillRect(x,yy,(yy/4)&1?1:3,3);g.fillStyle='#3a3630';g.fillRect(x+((yy/4)&1?0:1),yy+1,1,1);}continue;}   /* a platform HUNG from the roof on two chains (B9), not stood on a pier: the Buried Dead's crown bier */
     g.fillStyle=z.kind==='timber'?'#755b43':'#827a67';
     for(const x of [l+3,r-7]){g.fillRect(x,t,z.kind==='timber'?4:10,b-t);g.fillStyle=z.kind==='timber'?'#a18a61':'#b3a58b';g.fillRect(x,t,1,b-t);if(z.kind!=='timber'){g.fillStyle='#5d594e';for(let yy=t+8;yy<b;yy+=8)g.fillRect(x,yy,10,1);}}
@@ -23388,6 +23394,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const m of movers) {
     if (m.kind === 'bucket') { if (m.vis && m.x + m.w > cx - 10 && m.x < cx + VW + 10) drawBucket(g, m, cx, cy, time); continue; }
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
+    if (L.burialLook && drawBurialMover(g, m, cx, cy, time)) continue;   /* THE BURIAL CAVERNS: stone slabs on chains, stone coffins, floating biers - no timber (burial-looks.js) */
     if (m.kind === 'pad' && m.spring) { const x = Math.round(m.x) - cx, t = (time + m.x0 * 0.013) % 2.2;
       if (t < 0.8 && m.sink < 0.55 && !(m.cd > 0)) { const k = t / 0.8; g.globalAlpha = 0.6 * (1 - k); g.strokeStyle = '#dff7c8'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 12.5, Math.round(m.y0) - cy + 4.5, 12 + k * 14, 2.5 + k * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* the ripple every couple of seconds: the bud is breathing, and you can see it from three pads off */
       g.drawImage(PROP.padSpring[m.sink > 0.55 ? 2 : m.cd > 0 ? 1 : 0], x, Math.round(m.y) - 5 - cy); }
@@ -24121,7 +24128,7 @@ function drawWorld(cx, cy, showPlayer) {
   if(L.sanctum&&L.carpetUp&&!L.sandWalk)drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
   drawCarpetWorld(g,L,P,cx,cy,time);drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage')drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if(L.witch)drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time,P);
-  drawBuriedDead(g,boss?.t==='burieddead'?boss:null,L.arena,cx,cy,time);
+  drawBuriedDead(g,boss?.t==='burieddead'?boss:null,L.arena,cx,cy,time,L.gasVents);
   drawWarden(g,boss?.t==='harbormaster'?boss:null,L.arena,cx,cy,time);
   drawSalvageCaptain(g,enemies.find(e=>e.salvage),L.mini,cx,cy,time);
   for (const s of seeds) { if (s.wormGrit) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = ART.OUT; g.fillRect(x - 2, y - 2, 5, 5); g.fillStyle = '#bf8f63'; g.fillRect(x - 1, y - 1, 3, 3); g.fillStyle = '#f2d79c'; g.fillRect(x - 1, y - 1, 1, 1); continue; }   /* THE DUNE WORM's spit: a clot of sand */ if (s.pyroEmber) { g.drawImage(PROP.fire[Math.floor(time * 14 + s.x) % 3], Math.round(s.x - cx) - 5, Math.round(s.y - cy) - 8, 10, 12); continue; } if (s.weight) { // THE COIN WEIGHT: lead on a chain, turning over as it goes
