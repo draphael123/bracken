@@ -670,11 +670,11 @@ async function runbossLab(BK, opts) {
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
         if(f%600===599)await yieldNow();continue;
       }
-      /* THE GATE GARGOYLE (the Witchlight Stair's boss): the bot plays him as a player does - off the terrace by the nearest rune
-         column and onto a slab at its top; on a slab, it leaves LATE when his shadow is on its slab (after he has dropped, so the aim
-         is his and the slab breaks under him), gets off a slab whose glyph is lit, guards the gust and the rubble (or rolls them),
-         and cuts him wherever he is in reach - most of all when he has crashed through to the garden floor, stunned: it DROPS off its
-         slab to him, cuts, and goes back up by a rune column when he rises (the rework, 2026-09-25). */
+      /* THE GATE GARGOYLE (the Witchlight Stair's boss; round three, 2026-09-27): the bot plays him as a player does. He is stone, so it
+         never swings at him: on a slab it leaves LATE when his shadow is on its slab (after he has dropped, so the aim is his and the slab
+         breaks under him), gets off a slab whose glyph is lit, guards the gust and the fire breath (or, with no shield, gets off the
+         breath's line to the next slab away from him as the line sets), and when he lies STUNNED on the spikes it walks off its slab over
+         him and comes down on his back - the stomp - and lets the wind bring it back up. A fall is the wind's too. */
       /* THE WINCHMASTER, ROUND TWO (Daniel's playtest, 2026-09-25): his housings have ladders now, so the hands play him the way the
          round-two fight is built - GO UP TO HIM AND FIGHT HIM. They work out which housing he is on (or swinging to), get to its
          ledge (down whatever ladder or rope they are near, across the spoil, up the rope to that ledge), climb its ladder and step
@@ -764,33 +764,28 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const m=boss.mode,slabs=BK.movers().filter(q=>q.arena&&q.slab&&!q.broken),on=P.onMover&&slabs.includes(P.onMover)?P.onMover:null,cen=q=>q.x+q.w/2;
-        const dx=boss.x-P.x,side=Math.sign(dx)||1,reach=LAB_REACH[h]+boss.w/2;
+        const dx=boss.x-P.x,side=Math.sign(dx)||1;
         const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
-        const next=(from,avoid)=>slabs.filter(q=>q!==from&&q!==avoid).sort((a,b)=>Math.abs(cen(a)-cen(from))-Math.abs(cen(b)-cen(from)))[0];
+        const next=(from,avoid,away)=>slabs.filter(q=>q!==from&&q!==avoid&&(!away||Math.sign(cen(q)-cen(from))===-side)).sort((a,b)=>Math.abs(cen(a)-cen(from))-Math.abs(cen(b)-cen(from)))[0];
         const goSlab=n=>{if(!n||!on)return;const dir=Math.sign(cen(n)-P.x)||1,edge=dir>0?on.x+on.w:on.x;k[dir>0?'right':'left']=true;if(P.ground&&Math.abs(edge-P.x)<14){BK.press('jump');P.labJump=16;}};
-        const add=BK.enemies().filter(q=>q.alive&&q.fromGarg&&Math.abs(q.x-P.x)<LAB_REACH[h]+8&&Math.abs(q.y-P.y)<26)[0];
-        if(P.flip){ /* under a slab: walk to its middle and cut what comes */ const s=P.flareSlab;if(s&&Math.abs(cen(s)-P.x)>6)k[cen(s)>P.x?'right':'left']=true; }
-        else if(!on&&P.ground&&P.y>A.top+40&&(boss.mode==='stunned'||boss.mode==='crash'||boss.mode==='smash')&&Math.abs(boss.y-P.y)<30+(boss.mode==='stunned'?0:400)){ /* THE GARDEN FLOOR, HE IS DOWN ON IT: to him, and cut */
-          const ex=boss.x-side*Math.max(12,LAB_REACH[h]*.6);if(Math.abs(ex-P.x)>4)k[ex>P.x?'right':'left']=true; }
-        else if(!on&&P.ground&&P.y>A.top+40){ /* THE TERRACE: to the nearest rune column */
-          const v=BK.props().filter(q=>q.t==='vent'&&q.rune&&q.x>A.x0&&q.x<A.x1).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];if(v&&Math.abs(v.x-P.x)>3)k[v.x>P.x?'right':'left']=true; }
-        else if(!on&&(boss.mode==='stunned'||boss.mode==='crash')){ /* in the air, he is down: steer to him */ if(Math.abs(dx)>6)k[dx>0?'right':'left']=true; }
-        else if(!on){ /* in the air (a column, or a jump): over a slab, steer onto it */
-          const s=slabs.filter(q=>q.y>P.y+2).sort((a,b)=>Math.abs(cen(a)-P.x)-Math.abs(cen(b)-P.x))[0];if(s&&(P.vy>-60||P.labJump>0)&&Math.abs(cen(s)-P.x)>4)k[cen(s)>P.x?'right':'left']=true; }
+        if(P.windRide){ /* the wind has it: nothing to do */ }
+        else if(P.flip){ /* under a slab: walk to its middle */ const s0=P.flareSlab;if(s0&&Math.abs(cen(s0)-P.x)>6)k[cen(s0)>P.x?'right':'left']=true; }
+        else if(m==='stunned'){ /* HE IS ON THE SPIKES: over him, and down onto his back */ if(Math.abs(dx)>3)k[dx>0?'right':'left']=true; }
+        else if(!on){ /* in the air (a jump, or off the lip): over a slab, steer onto it */
+          const s0=slabs.filter(q=>q.y>P.y+2).sort((a,b)=>Math.abs(cen(a)-P.x)-Math.abs(cen(b)-P.x))[0];if(s0&&(P.vy>-60||P.labJump>0)&&Math.abs(cen(s0)-P.x)>4)k[cen(s0)>P.x?'right':'left']=true;else if(!s0&&P.ground)k.right=true; }
         else {
           let done=false;
           if(m==='diveTell'&&boss.tgt===on){const n=next(on),dir=n?Math.sign(cen(n)-P.x)||1:1,ex=dir>0?on.x+on.w-10:on.x+10;if(Math.abs(ex-P.x)>3)k[ex>P.x?'right':'left']=true;done=true;}   /* to the edge, and wait: the aim is his until he drops */
-          else if(m==='dive'&&boss.tgt===on){goSlab(next(on));if(boss.y>on.y-44&&P.st>16&&!(P.dodge>0))BK.press('dodge');done=true;}   /* LATE: he has dropped - go, or roll under it */
+          else if(m==='dive'&&boss.tgt===on){goSlab(next(on));done=true;}   /* LATE: he has dropped - go */
           else if(m==='flareTell'&&boss.fm===on){goSlab(next(on));done=true;}
-          else if((m==='stunned'||m==='crash'||m==='smash')&&boss.y>on.y+8){k[dx>0?'right':'left']=true;done=true;}   /* HE IS THROUGH IT: drop off this slab to him (its edge is the way down) */
-          else if(m==='land'&&boss.onM&&boss.onM!==on&&!rest)goSlab(boss.onM);
-          else if(!done){const tx=rest?cen(on):Math.max(on.x+6,Math.min(on.x+on.w-6,boss.x-side*Math.max(12,LAB_REACH[h]*.6)));if(Math.abs(tx-P.x)>4)k[tx>P.x?'right':'left']=true;}
-          const gusting=(m==='gustTell'&&boss.modeT<0.25)||m==='gust',spitting=m==='spitTell'||m==='spit'||(boss.rubble||[]).some(b=>Math.abs(b.x-P.x)<60);
-          if(!done&&(gusting||spitting)){if(SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=side;}else if(P.st>20&&!(P.dodge>0)&&((m==='gustTell'&&boss.modeT<0.08)||(boss.rubble||[]).some(b=>Math.abs(b.x-P.x)<26)))BK.press('dodge');}
+          else if((m==='breathTell'&&boss.modeT<0.45)||m==='breath'){ if(SHIELDED(h)){k.block=true;P.face=side;} else if(m==='breathTell'){goSlab(next(on,null,true)||next(on));} done=true; }   /* THE FIRE: a shield, or off its line */
+          else if((m==='smash'||m==='crash')&&boss.y>on.y+8){done=true;}
+          if(!done){const tx=cen(on);if(Math.abs(tx-P.x)>6)k[tx>P.x?'right':'left']=true;}
+          const gusting=(m==='gustTell'&&boss.modeT<0.25)||m==='gust';
+          if(!done&&gusting){if(SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=side;}else if(P.st>20&&!(P.dodge>0)&&m==='gustTell'&&boss.modeT<0.08)BK.press('dodge');}
         }
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        if(!k.block&&P.atk<0){if(add){P.face=Math.sign(add.x-P.x)||1;BK.press('atk');swings++;}else if(!rest&&Math.abs(dx)<reach&&Math.abs(P.y-boss.y)<40&&m!=='diveTell'){P.face=side;BK.press('atk');swings++;}}
-        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES':m0,Math.max(0,was-P.hp));if(P.dead)falls++;
         if(f%600===599)await yieldNow();continue;
       }
       /* THE DUNE WORM, played as his hollow teaches it (docs/briefs/dune-worm.md). With the awning DOWN, wind it (to THE HOLLOW WINCH, strike it);

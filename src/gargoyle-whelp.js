@@ -1,13 +1,16 @@
 // src/gargoyle-whelp.js — THE GARGOYLE WHELP (docs/briefs/witchlight-whelps.md). Daniel, 2026-09-26: "a section with small
 // gargoyle enemies before the boss... he should summon those minis rather than the demons."
-// The Gate Gargoyle's brood: stone the size of an imp, set on the tower's merlons, spouts and cornices. It is SAFE UNTIL IT
-// MOVES - perched it is stone, and a blade glances off it - and its danger is the SHOVE, not the damage: it drops on you off
-// a ledge you are standing on, and the ledge is over a fall.
+// The Gate Gargoyle's brood: stone the size of an imp, set on the tower's merlons, spouts and cornices. REWORKED 2026-09-27 (Daniel:
+// "The REGULAR gargoyles in that section of the level work the same way (they fall into spikes; the player stomps them)"):
+// IT IS STONE. No blade, shot or spell takes anything off it, anywhere - EXCEPT where its own dive puts it: STUCK ON THE SPIKES.
 //   ents  { t: 'whelp', x, y }   perched on the tile under it (a merlon, a spout, a ledge). Its perch is where it was put.
-//   PERCHED    stone: WH.stoneTake of a blow (a spark, "STONE"), no stagger, no shove. Its eyes brighten when it has seen you.
+//   PERCHED    stone (a spark, "STONE"), no stagger, no shove. Its eyes brighten when it has seen you.
 //   THE SWOOP  crouchTell: it crouches, spreads its wings and SCREECHES (a yellow !: a shield turns it) - then dives in a line
-//              at where you are. A hit shoves you hard. Guarded, it clangs off and lies dazed on the floor.
-//   LANDED     at the end of the dive, on a floor or a slab: stone gone soft, every blow counts. Then it flaps home, and hardens.
+//              at where you are and on, THROUGH the ledge you were on (a CRACKED ledge breaks under it, and grows back), then
+//              drops. A hit shoves you hard. Guarded, it clangs off and drops.
+//   STUCK      what it drops into, over the moat, is the SPIKES: it lies impaled and stunned for WH.stuckT seconds, and a STOMP breaks
+//              it - jump down on it, and the moat's wind carries you back up (src/spike-winds.js). On bare stone it only lands (stone
+//              still). Either way it then flaps home and hardens again.
 //   CRUMBLES   when broken: chips, dust and a screech cut short.
 // This file holds its NUMBERS, its FRAMES and its ART. What it does is updateWhelp in src/main.js, because the mark audit
 // (tools/tells.mjs) reads creature update functions there and nowhere else.
@@ -19,14 +22,16 @@ export const WH = {
   hp: 28, w: 12, h: 14,
   sight: 118, sightUp: 40, sightDown: 150,   /* it looks DOWN off its perch: 7 tiles along, 2.5 up, 9 down */
   tell: 0.65, speed: 235, swoopT: 0.85, landT: 1.3, dazedT: 2.1, flyV: 105, cd: [2.2, 3.0], wake: [0.4, 1.1],
-  stoneTake: 1, dmg: { swoop: 9 }, shove: [175, -150],
+  stoneTake: 0, dmg: { swoop: 9 }, shove: [175, -150],
+  fallG: 900, fallV: 420, stuckT: 3.2,       /* after its line it DROPS, and lies on the spikes this long */
   gargSight: 900, gargSwoopT: 2.2,           /* one the Gate Gargoyle calls sees his whole room from the tower's face */
 };
 /* THE SWOOP'S LINE, a function so the tool can ask it: a unit vector from the whelp at the hero's middle */
 export function whelpAim(e, tx, ty) { const dx = tx - e.x, dy = ty - (e.y - 6), n = Math.hypot(dx, dy) || 1; return [dx / n, dy / n]; }
-/* stone while it sits, stone while it crouches on its perch: only a whelp OFF its perch can be cut */
-export const whelpStone = e => !!e && (e.mode === 'perch' || e.mode === 'crouchTell');
-export const whelpOpen = e => !!e && (e.mode === 'landed' || e.mode === 'dazed');
+/* STONE, ALWAYS, but stuck on the spikes - and there only a stomp breaks it (main.js sets e.stompNow for the one call that is the stomp) */
+export const whelpOpen = e => !!e && e.mode === 'stuck';
+export const whelpStone = e => !!e && !whelpOpen(e);
+export const whelpTake = (e, dmg) => (e.stompNow > 0 && whelpOpen(e) ? e.stompNow : 0);
 /* does it see you from its perch: along, and below more than above (it is a thing that drops) */
 export function whelpSees(e, P, far) {
   if (!P || P.dead) return false; const dx = Math.abs(P.x - e.x), dy = P.y - e.y;
@@ -39,8 +44,9 @@ export function whelpFrame(e) {
   switch (e.mode) {
     case 'perch': return e.seen ? WHELP_F.watch : WHELP_F.perch;
     case 'crouchTell': return WHELP_F.crouch;
-    case 'swoop': return WHELP_F.swoop;
-    case 'landed': case 'dazed': return (e.flash || 0) > 0.02 ? WHELP_F.hurt : WHELP_F.landed;
+    case 'swoop': case 'plunge': return WHELP_F.swoop;
+    case 'stuck': return (e.flash || 0) > 0.02 ? WHELP_F.hurt : WHELP_F.landed;
+    case 'landed': case 'dazed': return WHELP_F.landed;
     case 'home': return Math.floor((e.anim || 0) * 9) % 2 ? WHELP_F.flyB : WHELP_F.flyA;
   }
   return WHELP_F.perch;

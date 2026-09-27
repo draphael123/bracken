@@ -11,43 +11,49 @@
 //   c 220-259  4 THE RUNE STAIR           the one vertical: three rune columns lit one after another, imps riding them with you,
 //                                         a floating chunk of the tower's library
 //   c 250-332  5 THE TOPIARY MAZE         hedges to go under and over, then THE HEDGE WARDEN at the gate between his braziers
-//   c 333-432  6 THE BATTLEMENTS          (2026-09-26, docs/briefs/witchlight-whelps.md) the tower's upper stair and wall-walk, cut by
-//                                         breaches over a dry moat, where THE GARGOYLE WHELPS sit stone on the merlons and spouts and
-//                                         drop on you where the footing is narrow; then THE EXAM: slabs, a rune column and whelps
-//   c 433-494    THE STAIR'S TOP          the lip onto THE GATE GARGOYLE's slabs, some CRACKED, over the garden terrace
-//                                         (compressed 2026-09-25: a 44-tile arena, the slabs 6-7 rows over the garden, not 11-13;
-//                                         moved right by the battlements' 100 columns on 2026-09-26, nothing else about it changed)
+//   c 333-532  6 THE BATTLEMENTS          (2026-09-26, docs/briefs/witchlight-whelps.md; TWICE AS LONG and over A SPIKED MOAT since
+//                                         2026-09-27, docs/briefs/gargoyle-spikes.md) the tower's upper stair and wall-walk over a moat
+//                                         of spikes whose WIND carries a fallen hero back (one bite: src/spike-winds.js). THE GARGOYLE
+//                                         WHELPS sit stone on the merlons and spouts; stone everywhere but where their own dive puts them,
+//                                         STUCK ON THE SPIKES - through a CRACKED LEDGE that grows back - where a stomp breaks them.
+//                                         TAUGHT at the cracked ledge over a shallow trench; DEVELOPED over the moat's narrow ledge;
+//                                         TWISTED on THE CRACKED CORNICE (the route itself breaks under them); COMBINED with the rune
+//                                         column in THE RUNE TOWER; EXAMINED on the gatehouse roof before the Gargoyle
+//   c 533-594    THE STAIR'S TOP          the lip onto THE GATE GARGOYLE's thirteen slabs in two tiers over a floor of SPIKES
+//                                         (2026-09-27: he is stone; he smashes through a slab left late, lies stunned on the spikes,
+//                                         and a stomp is the only thing that hurts him; the winds bring you back up)
 // THE LIGHT changes by place (dusk -> twilight -> witchlight night: L.tints + a dusk grade kept under 0.45), its own runed stone
 // (src/redraw/witch_world.js), one landmark a place (the arches, the colonnade, the library chunk, the orrery ring, the tower),
 // loose-magic motes and witchlight ribbons that grow stronger as you climb, and the tower in the backdrop growing place by place.
 export const WL = {
-  W: 495, H: 92, FOOT: 80, PIER: 76, GORGE: 88, ROOF: [66, 69], GARDEN: 40,   /* the cloister's roof: its underside six rows over the floor, in the same frame as the brambles */
-  PLACES: { foot: [0, 49], aqueduct: [50, 139], cloister: [140, 219], runestair: [220, 259], garden: [250, 332], battlements: [333, 432], top: [433, 494] },
+  W: 595, H: 92, FOOT: 80, PIER: 76, GORGE: 88, ROOF: [66, 69], GARDEN: 40,   /* the cloister's roof: its underside six rows over the floor, in the same frame as the brambles */
+  PLACES: { foot: [0, 49], aqueduct: [50, 139], cloister: [140, 219], runestair: [220, 259], garden: [250, 332], battlements: [333, 532], top: [533, 594] },
   /* THE BATTLEMENTS (docs/briefs/witchlight-whelps.md): standing rows, the breaches, the whelps' perches, the exam. EXAM[0] is its
      checkpoint, EXAM[1] the one outside the Gargoyle's lip; nothing between them is safe footing to stop on for long */
-  BATT: { walk: 30, breach: [358, 360], moat: [373, 390], far: 26, exam: [399, 429], door: 32 },
-  EXAM: [395, 440],
+  BATT: { walk: 30, trench: [350, 353], breach: [358, 360], moat: [373, 390], far: 26, cornice: [399, 448], rune: [456, 489], exam: [499, 529], door: 32 },
+  EXAM: [495, 540],
   PIERS: [[50, 53], [78, 82], [106, 110], [134, 139]],
   BRAMBLES: [[150, 165], [176, 192], [200, 211]],
   GLYPHS: [[147, 169], [173, 194], [198, 214]],          // [up (on the floor), down (under the roof)]
   MINI: { x0: 300, x1: 331, gate: 332, wallL: 299, braziers: [305, 326] },
-  /* HIS ROOM, COMPRESSED (Daniel, 2026-09-25: "much further zoomed out" and "the platforms don't need to be quite as high up"): 44 tiles,
-     not 79 (A7), the slabs 6-7 rows over the garden floor, not 11-13. Each drifting slab moves RIGHT by its range, so its left gap
-     opens from one tile to three as its right one closes from three to one: no gap on the chain is ever more than three. */
-  ARENA: { x0: 446, x1: 490 }, TOP: 34, PERCH: 30,
-  SLABS: [[449, 35, { speed: 14 }], [457, 34, { cracked: true }], [462, 35, { speed: 12 }], [470, 34, { cracked: true }], [475, 35, { speed: 16 }],
-    [483, 34, { cracked: true }]],
-  LIFTS: [[461, 0], [474, 1.5], [482, 3]],               // rune columns from the terrace, under the gaps between the slabs (columns no slab ever drifts over)
+  /* HIS ROOM (Daniel, 2026-09-27: "The arena floor is SPIKES. MANY MORE platforms than now"): 44 tiles, a floor of spikes (row
+     GARDEN) and THIRTEEN slabs in two tiers - seven five rows over the spikes (row LOW) and six three rows above
+     them (row TOP), each over a gap in the tier below. No gap on a tier is over two tiles, and the tiers are a hop apart (the jump rises
+     three). The winds of the spiked floor (L.winds, arena) bring a fallen hero up to the nearest slab standing. */
+  ARENA: { x0: 546, x1: 590 }, TOP: 32, LOW: 35, LIP: 33, PERCH: 28,
+  SLABS: [[548, 35], [554, 35], [560, 35, { range: 1, speed: 12 }], [566, 35], [572, 35], [578, 35, { range: 1, speed: 12 }], [584, 35],
+    [551, 32], [557, 32], [563, 32], [569, 32], [575, 32], [581, 32]],
+  WELLS: [552, 564, 576, 588],
   LIGHT: [[0, 139, 'dusk'], [140, 259, 'twilight'], [260, 494, 'witchlight']],
-  STEPS: [0, 50, 140, 220, 262, 333, 433],               // where the tower in the backdrop takes a step nearer
-  MARKS: { cavern: 4, aqueduct: 92, colonnade: 180, library: 243, orrery: 316, battlements: 384, tower: 491 },
+  STEPS: [0, 50, 140, 220, 262, 333, 533],               // where the tower in the backdrop takes a step nearer
+  MARKS: { cavern: 4, aqueduct: 92, colonnade: 180, library: 243, orrery: 316, battlements: 384, tower: 591 },
 };
 
 export function buildWitchlight({ painter, T, TS }) {
   const { W, H, FOOT, PIER, GORGE, GARDEN: G } = WL;
   const L = painter(W, H), { set, block, plat, ent, coins } = L;
   const fill = (x0, x1, y0, y1, t) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, t); };
-  const ropes = [], encounters = [], glyphBridges = [], hedges = [], skins = [];
+  const ropes = [], encounters = [], glyphBridges = [], hedges = [], skins = [], winds = [];
   const rope = (x, y0, y1) => ropes.push([x, y0, y1]);
   const rune = (x, row, top, phase = 0) => ent('vent', x, row, { rune: true, h: (row + 1 - top) * TS, period: 4.4, on: 2.4, lift: 200, w: 16, phase });
   const slab = (x, row, o) => ent('mover', x, row, Object.assign({ len: 3, slab: true, speed: 30 }, o));
@@ -131,54 +137,85 @@ export function buildWitchlight({ painter, T, TS }) {
   hedge(M.gate - 1, M.gate + 2, G - 12, G - 5); for (let y = G - 4; y <= G; y++) set(M.gate, y, T.PORT);   /* the gate: it lifts when he falls */
   ent('sign', 298, G, { text: 'THE GARDEN GATE. ITS WARDEN IS CUT FROM THE HEDGE, AND HE GROWS BACK FROM THE STUMP.' });
 
-  // ---- 6. THE BATTLEMENTS (c 333-432, rows 40 -> 19 -> 32): the tower's upper stair and its wall-walk ----
-  /* One massif of the tower's stone from the stair to the Gargoyle's lip, and everything cut into it: a breach in the walk, a dry
-     moat under the cornice, and the exam's moat under its slabs. A fall lands on a moat floor with a rope up its NEAR wall only, so
-     a miss costs the climb back and never skips ahead (S2). The whelps sit stone where the footing is narrow (S1). */
+  // ---- 6. THE BATTLEMENTS (c 333-532, rows 40 -> 15 -> 32): the tower's upper stair and its wall-walk, over a SPIKED MOAT ----
+  /* One massif of the tower's stone from the stair to the Gargoyle's lip, cut by a moat of SPIKES the whole way. The moat's WIND brings a
+     hero who falls in back up to the footing at or behind where he fell (a fall costs the stretch, one bite, and never skips ahead: S2),
+     and a hero who stomps a whelp stuck on its spikes back up without the bite. A whelp is stone but there (S1: they sit over the
+     narrow footing and the cracked ledges). */
   const B = WL.BATT, stand = (x0, x1, row) => { block(x0, x1, row + 1, H - 1); skins.push([x0, x1, row + 1, H - 1, 'tower']); };
   const perch = (x, row, w = 1) => { block(x, x + w - 1, row + 1, row + 1); skins.push([x, x + w - 1, row + 1, row + 1, 'tower']); };   /* a spout or a merlon cap out of the tower's face */
+  const zone = (x0, x1, row, wells, exits, o) => { fill(x0, x1, row, row, T.SPIKE); winds.push(Object.assign({ x0, x1, row, wells, exits }, o || {})); };   /* A STRETCH OF SPIKED MOAT and its wind (spike-winds.js) */
+  const crack = (x, row, o) => slab(x, row, Object.assign({ len: 3, range: 0, cracked: true, brittle: true, regrow: 4 }, o));   /* A CRACKED LEDGE: a whelp dives through it; it grows back */
   stand(338, 339, 38); stand(340, 341, 36); stand(342, 343, 34); stand(344, 345, 32);        // THE UPPER STAIR: two rows a step
   stand(346, 372, B.walk);                                                                  // the wall-walk
-  fill(B.breach[0], B.breach[1], B.walk + 1, G, T.AIR); fill(B.breach[0], B.breach[1], G, G, T.SPIKE); rope(B.breach[0], B.walk + 1, G - 1);   /* THE FIRST BREACH: three tiles over the brambles */
-  block(364, 365, B.walk - 1, B.walk); skins.push([364, 365, B.walk - 1, B.walk, 'tower']);   /* a merlon past the breach: the first whelp sits on it */
-  fill(B.moat[0], B.moat[1], B.walk + 1, G, T.AIR); rope(B.moat[0], B.walk + 1, G);         // THE DRY MOAT under the cornice, a rope up the walk's end
+  /* TAUGHT: THE CRACKED LEDGE over a shallow trench of spikes, a whelp on a spout over it. It dives at you on the ledge; step off and it
+     goes through the ledge onto the spikes two rows down, where you can jump on it and the wind lifts you straight back */
+  fill(B.trench[0], B.trench[1], B.walk + 1, B.walk + 2, T.AIR); zone(B.trench[0], B.trench[1], B.walk + 3, [351], [[349, B.walk]]); crack(B.trench[0], B.walk + 1, { len: 4 });
+  perch(352, 25);
+  fill(B.breach[0], B.breach[1], B.walk + 1, G, T.AIR); zone(B.breach[0], B.breach[1], G, [359], [[357, B.walk]]);   /* THE FIRST BREACH: three tiles over the moat */
+  block(364, 365, B.walk - 1, B.walk); skins.push([364, 365, B.walk - 1, B.walk, 'tower']);   /* a merlon past the breach: a whelp sits on it */
+  /* DEVELOPED: THE SPOUTS - the moat under the cornice, and the NARROW ledge between two whelps */
+  zone(B.moat[0], B.moat[1], G, [378, 386], [[372, B.walk], [381, 26]]);
   ledge(375, 29, 3); ledge(380, 27, 3); ledge(386, 27, 2);                                  // THE CORNICE: up, up, and the NARROW ledge between the spouts
   perch(384, 19); perch(389, 19);                                                           /* the two spouts over it (row 20: clear of a jump's head from the ledges) */
-  stand(391, 398, B.far);                                                                   // the far wall: the exam's checkpoint
-  fill(B.exam[0], B.exam[1], B.far + 1, G, T.AIR); rope(B.exam[0], B.far + 1, G);           // THE EXAM's moat: one rope, back to its start
-  slab(400, B.far + 1, { range: 4, speed: 20 }); slab(409, B.far + 1, { len: 4, range: 1, speed: 4, sink: true });   /* a slider, then a slab that SINKS under you */
-  block(407, 408, B.far + 1, B.far + 2); skins.push([407, 408, B.far + 1, B.far + 2, 'tower']);   /* a merlon stump between them, two tiles to stand on... */
-  perch(407, 19);                                                                           /* ...under a spout: the whelp that meets you on it */
-  block(415, 418, B.far + 1, B.far + 3); skins.push([415, 418, B.far + 1, B.far + 3, 'tower']);   /* a merlon block fallen into the moat, still standing */
-  rune(417, B.far, 18, 1.2); ledge(419, 20, 4);                                             // a rune column off it, up to the gatehouse cornice
-  perch(424, 12);                                                                           /* the last spout, over the cornice */
-  ledge(425, 22, 3);
-  stand(430, 432, 24); stand(433, 434, 26); stand(435, 436, 28); stand(437, 438, 30); stand(439, 441, B.door);   // down the gatehouse roof to the lip
-  ent('sign', 336, G, { text: 'THE BATTLEMENTS. THE TOWER\'S BROOD SITS ON ITS MERLONS: STONE, UNTIL IT DROPS ON YOU.' });
-  ent('check', WL.EXAM[0], B.far); ent('check', WL.EXAM[1], B.door);
-  coins([426, G], [427, G], [428, G], [429, G], [428, G - 1], [429, G - 1]);   /* the exam moat's far end pays in gold, laid here so the dead-end rule (R) puts no heart in the exam (S5) */
-  coins([350, B.walk - 1], [354, B.walk - 1], [368, B.walk - 1], [381, 25], [386, 25], [393, B.far - 1], [420, 19], [422, 19], [431, 23]);
-  meet('THE FIRST BREACH', 350, 372, [['whelp', 364, B.walk - 2], ['armour', 369, B.walk], ['bonearcher', 371, B.walk]]);
+  stand(391, 398, B.far);                                                                   // the far wall
+  /* TWISTED: THE CRACKED CORNICE - the way on is CRACKED LEDGES a whelp dives through. Leave one late and it breaks under the whelp,
+     which lies on the spikes to be stomped; the ledge grows back in four seconds, so the route comes back (a ghost of it shows where) */
+  zone(B.cornice[0], B.cornice[1], G, [405, 420, 432, 443], [[397, B.far], [407, 25], [422, 27], [439, 26]]);
+  crack(401, 27); ledge(406, 26, 3); crack(411, 26); crack(416, 28);
+  stand(421, 423, 27);                                                                      /* a merlon standing in the moat */
+  slab(425, 28, { range: 4, speed: 18 });                                                   /* a slider: the gap after it closes to two */
+  crack(433, 28); ledge(438, 27, 3); crack(444, 26);
+  perch(412, 17); perch(434, 17);                                                           /* the spouts over the cracked ledges */
+  stand(449, 455, 25);                                                                      // the cornice's end: a checkpoint
+  /* COMBINED: THE RUNE TOWER - a rune column off a merlon in the moat, up to the tower's high cornice, and down its broken ledges past
+     two whelps (one over a cracked ledge two tiles wide) */
+  zone(B.rune[0], B.rune[1], G, [462, 474, 486], [[454, 25], [459, 28]]);
+  stand(458, 460, 28); rune(459, 28, 14, 0.6); ledge(461, 16, 4);
+  ledge(467, 17, 3); ledge(472, 19, 3); crack(477, 21, { len: 2 }); ledge(481, 23, 3); ledge(486, 25, 3);
+  perch(467, 8); perch(478, 12);
+  stand(490, 498, B.far);                                                                   // the exam's wall: its checkpoint
+  /* EXAMINED: THE GATEHOUSE ROOF - slabs over the moat (a slider, one that SINKS, a merlon stump under a whelp), a rune column to the
+     gatehouse cornice and a CRACKED ledge under the last whelp, then down the roof to the lip */
+  zone(B.exam[0], B.exam[1], G, [504, 513, 524], [[497, B.far], [516, 26]]);
+  slab(500, B.far + 1, { range: 4, speed: 20 }); slab(509, B.far + 1, { len: 4, range: 1, speed: 4, sink: true });   /* a slider, then a slab that SINKS under you */
+  block(507, 508, B.far + 1, B.far + 2); skins.push([507, 508, B.far + 1, B.far + 2, 'tower']);   /* a merlon stump between them, two tiles to stand on... */
+  perch(507, 19);                                                                           /* ...under a spout: the whelp that meets you on it */
+  block(515, 518, B.far + 1, B.far + 3); skins.push([515, 518, B.far + 1, B.far + 3, 'tower']);   /* a merlon block fallen into the moat, still standing */
+  rune(517, B.far, 18, 1.2); ledge(519, 20, 4);                                             // a rune column off it, up to the gatehouse cornice
+  perch(524, 12);                                                                           /* the last spout, over the cornice */
+  crack(525, 22);
+  stand(530, 532, 24); stand(533, 534, 26); stand(535, 536, 28); stand(537, 538, 30); stand(539, 541, B.door);   // down the gatehouse roof to the lip
+  ent('sign', 336, G, { text: 'THE BATTLEMENTS. THE MOAT IS SPIKED: FALL IN AND ITS WIND BRINGS YOU BACK, AT A PRICE.' });
+  ent('sign', 347, B.walk, { text: 'A WHELP IS STONE: LET IT DIVE ONTO THE SPIKES, THEN JUMP ON IT.' });
+  ent('check', 395, B.far); ent('check', 452, 25); ent('check', WL.EXAM[0], B.far); ent('check', WL.EXAM[1], B.door);
+  coins([350, B.walk - 1], [354, B.walk - 1], [368, B.walk - 1], [381, 25], [386, 25], [393, B.far - 1], [407, 24], [422, 26], [440, 25], [451, 23],
+    [462, 14], [464, 14], [473, 17], [482, 21], [487, 23], [492, B.far - 1], [520, 19], [522, 19], [531, 23]);
+  meet('THE CRACKED LEDGE', 346, 357, [['whelp', 352, 25], ['bonegob', 355, B.walk], ['bonearcher', 357, B.walk]]);
+  meet('THE FIRST BREACH', 358, 372, [['whelp', 364, B.walk - 2], ['armour', 369, B.walk], ['bonearcher', 371, B.walk]]);
   meet('THE SPOUTS', 373, 398, [['whelp', 384, 19], ['whelp', 389, 19], ['bonearcher', 396, B.far]]);
-  meet('THE GATEHOUSE ROOF', 399, 441, [['whelp', 407, 19], ['whelp', 424, 12], ['bonearcher', 431, 24], ['apprentice', 436, 28]]);
+  meet('THE CRACKED CORNICE', 399, 455, [['whelp', 412, 17], ['whelp', 434, 17], ['bonearcher', 454, 25]]);
+  meet('THE RUNE TOWER', 456, 498, [['whelp', 467, 8], ['whelp', 478, 12], ['bonearcher', 488, 24]]);
+  meet('THE GATEHOUSE ROOF', 499, 541, [['whelp', 507, 19], ['whelp', 524, 12], ['bonearcher', 531, 24], ['apprentice', 536, 28]]);
 
-  // ---- THE STAIR'S TOP (c 433-494): onto the Gargoyle's slabs ----
-  ledge(442, WL.TOP - 1, 6);                                                                // the arena's lip, off the gatehouse roof
-  /* THE GARGOYLE'S SLABS: a chain of them over the garden terrace, a short hop apart, solid ones drifting a little and CRACKED ones
-     (his opening) held still between them. A fall lands on the terrace; three rune columns under the gaps lift you back up. */
-  for (const [x, row, o] of WL.SLABS) slab(x, row, Object.assign({ arena: true, len: o.cracked ? 4 : 5, range: o.cracked ? 0 : 2 }, o));
-  for (const [x, ph] of WL.LIFTS) rune(x, G, WL.TOP - 3, ph);
-  block(WL.ARENA.x1 + 1, W - 1, 0, H - 1); skins.push([WL.ARENA.x1 + 1, W - 1, 0, H - 1, 'tower']);   // the tower's foot
-  ent('gargoyle', WL.ARENA.x1 - 3, WL.PERCH, { face: -1 });                         // bolted over the gate: the level ends on his fall
+  // ---- THE STAIR'S TOP (c 533-594): onto the Gargoyle's slabs, over the spikes ----
+  const A = WL.ARENA;
+  ledge(542, WL.LIP, 6);                                                                    // the arena's lip, off the gatehouse roof
+  /* THE GARGOYLE'S SLABS: two tiers over a floor of spikes. He smashes through the one he dives on if you have left it (every slab gives:
+     GARG.smashAny), and it grows back in a few seconds; a fall is one bite and the wind brings you up to the nearest slab standing */
+  for (const [x, row, o] of WL.SLABS) slab(x, row, Object.assign({ arena: true, len: 4, range: 0 }, o || {}));
+  zone(542, A.x1, G, WL.WELLS, [], { arena: true });
+  block(A.x1 + 1, W - 1, 0, H - 1); skins.push([A.x1 + 1, W - 1, 0, H - 1, 'tower']);     // the tower's foot
+  ent('gargoyle', A.x1 - 3, WL.PERCH, { face: -1 });                                        // bolted over the gate: the level ends on his fall
   ent('check', 336, G);
-  ent('sign', 441, B.door, { text: "THE STAIR'S TOP. SOMETHING IS BOLTED OVER THE TOWER GATE, AND IT IS AWAKE." });
-  coins([443, WL.TOP - 2], [446, WL.TOP - 2]);
+  ent('sign', 541, B.door, { text: "THE STAIR'S TOP. HE IS STONE: MAKE HIM CRASH ONTO THE SPIKES, THEN JUMP ON HIM." });
+  coins([543, WL.LIP - 1], [546, WL.LIP - 1]);
 
   // the dead that followed you up, in the quiet between the encounters
   dead('zombie', 64, GORGE); dead('husk', 124, GORGE);   /* (in the gorge: a fall costs a fight) */
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);   /* EVERY ROPE IS HUNG LAST (the Gale Moor bug) */
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: FOOT }, pools: [], falls: [], moversExtra: [], interiors: [], gusts: [],
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: FOOT }, pools: [], falls: [], moversExtra: [], interiors: [], gusts: [], winds,   /* the spiked moat's winds (spike-winds.js) */
     music: 'witchlight', duskStart: 0, duskLen: W * TS * 2.35,   /* the dusk grade deepens to ~0.43 at the top, under the engine's 0.45: greens stay green */
     hasCryst: false, encounters, places: WL.PLACES, marks: WL.MARKS, light: WL.LIGHT,
     tints: [[140, 259, [52, 44, 120], 0.13], [260, W - 1, [30, 18, 72], 0.24]],   /* THE LIGHT BY PLACE: twilight in the cloister and the shaft, witchlight night in the garden and on top */

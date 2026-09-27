@@ -77,6 +77,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   const extraFoot = [], springs = new Set(), buds = new Set(), groups = []; let flight = null;
   if (opts.rides && !plain) {
     for (const e of (L.ents || [])) {
+      if (e.t === 'mover' && e.slab && !e.range && !e.vert && !e.sink) for (let x = e.x; x < e.x + (e.len || 3); x++) extraFoot.push(x + ',' + (e.y - 1));   /* A SLAB HELD STILL IS A LEDGE (the Witchlight Stair's cracked ledges and the Gargoyle's slabs): the band below only boards a mover from two tiles off */
       if (e.t === 'pad') for (const dx of (e.big ? [-1, 0, 1] : [-1, 0])) extraFoot.push((e.x + dx) + ',' + (e.y - 1));   /* a big pad is two tiles wide, centred on its column: it reaches half into both neighbours */
       if (e.t === 'pad' && e.spring && !e.big) for (const dx of [-1, 0]) buds.add((e.x + dx) + ',' + (e.y - 1));
       if (e.t === 'wasp' && !opts.noFoes) { extraFoot.push(e.x + ',' + (e.y - 1)); springs.add(e.x + ',' + (e.y - 1)); }

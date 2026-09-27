@@ -221,6 +221,7 @@ export const SFX = {
   braceStop() { noise(0.18, 0.28, 560, 0.5); tone('sine', 88, 38, 0.32, 0.3); bell(1046, 0.5, 0.085); tone('triangle', vary(2200), 1400, 0.07, 0.05); },
   vigilFull() { bell(1568, 0.5, 0.08); bell(2093, 0.4, 0.05, 0.08); noise(0.3, 0.1, 3000, 0.5); },
   // the pyromancer's own fire
+  gargFire() { noise(0.8, 0.32, 900, 0.5); noise(0.6, 0.18, 2600, 0.8, 0.05); tone('sawtooth', 110, 70, 0.7, 0.12); crackle(6, 0.04); },   /* THE GATE GARGOYLE's FIRE BREATH: a furnace door opened */
   ember() { noise(0.1, 0.2, vary(2200), 0.7); tone('triangle', vary(440), 160, 0.12, 0.1); crackle(2, 0.02); },
   heatFull() { tone('triangle', 880, 880, 0.14, 0.08); tone('triangle', 1320, 1320, 0.2, 0.08, 0.07); noise(0.3, 0.12, 1200, 0.4); },
   pyre() { if (!ac) return; const t = ac.currentTime; const src = ac.createBufferSource(); src.buffer = noiseBuf; const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(3200, t + 0.35); const gn = ac.createGain(); gn.gain.setValueAtTime(0.001, t); gn.gain.exponentialRampToValueAtTime(0.42, t + 0.08); gn.gain.exponentialRampToValueAtTime(0.001, t + 0.7); src.connect(f); f.connect(gn); gn.connect(sfxGain); src.start(t); src.stop(t + 0.75);

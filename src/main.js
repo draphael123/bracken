@@ -7,7 +7,8 @@ import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { updateGraveWarden as stepGraveWarden, drawGraveWarden, wardenFrame as graveFrame, wardenOpen as graveOpen, WARDEN as GRAVE_W } from './grave-warden.js';   /* (named apart: harbor-boss.js's Breakwater Warden owns updateWarden and wardenFrame) */   /* THE GRAVE WARDEN (batch 4b) */
 import { bakeGraveWarden, bakeHedgeWarden, bakeGateGargoyle } from './redraw/queue_bosses.js';
 import * as WHF from './gargoyle-whelp.js';   /* THE GARGOYLE WHELP: its numbers, frames and art (docs/briefs/witchlight-whelps.md) */
-import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGargoyleWorld, GARG, gargCam, gargRegrowT, gargKeepFooting, drawSlabGhost } from './gate-gargoyle.js';   /* THE GATE GARGOYLE, the Witchlight Stair's boss */
+import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGargoyleWorld, GARG, gargCam, gargRegrowT, gargKeepFooting, drawSlabGhost, gargStomped } from './gate-gargoyle.js';   /* THE GATE GARGOYLE, the Witchlight Stair's boss */
+import { WIND, windZoneAt, onSpikes, windCatch, windStep, windBite, stompOn, drawWinds } from './spike-winds.js';   /* THE SPIKED MOAT AND ITS WINDS (the battlements and the Gargoyle's room) */
 import { updateHedgeWarden as stepHedgeWarden, drawHedgeWarden, hedgeFrame, hedgeTake } from './hedge-warden.js';
 import { SEXTON, updateSexton as stepSexton, sextonFrame, sextonTake } from './sexton.js'; import { bakeSexton } from './redraw/sexton.js';   /* THE SEXTON, the Falling Tower's mini (docs/briefs/falling-tower-rework.md) */
 import { crumbleStart as crumbleStartAt, crumbleBreak as crumbleBreakAt } from './tower-collapse.js';   /* THE HEDGE WARDEN (batch 4c) */
@@ -2294,7 +2295,7 @@ function spawnEnt(e) {
       case 'chainpost': { const cut = marks.has('chain:' + e.x); props.push({ t: 'chainpost', x: px, y: py, hp: 3, cut, tx: e.x }); break; }
       case 'glowbud': { const pr = { t: 'glowbud', x: px, y: py, lit: 0, mycelium:e.mycelium, motherNode:e.motherNode }; props.push(pr); lights.push({ x: px, y: py - 8, r: 18, glow: true }); pr.light = lights[lights.length - 1]; break; } // dim until you strike it
       case 'glow': props.push({ t: 'glow', x: px, y: py, dark: 0 }); lights.push({ x: px, y: py - 8, r: 52, glow: true, ref: null }); lights[lights.length - 1].ref = props[props.length - 1]; break;
-      case 'mover': movers.push({ x0: e.x * TS, x: e.x * TS, y: e.y * TS, y0: e.y * TS, w: e.len * TS, h: 8, range: (e.range || 0) * TS, p: 0, dir: 1, dx: 0, dy: 0, speed: e.speed || 36, cap: !!e.cap, bob: !!e.bob, vert: !!e.vert, rise: (e.rise || 0) * TS, period: e.period || 3.2, phase: e.vert ? (e.ph || 0) : (e.x % 7) * 0.9, stone: !!e.stone, slab: !!e.slab, ghost: e.ghost || null, tide: !!e.tide, sink: !!e.sink, sinkK: 0, cracked: !!e.cracked, arena: !!e.arena }); break;
+      case 'mover': movers.push({ x0: e.x * TS, x: e.x * TS, y: e.y * TS, y0: e.y * TS, w: e.len * TS, h: 8, range: (e.range || 0) * TS, p: 0, dir: 1, dx: 0, dy: 0, speed: e.speed || 36, cap: !!e.cap, bob: !!e.bob, vert: !!e.vert, rise: (e.rise || 0) * TS, period: e.period || 3.2, phase: e.vert ? (e.ph || 0) : (e.x % 7) * 0.9, stone: !!e.stone, slab: !!e.slab, ghost: e.ghost || null, tide: !!e.tide, sink: !!e.sink, sinkK: 0, cracked: !!e.cracked, arena: !!e.arena, brittle: !!e.brittle, regrow: e.regrow || 0 }); break;
       case 'vent': props.push({ t: 'vent', x: px, y: py, period: e.period || 4, on: e.on || 1.6, phase: e.phase || 0, h: e.h || 112, wind: !!e.wind, heat: !!e.heat, glass: !!e.glass, incense: !!e.incense, ember: !!e.ember, rune: !!e.rune, lift: e.lift || 190, w: e.w || 13 }); break;
       case 'roller': props.push({ t: 'roller', x: px, y: py, vx: (e.face || 1) * (e.speed || 55), alive: true, rot: 0 }); break;
     }
@@ -2851,7 +2852,7 @@ function shrineLights(s, px, py, swim) {
   for (let ty = Math.floor((py - 8) / TS); ty < Math.floor(s.y / TS); ty++) if (isSolid(tx, ty)) return false;
   return (L.pools || []).some(p => p.swim && !p.dry && s.x >= p.x0 && s.x <= p.x1 && py - 8 >= p.y);
 }
-function respawn() { P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
+function respawn() { P.windRide = null; P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
@@ -5536,8 +5537,8 @@ function wardedDamage(e, dmg) {
   if (e.t === 'sexton') { const d0 = dmg; dmg = sextonTake(e, dmg); if (dmg > d0) sparks(e.x, e.y - 30, -(e.face || 1), 6); }   /* THE SEXTON caught in his own bell pit: every blow lands double */   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
   if (e.t === 'abbot') dmg = Math.max(1, Math.round(dmg * abbotTake(e)));   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
   if (e.t === 'winchmaster') dmg = Math.max(1, Math.round(dmg * winchTake(e)));   /* THE WINCHMASTER: double while the jammed drum has him down on his ledge */
-  if (e.t === 'whelp' && WHF.whelpStone(e)) dmg = Math.min(dmg, WHF.WH.stoneTake);   /* THE WHELP ON ITS PERCH IS STONE: a chip, whatever the blow (last, so no finisher gets round it) */
-  if (e.t === 'gargoyle') dmg = gargTake(e, dmg);   /* THE GATE GARGOYLE: double while he hangs from a broken edge (gate-gargoyle.js) */
+  if (e.t === 'whelp') dmg = WHF.whelpTake(e, dmg);   /* THE WHELP IS STONE: nothing but a stomp while it is stuck on the spikes (last, so no finisher gets round it) */
+  if (e.t === 'gargoyle') dmg = gargTake(e, dmg);   /* THE GATE GARGOYLE IS STONE: nothing but a stomp while he lies stunned on the spikes (gate-gargoyle.js) */
   return dmg;
 }
 function hurtEnemy(e, dmg, fromX, plunge) { const blow = BLOW; BLOW = null;   /* taken at once, so nothing this blow sets off inherits it */
@@ -6821,6 +6822,8 @@ function updatePlayer(dt) {
   if (P.down > 0) { downedPlayer(dt); return; }   /* DOWN, not dead: he crawls, and his partner can pick him up */
   if (P.dead) { const dw = P.dead; P.dead -= dt; if (dw > 0.6 && P.dead <= 0.6) { dust(P.x - P.face * 10, P.y, 8); SFX.thud(); } if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (SET.iron && lives <= 0) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
   if (P.fly && flight) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); flyPlayer(dt); return; }
+  if (P.windRide && !L.winds) P.windRide = null;   /* (a ride never outlives its level) */
+  if (P.windRide) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); P.dodge = 0; P.plunge = false; return; }   /* THE WIND HAS HIM (spike-winds.js): it moves him, not his legs */
   if (P.carpet) { carpetPlayer(dt); return; }   /* THE FALLING TOWER'S CARPET (carpet.js): no ground, no falling, eight ways */
   if (MG && P.flip && magePlayer(dt)) return;   /* THE MAGE'S FOLLY: the room turned over, and the hero walking its ceiling */
   /* THE DANCE: H, standing still on the ground, and again to stop. Anything else you do - move, jump, swing, block,
@@ -7605,7 +7608,7 @@ function updatePlayer(dt) {
 
   const pb = box(P);
   for (let ty = Math.floor(pb.t / TS); ty <= Math.floor((pb.b - 1) / TS); ty++) for (let tx = Math.floor(pb.l / TS); tx <= Math.floor((pb.r - 1) / TS); tx++) {
-    if (tileAt(tx, ty) === T.SPIKE && pb.b > ty * TS + 6) damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true, name: 'THE SPIKES' });
+    if (tileAt(tx, ty) === T.SPIKE && pb.b > ty * TS + 6 && !windFall(tx, ty)) damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true, name: 'THE SPIKES' });   /* (a WIND ZONE's spikes are the zone's: one bite and the wind, spike-winds.js) */
   }
   if (P.y > LH * TS + 30) { if (SET.invincible) { P.x = checkpoint.x; P.y = checkpoint.y; P.vx = 0; P.vy = 0; } else { die({ name: 'THE FALL', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.6; } }   /* (in co-op the fall put him DOWN, and a downed hero is not also a dead one) */
   /* A POOL HAS A BOTTOM. This was "in its columns and anywhere below its surface", so the Undercrown's flooded level
@@ -7705,6 +7708,7 @@ function updatePlayer(dt) {
     const stompable = !P.plunge && P.vy > 40 && pb.b <= e.y - e.h + 7 && P.dodge <= 0;
     if (e.t === 'frog' && (e.mode === 'sleep' || (e.mode === 'dazed' && !stompable))) continue;
     if (e.t === 'frog' && stompable && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
+    if (e.t === 'whelp' || e.t === 'gargoyle') continue;   /* STONE: their only stomp is on the spikes, and it is theirs (stompStone) */
     // stomp: falling onto a foe's head
     if (!P.plunge && P.vy > 40 && pb.b <= e.y - e.h + 7 && P.dodge <= 0 && e.t !== 'emberwisp') {
       P.hitSet.clear(); P.canCut = false; P.ground = false;
@@ -10646,7 +10650,7 @@ function ma() {
 function mageHint(key, msg) { const k = 'mgHint' + key; if ((PROG[k] || 0) >= 2) return; PROG[k] = (PROG[k] || 0) + 1; hintT = 4.5; hintMsg = msg; }
 const cellSet = (x, y, t) => { const i = y * LW + x; if (L.grid[i] !== t) { L.grid[i] = t; tileSpr[i] = null; } };
 function mageReset() {
-  MG = null; P.flip = false; P.flipT = 0; P.flareSlab = null; P.flareT = 0; if (!L || !L.mage) { P.w = 10; P.h = 14; return; }
+  MG = null; P.flip = false; P.flipT = 0; P.flareSlab = null; P.flareT = 0; P.windRide = null; if (!L || !L.mage) { P.w = 10; P.h = 14; return; }
   const M = L.mage;
   MG = { shelves: (M.shelves || []).map(s => ({ ...s, up: false, k: 0 })), shots: [], puddles: [], flipFx: 0, stacks: [], A: null, songT: 6 };
   for (const s of MG.shelves) { for (let y = s.yUp; y < s.yUp + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.AIR); for (let y = s.yDown; y < s.yDown + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.SOLID); }
@@ -10754,7 +10758,7 @@ function magePlayer(dt) {
     else if (P.y - P.h <= under + 1 && P.vy <= 0) { P.x += m.dx || 0; P.y = under + P.h; P.vy = 0; P.ground = true; } }
   if (gs < 0 && !P.ground && !P.flareSlab) { let free = true; for (let k = 1; k <= 14 && free; k++) if (isSolid(Math.floor(P.x / TS), Math.floor((P.y - P.h) / TS) - k)) free = false; if (free || P.y - P.h < 2) setFlip(false); }
   /* the spikes: his body, whichever way up */
-  { const tx = Math.floor(P.x / TS), ty0 = Math.floor((P.y - P.h + 1) / TS), ty1 = Math.floor((P.y - 1) / TS); for (let ty = ty0; ty <= ty1; ty++) if (tileAt(tx, ty) === T.SPIKE && !P.dead) { damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true }); break; } }
+  { const tx = Math.floor(P.x / TS), ty0 = Math.floor((P.y - P.h + 1) / TS), ty1 = Math.floor((P.y - 1) / TS); for (let ty = ty0; ty <= ty1; ty++) if (tileAt(tx, ty) === T.SPIKE && !P.dead && !windFall(tx, ty)) { damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true }); break; } }
   /* THE ACID: it eats a hero walking the ceiling exactly as it eats one walking the floor */
   { const pl = (L.pools || []).find(p => p.harm && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 4 && (p.bottom === undefined || P.y <= p.bottom + 4));
     if (pl && pl.deadly && !P.dead && P.y > pl.y + 10) { P.hp = 0; P.dead = 1.2; P.vx = 0; P.vy = 0; SFX.splash(); SFX.pDie(); burst(P.x, pl.y, 16, ['#1c3212', '#a6e04a', '#d9d6c0'], 90, 0.6, 300, 2); number(P.x, pl.y - 20, 'THE WATER KILLS', '#ff6b6b'); }   /* DEADLY WATER is a death, and quick: not five seconds of sinking (deadly-water.js) */
@@ -12638,20 +12642,34 @@ function updateMaw(e, dt) {
 function heraldPool() { return (L.pools || []).find(p => p.arenaTide); }
 const heraldGuard = () => enemies.filter(q => q.alive && q.called).length;
 function heraldGround(x) { const tx = Math.floor(x / TS); for (let ty = Math.floor(L.arena.floor / TS) - 5; ty <= Math.floor(L.arena.floor / TS); ty++) if (isSolid(tx, ty)) return ty * TS; return L.arena.floor; }
-/* THE GARGOYLE WHELP (its numbers, frames and art: src/gargoyle-whelp.js; docs/briefs/witchlight-whelps.md).
-   Daniel, 2026-09-26: "small gargoyle enemies before the boss". SAFE UNTIL IT MOVES: on its perch it is stone (wardedDamage holds a
-   blow to a chip); its danger is the shove, dropped on you where the ground is narrow.
-     THE SWOOP (yellow, blockable) it crouches and screeches, then dives in a line at where you are. A hit shoves you hard and it
-       tumbles on down; guarded, it clangs off and lies DAZED. Either way it ends LANDED, where every blow counts.
+/* THE GARGOYLE WHELP (its numbers, frames and art: src/gargoyle-whelp.js; docs/briefs/witchlight-whelps.md, reworked 2026-09-27).
+   Daniel: "The REGULAR gargoyles in that section of the level work the same way (they fall into spikes; the player stomps them)".
+   IT IS STONE (wardedDamage: whelpTake) everywhere but one place: STUCK ON THE SPIKES, where a stomp breaks it.
+     THE SWOOP (yellow, blockable) it crouches and screeches, then dives in a line at where you are - a hit shoves you hard - and on,
+       through any ledge in its way (a CRACKED one breaks under it: breakSlab, and it grows back), then it DROPS. Guarded, it clangs off
+       and drops. What it drops onto over the moat is the spikes: STUCK, stunned, for WH.stuckT - jump on it. On stone it only lands.
    Then it flaps home in a straight line (a gargoyle is not stopped by the stone it is made of) and hardens again. One the Gate
    Gargoyle called (fromGarg) sees his whole room from the tower's face and dives the length of it. */
-function whelpLand(e, y) { e.mode = 'landed'; e.modeT = WHF.WH.landT; e.noGrav = false; e.vx *= 0.3; e.vy = 0; if (y !== undefined) e.y = y; SFX.stone(); dust(e.x, e.y, 4); }
+function whelpLand(e, y) { e.mode = 'landed'; e.modeT = WHF.WH.landT; e.noGrav = true; e.vx = 0; e.vy = 0; if (y !== undefined) e.y = y; SFX.stone(); dust(e.x, e.y, 4); }
+/* ITS FALL (the swoop's line, then the drop): free of every ledge and slab - a cracked one it passes through BREAKS - stopped by stone
+   (it lands, still stone) or by the spikes (it sticks, and is open). Returns true when it has stopped. */
+function whelpFly(e, dt, clear) {
+  const y0 = e.y, x = e.x + e.vx * dt, y = e.y + e.vy * dt, tx = Math.floor(x / TS);
+  for (const m of movers) if (m.brittle && !m.broken && x > m.x && x < m.x + m.w && y0 <= m.y + 2 && y >= m.y) breakSlab(m);   /* THE CRACKED LEDGE gives under it */
+  e.x = x; e.y = y; if (!clear) return false;
+  const feet = Math.floor((e.y - 1) / TS), t = tileAt(tx, feet);
+  if (e.vy > 0 && t === T.SPIKE && e.y >= feet * TS + 6) { e.y = (feet + 1) * TS; e.mode = 'stuck'; e.modeT = WHF.WH.stuckT; e.vx = 0; e.vy = 0; e.noGrav = true; e.stagger = 0;
+    SFX.stone(); SFX.crack(); dust(e.x, e.y, 6); burst(e.x, e.y - 4, 10, ['#6a6280', '#8e86a4', '#c84a6a'], 70, 0.5); number(e.x, e.y - e.h - 12, 'STUCK: JUMP ON IT', '#8fd160'); return true; }
+  if (isSolid(tx, feet) || isSolid(tx, Math.floor((e.y - e.h / 2) / TS))) { let ty = feet; while (ty > 0 && isSolid(tx, ty - 1)) ty--; whelpLand(e, isSolid(tx, feet) ? ty * TS : e.y); return true; }
+  if (e.y > L.H * TS + 40) { e.mode = 'home'; e.noGrav = true; return true; }
+  return false;
+}
 function updateWhelp(e, dt) {
   const C = WHF.WH, far = !!e.fromGarg; e.modeT = (e.modeT || 0) - dt; e.cd = (e.cd || 0) - dt; if (!e.home) e.home = { x: e.x, y: e.y };
   const tx = P.x, ty = P.y - 9;
   switch (e.mode) {
     case 'perch': e.x = e.home.x; e.y = e.home.y; e.vx = 0; e.vy = 0; e.noGrav = true; e.stagger = 0;
-      e.seen = WHF.whelpSees(e, P, far);
+      e.seen = WHF.whelpSees(e, P, far) && !P.windRide;
       if (!e.seen) { if (e.cd < C.wake[0]) e.cd = C.wake[0] + Math.random() * (C.wake[1] - C.wake[0]); break; }   /* it takes a beat to notice you */
       e.face = Math.sign(P.x - e.x) || e.face;
       if (e.cd <= 0) { e.mode = 'crouchTell'; e.modeT = C.tell; e.aim = WHF.whelpAim(e, tx, ty); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.whelpScreech(); }
@@ -12661,20 +12679,21 @@ function updateWhelp(e, dt) {
       if (e.modeT <= 0) { e.mode = 'swoop'; e.modeT = far ? C.gargSwoopT : C.swoopT; e.hit = false; e.clear = false; SFX.throwWhoosh(); }
       break;
     case 'swoop': { e.noGrav = true; e.vx = e.aim[0] * C.speed; e.vy = e.aim[1] * C.speed; e.face = Math.sign(e.vx) || e.face;
-      const y0 = e.y, hw = e.w / 2, inRock = (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)), clear = e.clear || (e.clear = ![[-hw, 0.5], [hw, 0.5], [-hw, -e.h], [hw, -e.h], [0, 0.5]].some(([dx, dy]) => inRock(e.x + dx, e.y + dy))); let r = { ground: false, hitX: false };
-      if (clear) r = moveBody(e, e.vx * dt, e.vy * dt, false); else { e.x += e.vx * dt; e.y += e.vy * dt; }   /* OFF ITS PERCH FIRST: the stone it sat on is not the floor it lands on */
-      if (!e.hit && !P.dead && Math.abs(P.x - e.x) < 11 && P.y - (P.h || 18) - 2 < e.y && P.y + 3 > e.y - e.h) { e.hit = true;
+      const hw = e.w / 2, inRock = (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)), clear = e.clear || (e.clear = ![[-hw, 0.5], [hw, 0.5], [-hw, -e.h], [hw, -e.h], [0, 0.5]].some(([dx, dy]) => inRock(e.x + dx, e.y + dy)));   /* OFF ITS PERCH FIRST: the stone it sat on is not the floor it lands on */
+      if (!e.hit && !P.dead && !P.windRide && Math.abs(P.x - e.x) < 11 && P.y - (P.h || 18) - 2 < e.y && P.y + 3 > e.y - e.h) { e.hit = true;
         const res = damagePlayer(e.x, DMG.whelpSwoop, { who: e, blow: 'the swoop' });
-        if (res === 'blocked') { e.mode = 'dazed'; e.modeT = C.dazedT; e.noGrav = false; e.vx = -e.aim[0] * 90; e.vy = -110; number(e.x, e.y - e.h - 10, 'TURNED', '#8fd160'); SFX.clank(); break; }
+        if (res === 'blocked') { e.mode = 'plunge'; e.vx = -e.aim[0] * 90; e.vy = -110; number(e.x, e.y - e.h - 10, 'TURNED', '#8fd160'); SFX.clank(); break; }
         if (res === 'hit') { P.vx = (Math.sign(e.aim[0]) || e.face) * C.shove[0]; P.vy = C.shove[1]; P.ground = false; } }   /* THE SHOVE: off your feet, and off the ledge */
-      for (const m of movers) if (!m.broken && m.w && e.vy > 0 && e.x > m.x && e.x < m.x + m.w && y0 <= m.y + 1 && e.y >= m.y) { e.onM = m; whelpLand(e, m.y); break; }   /* down on a slab: it rides it */
-      if (e.mode === 'swoop' && (r.ground || r.hitX || e.modeT <= 0)) { whelpLand(e); if (!r.ground) e.modeT += 0.3; }
+      if (whelpFly(e, dt, clear)) break;
+      if (e.modeT <= 0) { e.mode = 'plunge'; e.vx *= 0.35; e.vy = Math.max(e.vy, 40); }   /* the line runs out, and it DROPS */
       break; }
-    case 'landed': case 'dazed': { e.noGrav = false; const m = e.onM && !e.onM.broken && Math.abs(e.x - (e.onM.x + e.onM.w / 2)) < e.onM.w / 2 + 2 ? e.onM : null;
-      if (m) { e.x += m.dx || 0; e.y = m.y; e.vy = 0; e.vx = 0; }
-      else { e.onM = null; e.vy = Math.min(320, (e.vy || 0) + 1000 * dt); e.vx *= Math.pow(0.02, dt); const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0; }
-      if (e.y > L.H * TS + 40 || e.modeT <= 0) { e.mode = 'home'; e.onM = null; e.noGrav = true; }
-      break; }
+    case 'plunge': case 'dazed': { e.noGrav = true; e.mode = 'plunge'; e.vy = Math.min(C.fallV, (e.vy || 0) + C.fallG * dt); e.vx *= Math.pow(0.05, dt); whelpFly(e, dt, true); break; }
+    case 'stuck': e.vx = 0; e.vy = 0; e.noGrav = true; e.stagger = 0;   /* ON THE SPIKES: open, and a stomp breaks it */
+      if (stompOn(P, e)) { stompStone(e); break; }
+      if (Math.random() < dt * 6) parts.push({ x: e.x + (Math.random() - 0.5) * 10, y: e.y - 8, vx: 0, vy: -20, life: 0.5, max: 0.5, col: '#9affd8', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'home'; number(e.x, e.y - e.h - 10, 'IT TEARS FREE', '#c8bca8'); SFX.stone(); }
+      break;
+    case 'landed': e.vx = 0; e.vy = 0; e.noGrav = true; if (e.modeT <= 0) e.mode = 'home'; break;   /* on stone it is only stone */
     case 'home': { e.noGrav = true; const dx = e.home.x - e.x, dy = e.home.y - e.y, d = Math.hypot(dx, dy) || 1, s = Math.min(d, C.flyV * dt);
       e.x += dx / d * s; e.y += dy / d * s; e.vx = dx / d * C.flyV; e.vy = dy / d * C.flyV; e.face = Math.sign(dx) || e.face;
       if (d < 2) { e.mode = 'perch'; e.x = e.home.x; e.y = e.home.y; e.cd = C.cd[0] + Math.random() * (C.cd[1] - C.cd[0]); burst(e.x, e.y - 6, 6, ['#6a6280', '#3a3450'], 30, 0.4); SFX.stone(); }   /* it settles, and hardens */
@@ -15122,10 +15141,33 @@ function drawSextonFx(cx, cy) {
 }
 /* THE GATE GARGOYLE's hands on the world (gate-gargoyle.js is the fight): his slabs, the break, the glyph flare, the whelps he calls */
 const gargSlabs = () => movers.filter(m => m.arena && m.slab);
-function breakSlab(m) { m.broken = true; m.brokenT = gargRegrowT(boss && boss.t === 'gargoyle' ? boss : null); for (const p of (players || [P])) if (p.onMover === m) { p.onMover = null; p.ground = false; p.vy = Math.max(p.vy, 40); }
-  { const back = gargKeepFooting(gargSlabs()); if (back) { burst(back.x + back.w / 2, back.y + 4, 12, ['#c8a0ff', '#8e86a4'], 50, 0.5); SFX.zap(); } }   /* never fewer than GARG.minLive stand */
+/* A SLAB BREAKS: his (an arena slab: back after gargRegrowT, never fewer than GARG.minLive standing) or a CRACKED LEDGE on the battlements
+   that a whelp dived through (m.brittle: back after its own m.regrow). Whoever stood on it drops. */
+function breakSlab(m) { m.broken = true; m.brokenT = m.arena ? gargRegrowT(boss && boss.t === 'gargoyle' ? boss : null) : (m.regrow || 4); for (const p of (players || [P])) if (p.onMover === m) { p.onMover = null; p.ground = false; p.vy = Math.max(p.vy, 40); }
+  if (m.arena) { const back = gargKeepFooting(gargSlabs()); if (back) { burst(back.x + back.w / 2, back.y + 4, 12, ['#c8a0ff', '#8e86a4'], 50, 0.5); SFX.zap(); } }   /* never fewer than GARG.minLive stand */
   if (P.flareSlab === m) { P.flareSlab = null; P.flareT = 0; if (P.flip) setFlip(false, true); }
-  burst(m.x + m.w / 2, m.y + 4, 26, ['#6a6280', '#8e86a4', '#1b1626', '#c8a0ff'], 120, 0.9, 400, 2); SFX.crack(); SFX.stone(); shakeCam(7); number(m.x + m.w / 2, m.y - 16, 'THE SLAB BREAKS', '#c8a0ff'); }
+  burst(m.x + m.w / 2, m.y + 4, 26, ['#6a6280', '#8e86a4', '#1b1626', '#c8a0ff'], 120, 0.9, 400, 2); SFX.crack(); SFX.stone(); shakeCam(m.arena ? 7 : 3); number(m.x + m.w / 2, m.y - 16, m.arena ? 'THE SLAB BREAKS' : 'THE LEDGE BREAKS', '#c8a0ff'); }
+/* THE SPIKED MOAT AND ITS WINDS (src/spike-winds.js is the rule): the slabs a ride may end on, the fall, the stomp, the ride */
+const windSlabs = z => (z && z.arena ? gargSlabs().filter(m => !m.broken) : []);
+/* a hero's body in a zone's spikes: ONE bite, and the wind has him. Returns true when it was a zone's (so the engine's spikes keep off) */
+function windFall(tx, ty) {
+  if (P.windRide) return true; const z = windZoneAt(L, tx, ty); if (!z || P.dead) return false;
+  const bite = windBite(P); if (bite > 0) { P.hp -= bite; P.hurt = 0.25; flash = Math.max(flash, 0.12); SFX.pHurt(); number(P.x, P.y - 20, '-' + bite, '#ff6b6b'); }
+  P.windFalls = (P.windFalls || 0) + 1; windCatch(P, z, 'fall', windSlabs(z)); SFX.puff(); SFX.gust(); shakeCam(3); burst(P.x, z.row * TS + 8, 12, ['#e0f4ff', '#c8a0ff'], 90, 0.5);
+  number(P.x, P.y - 30, 'THE WIND TAKES YOU UP', '#e0f4ff'); return true; }
+/* THE STOMP on stone lying on the spikes - the Gate Gargoyle stunned, a whelp stuck: a stomp's worth off him (all of a whelp), a bounce,
+   and the wind takes the hero back up without a bite */
+function stompStone(e) {
+  const dmg = e.t === 'gargoyle' ? GARG.stompDmg : e.hp; e.stompNow = dmg; hurtEnemy(e, dmg, P.x, true); e.stompNow = 0; e.bleed = 0; e.burn = 0;
+  SFX.pPogo(); SFX.crack(); shakeCam(e.t === 'gargoyle' ? 7 : 3); hitstop(0.06); burst(e.x, e.y - e.h, 16, ['#6a6280', '#8e86a4', '#e0c8ff'], 90, 0.5); number(e.x, e.y - e.h - 18, 'STOMPED', '#8fd160');
+  if (e.t === 'gargoyle' && e.alive) { gargStomped(e); number(e.x, e.y - e.h - 32, 'HE TEARS FREE: THE WIND TAKES YOU UP', '#e0f4ff'); }
+  P.vy = WIND.bounce; P.ground = false; const z = onSpikes(L, e.x, e.y) || windZoneAt(L, Math.floor(e.x / TS), Math.floor((e.y - 1) / TS));
+  if (z && !P.dead) { windCatch(P, z, 'stomp', windSlabs(z)); SFX.gust(); } }
+/* once a frame (from updateMovers): every hero's ride, and every broken slab or ledge coming back */
+function windWorld(dt) {
+  for (const pp of (players || [P])) asPlayer(pp, () => { const k = P.windRide; if (k && (P.dead || windStep(P, dt, windSlabs(k.z)))) { if (P.dead) P.windRide = null; else number(P.x, P.y - 26, 'BACK UP', '#e0f4ff'); } });
+  for (const m of movers) if (m.broken && (m.arena || m.brittle)) { m.brokenT -= dt; if (m.brokenT <= 0) { m.broken = false; burst(m.x + m.w / 2, m.y + 4, 12, ['#c8a0ff', '#8e86a4'], 50, 0.5); SFX.zap(); } }   /* A BROKEN SLAB comes back */
+}
 function flareSlab(m, t) { if (P.dead) return; P.onMover = null; setFlip(true, true); P.flareSlab = m; P.flareT = t; P.y = m.y + m.h + P.h; P.vy = 0; P.ground = true;
   SFX.zap(); ringAt(P.x, m.y + 6, 30, '#c8a0ff', 0.5); burst(P.x, m.y + 8, 14, ['#c8a0ff', '#e0c8ff'], 70, 0.5); number(P.x, m.y - 14, 'THE GLYPH TURNS YOU OVER', '#c8a0ff'); }
 function updateGargoyleBoss(e, dt) {
@@ -15134,16 +15176,17 @@ function updateGargoyleBoss(e, dt) {
     hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }),
     push: vx => { if (!P.dead && !P.flip) { P.vx = vx; P.gustT = 0.1; } },
     say: (m, red, green) => number(e.x, e.y - 44, m, green ? '#8fd160' : red ? '#ff6b6b' : '#ffd36b'),
-    sound: k => ({ screech: SFX.queenShriek, zap: SFX.zap, rattle: SFX.rattle, whoosh: SFX.throwWhoosh, slam: SFX.heavy, crack: SFX.crack, gust: SFX.gust, spit: SFX.stone }[k] || SFX.thud)(),
+    sound: k => ({ screech: SFX.queenShriek, zap: SFX.zap, rattle: SFX.rattle, whoosh: SFX.throwWhoosh, slam: SFX.heavy, crack: SFX.crack, gust: SFX.gust, fire: SFX.gargFire, inhale: SFX.ember }[k] || SFX.thud)(),
     shake: n => shakeCam(n), dust: (x, y) => { dust(x, y, 6); burst(x, y - 2, 10, ['#6a6280', '#8e86a4'], 70, 0.5); },
     wind: (x, y, dir) => { if (Math.random() < 0.5) parts.push({ x: x + (Math.random() - 0.5) * 20, y: y + (Math.random() - 0.5) * 30, vx: dir * 260, vy: 0, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); },
-    breakSlab, flare: flareSlab, crash: (x, y) => { burst(x, y - 4, 30, ['#6a6280', '#8e86a4', '#1b1626', '#5a5a64'], 150, 0.9, 500, 2); dust(x - 20, y, 8); dust(x + 20, y, 8); ringAt(x, y - 6, 40, '#8e86a4', 0.4); },   /* THE CRASH on the garden floor: rubble and dust */
+    solid: (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)),
+    fire: ln => { if (Math.random() < 0.7) { const f = Math.random(), x = ln[0] + (ln[2] - ln[0]) * f, y = ln[1] + (ln[3] - ln[1]) * f; parts.push({ x, y, vx: (Math.random() - 0.5) * 40, vy: -30 - Math.random() * 30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ffb040' : '#e0502a', size: 2, grav: -40 }); } },   /* THE FIRE BREATH's embers */
+    breakSlab, flare: flareSlab, crash: (x, y) => { burst(x, y - 4, 30, ['#6a6280', '#8e86a4', '#1b1626', '#5a5a64'], 150, 0.9, 500, 2); dust(x - 20, y, 8); dust(x + 20, y, 8); ringAt(x, y - 6, 40, '#8e86a4', 0.4); },   /* THE CRASH onto the spikes: rubble and dust */
     adds: () => enemies.filter(q => q.alive && q.fromGarg).length,
     whelp: (x, y) => { const n0 = enemies.length; spawnEnt({ t: 'whelp', x: Math.floor(x / TS), y: Math.floor(y / TS) - 1, face: -1, fromGarg: true }); for (let i = n0; i < enemies.length; i++) { enemies[i].fromGarg = true; enemies[i].cd = 0.9 + Math.random() * 0.6; } burst(x, y - 6, 12, ['#6a6280', '#8e86a4', '#9affd8'], 60, 0.5); dust(x, y, 4); },   /* out of the tower's cornices: a whelp perched on its face, stone until it swoops */
     phase2: () => { for (const m of gargSlabs()) if (!m.p2) { m.p2 = true; m.speed *= GARG.slabP2; } } });
   e.x = Math.max(A.x0 + 12, Math.min(A.x1 + 40, e.x));
-  /* A BROKEN SLAB comes back: after GARG.regrow seconds, GARG.regrowP2 in the second half (breakSlab set which) */
-  for (const m of gargSlabs()) if (m.broken) { m.brokenT -= dt; if (m.brokenT <= 0) { m.broken = false; burst(m.x + m.w / 2, m.y + 4, 12, ['#c8a0ff', '#8e86a4'], 50, 0.5); SFX.zap(); } }
+  if (e.alive && e.mode === 'stunned' && stompOn(P, e)) stompStone(e);   /* HIS OPENING: jump on him while he lies on the spikes */
 }
 function updateUndeadMage(e,dt){
  e.hp0??=e.maxHp;const A=L.arena,box=carpetBox(A,e.squeeze||0);
@@ -21756,6 +21799,7 @@ function drawBore(cx, cy) {
 }
 function updateMovers(dt) {
   updateCarts(dt);
+  if (L.winds) windWorld(dt);   /* THE SPIKED MOAT's winds: the rides, and the slabs growing back (spike-winds.js) */
   if (L.cableway) { oreBrake(dt); stepCableway(L.cableway, dt); }   /* THE ORE ROAD's clock: every bucket on a line is the same clock, and the brake is a hand on it */
   for (const m of movers) {
     if (m.kind === 'cart' || m.kind === 'orelift') continue;
@@ -23427,7 +23471,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.kind === 'swing') { g.strokeStyle = m.vine ? '#3f6e2c' : '#c9b27c'; g.lineWidth = m.vine ? 2 : 1; g.beginPath(); g.moveTo(Math.round(m.px - cx) + 0.5, Math.round(m.py - cy)); g.lineTo(Math.round(m.x - cx) + 2.5, Math.round(m.y - cy)); g.moveTo(Math.round(m.px - cx) + 0.5, Math.round(m.py - cy)); g.lineTo(Math.round(m.x + m.w - cx) - 2.5, Math.round(m.y - cy)); g.stroke(); if (m.vine) { g.fillStyle = '#6faa4a'; for (let k = 1; k < 5; k++) { const t = k / 5; g.fillRect(Math.round(m.px + (m.x + 2 - m.px) * t - cx) + (k % 2 ? 1 : -3), Math.round(m.py + (m.y - m.py) * t - cy), 3, 2); g.fillRect(Math.round(m.px + (m.x + m.w - 2 - m.px) * t - cx) + (k % 2 ? -3 : 1), Math.round(m.py + (m.y - m.py) * t - cy) + 1, 3, 2); } } g.fillStyle = m.vine ? '#3f6e2c' : '#5c3a1d'; g.fillRect(Math.round(m.px - cx) - 3, Math.round(m.py - cy) - 3, 6, 4); const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(m.nautical ? LEDGE_SETS.cargo.ledge[i%3] : i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, Math.round(m.y) - cy); }
     else if (m.tide) causeDrawBoat(m, cx, cy);   /* THE DROWNED CAUSEWAY: a boat on its mooring */
     else if (['waymeet','reef','longwater'].includes(curId())&&(!m.kind||m.kind==='lift')) drawWorkPlatform(g,m,cx,cy,curId()==='waymeet'?'town':'sea',L);
-    else if (m.slab) { if (!m.broken) drawSlab(m, cx, cy); else if (m.arena) drawSlabGhost(g, m, cx, cy, time); }   /* THE WITCHLIGHT STAIR: stone held up by a loose spell */
+    else if (m.slab) { if (!m.broken) drawSlab(m, cx, cy); else if (m.arena || m.brittle) drawSlabGhost(g, m, cx, cy, time); }   /* THE WITCHLIGHT STAIR: stone held up by a loose spell */
     else if (m.stone) { const n = Math.max(1, Math.round(m.w / TS)); // A PILLAR OF THE OLD SLUICE: wet stone, weed on its head
       for (let i = 0; i < n; i++) { const dx = Math.round(m.x) + i * TS - cx, dy = Math.round(m.y) - cy;
         g.fillStyle = '#5a6470'; g.fillRect(dx, dy, TS, 10); g.fillStyle = '#6f7a84'; g.fillRect(dx, dy, TS, 3);
@@ -24121,6 +24165,7 @@ function drawWorld(cx, cy, showPlayer) {
   if(L.sanctum&&L.carpetUp&&!L.sandWalk)drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
   drawCarpetWorld(g,L,P,cx,cy,time);drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage')drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if(L.witch)drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time,P);
+  if(L.winds)drawWinds(g,L,P,cx,cy,time,VW,VH);   /* the wells in the spiked moat, and the wind round a hero it carries */
   drawBuriedDead(g,boss?.t==='burieddead'?boss:null,L.arena,cx,cy,time);
   drawWarden(g,boss?.t==='harbormaster'?boss:null,L.arena,cx,cy,time);
   drawSalvageCaptain(g,enemies.find(e=>e.salvage),L.mini,cx,cy,time);
