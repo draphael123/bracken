@@ -45,7 +45,7 @@ const at = (x, y) => L.grid[y * L.W + x];
 for (const [name, [a, b]] of Object.entries(WL.PLACES)) { const n = seen.filter(([x]) => x >= a && x <= b).length; assert.ok(n > 25, name + ' is walked: ' + n); }
 /* THE ARENA'S LIP is reached (the reach model does not ride his slabs; the slab chain itself - its gaps and the rune columns up to it - is
    asked by tools/gargoyle-smash.mjs). The row comes from WL.TOP: the rework lowered the room, and the fixed row 31 it replaced went stale */
-const onSlabs = Rs => [...Rs.seen].some(k => { const [x, y] = k.split(',').map(Number); return x >= WL.ARENA.x0 && x <= WL.ARENA.x1 && y <= WL.TOP - 2; });
+const onSlabs = Rs => [...Rs.seen].some(k => { const [x, y] = k.split(',').map(Number); return x >= WL.ARENA.x0 && x <= WL.ARENA.x1 && y <= WL.TOP - 1; });
 assert.ok(onSlabs(R), "the Gargoyle's slabs are reached from the cavern mouth");
 const silvers = L.ents.filter(e => e.t === 'silver'); assert.equal(silvers.length, 3, 'three silvers');
 for (const s of silvers) assert.ok(near(s), 'silver reachable at ' + s.x + ',' + s.y);
@@ -57,13 +57,11 @@ const band = Math.max(...rows) - Math.min(...rows); assert.ok(band >= 45, 'the s
 // 2b. the Gate Gargoyle
 { const A = L.arena, TSZ = 16; assert.equal(A.boss, 'gargoyle'); const g = L.ents.find(e => e.t === 'gargoyle'); assert.ok(g && g.x > WL.ARENA.x1 - 6, 'he is bolted over the tower gate');
   assert.ok(!L.ents.some(e => e.t === 'gate'), 'no gate: the level ends on his kill');
-  const sl = L.ents.filter(e => e.t === 'mover' && e.arena), cr = sl.filter(e => e.cracked); assert.ok(sl.length >= 6 && cr.length >= 3, 'slabs, some cracked (six in the 44-tile room since the rework; ten in the old 79): ' + sl.length + '/' + cr.length);
-  assert.ok(cr.every(e => !e.range), 'a cracked slab holds still: his opening is a place you choose to stand');
+  const sl = L.ents.filter(e => e.t === 'mover' && e.arena); assert.ok(sl.length >= 12 && new Set(sl.map(e => e.y)).size === 2, 'thirteen slabs in two tiers (round three, 2026-09-27: every one gives under him, GARG.smashAny): ' + sl.length);
   for (const e of sl) assert.ok(e.y <= A.floor / TSZ - 6, 'every slab is over the terrace, not on it (six rows at least: the rework lowered them from 11-13, tools/gargoyle-smash.mjs)');
-  const lifts = L.ents.filter(e => e.t === 'vent' && e.rune && e.x > WL.ARENA.x0 && e.x < WL.ARENA.x1); assert.ok(lifts.length >= 3, 'rune columns from the terrace back up');
-  for (const v of lifts) { assert.ok(v.y === A.floor / TSZ - 1 && v.y + 1 - v.h / TSZ < Math.min(...sl.map(e => e.y)), 'the column at ' + v.x + ' lifts from the terrace past the slabs');
-    assert.ok(!sl.some(e => v.x >= e.x && v.x < e.x + (e.len || 3)), 'nothing over the column at ' + v.x); }
-  assert.deepEqual(['diveTell', 'flareTell', 'gustTell', 'spitTell'].map(mode => markOf({ t: 'gargoyle', mode })), ['!!', '!!', '!', '!'], 'the dive and the flare wear the red mark; a shield turns the gust and the spit'); }
+  for (let x = WL.ARENA.x0; x <= WL.ARENA.x1; x++) assert.equal(at(x, A.floor / TSZ - 1), T.SPIKE, 'his floor is spikes at ' + x);
+  assert.ok((L.winds || []).some(z => z.arena && (z.wells || []).length >= 3), 'and its wind brings you back up to his slabs (it replaced the rune columns from the terrace)');
+  assert.deepEqual(['diveTell', 'flareTell', 'gustTell', 'breathTell'].map(mode => markOf({ t: 'gargoyle', mode })), ['!!', '!!', '!', '!'], 'the dive and the flare wear the red mark; a shield turns the gust and the fire breath'); }
 // 3. one verb a place
 const inX = ([a, b]) => e => e.x >= a && e.x <= b;
 const slabs = L.ents.filter(e => e.t === 'mover' && e.slab && inX(WL.PLACES.aqueduct)(e));
@@ -151,10 +149,10 @@ try {
      const gi=(Math.round(M.floor/16)-1)*BK.L.W+M.gate,before=BK.L.grid[gi];w.growth=2;w.mode='stump';w.modeT=9;w.hp=3;BKT.hurtEnemy(w,50,w.x-20,false);BK.sim(120);
      out.warden={woke,touch,alive:w.alive,gateBefore:before,gateAfter:BK.L.grid[gi]};}
     /* THE GATE GARGOYLE: asleep on the gate until you are on his slabs; touching him costs nothing; his kill wins the level */
-    {boot();clear(e=>e.t==='gargoyle');const g=need(BK.enemies().find(e=>e.t==='gargoyle'),'the Gate Gargoyle');const asleep=g.mode;const s=need(BK.movers().filter(m=>m.arena&&!m.cracked).sort((a,b)=>a.x-b.x)[0],'his slabs');
+    {boot();clear(e=>e.t==='gargoyle');const g=need(BK.enemies().find(e=>e.t==='gargoyle'),'the Gate Gargoyle');const asleep=g.mode;const s=need(BK.movers().filter(m=>m.arena).sort((a,b)=>a.x-b.x)[0],'his slabs');
      BK.P.x=s.x+s.w/2;BK.P.y=s.y-1;BK.P.vy=0;BK.sim(90);const woke={active:!!BK.bossActive,mode:g.mode};BK.god=false;BK.P.hp=BK.P.maxHp;const hp0=BK.P.hp;
      for(let i=0;i<90;i++){g.mode='hover';g.cd=99;g.x=BK.P.x;g.y=BK.P.y;BK.sim(1);}const touch=hp0-BK.P.hp;BK.god=true;
-     g.hp=1;BKT.hurtEnemy(g,40,g.x-20,false);let won=false;for(let i=0;i<900&&!won;i++){BK.sim(1);if(BK.state!=='play')won=BK.state;}
+     g.mode='stunned';g.modeT=3;g.stompNow=g.hp;BKT.hurtEnemy(g,g.hp,g.x-20,true);g.stompNow=0;let won=false;   /* (he is stone: the kill is a stomp on the spikes, tools/gargoyle-stomp.mjs) */for(let i=0;i<900&&!won;i++){BK.sim(1);if(BK.state!=='play')won=BK.state;}
      out.gargoyle={asleep,woke,touch,alive:g.alive,won};}
     out.errors=(window.__errs||[]).slice(0,3);return out;})()`, 300000);
   console.log(JSON.stringify(r));

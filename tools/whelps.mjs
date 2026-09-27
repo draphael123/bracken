@@ -10,9 +10,11 @@
         exam's slabs); jumps of 2.5-3 tiles over a fall (S2); a checkpoint 40+ tiles before the exam and one outside the lip, none
         inside it (S3/S4); every moat with a rope up its near wall and none up its far wall, so a fall costs the climb and skips nothing.
      3. THE GATE GARGOYLE calls whelps and no imps, at the same cap and cadence.
-     4. ON THE PAGE: perched it is stone (a blow is a chip); seen, it crouches and screeches, then swoops; unguarded, the swoop hurts and
-        SHOVES; guarded, it clangs off DAZED and costs nothing; landed it takes every blow; it flies home and hardens; broken it
-        crumbles. The Gargoyle's shriek brings two or three whelps (never more than three up), and they crumble when he dies.
+     4. ON THE PAGE: perched it is stone; seen, it crouches and screeches, then swoops; unguarded, the swoop hurts and SHOVES; guarded,
+        it clangs off and costs nothing; wherever it comes down off the spikes it is still stone (round three, 2026-09-27: only a stomp
+        while it is stuck on the spikes breaks it - tools/gargoyle-stomp.mjs); it flies home and hardens; broken it crumbles. The
+        Gargoyle's shriek brings two or three whelps (never more than three up), and they crumble when he dies.
+   (Round three also took the ropes out of the moats: the moat is spiked and its WIND is the way back, spike-winds.js.)
    Every assertion is SOFT and all are printed, so a run on the old code lists everything it did not do. */
 import { readFileSync } from 'node:fs';
 import { install } from './node-canvas.mjs';
@@ -32,7 +34,7 @@ if (WHF) { const S = WHF.bakeWhelp();
     for (let y = 0; y < H; y++) { if (d[(y * W) * 4 + 3]) n++; if (d[(y * W + W - 1) * 4 + 3]) n++; } return n ? f + ':' + n : null; }).filter(Boolean);
   ok(edge.length === 0, 'E6: no frame touches the top or the sides of its canvas: ' + (edge.join(' ') || 'none'));
   const fr = m => WHF.whelpFrame({ mode: m, anim: 0 }); ok(new Set(['perch', 'crouchTell', 'swoop', 'landed', 'home'].map(fr)).size === 5 && fr('crouchTell') === WHF.WHELP_F.crouch, 'a frame of its own for each thing it does');
-  ok(WHF.whelpStone({ mode: 'perch' }) && WHF.whelpStone({ mode: 'crouchTell' }) && !WHF.whelpStone({ mode: 'landed' }) && WHF.whelpOpen({ mode: 'landed' }), 'stone on its perch, soft where it lands'); }
+  ok(WHF.whelpStone({ mode: 'perch' }) && WHF.whelpStone({ mode: 'crouchTell' }) && WHF.whelpStone({ mode: 'landed' }) && !WHF.whelpStone({ mode: 'stuck' }) && WHF.whelpOpen({ mode: 'stuck' }), 'stone on its perch and wherever it lands; open only stuck on the spikes'); }
 ok(/whelp: WHF\.WH\.hp/.test(main) && /whelpSwoop: WHF\.WH\.dmg\.swoop/.test(main), 'its health and its blow are in EHP and DMG');
 ok(main.includes("case 'whelp': enemies.push(") && main.includes("SPR.whelp = WHF.bakeWhelp()"), 'it spawns, and its sheet is baked');
 ok(/\{ t: 'whelp', name: 'GARGOYLE WHELP'/.test(main) && main.includes("whelp:'WHELP'") && /whelp: \['#/.test(main), 'a bestiary row, a short name, its colours');
@@ -45,9 +47,8 @@ ok(main.includes("case 'whelp': c.frame = WHF.WHELP_F.crumble"), 'it crumbles, i
 const I = LEVELS.findIndex(l => l.id === 'witchlight'), L = LEVELS[I].build(), WL = (await import('../src/witchlight.js')).WL;
 const [b0, b1] = (L.places && L.places.battlements) || [0, -1];
 ok(b1 - b0 >= 80 && b0 > WL.MINI.gate && b1 < WL.ARENA.x0, 'THE BATTLEMENTS: a place between the Warden\'s gate and the Gargoyle\'s lip, ' + (b1 - b0 + 1) + ' columns');
-{ const A = WL.ARENA, old = { x0: 346, sl: [3, 11, 16, 24, 29, 37], lifts: [15, 28, 36] };
-  ok(A.x1 - A.x0 === 44 && WL.SLABS.map(s => s[0] - A.x0).join() === old.sl.join() && WL.LIFTS.map(l => l[0] - A.x0).join() === old.lifts.join() && L.W - 1 - A.x1 === 4,
-    'his room moved right whole: 44 tiles, the same slabs and lifts, the tower\'s foot after it'); }
+{ const A = WL.ARENA;   /* (round three rebuilt his slabs: tools/gargoyle-stomp.mjs asks them) */
+  ok(A.x1 - A.x0 === 44 && L.W - 1 - A.x1 === 4, 'his room follows the battlements: 44 tiles, the tower\'s foot after it'); }
 const wh = L.ents.filter(e => e.t === 'whelp'), inB = e => e.x >= b0 && e.x <= b1;
 ok(wh.length >= 5 && wh.every(inB) && wh.every(e => e.enc), 'five whelps or more, all on the battlements, all in encounters: ' + wh.map(e => e.x + ',' + e.y).join(' '));
 const at = (x, y) => L.grid[y * L.W + x], solid = t => t === T.SOLID, stand = t => t === T.SOLID || t === T.ONEWAY;
@@ -69,8 +70,8 @@ ok(hard.some(g => wh.some(e => near(e, g.x0, g.x1, 5) && e.y <= g.y)), 'S1: a wh
   ok(ex[1] - ex[0] >= 40 && ex[1] < WL.ARENA.x0, 'S3: the exam is 40+ columns and ends at the lip: ' + ex.join('-'));
   ok(!L.ents.some(e => e.t === 'mend' && e.x > ex[0] && e.x < ex[1]), 'S5: no free heart in the exam'); }
 { const nets = new Set(); for (let x = b0; x <= b1; x++) for (let y = 10; y <= 40; y++) if (at(x, y) === T.NET) nets.add(x);
-  const moats = [WL.BATT.breach, WL.BATT.moat, [WL.BATT.exam[0], WL.BATT.exam[1]]];
-  ok(moats.every(([a]) => nets.has(a)) && [...nets].every(x => moats.some(([a]) => a === x)), 'every moat has a rope up its near wall and only there: a fall costs the climb and skips nothing: ropes at ' + [...nets].join(' ')); }
+  const moats = [WL.BATT.breach, WL.BATT.moat, [WL.BATT.exam[0], WL.BATT.exam[1]]], zs = L.winds || [];
+  ok(nets.size === 0 && moats.every(([a, b]) => zs.some(z => z.x0 <= a && z.x1 >= b && z.exits.some(([x]) => x < a))), 'every moat is SPIKED and its wind brings you back behind it (no ropes): a fall costs the stretch and skips nothing'); }
 // 3. the Gargoyle calls whelps
 ok(/c\.whelp\(/.test(gg) && !/c\.imp\(/.test(gg) && /whelps: 3,/.test(gg) && /shriekEvery: 13,/.test(gg), 'the Gate Gargoyle\'s shriek calls whelps, not imps: three at most, every 13 s at most');
 ok(/whelp: \(x, y\) => \{/.test(main) && !/\n {4}imp: \(x, y\) => \{ const n0 = enemies\.length; spawnEnt\(\{ t: 'imp'/.test(main) && main.includes('THE WHELPS HE CALLED CRUMBLE WITH HIM'), 'main.js hands him whelps, and they go when he does');
@@ -79,39 +80,39 @@ const pg = await openPage({ audio: false, fonts: false });
 try {
   const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const out={};
     const boot=keep=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(${I});BK.state='play';BK.god=true;BK.P.hp=BK.P.maxHp;BK.sim(10);for(const e of BK.enemies())if(!keep(e))e.alive=false;};
-    const W=()=>BK.enemies().find(e=>e.t==='whelp'&&e.alive&&e.x>=364*16&&e.x<366*16);
+    const W=()=>BK.enemies().find(e=>e.t==='whelp'&&e.alive&&e.x>=364*16&&e.x<366*16);const sp=()=>BK.SET.speed||1;
     if(!BK.enemies().some(e=>e.t==='whelp')){boot(()=>true);if(!BK.enemies().some(e=>e.t==='whelp'))return {none:true};}
     /* STONE: a blow on its perch is a chip */
     boot(e=>e.t==='whelp'&&e.x>=364*16&&e.x<366*16);let w=W();BK.tp(350,30);BK.sim(5);w.cd=99;const h0=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);BK.sim(2);out.stone={took:h0-w.hp,mode:w.mode,alive:w.alive};
     /* SEEN, IT SWOOPS: the tell, then the dive; unguarded, a hit and a shove */
     const swoop=guard=>{boot(e=>e.t==='whelp'&&e.x>=364*16&&e.x<366*16);const w=W();BK.tp(362,30);BK.sim(3);w.cd=0.2;BK.god=false;BK.P.hp=BK.P.maxHp;BK.P.inv=0;const hp0=BK.P.hp;
-      const seen=new Set();let shove=0,tellT=0;for(let i=0;i<150;i++){if(guard)BK.keys.block=true;BK.sim(1);seen.add(w.mode);if(w.mode==='crouchTell')tellT++;shove=Math.max(shove,Math.abs(BK.P.vx));if(w.mode==='landed'||w.mode==='dazed')break;}
+      const seen=new Set();let shove=0,tellT=0;for(let i=0;i<150;i++){if(guard)BK.keys.block=true;BK.sim(1);seen.add(w.mode);if(w.mode==='crouchTell')tellT++;shove=Math.max(shove,Math.abs(BK.P.vx));if(w.mode==='landed'||w.mode==='stuck')break;}
       BK.keys.block=false;const o={seen:[...seen],tell:+(tellT/60).toFixed(2),mode:w.mode,hurt:hp0-BK.P.hp,shove:Math.round(shove),wound:BK.windingUpOf?null:null};BK.god=true;BK.P.hp=BK.P.maxHp;return [o,w];};
     {const [o,w]=swoop(false);out.open=o;
-     /* landed, every blow counts */
-     if(w.mode==='landed'||w.mode==='dazed'){const h=w.hp;BKT.hurtEnemy(w,10,w.x-20,false);out.open.soft=h-w.hp;}
+     /* down, it is still stone (a stomp on the spikes is the only blow: tools/gargoyle-stomp.mjs) */
+     {const h=w.hp;BKT.hurtEnemy(w,10,w.x-20,false);out.open.soft=h-w.hp;}
      /* then home, and stone again */
      let t=0;for(;t<600&&w.mode!=='perch';t++){BK.sim(1);}out.open.home={mode:w.mode,dx:Math.round(w.x-w.home.x),dy:Math.round(w.y-w.home.y),secs:+(t/60).toFixed(1)};}
     {const [o]=swoop(true);out.guard=o;}
     /* BROKEN, IT CRUMBLES */
-    {const [o,w]=swoop(false);w.hp=1;BKT.hurtEnemy(w,10,w.x-20,false);BK.sim(2);const c=(BK.corpses?BK.corpses():[]).find(q=>q.t==='whelp');out.crumble={alive:w.alive,corpse:!!c,frame:c?c.frame:null};}
+    {const [o,w]=swoop(false);w.mode='stuck';w.stompNow=w.hp;BKT.hurtEnemy(w,w.hp,w.x-20,true);w.stompNow=0;BK.sim(2);const c=(BK.corpses?BK.corpses():[]).find(q=>q.t==='whelp');out.crumble={alive:w.alive,corpse:!!c,frame:c?c.frame:null};}
     /* THE GATE GARGOYLE CALLS WHELPS */
     {boot(e=>e.t==='gargoyle');const g=BK.enemies().find(e=>e.t==='gargoyle');const s=BK.movers().filter(m=>m.arena&&!m.cracked).sort((a,b)=>a.x-b.x)[0];
      BK.P.x=s.x+s.w/2;BK.P.y=s.y-1;BK.P.vy=0;BK.sim(90);const calls=[];
      for(let k=0;k<3;k++){g.mode='perchFly';g.modeT=2.5;g.shriekCd=0;for(let i=0;i<400&&g.mode!=='hover';i++){BK.sim(1);}
        const adds=BK.enemies().filter(q=>q.alive&&q.fromGarg);calls.push({whelps:adds.filter(q=>q.t==='whelp').length,imps:adds.filter(q=>q.t==='imp').length});}
      const one=BK.enemies().find(q=>q.alive&&q.fromGarg&&q.t==='whelp');let swooped=false;if(one){BK.god=true;for(let i=0;i<600&&!swooped;i++){BK.sim(1);if(one.mode==='swoop')swooped=true;}}
-     g.hp=1;BKT.hurtEnemy(g,40,g.x-20,false);BK.sim(20);out.garg={calls,swooped,after:BK.enemies().filter(q=>q.alive&&q.fromGarg).length,dead:!g.alive};}
+     g.mode='stunned';g.modeT=3;g.stompNow=g.hp;BKT.hurtEnemy(g,g.hp,g.x-20,true);g.stompNow=0;BK.sim(20);out.garg={calls,swooped,after:BK.enemies().filter(q=>q.alive&&q.fromGarg).length,dead:!g.alive};}
     out.errors=(window.__errs||[]).slice(0,3);return out;})()`, 600000);
   console.log(JSON.stringify(r));
   if (r.none) ok(false, 'there are whelps on the page');
   else {
-    ok(r.stone.alive && r.stone.took <= 1 && r.stone.mode !== 'landed', 'PERCHED IT IS STONE: a 30-point blow takes ' + r.stone.took);
+    ok(r.stone.alive && r.stone.took === 0 && r.stone.mode !== 'landed', 'PERCHED IT IS STONE: a 30-point blow takes ' + r.stone.took);
     ok(r.open.seen.includes('crouchTell') && r.open.tell >= 0.5 && r.open.seen.includes('swoop'), 'SEEN, it crouches (' + r.open.tell + ' s), then swoops: ' + r.open.seen.join(' '));
     ok(r.open.hurt > 0 && r.open.shove >= 150, 'unguarded, the swoop hurts (' + r.open.hurt + ') and SHOVES (' + r.open.shove + ' px/s)');
-    ok(r.open.soft >= 8, 'LANDED, every blow counts: ' + r.open.soft + ' of 10');
+    ok(r.open.soft === 0, 'DOWN, it is still stone: a blow takes ' + r.open.soft + ' (' + r.open.mode + ')');
     ok(r.open.home.mode === 'perch' && Math.abs(r.open.home.dx) <= 2 && Math.abs(r.open.home.dy) <= 2, 'then it flies home and hardens: ' + JSON.stringify(r.open.home));
-    ok(r.guard.mode === 'dazed' && r.guard.hurt === 0, 'GUARDED, it clangs off dazed and costs nothing: ' + JSON.stringify(r.guard));
+    ok(r.guard.seen.includes('plunge') && r.guard.hurt === 0, 'GUARDED, it clangs off and drops, and costs nothing: ' + JSON.stringify(r.guard));
     ok(!r.crumble.alive && r.crumble.corpse && r.crumble.frame === 7, 'BROKEN, it crumbles: ' + JSON.stringify(r.crumble));
     ok(r.garg.calls.every(c => c.imps === 0) && r.garg.calls[0].whelps >= 2 && r.garg.calls.every(c => c.whelps <= 3), 'THE GARGOYLE\'S SHRIEK brings whelps, never imps, never more than three: ' + JSON.stringify(r.garg.calls));
     ok(r.garg.swooped, 'a whelp he called swoops at you across his room');
@@ -119,5 +120,5 @@ try {
   }
   ok((r.errors || []).length === 0 && pg.errors.length === 0, 'no errors on the page: ' + JSON.stringify((r.errors || []).concat(pg.errors).slice(0, 3)));
 } finally { pg.close(); }
-console.log(fails.length ? '\n' + fails.length + ' FAILED' : '\nTHE GARGOYLE WHELP: stone on its perch, a told swoop that shoves, soft where it lands; THE BATTLEMENTS before the Gargoyle, and whelps at his call.');
+console.log(fails.length ? '\n' + fails.length + ' FAILED' : '\nTHE GARGOYLE WHELP: stone on its perch, a told swoop that shoves, broken only by a stomp on the spikes; THE BATTLEMENTS before the Gargoyle, and whelps at his call.');
 process.exitCode = fails.length ? 1 : 0;

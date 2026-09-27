@@ -30,7 +30,7 @@ export const WL = {
   PLACES: { foot: [0, 49], aqueduct: [50, 139], cloister: [140, 219], runestair: [220, 259], garden: [250, 332], battlements: [333, 532], top: [533, 594] },
   /* THE BATTLEMENTS (docs/briefs/witchlight-whelps.md): standing rows, the breaches, the whelps' perches, the exam. EXAM[0] is its
      checkpoint, EXAM[1] the one outside the Gargoyle's lip; nothing between them is safe footing to stop on for long */
-  BATT: { walk: 30, trench: [350, 353], breach: [358, 360], moat: [373, 390], far: 26, cornice: [399, 448], rune: [456, 489], exam: [499, 529], door: 32 },
+  BATT: { walk: 30, trench: [350, 352], breach: [358, 360], moat: [373, 390], far: 26, cornice: [399, 448], rune: [456, 489], exam: [499, 529], door: 32 },
   EXAM: [495, 540],
   PIERS: [[50, 53], [78, 82], [106, 110], [134, 139]],
   BRAMBLES: [[150, 165], [176, 192], [200, 211]],
@@ -150,7 +150,7 @@ export function buildWitchlight({ painter, T, TS }) {
   stand(346, 372, B.walk);                                                                  // the wall-walk
   /* TAUGHT: THE CRACKED LEDGE over a shallow trench of spikes, a whelp on a spout over it. It dives at you on the ledge; step off and it
      goes through the ledge onto the spikes two rows down, where you can jump on it and the wind lifts you straight back */
-  fill(B.trench[0], B.trench[1], B.walk + 1, B.walk + 2, T.AIR); zone(B.trench[0], B.trench[1], B.walk + 3, [351], [[349, B.walk]]); crack(B.trench[0], B.walk + 1, { len: 4 });
+  fill(B.trench[0], B.trench[1], B.walk + 1, B.walk + 2, T.AIR); zone(B.trench[0], B.trench[1], B.walk + 3, [351], [[349, B.walk]]); crack(B.trench[0], B.walk + 1);
   perch(352, 25);
   fill(B.breach[0], B.breach[1], B.walk + 1, G, T.AIR); zone(B.breach[0], B.breach[1], G, [359], [[357, B.walk]]);   /* THE FIRST BREACH: three tiles over the moat */
   block(364, 365, B.walk - 1, B.walk); skins.push([364, 365, B.walk - 1, B.walk, 'tower']);   /* a merlon past the breach: a whelp sits on it */
@@ -225,7 +225,7 @@ export function buildWitchlight({ painter, T, TS }) {
     palette: { sky: [[64, 46, 96], [236, 150, 112]], far: 'mage', mid: 'mage', near: 'none', dress: 'village', haze: 'rgba(200,120,160,0.08)',
       grass: '#5a6a4a', grassL: '#7c8c5c', grassD: '#3a4632', dirt: '#5a4c5a', dirtL: '#76647a', dirtD: '#382e3c', canopy: ['#2a2238', '#3a2e4a', '#4e3a5c', '#6a4a6e'] },
     weather: [{ x0: 0, x1: 140 * TS, kind: 'leaves' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: WL.ARENA.x0 * TS, x1: WL.ARENA.x1 * TS, floor: (G + 1) * TS, y0: (WL.TOP - 14) * TS, top: WL.TOP * TS, trigger: (WL.ARENA.x0 + 4) * TS, wallL: WL.ARENA.x0 - 1, wallR: WL.ARENA.x1, boss: 'gargoyle', music: 'boss4', start: [WL.SLABS[0][0] + 3, WL.LOW - 1] },   /* (start: the bot's lab begins on his first slab, not on his spikes) */
+    arena: { x0: WL.ARENA.x0 * TS, x1: WL.ARENA.x1 * TS, floor: (G + 1) * TS, y0: (WL.TOP - 14) * TS, top: WL.TOP * TS, trigger: (WL.ARENA.x0 + 2) * TS, wallL: WL.ARENA.x0 - 1, wallR: WL.ARENA.x1, boss: 'gargoyle', music: 'boss4', start: [WL.SLABS[0][0] + 3, WL.LOW - 1] },   /* (start: the bot's lab begins on his first slab, not on his spikes) */
     mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'hedgewarden', name: 'THE HEDGE WARDEN' },
     noCoin: [[0, 9, 0, FOOT - 6], [140, 219, 0, WL.ROOF[0] - 1]],
   };

@@ -8,9 +8,11 @@
         side columns, and a STUNNED pose and a CRASH pose of his own.
      3. THE CAMERA frames him and you together (gargCam): you always on screen, him too when you are a screen apart, the floor in it.
      4. ON THE PAGE: the zoomed-out view comes on when he wakes; the same dive three ways - a slab LEFT LATE breaks under him and he
-        CRASHES TO THE FLOOR, STUNNED for GARG.stun seconds, every blow counting twice; a slab KEPT is a hit and a landing, and opens
-        nothing; a slab left EARLY only moves his aim. A hero under the slab he comes through is hit. The slab grows back after
-        GARG.regrow seconds, slower in phase two, and never fewer than GARG.minLive slabs stand.
+        CRASHES ONTO THE SPIKES, STUNNED for GARG.stun seconds (round three, 2026-09-27: stone even then - only a stomp hurts him,
+        tools/gargoyle-stomp.mjs); a slab KEPT is a hit and a landing, and opens nothing; a slab left EARLY only moves his aim. The
+        slab grows back after GARG.regrow seconds, slower in phase two, and never fewer than GARG.minLive slabs stand.
+   (Round three put SPIKES where the garden floor was and thirteen slabs in two tiers: the room's questions follow it, the floor
+   is no longer walked and no hero stands under a slab, so those two asks went with it.)
    Every assertion is SOFT and all are printed, so a run on the old code lists everything the old fight did not do. */
 import { install } from './node-canvas.mjs';
 import { LEVELS, T } from '../src/level.js';
@@ -23,14 +25,13 @@ const TS = 16, I = LEVELS.findIndex(l => l.id === 'witchlight'), L = LEVELS[I].b
 // 1. his room
 const wide = (A.x1 - A.x0) / TS, floorRow = A.floor / TS, sl = L.ents.filter(e => e.t === 'mover' && e.arena);
 ok(wide <= 46 && wide >= 34, 'A7: the arena is about forty tiles, not 79: ' + wide);
-const ups = sl.map(e => floorRow - e.y); ok(sl.length >= 5 && ups.every(u => u >= 5 && u <= 7), 'his slabs are 5-7 rows over the garden floor: ' + ups.join(' '));
-{ const xs = sl.map(e => [e.x, e.x + e.len - 1 + (e.range || 0), e.x + e.len - 1]).sort((a, b) => a[0] - b[0]), gaps = xs.slice(1).map((q, i) => q[0] - xs[i][2] - 1);   /* the widest a gap gets: the left slab at rest, not drifted */
-  ok(gaps.every(g => g >= 0 && g <= 3), 'the slab chain has no gap over three tiles (the real jump is 3.2): ' + gaps.join(' ')); }
-const lifts = L.ents.filter(e => e.t === 'vent' && e.rune && e.x > A.x0 / TS && e.x < A.x1 / TS);
-ok(lifts.length >= 3 && lifts.every(v => v.y === floorRow - 1 && v.y + 1 - v.h / TS < Math.min(...sl.map(e => e.y))), 'three rune columns lift from the garden floor past the slabs: ' + lifts.map(v => v.x).join(' '));
+const ups = sl.map(e => floorRow - e.y); ok(sl.length >= 5 && ups.every(u => u >= 5 && u <= 9), 'his slabs are 5-9 rows over the spiked floor (two tiers): ' + ups.join(' '));
+for (const row of [...new Set(sl.map(e => e.y))]) { const xs = sl.filter(e => e.y === row).map(e => [e.x, e.x + e.len - 1 + (e.range || 0), e.x + e.len - 1]).sort((a, b) => a[0] - b[0]), gaps = xs.slice(1).map((q, i) => q[0] - xs[i][2] - 1);   /* the widest a gap gets: the left slab at rest, not drifted */
+  ok(gaps.every(g => g >= 0 && g <= 3), 'row ' + row + ': the slab chain has no gap over three tiles (the real jump is 3.2): ' + gaps.join(' ')); }
+ok((L.winds || []).some(z => z.arena && z.x0 <= A.x0 / TS && z.x1 >= A.x1 / TS - 1), 'the wind of the spiked floor brings a fallen hero back up to his slabs (it replaced the rune columns)');
 { const R = floodReach(L, T, { rides: true }), at = (x, y) => R.seen.has(x + ',' + y);
-  let floor = 0; for (let x = Math.ceil(A.x0 / TS) + 1; x < A.x1 / TS; x++) if (at(x, floorRow - 1)) floor++;
-  ok(floor >= wide * 0.8, 'the garden floor under the slabs is walked: ' + floor + ' of ' + wide + ' columns'); }
+  const miss = sl.filter(e => !e.range && ![0, 1, 2].some(d => at(e.x + d, e.y - 1)));
+  ok(miss.length === 0, 'every slab held still is reached: ' + (miss.map(e => e.x + ',' + e.y).join(' ') || 'all')); }
 // 2. bigger, and inside his canvas
 const S = D.bakeGateGargoyle();
 ok(S.w >= 44 && S.h >= 44 && S.R[0].width >= 120, 'drawn at 45 px (he was 30): box ' + S.w + 'x' + S.h + ', sheet ' + S.R[0].width + 'x' + S.R[0].height);
@@ -39,7 +40,7 @@ ok(S.w >= 44 && S.h >= 44 && S.R[0].width >= 120, 'drawn at 45 px (he was 30): b
   ok(edge.length === 0, 'E6: no frame touches the top or the sides of its canvas: ' + (edge.join(' ') || 'none')); }
 ok(typeof G.gargFrame === 'function' && G.gargFrame({ mode: 'stunned' }) !== G.gargFrame({ mode: 'hover', anim: 0 }) && G.gargFrame({ mode: 'crash' }) !== G.gargFrame({ mode: 'stunned' }) && G.gargFrame({ mode: 'stunned' }) < S.R.length && G.gargFrame({ mode: 'crash' }) < S.R.length, 'a STUNNED pose and a CRASH pose of his own');
 ok(G.gargOpen && G.gargOpen({ mode: 'stunned' }) && !G.gargOpen({ mode: 'hang' }), 'his opening is the stun on the floor, not the hang');
-ok(typeof GARG.smashAny === 'boolean' && GARG.stun >= 2 && GARG.stun <= 3 && GARG.stunMul === 2 && GARG.regrowP2 > GARG.regrow && GARG.regrow > 0 && GARG.minLive >= 3, 'the numbers: smashAny ' + GARG.smashAny + ', stun ' + GARG.stun + ', x' + GARG.stunMul + ', regrow ' + GARG.regrow + '/' + GARG.regrowP2 + ', minLive ' + GARG.minLive);
+ok(typeof GARG.smashAny === 'boolean' && GARG.stun >= 2 && GARG.stun <= 4 && GARG.stompDmg > 0 && GARG.regrowP2 > GARG.regrow && GARG.regrow > 0 && GARG.minLive >= 3, 'the numbers: smashAny ' + GARG.smashAny + ', stun ' + GARG.stun + ', a stomp ' + GARG.stompDmg + ', regrow ' + GARG.regrow + '/' + GARG.regrowP2 + ', minLive ' + GARG.minLive);
 // 3. the camera
 if (typeof G.gargCam !== 'function') ok(false, 'gargCam frames him and you');
 else { const Ar = { x0: A.x0, x1: A.x1, floor: A.floor, top: A.top }, bad = [];
@@ -79,8 +80,6 @@ try {
     regrowAll();{const m=sl().find(q=>!q.cracked)||sl()[0];out.stay=dive(m,'stay');}
     /* EARLY: only his aim moves */
     regrowAll();{const m=sl().find(q=>q.cracked)||sl()[2];out.early=dive(m,'early');}
-    /* UNDER IT: a hero on the garden floor under the slab he comes through is hit */
-    regrowAll();{const m=sl()[2];out.under=dive(m,'under');}
     /* PHASE TWO: a broken slab takes longer to come back */
     regrowAll();{const m=sl().find(q=>!q.cracked)||sl()[0];const o=dive(m,'late',2);let t=0;for(;t<60*60&&m.broken;t++){g.mode='hover';g.cd=99;BK.sim(1);}o.regrow=+(t*sp()/60).toFixed(1);out.p2=o;}
     /* NEVER FEWER THAN minLive STAND */
@@ -90,15 +89,14 @@ try {
   ok(r.wake.active && r.wake.VW > r.wake.VW0 && r.wake.VW > 320, 'the zoomed-out view comes on when he wakes: ' + r.wake.VW0 + ' -> ' + r.wake.VW + 'x' + r.wake.VH);
   ok(r.wake.w >= 44 && r.wake.h >= 44, 'his body is 45 px: ' + r.wake.w + 'x' + r.wake.h);
   ok(r.late.broken && r.late.seen.includes('crash') && r.late.mode === 'stunned' && Math.abs(r.late.dy) <= 4 && r.late.open >= GARG.stun - 0.3, 'LEFT LATE: the slab breaks, he crashes to the garden floor and lies there stunned, open: ' + JSON.stringify(r.late));
-  ok(r.late.dmgShut > 0 && r.late.dmgOpen >= 2 * r.late.dmgShut - 1, 'stunned, every blow counts twice: ' + r.late.dmgOpen + ' vs ' + r.late.dmgShut);
+  ok(r.late.dmgShut === 0 && r.late.dmgOpen === 0, 'he is stone, stunned or not: a blade takes ' + r.late.dmgOpen + ' and ' + r.late.dmgShut + ' (only a stomp hurts him: tools/gargoyle-stomp.mjs)');
   ok(Math.abs(r.late.stunSecs - GARG.stun) < 0.35 && r.late.after !== 'stunned', 'the stun lasts about ' + GARG.stun + ' s and ends: ' + r.late.stunSecs);
   ok(Math.abs(r.late.regrow - GARG.regrow) < 1.2, 'the slab grows back after about ' + GARG.regrow + ' s: ' + r.late.regrow);
   ok(!r.stay.broken && r.stay.mode === 'land' && r.stay.open === 0 && r.stay.hit > 0, 'KEPT: his dive hits you and he lands on the slab; nothing opens: ' + JSON.stringify(r.stay));
   ok(!r.early.broken && !r.early.aim && r.early.open === 0, 'LEFT EARLY: only his aim moves: ' + JSON.stringify(r.early));
-  ok(r.under.broken && r.under.hit > 0, 'a hero under the slab he comes through is hit: ' + JSON.stringify(r.under));
-  ok(r.p2.broken && r.p2.regrow > r.late.regrow + 2 && Math.abs(r.p2.regrow - GARG.regrowP2) < 1.2, 'phase two: a broken slab comes back slower (' + r.p2.regrow + ' s, was ' + r.late.regrow + ')');
+  ok(r.p2.broken && r.p2.regrow > r.late.regrow + 0.8 && Math.abs(r.p2.regrow - GARG.regrowP2) < 1.2, 'phase two: a broken slab comes back slower (' + r.p2.regrow + ' s, was ' + r.late.regrow + ')');
   ok(r.live.api && r.live.least >= GARG.minLive, 'never fewer than ' + GARG.minLive + ' slabs stand: ' + JSON.stringify(r.live));
   ok(pg.errors.length === 0 && r.errors.length === 0, 'no errors on the page: ' + JSON.stringify(pg.errors.slice(0, 3).concat(r.errors)));
 } finally { await pg.close(); }
-console.log(fails.length ? '\n' + fails.length + ' FAILED' : '\nTHE GATE GARGOYLE: zoomed out, in a room of forty tiles with its slabs lowered, half as big again, and a slab left late puts him through it onto the garden floor, stunned.');
+console.log(fails.length ? '\n' + fails.length + ' FAILED' : '\nTHE GATE GARGOYLE: zoomed out, in a room of forty tiles, half as big again, and a slab left late puts him through it onto the spikes, stunned.');
 process.exitCode = fails.length ? 1 : 0;

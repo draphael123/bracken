@@ -10,9 +10,9 @@
      THE PYROMANDER    keep hitting him while he runs hot: he cannot vent, and his own fire takes him over the top (batch 5)
      THE GRAVE WARDEN  let his dig mark you beside an open grave and leave late: the spade goes in and he kneels (batch 4b)
      THE HEDGE WARDEN  cut him down beside a witchlight brazier: the stump burns, open, and cannot regrow while it does (batch 4c)
-     THE GATE GARGOYLE  be on the slab his shadow finds and leave it late: his dive smashes through it - a solid slab as well as a
-                        CRACKED one (GARG.smashAny) - and he crashes to the garden floor, stunned; leaving early only moves his aim
-                        (the stair's top, 2026-09-22; the smash and the stun, 2026-09-25: tools/gargoyle-smash.mjs asks the rest)
+     THE GATE GARGOYLE  be on the slab his shadow finds and leave it late: his dive smashes through it - a low slab or a high one
+                        (GARG.smashAny) - and he crashes onto the spikes, stunned, where a stomp is the only blow (round three,
+                        2026-09-27); leaving early only moves his aim (tools/gargoyle-smash.mjs and tools/gargoyle-stomp.mjs ask the rest)
      THE DEATH KNIGHT  the hero turned boss (2026-09-25): be under his CLEAVE when he commits it and dodge out of it, and the blade
                        sticks in the chapel floor - he is open; a Cleave taken, or one nobody was under, sticks nothing. (THE FIRST
                        DEATH KNIGHT's ward-break, renamed THE REAPER and benched, is asked in Node by tools/unburied-fights.mjs)
@@ -88,17 +88,18 @@ try {
    const lawn=fell(143*16);BK.P.x=w.x-150;BK.sim(330);const grew={mode:w.mode,hp:Math.round(w.hp),full:Math.round(w.maxHp)};
    const fire=fell(BK.L.witch.braziers[0][0]*16+20);BK.P.x=w.x-150;BK.sim(120);const burning={mode:w.mode,open:+(w.open||0).toFixed(1)};
    out.hedgeWarden={lawn,grew,fire,burning};}
-  /* THE GATE GARGOYLE: the same dive three times - on a solid slab left late, on a cracked slab left late, on a cracked slab left early */
+  /* THE GATE GARGOYLE: the same dive three times - on a low slab left late, on a high slab left late, on a slab left early */
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='witchlight'));BK.state='play';BK.god=true;
    const g=BK.enemies().find(e=>e.t==='gargoyle');for(const e of BK.enemies())if(e!==g)e.alive=false;const sl=BK.movers().filter(m=>m.arena);
    const on=m=>{BK.P.x=m.x+m.w/2;BK.P.y=m.y;BK.P.vy=0;BK.P.onMover=m;BK.P.ground=true;};
    on(sl[0]);BK.sim(90);
-   const next=m=>sl.filter(q=>q!==m&&!q.broken&&!q.cracked).sort((a,b)=>Math.abs(a.x-m.x)-Math.abs(b.x-m.x))[0];
+   const next=m=>sl.filter(q=>q!==m&&!q.broken&&q.y===m.y).sort((a,b)=>Math.abs(a.x-m.x)-Math.abs(b.x-m.x))[0];
    const dive=(m,late)=>{g.mode='hover';g.hp=g.maxHp;g.phase=1;BK.sim(2);on(m);g.mode='diveTell';g.modeT=0.4;g.tgt=m;g.off=m.w/2;g.cd=99;g.queue=[];
      if(!late)on(next(m));for(let i=0;i<120&&g.mode==='diveTell';i++){if(late)on(m);BK.sim(1);}
      if(late)on(next(m));for(let i=0;i<240&&['dive','smash','crash'].includes(g.mode);i++)BK.sim(1);const o={mode:g.mode,open:+(g.open||0).toFixed(1),broken:!!m.broken,aim:g.tgt===m};g.mode='hover';g.modeT=0;return o;};
-   const solid=dive(sl.find(m=>!m.cracked),true),early=dive(sl.find(m=>m.cracked&&!m.broken),false),cracked=dive(sl.find(m=>m.cracked&&!m.broken),true);
-   out.gargoyle={solid,early,cracked};}
+   const S=sl.filter(m=>!m.range).sort((a,b)=>a.x-b.x),top=Math.min(...S.map(m=>m.y)),hi=S.filter(m=>m.y===top),lo=S.filter(m=>m.y!==top);
+   const solid=dive(lo[0],true),early=dive(lo[2],false),upper=dive(hi[2],true);
+   out.gargoyle={solid,early,upper};}
   /* THE DEATH KNIGHT: THE CLEAVE three times - taken (the hero stays under it), with nobody under it, and committed on the hero and
      DODGED with the game's own dodge key. Only the last sticks the blade in the floor. Then a blow on the stuck man through the game's
      own hurtEnemy (so unbHurt's wiring is asked too): open, he takes more */
@@ -185,9 +186,9 @@ try {
   assert.equal(r.hedgeWarden.lawn.mode, 'felled', 'a blow through his root fells him: ' + JSON.stringify(r.hedgeWarden));
   assert.equal(r.hedgeWarden.lawn.open, 0, 'felled on the open lawn, the stump is not open: ' + JSON.stringify(r.hedgeWarden));
   assert.ok(!['felled', 'stump'].includes(r.hedgeWarden.grew.mode) && r.hedgeWarden.grew.hp === r.hedgeWarden.grew.full, 'a stump left alone grows him back whole: ' + JSON.stringify(r.hedgeWarden));
-  assert.ok(r.gargoyle.solid.mode === 'stunned' && r.gargoyle.solid.open > 2 && r.gargoyle.solid.broken, 'left late, even a solid slab breaks under him and he lies stunned on the garden floor, open: ' + JSON.stringify(r.gargoyle));
-  assert.ok(!r.gargoyle.early.aim && !r.gargoyle.early.broken && r.gargoyle.early.open === 0, 'leaving a cracked slab early only moves his aim: ' + JSON.stringify(r.gargoyle));
-  assert.ok(r.gargoyle.cracked.mode === 'stunned' && r.gargoyle.cracked.open > 2 && r.gargoyle.cracked.broken, 'left late, a cracked slab breaks under him and he lies stunned on the garden floor, open: ' + JSON.stringify(r.gargoyle));
+  assert.ok(r.gargoyle.solid.mode === 'stunned' && r.gargoyle.solid.open > 2 && r.gargoyle.solid.broken, 'left late, a low slab breaks under him and he lies stunned on the spikes, open: ' + JSON.stringify(r.gargoyle));
+  assert.ok(!r.gargoyle.early.aim && !r.gargoyle.early.broken && r.gargoyle.early.open === 0, 'leaving a slab early only moves his aim: ' + JSON.stringify(r.gargoyle));
+  assert.ok(r.gargoyle.upper.mode === 'stunned' && r.gargoyle.upper.open > 2 && r.gargoyle.upper.broken, 'left late, a high slab breaks under him too and he lies stunned on the spikes, open: ' + JSON.stringify(r.gargoyle));
   assert.ok(r.hedgeWarden.fire.open > 2, 'felled beside a brazier, the stump burns open: ' + JSON.stringify(r.hedgeWarden));
   assert.ok(r.hedgeWarden.burning.mode === 'stump' && r.hedgeWarden.burning.open > 0, 'a burning stump does not regrow: ' + JSON.stringify(r.hedgeWarden));
 
