@@ -1,0 +1,19 @@
+  flat  tome   19,261 THE READING ROOM
+  flat  tome   40,261 THE READING ROOM
+  flat  tome   30,238 THE READING ROOM
+  flat  tome   27,215 THE ORRERY CAGE
+  flat  imp    53,216 THE ORRERY CAGE
+  flat  tome   21,189 THE PENDULUM GALLERY
+  flat  bat    50,189 THE PENDULUM GALLERY
+  flat  bat    20,99  THE BELL LOFT
+  flat  haunt  40,99  THE BELL LOFT
+  flat  tome   30,99  THE BELL LOFT
+  flat  tome   24,297 THE LIBRARY STACKS
+  flat  boo    46,297 THE LIBRARY STACKS
+  flat  imp    23,81  THE OPEN CROWN
+  flat  tome   46,81  THE OPEN CROWN
+  flat  haunt  16,227 THE ORRERY CAGE (sprinkled)
+  flat  tome   34,83  THE OPEN CROWN (sprinkled)
+  flat  tome   37,263 THE READING ROOM (sprinkled)
+  flat  bat    43,263 THE READING ROOM (sprinkled)
+ok  tower-flyers   18 flyers in the Falling Tower, every one over flat ground (6 floors), none over a stair and none in the desert

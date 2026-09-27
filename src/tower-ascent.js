@@ -38,6 +38,7 @@
 // L.hasCryst lets craze), authored crumbling ledges (deckBreaks), vertical movers, swing movers, poison water, spikes,
 // the Folly's gravity glyphs, falling stones.
 import { crumbleInit, crumbleGone } from './tower-collapse.js';
+import { TOWER_FLYERS, FLAT, overFlat } from './tower-flyers.js';
 export const TOWER = { W: 72, H: 306, X0: 12, X1: 59, SKY: 50, FLOOR: 36, N: 7 };
 /* THE DESERT's rows (round 2, docs/briefs/falling-tower-round2.md §2), high in the empty sky rows where nothing else is built and no
    camera ever reaches except through the portal: sixteen rows over the sanctum's vault, which is itself painted and not built
@@ -83,9 +84,18 @@ export function buildTowerAscent({ painter, T, TS }) {
   const net = (x, y0, y1) => nets.push([x, y0, y1]);
   const deco = (kind, x, y, o) => ent('deco', x, y, Object.assign({ kind }, o || {}));
   const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: x < 36 ? 1 : -1 }, o || {}));
-  const FLY = new Set(['tome', 'imp', 'bat', 'boo', 'haunt', 'broom']);
-  /* one creature in the middle of a tier: a flyer hangs three rows over it, anything else stands on it */
-  const put = (t, x0, len, row) => foe(t, x0 + (len >> 1), FLY.has(t) ? row - 3 : row - 1);
+  const FLY = TOWER_FLYERS;
+  /* where the cistern's poison will lie (laid at the end, WATER ONLY WHERE THERE IS WATER): the gaps between its stones at the surface */
+  const cisternPools = () => { if (!cistern) return []; const { surf } = cistern, res = [];
+    for (let x = X0; x <= X1; x++) { if (!(L.grid[surf * W + x] === T.AIR && L.grid[(surf + 1) * W + x] === T.AIR)) continue; let x1 = x; while (x1 + 1 <= X1 && L.grid[surf * W + x1 + 1] === T.AIR && L.grid[(surf + 1) * W + x1 + 1] === T.AIR) x1++;
+      res.push({ x0: x * TS, x1: (x1 + 1) * TS, y: surf * TS + 4, bottom: cistern.bot * TS, harm: true }); x = x1; } return res; };
+  /* one creature in the middle of a tier, standing on it. NO FLYER ON A STAIR (round 3, Daniel 2026-09-27: "too many flying foes ...
+     especially over platforming ... ground foes there if a threat is needed"): a tier the list gives a flyer gets a WALKER instead - an
+     apprentice, and every third one an armour - so the climb keeps its threat and it is one you can fight from the ledge you are on.
+     The flyers themselves are kept to the floors (see FLYERS KEEP TO THE FLOORS). */
+  let walkers = 0;
+  const walker = () => (walkers++ % 3 === 2 ? 'armour' : 'apprentice');
+  const put = (t, x0, len, row) => foe(FLY.has(t) ? walker() : t, x0 + (len >> 1), row - 1);
   const ledge = (x0, len, row, t = T.ONEWAY) => rect(x0, x0 + len - 1, row, row, t);
   /* a pocket off a tier, four tiles past the end of its ledge (or before its start, against the far wall), with the silver on it */
   const pocket = ([x0, len, row]) => { const px = x0 + len + 4 <= X1 - 3 ? x0 + len + 4 : x0 - 7; ledge(px, 3, row); ent('silver', px + 1, row - 1); };
@@ -295,11 +305,33 @@ export function buildTowerAscent({ painter, T, TS }) {
 
   // EVERY ROPE IS HUNG LAST (rule I): nothing is dug after this line
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
+  /* FLYERS KEEP TO THE FLOORS (round 3; src/tower-flyers.js is the rule, tools/tower-flyers.mjs the check). Every flyer placed above -
+     by the floors' lists and the seams - is checked against the finished grid: one over flat ground stays; one over a stair is moved to
+     the nearest flat ground on its own floor (three rows over it), if that floor has room for it - at most FLOOR_FLYERS a floor, six
+     columns apart - and otherwise it is not put at all. The cistern's water is laid below (its pools are known here), so it counts. */
+  { const FLOOR_FLYERS = 3, probe = { W, H, grid: L.grid, pools: cisternPools() }, placed = [], out = [];
+    const floorOf = y => floors.find(f => y >= f.top - 2 && y < f.bot + 1);
+    const free = (x, y) => y > SKY && !placed.some(([px, py]) => Math.abs(px - x) < 6 && Math.abs(py - y) < 5);   /* (never on the parapet: it is his door's) */
+    for (const e of L.ents) { if (!FLY.has(e.t)) { out.push(e); continue; }
+      const F = floorOf(e.y); if (!F || placed.filter(q => q[2] === F).length >= FLOOR_FLYERS) continue;
+      let spot = overFlat(probe, T, e.x, e.y) && free(e.x, e.y) ? [e.x, e.y] : null;
+      if (!spot) { let best = Infinity;
+        for (let gy = F.top + 1; gy <= F.bot; gy++) for (let x = X0 + FLAT.half; x <= X1 - FLAT.half; x++) { const y = gy - 3;
+          if (L.grid[gy * W + x] !== T.SOLID || !overFlat(probe, T, x, y) || !free(x, y)) continue;
+          const cost = Math.abs(x - e.x) + Math.abs(y - e.y) * 0.5; if (cost < best) { best = cost; spot = [x, y]; } } }
+      if (!spot) { /* no floor for it: a walker on the ledge under it instead, if there is one in reach and nothing stands there */
+        let gy = e.y; while (gy < F.bot && L.grid[gy * W + e.x] === T.AIR) gy++; const t = L.grid[gy * W + e.x];
+        const wet = probe.pools.some(q => e.x * TS + 8 > q.x0 && e.x * TS + 8 < q.x1 && gy * TS > q.y);   /* never down in the cistern's poison */
+        if (!wet && gy - e.y <= 8 && (t === T.ONEWAY || t === T.PLANK || t === T.SOLID || t === T.CRYST) && !out.some(q => !FLY.has(q.t) && Math.abs(q.x - e.x) < 4 && Math.abs(q.y - (gy - 1)) < 3))
+          out.push({ ...e, t: walker(), y: gy - 1, face: e.x < 36 ? 1 : -1 });
+        continue; }
+      e.x = spot[0]; e.y = spot[1]; e.face = e.x < 36 ? 1 : -1; placed.push([e.x, e.y, F]); out.push(e); }
+    L.ents.length = 0; L.ents.push(...out); }
   /* WATER ONLY WHERE THERE IS WATER. The cistern was one pool from wall to wall, so the stones and the rope the floor below
      comes up by were 'in' it too - and since the water was made DEADLY (e0ab1dc) the climb up that rope killed you before you
      were out of it (Daniel: 'takes you right into poison water... impossible to beat'). One pool per open gap between the
      stones now: each four rows deep with a stone either side, so each is still a trap and still DEADLY (deadly-water.js). */
-  if (cistern) { const { surf, bot } = cistern, open = x => L.grid[surf * W + x] === T.AIR && L.grid[(surf + 1) * W + x] === T.AIR;
+  if (cistern) { const { surf, bot } = cistern, open = x => L.grid[surf * W + x] === T.AIR && L.grid[(surf + 1) * W + x] === T.AIR;   /* (cisternPools() above reads the same gaps for the flyers) */
     for (let x = X0; x <= X1; x++) { if (!open(x)) continue; let x1 = x; while (x1 + 1 <= X1 && open(x1 + 1)) x1++;
       /* WITCHWATER, NOT A LAWN (round 2, docs/briefs/falling-tower-round2.md §1c). It was the Undercrown's green, and between the stones - a
          bright flat top and the bubbles standing up off it - it read at play size as a row of GRASS TILES: the mistake the sanctum's fire
@@ -331,6 +363,7 @@ export function buildTowerAscent({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra, interiors, gusts: [], flips, glyphBridges, crumbles,   /* FAILING STONE: src/tower-collapse.js */
     music: 'fallingtower', night: true, nightA: 0.12, edgeLit: true, duskStart: 99999, duskLen: 1, hasCryst: true,
+    flatFlyers: { below: SKY }, calm: [[SAND.x0, SAND.x1, 0, SAND.deep + 1]],   /* (round 3) the sprinkler's flyers keep to flat ground under the parapet (his door's), and nothing of the tower's is sprinkled on the desert past the second door (a calm over the sky rows only: the tower itself has none) */
     towerAscent: true, carpetAt: { x: 36 * TS, y: SKY * TS }, fallingTower: true, stackedFloors: true, skyRow: SKY,
     /* THE ARCHMAGE'S SANCTUM (src/sanctum.js). `in` is the door on the parapet and stands exactly where the carpet used
        to lie, so the carpet's own board check opens it; `spawn` is where you come out, inside his hall and well over the
