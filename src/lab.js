@@ -628,26 +628,6 @@ async function runbossLab(BK, opts) {
       /* THE HEDGE WARDEN (batch 4c): the bot plays him as a player does - fights him BESIDE A BRAZIER (it stands past the nearest
          one, so he follows it there and is felled by the fire), gets clear of the thorns, guards the cut and the rush (or backs
          off / jumps the rush without a shield), cuts the cuttings he throws off, and puts everything into a stump. */
-      /* THE TIDE REAVER (2026-09-22): played as a player plays him - it JUMPS the low rake as its tell runs out, jumps the wave and jumps
-         his cast (which sticks the harpoon in the wall and disarms him: it then puts everything into him), guards the thrust with a
-         shield or steps back out of it without one, and otherwise stands in reach and cuts. */
-      if(boss.t==='tidemarauder'&&boss.mini){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
-        const open=boss.mode==='disarmed'||boss.mode==='fetch'||boss.mode==='wrench';if(open&&!wasOpen)opened++;wasOpen=open;
-        const m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1,hp=boss.harpoon,wv=boss.wave;
-        const rest=!open&&(P.st<14||(P.labRest&&P.st<44));P.labRest=rest;
-        let gx=rest?boss.x-side*120:boss.x-side*Math.max(14,LAB_REACH[h]*.7);
-        if((m==='thrustTell'||m==='reelThrust')&&!SHIELDED(h))gx=boss.x-side*110;   /* no shield: out of the thrust, the reeled one too */
-        gx=Math.max(A.x0+18,Math.min(A.x1-18,gx));
-        if(Math.abs(gx-P.x)>4)k[gx>P.x?'right':'left']=true;
-        const jumpNow=(m==='rakeTell'&&boss.modeT<0.2&&Math.abs(dx)<110)||(wv&&Math.abs(wv.x-P.x)<40&&Math.sign(P.x-wv.x)===wv.dir)||(m==='cast'&&hp&&!hp.stuck&&Math.abs(hp.x-P.x)<46&&Math.sign(P.x-hp.x)===hp.dir);
-        if(jumpNow&&P.ground){BK.press('jump');P.labJump=16;}
-        if(P.labJump>0){P.labJump--;k.jump=true;}
-        if((m==='thrustTell'||m==='reelThrust')&&SHIELDED(h)&&Math.abs(dx)<120){k.block=true;k.left=k.right=false;P.face=side;}
-        else if(!rest&&m!=='rakeTell'&&!(m==='thrustTell'&&!SHIELDED(h))&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<40&&P.atk<0){P.face=side;BK.press('atk');swings++;}
-        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
-        if(f%600===599)await yieldNow();continue;
-      }
       if(boss.t==='hedgewarden'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
@@ -933,6 +913,13 @@ async function runbossLab(BK, opts) {
          things its marks are drawn from) - cut the arms where they lie, get up out of the surge, ring the bell while it breathes,
          and stand behind a waystone for the spear */
       if (KA) { goal = KA.goal; if (KA.up) k.up = true;
+        /* WHERE EACH HERO'S OWN BLOW LANDS (2026-09-25): the advice points at the thing - an arm lying on the road, a crate, a chest, the pinned
+           spear - and the lab stands this hero off it by its own reach (LAB_STAND). The warden's point lands 38 out: stood ON a crate she swung
+           over it, and the first pilot had her 90 s on the four arms the knight cut in 28. A CHEST is struck from the landward side only (it
+           has to go out to him), and the swing waits until the hero is there. */
+        const stand = (LAB_STAND[h] || 12) - 4, far = (LAB_STAND[h] || 12) >= 18;   /* (only the heroes whose blow lands further out than a stride: the knight's cut from on top of an arm was already right) */
+        if (far && KA.strike !== null && KA.kind === 'arm') { const s = Math.sign(KA.strike - P.x) || P.face || 1; goal = KA.strike - s * stand; }
+        if (KA.kind === 'chest') { goal = KA.strike - Math.max(13, stand); if (Math.abs(goal - P.x) > 7) KA.strike = null; }
         if (KA.block && SHIELDED(h)) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face; k.block = true; if (h === 'paladin') holdC = f + 30; }   /* the snap the shield turns: a shielded hero takes it on the shield */
         if (KA.dodge && f % 6 === 0) { k.left = KA.dodgeDir < 0; k.right = KA.dodgeDir > 0; BK.press('dodge'); }   /* a blow that has chosen you is rolled through */ if (KA.jump && (P.ground || (P.swim && f % 10 === 0))) { BK.press('jump'); k.jump = true; } else if (KA.hold && P.vy < 0) k.jump = true;   /* a climb the Kraken's advice asks for is held while it rises: let go and it is a hop */ if (KA.mash && f % 3 === 0) BK.press(f % 6 ? 'atk' : 'jump');
         if (KA.climb && P.ground && Math.abs(P.vx) < 8 && goal !== null && Math.abs(goal - P.x) > 6 && f % 8 === 0) BK.press('jump');

@@ -161,3 +161,34 @@ levelled to -15 LUFS like the rest, three of them from packs already credited he
 - deathknight.ogg = Mussorgsky, "Night on Bald Mountain" (1867), chiptune arrangement by TheOuterLinux, CC0 -
   https://opengameart.org/content/mussorgsky-night-on-bald-mountain - THE UNBURIED FIELD, start to finish, and THE DEATH KNIGHT's fight on the same loop (2026-09-25): the climax, 4:00-6:00 of the
   LMMS render, faded in and out for a loop, lowpassed at 9 kHz, -11.2 LUFS.
+
+
+THE MUSIC LANE, 2026-09-26 (six tracks, each CC0-confirmed on its own OpenGameArt page):
+- burning.mp3 = "Danish Mega Pony v. 4 OST - Track 02 (Fire Level)" from "Fire Level" by Spring Spring (Julie Damsgaard), CC0 -
+  https://opengameart.org/content/fire-level - THE BURNING VILLAGE's level track, benching quarry.ogg (kept, still Quarry Pass's).
+- pyroboss.ogg = "Evil boss.ogg" from "Evil boss music" by Kosmo The Cat, CC0 -
+  https://opengameart.org/content/evil-boss-music - THE PYROMANCER's boss track (the Burning Village arena), benching hilltroll.ogg (kept, still the Hill Troll's).
+- minicharge.ogg = "charge.ogg" from "Charge!" by Centurion_of_war, CC0 -
+  https://opengameart.org/content/charge - the shared mini-boss track: every mini fight now plays this unless it names its own (main.js's mini fallback was 'boss'; a boss keeps its own track).
+- monastery.ogg = "rpgchip07_the_shrine_of_mysteries.ogg" from "15 Melodic RPG Chiptunes" by Aureolus_Omicron, CC0 -
+  https://opengameart.org/content/15-melodic-rpg-chiptunes - THE MONASTERY's level track, benching sunspire.ogg (kept, still the Sunspire's). The page offers only a zip of all 15 tracks; this one file was extracted and the zip discarded.
+- northumberland.mp3 = "The Fair Flower of Northumberland" (traditional, arr. Spring Spring / Spring Enterprises), CC0 -
+  https://opengameart.org/content/northumberland - GALE MOOR's level track, benching adventure.ogg (kept, still sold at the store). The MP3 was used, not the page's 54 MB FLAC.
+- windcaller.ogg = "hard_boss_battle_1_bpm200.ogg" from "Hard Boss Battle 1" by MintoDog, CC0 -
+  https://opengameart.org/content/hard-boss-battle-1 - THE WINDCALLER's boss track (Gale Moor's summit arena), benching musMountain.ogg (kept, part of MintoDog's stage-select set).
+
+MORE APPROVED (Daniel, 2026-09-26):
+- hangingvillage.ogg = "Dark Shrine Loop" (qubodup-yd-DarkShrineLoop-OpenGameArt.ogg) by qubodup, CC0 -
+  https://opengameart.org/content/dark-shrine-loop - THE HANGING VILLAGE's level track, benching town.mp3 (kept, still sold at the store).
+- sporewood.mp3 = "Mysterious Ambience (song21)" by cynicmusic -
+  https://opengameart.org/content/mysterious-ambience-song21 - the page is multi-licensed (CC0, GPL, CC-BY-SA); the CC0 option was the one used - SPOREWOOD's level track, benching cave.mp3 (kept, still the Mineworks' theme).
+
+CONVERTED TO OGG FROM THE ORIGINAL WAV (ffmpeg, libvorbis q3, no fades, loop points kept), Daniel 2026-09-26:
+- duneworm.ogg = "Negev Fight Loop" from "Desert Calmness and Fighting (Orchestral)" by Dizzy Crow, CC0 -
+  https://opengameart.org/content/desert-calmness-and-fighting-orchestral-141 - THE DUNE WORM's boss track (Sunken Caravan's hollow), benching boss2.ogg (kept, still the Goblin Chieftain's).
+- lance.ogg = "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0 -
+  https://opengameart.org/content/boss-battle-3-8-bit-re-upload - THE QUEEN'S LANCE's own boss track (Stormhold's arena), benching musCastle.ogg (kept, part of MintoDog's stage-select set).
+- caravan.ogg = "Desert Theme - 8bit Chiptune Theme" by Wolfgang_, CC0 -
+  https://opengameart.org/content/desert-theme-8bit-chiptune-theme - THE SUNKEN CARAVAN's own level track, benching musBeach.ogg (kept, part of the same stage-select set).
+- monasterygolem.ogg = "Boss Battle #6 [8-bit]" V1 by nene, CC0 -
+  https://opengameart.org/content/boss-battle-6-8-bit - THE MONASTERY's GOLEM mini's own track, overriding the shared mini fallback (minicharge.ogg).

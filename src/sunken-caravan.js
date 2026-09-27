@@ -71,7 +71,7 @@ export function buildCaravan({ T, TS }) {
        +37      the level's GATE: it ends the level after his death (L.gateAfterBoss), not before
      The worm sleeps under the middle of it and wakes when you cross the trigger. His music is boss2 (the greybox's: no desert
      track in audio/, and nothing is downloaded - see the lane report). */
-  L.hollow = L.arena; L.arena.music = 'boss2';
+  L.hollow = L.arena; L.arena.music = 'duneworm';   /* "Negev Fight Loop" from "Desert Calmness and Fighting (Orchestral)" by Dizzy Crow, CC0, converted WAV -> OGG (audio/CREDITS.txt) */
   { const ax0 = L.arena.x0 / TS, ax1 = L.arena.wallR - 2, gy = top(ax1) - 1, floorRow = L.arena.floor / TS;
     L.ents = L.ents.filter(e => !(e.t === 'deco' && (e.kind === 'wagon' || e.kind === 'wagonSunk') && e.x === ax0 + 20));
     L.ents.push({ t: 'gate', x: ax1, y: gy });
@@ -99,8 +99,7 @@ export function buildCaravan({ T, TS }) {
     /* AND IT IS A ROOM: the tower's inside gets a back wall (drawRoomPaint 'caravanserai' in main.js), so it reads as a place you
        climb through - door, shelf, shelf, hatch - and not as posts against the sky. The same rect is the reverb and the no-grass rule */
     L.interiors = (L.interiors || []).concat([[cs + 1, cs + 5, csRoof + 1, top(cs - 1) - 1, 'caravanserai']]); }
-  L.music = 'musBeach';   /* PARKED (see the lane report): no desert track in audio/, and this lane downloads nothing. MintoDog's CC0 "beach"
-                             stage theme is the warmest one there is; tools/newlevel.mjs flags it as shared, deliberately */
+  L.music = 'caravan';   /* "Desert Theme - 8bit Chiptune Theme" by Wolfgang_, CC0, converted WAV -> OGG - THE SUNKEN CARAVAN's own level track, benching musBeach (audio/CREDITS.txt) */
   L.ambient = [{ x0: 0, x1: 99999, kind: 'wind' }];
   L.sun = true; L.caravan = true;
   L.ledgeKit = 'desert';   /* main.js: ONEWAY/PLANK art picked per tile (ruin lintel / rock shelf / sandstone lip), real timber (L.timberPlanks, the draft's) kept as wood - any desert level can set this, not just this one */
