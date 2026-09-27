@@ -24,7 +24,7 @@
 export const SEXTON = {
   hp: 520, walk: 28, keep: 34, cd: 1.25, cdP2: 0.95,
   tell: { swing: 0.8, rush: 0.85, toll: 1.0, drop: 0.95 },
-  dmg: { swing: 17, rush: 14, toll: 14, drop: 16 },
+  dmg: { swing: 17, rush: 14, toll: 14, drop: 16, pit: 12 },   /* pit: the bell pit's spikes (round 3), a bite like one of his own blows - and it throws you out (bellPitThrow) */
   swingReach: 48, rushV: 150, rushT: 0.7, rushFrom: 80, tollR: 80, tollHit: 150, count: 3, countP2: 2,
   dropHalf: 14, pairGap: 44, pit: 3.2, pitMul: 2, climb: 0.55, pitDepth: 32,
   leapT: 0.75, leapH: 50, leapReach: 150,   /* THE LEAP over a ringers' walk: its length, how high he goes (the walks stand 32 px), how far he looks for the far side */
@@ -37,6 +37,17 @@ export const sextonOpen = e => e.mode === 'pit';
    why the spikes in his bell pit do not hurt him when he is caught down there, and why that reads right. Drawn only: his feet (e.y)
    are still the deck's for every rule in this file. Lower in a told windup (he sets himself), highest on the move. Never touching. */
 export const HOVER = { lift: 4, bob: 1.5, low: 2 };
+/* HIS PIT IS SPIKED, AND IT BITES YOU ONCE (round 3). A hero in a bay of the bell pit who takes a spike is thrown UP past the deck and
+   toward the nearer side of the bay, onto the joist or the plank beyond it - without this a fall through a plank was a box of points
+   you bounced in until you died (measured: an idle knight dead in three seconds, a jumping one down 81). D is L.bellDeck. */
+export const PIT_THROW = { vy: -430, vx: 170 };
+/* open(tx): can a hero stand on the deck at column tx (nothing solid over it - the mini's shut gate stands over the last joist) */
+export function bellPitThrow(D, x, y, open = () => true) {
+  if (!D || !D.spikes || y <= D.deck * 16 || y > (D.spikes.row + 1) * 16 + 2) return null;
+  const tx = Math.floor(x / 16), bay = D.spikes.bays.find(([a, b]) => tx >= a && tx <= b); if (!bay) return null;
+  const toL = open(bay[0] - 1) ? x - bay[0] * 16 : Infinity, toR = open(bay[1] + 1) ? (bay[1] + 1) * 16 - x : Infinity;
+  return { vy: PIT_THROW.vy, vx: (toL <= toR ? -1 : 1) * PIT_THROW.vx };
+}
 export const sextonHover = e => { const m = e.mode || '';
   const base = m.endsWith('Tell') || m === 'pit' || m === 'climb' ? HOVER.low : HOVER.lift;
   return Math.max(1, Math.round(base + Math.sin((e.anim || 0) * 2.6) * HOVER.bob)); };

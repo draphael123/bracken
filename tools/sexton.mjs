@@ -97,7 +97,7 @@ try {
    {const h=s.hp;BK.sim(30);out.pitHurt=h-s.hp;out.pitStill=s.mode;}   /* (round 3) down on the spikes, and they do not touch him: he glides */
    const hp0=s.hp;BKT.hurtEnemy(s,10,s.x-10,false);out.double=hp0-s.hp;
    /* (round 3) THE PIT BITES YOU: a plank gone under a hero drops him on the spikes, and they hurt */
-   {s.x=14*16;s.mode='stalk';s.modeT=0;s.cd=99;const c=planks.find(q=>q.x0===47);c.st='down';for(let x=c.x0;x<=c.x1;x++)L.grid[c.row*L.W+x]=T.AIR;BK.god=false;P.inv=0;P.hp=P.maxHp;P.x=49*16+8;P.y=c.row*16+4;P.vx=0;P.vy=0;const h=P.hp;BK.sim(40);out.spikes=h-P.hp;out.spikesDead=!!P.dead;}
+   {s.x=14*16;s.mode='stalk';s.modeT=0;s.cd=99;const c=planks.find(q=>q.x0===47);c.st='down';for(let x=c.x0;x<=c.x1;x++)L.grid[c.row*L.W+x]=T.AIR;BK.god=false;P.inv=0;P.hp=P.maxHp;P.x=49*16+8;P.y=c.row*16+4;P.vx=0;P.vy=0;const h=P.hp;let top=1e9,bites=0,was=P.hp;for(let f=0;f<90;f++){BK.sim(1);if(f>10)top=Math.min(top,P.y);if(P.hp<was)bites++;was=P.hp;}out.spikes=h-P.hp;out.spikesDead=!!P.dead;out.thrown=top<c.row*16;out.bites=bites;}
    /* and his death lifts the gate */
    BK.god=true;s.hp=1;BKT.hurtEnemy(s,50,s.x-10,false);BK.sim(60);out.dead=!s.alive;out.done=BK.miniActive===false;
    out.gate=[...Array(D.deck-D.frame-2)].map((_,k)=>L.grid[(D.frame+2+k)*L.W+52]).every(t=>t===0);
@@ -109,6 +109,7 @@ try {
   assert.ok(r.double >= 18, 'and he takes double in the pit: ' + r.double);
   assert.equal(r.pitHurt, 0, 'the spikes in his pit do not hurt him: ' + r.pitHurt); assert.equal(r.pitStill, 'pit', 'and he is still caught (the opening is unchanged)');
   assert.ok(r.spikes > 0, 'a hero who falls through a plank lands on the spikes and is hurt: ' + r.spikes);
+  assert.ok(r.thrown && r.bites === 1 && !r.spikesDead, 'and the pit bites ONCE and throws him up past the deck (bellPitThrow), not a box he bounces in: ' + JSON.stringify([r.thrown, r.bites, r.spikes]));
   assert.ok(r.dead && r.done && r.gate, 'his death ends the fight and lifts the gate at col 52: ' + JSON.stringify([r.dead, r.done, r.gate]));
   assert.deepEqual(pg.errors, []);
   console.log('in play: ' + JSON.stringify(r));

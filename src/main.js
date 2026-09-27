@@ -9,7 +9,7 @@ import { bakeGraveWarden, bakeHedgeWarden, bakeGateGargoyle } from './redraw/que
 import * as WHF from './gargoyle-whelp.js';   /* THE GARGOYLE WHELP: its numbers, frames and art (docs/briefs/witchlight-whelps.md) */
 import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGargoyleWorld, GARG, gargCam, gargRegrowT, gargKeepFooting, drawSlabGhost } from './gate-gargoyle.js';   /* THE GATE GARGOYLE, the Witchlight Stair's boss */
 import { updateHedgeWarden as stepHedgeWarden, drawHedgeWarden, hedgeFrame, hedgeTake } from './hedge-warden.js';
-import { SEXTON, updateSexton as stepSexton, sextonFrame, sextonTake, sextonHover } from './sexton.js'; import { bakeSexton } from './redraw/sexton.js';   /* THE SEXTON, the Falling Tower's mini (docs/briefs/falling-tower-rework.md) */
+import { SEXTON, updateSexton as stepSexton, sextonFrame, sextonTake, sextonHover, bellPitThrow } from './sexton.js'; import { bakeSexton } from './redraw/sexton.js';   /* THE SEXTON, the Falling Tower's mini (docs/briefs/falling-tower-rework.md) */
 import { crumbleStart as crumbleStartAt, crumbleBreak as crumbleBreakAt } from './tower-collapse.js';   /* THE HEDGE WARDEN (batch 4c) */
 import { drawWitchTower, towerStep, stairProgress, drawWitchSky, drawWitchLandmarks, witchMotes, libraryBooks } from './witchlight.js';   /* THE WITCHLIGHT STAIR: its tower, its sky, its landmarks, its loose magic */
 import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed stone */
@@ -7605,9 +7605,11 @@ function updatePlayer(dt) {
     else if (P.fidgetT > 0) { P.fidgetT -= dt; if (P.fidgetT <= 0) { P.fidgetT = 0; P.idleT = 0; P.fidgetWait = 7 + Math.random() * 6; } }
     else if ((P.idleT = (P.idleT || 0) + dt) > (P.fidgetWait || 4) && K.R.fidget) P.fidgetT = K.R.fidget.length * 0.1; }
 
+  /* THE BELL PIT'S THROW, carried: its sideways half waits until you are up past the deck, or the joist you rise beside stops it (pitThrow) */
+  if (P.pitCarry) { P.pitCarry.t -= dt; if (L.bellDeck && P.y < L.bellDeck.deck * TS - 2 && !P.dead) P.vx = P.pitCarry.vx; if (P.pitCarry.t <= 0 || (P.ground && P.y <= L.bellDeck.deck * TS)) P.pitCarry = null; }
   const pb = box(P);
   for (let ty = Math.floor(pb.t / TS); ty <= Math.floor((pb.b - 1) / TS); ty++) for (let tx = Math.floor(pb.l / TS); tx <= Math.floor((pb.r - 1) / TS); tx++) {
-    if (tileAt(tx, ty) === T.SPIKE && pb.b > ty * TS + 6) damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true, name: 'THE SPIKES' });
+    if (tileAt(tx, ty) === T.SPIKE && pb.b > ty * TS + 6) spikeBite(tx, 'THE SPIKES');
   }
   if (P.y > LH * TS + 30) { if (SET.invincible) { P.x = checkpoint.x; P.y = checkpoint.y; P.vx = 0; P.vy = 0; } else { die({ name: 'THE FALL', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.6; } }   /* (in co-op the fall put him DOWN, and a downed hero is not also a dead one) */
   /* A POOL HAS A BOTTOM. This was "in its columns and anywhere below its surface", so the Undercrown's flooded level
@@ -7789,6 +7791,10 @@ const MINI_NAME = { lancer: 'THE SERJEANT', propman: 'THE OVERMAN', forgemaster:
 const MINI_DONE = { sexton: 'THE BELL FRAME IS OPEN', barrowrider: 'THE GATE STANDS OPEN', hedgewarden: 'THE GARDEN GATE OPENS', gravewarden: 'THE OSSUARY DOOR LIFTS', homunculus: 'THE LAB DOOR LIFTS', ploughman: 'THE HEDGE GATE LIFTS', propman: 'NOTHING HOLDS IT UP NOW', forgemaster: 'THE FORGE GOES COLD', greathound: 'THE KENNELS OPEN', troll: 'THE GULLY IS CLEAR', spider: 'THE WEB COMES DOWN', sailer: 'THE ROAD IS OPEN', lampreeve: 'THE STREET KEEPS ITS LIGHTS', suncatcher: 'THE RIME COMES OFF THE ROAD', golem: 'THE HALL DOOR OPENS', assassin: 'THE PARK GATE IS OPEN' };
 const miniName = () => (L.mini && (L.mini.name || MINI_NAME[L.mini.boss] || (BEASTS.find(q => q.t === L.mini.boss) || {}).name)) || 'THE BEAST';   /* a level can name its own (THE STALKER, THE QUARRY DOG): the table is only the fallback. AND THEN THE BESTIARY, the way bossTitle asks it (E7): the Burial Caverns' mini was in neither, so his card and his bar both said THE BEAST - which is the name Daniel asked to have changed (2026-09-24) */
 const hallSealed = e => hallHolds(L.arena, bossActive, e, boss);
+/* THE SEXTON'S BELL PIT BITES ONCE AND THROWS YOU OUT (round 3): up past the deck and toward the nearer joist, so a fall through a plank
+   costs a spike's bite and not a life spent bouncing in a box of points (src/sexton.js bellPitThrow) */
+const spikeBite = (tx, name) => { const d = L.bellDeck, t = d && !P.dead ? bellPitThrow(d, P.x, P.y, c => ![1, 2].some(k => { const q = tileAt(c, d.deck - k); return q === T.SOLID || q === T.PORT; })) : null;
+  damagePlayer(tx * TS + 8, t ? SEXTON.dmg.pit : DMG.spike, { up: true, unblockable: true, name: t ? 'THE BELL PIT' : name }); if (P.dead || !t) return;   /* the pit bites like one of his blows, not like a gear pit's spikes */ if (t) { P.vy = t.vy; P.vx = t.vx; P.ground = false; P.onMover = null; P.canCut = false; P.plunge = false; P.pitCarry = { vx: t.vx, t: 0.7 }; } };
 const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss && (e.mini || e.t === 'greathound')) : null;
 // A mini dies: the wall it closed behind you opens, and so does the gate it was standing in front of.
 function miniEnd(e) {
@@ -10757,7 +10763,7 @@ function magePlayer(dt) {
     else if (P.y - P.h <= under + 1 && P.vy <= 0) { P.x += m.dx || 0; P.y = under + P.h; P.vy = 0; P.ground = true; } }
   if (gs < 0 && !P.ground && !P.flareSlab) { let free = true; for (let k = 1; k <= 14 && free; k++) if (isSolid(Math.floor(P.x / TS), Math.floor((P.y - P.h) / TS) - k)) free = false; if (free || P.y - P.h < 2) setFlip(false); }
   /* the spikes: his body, whichever way up */
-  { const tx = Math.floor(P.x / TS), ty0 = Math.floor((P.y - P.h + 1) / TS), ty1 = Math.floor((P.y - 1) / TS); for (let ty = ty0; ty <= ty1; ty++) if (tileAt(tx, ty) === T.SPIKE && !P.dead) { damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true }); break; } }
+  { const tx = Math.floor(P.x / TS), ty0 = Math.floor((P.y - P.h + 1) / TS), ty1 = Math.floor((P.y - 1) / TS); for (let ty = ty0; ty <= ty1; ty++) if (tileAt(tx, ty) === T.SPIKE && !P.dead) { spikeBite(tx, null); break; } }
   /* THE ACID: it eats a hero walking the ceiling exactly as it eats one walking the floor */
   { const pl = (L.pools || []).find(p => p.harm && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 4 && (p.bottom === undefined || P.y <= p.bottom + 4));
     if (pl && pl.deadly && !P.dead && P.y > pl.y + 10) { P.hp = 0; P.dead = 1.2; P.vx = 0; P.vy = 0; SFX.splash(); SFX.pDie(); burst(P.x, pl.y, 16, ['#1c3212', '#a6e04a', '#d9d6c0'], 90, 0.6, 300, 2); number(P.x, pl.y - 20, 'THE WATER KILLS', '#ff6b6b'); }   /* DEADLY WATER is a death, and quick: not five seconds of sinking (deadly-water.js) */

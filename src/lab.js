@@ -645,6 +645,37 @@ async function runbossLab(BK, opts) {
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
         if(f%600===599)await yieldNow();continue;
       }
+      /* THE SEXTON (Falling Tower round 3): the bot plays his deck as a player does now that his pit is SPIKED - it never stands on a
+         plank that is counting or gone (the room's rule, the toll's sign), is in the air when a toll lands (it strikes the deck), leaves a
+         bell's shadow, guards the swing and the rush (or backs off and jumps the rush without a shield), and goes in on him while he is
+         caught in the pit. Before the spikes it played him with the generic walker, which stood on counting planks and fell into a pit
+         that cost nothing - so its 3/3 measured a bot that ignored the room. */
+      if(boss.t==='sexton'){
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
+        const fl=A.floor,m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1,danger=[];
+        for(const c of (L.crumbles||[]))if(c.kind==='deck'&&(c.st==='count'||c.st==='down'))danger.push([c.x0*16-8,(c.x1+1)*16+8]);
+        for(const x of (boss.spots||[]))danger.push([x-30,x+30]);
+        const bad=x=>danger.some(([l,r])=>x>l&&x<r),free=x=>x>A.x0+20&&x<A.x1-20&&!bad(x);
+        const pit=m==='pit',rest=P.st<14||(P.labRest&&P.st<44);P.labRest=rest;
+        let gx=pit?boss.x-side*Math.max(12,LAB_REACH[h]*.5):rest?boss.x-side*110:boss.x-side*Math.max(20,LAB_REACH[h]*.7);
+        if((m==='swingTell'||m==='rushTell')&&!SHIELDED(h))gx=boss.x-side*90;
+        /* A PLANK COUNTS UNDER YOUR OWN WEIGHT, so it fights from what does not: a joist, a ringers' walk (one jump up) - he comes to you */
+        const D=L.bellDeck,safe=D?[...D.joists.filter((_,i)=>i!==0&&i!==4),...[13,39].map(c=>c*16+8)].filter(x=>!bad(x)):[];
+        if(safe.length&&!pit){gx=safe.reduce((b,x)=>Math.abs(x-gx)+Math.abs(x-P.x)*.3<Math.abs(b-gx)+Math.abs(b-P.x)*.3?x:b,safe[0]);}
+        else if(!free(gx)){let best=null;for(let q=6;q<400&&best===null;q+=6){if(free(gx-q))best=gx-q;else if(free(gx+q))best=gx+q;}if(best!==null)gx=best;}
+        if(Math.abs(gx-P.x)>4)k[gx>P.x?'right':'left']=true;
+        if(P.ground&&(gx===13*16+8||gx===39*16+8)&&Math.abs(gx-P.x)<34&&P.y>fl-20){BK.press('jump');P.labJump=18;}   /* up onto the walk */
+        if(P.ground&&bad(P.x)){BK.press('jump');P.labJump=16;}   /* on a counting plank, or at the lip of a gone one: off it */   /* on a counting plank: off it */
+        if(m==='tollTell'&&boss.modeT<.2&&P.ground){BK.press('jump');P.labJump=18;}   /* the toll strikes the deck: be off it when it lands */
+        if(m==='rush'&&!SHIELDED(h)&&P.ground&&Math.abs(dx)<60&&(boss.face||1)*(P.x-boss.x)>0){BK.press('jump');P.labJump=18;}
+        if(P.ground&&P.y>fl+8){BK.press('jump');P.labJump=18;}   /* down in the pit: out */
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if((m==='swingTell'||m==='rushTell'||m==='rush')&&SHIELDED(h)&&Math.abs(dx)<110){k.block=true;k.left=k.right=false;P.face=side;}
+        else if(!rest&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<44&&P.atk<0&&m!=='leap'&&m!=='climb'){P.face=side;BK.press('atk');swings++;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
+        if(f%600===599)await yieldNow();continue;
+      }
       /* THE HEDGE WARDEN (batch 4c): the bot plays him as a player does - fights him BESIDE A BRAZIER (it stands past the nearest
          one, so he follows it there and is felled by the fire), gets clear of the thorns, guards the cut and the rush (or backs
          off / jumps the rush without a shield), cuts the cuttings he throws off, and puts everything into a stump. */

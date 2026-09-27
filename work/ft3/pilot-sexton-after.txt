@@ -1,0 +1,5 @@
+{"h":"knight","salt":1,"out":"win","secs":75.3,"taken":48,"left":0,"pits":5,"hitBy":{"pit":16,"climb":16,"dropTell":16}}
+{"h":"warden","salt":1,"out":"death","secs":38.6,"taken":100,"left":38,"pits":1,"hitBy":{"swingTell":17,"pit":48,"dropTell":12,"stalk":16,"swing":7}}
+{"h":"pyro","salt":1,"out":"death","secs":31.3,"taken":88,"left":46,"pits":1,"hitBy":{"pit":16,"climb":16,"dropTell":16,"swing":16,"stalk":16,"swingTell":8}}
+{"mini":"sexton","fights":3,"wins":1,"pct":33,"medianWin":75.3,"medianFight":38.6,"pitsAvg":2.3,"byHero":{"knight":"1/1","warden":"0/1","pyro":"0/1"},"hitBy":{"pit":80,"climb":32,"dropTell":44,"swingTell":25,"stalk":32,"swing":23}}
+errors []

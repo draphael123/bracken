@@ -1,0 +1,5 @@
+{"h":"knight","salt":1,"out":"win","secs":67.3,"taken":49,"opened":7,"left":0,"swings":75,"hitBy":{"hover":35,"gather":14},"portal":{"breached":2,"gather":5}}
+{"h":"warden","salt":1,"out":"win","secs":100.8,"taken":38,"opened":11,"left":0,"swings":106,"hitBy":{"markTell":19,"markWait":19},"portal":{"breached":5,"gather":6}}
+{"h":"pyro","salt":1,"out":"win","secs":111.5,"taken":156,"opened":12,"left":0,"swings":99,"hitBy":{"stepTell":38,"blinkIn":19,"hover":33,"markTell":26,"markWait":14,"stormTell":26},"portal":{"breached":4,"gather":8}}
+{"health":"refill","cap":150,"fights":3,"wins":3,"pct":100,"medianWin":100.8,"medianLeftOnLoss":null,"openedAvg":10,"breachedAvg":3.7,"markOpenAvg":6.3,"byHero":{"knight":"1/1","warden":"1/1","pyro":"1/1"},"hitBy":{"hover":68,"gather":14,"markTell":45,"markWait":33,"stepTell":38,"blinkIn":19,"stormTell":26}}
+errors []
