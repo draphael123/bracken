@@ -378,7 +378,7 @@ async function runbossLab(BK, opts) {
     if (!boss) { rows.push({ lvl: lvId, h, skipped: 'no boss' }); continue; }
     for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
     if (A.carpet) { BK.board(); BK.sim(30); }   /* THE SKY FIGHT: its fight starts when the carpet is boarded */
-    else { BK.tp(Math.round(A.trigger / 16) + (A.reverse?-1:1), Math.round(A.floor / 16) - 1); if (opts.nudge) BK.P.x += opts.nudge; BK.sim(30); }   /* opts.nudge: start a few px off, for reps of a fight no dice reach (the Deep and the Hurricane replay identically under any seed) */
+    else { if (A.start) BK.tp(A.start[0], A.start[1]); else BK.tp(Math.round(A.trigger / 16) + (A.reverse?-1:1), Math.round(A.floor / 16) - 1);   /* A.start: a room whose floor is no place to stand (the Gate Gargoyle's spikes) says where the fight begins */ if (opts.nudge) BK.P.x += opts.nudge; BK.sim(30); }   /* opts.nudge: start a few px off, for reps of a fight no dice reach (the Deep and the Hurricane replay identically under any seed) */
     /* THE QUARTERMASTER GOES UP HER SHIP: the playtest walker knows ropes, steps and ledges, so it follows her deck to deck */
     const walker = boss.t === 'quarter' ? PT.makeBot(BK) : null;
     const air = boss.t === 'bellcrab' ? (await import('./deepair.js')).airBoxes(L).filter(a=>a.kind==='vent' && a.l>A.x0 && a.r<A.x1).map(a=>({...a,x:(a.l+a.r)/2,ty:A.floor-12,o:{}})) : (boss.airs||[]);
@@ -766,13 +766,15 @@ async function runbossLab(BK, opts) {
         const m=boss.mode,slabs=BK.movers().filter(q=>q.arena&&q.slab&&!q.broken),on=P.onMover&&slabs.includes(P.onMover)?P.onMover:null,cen=q=>q.x+q.w/2;
         const dx=boss.x-P.x,side=Math.sign(dx)||1;
         const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
-        const next=(from,avoid,away)=>slabs.filter(q=>q!==from&&q!==avoid&&(!away||Math.sign(cen(q)-cen(from))===-side)).sort((a,b)=>Math.abs(cen(a)-cen(from))-Math.abs(cen(b)-cen(from)))[0];
-        const goSlab=n=>{if(!n||!on)return;const dir=Math.sign(cen(n)-P.x)||1,edge=dir>0?on.x+on.w:on.x;k[dir>0?'right':'left']=true;if(P.ground&&Math.abs(edge-P.x)<14){BK.press('jump');P.labJump=16;}};
+        const next=(from,avoid,away)=>slabs.filter(q=>q!==from&&q!==avoid&&(!away||Math.sign(cen(q)-cen(from))===-side)).sort((a,b)=>Math.abs(cen(a)-cen(from))+(a.y!==from.y?200:0)-Math.abs(cen(b)-cen(from))-(b.y!==from.y?200:0))[0];   /* the same tier first: a hop across, not up */
+        const goSlab=n=>{if(!n||!on)return;P.labTo=n;const dir=Math.sign(cen(n)-P.x)||1,edge=dir>0?on.x+on.w:on.x;k[dir>0?'right':'left']=true;if(P.ground&&Math.abs(edge-P.x)<14){BK.press('jump');P.labJump=16;}};
+        if(on||P.windRide)P.labTo=null;
         if(P.windRide){ /* the wind has it: nothing to do */ }
         else if(P.flip){ /* under a slab: walk to its middle */ const s0=P.flareSlab;if(s0&&Math.abs(cen(s0)-P.x)>6)k[cen(s0)>P.x?'right':'left']=true; }
-        else if(m==='stunned'){ /* HE IS ON THE SPIKES: over him, and down onto his back */ if(Math.abs(dx)>3)k[dx>0?'right':'left']=true; }
+        else if(m==='stunned'){ /* HE IS ON THE SPIKES: over him, and down onto his back. A slab over him is stepped off its nearer end first */
+          if(on&&boss.x>on.x-4&&boss.x<on.x+on.w+4){const l=boss.x-on.x,r=on.x+on.w-boss.x;k[l<r?'left':'right']=true;} else if(Math.abs(dx)>3)k[dx>0?'right':'left']=true; }
         else if(!on){ /* in the air (a jump, or off the lip): over a slab, steer onto it */
-          const s0=slabs.filter(q=>q.y>P.y+2).sort((a,b)=>Math.abs(cen(a)-P.x)-Math.abs(cen(b)-P.x))[0];if(s0&&(P.vy>-60||P.labJump>0)&&Math.abs(cen(s0)-P.x)>4)k[cen(s0)>P.x?'right':'left']=true;else if(!s0&&P.ground)k.right=true; }
+          const to=P.labTo&&!P.labTo.broken&&P.labTo.y>P.y-60?P.labTo:null,s0=to||slabs.filter(q=>q.y>P.y+2).sort((a,b)=>Math.abs(cen(a)-P.x)-Math.abs(cen(b)-P.x))[0];if(s0&&(P.vy>-60||P.labJump>0)&&Math.abs(cen(s0)-P.x)>4)k[cen(s0)>P.x?'right':'left']=true;else if(!s0&&P.ground)k.right=true; }
         else {
           let done=false;
           if(m==='diveTell'&&boss.tgt===on){const n=next(on),dir=n?Math.sign(cen(n)-P.x)||1:1,ex=dir>0?on.x+on.w-10:on.x+10;if(Math.abs(ex-P.x)>3)k[ex>P.x?'right':'left']=true;done=true;}   /* to the edge, and wait: the aim is his until he drops */
@@ -785,7 +787,7 @@ async function runbossLab(BK, opts) {
           if(!done&&gusting){if(SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=side;}else if(P.st>20&&!(P.dodge>0)&&m==='gustTell'&&boss.modeT<0.08)BK.press('dodge');}
         }
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES':m0,Math.max(0,was-P.hp));if(P.dead)falls++;
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES after '+m0:m0,Math.max(0,was-P.hp));if(P.dead)falls++;if(opts.onFrame)await opts.onFrame({boss,P,f,h});
         if(f%600===599)await yieldNow();continue;
       }
       /* THE DUNE WORM, played as his hollow teaches it (docs/briefs/dune-worm.md). With the awning DOWN, wind it (to THE HOLLOW WINCH, strike it);
