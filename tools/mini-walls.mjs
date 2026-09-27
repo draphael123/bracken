@@ -44,6 +44,19 @@ try {
       if (q.inRock) bad.push(`${lv}/${t} run ${q.run}: ${q.inRock} of ${q.frames} frames with his box in rock - first ${JSON.stringify(q.first)}`);
       if (q.cols < 4) bad.push(`${lv}/${t} run ${q.run}: he visited only ${q.cols} columns - frozen, not fought`); }
   }
+  /* THE LEAP, ON PURPOSE (round 3). The random throws used to find it by putting the hero down in the bell pit past the right walk, on whole
+     planks the Sexton would follow him over. The pit is SPIKED now (Daniel, 2026-09-27) and no longer a place to throw a hero, so the
+     leap the rock test must include is set up by hand: you on the far side of the right walk, the planks held whole, him coming. */
+  { const q = await pg.evalp(`(async()=>{const{LEVELS,T}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;
+      BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;BK.sim(10);
+      const L=BK.L,M=L.mini,P=BK.P,W=L.W,planks=L.crumbles.filter(c=>c.kind==='deck');for(const e of BK.enemies())if(!e.maxHp&&e.t!=='sexton')e.alive=false;
+      BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(90);const s=BK.enemies().find(e=>e.t==='sexton'&&e.alive);
+      s.x=34*16;s.mode='stalk';s.modeT=0;let leap=0,inRock=0;
+      for(let f=0;f<360;f++){for(const c of planks){c.st='whole';c.t=0;for(let x=c.x0;x<=c.x1;x++)L.grid[c.row*W+x]=T.PLANK;}s.cd=99;P.x=48*16+8;P.y=M.floor;P.vx=0;P.vy=0;P.hp=P.maxHp;BK.sim(1);if(s.mode==='leap')leap++;
+        const w=s.w||20,h=s.h||30;for(let y=Math.floor((s.y-h+1)/16);y<=Math.floor((s.y-1)/16);y++)for(let x=Math.floor((s.x-w/2+1)/16);x<=Math.floor((s.x+w/2-1)/16);x++){const v=L.grid[y*W+x];if(v===T.SOLID||v===T.PORT){inRock++;y=1e9;break;}}}
+      return {leap,inRock,x:Math.round(s.x/16)};})()`, 300000);
+    seen.push('sexton, set up: ' + q.leap + ' frames leaping the right walk to reach you, ' + q.inRock + ' in rock, ended at col ' + q.x); leaps += q.leap;
+    if (q.inRock) bad.push('fallingtower/sexton set-up leap: ' + q.inRock + ' frames with his box in rock'); }
   assert.deepEqual(pg.errors, []);
 } finally { pg.close(); }
 for (const s of seen) console.log('   ' + s);

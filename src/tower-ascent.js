@@ -237,8 +237,15 @@ export function buildTowerAscent({ painter, T, TS }) {
     rect(X0, X1, frame, frame + 1, T.SOLID);                                         /* the bell frame: the room's roof */
     rect(52, 52, frame + 2, deck - 1, T.PORT);                                       /* the mini's gate: it lifts when he falls */
     net(56, frame, deck - 1);                                                        /* and the rope up through the frame beyond it */
-    for (const [x0, x1] of [[15, 19], [21, 25], [27, 31], [33, 37], [41, 45], [47, 51]]) crumbles.push({ x0, x1, row: deck, kind: 'deck' });
-    bell = { deck, frame, joists: [13, 20, 26, 32, 39, 46].map(x => x * TS + 8) };
+    /* THE BELL PIT IS SPIKED (round 3, Daniel 2026-09-27): iron on the pit's floor under every plank - a plank that goes under you is a
+       fall onto points now, not a step down. The Sexton caught in it is not hurt by them: he does not stand, he GLIDES (sexton.js) */
+    const bays = [[15, 19], [21, 25], [27, 31], [33, 37], [41, 45], [47, 51]];
+    /* ...except the column the cistern's rope comes up in: the rope runs on up through the pit to the plank, so you climb in past the
+       points, not onto them (the reach fill and tools/killzones.mjs both hold this) */
+    const [rx0, rlen] = floors[4].tiers[floors[4].tiers.length - 1], ropeX = rx0 + (rlen >> 1);
+    for (const [x0, x1] of bays) { crumbles.push({ x0, x1, row: deck, kind: 'deck' }); for (let x = x0; x <= x1; x++) if (x !== ropeX) set(x, b - 1, T.SPIKE); }
+    if (bays.some(([x0, x1]) => ropeX >= x0 && ropeX <= x1)) net(ropeX, deck + 1, b - 1);
+    bell = { deck, frame, joists: [13, 20, 26, 32, 39, 46].map(x => x * TS + 8), spikes: { row: b - 1, bays, rope: ropeX } };
     ent('sexton', 30, deck - 1, { mini: true, face: -1 });
     ent('sign', 13, deck - 3, { text: 'THE BELL LOFT. HIS TOLL SETS THE DECK COUNTING: GET OFF THE PLANKS.' });
     ent('check', 56, deck - 1);                                                      /* past the gate: somewhere to go the moment he falls */

@@ -9,6 +9,7 @@
      IN PLAY  the loft wakes him with his name, each attack forced lands on a hero, the toll counts real planks, a rush over a counting
               one drops him in the pit and the plank goes, and his death lifts the gate at col 52 and ends the fight */
 import assert from 'node:assert/strict';
+import { sextonHover } from '../src/sexton.js';
 import { readFileSync } from 'node:fs';
 import { SEXTON, SEXTON_F, updateSexton, sextonFrame, sextonTake, sextonOpen } from '../src/sexton.js';
 import { LEVELS } from '../src/level.js';
@@ -63,6 +64,16 @@ assert.equal(MARK['sexton|swingTell'], '!'); assert.equal(MARK['sexton|rushTell'
   assert.ok(q.e.x > 656, 'you are past the walk and he never got over it: ' + Math.round(q.e.x)); assert.equal(inside, 0, 'over the walk he was lower than its top ' + inside + ' frames: through the stone, not over it');
   assert.ok(top < FLOOR - 32, 'the leap never rose over the walk: ' + (FLOOR - top) + ' px');
   const h = rig({ e: { mode: 'rushTell', modeT: 0, x: 560 } }); h.c.stands = wall; h.P.x = 760; step(h, 1); assert.ok(!inWall(h.e.x), 'his rush ran into the walk: ' + h.e.x); }
+// ---- THE SPIKED PIT AND HIS GLIDE (round 3, Daniel 2026-09-27) ----
+{ const { LEVELS, T } = await import('../src/level.js'); const L = LEVELS.find(l => l.id === 'fallingtower').build(), D = L.bellDeck, at = (x, y) => L.grid[y * L.W + x];
+  assert.ok(D.spikes && D.spikes.bays.length === 6, 'the bell deck names its spiked bays');
+  for (const c of L.crumbles.filter(c => c.kind === 'deck')) for (let x = c.x0; x <= c.x1; x++) { if (x === D.spikes.rope) { assert.equal(at(x, D.spikes.row), T.NET, 'the cistern rope does not run up through the pit'); continue; } assert.equal(at(x, D.spikes.row), T.SPIKE, 'no spike under the plank at col ' + x); assert.equal(at(x, D.spikes.row - 1), T.AIR, 'the pit over the spikes is not open at col ' + x); assert.notEqual(at(x, D.spikes.row + 1), T.AIR, 'the spikes stand on nothing at col ' + x); }
+  assert.equal(D.spikes.row * 16, L.mini.floor + SEXTON.pitDepth, 'caught in the pit his feet are on the spike row, as before (his opening is unchanged)');
+  for (const mode of ['stalk', 'swingTell', 'rush', 'pit', 'climb', 'leap', 'tollTell']) for (const anim of [0, 0.3, 0.9, 1.7]) assert.ok(sextonHover({ mode, anim }) >= 1, 'he touches the deck (' + mode + ')');
+  const walk = [...Array(40)].map((_, i) => sextonHover({ mode: 'stalk', anim: i / 20 })); assert.ok(Math.max(...walk) > Math.min(...walk), 'he glides: the hover rises and falls as he goes');
+  const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.ok(src.includes("e.t === 'sexton' ? -sextonHover(e)"), 'main.js does not draw him lifted off the deck');
+  assert.ok(src.includes('t === T.SPIKE) s = L.fallingTower ? (TILE.towerSpikes'), "the tower paints its spikes as thorns (a hedge's)"); }
 // ---- ART ----
 { const { install } = await import('./node-canvas.mjs'); install(); const { bakeSexton } = await import('../src/redraw/sexton.js'); const S = bakeSexton();
   const idx = Object.values(SEXTON_F).flat(); assert.ok(idx.every(i => i < S.R.length), 'every pose in the table is in the set'); assert.equal(SEXTON_F.hurt, S.R.length - 1, 'hurt is the last frame (HAS_HURT)');
@@ -83,7 +94,10 @@ try {
    /* THE OPENING in the page: the plank between them counting, and his rush */
    ready();s.x=24*16;s.face=1;P.x=40*16;const target=planks.find(c=>c.x0===27);target.st='count';target.t=2.5;s.mode='rushTell';s.modeT=0;BK.sim(40);
    out.pit=[s.mode,Math.round(s.y/16),target.st,+(s.open||0).toFixed(1)];
+   {const h=s.hp;BK.sim(30);out.pitHurt=h-s.hp;out.pitStill=s.mode;}   /* (round 3) down on the spikes, and they do not touch him: he glides */
    const hp0=s.hp;BKT.hurtEnemy(s,10,s.x-10,false);out.double=hp0-s.hp;
+   /* (round 3) THE PIT BITES YOU: a plank gone under a hero drops him on the spikes, and they hurt */
+   {s.x=14*16;s.mode='stalk';s.modeT=0;s.cd=99;const c=planks.find(q=>q.x0===47);c.st='down';for(let x=c.x0;x<=c.x1;x++)L.grid[c.row*L.W+x]=T.AIR;BK.god=false;P.inv=0;P.hp=P.maxHp;P.x=49*16+8;P.y=c.row*16+4;P.vx=0;P.vy=0;const h=P.hp;BK.sim(40);out.spikes=h-P.hp;out.spikesDead=!!P.dead;}
    /* and his death lifts the gate */
    BK.god=true;s.hp=1;BKT.hurtEnemy(s,50,s.x-10,false);BK.sim(60);out.dead=!s.alive;out.done=BK.miniActive===false;
    out.gate=[...Array(D.deck-D.frame-2)].map((_,k)=>L.grid[(D.frame+2+k)*L.W+52]).every(t=>t===0);
@@ -93,6 +107,8 @@ try {
   assert.ok(r.counting >= 2, 'the toll set real planks counting: ' + r.counting);
   assert.equal(r.pit[0], 'pit', 'the rush over a counting plank drops him: ' + JSON.stringify(r.pit)); assert.equal(r.pit[2], 'down', 'and the plank goes'); assert.ok(r.pit[1] > 117);
   assert.ok(r.double >= 18, 'and he takes double in the pit: ' + r.double);
+  assert.equal(r.pitHurt, 0, 'the spikes in his pit do not hurt him: ' + r.pitHurt); assert.equal(r.pitStill, 'pit', 'and he is still caught (the opening is unchanged)');
+  assert.ok(r.spikes > 0, 'a hero who falls through a plank lands on the spikes and is hurt: ' + r.spikes);
   assert.ok(r.dead && r.done && r.gate, 'his death ends the fight and lifts the gate at col 52: ' + JSON.stringify([r.dead, r.done, r.gate]));
   assert.deepEqual(pg.errors, []);
   console.log('in play: ' + JSON.stringify(r));

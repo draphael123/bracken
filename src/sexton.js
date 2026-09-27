@@ -33,6 +33,13 @@ export const SEXTON = {
 const TELL = { swing: 'swingTell', rush: 'rushTell', toll: 'tollTell', drop: 'dropTell' };
 const SAY = { swingTell: 'THE SWING', rushTell: 'HE CHARGES', tollTell: 'THE TOLL: OFF THE DECK', dropTell: 'THE BELL DROPS' };
 export const sextonOpen = e => e.mode === 'pit';
+/* HE GLIDES (round 3, Daniel 2026-09-27): a dead bell-ringer does not walk his deck, he drifts a hand over it, hem trailing - which is
+   why the spikes in his bell pit do not hurt him when he is caught down there, and why that reads right. Drawn only: his feet (e.y)
+   are still the deck's for every rule in this file. Lower in a told windup (he sets himself), highest on the move. Never touching. */
+export const HOVER = { lift: 4, bob: 1.5, low: 2 };
+export const sextonHover = e => { const m = e.mode || '';
+  const base = m.endsWith('Tell') || m === 'pit' || m === 'climb' ? HOVER.low : HOVER.lift;
+  return Math.max(1, Math.round(base + Math.sin((e.anim || 0) * 2.6) * HOVER.bob)); };
 /* the frames of bakeSexton: 0 stand | 1,2 walk | 3 swing tell | 4 swing | 5 rush tell | 6 rush | 7 toll tell | 8 toll | 9 drop tell (hauling)
    | 10,11 caught in the pit (THE OPENING) | 12 climbing out | 13 hurt */
 export const SEXTON_F = { stand: 0, walk: [1, 2], swingTell: 3, swing: 4, rushTell: 5, rush: 6, tollTell: 7, toll: 8, dropTell: 9, drop: 9, pit: [10, 11], climb: 12, leap: 12, hurt: 13 };
