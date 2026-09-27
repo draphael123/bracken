@@ -3870,14 +3870,14 @@ function galeMoor() {
   ent('sign', o + 1, 21, { text: 'THE WIND CIRCLES THE STONES. THE CENTRE UPDRAFT AND A GUST PUT YOU ON TOP.' });
   coins([o + 7, 20], [o + 12, 19], [o + 16, 18], [o + 22, 18], [o + 26, 19], [o + 33, 20]);
 
-  /* ==== THE BOTHY (128-149): the lee of the hill. Still air, a warm door, and Tam, who goes no higher. ==== */
+  /* ==== THE BOTHY (128-149): the lee of the hill. Still air, and a warm door. ==== */
   o = 128; section('bothy', 'THE BOTHY', o, o + 21, [o + 10, 21]);
   floor(o, o + 21, 22); calm.push([o, o + 21, 12, 22]);   /* THE LEE IS A REST (level review): a troll and an elite goat stood in it */
   ent('deco', o + 6, 21, { kind: 'bothy' }); ent('torch', o + 9, 21); ent('deco', o + 18, 21, { kind: 'fence', v: 1 });
-  ent('sign', o + 2, 21, { text: 'NO WIND IN THE LEE. THREE LOST KITES HANG ON THE POSTS AHEAD: RIDE UP TO THEM.' });
+  ent('sign', o + 2, 21, { text: 'NO WIND IN THE LEE. A LOST KITE HANGS ON A POST AHEAD, IF YOU RIDE UP TO IT.' });
   ent('check', o + 16, 21); coins([o + 4, 20], [o + 15, 20]);
 
-  /* ==== 3. THE KITE FIELD (150-205): goblins hang from box kites and drop stones. Three lost kites on tall posts, reached on the updrafts. ==== */
+  /* ==== 3. THE KITE FIELD (150-205): goblins hang from box kites and drop stones. A lost kite waits on the third post, reached on the updrafts. ==== */
   o = 150; section('kite-field', 'THE KITE FIELD', o, o + 55, [o + 30, 21]);
   floor(o, o + 55, 22);
   gust(o, o + 56, 4, 23, { period: 6, on: 4.4, phase: 2, k: 1.4 });
@@ -4477,7 +4477,7 @@ function shipwreckReef() {
   // ---- 1. THE TIDEWAY: the backs of the wrecks, and the sea coming and going over them ----
   block(0, 12, 28, H - 1);
   
-  ent('sign', 2, 27, { text: 'THE REEF. BRING BACK HER THREE MANIFEST PAGES. AT HIGH TIDE, TAKE THE RIGGING.' });
+  ent('sign', 2, 27, { text: 'THE REEF. HER MANIFEST IS SCATTERED SOMEWHERE ABOARD. AT HIGH TIDE, TAKE THE RIGGING.' });
   ent('check', 9, 27);
   block(13, 118, 33, H - 1); // the reef bed under it all
   block(16, 26, 26, 32); block(30, 42, 27, 32); block(46, 58, 25, 32); block(62, 74, 27, 32); block(78, 92, 26, 32); block(96, 118, 24, 32);
@@ -4970,7 +4970,7 @@ function theHurricane() {
   ent('sign', 18, 15, { text: 'HER BELL. THEY RANG IT FOR THE WATCH AND FOR THE DEAD, AND IT IS STILL RINGING ITSELF.' });
   ent('sign', 26, 19, { text: 'THE WAVE COMES FROM WINDWARD. TAKE A LINE, CLIMB, OR GO BELOW. ON DECK, JUMP IT.' });
   ent('check', 30, 19);
-  ent('sign', 44, 19, { text: 'HER LANTERNS ROLLED INTO THE CORNERS. BRING THEM BACK FOR HER LIGHTS.' });
+  ent('sign', 44, 19, { text: 'HER LANTERNS ROLLED INTO THE CORNERS OF THE SHIP. ONE STILL HOLDS A LIGHT.' });
   ent('sign', 50, 19, { text: 'SHE ROLLS. WHEN SHE HEELS, HOLD A LINE, PUT A BITT AT YOUR BACK, OR STAND ON THE SAND.' });
   ent('deco', 40, 19, { kind: 'kegStack' }); ent('deco', 24, 19, { kind: 'hammock', v: 0 }); ent('deco', 32, 19, { kind: 'rumBarrels', v: 1 }); ent('deco', 46, 19, { kind: 'washing' }); ent('deco', 28, 19, { kind: 'hammock', v: 1 });
   coins([28, 18], [36, 18], [48, 18]);
