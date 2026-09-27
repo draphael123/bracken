@@ -1,0 +1,1369 @@
+{
+ "label": "before",
+ "at": "2026-09-26T00:43:08.584Z",
+ "summary": [
+  {
+   "lab": "refill 150s",
+   "fights": 21,
+   "wins": 8,
+   "medianWin": 134.4,
+   "medianSecs": 150,
+   "medianLeftPct": 3,
+   "medianTaken": 89,
+   "medianTpm": 36,
+   "stage3": 0,
+   "deaths": 0,
+   "bossHp": 675
+  },
+  {
+   "lab": "normal 300s",
+   "fights": 21,
+   "wins": 13,
+   "medianWin": 142.2,
+   "medianSecs": 142.2,
+   "medianLeftPct": 0,
+   "medianTaken": 86,
+   "medianTpm": 33,
+   "stage3": 0,
+   "deaths": 8,
+   "bossHp": 675
+  }
+ ],
+ "rows": [
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "knight",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 3,
+   "taken": 111,
+   "tpm": 44,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    28
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 288,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 69,
+    "geyser": 26
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "warden",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 9,
+   "taken": 101,
+   "tpm": 40,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    49
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 1,
+    "crate": 288,
+    "bell": 123
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 3,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 23,
+    "geyser": 26
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "pyro",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 3,
+   "taken": 102,
+   "tpm": 41,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    36
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 288,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23,
+    "jet": 17
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "paladin",
+   "out": "win",
+   "secs": 120.9,
+   "hp": 675,
+   "left": 0,
+   "taken": 54,
+   "tpm": 27,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    29
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 342,
+    "bell": 123
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 46
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "pirate",
+   "out": "win",
+   "secs": 137.5,
+   "hp": 675,
+   "left": 0,
+   "taken": 89,
+   "tpm": 39,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    23
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 3,
+    "crate": 306,
+    "bell": 164,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23,
+    "geyser": 26,
+    "jet": 40
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "reaper",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 36,
+   "taken": 34,
+   "tpm": 14,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    78
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 2,
+    "crate": 126,
+    "bell": 82,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 2,
+   "looks": 3,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 17,
+    "jet": 17
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "refill",
+   "h": "geomancer",
+   "out": "win",
+   "secs": 110.5,
+   "hp": 675,
+   "left": 0,
+   "taken": 46,
+   "tpm": 25,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    18
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 3,
+    "crate": 342,
+    "bell": 123,
+    "under": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 46
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "refill",
+   "h": "knight",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 3,
+   "taken": 111,
+   "tpm": 44,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    28
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 288,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 69,
+    "geyser": 26
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "refill",
+   "h": "warden",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 0,
+   "taken": 121,
+   "tpm": 48,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    49
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 3,
+    "crate": 306,
+    "bell": 164,
+    "under": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 69
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "refill",
+   "h": "pyro",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 3,
+   "taken": 95,
+   "tpm": 38,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    36
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 288,
+    "bell": 164,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23,
+    "geyser": 26
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "refill",
+   "h": "paladin",
+   "out": "win",
+   "secs": 119.4,
+   "hp": 675,
+   "left": 0,
+   "taken": 31,
+   "tpm": 16,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    29
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 342,
+    "bell": 123,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 23
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "refill",
+   "h": "pirate",
+   "out": "win",
+   "secs": 141.4,
+   "hp": 675,
+   "left": 0,
+   "taken": 89,
+   "tpm": 38,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    23
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 3,
+    "crate": 270,
+    "bell": 164,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 5,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23,
+    "geyser": 26,
+    "jet": 40
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "refill",
+   "h": "reaper",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 34,
+   "taken": 34,
+   "tpm": 14,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    78
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 2,
+    "crate": 126,
+    "bell": 82,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 2,
+   "looks": 3,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 17,
+    "jet": 17
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "refill",
+   "h": "geomancer",
+   "out": "win",
+   "secs": 134.4,
+   "hp": 675,
+   "left": 0,
+   "taken": 69,
+   "tpm": 31,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    18
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 3,
+    "crate": 306,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 5,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 69
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "refill",
+   "h": "knight",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 3,
+   "taken": 111,
+   "tpm": 44,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    28
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 288,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 69,
+    "geyser": 26
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "refill",
+   "h": "warden",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 20,
+   "taken": 91,
+   "tpm": 36,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    49
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 4,
+    "crate": 216,
+    "bell": 123
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 3,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 23,
+    "orbs": 16
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "refill",
+   "h": "pyro",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 3,
+   "taken": 95,
+   "tpm": 38,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    36
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 288,
+    "bell": 164,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23,
+    "geyser": 26
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "refill",
+   "h": "paladin",
+   "out": "win",
+   "secs": 119.4,
+   "hp": 675,
+   "left": 0,
+   "taken": 31,
+   "tpm": 16,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    29
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 342,
+    "bell": 123,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 23
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "refill",
+   "h": "pirate",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 10,
+   "taken": 63,
+   "tpm": 25,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    23
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 3,
+    "crate": 198,
+    "bell": 205,
+    "glance": 2
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 5,
+   "looks": 6,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23,
+    "jet": 40
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "refill",
+   "h": "reaper",
+   "out": "timeout",
+   "secs": 150,
+   "hp": 675,
+   "left": 6,
+   "taken": 46,
+   "tpm": 18,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    34
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 270,
+    "bell": 164,
+    "glance": 2,
+    "under": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 46
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "refill",
+   "h": "geomancer",
+   "out": "win",
+   "secs": 134.4,
+   "hp": 675,
+   "left": 0,
+   "taken": 69,
+   "tpm": 31,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    18
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 3,
+    "crate": 306,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 5,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 69
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "normal",
+   "h": "knight",
+   "out": "death",
+   "secs": 147.7,
+   "hp": 675,
+   "left": 6,
+   "taken": 100,
+   "tpm": 41,
+   "died": true,
+   "stage": 2,
+   "turnAt": [
+    28
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 270,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 69,
+    "geyser": 26
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "normal",
+   "h": "warden",
+   "out": "death",
+   "secs": 97.5,
+   "hp": 675,
+   "left": 43,
+   "taken": 100,
+   "tpm": 46,
+   "died": true,
+   "stage": 2,
+   "turnAt": [
+    49
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 1,
+    "crate": 144,
+    "bell": 41
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 1,
+   "looks": 2,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 23
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "normal",
+   "h": "pyro",
+   "out": "death",
+   "secs": 83.9,
+   "hp": 675,
+   "left": 45,
+   "taken": 88,
+   "tpm": 49,
+   "died": true,
+   "stage": 2,
+   "turnAt": [
+    36
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 126,
+    "bell": 41
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 1,
+   "looks": 2,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "normal",
+   "h": "paladin",
+   "out": "win",
+   "secs": 118.1,
+   "hp": 675,
+   "left": 0,
+   "taken": 31,
+   "tpm": 16,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    29
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 324,
+    "bell": 123,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 23
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "normal",
+   "h": "pirate",
+   "out": "death",
+   "secs": 140.8,
+   "hp": 675,
+   "left": 4,
+   "taken": 90,
+   "tpm": 29,
+   "died": true,
+   "stage": 2,
+   "turnAt": [
+    23
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 5,
+    "crate": 270,
+    "bell": 164,
+    "glance": 1,
+    "orb": 8
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23,
+    "jet": 46
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "normal",
+   "h": "reaper",
+   "out": "win",
+   "secs": 153,
+   "hp": 675,
+   "left": 0,
+   "taken": 51,
+   "tpm": 20,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    34
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 304,
+    "bell": 164,
+    "glance": 4,
+    "under": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 5,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 51
+   }
+  },
+  {
+   "pass": 0,
+   "mode": "normal",
+   "h": "geomancer",
+   "out": "death",
+   "secs": 134.5,
+   "hp": 675,
+   "left": 0,
+   "taken": 95,
+   "tpm": 33,
+   "died": true,
+   "stage": 2,
+   "turnAt": [
+    22
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 2,
+    "crate": 288,
+    "bell": 164,
+    "under": 2
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 46
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "normal",
+   "h": "knight",
+   "out": "death",
+   "secs": 147.7,
+   "hp": 675,
+   "left": 6,
+   "taken": 100,
+   "tpm": 41,
+   "died": true,
+   "stage": 2,
+   "turnAt": [
+    28
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 270,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 69,
+    "geyser": 26
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "normal",
+   "h": "warden",
+   "out": "win",
+   "secs": 166.4,
+   "hp": 675,
+   "left": 0,
+   "taken": 98,
+   "tpm": 35,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    49
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 1,
+    "crate": 288,
+    "bell": 164,
+    "under": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 5,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 46
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "normal",
+   "h": "pyro",
+   "out": "win",
+   "secs": 145.1,
+   "hp": 675,
+   "left": 0,
+   "taken": 85,
+   "tpm": 35,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    35
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 288,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23,
+    "orbs": 16,
+    "jet": 23
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "normal",
+   "h": "paladin",
+   "out": "win",
+   "secs": 135.8,
+   "hp": 675,
+   "left": 0,
+   "taken": 69,
+   "tpm": 30,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    37
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 1,
+    "crate": 288,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 69
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "normal",
+   "h": "pirate",
+   "out": "win",
+   "secs": 142.2,
+   "hp": 675,
+   "left": 0,
+   "taken": 89,
+   "tpm": 38,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    23
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 3,
+    "crate": 306,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 5,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23,
+    "geyser": 26,
+    "jet": 40
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "normal",
+   "h": "reaper",
+   "out": "win",
+   "secs": 188,
+   "hp": 675,
+   "left": 0,
+   "taken": 86,
+   "tpm": 27,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    72
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 3,
+    "crate": 306,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 17,
+    "jet": 69
+   }
+  },
+  {
+   "pass": 1,
+   "mode": "normal",
+   "h": "geomancer",
+   "out": "win",
+   "secs": 135.9,
+   "hp": 675,
+   "left": 0,
+   "taken": 46,
+   "tpm": 20,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    21
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 2,
+    "crate": 306,
+    "bell": 164,
+    "under": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 46
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "normal",
+   "h": "knight",
+   "out": "death",
+   "secs": 147.7,
+   "hp": 675,
+   "left": 6,
+   "taken": 100,
+   "tpm": 41,
+   "died": true,
+   "stage": 2,
+   "turnAt": [
+    28
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 270,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 69,
+    "geyser": 26
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "normal",
+   "h": "warden",
+   "out": "win",
+   "secs": 152.4,
+   "hp": 675,
+   "left": 0,
+   "taken": 75,
+   "tpm": 30,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    49
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 3,
+    "crate": 306,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 23
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "normal",
+   "h": "pyro",
+   "out": "win",
+   "secs": 140.4,
+   "hp": 675,
+   "left": 0,
+   "taken": 23,
+   "tpm": 10,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    35
+   ],
+   "ledger": {
+    "arm1": 204,
+    "crate": 288,
+    "bell": 164,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "normal",
+   "h": "paladin",
+   "out": "win",
+   "secs": 115.7,
+   "hp": 675,
+   "left": 0,
+   "taken": 75,
+   "tpm": 39,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    28
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 3,
+    "crate": 342,
+    "bell": 123,
+    "glance": 3
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 4,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 46
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "normal",
+   "h": "pirate",
+   "out": "win",
+   "secs": 142.2,
+   "hp": 675,
+   "left": 0,
+   "taken": 69,
+   "tpm": 29,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    23
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 4,
+    "crate": 270,
+    "bell": 164,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 5,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 23,
+    "jet": 46
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "normal",
+   "h": "reaper",
+   "out": "win",
+   "secs": 217.4,
+   "hp": 675,
+   "left": 0,
+   "taken": 74,
+   "tpm": 20,
+   "died": false,
+   "stage": 2,
+   "turnAt": [
+    78
+   ],
+   "ledger": {
+    "arm1": 204,
+    "under": 3,
+    "crate": 252,
+    "bell": 205,
+    "glance": 1
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 5,
+   "looks": 6,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "sweep": 17,
+    "jet": 57
+   }
+  },
+  {
+   "pass": 2,
+   "mode": "normal",
+   "h": "geomancer",
+   "out": "death",
+   "secs": 133.9,
+   "hp": 675,
+   "left": 0,
+   "taken": 95,
+   "tpm": 34,
+   "died": true,
+   "stage": 2,
+   "turnAt": [
+    22
+   ],
+   "ledger": {
+    "arm1": 204,
+    "glance": 4,
+    "crate": 288,
+    "bell": 164
+   },
+   "tide": 0,
+   "rung": 0,
+   "knelled": 4,
+   "looks": 5,
+   "pinned": 0,
+   "held": 0,
+   "hitBy": {
+    "jet": 46
+   }
+  }
+ ]
+}
