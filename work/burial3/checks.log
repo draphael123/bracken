@@ -23,7 +23,7 @@ FAIL signs           5526ms  no level says the same sentence on two signs (1 kno
  ok  burial-vents   45316ms  burial-vents  fire from a candle, a vent lit by a swing and not without fire, no gas while it burns, the dead 
  ok  burial3          504ms  burial3  GRAVE HANDS: told 1.1 s along the line, unblockable, none in a lit vent's light, cleared by a jump; G
  ok  burial3-keys   32327ms  burial3-keys  THE ARCADE WALK crossed with real keys by knight (22.3 s, 24 coins), pyro (20.3 s, 21 coins), pi
- ok  textfit       236392ms  0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-burial3\audits\readability\textfit
+ ok  textfit       236392ms  0 pictures in <repo>\audits\readability\textfit
 
 ---- signs ----
 burial @192            3 lines THE ARCADE WALK. THE LONG WAY ROUND, OVER THE WATER: THE DEAD KEPT THEIR HOARD AT THE END ...
