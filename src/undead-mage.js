@@ -25,7 +25,7 @@
 //   THE STAGES (A10) 1 over 70%: one pair at a time. 2 (70-40%) "HIS RINGS STAY OPEN": rings live 1.6x longer, a spare exit stays
 //                    open near you after a step or a bent bolt (three rings at once), and his fire comes out of it. 3 (his enrage)
 //                    "HE FIGHTS RING TO RING": his blink is a ring pair, and his fire comes across the room out of a ring behind you.
-// ROUND 3 (docs/briefs/falling-tower-round3.md, Daniel 2026-09-27): two more told moves on the same kit. His difficulty was called
+// ROUND 3 (work/claude/lane-done/claude-ft3.md, Daniel 2026-09-27): two more told moves on the same kit. His difficulty was called
 // fine, so they take the places of the SECOND step and the SECOND bent bolt in his order - the rotation is as long as it was, and the
 // dodge-through opening, his health and every old tell are untouched.
 //   DECOY RING       decoyTell TWO exit rings open either side of you and BOTH flare - but only the real one has THE DESERT in it;

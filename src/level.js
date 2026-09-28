@@ -1220,7 +1220,7 @@ function screePath() {
   ent('goat', 72, 17, { face: -1 }); ent('shield', 78, 17, { face: -1 }); ent('rockfall', 90, 4, { every: 2.4 }); ent('rockfall', 94, 4, { every: 3.1 });
   ent('deco', 84, 15, { kind: 'stone' }); ent('deco', 106, 13, { kind: 'stone' }); ent('deco', 112, 13, { kind: 'cairn' });
   ent('troll', 92, 15, { face: -1 }); ent('harpy', 110, 8);
-  // TWIST loose rock (S1, docs/level-design/wood-to-highcrown-design.md #6 plan 2): two of the crest ledges are loose - the
+  // TWIST loose rock (S1, the design audit's Scree Path plan 2, on claude/designaudit): two of the crest ledges are loose - the
   // shelf snaps under a standing weight (main.js) - so camping one to trade blows with the thrower drops you a step.
   for (const x of [86, 87, 88]) set(x, 12, T.SHELF); plat(91, 10, 3); ent('rockgoblin', 92, 9, { face: -1 });
   for (const x of [97, 98]) set(x, 12, T.SHELF); coins([87, 11], [92, 9], [98, 11]); // the crest ledges over the second terrace: a coin run above the rockfall
