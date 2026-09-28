@@ -9,7 +9,8 @@
 // and there is no going back down. At the crown the roof is gone and the carpet waits on the parapet (src/carpet.js);
 // the Undead Archmage is fought in the open sky (src/undead-mage.js).
 //
-//   rows 0-49      THE SKY: the carpet's arena (L.arena.carpet, rows 34-50), nothing to stand on by design
+//   rows 0-49      THE SKY: the desert (SAND, rows 6-12), his hall at the top of the tower (HALL, rows 22-38: the carpet's
+//                  arena), and nothing to stand on by design between the hall's floor and the crown
 //   rows 50-83   7 THE OPEN CROWN        broken ledges, the sky showing through, the carpet at the top
 //   rows 86-119  6 THE BELL LOFT         (2026-09-25) the bell deck over its pit, and THE SEXTON, the tower's mini
 //   rows 122-155 5 THE BURST CISTERN     a floor of poison water, stepping stones
@@ -37,12 +38,20 @@
 // L.hasCryst lets craze), authored crumbling ledges (deckBreaks), vertical movers, swing movers, poison water, spikes,
 // the Folly's gravity glyphs, falling stones.
 import { crumbleInit, crumbleGone } from './tower-collapse.js';
+import { TOWER_FLYERS, FLAT, overFlat } from './tower-flyers.js';
 export const TOWER = { W: 72, H: 306, X0: 12, X1: 59, SKY: 50, FLOOR: 36, N: 7 };
 /* THE DESERT's rows (round 2, docs/briefs/falling-tower-round2.md §2), high in the empty sky rows where nothing else is built and no
    camera ever reaches except through the portal: sixteen rows over the sanctum's vault, which is itself painted and not built
    (src/sanctum.js). It was a sandstone cutting walled at both ends; it is open sand now, from one edge of the world to the other,
    under THE SUNKEN CARAVAN's sky. `arrive` is where the second door puts you, `gate` the level's end. */
-export const SAND = { x0: 0, x1: TOWER.W - 1, row: 18, deep: 24, arrive: 20, gate: 34 };
+export const SAND = { x0: 0, x1: TOWER.W - 1, row: 6, deep: 12, arrive: 20, gate: 34 };
+/* HIS HALL, THE TOP OF THE TOWER (round 3, Daniel 2026-09-27: "move his arena higher so walking foes cannot wander in", its backdrop
+   "the top of the tower open to the night with the moon behind"). It sat on the crown: its burning floor was row 50 and the parapet
+   walk row 51, so anything that walked the crown's last tiers stood with its head in his fire. It is TWELVE ROWS higher now - its floor
+   eight rows over the tower's merlons and thirteen over the parapet, more than twice the best jump any walker has - and the desert moved up with it (still ten rows over it).
+   The door on the parapet puts you in it as before. tools/tower-hall.mjs holds the gap, and main.js keeps the crown's creatures out
+   of the hall while the fight is on (a hall you reach through a door is not reached by what is outside it). */
+export const HALL = { y0: 22, floor: 38 };
 // [name, interior kind], bottom (k 0) to top (k 6). Every floor's rows come off the pitch, so inserting one moves each
 // floor under it and nothing here is re-typed; what DOES have to move by hand is everything keyed to a row somewhere
 // else - the GARRISON row, level.js's ELITES coords, L.tall and START (docs/briefs/falling-tower-longer.md).
@@ -75,9 +84,18 @@ export function buildTowerAscent({ painter, T, TS }) {
   const net = (x, y0, y1) => nets.push([x, y0, y1]);
   const deco = (kind, x, y, o) => ent('deco', x, y, Object.assign({ kind }, o || {}));
   const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: x < 36 ? 1 : -1 }, o || {}));
-  const FLY = new Set(['tome', 'imp', 'bat', 'boo', 'haunt', 'broom']);
-  /* one creature in the middle of a tier: a flyer hangs three rows over it, anything else stands on it */
-  const put = (t, x0, len, row) => foe(t, x0 + (len >> 1), FLY.has(t) ? row - 3 : row - 1);
+  const FLY = TOWER_FLYERS;
+  /* where the cistern's poison will lie (laid at the end, WATER ONLY WHERE THERE IS WATER): the gaps between its stones at the surface */
+  const cisternPools = () => { if (!cistern) return []; const { surf } = cistern, res = [];
+    for (let x = X0; x <= X1; x++) { if (!(L.grid[surf * W + x] === T.AIR && L.grid[(surf + 1) * W + x] === T.AIR)) continue; let x1 = x; while (x1 + 1 <= X1 && L.grid[surf * W + x1 + 1] === T.AIR && L.grid[(surf + 1) * W + x1 + 1] === T.AIR) x1++;
+      res.push({ x0: x * TS, x1: (x1 + 1) * TS, y: surf * TS + 4, bottom: cistern.bot * TS, harm: true }); x = x1; } return res; };
+  /* one creature in the middle of a tier, standing on it. NO FLYER ON A STAIR (round 3, Daniel 2026-09-27: "too many flying foes ...
+     especially over platforming ... ground foes there if a threat is needed"): a tier the list gives a flyer gets a WALKER instead - an
+     apprentice, and every third one an armour - so the climb keeps its threat and it is one you can fight from the ledge you are on.
+     The flyers themselves are kept to the floors (see FLYERS KEEP TO THE FLOORS). */
+  let walkers = 0;
+  const walker = () => (walkers++ % 3 === 2 ? 'armour' : 'apprentice');
+  const put = (t, x0, len, row) => foe(FLY.has(t) ? walker() : t, x0 + (len >> 1), row - 1);
   const ledge = (x0, len, row, t = T.ONEWAY) => rect(x0, x0 + len - 1, row, row, t);
   /* a pocket off a tier, four tiles past the end of its ledge (or before its start, against the far wall), with the silver on it */
   const pocket = ([x0, len, row]) => { const px = x0 + len + 4 <= X1 - 3 ? x0 + len + 4 : x0 - 7; ledge(px, 3, row); ent('silver', px + 1, row - 1); };
@@ -229,8 +247,15 @@ export function buildTowerAscent({ painter, T, TS }) {
     rect(X0, X1, frame, frame + 1, T.SOLID);                                         /* the bell frame: the room's roof */
     rect(52, 52, frame + 2, deck - 1, T.PORT);                                       /* the mini's gate: it lifts when he falls */
     net(56, frame, deck - 1);                                                        /* and the rope up through the frame beyond it */
-    for (const [x0, x1] of [[15, 19], [21, 25], [27, 31], [33, 37], [41, 45], [47, 51]]) crumbles.push({ x0, x1, row: deck, kind: 'deck' });
-    bell = { deck, frame, joists: [13, 20, 26, 32, 39, 46].map(x => x * TS + 8) };
+    /* THE BELL PIT IS SPIKED (round 3, Daniel 2026-09-27): iron on the pit's floor under every plank - a plank that goes under you is a
+       fall onto points now, not a step down. The Sexton caught in it is not hurt by them: he does not stand, he GLIDES (sexton.js) */
+    const bays = [[15, 19], [21, 25], [27, 31], [33, 37], [41, 45], [47, 51]];
+    /* ...except the column the cistern's rope comes up in: the rope runs on up through the pit to the plank, so you climb in past the
+       points, not onto them (the reach fill and tools/killzones.mjs both hold this) */
+    const [rx0, rlen] = floors[4].tiers[floors[4].tiers.length - 1], ropeX = rx0 + (rlen >> 1);
+    for (const [x0, x1] of bays) { crumbles.push({ x0, x1, row: deck, kind: 'deck' }); for (let x = x0; x <= x1; x++) if (x !== ropeX) set(x, b - 1, T.SPIKE); }
+    if (bays.some(([x0, x1]) => ropeX >= x0 && ropeX <= x1)) net(ropeX, deck + 1, b - 1);
+    bell = { deck, frame, joists: [13, 20, 26, 32, 39, 46].map(x => x * TS + 8), spikes: { row: b - 1, bays, rope: ropeX } };
     ent('sexton', 30, deck - 1, { mini: true, face: -1 });
     ent('sign', 13, deck - 3, { text: 'THE BELL LOFT. HIS TOLL SETS THE DECK COUNTING: GET OFF THE PLANKS.' });
     ent('check', 56, deck - 1);                                                      /* past the gate: somewhere to go the moment he falls */
@@ -266,7 +291,7 @@ export function buildTowerAscent({ painter, T, TS }) {
      this is the road into it. Reached only by the portal; the world's own edges end it, not walls. */
   rect(SAND.x0, SAND.x1, SAND.row, SAND.deep, T.SOLID);                     /* the sand itself, seven rows deep: the camera never sees under it */
   ent('gate', SAND.gate, SAND.row - 1); ent('sign', SAND.arrive + 4, SAND.row - 1, { text: 'THE TOWER IS BEHIND YOU. AHEAD IS THE SAND, AND THE ROAD TO THE SUNKEN CARAVAN.' });
-  ent('undeadmage', 36, 42, { face: -1 });
+  ent('undeadmage', 36, HALL.floor - 8, { face: -1 });
   // ---- THE DIVIDERS AND THEIR ROPES. Each floor's rope hangs from its last tier, through the divider over it, to its top. ----
   for (let k = 0; k < floors.length - 1; k++) {
     const F = floors[k], [x0, len, row] = F.tiers[F.tiers.length - 1], rx = x0 + (len >> 1);
@@ -280,11 +305,33 @@ export function buildTowerAscent({ painter, T, TS }) {
 
   // EVERY ROPE IS HUNG LAST (rule I): nothing is dug after this line
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
+  /* FLYERS KEEP TO THE FLOORS (round 3; src/tower-flyers.js is the rule, tools/tower-flyers.mjs the check). Every flyer placed above -
+     by the floors' lists and the seams - is checked against the finished grid: one over flat ground stays; one over a stair is moved to
+     the nearest flat ground on its own floor (three rows over it), if that floor has room for it - at most FLOOR_FLYERS a floor, six
+     columns apart - and otherwise it is not put at all. The cistern's water is laid below (its pools are known here), so it counts. */
+  { const FLOOR_FLYERS = 3, probe = { W, H, grid: L.grid, pools: cisternPools() }, placed = [], out = [];
+    const floorOf = y => floors.find(f => y >= f.top - 2 && y < f.bot + 1);
+    const free = (x, y) => y > SKY && !placed.some(([px, py]) => Math.abs(px - x) < 6 && Math.abs(py - y) < 5);   /* (never on the parapet: it is his door's) */
+    for (const e of L.ents) { if (!FLY.has(e.t)) { out.push(e); continue; }
+      const F = floorOf(e.y); if (!F || placed.filter(q => q[2] === F).length >= FLOOR_FLYERS) continue;
+      let spot = overFlat(probe, T, e.x, e.y) && free(e.x, e.y) ? [e.x, e.y] : null;
+      if (!spot) { let best = Infinity;
+        for (let gy = F.top + 1; gy <= F.bot; gy++) for (let x = X0 + FLAT.half; x <= X1 - FLAT.half; x++) { const y = gy - 3;
+          if (L.grid[gy * W + x] !== T.SOLID || !overFlat(probe, T, x, y) || !free(x, y)) continue;
+          const cost = Math.abs(x - e.x) + Math.abs(y - e.y) * 0.5; if (cost < best) { best = cost; spot = [x, y]; } } }
+      if (!spot) { /* no floor for it: a walker on the ledge under it instead, if there is one in reach and nothing stands there */
+        let gy = e.y; while (gy < F.bot && L.grid[gy * W + e.x] === T.AIR) gy++; const t = L.grid[gy * W + e.x];
+        const wet = probe.pools.some(q => e.x * TS + 8 > q.x0 && e.x * TS + 8 < q.x1 && gy * TS > q.y);   /* never down in the cistern's poison */
+        if (!wet && gy - e.y <= 8 && (t === T.ONEWAY || t === T.PLANK || t === T.SOLID || t === T.CRYST) && !out.some(q => !FLY.has(q.t) && Math.abs(q.x - e.x) < 4 && Math.abs(q.y - (gy - 1)) < 3))
+          out.push({ ...e, t: walker(), y: gy - 1, face: e.x < 36 ? 1 : -1 });
+        continue; }
+      e.x = spot[0]; e.y = spot[1]; e.face = e.x < 36 ? 1 : -1; placed.push([e.x, e.y, F]); out.push(e); }
+    L.ents.length = 0; L.ents.push(...out); }
   /* WATER ONLY WHERE THERE IS WATER. The cistern was one pool from wall to wall, so the stones and the rope the floor below
      comes up by were 'in' it too - and since the water was made DEADLY (e0ab1dc) the climb up that rope killed you before you
      were out of it (Daniel: 'takes you right into poison water... impossible to beat'). One pool per open gap between the
      stones now: each four rows deep with a stone either side, so each is still a trap and still DEADLY (deadly-water.js). */
-  if (cistern) { const { surf, bot } = cistern, open = x => L.grid[surf * W + x] === T.AIR && L.grid[(surf + 1) * W + x] === T.AIR;
+  if (cistern) { const { surf, bot } = cistern, open = x => L.grid[surf * W + x] === T.AIR && L.grid[(surf + 1) * W + x] === T.AIR;   /* (cisternPools() above reads the same gaps for the flyers) */
     for (let x = X0; x <= X1; x++) { if (!open(x)) continue; let x1 = x; while (x1 + 1 <= X1 && open(x1 + 1)) x1++;
       /* WITCHWATER, NOT A LAWN (round 2, docs/briefs/falling-tower-round2.md §1c). It was the Undercrown's green, and between the stones - a
          bright flat top and the bubbles standing up off it - it read at play size as a row of GRASS TILES: the mistake the sanctum's fire
@@ -316,6 +363,7 @@ export function buildTowerAscent({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra, interiors, gusts: [], flips, glyphBridges, crumbles,   /* FAILING STONE: src/tower-collapse.js */
     music: 'fallingtower', night: true, nightA: 0.12, edgeLit: true, duskStart: 99999, duskLen: 1, hasCryst: true,
+    flatFlyers: { below: SKY }, calm: [[SAND.x0, SAND.x1, 0, SAND.deep + 1]],   /* (round 3) the sprinkler's flyers keep to flat ground under the parapet (his door's), and nothing of the tower's is sprinkled on the desert past the second door (a calm over the sky rows only: the tower itself has none) */
     towerAscent: true, carpetAt: { x: 36 * TS, y: SKY * TS }, fallingTower: true, stackedFloors: true, skyRow: SKY,
     /* THE ARCHMAGE'S SANCTUM (src/sanctum.js). `in` is the door on the parapet and stands exactly where the carpet used
        to lie, so the carpet's own board check opens it; `spawn` is where you come out, inside his hall and well over the
@@ -323,7 +371,7 @@ export function buildTowerAscent({ painter, T, TS }) {
        the way out opens WHERE HE FALLS. */
     bellDeck: bell,   /* THE SEXTON's deck: its row, the frame over it and the joists he climbs out onto (main.js) */
     mini: { x0: 12 * TS, x1: 52 * TS, floor: bell.deck * TS, y0: bell.frame * TS, y1: (bell.deck + 4) * TS, trigger: 14 * TS, wallL: 12, gate: 52, boss: 'sexton', name: 'THE SEXTON' },
-    sanctum: { in: { x: 36 * TS, y: SKY * TS }, spawn: { x: 14 * TS, y: 40 * TS }, sand: { x: SAND.arrive * TS + 8, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
+    sanctum: { in: { x: 36 * TS, y: SKY * TS }, spawn: { x: 14 * TS, y: (HALL.floor - 10) * TS }, sand: { x: SAND.arrive * TS + 8, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
     tall: { top: SKY * TS, bottom: floors[0].bot * TS, col: '16,20,32', deepest: 0.16 },   /* the gloom is cold slate, not the Folly's violet */
     towerFloors: floors.map((F, k) => ({ name: F.name, top: F.top, bot: F.bot, hole: F.hole || null, last: k === N - 1 })),
     deckBreaks: breaks.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true })),   /* spine ledges: they come back (updateTowerAscent), or a fall into the water would be a soft-lock */
@@ -336,7 +384,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hall' }],
     noCoin: [[0, W - 1, 0, SKY + 1]],
     /* THE SKY IS THE ARENA. trigger is never walked past: the carpet starts the fight when it is boarded (carpet.js) */
-    arena: { x0: 4 * TS, x1: 68 * TS, y0: 34 * TS, floor: SKY * TS,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: 0, wallR: W - 1, boss: 'undeadmage', carpet: true, music: 'boss4', tint: '#30334e', tintA: 0.06 },
+    arena: { x0: 4 * TS, x1: 68 * TS, y0: HALL.y0 * TS, floor: HALL.floor * TS, hall: true,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: 0, wallR: W - 1, boss: 'undeadmage', carpet: true, music: 'boss4', tint: '#30334e', tintA: 0.06 },
   };
 }
 

@@ -1,0 +1,5 @@
+{"h":"knight","salt":1,"out":"win","secs":53.2,"taken":21,"left":0,"pits":2,"hitBy":{}}
+{"h":"warden","salt":1,"out":"win","secs":58.6,"taken":76,"left":0,"pits":3,"hitBy":{"swingTell":17}}
+{"h":"pyro","salt":1,"out":"win","secs":37.9,"taken":16,"left":0,"pits":2,"hitBy":{"dropTell":16}}
+{"mini":"sexton","fights":3,"wins":3,"pct":100,"medianWin":53.2,"medianFight":53.2,"pitsAvg":2.3,"byHero":{"knight":"1/1","warden":"1/1","pyro":"1/1"},"hitBy":{"swingTell":17,"dropTell":16}}
+errors []

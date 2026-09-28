@@ -28,7 +28,10 @@ const deadly = (x, y) => (L.pools || []).some(p => p.deadly && x * 16 >= p.x0 &&
 for (const c of C) {
   const mid = (c.x0 + c.x1) >> 1; let y = c.row + c.rows; while (y < L.H && at(mid, y) === T.AIR) y++;
   assert.ok(y - c.row < 14, c.kind + ': the fall off it is ' + (y - c.row) + ' rows');
-  assert.notEqual(at(mid, y), T.SPIKE, c.kind + ': it drops you on spikes'); assert.ok(!deadly(mid, y - 1), c.kind + ': it drops you in poison');
+  /* (round 3, Daniel 2026-09-27) THE BELL PIT IS SPIKED ON PURPOSE: the Sexton's planks drop you onto iron that HURTS (it does not kill) and
+     the way out is the jump back up through the hole. Every other failing section still drops you on something that does not hurt. */
+  if (c.kind === 'deck') assert.ok([...Array(c.x1 - c.x0 + 1)].some((_, i) => { let q = c.row + 1; while (q < L.H && at(c.x0 + i, q) === T.AIR) q++; return at(c.x0 + i, q) === T.SPIKE && q - c.row <= 3; }), 'deck: the bell pit under it is not spiked (round 3)');
+  else assert.notEqual(at(mid, y), T.SPIKE, c.kind + ': it drops you on spikes'); assert.ok(!deadly(mid, y - 1), c.kind + ': it drops you in poison');
   if (c.opens) continue;
   const R = floodReach({ ...L, START: { x: mid, y: y - 1 } }, T, { rides: true });
   assert.ok(R.jumpNear(mid, c.row - 1), c.kind + ': from where it drops you (' + mid + ',' + (y - 1) + ') the climb back to it is not there');

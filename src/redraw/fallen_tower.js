@@ -129,3 +129,18 @@ export function paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time = 0, blocked
   g.fillStyle = FT.dustL; for (let k = 0; k < Math.floor(w / 90); k++) { const x = (k * 97 + tx0 * 7) % w, y = ((time * 22 + k * 53) % (h + 20)) - 10; g.globalAlpha = 0.5; g.fillRect(Math.round(sx + x + Math.sin(time + k) * 3), Math.round(sy + y), 1, 1); } g.globalAlpha = 1;
   return R;
 }
+/* THE TOWER'S SPIKES (round 3, the Sexton's bell pit; also the pendulum gallery's gear pit): iron points leaded into a slate kerb, pale at
+   the tips, with a bronze shard of a broken bell among them. The tower has no brambles - the default spike tile is THORNS, a hedge's,
+   and it was growing out of a stone floor two hundred rows up. Four variants, 16x16, bottom-aligned like every spike tile. */
+export function bakeTowerSpikes() {
+  const out = [];
+  for (let v = 0; v < 4; v++) {
+    const [c, g] = canvas(16, 16);
+    rect(g, 0, 13, 16, 3, FT.stoneD); rect(g, 0, 13, 16, 1, FT.stoneL); px(g, 3 + v * 3, 14, FT.mortar);   /* the kerb */
+    if (v % 2 === 0) { fillPoly(g, [[9 - v, 13], [11 - v, 10], [14 - v, 13]], FT.bell); px(g, 11 - v, 11, FT.bellL); }   /* a shard of the bell */
+    for (const bx of [1, 5, 9, 13]) { const x = bx + (v === 3 && bx === 5 ? 1 : 0), top = 3 + ((bx + v) % 3);
+      fillPoly(g, [[x - 1, 13], [x, top], [x + 2, 13]], '#3a3e4c'); line(g, x, top + 1, x, 12, '#6a7086'); px(g, x, top, '#d8dcea'); px(g, x, top + 1, '#aab0c4'); }
+    out.push(c);
+  }
+  return out;
+}

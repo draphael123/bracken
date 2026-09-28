@@ -1,0 +1,5 @@
+{"h":"knight","salt":1,"out":"win","secs":79.1,"taken":127,"opened":9,"left":0,"swings":78,"hitBy":{"hover":49,"iceTell":19,"gather":19,"blinkOut":19,"markTell":7,"markWait":14},"portal":{"breached":5,"gather":4}}
+{"h":"warden","salt":1,"out":"win","secs":118.9,"taken":111,"opened":15,"left":0,"swings":144,"hitBy":{"hover":14,"markWait":33,"stepTell":19,"fireTell":19,"blinkOut":19,"markTell":7},"portal":{"breached":8,"gather":7}}
+{"h":"pyro","salt":1,"out":"win","secs":92.7,"taken":147,"opened":11,"left":0,"swings":98,"hitBy":{"hover":33,"blinkIn":19,"poisonTell":19,"stormTell":19,"iceTell":19,"blinkOut":19,"markWait":19},"portal":{"breached":5,"gather":6}}
+{"health":"refill","cap":150,"fights":3,"wins":3,"pct":100,"medianWin":92.7,"medianLeftOnLoss":null,"openedAvg":11.7,"breachedAvg":6,"markOpenAvg":5.7,"byHero":{"knight":"1/1","warden":"1/1","pyro":"1/1"},"hitBy":{"hover":96,"iceTell":38,"gather":19,"blinkOut":57,"markTell":14,"markWait":66,"stepTell":19,"fireTell":19,"blinkIn":19,"poisonTell":19,"stormTell":19}}
+errors []

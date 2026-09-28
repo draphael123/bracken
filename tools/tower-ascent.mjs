@@ -31,7 +31,7 @@ assert.equal(L.towerFloors.length, 7, 'seven floors since the tower was made lon
 assert.equal(L.H, 306, 'and 306 rows (it was 240)');
 const kinds = new Set(L.interiors.map(i => i[4])); assert.equal(kinds.size, 7, 'seven floors, seven rooms: ' + [...kinds]);
 for (const f of L.towerFloors.slice(0, 6)) { const [x, y0, y1] = f.hole; for (let y = y0; y <= y1; y++) assert.equal(at(x, y), T.NET, f.name + ': the rope goes through its divider'); }
-assert.ok(!L.calm || !L.calm.length, 'no blanket calm (the rule the Codex levels broke)');
+assert.ok(!L.calm || L.calm.every(([, , , y1]) => y1 < TOWER.SKY - 4), 'no blanket calm in the tower (the rule the Codex levels broke; round 3 calms only the desert, over the sky rows)');
 const garrison = L.ents.filter(e => e.garrison); assert.ok(garrison.length >= 8, 'the GARRISON row places: ' + garrison.length);
 const gRows = new Set(garrison.map(e => L.towerFloors.findIndex(f => e.y >= f.top && e.y < f.bot))); assert.ok(gRows.size >= 3, 'and on more than the top floor (stackedFloors): ' + [...gRows]);
 const elites = L.ents.filter(e => e.elite); assert.equal(elites.length, 1, 'one elite, the cistern husk: the orrery armour captains the ambush and the loft warden is THE SEXTON since the rework (2026-09-25)');
@@ -43,7 +43,9 @@ assert.equal(L.ents.filter(e => e.t === 'silver').length, 3);
    this one had gravity glyphs in it. */
 const non = new Set(['check', 'sign', 'coin', 'deco', 'silver', 'stal', 'gate', 'mover', 'undeadmage', 'glyph', 'mend']);
 const foes = L.ents.filter(e => !non.has(e.t)), climb = L.START.y - TOWER.SKY;
-const density = foes.length / (climb / 12); assert.ok(density >= 3.5 && density <= 4.6, 'foes per screen of climb: ' + density.toFixed(2));
+/* (round 3, Daniel 2026-09-27: 'too many flying foes') the forty flyers taken off the stairs came back as walkers where a ledge could hold one
+   and as nothing where it could not (over the cistern's water, the gear pit's spikes, a crowd): 4.2 a screen went to 3.3, so the floor is 3.2 */
+const density = foes.length / (climb / 12); assert.ok(density >= 3.2 && density <= 4.6, 'foes per screen of climb: ' + density.toFixed(2));
 assert.ok(L.arena.carpet && L.arena.boss === 'undeadmage' && L.arena.trigger > L.W * 16, 'the fight is started by the carpet, not by walking');
 assert.ok(L.ents.some(e => e.t === 'undeadmage' && e.y < TOWER.SKY), 'he waits in the sky');
 // ---- REACH ----
@@ -89,9 +91,12 @@ assert.ok(checks[0] > TOWER.SKY + 1 && checks[0] <= TOWER.SKY + 8, "the last che
   const n = t => L.ents.filter(e => e.t === t).length;
   assert.equal(n('zombie'), 3, 'three zombies in the tower'); assert.equal(n('husk'), 1, 'and one husk');
   assert.ok(L.ents.filter(e => e.t === 'husk')[0].elite, 'and it is the cistern elite, not one more on top of it');
-  assert.ok(n('tome') >= 24, 'THE TOMES carry what they carried: ' + n('tome'));
+  /* (round 3, Daniel 2026-09-27) A TOME IS A FLYER, and flyers keep to the floors now (src/tower-flyers.js): the twenty-eight that hung over
+     every stair are ten over the tower's flat ground. Still the tower's own foe, and still met on every floor that has a floor to meet
+     them over - all but the cistern, which is water and stepping stones from wall to wall. */
+  assert.ok(n('tome') >= 8, "THE TOMES are still the tower's own foe: " + n('tome'));
   const perFloor = L.towerFloors.map(f => L.ents.filter(e => e.t === 'tome' && e.y >= f.top && e.y < f.bot).length);
-  assert.ok(perFloor.every(k => k >= 2), 'on every floor: ' + perFloor.join(','));
+  assert.ok(perFloor.every((k, i) => k >= 1 || L.towerFloors[i].name === 'THE BURST CISTERN'), 'on every floor with flat ground: ' + perFloor.join(','));
   // AND BOTH NEW FLOORS ARE LOAD-BEARING. Take the rule away and the fill stops at it.
   const noFlip = floodReach({ ...L, glyphBridges: [] }, T, { rides: true });
   assert.ok(!noFlip.jumpNear(40, F['THE READING ROOM'].top + 9), 'without the flip the gallery is out of reach');

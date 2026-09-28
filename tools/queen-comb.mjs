@@ -10,5 +10,6 @@ vm.runInContext(src.slice(src.indexOf('function combFall('),src.indexOf('functio
 const before=Array.from(L.grid);for(let i=0;i<8;i++)c.combFall({x:A.x0+80});
 assert.deepEqual(Array.from(L.grid),before);assert.equal(rocks.length,12);assert(rocks.every(r=>r.comb&&r.delay>=0.6));
 const view=src.slice(src.indexOf('function desiredView()'),src.indexOf('// THE EDITOR',src.indexOf('function desiredView()')));
-assert(view.includes("boss.t === 'queen'"),'render must keep the wider Queen view');
+const {bossZooms}=await import('../src/boss-view.js');   /* one list since 2026-09-27 (tools/zoom-coverage.mjs runs desiredView() itself) */
+assert(view.includes('bossZooms(boss.t)')&&bossZooms('queen'),'render must keep the wider Queen view');
 console.log('Queen: no ceiling footing, three told falling-comb pieces, unchanged grid and persistent wider view.');
