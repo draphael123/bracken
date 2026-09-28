@@ -23,7 +23,9 @@ const save = (name, png) => { const f = name.replace(/[^a-z0-9.-]+/gi, '-') + '.
 const results = [];
 try {
   await pg.evalp(`import('/src/level.js').then(M => { window.__LV = M.LEVELS; return true; })`);
-  const levels = await pg.evalp('window.__LV.map((l, i) => ({ i, id: l.id, hasArena: !!l.arena, hasMini: !!l.mini }))');
+  // a level entry is a builder (LEVELS[i].build()), not a plain object - boss-fight-end.mjs reads it the same way
+  const levels = await pg.evalp(`window.__LV.map((l, i) => { let b; try { b = l.build(); } catch { return { i, id: l.id, hasArena: false, hasMini: false }; }
+    return { i, id: l.id, hasArena: !!b.arena, hasMini: !!b.mini }; })`);
   for (const lv of levels) {
     for (const kind of ['arena', 'mini']) {
       if (!(kind === 'arena' ? lv.hasArena : lv.hasMini)) continue;
@@ -35,12 +37,22 @@ try {
         const active = () => ${kind === 'arena' ? 'BK.bossActive' : 'BK.miniActive'};
         for (let k = 0; k < 300 && !active(); k++) { BK.P.hp = BK.P.maxHp; BK.sim(1); }
         if (!active()) return { id: '${lv.id}', kind: '${kind}', t, started: false };
-        for (let k = 0; k < 150; k++) { BK.P.hp = BK.P.maxHp; BK.P.inv = 9; BK.sim(1); }
+        // A FOE MORE THAN ~420PX FROM THE PLAYER IS FROZEN (main.js's own culling): standing still at the trigger
+        // in a wide arena never lets a distant boss/mini leave its 'wake' mode, so a real player closing the
+        // distance is imitated here - walk toward it - instead of freezing this capture's own picture of the fight.
+        for (let k = 0; k < 260; k++) { BK.P.hp = BK.P.maxHp; BK.P.inv = 9;
+          const foe = ${kind === 'arena' ? 'BK.boss' : "BK.enemies().find(e => e.alive && e.t === t && (e.mini || e.t === 'greathound'))"};
+          const d = foe ? foe.x - BK.P.x : 0;
+          BK.keys.right = d > 60; BK.keys.left = d < -60;
+          BK.sim(1); }
+        BK.keys.right = BK.keys.left = false;
+        for (let k = 0; k < 90; k++) { BK.P.hp = BK.P.maxHp; BK.P.inv = 9; BK.sim(1); }
+        BK.step(1);   /* sim() never calls render() - the buffer stays whatever the LAST rendered frame drew until this */
         const v = BK.view, P = BK.P, boss = ${kind === 'arena' ? 'BK.boss' : 'null'};
         const camX = v.x, camY = v.y, VW = v.VW, VH = v.VH;
         const wallL = A.wallL !== undefined ? A.wallL * 16 : A.x0, wallR = A.wallR !== undefined ? A.wallR * 16 : A.x1;
-        const bx = boss ? boss.x : (BK.enemies().find(e => e.t === t && e.alive) || {}).x;
-        const by = boss ? boss.y : (BK.enemies().find(e => e.t === t && e.alive) || {}).y;
+        const mb = boss ? boss : BK.enemies().find(e => e.alive && e.t === t && (e.mini || e.t === 'greathound'));   /* the same test main.js's own miniOne() uses - a level can carry the same 't' on an ordinary foe too */
+        const bx = mb && mb.x, by = mb && mb.y;
         return { id: '${lv.id}', kind: '${kind}', t, started: true, camX, camY, VW, VH,
           arenaX0: A.x0, arenaX1: A.x1, wallL, wallR,
           bossOn: bx !== undefined && bx > camX && bx < camX + VW && by > camY - 40 && by < camY + VH,

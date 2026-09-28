@@ -11,7 +11,7 @@
 // not). So this file no longer hardcodes which bosses to expect - it reads every boss `L.arena.boss` and every mini
 // `L.mini.boss` actually placed in the levels (src/*.js) the same way spawnEntities does, then checks EVERY one of
 // them zooms unless src/boss-view.js excludes it by name. `--src <file>` runs step 2 against another main.js.
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import vm from 'node:vm';
 import { ZOOM_BOSS_EXCLUDE, ZOOM_MINI_EXCLUDE, bossZooms, miniZooms } from '../src/boss-view.js';
 const ai = process.argv.indexOf('--src');
@@ -20,12 +20,20 @@ const src = readFileSync(ai > 0 ? process.argv[ai + 1] : new URL('main.js', SRC_
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
 
 /* 1. EVERY BOSS AND MINI ACTUALLY PLACED: every `arena: {...boss: 'x'...}` and `mini: {...boss: 'x'...}` object
-   literal across src/*.js (a level builds its own arena/mini as `const arena = {...}` as often as inline, so this
-   matches either `arena:` or `arena =`), read the same brace-balanced way a hand would, not a single-line regex -
-   several arenas nest another object (dais, housings) before their own `boss:` key. */
+   literal across src/**\/*.js - not just src/*.js: a level's own arena/mini is as often built by its draft
+   (src/draft/*.js, e.g. the Dune Worm's hollow) as it is inline, and a level builds its own arena/mini as
+   `const arena = {...}` as often as inline, so this matches either `arena:` or `arena =`. Read the same
+   brace-balanced way a hand would, not a single-line regex - several arenas nest another object (dais, housings)
+   before their own `boss:` key. */
+const allJsFiles = (dir) => { const out = [];
+  for (const f of readdirSync(dir)) { const p = new URL(f, dir);
+    if (statSync(p).isDirectory()) out.push(...allJsFiles(new URL(f + '/', dir)));
+    else if (f.endsWith('.js')) out.push(p); }
+  return out; };
+const SRC_FILES = allJsFiles(SRC_DIR);
 const placed = (keyRe) => { const out = new Set();
-  for (const f of readdirSync(SRC_DIR)) { if (!f.endsWith('.js')) continue;
-    const body = readFileSync(new URL(f, SRC_DIR), 'utf8'); let idx = 0;
+  for (const f of SRC_FILES) {
+    const body = readFileSync(f, 'utf8'); let idx = 0;
     while (true) { const rest = body.slice(idx); const m = rest.match(keyRe); if (!m) break;
       const start = idx + m.index + m[0].length - 1; let depth = 0, i = start;
       for (; i < body.length; i++) { if (body[i] === '{') depth++; else if (body[i] === '}') { depth--; if (depth === 0) break; } }
@@ -35,7 +43,7 @@ const placed = (keyRe) => { const out = new Set();
 const bosses = placed(/\barena\s*[:=]\s*\{/), minis = placed(/\bmini\s*[:=]\s*\{/);
 ok(bosses.size >= 25, 'only found ' + bosses.size + ' placed boss arenas across src/*.js: the reader broke');
 ok(minis.size >= 10, 'only found ' + minis.size + ' placed mini arenas across src/*.js: the reader broke');
-for (const t of ['harbormaster', 'pyromancer', 'bellcrab', 'closedhelm', 'drownedking', 'prince', 'grandmother', 'troll', 'strawking', 'archmage', 'gargoyle', 'queen', 'mother', 'ram', 'abbot', 'winchmaster'])
+for (const t of ['harbormaster', 'pyromancer', 'bellcrab', 'closedhelm', 'drownedking', 'prince', 'grandmother', 'troll', 'strawking', 'archmage', 'gargoyle', 'queen', 'mother', 'ram', 'abbot', 'winchmaster', 'duneworm'])
   ok(bosses.has(t), t + "'s arena was not found (level file renamed or restructured?)");
 ok(minis.has('golem'), "the Monastery Golem's mini arena was not found");
 
