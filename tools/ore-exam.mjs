@@ -17,7 +17,7 @@
 // usage: node tools/ore-exam.mjs
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
-import { OR, cableLines, ORES, oreBias, MINE_PLACES, WORKS } from '../src/ore-road.js';
+import { OR, cableLines, ORES, oreBias, MINE_PLACES, WORKS, lineYAt } from '../src/ore-road.js';
 import { SLOPE, isSlope } from '../src/slopes.js';
 
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
@@ -118,6 +118,40 @@ console.log('\nROUND FOUR: ORE WALLS YOU MINE THROUGH (lane claude/oreroad3, ite
   const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   ok(/function wallsStep/.test(src) && /function breakWall/.test(src) && /function wallsMendAll/.test(src), 'main.js has the hook: struck like a vein (wallsStep), opens the grid for real when it gives (breakWall), and mends on respawn (wallsMendAll, called from mendAll)');
   ok(/wallsMendAll\(\)/.test(src) && src.indexOf('mendAll(); wallsMendAll();') >= 0, "NEVER A SOFT-LOCK: respawn's own mendAll() call is followed by wallsMendAll(), so a wall never stays broken past the attempt that broke it"); }
+
+console.log('\nROUND FIVE: PASSING BUCKETS (lane claude/passbuckets, item 4) - AND THE WINCHMASTER\'S WEST WALL, SEALED');
+/* ---- PASSING BUCKETS (Daniel, 2026-09-28, decided): THE FIRST SPAN gets a second line, 'pass', running the OTHER
+   way. Pinned here: it exists, it runs opposite 'first', and the gap between the two - sampled all along the stretch,
+   not just at one spot - is a REAL JUMP (3.2-4.5 tiles by hero, RULES/common.md - not the reach model's 6), never a
+   step and never out of reach. A miss falls into THE FIRST SPAN's own pit (tools/ore-road.mjs/ore-ride.mjs already
+   hold that pit to "a fifth of your health and a climb, never your life" for every span, this one included - nothing
+   new needed here for that half of it). */
+{ const lines = cableLines(), first = lines.find(l => l.id === 'first'), pass = lines.find(l => l.id === 'pass');
+  ok(!!pass, "the 'pass' line exists - a second line over THE FIRST SPAN");
+  ok(!!first && !!pass && Math.sign(first.pts[first.pts.length - 1][0] - first.pts[0][0]) === -Math.sign(pass.pts[pass.pts.length - 1][0] - pass.pts[0][0]),
+    "and it runs the OPPOSITE way to 'first' (first's pts travel low-to-high x as its clock runs; pass's travel high-to-low, so a bucket on it moves the other direction)");
+  if (first && pass) {
+    const xs = pass.pts.map(p => p[0] / 16), x0 = Math.min(...xs), x1 = Math.max(...xs);
+    ok(x0 >= 68 && x1 <= 135, `it stays on THE FIRST SPAN (68-135): runs ${x0}-${x1}`);
+    let worst = null, lo = Infinity, hi = -Infinity;
+    for (let x = x0; x <= x1; x += 0.5) { const y1 = lineYAt(first, x * 16), y2 = lineYAt(pass, x * 16); if (y1 === null || y2 === null) continue;
+      const rows = Math.abs(y2 - y1) / 16; lo = Math.min(lo, rows); hi = Math.max(hi, rows); if (rows < 3.2 || rows > 4.5) worst = worst ?? [x, rows]; }
+    ok(lo >= 3.2 && hi <= 4.5, `the vertical gap between the two lines is ${lo.toFixed(2)}-${hi.toFixed(2)} tiles everywhere they run together - a real jump (3.2-4.5), not a step and not a reach nothing could make` + (worst ? ` - at column ${worst[0]} it is ${worst[1].toFixed(2)}` : ''));
+  }
+  const sign = L.ents.some(e => e.t === 'sign' && e.x >= 60 && e.x <= 90 && /SECOND LINE/.test(e.text || ''));
+  ok(sign, 'and it is TAUGHT: a sign says so before the stretch (C5 - the other line\'s buckets are visible coming; nothing else needed for that)'); }
+
+/* ---- THE WINCHMASTER'S WEST LOCK WALL, SEALED (winch3's Q4, approved, closed in this lane - his own AI in
+   src/winchmaster.js is untouched): the wall now runs from THE HEAD FRAME's own top row down to the arena floor at
+   every row, where the old 6-row wall left rows open between its low top and the housing's underside - the gap that
+   let a hero land on the wall and step back out onto the landing. Pinned geometrically (the runtime toggle itself,
+   main.js's setWall, is proved in the page by tools/ore-ride.mjs) - the FIX here is that main.js's own code for it
+   reads the Head Frame's row off OR.ARENA rather than a number typed in main.js, so a future room edit cannot make
+   the fix stale the way the lab's old literals did (claude/oreroad3, item 3). */
+{ const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const i0 = src.indexOf('function setWall(col, solid)'), body = i0 < 0 ? '' : src.slice(i0, src.indexOf('\n}', i0));
+  ok(/A\.boss === 'winchmaster' && col === A\.wallL/.test(body), "setWall special-cases only the Winchmaster's own west wall (wallL) - no other boss's wall is touched");
+  ok(/top = sealed \? 0 :/.test(body), 'and when it is that wall, it runs from row 0 (the top of the level - past the Head Frame\'s own underside, not merely to it) rather than the generic 6 rows'); }
 
 console.log(failed());
 function failed() { return fails ? '\n' + fails + ' ore-exam check(s) FAILED.' : '\nall ore-exam checks pass.'; }

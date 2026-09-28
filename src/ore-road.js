@@ -26,7 +26,8 @@ import { makeWall } from './breakable-walls.js';
 //
 // ONE VERB A PLACE, SEVEN SECTIONS OF 60-100 (F1), AND IT ALTERNATES (F4) - fight, cross, fight, ride, climb, cross, fight:
 //   c   0- 67  THE ORE YARD       ON FOOT.   The crusher: the first hazard, and the first thing you can tip ore into
-//   c  68-135  THE FIRST SPAN     RIDE.      Two pylons to rest on, tipplers over the lane, the down line coming back
+//   c  68-135  THE FIRST SPAN     RIDE.      Two pylons to rest on, tipplers over the lane, and PASSING BUCKETS: a second
+//                                            line running back the other way, under the first - hop down as it passes
 //   c 136-203  THE SORTING TOWER  CLIMB.     Three decks, and THE SORTING FLOOR is the ambush room (Q)
 //   c 204-271  THE ORE CHUTE      RIDE DOWN. Fast, steered rather than waited out, over the crusher run
 //   c 272-339  THE COLLAPSED SPAN ON FOOT.   The cable is snapped; climb the fallen towers over their own splinters
@@ -42,6 +43,19 @@ export const OR = {
   W: 529, H: 60,
   YARD: 36,                                                      // the yard's floor, and the first span's line
   PYLON_A: [96, 104], PYLON_B: [120, 128],                       // the two rests out on the first span
+  /* PASSING BUCKETS (Daniel, 2026-09-28, decided: THE FIRST SPAN, oreroad3's recommendation - a plainer ride whose pit
+     already gives fall safety). A second line, 'pass', runs the OTHER way over the open gorge just short of PYLON A:
+     east, PYLON A's own underside (OR.PYLON_A again, four rows lower); west, a fresh low rest out in the gorge, at
+     `westX` (width `westW`, centred there). Between them it TRACKS THE FIRST LINE'S OWN CONTOUR (cableLines() samples
+     first's height with lineYAt and adds `gapRows` rows to every column) - so the vertical gap between the skip you are
+     riding and the one coming back is the SAME everywhere along the stretch, a real jump (`gapRows` tiles, not the reach
+     model's 6), not a step you can just walk and not a reach nothing could make. The west rest sits where the first
+     line's own dip is deepest, so it is built at whatever row the tracked contour actually lands on there (buildOreRoad
+     reads it straight off the built 'pass' line, not off a row typed here - the dip's true depth, not a guess at it).
+     The other line's buckets are visible coming (they are ordinary movers, drawn like any other skip - nothing to add
+     for that). A miss falls into THE FIRST SPAN's own pit (already below this whole stretch): a climb, never a death -
+     nothing new was built for that either. */
+  PASS: { x0: 82, x1: 104, westX: 82, westW: 7, gapRows: 4 },
   TOWER: [36, 28, 21], TOWER_X: [136, 203],                      // the sorting tower's three decks
   TIPPLE: [228, 240], TIPPLE_ROW: 27,                            // the tipple house, half way down the chute
   FOOT: [262, 280], FOOT_ROW: 34,                                // the chute's foot, and the head of the wreck
@@ -166,15 +180,22 @@ const join = (...parts) => parts.reduce((a, p) => a.concat(a.length ? p.slice(1)
    step and not a jump, so every spacing here was reset against the 59 px running jump instead of being left where it was. */
 export function cableLines() {
   const A = OR.ARENA, [pa0, pa1] = OR.PYLON_A, [pb0, pb1] = OR.PYLON_B;
+  const firstPts = join(
+    sagPts(67.5, OR.YARD, 69, OR.YARD, 0, 1), sagPts(69, OR.YARD, pa0, OR.YARD, 3), sagPts(pa0, OR.YARD, pa1, OR.YARD, 0, 1),
+    sagPts(pa1, OR.YARD, pb0, OR.YARD, 2), sagPts(pb0, OR.YARD, pb1, OR.YARD, 0, 1),
+    sagPts(pb1, OR.YARD, 135, OR.YARD, 2), sagPts(135, OR.YARD, 136.75, OR.YARD, 0, 1));
+  /* PASSING BUCKETS: sample THE FIRST LINE'S OWN HEIGHT (lineYAt needs only .pts, so the half-built array above is enough)
+     at every column of the stretch, east to west (dir 1 walks pts[0] to pts[last], so the ride comes FROM PYLON A's
+     underside and goes TO the new west rest - the other way from first, which reaches Pylon A travelling east) - and add
+     OR.PASS.gapRows rows to every one of them. The two lines are always exactly that many rows apart here, sag and all. */
+  const passPts = []; for (let x = OR.PASS.x1; x >= OR.PASS.x0; x--) passPts.push([x * TS, lineYAt({ pts: firstPts }, x * TS) + OR.PASS.gapRows * TS]);
   return [
     /* THE FIRST SPAN: one line, two rests. It runs flat across each pylon's deck so the rims come level with it - step off, step on */
     /* AND EVERY LINE RUNS FLAT THROUGH ITS STATION LIPS. A sag that meets a rock deck comes up to it from BELOW, and a
        rider still under the deck's surface is carried into the cliff face: this line's last stretch put him 14 px into
        the sorting tower's rock and stood him at its foot (tools/ore-road.mjs now checks the whole line for this). */
-    { id: 'first', speed: 62, gap: 100, ret: 220, pts: join(
-      sagPts(67.5, OR.YARD, 69, OR.YARD, 0, 1), sagPts(69, OR.YARD, pa0, OR.YARD, 3), sagPts(pa0, OR.YARD, pa1, OR.YARD, 0, 1),
-      sagPts(pa1, OR.YARD, pb0, OR.YARD, 2), sagPts(pb0, OR.YARD, pb1, OR.YARD, 0, 1),
-      sagPts(pb1, OR.YARD, 135, OR.YARD, 2), sagPts(135, OR.YARD, 136.75, OR.YARD, 0, 1)) },
+    { id: 'first', speed: 62, gap: 100, ret: 220, pts: firstPts },
+    { id: 'pass', speed: 55, gap: 90, ret: 140, pts: passPts },
     /* THE ORE CHUTE: the fast one. Down thirteen rows from the tower's top deck to the foot, flat over the tipple house half way,
        and at 96 px/s it is steered rather than waited out - which is the answer to "riding on lifts is boring" */
     { id: 'chute', speed: 96, gap: 100, ret: 240, pts: join(
@@ -236,6 +257,10 @@ export function buildOreRoad({ painter, T }) {
   const ropes = [], encounters = [], walls = [];
   const rope = (x, y0, y1) => ropes.push([x, y0, y1]);
   const meet = (name, x0, x1, foes) => { encounters.push({ name, x0, x1, n: foes.length }); for (const [t, x, row, o] of foes) ent(t, x, row, Object.assign({ face: -1, enc: name }, o || {})); };
+  /* built once, up front, so PASSING BUCKETS' own low rest can be placed at whatever row the 'pass' line's contour (tracking
+     'first', OR.PASS.gapRows under it) actually lands on there - not a row guessed and typed - and reused below as `cable` */
+  const cable0 = cableLines(), passLine = cable0.find(l => l.id === 'pass');
+  const passRow = x => Math.round(lineYAt(passLine, x * TS) / TS);   /* the row a plat() call needs, matching how every line's own deck check reads it */
 
   // ---- THE ORE YARD (c 0-67) — on foot, and the level teaches both its verbs before it asks for either ----
   block(0, 67, YARD + 1, H - 1);
@@ -280,6 +305,15 @@ export function buildOreRoad({ painter, T }) {
      skip tipped from the line above drops its ore straight down onto them. */
   plat(121, YARD + 5, 7);
   meet('THE UNDER-DECK', 121, 127, [['sapper', 122, YARD + 5], ['sapper', 126, YARD + 5]]);
+  /* PASSING BUCKETS (item 4, Daniel 2026-09-28): TWO LINES RUNNING OPPOSITE WAYS, and you hop across to a bucket passing
+     the other way, timed as they cross. The line's own two rests: PYLON A's underside (its own footprint, four rows
+     lower - the ride comes up right under where you may already be standing) and a fresh low rest just west of it. Ride
+     'first' east and watch below - a 'pass' skip comes the other way, always OR.PASS.gapRows rows under whichever 'first'
+     skip you are on; step down onto one as it goes by, or stay put and let it go. A miss is the same pit every span has:
+     a climb, not a death. */
+  plat(OR.PASS.westX - Math.floor((OR.PASS.westW - 1) / 2), passRow(OR.PASS.westX), OR.PASS.westW);
+  plat(PYLON_A[0], passRow(PYLON_A[1]), PYLON_A[1] - PYLON_A[0] + 1);
+  ent('sign', 72, YARD, { text: "A SECOND LINE RUNS BACK, UNDER THE FIRST. HOP DOWN TO IT AS IT PASSES." });
   /* FALLING ROCK OVER THE SPANS (Daniel's idea 1). Out here there is nothing for a goblin to stand on, so the lane is
      kept honest by the crags themselves: three falls on a beat you can learn, and the answer to all three is the BRAKE.
      A tippler needs a floor under his feet AND a floor under his stream, so every one of them is on a structure. */
@@ -416,7 +450,7 @@ export function buildOreRoad({ painter, T }) {
     rope(q.ladder[0], q.ladder[1], q.ladder[2]);                                    /* and the ladder from it to the deck the span starts from */
   }
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);   /* every rope is hung last (the Gale Moor bug) */
-  const cable = cableLines();
+  const cable = cable0;
   /* ======== UNDERGROUND (Daniel's playtest, 2026-09-25: "the whole level becomes one vast cavern: no sky") ========
      THE CEILING is rock with stalactites, drawn and never solid, and it is laid off the route rather than typed: over every
      column it hangs CEIL_GAP rows above the highest thing anything uses there - a floor, a rope, a cable and the hanger above

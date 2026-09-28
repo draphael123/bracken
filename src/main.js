@@ -7865,7 +7865,17 @@ function setWallAt(col, solid, floorY) { const top = floorY / TS - 6, bot = floo
     if (solid) { if (!was.has(i)) was.set(i, [L.grid[i], tileSpr[i]]); if (L.grid[i] === T.SOLID) continue; L.grid[i] = T.SOLID; tileSpr[i] = L.fallingTower ? (FALLEN_SKINS || (FALLEN_SKINS = FTW.bakeFallenSkins())).fallen[(ty + col) % 3] : TILE.palisade[(ty + col) % 3]; }
     else { const w = was.get(i); was.delete(i); if (w) { L.grid[i] = w[0]; tileSpr[i] = w[1]; } else { L.grid[i] = T.AIR; tileSpr[i] = null; } } } }
 function setWall(col, solid) {
-  const A = L.arena; const top = A.floor / TS - 6, bot = A.floor / TS - 1;
+  const A = L.arena;
+  /* THE WINCHMASTER'S WEST LOCK WALL RUNS FLOOR TO CEILING (round: passbuckets, 2026-09-28, Daniel's Q4 from claude/winch3,
+     approved). Every other arena's 6-row wall is tall enough because nothing in it stands taller than that - but the Head
+     Frame stands at row 8, four rows above the old wall's own top (row 12, close to the landing's own height outside it):
+     walking off its west edge dropped you onto the wall's top instead of down its face, and from there you could step
+     straight back out onto the landing, skipping the lock. Running the wall up to row 0 (and past the Head Frame's own
+     underside, not merely to it - anything less still leaves open air beside the housing to fall through and out) leaves
+     no ledge anywhere on the column to land on. Only wallL, only his arena: no other boss's wall, and nothing of his own
+     AI (src/winchmaster.js is untouched). */
+  const sealed = A.boss === 'winchmaster' && col === A.wallL;
+  const top = sealed ? 0 : A.floor / TS - 6, bot = A.floor / TS - 1;
   for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? ((L.arena.boss === 'chief' || L.arena.boss === 'master') ? TILE.palisade[(ty + col) % 3] : L.arena.boss === 'suncatcher' ? (TILE.ice || (TILE.ice = bakeIceTile())) : (L.arena.boss === 'ram' || L.arena.boss === 'lance' || L.arena.boss === 'roc' || L.arena.boss === 'golem' || L.arena.boss === 'prince' || L.arena.boss === 'duneworm') ? TILE.drystone[(ty + col) % 3] : L.arena.boss === 'gqueen' ? TILE.port[(ty + col) % 2] : TILE.vine[(ty + col) % 4]) : null; }
   // her hall is shut by portcullises, and you see them come down: both doors, with the clang, when she wakes
   if (solid && L.arena.boss === 'gqueen') { const ys = []; for (let ty = top; ty <= bot; ty++) ys.push(ty); const spr = ys.map(ty => tileSpr[ty * LW + col]); for (const ty of ys) tileSpr[ty * LW + col] = null; gateFx.push({ col, ys, t: 0, dur: 0.3, closing: true, spr }); SFX.gateDrop(); }
