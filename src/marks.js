@@ -191,6 +191,129 @@ export const MARK = {
 };
 /* MARK:END */
 
+// THE ANSWER TO EVERY BLOW (the combat pass, 2026-09-28). The mark says whether the shield turns it; the ANSWER says what the
+// player DOES about it - one of four, and a level's foe mix should ask for at least three (tools/answer-tags.mjs lists the ones
+// that do not; fixing a level's mix is the design lanes' job, not this table's):
+//   block  the shield (or a parry) - every yellow ! is a block, and nothing else is
+//   dodge  the roll, or simply not being there: the ring, the spot, the overhead, the charge
+//   jump   over it: a sweep along the floor, a wave, a rolled stone
+//   duck   under it: THE UNIVERSAL CROUCH (planned, not built yet) - tagged now so the crouch lands with its foes waiting
+// One row per told blow of every COMMON foe ('type|mode', as MARK above; bosses and minis answer in their own fights), kept by
+// hand: tools/answer-tags.mjs fails on a told blow with no row, a row with no blow, and a ! that is not a block.
+/* ANSWER:BEGIN */
+export const ANSWER = {
+  '*|eliteLungeTell': 'block', '*|eliteSlamTell': 'dodge',
+  'ambusher|cutTell': 'block',
+  'angler|biteTell': 'block', 'angler|castTell': 'block', 'angler|dive': 'block', 'angler|hookTell': 'block', 'angler|swellTell': 'block',
+  'archer|draw': 'block', 'archer|elVolleyTell': 'dodge',
+  'armour|swingTell': 'block',
+  'assassin|markTell': 'dodge', 'assassin|stabTell': 'block',
+  'badger|chargeTell': 'block',
+  'bannerbearer|poleTell': 'block',
+  'bellguard|hookTell': 'block', 'bellguard|knellTell': 'dodge',
+  'berserker|flailTell': 'block', 'berserker|windTell': 'dodge',
+  'boarder|shootTell': 'block', 'boarder|slashTell': 'block', 'boarder|swingTell': 'block', 'boarder|throwTell': 'block',
+  'bonecorsair|cleaveTell': 'dodge', 'bonecorsair|cutTell': 'block',
+  'bonegob|throw': 'block',
+  'bosun|salvageBroadsideTell': 'jump', 'bosun|salvageCargoTell': 'dodge', 'bosun|salvageCrossfireTell': 'dodge', 'bosun|salvageHookTell': 'block', 'bosun|salvagePinTell': 'block', 'bosun|shootTell': 'block', 'bosun|slashTell': 'block', 'bosun|swingTell': 'block', 'bosun|throwTell': 'block',
+  'broom|dashTell': 'block', 'broom|sweepTell': 'block',
+  'brute|elCut1Tell': 'block', 'brute|elCut2Tell': 'block', 'brute|elOverTell': 'dodge', 'brute|raise': 'dodge', 'brute|wind': 'block',
+  'burngob|swingTell': 'block',
+  'corpse|cutTell': 'block',
+  'crab|lungeTell': 'block', 'crab|pinchTell': 'block', 'crab|snapTell': 'block', 'crab|strikeTell': 'block', 'crab|thrustTell': 'block',
+  'crossbow|aim': 'block', 'crossbow|cutTell': 'block', 'crossbow|leapTell': 'dodge', 'crossbow|shout': 'block', 'crossbow|stabTell': 'block', 'crossbow|swingTell': 'block',
+  'cutlass|shootTell': 'block', 'cutlass|slashTell': 'block', 'cutlass|swingTell': 'block', 'cutlass|throwTell': 'block',
+  'cutter|raise': 'block',
+  'cutthroat|slashTell': 'block',
+  'drownedcaptain|comboTell': 'block', 'drownedcaptain|lungeTell': 'block',
+  'drownedknight|comboTell': 'block', 'drownedknight|lungeTell': 'block',
+  'drunk|bottleTell': 'dodge', 'drunk|lobTell': 'block',
+  'eel|leapTell': 'block', 'eel|lungeTell': 'block', 'eel|pinchTell': 'block', 'eel|snapTell': 'block', 'eel|strikeTell': 'block', 'eel|thrustTell': 'block',
+  'farmhand|swingTell': 'block',
+  'feeler|lashTell': 'block',
+  'fledgling|peckTell': 'block',
+  'gaffer|haftTell': 'block', 'gaffer|hookTell': 'duck',
+  'gar|lungeTell': 'block',
+  'goat|charge': 'block',
+  'gobmage|boltTell': 'block', 'gobmage|runeTell': 'dodge',
+  'gobpriest|bellTell': 'block', 'gobpriest|censerTell': 'block',
+  'grub|spit': 'block',
+  'hare|run': 'block',
+  'harpy|aim': 'block',
+  'haunt|throwTell': 'block',
+  'hearthgob|raise': 'block',
+  'heavy|grabTell': 'dodge', 'heavy|raise': 'dodge', 'heavy|slashTell': 'block', 'heavy|windUp': 'block',
+  'hedgeknight|aim': 'block', 'hedgeknight|cutTell': 'block', 'hedgeknight|leapTell': 'dodge', 'hedgeknight|shout': 'block', 'hedgeknight|stabTell': 'block', 'hedgeknight|swingTell': 'block',
+  'heronfoe|lungeTell': 'block', 'heronfoe|pinchTell': 'block', 'heronfoe|snapTell': 'block', 'heronfoe|strikeTell': 'block', 'heronfoe|thrustTell': 'block',
+  'imp|throwTell': 'block',
+  'javelin|grabTell': 'dodge', 'javelin|raise': 'dodge', 'javelin|slashTell': 'block', 'javelin|windUp': 'block',
+  'jelly|biteTell': 'block', 'jelly|castTell': 'block', 'jelly|dive': 'block', 'jelly|hookTell': 'block', 'jelly|swellTell': 'block',
+  'lanternshade|flareTell': 'block',
+  'lookout|shootTell': 'block', 'lookout|slashTell': 'block', 'lookout|swingTell': 'block', 'lookout|throwTell': 'block',
+  'manta|diveTell': 'block',
+  'marine|shootTell': 'block', 'marine|slashTell': 'block', 'marine|swingTell': 'block', 'marine|throwTell': 'block',
+  'marshlight|flareTell': 'block',
+  'merrowbrute|ramTell': 'block',
+  'merrowcaller|surgeTell': 'jump',
+  'merrowspear|throwTell': 'block',
+  'mimic|biteTell': 'block',
+  'miner|swingTell': 'block', 'miner|throwTell': 'block',
+  'netter|biteTell': 'block', 'netter|castTell': 'block', 'netter|dive': 'block', 'netter|hookTell': 'block', 'netter|swellTell': 'block',
+  'petrel|biteTell': 'block', 'petrel|castTell': 'block', 'petrel|dive': 'block', 'petrel|diveTell': 'block', 'petrel|hookTell': 'block', 'petrel|swellTell': 'block',
+  'pike|elSweepTell': 'block', 'pike|tell': 'block',
+  'prise|reachTell': 'block',
+  'propman|raise': 'block', 'propman|throwTell': 'block',
+  'puffer|biteTell': 'block', 'puffer|castTell': 'block', 'puffer|dive': 'block', 'puffer|hookTell': 'block', 'puffer|swellTell': 'block',
+  'pumpkin|biteTell': 'block', 'pumpkin|puffTell': 'dodge',
+  'rockgoblin|throw': 'block',
+  'rook|diveTell': 'block',
+  'runner|aim': 'block', 'runner|cutTell': 'block', 'runner|leapTell': 'dodge', 'runner|shout': 'block', 'runner|stabTell': 'block', 'runner|swingTell': 'block',
+  'sailer|sail': 'block',
+  'sailor|biteTell': 'block', 'sailor|castTell': 'block', 'sailor|dive': 'block', 'sailor|hookTell': 'block', 'sailor|swellTell': 'block',
+  'scalder|ladleTell': 'block', 'scalder|pourTell': 'dodge',
+  'scarecrow|swipeTell': 'block',
+  'scorpion|clawTell': 'block', 'scorpion|tailTell': 'dodge',
+  'scout|lungeTell': 'block', 'scout|pinchTell': 'block', 'scout|snapTell': 'block', 'scout|strikeTell': 'block', 'scout|thrustTell': 'block',
+  'seawitch|callTell': 'dodge',
+  'sheargob|cutTell': 'dodge', 'sheargob|snipTell': 'block',
+  'shield|elChargeTell': 'block', 'shield|shoveTell': 'block',
+  'siren|lungeTell': 'block', 'siren|pinchTell': 'block', 'siren|snapTell': 'block', 'siren|strikeTell': 'block', 'siren|thrustTell': 'block',
+  'slinger|kickTell': 'block', 'slinger|slingTell': 'block',
+  'snuffer|swipeTell': 'block',
+  'soldier|grabTell': 'dodge', 'soldier|raise': 'dodge', 'soldier|slashTell': 'block', 'soldier|windUp': 'block',
+  'spider|drop': 'block', 'spider|dropTell': 'block', 'spider|reelTell': 'block', 'spider|spitTell': 'block',
+  'sprig|biteTell': 'block',
+  'stormshaman|callTell': 'dodge',
+  'swornsword|aim': 'block', 'swornsword|cutTell': 'block', 'swornsword|leapTell': 'dodge', 'swornsword|shout': 'block', 'swornsword|stabTell': 'block', 'swornsword|swingTell': 'block',
+  'temperer|cutTell': 'block', 'temperer|quenchTell': 'dodge', 'temperer|shoveTell': 'block',
+  'thorn|wind': 'block',
+  'tideguard|lungeTell': 'block', 'tideguard|pinchTell': 'block', 'tideguard|snapTell': 'block', 'tideguard|strikeTell': 'block', 'tideguard|thrustTell': 'block',
+  'tidemarauder|harpoonTell': 'block', 'tidemarauder|rakeTell': 'jump',
+  'tippler|barTell': 'block', 'tippler|heaveTell': 'dodge',
+  'tome|tell': 'block',
+  'topiary|swipeTell': 'block',
+  'troll|hurlTell': 'block', 'troll|ripTell': 'jump', 'troll|slamTell': 'dodge', 'troll|swatTell': 'block', 'troll|throwTell': 'block',
+  'turret|chargeTell': 'block',
+  'turtle|lungeTell': 'block', 'turtle|pinchTell': 'block', 'turtle|snapTell': 'block', 'turtle|strikeTell': 'block', 'turtle|thrustTell': 'block',
+  'urchin|biteTell': 'block', 'urchin|castTell': 'block', 'urchin|dive': 'block', 'urchin|hookTell': 'block', 'urchin|swellTell': 'block',
+  'vulture|watch': 'dodge',
+  'wasp|stingTell': 'block',
+  'watch|sweepTell': 'block', 'watch|thrustTell': 'block',
+  'whelp|crouchTell': 'block',
+  'zombie|grabTell': 'block',
+};
+/* ANSWER:END */
+// THE COMMON FOES WHOSE HARM IS NOT A TOLD WINDUP (touch, a lunge from hiding, a latch, a burst, a gust): what the player does
+// about each, or '' for a creature that never harms you at all. These are also the list of UNTOLD attacks for the next pass.
+export const UNTOLD = {
+  spit: 'block', lurker: 'dodge', hopper: 'block', crow: 'duck', hound: 'jump', sapper: 'dodge', sporeling: 'block', spitcap: 'dodge',
+  weaver: 'dodge', thief: 'dodge', lamprey: 'dodge', wight: 'dodge', holdfast: 'dodge', shardling: 'dodge', clinger: 'dodge',
+  bonearcher: 'block', boo: 'dodge', husk: 'block', apprentice: 'block', emberwisp: 'dodge', kite: 'dodge', bale: 'jump', sweep: 'dodge',
+  horn: 'duck',      // the horn's gust shoves you off your footing: the crouch braces against it (the level guide: crouch braces for everyone)
+  folk: '', sentry: '', squirrel: '', dummy: '',   // harmless, a bell-runner, a pickpocket (it is a thief underneath), a straw man
+};
+export const answerOf = (t, mode) => ANSWER[t + '|' + mode] || ANSWER['*|' + mode] || UNTOLD[t] || '';
+
 const MISSED = new Set();
 // THE MARK OVER THIS CREATURE NOW: '!', '!!', or '' for none. A windup with no row wears no mark - and says so once in
 // the console, because a windup the table does not know is a hole in the audit, not a quiet tell.

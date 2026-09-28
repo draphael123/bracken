@@ -54,6 +54,7 @@ import { lanceSupport, LANCE_SUPPORT } from './lance-support.js';   /* THE QUEEN
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
+import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost } from './attack-tokens.js';   /* ATTACK TOKENS: one or two common foes swing at a hero at once, the rest wait on a ring (src/attack-tokens.js) */
 import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { COMBAT, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
@@ -20280,8 +20281,16 @@ function updateBalcony(e, dt) {
   if(b.state==='warn'){b.t-=dt;if(b.t<=0){e.y+=3;e.vy=60;e.air=true;e.stagger=0.25;e.balcony=null;dust(e.x,e.y,4);}}
   return true;
 }
+/* ATTACK TOKENS (src/attack-tokens.js): the board, what is outside the purse, and the few things of the world the module needs */
+const TK = tokenBoard();
+TOKENS.exempt = e => !!(e === boss || e.xpRole || e.mini || e.harmless || e.trainer || e.work || e.t === 'dummy' || bossActive || miniActive || rushOn());   /* bosses, minis and the adds of their fights are their own scripts */
+const tkApi = { dt: 0, get time() { return time; }, nums: () => nums, windingUp: e => windingUp(e), move: (e, dx) => moveBody(e, dx, 0, false),
+  walker: e => !e.noGrav && !e.pool && !e.swim && !e.fly && e.speed > 0 && foeHasFooting(e),
+  grounded: e => !e.noGrav && !e.pool && !e.swim && !e.fly && foeHasFooting(e), fall: (e, dy) => moveBody(e, 0, dy, false),
+  safeStep: (x, y) => { const tx = Math.floor(x / TS), row = Math.floor((y + 1) / TS), u = tileAt(tx, row);
+    return (isSolid(tx, row) || isOneWay(u)) && u !== T.SPIKE && tileAt(tx, row - 1) !== T.SPIKE && !isSolid(tx, row - 1) && !(L.pools || []).some(p => x > p.x0 && x < p.x1 && y > p.y); } };
 function updateEnemies(dt) {
-  updatePack(dt); eliteWatch();
+  updatePack(dt); eliteWatch(); tkApi.dt = dt;
   for (const e of enemies) {
     disarmTick(); updFoe = e; updSeedN = seeds.length;   /* DISARM: whose blow this is, and what it throws (knightKit) */
     if (!e.alive) continue;
@@ -20289,6 +20298,7 @@ function updateEnemies(dt) {
        boss in the game answers to whichever of them walked into it, with no branch of its own. (P is put back to
        player one at the call site the moment the sweep is over.) */
     if (coop()) P = nearestHero(e);
+    tokenPre(TK, e, P, tkApi);   /* ATTACK TOKENS: may it ask for a blow at this hero? */
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
     { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (!wu && e.wuWas) { e.relT = 0.18; if (Math.abs(e.x - P.x) < 380 && SFX.foeRelease) SFX.foeRelease(e.t, MAT[e.t], !!e.maxHp || !!e.big); } e.wuWas = wu; }
     if (Math.abs(e.x - P.x) < 420) temper(e, dt);
@@ -20355,6 +20365,7 @@ function updateEnemies(dt) {
     if (e.rallyT > 0) { e.rallyT -= dt; if (!windingUp(e) && e.modeT > 0) e.modeT -= dt * 0.6; if (e.cd > 0) e.cd -= dt * 0.6; }   /* RALLIED: it gets to the next blow sooner (never through the tell itself: that stays as long as it was) */
     if (e.wallT > 0) e.wallT -= dt;
     if (e.blessT > 0) e.blessT -= dt;   /* A PRIEST'S BLESSING wears off */
+    if (tokenHold(TK, e, tkApi, dt)) continue;   /* ATTACK TOKENS: turned away, it waits its turn on the ring (src/attack-tokens.js) */
     if (e.elite && updateElite(e, dt)) continue;
     if (e.work && oreWorkStep(e, dt)) continue;   /* MINE LIFE: a goblin at work is not fighting - nothing of his runs until his told alert has played out */
     if (e.t === 'dummy') { e.vx = 0; e.hp = e.hp0; continue; } // a straw man stands there
@@ -22390,7 +22401,7 @@ function update(dt) {
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
-  updateMovers(wdt); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -26131,7 +26142,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
      uneven item count, so a harness (tools/textfit.mjs's 'soundtest' sweep) asks for the real boundaries instead of
      assuming a fixed one. */
   soundFxPages: () => fxPages(((VW - 48) - 20) / 2, 10).map(p => p[0].i),
-  enemies: () => enemies, spawnFoe: e => { const n0 = enemies.length; spawnEnt(e); return enemies.slice(n0); },   /* put one creature down in the running level, for a harness (tools/drowned-knights.mjs) */ movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [], elites: () => enemies.filter(e => e.elite), ELITE,
+  enemies: () => enemies, tokens: () => ({ board: TK, TOKENS }), spawnFoe: e => { const n0 = enemies.length; spawnEnt(e); return enemies.slice(n0); },   /* put one creature down in the running level, for a harness (tools/drowned-knights.mjs) */ movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [], elites: () => enemies.filter(e => e.elite), ELITE,
   flyers: () => FLYERS,   /* the creatures that legitimately have no floor under them: src/playtest.js's runtime floater sample reads this instead of keeping a second list */
   waterKin: () => HEEL_SWIMS,   /* what the sea does not drown: it lives IN or BY the water, not on a floor tile - the same list the runtime floater sample reads instead of keeping a second one */
   risen: () => risen, bodies: () => bodies,
