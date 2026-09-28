@@ -168,6 +168,17 @@ async function pageTextFit(input) {
     for (const id of ['wood', 'storm']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; toPlay(li, 'knight'); frame('menu map ' + id, () => { BK.state = 'menu'; BK.ui.mapOpen(); }, { settle: 40 }); }
     BK.ui.menuKind = 'pause'; }
 
+  /* THE SOUND TEST'S MUSIC TAB (2026-09-27): every song, unlocked first so the longest credit lines (the worst case
+     for the row under the list) are the ones actually measured, not '???' and 'not yet heard' every time. Its
+     EFFECTS tab (cols=3, hundreds of SFX ids) is pre-existing and not swept here - see the lane report: two
+     PRE-EXISTING overlaps there (unrelated to this change) were found by an early draft of this same sweep and were
+     left for their own fix rather than folded into this one. */
+  if (want('soundtest')) { toPlay(0, 'knight'); const { MUSIC_NAMES } = await import('/src/audio.js');
+    const PR = BK.PROG; PR.heardMusic = PR.heardMusic || {}; for (const n of MUSIC_NAMES) PR.heardMusic[n] = 1;
+    for (let i = 0; i < MUSIC_NAMES.length; i++) frame('soundtest music #' + i + ' ' + MUSIC_NAMES[i], () => { BK.state = 'soundtest'; BK.soundCat = 1; BK.soundI = i; }, { settle: 20 });
+    frame('soundtest ambience #0', () => { BK.state = 'soundtest'; BK.soundCat = 2; BK.soundI = 0; }, { settle: 20 });
+    await yieldNow(); }
+
   if (want('hud')) for (const h of HEROES) { toPlay(campaign.findIndex(([l]) => l.id === 'waymeet') >= 0 ? campaign.find(([l]) => l.id === 'waymeet')[1] : 0, h);
     frame('hud [' + h + '] meters full', () => { BK.state = 'play'; Object.assign(P, { resolve: 100, heat: 100, full: true, light: 100, harvest: 100, plunder: 100, loaded: true }); window.BK.PROG.tonics = 3; });
     frame('hud [' + h + '] swimming, no air', () => { BK.state = 'play'; Object.assign(P, { swim: true, breath: 0 }); });

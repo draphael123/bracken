@@ -118,7 +118,7 @@ import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
 
 // ---------- display ----------
 let VW = 320, VH = 180;
@@ -210,7 +210,12 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
     PROG.medalPurseGranted = true; if (back) { PROG.coins = (PROG.coins || 0) + back; PROG.medalPurseBack = back; } }
   if (!PROG.skillRefund) { const OLD = { shieldThrow: 80, groundSlam: 90, fireWall: 80, cinderStep: 90, risingCut: 100, vent: 100, kindle: 90, wisp: 120 }; let back = 0; for (const id in OLD) if (PROG.items[id]) { back += OLD[id]; delete PROG.items[id]; } PROG.skillRefund = true; if (back) { PROG.coins += back; PROG.refundNote = (PROG.refundNote || 0) + back; } } // the skills left the store for the trees: their gold comes back
   PROG.talents = PROG.talents || {}; PROG.tonics = PROG.tonics || 0;
-  PROG.skillOwned = PROG.skillOwned || {}; PROG.loadouts = PROG.loadouts || {}; }
+  PROG.skillOwned = PROG.skillOwned || {}; PROG.loadouts = PROG.loadouts || {};
+  /* THE SOUND TEST'S LOCK (Daniel, 2026-09-27): a song unlocks once it is heard in play, not by browsing the menu -
+     see markHeard below. An OLD SAVE has no heardMusic at all, and must still open with nothing unlocked except
+     what is safe: the title theme (the very first thing anyone hears, before a slot is even chosen) and the stage-
+     select tune (every menu and the map play it by default). Everything else in MUSIC_NAMES starts as '???'. */
+  PROG.heardMusic = PROG.heardMusic || {}; PROG.heardMusic.theme = 1; PROG.heardMusic.select = 1; }
 /* A SLOT SWITCH IS A NEW SESSION. coopWant and the live pair are runtime-only - never written to the save - so
    loading a different slot mid-coop would otherwise leave the map showing yesterday's partner from a slot that
    never asked for one. Every road into a slot (continue, boss rush, practice, local co-op, a fresh save) runs
@@ -226,6 +231,13 @@ function saveProgress() { if (saveBlocked) return; const was = PROG.hero; if (pa
   try { localStorage.setItem(slotKey(slot), JSON.stringify(PROG)); } catch {}
   PROG.hero = was; }
 loadSlot(slot);
+/* THE SOUND TEST'S LOCK, the write side. audio.js calls this every time ANYTHING asks for a track by name - a level's
+   own theme, a boss arena, a mini fight, a menu - never when the Sound Test itself is only being browsed (browsing
+   moves a cursor; it does not call music.play until Z is pressed on a track the player has already unlocked some
+   other way, guarded in the 'soundtest' state below). First time heard, it is written into THIS slot's own save. */
+function markHeard(name) { if (!MUSIC_NAMES.includes(name)) return; PROG.heardMusic = PROG.heardMusic || {}; if (!PROG.heardMusic[name]) { PROG.heardMusic[name] = 1; saveProgress(); } }
+setHeardHook(markHeard);
+const musicUnlocked = name => !!(PROG.heardMusic && PROG.heardMusic[name]);
 
 // ---------- tuning ----------
 const RUN = 92, GRAV = 1000, JUMPV = -320, POGO = -330;
@@ -22160,7 +22172,7 @@ function update(dt) {
     if (rightPress) { soundCat = (soundCat + 1) % 3; soundI = 0; SFX.ui(); }
     if (upPress) { soundI = (soundI + list.length - 1) % list.length; SFX.ui(); }
     if (downPress) { soundI = (soundI + 1) % list.length; SFX.ui(); }
-    if (confirmPress) { const n = list[soundI]; if (soundCat === 0) SFX[n](); else if (soundCat === 1) music.play(n); else ambient.set(n); }
+    if (confirmPress) { const n = list[soundI]; if (soundCat === 0) SFX[n](); else if (soundCat === 1) { if (musicUnlocked(n)) music.play(n); else SFX.buzz(); } else ambient.set(n); }
     if (pausePress) { state = 'menu'; ambient.set(menuFrom === 'play' ? null : 'forest'); music.play(menuFrom === 'play' ? (L.music || 'theme') : 'select'); SFX.menuClose(); }
     return;
   }
@@ -24966,10 +24978,19 @@ function drawSoundTest() {
   text('SOUND TEST', VW / 2, y + 6, UI.title, 'center');
   const cats = ['EFFECTS', 'MUSIC', 'AMBIENCE'], lists = [SFX_NAMES(), MUSIC_NAMES, AMBIENT_NAMES], list = lists[soundCat];
   cats.forEach((c, i) => { const sel = i === soundCat; text((sel ? '< ' : '') + c + (sel ? ' >' : ''), x + w / 2 + (i - 1) * 84, y + 18, sel ? '#8fd160' : UI.dim, 'center'); });
-  const cols = soundCat === 0 ? 3 : 1, rows = 11, perPage = cols * rows, page = Math.floor(soundI / perPage), start = page * perPage;
-  for (let i = start; i < Math.min(list.length, start + perPage); i++) { const k = i - start, cx0 = x + 10 + (k % cols) * (w - 20) / cols, cy0 = y + 32 + Math.floor(k / cols) * 11, sel = i === soundI; if (sel) text('>', cx0 - 2, cy0, '#8fd160'); text(list[i], cx0 + 8, cy0, sel ? '#fff6e0' : '#c9d1dc'); }
+  /* MUSIC keeps three rows spare at the foot of its list: one gap, then a row of its own for the credit line below
+     (a full width to itself - no need to fight the page indicator for room), before the same two footer lines every
+     other tab uses. The list must never grow into any of it. */
+  const cols = soundCat === 0 ? 3 : 1, rows = soundCat === 1 ? 8 : 11, perPage = cols * rows, page = Math.floor(soundI / perPage), start = page * perPage;
+  for (let i = start; i < Math.min(list.length, start + perPage); i++) { const k = i - start, cx0 = x + 10 + (k % cols) * (w - 20) / cols, cy0 = y + 32 + Math.floor(k / cols) * 11, sel = i === soundI;
+    const locked = soundCat === 1 && !musicUnlocked(list[i]);
+    if (sel) text('>', cx0 - 2, cy0, '#8fd160'); text(locked ? '???' : list[i], cx0 + 8, cy0, locked ? '#6b716b' : (sel ? '#fff6e0' : '#c9d1dc')); }
   if (list.length > perPage) text('page ' + (page + 1) + '/' + Math.ceil(list.length / perPage), x + w - 8, y + h - 20, '#9aa39a', 'right');
-  text('Z play   LEFT/RIGHT group   ESC back', VW / 2, y + h - 10, UI.dim, 'center');
+  /* THE CREDIT LINE. Only a song already unlocked names its own maker - a locked one is '???' above and stays
+     unnamed below it too, or the lock is not really a lock. fitText is a safety net, not the plan: MUSIC_CREDITS is
+     kept short enough that it almost never has to cut (tools/textfit.mjs 'soundtest' sweeps every one unlocked). */
+  if (soundCat === 1) { const n = list[soundI], line = musicUnlocked(n) ? (MUSIC_CREDITS[n] || 'made for BRACKEN') : 'not yet heard'; text(fitText(line, w - 16), x + w / 2, y + h - 34, UI.dim, 'center'); }
+  text('Z play   LEFT/RIGHT tab   ESC back', VW / 2, y + h - 10, UI.dim, 'center');
 }
 const UI = { text: '#f0e8d4', title: '#fff6e0', dim: '#c2c9c2', border: '#d9c28c', sel: '#a8e06e', gold: '#ffd34a', silver: '#eaf0ff', plate: 'rgba(16,13,24,0.96)' };
 applyLook(); // whatever look was saved, before anything is drawn
@@ -25917,6 +25938,9 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
     }
     Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
+  /* THE SOUND TEST, for tools/soundtest.mjs: a harness can put the cursor straight on a category and a row without
+     hunting for the up/down flags press() does not carry. */
+  get soundCat() { return soundCat; }, set soundCat(v) { soundCat = v; }, get soundI() { return soundI; }, set soundI(v) { soundI = v; }, musicUnlocked,
   enemies: () => enemies, spawnFoe: e => { const n0 = enemies.length; spawnEnt(e); return enemies.slice(n0); },   /* put one creature down in the running level, for a harness (tools/drowned-knights.mjs) */ movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [], elites: () => enemies.filter(e => e.elite), ELITE,
   flyers: () => FLYERS,   /* the creatures that legitimately have no floor under them: src/playtest.js's runtime floater sample reads this instead of keeping a second list */
   waterKin: () => HEEL_SWIMS,   /* what the sea does not drown: it lives IN or BY the water, not on a floor tile - the same list the runtime floater sample reads instead of keeping a second one */
