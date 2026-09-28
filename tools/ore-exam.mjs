@@ -15,6 +15,7 @@
 // PROVED RED ON MASTER: `git worktree add ../oreroad2-baseline cd35d24 && cd ../oreroad2-baseline && node tools/ore-exam.mjs`
 // fails at "the winch line exists" (no such id in cableLines()) and everything after it, because none of this was there.
 // usage: node tools/ore-exam.mjs
+import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { OR, cableLines, ORES, oreBias, MINE_PLACES, WORKS } from '../src/ore-road.js';
 import { SLOPE, isSlope } from '../src/slopes.js';
@@ -97,6 +98,26 @@ console.log('\nFOLLOW-UP: TWIST THE TIP, DEVELOP THE BRAKE, FIVE-ORE VEINS, A CA
   ok(cartSlope, 'a slope sits at column 36, the ore yard cart rail\'s own hitching ramp (one column clear of its checked span)');
   const cartWork = WORKS.find(w => w[3].k === 'cart' && w[1] === 66);
   ok(!!cartWork, 'the ore yard\'s cart line is still where the ramp was built for it'); }
+
+console.log('\nROUND FOUR: ORE WALLS YOU MINE THROUGH (lane claude/oreroad3, item 1)');
+/* ---- src/breakable-walls.js, built once so a later 'secret' wall and the future minecart level reuse it. THE ORE
+   ROAD gets 2-4 of them, at least one on the main route (409-475, between the Winch House and the arena's boss trigger)
+   and at least one off it (a side dig). Each is real solid rock (block()) at build time, not a painted decoration:
+   this pins that they exist, sit on the route, and carry every wall its own kind knows how to break. */
+{ const { WALL_KINDS, wallHits } = await import('../src/breakable-walls.js');
+  const W = L.walls || [];
+  ok(W.length >= 2 && W.length <= 4, `${W.length} breakable wall(s): 2-4 of them (it was Daniel's own range)`);
+  ok(W.every(w => WALL_KINDS[w.kind] && wallHits(w) >= 2 && w.hits === 0 && w.broken === false), 'every one starts unbroken, at zero hits, in a kind the engine knows');
+  ok(W.every(w => w.x0 <= w.x1 && w.y0 <= w.y1), 'every one is a real rectangle of tiles, not a single painted cell mistaken for one');
+  ok(W.every(w => { for (let ty = w.y0; ty <= w.y1; ty++) for (let tx = w.x0; tx <= w.x1; tx++) if (at(tx, ty) !== T.SOLID) return false; return true; }), 'every one is solid rock at build time - the route reads right before it is ever struck');
+  const main = W.some(w => w.x0 >= 409 && w.x1 <= 475), side = W.some(w => w.x0 < 409 || w.x1 > 475);
+  ok(main, 'at least one sits on the main route (409-475, the Winch House to the arena)');
+  ok(side, 'and at least one sits off it (the ore yard or the wreck head, a dig for whoever goes looking)');
+  const oreWalls = W.filter(w => w.kind === 'ore');
+  ok(oreWalls.every(w => w.colour && w.colour.length === 3 && JSON.stringify(w.colour) === JSON.stringify(ORES[oreBias(w.x0)])), "every 'ore' wall carries its own section's ore colour (oreBias), not a fixed one");
+  const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  ok(/function wallsStep/.test(src) && /function breakWall/.test(src) && /function wallsMendAll/.test(src), 'main.js has the hook: struck like a vein (wallsStep), opens the grid for real when it gives (breakWall), and mends on respawn (wallsMendAll, called from mendAll)');
+  ok(/wallsMendAll\(\)/.test(src) && src.indexOf('mendAll(); wallsMendAll();') >= 0, "NEVER A SOFT-LOCK: respawn's own mendAll() call is followed by wallsMendAll(), so a wall never stays broken past the attempt that broke it"); }
 
 console.log(failed());
 function failed() { return fails ? '\n' + fails + ' ore-exam check(s) FAILED.' : '\nall ore-exam checks pass.'; }
