@@ -1380,6 +1380,10 @@ const MEDALS = { caravan: [410, 560, 780],   /* THE SUNKEN CARAVAN: 505 columns 
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
 let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
+// WHERE THE SOUND TEST WAS OPENED FROM (Daniel, 2026-09-27): a main-menu entry point straight off the title, next to
+// the existing one inside Settings. Back ('pause') has to land wherever it was opened - the title screen itself for
+// the new entry, the Settings list (as it always has) for the old one - so this remembers which door it came in.
+let soundFrom = 'menu';
 let stop = 0, shake = 0, kick = 0, camX = 0, camY = 0, flash = 0, killFlash = 0, introSeen = false, earned = 0;
 /* THE HERO'S FEET, DOWN THE SCREEN (look-and-feel review, 2026-09-26): on flat ground the follow camera used to hold them at
    58% down the buffer, so about 40% of every ordinary screen was fill under the floor and the backdrop - where the polish
@@ -4339,7 +4343,7 @@ function menuConfirm() {
   else if (k === 'Hero') { state = 'herocard'; SFX.uiSel(); }
   else if (k === 'Return to map' && rushOn()) { rush = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
   else if (k === 'Return to map') { setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
-  else if (k === 'Sound test') { state = 'soundtest'; soundI = 0; soundCat = 0; SFX.uiSel(); }
+  else if (k === 'Sound test') { state = 'soundtest'; soundI = 0; soundCat = 0; soundFrom = 'menu'; SFX.uiSel(); }
   else if (k === 'Controls') { state = 'controls'; SFX.uiSel(); }
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); }
   else if (k === 'Erase this save') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
@@ -7776,7 +7780,7 @@ function updatePlayer(dt) {
 let titleI = 0, titleBarY = null;
 const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {}).cleared);
 const titleItems = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE'], MODES_PARKED ? [] : ['THE EDITOR'], ['SETTINGS', 'CONTROLS']); };
+  return base.concat(['LOCAL CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE'], MODES_PARKED ? [] : ['THE EDITOR'], ['SETTINGS', 'SOUND TEST', 'CONTROLS']); };
 /* THE EDITOR AND THE BOSS RUSH ARE PARKED, NOT DELETED (Daniel, 2026-09-23): "we need to work on the core game before working on
    these modes." They leave the title menu and every line of their code stays. `?modes=1` brings both back for testing. Do not add
    new bosses, tiles or terrain to either while this is true. */
@@ -22148,6 +22152,7 @@ function update(dt) {
         else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); coopPickFrom = 'title'; coopPick = { i: 0, ally: false }; state = 'coop'; }
         else if (k === 'THE EDITOR') edEnter();
         else if (k === 'SETTINGS') openMenu('title');
+        else if (k === 'SOUND TEST') { state = 'soundtest'; soundI = 0; soundCat = 0; soundFrom = 'title'; }
         else if (k === 'CONTROLS') state = 'controls';
       }
     }
@@ -22173,7 +22178,7 @@ function update(dt) {
     if (upPress) { soundI = (soundI + list.length - 1) % list.length; SFX.ui(); }
     if (downPress) { soundI = (soundI + 1) % list.length; SFX.ui(); }
     if (confirmPress) { const n = list[soundI]; if (soundCat === 0) SFX[n](); else if (soundCat === 1) { if (musicUnlocked(n)) music.play(n); else SFX.buzz(); } else ambient.set(n); }
-    if (pausePress) { state = 'menu'; ambient.set(menuFrom === 'play' ? null : 'forest'); music.play(menuFrom === 'play' ? (L.music || 'theme') : 'select'); SFX.menuClose(); }
+    if (pausePress) { if (soundFrom === 'title') { state = 'title'; ambient.set('forest'); music.play(menuTrack()); } else { state = 'menu'; ambient.set(menuFrom === 'play' ? null : 'forest'); music.play(menuFrom === 'play' ? (L.music || 'theme') : 'select'); } SFX.menuClose(); }
     return;
   }
   if (state === 'rushover' || state === 'rushwin') {
@@ -25990,7 +25995,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
     get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },
     get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
-    get titleI() { return titleI; }, set titleI(v) { titleI = v; },
+    get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(),
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),
     tabs: () => storeTabs().length, items: () => storeItems(storeTabs()[storeTab]).length, menuCount: () => menuItems().length,

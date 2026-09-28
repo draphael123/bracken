@@ -66,6 +66,30 @@ try {
     return out;
   })()`, 120000);
   console.log(JSON.stringify(r));
+
+  // Follow-up (Daniel, 2026-09-27): "an option on the MAIN MENU for sound test" - a SOUND TEST item straight off the
+  // title screen, next to the existing one buried in Settings. It must be the same screen (not a second copy), and
+  // ESC from it must land back on the title, not on the Settings list it never went through.
+  const m = await pg.evalp(`(()=>{
+    const out = {};
+    BK.state = 'title'; BK.step(0);
+    const items = BK.ui.titleItems();
+    out.hasEntry = items.includes('SOUND TEST');
+    out.keepsSettings = items.includes('SETTINGS');
+    const idx = items.indexOf('SOUND TEST');
+    BK.ui.titleI = idx; BK.press('confirm'); BK.sim(1);
+    out.opensSoundTest = BK.state === 'soundtest';
+    BK.press('pause'); BK.sim(1);
+    out.backGoesToTitle = BK.state === 'title';
+    return out;
+  })()`, 30000);
+  console.log(JSON.stringify(m));
+  assert.ok(m.hasEntry, 'the title screen menu has a SOUND TEST item: ' + JSON.stringify(m));
+  assert.ok(m.keepsSettings, 'and SETTINGS is still there too: ' + JSON.stringify(m));
+  assert.ok(m.opensSoundTest, 'choosing it opens the Sound Test: ' + JSON.stringify(m));
+  assert.ok(m.backGoesToTitle, 'and ESC from it returns to the title screen, not a menu it never opened: ' + JSON.stringify(m));
+  console.log('ok  soundtest  the title screen also opens SOUND TEST straight from its main menu, and ESC from it returns to the title');
+
   assert.ok(r.freshHasTheme, 'a fresh/old save unlocks the title theme by default: ' + JSON.stringify(r));
   assert.ok(r.freshHasSelect, 'and the stage-select tune, also heard before any choice: ' + JSON.stringify(r));
   assert.ok(r.freshTargetLocked, 'and nothing else: ' + JSON.stringify(r));

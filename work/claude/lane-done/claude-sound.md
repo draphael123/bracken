@@ -130,3 +130,63 @@ were not run.
    Both are unlocked by default here, since both are heard with zero player action needed to trigger them from a
    cold boot into Settings. **Recommendation: keep both** - locking `select` back down would make a brand-new
    player's very first trip into Settings show a `'???'` in a system they have not chosen to be tested on.
+
+## Follow-up: main menu entry
+
+Daniel's actual ask - "an option on the MAIN MENU for sound test" - was not what the lane above shipped: it only
+extended the Sound Test that already lived two levels deep, under TITLE > SETTINGS > Sound test. This follow-up adds
+a direct `SOUND TEST` item to the title screen's own main menu, next to `SETTINGS`, opening the identical screen (not
+a copy).
+
+**What changed (`src/main.js`):**
+
+- `titleItems()` now returns `[..., 'SETTINGS', 'SOUND TEST', 'CONTROLS']` - one new entry, placed next to `SETTINGS`
+  since both are option-list ("go elsewhere") entries, ahead of `CONTROLS`. It is fully data-driven off the same
+  array the title screen already draws and navigates (`drawTitle`'s menu block, UP/DOWN/`titleI` in `update()`), so
+  keyboard/pad navigation, the cursor bob, the selection highlight and the panel layout all match every other title
+  item for free - nothing in the drawing or input code needed a special case for it.
+- A new `soundFrom` variable (`'title'` or `'menu'`, default `'menu'`) records which door the Sound Test was opened
+  through. `k === 'SOUND TEST'` on the title (`state === 'title'`'s `menuTake()` handler) sets `state = 'soundtest'`
+  and `soundFrom = 'title'`; the existing `k === 'Sound test'` handler inside Settings sets `soundFrom = 'menu'`
+  (unchanged behaviour, just now explicit).
+- The Sound Test's `pausePress` handler (`state === 'soundtest'`) now branches on `soundFrom`: from `'title'` it
+  returns straight to `state = 'title'` (ambience back to `'forest'`, `music.play(menuTrack())`, same track the title
+  screen already plays on arrival); from `'menu'` it keeps its old behaviour exactly, back to the Settings list
+  (`state = 'menu'`). Selecting `Settings` from the title still works unchanged, and pausing out of a Settings-opened
+  Sound Test still lands back in Settings, not the title - only the new entry point's own back-path changed.
+- `ui.titleItems: () => titleItems()` was added to the debug object at the end of `main.js` (next to the existing
+  `ui.titleI` get/set and `ui.menuCount()`) so a harness can find the new item by name instead of hardcoding its
+  index, which shifts depending on save state (`CONTINUE`/`NEW GAME`), Boss Rush's unlock and whether `?modes=1` is
+  set.
+
+**`tools/soundtest.mjs`** gained a second check (its own `pg.evalp` block, after the existing lock assertions):
+opens the title, reads `BK.ui.titleItems()`, confirms `SOUND TEST` is present and `SETTINGS` is still there too,
+selects it (`BK.ui.titleI` + `BK.press('confirm')`), confirms it lands in `state === 'soundtest'`, then confirms
+`BK.press('pause')` returns to `state === 'title'` (not to a Settings menu it never opened). All four new assertions
+pass, printed as their own `ok  soundtest  ...` line separate from the existing lock report.
+
+## Checks run (this follow-up)
+
+- `node tools/soundtest.mjs` - both reports green: the pre-existing lock suite (unchanged, still 9/9) and the new
+  main-menu-entry suite (4/4: item present, Settings kept, opens the same screen, ESC returns to title).
+- `node tools/textfit.mjs menu,soundtest --strict` - 93 screens, 1489 strings, 0 OVERFLOW/OFFSCREEN/CLIPPED/
+  TRUNCATED/COVERS/COLLIDE/OVERDRAWN/LONGHINT/SMUDGE/ERROR. `SOUND TEST` (10 characters) is shorter than
+  `CHOOSE A SAVE` (14), the longest label the title menu panel already carries, so no new overflow risk there; the
+  soundtest screen itself is untouched by this follow-up (no drawing code changed) and stayed clean.
+- No other check was run, per the lane rules (named checks only, no full suite).
+
+## Commit / push (this follow-up)
+
+- New commit on `claude/sound` on top of `441ba96`, pushed to `origin claude/sound`.
+
+## QUESTIONS FOR DANIEL (follow-up, conservative option taken by default since you're asleep)
+
+1. **Where in the title menu the new item sits.** Placed between `SETTINGS` and `CONTROLS` (`['... SETTINGS,
+   SOUND TEST, CONTROLS']`) - grouped with the other "go to a different screen" options, last among them so it does
+   not push `CONTROLS` or bump the more-used items (`CONTINUE`/`NEW GAME`, `LOCAL CO-OP`, `PRACTICE`) further down.
+   **Recommendation: keep this order** - it is the smallest, least disruptive placement; say the word to move it
+   elsewhere (e.g. its own top-level slot near `PRACTICE`).
+2. **The old Settings > Sound test entry was left in place**, per your instruction ("keep the Settings entry too").
+   Both entries open the exact same `'soundtest'` state and song lists - there is only ever one Sound Test, reached
+   two ways. **Recommendation: keep both** - a returning player who is used to the old path loses nothing, and a new
+   player finds it faster from the title.
