@@ -406,6 +406,17 @@ async function runbossLab(BK, opts) {
     /* THE MODE LEDGER (opts.modes): how often the boss ENTERED each mode, and how much of the hero's health was lost while it was in each - which attacks fired at all, and which ones did the damage */
     const modeN = {}, hitBy = {}; let lastMode = null;
     const ledger = (m0, lost) => { if (!opts.modes) return; if (boss.mode !== lastMode) { lastMode = boss.mode; modeN[lastMode] = (modeN[lastMode] || 0) + 1; } if (lost > 0) hitBy[m0] = (hitBy[m0] || 0) + lost; };
+    /* THE FIGHT ITSELF IS RESEEDED HERE, on the row's own seed again, right before its loop starts. The seed above
+       (before BK.load) still pins the level's load and its settle sim end to end - so a retry of the SAME level is
+       reproducible - but a boss's own rolls (the Abbot's archer-or-sprig summon, among others) used to draw from
+       wherever that stream happened to land after the load-time settle and the walk into the arena, and THAT depends
+       on how many Math.random calls everything else in the level made first: an unrelated enemy added anywhere in
+       the level shifts the count, shifts the stream, and the boss's OWN rolls change though nothing about the fight
+       did (claude/monastery3, batch38: small-adds went red on spire/abbot from Monastery level content alone, with
+       boss-fight-end unmoved - the fight still ended, just on a different sample of the Abbot's own dice). Reseeding
+       again here, on the identical seedOf(...) string, makes the fight loop depend only on the row's own key - never
+       on how many creatures anything else in the level spawned before it. */
+    Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
@@ -814,11 +825,13 @@ async function runbossLab(BK, opts) {
           else if((m==='breathTell'&&boss.modeT<0.45)||m==='breath'){ if(SHIELDED(h)){k.block=true;P.face=side;} else if(m==='breathTell'){goSlab(next(on,null,true)||next(on));} done=true; }   /* THE FIRE: a shield, or off its line */
           else if((m==='smash'||m==='crash')&&boss.y>on.y+8){done=true;}
           if(!done){const tx=cen(on);if(Math.abs(tx-P.x)>6)k[tx>P.x?'right':'left']=true;}
-          const gusting=(m==='gustTell'&&boss.modeT<0.25)||m==='gust';
-          if(!done&&gusting){if(SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=side;}else if(P.st>20&&!(P.dodge>0)&&m==='gustTell'&&boss.modeT<0.08)BK.press('dodge');}
+          /* THE FIREBALL (2026-09-28, in the wing gust's place): slow and aimed where it was thrown - a shield faces it; the others jump it
+             as it comes in (a roll could carry them off the slab) */
+          const b=boss.ball;if(b){const bs=Math.sign(b.x-P.x)||side,near=Math.abs(b.x-P.x),closing=Math.sign(b.vx)===-bs||near<10;
+            if(closing&&near<70&&Math.abs(b.y-(P.y-9))<40){if(SHIELDED(h)){if(!done){k.block=true;k.left=k.right=false;P.face=bs;}}else if(near<34&&P.ground&&!P.labJump){BK.press('jump');P.labJump=10;}}}
         }
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES after '+m0:m0,Math.max(0,was-P.hp));if(P.dead)falls++;if(opts.onFrame)await opts.onFrame({boss,P,f,h});
+        const was=P.hp,m0=boss.mode,ball0=boss.ball;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES after '+m0:ball0&&!boss.ball&&P.hp<was?'FIREBALL':m0,Math.max(0,was-P.hp));if(P.dead)falls++;if(opts.onFrame)await opts.onFrame({boss,P,f,h});
         if(f%600===599)await yieldNow();continue;
       }
       /* THE DUNE WORM, played as his hollow teaches it (docs/briefs/dune-worm.md). With the awning DOWN, wind it (to THE HOLLOW WINCH, strike it);

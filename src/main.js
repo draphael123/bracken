@@ -1950,7 +1950,15 @@ function spawnEnt(e) {
       case 'thorn': enemies.push({ ...base, t: 'thorn', w: 12, h: 11, hp: EHP.thorn, speed: 22, mode: 'walk', modeT: 0 }); break;
       case 'queen': boss = { ...base, t: 'queen', w: 40, h: 20, hp: EHP.queen, maxHp: EHP.queen, mode: 'sleep', modeT: 0, face: -1, tx: px, ty: py, dive: null, phase: 1 }; enemies.push(boss); break;
       case 'frog': boss = { ...base, t: 'frog', w: 40, h: 30, hp: EHP.frog, maxHp: EHP.frog, mode: 'sleep', modeT: 0, face: -1, phase: 1, last: '' }; enemies.push(boss); break;
-      case 'archer': enemies.push({ ...base, t: 'archer', w: 8, h: 10, hp: EHP.archer, speed: 24, timer: 1 + Math.random(), draw: 0, horn: !!e.horn, hornT: 0, blown: false, fire: !!e.fire }); break;
+      case 'archer': enemies.push({ ...base, t: 'archer', w: 8, h: 10, hp: EHP.archer, speed: 24, timer: 1 + Math.random(), draw: 0, horn: !!e.horn, hornT: 0, blown: false, fire: !!e.fire,
+        /* THE STOCKADE'S TWIST (tower 3): a blower who starts on the ground and runs for his horn once he sees you, instead of standing on the tower */
+        /* runTo's dx/climbDx are OFFSETS from this archer's own (already-shifted) tile x - never absolute columns, since
+           grow() shifts an entity's own x but not a nested field, and this level grows sections in ahead of tower 3 */
+        runTo: e.runTo ? { x: (e.x + e.runTo.dx) * TS + 8, y: (e.runTo.y + 1) * TS, climbX: (e.x + e.runTo.climbDx) * TS + 8 } : null, running: false, climbing: false, arrived: false,
+        /* THE STOCKADE'S RULE, IN THE BOSS: a rafters blower who only sounds when the Chieftain hits phase two (hurtEnemy), not by proximity */
+        rafters: !!e.rafters,
+        /* THE COMBINE (tower + gate): the hounds this horn wakes when it sounds, as offsets from him */
+        pack: e.pack ? e.pack.map(p => ({ dx: p.dx * TS, y: (p.y + 1) * TS })) : null }); break;
       case 'hopper': { const col = e.color || 'green'; enemies.push({ ...base, t: 'hopper', color: col, w: 8, h: 6, hp: HOP[col].hp, timer: 0.5 + Math.random(), air: false }); break; }
       case 'pad': { const pw = e.big ? 32 : 24; movers.push({ kind: 'pad', x0: px - pw / 2, x: px - pw / 2, y0: py - 2, y: py - 2, w: pw, h: 6, sink: 0, dx: 0, dy: 0, big: !!e.big, spring: !!e.spring && !e.big, cd: 0, fired: 0 }); break; }   /* a BIG pad (big: true) is two tiles of footing and holds you longer: the rests of a crossing. A BUD pad (spring: true) throws you up a tier when you land on it (see the mover landing in updatePlayer) */
       case 'sapper': enemies.push({ ...base, t: 'sapper', w: 8, h: 12, hp: EHP.sapper, speed: 62, fuse: 0, fleeT: 0 }); break;
@@ -4109,7 +4117,7 @@ const BEASTS = [
   { t: 'assassin', name: 'GOBLIN ASSASSIN', sub: 'the one who is awake', desc: 'He carries no light, which is how you know him: everything else in Underleaf has a candle. He waits without moving and you will not see him. What you WILL get is a whisper and a ring where it came from - that is the only warning, and what follows it goes straight through you and cannot be blocked. He comes up behind and thrusts, and THAT one the shield turns: parry it and he is yours.' },
   { t: 'berserker', name: 'GOBLIN BERSERKER', sub: 'no guard, no stopping', desc: 'They shut him in for the night, and everyone within half a mile knows when he is let out. He has no shield, no guard and no patience: he runs in a straight line and he cannot turn while he does it, so go through him and hit his back. A swing that finds nothing puts him on his face. So does a wall. Half dead he stops falling over, and then it is just the two of you. The one they chain at the Waymeet swings that chain: stand off and it hauls you onto his run.' },
   { t: 'gravewarden', name: 'THE GRAVEYARD KEEPER', sub: 'the ossuary keeps its keeper', desc: 'Huge and slow, a spade and a bell-lantern on a chain. Guard his spade and his grave dirt; jump the lantern when he whirls it low; move when the earth cracks under you, because a dead hand comes up there. His dig follows you: stand beside an open grave and leave late, and the spade goes into the grave and puts him on his knees, open. When he tolls, the dead climb out of the graves - and past half, every toll seals one for good.' },
-  { t: 'gargoyle', name: 'THE GATE GARGOYLE', sub: 'bolted over the tower gate', desc: "Stone, and woken by the loose magic: no blade, spell or shot takes anything off him. He rises out of sight and comes down on the slab his shadow finds - be on another one when he lands. His wings throw you toward the spikes and his throat throws fire along a line you can see set; a shield takes both. Leave his slab late and he smashes through it onto the spikes, stunned. Jump on him there. The wind lifts you back up, and the slab grows back." },
+  { t: 'gargoyle', name: 'THE GATE GARGOYLE', sub: 'bolted over the tower gate', desc: "Stone, and woken by the loose magic: no blade, spell or shot takes anything off him. He rises out of sight and comes down on the slab his shadow finds - be on another one when he lands. His fire runs out along a line you can see set, and he spits one slow fireball at you; a shield takes both. Leave his slab late and he smashes through it onto the spikes, stunned. Jump on him there. The wind lifts you back up, and the slab grows back." },
   { t: 'sexton', name: 'THE SEXTON', sub: 'the falling tower keeps its bell-ringer', desc: 'He rings the loft on its failing deck. Guard his swing and his charge; when the bell goes up, get off the planks - the toll strikes the deck and sets it counting. Charge him across a counting plank and he goes through, caught and open.' },
   { t: 'hedgewarden', name: 'THE HEDGE WARDEN', sub: 'the garden keeps its gate', desc: 'A topiary knight as tall as the garden wall. Guard his cut and his charge; when he flings his arms wide the thorns come out all round him, and no shield turns them - get clear. Cut him down and he falls to a stump that grows him back: cut the root out before it is up, or he stands again whole. He follows you. Fell him beside a witchlight brazier and the fire takes the stump - it cannot grow while it burns, and every blow counts twice.' },
   { t: 'burngob', name: 'BURNING GOBLIN', sub: 'it carries the fire', desc: 'A goblin already alight. It fights like the others - a told swing a shield turns - and touching it costs nothing. What it costs is the ground: the straw it walks on catches, and so does the straw it dies on. Kill it on bare ground.' },
@@ -5815,7 +5823,14 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
     if (e.t === 'lance' && e.hp <= e.maxHp / 2 && e.phase === 1) { e.phase = 2; e.mode = 'rise'; e.modeT = 1.1; e.stagger = 1.1; e.sweepT = 1;
       number(e.x, e.y - e.h - 16, 'HE THROWS IT AWAY', '#ff6b6b'); SFX.roar(); SFX.clank(); shakeCam(8); zoomKick(1.12, 0.4);
       for (let k = 0; k < 12; k++) parts.push({ x: e.x, y: e.y - 20, vx: -e.face * (120 + Math.random() * 160), vy: -120 - Math.random() * 80, life: 1.4, max: 1.4, col: k % 2 ? '#8a5a32' : '#9aa3b0', size: 2, grav: 420 }); }
-    if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp <= e.maxHp / 2 && e.phase === 1) { e.phase = 2; number(e.x, e.y - 24, 'ENRAGED', '#ff6b6b'); SFX.roar(); killFlash = 0.06; shakeCam(5); zoomKick(1.08, 0.3); }
+    if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp <= e.maxHp / 2 && e.phase === 1) { e.phase = 2; number(e.x, e.y - 24, 'ENRAGED', '#ff6b6b'); SFX.roar(); killFlash = 0.06; shakeCam(5); zoomKick(1.08, 0.3);
+      /* THE RULE REACHES THE BOSS. The rafters blower calls a sapper wave down at the Chieftain's second wind - UNLESS he is
+         already down, which is what climbing up there for him during phase one buys you. */
+      if (e.t === 'chief') { const blower = enemies.find(q => q.alive && q.t === 'archer' && q.rafters && !q.blown);
+        if (blower) { blower.blown = true; number(blower.x, blower.y - 16, 'THE HORN!', '#ff6b6b'); SFX.hornDraw(); SFX.roar();
+          for (const dx of [-10, 10]) { const sx = blower.x + dx; enemies.push({ x: sx, y: blower.y, vx: 0, vy: 0, face: Math.sign(dx), alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0, t: 'sapper', w: 8, h: 12, hp: EHP.sapper, speed: 62, fuse: 0, fleeT: 0 }); burst(sx, blower.y, 6, ['#5a2a7a', '#e0b040'], 50, 0.4); }
+          number(P.x, P.y - 50, 'A SAPPER WAVE FROM THE RAFTERS', '#ff6b6b'); } }
+    }
   }
 }
 function cutWeb(tx, ty) { // a curtain of web goes whole: one cut takes the column you struck
@@ -15213,11 +15228,10 @@ function updateGargoyleBoss(e, dt) {
   const A = L.arena, top = A.top !== undefined ? A.top : A.floor - 12 * TS; e.floorY = A.floor;
   stepGargoyle(e, dt, { P, A: { x0: A.x0, x1: A.x1, floor: A.floor, top }, slabs: gargSlabs(), rnd: Math.random,
     hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }),
-    push: vx => { if (!P.dead && !P.flip) { P.vx = vx; P.gustT = 0.1; } },
     say: (m, red, green) => number(e.x, e.y - 44, m, green ? '#8fd160' : red ? '#ff6b6b' : '#ffd36b'),
-    sound: k => ({ screech: SFX.queenShriek, zap: SFX.zap, rattle: SFX.rattle, whoosh: SFX.throwWhoosh, slam: SFX.heavy, crack: SFX.crack, gust: SFX.gust, fire: SFX.gargFire, inhale: SFX.ember }[k] || SFX.thud)(),
+    sound: k => ({ screech: SFX.queenShriek, zap: SFX.zap, rattle: SFX.rattle, whoosh: SFX.throwWhoosh, slam: SFX.heavy, crack: SFX.crack, fire: SFX.gargFire, inhale: SFX.ember, fireball: SFX.pyre }[k] || SFX.thud)(),   /* THE FIREBALL goes with the Pyromancer's own whoomph (SFX.pyre) */
     shake: n => shakeCam(n), dust: (x, y) => { dust(x, y, 6); burst(x, y - 2, 10, ['#6a6280', '#8e86a4'], 70, 0.5); },
-    wind: (x, y, dir) => { if (Math.random() < 0.5) parts.push({ x: x + (Math.random() - 0.5) * 20, y: y + (Math.random() - 0.5) * 30, vx: dir * 260, vy: 0, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); },
+    pop: (x, y, on) => { burst(x, y, on === 'you' ? 14 : 18, ['#ffd36b', '#ff9a5c', '#e0502a', '#fff0b0'], 90, 0.45); SFX.ember(); if (on === 'slab') number(x, y - 12, 'IT BREAKS ON THE SLAB', '#ffd36b'); },   /* THE FIREBALL bursts: on a slab, on stone, on a shield, on you */
     solid: (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)),
     fire: ln => { if (Math.random() < 0.7) { const f = Math.random(), x = ln[0] + (ln[2] - ln[0]) * f, y = ln[1] + (ln[3] - ln[1]) * f; parts.push({ x, y, vx: (Math.random() - 0.5) * 40, vy: -30 - Math.random() * 30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ffb040' : '#e0502a', size: 2, grav: -40 }); } },   /* THE FIRE BREATH's embers */
     breakSlab, flare: flareSlab, crash: (x, y) => { burst(x, y - 4, 30, ['#6a6280', '#8e86a4', '#1b1626', '#5a5a64'], 150, 0.9, 500, 2); dust(x - 20, y, 8); dust(x + 20, y, 8); ringAt(x, y - 6, 40, '#8e86a4', 0.4); },   /* THE CRASH onto the spikes: rubble and dust */
@@ -20682,13 +20696,34 @@ function updateEnemies(dt) {
       continue;
     }
     if (e.t === 'archer') {
+      /* THE TWIST, TOWER 3: this blower starts on the ground. He sees you (the same box the horn's draw uses), runs for the
+         tower, then climbs the net beside it (scripted past the tower's own wall, the way the sprig ringer climbs to a bell)
+         and only THEN stands to sound it - the normal horn logic below picks him up once he has arrived. */
+      if (e.horn && e.runTo && !e.arrived) {
+        if (!e.running && !P.dead && Math.abs(P.x - e.x) < 172 && Math.abs(P.y - e.y) < 140) { e.running = true; number(e.x, e.y - 16, 'HE RUNS', '#ff9a5c'); SFX.yelp(); }
+        if (e.running) {
+          if (!e.climbing) {
+            if (Math.abs(e.x - e.runTo.climbX) > 4) { e.face = Math.sign(e.runTo.climbX - e.x) || e.face; e.vx = e.face * e.speed * 1.6; e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270;
+              const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0; }
+            else { e.vx = 0; e.vy = 0; e.climbing = true; }
+          } else {
+            e.vx = 0; e.vy = 0; e.face = -1;
+            e.y -= 70 * dt; e.x += Math.sign(e.runTo.x - e.x) * 40 * dt;
+            if (e.y <= e.runTo.y) { e.y = e.runTo.y; e.x = e.runTo.x; e.arrived = true; }
+          }
+        }
+        continue;
+      }
       /* THE HORN IS THE STOCKADE'S RULE, AND IT READS NOW. He blew it 1.3 s after you came within 210 px - off the edge of the
          screen, with nothing drawn and nothing heard until the camp came - so a player never saw why it mattered. He has to SEE
          you (on the screen with him), and then he puts the bow down and raises the horn: a climbing note, THE HORN over him and
          a bar filling amber to red (drawHornTell) for HORN_DRAW seconds. Kill him, or knock him off it, before it fills. Walk
          out of his sight and the breath goes out of it. */
-      if (e.horn && !e.blown && !P.dead && Math.abs(P.x - e.x) < 172 && Math.abs(P.y - e.y) < 140 && e.stagger <= 0) { if (!(e.hornT > 0)) { number(e.x, e.y - 22, 'THE HORN', '#ff9a5c'); SFX.hornDraw(); } e.hornT += dt; e.draw = 0; e.timer = Math.max(e.timer, 0.6);
-        if (e.hornT > HORN_DRAW) { e.blown = true; hornSquadT = 1.2; number(e.x, e.y - 18, 'THE HORN!', '#ff6b6b'); SFX.roar(); shakeCam(3); } } else if (e.horn && !e.blown) e.hornT = Math.max(0, e.hornT - dt * (e.stagger > 0 ? 3 : 1));
+      if (e.horn && !e.rafters && !e.blown && !P.dead && Math.abs(P.x - e.x) < 172 && Math.abs(P.y - e.y) < 140 && e.stagger <= 0) { if (!(e.hornT > 0)) { number(e.x, e.y - 22, 'THE HORN', '#ff9a5c'); SFX.hornDraw(); } e.hornT += dt; e.draw = 0; e.timer = Math.max(e.timer, 0.6);
+        if (e.hornT > HORN_DRAW) { e.blown = true; hornSquadT = 1.2; number(e.x, e.y - 18, 'THE HORN!', '#ff6b6b'); SFX.roar(); shakeCam(3);
+          /* THE COMBINE: this horn's own pack, woken where it stands behind the gate - not the generic camp squad */
+          if (e.pack) for (const p of e.pack) { const hx = e.x + p.dx, hy = p.y; enemies.push({ x: hx, y: hy, vx: 0, vy: 0, face: 1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0, t: 'hound', w: 12, h: 7, hp: EHP.hound, speed: 105, timer: 0, air: false }); burst(hx, hy - 6, 5, COLS.hound, 40, 0.4); }
+        } } else if (e.horn && !e.rafters && !e.blown) e.hornT = Math.max(0, e.hornT - dt * (e.stagger > 0 ? 3 : 1));
       const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < 70) && !P.dead && !(e.trialSt && e.trialSt.done);   /* a trial's archer puts the bow down when his gate is up */
       if (near) e.face = Math.sign(d) || e.face;
       e.timer -= dt; e.draw = Math.max(0, e.draw - dt); e.loose = Math.max(0, (e.loose || 0) - dt);
