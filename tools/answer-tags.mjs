@@ -6,13 +6,16 @@
 //     no ANSWER row, or a row names something other than the four answers
 //   - a yellow ! is answered with anything but block, or a red !! with block (the mark and the answer would disagree)
 //   - an ANSWER row names no blow at all (a stale row), or a common foe with no told blow is missing from UNTOLD
+//   - UNTOLD (the common foes whose harm has no told windup) is not empty (part 2: no untold hits), or a common foe with no
+//     told blow is not named HARMLESS
 // and it REPORTS, without failing, every level whose foe mix asks for fewer than three different answers: those are the
 // design lanes' to fix (Daniel, backlog item 13), and the list is here so they can see them.
 //   node tools/answer-tags.mjs            (--quiet: the offenders only)
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS } from '../src/level.js';
-import { MARK, ANSWER, UNTOLD } from '../src/marks.js';
+import * as MARKS from '../src/marks.js';
+const { MARK, ANSWER } = MARKS, UNTOLD = MARKS.UNTOLD || {}, HARMLESS = MARKS.HARMLESS || new Set();
 
 const SRC = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const ANSWERS = new Set(['block', 'dodge', 'jump', 'duck']);
@@ -39,7 +42,7 @@ const bad = [];
 const blowsOf = t => BLOWS.filter(k => k.startsWith(t + '|'));
 for (const t of common) {
   const bl = blowsOf(t);
-  if (!bl.length) { if (!(t in UNTOLD)) bad.push(`${t}: a common foe with no told blow and no UNTOLD row`); continue; }
+  if (!bl.length) { if (!HARMLESS.has(t)) bad.push(`${t}: a common foe that harms you with no told blow` + (UNTOLD[t] ? ` (UNTOLD: '${UNTOLD[t]}' - an untold hit)` : '')); continue; }
   for (const k of bl) {
     const a = ANSWER[k];
     if (!a) { bad.push(`${k} (${MARK[k]}): no ANSWER row`); continue; }
@@ -50,7 +53,8 @@ for (const t of common) {
 }
 for (const k of ['*|eliteLungeTell', '*|eliteSlamTell']) if (MARK[k] && !ANSWER[k]) bad.push(`${k}: an elite's own blow with no ANSWER row`);
 for (const k of Object.keys(ANSWER)) if (!(MARK[k] === '!' || MARK[k] === '!!')) bad.push(`${k}: an ANSWER row for no blow (MARK says ${JSON.stringify(MARK[k])})`);
-for (const [t, a] of Object.entries(UNTOLD)) if (a !== '' && !ANSWERS.has(a)) bad.push(`UNTOLD ${t}: '${a}'`);
+/* NO UNTOLD HITS (the combat pass, part 2; Daniel, 2026-09-28): UNTOLD must end empty - a harm with no windup is a hit nobody can read */
+for (const [t, a] of Object.entries(UNTOLD)) bad.push(`UNTOLD ${t}: '${a}' - an untold hit: give it a told windup (a mark and an ANSWER row), or HARMLESS if it never harms`);
 assert.deepEqual(bad, [], 'answer tags:\n  ' + bad.join('\n  '));
 
 // THE COVERAGE REPORT: what each level's foe mix asks of the player

@@ -7775,8 +7775,8 @@ function updatePlayer(dt) {
        hazard, or if it is throwing its BODY at you right now. Everything that fights with a weapon, a spell or a
        thrown thing does its damage with that, and touching it costs nothing - bosses included. Before this, 106
        kinds hurt on every touch, attacking or not: soldiers, casters, the Archmage, a squirrel. */
-    if (!TOUCH_ALWAYS.has(e.t) && !(BODY_BLOW.has(e.t) && bodyAttacking(e))) continue;
-    const res = e.turncoat ? 'none' : damagePlayer(e.x, e.t === 'hopper' ? HOP[e.color || 'green'].dmg : e.pack ? 12 : (DMG[e.t] || 12), { who: e, unblockable: e.t === 'emberwisp' }); if (e.t === 'emberwisp') e.recoil = 1.2;   /* THE WISP's touch is its blow, and nothing turns it */
+    if (!TOUCH_ALWAYS.has(e.t) && !(BODY_BLOW.has(e.t) && bodyAttacking(e)) && !(e.drone && e.t === 'hopper')) continue;   /* (the Hornet Queen's drones keep their old touch: her fight is her own script) */
+    const res = e.turncoat ? 'none' : damagePlayer(e.x, e.t === 'hopper' ? HOP[e.color || 'green'].dmg : e.pack ? 12 : (DMG[e.t] || 12), { who: e, unblockable: e.t === 'emberwisp' || (e.t === 'hound' && e.mode === 'leap') || e.t === 'bale' || e.t === 'crow' || e.t === 'boo' });   /* (part 2: a pouncing hound goes under the shield, a rolling bale bowls it over, a crow comes at the head over it and the shy dead through it - each told in red) */ if (e.t === 'emberwisp') e.recoil = 1.2;   /* THE WISP's touch is its blow, and nothing turns it */
     if (res === 'blocked') {
       if (e.t === 'sapper' && e.fleeT <= 0) { bombs.push({ x: e.x, y: e.y - 4, vx: -Math.sign(P.x - e.x) * 20, vy: -40, fuse: 0.45 }); e.fleeT = 0; e.stagger = 0.7; e.vx = 0; number(e.x, e.y - 18, 'DROPPED IT', '#ffd36b'); }
       if (e.t === 'queen') { if (e.mode === 'dive' || e.mode === 'sweep') queenWinded(e, true); }
@@ -9462,9 +9462,12 @@ function updateLamprey(e, dt) {
       else { e.mode = 'swim'; e.cd = 1.4; } }
     return;
   }
-  e.mode = 'swim';
+  if (e.mode !== 'lungeTell') e.mode = 'swim';
   const mine = pl && P.swim && !P.dead && P.x > pl.x0 && P.x < pl.x1;
-  if (mine && ad < 140 && dy < 70 && e.cd <= 0) { e.mode = 'reach'; e.modeT = 0.4; e.face = Math.sign(d) || e.face; number(e.x, e.y - 12, 'IT CLOSES', '#e8dcc0'); SFX.charge(); }
+  /* TOLD (the combat pass, part 2): it went for you the frame you were in reach. Now it coils and stops dead in the water first
+     (a red !!: a latch is not a blow a shield turns - kick away, or roll), and only then comes */
+  if (e.mode === 'lungeTell') { e.vx *= Math.pow(0.02, dt); e.vy *= Math.pow(0.02, dt); e.face = Math.sign(d) || e.face; if (e.stagger > 0) { e.mode = 'swim'; e.cd = 1.2; } else if (e.modeT <= 0) { e.mode = 'reach'; e.modeT = 0.4; number(e.x, e.y - 12, 'IT CLOSES', '#e8dcc0'); SFX.charge(); } swimMove(e, dt, pl, top, bot, 6); return; }
+  if (mine && ad < 150 && dy < 70 && e.cd <= 0 && !e.tokWait) { e.mode = 'lungeTell'; e.modeT = 0.4; e.face = Math.sign(d) || e.face; number(e.x, e.y - 12, '!!', '#ff6b6b'); }
   else { const tx = e.hx + Math.sin(e.anim * 0.5) * 36, ty = e.hy + Math.sin(e.anim * 1.1) * 8;
     e.vx += (Math.sign(tx - e.x) * 34 - e.vx) * Math.min(1, dt * 1.4); e.vy += (Math.sign(ty - e.y) * 20 - e.vy) * Math.min(1, dt * 1.4); e.face = Math.sign(e.vx) || e.face; }
   swimMove(e, dt, pl, top, bot, 6);
@@ -10375,6 +10378,12 @@ function updateBoo(e, dt) {
   const wasFrozen = e.mode === 'freeze';
   if (watched) { if (!wasFrozen) { e.mode = 'freeze'; e.shiverT = 0; SFX.booFreeze(); } }
   else if (wasFrozen || e.mode === undefined) e.mode = 'drift';
+  /* ITS TOUCH, TOLD (the combat pass, part 2): close behind you it opens its hands from its face and grins (a red !!, 0.4 s: the
+     dead go through a shield) and swoops - and turn round on it at any point and it is caught, both hands over its eyes again */
+  e.swoopCd = Math.max(0, (e.swoopCd || 0) - dt);
+  if (e.mode === 'swoopTell') { e.vx = 0; e.vy = 0; e.modeT -= dt; if (e.modeT <= 0) { e.mode = 'swoop'; e.modeT = 0.4; const dd = Math.hypot(d, dy - 10) || 1; e.svx = d / dd * 130; e.svy = (dy - 10) / dd * 130; } e.alpha = 0.9; return; }
+  if (e.mode === 'swoop') { e.x += e.svx * dt; e.y += e.svy * dt; e.modeT -= dt; if (e.modeT <= 0) { e.mode = 'drift'; e.swoopCd = 1.6; } e.alpha = 0.9; return; }
+  if (e.mode === 'drift' && !P.dead && ad < 40 && Math.abs(dy) < 30 && e.swoopCd <= 0 && !e.tokWait) { e.mode = 'swoopTell'; e.modeT = 0.4; e.face = Math.sign(d) || e.face; number(e.x, e.y - 24, '!!', '#ff6b6b'); return; }
   if (e.mode === 'freeze') { e.vx = 0; e.vy = 0; e.shiverT = (e.shiverT || 0) + dt; }   /* not a pixel moves: the freeze has to be provably absolute */
   else {
     e.face = Math.sign(d) || e.face;
@@ -13270,7 +13279,11 @@ function playerLight() { let r = P.relic === 'lamp' ? 90 : P.relic === 'diverlam
 // Cave bat: hangs in the dark; flies at the nearest light, bites what carries it, then goes back to its roost.
 const windAt = (x, y) => { for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; if (x > z.x0 && x < z.x1 && y > z.y0 && y <= z.y1 + 4) { const ph = (time + (z.phase || 0)) % z.period; if (ph >= z.on) return 0; return (z.alt ? (Math.floor((time + (z.phase || 0)) / z.period) % 2 ? -z.dir : z.dir) : z.dir) * (z.flip ? -1 : 1); } } return 0; };
 function updateCrow(e, dt) { // storm crows: they come down the wind in strings, and they do not turn for anyone
-  if (!e.go) { if (!P.dead && Math.abs(e.x - P.x) < e.wake) { e.go = true; SFX.caw(); } else return; }
+  /* TOLD (the combat pass, part 2): a string came down the wind with nothing said. Now each crow, when it wakes, hangs on the
+     wind a beat with its wings up and CAWS (a red !!: it comes at the head, over a shield - get under it) - and only then comes,
+     and it does not turn. */
+  if (!e.go) { if (!P.dead && Math.abs(e.x - P.x) < e.wake) { e.go = true; e.mode = 'diveTell'; e.modeT = 0.55 + (e.ph || 0) % 0.3; SFX.caw(); number(e.x, e.y - 10, '!!', '#ff6b6b'); } else return; }
+  if (e.mode === 'diveTell') { e.modeT -= dt; e.y = e.hy + Math.sin(e.anim * 14) * 1.5; e.face = e.vx >= 0 ? 1 : -1; if (e.modeT <= 0) e.mode = 'fly'; return; }
   e.x += e.vx * dt; e.y = e.hy + Math.sin(e.anim * e.freq + e.ph) * e.amp; e.face = e.vx >= 0 ? 1 : -1;
   if (e.x < camX - 60) e.alive = false;
 }
@@ -13298,7 +13311,9 @@ function updateHorn(e, dt) { // a goblin with a ram's horn: he winds it at you, 
   e.modeT -= dt; e.vy = Math.min(320, e.vy + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground) e.vy = 0;
   const d = P.x - e.x, ad = Math.abs(d), near = !P.dead && ad < 170 && Math.abs(P.y - e.y) < 60;
   if (e.stagger > 0) { e.mode = 'idle'; e.modeT = 1.2; return; }
-  if (e.mode === 'idle') { e.face = Math.sign(d) || e.face; if (near && e.modeT <= 0) { e.mode = 'tell'; e.modeT = 0.7; SFX.snort(); } }
+  /* (the combat pass, part 2: THE GUST IS TOLD IN RED. It shoves, it cuts nobody - and a shove toward a drop is the untold knockback
+     Daniel ruled out, so the breath he takes wears the red !!: no shield holds against wind. Crouch, and brace) */
+  if (e.mode === 'idle') { e.face = Math.sign(d) || e.face; if (near && e.modeT <= 0 && !e.tokWait) { e.mode = 'tell'; e.modeT = 0.7; SFX.snort(); number(e.x, e.y - e.h - 10, '!!', '#ff6b6b'); } }
   else if (e.mode === 'tell') { if (e.modeT <= 0) { e.mode = 'blow'; e.modeT = 1.5; SFX.hornBlast(); } }
   else if (e.mode === 'blow') {
     if (!P.dead && Math.sign(d) === e.face && ad < 160 && Math.abs(P.y - e.y) < 44) { const k = 1 - ad / 180; if (P.ground) moveBody(P, e.face * 120 * k * dt, 0, false); else P.vx += e.face * 520 * k * dt; P.gustT = 0.25; }
@@ -13307,22 +13322,30 @@ function updateHorn(e, dt) { // a goblin with a ram's horn: he winds it at you, 
 }
 function updateBale(e, dt) { // a heather bale the wind rolls along the moor; cut it and it bursts, and the next one comes tumbling after
   e.burn = 0;
-  if (e.gone > 0) { e.gone -= dt; if (e.gone <= 0) { const w = windAt(e.x, e.y - 6) || e.lastW || 1; e.x = (w > 0 ? e.x0 : e.x1) * TS + 8; e.y = e.y0 - 40; e.vx = w * 60; e.vy = 0; e.hp = e.hp0; burst(e.x, e.y - 6, 6, COLS.bale, 30, 0.4); } return; }
+  if (e.gone > 0) { e.gone -= dt; if (e.gone <= 0) { const w = windAt(e.x, e.y - 6) || e.lastW || 1; e.x = (w > 0 ? e.x0 : e.x1) * TS + 8; e.y = e.y0 - 40; e.vx = 0; e.vy = 0; e.hp = e.hp0; e.mode = 'wait'; burst(e.x, e.y - 6, 6, COLS.bale, 30, 0.4); } return; }
+  /* TOLD (the combat pass, part 2): a bale came tumbling the moment it was there. Now it settles where the wind drops it and
+     rocks on the gust a beat (a red !!: a bale that size bowls a shield over - JUMP it) before the wind takes it - every roll, the first one too */
+  if (e.mode !== 'roll' && e.mode !== 'rollTell') { e.vx = 0; e.vy = Math.min(320, e.vy + 1000 * dt); if (moveBody(e, 0, e.vy * dt, false).ground) e.vy = 0;
+    if (!P.dead && Math.abs(e.x - P.x) < 300) { e.mode = 'rollTell'; e.modeT = 0.6; number(e.x, e.y - 18, '!!', '#ff6b6b'); } return; }
+  if (e.mode === 'rollTell') { e.modeT -= dt; e.vx = 0; e.spin = (e.spin || 0) + Math.sin(e.anim * 18) * 0.05; e.vy = Math.min(320, e.vy + 1000 * dt); if (moveBody(e, 0, e.vy * dt, false).ground) e.vy = 0; if (e.modeT <= 0) { e.mode = 'roll'; e.vx = (windAt(e.x, e.y - 6) || e.lastW || 1) * 60; SFX.baleBump(); } return; }
   const w = windAt(e.x, e.y - 6); if (w) e.lastW = w;
   e.vx += ((w ? w * 150 : 0) - e.vx) * Math.min(1, dt * (w ? 1.6 : 0.7));
   e.vy = Math.min(320, e.vy + 1000 * dt);
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) { e.vy = Math.abs(e.vx) > 70 && Math.random() < dt * 5 ? -110 : 0; if (e.vy < 0 && Math.abs(e.x - P.x) < 200) SFX.baleBump(); } if (r.hitX) e.vx = -e.vx * 0.4;
   e.spin = (e.spin || 0) + e.vx * dt / 6; e.face = 1;
-  if (e.x < e.x0 * TS - 8 || e.x > e.x1 * TS + 24) e.gone = 1.5;
+  if (e.x < e.x0 * TS - 8 || e.x > e.x1 * TS + 24) { e.gone = 1.5; e.mode = 'wait'; }
   if (Math.abs(e.vx) > 60 && r.ground && Math.random() < dt * 8) dust(e.x - Math.sign(e.vx) * 5, e.y, 1);
 }
 function updateKite(e, dt) { // a goblin under a box kite: drifts on the gusts, edges over you, drops a stone. Cut the string or the goblin and both come down.
   e.anim += dt; e.modeT -= dt;
   if (e.mode === 'fall') { e.vy += 700 * dt; e.y += e.vy * dt; e.x += e.vx * dt; e.vx *= Math.pow(0.2, dt); const ty = Math.floor((e.y + 1) / TS); if (isSolid(Math.floor(e.x / TS), ty)) { e.y = ty * TS; e.alive = false; dust(e.x, e.y, 6); SFX.thud(); enemies.push({ t: 'sprig', x: e.x, y: e.y, vx: 0, vy: 0, w: 8, h: 10, hp: EHP.sprig, speed: 44, face: Math.sign(P.x - e.x) || 1, alive: true, dying: 0, anim: Math.random(), flash: 0, stagger: 0.5 }); number(e.x, e.y - 14, 'DOWN', '#8fd160'); const c = { t: 'kite', color: e.col, x: e.x, y: e.y - 30, vx: 40, vy: -30, rot: 0, spin: 4, face: 1, life: 1.2, max: 1.2, frame: 0, grav: 200, bounced: false, ground: false }; corpses.push(c); } return; }
+  /* TOLD (the combat pass, part 2): the stone came down the frame he was over you. Now he checks on the string over the spot and
+     lifts the stone into sight (a yellow !, 0.45 s: a shield turns a stone from above) - step out from under, or put it up */
+  if (e.mode === 'dropTell') { e.y = e.hy + Math.sin(e.anim * 9) * 2; e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'hover'; rocks.push({ x: e.x, y: e.y + 10, vx: 0, vy: 40, t: 0, dead: false, thrown: true }); SFX.kiteChatter(); } return; }
   const w = windAt(e.x, e.y); e.vx += ((w * 60) + (Math.abs(P.x - e.x) < 220 && !P.dead ? Math.sign(P.x - e.x) * 28 : Math.sign(e.hx - e.x) * 14) - e.vx) * Math.min(1, dt * 2);
   e.x += e.vx * dt; e.y = e.hy + Math.sin(e.anim * 1.6) * 5 + (w ? Math.sin(e.anim * 5) * 2 : 0); e.face = Math.sign(P.x - e.x) || e.face;
   if (e.x < 16) e.x = 16; if (e.x > LW * TS - 16) e.x = LW * TS - 16;
-  e.dropT -= dt; if (e.dropT <= 0 && !P.dead && Math.abs(P.x - e.x) < 26 && P.y > e.y) { e.dropT = 2.6; rocks.push({ x: e.x, y: e.y + 10, vx: 0, vy: 40, t: 0, dead: false, thrown: true }); number(e.x, e.y - 40, '!', '#ff6b6b'); SFX.kiteChatter(); }
+  e.dropT -= dt; if (e.dropT <= 0 && !P.dead && Math.abs(P.x - e.x) < 30 && P.y > e.y && !e.tokWait) { e.dropT = 2.6; e.mode = 'dropTell'; e.modeT = 0.45; e.vx = 0; number(e.x, e.y - 40, '!', '#ffd36b'); }
 }
 function updateHare(e, dt) { // sits until you are close, then runs with the wind, and it does not go round you
   e.anim += dt; e.hitT = Math.max(0, e.hitT - dt); e.vy += 1000 * dt; if (e.vy > 320) e.vy = 320; e.hopT -= dt;
@@ -13440,9 +13463,14 @@ function updateWight(e, dt) { // bog-mist with hands: slow, cold, and it holds y
   if (e.mode === 'rise') { e.y = e.riseY + Math.max(0, e.modeT) * 24; if (e.modeT <= 0) e.mode = 'drift'; return; }
   if (e.life <= 0 || P.dead) { e.alive = false; burst(e.x, e.y - 6, 6, COLS.wight, 20, 0.6, -10, 1); return; }
   e.face = Math.sign(d) || e.face; e.vy = Math.min(320, (e.vy || 0) + 1000 * dt);
-  if (moveBody(e, e.face * 46 * dt, e.vy * dt, false).ground) e.vy = 0; e.riseY = e.y;
+  if (moveBody(e, (e.mode === 'graspTell' || e.mode === 'grasp' ? 0 : e.face * 46) * dt, e.vy * dt, false).ground) e.vy = 0; e.riseY = e.y;
   if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - Math.random() * 12, vx: 0, vy: -15, life: 0.6, max: 0.6, col: '#c8d8c8', size: 1, grav: 0 });
-  if (!P.dead && ad < 10 && Math.abs(P.y - e.y) < 18 && e.hitT <= 0) { e.hitT = 1.2; SFX.wightTouch(); const res = damagePlayer(e.x, DMG.wight); if (res === 'hit') { P.vx *= 0.2; P.stDelay = 0.8; number(P.x, P.y - 24, 'COLD', '#c8d8c8'); } }
+  /* TOLD (the combat pass, part 2): its cold came with the touch. Now it stops and lifts its hands out of the mist first (a red !!,
+     0.45 s: mist comes round a shield - step back out of its reach), and then it reaches; a blow while it lifts them puts it off */
+  if (e.mode === 'graspTell') { if (e.stagger > 0) { e.mode = 'drift'; e.hitT = 0.8; } else if (e.modeT <= 0) { e.mode = 'grasp'; e.modeT = 0.25; SFX.wightTouch();
+      if (!P.dead && ad < 22 && Math.abs(P.y - e.y) < 18) { const res = damagePlayer(e.x, DMG.wight, { unblockable: true }); if (res === 'hit') { P.vx *= 0.2; P.stDelay = 0.8; number(P.x, P.y - 24, 'COLD', '#c8d8c8'); } } } }
+  else if (e.mode === 'grasp') { if (e.modeT <= 0) { e.mode = 'drift'; e.hitT = 1.2; } }
+  else if (!P.dead && ad < 20 && Math.abs(P.y - e.y) < 18 && e.hitT <= 0 && !e.tokWait) { e.mode = 'graspTell'; e.modeT = 0.45; number(e.x, e.y - 20, '!!', '#ff6b6b'); }
 }
 function updateTowerSlides(dt){
   P.zipRelease=Math.max(0,(P.zipRelease||0)-dt);
@@ -13631,8 +13659,9 @@ function updateStormShaman(e, dt) {
 // moment to see it land - the only moment he can be reached - then he is back down the flue.
 function updateSweep(e, dt) {
   e.modeT -= dt; const d = P.x - e.x, ad = Math.abs(d), near = !P.dead && ad < 110 && Math.abs(P.y - e.y) < 90;
-  if (e.mode === 'hide') { e.gone = 1; if (near && e.modeT <= 0) { e.mode = 'pop'; e.modeT = 0.45; e.gone = 0; SFX.sweepPop(); burst(e.x, e.y - 8, 6, ['#2a2630', '#5a5460'], 30, 0.4, -20, 1); } }
-  else if (e.mode === 'pop') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'throw'; e.modeT = 0.3; const sx = e.x + e.face * 6, sy = e.y - 12, Tf = 0.8, G = 420; seeds.push({ x: sx, y: sy, vx: (P.x - sx) / Tf, vy: ((P.y - 8) - sy) / Tf - 0.5 * G * Tf, g: G, dead: false, life: 3, soot: true, owner: e }); SFX.throwWhoosh(); } }
+  /* (the combat pass, part 2: the pop was a windup with nothing over it; it wears the yellow ! now - a shield turns soot) */
+  if (e.mode === 'hide') { e.gone = 1; if (near && e.modeT <= 0 && !e.tokWait) { e.mode = 'popTell'; e.modeT = 0.45; e.gone = 0; SFX.sweepPop(); number(e.x, e.y - 22, '!', '#ffd36b'); burst(e.x, e.y - 8, 6, ['#2a2630', '#5a5460'], 30, 0.4, -20, 1); } }
+  else if (e.mode === 'popTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'throw'; e.modeT = 0.3; const sx = e.x + e.face * 6, sy = e.y - 12, Tf = 0.8, G = 420; seeds.push({ x: sx, y: sy, vx: (P.x - sx) / Tf, vy: ((P.y - 8) - sy) / Tf - 0.5 * G * Tf, g: G, dead: false, life: 3, soot: true, owner: e }); SFX.throwWhoosh(); } }
   else if (e.mode === 'throw') { if (e.modeT <= 0) { e.mode = 'up'; e.modeT = 1.3; } }
   else if (e.mode === 'up') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'hide'; e.modeT = 2.2; e.gone = 1; SFX.sweepHide(); burst(e.x, e.y - 8, 4, ['#2a2630'], 20, 0.3, -20, 1); } }
 }
@@ -13986,8 +14015,13 @@ function updateClinger(e, dt) {
       e.vx = 0; e.vy = 0; e.x = e.wallX; e.y = e.wallY;
       e.face = P.x < e.x ? -1 : 1;
       const near = !P.dead && Math.abs(P.x - e.x) < 34 && P.y > e.y - 30 && P.y < e.y + 90 && !P.ground;
-      if (near) { e.mode = 'drop'; e.modeT = 2.6; e.vy = 60; e.vx = Math.sign(P.x - e.x) * 40;
-        number(e.x, e.y - 16, 'IT LETS GO', '#ff6b6b'); SFX.hiss ? SFX.hiss() : SFX.puff(); }
+      /* TOLD (the combat pass, part 2): it dropped the frame you passed under. Now its legs come off the wall one by one and it
+         rattles first (a red !!, 0.4 s: it comes from above, and no shield faces up - get out from under), and then it lets go */
+      if (near && !e.tokWait) { e.mode = 'dropTell'; e.modeT = 0.4; number(e.x, e.y - 16, '!!', '#ff6b6b'); SFX.hiss ? SFX.hiss() : SFX.puff(); }
+      break; }
+    case 'dropTell': {
+      e.vx = 0; e.vy = 0; e.x = e.wallX + Math.sin(e.anim * 40) * 1; e.y = e.wallY; e.face = P.x < e.x ? -1 : 1;
+      if (e.modeT <= 0) { e.mode = 'drop'; e.modeT = 2.6; e.vy = 60; e.vx = Math.sign(P.x - e.x) * 40; number(e.x, e.y - 16, 'IT LETS GO', '#ff6b6b'); }
       break; }
     case 'drop': {
       e.vy += 900 * dt; if (e.vy > 420) e.vy = 420;
@@ -13995,8 +14029,9 @@ function updateClinger(e, dt) {
       e.x += e.vx * dt; e.y += e.vy * dt;
       if (Math.random() < dt * 20) parts.push({ x: e.x, y: e.y - 5, vx: 0, vy: -20, life: 0.3, max: 0.3, col: '#cfc8b8', size: 1, grav: 0 });
       if (!P.dead && Math.abs(P.x - e.x) < 13 && Math.abs((P.y - 8) - e.y) < 15) {
+        damagePlayer(e.x, DMG.clingerGrab, { up: true, unblockable: true });
         e.mode = 'hold'; e.holdT = 1.5; e.tick = 0; P.clung = e;
-        damagePlayer(e.x, DMG.clingerGrab, { up: true }); SFX.gobHurt ? SFX.gobHurt() : SFX.hiss();
+        SFX.gobHurt ? SFX.gobHurt() : SFX.hiss();
         number(P.x, P.y - 28, 'IT HAS YOU', '#ff6b6b'); shakeCam(3); break; }
       if (isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS)) || e.modeT <= 0) { e.mode = 'floor'; e.modeT = 4; e.vy = 0; }
       break; }
@@ -14272,8 +14307,17 @@ function updateHoldfast(e, dt) {
   e.vx = 0; e.vy = 0;
   const near = !P.dead && Math.abs(P.x - e.x) < 17 && Math.abs((P.y - 6) - (e.y - 7)) < 18;
   switch (e.mode) {
+    /* TOLD (the combat pass, part 2): it had you the frame you stood on it. Now the roots come up round your feet first (a red !!, 0.4 s:
+       a grip is not a blow a shield turns - step off, or roll), and it takes you only if you are still there when they close */
     case 'wait':
-      if (near) { e.mode = 'hold'; e.modeT = 2.6; e.tick = 0; P.rooted = e;
+      if (near && !e.tokWait) { e.mode = 'gripTell'; e.modeT = 0.4; SFX.squelch ? SFX.squelch() : SFX.hiss(); number(e.x, e.y - 20, '!!', '#ff6b6b'); }
+      break;
+    case 'gripTell':
+      if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 16, y: e.y - 2, vx: 0, vy: -30, life: 0.3, max: 0.3, col: '#4a8a7a', size: 1, grav: 0 });
+      if (e.modeT > 0) break;
+      if (!near) { e.mode = 'spent'; e.modeT = 1.0; break; }
+      e.mode = 'hold';
+      { e.modeT = 2.6; e.tick = 0; P.rooted = e;
         SFX.squelch ? SFX.squelch() : SFX.hiss(); number(e.x, e.y - 20, 'IT HAS YOU', '#ff6b6b'); shakeCam(3);
         damagePlayer(e.x, DMG.holdfastGrip, { unblockable: true });
         if (!(PROG.holdTold > 1)) { PROG.holdTold = (PROG.holdTold || 0) + 1; hintT = 4.5;
@@ -15954,6 +15998,14 @@ function updateShardling(e, dt) {
   if (ad < 190 && !P.dead) e.face = Math.sign(d) || e.face;
   const want = ad < 190 && !P.dead && e.stagger <= 0 ? e.face * e.speed : 0;
   e.vx += (want - e.vx) * Math.min(1, dt * 6);
+  /* ITS OWN BLOW, TOLD (the combat pass, part 2): its only harm was the burst it gives when it dies close to you - its bristle says
+     that. Close in, it now also SHEDS on purpose: it hunches, rings (a red !!, 0.5 s: the points go off all round it, and a shield
+     covers one side - step off) and throws its points off round it. It stands still to do it */
+  e.shedCd = Math.max(0, (e.shedCd || 0) - dt);
+  if (e.mode === 'shedTell') { e.vx = 0; if (e.stagger > 0) { e.mode = 'walk'; e.shedCd = 1; } else if (e.modeT <= 0) { e.mode = 'shed'; e.modeT = 0.3; e.shedCd = 2.4; SFX.crack(); burst(e.x, e.y - 6, 10, ['#bfe6f5', '#eefaff', '#7aa8c8'], 110, 0.4, 200, 1); ringAt(e.x, e.y - 6, 26, '#bfe6f5', 0.3);
+      if (!P.dead && ad < 28 && Math.abs(P.y - e.y) < 22) damagePlayer(e.x, DMG.shardBurst, { unblockable: true }); } return; }
+  if (e.mode === 'shed') { e.vx = 0; if (e.modeT <= 0) e.mode = 'walk'; return; }
+  if (!P.dead && ad < 24 && Math.abs(P.y - e.y) < 20 && e.shedCd <= 0 && e.stagger <= 0 && !e.tokWait) { e.mode = 'shedTell'; e.modeT = 0.5; e.vx = 0; SFX.shardBristle(); number(e.x, e.y - 18, '!!', '#ff6b6b'); return; }
   { const was = e.mode; e.mode = ad < 40 ? 'bristle' : 'walk'; if (e.mode === 'bristle' && was !== 'bristle') SFX.shardBristle(); }
   const aheadX = e.x + Math.sign(e.vx || e.face) * (e.w / 2 + 2), ftx = Math.floor(aheadX / TS), fty = Math.floor((e.y + 1) / TS);
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
@@ -17663,6 +17715,12 @@ function updateBurnGob(e, dt) {
    on you - and it will not close on a hero with a wall at his back. After it has burned you it falls away for a breath. */
 function updateEmberWisp(e, dt) {
   e.anim += dt; e.recoil = Math.max(0, (e.recoil || 0) - dt); if (e.hx === undefined) { e.hx = e.x; e.hy = e.y; }
+  /* ITS TOUCH, TOLD (the combat pass, part 2): it burned whatever it drifted into. Now it drifts harmless, and close to you it stops,
+     flares white-hot (a red !!, 0.5 s: nothing turns fire) and darts - only the dart burns, and it falls back after */
+  e.dartCd = Math.max(0, (e.dartCd || 0) - dt); e.modeT = (e.modeT || 0) - dt;
+  if (e.mode === 'flareTell') { e.vx = 0; e.vy = 0; if (e.modeT <= 0) { e.mode = 'dash'; e.modeT = 0.45; const ddx = P.x - e.x, ddy = (P.y - 10) - e.y, dd = Math.hypot(ddx, ddy) || 1; e.vx = ddx / dd * 150; e.vy = ddy / dd * 150; } return; }
+  if (e.mode === 'dash') { e.x += e.vx * dt; e.y += e.vy * dt; if (isSolid(Math.floor(e.x / TS), Math.floor((e.y - 5) / TS))) e.modeT = 0; if (e.modeT <= 0 || e.recoil > 0) { e.mode = 'drift'; e.dartCd = 1.8; e.recoil = Math.max(e.recoil, 0.8); e.ang = Math.atan2(-e.vy, -e.vx); } e.face = e.vx < 0 ? -1 : 1; return; }
+  { const fdx = P.x - e.x, fdy = (P.y - 12) - e.y; if (e.mode !== 'flareTell' && !P.dead && e.recoil <= 0 && e.dartCd <= 0 && Math.hypot(fdx, fdy) < 48 && !e.tokWait) { e.mode = 'flareTell'; e.modeT = 0.5; number(e.x, e.y - 16, '!!', '#ff6b6b'); return; } }
   const dx = P.x - e.x, dy = (P.y - 12) - e.y, dist = Math.hypot(dx, dy), home = Math.hypot(e.x - e.hx, e.y - e.hy) > 150;
   let tgt;
   if (P.dead || dist > 170 || home) tgt = Math.atan2(e.hy - e.y, e.hx - e.x);
@@ -17680,6 +17738,7 @@ function updateEmberWisp(e, dt) {
 }
 function drawEmberWisp(e, cx, cy) {
   const x = Math.round(e.x - cx), y = Math.round(e.y - cy), fl = Math.sin(time * 13 + e.anim * 5);
+  if (e.mode === 'flareTell') { g.globalAlpha = 0.35 + 0.3 * Math.abs(fl); g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, y - 5, 12 + 3 * (1 - Math.max(0, e.modeT) / 0.5), 0, 7); g.fill(); g.globalAlpha = 1; }   /* THE FLARE: white-hot before the dart */
   g.globalAlpha = 0.26 + 0.08 * fl; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(x, y - 5, 9, 0, 7); g.fill();
   g.globalAlpha = 0.55; g.fillStyle = '#ff9a5c'; g.beginPath(); g.arc(x, y - 5, 5.5, 0, 7); g.fill(); g.globalAlpha = 1;
   g.fillStyle = e.flash > 0 ? '#ffffff' : '#ffd36b'; g.fillRect(x - 3, y - 8, 6, 6); g.fillStyle = '#fff6c8'; g.fillRect(x - 2, y - 7, 3, 3);
@@ -20184,8 +20243,8 @@ function drawCritters(cx, cy) {
    time (spines, stings, the drifting lights). BODY_BLOW: creatures whose attack IS their body - the leap, the dive, the
    charge, the bite - and they hurt only while that attack is under way, never standing about or winding up. */
 const TOUCH_ALWAYS = new Set(['anvil', 'barrel', 'boiler', 'cargo', 'cargowall', 'cascade', 'catapult', 'deadfall', 'felltree', 'hammer', 'hexspill', 'hotplate', 'keg', 'loosegun', 'rockfall', 'scaffold', 'skybolt', 'sluice', 'weight', 'towertop', 'knell', 'rod', 'tbell', 'tidebell', 'pwheel', 'thresher', 'croppole', 'davit', 'flagpost', 'treehouse', 'throne', 'rack', 'glyph', 'gplate', 'rune', 'stormkite',
-  'urchin', 'thorn', 'jelly', 'wasp', 'marshlight', 'wisp', 'emberwisp', 'spit', 'sporeling', 'grub', 'lurker', 'hopper']);
-const BODY_BLOW = new Set(['frog', 'queen', 'ramlord', 'golem', 'hound', 'dog', 'badger', 'crow', 'kite', 'fledgling', 'gar', 'weaver', 'sailer', 'broom', 'mimic', 'familiar', 'topiary']);
+  'urchin', 'thorn', 'jelly', 'wasp', 'marshlight', 'wisp', 'spit', 'grub']);   /* (the combat pass, part 2: the sporeling, the lurker, the hopper and the ember wisp hurt by a TOLD blow now - BODY_BLOW - and a touch of one standing about is nothing) */
+const BODY_BLOW = new Set(['frog', 'queen', 'ramlord', 'golem', 'hound', 'dog', 'badger', 'crow', 'kite', 'fledgling', 'gar', 'weaver', 'sailer', 'broom', 'mimic', 'familiar', 'topiary', 'sporeling', 'lurker', 'hopper', 'emberwisp', 'boo']);
 const BODY_MOVE = /charge|dive|lunge|pounce|swoop|leap|ram|butt|roll|dash|bite|sting|stomp|slam|rush|drop|tackle|sweep|hop|jump|peck|claw|trample|spin|buck|fly/i;
 const bodyAttacking = e => typeof e.mode === 'string' && !/Tell$|Wind$|Hang$|Up$|crouch|aim|rest|idle|wake|sleep|stun|winded|dazed|stuck|recover/i.test(e.mode) && BODY_MOVE.test(e.mode);
 const windingUp = e => (e.t === 'vulture' && e.mode === 'watch') || (/* audit 2026-09-24 (A2): windups that played no warning sound - the Hornet Queen's volley and sweep, the Chieftain's bow, the Herald's wave */ (e.t === 'chief' && e.mode === 'aim') || (e.t === 'herald' && e.mode === 'raise') || (e.t === 'deathknight' || e.t === 'bloodknight' || e.t === 'barrowrider' || e.t === 'bannerbearer' || e.t === 'corpse') && typeof e.mode === 'string' && e.mode.endsWith('Tell') && e.mode !== 'riseTell') || (e.t === 'gargoyle' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'whelp' && e.mode === 'crouchTell') || (e.t === 'winchmaster' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'duneworm' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'hedgewarden' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sexton' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'pyromancer' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || ((e.t === 'burieddead' || e.t === 'zombie')&&e.mode.endsWith('Tell')) || (e.t === 'harbormaster' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || ((e.t === 'bellcrab' || e.t === 'bellguard') && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'mother' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'golem' && e.mode === 'sweepTell') || (e.t === 'fledgling' && e.mode === 'peckTell') || (e.t === 'gobpriest' && (e.mode === 'riteTell' || e.mode === 'censerTell' || e.mode === 'bellTell')) || (e.t === 'archmage' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'homunculus' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'strawking' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'kraken' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'master' && (e.mode === 'chargeTell' || e.mode === 'lashTell' || e.mode === 'leapTell' || e.mode === 'crackTell' || e.mode === 'whistleTell')) || (e.t === 'tome' && e.mode === 'tell') || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'blackoutTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang' || e.mode === 'volleyUp' || e.mode === 'sweepStart')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell' || e.mode === 'anchorTell' || e.mode === 'ramTell' || e.mode === 'diveTell' || e.mode === 'whirlTell' || e.mode === 'gulpTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'thrustTell' || e.mode === 'bashTell' || e.mode === 'judgeTell')) || (e.t === 'lancer' && (e.mode === 'chargeTell' || e.mode === 'swipeTell' || e.mode === 'cutTell')) || (e.t === 'prince' && (e.mode === 'cutTell' || e.mode === 'sinkTell' || e.mode === 'callTell' || e.mode === 'crownTell' || e.mode === 'snuffTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'masthead' && (e.mode === 'slashTell' || e.mode === 'sailTell' || e.mode === 'dropTell' || e.mode === 'boomTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell' || e.mode === 'spitTell' || e.mode === 'lungeTell' || e.mode === 'tailTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')) || (e.t === 'troll' && (e.mode === 'swatTell' || e.mode === 'throwTell' || e.mode === 'hurlTell' || e.mode === 'slamTell' || e.mode === 'ripTell')) || (e.t === 'suncatcher' && (e.mode === 'frostTell' || e.mode === 'spireTell' || e.mode === 'shardTell' || e.mode === 'clawTell' || e.mode === 'hailTell')); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)
@@ -20297,7 +20356,10 @@ function updateBalcony(e, dt) {
 }
 /* ATTACK TOKENS (src/attack-tokens.js): the board, what is outside the purse, and the few things of the world the module needs */
 const TK = tokenBoard();
-TOKENS.exempt = e => !!(e === boss || e.xpRole || e.mini || e.harmless || e.trainer || e.work || e.t === 'dummy' || bossActive || miniActive || rushOn());   /* bosses, minis and the adds of their fights are their own scripts */
+/* THE WIND'S OWN (part 2): a string of storm crows and a rolling bale are the moor's weather, not a fighter taking its turn - each
+   still tells its own coming (a yellow !), but a string of five does not queue for the purse one crow at a time */
+const TOKEN_HAZARDS = new Set(['crow', 'bale']);
+TOKENS.exempt = e => !!(e === boss || e.xpRole || e.mini || e.harmless || e.trainer || e.work || e.t === 'dummy' || TOKEN_HAZARDS.has(e.t) || bossActive || miniActive || rushOn());   /* bosses, minis and the adds of their fights are their own scripts */
 const tkApi = { dt: 0, get time() { return time; }, nums: () => nums, windingUp: e => windingUp(e), heavy: e => markOf(e) === '!!', move: (e, dx) => moveBody(e, dx, 0, false),
   walker: e => !e.noGrav && !e.pool && !e.swim && !e.fly && e.speed > 0 && foeHasFooting(e),
   grounded: e => !e.noGrav && !e.pool && !e.swim && !e.fly && foeHasFooting(e), fall: (e, dy) => moveBody(e, 0, dy, false),
@@ -20459,8 +20521,12 @@ function updateEnemies(dt) {
       const near = Math.abs(e.x - P.x) < 150 && Math.abs(e.y - P.y) < 90 && !P.dead;
       if (near) e.face = Math.sign(P.x - e.x) || e.face;
       e.timer -= dt; e.mouth = Math.max(0, e.mouth - dt);
-      if (near && e.timer <= 0) {
-        e.timer = 1.8; e.mouth = 0.3;
+      /* TOLD (the combat pass, part 2): the seed used to come out of a closed mouth. It fills its cheeks first - the mouth
+         open, a yellow ! (a shield turns a seed) - and spits when the breath runs out. A blow while it fills puts it off. */
+      if (e.mode === 'spitTell') { e.modeT -= dt; e.mouth = Math.max(e.mouth, 0.05); if (e.stagger > 0) { e.mode = 'idle'; e.timer = 0.9; } else if (e.modeT <= 0) { e.mode = 'idle'; e.timer = 0; e.shoot = true; } }
+      else if (near && e.timer <= 0 && !e.tokWait) { e.mode = 'spitTell'; e.modeT = 0.45; number(e.x, e.y - 18, '!', '#ffd36b'); }
+      if (e.shoot) {
+        e.shoot = false; e.timer = 1.8; e.mouth = 0.3;
         const sx = e.x + e.face * 8, sy = e.y - 8, dx = P.x - sx, dy = (P.y - 7) - sy, d = Math.hypot(dx, dy) || 1, sp = 125;
         seeds.push({ x: sx, y: sy, vx: dx / d * sp, vy: dy / d * sp, dead: false, life: 3 }); SFX.spit();
       }
@@ -20470,7 +20536,11 @@ function updateEnemies(dt) {
       const d = P.x - e.x, near = Math.abs(d) < 170 && Math.abs(e.y - P.y) < 80 && !P.dead;
       e.timer -= dt; e.vy += 1000 * dt; if (e.vy > 300) e.vy = 300;
       const hk = HOP[e.color || 'green'];
-      if (!e.air && e.stagger <= 0 && near && e.timer <= 0) { e.face = Math.sign(d) || e.face; e.vx = e.face * (60 + Math.min(40, Math.abs(d) * 0.3)) * hk.sp; e.vy = e.color === 'blue' ? -260 : e.color === 'yellow' ? -190 : -230; e.air = true; e.timer = hk.cd + Math.random() * 0.4; if (Math.random() < 0.4) SFX.croak(); }
+      /* TOLD (the combat pass, part 2): a hopper on the ground hurts nobody. It squats and swells its throat (a yellow !, 0.3 s)
+         and then it leaps, and only the leap bites. The Hornet Queen's drones keep their own old way (her fight is her script). */
+      if (!e.drone && e.mode === 'hopTell') { e.vx *= Math.pow(0.02, dt); e.modeT -= dt; if (e.stagger > 0 || e.air) e.mode = 'sit'; else if (e.modeT <= 0) { e.mode = 'hop'; e.timer = 0; e.hopNow = true; } }
+      else if (!e.drone && !e.air && e.stagger <= 0 && near && e.timer <= 0 && !e.tokWait) { e.mode = 'hopTell'; e.modeT = 0.3; e.face = Math.sign(d) || e.face; number(e.x, e.y - 12, '!', '#ffd36b'); }
+      if (!e.air && e.stagger <= 0 && near && e.timer <= 0 && (e.drone || e.hopNow)) { e.hopNow = false; e.mode = 'hop'; e.face = Math.sign(d) || e.face; e.vx = e.face * (60 + Math.min(40, Math.abs(d) * 0.3)) * hk.sp; e.vy = e.color === 'blue' ? -260 : e.color === 'yellow' ? -190 : -230; e.air = true; e.timer = hk.cd + Math.random() * 0.4; if (Math.random() < 0.4) SFX.croak(); }
       if (!e.air) e.vx *= Math.pow(0.02, dt);
       const oldY = e.y; e.x += e.vx * dt; e.y += e.vy * dt;
       // land on the raft it rode in on, or on tiles
@@ -20478,7 +20548,7 @@ function updateEnemies(dt) {
       if (e.raft && e.vy >= 0 && oldY <= e.raft.y + 1 && e.y >= e.raft.y && e.x > e.raft.x - 2 && e.x < e.raft.x + e.raft.w + 2) { e.y = e.raft.y; e.vy = 0; landed = true; e.x += e.raft.dx; }
       else if (e.raft && !e.air && e.x > e.raft.x - 2 && e.x < e.raft.x + e.raft.w + 2 && Math.abs(e.y - e.raft.y) < 6) { e.x += e.raft.dx; e.y = e.raft.y; e.vy = 0; landed = true; }
       else { const ty = Math.floor((e.y - 0.01) / TS); for (const tx of [Math.floor((e.x - 3) / TS), Math.floor((e.x + 3) / TS)]) { const t = tileAt(tx, ty); if (t === T.SOLID || t === T.CRATE || t === T.PALISADE || (isOneWay(t) && oldY <= ty * TS + 0.5 && e.vy >= 0)) { e.y = ty * TS; e.vy = 0; landed = true; break; } } }
-      if (landed && e.air) { e.air = false; dust(e.x, e.y, 3); e.stagger = 0.15; }
+      if (landed && e.air) { e.air = false; dust(e.x, e.y, 3); e.stagger = 0.15; if (e.mode === 'hop') e.mode = 'sit'; }
       if (!landed && e.vy > 0) e.air = true;
       // deep water swallows them
       if (e.vy > 0) for (const p of (L.pools || [])) if (!p.shallow && !p.swim && e.x > p.x0 && e.x < p.x1 && e.y > p.y + 6) { e.alive = false; burst(e.x, p.y, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); SFX.splash(); break; }
@@ -20499,7 +20569,12 @@ function updateEnemies(dt) {
       if (e.squirrel && (e.loot > 0 || e.mode === 'flee') && e.vy === 0 && Math.random() < dt * 2.2) { e.vy = -300; SFX.leap(); }
       if (e.loot > 0) { const away = Math.sign(e.x - P.x) || e.face; e.face = away; e.vx += (away * 95 - e.vx) * Math.min(1, dt * 8); if (ad > 420) { e.alive = false; number(P.x, P.y - 30, 'THE THIEF GOT AWAY', '#9aa39a'); } }
       else { const near = ad < 200 && Math.abs(e.y - P.y) < 50 && !P.dead; if (near) { e.face = Math.sign(d) || e.face; e.vx += (e.face * e.speed - e.vx) * Math.min(1, dt * 8); } else e.vx *= Math.pow(0.05, dt);
-        if (!P.dead && ad < 10 && Math.abs(e.y - P.y) < 14 && P.dodge <= 0) { if (P.relic === 'cloak') { number(e.x, e.y - 18, 'NOTHING TO TAKE', '#6a3aa0'); e.loot = -1; } else { const take = Math.min(5, got); if (take > 0) { got -= take; e.loot = take; number(P.x, P.y - 22, '-' + take + ' GOLD', '#ff6b6b'); SFX.coin(); } else { e.loot = -1; number(e.x, e.y - 18, 'EMPTY POCKETS', '#9aa39a'); } } e.vx = (Math.sign(e.x - P.x) || 1) * 95; }
+        /* TOLD (the combat pass, part 2): the hand was in your purse the moment he touched you. He crouches for the grab first (a red !!:
+           a shield keeps nothing out of a pocket - roll away, or cut him first), then darts, and only the dart takes */
+        if (e.mode === 'snatchTell') { e.vx = 0; e.face = Math.sign(d) || e.face; if (e.stagger > 0) e.mode = 'stalk'; else if ((e.modeT -= dt) <= 0) { e.mode = 'snatch'; e.modeT = 0.3; e.vx = e.face * 170; } }
+        else if (e.mode === 'snatch') { e.vx = e.face * 170; if ((e.modeT -= dt) <= 0) { e.mode = 'stalk'; e.vx = 0; } }
+        else if (e.mode !== 'flee' && !P.dead && ad < 34 && Math.abs(e.y - P.y) < 14 && e.stagger <= 0 && !e.tokWait) { e.mode = 'snatchTell'; e.modeT = 0.35; number(e.x, e.y - 18, '!!', '#ff6b6b'); }
+        if (e.mode === 'snatch' && !P.dead && ad < 10 && Math.abs(e.y - P.y) < 14 && P.dodge <= 0) { e.mode = 'stalk'; if (P.relic === 'cloak') { number(e.x, e.y - 18, 'NOTHING TO TAKE', '#6a3aa0'); e.loot = -1; } else { const take = Math.min(5, got); if (take > 0) { got -= take; e.loot = take; number(P.x, P.y - 22, '-' + take + ' GOLD', '#ff6b6b'); SFX.coin(); } else { e.loot = -1; number(e.x, e.y - 18, 'EMPTY POCKETS', '#9aa39a'); } } e.vx = (Math.sign(e.x - P.x) || 1) * 95; }
         if (e.loot === -1) { e.loot = 0; e.mode = 'flee'; e.fleeT = 3; }
         if (e.mode === 'flee') { e.fleeT -= dt; e.vx += ((Math.sign(e.x - P.x) || 1) * 95 - e.vx) * Math.min(1, dt * 8); if (e.fleeT <= 0) e.mode = 'stalk'; } }
       const dirM = Math.sign(e.vx) || e.face; const aheadX = e.x + dirM * (e.w / 2 + 2), ftx = Math.floor(aheadX / TS), fty = Math.floor((e.y + 1) / TS);
@@ -20586,8 +20661,10 @@ function updateEnemies(dt) {
     if (e.t === 'spitcap') { // ROOTED. It swells, and what it lobs bursts into sleep where it lands: move, or be in the cloud.
       const d = P.x - e.x, ad = Math.abs(d), near = ad > 24 && ad < 240 && Math.abs(P.y - e.y) < 100 && !P.dead;
       e.modeT -= dt; if (near) e.face = Math.sign(d) || e.face;
-      if (e.mode === 'rest') { if (near && e.modeT <= 0) { e.mode = 'swell'; e.modeT = 0.85; SFX.hiss(); number(e.x, e.y - e.h - 8, 'IT SWELLS', '#c9a0ff'); } }
-      else if (e.mode === 'swell') { e.weak = true; // the bladder is tight: this is when it comes apart
+      /* (the combat pass, part 2: THE SWELL WEARS THE RED !!. A shield stops the spore, and the cloud comes up where it stopped all the
+         same - there is nothing here for a shield to do. Get out from under the arc) */
+      if (e.mode === 'rest') { if (near && e.modeT <= 0 && !e.tokWait) { e.mode = 'swellTell'; e.modeT = 0.85; SFX.hiss(); number(e.x, e.y - e.h - 8, '!!', '#ff6b6b'); } }
+      else if (e.mode === 'swellTell') { e.weak = true; // the bladder is tight: this is when it comes apart
         if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * 12, y: e.y - e.h, vx: 0, vy: -18, life: 0.5, max: 0.5, col: '#c9a0ff', size: 1, grav: -8 });
         if (e.modeT <= 0) { e.mode = 'spit'; e.modeT = 0.4; e.weak = false;
           const sx = e.x, sy = e.y - e.h - 2, Tf = Math.max(0.55, Math.min(1.5, ad / 165)), G2 = 720;
@@ -20600,7 +20677,11 @@ function updateEnemies(dt) {
       const d = P.x - e.x, ad = Math.abs(d), below = P.y - e.y;
       e.cd -= dt; e.modeT -= dt; e.y += (e.restY + Math.sin(e.anim * 1.4) * 3 - e.y) * Math.min(1, dt * 4);
       if (e.mode === 'spit' && e.modeT <= 0) e.mode = 'hang';
-      if (!P.dead && ad < 180 && below > -30 && below < 150 && e.cd <= 0 && e.stagger <= 0) {
+      /* TOLD (the combat pass, part 2): the web came with no warning. It draws its legs in and rears back first (a yellow !, 0.4 s:
+         a shield turns web), and a blow while it rears puts it off */
+      if (e.mode === 'spitTell' && e.stagger > 0) { e.mode = 'hang'; e.cd = 1; }
+      if (!P.dead && ad < 180 && below > -30 && below < 150 && e.cd <= 0 && e.stagger <= 0 && e.mode === 'hang' && !e.tokWait) { e.mode = 'spitTell'; e.modeT = 0.4; e.face = Math.sign(d) || e.face; number(e.x, e.y - 14, '!', '#ffd36b'); }
+      if (e.mode === 'spitTell' && e.modeT <= 0) {
         e.cd = 2.4 + Math.random() * 0.8; e.mode = 'spit'; e.modeT = 0.4; e.face = Math.sign(d) || e.face;
         const sx = e.x, sy = e.y + 4, Tf = 0.55, G2 = 360;
         seeds.push({ x: sx, y: sy, vx: (P.x - sx) / Tf, vy: ((P.y - 8) - sy) / Tf - 0.5 * G2 * Tf, g: G2, life: 2, net: true, web: true, from: e });
@@ -20613,7 +20694,10 @@ function updateEnemies(dt) {
     if (e.t === 'feeler') { updateFeeler(e, dt); continue; }
     if (e.t === 'lurker') { // scenery until you are close, then a lunge
       const d = P.x - e.x, ad = Math.abs(d); e.modeT -= dt;
-      if (e.mode === 'hide') { if (ad < 42 && Math.abs(P.y - e.y) < 24 && !P.dead) { e.mode = 'lunge'; e.modeT = 0.4; e.face = Math.sign(d) || 1; e.vx = e.face * 190; SFX.thump(); number(e.x, e.y - e.h - 8, '!', '#ffd36b'); } }
+      /* TOLD (the combat pass, part 2): it lunged the frame you came near, with the ! over a blow already landing. Now the cap
+         lifts and the eyes come open under it first (a yellow !, 0.35 s: a shield turns it), and it springs from further off */
+      if (e.mode === 'hide') { if (ad < 56 && Math.abs(P.y - e.y) < 24 && !P.dead && !e.tokWait) { e.mode = 'springTell'; e.modeT = 0.35; e.face = Math.sign(d) || 1; SFX.thump(); number(e.x, e.y - e.h - 8, '!', '#ffd36b'); } }
+      else if (e.mode === 'springTell') { e.face = Math.sign(d) || e.face; if (e.stagger > 0) { e.mode = 'rest'; e.modeT = 1.2; } else if (e.modeT <= 0) { e.mode = 'lunge'; e.modeT = 0.4; e.vx = e.face * 190; } }
       else if (e.mode === 'lunge') { e.x += e.vx * dt; const ftx = Math.floor((e.x + e.face * 8) / TS), fty = Math.floor((e.y + 1) / TS); if (!isSolid(ftx, fty) && !isOneWay(tileAt(ftx, fty))) e.vx = 0; if (isSolid(Math.floor((e.x + e.face * 7) / TS), Math.floor((e.y - 6) / TS))) e.vx = 0; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 1.6; e.vx = 0; } }
       else if (e.mode === 'rest' && e.modeT <= 0) { e.mode = 'hide'; e.home = true; }
       continue;
@@ -20637,7 +20721,12 @@ function updateEnemies(dt) {
       e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270;
       let want = 0;
       if (e.fleeT > 0) { e.fleeT -= dt; want = -e.face * e.speed * 1.2; }
-      else if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = e.face * e.speed; if (ad < 22) { bombs.push({ x: e.x + e.face * 6, y: e.y - 4, vx: e.face * 30, vy: -60, fuse: 1.1 }); e.fleeT = 1.4; SFX.bow(); number(e.x, e.y - 20, 'BOMB', '#ff6b6b'); } }
+      /* TOLD (the combat pass, part 2): the bomb was at your feet before anything was said. He stops and holds it up, fizzing, over
+         his head first (a red !!: no shield turns a blast), and then he drops it and runs - so the answer is to be gone */
+      else if (e.mode === 'lightTell') { want = 0; e.face = Math.sign(d) || e.face; if (Math.random() < dt * 30) parts.push({ x: e.x, y: e.y - 16, vx: (Math.random() - 0.5) * 30, vy: -30, life: 0.25, max: 0.25, col: '#ffd36b', size: 1, grav: 0 });
+        if (e.stagger > 0) { e.mode = 'walk'; bombs.push({ x: e.x, y: e.y - 4, vx: 0, vy: -40, fuse: 0.9 }); e.fleeT = 1.2; number(e.x, e.y - 18, 'DROPPED IT', '#ffd36b'); }
+        else if ((e.modeT -= dt) <= 0) { e.mode = 'walk'; bombs.push({ x: e.x + e.face * 6, y: e.y - 4, vx: e.face * 30, vy: -60, fuse: 1.1 }); e.fleeT = 1.4; SFX.bow(); number(e.x, e.y - 20, 'BOMB', '#ff6b6b'); } }
+      else if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = e.face * e.speed; if (ad < 30 && !e.tokWait) { e.mode = 'lightTell'; e.modeT = 0.5; want = 0; number(e.x, e.y - 22, '!!', '#ff6b6b'); SFX.hiss(); } }
       if (e.stagger > 0) want = 0;
       e.vx += (want - e.vx) * Math.min(1, dt * 10);
       const aheadX = e.x + Math.sign(e.vx || e.face) * (e.w / 2 + 2), ftx = Math.floor(aheadX / TS), fty = Math.floor((e.y + 1) / TS);
@@ -20669,11 +20758,14 @@ function updateEnemies(dt) {
       if (e.flank) { e.holdT -= dt; const dh = e.holdX - e.x; if (Math.abs(dh) > 6 && e.holdT > 0) { e.face = Math.sign(dh); want = e.face * 150; } else { want = 0; e.face = Math.sign(d) || e.face; } if (e.holdT <= 0) e.flank = false;
         e.vx += (want - e.vx) * Math.min(1, dt * 8); const r4 = moveBody(e, e.vx * dt, e.vy * dt, false); if (r4.ground) { e.vy = 0; e.air = false; } if (r4.hitX) e.vx = 0; continue;
       }
-      if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = e.face * e.speed; const fireAhead = fires.some(f => f.delay <= 0 && Math.sign(f.x - e.x) === e.face && Math.abs(f.x - e.x) < 30); if (fireAhead) want = -e.face * 40; else if (!e.air && ad < 46 && e.timer <= 0) { e.vy = -170; e.air = true; e.timer = 0.9; e.vx = e.face * 150; } }
+      if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = e.face * e.speed; const fireAhead = fires.some(f => f.delay <= 0 && Math.sign(f.x - e.x) === e.face && Math.abs(f.x - e.x) < 30); if (fireAhead) want = -e.face * 40; else if (!e.air && ad < 58 && e.timer <= 0 && e.mode !== 'pounceTell' && !e.tokWait) { e.mode = 'pounceTell'; e.modeT = 0.35; SFX.bark(); number(e.x, e.y - 14, '!!', '#ff6b6b'); } }
+      /* TOLD (the combat pass, part 2): the leap came off the stride with nothing before it. It drops on its haunches first (a red !!,
+         0.35 s: it goes low, for the legs, under any shield - JUMP it), and only the leap bites: a hound running at you is not yet a blow */
+      if (e.mode === 'pounceTell') { want = 0; e.vx *= Math.pow(0.001, dt); e.face = Math.sign(d) || e.face; if (e.stagger > 0) { e.mode = 'run'; e.timer = 0.6; } else if ((e.modeT -= dt) <= 0) { e.mode = 'leap'; e.vy = -170; e.air = true; e.timer = 0.9; e.vx = e.face * 150; } }
       if (e.stagger > 0) want = 0;
       if (!e.air) e.vx += (want - e.vx) * Math.min(1, dt * 8);
       const aheadX = e.x + Math.sign(e.vx || e.face) * (e.w / 2 + 2), ftx = Math.floor(aheadX / TS), fty = Math.floor((e.y + 1) / TS);
-      const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) { e.vy = 0; e.air = false; }
+      const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) { e.vy = 0; e.air = false; if (e.mode === 'leap') e.mode = 'run'; }
       if (r.ground && !e.air && tileAt(ftx, fty) === T.AIR && !isOneWay(tileAt(ftx, fty))) e.vx = 0;
       if (r.hitX) e.vx = 0;
       continue;
@@ -20769,6 +20861,17 @@ function updateEnemies(dt) {
       if ((!e.mode || e.mode === 'walk') && near && e.biteCd <= 0 && e.stagger <= 0) { e.mode = 'biteTell'; e.modeT = 0.4; e.face = Math.sign(dx) || e.face; e.bitHit = false; number(e.x, e.y - 16, '!', '#ffd36b'); SFX.tell(false); }
       if (e.mode === 'biteTell') { want = 0; if (e.modeT <= 0) { e.mode = 'bite'; e.modeT = 0.34; e.vy = -150; e.vx = e.face * 110; } }
       else if (e.mode === 'bite') { want = e.face * 110; if (!e.bitHit && !P.dead && overlap(box(e), box(P))) { e.bitHit = true; damagePlayer(e.x, e.fat ? 4 : DMG.sprig || 15); }   /* (the old fat one gums you) */ if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.55; e.biteCd = 1.4; } }
+      else if (e.mode === 'rest') { want = 0; if (e.modeT <= 0) e.mode = 'walk'; }
+    }
+    /* THE SPORELING BITES, TOLD (the combat pass, part 2). It hurt on every touch, which is not an attack you can answer. Now it
+       does what the sprig does: sits back on a yellow ! (a shield turns it), hops mouth first, rests after - and a touch is nothing */
+    if (e.t === 'sporeling') {
+      const dx = P.x - e.x, near = !P.dead && Math.abs(dx) < 30 && Math.abs(P.y - e.y) < 14;
+      e.biteCd = Math.max(0, (e.biteCd || 0) - dt); if (e.mode === 'biteTell' || e.mode === 'bite' || e.mode === 'rest') e.modeT -= dt;
+      if (e.stagger > 0 && (e.mode === 'biteTell' || e.mode === 'bite')) e.mode = 'walk';
+      if ((!e.mode || e.mode === 'walk') && near && e.biteCd <= 0 && e.stagger <= 0 && !e.tokWait) { e.mode = 'biteTell'; e.modeT = 0.4; e.face = Math.sign(dx) || e.face; number(e.x, e.y - 16, '!', '#ffd36b'); }
+      if (e.mode === 'biteTell') { want = 0; if (e.modeT <= 0) { e.mode = 'bite'; e.modeT = 0.3; e.vy = -130; e.vx = e.face * 100; } }
+      else if (e.mode === 'bite') { want = e.face * 100; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.5; e.biteCd = 1.3; } }
       else if (e.mode === 'rest') { want = 0; if (e.modeT <= 0) e.mode = 'walk'; }
     }
     if (e.t === 'shield') {
@@ -24029,10 +24132,10 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'spit') frame = e.mouth > 0 ? 2 : (Math.floor(e.anim * 1.5) % 4 === 1 ? 1 : 0);
     else if (e.t === 'wasp') frame = Math.floor(e.anim * 30) % 3;
     else if (e.t === 'queen') frame = e.mode === 'winded' || e.mode === 'slamRest' ? 6 : e.mode === 'aim' ? 2 : e.mode === 'dive' ? 3 : (e.mode === 'volley' || e.mode === 'volleyUp') ? 4 : (e.mode === 'slamUp' || e.mode === 'slamHang' || e.mode === 'slam') ? 5 : (e.mode === 'sweep' || e.mode === 'sweepStart') ? 7 : Math.floor(e.anim * 26) % 2;
-    else if (e.t === 'hopper') frame = e.air ? (e.vy < 0 ? 1 : 3) : (e.timer < 0.2 && Math.abs(P.x - e.x) < 170 ? 2 : 0);
+    else if (e.t === 'hopper') frame = e.air ? (e.vy < 0 ? 1 : 3) : (e.mode === 'hopTell' || (e.drone && e.timer < 0.2 && Math.abs(P.x - e.x) < 170) ? 2 : 0);
     else if (e.t === 'frog') frame = e.mode === 'dazed' ? 6 : e.mode === 'crouch' ? 3 : (e.mode === 'leap' || e.mode === 'hop') ? (e.vy < 40 ? 4 : 5) : e.mode === 'croak' ? 1 : (e.mode === 'inhale' || e.mode === 'tongue' || e.mode === 'inhaleTell') ? 2 : 0;
     else if (e.t === 'sapper') frame = e.fleeT > 0 ? 4 + Math.floor(e.anim * 12) % 2 : Math.floor(e.anim * 12) % 4;
-    else if (e.t === 'sporeling') frame = Math.abs(e.vx) > 4 ? [0, 2, 1, 3][Math.floor(e.anim * 9) % 4] : 0;
+    else if (e.t === 'sporeling') frame = e.mode === 'biteTell' ? 0 : Math.abs(e.vx) > 4 ? [0, 2, 1, 3][Math.floor(e.anim * 9) % 4] : 0;
     else if (e.t === 'masthead') frame = ({ slashTell: 3, slash: 4, sailTell: 5, sail: 6, climb: 7, dropTell: 7, drop: 8, boomTell: 9, boom: 10, fouled: 11, tangled: 12, reel: 12, dead: 12 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 6) % 2 : 0);
     else if(e.t==='undeadmage')frame=undeadFrame(e,UNDEADMAGE_F);
     else if(e.t==='burieddead'||e.t==='zombie'||e.t==='husk'||e.t==='apprentice'){frame=e.t==="burieddead"?deadKingFrame(e):deadFrame(e);if((e.t==='zombie'||e.t==='apprentice')&&frame<=1&&Math.abs(e.vx)>2)frame=[0,1,0,7][Math.floor(e.anim*6)%4];}   /* the redrawn dead walk on both feet */
@@ -24044,8 +24147,8 @@ function drawWorld(cx, cy, showPlayer) {
     else if (FIELD_FRAME[e.t]) frame = FIELD_FRAME[e.t](e);   /* THE HEXED FIELDS */
     else if (MAGE_FRAME[e.t]) frame = MAGE_FRAME[e.t](e);   /* THE MAGE'S FOLLY */
     else if (e.t === 'feeler') frame = ({ hide: 0, rise: 1, sink: 1, lashTell: 4, lash: 5, stuck: 6 })[e.mode] ?? (2 + Math.floor(e.anim * 2.5) % 2);
-    else if (e.t === 'spitcap') frame = e.mode === 'swell' ? 1 : e.mode === 'spit' ? 2 : 0;
-    else if (e.t === 'weaver') frame = (e.mode === 'spit' || e.mode === 'reelTell') ? 1 : Math.floor(e.anim * 3) % 4 === 2 ? 2 : 0;
+    else if (e.t === 'spitcap') frame = e.mode === 'swellTell' ? 1 : e.mode === 'spit' ? 2 : 0;
+    else if (e.t === 'weaver') frame = (e.mode === 'spit' || e.mode === 'reelTell' || e.mode === 'spitTell') ? 1 : Math.floor(e.anim * 3) % 4 === 2 ? 2 : 0;
     else if (e.t === 'drone') frame = Math.floor(e.anim * 1.1) % 6 === 0 && (e.anim * 1.1) % 1 < 0.15 ? 2 : [0, 3, 1, 3][Math.floor(e.anim * 5) % 4];
     else if (e.t === 'shaman') frame = e.cast > 0 ? (Math.floor(e.anim * 10) % 2 ? 4 : 1) : Math.abs(e.vx || 0) > 4 ? 2 + Math.floor(e.anim * 6) % 2 : 0;
     else if (e.t === 'hound') frame = e.air ? 2 : Math.floor(e.anim * 14) % 2;
@@ -24065,7 +24168,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'stormshaman') frame = e.castFlash > 0 ? 1 : 0;
     else if (e.t === 'seawitch') frame = e.mode === 'callTell' || e.mode === 'call' ? 2 : e.castFlash > 0 ? 1 : 0;   /* watching, casting, and both arms up on the call */
     else if (e.t === 'dummy') frame = e.flash > 0 ? 1 : 0;
-    else if (e.t === 'sweep') frame = e.mode === 'pop' ? 2 : e.mode === 'throw' ? 1 : 0;
+    else if (e.t === 'sweep') frame = e.mode === 'popTell' ? 2 : e.mode === 'throw' ? 1 : 0;
     else if (e.t === 'scalder') frame = e.mode === 'stir' ? 1 : e.mode === 'pourTell' ? 2 : e.mode === 'pour' ? 3 : e.mode === 'ladleTell' ? 4 : e.mode === 'ladle' ? 5 : 0;
     else if (e.t === 'crow') frame = Math.abs(e.vy || 0) < 12 && Math.floor(e.anim * 2) % 3 === 0 ? 3 : Math.floor(e.anim * 10) % 3;   /* it glides between strokes when it is not climbing or diving */
     else if (e.t === 'horn') frame = e.mode === 'blow' || e.mode === 'sent' ? 2 : e.mode === 'tell' || e.mode === 'whistleTell' ? 1 : 0;
@@ -24074,7 +24177,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'gar') frame = e.mode === 'lunge' ? 2 : e.mode === 'beached' ? 3 + Math.floor(e.anim * 7) % 2 : Math.floor(e.anim * 4) % 2;
     else if (e.t === 'hare') frame = e.mode === 'run' ? Math.floor(e.anim * 12) % 2 : 2;
     else if (e.t === 'prise') frame = e.mode === 'snap' ? 3 : (e.mode === 'reachTell') ? 2 : Math.abs(e.vx) > 3 ? Math.floor(e.anim * 6) % 2 : 0;
-    else if (e.t === 'holdfast') frame = e.mode === 'hold' ? 2 : e.mode === 'spent' ? 1 : 0;
+    else if (e.t === 'holdfast') frame = e.mode === 'hold' ? 2 : e.mode === 'gripTell' ? 1 : e.mode === 'spent' ? 1 : 0;
     /* THE ROAD PEOPLE. Their whole read is the wind-up, so the tell frame has to be on screen for the
        whole tell and not a beat of it - each of these is keyed off the MODE, never off a timer. */
     else if (e.t === 'swornsword') frame = e.mode === 'cutTell' ? 2 : e.mode === 'cut' ? 3 : (e.mode === 'reel' || e.mode === 'rest') ? 4 : Math.abs(e.vx) > 6 ? [0, 5, 1, 6][Math.floor(e.anim * 8) % 4] : 0;
@@ -24090,10 +24193,10 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'bellguard') frame=({hookTell:2,knellTell:3,rest:4})[e.mode]??(Math.abs(e.vx)>2?1:0);
     else if (e.t === 'drownedking') frame = kingFrame(e);
     else if (e.t === 'propman') frame = (e.mode === 'setTell' || e.mode === 'set' || e.mode === 'throwTell') ? 2 : e.mode === 'seek' ? 3 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 2 : 0;
-    else if (e.t === 'clinger') frame = e.mode === 'cling' ? 0 : e.mode === 'hold' ? 3 : 1 + Math.floor(e.anim * 14) % 2;
+    else if (e.t === 'clinger') frame = e.mode === 'cling' || e.mode === 'dropTell' ? 0 : e.mode === 'hold' ? 3 : 1 + Math.floor(e.anim * 14) % 2;
     else if (e.t === 'prince') frame = princeFrame(e);
     else if (e.t === 'courtier') frame = e.mode === 'rise' ? 0 : e.mode === 'clawTell' ? 3 : e.mode === 'claw' ? 4 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 6) % 2 : 1;
-    else if (e.t === 'wight') frame = Math.floor(e.anim * 6) % 4;
+    else if (e.t === 'wight') frame = e.mode === 'graspTell' || e.mode === 'grasp' ? 2 : Math.floor(e.anim * 6) % 4;
     else if (e.t === 'windcaller') frame = e.mode === 'fallen' ? 2 : e.mode === 'ground' ? 3 : e.mode === 'blink' || e.mode === 'appear' ? 2 : (e.mode === 'howlTell' || e.mode === 'howl') ? 3 : e.castFlash > 0 ? 1 : Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 7) % 2 : 0;
     else if (e.t === 'golem') frame = e.mode === 'stagger' ? 5 : e.mode === 'sweepTell' ? 7 : e.mode === 'sweep' ? 8 : (e.mode === 'shroudTell' || e.mode === 'shroud') ? 6 : (e.mode === 'stompTell' || e.mode === 'stomp') ? 3 : e.mode === 'throwTell' || e.mode === 'throw' ? 4 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
     else if (e.t === 'tippler') frame = e.mode === 'heaveTell' ? 2 : e.mode === 'tip' ? 3 : (e.mode === 'barTell' || e.mode === 'bar') ? 4 : Math.abs(e.vx) > 4 ? 1 : Math.floor(e.anim * 2) % 2;
@@ -24105,7 +24208,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'spider') frame = (e.mode === 'drop' || e.mode === 'dropTell' || e.mode === 'ground') ? 1 : e.mode === 'climb' ? 3 + Math.floor(e.anim * 10) % 2 : (Math.floor(e.anim * 1.5) % 3 === 0 ? 2 : 0);
     else if (e.squirrel) frame = e.vy !== 0 ? 2 : Math.floor(e.anim * 12) % 2;
     else if (e.t === 'owl') frame = e.mode === 'douseTell' ? 3 : e.mode === 'douseDive' ? 6 : e.mode === 'pinned' ? 10 : e.mode === 'skim' ? 9 : e.mode === 'skimTell' ? (e.skimAt ? 8 : 6) : e.mode === 'stuckTalons' ? 11 : e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'dazzled' ? 4 : e.mode === 'hootTell' ? 3 : e.mode === 'plunge' ? 12 : e.mode === 'riseUp' || e.mode === 'stalk' ? 1 + Math.floor(e.anim * 9) % 2 : e.mode === 'screech' || e.mode === 'screechTell' ? 3 : e.mode === 'sit' || e.mode === 'sleep' || e.mode === 'wake' || e.mode === 'fanTell' || e.mode === 'fan' ? 0 : e.mode === 'swoop' ? 6 : e.mode === 'land' ? 7 : e.mode === 'takeoff' ? (Math.floor(e.anim * 14) % 2 ? 1 : 2) : e.mode === 'fly' ? (e.modeT > 2.4 ? 1 + Math.floor(e.anim * 9) % 2 : 5) : e.mode === 'carry' ? 1 + Math.floor(e.anim * 8) % 2 : 1 + Math.floor(e.anim * 8) % 2;
-    else if (e.t === 'shardling') frame = e.mode === 'bristle' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
+    else if (e.t === 'shardling') frame = e.mode === 'bristle' || e.mode === 'shedTell' || e.mode === 'shed' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
     else if (e.t === 'fledgling') frame = e.mode === 'peckTell' ? 2 : e.mode === 'peck' ? 3 : !e.onGround ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
     else if (e.t === 'gobpriest') frame = e.mode === 'riteTell' || e.mode === 'rite' ? 3 + Math.floor(e.anim * 5) % 2 : e.mode === 'censerTell' ? 5 : e.mode === 'censer' ? 6 : e.mode === 'bellTell' ? 7 : e.mode === 'bell' ? 8 : e.mode === 'broken' ? 9 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 6) % 2 : 0;   /* the censer up and swinging on the rite; knocked back when it breaks */
     else if (e.t === 'gobmage') frame = e.mode === 'boltTell' ? 3 : e.mode === 'bolt' ? 4 : e.mode === 'runeTell' || e.mode === 'rune' ? 5 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 6) % 2 : 0;   /* the book held out, thrown open, and up over the hat for the rune */
@@ -24179,7 +24282,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'petrel') frame = e.mode === 'dive' ? 2 : e.mode === 'climb' ? 3 : Math.floor(e.anim * 8) % 2;
     else if (e.t === 'puffer') frame = (e.mode === 'burst' || e.mode === 'swellTell' || e.mode === 'deflate') ? (e.swell > 0.55 ? 3 : 2) : Math.floor(e.anim * 3) % 2;
     else if (e.t === 'jelly') frame = Math.floor(e.anim * 2) % 3;
-    else if (e.t === 'lamprey') frame = e.mode === 'latched' ? 2 : e.mode === 'reach' ? 2 : Math.floor(e.anim * 6) % 2;
+    else if (e.t === 'lamprey') frame = e.mode === 'latched' ? 2 : e.mode === 'reach' || e.mode === 'lungeTell' ? 2 : Math.floor(e.anim * 6) % 2;
     else if (e.t === 'manta') frame = (e.mode === 'dive' || e.mode === 'diveTell') ? 3 : Math.floor(e.anim * 5) % 2;
     else if (e.t === 'reefmaw' && e.land) frame = ({ crawl: Math.abs(e.vx || 0) > 4 ? Math.floor(e.anim * 4) % 2 : 0, turn: 1, lungeTell: 2, lunge: 3, tailTell: 4, tail: 5, roll: 6 + Math.floor(e.anim * 10) % 2, shaken: 6, beached: 8, right: 7, recover: 0, haul: 9, thrashTell: 2, thrash: 9, dead: 10 })[e.mode] ?? 0;   /* ON LAND: his own sheet (bakeReefmaw().land) */
     else if (e.t === 'reefmaw') frame = ({ lurk: 0, riseTell: 1, rise: 2, biteTell: 3, bite: 4, spitTell: 3, spit: 4, thrash: 5, thrashTell: 5, stuck: 6, reel: 6, recoil: 6, sink: 7, dead: 8 })[e.mode] ?? (e.rise > 0.5 ? 2 : 0);
