@@ -1,0 +1,99 @@
+{
+ "refill": false,
+ "secs": 300,
+ "passes": 1,
+ "rows": [
+  {
+   "pass": 0,
+   "h": "knight",
+   "won": true,
+   "out": "win",
+   "secs": 94.1,
+   "taken": 12,
+   "opened": 8,
+   "left": 0,
+   "hitBy": {
+    "stunned": 12
+   },
+   "modes": {
+    "wake": 1,
+    "hover": 24,
+    "breathTell": 8,
+    "breath": 8,
+    "recover": 12,
+    "fireballTell": 4,
+    "fireball": 4,
+    "diveTell": 8,
+    "dive": 8,
+    "smash": 8,
+    "crash": 8,
+    "stunned": 8,
+    "reset": 7,
+    "flareTell": 3,
+    "perchFly": 1,
+    "shriek": 1
+   }
+  },
+  {
+   "pass": 0,
+   "h": "warden",
+   "won": true,
+   "out": "win",
+   "secs": 70,
+   "taken": 28,
+   "opened": 8,
+   "left": 0,
+   "hitBy": {
+    "breath": 16,
+    "diveTell": 12
+   },
+   "modes": {
+    "wake": 1,
+    "hover": 16,
+    "breathTell": 5,
+    "breath": 5,
+    "recover": 5,
+    "diveTell": 8,
+    "dive": 8,
+    "smash": 8,
+    "crash": 8,
+    "stunned": 8,
+    "reset": 7,
+    "flareTell": 2,
+    "perchFly": 1,
+    "shriek": 1
+   }
+  },
+  {
+   "pass": 0,
+   "h": "pyro",
+   "won": false,
+   "out": "death",
+   "secs": 69.4,
+   "taken": 88,
+   "opened": 7,
+   "left": 1,
+   "hitBy": {
+    "FIREBALL": 26,
+    "SPIKES after breathTell": 18,
+    "breath": 44
+   },
+   "modes": {
+    "wake": 1,
+    "hover": 16,
+    "diveTell": 7,
+    "dive": 7,
+    "smash": 7,
+    "crash": 7,
+    "stunned": 7,
+    "reset": 7,
+    "flareTell": 1,
+    "breathTell": 6,
+    "breath": 6,
+    "recover": 7,
+    "fireballTell": 2,
+    "fireball": 2
+   }
+  }
+ ]
+}
