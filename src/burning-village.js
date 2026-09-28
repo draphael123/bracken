@@ -21,6 +21,9 @@
 export const VILLAGE = { W: 508, H: 34, R: 26 };
 /* THE BURNING BEAM's fuse: from the moment you stand on it. Nine tiles at the paladin's pace (the slowest) is 1.73 s */
 export const BEAM = { fuse: 1.8, back: 5 };
+/* THE ROOFTOPS' BEAM (design audit §13.2, TWIST): its own, shorter fuse - the fastest hero (the pyromancer) needs 1.43 s
+   for its nine tiles, so 1.2 s outruns nobody unwatered. Doused (BUCKET.beamWet, main.js), a beam holds regardless of fuse. */
+export const BEAM_TWIST = 1.2;
 /* THE SMOKE: a plume rises for `up` seconds of every period, after `tell` seconds of thickening; airborne in it you rise at `lift` px/s */
 export const SMOKE = { up: 1.6, tell: 0.8, lift: 190, half: 12 };
 
@@ -133,11 +136,14 @@ export function buildBurningVillage({ painter, T, TS }) {
   captive(263, 10, { hot: true }); ent('silver', 267, 9); foe('archer', 259, 10); coins([256, 9], [261, 9]);
   ent('villagewell', 255, 10, { bucket: true, kind: 'butt', splash: false });
   house(272, 286, 16, 0, DEEP); foe('burngob', 280, 13); foe('sapper', 284, 13); beams.push([277, 17, 277, 13]);
-  /* THE BURNING BEAM: nine tiles over the second cellar, too wide to jump. It holds you for BEAM.fuse seconds from the moment
-     you stand on it - told: it flashes and a ! stands over every tile - then burns through into the cellar, and is back five
-     seconds later. Run it and it holds; stop on it and it does not. */
+  /* THE BURNING BEAM (design audit §13.2, TWIST): nine tiles over the second cellar, too wide to jump. Its fuse is
+     BEAM_TWIST, not BEAM.fuse - short enough that no hero outruns it (the fastest, the pyromancer, needs 1.43 s for
+     these nine tiles; the fuse gives 1.2). Told the moment you stand on it - it flashes and a ! stands over every tile -
+     it burns through into the cellar a moment after any hero commits to running it, and is back five seconds later.
+     Doused first from THE HALL'S RAIN BUTT (behind, on the route already), it holds instead: "a doused beam holds" stops
+     being a line nobody is ever asked to prove, and becomes this gap's actual answer. */
   for (let x = 287; x <= 295; x++) set(x, 14, T.ONEWAY);
-  beamSpans.push([287, 295, 14]);
+  extraBreaks.push({ x0: 287, x1: 295, row: 14, t: -1, down: false, regrow: true, beam: true, onTop: true, fuse: BEAM_TWIST, douseOnly: true });
   house(296, 308, 16, 0, DEEP); foe('emberwisp', 300, 10); foe('sprig', 303, 13); foe('thief', 306, 13);
   plat(309, 17, 3); plat(311, 20, 3); plat(313, 23, 3);            // down the last gable to the street
   coins([298, 12], [302, 12], [306, 12]);

@@ -78,7 +78,11 @@ const L = lv.build();
   for (const z of beams) {
     assert.ok(z.onTop && z.regrow && z.fuse > 0, 'it burns from the moment it is stood on, and grows back: ' + JSON.stringify(z));
     const secs = (z.x1 - z.x0 + 1) * TS / (92 * 0.9);
-    assert.ok(secs < z.fuse, 'the paladin runs its ' + (z.x1 - z.x0 + 1) + ' tiles in ' + secs.toFixed(2) + ' s, inside its ' + z.fuse + ' s fuse');
+    /* design audit §13.2 TWIST: this beam's fuse is deliberately shorter than even the fastest hero (the pyromancer,
+       1.43 s for these nine tiles) can outrun, so it is douseOnly - the paladin's slower 1.77 s is not the bar here,
+       staying alive unwatered is not the point. Any other beam keeps the old bar: the slowest hero can always run it. */
+    if (z.douseOnly) assert.ok(secs > z.fuse, 'the beam at ' + z.x0 + ' is too long to run unwatered: the paladin\'s ' + secs.toFixed(2) + ' s is outside its ' + z.fuse + ' s fuse');
+    else assert.ok(secs < z.fuse, 'the paladin runs its ' + (z.x1 - z.x0 + 1) + ' tiles in ' + secs.toFixed(2) + ' s, inside its ' + z.fuse + ' s fuse');
     /* without it, the only way on is DOWN: into the cellar under it and through its fire to the ladder at the far end (a floor
        the model may not stand on is a floor of spikes to it) */
     const G = L.grid.slice(); for (let x = z.x0; x <= z.x1; x++) G[z.row * L.W + x] = T.AIR;
@@ -193,12 +197,15 @@ try {
   {const S=BK.store;const P0=BKT.PROG;P0.heroes=P0.heroes||{};delete P0.heroes.pyro;P0.burning=P0.burning||{};P0.burning.cleared=false;
    const shut=S.coinRoute('pyro');P0.burning.cleared=true;const open=S.coinRoute('pyro');P0.coins=900;const s0=S.silverLeft();const ok=S.buy('pyro');
    out.store={shut,open,bought:!!P0.heroes.pyro,coins:P0.coins,silverSpent:s0-S.silverLeft()};delete P0.heroes.pyro;P0.burning.cleared=false;}
-  /* 7. THE ROOFTOPS, in the page. THE BEAM: told from the first frame it is stood on, run end to end by the paladin with the
-     right held, it holds; stood still on, it burns through and drops you into the cellar; and it comes back */
+  /* 7. THE ROOFTOPS, in the page. THE BEAM (design audit §13.2 TWIST): told from the first frame it is stood on; even the
+     fastest hero, run unwatered, cannot outrun its fuse and falls through into the cellar; stood still on, it burns through
+     the same way; and it comes back */
   {const z=()=>BK.L.deckBreaks.find(q=>q.beam);
-   boot('paladin');clear();const Z=z();BK.tp(Z.x0-2,Z.row-1);BK.P.face=1;BK.sim(10);
+   boot('pyro');clear();const Z=z();BK.tp(Z.x0-2,Z.row-1);BK.P.face=1;BK.sim(10);
    BK.keys.right=true;let told=null,on=null,maxY=0,f=0;for(;f<240&&BK.P.x<(Z.x1+2)*16;f++){BK.sim(1);if(on===null&&BK.P.ground&&BK.P.x>=Z.x0*16)on=f;if(told===null&&Z.t>=0)told=f;if(BK.P.x>Z.x0*16)maxY=Math.max(maxY,BK.P.y);}BK.keys.right=false;
-   const ran={told:told-on,crossed:BK.P.x>=(Z.x1+1)*16,maxY:Math.round(maxY),rowY:Z.row*16};
+   /* down (not crossed/maxY, which the trench's own smoke plume can mask by lifting a falling hero straight back up) is
+      the unambiguous signal: did the beam burn through under the fastest hero before it got her across */
+   const ran={told:told-on,down:Z.down,maxY:Math.round(maxY),rowY:Z.row*16};
    boot('knight');clear();const Z2=z();BK.tp(Z2.x0+1,Z2.row-1);   /* (clear of the plume under its middle, which would carry a falling hero straight back up) */BK.sim(2);const t0=Z2.t;BK.sim(Math.round(Z2.fuse*60)+20);const stood={t0:+t0.toFixed(2),down:Z2.down,y:Math.round(BK.P.y),row:Z2.row};
    BK.tp(Z2.x0-2,Z2.row-1);BK.sim(Math.round((5+1)*60));out.beam={ran,stood,back:!Z2.down};}
   /* THE SMOKE: a hero who jumps into a plume while it is up is carried up out of the cellar, past the roofs' eaves */
@@ -278,7 +285,7 @@ try {
   assert.equal(r.store.open, true, 'after it, coins too');
   assert.ok(r.store.bought && r.store.coins === 100 && r.store.silverSpent === 0, 'bought for 800 coins, no silver: ' + JSON.stringify(r.store));
   assert.equal(r.beam.ran.told, 0, 'the beam is told the frame it is stood on (and not before): ' + JSON.stringify(r.beam));
-  assert.ok(r.beam.ran.crossed && r.beam.ran.maxY <= r.beam.ran.rowY + 2, 'the paladin runs it end to end and it holds: ' + JSON.stringify(r.beam.ran));
+  assert.ok(r.beam.ran.down, 'the twist (design audit §13.2): even the fastest hero cannot outrun it unwatered, and it burns through under her: ' + JSON.stringify(r.beam.ran));
   assert.ok(r.beam.stood.down && r.beam.stood.y > (r.beam.stood.row + 2) * 16, 'stand still on it and it burns through into the cellar: ' + JSON.stringify(r.beam.stood));
   assert.ok(r.beam.back, 'and it is back after it has burned through');
   assert.ok(r.smoke.top <= 12 && r.smoke.from - r.smoke.top >= 12, 'the smoke carries a hero up out of the cellar, past the eaves: ' + JSON.stringify(r.smoke));
