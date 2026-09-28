@@ -2,6 +2,10 @@
 
 Newest first. Play it at https://bracken-nine.vercel.app
 
+## 28 September 2026
+- **Sound Test** on the main menu: every song you have heard in play unlocks there (the rest show as ???), with its credit;
+  every sound effect is there from the start.
+
 ## 27 September 2026 (evening)
 - **Stormhold, rebuilt:** longer, with tall watchtowers to climb for their keys, walkways between them, sentries who ring
   alarm bells, and an exam at the bridgehead before the Queen's Lance.
