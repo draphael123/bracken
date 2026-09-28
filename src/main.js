@@ -54,7 +54,8 @@ import { lanceSupport, LANCE_SUPPORT } from './lance-support.js';   /* THE QUEEN
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
-import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost } from './attack-tokens.js';   /* ATTACK TOKENS: one or two common foes swing at a hero at once, the rest wait on a ring (src/attack-tokens.js) */
+import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost } from './attack-tokens.js';
+import { installTactics, braceHit } from './foe-tactics.js';   /* THE COMBAT PASS, PART 2: held wind-ups, reactive waiting, the brute's cover, the squad hook (src/foe-tactics.js) */   /* ATTACK TOKENS: one or two common foes swing at a hero at once, the rest wait on a ring (src/attack-tokens.js) */
 import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { COMBAT, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
@@ -4769,7 +4770,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER', 'PUSHED BACK', "THE QUEEN'S BOWS"]);   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
+const MOVE_WORDS = new Set(['DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER', 'PUSHED BACK', "THE QUEEN'S BOWS", 'COVERED']);   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
   if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (!SET.numbers || !MOVE_WORDS.has(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }
@@ -7728,6 +7729,7 @@ function updatePlayer(dt) {
       if (e.turncoat) continue;
       /* (the Hound Master's guard lives in hurtEnemy0 now: a blade, an ember and a ball all meet the same hound) */
       if (chiefShielded(e) && front && !throughGuard(e)) { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 8, e.y - 10, P.face, 6); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'SHIELD', '#c9d1dc'); continue; }
+      if (e.t === 'brute' && front && braceHit(e, time, !!(P.heavy || P.heavySwing))) { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 9, e.y - 12, P.face, 6); P.vx = e.face * 130; number(e.x, e.y - e.h - 6, 'COVERED', '#c9d1dc'); continue; }   /* THE BRUTE COVERS UP: the third light cut of a flurry off his front is turned (src/foe-tactics.js braceHit) - a heavy blow goes through */
       if (e.t === 'brute' && e.mode === 'raise') { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); swordEffect(e); continue; }
       if (e.t === 'turtle' && front && !throughGuard(e) && !(e.broken > 0) && e.mode !== 'snap' && e.mode !== 'rest' && e.stagger <= 0) { guardTurned(e); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 8, e.y - 5, e.face, 5); e.mode = 'hide'; e.modeT = 1.2; continue; } // the shell turns it and in goes the head
       if (e.t === 'crab' && front && !throughGuard(e) && !(e.broken > 0) && e.guardT > 0 && e.mode !== 'flipped') { guardTurned(e); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 6, e.y - 5, e.face, 5); continue; } // claws up
@@ -20365,6 +20367,7 @@ const tkApi = { dt: 0, get time() { return time; }, nums: () => nums, windingUp:
   grounded: e => !e.noGrav && !e.pool && !e.swim && !e.fly && foeHasFooting(e), fall: (e, dy) => moveBody(e, 0, dy, false),
   safeStep: (x, y) => { const tx = Math.floor(x / TS), row = Math.floor((y + 1) / TS), u = tileAt(tx, row);
     return (isSolid(tx, row) || isOneWay(u)) && u !== T.SPIKE && tileAt(tx, row - 1) !== T.SPIKE && !isSolid(tx, row - 1) && !(L.pools || []).some(p => x > p.x0 && x < p.x1 && y > p.y); } };
+const TAC_HOOK = installTactics(TK, TOKENS, { turned: () => SFX.shieldScrape() });   /* held wind-ups on a grant, and each kind's own way of waiting (src/foe-tactics.js) */
 function updateEnemies(dt) {
   updatePack(dt); eliteWatch(); tkApi.dt = dt;
   for (const e of enemies) {

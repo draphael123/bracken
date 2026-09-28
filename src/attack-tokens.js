@@ -40,6 +40,7 @@ export const TOKENS = {
   near: 150,         // px: a waiting foe closer than this is walked round the ring; further out it keeps its own AI
   far: 300,          // px: a holder this far from its hero gives the token back
   idleModes: new Set(['walk', 'idle', 'stalk', 'patrol', 'chase']),   // the plain modes a creature stands about in: never a recovery
+  standing: e => TOKENS.idleModes.has(e.mode),   // is it standing about (so may be walked round the ring)? part 2 lets a kind with no mode of its own in (src/foe-tactics.js)
   /* HEAVIES COME ALONE (the combat pass, part 2; Daniel, 2026-09-28): a red !! blow - the one nothing turns - costs the whole
      purse, so while it is coming it is the only thing coming. e.tokHeavy is set by tokenPost from api.heavy(e) the frame the
      windup starts (never read off a mode that is not a windup: markOf would take it for a hole in the table). */
@@ -156,8 +157,8 @@ export function tokenPost(board, enemies, api, dt) {
   for (const [e] of order) {
     if (e.tokFrame !== board.frame || !e.alive || e.tokHeld || !api.walker(e)) { e.tokRing = 0; continue; }
     const hero = e.tokHero, d = e.x - hero.x;
-    const idle = !e.tokWait && typeof e.cd === 'number' && e.cd > 0.3 && TOKENS.idleModes.has(e.mode) && !(e.stagger > 0) && Math.abs(d) < TOKENS.ring && !api.windingUp(e);
-    if (!(e.tokWait || idle) || !TOKENS.idleModes.has(e.mode) || Math.abs(d) > TOKENS.near || Math.abs(e.y - hero.y) > 40 || hero.dead) { e.tokRing = 0; continue; }
+    const idle = !e.tokWait && typeof e.cd === 'number' && e.cd > 0.3 && TOKENS.standing(e) && !(e.stagger > 0) && Math.abs(d) < TOKENS.ring && !api.windingUp(e);
+    if (!(e.tokWait || idle) || !TOKENS.standing(e) || Math.abs(d) > TOKENS.near || Math.abs(e.y - hero.y) > 40 || hero.dead) { e.tokRing = 0; continue; }
     const key = hero; let l = ring.get(key); if (!l) ring.set(key, l = []); l.push(e);
   }
   for (const [hero, l] of ring) {
