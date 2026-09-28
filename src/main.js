@@ -8,6 +8,7 @@ import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { bakeScalder } from './redraw/scalder.js';
 import { bakeStoneFront, bakeTownRow } from './redraw/stone-town.js';
 import { updateGraveWarden as stepGraveWarden, drawGraveWarden, wardenFrame as graveFrame, wardenOpen as graveOpen, WARDEN as GRAVE_W } from './grave-warden.js';   /* (named apart: harbor-boss.js's Breakwater Warden owns updateWarden and wardenFrame) */   /* THE GRAVE WARDEN (batch 4b) */
+import { newPushBlock, updatePushBlock, PB } from './push-blocks.js';   /* PUSHABLE BLOCKS (backlog #12, 2026-09-28) */
 import { bakeGraveWarden, bakeHedgeWarden, bakeGateGargoyle } from './redraw/queue_bosses.js';
 import * as WHF from './gargoyle-whelp.js';   /* THE GARGOYLE WHELP: its numbers, frames and art (docs/briefs/witchlight-whelps.md) */
 import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGargoyleWorld, GARG, gargCam, gargRegrowT, gargKeepFooting, drawSlabGhost, gargStomped, stepBall, drawBall } from './gate-gargoyle.js';   /* THE GATE GARGOYLE, the Witchlight Stair's boss */
@@ -2088,6 +2089,7 @@ function spawnEnt(e) {
       case 'ram': props.push({ t: 'ram', x: px, y: py - 16, th: 0, active: 0, tm: 0, hit: new Set() }); break;
       case 'plate': props.push({ t: 'plate', x: px, y: py, cage: e.cage, down: false }); break;
       case 'dropcage': props.push({ t: 'dropcage', x: px, y: py, y0: py, dropped: false, landed: 0, hit: new Set(), boss: !!e.boss, resetT: 0 }); break;
+      case 'pushblock': movers.push(newPushBlock(px, py)); break;   /* PUSHABLE BLOCKS: a mover, so standing on it and resetting it on death/checkpoint come free (backlog #12) */
       case 'miner': enemies.push({ ...base, t: 'miner', w: 10, h: 11, hp: EHP.miner, speed: 26, mode: 'walk', modeT: 0, digT: 0, glass: !!e.glass }); break;
       case 'tippler': enemies.push({ ...base, t: 'tippler', w: 12, h: 12, hp: EHP.tippler, speed: 0, mode: 'idle', modeT: 0, cd: 1 + Math.random() }); break;
       case 'sheargob': enemies.push({ ...base, t: 'sheargob', w: 10, h: 12, hp: EHP.sheargob, speed: 30, mode: 'walk', modeT: 0, cd: 0.8 }); break;
@@ -22124,7 +22126,7 @@ function updateProps(dt) {
     if (pr.t === 'stray' && !pr.got && !P.dead && Math.abs(pr.x - P.x) < 15 && Math.abs(pr.y - P.y) < 22) { const Q = questOf(); pr.got = true; straysGot.add(pr.x); if (pr.kind === 'folk') freeFolk(pr); strayLast = { x: pr.x, y: pr.y }; if (pr.kind === 'sheep') SFX.bleat(); else if (pr.kind === 'canary' || pr.kind === 'pigeon') { SFX.bird(); SFX.sting(); } else { SFX.coin(); SFX.sting(); } burst(pr.x, pr.y - 4, 8, ['#e8e0d0', '#fff6c8'], 50, 0.5); number(pr.x, pr.y - 18, Q.name + ' ' + straysGot.size + '/' + Q.n, '#ffe6a0'); if (straysGot.size >= Q.n) questDone(pr.x, pr.y); }
     if (pr.t === 'lever' && !pr.on && hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y })) { pr.on = true; towerLever(pr); SFX.stone(); const ram = props.find(r => r.t === 'ram' && Math.floor(r.x / TS) === pr.ram); if (ram) { ram.active = 3.2; ram.tm = 0; ram.hit.clear(); number(pr.x, pr.y - 20, 'THE RAM SWINGS', '#ffd36b'); } }
     if (pr.t === 'ram' && pr.active > 0) { pr.active -= dt; pr.tm += dt; pr.th = Math.sin(pr.tm * 4.2) * 1.35 * Math.min(1, pr.active / 1.2); const pts = [30, 44, 58, 72].map(r => [pr.x + Math.sin(pr.th) * r, pr.y + Math.cos(pr.th) * r]); const nearSeg = (x, y) => pts.some(([qx, qy]) => Math.hypot(x - qx, y - qy) < 14); if (Math.abs(pr.th) > 0.12) { if (!P.dead && nearSeg(P.x, P.y - 8)) damagePlayer(pr.x, DMG.ram, { up: true, unblockable: true }); for (const e of enemies) if (e.alive && !pr.hit.has(e) && nearSeg(e.x, e.y - e.h / 2)) { pr.hit.add(e); hurtEnemy(e, 30, pr.x, false); } } if (pr.active <= 0) pr.th = 0; }
-    if (pr.t === 'plate' && !pr.down) { const on = (!P.dead && P.ground && Math.abs(P.x - pr.x) < 10 && Math.abs(P.y - pr.y) < 4) || enemies.some(e => e.alive && Math.abs(e.x - pr.x) < 10 && Math.abs(e.y - pr.y) < 4); if (on) { pr.down = true; SFX.stone(); const cg = props.find(c => c.t === 'dropcage' && Math.floor(c.x / TS) === pr.cage); if (cg && !cg.dropped) { cg.dropped = true; cg.landed = 0; cg.hit.clear(); if (cg.boss) cg.resetT = 5; number(cg.x, cg.y - 20, 'THE CAGE FALLS', '#ffd36b'); SFX.crack(); shakeCam(2); } } }
+    if (pr.t === 'plate' && !pr.down) { const on = (!P.dead && P.ground && Math.abs(P.x - pr.x) < 10 && Math.abs(P.y - pr.y) < 4) || enemies.some(e => e.alive && Math.abs(e.x - pr.x) < 10 && Math.abs(e.y - pr.y) < 4) || movers.some(mv => mv.kind === 'pushblock' && mv.ground && Math.abs(mv.x + mv.w / 2 - pr.x) < 10 && Math.abs(mv.y + mv.h - pr.y) < 6);   /* A PUSHED BLOCK HOLDS A PLATE DOWN exactly like standing on it (backlog #12) */ if (on) { pr.down = true; SFX.stone(); const cg = props.find(c => c.t === 'dropcage' && Math.floor(c.x / TS) === pr.cage); if (cg && !cg.dropped) { cg.dropped = true; cg.landed = 0; cg.hit.clear(); if (cg.boss) cg.resetT = 5; number(cg.x, cg.y - 20, 'THE CAGE FALLS', '#ffd36b'); SFX.crack(); shakeCam(2); } } }
     /* A CAGE THAT HAS HELD THE KING IS SCRAP (pr.spent). His five cages used to be winched back up five seconds after
        they came down, held him 3.2 s and left him open for seven more - so one cage after another held him for the whole
        fight and he was measured dead in 16-23 s without ever standing up. A cage that MISSED still comes back; the one
@@ -22275,11 +22277,14 @@ function drawBore(cx, cy) {
   g.fillStyle = gr; g.beginPath(); g.moveTo(x - 4, bot); g.quadraticCurveTo(x - 8, top + 6, x + 6, top); g.quadraticCurveTo(x + 22, top + 4, x + 40, bot); g.closePath(); g.fill();
   g.fillStyle = '#ffffff'; for (let k = 0; k < 6; k++) g.fillRect(x - 6 + ((k * 5 + Math.floor(time * 30)) % 12), top + k * 3, 3, 1);
 }
+const PB_CTX = { players: null, box, overlap, isSolid, isOneWay, tileAt, blocks: null, sound: k => { if (k === 'scrape') SFX.stone(); else SFX.thud(); }, dust: (x, y, n) => dust(x, y, n) };   /* PUSHABLE BLOCKS: one context object, reused (updateMovers runs every frame for every mover) */
 function updateMovers(dt) {
   updateCarts(dt);
   if (L.winds) windWorld(dt);   /* THE SPIKED MOAT's winds: the rides, and the slabs growing back (spike-winds.js) */
   if (L.cableway) { oreBrake(dt); stepCableway(L.cableway, dt); }   /* THE ORE ROAD's clock: every bucket on a line is the same clock, and the brake is a hand on it */
+  PB_CTX.players = players; PB_CTX.blocks = movers.filter(q => q.kind === 'pushblock');
   for (const m of movers) {
+    if (m.kind === 'pushblock') { updatePushBlock(m, dt, PB_CTX); continue; }
     if (m.kind === 'cart' || m.kind === 'orelift') continue;
     if (m.kind === 'bucket') { updateBucket(m, dt); continue; }
     if ((m.kind === 'hexvine' || m.kind === 'haycart') && updateFieldsMover(m, dt)) continue;   /* THE HEXED FIELDS */
@@ -23931,6 +23936,8 @@ function drawWorld(cx, cy, showPlayer) {
     if (m.kind === 'bucket') { if (m.vis && m.x + m.w > cx - 10 && m.x < cx + VW + 10) drawBucket(g, m, cx, cy, time); continue; }
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
     if (L.burialLook && drawBurialMover(g, m, cx, cy, time)) continue;   /* THE BURIAL CAVERNS: stone slabs on chains, stone coffins, floating biers - no timber (burial-looks.js) */
+    if (m.kind === 'pushblock') { const bx = Math.round(m.x) - cx, by = Math.round(m.y) - cy;   /* a block of the level's own ground tile (backlog #12): it is baked fresh per palette (bakeAll), so it always matches the set it stands in, with a mortar line round it so it still reads as a loose object and not the floor */
+      g.drawImage(TILE.dirt[0], bx, by); g.strokeStyle = 'rgba(20,16,12,0.55)'; g.lineWidth = 1; g.strokeRect(bx + 0.5, by + 0.5, m.w - 1, m.h - 1); g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(bx + 1.5, by + 1.5, m.w - 3, m.h - 3); continue; }
     if (m.kind === 'pad' && m.spring) { const x = Math.round(m.x) - cx, t = (time + m.x0 * 0.013) % 2.2;
       if (t < 0.8 && m.sink < 0.55 && !(m.cd > 0)) { const k = t / 0.8; g.globalAlpha = 0.6 * (1 - k); g.strokeStyle = '#dff7c8'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 12.5, Math.round(m.y0) - cy + 4.5, 12 + k * 14, 2.5 + k * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* the ripple every couple of seconds: the bud is breathing, and you can see it from three pads off */
       g.drawImage(PROP.padSpring[m.sink > 0.55 ? 2 : m.cd > 0 ? 1 : 0], x, Math.round(m.y) - 5 - cy); }

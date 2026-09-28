@@ -115,6 +115,13 @@ function brackenWood() {
   floor(98, 120, 22);
   coins([99, 20], [100, 19], [101, 20]);
   ent('sign', 103, 21, { text: 'C BLOCKS AND STAGGERS. V DODGES. SPINED BACKS BREAK A PLUNGE: CUT THEM SIDE-ON.', pyro: 'V DODGES. TAP C: EMBER. HOLD C: JET. SPINED BACKS BREAK A PLUNGE: BURN THEM SIDE-ON.', paladin: 'HOLD C: AEGIS. TAP C: MEND. V: HEAVY STEP. SPINED BACKS BREAK A PLUNGE.' });
+  // A STONE BLOCK (teaching use, backlog #12: PUSHABLE BLOCKS). A ledge floats over the path at row 18 - four
+  // tiles up, a real jump reaches about 3.2 - with a coin on it. Push the block two tiles snug underneath, stand
+  // on it, and the last tile is one jump away. The ledge is a single floating tile (rows 19-21 under it stay
+  // open air, same as the rest of this corridor), so it never narrows the walkway: the block itself is the only
+  // thing at ground level, and it stands off to the side, low enough to hop clean over - nothing here gates the
+  // level, it is only shown once before the design lanes place the rest of it.
+  ent('pushblock', 105, 21); block(107, 107, 18, 18); ent('coin', 107, 17);
   ent('thorn', 109, 21, { face: -1 });
   crate(111, 21); crate(112, 21); crate(112, 20);
   ent('sprig', 116, 21, { face: -1 });   /* (the rising cut's sign stood here: a first wood seven lessons deep teaches none of them, so it teaches two) */
