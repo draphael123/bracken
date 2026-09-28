@@ -969,9 +969,17 @@ function sporewood() {
   caps2.push(sprout(345, 14, { rise: 16, lean: 96, growT: 1.6 }));
   R.ents.push({ t: 'rockfall', x: 348, y: 0, spore: true, every: 2.7, tell: 0.9 });
   /* -- 3. DEVELOP the pillars (373-398, the quiet stretch): a lurker waits on the shelf between the two floor caps,
-     among them, not past them. (A curtain over each cap, gating the spring on a cut, was tried and reverted: at
-     row 18 it sat inside a real jump's arc over the 3-column gaps either side and cut the route in two - see
-     work/claude/lane-done/claude-sporewood2.md, the checkpoint-stand fix.) */
+     among them, not past them. (Daniel, 2026-09-28: bring the webbed cap back where the web doesn't block the
+     route. First try hung a curtain at row 18, right over each cap: that sat inside a real jump's arc over the
+     3-column gaps either side and cut the route in two - work/claude/lane-done/claude-sporewood2.md, the
+     checkpoint-stand fix. This one hangs from row 15 to 17 instead - two rows higher, above where that jump's arc
+     passes (checkpoint-stand.mjs's own real-jump model, across:5, still stands every checkpoint past here - see
+     tools/spore-exam.mjs) - but still low enough to catch a spring off the cap itself: GRAV=1000, a plain spring
+     (vy -400) apexes at row 14, a plunged one (vy -560) at row ~9, so either one rams the curtain within two tiles
+     of leaving the cap. Each pillar already trails a thin curtain of its own (x385, x394, rows 12-17, "curtains
+     strung between the pillars" from the drone-gauntlet build); this drapes the rest of each cap's 3 columns to
+     match, so cutting one cap's web is one continuous curtain, not two. */
+  RS(383, 384, 15, 17, T.WEB); RS(395, 397, 15, 17, T.WEB);   /* x385 and x394 are already WEB (the pillars' own curtain, above) */
   R.ents.push({ t: 'lurker', x: 387, y: 19 });
   /* -- 4. EXAM (456-486, the last stretch before her door): strike the Gills' second glowbud and its cap grows
      under a spore fall, with the spitcap at 476 and the weaver at 460 (both above) already holding the ledge; past
