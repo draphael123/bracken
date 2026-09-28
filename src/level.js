@@ -1774,7 +1774,11 @@ function hangingVillage() {
   gusts.push({ x0: 20 * TS, x1: 90 * TS, y0: 12 * TS, y1: 20 * TS, dir: 1, period: 9, on: 2.2, phase: 3, alt: true, arena: true }); // the crown's crosswind, only while the Reeve fights
   hole(36, 40, tops.t3); ent('mover', 36, tops.t3, { len: 2, range: 3, speed: 36 }); hole(70, 74, tops.t3); ent('mover', 70, tops.t3, { len: 2, range: 3, speed: 36 }); // gaps in the bough with sliding boughs across them: the wind wants you off
   movers.push({ kind: 'swing', px: 38 * TS + 8, py: (tops.t3 - 9) * TS, arm: 60, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0.7, vine: true }); // MORE SWINGING ROPES (Daniel's backlog): a rope beside the sliding bough, not only a ride
-  pit(52, 53, tops.t3); pit(30, 31, tops.t3); // pits the wind wants to push you into
+  /* THE CLIFF HALL's own rope bridge (AMBUSH.hanging above, its cutter's 'bridge: 50'): a plank span over the same shallow spike-pit the
+     wind already wants you in, cut down to it in three chops mid-fight (src/main.js updateCutter/L.bridges) instead of standing open from
+     the start - so the ambush room loses a piece of its own floor while you're still fighting on it, not before. */
+  for (let x = 50; x <= 56; x++) { set(x, tops.t3, T.PLANK); set(x, tops.t3 + 1, T.SPIKE); }
+  pit(30, 31, tops.t3); // a pit the wind wants to push you into
   ent('spider', 80, 58, { drop: 100 }); ent('spider', 48, 58, { drop: 100 }); ent('snuffer', 34, 65, { face: 1 }); ent('sprig', 26, 65, { face: 1 }); ent('wasp', 56, 60);
   plat(70, 63, 3); failing(40, 61, 3); coins([71, 62],   /* the lamp's ledge was four rows off the floor */ [41, 60], [86, 63], [56, 63], [26, 63]);
   ent('door', 88, 65, { at: 88 }); ent('folk', 91, 65, { door: 88 }); ent('deco', 14, 65, { kind: 'lanternPost' }); ent('lantern', 14, 65); ent('lantern', 64, 65);
@@ -1864,7 +1868,9 @@ function hangingVillage() {
   /* and what each floor leaves lying about: roots and fungus, rope and hemp, the market's stalls, flour at the mill, the rooks' boxes */
   for(const [x,y,k] of [[23,107,'stump'],[40,107,'mushroom'],[80,107,'fern'],[16,93,'ropeCoil'],[27,93,'washing'],[18,93,'hempBale'],[60,93,'ropeCoil'],[24,79,'stall'],[45,79,'shopSign'],[72,79,'stall'],[82,79,'barrels'],[58,65,'flourSacks'],[84,65,'flourSacks'],[26,51,'dovecote'],[48,51,'birdhouse'],[78,51,'beehive']])ent('deco',x,y,{kind:k});
   return {
-    hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, crumbles, vines: [52, 68, 34, 48, 61, 41, 63], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
+    hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, crumbles,
+    bridges: [{ x: 50, x1: 56, y: tops.t3 }],   /* THE CLIFF HALL's own rope (src/main.js L.bridges/updateCutter): whole every attempt, cut by the ambush's cutter, hauled back once you step off it */
+    vines: [52, 68, 34, 48, 61, 41, 63], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'hangingvillage', night: false, glowNight: true,   /* "Dark Shrine Loop" by qubodup, CC0 - THE HANGING VILLAGE's own theme, benching town (audio/CREDITS.txt) */
     /* SEVEN FLOORS, SEVEN GROUNDS (src/hanging-village.js): each band of rows wears its floor's look - its top, its rock, its underside, its
        ledges, its scatter - and the cliff face behind it. ceilLook: whose bough is overhead, which is what carries the brackets. */
@@ -7564,7 +7570,10 @@ const GARRISON = {
   spore: [['sporeling', 4], ['spitcap', 3], ['weaver', 2], ['thorn', 2], ['spider', 1]],   // eight kinds was the thinnest roster in the wood
   moor: [['goat', 4], ['rockgoblin', 3], ['harpy', 3], ['kite', 3], ['troll', 1], ['sailer', 2]],   /* twenty-three over NINE HUNDRED AND NINETY-SIX columns; sixteen over seven hundred and three, after the cut (docs/briefs/gale-moor-rework.md): the same density */
   scree: [['harpy', 4], ['goat', 4], ['rockgoblin', 3], ['troll', 1]],
-  hanging: [['snuffer', 3], ['cutter', 2], ['rockgoblin', 2]],   // thirty-four creatures over eight floors: the thinnest level in the crags       // 58 sat twenty-two under Kingswood
+  hanging: [['snuffer', 3], ['rockgoblin', 4]],   /* 'cutter' dropped (2026-09-28, coordinator follow-up on claude/hanging2): the sprinkler cannot
+     put a cutter anywhere near a rope, so every one it placed was the exact GAP the design audit named - a foe with nothing to cut. The
+     hand-placed cutter in THE CLIFF HALL ambush keeps its own bridge instead (see AMBUSH.hanging below). thirty-four creatures over eight
+     floors: the thinnest level in the crags       // 58 sat twenty-two under Kingswood */
   /* EIGHT KINDS, NOT ELEVEN (2026-09-22). The crow, the goat, the kite, the spider and the snuffer each landed once or
      twice over six hundred columns - a cast nobody can learn, so no encounter on the mountain had a shape. What is left
      is the mountain's own (the birds, the bats, the rock) and the goblins who took the monastery, who are the False
@@ -7854,7 +7863,14 @@ const AMBUSH = {
   scree: [{ name: 'THE GOAT TRACK', row: 13, wallL: 173, wallR: 202, check: [168, 13],
     waves: [[['goat', 178], ['goat', 198], ['sprig', 191], ['harpy', 185, 8]], [['shield', 193], ['archer', 199], ['troll', 180], ['rockgoblin', 186]]] }],
   hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
-    waves: [[['sprig', 48], ['sprig', 65], ['snuffer', 58]], [['brute', 57, null, { elite: true }], ['archer', 66], ['cutter', 49]]] }],
+    /* THE CUTTER HAS A ROPE NOW (2026-09-28, coordinator follow-up on claude/hanging2): 'bridge: 50' names the room's own L.bridges span
+       (50-56, row 66, in hangingVillage() below), the same rule at work mid-fight, not just on the road or in the boss.
+       ORDER MATTERS HERE: singleAmbush() (src/ambush.js) flattens every wave into one, keeps the elite as the room's captain, and takes
+       only the FIRST three of what is left, in the order they appear. The old order (two sprigs and a snuffer, THEN the brute, archer and
+       cutter) meant the cutter - and the archer beside it - never actually spawned: the room's real, live roster has always been the
+       brute plus the first three names, and the cutter used to come fourth. It is moved up here so it is one of the three that survive;
+       the second sprig gives up its place instead (still 4 bodies total, same as before: one elite, three minions). */
+    waves: [[['sprig', 48], ['snuffer', 58]], [['brute', 57, null, { elite: true }], ['cutter', 49, null, { bridge: 50 }], ['archer', 66], ['sprig', 65]]] }],
   spire: [{ name: 'THE CLOISTER', row: 99, wallL: 40, wallR: 74, check: false,
     waves: [[['fledgling', 46], ['fledgling', 66], ['rockgoblin', 56], ['bat', 52, 94]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 93], ['fledgling', 68]]] }],
   /* moor: THE CAIRN RIDGE is built in galeMoor() in its final columns (docs/briefs/gale-moor-rework.md) */

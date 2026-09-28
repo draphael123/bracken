@@ -111,4 +111,57 @@ no route or reach-model check that depended on the old crossing changes):
 4. **INDEX** (`tools/curve.mjs`): not run this lane (out of scope; the brief did not ask for it and this lane adds
    content rather than removing it, so a rise if any is expected, not a concern).
 
-Final commit: PLACEHOLDER-SHA (filled in at push time).
+## Follow-up (2026-09-28): built Q1's recommendation
+
+Coordinator asked to build Q1 now rather than leave it as a question. Done, on top of commit 40068e4:
+
+- **`GARRISON.hanging` no longer asks for `'cutter'`** (`src/level.js`): its two slots became `rockgoblin`, so
+  `[['snuffer', 3], ['cutter', 2], ['rockgoblin', 2]]` is now `[['snuffer', 3], ['rockgoblin', 4]]`. The sprinkler
+  (`garrison()`) places by an open-floor grid search and has no idea where a bridge is, so any `'cutter'` it ever
+  placed was the GAP by construction - there is no clean way to give a randomly-sprinkled cutter a rope, only a way
+  to stop asking for one.
+- **THE CLIFF HALL's cutter got its own bridge - and, in the process, turned out to have never actually been in the
+  fight at all.** Digging into `src/ambush.js`'s `singleAmbush()` (which every ambush room's raw `waves` table is run
+  through at build time): it flattens both waves into one, keeps whichever elite is the room's captain, and keeps
+  only the FIRST THREE of what is left, in the order they appear in the source. The old table listed two sprigs and a
+  snuffer in wave 1, THEN the brute (the elite/captain), the archer and the cutter in wave 2 - so the three survivors
+  were always the two sprigs and the snuffer, and the archer and the cutter were dead data that had never once
+  spawned in the live game. This is a second, worse instance of the same "foe with nothing to cut" bug, and it was
+  invisible to `ambush-single.mjs` (which only checks the room's shape AFTER the cut: 1 elite, 2-4 minions - it has no
+  way to know two of the source table's names never made it there).
+  - Reordered the table so the cutter survives the cut (`['sprig', 48], ['snuffer', 58]` in wave 1;
+    `['brute', 57, ..., elite:true], ['cutter', 49, null, { bridge: 50 }], ['archer', 66], ['sprig', 65]` in wave 2) -
+    same four bodies in the room as before (one elite + three minions), just trading the second sprig for the cutter.
+    The archer stays dead data, same as it already was; not touched further; not this brief.
+  - Built the bridge itself: the room's own small pit (52-53, row 66, a wind-hazard on the way to the mill) widened to
+    a 7-tile plank span (50-56) with the same spike hazard one row under it as before - the cutter (`t: 'cutter'`, the
+    OTHER cutter mechanism in this codebase, `src/main.js` `updateCutter` + `L.bridges`, entirely separate from the
+    `sprig`+`cutter:true` one the main-road bridge uses) chops it down in three hits on his own clock (~9s), dropping
+    the room's floor onto the spike while the fight is still on, then it's hauled back up automatically once nobody
+    is standing over it (`updateSpans`, already generic, already wired for any level). No vine, no new fall risk: the
+    span sits inside the sealed ambush room and the spike below it is the same one that was already there.
+  - `hangingVillage()`'s return object now carries `bridges: [{ x: 50, x1: 56, y: 66 }]` (this level's first use of
+    `L.bridges` - it turns out NO level in the game had ever populated it before this; `updateCutter`'s whole mechanism
+    was dead code everywhere, not just here, which is the fuller shape of the bug the design audit's "cutters with no
+    rope" line was pointing at).
+- **`tools/hanging-exam.mjs` extended** with a fourth section, "no cutter without a rope in reach": asserts zero
+  `t: 'cutter'` foes exist anywhere in the BUILT level's `L.ents` (catches a garrison regrowth of any kind, not just
+  this exact one), and that every `t: 'cutter'` this level's ambush ACTUALLY SPAWNS (read from `L.ambushes` after
+  `singleAmbush()`, the shape the game really uses, not the raw source table - so a reorder that quietly drops the
+  cutter again would be caught) names a real `bridge` that has a matching `L.bridges` entry; and generalizes the
+  original section 1 check (every `sprig` with `cutter: true` has a real rope bridge within the game's own 60px) past
+  just the one bridge it was written against. Proved red first: on the previous commit (40068e4), it fails with
+  `2 !== 0` (the two garrison cutters) via a throwaway `git worktree`.
+- **Fixed a `dangling-paths` regression this lane's own files caused once committed**: both `tools/hanging-exam.mjs`
+  and this report cite `docs/level-design/wood-to-highcrown-design.md`, which lives only on `origin/claude/designaudit`
+  (unmerged) - the brief's own instruction was to read it with `git show origin/...`. That citation was invisible to
+  `dangling-paths` before the file was committed and turned red the moment it was. Added a `MISSING` entry in
+  `tools/dangling-paths.mjs` (`docs/level-design/`), the same "ON A BRANCH, SAID SO" pattern already used for
+  `docs/audit/ranking-2026-09-24.md`, to delete once that branch merges.
+
+**Checks, re-run:** `hanging-exam`, `hanging-hoist`, `spawns`, `one-new-foe`, `ambush-single`, and the 7 REQUIRED checks
+(architecture, checkpoints, skins, dangling-paths, boss-fight-end, slopes-trace, npc-removal) - all green. `pacing.mjs`
+unchanged at 539 route tiles, 9/9 checkpoints, worst gap still 85 (the ambush room's own floor churn doesn't touch the
+reach model - the span is footing either whole or cut, never a hole at build time).
+
+Final commit: see this lane's final chat message and `git log -1` on `claude/hanging2`.

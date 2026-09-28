@@ -1,6 +1,6 @@
 /* tools/hanging-exam.mjs - THE HANGING VILLAGE's last stretch before the Reeve, pinned (docs/level-design/wood-to-highcrown-design.md
    §7 Plan 1 "TWIST the cutter", and "GAME-WIDE PATTERNS WORTH FIXING ONCE" item 1: the last stretch before a boss must be an exam,
-   not a rest). Node only: no page. Three things a later merge could silently lose:
+   not a rest). Node only: no page. Four things a later merge could silently lose:
 
    1. THE ROPE BRIDGE. The lantern stair (row 37, the tier right before the crown climb) carries a cuttable rope bridge with a
       cutter at his post - the level's own rule ("a rope can be cut") used against you on the road, not only in the boss. The bridge
@@ -10,7 +10,14 @@
    2. FAILING STONE. Two or more platforms reused from the Falling Tower's rule (src/tower-collapse.js, L.crumbles) - floors that
       give, Daniel's backlog - and none of them carries a load, relic or other thing a hero needs to still be there after it gives.
    3. THE CLIMB TO THE CROWN IS NOT SILENT. A creature stands on the last stretch before the arena's own checkpoint, so the final
-      run is not "-": nothing (checkpoint-gaps.mjs and pacing.mjs measure the WAY there; this measures WHAT is on the last of it). */
+      run is not "-": nothing (checkpoint-gaps.mjs and pacing.mjs measure the WAY there; this measures WHAT is on the last of it).
+   4. NO CUTTER WITHOUT A ROPE IN REACH (2026-09-28, coordinator follow-up). This level had, and could quietly regrow, THREE foes
+      with nothing to cut: two from GARRISON.hanging's old ['cutter', 2] (the sprinkler places by grid search, never near a bridge -
+      it cannot; the fix there is to not ask it for one) and one in the "THE CLIFF HALL" ambush wave, which - worse - never even
+      spawned: singleAmbush() (src/ambush.js) keeps the elite plus the FIRST three non-elites in flattened wave order, and the old
+      wave order put the cutter fourth. This checks BOTH cutter kinds this level can place: a `sprig` with `cutter: true` (the
+      lowercase `bridges` array, from `ent('bridge', ...)`) and the dedicated `t: 'cutter'` enemy (`L.bridges`, `src/main.js`
+      updateCutter) - and it reads L.ambushes AFTER the build, the same shape the game actually spawns, not the raw source table. */
 import assert from 'node:assert/strict';
 import { LEVELS, T, TS } from '../src/level.js';
 import { pacing } from './pacing.mjs';
@@ -67,4 +74,27 @@ const preExamStr = preExam.join('');
 assert(/[PHFX]/.test(preExamStr), 'the ten stretches before the boss checkpoint (' + preExamStr + ') hold nothing but rest and light: no exam');
 assert(preExam.includes('X'), 'the level\'s own set-piece (the rope bridge) does not show up in the pacing window right before the boss (' + preExamStr + ')');
 
-console.log('hanging-exam  bridge ' + br.x + '-' + br.x1 + ' cut by a sprig at ' + cutter.x + ' (' + (midPx / HERO_SPEED).toFixed(2) + 's in the cut zone at a walk); ' + (L.crumbles || []).length + ' failing-stone floors; a foe on the crown climb; pacing window before the boss: ' + preExamStr + 'R');
+/* ---- 4. NO CUTTER WITHOUT A ROPE IN REACH ---- */
+/* 4a. GARRISON.hanging cannot place a 'cutter': the sprinkler picks any open floor by a grid search (src/level.js garrison()),
+   never a spot near a bridge, so any 'cutter' it places is the GAP by construction. Read from the BUILT level (post-garrison,
+   post-dressing), not the source table, so a regrowth is caught wherever it comes from. */
+const wildCutters = L.ents.filter(e => e.t === 'cutter');
+assert.equal(wildCutters.length, 0, 'a "cutter" foe stands in the built level with no bridge of its own (' + wildCutters.map(e => e.x + ',' + e.y).join(' ') + '): GARRISON.hanging must not ask for the "cutter" kind (the sprinkler cannot place one near a rope)');
+
+/* 4b. every t:'cutter' this level's AMBUSH wave actually spawns (read post-singleAmbush, the shape the game really uses - a raw
+   source entry that never survives the leader/first-three cut is not "in the level" no matter what it says) names a real bridge,
+   and that bridge is a real L.bridges entry. */
+const ambushCutters = (L.ambushes || []).flatMap(A => A.waves.flat()).filter(f => f[0] === 'cutter');
+assert(ambushCutters.length >= 1, 'THE CLIFF HALL used to place a cutter with no bridge (dropped silently by singleAmbush\'s first-three cut, so it never even spawned); now none survives the build at all - the twist was lost, not just unwired');
+for (const f of ambushCutters) { const bridgeX = f[3] && f[3].bridge;
+  assert(bridgeX !== undefined, 'the ambush\'s cutter at ' + f[1] + ' has no { bridge } naming which L.bridges span is his to cut');
+  const lb = (L.bridges || []).find(b => b.x === bridgeX);
+  assert(lb, 'the ambush\'s cutter points at bridge ' + bridgeX + ', but L.bridges has no span starting there'); }
+
+/* 4c. every sprig with cutter:true (the lowercase, toll-bridge-style mechanic) has a real ent('bridge', ...) within the 60px the
+   game checks it against - generalized past section 1's own bridge, in case another is ever added */
+const sprigCutters = L.ents.filter(e => e.t === 'sprig' && e.cutter);
+for (const sc of sprigCutters) { const near = bridges.find(b => Math.abs(sc.x - b.x1) * TS < 60);
+  assert(near, 'a sprig cutter at ' + sc.x + ',' + sc.y + ' has no rope bridge within the game\'s own 60px range of its far post'); }
+
+console.log('hanging-exam  bridge ' + br.x + '-' + br.x1 + ' cut by a sprig at ' + cutter.x + ' (' + (midPx / HERO_SPEED).toFixed(2) + 's in the cut zone at a walk); ' + (L.crumbles || []).length + ' failing-stone floors; a foe on the crown climb; the ambush\'s cutter (bridge ' + ambushCutters[0][3].bridge + ') survives the build; 0 wild cutters; pacing window before the boss: ' + preExamStr + 'R');
