@@ -149,9 +149,8 @@ or the level's difficulty having changed. This wasn't specific to spire/abbot: a
   `monastery3-beats`, `gob-priest`: unaffected (none of them run `bossLab`), all green.
 
 One incidental fix alongside this: `dangling-paths` briefly failed because my own
-`tools/monastery3-beats.mjs` header comment cited
-`docs/level-design/wood-to-highcrown-design.md` - the design audit doc, which lives only on the
-unmerged `origin/claude/designaudit` branch and is not a path this branch's fresh clone can open.
+`tools/monastery3-beats.mjs` header comment cited the design audit's file path - it lives only on the
+unmerged `origin/claude/designaudit` branch, not a path this branch's fresh clone can open.
 Reworded the comment to say so in prose instead of citing the path (matching how `docs/INTEGRATOR.md`
 already handles the same audit-branch situation elsewhere in this repo) - not a threshold change, a
 citation fix.
