@@ -2264,7 +2264,7 @@ function theMonastery() {
   ent('gobpriest', 71, 35, { face: 1 }); ent('troll', 73, 35, { face: 1 });
   brazier(74, 35, 2, { lift: 150, period: 4.0, on: 2.0, phase: 0 });
   wheel(35, 77, 34, 1, 'b');
-  ent('sign', 65, 35, { text: 'A THIRD WHEEL. FLIP IT WITH ONE OF THEM ON ITS STAIR, AND IT GOES OUT FROM UNDER HIM.' });
+  ent('sign', 45, 35, { text: 'A THIRD WHEEL. FLIP IT WITH ONE OF THEM ON ITS STAIR, AND IT GOES OUT FROM UNDER HIM.' });
 
   // ---- MORE GOING ON. Every floor used to be a stair up one side and a walk to a wall on the other. ----
   // SIDE ROUTES: a goat path of boards up the side the main stair does not use, through a small trapdoor in
