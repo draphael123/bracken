@@ -1,6 +1,7 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
+import { THROW_KIND, isFireFoe, throwDamage, PYRO_HIT_FIELD } from './throwables.js';   /* CARRY & THROW (2026-09-28): the generic pick-up-and-throw system, and the water buckets built on it */
 import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins, ORES, ORE_NAMES, workSees, workLamp, hash as oreHash } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
 import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, winchRust, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
@@ -1923,7 +1924,7 @@ function spawnEntities() {
     if(L.sanctum&&!L.sandWalk){L.sanctum.open=false;L.sanctum.outOpen=0;L.sanctum.out=null;}
   } else if (typeof P !== 'undefined' && P && P.carpet) P.carpet = null;   /* a rug ridden out of the tower (quit mid-fight) must not fly into the next level: carpetBox reads L.arena and threw every frame */
   eliteWatch();   /* an elite cut down in the same beat the hero fell (the world is still in its hitstop) is written down before the board is reset */
-  shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
+  shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) P.carry = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
   if (L.arena && L.arena.boss === 'queen') L.arena.comb = { rows: [], n: 0 };
   crumbleReset(L, { setSpr: (i, s) => { if (tileSpr) tileSpr[i] = s; } });   /* THE ROTTEN BRIDGES are whole again on every attempt (B4) */
   for (const v of L.gasVents || []) { v.litT = 0; v.burnt = false; } if (typeof P !== 'undefined' && P) P.candle = 0;   /* and every gas vent cold, the fire out of your hand */ whirlInit(L, marks);   /* a whirlpool whose lever was struck stays still through a death: marks keeps it */ if (L.keepCrumbles) keepCrumbleReset(); washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; deathFx = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
@@ -2252,7 +2253,7 @@ function spawnEnt(e) {
       case 'captive': props.push({ t: 'captive', x: px, y: py, hot: !!e.hot, hotNear: !!e.hotNear, boards: 2, freed: straysGot.has(px), alt: (e.x & 1) === 1, coolT: 0, blowT: 0 }); break;
       case 'watertrough': props.push({ t: 'vtrough', x: px, y: py, water: 1, refillT: 0 }); break;
       case 'villagewell': props.push({ t: 'vwell', x: px, y: py, cd: 0, kind: e.kind || 'well', noSplash: e.splash === false });
-        if (e.bucket) props.push({ t: 'vbucket', x: px + 12, y: py, hx: px + 12, hy: py, state: 'rest', kind: e.kind || 'well' }); break;   /* THE BUCKET (burning village rework, 2026-09-25) */
+        if (e.bucket) props.push({ t: 'vbucket', x: px + 12, y: py, hx: px + 12, hy: py, state: 'rest', kind: e.kind || 'well', thrKind: 'bucket' }); break;   /* THE BUCKET (burning village rework, 2026-09-25; thrown, CARRY & THROW, 2026-09-28) */
       case 'sweep': enemies.push({ ...base, t: 'sweep', w: 8, h: 12, hp: EHP.sweep, mode: 'hide', modeT: Math.random(), gone: 1 }); break;
       case 'chimpot': props.push({ t: 'chimpot', x: px, y: py, ph: Math.random() * 3 }); break;
       case 'dummy': enemies.push({ ...base, t: 'dummy', w: 12, h: 22, hp: 9999, hp0: 9999, face: -1 }); break;
@@ -6879,6 +6880,10 @@ function updatePlayer(dt) {
   if (P.windRide) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); P.dodge = 0; P.plunge = false; return; }   /* THE WIND HAS HIM (spike-winds.js): it moves him, not his legs */
   if (P.carpet) { carpetPlayer(dt); return; }   /* THE FALLING TOWER'S CARPET (carpet.js): no ground, no falling, eight ways */
   if (MG && P.flip && magePlayer(dt)) return;   /* THE MAGE'S FOLLY: the room turned over, and the hero walking its ceiling */
+  /* CARRY & THROW's swing-block lands earlier in the frame, before updateCharge reads keys.atk (see the asPlayer loop
+     that calls updateCharge) - by here the throw, if any, is already thrown and the key already eaten. This is a
+     second, harmless net: if anything still sees P.carry with keys.atk set, it is cleared again. */
+  if (P.carry) { keys.atk = false; P.abuf = 0; }
   /* THE DANCE: H, standing still on the ground, and again to stop. Anything else you do - move, jump, swing, block,
      take a blow - and the dance is over, because a fight is not a party. */
   { const dn = keys.dance && !P.danceWas; P.danceWas = !!keys.dance;
@@ -7376,7 +7381,7 @@ function updatePlayer(dt) {
   if (sprinting && P.ground && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
   else if (!sprinting) P.sprintFx = false;
   if (sprinting && P.ground && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
-  const cap = (P.ballast ? (P.swim ? 54 : 58) : (P.block || P.jet || P.geoGuard) ? 32 : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (isReaper() && P.ground ? 0.8 : isGeo() && P.ground ? 0.92 : 1) /* heavy on his feet, not in the air: the levels' gaps are measured for the knight's jump */ * (PROG.charm === 'swift' ? 1.12 : 1) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
+  const cap = (P.ballast ? (P.swim ? 54 : 58) : P.carry ? (P.swim ? THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeedSwim : THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeed) : (P.block || P.jet || P.geoGuard) ? 32 : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (isReaper() && P.ground ? 0.8 : isGeo() && P.ground ? 0.92 : 1) /* heavy on his feet, not in the air: the levels' gaps are measured for the knight's jump */ * (PROG.charm === 'swift' ? 1.12 : 1) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
   const onSlick = P.ground && P.relic !== 'crampons' && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]) || (P.ground && L.iceLedges && tileAt(Math.floor(P.x / TS), Math.floor((P.y + 2) / TS)) === T.CRYST); /* and its crystal ledges, which look like ice and held like rock */ // the Sunspire's ice: slow to get going, slower to stop
   /* UPHILL IS SLOWER (Daniel, 2026-09-25: "going up a slope doesn't really slow you down"): walking up a dune the legs cap at 0.6 of a run on a steep slope, 0.8 on a gentle one, and down it they run a little free (1.1). Walking only - the slide (below) keeps its own speeds. */
   const slopeK = SLOPES_ON && P.ground && move && !P.swim ? footSlope(tileAt, P) : 0, capW = slopeK ? cap * (slopeRise(slopeK) === move ? (slopeGrade(slopeK) === 1 ? UPHILL.steep : UPHILL.gentle) : UPHILL.down) : cap;
@@ -17559,7 +17564,9 @@ function updateVillage(dt) {
     else if (!on && c.f) { c.f.life = 0; c.f = null; }
     if (c.s === CATCHING && Math.abs(c.x * TS - P.x) < 240 && Math.random() < dt * 7) parts.push({ x: c.x * TS + Math.random() * TS, y: (c.y + 1) * TS - 2, vx: (Math.random() - 0.5) * 10, vy: -30 - Math.random() * 30, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ffd36b' : '#ff6b2c', size: 1, grav: -10 });
   }
-  for (const e of enemies) if (e.t === 'burngob' && e.alive && e.onGround) { e.litT = (e.litT || 0) - dt;
+  for (const e of enemies) if (e.t === 'burngob' && e.alive && e.onGround) {
+    if (e.doused > 0) { e.doused -= dt; continue; }   /* A THROWN BUCKET DOUSES A BURNING GOBLIN (design decision 2): it stops lighting what it walks on for a moment */
+    e.litT = (e.litT || 0) - dt;
     if (e.litT <= 0) { e.litT = 0.6; const c = cellNear(VG, Math.floor(e.x / TS), Math.floor((e.y - 1) / TS)); if (c) ignite(VG, c.x, c.y, 'burngob'); } }
   for (const pr of props) {
     if (pr.t === 'captive') { if (pr.freed || pr.lost) continue;
@@ -17595,24 +17602,27 @@ function updateVillage(dt) {
         const bx = Math.floor(pr.x / TS), by = Math.floor((pr.y + 3) / TS); if (isSolid(bx, by)) { pr.y = by * TS - 3; pr.state = 'down'; SFX.heavy(); shakeCam(3); dust(pr.x, pr.y, 8); } } }
   }
 }
-// ============================================================================================ THE BUCKET (2026-09-25)
-// docs/briefs/burning-village-rework.md §4. Every well in the village keeps a bucket on its rim. DOWN takes it, full; it is carried
-// as the game carries a weight (P.ballast: the load speed), a blow SPILLS it, and DOWN again sets it down. Carry it INTO a fire:
-// the first thing water puts out a step in front of you takes the whole bucket - a heap, a hot door, his fire in the grid (and on
-// his square, held out for QUENCH seconds), the barn roof's fire, a burning beam (which then holds). No new button: the move that
-// would burn you puts the fire out. A spent or spilled bucket goes back to its well by itself (a villager fetches it).
-const BUCKET = { reach: 16, back: 4, lost: 20, beamWet: 12, cool: 30 };
-let bucketDownWas = false;
-function bucketTargets(fx, fy) {   /* what the water would go on, from a hand at fx and feet at fy: the nearest thing first */
+// ============================================================================================ THE BUCKET (2026-09-25, thrown 2026-09-28)
+// docs/briefs/burning-village-rework.md §4, folded onto src/throwables.js's CARRY & THROW (design decision 2, 2026-09-28: "ONE
+// bucket rule, not two"). Every well in the village keeps a bucket on its rim. Walk onto it and press INTERACT and it is yours,
+// carried as the game carries a weight (P.carry: THROW_KIND.bucket's own load speed - see the run cap above). ATTACK throws it
+// in an arc the way you face (updatePlayer's carry block: no swinging while it is carried). What it hits water puts out - a
+// heap, a hot door, his fire in the grid (and on his square, held out for QUENCH seconds), the barn roof's fire, a burning beam
+// (which then holds), a burning goblin (its straw-ignite pauses) - the same five beats the old walk-in carry taught, now reached
+// by throwing at them instead of walking into them; and it does FIRE_FOES a small hit like anything else, more like a fire foe.
+// A blow or a fall spills it, and a thrown one that hits or lands - on a target or on bare ground - is back at its rack
+// THROW_KIND.bucket.respawn seconds later (a villager fetches it).
+const BUCKET = { beamWet: 12, cool: 30 };
+function bucketTargets(fx, fy) {   /* what the water would go on, from a point (fx, fy): the nearest thing first */
   const heap = (L.heaps || []).find(h => !h.out && fx >= h.x0 * TS - 6 && fx <= (h.x1 + 1) * TS + 6 && fy > h.y0 * TS - 10 && fy <= (h.y1 + 1) * TS + 4);
   if (heap) return { heap };
-  const cap = props.find(q => q.t === 'captive' && !q.freed && !q.lost && (q.hot || q.hotNear) && !(q.coolT > 0) && Math.abs(q.x - fx) < BUCKET.reach && Math.abs(q.y - fy) < 20);
+  const cap = props.find(q => q.t === 'captive' && !q.freed && !q.lost && (q.hot || q.hotNear) && !(q.coolT > 0) && Math.abs(q.x - fx) < 16 && Math.abs(q.y - fy) < 20);
   if (cap) return { cap };
   const beam = (L.deckBreaks || []).find(z => z.beam && !z.down && !(z.wet > 0) && Math.abs(fy - z.row * TS) < 6 && fx >= z.x0 * TS - 4 && fx <= (z.x1 + 1) * TS + 4);
   if (beam) return { beam };
-  const bar = fires.find(f => f.barrier && !f.heap && !(f.delay > 0) && Math.abs(f.x - fx) < BUCKET.reach && Math.abs(f.y - fy) < 30);
+  const bar = fires.find(f => f.barrier && !f.heap && !(f.delay > 0) && Math.abs(f.x - fx) < 16 && Math.abs(f.y - fy) < 30);
   if (bar) return { bar };
-  const cell = VG && VG.cells.find(c => (c.s === ALIGHT || c.s === CATCHING) && Math.abs(c.x * TS + 8 - fx) < BUCKET.reach && Math.abs((c.y + 1) * TS - fy) < 20);
+  const cell = VG && VG.cells.find(c => (c.s === ALIGHT || c.s === CATCHING) && Math.abs(c.x * TS + 8 - fx) < 16 && Math.abs((c.y + 1) * TS - fy) < 20);
   if (cell) return { cell };
   return null;
 }
@@ -17623,38 +17633,71 @@ function putOutHeap(h) {
   SFX.hiss(); SFX.crumble ? SFX.crumble() : SFX.crack(); shakeCam(2); burst((h.x0 + h.x1 + 1) * 8, h.y0 * TS + 8, 22, ['#3a3036', '#6e6266', '#ff9a5c'], 70, 0.8, -30, 2);
   number((h.x0 + h.x1 + 1) * 8, h.y0 * TS - 12, h.step ? 'IT BURNS DOWN - THE STREET IS OPEN' : 'IT FALLS IN', '#9ad0ff');
 }
+/* A THROWN BUCKET LANDS ON A TARGET: pr is the flying bucket (pr.x, pr.y its own position, not the hero's) */
 function pourBucket(pr, tg) {
-  const fx = P.x + P.face * 12, fy = P.y;
+  const fx = pr.x, fy = pr.y, dir = Math.sign(pr.vx) || P.face;
   if (tg.heap) putOutHeap(tg.heap);
   else if (tg.cap) { tg.cap.coolT = BUCKET.cool; tg.cap.cooled = true; number(tg.cap.x, tg.cap.y - 40, 'COOLED', '#9ad0ff'); }
   else if (tg.beam) { tg.beam.wet = BUCKET.beamWet; tg.beam.t = -1; number((tg.beam.x0 + tg.beam.x1 + 1) * 8, tg.beam.row * TS - 20, 'THE BEAM HOLDS', '#9ad0ff'); }
   else if (tg.bar) { const bs = fires.filter(f => f.barrier && !f.heap); for (const f of bs) f.delay = 12; number(tg.bar.x, tg.bar.y - 40, 'THE FIRE IS OUT - GO', '#9ad0ff'); }
   else if (tg.cell) { const cx0 = tg.cell.x, cy0 = tg.cell.y; const n = douse(VG, cx0, cy0, 2) + quench(VG, cx0, cy0, 2); number(fx, fy - 30, n ? 'PUT OUT' : 'SPLASH', '#9ad0ff'); }
-  for (let i = 0; i < 22; i++) parts.push({ x: fx, y: fy - 10, vx: P.face * (60 + Math.random() * 90), vy: -90 - Math.random() * 90, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
-  SFX.splash(); if (P.ballast === pr) P.ballast = null; pr.state = 'return'; pr.retT = BUCKET.back; pr.spent = (pr.spent || 0) + 1;
+  for (let i = 0; i < 22; i++) parts.push({ x: fx, y: fy - 10, vx: dir * (60 + Math.random() * 90), vy: -90 - Math.random() * 90, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
+  SFX.splash(); pr.state = 'return'; pr.retT = THROW_KIND[pr.thrKind || 'bucket'].respawn; pr.spent = (pr.spent || 0) + 1;
+}
+/* A THROWN BUCKET HITS A FOE: a small hit to anything, more to what fire already owns (throwDamage), and it DOUSES a burning
+   goblin (its straw-ignite pauses - updateVillage's burngob loop, below) rather than merely hurting it harder. On the
+   Pyromancer himself (decision 3) it also sets PYRO_HIT_FIELD, a plain flag his own duel (a separate lane) can read; his AI
+   is not touched here. */
+function hitThrownBucket(pr, e) {
+  hurtEnemy(e, throwDamage(pr.thrKind || 'bucket', e.t), pr.x, false);
+  if (isFireFoe(e.t)) { e.doused = 2; number(e.x, e.y - e.h - 10, 'DOUSED', '#9ad0ff'); }
+  if (e.t === 'pyromancer') e[PYRO_HIT_FIELD] = time;
+  sparks(e.x, e.y - e.h / 2, Math.sign(pr.vx) || 1, 6);
+  for (let i = 0; i < 16; i++) parts.push({ x: pr.x, y: pr.y - 6, vx: (Math.random() - 0.5) * 100, vy: -70 - Math.random() * 70, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
+  SFX.splash(); pr.state = 'return'; pr.retT = THROW_KIND[pr.thrKind || 'bucket'].respawn; pr.spent = (pr.spent || 0) + 1;
+}
+/* A THROWN BUCKET HITS BARE GROUND: nothing put out, nothing hurt - it still goes home, on its own clock */
+function landBucket(pr) {
+  SFX.stone(); burst(pr.x, pr.y - 2, 6, ['#8a919c', '#9ad0ff'], 40, 0.4);
+  pr.state = 'return'; pr.retT = THROW_KIND[pr.thrKind || 'bucket'].respawn;
+}
+/* ONE ARC STEP (src/throwables.js's numbers): gravity, move, then look for a target, a foe or the ground, in that order -
+   a bucket that would land square on a fire douses it before it is ever checked against the tiles under it */
+function stepBucketFlight(pr, dt) {
+  const k = THROW_KIND[pr.thrKind || 'bucket'];
+  pr.vy += k.g * dt; pr.x += pr.vx * dt; pr.y += pr.vy * dt;
+  const tg = bucketTargets(pr.x, pr.y); if (tg) { pourBucket(pr, tg); return; }
+  for (const e of enemies) { if (!e.alive || e.harmless) continue;
+    if (overlap({ l: pr.x - 5, r: pr.x + 5, t: pr.y - 9, b: pr.y + 3 }, box(e))) { hitThrownBucket(pr, e); return; } }
+  const tx = Math.floor(pr.x / TS), ty = Math.floor((pr.y + 2) / TS);
+  if (pr.vy >= 0 && (isSolid(tx, ty) || isOneWay(tileAt(tx, ty)))) { landBucket(pr); return; }
+  if (isSolid(Math.floor((pr.x + Math.sign(pr.vx || 1) * 4) / TS), Math.floor(pr.y / TS))) { landBucket(pr); return; }   /* a wall stops it flat, not through */
+  if (pr.y > LH * TS || pr.x < 0 || pr.x > LW * TS) { pr.state = 'return'; pr.retT = 0.5; }
+}
+/* CARRY & THROW's throw half, for THE BURNING VILLAGE's buckets: called from updatePlayer's carry block on ATTACK */
+function throwCarry() {
+  const pr = P.carry; if (!pr) return;
+  const k = THROW_KIND[pr.thrKind || 'bucket'];
+  pr.state = 'fly'; pr.vx = P.face * k.vx; pr.vy = k.vy; P.carry = null;
+  SFX.throwWhoosh();
 }
 function updateBuckets(dt) {
-  const downNow = !!keys.down && !bucketDownWas; bucketDownWas = !!keys.down; let took = false;
+  let took = false;
   for (const pr of props) { if (pr.t !== 'vbucket') continue;
-    if (pr.state === 'return') { if ((pr.retT -= dt) <= 0) { pr.state = 'rest'; pr.x = pr.hx; pr.y = pr.hy; burst(pr.x, pr.y - 6, 6, ['#9ad0ff', '#e8f6ff'], 30, 0.4); } continue; }
+    if (pr.state === 'return') { if ((pr.retT -= dt) <= 0) { pr.state = 'rest'; pr.x = pr.hx; pr.y = pr.hy; pr.vx = 0; pr.vy = 0; burst(pr.x, pr.y - 6, 6, ['#9ad0ff', '#e8f6ff'], 30, 0.4); } continue; }
     if (pr.state === 'held') {
-      if (P.ballast !== pr || P.dead) { pr.state = 'return'; pr.retT = BUCKET.back; if (P.ballast === pr) P.ballast = null; continue; }
+      if (P.carry !== pr || P.dead) { pr.state = 'return'; pr.retT = THROW_KIND[pr.thrKind || 'bucket'].respawn; if (P.carry === pr) P.carry = null; continue; }
       pr.x = P.x + P.face * 7; pr.y = P.y - 3;
-      /* A BLOW SPILLS IT: the water goes on the ground at your feet, wasted, and the bucket goes home */
-      if (P.hp < (pr.hpWas ?? P.hp)) { P.ballast = null; pr.state = 'return'; pr.retT = BUCKET.back; SFX.splash(); number(P.x, P.y - 30, 'SPILLED', '#ff9a5c');
-        for (let i = 0; i < 14; i++) parts.push({ x: P.x, y: P.y - 4, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 40, life: 0.5, max: 0.5, col: '#9ad0ff', size: 2, grav: 500 }); continue; }
-      pr.hpWas = P.hp;   /* A BLOW is any hit that costs blood: a knight swinging through one is not flinched (P.hurt stays 0), and it still spills */
-      const tg = bucketTargets(P.x + P.face * 12, P.y); if (tg) { pourBucket(pr, tg); continue; }
-      if (downNow && P.ground && !took) { took = true; P.ballast = null; pr.state = 'free'; pr.idle = 0; pr.x = P.x + P.face * 8; pr.y = P.y; SFX.stone(); number(P.x, P.y - 30, 'SET DOWN', '#9ad0ff'); }
+      /* A BLOW OR A DEATH DROPS IT (the generic rule): the water goes on the ground, wasted, and the bucket goes home */
+      if (P.hurt > 0 && !pr.hurtWas) { P.carry = null; pr.state = 'return'; pr.retT = THROW_KIND[pr.thrKind || 'bucket'].respawn; SFX.splash(); number(P.x, P.y - 30, 'SPILLED', '#ff9a5c');
+        for (let i = 0; i < 14; i++) parts.push({ x: P.x, y: P.y - 4, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 40, life: 0.5, max: 0.5, col: '#9ad0ff', size: 2, grav: 500 }); pr.hurtWas = true; continue; }
+      pr.hurtWas = P.hurt > 0;
       continue; }
-    if (pr.state === 'free') { pr.idle = (pr.idle || 0) + dt;
-      pr.vy = Math.min(360, (pr.vy || 0) + 900 * dt); const ty = Math.floor((pr.y + pr.vy * dt) / TS), tx = Math.floor(pr.x / TS);
-      if (pr.vy >= 0 && (isSolid(tx, ty) || isOneWay(tileAt(tx, ty)))) { pr.y = ty * TS; pr.vy = 0; } else pr.y += pr.vy * dt;
-      if (pr.idle > BUCKET.lost || pr.y > LH * TS) { pr.state = 'return'; pr.retT = 0.5; continue; } }
-    /* DOWN TAKES IT - at its well, or where it was set down */
-    if ((pr.state === 'rest' || pr.state === 'free') && downNow && !took && !P.ballast && !P.dead && P.ground && Math.abs(pr.x - P.x) < 18 && Math.abs(pr.y - P.y) < 14) { took = true;
-      P.ballast = pr; pr.state = 'held'; pr.hpWas = P.hp; SFX.clank(); number(P.x, P.y - 30, 'THE BUCKET', '#9ad0ff');
-      if (!(PROG.bucketTold > 1)) { PROG.bucketTold = (PROG.bucketTold || 0) + 1; hintT = 5; hintMsg = 'CARRY THE BUCKET INTO A FIRE AND IT GOES OUT. A BLOW SPILLS IT. DOWN SETS IT DOWN.'; } }
+    if (pr.state === 'fly') { stepBucketFlight(pr, dt); continue; }
+    /* WALK ONTO IT AND PRESS INTERACT (CARRY & THROW's pick-up half) - at its rack, or wherever it landed */
+    if (pr.state === 'rest' && talkPress && !took && !P.carry && !P.dead && P.ground && Math.abs(pr.x - P.x) < 18 && Math.abs(pr.y - P.y) < 14) { took = true;
+      P.carry = pr; pr.state = 'held'; pr.hurtWas = false; SFX.clank(); number(P.x, P.y - 30, 'THE BUCKET', '#9ad0ff');
+      if (!(PROG.bucketTold > 1)) { PROG.bucketTold = (PROG.bucketTold || 0) + 1; hintT = 5; hintMsg = 'INTERACT TAKES THE BUCKET. ATTACK THROWS IT AT A FIRE. A BLOW OR A FALL SPILLS IT.'; } }
   }
   for (const z of L.deckBreaks || []) if (z.wet > 0) { z.wet -= dt; if (!z.down) z.t = -1; }   /* A DOUSED BEAM HOLDS: its fuse cannot start while it is wet */
 }
@@ -17667,7 +17710,7 @@ function drawPail(x, y, full) {   /* a wooden pail: staves, two iron hoops, a ro
 function drawBuckets(cx, cy) {
   for (const pr of props) { if (pr.t !== 'vbucket' || pr.state === 'return') continue; const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -20 || x > VW + 20) continue;
     drawPail(x, y, true);
-    if (pr.state !== 'held' && !P.ballast && Math.abs(pr.x - P.x) < 48 && Math.abs(pr.y - P.y) < 32) { g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 5 + pr.hx); g.strokeStyle = '#9ad0ff'; g.beginPath(); g.arc(x, y - 6, 9, 0, 7); g.stroke(); g.globalAlpha = 1; } }   /* take me */
+    if (pr.state !== 'held' && pr.state !== 'fly' && !P.carry && Math.abs(pr.x - P.x) < 48 && Math.abs(pr.y - P.y) < 32) { g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 5 + pr.hx); g.strokeStyle = '#9ad0ff'; g.beginPath(); g.arc(x, y - 6, 9, 0, 7); g.stroke(); g.globalAlpha = 1; } }   /* take me */
 }
 /* THE SMOKE's clock: up for SMOKE.up seconds of its period, thickening for SMOKE.tell seconds before it */
 const smokePh = s => (time + s.ph) % s.per, smokeUp = s => smokePh(s) < SMOKE.up, smokeTell = s => smokePh(s) > s.per - SMOKE.tell;
@@ -22608,6 +22651,11 @@ function update(dt) {
      EACH HERO BUFFERS HIS OWN PRESSES AND HOLDS HIS OWN SWING. In single player asPlayer calls straight through, so
      this is the two lines it always was, in the order it always ran them. */
   for (const pp of players) asPlayer(pp, () => {
+    /* CARRY & THROW (src/throwables.js, 2026-09-28): ATTACK throws whatever is carried, the way the hero faces, and is
+       eaten FIRST, before the line below buffers a swing off the same press (P.abuf), and before updateCharge ever
+       reads keys.atk - so nothing downstream reads it as a swing. NO SWINGING WHILE CARRYING is the whole of that
+       rule, and it has to live here, ahead of everything else this press could start, to hold for a held key too. */
+    if (P.carry) { if (atkPress && !P.dead) throwCarry(); atkPress = false; keys.atk = false; P.abuf = 0; }
     if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; P.abufUp = !!keys.up; P.abufLow = !!keys.down; } if (dodgePress) { P.dbuf = 0.12; P.dbufDir = 0; }
     /* ONE DODGE, TWO WAYS TO ASK FOR IT (2026-09-24). Tapping a way twice IS the dodge button, pointed. It is read here with the
        other presses, not in updatePlayer: a double tap made during a hitstop is no longer lost, and everything that answers the
@@ -26333,7 +26381,7 @@ function frame(now) { rafQueued = false; tick(now); if (!rafQueued) { rafQueued 
 setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now()); }, 125);
 loadLevel(0);
 document.getElementById('boot').remove();
-window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.ballast = pr; pr.state = 'held'; pr.hpWas = P.hp; } }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
+window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
   xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
