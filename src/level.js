@@ -3842,8 +3842,12 @@ function galeMoor() {
   gust(o, o + 39, 4, 14, { period: 3.4, on: 2.5, alt: true, k: 1.4 });   /* ONE zone: two overlapped here and stacked (level review) */
   ent('sign', o + 4, 13, { text: 'THE FLAGS POINT THE WAY: OVER THE MILLS AND THE TUMBLE TO THE KITE POST.' });
   coins([o + 8, 12], [o + 14, 9], [o + 20, 12], [o + 26, 8], [o + 34, 10]); ent('check', o + 39, 13);
+  /* ambush-listed (claude/ambushaudit, 2026-09-28): troll's {elite:true} here was vestigial - AMBUSH_CAPTAINS.moor='goat' always wins
+     captaincy over a tuple's own elite flag, and singleAmbush()'s "rest" filter excludes any elite-flagged foe too, so troll could NEVER
+     spawn either way (same trap as the King's Road's shield above). Freed of the flag and reordered into a rest slot so it actually
+     appears; the duplicate goat and rockgoblin are cut (say so) to stay inside the four-foe rule. */
   ambushes.push({ name: 'THE CAIRN RIDGE', row: 13, wallL: o + 1, wallR: o + 37,
-    waves: [[['goat', o + 7], ['goat', o + 33], ['rockgoblin', o + 20], ['crow', o + 17, 7]], [['rockgoblin', o + 31], ['troll', o + 9, null, { elite: true }], ['goat', o + 25]]] });
+    waves: [[['goat', o + 7], ['troll', o + 9], ['rockgoblin', o + 20], ['crow', o + 17, 7]]] });
 
   /* ==== THE TUMBLE (495-534): the last open moor, heather bales the wind rolls at you, and hornblowers on the */
   /* mounds who wind their horns at you as you come. (The mounds are steps, never walls.) ==== */
@@ -7399,7 +7403,9 @@ function theMagesFolly() {
     weather: [{ x0: 0, x1: 118 * TS, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 118 * TS, kind: 'wind' }, { x0: 118 * TS, x1: 501 * TS, kind: 'hall' }, { x0: 501 * TS, x1: 99999, kind: 'wind' }],
     mini: { x0: 238 * TS, x1: 262 * TS, floor: G * TS, y0: (G - 12) * TS, y1: (G + 1) * TS, trigger: 242 * TS, wallL: 237, gate: 262, boss: 'homunculus', name: 'THE HOMUNCULUS' },
-    ambushes: [{ name: 'THE READING ROOM', row: G - 1, wallL: 218, wallR: 234, check: false, waves: [[['broom', 222], ['broom', 231], ['armour', 226]], [['armour', 221], ['imp', 230, G - 6], ['broom', 226], ['broom', 232]]] }],
+    /* ambush-listed: imp was listed but never spawned (budget spent on a duplicate armour+broom). Restored - only 3 distinct foe types
+       were ever listed here, so nothing is cut, just the duplicate copies trimmed. */
+    ambushes: [{ name: 'THE READING ROOM', row: G - 1, wallL: 218, wallR: 234, check: false, waves: [[['armour', 221], ['broom', 222], ['imp', 230, G - 6], ['broom', 231]]] }],
     noCoin: [[118, 262, 0, 13], [263, 380, 0, 21], [102, 108, 0, 23], [381, 500, 0, 5]],   /* the tower's roofs and the gatehouse top: the sprinkler treats an assisted level as all reachable */
     calm: [[0, 18, 0, 47], [20, 32, 0, 47], [66, 77, 30, 38], [96, 124, 0, 47], [144, 158, 0, 47], [176, 214, 26, 47], [233, 264, 0, 47], [290, 318, 22, 47], [318, 346, 0, 47], [362, 372, 0, 47], [386, 436, 30, 47], [436, 502, 0, 47], [501, 590, 0, 47], [591, 656, 0, 47]],   /* no garrison on the lanes, the flipped floor or the test room, nor on the three floors thinned by hand (the stacks' crossing, the bench, the gilded armour's) */
     arena: { x0: 657 * TS, x1: 700 * TS, floor: F * TS, y0: 0, trigger: 662 * TS, wallL: 656, wallR: 700, boss: 'archmage', music: 'boss4', tint: '#2a1a40', tintA: 0.04, fx: 'motes' },
@@ -7886,31 +7892,56 @@ const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul
 const AMBUSH = {
   wood: [{ name: 'THE BRAMBLE RIDE', row: 11, wallL: 314, wallR: 351, check: [304, 11],   /* (every column here is 104 past what it was: the FOUR lessons grew the wood ahead of the giant. It said 78 and stood
      26 short for a day after the perfect-guard lesson went in - its walls shut round the bramble bed itself and put a thorn goblin in the thorns) */
-    waves: [[['sprig', 320], ['sprig', 347], ['thorn', 334], ['badger', 326]], [['shield', 342], ['spit', 348], ['thorn', 320], ['crow', 332, 6]]] }],
+    /* ambush-listed (claude/ambushaudit, 2026-09-28): the wave table listed 8 foes across two waves but singleAmbush() only ever spawns 1 elite + 3 -
+       badger was silently dropped every time. Trimmed to what the room's own budget can actually hold: shield leads, badger restored for variety,
+       spit/crow/the duplicate sprig+thorn cut (say so, not silently) since they never fit the four-foe rule. */
+    waves: [[['shield', 342], ['sprig', 320], ['thorn', 334], ['badger', 326]]] }],
   marsh: [{ name: 'THE REED ISLAND', row: 17, wallL: 371, wallR: 389, check: false,
-    waves: [[['hopper', 386], ['turtle', 380]], [['thorn', 384], ['archer', 387], ['heronfoe', 381], ['spit', 373]]] }],
+    /* ambush-listed: 6 distinct foes listed, only 4 fit the 1-elite+3 rule; thorn/hopper/turtle/archer is already the most-varied set the
+       budget allows - heronfoe and spit are cut here (not silently) rather than left in the table to vanish on their own. */
+    waves: [[['thorn', 384], ['hopper', 386], ['turtle', 380], ['archer', 387]]] }],
   stockade: [{ name: 'THE KENNEL YARD', row: 19, wallL: 170, wallR: 209, check: [167, 16],
-    waves: [[['sprig', 176], ['sprig', 203], ['hound', 196], ['hound', 182]], [['shield', 195], ['archer', 201, null, { elite: true }], ['sapper', 184]]] }],
+    /* ambush-listed: shield was listed but never spawned (budget already spent on a duplicate sprig+hound). Restored per the "shield covering
+       an archer" pattern (Daniel, fewer-better-foes); the duplicate sprig/hound and sapper are cut (say so) to stay inside the four-foe rule. */
+    waves: [[['archer', 201, null, { elite: true }], ['sprig', 176], ['hound', 196], ['shield', 195]]] }],
   spore: [{ name: 'THE UNDERCAP', row: 19, wallL: 135, wallR: 170, check: [132, 19],
+    /* left to claude/sporewood2 (in flight): spitcap/weaver are silently dropped here too, same ambush-listed offense, but this level is
+       being merged from its own branch - not touched here. */
     waves: [[['sporeling', 142], ['sporeling', 163], ['lurker', 152]], [['shield', 160], ['spitcap', 166], ['weaver', 146], ['sporeling', 140]]] }],
   kings: [{ name: "THE KING'S ROAD", row: 13, wallL: 277, wallR: 308, check: [274, 12],
-    waves: [[['thief', 282], ['thief', 303], ['sprig', 292], ['hound', 286]], [['shield', 296, null, { elite: true }], ['archer', 305], ['hound', 286]]] }],
+    /* ambush-listed: shield's {elite:true} here was vestigial - AMBUSH_CAPTAINS.kings='archer' always wins captaincy over a tuple's own elite
+       flag, and singleAmbush()'s "rest" filter excludes any elite-flagged foe too, so shield could NEVER spawn either way (same trap as the
+       Cairn Ridge's troll below). Freed of the flag and reordered into a rest slot so it actually appears, alongside an archer per the
+       "shield covering an archer" pattern; the duplicate thief/hound and sprig are cut (say so) to stay inside the four-foe rule. */
+    waves: [[['archer', 305], ['shield', 296], ['thief', 282], ['hound', 286]]] }],
   scree: [{ name: 'THE GOAT TRACK', row: 13, wallL: 173, wallR: 202, check: [168, 13],
-    waves: [[['goat', 178], ['goat', 198], ['sprig', 191], ['harpy', 185, 8]], [['shield', 193], ['archer', 199], ['troll', 180], ['rockgoblin', 186]]] }],
+    /* ambush-listed: 7 distinct foes listed for a 4-foe room; troll/goat/sprig/harpy was already the built room's own pick (AMBUSH_CAPTAINS.scree
+       ='troll'), kept as-is; shield/archer/rockgoblin/the duplicate goat are cut here (say so) rather than left to vanish silently. */
+    waves: [[['troll', 180], ['goat', 178], ['sprig', 191], ['harpy', 185, 8]]] }],
   hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
+    /* left to claude/hanging2 (already fixed there, per the finding that opened this audit): do not touch. */
     waves: [[['sprig', 48], ['sprig', 65], ['snuffer', 58]], [['brute', 57, null, { elite: true }], ['archer', 66], ['cutter', 49]]] }],
   spire: [{ name: 'THE CLOISTER', row: 99, wallL: 40, wallR: 74, check: false,
+    /* left to claude/monastery3 (in flight): bat/harpy are silently dropped here too, same ambush-listed offense, not touched here. */
     waves: [[['fledgling', 46], ['fledgling', 66], ['rockgoblin', 56], ['bat', 52, 94]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 93], ['fledgling', 68]]] }],
   /* moor: THE CAIRN RIDGE is built in galeMoor() in its final columns (docs/briefs/gale-moor-rework.md) */
   storm: [{ name: 'THE MARKET SQUARE', row: 31, wallL: 98, wallR: 138, check: false,   /* the square among the stalls (facades.push([98,138,...]) in src/stormhold-town.js); this rework's real bounds, replacing the pre-merge placeholder */
-    waves: [[['sprig', 104], ['sprig', 134], ['hearthgob', 118], ['cutter', 110]], [['shield', 130], ['archer', 122], ['pike', 114, null, { elite: true }]]] }],
+    /* ambush-listed: cutter was listed but never spawned (budget spent on a duplicate sprig). Restored; the duplicate sprig and shield/archer
+       are cut (say so) to stay inside the four-foe rule. */
+    waves: [[['pike', 114, null, { elite: true }], ['sprig', 104], ['hearthgob', 118], ['cutter', 110]]] }],
   longwater: [{ name: 'THE SLUICE BRIDGE', row: 26, wallL: 381, wallR: 427, check: false,   /* +88: the Linn and the Bore Reach grew in upstream (2026-09-25) */
-    waves: [[['scout', 385], ['scout', 424], ['crab', 404, 25], ['crab', 412, 25]], [['tideguard', 418, 25], ['scout', 424], ['netter', 386], ['heronfoe', 404, 25]]] }],
+    /* ambush-listed: netter was listed but never spawned (budget spent on a duplicate scout+crab). Restored; the duplicate scout/crab and
+       heronfoe are cut (say so) - heronfoe is the one type the four-foe rule still can't fit (5 distinct types listed). */
+    waves: [[['tideguard', 418, 25], ['scout', 385], ['crab', 404, 25], ['netter', 386]]] }],
   flotilla: [{ name: 'THE WAIST', row: 23, wallL: 62, wallR: 92, check: [57, 23],
-    waves: [[['cutlass', 66], ['cutlass', 88], ['scout', 76], ['crab', 83]], [['boarder', 84], ['marine', 90], ['bosun', 68], ['cutlass', 75]]] }],
+    /* ambush-listed: crab was listed but never spawned (budget spent on a duplicate cutlass). Restored; the duplicate cutlass and marine/bosun
+       are cut (say so) to stay inside the four-foe rule. */
+    waves: [[['boarder', 84], ['cutlass', 66], ['scout', 76], ['crab', 83]]] }],
   /* THE DROWNED CHAPEL: the doors are the gates (the door columns under the two walls), its floor is over the high water */
   causeway: [{ name: 'THE DROWNED CHAPEL', row: 19, wallL: 265, wallR: 297, check: false,
-    waves: [[['sailor', 270], ['sailor', 292], ['crab', 281], ['netter', 276]], [['tideguard', 288], ['scout', 293], ['sailor', 272], ['crab', 284]]] }],
+    /* ambush-listed: netter was listed but never spawned (budget spent on a duplicate sailor+crab). Restored; the duplicate sailor/crab and
+       scout are cut (say so) to stay inside the four-foe rule. */
+    waves: [[['tideguard', 288], ['sailor', 270], ['crab', 281], ['netter', 276]]] }],
   /* ONE ROOM A LEVEL. Three levels had two, and the second was the same lesson again a few minutes on. Kept: THE WEATHER DECK
      (the Hurricane's middle, out in the level's own storm with the rail and the sea to throw them over; THE ORLOP was a flat hold
      at the start, twenty tiles past the Boarding Master's gate - back to back with a fight). THE LAMP ISLAND (a quay under a
@@ -7918,9 +7949,14 @@ const AMBUSH = {
      MARKET HALL (a hall with a gallery over it; THE HORSE FAIR sent a mounted lancer in a hundred tiles before the level's own
      mini, THE LANCER). The cut rooms are ground again: the creatures the level placed in them stand where they were put. */
   hurricane: [{ name: 'THE WEATHER DECK', row: 18, wallL: 389, wallR: 427, check: false,
-    waves: [[['sailor', 394], ['cutlass', 422], ['scout', 408]], [['boarder', 414], ['marine', 422], ['bosun', 396], ['lookout', 404]]] }],
+    /* ambush-listed: 7 distinct foes listed (no duplicates to trade) for a 4-foe room; cutlass/sailor/scout/boarder is already the built
+       room's own pick and the most this budget can hold - marine/bosun/lookout are cut here (say so) rather than left to vanish silently. */
+    waves: [[['cutlass', 422], ['sailor', 394], ['scout', 408], ['boarder', 414]]] }],
   lamplit: [{ name: 'THE LAMP ISLAND', row: 21, wallL: 481, wallR: 519, check: false,
-    waves: [[['scout', 486], ['scout', 514], ['wight', 500], ['crab', 492]], [['tideguard', 506], ['scout', 514], ['watch', 488], ['snuffer', 498]]] }],
+    /* ambush-listed: crab was listed but never spawned (budget spent on a duplicate scout). Restored; the duplicate scout, tideguard and
+       snuffer are cut (say so) to stay inside the four-foe rule. (wight here is renamed to lanternshade/bonecorsair at runtime by
+       hauntedCoast() in src/haunted-coast.js - that substitution is intentional, not a drop.) */
+    waves: [[['watch', 488], ['scout', 486], ['wight', 500], ['crab', 492]]] }],
   /* THE FALLING TOWER (docs/briefs/falling-tower-rework.md §4): THE ORRERY PIT, under the observers' gallery. Its door is the gallery's
      failing floor - you come DOWN into it - and the room is walled by the shaft's wall (col 24) and the gate at col 55 before the rope out.
      Its roof is the gallery, eight rows up, so the gates reach it and the room holds. The door checkpoint is on the gallery (check: false):
@@ -7929,7 +7965,9 @@ const AMBUSH = {
   fallingtower: [{ name: 'THE ORRERY PIT', row: 227, wallL: 24, wallR: 55, y0: 220, trigger: 27, check: false,
     waves: [[['apprentice', 44, 227, { elite: true }], ['armour', 34], ['tome', 38, 224], ['broom', 50, 225]]] }],
   waymeet: [{ name: 'THE MARKET HALL', row: 35, wallL: 95, wallR: 123, check: [91, 35],
-    waves: [[['swornsword', 100], ['runner', 118], ['swornsword', 110], ['hedgeknight', 114]], [['swornsword', 112], ['crossbow', 119], ['swornsword', 100], ['hedgeknight', 106]]] }],
+    /* ambush-listed: crossbow was listed but never spawned (budget spent on duplicate swornsword/hedgeknight copies). Restored - only 4
+       distinct foe types were ever listed here, so nothing is cut, just the duplicate copies trimmed. */
+    waves: [[['hedgeknight', 106], ['swornsword', 100], ['runner', 118], ['crossbow', 119]]] }],
   /* THE BANQUET HALL (docs/briefs/highcrown-bells.md): her captain at the high table and his guard sat down to eat, and both doors
      drop behind you. A hall sixteen rows high with two chandeliers on long chains over the floor: the room's own machinery, cut
      down on whoever is under it. Led by THE GOBLIN CAPTAIN (a brute, the kitchen's kind): the storm's room is a pike's and the Long

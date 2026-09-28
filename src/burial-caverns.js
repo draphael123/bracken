@@ -111,9 +111,12 @@ export function burialCaverns({ painter, T, TS }) {
     for (let x = 196; x < 288; x += 14) if (x < 210 || x > 216) ent('torch', x, g2 - 1);
     ent('mend', 199, g2 - 1);                                                     /* after the Charnel House and its two pits (S5) */
   }
-  /* THE CHARNEL HOUSE, the one ambush: gallery two's doors seal and the dead come out of the shelves */
+  /* THE CHARNEL HOUSE, the one ambush: gallery two's doors seal and the dead come out of the shelves
+     ambush-listed (claude/ambushaudit, 2026-09-28): bonearcher was listed but never spawned (budget spent on a duplicate zombie+bonegob).
+     Restored for ranged variety; wight is the one type the four-foe rule still can't fit (4 distinct non-captain types listed) - cut here
+     (say so) in favour of bonearcher's ranged threat over a second undead grunt (QUESTION FOR DANIEL: see report). */
   const ambushes = [{ name: 'THE CHARNEL HOUSE', row: DESCENT.g[1] - 1, y0: 34, wallL: 226, wallR: 270, check: [272, DESCENT.g[1] - 1],   /* y0: only gallery two's own floor sets it off - gallery one shares its columns */
-    waves: [[['zombie', 238], ['bonegob', 250], ['zombie', 262], ['bonearcher', 258, 37]], [['husk', 244], ['bonegob', 256], ['zombie', 232], ['bonearcher', 238, 37], ['wight', 266]]] }];
+    waves: [[['husk', 244], ['zombie', 238], ['bonegob', 250], ['bonearcher', 258, 37]]] }];
 
   // ======================================================================== 4. THE DROWNED OSSUARY (184-302, rows 45-70)
   { const [ox0, ox1, oy0, oy1] = DESCENT.oss, [wx0, wx1, wy] = DESCENT.water;
