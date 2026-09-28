@@ -1962,7 +1962,7 @@ function hangingVillage() {
 function theMonastery() {
   const W = 96, H = 222; const L = painter(W, H);
   const { block, plat, ent, coins, set, spikes } = L;
-  const movers = [], facades = [], masonry = [], interiors = [], flags = [], hangers = [];
+  const movers = [], facades = [], masonry = [], interiors = [], flags = [], hangers = [], crumbles = [];
   const CLOUD = 100; // above this row the sun is on the stone
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const boards = (x, y, n) => { for (let i = 0; i < n; i++) set(x + i, y, T.ONEWAY); };
@@ -2138,6 +2138,10 @@ function theMonastery() {
   tower(70, 118, 131);
   ent('tbell', 11, 117, { span: [16, 40, 118] });                   // the first bell: the drawbridge over the broken floor
   ent('sign', 9, 117, { text: 'A BELL. STRIKE IT AND WHAT HANGS FROM ITS TOWER COMES DOWN.' });
+  // THE DRAWBRIDGE, DEVELOPED (design audit, plan 1): a harpy and a fledgling over the broken floor, and a priest waiting
+  // on the far tower's own floor (41-48, laid the same row the bell drops the bridge onto) whose rite blesses them both
+  ent('harpy', 24, 112, { face: 1 }); ent('fledgling', 36, 114, { face: -1 });
+  ent('gobpriest', 42, 117, { face: -1 });
   for (let x = 49; x <= 69; x++) set(x, 118, T.PLANK);              // the rope bridge the Roc left standing
   ent('tbell', 73, 117, { span: [78, 83, 118] });                   // the second: over to the flue
   // THE FLUE: the old kitchens' chimney, with its hearth at the bridges' height and the braziers that still breathe in it
@@ -2150,6 +2154,10 @@ function theMonastery() {
   ent('check', 13, 117); ent('check', 6, 131); coins([31, 117], [36, 117], [58, 117], [63, 117]);
   // THE BELL YARD under the bridges, where the looters camp: down a tower's hatch, and back up its stair
   ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 }); ent('gobpriest', 62, 131, { face: -1 });
+  // A STONE ON A CHAIN, still set the way the monks left it (Daniel's backlog: generalise Kingswood's plate-and-cage -
+  // cheap, since the plate/dropcage pair is already level-agnostic prop code, so this is the same trap, replanted here)
+  ent('sign', 47, 131, { text: 'A STONE ON A CHAIN, STILL SET TO CATCH A THIEF. STAND ON THE PLATE.' });
+  ent('plate', 60, 131, { cage: 60 }); ent('dropcage', 60, 127);
   // THE DORTER: the monks' cells between the towers, and the looters asleep in the monks' cots with what they took piled by the door
   facades.push([49, 69, CLOUD + 18, 131, 'monkDorm']);
   for (const [x, k, v] of [[52, 'cot', 0], [57, 'cot', 1], [64, 'lootHeap', 0], [81, 'incenseStand', 0]]) ent('deco', x, 131, { kind: k, v });
@@ -2185,6 +2193,9 @@ function theMonastery() {
   ent('gobpriest', 57, 79, { face: -1 }); ent('gobpriest', 41, 79, { face: 1 });
   ent('sign', 16, 79, { text: 'THE BELLOWS THROW YOU HIGH. KEEP GOING AT THE TOP.' });
   brazier(14, 80, 11, { lift: 230, period: 4.6, on: 2.4, phase: 0 }); plat(16, 69, 5);
+  // COMBINE INCENSE AND LOOSE MASONRY (design audit, plan 2): a lip cut into the shaft right over the first plume's
+  // landing, dressed loose - the fire under it shivers it same as the crawl's own stone does (stal(17,68), below)
+  block(16, 18, 67, 67);
   brazier(19, 69, 7, { lift: 230, period: 4.6, on: 2.4, phase: 1.5 });
   plat(23, 62, 5); brazier(25, 62, 6, { lift: 230, period: 4.6, on: 2.4, phase: 3.0 });
   band(56, 23, 5);
@@ -2194,6 +2205,10 @@ function theMonastery() {
   // THE SCAFFOLD the monks left up the east face, with a shrine at the top of it
   for (const [x, y] of [[44, 78], [49, 76], [54, 74], [59, 72], [64, 70], [69, 68], [74, 66], [78, 64]]) plat(x, y, 4);
   coins([45, 77], [55, 73], [65, 69], [75, 65], [79, 63]); ent('silver', 81, 63); ent('deco', 80, 63, { kind: 'shrine', v: 0 });
+  // FAILING STONE, IN THE UPPER RUINS (Daniel's backlog): the scaffold is old timber, and one board of it goes - weight
+  // starts its count, it drops, and it is whole again four seconds after (src/tower-collapse.js, the Falling Tower's own rule)
+  ent('sign', 62, 72, { text: 'OLD TIMBER. STAND ON IT AND IT COUNTS DOWN, THEN IT GOES - BACK A FEW SECONDS LATER.' });
+  crumbles.push({ x0: 59, x1: 62, row: 72, rows: 1, count: 3 });
   flags.push([2, 60, 22, 57], [30, 66, 76, 60], [8, 86, 36, 84], [50, 44, 90, 40], [4, 42, 30, 46]);
 
   // ---- 6b. THE TEMPLE HALL: the guardian the monks set over their relics, still standing its watch ----
@@ -2243,6 +2258,13 @@ function theMonastery() {
   for (let y = 32; y <= 34; y++) { for (let x = 70; x <= 93; x++) set(x, y, T.AIR); for (let x = 3; x <= 16; x++) set(x, y, T.AIR); }
   coins([74, 35], [78, 35], [86, 35], [90, 35]); ent('deco', 82, 35, { kind: 'bones', v: 1 });
   ent('deco', 6, 35, { kind: 'prayerFlags', v: 1 }); coins([4, 35], [9, 35], [15, 35]);
+  // A THIRD WHEEL, IN THE CRAWL'S RIGHT HOLLOW (design audit, plan 3 + the exam, plan 4): between two priests' flocks,
+  // a small brazier to carry you up past it - so the last stretch before the belfry door is an EXAM (game-wide pattern
+  // 1): incense, a wheel, a priest and (garrison's own) a harpy all in the same 80 route tiles, a foe right by the hop
+  ent('gobpriest', 71, 35, { face: 1 }); ent('troll', 73, 35, { face: 1 });
+  brazier(74, 35, 2, { lift: 150, period: 4.0, on: 2.0, phase: 0 });
+  wheel(35, 77, 34, 1, 'b');
+  ent('sign', 65, 35, { text: 'A THIRD WHEEL. FLIP IT WITH ONE OF THEM ON ITS STAIR, AND IT GOES OUT FROM UNDER HIM.' });
 
   // ---- MORE GOING ON. Every floor used to be a stair up one side and a walk to a wall on the other. ----
   // SIDE ROUTES: a goat path of boards up the side the main stair does not use, through a small trapdoor in
@@ -2260,7 +2282,7 @@ function theMonastery() {
   sideRoute(80, 56, 84, 88);       // the bellows' far side, up to the chimney's foot
   // LOOSE MASONRY: a stone in the vault over a step you have to stand on shivers when you pass under, and drops.
   const stal = (x, y) => { if (L.grid[(y - 1) * W + x] === T.SOLID && L.grid[y * W + x] === T.AIR) ent('stal', x, y, { stone: true }); };
-  for (const [x, y] of [[51, 199], [91, 199], [9, 175], [24, 103], [44, 103], [88, 103], [41, 83], [84, 84], [77, 59], [39, 39], [10, 32], [80, 32]]) stal(x, y);
+  for (const [x, y] of [[51, 199], [91, 199], [9, 175], [24, 103], [44, 103], [88, 103], [41, 83], [84, 84], [77, 59], [39, 39], [10, 32], [80, 32], [17, 68]]) stal(x, y);
   // and more of the mountain's own: bats in the shade below the cloud, harpies and fledglings above it
   ent('bat', 60, 205); ent('bat', 24, 186); ent('harpy', 20, 142);
   ent('harpy', 40, 44); ent('fledgling', 62, 55, { face: -1 });
@@ -2301,14 +2323,16 @@ function theMonastery() {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'monastery', night: false, cloudLine: CLOUD, snowLine: 28,   /* "rpgchip07_the_shrine_of_mysteries" from 15 Melodic RPG Chiptunes by Aureolus_Omicron, CC0 - THE MONASTERY's own theme, benching sunspire (audio/CREDITS.txt) */
-    belfry: {roofGone:false}, monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors,
+    belfry: {roofGone:false}, monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors, crumbles,
     /* THE GROUND KIT BY PLACE: bees and herb beds belong in the garden, not on the belfry floor (GROUND_KITS.spire is the rest) */
     kits: [[1, 94, 196, 196, { density: 0.3, kinds: ['herbBed', 'skep'] }], [72, 94, 218, 218, { density: 0.25, kinds: ['bones'] }]],
     tall: { top: CLOUD * TS, bottom: 218 * TS, col: '64,70,84', deepest: 0.26 },
 
-    palette: { sky: [[146, 156, 172], [230, 216, 196]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'beam',
-      haze: 'rgba(222,208,190,0.14)', grass: '#7c8a56', grassL: '#9aa86c', grassD: '#5a6640',
-      dirt: '#6a625a', dirtL: '#827a70', dirtD: '#4a443e', canopy: ['#5a5650', '#6e6a62', '#86806e', '#a89c84'] },
+    // A SMALL WARMTH FIX (level review flagged the palette as washed-out): the stone and canopy tones nudged out of
+    // grey toward the sky's own warm stop, without changing the crag structure or any other level sharing 'crag'
+    palette: { sky: [[146, 156, 172], [232, 212, 182]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'beam',
+      haze: 'rgba(228,202,166,0.15)', grass: '#7c8a56', grassL: '#9aa86c', grassD: '#5a6640',
+      dirt: '#726255', dirtL: '#8f7d68', dirtD: '#4f4034', canopy: ['#5f584a', '#746b58', '#8f8265', '#b0a17a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'abbot', music: 'roc', tint: '#e8c88a', tintA: 0.10, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest. THE FALSE ABBOT has it now (2026-09-22): the Roc was a giant bird in a bell tower, and this level's own rule is that what the monks built answers a blow. Her code is untouched and she is placed nowhere - restorable, as the Harbor was. (The track is still hers: he has not got one of his own yet.) */
     mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS, music: 'monasterygolem' },   /* "Boss Battle #6 [8-bit]" V1 by nene, CC0, converted WAV -> OGG - the Monastery's Golem mini's own track (audio/CREDITS.txt) */
