@@ -148,3 +148,39 @@ live. No regression in outcome; times and damage taken stay in the same range he
 
 `53cbae0` - "Stormhold, rebuilt again: taller climbs stay, plus the alarm, a rope, and the exam" (on top of the
 merge commit `9300af8`, "Merge origin/master (abcd773) into claude/stormhold2"). Pushed to `origin/claude/stormhold2`.
+
+## Follow-up (coordinator flag)
+
+Deleting master's inline `stormhold()` in the merge dropped two of its own changes that had nothing to do with the
+layout itself and landed on master after this lane's held branch forked:
+
+1. **claude/npcs** (Daniel, 2026-09-26, "they don't add much"): every decorative talker/quest-giver removed
+   game-wide. `tools/npc-removal.mjs` was failing on Stormhold two ways - the squire NPC (outside a shop) and no
+   live level's relics including `shoes` (the former quest's reward, now orphaned). Fixed: removed the squire
+   (road-in sign area) and the three HILL FOLK quest strays (Smithy, Tannery, Longhouse); the `quest` field is gone
+   from the returned level object; the `shoes` relic is now a direct pickup at (130,7) in the Longhouse rafters -
+   master's own exact spot for it once its version dropped the same quest (`git show abcd773:src/level.js` around
+   its now-deleted `stormhold()`). `tools/npc-removal.mjs` is green.
+2. **THE QUEEN'S LANCE's own boss track**: master's stormhold() played `music: 'lance'` (audio/lance.ogg, "Boss
+   Battle #3 [8-bit re-upload]" V3 by nene, CC0) in his arena, benching the generic `musCastle`; that track was added
+   to the game after this lane's held branch forked, so its own build never picked it up. Restored.
+
+Diffed master's full deleted `stormhold()` against this build line by line for anything else Stormhold-specific
+that could have been lost - his end lookouts/platforms, the rock goblin, the lantern posts and silver on the
+bridge, checkpoints, signs, arena tint/fx/trigger, palette. Everything else was already correct: the held branch's
+own bridge geometry already matches master's at the same P0-relative offsets (lantern posts at +8/+26/+44/+62/+80/
++98, rock goblin at +92, silver at +71, the Lance himself at +18), and this lane's earlier commit had already
+ported the lookouts via `lanceLookouts()` and removed the fire archers. No other regression found. Checkpoints and
+section content elsewhere in the town aren't comparable 1:1 (this lane's layout is a different, longer design from
+master's flat one, per the brief), so I didn't try to port those - only genuine drops of master's own later fixes.
+
+**Conservative choices taken (Daniel asleep) - flagging both:**
+- Placed the `shoes` relic at master's own exact spot (130,7) rather than picking a new hidden spot on the new
+  layout, since that rafter/archer perch is unchanged between the two builds (same room, same platforming) and
+  reusing a spot Daniel already approved once seemed safer than inventing a new one.
+- Did not add a new sign or fanfare where the squire used to stand - the road-in sign right there already covers
+  the tower/key rule, and other de-NPC'd levels (checked marsh/burning via `tools/npc-removal.mjs -v`) don't add
+  replacement text either, so silence looked like the established pattern rather than a gap.
+
+Checks re-run: `npc-removal`, `stormhold2`, `keys`, `reach storm`, `lance-support`, `elites`, `bells`,
+`collectables` - all green. Commit `09da6f0`, pushed to `origin/claude/stormhold2`.
