@@ -218,36 +218,54 @@ try {
    for(let i=0;i<600&&V.smokeUp(s);i++)BK.sim(1);for(let i=0;i<600&&!V.smokeUp(s);i++)BK.sim(1);
    const y0=BK.P.y;BK.press('jump');BK.keys.jump=true;let top=y0;for(let i=0;i<90;i++){BK.sim(1);top=Math.min(top,BK.P.y);}BK.keys.jump=false;
    out.pitSmoke={from:Math.round(y0/16),top:Math.round(top/16)};}
-  /* 8. THE BUCKET, in the page */
-  {const V=BK.village(),hold=(k,n)=>{BK.keys[k]=true;for(let i=0;i<n;i++)BK.sim(1);BK.keys[k]=false;},down=()=>{BK.keys.down=true;BK.sim(2);BK.keys.down=false;BK.sim(2);};
+  /* 8. THE BUCKET, in the page - CARRY & THROW (src/throwables.js, 2026-09-28): INTERACT takes it, ATTACK throws it the way
+     the hero faces, and every beat below is now reached by the throw landing on it, not by walking a carried bucket in */
+  {const V=BK.village(),throwIt=()=>{BK.press('atk');BK.sim(50);},hold=(k,n)=>{BK.keys[k]=true;for(let i=0;i<n;i++)BK.sim(1);BK.keys[k]=false;};
    const B=()=>V.buckets(),at=x=>B().find(b=>Math.abs(b.hx/16-x)<3);
-   /* taught: DOWN at the croft well takes it; you walk slower; walked into the root cellar's timber it goes out and falls in */
-   boot('knight');clear();const b1=B().sort((a,b)=>a.hx-b.hx)[0];BK.tp(Math.floor(b1.hx/16),Math.round(b1.hy/16)-1);BK.P.face=1;BK.sim(5);down();
-   const took=BK.P.ballast===b1;BK.P.face=-1;BK.keys.left=true;BK.sim(40);const slow=Math.abs(BK.P.vx);BK.keys.left=false;BK.sim(10);
-   const cel=BK.L.heaps.find(h=>h.name==='THE ROOT CELLAR');BK.P.face=1;hold('right',80);
+   /* taught: INTERACT at the croft well takes it; you walk slower; thrown into the root cellar's timber it goes out and falls in */
+   boot('knight');clear();const b1=B().sort((a,b)=>a.hx-b.hx)[0];BK.tp(Math.floor(b1.hx/16),Math.round(b1.hy/16)-1);BK.P.face=1;BK.sim(5);BK.press('talk');BK.sim(4);
+   const took=BK.P.carry===b1;BK.P.face=-1;BK.keys.left=true;BK.sim(40);const slow=Math.abs(BK.P.vx);BK.keys.left=false;BK.sim(10);
+   const cel=BK.L.heaps.find(h=>h.name==='THE ROOT CELLAR');BK.tp(cel.x0-2,Math.round(b1.hy/16)-1);BK.P.face=1;BK.sim(5);throwIt();
    const cellarOut=!!cel.out,open=BK.L.grid[cel.y0*BK.L.W+cel.x0]===0,home=b1.state;BK.sim(300);const back=b1.state==='rest';
    /* a blow spills it: nothing is put out, and it goes home */
-   boot('knight');clear();const b2=B().sort((a,b)=>a.hx-b.hx)[0];BK.tp(Math.floor(b2.hx/16),Math.round(b2.hy/16)-1);BK.sim(5);down();const had=BK.P.ballast===b2;
-   BK.P.inv=0;BK.P.inv=0;BK.P.hurt=0;BK.sim(1);const hp2=BK.P.hp;BK.damagePlayer(BK.P.x+10,5,{});BK.sim(15);   /* (past the hitstop, which holds the world still) */const spilled={hit:hp2-BK.P.hp,had,dropped:BK.P.ballast!==b2,state:b2.state,cellar:!BK.L.heaps.find(h=>h.name==='THE ROOT CELLAR').out};
-   /* the hot door cooled by the bucket opens quietly */
-   boot('knight');clear();BK.god=true;const b3=B().sort((a,b)=>a.hx-b.hx)[0];const cap=BK.props().find(p=>p.t==='captive'&&p.hot);BK.tp(Math.floor(b3.hx/16),Math.round(b3.hy/16)-1);BK.sim(5);down();
-   BK.tp(Math.round(cap.x/16)-2,Math.round(cap.y/16)-1);BK.P.face=1;hold("right",30);const cooled=!!cap.cooled;BK.tp(Math.round(cap.x/16)-1,Math.round(cap.y/16)-1);BK.P.face=1;BK.sim(5);const hp1=BK.P.hp;for(let i=0;i<10&&!cap.freed;i++){BK.press('atk');BK.sim(24);}BK.sim(60);
+   boot('knight');clear();const b2=B().sort((a,b)=>a.hx-b.hx)[0];V.take(b2);const had=BK.P.carry===b2;
+   BK.P.inv=0;BK.P.hurt=0;BK.sim(1);const hp2=BK.P.hp;BK.damagePlayer(BK.P.x+10,5,{});BK.sim(15);   /* (past the hitstop, which holds the world still) */const spilled={hit:hp2-BK.P.hp,had,dropped:BK.P.carry!==b2,state:b2.state,cellar:!BK.L.heaps.find(h=>h.name==='THE ROOT CELLAR').out};
+   /* the hot door cooled by a thrown bucket opens quietly */
+   boot('knight');clear();BK.god=true;const b3=B().sort((a,b)=>a.hx-b.hx)[0];const cap=BK.props().find(p=>p.t==='captive'&&p.hot);V.take(b3);
+   BK.tp(Math.round(cap.x/16)-2,Math.round(cap.y/16)-1);BK.P.face=1;BK.sim(5);throwIt();const cooled=!!cap.cooled;BK.tp(Math.round(cap.x/16)-1,Math.round(cap.y/16)-1);BK.P.face=1;BK.sim(5);const hp1=BK.P.hp;for(let i=0;i<10&&!cap.freed;i++){BK.press('atk');BK.sim(24);}BK.sim(60);
    const door={cooled,freed:cap.freed,lost:hp1-BK.P.hp};
-   /* the fallen house: from the street well, carried up the street into the heap, and the street beyond is walked */
-   boot('knight');clear();BK.god=true;const fh=BK.L.heaps.find(h=>h.name==='THE FALLEN HOUSE'),b4=at(210);BK.tp(Math.floor(b4.hx/16),Math.round(b4.hy/16)-1);BK.sim(5);down();
-   BK.P.face=1;hold('right',600);const fallen={out:!!fh.out,step:BK.L.grid[fh.y1*BK.L.W+fh.x0]===1&&BK.L.grid[(fh.y1-1)*BK.L.W+fh.x0]===0};BK.sim(30);BK.keys.right=true;for(let i=0;i<160;i++){if(i%20===0)BK.press("jump");BK.sim(1);}BK.keys.right=false;   /* (a hop up the step) */fallen.beyond=BK.P.x>(fh.x1+2)*16&&BK.P.y>=24*16;
-   /* the roof: the Hall's pail cools the dormer's hot door */
-   boot('knight');clear();BK.god=true;const dor=BK.props().find(p=>p.t==='captive'&&p.hot&&p.y<20*16),b5=B().find(b=>b.kind==='butt');BK.tp(Math.floor(b5.hx/16),Math.round(b5.hy/16)-1);BK.sim(5);down();BK.P.face=1;hold('right',240);
-   const dormer={cooled:!!dor.cooled,held:BK.P.ballast===b5};
-   /* the beam: doused, it holds a hero standing on it well past its fuse */
-   boot('knight');clear();BK.god=true;const Z=BK.L.deckBreaks.find(q=>q.beam);BK.tp(Z.x0-3,Z.row-1);BK.sim(5);const b7=B().find(b=>b.kind==='butt');V.take(b7);BK.P.face=1;hold('right',50);const wet=Z.wet>0;BK.tp(Z.x0+1,Z.row-1);BK.sim(Math.round((Z.fuse+1.5)*60));
+   /* the fallen house: thrown from the street well up the street into the heap, and the street beyond is walked */
+   boot('knight');clear();BK.god=true;const fh=BK.L.heaps.find(h=>h.name==='THE FALLEN HOUSE'),b4=at(210);V.take(b4);
+   BK.tp(fh.x0-2,Math.round(b4.hy/16)-1);BK.P.face=1;BK.sim(5);throwIt();const fallen={out:!!fh.out,step:BK.L.grid[fh.y1*BK.L.W+fh.x0]===1&&BK.L.grid[(fh.y1-1)*BK.L.W+fh.x0]===0};BK.sim(30);BK.keys.right=true;for(let i=0;i<160;i++){if(i%20===0)BK.press("jump");BK.sim(1);}BK.keys.right=false;   /* (a hop up the step) */fallen.beyond=BK.P.x>(fh.x1+2)*16&&BK.P.y>=24*16;
+   /* the roof: the Hall's pail cools the dormer's hot door, thrown */
+   boot('knight');clear();BK.god=true;const dor=BK.props().find(p=>p.t==='captive'&&p.hot&&p.y<20*16),b5=B().find(b=>b.kind==='butt');V.take(b5);
+   BK.tp(Math.round(dor.x/16)-2,Math.round(dor.y/16)-1);BK.P.face=1;BK.sim(5);throwIt();
+   const dormer={cooled:!!dor.cooled};
+   /* the beam: a thrown bucket douses it, and it holds a hero standing on it well past its fuse */
+   boot('knight');clear();BK.god=true;const Z=BK.L.deckBreaks.find(q=>q.beam);const b7=B().find(b=>b.kind==='butt');V.take(b7);
+   BK.tp(Z.x0-2,Z.row-1);BK.P.face=1;BK.sim(5);throwIt();const wet=Z.wet>0;BK.tp(Z.x0+1,Z.row-1);BK.sim(Math.round((Z.fuse+1.5)*60));
    const beam={wet,down:Z.down,y:Math.round(BK.P.y/16)};
-   /* his square: the pump's bucket into a burning patch puts it out and holds it out, with his bar at the top */
+   /* his square: the pump's bucket thrown onto a burning patch puts it out and holds it out, with his bar at the top */
    boot('knight');BK.god=true;const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);const pm=BK.boss;pm.heat=100;pm.calmT=0;pm.cd=99;pm.mode='stalk';BK.sim(150);
    const G=V.G(),lit=G.cells.filter(c=>c.square&&c.s===2).sort((a,b)=>a.x-b.x);const tgt=lit[0];const b6=B().find(b=>b.kind==='pump');
-   let sq=null;if(tgt){V.take(b6);BK.tp(tgt.x-2,tgt.y);BK.P.face=1;hold('right',20);const outNow=tgt.s!==2;for(let i=0;i<360;i++){pm.heat=100;pm.cd=99;pm.calmT=0;pm.mode='stalk';BK.sim(1);}sq={outNow,held:tgt.s!==2&&tgt.s!==1,after8:null};
+   let sq=null;if(tgt){V.take(b6);BK.tp(tgt.x-2,tgt.y);BK.P.face=1;BK.sim(5);throwIt();const outNow=tgt.s!==2;for(let i=0;i<360;i++){pm.heat=100;pm.cd=99;pm.calmT=0;pm.mode='stalk';BK.sim(1);}sq={outNow,held:tgt.s!==2&&tgt.s!==1,after8:null};
      for(let i=0;i<240;i++){pm.heat=100;pm.cd=99;pm.calmT=0;BK.sim(1);}sq.after8=tgt.s;}
-   BK.god=false;out.bucketDone=true;out.bucket={took,slow:Math.round(slow),cellarOut,open,home,back,spilled,door,fallen,dormer,beam,sq};}
+   /* CARRY & THROW's generic promise: no swinging while carrying, and a foe in the way takes a small hit (more if fire owns it) */
+   boot('knight');clear();BK.P.face=1;const foeRow=Math.round(BK.P.y/16)-1;const gb=BK.spawnFoe({t:'burngob',x:Math.round(BK.P.x/16)+3,y:foeRow})[0];gb.hp=99;const b8=B().sort((a,b)=>a.hx-b.hx)[0];V.take(b8);BK.sim(5);
+   const heldNoSwing=BK.P.atk,b8hp=gb.hp;BK.press('atk');BK.sim(1);const stillNoSwing=BK.P.atk===heldNoSwing&&!BK.P.carry;   /* the throw ate the press: no swing started, and the bucket left his hands */
+   BK.sim(30);const gobHit=b8hp-gb.hp,gobDoused=!!gb.doused;gb.alive=false;
+   /* (the burning goblin above and the ember wisp are both FIRE_FOES - src/throwables.js's own table already proves the wisp
+      takes the fire number too, in tools/throwables.mjs; a drifting wisp is a poor, flighty target for a single fixed-arc
+      throw in this harness, so the in-level proof here is the goblin, plus a plain foe for the small-hit side of it) */
+   const sp=BK.spawnFoe({t:'sprig',x:Math.round(BK.P.x/16)+3,y:foeRow})[0];sp.hp=99;V.take(B().sort((a,b)=>a.hx-b.hx)[0]);BK.sim(5);const sphp0=sp.hp;BK.press('atk');BK.sim(30);const sprigHit=sphp0-sp.hp;sp.alive=false;
+   const foeHits={stillNoSwing,gobHit,gobDoused,sprigHit,fireMoreThanPlain:gobHit>sprigHit};
+   /* RESPAWN: a thrown bucket that lands (on anything, or on bare ground) is back at its rack ~3s later, never sooner */
+   const b9=B().sort((a,b)=>a.hx-b.hx)[0];V.take(b9);BK.sim(5);BK.P.face=1;BK.press('atk');
+   let f0=0;for(f0=0;f0<120&&b9.state!=='return';f0++)BK.sim(1);const landed=b9.state==='return';
+   BK.sim(Math.round(2.9*60));const before3=b9.state==='return';
+   BK.sim(Math.round(0.3*60));const after3={rest:b9.state==='rest',home:Math.abs(b9.x-b9.hx)<1&&Math.abs(b9.y-b9.hy)<1};
+   const respawn={landed,before3,after3};
+   BK.god=false;out.bucketDone=true;out.bucket={took,slow:Math.round(slow),cellarOut,open,home,back,spilled,door,fallen,dormer,beam,sq,foeHits,respawn};}
   /* 9. THE BARN (RULES Q): it shuts on the floor, all four are there at once led by its captain, holding a way out (jumping and
      rolling at both gates) keeps you in, killing the captain opens it and pays, and a death inside puts it back */
   {boot('knight');clear();BK.god=true;const A=()=>BK.ambushes()[0];const a0=A();BK.tp(a0.wallL+4,a0.row);BK.P.face=1;for(let i=0;i<30&&!A().st;i++)BK.sim(1);
@@ -291,15 +309,22 @@ try {
   assert.ok(r.smoke.top <= 12 && r.smoke.from - r.smoke.top >= 12, 'the smoke carries a hero up out of the cellar, past the eaves: ' + JSON.stringify(r.smoke));
   assert.ok(r.pitSmoke.from - r.pitSmoke.top >= 3, 'and the first beam\'s own pit lifts a hero too, met small before the rooftops: ' + JSON.stringify(r.pitSmoke));
   const K = r.bucket;
-  assert.ok(K.took && K.slow > 0 && K.slow <= 60, 'DOWN takes the bucket, and you walk at the load speed with it: ' + JSON.stringify(K));
-  assert.ok(K.cellarOut && K.open && K.home === 'return' && K.back, 'carried into the root cellar\'s burning timber it puts it out, the hatch opens, and the bucket goes home: ' + JSON.stringify(K));
+  assert.ok(K.took && K.slow > 0 && K.slow <= 60, 'INTERACT takes the bucket, and you walk at the load speed with it: ' + JSON.stringify(K));
+  assert.ok(K.cellarOut && K.open && K.home === 'return' && K.back, 'thrown into the root cellar\'s burning timber it puts it out, the hatch opens, and the bucket goes home: ' + JSON.stringify(K));
   assert.ok(K.spilled.had && K.spilled.dropped && K.spilled.state === 'return' && K.spilled.cellar, 'a blow spills it, and puts nothing out: ' + JSON.stringify(K.spilled));
-  assert.ok(K.door.cooled && K.door.freed && K.door.lost === 0, 'the bucket cools a hot door and it opens quietly: ' + JSON.stringify(K.door));
-  assert.ok(K.fallen.out && K.fallen.step && K.fallen.beyond, 'carried up the street into the fallen house it burns it down to a step, and the street beyond is walked: ' + JSON.stringify(K.fallen));
-  assert.ok(K.dormer.cooled, 'the Hall\'s pail cools the dormer\'s hot door: ' + JSON.stringify(K.dormer));
-  assert.ok(K.beam.wet && !K.beam.down && K.beam.y <= 14, 'a doused beam holds a hero standing on it past its fuse: ' + JSON.stringify(K.beam));
-  assert.ok(K.sq && K.sq.outNow && K.sq.held, 'the pump\'s bucket puts out a patch of his square and holds it out with his bar at the top: ' + JSON.stringify(K.sq));
+  assert.ok(K.door.cooled && K.door.freed && K.door.lost === 0, 'a thrown bucket cools a hot door and it opens quietly: ' + JSON.stringify(K.door));
+  assert.ok(K.fallen.out && K.fallen.step && K.fallen.beyond, 'thrown into the fallen house it burns it down to a step, and the street beyond is walked: ' + JSON.stringify(K.fallen));
+  assert.ok(K.dormer.cooled, 'the Hall\'s pail, thrown, cools the dormer\'s hot door: ' + JSON.stringify(K.dormer));
+  assert.ok(K.beam.wet && !K.beam.down && K.beam.y <= 14, 'a thrown, doused beam holds a hero standing on it past its fuse: ' + JSON.stringify(K.beam));
+  assert.ok(K.sq && K.sq.outNow && K.sq.held, 'the pump\'s bucket, thrown onto a patch of his square, puts it out and holds it out with his bar at the top: ' + JSON.stringify(K.sq));
   assert.equal(K.sq.after8, 2, 'and after its eight seconds his heat takes it back: ' + JSON.stringify(K.sq));
+  const F = K.foeHits;
+  assert.ok(F.stillNoSwing, 'no swinging while carrying: ATTACK throws it instead, and the press starts no swing: ' + JSON.stringify(F));
+  assert.ok(F.gobHit > 0 && F.gobDoused, 'a thrown bucket hurts a burning goblin and douses it: ' + JSON.stringify(F));
+  assert.ok(F.sprigHit > 0, 'and it does a small hit to any foe: ' + JSON.stringify(F));
+  assert.ok(F.fireMoreThanPlain, 'more to a fire foe than a plain one: ' + JSON.stringify(F));
+  const R = K.respawn;
+  assert.ok(R.landed && R.before3 && R.after3.rest && R.after3.home, 'a thrown bucket that lands is back at its rack about 3s later, never sooner: ' + JSON.stringify(R));
   const Bn = r.barn;
   assert.ok(Bn.lock.st && Bn.lock.foes.length >= 3 && Bn.lock.foes.filter(t => t.endsWith('*')).length === 1 && Bn.lock.foes.includes('brute*'), 'THE BARN shuts with its captain and his crew all there: ' + JSON.stringify(Bn));
   assert.ok(Bn.kept.every(Boolean), 'jumping and rolling at both gates keeps the hero in the room: ' + JSON.stringify(Bn.kept));

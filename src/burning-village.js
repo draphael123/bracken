@@ -78,7 +78,7 @@ export function buildBurningVillage({ painter, T, TS }) {
      nothing stands in it. The well keeps a bucket on its rim; beside it a ROOT CELLAR's hatch is buried under burning timber.
      Carry the bucket into the timber: it goes out, falls in as ash, and the cellar under it holds a stash. Seven tiles on, the
      first HOT DOOR: the bucket cools it as the trough does. */
-  ent('sign', 87, S, { text: 'DOWN TAKES THE BUCKET. CARRY IT INTO A FIRE TO PUT IT OUT. A BLOW SPILLS IT.' });
+  ent('sign', 87, S, { text: 'INTERACT TAKES THE BUCKET. THROW IT AT A FIRE TO PUT IT OUT. A BLOW SPILLS IT.' });
   ent('villagewell', 90, S, { bucket: true, kind: 'well', splash: false });
   for (let x = 93; x <= 94; x++) for (let y = R + 1; y <= R + 2; y++) set(x, y, T.AIR);   /* the root cellar under the road, two rows deep: a jump gets you back out */
   /* its hatch is the road itself, smouldering timber too hot to lift: walked over, it is floor (a flame on the road would be a toll
