@@ -1950,7 +1950,15 @@ function spawnEnt(e) {
       case 'thorn': enemies.push({ ...base, t: 'thorn', w: 12, h: 11, hp: EHP.thorn, speed: 22, mode: 'walk', modeT: 0 }); break;
       case 'queen': boss = { ...base, t: 'queen', w: 40, h: 20, hp: EHP.queen, maxHp: EHP.queen, mode: 'sleep', modeT: 0, face: -1, tx: px, ty: py, dive: null, phase: 1 }; enemies.push(boss); break;
       case 'frog': boss = { ...base, t: 'frog', w: 40, h: 30, hp: EHP.frog, maxHp: EHP.frog, mode: 'sleep', modeT: 0, face: -1, phase: 1, last: '' }; enemies.push(boss); break;
-      case 'archer': enemies.push({ ...base, t: 'archer', w: 8, h: 10, hp: EHP.archer, speed: 24, timer: 1 + Math.random(), draw: 0, horn: !!e.horn, hornT: 0, blown: false, fire: !!e.fire }); break;
+      case 'archer': enemies.push({ ...base, t: 'archer', w: 8, h: 10, hp: EHP.archer, speed: 24, timer: 1 + Math.random(), draw: 0, horn: !!e.horn, hornT: 0, blown: false, fire: !!e.fire,
+        /* THE STOCKADE'S TWIST (tower 3): a blower who starts on the ground and runs for his horn once he sees you, instead of standing on the tower */
+        /* runTo's dx/climbDx are OFFSETS from this archer's own (already-shifted) tile x - never absolute columns, since
+           grow() shifts an entity's own x but not a nested field, and this level grows sections in ahead of tower 3 */
+        runTo: e.runTo ? { x: (e.x + e.runTo.dx) * TS + 8, y: (e.runTo.y + 1) * TS, climbX: (e.x + e.runTo.climbDx) * TS + 8 } : null, running: false, climbing: false, arrived: false,
+        /* THE STOCKADE'S RULE, IN THE BOSS: a rafters blower who only sounds when the Chieftain hits phase two (hurtEnemy), not by proximity */
+        rafters: !!e.rafters,
+        /* THE COMBINE (tower + gate): the hounds this horn wakes when it sounds, as offsets from him */
+        pack: e.pack ? e.pack.map(p => ({ dx: p.dx * TS, y: (p.y + 1) * TS })) : null }); break;
       case 'hopper': { const col = e.color || 'green'; enemies.push({ ...base, t: 'hopper', color: col, w: 8, h: 6, hp: HOP[col].hp, timer: 0.5 + Math.random(), air: false }); break; }
       case 'pad': { const pw = e.big ? 32 : 24; movers.push({ kind: 'pad', x0: px - pw / 2, x: px - pw / 2, y0: py - 2, y: py - 2, w: pw, h: 6, sink: 0, dx: 0, dy: 0, big: !!e.big, spring: !!e.spring && !e.big, cd: 0, fired: 0 }); break; }   /* a BIG pad (big: true) is two tiles of footing and holds you longer: the rests of a crossing. A BUD pad (spring: true) throws you up a tier when you land on it (see the mover landing in updatePlayer) */
       case 'sapper': enemies.push({ ...base, t: 'sapper', w: 8, h: 12, hp: EHP.sapper, speed: 62, fuse: 0, fleeT: 0 }); break;
@@ -5815,7 +5823,14 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
     if (e.t === 'lance' && e.hp <= e.maxHp / 2 && e.phase === 1) { e.phase = 2; e.mode = 'rise'; e.modeT = 1.1; e.stagger = 1.1; e.sweepT = 1;
       number(e.x, e.y - e.h - 16, 'HE THROWS IT AWAY', '#ff6b6b'); SFX.roar(); SFX.clank(); shakeCam(8); zoomKick(1.12, 0.4);
       for (let k = 0; k < 12; k++) parts.push({ x: e.x, y: e.y - 20, vx: -e.face * (120 + Math.random() * 160), vy: -120 - Math.random() * 80, life: 1.4, max: 1.4, col: k % 2 ? '#8a5a32' : '#9aa3b0', size: 2, grav: 420 }); }
-    if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp <= e.maxHp / 2 && e.phase === 1) { e.phase = 2; number(e.x, e.y - 24, 'ENRAGED', '#ff6b6b'); SFX.roar(); killFlash = 0.06; shakeCam(5); zoomKick(1.08, 0.3); }
+    if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp <= e.maxHp / 2 && e.phase === 1) { e.phase = 2; number(e.x, e.y - 24, 'ENRAGED', '#ff6b6b'); SFX.roar(); killFlash = 0.06; shakeCam(5); zoomKick(1.08, 0.3);
+      /* THE RULE REACHES THE BOSS. The rafters blower calls a sapper wave down at the Chieftain's second wind - UNLESS he is
+         already down, which is what climbing up there for him during phase one buys you. */
+      if (e.t === 'chief') { const blower = enemies.find(q => q.alive && q.t === 'archer' && q.rafters && !q.blown);
+        if (blower) { blower.blown = true; number(blower.x, blower.y - 16, 'THE HORN!', '#ff6b6b'); SFX.hornDraw(); SFX.roar();
+          for (const dx of [-10, 10]) { const sx = blower.x + dx; enemies.push({ x: sx, y: blower.y, vx: 0, vy: 0, face: Math.sign(dx), alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0, t: 'sapper', w: 8, h: 12, hp: EHP.sapper, speed: 62, fuse: 0, fleeT: 0 }); burst(sx, blower.y, 6, ['#5a2a7a', '#e0b040'], 50, 0.4); }
+          number(P.x, P.y - 50, 'A SAPPER WAVE FROM THE RAFTERS', '#ff6b6b'); } }
+    }
   }
 }
 function cutWeb(tx, ty) { // a curtain of web goes whole: one cut takes the column you struck
@@ -20682,13 +20697,34 @@ function updateEnemies(dt) {
       continue;
     }
     if (e.t === 'archer') {
+      /* THE TWIST, TOWER 3: this blower starts on the ground. He sees you (the same box the horn's draw uses), runs for the
+         tower, then climbs the net beside it (scripted past the tower's own wall, the way the sprig ringer climbs to a bell)
+         and only THEN stands to sound it - the normal horn logic below picks him up once he has arrived. */
+      if (e.horn && e.runTo && !e.arrived) {
+        if (!e.running && !P.dead && Math.abs(P.x - e.x) < 172 && Math.abs(P.y - e.y) < 140) { e.running = true; number(e.x, e.y - 16, 'HE RUNS', '#ff9a5c'); SFX.yelp(); }
+        if (e.running) {
+          if (!e.climbing) {
+            if (Math.abs(e.x - e.runTo.climbX) > 4) { e.face = Math.sign(e.runTo.climbX - e.x) || e.face; e.vx = e.face * e.speed * 1.6; e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270;
+              const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0; }
+            else { e.vx = 0; e.vy = 0; e.climbing = true; }
+          } else {
+            e.vx = 0; e.vy = 0; e.face = -1;
+            e.y -= 70 * dt; e.x += Math.sign(e.runTo.x - e.x) * 40 * dt;
+            if (e.y <= e.runTo.y) { e.y = e.runTo.y; e.x = e.runTo.x; e.arrived = true; }
+          }
+        }
+        continue;
+      }
       /* THE HORN IS THE STOCKADE'S RULE, AND IT READS NOW. He blew it 1.3 s after you came within 210 px - off the edge of the
          screen, with nothing drawn and nothing heard until the camp came - so a player never saw why it mattered. He has to SEE
          you (on the screen with him), and then he puts the bow down and raises the horn: a climbing note, THE HORN over him and
          a bar filling amber to red (drawHornTell) for HORN_DRAW seconds. Kill him, or knock him off it, before it fills. Walk
          out of his sight and the breath goes out of it. */
-      if (e.horn && !e.blown && !P.dead && Math.abs(P.x - e.x) < 172 && Math.abs(P.y - e.y) < 140 && e.stagger <= 0) { if (!(e.hornT > 0)) { number(e.x, e.y - 22, 'THE HORN', '#ff9a5c'); SFX.hornDraw(); } e.hornT += dt; e.draw = 0; e.timer = Math.max(e.timer, 0.6);
-        if (e.hornT > HORN_DRAW) { e.blown = true; hornSquadT = 1.2; number(e.x, e.y - 18, 'THE HORN!', '#ff6b6b'); SFX.roar(); shakeCam(3); } } else if (e.horn && !e.blown) e.hornT = Math.max(0, e.hornT - dt * (e.stagger > 0 ? 3 : 1));
+      if (e.horn && !e.rafters && !e.blown && !P.dead && Math.abs(P.x - e.x) < 172 && Math.abs(P.y - e.y) < 140 && e.stagger <= 0) { if (!(e.hornT > 0)) { number(e.x, e.y - 22, 'THE HORN', '#ff9a5c'); SFX.hornDraw(); } e.hornT += dt; e.draw = 0; e.timer = Math.max(e.timer, 0.6);
+        if (e.hornT > HORN_DRAW) { e.blown = true; hornSquadT = 1.2; number(e.x, e.y - 18, 'THE HORN!', '#ff6b6b'); SFX.roar(); shakeCam(3);
+          /* THE COMBINE: this horn's own pack, woken where it stands behind the gate - not the generic camp squad */
+          if (e.pack) for (const p of e.pack) { const hx = e.x + p.dx, hy = p.y; enemies.push({ x: hx, y: hy, vx: 0, vy: 0, face: 1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0, t: 'hound', w: 12, h: 7, hp: EHP.hound, speed: 105, timer: 0, air: false }); burst(hx, hy - 6, 5, COLS.hound, 40, 0.4); }
+        } } else if (e.horn && !e.rafters && !e.blown) e.hornT = Math.max(0, e.hornT - dt * (e.stagger > 0 ? 3 : 1));
       const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < 70) && !P.dead && !(e.trialSt && e.trialSt.done);   /* a trial's archer puts the bow down when his gate is up */
       if (near) e.face = Math.sign(d) || e.face;
       e.timer -= dt; e.draw = Math.max(0, e.draw - dt); e.loose = Math.max(0, (e.loose || 0) - dt);

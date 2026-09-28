@@ -608,12 +608,12 @@ function theStockade() {
   floor(186, 249, 20);
   for (let x = 187; x <= 200; x++) set(x, 20, T.RAIL); ent('cart', 188, 19); ent('pike', 195, 19, { face: -1 }); ent('pike', 198, 19, { face: -1 }); ent('sign', 186, 19, { text: 'A LOOT CART ON THE RAIL. CUT IT AND IT ROLLS. THE PIKES HOLD THE LINE. NOT AGAINST A CART.' });
   ent('torch', 188, 19); ent('hound', 193, 19, { face: -1 }); ent('cage', 199, 19, { kind: 'bird' });
-  block(203, 205, 15, 19); plat(202, 14, 5); ent('towertop', 204, 14); ent('archer', 204, 13, { face: -1, horn: true }); plat(199, 17, 2); plat(207, 17, 2); coins([203, 13], [207, 16]); // the third horn tower: silence it or the kennels empty onto you
+  block(203, 205, 15, 19); plat(202, 14, 5); ent('towertop', 204, 14); ent('archer', 204, 13, { face: -1, horn: true, pack: [{ dx: 32, y: 19 }, { dx: 40, y: 19 }] }); plat(199, 17, 2); plat(207, 17, 2); coins([203, 13], [207, 16]); // THE COMBINE: silence him and the crank ahead is quiet; let him sound it and his pack pours out behind the gate
   ent('torch', 214, 19); ent('brute', 217, 19, { face: -1 }); ent('check', 215, 19);
   ent('treehouse', 221, 6);
   ent('barrel', 223, 19); ent('barrel', 226, 19); ent('crank', 229, 19, { wall: 232 }); ent('brazier', 228, 19);
   pal(232, 15, 19);
-  ent('hound', 240, 19, { face: -1 }); ent('torch', 235, 19); ent('torch', 246, 19);
+  ent('torch', 235, 19); ent('torch', 246, 19);
   coins([193, 17], [213, 17], [224, 16], [238, 17], [244, 18]);
   ent('check', 247, 19);
 
@@ -623,16 +623,19 @@ function theStockade() {
   block(252, 269, 12, 27);
   coins([256, 10], [264, 10]);   /* (a sapper met you off the lift: a fight at a landing) */
 
-  // ---- 7. The high bridge and the second tower ----
+  // ---- 7. The high bridge and the second tower: THE TWIST. This one won't stand and blow it - he runs. ----
   planks(270, 273, 12); planks(274, 281, 13); planks(282, 285, 12);
   net(270, 285, 17); ent('silver', 278, 16);
   plat(272, 15, 2); plat(280, 15, 2); plat(283, 13, 2); // the way back up once the ropes are cut: net → ledge → bank, either side
   ent('bridge', 270, 12, { x1: 285 });
   block(286, 314, 12, 27);
-  ent('sprig', 287, 11, { face: -1, cutter: true }); ent('check', 292, 11);
+  ent('sign', 286, 11, { text: 'THIS ONE WON\'T STAND FOR IT. HE RUNS FOR THE TOWER - CATCH HIM ON THE BRIDGE, OR CLIMB THE NET AFTER HIM.' });
+  ent('sprig', 288, 11, { face: -1, cutter: true }); ent('sapper', 291, 11, { face: -1 }); ent('check', 293, 11);
   plat(295, 10, 2); plat(299, 8, 2);
+  for (let y = 8; y <= 11; y++) set(298, y, T.NET);   /* the net beside the platforms: the fast way up, his own way up too */
   block(302, 304, 8, 11); plat(301, 7, 5); ent('towertop', 303, 7);
-  ent('archer', 303, 6, { face: -1, horn: true });
+  ent('archer', 305, 7, { face: -1 });   /* the tower keeps its archer: he shoots while the blower runs */
+  ent('archer', 291, 11, { face: 1, horn: true, runTo: { dx: 12, y: 6, climbDx: 7 } });   /* THE BLOWER: on the ground, not the tower - sees you, runs, climbs the net (his own column + 7, where it stands beside), THEN sounds it. dx/climbDx are OFFSETS from his own x, not absolute columns - grow() only shifts an entity's own x, never a nested field, so an absolute target here would drift off the tower every time a section grows in ahead of him (see tools/stockade-horns.mjs, which proved this red once already) */
   ent('brute', 309, 11, { face: -1 }); ent('hound', 312, 11, { face: -1 });
   ent('torch', 290, 11); ent('torch', 308, 11);
   coins([277, 11], [296, 9], [300, 7], [311, 10]);
@@ -641,12 +644,13 @@ function theStockade() {
   for (let y = 12; y <= 27; y++) { set(315, y, 0); set(316, y, 0); } net(315, 316, 26); for (let y = 20; y <= 25; y++) set(316, y, T.NET); // and rungs up out of this one to the floor
   movers.push({ kind: 'lift', x: 315 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30 });
   floor(317, 365, 20);
-  ent('check', 323, 19);   /* (a hound stood at the foot of the lift: the hall's door is a breath, not a fight) */
+  ent('hound', 318, 19, { face: -1 }); ent('check', 323, 19);   /* the EXAM's last beat: a hound on the landing, off the lift */
 
   // ---- 9. The great hall: the Chieftain, archers on the balcony, a brazier by the wall ----
   // the rafter climb, both sides, two tiles a jump, for when the hall burns; the gate sits on the top beam
   plat(327, 18, 2); plat(329, 16, 3); plat(333, 14, 2); plat(336, 12, 2); plat(334, 10, 4); plat(338, 11, 3); plat(342, 9, 5);
   plat(360, 18, 2); plat(356, 16, 3); plat(353, 14, 2); plat(350, 12, 2); plat(350, 10, 4); plat(347, 11, 3);
+  ent('archer', 344, 9, { face: -1, horn: true, rafters: true });   /* THE RULE, IN THE BOSS: a blower up the escape-gate climb. Reach him before the Chieftain's second wind, or he calls a sapper wave down on you */
   ent('brazier', 354, 19); ent('torch', 328, 19); ent('torch', 361, 19);
   ent('rack', 331, 19, { kind: 'club' }); ent('rack', 358, 19, { kind: 'bow' }); block(336, 339, 18, 19); coins([337, 17]); // the racks he swaps at, and a stone dais his club and sword cannot reach
   ent('deco', 331, 19, { kind: 'banner', v: 0 }); ent('deco', 358, 19, { kind: 'banner', v: 1 }); ent('deco', 344, 19, { kind: 'boneThrone' });
