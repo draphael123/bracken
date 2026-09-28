@@ -2,6 +2,19 @@
 
 Newest first. Play it at https://bracken-nine.vercel.app
 
+## 27 September 2026 (evening)
+- **Stormhold, rebuilt:** longer, with tall watchtowers to climb for their keys, walkways between them, sentries who ring
+  alarm bells, and an exam at the bridgehead before the Queen's Lance.
+- **The Gate Gargoyle is stone:** only a stomp hurts him, and only after you bait him into crashing through a platform onto
+  the spikes. He breathes fire now. The Battlements are twice as long, over spikes, with winds that carry you back up.
+- **The Burial Caverns:** the Buried Dead has two new attacks (Grave Hands and Grave Breath) and lost his crown; the Drowned
+  Ossuary has sinking biers, grasping hands and a hidden high walkway; stone ledges replace the mine boards.
+- **The Falling Tower:** the Undead Archmage fights at the top of the tower under the moon, with a decoy ring and a ring
+  trap; far fewer flyers over the climbing; the Sexton's bell pit is spiked. Ten boss fights now stay zoomed out.
+- **Gale Moor and the Scree Path:** gusts you can read, a quarry exam, and the Ram Lord can be baited into the scree bank.
+- **Fewer talkers:** most NPCs are gone; quest relics are now pickups where the quest items used to be.
+- Fixed: the desert gate at the end of the Falling Tower no longer draws see-through.
+
 ## 27 September 2026
 - **The Burial Caverns, reworked:** shorter and no longer repetitive - five places each with their own backdrop, gas vents you
   have to time, barrow soldiers, and **the Buried Dead now opens up because of something you do**, not on a timer.

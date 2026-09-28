@@ -1,4 +1,4 @@
-// tools/ram-bank.mjs — THE RAM LORD'S OPENING IS CAUSED, NOT WAITED FOR (RULES A11; docs/level-design/wood-to-highcrown-design.md
+// tools/ram-bank.mjs — THE RAM LORD'S OPENING IS CAUSED, NOT WAITED FOR (RULES A11; the design audit on claude/designaudit
 // §6 THE SCREE PATH, plan 4). Before this, his fold was a 16-tile box: a charge crossed it well inside his 3s timer no matter
 // where the player stood, so the wall crash - his only opening (A6) - happened every time regardless of anything the player did.
 // The fold is now about 30 tiles, with a scree bank on one wall (src/level.js, L.arena.bank): the crash still always drops rock,

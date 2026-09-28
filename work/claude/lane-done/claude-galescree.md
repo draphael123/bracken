@@ -1,7 +1,7 @@
 # claude/galescree — lane report (2026-09-27)
 
 Daniel's week-1 plan, day 2: **Lane CRAGS: GALE MOOR + THE SCREE PATH**, from the design audit
-(`docs/level-design/wood-to-highcrown-design.md`, read off `origin/claude/designaudit` — that branch is not merged
+(the level design audit, read off `origin/claude/designaudit` — that branch is not merged
 here, only the two sections and the game-wide notes that name these levels). Everything is on `claude/galescree`
 and pushed. I did not touch master, did not touch any other lane's branch, and did not deploy.
 
