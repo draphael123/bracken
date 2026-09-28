@@ -425,9 +425,14 @@ export function buildOreRoad({ painter, T }) {
        geometry they are read off. THE SORTING FLOOR is the tower's middle deck: a trestle floor 27 tiles between its gates -
        wide enough to read a tell on, narrow enough that the fight does not scatter. Its captain is a GAFFER, this level's own
        creature and the one whose reach the room exists to teach. The door checkpoint stands outside the west gate. */
+    /* ambush-listed (ambushfix, 2026-09-28, excuse removed now this level's on master): same two-mini-wave trap as elsewhere - gaffer is
+       captain (its own {elite:true}), but wave1's miner/rockgoblin/sprig filled all three rest slots in flattened order before wave2's
+       sheargob/tippler were ever reached, even though they're this level's own signature creatures (sheargob: "the Sheargobs cutting
+       hangers" up at THE STEEP LINE, line 32 above; tippler: found nowhere outside Ore Road). Collapsed to one wave with sheargob and
+       tippler right after the captain so both survive; rockgoblin, sprig and the duplicate miner are cut entirely (say so - all three are
+       common filler seen throughout the level already, none level-specific like the pair kept), staying inside the four-foe rule. */
     ambushes: [{ name: 'THE SORTING FLOOR', row: TOWER[1], y0: TOWER[2] + 1, wallL: 152, wallR: 178, check: [148, TOWER[1]],
-      waves: [[['miner', 157, TOWER[1]], ['rockgoblin', 174, TOWER[1]], ['sprig', 165, TOWER[1]], ['bat', 169, TOWER[1] - 5]],
-              [['gaffer', 172, TOWER[1], { elite: true }], ['sheargob', 156, TOWER[1]], ['tippler', 163, TOWER[1]], ['miner', 176, TOWER[1]]]] }],
+      waves: [[['gaffer', 172, TOWER[1], { elite: true }], ['sheargob', 156, TOWER[1]], ['tippler', 163, TOWER[1]], ['miner', 157, TOWER[1]]]] }],
     /* THE REACH MODEL's footing for a ride (reachcore.js): each line is a band you can board anywhere along and leave anywhere along,
        the way a lift is. It is generous on a sloped line - the tools call this level ASSISTED, and that is the truth */
     cableBridges: cable.map(l => { const xs = l.pts.map(p => p[0]), ys = l.pts.map(p => p[1]); return [Math.floor(Math.min(...xs) / TS), Math.floor((Math.max(...xs) - 1) / TS), Math.floor(Math.min(...ys) / TS), Math.floor(Math.max(...ys) / TS)]; }),
