@@ -3626,7 +3626,9 @@ function theShopSea() {
   ent('deco', 13, 21, { kind: 'coiledCable', v: 0 }); ent('deco', 39, 21, { kind: 'plunder', v: 1 });
   ent('deco', 9, 21, { kind: 'lanternDeck', v: 1 }); ent('deco', 31, 21, { kind: 'chartTable' });
   ent('deco', 21, 21, { kind: 'seaChest' }); ent('deco', 35, 21, { kind: 'waterButt' });
-  
+  // THE HULK'S OWN DRESSING (visual-audit lane 3): a hammock slung by the hatch, a spare cannon by the
+  // counter, a pennant off her old mast - the Flotilla's own furniture, so this reads as a hull, not a cellar.
+  ent('deco', 17, 21, { kind: 'hammock', v: 0 }); ent('deco', 27, 21, { kind: 'cannon' }); ent('deco', 22, 21, { kind: 'pennant', v: 0 });
   plat(6, 18, 4); plat(12, 18, 3);                        // her upper shelf, where the dear stuff lives
   ent('deco', 7, 17, { kind: 'seaChest' }); ent('deco', 13, 17, { kind: 'plunder', v: 0 });
   return {
@@ -3646,7 +3648,9 @@ function theShopCrag() {
   ent('deco', 14, 19, { kind: 'wares', v: 1 }); ent('deco', 34, 19, { kind: 'wares', v: 0 });
   ent('deco', 23, 19, { kind: 'counter' }); ent('npc', 24, 19, { kind: 'keeper' });
   ent('deco', 29, 19, { kind: 'cart' }); ent('deco', 18, 19, { kind: 'lanternPost' }); ent('deco', 8, 19, { kind: 'bones', v: 0 });
-  
+  // THE CRAG'S OWN DRESSING (visual-audit lane 3): a standing stone and a cairn - single placed sprites, not
+  // the zone-sized `L.stone` the comment below warns off - so this room reads as the mountain, not the wood.
+  ent('deco', 12, 19, { kind: 'stone', v: 0 }); ent('deco', 33, 19, { kind: 'cairn' });
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [],
     duskStart: -1, duskLen: 1, music: 'store', night: true, shop: true, interiors: [[2, 37, 13, 19, 'stone']],
@@ -3669,10 +3673,13 @@ function theShop() {
   ent('deco', 23, 19, { kind: 'counter' }); ent('npc', 24, 19, { kind: 'keeper' });
   for (let x = 12; x <= 30; x++) ent('carpet', x, 19);
   ent('deco', 29, 19, { kind: 'barrels' }); ent('deco', 18, 19, { kind: 'lanternPost' });
+  // THE WOOD'S OWN DRESSING (visual-audit lane 3): a hearth for her own warm pool of light (bar.md #4), a
+  // shelf of mugs and a rack of casks behind the counter - the Kingswood inn's own furniture, not new art.
+  ent('deco', 5, 19, { kind: 'hearth' }); ent('deco', 20, 19, { kind: 'mugShelf' }); ent('deco', 27, 19, { kind: 'caskRack' });
   // (the store is quiet now: no bard, no old knight)
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [],
-    duskStart: -1, duskLen: 1, music: 'store', night: true, shop: true, interiors: [[2, 37, 13, 19]],
+    duskStart: -1, duskLen: 1, music: 'store', night: true, shop: true, interiors: [[2, 37, 13, 19, 'hall']],
     palette: { hall: true, sky: 'night', dress: 'none', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', grass: '#6a5a3a', grassL: '#8a7a4a', grassD: '#3a2a1a' },
     weather: [], ambient: [],
   };
