@@ -10,7 +10,7 @@ THE ORE ROAD, level id `oreroad`. Everything is on `claude/oreroad2` (branched f
 
 ## The brief
 
-The design audit's section on THE ORE ROAD (`docs/level-design/wood-to-highcrown-design.md` on `origin/claude/designaudit`) and its "GAME-WIDE PATTERNS WORTH FIXING ONCE" item 1 both named the same gap: *the last stretch before the boss (408-475) is on foot* - the level's mechanic map flags it directly, and it's one of only two levels (with Gale Moor) the audit calls out by name for having no exam before the boss. The audit's own plan for the fix (§10, plan item 3, "EXAM"): make the winch house a last ride, one short line with a rusted bucket, a sheargob who leaps on, a tippler over the middle and bats; move the foot fights to the landing.
+The design audit's section on THE ORE ROAD (in the wood-to-highcrown design audit doc, on origin/claude/designaudit - not merged to master, so it isn't cited here as a repo path) and its "GAME-WIDE PATTERNS WORTH FIXING ONCE" item 1 both named the same gap: *the last stretch before the boss (408-475) is on foot* - the level's mechanic map flags it directly, and it's one of only two levels (with Gale Moor) the audit calls out by name for having no exam before the boss. The audit's own plan for the fix (§10, plan item 3, "EXAM"): make the winch house a last ride, one short line with a rusted bucket, a sheargob who leaps on, a tippler over the middle and bats; move the foot fights to the landing.
 
 I built that plan against **current master**, not the audit's own (stale) geometry - the NPC-removal batch changed this level after the audit was written, so I read the plan for its intent and rebuilt it against what's actually in `src/ore-road.js` today.
 
