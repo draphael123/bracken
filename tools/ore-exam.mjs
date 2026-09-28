@@ -1,0 +1,64 @@
+// tools/ore-exam.mjs — THE ORE SHAFT (lane claude/oreroad2), pinned so a later merge cannot silently lose it.
+//
+// The design audit's game-wide pattern #1 ("the last stretch before the boss is a rest, not an exam") named THE ORE ROAD
+// by number: "the stretch before the boss (408-475) is on foot", the one gap in its own mechanic map. The audit's own
+// plan for THE ORE ROAD (section 10, item 3, EXAM) said what to build: "make the winch house a last ride: one short
+// line with one rusted bucket, a sheargob who leaps on, a tippler over the middle and bats. The foot fights... move to
+// the landing." This file pins that it is still there - not that it plays well (tools/ore-road.mjs, ore-ride.mjs and
+// ore-work.mjs hold the ride and the fights to the level's own geometry rules already) but that THE SHAPE of the fix
+// survives: a ride mechanic inside the last 80 route tiles, the rust, the tippler, the flight, and the crew moved off
+// the shaft's own floor onto the decks either side of it.
+//
+// It also pins the rest of this lane's backlog: five ores (not four) with a section bias, a lamp lighting the one room
+// that had none (the arena), a slope underfoot (src/slopes.js) and this level's own visual variety per section.
+//
+// PROVED RED ON MASTER: `git worktree add ../oreroad2-baseline cd35d24 && cd ../oreroad2-baseline && node tools/ore-exam.mjs`
+// fails at "the winch line exists" (no such id in cableLines()) and everything after it, because none of this was there.
+// usage: node tools/ore-exam.mjs
+import { LEVELS, T } from '../src/level.js';
+import { OR, cableLines, ORES, oreBias, MINE_PLACES } from '../src/ore-road.js';
+import { SLOPE, isSlope } from '../src/slopes.js';
+
+let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
+const lv = LEVELS.find(l => l.id === 'oreroad'), L = lv.build();
+const at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x];
+console.log('THE ORE SHAFT, THE FIVE ORES, AND THE SLOPE (lane claude/oreroad2)');
+
+/* ---- THE EXAM (audit item 1 + §10 plan item 3): the last 80 route tiles (roughly 443-523, the winch house and the
+   drum house) hold a ride, and it is the level's own rule mechanic - not a new one bolted on */
+{ const line = cableLines().find(l => l.id === 'winch');
+  ok(!!line, 'the winch line exists - a bucket ride inside the last 80 route tiles before the Winchmaster');
+  if (line) { const xs = line.pts.map(p => p[0] / 16);
+    ok(Math.min(...xs) >= 408 && Math.max(...xs) <= 475, `it runs ${Math.min(...xs).toFixed(1)}-${Math.max(...xs).toFixed(1)}, inside the winch house (408-475)`);
+    ok(line.cracked > 0, 'at least one bucket on it is rust that will not hold you (cracked)'); }
+  ok(!!(OR.PITS || []).find(q => q.id === 'winchride'), 'the shaft is a real pit (a fall costs the usual fifth and the turbines carry you home), not a painted gap');
+  const bats = (L.encounters || []).find(e => e.name === 'THE SHAFT BATS');
+  ok(!!bats && bats.x0 >= 408 && bats.x1 <= 475, 'bats are loose over the ride (THE SHAFT BATS)');
+  const tipOverShaft = L.ents.some(e => e.t === 'tippler' && e.x > 420 && e.x < 450);
+  ok(tipOverShaft, 'a tippler stands over the middle of the shaft');
+  const sheargobAtBoard = L.ents.some(e => e.t === 'sheargob' && e.x >= 415 && e.x <= 421);
+  ok(sheargobAtBoard, 'a sheargob waits at the boarding deck - the one who leaps onto your bucket');
+  /* the crew moved OFF the shaft's own floor: no foe of THE WINCH CREW or THE DRUM YARD stands over open air in 421-450 */
+  const stranded = L.ents.filter(e => ['miner', 'rockgoblin', 'heavy', 'gaffer', 'javelin', 'sapper'].includes(e.t) && e.x > 421 && e.x < 450 && at(e.x, e.y + 1) !== T.SOLID);
+  ok(!stranded.length, 'the crew that used to fight on the shaft\'s own floor stands on the decks either side of it, not over the drop' + (stranded.length ? ' - not ' + stranded.map(e => e.t + '@' + e.x).join(',') : '')); }
+
+/* ---- FIVE ORES, SECTIONS BIAS DIFFERENT ONES (Daniel's backlog: "more kinds of ore") ---- */
+{ ok(ORES.length === 5, `${ORES.length} ores (copper, iron, silver, gold, gem) - it was four`);
+  ok(typeof oreBias === 'function' && oreBias(0) !== oreBias(200) && oreBias(200) !== oreBias(300) && oreBias(300) !== oreBias(450),
+    'the yard, the tower/chute, the collapse/steep and the winch/drum each lean a different one of the five'); }
+
+/* ---- A LAMP IN THE ONE DARK ROOM (Daniel's backlog: "a dark boss shaft") ---- */
+{ const armLamp = L.ents.some(e => e.t === 'minerlamp' && e.x >= L.arena.x0 / 16); ok(armLamp, 'the drum house (the boss arena) has a lamp of its own - LAMP_EVERY stops short of it, so nothing else ever lit it'); }
+
+/* ---- A SLOPE UNDERFOOT (Daniel's backlog: "SLOPES via src/slopes.js") ---- */
+{ let found = 0; for (let x = 0; x < L.W; x++) for (let y = 0; y < L.H; y++) if (isSlope(at(x, y))) found++;
+  ok(found >= 2, `${found} slope tile(s) in the level - the spoil heap's ramp (SLOPE.R1), not a jump onto it`);
+  ok(isSlope(at(9, 36)) || isSlope(at(10, 35)), 'the ramp sits where the spoil heap is, in THE ORE YARD'); }
+
+/* ---- NOTHING ELSE MOVED: the level still needs the Moor, keeps its boss and its id, and every existing place is where it was ---- */
+{ ok(lv.needs === 'moor' && L.arena.boss === 'winchmaster' && lv.id === 'oreroad', 'id, needs and boss untouched');
+  ok(MINE_PLACES.length >= 7, `${MINE_PLACES.length} named mine places still on the route`); }
+
+console.log(failed());
+function failed() { return fails ? '\n' + fails + ' ore-exam check(s) FAILED.' : '\nall ore-exam checks pass.'; }
+process.exitCode = fails ? 1 : 0;

@@ -169,11 +169,11 @@ for (const l of C.lines) {
   ok(S.length >= 150 && !badS.length, `${S.length} seams of ore in the rock faces, every one IN rock, none beside a spike and none in the Winchmaster's room` + (badS.length ? ' - not ' + JSON.stringify(badS.slice(0, 4)) : ''));
   const combos = new Map(); for (const q of S) combos.set(q[2] + '/' + q[3], (combos.get(q[2] + '/' + q[3]) || 0) + 1);
   const worst = Math.max(...combos.values()) / Math.max(1, S.length);
-  ok(new Set(S.map(q => q[2])).size === 4 && new Set(S.map(q => q[3])).size === 4 && worst < 0.2, `varied, not one stamp: four ores and four seam shapes in ${combos.size} pairings, the commonest ${Math.round(worst * 100)}% of them`);
+  ok(new Set(S.map(q => q[2])).size === 5 && new Set(S.map(q => q[3])).size === 4 && worst < 0.2, `varied, not one stamp: five ores and four seam shapes in ${combos.size} pairings, the commonest ${Math.round(worst * 100)}% of them`);
   ok(S.some(q => q[4]) && S.filter(q => q[4]).length < S.length / 2, `${S.filter(q => q[4]).length} of them glint`);
   const why = M.map(it => [it, mineBlocked(L, T, it)]).filter(([, r]) => r);
   ok(M.filter(q => !q.set).length >= 15 && !why.length, `${M.filter(q => !q.set).length} heaps, spills and carts of ore on the floors, every one on footing and clear of every hazard and every tell` + (why.length ? ' - NOT ' + why.map(([it, r]) => it.k + '@' + it.x + ',' + it.y + ': ' + r).join('; ') : ''));
-  ok(new Set(M.filter(q => q.k === 'heap').map(q => q.size)).size === 3 && M.some(q => q.k === 'cart' && q.load > 0) && new Set(M.filter(q => !q.set).map(q => q.ore)).size === 4, 'heaps of all three sizes, a cart full of ore, and all four ores on the floors'); }
+  ok(new Set(M.filter(q => q.k === 'heap').map(q => q.size)).size === 3 && M.some(q => q.k === 'cart' && q.load > 0) && new Set(M.filter(q => !q.set).map(q => q.ore)).size === 5, 'heaps of all three sizes, a cart full of ore, and all five ores on the floors'); }
 
 /* ---- THE WORK LOOPS (section 2), as geometry: every row of WORKS found its goblin (a row that silently matched nobody is a loop
    that does not exist), none of them is the level's own three, the elite or in his room, every miner at work has a seam on his

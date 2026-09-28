@@ -1,3 +1,4 @@
+import { SLOPE } from './slopes.js';
 // ore-road.js — THE ORE ROAD (built 2026-09-23; REWORKED 2026-09-25 against docs/briefs/ore-road-rework.md).
 //
 // WHAT WAS WRONG, IN NUMBERS, AND WHY THE REWORK IS SHAPED THE WAY IT IS. The shipped level scored INDEX 59 against
@@ -29,7 +30,7 @@
 //   c 204-271  THE ORE CHUTE      RIDE DOWN. Fast, steered rather than waited out, over the crusher run
 //   c 272-339  THE COLLAPSED SPAN ON FOOT.   The cable is snapped; climb the fallen towers over their own splinters
 //   c 340-407  THE STEEP LINE     HOP.       Rusted buckets, two pillars, and the Sheargobs cutting hangers
-//   c 408-475  THE WINCH HOUSE    ON FOOT.   His crew, the gated elite, the last checkpoint
+//   c 408-475  THE WINCH HOUSE    RIDE.      His crew on the entry deck, THE ORE SHAFT (EXAM, audit item 3), the landing
 //   c 476-523  THE DRUM HOUSE     THE WINCHMASTER (src/winchmaster.js): three housings on two lines, and he goes round them
 //
 // THE CABLEWAY is pure and lives here: a LINE is a polyline the buckets' tops follow, a speed, and a spacing. Every
@@ -88,6 +89,9 @@ export const OR = {
     { id: 'chute', x0: 204, x1: 261, floor: 57, start: [203, 21], ledge: [204, 206, 50], ladder: [204, 22, 50] },
     { id: 'wreck', bed: true, x0: 281, x1: 324, floor: 44, start: [280, 34], ledge: [281, 283, 39], ladder: [281, 35, 39] },
     { id: 'steep', x0: 353, x1: 407, floor: 57, start: [352, 20], ledge: [353, 355, 50], ladder: [353, 21, 50] },
+    /* THE ORE SHAFT (EXAM): the last drop before the boss. Falls the same as every other span's - the turbines take you
+       back up to the entry deck's own recovery ledge */
+    { id: 'winchride', x0: 421, x1: 450, floor: 57, start: [420, 12], ledge: [421, 423, 50], ladder: [421, 13, 50] },
     /* and THE DRUM HOUSE's (round three): the recovery ledge under the Head Frame, and its ladder - the Head Frame's own - up past the deck */
     { id: 'drum', x0: 482, x1: 509, floor: 23, start: [481, 12], ledge: [482, 484, 18], ladder: [482, 13, 18] }],
   PIT_BITE: 0.2, PIT_LIFT: 150, PIT_DRAFT: 230, TURBINE_EVERY: 5,
@@ -132,6 +136,11 @@ export function cableLines() {
     { id: 'steep', speed: 58, gap: 96, ret: 200, cracked: 3, pts: join(
       sagPts(352.5, OR.PILLAR[1], 354, OR.PILLAR[1], 0, 1), sagPts(354, OR.PILLAR[1], OR.PILLAR_BX[0], OR.PILLAR_B, 2), sagPts(OR.PILLAR_BX[0], OR.PILLAR_B, OR.PILLAR_BX[1], OR.PILLAR_B, 0, 1),
       sagPts(OR.PILLAR_BX[1], OR.PILLAR_B, 407, OR.WINCH, 2), sagPts(407, OR.WINCH, 408.75, OR.WINCH, 0, 1)) },
+    /* THE ORE SHAFT (EXAM, audit plan item 3): a short line over the last drop before the boss, one bucket in four rusted
+       (the same convention as the steep line's rust - CRACK still holds it a moment once it gives). It is not a `hop` line
+       stepped along like the down line's goblins: nobody is carried anywhere on it but you */
+    { id: 'winch', speed: 56, gap: 92, ret: 170, cracked: 4, pts: join(
+      sagPts(420.5, OR.WINCH, 423, OR.WINCH, 0, 1), sagPts(423, OR.WINCH, 448, OR.WINCH, 1), sagPts(448, OR.WINCH, 452.5, OR.WINCH, 0, 1)) },
     /* THE DRUM LINES: the arena's two. The LOW line runs from the entrance deck into the Great Drum; the HIGH line runs between
        the Head Frame's ledge and the Tail Wheel's, and he drives it into whichever housing he is on. Both END THREE-QUARTERS OF A
        TILE INSIDE THEIR LEDGES AT BOTH ENDS, because he REVERSES them: a rider is carried back out to the far end as well as in */
@@ -188,7 +197,8 @@ export function buildOreRoad({ painter, T }) {
   set(22, YARD + 3, T.SOLID); set(34, YARD + 3, T.SOLID); spikes(23, 33, YARD + 3);   /* a lip at each end to land on, the teeth between them */
   plat(24, YARD, 2); plat(28, YARD - 1, 2); plat(32, YARD, 2);                  // the feed chutes: the way across, over the teeth
   rope(21, YARD + 1, YARD + 3); rope(35, YARD + 1, YARD + 3);                   // and a way out at both ends, in plain sight from the bottom of it
-  block(8, 12, YARD - 1, YARD);                                                 // the spoil heap, a step up
+  block(11, 12, YARD - 1, YARD);                                                // the spoil heap's peak
+  set(9, YARD, SLOPE.R1); set(10, YARD - 1, SLOPE.R1); set(10, YARD, T.SOLID);  // SLOPES (Daniel's backlog, src/slopes.js): a two-step ramp up onto it, not a jump - column 8 is the flat approach
   block(51, 67, YARD - 7, YARD - 7); block(52, 54, YARD - 6, YARD - 1);         // the loading house: its roof, and its west wall, with the road through under it
   plat(55, YARD - 3, 12);                                                       // its loft, where the loaders work
   rope(56, YARD - 4, YARD); rope(51, YARD - 8, YARD);                           // up to the loft, and on up through a hole in the roof to the tipping frame
@@ -274,18 +284,25 @@ export function buildOreRoad({ painter, T }) {
   meet('THE STEEP FLIERS', 354, 406, [['bat', 360, 14], ['bat', 372, 12], ['crow', 392, 9]]);
   coins([348, PILLAR[1] - 1], [378, PILLAR_B - 1], [382, PILLAR_B - 1]);
 
-  // ---- THE WINCH HOUSE (c 408-475) — the castle side ----
-  block(408, 480, WINCH + 1, H - 1);
-  block(412, 440, WINCH - 6, WINCH - 6); plat(416, WINCH - 3, 8);               // its roof, and the loft under it
+  // ---- THE WINCH HOUSE (c 408-475) — EXAM (audit plan item 3, design audit §10): the stretch before the boss was foot
+  // fights only - the one gap the mechanic map found ("the stretch before the boss (408-475) is on foot"). THE ORE SHAFT
+  // (421-450) reopens it as a last ride: one short line, a rusted bucket, the sheargob who leaps aboard, a tippler over
+  // the middle and bats loose in the dark - it rehearses the Winchmaster in his own vocabulary (buckets, cut lines, the
+  // drum) right before his room. The crew that used to stand on the shaft's floor moves to its two decks either side.
+  block(408, 420, WINCH + 1, H - 1); block(451, 480, WINCH + 1, H - 1);          // the entry deck, and the landing - THE ORE SHAFT is the open gorge between them (THE PIT, below)
+  block(412, 440, WINCH - 6, WINCH - 6); plat(416, WINCH - 3, 8);               // its roof, and the loft under it (over the deck AND the shaft, like every span's overhead structure)
   block(451, 462, WINCH - 8, WINCH - 8); plat(453, WINCH - 3, 9);               // the drum house's outer shed, well short of the gate - a roof beside a portcullis is a way over it
   rope(417, WINCH - 4, WINCH);                                                  // up into the winch house's loft
-  rope(413, WINCH - 7, WINCH); rope(453, WINCH - 9, WINCH);                     // and on up through a hole in each roof, to the frames on top (the shed's one rope serves its loft and its roof)
-  ent('silver', 422, WINCH - 4);                                                // SILVER THREE: in the loft
-  ent('check', 415, WINCH); ent('check', 446, WINCH);   /* 415, not 414: the rope at 413 stood in its base */ ent('check', 468, WINCH);
-  ent('sign', 430, WINCH, { text: 'THE DRUM HOUSE. NOTHING STOPS THE DRUM BUT A BUCKET WITH SOMEONE IN IT.' });
-  meet('THE WINCH CREW', 410, 444, [['miner', 410, WINCH], ['rockgoblin', 436, WINCH], ['sheargob', 419, WINCH - 4]]);
-  meet('THE DRUM YARD', 448, 475, [['heavy', 455, WINCH], ['gaffer', 462, WINCH], ['sheargob', 459, WINCH - 4], ['javelin', 466, WINCH], ['sapper', 450, WINCH]]);   /* and the drum yard's: the last loading house on the road */
-  ent('tippler', 428, WINCH - 7, { face: -1 }); ent('tippler', 460, WINCH - 9, { face: -1 });   /* the frames on the two roofs: each has the yard under it */
+  rope(413, WINCH - 7, WINCH); rope(461, WINCH - 9, WINCH);                     // and on up through a hole in each roof, to the frames on top (the shed's one rope serves its loft and its roof)
+  ent('silver', 422, WINCH - 4);                                                // SILVER THREE: in the loft, now over the shaft rather than the floor
+  plat(427, 20, 3);                                                             // THE SPILL LEDGE: the tippler's own catch-stage, out over the shaft (A12 - a tipping frame needs a floor under its stream)
+  ent('check', 415, WINCH); ent('check', 454, WINCH); ent('check', 470, WINCH);   /* 415, not 414: the rope at 413 stood in its base. 454 is the landing, clear of the heap at 451 - the loft's rope moved to 461 to clear it */
+  ent('sign', 409, WINCH, { text: 'THE ORE SHAFT. HOLD DOWN FOR HIS DRUM, BRAKE FOR THE RUST, AND MIND THE SHEARGOB.' });
+  ent('sign', 458, WINCH, { text: 'THE DRUM HOUSE. NOTHING STOPS THE DRUM BUT A BUCKET WITH SOMEONE IN IT.' });
+  meet('THE WINCH CREW', 409, 420, [['miner', 410, WINCH], ['rockgoblin', 414, WINCH], ['sheargob', 419, WINCH - 4]]);   /* the sheargob is the one who leaps onto your bucket once you board */
+  meet('THE DRUM YARD', 451, 475, [['heavy', 455, WINCH], ['gaffer', 462, WINCH], ['sheargob', 459, WINCH - 4], ['javelin', 466, WINCH], ['sapper', 452, WINCH]]);   /* the landing: what used to fight you on the shaft's own floor, moved off it */
+  ent('tippler', 428, WINCH - 7, { face: -1 }); ent('tippler', 460, WINCH - 9, { face: -1 });   /* the first stands over THE ORE SHAFT itself now - the middle of the ride - its stream lands on the spill ledge */
+  meet('THE SHAFT BATS', 421, 450, [['bat', 427, WINCH - 5], ['bat', 441, WINCH - 6]]);          // loose over the ride, under the roof
   coins([419, WINCH - 4], [432, WINCH - 1], [458, WINCH - 4], [464, WINCH - 1]);
 
   // ---- THE DRUM HOUSE (c 476-523): the arena. Three housings, two lines, and he goes round them (src/winchmaster.js) ----
@@ -300,6 +317,7 @@ export function buildOreRoad({ painter, T }) {
   for (const Hs of A.housings) rope(...Hs.ladder);   /* ROUND TWO: a ladder up onto every housing */
   ent('winchmaster', Math.floor(A.housings[0].home), A.housing, { face: -1 });
   ent('sign', 477, A.deck, { text: 'CLIMB UP AND FIGHT HIM, OR RIDE A LOADED BUCKET INTO HIS DRUM.' });
+  ent('minerlamp', 480, A.deck, { lit: true });   /* THE DRUM HOUSE was the one dark room with no lamp in it at all - LAMP_EVERY stops short of the arena (A.x0 - 2), so nothing ever lit it */
 
   /* ======== THE PIT (Daniel's playtest, 2026-09-25, item 5) ========
      At the very bottom of every span, a bed of spikes. A hero who falls in pays about a FIFTH of his health and never his life
@@ -397,7 +415,7 @@ export function buildOreRoad({ painter, T }) {
       grass: '#5a4a3a', grassL: '#7a6448', grassD: '#3a2e22', dirt: '#3e342c', dirtL: '#54483a', dirtD: '#241d18', canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [{ x0: 0, x1: 99999, kind: 'dust' }], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: surf(A.deck), y0: 0, trigger: (A.x0 + 3) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'winchmaster', music: 'boss3', tint: '#5a4a3a', tintA: 0.06, fx: 'dust' },
-    noCoin: [[68, 135, 0, H - 1], [204, 261, 0, H - 1], [353, 375, 0, H - 1], [385, 407, 0, H - 1], [476, 523, 0, H - 1]],   /* over the drop: the sprinkler must not put coins where only a bucket goes */
+    noCoin: [[68, 135, 0, H - 1], [204, 261, 0, H - 1], [353, 375, 0, H - 1], [385, 407, 0, H - 1], [421, 450, 0, H - 1], [476, 523, 0, H - 1]],   /* over the drop: the sprinkler must not put coins where only a bucket goes */
   };
 }
 
@@ -407,8 +425,14 @@ export function buildOreRoad({ painter, T }) {
    fight cannot change by accident. Every choice below is a HASH of where it is, never the dice: the boss pilot pins its
    dice, and a draw or a build that rolled them would move his fight. */
 OR.MINE_EDGE = 475;
-/* THE FOUR ORES, each [shadow, body, shine]: copper green, iron rust, gold, and the violet gem. Varied, not one stamp */
-export const ORES = [['#1f3a32', '#3f8a66', '#9ae8bc'], ['#4a2418', '#a0522d', '#f0a070'], ['#5a4418', '#d0a030', '#ffe68a'], ['#34245a', '#9a6ae0', '#ecdcff']];
+/* THE FIVE ORES (Daniel's backlog: "more kinds of ore"), each [shadow, body, shine]: copper green, iron rust, silver, gold,
+   and the violet gem. Varied, not one stamp - and SECTIONS BIAS DIFFERENT ORES (oreBias below): copper and iron in the
+   working yard, silver through the tower and chute, gem through the wreck and the steep line, gold toward the drum. */
+export const ORES = [['#1f3a32', '#3f8a66', '#9ae8bc'], ['#4a2418', '#a0522d', '#f0a070'], ['#3a3a42', '#9aa0ac', '#eef0f6'], ['#5a4418', '#d0a030', '#ffe68a'], ['#34245a', '#9a6ae0', '#ecdcff']];
+/* WHICH ORE A SECTION LEANS ON (index into ORES: 0 copper, 1 iron, 2 silver, 3 gold, 4 gem), by route column. Three in
+   five seams take the section's own ore; the rest are any of the five, so no stretch is a single stamp either */
+export const oreBias = x => x < 136 ? 0 : x < 272 ? 2 : x < 408 ? 4 : 3;
+export const oreAt = (x, cx, cy, seed) => hash(cx, cy, seed) < 0.6 ? oreBias(x) : Math.floor(hash(cx, cy, seed + 100) * ORES.length);
 export const hash = (a, b, s = 0) => { let h = (Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263) + Math.imul(s | 0, 1013904223)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 /* THE ORE ON THE FLOORS, placed by hand, place by place ([kind, column, standing row, a, b]): a HEAP [size 0-2, ore], a CART
    parked full on its rail [load 0-2, ore], a SPILL where a station dropped some [ore]. tools/ore-road.mjs holds every one of them
@@ -419,25 +443,25 @@ const MINE_ORE = [
   ['heap', 141, 36, 2, 2], ['cart', 156, 36, 1, 1], ['heap', 167, 36, 1, 3], ['heap', 180, 36, 1, 1], ['spill', 193, 36, 0],   /* the sorting yard, under the sorting floor */
   ['heap', 139, 21, 1, 0], ['spill', 197, 21, 2],                                                                      /* the tower's top deck, where the chute is loaded */
   ['heap', 268, 34, 1, 2], ['heap', 279, 34, 2, 0],                                                                    /* the chute's foot */
-  ['heap', 336, 30, 1, 2],                                                                                             /* the wreck's head: what was saved out of it */
-  ['heap', 418, 12, 1, 1], ['heap', 422, 12, 2, 1], ['heap', 451, 12, 1, 2]];   /* the winch house and the drum yard: the ore waiting for the drum */
+  ['heap', 336, 30, 1, 4],                                                                                             /* the wreck's head: what was saved out of it - the collapse leans gem, oreBias */
+  ['heap', 418, 12, 1, 1], ['heap', 451, 12, 1, 2]];   /* the winch house's entry deck, and the landing: the ore waiting for the drum */
 /* THE MINE'S FURNITURE (section 3), place by place in route order ([kind, column, standing row, extra]): the SPOIL heap of the
    yard, the TOOL RACKS and the TALLY BOARD, the timber SHORING sets (a lantern hung from some of them, lit), the sorting tower's
    ORE CHUTE (extra: [top column, top row]), the collapsed span's OVERTURNED CART, and THE MINE OFFICE in the winch house. Held to
    the same mineBlocked rule as the ore (a chute by its foot), and every place along the route has its own landmark (MINE_PLACES) */
 const MINE_SETS = [
-  ['spoil', 10, 34, 2], ['rack', 53, 36, 1], ['tally', 55, 32, 0],                                             /* THE ORE YARD, THE LOADING HOUSE */
+  ['spoil', 11, 34, 1], ['rack', 53, 36, 1], ['tally', 55, 32, 0],                                             /* THE ORE YARD (its heap now on the peak, past the slope ramp), THE LOADING HOUSE */
   ['shore', 140, 36, 2], ['shore', 170, 36, 2, 'lit'], ['shore', 192, 36, 2], ['shore', 140, 21, 2, 'lit'], ['shore', 184, 21, 2],   /* THE SORTING TOWER */
   ['chute', 150, 36, 0, [145, 21]],
   ['shore', 268, 34, 2, 'lit'],                                                                                 /* the chute's foot */
   ['wreckcart', 326, 30, 1],                                                                                    /* THE COLLAPSED SPAN */
-  ['rack', 411, 12, 1], ['shore', 418, 12, 2], ['office', 432, 12, 3, 'lit'], ['shore', 438, 12, 2, 'lit']];  /* THE WINCH HOUSE */
+  ['rack', 411, 12, 1], ['shore', 418, 12, 2], ['office', 464, 12, 2, 'lit']];  /* THE WINCH HOUSE's entry deck, and THE DRUM YARD's landing (moved off THE ORE SHAFT, and narrower here: clear of the tippler's stream and the lamp) */
 /* THE PLACES AND WHAT YOU WOULD MEET SOMEONE BY (F2): each place's landmarks - its furniture, and 'work:<loop>' for the goblins at
    work in it. tools/ore-road.mjs holds every place to its list, and no two places to the same one */
 export const MINE_PLACES = [['THE ORE YARD', 0, 50, ['spoil', 'work:cart']], ['THE LOADING HOUSE', 51, 67, ['rack', 'tally', 'work:sack']],
   ['THE SORTING TOWER', 136, 203, ['chute', 'work:winch', 'work:sort', 'shore']], ['THE TIPPLE HOUSE', 228, 240, ['work:sack', 'work:pick']],
   ['THE COLLAPSED SPAN', 272, 339, ['wreckcart', 'work:sack']], ["THE BRAKEMAN'S HUT", 340, 352, ['work:winch']],
-  ['THE WINCH HOUSE', 408, 445, ['office', 'rack', 'work:cart']], ['THE DRUM YARD', 446, 475, ['work:sort', 'work:sack']]];
+  ['THE WINCH HOUSE', 408, 420, ['rack', 'shore', 'work:cart']], ['THE DRUM YARD', 421, 475, ['office', 'work:sort', 'work:sack']]];
 export function layMine(grid, W, H, T) {
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : grid[y * W + x];
   /* THE SEAMS IN THE ROCK. Every face of rock the route shows carries ore: a rock tile within six rows under a floor it is the
@@ -450,7 +474,7 @@ export function layMine(grid, W, H, T) {
     if (depth > 6 && !side) continue; if (depth === 1) continue;   /* not the floor's own top course: the lip stays clean */
     const cx = Math.floor(x / 5), cy = Math.floor(y / 3), band = hash(cx, cy, 7);
     if (band > 0.42 || hash(x, y, 11) > 0.5) continue;
-    seams.push([x, y, Math.floor(hash(cx, cy, 13) * 4), Math.floor(hash(x, y, 17) * 4), hash(x, y, 19) < 0.35]); }   /* [x, y, ore, shape, glints] */
+    seams.push([x, y, oreAt(x, cx, cy, 13), Math.floor(hash(x, y, 17) * 4), hash(x, y, 19) < 0.35]); }   /* [x, y, ore, shape, glints] - oreAt biases the ore to the section it is in */
   const mine = MINE_ORE.map(([k, x, y, a, b]) => k === 'heap' ? { k, x, y, x0: x, x1: x + (a > 0 ? 1 : 0), size: a, ore: b }
     : k === 'cart' ? { k, x, y, x0: x, x1: x + 1, load: a, ore: b, rail: [x - 2, x + 3] } : { k, x, y, x0: x, x1: x, ore: a });
   for (const [k, x, y, w, ex] of MINE_SETS) mine.push({ k, x, y, x0: x, x1: x + w, lit: ex === 'lit', top: Array.isArray(ex) ? ex : null, set: true });
@@ -577,8 +601,8 @@ export const WORKS = [
   ['sapper', 236, 27, { k: 'sack', from: 230, to: 237 }],                /* THE TIPPLE HOUSE */
   ['sapper', 300, 30, { k: 'sack', from: 298, to: 307 }],                /* THE COLLAPSED SPAN: salvage off the fallen deck */
   ['heavy', 343, 29, { k: 'winch', at: 342, shaft: 340, top: 22 }],       /* THE BRAKEMAN'S HUT: the hoist up the pillar */
-  ['rockgoblin', 436, 12, { k: 'cart', load: 442, tip: 427 }],           /* THE WINCH HOUSE: the rail yard, tipped onto the spoil */
-  ['sapper', 450, 12, { k: 'sack', from: 453, to: 458 }],                /* THE DRUM YARD */
+  ['rockgoblin', 414, 12, { k: 'cart', load: 417, tip: 410 }],           /* THE WINCH HOUSE's entry deck: the rail yard, tipped onto the spoil (moved off THE ORE SHAFT) */
+  ['sapper', 452, 12, { k: 'sack', from: 453, to: 458 }],                /* THE DRUM YARD, the landing off the shaft */
   ['javelin', 466, 12, { k: 'sort', at: 464 }]];                         /* THE DRUM YARD's sorting table */
 /* WHERE A LOOP'S LANTERN HANGS (tile column): over the middle of the work, so the work is lit - in this dark a thing drawn in timber
    and iron and not under a light is not seen at all */
@@ -721,11 +745,21 @@ export function drawOreStructures(g, L, cx, cy, time, VW, VH, drumAng) {
    top). Behind the play, three things at their own depths: THE FAR WALL's pillars and flowstone at 0.12, the far cableway
    running on into the dark with its lamps at 0.2, and the gem seams that glint in the far rock. Motes drift in front of all of
    it. Rects only, so tools can render it in Node. cy is optional (older call sites passed none). */
+/* BETTER VISUAL VARIETY PER SECTION (Daniel's backlog: this was the most washed-out level, one grey the whole way).
+   The far wall's own rock takes a tint from whichever place the camera is over - not the route itself (untouched),
+   just the colour behind it: copper-warm through the working yard and the span, cool silver through the tower and
+   the chute, the gem's violet through the collapse and the steep line, gold toward the winch house and the drum. */
+const SECTION_TINT = { yard: ['#241f1a', '#332720'], span1: ['#1e2018', '#2c2c22'], tower: ['#181e24', '#222a34'],
+  chute: ['#1a1f28', '#24293a'], collapse: ['#221a28', '#332038'], steep: ['#1e1826', '#2c2036'],
+  winch: ['#241e16', '#362c1c'], drum: ['#221a12', '#332818'] };
+function sectionTint(cx) { const col = Math.floor(cx / TS);
+  let name = 'drum'; for (const [n, [x0, x1]] of Object.entries(OR.PLACES)) if (col >= x0 - 20 && col <= x1 + 20) { name = n; break; }
+  return SECTION_TINT[name] || SECTION_TINT.yard; }
 export function drawOreBackdrop(g, VW, VH, cx, time, cy = 0) {
-  const par = (f, w) => ((-cx * f) % w + w) % w, dy = Math.round(-cy * 0.04);
+  const par = (f, w) => ((-cx * f) % w + w) % w, dy = Math.round(-cy * 0.04), [tintA, tintB] = sectionTint(cx);
   /* the far wall: tall pillars of rock, lit a little along one edge */
   for (let k = 0; k < 7; k++) { const x = Math.round(par(0.12, VW + 240) + k * 97) % (VW + 240) - 120, w = 26 + (k * 37) % 30, top = -20, bot = VH + 20;
-    g.fillStyle = '#1c1820'; g.fillRect(x, top, w, bot - top); g.fillStyle = '#26202a'; g.fillRect(x + 2, top, 3, bot - top);
+    g.fillStyle = tintA; g.fillRect(x, top, w, bot - top); g.fillStyle = tintB; g.fillRect(x + 2, top, 3, bot - top);
     g.fillStyle = '#2e2630'; for (let y = 10 + (k * 23) % 30 + dy; y < VH; y += 34) g.fillRect(x + 4, y, w - 10, 2); }
   /* the far cableway, going on into the dark: its pylons, the cable, its buckets, and a lamp at every pylon */
   { const y0 = Math.round(VH * 0.42) + dy, sh = par(0.2, 150);

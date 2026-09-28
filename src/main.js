@@ -2154,7 +2154,7 @@ function spawnEnt(e) {
       case 'cart': movers.push({ kind: 'cart', x: px - 14, y: py - 10, x0: px - 14, y0: py - 10, w: 28, h: 10, dir: e.dir || 1, vx: 0, vy: 0, rolling: !!e.auto, auto: !!e.auto, gone: false, respawnT: 0, hit: new Set(), speed: e.speed || 140, dx: 0, dy: 0 }); break;
       case 'orelift': movers.push({ kind: 'orelift', x: px - 32, y: (e.y + 1) * TS - 6, y0: (e.y + 1) * TS - 6, y1: e.to * TS - 6, w: 64, h: 6, dx: 0, dy: 0 }); break;
       case 'gas': props.push({ t: 'gas', x: px, y: py, period: e.period || 7, on: 2.2, phase: e.phase || 0, vent: 0, lit: 0, armT: 0 }); break;
-      case 'minerlamp': props.push({ t: 'minerlamp', x: px, y: py, lit: e.lit !== false, hitCd: 0 }); lights.push({ x: px, y: py - 8, r: 76, glow: true, warm: true, lantern: props[props.length - 1] }); break;
+      case 'minerlamp': props.push({ t: 'minerlamp', x: px, y: py, lit: e.lit !== false, hitCd: 0 }); lights.push({ x: px, y: py - 8, r: 98, glow: true, warm: true, lantern: props[props.length - 1] }); break;   /* WARMER (Daniel's backlog: Ore Road was the most washed-out level) - a bigger pool than 76, since minerlamp is this level's alone */
       case 'boiler': props.push({ t: 'boiler', x: px, y: py, hp: 6, burst: 0, cool: 0 }); lights.push({ x: px, y: py - 20, r: 70, glow: true, warm: true, forge: true }); break;
       case 'hammer': props.push({ t: 'hammer', x: px, y: py, drop: 0, tell: 0 }); lights.push({ x: px, y: py - 26, r: 64, glow: true, warm: true, forge: true }); break;
       case 'greathound': enemies.push({ ...base, t: 'greathound', w: 32, h: 17, hp: EHP.greathound, maxHp: EHP.greathound, mode: 'wait', modeT: 0, face: -1, speed: 150, lungeT: 2, pounceT: 3.5, howlT: 5, hitT: 0, air: false, phase: 1 }); break;
