@@ -1,4 +1,6 @@
-// src/contrast-rim.js — A LIGHT RIM FOR DARK FOES IN DARK PLACES (docs/sprite-quality-audit.md). Not wired in.
+// src/contrast-rim.js — A LIGHT RIM FOR DARK FOES IN DARK PLACES (docs/sprite-quality-audit.md). Wired in: src/main.js's
+// applyLevelRims() calls rimSet() per level, per foe, when needsRim() clears 0.45 (confirmed live for the bat/Falling Tower,
+// snuffer/Lamplit Street, lamprey/the Keep and petrel/Causeway cluster, docs/visual-audit/lanes.md lane 10).
 // The audit found the foes that vanish are dark bodies (L* 23-36) on dusky or cave backdrops: the bat in the Falling Tower, the snuffer
 // on the Lamplit Street, the lamprey in the Keep, the petrel on the Causeway. Their dark outline is the same value as the dark behind
 // them, so nothing separates them. The cure art uses everywhere: a one-pixel rim of light along the edges that face UP (lit from above),

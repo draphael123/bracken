@@ -12,7 +12,9 @@
 //   canvas 16x22, anchor ax 9, ay 22   pack 8x10
 //
 // bakeLamprey()  LAMPREY — a long eel-thin body and a round sucker mouth full of rings of teeth. Two swim frames
-//   (the body's wave at two points in its cycle) and one latched frame (the mouth open and fixed).
+//   (the body's wave at two points in its cycle), one latched frame (the mouth open and fixed), and one hurt frame
+//   (the body kinked into a tight recoil, mouth shut, a pale fleck at the head) — HAS_HURT convention, the last
+//   frame (docs/visual-audit/foes.md: the lamprey in the Keep had no hurt feedback at all).
 //   canvas 30x10, anchor ax 6, ay 10   pack 14x6
 //
 // bakeManta()  MANTA — a wide ray skimming just under the surface: two wingbeats and a tucked dive frame, narrow
@@ -96,9 +98,11 @@ export function bakeLamprey() {
   const W = 30, H = 12, X = 5, MY = 6;
   const q = G => outline(fromGrid(rowsOf(settle(G)), LP, 1), OUT);
   const body = (G, ph) => { for (let i = 0; i < 22; i++) { const yy = MY + Math.round(Math.sin(i * 0.5 + ph) * 1.4); put(G, X + i, yy, i % 2 ? 's' : 'S'); put(G, X + i, yy + 1, 'S'); } };
+  const recoil = G => { for (let i = 0; i < 22; i++) { const yy = MY + Math.round(Math.sin(i * 0.95 + 2.4) * 2.6); put(G, X + i, yy, i % 2 ? 's' : 'S'); put(G, X + i, yy + 1, 'S'); } };   // HURT: a tighter, sharper kink than any swim phase
   const mouth = (G, open) => { limb(G, [X - 1, MY], [X - 1, MY], open ? 6 : 4, ['M', 'm', 'm']); if (open) put(G, X - 1, MY, 'e'); };
   const frame = (ph, open) => { const G = blank(W, H); body(G, ph); mouth(G, open); return q(G); };
-  return pack([frame(0, false), frame(2, false), frame(0, true)], X + 2, H, 14, 6);
+  const hurt = () => { const G = blank(W, H); recoil(G); mouth(G, false); put(G, X + 4, MY - 3, 'e'); return q(G); };   // mouth shut, thrown off its bite; a pale fleck where it flinched
+  return pack([frame(0, false), frame(2, false), frame(0, true), hurt()], X + 2, H, 14, 6);
 }
 
 // ---------- MANTA ----------
