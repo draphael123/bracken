@@ -1,4 +1,7 @@
-// src/redraw/foes_v2.js — THE REDRAW PASS (docs/animation-audit.md): the foes met most whose animation is thinnest, redrawn. Not wired in.
+// src/redraw/foes_v2.js — THE REDRAW PASS (docs/animation-audit.md): the foes met most whose animation is thinnest, redrawn. Wired in:
+// src/main.js bakes every FRAMES_V2 set at load and V2_HURT/V2_DEATH (main.js ~711) show the bat/petrel/snuffer's own hurt and death
+// frames on a real hit (e.flash > 0.06), outside HAS_HURT — the bat's own last frame is its DEATH pose, not its hurt one, so it can't
+// join HAS_HURT the way the lamprey did (src/redraw/sea_wildlife.js).
 // THE CONTRACT WITH THE GAME: every set keeps its old frame indices meaning what they meant (main.js picks them: see FRAMES_V2), its
 // canvas anchor (ax/ay) and its hit box (w/h), so a set drops in where the old one was; the NEW frames (a hurt, a death, more steps)
 // are appended after the old ones, and FRAMES_V2 says which, and the one line each needs in main.js's frame pick to use them.
