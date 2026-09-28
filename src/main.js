@@ -260,12 +260,12 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (1 + 0.075 * LV_GROW())); // (HEAVY PLUNGE and FIREDROP were two ranks of this: the level brings it now)
-const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, wormLunge: DWM.WORM.dmg.lunge, wormBite: DWM.WORM.dmg.bite, sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lever, minerPick:16, abbot:ABBOT.dmg.censer, abbotChain:ABBOT.dmg.cast, abbotProcess:ABBOT.dmg.process, abbotKnell:ABBOT.dmg.knell, tome:TOME.dmg, hedgewarden:18, gravewarden:20, pyroStaff:9, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroJet:10, pyroStep:14, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 26, bellSlam: 34, bellPressure: 24, bellCharge: 32, bellSnip: 18, bellLeap: 24, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 12, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 26, krakSweep: 22, krakGrip: 6, krakDrag: 24, krakTide: 14, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7, temperCut: 13, scalderPour: 16, scalderLadle: 9, temperShove: 6, temperQuench: 20,
+const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, wormLunge: DWM.WORM.dmg.lunge, wormBite: DWM.WORM.dmg.bite, sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lever, minerPick:16, abbot:ABBOT.dmg.censer, abbotChain:ABBOT.dmg.cast, abbotProcess:ABBOT.dmg.process, abbotKnell:ABBOT.dmg.knell, tome:TOME.dmg, hedgewarden:18, gravewarden:20, pyroCut:9, pyroThird:12, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroBellows:14, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 26, bellSlam: 34, bellPressure: 24, bellCharge: 32, bellSnip: 18, bellLeap: 24, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 12, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 26, krakSweep: 22, krakGrip: 6, krakDrag: 24, krakTide: 14, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7, temperCut: 13, scalderPour: 16, scalderLadle: 9, temperShove: 6, temperQuench: 20,
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16, drunkLob: 10, drunkStool: 14, drunkBottle: 12, drunkGlass: 8,
   priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, princeCut: 22, princeRise: 26, princeCrown: 16, princeWind: 12, courtier: 12, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, venomTick: 5, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawLunge: 22, mawTail: 18, mawRoll: 8, mawDrown: 20, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, fledgling: 10, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, tipplerBar: 15, tipplerOre: 14, shearSnip: 12, shearCut: 16, gafferHook: 16, gafferHaft: 13, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 20, pounce: 25, snap: 15, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, badger: 12, gar: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20, gobpriest: 0, priestCenser: 10, priestBell: 7, gobmage: 0, gobBolt: 12, kingWhirl: 16, kingGulp: 10, merrowSpear: 12, merrowSurge: 8, merrowBrute: 16, gobRune: 16, pufferBurst: 10, jelly: 8, mantaDive: 16,
   dkLunge: DKN.DK.knight.dmg.lunge, dkCapLunge: DKN.DK.captain.dmg.lunge, dkSlash: DKN.DK.captain.dmg.slash, dkSlash2: DKN.DK.captain.dmg.slash2, whelpSwoop: WHF.WH.dmg.swoop, whelpFire: WHF.WH.dmg.fire };
-const EHP = { sexton: SEXTON.hp, duneworm: DWM.WORM.hp, scorpion: DF.SCORPION.hp, vulture: DF.VULTURE.hp, sandgob: DF.SANDGOB.hp, cutthroat: DF.CUTTHROAT.hp, slinger: DF.SLINGER.hp, ambusher: DF.AMBUSHER.hp, bannerbearer:UNBF.UNB.hp.bannerbearer, corpse:UNBF.UNB.hp.corpse, barrowrider:UNBF.UNB.hp.barrowrider, deathknight:UNBF.UNB.hp.deathknight, bloodknight:UNBF.UNB.hp.bloodknight, winchmaster:WINCH.hp, abbot:ABBOT.hp, tome:TOME.hp, gargoyle:410, hedgewarden:HEDGE.hp, gravewarden:380, burngob:26, emberwisp:8, pyromancer:510, bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22, temperer: 30, scalder: 26,
+const EHP = { sexton: SEXTON.hp, duneworm: DWM.WORM.hp, scorpion: DF.SCORPION.hp, vulture: DF.VULTURE.hp, sandgob: DF.SANDGOB.hp, cutthroat: DF.CUTTHROAT.hp, slinger: DF.SLINGER.hp, ambusher: DF.AMBUSHER.hp, bannerbearer:UNBF.UNB.hp.bannerbearer, corpse:UNBF.UNB.hp.corpse, barrowrider:UNBF.UNB.hp.barrowrider, deathknight:UNBF.UNB.hp.deathknight, bloodknight:UNBF.UNB.hp.bloodknight, winchmaster:WINCH.hp, abbot:ABBOT.hp, tome:TOME.hp, gargoyle:410, hedgewarden:HEDGE.hp, gravewarden:380, burngob:26, emberwisp:8, pyromancer:587, bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22, temperer: 30, scalder: 26,
   prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, prince: 960, courtier: 22, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 500, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, seawitch: 20, crow: 6, horn: 22, bale: 12, shardling: 18, fledgling: 16, suncatcher: 430, roc: 1100, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, tippler: 26, sheargob: 30, gaffer: 44, bat: 8, forgemaster: 480, golem: 400, kite: 15, badger: 30, gar: 16, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 1450, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 8, mother: 8, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360, gobpriest: 14, merrowspear: 24, merrowcaller: 22, merrowbrute: 50, gobmage: 22, puffer: 12, jelly: 10, lamprey: 24, manta: 34,
   drownedknight: DKN.DK.knight.hp, drownedcaptain: DKN.DK.captain.hp, whelp: WHF.WH.hp };
 
@@ -4128,7 +4128,7 @@ const BEASTS = [
   { t: 'hedgewarden', name: 'THE HEDGE WARDEN', sub: 'the garden keeps its gate', desc: 'A topiary knight as tall as the garden wall. Guard his cut and his charge; when he flings his arms wide the thorns come out all round him, and no shield turns them - get clear. His thorn lash cracks along the lawn well out in front of him: guard it or jump it. When he drives his sword into the lawn, roots crawl out at you: jump them, or stand at a brazier, where the witch-fire burns them out. Cut him down and he falls to a stump that grows him back, and a stump on the open lawn is green wood that no blow bites. He follows you. Fell him beside a witchlight brazier and the fire takes the stump - it cannot grow while it burns, every blow counts twice, and only then can you cut the root out.' },
   { t: 'burngob', name: 'BURNING GOBLIN', sub: 'it carries the fire', desc: 'A goblin already alight. It fights like the others - a told swing a shield turns - and touching it costs nothing. What it costs is the ground: the straw it walks on catches, and so does the straw it dies on. Kill it on bare ground.' },
   { t: 'emberwisp', name: 'EMBER WISP', sub: 'the fire that drifts', desc: 'Its touch is its blow, and nothing turns it: the red cross is over it whenever it is near. It is slow and it turns wide, so it cannot double back on you, and it will not pin you to a wall. One cut puts it out.' },
-  { t: 'pyromancer', name: 'THE PYROMANCER', sub: 'a renegade of the order', desc: 'He fights with the Pyromancer\'s own kit - embers, the jet, the firedrop - and runs her own heat: every attack stokes him, and so does every blow he takes. Left alone past seventy he vents and the square goes out. Keep hitting him while he runs hot and he cannot vent: he OVERHEATS, and stands open in his own smoke. The square burns with his bar.' },
+  { t: 'pyromancer', name: 'THE PYROMANCER', sub: 'a renegade of the order', desc: 'He fights with the Pyromancer\'s own staff - her run of three cuts and her held blow, THE BELLOWS, that no shield turns - and her ember, and he hops the stalls to meet you. He reads a run: the third light blow in a row he turns, but a heavy goes through. Struck while he runs hot he OVERHEATS, open. A thrown bucket of water puts him out and opens him too. The square burns with his bar.' },
   { t: 'scalder', name: 'THE SCALDER', sub: 'he holds the top of the ladder', desc: 'A goblin and a pot of boiling pitch on the lip of a tower. Climb under him and he tips it straight down the ladder: no shield turns it. Wait on a landing while he stirs the pot back up, then climb.' },
   { t: 'temperer', name: 'THE TEMPERER', sub: 'he goes back to the fire', desc: 'The least dangerous thing in the hall until he turns and runs. He fetches the heat himself: at a lit brazier the blade comes back glowing, and the next blow is one no shield turns. Catch him at the fire, or put the fire out.' },
   { t: 'hearthgob', name: 'HEARTH GOBLIN', sub: 'it lives here', desc: 'Asleep by its own fire until you are close enough to wake it, and then it comes at you with a stool. Not a soldier. Worse than it sounds in a room you cannot back out of.' },
@@ -5636,7 +5636,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'sandgob' && e.st && !DF.sandGobTouchable(e.st)) return;   /* THE SAND GOBLIN under its mound: the blade goes through sand */
   if (e.t === 'ambusher' && e.st && !DF.ambusherTouchable(e.st)) return;   /* THE SAND-CLOAKED AMBUSHER under his cloak: the same */
   if (UNBF.UNB_FOES.has(e.t)) { const ud = unbHurt(e, dmg, fromX); if (ud === false) return; dmg = ud; }   /* THE UNBURIED FIELD: the fallen only fall under a banner; the Death Knight and the Barrow Rider open */   /* ON HIS KNEES IN THE GRAVE: double */
-  if (e.t === 'pyromancer') { if (e.open > 0) dmg = Math.round(dmg * 1.5); e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0; }   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; overheated he takes half as much again */
+  if (e.t === 'pyromancer') { if (pyroReads(e, blow, plunge)) return; if (e.open > 0) dmg = Math.round(dmg * 1.5); e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0; }   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; overheated he takes half as much again */
   if (e.t === 'captain' && e.mode === 'beach') dmg = Math.round(dmg * 2); // beached on his own planking
   if (e.t === 'captain' && e.mode === 'reel') dmg = Math.round(dmg * 1.5);
   /* THE CLOSED HELM. Full plate, and it is not a damage reduction: it is a NO. Only the window his own
@@ -6791,6 +6791,10 @@ function guardTurned(e) {
   if (hero() === 'knight') hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + kx + ', LET GO: CHARGE THROUGH IT. DOWN+' + kx + ' SWEEPS UNDER IT.';
   else hintMsg = 'A GUARD TURNS A LIGHT BLOW. HOLD ' + kx + ' TO GO THROUGH IT, OR DOWN+' + kx + ' TO SWEEP UNDER IT.';
 }
+/* HER STAFF, IN NUMBERS: the Pyromancer hero's thrust (live from 0.04 to 0.18 of a 0.3 s swing, 32 px out, belt to chest) and
+   her held blow's 38. THE PYROMANCER boss's mirror duel (updatePyromancer, PYRO_DUEL) is built on these same numbers, scaled
+   to his size, so a change to her staff is a change to his. */
+const PYRO_STAFF = { reach: 32, top: 15, bot: 3, live: [0.04, 0.18], swing: 0.3, heavyReach: 38 };
 function attackBox() {
   if (dashStriking()) { const D = DASH_STRIKE[hero()];   /* THE DASH ATTACK: the blade (or the point) out in front the whole of the run, cut to the art (chars.js dashAtk) */
     if (P.dashAtk < D.t * 0.15) return null;
@@ -6843,13 +6847,13 @@ function attackBox() {
     return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - 16, b: P.y - 1 } : { l: P.x - r, r: P.x - 2, t: P.y - 16, b: P.y - 1 };
   }
   if (P.heavy && P.atk >= (hero() === 'knight' && P.cutStage ? 0.07 : 0.03) && P.atk < 0.22) { // it reaches further and lands lower than a swing (THE HEAVY CUT: not while the blade is still over his head)
-    const r = isPyro() ? 38 : isPaladin() ? 32 : 26, top = hero() === 'knight' && P.cutStage ? 34 : 26;   /* THE HEAVY CUT starts over his head */
+    const r = isPyro() ? PYRO_STAFF.heavyReach : isPaladin() ? 32 : 26, top = hero() === 'knight' && P.cutStage ? 34 : 26;   /* THE HEAVY CUT starts over his head */
     return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - top, b: P.y + 2 } : { l: P.x - r, r: P.x - 2, t: P.y - top, b: P.y + 2 };
   }
   if (P.plunge) return { l: P.x - 10, r: P.x + 10, t: P.y - 6, b: P.y + 12 };
   if (P.swingKind === 'rise' && P.atk >= 0.02 && P.atk < 0.17) { const r = isPyro() || isPaladin() || isReaper() ? 28 : 22; return P.face > 0 ? { l: P.x - 4, r: P.x + r, t: P.y - 40, b: P.y + 14 } : { l: P.x - r, r: P.x + 4, t: P.y - 40, b: P.y + 14 }; }   /* floor to overhead, and it starts below the feet it leaves with */
   if (P.swingKind === 'sweep' && P.atk >= 0.02 && P.atk < 0.15) { const r = isPyro() || isPaladin() || isReaper() ? 34 : 28; return P.face > 0 ? { l: P.x - 6, r: P.x + r, t: P.y - 8, b: P.y + 2 } : { l: P.x - r, r: P.x + 6, t: P.y - 8, b: P.y + 2 }; }   /* ankle height */
-  if (isPyro() && P.atk >= 0.04 && P.atk < 0.18) return P.face > 0 ? { l: P.x + 2, r: P.x + 32, t: P.y - 15, b: P.y - 3 } : { l: P.x - 32, r: P.x - 2, t: P.y - 15, b: P.y - 3 }; // the staff thrusts: a lighter blow, a tile more reach
+  if (isPyro() && P.atk >= PYRO_STAFF.live[0] && P.atk < PYRO_STAFF.live[1]) { const S = PYRO_STAFF; return P.face > 0 ? { l: P.x + 2, r: P.x + S.reach, t: P.y - S.top, b: P.y - S.bot } : { l: P.x - S.reach, r: P.x - 2, t: P.y - S.top, b: P.y - S.bot }; } // the staff thrusts: a lighter blow, a tile more reach
   if (isPaladin() && P.atk >= 0.06 && P.atk < 0.18) return P.face > 0 ? { l: P.x + 2, r: P.x + 26, t: P.y - 24, b: P.y + 1 } : { l: P.x - 26, r: P.x - 2, t: P.y - 24, b: P.y + 1 }; // the maul: over and down, a wide heavy arc
   // THE SWATHE. It lands LATE - the blade is behind him for the first third of it - and then it is
   // everywhere at once. The window is where the weight of the thing lives.
@@ -17649,9 +17653,9 @@ function pourBucket(pr, tg) {
    Pyromancer himself (decision 3) it also sets PYRO_HIT_FIELD, a plain flag his own duel (a separate lane) can read; his AI
    is not touched here. */
 function hitThrownBucket(pr, e) {
+  if (e.t === 'pyromancer') e[PYRO_HIT_FIELD] = time;   /* (set BEFORE the hit: hurtEnemy's pyroReads knows a bucket by it, and a bucket is never a blow he reads) */
   hurtEnemy(e, throwDamage(pr.thrKind || 'bucket', e.t), pr.x, false);
   if (isFireFoe(e.t)) { e.doused = 2; number(e.x, e.y - e.h - 10, 'DOUSED', '#9ad0ff'); }
-  if (e.t === 'pyromancer') e[PYRO_HIT_FIELD] = time;
   sparks(e.x, e.y - e.h / 2, Math.sign(pr.vx) || 1, 6);
   for (let i = 0; i < 16; i++) parts.push({ x: pr.x, y: pr.y - 6, vx: (Math.random() - 0.5) * 100, vy: -70 - Math.random() * 70, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
   SFX.splash(); pr.state = 'return'; pr.retT = THROW_KIND[pr.thrKind || 'bucket'].respawn; pr.spent = (pr.spent || 0) + 1;
@@ -17666,6 +17670,9 @@ function landBucket(pr) {
 function stepBucketFlight(pr, dt) {
   const k = THROW_KIND[pr.thrKind || 'bucket'];
   pr.vy += k.g * dt; pr.x += pr.vx * dt; pr.y += pr.vy * dt;
+  /* HE IS THE BIGGEST FIRE IN HIS SQUARE: a bucket that reaches THE PYROMANCER goes on him before it goes on the burning floor he
+     stands in, or his own heat - which lights that floor - would shield him from the one thing that opens him (pyroDouse) */
+  if (boss && boss.t === 'pyromancer' && boss.alive && overlap({ l: pr.x - 5, r: pr.x + 5, t: pr.y - 9, b: pr.y + 3 }, box(boss))) { hitThrownBucket(pr, boss); return; }
   const tg = bucketTargets(pr.x, pr.y); if (tg) { pourBucket(pr, tg); return; }
   for (const e of enemies) { if (!e.alive || e.harmless) continue;
     if (overlap({ l: pr.x - 5, r: pr.x + 5, t: pr.y - 9, b: pr.y + 3 }, box(e))) { hitThrownBucket(pr, e); return; } }
@@ -17849,95 +17856,190 @@ function drawEmberWisp(e, cx, cy) {
   g.fillStyle = '#3a0c08'; g.fillRect(x - 2, y - 6, 1, 1); g.fillRect(x + 1, y - 6, 1, 1);
   if (Math.hypot(P.x - e.x, P.y - 10 - e.y) < 96 && !(e.recoil > 0)) tellQ.push({ txt: '!!', x, y: y - 28, col: '#ff6b6b', a: 1 });   /* THE RED CROSS: its touch is its blow, and nothing turns it */
 }
-/* THE PYROMANCER: a renegade of the Pyromancers' order, fought in the square. He runs the class's own kit at a boss's size -
-   embers, the jet, the firedrop - and the class's own HEAT: each attack stokes him, and every blow he takes does too. Left
-   alone past seventy he VENTS (a told ring of fire, the heat gone, the square put out) and gives nothing away. Struck while
-   he runs hot he cannot vent, his own fire takes him over the top and he OVERHEATS: three and a half seconds standing in his
-   own smoke, open, taking half as much again. The square burns as the bar climbs (squareHeat), so punishing him costs the
-   player floor; letting him vent gives it back and opens nothing. That choice is the fight. */
-const PYRO_VENT_AT = 70, PYRO_CALM = 2.2, PYRO_OVER = 3.4;
+/* THE PYROMANCER: a renegade of the Pyromancers' order, fought in the square - AS A MIRROR DUEL (Daniel, 2026-09-28: "a tad
+   harder and play more like a duel where they jump on platforms and use their regular/heavy attacks"). He fights with the
+   hero's own staff: HER RUN OF THREE (the thrust, the run's second cut, and a heavier third that shoves), HER HELD BLOW (THE
+   BELLOWS, the cone of fire out of the staff that goes through a guard), and ONE of her spells, the ember. He HOPS the square's
+   market stalls to meet you on your own floor. He READS YOU: two light blows in a row and his guard comes up, and the third is
+   turned - a heavy goes through it. And he runs the class's own HEAT: each attack stokes him, and every blow he takes does too.
+   Left alone past seventy he VENTS (a told ring of fire, the heat gone, the square put out) and gives nothing away. Struck
+   while he runs hot he cannot vent, his own fire takes him over the top and he OVERHEATS: open in his own smoke. The square
+   burns as the bar climbs (squareHeat). THE BUCKET is the other way in: a thrown bucket of water that reaches him DOUSES him -
+   his heat to nothing, the square with it - and he stands staggered and OPEN (pyroDouse); racks at both ends of the square and
+   one up on its middle stall keep a bucket in reach. Phase two, HE TAKES THE STALLS: his run of three ends in the Bellows
+   instead of the third cut, and he goes up onto a stall to rain the ember down on you. */
+const PYRO_VENT_AT = 70, PYRO_CALM = 2.2, PYRO_OVER = 3.4, PYRO_SCALE = 1.4;   /* (PYRO_SCALE: he is drawn at 1.4 of her size, drawPyromancer) */
+const PYRO_DUEL = {
+  cutTell: [0.42, 0.3, 0.34],                              /* the first cut of a run is told longest; each after it is told again, shorter */
+  cutT: PYRO_STAFF.swing, live: PYRO_STAFF.live,           /* HER SWING'S CLOCK: 0.3 s, live from 0.04 to 0.18 (attackBox's own numbers) */
+  reach: Math.round(PYRO_STAFF.reach * PYRO_SCALE),        /* her 32 px thrust at his size */
+  top: Math.round(PYRO_STAFF.top * PYRO_SCALE) + 6,
+  shove: 170,                                              /* the third cut shoves, as hers does (a blow that lands or a shield that takes it) */
+  bellowsTell: 0.62, bellowsT: 0.5, cone: Math.round(PYRO_STAFF.heavyReach * PYRO_SCALE) + 35,   /* HER HELD BLOW: the gather, then the cone - the staff's 38 px and the fire's flight past it */
+  read: 1.4,                                               /* HE READS A RUN: blows further apart than this are not a run */
+  doused: 3.0, wet: 6,                                     /* a bucket opens him for 3 s; he is wet for 6 s after, and a bucket then only cools him */
+  hopMax: 340, hopFar: 210,                                /* a hop's top speed, and the furthest spot he will hop for (further, he walks first) */
+};
+/* THE STALLS, read off the grid once a fight: every one-way run in his arena above the floor he can stand on */
+function pyroStalls(e) {
+  if (e.stalls) return e.stalls;
+  const A = L.arena, out = [], fy = Math.floor(A.floor / TS);
+  for (let ty = fy - 8; ty < fy; ty++) { let run = null;
+    for (let tx = Math.floor(A.x0 / TS); tx <= Math.floor(A.x1 / TS); tx++) { const top = isOneWay(tileAt(tx, ty)) && !isSolid(tx, ty - 1) && !isSolid(tx, ty - 2);
+      if (top && !run) run = { x0: tx, x1: tx, y: ty * TS }; else if (top) run.x1 = tx; else if (run) { out.push(run); run = null; } }
+    if (run) out.push(run); }
+  return (e.stalls = out.map(s => ({ l: s.x0 * TS + 7, r: (s.x1 + 1) * TS - 7, y: s.y })));
+}
+/* WHERE HE LANDS TO MEET YOU: on your floor, a staff's length off you on the side he comes from (the other side if the stall is too short) */
+function pyroSpot(e) {
+  const A = L.arena, side = Math.sign(e.x - P.x) || 1, lo = A.x0 + 60, hi = A.x1 - 60;
+  if (P.y > A.floor - 8) return { x: Math.max(lo, Math.min(hi, P.x + side * 34)), y: A.floor };
+  const s = pyroStalls(e).find(q => P.x >= q.l - 12 && P.x <= q.r + 12 && Math.abs(q.y - P.y) < 10); if (!s) return null;
+  let x = Math.max(s.l, Math.min(s.r, P.x + side * 30)); if (Math.abs(x - P.x) < 18) x = Math.max(s.l, Math.min(s.r, P.x - side * 30));
+  return { x, y: s.y };
+}
+/* A HOP: a ballistic arc from where he stands to (tx, ty), its top two tiles over the higher end - his gravity is 1000 */
+function pyroHop(e, tx, ty) {
+  const g = 1000, apex = Math.min(e.y, ty) - 30, up = Math.sqrt(2 * g * Math.max(8, e.y - apex)), T = up / g + Math.sqrt(2 * g * Math.max(1, ty - apex)) / g;
+  e.vy = -up; e.vx = Math.max(-PYRO_DUEL.hopMax, Math.min(PYRO_DUEL.hopMax, (tx - e.x) / T)); e.hopDown = ty > e.y + 8; e.hopY = ty; e.face = Math.sign(tx - e.x) || e.face;
+  SFX.jump(); dust(e.x, e.y, 5);
+}
+/* THE BUCKET OPENING (CARRY & THROW's hook, PYRO_HIT_FIELD): his flames out, his heat gone - and staggered, OPEN. A bucket while
+   he is already open, or still wet from the last, only cools him: nothing a player can chain into a lock. */
+function pyroDouse(e) {
+  const D = PYRO_DUEL; e.heat = 0; e.readN = 0; e.calmT = 0; SFX.hiss(); SFX.splash();
+  for (let i = 0; i < 24; i++) parts.push({ x: e.x + (Math.random() - 0.5) * 18, y: e.y - 10 - Math.random() * 26, vx: (Math.random() - 0.5) * 50, vy: -50 - Math.random() * 50, life: 0.9, max: 0.9, col: Math.random() < 0.5 ? '#e8f6ff' : '#9a9aa4', size: 2, grav: -30 });
+  if (e.open > 0 || e.wetT > 0 || e.mode === 'sleep' || e.mode === 'wake') { number(e.x, e.y - 56, 'DOUSED', '#9ad0ff'); return; }
+  e.mode = 'doused'; e.modeT = D.doused; e.open = D.doused; e.wetT = D.doused + D.wet; e.vx = 0; if (e.vy < 0) e.vy = 0;
+  number(e.x, e.y - 56, 'DOUSED - HE IS OPEN', '#9ad0ff'); ringAt(e.x, e.y - 20, 26, '#9ad0ff', 0.4); shakeCam(3);
+  if (!(PROG.pyroDousedTold > 1)) { PROG.pyroDousedTold = (PROG.pyroDousedTold || 0) + 1; hintT = 4; hintMsg = 'WATER PUTS HIM OUT. WHILE HE STANDS THERE DRIPPING, HE IS OPEN.'; }
+}
+/* HE READS YOU (hurtEnemy0): a blow the hero struck - light, a sweep, a dash, a shot - counts toward a run; two in a row and his
+   guard comes up, and the THIRD is turned. A HEAVY (or a plunge) goes through it and breaks the read. What is not a hero's blow
+   (a spell, a burn, the bucket) is not read at all, and open he reads nothing. Returns true when the blow was turned. */
+function pyroReads(e, blow, plunge) {
+  if (!blow || e[PYRO_HIT_FIELD] === time || e.open > 0) return false;
+  if (plunge || blowHas(blow, 'heavy') || blowHas(blow, 'plunge') || (P.heavy && P.atk >= 0)) { e.readN = 0; return false; }
+  e.readN = time - (e.readAt ?? -99) > PYRO_DUEL.read ? 1 : (e.readN || 0) + 1; e.readAt = time;
+  if (e.readN === 2) { number(e.x, e.y - 64, 'HE READS YOU', '#dfe8ff');
+    if (!(PROG.pyroReadTold > 1)) { PROG.pyroReadTold = (PROG.pyroReadTold || 0) + 1; hintT = 5; hintMsg = 'HE READS A RUN AND TURNS THE THIRD BLOW. HOLD ATTACK: A HEAVY GOES THROUGH HIS GUARD.'; } }
+  if (e.readN < 3) return false;
+  e.readN = 0; e.guardT = 0.35; e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0;   /* (a turned blow still stokes him: he is working) */
+  SFX.clank(); SFX.enGarde(); hitstop(0.04); sparks(e.x - (Math.sign(e.x - P.x) || 1) * 10, e.y - 20, -(Math.sign(e.x - P.x) || 1), 6);
+  number(e.x, e.y - e.h - 16, 'BLOCKED', '#dfe8ff'); if (Math.abs(P.x - e.x) < 60) P.vx = -(Math.sign(e.x - P.x) || 1) * 110;   /* a small push off his staff, never a stun */
+  return true;
+}
 function updatePyromancer(e, dt) {
-  const A = L.arena, floor = A.floor, d = P.x - e.x, ad = Math.abs(d), p2 = e.hp < e.maxHp * 0.5;
-  e.modeT -= dt; e.cd -= dt; e.calmT = (e.calmT || 0) + dt; e.open = Math.max(0, (e.open || 0) - dt); e.anim += dt;
-  if (p2 && e.phase === 1) { e.phase = 2; number(e.x, e.y - 56, 'HE STOKES THE SQUARE', '#ff9a5c'); SFX.roar(); }
+  const A = L.arena, floor = A.floor, D = PYRO_DUEL, d = P.x - e.x, ad = Math.abs(d), p2 = e.hp < e.maxHp * 0.5;
+  e.modeT -= dt; e.cd -= dt; e.calmT = (e.calmT || 0) + dt; e.open = Math.max(0, (e.open || 0) - dt); e.anim += dt; e.wetT = Math.max(0, (e.wetT || 0) - dt); e.guardT = Math.max(0, (e.guardT || 0) - dt);
+  if (time - (e.readAt ?? -99) > D.read) e.readN = 0;
+  if (p2 && e.phase === 1) { e.phase = 2; number(e.x, e.y - 56, 'HE TAKES THE STALLS', '#ff9a5c'); SFX.roar(); }
+  if (e[PYRO_HIT_FIELD] !== undefined && e[PYRO_HIT_FIELD] !== e.wetSeen) { e.wetSeen = e[PYRO_HIT_FIELD]; pyroDouse(e); }
   const heat = n => { e.heat = Math.min(100, (e.heat || 0) + n); };
   const after = () => { if (e.heat >= 100) { e.mode = 'overheat'; e.modeT = PYRO_OVER; e.open = PYRO_OVER; e.vx = 0; number(e.x, e.y - 56, 'OVERHEATED', '#fff6c8'); SFX.hiss(); SFX.heatFull(); ringAt(e.x, e.y - 20, 30, '#fff6c8', 0.4); }
-    else { e.mode = 'stalk'; e.cd = p2 ? 1.25 : 1.8; } };
+    else { e.mode = 'stalk'; e.cd = p2 ? 0.8 : 1.15; } };
   let want = 0;
   switch (e.mode) {
     case 'sleep': break;
-    case 'wake': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.8; } break;
+    case 'wake': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.8;
+      if (!(PROG.pyroBucketTold > 1)) { PROG.pyroBucketTold = (PROG.pyroBucketTold || 0) + 1; hintT = 5; hintMsg = 'THE SQUARE HAS BUCKETS. THROW ONE AT HIM.'; } } break;
     case 'stalk': { e.face = Math.sign(d) || e.face;
-      want = (ad < 64 ? -1 : ad > 130 ? 1 : 0) * e.face * (p2 ? 70 : 55);
+      const lvl = Math.abs(P.y - e.y) < 22, above = !lvl && P.y < e.y;
+      want = lvl ? (ad < 28 ? -1 : ad > 38 ? 1 : 0) * e.face * (p2 ? 85 : 70) : (ad > 150 ? e.face * (p2 ? 85 : 70) : 0);   /* A DUELLIST: he closes to a staff's length, and under you he comes to hop */
       if (e.heat >= PYRO_VENT_AT && e.calmT >= PYRO_CALM) { e.mode = 'ventTell'; e.modeT = 0.9; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - 56, 'HE VENTS', '#ff9a5c'); SFX.charge(); break; }
-      if (e.cd > 0 || P.dead) break;
+      if (e.cd > 0 || P.dead || !e.onGround) break;
       e.turn = (e.turn || 0) + 1;
-      const onStall = P.ground && P.y < floor - 20;
-      /* THE CLASS'S OWN BASIC BLOW (Daniel): up close he swings the staff, told and blockable; and ENRAGED he casts THE FIRE WALL */
-      if (ad < 34 && Math.abs(P.y - e.y) < 24 && e.turn % 3 !== 0) { e.mode = 'staffTell'; e.modeT = 0.4; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); break; }
-      if (p2 && e.turn % 5 === 2) { e.mode = 'wallTell'; e.modeT = 0.7; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - 56, 'FIRE WALL', '#ff9a5c'); SFX.charge(); break; }
-      if (onStall) { e.mode = 'emberTell'; e.modeT = 0.55; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); }   /* up on a stall: the ember is lobbed, and an arc is what answers height */
-      else if (e.turn % 4 === 0 && ad > 40) { e.mode = 'stepTell'; e.modeT = 0.45; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); number(e.x, e.y - 56, 'CINDER STEP', '#ff9a5c'); SFX.tell(false); }
-      else if (p2 && e.turn % 7 === 5) { e.mode = 'wispTell'; e.modeT = 0.7; e.vx = 0; number(e.x, e.y - 56, 'THE WISP', '#ff9a5c'); SFX.charge(); }
-      else if (ad < 72 && e.turn % 2 === 0) { e.mode = 'jetTell'; e.modeT = 0.65; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); }   /* THE JET is every other choice up close, and a shield turns it: the brief's bellows cone, '!' */
-      else { e.mode = 'emberTell'; e.modeT = 0.55; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); }
+      /* UP ON A STALL BY CHOICE (phase two): one ember from the height, then down to you */
+      if (!lvl && !P.ground && !P.climb) { e.cd = 0.1; break; }   /* (a hero in the air is not on another floor: he waits to see where you come down) */
+      if (!lvl && e.perch > 0) { e.perch = 0; e.mode = 'emberTell'; e.modeT = 0.55; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); break; }
+      /* ON ANOTHER FLOOR: he hops to yours - or, now and then from under a stall, lobs the ember up (an arc is what answers height) */
+      if (!lvl && (P.ground || P.climb)) { const spot = pyroSpot(e);
+        if (spot && Math.abs(spot.x - e.x) < D.hopFar && !(above && e.turn % 3 === 0)) { e.mode = 'hopCrouch'; e.modeT = 0.22; e.vx = 0; e.hopTo = spot; break; } }
+      if (!lvl) { if (ad < 220) { e.mode = 'emberTell'; e.modeT = 0.55; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); } else e.cd = 0.25; break; }
+      /* ON YOUR FLOOR: HER RUN OF THREE up close, HER HELD BLOW a step out, and far off the ember - or (phase two) up onto a stall */
+      if (ad < D.reach + 4 && !(P.block && e.turn % 2 === 0)) { e.cut = 1; e.mode = 'cutTell'; e.modeT = D.cutTell[0]; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); break; }
+      if (ad < D.cone - 10 && (e.turn % 3 === 0 || P.block)) {   /* (and he answers a raised shield with the blow no shield turns) */
+        e.mode = 'bellowsTell'; e.modeT = D.bellowsTell; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); break; }
+      if (ad > 110 && p2 && e.turn % 3 === 2) { const s = pyroStalls(e).filter(q => Math.abs((q.l + q.r) / 2 - e.x) < D.hopFar).sort((a, b) => Math.abs((a.l + a.r) / 2 - e.x) - Math.abs((b.l + b.r) / 2 - e.x))[0];
+        if (s && e.y > s.y) { e.mode = 'hopCrouch'; e.modeT = 0.22; e.vx = 0; e.hopTo = { x: (s.l + s.r) / 2, y: s.y }; e.perch = 1; break; } }
+      if (ad > 110 && e.turn % 3 === 0) { e.mode = 'emberTell'; e.modeT = 0.55; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); break; }
+      e.cd = 0.25; break; }
+    /* THE HOP (not a blow: he lands on nobody, and a tell with no blow wears no mark) */
+    case 'hopCrouch': e.vx = 0; if (e.modeT <= 0) { pyroHop(e, e.hopTo.x, e.hopTo.y); e.mode = 'hop'; e.modeT = 1.6; } break;
+    case 'hop': if ((e.onGround && e.vy >= 0 && e.modeT < 1.52) || e.modeT <= 0) { e.mode = 'land'; e.modeT = 0.18; e.vx = 0; dust(e.x, e.y, 4); SFX.thud(); } break;
+    case 'land': if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.15; } break;
+    /* HER RUN OF THREE. Each cut told (a yellow !: the shield turns it), each on her own swing's clock. A cut that LANDS ends the run -
+       never a second blow into a hero still reeling from the first; a cut the shield takes, or the air, goes on to the next. */
+    case 'cutTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = D.cutT; e.cutRes = null; e.cutDone = false; e.vx = e.face * 70; SFX.foeSlash(); } break;
+    case 'cut': { const t = D.cutT - e.modeT, third = e.cut === 3;
+      if (!e.cutDone && t >= D.live[0] && t < D.live[1]) { const fx = (P.x - e.x) * e.face;
+        if (!P.dead && fx > -4 && fx < D.reach + (P.w || 10) / 2 && Math.abs((P.y - 8) - (e.y - 12)) < D.top) { e.cutDone = true;
+          e.cutRes = damagePlayer(e.x, third ? DMG.pyroThird : DMG.pyroCut, { who: e, name: third ? 'THE THIRD CUT' : 'THE STAFF' });
+          if (third && e.cutRes) { P.vx = e.face * D.shove; if (P.ground) P.vy = -80; } } }
+      if (e.modeT <= 0) { heat(8);   /* each cut stokes him as her staff blow stokes her */
+        const more = e.cutRes !== 'hit' && e.cut < 3 && !P.dead && Math.abs(P.y - e.y) < 26 && ad < D.reach + 30;
+        if (e.cutRes === 'hit') { e.mode = 'cutEnd'; e.modeT = 0.35; }
+        else if (more && p2 && e.cut === 2) { e.mode = 'bellowsTell'; e.modeT = D.bellowsTell; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
+        else if (more) { e.cut++; e.mode = 'cutTell'; e.modeT = D.cutTell[e.cut - 1]; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); }
+        else after(); }
       break; }
+    case 'cutEnd': if (e.modeT <= 0) after(); break;
+    /* HER HELD BLOW, THE BELLOWS: the flame gathered back low, then a cone of fire out of the staff. It goes through a guard, as hers
+       does (a red !!): get over it, roll through it or be out of its reach. One blow a Bellows. */
+    case 'bellowsTell': e.face = Math.sign(d) || e.face; e.vx = 0;
+      if (Math.random() < dt * 30) parts.push({ x: e.x + e.face * 8 + (Math.random() - 0.5) * 12, y: e.y - 18 - Math.random() * 16, vx: 0, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: -20 });
+      if (e.modeT <= 0) { e.mode = 'bellows'; e.modeT = D.bellowsT; e.jetHit = false; e.vx = e.face * 110; SFX.roar(); SFX.jet(); shakeCam(3, e.face * 2); } break;
+    case 'bellows': {
+      for (let k = 0; k < 3; k++) { const r = Math.random(); parts.push({ x: e.x + e.face * (14 + r * (D.cone - 14)), y: e.y - 18 + (Math.random() - 0.5) * (8 + r * 26), vx: e.face * 90, vy: -20, life: 0.25, max: 0.25, col: r < 0.4 ? '#fff6c8' : r < 0.7 ? '#ffd36b' : '#ff6b2c', size: 2, grav: -40 }); }
+      const fx = (P.x - e.x) * e.face, fy = (P.y - 10) - (e.y - 18);
+      if (!P.dead && !e.jetHit && fx > 6 && fx < D.cone && Math.abs(fy) < 12 + fx * 0.18) { e.jetHit = true; damagePlayer(e.x, DMG.pyroBellows, { unblockable: true, who: e, name: 'THE BELLOWS' }); }
+      if (e.modeT <= 0) { heat(20); after(); } break; }
+    /* HER ONE SPELL, THE EMBER: three off the palm, lobbed at you - a yellow !, and a shield takes them */
     case 'emberTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ember'; e.modeT = 0.55; e.shots = 3; e.shotT = 0; } break;
     case 'ember': e.shotT -= dt;
       if (e.shotT <= 0 && e.shots > 0) { e.shots--; e.shotT = 0.15; const sx = e.x + e.face * 12, sy = e.y - 24, ty = P.y - 10, dx2 = P.x - sx, dy2 = ty - sy, dd = Math.hypot(dx2, dy2) || 1;
         seeds.push({ x: sx, y: sy, vx: dx2 / dd * 200 + (Math.random() - 0.5) * 30, vy: dy2 / dd * 200 - 40, g: 160, life: 2.4, dead: false, spore: false, dmg: DMG.pyroEmber, shot: true, fire: true, pyroEmber: true, owner: e }); SFX.spark(); }
       if (e.modeT <= 0 && e.shots <= 0) { heat(12); after(); } break;
-    case 'jetTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'jet'; e.modeT = 0.8; e.jetHit = false; SFX.roar(); SFX.puff(); } break;
-    case 'jet': { /* THE BELLOWS: a cone of flame off the staff, low and long. Nothing turns it: get over it, or behind him */
-      for (let k = 0; k < 3; k++) { const r = Math.random(); parts.push({ x: e.x + e.face * (14 + r * 70), y: e.y - 18 + (Math.random() - 0.5) * (8 + r * 26), vx: e.face * 90, vy: -20, life: 0.25, max: 0.25, col: r < 0.4 ? '#fff6c8' : r < 0.7 ? '#ffd36b' : '#ff6b2c', size: 2, grav: -40 }); }
-      const fx = (P.x - e.x) * e.face, fy = (P.y - 10) - (e.y - 18);
-      if (!P.dead && !e.jetHit && fx > 6 && fx < 86 && Math.abs(fy) < 12 + fx * 0.18) { e.jetHit = true; damagePlayer(e.x, DMG.pyroJet, { who: e, name: 'THE JET' }); }   /* one blow a jet, and the shield turns it */
-      if (e.modeT <= 0) { heat(20); after(); } break; }
-    /* THE CINDER STEP (hers: a roll that goes through it alight and leaves its fire behind). His body is a blow a
-       shield turns; the LINE OF FIRE he draws across the square is the part you have to live with afterwards. That
-       is what a boss dash is for - it cuts the room - and it is why this replaced the old leap-and-slam, which was
-       not one of her abilities at all (Daniel, 2026-09-22: "get rid of the fire stomp"). */
-    case 'stepTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'step'; e.modeT = 0.34; e.stepHit = false; e.trailX = e.x; SFX.throwWhoosh(); } break;
-    case 'step': { e.vx = e.face * 330;
-      if (Math.abs(e.x - (e.trailX ?? e.x)) > 13) { e.trailX = e.x; fires.push({ x: e.x, y: floor, life: 2.6, delay: 0, dmg: DMG.squareFire }); }
-      for (let k = 0; k < 2; k++) parts.push({ x: e.x + (Math.random() - 0.5) * 12, y: e.y - 8 - Math.random() * 20, vx: -e.face * 40, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: -30, fire: true });
-      if (!P.dead && !e.stepHit && ad < 16 && Math.abs(P.y - e.y) < 26) { e.stepHit = true; const r = damagePlayer(e.x, DMG.pyroStep, { who: e, name: 'THE CINDER STEP' }); if (r === 'hit') { P.vx = e.face * 190; P.vy = -150; P.ground = false; } }
-      if (e.modeT <= 0) { heat(14); after(); } break; }
-    /* THE WISP (hers: a flame that keeps her company and goes at what she is fighting). He calls the village's own
-       emberwisp, so there is no new creature here - the level already fights you with these. It throws no blow
-       itself, so it wears no mark. */
-    case 'wispTell': if (e.modeT <= 0) { e.mode = 'wisp'; e.modeT = 0.4; SFX.puff(); ringAt(e.x, e.y - 24, 22, '#ffd36b', 0.35);
-      const n0 = enemies.length; spawnEnt({ t: 'emberwisp', x: Math.floor(e.x / TS) + e.face, y: Math.floor((e.y - 26) / TS) });
-      for (let q = n0; q < enemies.length; q++) enemies[q].fromPyro = true; heat(10); } break;
-    case 'wisp': if (e.modeT <= 0) after(); break;
+    case 'doused': e.vx = 0; if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * 14, y: e.y - 6 - Math.random() * 24, vx: 0, vy: 40, life: 0.4, max: 0.4, col: '#9ad0ff', size: 1, grav: 300 });
+      if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.6; } break;
     case 'overheat': if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 16, y: e.y - 30 - Math.random() * 10, vx: (Math.random() - 0.5) * 20, vy: -40 - Math.random() * 30, life: 1.1, max: 1.1, col: Math.random() < 0.7 ? '#4a4048' : '#ff9a5c', size: 3, grav: -30 });
-      if (e.modeT <= 0) { e.mode = 'ventTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); } break;
-    case 'ventTell': if (Math.random() < dt * 40) parts.push({ x: e.x + (Math.random() - 0.5) * 50, y: e.y - Math.random() * 30, vx: (e.x - (e.x + 0)) * 0, vy: -10, life: 0.4, max: 0.4, col: '#ff9a5c', size: 1, grav: 0 });
+      if (e.modeT <= 0 && e.heat < PYRO_VENT_AT) { e.mode = 'stalk'; e.cd = 0.6; }   /* (a bucket put him out while he stood there: nothing left to vent) */
+      else if (e.modeT <= 0) { e.mode = 'ventTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); } break;
+    case 'ventTell': if (Math.random() < dt * 40) parts.push({ x: e.x + (Math.random() - 0.5) * 50, y: e.y - Math.random() * 30, vx: 0, vy: -10, life: 0.4, max: 0.4, col: '#ff9a5c', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'vent'; e.modeT = 0.5; e.heat = 0; shakeCam(5); SFX.roar(); ringAt(e.x, e.y - 16, 66, '#ff6b2c', 0.5); ringAt(e.x, e.y - 16, 40, '#ffd36b', 0.35);
         if (!P.dead && Math.hypot(P.x - e.x, (P.y - 10) - (e.y - 16)) < 66) damagePlayer(e.x, DMG.pyroVent, { unblockable: true, who: e, name: 'THE VENT' }); } break;
     case 'vent': if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 1.0; } break;
-    case 'staffTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'staff'; e.modeT = 0.35; SFX.slash();
-      if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 38 && Math.abs(P.y - e.y) < 26) { const r = damagePlayer(e.x, DMG.pyroStaff, { who: e, name: 'THE STAFF' }); if (r === 'blocked') { e.stagger = 0.6; number(e.x, e.y - 30, 'PARRIED', '#8fd160'); } } heat(6); } break;
-    case 'staff': if (e.modeT <= 0) after(); break;
-    case 'wallTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'wall'; e.modeT = 0.6; SFX.heavy(); SFX.puff(); shakeCam(2);
-      for (let i = 1; i <= 5; i++) fires.push({ x: e.x + e.face * i * 14, y: floor, life: 3, delay: i * 0.08, dmg: DMG.squareFire + 2 }); heat(14); } break;   /* the Pyromancer's FIRE WALL: five flames marching off the staff */
-    case 'wall': if (e.modeT <= 0) after(); break;
   }
   if (e.mode === 'stalk' || e.mode === 'wake') e.vx += (want - e.vx) * Math.min(1, dt * 6);
-  else if (e.mode !== 'rise') e.vx *= Math.max(0, 1 - dt * 10);
+  else if (e.mode !== 'hop') e.vx *= Math.max(0, 1 - dt * 10);
   e.vy += 1000 * dt; if (e.vy > 560) e.vy = 560;
-  const r = moveBody(e, e.vx * dt, e.vy * dt, false); e.onGround = !!r.ground; if (r.ground) e.vy = 0; if (r.hitX) e.vx = 0;
-  const edge = e.mode === 'rise' || e.mode === 'drop' ? 14 : 60; e.x = Math.max(A.x0 + edge, Math.min(A.x1 - edge, e.x));   /* he keeps off the walls: there is always a way round him, never a corner he hides in behind his own fire */
+  const drop = e.mode === 'hop' && e.hopDown && e.y < e.hopY - 6;   /* hopping DOWN he passes through the stall he left */
+  const r = moveBody(e, e.vx * dt, e.vy * dt, drop); e.onGround = !!r.ground; if (r.ground) e.vy = 0; if (r.hitX) e.vx = 0;
+  e.x = Math.max(A.x0 + 60, Math.min(A.x1 - 60, e.x));   /* he keeps off the walls: there is always a way round him, never a corner he hides in behind his own fire */
 }
-const PYRO_ANIM = { staffTell: 'cast', staff: 'block', wallTell: 'blast', wall: 'blast', stalk: 'run', wake: 'idle', emberTell: 'cast', ember: 'cast', jetTell: 'block', jet: 'block', stepTell: 'crouch', step: 'run', wispTell: 'cast', wisp: 'cast', dropTell: 'crouch', rise: 'jump', drop: 'plunge', land: 'land', overheat: 'hurt', ventTell: 'blast', vent: 'blast', sleep: 'idle' };
+const PYRO_ANIM = { stalk: 'run', wake: 'idle', emberTell: 'cast', ember: 'cast', hopCrouch: 'crouch', land: 'land', cutEnd: 'idle', doused: 'hurt', overheat: 'hurt', ventTell: 'blast', vent: 'blast', sleep: 'idle' };
+/* HER FRAMES, ON HER CLOCK: the cuts are the hero's own swing (attackPose, the same beats her swing is drawn on) over her baked kit,
+   the Bellows her own held blow; [key, frame] */
+function pyroPose(e) {
+  const set = SPR.pyromancerKit, D = PYRO_DUEL, R = set ? set.R : {};
+  if (e.mode === 'cutTell') return [e.cut === 2 && R.atkB ? 'atkB' : 'atk', 0];
+  if (e.mode === 'cut') { const p = attackPose('pyro', { atk: D.cutT - e.modeT, combo: e.cut % 3, ground: true }, R); return [p.key, p.frame]; }
+  if (e.mode === 'bellowsTell') return ['heavy', 0];
+  if (e.mode === 'bellows') { const t = D.bellowsT - e.modeT; return t < 0.2 ? ['heavy', 1] : t < 0.36 ? ['heavy', 2] : ['atk', 3]; }
+  if (e.mode === 'hop') return [e.vy < 0 ? 'jump' : 'fall', Math.floor(e.anim * 8) % 2];
+  if (e.mode === 'stalk' && (e.guardT > 0 || e.readN >= 2)) return ['block', 0];   /* HIS GUARD IS UP: the staff levelled across him */
+  let key = PYRO_ANIM[e.mode] || 'idle'; if (key === 'run' && Math.abs(e.vx) < 6) key = 'idle';
+  const fr = R[key], n = Array.isArray(fr) ? fr.length : 1; return [key, Math.floor(e.anim * (key === 'run' ? 10 : 6)) % n];
+}
 function drawPyromancer(e, cx, cy) {
   const set = SPR.pyromancerKit; if (!set) return;
-  let key = PYRO_ANIM[e.mode] || 'idle'; if (key === 'run' && Math.abs(e.vx) < 6) key = 'idle';
-  const fr = set.R[key], n = Array.isArray(fr) ? fr.length : 1, frame = Math.floor(e.anim * (key === 'run' ? 10 : 6)) % n;
+  const [key, frame] = pyroPose(e);
   const x = e.x - cx, y = e.y - cy, k = (e.heat || 0) / 100;
   if (k > 0.05) { g.globalAlpha = 0.12 + 0.28 * k + (e.mode === 'overheat' ? 0.15 * Math.sin(time * 20) : 0); g.fillStyle = e.mode === 'overheat' ? '#fff6c8' : '#ff6b2c'; g.beginPath(); g.arc(Math.round(x), Math.round(y - 20), 16 + 14 * k, 0, 7); g.fill(); g.globalAlpha = 1; }
   const white = e.flash > 0 || (e.mode === 'overheat' && Math.floor(time * 10) % 2 === 0) || (/Tell$/.test(e.mode) && Math.floor(time * 12) % 3 === 0);
-  drawSet(set, key, frame, x, y, e.face, white, 1.4, 1.4);
+  drawSet(set, key, frame, x, y, e.face, white, PYRO_SCALE, PYRO_SCALE);
+  if (e.wetT > 0) { g.fillStyle = '#9ad0ff'; for (let q = 0; q < 3; q++) { const k2 = (time * 1.7 + q / 3) % 1; g.globalAlpha = 1 - k2; g.fillRect(Math.round(x - 8 + q * 7), Math.round(y - 38 + k2 * 34), 1, 2); } g.globalAlpha = 1; }   /* WET: he drips */
+  if (e.mode === 'stalk' && (e.guardT > 0 || e.readN >= 2)) { g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 14); g.strokeStyle = '#dfe8ff'; g.beginPath(); g.arc(Math.round(x + e.face * 12), Math.round(y - 22), 12, e.face > 0 ? -1.2 : Math.PI - 1.2, e.face > 0 ? 1.2 : Math.PI + 1.2); g.stroke(); g.globalAlpha = 1; }   /* HIS GUARD: a pale arc in front of him */
 }
 function drawPyroHeat(b) {   /* HIS HEAT, over his bar: the class's own meter, and the fight's clock - on its own line of the plate, under his name */
   const k = (b.heat || 0) / 100, over = b.mode === 'overheat', y = VH - 17;
@@ -26392,6 +26494,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   telling: e => !!e && windingUp(e), markOf: e => markOf(e), marksMissed: () => marksMissed(),   /* the mark the screen holds over a windup, and every windup the table had no row for */
   sim(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */
   tp(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; },
+  pyroDuel: { D: PYRO_DUEL, pose: e => pyroPose(e), stalls: e => pyroStalls(e) },   /* THE PYROMANCER's mirror duel, for tools/pyro-duel.mjs */
   /* THE BOT HAS TO BE ABLE TO LOOK AT A PLACE IT IS NOT STANDING. A backdrop fault lives at a height: a band cut off
      above the fourth storey, a room wall that stops a row short. Walking there to see it takes a minute a frame. This
      puts the hero and the camera on a tile and draws one frame, nothing updated, so a sweep of a level is a loop. */

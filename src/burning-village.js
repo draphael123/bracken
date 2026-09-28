@@ -228,6 +228,11 @@ export function buildBurningVillage({ painter, T, TS }) {
      QUENCH.secs, even while his heat is high (fire-spread.js quench). The room's own water (A4, A12); it opens nothing on him */
   ent('villagewell', 456, F - 1, { bucket: true, kind: 'pump', splash: false });
   plat(461, F - 3, 5); plat(475, F - 3, 5); plat(488, F - 3, 5);            // three market stalls: somewhere off the burning floor
+  /* THE BUCKET OPENING (the Pyromancer's mirror duel, 2026-09-28): a thrown bucket that reaches him douses him and he stands open
+     (main.js pyroDouse). So a bucket is always in reach in his square: the pump at the west door, a rain butt at the east wall, and
+     one up on the middle stall, off the floor his heat sets alight (tools/pyro-duel.mjs) */
+  ent('villagewell', 492, F - 1, { bucket: true, kind: 'butt', splash: false });
+  ent('villagewell', 476, F - 4, { bucket: true, kind: 'butt', splash: false });
   burn.push([455, 495, F - 1, { square: true }]);
   foe('pyromancer', 484, F - 1, { boss: true });
   facades.push([448, 500, 12, F - 1, 'burning']);
