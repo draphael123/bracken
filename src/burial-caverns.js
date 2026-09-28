@@ -216,6 +216,7 @@ export function burialCaverns({ painter, T, TS }) {
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }], calm,
     gasVents, candles, darkZones, crumble, burialSections: SECTIONS.map(s => s.slice()), arena, ambushes, graves, graveRows: [vy1 + 1, vy1 + 2], quest,
     mini: { name: 'THE GRAVEYARD KEEPER', x0: vx0 * TS, x1: (vx1 + 1) * TS, floor: (vy1 + 1) * TS, trigger: (vx0 + 4) * TS, wallL: vx0 - 1, gate: DESCENT.gate, boss: 'gravewarden', y0: vy0 * TS, y1: (vy1 + 2) * TS },
-    drownedHands, ledgeZones: [[184, 187, 61, 61, 'cryptStone'], [WALK.segs[0][0], WALK.segs[WALK.segs.length - 1][1], 56, 57, 'cryptStone']],
+    drownedHands, ledgeZones: [[184, 187, 61, 61, 'cryptStone'], [WALK.segs[0][0], WALK.segs[WALK.segs.length - 1][1], 56, 57, 'cryptStone'],
+      [0, 99, 6, 21, 'barrowStone'], [LAIR[0], LAIR[1], 6, 21, 'processionStone']],   /* THE CANDLE PATH and THE BURIED DEAD'S LAIR: dressed stone off each one's own backdrop, not the mine's staging (follow-up, Daniel 2026-09-27) */
     burialPlaces: [['THE BLIND VAULT', ...BLIND], ['THE ROTTEN BRIDGES', BRIDGES[0][0], BRIDGES[1][1]]], ventLight: VENT.light };
 }

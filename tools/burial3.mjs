@@ -9,12 +9,14 @@
         with every gap 3 tiles or less and no step up of more than one; or is not optional (the east pier must be reachable without it);
         or its hoard pays less than 8 coins (S7); or any ledge in the ossuary is still drawn as timber;
      5. A FLOATING BIER does not hold a moment and then sink under you, or does not come back up when you leave it;
-     6. A DROWNED HAND grabs without a tell, misses a swimmer who stays over it, or reaches a hero on a pier. */
+     6. A DROWNED HAND grabs without a tell, misses a swimmer who stays over it, or reaches a hero on a pier;
+     7. Any one-way ledge in THE CANDLE PATH or THE BURIED DEAD'S LAIR is still drawn as the mine's timber staging, instead of stone
+        dressed to match each section's own backdrop (follow-up, Daniel 2026-09-27). */
 import assert from 'node:assert/strict';
 import { LEVELS, T } from '../src/level.js';
 import { updateBuriedDead, HANDS, BREATH } from '../src/buried-dead.js';
 import { VENT, stepBier, BIER, updateDrownedHands, DROWN } from '../src/burial-expansion.js';
-import { WALK, BIERS, HANDS_AT, DESCENT } from '../src/burial-caverns.js';
+import { WALK, BIERS, HANDS_AT, DESCENT, LAIR } from '../src/burial-caverns.js';
 import { floodReach } from '../src/reachcore.js';
 import { install, newCanvas } from './node-canvas.mjs';
 install();
@@ -96,4 +98,15 @@ const run = (e, c, secs) => { for (let f = 0; f < secs * 60; f++) { e.hp = 100; 
   const bier = sim(H(), { x: 404, y: 1050, swim: false }, 2); assert(bier.some(e => e[0] === 'grab'), 'a hero on a bier at the surface is out of the hands\' reach');
   const pier = sim(H(), { x: 404, y: 1024, swim: false }, 2); assert.equal(pier.length, 0, 'a hand reached a hero on a pier');
   out.push(HANDS_AT.length + ' drowned hands: told ' + DROWN.tell + ' s, grab who stays, not who leaves, not on a pier'); }
+// 7. NO TIMBER IN THE CANDLE PATH OR THE BURIED DEAD'S LAIR
+{ const at = (x, y) => L.grid[y * L.W + x], zones = L.ledgeZones || [];
+  const named = z => zones.find(zz => zz[4] === z);
+  const barrow = named('barrowStone'), procession = named('processionStone');
+  assert(barrow, 'THE CANDLE PATH has no barrowStone ledge zone'); assert(procession, "THE BURIED DEAD'S LAIR has no processionStone ledge zone");
+  const wood = (x0, x1, y0, y1, set) => { let n = 0; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++)
+    if (at(x, y) === T.ONEWAY && !zones.some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3] && z[4] === set)) n++; return n; };
+  const woodCP = wood(0, 99, 6, 21, 'barrowStone'), woodLair = wood(LAIR[0], LAIR[1], 6, 21, 'processionStone');
+  assert.equal(woodCP, 0, woodCP + ' ledge tiles in THE CANDLE PATH are still the mine\'s staging (wood)');
+  assert.equal(woodLair, 0, woodLair + ' ledge tiles in THE BURIED DEAD\'S LAIR are still the mine\'s staging (wood)');
+  out.push('THE CANDLE PATH and THE BURIED DEAD\'S LAIR: stone ledges, no timber left'); }
 console.log('burial3  ' + out.join('; '));

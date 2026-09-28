@@ -137,3 +137,24 @@ export function drawCryptPier(g, l, r, t, b) {
   for (let y = t + 18; y < b; y += 12) R(g, x, y, 14, 1, '#2c3a40');
   g.strokeStyle = '#4a5c62'; g.lineWidth = 3; g.beginPath(); g.moveTo(l + 2, t + 7); g.quadraticCurveTo(x - 2, t + 7, x, t + 24); g.moveTo(r - 2, t + 7); g.quadraticCurveTo(x + 16, t + 7, x + 14, t + 24); g.stroke();
 }
+/* THE CANDLE PATH'S LEDGE (claude/burial3, follow-up: Daniel, 2026-09-27, "the lair's own ledges and the Candle Path's are still the
+   mine's staging"): a course of the barrow's own dry-stone revetment (see barrow(), above) laid as a shelf, not a board (L.ledgeZones
+   names 'barrowStone'). */
+export function bakeBarrowLedge(canvas, v, end) {
+  const [c, g] = canvas(16, 16);
+  R(g, 0, 0, 16, 7, '#5a5248'); R(g, 0, 0, 16, 2, '#766c59'); R(g, 0, 2, 16, 1, '#6e665a'); R(g, 0, 6, 16, 1, '#39362f');
+  R(g, (v * 5) % 16, 2, 1, 4, '#39362f'); R(g, 1 + ((v * 3) % 12), 4, 4, 1, '#4e473e');
+  if (end === 'L') { R(g, 0, 0, 2, 7, '#39362f'); R(g, 1, 7, 4, 3, '#5a5248'); R(g, 1, 10, 3, 2, '#39362f'); }
+  if (end === 'R') { R(g, 14, 0, 2, 7, '#39362f'); R(g, 11, 7, 4, 3, '#5a5248'); R(g, 12, 10, 3, 2, '#39362f'); }
+  return c;
+}
+/* THE BURIED DEAD'S LAIR LEDGE: dressed stone off the processional hall's own pillars (see procession(), above), the tiers he fights
+   round and his bier's chains carry (L.ledgeZones names 'processionStone'). */
+export function bakeProcessionLedge(canvas, v, end) {
+  const [c, g] = canvas(16, 16);
+  R(g, 0, 0, 16, 7, '#57505e'); R(g, 0, 0, 16, 2, '#6e6676'); R(g, 0, 2, 16, 1, '#7a7284'); R(g, 0, 6, 16, 1, '#332f38');
+  R(g, (v * 5) % 16, 2, 1, 4, '#332f38'); R(g, 1 + ((v * 3) % 12), 4, 4, 1, '#4a4452');
+  if (end === 'L') { R(g, 0, 0, 2, 7, '#332f38'); R(g, 1, 7, 4, 3, '#57505e'); R(g, 1, 10, 3, 2, '#332f38'); }
+  if (end === 'R') { R(g, 14, 0, 2, 7, '#332f38'); R(g, 11, 7, 4, 3, '#57505e'); R(g, 12, 10, 3, 2, '#332f38'); }
+  return c;
+}

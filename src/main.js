@@ -40,7 +40,7 @@ import { crumbleStep, crackMarks } from './tower-collapse.js'; import * as FTW f
 import {bakeCoastalFoe} from './coastal-foes.js';
 import {drawClimbCues} from './haunted-coast.js';
 import {updateDeckBreaks,drawDeckBreaks} from './storm-ship.js';
-import {updateGasVents,drawGasVents,updateGraveFire,drawHandFire,inVentLight,VENT as BVENT,stepBier,updateDrownedHands,drawDrownedHands,DROWN} from './burial-expansion.js'; import {paintBurialRoom,drawSeam as drawBurialSeam,drawBurialMover,bakeCryptLedge,drawCryptPier} from './burial-looks.js'; import {updateCrumble,drawCrumble,crumbleReset,burialHoles} from './burial-variety.js';
+import {updateGasVents,drawGasVents,updateGraveFire,drawHandFire,inVentLight,VENT as BVENT,stepBier,updateDrownedHands,drawDrownedHands,DROWN} from './burial-expansion.js'; import {paintBurialRoom,drawSeam as drawBurialSeam,drawBurialMover,bakeCryptLedge,drawCryptPier,bakeBarrowLedge,bakeProcessionLedge} from './burial-looks.js'; import {updateCrumble,drawCrumble,crumbleReset,burialHoles} from './burial-variety.js';
 import {updateKeepPassages,drawKeepPassages} from './keep-passages.js';
 import {whirlInit,updateWhirlpools,drawWhirlpools,strikeLever,whirlKey} from './whirlpools.js';   /* THE KEEP'S WHIRLPOOLS: the pull, the air they burn, and the lever each one shows you (docs/briefs/keep-rework-2.md) */
 import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js';
@@ -862,6 +862,8 @@ function resolveTiles() {
   if(!LEDGE_SETS.cargo)Object.assign(LEDGE_SETS,bakeRouteLedges());
   if(!LEDGE_SETS.slate)LEDGE_SETS.slate=FTW.bakeSlateLedge();   /* THE FALLING TOWER's cut slate */
   if(!LEDGE_SETS.cryptStone)LEDGE_SETS.cryptStone={ledge:[0,1,2].map(v=>bakeCryptLedge(canvas,v)),ledgeL:bakeCryptLedge(canvas,3,'L'),ledgeR:bakeCryptLedge(canvas,4,'R')};   /* THE DROWNED OSSUARY's stone (burial-looks.js) */
+  if(!LEDGE_SETS.barrowStone)LEDGE_SETS.barrowStone={ledge:[0,1,2].map(v=>bakeBarrowLedge(canvas,v)),ledgeL:bakeBarrowLedge(canvas,3,'L'),ledgeR:bakeBarrowLedge(canvas,4,'R')};   /* THE CANDLE PATH's stone (burial-looks.js) */
+  if(!LEDGE_SETS.processionStone)LEDGE_SETS.processionStone={ledge:[0,1,2].map(v=>bakeProcessionLedge(canvas,v)),ledgeL:bakeProcessionLedge(canvas,3,'L'),ledgeR:bakeProcessionLedge(canvas,4,'R')};   /* THE BURIED DEAD'S LAIR's stone (burial-looks.js) */
   if(!LEDGE_SETS.masonry){const [c,cg]=canvas(16,16);cg.fillStyle='#39362f';cg.fillRect(0,0,16,6);cg.fillStyle='#a69a82';cg.fillRect(0,1,16,3);cg.fillStyle='#cec0a0';cg.fillRect(0,1,16,1);cg.fillStyle='#766c59';cg.fillRect(7,2,1,3);LEDGE_SETS.masonry={ledge:[c],ledgeL:c,ledgeR:c};}
   /* THE DESERT'S OWN LEDGES (L.ledgeKit = 'desert', src/redraw/desert.js and src/redraw/caravan_ruins.js): three kits picked per tile by
      where it sits (desertLedgeAt, below), not one name for the whole level - a ruin's ledges, a natural cliff's shelves and
