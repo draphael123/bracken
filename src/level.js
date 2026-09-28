@@ -163,6 +163,10 @@ function brackenWood() {
   block(200, 214, 15, 27);
   ent('sprig', 206, 14, { face: -1 });
   coins([203, 13], [209, 12], [212, 13]);
+  // design-audit plan item 2 (wood-to-highcrown-design.md, BRACKEN WOOD): a thorn on each lip of the stream, so the
+  // "a held jump is higher than a tapped one" sign further up finally asks for one that can fail - miss it and you
+  // land in the water, not on a hazard tile: the first level stays gentle, only the crossing costs you a swim back.
+  ent('thorn', 214, 14, { face: 1 }); ent('thorn', 218, 14, { face: -1 });
   block(218, 234, 15, 27);
   coins([215, 12], [216, 11], [217, 12]);
   ent('check', 221, 14);
@@ -195,6 +199,11 @@ function brackenWood() {
   ent('deco', 293, 5, { kind: 'drip', hang: true }); ent('deco', 300, 4, { kind: 'drip', hang: true }); ent('deco', 309, 5, { kind: 'drip', hang: true }); ent('deco', 318, 4, { kind: 'drip', hang: true });
   /* The comb hangs as wax, not footing: the Queen shakes pieces loose, but nobody can stand on her ceiling. */
   ent('queen', 304, 3);
+  // design-audit plan item 3, TWIST (wood-to-highcrown-design.md, BRACKEN WOOD): a dead pine at the west wall, inside
+  // the vines and before the fight's own trigger so it can be felled any time. Four strokes (already taught at the
+  // tarn) lay it across the near comb as a third perch, close to the Queen's own height, so the level's own machine
+  // reaches the fight it built toward.
+  ent('felltree', 289, 6, { len: 10, dir: 1 });
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 },
@@ -217,6 +226,11 @@ function brackenWood() {
   G0.ent('wasp', 245, 13, { pogo: true }); G0.ent('wasp', 248, 13, { pogo: true }); G0.ent('wasp', 253, 13, { pogo: true }); // (level with the wasp pit's: just under the bank, so a jump off it gets above them; they hung too high to reach)
   G0.coins([244, 13], [248, 13], [252, 13]);
   G0.block(253, 270, 15, 27); // the far lip is inside two paid bounces, even under the paladin's heavier feet
+  // design-audit plan item 1, DEVELOP (wood-to-highcrown-design.md, BRACKEN WOOD): a badger on the far bank, right at
+  // the log's landing. It charges back along the one-tile pine, and its hit throws you the way it is running - back
+  // over the water you just crossed. Miss the jump (or the parry) and it is a swim and a walk back, not a hit worse
+  // than the ones this level already hands out.
+  G0.ent('badger', 257, 14, { face: -1 });
   G0.ent('check', 259, 14); G0.ent('sprig', 265, 14, { face: -1 }); G0.coins([262, 13], [268, 13]);
   const R0 = G0.done();
   const G = grow(R0, R0, 130, 46);
