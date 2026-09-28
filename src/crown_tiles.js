@@ -144,6 +144,9 @@ export function bakeFacade(kind, tw, th, seed, o = {}) {
   /* THE DROWNED KING'S STONE (o.sea): the same courses under thirty years of sea - green-grey, weed where the snow lay, and the
      windows lit by nothing a man lit */
   if (o.sea) Object.assign(S, { f: '#2e3e40', l: '#3a4c4c', d: '#243232', mor: '#162022', hi: '#4a605c', slit: '#081012', snow: '#5a8a58', roof: '#26343a', roofL: '#34464a', win: '#3fa89a', winL: '#bff5ea' });
+  /* STORMHOLD'S WALLS (o.town): the town's own stone, honey limestone under snow and a slate cap - not the Queen's granite,
+     so the castle town and the castle next door are two places at a glance (F6) */
+  if (o.town) Object.assign(S, { f: '#7a6a52', l: '#8a785e', d: '#665842', mor: '#463c30', hi: '#9c8a6c', slit: '#16121a', snow: '#eef4ff', roof: '#2e3040', roofL: '#434658' });
   const roofH = kind === 'tower' && o.roof ? Math.min(Math.round(W * 0.6), Math.round(H * 0.45)) : 0, cren = roofH ? 0 : 8;
   const by = roofH + cren;   /* where the body starts */
   for (let y = by; y < H; y++) { const k = (y - by) & 7; rect(g, 0, y, W, 1, k === 7 ? S.mor : k === 0 ? S.l : S.f);
