@@ -5,6 +5,8 @@
 //   disarm, ironclad, realm   THE KNIGHT'S THREE: a shield stripped stops turning his cut; hit in iron he keeps swinging;
 //           the realm's light hurts, and a boss is never hit by a wave for more than its cap
 //   heavy   THE HEAVY CUT (hold X): no shield while the sword is up; let go early and it is a chop, held long it knocks the foe down
+//           (its sworn sword stands where it is put, speed 0: since the attack tokens (combat pass), a foe on a long cooldown - the
+//           cd=99 that keeps him from swinging here - steps back out to the waiting ring, 58 px, past the chop's 26 px reach)
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false });
@@ -20,7 +22,7 @@ try {
   if (WANT.includes('rise')) out.rise = await pg.evalp(`(()=>{const [e]=__kit('knight',['risingCut'],[['sprig',6]]);const y0=e.y;BK.press('throw');let keys=new Set(),top=0,held=0;
     for(let i=0;i<80;i++){BK.step(1);keys.add(BK.P.lastKey);top=Math.max(top,y0-e.y);if(y0-e.y>30&&BK.P.riseT<=0)held++;}
     return {top:Math.round(top),held,keys:[...keys]}})()`);
-  if (WANT.includes('heavy')) out.heavy = await pg.evalp(`(()=>{const run=(frames,block)=>{const [e]=__kit('knight',[],[['swornsword',20]]);BK.keys.atk=true;let st=0,guard=false;
+  if (WANT.includes('heavy')) out.heavy = await pg.evalp(`(()=>{const run=(frames,block)=>{const [e]=__kit('knight',[],[['swornsword',20]]);e.speed=0;BK.keys.atk=true;let st=0,guard=false;
       for(let i=0;i<frames;i++){if(block&&i===frames-10)BK.keys.block=true;BK.sim(1);guard=guard||BK.P.block;}BK.keys.atk=false;BK.keys.block=false;const x0=BK.P.x;
       for(let i=0;i<40;i++){BK.sim(1);st=Math.max(st,BK.P.cutStage||0);}return {st,guard,floored:e.floored>0,moved:Math.round(BK.P.x-x0),hp:5000-e.hp};};
     return {chop:run(21,false),held:run(72,true)}})()`);
