@@ -138,3 +138,39 @@ Checks run (all green): `burial3`, `burial3-keys` (28-32 s each run, real keys, 
 `burial-geometry`.
 
 Sha: `73bc711`, pushed to `origin/claude/burial3`.
+
+## Follow-up: slopes-trace
+
+The release suite's `node tools/slopes-trace.mjs` failed on this branch: `FAIL burial: first difference at frame 413 of 2020 (walk 6) - was
+[2325.93,326.26,56,-290,0], now [2325.93,326.26,56,148,0]`. Confirmed the pre-slopes baseline still holds on master `abcd773` (`ok burial`
+there, read-only in `bracken`), so the difference is this branch's own.
+
+**Traced it down to walk 6's start (tile 143, the road just past THE OSSUARY, in front of THE BLIND VAULT) and dumped every frame with
+`BK.enemies()` alongside it.** Position, velocity and every entity match byte-for-byte through frame 52. At frame 53 master lands a jump
+(vy jumps to -290, five frozen hitstop frames from the landing) while this branch just keeps falling (vy 148, still airborne) - because a
+"zombie" garrison filler that stands at tile ~146 on master is not there on this branch; this branch's copy of that same filler creature
+sits about 7 tiles further along instead (confirmed with a probe of `BK.enemies()` and `L.ents` on both checkouts).
+
+That filler zombie is not hand-placed: `src/burial-caverns.js` places the road, the shelves and THE BLIND VAULT's own dead by hand, and
+`garrison()` (`src/level.js`, table `GARRISON.burial`) then scatters four more zombies (plus husks, corpses, bats, etc.) into whatever
+standing spots are left, in level-width column order, using no per-tile randomness of its own - the same fixed list of candidate spots,
+walked in the same fixed order, every time. THE ARCADE WALK rework in this branch (`WALK.segs`, the `plat()` calls that replaced the
+"three wooden ledges out of reach of each other") added new standable stone piers in THE DROWNED OSSUARY (cols 178-302). That changes the
+total count and order of candidate spots `garrison()` finds across the WHOLE level, which shifts which candidate each of the four
+"zombie" fillers lands on - including the one nearest THE BLIND VAULT, seven tiles from where it stood before. Verified this is the whole
+story by temporarily disabling the new `updateDrownedHands` call in `updateBurialFire` (main.js) and re-running the trace: no change,
+frame 413 still differs, which rules out the drowned-hand/bier machinery itself. THE OSSUARY and THE BLIND VAULT's own tiles and
+hand-placed entities are byte-identical to master (`diff --strip-trailing-cr` on `src/burial-caverns.js`): nothing there moved by hand.
+
+This is **(b): an intended new mechanic the walk now meets**, not a bug - the Arcade Walk is exactly the content change Daniel asked for
+in this lane ("has nothing going on", "the upper walkway cannot be crossed"), and a garrison filler landing on a different one of its own
+always-valid spots because the level grew new floor elsewhere is the sprinkler doing its job, not a broken check. `tools/slopes-trace.mjs`
+already has a documented path for this (`--rebase=<id>`, used before for THE UNDERWATER KEEP's rework and for Burial's own rework in
+`claude/burial2`): it re-records ONE level's baseline on the current mover, leaving the other three on the original pre-slopes baseline.
+
+Ran `node tools/slopes-trace.mjs --rebase=burial`, then confirmed a plain `node tools/slopes-trace.mjs` is green on all four levels
+(`wood`, `kings`, `keep` untouched; `burial` now 2020 frames identical to its own new baseline). Only `docs/slopes-trace.json` changed.
+
+Also ran (all green): `burial3`, `burial3-keys`, `burial2`, `footing-art`.
+
+Sha: (this commit), pushed to `origin/claude/burial3`.
