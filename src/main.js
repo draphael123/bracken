@@ -19674,10 +19674,21 @@ function cutHoist(m) {
   hintT = 5; hintMsg = 'SHE CUT THE HOIST. ITS IRON BLOCK HANGS OVER THE FLOOR: CUT ITS PEG WHEN SHE IS UNDER IT.';
 }
 function setLoadDown(pr, vx) { P.ballast = null; pr.state = 'free'; pr.vy = vx ? -80 : 0; pr.vx = vx || 0; pr.cd = 0.6; pr.x = P.x + (vx ? 0 : P.face * 6); pr.y = P.y - 2; }
+/* CARRY & THROW, FOLDED IN (src/throwables.js's THROW_KIND.ballast, 2026-09-28: the live report "this platform does not
+   work" - Daniel stood on the rope hoist's deck, hit it and jumped on it, but never carried a load to the basket,
+   because nothing told him to). ATTACK while a load is held (P.ballast, either DOWN or INTERACT picked it up) launches
+   it in the arc THROW_KIND.ballast gives, then hands it back to the plain "free or falling" branch below - the same
+   physics a dropped or knocked-loose load already has, which already checks wellAt() every frame. A THROW THAT LANDS
+   IN THE BASKET IS INDISTINGUISHABLE FROM ONE CARRIED IN: intoBasket() does not know or care how the load arrived. */
+function throwLoad(pr) {
+  const k = THROW_KIND.ballast; P.ballast = null; pr.state = 'free'; pr.vx = P.face * k.vx; pr.vy = k.vy; pr.cd = 0.6; pr.hurtWas = false;
+  SFX.throwWhoosh(); number(pr.x, pr.y - 20, 'THROWN', '#c9b27c');
+}
 function updateHoists(dt) {
   const decks = hoistDecks(), hb = attackBox();
   for (const m of decks) if (m.wellX === undefined) { m.wellX = m.well * TS + 8; m.floorY = (Math.floor(m.y0 / TS) + 1) * TS; }
   const downNow = !!keys.down && !hoistDownWas; hoistDownWas = !!keys.down; let pickedNow = false;
+  const pickupNow = downNow || talkPress;   /* CARRY & THROW: pick it up with DOWN (the old way, still works) or INTERACT (the new one) */
   const wellAt = pr => decks.find(m => { const s = hoistOf(m); return s.state === 'rest' && Math.abs(pr.x - m.wellX) < 12 && pr.y > m.floorY - 34 && pr.y < m.floorY + 6; });
   const intoBasket = (pr, m) => { const s = hoistOf(m); if (P.ballast === pr) P.ballast = null; pr.state = 'basket'; pr.basket = m; pr.vy = 0; pr.vx = 0; s.load++;
     SFX.thud(); SFX.clank(); burst(m.wellX, m.floorY - 6, 6, ['#c9b27c', '#8a919c'], 40, 0.4);
@@ -19707,10 +19718,12 @@ function updateHoists(dt) {
     const m = wellAt(pr); if (m) { intoBasket(pr, m); continue; }
     /* LOST: off its floor or out of the level - it goes back to its pile, it is never gone for good */
     if (pr.y > pr.home[1] + 3 * TS || pr.y > LH * TS || pr.x < 0 || pr.x > LW * TS) { pr.state = 'return'; pr.retT = 0.8; continue; }
-    /* DOWN PICKS IT UP. Walking onto it did, and a stone lying in the Reeve's crown slowed every hero who crossed it in the middle of a fight */
-    if (pr.state === 'free' && downNow && !pickedNow && !P.ballast && !P.dead && !(pr.cd > 0) && P.ground && Math.abs(pr.x - P.x) < 14 && Math.abs(pr.y - P.y) < 14) { pickedNow = true;
+    /* DOWN OR INTERACT PICKS IT UP. Walking onto it did with DOWN, and a stone lying in the Reeve's crown slowed every hero
+       who crossed it in the middle of a fight; INTERACT is CARRY & THROW's own pick-up key (the buckets') and also arms
+       ATTACK to throw it once held, above. */
+    if (pr.state === 'free' && pickupNow && !pickedNow && !P.ballast && !P.dead && !(pr.cd > 0) && P.ground && Math.abs(pr.x - P.x) < 14 && Math.abs(pr.y - P.y) < 14) { pickedNow = true;
       P.ballast = pr; pr.state = 'held'; pr.hurtWas = false; SFX.clank(); number(P.x, P.y - 30, LOAD_NAME[pr.kind] || 'A LOAD', '#c9b27c');
-      if (!(PROG.hoistTold > 1)) { PROG.hoistTold = (PROG.hoistTold || 0) + 1; hintT = 5; hintMsg = 'DOWN PICKS A LOAD UP OR SETS IT DOWN. CARRY IT TO A HOIST WELL AND THE DECK RISES.'; } }
+      if (!(PROG.hoistTold > 1)) { PROG.hoistTold = (PROG.hoistTold || 0) + 1; hintT = 5; hintMsg = 'DOWN OR INTERACT PICKS IT UP. CARRY IT IN, OR THROW IT.'; } }
   }
 }
 const LOAD_NAME = { sack: 'A SACK', coil: 'A COIL OF ROPE', stone: 'A STONE' };
@@ -19745,6 +19758,14 @@ function drawHoists(cx, cy) {
     /* the well-head: a ring of stones and a winch post, in front of the basket */
     g.fillStyle = '#5a5a60'; g.fillRect(wx - 11, fy - 7, 22, 7); g.fillStyle = '#7e7e86'; for (let k = -11; k < 11; k += 5) g.fillRect(wx + k, fy - 7, 4, 2); g.fillStyle = '#1b1626'; g.fillRect(wx - 8, fy - 5, 16, 1);
     g.fillStyle = '#4a3624'; g.fillRect(wx + 9, fy - 16, 2, 16);
+    /* TOLD (2026-09-28): a basket short of `need` glows and shivers on its own clock, whether or not you are carrying
+       anything, so a load a weight would fill it is a thing you SEE before you ever stand on the deck - Daniel's
+       report was a hero who stood on the deck, hit it and jumped on it, and never carried a load, because nothing
+       told him to. A basket already full, cut, or mid-ride does not glow (nothing left to tell). */
+    if (s.state === 'rest' && s.load < (m.need || 1)) {
+      const k = 0.4 + 0.35 * Math.sin(time * 3.2); g.globalAlpha = k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2;
+      g.beginPath(); g.arc(wx, fy - 3, 13, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
+      if (Math.sin(time * 3.2) > 0.985) { g.fillStyle = '#3a2a1c'; g.fillRect(wx - 1, fy - 21, 2, 3); } }   /* a creak: the winch post jumps a pixel on the beat */
   }
   for (const pr of props) { if (pr.t !== 'load' || pr.state === 'gone' || pr.state === 'basket' || pr.state === 'return') continue;
     const x = R(pr.x - cx), y = R(pr.y - cy); if (x < -20 || x > VW + 20) continue;
@@ -22809,6 +22830,10 @@ function update(dt) {
        reads keys.atk - so nothing downstream reads it as a swing. NO SWINGING WHILE CARRYING is the whole of that
        rule, and it has to live here, ahead of everything else this press could start, to hold for a held key too. */
     if (P.carry) { if (atkPress && !P.dead) throwCarry(); atkPress = false; keys.atk = false; P.abuf = 0; }
+    /* CARRY & THROW, FOLDED ONTO THE HOIST LOAD (src/throwables.js's THROW_KIND.ballast): the same "eaten first" rule as
+       P.carry above, but only for a hoist's own load (P.ballast.t === 'load') - an underwater ballast stone (P.ballast on
+       a different prop, takeBallast/dropBallast) is untouched: JUMP still drops it, ATTACK still swings, same as always. */
+    if (P.ballast && P.ballast.t === 'load') { if (atkPress && !P.dead) throwLoad(P.ballast); atkPress = false; keys.atk = false; P.abuf = 0; }
     if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; P.abufUp = !!keys.up; P.abufLow = !!keys.down; } if (dodgePress) { P.dbuf = 0.12; P.dbufDir = 0; }
     /* ONE DODGE, TWO WAYS TO ASK FOR IT (2026-09-24). Tapping a way twice IS the dodge button, pointed. It is read here with the
        other presses, not in updatePlayer: a double tap made during a hitstop is no longer lost, and everything that answers the

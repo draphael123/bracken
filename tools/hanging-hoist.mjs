@@ -18,6 +18,7 @@ import vm from 'node:vm';
 import { LEVELS, T, TS } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { QUIET } from '../src/marks.js';
+import { THROW_KIND } from '../src/throwables.js';
 
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const L = LEVELS.find(l => l.id === 'hanging').build();
@@ -60,16 +61,18 @@ const section = src.slice(src.lastIndexOf('\n', a0), src.lastIndexOf('// ====', 
 function sandbox() {
   const noop = () => {};
   const c = { TS: 16, LW: 200, LH: 200, movers: [], props: [], keys: {}, PROG: {}, P: null, players: null, hb: null, hintT: 0, hintMsg: '', numbers: [],
+    talkPress: false, atkPress: false, THROW_KIND,   /* CARRY & THROW (2026-09-28): INTERACT picks a load up, ATTACK throws it */
     SFX: new Proxy({}, { get: () => noop }), burst: noop, shakeCam: noop, sparks: noop, dust: noop,
     overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t, tileAt: (x, y) => (y >= 50 ? 1 : 0), isSolid: (x, y) => y >= 50, isOneWay: () => false,
     Math, Object, Array, Set };
   c.number = (x, y, s) => c.numbers.push(s); c.attackBox = () => c.hb;
   c.P = { x: 100, y: 800, face: 1, ground: true, dead: 0, hurt: 0, climb: false, ballast: null, onMover: null, hitSet: new Set() }; c.players = [c.P];
-  vm.createContext(c); vm.runInContext(section + '\n;this.api = { hoistDeck, cutHoist, updateHoists, hoistOf };', c);
+  vm.createContext(c); vm.runInContext(section + '\n;this.api = { hoistDeck, cutHoist, updateHoists, hoistOf, throwLoad };', c);
   return c;
 }
 const step = (c, n = 1, dt = 1 / 60) => { for (let i = 0; i < n; i++) { for (const m of c.movers) if (m.hoist) { const oy = m.y; c.api.hoistDeck(m, dt); m.dy = m.y - oy; } c.api.updateHoists(dt); } };
 const press = (c, k) => { c.keys[k] = true; step(c, 1); c.keys[k] = false; step(c, 1); };
+const interact = c => { c.talkPress = true; step(c, 1); c.talkPress = false; step(c, 1); };   /* CARRY & THROW's pick-up key, edge-triggered like DOWN */
 const deck = o => ({ kind: 'lift', hoist: 'h', x: 64, y: 792, y0: 792, y1: 600, w: 32, h: 8, speed: 60, well: 2, need: 1, top: 560, wheelX: 60, wheelY: 570, ...o });
 const load = (x, o = {}) => ({ t: 'load', kind: 'sack', hoist: 'h', x, y: 800, home: [x, 800], floorY: 800, state: 'free', vy: 0, vx: 0, cd: 0, ...o });
 { /* a load is carried in, the deck rises, holds while stood on, tips once left, and comes home */
@@ -88,6 +91,16 @@ const load = (x, o = {}) => ({ t: 'load', kind: 'sack', hoist: 'h', x, y: 800, h
   c.P.x = 140; press(c, 'down'); assert.equal(c.P.ballast, a); press(c, 'down'); assert.equal(c.P.ballast, null, 'DOWN sets it down again'); assert.equal(a.state, 'free');
   step(c, 40); press(c, 'down'); assert.equal(c.P.ballast, a, 'and picks it up again once it has settled'); c.P.hurt = 0.3; step(c, 1); assert.equal(c.P.ballast, null, 'a blow knocks it out of your hands'); c.P.hurt = 0;
   a.state = 'free'; a.y = 800 + 5 * 16; a.vy = 0; step(c, 60); assert.equal(a.x, 140, 'a load lost off its floor goes back to its pile'); }
+{ /* CARRY & THROW (src/throwables.js, 2026-09-28): INTERACT picks a load up same as DOWN, and a throw that LANDS IN THE BASKET
+     counts exactly like carrying it in - Daniel's live report was a hero who stood on the deck, hit it and jumped on it, but
+     never carried a load to the basket, because nothing told him to */
+  const c = sandbox(), m = deck({ need: 1 }), a = load(140); c.movers.push(m); c.props.push(a);
+  c.P.x = 140; interact(c); assert.equal(c.P.ballast, a, 'INTERACT picks a load up, same as DOWN'); assert.equal(a.state, 'held');
+  c.P.x = 60; c.P.face = -1; step(c, 5);   /* well off to the left of the deck, out of carrying range - only a throw reaches it from here */
+  c.api.throwLoad(a); assert.equal(c.P.ballast, null, 'thrown, it leaves the hero\'s hands'); assert(a.vx < 0 && a.vy < 0, 'and launches the way he faced, up and out');
+  step(c, 20); assert.equal(a.state, 'basket', 'a THROWN load that lands in the well fills the basket exactly like a carried one'); assert.equal(c.api.hoistOf(m).load, 1);
+  assert.equal(c.api.hoistOf(m).state, 'creak', 'and the deck answers a thrown load the same way it answers a carried one');
+  step(c, 40); assert(c.api.hoistOf(m).state === 'up' && m.y < m.y0, 'and rises off a thrown load exactly as it would off a carried one'); }
 { /* the mill's peg */
   const c = sandbox(), m = deck({ well: 6, x: 64 }), s = load(104, { peg: true, pegX: 40, hy: 700, ropeTop: 600, state: 'hung', y: 700 }); c.movers.push(m); c.props.push(s);
   step(c, 30); assert.equal(s.state, 'hung', 'a pegged sack stays hung'); assert.equal(c.api.hoistOf(m).load, 0);

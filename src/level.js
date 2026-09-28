@@ -1820,8 +1820,14 @@ function hangingVillage() {
   ent('check', 8, 93);
   // 1 -> 2: a counterweight lift at the trunk
   band(1, W - 2, tops.t2); hole(2, 5, tops.t2);   /* the hoist's shaft: the deck (3-4) and the well's rope (2) go up it, and the market floor starts a hop from the deck */
-  /* THE ROPEWALK HOIST, where the machine is TAUGHT: the only way up, a checkpoint beside it, three coils by it and nothing to fight */
-  hoist('rope', 3, tops.t1 - 1, tops.t2 - 1, 2, 1, { speed: 66 });   /* fourteen rows: about six seconds at the game's pace */ ent('load', 11, 93, { kind: 'coil', hoist: 'rope' }); ent('load', 13, 93, { kind: 'coil', hoist: 'rope' }); ent('load', 15, 93, { kind: 'coil', hoist: 'rope' });
+  /* THE ROPEWALK HOIST, where the machine is TAUGHT: the only way up, a checkpoint beside it, three coils by it and nothing to fight.
+     THE TAUGHT WEIGHT (2026-09-28, Daniel's live report: he stood on the deck, hit it and jumped on it, but never carried a load to
+     the basket, because nothing told him to). A fourth coil sits RIGHT BESIDE THE DECK, close enough that its take-me ring (the same
+     one every hoist load already draws) is the first thing you see stepping off the shaft - and CARRY & THROW's own sign, so the
+     hero who reads it before ever touching the coils knows there are two ways in: walk it to the well, or take it (INTERACT) and
+     throw it (ATTACK). The basket itself backs the sign up now too (drawHoists' TOLD glow, on every hoist, not only this one). */
+  hoist('rope', 3, tops.t1 - 1, tops.t2 - 1, 2, 1, { speed: 66 });   /* fourteen rows: about six seconds at the game's pace */ ent('load', 5, 93, { kind: 'coil', hoist: 'rope' }); ent('load', 11, 93, { kind: 'coil', hoist: 'rope' }); ent('load', 13, 93, { kind: 'coil', hoist: 'rope' }); ent('load', 15, 93, { kind: 'coil', hoist: 'rope' });
+  ent('sign', 9, 93, { text: 'TAKE IT (INTERACT); THROW IT IN (ATTACK).' });   /* far enough from the weight at x=5 (talkers()' 28px reach) that INTERACT there never also opens this sign */
   ent('sign', 8, 93, { text: 'THE HOIST: DOWN PICKS UP A COIL. STAND ON THE DECK AND DROP IT IN THE WELL. UP YOU GO.' });
 
   // ---- Tier 2. THE MARKET (walk right): hill folk and goblins live door to door; the Lamplighter wants three lanterns lit ----

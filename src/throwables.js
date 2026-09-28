@@ -18,6 +18,14 @@ export const THROW_KIND = {
   // barrel: { vx: 120, vy: -160, g: 640, respawn: 4, hitSmall: 2, hitFire: 2, carrySpeed: 46, carrySpeedSwim: 44 },
   // pot:    { vx: 170, vy: -190, g: 600, respawn: 2, hitSmall: 1, hitFire: 1, carrySpeed: 62, carrySpeedSwim: 56 },
   // rock:   { vx: 140, vy: -150, g: 700, respawn: 5, hitSmall: 3, hitFire: 1, carrySpeed: 50, carrySpeedSwim: 46 },
+  // THE HANGING VILLAGE's hoist loads (2026-09-28, the ropewalk teaching pass): a coil, a sack or a stone thrown at
+  // a hoist's well. Only vx/vy/g/carrySpeed are ever READ for it (src/main.js's updateHoists reuses the load's own
+  // free-fall physics for the arc, not THROW_KIND's generic stepper, and a hoist load never fights a foe or waits on
+  // a clock - a lost one just walks home the way any dropped load already did). respawn/hitSmall/hitFire are set
+  // here only so this row keeps THROW_KIND's own table-wide contract (tools/throwables.mjs §1, every kind arcs,
+  // respawns and hurts a fire foe harder) true for a generic reader of the table, even though nothing in the hoist
+  // ever consults them.
+  ballast: { vx: 150, vy: -120, g: 640, respawn: 3, hitSmall: 1, hitFire: 2, carrySpeed: 58, carrySpeedSwim: 54 },
 };
 // THE FIRE FOES a thrown water kind (a bucket) does more to, and douses instead of merely hurting - the burning
 // goblin's straw-ignite pauses under `doused` (main.js, updateVillage's burngob loop). The Pyromancer is not in
