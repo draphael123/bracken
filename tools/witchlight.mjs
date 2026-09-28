@@ -88,7 +88,14 @@ assert.equal(at(L.mini.gate, L.mini.floor / TS - 1), T.PORT, 'his gate is a port
 { const S = build(); for (let y = 0; y < S.H; y++) if (S.grid[y * S.W + S.mini.gate] === T.PORT) S.grid[y * S.W + S.mini.gate] = T.SOLID;
   const Rs = floodReach(S, T, { rides: true }); assert.ok(!onSlabs(Rs), 'his gate holds the way on'); }
 assert.equal(L.witch.braziers.length, 2); for (const [x] of L.witch.braziers) assert.ok(x * TS > L.mini.x0 && x * TS < L.mini.x1, 'his braziers stand in his room');
-assert.deepEqual(['cutTell', 'rushTell', 'thornTell'].map(mode => markOf({ t: 'hedgewarden', mode })), ['!', '!', '!!'], 'the cut and the rush a shield turns; the thorns wear the red mark');
+assert.deepEqual(['cutTell', 'rushTell', 'thornTell', 'lashTell', 'rootsTell'].map(mode => markOf({ t: 'hedgewarden', mode })), ['!', '!', '!!', '!', '!!'], 'the cut, the rush and the thorn lash a shield turns; the thorns and the roots wear the red mark');
+/* THE ROOTED GARDEN (claude/hedgewarden2, Daniel's playtest 2026-09-28: his section a bit longer): half as long again to his gate, braziers on
+   its lawn, and hedges that put out roots toward one - every root runs at a fire, so standing at the fire is always an answer */
+{ const G0 = WL.PLACES.garden[0], lead = WL.MINI.x0 - G0, fires = ((L.witch && L.witch.fires) || []).map(([x]) => x), roots = (L.witch && L.witch.roots) || [];
+  assert.ok(lead >= 70, 'the garden before his gate is half as long again: ' + lead + ' columns (it was 50)');
+  assert.ok(fires.length >= 3 && fires.every(x => x > G0 && x < WL.MINI.x0), 'braziers on the garden lawn: ' + fires);
+  assert.ok(roots.length >= 3 && roots.every(m => fires.some(x => (x - m.x) * m.dir > 0 && (m.to - x) * m.dir >= 0)), 'hedges that put out roots, each toward a brazier: ' + JSON.stringify(roots));
+  assert.ok(new Set(roots.map(m => m.dir)).size === 2, 'and somewhere they run out both ways (the twist, his room in small)'); }
 assert.equal(markOf({ t: 'broom', mode: 'sweepTell' }), '!', 'the broom\'s sweep a shield braces against');
 // 5. encounters
 const src = readFileSync(new URL('../src/level.js', import.meta.url), 'utf8');
@@ -146,8 +153,25 @@ try {
     {boot();const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=need(BK.enemies().find(e=>e.t==='hedgewarden'),'the Hedge Warden');
      const woke={active:!!BK.miniActive,mode:w.mode};BK.god=false;BK.P.hp=BK.P.maxHp;const hp0=BK.P.hp;
      for(let i=0;i<90;i++){w.cd=99;if(w.mode!=='stalk')w.mode='stalk';BK.P.x=w.x;BK.P.y=w.y;BK.sim(1);}const touch=hp0-BK.P.hp;BK.god=true;
-     const gi=(Math.round(M.floor/16)-1)*BK.L.W+M.gate,before=BK.L.grid[gi];w.growth=2;w.mode='stump';w.modeT=9;w.hp=3;BKT.hurtEnemy(w,50,w.x-20,false);BK.sim(120);
+     const gi=(Math.round(M.floor/16)-1)*BK.L.W+M.gate,before=BK.L.grid[gi];w.growth=2;w.mode='stump';w.modeT=9;w.burnT=3;w.hp=3;BKT.hurtEnemy(w,50,w.x-20,false);   /* (a burning stump: since claude/hedgewarden2 no other takes a blow) */BK.sim(120);
      out.warden={woke,touch,alive:w.alive,gateBefore:before,gateAfter:BK.L.grid[gi]};}
+    /* THE HEDGE WARDEN'S NEW ATTACKS (claude/hedgewarden2): each told, and each with its answer. THE THORN LASH lands well out of his
+       cut's reach on a hero standing, not on one in the air, and a shield turns it; THE ROOTS crawl out and bite a hero on the lawn, and
+       burn out at a brazier before they reach one standing past it. In the garden a rooted hedge's root bites a hero in its strip and
+       burns out at the fire. And a fight left running (god mode, hero standing off) tells all five attacks */
+    {boot();const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=need(BK.enemies().find(e=>e.t==='hedgewarden'),'the Hedge Warden');
+     const mid=(M.x0+M.x1)/2;
+     const hit=(what,px,each)=>{BK.god=true;w.mode='stalk';w.cd=99;BK.sim(20);w.x=mid;w.face=Math.sign(px-w.x)||1;w.cd=99;w.burnT=0;w.phase=1;BK.P.x=px;BK.P.y=M.floor;BK.P.vy=0;BK.P.vx=0;BK.sim(2);
+       BK.god=false;BK.P.hp=BK.P.maxHp;BK.P.inv=0;const hp0=BK.P.hp;w.mode=what+'Tell';w.modeT=0.02;const seen=new Set();
+       for(let i=0;i<150;i++){if(each)each(i);else BK.P.x=px;BK.sim(1);seen.add(w.mode);w.cd=99;}
+       BK.keys.block=false;BK.god=true;const o={seen:[...seen],took:hp0-BK.P.hp};BK.P.hp=BK.P.maxHp;return o;};
+     const lash={stood:hit('lash',mid+100),jumped:hit('lash',mid+100,i=>{if(i<2){BK.P.y=M.floor-30;BK.P.vy=-150;}}),guarded:hit('lash',mid+100,()=>{BK.keys.block=true;BK.P.face=-1;})};
+     const bz=BK.L.witch.braziers.map(([x])=>x*16+8),far=Math.max(...bz);BK.L.hedgeRoots=[];
+     const roots={bit:hit('roots',mid+120)};BK.L.hedgeRoots=[];roots.past=hit('roots',far+14);roots.burnt=(BK.L.hedgeRoots||[]).some(r=>r.burnt);
+     BK.god=true;w.mode='stalk';w.cd=0;const told=new Set();for(let i=0;i<60*60;i++){BK.P.x=w.x+90;BK.P.y=M.floor;BK.sim(1);told.add(w.mode);if(w.mode==='felled'||w.mode==='stump'){w.mode='stalk';w.hp=w.maxHp;}}
+     const G=${WL.GARDEN},fx=((BK.L.witch.fires||[])[0]||[262])[0],garden=g=>{boot();clear(()=>false);BK.tp(g,G);BK.god=false;BK.P.hp=BK.P.maxHp;const hp0=BK.P.hp;BK.L.hedgeRoots=[];let burnt=0;
+       for(let i=0;i<60*8;i++){BK.P.x=g*16+8;BK.P.hp=Math.max(BK.P.hp,20);BK.sim(1);burnt=Math.max(burnt,(BK.L.hedgeRoots||[]).filter(r=>r.burnt).length);}const o={took:hp0-BK.P.hp,burnt};BK.god=true;return o;};
+     out.newAttacks={lash,roots,told:[...told],garden:{strip:garden(fx+5),fire:garden(fx)}};}
     /* THE GATE GARGOYLE: asleep on the gate until you are on his slabs; touching him costs nothing; his kill wins the level */
     {boot();clear(e=>e.t==='gargoyle');const g=need(BK.enemies().find(e=>e.t==='gargoyle'),'the Gate Gargoyle');const asleep=g.mode;const s=need(BK.movers().filter(m=>m.arena).sort((a,b)=>a.x-b.x)[0],'his slabs');
      BK.P.x=s.x+s.w/2;BK.P.y=s.y-1;BK.P.vy=0;BK.sim(90);const woke={active:!!BK.bossActive,mode:g.mode};BK.god=false;BK.P.hp=BK.P.maxHp;const hp0=BK.P.hp;
@@ -166,6 +190,13 @@ try {
   assert.ok(r.warden.woke.active && r.warden.woke.mode !== 'sleep', 'he wakes at his gate: ' + JSON.stringify(r.warden));
   assert.equal(r.warden.touch, 0, 'touching him costs nothing (the touch rule)');
   assert.ok(!r.warden.alive && r.warden.gateBefore === T.PORT && r.warden.gateAfter !== T.PORT, 'his gate opens when he dies: ' + JSON.stringify(r.warden));
+  { const n = r.newAttacks; console.log('  the Warden\'s new attacks: ' + JSON.stringify(n));
+    assert.ok(n && n.lash.stood.seen.includes('lash') && n.lash.stood.took > 0, 'THE THORN LASH lands well out past his cut, on a hero standing: ' + JSON.stringify(n && n.lash));
+    assert.ok(n.lash.jumped.took === 0 && n.lash.guarded.took === 0, 'a jump clears the lash, and a shield turns it: ' + JSON.stringify(n.lash));
+    assert.ok(n.roots.bit.seen.includes('roots') && n.roots.bit.took > 0, 'THE ROOTS crawl out along the lawn and bite a hero on it: ' + JSON.stringify(n.roots));
+    assert.ok(n.roots.past.took === 0 && n.roots.burnt, 'and burn out at a brazier before they reach a hero standing past it: ' + JSON.stringify(n.roots));
+    assert.ok(['cutTell', 'rushTell', 'thornTell', 'lashTell', 'rootsTell'].every(m => n.told.includes(m)), 'a fight left running tells all five of his attacks: ' + n.told);
+    assert.ok(n.garden.strip.took > 0 && n.garden.fire.took === 0 && n.garden.fire.burnt > 0, 'THE ROOTED GARDEN: a hedge\'s root bites a hero in its strip, and burns out at the fire he can stand by: ' + JSON.stringify(n.garden)); }
   assert.ok(r.gargoyle.asleep === 'sleep' && r.gargoyle.woke.active && r.gargoyle.woke.mode !== 'sleep', 'the Gargoyle sleeps on his gate and wakes when you come onto his slabs: ' + JSON.stringify(r.gargoyle));
   assert.equal(r.gargoyle.touch, 0, 'touching the Gargoyle costs nothing (the touch rule)');
   assert.ok(!r.gargoyle.alive && r.gargoyle.won, 'his kill ends the level: ' + JSON.stringify(r.gargoyle));

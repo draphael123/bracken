@@ -85,8 +85,9 @@ try {
    const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=BK.enemies().find(e=>e.t==='hedgewarden'&&e.mini);
    const third=w.maxHp/3,root=w.maxHp-third+w.maxHp*0.16;
    const fell=x=>{w.mode='stalk';w.cd=99;w.burnT=0;w.growth=0;w.hp=Math.ceil(root)+2;w.x=x;BK.P.x=x-150;BKT.hurtEnemy(w,Math.ceil(third),w.x-20,false);BK.sim(20);return {mode:w.mode,open:+(w.open||0).toFixed(1)};};
-   const lawn=fell(143*16);BK.P.x=w.x-150;BK.sim(330);const grew={mode:w.mode,hp:Math.round(w.hp),full:Math.round(w.maxHp)};
-   const fire=fell(BK.L.witch.braziers[0][0]*16+20);BK.P.x=w.x-150;BK.sim(120);const burning={mode:w.mode,open:+(w.open||0).toFixed(1)};
+   const lawn=fell(143*16);const bite=()=>{BK.sim(40);const h0=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);return Math.round(h0-w.hp);};lawn.bite=bite();   /* (claude/hedgewarden2: a green stump takes nothing) */
+   BK.P.x=w.x-150;BK.sim(330);const grew={mode:w.mode,hp:Math.round(w.hp),full:Math.round(w.maxHp)};
+   const fire=fell(BK.L.witch.braziers[0][0]*16+20);BK.P.x=w.x-150;BK.sim(120);const burning={mode:w.mode,open:+(w.open||0).toFixed(1)};burning.bite=bite();
    out.hedgeWarden={lawn,grew,fire,burning};}
   /* THE GATE GARGOYLE: the same dive three times - on a low slab left late, on a high slab left late, on a slab left early */
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='witchlight'));BK.state='play';BK.god=true;
@@ -191,6 +192,7 @@ try {
   assert.ok(r.gargoyle.upper.mode === 'stunned' && r.gargoyle.upper.open > 2 && r.gargoyle.upper.broken, 'left late, a high slab breaks under him too and he lies stunned on the spikes, open: ' + JSON.stringify(r.gargoyle));
   assert.ok(r.hedgeWarden.fire.open > 2, 'felled beside a brazier, the stump burns open: ' + JSON.stringify(r.hedgeWarden));
   assert.ok(r.hedgeWarden.burning.mode === 'stump' && r.hedgeWarden.burning.open > 0, 'a burning stump does not regrow: ' + JSON.stringify(r.hedgeWarden));
+  assert.ok(r.hedgeWarden.lawn.bite === 0 && r.hedgeWarden.burning.bite >= 50, 'THE BRAZIER IS THE ONLY OPENING (claude/hedgewarden2): a stump on the open lawn is green wood no blow bites; a burning one takes a blow twice over: ' + JSON.stringify(r.hedgeWarden));
 
   assert.equal(r.deathKnight.boss, 'bloodknight', 'the Unburied Field ends in THE DEATH KNIGHT: ' + JSON.stringify(r.deathKnight));
   assert.equal(r.deathKnight.taken.open, 0, 'A11: a Cleave taken sticks nothing: ' + JSON.stringify(r.deathKnight));

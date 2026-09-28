@@ -1,27 +1,39 @@
 // hedge-warden.js — THE HEDGE WARDEN, the Witchlight Stair's mini (batch 4c, 2026-09-22). Brief: .claude/briefs/witchlight-stair.md.
 // A giant topiary knight at the tower's garden gate, clipped box hedge for armour and a hedge-sword. He is fought between
 // two WITCHLIGHT BRAZIERS (witchlight.js). His art: src/redraw/queue_bosses.js (bakeHedgeWarden).
-//   THE CUT     !    the sword up over the helm and down in front: guard it, or step back out of it
-//   THE RUSH    !    he stamps and charges the length of his reach with the blade out: guard it, or jump him
-//   THORNS      ✕    arms flung wide, thorns bristle all round him and burst: too many to guard - get out of reach
+//   THE CUT         !    the sword up over the helm and down in front: guard it, or step back out of it
+//   THE RUSH        !    he stamps and charges the length of his reach with the blade out: guard it, or jump him
+//   THORNS          ✕    arms flung wide, thorns bristle all round him and burst: too many to guard - get out of reach
+//   THE THORN LASH  !    (claude/hedgewarden2) the sword arm drawn back and a thorn vine coiling off the blade, then the vine
+//                        cracks along the lawn a room's third out in front of him: guard it, or jump it. Standing off him is no
+//                        answer to it
+//   THE ROOTS       ✕    (claude/hedgewarden2) the sword lifted point-down and driven into the lawn: a root crawls out along the floor
+//                        at you (in phase two, both ways). No shield turns it: jump it - or stand at a brazier, where the
+//                        witch-fire burns it out. The garden before his gate teaches it (witchlight.js, THE ROOTED GARDEN)
 // HE GROWS BACK. His health is three GROWTHS. Cut a growth down to its root and he falls to a STUMP, and the stump regrows:
 // cut the root out before it is up and that growth is gone for good; let it grow and he stands again with the growth back.
 // The last growth's root is his life.
-// THE OPENING IS YOURS (tools/boss-openings.mjs proves it): he follows you. Cut him down BESIDE A BRAZIER and the witch-fire
-// takes the stump: it burns, open - every blow on it counts twice, and it cannot regrow while it burns. Cut down on the open
-// lawn, the stump just regrows.
-// PHASE TWO (the last growth): he is quicker, the thorns reach further, and a stump that regrows throws off a topiary cutting.
-// Touching him never hurts (the touch rule): his damage is his sword, his rush and his thorns.
+// THE OPENING IS YOURS, AND IT IS THE ONLY ONE (tools/boss-openings.mjs proves it): he follows you. Cut him down BESIDE A
+// BRAZIER and the witch-fire takes the stump: it burns, open - every blow on it counts twice, and it cannot regrow while it
+// burns. Cut down on the open lawn, the stump is green wood: no blow bites it, and it just regrows (claude/hedgewarden2: a lawn
+// stump could be rooted out before, which made the brazier a bonus, not the opening).
+// PHASE TWO (the last growth): he is quicker, the thorns reach further, his roots go out both ways, and a stump that regrows
+// throws off a topiary cutting.
+// Touching him never hurts (the touch rule): his damage is his sword, his rush, his thorns, his lash and his roots.
 export const HEDGE = {
+  hp: 486,   /* 420 until claude/hedgewarden2 (+16%, Daniel's playtest 2026-09-28: "a bit harder"); main.js EHP reads it */
   walk: 30, keep: 34, cd: 1.3, cdP2: 0.95,
-  tell: { cut: 0.85, rush: 0.8, thorn: 1.0 },
-  dmg: { cut: 16, rush: 14, thorn: 14 },
+  tell: { cut: 0.85, rush: 0.8, thorn: 1.0, lash: 0.9, roots: 0.95 },
+  dmg: { cut: 16, rush: 14, thorn: 14, lash: 14, roots: 12 },
   cutReach: 50, rushV: 150, rushT: 0.6, thornR: 46, thornRP2: 58,
+  lashReach: 150, lashT: 0.35, low: 10,                /* the lash and the roots run along the lawn: feet more than `low` px up are over them */
+  rootV: 120, rootHalf: 9, fireStop: 12, rootWarn: 0.8, rootsT: 0.5,   /* a root's speed, its head's half-width, how near a fire burns it, a garden hedge's warning */
   growths: 3, root: 0.14, regrow: 4.6, regrowP2: 3.8, burnT: 3.2, burnMul: 2, brazierNear: 44, cuttings: 2,
-  order: ['cut', 'rush', 'cut', 'thorn', 'rush', 'cut', 'thorn'],
+  order: ['cut', 'lash', 'rush', 'cut', 'thorn', 'roots', 'rush', 'cut', 'lash', 'thorn', 'roots'],
 };
-const TELL = { cut: 'cutTell', rush: 'rushTell', thorn: 'thornTell' };
-const SAY = { cutTell: 'THE CUT', rushTell: 'HE CHARGES', thornTell: 'THORNS: GET CLEAR' };
+const TELL = { cut: 'cutTell', rush: 'rushTell', thorn: 'thornTell', lash: 'lashTell', roots: 'rootsTell' };
+const SAY = { cutTell: 'THE CUT', rushTell: 'HE CHARGES', thornTell: 'THORNS: GET CLEAR', lashTell: 'THE THORN LASH', rootsTell: 'THE ROOTS: JUMP, OR GET TO THE FIRE' };
+const RED = new Set(['thorn', 'roots']);
 export const hedgeOpen = e => (e.burnT || 0) > 0;
 const STUMP = new Set(['felled', 'stump']);
 export const hedgeStump = e => STUMP.has(e.mode);
@@ -29,32 +41,38 @@ export const hedgeStump = e => STUMP.has(e.mode);
 const third = e => e.maxHp / HEDGE.growths;
 const floorOf = e => Math.max(0, e.maxHp - third(e) * ((e.growth || 0) + 1));
 const rootOf = e => floorOf(e) + e.maxHp * HEDGE.root;
-/* the frames of bakeHedgeWarden: 0 stand | 1,2 walk | 3 cut tell | 4 cut | 5 thorn tell | 6 thorns | 7 stump | 8,9 regrowing */
+/* the frames of bakeHedgeWarden: 0 stand | 1,2 walk | 3 cut tell | 4 cut | 5 thorn tell | 6 thorns | 7 stump | 8,9 regrowing |
+   10 lash tell | 11 roots tell | 12 roots (the sword in the lawn) */
 export function hedgeFrame(e) {
   switch (e.mode) {
     case 'cutTell': return 3; case 'cut': return 4; case 'rush': return 4; case 'rushTell': return 1 + Math.floor((e.anim || 0) * 12) % 2;
     case 'thornTell': return 5; case 'thorn': return 6; case 'felled': return 7;
+    case 'lashTell': return 10; case 'lash': return 4; case 'rootsTell': return 11; case 'roots': return 12;
     case 'stump': { const k = e.regrowK || 0; return k < 0.4 ? 7 : k < 0.75 ? 8 : 9; }
     case 'sleep': case 'wake': return 0;
   }
   return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 5) % 2 : 0;
 }
 /* HIS HEALTH, three growths deep: called by hurtEnemy0 with the blow's damage, returns what comes off the bar. Standing, no
-   blow takes him past his root (it fells him there); a stump loses its root, twice as fast while it burns; the last growth's
-   root is his life, so only there does the bar reach nothing. */
+   blow takes him past his root (it fells him there); a stump loses its root ONLY while it burns, twice as fast; a green stump
+   takes nothing (the brazier is the opening, and the only one); the last growth's root is his life, so only there does the bar
+   reach nothing. */
 export function hedgeTake(e, dmg) {
   if (!(dmg > 0) || e.mode === 'sleep') return dmg;
-  if (hedgeStump(e)) { if (hedgeOpen(e)) dmg = Math.round(dmg * HEDGE.burnMul); const fl = floorOf(e);
+  if (hedgeStump(e)) { if (!hedgeOpen(e)) { e.green = true; return 0; }
+    dmg = Math.round(dmg * HEDGE.burnMul); const fl = floorOf(e);
     if (e.hp - dmg <= fl) { e.rooted = true; return fl > 0 ? Math.max(0, e.hp - fl) : dmg; } return dmg; }
   const r = rootOf(e); if (e.hp - dmg <= r) { e.fell = true; return Math.max(0, e.hp - r); }
   return dmg;
 }
-function begin(e, what, c) { e.mode = TELL[what]; e.modeT = HEDGE.tell[what] * (e.phase === 2 ? 0.85 : 1); e.face = Math.sign(c.P.x - e.x) || e.face || 1; c.say(SAY[e.mode], what === 'thorn'); }
+function begin(e, what, c) { e.mode = TELL[what]; e.modeT = HEDGE.tell[what] * (e.phase === 2 ? 0.85 : 1); e.face = Math.sign(c.P.x - e.x) || e.face || 1; c.say(SAY[e.mode], RED.has(what)); }
+const rest = (e, rnd) => { e.mode = 'stalk'; e.vx = 0; e.cd = (e.phase === 2 ? HEDGE.cdP2 : HEDGE.cd) * (0.8 + 0.4 * rnd()); };
 export function updateHedgeWarden(e, dt, c) {
   const { P, A, hit } = c, floor = A.floor, rnd = c.rnd || Math.random;
   if (!e.alive || e.mode === 'sleep') return;
   e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.turn ??= 0; e.growth ??= 0; e.y = floor;
-  e.burnT = Math.max(0, (e.burnT || 0) - dt); e.open = e.burnT;
+  e.burnT = Math.max(0, (e.burnT || 0) - dt); e.open = e.burnT; e.greenT = Math.max(0, (e.greenT || 0) - dt);
+  if (e.green) { e.green = false; if (e.greenT <= 0) { e.greenT = 2.5; c.say('GREEN WOOD: FELL HIM BY THE FIRE', false); c.sound('thud'); } }   /* a blow on a stump that is not burning */
   if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.8; if (!e.dealt) { e.dealt = true; e.turn = Math.floor(rnd() * HEDGE.order.length); } } return; }   /* where in his order he starts is his own, fight to fight */
   /* a blow (or a bleed) that took him under his root while he stood fells him there */
   if (!hedgeStump(e) && (e.fell || e.hp <= rootOf(e))) { e.fell = false; e.hp = Math.max(e.hp, rootOf(e));
@@ -76,7 +94,7 @@ export function updateHedgeWarden(e, dt, c) {
       if (e.phase === 2 && c.adds() < HEDGE.cuttings) c.sprout(e.x + (Math.random() < 0.5 ? -40 : 40)); }
     return; }
   // ---- THE ATTACKS ----
-  if (e.mode === 'cutTell' || e.mode === 'rushTell' || e.mode === 'thornTell') {
+  if (e.mode === 'cutTell' || e.mode === 'rushTell' || e.mode === 'thornTell' || e.mode === 'lashTell' || e.mode === 'rootsTell') {
     if (e.mode !== 'rushTell') e.face = Math.sign(P.x - e.x) || e.face;
     if (e.modeT > 0) return;
     if (e.mode === 'cutTell') { e.mode = 'cut'; e.modeT = 0.4; c.sound('heavy'); c.shake(2);
@@ -84,12 +102,18 @@ export function updateHedgeWarden(e, dt, c) {
     if (e.mode === 'rushTell') { e.mode = 'rush'; e.modeT = HEDGE.rushT; e.rushHit = false; c.sound('whoosh'); return; }
     if (e.mode === 'thornTell') { e.mode = 'thorn'; e.modeT = 0.35; c.sound('thorn'); c.shake(3);
       const R = e.phase === 2 ? HEDGE.thornRP2 : HEDGE.thornR; if (!P.dead && Math.abs(P.x - e.x) < R && P.y > floor - 44) hit(e.x, HEDGE.dmg.thorn, true, 'THE THORNS'); return; }
+    /* THE THORN LASH: the vine cracks along the lawn in front of him, the length of a room's third; over it is safe, and a shield */
+    if (e.mode === 'lashTell') { e.mode = 'lash'; e.modeT = HEDGE.lashT; c.sound('whoosh'); c.shake(2);
+      const dx = (P.x - e.x) * e.face; if (!P.dead && dx > -8 && dx < HEDGE.lashReach && P.y > floor - HEDGE.low) hit(e.x, HEDGE.dmg.lash, false, 'THE THORN LASH'); return; }
+    /* THE ROOTS: the sword goes into the lawn and a root crawls out at you (phase two: one each way) - stepRoots runs it */
+    if (e.mode === 'rootsTell') { e.mode = 'roots'; e.modeT = HEDGE.rootsT; c.sound('crack'); c.shake(3); c.dust(e.x + e.face * 14, floor);
+      if (c.roots) { c.roots(e.x + e.face * 14, e.face); if (e.phase === 2) c.roots(e.x - e.face * 14, -e.face); } return; }
   }
   if (e.mode === 'rush') { const nx = e.x + e.face * HEDGE.rushV * dt; e.vx = e.face * HEDGE.rushV;
     if (nx > A.x0 + 16 && nx < A.x1 - 16) e.x = nx; else e.modeT = 0;
     if (!e.rushHit && !P.dead && Math.abs(P.x - e.x) < 20 && Math.abs(P.y - floor) < 30) { e.rushHit = true; hit(e.x, HEDGE.dmg.rush, false, 'THE RUSH'); }
-    if (e.modeT <= 0) { e.mode = 'stalk'; e.vx = 0; e.cd = (e.phase === 2 ? HEDGE.cdP2 : HEDGE.cd) * (0.8 + 0.4 * rnd()); } return; }
-  if (e.mode === 'cut' || e.mode === 'thorn') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = (e.phase === 2 ? HEDGE.cdP2 : HEDGE.cd) * (0.8 + 0.4 * rnd()); } return; }
+    if (e.modeT <= 0) rest(e, rnd); return; }
+  if (e.mode === 'cut' || e.mode === 'thorn' || e.mode === 'lash' || e.mode === 'roots') { if (e.modeT <= 0) rest(e, rnd); return; }
   // ---- STALKING: he keeps to his reach and comes on ----
   const d = P.x - e.x, ad = Math.abs(d); e.face = Math.sign(d) || e.face;
   const want = ad > HEDGE.keep ? e.face : 0, nx = e.x + want * HEDGE.walk * (e.phase === 2 ? 1.3 : 1) * dt;
@@ -98,20 +122,83 @@ export function updateHedgeWarden(e, dt, c) {
   let what = HEDGE.order[e.turn++ % HEDGE.order.length];
   if (what === 'cut' && ad > HEDGE.cutReach + 40) what = 'rush';
   if (what === 'thorn' && ad > HEDGE.thornR + 50) what = 'rush';
+  if (what === 'lash' && ad > HEDGE.lashReach) what = 'rush';
   if (what === 'rush' && ad < 26) what = 'thorn';
   begin(e, what, c);
 }
-/* the braziers, the thorn ring, the stump's burning and its regrowth */
+
+/* ---------- THE ROOTS: his, and the garden's ---------- */
+/* A ROOT crawls along a floor from where it broke ground, a hump of thorns at its head and its runner dying back behind it. It
+   bites whoever it runs under with their feet on the floor (no shield turns it: jump it), and it BURNS OUT at a witchlight
+   brazier - stand at the fire and the roots cannot reach you. `list` is the level's (main.js keeps it on L.hedgeRoots). */
+export function rootOut(list, x, y, dir, o = {}) {
+  list.push({ x, x0: x, y, dir, v: o.v || HEDGE.rootV, dmg: o.dmg || HEDGE.dmg.roots, lo: o.lo ?? -1e9, hi: o.hi ?? 1e9, hit: false, dead: false, fade: 0, t: 0, boss: !!o.boss });
+}
+/* one step of every root, and of THE ROOTED GARDEN's hedges (witchlight.js WL.ROOTS: they put out a root every `period` s while the
+   hero is near, after `rootWarn` s of shivering). c: { P, fires: [{x, y}] (px), hit(x, dmg), sound(k), burn(x, y), blocked(x, y) } */
+export function stepRoots(list, emitters, dt, c) {
+  const { P } = c, TS = 16;
+  for (const m of emitters || []) { const mx = m.x * TS + 8, my = (m.row + 1) * TS;
+    m.t = (m.t ?? m.phase) - dt; const near = !P.dead && Math.abs(P.x - mx) < 26 * TS && Math.abs(P.y - my) < 8 * TS;
+    m.tell = near && m.t < HEDGE.rootWarn ? Math.min(1, 1 - m.t / HEDGE.rootWarn) : 0;
+    if (m.t <= 0) { m.t += m.period; if (near) { rootOut(list, mx, my, m.dir, { dmg: m.dmg, lo: Math.min(m.x, m.to) * TS, hi: (Math.max(m.x, m.to) + 1) * TS }); c.sound('root'); } } }
+  for (const r of list) {
+    if (r.dead) { r.fade -= dt; continue; }
+    r.t += dt; r.x += r.dir * r.v * dt;
+    if ((c.fires || []).some(f => Math.abs(f.y - r.y) < 8 && Math.abs(f.x - r.x) < HEDGE.fireStop)) { r.dead = true; r.burnt = true; r.fade = 0.5; c.burn(r.x, r.y); continue; }
+    if (r.x <= r.lo || r.x >= r.hi || (c.blocked && c.blocked(r.x + r.dir * 6, r.y))) { r.dead = true; r.fade = 0.4; continue; }
+    if (!r.hit && !P.dead && Math.abs(P.x - r.x) < HEDGE.rootHalf && P.y > r.y - HEDGE.low && P.y < r.y + 8) { r.hit = true; list.hits = (list.hits || 0) + 1; c.hit(r.x, r.dmg); }
+  }
+  for (let i = list.length - 1; i >= 0; i--) if (list[i].dead && list[i].fade <= 0) list.splice(i, 1);
+}
+
+/* A WITCHLIGHT BRAZIER: a stone bowl on a post, its witch-fire going */
+function drawBrazier(g, x, fy, time, seed) {
+  g.fillStyle = '#1b1626'; g.fillRect(x - 3, fy - 16, 6, 16); g.fillRect(x - 8, fy - 20, 16, 5); g.fillStyle = '#6a6280'; g.fillRect(x - 2, fy - 15, 4, 15); g.fillStyle = '#8e86a4'; g.fillRect(x - 7, fy - 19, 14, 3);
+  for (let k = 0; k < 3; k++) { const h = 6 + Math.round(3 * Math.sin(time * 9 + k * 2 + seed)); g.fillStyle = k === 1 ? '#e0c8ff' : '#9a5ad0'; g.fillRect(x - 5 + k * 4, fy - 20 - h, 3, h); }
+  g.globalAlpha = 0.12 + 0.05 * Math.sin(time * 5 + seed); g.fillStyle = '#b07cf0'; g.beginPath(); g.arc(x, fy - 24, 16, 0, 7); g.fill(); g.globalAlpha = 1;
+}
+/* the roots crawling (and burning out), the garden's braziers, and its rooted hedges shivering before they put one out */
+export function drawRoots(g, list, W, cx, cy, time) {
+  const TS = 16, VW = g.canvas.width;
+  for (const [fx, row] of (W && W.fires) || []) { const x = Math.round(fx * TS + 8 - cx); if (x > -20 && x < VW + 20) drawBrazier(g, x, Math.round((row + 1) * TS - cy), time, fx * TS); }
+  for (const m of (W && W.roots) || []) { const x = Math.round(m.x * TS + 8 - cx), fy = Math.round((m.row + 1) * TS - cy); if (x < -40 || x > VW + 40) continue;
+    const k = m.tell || 0, sh = k > 0 ? (Math.floor(time * 30) % 2 ? 1 : -1) : 0;   /* THE KNOT: gnarled roots at the hedge's foot; it shivers and the lawn cracks toward where the root will run */
+    g.fillStyle = '#3a2a1a'; g.fillRect(x - 5 + sh, fy - 5, 10, 5); g.fillStyle = '#5a4020'; g.fillRect(x - 4 + sh, fy - 5, 3, 2); g.fillRect(x + 1 + sh, fy - 4, 3, 2);
+    g.fillStyle = '#2a1e12'; for (let q = 0; q < 3; q++) g.fillRect(x - 7 + q * 5 + sh, fy - 2 - (q % 2), 3, 2);
+    if (k > 0) { g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#1a120a'; const n = Math.round(k * 28); for (let d = 4; d < n; d += 3) g.fillRect(x + m.dir * d, fy - 1 - ((d >> 2) % 2), 2, 1);
+      g.fillStyle = '#8fd160'; for (let q = 0; q < 3; q++) g.fillRect(x - 4 + q * 4 + sh, fy - 7 - Math.round(3 * k) - (q % 2), 1, 2); g.globalAlpha = 1; } }
+  for (const r of list || []) { const hx = Math.round(r.x - cx), fy = Math.round(r.y - cy); if (hx < -80 || hx > VW + 80) continue;
+    const a = r.dead ? Math.max(0, r.fade * 2) : 1; if (a <= 0) continue; g.globalAlpha = a;
+    const back = Math.min(Math.abs(r.x - r.x0), 56);   /* the runner behind the head, dying back */
+    for (let d = 2; d < back; d += 2) { const x = hx - r.dir * d, up = (d % 6 === 0) ? 1 : 0; g.fillStyle = d > back - 10 ? '#2a1e12' : '#4a3418'; g.fillRect(x, fy - 2 - up, 2, 2 + up);
+      if (d % 8 === 4) { g.fillStyle = '#8a3a2a'; g.fillRect(x, fy - 4, 1, 1); } }
+    if (r.burnt) { for (let k = 0; k < 4; k++) { const h = 4 + Math.round(3 * Math.sin(time * 14 + k)); g.fillStyle = k % 2 ? '#e0c8ff' : '#9a5ad0'; g.fillRect(hx - 6 + k * 3, fy - 2 - h, 2, h); } }
+    else { const bob = Math.round(2 * Math.sin(time * 18 + r.x0));   /* THE HEAD: a hump of broken turf and thorns */
+      g.fillStyle = '#3a2a1a'; g.fillRect(hx - 6, fy - 5, 12, 5); g.fillStyle = '#5a4020'; g.fillRect(hx - 4, fy - 7 - bob, 8, 3);
+      for (let k = 0; k < 4; k++) { const tx = hx - 5 + k * 3, h = 4 + ((k * 5 + (bob & 1)) % 4); g.fillStyle = '#6a8a3a'; g.fillRect(tx, fy - 7 - h, 1, h); g.fillStyle = '#ff6b6b'; g.fillRect(tx, fy - 8 - h, 1, 1); }
+      g.fillStyle = '#2a1e12'; g.fillRect(hx + r.dir * 6, fy - 3, 2, 1); g.fillRect(hx + r.dir * 8, fy - 2, 2, 1); }
+    g.globalAlpha = 1; }
+}
+/* the braziers, the thorn ring, the lash, the roots' cracks, the stump's burning and its regrowth */
 export function drawHedgeWarden(g, e, braziers, cx, cy, time, floorY) {
   const fy = Math.round(floorY - cy);
-  for (const bx of braziers || []) { const x = Math.round(bx - cx); if (x < -20 || x > g.canvas.width + 20) continue;   /* A WITCHLIGHT BRAZIER: a stone bowl on a post */
-    g.fillStyle = '#1b1626'; g.fillRect(x - 3, fy - 16, 6, 16); g.fillRect(x - 8, fy - 20, 16, 5); g.fillStyle = '#6a6280'; g.fillRect(x - 2, fy - 15, 4, 15); g.fillStyle = '#8e86a4'; g.fillRect(x - 7, fy - 19, 14, 3);
-    for (let k = 0; k < 3; k++) { const h = 6 + Math.round(3 * Math.sin(time * 9 + k * 2 + bx)); g.fillStyle = k === 1 ? '#e0c8ff' : '#9a5ad0'; g.fillRect(x - 5 + k * 4, fy - 20 - h, 3, h); }
-    g.globalAlpha = 0.12 + 0.05 * Math.sin(time * 5 + bx); g.fillStyle = '#b07cf0'; g.beginPath(); g.arc(x, fy - 24, 16, 0, 7); g.fill(); g.globalAlpha = 1; }
+  for (const bx of braziers || []) { const x = Math.round(bx - cx); if (x < -20 || x > g.canvas.width + 20) continue; drawBrazier(g, x, fy, time, bx); }
   if (!e?.alive) return;
   const x = Math.round(e.x - cx);
   if (e.mode === 'thornTell' || e.mode === 'thorn') { const R = e.phase === 2 ? HEDGE.thornRP2 : HEDGE.thornR, k = e.mode === 'thorn' ? 1 : 0.45; g.globalAlpha = 0.3 * k + (Math.floor(time * 12) % 2 ? 0.1 : 0);
     g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 8, R, 10, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
+  /* THE THORN LASH: told, the vine coils back over his shoulder, longer as the tell runs; struck, it lies cracked along the lawn */
+  if (e.mode === 'lashTell') { const k = Math.max(0, Math.min(1, 1 - e.modeT / HEDGE.tell.lash)), n = 6 + Math.round(10 * k);
+    for (let i = 0; i < n; i++) { const a = -Math.PI / 2 - e.face * (0.3 + i * 0.22), r = 14 + i * 2.2, px = x - e.face * 6 + Math.cos(a) * r, py = fy - 34 + Math.sin(a) * r * 0.8;
+      g.fillStyle = i % 3 ? '#4e7a34' : '#86c060'; g.fillRect(Math.round(px), Math.round(py), 2, 2); if (i % 2) { g.fillStyle = '#ff6b6b'; g.fillRect(Math.round(px), Math.round(py) - 1, 1, 1); } } }
+  if (e.mode === 'lash') { const k = Math.max(0, e.modeT / HEDGE.lashT); g.globalAlpha = 0.4 + 0.6 * k;
+    for (let d = 10; d < HEDGE.lashReach; d += 3) { const px = x + e.face * d, py = fy - 3 - Math.round(2 * Math.sin(d * 0.3 + time * 30) * k); g.fillStyle = d % 9 === 1 ? '#86c060' : '#4e7a34'; g.fillRect(px, py, 3, 2); if (d % 6 === 1) { g.fillStyle = '#ff6b6b'; g.fillRect(px + 1, py - 2, 1, 2); } }
+    g.globalAlpha = 1; }
+  /* THE ROOTS, told: the lawn cracks and heaves in front of him (both sides in phase two), where they will break out */
+  if (e.mode === 'rootsTell') { const k = Math.max(0, Math.min(1, 1 - e.modeT / HEDGE.tell.roots)), sides = e.phase === 2 ? [e.face, -e.face] : [e.face];
+    for (const s of sides) { g.globalAlpha = 0.45 + 0.45 * k; g.fillStyle = '#1a120a'; for (let d = 12; d < 12 + 40 * k; d += 3) g.fillRect(x + s * d, fy - 1 - ((d >> 2) % 2), 2, 1);
+      g.fillStyle = '#8fd160'; if (Math.floor(time * 16) % 2) g.fillRect(x + s * (14 + Math.round(30 * k)), fy - 4, 2, 3); g.globalAlpha = 1; } }
   if (hedgeStump(e)) {
     if (hedgeOpen(e)) { for (let k = 0; k < 5; k++) { const h = 8 + Math.round(5 * Math.sin(time * 11 + k * 1.7)); g.fillStyle = k % 2 ? '#e0c8ff' : '#9a5ad0'; g.fillRect(x - 9 + k * 4, fy - 12 - h, 3, h); }
       const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 22 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }

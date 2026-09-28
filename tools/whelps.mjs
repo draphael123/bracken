@@ -65,7 +65,7 @@ ok(hard.some(g => wh.some(e => near(e, g.x0, g.x1, 5) && e.y <= g.y)), 'S1: a wh
 { const slabs = L.ents.filter(e => e.t === 'mover' && e.slab && e.x >= b0 && e.x <= b1);
   ok(slabs.length >= 2 && slabs.some(e => e.sink) && wh.some(e => slabs.some(m => Math.abs(e.x - m.x) <= 4 && e.y < m.y)), 'S1/S3: the exam\'s slabs (one of them sinks) with a whelp over them: ' + slabs.map(m => m.x).join(' ')); }
 { const ex = WL.EXAM, cps = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), prev = cps.filter(x => x < ex[0]).pop();
-  ok(cps.includes(ex[0]) && cps.includes(ex[1]) && !cps.some(x => x > ex[0] && x < ex[1]), 'S3: a checkpoint before the exam and one outside the lip, none inside it: ' + cps.filter(x => x > 300).join(' '));
+  ok(cps.includes(ex[0]) && cps.includes(ex[1]) && !cps.some(x => x > ex[0] && x < ex[1]), 'S3: a checkpoint before the exam and one outside the lip, none inside it: ' + cps.filter(x => x > 324).join(' '));
   ok(ex[0] - prev >= 40, 'S4: the exam\'s checkpoint is 40+ columns from the last: ' + prev + ' -> ' + ex[0]);
   ok(ex[1] - ex[0] >= 40 && ex[1] < WL.ARENA.x0, 'S3: the exam is 40+ columns and ends at the lip: ' + ex.join('-'));
   ok(!L.ents.some(e => e.t === 'mend' && e.x > ex[0] && e.x < ex[1]), 'S5: no free heart in the exam'); }
@@ -80,12 +80,12 @@ const pg = await openPage({ audio: false, fonts: false });
 try {
   const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const out={};
     const boot=keep=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(${I});BK.state='play';BK.god=true;BK.P.hp=BK.P.maxHp;BK.sim(10);for(const e of BK.enemies())if(!keep(e))e.alive=false;};
-    const W=()=>BK.enemies().find(e=>e.t==='whelp'&&e.alive&&e.x>=364*16&&e.x<366*16);const sp=()=>BK.SET.speed||1;
+    const W=()=>BK.enemies().find(e=>e.t==='whelp'&&e.alive&&e.x>=388*16&&e.x<390*16);const sp=()=>BK.SET.speed||1;
     if(!BK.enemies().some(e=>e.t==='whelp')){boot(()=>true);if(!BK.enemies().some(e=>e.t==='whelp'))return {none:true};}
     /* STONE: a blow on its perch is a chip */
-    boot(e=>e.t==='whelp'&&e.x>=364*16&&e.x<366*16);let w=W();BK.tp(350,30);BK.sim(5);w.cd=99;const h0=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);BK.sim(2);out.stone={took:h0-w.hp,mode:w.mode,alive:w.alive};
+    boot(e=>e.t==='whelp'&&e.x>=388*16&&e.x<390*16);let w=W();BK.tp(374,30);BK.sim(5);w.cd=99;const h0=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);BK.sim(2);out.stone={took:h0-w.hp,mode:w.mode,alive:w.alive};
     /* SEEN, IT SWOOPS: the tell, then the dive; unguarded, a hit and a shove */
-    const swoop=guard=>{boot(e=>e.t==='whelp'&&e.x>=364*16&&e.x<366*16);const w=W();BK.tp(362,30);BK.sim(3);w.cd=0.2;BK.god=false;BK.P.hp=BK.P.maxHp;BK.P.inv=0;const hp0=BK.P.hp;
+    const swoop=guard=>{boot(e=>e.t==='whelp'&&e.x>=388*16&&e.x<390*16);const w=W();BK.tp(386,30);BK.sim(3);w.cd=0.2;BK.god=false;BK.P.hp=BK.P.maxHp;BK.P.inv=0;const hp0=BK.P.hp;
       const seen=new Set();let shove=0,tellT=0;for(let i=0;i<150;i++){if(guard)BK.keys.block=true;BK.sim(1);seen.add(w.mode);if(w.mode==='crouchTell')tellT++;shove=Math.max(shove,Math.abs(BK.P.vx));if(w.mode==='landed'||w.mode==='stuck')break;}
       BK.keys.block=false;const o={seen:[...seen],tell:+(tellT/60).toFixed(2),mode:w.mode,hurt:hp0-BK.P.hp,shove:Math.round(shove),wound:BK.windingUpOf?null:null};BK.god=true;BK.P.hp=BK.P.maxHp;return [o,w];};
     {const [o,w]=swoop(false);out.open=o;
