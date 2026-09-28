@@ -2,18 +2,24 @@
 // reworked 2026-09-25 (docs/briefs/gargoyle-rework.md) and AGAIN 2026-09-27 (Daniel's design, round three: docs/briefs/gargoyle-spikes.md).
 // A huge stone gargoyle bolted over the tower's outer gate, woken by the loose magic. He is fought on the stair's top: MANY FLOATING
 // SLABS in two tiers over A FLOOR OF SPIKES. His art: src/redraw/queue_bosses.js (bakeGateGargoyle, drawn at GARG.K = 1.5):
-// 0 perched | 1,2 fly | 3 dive tell | 4 dive | 5 gust tell | 6 gust | 7 breath tell | 8 breath | 9 shriek | 10 STUNNED | 11 CRASH.
+// 0 perched | 1,2 fly | 3 dive tell | 4 dive | 5 fireball tell | 6 fireball | 7 breath tell | 8 breath | 9 shriek | 10 STUNNED | 11 CRASH.
+// Daniel's playtest, 2026-09-28 (work/claude/lane-done/claude-gargoyle4.md): the fire breath SLOWED (a longer tell, a longer set line,
+// a jet that runs out along the line instead of being there at once); the wing gust REPLACED by one slow fireball; his flying SLOWED
+// (GARG.fly caps it); and ONE whelp of his at a time (GARG.whelps).
 //   THE STONE DIVE   ✕  he rises out of sight and his shadow finds the slab you stand on; he comes down on it. He follows you from
 //                        slab to slab while he is up there - the aim is his until he drops. No shield turns it: be elsewhere.
 //   THE FIRE BREATH  !  he hangs off to one side of you, rears back and his throat lights; a dotted line shows where the jet will go,
 //                        following you until the last quarter-second, when it LOCKS (it goes solid). Then a jet of fire along it. Step
 //                        off the line - up a tier, down a tier, or behind a slab (a slab stops the jet) - or take it on a shield.
-//                        In phase two the jet SWEEPS after you as it burns.
-//   THE WING GUST    !  wings drawn back, then a blast that shoves you along your slab toward its edge - and the spikes; a shield braces you.
+//                        The jet RUNS OUT along the line from his mouth (GARG.breath.travel), so a late step still gets you off it.
+//                        In phase two the jet SWEEPS after you as it burns (slowly).
+//   THE FIREBALL     !  he rears back and fire gathers, glowing, in his jaws; then ONE slow fireball, aimed where you are as it
+//                        leaves him. Step off its path, jump it, or take it on a shield; a slab or stone in its way breaks it.
 //   THE GLYPH FLARE  ✕  (no damage) a glyph lights under the slab you stand on: still on it when it goes, and you fall UP onto its
 //                        underside for three seconds - and he likes to dive on that slab while you hang there.
-//   THE PERCH SHRIEK    back to the gate; two or three GARGOYLE WHELPS come out of the tower's cornices (three at most): stone on
-//                        its face until they swoop (src/gargoyle-whelp.js). Like him, they break only by a stomp on the spikes.
+//   THE PERCH SHRIEK    back to the gate; a GARGOYLE WHELP comes out of the tower's cornices - ONE of his at a time: while it lives he
+//                        does not shriek, he picks another attack. Stone on its face until it swoops (src/gargoyle-whelp.js). Like
+//                        him, it breaks only by a stomp on the spikes.
 // HE IS STONE (Daniel, 2026-09-27: "INVULNERABLE except then"): no blade, shot, spell or burn takes anything off him (gargTake). THE
 // OPENING IS YOURS: be on the slab his shadow finds and leave it LATE - after he has dropped - and nothing takes his weight: HE SMASHES
 // THROUGH IT (the crack runs across it first) and CRASHES DOWN ONTO THE SPIKES, where he lies STUNNED for GARG.stun seconds. Then, and
@@ -22,24 +28,31 @@
 // and it is you he lands on. A broken slab grows back in a few seconds (GARG.regrow, a little slower in phase two) and never fewer than
 // GARG.minLive stand. Fall onto the spikes and they take one bite and the winds bring you back (src/spike-winds.js).
 // PHASE TWO (half his health): his fire SWEEPS after you, the moving slabs drift faster, dives come in pairs, every flare comes with a
-// gust. Touching him never hurts (the touch rule).
+// fireball. Touching him never hurts (the touch rule).
 export const GARG = {
   hp: 410, stomps: 5, cd: 1.35, cdP2: 0.95,
   K: 1.5, w: 45, h: 45,                       /* HALF AS BIG AGAIN (he was 30): every read of his size below goes through K */
-  tell: { dive: 0.95, gust: 0.75, breath: 0.95, flare: 0.9 }, tellP2: 0.82,
-  dmg: { dive: 18, gust: 6, breath: 12, crash: 12 },
+  tell: { dive: 0.95, fireball: 1.1, breath: 1.5, flare: 0.9 }, tellP2: 0.82, tellP2Not: ['breath'],   /* (2026-09-28: the breath's tell was 0.95, and 0.78 in phase two; it is 1.5 in both) */
+  dmg: { dive: 18, fireball: 10, breath: 12, crash: 12 },
   diveV: 430, diveUp: 150, land: 1.1, recover: 0.9, rise: 0.55, reset: 1.4,
   smashAny: true, smashT: 0.24, crashG: 1500, stun: 3.5,
-  gustV: 215, gustT: 0.6, gustReach: 170,
-  breath: { T: 0.85, reach: 210, w: 10, lock: 0.25, sweep: 0.75 },   /* the jet: seconds, px long, px either side of its line, the locked last part of the tell, rad/s it chases you in phase two */
-  flareT: 3.0, whelps: 3, shriekEvery: 13, regrow: 4, regrowP2: 5.5, minLive: 6, slabP2: 1.6,
+  /* HIS FLYING (Daniel, 2026-09-28: "he moves too quickly"): he eased toward where he wanted to be at a rate that grew with the distance, so a
+     side-swap or a hop of yours had him streak 200-300 px/s. Now the ease is gentler and CAPPED: px/s while he hovers and repositions, while he
+     sets up a breath or a fireball, and while he climbs back up. The dive itself (diveV, and his climb out of sight before it) is untouched. */
+  fly: 90, flyTell: 120, flyUp: 150, ease: 1.6,
+  /* THE FIREBALL (in the wing gust's place, 2026-09-28): px/s, radius, seconds it lives, the recoil after it leaves him */
+  ball: { v: 90, r: 6, life: 4.5, throwT: 0.45 },
+  /* the jet: seconds, px long, px either side of its line, the locked last part of the tell, rad/s it chases you in phase two, and px/s its
+     front runs out along the line (2026-09-28: T 0.85 -> 1.4, lock 0.25 -> 0.5, sweep 0.75 -> 0.4, and the front was the whole line at once) */
+  breath: { T: 1.4, reach: 210, w: 10, lock: 0.5, sweep: 0.4, travel: 260 },
+  flareT: 3.0, whelps: 1, shriekEvery: 13, regrow: 4, regrowP2: 5.5, minLive: 6, slabP2: 1.6,   /* whelps: ONE of his alive at a time (it was three) */
   hoverUp: 60, hoverDX: 52, high: 64,
 };
 /* a STOMP takes this much: GARG.stomps of them and he is broken, whoever you are */
 GARG.stompDmg = Math.ceil(GARG.hp / GARG.stomps);
 const K = GARG.K;
-const TELL = { dive: 'diveTell', gust: 'gustTell', breath: 'breathTell', flare: 'flareTell' };
-const SAY = { diveTell: 'THE STONE DIVE', gustTell: 'THE WING GUST', breathTell: 'FIRE: OFF THE LINE', flareTell: 'THE GLYPH FLARE: GET OFF THAT SLAB' };
+const TELL = { dive: 'diveTell', fireball: 'fireballTell', breath: 'breathTell', flare: 'flareTell' };
+const SAY = { diveTell: 'THE STONE DIVE', fireballTell: 'THE FIREBALL', breathTell: 'FIRE: OFF THE LINE', flareTell: 'THE GLYPH FLARE: GET OFF THAT SLAB' };
 /* HIS OPENING: stunned on the spikes, and only a stomp reaches him there */
 export const gargOpen = e => e.mode === 'stunned';
 /* the frames of bakeGateGargoyle */
@@ -47,7 +60,7 @@ export function gargFrame(e) {
   const fly = 1 + Math.floor((e.anim || 0) * 8) % 2;
   switch (e.mode) {
     case 'sleep': case 'wake': case 'land': return 0; case 'diveTell': return 3; case 'dive': return 4; case 'smash': case 'crash': return 11;
-    case 'gustTell': return 5; case 'gust': return 6; case 'breathTell': return 7; case 'breath': return 8;
+    case 'fireballTell': return 5; case 'fireball': return 6; case 'breathTell': return 7; case 'breath': return 8;
     case 'flareTell': case 'shriek': return 9; case 'stunned': return 10;
   }
   return fly;
@@ -86,23 +99,43 @@ export function breathLine(e, a, c) {
 /* is a point within the jet: its distance from the line segment */
 export function inBreath(L4, x, y) { const [x0, y0, x1, y1] = L4, vx = x1 - x0, vy = y1 - y0, n = vx * vx + vy * vy || 1, t = Math.max(0, Math.min(1, ((x - x0) * vx + (y - y0) * vy) / n));
   return Math.hypot(x - (x0 + vx * t), y - (y0 + vy * t)) <= GARG.breath.w; }
+/* THE JET SO FAR: the line cut to where its front has run in `t` seconds of burning */
+export function jetSoFar(L5, t) { const [x0, y0, x1, y1, len] = L5, f = Math.min(len, Math.max(0, t) * GARG.breath.travel), k = len > 0 ? f / len : 0;
+  return [x0, y0, x0 + (x1 - x0) * k, y0 + (y1 - y0) * k, f]; }
+/* THE FIREBALL: where his jaws are, and one ball on its way (e.ball). It flies straight, slowly; a live slab or stone in its way breaks
+   it, and so does the end of its life; on you it is a blow a shield takes (c.hit, not hard). Returns what happened to it this frame. */
+export const mouth = e => [e.x + (e.face || 1) * 14 * K, e.y - 18 * K];
+export function stepBall(e, dt, c) {
+  const b = e.ball; if (!b) return null; const P = c.P, B = GARG.ball;
+  b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt; b.t = (b.t || 0) + dt;
+  const inSlab = (c.slabs || []).some(m => !m.broken && b.x > m.x - B.r * 0.5 && b.x < m.x + m.w + B.r * 0.5 && b.y > m.y - B.r * 0.5 && b.y < m.y + (m.h || 8) + B.r * 0.5);
+  if (inSlab || (c.solid && c.solid(b.x, b.y)) || b.life <= 0) { e.ball = null; if (c.pop) c.pop(b.x, b.y, inSlab ? 'slab' : 'stone'); return inSlab ? 'slab' : b.life <= 0 ? 'spent' : 'stone'; }
+  if (P && !P.dead && !P.windRide && Math.abs(P.x - b.x) < 6 + B.r && b.y > P.y - (P.h || 18) - B.r && b.y < P.y + B.r) {
+    const r = c.hit(b.x, GARG.dmg.fireball, false, 'THE FIREBALL');
+    if (r === false) return null;   /* rolled through it (a dodge's i-frames): it flies on */
+    e.ball = null; if (c.pop) c.pop(b.x, b.y, r === 'blocked' ? 'shield' : 'you'); if (r === 'blocked' && c.say) c.say('THE SHIELD TAKES THE FIREBALL', false, true); return r === 'blocked' ? 'blocked' : 'hit'; }
+  return 'flying';
+}
 
 const live = slabs => slabs.filter(m => !m.broken);
 const onSlab = (P, slabs) => P.onMover && slabs.includes(P.onMover) && !P.onMover.broken ? P.onMover : null;
-function begin(e, what, c) { e.mode = TELL[what]; e.modeT = GARG.tell[what] * (e.phase === 2 ? GARG.tellP2 : 1); e.last2 = e.last; e.last = what; e.side = e.side || 1;
-  c.say(SAY[e.mode], what === 'dive' || what === 'flare'); c.sound(what === 'dive' ? 'screech' : what === 'flare' ? 'zap' : what === 'breath' ? 'inhale' : 'rattle'); }
+function begin(e, what, c) { e.mode = TELL[what]; e.modeT = GARG.tell[what] * (e.phase === 2 && !GARG.tellP2Not.includes(what) ? GARG.tellP2 : 1); e.last2 = e.last; e.last = what; e.side = e.side || 1;
+  c.say(SAY[e.mode], what === 'dive' || what === 'flare'); c.sound(what === 'dive' ? 'screech' : what === 'flare' ? 'zap' : what === 'breath' || what === 'fireball' ? 'inhale' : 'rattle'); }
 /* HIS CHOICE is weighted and random, and never the same thing three times running (the Hedge Warden's first pilot had no dice in it,
-   and its four passes were one fight four times) */
-function choose(e, c, slab) {
-  const r = c.rnd, w = { dive: 3, gust: 1.6, breath: 2.4, flare: slab && e.flareCd <= 0 ? 1.2 : 0, shriek: e.shriekCd <= 0 && c.adds() < GARG.whelps ? 0.8 : 0 };
+   and its four passes were one fight four times). THE SHRIEK only while none of his whelps is up (GARG.whelps, 2026-09-28): with one alive its
+   weight is 0 and the roll falls to his other attacks - he does something else, he never stands and screams for nothing */
+export function gargChoose(e, c, slab) {
+  const r = c.rnd, w = { dive: 3, fireball: 1.6, breath: 2.4, flare: slab && e.flareCd <= 0 ? 1.2 : 0, shriek: e.shriekCd <= 0 && c.adds() < GARG.whelps ? 0.8 : 0 };
   if (e.last && e.last === e.last2 && w[e.last]) w[e.last] = 0;
   else if (e.last && w[e.last]) w[e.last] *= 0.45;
   const tot = Object.values(w).reduce((s, v) => s + v, 0); let k = r() * tot;
   for (const [what, v] of Object.entries(w)) { k -= v; if (k <= 0 && v > 0) return what; }
   return 'dive';
 }
-const toward = (e, tx, ty, dt, k = 2.4) => { e.vx = (tx - e.x) * Math.min(1, dt * k) / Math.max(dt, 1e-6); e.vy = (ty - e.y) * Math.min(1, dt * k) / Math.max(dt, 1e-6);
-  e.x += (tx - e.x) * Math.min(1, dt * k); e.y += (ty - e.y) * Math.min(1, dt * k); };
+/* HE EASES toward where he wants to be - and never faster than `max` px/s (GARG.fly and its kin, 2026-09-28) */
+const toward = (e, tx, ty, dt, k = GARG.ease, max = GARG.fly) => { const f = Math.min(1, dt * k); let dx = (tx - e.x) * f, dy = (ty - e.y) * f;
+  const d = Math.hypot(dx, dy), cap = max * dt; if (d > cap && d > 0) { dx *= cap / d; dy *= cap / d; }
+  e.vx = dx / Math.max(dt, 1e-6); e.vy = dy / Math.max(dt, 1e-6); e.x += dx; e.y += dy; };
 const footX = (e, m) => m.x + Math.max(8 * K, Math.min(m.w - 8 * K, e.off));   /* where on a slab he comes down: never off its end */
 const aimAt = (e, P) => Math.atan2(P.y - 10 - (e.y - 18 * K), P.x - (e.x + (e.face || 1) * 14 * K));
 
@@ -111,6 +144,7 @@ export function updateGargoyle(e, dt, c) {
   if (!e.alive || e.mode === 'sleep') return;
   e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.flareCd = (e.flareCd ?? 4) - dt; e.shriekCd = (e.shriekCd ?? 8) - dt;
   e.open = gargOpen(e) ? Math.max(0, e.modeT) : 0; e.slabsSeen = slabs;   /* (the breath's told line is drawn stopped where the jet will stop) */
+  if (e.ball) stepBall(e, dt, c);   /* THE FIREBALL flies on whatever he does next */
   const slab = onSlab(P, slabs), top = A.top, riding = !!P.windRide;
   if (e.phase === 1 && e.hp <= e.maxHp / 2) { e.phase = 2; c.phase2(); c.say('HIS FIRE FOLLOWS YOU', true); c.shake(6); }
   const side = () => (e.x < P.x ? -1 : 1);
@@ -121,15 +155,16 @@ export function updateGargoyle(e, dt, c) {
       const tx = Math.max(A.x0 + 16 * K, Math.min(A.x1 - 16 * K, P.x + e.side * e.hx)), ty = Math.min(P.y, top + 32) - GARG.hoverUp;
       toward(e, tx, ty, dt); e.face = Math.sign(P.x - e.x) || e.face;
       if (riding) { e.cd = Math.max(e.cd, 0.6); return; }   /* while the wind has you he waits: nothing is thrown at a hero who cannot move */
-      if (e.cd <= 0) { const what = e.queue && e.queue.length ? e.queue.shift() : choose(e, { ...c, rnd }, slab);
+      if (e.cd <= 0) { const what = e.queue && e.queue.length ? e.queue.shift() : gargChoose(e, { ...c, rnd }, slab);
         if (what === 'shriek') { e.mode = 'perchFly'; e.modeT = 2.5; c.say('HE GOES BACK TO THE GATE', false); }
         else if (what === 'flare' && !slab) { e.cd = 0.3; }
-        else { begin(e, what, c); if (what === 'flare') { e.fm = slab; e.flareCd = 7; } if (what === 'dive') { e.tgt = slab; e.off = slab ? P.x - slab.x : 0; } if (what === 'breath') { e.sd = side(); e.aim = null; } } }
+        else if (what === 'fireball' && e.ball) { e.cd = 0.3; }   /* one of his fireballs at a time */
+        else { begin(e, what, c); if (what === 'flare') { e.fm = slab; e.flareCd = 7; } if (what === 'dive') { e.tgt = slab; e.off = slab ? P.x - slab.x : 0; } if (what === 'breath') { e.sd = side(); e.aim = null; } if (what === 'fireball') e.sd = side(); } }
       return; }
     /* THE STONE DIVE: up and out of sight; his shadow follows you from slab to slab until he drops */
     case 'diveTell': { const s = onSlab(P, slabs), fl = P.flip && P.flareSlab && !P.flareSlab.broken ? P.flareSlab : null;   /* in the air between slabs he keeps the last one he saw you on */
       if (fl || s) { e.tgt = fl || s; e.off = P.x - e.tgt.x; } else if (!e.tgt || e.tgt.broken) { e.tgt = live(slabs).sort((a, b) => Math.abs(a.x + a.w / 2 - P.x) - Math.abs(b.x + b.w / 2 - P.x))[0] || null; e.off = e.tgt ? e.tgt.w / 2 : 0; } e.tx = P.x;
-      toward(e, e.tgt ? e.tgt.x + e.off : P.x, top - GARG.diveUp, dt, 3.2);
+      toward(e, e.tgt ? e.tgt.x + e.off : P.x, top - GARG.diveUp, dt, 3.2, Infinity);   /* (up out of sight: the dive is as it was) */
       if (e.modeT <= 0) { e.mode = 'dive'; e.modeT = 2; e.hitP = false; c.sound('whoosh'); } return; }
     case 'dive': { const m = e.tgt && !e.tgt.broken ? e.tgt : null, gy = m ? m.y : top + 24; e.x = m ? footX(e, m) : e.tx; e.y += GARG.diveV * dt; e.vx = 0; e.vy = GARG.diveV;
       if (e.y < gy) return;
@@ -151,39 +186,39 @@ export function updateGargoyle(e, dt, c) {
       e.mode = 'stunned'; e.modeT = GARG.stun; e.open = GARG.stun; c.say('ON THE SPIKES: JUMP ON HIM', false, true); c.sound('crack'); return; }
     case 'stunned': if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = GARG.rise * 1.6; e.cd = 0.9; c.say('HE TEARS HIMSELF OFF', false); } return;
     /* STOMPED: off the spikes and back up over his slabs, untouchable, while the wind takes you up too */
-    case 'reset': toward(e, Math.max(A.x0 + 40, Math.min(A.x1 - 40, e.x)), top - GARG.hoverUp - 30, dt, 2.2); e.face = Math.sign(P.x - e.x) || e.face;
+    case 'reset': toward(e, Math.max(A.x0 + 40, Math.min(A.x1 - 40, e.x)), top - GARG.hoverUp - 30, dt, 2.2, GARG.flyUp); e.face = Math.sign(P.x - e.x) || e.face;
       if (e.modeT <= 0) { e.mode = 'hover'; e.cd = Math.max(e.cd, 0.9); } return;
     case 'land': { const m = e.onM; if (m) { e.x = m.x + e.off; e.y = m.y; } e.face = Math.sign(P.x - e.x) || e.face;
       if (e.modeT <= 0) { if (e.phase === 2 && !e.paired) { e.paired = true; begin(e, 'dive', c); e.modeT *= 0.7; e.tgt = onSlab(P, slabs); e.off = e.tgt ? P.x - e.tgt.x : 0; return; }
         e.paired = false; e.mode = 'rise'; e.modeT = GARG.rise; } return; }
-    case 'rise': toward(e, e.x, top - GARG.hoverUp - 10, dt, 3); if (e.modeT <= 0) { e.mode = 'hover'; e.cd = Math.max(e.cd, 0.6); } return;
-    /* THE WING GUST: level with you, a few strides off; the blast shoves you along your slab */
-    case 'gustTell': { e.gs = e.gs || side(); toward(e, P.x + e.gs * 72 * K, P.y - 12, dt, 3); e.face = -e.gs;
-      if (e.modeT <= 0) { e.mode = 'gust'; e.modeT = GARG.gustT; c.sound('gust');
-        const inCone = !riding && Math.abs(P.x - e.x) < GARG.gustReach && Math.abs(P.y - e.y) < 64;
-        const r = inCone ? c.hit(e.x, GARG.dmg.gust, false, 'THE WING GUST') : null; e.braced = r !== 'hit'; if (r === 'blocked') c.say('BRACED', false, true); }   /* a shield braces you; a roll goes through it */ return; }
-    case 'gust': { if (!e.braced && !P.dead && !riding && Math.abs(P.x - e.x) < GARG.gustReach + 40 && Math.abs(P.y - e.y) < 80) c.push(-e.gs * GARG.gustV);
-      c.wind(e.x, e.y - 14 * K, -e.gs);
-      if (e.modeT <= 0) { e.gs = 0; e.mode = 'recover'; e.modeT = GARG.recover; e.cd = e.phase === 2 ? GARG.cdP2 : GARG.cd; } return; }
+    case 'rise': toward(e, e.x, top - GARG.hoverUp - 10, dt, 3, GARG.flyUp); if (e.modeT <= 0) { e.mode = 'hover'; e.cd = Math.max(e.cd, 0.6); } return;
+    /* THE FIREBALL (in the wing gust's place, Daniel 2026-09-28): off to one side of you and a little above, he rears back and the fire
+       gathers in his jaws (the glow grows through the tell); then ONE slow ball, aimed where you are as it leaves him */
+    case 'fireballTell': { const sd = e.sd = e.sd || side(); toward(e, P.x + sd * 80 * K, P.y - 12, dt, 3, GARG.flyTell);   /* level with you (the gust's place): the ball comes in low along your tier */ e.face = -sd;
+      if (e.modeT <= 0) { const [mx, my] = mouth(e), a = Math.atan2(P.y - 9 - my, P.x - mx);
+        e.ball = { x: mx, y: my, vx: Math.cos(a) * GARG.ball.v, vy: Math.sin(a) * GARG.ball.v, life: GARG.ball.life, t: 0 };
+        e.mode = 'fireball'; e.modeT = GARG.ball.throwT; e.thrown = (e.thrown || 0) + 1; c.sound('fireball'); } return; }
+    case 'fireball': e.vx = 0; e.vy = 0;
+      if (e.modeT <= 0) { e.sd = 0; e.mode = 'recover'; e.modeT = GARG.recover; e.cd = e.phase === 2 ? GARG.cdP2 : GARG.cd; } return;
     /* THE FIRE BREATH: off to one side of you and above; the line follows you, then LOCKS for its last quarter-second, then the jet */
-    case 'breathTell': { const sd = e.sd = e.sd || side(); toward(e, P.x + sd * 96 * K, P.y - 4, dt, 3); e.face = -sd;   /* level with you: the jet goes along your tier, under the one above */
+    case 'breathTell': { const sd = e.sd = e.sd || side(); toward(e, P.x + sd * 96 * K, P.y - 4, dt, 3, GARG.flyTell); e.face = -sd;   /* level with you: the jet goes along your tier, under the one above */
       if (e.modeT > GARG.breath.lock || e.aim === null || e.aim === undefined) e.aim = aimAt(e, P);   /* it follows you, then it is set */
       if (e.modeT <= 0) { e.mode = 'breath'; e.modeT = GARG.breath.T; e.bHit = false; c.sound('fire'); } return; }
     case 'breath': { e.vx = 0; e.vy = 0;
       if (e.phase === 2) { const want = aimAt(e, P); let d = want - e.aim; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; e.aim += Math.sign(d) * Math.min(Math.abs(d), GARG.breath.sweep * dt); }   /* PHASE TWO: it chases you as it burns */
-      const ln = breathLine(e, e.aim, c); e.jet = ln; if (c.fire) c.fire(ln);
+      const ln = jetSoFar(breathLine(e, e.aim, c), GARG.breath.T - e.modeT); e.jet = ln; if (c.fire && ln[4] > 2) c.fire(ln);   /* THE FRONT RUNS OUT along the line: it burns only as far as it has got */
       if (!e.bHit && !P.dead && !riding && (inBreath(ln, P.x, P.y - 9) || inBreath(ln, P.x, P.y - (P.h || 18) + 3) || inBreath(ln, P.x, P.y - 2))) { e.bHit = true; const r = c.hit(ln[0], GARG.dmg.breath, false, 'THE FIRE BREATH'); if (r === 'blocked') c.say('THE SHIELD TAKES THE FIRE', false, true); }
       if (e.modeT <= 0) { e.sd = 0; e.jet = null; e.mode = 'recover'; e.modeT = GARG.recover; e.cd = e.phase === 2 ? GARG.cdP2 : GARG.cd; } return; }
-    /* after a gust or the fire he sinks a little and gets his breath */
+    /* after a fireball or the breath he sinks a little and gets his breath */
     case 'recover': toward(e, e.x, Math.min(P.y, top + 32) - 16, dt, 1.2); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) e.mode = 'hover'; return;
     /* THE GLYPH FLARE: a glyph lit under your slab; still on it when it goes and you fall up onto its underside */
-    case 'flareTell': toward(e, P.x - side() * 60 * K, P.y - 70 * K, dt, 2);
+    case 'flareTell': toward(e, P.x - side() * 60 * K, P.y - 70 * K, dt, 2, GARG.flyTell);
       if (e.modeT <= 0) { const m = e.fm; e.fm = null; e.mode = 'hover'; e.cd = 0.35;
-        if (m && !m.broken && onSlab(P, slabs) === m) { c.flare(m, GARG.flareT); e.queue = e.phase === 2 ? ['gust', 'dive'] : rnd() < 0.65 ? ['dive'] : []; }
+        if (m && !m.broken && onSlab(P, slabs) === m) { c.flare(m, GARG.flareT); e.queue = e.phase === 2 ? ['fireball', 'dive'] : rnd() < 0.65 ? ['dive'] : []; }
         else c.say('THE GLYPH FIZZLES', false, true); } return;
     /* THE PERCH SHRIEK */
-    case 'perchFly': toward(e, e.px0, e.py0, dt, 2.2); if (Math.hypot(e.x - e.px0, e.y - e.py0) < 10 || e.modeT <= 0) { e.mode = 'shriek'; e.modeT = 1.1; e.shrieked = false; c.sound('screech'); c.shake(4); } return;
-    case 'shriek': e.face = -1; if (!e.shrieked && e.modeT < 0.7) { e.shrieked = true; const n = Math.min(GARG.whelps - c.adds(), 2 + (rnd() < 0.5 ? 1 : 0)); for (let i = 0; i < n; i++) c.whelp(A.x1 - 8, top - 40 - i * 26); e.shriekCd = GARG.shriekEvery; }
+    case 'perchFly': toward(e, e.px0, e.py0, dt, 2.2, GARG.flyUp); if (Math.hypot(e.x - e.px0, e.y - e.py0) < 10 || e.modeT <= 0) { e.mode = 'shriek'; e.modeT = 1.1; e.shrieked = false; c.sound('screech'); c.shake(4); } return;
+    case 'shriek': e.face = -1; if (!e.shrieked && e.modeT < 0.7) { e.shrieked = true; const n = Math.max(0, GARG.whelps - c.adds()); for (let i = 0; i < n; i++) c.whelp(A.x1 - 8, top - 40 - i * 26); e.shriekCd = GARG.shriekEvery; }
       if (e.modeT <= 0) { e.mode = 'hover'; e.cd = 0.8; } return;
   }
   e.mode = 'hover';
@@ -198,7 +233,7 @@ export function drawSlabGhost(g, m, cx, cy, time) {
 }
 /* HIS MARKS ON THE WORLD: the dive's shadow (and its red cross) on the slab he is coming down on - and on the spikes under it once the
    slab is empty, since that is where he is going; the crack running across a slab as it gives; the glyph lit under a slab; the fire
-   breath's line (dotted while it follows you, solid once it is set) and its jet; the gust's wind; and the stunned mark, circling stars
+   breath's line (dotted while it follows you, solid once it is set) and its jet; the fireball's glow in his jaws and the ball; and the stunned mark, circling stars
    in a green ring and a green arrow over his back - JUMP ON HIM - for as long as he lies open */
 export function drawGargoyleWorld(g, e, cx, cy, time, P) {
   if (!e || !e.alive) return;
@@ -226,7 +261,14 @@ export function drawGargoyleWorld(g, e, cx, cy, time, P) {
     for (let d = 0; d < len; d += 3) { const f = d / Math.max(1, len), wob = Math.sin(time * 40 + d * 0.3) * (2 + 5 * f), px = x0 + dx * d - dy * wob, py = y0 + dy * d + dx * wob, r = 2 + 6 * f;
       g.globalAlpha = 0.85 - 0.4 * f; g.fillStyle = f < 0.3 ? '#fff0b0' : f < 0.7 ? '#ffb040' : '#e0502a'; g.fillRect(Math.round(px - cx - r / 2), Math.round(py - cy - r / 2), Math.round(r), Math.round(r)); }
     g.globalAlpha = 1; }
-  if (e.mode === 'gust' && !e.braced) { g.globalAlpha = 0.5; g.fillStyle = '#eefaff'; for (let q = 0; q < 8; q++) { const d = ((time * 400 + q * 37) % 160); g.fillRect(Math.round(e.x - cx - e.gs * d), Math.round(e.y - cy - 30 * K + (q * 11) % 44), 8, 1); } g.globalAlpha = 1; }
+  /* THE FIREBALL, TOLD: fire gathering in his jaws, growing and brightening to the throw; then the ball, flickering, with its trail */
+  if (e.mode === 'fireballTell') { const [mx, my] = mouth(e), k = 1 - Math.max(0, e.modeT) / GARG.tell.fireball, x = Math.round(mx - cx), y = Math.round(my - cy), r = 2 + Math.round(GARG.ball.r * k), fl = Math.floor(time * 16) % 2;
+    g.globalAlpha = 0.25 + 0.35 * k; g.fillStyle = '#ff9a3c'; g.beginPath(); g.arc(x, y, r + 5 + (fl ? 1 : 0), 0, 7); g.fill();
+    g.globalAlpha = 0.6 + 0.4 * k; g.fillStyle = fl ? '#ff9a5c' : '#ff6b2c'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = '#fff0b0'; g.fillRect(x - 1, y - 1, 2, 2); g.globalAlpha = 1; }
+  if (e.ball) { const b = e.ball, x = Math.round(b.x - cx), y = Math.round(b.y - cy), r = GARG.ball.r, fl = Math.floor(time * 20) % 2, sp = Math.hypot(b.vx, b.vy) || 1;
+    for (let q = 1; q <= 4; q++) { g.globalAlpha = 0.45 - q * 0.09; g.fillStyle = q < 3 ? '#ffb040' : '#e0502a'; const tr = r - q; g.fillRect(Math.round(x - b.vx / sp * q * 5 - tr / 2), Math.round(y - b.vy / sp * q * 5 - tr / 2), Math.max(1, tr), Math.max(1, tr)); }
+    g.globalAlpha = 0.3; g.fillStyle = '#ff7828'; g.beginPath(); g.arc(x, y, r + 4, 0, 7); g.fill(); g.globalAlpha = 1;
+    g.fillStyle = fl ? '#ff9a5c' : '#ff6b2c'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x - 1, y - 1, r * 0.55, 0, 7); g.fill(); g.fillStyle = '#fff6c8'; g.fillRect(x - 2, y - 3, 2, 2); }
   if (e.mode === 'stunned') { const k = 0.5 + 0.5 * Math.sin(time * 10), hx = Math.round(e.x + (e.face || 1) * 12 * K - cx), hy = Math.round(e.y - 18 * K - cy), left = Math.max(0, e.modeT) / GARG.stun;
     g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - 12 * K - cy), 30 + k * 3, 18, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
     g.globalAlpha = 1; for (let q = 0; q < 3; q++) { const a = time * 5 + q * 2.09, sx = hx + Math.round(Math.cos(a) * 12), sy = hy + Math.round(Math.sin(a) * 4);   /* THE STARS: round his head */

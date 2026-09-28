@@ -61,7 +61,7 @@ const band = Math.max(...rows) - Math.min(...rows); assert.ok(band >= 45, 'the s
   for (const e of sl) assert.ok(e.y <= A.floor / TSZ - 6, 'every slab is over the terrace, not on it (six rows at least: the rework lowered them from 11-13, tools/gargoyle-smash.mjs)');
   for (let x = WL.ARENA.x0; x <= WL.ARENA.x1; x++) assert.equal(at(x, A.floor / TSZ - 1), T.SPIKE, 'his floor is spikes at ' + x);
   assert.ok((L.winds || []).some(z => z.arena && (z.wells || []).length >= 3), 'and its wind brings you back up to his slabs (it replaced the rune columns from the terrace)');
-  assert.deepEqual(['diveTell', 'flareTell', 'gustTell', 'breathTell'].map(mode => markOf({ t: 'gargoyle', mode })), ['!!', '!!', '!', '!'], 'the dive and the flare wear the red mark; a shield turns the gust and the fire breath'); }
+  assert.deepEqual(['diveTell', 'flareTell', 'fireballTell', 'breathTell'].map(mode => markOf({ t: 'gargoyle', mode })), ['!!', '!!', '!', '!'], 'the dive and the flare wear the red mark; a shield turns the fireball (the wing gust\'s place since 2026-09-28) and the fire breath'); }
 // 3. one verb a place
 const inX = ([a, b]) => e => e.x >= a && e.x <= b;
 const slabs = L.ents.filter(e => e.t === 'mover' && e.slab && inX(WL.PLACES.aqueduct)(e));
