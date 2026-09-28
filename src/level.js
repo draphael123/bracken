@@ -944,9 +944,10 @@ function sporewood() {
      the weaver at 348 (already placed, above) spits at whoever rides it - the rule, back in the crossing-under-fire. */
   caps2.push(sprout(345, 14, { rise: 16, lean: 96, growT: 1.6 }));
   R.ents.push({ t: 'rockfall', x: 348, y: 0, spore: true, every: 2.7, tell: 0.9 });
-  /* -- 3. DEVELOP the pillars (373-398, the quiet stretch): a curtain drapes each floor cap - webbed, it will not
-     spring you until you cut it - and a lurker waits on the shelf between them, among the caps, not past them. */
-  RS(383, 385, 18, 18, T.WEB); RS(395, 397, 18, 18, T.WEB);
+  /* -- 3. DEVELOP the pillars (373-398, the quiet stretch): a lurker waits on the shelf between the two floor caps,
+     among them, not past them. (A curtain over each cap, gating the spring on a cut, was tried and reverted: at
+     row 18 it sat inside a real jump's arc over the 3-column gaps either side and cut the route in two - see
+     work/claude/lane-done/claude-sporewood2.md, the checkpoint-stand fix.) */
   R.ents.push({ t: 'lurker', x: 387, y: 19 });
   /* -- 4. EXAM (456-486, the last stretch before her door): strike the Gills' second glowbud and its cap grows
      under a spore fall, with the spitcap at 476 and the weaver at 460 (both above) already holding the ledge; past
