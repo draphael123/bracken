@@ -143,7 +143,7 @@ export function buildWitchlight({ painter, T, TS }) {
   coins([265, G - 1], [268, G - 1], [283, G - 1], [286, G - 1], [296, G - 6], [300, G - 6], [312, G - 2], [316, G - 2]);
   meet('THE HEDGE-TOP IMPS', 274, 289, [['apprentice', 276, G], ['imp', 280, G - 10], ['imp', 286, G - 11]]);
   meet('THE TOPIARY', 291, 306, [['topiary', 297, G], ['armour', 300, G - 6], ['topiary', 305, G]]);
-  meet("THE WARDEN'S LAWN", 307, 320, [['topiary', 311, G], ['imp', 314, G - 8], ['topiary', 317, G]]);
+  meet("THE WARDEN'S LAWN", 307, 320, [['topiary', 311, G], ['hound', 314, G], ['topiary', 317, G]]);   /* claude/witchmix: the Warden's own hound, loosed on his lawn - its low leap is jumped, not blocked */
   ent('hedgewarden', 342, G, { face: -1, mini: true });
   hedge(M.gate - 1, M.gate + 2, G - 12, G - 5); for (let y = G - 4; y <= G; y++) set(M.gate, y, T.PORT);   /* the gate: it lifts when he falls */
   ent('sign', 322, G, { text: 'THE GARDEN GATE. HE GROWS BACK FROM THE STUMP, UNLESS HE FALLS BESIDE THE WITCH-FIRE.' });
@@ -203,7 +203,7 @@ export function buildWitchlight({ painter, T, TS }) {
   coins([374, B.walk - 1], [378, B.walk - 1], [392, B.walk - 1], [405, 25], [410, 25], [417, B.far - 1], [431, 24], [446, 26], [464, 25], [475, 23],
     [486, 14], [488, 14], [497, 17], [506, 21], [511, 23], [516, B.far - 1], [544, 19], [546, 19], [555, 23]);
   meet('THE CRACKED LEDGE', 370, 381, [['whelp', 376, 25], ['bonegob', 379, B.walk], ['bonearcher', 381, B.walk]]);
-  meet('THE FIRST BREACH', 382, 396, [['whelp', 388, B.walk - 2], ['armour', 393, B.walk], ['bonearcher', 395, B.walk]]);
+  meet('THE FIRST BREACH', 382, 396, [['whelp', 388, B.walk - 2], ['heavy', 393, B.walk], ['bonearcher', 395, B.walk]]);   /* claude/witchmix: a King's Champion holds the breach in plate - his overhead and his grip are answered with the feet, not the shield */
   meet('THE SPOUTS', 397, 422, [['whelp', 408, 19], ['whelp', 413, 19], ['bonearcher', 420, B.far]]);
   meet('THE CRACKED CORNICE', 423, 479, [['whelp', 436, 17], ['whelp', 458, 17], ['bonearcher', 478, 25]]);
   meet('THE RUNE TOWER', 480, 522, [['whelp', 491, 8], ['whelp', 502, 12], ['bonearcher', 512, 24]]);

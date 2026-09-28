@@ -151,7 +151,7 @@ assert.ok(checks[0] > TOWER.SKY + 1 && checks[0] <= TOWER.SKY + 8, "the last che
   assert.ok(UNDEADMAGE_F.idle.length === 2 && UNDEADMAGE_F.enraged.length === 2 && UNDEADMAGE_F.hurt > UNDEADMAGE_F.dead, 'the frame table (hurt LAST)'); }
 // ---- THE FOLLY'S POLISH (from tower-finish.mjs) ----
 { assert.ok(gateOccupied(5, [9], [{ x: 0, y: 0 }, { x: 88, y: 160, w: 10, h: 14 }])); assert.ok(!gateOccupied(5, [9], [{ x: 64, y: 160, w: 10, h: 14 }]));
-  const m = LEVELS.find(l => l.id === 'mage').build(); assert.ok(!m.pools.some(p => p.acid && !p.magePool)); assert.ok(m.mage.skins.some(z => z[0] === 118 && z[1] === m.W - 1 && z[2] === 0 && z[3] === m.H - 1));
+  const m = LEVELS.find(l => l.id === 'mage').build(); assert.ok(!m.pools.some(p => p.acid && !p.magePool)); assert.ok(m.mage.skins.some(z => z[0] === m.mage.outside && m.mage.outside === 64 &&   /* the tower's door (118 before THE WARDED COURTYARD shortened the yard, claude/courtyard) */ z[1] === m.W - 1 && z[2] === 0 && z[3] === m.H - 1));
   const s = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), c = vm.createContext({ MG: { A: { sub: 3 } } });
   vm.runInContext(s.slice(s.indexOf('function archGate('), s.indexOf('function homHurt(')), c); assert.equal(c.archGate({ stage: 2, maxHp: 1000 }), 0);
   assert.ok(!/updateCarpet\([^)]*\)[^;]*;[^\n]*function updateSea|function updateSea[\s\S]{0,4000}updateAscent\(/.test(s.slice(s.indexOf('function updateSea('), s.indexOf('function updateSea(') + 4000)), 'the carpet is never hooked inside updateSea'); }

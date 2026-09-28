@@ -5,14 +5,17 @@
    down (the bot cannot fight, and this is the geometry's walk), except THE BARN, which locks and is opened by killing its captain.
    Keys: left/right held, jump pressed and held; nothing is teleported after the start. Prints each leg, its time and the hero's
    health (every point lost is the level's fire). Not in the suite: it is a walk.
-   THE BEAM IS DOUSED (design audit §13.2 TWIST): its fuse now outruns nobody, so the walk takes the Hall's bucket (a plain DOWN
-   at its rest, the take-a-bucket already on this waypoint) before crossing - the same route a player takes, not a new one. */
+   THE BEAM IS DOUSED (design audit §13.2 TWIST): its fuse now outruns nobody, so the walk takes the Hall's bucket (INTERACT at
+   its rest, the take-a-bucket already on this waypoint) and THROWS it at the beam a couple of waypoints on (CARRY & THROW,
+   src/throwables.js, 2026-09-28: a thrown bucket douses it, a carried one walked over it no longer does) - the same route a
+   player takes, not a new one. */
 import { openPage } from './cdp.mjs';
 const heroes = (process.argv[2] || 'knight,warden').split(',');
-/* [tile x, standing row, note, take] - take: press DOWN once this waypoint is reached (the Hall's rain butt) */
+/* [tile x, standing row, note, action] - action 'take': press INTERACT once this waypoint is reached (the Hall's rain butt);
+   'throw': press ATTACK once, facing the way the route runs, to throw whatever is carried */
 const WP = [[40, 25, 'the road in'], [150, 25, 'the crofts'], [204, 25, 'the long street'], [208, 22], [210, 19], [212, 16], [215, 13, 'up the gable'],
-  [225, 13], [236, 13, 'over THE FALLEN HOUSE'], [245, 13], [252, 13, "the Hall's ledge"], [255, 10, "THE HALL's rain butt - takes the bucket", true], [267, 10], [276, 13, 'the second house'],
-  [285, 13], [297, 13, 'across THE BURNING BEAM, doused'], [307, 13], [310, 16], [312, 19], [314, 22], [318, 25, 'down to the street'], [340, 25, 'the barn'],
+  [225, 13], [236, 13, 'over THE FALLEN HOUSE'], [245, 13], [252, 13, "the Hall's ledge"], [255, 10, "THE HALL's rain butt - takes the bucket", 'take'], [267, 10], [276, 13, 'the second house'],
+  [285, 13, 'throws the bucket at THE BURNING BEAM', 'throw'], [297, 13, 'across THE BURNING BEAM, doused'], [307, 13], [310, 16], [312, 19], [314, 22], [318, 25, 'down to the street'], [340, 25, 'the barn'],
   [395, 25, 'through THE BARN'], [438, 25, 'the well yard'], [446, 23, "the square's door"], [459, 23, 'into his square']];
 const pg = await openPage({ audio: false, fonts: false });
 try {
@@ -22,7 +25,7 @@ try {
       const calm=()=>{const A=BK.ambushes()[0];for(const e of BK.enemies())if(!e.boss&&!(A&&A.leader===e))e.alive=false;};   /* (THE BARN's crowd too: this is a walk, not a fight - the ambush lab measures the fight) */
       const tile=(x,y)=>BK.L.grid[y*BK.L.W+x];
       calm();let hold=0,f=0;const hp0=P.hp;
-      for(const [wx,wy,note,take] of WP){const t0=f;let ok=false;
+      for(const [wx,wy,note,action] of WP){const t0=f;let ok=false;
         for(let i=0;i<60*45;i++,f++){if(BK.state==='talk')BK.state='play';   /* (a sign read in passing: close it and walk on) */calm();const A=BK.ambushes()[0];if(A&&A.st==='fight'&&A.leader&&A.leader.alive&&f%60===0)BKT.hurtEnemy(A.leader,99999,A.leader.x-10,false);   /* THE BARN: its captain falls, it opens */
           const dx=wx*16+8-P.x,row=Math.round(P.y/16)-1,dir=Math.sign(dx)||0;
           if(Math.abs(dx)<7&&Math.abs(row-wy)<=0&&P.ground){ok=true;break;}
@@ -31,8 +34,9 @@ try {
           if(P.ground&&hold<=0&&(wy<row||gap||wall)){BK.press('jump');hold=30;}
           k.jump=hold>0;hold--;if(P.dead)break;BK.sim(1);}
         k.left=k.right=k.jump=false;
-        if(ok&&take){k.down=true;BK.sim(2);k.down=false;BK.sim(2);}   /* THE HALL'S BUTT: a plain DOWN takes its bucket, the same as a player would - it rides along and douses THE BEAM on approach, no other button */
-        out.push({wp:wx+','+wy,note:note||'',ok,st:BK.state,secs:+((f-t0)/60).toFixed(1),at:Math.round(P.x/16)+','+(Math.round(P.y/16)-1),hp:Math.round(P.hp),dead:!!P.dead,ballast:!!P.ballast});if(!ok)break;}
+        if(ok&&action==='take'){k.talk=true;BK.sim(2);k.talk=false;BK.sim(2);}   /* THE HALL'S BUTT: INTERACT takes its bucket, the same as a player would */
+        if(ok&&action==='throw'){P.face=1;k.atk=true;BK.sim(2);k.atk=false;BK.sim(40);}   /* thrown at the beam, facing the way the route runs - it arcs, lands and douses before the walk reaches it */
+        out.push({wp:wx+','+wy,note:note||'',ok,st:BK.state,secs:+((f-t0)/60).toFixed(1),at:Math.round(P.x/16)+','+(Math.round(P.y/16)-1),hp:Math.round(P.hp),dead:!!P.dead,carry:!!P.carry});if(!ok)break;}
       return {out,lost:hp0-P.hp};})()`, 1200000);
     console.log('== ' + h); for (const x of r.out) console.log((x.ok ? ' ok  ' : 'FAIL ') + x.wp.padEnd(8) + String(x.secs).padStart(6) + ' s  hp ' + x.hp + (x.dead ? ' DEAD' : '') + '  at ' + x.at + '  ' + x.note + (x.ok ? '' : '  [' + x.st + ']'));
     console.log('   ' + (r.out.every(x => x.ok) ? 'reached his square' : 'stopped') + ', health lost on the way: ' + r.lost);

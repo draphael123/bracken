@@ -78,7 +78,7 @@ export function buildBurningVillage({ painter, T, TS }) {
      nothing stands in it. The well keeps a bucket on its rim; beside it a ROOT CELLAR's hatch is buried under burning timber.
      Carry the bucket into the timber: it goes out, falls in as ash, and the cellar under it holds a stash. Seven tiles on, the
      first HOT DOOR: the bucket cools it as the trough does. */
-  ent('sign', 87, S, { text: 'DOWN TAKES THE BUCKET. CARRY IT INTO A FIRE TO PUT IT OUT. A BLOW SPILLS IT.' });
+  ent('sign', 87, S, { text: 'INTERACT TAKES THE BUCKET. THROW IT AT A FIRE TO PUT IT OUT. A BLOW SPILLS IT.' });
   ent('villagewell', 90, S, { bucket: true, kind: 'well', splash: false });
   for (let x = 93; x <= 94; x++) for (let y = R + 1; y <= R + 2; y++) set(x, y, T.AIR);   /* the root cellar under the road, two rows deep: a jump gets you back out */
   /* its hatch is the road itself, smouldering timber too hot to lift: walked over, it is floor (a flame on the road would be a toll
@@ -102,6 +102,10 @@ export function buildBurningVillage({ painter, T, TS }) {
      rooftops' 287-295 span, not this one, is what makes the beam the only way over). A thin smoke plume puffs up out of the
      pit on the same clock as the rooftops', so the beam and the lift it gives are both met small, once, before 250 asks for
      either for real. */
+  /* A RACK WITHIN EASY REACH (Daniel, follow-up to 2026-09-28: every fire area keeps a bucket within ~6 tiles), three tiles
+     short of the log itself - this beat is optional (a jump crosses it too), but a thrown bucket douses it the same as any
+     other told beam, so the water to do that with is never a long carry away. */
+  ent('villagewell', 185, S, { bucket: true, kind: 'well', splash: false });
   for (let x = 188; x <= 191; x++) { set(x, R, T.AIR); set(x, R + 1, T.AIR); set(x, R, T.ONEWAY); }
   extraBreaks.push({ x0: 188, x1: 191, row: R, t: -1, down: false, regrow: true, log: true, onTop: true, fuse: BEAM.fuse });
   pits.push([188, 191]); coins([189, R + 1]);
@@ -118,6 +122,10 @@ export function buildBurningVillage({ painter, T, TS }) {
      timber four rows high - one more than any jump - alight on top. The way past it with no water is the ROOFS: up the gable
      of the house before it, along its roof, and three tiles over the fire onto the next roof. (Every gap on this route is three tiles, or four with a drop: a real
      running jump carries the knight four tiles and the paladin three and a half - measured in the page, not the reach model's six) */
+  /* A RACK RIGHT AT THE HEAP (Daniel, follow-up to 2026-09-28): the street well is a real twenty-tile carry away, which
+     was always the point of it as a route-choosing beat - but a hero who arrives here without having carried that far
+     still needs water within reach, not a walk back. Two tiles short of the heap. */
+  ent('villagewell', 227, S, { bucket: true, kind: 'well', splash: false });
   block(229, 231, S - 3, S); heaps.push({ x0: 229, x1: 231, y0: S - 3, y1: S, name: 'THE FALLEN HOUSE', step: true });   /* doused, it burns down to a step (its bottom row) */
   house(232, 246, 16, 1); foe('pike', 241, S); foe('emberwisp', 241, 20);
 
@@ -132,16 +140,20 @@ export function buildBurningVillage({ painter, T, TS }) {
   trench.push([T0, T1, R, R + DEEP - 1]);
   house(254, 268, 13, 0, DEEP);                        // THE HALL: the street's tallest roof, and a villager in its dormer
   plat(250, 14, 4);                                    // the Hall's one ledge, three tiles off the last house's roof
-  /* THE HALL'S RAIN BUTT, and its pail: the villager in the dormer is behind a HOT door, and the only water on the roofs is here */
+  /* THE HALL'S RAIN BUTT, and its pail: the villager in the dormer is behind a HOT door */
   captive(263, 10, { hot: true }); ent('silver', 267, 9); foe('archer', 259, 10); coins([256, 9], [261, 9]);
   ent('villagewell', 255, 10, { bucket: true, kind: 'butt', splash: false });
   house(272, 286, 16, 0, DEEP); foe('burngob', 280, 13); foe('sapper', 284, 13); beams.push([277, 17, 277, 13]);
+  /* A SECOND RACK, ON THE BEAM'S OWN ROOF (Daniel, follow-up to 2026-09-28): the Hall's butt is thirty-two tiles behind
+     it - fine for the hero who carried its bucket the whole way, not for one who arrives without it. Five tiles short of
+     the beam, on the same roof, so water is never more than a short throw away here either. */
+  ent('villagewell', 282, 13, { bucket: true, kind: 'butt', splash: false });
   /* THE BURNING BEAM (design audit §13.2, TWIST): nine tiles over the second cellar, too wide to jump. Its fuse is
      BEAM_TWIST, not BEAM.fuse - short enough that no hero outruns it (the fastest, the pyromancer, needs 1.43 s for
      these nine tiles; the fuse gives 1.2). Told the moment you stand on it - it flashes and a ! stands over every tile -
      it burns through into the cellar a moment after any hero commits to running it, and is back five seconds later.
-     Doused first from THE HALL'S RAIN BUTT (behind, on the route already), it holds instead: "a doused beam holds" stops
-     being a line nobody is ever asked to prove, and becomes this gap's actual answer. */
+     Doused from either rack (THE HALL'S RAIN BUTT behind it, or the one right on its own roof), it holds instead: "a
+     doused beam holds" stops being a line nobody is ever asked to prove, and becomes this gap's actual answer. */
   for (let x = 287; x <= 295; x++) set(x, 14, T.ONEWAY);
   extraBreaks.push({ x0: 287, x1: 295, row: 14, t: -1, down: false, regrow: true, beam: true, onTop: true, fuse: BEAM_TWIST, douseOnly: true });
   house(296, 308, 16, 0, DEEP); foe('emberwisp', 300, 10); foe('sprig', 303, 13); foe('thief', 306, 13);
@@ -165,6 +177,10 @@ export function buildBurningVillage({ painter, T, TS }) {
   for (let x = 390; x <= 392; x++) { set(x, 10, T.AIR); set(x, 11, T.AIR); }
   ent('watertrough', 381, 9);
   ent('sign', 378, 9, { text: 'THE ROOF IS ALIGHT. STRIKE THE WATER BUTT, THEN DROP THROUGH THE HATCH.' });
+  /* A BUCKET OF ITS OWN, TOO (Daniel, follow-up to 2026-09-28: "every fire area keeps a bucket within a short throw"):
+     the trough's strike already puts this fire out (unchanged); a thrown bucket does too now, and two tiles short of
+     it is a rack so that way is never a longer reach than the trough's. */
+  ent('villagewell', 383, 9, { bucket: true, kind: 'butt', splash: false });
   const roofFire = [[385, 9], [386, 9], [387, 9]];              /* a ladder up the barn's near gable onto the roof, and what the roof holds pays for the climb; the far gable stands five rows over it, so the roof is a dead end and never a way round the captain's door */
   interiors.push([323, 397, 12, 25, 'timber']);
   facades.push([323, 397, 12, 25, 'barn']);          /* its back wall, drawn: the barn read as open sky, and an ambush room has to be a place (RULES Q1) */
@@ -192,11 +208,14 @@ export function buildBurningVillage({ painter, T, TS }) {
      the well's own water has to cross what it is lighting, under an archer, to the last hot door; and one more burning
      beam - the same told, onTop mechanic met first at 188-191 and again on the rooftops - bridges the ground to his step. */
   ent('check', 404, S);
-  ent('villagewell', 414, S, { bucket: true });              /* struck, it splashes (as it always did); DOWN, and its bucket is yours */
+  ent('villagewell', 414, S, { bucket: true });              /* struck, it splashes (as it always did); INTERACT, and its bucket is yours */
   ent('sign', 408, S, { text: 'THE WELL PUTS OUT WHAT IS NEAR IT. IN HIS SQUARE, THE FLOOR BURNS AS HE RUNS HOT.' });
   straw(415, 419); foe('burngob', 417, S);
   house(420, 432, 19, 1); captive(422, S, { hot: true });
   foe('archer', 426, 16); foe('emberwisp', 436, 20); coins([418, S - 1], [426, 15], [430, 15]);
+  /* A RACK AT THE LAST LOG TOO (Daniel, follow-up to 2026-09-28): the well yard's own well is twenty-three tiles back -
+     three tiles short of the log instead, so nobody has to carry that far to douse this one. */
+  ent('villagewell', 434, S, { bucket: true, kind: 'well', splash: false });
   for (let x = 437; x <= 439; x++) { set(x, R, T.AIR); set(x, R + 1, T.AIR); set(x, R, T.ONEWAY); }
   extraBreaks.push({ x0: 437, x1: 439, row: R, t: -1, down: false, regrow: true, log: true, onTop: true, fuse: BEAM.fuse });
   pits.push([437, 439]);
@@ -209,6 +228,11 @@ export function buildBurningVillage({ painter, T, TS }) {
      QUENCH.secs, even while his heat is high (fire-spread.js quench). The room's own water (A4, A12); it opens nothing on him */
   ent('villagewell', 456, F - 1, { bucket: true, kind: 'pump', splash: false });
   plat(461, F - 3, 5); plat(475, F - 3, 5); plat(488, F - 3, 5);            // three market stalls: somewhere off the burning floor
+  /* THE BUCKET OPENING (the Pyromancer's mirror duel, 2026-09-28): a thrown bucket that reaches him douses him and he stands open
+     (main.js pyroDouse). So a bucket is always in reach in his square: the pump at the west door, a rain butt at the east wall, and
+     one up on the middle stall, off the floor his heat sets alight (tools/pyro-duel.mjs) */
+  ent('villagewell', 492, F - 1, { bucket: true, kind: 'butt', splash: false });
+  ent('villagewell', 476, F - 4, { bucket: true, kind: 'butt', splash: false });
   burn.push([455, 495, F - 1, { square: true }]);
   foe('pyromancer', 484, F - 1, { boss: true });
   facades.push([448, 500, 12, F - 1, 'burning']);

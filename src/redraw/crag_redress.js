@@ -1,7 +1,13 @@
 // ============================================================================================
-// THE CRAG REDRESS (docs/visual-audit.md): Scree Path, the Hanging Village and Stormhold share one grey gravel slab, one purple
+// THE CRAG REDRESS (docs/visual-audit.md): Scree Path, the Hanging Village and Stormhold shared one grey gravel slab, one purple
 // dusk sky and one set of purple hills, so they read as one place. This gives each its own sky and backdrops, and all three a
-// ground that is ROCK (layered strata, grass that wraps its corners, stones, cracks) instead of a slab. Not wired in.
+// ground that is ROCK (layered strata, grass that wraps its corners, stones, cracks) instead of a slab.
+// WIRED IN: main.js's REDRESS map (~721) sends scree/hanging/storm here (module 'crag') and bakes ground+sky+far+mid+near+props
+// from it (~725-794, ~904). The Hanging Village's own rework (src/hanging-village.js, landed after this file was written) gives
+// that level its own floor-by-floor ground (L.groundZones beats this module's ground, main.js ~906) and draws its own cliff face
+// over the whole backdrop, so 'hanging' bakes here but rarely shows through - left wired (not removed) so a floor with no zone
+// of its own still lands on crag rock, not the old grey slab. Scree and Stormhold show this module's sky/far/mid/near/ground/props
+// directly, matching their own screens (`node tools/redress-shots.mjs scree hanging storm`).
 //
 // It is built to the game's own plumbing so wiring is config, not code:
 //   bakeCragGround(theme)  -> the SET2 shape resolveTiles() reads (main.js ~701): { top: {'00','01','10','11': [4]}, edge: {'01','10',

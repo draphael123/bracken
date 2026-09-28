@@ -398,7 +398,7 @@ async function runbossLab(BK, opts) {
     const smallWatch=(a0,aim)=>{if(a0<0&&P.atk>=0){smallEnd();if(aim)smallSw={aim,hp:aim.hp,set:new Set(smallFoes().concat([aim])),hit:false,other:false};}
       if(smallSw){for(const x of P.hitSet||[]){if(smallSw.set.has(x))smallSw.hit=true;else smallSw.other=true;}if(smallSw.aim.hp<smallSw.hp)smallSw.hit=true;if(P.atk<0)smallEnd();}};
     const advance=(n,draw=false)=>{const before=P.hp,a0=P.atk,aim=a0<0?smallAim():null;BK[draw?'step':'sim'](n);health.damageTaken+=Math.max(0,before-Math.max(0,P.hp));health.healthRecovered+=Math.max(0,P.hp-before);smallWatch(a0,aim);};
-    P.labPogo=0;P.labNextPogo=0;P.labPogoJump=-100;P.labHeavyAt=0;P.labShipVault=0;P.labRest=false;P.labJump=0;P.labMageLanding=null;P.labMageTap=-99;
+    P.labPogo=0;P.labNextPogo=0;P.labPogoJump=-100;P.labHeavyAt=0;P.labShipVault=0;P.labRest=false;P.labJump=0;P.labHold=0;P.labMageLanding=null;P.labMageTap=-99;
     // the old roof boards in the roc's nest, once: her dive sticks in them
     const glass = []; if (boss.t === 'roc') for (const [x0, x1] of ((L.monk && L.monk.boards) || [])) for (let x = x0; x <= x1; x++) glass.push(x * TS + 8);
     /* nearest the middle of the room first; the bot moves between three of them so it is always standing on one when she comes down */
@@ -592,39 +592,48 @@ async function runbossLab(BK, opts) {
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});
         if(f%600===599)await yieldNow();continue;
       }
-      /* THE PYROMANCER (batch 5): the bot reads the square. It never stands on burning ground (a burning or catching cell of the
-         village's fire grid), keeps out of the firedrop's landing ring, the jet's cone and the vent's ring, takes his embers on
-         the shield (the three who carry one) or rolls through them, and otherwise stays in reach and cuts - which is what keeps
-         him from venting and takes him over the top into OVERHEAT, where it goes in. Resting is done on clear ground, away. */
+      /* THE PYROMANCER (batch 5; THE MIRROR DUEL, 2026-09-28): the bot reads the square. It never stands on burning ground (a
+         burning or catching cell of the village's fire grid), guards his staff cuts (the three who carry a shield) or steps back out
+         of their reach, is out of THE BELLOWS' cone (red: nothing turns it) and the vent's ring, takes his embers on the shield or
+         rolls through them, and otherwise stays in reach and cuts - which is what keeps him from venting and takes him over the top
+         into OVERHEAT, where it goes in. It HEARS HIS READ: two of its blows in a row and his guard is up, so it does not throw a
+         light third into it - it holds attack for a heavy, which goes through. And it THROWS A BUCKET, as a player is told to: while
+         he is dry and not open it fetches the nearest one off a floor rack (INTERACT) and throws it at him (ATTACK) from a few steps,
+         and he stands doused and open. Resting is done on clear ground, away. */
       if(boss.t==='pyromancer'){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;k.atk=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const VGr=BK.village?BK.village().G():null,fl=A.floor,m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1;
-        const hotAt=x=>{if(fireAt(BK,x,fl-1))return true;if(!VGr)return false;const c=VGr.get(Math.floor(x/16),Math.floor(fl/16)-1);return !!c&&(c.s===2||c.s===1);};   /* the square's grid AND every other flame on the floor: his embers and his drop leave fire where they land */
+        const hotAt=x=>{if(fireAt(BK,x,fl-1))return true;if(!VGr)return false;const c=VGr.get(Math.floor(x/16),Math.floor(fl/16)-1);return !!c&&(c.s===2||c.s===1);};   /* the square's grid AND every other flame on the floor: his embers leave fire where they land */
         const danger=[];
         if(m==='ventTell'||m==='vent')danger.push([boss.x-84,boss.x+84]);
-        if(m==='dropTell'||m==='rise'||m==='drop')danger.push([(boss.tx??P.x)-56,(boss.tx??P.x)+56]);
-        if((m==='jetTell'||m==='jet')&&!SHIELDED(h))danger.push(boss.face>0?[boss.x,boss.x+100]:[boss.x-100,boss.x]);
-        if((m==='jetTell'||m==='jet')&&SHIELDED(h)&&Math.abs(dx)<100){k.block=true;P.face=side;}
-        if(m==='staffTell'){if(SHIELDED(h)){k.block=true;P.face=side;}else danger.push([boss.x-44,boss.x+44]);}   /* his staff: guarded, or stepped back from */
-        if(m==='wallTell')danger.push(boss.face>0?[boss.x,boss.x+90]:[boss.x-90,boss.x]);   /* the fire wall's line */   /* the jet is a '!' now: the three with a guard hold it */
+        if(m==='bellowsTell'||m==='bellows')danger.push(boss.face>0?[boss.x-6,boss.x+104]:[boss.x-104,boss.x+6]);   /* THE BELLOWS' cone: nothing turns it */
+        if(m==='cutTell'||m==='cut'){if(SHIELDED(h)&&Math.abs(boss.y-P.y)<26){k.block=true;P.face=side;}else danger.push([boss.x-58,boss.x+58]);}   /* his staff: guarded, or stepped back from */
         const bad=x=>danger.some(([l,r])=>x>l&&x<r)||hotAt(x),free=x=>x>A.x0+16&&x<A.x1-16&&!bad(x);
         const rest=P.st<14||(P.labRest&&P.st<44);P.labRest=rest;
-        let gx=rest?boss.x-side*150:boss.x-side*Math.max(18,LAB_REACH[h]*.65);
+        /* THE BUCKET: the nearest one standing at a floor rack in his square, while he is dry and not already open */
+        const bucket=!P.carry&&!rest&&!(boss.open>0)&&!(boss.wetT>0)&&BK.village?BK.village().buckets().filter(q=>q.state==='rest'&&Math.abs(q.y-fl)<4&&q.x>A.x0&&q.x<A.x1).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0]:null;
+        let gx=rest?boss.x-side*150:P.carry?boss.x-side*44:bucket?bucket.x:boss.x-side*Math.max(18,LAB_REACH[h]*.65);
         if(!free(gx)){let best=null;for(let s=6;s<440&&best===null;s+=6){if(free(gx-s))best=gx-s;else if(free(gx+s))best=gx+s;}if(best!==null)gx=best;}
         if(Math.abs(gx-P.x)>4)k[gx>P.x?'right':'left']=true;
         if(P.ground&&Math.abs(gx-P.x)>12){const dir=gx>P.x?1:-1;if(hotAt(P.x+dir*8)||hotAt(P.x+dir*22)||hotAt(P.x+dir*34)){BK.press('jump');P.labJump=16;}}   /* a player jumps the flames between him and where he is going - a full jump, held: a tapped hop is six pixels and the fire reaches fourteen */
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        if(P.ground&&P.y<fl-20){k.down=true;BK.press('jump');}   /* off a stall: the fight is on the floor */
+        if(P.ground&&P.y<fl-20){k.down=true;BK.press('jump');}   /* off a stall: the bot fights on the floor, and he hops down to it */
+        if(bucket&&P.ground&&Math.abs(bucket.x-P.x)<12&&Math.abs(bucket.y-P.y)<12){k.left=k.right=false;BK.press('talk');}   /* INTERACT takes it */
         const inRing=danger.length&&bad(P.x)&&Math.abs(gx-P.x)>40;
-        if(inRing&&(m==='drop'||m==='vent'||m==='jet'||(m.endsWith('Tell')&&boss.modeT<.18))&&P.st>20&&!(P.dodge>0))BK.press('dodge');
+        if(inRing&&(m==='bellows'||m==='vent'||(m.endsWith('Tell')&&boss.modeT<.18))&&P.st>20&&!(P.dodge>0))BK.press('dodge');
         const inc=BK.seeds().find(s=>s.pyroEmber&&!s.dead&&Math.abs(s.x-P.x)<80&&Math.abs(s.y-(P.y-8))<30&&(s.x-P.x)*s.vx<0);
         const volley=(m==='emberTell'||m==='ember')&&Math.abs(dx)<220;   /* his ember '!': a player with a shield guards the whole volley, facing him */
-        if(volley&&SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=side;}
+        const reach=Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<32;
+        if(P.carry){if(P.ground&&!danger.length&&Math.abs(boss.y-P.y)<20&&Math.abs(dx)>16&&Math.abs(dx)<66){P.face=side;BK.press('atk');}}   /* ATTACK throws it: a few steps off him, on his floor */
+        else if(volley&&SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=side;}
         else if(inc&&SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=Math.sign(inc.x-P.x)||P.face;}
         else if(inc&&P.st>20&&!(P.dodge>0)&&Math.abs(inc.x-P.x)<24)BK.press('dodge');
-        else if(!rest&&!danger.length&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
-        if(opts.samples&&f%60===0){out.samples=out.samples||[];out.samples.push([h,Math.round(f/60),m,Math.round(boss.heat),boss.open>0?'OPEN':'',Math.round(dx),hotAt(P.x)?'HOT':''].join(' '));}
+        else if(!rest&&!danger.length&&reach&&P.atk<0&&!(P.labHold>0)){P.face=side;
+          if((boss.readN||0)>=2&&!(boss.open>0))P.labHold=1;   /* HIS GUARD IS UP: not a third light blow into it - a held one */
+          else{BK.press('atk');swings++;}}
+        if(P.labHold>0){if(P.heavy||P.labHold>Math.round(0.9*60/(BK.SET.speed||1))||danger.length||P.carry)P.labHold=0;else{P.labHold++;k.atk=true;P.face=side;}}   /* held until the heavy goes, then let go */
+        if(opts.samples&&f%60===0){out.samples=out.samples||[];out.samples.push([h,Math.round(f/60),m,Math.round(boss.heat),boss.open>0?'OPEN':'',Math.round(dx),hotAt(P.x)?'HOT':'',P.carry?'BUCKET':''].join(' '));}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});if(f%600===599)await yieldNow();continue;
       }
@@ -830,13 +839,13 @@ async function runbossLab(BK, opts) {
           else if((m==='breathTell'&&boss.modeT<0.45)||m==='breath'){ if(SHIELDED(h)){k.block=true;P.face=side;} else if(m==='breathTell'){goSlab(next(on,null,true)||next(on));} done=true; }   /* THE FIRE: a shield, or off its line */
           else if((m==='smash'||m==='crash')&&boss.y>on.y+8){done=true;}
           if(!done){const tx=cen(on);if(Math.abs(tx-P.x)>6)k[tx>P.x?'right':'left']=true;}
-          /* THE FIREBALL (2026-09-28, in the wing gust's place): slow and aimed where it was thrown - a shield faces it; the others jump it
+          /* THE FIREBALLS (2026-09-28, in the wing gust's place; two, one after the other, since claude/gargoyle5 - the nearest one coming in is the one it answers): slow and aimed where it was thrown - a shield faces it; the others jump it
              as it comes in (a roll could carry them off the slab) */
-          const b=boss.ball;if(b){const bs=Math.sign(b.x-P.x)||side,near=Math.abs(b.x-P.x),closing=Math.sign(b.vx)===-bs||near<10;
+          const b=(boss.balls||[]).filter(q=>Math.sign(q.vx)===-(Math.sign(q.x-P.x)||side)||Math.abs(q.x-P.x)<10).sort((p,q)=>Math.abs(p.x-P.x)-Math.abs(q.x-P.x))[0];if(b){const bs=Math.sign(b.x-P.x)||side,near=Math.abs(b.x-P.x),closing=Math.sign(b.vx)===-bs||near<10;
             if(closing&&near<70&&Math.abs(b.y-(P.y-9))<40){if(SHIELDED(h)){if(!done){k.block=true;k.left=k.right=false;P.face=bs;}}else if(near<34&&P.ground&&!P.labJump){BK.press('jump');P.labJump=10;}}}
         }
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        const was=P.hp,m0=boss.mode,ball0=boss.ball;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES after '+m0:ball0&&!boss.ball&&P.hp<was?'FIREBALL':m0,Math.max(0,was-P.hp));if(P.dead)falls++;if(opts.onFrame)await opts.onFrame({boss,P,f,h});
+        const was=P.hp,m0=boss.mode,ball0=(boss.balls||[]).length;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES after '+m0:ball0>(boss.balls||[]).length&&P.hp<was?'FIREBALL':m0,Math.max(0,was-P.hp));if(P.dead)falls++;if(opts.onFrame)await opts.onFrame({boss,P,f,h});
         if(f%600===599)await yieldNow();continue;
       }
       /* THE DUNE WORM, played as his hollow teaches it (docs/briefs/dune-worm.md). With the awning DOWN, wind it (to THE HOLLOW WINCH, strike it);
