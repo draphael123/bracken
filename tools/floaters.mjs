@@ -66,6 +66,15 @@ const sandCastles = (R, tile) => { const { ents } = R, hits = [];
     if (d >= PLANK_DROP) hits.push((e.kind || e.t) + '@' + e.x + ',' + e.y); }
   return hits; };
 
+// THE ORE ITSELF (Daniel, 2026-09-28: "ground every floating ore"). A VEIN (src/ore-road.js's L.veins) is a decal on a
+// solid tile that must have open air in front of it and footing under that air (the same rule ore-road.mjs's own
+// veinFooting check pins for the one level that has them today); a MINE ITEM (L.mine: a heap, cart or spill on a
+// floor) must have solid or ledge footing under its whole span. Neither is an entity, so nothing above this line
+// ever looked at either - this is the extension, generic (any level with L.veins/L.mine, not only THE ORE ROAD), so
+// a floating vein or a floating heap of ore cannot come back on any level that grows one later.
+const veinFloats = (R, tile) => (R.veins || []).filter(v => !(tile(v.x, v.y) === T.AIR && tile(v.x, v.y - 1) === T.AIR && (SOLID.has(tile(v.x, v.y + 1)) || LEDGE.has(tile(v.x, v.y + 1))))).map(v => 'vein@' + v.x + ',' + v.y);
+const mineFloats = (R, tile) => (R.mine || []).filter(m => { for (let x = m.x0; x <= m.x1; x++) if (!(SOLID.has(tile(x, m.y + 1)) || LEDGE.has(tile(x, m.y + 1)))) return true; return false; }).map(m => (m.k || 'ore') + '@' + m.x + ',' + m.y);
+
 for (const lv of LEVELS) {
   if (args.length && !args.includes(lv.id)) continue;
   let R;
@@ -74,7 +83,7 @@ for (const lv of LEVELS) {
   const tile = (x, y) => (x < 0 || x >= W) ? T.SOLID : (y < 0 || y >= H) ? T.AIR : grid[y * W + x];
   const gnd = (x, y) => SOLID.has(tile(x, y)) || LEDGE.has(tile(x, y));
   const settle = (x, y0) => { let y = y0, n = 0; while (gnd(x, y) && n++ < 3) y--; if (gnd(x, y)) return null; n = 0; while (!gnd(x, y + 1) && n++ < 3) y++; return gnd(x, y + 1) ? y : null; };
-  const dropped = [], air = [], marks = [], castles = sandCastles(R, tile);
+  const dropped = [], air = [], marks = [], castles = sandCastles(R, tile), veinsFloating = veinFloats(R, tile), mineFloating = mineFloats(R, tile);
   for (const e of ents) {
     const dec = e.t === 'deco';
     if (dec && decoHangs(e)) { let k = 0; while (k < 5 && !SOLID.has(tile(e.x, e.y - 1 - k))) k++; if (k >= 5) unhung++; continue; }   /* main.js leaves it out: not in the air */
@@ -91,6 +100,7 @@ for (const lv of LEVELS) {
   const say = (list, what) => { if (!list.length) return; bad += list.length; console.log('  ' + lv.id.padEnd(10) + list.length + ' ' + what + ': ' + list.slice(0, 12).join(' ') + (list.length > 12 ? ' ...' : '')); };
   say(dropped, 'with no floor near them, left out'); say(air, 'with no floor near them, left in the air'); say(marks, 'checkpoints drawn hanging from nothing');
   say(castles, 'sprinkled onto a bridge over open sky (sand castles)');
+  say(veinsFloating, 'ore veins with no footing under the open air in front of them, floating'); say(mineFloating, 'ore on the floor with no footing under it, floating');
 }
 
 console.log('\n' + checked + ' standing things checked (' + moved + ' set down a row or more at load; ' + unhung + ' hung ones with no rock over them are left out). ' + (bad ? bad + ' cannot be set down.' : 'every one can be set down.'));
