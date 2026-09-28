@@ -814,11 +814,13 @@ async function runbossLab(BK, opts) {
           else if((m==='breathTell'&&boss.modeT<0.45)||m==='breath'){ if(SHIELDED(h)){k.block=true;P.face=side;} else if(m==='breathTell'){goSlab(next(on,null,true)||next(on));} done=true; }   /* THE FIRE: a shield, or off its line */
           else if((m==='smash'||m==='crash')&&boss.y>on.y+8){done=true;}
           if(!done){const tx=cen(on);if(Math.abs(tx-P.x)>6)k[tx>P.x?'right':'left']=true;}
-          const gusting=(m==='gustTell'&&boss.modeT<0.25)||m==='gust';
-          if(!done&&gusting){if(SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=side;}else if(P.st>20&&!(P.dodge>0)&&m==='gustTell'&&boss.modeT<0.08)BK.press('dodge');}
+          /* THE FIREBALL (2026-09-28, in the wing gust's place): slow and aimed where it was thrown - a shield faces it; the others jump it
+             as it comes in (a roll could carry them off the slab) */
+          const b=boss.ball;if(b){const bs=Math.sign(b.x-P.x)||side,near=Math.abs(b.x-P.x),closing=Math.sign(b.vx)===-bs||near<10;
+            if(closing&&near<70&&Math.abs(b.y-(P.y-9))<40){if(SHIELDED(h)){if(!done){k.block=true;k.left=k.right=false;P.face=bs;}}else if(near<34&&P.ground&&!P.labJump){BK.press('jump');P.labJump=10;}}}
         }
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES after '+m0:m0,Math.max(0,was-P.hp));if(P.dead)falls++;if(opts.onFrame)await opts.onFrame({boss,P,f,h});
+        const was=P.hp,m0=boss.mode,ball0=boss.ball;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES after '+m0:ball0&&!boss.ball&&P.hp<was?'FIREBALL':m0,Math.max(0,was-P.hp));if(P.dead)falls++;if(opts.onFrame)await opts.onFrame({boss,P,f,h});
         if(f%600===599)await yieldNow();continue;
       }
       /* THE DUNE WORM, played as his hollow teaches it (docs/briefs/dune-worm.md). With the awning DOWN, wind it (to THE HOLLOW WINCH, strike it);
