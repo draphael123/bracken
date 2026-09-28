@@ -38,6 +38,15 @@
 // PHASE TWO (A10), one sentence: AT HALF HEALTH HE WILL NOT STAY ON ONE HOUSING - every WINCH.leapEvery seconds he crouches and
 // LEAPS to another (a red ring tells you where he will land, and the landing hurts), while every line runs a quarter faster,
 // he lets two buckets go at a time, and the drums shake rock off the roof twice as often.
+// ROUND FOUR (Daniel, 2026-09-28, decided):
+//   HALF DAMAGE UNLESS HIS DRUM IS JAMMED (WINCH.chipMul): a blow on him on his housing lands at half, told over him (THE IRON
+//     TAKES HALF: JAM HIS DRUM) - so jamming the drum IS the fight, and climbing up to cut is the slow way round. While the drum
+//     is jammed (thrown, then downed) the half is off, and downed he still takes double.
+//   PHASE TWO RUSTS HIS BUCKETS (winchRust): from half health every WINCH.rustEvery-th skip on his two lines comes out of its
+//     station house rusted - the level's own rust rule (OR.CRACK: it holds you a moment, then gives). A skip only ever rusts
+//     inside the station house, out of sight, so every rusted one you can board you SAW rusted: a ride in is a gamble you
+//     choose, never an untold fall. A fall is the drum pit's: a climb, not a death.
+//   HIS ROOM IS LIT (src/ore-road.js: the arena's dark zone and its lamps), so the rides read.
 // THREE LAYERS AT ONCE (DESIGN.md): the lines keep delivering buckets, he attacks, and the roof comes down on its own clock.
 // Touching him never hurts (the touch rule).
 //
@@ -84,11 +93,19 @@ export const WINCH = {
      (walk), and the roof: a told rock every rockEvery s (half that in phase two), rockTell of warning */
   retreat: 0.25, walk: 34, rockEvery: 7, rockEveryP2: 3.5, rockTell: 1.0,
   dmg: { send: 28, hook: 18, lever: 26, leap: 24 },
+  /* ROUND FOUR: a blow while his drum runs lands at chipMul (said over him at most every chipSay s); in phase two every
+     rustEvery-th skip of his lines comes out of its station rusted (the one at i % rustEvery === 1: not two in a row round the loop) */
+  chipMul: 0.5, chipSay: 6, rustEvery: 3,
 };
 const SAY = { reverseTell: 'HE THROWS THE BRAKE', sendTell: 'HE SENDS ONE DOWN', hookTell: 'THE HOOK', leverTell: 'THE BRAKE BAR', leapTell: 'HE CROUCHES TO LEAP' };
 const RED = new Set(['sendTell', 'hookTell', 'leapTell']);
 export const winchOpen = e => e.mode === 'downed';
-export const winchTake = e => winchOpen(e) ? WINCH.downMul : 1;
+/* HIS DRUM IS JAMMED from the moment a loaded skip goes into it until he cuts loose: thrown off the housing, then downed on its ledge */
+export const winchJammed = e => e.mode === 'thrown' || e.mode === 'downed';
+export const winchTake = e => winchOpen(e) ? WINCH.downMul : winchJammed(e) ? 1 : WINCH.chipMul;
+/* ROUND FOUR, PHASE TWO: is skip i of his lines rusted as it comes out of its station house now (main.js asks only while a skip
+   is in the return, out of sight, so none turns to rust under a rider) */
+export const winchRust = (e, i) => !!e && e.alive && e.phase === 2 && i % WINCH.rustEvery === 1;
 export const winchNext = at => (at + 1) % 3;
 /* the frames of bakeWinchmaster (his 13-frame sheet, reused as it is - brief section 8: a FIGHT rework, not an art job):
    0 idle | 1,2 pace | 3 bar up | 4 bar down | 5 hauling the brake | 6 boot on the release | 7 arm back (THE HOOK, wound up)
@@ -156,7 +173,10 @@ export function updateWinchmaster(e, dt, c) {
   for (const k of ['revCd', 'sendCd', 'hookCd', 'leverCd', 'leapCd']) e[k] = Math.max(0, (e[k] ?? 0) - dt);
   const H = c.H[e.at];
   if (e.hp <= e.maxHp * 0.5 && e.phase !== 2) { e.phase = 2; e.rockT = Math.min(e.rockT ?? 0, 1.5);
-    c.say('ENRAGED, HE LEAPS DRUM TO DRUM', true);   /* round three: the leap is what phase two IS (A10); the harder drums come with it */ c.sound('roar'); c.shake(4); if (e.mode === 'stalk') driveAll(e, c, WINCH.p2Mul); }
+    c.say('ENRAGED, HE LEAPS DRUM TO DRUM', true);   /* round three: the leap is what phase two IS (A10); the harder drums come with it */ c.sound('roar'); c.shake(4); if (e.mode === 'stalk') driveAll(e, c, WINCH.p2Mul);
+    e.rustSayT = 1.6; }   /* round four: and his skips start to rust - said once the leap's line has been read */
+  e.chipSaid = Math.max(0, (e.chipSaid || 0) - dt);
+  if (e.rustSayT > 0) { e.rustSayT -= dt; if (e.rustSayT <= 0) c.say('HIS SKIPS RUST: THE RED ONES GIVE WAY', true); }
   /* THE ROOF: the drums shake a rock loose over where you stand, on their own clock. It is told for WINCH.rockTell - dust off the
      roof and a ring where it lands - and only ever begun on your screen (c.rockSpot answers null otherwise, and the clock waits) */
   if (e.mode !== 'wake' && !P.dead) { e.rockT = (e.rockT ?? WINCH.rockEvery * 0.6) - dt;

@@ -2,7 +2,7 @@ import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, 
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins, ORES, workSees, workLamp, hash as oreHash } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
-import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
+import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, winchRust, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { bakeScalder } from './redraw/scalder.js';
 import { bakeStoneFront, bakeTownRow } from './redraw/stone-town.js';
@@ -5563,7 +5563,8 @@ function wardedDamage(e, dmg) {
   if (e.t === 'hedgewarden') dmg = hedgeTake(e, dmg);
   if (e.t === 'sexton') { const d0 = dmg; dmg = sextonTake(e, dmg); if (dmg > d0) sparks(e.x, e.y - 30, -(e.face || 1), 6); }   /* THE SEXTON caught in his own bell pit: every blow lands double */   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
   if (e.t === 'abbot') dmg = Math.max(1, Math.round(dmg * abbotTake(e)));   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
-  if (e.t === 'winchmaster') dmg = Math.max(1, Math.round(dmg * winchTake(e)));   /* THE WINCHMASTER: double while the jammed drum has him down on his ledge */
+  if (e.t === 'winchmaster') { const k = winchTake(e); dmg = Math.max(1, Math.round(dmg * k));   /* THE WINCHMASTER: double while the jammed drum has him down on his ledge - and HALF while his drum runs (round four), told over him */
+    if (k < 1 && !(e.chipSaid > 0)) { e.chipSaid = WINCH.chipSay; number(e.x, e.y - (e.h || 36) - 14, 'THE IRON TAKES HALF: JAM HIS DRUM', '#9aa39a'); } }
   if (e.t === 'whelp') dmg = WHF.whelpTake(e, dmg);   /* THE WHELP IS STONE: nothing but a stomp while it is stuck on the spikes (last, so no finisher gets round it) */
   if (e.t === 'gargoyle') dmg = gargTake(e, dmg);   /* THE GATE GARGOYLE IS STONE: nothing but a stomp while he lies stunned on the spikes (gate-gargoyle.js) */
   return dmg;
@@ -15008,7 +15009,9 @@ function updateBucket(m, dt) {
   if (!b.vis) {   /* in the return, inside a station house: nobody rides it there, and a rusted one comes back mended - AND RELOADED, which is why the ore is a decision you get to make again and not a resource you spend */
     if (wasVis) { for (const p of oreRiders()) if (p.onMover === m) p.onMover = null; for (const e of enemies) if (e.bucket === m && e.alive) { e.alive = false; e.silentGone = true; } }
     m.vis = false; m.fallen = 0; m.fallV = 0; m.crackT = 0; m.broken = false; m.y = -9999; m.dx = 0; m.dy = 0;
-    m.ore = !ln.riders; m.lift = ln.riders ? OR.BUCKET.lift : 0; m.dump = 0; return; }
+    m.ore = !ln.riders; m.lift = ln.riders ? OR.BUCKET.lift : 0; m.dump = 0;
+    if (ln.drum) m.cracked = winchRust(boss && boss.t === 'winchmaster' ? boss : null, m.i);   /* THE WINCHMASTER'S PHASE TWO: his skips rust HERE, in the station house, out of sight - so a rusted one is always seen rusted before it is boarded (winchmaster.js, round four) */
+    return; }
   m.vis = true;
   const rider = oreRiders().find(p => p.onMover === m);
   /* THE ORE (brief section 3). HOLD DOWN ON A LOADED SKIP AND IT TIPS. One button, no new art, and it is exactly
@@ -15107,7 +15110,8 @@ function updateWinchBoss(e, dt) {
   if (!L.arena) return;
   /* A FRESH FIGHT STARTS AT THE GREAT DRUM with both lines running as the level built them: a death mid-reverse or mid-jam must
      not hand the next attempt a line running the wrong way */
-  if (e.mode === 'wake' && !e.restored) { e.restored = true; e.at = 0; for (const l of L.cableway.lines) if (l.drum) { l.jam = 0; l.mul = 1; l.dir = l.dir0 || 1; } }
+  if (e.mode === 'wake' && !e.restored) { e.restored = true; e.at = 0; for (const l of L.cableway.lines) if (l.drum) { l.jam = 0; l.mul = 1; l.dir = l.dir0 || 1; }
+    for (const m of movers) if (m.kind === 'bucket' && L.cableway.lines[m.line].drum) m.cracked = false; }   /* (and the last attempt's rust is gone: a fresh fight is phase one) */
   stepWinchmaster(e, dt, winchC(e));
   e.x = Math.max(L.arena.x0 + 16, Math.min(L.arena.x1 - 16, e.x));
 }
