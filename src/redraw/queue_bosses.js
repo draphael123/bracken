@@ -10,8 +10,8 @@
 //                    his knees in a grave, spade sunk) | 13 hurt
 // bakeHedgeWarden()  0 stand | 1,2 walk | 3 CUT TELL (the clipped sword up) | 4 CUT | 5 THORN TELL (arms flung wide, thorns
 //                    bristling red) | 6 THORNS | 7 STUMP (cut down: roots and a stump) | 8,9 REGROWING (half, nearly)
-// bakeGateGargoyle() 0 PERCHED (on the gate, wings folded) | 1,2 fly | 3 DIVE TELL (high, wings wide) | 4 DIVE | 5 GUST TELL
-//                    (wings drawn back) | 6 GUST | 7 SPIT TELL (head back, throat lit) | 8 SPIT | 9 SHRIEK | 10 STUNNED
+// bakeGateGargoyle() 0 PERCHED (on the gate, wings folded) | 1,2 fly | 3 DIVE TELL (high, wings wide) | 4 DIVE | 5 FIREBALL TELL
+//                    (head up, jaws open, a ball of fire held in them) | 6 FIREBALL THROW (the flame leaving his jaws) | 7 SPIT TELL (head back, throat lit) | 8 SPIT | 9 SHRIEK | 10 STUNNED
 //                    (THE OPENING: through a slab and flat on the garden floor) | 11 CRASH (going through it). Drawn at 1.5x (2026-09-25)
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten, shade as tint } from '../px.js';
 import { OUT } from '../art.js';
@@ -146,6 +146,8 @@ export function bakeHedgeWarden() {
    STUNNED (crashed through a slab onto the garden floor, sprawled, wings flat) and frame 11 is THE CRASH (going through it). */
 const GG = { s: '#8a8a94', S: '#a6a6b0', sd: '#6e6e78', sD: '#4e4e58', moss: '#6a8a4a', mossL: '#8aaa5a', iron: '#4a4a52', ironL: '#7a7a84', witch: '#b8ff9a', witchL: '#effff0', claw: '#3e3e46', slab: '#7a7a84', slabL: '#9a9aa4', slabD: '#5a5a64', tooth: '#e8e4d8', dim: '#5e7a52' };
 export const GARG_K = 1.5;
+/* HIS FIRE, for the fireball's own pose (frames 5-6, claude/gargoyle5): the same reds, oranges and yellows the breath is drawn in (gate-gargoyle.js drawFlame) */
+const FIRE = { red: '#d8401e', orange: '#ff8a1e', yellow: '#ffd23c', white: '#fff6d8', maw: '#2a1418', smoke: '#57505a' };
 export function bakeGateGargoyle() {
   const K = GARG_K, W = 132, H = 100, cx = 62;
   /* A BAT'S WING IN STONE: the arm up from the shoulder to the WRIST, three fingers FANNING from the wrist - up-back, back,
@@ -196,18 +198,31 @@ export function bakeGateGargoyle() {
       wing(g, cx - 2, y - 4, 26, 24, true); legs(g, cx + 2, y + 2, -2); body(g, cx, y + 2, 1, -1); wing(g, cx + 2, y - 2, 30, 22);         // tipped forward, the wings thrown up and back by the fall
       chunk(g, cx - 40, y + 12, 16, 6); chunk(g, cx + 22, y + 10, 14, 6); chunk(g, cx - 16, y + 20, 10, 5); chunk(g, cx + 8, y + 21, 8, 4);   // the slab going to pieces round him
       grit(g, cx, y + 16, 16, 72); return; }
-    const lift = [0, 0, 22, -8, 30, 4, 26, 0, 0, 20][f] ?? 0, spread = [0, 0, 26, 24, 30, 16, 30, 20, 20, 26][f] ?? 22;
+    const lift = [0, 0, 22, -8, 30, 14, 2, 0, 0, 20][f] ?? 0, spread = [0, 0, 26, 24, 30, 22, 26, 20, 20, 26][f] ?? 22;   /* 5,6: wings raised to throw, then down with it (claude/gargoyle5) */
     if (f === 4) { // DIVE: plummeting, wings swept back, claws first
       wing(g, cx + 9, y - 21, 18, 14, true); body(g, cx, y - 6, 0, -2); wing(g, cx + 12, y - 18, 22, 16); legs(g, cx + 3, y + 3, 3); return; }
     wing(g, cx - 3, y - 6, lift + 4, spread, true);
     legs(g, cx, y, f === 3 ? -1 : 0);
-    const [hx, hy] = body(g, cx, y, 0, f === 7 ? 2 : f === 9 ? 3 : 0);
+    const [hx, hy] = body(g, cx, y, 0, f === 7 ? 2 : f === 9 ? 3 : f === 5 ? 1.5 : f === 6 ? -1 : 0);
     wing(g, cx, y - 3, lift, spread);
     if (f === 7) { ellipse(g, hx + 10, hy + 1, 4, 4, GG.witch); ellipse(g, hx + 10, hy + 1, 2, 2, GG.witchL); }                              // SPIT TELL: head back, the throat lit
     if (f === 8) for (const [dx, dy] of [[26, -9], [34, 0], [28, 9]]) { chunk(g, hx + dx, hy + dy, 6, 6); px(g, hx + dx + 1, hy + dy + 1, GG.S); }   // SPIT: three chunks of masonry
     if (f === 9) { fillPoly(g, [[hx + 6, hy - 1], [hx + 18, hy - 10], [hx + 18, hy + 5]], GG.sD); for (let k = 0; k < 3; k++) thick(g, hx + 21 + k * 4, hy - 9 - k * 3, hx + 24 + k * 4, hy - 13 - k * 3, GG.witch, 2); }   // SHRIEK
-    if (f === 5) for (let k = 0; k < 4; k++) { px(g, cx + 30 + k * 5, y - 30 + k * 4, GG.witchL); px(g, cx + 31 + k * 5, y - 29 + k * 4, GG.witchL); }   // GUST TELL: the air gathering
-    if (f === 6) for (let k = 0; k < 7; k++) { line(g, cx + 24, y - 24 + k * 6, cx + 52, y - 27 + k * 6, GG.slabL); line(g, cx + 30, y - 23 + k * 6, cx + 46, y - 25 + k * 6, '#eefaff'); }   // GUST: the blast
+    if (f === 5) { // FIREBALL TELL (claude/gargoyle5, in the gust's old frame): head up, the jaw dropped open and a ball of fire held in it, glowing
+      const sx = hx + 17, sy = hy + 1.5 - 1.5 * 3;                                                                                           // the snout's tip (head 1.5)
+      fillPoly(g, [[hx + 5, hy + 3], [sx, sy + 3], [hx + 16, hy + 12], [hx + 6, hy + 9]], FIRE.maw);                                          // the open maw
+      thick(g, hx + 5, hy + 9, hx + 16, hy + 12, GG.S, 2); for (const fx of [8, 11, 14]) rect(g, hx + fx, hy + 8 + (fx - 8) * 0.3, 1, 2, GG.tooth);   // the lower jaw, dropped, its teeth up
+      ellipse(g, hx + 12, hy + 6, 5, 4.5, FIRE.red); ellipse(g, hx + 12, hy + 6, 3.6, 3.2, FIRE.orange); ellipse(g, hx + 12, hy + 5.5, 2.2, 2, FIRE.yellow); rect(g, hx + 11, hy + 4, 2, 2, FIRE.white);   // THE FIRE IN HIS JAWS
+      for (const [dx, dy, c] of [[4, -6, FIRE.yellow], [9, -9, FIRE.orange], [1, -11, FIRE.orange], [13, -4, FIRE.yellow]]) px(g, hx + 12 + dx - 5, hy + 6 + dy, c);   // sparks off it
+      rect(g, hx + 2, hy - 3, 2, 2, FIRE.yellow); }                                                                                        // and the fire in his eye
+    if (f === 6) { // FIREBALL THROW: head thrust out, jaws wide, the flame leaving them and smoke curling off the snout
+      fillPoly(g, [[hx + 5, hy + 4], [hx + 18, hy + 4], [hx + 17, hy + 12], [hx + 6, hy + 9]], FIRE.maw); thick(g, hx + 5, hy + 9, hx + 17, hy + 13, GG.S, 2);
+      for (const fx of [8, 11, 14]) rect(g, hx + fx, hy + 9 + (fx - 8) * 0.4, 1, 2, GG.tooth);
+      fillPoly(g, [[hx + 15, hy + 4], [hx + 26, hy + 1], [hx + 31, hy + 8], [hx + 25, hy + 14], [hx + 15, hy + 11]], FIRE.red);               // the flame leaving his jaws
+      fillPoly(g, [[hx + 16, hy + 6], [hx + 25, hy + 4], [hx + 28, hy + 8], [hx + 24, hy + 12], [hx + 16, hy + 10]], FIRE.orange);
+      ellipse(g, hx + 21, hy + 8, 3, 2.2, FIRE.yellow); rect(g, hx + 17, hy + 7, 3, 2, FIRE.white);
+      for (const [dx, dy] of [[4, -6], [8, -9], [12, -7]]) { ellipse(g, hx + 14 + dx, hy + dy, 1.8, 1.5, FIRE.smoke); }                   // smoke curling up off his snout
+      rect(g, hx + 2, hy - 3, 2, 2, FIRE.yellow); }
   }, true);
   return pack(F, cx, H, 45, 45);
 }

@@ -1,0 +1,22 @@
+
+> check
+> node tools/check.mjs gargoyle-playtest,gargoyle-stomp,gargoyle-smash,whelps,witchlight,boss-openings,tells,queue-bosses,architecture,checkpoints,skins,dangling-paths,slopes-trace,npc-removal,boss-fight-end
+
+ ok  syntax             0ms  6 files parse
+ ok  tells            517ms  the mark over every windup on the screen comes from this table (src/marks.js, 560 rows).
+ ok  dangling-paths   246ms  ok  dangling-paths 2417 tracked files, every repo path they cite resolves in a fresh clone (7 known holes list
+ ok  checkpoints     7747ms  428 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  skins          13154ms  ok  roofs          44 houses: every roof picture sits on the slab you stand on.
+ ok  witchlight     52530ms  THE WITCHLIGHT STAIR: five places, one verb each, encounters not a sprinkle, its own light - the Hedge Warden 
+ ok  boss-openings  77085ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"buriedGas":{"rest":{"mode":"rest","open":0},"c
+ ok  boss-fight-end246117ms  Every one of 45 boss and mini fights (32 bosses, 13 minis) ends when its boss dies.
+ ok  architecture    3348ms  44 levels, 348 built pieces declared; 2 grandfathered (harbor, waymeet). everything that was built stands on s
+ ok  gargoyle-smash 19304ms  THE GATE GARGOYLE: zoomed out, in a room of forty tiles, half as big again, and a slab left late puts him thro
+ ok  whelps         30641ms  THE GARGOYLE WHELP: stone on its perch, a told swoop that shoves, broken only by a stomp on the spikes; THE BA
+ ok  npc-removal     3072ms  every NPC outside the shops is gone; the ferryman and the captives are mechanics without dialogue; every forme
+ ok  gargoyle-stomp 25125ms  THE GATE GARGOYLE, ROUND THREE: stone over a floor of spikes, broken only by a stomp when his own dive puts hi
+ ok  gargoyle-playtest 22571ms  [marks] a windup with no row in src/marks.js: gargoyle|gustTell - it wears no mark
+ ok  slopes-trace   30364ms  slopes-trace: every frame of every level identical to the pre-slopes build
+
+15 of 194 checks pass - A SUBSET (gargoyle-playtest, gargoyle-stomp, gargoyle-smash, whelps, witchlight, boss-openings, tells, queue-bosses, architecture, checkpoints, skins, dangling-paths, slopes-trace, npc-removal, boss-fight-end), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.
