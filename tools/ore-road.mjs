@@ -18,7 +18,8 @@
 import { LEVELS, T } from '../src/level.js';
 import { readFileSync } from 'node:fs';
 import { OR, cableLines, makeCableway, stepCableway, bucketAt, pointAt, lineYAt, brakeStep, liftStep, mineBlocked, WORKS, workSees, MINE_PLACES } from '../src/ore-road.js';
-import { WINCH, updateWinchmaster, winchJam, winchTake, winchOpen, winchFrame } from '../src/winchmaster.js';
+import * as WM from '../src/winchmaster.js';
+const { WINCH, updateWinchmaster, winchJam, winchTake, winchOpen, winchFrame } = WM;
 
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 const TS = 16, lv = LEVELS.find(l => l.id === 'oreroad'), L = lv.build(), at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x];
@@ -169,11 +170,11 @@ for (const l of C.lines) {
   ok(S.length >= 150 && !badS.length, `${S.length} seams of ore in the rock faces, every one IN rock, none beside a spike and none in the Winchmaster's room` + (badS.length ? ' - not ' + JSON.stringify(badS.slice(0, 4)) : ''));
   const combos = new Map(); for (const q of S) combos.set(q[2] + '/' + q[3], (combos.get(q[2] + '/' + q[3]) || 0) + 1);
   const worst = Math.max(...combos.values()) / Math.max(1, S.length);
-  ok(new Set(S.map(q => q[2])).size === 4 && new Set(S.map(q => q[3])).size === 4 && worst < 0.2, `varied, not one stamp: four ores and four seam shapes in ${combos.size} pairings, the commonest ${Math.round(worst * 100)}% of them`);
+  ok(new Set(S.map(q => q[2])).size === 5 && new Set(S.map(q => q[3])).size === 4 && worst < 0.2, `varied, not one stamp: five ores and four seam shapes in ${combos.size} pairings, the commonest ${Math.round(worst * 100)}% of them`);
   ok(S.some(q => q[4]) && S.filter(q => q[4]).length < S.length / 2, `${S.filter(q => q[4]).length} of them glint`);
   const why = M.map(it => [it, mineBlocked(L, T, it)]).filter(([, r]) => r);
   ok(M.filter(q => !q.set).length >= 15 && !why.length, `${M.filter(q => !q.set).length} heaps, spills and carts of ore on the floors, every one on footing and clear of every hazard and every tell` + (why.length ? ' - NOT ' + why.map(([it, r]) => it.k + '@' + it.x + ',' + it.y + ': ' + r).join('; ') : ''));
-  ok(new Set(M.filter(q => q.k === 'heap').map(q => q.size)).size === 3 && M.some(q => q.k === 'cart' && q.load > 0) && new Set(M.filter(q => !q.set).map(q => q.ore)).size === 4, 'heaps of all three sizes, a cart full of ore, and all four ores on the floors'); }
+  ok(new Set(M.filter(q => q.k === 'heap').map(q => q.size)).size === 3 && M.some(q => q.k === 'cart' && q.load > 0) && new Set(M.filter(q => !q.set).map(q => q.ore)).size === 5, 'heaps of all three sizes, a cart full of ore, and all five ores on the floors'); }
 
 /* ---- THE WORK LOOPS (section 2), as geometry: every row of WORKS found its goblin (a row that silently matched nobody is a loop
    that does not exist), none of them is the level's own three, the elite or in his room, every miner at work has a seam on his
@@ -385,10 +386,11 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
   ok(!opened && w.e.at === 0, 'THE OPENING IS CAUSED: a minute of him left alone, sending and hooking, and he never once goes down or leaves his drum'); }
 /* ---- THE JAM AND THE CIRCUIT: A -> B -> C -> A, and each time the line into the next housing is driven into it */
 { const w = world(); w.run(0.3);
-  ok(winchTake(w.e) === 1 && !winchOpen(w.e), 'on a housing he takes blows as they come (and no jump reaches him)');
+  ok(winchTake(w.e) === 0.5 && !winchOpen(w.e), 'ROUND FOUR: on a housing, his drum running, a blow on him lands at HALF (and no jump reaches him)');
   const order = [];
   for (let k = 0; k < 3; k++) { const at0 = w.e.at, q = w.H[at0];
     ok(winchJam(w.e, w.c), `THE OPENING at ${q.name}: a loaded bucket ridden into his drum jams it`);
+    ok(winchTake(w.e) === 1, 'ROUND FOUR: and the moment the drum jams the half is off - thrown off the housing he takes blows as they come');
     w.run(WINCH.thrownT + 0.05); ok(w.e.mode === 'downed' && Math.abs(w.e.y - q.ledgeY) < 1 && Math.abs(w.e.x - q.ledgeX) < 1, 'he goes off the housing onto its ledge, DOWNED');
     ok(winchTake(w.e) === 2 && winchOpen(w.e) && !winchJam(w.e, w.c), 'and takes double while he is down (a second jam does nothing)');
     w.run(WINCH.downT + WINCH.tell.letgo + WINCH.swingT / 2); const nx = w.H[(at0 + 1) % 3].homeX, mid = (w.e.x - q.ledgeX) * (nx - q.ledgeX);
@@ -463,6 +465,24 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
   const reachHook = q => { const hx = q.homeX, hy = q.topY - 26; let n = 0; for (let x = q.ln.pts[0][0]; x <= q.ln.pts[q.ln.pts.length - 1][0]; x += 8) if (Math.hypot(x - hx, lineYAt(q.ln, x) - 9 - hy) < WINCH.hookR * 0.9) n++; return n; };
   ok(H.every(q => reachHook(q) > 4), 'THE HOOK: from every housing, some of the line into it is inside the chain\'s reach - ' + H.map(q => q.id + ' ' + reachHook(q)).join(', '));
   ok(H.every(q => q.ln.len > WINCH.sendR * 4), 'SEND: every line is long enough to send a bucket down, and there is air over all of it to be in'); }
+/* ---- ROUND FOUR (Daniel, 2026-09-28): HALF UNLESS JAMMED, PHASE TWO RUSTS HIS SKIPS, AND HIS ROOM IS LIT */
+{ const msrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  ok(WINCH.chipMul === 0.5 && /if \(e\.t === 'winchmaster'\) \{ const k = winchTake\(e\); dmg = Math\.max\(1, Math\.round\(dmg \* k\)\)/.test(msrc), 'HALF DAMAGE UNLESS HIS DRUM IS JAMMED: every blow on him (and burn, through wardedDamage) is scaled by winchTake - half while his drum runs');
+  ok(/k < 1 && !\(e\.chipSaid > 0\)[^\n]*THE IRON TAKES HALF: JAM HIS DRUM/.test(msrc), 'and it is TOLD: a halved blow says THE IRON TAKES HALF: JAM HIS DRUM over him (at most every ' + WINCH.chipSay + ' s)');
+  const rust = WM.winchRust, e1 = { alive: true, phase: 1 }, e2 = { alive: true, phase: 2 }, idx = [...Array(9).keys()];
+  ok(typeof rust === 'function' && idx.every(i => !rust(e1, i)), 'PHASE TWO RUSTS HIS SKIPS: in phase one none of them is rust');
+  ok(typeof rust === 'function' && idx.filter(i => rust(e2, i)).join() === '1,4,7' && !rust({ alive: false, phase: 2 }, 1) && !rust(null, 1), 'from half health every third skip of his is (skips 1, 4, 7 - never two together round a loop), and none once he is dead');
+  const ub = (msrc.match(/function updateBucket\(m, dt\) \{[^]*?\n\}/) || [''])[0], ret = (ub.match(/if \(!b\.vis\) \{[^]*?return; \}/) || [''])[0];
+  ok(/winchRust\(/.test(ret) && (ub.match(/winchRust\(/g) || []).length === 1 && (msrc.match(/winchRust\(/g) || []).length === 1, 'and a skip only turns to rust IN ITS STATION HOUSE (the return, out of sight): one you can board, you saw rusted - never an untold fall');
+  const Cw = makeCableway(L.cable), pit = OR.PITS.find(q => q.id === 'drum'), drums = Cw.lines.filter(l => l.drum);
+  ok(typeof rust === 'function' && drums.every(l => l.n >= 3 && [...Array(l.n).keys()].some(i => !rust(e2, i))), 'there is always a sound skip coming on both of his lines: ' + (typeof rust === 'function' ? drums.map(l => l.id + ' ' + [...Array(l.n).keys()].filter(i => rust(e2, i)).length + ' of ' + l.n + ' rust').join(', ') : '(no rust rule)'));
+  ok(!!pit && drums.every(l => l.pts.every(p => p[0] >= (pit.x0 - 1) * TS && p[0] <= (pit.x1 + 1) * TS)) && OR.PIT_BITE < 1 && /Math\.min\(Math\.round\(P\.maxHp \* OR\.PIT_BITE\), P\.hp - 1\)/.test(msrc), 'a skip that gives way drops you into THE DRUM PIT under both his lines: a fifth of your health and a climb, never your life');
+  const rw = world(); rw.run(0.3); rw.e.revCd = rw.e.sendCd = rw.e.hookCd = rw.e.leverCd = 999; rw.e.qMark = -1e9; rw.e.hp = rw.e.maxHp * 0.45; rw.run(2.5);
+  ok(rw.log.some(q => q[0] === 'say' && /HIS SKIPS RUST/.test(q[1])), 'and phase two SAYS it over him: HIS SKIPS RUST: THE RED ONES GIVE WAY');
+  const Z = (L.darkZones || []).filter(z => z.x1 > AR.x0 * TS);
+  ok(Z.length === 1 && Z[0].x0 === AR.x0 * TS && Z[0].x1 >= L.W * TS && Z[0].y0 <= 0 && Z[0].y1 >= L.H * TS && Z[0].dark <= L.dark * 0.6, `HIS ROOM IS LIT: inside the arena's columns the dark eases to ${Z[0] && Z[0].dark} (the cavern is ${L.dark})`);
+  ok((L.darkZones || []).every(z => z.x0 >= AR.x0 * TS), 'and only his room: no zone reaches back into the level before the arena');
+  ok(AR.housings.every(Hs => L.ents.some(e => e.t === 'minerlamp' && e.lit && e.y === Hs.top && e.x >= Hs.x0 && e.x <= Hs.x1)), 'a lit lamp stands on every housing: ' + AR.housings.map(Hs => Hs.name).join(', ')); }
 /* ---- A1/A2/A3/A8, read off the files */
 { const wsrc = readFileSync(new URL('../src/winchmaster.js', import.meta.url), 'utf8'), msrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   const { BY_HAND, MARK } = await import('../src/marks.js');

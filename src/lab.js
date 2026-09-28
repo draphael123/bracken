@@ -689,7 +689,9 @@ async function runbossLab(BK, opts) {
       }
       /* THE HEDGE WARDEN (batch 4c): the bot plays him as a player does - fights him BESIDE A BRAZIER (it stands past the nearest
          one, so he follows it there and is felled by the fire), gets clear of the thorns, guards the cut and the rush (or backs
-         off / jumps the rush without a shield), cuts the cuttings he throws off, and puts everything into a stump. */
+         off / jumps the rush without a shield), cuts the cuttings he throws off, and puts everything into a stump. The THORN LASH
+         (claude/hedgewarden2) it guards with a shield and jumps without one; a ROOT crawling at it it jumps (standing past the brazier,
+         most of them burn out before they reach it). */
       if(boss.t==='hedgewarden'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
@@ -705,11 +707,13 @@ async function runbossLab(BK, opts) {
         gx=Math.max(A.x0+18,Math.min(A.x1-18,gx));
         if(Math.abs(gx-P.x)>4)k[gx>P.x?'right':'left']=true;
         if((m==='rush'&&Math.abs(dx)<60&&(boss.x-P.x)*boss.face<0&&!SHIELDED(h))&&P.ground){BK.press('jump');P.labJump=18;}
+        if(m==='lashTell'&&!SHIELDED(h)&&boss.modeT<0.12&&Math.abs(dx)<170&&P.ground){BK.press('jump');P.labJump=18;}   /* THE THORN LASH: over it */
+        {const rt=(L.hedgeRoots||[]).find(r=>!r.dead&&Math.abs(r.y-P.y)<10&&(P.x-r.x)*r.dir>0&&(P.x-r.x)*r.dir<30);if(rt&&P.ground){BK.press('jump');P.labJump=18;}}   /* A ROOT coming: over it */
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        if((m==='cutTell'||m==='cut'||m==='rushTell'||m==='rush')&&SHIELDED(h)&&Math.abs(dx)<140){k.block=true;k.left=k.right=false;P.face=side;}
+        if((m==='cutTell'||m==='cut'||m==='rushTell'||m==='rush'||m==='lashTell'||m==='lash')&&SHIELDED(h)&&Math.abs(dx)<170&&!(L.hedgeRoots||[]).some(r=>!r.dead&&Math.abs(r.x-P.x)<40)){k.block=true;k.left=k.right=false;P.face=side;}
         else if(add&&Math.abs(add.x-P.x)<LAB_REACH[h]+add.w/2+2&&Math.abs(add.y-P.y)<24&&P.atk<0&&!stump){P.face=Math.sign(add.x-P.x)||1;BK.press('atk');swings++;}
         else if(!rest&&m!=='thornTell'&&m!=='thorn'&&!(m==='cutTell'&&!SHIELDED(h))&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<40&&P.atk<0){P.face=side;BK.press('atk');swings++;}   /* (no shield: it steps out of the cut, it does not trade with it) */
-        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(P.dead)falls++;
+        const was=P.hp,m0=boss.mode,rh=(L.hedgeRoots&&L.hedgeRoots.hits)||0;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(((L.hedgeRoots&&L.hedgeRoots.hits)||0)>rh?'roots':m0,Math.max(0,was-P.hp));if(P.dead)falls++;   /* (a root's bite is booked to THE ROOTS, whatever he is doing when it lands) */
         if(f%600===599)await yieldNow();continue;
       }
       /* THE GATE GARGOYLE (the Witchlight Stair's boss; round three, 2026-09-27): the bot plays him as a player does. He is stone, so it
@@ -773,9 +777,10 @@ async function runbossLab(BK, opts) {
           const L2=BK.L,lines=L2.cableway.lines,lo=lines.find(l=>l.id==='low'),hi=lines.find(l=>l.id==='high');
           const at2=(x0,x1,r)=>Math.abs(P.y-(r+1)*TZ)<3&&P.x>x0*TZ-6&&P.x<(x1+1)*TZ+6;
           const topAt=HS.findIndex((q,i)=>onTop(i)||(Math.abs(P.x-(q.ladder[0]*TZ+8))<6&&Math.abs(P.y-(q.top+1)*TZ)<3));
-          /* onto a skip coming under the step at a lip (the ore-ride rule: look before you step) */
+          /* onto a skip coming under the step at a lip (the ore-ride rule: look before you step) - and never a rusted one (his phase
+             two rusts every third skip, told by its colour: the hands read it the way a player does) */
           const board=(ln,lip,dir)=>{ const li=lines.indexOf(ln),step=P.x+dir*14,stand=lip-dir*6;
-            const skip=ln.dir*dir>0&&!(ln.jam>0)&&BK.movers().some(q=>q.kind==='bucket'&&q.line===li&&q.vis&&!(q.fallen>0)&&step>q.x+4&&step<q.x+q.w-4&&Math.abs(q.y-P.y)<6);
+            const skip=ln.dir*dir>0&&!(ln.jam>0)&&BK.movers().some(q=>q.kind==='bucket'&&q.line===li&&q.vis&&!(q.fallen>0)&&!q.cracked&&step>q.x+4&&step<q.x+q.w-4&&Math.abs(q.y-P.y)<6);
             if(skip)k[dir>0?'right':'left']=true;else go(stand); };
           const climb=x=>{const lx=x*TZ+8;if(Math.abs(lx-P.x)>3)go(lx);else k.up=true;};
           const onLad=[482,509,501].find(x=>Math.abs(P.x-(x*TZ+8))<7&&(BK.L.grid[Math.floor((P.y+2)/TZ)*BK.L.W+x]===T.NET||BK.L.grid[Math.floor((P.y-4)/TZ)*BK.L.W+x]===T.NET));

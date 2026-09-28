@@ -1731,13 +1731,16 @@ function underleaf() {
 function hangingVillage() {
   const W = 110, H = 132; const L = painter(W, H); // rows 112-131 are under the roots: the Weaver's hollow
   const { block, plat, ent, coins, set } = L;
-  const movers = [], gusts = [], interiors = [];
+  const movers = [], gusts = [], interiors = [], crumbles = [];
   const band = (x0, x1, top) => block(x0, x1, top, top + 3);
   const hole = (x0, x1, top) => { for (let y = top; y <= top + 3; y++) for (let x = x0; x <= x1; x++) set(x, y, 0); };
   const ladder = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
   const shelf = (x, y, n) => { for (let i = 0; i < n; i++) set(x + i, y, T.SHELF); };
   const pit = (x0, x1, top) => { for (let x = x0; x <= x1; x++) { set(x, top, 0); set(x, top + 1, T.SPIKE); } }; // a rotten stretch of bough with goblin spikes set under it
   const vine = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); }; // a hanging vine: climb it like a rope
+  /* FAILING STONE, reused from the Falling Tower (src/tower-collapse.js, Daniel's backlog): a ledge that looks solid and gives after
+     a beat on it. A floor that gives is the same idea as a rope that can be cut - the ground is a promise too. */
+  const failing = (x, y, len, count = 2.2) => { plat(x, y, len); crumbles.push({ x0: x, x1: x + len - 1, row: y, rows: 1, count }); };
   /* THE HOIST (src/main.js, THE HOIST; docs/briefs/hanging-village-rework.md §3): a deck that rests on the floor it stands on (row `low`).
      THE WELL IS ALWAYS ON THE FAR SIDE OF THE DECK FROM THE LOADS: carried the other way, a load went in as you walked past the well and
      the deck left without you (measured, tools/hanging-hoist-walk.mjs).
@@ -1812,7 +1815,7 @@ function hangingVillage() {
   ent('door', 32, 79, { kind: 'cottage', at: 32 }); ent('folk', 35, 79, { door: 32, alt: true }); ent('deco', 40, 79, { kind: 'well' });
   ent('door', 50, 79, { at: 50 }); ent('folk', 47, 79, { door: 50 }); ent('deco', 56, 79, { kind: 'fence', v: 0 }); ent('door', 64, 79, { at: 64 }); ent('folk', 67, 79, { door: 64 });
   ent('squirrel', 74, 79, { face: -1 }); ent('snuffer', 62, 79, { face: -1 }); ent('shield', 92, 79, { face: -1 });
-  plat(58, 76, 3); plat(78, 75, 3); coins([59, 75], [79, 74], [18, 77], [38, 77], [70, 77], [88, 77], [96, 77]);
+  plat(58, 76, 3); failing(78, 75, 3); coins([59, 75], [79, 74], [18, 77], [38, 77], [70, 77], [88, 77], [96, 77]);
   movers.push({ kind: 'swing', px: 44 * TS, py: 70 * TS, arm: 70, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0 }); plat(40, 73, 2); plat(48, 72, 2); ent('spit', 49, 71, { face: -1 }); coins([44, 71]); // a rope swing over the well to a spitter's ledge
   ent('check', 96, 79); ent('check', 43, 79);   /* mid-market: the ropewalk hoist to the market's east end was 103 walked tiles (B6 is a hundred) */
   ent('sign', 70, 79, { text: 'THE SNUFFERS PUT OUT WHAT YOU LIGHT. CUT THEM FIRST, THEN RELIGHT THE POST.' });
@@ -1827,9 +1830,14 @@ function hangingVillage() {
   gusts.push({ x0: 20 * TS, x1: 92 * TS, y0: 56 * TS, y1: 66 * TS, dir: -1, period: 5, on: 1.6, phase: 0 });
   gusts.push({ x0: 20 * TS, x1: 90 * TS, y0: 12 * TS, y1: 20 * TS, dir: 1, period: 9, on: 2.2, phase: 3, alt: true, arena: true }); // the crown's crosswind, only while the Reeve fights
   hole(36, 40, tops.t3); ent('mover', 36, tops.t3, { len: 2, range: 3, speed: 36 }); hole(70, 74, tops.t3); ent('mover', 70, tops.t3, { len: 2, range: 3, speed: 36 }); // gaps in the bough with sliding boughs across them: the wind wants you off
-  pit(52, 53, tops.t3); pit(30, 31, tops.t3); // pits the wind wants to push you into
+  movers.push({ kind: 'swing', px: 38 * TS + 8, py: (tops.t3 - 9) * TS, arm: 60, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0.7, vine: true }); // MORE SWINGING ROPES (Daniel's backlog): a rope beside the sliding bough, not only a ride
+  /* THE CLIFF HALL's own rope bridge (AMBUSH.hanging above, its cutter's 'bridge: 50'): a plank span over the same shallow spike-pit the
+     wind already wants you in, cut down to it in three chops mid-fight (src/main.js updateCutter/L.bridges) instead of standing open from
+     the start - so the ambush room loses a piece of its own floor while you're still fighting on it, not before. */
+  for (let x = 50; x <= 56; x++) { set(x, tops.t3, T.PLANK); set(x, tops.t3 + 1, T.SPIKE); }
+  pit(30, 31, tops.t3); // a pit the wind wants to push you into
   ent('spider', 80, 58, { drop: 100 }); ent('spider', 48, 58, { drop: 100 }); ent('snuffer', 34, 65, { face: 1 }); ent('sprig', 26, 65, { face: 1 }); ent('wasp', 56, 60);
-  plat(70, 63, 3); plat(40, 61, 3); coins([71, 62],   /* the lamp's ledge was four rows off the floor */ [41, 60], [86, 63], [56, 63], [26, 63]);
+  plat(70, 63, 3); failing(40, 61, 3); coins([71, 62],   /* the lamp's ledge was four rows off the floor */ [41, 60], [86, 63], [56, 63], [26, 63]);
   ent('door', 88, 65, { at: 88 }); ent('folk', 91, 65, { door: 88 }); ent('deco', 14, 65, { kind: 'lanternPost' }); ent('lantern', 14, 65); ent('lantern', 64, 65);
   ent('check', 20, 65);
   /* THE MILL HOIST: a flour sack hangs on a peg over the well. Cut the peg and it drops in - the crown's peg-cut, taught where nothing is
@@ -1867,11 +1875,22 @@ function hangingVillage() {
   ent('spider', 70, 30, { drop: 100 }); ent('brute', 50, 37, { face: 1 }); ent('door', 60, 37, { kind: 'cottage', at: 60 }); ent('folk', 63, 37, { door: 60, alt: true });
   ent('spider', 40, 30, { drop: 100 }); ent('snuffer', 54, 37, { face: -1 }); ent('snuffer', 24, 37, { face: 1 }); ent('deco', 48, 37, { kind: 'lanternPost' }); ent('deco', 20, 37, { kind: 'lanternPost' }); ent('lantern', 20, 37); ent('lantern', 48, 37); ent('lantern', 84, 37);
   plat(76, 34, 3); plat(26, 33, 3); ent('silver', 28, 32); coins([77, 33], [27, 32], [66, 35], [44, 35], [12, 35]);
-  pit(42, 43, tops.t5); pit(72, 73, tops.t5);
-  hole(52, 57, tops.t5); shelf(52, tops.t5, 6); hole(14, 18, tops.t5); ent('mover', 14, tops.t5, { len: 2, range: 3, speed: 40 }); ent('wasp', 55, 33); ent('thorn', 36, 37, { face: 1 }); // snapping branch and a sliding bough on the way to the crown
+  pit(42, 43, tops.t5);
+  /* THE EXAM (game-wide pattern 1: the last stretch before a boss must be one, not a rest) STARTS HERE: the lantern stair carries the
+     level's own rule right up to the Reeve's door. TWIST the cutter (design audit §7 Plan 1, adapted to current master): a rope
+     bridge over the gap a spider already drops onto, with a cutter at its post who saws through once you're out over the middle of
+     it. Falling through is not a dead end (B4): the drop lands square on the upper boughs' own floor below, no spikes in it, so a
+     cut rope costs you the climb back up its own route, never the run. (No vine here: one straight down to the same floor a fall
+     already lands on would only open a second, shorter way past the upper boughs' own content - not what B4 asks for.) */
+  hole(64, 75, tops.t5); for (let x = 64; x <= 75; x++) set(x, tops.t5, T.PLANK); ent('bridge', 64, tops.t5, { x1: 75 });
+  ent('sprig', 77, 37, { face: -1, cutter: true });
+  ent('sign', 80, 37, { text: 'HE SAWS THROUGH THE ROPE ONCE YOU ARE OUT ON IT. DO NOT STOP HALFWAY.' });
+  hole(52, 57, tops.t5); shelf(52, tops.t5, 6); hole(14, 18, tops.t5); ent('mover', 14, tops.t5, { len: 2, range: 3, speed: 40 });
+  movers.push({ kind: 'swing', px: 16 * TS + 8, py: (tops.t5 - 9) * TS, arm: 50, x: 0, y: 0, w: 32, h: 8, period: 2.8, phase: 1.0, vine: true }); // MORE SWINGING ROPES: an alternate to the sliding bough, right at the exam's tail
+  ent('wasp', 55, 33); ent('thorn', 36, 37, { face: 1 }); // snapping branch and a sliding bough on the way to the crown
   ent('check', 10, 37); ent('check', 96, 37);   /* THE TOP OF THE ROOKERY CLIMB: the run from the rookery's west end to here and on to the stair's west end was 162 walked tiles with nothing in it (tools/checkpoint-gaps.mjs) */
-  // 5 -> crown: the long rope
-  band(1, W - 2, tops.crown); hole(2, 5, tops.crown); ladder(3, 4, tops.crown, tops.t5 - 1);
+  // 5 -> crown: the long rope, with one last threat so the climb is not a silent one (game-wide pattern 1)
+  band(1, W - 2, tops.crown); hole(2, 5, tops.crown); ladder(3, 4, tops.crown, tops.t5 - 1); ent('spider', 7, 29, { drop: 90 });
 
   // ---- The crown: THE OWL REEVE. Three perches on the high branches with a dark lantern on each; ledges climb to every one. ----
   ent('sign', 8, 19, { text: 'STRIKE A LAMP. ITS GLOW DROPS THE REEVE. HIT HER WHILE SHE LIES DAZZLED.' });
@@ -1906,7 +1925,9 @@ function hangingVillage() {
   /* and what each floor leaves lying about: roots and fungus, rope and hemp, the market's stalls, flour at the mill, the rooks' boxes */
   for(const [x,y,k] of [[23,107,'stump'],[40,107,'mushroom'],[80,107,'fern'],[16,93,'ropeCoil'],[27,93,'washing'],[18,93,'hempBale'],[60,93,'ropeCoil'],[24,79,'stall'],[45,79,'shopSign'],[72,79,'stall'],[82,79,'barrels'],[58,65,'flourSacks'],[84,65,'flourSacks'],[26,51,'dovecote'],[48,51,'birdhouse'],[78,51,'beehive']])ent('deco',x,y,{kind:k});
   return {
-    hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, vines: [52, 68, 34, 48, 61, 41, 63], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
+    hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, crumbles,
+    bridges: [{ x: 50, x1: 56, y: tops.t3 }],   /* THE CLIFF HALL's own rope (src/main.js L.bridges/updateCutter): whole every attempt, cut by the ambush's cutter, hauled back once you step off it */
+    vines: [52, 68, 34, 48, 61, 41, 63], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'hangingvillage', night: false, glowNight: true,   /* "Dark Shrine Loop" by qubodup, CC0 - THE HANGING VILLAGE's own theme, benching town (audio/CREDITS.txt) */
     /* SEVEN FLOORS, SEVEN GROUNDS (src/hanging-village.js): each band of rows wears its floor's look - its top, its rock, its underside, its
        ledges, its scatter - and the cliff face behind it. ceilLook: whose bough is overhead, which is what carries the brackets. */
@@ -1941,7 +1962,7 @@ function hangingVillage() {
 function theMonastery() {
   const W = 96, H = 222; const L = painter(W, H);
   const { block, plat, ent, coins, set, spikes } = L;
-  const movers = [], facades = [], masonry = [], interiors = [], flags = [], hangers = [];
+  const movers = [], facades = [], masonry = [], interiors = [], flags = [], hangers = [], crumbles = [];
   const CLOUD = 100; // above this row the sun is on the stone
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const boards = (x, y, n) => { for (let i = 0; i < n; i++) set(x + i, y, T.ONEWAY); };
@@ -2117,6 +2138,10 @@ function theMonastery() {
   tower(70, 118, 131);
   ent('tbell', 11, 117, { span: [16, 40, 118] });                   // the first bell: the drawbridge over the broken floor
   ent('sign', 9, 117, { text: 'A BELL. STRIKE IT AND WHAT HANGS FROM ITS TOWER COMES DOWN.' });
+  // THE DRAWBRIDGE, DEVELOPED (design audit, plan 1): a harpy and a fledgling over the broken floor, and a priest waiting
+  // on the far tower's own floor (41-48, laid the same row the bell drops the bridge onto) whose rite blesses them both
+  ent('harpy', 24, 112, { face: 1 }); ent('fledgling', 36, 114, { face: -1 });
+  ent('gobpriest', 42, 117, { face: -1 });
   for (let x = 49; x <= 69; x++) set(x, 118, T.PLANK);              // the rope bridge the Roc left standing
   ent('tbell', 73, 117, { span: [78, 83, 118] });                   // the second: over to the flue
   // THE FLUE: the old kitchens' chimney, with its hearth at the bridges' height and the braziers that still breathe in it
@@ -2129,6 +2154,10 @@ function theMonastery() {
   ent('check', 13, 117); ent('check', 6, 131); coins([31, 117], [36, 117], [58, 117], [63, 117]);
   // THE BELL YARD under the bridges, where the looters camp: down a tower's hatch, and back up its stair
   ent('rockgoblin', 55, 131, { face: 1 }); ent('rockgoblin', 66, 131, { face: -1 }); ent('gobpriest', 62, 131, { face: -1 });
+  // A STONE ON A CHAIN, still set the way the monks left it (Daniel's backlog: generalise Kingswood's plate-and-cage -
+  // cheap, since the plate/dropcage pair is already level-agnostic prop code, so this is the same trap, replanted here)
+  ent('sign', 47, 131, { text: 'A STONE ON A CHAIN, STILL SET TO CATCH A THIEF. STAND ON THE PLATE.' });
+  ent('plate', 60, 131, { cage: 60 }); ent('dropcage', 60, 127);
   // THE DORTER: the monks' cells between the towers, and the looters asleep in the monks' cots with what they took piled by the door
   facades.push([49, 69, CLOUD + 18, 131, 'monkDorm']);
   for (const [x, k, v] of [[52, 'cot', 0], [57, 'cot', 1], [64, 'lootHeap', 0], [81, 'incenseStand', 0]]) ent('deco', x, 131, { kind: k, v });
@@ -2164,6 +2193,9 @@ function theMonastery() {
   ent('gobpriest', 57, 79, { face: -1 }); ent('gobpriest', 41, 79, { face: 1 });
   ent('sign', 16, 79, { text: 'THE BELLOWS THROW YOU HIGH. KEEP GOING AT THE TOP.' });
   brazier(14, 80, 11, { lift: 230, period: 4.6, on: 2.4, phase: 0 }); plat(16, 69, 5);
+  // COMBINE INCENSE AND LOOSE MASONRY (design audit, plan 2): a lip cut into the shaft right over the first plume's
+  // landing, dressed loose - the fire under it shivers it same as the crawl's own stone does (stal(17,68), below)
+  block(16, 18, 67, 67);
   brazier(19, 69, 7, { lift: 230, period: 4.6, on: 2.4, phase: 1.5 });
   plat(23, 62, 5); brazier(25, 62, 6, { lift: 230, period: 4.6, on: 2.4, phase: 3.0 });
   band(56, 23, 5);
@@ -2173,6 +2205,10 @@ function theMonastery() {
   // THE SCAFFOLD the monks left up the east face, with a shrine at the top of it
   for (const [x, y] of [[44, 78], [49, 76], [54, 74], [59, 72], [64, 70], [69, 68], [74, 66], [78, 64]]) plat(x, y, 4);
   coins([45, 77], [55, 73], [65, 69], [75, 65], [79, 63]); ent('silver', 81, 63); ent('deco', 80, 63, { kind: 'shrine', v: 0 });
+  // FAILING STONE, IN THE UPPER RUINS (Daniel's backlog): the scaffold is old timber, and one board of it goes - weight
+  // starts its count, it drops, and it is whole again four seconds after (src/tower-collapse.js, the Falling Tower's own rule)
+  ent('sign', 62, 72, { text: 'OLD TIMBER. STAND ON IT AND IT COUNTS DOWN, THEN IT GOES - BACK A FEW SECONDS LATER.' });
+  crumbles.push({ x0: 59, x1: 62, row: 72, rows: 1, count: 3 });
   flags.push([2, 60, 22, 57], [30, 66, 76, 60], [8, 86, 36, 84], [50, 44, 90, 40], [4, 42, 30, 46]);
 
   // ---- 6b. THE TEMPLE HALL: the guardian the monks set over their relics, still standing its watch ----
@@ -2222,6 +2258,13 @@ function theMonastery() {
   for (let y = 32; y <= 34; y++) { for (let x = 70; x <= 93; x++) set(x, y, T.AIR); for (let x = 3; x <= 16; x++) set(x, y, T.AIR); }
   coins([74, 35], [78, 35], [86, 35], [90, 35]); ent('deco', 82, 35, { kind: 'bones', v: 1 });
   ent('deco', 6, 35, { kind: 'prayerFlags', v: 1 }); coins([4, 35], [9, 35], [15, 35]);
+  // A THIRD WHEEL, IN THE CRAWL'S RIGHT HOLLOW (design audit, plan 3 + the exam, plan 4): between two priests' flocks,
+  // a small brazier to carry you up past it - so the last stretch before the belfry door is an EXAM (game-wide pattern
+  // 1): incense, a wheel, a priest and (garrison's own) a harpy all in the same 80 route tiles, a foe right by the hop
+  ent('gobpriest', 71, 35, { face: 1 }); ent('troll', 73, 35, { face: 1 });
+  brazier(74, 35, 2, { lift: 150, period: 4.0, on: 2.0, phase: 0 });
+  wheel(35, 77, 34, 1, 'b');
+  ent('sign', 45, 35, { text: 'A THIRD WHEEL. FLIP IT WITH ONE OF THEM ON ITS STAIR, AND IT GOES OUT FROM UNDER HIM.' });
 
   // ---- MORE GOING ON. Every floor used to be a stair up one side and a walk to a wall on the other. ----
   // SIDE ROUTES: a goat path of boards up the side the main stair does not use, through a small trapdoor in
@@ -2239,7 +2282,7 @@ function theMonastery() {
   sideRoute(80, 56, 84, 88);       // the bellows' far side, up to the chimney's foot
   // LOOSE MASONRY: a stone in the vault over a step you have to stand on shivers when you pass under, and drops.
   const stal = (x, y) => { if (L.grid[(y - 1) * W + x] === T.SOLID && L.grid[y * W + x] === T.AIR) ent('stal', x, y, { stone: true }); };
-  for (const [x, y] of [[51, 199], [91, 199], [9, 175], [24, 103], [44, 103], [88, 103], [41, 83], [84, 84], [77, 59], [39, 39], [10, 32], [80, 32]]) stal(x, y);
+  for (const [x, y] of [[51, 199], [91, 199], [9, 175], [24, 103], [44, 103], [88, 103], [41, 83], [84, 84], [77, 59], [39, 39], [10, 32], [80, 32], [17, 68]]) stal(x, y);
   // and more of the mountain's own: bats in the shade below the cloud, harpies and fledglings above it
   ent('bat', 60, 205); ent('bat', 24, 186); ent('harpy', 20, 142);
   ent('harpy', 40, 44); ent('fledgling', 62, 55, { face: -1 });
@@ -2280,14 +2323,16 @@ function theMonastery() {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'monastery', night: false, cloudLine: CLOUD, snowLine: 28,   /* "rpgchip07_the_shrine_of_mysteries" from 15 Melodic RPG Chiptunes by Aureolus_Omicron, CC0 - THE MONASTERY's own theme, benching sunspire (audio/CREDITS.txt) */
-    belfry: {roofGone:false}, monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors,
+    belfry: {roofGone:false}, monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors, crumbles,
     /* THE GROUND KIT BY PLACE: bees and herb beds belong in the garden, not on the belfry floor (GROUND_KITS.spire is the rest) */
     kits: [[1, 94, 196, 196, { density: 0.3, kinds: ['herbBed', 'skep'] }], [72, 94, 218, 218, { density: 0.25, kinds: ['bones'] }]],
     tall: { top: CLOUD * TS, bottom: 218 * TS, col: '64,70,84', deepest: 0.26 },
 
-    palette: { sky: [[146, 156, 172], [230, 216, 196]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'beam',
-      haze: 'rgba(222,208,190,0.14)', grass: '#7c8a56', grassL: '#9aa86c', grassD: '#5a6640',
-      dirt: '#6a625a', dirtL: '#827a70', dirtD: '#4a443e', canopy: ['#5a5650', '#6e6a62', '#86806e', '#a89c84'] },
+    // A SMALL WARMTH FIX (level review flagged the palette as washed-out): the stone and canopy tones nudged out of
+    // grey toward the sky's own warm stop, without changing the crag structure or any other level sharing 'crag'
+    palette: { sky: [[146, 156, 172], [232, 212, 182]], far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', ledges: 'beam',
+      haze: 'rgba(228,202,166,0.15)', grass: '#7c8a56', grassL: '#9aa86c', grassD: '#5a6640',
+      dirt: '#726255', dirtL: '#8f7d68', dirtD: '#4f4034', canopy: ['#5f584a', '#746b58', '#8f8265', '#b0a17a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'abbot', music: 'roc', tint: '#e8c88a', tintA: 0.10, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest. THE FALSE ABBOT has it now (2026-09-22): the Roc was a giant bird in a bell tower, and this level's own rule is that what the monks built answers a blow. Her code is untouched and she is placed nowhere - restorable, as the Harbor was. (The track is still hers: he has not got one of his own yet.) */
     mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS, music: 'monasterygolem' },   /* "Boss Battle #6 [8-bit]" V1 by nene, CC0, converted WAV -> OGG - the Monastery's Golem mini's own track (audio/CREDITS.txt) */
@@ -3842,8 +3887,12 @@ function galeMoor() {
   gust(o, o + 39, 4, 14, { period: 3.4, on: 2.5, alt: true, k: 1.4 });   /* ONE zone: two overlapped here and stacked (level review) */
   ent('sign', o + 4, 13, { text: 'THE FLAGS POINT THE WAY: OVER THE MILLS AND THE TUMBLE TO THE KITE POST.' });
   coins([o + 8, 12], [o + 14, 9], [o + 20, 12], [o + 26, 8], [o + 34, 10]); ent('check', o + 39, 13);
+  /* ambush-listed (claude/ambushaudit, 2026-09-28): troll's {elite:true} here was vestigial - AMBUSH_CAPTAINS.moor='goat' always wins
+     captaincy over a tuple's own elite flag, and singleAmbush()'s "rest" filter excludes any elite-flagged foe too, so troll could NEVER
+     spawn either way (same trap as the King's Road's shield above). Freed of the flag and reordered into a rest slot so it actually
+     appears; the duplicate goat and rockgoblin are cut (say so) to stay inside the four-foe rule. */
   ambushes.push({ name: 'THE CAIRN RIDGE', row: 13, wallL: o + 1, wallR: o + 37,
-    waves: [[['goat', o + 7], ['goat', o + 33], ['rockgoblin', o + 20], ['crow', o + 17, 7]], [['rockgoblin', o + 31], ['troll', o + 9, null, { elite: true }], ['goat', o + 25]]] });
+    waves: [[['goat', o + 7], ['troll', o + 9], ['rockgoblin', o + 20], ['crow', o + 17, 7]]] });
 
   /* ==== THE TUMBLE (495-534): the last open moor, heather bales the wind rolls at you, and hornblowers on the */
   /* mounds who wind their horns at you as you come. (The mounds are steps, never walls.) ==== */
@@ -7399,7 +7448,9 @@ function theMagesFolly() {
     weather: [{ x0: 0, x1: 118 * TS, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 118 * TS, kind: 'wind' }, { x0: 118 * TS, x1: 501 * TS, kind: 'hall' }, { x0: 501 * TS, x1: 99999, kind: 'wind' }],
     mini: { x0: 238 * TS, x1: 262 * TS, floor: G * TS, y0: (G - 12) * TS, y1: (G + 1) * TS, trigger: 242 * TS, wallL: 237, gate: 262, boss: 'homunculus', name: 'THE HOMUNCULUS' },
-    ambushes: [{ name: 'THE READING ROOM', row: G - 1, wallL: 218, wallR: 234, check: false, waves: [[['broom', 222], ['broom', 231], ['armour', 226]], [['armour', 221], ['imp', 230, G - 6], ['broom', 226], ['broom', 232]]] }],
+    /* ambush-listed: imp was listed but never spawned (budget spent on a duplicate armour+broom). Restored - only 3 distinct foe types
+       were ever listed here, so nothing is cut, just the duplicate copies trimmed. */
+    ambushes: [{ name: 'THE READING ROOM', row: G - 1, wallL: 218, wallR: 234, check: false, waves: [[['armour', 221], ['broom', 222], ['imp', 230, G - 6], ['broom', 231]]] }],
     noCoin: [[118, 262, 0, 13], [263, 380, 0, 21], [102, 108, 0, 23], [381, 500, 0, 5]],   /* the tower's roofs and the gatehouse top: the sprinkler treats an assisted level as all reachable */
     calm: [[0, 18, 0, 47], [20, 32, 0, 47], [66, 77, 30, 38], [96, 124, 0, 47], [144, 158, 0, 47], [176, 214, 26, 47], [233, 264, 0, 47], [290, 318, 22, 47], [318, 346, 0, 47], [362, 372, 0, 47], [386, 436, 30, 47], [436, 502, 0, 47], [501, 590, 0, 47], [591, 656, 0, 47]],   /* no garrison on the lanes, the flipped floor or the test room, nor on the three floors thinned by hand (the stacks' crossing, the bench, the gilded armour's) */
     arena: { x0: 657 * TS, x1: 700 * TS, floor: F * TS, y0: 0, trigger: 662 * TS, wallL: 656, wallR: 700, boss: 'archmage', music: 'boss4', tint: '#2a1a40', tintA: 0.04, fx: 'motes' },
@@ -7608,7 +7659,10 @@ const GARRISON = {
   spore: [['sporeling', 4], ['spitcap', 3], ['weaver', 2], ['thorn', 2], ['spider', 1]],   // eight kinds was the thinnest roster in the wood
   moor: [['goat', 4], ['rockgoblin', 3], ['harpy', 3], ['kite', 3], ['troll', 1], ['sailer', 2]],   /* twenty-three over NINE HUNDRED AND NINETY-SIX columns; sixteen over seven hundred and three, after the cut (docs/briefs/gale-moor-rework.md): the same density */
   scree: [['harpy', 4], ['goat', 4], ['rockgoblin', 3], ['troll', 1]],
-  hanging: [['snuffer', 3], ['cutter', 2], ['rockgoblin', 2]],   // thirty-four creatures over eight floors: the thinnest level in the crags       // 58 sat twenty-two under Kingswood
+  hanging: [['snuffer', 3], ['rockgoblin', 4]],   /* 'cutter' dropped (2026-09-28, coordinator follow-up on claude/hanging2): the sprinkler cannot
+     put a cutter anywhere near a rope, so every one it placed was the exact GAP the design audit named - a foe with nothing to cut. The
+     hand-placed cutter in THE CLIFF HALL ambush keeps its own bridge instead (see AMBUSH.hanging below). thirty-four creatures over eight
+     floors: the thinnest level in the crags       // 58 sat twenty-two under Kingswood */
   /* EIGHT KINDS, NOT ELEVEN (2026-09-22). The crow, the goat, the kite, the spider and the snuffer each landed once or
      twice over six hundred columns - a cast nobody can learn, so no encounter on the mountain had a shape. What is left
      is the mountain's own (the birds, the bats, the rock) and the goblins who took the monastery, who are the False
@@ -7886,31 +7940,62 @@ const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul
 const AMBUSH = {
   wood: [{ name: 'THE BRAMBLE RIDE', row: 11, wallL: 314, wallR: 351, check: [304, 11],   /* (every column here is 104 past what it was: the FOUR lessons grew the wood ahead of the giant. It said 78 and stood
      26 short for a day after the perfect-guard lesson went in - its walls shut round the bramble bed itself and put a thorn goblin in the thorns) */
-    waves: [[['sprig', 320], ['sprig', 347], ['thorn', 334], ['badger', 326]], [['shield', 342], ['spit', 348], ['thorn', 320], ['crow', 332, 6]]] }],
+    /* ambush-listed (claude/ambushaudit, 2026-09-28): the wave table listed 8 foes across two waves but singleAmbush() only ever spawns 1 elite + 3 -
+       badger was silently dropped every time. Trimmed to what the room's own budget can actually hold: shield leads, badger restored for variety,
+       spit/crow/the duplicate sprig+thorn cut (say so, not silently) since they never fit the four-foe rule. */
+    waves: [[['shield', 342], ['sprig', 320], ['thorn', 334], ['badger', 326]]] }],
   marsh: [{ name: 'THE REED ISLAND', row: 17, wallL: 371, wallR: 389, check: false,
-    waves: [[['hopper', 386], ['turtle', 380]], [['thorn', 384], ['archer', 387], ['heronfoe', 381], ['spit', 373]]] }],
+    /* ambush-listed: 6 distinct foes listed, only 4 fit the 1-elite+3 rule; thorn/hopper/turtle/archer is already the most-varied set the
+       budget allows - heronfoe and spit are cut here (not silently) rather than left in the table to vanish on their own. */
+    waves: [[['thorn', 384], ['hopper', 386], ['turtle', 380], ['archer', 387]]] }],
   stockade: [{ name: 'THE KENNEL YARD', row: 19, wallL: 170, wallR: 209, check: [167, 16],
-    waves: [[['sprig', 176], ['sprig', 203], ['hound', 196], ['hound', 182]], [['shield', 195], ['archer', 201, null, { elite: true }], ['sapper', 184]]] }],
+    /* ambush-listed: shield was listed but never spawned (budget already spent on a duplicate sprig+hound). Restored per the "shield covering
+       an archer" pattern (Daniel, fewer-better-foes); the duplicate sprig/hound and sapper are cut (say so) to stay inside the four-foe rule. */
+    waves: [[['archer', 201, null, { elite: true }], ['sprig', 176], ['hound', 196], ['shield', 195]]] }],
   spore: [{ name: 'THE UNDERCAP', row: 19, wallL: 135, wallR: 170, check: [132, 19],
+    /* left to claude/sporewood2 (in flight): spitcap/weaver are silently dropped here too, same ambush-listed offense, but this level is
+       being merged from its own branch - not touched here. */
     waves: [[['sporeling', 142], ['sporeling', 163], ['lurker', 152]], [['shield', 160], ['spitcap', 166], ['weaver', 146], ['sporeling', 140]]] }],
   kings: [{ name: "THE KING'S ROAD", row: 13, wallL: 277, wallR: 308, check: [274, 12],
-    waves: [[['thief', 282], ['thief', 303], ['sprig', 292], ['hound', 286]], [['shield', 296, null, { elite: true }], ['archer', 305], ['hound', 286]]] }],
+    /* ambush-listed: shield's {elite:true} here was vestigial - AMBUSH_CAPTAINS.kings='archer' always wins captaincy over a tuple's own elite
+       flag, and singleAmbush()'s "rest" filter excludes any elite-flagged foe too, so shield could NEVER spawn either way (same trap as the
+       Cairn Ridge's troll below). Freed of the flag and reordered into a rest slot so it actually appears, alongside an archer per the
+       "shield covering an archer" pattern; the duplicate thief/hound and sprig are cut (say so) to stay inside the four-foe rule. */
+    waves: [[['archer', 305], ['shield', 296], ['thief', 282], ['hound', 286]]] }],
   scree: [{ name: 'THE GOAT TRACK', row: 13, wallL: 173, wallR: 202, check: [168, 13],
-    waves: [[['goat', 178], ['goat', 198], ['sprig', 191], ['harpy', 185, 8]], [['shield', 193], ['archer', 199], ['troll', 180], ['rockgoblin', 186]]] }],
+    /* ambush-listed: 7 distinct foes listed for a 4-foe room; troll/goat/sprig/harpy was already the built room's own pick (AMBUSH_CAPTAINS.scree
+       ='troll'), kept as-is; shield/archer/rockgoblin/the duplicate goat are cut here (say so) rather than left to vanish silently. */
+    waves: [[['troll', 180], ['goat', 178], ['sprig', 191], ['harpy', 185, 8]]] }],
   hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
-    waves: [[['sprig', 48], ['sprig', 65], ['snuffer', 58]], [['brute', 57, null, { elite: true }], ['archer', 66], ['cutter', 49]]] }],
+    /* THE CUTTER HAS A ROPE NOW (2026-09-28, coordinator follow-up on claude/hanging2): 'bridge: 50' names the room's own L.bridges span
+       (50-56, row 66, in hangingVillage() below), the same rule at work mid-fight, not just on the road or in the boss.
+       ORDER MATTERS HERE: singleAmbush() (src/ambush.js) flattens every wave into one, keeps the elite as the room's captain, and takes
+       only the FIRST three of what is left, in the order they appear. The old order (two sprigs and a snuffer, THEN the brute, archer and
+       cutter) meant the cutter - and the archer beside it - never actually spawned: the room's real, live roster has always been the
+       brute plus the first three names, and the cutter used to come fourth. It is moved up here so it is one of the three that survive;
+       the second sprig gives up its place instead (still 4 bodies total, same as before: one elite, three minions). */
+    waves: [[['sprig', 48], ['snuffer', 58]], [['brute', 57, null, { elite: true }], ['cutter', 49, null, { bridge: 50 }], ['archer', 66], ['sprig', 65]]] }],
   spire: [{ name: 'THE CLOISTER', row: 99, wallL: 40, wallR: 74, check: false,
+    /* left to claude/monastery3 (in flight): bat/harpy are silently dropped here too, same ambush-listed offense, not touched here. */
     waves: [[['fledgling', 46], ['fledgling', 66], ['rockgoblin', 56], ['bat', 52, 94]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 93], ['fledgling', 68]]] }],
   /* moor: THE CAIRN RIDGE is built in galeMoor() in its final columns (docs/briefs/gale-moor-rework.md) */
   storm: [{ name: 'THE MARKET SQUARE', row: 31, wallL: 98, wallR: 138, check: false,   /* the square among the stalls (facades.push([98,138,...]) in src/stormhold-town.js); this rework's real bounds, replacing the pre-merge placeholder */
-    waves: [[['sprig', 104], ['sprig', 134], ['hearthgob', 118], ['cutter', 110]], [['shield', 130], ['archer', 122], ['pike', 114, null, { elite: true }]]] }],
+    /* ambush-listed: cutter was listed but never spawned (budget spent on a duplicate sprig). Restored; the duplicate sprig and shield/archer
+       are cut (say so) to stay inside the four-foe rule. */
+    waves: [[['pike', 114, null, { elite: true }], ['sprig', 104], ['hearthgob', 118], ['cutter', 110]]] }],
   longwater: [{ name: 'THE SLUICE BRIDGE', row: 26, wallL: 381, wallR: 427, check: false,   /* +88: the Linn and the Bore Reach grew in upstream (2026-09-25) */
-    waves: [[['scout', 385], ['scout', 424], ['crab', 404, 25], ['crab', 412, 25]], [['tideguard', 418, 25], ['scout', 424], ['netter', 386], ['heronfoe', 404, 25]]] }],
+    /* ambush-listed: netter was listed but never spawned (budget spent on a duplicate scout+crab). Restored; the duplicate scout/crab and
+       heronfoe are cut (say so) - heronfoe is the one type the four-foe rule still can't fit (5 distinct types listed). */
+    waves: [[['tideguard', 418, 25], ['scout', 385], ['crab', 404, 25], ['netter', 386]]] }],
   flotilla: [{ name: 'THE WAIST', row: 23, wallL: 62, wallR: 92, check: [57, 23],
-    waves: [[['cutlass', 66], ['cutlass', 88], ['scout', 76], ['crab', 83]], [['boarder', 84], ['marine', 90], ['bosun', 68], ['cutlass', 75]]] }],
+    /* ambush-listed: crab was listed but never spawned (budget spent on a duplicate cutlass). Restored; the duplicate cutlass and marine/bosun
+       are cut (say so) to stay inside the four-foe rule. */
+    waves: [[['boarder', 84], ['cutlass', 66], ['scout', 76], ['crab', 83]]] }],
   /* THE DROWNED CHAPEL: the doors are the gates (the door columns under the two walls), its floor is over the high water */
   causeway: [{ name: 'THE DROWNED CHAPEL', row: 19, wallL: 265, wallR: 297, check: false,
-    waves: [[['sailor', 270], ['sailor', 292], ['crab', 281], ['netter', 276]], [['tideguard', 288], ['scout', 293], ['sailor', 272], ['crab', 284]]] }],
+    /* ambush-listed: netter was listed but never spawned (budget spent on a duplicate sailor+crab). Restored; the duplicate sailor/crab and
+       scout are cut (say so) to stay inside the four-foe rule. */
+    waves: [[['tideguard', 288], ['sailor', 270], ['crab', 281], ['netter', 276]]] }],
   /* ONE ROOM A LEVEL. Three levels had two, and the second was the same lesson again a few minutes on. Kept: THE WEATHER DECK
      (the Hurricane's middle, out in the level's own storm with the rail and the sea to throw them over; THE ORLOP was a flat hold
      at the start, twenty tiles past the Boarding Master's gate - back to back with a fight). THE LAMP ISLAND (a quay under a
@@ -7918,9 +8003,14 @@ const AMBUSH = {
      MARKET HALL (a hall with a gallery over it; THE HORSE FAIR sent a mounted lancer in a hundred tiles before the level's own
      mini, THE LANCER). The cut rooms are ground again: the creatures the level placed in them stand where they were put. */
   hurricane: [{ name: 'THE WEATHER DECK', row: 18, wallL: 389, wallR: 427, check: false,
-    waves: [[['sailor', 394], ['cutlass', 422], ['scout', 408]], [['boarder', 414], ['marine', 422], ['bosun', 396], ['lookout', 404]]] }],
+    /* ambush-listed: 7 distinct foes listed (no duplicates to trade) for a 4-foe room; cutlass/sailor/scout/boarder is already the built
+       room's own pick and the most this budget can hold - marine/bosun/lookout are cut here (say so) rather than left to vanish silently. */
+    waves: [[['cutlass', 422], ['sailor', 394], ['scout', 408], ['boarder', 414]]] }],
   lamplit: [{ name: 'THE LAMP ISLAND', row: 21, wallL: 481, wallR: 519, check: false,
-    waves: [[['scout', 486], ['scout', 514], ['wight', 500], ['crab', 492]], [['tideguard', 506], ['scout', 514], ['watch', 488], ['snuffer', 498]]] }],
+    /* ambush-listed: crab was listed but never spawned (budget spent on a duplicate scout). Restored; the duplicate scout, tideguard and
+       snuffer are cut (say so) to stay inside the four-foe rule. (wight here is renamed to lanternshade/bonecorsair at runtime by
+       hauntedCoast() in src/haunted-coast.js - that substitution is intentional, not a drop.) */
+    waves: [[['watch', 488], ['scout', 486], ['wight', 500], ['crab', 492]]] }],
   /* THE FALLING TOWER (docs/briefs/falling-tower-rework.md §4): THE ORRERY PIT, under the observers' gallery. Its door is the gallery's
      failing floor - you come DOWN into it - and the room is walled by the shaft's wall (col 24) and the gate at col 55 before the rope out.
      Its roof is the gallery, eight rows up, so the gates reach it and the room holds. The door checkpoint is on the gallery (check: false):
@@ -7929,7 +8019,9 @@ const AMBUSH = {
   fallingtower: [{ name: 'THE ORRERY PIT', row: 227, wallL: 24, wallR: 55, y0: 220, trigger: 27, check: false,
     waves: [[['apprentice', 44, 227, { elite: true }], ['armour', 34], ['tome', 38, 224], ['broom', 50, 225]]] }],
   waymeet: [{ name: 'THE MARKET HALL', row: 35, wallL: 95, wallR: 123, check: [91, 35],
-    waves: [[['swornsword', 100], ['runner', 118], ['swornsword', 110], ['hedgeknight', 114]], [['swornsword', 112], ['crossbow', 119], ['swornsword', 100], ['hedgeknight', 106]]] }],
+    /* ambush-listed: crossbow was listed but never spawned (budget spent on duplicate swornsword/hedgeknight copies). Restored - only 4
+       distinct foe types were ever listed here, so nothing is cut, just the duplicate copies trimmed. */
+    waves: [[['hedgeknight', 106], ['swornsword', 100], ['runner', 118], ['crossbow', 119]]] }],
   /* THE BANQUET HALL (docs/briefs/highcrown-bells.md): her captain at the high table and his guard sat down to eat, and both doors
      drop behind you. A hall sixteen rows high with two chandeliers on long chains over the floor: the room's own machinery, cut
      down on whoever is under it. Led by THE GOBLIN CAPTAIN (a brute, the kitchen's kind): the storm's room is a pike's and the Long
@@ -7974,8 +8066,8 @@ const ELITES = {
   harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
   keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
   burial: [['corpse', 94, 21, { face: -1, risen: true }], ['husk', 129, 21, { face: -1 }], ['husk', 404, 21, { face: -1 }]],   /* (claude/burial2: a barrow soldier past the Candle Path's second pit, a husk under the Ossuary's shelves, and the husk on THE ROTTEN BRIDGES' pier) */   /* (the third husk holds THE ROTTEN BRIDGES' pier since 2026-09-24: 950 is a board now) (the wight left the Falling Gallery's road, walled up in batch 4b, for the Grave Causeway before its green water) */
-  oreroad: [['heavy', 455, 12, { face: -1, gate: 472 }]],   /* THE ORE ROAD: the drum yard's foreman holds the last gate onto the drum house's deck (the rework of 2026-09-25 moved the whole level east, so his column moved with it) */
-  witchlight: [['husk', 110, 76, { face: -1 }], ['armour', 286, 34, { face: -1 }]],   /* the redesign: the second pier's captain calls up the gorge's dead; the warden armour on the tall hedge guards its silver */
+  oreroad: [['heavy', 458, 12, { face: -1, gate: 472 }]],   /* THE ORE ROAD: the drum yard's foreman holds the last gate onto the drum house's deck. 458, not 455 (lane claude/oreroad2, THE ORE SHAFT rework): the checkpoint at 454 needs two tiles' clearance from him (elites, "never at a landing") */
+  witchlight: [['husk', 110, 76, { face: -1 }], ['armour', 300, 34, { face: -1 }]],   /* the redesign: the second pier's captain calls up the gorge's dead; the warden armour on the tall hedge guards its silver (at 300 since the garden grew, claude/hedgewarden2) */
   fallingtower: [['husk', 52, 146, { face: -1 }]],   /* the cistern's husk over the poison: it sits ON the cistern's own first-tier husk, so it is UPGRADED, not added - one husk in the tower, and it is this one. Since the rework of 2026-09-25 (docs/briefs/falling-tower-rework.md) the tower's other two elites are gone into its named fights: the orrery's armour CAPTAINS THE ORRERY PIT (AMBUSH, below) and the bell loft's warden became THE SEXTON, its mini - an elite beside either would be back to back with it (rule Q). */
   wood: [['shield', 147, 21, { gate: 157 }]],
   marsh: [['thorn', 65, 15, { gate: 72 }]],

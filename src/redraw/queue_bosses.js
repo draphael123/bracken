@@ -111,7 +111,7 @@ export function bakeHedgeWarden() {
     line(g, hx + ux * 5 - uy * 4, hy + uy * 5 + ux * 4, hx + ux * 5 + uy * 4, hy + uy * 5 - ux * 4, HW.trunkL);
     fillPoly(g, [[hx + ux * 6 - uy * 2.5, hy + uy * 6 + ux * 2.5], [tx - uy * 1.5, ty + ux * 1.5], [tx + ux * 4, ty + uy * 4], [tx + uy * 1.5, ty - ux * 1.5], [hx + ux * 6 + uy * 2.5, hy + uy * 6 - ux * 2.5]], HW.g);
     line(g, hx + ux * 6, hy + uy * 6, tx + ux * 3, ty + uy * 3, HW.G); };
-  const F = frames(W, H, 10, (g, f) => {
+  const F = frames(W, H, 13, (g, f) => {
     if (f === 7) { const floor = H - 2; fillPoly(g, [[cx - 12, floor], [cx - 8, floor - 3], [cx + 8, floor - 3], [cx + 12, floor]], HW.soil);   // STUMP: cut to the root
       rect(g, cx - 5, floor - 11, 10, 9, HW.trunk); rect(g, cx - 5, floor - 11, 10, 2, HW.trunkL); for (let k = 0; k < 3; k++) { rect(g, cx - 3 + k * 3, floor - 10, 1, 1, HW.trunkD); }
       for (const [dx, dy] of [[-9, -2], [8, -1], [-6, -4], [11, -3]]) line(g, cx + dx * 0.5, floor - 3, cx + dx, floor + dy + 2, HW.trunkD);   // roots
@@ -125,6 +125,13 @@ export function bakeHedgeWarden() {
     else if (f === 5 || f === 6) { sword(g, sh[0], sh[1], cx + 22, hip - 24);                  // THORN TELL / THORNS: bristling
       const n = f === 5 ? 10 : 14, r = f === 5 ? 15 : 22; for (let k = 0; k < n; k++) { const a = -Math.PI * 0.95 + k * Math.PI * 0.95 / (n - 1), x0 = cx + Math.cos(a) * 11, y0 = hip - 10 + Math.sin(a) * 11;
         line(g, x0, y0, cx + Math.cos(a) * r, hip - 10 + Math.sin(a) * r, f === 5 ? HW.thorn : HW.trunkD); if (f === 6) px(g, cx + Math.cos(a) * r, hip - 10 + Math.sin(a) * r, HW.thorn); } }
+    else if (f === 10) { sword(g, sh[0], sh[1], cx - 22, hip - 30);                           // LASH TELL (claude/hedgewarden2): the arm drawn back,
+      for (let k = 0; k < 12; k++) { const a = -2.2 - k * 0.42, r = 5 + k * 0.9, x0 = cx - 24 + Math.cos(a) * r, y0 = hip - 32 + Math.sin(a) * r;   // a thorn vine coiling off the blade
+        px(g, x0, y0, k % 3 ? HW.g : HW.G); if (k % 2) px(g, x0 + 1, y0 - 1, HW.thorn); } }
+    else if (f === 11) { sword(g, sh[0] - 6, hip - 30, sh[0] - 4, floor - 18);                 // ROOTS TELL: lifted two-handed, point down over the lawn
+      for (let k = 0; k < 4; k++) line(g, cx + 4 + k * 4, floor - 1, cx + 7 + k * 4, floor - 2 - (k % 2), HW.trunkD); }
+    else if (f === 12) { sword(g, sh[0] - 6, hip - 6, sh[0] - 3, floor + 1);                  // ROOTS: the blade in the lawn to the guard, and the lawn heaving
+      for (const [dx, h] of [[-8, 3], [-4, 5], [10, 4], [14, 6], [18, 3]]) { line(g, cx + dx, floor, cx + dx + 1, floor - h, HW.trunkD); px(g, cx + dx + 1, floor - h - 1, HW.thorn); } }
     else sword(g, sh[0], sh[1], cx + 20, floor - 3);                                           // resting on the point
   });
   return pack(F, cx, H, 22, 40);
