@@ -1,4 +1,5 @@
 import { SLOPE } from './slopes.js';
+import { makeWall } from './breakable-walls.js';
 // ore-road.js — THE ORE ROAD (built 2026-09-23; REWORKED 2026-09-25 against docs/briefs/ore-road-rework.md).
 //
 // WHAT WAS WRONG, IN NUMBERS, AND WHY THE REWORK IS SHAPED THE WAY IT IS. The shipped level scored INDEX 59 against
@@ -187,7 +188,7 @@ export const liftStep = (was, ore, dt) => Math.max(0, Math.min(OR.BUCKET.lift, (
 export function buildOreRoad({ painter, T }) {
   const { W, H, YARD, TOWER, TOWER_X, PYLON_A, PYLON_B, TIPPLE, TIPPLE_ROW, FOOT, FOOT_ROW, WRECK, WRECK_BED, PILLAR, PILLAR_X, PILLAR_B, PILLAR_BX, WINCH } = OR, A = OR.ARENA;
   const L = painter(W, H), { set, block, plat, spikes, ent, coins } = L;
-  const ropes = [], encounters = [];
+  const ropes = [], encounters = [], walls = [];
   const rope = (x, y0, y1) => ropes.push([x, y0, y1]);
   const meet = (name, x0, x1, foes) => { encounters.push({ name, x0, x1, n: foes.length }); for (const [t, x, row, o] of foes) ent(t, x, row, Object.assign({ face: -1, enc: name }, o || {})); };
 
@@ -206,6 +207,11 @@ export function buildOreRoad({ painter, T }) {
   set(36, YARD, SLOPE.R1);   /* A RAMP TO A CART LINE (Daniel's follow-up, src/slopes.js): the feed rail's own hitching ramp, right where the
      rockgoblin's cart rail starts (WORKS' cart span checks columns 37-49 flat, so this sits one column clear of it, at the crusher's
      own east lip) - walked up and stepped off the top (the same LONE pattern src/dune-yard.js proves), not jumped */
+  /* ORE WALLS YOU MINE THROUGH (Daniel's playtest, 2026-09-28, item 1; src/breakable-walls.js), first of the level's own: a small
+     rock nub above the spoil peak's own walkable top (row YARD-2, columns 11-12) - a step off the ramp and to the right, never in
+     the way of the yard's own route along row YARD, an optional dig for the section's own ore (oreBias: copper) */
+  block(13, 13, YARD - 3, YARD - 2);
+  walls.push(makeWall(13, 13, YARD - 3, YARD - 2, 'ore', oreBias(13), ORES[oreBias(13)]));
   block(51, 67, YARD - 7, YARD - 7); block(52, 54, YARD - 6, YARD - 1);         // the loading house: its roof, and its west wall, with the road through under it
   plat(55, YARD - 3, 12);                                                       // its loft, where the loaders work
   rope(56, YARD - 4, YARD); rope(51, YARD - 8, YARD);                           // up to the loft, and on up through a hole in the roof to the tipping frame
@@ -280,6 +286,10 @@ export function buildOreRoad({ painter, T }) {
   meet('THE WRECK', 283, 322, [['sapper', 300, 30], ['rockgoblin', 314, 32], ['goat', 320, 32], ['sheargob', 292, 27], ['gaffer', 318, 27]]);
   ent('tippler', 307, 25, { face: -1 });                                        // on the highest piece of the fallen tower, tipping onto the deck below it
   meet('THE WRECK HEAD', 325, 339, [['heavy', 332, 30], ['miner', 337, 30], ['sprig', 328, 30]]);
+  /* a second ore wall (item 1): a nub above the wreck head's own walkable top (row 30), well clear of its three foes and the
+     silver/tippler further west - this section leans gem, so this one pops gem */
+  block(334, 334, 28, 29);
+  walls.push(makeWall(334, 334, 28, 29, 'ore', oreBias(334), ORES[oreBias(334)]));
   ent('silver', 304, 25);                                                       // SILVER TWO: up on the fallen tower's top piece, past the tippler on it
   coins([291, 27], [306, 25], [317, 27], [327, 30], [335, 30]);
 
@@ -319,6 +329,11 @@ export function buildOreRoad({ painter, T }) {
   ent('sign', 458, WINCH, { text: 'THE DRUM HOUSE. NOTHING STOPS THE DRUM BUT A BUCKET WITH SOMEONE IN IT.' });
   meet('THE WINCH CREW', 409, 420, [['miner', 410, WINCH], ['rockgoblin', 414, WINCH], ['sheargob', 419, WINCH - 4]]);   /* the sheargob is the one who leaps onto your bucket once you board */
   meet('THE DRUM YARD', 451, 475, [['heavy', 458, WINCH], ['gaffer', 462, WINCH], ['sheargob', 459, WINCH - 4], ['javelin', 466, WINCH], ['sapper', 452, WINCH]]);   /* the landing: what used to fight you on the shaft's own floor, moved off it. heavy at 458, not 455 - the checkpoint at 454 needs two tiles' clearance (elites) */
+  /* ORE WALLS YOU MINE THROUGH (item 1), the MAIN-ROUTE one: a floor-to-headroom plug at column 468, clear of the sorting
+     table's work (462-466) and of the checkpoint at 470 - the landing is genuinely blocked between THE DRUM YARD's fight
+     and the boss arena until it gives. Gold: this section leans toward the drum, like the rest of the landing's ore */
+  block(468, 468, WINCH - 5, WINCH);
+  walls.push(makeWall(468, 468, WINCH - 5, WINCH, 'ore', oreBias(468), ORES[oreBias(468)]));
   ent('tippler', 428, WINCH - 7, { face: -1 }); ent('tippler', 460, WINCH - 9, { face: -1 });   /* the first stands over THE ORE SHAFT itself now - the middle of the ride - its stream lands on the spill ledge */
   meet('THE SHAFT BATS', 421, 450, [['bat', 427, WINCH - 5], ['bat', 441, WINCH - 6]]);          // loose over the ride, under the roof
   coins([419, WINCH - 4], [432, WINCH - 1], [458, WINCH - 4], [464, WINCH - 1]);
@@ -420,7 +435,7 @@ export function buildOreRoad({ painter, T }) {
     dark: OR.DARK, edgeLit: true, night: true, glowNight: true, nightA: 0.1, ceil, veins, glints,
     darkZones: [{ x0: A.x0 * TS, x1: W * TS, y0: 0, y1: H * TS, dark: A.dark, name: 'THE DRUM HOUSE' }],   /* round four: his room, and only his room, lit (OR.ARENA.dark) */
     pits: OR.PITS.map(q => ({ ...q, turbines: [...Array(Math.floor((q.x1 - q.x0 - 4) / OR.TURBINE_EVERY) + 1).keys()].map(k => q.x0 + 4 + k * OR.TURBINE_EVERY).filter(x => x <= q.x1 - 1) })),
-    cable, encounters, places: OR.PLACES, oreRoad: true,
+    cable, encounters, places: OR.PLACES, oreRoad: true, walls,
     /* THE AMBUSH ROOM (Q), returned by the builder rather than written into level.js's table, so its columns live beside the
        geometry they are read off. THE SORTING FLOOR is the tower's middle deck: a trestle floor 27 tiles between its gates -
        wide enough to read a tell on, narrow enough that the fight does not scatter. Its captain is a GAFFER, this level's own
