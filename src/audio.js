@@ -433,8 +433,14 @@ function playFile(name) {
   chain(true);
   musicGain.gain.value = musicOn ? trackVol(name) : 0;
 }
+// THE SOUND TEST'S LOCK (Daniel's design, 2026-09-27): a song unlocks once it is actually heard in play - a level,
+// a boss arena or a menu track - never by browsing the Sound Test itself. main.js owns the save (PROG.heardMusic)
+// and hands this module one callback; every call to music.play() with a real name reports it here, heard or not,
+// and main.js decides whether that name was already known. Sound effects need no such hook: they are all open.
+let heardHook = null;
+export function setHeardHook(fn) { heardHook = fn; }
 export const music = {
-  play(name) { wantTrack = name; silenced = false; if (!ac) return;
+  play(name) { if (heardHook) heardHook(name); wantTrack = name; silenced = false; if (!ac) return;
     if (trackBuf[name]) { playFile(name); return; }
     // A TRACK WITH NO FILE IS PLAYED BY THE SYNTH - but the synth only runs while `currentTrack` is null,
     // and nothing was clearing it. So walking into UNDERLEAF left the PREVIOUS level's file playing and
@@ -1221,3 +1227,49 @@ Object.assign(SFX, {
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];
+// THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
+// that page was CC0, checked before the file was pulled - see the credited lanes' own reports). Three tracks have
+// no outside credit because nothing outside BRACKEN made them (store, underkeep, fallingtower, stormharbor, burial
+// all note they were synthesised for this game in CREDITS.txt); mineworks/underleaf/deep have no file at all, so no
+// line for them either - the Sound Test shows nothing under a track this map does not name.
+// Kept short on purpose: this line sits on ONE row under the list (tools/textfit.mjs 'soundtest'), so the title is
+// trimmed to what fits and the pack/parenthetical detail stays in audio/CREDITS.txt, the full record.
+export const MUSIC_CREDITS = {
+  theme: '"Stage 1" — Juhani Junkala', theme2: '"Stage 2" — Juhani Junkala',
+  theme3: '"Level 3" — Juhani Junkala', theme4: '"Level 1" — Juhani Junkala',
+  boss: '"Boss Fight" — Juhani Junkala', boss2: '"Level 2" — Juhani Junkala',
+  boss3: '"Battle Music" — pmiller', boss4: '"Great Boss" — Spring Spring',
+  select: '"Stage Select" — Juhani Junkala', ending: '"Ending" — Juhani Junkala',
+  snow: '"Snow Stage" — MintoDog', king: '"Great Boss" — Spring Spring', town: '"Exploring Town" — Spring Spring',
+  adventure: '"Adventure Begins" — Frenchyboy', cave: '"Cave Loop" — Wolfgang_',
+  stockade: '"12 Music Loops" — SubspaceAudio', sunspire: '"12 Music Loops" — SubspaceAudio',
+  stormhold: '"12 Music Loops" — SubspaceAudio', roc: '"12 Music Loops" — SubspaceAudio',
+  highcrown: '"12 Music Loops" — SubspaceAudio', queen: '"12 Music Loops" — SubspaceAudio',
+  longwater: '"Sailor Waltz" — skrjablin', reef: '"Nautilus" — poinl', flotilla: '"Pirate Game Tune" — Tozan',
+  hurricane: '"WoWChapter3" — yd', drowned: '"Enemy Ship" — yd', stormharbor: '"wowchapter1" — yd',
+  waymeet: '"Old Tower Inn" — RandomMind', marketday: '"Market Day" — RandomMind',
+  musForest: '"Stage Select" — MintoDog', musCastle: '"Stage Select" — MintoDog',
+  musMountain: '"Stage Select" — MintoDog', musUnder: '"Stage Select" — MintoDog',
+  musBeach: '"Stage Select" — MintoDog', musSailor: '"Sailor Waltz" — skrjablin',
+  musDungeon: '"Spooky Dungeon" — Memoraphile',
+  sleepers: '"Void Estate" — Zane Little', trench: '"Underwater Theme" — Spring',
+  barrows: '"Perilous Dungeon" — HydroGene', quarry: '"Cavern and Blade" — zesona', skysail: '"Village In Air" — Le Mandrill',
+  frogking: '"Minor Gyokaijuu" — Spring', sporemother: '"Nightmare Chiptune" — Centurion',
+  ramlord: '"Strong Boss" — HydroGene', owlreeve: '"Zelda Style Boss" — HydroGene',
+  herald: '"Boss Encounter" — ansimuz', reefmaw: '"Boss Battle #3" — nene',
+  closedhelm: '"Duel of Dungeons" — Umplix', quartermaster: '"Sailors Battle" — Doge',
+  houndmaster: '"Boss Fight 2" — ansimuz', masthead: '"Slay The Evil" — HydroGene', hilltroll: '"Boss Battle #6" — nene',
+  rimewright: '"Fields of Ice" — Jonathan So', captain: '"Stereotypical Boss" — Spring',
+  tollmaster: '"Infinite Darkness" — HydroGene', grandmother: '"Ghost Land" — HydroGene',
+  fields: '"Halloween Hullabaloo" — StarlightFrost', scarecrowking: '"Witch\'s Lair" — Juhani Junkala',
+  causeway: '"Solemn Tide" — madameberry', kraken: '"Castle Boss" — madameberry',
+  witchlight: '"Iremos Forest" — beardalaxy', oreroad: '"12 Music Loops" — SubspaceAudio',
+  unburied: '"Void Estate" — Zane Little', deathknight: '"Bald Mountain" — Mussorgsky',
+  ambience_forest: '"Forest Ambience" — TinyWorlds',
+  burning: '"Fire Level" — Spring Spring', pyroboss: '"Evil Boss Music" — Kosmo Cat', minicharge: '"Charge!" — Centurion_of_war',
+  monastery: '"Shrine of Mysteries" — Aureolus', northumberland: '"Northumberland" — trad., Spring',
+  windcaller: '"Hard Boss Battle" — MintoDog', hangingvillage: '"Dark Shrine Loop" — qubodup', sporewood: '"Mysterious Ambience" — cynicm',
+  duneworm: '"Negev Fight Loop" — Dizzy Crow', lance: '"Boss Battle #3" — nene',
+  caravan: '"Desert Theme" — Wolfgang_', monasterygolem: '"Boss Battle #6" — nene',
+  store: '"The Warm Counter" — BRACKEN',
+};
