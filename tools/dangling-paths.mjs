@@ -45,6 +45,7 @@ const MISSING = new Map([
   ['src/tower-return.js', 'STALE CITATION - docs/audit-new-levels-0920.md:47 names a module that is in no commit. Correct the reference or say what replaced it; do not create the file to satisfy the check.'],
   ['docs/audit/ranking-2026-09-24.md', 'ON A BRANCH, SAID SO. docs/INTEGRATOR.md cites the ranking and says it is on claude/audit, which has not merged. Delete this line when it does.'],
   ['docs/level-design/', 'ON A BRANCH, SAID SO. The whole directory (and its wood-to-highcrown-design.md, the design audit) lives on origin/claude/designaudit, which has not merged; claude/hanging2 was briefed to read it there (`git show origin/claude/designaudit:docs/level-design/wood-to-highcrown-design.md`). Delete this line once that branch merges.'],
+  ['docs/look-and-feel/', 'ON A BRANCH, SAID SO. The whole directory (and its wood-to-highcrown.md, the 2026-09-26 look-and-feel review) lives on origin/claude/lookfeel, which has not merged; claude/visualaudit was briefed to read it there (`git show origin/claude/lookfeel:docs/look-and-feel/wood-to-highcrown.md`). Delete this line once that branch merges.'],
 ]);
 /* a citation is forgiven if it sits under one of the MISSING prefixes */
 const forgiven = p => [...MISSING.keys()].some(m => m.endsWith('/') ? p.startsWith(m) : p === m);
