@@ -1218,7 +1218,10 @@ function screePath() {
   ent('goat', 72, 17, { face: -1 }); ent('shield', 78, 17, { face: -1 }); ent('rockfall', 90, 4, { every: 2.4 }); ent('rockfall', 94, 4, { every: 3.1 });
   ent('deco', 84, 15, { kind: 'stone' }); ent('deco', 106, 13, { kind: 'stone' }); ent('deco', 112, 13, { kind: 'cairn' });
   ent('troll', 92, 15, { face: -1 }); ent('harpy', 110, 8);
-  plat(86, 12, 3); plat(91, 10, 3); plat(97, 12, 2); coins([87, 11], [92, 9], [98, 11]); // the crest ledges over the second terrace: a coin run above the rockfall
+  // TWIST loose rock (S1, docs/level-design/wood-to-highcrown-design.md #6 plan 2): two of the crest ledges are loose - the
+  // shelf snaps under a standing weight (main.js) - so camping one to trade blows with the thrower drops you a step.
+  for (const x of [86, 87, 88]) set(x, 12, T.SHELF); plat(91, 10, 3); ent('rockgoblin', 92, 9, { face: -1 });
+  for (const x of [97, 98]) set(x, 12, T.SHELF); coins([87, 11], [92, 9], [98, 11]); // the crest ledges over the second terrace: a coin run above the rockfall
   coins([66, 17], [76, 17], [86, 15], [98, 15], [104, 13], [116, 13]);
   ent('check', 118, 13);
 
@@ -1256,7 +1259,9 @@ function screePath() {
   block(285, 363, 9, 27);
   block(276, 284, 20, 27); // the foot of the wall: a step down from the bank, no pit
   for (let y = 10; y <= 19; y++) { set(283, y, T.CLIMB); set(284, y, T.CLIMB); } // the crag wall: hold into the rock to cling, jump to kick up it
-  ent('sign', 278, 19, { text: 'OCHRE ROCK WITH HANDHOLDS CLIMBS: HOLD INTO IT TO CLING, JUMP TO KICK UP.' });
+  // TEACH IN ORDER (S1): the climb-rock sign moved to the cairn field, where this rock is first MET; this second face of it
+  // needs no sign of its own, only the reminder of what stands beside it.
+  ent('sign', 278, 19, { text: 'THE CRAG WALL. THE SAME OCHRE ROCK AS BELOW.' });
   ent('rockfall', 281, 2, { every: 2.7 });
   coins([278, 16], [282, 15], [282, 12]);
   ent('sprig', 290, 8, { face: -1 }); ent('deco', 288, 8, { kind: 'stone' });
@@ -1269,11 +1274,16 @@ function screePath() {
   block(300, 311, 8, 8); ent('check', 308, 7);
 
   // ---- 6. THE FOLD: the Ram Lord's walled pasture on the plateau ----
+  // A11 (the audit's plan 4): widened from 16 tiles to about 30, so a wall crash is no longer guaranteed by the
+  // room's own size - the player CAUSES it by choosing which side to stand on when he lowers his head. A bank of
+  // loose scree is stacked against the west wall (313): his crash always shakes rock down (updateRam, main.js),
+  // and a ram baited into THIS wall buries himself deeper for it - a caused opening, not a waited one.
   ent('sign', 307, 7, { text: 'THE RAM LORD TURNS STEEL. CUT HIM WHEN A GREEN RING SHOWS: AFTER A WALL OR LEAP.' });
-  ent('deco', 313, 8, { kind: 'foldGate' }); ent('deco', 327, 8, { kind: 'foldGate' });
-  ent('deco', 313, 8, { kind: 'cairn' }); ent('deco', 327, 8, { kind: 'cairn' });
-  ent('deco', 320, 8, { kind: 'bothy' }); ent('deco', 315, 8, { kind: 'fence', v: 0 }); ent('deco', 324, 8, { kind: 'fence', v: 1 }); ent('deco', 318, 8, { kind: 'cart' }); // the fold: a shepherd's hut, hurdles, a cart. Walls to run him into and nothing to hide on
-  ent('ramlord', 322, 8);
+  ent('deco', 313, 8, { kind: 'foldGate' }); ent('deco', 341, 8, { kind: 'foldGate' });
+  ent('deco', 313, 8, { kind: 'cairn' }); ent('deco', 341, 8, { kind: 'cairn' });
+  for (const x of [314, 315, 316]) ent('deco', x, 8, { kind: 'stone', v: x % 3 }); // THE SCREE BANK: banked loose stone against the west wall
+  ent('deco', 327, 8, { kind: 'bothy' }); ent('deco', 320, 8, { kind: 'fence', v: 0 }); ent('deco', 335, 8, { kind: 'fence', v: 1 }); ent('deco', 331, 8, { kind: 'cart' }); // the fold: a shepherd's hut, hurdles, a cart. Walls to run him into and nothing to hide on
+  ent('ramlord', 327, 8);
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
@@ -1282,7 +1292,7 @@ function screePath() {
     stone, scree, slide: { x0: 184 * TS, x1: 252 * TS, speed: 118 },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: 312 * TS, x1: 328 * TS, floor: 9 * TS, trigger: 315 * TS, wallL: 311, wallR: 329, boss: 'ram', music: 'ramlord', tint: '#6a4a7a', tintA: 0.12, fx: 'dust' },
+    arena: { x0: 312 * TS, x1: 342 * TS, floor: 9 * TS, trigger: 315 * TS, wallL: 311, wallR: 343, boss: 'ram', music: 'ramlord', tint: '#6a4a7a', tintA: 0.12, fx: 'dust', bank: -1 },   /* bank: -1 - the loose scree is banked against the LOW (west, x0) wall (A11) */
   }
   // ---- 4b. THE ROPEWAY: the gorge proper. A swing, a rope lift, the old mill's sails, another swing; harpies on the wind, rocks off the cliff, a ladder out of the bottom. ----
   const GA = grow(L, ret, 256, 56);
@@ -1307,9 +1317,16 @@ function screePath() {
   // ---- 3b. THE CAIRN FIELD: standing stones, a gully that drags you back, a goat pen, harpies on the wind ----
   const G = grow(RA, RA, 176, 40);
   G.floor(176, 215, 14);
+  // TEACH IN ORDER (S1, the audit's plan 1): a short forward scree run first, no spikes under it - only the slide - before
+  // the gully asks you to fight the wind the other way.
+  G.R.scree.push({ x0: 178, x1: 183, y: 14, dir: 1 });
+  G.ent('sign', 178, 13, { text: 'SCREE HERE RUNS WITH YOU. THE GULLY AHEAD RUNS AGAINST YOU.' });
   for (let x = 190; x <= 197; x++) for (let y = 14; y <= 17; y++) G.set(x, y, 0); // the gully
   G.R.scree.push({ x0: 190, x1: 197, y: 18, dir: -1 }); G.plat(196, 16, 2); for (let y = 14; y <= 17; y++) G.set(198, y, T.CLIMB);
-  G.ent('sign', 178, 13, { text: 'THE GULLY WIND PULLS YOU BACK. WAIT FOR THE LULL, THEN JUMP.' });
+  // the climb-rock sign moves here (the audit's plan 1): this is where a hero MEETS the ochre rock first; the crag wall's
+  // climb, further on, used to be the only place it was ever explained.
+  G.ent('sign', 188, 13, { text: 'OCHRE ROCK WITH HANDHOLDS CLIMBS: HOLD INTO IT TO CLING, JUMP TO KICK UP.' });
+  G.ent('sign', 184, 13, { text: 'THE GULLY WIND PULLS YOU BACK. WAIT FOR THE LULL, THEN JUMP.' });
   G.ent('deco', 181, 13, { kind: 'stone', v: 0 }); G.ent('deco', 186, 13, { kind: 'cairn' }); G.ent('deco', 205, 13, { kind: 'stone', v: 2 }); G.ent('deco', 211, 13, { kind: 'cairn' });
   G.ent('rockfall', 193, 5, { every: 2.4 }); G.ent('harpy', 187, 8); G.ent('harpy', 212, 9);
   G.R.stone.push([200, 200, 13, 13], [208, 208, 13, 13]); G.block(200, 200, 13, 13); G.block(208, 208, 13, 13);
@@ -1346,6 +1363,14 @@ function screePath() {
   Q.coins([446, 5], [451, 4], [461, 3], [466, 4], [471, 5], [443, 8], [473, 8]);
   Q.ent('deco', 439, 8, { kind: 'stone' }); Q.ent('deco', 474, 8, { kind: 'stone', v: 1 });
   Q.ent('deco', 444, 8, { kind: 'cairn' }); Q.ent('silver', 456, 3);
+  // ---- THE QUARRY EXAM (S3, the audit's plan 3): the dead crystal floor lives with the level's own rule under pressure -
+  // a scree chute down the low road, a loose ledge over it, broken stone at its foot, a rockfall on a count, and a goat
+  // charging down it. Checkpoint 438 stands before it (above); the fold's stile at the gully's end stands outside it.
+  Q.R.scree.push({ x0: 452, x1: 458, y: 9, dir: 1 });
+  for (const x of [459, 460]) Q.set(x, 9, T.SPIKE);           // broken stone where the chute lets you off: two tiles, never more
+  for (const x of [454, 455]) Q.set(x, 7, T.SHELF);           // a loose ledge over the chute, between the low road and the high stagings
+  Q.ent('rockfall', 456, 4, { every: 2.6 });
+  Q.ent('goat', 449, 9, { face: 1 });                          // charges down the chute ahead of you
   /* (the Suncatcher lived here: he is gone from the scree, and his code is kept for a frost level) */
   return reworkScree(Q.done(), T);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js */
 ;
@@ -3911,6 +3936,9 @@ function galeMoor() {
   floor(o + 35, o + 43, 14);
   headwind(o + 5, o + 35, 6, 22, 1);
   ent('harpy', o + 20, 7);
+  // TWIST (S1, the audit's plan 2): a sail goblin on the last stone, the same headwind carrying her at you while you
+  // brace. Block her and she spills into the thorns below.
+  ent('sailer', o + 31, 14, { face: -1 });
   ent('flagpost', o + 2, 19); ent('flagpost', o + 39, 13);
   ent('sign', o + 1, 19, { text: 'ON A STONE, CROUCH OR HOLD C AND THE GUST CANNOT MOVE YOU. HOP IN THE STILL.' });
   ent('check', o + 42, 13);
@@ -3952,8 +3980,11 @@ function galeMoor() {
   plat(o + 12, 12, 2);
   for (const hx of [o + 18, o + 27, o + 36]) for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', mill: true, first: i === 0, towerH: 14 * TS, px: hx * TS + 8, py: 9 * TS, r: 42, phase: i * Math.PI / 2, period: 6, x: 0, y: 0, w: 40, h: 6 });   /* broad sails: riding a turning wheel is the whole test */
   floor(o + 43, o + 52, 14);
-  gust(o, o + 52, 2, 24, { period: 4.6, on: 2.8, alt: true, k: 0.35 });   /* it turns the sails; it barely touches you */
-  ent('sign', o + 1, 13, { text: 'THE MILL SAILS TURN WITH THE WIND: RIDE ONE UP. THE BANK LADDER LEAVES THE BOG.' });
+  gust(o, o + 52, 9, 24, { period: 4.6, on: 2.8, alt: true, k: 0.35 });   /* it turns the sails at ground level; it barely touches you down here */
+  // DEVELOP the mills (S, the audit's plan 1): the mill gust is told with a shove now, up over the tops of the sails - ride
+  // one up in the lull, and the same gust throws you off the top and on toward the next mill.
+  gust(o + 16, o + 40, 2, 8, { period: 5, on: 1.8, phase: 4, shove: 200 });
+  ent('sign', o + 1, 13, { text: 'THE MILL SAILS TURN WITH THE WIND: RIDE ONE UP. IT WILL THROW YOU ON TO THE NEXT.' });
   ent('check', o + 4, 13); ent('flagpost', o + 7, 13); ent('flagpost', o + 46, 13);
   coins([o + 13, 11], [o + 18, 6], [o + 27, 6], [o + 36, 6], [o + 22, 22], [o + 23, 22], [o + 32, 22], [o + 33, 22]);
 
@@ -3973,11 +4004,13 @@ function galeMoor() {
   /* mounds who wind their horns at you as you come. (The mounds are steps, never walls.) ==== */
   o = 495; section('tumble', 'THE TUMBLE', o, o + 39, [o + 20, 13]);
   floor(o, o + 39, 14);
-  block(o + 12, o + 15, 12, 13); block(o + 26, o + 30, 12, 13); block(o + 35, o + 37, 13, 13);
+  // COMBINE (S, the audit's plan 3): the mounds narrow to stones - two or three tiles, room to brace, no floor to walk
+  // braced across - so the Tumble's gust can become the same told shove headwind as the rest of the moor.
+  block(o + 12, o + 14, 12, 13); block(o + 26, o + 28, 12, 13); block(o + 35, o + 37, 13, 13);
   ent('horn', o + 13, 11, { face: -1 }); ent('horn', o + 27, 11, { face: -1 });
   for (const x of [o + 4, o + 20, o + 33]) ent('bale', x, 13, { x0: o, x1: o + 39 });
   ent('hare', o + 22, 13, { face: -1 });
-  gust(o, o + 39, 2, 14, { dir: -1, period: 5, on: 2.6, phase: 1, alt: true });
+  headwind(o, o + 39, 2, 13, 1);   /* THE FIRST ON-FOOT EXAM (the audit): brace on a mound through the gust, jump a bale in the still */
   ent('sign', o + 1, 13, { text: 'BALES ROLL WITH THE WIND: JUMP OR CUT THEM. HORNBLOWERS BLOW YOU BACK.' });
   ent('flagpost', o + 8, 13); ent('flagpost', o + 32, 13); ent('deco', o + 19, 13, { kind: 'cairn' });
   coins([o + 6, 11], [o + 13, 9], [o + 19, 11], [o + 27, 9], [o + 33, 11], [o + 38, 12]);
@@ -3985,6 +4018,9 @@ function galeMoor() {
   /* ==== 7. THE KITE POST (535-550): the edge of the moor, a wall of stone, and past it nothing but air. The shepherds' great kite is tethered here. ==== */
   o = 535; section('kite-post', 'THE KITE POST', o, o + 15, [o + 6, 13]);
   floor(o, o + 13, 14); block(o + 14, o + 15, 5, 29);
+  // EXAM (S, the audit's plan 4): a short kite-up practice before the post itself - the updraft is the same one taught at
+  // the stone circle and the kite field, so the Sky Road below examines a verb the moor already taught, not a new one.
+  ent('vent', o + 1, 13, { period: 3.6, on: 2.4, h: 90, wind: true }); plat(o + 6, 8, 2); coins([o + 6, 7]);
   ent('stormkite', o + 9, 13);
   ent('sign', o + 2, 13, { text: 'TAKE HOLD OF THE GREAT KITE: ARROWS STEER, ROLL DARTS. IT WILL NOT WAIT.' });
   ent('check', o + 5, 13); ent('flagpost', o + 12, 13);
@@ -4012,6 +4048,10 @@ function galeMoor() {
   for (const [x, ph] of [[o + 81, 0], [o + 85, 1.1], [o + 89, 2.2]]) ent('skybolt', x, 18, { top: 2, period: 3.2, phase: ph });
   tower(o + 82, o + 83, 12); tower(o + 86, o + 87, 11);   /* (and never over a bolt's own column) */
   ent('harpy', o + 86, 5); ent('kite', o + 80, 5); ent('kite', o + 90, 6); string(o + 84, 9, 3, 2); ribbon(o + 90, o + 95, 8, 2);
+  // EXAM (S, the audit's plan 4): one told headwind burst over the organ pipes, tighter and stronger than the road's own
+  // ambient wind - dive under their tops (row 9) to duck it, since flying high through it costs you ground you cannot get
+  // back. It is pushed before the ambient gust, so it is the one that answers for this stretch (windAt checks in order).
+  gust(o + 66, o + 80, 0, 9, { dir: -1, period: 3.6, on: 1.6, phase: 0, k: 1.2 });
   gust(o, o + 96, 0, 26, { dir: -1, period: 7, on: 1.8, phase: 2, k: 0.8 });
 
   /* ==== THE LANDING (647-654): an eight-tile shelf of the summit rock west of the Windcaller's wall. The storm cuts the kite's

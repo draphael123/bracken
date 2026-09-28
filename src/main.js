@@ -18206,7 +18206,16 @@ function updateRam(e, dt) {
         shakeCam(6); SFX.stone(); SFX.bellow(); dust(e.x - e.face * 14, e.y, 12);
         for (let q = 0; q < 10; q++) parts.push({ x: e.x - e.face * 16, y: e.y - 6 - Math.random() * 16, vx: -e.face * (60 + Math.random() * 140), vy: -40 - Math.random() * 80, life: 0.7, max: 0.7, col: Math.random() < 0.5 ? '#8a919c' : '#d8d0c0', size: 2, grav: 260 });
         number(e.x, e.y - e.h - 12, 'OFF THE WALL', '#ff9a5c'); break; }
-      if (e.x <= A.x0 + 16 || e.x >= A.x1 - 16 || e.modeT <= 0) { e.banks = 0; e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); e.vx = 0; e.mode = 'crash'; e.modeT = p2 ? 1.7 : 2.4; shakeCam(9); SFX.heavy(); SFX.stone(); SFX.sting(); zoomKick(1.12, 0.3); dust(e.x + e.face * 14, e.y, 14); number(e.x, e.y - e.h - 12, 'INTO THE WALL', '#8fd160'); const n = p2 ? 4 : 2; for (let i = 0; i < n; i++) rocks.push({ x: A.x0 + 24 + Math.random() * (A.x1 - A.x0 - 48), y: floor - 150, vy: 0, t: 0, dead: false }); sparks(e.x + e.face * 14, e.y - 10, e.face, 8); }
+      if (e.x <= A.x0 + 16 || e.x >= A.x1 - 16 || e.modeT <= 0) { e.banks = 0; const hitWall = e.x <= A.x0 + 16 ? -1 : e.x >= A.x1 - 16 ? 1 : 0; e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); e.vx = 0;
+        // A11: THE SCREE BANK is a CAUSED opening, not a waited one - baiting his charge into the banked wall (A.bank)
+        // buries him deeper than an ordinary wall hit: more rock, a longer daze, and the same double damage window (ramOpen).
+        const atBank = A.bank && hitWall === A.bank;
+        e.mode = 'crash'; e.modeT = (p2 ? 1.7 : 2.4) + (atBank ? 0.8 : 0);
+        shakeCam(atBank ? 13 : 9); SFX.heavy(); SFX.stone(); SFX.sting(); zoomKick(atBank ? 1.16 : 1.12, 0.3);
+        dust(e.x + e.face * 14, e.y, atBank ? 26 : 14);
+        number(e.x, e.y - e.h - 12, atBank ? 'INTO THE BANK: HE BURIES HIMSELF' : 'INTO THE WALL', atBank ? '#ffd36b' : '#8fd160');
+        const n = (p2 ? 4 : 2) + (atBank ? 3 : 0); for (let i = 0; i < n; i++) rocks.push({ x: A.x0 + 24 + Math.random() * (A.x1 - A.x0 - 48), y: floor - 150, vy: 0, t: 0, dead: false });
+        sparks(e.x + e.face * 14, e.y - 10, e.face, atBank ? 14 : 8); }
       break;
     case 'rear': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 3; e.chain = p2 ? 1 : 0; SFX.bellow(); dust(e.x - e.face * 12, e.y, 8); } break;
     case 'leapTell': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'leap'; e.modeT = 2; e.vy = -430; e.landX = Math.max(A.x0 + 20, Math.min(A.x1 - 20, P.x)); e.vx = (e.landX - e.x) / 0.86; e.airT = 0; SFX.leap(); dust(e.x, e.y, 10); } break;
