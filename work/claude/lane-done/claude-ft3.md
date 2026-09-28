@@ -108,3 +108,40 @@ The report commit follows.
 5. **Seen, not fixed (pre-existing):** in the desert past the second door, the level-end gate draws faint and see-through. I
    reproduced it with the desert at its old rows too. Worth a small lane?
    *Recommendation:* yes.
+
+## Follow-up (2026-09-27, same day)
+
+Daniel approved all three questions above. All conservative choices; nothing else was touched.
+
+1. **The Undead Archmage's own hall now zooms out too** (`src/boss-view.js`): `'undeadmage'` added to `ZOOM_BOSSES`. The
+   wake (`bossStart()`) and `desiredView()` both read that one list, so one word covers both, same as the round-3 fix did
+   for the other ten. Fixed the stale comment at the top of the file too, which named the Undead Archmage but meant the
+   Folly's Archmage (a mislabel from round 3, not from this lane). Checked the framing at the wider view with `ft2-shots.mjs`
+   (shots in `work/ft3/shots-followup/`): the whole hall, the moon, the tower's far parapet, the player and both rings are
+   all on screen together, at the bottom of his room and mid-fight alike. `zoom-coverage` is green at 25 bosses (was 24).
+2. **His bestiary entry now names the decoy**: "Of two rings, only one holds the desert." added after the line about his
+   rings working both ways. It fit with nothing shortened elsewhere - `textfit` ran clean (0 pictures, no OVERFLOW /
+   OFFSCREEN / CLIPPED / TRUNCATED across all 175 screens it draws).
+3. **The desert's level-end gate draws solid.** Root cause, found by monkey-patching `drawImage` and `globalAlpha` in a
+   live page to log the exact state at the gate's own draw call: `drawHealths()` (the floating heart pickups a health
+   crate drops) glows each heart with `bloom()` directly instead of the `fbloom()` wrapper that puts `globalAlpha` back to
+   1 afterward, and had no off-screen bounds check either. The Falling Tower's long ascent drops several hearts, and one
+   left uncollected anywhere in the level - on screen or not - left the whole buffer at alpha 0.3 for every plain
+   `drawImage` after it that trusts the default, the gate's own draw among them. That is why it reproduced at the
+   desert's old rows too: it was never about where the gate sat, only about whether a heart was still live somewhere.
+   Ruled out first: alpha baked into the sprite itself (checked every non-transparent pixel of `PROP.gate` - all opaque),
+   a fog or dark layer (none active on the sand: `L.fog` unset, `L.dark` unset, `L.nightA` zeroed on arrival), and the
+   tower's palette (the gate bakes off the shared default stone/grass colours, not a per-level override). Fixed by
+   switching `drawHealths()` to `fbloom()` and adding the same 40px screen-bounds check every other prop loop already
+   has. New check `gate-alpha` (Node, static - no browser) holds `drawHealths()` to both; it fails against the old body
+   and passes against the fix (checked by hand before adding it to `check.mjs`'s list).
+
+### Checks run
+`zoom-coverage`, `archmage-room`, `archmage-rings`, `tower-hall`, `textfit`, `tells`, `tower-flyers` (touched by nothing
+here but named in the brief), `gate-alpha` (new). All green. The full suite was not run.
+
+### Commits
+`ac1c3b4` zoom, `9124f80` bestiary line, `10c0c3c` gate alpha fix + new check. Pushed to `origin claude/ft3`.
+
+No design calls came up worth a question - all three were exactly what Daniel asked for, with nothing left to soften or
+reconsider.
