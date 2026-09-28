@@ -35,8 +35,9 @@ export const TOKENS = {
   heavyWait: 2.5,   // s the purse is saved for a heavy that was turned away, before it is given up on
   deny: 0.3,         // s a foe turned away holds its cooldown up before it may ask again
   ring: 58,          // px: the nearest waiting foe holds this far from the hero
-  ringStep: 22, 
-  heavyRing: 30,     // px: a heavy waiting for the whole purse holds this close, in front of the ring     // px: each further waiting foe on the same side holds this much further out
+  ringStep: 22,      // px: each further waiting foe on the same side holds this much further out
+  heavyRing: 30,     // px: the foe that is NEXT (a heavy waiting for the whole purse, or the one that has waited longest) holds this close
+  patience: 2.0,     // s on the ring before the longest-waiting foe is made next: a slow one (a brute) is not left out by the quick
   near: 150,         // px: a waiting foe closer than this is walked round the ring; further out it keeps its own AI
   far: 300,          // px: a holder this far from its hero gives the token back
   idleModes: new Set(['walk', 'idle', 'stalk', 'patrol', 'chase']),   // the plain modes a creature stands about in: never a recovery
@@ -70,7 +71,7 @@ export function claim(board, hero, e, force = false) {
   const cost = TOKENS.cost(e) || 1;
   if (!room(board, hero, e)) { if (!force) return false; board.stats.overflow++; }
   { const q = board.heavyQ && board.heavyQ.get(hero); if (q && q.e === e) board.heavyQ.delete(hero); }
-  heldBy(board, hero).add(e); e.tokHeld = hero; e.tokCost = cost; e.tokTail = TOKENS.tail; e.tokWait = false;
+  heldBy(board, hero).add(e); e.tokHeld = hero; e.tokWaitT = 0; e.tokCost = cost; e.tokTail = TOKENS.tail; e.tokWait = false;
   board.stats.grants++; if (board.on.grant) board.on.grant(e);
   return true;
 }
@@ -165,9 +166,16 @@ export function tokenPost(board, enemies, api, dt) {
     for (const side of [-1, 1]) {
       const mine = l.filter(e => (Math.sign(e.x - hero.x) || 1) === side).sort((a, b) => Math.abs(a.x - hero.x) - Math.abs(b.x - hero.x));
       /* the heavy the purse is being emptied for stands in close, looming, so its blow is ready the moment the others are done */
-      let k = 0; for (const e of mine) { e.tokRing = e.tokWantHeavy ? TOKENS.heavyRing : TOKENS.ring + (k++) * TOKENS.ringStep; TOKENS.waitMove(e, hero, api, dt); }
+      const next = board.heavyQ.get(hero);
+      let k = 0; for (const e of mine) { e.tokRing = e.tokWantHeavy || (next && next.e === e) ? TOKENS.heavyRing : TOKENS.ring + (k++) * TOKENS.ringStep; e.tokWaitT = (e.tokWaitT || 0) + dt; TOKENS.waitMove(e, hero, api, dt); }
     }
+    /* THE LONGEST WAIT IS NEXT (part 2). The ring holds a slow foe - the brute, whose reach is short - far out while the quick ones on
+       the other side take every token that comes free, so it could wait a whole fight. Once a foe has waited TOKENS.patience it is made
+       NEXT the same way a turned-away heavy is: nobody new starts until it has had its turn, and it stands in close to take it */
+    if (!board.heavyQ.has(hero)) { let best = null; for (const e of l) if ((e.tokWaitT || 0) >= TOKENS.patience && (!best || e.tokWaitT > best.tokWaitT)) best = e;
+      if (best) board.heavyQ.set(hero, { e: best, t: TOKENS.heavyWait }); }
   }
+  for (const [e] of order) if (!e.tokRing && !e.tokWait) e.tokWaitT = 0;
   board.frame++; board.order = [];
 }
 

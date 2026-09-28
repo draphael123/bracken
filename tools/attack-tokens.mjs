@@ -1,7 +1,7 @@
 // tools/attack-tokens.mjs — A CROWD TAKES TURNS, AND THE ONES WAITING ARE NOT STATUES (the combat pass, 2026-09-28; src/attack-tokens.js).
 //
 // In the page, headless: a level is loaded, everything in it is put away, and a crowd of six common foes is set down round a hero
-// who stands still in god mode for twenty seconds. Every frame counts the foes ATTACKING him - winding up (the predicate the
+// who stands still in god mode for forty seconds. Every frame counts the foes ATTACKING him - winding up (the predicate the
 // marks read) or inside the half second after a windup, which is the blow itself. It fails when:
 //   - more than TWO are attacking at once (the purse is two), or the crowd never attacks at all (a vacuous pass)
 //   - a WAITING foe near him stands still: over every second it spends waiting within 150 px, it must cover at least 4 px
@@ -20,6 +20,9 @@ try {
     await pg.reload();
     const r = await pg.evalp(`(async()=>{
       const { LEVELS } = await import('/src/level.js');
+      /* THE DICE PINNED (part 2): the crowd's choices - a brute's overhead or his sweep, a held swing - are dice, and a count of red blows
+         over forty seconds should not hang on luck (seeded here; the page still rolls a few of its own between frames) */
+      { let a = 20260928 >>> 0; Math.random = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
       BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(lvl)})); BK.start(); BK.god = true;
       const L = BK.L, W = L.W, at = (x, y) => L.grid[y * W + x];
       /* A FLAT FLOOR: sixteen columns of ground with three rows of air over them, the nearest to the start */
@@ -34,7 +37,7 @@ try {
         for (const f of BK.spawnFoe({ t, x: spot[0] + dx, y: spot[1], face: -side })) foes.push(f); });
       const IDLE = new Set(['walk', 'idle', 'stalk', 'patrol', 'chase']);   /* WAITING is standing about in its plain mode: a recovery (rest, reel) is the hero's opening, and the pike's guard turns a cut */
       const last = new Map(), path = new Map(), win = new Map(); let maxA = 0, frames = 0, attacks = 0, stills = [], waitSecs = 0, reds = 0, redWith = [], redEnd = new Map();
-      for (let f = 0; f < 1200; f++) {
+      for (let f = 0; f < 2400; f++) {   /* (forty seconds since part 2: a red !! waits for the whole purse, and twenty seconds held too few of them to count) */
         const x0 = new Map(foes.map(e => [e, e.x]));
         BK.P.hp = BK.P.maxHp || BK.P.hp; BK.sim(1); frames++;
         const now = f / 60; let a = 0;
@@ -60,13 +63,13 @@ const bad = [];
 for (const r of out) {
   console.log(JSON.stringify(r));
   if (r.err) { bad.push(r.lvl + ': ' + r.err); continue; }
-  if (r.alive < 6) bad.push(`${r.lvl}: only ${r.alive} of the crowd of six stood the twenty seconds`);
-  if (r.attacks < 6) bad.push(`${r.lvl}: the crowd attacked ${r.attacks} times in twenty seconds - nothing to measure`);
+  if (r.alive < 6) bad.push(`${r.lvl}: only ${r.alive} of the crowd of six stood the forty seconds`);
+  if (r.attacks < 12) bad.push(`${r.lvl}: the crowd attacked ${r.attacks} times in forty seconds - nothing to measure`);
   if (r.maxA > 2) bad.push(`${r.lvl}: ${r.maxA} foes attacking the hero at once (the purse is two)`);
-  if (r.waitSecs < 10) bad.push(`${r.lvl}: only ${r.waitSecs} foe-seconds of waiting near the hero - nothing to measure`);
+  if (r.waitSecs < 20) bad.push(`${r.lvl}: only ${r.waitSecs} foe-seconds of waiting near the hero - nothing to measure`);
   if (r.nRedWith) bad.push(`${r.lvl}: ${r.nRedWith} frames with another windup under a red !! (a heavy comes alone): ${r.redWith.join(', ')}`);
   if (r.nStill) bad.push(`${r.lvl}: ${r.nStill} of ${r.waitSecs} waiting foe-seconds stood still: ${r.stills.join(', ')}`);
 }
-{ const reds = out.reduce((n, r) => n + (r.reds || 0), 0); if (reds < 3) bad.push(`only ${reds} red !! blows over both crowds - nothing to measure (a heavy waits for the whole purse: it must still be thrown)`); }
+{ const reds = out.reduce((n, r) => n + (r.reds || 0), 0); if (reds < 4) bad.push(`only ${reds} red !! blows over both crowds - nothing to measure (a heavy waits for the whole purse: it must still be thrown)`); }
 assert.deepEqual(bad, [], 'attack tokens:\n  ' + bad.join('\n  '));
 console.log(out.map(r => `${r.lvl}: at most ${r.maxA} of six attacking at once over ${r.attacks} attacks; ${r.waitSecs} waiting foe-seconds, none still`).join('\n'));
