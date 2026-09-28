@@ -2,7 +2,7 @@ import { lanceLookouts } from './lance-support.js';
 // ============================================================================================
 // LEVEL 10 - STORMHOLD, THE CASTLE TOWN (docs/briefs/stormhold-town.md; rebuilt again this lane,
 // claude/stormhold2, off Daniel's note that the held branch "still didn't seem appropriate" - see
-// docs/level-design/wood-to-highcrown-design.md "## 11. STORMHOLD" for the audit this answers).
+// the "## 11. STORMHOLD" section of the design audit on claude/designaudit for the audit this answers).
 // What is left of the goblins after Kingswood, the Stockade and the crags has fallen back up the
 // mountain and taken a town that is not theirs: stone houses, a market square, a wall with towers on
 // it, and the Queen's castle over all of it in the snow.
@@ -171,7 +171,7 @@ export function stormholdTown({ painter, T, TS }) {
   ent('cutter', 210, 23, { face: -1, bridge: 207 });
   ent('silver', 200, 23);
   ent('sign', 189, 26, { text: 'THE ROPE FRAYS WHERE HE STANDS ON IT. DO NOT LINGER, OR TAKE THE STREET.' });
-  plat(220, 26, 2); plat(222, 29, 2);
+  plat(222, 26, 2); plat(222, 29, 2);
   // THE FIRST BELL (the level teaches Highcrown's alarm before Highcrown does): a sentry who runs for it if he sees you,
   // and a grate over the way to the chimneys if he rings it - catch him, break the bell, or fight through the grate.
   ent('sentry', 224, 31, { section: 'smokerow', range: 6, face: 1 });
@@ -244,7 +244,9 @@ export function stormholdTown({ painter, T, TS }) {
   ent('check', 388, 29);
   ent('pike', 405, 29, { face: -1 }); ent('pike', 411, 29, { face: -1 }); ent('shield', 417, 29, { face: -1 });
   ent('torch', 404, 29); ent('deco', 422, 29, { kind: 'banner', v: 0 });
-  facades.push([403, 429, 22, 29, 'townrow'], [0, 12, 28, 35, 'townrow'], [27, 38, 28, 35, 'townrow']);
+  // THE ARCH IS A LINTEL, NOT A PIER: nothing stands under it (the pikes and the winch's drop both need the yard clear),
+  // so it carries on the two town fronts either side, in reach at every row it occupies (tools/architecture.mjs SPAN).
+  facades.push([391, 395, 19, 29, 'townrow'], [403, 429, 19, 29, 'townrow'], [0, 12, 28, 35, 'townrow'], [27, 38, 28, 35, 'townrow']);
   ent('check', 425, 29); coins([392, 28], [399, 28], [408, 28], [414, 28], [420, 28], [426, 28]);
 
   // ============================ 6. THE CURTAIN WALL (430-543): the gorge, the wall face, the walk, THE WALL WATCH ============================
@@ -301,7 +303,7 @@ export function stormholdTown({ painter, T, TS }) {
   // ============================ 7. THE LONG BRIDGE (544-671): seven spans, six piers, and the Queen's Lance ============================
   // one height the whole way, so his charge has one line to run and the piers are the rhythm (unchanged, shifted right)
   const BY = 30, P0 = STORM_TOWN.BRIDGE;
-  ent('check', P0 + 2, BY - 1);
+  ent('check', P0 - 1, BY - 1);
   ent('sign', P0, BY - 1, { text: 'THE QUEEN\'S LANCE CANNOT TURN MID-CHARGE. STAND ON A LOOKOUT AND LET HIM PASS.' });
   for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4;
     block(px0, px1, BY, 45);

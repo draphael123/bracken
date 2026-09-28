@@ -1,8 +1,8 @@
-// tools/stormhold2.mjs — THE STORMHOLD REWORK (claude/stormhold2, docs/level-design/wood-to-highcrown-design.md
-// "## 11. STORMHOLD"): Daniel played the held branch and it "still didn't seem appropriate". Node only. tools/watchtowers.mjs
+// tools/stormhold2.mjs — THE STORMHOLD REWORK (claude/stormhold2, the "## 11. STORMHOLD" section of the design
+// audit on claude/designaudit): Daniel played the held branch and it "still didn't seem appropriate". Node only. tools/watchtowers.mjs
 // and tools/bells.mjs already prove the towers/keys/ropes and the alarm machinery in full; this file asserts the five
 // things this lane's brief asked for that nothing else checks:
-//   1. LONGER than the held branch it was built from (672 columns, docs/level-design/wood-to-highcrown-design.md "## 11").
+//   1. LONGER than the held branch it was built from (672 columns, per the design audit's "## 11").
 //   2. TALL WATCHTOWERS, each at least six rows of climb, with its key on the top deck (a light sanity check; the full
 //      geometry - the ladder, the rope, the sign - is tools/watchtowers.mjs's job).
 //   3. WALKWAYS: at least one rope span outside the boss's own bridge (a tower-to-roof or roof-to-roof crossing).
