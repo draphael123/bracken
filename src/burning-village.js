@@ -29,6 +29,7 @@ export function buildBurningVillage({ painter, T, TS }) {
   const L = painter(W, H), { set, block, floor, plat, crate, ent, coins } = L;
   const roofs = [], burn = [], facades = [], stillFires = [], beams = [], interiors = [];
   const heaps = [], trench = [], beamSpans = [], cellarFires = [], smoke = [];   /* THE ROOFTOPS and THE FALLEN HOUSE (2026-09-25) */
+  const extraBreaks = [];   /* deckBreaks built by hand, not by the tuple mappers below (design audit §13.1's early beam) */
   const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: -1 }, o || {}));
   /* STRAW ON THE STREET lies in bales of five with two tiles of bare road between: a fire runs the length of a bale and stops,
      so a burning goblin can shut a stretch of the road but never all of it (one unbroken strip of twenty-three burning at once
@@ -58,7 +59,9 @@ export function buildBurningVillage({ painter, T, TS }) {
   ent('sign', 5, S, { text: 'THE GOBLINS CAME DOWN FROM THE STOCKADE AND FIRED THE VILLAGE. GET ITS PEOPLE OUT.' });
   ent('deco', 13, S, { kind: 'brokenCart', v: 0 }); still(15, S);
   ent('sign', 19, S, { text: 'A BURNING GOBLIN SETS ALIGHT THE STRAW IT WALKS ON. KILL IT ON BARE GROUND.' }); foe('sprig', 22, S);
-  straw(26, 44); foe('burngob', 38, S); foe('sprig', 31, S);   /* (the croft yard's sprig, moved down the road: the density bar) */ coins([24, S - 1], [28, S - 2], [46, S - 1]);
+  /* THE FIRST BURNING GOBLIN WALKS THE LAST BALE, RIGHT AT THE PIT (design audit §13.3): "kill it on bare ground" the sign
+     teaches is a positioning problem here, not a slogan - the straw it is lit on ends two tiles from the ember pit's edge. */
+  straw(26, 44); foe('burngob', 43, S); foe('sprig', 31, S);   /* (the croft yard's sprig, moved down the road: the density bar) */ coins([24, S - 1], [28, S - 2], [46, S - 1]);
   house(50, 62, 19);                                   // a cottage: its thatch is the first roof
   foe('archer', 57, 16); coins([52, 15], [56, 15], [60, 15]);
   facades.push([64, 74, 18, 25, 'burning']); still(69, S);
@@ -89,7 +92,17 @@ export function buildBurningVillage({ painter, T, TS }) {
   plat(172, 23, 4); plat(176, 20, 4); foe('emberwisp', 178, 18); coins([173, 22], [177, 19]);
   ent('check', 187, S);
 
-  pit(188, 191);
+  /* THE FIRST BURNING BEAM (design audit §13.1): the ember-pit log that used to sit here is now told the way the rooftops'
+     beams are - onTop, from the moment you stand on it, not from merely walking near it - and it grows back the same way.
+     Four tiles (the ember pits' own width, and inside a real jump): it is not the rooftops' gate, only their first taste, so
+     it stays a beam that is ALSO a log's ember pit underneath (BK's model can float a hero across four tiles either way; the
+     rooftops' 287-295 span, not this one, is what makes the beam the only way over). A thin smoke plume puffs up out of the
+     pit on the same clock as the rooftops', so the beam and the lift it gives are both met small, once, before 250 asks for
+     either for real. */
+  for (let x = 188; x <= 191; x++) { set(x, R, T.AIR); set(x, R + 1, T.AIR); set(x, R, T.ONEWAY); }
+  extraBreaks.push({ x0: 188, x1: 191, row: R, t: -1, down: false, regrow: true, log: true, onTop: true, fuse: BEAM.fuse });
+  pits.push([188, 191]); coins([189, R + 1]);
+  smoke.push({ x: 189, y0: R - 6, y1: R + 1, per: 4.4, ph: 0.2 });
   // ---- 3. THE LONG STREET ----
   house(194, 206, 19, -1); captive(200, S);
   foe('sprig', 204, S); foe('thief', 213, S);
@@ -169,11 +182,18 @@ export function buildBurningVillage({ painter, T, TS }) {
   coins([330, 19], [338, 19], [366, 19], [380, 19]);
 
   // ---- 5. THE WELL YARD ----
+  /* AN EXAM, NOT A BREATHER (design audit §13.4, and its game-wide fix 1: the last stretch before a boss stays an exam):
+     the well's own water has to cross what it is lighting, under an archer, to the last hot door; and one more burning
+     beam - the same told, onTop mechanic met first at 188-191 and again on the rooftops - bridges the ground to his step. */
   ent('check', 404, S);
   ent('villagewell', 414, S, { bucket: true });              /* struck, it splashes (as it always did); DOWN, and its bucket is yours */
   ent('sign', 408, S, { text: 'THE WELL PUTS OUT WHAT IS NEAR IT. IN HIS SQUARE, THE FLOOR BURNS AS HE RUNS HOT.' });
+  straw(415, 419); foe('burngob', 417, S);
   house(420, 432, 19, 1); captive(422, S, { hot: true });
-  foe('sprig', 428, S); foe('emberwisp', 436, 20); coins([418, S - 1], [426, 15], [430, 15]);
+  foe('archer', 426, 16); foe('emberwisp', 436, 20); coins([418, S - 1], [426, 15], [430, 15]);
+  for (let x = 437; x <= 439; x++) { set(x, R, T.AIR); set(x, R + 1, T.AIR); set(x, R, T.ONEWAY); }
+  extraBreaks.push({ x0: 437, x1: 439, row: R, t: -1, down: false, regrow: true, log: true, onTop: true, fuse: BEAM.fuse });
+  pits.push([437, 439]);
   block(440, 443, R - 1, R - 1); block(444, W - 1, R - 2, H - 1);            // up to the square, a step at a time
 
   // ---- 6. THE SQUARE ----
@@ -191,7 +211,7 @@ export function buildBurningVillage({ painter, T, TS }) {
   /* FLAME PILLARS, not campfires (Daniel): the village's own fire is columns that ROAR up and drop back to embers on a clock,
      so the road through them is timed, and every screen has fire on it. Placed on bare ground (never on straw: the village's
      fire does not spread) and never on a sign, door, trough or checkpoint; each is [x, y, period, phase]. */
-  const busyAt = x => L.ents.some(e => Math.abs(e.x - x) <= 1 && e.y >= S - 1 && e.y <= S && ['sign', 'captive', 'watertrough', 'villagewell', 'check', 'gate', 'deco'].includes(e.t)) || burn.some(([a, b, r]) => r === S && x >= a - 1 && x <= b + 1) || pits.some(([a, b]) => x >= a - 1 && x <= b + 1) || trench.some(([a, b]) => x >= a - 1 && x <= b + 1) || heaps.some(h => x >= h.x0 - 1 && x <= h.x1 + 1);
+  const busyAt = x => L.ents.some(e => Math.abs(e.x - x) <= 1 && e.y >= S - 1 && e.y <= S && ['sign', 'captive', 'watertrough', 'villagewell', 'check', 'gate', 'deco'].includes(e.t)) || burn.some(([a, b, r]) => r === S && x >= a - 1 && x <= b + 1) || pits.some(([a, b]) => x >= a - 1 && x <= b + 1) || trench.some(([a, b]) => x >= a - 1 && x <= b + 1) || heaps.some(h => x >= h.x0 - 1 && x <= h.x1 + 1) || extraBreaks.some(z => x >= z.x0 - 1 && x <= z.x1 + 1);
   const pillarsAt = [15, 36, 69, 118,   /* (not 88: the croft well's yard, where the bucket is taught, has no fire in it) */
     131, 163, 190, 213, 232, 248, 289, 313, 408, 436];
   const pillars = [];
@@ -203,7 +223,8 @@ export function buildBurningVillage({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: S }, pools: [], falls: [], moversExtra: [], interiors, roofs, houses, facades,
     burn, stillFires, beams, roofFire, village: true, emberPits: pits, deckBreaks: logs.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true, log: true }))
-      .concat(beamSpans.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true, beam: true, onTop: true, fuse: BEAM.fuse }))),
+      .concat(beamSpans.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true, beam: true, onTop: true, fuse: BEAM.fuse })))
+      .concat(extraBreaks),
     heaps, trench, cellarFires, smoke,
     calm: trench.map(([a, b, y0, y1]) => [a, b, y0, y1]).concat([[80, 100, 14, S]]),   /* and the croft well's yard, where the bucket is taught */   /* nobody is garrisoned on a cellar floor: it is on fire */
     quest: { n: 6, item: 'folk', name: 'SAVED', done: 'THE VILLAGE IS OUT', thanks: 'THE VILLAGE THANKS YOU' },   /* the villagers are the level's quest: the count on the HUD and on the card */ night: true, glowNight: true, nightA: 0.18, duskStart: -1, duskLen: 1,

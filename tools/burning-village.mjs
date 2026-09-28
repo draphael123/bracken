@@ -88,7 +88,10 @@ const L = lv.build();
   /* THE SMOKE: a plume stands in a gap between the roofs (no slab in its column), from a cellar floor up past the roofs */
   assert.ok((L.smoke || []).length >= 3, 'smoke rises out of the cellars');
   for (const s of L.smoke) { for (let y = s.y0; y <= s.y1; y++) assert.notEqual(at(L.grid, s.x, y), T.SOLID, 'the plume at ' + s.x + ' rises through open air (row ' + y + ')');
-    assert.ok(L.trench.some(([a, b, , y1]) => s.x >= a && s.x <= b && s.y1 === y1), 'the plume at ' + s.x + ' rises from a cellar floor'); }
+    const fromTrench = L.trench.some(([a, b, , y1]) => s.x >= a && s.x <= b && s.y1 === y1);
+    const fromPit = (L.emberPits || []).some(([a, b]) => s.x >= a && s.x <= b);   /* design audit §13.1: the first beam's pit smokes too, ahead of the rooftops */
+    assert.ok(fromTrench || fromPit, 'the plume at ' + s.x + ' rises from a cellar floor or an ember pit'); }
+  assert.ok((L.smoke || []).some(s => (L.emberPits || []).some(([a, b]) => s.x >= a && s.x <= b)), 'and the first beam (188-191) has its own plume, before the rooftops');
   /* AND THE ROUTE LEAVES THE STREET: the pacing strip had no platforming on it at all */
   const P = pacing(lv), up = P.route.filter(([x, y]) => x >= 200 && x <= 320 && y <= S - 9).length;
   assert.ok(up >= 20, 'the walked route goes up onto the roofs between 200 and 320: ' + up + ' tiles');
@@ -199,10 +202,15 @@ try {
    boot('knight');clear();const Z2=z();BK.tp(Z2.x0+1,Z2.row-1);   /* (clear of the plume under its middle, which would carry a falling hero straight back up) */BK.sim(2);const t0=Z2.t;BK.sim(Math.round(Z2.fuse*60)+20);const stood={t0:+t0.toFixed(2),down:Z2.down,y:Math.round(BK.P.y),row:Z2.row};
    BK.tp(Z2.x0-2,Z2.row-1);BK.sim(Math.round((5+1)*60));out.beam={ran,stood,back:!Z2.down};}
   /* THE SMOKE: a hero who jumps into a plume while it is up is carried up out of the cellar, past the roofs' eaves */
-  {boot('knight');clear();const s=BK.L.smoke[0],V=BK.village();BK.tp(s.x,s.y1);BK.sim(5);
+  {boot('knight');clear();const s=BK.L.smoke.find(q=>q.x>=248),V=BK.village();BK.tp(s.x,s.y1);BK.sim(5);
    for(let i=0;i<600&&V.smokeUp(s);i++)BK.sim(1);for(let i=0;i<600&&!V.smokeUp(s);i++)BK.sim(1);
    const y0=BK.P.y;BK.press('jump');BK.keys.jump=true;let top=y0;for(let i=0;i<120;i++){BK.sim(1);top=Math.min(top,BK.P.y);}BK.keys.jump=false;
    out.smoke={from:Math.round(y0/16),top:Math.round(top/16),limit:s.y0};}
+  /* and the first beam's own pit (188-191, design audit §13.1) smokes too - a smaller lift, met before the rooftops ask for it */
+  {boot('knight');clear();const s=BK.L.smoke.find(q=>q.x<248),V=BK.village();BK.tp(s.x,s.y1);BK.sim(5);
+   for(let i=0;i<600&&V.smokeUp(s);i++)BK.sim(1);for(let i=0;i<600&&!V.smokeUp(s);i++)BK.sim(1);
+   const y0=BK.P.y;BK.press('jump');BK.keys.jump=true;let top=y0;for(let i=0;i<90;i++){BK.sim(1);top=Math.min(top,BK.P.y);}BK.keys.jump=false;
+   out.pitSmoke={from:Math.round(y0/16),top:Math.round(top/16)};}
   /* 8. THE BUCKET, in the page */
   {const V=BK.village(),hold=(k,n)=>{BK.keys[k]=true;for(let i=0;i<n;i++)BK.sim(1);BK.keys[k]=false;},down=()=>{BK.keys.down=true;BK.sim(2);BK.keys.down=false;BK.sim(2);};
    const B=()=>V.buckets(),at=x=>B().find(b=>Math.abs(b.hx/16-x)<3);
@@ -274,6 +282,7 @@ try {
   assert.ok(r.beam.stood.down && r.beam.stood.y > (r.beam.stood.row + 2) * 16, 'stand still on it and it burns through into the cellar: ' + JSON.stringify(r.beam.stood));
   assert.ok(r.beam.back, 'and it is back after it has burned through');
   assert.ok(r.smoke.top <= 12 && r.smoke.from - r.smoke.top >= 12, 'the smoke carries a hero up out of the cellar, past the eaves: ' + JSON.stringify(r.smoke));
+  assert.ok(r.pitSmoke.from - r.pitSmoke.top >= 3, 'and the first beam\'s own pit lifts a hero too, met small before the rooftops: ' + JSON.stringify(r.pitSmoke));
   const K = r.bucket;
   assert.ok(K.took && K.slow > 0 && K.slow <= 60, 'DOWN takes the bucket, and you walk at the load speed with it: ' + JSON.stringify(K));
   assert.ok(K.cellarOut && K.open && K.home === 'return' && K.back, 'carried into the root cellar\'s burning timber it puts it out, the hatch opens, and the bucket goes home: ' + JSON.stringify(K));
