@@ -1,7 +1,9 @@
 // ============================================================================================
 // THE SECOND REDRESS (docs/visual-audit.md, fixes 2-4): HIGHCROWN and THE UNDERCROWN (a castle, and the pit it stands on), THE MAGE'S
 // tower (the bookcase wallpaper broken up), THE MONASTERY (white on white given a sky to stand against), and the three SHOPS (empty
-// brown rooms made into stores). Not wired in. The same plumbing as redraw/crag_redress.js:
+// brown rooms made into stores). WIRED IN (main.js's REDRESS table keys 'crown' and 'undercrown' straight to this module's 'castle' and
+// 'undercrown' themes, and 'mage'/'fallingtower'/'spire'/the three shops the rest of it - verified in code 2026-09-28, the visual audit's
+// lane #1 called this "unwired" a third time off a comment this stale, not off the game). The same plumbing as redraw/crag_redress.js:
 //   bakeRedressGround(theme)  -> the SET2 ground shape resolveTiles() reads (castle, undercrown, shopWood, shopCrag, shopSea)
 //   bakeRedressSky(theme, h)  -> a 16 x h strip, or null indoors (the back wall is the far layer)
 //   bakeRedressFar(theme)     -> 320 x 90 outdoors / 320 x 180 indoors (the back wall, whole screen)

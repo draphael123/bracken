@@ -2989,6 +2989,9 @@ function highcrown() {
   block(11, 21, 44, 57); port(16, 58, 63);
   ent('winch', 8, 63, { gate: 16, gy0: 58, gy1: 63, hold: 6 });
   ent('sign', 6, 63, { text: 'STRIKE THE WINCH TO HOLD THE GATE UP A FEW BREATHS. IT DROPS ON WHAT IS UNDER.' });
+  ent('hound', 16, 63, { face: 1 });   /* THE WINCH AS A WEAPON (2026-09-28, design audit plan 3): the sign taught the drop and nothing ever stood
+     under it. A hound paces the gate's own column (the closeGate/hurtEnemy check in main.js's winch code is generic, not drop-only), so a
+     hero who strikes the winch, waits and lets it fall on the hound sees the gate do it before ever seeing it stop a hero */
   ent('check', 22, 63);
   // the wall walk, archers on it, and the steps up to it
   plat(22, 52, 53);
@@ -3315,6 +3318,9 @@ function highcrownWhole() {
     ent('firevent', X + 22, 57, { every: 2.8 }); ent('firevent', X + 60, 59, { every: 3.1 });
     ent('hearthgob', X + 31, 55, { face: -1 }); ent('hearthgob', X + 50, 55, { face: -1 }); ent('archer', X + 67, 61, { face: -1, fire: true });
     ent('brazier', X + 31, 61); ent('torch', X + 5, 63); ent('torch', X + 68, 61); ent('deco', X + 49, 55, { kind: 'cauldron' });
+    /* MAKE THE BAKEHOUSE ITS OWN PLACE (design audit plan 2): a temperer at a brazier, so this crossing is fire you time - a foe who
+       breaks off and comes back with a glowing blade - not the siege lines' scaffold-and-vent crossing again with different dressing */
+    ent('temperer', X + 34, 61, { face: -1 });
     coins([X + 9, 60], [X + 14, 58], [X + 18, 57], [X + 25, 54], [X + 38, 44], [X + 41, 44], [X + 44, 44], [X + 44, 57], [X + 54, 55], [X + 58, 57], [X + 63, 59]);
     B.R.masonry = B.R.masonry.concat([[X + 10, X + 12, 62, 70], [X + 20, X + 24, 58, 70], [X + 47, X + 52, 56, 70]]);
     B.R.facades = B.R.facades.concat([[X + 8, X + 63, 40, 69, 'burning']]);
@@ -3409,6 +3415,13 @@ function highcrownWhole() {
     ent('check', X + 74, 19); ent('torch', X + 76, 19);
     ent('deco', X + 62, 11, { kind: 'gobPennant', v: 1 }); ent('deco', X + 71, 15, { kind: 'warStandard', v: 0 });
     coins([X + 49, 13], [X + 57, 12], [X + 59, 11], [X + 64, 10]);
+    /* THE PIT BETWEEN THE STACK AND THE GUTTER IS SPIKES NOW (Daniel, 2026-09-28: whelps on Highcrown's rooftops "ONLY where there
+       are SPIKES to stomp them onto"). A whelp perches on the chimney stack, over the same drop a missed gutter jump already fell
+       into: it dives at whoever is crossing the gutter, passes straight through the ONEWAY plank (isSolid does not name it, same as
+       every plain ledge a whelp's line runs through), and sticks in the spikes below - stomp it there, and the wind lifts you back
+       to the stack (R.winds, set with the built level's final columns, below: grow() does not know to shift a wind zone). */
+    Q.spikes(X + 54, X + 60, 26);
+    ent('whelp', X + 52, 15);
     Q.R.alarms = (Q.R.alarms || []).concat([{ id: 'leads', gates: [[X + 70, 10, 15]], garrison: [{ t: 'soldier', x: X + 63, y: 11 }, { t: 'heavy', x: X + 67, y: 11 }, { t: 'javelin', x: X + 51, y: 15 }] }]);
     Q.R.arena = { ...Q.R.arena, wallL: X + 79 };                               /* grow() leaves a wall column left of the cut where it was: her west wall is the door-tower now, not the keep's */
     Q.R.interiors = Q.R.interiors.concat([[X, X + 41, 10, 25, 'royal']]);
@@ -3472,7 +3485,12 @@ function highcrownWhole() {
     F.R.interiors.push([X,X+n-1,10,19,'royal']); F.R.masonry.push([X,X+n-1,8,9],[X,X+n-1,20,26]);
     F.ent('sign',X+3,19,   /* (its checkpoint at X+2 went: eight tiles past the chapel's at 756, and the banquet room's door one stands at its far end, 809) */
       {text:'THE CAPTAINS HALL. GOBLINS DROP FROM THE BALCONIES. FALLING LAMPS STRIKE BOTH SIDES.'});
-    for(const dx of [12,28,40]) { F.ent('weight',X+dx,10,{len:6,lamp:true,hang:true,unstable:true});F.plat(X+dx+1,14,3); for(let y=14;y<20;y++)F.set(X+dx+3,y,T.NET); F.ent('soldier',X+dx+2,13,{face:-1,balcony:true}); }
+    /* TWIST THE STUCK SPEAR (design audit plan 1): the wall walk taught it and nothing ever required it. The middle balcony keeps its
+       net (an ambush that only ever drops on you is still a fair climb), but its guard is a javelineer, not a soldier, and he does not
+       carry `balcony:true` - so he stands his ground and throws while you climb, the level's own rule ("a spear that misses you and
+       hits the wall stays there a while - stand on it") loose in the second of the three fight rooms, not only on the road up. */
+    for(const dx of [12,40]) { F.ent('weight',X+dx,10,{len:6,lamp:true,hang:true,unstable:true});F.plat(X+dx+1,14,3); for(let y=14;y<20;y++)F.set(X+dx+3,y,T.NET); F.ent('soldier',X+dx+2,13,{face:-1,balcony:true}); }
+    F.ent('weight',X+28,10,{len:6,lamp:true,hang:true,unstable:true});F.plat(X+29,14,3); for(let y=14;y<20;y++)F.set(X+31,y,T.NET); F.ent('javelin',X+30,13,{face:-1});
     F.ent('heavy',X+23,19,{face:-1});
     for(const dx of [7,22,44])F.ent('torch',X+dx,19);
     for(const dx of [9,20,34])F.ent('deco',X+dx,19,{kind:'longTable',v:0});
@@ -3509,6 +3527,12 @@ function highcrownWhole() {
     { id: 'ward', gates: [[321, 58, 63]], garrison: [{ t: 'soldier', x: 315, y: 63 }, { t: 'javelin', x: 312, y: 63 }] },
     { id: 'hall', gates: [[735, 54, 63]], wake: [678, 735, 54, 63] },
     { id: 'chapel', gates: [[715, 10, 19]], garrison: [{ t: 'soldier', x: 747, y: 19 }, { t: 'javelin', x: 749, y: 19 }, { t: 'soldier', x: 751, y: 19 }] }]);
+
+  // ---- THE LEADS' SPIKES, WOUND (2026-09-28). grow() shifts every ent's x and the grid itself, but it has no idea what a
+  // "wind zone" is, so R.winds is written here in the FINAL columns the spikes (Q.spikes(X+54,X+60,26) above, X=638) landed
+  // on after the armoury, the furnace line and the Captains Hall all grew in ahead of it: 864-870, row 26 (checked against
+  // the built level - see tools/crown-exam.mjs). The exit sits back on the chimney stack, at or behind wherever the fall was. */
+  R.winds = (R.winds || []).concat([{ x0: 864, x1: 870, row: 26, wells: [867], exits: [[860, 15]] }]);
   return R;
 }
 
