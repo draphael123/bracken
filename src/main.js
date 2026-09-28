@@ -22282,7 +22282,8 @@ function updateMovers(dt) {
   updateCarts(dt);
   if (L.winds) windWorld(dt);   /* THE SPIKED MOAT's winds: the rides, and the slabs growing back (spike-winds.js) */
   if (L.cableway) { oreBrake(dt); stepCableway(L.cableway, dt); }   /* THE ORE ROAD's clock: every bucket on a line is the same clock, and the brake is a hand on it */
-  PB_CTX.players = players; PB_CTX.blocks = movers.filter(q => q.kind === 'pushblock');
+  const pbs = movers.filter(q => q.kind === 'pushblock');   /* only a level with a block touches PB_CTX (tools that slice updateMovers alone, like rafts, never define it) */
+  if (pbs.length) { PB_CTX.players = players; PB_CTX.blocks = pbs; }
   for (const m of movers) {
     if (m.kind === 'pushblock') { updatePushBlock(m, dt, PB_CTX); continue; }
     if (m.kind === 'cart' || m.kind === 'orelift') continue;
