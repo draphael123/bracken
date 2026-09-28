@@ -69,30 +69,29 @@ export function stormholdTown({ painter, T, TS }) {
   ent('doorway', 29, 13, { id: 'hearth-back', to: 'hearth-far', lock: [6, 30], label: 'OUT THE BACK' });
   coins([12, 12], [16, 12], [20, 12], [23, 12], [24, 12], [25, 12], [26, 11], [27, 12]);
   ent('sign', 7, 13, { text: 'HEARTH GOBLINS SLEEP BY THE FIRE UNTIL YOU COME CLOSE.' });
-  room(38, 66, 6, 14, 'stone');   // THE SMITHY: the forge breathes up to the shelf, and the first of the hill folk is on it
+  room(38, 66, 6, 14, 'stone');   // THE SMITHY: the forge breathes up to the shelf
   ent('doorway', 41, 14, { id: 'smithy-in', to: 'smithy-out', lock: [38, 66], label: 'THE SMITHY' });
   ent('brazier', 46, 14); ent('deco', 52, 14, { kind: 'anvil' }); ent('torch', 60, 14);
   ent('hearthgob', 50, 14, { face: -1 }); ent('hearthgob', 58, 14, { face: -1 }); ent('miner', 62, 14, { face: -1 });
   plat(47, 13, 3); plat(50, 11, 3); plat(54, 10, 4);
   coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13], [63, 13], [64, 13]);
-  ent('stray', 56, 9, { kind: 'folk' });
   ent('vent', 52, 14, { heat: true, h: 90, period: 3.4, on: 1.5, lift: 240, w: 12 });
   ent('doorway', 65, 14, { id: 'smithy-back', to: 'smithy-far', lock: [38, 66], label: 'OUT THE SLACK-TUB DOOR' });
   ent('sign', 39, 14, { text: 'THE SMITHY. THE BACK DOOR IS PAST THE SHELF.' });
-  room(74, 98, 6, 13, 'earth');   // THE TANNERY: hides on racks you climb, and the second of the hill folk under the spider
+  room(74, 98, 6, 13, 'earth');   // THE TANNERY: hides on racks you climb
   ent('doorway', 77, 13, { id: 'tan-in', to: 'tan-out', lock: [74, 98], label: 'THE TANNERY' });
   ent('torch', 82, 13); ent('hearthgob', 88, 13, { face: -1 }); ent('spider', 92, 7, { drop: 90 });
-  ent('stray', 95, 13, { kind: 'folk' }); coins([80, 12], [84, 12], [88, 12], [90, 12], [92, 12], [93, 12]);
+  coins([80, 12], [84, 12], [88, 12], [90, 12], [92, 12], [93, 12]);
   plat(80, 11, 3); plat(85, 9, 3); plat(90, 11, 3); coins([81, 10], [86, 8], [91, 10]);
   for (const x of [79, 84, 89, 94]) ent('deco', x, 6, { kind: 'banner', v: x % 2, hang: true });
   ent('sprig', 82, 13, { face: 1 }); ent('sprig', 88, 13, { face: -1 });
   ent('doorway', 97, 13, { id: 'tan-back', to: 'tan-far', lock: [74, 98], label: 'OUT PAST THE PITS' });
-  room(106, 160, 4, 15, 'hall');   // THE LONGHOUSE: the officers' feast, three chandeliers to cut down, the last of the hill folk in the rafters
+  room(106, 160, 4, 15, 'hall');   // THE LONGHOUSE: the officers' feast, three chandeliers to cut down, a relic in the rafters
   ent('doorway', 109, 15, { id: 'long-in', to: 'long-out', lock: [106, 160], label: 'THE LONGHOUSE' });
   ent('torch', 114, 15); ent('brazier', 124, 15); ent('brazier', 142, 15); ent('torch', 154, 15);
   ent('hearthgob', 120, 15, { face: -1 }); ent('hearthgob', 134, 15, { face: 1 }); ent('brute', 146, 15, { face: -1 });
-  plat(112, 14, 3); plat(115, 12, 3); plat(118, 11, 4); plat(123, 10, 3); plat(128, 8, 5); plat(136, 10, 4); ent('archer', 129, 7, { face: -1 });
-  ent('stray', 130, 7, { kind: 'folk' });
+  plat(112, 14, 3); plat(115, 12, 3); plat(118, 11, 4); plat(123, 10, 3); plat(128, 8, 5); plat(136, 10, 4); ent('archer', 129, 7, { face: -1 });   // a real way into the rafters
+  ent('relic', 130, 7, { kind: 'shoes' });   /* master's own spot for this relic (git show abcd773:src/level.js, its stormhold()) - kept when its NPC/quest went (tools/npc-removal.mjs, Daniel 2026-09-26) */
   ent('doorway', 159, 15, { id: 'long-back', to: 'long-far', lock: [106, 160], label: 'OUT THE GABLE END' });
   coins([116, 10], [120, 10], [126, 7], [130, 7], [137, 9], [139, 9], [150, 14], [154, 14], [155, 14], [156, 14], [157, 14]);
   for (const x of [121, 138, 152]) ent('weight', x, 4, { len: 4, lamp: true, hang: true });
@@ -102,7 +101,6 @@ export function stormholdTown({ painter, T, TS }) {
   // ============================ 1. THE ROAD IN (0-89): the road under the wall, and THE GATE WATCH ============================
   floor(0, 89, 36);
   ent('sign', 4, 35, { text: 'STORMHOLD. THE GATES ARE LOCKED, AND EVERY KEY HANGS IN A WATCHTOWER.' });
-  ent('npc', 8, 35, { kind: 'squire' });
   roof(14, 26, 31);   // the Hearth House
   ent('doorway', 17, 35, { id: 'hearth-out', to: 'hearth-in', kind: 'goblin' });
   ent('doorway', 23, 35, { id: 'hearth-far', to: 'hearth-back', kind: 'goblin' });
@@ -344,7 +342,9 @@ export function stormholdTown({ painter, T, TS }) {
     playtestSections: STORM_TOWN.SECTIONS,
     indoorRow: 18,   // rows 0-18 are the insides of the houses: the camera never shows them from the street, nor the street from inside
     duskStart: -1, duskLen: 1, music: 'stormhold', night: true, glowNight: true, nightA: 0.26,
-    quest: { n: 3, item: 'folk', name: 'HILL FOLK', npc: 'squire', done: 'THEY ARE OUT OF THEIR CELLARS', reward: 'relic', relic: 'shoes' },
+    /* the HILL FOLK quest (an npc + 3 strays, turned in to a squire) is gone with the rest of the decorative cast
+       (tools/npc-removal.mjs, Daniel 2026-09-26); its reward is a direct 'shoes' relic pickup in the Longhouse now,
+       master's own spot for it (git show abcd773:src/level.js, its now-deleted stormhold()). */
     palette: { set: 'village', sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(150,160,200,0.16)',
       grass: '#cfd8e2', grassL: '#eef4ff', grassD: '#9aa8bc', dirt: '#4a4a58', dirtL: '#62626e', dirtD: '#32323c',
       canopy: ['#3a3a48', '#4a4a5a', '#5a5a6c', '#6a6a80'] },
@@ -357,6 +357,6 @@ export function stormholdTown({ painter, T, TS }) {
       { id: 'smokerow', gates: [[227, 28, 31]], garrison: [{ t: 'sprig', x: 226, y: 31 }, { t: 'sprig', x: 224, y: 31 }] },
       { id: 'bellwatch', gates: [[305, 28, 31]], garrison: [{ t: 'hearthgob', x: 300, y: 31 }, { t: 'hearthgob', x: 302, y: 31 }] },
     ],
-    arena: { x0: P0 * TS, x1: (W - 1) * TS, floor: BY * TS, trigger: (P0 + 6) * TS, wallL: P0 - 1, wallR: W - 1, boss: 'lance', music: 'musCastle', tint: '#6a7a9a', tintA: 0.10, fx: 'dust', bows: lanceBows },
+    arena: { x0: P0 * TS, x1: (W - 1) * TS, floor: BY * TS, trigger: (P0 + 6) * TS, wallL: P0 - 1, wallR: W - 1, boss: 'lance', music: 'lance', tint: '#6a7a9a', tintA: 0.10, fx: 'dust', bows: lanceBows },   /* "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0, converted WAV -> OGG - THE QUEEN'S LANCE's own boss track (audio/CREDITS.txt), benching musCastle - master's own change (git show abcd773:src/level.js, its now-deleted stormhold()), missed by this lane's held branch since it predates the audio addition */
   };
 }
