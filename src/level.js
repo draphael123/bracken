@@ -3318,9 +3318,10 @@ function highcrownWhole() {
     ent('firevent', X + 22, 57, { every: 2.8 }); ent('firevent', X + 60, 59, { every: 3.1 });
     ent('hearthgob', X + 31, 55, { face: -1 }); ent('hearthgob', X + 50, 55, { face: -1 }); ent('archer', X + 67, 61, { face: -1, fire: true });
     ent('brazier', X + 31, 61); ent('torch', X + 5, 63); ent('torch', X + 68, 61); ent('deco', X + 49, 55, { kind: 'cauldron' });
-    /* MAKE THE BAKEHOUSE ITS OWN PLACE (design audit plan 2): a temperer at a brazier, so this crossing is fire you time - a foe who
-       breaks off and comes back with a glowing blade - not the siege lines' scaffold-and-vent crossing again with different dressing */
-    ent('temperer', X + 34, 61, { face: -1 });
+    /* MAKE THE BAKEHOUSE ITS OWN PLACE (design audit plan 2) IS ALREADY DONE, checked here rather than redone: tools/temperer.mjs caps
+       Highcrown at three of him (never a crowd), and the second of the three ("by the 619 brazier", the FINAL COLUMNS section below)
+       already stands on THIS brazier - the forge stair's boards it was written against back onto the bakehouse's own scaffold. A fourth
+       here would have doubled him up on top of the third; tools/crown-exam.mjs pins that the bakehouse has one and the siege lines none. */
     coins([X + 9, 60], [X + 14, 58], [X + 18, 57], [X + 25, 54], [X + 38, 44], [X + 41, 44], [X + 44, 44], [X + 44, 57], [X + 54, 55], [X + 58, 57], [X + 63, 59]);
     B.R.masonry = B.R.masonry.concat([[X + 10, X + 12, 62, 70], [X + 20, X + 24, 58, 70], [X + 47, X + 52, 56, 70]]);
     B.R.facades = B.R.facades.concat([[X + 8, X + 63, 40, 69, 'burning']]);

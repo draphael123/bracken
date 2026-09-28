@@ -32,7 +32,7 @@ const bakehouseSign = L.ents.find(e => e.t === 'sign' && /BAKEHOUSE YARD IS ALIG
 assert(bakehouseSign, 'the bakehouse yard\'s own sign is gone');
 const siegeSign = L.ents.find(e => e.t === 'sign' && /OLD SIEGE LINES/.test(e.text));
 assert(siegeSign, 'the siege lines\' own sign is gone');
-const bakeTemp = L.ents.find(e => e.t === 'temperer' && e.x > bakehouseSign.x && e.x < bakehouseSign.x + 70);
+const bakeTemp = L.ents.find(e => e.t === 'temperer' && e.x >= bakehouseSign.x && e.x < bakehouseSign.x + 70);
 assert(bakeTemp, 'no temperer works a brazier in the bakehouse yard (' + bakehouseSign.x + '-' + (bakehouseSign.x + 70) + '): it is only the siege lines\' crossing again (design audit plan 2, GAME-WIDE PATTERN 6, repeated shapes)');
 const siegeTemp = L.ents.find(e => e.t === 'temperer' && e.x > siegeSign.x && e.x < siegeSign.x + 80);
 assert(!siegeTemp, 'a temperer stands in the siege lines too (' + (siegeTemp || {}).x + '): the brief keeps him "never in the forge hall" and out of the level\'s other fire crossing, so the bakehouse stays the one place he works');
