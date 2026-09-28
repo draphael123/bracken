@@ -629,7 +629,7 @@ function theStockade() {
   plat(272, 15, 2); plat(280, 15, 2); plat(283, 13, 2); // the way back up once the ropes are cut: net → ledge → bank, either side
   ent('bridge', 270, 12, { x1: 285 });
   block(286, 314, 12, 27);
-  ent('sign', 286, 11, { text: 'THIS ONE WON\'T STAND FOR IT. HE RUNS FOR THE TOWER - CATCH HIM ON THE BRIDGE, OR CLIMB THE NET AFTER HIM.' });
+  ent('sign', 286, 11, { text: 'HE RUNS FOR THE TOWER HORN. CATCH HIM ON THE BRIDGE.' });
   ent('sprig', 288, 11, { face: -1, cutter: true }); ent('sapper', 291, 11, { face: -1 }); ent('check', 293, 11);
   plat(295, 10, 2); plat(299, 8, 2);
   for (let y = 8; y <= 11; y++) set(298, y, T.NET);   /* the net beside the platforms: the fast way up, his own way up too */
