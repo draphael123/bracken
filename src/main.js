@@ -20298,7 +20298,7 @@ function updateBalcony(e, dt) {
 /* ATTACK TOKENS (src/attack-tokens.js): the board, what is outside the purse, and the few things of the world the module needs */
 const TK = tokenBoard();
 TOKENS.exempt = e => !!(e === boss || e.xpRole || e.mini || e.harmless || e.trainer || e.work || e.t === 'dummy' || bossActive || miniActive || rushOn());   /* bosses, minis and the adds of their fights are their own scripts */
-const tkApi = { dt: 0, get time() { return time; }, nums: () => nums, windingUp: e => windingUp(e), move: (e, dx) => moveBody(e, dx, 0, false),
+const tkApi = { dt: 0, get time() { return time; }, nums: () => nums, windingUp: e => windingUp(e), heavy: e => markOf(e) === '!!', move: (e, dx) => moveBody(e, dx, 0, false),
   walker: e => !e.noGrav && !e.pool && !e.swim && !e.fly && e.speed > 0 && foeHasFooting(e),
   grounded: e => !e.noGrav && !e.pool && !e.swim && !e.fly && foeHasFooting(e), fall: (e, dy) => moveBody(e, 0, dy, false),
   safeStep: (x, y) => { const tx = Math.floor(x / TS), row = Math.floor((y + 1) / TS), u = tileAt(tx, row);

@@ -18,7 +18,7 @@
 // The creature code is not touched: the token only ever sees windingUp(e), the same predicate the marks read.
 //
 // THE HOOKS FOR PART 2 (squads, reactive foes, varied told swings, a visible poise break, pogo chains off foes):
-//   TOKENS.cost(e)        what a blow costs: 1 now. A squad's heavy (a brute's overhead) can cost 2 and so be alone.
+//   TOKENS.cost(e)        what a blow costs: 1, and 2 for a red !! (part 2: a heavy is always thrown alone).
 //   TOKENS.cap(hero)      the purse: 2 now. Difficulty, a squad's banner or a hero's state can widen or narrow it.
 //   TOKENS.priority(e)    who is served first when two ask on one frame (a squad leader, a foe the hero just hit).
 //   claim(board, hero, e) / release(board, e, why)   for code that wants a token on purpose (a squad that plans a
@@ -32,13 +32,18 @@ export const TOKENS = {
   perHero: 2,        // at most this many common foes winding up or striking at one hero at once
   tail: 0.45,        // s a holder keeps its token after its windup ends: the blow itself and its follow-through
   rest: 0.7,         // s after giving a token back before the same foe may ask again: the others get their turn
+  heavyWait: 2.5,   // s the purse is saved for a heavy that was turned away, before it is given up on
   deny: 0.3,         // s a foe turned away holds its cooldown up before it may ask again
   ring: 58,          // px: the nearest waiting foe holds this far from the hero
-  ringStep: 22,      // px: each further waiting foe on the same side holds this much further out
+  ringStep: 22, 
+  heavyRing: 30,     // px: a heavy waiting for the whole purse holds this close, in front of the ring     // px: each further waiting foe on the same side holds this much further out
   near: 150,         // px: a waiting foe closer than this is walked round the ring; further out it keeps its own AI
   far: 300,          // px: a holder this far from its hero gives the token back
   idleModes: new Set(['walk', 'idle', 'stalk', 'patrol', 'chase']),   // the plain modes a creature stands about in: never a recovery
-  cost: () => 1,
+  /* HEAVIES COME ALONE (the combat pass, part 2; Daniel, 2026-09-28): a red !! blow - the one nothing turns - costs the whole
+     purse, so while it is coming it is the only thing coming. e.tokHeavy is set by tokenPost from api.heavy(e) the frame the
+     windup starts (never read off a mode that is not a windup: markOf would take it for a hole in the table). */
+  cost: e => (e.tokHeavy || e.tokWantHeavy ? 2 : 1),   /* (tokWantHeavy: a heavy turned away waits for the whole purse, not half of it) */
   cap: () => TOKENS.perHero,
   priority: e => (e.elite ? 1 : 0),
   exempt: () => false,   // main.js supplies this (bosses, minis, their adds, trainers, dummies)
@@ -46,7 +51,7 @@ export const TOKENS = {
 };
 
 export function tokenBoard() {
-  return { held: new Map(), reserve: new Map(), frame: 0, order: [], on: {}, stats: { grants: 0, cancels: 0, overflow: 0, maxHeld: 0 } };
+  return { held: new Map(), reserve: new Map(), heavyQ: new Map(), frame: 0, order: [], on: {}, stats: { grants: 0, cancels: 0, overflow: 0, maxHeld: 0 } };
 }
 
 const heldBy = (board, hero) => { let s = board.held.get(hero); if (!s) board.held.set(hero, s = new Set()); return s; };
@@ -55,12 +60,15 @@ const used = (board, hero) => { let n = 0; for (const q of heldBy(board, hero)) 
 // IS THERE ROOM FOR IT? An elite captain near his hero keeps one token back for himself: his minions share the rest, so the
 // captain is never the one left waiting on a minion (and his own moves, which remember where they were, are never taken back).
 export function room(board, hero, e) {
+  const q = board.heavyQ && board.heavyQ.get(hero);
+  if (q && q.e !== e && !e.elite && q.e.alive) return false;   /* THE PURSE IS BEING EMPTIED FOR A HEAVY: nobody new starts until it has swung */
   const cap = e.elite ? TOKENS.cap(hero) : Math.max(1, TOKENS.cap(hero) - (board.reserve.get(hero) || 0));
   return used(board, hero) + (TOKENS.cost(e) || 1) <= cap;
 }
 export function claim(board, hero, e, force = false) {
   const cost = TOKENS.cost(e) || 1;
   if (!room(board, hero, e)) { if (!force) return false; board.stats.overflow++; }
+  { const q = board.heavyQ && board.heavyQ.get(hero); if (q && q.e === e) board.heavyQ.delete(hero); }
   heldBy(board, hero).add(e); e.tokHeld = hero; e.tokCost = cost; e.tokTail = TOKENS.tail; e.tokWait = false;
   board.stats.grants++; if (board.on.grant) board.on.grant(e);
   return true;
@@ -81,6 +89,7 @@ export function tokenPre(board, e, hero, api) {
   if (e.tokRest > 0) e.tokRest -= api.dt;
   if (e.tokDeny > 0) e.tokDeny -= api.dt;
   if (e.tokHeld) return;
+  e.tokHeavy = false;
   const shut = e.tokRest > 0 || e.tokDeny > 0 || !room(board, hero, e);
   e.tokWait = shut;
   if (shut && typeof e.cd === 'number') e.cd = Math.max(e.cd, 0.12);   /* RELOADING: its next blow is held, not thrown */
@@ -114,8 +123,9 @@ export function tokenPost(board, enemies, api, dt) {
       if (wu) e.tokTail = TOKENS.tail; else if ((e.tokTail -= dt) <= 0) release(board, e, 'done');
       continue;
     }
+    if (wu) { e.tokHeavy = !!(api.heavy && api.heavy(e)); e.tokWantHeavy = false; }
     if (wu && !e.tokSnap.wu) fresh.push([e, n0, n1, i]);
-    else if (wu) claim(board, e.tokHero, e, true);   /* already mid-tell when it came under the rule: let it finish, and count it */
+    else if (wu) claim(board, e.tokHero, e, true);  /* already mid-tell when it came under the rule: let it finish, and count it */
   }
   fresh.sort((a, b) => (TOKENS.priority(b[0]) - TOKENS.priority(a[0])) || (a[3] - b[3]));
   for (const [e, n0, n1] of fresh) {
@@ -124,6 +134,9 @@ export function tokenPost(board, enemies, api, dt) {
     const s = e.tokSnap; e.mode = s.mode; e.modeT = s.modeT; if (s.draw !== undefined || e.draw !== undefined) e.draw = s.draw || 0;
     if (typeof s.cd === 'number') e.cd = Math.max(s.cd, 0.12);
     e.tokDeny = TOKENS.deny; e.tokWait = true; e.tokOut = true; board.stats.cancels++;
+    /* A HEAVY TURNED AWAY IS NEXT: two light blows taking turns would otherwise keep the purse from ever being empty, and the
+       red !! would never be thrown at all. The purse is saved for it (room) until it swings, dies or stops asking (TOKENS.heavyWait). */
+    if (e.tokHeavy && !board.heavyQ.has(e.tokHero)) { board.heavyQ.set(e.tokHero, { e, t: TOKENS.heavyWait }); e.tokWantHeavy = true; }
     for (let k = Math.min(n1, nums.length) - 1; k >= n0; k--) { const n = nums[k]; if (n && (n.txt === '!' || n.txt === '!!')) drop.push(k); }
     if (board.on.cancel) board.on.cancel(e);
   }
@@ -132,6 +145,7 @@ export function tokenPost(board, enemies, api, dt) {
   for (const [hero, set] of board.held) for (const q of set) if (!q.alive || !enemies.includes(q)) { set.delete(q); q.tokHeld = null; }
   for (const [, set] of board.held) board.stats.maxHeld = Math.max(board.stats.maxHeld, set.size);
   board.reserve.clear();
+  for (const [hero, q] of board.heavyQ) if ((q.t -= dt) <= 0 || !q.e.alive || q.e.tokHero !== hero || TOKENS.exempt(q.e)) { board.heavyQ.delete(hero); q.e.tokWantHeavy = false; }
   for (const [e] of order) if (e.elite && e.alive && !e.tokHeld && e.tokFrame === board.frame && Math.abs(e.x - e.tokHero.x) < 200)
     board.reserve.set(e.tokHero, Math.min(1, (board.reserve.get(e.tokHero) || 0) + 1));
   // THE WAITING RING: rank the waiting walkers on each side of their hero, nearest first. Waiting is two things: turned away
@@ -149,7 +163,8 @@ export function tokenPost(board, enemies, api, dt) {
   for (const [hero, l] of ring) {
     for (const side of [-1, 1]) {
       const mine = l.filter(e => (Math.sign(e.x - hero.x) || 1) === side).sort((a, b) => Math.abs(a.x - hero.x) - Math.abs(b.x - hero.x));
-      mine.forEach((e, k) => { e.tokRing = TOKENS.ring + k * TOKENS.ringStep; TOKENS.waitMove(e, hero, api, dt); });
+      /* the heavy the purse is being emptied for stands in close, looming, so its blow is ready the moment the others are done */
+      let k = 0; for (const e of mine) { e.tokRing = e.tokWantHeavy ? TOKENS.heavyRing : TOKENS.ring + (k++) * TOKENS.ringStep; TOKENS.waitMove(e, hero, api, dt); }
     }
   }
   board.frame++; board.order = [];
