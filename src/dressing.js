@@ -759,8 +759,11 @@ export const ALLOWED_DECORATIONS = {
   ],
   "shop": [
     "barrels",
+    "caskRack",
     "counter",
+    "hearth",
     "lanternPost",
+    "mugShelf",
     "snow",
     "stem",
     "wares"
@@ -811,19 +814,24 @@ export const ALLOWED_DECORATIONS = {
   ],
   "shopCrag": [
     "bones",
+    "cairn",
     "cart",
     "counter",
     "lanternPost",
     "snow",
     "stem",
+    "stone",
     "wares"
   ],
   "shopSea": [
+    "cannon",
     "chartTable",
     "coiledCable",
     "counter",
+    "hammock",
     "kegStack",
     "lanternDeck",
+    "pennant",
     "plunder",
     "rumBarrels",
     "seaChest",
