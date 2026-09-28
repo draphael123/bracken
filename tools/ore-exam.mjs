@@ -122,10 +122,10 @@ console.log('\nROUND FOUR: ORE WALLS YOU MINE THROUGH (lane claude/oreroad3, ite
 console.log('\nROUND FIVE: PASSING BUCKETS (lane claude/passbuckets, item 4) - AND THE WINCHMASTER\'S WEST WALL, SEALED');
 /* ---- PASSING BUCKETS (Daniel, 2026-09-28, decided): THE FIRST SPAN gets a second line, 'pass', running the OTHER
    way. Pinned here: it exists, it runs opposite 'first', and the gap between the two - sampled all along the stretch,
-   not just at one spot - is a REAL JUMP (3.2-4.5 tiles by hero, RULES/common.md - not the reach model's 6), never a
-   step and never out of reach. A miss falls into THE FIRST SPAN's own pit (tools/ore-road.mjs/ore-ride.mjs already
-   hold that pit to "a fifth of your health and a climb, never your life" for every span, this one included - nothing
-   new needed here for that half of it). */
+   not just at one spot - is a REAL JUMP (3.2-4.5 tiles by hero, not the reach model's 6), never a step and never out
+   of reach. A miss falls into THE FIRST SPAN's own pit (this level's own geometry checks and page ride already hold
+   that pit to "a fifth of your health and a climb, never your life" for every span, this one included - nothing new
+   needed here for that half of it). */
 { const lines = cableLines(), first = lines.find(l => l.id === 'first'), pass = lines.find(l => l.id === 'pass');
   ok(!!pass, "the 'pass' line exists - a second line over THE FIRST SPAN");
   ok(!!first && !!pass && Math.sign(first.pts[first.pts.length - 1][0] - first.pts[0][0]) === -Math.sign(pass.pts[pass.pts.length - 1][0] - pass.pts[0][0]),
