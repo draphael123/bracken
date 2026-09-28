@@ -71,3 +71,5 @@ Branch `claude/gargoyle3`, off master abcd773. The brief is `docs/briefs/gargoyl
 3. **Five stomps to kill him, 3.5 s stun.** The bot takes about 8 openings to land 5 stomps. *Recommendation: play it before tuning.* If it drags, go to 4 stomps rather than making the stun shorter.
 4. **The breath hit the bot's Freebooter hardest** (no shield). It is dodged by moving up or down a tier, or by standing behind a slab. *Recommendation: no change until you have played it;* if it feels unfair, make the lock window longer (0.25 to 0.35 s).
 5. **Cracked ledges in the battlements regrow in 4 s,** and the route waits on them if a whelp breaks one ahead of you. *Recommendation: keep 4 s.*
+
+Follow-up: boss-fight-end
