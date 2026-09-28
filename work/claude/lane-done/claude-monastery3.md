@@ -109,3 +109,52 @@ Diagnosed, not papered over:
    is only 3 rows before the Nest's own floor slab (masonry, load-bearing for the arena above) -
    rebuilding that would risk the boss room's own architecture. **Recommendation:** conservative
    version (built) stands; a fuller re-route is a separate, larger pass if Daniel wants it.
+
+## Follow-up: Q2 (small-adds' seeding), fixed - batch38
+
+Question 2 above is now built, per the coordinator's follow-up (it was already on Daniel's approved
+backlog, and batch38 needed it green tonight).
+
+**Change (`src/lab.js`, `runbossLab`):** `Math.random` is now reseeded a second time, on the identical
+`seedOf(lvId + '|' + h + '|' + healthMode + ...)` string, immediately before the fight loop starts (the
+`for (; f < maxF ...)` loop) - after the non-boss-enemy cull, the teleport into the arena/mini room, and
+its settle sim. The seed BEFORE `BK.load` still stands (so a level's load and its walk into the arena
+replay identically on a retry); this second reseed means the recorded FIGHT no longer inherits however
+many `Math.random()` calls the rest of the level's now-culled enemies happened to make first. Minimal:
+one line, same seed formula, no new state, nothing touched in any check's thresholds.
+
+**Why this was right, not a workaround:** the Abbot's own congregation `summon()` in `src/main.js`
+(~14784) rolls plain `Math.random() < 0.4 ? 'archer' : 'sprig'`. Before this fix, that roll's exact
+result depended on the total count of `Math.random()` calls made by EVERY enemy anywhere in the level
+during the pre-fight settle - so any lane's unrelated level-content change could flip which small ally
+the Abbot calls up, and therefore this row's small-foe sample, with nothing about the fight, the boss,
+or the level's difficulty having changed. This wasn't specific to spire/abbot: any boss whose kit rolls
+`Math.random()` (a summon, a random side, a random target) was exposed to the same coupling.
+
+**Numbers, before -> after (this branch, with the Monastery content from the section above):**
+- `small-adds`: FAIL -> PASS. `spire/abbot knight` was 6 swings/3 missed (50%, over the 33% limit);
+  after the reseed, the whole suite ran 20 rows/84 swings/5 missed (6% overall, worst judged row 20%).
+  I did not chase the exact new spire/abbot/knight numbers in isolation - the full-suite pass is what
+  the check asserts, and re-running only that one row would reseed it into a different opts.salt-free
+  context than the suite gives it.
+- `boss-fight-end`: 45/45 fights still end on their boss's death, unmoved (it was never broken - the
+  Abbot fight always ended correctly; only which small ally showed up changed).
+- `mother-pilot`, `boss-openings`, `normal-health`, `herald-pirate`, `boss-navigation`, `lab-reach`: all
+  still pass. These assert RANGES (e.g. the Mother's refill-mode clear time, 90-150s) or reconciliation
+  invariants (health ledgers), not single pinned numbers, so I could not detect a sub-threshold shift in
+  their exact frame-by-frame traces without instrumenting each one - nothing in their own assertions or
+  printed summaries moved outside what was already passing. I did not weaken or loosen any of them to
+  get there; every one that is green is green on its own existing assertions, unchanged.
+- `architecture`, `checkpoints`, `skins`, `dangling-paths`, `slopes-trace`, `npc-removal`,
+  `monastery3-beats`, `gob-priest`: unaffected (none of them run `bossLab`), all green.
+
+One incidental fix alongside this: `dangling-paths` briefly failed because my own
+`tools/monastery3-beats.mjs` header comment cited
+`docs/level-design/wood-to-highcrown-design.md` - the design audit doc, which lives only on the
+unmerged `origin/claude/designaudit` branch and is not a path this branch's fresh clone can open.
+Reworded the comment to say so in prose instead of citing the path (matching how `docs/INTEGRATOR.md`
+already handles the same audit-branch situation elsewhere in this repo) - not a threshold change, a
+citation fix.
+
+Background task filed for this in the earlier section (Q2) is superseded by this commit - built, not
+just proposed.

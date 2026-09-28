@@ -406,6 +406,17 @@ async function runbossLab(BK, opts) {
     /* THE MODE LEDGER (opts.modes): how often the boss ENTERED each mode, and how much of the hero's health was lost while it was in each - which attacks fired at all, and which ones did the damage */
     const modeN = {}, hitBy = {}; let lastMode = null;
     const ledger = (m0, lost) => { if (!opts.modes) return; if (boss.mode !== lastMode) { lastMode = boss.mode; modeN[lastMode] = (modeN[lastMode] || 0) + 1; } if (lost > 0) hitBy[m0] = (hitBy[m0] || 0) + lost; };
+    /* THE FIGHT ITSELF IS RESEEDED HERE, on the row's own seed again, right before its loop starts. The seed above
+       (before BK.load) still pins the level's load and its settle sim end to end - so a retry of the SAME level is
+       reproducible - but a boss's own rolls (the Abbot's archer-or-sprig summon, among others) used to draw from
+       wherever that stream happened to land after the load-time settle and the walk into the arena, and THAT depends
+       on how many Math.random calls everything else in the level made first: an unrelated enemy added anywhere in
+       the level shifts the count, shifts the stream, and the boss's OWN rolls change though nothing about the fight
+       did (claude/monastery3, batch38: small-adds went red on spire/abbot from Monastery level content alone, with
+       boss-fight-end unmoved - the fight still ended, just on a different sample of the Abbot's own dice). Reseeding
+       again here, on the identical seedOf(...) string, makes the fight loop depend only on the row's own key - never
+       on how many creatures anything else in the level spawned before it. */
+    Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction

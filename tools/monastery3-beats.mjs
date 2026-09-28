@@ -1,7 +1,8 @@
 // tools/monastery3-beats.mjs — pins THE MONASTERY's design-audit beats (claude/monastery3) so a later merge can't
 // silently lose them: the drawbridge's harpy/fledgling/priest, the bellows' loose masonry, the bell yard's plate-
 // and-cage trap, the crawl's third wheel between two priests' flocks (with its own incense and troll), and the
-// warmth fix to the level's palette (docs/level-design/wood-to-highcrown-design.md §8, and its game-wide pattern 1).
+// warmth fix to the level's palette (the design audit's THE MONASTERY section and its game-wide pattern 1 - on
+// origin/claude/designaudit, unmerged, not a path this branch can cite).
 import assert from 'node:assert/strict';
 import { LEVELS, T } from '../src/level.js';
 
