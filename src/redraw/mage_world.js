@@ -8,7 +8,7 @@
 //   bakeFarMage(w, h)       320x90  the fields below the hill, far hedges, a moon-lit mist; horizon row ~52
 //   bakeMidMage(w, h)       480x140 the garden walls and the yews of the grounds, the tower's outer wall on the right
 //   bakeNearMage(w, h)      640x300 yew trunks and hedge tops
-// SKINS (16x16, three variants each)   bakeTowerSkins() -> { tower, gate, hedge, hedgeTop, ice, crack, hole, sand }
+// SKINS (16x16, three variants each)   bakeTowerSkins() -> { tower, gate, hedge, hedgeTop, ice, crack, hole, sand, paving }
 // ROOM PAINTS   paintRoom(g, st, sx, sy, w, h, tx0) draws a room's back wall: 'library', 'reading', 'orrery', 'clock', 'lab', 'flip', 'dome'
 // PROPS (bottom row = ground unless said)
 //   bakeGlyph()             28x8    a rune circle on the floor (drawn flipped on a ceiling): it turns the room over
@@ -84,7 +84,11 @@ export function bakeTowerSkins() {
     for (let i = 0; i < 9; i++) { const x = (i * 7 + v * 5) % 16, y = (i * 11 + v * 3) % 16;
       g.fillStyle = (i + v) % 3 ? '#b07a4e' : '#d09a6c'; g.fillRect(x, y, 1, 1); }
     if (v === 2) { g.fillStyle = '#8a5a3a'; g.fillRect(4, 10, 3, 1); } });
-  return { tower, gate, hedge, hedgeTop, ice, crack, hole, sand };
+  /* THE WARDED COURTYARD's PAVING: big grey-violet flags, paler than the tower's wall so the yard reads as a floor, a joint every tile
+     and a worn hollow here and there */
+  const paving = tile((g, v) => { g.fillStyle = '#5a526c'; g.fillRect(0, 0, 16, 16); g.fillStyle = '#6e6682'; g.fillRect(1, 1, 14, 5); g.fillStyle = '#3a3448'; g.fillRect(0, 15, 16, 1); g.fillRect(15, 0, 1, 16); g.fillRect(0, 7 + v, 8, 1); g.fillRect(8, 9 - v, 8, 1); g.fillRect(8, 7 + v, 1, 2);
+    g.fillStyle = '#4e4660'; for (let i = 0; i < 6; i++) g.fillRect((i * 5 + v * 3) % 14 + 1, (i * 7 + v) % 12 + 3, 2, 1); if (v === 2) { g.fillStyle = '#453e56'; g.fillRect(4, 11, 4, 2); } });
+  return { tower, gate, hedge, hedgeTop, ice, crack, hole, sand, paving };
 }
 
 // ---------- the rooms' back walls ----------

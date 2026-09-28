@@ -112,18 +112,19 @@ export function jetSoFar(L5, t) { const [x0, y0, x1, y1, len] = L5, f = Math.min
    Each flies straight, slowly; a live slab or stone in its way breaks it, and so does the end of its life; on you it is a blow a shield
    takes (c.hit, not hard). stepBall returns what happened to each ball this frame. */
 export const mouth = e => [e.x + (e.face || 1) * 14 * K, e.y - 18 * K];
-function stepOne(e, b, dt, c) {
-  const P = c.P, B = GARG.ball, gone = () => { e.balls = e.balls.filter(q => q !== b); };
+function stepOne(e, b, dt, c, sp) {
+  const P = c.P, B = sp || GARG.ball, gone = () => { e.balls = e.balls.filter(q => q !== b); };
   b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt; b.t = (b.t || 0) + dt;
   const inSlab = (c.slabs || []).some(m => !m.broken && b.x > m.x - B.r * 0.5 && b.x < m.x + m.w + B.r * 0.5 && b.y > m.y - B.r * 0.5 && b.y < m.y + (m.h || 8) + B.r * 0.5);
   if (inSlab || (c.solid && c.solid(b.x, b.y)) || b.life <= 0) { gone(); if (c.pop) c.pop(b.x, b.y, inSlab ? 'slab' : 'stone'); return inSlab ? 'slab' : b.life <= 0 ? 'spent' : 'stone'; }
   if (P && !P.dead && !P.windRide && Math.abs(P.x - b.x) < 6 + B.r && b.y > P.y - (P.h || 18) - B.r && b.y < P.y + B.r) {
-    const r = c.hit(b.x, GARG.dmg.fireball, false, 'THE FIREBALL');
+    const r = c.hit(b.x, sp ? sp.dmg : GARG.dmg.fireball, false, 'THE FIREBALL');
     if (r === false) return 'flying';   /* rolled through it (a dodge's i-frames): it flies on */
     gone(); if (c.pop) c.pop(b.x, b.y, r === 'blocked' ? 'shield' : 'you'); if (r === 'blocked' && c.say) c.say('THE SHIELD TAKES THE FIREBALL', false, true); return r === 'blocked' ? 'blocked' : 'hit'; }
   return 'flying';
 }
-export function stepBall(e, dt, c) { if (!e.balls || !e.balls.length) return []; return e.balls.slice().map(b => stepOne(e, b, dt, c)); }
+/* sp (optional): another thrower's ball - { r, dmg } - on the same rules (THE COMMON WHELP's one small fireball, claude/courtyard) */
+export function stepBall(e, dt, c, sp) { if (!e.balls || !e.balls.length) return []; return e.balls.slice().map(b => stepOne(e, b, dt, c, sp)); }
 
 const live = slabs => slabs.filter(m => !m.broken);
 const onSlab = (P, slabs) => P.onMover && slabs.includes(P.onMover) && !P.onMover.broken ? P.onMover : null;
@@ -303,10 +304,7 @@ export function drawGargoyleWorld(g, e, cx, cy, time, P) {
   if (e.mode === 'fireballTell') { const [mx, my] = mouth(e), k = 1 - Math.max(0, e.modeT) / (e.tell0 || GARG.tell.fireball), x = Math.round(mx - cx), y = Math.round(my - cy), r = 2 + Math.round(GARG.ball.r * k), fl = Math.floor(time * 16) % 2;
     g.globalAlpha = 0.25 + 0.35 * k; g.fillStyle = '#ff9a3c'; g.beginPath(); g.arc(x, y, r + 5 + (fl ? 1 : 0), 0, 7); g.fill();
     g.globalAlpha = 0.6 + 0.4 * k; g.fillStyle = fl ? '#ff9a5c' : '#ff6b2c'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = '#fff0b0'; g.fillRect(x - 1, y - 1, 2, 2); g.globalAlpha = 1; }
-  for (const b of e.balls || []) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), r = GARG.ball.r, fl = Math.floor(time * 20) % 2, sp = Math.hypot(b.vx, b.vy) || 1;
-    for (let q = 1; q <= 4; q++) { g.globalAlpha = 0.45 - q * 0.09; g.fillStyle = q < 3 ? '#ffb040' : '#e0502a'; const tr = r - q; g.fillRect(Math.round(x - b.vx / sp * q * 5 - tr / 2), Math.round(y - b.vy / sp * q * 5 - tr / 2), Math.max(1, tr), Math.max(1, tr)); }
-    g.globalAlpha = 0.3; g.fillStyle = '#ff7828'; g.beginPath(); g.arc(x, y, r + 4, 0, 7); g.fill(); g.globalAlpha = 1;
-    g.fillStyle = fl ? '#ff9a5c' : '#ff6b2c'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x - 1, y - 1, r * 0.55, 0, 7); g.fill(); g.fillStyle = '#fff6c8'; g.fillRect(x - 2, y - 3, 2, 2); }
+  for (const b of e.balls || []) drawBall(g, b, cx, cy, time, GARG.ball.r);
   if (e.mode === 'stunned') { const k = 0.5 + 0.5 * Math.sin(time * 10), hx = Math.round(e.x + (e.face || 1) * 12 * K - cx), hy = Math.round(e.y - 18 * K - cy), left = Math.max(0, e.modeT) / GARG.stun;
     g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - 12 * K - cy), 30 + k * 3, 18, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
     g.globalAlpha = 1; for (let q = 0; q < 3; q++) { const a = time * 5 + q * 2.09, sx = hx + Math.round(Math.cos(a) * 12), sy = hy + Math.round(Math.sin(a) * 4);   /* THE STARS: round his head */
@@ -315,3 +313,10 @@ export function drawGargoyleWorld(g, e, cx, cy, time, P) {
     g.fillStyle = '#8fd160'; g.fillRect(ax - 1, ay - 8, 3, 6); for (let q = 0; q < 4; q++) g.fillRect(ax - 4 + q, ay - 2 + q, 9 - 2 * q, 1);
     g.globalAlpha = 0.8; g.fillRect(Math.round(e.x - cx) - 14, Math.round(e.y - 30 * K - cy), Math.round(28 * left), 2); g.globalAlpha = 1; }   /* and how long he has left down there */
 }
+/* ONE FIREBALL IN FLIGHT, r its radius: a flickering ball with its trail and halo - his (GARG.ball.r) and, smaller, a common whelp's
+   (WH.ball.r, src/gargoyle-whelp.js: claude/courtyard) */
+export function drawBall(g, b, cx, cy, time, r) {
+  const x = Math.round(b.x - cx), y = Math.round(b.y - cy), fl = Math.floor(time * 20) % 2, sp = Math.hypot(b.vx, b.vy) || 1;
+  for (let q = 1; q <= 4; q++) { g.globalAlpha = 0.45 - q * 0.09; g.fillStyle = q < 3 ? '#ffb040' : '#e0502a'; const tr = r - q; g.fillRect(Math.round(x - b.vx / sp * q * 5 - tr / 2), Math.round(y - b.vy / sp * q * 5 - tr / 2), Math.max(1, tr), Math.max(1, tr)); }
+  g.globalAlpha = 0.3; g.fillStyle = '#ff7828'; g.beginPath(); g.arc(x, y, r + 4, 0, 7); g.fill(); g.globalAlpha = 1;
+  g.fillStyle = fl ? '#ff9a5c' : '#ff6b2c'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x - 1, y - 1, r * 0.55, 0, 7); g.fill(); g.fillStyle = '#fff6c8'; g.fillRect(x - 2, y - 3, 2, 2); }

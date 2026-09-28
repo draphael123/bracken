@@ -432,16 +432,50 @@ export function polishTower(L, id, T) {
      ribs and windows over its rooms - its rooms paint their own broken walls (src/redraw/fallen_tower.js) */
   L.palette.ledges = id === 'fallingtower' ? 'slate' : 'arcane'; L.towerBackdrop = id === 'mage';
   if (id === 'mage') {
-    L.mage.skins.unshift([118, L.W - 1, 0, L.H - 1, 'tower']);
-    L.ents = L.ents.filter(e => !(e.t === 'deco' && ['gardenWall', 'campfire', 'cairn', 'fallenLog', 'tuft', 'flower', 'stone'].includes(e.kind) && e.x >= 118));
+    const door = L.mage.outside;   /* the tower's door: everything from it on is the tower (64 since THE WARDED COURTYARD; it was 118) */
+    L.mage.skins.unshift([door, L.W - 1, 0, L.H - 1, 'tower']);
+    L.ents = L.ents.filter(e => !(e.t === 'deco' && ['gardenWall', 'campfire', 'cairn', 'fallenLog', 'tuft', 'flower', 'stone'].includes(e.kind) && e.x >= door));
     for (const p of L.pools.filter(p => p.acid && !p.magePool)) for (let y = Math.floor(p.y / 16); y < Math.ceil(p.bottom / 16) + 1; y++) for (let x = p.x0 / 16; x < p.x1 / 16; x++) L.grid[y * L.W + x] = T.SOLID;
     L.pools = L.pools.filter(p => !p.acid || p.magePool);
-    for (const e of L.ents) if (e.t === 'sign' && e.x === 268) e.text = 'THE ALCHEMY LAB. THE SEALED VATS STILL SPIT. GUARD THE SLOW GOB OR STEP ASIDE.';
+    for (const e of L.ents) if (e.t === 'sign' && /^THE ALCHEMY LAB\./.test(e.text || '')) e.text = 'THE ALCHEMY LAB. THE SEALED VATS STILL SPIT. GUARD THE SLOW GOB OR STEP ASIDE.';
   }
   return L;
 }
+/* THE WARDED COURTYARD'S BACKDROP (claude/courtyard, 2026-09-28). Before the door (x < L.mage.outside) the Folly is outdoors, and the
+   redress's library shelving was showing through the yard. Here, instead: the TOWER rising ahead of you on a slow parallax - its great
+   face, its buttresses, its lit windows, a violet glow where his spills got into the stone - and the yard's back wall along the paving,
+   crenellated, with a lit arch now and then. Screen-space, clipped to the yard, drawn over the parallax and under the tiles. */
+function drawCourtyardBack(g, L, cx, cy, lo) {
+  const VW = g.canvas.width, VH = g.canvas.height, end = Math.round(lo * 16 - cx); if (end <= 0 || !L.mage || L.mage.yard === undefined) return;
+  const floorY = Math.round(L.mage.yard * 16 - cy), wallTop = floorY - 60, t = typeof performance !== 'undefined' ? performance.now() / 1000 : 0;
+  g.save(); g.beginPath(); g.rect(0, 0, Math.min(VW, end), VH); g.clip();
+  /* THE TOWER: its middle a little right of the view at the gate, drifting left as you cross the yard (a fifth of the camera's pace) */
+  const mid = Math.round(250 - cx * 0.2), tw = 150, x0 = mid - tw / 2;
+  g.fillStyle = '#2c2544'; g.fillRect(x0, 0, tw, wallTop + 1);
+  g.fillStyle = '#352d50'; for (let y = ((wallTop % 12) + 12) % 12; y < wallTop; y += 12) g.fillRect(x0, y, tw, 1);   /* its courses */
+  for (const bx of [x0 - 10, x0 + tw - 4]) { g.fillStyle = '#221c38'; g.fillRect(bx, 0, 14, wallTop + 1); g.fillStyle = '#453d64'; g.fillRect(bx + 1, 0, 2, wallTop + 1); }   /* two buttresses */
+  for (let row = 0; row < 4; row++) for (const wx of [x0 + 28, x0 + tw - 44]) { const wy = wallTop - 58 - row * 64; if (wy < -40) continue;   /* its windows, lit: violet low, warm high */
+    const warm = (row + (wx > mid ? 1 : 0)) % 2, fl = 0.8 + 0.2 * Math.sin(t * 2.3 + row * 1.7 + wx);
+    g.fillStyle = '#2e2844'; g.fillRect(wx - 3, wy - 3, 22, 40); for (let k = 0; k < 8; k++) g.fillRect(wx + 8 - k, wy - 10 + k, 2 * k + 1, 1);
+    g.globalAlpha = fl; g.fillStyle = warm ? '#e0a040' : '#9a5ae0'; g.fillRect(wx, wy, 16, 34); for (let k = 0; k < 6; k++) g.fillRect(wx + 8 - k, wy - 6 + k, 2 * k + 1, 1);
+    g.fillStyle = warm ? '#ffe08a' : '#e0c8ff'; g.fillRect(wx + 3, wy + 4, 3, 10); g.globalAlpha = 1;
+    g.fillStyle = '#2e2844'; g.fillRect(wx + 7, wy - 4, 2, 38); g.fillRect(wx, wy + 16, 16, 2); }
+  { const k = 0.5 + 0.5 * Math.sin(t * 1.3); g.globalAlpha = 0.10 + 0.06 * k; g.fillStyle = '#b07cf0'; g.fillRect(x0 + 6, 0, tw - 12, wallTop - 20); g.globalAlpha = 1; }   /* the loose magic in his stone */
+  /* THE YARD'S BACK WALL: world-anchored, crenellated, an arch with a lit brazier every twelve tiles */
+  const off = ((cx % 16) + 16) % 16;
+  g.fillStyle = '#211b31'; g.fillRect(0, wallTop, VW, VH - wallTop);   /* (down past the paving too: the drain and the ditch show its foot, not the redress) */
+  for (let y = wallTop + 8; y < VH; y += 8) { g.fillStyle = '#1a1628'; g.fillRect(0, y, VW, 1); for (let x = -off + ((y / 8) % 2) * 8; x < VW; x += 16) g.fillRect(x, y - 7, 1, 7); }
+  g.fillStyle = '#2e2844'; g.fillRect(0, wallTop, VW, 2);
+  for (let x = -off; x < VW; x += 16) { g.fillStyle = '#211b31'; g.fillRect(x, wallTop - 7, 9, 7); g.fillStyle = '#2e2844'; g.fillRect(x, wallTop - 7, 9, 1); }   /* the merlons */
+  for (let tx = Math.floor(cx / 16 / 12) * 12; tx * 16 - cx < VW; tx += 12) { const ax = Math.round(tx * 16 + 88 - cx); if (ax > end) break;
+    g.fillStyle = '#16122a'; g.fillRect(ax - 11, wallTop + 22, 22, floorY - wallTop - 22); for (let k = 0; k < 11; k++) g.fillRect(ax - k, wallTop + 12 + k, 2 * k, 1);   /* the arch */
+    const f = 0.7 + 0.3 * Math.sin(t * 9 + tx); g.globalAlpha = 0.35 * f; g.fillStyle = '#ff9a3c'; g.fillRect(ax - 9, floorY - 30, 18, 22); g.globalAlpha = 1;
+    g.fillStyle = '#3a3448'; g.fillRect(ax - 4, floorY - 12, 8, 12); g.fillStyle = f > 0.85 ? '#ffe08a' : '#ffb040'; g.fillRect(ax - 3, floorY - 17, 6, 5); g.fillStyle = '#ff6b2c'; g.fillRect(ax - 1, floorY - 20, 2, 3); }   /* a brazier in it */
+  g.restore();
+}
 export function drawTowerBackdrop(g, L, cx, cy) {
   if (!L.towerBackdrop) return; const lo = L.mage?.outside ?? 0;
+  if (lo > 0) drawCourtyardBack(g, L, cx, cy, lo);   /* the yard before the door (THE WARDED COURTYARD) */
   const start = Math.max(lo, Math.floor(cx / 16) - 2), end = Math.min(L.W, Math.ceil((cx + g.canvas.width) / 16) + 2);
   const sky = L.skyRow !== undefined ? Math.max(0, L.skyRow * 16 - cy) : 0;   /* the tower's ribs stop where the tower does: over the crown is sky */
   g.save(); g.beginPath(); g.rect(lo * 16 - cx, sky, L.W * 16, g.canvas.height); g.clip();

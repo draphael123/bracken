@@ -203,9 +203,9 @@ export const MARK = {
   'undeadmage|bendTell': '!', 'undeadmage|decoyTell': '', 'undeadmage|fireTell': '!', 'undeadmage|handTell': '!', 'undeadmage|iceTell': '!', 'undeadmage|markTell': '!!',
   'undeadmage|poisonTell': '!', 'undeadmage|stepTell': '', 'undeadmage|stormTell': '!!', 'undeadmage|trapTell': '!', 'urchin|biteTell': '!', 'urchin|castTell': '!',
   'urchin|dive': '!', 'urchin|hookTell': '!', 'urchin|swellTell': '!', 'vulture|watch': '!!', 'wasp|stingTell': '!', 'watch|sweepTell': '!',
-  'watch|thrustTell': '!', 'weaver|spitTell': '!', 'whelp|crouchTell': '!', 'wight|graspTell': '!!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!',
-  'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|sendTell': '!!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!',
-  'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'watch|thrustTell': '!', 'weaver|spitTell': '!', 'whelp|crouchTell': '!', 'whelp|fireTell': '!', 'wight|graspTell': '!!', 'winchmaster|hookTell': '!!',
+  'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|sendTell': '!!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!',
+  'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
 };
 /* MARK:END */
 
@@ -317,7 +317,7 @@ export const ANSWER = {
   'vulture|watch': 'dodge',
   'wasp|stingTell': 'block',
   'watch|sweepTell': 'block', 'watch|thrustTell': 'block',
-  'whelp|crouchTell': 'block',
+  'whelp|crouchTell': 'block', 'whelp|fireTell': 'block',
   'zombie|grabTell': 'block',
   /* THE UNTOLD, TOLD (the combat pass, part 2, 2026-09-28): every common foe whose harm had no windup has one now, and its answer */
   'apprentice|castTell': 'block', 'apprentice|grabTell': 'block',
