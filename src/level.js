@@ -7239,7 +7239,7 @@ function theMagesFolly() {
   air(66, 207, 14, G - 1); air(64, 65, 36, G - 1);              /* the hall, and the front door */
   interiors.push([66, 207, 14, G - 1, 'library']);
   ent('check', 69, G - 1); deco('lectern', 71, G - 1);
-  sign(67, G - 1, 'THE LIBRARY. THE RUNES WORK IN HERE TOO, ON WHOLE STACKS OF BOOKS. THE BOOKS FLY: RIDE THEM.');
+  sign(67, G - 1, 'THE LIBRARY. THE RUNES WORK IN HERE TOO, ON WHOLE STACKS. THE BOOKS FLY: RIDE THEM.');
   /* THE STACKS: two runeshelves in the way, built slid (the recess above holds them in the grid), down at load */
   block(73, 74, G - 2, G - 1); block(77, 78, G - 4, G - 1);     /* shelves to climb, two rows a step */
   coins([74, G - 4], [78, G - 6]);
