@@ -1,0 +1,7 @@
+{"seed":1,"h":"knight","won":true,"out":"win","secs":83.4,"left":0,"opened":{"scorched":3,"stuck":1},"perMin":201,"swings":214,"hitBy":{"walk":31,"skullTell":19,"rest":106,"slamTell":7,"throwTell":7,"novaTell":40,"scorched":12,"bodyFly":37,"clawTell":20}}
+{"seed":1,"h":"pyro","won":true,"out":"win","secs":114.7,"left":0,"opened":{"scorched":3,"stuck":1},"perMin":196,"swings":346,"hitBy":{"wake":12,"walk":14,"skullTell":7,"rest":134,"novaTell":63,"clawTell":46,"eruptTell":41,"bodyFly":37,"burrow":12,"callTell":9}}
+{"seed":1,"h":"pirate","won":true,"out":"win","secs":96.2,"left":0,"opened":{"scorched":4,"stuck":1},"perMin":184,"swings":246,"hitBy":{"wake":12,"walk":26,"skullTell":14,"rest":101,"clawTell":33,"bodyFly":37,"novaTell":23}}
+THE BURIED DEAD: fights 3, kills in 150 s 3 (100%), median kill 96.2 s, opened {"scorched":10,"stuck":3}
+by hero knight 1/1 (201 hp/min), pyro 1/1 (196 hp/min), pirate 1/1 (184 hp/min)
+damage by his mode: {"rest":341,"novaTell":126,"bodyFly":111,"clawTell":99,"walk":71,"eruptTell":41,"skullTell":40,"wake":24,"scorched":12,"burrow":12,"callTell":9,"slamTell":7,"throwTell":7}
+errors []

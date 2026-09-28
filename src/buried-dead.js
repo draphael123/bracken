@@ -1,5 +1,5 @@
 import {canvas,outline,flipX,whiten} from './px.js';
-import {VENT} from './burial-expansion.js';
+import {VENT,ventLit} from './burial-expansion.js';
 /* THE SKULLS (Daniel, 2026-09-24: "a ranged skull throw when the player platform-camps or stays far away"). The ossuary's
    high tier is nova-safe on purpose and THE HANDS were the only thing that reached it, once a rotation: so a hero who
    climbed and waited, or stood off at the far wall, could let most of the fight go by. Stay up there, or stay away, for
@@ -18,6 +18,27 @@ function stepSkulls(e,dt,P,A,hit){
  e.skulls=e.skulls.filter(q=>!q.done);
 }
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+/* GRAVE HANDS (Daniel, 2026-09-27; claude/burial3). A LINE of the dead's arms comes up out of the floor, one after another, running from
+   him towards where you stood - told by the earth cracking along that line first (the crack runs out over the wind-up, so you can
+   see how far it goes). Unblockable: the answer is your feet (jump the arm that is under you, get up a tier) OR THE LEVEL'S RULE: THE
+   DEAD WILL NOT RISE INSIDE A BURNING VENT'S LIGHT (VENT.light px), so no arm comes up in a lit vent's light, and the crack goes
+   round it. Not an opening: he rests after it as he does after anything, and it opens nothing (A11 - his windows are the gas and the arm
+   in the ground). In PHASE ONE, from the start: it is the fight's first reason to light a vent for yourself, not only under him.
+   GRAVE BREATH (the same day). A cold wave off him, both ways, across the whole lair: it SNUFFS every burning vent it passes and the
+   FIRE IN YOUR HAND. Close in, the cold bites (a shield turns it). The answer is the lair's own: THE CANDLES AT ITS WALLS - take fire
+   again and light again. PHASE TWO ONLY: it is what changes when he is enraged (A10) - the vents you lit stop staying lit. */
+export const HANDS={tell:1.1,first:34,step:22,gap:.06,up:.45,bite:.25,reach:13,high:34,dmg:18};
+export const BREATH={tell:1.3,speed:320,near:110,dmg:10};
+function stepHandLine(e,dt,P,A,hit,vents){const q=e.handLine;if(!q)return;q.t+=dt;if(q.t<0)return;let live=false;
+ for(const a of q.arms){if(q.t<a.at){live=true;continue;}const k=q.t-a.at;if(k<HANDS.up)live=true;
+  if(a.blocked===undefined)a.blocked=ventLit(vents,a.x,A.floor);   /* asked the moment it would come up: a vent lit during the tell still stops it */
+  if(!a.blocked&&k<HANDS.bite&&!q.hit&&!P.dead&&Math.abs(P.x-a.x)<HANDS.reach&&P.y>A.floor-HANDS.high){q.hit=true;hit(a.x,HANDS.dmg,true);}}
+ if(!live)e.handLine=null;}
+function stepBreath(e,dt,P,A,hit,c){const b=e.breath;if(!b)return;b.r+=BREATH.speed*dt;
+ for(const v of c.vents||[])if(v.litT>0&&Math.abs(v.x*16+8-b.x)<=b.r){v.litT=0;v.burnt=false;if(c.snuff)c.snuff(v);}
+ if(!b.passed&&Math.abs(P.x-b.x)<=b.r){b.passed=true;if(P.candle>0){P.candle=0;if(c.snuffHand)c.snuffHand();}
+  if(!P.dead&&Math.abs(P.x-b.x)<BREATH.near&&P.y>A.floor-70)hit(b.x,BREATH.dmg,false);}
+ if(b.r>A.x1-A.x0+32)e.breath=null;}
 export function updateBuriedDead(e,dt,c){
  const{P,A,hit,summon,say,sound}=c;if(!e.alive||P.dead||e.mode==='sleep')return;
  const ring=c.ring||(()=>{}),throwZombie=c.throwZombie||(()=>{}),shake=c.shake||(()=>{});
@@ -28,12 +49,13 @@ export function updateBuriedDead(e,dt,c){
  /* SCORCHED: a burning vent in his floor, and he walks into its flame (or you light it under him). Once a lighting (v.burnt), not while
     he is under the ground or in the air, and never over a window already open. */
  if(!['burrow','eruptTell','bodyFly','stuck','scorched','wake','rally'].includes(e.mode)&&!(e.open>0))for(const v of c.vents||[])if(v.litT>0&&!v.burnt&&Math.abs(e.x-(v.x*16+8))<VENT.scorchR){
-  v.burnt=true;e.mode='scorched';e.modeT=VENT.scorch;e.open=VENT.scorch;e.effect=null;say('THE GAS TAKES HIM: STRIKE',true);sound('roar');ring(e.x,A.floor-30,40,'#ffd36b');shake(4);break;}
+  v.burnt=true;if(e.handLine&&e.handLine.t<0)e.handLine=null;e.mode='scorched';e.modeT=VENT.scorch;e.open=VENT.scorch;e.effect=null;say('THE GAS TAKES HIM: STRIKE',true);sound('roar');ring(e.x,A.floor-30,40,'#ffd36b');shake(4);break;}
  if(e.phase===1&&e.hp<=e.hp0*.5&&e.mode!=='burrow'&&e.mode!=='eruptTell'){e.phase=2;e.mode='rally';e.modeT=1.5;e.turn=0;say('THE GRAVES ANSWER',true);sound('roar');return;}
  e.brokeT=Math.max(0,(e.brokeT||0)-dt);
  /* THE CAMP CLOCK: up on a tier (30 px is over the low step's lip) or out past his reach, and it runs; come down and close, and it stops */
  const camping=P.y<A.floor-30||Math.abs(P.x-e.x)>SKULL.far;e.campT=camping?(e.campT||0)+dt:0;e.skullCd=Math.max(0,(e.skullCd??0)-dt);
  if(e.skulls&&e.skulls.length)stepSkulls(e,dt,P,A,hit);
+ stepHandLine(e,dt,P,A,hit,c.vents);stepBreath(e,dt,P,A,hit,c);
  if(e.flying){const q=e.flying;q.t+=dt;q.vy+=560*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.spin+=dt*9;
   if(q.y>=A.floor-2){e.flying=null;shake(3);sound('heavy');
    if(Math.abs(P.x-q.x)<22&&P.y>A.floor-30)hit(q.x,14,false);
@@ -54,17 +76,19 @@ export function updateBuriedDead(e,dt,c){
   /* THE HANDS are in BOTH turns, so he has seven before he is enraged and eight after (Daniel: "he can use just one
      more attack pre-enrage"). They exist because the ossuary grew a nova-safe upper tier: high ground that nothing
      could answer would be a camp, not a choice. */
-  const turns=e.phase===2?['slamTell','throwTell','bodyTell','novaTell','clawTell','sinkTell','cleaveTell','callTell']:['slamTell','throwTell','novaTell','clawTell','cleaveTell','sinkTell','callTell'];
+  const turns=e.phase===2?['slamTell','breathTell','throwTell','bodyTell','handsTell','novaTell','clawTell','sinkTell','cleaveTell','callTell']:['slamTell','throwTell','handsTell','novaTell','clawTell','cleaveTell','sinkTell','callTell'];   /* claude/burial3: GRAVE HANDS from the start, GRAVE BREATH once enraged; sink stays three turns before the slam (sink, then two, then slam) */
   /* SINK SITS SIXTH IN PHASE ONE, NOT THIRD (Daniel approved, docs/briefs/buried-dead-rotation.md option A). His one caused
      opening needs the slam to land while the ground he broke still lives (brokeT 14 s). Third, four turns stood between the
      erupt and the next slam - 21.0 s - so the arm-in-the-ground punish was never reachable before enrage. Sixth, it is 8.5 s. */
   const skull=e.campT>=SKULL.after&&e.skullCd<=0,m=skull?'skullTell':turns[e.turn++%turns.length];if(skull){e.skullCd=SKULL.cd;e.campT=0;}   /* the skull cuts in; it does not use up a turn */
-  e.mode=m;e.modeT=m==='skullTell'?SKULL.tell:m==='callTell'?1.3:m==='novaTell'?1.2:m==='bodyTell'?1.05:m==='clawTell'?1:m==='throwTell'?.85:1;e.markX=m==='bodyTell'?clamp(P.x,A.x0+40,A.x1-40):m==='clawTell'?clamp(P.x,A.x0+20,A.x1-20):e.x;if(m==='clawTell')e.markY=Number.isFinite(P.y)?P.y:A.floor;if(m==='skullTell'){e.skullAt={x:P.x,y:P.y-10};sound('clatter');}   /* its own mark: the hands' markY is a different promise */   /* WHERE YOU ARE STANDING WHEN HE WINDS UP, floor or ledge: leaving is the answer, exactly as the erupt works */
-  say(({slamTell:'SLAM: JUMP',callTell:'THE DEAD RISE',sinkTell:'FOLLOW THE SHADOW',cleaveTell:'SWEEP: GUARD OR RETREAT',novaTell:'POISON NOVA: GET CLEAR',throwTell:'HE THROWS THE DEAD',bodyTell:'BODY SLAM: MOVE',clawTell:'THE HANDS COME UP: MOVE YOUR FEET',skullTell:'SKULL: GUARD IT'})[m],m==='slamTell'||m==='novaTell'||m==='bodyTell'||m==='clawTell');sound('charge');return;
+  e.mode=m;e.modeT=m==='handsTell'?HANDS.tell:m==='breathTell'?BREATH.tell:m==='skullTell'?SKULL.tell:m==='callTell'?1.3:m==='novaTell'?1.2:m==='bodyTell'?1.05:m==='clawTell'?1:m==='throwTell'?.85:1;e.markX=m==='bodyTell'?clamp(P.x,A.x0+40,A.x1-40):m==='clawTell'?clamp(P.x,A.x0+20,A.x1-20):e.x;if(m==='clawTell')e.markY=Number.isFinite(P.y)?P.y:A.floor;if(m==='skullTell'){e.skullAt={x:P.x,y:P.y-10};sound('clatter');}if(m==='handsTell')e.handLine=handLine(e,P,A);if(m==='breathTell')sound('hiss');   /* its own mark: the hands' markY is a different promise */   /* WHERE YOU ARE STANDING WHEN HE WINDS UP, floor or ledge: leaving is the answer, exactly as the erupt works */
+  say(({slamTell:'SLAM: JUMP',callTell:'THE DEAD RISE',sinkTell:'FOLLOW THE SHADOW',cleaveTell:'SWEEP: GUARD OR RETREAT',novaTell:'POISON NOVA: GET CLEAR',throwTell:'HE THROWS THE DEAD',bodyTell:'BODY SLAM: MOVE',clawTell:'THE HANDS COME UP: MOVE YOUR FEET',skullTell:'SKULL: GUARD IT',handsTell:'GRAVE HANDS: JUMP THEM, OR STAND IN THE FIRE',breathTell:'GRAVE BREATH: THE FIRE WILL GO OUT'})[m],m==='slamTell'||m==='novaTell'||m==='bodyTell'||m==='clawTell'||m==='handsTell');sound('charge');return;
  }
  if(e.modeT>0||!e.mode.endsWith('Tell'))return;
  const m=e.mode;e.effect=m;e.effectT=.35;
  if(m==='sinkTell'){e.mode='burrow';e.modeT=.7;sound('hiss');return;}
+ if(m==='handsTell'){if(!e.handLine)e.handLine=handLine(e,P,A);e.handLine.t=Math.max(0,e.handLine.t);ring(e.x+e.handLine.dir*40,A.floor-6,30,'#d8cfb0');shake(3);sound('crack');}   /* forced without its wind-up (A3), it still has a line */
+ if(m==='breathTell'){e.breath={x:e.x,r:0,passed:false};ring(e.x,A.floor-40,60,'#bfe6f5');sound('puff');}
  if(m==='skullTell'){const n=e.phase===2?2:1,hx=e.x+(e.face||1)*6,hy=A.floor-96,at=e.skullAt||{x:P.x,y:P.y-10};e.skullAt=null;e.skulls=e.skulls||[];   /* a tell forced without its wind-up (the harness, A3) aims where you are */
   for(let i=0;i<n;i++){const tx=at.x+(i?Math.sign(at.x-e.x||1)*32:0),ty=at.y,d=Math.hypot(tx-hx,ty-hy)||1;   /* the second, enraged, goes where you would step back to */
    e.skulls.push({x:hx,y:hy,vx:(tx-hx)/d*SKULL.speed,vy:(ty-hy)/d*SKULL.speed,t:-i*.2});}
@@ -88,6 +112,10 @@ export function updateBuriedDead(e,dt,c){
  if(m==='eruptTell'){if(Math.abs(P.x-e.markX)<42&&P.y>A.floor-90)hit(e.markX,26,true);sound('heavy');e.brokeX=e.markX;e.brokeT=14;}
  rest();
 }
+/* the line, laid at the wind-up: from beside him to the far wall on your side, an arm every HANDS.step px; t counts UP to 0 over the tell */
+function handLine(e,P,A){const dir=Math.sign(P.x-e.x)||e.face||1,arms=[];
+ for(let i=0,x=e.x+dir*HANDS.first;x>A.x0+8&&x<A.x1-8;i++,x+=dir*HANDS.step)arms.push({x,at:i*HANDS.gap});
+ return {dir,t:-HANDS.tell,arms,hit:false};}
 export function updateZombie(e,dt,c){
  const{P,move,hit,snare,say,solid,shot}=c;e.anim+=dt;e.modeT-=dt;e.vx=0;
  /* THE APPRENTICE STILL THROWS. He is the only one of the dead with a reach, so the caverns and the tower are not one
@@ -132,7 +160,7 @@ export function bakeDead(big=false,kind=''){
  R.push(outline(c));}
  const W=R.map(c=>whiten(c));return{R,L:R.map(flipX),white:{R:W,L:W.map(flipX)},ax:big?39:husk?16:13,ay:big?95:husk?38:32,w,h};
 }
-export function drawBuriedDead(g,e,A,cx,cy,time){
+export function drawBuriedDead(g,e,A,cx,cy,time,vents){
  if(!e?.alive||!A)return;const x=e.x-cx,y=A.floor-cy;g.save();g.globalCompositeOperation='source-over';
  if(['burrow','eruptTell','sinkTell'].includes(e.mode)){const locked=e.mode==='eruptTell';g.fillStyle=locked?'#a86048':'#292320';g.beginPath();g.ellipse(x,y-2,locked?42:28,6,0,0,7);g.fill();g.strokeStyle=locked?'#ffd36b':'#b29e78';g.lineWidth=2;g.stroke();for(let k=-20;k<=20;k+=10)g.fillRect(x+k,y-5-Math.sin(time*12+k)*3,3,3);}
  if(e.mode==='novaTell'){const k=1-Math.max(0,e.modeT)/1.2;g.strokeStyle='rgba(166,224,74,'+(.35+.4*k)+')';g.lineWidth=2;g.beginPath();g.ellipse(x,y-20,112*k,26*k+8,0,0,7);g.stroke();g.fillStyle='rgba(92,138,36,'+(.12+.12*k)+')';g.fill();}
@@ -142,6 +170,20 @@ export function drawBuriedDead(g,e,A,cx,cy,time){
  if(e.mode==='skullTell'&&e.skullAt){const k=1-Math.max(0,e.modeT)/SKULL.tell;g.strokeStyle='rgba(166,224,74,'+(.3+.5*k).toFixed(2)+')';g.lineWidth=1;g.beginPath();g.arc(e.skullAt.x-cx,e.skullAt.y-cy,6+8*(1-k),0,7);g.stroke();}   /* where it will go: a green ring closing on the spot you stood */
  for(const q of e.skulls||[])if(q.t>=0){const sx=Math.round(q.x-cx),sy=Math.round(q.y-cy);g.fillStyle='rgba(166,224,74,.4)';g.fillRect(sx-Math.round(q.vx*.04)-2,sy-Math.round(q.vy*.04)-2,4,4);
   g.fillStyle='#5c8a24';g.fillRect(sx-4,sy-4,8,7);g.fillStyle='#e8e0c4';g.fillRect(sx-3,sy-3,6,5);g.fillStyle='#5c8a24';g.fillRect(sx-2,sy-1,2,2);g.fillRect(sx+1,sy-1,2,2);g.fillStyle='#a89e80';g.fillRect(sx-2,sy+2,4,1);}
+ /* GRAVE HANDS: over the tell the earth cracks out along the line (it stops short where a vent's light will keep them down); then the arms */
+ if(e.handLine){const q=e.handLine,k=q.t<0?1+q.t/HANDS.tell:1,n=Math.ceil(q.arms.length*k);
+  for(let i=0;i<q.arms.length;i++){const a=q.arms[i],ax=Math.round(a.x-cx);
+   if(q.t<0){if(i>=n)break;const lit=ventLit(vents,a.x,A.floor);if(lit)continue;g.fillStyle='#1a1410';g.fillRect(ax-9,y-2,18,2);g.fillStyle='#d8cfb0';for(let j=-8;j<=8;j+=4)g.fillRect(ax+j,y-3-((i+j)&1),2,1);
+    if(i===n-1){g.fillStyle='#a86048';g.fillRect(ax-2,y-5-Math.round(Math.sin(time*30)),4,3);}continue;}
+   const t=q.t-a.at;if(t<0||t>HANDS.up)continue;
+   if(a.blocked){if(t<.2){g.globalAlpha=.6*(1-t/.2);g.fillStyle='#6a6a60';g.fillRect(ax-4,y-6-t*30,8,4);g.globalAlpha=1;}continue;}   /* in the light: a puff of grave dust, and nothing comes up */
+   const h=Math.round(28*Math.sin(Math.PI*Math.min(1,t/HANDS.up)));g.fillStyle='#1a1410';g.fillRect(ax-7,y-2,14,3);
+   g.fillStyle='#4e5a3c';g.fillRect(ax-2,y-h,5,h);g.fillStyle='#d8cfb0';g.fillRect(ax-1,y-h,2,h);
+   g.fillStyle='#d8cfb0';for(let j=-3;j<=3;j+=2)g.fillRect(ax+j,y-h-5,1,5);g.fillRect(ax-4,y-h-1,9,2);}}
+ /* GRAVE BREATH: a pale cold wall going out both ways from him, frost on the floor behind it */
+ if(e.mode==='breathTell'){const k=1-Math.max(0,e.modeT)/BREATH.tell;g.fillStyle='rgba(191,230,245,'+(.15+.3*k).toFixed(2)+')';for(let i=0;i<8;i++){const a=i/8*Math.PI*2+time*3,r=40*(1-k)+6;g.fillRect(Math.round(x+Math.cos(a)*r+8),Math.round(y-70+Math.sin(a)*r*.5),2,2);}}
+ if(e.breath){const b=e.breath;for(const s of [-1,1]){const bx=Math.round(b.x+s*b.r-cx);g.fillStyle='rgba(191,230,245,.35)';g.fillRect(bx-(s>0?10:0),y-96,10,96);g.fillStyle='rgba(232,248,255,.6)';g.fillRect(bx-(s>0?2:0),y-96,2,96);}
+  g.fillStyle='rgba(191,230,245,.25)';g.fillRect(Math.round(b.x-b.r-cx),y-2,Math.round(b.r*2),2);}
  if(e.mode==='slamTell'||e.effect==='slamTell'&&e.effectT>0){const r=e.phase===2?175:145;g.fillStyle='rgba(244,126,85,.28)';g.fillRect(x-r,y-25,r*2,25);g.strokeStyle='#ffc082';g.strokeRect(x-r,y-25,r*2,25);}
  g.restore();
 }

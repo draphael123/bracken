@@ -7,7 +7,8 @@
 //               shrouded body in each, and timber props holding the roof
 //   crypt       a flooded crypt: an arcade of round arches on square piers, the dark behind them, and a tide line of green scum
 //   bonestair   a bone-stair shaft: dark rock with a stair of stacked long bones climbing it in flights, skulls set in the risers
-//   procession  a processional hall: dressed stone, tall pillars, a stone effigy of a crowned dead king in a niche between each two,
+//   procession  a processional hall: dressed stone, tall pillars, a stone effigy of a hooded dead man in a niche between each two (NO
+//               CROWN: Daniel, 2026-09-27 - the Buried Dead is not a king, and his hall does not say he is),
 //               and banners hanging between them that move in the draught
 // A SEAM between two of them (structures kind 'seam', found by the builder) gets a pillar over the join.
 // Painted in the room's own coordinates, so nothing crawls when the camera moves (drawRoom translates and clips).
@@ -70,11 +71,11 @@ function procession(g, sx, sy, w, h, tx0, ty0, time) {
     /* the pillar: base, shaft with its fluting, and a capital */
     const px = sx + x; R(g, px, sy, 16, h, '#57505e'); R(g, px + 2, sy, 1, h, '#6e6676'); R(g, px + 7, sy, 1, h, '#4a4452'); R(g, px + 12, sy, 1, h, '#4a4452');
     R(g, px - 3, sy + 10, 22, 5, '#6e6676'); R(g, px - 3, sy + h - 8, 22, 8, '#4a4452');
-    /* between each two: a niche with a crowned effigy standing in it, and a banner either side */
+    /* between each two: a niche with a hooded effigy standing in it, and a banner either side */
     const nx = px + 16 + (bay - 16) / 2 - 14, ny = sy + h - 104;
     if (ny > sy + 16) { R(g, nx, ny, 28, 96, '#1e1a22'); g.fillStyle = '#1e1a22'; g.beginPath(); g.ellipse(nx + 14, ny, 14, 10, 0, Math.PI, 0); g.fill();
       R(g, nx + 7, ny + 20, 14, 64, '#7a7482'); R(g, nx + 8, ny + 20, 3, 64, '#948ea0'); R(g, nx + 9, ny + 8, 10, 12, '#8a8494');   /* the robe and the head */
-      R(g, nx + 8, ny + 4, 12, 4, '#a89a5a'); R(g, nx + 8, ny + 2, 2, 2, '#a89a5a'); R(g, nx + 13, ny + 2, 2, 2, '#a89a5a'); R(g, nx + 18, ny + 2, 2, 2, '#a89a5a');   /* his crown */
+      R(g, nx + 7, ny + 4, 14, 6, '#6a6472'); R(g, nx + 7, ny + 10, 2, 12, '#6a6472'); R(g, nx + 19, ny + 10, 2, 12, '#6a6472'); R(g, nx + 8, ny + 4, 12, 1, '#948ea0');   /* his hood, stone like the rest of him */
       R(g, nx + 11, ny + 12, 2, 2, '#1e1a22'); R(g, nx + 15, ny + 12, 2, 2, '#1e1a22'); R(g, nx + 10, ny + 36, 8, 3, '#948ea0'); R(g, nx + 13, ny + 30, 2, 40, '#6a6472');   /* hands on a sword */
       R(g, nx + 4, ny + 84, 20, 12, '#4e4754'); R(g, nx + 4, ny + 84, 20, 1, '#6e6676'); }
     for (const bx of [px + 22, px + bay - 30]) { const sway = Math.round(Math.sin(time * 0.9 + bx * 0.05) * 1.5), by = sy + 14, bh = Math.min(70, h - 60);
@@ -96,4 +97,64 @@ export function drawSeam(g, l, r, t, b) {
   R(g, x, t, 20, h, '#5a5448'); R(g, x + 2, t, 2, h, '#7a7262'); R(g, x + 15, t, 3, h, '#433e35');
   for (let y = t + 12; y < b; y += 16) R(g, x, y, 20, 1, '#433e35');
   R(g, x - 4, t, 28, 6, '#6a6354'); R(g, x - 4, t + 6, 28, 2, '#433e35'); R(g, x - 4, b - 8, 28, 8, '#4e483e'); R(g, x - 4, b - 8, 28, 1, '#7a7262');
+}
+/* THE DROWNED OSSUARY'S THINGS (claude/burial3, Daniel 2026-09-27: "the overhead wood platforms there don't make sense visually"). Down here
+   nothing is timber: THE CHAINS SWING a stone slab, THE COFFINS RISE as stone coffins, and a FLOATING BIER is a black bier with a shrouded
+   body on it. Returns true when it drew the mover (main.js draws everything else its own way). */
+export function drawBurialMover(g, m, cx, cy, time) {
+  const x = Math.round(m.x - cx), y = Math.round(m.y - cy);
+  if (m.kind === 'swing') { const px = Math.round(m.px - cx), py = Math.round(m.py - cy);
+    for (const ex of [x + 3, x + m.w - 4]) { const n = Math.max(1, Math.round(Math.hypot(ex - px, y - py) / 4)); for (let i = 0; i < n; i++) { const t = i / n; R(g, Math.round(px + (ex - px) * t) - (i & 1 ? 0 : 1), Math.round(py + (y - py) * t), i & 1 ? 1 : 3, 3, i & 1 ? '#5d594e' : '#9a958c'); } }
+    R(g, px - 4, py - 3, 8, 4, '#3a3630');
+    R(g, x, y, m.w, 8, '#56686e'); R(g, x, y, m.w, 2, '#7a8a8e'); R(g, x, y + 7, m.w, 1, '#2c3a40'); for (let k = 6; k < m.w - 2; k += 9) R(g, x + k, y + 3, 1, 3, '#3e4f56');
+    return true; }
+  if (m.bier) { const d = m.state === 'hold' ? (Math.sin(time * 40) > 0 ? 1 : -1) : 0;
+    R(g, x, y + 2, m.w, 5, '#2a2022'); R(g, x, y + 2, m.w, 1, '#4a3a36'); R(g, x + 2, y + 7, 3, 3, '#2a2022'); R(g, x + m.w - 5, y + 7, 3, 3, '#2a2022');   /* the bier: black boards, two short legs */
+    R(g, x + 4 + d, y - 3, m.w - 8, 5, '#b8ae98'); R(g, x + 4 + d, y - 3, m.w - 8, 1, '#d8cfb0'); R(g, x + m.w - 10 + d, y - 5, 6, 4, '#c8bea8');   /* the shrouded body on it */
+    for (let k = 8; k < m.w - 10; k += 4) R(g, x + k + d, y - 2, 1, 4, '#8c8272');
+    if (m.state === 'hold' || m.state === 'sink') { g.globalAlpha = 0.7; R(g, x - 2, y + 8, m.w + 4, 1, '#dff0f5'); g.globalAlpha = 1; }
+    return true; }
+  if (m.vert) { const n = Math.max(1, Math.round(m.w / 16));   /* a stone coffin, lid up, pushed up out of the water */
+    R(g, x, y, m.w, 10, '#5a5448'); R(g, x, y, m.w, 2, '#7a7262'); R(g, x + 2, y + 10, m.w - 4, 20, '#3e3a32'); R(g, x + 2, y + 10, 2, 20, '#4e483e');
+    for (let i = 0; i < n; i++) R(g, x + i * 16 + 7, y + 3, 2, 5, '#433e35'); R(g, x + Math.round(m.w / 2) - 4, y + 5, 9, 1, '#433e35');
+    return true; }
+  return false;
+}
+/* THE CRYPT'S LEDGE: dressed stone with a moulded lip, the same stone as the arcade behind it (the tile set L.ledgeZones names 'cryptStone') */
+export function bakeCryptLedge(canvas, v, end) {
+  const [c, g] = canvas(16, 16);
+  R(g, 0, 0, 16, 7, '#3e4f56'); R(g, 0, 0, 16, 2, '#6f8288'); R(g, 0, 2, 16, 1, '#56686e'); R(g, 0, 6, 16, 1, '#2c3a40');
+  R(g, (v * 5) % 16, 2, 1, 4, '#2c3a40'); R(g, 1 + ((v * 3) % 12), 4, 3, 1, '#4a5c62');
+  if (end === 'L') { R(g, 0, 0, 2, 7, '#2c3a40'); R(g, 1, 7, 4, 3, '#3e4f56'); R(g, 1, 10, 3, 2, '#2c3a40'); }
+  if (end === 'R') { R(g, 14, 0, 2, 7, '#2c3a40'); R(g, 11, 7, 4, 3, '#3e4f56'); R(g, 12, 10, 3, 2, '#2c3a40'); }
+  return c;
+}
+/* A PIER OF THE FLOODED ARCADE under a stone ledge: a square pier from the water's floor to the ledge, and the shoulders of the two arches
+   it carries, so the ledge reads as the arcade's own walkway and not a board in the air (structures kind 'cryptPier') */
+export function drawCryptPier(g, l, r, t, b) {
+  const mx = Math.round((l + r) / 2), x = mx - 7;
+  R(g, x, t + 6, 14, b - t - 6, '#3e4f56'); R(g, x, t + 6, 2, b - t - 6, '#56686e'); R(g, x + 12, t + 6, 2, b - t - 6, '#2c3a40');
+  for (let y = t + 18; y < b; y += 12) R(g, x, y, 14, 1, '#2c3a40');
+  g.strokeStyle = '#4a5c62'; g.lineWidth = 3; g.beginPath(); g.moveTo(l + 2, t + 7); g.quadraticCurveTo(x - 2, t + 7, x, t + 24); g.moveTo(r - 2, t + 7); g.quadraticCurveTo(x + 16, t + 7, x + 14, t + 24); g.stroke();
+}
+/* THE CANDLE PATH'S LEDGE (claude/burial3, follow-up: Daniel, 2026-09-27, "the lair's own ledges and the Candle Path's are still the
+   mine's staging"): a course of the barrow's own dry-stone revetment (see barrow(), above) laid as a shelf, not a board (L.ledgeZones
+   names 'barrowStone'). */
+export function bakeBarrowLedge(canvas, v, end) {
+  const [c, g] = canvas(16, 16);
+  R(g, 0, 0, 16, 7, '#5a5248'); R(g, 0, 0, 16, 2, '#766c59'); R(g, 0, 2, 16, 1, '#6e665a'); R(g, 0, 6, 16, 1, '#39362f');
+  R(g, (v * 5) % 16, 2, 1, 4, '#39362f'); R(g, 1 + ((v * 3) % 12), 4, 4, 1, '#4e473e');
+  if (end === 'L') { R(g, 0, 0, 2, 7, '#39362f'); R(g, 1, 7, 4, 3, '#5a5248'); R(g, 1, 10, 3, 2, '#39362f'); }
+  if (end === 'R') { R(g, 14, 0, 2, 7, '#39362f'); R(g, 11, 7, 4, 3, '#5a5248'); R(g, 12, 10, 3, 2, '#39362f'); }
+  return c;
+}
+/* THE BURIED DEAD'S LAIR LEDGE: dressed stone off the processional hall's own pillars (see procession(), above), the tiers he fights
+   round and his bier's chains carry (L.ledgeZones names 'processionStone'). */
+export function bakeProcessionLedge(canvas, v, end) {
+  const [c, g] = canvas(16, 16);
+  R(g, 0, 0, 16, 7, '#57505e'); R(g, 0, 0, 16, 2, '#6e6676'); R(g, 0, 2, 16, 1, '#7a7284'); R(g, 0, 6, 16, 1, '#332f38');
+  R(g, (v * 5) % 16, 2, 1, 4, '#332f38'); R(g, 1 + ((v * 3) % 12), 4, 4, 1, '#4a4452');
+  if (end === 'L') { R(g, 0, 0, 2, 7, '#332f38'); R(g, 1, 7, 4, 3, '#57505e'); R(g, 1, 10, 3, 2, '#332f38'); }
+  if (end === 'R') { R(g, 14, 0, 2, 7, '#332f38'); R(g, 11, 7, 4, 3, '#57505e'); R(g, 12, 10, 3, 2, '#332f38'); }
+  return c;
 }

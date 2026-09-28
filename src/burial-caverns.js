@@ -22,6 +22,15 @@ export const DESCENT = { hole: [184, 187], wall: [188, 359], g: [31, 41], hall: 
   oss: [184, 302, 45, 70], water: [190, 298, 66], piers: [[184, 189], [298, 302]], pier: 64, vault: [303, 358, 56, 70], gate: 359, shaft: [360, 366] };
 export const BLIND = [140, 187], EXAM = [367, 466], LAIR = [467, 527], AX = 471;
 export const BRIDGES = [[388, 401], [407, 419]];
+/* THE DROWNED OSSUARY, round 3 (claude/burial3, Daniel 2026-09-27: "has nothing going on"; "the overhead wood platforms don't make sense";
+   "the upper walkway cannot be crossed"). THE ARCADE WALK: the flooded arcade's own walkway, stone ledges on the arcade's piers, row 56
+   (a hero stands on 55, under the swinging slabs' lowest point) and row 57 where no coffin rises under it. The way up is THE CHAIN at its
+   west end, hung off the west pier; the gaps are two and three tiles (S7: the high road is the harder one); it ends over the east pier in
+   the dead's hoard, and you drop to the pier. OPTIONAL: the road under it is the water. */
+export const WALK = { chain: 190, top: 56, segs: [[191, 199, 56], [202, 212, 56], [216, 224, 57], [227, 240, 56], [243, 251, 57], [255, 265, 56], [268, 276, 57], [279, 288, 56], [292, 301, 56]] };
+/* FLOATING BIERS on the black water (they sink a moment after you land: burial-expansion.js stepBier), and DROWNED HANDS under it */
+export const BIERS = [193, 198, 203, 214, 219, 224, 229, 240, 245, 250, 255, 266, 271, 276, 288, 293];
+export const HANDS_AT = [201, 212, 222, 238, 253, 269, 286];
 export const SECTIONS = [
   ['THE CANDLE PATH', 0, 99, 6, 21, 'barrow'], ['THE OSSUARY', 100, 187, 6, 24, 'ossuary'], ['THE CHARNEL GALLERIES', 184, 296, 25, 44, 'bonestair'],
   ['THE DROWNED OSSUARY', 178, 302, 45, 70, 'crypt'], ['THE GRAVEYARD KEEPER', 303, 366, 6, 72, 'bonestair'], ['THE ROTTEN BRIDGES', 367, 466, 6, 30, 'barrow'],
@@ -30,7 +39,7 @@ export const POISON = { harm: true, poison: true, swim: true, clear: true, foulC
 
 export function burialCaverns({ painter, T, TS }) {
   const L = painter(BW, BH), { block, set, ent, coins, plat } = L, G = ROAD;
-  const interiors = [], structures = [], pools = [], moversExtra = [], gasVents = [], candles = [], darkZones = [], crumble = [], calm = [];
+  const drownedHands = [], interiors = [], structures = [], pools = [], moversExtra = [], gasVents = [], candles = [], darkZones = [], crumble = [], calm = [];
   const cut = (a, b, t, bot) => { for (let y = t; y <= bot; y++) for (let x = a; x <= b; x++) set(x, y, T.AIR); };
   const net = (x, a, b) => { for (let y = a; y <= b; y++) set(x, y, T.NET); };
   const deco = (kind, x, y = G - 1, v = 0) => ent('deco', x, y, { kind, v });
@@ -115,11 +124,17 @@ export function burialCaverns({ painter, T, TS }) {
     sign(188, 'THE DROWNED OSSUARY. THE COFFINS RISE AND THE CHAINS SWING: CROSS ON THEM.', DESCENT.pier - 1);
     for (const [x, ph] of [[208, 0], [234, 1.4], [260, 2.6], [282, 0.8]]) ent('mover', x, 63, { len: 3, vert: true, rise: 6, period: 4.4, ph });
     for (const [px, ph] of [[222, 0], [246, 1.2], [272, 2.2]]) moversExtra.push({ kind: 'swing', px: px * TS, py: oy0 * TS, arm: 7 * TS, x: 0, y: 0, w: 40, h: 8, period: 3.4, phase: ph });
-    for (const [x, y, n] of [[216, 55, 5], [242, 51, 5], [268, 55, 5]]) arch(x, y, n, wy);
-    for (const [t, x, y] of [['bonearcher', 218, 54], ['bonearcher', 270, 54], ['bonegob', 246, 50], ['bat', 226, 53], ['bat', 256, 51], ['boo', 286, 57], ['spider', 232, 45], ['spider', 276, 45]]) ent(t, x, y, { face: -1 });
+    /* THE ARCADE WALK (was three wooden ledges out of reach of each other): stone, on piers, crossable end to end */
+    net(WALK.chain, WALK.top, DESCENT.pier + 1);
+    for (const [a, b, row] of WALK.segs) { plat(a, row, b - a + 1); structures.push({ x0: a, x1: b, top: row, floor: oy1 + 1, kind: 'cryptPier' }); }
+    sign(192, 'THE ARCADE WALK. THE LONG WAY OVER THE WATER, AND A HOARD AT ITS END.', WALK.top - 1);
+    coins([294, 55], [295, 55], [296, 55], [297, 55], [298, 55], [299, 55], [300, 55], [301, 55], [297, 54], [298, 54]); deco('coffer', 300, 55);   /* the hoard (S7: a cache of ten) */
+    for (const [t, x, y] of [['bonearcher', 220, 56], ['bonearcher', 272, 56], ['bonegob', 247, 56], ['bat', 226, 53], ['bat', 256, 51], ['boo', 286, 57], ['spider', 232, 45], ['spider', 276, 45]]) ent(t, x, y, { face: -1 });
     for (let x = 212; x < 296; x += 10) coins([x, 62]);
     /* the second grave candle: a vault in the west wall, over the pier */
     cut(178, 183, 57, 60); interiors.push([178, 183, 57, 60, 'crypt']); plat(184, 61, 4);
+    for (const x of BIERS) moversExtra.push({ kind: 'bier', bier: true, x: x * TS, y: wy * TS - 6, y0: wy * TS - 6, w: 2 * TS, h: 8, phase: x * 0.37 });
+    for (const x of HANDS_AT) drownedHands.push({ x: x * TS + 8, y: wy * TS });
     ent('stray', 180, 60, { kind: 'lamp' }); ent('silver', 182, 60); ent('torch', 179, 60);
   }
 
@@ -172,7 +187,7 @@ export function burialCaverns({ painter, T, TS }) {
 
   // ======================================================================== 7. THE BURIED DEAD'S LAIR (467-527): the processional hall
   interiors.push([LAIR[0], LAIR[1] - 2, 6, 21, 'procession']);
-  ent('check', 468, G - 1); sign(469, 'THE BURIED DEAD. BURN THE GAS UNDER HIM AND HE OPENS. HIS HANDS AND SKULLS REACH THE LEDGES.');
+  ent('check', 468, G - 1); sign(469, 'THE BURIED DEAD. BURN THE GAS UNDER HIM AND HE OPENS. NO HAND OF HIS RISES IN ITS LIGHT.');
   const wallL = AX - 1, wallR = AX + 42;
   /* THE TIERS (unchanged from 2026-09-24, tools/buried-dead.mjs): a step at each wall (48 px), low (48), high (96: over the nova),
      and THE CROWN, a bier hung on chains 128 px up over the grave he rises from */
@@ -201,5 +216,7 @@ export function burialCaverns({ painter, T, TS }) {
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }], calm,
     gasVents, candles, darkZones, crumble, burialSections: SECTIONS.map(s => s.slice()), arena, ambushes, graves, graveRows: [vy1 + 1, vy1 + 2], quest,
     mini: { name: 'THE GRAVEYARD KEEPER', x0: vx0 * TS, x1: (vx1 + 1) * TS, floor: (vy1 + 1) * TS, trigger: (vx0 + 4) * TS, wallL: vx0 - 1, gate: DESCENT.gate, boss: 'gravewarden', y0: vy0 * TS, y1: (vy1 + 2) * TS },
+    drownedHands, ledgeZones: [[184, 187, 61, 61, 'cryptStone'], [WALK.segs[0][0], WALK.segs[WALK.segs.length - 1][1], 56, 57, 'cryptStone'],
+      [0, 99, 6, 21, 'barrowStone'], [LAIR[0], LAIR[1], 6, 21, 'processionStone']],   /* THE CANDLE PATH and THE BURIED DEAD'S LAIR: dressed stone off each one's own backdrop, not the mine's staging (follow-up, Daniel 2026-09-27) */
     burialPlaces: [['THE BLIND VAULT', ...BLIND], ['THE ROTTEN BRIDGES', BRIDGES[0][0], BRIDGES[1][1]]], ventLight: VENT.light };
 }

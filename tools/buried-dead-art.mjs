@@ -11,7 +11,7 @@ import { install, newCanvas, savePNG } from './node-canvas.mjs';
 install();
 const A = await import('../src/buried-dead-art.js');
 const S = A.bakeBuriedDeadKing();
-const NAMES = ['DRAG', 'DRAG 2', 'SWEEP TELL', 'SLAM TELL', 'NOVA TELL', 'OPEN', 'BURIED', 'THROW TELL', 'CALL TELL', 'HANDS TELL', 'SKULL TELL', 'BODY TELL', 'BODY SLAM', 'STUCK', 'RISING', 'SLAM', 'SWEEP', 'THROWN'];
+const NAMES = ['DRAG', 'DRAG 2', 'SWEEP TELL', 'SLAM TELL', 'NOVA TELL', 'OPEN', 'BURIED', 'THROW TELL', 'CALL TELL', 'HANDS TELL', 'SKULL TELL', 'BODY TELL', 'BODY SLAM', 'STUCK', 'RISING', 'SLAM', 'SWEEP', 'THROWN', 'GRAVE HANDS TELL', 'GRAVE BREATH TELL'];
 assert.equal(S.R.length, NAMES.length, 'a frame for every name');
 // 1. one canvas, grounded
 const w = S.R[0].width, h = S.R[0].height;
@@ -21,7 +21,7 @@ const flying = 12;
 low.forEach((y, i) => { if (i !== flying) assert.equal(y, S.ay - 1, NAMES[i] + ' is not grounded on the anchor (lowest row ' + y + ', ay ' + S.ay + ')'); });
 // 2. every tell its own pose
 const hash = c => { const d = c._d; let x = 2166136261; for (let i = 0; i < d.length; i++) x = Math.imul(x ^ d[i], 16777619) >>> 0; return x; };
-const tells = ['slamTell', 'cleaveTell', 'novaTell', 'throwTell', 'callTell', 'clawTell', 'skullTell', 'bodyTell', 'sinkTell', 'eruptTell'];
+const tells = ['slamTell', 'cleaveTell', 'novaTell', 'throwTell', 'callTell', 'clawTell', 'skullTell', 'bodyTell', 'sinkTell', 'eruptTell', 'handsTell', 'breathTell'];
 const fr = m => A.kingFrame({ mode: m, anim: 0, vx: 0, open: 0, effectT: 0 });
 const rest = fr('walk'), seen = new Map();
 for (const m of tells) {
