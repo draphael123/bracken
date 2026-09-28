@@ -22,6 +22,7 @@ const MODEL_GAPS = {
   wood: [[510, 8, 'the wasp pogo over the last pit: the fill has no landing lower than a jump starts, so it never comes down off a wasp'],
     [453, 14, 'the same: the pit crossing before it is made on the wasps']],
   moor: [[652, 12, "the gust ride's carry is calibrated on the model's 6-tile jump (tools/moor-gusts.mjs), so with a real jump the carry falls a tile short - the ride itself is walked by tools/moor-gusts-walk.mjs"]],
+  oreroad: [[470, 12, "a real breakable wall (src/breakable-walls.js) stands solid at column 468, between THE DRUM YARD's fight and this checkpoint, until struck - the fill has no pick, so it can never get past it. A player does: tools/ore-exam.mjs pins the wall is there and opens for real, and it resets on death (wallsMendAll), so the checkpoint stays genuinely gated by it every attempt"]],
 };
 /* THE RULE BITES: a made-up flight arena with a lantern under its floor, one far below it, one inside it */
 export const seenFromFlight = (L, e) => { const A = L.arena; if (!A || !A.carpet) return null; const b = carpetBox(A, 0), feet = (e.y + 1) * TS, px = e.x * TS + 8;
