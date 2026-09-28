@@ -199,13 +199,16 @@ export function buildOreRoad({ painter, T }) {
   rope(21, YARD + 1, YARD + 3); rope(35, YARD + 1, YARD + 3);                   // and a way out at both ends, in plain sight from the bottom of it
   block(11, 12, YARD - 1, YARD);                                                // the spoil heap's peak
   set(9, YARD, SLOPE.R1); set(10, YARD - 1, SLOPE.R1); set(10, YARD, T.SOLID);  // SLOPES (Daniel's backlog, src/slopes.js): a two-step ramp up onto it, not a jump - column 8 is the flat approach
+  set(36, YARD, SLOPE.R1);   /* A RAMP TO A CART LINE (Daniel's follow-up, src/slopes.js): the feed rail's own hitching ramp, right where the
+     rockgoblin's cart rail starts (WORKS' cart span checks columns 37-49 flat, so this sits one column clear of it, at the crusher's
+     own east lip) - walked up and stepped off the top (the same LONE pattern src/dune-yard.js proves), not jumped */
   block(51, 67, YARD - 7, YARD - 7); block(52, 54, YARD - 6, YARD - 1);         // the loading house: its roof, and its west wall, with the road through under it
   plat(55, YARD - 3, 12);                                                       // its loft, where the loaders work
   rope(56, YARD - 4, YARD); rope(51, YARD - 8, YARD);                           // up to the loft, and on up through a hole in the roof to the tipping frame
   ent('sign', 4, YARD, { text: 'THE ORE ROAD. THE BUCKETS ARE THE ONLY FLOOR OVER THE GORGE, AND THEY COME ON A CLOCK.' });
   ent('sign', 17, YARD, { text: 'HOLD DOWN ON A LOADED SKIP AND IT TIPS. EMPTY IT RIDES HIGH, LOADED IT RIDES LOW.' });
   ent('sign', 49, YARD, { text: 'HOLD THE SHIELD ON A BUCKET AND THE LINE STOPS. STOPPED IS WHERE YOU CAN FIGHT.' });
-  ent('check', 5, YARD); ent('check', 37, YARD); ent('check', 64, YARD);   /* 37, not 34: column 34 is the crusher's east lip, and a checkpoint over the pit respawns you onto its teeth (audit FLOAT) */
+  ent('check', 5, YARD); ent('check', 41, YARD); ent('check', 64, YARD);   /* 41, not 34: column 34 is the crusher's east lip, and a checkpoint over the pit respawns you onto its teeth (audit FLOAT). not 37 either any more: the cart line's ramp at 36 needs that column clear */
   meet('THE PICK LINE', 14, 40, [['miner', 16, YARD], ['rockgoblin', 10, YARD - 2], ['sprig', 40, YARD]]);
   meet('THE LOADING HOUSE', 52, 67, [['miner', 58, YARD], ['rockgoblin', 66, YARD], ['sapper', 56, YARD]]);
   ent('tippler', 60, YARD - 8, { face: -1 });                                   /* THE FIRST TIPPLER, over a floor and not yet over a drop: the level shows you the stream where you can walk out of it */
@@ -216,6 +219,12 @@ export function buildOreRoad({ painter, T }) {
   ent('check', 100, YARD); ent('check', 124, YARD);
   meet('THE PYLON LOOKOUTS', PYLON_A[0], PYLON_A[1], [['javelin', 97, YARD], ['sprig', 103, YARD], ['gaffer', 101, YARD], ['sapper', 99, YARD]]   /* ROUND THREE: the bomb goblins are back - on a rest over the drop, where a bomb at your feet leaves nowhere to step */);
   meet('THE SECOND PYLON', PYLON_B[0], PYLON_B[1], [['javelin', 121, YARD], ['gaffer', 127, YARD], ['miner', 124, YARD], ['sapper', 122, YARD]]);
+  /* TWIST THE TIP (audit plan item 1, cols 120-135, over the pylon lookouts' deck): a lower stage under the second pylon,
+     out in the open gorge - the level asked "hold down and it tips, and what you tip falls on what is under it" once,
+     in the yard's crusher, on foot. Here it asks it again, riding: a sapper pair stand on the low stage, and a loaded
+     skip tipped from the line above drops its ore straight down onto them. */
+  plat(121, YARD + 5, 7);
+  meet('THE UNDER-DECK', 121, 127, [['sapper', 122, YARD + 5], ['sapper', 126, YARD + 5]]);
   /* FALLING ROCK OVER THE SPANS (Daniel's idea 1). Out here there is nothing for a goblin to stand on, so the lane is
      kept honest by the crags themselves: three falls on a beat you can learn, and the answer to all three is the BRAKE.
      A tippler needs a floor under his feet AND a floor under his stream, so every one of them is on a structure. */
@@ -281,6 +290,11 @@ export function buildOreRoad({ painter, T }) {
   meet("THE BRAKEMAN'S HUT", PILLAR_X[0], PILLAR_X[1], [['heavy', 343, PILLAR[0]], ['sapper', 351, PILLAR[1]], ['rockgoblin', 348, PILLAR[1]]]);
   meet('THE SECOND PILLAR', PILLAR_BX[0], PILLAR_BX[1], [['gaffer', 378, PILLAR_B], ['javelin', 383, PILLAR_B], ['sheargob', 380, PILLAR_B]]);
   ent('tippler', 346, PILLAR[1], { face: -1 });                                 // on the brakeman's stage, tipping onto the pillar's lower step
+  /* DEVELOP THE BRAKE (audit plan item 2): past the second pillar, a second tippler's frame hangs right over the steep
+     line itself - not off to the side on a structure of its own, but astride the cable, so his stream crosses it. Brake
+     short of him and go on after his skip drops: the brake as timing (the yard only ever taught it as a place to fight) */
+  plat(397, 8, 4); ent('tippler', 398, 7, { face: -1 });
+  plat(396, 18, 5);                                                             // the catch ledge his stream lands on, well under the line - never a floor over open gorge (A12)
   meet('THE STEEP FLIERS', 354, 406, [['bat', 360, 14], ['bat', 372, 12], ['crow', 392, 9]]);
   coins([348, PILLAR[1] - 1], [378, PILLAR_B - 1], [382, PILLAR_B - 1]);
 
@@ -300,7 +314,7 @@ export function buildOreRoad({ painter, T }) {
   ent('sign', 409, WINCH, { text: 'THE ORE SHAFT. HOLD DOWN FOR HIS DRUM, BRAKE FOR THE RUST, AND MIND THE SHEARGOB.' });
   ent('sign', 458, WINCH, { text: 'THE DRUM HOUSE. NOTHING STOPS THE DRUM BUT A BUCKET WITH SOMEONE IN IT.' });
   meet('THE WINCH CREW', 409, 420, [['miner', 410, WINCH], ['rockgoblin', 414, WINCH], ['sheargob', 419, WINCH - 4]]);   /* the sheargob is the one who leaps onto your bucket once you board */
-  meet('THE DRUM YARD', 451, 475, [['heavy', 455, WINCH], ['gaffer', 462, WINCH], ['sheargob', 459, WINCH - 4], ['javelin', 466, WINCH], ['sapper', 452, WINCH]]);   /* the landing: what used to fight you on the shaft's own floor, moved off it */
+  meet('THE DRUM YARD', 451, 475, [['heavy', 458, WINCH], ['gaffer', 462, WINCH], ['sheargob', 459, WINCH - 4], ['javelin', 466, WINCH], ['sapper', 452, WINCH]]);   /* the landing: what used to fight you on the shaft's own floor, moved off it. heavy at 458, not 455 - the checkpoint at 454 needs two tiles' clearance (elites) */
   ent('tippler', 428, WINCH - 7, { face: -1 }); ent('tippler', 460, WINCH - 9, { face: -1 });   /* the first stands over THE ORE SHAFT itself now - the middle of the ride - its stream lands on the spill ledge */
   meet('THE SHAFT BATS', 421, 450, [['bat', 427, WINCH - 5], ['bat', 441, WINCH - 6]]);          // loose over the ride, under the roof
   coins([419, WINCH - 4], [432, WINCH - 1], [458, WINCH - 4], [464, WINCH - 1]);
@@ -372,14 +386,14 @@ export function buildOreRoad({ painter, T }) {
     for (const d of [3, -3, 4, -4, 5, -5, 2, -2, 6, -6]) { const c = m.x + d, y = m.y; if (got || c < 2 || c >= A.x0 - 2) continue;
       if (!clear(c, y) || !fl(L.grid[(y + 1) * W + c]) || [-1, 0, 1].some(k => busy.has((c + k) + ',' + y) || L.grid[y * W + c + k] === T.NET) || veins.some(v => Math.abs(v.x - c) < 3 && v.y === y)) continue;
       got = [c, y]; }
-    if (got) { veins.push({ x: got[0], y: got[1], face: 0, gem: (got[0] * 31) % 3 === 0, hits: 0, mined: false, coins: OR.VEIN_COINS }); busy.add(got.join(',')); } }
+    if (got) { const ore = oreAt(got[0], got[0], got[1], 23); veins.push({ x: got[0], y: got[1], face: 0, ore, gem: ore === 4, hits: 0, mined: false, coins: OR.VEIN_COINS }); busy.add(got.join(',')); } }
   for (let x = 8; x < A.x0 - 4; x += OR.VEIN_EVERY) { if (veins.some(v => Math.abs(v.x - x - OR.VEIN_EVERY / 2) < OR.VEIN_EVERY / 2)) continue; let best = null, bw = 0;
     for (let c = x; c < x + OR.VEIN_EVERY - 4; c++) for (let y = 2; y < H - 2; y++) {
       if (!clear(c, y) || !fl(L.grid[(y + 1) * W + c])) continue;
       if ([-1, 0, 1].some(d => busy.has((c + d) + ',' + y) || L.grid[y * W + c + d] === T.NET)) continue;
       let w = 0; for (let k = -4; k <= 4; k++) if (clear(c + k, y) && fl(L.grid[(y + 1) * W + c + k])) w++;
       if (w > bw) { bw = w; best = [c, y]; } }
-    if (best && bw >= 7) { veins.push({ x: best[0], y: best[1], face: 0, gem: (best[0] * 31) % 3 === 0, hits: 0, mined: false, coins: OR.VEIN_COINS }); busy.add(best.join(',')); } }
+    if (best && bw >= 7) { const ore = oreAt(best[0], best[0], best[1], 23); veins.push({ x: best[0], y: best[1], face: 0, ore, gem: ore === 4, hits: 0, mined: false, coins: OR.VEIN_COINS }); busy.add(best.join(',')); } }
   /* and the gem glints in the ceiling over the chasm: nothing to mine up there, only light to see the rock by */
   const glints = []; for (let x = 4; x < W - 4; x += 9) glints.push([x + ((x * 13) % 5), ceil[x] - 1 - ((x * 7) % 3), (x * 17) % 3]);
   /* EVERY FALLING ROCK IS TOLD (Daniel's playtest, 2026-09-25). A full second of dust from the spot and a red ring where it
@@ -429,6 +443,7 @@ OR.MINE_EDGE = 475;
    and the violet gem. Varied, not one stamp - and SECTIONS BIAS DIFFERENT ORES (oreBias below): copper and iron in the
    working yard, silver through the tower and chute, gem through the wreck and the steep line, gold toward the drum. */
 export const ORES = [['#1f3a32', '#3f8a66', '#9ae8bc'], ['#4a2418', '#a0522d', '#f0a070'], ['#3a3a42', '#9aa0ac', '#eef0f6'], ['#5a4418', '#d0a030', '#ffe68a'], ['#34245a', '#9a6ae0', '#ecdcff']];
+export const ORE_NAMES = ['COPPER', 'IRON', 'SILVER', 'GOLD', 'GEMS'];
 /* WHICH ORE A SECTION LEANS ON (index into ORES: 0 copper, 1 iron, 2 silver, 3 gold, 4 gem), by route column. Three in
    five seams take the section's own ore; the rest are any of the five, so no stretch is a single stamp either */
 export const oreBias = x => x < 136 ? 0 : x < 272 ? 2 : x < 408 ? 4 : 3;
@@ -807,7 +822,7 @@ export function drawOreCeiling(g, L, cx, cy, time, VW, VH) {
 export function drawOreVeins(g, L, cx, cy, time, VW, VH) {
   drawOreSeams(g, L, cx, cy, time, VW, VH);   /* MINE LIFE: the ore in the rock faces, over the tiles */
   for (const v of (L.veins || [])) { const x = v.x * TS - cx, y = v.y * TS - cy; if (x < -20 || x > VW + 20 || y < -20 || y > VH + 20) continue;
-    const pal = v.gem ? ['#3a3048', '#c08aff', '#6fe0d8'] : ['#3a3028', '#e0a040', '#c07048'];
+    const pal = ORES[v.ore ?? (v.gem ? 4 : 1)];   /* THE MINABLE VEINS, ALL FIVE ORES (Daniel's backlog): the section bias (oreBias/oreAt) that already varies the ambient seams now varies what you can actually strike and carry off too */
     g.fillStyle = '#1e1a20'; g.fillRect(x + 1, y - 2, 14, 13); g.fillRect(x - 1, y + 1, 18, 8);
     g.fillStyle = pal[0]; g.fillRect(x + 2, y - 1, 12, 11); g.fillRect(x, y + 2, 16, 6);
     if (v.mined) { g.fillStyle = '#141116'; g.fillRect(x + 4, y + 2, 8, 5); continue; }

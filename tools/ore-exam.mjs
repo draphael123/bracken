@@ -16,7 +16,7 @@
 // fails at "the winch line exists" (no such id in cableLines()) and everything after it, because none of this was there.
 // usage: node tools/ore-exam.mjs
 import { LEVELS, T } from '../src/level.js';
-import { OR, cableLines, ORES, oreBias, MINE_PLACES } from '../src/ore-road.js';
+import { OR, cableLines, ORES, oreBias, MINE_PLACES, WORKS } from '../src/ore-road.js';
 import { SLOPE, isSlope } from '../src/slopes.js';
 
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
@@ -58,6 +58,45 @@ console.log('THE ORE SHAFT, THE FIVE ORES, AND THE SLOPE (lane claude/oreroad2)'
 /* ---- NOTHING ELSE MOVED: the level still needs the Moor, keeps its boss and its id, and every existing place is where it was ---- */
 { ok(lv.needs === 'moor' && L.arena.boss === 'winchmaster' && lv.id === 'oreroad', 'id, needs and boss untouched');
   ok(MINE_PLACES.length >= 7, `${MINE_PLACES.length} named mine places still on the route`); }
+
+/* ==================================================================================================================
+   FOLLOW-UP (Daniel approved, same lane): audit plan items 1 and 2, the veins in all five ores, a real cart-line
+   ramp, and the elites fix that came with them. PROVED RED first via a throwaway worktree at this branch's own
+   pre-follow-up commit (cd70591), the same way the exam section above was proved red on master. */
+console.log('\nFOLLOW-UP: TWIST THE TIP, DEVELOP THE BRAKE, FIVE-ORE VEINS, A CART-LINE RAMP');
+
+/* ---- 0: the elites fix - the gate-holding heavy never stands within two tiles of a checkpoint (tools/elites.mjs's
+   own "never at a landing" rule, RULES). This is what was red: a heavy at 455 stood one tile from the check at 454 */
+{ const heavy = L.ents.find(e => e.elite && e.t === 'heavy' && e.gate !== undefined);
+  const nearCheck = heavy && L.ents.some(c => c.t === 'check' && Math.abs(c.x - heavy.x) <= 2 && Math.abs(c.y - heavy.y) <= 2);
+  ok(!!heavy && !nearCheck, 'the drum yard\'s gate-holding heavy stands clear of every checkpoint' + (heavy ? ` (heavy@${heavy.x},${heavy.y})` : ' - no gated heavy found')); }
+
+/* ---- 1: TWIST THE TIP (audit plan item 1, cols 120-135, over the pylon lookouts' deck) - a sapper pair on a deck
+   BELOW the first span's own line, so a loaded skip tipped from above lands on them */
+{ const deck = (L.encounters || []).find(e => e.name === 'THE UNDER-DECK');
+  ok(!!deck && deck.x0 >= 120 && deck.x1 <= 135, 'THE UNDER-DECK sits at the end of span 1 (120-135)');
+  const below = L.ents.filter(e => e.t === 'sapper' && e.x >= 120 && e.x <= 135 && e.y > OR.YARD);
+  ok(below.length >= 2, `${below.length} sapper(s) stand below the first span's own line (row ${OR.YARD}), tippable from above` + (below.length ? '' : ' - none found under the line')); }
+
+/* ---- 2: DEVELOP THE BRAKE (audit plan item 2, the steep line, 353-407) - a second tippler hangs directly over the
+   steep cable's own path (not off on a structure of its own like the brakeman's stage tippler at 346), with a floor
+   under its stream that is never the cable's own path (A12, tools/ore-road.mjs already proves every tippler's stream
+   lands on real footing; this just proves there are now two tipplers on the steep line, not one) */
+{ const steepTipplers = L.ents.filter(e => e.t === 'tippler' && e.x >= 340 && e.x < 407);
+  ok(steepTipplers.length >= 2, `${steepTipplers.length} tippler(s) on the steep line - the brakeman's stage one, and one that hangs over the cable itself`);
+  const overLine = steepTipplers.find(e => e.x > 384);   /* past the second pillar (PILLAR_BX[1]), astride the cable rather than on a pillar's own stage */
+  ok(!!overLine, 'one of them hangs over the line past the second pillar, where braking short of him is the only way to dodge his stream'); }
+
+/* ---- 3: THE MINABLE VEINS IN ALL FIVE ORES (not just gem/not-gem) ---- */
+{ const veinOres = new Set((L.veins || []).map(v => v.ore));
+  ok(veinOres.size === 5, `veins are struck in ${veinOres.size} of the five ores (it was two: gem, or not)`); }
+
+/* ---- 4: A REAL SLOPE RAMP TO A CART LINE - distinct from the spoil heap's own ramp, and outside the cart rail's
+   own checked flat span (tools/ore-work.mjs's span() - the WORKS row for the ore yard's rockgoblin cart) */
+{ let cartSlope = false; for (let y = 0; y < L.H; y++) if (isSlope(at(36, y))) cartSlope = true;
+  ok(cartSlope, 'a slope sits at column 36, the ore yard cart rail\'s own hitching ramp (one column clear of its checked span)');
+  const cartWork = WORKS.find(w => w[3].k === 'cart' && w[1] === 66);
+  ok(!!cartWork, 'the ore yard\'s cart line is still where the ramp was built for it'); }
 
 console.log(failed());
 function failed() { return fails ? '\n' + fails + ' ore-exam check(s) FAILED.' : '\nall ore-exam checks pass.'; }

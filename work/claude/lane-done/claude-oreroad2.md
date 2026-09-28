@@ -49,11 +49,47 @@ Proved red on master: `git worktree add ../oreroad2-baseline-check cd35d24`, cop
 
 ## UNVERIFIED
 
-- `tools/oreroad-walk.mjs` (not in the suite - it's a play-bot sweep, and the bot cannot fight per RULES M) reports the knight bot getting stuck at route tile 75 and only covering 26% of the level before giving up. I checked: tile 75 is in the first span, nowhere near anything I touched (my changes start at column 421). This looks like a pre-existing bot limitation (it can't fight past an early encounter), not a regression from this lane - I did not chase it further given the brief and the cost rules.
-- I did not extend the vein pickups' (`L.veins`, the minable rock-face seams you can strike) two-way gem/not-gem palette to the full five-ore set - only the SEAM texture (`L.seams`, the ambient ore in the rock faces, already a much larger system) got the full five-ore section bias. Veins still read as either "ore" (rust/brass) or "gem" (violet/cyan). Widening veins to all five ores would touch `drawOreVeins`' two-palette rendering, which felt like more surgery than the backlog's "own colour + sparkle, mined the same way" strictly asked for - flagged below.
+- `tools/oreroad-walk.mjs` (not in the suite - it's a play-bot sweep, and the bot cannot fight per RULES M) reports the knight bot getting stuck at route tile 75 and only covering 26% of the level before giving up. I checked: tile 75 is in the first span, nowhere near anything I touched (my changes start at column 421). This looks like a pre-existing bot limitation (it can't fight past an early encounter), not a regression from this lane - I did not chase it further given the brief and the cost rules. Still true after the follow-up below (re-ran it: same STUCK @70, now 18% - the number moves a little run to run since it's a bot, not the level).
 
-## QUESTIONS FOR DANIEL
+## QUESTIONS FOR DANIEL (original three - 1 and 3 are now answered by the follow-up below; 2 stands)
 
-1. **Should the minable veins (the pickups you strike, not the background seam texture) get all five ore colours too, or stay gem/not-gem?** *Recommendation (conservative, built as default): leave veins as the two-palette gem/ore system - it's what "mined the same way" already describes, and the seams (the much larger ambient system) now carry the full five-ore variety and the section bias. Widening veins is a small, separable follow-up if you want it.*
+1. ~~Should the minable veins get all five ore colours too, or stay gem/not-gem?~~ **Done in the follow-up: all five.**
 2. **The winch line's rust rate** (`cracked: 4`, one bucket in four) - I matched the steep line's convention (`cracked: 3`) rather than trying to land on literally always-exactly-one-rusted-bucket-visible, since the loop math doesn't guarantee an exact count at any instant. *Recommendation: leave it - it reads the same as the steep line's rust, which you've already approved.*
-3. **The slope is a single, small, safe proof (the spoil heap ramp) rather than a broader re-terrain of the cart lines** ("ramps to the cart lines" in your note) - the cart rail spans I found are all flat with their surrounding floor, so a ramp there wouldn't connect two different heights the way the spoil heap does. *Recommendation: if you want a literal ramp up to a cart line, tell me which one (e.g. the winch house's rail yard, or the ore yard's feed rail) and I can shape a small rise into it in a follow-up - didn't want to guess and reshape a working mine-life loop's geometry without a specific target.*
+3. ~~The slope is a single, small, safe proof rather than a ramp to a cart line~~ **Done in the follow-up: the ore yard's cart line now has one.**
+
+---
+
+## FOLLOW-UP (2026-09-28, same day, Daniel approved all of it)
+
+### 0. Fix: `elites` was red
+
+The drum yard's gate-holding heavy (`src/level.js`'s `ELITES.oreroad` table, not `src/ore-road.js` - the elite is pinned to a fixed spot by that table regardless of where the ordinary `heavy` entity I placed stands, since it snaps whichever `heavy` it finds within 3 tiles back onto its own coordinate) was at column 455, one tile from the checkpoint I'd moved to 454 for an unrelated reason (clear of the loft's rope). Moved him to 458 in **both** places - `src/ore-road.js`'s `THE DRUM YARD` foe list and `src/level.js`'s `ELITES.oreroad` entry (they have to agree: the table only *finds and upgrades* an existing `heavy` within 3 columns of the coordinate it names, it doesn't place one). `elites` is green.
+
+### 1. TWIST THE TIP (audit plan item 1, cols 120-135, over the pylon lookouts' deck)
+
+A new one-way deck (`plat(121, YARD + 5, 7)`) sits five rows under the first span's own line, at the second pylon. Two sappers (`THE UNDER-DECK`) stand on it. The mechanic is the one the yard's crusher already teaches (hold down on a loaded skip and it tips; main.js already drops the ore on whatever is beneath) - this is the first place after the yard that asks for it again, riding, on a fight rather than a floor.
+
+### 2. DEVELOP THE BRAKE (audit plan item 2, the steep line, 353-407)
+
+A second tippler now hangs directly over the steep cable itself, past the second pillar (`plat(397, 8, 4)`, tippler at 398,7) - not off on a pillar's own stage like the existing one at 346. His stream lands on a small one-way catch ledge (`plat(396, 18, 5)`) well under the line, so A12 (a tipping frame needs a floor under its feet *and* under its stream) still holds without putting a solid tile in the bucket's own path. Braking short of him and going on after his skip drops is now a real choice on this line, not only on the brakeman's own stage at the start of it.
+
+### 3. The minable veins, all five ores
+
+`veins.push` now carries an `ore` index (`oreAt()`, the same section-biased pick the ambient seams already used) instead of a bare `gem` boolean; `gem` is kept as `ore === 4` for the one place that still wants a plain boolean (the vein's own soft light in `src/main.js`, which only gem veins get - "own colour + sparkle" reads as gems being the one that visibly glows, so I left that distinction rather than lighting all five). `drawOreVeins`' palette, and every struck/mined particle burst and the "COPPER/IRON/SILVER/GOLD/GEMS" popup text in `src/main.js`, now read the vein's own ore (`ORES`/new `ORE_NAMES`) instead of a two-way branch. Checked: all 5 ore indices appear among the level's 16 veins.
+
+### 4. A real slope ramp to a cart line
+
+Picked **the ore yard's feed-rail cart** (`WORKS`' `['rockgoblin', 66, 36, { k: 'cart', load: 48.5, tip: 38.5 }]`, "the feed rail, tipped into the crusher") over the winch house's rail-yard cart, because the winch house's entry deck has no free column at all - `tools/ore-work.mjs`'s own span check for a `cart` work-loop covers `floor(min(load,tip)-1.3)` to `ceil(max(load,tip)+1.3)-1`, which for the winch cart is columns 408-418, i.e. the *entire* entry deck. The ore yard's cart checks columns 37-49, leaving column 36 (one clear of it, at the crusher's own east lip) free for a single `SLOPE.R1` tile - "one R1 on the flat, walked up and stepped off the top," the same `LONE` pattern `src/dune-yard.js` already proves in `tools/slopes.mjs`. Moved the checkpoint that used to sit at column 37 to 41 so its own 3-column clearance no longer overlaps the ramp.
+
+### Pinning
+
+`tools/ore-exam.mjs` got a second section, "FOLLOW-UP", pinning all four items above plus the elites fix (8 more assertions, 23 total). Proved red first: `git worktree add ../oreroad2-followup-baseline cd70591` (this branch's own commit from before the follow-up), copied the updated `ore-exam.mjs` in, ran it - 7 of the 8 new assertions failed (the 8th, "the cart line is still where the ramp was built for it," was true on both sides, since I didn't move the cart). Worktree removed afterward, never `git stash`.
+
+### Checks (green)
+
+Ran individually rather than as one `npm run check --` batch, because ore-work.mjs hung with zero output for several minutes on the first attempt while the PC had ~40 Chrome processes up from other lanes; killed it, swept orphan profiles (`tools/profile-sweep.mjs --kill-orphans`), and re-ran it alone - it completed in under a minute both times after that.
+
+- `ore-road`, `ore-exam` (23/23), `architecture`, `checkpoints`, `checkpoint-gaps`, `skins`, `dangling-paths`, `npc-removal`, `elites`, `syntax` - via one `npm run check --` batch, all green.
+- `ore-work`, `ore-ride`, `boss-fight-end`, `slopes-trace` - each run alone (browser-driven), all green.
+- `slopes.mjs` - green on its own too (the level whitelist from the first commit still holds; this follow-up added no new slope-mover level, only more tiles on `oreroad`, already whitelisted).
+- `tools/oreroad-walk.mjs` (informational, not in the suite) - re-ran, same pre-existing STUCK/BRUTAL notes as before, nothing new.
