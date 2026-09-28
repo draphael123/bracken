@@ -86,10 +86,10 @@ try {
       BK.keys.block=false;const late=aims.filter(a=>a[0]<${GARG.breath.lock}-0.02),set=late.length>1&&late.every(a=>Math.abs(a[1]-late[0][1])<1e-9);const o={seen:[...seen],set,took:hp0-BK.P.hp};BK.god=true;return o;};
     out.breath={open:breath(false),guard:breath(true)};
     /* THE BATTLEMENTS' MOAT: fall in, one bite, back at or behind where you fell */
-    {boot(()=>false);const P=BK.P;BK.tp(380,33);hurt();const hp0=P.hp;P.vy=0;let t=0,rode=false;for(;t<600;t++){BK.sim(1);if(P.windRide)rode=true;if(rode&&!P.windRide&&P.ground)break;}
+    {boot(()=>false);const P=BK.P;BK.tp(404,33);hurt();const hp0=P.hp;P.vy=0;let t=0,rode=false;for(;t<600;t++){BK.sim(1);if(P.windRide)rode=true;if(rode&&!P.windRide&&P.ground)break;}
      out.moat={rode,bite:hp0-P.hp,x:Math.floor(P.x/16),row:Math.round(P.y/16)-1,secs:+(t/60).toFixed(2)};BK.god=true;}
     /* THE WHELP: stone; it dives through the cracked ledge onto the spikes; only a stomp breaks it there; the ledge grows back */
-    {boot(e=>e.t==='whelp'&&e.x>=350*16&&e.x<=354*16);const w=BK.enemies().find(e=>e.t==='whelp'&&e.alive);const P=BK.P;const led=BK.movers().find(m=>m.brittle&&m.x>=349*16&&m.x<=351*16);
+    {boot(e=>e.t==='whelp'&&e.x>=374*16&&e.x<=378*16);const w=BK.enemies().find(e=>e.t==='whelp'&&e.alive);const P=BK.P;const led=BK.movers().find(m=>m.brittle&&m.x>=373*16&&m.x<=375*16);
      const h1=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);out.whelp={stone:h1-w.hp};
      P.x=led.x+led.w/2;P.y=led.y;P.vy=0;P.onMover=led;P.ground=true;w.cd=0;w.seen=true;let i=0;for(;i<120&&w.mode!=='swoop';i++)BK.sim(1);
      P.x=led.x-40;P.y=led.y;P.onMover=null;P.vy=0;BK.sim(1);const seen=new Set();for(i=0;i<240&&w.mode!=='stuck'&&w.mode!=='landed';i++){BK.sim(1);seen.add(w.mode);}
@@ -109,7 +109,7 @@ try {
   ok(r.fall.rode && r.fall.land === 'slab' && r.fall.bite === Math.round(r.fall.max * 0.2) && r.fall.after === r.fall.bite, 'a fall onto his spikes is ONE bite (' + r.fall.bite + ', and ' + r.fall.after + ' after two more seconds) and the wind carries you up to a slab: ' + JSON.stringify(r.fall));
   ok(r.breath.open.seen.includes('breath') && r.breath.open.set && r.breath.open.took > 0, 'THE FIRE BREATH is told - its line follows you, then SETS - and lands: ' + JSON.stringify(r.breath.open));
   ok(r.breath.guard.took === 0, 'a shield takes the fire: ' + JSON.stringify(r.breath.guard));
-  ok(r.moat.rode && r.moat.bite > 0 && r.moat.x <= 380 && r.moat.row < 32, 'a fall into the battlements\' moat: one bite, and the wind puts you back at or behind where you fell: ' + JSON.stringify(r.moat));
+  ok(r.moat.rode && r.moat.bite > 0 && r.moat.x <= 404 && r.moat.row < 32, 'a fall into the battlements\' moat: one bite, and the wind puts you back at or behind where you fell: ' + JSON.stringify(r.moat));
   ok(r.whelp.stone === 0, 'A WHELP IS STONE on its perch: a 30-point blow takes ' + r.whelp.stone);
   ok(r.whelp.broke && r.whelp.mode === 'stuck', 'it dives THROUGH the cracked ledge you left and sticks on the spikes: ' + JSON.stringify(r.whelp));
   ok(r.whelp.bladeStuck === 0 && !r.whelp.stomp.alive && r.whelp.stomp.rode && r.whelp.stomp.bite === 0, 'stuck, a blade still takes nothing - a stomp breaks it and the wind brings you up: ' + JSON.stringify(r.whelp.stomp) + ', blade ' + r.whelp.bladeStuck);
