@@ -58,29 +58,37 @@ export const OR = {
      convention), so nobody stands on a rope-end a row higher than the ledge. FOUR ROWS IS ENOUGH ONLY BECAUSE A DRUM LINE'S SKIPS
      CANNOT BE TIPPED: an emptied skip rides OR.BUCKET.lift higher, and 18 px under a 64 px housing is a 46 px jump. `housing`
      is the Great Drum's row: main.js seats him there before the fight */
-  /* ROUND FOUR (Daniel's playtest, 2026-09-28, item 3): THE HIGH HOUSINGS WERE TOO CLOSE TO THE CEILING AND TOO NARROW -
-     the Head Frame and the Tail Wheel, the narrowest platforms in the room (6 and 7 tiles against the Great Drum's 9),
-     stood at row 4, four rows off the level's own row-0 ceiling.
-     WIDENED, THE TAIL WHEEL ONLY (7 tiles -> 8, x1 508 -> 509): the Head Frame could not widen the same way without
-     breaking something else that matters more, and the room is too tightly built for a bigger rework in this lane -
-     see QUESTIONS FOR DANIEL. Tried and abandoned, in order: (1) widening the Head Frame eastward past its ladder (fixed
-     at column 482 - it HAS to be the entrance deck's own rope carried on up, ROUND TWO's comment, and the deck is a single
-     tile at 481) pushed its own ledge close enough to THE TAIL WHEEL'S that the high line fell under WINCH.revRange + 40 -
-     proved red (tools/ore-road.mjs's REVERSE-range line). (2) Moving the ledge to the OTHER side of the widened housing
-     kept the line long, but then the line's own path (which a hero rides, empty as well as loaded) ran straight through
-     the housing's own widened platform - proved red ("the high line never carries its rider into rock"). LOWERING either
-     housing runs into the same wall: the LOW LINE rides at the standing-height of row 12 (A.deck) the entire way from the
-     entrance deck to the Great Drum, over the same columns the Head Frame and the Tail Wheel stand in, so a top low enough
-     to put their own ledge (always four rows under the housing, ROUND TWO's rule) on or near row 12 puts solid rock in the
-     low line's own path - tried, proved red the same way. Going low enough to clear row 12 from the other side (row 13+)
-     puts the housing at the entrance deck's own standing height, which breaks "no jump reaches any housing" (a two-tile
-     hop from the deck's edge at 481 would then reach it) - the harder invariant of the two, so not attempted past that
-     point. Nothing here is a baked constant: every read of it (main.js's winchHousings) is live off this table */
+  /* ROUND FOUR (Daniel's playtest, 2026-09-28, item 3): "THE HIGH HOUSINGS ARE TOO CLOSE TO THE CEILING AND TOO NARROW" -
+     tried, and NOT done in this lane; the numbers below are still the ones from ROUND THREE. Every direction that was
+     tried came back red, and the room turns out to have no free column left in it for this brief - see QUESTIONS FOR
+     DANIEL for the recommendation (make more room first, in its own lane, rather than guess further here). What was tried:
+     (1) widening THE HEAD FRAME eastward past its own ladder (fixed at column 482 - it HAS to be the entrance deck's own
+     rope carried on up, ROUND TWO's comment, and the deck is a single tile at 481) pushed its ledge close enough to THE
+     TAIL WHEEL'S that the high line fell under WINCH.revRange + 40 - proved red on tools/ore-road.mjs's REVERSE-range line.
+     (2) Moving that ledge to the other side of the widened housing kept the line long, but then the line's own path (a
+     hero rides it, empty as well as loaded) ran straight through the housing's own new width - proved red on "the high
+     line never carries its rider into rock". (3) Widening THE TAIL WHEEL eastward (the only side with any room) reached
+     column 509, which is THE GREAT DRUM's own ladder column - every ore-road.mjs check stayed green, but a pilot
+     (bossLab, seed 3100, knight/warden/pyro) turned up a real regression: the warden, a clean win on master (283.8 s), ran
+     to the 300 s cap taking no damage at all, stuck. src/lab.js's own hands for this fight (the block starting "THE
+     WINCHMASTER, ROUND TWO") read several of these columns as literal numbers (482, 501, 509, at lines 770-801) rather
+     than off this table, so widening onto 509 put THE TAIL WHEEL's own new platform tile on the exact column the hands
+     use to mean "THE GREAT DRUM's ladder" - proved (before/after pilots, both this checkout's own git worktree of master
+     05deabe and this branch, same seed): knight identical (122.4 s / 122.6 s, the harness itself unaffected), warden
+     283.8 s win -> 300 s stuck. Reverted rather than shipped once a hero got stuck, not merely a check gone red.
+     (4) LOWERING either housing runs into a wall on both sides regardless of width: the LOW LINE rides at the standing-
+     height of row 12 (A.deck) the entire way from the entrance deck to the Great Drum, over the same columns the Head
+     Frame and the Tail Wheel stand in, so a top low enough to put a housing's own ledge (always four rows under it,
+     ROUND TWO's rule) on or near row 12 puts solid rock in the low line's own path - proved red the same way. Going low
+     enough to clear row 12 from the other side (row 13+) puts the housing at the entrance deck's own standing height,
+     which breaks "no jump reaches any housing" (a two-tile hop from the deck's edge at 481 would then reach it) - not
+     attempted past that point. Nothing here is a baked constant: every read of it (main.js's winchHousings) is live off
+     this table - src/lab.js is the one place with its own copy of these columns */
   ARENA: { x0: 476, x1: 519, deck: 12, housing: 8, spoil: 22, highRow: 8, ledge: [507, 509], house: [510, 518],
     housings: [
       { id: 'A', name: 'THE GREAT DRUM', x0: 510, x1: 518, top: 8, home: 513, ledge: [507, 509], ledgeTop: 12, line: 'low', at: 'end', ladder: [509, 9, 12] },
       { id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 481, top: 4, home: 478.5, ledge: [483, 484], ledgeTop: 8, line: 'high', at: 'start', ladder: [482, 5, 18] },
-      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 509, top: 4, home: 505.5, ledge: [499, 501], ledgeTop: 8, line: 'high', at: 'end', ladder: [501, 5, 8] }],
+      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 508, top: 4, home: 505, ledge: [499, 501], ledgeTop: 8, line: 'high', at: 'end', ladder: [501, 5, 8] }],
     /* ROUND THREE (Daniel, 2026-09-24: "the ore road is great now", four notes): THE HOUSINGS ARE BIGGER - the Head Frame six tiles
        (it was five), the Tail Wheel seven (it was four), the Great Drum nine - room to move and dodge on top. THE ROOM'S FLOOR IS
        THE PIT, like every span's: the entrance deck runs to 481, the Head Frame's ladder climbs from the pit's recovery ledge past
@@ -96,7 +104,7 @@ export const OR = {
     /* ROUND FOUR (Daniel, 2026-09-28, from the look-and-feel review: "his shaft is dark"): HIS ROOM IS LIT, and only his room. The
        engine's dark eases to `dark` while you are inside the arena's columns (a dark zone: L.darkZones), and each housing has a
        lamp on its top at `lamps` [x, row] - so the drum houses, the lines and the skips on them read from anywhere in the room */
-    dark: 0.18, lamps: [[517, 8], [477, 4], [508, 4]] },   /* moved with THE TAIL WHEEL's widening (item 3) */
+    dark: 0.18, lamps: [[517, 8], [477, 4], [507, 4]] },
   PLACES: { yard: [0, 67], span1: [68, 135], tower: [136, 203], chute: [204, 271], collapse: [272, 339], steep: [340, 407], winch: [408, 475], drum: [476, 523] },
   /* THE BUCKET IS 46 PX WIDE, NOT 24. Daniel found this himself and it is the change everything else stands on: the
      knight's box is 10-14 px, so a 24 px skip had no room to swing or to dodge on and NO FIGHT COULD HAPPEN ON ONE.
