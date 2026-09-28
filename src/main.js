@@ -1952,7 +1952,9 @@ function spawnEnt(e) {
       case 'frog': boss = { ...base, t: 'frog', w: 40, h: 30, hp: EHP.frog, maxHp: EHP.frog, mode: 'sleep', modeT: 0, face: -1, phase: 1, last: '' }; enemies.push(boss); break;
       case 'archer': enemies.push({ ...base, t: 'archer', w: 8, h: 10, hp: EHP.archer, speed: 24, timer: 1 + Math.random(), draw: 0, horn: !!e.horn, hornT: 0, blown: false, fire: !!e.fire,
         /* THE STOCKADE'S TWIST (tower 3): a blower who starts on the ground and runs for his horn once he sees you, instead of standing on the tower */
-        runTo: e.runTo ? { x: e.runTo.x * TS + 8, y: (e.runTo.y + 1) * TS, climbX: e.runTo.climbX * TS + 8 } : null, running: false, climbing: false, arrived: false,
+        /* runTo's dx/climbDx are OFFSETS from this archer's own (already-shifted) tile x - never absolute columns, since
+           grow() shifts an entity's own x but not a nested field, and this level grows sections in ahead of tower 3 */
+        runTo: e.runTo ? { x: (e.x + e.runTo.dx) * TS + 8, y: (e.runTo.y + 1) * TS, climbX: (e.x + e.runTo.climbDx) * TS + 8 } : null, running: false, climbing: false, arrived: false,
         /* THE STOCKADE'S RULE, IN THE BOSS: a rafters blower who only sounds when the Chieftain hits phase two (hurtEnemy), not by proximity */
         rafters: !!e.rafters,
         /* THE COMBINE (tower + gate): the hounds this horn wakes when it sounds, as offsets from him */

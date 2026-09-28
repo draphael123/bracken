@@ -615,7 +615,7 @@ function theStockade() {
   for (let y = 8; y <= 11; y++) set(298, y, T.NET);   /* the net beside the platforms: the fast way up, his own way up too */
   block(302, 304, 8, 11); plat(301, 7, 5); ent('towertop', 303, 7);
   ent('archer', 305, 7, { face: -1 });   /* the tower keeps its archer: he shoots while the blower runs */
-  ent('archer', 291, 11, { face: 1, horn: true, runTo: { x: 303, y: 6, climbX: 300 } });   /* THE BLOWER: on the ground, not the tower - sees you, runs, climbs the net, THEN sounds it */
+  ent('archer', 291, 11, { face: 1, horn: true, runTo: { dx: 12, y: 6, climbDx: 7 } });   /* THE BLOWER: on the ground, not the tower - sees you, runs, climbs the net (his own column + 7, where it stands beside), THEN sounds it. dx/climbDx are OFFSETS from his own x, not absolute columns - grow() only shifts an entity's own x, never a nested field, so an absolute target here would drift off the tower every time a section grows in ahead of him (see tools/stockade-horns.mjs, which proved this red once already) */
   ent('brute', 309, 11, { face: -1 }); ent('hound', 312, 11, { face: -1 });
   ent('torch', 290, 11); ent('torch', 308, 11);
   coins([277, 11], [296, 9], [300, 7], [311, 10]);

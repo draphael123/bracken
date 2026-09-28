@@ -53,3 +53,23 @@ QUESTIONS FOR DANIEL
 3. No bot pilot was run on the Chieftain (see UNVERIFIED). Want a follow-up lane to build/run one before this ships, or is boss-fight-end plus a manual playtest enough? Recommendation: a quick manual playtest is enough for a level-design change of this size - nothing here touches the Chieftain's own attack patterns, only what happens once at the 50% threshold.
 
 Final commit: see git log -1 at time of this report.
+
+## Follow-up: tools/stockade-horns.mjs (pins the four beats)
+
+Coordinator asked for a check that pins these beats so a later merge can't silently drop them. Added `tools/stockade-horns.mjs`, registered in `tools/check.mjs`'s list (before `]) if (take(t))`) and its header comment.
+
+While writing it, the check caught a REAL BUG in the first pass of this lane's own work: the tower-3 blower's `runTo` target was stored as absolute tile columns (`{x:303,y:6,climbX:298}`). `grow()` (the function every later section is spliced in with) shifts an entity's own `x` field, but never a nested field like `runTo.x` - so after the sapper tunnel, the wall walk and the siege engine were spliced in ahead of tower 3, the blower's own position shifted correctly (to x=419) but his target stayed at the old, unshifted columns (303/298) - he would have run to completely the wrong place in the built level. Fixed by storing `runTo` as `{dx, y, climbDx}`, offsets from the blower's own x (the same pattern `pack`'s `dx` already used correctly), resolved at spawn time in `src/main.js` off the archer's own already-shifted `e.x`. This is the kind of drift-after-a-later-section-grows-in bug the check exists to catch, and it caught it before it shipped.
+
+**Proved red first**, in a throwaway worktree off `origin/master` at cd35d24 (`git worktree add`, never `git stash`): copied `tools/stockade-horns.mjs` in (master has none of the four beats), ran it - 6 failures across all four beats (no runTo, no pack, no rafters archer, no lift hound, no sapper wave, and the "silenced" case couldn't run because there was no blower to silence). Removed the throwaway worktree afterward (`git worktree remove --force`).
+
+**Proved green** on claude/stockade after the runTo fix:
+```
+stockade-horns (static): blower 419,11 -> {"x":431,"y":6,"climbX":426} | kennel pack [{"dx":32,"y":19},{"dx":40,"y":19}] | rafters 472,9 | bridge sapper true | lift hound true
+stockade-horns (page): {"chiefWave":{"before":4,"after":6,"phase":2},"chiefSilenced":{"before":4,"after":4,"phase":2,"hadBlower":true},"queenPhase2":{"before":0,"after":0,"phase":2}}
+stockade-horns: all four beats hold - the tower-3 twist, the kennel combine, the boss horn (chief-only), and the exam.
+```
+The blower's resolved target (431,6) lands exactly on the audit's own column for tower 3 (431) - a nice confirmation the offset fix is correct, not just passing its own check.
+
+The "page" half drives the actual Chieftain fight through the real `hurtEnemy`/phase-2 code: left alone, the rafters archer's wave adds 2 sappers at phase two; with him already downed first, phase two adds none; and the same phase-two trigger on a different boss (the Hornet Queen, Bracken Wood) adds none either - confirming the hook is wired to the Chieftain only, not a general phase-two side effect.
+
+Re-ran the 7 originally-required checks plus this one together - all green (see below for the final combined run and commit sha).
