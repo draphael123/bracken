@@ -73,10 +73,10 @@ export function installTactics(board, TOKENS, api) {
 // THE BRUTE COVERS UP. Called from the melee hit loop for a cut that meets a brute from the front: true means this cut is TURNED.
 // A light cut is counted into a flurry (cuts less than braceWindow apart); the braceAt-th cut of a flurry is turned while the brute
 // is standing about (walking, or waiting its turn) - never in its windup or its recovery (those are the hero's openings), never
-// broken or staggered, and never against a heavy blow, which is what goes through a guard.
+// broken or reeling (more than a cut's own flinch), and never against a heavy blow, which is what goes through a guard.
 export function braceHit(e, now, heavy) {
   if (e.t !== 'brute' || e.elite) return false;
-  if (heavy || e.broken > 0 || (e.stagger || 0) > 0.05 || e.knock > 0) { e.flurryN = 0; return false; }
+  if (heavy || e.broken > 0 || (e.stagger || 0) > 0.45 || e.knock > 0) { e.flurryN = 0; return false; }   /* (a cut's own flinch is not an opening: a heavy blow's stagger, a reel or a break is) */
   if (!(now - (e.flurryAt ?? -99) < TAC.braceWindow)) e.flurryN = 0;
   e.flurryAt = now; e.flurryN = (e.flurryN || 0) + 1;
   if (e.flurryN >= TAC.braceAt && (e.mode === 'walk' || e.mode === undefined)) { e.flurryN = 0; return true; }

@@ -24,6 +24,7 @@ const bad = [];
   const h = { t: 'brute', mode: 'walk', face: 1 }; braceHit(h, 0, false); braceHit(h, 0.3, false); if (braceHit(h, 0.6, true)) bad.push('braceHit: a heavy blow was turned');
   const r = { t: 'brute', mode: 'rest', face: 1 }; braceHit(r, 0, false); braceHit(r, 0.3, false); if (braceHit(r, 0.6, false)) bad.push('braceHit: the brute covered up in his recovery (the hero\'s opening)');
   const s = { t: 'brute', mode: 'walk', face: 1 }; braceHit(s, 0, false); braceHit(s, 2, false); if (braceHit(s, 4, false)) bad.push('braceHit: three cuts two seconds apart are not a flurry');
+  const fl = { t: 'brute', mode: 'walk', face: 1, stagger: 0.42 }; braceHit(fl, 0, false); braceHit(fl, 0.25, false); if (!braceHit(fl, 0.5, false)) bad.push('braceHit: the flinch of a cut (stagger 0.42) kept the brute from covering up');
   const o = { t: 'sprig', mode: 'walk' }; for (let i = 0; i < 4; i++) if (braceHit(o, i * 0.2, false)) bad.push('braceHit: a sprig covered up'); }
 { const board = { on: {}, stats: {} }, TOK = { waitMove: () => {}, perHero: 2 }; installTactics(board, TOK, {});
   let held = 0; const real = Math.random;

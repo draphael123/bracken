@@ -9,7 +9,7 @@
 //      back off its guard (staggerPose, read by poseOf), a ring of gold stars turns over its head (drawOpen), and - when a hero is
 //      close enough to finish it - the stars close in and go white (the finisher's tell, src/finishers.js).
 // The hooks in main.js: poiseMax reads the two sets, addPoise's break calls broke(e), poseOf calls staggerPose, drawEnemies calls
-// drawOpen. BK.combat2().breaks counts breaks for tools/poise-break.mjs.
+// drawOpen. BK.combat2().OPEN.breaks counts breaks for tools/finishers.mjs.
 
 export const POISE_EXTRA = new Set(['ambusher', 'apprentice', 'bannerbearer', 'bonegob', 'burngob', 'corpse', 'cutthroat', 'feeler', 'husk',
   'jelly', 'lanternshade', 'merrowcaller', 'sheargob', 'slinger', 'tippler', 'vulture', 'zombie']);
