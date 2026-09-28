@@ -1050,8 +1050,8 @@ function kingswood() {
   // high road (rows 6-12)
   plat(85, 12, 4); plat(91, 10, 3); plat(96, 8, 4);
   movers.push({ kind: 'swing', px: 104 * TS, py: 2 * TS, arm: 80, x: 0, y: 0, w: 48, h: 8, period: 3.2, phase: 0 });
-  plat(111, 8, 3); ent('thief', 112, 7, { face: -1 }); plat(116, 9, 4); ent('wasp', 121, 7);
-  plat(103, 10, 3); plat(107, 9, 2); plat(123, 10, 2); plat(126, 11, 3); plat(130, 10, 2); // a ledge road under each swing: the swing is the fast way, never the only way
+  block(111, 113, 8, 8); ent('thief', 112, 7, { face: -1 }); ent('dropcage', 112, 3); plat(116, 9, 4); ent('wasp', 121, 7);   /* a plate and cage on the HIGH road too (design audit item 1): the low road already had one, so a high-road player met it first in the boss */
+  plat(103, 10, 3); plat(107, 9, 2); ent('plate', 118, 9, { cage: 112 }); plat(123, 10, 2); plat(126, 11, 3); plat(130, 10, 2); // a ledge road under each swing: the swing is the fast way, never the only way
   movers.push({ kind: 'swing', px: 127 * TS, py: 2 * TS, arm: 88, x: 0, y: 0, w: 48, h: 8, period: 3.6, phase: 1.6 });
   plat(134, 9, 4); ent('thief', 136, 8, { face: -1 }); plat(140, 11, 3); plat(145, 13, 4);
   coins([87, 11], [93, 9], [98, 7], [104, 6], [112, 6], [118, 8], [127, 6], [135, 8], [141, 10], [146, 12]);
@@ -1086,14 +1086,18 @@ function kingswood() {
   movers.push({ kind: 'swing', px: 254 * TS, py: 1 * TS, arm: 96, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 2.2 });
   plat(261, 9, 3); plat(266, 11, 3); plat(271, 11, 4);
   plat(228, 9, 2); plat(231, 10, 3); plat(235, 8, 2); plat(250, 10, 2); plat(253, 11, 3); plat(257, 10, 2); // a ledge road under each canopy swing
+  ent('plate', 262, 9, { cage: 262 });   /* THE TWIST (design audit item 2): fork one's plate and cage are both on the low road; here they invert - the plate is on the canopy, the cage drops through a hatch onto the patrol walking the roots below */
   coins([212, 10], [217, 8], [223, 6], [231, 6], [239, 6], [245, 7], [254, 6], [262, 8], [267, 10], [272, 10]);   /* the apex of the arc was a course over the top of anybody's jump */
   // roots
   block(211, 275, 21, 27); ceiling(211, 274, 15);   /* the roof stops a column short of the way out: ending ON the exit block left a gap one tile high, and nobody fits through that */
   for (let x = 211; x <= 275; x++) for (let y = 16; y <= 20; y++) set(x, y, 0);
+  for (let x = 261; x <= 262; x++) for (let y = 12; y <= 15; y++) set(x, y, 0);   /* the hatch the canopy's cage falls through, onto the brute below */
+  ent('dropcage', 262, 4);
   ent('torch', 214, 20); ent('torch', 230, 20); ent('torch', 246, 20); ent('torch', 262, 20);
   ent('firepit', 216, 20, { period: 3.4, on: 1.5, phase: 0.8 }); ent('brazier', 224, 20); ent('firepit', 265, 20, { period: 3.4, on: 1.5, phase: 2.4 });
-  ent('hound', 220, 20, { face: -1 }); ent('pike', 228, 20, { face: -1 }); ent('lever', 234, 20, { ram: 240 }); ent('ram', 240, 16, { hang: true }); ent('sprig', 244, 20, { face: -1 }); ent('sprig', 248, 20, { face: -1 });
-  ent('plate', 254, 20, { cage: 258 }); ent('dropcage', 258, 16); ent('brute', 262, 20, { face: -1 }); ent('thief', 268, 20, { face: -1 });
+  ent('hound', 220, 20, { face: -1 }); ent('pike', 228, 20, { face: -1 }); ent('timber', 228, 15, { x0: 226, x1: 230, row: 15, floor: 20, deep: 1, hp: 2, mound: 1 });   /* the fork's SECOND cracked post (design audit item 2), over the pike */
+  ent('lever', 234, 20, { ram: 240 }); ent('ram', 240, 16, { hang: true }); ent('sprig', 244, 20, { face: -1 }); ent('sprig', 248, 20, { face: -1 });
+  ent('brute', 262, 20, { face: -1 }); ent('thief', 268, 20, { face: -1 });   /* the brute is now the patrol the canopy's cage falls on */
   coins([218, 19], [236, 19], [252, 19], [266, 19], [273, 19]);
   block(275, 277, 17, 27); block(278, 281, 15, 27); block(282, 300, 14, 27);
   block(273, 274, 19, 20);   /* THE STEP OUT OF THE ROOTS: the way up was four tiles from the burrow floor and a jump is three */
@@ -1103,13 +1107,13 @@ function kingswood() {
   ent('sign', 286, 13, { text: 'THE COURT WATCHES FROM THE BRANCHES. FIRE ARCHERS LIGHT THE GRASS. BRAZIERS TIP.' });
   for (const x of [288, 292, 296]) ent('carpet', x, 13);
   ent('folk', 289, 13, { door: 300, alt: true }); ent('folk', 293, 13, { door: 300 }); ent('door', 299, 13);
-  ent('shield', 295, 13, { face: -1 }); ent('shield', 298, 13, { face: -1 });
+  ent('shield', 295, 13, { face: -1 }); ent('shield', 298, 13, { face: -1 }); ent('brazier', 296, 13); ent('dropcage', 296, 5);   /* EXAM (design audit item 4): the sign already promised a plate and cage over the carpet guards and a brazier to tip - now built, not just written */
   ent('deco', 290, 13, { kind: 'banner', v: 0 }); ent('deco', 297, 13, { kind: 'banner', v: 1 });
   ent('thief', 302, 13, { face: -1 }); coins([289, 12], [294, 12]);
-  plat(286, 10, 4); plat(292, 8, 3); ent('archer', 288, 9, { face: -1, fire: true }); coins([287, 9], [293, 7], [294, 7]);
+  plat(286, 10, 4); plat(292, 8, 3); ent('archer', 288, 9, { face: -1, fire: true }); ent('firepit', 294, 13, { period: 3.4, on: 1.4, phase: 0.6 }); coins([287, 9], [293, 7], [294, 7]);   /* the fire archer lights the grass: a firepit in it, not just an arrow in flight */
   // the cache: a hidden loft above the court holds the Thief Cloak
   plat(303, 9, 3); plat(307, 7, 3); coins([304, 8], [308, 6], [309, 6]); ent('relic', 308, 6, { kind: 'cloak' });
-  plat(284, 12, 2); plat(298, 8, 3); // a step up to the court's ledges (they started a head too high to jump) and one across the gap to the loft
+  plat(284, 12, 2); plat(298, 8, 3); ent('plate', 299, 8, { cage: 296 }); // a step up to the court's ledges (they started a head too high to jump) and one across the gap to the loft; the plate on it drops the cage on the carpet guards below
   ent('check', 312, 13);
 
   // ---- 7. The throne room: King Gorm Underleaf on his palanquin. ----
@@ -1252,8 +1256,9 @@ function kingswood() {
   O.coins([a+5,9],[a+11,6],[a+22,7],[a+37,6],[a+44,8]);
   const stone=O.done(), HN=grow(stone,stone,354,48), h=354;
   // THE HUNTING STANDS: ladders inside grounded towers, a rope walk, and one cuttable stand over the patrol.
-  HN.block(h,h+47,14,27);HN.ent('sign',h+1,13,{text:'THE HUNTING STANDS. CLIMB INSIDE. CUT THE CRACKED POST TO DROP ITS DECK ON THE PATROL.'});
-  for(const x of [h+5,h+29]){HN.plat(x,6,9);for(const [dx,y] of [[1,12],[4,10],[1,8]])HN.plat(x+dx,y,3);for(let y=6;y<=13;y++)HN.set(x+7,y,T.NET);HN.R.structures.push({kind:'timber',x0:x,x1:x+8,top:6,floor:14});HN.ent('archer',x+2,5,{face:-1});}
+  HN.block(h,h+47,14,27);HN.ent('sign',h+1,13,{text:'THE HUNTING STANDS. CLIMB INSIDE. CUT THE CRACKED POSTS TO DROP THEIR DECKS ON THE PATROL.'});
+  HN.ent('sprig',h+3,13,{face:-1});HN.ent('timber',h+3,10,{x0:h+1,x1:h+5,row:10,floor:13,deep:1,hp:2,mound:1});   /* the SECOND cracked post (design audit item 3, DEVELOP): the quiet stretch had one, now it has the level's own rule twice */
+  for(const x of [h+5,h+29]){HN.plat(x,6,9);for(const [dx,y] of [[1,12],[4,10],[1,8]])HN.plat(x+dx,y,3);for(let y=6;y<=13;y++)HN.set(x+7,y,T.NET);HN.R.structures.push({kind:'timber',x0:x,x1:x+8,top:6,floor:14});HN.ent('archer',x+2,5,{face:x===h+5?1:-1});}   /* both stand archers now face the rope walk between the towers, not just the far one */
   for(let x=h+14;x<h+29;x++)HN.set(x,6,T.PLANK);HN.ent('bridge',h+14,6,{x1:h+28});
   HN.R.moversExtra.push({kind:'swing',px:(h+22)*TS,py:1*TS,arm:64,x:0,y:0,w:48,h:8,period:3.2,phase:0});
   HN.plat(h+39,9,5);HN.ent('timber',h+39,13,{x0:h+39,x1:h+43,row:9,floor:13,deep:1,hp:2,mound:1});
