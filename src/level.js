@@ -2216,10 +2216,10 @@ function theMonastery() {
    held its own build on origin/claude/stormhold; this rework (claude/stormhold2) supersedes master's inline
    version entirely per Daniel's brief (taller watchtowers with keys at their tops, wall-walk bridges, the
    Highcrown alarm bells on sentries, an exam at the bridgehead, ropes for the cutters, no fire archers on
-   the Lance's bridge) - see docs/level-design/wood-to-highcrown-design.md "## 11. STORMHOLD" for the audit
+   the Lance's bridge) - see the "## 11. STORMHOLD" section of the design audit on claude/designaudit for the audit
    this rebuild answers. Master's inline function is gone from this file; its ideas (the three watchtowers,
    the chimney gorge, the houses-as-places pass, the Lance's wind phases) live on in src/stormhold-town.js
-   and src/queens-lance.js/lance-support.js where this rework kept or adapted them. */
+   and src/lance-support.js where this rework kept or adapted them. */
 // ============================================================================================
 // THE UNDERCROWN - the secret level under Highcrown, and the only one in the game that goes DOWN.
 //

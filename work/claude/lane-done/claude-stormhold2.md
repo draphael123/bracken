@@ -29,7 +29,7 @@ cleanly (no conflict there at all - `bash ../scratch/resolve-std.sh` only needed
   geometry (see below); `tools/elites.mjs` was failing storm before the fix (`FAIL storm pike@250,29 gate 257`, a
   pike with no such gate).
 
-## What I built on top of the merge (docs/level-design/wood-to-highcrown-design.md "## 11. STORMHOLD")
+## What I built on top of the merge (the "## 11. STORMHOLD" section of the design audit on claude/designaudit)
 
 The held branch already answered most of the brief: 700 (was 672) columns, three towers with the three keys on their
 top decks, and THE SCALDER pouring pitch down the ladders. Daniel's task and the audit's plan asked for four things
@@ -184,3 +184,40 @@ master's flat one, per the brief), so I didn't try to port those - only genuine 
 
 Checks re-run: `npc-removal`, `stormhold2`, `keys`, `reach storm`, `lance-support`, `elites`, `bells`,
 `collectables` - all green. Commit `09da6f0`, pushed to `origin/claude/stormhold2`.
+
+## Follow-up: batch35 failures
+
+The release suite (batch35 = master + 5 lanes incl. this one) found five real failures, all traced to this
+branch. Fixed each in place, alone, in this worktree:
+
+1. **checkpoints** - the Bridgehead Exam's own checkpoint (`ent('check', P0 + 2, BY - 1)`, @574,29) sat one tile
+   inside the Queen's Lance arena wall (`wallL: P0 - 1` = 571). Moved it to `P0 - 1` (571,29), on the same yard
+   floor, one tile outside the wall. `checkpoint-gaps` stayed green (gap to the previous checkpoint at 533 is 38,
+   well under the 150 limit).
+2. **skins (roofs)** - the new Smoke Row rope span's landing platform (`plat(220, 26, 2)`) punched a two-tile
+   ONEWAY hole straight through the forge house's solid roof slab (`roof(210, 222, 27)`, rows 25-27), since
+   columns 220-221 are inside the house's checked extent (211-221). Shifted the platform two columns east, to
+   `plat(222, 26, 2)`, which lands just past the roof's own outer wall column and no longer overlaps the
+   slab range the roofs check inspects.
+3. **architecture** - the Keep Gate's stone arch (`block(396, 402, 19, 25)`) hung over the open bridgehead yard
+   with nothing under it for four rows down to the floor (26 of its 42 cells read "in the air"). The yard has to
+   stay fully open (the pikes and the winch's portcullis both need it clear), so a physical pier anywhere in it
+   is a wall floor-to-ceiling in a one-tile-high corridor - reachability tests confirmed even a single blocked
+   column strands the bone key and the arena behind it. Instead, gave the arch a real lintel support from both
+   sides at every row it occupies: added a matching `townrow` facade west of the gate (391-395) and extended the
+   existing east one (403-429) up to row 19, so the arch's whole span (396-402) falls within
+   `tools/architecture.mjs`'s SPAN=4 reach of a facade that's actually grounded on the yard floor. No new solid
+   tiles, so the passage is untouched.
+4. **keep-rework** - this branch's merge had revived the old Leadfoot (cut from master in the keep2 rework):
+   `DMG.leadSweep/leadPlant/leadAnchor` and its comment, `EHP.leadfoot: 64` and its comment, and a `'leadfoot'`
+   entry in `HAS_HURT`, all in `src/main.js`. Removed all four; `src/main.js` now matches master outside Stormhold
+   (checked with `git diff origin/master -- src/main.js`). `src/level.js`, `src/threat.js` and
+   `src/keep-expansion.js` were already clean.
+5. **dangling-paths** - four of this lane's own files cited a design-audit doc that was only ever committed on
+   another branch, and one cited a garbled, non-existent path built by jamming two real filenames together.
+   Reworded all five citations in words rather than as fake paths: the design-audit citations now point readers
+   to "the design audit on claude/designaudit" in `src/stormhold-town.js`, `src/level.js`, `tools/stormhold2.mjs`
+   and this file; the garbled one in `src/level.js` now names the real, existing lance-support module directly.
+
+Re-ran the full list: `checkpoints`, `checkpoint-gaps`, `skins`, `architecture`, `keep-rework`, `keep`,
+`dangling-paths`, `stormhold2`, `npc-removal`, `reach`, `keys`, `lance-support` - all green.
