@@ -3,7 +3,8 @@
      1. fire spreads only from the Pyromancer's and the burning goblins' fires; the village's own fire never creeps
      2. water sets a catching cell back to unlit
      3. a trapped villager is freed by a real attack, runs, is counted - and nothing the fire does can kill one
-     4. the wisp hurts on contact and nothing turns it; the burning goblin's touch costs nothing, only its swing
+     4. the wisp's touch alone costs nothing (the combat pass: no untold hits, Daniel 2026-09-28); its TOLD blow - the white
+        flare, a red !!, then the dart - burns through a raised shield; the burning goblin's touch costs nothing, only its swing
      5. the Pyromancer's heat rises with his attacks; struck, he overheats and OPENS; left alone he vents and does not;
         the square burns with his bar and clears when he vents
      6. the level meets the density bar (3.5-4.5 foes a screen, no run of flat screens), is plugged in (garrison, elite,
@@ -173,9 +174,13 @@ try {
    BK.tp(Math.round(tr.x/16)-1,Math.round(tr.y/16)-1);BK.P.face=1;BK.sim(5);for(let i=0;i<4&&tr.water>0;i++){BK.press('atk');BK.sim(24);}
    BK.tp(Math.round(cap2.x/16)-1,Math.round(cap2.y/16)-1);BK.P.face=1;BK.sim(5);const hp1=BK.P.hp;for(let i=0;i<10&&!cap2.freed;i++){BK.press('atk');BK.sim(24);}BK.sim(60);
    out.hotDoor={hot,watered:{cooled:!!cap2.cooled,freed:cap2.freed,lost:hp1-BK.P.hp}};}
-  /* 4. THE WISP'S TOUCH, with the shield up; THE BURNING GOBLIN'S touch, walking, and then its swing */
-  {boot();const w=BK.enemies().find(e=>e.t==='emberwisp');clear();w.alive=true;BK.P.hp=BK.P.maxHp;const hp0=BK.P.hp;BK.P.x=w.x;BK.P.y=w.y+8;BK.keys.block=true;BK.P.face=1;BK.sim(2);   /* the baseline BEFORE the first touch: it lands on the first frame */
-   for(let i=0;i<40&&BK.P.hp===hp0;i++){BK.P.x=w.x;BK.P.y=w.y+8;BK.sim(1);}BK.keys.block=false;out.wisp={lost:hp0-BK.P.hp,mark:BK.markOver(w)};}
+  /* 4. THE WISP: its touch, held on it with the shield up and its dart kept on cooldown, costs nothing; its told blow (the flare, then the dart)
+     burns through that same raised shield. THE BURNING GOBLIN'S touch, walking, and then its swing */
+  {boot();const w=BK.enemies().find(e=>e.t==='emberwisp');clear();w.alive=true;BK.P.hp=BK.P.maxHp;BK.P.inv=0;const hp0=BK.P.hp;BK.keys.block=true;BK.P.face=1;   /* THE TOUCH: 40 frames stood in it, its dart held on cooldown */
+   const modes=new Set();for(let i=0;i<40;i++){w.dartCd=9;w.mode='drift';BK.P.x=w.x;BK.P.y=w.y+8;BK.sim(1);modes.add(w.mode);}const touch=hp0-BK.P.hp;
+   BK.P.hp=BK.P.maxHp;BK.P.inv=0;BK.P.hurt=0;const hp1=BK.P.hp;for(let i=0;i<60&&!BK.P.ground;i++){w.dartCd=9;BK.sim(1);}for(let i=0;i<12;i++){w.dartCd=9;BK.sim(1);}w.x=w.hx=BK.P.x+30;w.y=w.hy=BK.P.y-12;w.dartCd=0;w.recoil=0;w.mode='drift';   /* THE TOLD BLOW: stood on the floor, the wisp a step off, facing it, shield up */
+   let told=null,firstTell=-1,hitAt=-1,blocking=true;for(let i=0;i<90&&BK.P.hp===hp1;i++){BK.P.face=Math.sign(w.x-BK.P.x)||-1;if(w.mode==='flareTell'&&firstTell<0){firstTell=i;told=BK.markOf(w);}blocking=blocking&&!!BK.P.block;BK.sim(1);   /* (up going into every frame, the blow's own included: the blow itself drops it) */if(BK.P.hp<hp1)hitAt=i;}
+   BK.keys.block=false;out.wisp={touch,touchModes:[...modes],told,firstTell,hitAt,blocking,lost:hp1-BK.P.hp,mark:BK.markOver(w)};}
   {boot();const gb=BK.enemies().find(e=>e.t==='burngob');clear();gb.alive=true;gb.mode='walk';gb.cd=99;gb.swingT=99;BK.P.hp=BK.P.maxHp;const hp0=BK.P.hp;
    for(let i=0;i<45;i++){BK.P.x=gb.x;BK.P.y=gb.y;gb.cd=99;gb.swingT=99;if(gb.mode!=='walk')gb.mode='walk';BK.sim(1);}const touch=hp0-BK.P.hp;
    BK.P.hp=BK.P.maxHp;BK.P.inv=0;gb.cd=0;gb.swingT=0;BK.P.x=gb.x+12*gb.face;for(let i=0;i<90&&BK.P.hp===BK.P.maxHp;i++){BK.P.x=gb.x+12*gb.face;BK.P.y=gb.y;BK.sim(1);}
@@ -287,7 +292,11 @@ try {
   assert.ok(r.hotDoor.hot.freed && r.hotDoor.hot.lost > 0, 'a hot door cut open unwatered blows out: ' + JSON.stringify(r.hotDoor.hot));
   assert.ok(r.hotDoor.watered.cooled && r.hotDoor.watered.freed && r.hotDoor.watered.lost === 0, 'watered first, it opens quietly: ' + JSON.stringify(r.hotDoor.watered));
 
-  assert.ok(r.wisp.lost > 0, 'the wisp hurts on contact, through a raised shield: ' + JSON.stringify(r.wisp));
+  /* (was 'the wisp hurts on contact, through a raised shield': the combat pass - no untold hits - made the touch harmless and the
+     flare-and-dart its blow, so this asserts that rule instead, as strictly: the touch costs nothing, the told dart burns through the shield) */
+  assert.equal(r.wisp.touch, 0, 'stood in the wisp with its dart on cooldown, its touch alone costs nothing: ' + JSON.stringify(r.wisp));
+  assert.ok(r.wisp.firstTell >= 0 && r.wisp.told === '!!', 'close to you it flares, and the flare wears the red !! (' + JSON.stringify(r.wisp) + ')');
+  assert.ok(r.wisp.lost > 0 && r.wisp.hitAt > r.wisp.firstTell && r.wisp.blocking, 'and its dart, AFTER the flare, burns through a raised shield: ' + JSON.stringify(r.wisp));
   assert.equal(r.wisp.mark, '!!', 'and it wears the red cross');
   assert.equal(r.gob.touch, 0, 'walking into a burning goblin costs nothing');
   assert.ok(r.gob.swing > 0, 'its swing does: ' + JSON.stringify(r.gob));
