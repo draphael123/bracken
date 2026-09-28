@@ -391,6 +391,11 @@ function marshWood() {
      earn: the river eels are a new kind here, and a kind is worth three. The index stays within six of where it was.) */
   for (const x of [186, 237, 252]) ent('eel', x, 20, { leap: true });
   ent('wasp', 219, 12, { sting: true, pogo: true });
+  // TWO VINE SWINGS over the river's widest gaps (Daniel's backlog: more swinging ropes to break up the hop). They
+  // are an alternate way across, not the only one - the pads still carry the route - hung well above the pads (row 9)
+  // so grabbing one is a real jump, not a free ride, and they never cross a told eel or the pogo wasp.
+  movers.push({ kind: 'swing', px: 212 * TS + 8, py: 9 * TS, arm: 76, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0, vine: true });
+  movers.push({ kind: 'swing', px: 245 * TS + 8, py: 9 * TS, arm: 76, x: 0, y: 0, w: 32, h: 8, period: 3.4, phase: 1.5, vine: true });
   block(260, 263, 14, 17);   // the far bank's lip, four rows over the water: the last bud is the way up it
   reeds(211, 16, 2); reeds(226, 16, 2); reeds(244, 16, 2);
   ent('check', 211, 15); ent('silver', 244, 13);
@@ -406,7 +411,16 @@ function marshWood() {
   ent('check', 296, 17);
   for (let x = 297; x <= 334; x++) for (let y = 18; y <= 27; y++) L.set(x, y, 0);
   water(297, 328, 19);
+  // TWIST THE RULE (design audit, MARSH WOOD #2): the channel gave you the choice once, at the ferry. Here it gives
+  // it again, and flips which side is harder - ride the raft dry under the two archers, or break the sluice, drain
+  // the grove and wade it with a gar and an eel in the mud. A floor under the channel is what makes wading possible.
+  pools[pools.length - 1].bottom = 22 * TS;
+  block(297, 328, 22, 27);
   ent('crank', 295, 17, { raftCall: 'marsh-grove' });
+  ent('sluice', 294, 17, { pool: 297, to: 21 });
+  ent('sign', 293, 15, { text: 'RIDE THE RAFT DRY, OR BREAK THE SLUICE AND WADE THE DRAINED MUD - A GAR AND AN EEL WAIT.' });
+  ent('gar', 312, 21, { face: -1, ifDrained: 297 });
+  ent('eel', 321, 21, { leap: true, ifDrained: 297 });
   movers.push({ kind: 'raft', callId: 'marsh-grove', x0: 297 * TS, x1: 329 * TS - 144, x: 297 * TS, y: 18 * TS + 8, w: 144, h: 8, speed: 26, frogs: true, frogMax: 3, frogEvery: 2.8 });
   plat(309, 11, 3); ent('archer', 310, 10, { face: -1 }); plat(323, 11, 3); ent('archer', 324, 10, { face: -1 });
   ent('wasp', 313, 15); ent('wasp', 326, 15);
@@ -418,16 +432,22 @@ function marshWood() {
   ent('thorn', 338, 17, { face: -1 }); crate(340, 17); ent('hopper', 342, 17, { face: -1, color: 'yellow' });
   ent('check', 344, 17);
 
-  // ---- 9. Mud flats, short ----
+  // ---- 9. Mud flats: THE EXAM (design audit S3, and GAME-WIDE PATTERNS #1 - the last stretch here was a rest,
+  // `-R.-`, not an exam). Sinking pads over a gar hole in biting water, a hopper on the landing reed, a spitter in
+  // the reeds and a wisp's fog over the middle - the level's own lessons, together, right before the King. The
+  // checkpoint at 344 stands at the exam's door; none stand inside it (345-366). ----
   block(345, 358, 18, 27);
-  // (a thorn stood at 348, two strides from where the flats are landed on, and a blue frog in the puddle four strides on:
-  // a fight at a landing, the last thing before the King's court. Both went - the flats are a breath before the boss now -
-  // and what they carried paid for the river's eels; the landing is kept calm at the end of this builder.)
-  for (let x = 351; x <= 355; x++) L.set(x, 18, 0); water(351, 355, 18, true);
-  reeds(356, 15, 2); coins([357, 14], [352, 15]);
+  for (let x = 349; x <= 354; x++) for (let y = 18; y <= 23; y++) L.set(x, y, 0);
+  pools.push({ x0: 349 * TS, x1: 355 * TS, y: 19 * TS, shallow: false, depth: 0, bottom: 24 * TS });
+  ent('sign', 346, 17, { text: 'THE MUD FLATS. PADS, A GAR, A SPITTER IN THE REEDS, AND THE FOG - ALL OF IT, ONCE MORE.' });
+  ent('pad', 349, 18, {}); ent('pad', 352, 18, {});
+  ent('gar', 351, 20, { face: -1 });
+  reeds(356, 15, 2); ent('hopper', 357, 17, { face: -1, color: 'yellow' });
+  coins([349, 14], [352, 14], [357, 14]);
 
   // ---- 10. The Croaking Court: a shallow pond, reed perches, and the King on his mud dais ----
   block(359, 405, 18, 27);
+  reeds(361, 15, 2); ent('spit', 361, 17, { face: -1 }); ent('wisp', 358, 12);   // the exam's spitter and its wisp, on the court's near reeds
   for (let x = 367; x <= 380; x++) L.set(x, 18, 0); water(367, 380, 18, true);
   reeds(363, 16, 2); reeds(382, 16, 2); ent('silver', 364, 15);
   block(386, 401, 17, 17);
@@ -442,7 +462,7 @@ function marshWood() {
 
     palette: { dress: 'marsh', haze: 'rgba(172,192,178,0.24)', grass: '#4a9a6e', grassL: '#7fd1a0', grassD: '#2f6e50', dirt: '#5a4a3c', dirtL: '#736050', dirtD: '#3d3128', sky: [[118, 138, 158], [172, 192, 178]], canopy: ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68'] },
     weather: [{ x0: 0, x1: 99999, kind: 'rain' }, { x0: 1750, x1: 2100, kind: 'mist' }, { x0: 4400, x1: 4800, kind: 'mist' }, { x0: 5400, x1: 5760, kind: 'mist' }],
-    fog: [],   /* (the foggy stream is the gar hole now: the fog is the drowned village's) */
+    fog: [{ x0: 352 * TS, x1: 362 * TS, alpha: 0.4 }],   /* the exam's own patch of fog, over its pads and its spitter, thinned by its one wisp */
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
     /* THE STAGES STAND ON POLES. A row of boards over open water with nothing under it is a floor hanging in the air
        (B9): each stage is driven into the river on two poles, with a rope rail between them, the way the drowned
@@ -7480,9 +7500,11 @@ const REVIEW = {
     R.ent('deco', 374, 11, { kind: 'hiveBg', v: 1 }); R.ent('wasp', 370, 7); R.ent('wasp', 373, 6);
     R.ent('deco', 458, 14, { kind: 'hiveBg', v: 2 }); R.ent('wasp', 456, 9); R.ent('wasp', 461, 8);
     R.ent('deco', 478, 8, { kind: 'hiveBg', v: 0 }); },   /* not 171: the log step is right over it there, and the shrine ran up through it. (114 before the four lessons grew the wood by 104 columns ahead of it) */
-  // a checkpoint by the old stones, and lily pads over the two long shallows (hop them and you are across
-  // before a wader is halfway), with gold on the way
-  marsh: L => { const R = rv(L); R.ent('check', 163, 17); for (const x of [115, 118, 121, 124, 127, 465, 468, 471, 474]) { R.ent('pad', x, 17); R.coin(x, 15); } },
+  // a checkpoint by the old stones, and lily pads over the King's shallow pond (hop them and you are across
+  // before a wader is halfway), with gold on the way. (Design audit MARSH WOOD #3, 2026-09-28: the pads this review
+  // once laid over the WADING SHALLOWS at 115-127 came back out - "the wading lesson then teaches wading", not a
+  // second sink lesson stacked on top of the hoppers it was there to teach.)
+  marsh: L => { const R = rv(L); R.ent('check', 163, 17); for (const x of [465, 468, 471, 474]) { R.ent('pad', x, 17); R.coin(x, 15); } },
   // and its own light in every part of it, so the long fungus wood stops being one colour from end to end
   spore: L => { rv(L).ent('check', 330, 13); L.ents = L.ents.filter(e => !(e.t === 'spitcap' && L.arena && e.x > L.arena.wallR));   /* a spitcap left past the Mother's east wall when the Deep Gills grew the wood: nothing out there to guard (level review, 2026-09-24) */
     L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, L.W, [200, 60, 150], 0.16]]; },   /* to the level's end, whatever it grows to: it stopped at 504, the width before the Deep Gills grew */
