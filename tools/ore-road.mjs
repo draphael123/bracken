@@ -297,10 +297,33 @@ const AR = OR.ARENA;
    Drum's ledge, and from the Head Frame's ledge the high line to the Tail Wheel's. No ledge is a dead end: the low line runs back
    to the deck whenever he is not on or bound for the Great Drum (checked in THE WINCHMASTER below) */
 { const B = AR.housings[1], pit = L.pits.find(q => q.id === 'drum');
-  ok(pit && pit.x0 <= AR.x0 + 6 && pit.x1 >= AR.house[0] - 1 && [...Array(pit.x1 - pit.x0 + 1).keys()].every(k => at(pit.x0 + k, pit.floor) === T.AIR), 'the drum house\'s floor is the pit, like every span\'s: spikes, turbines, a recovery ledge and a ladder home');
+  ok(pit && pit.x0 === B.ladder[0] && pit.x1 >= AR.house[0] - 1 && [...Array(pit.x1 - pit.x0 + 1).keys()].every(k => at(pit.x0 + k, pit.floor) === T.AIR), 'the drum house\'s floor is the pit, like every span\'s, from the Head Frame\'s ladder (the deck under the Head Frame is the only floor) to the Great Drum: spikes, turbines, a recovery ledge and a ladder home');
   ok(footing(at(B.ladder[0] - 1, AR.deck + 1)) && at(B.ladder[0] - 1, AR.deck) === T.AIR && B.ladder[1] <= AR.deck && B.ladder[2] >= AR.deck, 'the entrance deck runs to the Head Frame\'s ladder, and the ladder passes it: step off the deck onto it');
-  ok(AR.ropes.length === 0 && [...Array(AR.house[0] - 482).keys()].every(k => at(482 + k, AR.spoil + 1) !== T.SOLID), 'and there is no spoil floor left to walk on (and no ropes up out of it)'); }
+  ok(AR.ropes.length === 0 && [...Array(AR.house[0] - B.ladder[0]).keys()].every(k => at(B.ladder[0] + k, AR.spoil + 1) !== T.SOLID), 'and there is no spoil floor left to walk on (and no ropes up out of it)'); }
 
+/* ---- ROUND FIVE (Daniel's playtest, 2026-09-28, decided): "THE PLATFORMS YOU FIGHT THE BOSS ON ARE TOO CLOSE TO THE CEILING AND TOO
+   NARROW, WHICH MAKES AVOIDING HIS ATTACKS ARTIFICIALLY DIFFICULT." Every place he is fought - his three housings, their three
+   ledges and the entrance deck - keeps FULL JUMP HEADROOM: the tallest real jump (4.5 tiles) with the hero drawn on top of it
+   (1.5) never meets rock, the drawn ceiling (L.ceil: the cavern's check above exempts a ceiling that has run out at row 0, which
+   is exactly how the old room hid 4 rows) or the top of the level - MIN_HEAD rows, with a tile to spare. A housing's surface is
+   also below the camera's own foot line, so standing up there never pins the view to the top of the level. And each is WIDE
+   enough to dodge on: a housing is MIN_HOUSING tiles (his leap hurts leapHit px round his landing and his brake bar lands
+   leverHit px from him: 8 tiles leaves a stride clear of both beside him), a ledge MIN_LEDGE */
+{ const MIN_HEAD = 7, MIN_HOUSING = 8, MIN_LEDGE = 3, msrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const foot = +((msrc.match(/const CAM_FOOT = ([\d.]+)/) || [])[1]), vh = +((msrc.match(/let VW = \d+, VH = (\d+)/) || [])[1]);
+  const head = (x0, x1, r) => { let m = r + 1; for (let x = x0; x <= x1; x++) { let y = r; while (y >= 0 && !(at(x, y) === T.SOLID || at(x, y) === T.PLANK)) y--;
+      m = Math.min(m, r - Math.max(y, L.ceil[x])); } return m; };   /* rows of air over the standing row r, to the first rock, the drawn ceiling or the top */
+  const B = AR.housings[1], spots = [...AR.housings.map(h => [h.name, h.x0, h.x1, h.top]), ...AR.housings.map(h => [h.name + "'s ledge", h.ledge[0], h.ledge[1], h.ledgeTop]), ['the entrance deck', AR.x0 - 1, B.ladder[0] - 1, AR.deck]];
+  const rows = spots.map(([n, x0, x1, r]) => [n, head(x0, x1, r)]), low = rows.filter(q => q[1] < MIN_HEAD);
+  ok(!low.length, `ROUND FIVE: FULL JUMP HEADROOM (${MIN_HEAD}+ tiles) everywhere he is fought - ` + rows.map(q => q[0] + ' ' + q[1]).join(', ') + (low.length ? ' - TOO LOW: ' + low.map(q => q[0]).join(', ') : ''));
+  ok(foot > 0 && vh > 0 && AR.housings.every(h => (h.top + 1) * TS >= foot * vh), `and every housing's surface is at least ${Math.round(foot * vh)} px under the top of the level (the camera's foot line): up there the view is never pinned to the top - ` + AR.housings.map(h => h.name + ' ' + (h.top + 1) * TS + ' px').join(', '));
+  const narrow = AR.housings.filter(h => h.x1 - h.x0 + 1 < MIN_HOUSING), tight = AR.housings.filter(h => h.ledge[1] - h.ledge[0] + 1 < MIN_LEDGE);
+  ok(!narrow.length && !tight.length, `and WIDE ENOUGH TO DODGE ON: every housing ${MIN_HOUSING}+ tiles, every ledge ${MIN_LEDGE}+ - ` + AR.housings.map(h => h.name + ' ' + (h.x1 - h.x0 + 1) + ' (ledge ' + (h.ledge[1] - h.ledge[0] + 1) + ')').join(', '));
+  /* and the pilot reads this table: src/lab.js's hands for him once held their own copies of these columns (482, 501, 509), and a
+     room edit that moved one stalled a hero in the pilot while every check here stayed green (claude/oreroad3, item 3) */
+  const lsrc = readFileSync(new URL('../src/lab.js', import.meta.url), 'utf8'), i0 = lsrc.indexOf("if(boss.t==='winchmaster'){"), hands = i0 < 0 ? '' : lsrc.slice(i0, lsrc.indexOf("if(boss.t==='gargoyle'){", i0));
+  const lit = [...hands.matchAll(/(?<![\w.])(4[6-9]\d|5[0-3]\d)(?![\w.])/g)].map(m => m[1]);
+  ok(hands.length > 500 && !lit.length && /OR\.ARENA/.test(hands), "src/lab.js's Winchmaster hands read every column off OR.ARENA - no literal arena column of their own" + (lit.length ? ' - found ' + [...new Set(lit)].join(', ') : '')); }
 console.log('\nTHE WINCHMASTER');
 /* THE STUB WORLD: the room's two drum lines as the level builds them, its three housings in pixels exactly as main.js's
    winchHousings() makes them, a hero moved by hand, and every world call written down */

@@ -739,7 +739,12 @@ async function runbossLab(BK, opts) {
       if(boss.t==='winchmaster'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
+        /* ROUND FIVE (claude/winch3, 2026-09-28): EVERY COLUMN AND ROW BELOW IS READ OFF OR.ARENA (and the drum pit off OR.PITS) - these
+           hands used to carry their own copies of his ladder columns, and a room edit that moved one stalled the warden at the cap while
+           every geometry check stayed green (claude/oreroad3, item 3). tools/ore-road.mjs now fails on a literal arena column here */
         const O=OR.ARENA,TZ=16,HS=O.housings,m=boss.mode,spoilY=(O.spoil+1)*TZ,deckY=(O.deck+1)*TZ;
+        const GA=HS[0],HB=HS[1],HC=HS[2],PD=OR.PITS.find(q=>q.id==='drum'),LA=GA.ladder[0],LB=HB.ladder[0],LC=HC.ladder[0],row=y=>(y+1)*TZ;
+        const deck0=O.x0-1,deck1=LB-1;   /* the entrance deck: the arena's first column to the tile before the Head Frame's ladder (the ladder is boarded from, at its level) */
         const go=x=>{if(Math.abs(x-P.x)>3)k[x>P.x?'right':'left']=true;};
         const tgt=(m==='letgo'||m==='swing')?(boss.at+1)%3:(boss.at||0),T0=HS[tgt],reach2=LAB_REACH[h]+boss.w/2;
         const on=P.onMover&&P.onMover.kind==='bucket'?P.onMover:null;
@@ -775,10 +780,10 @@ async function runbossLab(BK, opts) {
           if(Math.abs(dx)>reach2-6)k[side>0?'right':'left']=true;
           if(Math.abs(dx)<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='letgo'&&m!=='swing'&&m!=='leap'){P.face=side;BK.press('atk');swings++;} }
         else if(P.climb){ /* ON A LADDER: to the row this housing is reached from, and off it there */
-          const lx=Math.floor(P.x/TZ),row=y=>(y+1)*TZ;let want=null,off=0;
-          if(lx===482){ if(tgt===1){want=null;k.up=true;} else if(tgt===2){want=row(8);off=1;} else {want=row(12);off=-1;} }
-          else if(lx===509){ if(tgt===0)k.up=true; else k.down=true; }
-          else if(lx===501){ if(tgt===2)k.up=true; else k.down=true; }
+          const lx=Math.floor(P.x/TZ);let want=null,off=0;
+          if(lx===LB){ if(tgt===1){want=null;k.up=true;} else if(tgt===2){want=row(HB.ledgeTop);off=Math.sign(HB.ledge[0]-LB);} else {want=row(O.deck);off=Math.sign(deck1-LB);} }
+          else if(lx===LA){ if(tgt===0)k.up=true; else k.down=true; }
+          else if(lx===LC){ if(tgt===2)k.up=true; else k.down=true; }
           else k.up=true;
           /* step off from a hair ABOVE the floor it leads to (letting go level with it drops you a few pixels short, into the pit) */
           if(want!==null){ if(P.y<=want-2&&P.y>want-10)k[off>0?'right':'left']=true; else if(P.y>want-2)k.up=true; else k.down=true; } }
@@ -792,22 +797,21 @@ async function runbossLab(BK, opts) {
             const skip=ln.dir*dir>0&&!(ln.jam>0)&&BK.movers().some(q=>q.kind==='bucket'&&q.line===li&&q.vis&&!(q.fallen>0)&&!q.cracked&&step>q.x+4&&step<q.x+q.w-4&&Math.abs(q.y-P.y)<6);
             if(skip)k[dir>0?'right':'left']=true;else go(stand); };
           const climb=x=>{const lx=x*TZ+8;if(Math.abs(lx-P.x)>3)go(lx);else k.up=true;};
-          const onLad=[482,509,501].find(x=>Math.abs(P.x-(x*TZ+8))<7&&(BK.L.grid[Math.floor((P.y+2)/TZ)*BK.L.W+x]===T.NET||BK.L.grid[Math.floor((P.y-4)/TZ)*BK.L.W+x]===T.NET));
-          const deck=at2(466,482,12);   /* (the Head Frame's ladder top at deck level is part of the deck: that is where the low line is boarded) */
-          if(deck&&tgt===0)board(lo,483*TZ,1);
+          const onLad=[LB,LA,LC].find(x=>Math.abs(P.x-(x*TZ+8))<7&&(BK.L.grid[Math.floor((P.y+2)/TZ)*BK.L.W+x]===T.NET||BK.L.grid[Math.floor((P.y-4)/TZ)*BK.L.W+x]===T.NET));
+          const deck=at2(deck0,LB,O.deck);   /* (the Head Frame's ladder at deck level is part of the deck: that is where the low line is boarded) */
+          if(deck&&tgt===0)board(lo,(LB+1)*TZ,1);
           else if(onLad!==undefined&&topAt<0){ /* STANDING ON A LADDER (its top, or a rung level with a floor): take hold the way it leads */
-            if(onLad===482){ const w=tgt===1?-1:tgt===2?(9*TZ):(13*TZ); if(w<0)k.up=true; else if(P.y<=w&&P.y>w-10)k[tgt===2?'right':'left']=true; else if(P.y>w)k.up=true; else k.down=true; }
-            else if((onLad===509&&tgt===0)||(onLad===501&&tgt===2))k.up=true; else k.down=true; }
+            if(onLad===LB){ const w=tgt===1?-1:tgt===2?row(HB.ledgeTop):row(O.deck),side=tgt===2?Math.sign(HB.ledge[0]-LB):Math.sign(deck1-LB); if(w<0)k.up=true; else if(P.y<=w&&P.y>w-10)k[side>0?'right':'left']=true; else if(P.y>w)k.up=true; else k.down=true; }
+            else if((onLad===LA&&tgt===0)||(onLad===LC&&tgt===2))k.up=true; else k.down=true; }
           else if(topAt===tgt){ /* at the top of his ladder: step onto the housing */ const q=HS[tgt]; k[q.ladder[0]<q.x0?'right':'left']=true; }
           else if(topAt>=0){ /* up on a housing he has left: back down its ladder */ const lx=HS[topAt].ladder[0]*TZ+8; if(Math.abs(lx-P.x)>3)go(lx);else k.down=true; }
-          else if(deck){ /* THE ENTRANCE DECK, for the Head Frame or the Tail Wheel: his ladder */ climb(482); }
-          else if(at2(483,484,8)){ /* the Head Frame's ledge */ if(tgt===2)board(hi,485*TZ,1); else if(tgt===1)climb(482); else climb(482); }
-          else if(at2(499,501,8)){ /* the Tail Wheel's ledge */ if(tgt===2)climb(501);
-            else if(tgt===1)board(hi,499*TZ,-1);
-            else board(hi,499*TZ,-1); /* for the Great Drum: the long way, and never through the spikes - back along the high line, down the Head Frame's ladder to the deck, and the low line in */ }
-          else if(at2(507,509,12)){ /* the Great Drum's ledge */ if(tgt===0)climb(509); else if(lo.dir<0)board(lo,507*TZ,-1); else go(508*TZ); }   /* (the low line runs in only while he is on the Great Drum: wait for it to turn, do not step into the pit) */
-          else if(at2(482,484,18)){ /* the pit's recovery ledge */ climb(482); }
-          else go(482*TZ+8); }
+          else if(deck){ /* THE ENTRANCE DECK, for the Head Frame or the Tail Wheel: his ladder */ climb(LB); }
+          else if(at2(HB.ledge[0],HB.ledge[1],HB.ledgeTop)){ /* the Head Frame's ledge */ if(tgt===2)board(hi,(HB.ledge[1]+1)*TZ,1); else climb(LB); }
+          else if(at2(HC.ledge[0],HC.ledge[1],HC.ledgeTop)){ /* the Tail Wheel's ledge */ if(tgt===2)climb(LC);
+            else board(hi,HC.ledge[0]*TZ,-1); /* for the Head Frame, and for the Great Drum the long way, never through the spikes - back along the high line, down the Head Frame's ladder to the deck, and the low line in */ }
+          else if(at2(GA.ledge[0],GA.ledge[1],GA.ledgeTop)){ /* the Great Drum's ledge */ if(tgt===0)climb(LA); else if(lo.dir<0)board(lo,GA.ledge[0]*TZ,-1); else go((GA.ledge[0]+1)*TZ); }   /* (the low line runs in only while he is on the Great Drum: wait for it to turn, do not step into the pit) */
+          else if(PD&&at2(PD.ledge[0],PD.ledge[1],PD.ledge[2])){ /* the pit's recovery ledge */ climb(PD.ladder[0]); }
+          else go(LB*TZ+8); }
         else if(P.labAir) k[P.labAir]=true;
         /* A JUMP OFF A SKIP comes back down INTO it: in the air, steer over the skip it left (it goes on moving under you) */
         if(on)P.labSkip=on; else if(P.ground||P.climb)P.labSkip=null;

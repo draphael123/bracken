@@ -16,7 +16,7 @@
 // usage: node tools/ore-ride.mjs
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
-import { cableLines } from '../src/ore-road.js';   /* only to prove COVERAGE: that the page rode every line the source declares */
+import { cableLines, OR } from '../src/ore-road.js';   /* cableLines only to prove COVERAGE: that the page rode every line the source declares; OR for the Head Frame's own column, in the exploit test below */
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const R0 = await pg.evalp(`(async()=>{
@@ -135,8 +135,8 @@ try {
     BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = false; BK.sim(5);
     for (const e of BK.enemies()) if (!e.maxHp) e.alive = false;
     const L = BK.L, P = BK.P, A = L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(120);
-    const b = BK.boss, li = L.cableway.lines.findIndex(l => l.id === 'low'); let m = null, seen = [];
-    for (let f = 0; f < 60 * 20 && !m; f++) { BK.sim(1); m = BK.movers().find(q => q.kind === 'bucket' && q.line === li && q.vis && q.x + q.w / 2 > 488 * 16 && q.x + q.w / 2 < 491 * 16); }
+    const b = BK.boss, li = L.cableway.lines.findIndex(l => l.id === 'low'), s0 = L.cableway.lines[li].pts[0][0]; let m = null, seen = [];   /* s0: the low line's start on the deck - a skip 7-10 tiles out from it, off the room's own table (round five moved the deck) */
+    for (let f = 0; f < 60 * 20 && !m; f++) { BK.sim(1); m = BK.movers().find(q => q.kind === 'bucket' && q.line === li && q.vis && q.x + q.w / 2 > s0 + 6.75 * 16 && q.x + q.w / 2 < s0 + 9.75 * 16); }
     if (!m) return { err: 'no skip came out' };
     for (let k = 0; k < 4; k++) { P.x = m.x + m.w / 2; P.y = m.y - 1; P.vx = P.vy = 0; BK.sim(1); }
     for (let f = 0; f < 60 * 25 && b.mode !== 'downed'; f++) { b.revCd = b.sendCd = b.hookCd = b.leverCd = 99; BK.sim(1); seen.push(b.mode); }
@@ -144,6 +144,32 @@ try {
   })()`, 600000);
   console.log(`  ${JAM.downed && JAM.open ? 'ok  ' : 'FAIL'} ridden in from the deck, a loaded skip jams the Great Drum and he is down on its ledge, open ` + JSON.stringify(JAM));
   assert(JAM.downed && JAM.open, 'the jam still puts him down, open (the bonus)');
+  /* THE WEST LOCK WALL, SEALED (winch3's Q4, approved): the round's own camLock (main.js) already clamps P.x inside the
+     arena every frame while the fight is on, which is why a plain walk-and-jump off the Head Frame's west edge cannot
+     be made to reach the landing in the page (tried it: it cannot). But that clamp is a SEPARATE safety net from the
+     wall itself, and Daniel's note was about the WALL - "the platforms you fight on" reading of "no way out over it" is
+     about the tile geometry, not the camera's own clamp. So this checks the geometry directly: once the arena is
+     locked, the wall's own column (A.wallL) must be SOLID from THE HEAD FRAME's own top row down to the floor - no gap
+     to stand in between the wall's old low top and the housing's underside, which is what let the old 6-row wall be
+     stood on at all. */
+  const WALL = await pg.evalp(`(async()=>{
+    const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'oreroad');
+    BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = true; BK.sim(5);
+    for (const e of BK.enemies()) if (!e.maxHp) e.alive = false;
+    const L = BK.L, P = BK.P, A = L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(120);
+    const B = ${JSON.stringify(OR.ARENA.housings[1])};   /* THE HEAD FRAME: its own top row, off the level's own table */
+    const T = lvm.T, gaps = [];
+    for (let ty = B.top; ty <= Math.round(A.floor / 16) - 1; ty++) { const t = L.grid[ty * L.W + A.wallL]; if (t !== T.SOLID) gaps.push([ty, t]); }
+    /* AND THE GENERIC CLAMP TOO, belt and suspenders: walk and jump west off the housing's edge for ten seconds */
+    P.x = B.x0 * 16 + 4; P.y = B.top * 16; P.vx = 0; P.vy = 0; BK.sim(3);
+    let minX = P.x, k = BK.keys;
+    for (let f = 0; f < 60 * 10; f++) { k.left = true; k.right = false; if (f % 40 < 6) BK.press('jump'); BK.sim(1); minX = Math.min(minX, P.x); }
+    return { gaps, wallL: A.wallL, top: B.top, floorRow: Math.round(A.floor / 16) - 1, minX: Math.round(minX / 16) };
+  })()`, 60000);
+  console.log(`  ${!WALL.gaps.length ? 'ok  ' : 'FAIL'} the west lock wall (column ${WALL.wallL}) is solid rock from the Head Frame's own top (row ${WALL.top}) to the floor (row ${WALL.floorRow}) - no ledge left to land on` + (WALL.gaps.length ? ' - open at ' + JSON.stringify(WALL.gaps) : ''));
+  assert(!WALL.gaps.length, `the west lock wall must run solid from the Head Frame's underside to the floor, with no gap to stand in - found open rows ${JSON.stringify(WALL.gaps)}`);
+  console.log(`  ${WALL.minX > WALL.wallL ? 'ok  ' : 'FAIL'} and the camera's own arena clamp (belt and suspenders): ten seconds walking and jumping off the Head Frame's west edge never crossed column ${WALL.wallL} (reached ${WALL.minX})`);
+  assert(WALL.minX > WALL.wallL, `a hero must never be walked past the arena's own lock wall (column ${WALL.wallL}) - he reached column ${WALL.minX}`);
   assert(!pg.errors.length, 'no page errors');
   console.log('every line of the ore road carries you across');
 } finally { pg.close(); }

@@ -3,6 +3,7 @@ import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { THROW_KIND, isFireFoe, throwDamage, PYRO_HIT_FIELD } from './throwables.js';   /* CARRY & THROW (2026-09-28): the generic pick-up-and-throw system, and the water buckets built on it */
 import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins, ORES, ORE_NAMES, workSees, workLamp, hash as oreHash } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
+import { WALL_KINDS, wallHits, wallPop, wallRect, wallCentre, drawWalls } from './breakable-walls.js';   /* THE BREAKABLE-WALL ENGINE (2026-09-28): built once, THE ORE ROAD's the first level to use it */
 import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, winchRust, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { bakeScalder } from './redraw/scalder.js';
@@ -2898,7 +2899,7 @@ function respawn() { P.windRide = null; P.martyrUsed = false; P.airRolled = fals
   setView('normal'); applyUpgrades();
   if (P.relic) { number(P.x, P.y - 30, RELICS[P.relic].name + ' LOST', '#9aa39a'); } P.relic = null;
   Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, wheelT: 0, sdN: 0, springT: 0, stretchT: 0, javThrowT: 0, disarmT: 0, ironT: 0, realmT: 0, kPoseT: 0, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
-  mendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; if (GEO) GEO.clear(); wardJav = null; spearRain = []; droppedArms = []; realmWaves = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
+  mendAll(); wallsMendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; if (GEO) GEO.clear(); wardJav = null; spearRain = []; droppedArms = []; realmWaves = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   for (const m of movers) if (m.kind === 'raft' && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.returning = false; m.called = false; m.offT = 0; m.bored = false; m.frogT = 0; } // EVERY RAFT AHEAD OF THE SHRINE POLES BACK TO ITS DOCK: only the Ferryman's did, so a fall off the marsh rafts left them docked on the far bank and the stream uncrossable
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
   P.breath=breathCapacity(L,P.relic);P.drownT=0;
@@ -6928,7 +6929,7 @@ function updatePlayer(dt) {
   if (isPaladin() && skillPress('blessedHammer') && cdReady('blessedHammer') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(19)) { cdSet('blessedHammer'); hammers.push({ x0: P.x, y0: P.y - 12, dir: P.face, t: 0, x: P.x, y: P.y - 12, hit: new Map() }); SFX.throwWhoosh(); SFX.lightFull(); P.castT = 0.25; kitPose(P, 'hurlH', 0.35); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (P.chargeT > 0) { P.chargeT -= dt; P.vx = P.face * 330; if (Math.random() < dt * 40) parts.push({ x: P.x - P.face * 6, y: P.y - 4 - Math.random() * 14, vx: -P.face * 60, vy: 0, life: 0.3, max: 0.3, col: '#ffd36b', size: 1, grav: 0, glow: true });
     for (const e of enemies) if (e.alive && !e.harmless && !P.chargeHit.has(e) && overlap({ l: P.x - 10, r: P.x + 10, t: P.y - 18, b: P.y }, box(e))) { P.chargeHit.add(e); hurtAs('dash', e,Math.round(12 * amul('holyCharge')), P.x, false); if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1); e.vx = P.face * 240; e.vy = -150; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(3, P.face * 2); hitstop(0.04); } }
-  if (skillPress('groundSlam') && (P.ground || P.swim) && cdReady('groundSlam') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(31)) { cdSet('groundSlam'); P.block = false; P.atk = -1; kitPose(P, 'slam', 0.42); shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: P.ground ? 1.2 : 0.8, sp: 210, hit: new Set(), water: !P.ground, skill: 'groundSlam' }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); } number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
+  if (skillPress('groundSlam') && (P.ground || P.swim) && cdReady('groundSlam') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(31)) { cdSet('groundSlam'); P.block = false; P.atk = -1; kitPose(P, 'slam', 0.42); shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: P.ground ? 1.2 : 0.8, sp: 210, hit: new Set(), water: !P.ground, skill: 'groundSlam' }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); const w = (L.walls || []).find(q => !q.broken && tx >= q.x0 && tx <= q.x1 && ty >= q.y0 && ty <= q.y1); if (w) breakWall(w); }   /* ONE HEAVY BLOW breaks a breakable wall outright, the same slam that breaks a crate in one */ number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   if (skillPress('shieldThrow') && !thrown && cdReady('shieldThrow') && tal('shieldThrow') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !P.plunge && !(P.dodge > 0)) { if (spend(25)) { thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set() }; P.block = false; kitPose(P, 'toss', 0.3); SFX.throwWhoosh(); squash(0.85, 1.15, 0.08); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   // ---- MORE ON THE KEYS ----
   const canAct = () => !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge;
@@ -7883,7 +7884,17 @@ function setWallAt(col, solid, floorY) { const top = floorY / TS - 6, bot = floo
     if (solid) { if (!was.has(i)) was.set(i, [L.grid[i], tileSpr[i]]); if (L.grid[i] === T.SOLID) continue; L.grid[i] = T.SOLID; tileSpr[i] = L.fallingTower ? (FALLEN_SKINS || (FALLEN_SKINS = FTW.bakeFallenSkins())).fallen[(ty + col) % 3] : TILE.palisade[(ty + col) % 3]; }
     else { const w = was.get(i); was.delete(i); if (w) { L.grid[i] = w[0]; tileSpr[i] = w[1]; } else { L.grid[i] = T.AIR; tileSpr[i] = null; } } } }
 function setWall(col, solid) {
-  const A = L.arena; const top = A.floor / TS - 6, bot = A.floor / TS - 1;
+  const A = L.arena;
+  /* THE WINCHMASTER'S WEST LOCK WALL RUNS FLOOR TO CEILING (round: passbuckets, 2026-09-28, Daniel's Q4 from claude/winch3,
+     approved). Every other arena's 6-row wall is tall enough because nothing in it stands taller than that - but the Head
+     Frame stands at row 8, four rows above the old wall's own top (row 12, close to the landing's own height outside it):
+     walking off its west edge dropped you onto the wall's top instead of down its face, and from there you could step
+     straight back out onto the landing, skipping the lock. Running the wall up to row 0 (and past the Head Frame's own
+     underside, not merely to it - anything less still leaves open air beside the housing to fall through and out) leaves
+     no ledge anywhere on the column to land on. Only wallL, only his arena: no other boss's wall, and nothing of his own
+     AI (src/winchmaster.js is untouched). */
+  const sealed = A.boss === 'winchmaster' && col === A.wallL;
+  const top = sealed ? 0 : A.floor / TS - 6, bot = A.floor / TS - 1;
   for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? ((L.arena.boss === 'chief' || L.arena.boss === 'master') ? TILE.palisade[(ty + col) % 3] : L.arena.boss === 'suncatcher' ? (TILE.ice || (TILE.ice = bakeIceTile())) : (L.arena.boss === 'ram' || L.arena.boss === 'lance' || L.arena.boss === 'roc' || L.arena.boss === 'golem' || L.arena.boss === 'prince' || L.arena.boss === 'duneworm') ? TILE.drystone[(ty + col) % 3] : L.arena.boss === 'gqueen' ? TILE.port[(ty + col) % 2] : TILE.vine[(ty + col) % 4]) : null; }
   // her hall is shut by portcullises, and you see them come down: both doors, with the clang, when she wakes
   if (solid && L.arena.boss === 'gqueen') { const ys = []; for (let ty = top; ty <= bot; ty++) ys.push(ty); const spr = ys.map(ty => tileSpr[ty * LW + col]); for (const ty of ys) tileSpr[ty * LW + col] = null; gateFx.push({ col, ys, t: 0, dur: 0.3, closing: true, spr }); SFX.gateDrop(); }
@@ -14932,7 +14943,7 @@ function oreBuild() {
    which is the whole point. MOVING IS PROGRESS; STOPPED IS WHERE YOU CAN FIGHT, and everything that flies over this
    gorge keeps coming while you are stopped. The drum line is not brakeable: the Winchmaster drives that one. */
 function oreBrake(dt) {
-  oreVeinsStep(dt); orePitStep(dt); oreWorksAfter(dt);   /* (the ore road's per-frame hook: the veins, the miners working them, the pit ride on it, and the work a goblin dropped) */
+  oreVeinsStep(dt); wallsStep(dt); orePitStep(dt); oreWorksAfter(dt);   /* (the ore road's per-frame hook: the veins, the breakable walls, the miners working them, the pit ride on it, and the work a goblin dropped) */
   const m = P.onMover;
   for (const l of L.cableway.lines) {
     const held = !l.drum && !P.dead && !!keys.block && !!m && m.kind === 'bucket' && L.cableway.lines[m.line] === l && m.vis && !(m.fallen > 0);
@@ -15021,6 +15032,35 @@ function oreWorksAfter(dt) {
     if (w.k === 'winch' && !e.alive && w.st === 'work') w.ph = 'fall';
     if (w.k === 'sack' && w.carry && !e.alive) { w.carry = false; w.sackX = e.x; } }
 }
+/* THE BREAKABLE-WALL ENGINE'S HOOK (src/breakable-walls.js, item 1): struck the same way a vein is struck - the
+   player's own attack box against the wall's own rect, P.hitSet keeping one hit per swing - and it opens the grid
+   for real when it gives, instead of only flipping a flag the way a vein does (a vein was never in anyone's way;
+   a wall is the rock itself). breakWall pops the level's own ore (or coins, for a 'secret' wall) the way a mined
+   vein does. mendWallTiles/wallsMendAll (called from respawn's mendAll) put the rock back: NEVER A SOFT-LOCK, and
+   a wall gating the route is relied on to still be there next attempt, not skipped once and left open for good. */
+function wallsStep(dt) {
+  const WS = L.walls || [];
+  for (const w of WS) { w.flash = Math.max(0, (w.flash || 0) - dt); if (w.broken || P.dead) continue;
+    const hb = attackBox(); if (!hb || P.hitSet.has(w)) continue;
+    const r = wallRect(w, TS); if (!overlap(hb, r)) continue;
+    P.hitSet.add(w); w.hits++; w.flash = 0.15; SFX.clank();
+    const [cx0, cy0] = wallCentre(w, TS), col = w.colour || ['#3a3a42', '#9aa0ac', '#eef0f6'];
+    sparks(cx0, cy0, P.face, 6); burst(cx0, cy0, 6, [col[1], col[2]], 65, 0.35);
+    if (w.hits >= wallHits(w)) breakWall(w); }
+}
+function breakWall(w) {
+  w.broken = true; SFX.stone(); shakeCam(2); hitstop(0.03);
+  const [cx0, cy0] = wallCentre(w, TS), col = w.colour || ['#3a3a42', '#9aa0ac', '#eef0f6'];
+  burst(cx0, cy0, 16, [col[1], col[2], '#fff6e0'], 100, 0.6);
+  for (let ty = w.y0; ty <= w.y1; ty++) for (let tx = w.x0; tx <= w.x1; tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.AIR) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } }
+  resolveTiles();
+  const pop = wallPop(w), n = pop === 'ore' ? 3 : 4;
+  for (let k = 0; k < n; k++) acorns.push({ x: cx0 + (k - (n - 1) / 2) * 6, y: cy0, got: false, ph: k, vy: -90 - k * 20, vein: pop === 'ore' });
+  number(cx0, cy0 - 14, pop === 'ore' ? (ORE_NAMES[w.ore] || 'ORE') : 'COINS', col[2]);
+}
+/* mends every broken wall back to solid rock - called from mendAll (respawn), the same reset a cut bridge span gets */
+function mendWallTiles(w) { for (let ty = w.y0; ty <= w.y1; ty++) for (let tx = w.x0; tx <= w.x1; tx++) { const i = ty * LW + tx; if (L.grid[i] === T.AIR && grid0[i] !== T.AIR) { L.grid[i] = grid0[i]; tileSpr[i] = null; destroyed.delete(i); } } }
+function wallsMendAll() { let any = false; for (const w of (L.walls || [])) if (w.broken) { mendWallTiles(w); w.broken = false; w.hits = 0; w.flash = 0; any = true; } if (any) resolveTiles(); }
 function oreVeinsStep(dt) {
   const V = L.veins || [];
   for (const v of V) { v.flash = Math.max(0, (v.flash || 0) - dt); if (v.mined || P.dead) continue;
@@ -22609,6 +22649,11 @@ function updateCamera(dt) {
   if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * CAM_FOOT + lookDown; }
   /* THE GATE GARGOYLE's fight frames him and you together, and keeps the garden floor he crashes onto in the picture (gate-gargoyle.js) */
   else if (bossActive && boss && boss.alive && boss.t === 'gargoyle' && L.arena) { [tx, ty] = gargCam(P, boss, L.arena, VW, VH); ty += lookDown * 0.5; }
+  /* THE WINCHMASTER's room is wider than any zoomed view (round five, claude/winch3: five more columns so his housings are wide enough to
+     dodge on). Centered on the room, as it was, both end housings lost a strip - and the Head Frame's man stood in it, where his "begins
+     nothing off screen" rule left him waiting. So the camera frames the two of you: the MIDPOINT of hero and Winchmaster, held inside the
+     room by the lock below. A room narrower than the view is still centered (centerLock) */
+  else if (bossActive && boss && boss.alive && boss.t === 'winchmaster' && camLock) tx = (P.x + boss.x) / 2 - VW / 2;
   camX += (tx - camX) * Math.min(1, dt * 5); camY += (ty - camY) * Math.min(1, dt * 4);
   // A ZOOMED VIEW CAN BE WIDER THAN A SMALL ARENA (every boss fight zooms out now, src/boss-view.js, and VW can run
   // to 640px): pinning the clamp to the west wall then ran the east edge of a narrow arena hundreds of pixels past
@@ -22618,7 +22663,7 @@ function updateCamera(dt) {
   // Frame at its west wall, the Great Drum at its east - and at the zoomed view's usual sizes the room is only a
   // little wider than the screen. Panned to either wall (the ordinary clamp below) the FAR housing runs off the
   // opposite edge; centered instead, both ends lose the same sliver and neither housing goes missing.
-  const centerLock = camLock && (boss && boss.t === 'winchmaster' || camLock.x1 - camLock.x0 + 16 < VW);
+  const centerLock = camLock && camLock.x1 - camLock.x0 + 16 < VW;   /* (the Winchmaster's room is framed on the two of you above, round five) */
   let x0, x1;
   if (centerLock) { x0 = x1 = Math.max(0, Math.min(LW * TS - VW, (camLock.x0 + camLock.x1) / 2 - VW / 2)); }
   else { x0 = camLock ? camLock.x0 - 8 : 0; x1 = camLock ? camLock.x1 + 8 - VW : LW * TS - VW; }
@@ -23933,6 +23978,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawShards(cx, cy);
   drawWater(cx, cy, false);
   if (L.cableway) { drawCables(g, L.cableway, cx, cy, time, VW); drawOreVeins(g, L, cx, cy, time, VW, VH); }   /* THE ORE ROAD's cables, and the empties coming back behind them */
+  if (L.walls) drawWalls(g, L.walls, cx, cy, TS, time);   /* THE BREAKABLE-WALL ENGINE's own look, over the rock the tile renderer already drew */
   for (const m of movers) {
     if (m.kind === 'bucket') { if (m.vis && m.x + m.w > cx - 10 && m.x < cx + VW + 10) drawBucket(g, m, cx, cy, time); continue; }
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;

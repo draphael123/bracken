@@ -1,4 +1,5 @@
 import { SLOPE } from './slopes.js';
+import { makeWall } from './breakable-walls.js';
 // ore-road.js — THE ORE ROAD (built 2026-09-23; REWORKED 2026-09-25 against docs/briefs/ore-road-rework.md).
 //
 // WHAT WAS WRONG, IN NUMBERS, AND WHY THE REWORK IS SHAPED THE WAY IT IS. The shipped level scored INDEX 59 against
@@ -25,22 +26,36 @@ import { SLOPE } from './slopes.js';
 //
 // ONE VERB A PLACE, SEVEN SECTIONS OF 60-100 (F1), AND IT ALTERNATES (F4) - fight, cross, fight, ride, climb, cross, fight:
 //   c   0- 67  THE ORE YARD       ON FOOT.   The crusher: the first hazard, and the first thing you can tip ore into
-//   c  68-135  THE FIRST SPAN     RIDE.      Two pylons to rest on, tipplers over the lane, the down line coming back
+//   c  68-135  THE FIRST SPAN     RIDE.      Two pylons to rest on, tipplers over the lane, and PASSING BUCKETS: a second
+//                                            line running back the other way, under the first - hop down as it passes
 //   c 136-203  THE SORTING TOWER  CLIMB.     Three decks, and THE SORTING FLOOR is the ambush room (Q)
 //   c 204-271  THE ORE CHUTE      RIDE DOWN. Fast, steered rather than waited out, over the crusher run
 //   c 272-339  THE COLLAPSED SPAN ON FOOT.   The cable is snapped; climb the fallen towers over their own splinters
 //   c 340-407  THE STEEP LINE     HOP.       Rusted buckets, two pillars, and the Sheargobs cutting hangers
 //   c 408-475  THE WINCH HOUSE    RIDE.      His crew on the entry deck, THE ORE SHAFT (EXAM, audit item 3), the landing
-//   c 476-523  THE DRUM HOUSE     THE WINCHMASTER (src/winchmaster.js): three housings on two lines, and he goes round them
+//   c 476-528  THE DRUM HOUSE     THE WINCHMASTER (src/winchmaster.js): three housings on two lines, and he goes round them
 //
 // THE CABLEWAY is pure and lives here: a LINE is a polyline the buckets' tops follow, a speed, and a spacing. Every
 // bucket on a line is the same clock offset by its spacing, so they arrive like a clock and not like a spawner. The
 // last stretch of each loop is the return, out of sight inside the station houses. main.js turns each bucket into a
 // mover (the rider is carried by the engine's own mover code) and calls stepCableway / placeBucket every frame.
 export const OR = {
-  W: 524, H: 60,
+  W: 529, H: 60,
   YARD: 36,                                                      // the yard's floor, and the first span's line
   PYLON_A: [96, 104], PYLON_B: [120, 128],                       // the two rests out on the first span
+  /* PASSING BUCKETS (Daniel, 2026-09-28, decided: THE FIRST SPAN, oreroad3's recommendation - a plainer ride whose pit
+     already gives fall safety). A second line, 'pass', runs the OTHER way over the open gorge just short of PYLON A:
+     east, PYLON A's own underside (OR.PYLON_A again, four rows lower); west, a fresh low rest out in the gorge, at
+     `westX` (width `westW`, centred there). Between them it TRACKS THE FIRST LINE'S OWN CONTOUR (cableLines() samples
+     first's height with lineYAt and adds `gapRows` rows to every column) - so the vertical gap between the skip you are
+     riding and the one coming back is the SAME everywhere along the stretch, a real jump (`gapRows` tiles, not the reach
+     model's 6), not a step you can just walk and not a reach nothing could make. The west rest sits where the first
+     line's own dip is deepest, so it is built at whatever row the tracked contour actually lands on there (buildOreRoad
+     reads it straight off the built 'pass' line, not off a row typed here - the dip's true depth, not a guess at it).
+     The other line's buckets are visible coming (they are ordinary movers, drawn like any other skip - nothing to add
+     for that). A miss falls into THE FIRST SPAN's own pit (already below this whole stretch): a climb, never a death -
+     nothing new was built for that either. */
+  PASS: { x0: 82, x1: 104, westX: 82, westW: 7, gapRows: 4 },
   TOWER: [36, 28, 21], TOWER_X: [136, 203],                      // the sorting tower's three decks
   TIPPLE: [228, 240], TIPPLE_ROW: 27,                            // the tipple house, half way down the chute
   FOOT: [262, 280], FOOT_ROW: 34,                                // the chute's foot, and the head of the wreck
@@ -57,11 +72,56 @@ export const OR = {
      convention), so nobody stands on a rope-end a row higher than the ledge. FOUR ROWS IS ENOUGH ONLY BECAUSE A DRUM LINE'S SKIPS
      CANNOT BE TIPPED: an emptied skip rides OR.BUCKET.lift higher, and 18 px under a 64 px housing is a 46 px jump. `housing`
      is the Great Drum's row: main.js seats him there before the fight */
-  ARENA: { x0: 476, x1: 519, deck: 12, housing: 8, spoil: 22, highRow: 8, ledge: [507, 509], house: [510, 518],
+  /* ROUND FOUR (Daniel's playtest, 2026-09-28, item 3): "THE HIGH HOUSINGS ARE TOO CLOSE TO THE CEILING AND TOO NARROW" -
+     tried, and NOT done in that lane (ROUND FIVE, below, did it). Every direction that was
+     tried came back red, and the room turns out to have no free column left in it for this brief - see QUESTIONS FOR
+     DANIEL for the recommendation (make more room first, in its own lane, rather than guess further here). What was tried:
+     (1) widening THE HEAD FRAME eastward past its own ladder (fixed at column 482 - it HAS to be the entrance deck's own
+     rope carried on up, ROUND TWO's comment, and the deck is a single tile at 481) pushed its ledge close enough to THE
+     TAIL WHEEL'S that the high line fell under WINCH.revRange + 40 - proved red on tools/ore-road.mjs's REVERSE-range line.
+     (2) Moving that ledge to the other side of the widened housing kept the line long, but then the line's own path (a
+     hero rides it, empty as well as loaded) ran straight through the housing's own new width - proved red on "the high
+     line never carries its rider into rock". (3) Widening THE TAIL WHEEL eastward (the only side with any room) reached
+     column 509, which is THE GREAT DRUM's own ladder column - every ore-road.mjs check stayed green, but a pilot
+     (bossLab, seed 3100, knight/warden/pyro) turned up a real regression: the warden, a clean win on master (283.8 s), ran
+     to the 300 s cap taking no damage at all, stuck. src/lab.js's own hands for this fight (the block starting "THE
+     WINCHMASTER, ROUND TWO") read several of these columns as literal numbers (482, 501, 509, in its WINCHMASTER block) rather
+     than off this table, so widening onto 509 put THE TAIL WHEEL's own new platform tile on the exact column the hands
+     use to mean "THE GREAT DRUM's ladder" - proved (before/after pilots, both this checkout's own git worktree of master
+     05deabe and this branch, same seed): knight identical (122.4 s / 122.6 s, the harness itself unaffected), warden
+     283.8 s win -> 300 s stuck. Reverted rather than shipped once a hero got stuck, not merely a check gone red.
+     (4) LOWERING either housing runs into a wall on both sides regardless of width: the LOW LINE rides at the standing-
+     height of row 12 (A.deck) the entire way from the entrance deck to the Great Drum, over the same columns the Head
+     Frame and the Tail Wheel stand in, so a top low enough to put a housing's own ledge (always four rows under it,
+     ROUND TWO's rule) on or near row 12 puts solid rock in the low line's own path - proved red the same way. Going low
+     enough to clear row 12 from the other side (row 13+) puts the housing at the entrance deck's own standing height,
+     which breaks "no jump reaches any housing" (a two-tile hop from the deck's edge at 481 would then reach it) - not
+     attempted past that point. Nothing here is a baked constant: every read of it (main.js's winchHousings) is live off
+     this table - src/lab.js was then the one place with its own copy of these columns (ROUND FIVE made it read this table) */
+  /* ROUND FIVE (Daniel's playtest, 2026-09-28, decided: "the platforms you fight the boss on are too close to the ceiling and
+     too narrow, which makes avoiding his attacks artificially difficult") - DONE, by MOVING THE LOW LINE DOWN AND GIVING THE
+     ROOM FIVE MORE COLUMNS. Round four's item 3 above found the only real wall: the high housings could not come down
+     because the low line rode at row 12 under them. So the whole room below the entrance landing now sits FIVE rows lower
+     (the landing stays at WINCH; you drop off its end onto the deck, `deck` 17): the high housings stand at row 8 (they
+     were 4), their ledges and the high line at 12, and the low line, the deck and the Great Drum's ledge at 17 - five rows
+     under the high line, not four, so the Great Drum's ledge (under the Tail Wheel's east end) and the deck (under the
+     Head Frame) keep full headroom too. The ceiling over his room keeps `ceilGap` rows (8, not the cavern's CEIL_GAP 6):
+     every housing now has 8 tiles of air between its surface and the rock (it had 4 on the high two), and every ledge 7
+     or more - the tallest real jump (4.5 tiles) and the hero drawn on top of it (1.5) never meet rock or the top of the
+     screen, and a housing's surface is lower than the camera's own foot line (0.68 x 180 px), so standing up there no
+     longer pins the view to the top of the level. WIDTHS, before -> after: the Head Frame 6 -> 8, the Tail Wheel 7 -> 8,
+     the Great Drum 9 -> 10; the Head Frame's ledge 2 -> 3 (the other two stay 3). The Tail Wheel and the two high ledges
+     are held by the low line's own length (it runs under all of them): its phase-two REVERSE budget
+     (tools/ore-road.mjs, "after a reverse ... to ride back in") allows 29 tiles and it is 28.5 now, so a wider Tail Wheel
+     or ledge needs a faster low line or a different reverse, not more columns. Lowering was chosen over raising the
+     level (every row of the other seven sections would move, and every tool that pins one) and over widening alone
+     (columns buy width, never headroom). tools/ore-road.mjs holds both numbers (ROUND FIVE), and src/lab.js reads every
+     column and row here instead of its own copies */
+  ARENA: { x0: 476, x1: 524, deck: 17, housing: 13, spoil: 27, highRow: 12, ledge: [511, 513], house: [514, 523], ceilGap: 8,
     housings: [
-      { id: 'A', name: 'THE GREAT DRUM', x0: 510, x1: 518, top: 8, home: 513, ledge: [507, 509], ledgeTop: 12, line: 'low', at: 'end', ladder: [509, 9, 12] },
-      { id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 481, top: 4, home: 478.5, ledge: [483, 484], ledgeTop: 8, line: 'high', at: 'start', ladder: [482, 5, 18] },
-      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 508, top: 4, home: 505, ledge: [499, 501], ledgeTop: 8, line: 'high', at: 'end', ladder: [501, 5, 8] }],
+      { id: 'A', name: 'THE GREAT DRUM', x0: 514, x1: 523, top: 13, home: 517, ledge: [511, 513], ledgeTop: 17, line: 'low', at: 'end', ladder: [513, 14, 17] },
+      { id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 483, top: 8, home: 479.5, ledge: [485, 487], ledgeTop: 12, line: 'high', at: 'start', ladder: [484, 9, 23] },
+      { id: 'C', name: 'THE TAIL WHEEL', x0: 505, x1: 512, top: 8, home: 508.5, ledge: [502, 504], ledgeTop: 12, line: 'high', at: 'end', ladder: [504, 9, 12] }],
     /* ROUND THREE (Daniel, 2026-09-24: "the ore road is great now", four notes): THE HOUSINGS ARE BIGGER - the Head Frame six tiles
        (it was five), the Tail Wheel seven (it was four), the Great Drum nine - room to move and dodge on top. THE ROOM'S FLOOR IS
        THE PIT, like every span's: the entrance deck runs to 481, the Head Frame's ladder climbs from the pit's recovery ledge past
@@ -77,8 +137,8 @@ export const OR = {
     /* ROUND FOUR (Daniel, 2026-09-28, from the look-and-feel review: "his shaft is dark"): HIS ROOM IS LIT, and only his room. The
        engine's dark eases to `dark` while you are inside the arena's columns (a dark zone: L.darkZones), and each housing has a
        lamp on its top at `lamps` [x, row] - so the drum houses, the lines and the skips on them read from anywhere in the room */
-    dark: 0.18, lamps: [[517, 8], [477, 4], [507, 4]] },
-  PLACES: { yard: [0, 67], span1: [68, 135], tower: [136, 203], chute: [204, 271], collapse: [272, 339], steep: [340, 407], winch: [408, 475], drum: [476, 523] },
+    dark: 0.18, lamps: [[522, 13], [477, 8], [511, 8]] },
+  PLACES: { yard: [0, 67], span1: [68, 135], tower: [136, 203], chute: [204, 271], collapse: [272, 339], steep: [340, 407], winch: [408, 475], drum: [476, 528] },
   /* THE BUCKET IS 46 PX WIDE, NOT 24. Daniel found this himself and it is the change everything else stands on: the
      knight's box is 10-14 px, so a 24 px skip had no room to swing or to dodge on and NO FIGHT COULD HAPPEN ON ONE.
      46 is about three tiles - two bodies wide - and it is what makes the bats, the harpies and the Gaffer's hook into
@@ -97,7 +157,7 @@ export const OR = {
        back up to the entry deck's own recovery ledge */
     { id: 'winchride', x0: 421, x1: 450, floor: 57, start: [420, 12], ledge: [421, 423, 50], ladder: [421, 13, 50] },
     /* and THE DRUM HOUSE's (round three): the recovery ledge under the Head Frame, and its ladder - the Head Frame's own - up past the deck */
-    { id: 'drum', x0: 482, x1: 509, floor: 23, start: [481, 12], ledge: [482, 484, 18], ladder: [482, 13, 18] }],
+    { id: 'drum', x0: 484, x1: 513, floor: 28, start: [483, 17], ledge: [484, 486, 23], ladder: [484, 18, 23] }],
   PIT_BITE: 0.2, PIT_LIFT: 150, PIT_DRAFT: 230, TURBINE_EVERY: 5,
   DARK: 0.34,                                                    // how black the cavern is away from the lamps
   CEIL_GAP: 6,                                                   // how many rows the cavern's ceiling keeps above anything anyone uses
@@ -120,15 +180,22 @@ const join = (...parts) => parts.reduce((a, p) => a.concat(a.length ? p.slice(1)
    step and not a jump, so every spacing here was reset against the 59 px running jump instead of being left where it was. */
 export function cableLines() {
   const A = OR.ARENA, [pa0, pa1] = OR.PYLON_A, [pb0, pb1] = OR.PYLON_B;
+  const firstPts = join(
+    sagPts(67.5, OR.YARD, 69, OR.YARD, 0, 1), sagPts(69, OR.YARD, pa0, OR.YARD, 3), sagPts(pa0, OR.YARD, pa1, OR.YARD, 0, 1),
+    sagPts(pa1, OR.YARD, pb0, OR.YARD, 2), sagPts(pb0, OR.YARD, pb1, OR.YARD, 0, 1),
+    sagPts(pb1, OR.YARD, 135, OR.YARD, 2), sagPts(135, OR.YARD, 136.75, OR.YARD, 0, 1));
+  /* PASSING BUCKETS: sample THE FIRST LINE'S OWN HEIGHT (lineYAt needs only .pts, so the half-built array above is enough)
+     at every column of the stretch, east to west (dir 1 walks pts[0] to pts[last], so the ride comes FROM PYLON A's
+     underside and goes TO the new west rest - the other way from first, which reaches Pylon A travelling east) - and add
+     OR.PASS.gapRows rows to every one of them. The two lines are always exactly that many rows apart here, sag and all. */
+  const passPts = []; for (let x = OR.PASS.x1; x >= OR.PASS.x0; x--) passPts.push([x * TS, lineYAt({ pts: firstPts }, x * TS) + OR.PASS.gapRows * TS]);
   return [
     /* THE FIRST SPAN: one line, two rests. It runs flat across each pylon's deck so the rims come level with it - step off, step on */
     /* AND EVERY LINE RUNS FLAT THROUGH ITS STATION LIPS. A sag that meets a rock deck comes up to it from BELOW, and a
        rider still under the deck's surface is carried into the cliff face: this line's last stretch put him 14 px into
        the sorting tower's rock and stood him at its foot (tools/ore-road.mjs now checks the whole line for this). */
-    { id: 'first', speed: 62, gap: 100, ret: 220, pts: join(
-      sagPts(67.5, OR.YARD, 69, OR.YARD, 0, 1), sagPts(69, OR.YARD, pa0, OR.YARD, 3), sagPts(pa0, OR.YARD, pa1, OR.YARD, 0, 1),
-      sagPts(pa1, OR.YARD, pb0, OR.YARD, 2), sagPts(pb0, OR.YARD, pb1, OR.YARD, 0, 1),
-      sagPts(pb1, OR.YARD, 135, OR.YARD, 2), sagPts(135, OR.YARD, 136.75, OR.YARD, 0, 1)) },
+    { id: 'first', speed: 62, gap: 100, ret: 220, pts: firstPts },
+    { id: 'pass', speed: 55, gap: 90, ret: 140, pts: passPts },
     /* THE ORE CHUTE: the fast one. Down thirteen rows from the tower's top deck to the foot, flat over the tipple house half way,
        and at 96 px/s it is steered rather than waited out - which is the answer to "riding on lifts is boring" */
     { id: 'chute', speed: 96, gap: 100, ret: 240, pts: join(
@@ -148,7 +215,7 @@ export function cableLines() {
     /* THE DRUM LINES: the arena's two. The LOW line runs from the entrance deck into the Great Drum; the HIGH line runs between
        the Head Frame's ledge and the Tail Wheel's, and he drives it into whichever housing he is on. Both END THREE-QUARTERS OF A
        TILE INSIDE THEIR LEDGES AT BOTH ENDS, because he REVERSES them: a rider is carried back out to the far end as well as in */
-    { id: 'low', speed: 60, gap: 90, ret: 160, drum: true, pts: [[481.25 * TS, surf(A.deck)], [(A.ledge[0] + 0.75) * TS, surf(A.deck)]] },
+    { id: 'low', speed: 60, gap: 90, ret: 160, drum: true, pts: [[(A.housings[1].ladder[0] - 0.75) * TS, surf(A.deck)], [(A.ledge[0] + 0.75) * TS, surf(A.deck)]] },   /* from the deck's last tile (the one before the Head Frame's ladder) */
     { id: 'high', speed: 52, gap: 90, ret: 160, drum: true, dir0: -1, pts: [[(A.housings[1].ledge[1] + 0.25) * TS, surf(A.highRow)], [(A.housings[2].ledge[0] + 0.75) * TS, surf(A.highRow)]] },
   ];
 }
@@ -187,9 +254,13 @@ export const liftStep = (was, ore, dt) => Math.max(0, Math.min(OR.BUCKET.lift, (
 export function buildOreRoad({ painter, T }) {
   const { W, H, YARD, TOWER, TOWER_X, PYLON_A, PYLON_B, TIPPLE, TIPPLE_ROW, FOOT, FOOT_ROW, WRECK, WRECK_BED, PILLAR, PILLAR_X, PILLAR_B, PILLAR_BX, WINCH } = OR, A = OR.ARENA;
   const L = painter(W, H), { set, block, plat, spikes, ent, coins } = L;
-  const ropes = [], encounters = [];
+  const ropes = [], encounters = [], walls = [];
   const rope = (x, y0, y1) => ropes.push([x, y0, y1]);
   const meet = (name, x0, x1, foes) => { encounters.push({ name, x0, x1, n: foes.length }); for (const [t, x, row, o] of foes) ent(t, x, row, Object.assign({ face: -1, enc: name }, o || {})); };
+  /* built once, up front, so PASSING BUCKETS' own low rest can be placed at whatever row the 'pass' line's contour (tracking
+     'first', OR.PASS.gapRows under it) actually lands on there - not a row guessed and typed - and reused below as `cable` */
+  const cable0 = cableLines(), passLine = cable0.find(l => l.id === 'pass');
+  const passRow = x => Math.round(lineYAt(passLine, x * TS) / TS);   /* the row a plat() call needs, matching how every line's own deck check reads it */
 
   // ---- THE ORE YARD (c 0-67) — on foot, and the level teaches both its verbs before it asks for either ----
   block(0, 67, YARD + 1, H - 1);
@@ -206,6 +277,11 @@ export function buildOreRoad({ painter, T }) {
   set(36, YARD, SLOPE.R1);   /* A RAMP TO A CART LINE (Daniel's follow-up, src/slopes.js): the feed rail's own hitching ramp, right where the
      rockgoblin's cart rail starts (WORKS' cart span checks columns 37-49 flat, so this sits one column clear of it, at the crusher's
      own east lip) - walked up and stepped off the top (the same LONE pattern src/dune-yard.js proves), not jumped */
+  /* ORE WALLS YOU MINE THROUGH (Daniel's playtest, 2026-09-28, item 1; src/breakable-walls.js), first of the level's own: a small
+     rock nub above the spoil peak's own walkable top (row YARD-2, columns 11-12) - a step off the ramp and to the right, never in
+     the way of the yard's own route along row YARD, an optional dig for the section's own ore (oreBias: copper) */
+  block(13, 13, YARD - 3, YARD - 2);
+  walls.push(makeWall(13, 13, YARD - 3, YARD - 2, 'ore', oreBias(13), ORES[oreBias(13)]));
   block(51, 67, YARD - 7, YARD - 7); block(52, 54, YARD - 6, YARD - 1);         // the loading house: its roof, and its west wall, with the road through under it
   plat(55, YARD - 3, 12);                                                       // its loft, where the loaders work
   rope(56, YARD - 4, YARD); rope(51, YARD - 8, YARD);                           // up to the loft, and on up through a hole in the roof to the tipping frame
@@ -229,6 +305,15 @@ export function buildOreRoad({ painter, T }) {
      skip tipped from the line above drops its ore straight down onto them. */
   plat(121, YARD + 5, 7);
   meet('THE UNDER-DECK', 121, 127, [['sapper', 122, YARD + 5], ['sapper', 126, YARD + 5]]);
+  /* PASSING BUCKETS (item 4, Daniel 2026-09-28): TWO LINES RUNNING OPPOSITE WAYS, and you hop across to a bucket passing
+     the other way, timed as they cross. The line's own two rests: PYLON A's underside (its own footprint, four rows
+     lower - the ride comes up right under where you may already be standing) and a fresh low rest just west of it. Ride
+     'first' east and watch below - a 'pass' skip comes the other way, always OR.PASS.gapRows rows under whichever 'first'
+     skip you are on; step down onto one as it goes by, or stay put and let it go. A miss is the same pit every span has:
+     a climb, not a death. */
+  plat(OR.PASS.westX - Math.floor((OR.PASS.westW - 1) / 2), passRow(OR.PASS.westX), OR.PASS.westW);
+  plat(PYLON_A[0], passRow(PYLON_A[1]), PYLON_A[1] - PYLON_A[0] + 1);
+  ent('sign', 72, YARD, { text: "A SECOND LINE RUNS BACK, UNDER THE FIRST. HOP DOWN TO IT AS IT PASSES." });
   /* FALLING ROCK OVER THE SPANS (Daniel's idea 1). Out here there is nothing for a goblin to stand on, so the lane is
      kept honest by the crags themselves: three falls on a beat you can learn, and the answer to all three is the BRAKE.
      A tippler needs a floor under his feet AND a floor under his stream, so every one of them is on a structure. */
@@ -280,6 +365,10 @@ export function buildOreRoad({ painter, T }) {
   meet('THE WRECK', 283, 322, [['sapper', 300, 30], ['rockgoblin', 314, 32], ['goat', 320, 32], ['sheargob', 292, 27], ['gaffer', 318, 27]]);
   ent('tippler', 307, 25, { face: -1 });                                        // on the highest piece of the fallen tower, tipping onto the deck below it
   meet('THE WRECK HEAD', 325, 339, [['heavy', 332, 30], ['miner', 337, 30], ['sprig', 328, 30]]);
+  /* a second ore wall (item 1): a nub above the wreck head's own walkable top (row 30), well clear of its three foes and the
+     silver/tippler further west - this section leans gem, so this one pops gem */
+  block(334, 334, 28, 29);
+  walls.push(makeWall(334, 334, 28, 29, 'ore', oreBias(334), ORES[oreBias(334)]));
   ent('silver', 304, 25);                                                       // SILVER TWO: up on the fallen tower's top piece, past the tippler on it
   coins([291, 27], [306, 25], [317, 27], [327, 30], [335, 30]);
 
@@ -307,7 +396,7 @@ export function buildOreRoad({ painter, T }) {
   // (421-450) reopens it as a last ride: one short line, a rusted bucket, the sheargob who leaps aboard, a tippler over
   // the middle and bats loose in the dark - it rehearses the Winchmaster in his own vocabulary (buckets, cut lines, the
   // drum) right before his room. The crew that used to stand on the shaft's floor moves to its two decks either side.
-  block(408, 420, WINCH + 1, H - 1); block(451, 480, WINCH + 1, H - 1);          // the entry deck, and the landing - THE ORE SHAFT is the open gorge between them (THE PIT, below)
+  block(408, 420, WINCH + 1, H - 1); block(451, A.x0 - 2, WINCH + 1, H - 1);     // the entry deck, and the landing - THE ORE SHAFT is the open gorge between them (THE PIT, below). The landing ends a column short of the arena (round five): its lock wall stands in open air at A.x0 - 1, on the deck
   block(412, 440, WINCH - 6, WINCH - 6); plat(416, WINCH - 3, 8);               // its roof, and the loft under it (over the deck AND the shaft, like every span's overhead structure)
   block(451, 462, WINCH - 8, WINCH - 8); plat(453, WINCH - 3, 9);               // the drum house's outer shed, well short of the gate - a roof beside a portcullis is a way over it
   rope(417, WINCH - 4, WINCH);                                                  // up into the winch house's loft
@@ -319,6 +408,11 @@ export function buildOreRoad({ painter, T }) {
   ent('sign', 458, WINCH, { text: 'THE DRUM HOUSE. NOTHING STOPS THE DRUM BUT A BUCKET WITH SOMEONE IN IT.' });
   meet('THE WINCH CREW', 409, 420, [['miner', 410, WINCH], ['rockgoblin', 414, WINCH], ['sheargob', 419, WINCH - 4]]);   /* the sheargob is the one who leaps onto your bucket once you board */
   meet('THE DRUM YARD', 451, 475, [['heavy', 458, WINCH], ['gaffer', 462, WINCH], ['sheargob', 459, WINCH - 4], ['javelin', 466, WINCH], ['sapper', 452, WINCH]]);   /* the landing: what used to fight you on the shaft's own floor, moved off it. heavy at 458, not 455 - the checkpoint at 454 needs two tiles' clearance (elites) */
+  /* ORE WALLS YOU MINE THROUGH (item 1), the MAIN-ROUTE one: a floor-to-headroom plug at column 468, clear of the sorting
+     table's work (462-466) and of the checkpoint at 470 - the landing is genuinely blocked between THE DRUM YARD's fight
+     and the boss arena until it gives. Gold: this section leans toward the drum, like the rest of the landing's ore */
+  block(468, 468, WINCH - 5, WINCH);
+  walls.push(makeWall(468, 468, WINCH - 5, WINCH, 'ore', oreBias(468), ORES[oreBias(468)]));
   ent('tippler', 428, WINCH - 7, { face: -1 }); ent('tippler', 460, WINCH - 9, { face: -1 });   /* the first stands over THE ORE SHAFT itself now - the middle of the ride - its stream lands on the spill ledge */
   meet('THE SHAFT BATS', 421, 450, [['bat', 427, WINCH - 5], ['bat', 441, WINCH - 6]]);          // loose over the ride, under the roof
   coins([419, WINCH - 4], [432, WINCH - 1], [458, WINCH - 4], [464, WINCH - 1]);
@@ -330,7 +424,7 @@ export function buildOreRoad({ painter, T }) {
     else block(Hs.x0, Hs.x1, Hs.top + 1, Hs.top + 2);                                         /* the two high housings: timber decks on legs (drawn) */
   }
   block(A.x1, W - 1, 0, H - 1);
-  block(481, 481, A.deck + 1, H - 1);                                           // the entrance deck's last tile (the room's floor is the pit - THE PIT)
+  block(A.x0 - 1, A.housings[1].ladder[0] - 1, A.deck + 1, H - 1);              // THE ENTRANCE DECK (round five: A.deck rows under the landing - you drop onto it), under the Head Frame to its ladder; past it the room's floor is the pit - THE PIT
   for (const [x, y0, y1] of A.ropes) rope(x, y0, y1);   /* out of the spoil: to the deck (the low line), and to each high ledge (the high line) */
   for (const Hs of A.housings) rope(...Hs.ladder);   /* ROUND TWO: a ladder up onto every housing */
   ent('winchmaster', Math.floor(A.housings[0].home), A.housing, { face: -1 });
@@ -356,7 +450,7 @@ export function buildOreRoad({ painter, T }) {
     rope(q.ladder[0], q.ladder[1], q.ladder[2]);                                    /* and the ladder from it to the deck the span starts from */
   }
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);   /* every rope is hung last (the Gale Moor bug) */
-  const cable = cableLines();
+  const cable = cable0;
   /* ======== UNDERGROUND (Daniel's playtest, 2026-09-25: "the whole level becomes one vast cavern: no sky") ========
      THE CEILING is rock with stalactites, drawn and never solid, and it is laid off the route rather than typed: over every
      column it hangs CEIL_GAP rows above the highest thing anything uses there - a floor, a rope, a cable and the hanger above
@@ -369,7 +463,7 @@ export function buildOreRoad({ painter, T }) {
   const FLY = new Set(['bat', 'harpy', 'crow']);
   for (const e of L.ents) if (e.t === 'crow') e.t = 'bat';   /* a crow is a bird of the open sky: under the mountain it is a bat */
   const ceil = [];
-  for (let x = 0; x < W; x++) { let m = H; for (let k = -5; k <= 5; k++) if (x + k >= 0 && x + k < W) m = Math.min(m, topUse[x + k]); ceil.push(Math.max(0, m - OR.CEIL_GAP - ((x * 7919) % 3 === 0 ? 1 : 0))); }
+  for (let x = 0; x < W; x++) { let m = H; for (let k = -5; k <= 5; k++) if (x + k >= 0 && x + k < W) m = Math.min(m, topUse[x + k]); ceil.push(Math.max(0, m - (x >= A.x0 ? A.ceilGap : OR.CEIL_GAP) - ((x * 7919) % 3 === 0 ? 1 : 0))); }   /* over his room it keeps A.ceilGap rows (round five: full jump headroom on every housing and ledge) */
   for (const e of L.ents) if (FLY.has(e.t)) e.y = Math.max(e.y, ceil[e.x] + 2);   /* the fliers keep under the rock */
   for (const e of L.ents) if (e.t === 'rockfall') e.y = Math.max(ceil[e.x] + 1, Math.min(e.y, ceil[e.x] + 1));
   /* THE LAMPS: a pit lamp on every stretch of floor worth the name, about every OR.LAMP_EVERY columns, standing on footing with air
@@ -420,7 +514,7 @@ export function buildOreRoad({ painter, T }) {
     dark: OR.DARK, edgeLit: true, night: true, glowNight: true, nightA: 0.1, ceil, veins, glints,
     darkZones: [{ x0: A.x0 * TS, x1: W * TS, y0: 0, y1: H * TS, dark: A.dark, name: 'THE DRUM HOUSE' }],   /* round four: his room, and only his room, lit (OR.ARENA.dark) */
     pits: OR.PITS.map(q => ({ ...q, turbines: [...Array(Math.floor((q.x1 - q.x0 - 4) / OR.TURBINE_EVERY) + 1).keys()].map(k => q.x0 + 4 + k * OR.TURBINE_EVERY).filter(x => x <= q.x1 - 1) })),
-    cable, encounters, places: OR.PLACES, oreRoad: true,
+    cable, encounters, places: OR.PLACES, oreRoad: true, walls,
     /* THE AMBUSH ROOM (Q), returned by the builder rather than written into level.js's table, so its columns live beside the
        geometry they are read off. THE SORTING FLOOR is the tower's middle deck: a trestle floor 27 tiles between its gates -
        wide enough to read a tell on, narrow enough that the fight does not scatter. Its captain is a GAFFER, this level's own
@@ -441,6 +535,12 @@ export function buildOreRoad({ painter, T }) {
     weather: [{ x0: 0, x1: 99999, kind: 'dust' }], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: surf(A.deck), y0: 0, trigger: (A.x0 + 3) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'winchmaster', music: 'boss3', tint: '#5a4a3a', tintA: 0.06, fx: 'dust' },
     noCoin: [[68, 135, 0, H - 1], [204, 261, 0, H - 1], [353, 375, 0, H - 1], [385, 407, 0, H - 1], [421, 450, 0, H - 1], [476, 523, 0, H - 1]],   /* over the drop: the sprinkler must not put coins where only a bucket goes */
+    /* item 3's arena widening shifted where the general sprinkler's own seeded draw (level.js's dressLevel, its rnd() calls
+       spent one per floor cell it considers) lands its decorations - which put a lanternPost on a vein at 430,5 that had
+       never had one on it before (proved: unchanged on the commit before this edit). dressLevel had no way to know a vein
+       was already standing there (L.veins isn't a decoration), so this excludes every vein's own cell from it, once, for
+       good - the general fix, not a nudge back to a coordinate that only works by luck until the next change */
+    noDress: veins.map(v => [v.x, v.x, v.y, v.y]),
   };
 }
 
