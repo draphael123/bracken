@@ -103,3 +103,16 @@ the gate check in witchlight.mjs, and boss-fight-end. That is the design change 
    since the garden teaches and he tests. Say if you want the garden to bite as hard as he does.
 5. **"GREEN WOOD" on a lawn stump:** it shrugs every blow. I recommend keeping this as the approved "brazier is the only opening".
    The softer option is to let a lawn stump take a quarter: that keeps a slow way through for a player who never finds the fire.
+
+## Merged gargoyle4
+
+- I merged `origin/claude/gargoyle4` (0ff8752), and it merged cleanly with no conflicts.
+  - Its changes don't name any level column: the numbers of 299 and up in them are pixel positions in its own test rooms, not level columns.
+  - Its new `tools/gargoyle-playtest.mjs` finds the Gargoyle's slabs from the level itself, so it needed no +24.
+  - `tools/check.mjs` keeps every name from both sides, including `gargoyle-playtest`.
+  - `src/marks.js` keeps every row from both sides, and `node tools/tells.mjs --write` changed nothing.
+- `MEDALS.witchlight` went from 300/450/680 to **312/468/707**, which is the old times multiplied by 619/595 (the new width over the old one).
+- After the merge these checks were green:
+  - gargoyle-playtest, gargoyle-stomp, gargoyle-smash, whelps, witchlight, boss-openings, boss-fight-end and tells;
+  - the required checks: architecture, checkpoints, skins, dangling-paths, slopes-trace and npc-removal.
+- boss-fight-end failed once when it ran alongside the full suite: the browser tab closed mid-run ("Inspected target navigated or closed"). Run again on its own, it passed 45 of 45.
