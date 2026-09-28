@@ -1,5 +1,8 @@
+import { lanceLookouts } from './lance-support.js';
 // ============================================================================================
-// LEVEL 10 - STORMHOLD, THE CASTLE TOWN (docs/briefs/stormhold-town.md).
+// LEVEL 10 - STORMHOLD, THE CASTLE TOWN (docs/briefs/stormhold-town.md; rebuilt again this lane,
+// claude/stormhold2, off Daniel's note that the held branch "still didn't seem appropriate" - see
+// docs/level-design/wood-to-highcrown-design.md "## 11. STORMHOLD" for the audit this answers).
 // What is left of the goblins after Kingswood, the Stockade and the crags has fallen back up the
 // mountain and taken a town that is not theirs: stone houses, a market square, a wall with towers on
 // it, and the Queen's castle over all of it in the snow.
@@ -8,23 +11,38 @@
 // and the tower's rope is the way back down to its gate. Three towers, three keys, three gates:
 //   THE GATE WATCH  (timber, outside the barbican)  the brass key  -> the barbican gate      @ 84
 //   THE BELL WATCH  (stone, over the close)         the iron key   -> the inner gate        @ 346
-//   THE WALL WATCH  (timber, on the curtain wall)   the bone key   -> the bridge gate       @ 542
+//   THE WALL WATCH  (timber, on the curtain wall)   the bone key   -> the bridge gate       @ 570
 // Every tower is LEFT of its gate (a rope runs east: updateTowerSlides), every gate column is sealed from
 // the indoor band to the street, and every tower has a ladder back down (the reach model does not ride a
 // rope, so nothing depends on one).
 //
+// THIS REWORK adds, on top of the held branch's town and towers:
+//   - TWO ALARMS (L.alarms), teaching Highcrown's bell before Highcrown: a sentry in Smoke Row (the first
+//     one in the game) and a second standing the Bell Watch's own ladder route - catch him, break his bell,
+//     or a grate drops and his watch turns out. The roof route past the tower's west window skips him.
+//   - A ROPE WALKWAY from the Bell Watch's west window across to the close's own roof, with a cutter at the
+//     far end who saws through it if you dawdle on it (the audit's gap: Stormhold's cutters had no rope).
+//   - THE BRIDGEHEAD EXAM (S3): the yard past the Wall Watch is longer now, and ends in a pike line under a
+//     fire-cage weight - the Lance's own verb (cut the cage down on what stands under it), rehearsed at his
+//     door. One checkpoint before it, none inside, and the existing one outside the arena closes it.
+//   - THE LONG BRIDGE's lookouts and archers are exactly master's (src/lance-support.js): two end lookouts
+//     his bowmen drop onto, and the one rock goblin. NO FIRE ARCHERS stand on his bridge.
+// Everything else - the market ambush, the chimneys, the winch gate, the houses - is the held branch's,
+// unchanged.
+//
 // Seven sections (F1): THE ROAD IN 0-89, THE MARKET SQUARE 90-179, SMOKE ROW 180-269, THE BELL CLOSE
-// 270-349, THE HALLS 350-429, THE CURTAIN WALL 430-543, THE LONG BRIDGE 544-671.
+// 270-349, THE HALLS 350-429, THE CURTAIN WALL 430-571, THE LONG BRIDGE 572-699.
 // Rows 0-18 are the indoor band (house interiors). The street steps up the mountain: the road stands on
 // row 35, the town on 31, the Halls on 29, the wall-walk on 28, the bridge on 29; the gorge floor on 43.
 // ============================================================================================
+const BRIDGE_SHIFT = 28;   // the bridgehead yard grew by this much for the EXAM (S3); everything from the Long Bridge on shifts with it
 export const STORM_TOWN = {
-  W: 672, H: 46,
-  GATES: { brass: 84, iron: 346, bone: 542 },
-  BRIDGE: 544,                 // P0, the first pier; the bone gate is two columns west of it
+  W: 672 + BRIDGE_SHIFT, H: 46,
+  GATES: { brass: 84, iron: 346, bone: 542 + BRIDGE_SHIFT },
+  BRIDGE: 544 + BRIDGE_SHIFT,   // P0, the first pier; the bone gate is two columns west of it
   SECTIONS: [{ name: 'THE ROAD IN', x0: 0, x1: 89 }, { name: 'THE MARKET SQUARE', x0: 90, x1: 179 }, { name: 'SMOKE ROW', x0: 180, x1: 269 },
-    { name: 'THE BELL CLOSE', x0: 270, x1: 349 }, { name: 'THE HALLS', x0: 350, x1: 429 }, { name: 'THE CURTAIN WALL', x0: 430, x1: 543 },
-    { name: 'THE LONG BRIDGE', x0: 544, x1: 671 }],
+    { name: 'THE BELL CLOSE', x0: 270, x1: 349 }, { name: 'THE HALLS', x0: 350, x1: 429 }, { name: 'THE CURTAIN WALL', x0: 430, x1: 543 + BRIDGE_SHIFT },
+    { name: 'THE LONG BRIDGE', x0: 544 + BRIDGE_SHIFT, x1: 671 + BRIDGE_SHIFT }],
 };
 
 export function stormholdTown({ painter, T, TS }) {
@@ -147,6 +165,20 @@ export function stormholdTown({ painter, T, TS }) {
   ent('brute', 214, 31, { face: -1 }); ent('sapper', 220, 31, { face: -1 }); ent('brazier', 208, 31);
   ent('check', 190, 31);
   coins([184, 30], [194, 30], [202, 30], [212, 30], [218, 30], [224, 30]);
+  // THE ROOFTOP ROPE (S7, a hard road that pays): up the lean-to onto the tannery's roof, a rope span the width of the
+  // gap to the forge roof, a cutter working it from the far end, then down again. The street below is the safe way past
+  // the same stretch - the rope saves nothing but pride and a silver (the audit's gap: Stormhold's cutters had no rope).
+  plat(188, 29, 3); plat(190, 26, 2);
+  span(207, 209, 24, { give: true });
+  ent('cutter', 210, 23, { face: -1, bridge: 207 });
+  ent('silver', 200, 23);
+  ent('sign', 189, 26, { text: 'THE ROPE FRAYS WHERE HE STANDS ON IT. DO NOT LINGER, OR TAKE THE STREET.' });
+  plat(220, 26, 2); plat(222, 29, 2);
+  // THE FIRST BELL (the level teaches Highcrown's alarm before Highcrown does): a sentry who runs for it if he sees you,
+  // and a grate over the way to the chimneys if he rings it - catch him, break the bell, or fight through the grate.
+  ent('sentry', 224, 31, { section: 'smokerow', range: 6, face: 1 });
+  ent('bell', 226, 31, { section: 'smokerow' });
+  ent('sign', 219, 31, { text: 'SENTRIES RUN FOR THEIR BELLS. CATCH HIM, OR BREAK IT FIRST.' });
   // THE CHIMNEYS: the old sootworks gorge. The span is down; the stacks stand a hop apart and the sweeps live in them.
   air(228, 252, 32, 43);
   for (const [x0, top] of [[230, 31], [234, 29], [239, 30], [243, 29], [248, 30]]) { block(x0, x0 + 1, top, 43); ent('chimpot', x0 + 1, top - 1); }   // up-hops are two tiles, drops three
@@ -173,6 +205,11 @@ export function stormholdTown({ painter, T, TS }) {
   ent('scalder', 301, 20, { face: -1, post: [301, 302] });   // over the second
   ent('key', 299, 20, { kind: 'iron' }); ent('brazier', 298, 20);
   ent('silver', 297, 24);
+  // COMBINE THE BELL WITH THE TOWER (the audit's plan item 3): a sentry stands the second floor, square on the ladder
+  // route between the first and second Scalder. He never sees the west window's shortcut, two rows above him - only the
+  // ladder gives you away. Ring him and a grate drops on the east arch and two hearthgobs come up to the belfry with you.
+  ent('sentry', 300, 25, { section: 'bellwatch', range: 3, face: -1 });
+  ent('bell', 302, 25, { section: 'bellwatch' });
   facades.push([297, 302, 19, 31, 'tower', { town: true, lit: false }]);
   ent('sign', 294, 31, { text: 'THE BELL WATCH HOLDS THE IRON KEY. IN BY THE ARCH, OR OVER THE ROOFS.' });
   ent('check', 274, 31); coins([270, 28], [275, 26], [279, 26], [286, 24], [290, 24], [299, 27], [300, 24], [298, 20]);
@@ -198,7 +235,8 @@ export function stormholdTown({ painter, T, TS }) {
   ent('doorway', 368, 29, { id: 'long-far', to: 'long-back', kind: 'cottage' });
   roof(374, 384, 25);
   ent('deco', 372, 29, { kind: 'banner', v: 0 }); ent('deco', 386, 29, { kind: 'banner', v: 1 }); ent('torch', 356, 29); ent('torch', 385, 29);
-  ent('brute', 376, 29, { face: -1 }); ent('archer', 382, 29, { face: -1, fire: true });
+  ent('brute', 376, 29, { face: -1 }); ent('archer', 382, 29, { face: -1 });
+  ent('pike', 373, 29, { face: 1 });   /* THE PIKE SERJEANT (ELITES.storm, src/level.js): holds the gate the Longhouse's own roof frames at 378 */
   coins([356, 28], [362, 27], [366, 28], [372, 27], [378, 28], [384, 27]);
   // THE KEEP GATE (F5): a portcullis held up on a winch. Strike the winch and it drops on whatever is under it; it winds
   // itself back up. The pikes come through that passage.
@@ -236,7 +274,7 @@ export function stormholdTown({ painter, T, TS }) {
   facades.push([500, 522, 20, 28, 'curtain', { town: true }]);
   // the wall-walk: two wall towers with a bowman on each, and the shield-wall on the walk (ELITES.storm holds its gate at 523)
   block(508, 510, 27, 28); block(517, 519, 27, 28); masonry.push([508, 510, 27, 28], [517, 519, 27, 28]);
-  ent('archer', 509, 26, { face: -1, fire: true }); ent('archer', 518, 26, { face: -1 });
+  ent('archer', 509, 26, { face: -1 }); ent('archer', 518, 26, { face: -1 });
   ent('check', 503, 28);
   coins([505, 27], [512, 27], [515, 27], [521, 27]);
   // THE WALL WATCH: timber, on the wall's east end; a switchback like the Gate Watch, a Scalder over the upper ladder
@@ -247,12 +285,20 @@ export function stormholdTown({ painter, T, TS }) {
   ent('key', 528, 21, { kind: 'bone' }); ent('brazier', 524, 21);
   ent('sign', 521, 28, { text: 'THE WALL WATCH HOLDS THE BONE KEY. THE ROPE GOES DOWN TO THE BRIDGE GATE.' });
   coins([527, 24], [528, 24], [527, 21]);
-  // the bridgehead yard, and the bridge gate
-  floor(531, 543, 30);
-  block(540, 543, 19, 24); masonry.push([540, 543, 19, 24]);
+  // THE BRIDGEHEAD YARD, and THE EXAM (RULES S3): the last stretch before the boss door combines the level's own
+  // mechanics under pressure. A checkpoint opens it, a pike line stands under a fire-cage weight - the Lance's own
+  // verb, cut the cage down on what stands under it - and there is nothing between here and the checkpoint outside
+  // his arena (below, at the first pier): none of S3's "no checkpoint inside it" and no free heart (S5) either.
+  floor(531, STORM_TOWN.BRIDGE - 1, 30);
+  ent('check', 533, 29);
+  ent('sign', 536, 29, { text: 'A CAGE COMES DOWN ON WHATEVER STANDS UNDER IT. CUT IT LOOSE ON HIM.' });
+  ent('pike', 546, 29, { face: 1 }); ent('pike', 557, 29, { face: 1 });
+  ent('weight', 551, 21, { len: 6, lamp: true });   // over the pikes' ground, the same fire cage the bridge itself hangs seven of
+  coins([540, 28], [551, 28], [561, 28]);
+  block(STORM_TOWN.BRIDGE - 4, STORM_TOWN.BRIDGE - 1, 19, 24); masonry.push([STORM_TOWN.BRIDGE - 4, STORM_TOWN.BRIDGE - 1, 19, 24]);
   ent('lockgate', STORM_TOWN.GATES.bone, 29, { needs: 'bone', h: 5 }); gateCol(STORM_TOWN.GATES.bone, 25, 29);
-  ent('check', 534, 29); ent('deco', 537, 29, { kind: 'lanternPost' });
-  facades.push([535, 539, 20, 29, 'tower', { town: true, roof: true }]);
+  ent('deco', STORM_TOWN.BRIDGE - 7, 29, { kind: 'lanternPost' });
+  facades.push([STORM_TOWN.BRIDGE - 9, STORM_TOWN.BRIDGE - 5, 20, 29, 'tower', { town: true, roof: true }]);
 
   // ============================ 7. THE LONG BRIDGE (544-671): seven spans, six piers, and the Queen's Lance ============================
   // one height the whole way, so his charge has one line to run and the piers are the rhythm (unchanged, shifted right)
@@ -266,8 +312,11 @@ export function stormholdTown({ painter, T, TS }) {
     if (k > 0) ent('weight', px0 - 7, BY - 9, { len: 6, lamp: true });   // a fire cage over every span: cut its chain as he goes under it
   }
   span(P0 + 113, P0 + 121, BY, { sway: 2 });   // the last span, to the gatehouse
-  ent('archer', P0 + 20, BY - 1, { face: 1, fire: true }); ent('archer', P0 + 56, BY - 1, { face: -1, fire: true });
-  ent('rockgoblin', P0 + 92, BY - 1, { face: -1 }); ent('archer', P0 + 110, BY - 1, { face: -1, fire: true });
+  /* HIS LOOKOUTS AND ARCHERS STAY AS ON MASTER (src/lance-support.js): two end lookouts his bowmen come to (never a
+     third, never onto the one you stand on), and the one rock goblin. NO FIRE ARCHERS stand on his bridge - three of
+     them made up to five bows at once, and Daniel took them off master on 2026-09-25. */
+  const lanceBows = lanceLookouts({ plat, ent }, P0, BY);
+  ent('rockgoblin', P0 + 92, BY - 1, { face: -1 });
   for (const x of [8, 26, 44, 62, 80, 98]) { ent('deco', P0 + x, BY - 1, { kind: 'lanternPost' }); coins([P0 + x + 4, BY - 2]); }
   ent('silver', P0 + 71, BY - 2);
   block(W - 2, W - 1, 20, 45); floor(P0 + 122, W - 1, BY);
@@ -301,6 +350,13 @@ export function stormholdTown({ painter, T, TS }) {
       canopy: ['#3a3a48', '#4a4a5a', '#5a5a6c', '#6a6a80'] },
     weather: [{ x0: 0, x1: 99999, kind: 'snow' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     castle: true,   // the castle grows over the whole level: drawn behind everything
-    arena: { x0: P0 * TS, x1: (W - 1) * TS, floor: BY * TS, trigger: (P0 + 6) * TS, wallL: P0 - 1, wallR: W - 1, boss: 'lance', music: 'musCastle', tint: '#6a7a9a', tintA: 0.10, fx: 'dust' },
+    /* THE ALARM (the audit's plan item 2: TEACH Highcrown's bell here - its first sign says sentries run for
+       theirs, and no level before this one taught it). Catch the sentry, break his bell, or the grate drops and
+       his watch turns out; the gate lifts again once the garrison is down (or after 20 s regardless). */
+    alarms: [
+      { id: 'smokerow', gates: [[227, 28, 31]], garrison: [{ t: 'sprig', x: 226, y: 31 }, { t: 'sprig', x: 224, y: 31 }] },
+      { id: 'bellwatch', gates: [[305, 28, 31]], garrison: [{ t: 'hearthgob', x: 300, y: 31 }, { t: 'hearthgob', x: 302, y: 31 }] },
+    ],
+    arena: { x0: P0 * TS, x1: (W - 1) * TS, floor: BY * TS, trigger: (P0 + 6) * TS, wallL: P0 - 1, wallR: W - 1, boss: 'lance', music: 'musCastle', tint: '#6a7a9a', tintA: 0.10, fx: 'dust', bows: lanceBows },
   };
 }

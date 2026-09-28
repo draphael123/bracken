@@ -7802,8 +7802,8 @@ const AMBUSH = {
   spire: [{ name: 'THE CLOISTER', row: 99, wallL: 40, wallR: 74, check: false,
     waves: [[['fledgling', 46], ['fledgling', 66], ['rockgoblin', 56], ['bat', 52, 94]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 93], ['fledgling', 68]]] }],
   /* moor: THE CAIRN RIDGE is built in galeMoor() in its final columns (docs/briefs/gale-moor-rework.md) */
-  storm: [{ name: 'THE HEARTH HALL', row: 31, wallL: 98, wallR: 152, check: false,   /* PLACEHOLDER coords from the pre-rework layout - rewired once the new Stormhold town's columns are final (this rework, docs/briefs/stormhold-town.md) */
-    waves: [[['sprig', 104], ['sprig', 146], ['hearthgob', 128], ['cutter', 117]], [['shield', 140], ['archer', 148], ['pike', 126, null, { elite: true }]]] }],
+  storm: [{ name: 'THE MARKET SQUARE', row: 31, wallL: 98, wallR: 138, check: false,   /* the square among the stalls (facades.push([98,138,...]) in src/stormhold-town.js); this rework's real bounds, replacing the pre-merge placeholder */
+    waves: [[['sprig', 104], ['sprig', 134], ['hearthgob', 118], ['cutter', 110]], [['shield', 130], ['archer', 122], ['pike', 114, null, { elite: true }]]] }],
   longwater: [{ name: 'THE SLUICE BRIDGE', row: 26, wallL: 381, wallR: 427, check: false,   /* +88: the Linn and the Bore Reach grew in upstream (2026-09-25) */
     waves: [[['scout', 385], ['scout', 424], ['crab', 404, 25], ['crab', 412, 25]], [['tideguard', 418, 25], ['scout', 424], ['netter', 386], ['heronfoe', 404, 25]]] }],
   flotilla: [{ name: 'THE WAIST', row: 23, wallL: 62, wallR: 92, check: [57, 23],
@@ -7890,7 +7890,7 @@ const ELITES = {
      shrines' ledge above the cloud, clear of the way up at 31-37, the cellar at 81-89 and the bellows at 14 */
   spire: [['troll', 61, 171], ['goat', 62, 79]],
   /* moor: the Kite Field's herd billy and the Gallery's crag troll are built in galeMoor() in their final columns */
-  storm: [['pike', 250, 29, { gate: 257 }]],   /* PLACEHOLDER coords from the pre-rework layout - rewired once the new Stormhold town's columns are final (this rework, docs/briefs/stormhold-town.md) */
+  storm: [['pike', 373, 29, { gate: 378 }]],   /* THE PIKE SERJEANT, THE HALLS: he holds the gap the Longhouse's second roof frames at 378 (this rework, docs/briefs/stormhold-town.md) */
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 880 is left alone */
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],
