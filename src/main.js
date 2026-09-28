@@ -22238,7 +22238,18 @@ function updateCamera(dt) {
   /* THE GATE GARGOYLE's fight frames him and you together, and keeps the garden floor he crashes onto in the picture (gate-gargoyle.js) */
   else if (bossActive && boss && boss.alive && boss.t === 'gargoyle' && L.arena) { [tx, ty] = gargCam(P, boss, L.arena, VW, VH); ty += lookDown * 0.5; }
   camX += (tx - camX) * Math.min(1, dt * 5); camY += (ty - camY) * Math.min(1, dt * 4);
-  const x0 = camLock ? camLock.x0 - 8 : 0, x1 = camLock ? camLock.x1 + 8 - VW : LW * TS - VW;
+  // A ZOOMED VIEW CAN BE WIDER THAN A SMALL ARENA (every boss fight zooms out now, src/boss-view.js, and VW can run
+  // to 640px): pinning the clamp to the west wall then ran the east edge of a narrow arena hundreds of pixels past
+  // its own east wall, into whatever level lies past the boss's room. Centered on the arena instead, the same
+  // overrun is spent evenly on both walls, so neither one runs far off and the boss's own room stays the picture.
+  // THE ORE ROAD's Winchmaster (winch2 follow-up, 2026-09-28): his room holds three housings end to end - the Head
+  // Frame at its west wall, the Great Drum at its east - and at the zoomed view's usual sizes the room is only a
+  // little wider than the screen. Panned to either wall (the ordinary clamp below) the FAR housing runs off the
+  // opposite edge; centered instead, both ends lose the same sliver and neither housing goes missing.
+  const centerLock = camLock && (boss && boss.t === 'winchmaster' || camLock.x1 - camLock.x0 + 16 < VW);
+  let x0, x1;
+  if (centerLock) { x0 = x1 = Math.max(0, Math.min(LW * TS - VW, (camLock.x0 + camLock.x1) / 2 - VW / 2)); }
+  else { x0 = camLock ? camLock.x0 - 8 : 0; x1 = camLock ? camLock.x1 + 8 - VW : LW * TS - VW; }
   camX = Math.max(x0, Math.min(x1, camX)); camY = Math.max(0, Math.min(LH * TS - VH, camY));
   // a level with its insides in a band of rock (Stormhold): from the street you never see into the band, and from a room you never see the street
   if (L.indoorRow !== undefined) { const edge = (L.indoorRow + 1) * TS; if (P.y > edge) camY = Math.max(camY, edge); else camY = Math.min(camY, edge - VH);
