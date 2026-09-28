@@ -948,6 +948,38 @@ function sporewood() {
   /* the pillars' sign stood at 328 - right when it was written, forty-five columns early since the bog grew in front of the pillars */
   for (const e of R.ents) if (e.t === 'sign' && e.x === 328 && /THE PILLARS/.test(e.text || '')) { e.x = 369; e.text = 'THE PILLARS. JUMP CAP TO CAP; FALL, AND THE CAPS ON THE FLOOR SPRING YOU BACK UP.'; }
   R.ents.push({ t: 'sign', x: 286, y: 13, text: 'SOME CAPS ARE LURKERS. THEY LUNGE WHEN YOU COME CLOSE: STRIKE FIRST.' });   /* the lantern terrace, where the rule's sign used to stand over no cap */
+  /* ==== THE DESIGN AUDIT'S EXAM AND SECOND HALF (the wood-to-highcrown design audit, sec.4 SPOREWOOD, not on this
+     branch - work/claude/lane-done/claude-sporewood2.md quotes the relevant part) ====
+     The rebuild above did the rule. Four gaps were left: the lurker sign taught nothing where caps are steps, the
+     bog's fight never touched a cap, the quiet pillars never asked "is that a cap, or a claw", and nothing after
+     the Gills examined the whole rule at once before her door (the audit's GAME-WIDE PATTERNS item 1: the last
+     stretch is a rest, not an exam, in eleven of fourteen levels - this is Sporewood's own fix, not a shared tool). */
+  const caps2 = [];
+  /* -- 1. TWIST the lurker: the sign moves from the terrace (286) to the stair's mouth (244), so "some caps are
+     lurkers" is read right before a stretch that is all caps - and one of the stair's tier landings holds one,
+     the twist the terrace never had room for. */
+  for (const e of R.ents) if (e.t === 'sign' && e.x === 286 && /SOME CAPS ARE LURKERS/.test(e.text || '')) e.x = 244;
+  R.ents.push({ t: 'lurker', x: 254, y: 9 });   /* tier one's landing, between the stair's two buds */
+  /* -- 2. COMBINE in the bog (330-372): a leaning cap over the middle sink, grown under its own spore fall, while
+     the weaver at 348 (already placed, above) spits at whoever rides it - the rule, back in the crossing-under-fire. */
+  caps2.push(sprout(345, 14, { rise: 16, lean: 96, growT: 1.6 }));
+  R.ents.push({ t: 'rockfall', x: 348, y: 0, spore: true, every: 2.7, tell: 0.9 });
+  /* -- 3. DEVELOP the pillars (373-398, the quiet stretch): a curtain drapes each floor cap - webbed, it will not
+     spring you until you cut it - and a lurker waits on the shelf between them, among the caps, not past them. */
+  RS(383, 385, 18, 18, T.WEB); RS(395, 397, 18, 18, T.WEB);
+  R.ents.push({ t: 'lurker', x: 387, y: 19 });
+  /* -- 4. EXAM (456-486, the last stretch before her door): strike the Gills' second glowbud and its cap grows
+     under a spore fall, with the spitcap at 476 and the weaver at 460 (both above) already holding the ledge; past
+     the lip, a carved sink (478-482, a spring at its bottom - nothing here is bottomless) takes a leaning cap to
+     cross. Growcap both ways, a fall, and a foe, right up to her door. */
+  R.ents.push({ t: 'rockfall', x: 456, y: 0, spore: true, every: 2.8, tell: 0.9 });
+  drop(478, 482, 14, 19, () => false);
+  RS(478, 482, 20, 24, T.AIR); RS(478, 482, 25, 25, T.BOUNCER);
+  caps2.push(sprout(477, 20, { rise: 16, lean: 80, growT: 1.6 }));
+  R.moversExtra = (R.moversExtra || []).concat(caps2);
+  /* -- and more of the wood swings (Daniel's backlog, 2026-09-28): a vine over the pillars' gap, one more way
+     across besides the webbed caps - rope-and-vine crossings (`kind: 'swing'`) are otherwise unused here. */
+  R.moversExtra = (R.moversExtra || []).concat([{ kind: 'swing', px: 383 * 16 + 8, py: 10 * 16, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.6, vine: true }]);
   return R;
 ;
 }
