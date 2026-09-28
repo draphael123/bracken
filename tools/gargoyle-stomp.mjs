@@ -82,7 +82,7 @@ try {
      const bite=hp0-P.hp;g.cd=99;BK.sim(120);out.fall={rode,land,bite,after:hp0-P.hp,max:P.maxHp,secs:+(t/60).toFixed(2)};BK.god=true;}
     /* THE FIRE BREATH: told (its line follows, then sets), then a jet: it lands unguarded; a shield takes it */
     const breath=guard=>{g.mode='hover';g.cd=99;const m=low()[3];on(m);BK.sim(5);hurt();const hp0=BK.P.hp;g.mode='breathTell';g.modeT=${GARG.tell.breath};g.sd=1;g.aim=null;g.x=BK.P.x+120;g.y=BK.P.y-44;
-      const aims=[];let seen=new Set();for(let i=0;i<150&&(g.mode==='breathTell'||g.mode==='breath');i++){on(m);if(guard){BK.keys.block=true;BK.P.face=1;}BK.sim(1);seen.add(g.mode);if(g.mode==='breathTell')aims.push([+g.modeT.toFixed(3),g.aim]);}
+      const aims=[];let seen=new Set();for(let i=0;i<400&&(g.mode==='breathTell'||g.mode==='breath');i++){on(m);if(guard){BK.keys.block=true;BK.P.face=1;}BK.sim(1);seen.add(g.mode);if(g.mode==='breathTell')aims.push([+g.modeT.toFixed(3),g.aim]);}
       BK.keys.block=false;const late=aims.filter(a=>a[0]<${GARG.breath.lock}-0.02),set=late.length>1&&late.every(a=>Math.abs(a[1]-late[0][1])<1e-9);const o={seen:[...seen],set,took:hp0-BK.P.hp};BK.god=true;return o;};
     out.breath={open:breath(false),guard:breath(true)};
     /* THE BATTLEMENTS' MOAT: fall in, one bite, back at or behind where you fell */

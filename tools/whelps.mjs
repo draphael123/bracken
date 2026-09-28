@@ -13,7 +13,7 @@
      4. ON THE PAGE: perched it is stone; seen, it crouches and screeches, then swoops; unguarded, the swoop hurts and SHOVES; guarded,
         it clangs off and costs nothing; wherever it comes down off the spikes it is still stone (round three, 2026-09-27: only a stomp
         while it is stuck on the spikes breaks it - tools/gargoyle-stomp.mjs); it flies home and hardens; broken it crumbles. The
-        Gargoyle's shriek brings two or three whelps (never more than three up), and they crumble when he dies.
+        Gargoyle's shriek brings ONE whelp, and never another while his is up (Daniel's playtest, 2026-09-28), and they crumble when he dies.
    (Round three also took the ropes out of the moats: the moat is spiked and its WIND is the way back, spike-winds.js.)
    Every assertion is SOFT and all are printed, so a run on the old code lists everything it did not do. */
 import { readFileSync } from 'node:fs';
@@ -73,7 +73,7 @@ ok(hard.some(g => wh.some(e => near(e, g.x0, g.x1, 5) && e.y <= g.y)), 'S1: a wh
   const moats = [WL.BATT.breach, WL.BATT.moat, [WL.BATT.exam[0], WL.BATT.exam[1]]], zs = L.winds || [];
   ok(nets.size === 0 && moats.every(([a, b]) => zs.some(z => z.x0 <= a && z.x1 >= b && z.exits.some(([x]) => x < a))), 'every moat is SPIKED and its wind brings you back behind it (no ropes): a fall costs the stretch and skips nothing'); }
 // 3. the Gargoyle calls whelps
-ok(/c\.whelp\(/.test(gg) && !/c\.imp\(/.test(gg) && /whelps: 3,/.test(gg) && /shriekEvery: 13,/.test(gg), 'the Gate Gargoyle\'s shriek calls whelps, not imps: three at most, every 13 s at most');
+ok(/c\.whelp\(/.test(gg) && !/c\.imp\(/.test(gg) && /whelps: 1,/.test(gg) && /shriekEvery: 13,/.test(gg), 'the Gate Gargoyle\'s shriek calls whelps, not imps: ONE of his at a time, every 13 s at most');
 ok(/whelp: \(x, y\) => \{/.test(main) && !/\n {4}imp: \(x, y\) => \{ const n0 = enemies\.length; spawnEnt\(\{ t: 'imp'/.test(main) && main.includes('THE WHELPS HE CALLED CRUMBLE WITH HIM'), 'main.js hands him whelps, and they go when he does');
 // 4. on the page
 const pg = await openPage({ audio: false, fonts: false });
@@ -114,7 +114,7 @@ try {
     ok(r.open.home.mode === 'perch' && Math.abs(r.open.home.dx) <= 2 && Math.abs(r.open.home.dy) <= 2, 'then it flies home and hardens: ' + JSON.stringify(r.open.home));
     ok(r.guard.seen.includes('plunge') && r.guard.hurt === 0, 'GUARDED, it clangs off and drops, and costs nothing: ' + JSON.stringify(r.guard));
     ok(!r.crumble.alive && r.crumble.corpse && r.crumble.frame === 7, 'BROKEN, it crumbles: ' + JSON.stringify(r.crumble));
-    ok(r.garg.calls.every(c => c.imps === 0) && r.garg.calls[0].whelps >= 2 && r.garg.calls.every(c => c.whelps <= 3), 'THE GARGOYLE\'S SHRIEK brings whelps, never imps, never more than three: ' + JSON.stringify(r.garg.calls));
+    ok(r.garg.calls.every(c => c.imps === 0) && r.garg.calls[0].whelps === 1 && r.garg.calls.every(c => c.whelps === 1), 'THE GARGOYLE\'S SHRIEK brings a whelp, never imps, and with his one up a shriek calls no other: ' + JSON.stringify(r.garg.calls));
     ok(r.garg.swooped, 'a whelp he called swoops at you across his room');
     ok(r.garg.dead && r.garg.after === 0, 'and they crumble when he dies: ' + r.garg.after + ' left');
   }
