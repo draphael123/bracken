@@ -139,7 +139,7 @@ export function buildWitchlight({ painter, T, TS }) {
   hedge(278, 287, G - 7, G - 3);                                                     // DEVELOPED: a tall hedge you go UNDER (three rows)
   hedge(294, 302, G - 5, G - 3); plat(292, G - 2, 2); ent('silver', 298, G - 6);     // a tall one you go UP (silver 3 on top), or under
   ent('check', 256, G); ent('check', 290, G); ent('check', 321, G);
-  ent('sign', 257, G, { text: 'THE TOWER GARDEN. ITS HEDGES PUT ROOTS ALONG THE LAWN: JUMP THEM, OR STAND BY THE WITCH-FIRE.' });
+  ent('sign', 257, G, { text: 'THE GARDEN HEDGES PUT OUT ROOTS. JUMP THEM, OR STAND BY THE WITCH-FIRE.' });
   coins([265, G - 1], [268, G - 1], [283, G - 1], [286, G - 1], [296, G - 6], [300, G - 6], [312, G - 2], [316, G - 2]);
   meet('THE HEDGE-TOP IMPS', 274, 289, [['apprentice', 276, G], ['imp', 280, G - 10], ['imp', 286, G - 11]]);
   meet('THE TOPIARY', 291, 306, [['topiary', 297, G], ['armour', 300, G - 6], ['topiary', 305, G]]);
