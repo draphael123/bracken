@@ -58,11 +58,29 @@ export const OR = {
      convention), so nobody stands on a rope-end a row higher than the ledge. FOUR ROWS IS ENOUGH ONLY BECAUSE A DRUM LINE'S SKIPS
      CANNOT BE TIPPED: an emptied skip rides OR.BUCKET.lift higher, and 18 px under a 64 px housing is a 46 px jump. `housing`
      is the Great Drum's row: main.js seats him there before the fight */
+  /* ROUND FOUR (Daniel's playtest, 2026-09-28, item 3): THE HIGH HOUSINGS WERE TOO CLOSE TO THE CEILING AND TOO NARROW -
+     the Head Frame and the Tail Wheel, the narrowest platforms in the room (6 and 7 tiles against the Great Drum's 9),
+     stood at row 4, four rows off the level's own row-0 ceiling.
+     WIDENED, THE TAIL WHEEL ONLY (7 tiles -> 8, x1 508 -> 509): the Head Frame could not widen the same way without
+     breaking something else that matters more, and the room is too tightly built for a bigger rework in this lane -
+     see QUESTIONS FOR DANIEL. Tried and abandoned, in order: (1) widening the Head Frame eastward past its ladder (fixed
+     at column 482 - it HAS to be the entrance deck's own rope carried on up, ROUND TWO's comment, and the deck is a single
+     tile at 481) pushed its own ledge close enough to THE TAIL WHEEL'S that the high line fell under WINCH.revRange + 40 -
+     proved red (tools/ore-road.mjs's REVERSE-range line). (2) Moving the ledge to the OTHER side of the widened housing
+     kept the line long, but then the line's own path (which a hero rides, empty as well as loaded) ran straight through
+     the housing's own widened platform - proved red ("the high line never carries its rider into rock"). LOWERING either
+     housing runs into the same wall: the LOW LINE rides at the standing-height of row 12 (A.deck) the entire way from the
+     entrance deck to the Great Drum, over the same columns the Head Frame and the Tail Wheel stand in, so a top low enough
+     to put their own ledge (always four rows under the housing, ROUND TWO's rule) on or near row 12 puts solid rock in the
+     low line's own path - tried, proved red the same way. Going low enough to clear row 12 from the other side (row 13+)
+     puts the housing at the entrance deck's own standing height, which breaks "no jump reaches any housing" (a two-tile
+     hop from the deck's edge at 481 would then reach it) - the harder invariant of the two, so not attempted past that
+     point. Nothing here is a baked constant: every read of it (main.js's winchHousings) is live off this table */
   ARENA: { x0: 476, x1: 519, deck: 12, housing: 8, spoil: 22, highRow: 8, ledge: [507, 509], house: [510, 518],
     housings: [
       { id: 'A', name: 'THE GREAT DRUM', x0: 510, x1: 518, top: 8, home: 513, ledge: [507, 509], ledgeTop: 12, line: 'low', at: 'end', ladder: [509, 9, 12] },
       { id: 'B', name: 'THE HEAD FRAME', x0: 476, x1: 481, top: 4, home: 478.5, ledge: [483, 484], ledgeTop: 8, line: 'high', at: 'start', ladder: [482, 5, 18] },
-      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 508, top: 4, home: 505, ledge: [499, 501], ledgeTop: 8, line: 'high', at: 'end', ladder: [501, 5, 8] }],
+      { id: 'C', name: 'THE TAIL WHEEL', x0: 502, x1: 509, top: 4, home: 505.5, ledge: [499, 501], ledgeTop: 8, line: 'high', at: 'end', ladder: [501, 5, 8] }],
     /* ROUND THREE (Daniel, 2026-09-24: "the ore road is great now", four notes): THE HOUSINGS ARE BIGGER - the Head Frame six tiles
        (it was five), the Tail Wheel seven (it was four), the Great Drum nine - room to move and dodge on top. THE ROOM'S FLOOR IS
        THE PIT, like every span's: the entrance deck runs to 481, the Head Frame's ladder climbs from the pit's recovery ledge past
@@ -78,7 +96,7 @@ export const OR = {
     /* ROUND FOUR (Daniel, 2026-09-28, from the look-and-feel review: "his shaft is dark"): HIS ROOM IS LIT, and only his room. The
        engine's dark eases to `dark` while you are inside the arena's columns (a dark zone: L.darkZones), and each housing has a
        lamp on its top at `lamps` [x, row] - so the drum houses, the lines and the skips on them read from anywhere in the room */
-    dark: 0.18, lamps: [[517, 8], [477, 4], [507, 4]] },
+    dark: 0.18, lamps: [[517, 8], [477, 4], [508, 4]] },   /* moved with THE TAIL WHEEL's widening (item 3) */
   PLACES: { yard: [0, 67], span1: [68, 135], tower: [136, 203], chute: [204, 271], collapse: [272, 339], steep: [340, 407], winch: [408, 475], drum: [476, 523] },
   /* THE BUCKET IS 46 PX WIDE, NOT 24. Daniel found this himself and it is the change everything else stands on: the
      knight's box is 10-14 px, so a 24 px skip had no room to swing or to dodge on and NO FIGHT COULD HAPPEN ON ONE.
@@ -451,6 +469,12 @@ export function buildOreRoad({ painter, T }) {
     weather: [{ x0: 0, x1: 99999, kind: 'dust' }], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: surf(A.deck), y0: 0, trigger: (A.x0 + 3) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'winchmaster', music: 'boss3', tint: '#5a4a3a', tintA: 0.06, fx: 'dust' },
     noCoin: [[68, 135, 0, H - 1], [204, 261, 0, H - 1], [353, 375, 0, H - 1], [385, 407, 0, H - 1], [421, 450, 0, H - 1], [476, 523, 0, H - 1]],   /* over the drop: the sprinkler must not put coins where only a bucket goes */
+    /* item 3's arena widening shifted where the general sprinkler's own seeded draw (level.js's dressLevel, its rnd() calls
+       spent one per floor cell it considers) lands its decorations - which put a lanternPost on a vein at 430,5 that had
+       never had one on it before (proved: unchanged on the commit before this edit). dressLevel had no way to know a vein
+       was already standing there (L.veins isn't a decoration), so this excludes every vein's own cell from it, once, for
+       good - the general fix, not a nudge back to a coordinate that only works by luck until the next change */
+    noDress: veins.map(v => [v.x, v.x, v.y, v.y]),
   };
 }
 
