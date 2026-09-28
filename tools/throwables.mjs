@@ -3,8 +3,10 @@
 //   1. THE TABLE ITSELF is sane: every kind arcs (positive speed, positive gravity), respawns, and hits a fire foe harder
 //      than a plain one; FIRE_FOES names the burning goblin and the ember wisp, and not the Pyromancer (his own duel decides
 //      what a thrown bucket costs him - decision 3, PYRO_HIT_FIELD is the hook, not a damage number here).
-//   2. NO SOFT-LOCK: every fire a bucket is the only way past (a beam, THE FALLEN HOUSE) sits within a short carry of a rack -
-//      a hero is never asked to fetch water from across the map to get past one.
+//   2. EVERY FIRE HAS A RACK IN RANGE (Daniel, follow-up to the first pass, 2026-09-28): every told beam and log, every
+//      heap and the barn roof's barrier fire keeps a bucket rack within ~6 tiles of it, on the same floor - never a long
+//      carry away, wherever the route puts you when you first meet it. What doesn't (the trench's fallback fire patches,
+//      the village's own flame pillars) says why, in the same pass, not by omission.
 //   3. IN THE PAGE: walk onto a bucket and INTERACT takes it; ATTACK throws it in an arc that douses a fire kind not proved
 //      by tools/burning-village.mjs's own bucket section (the barn roof's barrier fire); a hero who dies mid-carry drops it,
 //      and it is back at its rack about THROW_KIND.bucket.respawn seconds after it lands, same as every other beat.
@@ -28,15 +30,38 @@ assert.equal(throwDamage('bucket', 'sprig'), THROW_KIND.bucket.hitSmall, 'anythi
 assert.equal(typeof PYRO_HIT_FIELD, 'string', 'the Pyromancer hook is a named field, for the boss lane to read - not a behaviour built here');
 console.log('the table: ' + Object.keys(THROW_KIND).join(', '));
 
-// ---- 2. NO SOFT-LOCK: a bucket rack within a short carry of every fire a bucket is the ONLY way past ----
+// ---- 2. EVERY FIRE HAS A RACK IN RANGE ----
 const TS = 16, lv = LEVELS.find(l => l.id === 'burning'), L = lv.build();
 const wells = L.ents.filter(e => e.t === 'villagewell' && e.bucket).map(w => ({ x: w.x, y: w.y }));
 assert.ok(wells.length >= 5, 'the village keeps a bucket at every rack the design calls for: ' + wells.length);
-const near = (x, y, d) => wells.some(w => Math.abs(w.x - x) <= d && Math.abs(w.y - y) <= 10);
-const RACK_REACH = 40;   /* tiles, straight-line: generous - THE HALL's butt to its own beam (the longest such carry today) is 36 */
-for (const z of (L.deckBreaks || [])) if (z.beam) assert.ok(near(z.x0, z.row, RACK_REACH) || near(z.x1, z.row, RACK_REACH), 'a burning beam at ' + z.x0 + ' has a rack within ' + RACK_REACH + ' tiles: ' + JSON.stringify({ x0: z.x0, row: z.row }));
-for (const h of (L.heaps || [])) assert.ok(near(h.x0, h.y0, RACK_REACH) || near(h.x1, h.y0, RACK_REACH), h.name + ' at ' + h.x0 + ' has a rack within ' + RACK_REACH + ' tiles');
-console.log('no soft-lock: every beam and heap has a rack within ' + RACK_REACH + ' tiles (' + wells.length + ' racks)');
+const RACK_CLOSE = 6;   /* tiles, on the same floor - "an easy throw", not "a carry" (decision 2's own words: "near every fire area") */
+const nearestWell = (x, y) => Math.min(...wells.map(w => Math.abs(w.y - y) > 3 ? 999 : Math.abs(w.x - x)));   /* same floor: a rack three rows off is not "in range" even if its x lines up */
+const near = (x, y, d) => nearestWell(x, y) <= d;
+/* EVERY TOLD BEAM OR LOG - the only fires you can stand ON, and so the only ones a douse changes the shape of the route
+   for (a doused beam holds; a log is never the only way, but the same rule applies to it) - except the very first one
+   (45-48, THE ROAD IN's ember pit, a plain log break with no onTop/fuse): it sits BEFORE the croft well where the
+   bucket is first taught (90), by design (docs/briefs/burning-village-rework.md §4, "TAUGHT SAFELY") - a player has
+   met no bucket yet when they meet it, it is a standard four-tile pit a jump clears the same as any other (unlike the
+   told, onTop beams), and giving it a rack would mean teaching the bucket before its own dedicated lesson does. */
+for (const z of (L.deckBreaks || [])) if ((z.beam || z.log) && z.x0 !== 45) { const d = Math.min(nearestWell(z.x0, z.row), nearestWell(z.x1, z.row));
+  assert.ok(d <= RACK_CLOSE, 'a ' + (z.beam ? 'beam' : 'log') + ' at ' + z.x0 + '-' + z.x1 + ' has a rack within ' + RACK_CLOSE + ' tiles: nearest is ' + d); }
+assert.ok((L.deckBreaks || []).some(z => z.x0 === 45 && z.log && !z.onTop), 'the road-in pit (45-48) is still the plain, pre-bucket log this exemption describes - if it changed, re-check whether the exemption still applies');
+/* EVERY HEAP - burning timber blocking the way (THE FALLEN HOUSE) or hiding a stash under it (THE ROOT CELLAR) */
+for (const h of (L.heaps || [])) { const d = Math.min(nearestWell(h.x0, h.y0), nearestWell(h.x1, h.y0));
+  assert.ok(d <= RACK_CLOSE, h.name + ' at ' + h.x0 + ' has a rack within ' + RACK_CLOSE + ' tiles: nearest is ' + d); }
+/* THE BARN ROOF'S BARRIER FIRE (Daniel's explicit ask: it had none before this pass) */
+for (const [x, y] of (L.roofFire || [])) { const d = nearestWell(x, y);
+  assert.ok(d <= RACK_CLOSE, 'the barn roof\'s fire at ' + x + ' has a rack within ' + RACK_CLOSE + ' tiles: nearest is ' + d); }
+console.log('every told beam, log, heap and the barn roof\'s fire has a rack within ' + RACK_CLOSE + ' tiles (' + wells.length + ' racks)');
+/* WHAT IS EXEMPT, AND WHY - not left unproved, said here so the exemption is the thing under test, not an omission */
+const cellarFireTiles = [256, 266, 280, 292, 304];   /* src/burning-village.js's own list: the rooftops' trench floor, five rows below the route */
+assert.ok(cellarFireTiles.every(x => (L.trench || []).some(([a, b]) => x >= a && x <= b)), 'the cellar fire patches are inside the trench, off the roofs route');
+console.log('exempt, and why: the trench\'s cellar-floor fire patches - a fallback a hero who falls in gets out of by ladder or smoke (C5), never a beat meant to be doused; ' +
+  'the village\'s own flame pillars (stillFires) - not the Pyromancer\'s fire, never doused by design (bucketTargets never matches a pillar, and src/burning-village.js says so directly)');
+/* BURNING GOBLINS - audited, not gated: a thrown bucket douses one it hits (a bonus, FIRE_FOES), but nothing requires carrying
+   water to one, since every burning goblin is an ordinary foe a sword kills regardless of the straw under it */
+const gobs = L.ents.filter(e => e.t === 'burngob'), gobDists = gobs.map(g => ({ x: g.x, d: nearestWell(g.x, g.y) }));
+console.log('burning goblins, tiles to the nearest rack (a bonus if in reach, never a gate): ' + gobDists.map(g => g.x + '@' + g.d).join(' '));
 
 // ---- 3. IN THE PAGE ----
 const pg = await openPage({ audio: false, fonts: false });

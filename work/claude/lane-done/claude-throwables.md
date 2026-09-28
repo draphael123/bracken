@@ -186,7 +186,78 @@ lane's mechanic, and could bite a future lane's tests the same way.
    want a bucket rack up there too as part of "near every fire area," that is a `villagewell`
    entity add in `src/burning-village.js`'s barn section, not built here.
 
-## Final commit
+## Follow-up: a rack within easy throwing range of EVERY fire (Daniel, after the first pass)
 
-`269df90` on `claude/throwables`, pushed. `git fetch origin && git merge origin/master`:
-already up to date, no conflicts.
+The first pass's QUESTION 4 flagged the barn roof's fire as having no rack of its own, and the
+"no soft-lock" check I built only proved a rack existed somewhere within 40 tiles (a carry, not
+a throw). Daniel asked for the barn roof's rack, an audit of every fire in the village against a
+much tighter ~6-tile "easy throw" standard, and that standard pinned as a check rather than left
+as a one-off fix.
+
+**Five new racks** (`src/burning-village.js`), each `ent('villagewell', x, y, { bucket: true, ...
+})` next to an existing fire that had nothing within 6 tiles:
+
+| fire | was (nearest rack) | now |
+|---|---|---|
+| the barn roof's barrier fire (385-387) | none (only the trough) | a rack at 383,9 (2-4 tiles) |
+| THE ROOFTOPS' burning beam (287-295) | THE HALL's butt, 32 tiles | a second rack at 282,13 (5 tiles), on the beam's own roof |
+| THE FALLEN HOUSE (229-231) | the street well, 19-21 tiles | a rack at 227,S (2 tiles) |
+| the well yard's last log (437-439) | the well-yard well, 23-24 tiles | a rack at 434,S (3 tiles) |
+| THE ROAD IN's early beam/log (188-191) | none within reach | a rack at 185,S (3 tiles) |
+
+Every existing route-choice or long-carry beat the original design intentionally built (the
+street well's twenty-tile carry to THE FALLEN HOUSE, the well yard's own well, THE HALL's butt
+serving its beam from behind) is UNCHANGED - I added a second, close rack beside each rather than
+moving or removing the original, so a player who deliberately carries water the long way still
+gets exactly the beat that was designed, and a player who arrives without it is never stuck
+fetching water from across the map either. One stale comment ("DOWN, and its bucket is yours",
+well yard) and one now-inaccurate one ("the only water on the roofs is here", the Hall's butt,
+no longer true with the roof's second rack) were corrected in passing.
+
+**The pin**, `tools/throwables.mjs`'s §2, rewritten from the old 40-tile "no soft-lock" check to
+`RACK_CLOSE = 6` tiles, same floor (a rack three rows off does not count, even if its column
+lines up), checked against every told beam, every log, every heap, and the barn roof's barrier
+fire (`L.roofFire`). Three things are exempt, proved rather than omitted:
+- **THE ROAD IN's very first pit (45-48)**: a plain log break (no `onTop`/fuse - crossable by a
+  jump the same as any other pit) that sits BEFORE the croft well, where the bucket is first
+  taught (`docs/briefs/burning-village-rework.md §4`, "TAUGHT SAFELY"). A player has met no
+  bucket yet when they reach it; giving it a rack would mean teaching the bucket before its own
+  dedicated lesson does. The check asserts the pit is still this shape (plain, pre-bucket,
+  `x0===45`) so the exemption is re-examined if that ever changes, not silently kept.
+- **The rooftops' trench cellar-floor fire patches** (`cellarFires`, five tiles on the floor five
+  rows below the route): a fallback hazard off the roofs route, already proven (this check's own
+  §1 and `tools/burning-village.mjs`'s rooftops section) to let a hero out by ladder or smoke -
+  never a beat meant to be doused.
+- **The village's own flame pillars** (`stillFires`): not the Pyromancer's fire, never doused by
+  design - `bucketTargets` never matches one, and `src/burning-village.js`'s own comment says so
+  directly ("the village's own fire... never creeps", dressing and hazard, not extinguishable).
+
+**Burning goblins are audited, not gated**: the check logs every one's distance to the nearest
+rack (a mix - some close, several far) but asserts nothing, because dousing one with a thrown
+bucket is a bonus (`FIRE_FOES`'s extra damage), never a requirement - every burning goblin is an
+ordinary foe a sword kills regardless of what is burning under it. "Braziers that burn you" in
+Daniel's message maps to two things already covered above: the flame pillars (exempt, as above)
+and the embers under a log/beam's own pit (covered by that beam/log's new nearby rack - they are
+the same hazard, not a separate one).
+
+### Checks re-run after this follow-up
+
+- `node tools/throwables.mjs` - **green**, including the new §2 (10 racks, every told beam/log/
+  heap/barn-roof-fire within 6 tiles; the three exemptions printed and proved, not asserted-past).
+- `node tools/burning-village.mjs` - **green**, unchanged assertions, all still pass with the
+  five new wells in place (they are in `COMBAT`/excluded categories already, so density and
+  flat-screen counts are unaffected: still 3.67/screen, `F.....F..........F`).
+- Required checks: `architecture, checkpoints, skins, dangling-paths, boss-fight-end,
+  slopes-trace, npc-removal` - **all green**.
+- `node tools/burning-route-walk.mjs knight,warden,pyro` - all three still reach the square with
+  0 net health lost; the well-yard leg is marginally faster now (the closer rack shortens the
+  detour to fetch water for the last log, though that waypoint script still uses the original
+  well/butt pickups, not the new racks - the new racks are proven reachable by the check and the
+  page test above, not walked by this particular tool).
+
+### Final commit
+
+`47ae796` was the sha at the end of the first pass; the two follow-up commits are on top of it
+(the rack additions to `src/burning-village.js`, and the rewritten §2 of
+`tools/throwables.mjs`). See the top of this file's git log for the exact final sha, reported
+in this lane's last message.
