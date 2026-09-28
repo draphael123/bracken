@@ -12,6 +12,11 @@
 //              it - jump down on it, and the moat's wind carries you back up (src/spike-winds.js). On bare stone it only lands (stone
 //              still). Either way it then flaps home and hardens again.
 //   CRUMBLES   when broken: chips, dust and a screech cut short.
+//   THE FIREBALL (claude/courtyard, Daniel 2026-09-28: "the common gargoyle gets a fireball"): ONE small, weak, slow fireball - smaller and
+//              weaker than the Gate Gargoyle's, and one where his are two. fireTell: it rears back, jaws open, and the fire gathers there
+//              (a yellow !: a shield takes it); then the ball, aimed where you are as it leaves, on his ball's own rules (gate-gargoyle.js
+//              stepBall: a slab or stone breaks it, a dodge roll passes through it). It spits from its perch when it sees you but you are
+//              past its dive (WH.ball.sight), and after a dive it spits before it dives again - so it is never only one thing.
 // This file holds its NUMBERS, its FRAMES and its ART. What it does is updateWhelp in src/main.js, because the mark audit
 // (tools/tells.mjs) reads creature update functions there and nowhere else.
 import { fromGrid, outline, flipX, whiten } from './px.js';
@@ -22,9 +27,11 @@ export const WH = {
   hp: 28, w: 12, h: 14,
   sight: 118, sightUp: 40, sightDown: 150,   /* it looks DOWN off its perch: 7 tiles along, 2.5 up, 9 down */
   tell: 0.65, speed: 235, swoopT: 0.85, landT: 1.3, dazedT: 2.1, flyV: 105, cd: [2.2, 3.0], wake: [0.4, 1.1],
-  stoneTake: 0, dmg: { swoop: 9 }, shove: [175, -150],
+  stoneTake: 0, dmg: { swoop: 9, fire: 6 }, shove: [175, -150],
   fallG: 900, fallV: 420, stuckT: 3.2,       /* after its line it DROPS, and lies on the spikes this long */
   gargSight: 900, gargSwoopT: 2.2,           /* one the Gate Gargoyle calls sees his whole room from the tower's face */
+  /* ITS ONE FIREBALL. His is v 90, r 6, 10 damage, a 1.1 s tell, two to a volley (GARG.ball); this is slower, smaller, weaker and single */
+  ball: { v: 78, r: 4, dmg: 6, life: 3.2, tell: 0.8, throwT: 0.35, sight: 200, sightUp: 90, sightDown: 190 },
 };
 /* THE SWOOP'S LINE, a function so the tool can ask it: a unit vector from the whelp at the hero's middle */
 export function whelpAim(e, tx, ty) { const dx = tx - e.x, dy = ty - (e.y - 6), n = Math.hypot(dx, dy) || 1; return [dx / n, dy / n]; }
@@ -38,12 +45,19 @@ export function whelpSees(e, P, far) {
   return far ? dx < WH.gargSight && dy > -WH.sightUp - 40 : dx < WH.sight && dy > -WH.sightUp && dy < WH.sightDown;
 }
 
-/* WHICH FRAME: 0 perched, 1 perched watching (eyes lit), 2 crouch (the tell), 3 swoop, 4-5 fly, 6 landed, 7 crumble, 8 hurt */
-export const WHELP_F = { perch: 0, watch: 1, crouch: 2, swoop: 3, flyA: 4, flyB: 5, landed: 6, crumble: 7, hurt: 8 };
+/* AND ITS FIREBALL'S SIGHT: further than its dive, and up as well as down (a ball goes where a dive cannot) */
+export function whelpFireSees(e, P) {
+  if (!P || P.dead) return false; const dx = Math.abs(P.x - e.x), dy = P.y - e.y, B = WH.ball;
+  return dx < B.sight && dy > -B.sightUp && dy < B.sightDown;
+}
+/* WHICH FRAME: 0 perched, 1 perched watching (eyes lit), 2 crouch (the tell), 3 swoop, 4-5 fly, 6 landed, 7 crumble, 8 hurt, 9 the spit (the fireball's tell) */
+export const WHELP_F = { perch: 0, watch: 1, crouch: 2, swoop: 3, flyA: 4, flyB: 5, landed: 6, crumble: 7, hurt: 8, spit: 9 };
 export function whelpFrame(e) {
   switch (e.mode) {
     case 'perch': return e.seen ? WHELP_F.watch : WHELP_F.perch;
     case 'crouchTell': return WHELP_F.crouch;
+    case 'fireTell': return WHELP_F.spit;
+    case 'fire': return WHELP_F.crouch;   /* the throw: lunging forward, jaws wide */
     case 'swoop': case 'plunge': return WHELP_F.swoop;
     case 'stuck': return (e.flash || 0) > 0.02 ? WHELP_F.hurt : WHELP_F.landed;
     case 'landed': case 'dazed': return WHELP_F.landed;
@@ -114,6 +128,11 @@ function frames() {
   { const r = blank();                                                                               /* 8 HURT: head snapped back, chips off it */
     wing(r, 8, 11, [[1, 5], [0, 10], [3, 15]]); ln(r, 5, 17, 1, 18, 'D'); ell(r, 10, 15, 4.6, 3.2, 'S', 's'); ell(r, 11, 17, 3.6, 1.6, 'd');
     ln(r, 7, 16, 6, 19, 'D'); ln(r, 13, 16, 14, 19, 'D'); head(r, 13, 10, 'E', true, -1); put(r, 18, 7, 's'); put(r, 17, 4, 'd'); claws(r, [5, 13], 19); out.push(f(r)); }
+  { const r = blank();                                                                               /* 9 THE SPIT: reared back on its haunches, wings half up, head thrown up with the jaws open - the fire gathers there (the world draws it) */
+    wing(r, 8, 9, [[2, 2], [1, 7], [3, 12]]); wing(r, 11, 9, [[10, 2], [14, 3], [15, 7]], 'd');
+    ln(r, 6, 17, 2, 18, 'D'); ln(r, 2, 18, 1, 16, 'D'); put(r, 1, 15, 's');
+    ell(r, 10, 13, 4.2, 4.8, 'S', 's'); ell(r, 11, 16, 3.5, 2.2, 'd'); ln(r, 13, 13, 14, 17, 'D');
+    head(r, 14, 7, 'E', true, -1); claws(r, [8, 13], 19); out.push(f(r)); }
   return out;
 }
 function pack(fr, ax, ay, w, h) { const R = fr, L = fr.map(flipX), white = fr.map(c => whiten(c)); return { R, L, white: { R: white, L: white.map(flipX) }, ax, ay, w, h }; }

@@ -186,9 +186,9 @@ export const MARK = {
   'undeadmage|bendTell': '!', 'undeadmage|decoyTell': '', 'undeadmage|fireTell': '!', 'undeadmage|handTell': '!', 'undeadmage|iceTell': '!', 'undeadmage|markTell': '!!',
   'undeadmage|poisonTell': '!', 'undeadmage|stepTell': '', 'undeadmage|stormTell': '!!', 'undeadmage|trapTell': '!', 'urchin|biteTell': '!', 'urchin|castTell': '!',
   'urchin|dive': '!', 'urchin|hookTell': '!', 'urchin|swellTell': '!', 'vulture|watch': '!!', 'wasp|stingTell': '!', 'watch|sweepTell': '!',
-  'watch|thrustTell': '!', 'whelp|crouchTell': '!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '',
-  'winchmaster|sendTell': '!!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!',
-  'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'watch|thrustTell': '!', 'whelp|crouchTell': '!', 'whelp|fireTell': '!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!',
+  'winchmaster|reverseTell': '', 'winchmaster|sendTell': '!!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!',
+  'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
 };
 /* MARK:END */
 
