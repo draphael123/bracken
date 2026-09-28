@@ -1,7 +1,7 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
-import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins, ORES, workSees, workLamp, hash as oreHash } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
+import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins, ORES, ORE_NAMES, workSees, workLamp, hash as oreHash } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
 import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { bakeScalder } from './redraw/scalder.js';
@@ -2162,7 +2162,7 @@ function spawnEnt(e) {
       case 'cart': movers.push({ kind: 'cart', x: px - 14, y: py - 10, x0: px - 14, y0: py - 10, w: 28, h: 10, dir: e.dir || 1, vx: 0, vy: 0, rolling: !!e.auto, auto: !!e.auto, gone: false, respawnT: 0, hit: new Set(), speed: e.speed || 140, dx: 0, dy: 0 }); break;
       case 'orelift': movers.push({ kind: 'orelift', x: px - 32, y: (e.y + 1) * TS - 6, y0: (e.y + 1) * TS - 6, y1: e.to * TS - 6, w: 64, h: 6, dx: 0, dy: 0 }); break;
       case 'gas': props.push({ t: 'gas', x: px, y: py, period: e.period || 7, on: 2.2, phase: e.phase || 0, vent: 0, lit: 0, armT: 0 }); break;
-      case 'minerlamp': props.push({ t: 'minerlamp', x: px, y: py, lit: e.lit !== false, hitCd: 0 }); lights.push({ x: px, y: py - 8, r: 76, glow: true, warm: true, lantern: props[props.length - 1] }); break;
+      case 'minerlamp': props.push({ t: 'minerlamp', x: px, y: py, lit: e.lit !== false, hitCd: 0 }); lights.push({ x: px, y: py - 8, r: 98, glow: true, warm: true, lantern: props[props.length - 1] }); break;   /* WARMER (Daniel's backlog: Ore Road was the most washed-out level) - a bigger pool than 76, since minerlamp is this level's alone */
       case 'boiler': props.push({ t: 'boiler', x: px, y: py, hp: 6, burst: 0, cool: 0 }); lights.push({ x: px, y: py - 20, r: 70, glow: true, warm: true, forge: true }); break;
       case 'hammer': props.push({ t: 'hammer', x: px, y: py, drop: 0, tell: 0 }); lights.push({ x: px, y: py - 26, r: 64, glow: true, warm: true, forge: true }); break;
       case 'greathound': enemies.push({ ...base, t: 'greathound', w: 32, h: 17, hp: EHP.greathound, maxHp: EHP.greathound, mode: 'wait', modeT: 0, face: -1, speed: 150, lungeT: 2, pounceT: 3.5, howlT: 5, hitT: 0, air: false, phase: 1 }); break;
@@ -14927,10 +14927,10 @@ function oreVeinsStep(dt) {
     const hb = attackBox(); if (!hb || P.hitSet.has(v)) continue;
     if (!overlap(hb, { l: v.x * TS, r: v.x * TS + TS, t: v.y * TS - 4, b: v.y * TS + 14 })) continue;
     P.hitSet.add(v); v.hits++; v.flash = 0.12; SFX.clank(); sparks(v.x * TS + 8, v.y * TS + 4, P.face, 5);
-    burst(v.x * TS + 8, v.y * TS + 4, 5, v.gem ? ['#c08aff', '#6fe0d8'] : ['#e0a040', '#7a7080'], 60, 0.35);
-    if (v.hits >= OR.VEIN_HITS) { v.mined = true; SFX.stone(); shakeCam(1.5); burst(v.x * TS + 8, v.y * TS + 4, 14, v.gem ? ['#c08aff', '#6fe0d8', '#fff6e0'] : ['#e0a040', '#b09a5a', '#fff6e0'], 90, 0.6);
+    const vc = ORES[v.ore ?? (v.gem ? 4 : 1)]; burst(v.x * TS + 8, v.y * TS + 4, 5, [vc[1], vc[2]], 60, 0.35);
+    if (v.hits >= OR.VEIN_HITS) { v.mined = true; SFX.stone(); shakeCam(1.5); burst(v.x * TS + 8, v.y * TS + 4, 14, [vc[1], vc[2], '#fff6e0'], 90, 0.6);
       for (let k = 0; k < v.coins; k++) acorns.push({ x: v.x * TS + 8 + (k - (v.coins - 1) / 2) * 6, y: v.y * TS + 4, got: false, ph: k, vy: -90 - k * 25, vein: true });
-      number(v.x * TS + 8, v.y * TS - 14, v.gem ? 'GEMS' : 'ORE', v.gem ? '#c08aff' : '#e0a040');
+      number(v.x * TS + 8, v.y * TS - 14, ORE_NAMES[v.ore ?? (v.gem ? 4 : 1)], vc[2]);
       const lt = lights.find(q => q.vein === v); if (lt) lt.r = 0; } }
   L.carrying = [];
   for (const e of enemies) { if (!e.alive || e.t !== 'miner') continue;
@@ -14956,7 +14956,7 @@ function oreVeinsStep(dt) {
     /* AT THE FACE: the pick goes up and comes down, turn about, and the chips fly */
     e.face = Math.sign(d) || e.face; e.vx = 0; w.t -= dt;
     if (w.t <= 0) { w.t = OR.WORK_CHIP; const down = e.mode !== 'dig'; e.mode = down ? 'dig' : 'swing'; e.modeT = 9; e.digT = 9;
-      if (down) { w.chips++; v.flash = 0.06; if (vx > camX - 20 && vx < camX + VW + 20 && Math.abs(v.y * TS - camY - VH / 2) < VH) { burst(vx - e.face * 4, v.y * TS + 4, 3, v.gem ? ['#c08aff', '#6fe0d8'] : ['#e0a040', '#7a7080'], 40, 0.3); if (Math.random() < 0.5) SFX.clank(); else SFX.tink(); } }
+      if (down) { w.chips++; v.flash = 0.06; if (vx > camX - 20 && vx < camX + VW + 20 && Math.abs(v.y * TS - camY - VH / 2) < VH) { const vc = ORES[v.ore ?? (v.gem ? 4 : 1)]; burst(vx - e.face * 4, v.y * TS + 4, 3, [vc[1], vc[2]], 40, 0.3); if (Math.random() < 0.5) SFX.clank(); else SFX.tink(); } }
       if (w.chips >= OR.WORK_CHIPS && e.mode === 'swing') { w.carry = true; e.mode = 'walk'; e.modeT = 0.3; } } }
 }
 /* THE PIT (Daniel's playtest, 2026-09-25, item 5). A hero falling into the spikes at the bottom of a span is the LEVEL's to
