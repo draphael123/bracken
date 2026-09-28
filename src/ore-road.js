@@ -73,7 +73,11 @@ export const OR = {
        the drum's mouth, not through it: a first version stood the ladder on the mouth's ledge, and the lab could never climb it
        (the bar guards the mouth, the sent bucket runs along it and the hook reached the rope up to it - a gauntlet, not a climb).
        The Head Frame's is the entrance deck's rope carried on up. The ledges are two tiles now: the ladder took the third */
-    ropes: [] },
+    ropes: [],
+    /* ROUND FOUR (Daniel, 2026-09-28, from the look-and-feel review: "his shaft is dark"): HIS ROOM IS LIT, and only his room. The
+       engine's dark eases to `dark` while you are inside the arena's columns (a dark zone: L.darkZones), and each housing has a
+       lamp on its top at `lamps` [x, row] - so the drum houses, the lines and the skips on them read from anywhere in the room */
+    dark: 0.18, lamps: [[517, 8], [477, 4], [507, 4]] },
   PLACES: { yard: [0, 67], span1: [68, 135], tower: [136, 203], chute: [204, 271], collapse: [272, 339], steep: [340, 407], winch: [408, 475], drum: [476, 523] },
   /* THE BUCKET IS 46 PX WIDE, NOT 24. Daniel found this himself and it is the change everything else stands on: the
      knight's box is 10-14 px, so a 24 px skip had no room to swing or to dodge on and NO FIGHT COULD HAPPEN ON ONE.
@@ -332,6 +336,7 @@ export function buildOreRoad({ painter, T }) {
   ent('winchmaster', Math.floor(A.housings[0].home), A.housing, { face: -1 });
   ent('sign', 477, A.deck, { text: 'CLIMB UP AND FIGHT HIM, OR RIDE A LOADED BUCKET INTO HIS DRUM.' });
   ent('minerlamp', 480, A.deck, { lit: true });   /* THE DRUM HOUSE was the one dark room with no lamp in it at all - LAMP_EVERY stops short of the arena (A.x0 - 2), so nothing ever lit it */
+  for (const [x, y] of A.lamps) ent('minerlamp', x, y, { lit: true });   /* round four: a lamp on every housing, at the end away from its drum's mouth */
 
   /* ======== THE PIT (Daniel's playtest, 2026-09-25, item 5) ========
      At the very bottom of every span, a bed of spikes. A hero who falls in pays about a FIFTH of his health and never his life
@@ -413,6 +418,7 @@ export function buildOreRoad({ painter, T }) {
        at OR.DARK, the night wash thin under it, and the lamps' warm pools; the far wall, the pillars and the veins are
        drawOreBackdrop, the ceiling and its stalactites drawOreStructures */
     dark: OR.DARK, edgeLit: true, night: true, glowNight: true, nightA: 0.1, ceil, veins, glints,
+    darkZones: [{ x0: A.x0 * TS, x1: W * TS, y0: 0, y1: H * TS, dark: A.dark, name: 'THE DRUM HOUSE' }],   /* round four: his room, and only his room, lit (OR.ARENA.dark) */
     pits: OR.PITS.map(q => ({ ...q, turbines: [...Array(Math.floor((q.x1 - q.x0 - 4) / OR.TURBINE_EVERY) + 1).keys()].map(k => q.x0 + 4 + k * OR.TURBINE_EVERY).filter(x => x <= q.x1 - 1) })),
     cable, encounters, places: OR.PLACES, oreRoad: true,
     /* THE AMBUSH ROOM (Q), returned by the builder rather than written into level.js's table, so its columns live beside the
