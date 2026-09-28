@@ -169,14 +169,22 @@ async function pageTextFit(input) {
     BK.ui.menuKind = 'pause'; }
 
   /* THE SOUND TEST'S MUSIC TAB (2026-09-27): every song, unlocked first so the longest credit lines (the worst case
-     for the row under the list) are the ones actually measured, not '???' and 'not yet heard' every time. Its
-     EFFECTS tab (cols=3, hundreds of SFX ids) is pre-existing and not swept here - see the lane report: two
-     PRE-EXISTING overlaps there (unrelated to this change) were found by an early draft of this same sweep and were
-     left for their own fix rather than folded into this one. */
+     for the row under the list) are the ones actually measured, not '???' and 'not yet heard' every time.
+     ITS EFFECTS TAB (2026-09-27 follow-up): every SFX id too - the tab that was left out of the first draft of this
+     sweep (see the lane report: an early hand check had found "two" overlaps there, but this loop, run once it
+     existed, found the column width itself was too narrow - almost every page collided, not just two ids - which is
+     what the same follow-up fixed, by giving a too-wide id its own full-width row instead of a fixed column it never
+     fit). Because a full-width row eats a row two ids would otherwise have shared, pages are not a fixed item count
+     any more either, so this asks the page itself (`BK.soundFxPages()`, the same layout `drawSoundTest` uses)
+     for every page's first index rather than assuming one. One frame per page is enough: every id on it is drawn in
+     the same frame (the whole grid, not one row at a time), so one frame per page catches every column boundary AND
+     the corner against the page indicator. */
   if (want('soundtest')) { toPlay(0, 'knight'); const { MUSIC_NAMES } = await import('/src/audio.js');
     const PR = BK.PROG; PR.heardMusic = PR.heardMusic || {}; for (const n of MUSIC_NAMES) PR.heardMusic[n] = 1;
     for (let i = 0; i < MUSIC_NAMES.length; i++) frame('soundtest music #' + i + ' ' + MUSIC_NAMES[i], () => { BK.state = 'soundtest'; BK.soundCat = 1; BK.soundI = i; }, { settle: 20 });
     frame('soundtest ambience #0', () => { BK.state = 'soundtest'; BK.soundCat = 2; BK.soundI = 0; }, { settle: 20 });
+    BK.state = 'soundtest'; BK.soundCat = 0; const fxStarts = BK.soundFxPages();
+    for (let p = 0; p < fxStarts.length; p++) frame('soundtest effects page #' + p, () => { BK.state = 'soundtest'; BK.soundCat = 0; BK.soundI = fxStarts[p]; }, { settle: 20 });
     await yieldNow(); }
 
   if (want('hud')) for (const h of HEROES) { toPlay(campaign.findIndex(([l]) => l.id === 'waymeet') >= 0 ? campaign.find(([l]) => l.id === 'waymeet')[1] : 0, h);

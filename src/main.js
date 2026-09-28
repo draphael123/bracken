@@ -24977,6 +24977,33 @@ function drawControls() {
     else text(c, x + w - 8, yy, '#c9d1dc', 'right', 6); });
   text('ESC back', x + 8, y + 15, UI.dim, 'left', 6);   /* up in the header: at the foot it sat on the last row */
 }
+/* EFFECTS' OWN LAYOUT (2026-09-27 follow-up). It used to be a fixed three-column grid over a fixed-width crowd of
+   hundreds of SFX ids - some ('priestCenserTell', 127px) wider than an 84px column has room for, no matter which of
+   the three columns it landed in, so almost every page had a column overlap, not the "two pre-existing" ones an
+   early hand check had found (tools/textfit.mjs's 'soundtest' sweep did not cover EFFECTS then; it does now, and
+   found the rest). Rather than truncate every long id down to a fixed column width - cutting names a player is
+   there to read - a wide id (one that would not fit a normal column, measured against the real font, not guessed)
+   gets its own full-width row instead: it is never cut, and it only costs the layout the one row it actually needs.
+   Pages are no longer a fixed item count either, for the same reason (a full-width row uses a row two ids would have
+   shared) - `fxPages()` walks the real list once and lays it out for real, cached by the column width and row count
+   it was asked for so it is only ever computed again if those change. `BK.soundFxPages` (below, on the debug object)
+   hands a headless sweep every page's first index, so it can visit each one without knowing this layout's internals. */
+let fxPagesCache = null;
+function fxPages(colW, rows) {
+  if (fxPagesCache && fxPagesCache.colW === colW && fxPagesCache.rows === rows) return fxPagesCache.pages;
+  const list = SFX_NAMES(), maxW = colW - 16, cols = 2;
+  const pages = []; let cur = [], row = 0, col = 0;
+  for (let i = 0; i < list.length; i++) {
+    const wide = textW(list[i]) > maxW;
+    if (wide && col !== 0) { row++; col = 0; }
+    cur.push({ i, col: wide ? 0 : col, row, span: wide ? 2 : 1 });
+    if (wide) { row++; col = 0; } else { col++; if (col === cols) { col = 0; row++; } }
+    if (row >= rows) { pages.push(cur); cur = []; row = 0; col = 0; }
+  }
+  if (cur.length) pages.push(cur);
+  fxPagesCache = { colW, rows, pages };
+  return pages;
+}
 function drawSoundTest() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 24, y = 6, w = VW - 48, h = VH - 12; panel(x, y, w, h);
@@ -24986,11 +25013,19 @@ function drawSoundTest() {
   /* MUSIC keeps three rows spare at the foot of its list: one gap, then a row of its own for the credit line below
      (a full width to itself - no need to fight the page indicator for room), before the same two footer lines every
      other tab uses. The list must never grow into any of it. */
-  const cols = soundCat === 0 ? 3 : 1, rows = soundCat === 1 ? 8 : 11, perPage = cols * rows, page = Math.floor(soundI / perPage), start = page * perPage;
-  for (let i = start; i < Math.min(list.length, start + perPage); i++) { const k = i - start, cx0 = x + 10 + (k % cols) * (w - 20) / cols, cy0 = y + 32 + Math.floor(k / cols) * 11, sel = i === soundI;
-    const locked = soundCat === 1 && !musicUnlocked(list[i]);
-    if (sel) text('>', cx0 - 2, cy0, '#8fd160'); text(locked ? '???' : list[i], cx0 + 8, cy0, locked ? '#6b716b' : (sel ? '#fff6e0' : '#c9d1dc')); }
-  if (list.length > perPage) text('page ' + (page + 1) + '/' + Math.ceil(list.length / perPage), x + w - 8, y + h - 20, '#9aa39a', 'right');
+  if (soundCat === 0) {
+    const colW = (w - 20) / 2, rows = 10, pages = fxPages(colW, rows);
+    const pageIdx = Math.max(0, pages.findIndex(p => p.some(e => e.i === soundI)));
+    for (const e of pages[pageIdx] || []) { const cx0 = x + 10 + e.col * colW, cy0 = y + 32 + e.row * 11, sel = e.i === soundI;
+      if (sel) text('>', cx0 - 2, cy0, '#8fd160'); text(list[e.i], cx0 + 8, cy0, sel ? '#fff6e0' : '#c9d1dc'); }
+    if (pages.length > 1) text('page ' + (pageIdx + 1) + '/' + pages.length, x + w - 8, y + h - 20, '#9aa39a', 'right');
+  } else {
+    const rows = soundCat === 1 ? 8 : 11, page = Math.floor(soundI / rows), start = page * rows;
+    for (let i = start; i < Math.min(list.length, start + rows); i++) { const cy0 = y + 32 + (i - start) * 11, sel = i === soundI;
+      const locked = soundCat === 1 && !musicUnlocked(list[i]);
+      if (sel) text('>', x + 8, cy0, '#8fd160'); text(locked ? '???' : list[i], x + 18, cy0, locked ? '#6b716b' : (sel ? '#fff6e0' : '#c9d1dc')); }
+    if (list.length > rows) text('page ' + (page + 1) + '/' + Math.ceil(list.length / rows), x + w - 8, y + h - 20, '#9aa39a', 'right');
+  }
   /* THE CREDIT LINE. Only a song already unlocked names its own maker - a locked one is '???' above and stays
      unnamed below it too, or the lock is not really a lock. fitText is a safety net, not the plan: MUSIC_CREDITS is
      kept short enough that it almost never has to cut (tools/textfit.mjs 'soundtest' sweeps every one unlocked). */
@@ -25946,6 +25981,10 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   /* THE SOUND TEST, for tools/soundtest.mjs: a harness can put the cursor straight on a category and a row without
      hunting for the up/down flags press() does not carry. */
   get soundCat() { return soundCat; }, set soundCat(v) { soundCat = v; }, get soundI() { return soundI; }, set soundI(v) { soundI = v; }, musicUnlocked,
+  /* EFFECTS' page starts (drawSoundTest's own fxPages, see there): a full-width row for a too-wide id makes pages an
+     uneven item count, so a harness (tools/textfit.mjs's 'soundtest' sweep) asks for the real boundaries instead of
+     assuming a fixed one. */
+  soundFxPages: () => fxPages(((VW - 48) - 20) / 2, 10).map(p => p[0].i),
   enemies: () => enemies, spawnFoe: e => { const n0 = enemies.length; spawnEnt(e); return enemies.slice(n0); },   /* put one creature down in the running level, for a harness (tools/drowned-knights.mjs) */ movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [], elites: () => enemies.filter(e => e.elite), ELITE,
   flyers: () => FLYERS,   /* the creatures that legitimately have no floor under them: src/playtest.js's runtime floater sample reads this instead of keeping a second list */
   waterKin: () => HEEL_SWIMS,   /* what the sea does not drown: it lives IN or BY the water, not on a floor tile - the same list the runtime floater sample reads instead of keeping a second one */

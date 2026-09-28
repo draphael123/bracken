@@ -190,3 +190,63 @@ pass, printed as their own `ok  soundtest  ...` line separate from the existing 
    Both entries open the exact same `'soundtest'` state and song lists - there is only ever one Sound Test, reached
    two ways. **Recommendation: keep both** - a returning player who is used to the old path loses nothing, and a new
    player finds it faster from the title.
+
+## Follow-up: effects tab
+
+The two overlaps this lane's report flagged (`task_b674f118`) and left alone turned out to be an undercount from an
+early hand check, not the whole story: once `tools/textfit.mjs`'s `'soundtest'` sweep actually covered the EFFECTS
+tab (it never had before - the lane report is explicit that the sweep "deliberately does not sweep EFFECTS yet"),
+it found the real cause was structural, not two stray strings. EFFECTS drew its 284 SFX ids in a fixed three-column
+grid, each column 84px wide; several dozen ids (`perfectGuard`, `shieldScrape`, `priestCenserTell` at 127px, and
+many more) are wider than that on almost every one of the tab's pages, so the "two pre-existing overlaps" were just
+the two an early manual spot-check happened to notice, not the extent of the bug.
+
+**What changed (`src/main.js`):**
+
+- EFFECTS no longer uses a fixed grid at all. A new `fxPages(colW, rows)` (just above `drawSoundTest`) walks
+  `SFX_NAMES()` once, measures each id with the real font (`textW`, the same measure `fitText` and `wrap` already
+  use elsewhere), and packs it into two 126px columns - except an id too wide for a column (measured, not guessed),
+  which gets a full-width row of its own instead of being confined to a column it does not fit. Nothing is ever cut:
+  the plan is the row an id actually needs, not a truncation of what does not fit a column that was too narrow to
+  begin with. The layout is cached by `(colW, rows)` so it is only rebuilt if those change, not every frame.
+- Because a full-width row eats a row two ids would otherwise have shared side by side, EFFECTS' pages no longer
+  hold a fixed item count; `drawSoundTest` finds the page holding the cursor (`soundI`) by asking `fxPages()` which
+  page contains it, rather than computing it from a constant `perPage`.
+- EFFECTS also lost one row at the bottom (10, not 11, still 2 columns): the previous grid's last row, in its
+  rightmost column, sat close enough to the `'page N/M'` indicator in the panel's bottom-right corner that a wide
+  page number (`'page 12/13'`, once EFFECTS needed more pages than the old grid ever did) collided with it too - the
+  same corner the wider columns needed clearing, just the vertical side of it instead of the horizontal one.
+- MUSIC and AMBIENCE were not touched beyond a harmless refactor (both already used a single column, now written as
+  its own branch instead of sharing a `cols`-parameterised loop with EFFECTS, since EFFECTS no longer fits that
+  shape). Their positions, row spacing, credit line, lock icons and footer are pixel-identical to before.
+- `BK.soundFxPages()` (the debug object, next to `soundCat`/`soundI`) exposes `fxPages()`'s page boundaries (each
+  page's first SFX index) so a headless harness can visit every real page without knowing the packing rule that
+  produced it.
+
+**`tools/textfit.mjs`:** the `'soundtest'` sweep's comment already named the EFFECTS gap; it now closes it. It reads
+`BK.soundFxPages()` for the real page starts (not a guessed `perPage`, which stopped being constant the moment a
+full-width row could appear) and puts the cursor on each one in its own frame, so every column boundary and the
+corner against the page indicator is swept on every page, not just the ones an early hand check happened to look at.
+
+**Checks run (this follow-up):**
+
+- `node tools/textfit.mjs soundtest` run BEFORE the `src/main.js` fix (with only the EFFECTS sweep added to
+  `textfit.mjs`) came back red against the unmodified 051d31e drawing code, as expected: OVERFLOW 4, COLLIDE 28 -
+  real column overlaps on 8 of the tab's 9 pages, not the "two" the lane report guessed at. This is the "catch them"
+  proof the follow-up brief asked for.
+- After the `src/main.js` layout fix: `node tools/textfit.mjs soundtest --strict` - clean (92 screens, 1607 strings,
+  0 across every category, 0 pictures). No truncation either: the full-width-row approach means nothing needs
+  `fitText` to cut a name to fit, so TRUNCATED is 0 too, not just COLLIDE.
+- `node tools/textfit.mjs menu,soundtest --strict` - clean (108 screens, 1878 strings, 0 across every category),
+  confirming the EFFECTS fix did not disturb the title/pause menu sweep it now runs alongside.
+- `node tools/soundtest.mjs` - both existing reports still green (9/9 lock assertions, 4/4 main-menu-entry
+  assertions): EFFECTS' drawing changed, nothing about how it is reached, locked, or played did.
+- `node tools/check.mjs syntax,comments,homepaths,dangling-paths` - all four pass (2 files re-parsed, no swallowed
+  code, no hardcoded home paths, every cited repo path resolves in a fresh clone). No other check was run, per the
+  lane rules (named checks only, no full suite, one headless page at a time).
+- `node --check src/main.js` and `node --check tools/textfit.mjs` - both parse.
+
+**Commit / push (this follow-up):** a new commit on `claude/sound`, pushed to `origin claude/sound`.
+
+**QUESTIONS FOR DANIEL:** none - this was a pure layout fix (row math, column widths, page boundaries) with no
+design call needed. `task_b674f118` can be considered closed by this commit.
