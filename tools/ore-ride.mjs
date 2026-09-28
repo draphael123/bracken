@@ -135,8 +135,8 @@ try {
     BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = false; BK.sim(5);
     for (const e of BK.enemies()) if (!e.maxHp) e.alive = false;
     const L = BK.L, P = BK.P, A = L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(120);
-    const b = BK.boss, li = L.cableway.lines.findIndex(l => l.id === 'low'); let m = null, seen = [];
-    for (let f = 0; f < 60 * 20 && !m; f++) { BK.sim(1); m = BK.movers().find(q => q.kind === 'bucket' && q.line === li && q.vis && q.x + q.w / 2 > 488 * 16 && q.x + q.w / 2 < 491 * 16); }
+    const b = BK.boss, li = L.cableway.lines.findIndex(l => l.id === 'low'), s0 = L.cableway.lines[li].pts[0][0]; let m = null, seen = [];   /* s0: the low line's start on the deck - a skip 7-10 tiles out from it, off the room's own table (round five moved the deck) */
+    for (let f = 0; f < 60 * 20 && !m; f++) { BK.sim(1); m = BK.movers().find(q => q.kind === 'bucket' && q.line === li && q.vis && q.x + q.w / 2 > s0 + 6.75 * 16 && q.x + q.w / 2 < s0 + 9.75 * 16); }
     if (!m) return { err: 'no skip came out' };
     for (let k = 0; k < 4; k++) { P.x = m.x + m.w / 2; P.y = m.y - 1; P.vx = P.vy = 0; BK.sim(1); }
     for (let f = 0; f < 60 * 25 && b.mode !== 'downed'; f++) { b.revCd = b.sendCd = b.hookCd = b.leverCd = 99; BK.sim(1); seen.push(b.mode); }

@@ -22320,6 +22320,11 @@ function updateCamera(dt) {
   if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * CAM_FOOT + lookDown; }
   /* THE GATE GARGOYLE's fight frames him and you together, and keeps the garden floor he crashes onto in the picture (gate-gargoyle.js) */
   else if (bossActive && boss && boss.alive && boss.t === 'gargoyle' && L.arena) { [tx, ty] = gargCam(P, boss, L.arena, VW, VH); ty += lookDown * 0.5; }
+  /* THE WINCHMASTER's room is wider than any zoomed view (round five, claude/winch3: five more columns so his housings are wide enough to
+     dodge on). Centered on the room, as it was, both end housings lost a strip - and the Head Frame's man stood in it, where his "begins
+     nothing off screen" rule left him waiting. So the camera frames the two of you: the MIDPOINT of hero and Winchmaster, held inside the
+     room by the lock below. A room narrower than the view is still centered (centerLock) */
+  else if (bossActive && boss && boss.alive && boss.t === 'winchmaster' && camLock) tx = (P.x + boss.x) / 2 - VW / 2;
   camX += (tx - camX) * Math.min(1, dt * 5); camY += (ty - camY) * Math.min(1, dt * 4);
   // A ZOOMED VIEW CAN BE WIDER THAN A SMALL ARENA (every boss fight zooms out now, src/boss-view.js, and VW can run
   // to 640px): pinning the clamp to the west wall then ran the east edge of a narrow arena hundreds of pixels past
@@ -22329,7 +22334,7 @@ function updateCamera(dt) {
   // Frame at its west wall, the Great Drum at its east - and at the zoomed view's usual sizes the room is only a
   // little wider than the screen. Panned to either wall (the ordinary clamp below) the FAR housing runs off the
   // opposite edge; centered instead, both ends lose the same sliver and neither housing goes missing.
-  const centerLock = camLock && (boss && boss.t === 'winchmaster' || camLock.x1 - camLock.x0 + 16 < VW);
+  const centerLock = camLock && camLock.x1 - camLock.x0 + 16 < VW;   /* (the Winchmaster's room is framed on the two of you above, round five) */
   let x0, x1;
   if (centerLock) { x0 = x1 = Math.max(0, Math.min(LW * TS - VW, (camLock.x0 + camLock.x1) / 2 - VW / 2)); }
   else { x0 = camLock ? camLock.x0 - 8 : 0; x1 = camLock ? camLock.x1 + 8 - VW : LW * TS - VW; }
