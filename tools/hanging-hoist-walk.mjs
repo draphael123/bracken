@@ -36,7 +36,19 @@ try {
       note('rope: stood on the deck and the coil went in the basket', m.hs && m.hs.load >= 1 && P().onMover === m, at(m));
       until(() => m.hs.state === 'top'); BK.sim(10); note('rope: the deck rose to the market floor with the hero on it', P().onMover === m && m.y === m.y1, at(m));
       hop('right'); hold('right', 30); note('rope: hopped off onto the market floor', P().ground && Math.floor(P().y / TS) === 80 && P().x > 6 * TS, at(m));
-      until(() => m.hs.state === 'rest' && BK.props().filter(p => p.t === 'load' && p.hoist === 'rope' && p.state === 'free').length === 3); note('rope: the basket tipped and the deck came home, the coil back on its pile', m.hs.state === 'rest' && m.y === m.y0 && BK.props().filter(p => p.t === 'load' && p.hoist === 'rope' && p.state === 'free').length === 3, at(m));
+      until(() => m.hs.state === 'rest' && BK.props().filter(p => p.t === 'load' && p.hoist === 'rope' && p.state === 'free').length === 4); note('rope: the basket tipped and the deck came home, the coil back on its pile', m.hs.state === 'rest' && m.y === m.y0 && BK.props().filter(p => p.t === 'load' && p.hoist === 'rope' && p.state === 'free').length === 4, at(m));   /* four coils now: the taught weight beside the deck (CARRY & THROW, 2026-09-28) plus the original three */
+      /* CARRY & THROW AT THE FIRST HOIST (2026-09-28, Daniel's live report): the taught weight beside the deck (x=5), taken with
+         INTERACT and thrown (ATTACK) at the well instead of carried in - a real-key player who never lets go of DOWN's old habit
+         still rides up, because a thrown load fills the basket exactly like a carried one (updateHoists' wellAt(), not a second path) */
+      fresh(); m = H('rope'); BK.tp(5, 93); BK.sim(10); BK.P.face = -1;
+      BK.press('talk'); BK.sim(6);
+      note('rope: INTERACT takes the taught weight beside the deck', P().ballast && P().ballast.kind === 'coil', { ballast: !!P().ballast });
+      hop('left'); BK.sim(6);
+      BK.press('atk'); BK.sim(2);
+      note('rope: ATTACK throws it', !P().ballast, { ballast: !!P().ballast });
+      until(() => m.hs.load > 0, 180); note('rope: the thrown weight lands in the basket and the deck answers', m.hs.load > 0, at(m));
+      until(() => m.hs.state === 'top', 400); BK.sim(10);
+      note('rope: a real-key player who throws it rides the deck up', P().onMover === m && m.y === m.y1, at(m));
       /* MILL: on the deck, cut the peg to the west of it */
       fresh(); m = H('mill'); BK.tp(76, 64); P().x = m.x + 5; P().y = m.y; P().vy = 0; BK.sim(4); clear(); k.left = true; BK.sim(1); clear();
       BK.press('atk'); BK.sim(24); const sack = BK.props().find(p => p.t === 'load' && p.hoist === 'mill');
