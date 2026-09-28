@@ -4,8 +4,9 @@
 //   1. TWIST the lurker: the "SOME CAPS ARE LURKERS" sign reads before the dripping stair, not after it, and one of the
 //      stair's own landings holds a lurker.
 //   2. COMBINE in the bog: a leaning cap over the middle sink, under its own spore fall, where the weaver already spits.
-//   3. DEVELOP the pillars: the two floor caps are webbed (cut the curtain before they spring you), and a lurker waits
-//      among them, not past them.
+//   3. DEVELOP the pillars: a lurker waits among the two floor caps, not past them. (A curtain gating each cap on a
+//      cut was tried and reverted - checkpoint-stand.mjs's real jump (5 columns, not the model's 6) found it sitting
+//      in the only jump's arc over the gaps either side, cutting the route in two. See the level's own comment.)
 //   4. EXAM, out of the Deep Gills to her door: a spore fall over the second sprout, the spitcap and weaver already
 //      holding the ledge, and a leaning cap over a carved sink - growcap both ways, a fall, and a foe, all in the same
 //      short stretch, and every foot of it stays reachable (floodReach, the same model pacing.mjs walks the route with).
@@ -35,10 +36,6 @@ assert(near('weaver', bogLean[0].x / 16, 9, 4), 'the bog\'s weaver is not near t
 const pillarSign = L.ents.find(e => e.t === 'sign' && /THE PILLARS/.test(e.text || ''));
 assert(pillarSign, 'cannot find the pillars\' sign to anchor the section');
 const pStart = pillarSign.x, pEnd = pillarSign.x + 40;
-const webbedCap = (x0, x1) => { for (let x = x0; x <= x1; x++) for (let y = 0; y < L.H; y++) if (at(x, y) === T.BOUNCER) { for (let wy = y - 1; wy >= 0 && wy >= y - 3; wy--) if (at(x, wy) === T.WEB) return true; } return false; };
-let anyWebbed = false;
-for (let x = pStart; x <= pEnd; x++) if (webbedCap(x, x)) anyWebbed = true;
-assert(anyWebbed, 'no floor cap in the pillars\' section (' + pStart + '-' + pEnd + ') sits under a web');
 assert(L.ents.some(e => e.t === 'lurker' && e.x >= pStart && e.x <= pEnd), 'no lurker waits among the pillars\' floor caps');
 
 // -- 4. EXAM: the last stretch before her door --
@@ -57,14 +54,16 @@ let hasFloor = false;
 for (let x = gapX0; x <= gapX1; x++) for (let y = 0; y < L.H; y++) if (at(x, y) === T.BOUNCER) hasFloor = true;
 assert(hasFloor, 'the exam\'s leaning cap crosses a gap with no spring at the bottom');
 
-// -- reachability: everything the exam adds still sits inside the route's fill, start to her door (R.seen is the
-// flood already run from L.START; a column is checked by settling down to its first footing row, as pacing.mjs does) --
-const R = floodReach(L, T, { rides: true });
+// -- reachability: everything this level's own beats touch still sits inside the route's fill, start to her door,
+// with a REAL JUMP (5 columns, not the model's 6 - the same stricter model checkpoint-stand.mjs holds every
+// checkpoint to, which is what caught the pillars' webbed caps blocking the route the first time this was written) --
+const R = floodReach(L, T, { rides: true, across: 5 });
 const settle = x => { let y = 0; while (y < L.H - 1 && !R.footing.has(R.key(x, y))) y++; return R.footing.has(R.key(x, y)) ? y : -1; };
 const reached = x => { const y = settle(x); return y >= 0 && R.seen.has(R.key(x, y)); };
+assert(reached(pStart + 2), 'the pillars\' section (col ' + (pStart + 2) + ') fell out of the reach fill');
 assert(reached(examX0 + 2), 'the exam stretch (col ' + (examX0 + 2) + ') fell out of the reach fill');
 assert(reached(A.wallL - 1), 'her door (col ' + (A.wallL - 1) + ') is no longer reachable through the exam stretch');
 
-console.log('Sporewood\'s second half and its exam: the lurker twist at 244, a leaning cap combined into the bog, the pillars\''
-  + ' floor caps webbed with a lurker among them, and the exam stretch (' + examX0 + '-' + examX1 + ') growing a cap both ways'
-  + ' under a fall and a foe, all reachable to her door.');
+console.log('Sporewood\'s second half and its exam: the lurker twist at 244, a leaning cap combined into the bog, a lurker'
+  + ' among the pillars\' floor caps, and the exam stretch (' + examX0 + '-' + examX1 + ') growing a cap both ways under a'
+  + ' fall and a foe, all reachable to her door with a real jump.');
