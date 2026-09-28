@@ -115,6 +115,26 @@ The rows are in `work/burial3/pilot-{before,after}.txt`. I did not tune anything
 
 1. **Should the biers carry a drowned hand right under some of them**, so standing still on one is always punished, rather than only near one? *Recommendation:* keep what is there (hands between the biers) until you have played it. The sink already punishes standing still.
 2. **Should GRAVE BREATH do damage at all?** Right now it does 10, a shield turns it, and only within 110 px. Its real cost is losing your fire. *Recommendation:* keep the small chip, so it reads as an attack and not a weather event.
-3. **The lair's own ledges and the Candle Path's are still the mine's wooden staging.** I changed only the ossuary, as asked. *Recommendation:* give the processional hall dressed-stone ledges too, as a small follow-up, reusing the new `L.ledgeZones`.
+3. **The lair's own ledges and the Candle Path's are still the mine's wooden staging.** I changed only the ossuary, as asked. *Recommendation:* give the processional hall dressed-stone ledges too, as a small follow-up, reusing the new `L.ledgeZones`. **Done below, sha `73bc711`.**
 4. **The walk's hoard is 10 coins and a coffer.** The level already holds its 3 silvers, and every relic is spoken for. *Recommendation:* keep coins for now. If you want the high road to feel special, give the Burial Caverns a relic of their own later (a grave-candle charm?), which needs a new relic kind.
 5. **GRAVE HANDS appear in phase one too**, as the fight's first reason to light a vent for your own safety. *Recommendation:* keep them in both phases. The phase-two change is the breath. If phase one feels crowded, move the hands to phase two only.
+
+## Follow-up: stone ledges (2026-09-27, sha `73bc711`)
+
+Daniel approved question 3 above. THE CANDLE PATH's one arch and THE BURIED DEAD'S LAIR's tiers and hung bier were still drawn with the
+mine's wooden staging (`LEDGE_SETS.staging`), against an earth-cut barrow and a processional hall. Art only - no tile moved, no collision
+changed.
+
+- **Two new ledge sets** in `src/burial-looks.js`: `bakeBarrowLedge` (dry-stone off the barrow's own revetment) and `bakeProcessionLedge`
+  (dressed stone off the hall's own pillars), each a moulded-lip shelf like the ossuary's `bakeCryptLedge`, in that section's own colours.
+- Registered in `src/main.js` as `LEDGE_SETS.barrowStone` and `LEDGE_SETS.processionStone`.
+- Named by two new `L.ledgeZones` entries in `src/burial-caverns.js`: `[0, 99, 6, 21, 'barrowStone']` for the Candle Path, and
+  `[LAIR[0], LAIR[1], 6, 21, 'processionStone']` for the Buried Dead's Lair.
+- **`tools/burial3.mjs` check 7** (new): asserts both zones exist and that no `T.ONEWAY` tile in either section's rectangle resolves
+  outside its named stone zone. Confirmed red on `0792594` (before the art change) - `THE CANDLE PATH has no barrowStone ledge zone` -
+  then green after.
+
+Checks run (all green): `burial3`, `burial3-keys` (28-32 s each run, real keys, alone as a load flake), `footing-art`, `buried-dead-art`,
+`burial-geometry`.
+
+Sha: `73bc711`, pushed to `origin/claude/burial3`.
