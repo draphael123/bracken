@@ -28,7 +28,10 @@ function extractListed(file) {
   while ((m = re.exec(text))) {
     const start = m.index + m[0].length - 1;
     const block = findBalanced(text, start);
-    const before = text.slice(Math.max(0, m.index - 600), m.index);
+    // window widened from 600 to 2000 (2026-09-28, ambushfix): hanging/kings/wood's follow-up comments
+    // pushed the gap between an entry's own `name:` and its `waves:` past 600 chars (up to 1015 observed),
+    // which silently dropped those three ambushes from this check's own report - false negatives, not passes.
+    const before = text.slice(Math.max(0, m.index - 2000), m.index);
     const names = [...before.matchAll(/name:\s*(?:'([^']+)'|"([^"]+)")/g)];
     const name = names.length ? (names[names.length - 1][1] ?? names[names.length - 1][2]) : null;
     if (!name) continue;   // not an ambush's own waves (shouldn't happen given the 600-char window)
@@ -60,8 +63,10 @@ for (const lv of LEVELS) {
 // haunted-coast.js renames a surviving 'wight' to 'lanternshade'/'bonecorsair' at runtime for lamplit only -
 // that substitution is intentional (level review, 2026-09-24), not a silent drop, so treat it as satisfied.
 const RENAMED = { lamplit: { wight: ['lanternshade', 'bonecorsair'] } };
-// left for their own branches to merge in (each already offends the same way on master; not this lane's to fix)
-const LEFT_TO_BRANCH = { hanging: 'claude/hanging2', spore: 'claude/sporewood2', spire: 'claude/monastery3', oreroad: 'claude/oreroad2 (in flight; Ore Road ambushes explicitly out of scope for this lane)' };
+// hanging/spore/spire/oreroad were excused here while their reworks were in flight on other branches; all four
+// are on master as of batch38 (claude/ambushfix, 2026-09-28), so the excuse list is empty - every ambush is
+// checked for real now.
+const LEFT_TO_BRANCH = {};
 function counts(arr) { const m = new Map(); for (const t of arr) m.set(t, (m.get(t) || 0) + 1); return m; }
 
 const rows = [];

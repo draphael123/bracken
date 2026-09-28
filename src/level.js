@@ -7985,9 +7985,13 @@ const AMBUSH = {
        an archer" pattern (Daniel, fewer-better-foes); the duplicate sprig/hound and sapper are cut (say so) to stay inside the four-foe rule. */
     waves: [[['archer', 201, null, { elite: true }], ['sprig', 176], ['hound', 196], ['shield', 195]]] }],
   spore: [{ name: 'THE UNDERCAP', row: 19, wallL: 135, wallR: 170, check: [132, 19],
-    /* left to claude/sporewood2 (in flight): spitcap/weaver are silently dropped here too, same ambush-listed offense, but this level is
-       being merged from its own branch - not touched here. */
-    waves: [[['sporeling', 142], ['sporeling', 163], ['lurker', 152]], [['shield', 160], ['spitcap', 166], ['weaver', 146], ['sporeling', 140]]] }],
+    /* ambush-listed (ambushfix, 2026-09-28, excuse removed now claude/sporewood2 is on master): same two-mini-wave trap as elsewhere -
+       singleAmbush() flattens both waves into one list and keeps only the captain (shield, found via AMBUSH_LEADERS since it heads the
+       last wave) plus the first three non-elite entries in that flattened order, so wave1's sporeling/sporeling/lurker filled all three
+       rest slots and spitcap/weaver (wave2, alongside the captain) never spawned. Collapsed to one wave with spitcap and weaver right
+       after the captain so both survive; the duplicate sporeling (listed 3x) is cut entirely (say so) in favor of keeping lurker for a
+       distinct third type, staying inside the four-foe rule. */
+    waves: [[['shield', 160], ['spitcap', 166], ['weaver', 146], ['lurker', 152]]] }],
   kings: [{ name: "THE KING'S ROAD", row: 13, wallL: 277, wallR: 308, check: [274, 12],
     /* ambush-listed: shield's {elite:true} here was vestigial - AMBUSH_CAPTAINS.kings='archer' always wins captaincy over a tuple's own elite
        flag, and singleAmbush()'s "rest" filter excludes any elite-flagged foe too, so shield could NEVER spawn either way (same trap as the
@@ -8001,15 +8005,22 @@ const AMBUSH = {
   hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
     /* THE CUTTER HAS A ROPE NOW (2026-09-28, coordinator follow-up on claude/hanging2): 'bridge: 50' names the room's own L.bridges span
        (50-56, row 66, in hangingVillage() below), the same rule at work mid-fight, not just on the road or in the boss.
-       ORDER MATTERS HERE: singleAmbush() (src/ambush.js) flattens every wave into one, keeps the elite as the room's captain, and takes
-       only the FIRST three of what is left, in the order they appear. The old order (two sprigs and a snuffer, THEN the brute, archer and
-       cutter) meant the cutter - and the archer beside it - never actually spawned: the room's real, live roster has always been the
-       brute plus the first three names, and the cutter used to come fourth. It is moved up here so it is one of the three that survive;
-       the second sprig gives up its place instead (still 4 bodies total, same as before: one elite, three minions). */
-    waves: [[['sprig', 48], ['snuffer', 58]], [['brute', 57, null, { elite: true }], ['cutter', 49, null, { bridge: 50 }], ['archer', 66], ['sprig', 65]]] }],
+       ambushfix (2026-09-28): the hanging2 fix above only reordered CUTTER within its own sub-array - but singleAmbush() (src/ambush.js)
+       flattens ALL waves into one list and takes the first three non-elite entries of THAT list, in order across every sub-array, not
+       within one. The first mini-wave (sprig, snuffer) still preceded brute's whole wave, so the real flattened order stayed
+       sprig, snuffer, brute(elite), cutter, archer, sprig - archer was still 4th non-elite and still never spawned (ambush-listed caught
+       it). Collapsed to one wave with cutter and archer immediately after the elite so both are guaranteed rest slots; the room only has
+       3 rest slots for 4 remaining listed types (sprig x2, snuffer, cutter, archer = 4 distinct after brute), so the duplicate sprig is
+       cut entirely (say so) in favor of keeping snuffer for variety alongside the bridge cutter and archer. */
+    waves: [[['brute', 57, null, { elite: true }], ['cutter', 49, null, { bridge: 50 }], ['archer', 66], ['snuffer', 58]]] }],
   spire: [{ name: 'THE CLOISTER', row: 99, wallL: 40, wallR: 74, check: false,
-    /* left to claude/monastery3 (in flight): bat/harpy are silently dropped here too, same ambush-listed offense, not touched here. */
-    waves: [[['fledgling', 46], ['fledgling', 66], ['rockgoblin', 56], ['bat', 52, 94]], [['rockgoblin', 64], ['troll', 48], ['harpy', 56, 93], ['fledgling', 68]]] }],
+    /* ambush-listed (ambushfix, 2026-09-28, excuse removed now claude/monastery3 is on master): same two-mini-wave trap - troll is captain
+       (only type in AMBUSH_LEADERS here, found via the wave-at(-1) fallback), but wave1's fledgling/fledgling/rockgoblin filled all three
+       rest slots in flattened order before wave2's bat/harpy were ever reached. Collapsed to one wave with bat and harpy right after the
+       captain so both survive; rockgoblin is cut entirely (say so - it's already this room's own wandering foe just outside the ambush,
+       R.ent('rockgoblin', 32, 195) in spire's build above, so a second copy here was redundant) and the duplicate fledgling is trimmed to
+       one, staying inside the four-foe rule. */
+    waves: [[['troll', 48], ['bat', 52, 94], ['harpy', 56, 93], ['fledgling', 46]]] }],
   /* moor: THE CAIRN RIDGE is built in galeMoor() in its final columns (docs/briefs/gale-moor-rework.md) */
   storm: [{ name: 'THE MARKET SQUARE', row: 31, wallL: 98, wallR: 138, check: false,   /* the square among the stalls (facades.push([98,138,...]) in src/stormhold-town.js); this rework's real bounds, replacing the pre-merge placeholder */
     /* ambush-listed: cutter was listed but never spawned (budget spent on a duplicate sprig). Restored; the duplicate sprig and shield/archer
