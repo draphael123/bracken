@@ -11567,7 +11567,7 @@ function clearRunes(e) { const R = MG && MG.A; if (!R) return; for (const r of R
         cuts, not a free combo. Each blow is worth ARCH.openMul while he is open, so the fight is about as many readings as it
         was, each one shorter and each one earned. His health is as it was.
    ============================================================================================================ */
-const ARCH = { reseal: 6, wardLen: 22, wardAgain: 4.5, stackH: 5, slide: 0.7, open1: 2.6, open2: 3.2, openHits: 2, openMul: 3, hitGap: 0.15,
+const ARCH = { reseal: 6, wardLen: 22, wardAgain: 4.5, stackH: 5, slide: 0.7, open1: 2.6, open2: 3.2, openHits: 2, openMul: 4, hitGap: 0.15,
   roomFirst: 2.5, roomEvery: 6.5, pairFirst: 4, pairEvery: 5.5, pairGap: 48, crushW: 26, books: 3, bookGap: 0.3, bookSpeed: 210, bookFrom: 180, glyphR: 16, flipBack: 1.6,
   tell: { crush: 0.9, books: 0.8, glyph: 0.9, pair: 0.9 } };
 const archRunesUp = R => !!R && R.runes.some(r => r.hp > 0);
