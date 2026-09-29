@@ -87,3 +87,53 @@ difficult, boss music, he blocks sections until you hit him with fire walls".
 5. **Seal difficulty**: seals 2 and 3 are "tested" only by where the brazier stands (a two-tile stone under his fire; the failing step). Want more
    (a brazier he douses, or one down behind you)?
 6. **The bot pilot** cannot play the realms. Worth teaching bossLab the three openings so pilots stay a tuning tool for him? (Recommend yes, small.)
+
+# undead4 (follow-up round, same branch)
+
+Daniel decided 2026-09-29: KEEP realms on the carpet, fully warded until the opening, the fire opening as built. CHANGE 1-3 below.
+
+## What changed
+- **CHANGE 1 - the brazier's fire burns the hero too** (src/spiral-chase.js `SEAL`). Struck, a brazier FLARES for 0.8 s (the tell: it
+  blazes up), then its wall rolls up the stair. Where it passes you it burns you once, 12 damage, no shield turns it. It stands 34 px, under
+  every hero's jump: feet above its top as it goes by and it misses. It still climbs the ward, breaks it and burns him. It climbs the ward's
+  own face (its middle), so nobody standing at the ward is caught by the climb.
+- **CHANGE 2 - seal 3 (THE LAST STAIR)**. Come within 56 px of its brazier and he SNUFFS it: a told `snuffTell` (0.9 s, a thread of his green
+  light from his hand to the bowl, "HE REACHES FOR THE BRAZIER"; no mark - it is no blow at you), once, from wherever he is and whatever he was
+  casting. The dark bowl smokes and will not light. A SECOND brazier stands behind you on the flight (x98, on the step before the failing one);
+  its fire carries up the stair past the dark one to the ward. Seal 2 is unchanged (placement only).
+- **CHANGE 3 - the bot pilot learns the realms and the stair** (src/lab.js). On the carpet, in a realm it no longer closes on him (he is
+  warded): FIRE - it keeps to dark tiles, gets over or under the wall going out and DODGES THROUGH it coming back; ICE - it sidesteps cracked
+  icicles and waits under the ceiling at the icicle over his shell, then swings; POISON - it stays over the mire and out of the spore rings, and
+  while the beam is cut goes down to the vent and swings. A new stair bot, `chaseClimb`, knows the flights as a list: it jumps off the very lip
+  for the next step, strikes each seal's brazier, jumps its fire, goes back to the second brazier when the first is snuffed, waits at a
+  standing ward, and recovers from a fall. tools/tower-chase.mjs and tools/archmage-pilot.mjs both use it (the pilot now climbs the stair per
+  hero after the fights; STAIR=0 skips it).
+
+## Checks
+- tower-chase extended: in Node the brazier's fire burns you once, unblockable, only after its flare, and a jump clears it; only the third seal
+  has a second brazier, standing behind the first where you stand; he snuffs the first as you come at it, told for its whole 0.9 s, once, and it
+  will not light; the second lights and its fire carries past the dark one and breaks the ward. In the page, the stair bot climbs past all three
+  seals and he snuffs the last one on the way; and EVERY HERO (knight, warden, pyro, paladin, pirate, reaper, geomancer), no god mode, climbs to
+  the carpet past all three seals. RED on the previous commit (c725e87): "standing in its road, the brazier's fire does not burn you".
+- Green: tower-chase, undead-realms, tells, boss-fight-end, boss-openings, checkpoint-gaps, checkpoints, death-cost, architecture, skins,
+  dangling-paths, slopes-trace (unchanged), npc-removal, undead-foes, tower-ascent, tower-collapse, tower-cutouts, tower-flyers, tower-hall,
+  archmage-rings, archmage-room, untold-told (the crow passed this run).
+
+## Numbers (bot pilots, salt 1, REFILL, 150 s cap; not tuned)
+- The fight: knight WIN 90.4 s (all three realm openings: scorched, shattered, vented), warden timeout 19% left (fire and ice openings, not the
+  vent in time), pyro WIN 93.9 s (all three). Round undead3's realm-blind bot: 0/3 (29 / 48 / 42% left); before the realms: 2/3 (57.9 s, warden
+  16% left, 113.4 s).
+- The stair (no god mode, health held up): knight 78 s / 48 hp taken / burnt 3 times, warden 78 s / 48 / 3, pyro 68 s / 48 / 3; all three at
+  the top with all three wards burnt and the last brazier snuffed. In tower-chase's all-hero run: paladin 91 s / 35 / 1, pirate 80 s / 32 / 2,
+  reaper 54 s / 0 / 0, geomancer 91 s / 67 / 3. The bot is caught by the fire more than a hand should be (its jump over the wall is timed off a
+  fixed distance); the Node rig proves a jump clears it.
+
+## UNVERIFIED
+- No hands on it. The paladin's 3-tile stair gaps are within reach only from the very lip (measured: from a standing start on a 2-tile stone
+  every hero lands, the paladin 0.2 tiles from the far edge of the next) - this is the stair as it was built, not this round's change.
+
+## QUESTIONS FOR DANIEL
+1. The brazier's fire: 12 damage and a 0.8 s flare. Recommendation: keep; if it reads as unfair in hand, lengthen the flare, not lower the
+   damage.
+2. His snuff is once per life on the stair (a death resets it with the stair). Keep, or once ever?
+3. The paladin clears the stair's 3-tile gaps by a hair (pre-existing). Widen nothing now; flag if it bites in hand?
