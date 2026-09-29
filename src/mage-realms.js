@@ -36,7 +36,8 @@ export const REALM = {
   bolt: { v: 150, fire: 14, ice: 12, tellFire: 0.9, tellIce: 0.9 },
   fire: { n: 7, tell: 1.0, burn: 0.8, every: 3.4, dmg: 16, wallTell: 1.0, wallV: 120, wallH: 64, track: 45, trackBack: 140, wallDmg: 18, cast: 2.4,
     patterns: [[0, 2, 4, 6], [1, 3, 5], [0, 1, 2], [4, 5, 6], [0, 3, 6], [1, 2, 4, 5], [2, 3, 4]] },
-  ice: { n: 7, crack: 0.9, fallV: 380, every: 1.7, regrow: 3.0, dmg: 14, drift: 42, grip: 0.3, cast: 2.4, len: 20 },
+  ice: { n: 7, crack: 0.9, fallV: 380, every: 1.7, regrow: 3.0, dmg: 14, drift: 42, grip: 0.3, cast: 2.4, len: 20,
+    home: 40, homeV: 240, hitW: 22 },   /* claude/archfix (Daniel: "easier to hit him with"): an icicle struck within home px of him falls ONTO him (it homes at homeV), and it breaks his shell anywhere within hitW of his middle */
   poison: { rise: 5, cap: 0.55, bite: 10, warm: 0.12, tick: 0.6, lift: 170, sporeTell: 1.1, sporeLife: 2.6, sporeR: 26, exposed: 2.4, every: 4.2, drain: 60, cast: 2.2 },
   /* claude/archfix (Daniel played both archmages, 2026-09-29: "these need to be more obvious" - in the fire realm he could not tell how to
      hurt him). EACH REALM SAYS ITS OPENING IN PLAIN WORDS: a banner every time you are pulled in (cueLen s; never the 2-per-save hint cap),
@@ -64,7 +65,7 @@ export function enterRealm(e, A, P, c) {
   const i = e.realmN || 0, kind = REALM.kinds[i], R = { kind, i, t: 0, A };
   const b = realmBox(null, A);
   if (kind === 'fire') Object.assign(R, { tiles: [], ph: 'wait', phT: 1.6, pat: 0, lit: [], wall: null, castT: 1.4, nextWall: true });
-  if (kind === 'ice') { const n = REALM.ice.n; R.icicles = []; for (let k = 0; k < n; k++) R.icicles.push({ x: b.x0 + (k + 0.5) * REALM.w / n, st: 'hang', t: 0, y: 0 });
+  if (kind === 'ice') { const n = REALM.ice.n; R.icicles = []; for (let k = 0; k < n; k++) { const x = b.x0 + (k + 0.5) * REALM.w / n; R.icicles.push({ x, x0: x, st: 'hang', t: 0, y: 0 }); }
     Object.assign(R, { dropT: 1.4, castT: 1.8, goX: b.x1 - 90, goT: 2.5 }); }
   if (kind === 'poison') Object.assign(R, { mire: A.floor - 26, mire0: A.floor - 26, burnT: 0, vent: { x: b.x0 + REALM.w * 0.72 }, sporeT: 2.2, castT: 1.2, exposedT: 0, spores: [], clouds: [], drain: false });
   R.cueT = REALM.cueLen; R.wardT = 0;   /* the banner naming its opening, every time (drawn by main.js drawRealmBanner) */
@@ -74,8 +75,8 @@ export function enterRealm(e, A, P, c) {
   c.pull && c.pull(kind);
 }
 function leaveRealm(e, c) { const kind = e.realm.kind; e.realm = null; e.realmN = (e.realmN || 0) + 1; e.realmRest = REALM.rest; e.shots = []; e.clouds = [];
-  e.mode = 'hover'; e.modeT = 0.6; c.leave && c.leave(kind); }
-function open(e, mode, c, msg) { e.mode = mode; e.modeT = REALM.openT; e.open = REALM.openT; e.shots = []; if (e.realm) e.realm.cueT = 0; c.say(msg, true); c.sound('crack'); }
+  e.mode = 'hover'; e.modeT = 0.6; c.sound && c.sound('golemChime'); c.leave && c.leave(kind); }
+function open(e, mode, c, msg) { e.mode = mode; e.modeT = REALM.openT; e.open = REALM.openT; e.shots = []; if (e.realm) e.realm.cueT = 0; c.say(msg, true); c.sound('crack'); c.sound('sting'); }   /* (claude/archfix: a sting as he opens, a chime as the window shuts) */
 /* A BLOW HIS WARD TURNS (main.js hurtEnemy0 asks): the banner comes back and his shell flares - never a silent nothing. Returns the word */
 export function realmWardHit(e) { const R = e && e.realm; if (!R) return null; R.cueT = Math.max(R.cueT || 0, REALM.cueAgain); R.wardT = 0.35; R.wardSayT = 0.9; return 'WARDED'; }
 /* WHAT THE SCREEN SHOWS OF THE OPENING RIGHT NOW (the cues drawRealmFx draws, and what the tests read):
@@ -89,7 +90,7 @@ export function realmCue(e, P) {
     if (W && W.back) { const ahead = x => (x - W.x) * W.d;
       const him = ahead(e.x) > -12 ? ahead(e.x) : Infinity, you = !P.dead && ahead(P.x) > -8 ? ahead(P.x) : Infinity;   /* (it hunts your height, and he keeps yours: whichever is nearer in its road is the one it meets) */
       out.first = him === Infinity && you === Infinity ? null : him <= you ? 'him' : 'you'; } }
-  if (R.kind === 'ice') { let best = null; for (const q of R.icicles) if (q.st === 'hang' && Math.abs(q.x - e.x) < 16 && (!best || Math.abs(q.x - e.x) < Math.abs(best.x - e.x))) best = q; out.icicle = best; }
+  if (R.kind === 'ice') { let best = null; for (const q of R.icicles) if (q.st === 'hang' && Math.abs(q.x - e.x) < REALM.ice.home && (!best || Math.abs(q.x - e.x) < Math.abs(best.x - e.x))) best = q; out.icicle = best; }
   if (R.kind === 'poison') out.vent = R.exposedT > 0 && !out.open;
   return out;
 }
@@ -141,11 +142,11 @@ export function updateRealm(e, dt, c) {
       if (best && Math.abs(best.x - P.x) < REALM.w / I.n) { best.st = 'crack'; best.t = I.crack; c.sound('crack'); } }
     for (const q of R.icicles) {
       if (q.st === 'crack') { q.t -= dt; if (q.t <= 0) { q.st = 'fall'; q.y = b.y0 - 6 + I.len; } }
-      else if (q.st === 'fall') { q.y += I.fallV * dt;
+      else if (q.st === 'fall') { q.y += I.fallV * dt; if (q.struck && q.home) { const dx = e.x - q.x; q.x += Math.sign(dx) * Math.min(Math.abs(dx), I.homeV * dt); }   /* struck near him, it falls onto him */
         if (!q.struck && !q.hitP && !P.dead && Math.abs(P.x - q.x) < 10 && q.y > py - 12 && q.y - I.len < py + 10) { q.hitP = true; hurtBy(c, q.x, q.y, I.dmg, true, 'icicle'); }
-        if (q.struck && Math.abs(e.x - q.x) < 16 && q.y > e.y - 44 && q.y - I.len < e.y) { q.st = 'gone'; q.t = I.regrow; c.sound('crack'); open(e, 'shattered', c, 'THE ICICLE BREAKS HIS WARD. HE IS OPEN'); return; }
+        if (q.struck && Math.abs(e.x - q.x) < I.hitW && q.y > e.y - 50 && q.y - I.len < e.y) { q.st = 'gone'; q.t = I.regrow; c.sound('crack'); open(e, 'shattered', c, 'THE ICICLE BREAKS HIS WARD. HE IS OPEN'); return; }
         if (q.y > b.y1 + 8) { q.st = 'gone'; q.t = I.regrow; c.sound('crack'); } }
-      else if (q.st === 'gone') { q.t -= dt; if (q.t <= 0) { q.st = 'hang'; q.struck = false; q.hitP = false; } } }
+      else if (q.st === 'gone') { q.t -= dt; if (q.t <= 0) { q.st = 'hang'; q.struck = false; q.home = false; q.hitP = false; q.x = q.x0 ?? q.x; } } }
     if (!casting && e.mode === 'rhover') { R.goT -= dt; if (R.goT <= 0) { R.goT = 2.5 + (c.rnd || Math.random)() * 1.5; R.goX = R.icicles[Math.floor((c.rnd || Math.random)() * R.icicles.length)].x; }
       const [tx, ty] = keep(R.goX, b.y0 + (b.y1 - b.y0) * 0.66), dx = tx - e.x, dy = ty - e.y, d = Math.hypot(dx, dy); if (d > 2) { e.x += dx / d * Math.min(d, I.drift * dt); e.y += dy / d * Math.min(d, I.drift * dt); }
       e.face = Math.sign(P.x - e.x) || e.face; R.castT -= dt;
@@ -173,7 +174,7 @@ export function strikeRealm(e, hb, seen, c) {
   const R = e && e.realm; if (!R || !hb || OPEN.has(e.mode)) return null; const b = c.box;
   const over = (x0, x1, y0, y1) => hb.l < x1 && hb.r > x0 && hb.t < y1 && hb.b > y0;
   if (R.kind === 'ice') for (const q of R.icicles) { if (q.st !== 'hang' || seen.has(q) || !over(q.x - 6, q.x + 6, b.y0 - 16, b.y0 + REALM.ice.len)) continue;
-    seen.add(q); q.st = 'fall'; q.struck = true; q.y = b.y0 - 6 + REALM.ice.len; c.sound('crack'); c.say('IT FALLS', false); return 'icicle'; }
+    seen.add(q); q.st = 'fall'; q.struck = true; q.home = Math.abs(q.x - e.x) < REALM.ice.home; q.y = b.y0 - 6 + REALM.ice.len; c.sound('crack'); c.say('IT FALLS', false); return 'icicle'; }
   if (R.kind === 'poison') { const v = R.vent; if (seen.has(v) || !over(v.x - 14, v.x + 14, R.mire - 14, R.mire + 10)) return null; seen.add(v);
     if (R.exposedT > 0) { R.drain = true; R.clouds = []; R.spores = []; open(e, 'vented', c, 'THE VENT BURSTS UP HIS BEAM. HE IS OPEN'); return 'vent'; }
     c.say('THE MIRE FEEDS HIM: IT HOLDS', false); c.sound('clank'); return 'held'; }
@@ -267,6 +268,11 @@ export function drawRealmFx(g, e, cx, cy, time, P, T) {   /* P: the hero (the fi
       g.strokeStyle = 'rgba(143,209,96,0.6)'; g.beginPath(); g.ellipse(ex, ey, 16, 26, 0, 0, Math.PI * 2); g.stroke(); }
     for (const s of R.spores) { const r = Q.sporeR * (0.6 + 0.4 * ((time * 4) % 1)); g.strokeStyle = Math.floor(time * 10) % 2 ? '#ff6b6b' : '#a6e04a'; g.lineWidth = 1; g.beginPath(); g.arc(Math.round(s.x - cx), Math.round(s.y - cy), r, 0, Math.PI * 2); g.stroke(); }   /* THE TELL: rings where they will bloom */
     for (const cl of R.clouds) { const a = Math.min(1, cl.t) * 0.5; g.fillStyle = 'rgba(110,170,60,' + a.toFixed(2) + ')'; g.beginPath(); g.arc(Math.round(cl.x - cx), Math.round(cl.y - cy), cl.r + Math.sin(time * 3 + cl.x) * 2, 0, Math.PI * 2); g.fill(); } }
+  /* WARDED, THE REST OF THE TIME (claude/archfix): a ring of his ward's runes turning round him in the realm's colour, and the word dim at
+     his feet - so the moment it is gone (OPEN) reads as a change */
+  if (!OPEN.has(e.mode) && e.alive) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy) - 22, C = REALM.col[R.kind];
+    for (let i = 0; i < 10; i++) { const a = time * 1.6 + i * Math.PI / 5; g.fillStyle = i % 2 ? C[0] : C[1]; g.fillRect(x + Math.round(Math.cos(a) * 21) - 1, y + Math.round(Math.sin(a) * 31) - 1, 2, 2); }
+    if (T) T('WARDED', x, y + 36, C[2], 6); }
   /* A BLOW HIS WARD TURNED (realmWardHit): his ward flares round him in the realm's colour for a breath - the clang has a shape */
   if (R.wardT > 0 && !OPEN.has(e.mode) && e.alive) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy) - 22, k = R.wardT / 0.35, C = REALM.col[R.kind];
     g.globalAlpha = Math.min(1, 0.4 + k); g.strokeStyle = C[1]; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y, 19 + (1 - k) * 8, 29 + (1 - k) * 8, 0, 0, Math.PI * 2); g.stroke();

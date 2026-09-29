@@ -25487,6 +25487,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (e.breakFlash > 0 && SET.flashes && sprSet.white) for (const [ox, oy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, 1], [-1, 1], [1, -1]]) drawSet(sprSet, null, frame, dx0 + ox, dy0 + oy, ps.face, true, pSX, pSY, 1, pRot);
       drawSet(sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot);
       if (!(e.flash > 0)) drawWarm('tint', sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, e.x, e.y - e.h / 2);
+      if (e.alive && e.t === 'undeadmage' && e.realm) { const op = e.open > 0; drawTinted(sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, op ? (Math.floor(time * 8) % 2 ? '#ffd36b' : '#ff9b2c') : '#6a7488', op ? 0.65 : 0.4); e.realm.tint = op ? 'open' : 'warded'; }   /* IN ONE OF HIS REALMS his whole sprite says it: gold and flashing while OPEN, cold and grey while WARDED (claude/archfix) */
       if (e.alive && e.frozen > 0) drawTinted(sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, '#bfe6f5', 0.45 + 0.1 * Math.sin(time * 6));   /* held: pale, and still */
       if (e.alive && e.relT > 0 && !e.harmless && !FLYERS.has(e.t)) drawFoeSmear(e, bigF, cx, cy);
       /* HEAVY FEET: the big ones put a little of the road up every time a foot comes down */

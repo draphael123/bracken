@@ -35,7 +35,7 @@ function rig(o = {}) {
   const log = { hits: [], says: [], pulls: [], leaves: [], tells: [], t: 0 };
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const c = () => ({ P, A, box: e.realm ? MR.realmBox(e, A) : carpetBox(A, 0), rnd, hit: (x, y, d, hard, blow) => log.hits.push({ t: log.t, d, hard, blow }), venom: () => { log.venom = (log.venom || 0) + 1; },
-    say: (m, h) => log.says.push(m), sound: () => {}, dodging: () => P.dodge > 0, carry: () => {}, pull: k => log.pulls.push([log.t, k]), leave: k => log.leaves.push([log.t, k]) });
+    say: (m, h) => log.says.push(m), sound: k => (log.sounds = log.sounds || []).push([log.t, k]), dodging: () => P.dodge > 0, carry: () => {}, pull: k => log.pulls.push([log.t, k]), leave: k => log.leaves.push([log.t, k]) });
   let lastMode = '', lastPh = '';
   const step = (dt = 1 / 60) => { const was = e.mode; updateUndeadMage(e, dt, c()); log.t += dt; P.vy = 0;
     if (e.mode !== lastMode && /Tell$/.test(e.mode)) log.tells.push([log.t, e.mode]); lastMode = e.mode;
@@ -88,6 +88,8 @@ const fireOut = {};
   assert.ok(scorched > 0, 'dodged through on its way back, his wall does not run on into him: ' + JSON.stringify(s.log.says.slice(-5)));
   assert.ok(!MR.realmWarded(s.e) && s.e.open > 2, 'scorched, he is not open');
   assert.ok(MR.realmCue(s.e, s.P).open, 'scorched, the cue does not say he is open');
+  assert.ok((s.log.sounds || []).some(([t, k]) => k === 'sting' && Math.abs(t - scorched) < 0.05), 'he opens without a sting');
+  { const t1 = s.log.t; s.run(REALM.openT + 0.3); assert.ok((s.log.sounds || []).some(([t, k]) => k === 'golemChime' && t > t1), 'the window shuts without a sound'); }
   { const v = intoRealm(0); v.run(REALM.cueLen + 0.2); assert.equal(MR.realmCue(v.e, v.P).bannerT, 0, 'the banner never goes'); }
   /* READ: the wall coming back shows its road - to him when you are behind him, to you when you are in it */
   { const u = intoRealm(0), U = u.e.realm; let saw = {}; u.run(20, () => { const W = U.wall; if (W && !W.back) u.P.y = W.y > (b.y0 + b.y1) / 2 ? b.y0 + 30 : b.y1 - 10;
@@ -95,7 +97,7 @@ const fireOut = {};
         u.P.x = (saw.you ? u.e.x + W.d * 40 : u.P.x); } return saw.him && saw.you; });
     assert.equal(saw.you, 'you', 'in the road of the returning wall, the cue does not say it will break on you: ' + JSON.stringify(saw));
     assert.equal(saw.him, 'him', 'behind him, the cue does not say the wall will burn him: ' + JSON.stringify(saw)); }
-  s.run(REALM.openT + 0.3); assert.ok(!s.e.realm && s.log.leaves.length === 1 && s.log.leaves[0][1] === 'fire' && s.e.realmN === 1, 'the opening runs out and the fire realm does not tear back to his hall');
+  assert.ok(!s.e.realm && s.log.leaves.length === 1 && s.log.leaves[0][1] === 'fire' && s.e.realmN === 1, 'the opening runs out and the fire realm does not tear back to his hall');
   s.e.hp = Math.floor(HP * 0.5); let back = -1; const t0 = s.log.t; s.run(REALM.rest + 6, () => { if (s.e.mode === 'realmTell') { back = s.log.t - t0; return true; } });
   assert.ok(back >= REALM.rest - 0.5, 'the next realm comes before he has had ' + REALM.rest + ' s in his hall: ' + back); }
 // ---- ICE ----
@@ -116,6 +118,11 @@ const fireOut = {};
   assert.ok(!s.log.hits.some(h => h.blow === 'icicle'), 'the icicle you struck fell on you');
   S.goT = 99; const over = S.icicles.find(k => k.st === 'hang'); S.goX = over.x; s.run(8, () => Math.abs(s.e.x - over.x) < 2);
   assert.equal(MR.realmCue(s.e, s.P).icicle, over, 'the icicle over his shell is not the one the cue marks');
+  /* EASIER (Daniel): one struck a stride beside his shell (26 px off his middle, not over him; the next one is 34 px off) still falls onto him */
+  { const h = intoRealm(1), H = h.e.realm, hb = MR.realmBox(h.e, A); H.goT = 99; H.castT = 99; const q = H.icicles[3]; H.goX = q.x + 26; h.run(8, () => Math.abs(h.e.x - (q.x + 26)) < 1); H.goX = h.e.x;
+    assert.equal(MR.realmCue(h.e, h.P).icicle, q, 'the icicle a stride beside him is not marked as the one to strike');
+    MR.strikeRealm(h.e, { l: q.x - 8, r: q.x + 8, t: hb.y0 - 20, b: hb.y0 }, new Set(), h.c()); h.run(2, () => h.e.mode === 'shattered');
+    assert.equal(h.e.mode, 'shattered', 'an icicle struck a stride beside his shell does not fall onto him: ' + [h.e.mode, Math.round(h.e.x - q.x)]); }
   MR.strikeRealm(s.e, { l: over.x - 8, r: over.x + 8, t: sb.y0 - 20, b: sb.y0 }, new Set(), s.c()); let t = 0; s.run(2, () => { t++; return s.e.mode === 'shattered'; });
   assert.equal(s.e.mode, 'shattered', 'an icicle struck over him does not break his shell: ' + [s.e.mode, s.e.x, over.x]);
   assert.ok(s.e.open > 2 && MAGE.openMul >= 2, 'shattered, he is not open'); s.run(REALM.openT + 0.3); assert.ok(!s.e.realm && s.e.realmN === 2, 'the ice realm does not tear back'); }
@@ -151,13 +158,13 @@ try {
      for(let i=0;i<900&&!b.realm;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);if(b.mode==='realmTell'){if(!told)BK.step(1);told=true;row.mark=BK.markOf?BK.markOf(b):'';}}
      row.told=told;row.kind=b.realm&&b.realm.kind;if(!b.realm){out.realms.push(row);break;}
      const R=b.realm,box=MR.realmBox(b,A);BK.sim(20);BK.step(2);   /* (drawn: the realm's room and its hazards, over the real renderer) */row.held=BK.P.x>=box.x0-1&&BK.P.x<=box.x1+1;row.grip=BK.P.carpet&&BK.P.carpet.grip;
-     {const t=rec(),cue=MR.REALM.cue&&MR.REALM.cue[R.kind];row.banner=!!cue&&t.some(x=>x.s===cue);row.bannerDrawn=R.bannerDrawn;}   /* READ: its opening in plain words, on the screen */const h0=b.hp;BKT.hurtEnemy(b,40,b.x-10,false);row.warded=b.hp===h0;{const t=rec();row.wardSaid=t.some(x=>x.s==='WARDED');row.cueAgain=+(R.cueT||0).toFixed(2);}
+     {const t=rec(),cue=MR.REALM.cue&&MR.REALM.cue[R.kind];row.banner=!!cue&&t.some(x=>x.s===cue);row.bannerDrawn=R.bannerDrawn;row.tintWard=R.tint;}   /* READ: its opening in plain words, on the screen */const h0=b.hp;BKT.hurtEnemy(b,40,b.x-10,false);row.warded=b.hp===h0;{const t=rec();row.wardSaid=t.some(x=>x.s==='WARDED');row.cueAgain=+(R.cueT||0).toFixed(2);}
      /* its opening, with the game's own swing */
      if(R.kind==='fire'){let n=0;for(;n<60*30&&b.mode!=='scorched';n++){BK.P.hp=BK.P.maxHp;const W=R.wall;if(W&&W.back&&!row.cue){rec();row.cue=R.cueDrawn;}if(W&&W.back&&Math.abs(W.x-BK.P.x)<40&&!(BK.P.dodge>0)&&!W.hitP){BK.P.face=Math.sign(W.x-BK.P.x)||1;BK.press('dodge');}BK.sim(1);}}
      if(R.kind==='ice'){R.goT=99;const q=R.icicles.find(q=>q.st==='hang'&&Math.abs(q.x-b.x)<200)||R.icicles[3];R.goX=q.x;for(let n=0;n<600&&Math.abs(b.x-q.x)>2;n++){BK.P.hp=BK.P.maxHp;BK.sim(1);}rec();row.cue=R.cueDrawn;
        for(let n=0;n<240&&b.mode!=='shattered';n++){BK.P.hp=BK.P.maxHp;BK.P.x=q.x-10;BK.P.y=box.y0+2;BK.P.vx=BK.P.vy=0;BK.P.face=1;if(n%20===0&&q.st==='hang')BK.press('atk');BK.sim(1);}}
      if(R.kind==='poison'){for(let n=0;n<60*15&&b.mode!=='vented';n++){BK.P.hp=BK.P.maxHp;if(R.exposedT>0&&!row.cue){rec();row.cue=R.cueDrawn;}if(!(R.exposedT>0)&&!row.dark){rec();row.dark=R.cueDrawn;}if(R.exposedT>0){BK.P.x=R.vent.x-12;BK.P.y=R.mire+2;BK.P.vx=BK.P.vy=0;BK.P.face=1;if(n%15===0)BK.press('atk');}else{BK.P.y=Math.min(BK.P.y,R.mire-40);}BK.sim(1);}}
-     row.opened=b.mode;{const t=rec();row.openCue=R.cueDrawn;row.openSaid=t.some(x=>x.s==='OPEN x2');row.openBanner=R.bannerDrawn;}const h1=b.hp;BKT.hurtEnemy(b,20,b.x-10,false);row.doubled=h1-b.hp;row.floorHeld=b.hp>=MR.REALM.at[k+1]*b.hp0-1||k===2;
+     row.opened=b.mode;{const t=rec();row.openCue=R.cueDrawn;row.openSaid=t.some(x=>x.s==='OPEN x2');row.openBanner=R.bannerDrawn;row.tintOpen=R.tint;}const h1=b.hp;BKT.hurtEnemy(b,20,b.x-10,false);row.doubled=h1-b.hp;row.floorHeld=b.hp>=MR.REALM.at[k+1]*b.hp0-1||k===2;
      for(let n=0;n<60*12&&b.realm;n++){BK.P.hp=BK.P.maxHp;BK.sim(1);}row.back=!b.realm&&b.realmN===k+1;row.after=[b.mode,b.modeT,b.realmN,!!b.realm];
      out.realms.push(row);}
    b.open=9;b.mode='gather';b.modeT=3;BKT.hurtEnemy(b,99999,b.x-10,false);BK.sim(500);out.dead=!b.alive;out.door=!!(BK.L.sanctum&&BK.L.sanctum.open);out.fightOver=!BK.bossActive;
@@ -172,6 +179,7 @@ r.realms.forEach((q, k) => { const K = REALM.kinds[k];
   assert.ok(q.banner && q.bannerDrawn === REALM.cue[K], K + ': entering the realm, its opening is not on the screen in plain words: ' + JSON.stringify([q.banner, q.bannerDrawn]));
   assert.ok(q.wardSaid && q.cueAgain >= REALM.cueAgain - 0.1, K + ': a warded blow is silent (no WARDED, or the cue does not come back): ' + JSON.stringify([q.wardSaid, q.cueAgain]));
   assert.ok({ fire: /^fire:(you|him)$/, ice: /^ice:icicle$/, poison: /^poison:lit$/ }[K].test(q.cue || ''), K + ': the cue is not drawn in the world when it matters: ' + q.cue);
+  assert.ok(q.tintWard === 'warded' && q.tintOpen === 'open', K + ': his sprite does not change between WARDED and OPEN: ' + JSON.stringify([q.tintWard, q.tintOpen]));
   if (K === 'poison') assert.equal(q.dark, 'poison:dark', 'while he feeds, the vent is not drawn dark');
   assert.ok(q.openCue === 'open:' + q.opened && q.openSaid && q.openBanner === 'open', K + ': open, he does not read as open (drawn, OPEN x2, the banner): ' + JSON.stringify([q.openCue, q.openSaid, q.openBanner]));
   assert.equal(q.opened, { fire: 'scorched', ice: 'shattered', poison: 'vented' }[K], K + ': its opening, struck in the game, does not open him: ' + JSON.stringify(q));
