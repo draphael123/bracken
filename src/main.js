@@ -5163,7 +5163,7 @@ function killerLine(k) { const mark = !k.rule ? '' : '   ' + (k.red ? (SET.color
    it lies at his arena door. Die again before you get it and it is gone. A shrine banks everything you carry. Each hero has his own. */
 let dcSess = 0;   /* which start of a wood this is: coins dropped in this start go back into this start's count, older ones into the purse */
 const dcHid = b => { if (b && !Object.getOwnPropertyDescriptor(b, 'carrier')) Object.defineProperties(b, { carrier: { value: null, writable: true, enumerable: false }, sess: { value: -1, writable: true, enumerable: false }, name: { value: '', writable: true, enumerable: false }, where: { value: 'spot', writable: true, enumerable: false }, vy: { value: 0, writable: true, enumerable: false }, falling: { value: false, writable: true, enumerable: false }, chk: { value: 0, writable: true, enumerable: false } }); return b; };   /* (not enumerable: a bundle is SAVED, and a saved bundle must never hold the creature that carries it) */
-const carryOf = p => p.carry || (p.carry = emptyCarry());
+const carryOf = p => p.dcCarry || (p.dcCarry = emptyCarry());
 const dcGot = n => { carryOf(P).coins += n; };
 const bundleOf = p => (p === players[0] ? (PROG.deathCost && PROG.deathCost.bundle) : p.bundle) || null;
 const dcSet = (p, b) => { if (p === players[0]) { PROG.deathCost = PROG.deathCost || freshDeathCost(); PROG.deathCost.bundle = b; } else p.bundle = b; };
@@ -5188,18 +5188,18 @@ function dcSpot(p) {
   return { x: checkpoint.x, y: checkpoint.y };
 }
 const dcPop = (x, y, txt, col) => { if (SET.colorSafe && col === '#ff9a5c') col = '#c080ff'; nums.push({ x, y, txt, col, life: 1.1, vy: -26 }); };
-const dcMirror = () => { if (!PROG.deathCost || !players || !players[0]) return; const c = players[0].carry; PROG.deathCost.carried = { xp: c && c.xp > 0 ? { [hero()]: c.xp } : {}, purse: c ? c.purse : 0 }; };
+const dcMirror = () => { if (!PROG.deathCost || !players || !players[0]) return; const c = players[0].dcCarry; PROG.deathCost.carried = { xp: c && c.xp > 0 ? { [hero()]: c.xp } : {}, purse: c ? c.purse : 0 }; };
 function dcGiveXp(n) { const h = hero(), was = heroLevel(h); PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + n; carryOf(P).xp += n; const now = heroLevel(h); if (now > was) levelUp(now, was); }
-function dcStart() { dcSess++; for (const q of players) { q.carry = emptyCarry(); q.dcDone = false; q.dcLost = false; if (q !== players[0]) q.bundle = null; } dcMirror(); }
-function dcBank() { const c = carryOf(P); if (!carryHas(c)) return; P.carry = emptyCarry(); if (P === players[0]) { dcMirror(); saveProgress(); } dcPop(P.x, P.y - 40, 'BANKED', '#8fd160'); SFX.coinUp(8); burst(P.x, P.y - 22, 8, ['#8fd160', '#fff6c8'], 40, 0.4, -30, 1); }
-function dcBankAll() { for (const q of players) q.carry = emptyCarry(); dcMirror(); }
+function dcStart() { dcSess++; for (const q of players) { q.dcCarry = emptyCarry(); q.dcDone = false; q.dcLost = false; if (q !== players[0]) q.bundle = null; } dcMirror(); }
+function dcBank() { const c = carryOf(P); if (!carryHas(c)) return; P.dcCarry = emptyCarry(); if (P === players[0]) { dcMirror(); saveProgress(); } dcPop(P.x, P.y - 40, 'BANKED', '#8fd160'); SFX.coinUp(8); burst(P.x, P.y - 22, 8, ['#8fd160', '#fff6c8'], 40, 0.4, -30, 1); }
+function dcBankAll() { for (const q of players) q.dcCarry = emptyCarry(); dcMirror(); }
 /* THE DEATH ITSELF. p is the hero who fell (P inside his own pass); killer is what killerOf wrote down at the blow. */
 function deathCost(p, killer) {
   if (!dcOn() || p.dcDone) return; p.dcDone = true; p.dcLost = false;
   const c = carryOf(p), lone = p === players[0], h = hero(), old = bundleOf(p);
   if (old) { dcSet(p, null); p.dcLost = true; }   /* ONLY ONE BUNDLE EVER EXISTS: dying again before you got it back is the end of it */
   const t = dcDrop(c, { got, purse: PROG.coins || 0, xp: heroXp(h) });
-  p.carry = emptyCarry();
+  p.dcCarry = emptyCarry();
   if (t.coins || t.purse || t.xp) {
     got = t.got; PROG.coins = t.purseLeft; if (t.xp) { PROG.xp[h] = t.xpLeft; }
     const e = killer && killer.foe, bossy = !!e && (e === boss || !!e.mini || !!e.xpRole), fight = bossActive || miniActive, safe = dcSpot(p);

@@ -154,6 +154,16 @@ fresh('wood');{const o=stand(0);for(let i=0;i<2;i++)coin();BK.P.y=BK.L.H*16+60;B
 fresh('wood');{const Ls=BK.L;let sp=null;for(let y=2;y<Ls.H-1&&!sp;y++)for(let x=2;x<Ls.W-2&&!sp;x++)if(at(Ls,x,y)===T.SPIKE&&at(Ls,x,y+1)===T.SOLID&&at(Ls,x,y-1)===T.AIR&&at(Ls,x-1,y+1)===T.SOLID)sp={x,y};
  if(!sp){out.spikes='the wood has no plain spike floor: skipped';}else{const o=open(sp.x-20);if(o){BK.P.x=o.tx*16+8;BK.P.y=(o.ty+1)*16;BK.sim(30);}for(let i=0;i<2;i++)coin();BK.P.x=sp.x*16+8;BK.P.y=sp.y*16+15;BK.P.ground=true;BK.P.vy=0;hit(null);BK.sim(1);const b=B();
   if(!b||dc.hazard(b.x,b.y)||at(Ls,Math.floor(b.x/16),Math.floor(b.y/16))===T.SPIKE)fails.push('I: the spike bundle is on the spikes: '+JSON.stringify(b));else out.spikes='ok';}}
+/* J. AN AMBUSHER CARRIES IT: the room is put back on a death and its foes are not there until it is tripped again - the bundle WAITS for its creature, and it is on it the moment it comes */
+fresh('wood');{const A=BK.L.ambushes[0],enter=()=>{BK.P.x=(A.wallL+5)*16+8;BK.P.y=(A.row+1)*16;BK.P.vx=BK.P.vy=0;BK.P.inv=99;BK.sim(60);};enter();
+ const e=BK.enemies().find(q=>q.alive&&q.ambush&&/^a/.test(q.xpKey)&&!q.harmless);
+ if(A.st!=='fight'||!e)fails.push('J: the wood ambush did not start ('+A.st+')');
+ else{for(let i=0;i<3;i++)coin();const cN=dc.carry(0).coins;hit(e);BK.sim(1);const b=B();if(!b||b.mode!=='foe'||b.foe!==e.xpKey||b.coins!==cN)fails.push('J: the ambusher does not carry it: '+JSON.stringify(b));
+  respawn();const w=B();if(!w||w.mode!=='foe'||w.carrier)fails.push('J: the bundle did not wait for its ambusher: '+JSON.stringify(w&&{mode:w.mode,carrier:!!w.carrier}));
+  BK.sim(30);if(B()&&B().mode!=='foe')fails.push('J: the bundle let go while its ambusher was still to come');
+  enter();BK.P.inv=99;const w2=B(),e2=BK.enemies().find(q=>q.alive&&q.xpKey===e.xpKey);
+  if(!w2||!e2||w2.carrier!==e2)fails.push('J: the ambusher came and did not carry it: '+(e2?'foe there':'no foe')+' '+JSON.stringify(w2&&{mode:w2.mode,carrier:!!w2.carrier}));
+  else{BK.P.x=dc.checkpoint().x;BK.P.y=dc.checkpoint().y;for(let k=0;k<30&&e2.alive;k++){BKT.hurtEnemy(e2,1e5,e2.x-10,false);if(e2.alive)BK.sim(3);}BK.sim(14);const d=B();if(e2.alive||!d||d.mode!=='spot')fails.push('J: killing the ambusher did not drop it: '+JSON.stringify(d));}}}
 return {fails,out};})()`);
   fails.push(...r.fails); Object.assign(out, r.out);
 } finally { await pg.close(); }
