@@ -61,6 +61,7 @@ import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
+import { makeEmberWard, EMBER as EMBER_K } from './ember-ward.js';   /* THE EMBER WARD (claude/ember-ward): the pyromancer's duck raises a half-dome of fire that runs on heat */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease } from './attack-tokens.js';
 import { installTactics, braceHit } from './foe-tactics.js';
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
@@ -535,7 +536,7 @@ let K = bakeKnight();
 // the save, so switching it off puts the game back; INVINCIBLE takes no damage and a fall puts you back on the last checkpoint.
 const godMode = () => !!SET.godmode;
 const owns = (tab, id) => godMode() || !!(PROG[tab.owned] && PROG[tab.owned][id]);
-const hero = () => PROG.hero || 'knight'; const isPyro = () => hero() === 'pyro'; const isPaladin = () => hero() === 'paladin'; const isPirate = () => hero() === 'pirate'; const isReaper = () => hero() === 'reaper'; const isWarden = () => hero() === 'warden'; const isGeo = () => hero() === 'geomancer'; let GEO = null;   /* THE GEOMANCER's kit (src/geomancer.js), bound below once the world it reaches into exists */
+const hero = () => PROG.hero || 'knight'; const isPyro = () => hero() === 'pyro'; const isPaladin = () => hero() === 'paladin'; const isPirate = () => hero() === 'pirate'; const isReaper = () => hero() === 'reaper'; const isWarden = () => hero() === 'warden'; const isGeo = () => hero() === 'geomancer'; let GEO = null; let EMBER = null;   /* THE PYROMANCER'S EMBER WARD (src/ember-ward.js), bound beside the Geomancer's kit */   /* THE GEOMANCER's kit (src/geomancer.js), bound below once the world it reaches into exists */
 const numWord = n => { const ONES = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
   const TENS = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
   if (n < 20) return ONES[n] || String(n);
@@ -1135,7 +1136,7 @@ function coopRegroup() {
    at once, the pair of them wake at the last shrine and each is charged a death. */
 function goDown(killer) {
   P.down = DOWN_T; P.reviveT = 0; P.hp = 0; P.killer = killer || null;
-  P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.deflectT = 0; P.deflectRec = 0; P.perch = 0; P.vaultCarry = 0;
+  P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.emberUp = false; P.emberHeat = 0; P.emberLock = 0; P.deflectT = 0; P.deflectRec = 0; P.perch = 0; P.vaultCarry = 0;
   P.inv = 0.6; P.vx = 0; P.hitSet.clear();
   SFX.gasp(); SFX.thud(); shakeCam(5); number(P.x, P.y - 30, 'DOWN', '#ff6b6b');
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
@@ -5040,6 +5041,9 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
      still landing - goes over a ducked hero, red or yellow, as a roll goes through it (false, as for the roll's grace). geo: a seed
      that has already been measured against the ducked body (seedOver) and found him */
   if (!geo && P.ducking && blowHigh(who || updFoe, time)) { duckedUnder(fromX); return false; }
+  /* THE EMBER WARD (src/ember-ward.js): what did not go over her meets the dome - a yellow blow is blocked, singes its thrower and heats
+     the ward (a flare on the beat), a red one breaks through */
+  if (isPyro() && EMBER && P.emberUp) { const w = EMBER.takes(fromX, dmg, unblockable, who || updFoe); if (w === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; } }
   { const sd = Math.sign(fromX - P.x) || P.face;
     let g2 = null, gd = 1e9;
     for (const r of risen) { if (r.life <= 0 || r.kind === 'wisp' || !(r.hp > 0)) continue;
@@ -7327,6 +7331,7 @@ function updatePlayer(dt) {
     if ((P.ground || P.swim) && ((P.jet && !tal('jetWalk')) || P.jetRecover > 0)) P.rootT = Math.max(P.rootT || 0, 0.05);   /* WALKING FLAME: she can walk with it lit */
     if (tal('smoulder') && !P.dead && !(P.infernoT > 0) && fires.some(f => !(f.delay > 0) && Math.abs(P.x - f.x) < 10 && P.y > f.y - 14 && P.y <= f.y + 2)) { P.heat = Math.min(100, (P.heat || 0) + 25 * dt); if (P.heat >= 100) bankHeat(); }   /* SMOULDER */
     SFX.jet(P.jet && !P.dead); // the jet roars for as long as it is held
+    if (EMBER) EMBER.update(dt, keys, { stunned, dodging, attacking, thrown });   /* THE EMBER WARD (src/ember-ward.js): down held, stood still - her duck, with a dome of fire round it */
     if (P.full && Math.random() < dt * 30) parts.push({ x: P.x + (Math.random() - 0.5) * 12, y: P.y - 4 - Math.random() * 14, vx: 0, vy: -40 - Math.random() * 30, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -20 });
   }
   P.aegis = false;
@@ -7460,12 +7465,12 @@ function updatePlayer(dt) {
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && (P.ground || P.swim)) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
-  const move = (stunned || dodging || (P.aegis && !tal('fortress')) || (P.warding && !tal('drainWalk')) || P.pinning || P.rootT > 0) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
+  const move = (stunned || dodging || (P.aegis && !tal('fortress')) || (P.warding && !tal('drainWalk')) || P.pinning || P.rootT > 0 || (isPyro() && P.emberUp)) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
   /* THE UNIVERSAL DUCK (claude/duck): DOWN held on the ground with nothing else asked of it - no walk, no swing, no guard, no roll - and
      the hero is crouched: his hurt box is DUCK_H tall and a high blow goes over him (src/duck.js). On a mover he rides at its speed,
      so there it is only the keys that count. P.crouch is what the harbour lookout reads for a hero out of his sight. */
-  P.ducking = !!(keys.down && P.ground && !move && !keys.left && !keys.right && !P.climb && !P.cling && !P.swim && !P.dead && !P.plunge && P.atk < 0 && !dodging && !stunned
-    && !P.block && !P.aegis && !P.warding && !(P.hurt > 0) && !P.fly && (P.onMover || Math.abs(P.vx) < 40)); P.crouch = P.ducking ? 1 : 0;
+  P.ducking = !!(keys.down && P.ground && !move && ((isPyro() && P.emberUp) || (!keys.left && !keys.right)) && !P.climb && !P.cling && !P.swim && !P.dead && !P.plunge && P.atk < 0 && !dodging && !stunned
+    && !P.block && !P.aegis && !P.warding && !(P.hurt > 0) && !P.fly && (P.onMover || Math.abs(P.vx) < 40)); P.crouch = P.ducking ? 1 : 0; if (isPyro() && EMBER) EMBER.settle();   /* (her ward turns with her: left and right face her about, and she stays down) */
   if (P.onMover) { const m = P.onMover; if (P.x + 4 > m.x && P.x - 4 < m.x + m.w && Math.abs(P.y - m.y) < 3) { P.x += m.dx; P.y += m.dy || 0; } else P.onMover = null; }
 
   /* (THE DASH - tap a way twice: distance, no grace, once in the air - was a move of its own until 2026-09-24. It is THE DODGE now,
@@ -8004,6 +8009,7 @@ function updatePlayer(dt) {
       else if (e.t !== 'wasp' && e.t !== 'spit') { e.vx = Math.sign(e.x - P.x) * 150; e.stagger = 0.5; if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.9; } }
     }
   }
+  if (isPyro() && EMBER && P.emberUp) EMBER.catchSeeds();   /* THE EMBER WARD: what flies into her dome melts there, or goes back on the beat */
   for (const s of seeds) if (!s.dead && !s.reflected && s.chain && overlap(cb, { l: s.x - 3, r: s.x + 3, t: s.y - 3, b: s.y + 3 })) { s.dead = true;
     const t = tileAt(Math.floor(P.x / TS), Math.floor((P.y - 8) / TS)); // HIS CHAIN: a line beats it, and that is the lesson of the level
     if (t === T.NET || t === T.CLIMB) { number(P.x, P.y - 30, 'THE LINE HOLDS', '#8fd160'); SFX.clank(); sparks(P.x, P.y - 10, 1, 5); }
@@ -21366,7 +21372,7 @@ function updateEnemies(dt) {
     if (coop()) P = nearestHero(e);
     tokenPre(TK, e, P, tkApi);   /* ATTACK TOKENS: may it ask for a blow at this hero? */
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
-    { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (wu) { if (!e.wuWas && !P.dead && Math.abs(e.x - P.x) < 260 && heightOf(tellKey(e)) === 'high') duckTeach(); noteTell(e, time); } else if (e.wuWas) noteRelease(e);   /* THE UNIVERSAL DUCK: which blow it told, and the mode that blow is (src/duck.js) */
+    { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (wu) { if (!e.wuWas && !P.dead && Math.abs(e.x - P.x) < 260 && heightOf(tellKey(e)) === 'high') duckTeach(); if (!e.wuWas && !P.dead && isPyro() && Math.abs(e.x - P.x) < 200 && markOf(e) === '!') emberTeach(); noteTell(e, time); } else if (e.wuWas) noteRelease(e);   /* THE UNIVERSAL DUCK: which blow it told, and the mode that blow is (src/duck.js) */
     if (!wu && e.wuWas) { e.relT = 0.18; if (Math.abs(e.x - P.x) < 380 && SFX.foeRelease) SFX.foeRelease(e.t, MAT[e.t], !!e.maxHp || !!e.big); } e.wuWas = wu; }
     if (Math.abs(e.x - P.x) < 420) temper(e, dt);
     e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - (P.relic === 'blackflag' ? dt * 0.66 : dt)); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt); if (e.rec > 0) e.rec = Math.max(0, e.rec - dt); if (e.breakFlash > 0) e.breakFlash -= dt;
@@ -21936,7 +21942,7 @@ function updateEnemies(dt) {
     if (s.fire && !s.reflected && Math.random() < dt * 40) parts.push({ x: s.x, y: s.y, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.25, max: 0.25, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 });
     if (s.bolt && Math.random() < dt * 50) parts.push({ x: s.x, y: s.y, vx: (Math.random() - 0.5) * 30, vy: (Math.random() - 0.5) * 30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#c9a0ff' : '#f0e4ff', size: 1, grav: 0 });
     if (s.life <= 0 || isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) { s.dead = true; if (s.jav && s.owner && s.owner.t === 'javelin' && s.life > 0) javFoothold(s, dt); burst(s.x, s.y, 3, [s.arrow ? '#e8dcc0' : s.spore ? '#c9a0ff' : s.acid ? '#b8d878' : '#ff9a5c'], 30, 0.2, 0, 1); if (s.lantern) { const ty = Math.floor(s.y / TS); const fy = isSolid(Math.floor(s.x / TS), ty) ? ty * TS : Math.floor((s.y + 8) / TS) * TS; fires.push({ x: s.x, y: fy, life: 2.4, delay: 0 }); SFX.crack(); if (inGas(s.x, s.y) && !P.gasCd) { P.gasCd = 2; gasBlast(s.x, s.y); } } if (s.acid) { for (let k = 0; k < 4; k++) parts.push({ x: s.x + (Math.random() - 0.5) * 10, y: s.y, vx: (Math.random() - 0.5) * 40, vy: -20, life: 0.4, max: 0.4, col: '#b8d878', size: 1, grav: 200 }); } if (s.fire && !s.reflected && s.life > 0) { const fy = Math.floor(s.y / TS) * TS; fires.push({ x: s.x, y: fy, life: s.pyroEmber ? 1.2 : 2.6, delay: 0, dmg: s.pyroEmber ? DMG.squareFire : 0 }); SFX.crack(); }   /* (his embers come in threes: each scorches where it lands for a breath, not the others' two and a half of full fire) */ if (s.slag) { const fy = Math.floor(s.y / TS) * TS; fires.push({ x: s.x, y: fy, life: 1.6, delay: 0 }); } if (s.spore && s.life > 0) clouds2.push({ x: s.x, y: s.y - 6, r: s.pod ? 20 : 11, life: s.pod ? 2.6 : 1.6, mild: true }); continue; }
-    if (s.reflected) for (const e of enemies) if (e.alive && e.t !== 'queen' && e.t !== 'frog' && overlap({ l: s.x - 3, r: s.x + 3, t: s.y - 3, b: s.y + 3 }, box(e))) { s.dead = true; if (e.t === 'windcaller') knockCaller(e); hurtEnemy(e, 10, s.x - s.vx, false); number(e.x, e.y - e.h - 14, 'RETURNED', '#8fd160'); break; }
+    if (s.reflected) for (const e of enemies) if (e.alive && e.t !== 'queen' && e.t !== 'frog' && overlap({ l: s.x - 3, r: s.x + 3, t: s.y - 3, b: s.y + 3 }, box(e))) { s.dead = true; if (e.t === 'windcaller') knockCaller(e); hurtEnemy(e, 10, s.x - s.vx, false); if (s.ember && e.alive) { e.burn = Math.max(e.burn || 0, EMBER_K.flareBurn); e.heatOwner = P; } number(e.x, e.y - e.h - 14, 'RETURNED', '#8fd160'); break; }
   }
   for (const s of seeds) if (s.menhir && !s.dead) { // his stone: it tumbles, and where it lands it breaks
     if (isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) { s.dead = true; burst(s.x, s.y, 16, ['#9aa39a', '#c9d1dc', '#5a6470'], 90, 0.7); SFX.stone(); shakeCam(4);
@@ -22097,6 +22103,17 @@ GEO = makeGeomancer({ get P() { return P; }, get L() { return L; }, get enemies(
   staffTip: () => { const c = K && P.lastKey ? pickFrame(K, P.lastKey, P.lastFrame || 0, 1) : null; return c && c.tip ? { x: P.x + P.face * (c.tip[0] - K.ax), y: P.y - K.ay + c.tip[1] } : null; },   /* HER GEODE, in the world: where the frame last drawn put it (chars.js keeps it on the canvas) */
   kitPose: (p, k, t) => kitPose(p, k, t), SFX, attackBox: () => attackBox(), heavyWind: () => heavyWind(), isGeo: () => isGeo(), tal: geoTal,
   meterFull: () => { meterReady('#e8a83a'); SFX.vigilFull(); }, trialEvent: k => trialEvent(k), noteParry: () => { noteVerb('parry'); parries++; } });
+/* THE EMBER WARD (src/ember-ward.js): the pyromancer's crouch. main.js owns the world and the keys; the module owns the dome, its heat
+   and what it does to what meets it. It is called from updatePlayer (update, settle, catchSeeds), damagePlayer0 (takes) and the hero's draw */
+EMBER = makeEmberWard({ get P() { return P; }, get L() { return L; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get parts() { return parts; }, get time() { return time; },
+  SFX, nearFoe: x => nearFoe(x), number: (x, y, t, c) => number(x, y, t, c), smoke: (x, y, n, s) => smoke(x, y, n, s), ringAt: (x, y, r, c, l) => ringAt(x, y, r, c, l),
+  flame: (x, y, n, s, u, z) => flame(x, y, n, s, u, z), burst: (...a) => burst(...a), hitstop: t => hitstop(t), zoomKick: (a, b) => zoomKick(a, b), shakeCam: (n, k) => shakeCam(n, k),
+  hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), swordDmg: () => swordDmg(), lcBig: e => lcBig(e), knockSkip: e => KNOCK_SKIP.has(e.t), reflectSeed: s => reflectSeed(s),
+  noteParry: () => { noteVerb('parry'); parries++; trialEvent('parry'); } });
+/* TEACH THE WARD: the first yellow blow told near the pyromancer says what her crouch does to it. Twice in a save, once a level */
+let emberTaughtIn = null;
+function emberTeach() { if ((PROG.emberTold || 0) >= 2 || emberTaughtIn === levelIndex) return; emberTaughtIn = levelIndex; PROG.emberTold = (PROG.emberTold || 0) + 1;
+  hintT = 5; hintMsg = 'A YELLOW MARK: HOLD DOWN AND YOUR EMBER WARD TURNS IT. RAISE IT AS IT LANDS AND IT FLARES.'; }
 /* HER DODGE IS BURROW (2026-09-24, docs/briefs/geomancer.md THE REWORK 4). She sinks into the floor for the dodge's grace, travels
    under it and bursts up ahead in a spray of rock. THROUGH FLOOR ONLY: where there is no floor under her leading foot she stops, and
    comes up at the last solid cell - so it passes UNDER a blow along the ground and never across a pit or a gap. And she never comes
@@ -25595,6 +25612,7 @@ function drawWorld(cx, cy, showPlayer) {
         P.swimTiltA = (P.swimTiltA || 0) + (targetTilt - (P.swimTiltA || 0)) * Math.min(1, SWIM_TILT_EASE / 60);
         swimRot = Math.round(P.swimTiltA / SWIM_TILT_STEP) * SWIM_TILT_STEP; }
       else if (!P.ground) { [key, frame] = airPose(P, K.R); }   /* the arc, with a take-off where the hero has one (hero-poses.js) */
+      else if (isPyro() && P.emberUp && K.R.ward) { key = 'ward'; frame = P.emberFlash > 0 ? 2 : Math.floor(time * ((P.emberHeat || 0) >= EMBER_K.sputter ? 14 : 6)) % 2; }   /* THE EMBER WARD: palm out over the dome, flung wide on a flare */
       else if (P.ducking || (keys.down && Math.abs(P.vx) < 10)) key = 'crouch';   /* the pose is the hurt box: crouched is DUCK_H tall (src/duck.js) */
       else if (P.flourishT > 0 && K.R.atkC && Math.abs(P.vx) < 10 && P.ground) { key = 'atkC'; frame = 3; }
       else if (P.skidT > 0 && K.R.skid) key = 'skid';
@@ -25647,6 +25665,7 @@ function drawWorld(cx, cy, showPlayer) {
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
+      if (isPyro() && EMBER) EMBER.draw(g, cx, cy);   /* THE EMBER WARD, DRAWN: the dome, the burst, the heat over her head */
       if (P.aegis) { const k = 0.5 + 0.5 * Math.sin(time * 8), ex = Math.round(P.x - cx), ey = Math.round(P.y - cy) - 12; g.globalAlpha = 0.14 + 0.08 * k; g.fillStyle = '#fff6c8'; g.beginPath(); g.ellipse(ex, ey, 17, 19, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 0.55 + 0.3 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(ex, ey, 17 + k, 19 + k, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } // the AEGIS
       if (isPyro() && P.full) { const k = 0.5 + 0.5 * Math.sin(time * 9); g.globalAlpha = 0.18 + 0.14 * k; g.fillStyle = '#ffd36b'; g.beginPath(); g.ellipse(Math.round(P.x - cx), Math.round(P.y - cy) - 9, 11 + k * 2, 14 + k * 2, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
       if (isPyro() && P.jet) { const jx = Math.round(P.x - cx) + P.face * 8, jy = Math.round(P.y - cy) - 9, f = time * 30; g.globalAlpha = 0.55; for (let i = 0; i < 6; i++) { const k = i / 6, w = 7 + k * 7 + Math.sin(f + i) * 2, len = jetLen() / 6 + 2; g.fillStyle = k < 0.25 ? '#fff6c8' : k < 0.6 ? '#ffd36b' : '#ff9a5c'; g.fillRect(Math.round(P.face > 0 ? jx + k * jetLen() : jx - k * jetLen() - len), Math.round(jy - w / 2 + Math.sin(f * 0.7 + i * 2) * 1.5), len, Math.round(w)); } g.globalAlpha = 1; }
@@ -27331,6 +27350,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   tileSpr: () => tileSpr, resolve: () => resolveTiles(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
      drawn from, so a bot reading it is reading exactly what a player is shown and nothing more. */
+  ember: () => EMBER ? EMBER.read() : null, emberReset: () => EMBER && EMBER.resetStats(),   /* THE EMBER WARD (tools/ember-ward.mjs) */
   telling: e => !!e && windingUp(e), markOf: e => markOf(e), duck: () => ({ H: DUCK_H, ducking: !!P.ducking, box: duckBox(P), ducked: P.ducked || 0, tells: tellsDrawn, braced: braced(), clears: y => duckClears(P, y), high: e => blowHigh(e, time), lane: e => laneOf(tellKey(e)), height: e => heightOf(tellKey(e)) }),   /* THE UNIVERSAL DUCK, for tools/duck.mjs and the bot (src/duck.js) */ marksMissed: () => marksMissed(),   /* the mark the screen holds over a windup, and every windup the table had no row for */
   sim(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */
   tp(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; },

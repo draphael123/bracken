@@ -1667,6 +1667,11 @@ export function bakePyro(skin = {}, previewOnly = false) {
     hurt: [pyroFrame({ lean: -2, trail: -1, dy: 1, feet: [[10, 18], [15, 18]], staff: [5, 17, 13, 3, 'back'], arm: [15, 9, 18, 6], arm2: [10, 9, 7, 6], cowl: 2 }),
       pyroFrame({ lean: -3, trail: -2, dy: 2, feet: [[10, 18], [15, 18]], staff: [5, 18, 13, 4, 'back'], arm: [15, 10, 18, 8], arm2: [10, 10, 7, 8], cowl: 2 })],
     crouch: pyroFrame({ sit: 3, hemW: 13, staff: up(0, 3), arm: [16, 14, 17, 15], cowl: 0 }),
+    /* THE EMBER WARD (src/ember-ward.js): down in the crouch with the staff slung back and the free palm pushed out with the fire in it -
+       the dome is raised off that palm (main.js draws it). Two beats of the palm's fire, and THE FLARE: arms flung wide, cowl thrown back */
+    ward: [pyroFrame({ sit: 3, hemW: 13, staff: [9, 21, 10, 3, 'back'], arm: [16, 13, 20, 12], palm: [21, 12], cowl: 0 }),
+      pyroFrame({ sit: 3, hemW: 13, staff: [9, 21, 10, 3, 'back'], arm: [16, 13, 20, 13], palm: [21, 13], cowl: 0, flick: 1 }),
+      pyroFrame({ sit: 3, hemW: 14, bell: 1, staff: [9, 21, 10, 3, 'back'], arm: [16, 12, 21, 9], arm2: [11, 12, 7, 9], palm: [22, 8], cowl: 2, flick: 1, sparks: [[20, 5, 'y'], [23, 6, 'r'], [6, 7, 'y']] })],
     // the jet: braced wide, the staff levelled in both hands
     block: [0, 1].map(i => pyroFrame({ lean: 1, feet: [[9, 18], [17, 18]], staff: [7, 12, 23, 10], arm: [16, 10, 20, 11], arm2: [12, 10, 15, 12], cowl: 0, flick: i, trail: -i })),
     // an ember off the palm: the other hand does the work, the staff stays up

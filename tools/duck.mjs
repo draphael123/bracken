@@ -57,12 +57,13 @@ try {
       r.stand = BK.duck().box.b - BK.duck().box.t;
       K.down = true; BK.sim(12); r.ducked = BK.duck().ducking; r.duckH = BK.duck().box.b - BK.duck().box.t;
       K.block = true; BK.sim(30); r.guardUp = !!(P.block || P.aegis || P.warding); r.guardDucks = r.guardUp && BK.duck().ducking; K.block = false;
-      K.right = true; BK.sim(20); r.walkDucks = BK.duck().ducking; K.right = false;
+      { const x0 = P.x; K.right = true; BK.sim(20); r.walkDucks = BK.duck().ducking; r.walkMoved = Math.round(Math.abs(P.x - x0)); r.walkWard = !!(BK.ember && BK.ember() && BK.ember().up); K.right = false; }
       none(); BK.sim(20); K.down = true; BK.press('jump'); K.jump = true; BK.sim(8); r.airDucks = BK.duck().ducking; none(); BK.sim(60);
       r.after = BK.duck().ducking;
       out.heroes.push(r); }
-    // ---- THE BLOWS: the pyromancer holds no guard, so only the duck is between her and each blow ----
-    setUp('pyro');
+    // ---- THE BLOWS: the warden holds no guard, so only the duck is between her and each blow (the pyromancer's duck is her EMBER WARD now,
+    //      claude/ember-ward, which blocks and melts what the duck lets through: tools/ember-ward.mjs holds that) ----
+    setUp('warden');
     const trial = (t, dx, duck, extra, secs = 8) => { home(); BK.P.face = 1;
       const [f] = BK.spawnFoe({ t, x: spot[0] + dx, y: spot[1], face: -1, ...(extra || {}) }); if (!f) return { err: t + ' did not spawn' };
       let lost = 0, hits = [], d0 = BK.duck().ducked, tells = 0, was = false;
@@ -101,7 +102,7 @@ else {
     if (r.duckH !== DUCK_H) bad.push(`${r.h}: ducked hurt box ${r.duckH} px tall, not DUCK_H ${DUCK_H}`);
     if (!(r.stand > DUCK_H)) bad.push(`${r.h}: standing hurt box ${r.stand} px, not taller than the duck`);
     if (r.guardDucks) bad.push(`${r.h}: ducked with a guard up`);
-    if (r.walkDucks) bad.push(`${r.h}: ducked while walking`);
+    if (r.walkDucks && !(r.h === 'pyro' && r.walkWard && r.walkMoved <= 1)) bad.push(`${r.h}: ducked while walking`);   /* (the pyromancer's EMBER WARD turns her on a way held, and she does not walk: tools/ember-ward.mjs) */
     if (r.airDucks) bad.push(`${r.h}: ducked in the air`);
     if (r.after) bad.push(`${r.h}: still ducked with down let go`);
   }
