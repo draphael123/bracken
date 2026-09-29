@@ -9,7 +9,8 @@
      THE UNDEAD ARCHMAGE  fly out of his DEATH MARK: the mark that finds no one comes back on him (batch 4, the sky fight)
      THE PYROMANDER    keep hitting him while he runs hot: he cannot vent, and his own fire takes him over the top (batch 5)
      THE GRAVE WARDEN  let his dig mark you beside an open grave and leave late: the spade goes in and he kneels (batch 4b)
-     THE HEDGE WARDEN  cut him down beside a witchlight brazier: the stump burns, open, and cannot regrow while it does (batch 4c)
+     THE HEDGE WARDEN  cut him down beside a witchlight brazier: the stump burns, open, and cannot regrow while it does (batch 4c); a
+                       stump on the open lawn is green wood a blow only chips, a quarter, and nothing grows back (claude/hedgewarden3)
      THE GATE GARGOYLE  be on the slab his shadow finds and leave it late: his dive smashes through it - a low slab or a high one
                         (GARG.smashAny) - and he crashes onto the spikes, stunned, where a stomp is the only blow (round three,
                         2026-09-27); leaving early only moves his aim (tools/gargoyle-smash.mjs and tools/gargoyle-stomp.mjs ask the rest)
@@ -84,9 +85,16 @@ try {
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='witchlight'));BK.state='play';BK.god=true;
    const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=BK.enemies().find(e=>e.t==='hedgewarden'&&e.mini);
    const third=w.maxHp/3,root=w.maxHp-third+w.maxHp*0.16;
-   const fell=x=>{w.mode='stalk';w.cd=99;w.burnT=0;w.growth=0;w.hp=Math.ceil(root)+2;w.x=x;BK.P.x=x-150;BKT.hurtEnemy(w,Math.ceil(third),w.x-20,false);BK.sim(20);return {mode:w.mode,open:+(w.open||0).toFixed(1)};};
-   const lawn=fell(143*16);const bite=()=>{BK.sim(40);const h0=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);return Math.round(h0-w.hp);};lawn.bite=bite();   /* (claude/hedgewarden2: a green stump takes nothing) */
-   BK.P.x=w.x-150;BK.sim(330);const grew={mode:w.mode,hp:Math.round(w.hp),full:Math.round(w.maxHp)};
+   const fell=x=>{w.mode='stalk';w.cd=99;w.burnT=0;w.growth=0;w.greenUp=false;w.hp=Math.ceil(root)+2;w.x=x;BK.P.x=x-150;BKT.hurtEnemy(w,Math.ceil(third),w.x-20,false);BK.sim(20);return {mode:w.mode,open:+(w.open||0).toFixed(1),hint:(BK.hint||{}).msg||''};};
+   const HW=await import('/src/hedge-warden.js'),call=()=>HW.brazierCall?HW.brazierCall(w):null;
+   const smokeN=()=>BK.parts().filter(q=>q.grav<0&&(q.col==='#5a5460'||q.col==='#4a4450')).length;
+   const bite=()=>{BK.sim(40);const h0=w.hp,s0=smokeN();BKT.hurtEnemy(w,30,w.x-20,false);const took=Math.round(h0-w.hp);BK.sim(20);   /* (past the blow's hitstop) */bite.smoke=smokeN()-s0;return took;};
+   const upCall=call();const lawn=fell(143*16);lawn.upCall=upCall;lawn.call=call();
+   lawn.bite=bite();lawn.smoke=bite.smoke;lawn.left=Math.round(w.hp);   /* (claude/hedgewarden3: a green stump takes a quarter, and puffs smoke) */
+   BK.P.x=w.x-150;BK.sim(330);const grew={mode:w.mode,hp:Math.round(w.hp),full:Math.round(w.maxHp),call:call()};
+   /* up again on the green root: a blow on the open lawn chips a quarter and does not fell him; the same blow at a brazier fells him there, burning */
+   w.x=143*16;w.cd=99;BK.P.x=w.x-150;grew.upBite=bite();grew.upMode=w.mode;
+   w.mode='stalk';w.cd=99;w.x=BK.L.witch.braziers[0][0]*16+20;BK.P.x=w.x-150;BK.sim(2);const h1=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);BK.sim(20);grew.atFire={mode:w.mode,open:+(w.open||0).toFixed(1),hp:Math.round(w.hp),was:Math.round(h1)};
    const fire=fell(BK.L.witch.braziers[0][0]*16+20);BK.P.x=w.x-150;BK.sim(120);const burning={mode:w.mode,open:+(w.open||0).toFixed(1)};burning.bite=bite();
    out.hedgeWarden={lawn,grew,fire,burning};}
   /* THE GATE GARGOYLE: the same dive three times - on a low slab left late, on a high slab left late, on a slab left early */
@@ -186,13 +194,20 @@ try {
   assert.ok(r.graveWarden.grave.open > 2, 'the kneel is the window: ' + JSON.stringify(r.graveWarden));
   assert.equal(r.hedgeWarden.lawn.mode, 'felled', 'a blow through his root fells him: ' + JSON.stringify(r.hedgeWarden));
   assert.equal(r.hedgeWarden.lawn.open, 0, 'felled on the open lawn, the stump is not open: ' + JSON.stringify(r.hedgeWarden));
-  assert.ok(!['felled', 'stump'].includes(r.hedgeWarden.grew.mode) && r.hedgeWarden.grew.hp === r.hedgeWarden.grew.full, 'a stump left alone grows him back whole: ' + JSON.stringify(r.hedgeWarden));
+  /* (claude/hedgewarden3, Daniel's playtest 2026-09-28: "the stump took no damage and REGREW, so it looked like the boss heals for no
+     reason". This used to assert a stump left alone grows him back WHOLE; the rule now is that damage done stays done) */
+  assert.ok(!['felled', 'stump'].includes(r.hedgeWarden.grew.mode) && r.hedgeWarden.grew.hp === r.hedgeWarden.lawn.left && r.hedgeWarden.grew.hp < r.hedgeWarden.grew.full, 'a stump left alone stands him up again, and the bar does not go up - no health grows back: ' + JSON.stringify(r.hedgeWarden));
+  assert.equal(r.hedgeWarden.lawn.hint, 'GREEN WOOD: DRIVE HIM TO THE FIRE', 'felled on the open lawn, the hint says what to do: ' + JSON.stringify(r.hedgeWarden.lawn));
+  assert.ok(r.hedgeWarden.lawn.smoke > 0, 'a blow on a green stump puffs smoke off it: ' + JSON.stringify(r.hedgeWarden.lawn));
+  assert.ok(r.hedgeWarden.lawn.upCall > 0 && r.hedgeWarden.grew.call > 0 && r.hedgeWarden.lawn.call === 0, 'his braziers glow and pulse while he is up (and not while he is a stump): ' + JSON.stringify(r.hedgeWarden));
+  assert.ok(r.hedgeWarden.grew.upBite >= 5 && r.hedgeWarden.grew.upBite <= 10 && !['felled', 'stump'].includes(r.hedgeWarden.grew.upMode), 'up again on his green root, a blow on the open lawn chips a quarter and does not fell him: ' + JSON.stringify(r.hedgeWarden.grew));
+  assert.ok(r.hedgeWarden.grew.atFire.mode === 'felled' && r.hedgeWarden.grew.atFire.open > 2 && r.hedgeWarden.grew.atFire.hp <= r.hedgeWarden.grew.atFire.was, 'and the same blow beside a brazier fells him there, and the fire takes the stump: ' + JSON.stringify(r.hedgeWarden.grew));
   assert.ok(r.gargoyle.solid.mode === 'stunned' && r.gargoyle.solid.open > 2 && r.gargoyle.solid.broken, 'left late, a low slab breaks under him and he lies stunned on the spikes, open: ' + JSON.stringify(r.gargoyle));
   assert.ok(!r.gargoyle.early.aim && !r.gargoyle.early.broken && r.gargoyle.early.open === 0, 'leaving a slab early only moves his aim: ' + JSON.stringify(r.gargoyle));
   assert.ok(r.gargoyle.upper.mode === 'stunned' && r.gargoyle.upper.open > 2 && r.gargoyle.upper.broken, 'left late, a high slab breaks under him too and he lies stunned on the spikes, open: ' + JSON.stringify(r.gargoyle));
   assert.ok(r.hedgeWarden.fire.open > 2, 'felled beside a brazier, the stump burns open: ' + JSON.stringify(r.hedgeWarden));
   assert.ok(r.hedgeWarden.burning.mode === 'stump' && r.hedgeWarden.burning.open > 0, 'a burning stump does not regrow: ' + JSON.stringify(r.hedgeWarden));
-  assert.ok(r.hedgeWarden.lawn.bite === 0 && r.hedgeWarden.burning.bite >= 50, 'THE BRAZIER IS THE ONLY OPENING (claude/hedgewarden2): a stump on the open lawn is green wood no blow bites; a burning one takes a blow twice over: ' + JSON.stringify(r.hedgeWarden));
+  assert.ok(r.hedgeWarden.lawn.bite >= 5 && r.hedgeWarden.lawn.bite <= 10 && r.hedgeWarden.burning.bite >= 50, 'THE BRAZIER IS THE BIG OPENING (claude/hedgewarden3; it was the only one, claude/hedgewarden2): a stump on the open lawn is green wood a blow only chips, a quarter; a burning one takes a blow twice over: ' + JSON.stringify(r.hedgeWarden));
 
   assert.equal(r.deathKnight.boss, 'bloodknight', 'the Unburied Field ends in THE DEATH KNIGHT: ' + JSON.stringify(r.deathKnight));
   assert.equal(r.deathKnight.taken.open, 0, 'A11: a Cleave taken sticks nothing: ' + JSON.stringify(r.deathKnight));

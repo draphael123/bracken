@@ -11,12 +11,15 @@
 //                        at you (in phase two, both ways). No shield turns it: jump it - or stand at a brazier, where the
 //                        witch-fire burns it out. The garden before his gate teaches it (witchlight.js, THE ROOTED GARDEN)
 // HE GROWS BACK. His health is three GROWTHS. Cut a growth down to its root and he falls to a STUMP, and the stump regrows:
-// cut the root out before it is up and that growth is gone for good; let it grow and he stands again with the growth back.
-// The last growth's root is his life.
+// cut the root out before it is up and that growth is gone for good; let it grow and he stands again - but on only what is left
+// of his root (claude/hedgewarden3: DAMAGE DONE STAYS DONE, his bar never goes up. It used to grow the whole growth back, and
+// Daniel's playtest read that as him healing for no reason). The last growth's root is his life.
 // THE OPENING IS YOURS, AND IT IS THE ONLY ONE (tools/boss-openings.mjs proves it): he follows you. Cut him down BESIDE A
 // BRAZIER and the witch-fire takes the stump: it burns, open - every blow on it counts twice, and it cannot regrow while it
-// burns. Cut down on the open lawn, the stump is green wood: no blow bites it, and it just regrows (claude/hedgewarden2: a lawn
-// stump could be rooted out before, which made the brazier a bonus, not the opening).
+// burns. Cut down on the open lawn, the stump is GREEN WOOD: a blow only chips it, a quarter (claude/hedgewarden3; it took nothing
+// in claude/hedgewarden2), it puffs smoke, and the hint says GREEN WOOD: DRIVE HIM TO THE FIRE. Up again on a green root, a blow on
+// the lawn still only chips it, and a blow beside a brazier fells him there, burning. While he is up his two braziers pulse.
+// The fire is the big payoff (a burning stump takes a blow twice over); the lawn is the slow way, and it does get there.
 // PHASE TWO (the last growth): he is quicker, the thorns reach further, his roots go out both ways, and a stump that regrows
 // throws off a topiary cutting.
 // Touching him never hurts (the touch rule): his damage is his sword, his rush, his thorns, his lash and his roots.
@@ -28,7 +31,7 @@ export const HEDGE = {
   cutReach: 50, rushV: 150, rushT: 0.6, thornR: 46, thornRP2: 58,
   lashReach: 150, lashT: 0.35, low: 10,                /* the lash and the roots run along the lawn: feet more than `low` px up are over them */
   rootV: 120, rootHalf: 9, fireStop: 12, rootWarn: 0.8, rootsT: 0.5,   /* a root's speed, its head's half-width, how near a fire burns it, a garden hedge's warning */
-  growths: 3, root: 0.14, regrow: 4.6, regrowP2: 3.8, burnT: 3.2, burnMul: 2, brazierNear: 44, cuttings: 2,
+  growths: 3, root: 0.14, regrow: 4.6, regrowP2: 3.8, burnT: 3.2, burnMul: 2, greenMul: 0.25, brazierNear: 44, cuttings: 2,   /* greenMul: what a blow on green wood takes (claude/hedgewarden3) */
   order: ['cut', 'lash', 'rush', 'cut', 'thorn', 'roots', 'rush', 'cut', 'lash', 'thorn', 'roots'],
 };
 const TELL = { cut: 'cutTell', rush: 'rushTell', thorn: 'thornTell', lash: 'lashTell', roots: 'rootsTell' };
@@ -54,17 +57,27 @@ export function hedgeFrame(e) {
   return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 5) % 2 : 0;
 }
 /* HIS HEALTH, three growths deep: called by hurtEnemy0 with the blow's damage, returns what comes off the bar. Standing, no
-   blow takes him past his root (it fells him there); a stump loses its root ONLY while it burns, twice as fast; a green stump
-   takes nothing (the brazier is the opening, and the only one); the last growth's root is his life, so only there does the bar
-   reach nothing. */
+   blow takes him past his root (it fells him there). His ROOT is the wood: burning, it takes a blow twice over; green (a stump
+   on the open lawn, or him up again on what is left of his root) it takes a quarter, and up on a green root he is felled again
+   only by a blow beside a brazier (e.atFire). The last growth's root is his life, so only there does the bar reach nothing. */
 export function hedgeTake(e, dmg) {
   if (!(dmg > 0) || e.mode === 'sleep') return dmg;
-  if (hedgeStump(e)) { if (!hedgeOpen(e)) { e.green = true; return 0; }
-    dmg = Math.round(dmg * HEDGE.burnMul); const fl = floorOf(e);
+  if (hedgeStump(e) || e.greenUp) { const fl = floorOf(e);
+    if (!hedgeStump(e) && e.atFire) e.fell = true;                              /* up on a green root and cut beside the fire: down he goes, there */
+    if (hedgeOpen(e)) dmg = Math.round(dmg * HEDGE.burnMul); else { e.green = true; dmg = Math.max(1, Math.round(dmg * HEDGE.greenMul)); }
     if (e.hp - dmg <= fl) { e.rooted = true; return fl > 0 ? Math.max(0, e.hp - fl) : dmg; } return dmg; }
   const r = rootOf(e); if (e.hp - dmg <= r) { e.fell = true; return Math.max(0, e.hp - r); }
   return dmg;
 }
+const GREEN = 'GREEN WOOD: DRIVE HIM TO THE FIRE';
+/* THE ROOT CUT OUT (from a stump, or from him up on a green root): that growth is gone for good, and he wakes on the next */
+function rootedOut(e, c) { e.rooted = false; e.greenUp = false;
+  if (floorOf(e) <= 0) return;                                                  // the last root: the blow that took it kills him (the engine's)
+  e.growth++; e.hp = floorOf(e) + third(e); e.hp = Math.min(e.hp, e.maxHp - third(e) * e.growth); e.burnT = 0;
+  if (e.growth >= HEDGE.growths - 1 && e.phase !== 2) { e.phase = 2; c.say('THE LAST GROWTH: HE IS QUICKER', true); }
+  c.say('ROOTED OUT', false, true); c.sound('crack'); c.shake(5); e.mode = 'wake'; e.modeT = 1.1; e.regrowK = 1; }
+/* HIS BRAZIERS CALL while he is up (claude/hedgewarden3): 1 while he stands, 0 while he sleeps, lies a stump or is dead */
+export const brazierCall = e => (e && e.alive && e.mode !== 'sleep' && !hedgeStump(e)) ? 1 : 0;
 function begin(e, what, c) { e.mode = TELL[what]; e.modeT = HEDGE.tell[what] * (e.phase === 2 ? 0.85 : 1); e.face = Math.sign(c.P.x - e.x) || e.face || 1; c.say(SAY[e.mode], RED.has(what)); }
 const rest = (e, rnd) => { e.mode = 'stalk'; e.vx = 0; e.cd = (e.phase === 2 ? HEDGE.cdP2 : HEDGE.cd) * (0.8 + 0.4 * rnd()); };
 export function updateHedgeWarden(e, dt, c) {
@@ -72,25 +85,25 @@ export function updateHedgeWarden(e, dt, c) {
   if (!e.alive || e.mode === 'sleep') return;
   e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.turn ??= 0; e.growth ??= 0; e.y = floor;
   e.burnT = Math.max(0, (e.burnT || 0) - dt); e.open = e.burnT; e.greenT = Math.max(0, (e.greenT || 0) - dt);
-  if (e.green) { e.green = false; if (e.greenT <= 0) { e.greenT = 2.5; c.say('GREEN WOOD: FELL HIM BY THE FIRE', false); c.sound('thud'); } }   /* a blow on a stump that is not burning */
+  e.atFire = (c.braziers() || []).some(bx => Math.abs(bx - e.x) < HEDGE.brazierNear);
+  if (e.green) { e.green = false; if (c.smoke) c.smoke(e.x, floor - 8);         /* a blow on green wood: it smokes, and now and then says so */
+    if (e.greenT <= 0) { e.greenT = 2.5; c.say(GREEN, false); c.sound('thud'); } }
+  if (e.rooted && !hedgeStump(e)) { rootedOut(e, c); return; }                  /* up on a green root and it is chipped out: the growth goes, as from a stump */
   if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.8; if (!e.dealt) { e.dealt = true; e.turn = Math.floor(rnd() * HEDGE.order.length); } } return; }   /* where in his order he starts is his own, fight to fight */
   /* a blow (or a bleed) that took him under his root while he stood fells him there */
-  if (!hedgeStump(e) && (e.fell || e.hp <= rootOf(e))) { e.fell = false; e.hp = Math.max(e.hp, rootOf(e));
+  /* (no Math.max back up to his root any more: a bleed that took him under it stays taken - damage done stays done) */
+  if (!hedgeStump(e) && (e.fell || (!e.greenUp && e.hp <= rootOf(e)))) { e.fell = false;
     e.mode = 'felled'; e.modeT = 0.5; e.regrowK = 0; e.rooted = false; e.vx = 0; c.say('CUT DOWN TO THE STUMP', false, true); c.sound('crack'); c.shake(4); c.dust(e.x, floor);
-    const fire = (c.braziers() || []).some(bx => Math.abs(bx - e.x) < HEDGE.brazierNear);
-    if (fire) { e.burnT = HEDGE.burnT; e.open = e.burnT; c.say('THE WITCH-FIRE TAKES THE STUMP', false, true); c.sound('fire'); }
+    if (e.atFire) { e.burnT = HEDGE.burnT; e.open = e.burnT; c.say('THE WITCH-FIRE TAKES THE STUMP', false, true); c.sound('fire'); }
+    else if (c.teach) c.teach(GREEN);                                           /* felled on the open lawn: the hint says what to do */
     return; }
   // ---- THE STUMP: it regrows unless the root is cut out ----
   if (hedgeStump(e)) {
-    if (e.rooted || e.hp <= floorOf(e)) { e.rooted = false;
-      if (floorOf(e) <= 0) return;                                             // the last root: the blow that took it kills him (the engine's)
-      e.growth++; e.hp = floorOf(e) + third(e); e.hp = Math.min(e.hp, e.maxHp - third(e) * e.growth); e.burnT = 0;
-      if (e.growth >= HEDGE.growths - 1 && e.phase !== 2) { e.phase = 2; c.say('THE LAST GROWTH: HE IS QUICKER', true); }
-      c.say('ROOTED OUT', false, true); c.sound('crack'); c.shake(5); e.mode = 'wake'; e.modeT = 1.1; e.regrowK = 1; return; }
+    if (e.rooted || e.hp <= floorOf(e)) { rootedOut(e, c); return; }
     if (e.mode === 'felled') { if (e.modeT <= 0) { e.mode = 'stump'; e.modeT = e.phase === 2 ? HEDGE.regrowP2 : HEDGE.regrow; } return; }
     if (e.burnT > 0) { e.modeT += dt; return; }                                // burning: it does not grow
     const T0 = e.phase === 2 ? HEDGE.regrowP2 : HEDGE.regrow; e.regrowK = Math.max(0, Math.min(1, 1 - e.modeT / T0));
-    if (e.modeT <= 0) { e.hp = floorOf(e) + third(e); e.mode = 'stalk'; e.cd = 0.9; c.say('HE GROWS BACK', true); c.sound('grow');
+    if (e.modeT <= 0) { e.greenUp = true; e.mode = 'stalk'; e.cd = 0.9; c.say('HE STANDS AGAIN', true); c.sound('grow');   /* up, on what is left of his root: nothing grows back */
       if (e.phase === 2 && c.adds() < HEDGE.cuttings) c.sprout(e.x + (Math.random() < 0.5 ? -40 : 40)); }
     return; }
   // ---- THE ATTACKS ----
@@ -153,7 +166,10 @@ export function stepRoots(list, emitters, dt, c) {
 }
 
 /* A WITCHLIGHT BRAZIER: a stone bowl on a post, its witch-fire going */
-function drawBrazier(g, x, fy, time, seed) {
+function drawBrazier(g, x, fy, time, seed, call) {
+  if (call) { const k = 0.5 + 0.5 * Math.sin(time * 4);   /* HIS BRAZIERS CALL while he is up (claude/hedgewarden3): a slow bright pulse and a ring going out, "bring him here" */
+    g.globalAlpha = 0.18 + 0.22 * k; g.fillStyle = '#b07cf0'; g.beginPath(); g.arc(x, fy - 24, 22 + 6 * k, 0, 7); g.fill();
+    const r = (time * 0.9 + seed * 0.013) % 1; g.globalAlpha = 0.5 * (1 - r); g.strokeStyle = '#e0c8ff'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, fy - 1, 10 + 30 * r, 3 + 5 * r, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
   g.fillStyle = '#1b1626'; g.fillRect(x - 3, fy - 16, 6, 16); g.fillRect(x - 8, fy - 20, 16, 5); g.fillStyle = '#6a6280'; g.fillRect(x - 2, fy - 15, 4, 15); g.fillStyle = '#8e86a4'; g.fillRect(x - 7, fy - 19, 14, 3);
   for (let k = 0; k < 3; k++) { const h = 6 + Math.round(3 * Math.sin(time * 9 + k * 2 + seed)); g.fillStyle = k === 1 ? '#e0c8ff' : '#9a5ad0'; g.fillRect(x - 5 + k * 4, fy - 20 - h, 3, h); }
   g.globalAlpha = 0.12 + 0.05 * Math.sin(time * 5 + seed); g.fillStyle = '#b07cf0'; g.beginPath(); g.arc(x, fy - 24, 16, 0, 7); g.fill(); g.globalAlpha = 1;
@@ -183,7 +199,8 @@ export function drawRoots(g, list, W, cx, cy, time) {
 /* the braziers, the thorn ring, the lash, the roots' cracks, the stump's burning and its regrowth */
 export function drawHedgeWarden(g, e, braziers, cx, cy, time, floorY) {
   const fy = Math.round(floorY - cy);
-  for (const bx of braziers || []) { const x = Math.round(bx - cx); if (x < -20 || x > g.canvas.width + 20) continue; drawBrazier(g, x, fy, time, bx); }
+  const call = brazierCall(e);
+  for (const bx of braziers || []) { const x = Math.round(bx - cx); if (x < -40 || x > g.canvas.width + 40) continue; drawBrazier(g, x, fy, time, bx, call); }
   if (!e?.alive) return;
   const x = Math.round(e.x - cx);
   if (e.mode === 'thornTell' || e.mode === 'thorn') { const R = e.phase === 2 ? HEDGE.thornRP2 : HEDGE.thornR, k = e.mode === 'thorn' ? 1 : 0.45; g.globalAlpha = 0.3 * k + (Math.floor(time * 12) % 2 ? 0.1 : 0);

@@ -155,6 +155,16 @@ try {
      for(let i=0;i<90;i++){w.cd=99;if(w.mode!=='stalk')w.mode='stalk';BK.P.x=w.x;BK.P.y=w.y;BK.sim(1);}const touch=hp0-BK.P.hp;BK.god=true;
      const gi=(Math.round(M.floor/16)-1)*BK.L.W+M.gate,before=BK.L.grid[gi];w.growth=2;w.mode='stump';w.modeT=9;w.burnT=3;w.hp=3;BKT.hurtEnemy(w,50,w.x-20,false);   /* (a burning stump: since claude/hedgewarden2 no other takes a blow) */BK.sim(120);
      out.warden={woke,touch,alive:w.alive,gateBefore:before,gateAfter:BK.L.grid[gi]};}
+    /* THE LAWN ROUTE AND THE FIRE ROUTE (claude/hedgewarden3, Daniel's playtest 2026-09-28: the green stump took nothing and regrew, so
+       he looked to heal for no reason). The same blow every third of a second, held at one spot, to his death: on the open lawn a green
+       stump takes a quarter and nothing grows back, so it is slow but it gets there; at a brazier the stump burns and it is quick. His
+       bar never goes up on either route */
+    const route=at=>{boot();const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=need(BK.enemies().find(e=>e.t==='hedgewarden'),'the Hedge Warden');
+      const x=at(M);let blows=0,rise=0,prev=w.hp,burnt=0;const seen=new Set();
+      for(let i=0;i<60*600&&w.alive;i++){w.x=x;BK.P.x=x-30;BK.P.y=M.floor;BK.P.hp=BK.P.maxHp;if(i%20===0&&w.mode!=='wake'){BKT.hurtEnemy(w,30,w.x-20,false);blows++;}BK.sim(1);
+        if(w.hp>prev+1e-6)rise++;prev=w.hp;seen.add(w.mode);if((w.burnT||0)>0)burnt++;}
+      return {dead:!w.alive,blows,rise,burnt,seen:[...seen]};};
+    out.routes={lawn:route(M=>(M.x0+M.x1)/2),fire:route(M=>BK.L.witch.braziers[0][0]*16+20)};
     /* THE HEDGE WARDEN'S NEW ATTACKS (claude/hedgewarden2): each told, and each with its answer. THE THORN LASH lands well out of his
        cut's reach on a hero standing, not on one in the air, and a shield turns it; THE ROOTS crawl out and bite a hero on the lawn, and
        burn out at a brazier before they reach one standing past it. In the garden a rooted hedge's root bites a hero in its strip and
@@ -190,6 +200,10 @@ try {
   assert.ok(r.warden.woke.active && r.warden.woke.mode !== 'sleep', 'he wakes at his gate: ' + JSON.stringify(r.warden));
   assert.equal(r.warden.touch, 0, 'touching him costs nothing (the touch rule)');
   assert.ok(!r.warden.alive && r.warden.gateBefore === T.PORT && r.warden.gateAfter !== T.PORT, 'his gate opens when he dies: ' + JSON.stringify(r.warden));
+  console.log('  the Warden, the lawn route and the fire route: ' + JSON.stringify(r.routes));
+  assert.ok(r.routes.lawn.dead && r.routes.lawn.burnt === 0 && r.routes.lawn.seen.includes('stump'), 'on the open lawn alone, green wood a blow only chips, he still comes down in the end: ' + JSON.stringify(r.routes.lawn));
+  assert.ok(r.routes.lawn.rise === 0 && r.routes.fire.rise === 0, 'damage done stays done: his bar never goes up, on the lawn or at the fire: ' + JSON.stringify(r.routes));
+  assert.ok(r.routes.fire.dead && r.routes.fire.burnt > 0 && r.routes.fire.blows * 2 <= r.routes.lawn.blows, 'the brazier is the big payoff: at the fire he comes down in half the blows or fewer: ' + JSON.stringify(r.routes));
   { const n = r.newAttacks; console.log('  the Warden\'s new attacks: ' + JSON.stringify(n));
     assert.ok(n && n.lash.stood.seen.includes('lash') && n.lash.stood.took > 0, 'THE THORN LASH lands well out past his cut, on a hero standing: ' + JSON.stringify(n && n.lash));
     assert.ok(n.lash.jumped.took === 0 && n.lash.guarded.took === 0, 'a jump clears the lash, and a shield turns it: ' + JSON.stringify(n.lash));
