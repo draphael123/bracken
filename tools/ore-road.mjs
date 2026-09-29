@@ -17,6 +17,8 @@
 // usage: node tools/ore-road.mjs
 import { LEVELS, T } from '../src/level.js';
 import { readFileSync } from 'node:fs';
+import { pacing } from './pacing.mjs';
+import { assertRule } from './checkpoint-rule.mjs';
 import { OR, cableLines, makeCableway, stepCableway, bucketAt, pointAt, lineYAt, brakeStep, liftStep, mineBlocked, WORKS, workSees, MINE_PLACES } from '../src/ore-road.js';
 import * as WM from '../src/winchmaster.js';
 const { WINCH, updateWinchmaster, winchJam, winchTake, winchOpen, winchFrame } = WM;
@@ -91,7 +93,8 @@ for (const l of C.lines) {
 { const cx = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), end = Math.round(L.arena.x0 / TS);
   let gap = cx[0]; for (let i = 1; i < cx.length; i++) gap = Math.max(gap, cx[i] - cx[i - 1]);
   gap = Math.max(gap, end - cx[cx.length - 1]);
-  ok(cx.length >= 12 && gap < 40, `${cx.length} checkpoints and the worst gap to one is ${gap} columns (it was 88)`); }
+  { let bad = ''; try { assertRule(lv, pacing(lv), L); } catch (e) { bad = e.message; }   /* RULES S4 as changed 2026-09-29 (Daniel: one per section) - it asked for 12 checkpoints under 40 columns apart */
+    ok(!bad, `${cx.length} checkpoints, one per section, the worst gap to one is ${gap} columns` + (bad ? ': ' + bad : '')); } }
 
 /* ---- SOMETHING IN THE GORGE TO FALL INTO. Hazard was ZERO on a level whose whole premise is a gorge. And the
    one hazard the level asks you to CROSS - the crusher in the yard - has a lip to land on and a rope out at each
