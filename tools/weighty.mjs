@@ -51,6 +51,7 @@ try {
       b.mode = 'winded'; b.modeT = 9; h0 = b.hp; BKT.hurtEnemy(b, 20, b.x - 12, false); r.winded = h0 - b.hp;
       return r; };
     /* her windups, watched: the mark over each (what the screen draws: BK.markShown), when it arrives, how long each windup is, and the feints */
+    const BASES = ${JSON.stringify([0.8, 0.6, 0.55].map(b => +(b * WEIGHTY.queen.windK + 0.02).toFixed(3)))};   /* her dive windups unheld (x windK, and a frame) */
     const queenWatch = (secs, loaded) => { const b = boot('wood'); const rnd = Math.random; if (loaded) Math.random = () => 0.01;   /* loaded: every pick a dive, every other dive a feint */ const P = BK.P; P.x = (BK.L.arena.x0 + BK.L.arena.x1) / 2; none();
       const r = { aims: [], feints: 0, feintMarked: 0, afterFeint: [], markAtStart: 0, windups: 0, fracs: [], poseFirst: 0 };
       let prev = b.mode, cur = null;
@@ -67,11 +68,11 @@ try {
         if ((m === 'feint' || m === 'feintOff') && (shown || told)) r.feintMarked++;
         if (cur && cur.mark == null && shown) cur.mark = f;
         prev = m;
-        if (!loaded && r.aims.length >= 6 && f > 60 * 40) break;
+        if (!loaded && r.aims.some(a => BASES.every(q => Math.abs(a - q) > 0.06)) && r.aims.length >= 6 && f > 60 * 40) break;   /* until one is seen held */
       }
       Math.random = rnd; r.aims = r.aims.map(x => +x.toFixed(2)); return r; };
     out.qOff = queenBlows(); out.qOffWatch = queenWatch(30);
-    BK.setCombat('weighty'); out.qOn = queenBlows(); out.qOnWatch = queenWatch(150); out.qOnLoaded = queenWatch(20, true); BK.setCombat('classic');
+    BK.setCombat('weighty'); out.qOn = queenBlows(); out.qOnWatch = queenWatch(240); out.qOnLoaded = queenWatch(20, true); BK.setCombat('classic');
 
     /* ---- THE BLADE COMMITS ---- */
     const flat = id => { BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === id)); BK.start(); BK.god = false;
@@ -158,7 +159,7 @@ if (W.fracs.length < W.windups - 1) bad.push(`switch on, ${W.windups} windups an
 if (!(WL.feints >= 2)) bad.push('switch on, with the dice loaded for it she never feinted');
 if (WL.feintMarked) bad.push(`switch on, a feint wore a mark or read as a windup (${WL.feintMarked} frames): a feint throws nothing`);
 if (!WL.afterFeint.length || WL.afterFeint.some(m => m !== 'aim')) bad.push(`switch on, a feint handed to ${JSON.stringify(WL.afterFeint)}, not a told dive`);
-if (!W.aims.some(a => a > 0.8 * Q.windK + 0.1)) bad.push(`switch on, no dive windup was held past its beat (${JSON.stringify(W.aims)})`);
+if (!W.aims.some(a => [0.8, 0.6, 0.55].every(b => Math.abs(a - (b * Q.windK + 0.02)) > 0.06))) bad.push(`switch on, no dive windup was held past its beat (${JSON.stringify(W.aims)})`);
 const C = R.cOn;
 if (!(C.recovery >= WEIGHTY.recovery.light - 0.02)) bad.push(`switch on, a swing ended with a recovery of ${C.recovery}`);
 if (C.jumpInSwing) bad.push('switch on, a jump came out of a swing');

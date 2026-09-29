@@ -7,7 +7,8 @@
 // WITH IT ON:
 //   1. THE HORNET QUEEN IS ALWAYS HITTABLE. Her swarm no longer closes over her (it turned 55% of every blow while two drones
 //      flew): every blow lands whole, and her two openings (winded, stuck) are the BONUS they always paid on top. Her health is
-//      raised so the fight lasts about as long as it did (queen.hp, measured with the pilot: tools/firsthour-pilot.mjs).
+//      raised a fifth (queen.hp): about what the swarm armour was worth to a player, less what the recovery costs him. The pilot bot is
+//      no guide here (it fights LONGER at x1 than in classic: the recovery stops its jump-cuts), so this is a reasoned number.
 //   2. THE BLADE COMMITS (every hero, every level). A swing ends in a RECOVERY by its weight (recovery.*): no jump out of the swing
 //      or its recovery, no dodge, no guard. Mashing is a string of commitments you cannot leave.
 //   3. SHE HOLDS AND SHE FEINTS. Her dive and her slam may be held past their usual beat (queen.holdMax), and one dive in
@@ -25,7 +26,7 @@
 export const WEIGHTY = {
   commonDamage: 1.4,
   recovery: { light: 0.16, slow: 0.22, heavy: 0.28 },
-  queen: { hp: 1.35, windK: 1.3, markAt: 0.5, holdP: 0.5, holdMax: 0.45, feintP: 0.3, rear: 14 },
+  queen: { hp: 1.2, windK: 1.3, markAt: 0.5, holdP: 0.5, holdMax: 0.45, feintP: 0.3, rear: 14 },
   poise: { absorb: 2, reset: 1.6, broken: 0.9 },
   parry: { hits: 3, window: 1.4, reel: 0.3, tell: 0.6, cd: 2.5 },
   lunge: { reach: 84, speed: 260, time: 0.2 },
