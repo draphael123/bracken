@@ -1995,6 +1995,7 @@ function spawnEnt(e) {
       case 'glyph': props.push({ t: 'glyph', x: px, y: e.ceiling ? e.y * TS : py, cool: 0, ceiling: !!e.ceiling, brief: e.brief || 0 }); break;   /* brief: the Witchlight Stair's, which let go after that many seconds */
       case 'gplate': props.push({ t: 'gplate', x: px, y: py, gate: e.gate, down: false, open: false, hold: 0 }); break;
       case 'vatspit': props.push({ t: 'vatspit', x: px, y: py, state: 'rest', t2: 1 + Math.random() }); break;
+      case 'lockrune': props.push({ t: 'lockrune', x: px, y: py, y0: py, lock: e.lock, shelf: e.onShelf === undefined ? -1 : e.onShelf, lit: false }); break;   /* THE RUNE LIBRARY: a rune of a vault door's lock (onShelf: it sits on a book stack and rides it) */
       case 'rune': props.push({ t: 'rune', x: px, y: py, shelf: e.shelf, post: !!e.post }); break;   /* (post: THE WARDED COURTYARD's runes stand on warding posts of their own) */
       /* THE HEXED FIELDS */
       case 'scarecrow': enemies.push({ ...base, t: 'scarecrow', w: 12, h: 22, hp: EHP.scarecrow, mode: 'still', modeT: 1, cd: 0.5 }); break;
@@ -11008,8 +11009,8 @@ function mageReset() {
   if (MG && MG.A) archStackGone(MG.A);   /* (the ward's stack is tiles: a death in the middle of his ward must not leave it standing) */
   MG = null; P.flip = false; P.flipT = 0; P.flareSlab = null; P.flareT = 0; P.windRide = null; if (!L || !L.mage) { P.w = 10; P.h = 14; return; }
   const M = L.mage;
-  MG = { shelves: (M.shelves || []).map(s => ({ ...s, up: false, k: 0 })), shots: [], puddles: [], flipFx: 0, stacks: [], A: null, songT: 6 };
-  for (const s of MG.shelves) { for (let y = s.yUp; y < s.yUp + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.AIR); for (let y = s.yDown; y < s.yDown + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.SOLID); }
+  MG = { shelves: (M.shelves || []).map(s => ({ ...s, up: false, k: 0 })), shots: [], puddles: [], flipFx: 0, stacks: [], A: null, songT: 6, locks: (M.locks || []).map((l, i) => ({ ...l, i, lit: 0, t: 0, open: false, shown: 0, wait: false })) };
+  for (const s of MG.shelves) { if (s.lock === undefined) for (let y = s.yUp; y < s.yUp + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.AIR); for (let y = s.yDown; y < s.yDown + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.SOLID); }   /* (a lock's stack stands ON the floor and sinks into it: nothing is dug under it) */
   /* the turrets under the ceilings: hung by the game, because a creature on nothing fails every tool that reads the level */
   for (const [tx, ty] of (M.hung || [])) enemies.push({ x: tx * TS + 8, y: ty * TS + 14, vx: 0, vy: 0, face: -1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0, t: 'turret', w: 12, h: 14, hp: EHP.turret, mode: 'idle', modeT: 1, cd: 1, ceiling: true, noGrav: true, hung: true });
   const pl = (L.pools || []).find(p => p.magePool); if (pl) { pl.dry = true; pl.depth = 0; pl.y = pl.base; }
@@ -11158,8 +11159,18 @@ function updateMage(dt, hb) {
         else if (near) { pr.state = 'bubble'; pr.t2 = 0.8; number(pr.x, pr.y - 22, '!', '#ffd36b'); SFX.drip(); if (Math.random() < 0.4) mageHint('vat', 'THE SPITTER BUBBLES, THEN IT SPITS. THE GOB IS SLOW: THE SHIELD TURNS IT, OR STEP ASIDE.'); } else pr.t2 = 0.3; }
       if (pr.state === 'bubble' && Math.random() < dt * 20) parts.push({ x: pr.x + 2 + (Math.random() - 0.5) * 6, y: pr.y - 14, vx: 0, vy: -20, life: 0.4, max: 0.4, col: MVIO[2], size: 1, grav: -10 });
       continue; }
+    /* THE RUNE-LOCK (THE RUNE LIBRARY, claude/follylib): strike a rune and it lights; a vault door opens when every rune on its lock is lit at
+       once. A lock with a window is the Archmage's ward: the first rune lit starts the clock, and if the rest are not lit in time every rune
+       goes dark and the stack rises again. A rune on a stack rides it, and is sealed in the books until the stack is down */
+    if (pr.t === 'lockrune') { const K = MG.locks[pr.lock], s = pr.shelf >= 0 ? MG.shelves[pr.shelf] : null; if (!K) continue;
+      if (s) pr.y = pr.y0 + (s.up ? (s.yUp - s.yDown) * Math.min(1, s.k) * TS : 0);
+      if (K.open || pr.lit) continue;
+      if (hb && !P.dead && !P.hitSet.has(pr) && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y })) { P.hitSet.add(pr);
+        if (s && !(s.up && s.k >= 1)) { sparks(pr.x, pr.y - 6, P.face, 3); SFX.clank(); number(pr.x, pr.y - 14, 'THE BOOKS HOLD IT', MVIO[2]); mageHint('lockStack', 'THE RUNE ON THE STACK IS SEALED IN THE BOOKS. STRIKE THE RUNE AT THE STACK\'S FOOT AND IT COMES DOWN.'); continue; }
+        lockLight(K, pr); }
+      continue; }
     if (pr.t === 'rune') { const s = MG.shelves[pr.shelf]; if (!s || s.up) continue;
-      if (hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); s.up = true; s.k = 0; if (!s.sunk) for (let y = s.yDown; y < s.yDown + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.AIR); resolveTiles(); sparks(pr.x, pr.y - 6, P.face, 6); ringAt(pr.x, pr.y - 6, 20, MVIO[2], 0.4); SFX.zap(); SFX.stone(); shakeCam(3); mageHint(s.slab ? 'ward' : 'rune', s.slab ? 'THE RUNE TAKES THE BLOW AND THE PAVING MOVES. THE TOWER WORKS THE SAME WAY.' : 'THE RUNE TAKES THE BLOW AND THE STACK SLIDES UP INTO ITS RECESS.'); }
+      if (hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); s.up = true; s.k = 0; if (!s.sunk) for (let y = s.yDown; y < s.yDown + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.AIR); resolveTiles(); sparks(pr.x, pr.y - 6, P.face, 6); ringAt(pr.x, pr.y - 6, 20, MVIO[2], 0.4); SFX.zap(); SFX.stone(); shakeCam(3); if (s.lock !== undefined) mageHint('lockFoot', 'THE STACK SLIDES DOWN INTO THE FLOOR. THE RUNE ON ITS TOP COMES DOWN WITH IT: STRIKE IT NOW.'); else mageHint(s.slab ? 'ward' : 'rune', s.slab ? 'THE RUNE TAKES THE BLOW AND THE PAVING MOVES. THE TOWER WORKS THE SAME WAY.' : 'THE RUNE TAKES THE BLOW AND THE STACK SLIDES UP INTO ITS RECESS.'); }
       continue; }
   }
   /* THE SHOTS: the imps' fire, the turrets' orbs, the spitters' gobs, the familiar's spit. All of them the shield turns */
@@ -11171,14 +11182,33 @@ function updateMage(dt, hb) {
       if (hitP) { const res = damagePlayer(s.x, s.dmg); if (res === 'blocked') { sparks(s.x, s.y, -P.face, 4); } }
       burst(s.x, s.y, 8, s.fire ? ['#ff9a5c', '#ffd36b'] : s.gob ? ['#9a4ad0', '#e0c8ff'] : s.book ? ['#e8dcc0', '#5a2a3a', '#6a5038'] : [MVIO[2], MVIO[3]], 70, 0.4); if (s.fire) { SFX.puff(); for (const dx of [-8, 8]) if (hitG) fires.push({ x: s.x + dx, y: Math.floor(s.y / TS) * TS, life: 1.6, delay: 0 }); } } }
   MG.shots = MG.shots.filter(s => !s.dead);
+  for (const K of MG.locks || []) { if (K.open) continue; if (K.wait) lockReraise(K);
+    if (K.t > 0) { K.t -= dt; const n = Math.ceil(K.t); if (n <= 3 && n > 0 && n !== K.shown) { K.shown = n; number(P.x, P.y - 34, String(n), MVIO[3]); SFX.charge(); } if (K.t <= 0) lockSeal(K); } }
   updatePuddles(dt);
   /* the tower's own sound: a chime somewhere, now and then */
   MG.songT -= dt; if (MG.songT <= 0) { MG.songT = 7 + Math.random() * 8; if (P.x > L.mage.outside * TS && SET.ambient) SFX.golemChime && SFX.golemChime(); }
   updateArchmageRoom(dt, hb);
 }
+/* THE RUNE-LOCK's three moves: a rune lights (the door opens if it was the last), the clock runs out (every rune goes dark and the stack rises
+   again, where it is clear of you), and the stack's rise waits for you to step out from under it */
+function lockLight(K, pr) { pr.lit = true; K.lit++; sparks(pr.x, pr.y - 6, P.face, 6); ringAt(pr.x, pr.y - 6, 20, MVIO[3], 0.4); SFX.zap(); shakeCam(1);
+  if (K.lit >= K.n) { lockOpen(K); return; }
+  if (K.window > 0 && !(K.t > 0)) { K.t = K.window; K.shown = 0; number(pr.x, pr.y - 22, K.window + ' SECONDS', MVIO[3]); SFX.charge(); mageHint('lockClock', 'THE WARD IS LISTENING: THE OTHER RUNES HAVE ' + K.window + ' SECONDS BEFORE EVERY RUNE GOES DARK AND THE STACK RISES AGAIN.'); }
+  else if (!(K.window > 0)) mageHint('lock', 'THE RUNE LIGHTS AND HOLDS ITS LIGHT. THE DOOR OPENS WHEN EVERY RUNE ON IT IS LIT.'); }
+function lockOpen(K) { K.open = true; K.t = 0; K.wait = false; for (let ty = 0; ty < LH; ty++) if (grid0[ty * LW + K.gate] === T.PORT) cellSet(K.gate, ty, T.AIR); resolveTiles(); SFX.gateLift(); shakeCam(3);
+  number(P.x, P.y - 34, 'THE VAULT OPENS', MVIO[3]); }
+function lockSeal(K) { for (const pr of props) if (pr.t === 'lockrune' && pr.lock === K.i && pr.lit) { pr.lit = false; burst(pr.x, pr.y - 8, 8, [MVIO[1], MVIO[2]], 50, 0.4); }
+  K.lit = 0; K.t = 0; K.shown = 0; K.wait = true; number(P.x, P.y - 34, 'THE RUNES GO DARK', MVIO[3]); SFX.golemChime(); mageHint('lockDark', 'THE RUNES WENT DARK. LIGHT THEM ALL WITHIN THE TIME, AND STRIKE THE STACK\'S FOOT AGAIN.'); lockReraise(K); }
+function lockReraise(K) { let all = true;
+  for (const s of MG.shelves) { if (s.lock !== K.i || !s.up) continue;
+    const under = !P.dead && P.x + P.w / 2 > s.x0 * TS && P.x - P.w / 2 < (s.x1 + 1) * TS && P.y > s.yDown * TS && P.y - P.h < (s.yDown + s.h) * TS; if (under) { all = false; continue; }
+    for (let y = s.yDown; y < s.yDown + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.SOLID); resolveTiles(); s.up = false; s.k = 0; SFX.stone(); shakeCam(2); dust((s.x0 + 1) * TS, s.yDown * TS + s.h * TS, 6); }
+  K.wait = !all; }
 /* ---------- the movers only this tower has ---------- */
 function updateMageMover(m, dt) {
   if (m.kind === 'lane') { m.dx = 0; m.dy = 0; return true; }
+  if (m.kind === 'bookcase') { const oldX = m.x; m.ph = (m.ph || 0) + dt; m.x += m.dir * m.speed * dt; if (m.x >= m.x1 - m.w) { m.x = m.x1 - m.w; m.dir = -1; } else if (m.x <= m.x0) { m.x = m.x0; m.dir = 1; }
+    m.dx = m.x - oldX; m.dy = 0; return true; }   /* A BOOKCASE ON A RAIL (THE RUNE LIBRARY): slides end to end at a walking pace and carries whoever stands on it */
   if (m.kind === 'book') { const oldX = m.x, oldY = m.y; m.ph = (m.ph || 0) + dt; m.x += m.dir * m.speed * dt; if (m.x >= m.x1 - m.w) { m.x = m.x1 - m.w; m.dir = -1; } else if (m.x <= m.x0) { m.x = m.x0; m.dir = 1; }
     m.y = m.y0 === undefined ? (m.y0 = m.y) : m.y0 + Math.sin(m.ph * 2.2) * 3; m.dx = m.x - oldX; m.dy = m.y - oldY; return true; }
   return false;   /* a planet is a wheel: the wheel code carries it */
@@ -11908,9 +11938,10 @@ function drawMageTiles(cx, cy) {
       for (let xx = 5; xx < w - 4; xx += TS) { g.fillRect(x + xx + 2, y + 5, 2, 7); g.fillRect(x + xx, y + 7, 6, 1); g.fillRect(x + xx + 1, y + 11, 4, 1); } g.globalAlpha = 1;
       g.fillStyle = '#1b1626'; g.fillRect(x - 1, y, 1, hh); g.fillRect(x + w, y, 1, hh); continue; }
     /* the stack itself: shelves and spines, and the recess behind it */
-    g.fillStyle = '#1e1828'; g.fillRect(x, s.yUp * TS - cy, w, hh); g.fillStyle = '#4a3624'; g.fillRect(x, y, w, hh); g.fillStyle = '#6a5038'; g.fillRect(x, y, w, 1); g.fillRect(x, y, 1, hh);
+    if (s.lock !== undefined) { g.save(); g.beginPath(); g.rect(x - 2, 0, w + 4, s.yUp * TS - cy); g.clip(); } else { g.fillStyle = '#1e1828'; g.fillRect(x, s.yUp * TS - cy, w, hh); }   /* (a lock's stack sinks into the floor: drawn only above it, and no recess) */
+    g.fillStyle = '#4a3624'; g.fillRect(x, y, w, hh); g.fillStyle = '#6a5038'; g.fillRect(x, y, w, 1); g.fillRect(x, y, 1, hh);
     const cols = ['#5a2a3a', '#2a4a3a', '#3a2a5a', '#5a4a2a']; for (let yy = 4; yy < hh; yy += 12) { g.fillStyle = '#2e2016'; g.fillRect(x + 1, y + yy + 8, w - 2, 2); for (let xx = 2; xx < w - 2; xx += 3) { g.fillStyle = cols[((xx + yy) / 3 | 0) % 4]; g.fillRect(x + xx, y + yy, 2, 8); } }
-    g.fillStyle = '#1b1626'; g.fillRect(x - 1, y, 1, hh); g.fillRect(x + w, y, 1, hh); if (s.k >= 1 || !s.up) { g.fillStyle = 'rgba(236,224,255,0.5)'; g.fillRect(x, y, w, 1); } }
+    g.fillStyle = '#1b1626'; g.fillRect(x - 1, y, 1, hh); g.fillRect(x + w, y, 1, hh); if (s.k >= 1 || !s.up) { g.fillStyle = 'rgba(236,224,255,0.5)'; g.fillRect(x, y, w, 1); } if (s.lock !== undefined) g.restore(); }
   /* THE STACKS OUT OF THE FLOOD: his books, two courses of them, rising out of the acid as the room floods */
   for (const st of MG.stacks || []) { if (!st.up) continue; const x = st.x * TS - cx, bot = Math.round(L.arena.floor - TS * 0.5 - cy), hh = Math.round(2 * TS * (0.35 + 0.65 * st.k)), y = Math.round(L.arena.floor - 2 * TS - cy), w = 2 * TS;
     if (x < -40 || x > VW + 40) continue;
@@ -11930,6 +11961,12 @@ function drawMageTiles(cx, cy) {
 function drawMageMover(m, cx, cy) {
   const A = ma();
   if (m.kind === 'lane') return;
+  if (m.kind === 'bookcase') { const x = Math.round(m.x - cx), y = Math.round(m.y - cy), w = m.w, cols = ['#5a2a3a', '#2a4a3a', '#3a2a5a', '#5a4a2a'];
+    g.fillStyle = '#3a2a1a'; g.fillRect(Math.round(m.x0 - cx), y + 9, Math.round(m.x1 - m.x0), 1); g.fillStyle = '#6a5038'; g.fillRect(Math.round(m.x0 - cx), y + 8, Math.round(m.x1 - m.x0), 1);   /* the rail */
+    g.fillStyle = '#4a3624'; g.fillRect(x, y, w, 20); g.fillStyle = '#6a5038'; g.fillRect(x, y, w, 2); g.fillRect(x, y, 1, 20); g.fillStyle = '#e0b050'; g.fillRect(x, y, w, 1);
+    g.fillStyle = '#1e1828'; g.fillRect(x + 2, y + 3, w - 4, 15);
+    for (let yy = 0; yy < 2; yy++) { g.fillStyle = '#2e2016'; g.fillRect(x + 2, y + 10 + yy * 8 - 1, w - 4, 1); for (let xx = 3; xx < w - 4; xx += 3) { g.fillStyle = cols[((xx + yy * 5) / 3 | 0) % 4]; g.fillRect(x + xx, y + 3 + yy * 8 + (xx % 2), 2, 6 - (xx % 2)); } }
+    g.fillStyle = '#1b1626'; g.fillRect(x - 1, y, 1, 20); g.fillRect(x + w, y, 1, 20); g.globalAlpha = 0.25; g.fillStyle = MVIO[2]; g.fillRect(x, y - 1, w, 1); g.globalAlpha = 1; return; }
   if (m.kind === 'book') { const c = A.book[Math.floor((m.ph || 0) * 4) % 2]; g.drawImage(c, Math.round(m.x + m.w / 2 - c.width / 2 - cx), Math.round(m.y - 3 - cy)); g.globalAlpha = 0.25; g.fillStyle = MVIO[2]; g.fillRect(Math.round(m.x - cx), Math.round(m.y - 4 - cy), m.w, 1); g.globalAlpha = 1; return; }
   if (m.planet) { const c = A.planet[(m.world || 0) % 4], x = Math.round(m.x + m.w / 2 - cx), y = Math.round(m.y - cy); g.drawImage(c, x - 11, y - 16); g.fillStyle = '#5a3c14'; g.fillRect(Math.round(m.x - cx), y + 1, m.w, 3); g.fillStyle = '#e0b050'; g.fillRect(Math.round(m.x - cx), y, m.w, 1); return; }
 }
@@ -11945,6 +11982,10 @@ function drawMageProps(cx, cy) {
       g.fillStyle = '#e0b050'; g.fillRect(jx - 1, by - 20, 2, 4);
       const lit = archWeightLive(pr); if (lit) { const k = 0.5 + 0.5 * Math.sin(time * 5); g.globalAlpha = 0.5 + 0.5 * k; g.fillStyle = '#8fd160'; g.fillRect(jx - 3, by - 11, 6, 3); g.globalAlpha = 1; fbloom(jx, by - 10, 12 + k * 4, 0.3, 'green'); } continue; }
     if (pr.t === 'vatspit') { g.drawImage(A.spit[pr.state === 'bubble' ? 1 : pr.state === 'spit' ? 2 : 0], x - 9, y - 16); continue; }
+    if (pr.t === 'lockrune') { const K = MG.locks[pr.lock], done = pr.lit || (K && K.open), urgent = K && K.t > 0 && K.t < 3, near = Math.abs(pr.x - P.x) < 140;
+      const c = A.rune[done ? 1 : Math.floor(time * 2) % 2 && near ? 1 : 0], flick = urgent && pr.lit ? Math.floor(time * 10) % 2 : 1;
+      if (pr.shelf >= 0) { const bx = x - 9; g.fillStyle = '#1b1626'; g.fillRect(bx, y - 1, 18, 2); g.fillStyle = '#6a5038'; g.fillRect(bx + 1, y - 2, 16, 1); }   /* the rune is set in a plate on the stack's top */
+      if (flick) g.drawImage(c, x - 5, y - 22); if (done && flick) fbloom(x, y - 17, 12, 0.45, 'green'); else if (near) fbloom(x, y - 17, 8, 0.2, 'green'); continue; }
     if (pr.t === 'rune' && pr.post) { const s = MG.shelves[pr.shelf], done = !s || s.up;   /* A WARDING POST (THE WARDED COURTYARD): a stone post the rune plate is set in, cold once its slab has moved */
       g.fillStyle = '#2e2838'; g.fillRect(x + 2, y - 26, 12, 26); g.fillStyle = '#6a6280'; g.fillRect(x + 3, y - 25, 10, 25); g.fillStyle = '#8e86a4'; g.fillRect(x + 3, y - 25, 10, 1); g.fillRect(x + 3, y - 25, 1, 25);
       g.fillStyle = '#4a4258'; g.fillRect(x + 1, y - 28, 14, 3); g.fillRect(x + 1, y - 2, 14, 2);
