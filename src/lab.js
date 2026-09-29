@@ -584,8 +584,27 @@ async function runbossLab(BK, opts) {
           const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
           if(SHIELDED(h)&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
           const nx=-q.vy/sp,ny=q.vx/sp,s2=(rx*nx+ry*ny)>=0?1:-1;vx+=nx*s2*1.4;vy+=ny*s2*1.4;threat=true;if(d<24&&P.st>20&&!(P.dodge>0))BK.press('dodge');}   /* and the dash's i-frames through the one that is about to land */
+        /* HIS SPELL REALMS (claude/undead3, round undead4: "teach the bot the three openings"). In a realm his ward holds, so the bot does
+           not close on him: it reads the realm's hazards and goes for its ONE opening - FIRE: over or under his wall going out, and a DODGE
+           THROUGH it coming back (it runs on into him); ICE: under the ceiling at the icicle over his shell, and a swing at it; POISON: over
+           the mire and out of the spore rings, and while the beam is cut, down to the vent and a swing at it. Open, it goes in as ever. */
+        let realmGoal=null;const RL=boss.realm;
+        if(RL&&boss.alive&&!(boss.open>0)){const b=realmBox(boss,A),toward=(gx,gy,w=1.6)=>{if(Math.abs(gx-P.x)>4)vx+=Math.sign(gx-P.x)*w;if(Math.abs(gy-py)>4)vy+=Math.sign(gy-py)*w;};
+          if(RL.kind==='fire'){const tw=(b.x1-b.x0)/7,ti=Math.floor((P.x-b.x0)/tw);
+            if((RL.ph==='tell'||RL.ph==='burn')&&RL.lit&&RL.lit.includes(ti)){let best=null;for(let j=0;j<7;j++)if(!RL.lit.includes(j)&&(best===null||Math.abs(j-ti)<Math.abs(best-ti)))best=j;if(best!==null){vx+=Math.sign(b.x0+(best+0.5)*tw-P.x)*2.5;threat=true;}}
+            const W=RL.wall;if(W){const closing=(P.x-W.x)*W.d>0,dd=Math.abs(P.x-W.x);
+              if(!W.back&&closing&&dd<110&&Math.abs(py-W.y)<60){vy+=(py<W.y?-1:1)*2.5;threat=true;}
+              if(W.back&&closing&&dd<46&&!W.hitP){threat=true;if(P.st>=10&&!(P.dodge>0)&&dd<34){P.face=-W.d;k.left=W.d>0;k.right=W.d<0;BK.press('dodge');}}}
+            realmGoal=[boss.x+(P.x<boss.x?-110:110),by];}
+          if(RL.kind==='ice'){for(const q of RL.icicles)if((q.st==='crack'||(q.st==='fall'&&!q.struck))&&Math.abs(q.x-P.x)<24){vx+=Math.sign(P.x-q.x||1)*2.5;threat=true;}
+            let over=null;for(const q of RL.icicles)if(q.st==='hang'&&(!over||Math.abs(q.x-boss.x)<Math.abs(over.x-boss.x)))over=q;
+            if(over){realmGoal=[over.x-10,b.y0+2-8];if(Math.abs(over.x-boss.x)<12&&Math.abs(P.x-(over.x-10))<8&&py<b.y0+10&&P.atk<0){P.face=1;BK.press('atk');swings++;}}}
+          if(RL.kind==='poison'){if(RL.exposedT<=0&&P.y>RL.mire-26){vy-=2.5;threat=true;}for(const s of [...(RL.spores||[]),...(RL.clouds||[])])away(s.x,s.y,(s.r||26)+24,3);
+            if(RL.exposedT>0){realmGoal=[RL.vent.x-12,RL.mire-6];if(Math.abs(P.x-(RL.vent.x-12))<8&&Math.abs(py-(RL.mire-6))<10&&P.atk<0){P.face=1;BK.press('atk');swings++;}}
+            else realmGoal=[RL.vent.x-110,RL.mire-70];}
+          if(realmGoal)toward(realmGoal[0],realmGoal[1],threat?0.8:1.6);}
         const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
-        if(!threat){const want=boss.open>0?LAB_REACH[h]*0.55:(rest?150:LAB_REACH[h]*0.7);const gx=boss.x-side*want,gy=by;
+        if(!threat&&!realmGoal){const want=boss.open>0?LAB_REACH[h]*0.55:(rest?150:LAB_REACH[h]*0.7);const gx=boss.x-side*want,gy=by;
           if(Math.abs(gx-P.x)>6)vx+=Math.sign(gx-P.x);if(Math.abs(gy-py)>6)vy+=Math.sign(gy-py);}
         if(vx>0.3)k.right=true;else if(vx<-0.3)k.left=true;if(vy>0.3)k.down=true;else if(vy<-0.3)k.up=true;
         if(block){k.block=true;}

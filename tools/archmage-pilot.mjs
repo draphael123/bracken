@@ -6,6 +6,7 @@
 // his modes did the damage. Not in the suite: it is too long.
 // usage: node tools/archmage-pilot.mjs            (salts 1,2,3 x 7 heroes = 21 fights)
 //        HEALTH=normal CAP=300 node tools/archmage-pilot.mjs 1 knight,warden
+//        (then the SPIRAL STAIR per hero, with the lab's stair bot - STAIR=0 skips it; undead4)
 import { openPage } from './cdp.mjs';
 const salts = (process.argv[2] || '1,2,3').split(',').map(Number);
 const heroes = (process.argv[3] || 'knight,warden,pyro,paladin,pirate,reaper,geomancer').split(',');
@@ -17,7 +18,7 @@ try {
     await pg.reload();
     const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;
       const seen={};let was=null;   /* how many of the openings were THE DODGE THROUGH (breached) and how many the mark (gather) */
-      const onFrame=({boss,h})=>{const s=seen[h]||(seen[h]={breached:0,gather:0});if(boss.mode!==was&&(boss.mode==='breached'||boss.mode==='gather'))s[boss.mode]++;was=boss.mode;};
+      const onFrame=({boss,h})=>{const s=seen[h]||(seen[h]={breached:0,gather:0});if(boss.mode!==was&&['breached','gather','scorched','shattered','vented'].includes(boss.mode))s[boss.mode]=(s[boss.mode]||0)+1;was=boss.mode;};
       const o=await BK.bossLab({bosses:['fallingtower'],heroes:${JSON.stringify(heroes)},healthMode:${JSON.stringify(health)},maxSecs:${cap},modes:true,salt:${salt},onFrame});
       return o.rows.map(r=>({h:r.h,salt:${salt},out:r.outcome||r.skipped,secs:r.secs,taken:r.health&&Math.round(r.health.damageTaken),opened:r.opened,left:r.hpLeftPct,swings:r.swings,hitBy:r.hitBy,portal:seen[r.h]}));})()`, 3600000);
     for (const x of r) console.log(JSON.stringify(x));
@@ -31,5 +32,14 @@ try {
     medianLeftOnLoss: left.length ? left[left.length >> 1] : null, openedAvg: +(rows.reduce((a, r) => a + (r.opened || 0), 0) / Math.max(1, rows.length)).toFixed(1),
     breachedAvg: +(rows.reduce((a, r) => a + ((r.portal && r.portal.breached) || 0), 0) / Math.max(1, rows.length)).toFixed(1), markOpenAvg: +(rows.reduce((a, r) => a + ((r.portal && r.portal.gather) || 0), 0) / Math.max(1, rows.length)).toFixed(1),
     byHero: Object.fromEntries(Object.entries(by).map(([h, [w, n]]) => [h, w + '/' + n])), hitBy: Object.fromEntries(Object.entries(hit).map(([k, v]) => [k, Math.round(v)])) }));
+  /* THE SPIRAL STAIR (undead4): each hero climbs it with the lab's stair bot (src/lab.js chaseClimb: braziers struck, their fire jumped,
+     the snuffed one relit from behind), health held up, no god mode - the seconds, what it took, and how often the brazier's fire caught it */
+  if (process.env.STAIR !== '0') for (const h of heroes) { await pg.reload();
+    const q = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');const LB=await import('/src/lab.js');BK.manualSimulation=true;
+      BK.setHero(${JSON.stringify(h)});BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=false;BK.sim(10);
+      BK.tp(33,50);BK.sim(5);for(let i=0;i<90;i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;BK.sim(20);
+      const r=LB.chaseClimb(BK,BK.enemies().find(e=>e.t==='magechase'),{secs:180,refill:true});
+      return {h:${JSON.stringify(h)},stair:BK.carpet()?'top':'stuck',secs:Math.round(r.t/60),taken:Math.round(r.taken),burnt:r.burnt,wards:BK.L.spiral.seals.filter(s=>s.broken).length,snuffed:BK.L.spiral.seals.some(s=>s.doused)};})()`, 600000);
+    console.log(JSON.stringify(q)); }
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }
