@@ -497,7 +497,7 @@ let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = ''; 
 window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPress(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
   damagePlayer: (x, d, o) => damagePlayer(x, d, o), hurtEnemy: (e, d, x, pl) => hurtEnemy(e, d, x, pl), respawn: () => respawn(), fullHp: e => fullHp(e), risen: () => risen, bodies: () => bodies, acorns: () => acorns, heavyWind: () => heavyWind(),
-  treeNodes: () => treeNodes(), get treeI() { return treeI; }, set treeI(v) { treeI = v; }, get treeMsg() { return treeMsg; }, get treeResetT() { return treeResetT; }, get talentsBackT() { return talentsBackT; }, get talentsBackWho() { return talentsBackWho; }, novas: () => novas, wardCap: () => wardCap(), raiseCue: () => raiseCue(), raisePips: () => raisePips() };   /* for the labs and the harnesses */
+  treeNodes: () => treeNodes(), get treeI() { return treeI; }, set treeI(v) { treeI = v; }, get treeMsg() { return treeMsg; }, get treeResetT() { return treeResetT; }, get talentsBackT() { return talentsBackT; }, get talentsBackWho() { return talentsBackWho; }, novas: () => novas, wardCap: () => wardCap(), raiseCue: () => raiseCue(), raisePips: () => raisePips(), heroSet: (s, w, p, h) => heroSet(s, w, p, h), skinIds: () => SKINS.map(k => k.id) };   /* for the labs and the harnesses */
 /* THE PRACTICE YARD, from the store: a portal into the straw men and plain platforms, for trying a hero without a wood to lose */
 const PRACTICE = [{ id: 'heroTrial', name: "THE HERO'S TRIAL", price: 0, practice: 'trial', desc: 'the guided yard for the hero you are, a gate a verb: the dash attack, rising cut and low sweep too.' }, { id: 'practiceYard', name: 'THE PRACTICE YARD', price: 0, practice: true, desc: 'step through the portal into a yard of straw men and plain platforms. nothing there can kill you. pause to leave.' }];
 const STORE_TABS = [{ name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'WEAPONS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { name: 'SKILLS', items: TALENTS, key: null, owned: 'talents', talent: true }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }, { name: 'PRACTICE', items: PRACTICE, key: null, owned: 'items' }];
@@ -1932,7 +1932,7 @@ function spawnEntities() {
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) P.carry = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
   if (L.arena && L.arena.boss === 'queen') L.arena.comb = { rows: [], n: 0 };
   crumbleReset(L, { setSpr: (i, s) => { if (tileSpr) tileSpr[i] = s; } });   /* THE ROTTEN BRIDGES are whole again on every attempt (B4) */
-  for (const v of L.gasVents || []) { v.litT = 0; v.burnt = false; } if (typeof P !== 'undefined' && P) P.candle = 0;   /* and every gas vent cold, the fire out of your hand */ whirlInit(L, marks);   /* a whirlpool whose lever was struck stays still through a death: marks keeps it */ if (L.keepCrumbles) keepCrumbleReset(); washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; deathFx = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
+  for (const v of L.gasVents || []) { v.litT = 0; v.burnt = false; } if (typeof P !== 'undefined' && P) P.candle = 0; for (const pp of (players || [])) { pp.dance = 0; pp.danceCue = 0; pp.danceMax = 0; pp.idleLongT = 0; }   /* and every gas vent cold, the fire out of your hand */ whirlInit(L, marks);   /* a whirlpool whose lever was struck stays still through a death: marks keeps it */ if (L.keepCrumbles) keepCrumbleReset(); washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; deathFx = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
   if((L.harborSections||L.reverseTower)&&!rushOn()){miniDone=!!(PROG[LEVELS[levelIndex].id]||{}).mini;if(miniDone&&L.mini)for(let y=0;y<LH;y++){const i=y*LW+L.mini.gate;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}}
   ambushReset();
   tomeToken = newTomeToken();   /* ONE TOKEN A LEVEL: every tome on every shelf shares it, so only one is ever winding up or darting (one windup at a time) */
@@ -3144,6 +3144,20 @@ function xpSim() { const keep = levelIndex, rows = []; let run = 0, full = 0, st
 let winLevelUp = false, medalPurse = 0;
 const MEDAL_PURSE = [0, 20, 45, 90];   /* gold paid the FIRST time a level reaches each medal: bronze 20, silver 45 in all, gold 90 in all */
 const medalTime = () => levelTime * (PROG.charm === 'ribbon' ? 0.9 : 1);
+/* A HERO'S OWN DANCE (dances lane, 2026-09-29): the frames are the set's own (K.R.dance, baked in chars.js for every hero and so for every
+   skin), the jingle is the hero's own (SFX.dance). An automatic dance (after a boss, or a long idle) plays whole turns for about two and a half seconds and stops. */
+function danceStart(auto) {
+  const n = (K.R.dance || []).length || 12;
+  P.dance = 0.0001; P.danceLoop = 0; P.danceMax = auto ? Math.ceil(2.4 / (n / 10)) * (n / 10) + 0.1 : 0; P.fidgetT = 0; P.idleT = 0; P.idleLongT = 0;
+  SFX.dance(hero());
+}
+/* THE ARENA OPENS: every hero still on his feet gives a turn of his own dance, as soon as his hands are still. */
+let bossWasActive = false;
+function danceAfterBoss() {
+  const ended = bossWasActive && !bossActive && state === 'play' && !rushOn() && L.arena && enemies.some(e => e.t === L.arena.boss && !e.alive);
+  bossWasActive = bossActive;
+  if (ended) for (const pp of players) if (upright(pp)) pp.danceCue = 8;
+}
 function winLevel() {
   for (const p of players) p.total = addScore(p.total || freshScore(), p.score);   /* this wood goes onto the run's running total, for the victory card */
   fogSave();
@@ -4645,14 +4659,14 @@ addEventListener('blur', () => { for (const k in keys) keys[k] = false; edPaint 
 const pad = { prev: {} }, pad2 = { prev: {} };
 const padsNow = () => { const out = [], gps = navigator.getGamepads ? navigator.getGamepads() : []; for (const p of gps) if (p && p.connected) out.push(p); return out; };
 const padState = gp => { const b = i => !!(gp.buttons[i] && gp.buttons[i].pressed), ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
-  return { jump: b(0), atk: b(2), dodge: b(1), throw: b(3), skill2: b(7), skill3: b(10), skill4: b(11), talk: b(12) || b(6), block: b(4) || b(5), pause: b(9), left: b(14) || ax < -0.5, right: b(15) || ax > 0.5, up: b(12) || ay < -0.5, down: b(13) || ay > 0.5 }; };
+  return { jump: b(0), atk: b(2), dodge: b(1), throw: b(3), skill2: b(7), skill3: b(10), skill4: b(11), talk: b(12) || b(6), block: b(4) || b(5), dance: b(8), pause: b(9), left: b(14) || ax < -0.5, right: b(15) || ax > 0.5, up: b(12) || ay < -0.5, down: b(13) || ay > 0.5 }; };
 /* a pad into a player's OWN hands: his held keys and his one-shot presses, never the globals, which are player one's */
 function padIntoPlayer(gp, st, p) {
   const now = padState(gp), rose = k => now[k] && !st.prev[k];
   if (Object.values(now).some(Boolean)) initAudio();
   const pr = p.press;
   for (const k of ['jump', 'atk', 'dodge', 'throw', 'skill2', 'skill3', 'skill4', 'talk', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
-  for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up']) { if (now[k]) p.keys[k] = true; else if (st.prev[k]) p.keys[k] = false; }
+  for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance']) { if (now[k]) p.keys[k] = true; else if (st.prev[k]) p.keys[k] = false; }   /* (dance: the BACK button, the EMOTE key - each player's own) */
   st.prev = now;
 }
 function pollGamepad() {
@@ -4665,7 +4679,7 @@ function pollGamepad() {
   if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; } }
   if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true; if (rose('talk')) talkPress = true; if (rose('pause')) pausePress = true;
   if (rose('left')) leftPress = true; if (rose('right')) rightPress = true; if (rose('up')) upPress = true; if (rose('down')) downPress = true;
-  for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down']) { if (now[k]) keys[k] = true; else if (pad.prev[k]) keys[k] = false; }
+  for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance']) { if (now[k]) keys[k] = true; else if (pad.prev[k]) keys[k] = false; }
   pad.prev = now;
 }
 // Touch: on-screen pad on touch devices (or ?touch=1). Zones are in display pixels.
@@ -7017,12 +7031,21 @@ function updatePlayer(dt) {
      that calls updateCharge) - by here the throw, if any, is already thrown and the key already eaten. This is a
      second, harmless net: if anything still sees P.carry with keys.atk set, it is cleared again. */
   if (P.carry) { keys.atk = false; P.abuf = 0; }
-  /* THE DANCE: H, standing still on the ground, and again to stop. Anything else you do - move, jump, swing, block,
-     take a blow - and the dance is over, because a fight is not a party. */
+  /* THE DANCE (the EMOTE key, H): standing still on the ground, and again to stop. Anything else you do - move, jump, swing, block,
+     take a blow - and the dance is over, because a fight is not a party. It is the hero's OWN dance (K.R.dance, chars.js) with
+     the hero's own jingle (SFX.dance), and it also plays by itself in two places: after a boss falls (P.danceCue, armed by
+     danceAfterBoss below) and on a long idle (P.idleLongT, the fidget clock). Both are the same dance and end the same way:
+     any press, any step, a blow. An automatic one plays ONE turn (P.danceMax) and stops; the key's own goes on until you stop it.
+     It never holds a hero: nothing here sets a timer that a move does not clear, so it cannot block a fight's end or the walk-out. */
   { const dn = keys.dance && !P.danceWas; P.danceWas = !!keys.dance;
-    const busy = !P.ground || P.dead || keys.left || keys.right || keys.jump || keys.atk || keys.dodge || keys.block || P.hurt > 0 || P.atk >= 0 || P.dodge > 0 || P.climb;
-    if (dn && !busy && Math.abs(P.vx) < 20) { P.dance = P.dance > 0 ? 0 : 0.0001; SFX.uiSel(); }
-    if (P.dance > 0) { if (busy) P.dance = 0; else { P.dance += dt; P.vx = 0; } } }
+    const busy = !P.ground || P.dead || keys.left || keys.right || keys.jump || keys.atk || keys.dodge || keys.block || P.hurt > 0 || P.atk >= 0 || P.dodge > 0 || P.climb || P.swim || P.carry;
+    if (dn && !busy && Math.abs(P.vx) < 20) { if (P.dance > 0) { P.dance = 0; P.danceMax = 0; SFX.uiSel(); } else danceStart(false); }
+    if (P.danceCue > 0) { P.danceCue -= dt; if (keys.left || keys.right || keys.jump || keys.dodge || P.dead || state !== 'play') P.danceCue = 0;
+      else if (!(P.dance > 0) && !busy && Math.abs(P.vx) < 20) { P.danceCue = 0; danceStart(true); } }
+    if (P.dance > 0) { if (busy) { P.dance = 0; P.danceMax = 0; } else { P.dance += dt; P.vx = 0;
+      const n = (K.R.dance || []).length || 12, lp = Math.floor(P.dance * 10 / n);
+      if (P.danceMax > 0 && P.dance >= P.danceMax) { P.dance = 0; P.danceMax = 0; }
+      else if (lp !== P.danceLoop) { P.danceLoop = lp; if (lp > 0) SFX.dance(hero()); } } } }
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
   if (isPyro() && skillPress('fireWall') && (P.ground || P.swim) && cdReady('fireWall') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(31)) { cdSet('fireWall'); kitPose(P, 'wall', 0.4); P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 3, delay: i * 0.08, own: true }); SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (isPyro() && skillPress('cinderStep') && cdReady('cinderStep') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('cinderStep');  P.dodge = 0.3; P.vx = P.face * 320; P.inv = Math.max(P.inv, 0.4); P.cinderT = 0.3; kitPose(P, 'cinder', 0.3); streaks(P.x, P.y - 8, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 160); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0, own: true }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
@@ -7795,7 +7818,9 @@ function updatePlayer(dt) {
       && !enemies.some(e => e.alive && Math.abs(e.x - P.x) < 160 && Math.abs(e.y - P.y) < 100 && windingUp(e));
     if (!calm) { P.idleT = 0; P.fidgetT = 0; }
     else if (P.fidgetT > 0) { P.fidgetT -= dt; if (P.fidgetT <= 0) { P.fidgetT = 0; P.idleT = 0; P.fidgetWait = 7 + Math.random() * 6; } }
-    else if ((P.idleT = (P.idleT || 0) + dt) > (P.fidgetWait || 4) && K.R.fidget) P.fidgetT = K.R.fidget.length * 0.1; }
+    else if ((P.idleT = (P.idleT || 0) + dt) > (P.fidgetWait || 4) && K.R.fidget) P.fidgetT = K.R.fidget.length * 0.1;
+    /* A LONG IDLE is a dance, not another fidget: half a minute of standing about in no danger, and the hero gives his own dance one turn */
+    if (calm) { if ((P.idleLongT = (P.idleLongT || 0) + dt) > 30 && K.R.dance) danceStart(true); } else P.idleLongT = 0; }
 
   /* THE BELL PIT'S THROW, carried: its sideways half waits until you are up past the deck, or the joist you rise beside stops it (pitThrow) */
   if (P.pitCarry) { P.pitCarry.t -= dt; if (L.bellDeck && P.y < L.bellDeck.deck * TS - 2 && !P.dead) P.vx = P.pitCarry.vx; if (P.pitCarry.t <= 0 || (P.ground && P.y <= L.bellDeck.deck * TS)) P.pitCarry = null; }
@@ -23241,7 +23266,7 @@ function update(dt) {
     updateParticles(dt);
     return;
   }
-  if (state === 'win') { if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { if (coop() && campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play(menuTrack()); } else { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
+  if (state === 'win') { for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { if (coop() && campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play(menuTrack()); } else { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   /* THE VICTORY CARD holds until it is dismissed: the end of a campaign is the one screen nobody should have to race */
   if (state === 'victory') { if (confirmPress || pausePress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); return; }
   if (state === 'talk') { if (!talk) { state = 'play'; return; } if (pausePress || dodgePress) closeTalk(); else if (talkPress || confirmPress || atkPress) { talk.i++; if (talk.i >= talk.lines.length) closeTalk(); else { SFX.text(); if (talk.who && talk.who.t === 'npc') talk.who.lineI = talk.i; } } return; }
@@ -23278,7 +23303,7 @@ function update(dt) {
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
-  updateMovers(wdt); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -25298,7 +25323,8 @@ function drawWorld(cx, cy, showPlayer) {
       if (P.flourishT > 0) P.flourishT -= 1 / 60;
       P.lastFace = P.face; if (P.skidT > 0) P.skidT -= 1 / 60;
       let dFace = P.face, dY = 0;
-      if (P.dance > 0) { const DANCE = [['idle', 0, 1], ['crouch', 0, 1], ['jump', 0, 1], ['land', 0, 1], ['block', 0, 1], ['idle', 2, 1],
+      if (P.dance > 0 && K.R.dance) { key = 'dance'; frame = Math.floor(P.dance * 10) % K.R.dance.length; }   /* the hero's OWN dance (chars.js F.dance) */
+      else if (P.dance > 0) { const DANCE = [['idle', 0, 1], ['crouch', 0, 1], ['jump', 0, 1], ['land', 0, 1], ['block', 0, 1], ['idle', 2, 1],
           ['idle', 0, -1], ['crouch', 0, -1], ['jump', 1, -1], ['land', 0, -1], ['run', 2, -1], ['run', 5, 1]];
         const bt = P.dance * 4.2, step = DANCE[Math.floor(bt) % DANCE.length], ph = bt % 1;
         key = K.R[step[0]] ? step[0] : 'idle'; frame = step[1]; dFace = P.face * step[2];
@@ -26017,7 +26043,7 @@ function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 2, w = VW - 40, h = VH - 4; panel(x, y, w, h);   /* (eighteen rows of the small hand at 8, and a clear line between the header and the first) */
   text('CONTROLS', VW / 2, y + 5, UI.title, 'center');
-  const rows = [['move', 'ARROWS / WASD', 'STICK'], ['dance', 'H, STANDING STILL', '-'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], hero() === 'knight' ? ['heavy cut', 'HOLD SWING, LET GO', 'HOLD X'] : ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'TAP A WAY TWICE, OR V / SHIFT', 'B'], ['', 'TELLS ARE TIMED FOR ONE PRESS', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['skill three', SET.skill3Key.toUpperCase()+' (equipped)', 'L3'], ['skill four', SET.skill4Key.toUpperCase()+' (equipped)', 'R3'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P   (MAP: TAB)', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
+  const rows = [['move', 'ARROWS / WASD', 'STICK'], ['emote', 'H = DANCE, STOPS ON A MOVE', 'BACK'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], hero() === 'knight' ? ['heavy cut', 'HOLD SWING, LET GO', 'HOLD X'] : ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'TAP A WAY TWICE, OR V / SHIFT', 'B'], ['', 'TELLS ARE TIMED FOR ONE PRESS', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['skill three', SET.skill3Key.toUpperCase()+' (equipped)', 'L3'], ['skill four', SET.skill4Key.toUpperCase()+' (equipped)', 'R3'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P   (MAP: TAB)', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
   /* IN CO-OP THE TWO COLUMNS ARE TWO PEOPLE: player one on the keys, player two on the first pad */
   text(coop() ? 'keyboard  P1' : 'keyboard', x + 80, y + 15, '#9aa39a', 'left', 6); text(coop() ? 'pad  P2' : 'pad', x + w - 10, y + 15, '#9aa39a', 'right', 6);
   if (isReaper()) rows.forEach((r, i) => { const o = DK_KEYS.controls[r[0]]; if (o) rows[i] = o; });
