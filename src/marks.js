@@ -433,7 +433,7 @@ export const HEIGHT = {
   'jelly|biteTell': 'low', 'jelly|castTell': 'low', 'jelly|dive': 'low', 'jelly|hookTell': 'low', 'jelly|swellTell': 'low',
   'kite|dropTell': 'low',
   'lamprey|lungeTell': 'low',
-  'lance|sweepTell': 'low', 'lance|thrustTell': 'low',
+  'lance|sweepTell': 'low', 'lance|thrustTell': 'high',   // THE QUEEN'S LANCE (a boss): his LOW sweep is jumped; his thrust goes over a ducked hero and he is left reaching, as when it is rolled
   'lanternshade|flareTell': 'low',
   'lookout|shootTell': 'high', 'lookout|slashTell': 'low', 'lookout|swingTell': 'low', 'lookout|throwTell': 'high',
   'lurker|springTell': 'low',
