@@ -185,6 +185,9 @@ export function drawRealm(g, e, A, cx, cy, time) {
 export function drawRealmFx(g, e, cx, cy, time) {
   const R = e && e.realm; if (!R) return; const A = R.A, b = realmBox(e, A), bb = realmBox(null, A), H = g.canvas.height, py0 = Math.round(bb.y0 - cy);
   if (R.kind === 'fire') { const F = REALM.fire, tw = REALM.w / F.n;
+    if (R.ph === 'tell') for (const t of R.lit) { const tx = Math.round(bb.x0 - cx + t * tw), w = Math.round(tw) - 2, flr = Math.round(A.floor - cy) - 22;   /* THE TELL: the columns it will stand up in shimmer first */
+      g.fillStyle = 'rgba(255,155,73,' + (0.08 + 0.06 * Math.sin(time * 24)).toFixed(3) + ')'; g.fillRect(tx + 1, py0, w, flr - py0);
+      g.fillStyle = 'rgba(255,211,107,0.5)'; for (let y = flr - ((time * 90) % 24); y > py0; y -= 24) g.fillRect(tx + 6 + ((y | 0) % 3) * 10, Math.round(y), 2, 3); }
     if (R.ph === 'burn') for (const t of R.lit) { const tx = Math.round(bb.x0 - cx + t * tw), w = Math.round(tw) - 2, flr = Math.round(A.floor - cy) - 22;
       g.fillStyle = 'rgba(201,70,61,0.85)'; g.fillRect(tx + 1, py0, w, flr - py0);
       g.fillStyle = 'rgba(255,155,73,0.9)'; g.fillRect(tx + 8, py0, w - 14, flr - py0);
@@ -200,11 +203,16 @@ export function drawRealmFx(g, e, cx, cy, time) {
       g.strokeStyle = 'rgba(200,240,255,0.8)'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 22, 17, 27, 0, 0, Math.PI * 2); g.stroke();
       g.fillStyle = 'rgba(155,226,255,0.18)'; g.beginPath(); g.ellipse(x, y - 22, 16, 26, 0, 0, Math.PI * 2); g.fill();
       g.fillStyle = '#ffffff'; g.fillRect(x - 9 + Math.round(Math.sin(time * 2) * 3), y - 40, 2, 5); } }
-  if (R.kind === 'poison') { const Q = REALM.poison, my = Math.round(R.mire - cy), VW = g.canvas.width;
-    g.fillStyle = '#2a3a1a'; g.fillRect(0, my + 4, VW, H - my); g.fillStyle = '#4a6a2a'; g.fillRect(0, my, VW, 5);
-    g.fillStyle = '#8fd160'; for (let x = 0; x < VW; x += 3) { const s = Math.round(Math.sin((x + cx) * 0.11 + time * 2.4) * 1.5); g.fillRect(x, my + s, 3, 1); }
-    for (let i = 0; i < 8; i++) { const bx = ((i * 97 + time * 13) % VW), ph = (time * 1.3 + i * 0.37) % 1; g.fillStyle = 'rgba(166,224,74,' + (0.7 * (1 - ph)).toFixed(2) + ')'; g.fillRect(Math.round(bx), my - Math.round(ph * 6), 2, 2); }
-    const vx = Math.round(R.vent.x - cx); g.fillStyle = '#1a2a10'; g.fillRect(vx - 12, my - 3, 24, 6); g.fillStyle = R.exposedT > 0 ? (Math.floor(time * 10) % 2 ? '#ffd36b' : '#a6e04a') : '#6a9a40'; g.fillRect(vx - 10, my - 2, 20, 2);   /* THE VENT: it flashes while the beam is cut */
+  if (R.kind === 'poison') { const Q = REALM.poison, my = Math.round(R.mire - cy), mx0 = Math.max(0, Math.round(bb.x0 - cx)), mx1 = Math.min(g.canvas.width, Math.round(bb.x1 - cx)), MW = Math.max(0, mx1 - mx0);
+    g.fillStyle = '#2a3a1a'; g.fillRect(mx0, my + 4, MW, H - my); g.fillStyle = '#4a6a2a'; g.fillRect(mx0, my, MW, 5);   /* the mire, between the realm's walls */
+    g.fillStyle = '#8fd160'; for (let x = mx0; x < mx1; x += 3) { const s = Math.round(Math.sin((x + cx) * 0.11 + time * 2.4) * 1.5); g.fillRect(x, my + s, 3, 1); }
+    for (let i = 0; i < 8; i++) { const bx = mx0 + ((i * 97 + time * 13) % Math.max(1, MW)), ph = (time * 1.3 + i * 0.37) % 1; g.fillStyle = 'rgba(166,224,74,' + (0.7 * (1 - ph)).toFixed(2) + ')'; g.fillRect(Math.round(bx), my - Math.round(ph * 6), 2, 2); }
+    /* THE VENT: a mouth in the mire, bubbling up into a column; it flashes gold while the beam is cut - the moment to strike it */
+    const vx = Math.round(R.vent.x - cx), cut = R.exposedT > 0;
+    g.fillStyle = '#10180a'; g.fillRect(vx - 14, my - 4, 28, 8); g.fillStyle = '#3a5a20'; g.fillRect(vx - 16, my - 5, 32, 2);
+    for (let i = 0; i < 6; i++) { const ph = (time * 1.6 + i / 6) % 1, bxx = vx + Math.round(Math.sin(i * 2.3 + time) * 6); g.fillStyle = cut ? (i % 2 ? '#ffd36b' : '#fff0c0') : (i % 2 ? '#a6e04a' : '#6a9a40'); g.fillRect(bxx, my - 4 - Math.round(ph * 22), 2, 2); }
+    g.fillStyle = cut ? (Math.floor(time * 10) % 2 ? '#ffd36b' : '#a6e04a') : '#6a9a40'; g.fillRect(vx - 10, my - 3, 20, 2);
+    if (cut) { g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,211,107,0.16)'; g.fillRect(vx - 18, my - 30, 36, 34); g.globalCompositeOperation = 'source-over'; }
     if (R.exposedT <= 0 && !OPEN.has(e.mode) && e.alive) { const ex = Math.round(e.x - cx), ey = Math.round(e.y - cy) - 20;   /* THE BEAM that feeds him */
       g.strokeStyle = 'rgba(143,209,96,' + (0.5 + 0.3 * Math.sin(time * 9)).toFixed(2) + ')'; g.lineWidth = 3; g.beginPath(); g.moveTo(vx, my - 2); g.lineTo(ex, ey); g.stroke(); g.lineWidth = 1;
       g.strokeStyle = 'rgba(143,209,96,0.6)'; g.beginPath(); g.ellipse(ex, ey, 16, 26, 0, 0, Math.PI * 2); g.stroke(); }

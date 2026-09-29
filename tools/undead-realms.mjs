@@ -129,9 +129,9 @@ try {
    const A=BK.L.arena;
    for(let k=0;k<3;k++){const row={};
      b.hp=Math.floor(b.hp0*MR.REALM.at[k]);b.realmRest=0;let told=false;
-     for(let i=0;i<900&&!b.realm;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);if(b.mode==='realmTell'){told=true;row.mark=BK.markOf?BK.markOf(b):'';}}
+     for(let i=0;i<900&&!b.realm;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);if(b.mode==='realmTell'){if(!told)BK.step(1);told=true;row.mark=BK.markOf?BK.markOf(b):'';}}
      row.told=told;row.kind=b.realm&&b.realm.kind;if(!b.realm){out.realms.push(row);break;}
-     const R=b.realm,box=MR.realmBox(b,A);BK.sim(20);row.held=BK.P.x>=box.x0-1&&BK.P.x<=box.x1+1;row.grip=BK.P.carpet&&BK.P.carpet.grip;
+     const R=b.realm,box=MR.realmBox(b,A);BK.sim(20);BK.step(2);   /* (drawn: the realm's room and its hazards, over the real renderer) */row.held=BK.P.x>=box.x0-1&&BK.P.x<=box.x1+1;row.grip=BK.P.carpet&&BK.P.carpet.grip;
      const h0=b.hp;BKT.hurtEnemy(b,40,b.x-10,false);row.warded=b.hp===h0;
      /* its opening, with the game's own swing */
      if(R.kind==='fire'){let n=0;for(;n<60*30&&b.mode!=='scorched';n++){BK.P.hp=BK.P.maxHp;const W=R.wall;if(W&&W.back&&Math.abs(W.x-BK.P.x)<40&&!(BK.P.dodge>0)&&!W.hitP){BK.P.face=Math.sign(W.x-BK.P.x)||1;BK.press('dodge');}BK.sim(1);}}
