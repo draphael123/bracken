@@ -58,6 +58,7 @@ import { lanceSupport, LANCE_SUPPORT } from './lance-support.js';   /* THE QUEEN
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
+import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease } from './attack-tokens.js';
 import { installTactics, braceHit } from './foe-tactics.js';
@@ -1893,6 +1894,7 @@ function loadLevel(i) {
   spawnEntities(); applyLevelRims();
   P.breath=breathCapacity(L,P.relic);P.drownT=0;
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
+  chasesLoad();
   fogReset(); wayRoute = null; wayTgt = null; wayMe = 0;   /* the map remembers this level from the save; the arrow's route is built again */
   /* ...and built HERE when the arrow is on: the fill with its rides takes a quarter of a second on the Deep, and on the arrow's first ask in
      play that was fifteen frames of hitch. Inside a load nobody sees it. (Off by default, so the labs and tools never pay for it.) */
@@ -2912,6 +2914,7 @@ function respawn() { P.windRide = null; P.martyrUsed = false; P.airRolled = fals
   P.breath=breathCapacity(L,P.relic);P.drownT=0;
   dcRespawn();
   coopRegroup();   /* the room is back: whoever else is in the party is stood up at the same shrine, not left in the old one */
+  chaseRespawn();
 }
 // the order is not the story order: a rush wants a ramp with a pulse in it, and the minis are the breathers
 // THE ORDER THEY ARE MET IN. The rush used to run in the order they happened to be written down, which put
@@ -8859,7 +8862,7 @@ function updateLifeboat(m, dt) {
   else if (m.state === 'ride') { m.y = sea; m.vx = m.speed; m.x += m.speed * dt;
     if (Math.random() < dt * 12) parts.push({ x: m.x + 2, y: sea + 6, vx: -30, vy: -10, life: 0.4, max: 0.4, col: '#b8c85a', size: 2, grav: 0 });
     m.beamT = Math.max(0, (m.beamT || 0) - dt);
-    if (aboard && !P.dead && !keys.down && Math.abs(P.x - m.beamX) < 10 && !(m.beamT > 0)) { m.beamT = 1; damagePlayer(m.beamX + 20, DMG.boatBeam, { unblockable: true }); P.onMover = null; P.vx = -260; P.vy = -120; P.ground = false; SFX.thud(); sparks(P.x, P.y - 14, -1, 6); shakeCam(4); }
+    if (aboard && !P.dead && !duckClears(P, P.y - 11) && Math.abs(P.x - m.beamX) < 10 && !(m.beamT > 0)) { m.beamT = 1; damagePlayer(m.beamX + 20, DMG.boatBeam, { unblockable: true }); P.onMover = null; P.vx = -260; P.vy = -120; P.ground = false; SFX.thud(); sparks(P.x, P.y - 14, -1, 6); shakeCam(4); }
     if (m.x >= m.dockX) { m.x = m.dockX; m.state = 'docked'; m.idle = 0; SFX.thud(); seaCue('SHE FETCHES UP. THE LADDER IS ON HER SIDE', '#bfe6f5', 2); } }
   else if (m.state === 'docked') { m.y = sea; m.idle = aboard || Math.abs(P.x - m.x) < 300 ? 0 : (m.idle || 0) + dt; if (m.idle > 6) { m.state = 'sink'; m.t = 0; } }
   else if (m.state === 'sink') { m.t += dt; m.y = sea + m.t * 20; if (m.t > 1.2) { if (P.onMover === m) P.onMover = null; m.state = 'hung'; m.x = m.hx0; m.y = m.hy; } }
@@ -19233,6 +19236,60 @@ function updateFlood(dt) {
   if (flood.x1 < F.x1) { flood.x1 = Math.min(F.x1, flood.x1 + F.speed * dt); if (Math.random() < dt * 30) parts.push({ x: flood.x1 + (Math.random() - 0.5) * 12, y: flood.y - Math.random() * 10, vx: 40, vy: -40 - Math.random() * 40, life: 0.5, max: 0.5, col: '#eefaff', size: 2, grav: 300 }); if (Math.floor(flood.t * 2) !== Math.floor((flood.t - dt) * 2) && Math.abs(P.x - flood.x1) < 300) SFX.splash(); }
   else if (flood.t > 14) { flood.x0 += 90 * dt; if (flood.x0 >= flood.x1 - 4) { L.pools = L.pools.filter(p => p !== flood); flood = null; marks.add('flood'); } }
 }
+/* ---------- THE CHASE ENGINE (claude/chase, src/chase.js): L.chases = [spec], opt-in. The state is in memory, never saved. ---------- */
+let chases = [], chaseBeamCd = 0, chaseMusicOn = false;
+function chasesLoad() { chases = (L.chases || []).map(c => ({ sp: chaseSpec(c), st: newChase() })); chaseBeamCd = 0; chaseMusicOn = false; }
+const chaseHero = sp => sp.axis === 'x' ? P.x : P.y - 7;
+function chaseMusicOff() { if (chaseMusicOn) { chaseMusicOn = false; music.play(L.music || 'theme'); } }
+function chaseEvent(c, e) {
+  const sp = c.sp;
+  if (e.k === 'start') { if (sp.music) { music.play(sp.music); chaseMusicOn = true; } number(P.x, P.y - 34, 'RUN!', '#ff6b6b'); SFX.rumble(); shakeCam(4); }
+  else if (e.k === 'warn') { number(P.x, P.y - 40, e.text, '#ff6b6b'); SFX.thunder(); shakeCam(3); }
+  else if (e.k === 'contact') { if (e.mode === 'kill') damagePlayer(P.x, 9999, { unblockable: true, pierce: true, name: sp.name }); else damagePlayer(P.x - sp.dir * 20, e.dmg, { unblockable: true, name: sp.name }); shakeCam(6); }
+  else if (e.k === 'end') { number(P.x, P.y - 34, 'SAFE', '#8fd160'); SFX.rumble(); chaseMusicOff(); }
+  else if (e.k === 'crash') { shakeCam(5); SFX.thud(); }
+}
+function updateChase(dt) {
+  if (!chases.length || P.dead || state !== 'play') return;
+  chaseBeamCd = Math.max(0, chaseBeamCd - dt);
+  for (const c of chases) for (const b of c.sp.beams) if (chaseBeamCd <= 0 && beamHit(duckBox(P), duckClears(P, b.y), b, time)) { chaseBeamCd = CHASE_BEAM.cd; damagePlayer((b.x0 + b.x1) / 2, b.dmg, { unblockable: true, name: b.name }); SFX.thud(); shakeCam(3); }   /* THE DUCK answers a beam: duckClears, never the down key */
+  for (const c of chases) {
+    if (c.st.phase === 'idle' && chases.some(o => o !== c && o.st.phase === 'run')) continue;
+    for (const e of chaseStep(c.sp, c.st, chaseHero(c.sp), dt)) chaseEvent(c, e);
+    const k = chaseDanger(c.sp, c.st, chaseHero(c.sp)); c.st.rumT -= dt; const r = rumbleFor(k);
+    if (r && c.st.rumT <= 0) { shakeCam(r.n); rumble(80, 0.25 * k); c.st.rumT = r.every; } }
+}
+function chaseRespawn() {   /* A DEATH PUTS EVERY CHASE BACK AT ITS START, unless the hero is past its safe line */
+  for (const c of chases) { const past = (chaseHero(c.sp) - c.sp.end) * c.sp.dir >= 0; if (!(c.st.phase === 'done' && past)) chaseReset(c.st); }
+  chaseMusicOff();
+}
+function drawChase(cx, cy) {
+  if (!chases.length || state !== 'play') return;
+  for (const c of chases) drawChaser(g, c.sp, c.st, cx, cy, VW, VH, time);
+}
+function drawChaseGlow() {
+  if (!chases.length || state !== 'play') return;
+  for (const c of chases) { drawGlow(g, c.sp, c.st, chaseDanger(c.sp, c.st, chaseHero(c.sp)), VW, VH, time, SET.reduceMotion);
+    if (c.st.warnT > 0 && !P.dead) text(c.st.warnText, Math.round(VW / 2), 30, Math.floor(time * 8) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 8); }
+}
+/* THE PLAYTEST CHASE DEMO (?chase=demo, docs/PLAYTEST.md): a short corridor cut into the first level's opening in MEMORY, one chaser, one timed beam. Like ?boss= it
+   sets bossJumpOn first, so nothing it does can reach a save; no real level has L.chases. */
+function chaseDemo(heroId) {
+  bossJumpOn = true;
+  const h = heroId && HEROES.some(x => x.id === heroId) ? heroId : hero();
+  window.BK.setHero(h); window.BK.reset({ fresh: true });
+  loadLevel(0); startGame();
+  const sx = L.START.x + 6, fy = L.START.y + 1, x0 = sx - 3, x1 = sx + 70;
+  if (x1 >= LW || fy - 10 < 0 || fy + 2 >= LH) { console.warn('?chase=demo: the first level has no room for the corridor'); return false; }
+  for (let y = fy - 10; y <= fy + 1; y++) for (let x = x0; x <= x1; x++) L.grid[y * LW + x] = (y >= fy || x === x0 || x === x1) ? T.SOLID : T.AIR;
+  L.ents = (L.ents || []).filter(e => !(e.x >= x0 - 2 && e.x <= x1 + 2 && e.y >= fy - 12 && e.y <= fy + 2)); grid0.set(L.grid);
+  L.chases = [{ id: 'demo', name: 'THE DEMO CHASE', axis: 'x', dir: 1, trigger: (sx + 6) * CHASE_TS, end: (sx + 58) * CHASE_TS, gap0: 200, curve: [[0, 60], [150, 78, 'THE ROOF GROANS'], [380, 96, 'IT QUICKENS']],
+    contact: 'kill', autoscroll: true, look: 'rock', music: 'boss', beams: [{ x0: (sx + 34) * CHASE_TS, x1: (sx + 37) * CHASE_TS, y: fy * CHASE_TS - 11, th: 6, period: 3, up: 1.2 }] }];
+  chasesLoad(); shrines.push({ x: (sx + 1) * CHASE_TS + 8, y: fy * CHASE_TS, lit: false });   /* the checkpoint right before the start line */
+  checkpoint = { x: (sx + 1) * CHASE_TS + 8, y: (fy) * CHASE_TS }; respawn();
+  camX = P.x - VW / 2; camY = P.y - 100;
+  return true;
+}
 let slide = null; // the rockslide: a front of boulders that chases you down the scree once
 function updateSlide(dt) {
   const Z = L.slide; if (!Z || P.dead) return;
@@ -22641,7 +22698,7 @@ function updateProps(dt) {
       else if (pr.st === 'down') { pr.timer -= dt; if (pr.timer <= 0) pr.st = 'rise'; }
       else if (pr.st === 'rise') { pr.h = Math.max(0, pr.h - 70 * dt); if (pr.h <= 0) { pr.st = 'up'; pr.timer = pr.every; } }
     }
-    if (pr.t === 'beam') { pr.cd = Math.max(0, pr.cd - dt); const m = P.onMover; if (m && m.kind === 'cart' && !keys.down && !P.dead && pr.cd <= 0 && Math.abs(P.x - pr.x) < 10 && Math.abs(P.y - pr.y) < 16) { pr.cd = 1; damagePlayer(pr.x, DMG.beam, { unblockable: true }); P.onMover = null; P.vy = -80; P.vx = -Math.sign(m.vx || m.dir) * 160; P.ground = false; number(P.x, P.y - 24, 'OFF THE CART', '#ff6b6b'); SFX.thud(); sparks(P.x, P.y - 16, 1, 5); } }
+    if (pr.t === 'beam') { pr.cd = Math.max(0, pr.cd - dt); const m = P.onMover; if (m && m.kind === 'cart' && !duckClears(P, P.y - 11) && !P.dead && pr.cd <= 0 && Math.abs(P.x - pr.x) < 10 && Math.abs(P.y - pr.y) < 16) { pr.cd = 1; damagePlayer(pr.x, DMG.beam, { unblockable: true }); P.onMover = null; P.vy = -80; P.vx = -Math.sign(m.vx || m.dir) * 160; P.ground = false; number(P.x, P.y - 24, 'OFF THE CART', '#ff6b6b'); SFX.thud(); sparks(P.x, P.y - 16, 1, 5); } }
     if (pr.t === 'dog' && !P.dead) { pr.anim += dt; pr.barkT = Math.max(0, pr.barkT - dt); pr.vy = Math.min(320, pr.vy + 1000 * dt);
       const dx = P.x - pr.x, far = Math.abs(dx) > 40; let want = 0;
       if (Math.abs(dx) > 340 || Math.abs(P.y - pr.y) > 120) { pr.x = P.x - P.face * 20; pr.y = P.y; pr.vy = 0; } // it catches up the way dogs do
@@ -23211,6 +23268,8 @@ function updateCamera(dt) {
       camY += (Math.max(0, Math.min(LH * TS - VH, bty)) - camY) * w;
       bossZoom = deep * w;
     } else bossZoom = Math.max(0, bossZoom - dt * 2.5); }
+  { const c = chases.find(q => q.st.phase === 'run' && q.sp.autoscroll);   /* THE CHASE'S AUTOSCROLL: the camera is pushed by the chaser's front (src/chase.js chaseCam) */
+    if (c) { if (c.sp.axis === 'x') camX = Math.max(0, Math.min(LW * TS - VW, chaseCam(c.sp, c.st, camX, VW, chaseHero(c.sp)))); else camY = Math.max(0, Math.min(LH * TS - VH, chaseCam(c.sp, c.st, camY, VH, chaseHero(c.sp)))); } }
   if (coop()) coopSoftStop();   /* and then the frame is a wall (see the co-op block): last, so it answers the camera wherever the boss intro left it */
   shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt);
 }
@@ -23349,7 +23408,7 @@ function update(dt) {
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
-  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateChase(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -26963,6 +27022,8 @@ function render() {
   if (state === 'map' || state === 'store') { for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x), Math.round(n.y), n.col, 'center'); } g.globalAlpha = 1; }
   if(PROG.progressionNotice && (state==='map'||state==='play')){talentsBackT=7;talentsBackWho=String(PROG.progressionNotice);talentsBackWhy=PROG.passiveNotice?'PASSIVES NOW COME WITH LEVELS':'';PROG.progressionNotice=0;PROG.passiveNotice=0;saveProgress();}
   if(talentsBackT>0&&(state==='map'||state==='play')){talentsBackT-=1/60;const lab=talentsBackWho+' COINS REFUNDED',sub=talentsBackWhy||'Q OPENS SKILLS AND LOADOUT';g.fillStyle='rgba(24,18,8,0.94)';g.fillRect(VW/2-114,58,228,23);text(lab,VW/2,62,UI.gold,'center',6);text(sub,VW/2,72,UI.text,'center',6);}
+  drawChase(cx, cy);   /* THE CHASER (src/chase.js), then its danger glow on the screen edge */
+  drawChaseGlow();
   drawWayOn(cx, cy);   /* the way-on arrow, under the tells it keeps clear of */
   drawTells();   /* the ! and the !!, over the numbers, the plates and the boss bar */
   drawWarp(); // the door closing, over everything
@@ -27163,6 +27224,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
   get sea() { return { roll, wash, strike, msg: seaMsg, calm: seaCalm(), tilt: seaTilt(), hard: stormK('wash') }; },
   stormBolt(t = 0.34) { boltBack = { t, x: camX * 0.15 + VW / 2, i: 0 }; return { quiet: stormQuiet(), flash: boltFlash() }; },   /* the backdrop's lightning, now, for a picture of it (t: how much of it is left) */   /* the Hurricane's sea state, for the harness */
+  chase: { on: () => chases.length > 0, demo: chaseDemo, get demoOn() { return bossJumpOn && chases.some(c => c.sp.id === 'demo'); }, states: () => chases.map(c => ({ id: c.sp.id, phase: c.st.phase, pos: c.st.pos, dist: c.st.dist, speed: c.st.speed, warnT: c.st.warnT, hold: c.st.hold, gap: (chaseHero(c.sp) - c.st.pos) * c.sp.dir, music: c.sp.music })), specs: () => chases.map(c => c.sp), reset: () => { for (const c of chases) chaseReset(c.st); chaseMusicOff(); }, problems: () => chaseProblems(L.chases || [], shrines.map(s => ({ x: s.x, y: s.y })).concat([{ x: L.START.x * TS + 8, y: (L.START.y + 1) * TS }])), get beamCd() { return chaseBeamCd; }, set beamCd(v) { chaseBeamCd = v; } },   /* THE CHASE ENGINE, for tools/chase.mjs */
   bossJump: { table: () => bossTable().map(r => ({ ...r })), go: bossJump, open: bjOpen, get on() { return bossJumpOn; }, get cursor() { return bjI; }, set cursor(v) { bjI = v; }, get hero() { return bjHero; }, set hero(v) { bjHero = v; }, rows: BJ_ROWS },   /* the hidden boss list, for tools/boss-jump.mjs and tools/textfit.mjs */
   rushStart, get rush() { return rush; }, RUSH,   // (the rush, for the harness)
   // THE CURSORS OF EVERY LIST, so the playtest bot can walk the TABS and the ROWS of a screen and not just
@@ -27213,5 +27275,6 @@ if (q.get('playtest') === '1') setTimeout(async () => {
   pre.textContent = r.text; document.body.appendChild(pre);
 }, 1200);
 if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
+if (q.get('chase') === 'demo') { chaseDemo(q.get('hero')); }   /* THE PLAYTEST CHASE DEMO: ?chase=demo[&hero=<id>] (docs/PLAYTEST.md), never saved */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'))) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 rafQueued = true; requestAnimationFrame(frame);
