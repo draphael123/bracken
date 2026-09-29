@@ -215,6 +215,9 @@ export function pacing(lv) {
       let open = true; for (let yy = y; yy <= e.y && open; yy++) if (SOLIDT.has(at(e.x, yy))) open = false; if (open) return i; } return -1; };
   const checks = ents.filter(e => e.t === 'check').map(e => { let i = tall ? nearestRoute(e.x, e.y, 48, 4) : nearestRoute(e.x, e.y, 12, 8); if (i < 0) i = swumOver(e); return i < 0 ? null : cum[i]; }).filter(v => v !== null).sort((a, b) => a - b);
   const endAt = (() => { if (!A) return total; const i = pts.findIndex(([x, y]) => x >= A.trigger / TS && inRect(x, y, regions[0].r)); return i < 0 ? total : cum[i]; })();
+  /* WHO IS WHO (claude/checkpoints, 2026-09-29): each checkpoint with its place along the route (null when off it), and where the route first enters each boss, mini or ambush room - tools/checkpoint-thin.mjs decides which checkpoints stay from these, and tools/checkpoint-gaps.mjs asks for one before every door */
+  const checkList = ents.filter(e => e.t === 'check').map(e => { let i = tall ? nearestRoute(e.x, e.y, 48, 4) : nearestRoute(e.x, e.y, 12, 8); if (i < 0) i = swumOver(e); return { x: e.x, y: e.y, at: i < 0 ? null : cum[i] }; });
+  const doors = regions.map(rg => { const i = pts.findIndex(([x, y]) => inRect(x, y, rg.r)); return { c: rg.c, name: rg.name || null, at: i < 0 ? null : cum[i] }; });
   const stops = [0, ...checks.filter(c => c < endAt), endAt]; let maxGap = 0, gapAt = 0;
   for (let i = 1; i < stops.length; i++) if (stops[i] - stops[i - 1] > maxGap) { maxGap = stops[i] - stops[i - 1]; gapAt = stops[i - 1]; }
   /* CHEAP HITS AND BLIND DROPS. A landing (the end of a jump, a fall or a ride) with a creature standing within two tiles
@@ -239,7 +242,7 @@ export function pacing(lv) {
   return {
     id: lv.id, name: lv.name, W, H, tall, strip, marks,
     stats: { routeTiles: total, stretches: nb, bridged, longest: { type: longest.c, stretches: longest.n, tiles: longest.n * STEP, atRoute: longest.at * STEP, x: B[longest.at] && B[longest.at].x },
-      empties, maxCheckGap: maxGap, checkGapAtRoute: gapAt, checksOnRoute: checks.length, checkAt: checks, checksTotal: ents.filter(e => e.t === 'check').length,
+      empties, maxCheckGap: maxGap, checkGapAtRoute: gapAt, checksOnRoute: checks.length, checkAt: checks, checkList, doors, endAt, checksTotal: ents.filter(e => e.t === 'check').length,
       setPieces, setKinds: [...setKinds], ambushes: (L.ambushes || []).map(q => q.name), mini: L.mini ? L.mini.boss : null, boss: A ? A.boss : null, systems,
       backtrack: back, backtrackPct: total ? Math.round(back / total * 100) : 0, backRuns, offRoutePct: reach ? Math.round(off / reach * 100) : 0,
       pockets: pockets.length, offLoot, foesOnRoute: foesOn, foesOffRoute: foesOff, mix, alternations, landingFoes, blindDrops },

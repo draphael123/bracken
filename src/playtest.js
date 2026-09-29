@@ -529,7 +529,7 @@ export async function run(BK, opts = {}) {
       const M = measureLevel(built, { T, TS }), { foes, threat, checks, hazTiles, gap, span } = M, kinds = M.kindSet;
       for (const t of M.unweighed) if (!NOT_A_FOE.test(t)) F('UNWEIGHED', SEV.note, 'no threat weight for "' + t + '"');
       Object.assign(row.stats, { foes, threat: Math.round(threat), kinds: kinds.size, checks, worstGap: gap, haz: hazTiles, thr100: +(threat / (span / 100)).toFixed(1), index: indexOf({ threat, kinds: kinds.size, hazTiles, gap, span }) });
-      if (gap > 150) F('LONGGAP', SEV.odd, gap + ' columns with no checkpoint in them');
+      if (gap > 200) F('LONGGAP', SEV.odd, gap + ' columns with no checkpoint in them');   /* was 150 until 2026-09-29: a checkpoint per section now (RULES S4), at most 175 WALKED tiles apart (tools/checkpoint-gaps.mjs); a run measured in columns can read longer than the same walk, so this keeps a margin */
       if (kinds.size < 3) F('THIN', SEV.odd, 'only ' + kinds.size + ' kind(s) of creature in the whole level');
     }
 

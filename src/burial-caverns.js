@@ -214,7 +214,7 @@ export function burialCaverns({ painter, T, TS }) {
   for (const e of L.ents) if (e.t === 'wight') e.t = 'zombie';   /* the fields' dead are the barrow's walking dead down here */
   const quest = { n: 3, item: 'lamp', name: 'GRAVE CANDLES', done: 'THE DEAD ARE LIT' };
   return { W: BW, H: BH, grid: L.grid, ents: L.ents, START: { x: 4, y: 17 }, interiors, structures, pools, falls: [], moversExtra, music: 'burial',
-    underground: true, dark: 0.08, edgeLit: true, duskStart: -1, duskLen: 1, night: true, nightA: 0.04, burialLook: true, checkRun: 100, noStack: true, risenDead: true,
+    underground: true, dark: 0.08, edgeLit: true, duskStart: -1, duskLen: 1, night: true, nightA: 0.04, burialLook: true, noStack: true, risenDead: true,
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(44,42,64,0.1)', murkCol: '#444651', murkLit: '#85808a', grass: '#747780', grassL: '#a8a3ab', grassD: '#484953', dirt: '#484650', dirtL: '#66626b', dirtD: '#303039', canopy: ['#20202c', '#292b37', '#353643', '#454653'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }], calm,
     gasVents, candles, darkZones, crumble, burialSections: SECTIONS.map(s => s.slice()), arena, ambushes, graves, graveRows: [vy1 + 1, vy1 + 2], quest,
