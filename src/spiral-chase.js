@@ -38,22 +38,32 @@ export const SPIRAL = { x0: 80, x1: 105, top: 70, floor: 124, W: 110, arrive: 82
    tower's failing stone. Every flight ends on a LANDING against a wall; the sixth's is the top floor, where the carpet lies. Each step
    is a jump a hero really makes (checkpoint-stand's real jump, 5 columns: two rows up and three across, one up and four, or flat and
    five): tools/tower-chase.mjs walks it with that fill. The flights turn at the walls, so the one over you runs the other way. */
+/* HIS WARD (claude/undead3, Daniel 2026-09-29: "he blocks sections until you hit him with fire walls"). Three flights are SEALED: a
+   `seal` names the stone the flight's BRAZIER stands on ([x, row]: the tile it stands in, you strike it from beside it). */
 export const FLIGHTS = [
-  { name: 'THE STAIR', dir: 1, steps: [[86, 4, 122], [90, 4, 120], [94, 4, 118], [98, 4, 116]], land: [102, 4, 114], spells: ['fire'] },
+  { name: 'THE STAIR', dir: 1, steps: [[86, 4, 122], [90, 4, 120], [94, 4, 118], [98, 4, 116]], land: [102, 4, 114], spells: ['fire'], seal: { brazier: [95, 117], teach: true } },
   { name: 'THE BROKEN STAIR', dir: -1, steps: [[97, 4, 112], [90, 4, 111], [86, 4, 109]], land: [80, 5, 107], spells: ['fire', 'ice'] },
   { name: 'THE FAILING STAIR', dir: 1, steps: [[85, 4, 105], [89, 4, 103, 'fail'], [93, 4, 101], [97, 4, 99, 'fail']], land: [102, 4, 97], spells: ['mark', 'fire'], check: true },
-  { name: 'THE STONES', dir: -1, steps: [[99, 2, 95], [94, 2, 94], [90, 2, 93], [86, 2, 92]], land: [80, 5, 90], spells: ['ice', 'fire'] },
+  { name: 'THE STONES', dir: -1, steps: [[99, 2, 95], [94, 2, 94], [90, 2, 93], [86, 2, 92]], land: [80, 5, 90], spells: ['ice', 'fire'], seal: { brazier: [94, 93] } },
   { name: 'THE GALLERY', dir: 1, steps: [[85, 4, 88], [89, 11, 86, 'fail']], land: [102, 4, 84], spells: ['mark', 'fire'] },
-  { name: 'THE LAST STAIR', dir: -1, steps: [[97, 4, 82], [90, 4, 81, 'fail']], land: [80, 9, 79], spells: ['fire', 'ice', 'mark'], top: true },
+  { name: 'THE LAST STAIR', dir: -1, steps: [[97, 4, 82], [90, 4, 81, 'fail']], land: [80, 9, 79], spells: ['fire', 'ice', 'mark'], top: true, seal: { brazier: [91, 80] } },
 ];
-/* THE TOP: the carpet laid before the door into his hall, and the checkpoint five tiles back from it (the carpet's own retry spot) */
+/* THE TOP: the carpet laid before the door into his hall, and the carpet's own retry spot five tiles back from it (claude/undead3: it
+   is no longer a checkpoint on the stair - Daniel: "checkpoints 2 -> 1" - but boarding the carpet still sets the door checkpoint there) */
 export const TOP = { carpet: 86, row: 78, check: 81 };
+/* THE SEALS. The ward is a column of his light standing on the landing's near end, SEAL.h rows tall: no jump clears it and the landing
+   is behind it. Strike the flight's brazier and a FIRE WALL rolls up the stair from it (wallV), climbs the ward (climbV) and burns him
+   where he hangs over it: the ward goes, he flinches (flinch) and flees on up the stair. The wall is the brazier's fire, not his: it
+   burns his ward and him and nothing else. */
+export const SEAL = { h: 8, wallV: 150, climbV: 240, flinch: 0.8, tall: 34 };
 export const CHASE = {
   up: 4,          /* rows over a landing he waits at: in the frame with you as you climb to it - and he is gone from it the moment you land */
   fly: 240,       /* px/s from one landing to the next: a swoop up the stairwell, there before you are off the landing */
   near: 3,        /* tiles: you are ON the landing when your feet are on its row and this close to its wall end */
-  gap: 1.0,       /* s between one spell and the next tell; a new landing waits `settle` first */
-  settle: 0.5,
+  /* HARDER (claude/undead3, Daniel: "the chase more difficult"): 1.0 s between spells was 0.6, a landing settled in 0.5 s now 0.35, and
+     from the third flight on his firebolt comes in a PAIR (pairFrom, pairFan radians apart). Every tell is still his fight's full tell */
+  gap: 0.6,       /* s between one spell and the next tell; a new landing waits `settle` first */
+  settle: 0.35, pairFrom: 2, pairFan: 0.22,
   flinch: 1.2,    /* s he hangs open when his mark finds no one: the fight's opening, shown */
   range: 330,     /* px: he casts at you from no further */
   get markR() { return MAGE.markR; }, get markFuse() { return MAGE.markFuse; },   /* (read late: undead-mage.js and this file can load in either order) */
@@ -74,9 +84,47 @@ export function buildSpiral(k, T) {
   /* THE WAY IN: his ring on the crown's parapet (tower-ascent.js puts that one) lets you out here, at the stair's foot */
   ent('ringdoor', S.arrive, S.floor - 1, { id: 'spiral-foot' });
   ent('sign', S.arrive + 3, S.floor - 1, { text: 'HE CLIMBS FOR HIS HALL. GUARD HIS FIRE AND HIS FROST. STEP OUT OF HIS MARK.' });
-  ent('check', TOP.check, TOP.row);
+  /* HIS WARDS: stone in the grid (a `ward` ent tells the reach fill a blow opens it, as a bell's bridge), his light drawn over it */
+  const seals = [];
+  FLIGHTS.forEach((F, k) => { const w = wardOf(k); if (!w) return;
+    rect(w.x, w.x, w.y0, w.y1, T.SOLID); ent('ward', w.x, w.y1, { y0: w.y0, flight: k });
+    const [bx, by] = F.seal.brazier; seals.push({ k, x: w.x, y0: w.y0, y1: w.y1, bx, by, teach: !!F.seal.teach, broken: false, wall: null });
+    if (F.seal.teach) ent('sign', F.steps[1][0] + 1, F.steps[1][2] - 1, { text: 'HIS WARD BARS THE STAIR. STRIKE THE BRAZIER: ITS FIRE CLIMBS THE STAIR AND BURNS THE WARD.' }); });
+  /* (the checkpoint at the top is gone, claude/undead3: one on the stair, the middle landing's - boarding the carpet sets the door one) */
   ent('magechase', FLIGHTS[0].land[0] + 2, FLIGHTS[0].land[2] - CHASE.up, { face: -1 });
-  return { ...S, flights: FLIGHTS.map(F => ({ ...F })), carpet: { ...TOP } };
+  return { ...S, flights: FLIGHTS.map(F => ({ ...F })), carpet: { ...TOP }, seals };
+}
+/* THE WARD OF FLIGHT k (null: the flight is not sealed): a column on the landing's near end, SEAL.h rows over the landing */
+export function wardOf(k) {
+  const F = FLIGHTS[k]; if (!F || !F.seal) return null; const [lx, ll, lr] = F.land;
+  return { x: F.dir > 0 ? lx : lx + ll - 1, y0: lr - SEAL.h, y1: lr - 1 };
+}
+/* WHERE HE HANGS WHILE A WARD HOLDS: over it, his hem at its top - the fire that climbs it finds him */
+export const sealPerch = s => ({ x: s.x * 16 + 8, y: (s.y0 + 1) * 16, seal: s });
+/* THE BRAZIER STRUCK: its fire goes up the stair. The wall's road is the flight's own steps from the brazier on, then the ward's foot,
+   then up the ward to him. Returns false when there is nothing to light (the ward is down, or its fire is already on the stair). */
+export function lightBrazier(s) {
+  if (!s || s.broken || s.wall) return false;
+  const F = FLIGHTS[s.k], d = F.dir, pts = [[s.bx * 16 + 8, (s.by + 1) * 16]];
+  for (const [x0, len, row] of F.steps) { const near = d > 0 ? x0 : x0 + len - 1, far = d > 0 ? x0 + len - 1 : x0;
+    if ((far - s.bx) * d <= 0) continue;   /* a step behind the brazier (or the one it stands on, when it is past it) */
+    if ((near - s.bx) * d > 0) pts.push([near * 16 + 8, row * 16]);
+    pts.push([far * 16 + 8, row * 16]); }
+  const foot = s.x * 16 + 8 - d * 12; pts.push([foot, (s.y1 + 1) * 16], [foot, (s.y0 + 1) * 16]);
+  s.wall = { pts, i: 0, x: pts[0][0], y: pts[0][1], t: 0 }; return true;
+}
+/* THE FIRE ON THE STAIR, one step: along its road, up the ward, and when it reaches the top the ward burns. c.breakWard(s) takes the
+   stone away; the caller's `e` (him, over the ward) flinches and flees. */
+export function updateSeals(seals, e, dt, c) {
+  for (const s of seals || []) { const w = s.wall; if (!w) continue; w.t += dt;
+    let go = dt * (w.i >= w.pts.length - 2 ? SEAL.climbV : SEAL.wallV);
+    while (go > 0 && w.i < w.pts.length - 1) { const [tx, ty] = w.pts[w.i + 1], dx = tx - w.x, dy = ty - w.y, dd = Math.hypot(dx, dy);
+      if (dd <= go) { w.x = tx; w.y = ty; w.i++; go -= dd; } else { w.x += dx / dd * go; w.y += dy / dd * go; go = 0; } }
+    if (w.i < w.pts.length - 1) continue;
+    s.wall = null; s.broken = true; c.breakWard && c.breakWard(s, false);
+    if (e && e.alive && Math.hypot(e.x - (s.x * 16 + 8), e.y - (s.y0 + 1) * 16) < 40) { e.mode = 'burnt'; e.modeT = SEAL.flinch; e.fled = Math.max(e.fled || 0, s.k + 1);
+      e.shots = []; e.deathMark = null; c.say && c.say('HIS WARD BURNS. HE FLEES UP THE STAIR', true); c.sound && c.sound('crack'); }
+    else if (e) e.fled = Math.max(e.fled || 0, s.k + 1); }
 }
 
 /* WHERE HE WAITS for flight k: over its landing, CHASE.up rows up, at the landing's wall end. Past the last flight: the door. */
@@ -84,6 +132,13 @@ export function perchOf(k) {
   if (k >= FLIGHTS.length) return { x: TOP.carpet * 16 + 8, y: (TOP.row - 1) * 16, door: true };
   const [lx, ll, lr] = FLIGHTS[k].land, dir = FLIGHTS[k].dir;
   return { x: (dir > 0 ? lx + ll - 1 : lx + 1) * 16 + 8, y: (lr - CHASE.up) * 16 };
+}
+/* THE FLIGHT HE IS AHEAD OF YOU ON: the one past your landing, or further if a burnt ward sent him on (e.fled) */
+export const nextOf = e => Math.max((e.reached ?? -1) + 1, e.fled || 0);
+/* WHERE HE WANTS TO BE: over that flight's ward while it holds (he stops above it), else over its landing */
+export function wantOf(e, c) {
+  const k = nextOf(e), s = (c && c.seals || []).find(q => q.k === k && !q.broken);
+  return s ? sealPerch(s) : perchOf(k);
 }
 /* HOW FAR UP YOU ARE: the last landing your feet have stood on (-1: the foot of the stair). The flights rise away from every landing,
    so a landing whose row you are standing at or over is one you have passed. Only while you stand - a jump is not a landing. */
@@ -101,6 +156,7 @@ export function updateMageChase(e, dt, c) {
   const { P } = c;
   if (!e.alive) return;
   e.anim = (e.anim || 0) + dt; e.modeT = (e.modeT || 0) - dt; e.shots ??= []; e.clouds ??= []; e.rings ??= []; e.flashT = Math.max(0, (e.flashT || 0) - dt);
+  if (e.mode !== 'sleep') updateSeals(c.seals, e, dt, c);   /* the brazier's fire on the stair, going up to him */
   const py = P.y - 8;
   // ---- what he has thrown: it flies on whatever he is doing, and the stone stops it ----
   for (const q of e.shots) { q.t -= dt; q.x += q.vx * dt; q.y += q.vy * dt;
@@ -115,12 +171,14 @@ export function updateMageChase(e, dt, c) {
   if (e.mode === 'sleep') {   /* he waits for you to come through his ring - then he is where the stair you are on sends him */
     if (!c.inSpiral(P) || P.dead) return;
     e.reached = landingOf(P, -1); if (e.reached >= FLIGHTS.length - 1) { e.alive = false; return; }   /* (a retry at the top: he is already through) */
-    const p = perchOf(e.reached + 1); e.x = p.x; e.y = p.y; e.face = Math.sign(P.x - e.x) || -1;
+    for (const s of c.seals || []) if (s.k <= e.reached && !s.broken) { s.broken = true; s.wall = null; c.breakWard && c.breakWard(s, true); }   /* a ward under the landing you wake on is long burnt */
+    e.fled = 0; const p = wantOf(e, c); e.x = p.x; e.y = p.y; e.face = Math.sign(P.x - e.x) || -1;
     e.mode = 'wake'; e.modeT = 1.2; c.say(e.reached < 0 ? 'THE ARCHMAGE CLIMBS FOR HIS HALL' : 'HE IS STILL CLIMBING', false); c.sound('mageBolt'); return; }
   e.reached = landingOf(P, e.reached ?? -1);
-  const want = perchOf(e.reached + 1), casting = /Tell$/.test(e.mode) || e.mode === 'markWait';
+  const want = wantOf(e, c), next = nextOf(e), casting = /Tell$/.test(e.mode) || e.mode === 'markWait';
   if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'wait'; e.modeT = CHASE.settle; } return; }
   if (e.mode === 'gather') { e.y += Math.sin(e.anim * 2) * 4 * dt; if (e.modeT <= 0) { e.mode = 'wait'; e.modeT = CHASE.settle; } return; }
+  if (e.mode === 'burnt') { e.y += Math.sin(e.anim * 9) * 10 * dt; if (e.modeT <= 0) e.mode = 'fly'; return; }   /* his ward's fire on him: he reels, then he runs */
   if (e.mode === 'enter') { if (e.modeT <= 0) e.alive = false; return; }
   /* YOU REACHED HIS LANDING: whatever he was doing, he goes on up (a tell half cast is dropped - he runs, he does not stand and trade) */
   if (e.mode !== 'fly' && e.mode !== 'markWait' && Math.hypot(want.x - e.x, want.y - e.y) > 4) e.mode = 'fly';
@@ -138,13 +196,13 @@ export function updateMageChase(e, dt, c) {
     if (e.modeT > 0 || P.dead) return;
     /* NEVER FROM OFF THE SCREEN, NEVER FROM ACROSS THE TOWER: he casts only when you can see him and he is in range of you */
     if (!c.onScreen(e.x, e.y - 46, 28) || !c.onScreen(e.x, e.y, 28) || !c.onScreen(P.x, P.y - 8, 0) || Math.hypot(P.x - e.x, P.y - e.y) > CHASE.range) return;
-    const list = FLIGHTS[Math.min(FLIGHTS.length - 1, e.reached + 1)].spells, spell = list[(e.turn = (e.turn ?? -1) + 1) % list.length];
+    const list = FLIGHTS[Math.min(FLIGHTS.length - 1, next)].spells, spell = list[(e.turn = (e.turn ?? -1) + 1) % list.length];
     e.spell = spell; e.mode = TELL[spell]; e.modeT = MAGE.tell[spell]; c.say(SAY[e.mode], spell === 'mark'); return; }
   if (e.modeT > 0) { e.face = Math.sign(P.x - e.x) || e.face; return; }
   // ---- the spell goes ----
   const hx = e.x + e.face * 12, hy = e.y - 34, aim = Math.atan2(py - hy, P.x - hx);
   const shot = (a, sp, r, dmg, kind, col) => e.shots.push({ x: hx, y: hy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a, sp, r, dmg, kind, col, t: 4 });
-  if (e.spell === 'fire') { shot(aim, MAGE.boltV, 5, MAGE.dmg.fire, 'fire', '#ff9b49'); c.sound('mageBolt'); }
+  if (e.spell === 'fire') { for (const s of next >= CHASE.pairFrom ? [-CHASE.pairFan / 2, CHASE.pairFan / 2] : [0]) shot(aim + s, MAGE.boltV, 5, MAGE.dmg.fire, 'fire', '#ff9b49'); c.sound('mageBolt'); }
   else if (e.spell === 'ice') { for (let i = -2; i <= 2; i++) shot(aim + i * 0.3, 120, 4, MAGE.dmg.ice, 'ice', '#9be2ff'); c.sound('hiss'); }
   else if (e.spell === 'mark') { e.deathMark = { x: P.x, y: py, r: CHASE.markR, t: CHASE.markFuse, T: CHASE.markFuse }; e.mode = 'markWait'; e.modeT = 99; c.sound('crack'); return; }
   e.mode = 'wait'; e.modeT = CHASE.gap;
@@ -161,4 +219,39 @@ export function drawRingDoor(g, x, y, time, on = 1) {
   drawDesertOval(g, x, cy, rw, rh, time, 0.7);
   const n = 30; for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 + time * 1.6;
     g.fillStyle = i % 6 === 0 ? RING_COL.rimL : RING_COL.rim; g.fillRect(x + Math.round(Math.cos(a) * (rw + 1)), cy + Math.round(Math.sin(a) * (rh + 1)), 1, 1); }
+}
+
+/* THE SEALS, drawn: his ward (a column of his green light over the stone that holds it, runes climbing it), each flight's brazier (an
+   iron bowl of orange fire - the first one ringed and beating, the lesson), and the brazier's fire on its way up the stair. */
+export function drawSeals(g, seals, cx, cy, time) {
+  const VW = g.canvas.width, VH = g.canvas.height;
+  for (const s of seals || []) {
+    const wx = s.x * 16 - cx, wy0 = s.y0 * 16 - cy, wh = (s.y1 - s.y0 + 1) * 16;
+    if (!s.broken && wx > -24 && wx < VW + 24 && wy0 < VH + 8 && wy0 + wh > -8) {
+      g.fillStyle = '#0c1a12'; g.fillRect(Math.round(wx), Math.round(wy0), 16, wh);
+      g.globalCompositeOperation = 'lighter';
+      for (let y = 0; y < wh; y += 2) { const a = 0.18 + 0.12 * Math.sin(time * 3 + y * 0.21); g.fillStyle = 'rgba(111,224,138,' + a.toFixed(3) + ')'; g.fillRect(Math.round(wx) + 2, Math.round(wy0) + y, 12, 2); }
+      g.fillStyle = 'rgba(111,224,138,0.10)'; g.fillRect(Math.round(wx) - 4, Math.round(wy0), 24, wh);
+      g.globalCompositeOperation = 'source-over';
+      g.fillStyle = RING_COL.rimL; for (let i = 0; i < 5; i++) { const ry = ((time * 22 + i * wh / 5) % wh) | 0; g.fillRect(Math.round(wx) + 5 + (i % 2) * 4, Math.round(wy0) + wh - ry, 2, 3); }   /* his runes, climbing it */
+      g.fillStyle = RING_COL.rim; g.fillRect(Math.round(wx), Math.round(wy0), 1, wh); g.fillRect(Math.round(wx) + 15, Math.round(wy0), 1, wh); }
+    /* the brazier: a bowl on three legs, orange fire in it */
+    const bx = s.bx * 16 + 8 - cx, by = (s.by + 1) * 16 - cy;
+    if (bx > -30 && bx < VW + 30 && by > -30 && by < VH + 40) {
+      const lit = !s.broken, f = Math.sin(time * 9 + s.k) * 1.5;
+      if (lit && s.teach && !s.wall) { const R = 12 + (time * 14) % 10; g.strokeStyle = 'rgba(255,211,107,' + (0.8 - (R - 12) / 12).toFixed(2) + ')'; g.lineWidth = 1; g.beginPath(); g.arc(Math.round(bx), Math.round(by - 10), R, 0, Math.PI * 2); g.stroke();
+        g.fillStyle = '#ffd36b'; const bob = Math.round(Math.sin(time * 5) * 2); g.fillRect(Math.round(bx) - 1, Math.round(by) - 34 + bob, 3, 4); g.fillRect(Math.round(bx) - 3, Math.round(by) - 31 + bob, 7, 1); g.fillRect(Math.round(bx) - 2, Math.round(by) - 30 + bob, 5, 1); }   /* the lesson: a ring beating round it and a mark over it */
+      g.fillStyle = '#3a3440'; g.fillRect(Math.round(bx) - 5, Math.round(by) - 6, 2, 6); g.fillRect(Math.round(bx) + 3, Math.round(by) - 6, 2, 6); g.fillRect(Math.round(bx) - 1, Math.round(by) - 5, 2, 5);
+      g.fillStyle = '#5a5262'; g.fillRect(Math.round(bx) - 7, Math.round(by) - 10, 14, 4); g.fillStyle = '#7a7288'; g.fillRect(Math.round(bx) - 7, Math.round(by) - 10, 14, 1);
+      if (lit) { g.fillStyle = '#c9463d'; g.fillRect(Math.round(bx) - 5, Math.round(by) - 16 + f, 10, 6); g.fillStyle = '#ff9b49'; g.fillRect(Math.round(bx) - 3, Math.round(by) - 19 + f, 6, 8); g.fillStyle = '#ffe9b0'; g.fillRect(Math.round(bx) - 1, Math.round(by) - 16 + f, 2, 4);
+        g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,155,73,' + (s.teach ? 0.16 : 0.09) + ')'; g.fillRect(Math.round(bx) - 16, Math.round(by) - 30, 32, 30); g.globalCompositeOperation = 'source-over'; }
+      else { g.fillStyle = '#2a2430'; g.fillRect(Math.round(bx) - 5, Math.round(by) - 12, 10, 2); } }
+    /* the fire on the stair: a standing sheet of flame, tongues licking up off it */
+    const w = s.wall; if (w) { const x = Math.round(w.x - cx), y = Math.round(w.y - cy), H = SEAL.tall;
+      for (let i = -7; i <= 7; i++) { const h = H * (1 - Math.abs(i) / 9) * (0.75 + 0.25 * Math.sin(time * 17 + i * 1.9));
+        g.fillStyle = '#c9463d'; g.fillRect(x + i, y - Math.round(h), 1, Math.round(h));
+        g.fillStyle = '#ff9b49'; g.fillRect(x + i, y - Math.round(h * 0.7), 1, Math.round(h * 0.7));
+        if (Math.abs(i) < 4) { g.fillStyle = '#ffe9b0'; g.fillRect(x + i, y - Math.round(h * 0.4), 1, Math.round(h * 0.4)); } }
+      g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,155,73,0.14)'; g.fillRect(x - 14, y - H - 8, 28, H + 10); g.globalCompositeOperation = 'source-over'; }
+  }
 }

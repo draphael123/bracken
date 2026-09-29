@@ -10,6 +10,13 @@
 //            or you are off the screen; every spell from its fight's tell, and only what the flight teaches (the first: fire alone); fire and
 //            ice turn on a shield, the death mark does not - and stepped out of it finds no one and he flinches open; a stone wall stops a
 //            bolt; he moves on when you reach his landing; at the top he goes through the door and is gone. The marks are his fight's
+//   HARDER   (claude/undead3, Daniel 2026-09-29: "the chase more difficult, boss music, he blocks sections until you hit him with fire walls")
+//            ONE checkpoint on the stair (the middle landing; boarding the carpet sets the door one); spells closer together (CHASE.gap,
+//            settle) and his firebolt in pairs from the third flight, every tell still his fight's full tell; THREE flights SEALED by his
+//            ward - a column of his light the fill cannot pass, each ward alone - and he hangs over it; only a FIRE WALL breaks it: strike
+//            the flight's brazier and it rolls up the stair, climbs the ward, burns him; he flinches and flees on. The first seal is taught
+//            (a sign, the brazier ringed), the other two are not. Waiting does nothing, a blow on him does nothing, the wall hurts only him
+//   MUSIC    his fight's track from the first step of the stair (the ring's far side), and on into the fight without a break
 //   PAGE     walk into the ring on the parapet and come out at the foot, zoomed out; climb all six flights with the game's own physics
 //            (a jump at every edge, god mode); every tell begins with him on the screen; the carpet at the top starts his fight as it
 //            always did (bossActive, on the carpet, in his hall); a death after the middle landing wakes you there, and him ahead of you
@@ -20,6 +27,7 @@ import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { TOWER } from '../src/tower-ascent.js';
 import { SPIRAL, FLIGHTS, TOP, CHASE, perchOf, updateMageChase } from '../src/spiral-chase.js';
+import * as SC from '../src/spiral-chase.js';   /* (the seals, read off the namespace: on a stair with none, each assertion fails by name) */
 import { MAGE } from '../src/undead-mage.js';
 import { MARK, ANSWER } from '../src/marks.js';
 import { carpetBox } from '../src/carpet.js';
@@ -55,12 +63,25 @@ assert.ok(up.jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'from the foot, a r
 { const short = floodReach({ ...L, START: { x: foot.x, y: foot.y } }, T, { rides: true, across: 3 });
   assert.ok(!short.jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'THE RULE BITES: a jump of three columns climbs the whole stair - its gaps are walks, not jumps'); }
 const checks = L.ents.filter(e => e.t === 'check' && inS(e)), h0 = S.floor - 1, h1 = TOP.row;
-assert.equal(checks.length, 2, 'two checkpoints on the stair (Daniel: fewer checkpoints): ' + checks.map(e => e.x + ',' + e.y));
-assert.ok(checks.some(e => e.y === TOP.row) && checks.some(e => (h0 - e.y) / (h0 - h1) > 0.4 && (h0 - e.y) / (h0 - h1) < 0.7), 'one in the middle of the climb and one at the top: ' + checks.map(e => e.y));
+assert.equal(checks.length, 1, 'ONE checkpoint on the stair (Daniel 2026-09-29: "checkpoints 2 -> 1"): ' + checks.map(e => e.x + ',' + e.y));
+assert.ok(checks.every(e => (h0 - e.y) / (h0 - h1) > 0.4 && (h0 - e.y) / (h0 - h1) < 0.7), 'it is in the middle of the climb: ' + checks.map(e => e.y));
 for (const e of checks) assert.ok(std(e.x, e.y) && up.seen.has(e.x + ',' + e.y), 'a checkpoint nobody stands at: ' + e.x + ',' + e.y);
 assert.ok(std(L.carpetAt.x / TS - 5, TOP.row), 'the carpet\'s retry spot (five tiles back from it) is not on the top floor');
 assert.ok(L.crumbles.filter(c => c.kind === 'spiral').length >= 3, 'the tower\'s failing stone is on the stair (its last use)');
-const foes = L.ents.filter(e => inS(e) && !['check', 'sign', 'coin', 'silver', 'ringdoor', 'mend', 'deco'].includes(e.t));
+// ---- SEALS: his ward on three flights, broken only by the brazier's fire wall ----
+const seals = (L.spiral && L.spiral.seals) || [];
+assert.equal(seals.length, 3, 'three flights sealed by his ward: ' + seals.length);
+assert.ok(typeof SC.wardOf === 'function' && typeof SC.lightBrazier === 'function' && typeof SC.updateSeals === 'function', 'the ward, the brazier and its fire are not in spiral-chase.js');
+assert.ok(seals[0].teach && seals[0].k === 0 && !seals[1].teach && !seals[2].teach, 'the FIRST seal is taught and the other two are not: ' + seals.map(s => s.k + (s.teach ? 't' : '')));
+assert.ok(L.ents.some(e => e.t === 'sign' && inS(e) && /BRAZIER/.test(e.text) && e.y > FLIGHTS[0].land[2]), 'no sign on the first flight teaches the brazier');
+for (const s of seals) { const F = FLIGHTS[s.k], w = SC.wardOf(s.k);
+  assert.ok(w && w.x === s.x && s.y1 - s.y0 + 1 >= 6, F.name + ': the ward is not a column taller than any jump: ' + JSON.stringify(w));
+  for (let y = s.y0; y <= s.y1; y++) assert.equal(at(s.x, y), T.SOLID, F.name + ': the ward is open at ' + s.x + ',' + y);
+  assert.ok(std(s.bx, s.by) && up.seen.has(s.bx + ',' + s.by), F.name + ': its brazier stands where nobody stands: ' + s.bx + ',' + s.by);
+  const beyond = F.land[2] - 1, lx = F.dir > 0 ? F.land[0] + 1 : F.land[0] + F.land[1] - 2;
+  const kept = floodReach({ ...L, START: { x: foot.x, y: foot.y }, ents: L.ents.filter(e => !(e.t === 'ward' && e.flight === s.k)) }, T, { rides: true, across: 5 });
+  assert.ok(!kept.seen.has(lx + ',' + beyond) && !kept.jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'THE WARD BITES: with ' + F.name + '\'s ward standing the fill still gets past it (' + lx + ',' + beyond + ')'); }
+const foes = L.ents.filter(e => inS(e) && !['check', 'sign', 'coin', 'silver', 'ringdoor', 'mend', 'deco', 'ward'].includes(e.t));
 assert.deepEqual(foes.map(e => e.t), ['magechase'], 'the stair is his chase and nothing else\'s: ' + foes.map(e => e.t));
 // ---- SPELLS: the chase in Node ----
 assert.ok(MARK['magechase|fireTell'] === '!' && MARK['magechase|iceTell'] === '!' && MARK['magechase|markTell'] === '!!', 'his marks are not his fight\'s');
@@ -71,7 +92,9 @@ assert.ok(ANSWER['magechase|fireTell'] === 'block' && ANSWER['magechase|markTell
 const rig = (o = {}) => { const P = { x: foot.x * TS + 8, y: (foot.y + 1) * TS, ground: true, dead: 0 }, hits = [], said = [];
   const e = { t: 'magechase', alive: true, mode: 'sleep', modeT: 0, x: 0, y: 0, face: -1, anim: 0 };
   const c = { P, hit: (x, y, d, hard, blow) => hits.push({ d, hard, blow }), say: m => said.push(m), sound: () => {}, onScreen: () => o.seen !== false,
-    solid: (x, y) => at(Math.floor(x / TS), Math.floor(y / TS)) === T.SOLID, inSpiral: p => p.x >= S.x0 * TS && p.x < (S.x1 + 1) * TS && p.y >= S.top * TS && p.y <= S.floor * TS };
+    /* (the old rigs climb a stair whose wards are already burnt; the seal rigs below hand it wards that stand) */
+    seals: seals.map(s => ({ ...s, broken: true })),
+    solid: (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); if (c.seals.some(s => s.broken && tx === s.x && ty >= s.y0 && ty <= s.y1)) return false; return at(tx, ty) === T.SOLID; }, inSpiral: p => p.x >= S.x0 * TS && p.x < (S.x1 + 1) * TS && p.y >= S.top * TS && p.y <= S.floor * TS };
   const run = (s, each) => { for (let i = 0; i < s * 60; i++) { updateMageChase(e, 1 / 60, c); if (each) each(); } };
   return { P, e, c, hits, said, run }; };
 const stand = (P, x, row) => { P.x = x * TS + 8; P.y = row * TS; P.ground = true; };
@@ -99,36 +122,76 @@ const stand = (P, x, row) => { P.x = x * TS + 8; P.y = row * TS; P.ground = true
 { const r = rig(); stand(r.P, TOP.check, TOP.row + 1); r.run(0.1); assert.ok(!r.e.alive, 'a retry at the top finds him still on the stair: he is through his door');
   const q = rig(); stand(q.P, FLIGHTS[4].land[0] + 1, FLIGHTS[4].land[2]); q.run(0.1); stand(q.P, TOP.check + 2, TOP.row + 1); q.run(4); assert.ok(!q.e.alive, 'you reach the top and he does not go through his door'); }
 
+/// ---- SEALS in Node: he waits over a ward, only its brazier's fire breaks it ----
+assert.ok(CHASE.gap <= 0.6 && CHASE.settle <= 0.35 && CHASE.pairFrom <= 2, 'his spells are no closer together than they were (gap ' + CHASE.gap + ', settle ' + CHASE.settle + ')');
+const fresh = () => seals.map(s => ({ ...s, wall: null, broken: false }));
+{ const r = rig(), broke = []; r.c.seals = fresh(); r.c.breakWard = (s, quiet) => broke.push([s.k, !!quiet]); const s0 = r.c.seals[0];
+  stand(r.P, 96, 118); r.run(1.5); assert.ok(Math.abs(r.e.x - (s0.x * TS + 8)) < 6 && Math.abs(r.e.y - (s0.y0 + 1) * TS) < 8, 'he does not hang over the first ward: ' + [r.e.x, r.e.y]);
+  stand(r.P, 101, 116); r.run(20); assert.ok(!s0.broken && !broke.length && Math.abs(r.e.x - (s0.x * TS + 8)) < 6, 'the ward opens (or he leaves it) with no fire: waiting at it is enough');
+  assert.ok(r.hits.length >= 3, 'held at the ward, he does not cast at you: ' + r.hits.length);
+  assert.equal(SC.lightBrazier(s0), true, 'the brazier does not light'); assert.equal(SC.lightBrazier(s0), false, 'a lit brazier lights a second fire');
+  const n0 = r.hits.length, blows = new Set(); let t = 0; stand(r.P, 99, 116);   /* standing right in the fire's road */
+  for (; t < 600 && !s0.broken; t++) { updateMageChase(r.e, 1 / 60, r.c); }
+  for (const h of r.hits.slice(n0)) blows.add(h.blow);
+  assert.ok(s0.broken && broke.some(b => b[0] === 0 && !b[1]), 'the brazier\'s fire does not break the ward: ' + JSON.stringify(broke));
+  assert.ok(t / 60 < 4, 'the fire takes ' + (t / 60).toFixed(1) + ' s to reach him');
+  assert.ok([...blows].every(b => ['fire', 'ice', 'mark'].includes(b)), 'the brazier\'s fire hurt you: ' + [...blows]);
+  assert.equal(r.e.mode, 'burnt', 'the fire reaches him and he does not flinch'); r.run(2.5); const q = perchOf(1);
+  assert.ok(Math.hypot(r.e.x - q.x, r.e.y - q.y) < 8 && r.e.fled === 1, 'his ward burnt, he does not flee on up the stair: ' + [r.e.mode, r.e.x, r.e.y, q.x, q.y]); }
+{ const r = rig(), broke = []; r.c.seals = fresh(); r.c.breakWard = (s, quiet) => broke.push([s.k, !!quiet]);
+  stand(r.P, FLIGHTS[2].land[0] + 1, FLIGHTS[2].land[2]); r.run(1.2); const s3 = r.c.seals[1];
+  assert.ok(broke.some(b => b[0] === 0 && b[1]) && r.c.seals[0].broken && !s3.broken, 'waking on the middle landing, the ward under it is not burnt (quietly) and the one over it standing: ' + JSON.stringify(broke));
+  assert.ok(Math.abs(r.e.x - (s3.x * TS + 8)) < 6, 'waking on the middle landing, he is not over the next ward: ' + [r.e.x, s3.x * TS + 8]);
+  let pair = 0; stand(r.P, 94, 94); r.run(15, () => { const f = r.e.shots.filter(q => q.kind === 'fire' && q.t > 3.9).length; pair = Math.max(pair, f); });
+  assert.equal(pair, 2, 'from the third flight his firebolt does not come in a pair: ' + pair); }
 // ---- PAGE ----
 const CI = FLIGHTS.findIndex(F => F.check), CK = FLIGHTS[CI], CKX = checks.find(e => e.y === CK.land[2] - 1).x;
 const pg = await openPage({ audio: false, fonts: false }); let r;
 try {
-  r = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');const SC=await import('/src/spiral-chase.js');BK.manualSimulation=true;const out={casts:[],offCast:0};
-   const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;BK.sim(10);};
-   boot();BK.tp(33,${TOWER.SKY});BK.sim(5);for(let i=0;i<90;i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;BK.sim(20);BK.step(1);
+  r = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');const SC=await import('/src/spiral-chase.js');const AU=await import('/src/audio.js');BK.manualSimulation=true;const out={casts:[],offCast:0};
+   const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';AU.music.play(BK.L.music||'theme');BK.god=true;BK.sim(10);};   /* (the level's own track, as a start from the map plays it: BK.load leaves the music alone) */
+   const through=()=>{BK.tp(33,${TOWER.SKY});BK.sim(5);out.tune0??=AU.music.want;for(let i=0;i<90;i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;BK.sim(20);BK.step(1);};
+   const F=SC.FLIGHTS;
+   /* the climb, with the game's own jump: walk the flight's way, jump at an edge or under a ledge, and (strike) swing at a brazier ahead */
+   const climb=(m,strike,secs,watch)=>{const G=BK.L.grid,W=BK.L.W;let jh=0,last='',t=0;
+     for(;t<60*secs&&!BK.carpet();t++){
+       const k=Math.max(-1,m.alive?(m.reached??-1):5),dir=F[Math.min(F.length-1,k+1)].dir;BK.keys.right=dir>0;BK.keys.left=dir<0;
+       const fx=Math.floor((BK.P.x+dir*7)/16),fy=Math.floor(BK.P.y/16);let up=false;for(let c=0;c<=1;c++)for(let q=1;q<=3;q++)if(G[(fy-q)*W+fx+dir*c]===2)up=true;
+       let hold=false;if(strike)for(const s of (BK.L.spiral.seals||[])){const d=(s.bx*16+8-BK.P.x)*dir;if(!s.broken&&!s.wall&&d>-12&&d<26&&Math.abs(BK.P.y-(s.by+1)*16)<20){hold=true;if(d<2){BK.keys.right=dir<0&&t%10<2;BK.keys.left=dir>0&&t%10<2;}else{BK.keys.right=d>6&&dir>0;BK.keys.left=d>6&&dir<0;}if(BK.P.ground&&t%10===0)BK.press('atk');}}
+       if(!hold&&BK.P.ground&&(!G[fy*W+fx]||up)&&!(jh>0)){BK.press('jump');jh=16;}BK.keys.jump=jh>0;jh--;
+       BK.sim(1);if(t%3===0)BK.step(1);
+       if(watch&&m.alive&&/Tell$/.test(m.mode)&&m.mode!==last){const v=BK.view,on=m.x>v.x&&m.x<v.x+v.VW&&m.y-46>v.y&&m.y<v.y+v.VH;out.casts.push(m.mode+(BK.telling(m)?BK.markOf(m):'?'));if(!on)out.offCast++;}
+       last=m.alive?m.mode:'gone';}
+     BK.keys.right=BK.keys.left=BK.keys.jump=false;return t;};
+   /* 1. NO FIRE, NO WAY ON: the same climb that never strikes a brazier is held at the first ward */
+   boot();through();{const m=BK.enemies().find(e=>e.t==='magechase');out.tuneFoot=AU.music.want;climb(m,false,25,false);const s=(BK.L.spiral.seals||[])[0]||{};
+     out.held={x:BK.P.x,y:BK.P.y,broken:s.broken,wardX:s.x*16,m:[Math.round(m.x),Math.round(m.y)],perch:[s.x*16+8,(s.y0+1)*16]};}
+   /* 2. THE CLIMB, striking the braziers */
+   boot();through();
    out.foot=[Math.floor(BK.P.x/16),Math.round(BK.P.y/16)-1];out.view=BK.view.VW;
    const m=BK.enemies().find(e=>e.t==='magechase');out.woke=m&&m.mode!=='sleep';
-   const F=SC.FLIGHTS,G=BK.L.grid,W=BK.L.W;let jh=0,last='',t=0;
-   for(;t<60*150&&!BK.carpet();t++){
-     const k=Math.max(-1,m.alive?(m.reached??-1):5),dir=F[Math.min(F.length-1,k+1)].dir;BK.keys.right=dir>0;BK.keys.left=dir<0;
-     const fx=Math.floor((BK.P.x+dir*7)/16),fy=Math.floor(BK.P.y/16);let up=false;for(let c=0;c<=1;c++)for(let q=1;q<=3;q++)if(G[(fy-q)*W+fx+dir*c]===2)up=true;
-     if(BK.P.ground&&(!G[fy*W+fx]||up)&&!(jh>0)){BK.press('jump');jh=16;}BK.keys.jump=jh>0;jh--;
-     BK.sim(1);if(t%3===0)BK.step(1);
-     if(m.alive&&/Tell$/.test(m.mode)&&m.mode!==last){const v=BK.view,on=m.x>v.x&&m.x<v.x+v.VW&&m.y-46>v.y&&m.y<v.y+v.VH;out.casts.push(m.mode+(BK.telling(m)?BK.markOf(m):'?'));if(!on)out.offCast++;}
-     last=m.alive?m.mode:'gone';}
-   BK.keys.right=BK.keys.left=BK.keys.jump=false;out.secs=Math.round(t/60);
+   const t=climb(m,true,150,true);out.secs=Math.round(t/60);out.sealsBroken=(BK.L.spiral.seals||[]).filter(s=>s.broken).length;
    BK.sim(30);const A=BK.L.arena;out.fight=!!BK.bossActive;out.carpet=!!BK.carpet();out.inHall=BK.P.x>A.x0&&BK.P.x<A.x1&&BK.P.y>A.y0&&BK.P.y<A.floor;out.chaseGone=!m.alive;
+   out.tuneFight=AU.music.want;out.musicGap=BK.bossMusicT;
    boot();BK.tp(${CKX},${CK.land[2] - 1});BK.sim(30);BK.tp(${FLIGHTS[CI + 1].steps[0][0] + 1},${FLIGHTS[CI + 1].steps[0][2] - 1});BK.sim(2);BK.god=false;BK.P.hp=0;BK.P.dead=0.01;BK.sim(400);BK.god=true;BK.sim(60);
-   const m2=BK.enemies().find(e=>e.t==='magechase');out.respawn=[Math.floor(BK.P.x/16),Math.round(BK.P.y/16)-1];out.m2=m2&&[m2.mode,Math.round(m2.x/16),Math.round(m2.y/16)];
+   const m2=BK.enemies().find(e=>e.t==='magechase');out.respawn=[Math.floor(BK.P.x/16),Math.round(BK.P.y/16)-1];out.m2=m2&&[m2.mode,Math.round(m2.x/16),Math.round(m2.y/16)];out.tuneRespawn=AU.music.want;
+   out.wards=(BK.L.spiral.seals||[]).map(s=>s.broken);
    return out;})()`, 600000);
 } finally { pg.close(); }
+const tune = L.arena.music || 'boss';
 assert.ok(Math.abs(r.foot[0] - foot.x) <= 2 && r.foot[1] === foot.y, 'walking into his ring on the parapet does not put you at the spiral\'s foot: ' + JSON.stringify(r));
 assert.ok(r.woke, 'he does not wake when you come through'); assert.ok(r.view > 320, 'the stair is not seen zoomed out: ' + r.view);
+assert.ok(r.tune0 !== tune && r.tuneFoot === tune, 'HIS MUSIC is not up from the first step of the stair (' + r.tune0 + ' on the parapet, ' + r.tuneFoot + ' at the foot, want ' + tune + ')');
+assert.ok(r.tuneFight === tune && !(r.musicGap > 0), 'his music breaks off when the fight starts: ' + [r.tuneFight, r.musicGap]);
+assert.equal(r.tuneRespawn, tune, 'a death on the stair and his music is not back on waking there');
+assert.ok(!r.held.broken && !(r.held.y <= FLIGHTS[0].land[2] * TS && r.held.x >= r.held.wardX) && r.held.y > FLIGHTS[1].land[2] * TS && Math.abs(r.held.m[0] - r.held.perch[0]) < 8, 'THE SEAL: without a brazier struck the climb gets past his first ward (or he leaves it): ' + JSON.stringify(r.held));
+assert.equal(r.sealsBroken, 3, 'the climb striking braziers does not burn all three wards: ' + r.sealsBroken);
 assert.ok(r.fight && r.carpet && r.inHall && r.chaseGone, 'the climb with the game\'s own jump does not reach the carpet, or the carpet does not start his fight: ' + JSON.stringify(r));
-assert.ok(r.casts.length >= 4 && r.casts.some(c => c.startsWith('fireTell')) && r.casts.some(c => c.startsWith('markTell')), 'he hardly casts on the way up: ' + r.casts);
+assert.ok(r.casts.length >= 6 && r.casts.some(c => c.startsWith('fireTell')) && r.casts.some(c => c.startsWith('markTell')), 'he hardly casts on the way up: ' + r.casts);
 assert.ok(r.casts.every(c => (c.startsWith('markTell') ? c.endsWith('!!') : c.endsWith('!') && !c.endsWith('!!'))), 'a spell told with the wrong mark (or none): ' + r.casts);
 assert.equal(r.offCast, 0, 'a spell begun with him off the screen');
-const mid = CK.land, p4 = perchOf(CI + 1);
+const mid = CK.land, s4 = seals.find(s => s.k === CI + 1), p4 = s4 ? SC.sealPerch(s4) : perchOf(CI + 1);
 assert.ok(r.respawn[1] === mid[2] - 1 && r.respawn[0] >= mid[0] - 1 && r.respawn[0] <= mid[0] + mid[1], 'a death after the middle landing does not wake you there: ' + JSON.stringify(r.respawn));
-assert.ok(r.m2 && r.m2[0] !== 'sleep' && Math.abs(r.m2[1] * TS - p4.x) < 24 && Math.abs(r.m2[2] * TS - p4.y) < 24, 'after it he is not waiting over the next landing: ' + JSON.stringify(r.m2));
-console.log(`ok  tower-chase   his ring on the parapet to a ${S.x1 - S.x0 + 1}x${S.floor - S.top}-tile spiral stair (six flights, climbed with a real jump in ${r.secs} s), ${r.casts.length} told casts on the way (${[...new Set(r.casts)].join(' ')}), none off the screen, and the carpet at the top starts his fight`);
+assert.ok(r.m2 && r.m2[0] !== 'sleep' && Math.abs(r.m2[1] * TS - p4.x) < 24 && Math.abs(r.m2[2] * TS - p4.y) < 24, 'after it he is not waiting over the next flight (its ward): ' + JSON.stringify(r.m2));
+assert.deepEqual(r.wards, seals.map(s => s.k <= CI), 'waking on the middle landing, the wards are not burnt under it and standing over it: ' + r.wards);
+console.log(`ok  tower-chase   his ring on the parapet to a ${S.x1 - S.x0 + 1}x${S.floor - S.top}-tile spiral stair (six flights, one checkpoint, climbed with a real jump in ${r.secs} s), his music from the first step, three wards burnt only by their braziers' fire, ${r.casts.length} told casts on the way (${[...new Set(r.casts)].join(' ')}), none off the screen, and the carpet at the top starts his fight`);
