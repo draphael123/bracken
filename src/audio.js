@@ -338,6 +338,10 @@ export const SFX = {
   lcSlam() { file('slam', 0.5, 0.8); tone('sine', 90, 30, 0.5, 0.4); noise(0.3, 0.36, 300, 0.5); tone('square', 1100, 640, 0.08, 0.14, 0.02); tone('sine', 2200, 2150, 0.6, 0.06, 0.02); noise(0.5, 0.14, 120, 0.4, 0.08); },
   thud() { tone('sine', 110, 46, 0.18, 0.32); tone('triangle', 220, 120, 0.1, 0.12); noise(0.08, 0.18, 320, 0.6); }, // something wooden and heavy meeting the ground
   stone() { file('stone', 0.4); },
+  /* THE WINCHMASTER's live skip under a rider who will jam him (claude/winch4): the ore's weight on the cable, low and felt - and the
+     jam itself, a drum crashing to a stop (the crack of it, iron grinding down, and the cable humming taut) */
+  skipRumble() { tone('sine', 52, 40, 0.34, 0.22); noise(0.3, 0.1, 170, 0.5); tone('triangle', 104, 80, 0.2, 0.05); },
+  drumJam() { SFX.crack(); SFX.heavy(); tone('sawtooth', 110, 28, 0.8, 0.22); noise(0.55, 0.22, 900, 0.4, 0.05); tone('square', 1800, 1400, 0.5, 0.04, 0.1); },
   roar() { file('roar', 0.6) || tone('sawtooth', 90, 220, 0.6, 0.3); },
   bossHurt() { file('bossHurt', 0.55) || tone('sawtooth', 300, 120, 0.25, 0.25); },
   buzz() { tone('sawtooth', 110, 130, 0.5, 0.12); tone('sawtooth', 220, 200, 0.5, 0.06); },

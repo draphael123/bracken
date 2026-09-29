@@ -8,7 +8,8 @@ import { mulberry } from './px.js';   /* bossLab seeds Math.random for the row i
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 import { MARK } from './marks.js';
 import { GEO as GEO_K } from './geomancer.js';   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
-import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
+import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */
+import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
 export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24 };   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
@@ -764,7 +765,21 @@ async function runbossLab(BK, opts) {
         const barHere=(Math.abs(P.y-mouthY)<14&&Math.abs(P.x-mouthX)<72)||(onTop(boss.at||0)&&Math.abs(P.x-boss.x)<62);
         if(m==='leverTell'&&barHere&&!P.climb){busy=true;if(SHIELDED(h)&&P.ground){k.block=true;P.face=Math.sign(boss.x-P.x)||1;}else if(boss.modeT<0.22&&P.ground){BK.press('jump');P.labJump=14;}}
         if(!busy&&ring&&P.ground){busy=true;const side=P.x>ring.x?1:-1;go(ring.x+side*42);}
+        /* ROUND SIX (claude/winch4): PHASE THREE - HE HAS COME DOWN. The hands go to the floor he stands on (the deck, or the Great Drum's
+           ledge after his ride: the low line always runs to him) and duel him there: out of THE HOOK SWUNG's reach as it winds up, or,
+           with no room to step out of it, a roll through it; THE WRENCH shielded (or backed off, without a shield) and cut while it
+           is bitten into the planks; his ride in a skip jumped as it comes; the ring he comes down on stepped out of */
+        const ph3=boss.phase===3,FLs=winchFloors(),hf=m==='descendTell'||m==='descend'?0:(boss.fl||0);
+        const onF=i=>{const q=FLs[i];return P.ground&&!on&&!P.climb&&Math.abs(P.y-q.y)<4&&P.x>q.x0-8&&P.x<q.x1+8;};
+        const duel=()=>{ const F=FLs[hf],dx=boss.x-P.x,ad=Math.abs(dx),side=Math.sign(dx)||1,md=boss.modeT,R=WM_K.whirlR;
+          if(m==='descendTell'||m==='descend'){const rx=boss.toX,s=P.x>=rx?1:-1,out=rx+s*(WM_K.leapHit+26);if(Math.abs(P.x-rx)<WM_K.leapHit+14)go(out>F.x0+6&&out<F.x1-6?out:rx-s*(WM_K.leapHit+26));return;}
+          if(m==='whirlTell'){ if(ad<R+8){const out=Math.max(F.x0+3,Math.min(F.x1-3,boss.x-side*(R+10)));if(Math.abs(out-boss.x)>R+3)go(out);else if(md<0.24&&P.ground&&!P.labJump){BK.press('jump');P.labJump=16;}} return; }   /* (no room on the deck to step out of it: over it) */
+          if(m==='wrenchTell'&&ad<WM_K.wrenchHit+14){ if(SHIELDED(h)&&P.ground){k.block=true;P.face=side;} else go(boss.x-side*(WM_K.wrenchHit+22)); return; }
+          if(m==='rideTell'||m==='ride'){ if(m==='ride'&&ad<64&&P.ground&&!P.labJump){BK.press('jump');P.labJump=14;} return; }
+          if(ad>reach2-6)k[side>0?'right':'left']=true;
+          if(ad<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='whirl'){P.face=side;BK.press('atk');swings++;} };
         if(busy){}
+        else if(ph3&&onF(hf))duel();
         else if((m==='downed'||m==='thrown')&&Math.abs(P.y-(boss.toY??boss.y))<30&&!P.climb){ /* THE BONUS WINDOW: he is down on a ledge beside you - cut */
           const lx=boss.toX??boss.x,dx=boss.x-P.x,side=Math.sign(lx-P.x)||1,d=Math.abs(lx-P.x);
           const ln0=on?BK.L.cableway.lines[on.line]:null;
@@ -774,14 +789,16 @@ async function runbossLab(BK, opts) {
         else if(on){ /* RIDING (round three: the room's floor is the pit, so the lines are the way round) - answer him and stay on: in the
           MIDDLE of the skip (a rider on its trailing lip who jumps the bar comes down behind it), and off onto the ledge at the far end */
           const ln0=BK.L.cableway.lines[on.line],p0=ln0.pts,end=ln0.dir>0?p0[p0.length-1]:p0[0],cx=on.x+on.w/2;
-          if(ln0.jam>0||Math.abs(end[0]-cx)<10)k[ln0.dir>0?'right':'left']=true; else if(Math.abs(cx-P.x)>5)k[cx>P.x?'right':'left']=true; }
-        else if(onTop(tgt)){ /* UP WITH HIM: in to reach, and cut */
+          if(ln0.jam>0||Math.abs(end[0]-cx)<10)k[ln0.dir>0?'right':'left']=true; else if(Math.abs(cx-P.x)>5)k[cx>P.x?'right':'left']=true;
+          if(ph3&&m==='ride'&&Math.abs(boss.x-P.x)<64&&Math.abs(boss.y-P.y)<20&&!P.labJump){BK.press('jump');P.labJump=14;} }   /* (phase three: his skip coming along the line - over it) */
+        else if(!ph3&&onTop(tgt)){ /* UP WITH HIM: in to reach, and cut */
           const dx=boss.x-P.x,side=Math.sign(dx)||1;
           if(Math.abs(dx)>reach2-6)k[side>0?'right':'left']=true;
           if(Math.abs(dx)<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='letgo'&&m!=='swing'&&m!=='leap'){P.face=side;BK.press('atk');swings++;} }
         else if(P.climb){ /* ON A LADDER: to the row this housing is reached from, and off it there */
           const lx=Math.floor(P.x/TZ);let want=null,off=0;
-          if(lx===LB){ if(tgt===1){want=null;k.up=true;} else if(tgt===2){want=row(HB.ledgeTop);off=Math.sign(HB.ledge[0]-LB);} else {want=row(O.deck);off=Math.sign(deck1-LB);} }
+          if(ph3){ if(lx===LB){want=row(O.deck);off=Math.sign(deck1-LB);} else k.down=true; }   /* phase three: every ladder leads down - the Head Frame's to the deck */
+          else if(lx===LB){ if(tgt===1){want=null;k.up=true;} else if(tgt===2){want=row(HB.ledgeTop);off=Math.sign(HB.ledge[0]-LB);} else {want=row(O.deck);off=Math.sign(deck1-LB);} }
           else if(lx===LA){ if(tgt===0)k.up=true; else k.down=true; }
           else if(lx===LC){ if(tgt===2)k.up=true; else k.down=true; }
           else k.up=true;
@@ -799,7 +816,16 @@ async function runbossLab(BK, opts) {
           const climb=x=>{const lx=x*TZ+8;if(Math.abs(lx-P.x)>3)go(lx);else k.up=true;};
           const onLad=[LB,LA,LC].find(x=>Math.abs(P.x-(x*TZ+8))<7&&(BK.L.grid[Math.floor((P.y+2)/TZ)*BK.L.W+x]===T.NET||BK.L.grid[Math.floor((P.y-4)/TZ)*BK.L.W+x]===T.NET));
           const deck=at2(deck0,LB,O.deck);   /* (the Head Frame's ladder at deck level is part of the deck: that is where the low line is boarded) */
-          if(deck&&tgt===0)board(lo,(LB+1)*TZ,1);
+          if(ph3){ /* PHASE THREE, not on his floor: down off any housing, along whatever line runs to him, down the Head Frame's ladder to the deck */
+            if(topAt>=0){const lx=HS[topAt].ladder[0]*TZ+8;if(Math.abs(lx-P.x)>3)go(lx);else k.down=true;}
+            else if(onLad!==undefined){ if(onLad===LB){const w=row(O.deck);if(P.y<=w&&P.y>w-10)k[Math.sign(deck1-LB)>0?'right':'left']=true;else if(P.y>w)k.up=true;else k.down=true;} else k.down=true; }
+            else if(deck){ if(hf===1)board(lo,(LB+1)*TZ,1); }
+            else if(at2(HB.ledge[0],HB.ledge[1],HB.ledgeTop))climb(LB);
+            else if(at2(HC.ledge[0],HC.ledge[1],HC.ledgeTop))board(hi,HC.ledge[0]*TZ,-1);
+            else if(at2(GA.ledge[0],GA.ledge[1],GA.ledgeTop)){ if(lo.dir<0)board(lo,GA.ledge[0]*TZ,-1); else go((GA.ledge[0]+1)*TZ); }
+            else if(PD&&at2(PD.ledge[0],PD.ledge[1],PD.ledge[2]))climb(PD.ladder[0]);
+            else go(LB*TZ+8); }
+          else if(deck&&tgt===0)board(lo,(LB+1)*TZ,1);
           else if(onLad!==undefined&&topAt<0){ /* STANDING ON A LADDER (its top, or a rung level with a floor): take hold the way it leads */
             if(onLad===LB){ const w=tgt===1?-1:tgt===2?row(HB.ledgeTop):row(O.deck),side=tgt===2?Math.sign(HB.ledge[0]-LB):Math.sign(deck1-LB); if(w<0)k.up=true; else if(P.y<=w&&P.y>w-10)k[side>0?'right':'left']=true; else if(P.y>w)k.up=true; else k.down=true; }
             else if((onLad===LA&&tgt===0)||(onLad===LC&&tgt===2))k.up=true; else k.down=true; }

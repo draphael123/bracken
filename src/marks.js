@@ -69,7 +69,7 @@ export const BY_HAND = {
   'sexton|swingTell':'!','sexton|rushTell':'!','sexton|tollTell':'!!','sexton|dropTell':'!!',   /* THE SEXTON (sexton.js, by hand): the swing and the charge a shield turns; the toll along the deck and the bell off the frame nothing does */
   'hedgewarden|cutTell':'!','hedgewarden|rushTell':'!','hedgewarden|thornTell':'!!','hedgewarden|lashTell':'!','hedgewarden|rootsTell':'!!',   /* THE HEDGE WARDEN (hedge-warden.js, by hand): the cut, the rush and the thorn lash a shield turns; the thorns and the roots nothing does (claude/hedgewarden2: the lash and the roots) */
   'broom|sweepTell':'!',
-  'winchmaster|reverseTell':'','winchmaster|sendTell':'!!','winchmaster|hookTell':'!!','winchmaster|leverTell':'!','winchmaster|leapTell':'!!',   /* THE WINCHMASTER (winchmaster.js, by hand): the send and the hook no shield turns, the brake bar it does, and the reverse throws no blow so it is QUIET */
+  'winchmaster|reverseTell':'','winchmaster|sendTell':'!!','winchmaster|hookTell':'!!','winchmaster|leverTell':'!','winchmaster|leapTell':'!!','winchmaster|descendTell':'!!','winchmaster|whirlTell':'!!','winchmaster|wrenchTell':'!','winchmaster|rideTell':'!!',   /* THE WINCHMASTER (winchmaster.js, by hand): the send and the hook no shield turns, the brake bar it does, and the reverse throws no blow so it is QUIET */
   'abbot|censerTell':'!','abbot|castTell':'!','abbot|processTell':'!!','abbot|coalsTell':'!!','abbot|knellTell':'!!','abbot|riteTell':'',   /* THE FALSE ABBOT (false-abbot.js, by hand: a module-file boss the audit cannot follow): the censer and the chain a shield turns; the procession, the coals and the knell nothing does; the rite throws no blow at all */
   'tome|tell':'!',   /* THE TOME (tome.js, by hand: a module-file foe the audit cannot follow): the dart is a blow, and the shield does not just turn it - it SHUTS the book */
   'gargoyle|diveTell':'!!','gargoyle|fireballTell':'!','gargoyle|breathTell':'!','gargoyle|flareTell':'!!',   /* THE GATE GARGOYLE (gate-gargoyle.js, by hand): the dive and the flare wear the red cross; the fireball (the wing gust's place, 2026-09-28) and the fire breath a shield turns */   /* THE WITCHLIGHT STAIR's aqueduct broom (sweepBroom, by hand): a sweep at the ankles a shield braces against */
@@ -203,8 +203,9 @@ export const MARK = {
   'undeadmage|markTell': '!!', 'undeadmage|poisonTell': '!', 'undeadmage|stepTell': '', 'undeadmage|stormTell': '!!', 'undeadmage|trapTell': '!', 'urchin|biteTell': '!',
   'urchin|castTell': '!', 'urchin|dive': '!', 'urchin|hookTell': '!', 'urchin|swellTell': '!', 'vulture|watch': '!!', 'wasp|stingTell': '!',
   'watch|sweepTell': '!', 'watch|thrustTell': '!', 'weaver|spitTell': '!', 'whelp|crouchTell': '!', 'whelp|fireTell': '!', 'wight|graspTell': '!!',
-  'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|sendTell': '!!', 'windcaller|howlTell': '',
-  'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!',
+  'winchmaster|sendTell': '!!', 'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!',
+  'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
 };
 /* MARK:END */
 
@@ -343,6 +344,12 @@ export const ANSWER = {
   'sweep|popTell': 'block',
   'thief|snatchTell': 'dodge',
   'weaver|spitTell': 'block',
+  /* THE WINCHMASTER (a boss, so not asked for by tools/answer-tags.mjs - kept because his phase three was built to ask for a dodge and a
+     block, claude/winch4): on his drums the send, the hook and the leap are sat out in the air or out of the ring; the brake bar is
+     shielded. On foot: the descent's ring stepped out of, THE HOOK SWUNG out of its reach or rolled through, THE WRENCH shielded, and
+     his ride in a skip jumped as it passes */
+  'winchmaster|sendTell': 'jump', 'winchmaster|hookTell': 'jump', 'winchmaster|leverTell': 'block', 'winchmaster|leapTell': 'dodge',
+  'winchmaster|descendTell': 'dodge', 'winchmaster|whirlTell': 'dodge', 'winchmaster|wrenchTell': 'block', 'winchmaster|rideTell': 'jump',
   'wight|graspTell': 'dodge',      // mist round a shield: out of its reach
 };
 /* ANSWER:END */
