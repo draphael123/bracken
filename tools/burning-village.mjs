@@ -139,7 +139,15 @@ const L = lv.build();
   for (let x = 0; x + 24 <= xmax; x += 24) { per.push(L.ents.filter(e => e.x >= x && e.x < x + 24 && !combat.has(e.t) && !e.boss).length + waves.filter(([, wx]) => wx >= x && wx < x + 24).length);
     flat.push(new Set(st.filter(([sx]) => sx >= x && sx < x + 24).map(([, y]) => y)).size <= 2); }
   const avg = per.reduce((a, b) => a + b, 0) / per.length;
-  assert.ok(avg >= 3.5 && avg <= 4.5, 'foes a screen ' + avg.toFixed(2) + ' (the bar is 3.5-4.5): ' + per.join(' '));
+  /* THE SPRINKLE CUT (Daniel, 2026-09-29, "FEWER, BETTER FOES"; src/foe-tactics.js SPRINKLE/PLAN) superseded the old 3.5-4.5 bar (docs/DESIGN.md B7):
+     the sprinkled row was halved and capped, and every 200-column section stands a DESIGNED squad instead. So the level is held to the new design:
+     no screen empty, the sprinkle under its cap, a squad in every section with ground, and the density fewer-but-not-hollow (2.5-4.5). */
+  assert.ok(avg >= 2.5 && avg <= 4.5, 'foes a screen ' + avg.toFixed(2) + ' (the bar since the sprinkle cut is 2.5-4.5): ' + per.join(' '));
+  assert.ok(per.every(n => n >= 1), 'no screen of the village is empty of foes: ' + per.join(' '));
+  const sprinkled = L.ents.filter(e => e.garrison && !e.squad), squads = new Set(L.ents.filter(e => e.squad).map(e => e.squad));
+  assert.ok(sprinkled.length >= 1 && sprinkled.length <= Math.floor(L.W / 30), 'the garrison row places, under the sprinkle cap: ' + sprinkled.length);
+  for (const b of L.squadBands || []) assert.ok(!b.spots || b.designed, 'a designed squad in every section with ground: columns ' + b.lo + '-' + b.hi);
+  assert.ok(squads.size >= 2, 'the village is held by designed squads: ' + [...squads]);
   assert.ok(!flat.some((f, i) => f && flat[i + 1] && flat[i + 2]), 'no run of three flat screens: ' + flat.map(f => f ? 'F' : '.').join(''));
   assert.equal(L.ents.filter(e => e.t === 'silver').length, 3, 'three silvers');
   assert.equal(L.ents.filter(e => e.t === 'captive').length, 6, 'six villagers to save');

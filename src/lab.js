@@ -1204,6 +1204,12 @@ async function runbossLab(BK, opts) {
          holding jump down forever, with no ground contact to ever let go on, meant this file's own walk code never
          got a frame to move him at all. That bug is general (every boss's stuck-recovery held jump the same way),
          not herald-specific - fixed once, below, for all of them. */
+      /* HE STANDS ON A STONE YOU CANNOT HOP (claude/batch45 fixer): his y follows the ground under him, so between blows he can stand on top of one of the
+         square's four-tile stones with the hero at its foot - under 50 px he does not stride, and his sweep and thrust pass over a hero that far below, so
+         the two stand there for the rest of the fight (traced: herald-pirate, 130 s at 34 px, not a hit either way). A player walks off: past 50 px he
+         strides after you, down off the stone. So the hands step 80 px off him, on the side with room, until he comes down. */
+      else if (boss.t === 'herald' && boss.y < A.floor - 40 && P.y > boss.y + 30 && !open) { const side = (Math.sign(P.x - boss.x) || 1) * (P.x + (Math.sign(P.x - boss.x) || 1) * 80 > A.x1 - 18 || P.x + (Math.sign(P.x - boss.x) || 1) * 80 < A.x0 + 18 ? -1 : 1);
+        goal = Math.max(A.x0 + 18, Math.min(A.x1 - 18, boss.x + side * 90)); strike = false; }
       else if (boss.t === 'herald') { goal = boss.x; strike = true; if (open) k.block = false; }
       else if (open) { goal = boss.x; strike = true; }
       /* THE PLATE THAT TURNS EVERY BLADE (the Queen's Lance): chipping at it does nothing at all, so the hands MAKE the

@@ -20,7 +20,11 @@ assert(L.ents.some(e => e.t === 'stal' && e.x === 17 && e.y === 68), 'and a loos
 
 // plan 3 + the exam (game-wide pattern 1): A THIRD WHEEL in the crawl, between two priests' flocks
 assert(L.ents.some(e => e.t === 'pwheel' && e.pivot && e.pivot[0] === 77 && e.pivot[1] === 34), 'the third wheel stands in the crawl');
-assert(near('gobpriest', 71, 35) && near('gobpriest', 80, 35, 6), 'two priests flock either side of the third wheel');
+/* THE SPRINKLE CUT (Daniel, 2026-09-29, "FEWER, BETTER FOES"; src/foe-tactics.js SPRINKLE/PLAN): the second priest east of the wheel was the garrison
+   sprinkler's, not the builder's, and the halved row no longer puts one there. The exam keeps its hand-placed priest and troll by the wheel, and the
+   crawl's section (rows 0-59) is held by a DESIGNED squad with a priest behind its melee instead (tools/sprinkle-cap.mjs holds every section to one). */
+assert(near('gobpriest', 71, 35) && !L.ents.some(e => e.t === 'gobpriest' && e.x === 71 && e.y === 35 && (e.garrison || e.squad)), 'a hand-placed priest flocks by the third wheel');
+assert(L.ents.some(e => e.t === 'gobpriest' && e.squad && !e.garrison && e.y < 60) && (L.squadBands || []).filter(b => b.lo < 60).every(b => b.designed), 'and the crawl\'s section stands a designed squad with a priest behind its melee');
 assert(near('troll', 73, 35), 'a troll stands by the wheel, in one flock');
 assert(L.ents.some(e => e.t === 'vent' && e.incense && Math.abs(e.x - 74) <= 3 && e.y >= 30 && e.y <= 40), 'incense carries you up past the wheel, in the exam');
 
