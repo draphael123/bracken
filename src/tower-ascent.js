@@ -11,7 +11,9 @@
 //
 //   rows 0-49      THE SKY: the desert (SAND, rows 6-12), his hall at the top of the tower (HALL, rows 22-38: the carpet's
 //                  arena), and nothing to stand on by design between the hall's floor and the crown
-//   rows 50-83   7 THE OPEN CROWN        broken ledges, the sky showing through, the carpet at the top
+//   rows 50-83   7 THE OPEN CROWN        broken ledges, the sky showing through, and HIS RING on the parapet (2026-09-29) -
+//                                        through it THE SPIRAL STAIR (cols 80-105, rows 70-123, east of the tower's wall:
+//                                        src/spiral-chase.js), the Undead Archmage chased up it, and the carpet at its top
 //   rows 86-119  6 THE BELL LOFT         (2026-09-25) the bell deck over its pit, and THE SEXTON, the tower's mini
 //   rows 122-155 5 THE BURST CISTERN     a floor of poison water, stepping stones
 //   rows 158-191 4 THE PENDULUM GALLERY  NEW: three clock pendulums ('swing' movers, as Marsh Wood and Kingswood use)
@@ -39,12 +41,14 @@
 // the Folly's gravity glyphs, falling stones.
 import { crumbleInit, crumbleGone } from './tower-collapse.js';
 import { TOWER_FLYERS, FLAT, overFlat } from './tower-flyers.js';
+/* THE SPIRAL STAIR (Daniel, 2026-09-29): his ring on the parapet, the stair tower he is chased up, the carpet at its top - src/spiral-chase.js */
+import { buildSpiral, SPIRAL, TOP as SPIRAL_TOP, inSpiral } from './spiral-chase.js';
 export const TOWER = { W: 72, H: 306, X0: 12, X1: 59, SKY: 50, FLOOR: 36, N: 7 };
 /* THE DESERT's rows (round 2, docs/briefs/falling-tower-round2.md §2), high in the empty sky rows where nothing else is built and no
    camera ever reaches except through the portal: sixteen rows over the sanctum's vault, which is itself painted and not built
    (src/sanctum.js). It was a sandstone cutting walled at both ends; it is open sand now, from one edge of the world to the other,
    under THE SUNKEN CARAVAN's sky. `arrive` is where the second door puts you, `gate` the level's end. */
-export const SAND = { x0: 0, x1: TOWER.W - 1, row: 6, deep: 12, arrive: 20, gate: 34 };
+export const SAND = { x0: 0, x1: SPIRAL.W - 1, row: 6, deep: 12, arrive: 20, gate: 34 };
 /* HIS HALL, THE TOP OF THE TOWER (round 3, Daniel 2026-09-27: "move his arena higher so walking foes cannot wander in", its backdrop
    "the top of the tower open to the night with the moon behind"). It sat on the crown: its burning floor was row 50 and the parapet
    walk row 51, so anything that walked the crown's last tiers stood with its head in his fire. It is TWELVE ROWS higher now - its floor
@@ -74,7 +78,7 @@ export const SWING = { arm: 12 * 16, th: 0.9, w: 48 };
 const endRise = () => Math.round(SWING.arm * (1 - Math.cos(SWING.th)) / 16);
 
 export function buildTowerAscent({ painter, T, TS }) {
-  const { W, H, X0, X1, SKY, FLOOR, N } = TOWER;
+  const { H, X0, X1, SKY, FLOOR, N } = TOWER, W = SPIRAL.W;   /* the grid is the tower's 72 columns and, east of its wall, THE SPIRAL STAIR's own (src/spiral-chase.js) */
   const L = painter(W, H), { set, ent, coins } = L;
   const rect = (x0, x1, y0, y1, t) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, t); };
   rect(0, W - 1, 0, H - 1, T.SOLID);
@@ -272,13 +276,13 @@ export function buildTowerAscent({ painter, T, TS }) {
        shorter count. The rule at its hardest, where the tower is most gone - and a fall is one tier, never the floor. */
     F.tiers.forEach(([x0, len, row], j) => { if (j % 4 === 1) crumbles.push({ x0, x1: x0 + len - 1, row, count: 2.5, kind: 'crown' }); });
     rect(28, 43, SKY + 1, SKY + 1, T.SOLID);                              /* THE PARAPET WALK, three over the last tier: the carpet waits over it */
-    ent('check', 30, F.bot - 1); ent('sign', 26, F.bot - 1, { text: 'THE CROWN. THE ROOF IS GONE. A DOOR STANDS OPEN ON THE PARAPET: HIS ROOM IS THROUGH IT.' });
+    ent('check', 30, F.bot - 1); ent('sign', 26, F.bot - 1, { text: 'THE CROWN. THE ROOF IS GONE. HIS RING STANDS OPEN ON THE PARAPET: HE WENT THROUGH IT.' });
     /* THE LAST CHECKPOINT BEFORE HIM IS ON THE CROWN'S LAST CLIMB, two tiers under the parapet (round 2, docs/briefs/falling-tower-round2.md
        §1b). It stood on the parapet, one row under his hall's floor, and the fight's camera looks that far down: all fight long there was a
        lit lantern under the fire that the carpet can never reach (Daniel: "a checkpoint that is unreachable when you fight the skeletal
        mage"). Here it is below everything the fight shows (tools/checkpoint-stand.mjs), and a death in the sky still wakes you by the door. */
     /* (its sign with it: on the parapet the fight saw that too, a signpost standing under the fire) */
-    { const [x0, len, row] = F.tiers[F.tiers.length - 2]; ent('check', x0 + (len >> 1) + 1, row - 1); ent('sign', x0 + 2, row - 1, { text: 'HIS CARPET FLIES WHERE YOU STEER IT. THE FLOOR BURNS. EVERY SPELL CAN BE OUT-FLOWN.' }); }
+    { const [x0, len, row] = F.tiers[F.tiers.length - 2]; ent('check', x0 + (len >> 1) + 1, row - 1); }   /* (its sign went up to the carpet, at the top of the spiral stair, 2026-09-29) */
     deco('telescope', 36, F.bot - 1); deco('starChart', 24, F.top + 1, { hang: true });
     const who = ['imp', 'apprentice', 'bat', 'armour', 'tome', 'apprentice', 'haunt', 'imp', 'tome', 'bat', 'armour'];
     F.tiers.forEach(([x0, len, row], j) => put(who[j % who.length], x0, len, row));
@@ -292,6 +296,11 @@ export function buildTowerAscent({ painter, T, TS }) {
   rect(SAND.x0, SAND.x1, SAND.row, SAND.deep, T.SOLID);                     /* the sand itself, seven rows deep: the camera never sees under it */
   ent('gate', SAND.gate, SAND.row - 1); ent('sign', SAND.arrive + 4, SAND.row - 1, { text: 'THE TOWER IS BEHIND YOU. AHEAD IS THE SAND, AND THE ROAD TO THE SUNKEN CARAVAN.' });
   ent('undeadmage', 36, HALL.floor - 8, { face: -1 });
+  /* THE SPIRAL STAIR (src/spiral-chase.js). The parapet's door into his hall is HIS RING now, and it lets you out at the foot of his stair
+     tower, east of the Falling Tower's wall; the door into his hall - and the carpet - wait at the top of it. */
+  ent('ringdoor', 36, SKY, { id: 'crown-ring', to: 'spiral-foot' });
+  const spiral = buildSpiral({ rect, ledge, ent, crumbles, interiors }, T);
+  ent('sign', SPIRAL_TOP.check + 2, SPIRAL_TOP.row, { text: 'HIS CARPET FLIES WHERE YOU STEER IT. THE FLOOR BURNS. EVERY SPELL CAN BE OUT-FLOWN.' });
   // ---- THE DIVIDERS AND THEIR ROPES. Each floor's rope hangs from its last tier, through the divider over it, to its top. ----
   for (let k = 0; k < floors.length - 1; k++) {
     const F = floors[k], [x0, len, row] = F.tiers[F.tiers.length - 1], rx = x0 + (len >> 1);
@@ -363,15 +372,15 @@ export function buildTowerAscent({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra, interiors, gusts: [], flips, glyphBridges, crumbles,   /* FAILING STONE: src/tower-collapse.js */
     music: 'fallingtower', night: true, nightA: 0.12, edgeLit: true, duskStart: 99999, duskLen: 1, hasCryst: true,
-    flatFlyers: { below: SKY }, calm: [[SAND.x0, SAND.x1, 0, SAND.deep + 1]],   /* (round 3) the sprinkler's flyers keep to flat ground under the parapet (his door's), and nothing of the tower's is sprinkled on the desert past the second door (a calm over the sky rows only: the tower itself has none) */
-    towerAscent: true, carpetAt: { x: 36 * TS, y: SKY * TS }, fallingTower: true, stackedFloors: true, skyRow: SKY,
+    flatFlyers: { below: SKY }, calm: [[SAND.x0, SAND.x1, 0, SAND.deep + 1], [SPIRAL.x0 - 1, SPIRAL.x1 + 1, SPIRAL.top, SPIRAL.floor]],   /* (round 3) the sprinkler's flyers keep to flat ground under the parapet (his door's), and nothing of the tower's is sprinkled on the desert past the second door (a calm over the sky rows only: the tower itself has none) */
+    towerAscent: true, carpetAt: { x: SPIRAL_TOP.carpet * TS, y: SPIRAL_TOP.row * TS }, spiral,   /* (2026-09-29) the carpet lies at the top of THE SPIRAL STAIR now, before the door into his hall */ fallingTower: true, stackedFloors: true, skyRow: SKY,
     /* THE ARCHMAGE'S SANCTUM (src/sanctum.js). `in` is the door on the parapet and stands exactly where the carpet used
        to lie, so the carpet's own board check opens it; `spawn` is where you come out, inside his hall and well over the
        fire; `sand` is where the second door puts you when he is down. `out` is not here because it is not decided here:
        the way out opens WHERE HE FALLS. */
     bellDeck: bell,   /* THE SEXTON's deck: its row, the frame over it and the joists he climbs out onto (main.js) */
     mini: { x0: 12 * TS, x1: 52 * TS, floor: bell.deck * TS, y0: bell.frame * TS, y1: (bell.deck + 4) * TS, trigger: 14 * TS, wallL: 12, gate: 52, boss: 'sexton', name: 'THE SEXTON' },
-    sanctum: { in: { x: 36 * TS, y: SKY * TS }, spawn: { x: 14 * TS, y: (HALL.floor - 10) * TS }, sand: { x: SAND.arrive * TS + 8, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
+    sanctum: { in: { x: SPIRAL_TOP.carpet * TS, y: SPIRAL_TOP.row * TS }, rug: true, spawn: { x: 14 * TS, y: (HALL.floor - 10) * TS }, sand: { x: SAND.arrive * TS + 8, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
     tall: { top: SKY * TS, bottom: floors[0].bot * TS, col: '16,20,32', deepest: 0.16 },   /* the gloom is cold slate, not the Folly's violet */
     towerFloors: floors.map((F, k) => ({ name: F.name, top: F.top, bot: F.bot, hole: F.hole || null, last: k === N - 1 })),
     deckBreaks: breaks.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true })),   /* spine ledges: they come back (updateTowerAscent), or a fall into the water would be a soft-lock */
@@ -384,7 +393,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hall' }],
     noCoin: [[0, W - 1, 0, SKY + 1]],
     /* THE SKY IS THE ARENA. trigger is never walked past: the carpet starts the fight when it is boarded (carpet.js) */
-    arena: { x0: 4 * TS, x1: 68 * TS, y0: HALL.y0 * TS, floor: HALL.floor * TS, hall: true,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: 0, wallR: W - 1, boss: 'undeadmage', carpet: true, music: 'boss4', tint: '#30334e', tintA: 0.06 },
+    arena: { x0: 4 * TS, x1: 68 * TS, y0: HALL.y0 * TS, floor: HALL.floor * TS, hall: true,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: 0, wallR: TOWER.W - 1, boss: 'undeadmage', carpet: true, music: 'boss4', tint: '#30334e', tintA: 0.06 },
   };
 }
 
@@ -402,6 +411,7 @@ export function towerAscentReset(L, restore, cpRow = Infinity, clear = null, sea
 }
 export function updateTowerAscent(L, P, dt, { change, crash, warn }) {
   if (!L.towerFloors || P.dead) return;
+  if (inSpiral(L.spiral, P.x, P.y)) return;   /* on THE SPIRAL STAIR the tower's floors are behind you, in another place: none of them arms or falls */
   const X0 = TOWER.X0, X1 = TOWER.X1;
   /* THE CISTERN'S LEDGES COME BACK UP. They are the stair, so one that gave way under you and dropped you in the water
      has to be there again when you have climbed out onto a stone - five seconds, and never while you are in its tiles */

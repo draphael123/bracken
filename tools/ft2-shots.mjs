@@ -29,7 +29,7 @@ try {
       for (const A of (BK.ambushes ? BK.ambushes() : [])) if (A.st && A.st !== 'done') { for (const e of A.foes || []) e.alive = false; A.st = 'done'; } }
     /* THE SKY FIGHT: through the door on the parapet, the fight started, a look low in the room and a look high */
     if (ok('fight') || ok('fight-low') || ok('after-portal')) {
-      BK.tp(36, 49); for (let k = 0; k < 20; k++) BK.step(1); BK.board && BK.board(); for (let k = 0; k < 150; k++) BK.step(1); snap('fight', 'the sky fight, the carpet boarded');
+      BK.tp(81, 78); for (let k = 0; k < 20; k++) BK.step(1); BK.board && BK.board(); for (let k = 0; k < 150; k++) BK.step(1); snap('fight', 'the sky fight, the carpet boarded');
       for (let k = 0; k < 90; k++) { BK.keys.down = true; BK.step(1); } BK.keys.down = false; for (let k = 0; k < 10; k++) BK.step(1); snap('fight-low', 'the bottom of his room');
       for (let k = 0; k < 70; k++) { BK.keys.up = true; BK.keys.right = true; BK.step(1); } BK.keys.up = BK.keys.right = false; for (let k = 0; k < 30; k++) BK.step(1); snap('fight-mid', 'mid-fight');
       /* HIS RINGS (round 2), where the level has them: the step's exit flaring by you, and a bent bolt's pair glowing */

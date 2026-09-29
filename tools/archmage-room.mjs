@@ -19,7 +19,7 @@ import { carpetBox, CARPET } from '../src/carpet.js';
 import { SANCTUM, fireTop, burnSanctum, openSanctumDoor } from '../src/sanctum.js';
 
 const L = LEVELS.find(l => l.id === 'fallingtower').build();
-const { W, X0, X1, SKY } = TOWER, TS = 16;
+const { X0, X1, SKY } = TOWER, W = L.W, TS = 16;   /* (the grid's own width: it runs on east of the tower for the spiral stair since 2026-09-29) */
 const at = (x, y) => L.grid[y * W + x];
 const skins = L.mage.skins;
 const claimed = (x, y) => skins.some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d);

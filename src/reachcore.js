@@ -51,7 +51,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
   const climbable = t => t === T.CLIMB; // a NET is one-way rungs: a rope ladder is climbed by hopping rung to rung, so it is footing, not a ladder
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
-  const doors = (L.ents || []).filter(e => e.t === 'doorway' && e.id);
+  const doors = (L.ents || []).filter(e => (e.t === 'doorway' || e.t === 'ringdoor') && e.id);   /* (a RINGDOOR is the Undead Archmage's ring as a door - the Falling Tower's parapet to his spiral stair, src/spiral-chase.js: walked into, not pressed, and the same pair to the fill) */
   const doorTo = new Map(doors.map(d => [d.id, d]));
   const vents = (L.ents || []).filter(e => e.t === 'vent');
   // the rides the model CAN follow, from L.moversExtra: a pulley lift (stand on it anywhere along its run and step

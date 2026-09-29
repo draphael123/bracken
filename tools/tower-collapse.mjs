@@ -18,8 +18,12 @@ const L = LEVELS.find(l => l.id === 'fallingtower').build(), W = L.W, at = (x, y
 const C = crumbleInit(L), kinds = C.map(c => c.kind);
 const floorOf = y => L.towerFloors.find(f => y >= f.top && y < f.bot);
 // ---- VARIED: the uses, in route order (bottom of the tower to the top) ----
-const order = [...new Set(C.slice().sort((a, b) => b.row - a.row).map(c => c.kind))];
+const order = [...new Set(C.filter(c => c.kind !== 'spiral').sort((a, b) => b.row - a.row).map(c => c.kind))];
 assert.deepEqual(order, ['teach', 'gallery', 'stair', 'landing', 'deck', 'crown'], 'the uses in route order: ' + order);
+/* (2026-09-29) THE SPIRAL STAIR's failing steps come AFTER the crown on the route - through his ring on the parapet, in a stair tower of
+   their own east of the tower's wall (src/spiral-chase.js) - so they are not in the tower's row order above: they are the rule's last use,
+   under his spells, and they stand in the stair tower */
+assert.ok(C.some(c => c.kind === 'spiral') && C.filter(c => c.kind === 'spiral').every(c => c.x0 >= L.spiral.x0 && c.x1 <= L.spiral.x1), 'the spiral stair has failing steps, and they are in the spiral stair');
 assert.equal(floorOf(C.find(c => c.kind === 'teach').row).name, 'THE LIBRARY STACKS', 'the rule is taught on the first floor');
 assert.ok(C.filter(c => c.kind === 'stair').length >= 5 && new Set(C.filter(c => c.kind === 'stair').map(c => c.chain)).size === 1, 'the failing stair is one chain of five or more');
 for (const c of C) for (let x = c.x0; x <= c.x1; x++) assert.notEqual(at(x, c.row), T.AIR, c.kind + ': a failing section is built as floor');

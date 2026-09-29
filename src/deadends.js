@@ -140,7 +140,8 @@ export function findDeadEnds(L, T, opts = {}) {
     if (Math.max(x1 - x0, y1 - y0) < DEADEND_MIN - 1) { skipped.push({ ...where, why: 'too small ' + (x1 - x0 + 1) + 'x' + (y1 - y0 + 1) }); continue; }
     /* A DOOR, A GATE, A KEEPER OR A LEVER AT THE END IS WHY YOU WENT: one halfway along does not pay the tail past it */
     const topSet = new Set(top);
-    const pointHere = ents.find(e => POINT.has(e.t) && [-1, 0, 1].some(dx => [-1, 0, 1, 2].some(dy => { const x = e.x + dx, y = e.y + dy; return x >= 0 && y >= 0 && x < W && y < H && topSet.has(y * W + x); })));
+    /* (and THE DOOR INTO A CARPET FIGHT, L.carpetAt: the Falling Tower's spiral stair ends at it, 2026-09-29 - the top of the stair is where you were going, not a pocket to pay) */
+    const pointHere = ents.concat(L.carpetAt ? [{ t: 'carpet', x: Math.floor(L.carpetAt.x / TS), y: Math.round(L.carpetAt.y / TS) }] : []).find(e => (POINT.has(e.t) || e.t === 'carpet') && [-1, 0, 1].some(dx => [-1, 0, 1, 2].some(dy => { const x = e.x + dx, y = e.y + dy; return x >= 0 && y >= 0 && x < W && y < H && topSet.has(y * W + x); })));
     if (pointHere) { skipped.push({ ...where, why: 'has a ' + pointHere.t }); continue; }
     // THE FAR END: the last six tiles, joined to the end and near it, nearest the wall first
     const zone = flood(Math.max(det[p] - 12, saddleDet + 1), 8).sort((a, b) => det[b] - det[a] || a - b);
