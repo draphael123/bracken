@@ -4,6 +4,7 @@ import {polishTower,buildTowerAscent} from './tower-ascent.js';
 import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER's flyers keep to its floors (round 3): the sprinkler asks it too (L.flatFlyers) */
 import {buildBurningVillage} from './burning-village.js';
 import {buildWitchlight} from './witchlight.js';
+import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
 import {hauntedCoast} from './haunted-coast.js';
@@ -7594,7 +7595,7 @@ export const LEVELS = [
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'causeway' },   /* the causeway again: Stormwreck Harbor is out of the campaign (Daniel, 2026-09-20: 'it offers nothing new') */
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
   /* THE HEXED FIELDS: the road inland leaves the coast through the farms under the Archmage's hill, and the Hunt waits past them */
-  { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: theHexedFields, needs: 'waymeet' },
+  { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: theHexedFields, needs: 'fair' },
   /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. The room is what changes, never the hero */
   { id: 'burial', name: 'THE BURIAL CAVERNS', sub: 'the dead under the hill', rule: 'FOLLOW THE CANDLES. THE LOWER ROAD ALWAYS LEADS BACK UP.', build: ()=>burialCaverns({painter,T,TS}), needs: 'fields' },
   { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'THE ROOM IS THE SPELL. STRIKE WHAT GLOWS, AND THE GLYPHS TURN THE FLOOR OVER.', build: theMagesFolly, needs: 'witchlight' },   /* (batch 4c: the Witchlight Stair is the road up to it now) */
@@ -7626,6 +7627,9 @@ export const LEVELS = [
   /* (2026-09-24, POLISH) the Warden's and the Geomancer's yards, APPENDED: LEVELS is an append log (map nodes and saves count by index) */
   { id: 'trial_warden', name: "THE WARDEN'S TRIAL", sub: 'point, shaft and pin', build: () => trialYard('warden'), hidden: true },
   { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'fault line, shield and quake', build: () => trialYard('geomancer'), hidden: true },
+  /* THE HARVEST FAIR (claude/fair1, L1: greybox + the facing mechanic): the road inland's second stop, between WAYMEET and THE HEXED FIELDS (the Fields
+     need it now). APPENDED, like every level since the log began, so no index and no save moves; its place on the road is its `needs` and its map node */
+  { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'waymeet' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

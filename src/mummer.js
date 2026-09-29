@@ -1,0 +1,102 @@
+// src/mummer.js - THE FACING RULE (claude/fair1). A reusable rule for any level: a foe that MOVES ONLY WHILE NOBODY LOOKS AT IT.
+// Pure, no DOM: tools/harvest-fair.mjs drives it headless and through the page; src/main.js holds the hook (updateMummer, drawMummer).
+//
+// THE RULE (the Harvest Fair's: DON'T TURN YOUR BACK ON THEM):
+//   a hero LOOKS at a foe when he is alive, on the same screen (sight px across, sightY px up or down) and FACES ITS SIDE (his `face` points at it).
+//   CO-OP: a foe is FROZEN if ANY hero looks at it; it moves only when EVERY hero has his back to it.
+//   A frozen foe can still be HIT (that is the whole answer to it: face it and cut it down).
+//
+//   THE MUMMER (masked player, sackcloth, painted wooden mask, cap bells): creeps toward the nearest hero ONLY while faced by nobody; the bells JINGLE
+//     as it creeps (the audio tell, and only while it moves); within strike reach its mask GLOWS RED for MUMMER.glow seconds (the visual tell), then it
+//     strikes; a look at any time during the glow cancels it.
+//   THE HOBBY-HORSE (the elite): the moment the hero's back is turned it winds up (HORSE.wind s, a told beat a look cancels) and CHARGES a fixed run
+//     (HORSE.dist px, HORSE.charge px/s), committed even if the hero then turns. It FREEZES where the charge ends and will not charge again until it
+//     has been looked at once.
+//   THE CAROUSEL: a riding hero is turned round (and cannot turn back for `lock` s) every `period` s, after a `warn` s warning.
+// A foe's state `s` is the one the game keeps in e.st: { x, y, face, mode, t, vx, bellT, armed, dir, run }. The step sets s.vx (px/s) and the HOST
+// moves the body (moveBody) and writes the real x back, so walls, edges and slopes stay the game's.
+export const TS = 16;
+export const MUMMER = { w: 10, h: 22, hp: 40, creep: 40, reach: 22, glow: 0.6, strike: 0.15, dmg: 14, recover: 1.1, sight: 300, sightY: 120, bell: 0.4 };
+export const HORSE = { w: 26, h: 22, hp: 96, wind: 0.45, charge: 230, dist: 190, dmg: 22, sight: 320, sightY: 120, skid: 0.35 };
+export const CAROUSEL = { period: 5, warn: 1.3, lock: 0.9 };
+
+/* does ONE hero look at this foe? */
+export function looks(e, h, sight = MUMMER.sight, sightY = MUMMER.sightY) {
+  if (!h || h.alive === false) return false;
+  const dx = e.x - h.x; if (Math.abs(dx) > sight || Math.abs((e.y || 0) - (h.y || 0)) > sightY) return false;
+  return dx === 0 || Math.sign(dx) === (h.face >= 0 ? 1 : -1);
+}
+/* is the foe faced by ANY hero (co-op: one is enough)? */
+export const facedBy = (e, heroes, sight = MUMMER.sight, sightY = MUMMER.sightY) => (heroes || []).some(h => looks(e, h, sight, sightY));
+/* the nearest living hero within sight, or null */
+export function nearestHero(e, heroes, sight = MUMMER.sight, sightY = MUMMER.sightY) {
+  let best = null, bd = 1e9;
+  for (const h of heroes || []) { if (h.alive === false) continue; const d = Math.abs(h.x - e.x); if (d <= sight && Math.abs((e.y || 0) - (h.y || 0)) <= sightY && d < bd) { bd = d; best = h; } }
+  return best;
+}
+
+export const newMummer = (x, y, face = -1) => ({ x, y, face, mode: 'still', t: 0, vx: 0, bellT: MUMMER.bell * 0.5 });
+/* one frame of a mummer. world = { heroes:[{x,y,face,alive}], canStep(x, dir) -> can it walk on }. Returns events: freeze, wake, bell, glow, strike { box, dmg } */
+export function mummerStep(s, w, dt) {
+  const evs = [], C = MUMMER; s.vx = 0;
+  const near = nearestHero(s, w.heroes, C.sight, C.sightY), seen = facedBy(s, w.heroes, C.sight, C.sightY);
+  const toward = () => { if (near) s.face = Math.sign(near.x - s.x) || s.face; };
+  switch (s.mode) {
+    case 'still':
+      if (near && !seen) { s.mode = 'creep'; toward(); evs.push({ t: 'wake' }); }
+      break;
+    case 'creep':
+      if (seen) { s.mode = 'still'; evs.push({ t: 'freeze' }); break; }
+      if (!near) { s.mode = 'still'; break; }
+      toward();
+      if (Math.abs(near.x - s.x) <= C.reach && Math.abs((near.y || 0) - (s.y || 0)) < 40) { s.mode = 'glow'; s.t = C.glow; evs.push({ t: 'glow' }); break; }
+      if (!w.canStep || w.canStep(s.x, s.face)) s.vx = s.face * C.creep;
+      s.bellT -= dt; if (s.bellT <= 0) { s.bellT = C.bell; evs.push({ t: 'bell' }); }
+      break;
+    case 'glow':
+      if (seen) { s.mode = 'still'; evs.push({ t: 'freeze' }); break; }
+      toward(); s.t -= dt;
+      if (s.t <= 0) { s.mode = 'strike'; s.t = C.strike; const x0 = s.face > 0 ? s.x : s.x - (C.reach + 10);
+        evs.push({ t: 'strike', dmg: C.dmg, box: [x0, x0 + C.reach + 10, s.y - C.h, s.y] }); }
+      break;
+    case 'strike': s.t -= dt; if (s.t <= 0) { s.mode = 'recover'; s.t = C.recover; } break;
+    case 'recover': s.t -= dt; if (s.t <= 0) s.mode = 'still'; break;
+    default: s.mode = 'still';
+  }
+  return evs;
+}
+
+export const newHorse = (x, y, face = -1) => ({ x, y, face, mode: 'still', t: 0, vx: 0, armed: true, dir: face, run: 0 });
+/* one frame of the hobby-horse. Events: freeze (looked at), wind, charge, end (the charge is over: it stands where it stopped) */
+export function horseStep(s, w, dt) {
+  const evs = [], C = HORSE; s.vx = 0;
+  const near = nearestHero(s, w.heroes, C.sight, C.sightY), seen = facedBy(s, w.heroes, C.sight, C.sightY);
+  switch (s.mode) {
+    case 'still':
+      if (seen) { if (!s.armed) evs.push({ t: 'freeze' }); s.armed = true; break; }
+      if (near && s.armed) { s.mode = 'wind'; s.t = C.wind; s.face = s.dir = Math.sign(near.x - s.x) || s.face; evs.push({ t: 'wind' }); }
+      break;
+    case 'wind':
+      if (seen) { s.mode = 'still'; s.armed = true; evs.push({ t: 'freeze' }); break; }
+      s.t -= dt; if (s.t <= 0) { s.mode = 'charge'; s.run = 0; evs.push({ t: 'charge' }); }
+      break;
+    case 'charge': {   // committed: a look no longer stops it
+      const step = C.charge * dt;
+      if (s.run >= C.dist || (w.canStep && !w.canStep(s.x, s.dir))) { s.mode = 'skid'; s.t = C.skid; s.armed = false; evs.push({ t: 'end' }); break; }
+      s.vx = s.dir * C.charge; s.run += step; break; }
+    case 'skid': s.t -= dt; s.vx = s.dir * C.charge * Math.max(0, s.t / C.skid) * 0.5; if (s.t <= 0) { s.mode = 'still'; s.vx = 0; } break;
+    default: s.mode = 'still';
+  }
+  return evs;
+}
+
+/* THE CAROUSEL: c is the rider's clock; `riding` is whether he is on the disc. Events: warn (once per turn), turn (flip him and lock his facing) */
+export const newCarousel = () => ({ t: 0, warned: false });
+export function carouselStep(c, spec, riding, dt) {
+  const evs = [], period = spec.period || CAROUSEL.period, warn = spec.warn || CAROUSEL.warn;
+  if (!riding) { c.t = 0; c.warned = false; return evs; }
+  c.t += dt;
+  if (!c.warned && c.t >= period - warn) { c.warned = true; evs.push({ t: 'warn', in: warn }); }
+  if (c.t >= period) { c.t = 0; c.warned = false; evs.push({ t: 'turn', lock: spec.lock || CAROUSEL.lock }); }
+  return evs;
+}

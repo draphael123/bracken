@@ -1,0 +1,66 @@
+# THE HARVEST FAIR - brief (L1: brief + greybox + the facing mechanic)
+
+Status: L1 built on `claude/fair1` (greybox, placeholder art). L2 (art, sound, real dressing) and L3 (the Wicker Queen, the boss of the maypole green)
+wait for Daniel's approval of this greybox. Design approved by Daniel; this file is the record of what was built and why.
+
+## What it is
+
+A village fair abandoned mid-festival as the sun goes down. It sits on the road inland **between WAYMEET and THE HEXED FIELDS** (the Fields' `needs`
+is now `fair`; the fair `needs: 'waymeet'`; INDEX target about 117, smoothing Waymeet 106 -> Fields 128). The light goes section by section from warm
+sunset to dusk (lanterns gutter, the music box winds down, the figures multiply: the tints and `duskStart/duskLen` are in the greybox, the rest is L2).
+Bunting, stalls, a carousel you ride, haystacks you bounce off, a maypole green with a bonfire at the end.
+
+**THE RULE (C2, F8): DON'T TURN YOUR BACK ON THEM.** Said three ways (C4): the level's rule line and the first signs, the bells that jingle when a player
+moves and are silent when it stands, and the mask that glows red at arm's length. Nothing else in the level asks a different question.
+
+## THE FACING MECHANIC (the engine; `src/mummer.js`, reusable by any level)
+
+A hero **looks at** a foe when he is alive, on the same screen (300 px across, 120 px up or down) and his `face` points at its side.
+
+- **THE MUMMER** (masked player: sackcloth, painted wooden mask, cap bells; hp 40, about three blows from a knight). It moves ONLY while no hero looks
+  at it. Face it and it freezes where it stands. **A frozen mummer can be hit**: that is the whole answer to it. While it creeps (40 px/s; the hero runs
+  92) its bells JINGLE (the audio tell, only while it moves). Within 22 px its mask GLOWS RED for 0.6 s (the visual tell; a `!`-style wind-up, so it plays
+  the game's wind-up sound), then it strikes for 14. A look at any time during the glow cancels the strike. It is never faster than a walking hero.
+- **THE HOBBY-HORSE** (the elite; a carved horse head on a pole, hp 96): the moment the hero's back is turned it rears for 0.45 s (red eye, a bell; a look
+  cancels it), then CHARGES a straight run of 190 px at 230 px/s for 22, **committed even if the hero then turns**. It FREEZES where the charge ends (a
+  haystack, a wall, a spike or a pit edge end it early) and will not charge again until it has been looked at once. Jump the charge or bounce over it.
+- **THE CAROUSEL** (`L.carousels`): a hero standing on the ride is TURNED ROUND every 5 s (4.5 s on the small one) after a 1.3 s warning (a calliope
+  phrase, "THE RIDE TURNS", the canopy bulbs go red) and cannot turn back for 0.5 s (less than the mask's 0.6 s glow, so a turn never lands a blow he could
+  not answer). The ride is the twist: the one you were holding frozen is behind you now.
+- **CO-OP: a foe is frozen if ANY hero faces it** (a dead or downed hero looks at nothing). It moves, and the horse charges, only when EVERY hero has his
+  back to it. Said in the bestiary cards for both.
+- Hooks: `src/main.js` `updateMummer` (its hands: gravity, edge/wall check, damage), `updateFair` (the carousel, the lock), `drawFair` (canopy, hay,
+  maypole, bonfire), `windingUp` (the tell sound), the frame picks, the bestiary. Art: `src/redraw/fair_greybox.js` (placeholder). Proved by
+  `tools/harvest-fair.mjs` (pure rule + the level + the page).
+
+## THE ARC (built: `src/harvest-fair.js`; W 672, placed wholly by hand, no garrison sprinkle, an encounter in every section, none of it filler)
+
+| section | columns | beat | the encounter |
+|---|---|---|---|
+| THE GATE | 0-118 | TEACH | ONE mummer alone on a flat lane, three signs (the rule, "face one and it stops", "listen for the bells / a red mask"). Then a stall-roof hop and a 3-wide spike pit |
+| THE STALL STAIR | 118-246 | DEVELOP | a PINCER on a climb: two mummers at the foot that you pass and that come up behind you, one at the top of the 12-tile slope stair where you stop for breath. Kill the front one while the ones behind close, or turn and hold them |
+| THE CAROUSEL | 246-374 | TWIST | a 27-wide ride with a mummer at each end; it turns you (warned). The one you froze is behind you |
+| THE HAYRICKS | 374-502 | COMBINE | two hobby-horses on the lane and three haystacks (the Sporewood cap bounce) each with 3 tiles of spikes past it: the hay is the way over, and the way out of a charge. Hold jump on the third and the high ledge pays a silver |
+| THE LAST ROUND | 502-618 | EXAM | a mummer, a small carousel with a mummer AND a horse on it, a haystack over spikes, another mummer, the door guard |
+| THE MAYPOLE GREEN | 622-672 | boss room (greybox) | a door, a checkpoint before it, a maypole and a bonfire, a gate at the far end. No boss yet (L3) |
+
+Checkpoints: one per section at 8, 124, 252, 380, 508 and the door's at 614 (116-128 apart, none inside the green). Jumps: pits of 3 (the real jump is about
+3.2), each with spikes two tiles down (a fall hurts and is jumped out of). Five facing encounters, ten mummers, three horses.
+
+## Foes and the one-new-foe rule (F10)
+
+Two new foes, neither a boss: THE MUMMER and THE HOBBY-HORSE. Both weighed in `src/threat.js`.
+
+## Boss (L3, NOT built)
+
+THE WICKER QUEEN on the maypole green, per Daniel's approved design. The green is a greybox room with its door, its checkpoint and its gate until then.
+
+## Art and sound (L2, NOT built)
+
+Real mummer and horse art (sackcloth, painted masks, cap bells), the carousel as a real set-piece (horses that go round, the calliope as a music box that
+winds down through the level), bunting and lanterns that gutter section by section, the figures that multiply in the background as the light goes, the
+haystack art over the spring caps, a level track and the boss's.
+
+## Questions for Daniel
+
+See the lane report (`work/claude/lane-done/claude-fair1.md`).

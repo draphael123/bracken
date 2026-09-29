@@ -122,6 +122,10 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      cannot reach him, told long, and open when you climb to him - the archer's 2.5; the ambusher is the sand goblin's trick with more
      health and a heavier knife - 2.5 as the sand goblin was */
   cutthroat: 3, slinger: 2.5, ambusher: 2.5,
+  /* THE HARVEST FAIR (src/mummer.js; docs/briefs/harvest-fair.md): a mummer is 40 health and a 14 blow that comes only from behind you, told by a
+     glowing mask and its bells - a read (where to LOOK) rather than a fight, so a 3, a soldier's; the hobby-horse is the elite that charges 22 the moment
+     a back is turned, committed and long: a 4, a heavy's */
+  mummer: 3, hobbyhorse: 4,
   /* THE DUNE WORM, the caravan's boss (2026-09-25): a boss is a 6. awningwinch is his trap and the camp's machine - furniture */
   duneworm: 6, awningwinch: 0,
 };

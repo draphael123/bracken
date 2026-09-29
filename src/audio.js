@@ -714,6 +714,13 @@ Object.assign(SFX, {
   shardBristle() { if (!gate('bristle', 0.3)) return; [1568, 2093, 2637].forEach((f, i) => bell(f, 0.3, 0.035, i * 0.04)); noise(0.1, 0.05, 5200, 1.2); },
   // ---- the telegraph: every enemy that winds up says so, a glint for the small ones, a low bell for the big ----
   tell(big) { if (!gate(big ? 'tellB' : 'tell', 0.12)) return; if (big) { tone('triangle', 523, 1046, 0.12, 0.08); bell(1568, 0.3, 0.04, 0.02); } else { tone('triangle', 1318, 1760, 0.07, 0.05); tone('sine', 2637, 2637, 0.1, 0.025, 0.02); } },
+  // ---- THE HARVEST FAIR (src/mummer.js): the mummer's cap bells (its audio tell: they jingle ONLY while it moves), the look that stills it, its strike, the hobby-horse's charge and the carousel's calliope ----
+  mummerBell() { if (!gate('mbell', 0.16)) return; const f = [2093, 2349, 2637][Math.floor(Math.random() * 3)]; bell(f, 0.14, 0.03); bell(f * 1.5, 0.1, 0.018, 0.03); },
+  mummerStill() { if (!gate('mstill', 0.3)) return; tone('sine', 660, 440, 0.12, 0.05); },
+  mummerStrike() { tone('square', 220, 90, 0.16, 0.12); noise(0.1, 0.12, 900, 0.6); },
+  horseCharge() { noise(0.4, 0.16, 500, 0.5); tone('sawtooth', 140, 90, 0.35, 0.1); bell(1568, 0.2, 0.05, 0.05); },
+  calliope() { if (!gate('calli', 0.5)) return; [523, 659, 784].forEach((f, i) => tone('square', f, f, 0.16, 0.05, i * 0.12)); },
+  calliopeTurn() { [784, 659, 523, 392].forEach((f, i) => tone('square', f, f, 0.12, 0.06, i * 0.08)); },
 });
 // ---------- personality: every goblin has a voice of its own pitch, and the beasts their own calls ----------
 const GOB_V = { burngob: 0.95, sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, temperer: 0.85, scalder: 1.05, miner: 0.9, tippler: 0.7, sheargob: 1.2, gaffer: 0.95, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7, gobpriest: 1.05, gobmage: 1.15 };
