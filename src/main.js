@@ -17735,7 +17735,7 @@ function drawFair(cx, cy) {
     g.fillStyle = '#c9a03a'; g.fillRect(x0 - cx - 1, y - cy + 3, x1 - x0 + 2, 2 * TS - 3); g.fillStyle = '#e0bc55'; g.fillRect(x0 - cx + 2, y - cy, x1 - x0 - 4, 5); g.fillRect(x0 - cx, y - cy + 4, x1 - x0, 2);
     g.fillStyle = '#8f6a22'; for (let i = 0; i < (x1 - x0) / 6; i++) g.fillRect(x0 - cx + 3 + i * 6, y - cy + 8 + (i % 2) * 5, 4, 1); }
   for (const z of (L.carousels || [])) { const x0 = z.x0 * TS, x1 = (z.x1 + 1) * TS, top = z.row * TS; if (x1 < cx - 8 || x0 > cx + VW + 8) continue;
-    const warn = P.car && P.car.warned, w = x1 - x0, roofY = top - 9 * TS;
+    const warn = P.car && P.car.warned, w = x1 - x0, roofY = top - 7 * TS;
     g.fillStyle = '#5a3a24'; for (const px of [x0 + 6, x1 - 8]) g.fillRect(px - cx, roofY - cy, 3, top - roofY);   /* the two end poles, the centre pole */
     g.fillRect(Math.round((x0 + x1) / 2) - 1 - cx, roofY - cy, 3, top - roofY);
     for (let i = 0; i < Math.floor(w / 8); i++) { g.fillStyle = i % 2 ? '#e8dcc0' : '#b8382c'; g.fillRect(x0 + i * 8 - cx, roofY - 8 - cy, 8, 10); }   /* the striped canopy */
@@ -17744,7 +17744,7 @@ function drawFair(cx, cy) {
     const n = Math.max(3, Math.floor(w / 40)); for (let i = 0; i < n; i++) { const hx = x0 + ((i / n) * w + time * 14) % w, hy = top - 22 + Math.sin(time * 3 + i * 2) * 4;
       g.fillStyle = '#8f6a3a'; g.fillRect(Math.round(hx) - 5 - cx, Math.round(hy) - cy, 10, 6); g.fillRect(Math.round(hx) + 3 - cx, Math.round(hy) - 4 - cy, 3, 4); g.fillStyle = '#c9962a'; g.fillRect(Math.round(hx) - 5 - cx, Math.round(hy) + 6 - cy, 1, 14); g.fillRect(Math.round(hx) + 4 - cx, Math.round(hy) + 6 - cy, 1, 14); }   /* painted horses going round on their brass poles */ }
   const G = L.green; if (G) { const mx = G.maypole * TS + 8, fx = G.bonfire * TS + 8, gy = G.floor * TS;
-    if (mx > cx - 30 && mx < cx + VW + 30) { const top = gy - 15 * TS; g.fillStyle = '#7a5230'; g.fillRect(Math.round(mx) - 2 - cx, top - cy, 4, gy - top);
+    if (mx > cx - 30 && mx < cx + VW + 30) { const top = gy - 9 * TS; g.fillStyle = '#7a5230'; g.fillRect(Math.round(mx) - 2 - cx, top - cy, 4, gy - top);
       for (let i = 0; i < 6; i++) { const a = time * 0.8 + i * 1.05; g.strokeStyle = ['#b8382c', '#e8c23a', '#3a7ab8', '#8fd160', '#c9a0ff', '#ff9a5c'][i]; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(mx) - cx, top + 2 - cy); g.lineTo(Math.round(mx + Math.cos(a) * 26) - cx, Math.round(gy - 40 + Math.sin(a) * 6) - cy); g.stroke(); } }
     if (fx > cx - 30 && fx < cx + VW + 30) { g.fillStyle = '#4a3020'; g.fillRect(Math.round(fx) - 10 - cx, gy - 5 - cy, 20, 5); g.globalAlpha = 0.18; g.fillStyle = '#ff9a3c'; g.beginPath(); g.arc(Math.round(fx) - cx, gy - 14 - cy, 34, 0, 7); g.fill(); g.globalAlpha = 1; } }
 }
