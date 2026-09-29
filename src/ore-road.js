@@ -511,7 +511,7 @@ export function buildOreRoad({ painter, T }) {
     /* ONE VAST CAVERN (Daniel, 2026-09-25): no sky. The engine's dark (black, with a hole for every lamp and the light you carry)
        at OR.DARK, the night wash thin under it, and the lamps' warm pools; the far wall, the pillars and the veins are
        drawOreBackdrop, the ceiling and its stalactites drawOreStructures */
-    dark: OR.DARK, edgeLit: true, night: true, glowNight: true, nightA: 0.1, ceil, veins, glints,
+    dark: OR.DARK, edgeLit: 'rgba(255,226,176,0.9)',   /* the lit lip on every edge you stand on, brighter than the default (value pass, lane claude/orevalue) */ night: true, glowNight: true, nightA: 0.1, ceil, veins, glints,
     darkZones: [{ x0: A.x0 * TS, x1: W * TS, y0: 0, y1: H * TS, dark: A.dark, name: 'THE DRUM HOUSE' }],   /* round four: his room, and only his room, lit (OR.ARENA.dark) */
     pits: OR.PITS.map(q => ({ ...q, turbines: [...Array(Math.floor((q.x1 - q.x0 - 4) / OR.TURBINE_EVERY) + 1).keys()].map(k => q.x0 + 4 + k * OR.TURBINE_EVERY).filter(x => x <= q.x1 - 1) })),
     cable, encounters, places: OR.PLACES, oreRoad: true, walls,
@@ -533,7 +533,7 @@ export function buildOreRoad({ painter, T }) {
     palette: { sky: [[14, 12, 18], [34, 28, 30]], far: 'crag', mid: 'crag', near: 'none', dress: 'none', ledges: 'staging', haze: 'rgba(40,32,30,0.18)', murkCol: '#34211c', murkLit: '#94572a',
       /* THE COLOUR PASS (lane claude/orecolour): a WARM dark (darkCol), the lamps' own amber laid into their pools (lampGlow), warm-lit creatures
          instead of cold-white ones (darkRim), and a copper grade over it all - the audit measured this level at chroma 4.9, the most washed-out */
-      darkCol: '18,9,5', lampGlow: [255, 150, 60, 0.24], darkRim: ['#c8843c', 0.26, 0.12], grade: ['#ff8a3c', 0.12],
+      darkCol: '18,9,5', lampGlow: [255, 150, 60, 0.24], darkRim: ['#c8843c', 0.26, 0.12], footLip: ['#f0be7c', 0.62], grade: ['#ff8a3c', 0.12],
       grass: '#6a4a30', grassL: '#8a6440', grassD: '#42281a', dirt: '#4c3122', dirtL: '#6c4630', dirtD: '#2a170f', canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [{ x0: 0, x1: 99999, kind: 'dust' }], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: surf(A.deck), y0: 0, trigger: (A.x0 + 3) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'winchmaster', music: 'boss3', tint: '#5a4a3a', tintA: 0.06, fx: 'dust' },
@@ -888,9 +888,9 @@ export function drawOreStructures(g, L, cx, cy, time, VW, VH, drumAng) {
    The far wall's own rock takes a tint from whichever place the camera is over - not the route itself (untouched),
    just the colour behind it: copper-warm through the working yard and the span, cool silver through the tower and
    the chute, the gem's violet through the collapse and the steep line, gold toward the winch house and the drum. */
-const SECTION_TINT = { yard: ['#3a2418', '#5c3820'], span1: ['#26301c', '#404c26'], tower: ['#1a2c44', '#2e4c74'],
-  chute: ['#163640', '#255c66'], collapse: ['#3a2044', '#603468'], steep: ['#2a1c4e', '#443480'],
-  winch: ['#3c2a10', '#5e4420'], drum: ['#40200f', '#683218'] };   /* copper, verdigris, steel, teal, plum, indigo, amber, ember: the far wall, section by section */
+const SECTION_TINT = { yard: ['#2a1a11', '#3d2515'], span1: ['#1b2314', '#2a3219'], tower: ['#132031', '#1e324d'],
+  chute: ['#10272e', '#183d43'], collapse: ['#2a1731', '#3f2245'], steep: ['#1e1438', '#2d2254'],
+  winch: ['#2b1e0c', '#3e2d15'], drum: ['#2e170b', '#452110'] };   /* copper, verdigris, steel, teal, plum, indigo, amber, ember: the far wall, section by section */
 function sectionTint(cx) { const col = Math.floor(cx / TS);
   let name = 'drum'; for (const [n, [x0, x1]] of Object.entries(OR.PLACES)) if (col >= x0 - 20 && col <= x1 + 20) { name = n; break; }
   return SECTION_TINT[name] || SECTION_TINT.yard; }

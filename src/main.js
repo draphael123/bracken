@@ -23870,6 +23870,16 @@ function drawLampGlow(cx, cy) {
       g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2); } }
   g.globalCompositeOperation = 'source-over';
 }
+/* THE FOOTING, ABOVE THE DARK (palette.footLip = [colour, alpha]): the lit lip drawn under the dark (edgeLit) is eaten by it wherever no lamp is near, so in a
+   dark level the edge you can stand on read as dim as the far wall. This lays a thin lip back ON TOP of the dark on every walkable top in view, so the footing is the
+   brightest thing in the gloom. Opt-in (THE ORE ROAD, lane claude/orevalue): no other level moves. */
+function drawFootLip(cx, cy) {
+  const [col, al] = L.palette.footLip, tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS); g.fillStyle = col;
+  for (let ty = Math.max(1, ty0); ty <= ty0 + Math.ceil(VH / TS) + 1 && ty < LH; ty++) for (let tx = Math.max(0, tx0); tx <= tx0 + Math.ceil(VW / TS) + 1 && tx < LW; tx++) {
+    const t0 = L.grid[ty * LW + tx]; if (!(t0 === T.SOLID || t0 === T.ONEWAY || t0 === T.PLANK || t0 === T.SHELF || t0 === T.RAIL || t0 === T.CRATE) || L.grid[(ty - 1) * LW + tx] !== T.AIR) continue;
+    g.globalAlpha = al; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.globalAlpha = al * 0.4; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); }
+  g.globalAlpha = 1;
+}
 function drawWater(cx, cy, surfaceOnly = false) {
   for (const p of (L.pools || [])) {
     if (p.x1 < cx || p.x0 > cx + VW || p.y > cy + VH) continue;
@@ -25459,7 +25469,7 @@ function drawWorld(cx, cy, showPlayer) {
     SEA.seaHoles(hole);   /* and a sea level's own lights, where its far water drew them this frame */
     for (const e of enemies) if (e.t === 'angler' && e.alive) hole(e.x - cx, e.y - 10 - cy, e.mode === 'biteTell' ? 44 : 26); // and an angler carries its own
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));
-    g.drawImage(DARKC, 0, 0); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy);
+    g.drawImage(DARKC, 0, 0); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy); if (L.palette && L.palette.footLip) drawFootLip(cx, cy);
     { const gx0 = Math.floor(cx / TS), gy0 = Math.floor(cy / TS); const ORE = ['#ffd36b', '#e07a4a', '#dfe8f0', '#ffd36b']; // veins of ore glint in the rock
       for (let ty = gy0; ty <= gy0 + Math.ceil(VH / TS); ty++) for (let tx = gx0; tx <= gx0 + Math.ceil(VW / TS); tx++) { if (tx < 1 || ty < 1 || tx >= LW - 1 || ty >= LH - 1 || L.grid[ty * LW + tx] !== T.SOLID) continue; const hsh = ((tx * 73856093) ^ (ty * 19349663)) >>> 0; if ((hsh % 100) >= 7) continue; if (tileAt(tx - 1, ty) !== T.AIR && tileAt(tx + 1, ty) !== T.AIR && tileAt(tx, ty - 1) !== T.AIR && tileAt(tx, ty + 1) !== T.AIR) continue;
         const tw = 0.5 + 0.5 * Math.sin(time * (2 + (hsh % 5) * 0.4) + hsh % 17); g.globalAlpha = 0.25 + 0.6 * tw; g.fillStyle = ORE[hsh % 4]; const ox = tx * TS + 3 + (hsh >> 3) % 10, oy = ty * TS + 3 + (hsh >> 7) % 10; g.fillRect(ox - cx, oy - cy, 2, 1); g.fillRect(ox - cx, oy - cy - 1, 1, 3); }
