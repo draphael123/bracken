@@ -40,11 +40,11 @@ export const WQ = {
   highTop: 24, highBot: 10,           // the HIGH ribbon runs 10-24 px up: a standing hero (14) is in it, a ducked one (8) is under it
   crownEvery: [13, 10, 9], crownFirst: 7, crownTell: 1.2, crownCap: 2,
   emberHalf: 40,                      // the embers: this far each side of the bonfire's middle
-  catchT: 0.4, burnT: 3.6, burnTP3: 3.0, riseT: 0.6, throwBack: 44, bankT: 5,
-  burnMul: 2.2, ward: 0.3,            // what a blow is worth burning, and against the standing wicker
+  catchT: 0.4, burnT: 2.8, burnTP3: 2.4, riseT: 0.6, throwBack: 44, bankT: 6,
+  burnMul: 1.35, ward: 0.25,           // what a blow is worth burning, and against the standing wicker
   trailStep: 22, trailLife: 2.6,      // PHASE 3: a fire every trailStep px she creeps
   rustle: 0.35,                       // her audio tell while she moves: the wicker creaks
-  dmg: { sickle: 26, lash: 16 },
+  dmg: { sickle: 26, lash: 20 },
   p2: 2 / 3, p3: 1 / 3,
 };
 /* THE LASH ORDER: low and high mixed, never three alike, so the height has to be READ, not remembered */

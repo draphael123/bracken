@@ -890,6 +890,8 @@ const DIE = {
   haunt() { SFX.clank(); tone('sine', 900, 300, 0.3, 0.06, 0.05); },
   boo() { tone('sine', 300, 150, 0.4, 0.1); tone('sine', 305, 155, 0.4, 0.07, 0.05); noise(0.35, 0.1, 1600, 0.4); },   /* a small breath let go, and it is gone */
   ploughman() { tone('sawtooth', 120, 40, 1.2, 0.22); noise(0.8, 0.3, 400, 0.6); },   /* the share goes into the furrow for good */
+  mummer() { tone('triangle', 520, 200, 0.16, 0.08); noise(0.2, 0.12, 900, 0.5); [2349, 2093, 1760].forEach((f, i) => bell(f, 0.2, 0.03, 0.08 + i * 0.09)); },   /* THE MUMMER goes down: the wooden mask knocks, the sackcloth slumps, the cap bells roll away (claude/fair3: it fell back on the generic cry) */
+  hobbyhorse() { noise(0.4, 0.2, 700, 0.5); tone('square', 300, 90, 0.3, 0.1); for (let i = 0; i < 4; i++) bell(1568 * (1 + (i % 2) * 0.12), 0.25, 0.04, 0.1 + i * 0.07); },   /* the pole cracks and the bridle bells scatter */
   wickerqueen() { noise(1.6, 0.34, 800, 0.5); tone('sawtooth', 140, 40, 1.6, 0.18); for (let i = 0; i < 6; i++) noise(0.06, 0.1, 3000 - i * 300, 1.4, 0.2 + i * 0.15); },   /* THE WICKER QUEEN goes up: the whoomph, the crackle, the frame coming down */
   strawking() { noise(1.4, 0.36, 900, 0.5); tone('sawtooth', 120, 30, 1.6, 0.24); tone('sine', 70, 30, 2, 0.2, 0.2); },   /* the field burning down with him in it */
   kraken() { tone('sawtooth', 110, 28, 1.8, 0.3); tone('sine', 70, 24, 2.2, 0.26, 0.2); noise(1.4, 0.4, 380, 0.7); noise(0.9, 0.3, 1400, 0.5, 0.5); /* a bellow that goes down under the water with it */ },
@@ -1083,6 +1085,8 @@ const HURT = {
   haunt() { SFX.clank(); tone('sine', 1200, 1100, 0.15, 0.04, 0.02); },
   boo() { tone('sine', 340, 220, 0.14, 0.1); noise(0.1, 0.1, 1400, 0.4); },
   ploughman() { tone('sawtooth', 150, 96, 0.22, 0.16); noise(0.18, 0.24, 500, 0.6); },
+  mummer() { tone('triangle', 420, 300, 0.07, 0.07); noise(0.05, 0.08, 1200, 0.6); bell(2349, 0.08, 0.02, 0.02); },   /* a blow on a wooden mask, a bell shaken */
+  hobbyhorse() { tone('square', 260, 180, 0.08, 0.08); noise(0.07, 0.1, 900, 0.5); bell(1568, 0.1, 0.025, 0.02); },   /* a knock on the carved head, the bridle jingles */
   wickerqueen() { noise(0.18, 0.22, 1500, 0.6); tone('triangle', 200, 120, 0.2, 0.08); },   /* a blade into basketwork: a dry crunch, and the wicker creaks */
   strawking() { noise(0.2, 0.3, 1100, 0.4); tone('sawtooth', 130, 80, 0.3, 0.18); tone('sine', 90, 60, 0.3, 0.1, 0.05); },   /* a barn's worth of straw taking a blade, and a laugh under it */
   kraken() { tone('sawtooth', 140, 60, 0.4, 0.22); noise(0.3, 0.3, 500, 0.6); tone('sine', 80, 50, 0.5, 0.16, 0.05); },   /* something the size of a church taking a cut */

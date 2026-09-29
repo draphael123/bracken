@@ -86,7 +86,7 @@ const lure = (turnAt, o = {}) => { const r = rig({ lashCd: 1e9, crownCd: 1e9, ..
   for (let i = 0; i < 60 * 12; i++) { if (!turned && turnAt(r.e)) { h.face = 1; turned = true; } r.step(); modes.add(r.e.mode); open = Math.max(open, r.e.open || 0); if (r.e.mode === 'burn') break; }
   return { r, modes, open, x: r.e.x }; };
 { const on = lure(e => W.onEmbers(e.x, EMB) && e.x < EMB.mid);
-  ok(on.modes.has('catch') && on.r.e.mode === 'burn' && on.open > 3, 'lured across and frozen on the embers she did not burn open: ' + JSON.stringify({ modes: [...on.modes], open: on.open }));
+  ok(on.modes.has('catch') && on.r.e.mode === 'burn' && on.open > 2.5, 'lured across and frozen on the embers she did not burn open: ' + JSON.stringify({ modes: [...on.modes], open: on.open }));
   ok(W.wqTake(on.r.e) === W.WQ.burnMul && W.wqTake({ mode: 'still' }) === W.WQ.ward && W.WQ.burnMul / W.WQ.ward > 5, 'a blow in the burn is not worth far more than against the standing wicker');
   const early = lure(e => e.x < EMB.x1 + 30 && !W.onEmbers(e.x, EMB));   // turned while she is still short of the embers: frozen off them
   let still = 0; for (let i = 0; i < 120; i++) { early.r.step(); if (early.r.e.mode === 'still') still++; }
