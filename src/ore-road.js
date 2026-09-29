@@ -313,7 +313,7 @@ export function buildOreRoad({ painter, T }) {
      a climb, not a death. */
   plat(OR.PASS.westX - Math.floor((OR.PASS.westW - 1) / 2), passRow(OR.PASS.westX), OR.PASS.westW);
   plat(PYLON_A[0], passRow(PYLON_A[1]), PYLON_A[1] - PYLON_A[0] + 1);
-  ent('sign', 72, YARD, { text: "A SECOND LINE RUNS BACK, UNDER THE FIRST. HOP DOWN TO IT AS IT PASSES." });
+  ent('sign', 67, YARD, { text: "A SECOND LINE RUNS BACK, UNDER THE FIRST. HOP DOWN TO IT AS IT PASSES." });
   /* FALLING ROCK OVER THE SPANS (Daniel's idea 1). Out here there is nothing for a goblin to stand on, so the lane is
      kept honest by the crags themselves: three falls on a beat you can learn, and the answer to all three is the BRAKE.
      A tippler needs a floor under his feet AND a floor under his stream, so every one of them is on a structure. */

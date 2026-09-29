@@ -1270,7 +1270,7 @@ function kingswood() {
   O.coins([a+5,9],[a+11,6],[a+22,7],[a+37,6],[a+44,8]);
   const stone=O.done(), HN=grow(stone,stone,354,48), h=354;
   // THE HUNTING STANDS: ladders inside grounded towers, a rope walk, and one cuttable stand over the patrol.
-  HN.block(h,h+47,14,27);HN.ent('sign',h+1,13,{text:'THE HUNTING STANDS. CLIMB INSIDE. CUT THE CRACKED POSTS TO DROP THEIR DECKS ON THE PATROL.'});
+  HN.block(h,h+47,14,27);HN.ent('sign',h+1,13,{text:'THE HUNTING STANDS. CUT THEIR CRACKED POSTS ON THE PATROL.'});
   HN.ent('sprig',h+3,13,{face:-1});HN.ent('timber',h+3,10,{x0:h+1,x1:h+5,row:10,floor:13,deep:1,hp:2,mound:1});   /* the SECOND cracked post (design audit item 3, DEVELOP): the quiet stretch had one, now it has the level's own rule twice */
   for(const x of [h+5,h+29]){HN.plat(x,6,9);for(const [dx,y] of [[1,12],[4,10],[1,8]])HN.plat(x+dx,y,3);for(let y=6;y<=13;y++)HN.set(x+7,y,T.NET);HN.R.structures.push({kind:'timber',x0:x,x1:x+8,top:6,floor:14});HN.ent('archer',x+2,5,{face:x===h+5?1:-1});}   /* both stand archers now face the rope walk between the towers, not just the far one */
   for(let x=h+14;x<h+29;x++)HN.set(x,6,T.PLANK);HN.ent('bridge',h+14,6,{x1:h+28});
@@ -3014,7 +3014,7 @@ function highcrown() {
   block(11, 21, 44, 57); port(16, 58, 63);
   ent('winch', 8, 63, { gate: 16, gy0: 58, gy1: 63, hold: 6 });
   ent('sign', 6, 63, { text: 'STRIKE THE WINCH TO HOLD THE GATE UP A FEW BREATHS. IT DROPS ON WHAT IS UNDER.' });
-  ent('hound', 16, 63, { face: 1 });   /* THE WINCH AS A WEAPON (2026-09-28, design audit plan 3): the sign taught the drop and nothing ever stood
+  ent('hound', 15, 63, { face: 1 });   /* THE WINCH AS A WEAPON (2026-09-28, design audit plan 3): the sign taught the drop and nothing ever stood
      under it. A hound paces the gate's own column (the closeGate/hurtEnemy check in main.js's winch code is generic, not drop-only), so a
      hero who strikes the winch, waits and lets it fall on the hound sees the gate do it before ever seeing it stop a hero */
   ent('check', 22, 63);
