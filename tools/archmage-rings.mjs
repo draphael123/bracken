@@ -23,7 +23,7 @@ import { openPage } from './cdp.mjs';
 
 const box = { x0: 100, x1: 1000, y0: 560, y1: 796 };
 const rig = (o = {}) => { const P = { x: 500, y: 700, dead: 0 }, hits = [], said = [], carried = [];
-  const e = { alive: true, hp: 1000, hp0: 1000, maxHp: 1000, x: 700, y: 690, mode: 'hover', modeT: 0, anim: 0, turn: 0, face: -1, blinkT: 99, ...o };
+  const e = { alive: true, hp: 1000, hp0: 1000, maxHp: 1000, x: 700, y: 690, mode: 'hover', modeT: 0, anim: 0, turn: 0, face: -1, blinkT: 99, realmN: 3, ...o };   /* (realmN 3: his three spell realms already had - these are his hall's rings; the realms are tools/undead-realms.mjs) */
   const c = { P, box, hit: (x, y, d, hard, blow) => hits.push({ d, hard, blow }), say: m => said.push(m), sound: () => {}, venom: () => {}, rnd: () => 0.5, dodging: () => false, carry: (x, y) => { carried.push([x, y]); P.x = x; P.y = y + 8; } };
   return { P, e, c, hits, said, carried }; };
 const run = (r, s, dt = 1 / 60) => { for (let i = 0; i < s / dt; i++) updateUndeadMage(r.e, dt, r.c); };
@@ -98,7 +98,7 @@ const exitOf = r => r.e.rings.find(q => q.kind === 'exit' && !q.spare);
 { const r = rig(), seen = new Set(); for (let i = 0; i < 60 * 90; i++) { updateUndeadMage(r.e, 1 / 60, r.c); if (r.e.mode.endsWith('Tell')) seen.add(r.e.mode); r.P.x = 300 + (i % 500); if (r.e.hp < 500) r.e.hp = 1000; }
   for (const m of ['fireTell', 'iceTell', 'stormTell', 'poisonTell', 'handTell', 'markTell', 'stepTell', 'bendTell', 'decoyTell', 'trapTell']) assert.ok(seen.has(m), 'he never casts ' + m + ' in a long fight (A3)');
   const q = rig({ mode: 'markTell', modeT: 0, spell: 'mark' }); updateUndeadMage(q.e, 0.01, q.c); q.P.x += 90; run(q, MAGE.markFuse + 0.1); assert.equal(q.e.mode, 'gather', 'the death mark that finds no one still opens him');
-  const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); assert.ok(/e\.t==='undeadmage'&&\(e\.mode==='gather'\|\|e\.mode==='breached'\)\)dmg=Math\.round\(dmg\*LICH\.openMul\)/.test(src), 'main.js doubles a blow on him when he is breached'); }
+  const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); assert.ok(/e\.t==='undeadmage'&&mageOpen\(e\)\)dmg=Math\.round\(dmg\*LICH\.openMul\)/.test(src) && mageOpen({ mode: 'breached' }) && mageOpen({ mode: 'gather' }), 'main.js doubles a blow on him when he is breached'); }   /* (claude/undead3: main.js asks mageOpen - breached, gathering, or a spell realm's opening) */
 console.log('the rings in Node: the step and its flared exit, bent bolts from above and behind, the dodge through that breaches him, the stages');
 
 // ---- IN PLAY ----

@@ -12,7 +12,7 @@ export const THIN = { off: false };
 export const CHECK_PIN = {
   hanging: [[10, 37], [96, 37]],   /* tools/hanging-exam.mjs: the lantern stair keeps both checkpoints that bracket its bridge (S3: the exam has one before it and one outside) */
   witchlight: [[519, 26]],   /* tools/whelps.mjs: a checkpoint at WL.EXAM[0], the door of the exam (S3) */
-  fallingtower: [[30, 299], [40, 239], [54, 217], [50, 179], [57, 116], [53, 56], [104, 96], [81, 78]],   /* tools/tower-ascent.mjs: a checkpoint on EACH of the tower's floors (a floor is a section: 7 of them, the mini's door covers the burst cistern), and the last before the sky on the crown's last climb; tools/tower-chase.mjs: two on the spiral stair, one in the middle of the climb and one at the top */
+  fallingtower: [[30, 299], [40, 239], [54, 217], [50, 179], [57, 116], [53, 56], [104, 96]],   /* tools/tower-ascent.mjs: a checkpoint on EACH of the tower's floors (a floor is a section: 7 of them, the mini's door covers the burst cistern), and the last before the sky on the crown's last climb; tools/tower-chase.mjs: ONE on the spiral stair, in the middle of the climb (claude/undead3, Daniel: "checkpoints 2 -> 1" - boarding the carpet sets the door one) */
   keep: [[634, 58]],   /* tools/keep-rework.mjs: a checkpoint at THE KING'S DOOR's first column (the exam's door, S3; the one outside the arena is found by the picker) */
   burial: [[369, 21]],   /* tools/burial2.mjs: a checkpoint at the exam's door (S3, within 3 columns of column 367) */
   marsh: [[391, 17]],   /* tools/raft-call.mjs: the dock checkpoint - a death on the Grove raft wakes you on the dock, and the raft comes back to you */
