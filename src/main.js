@@ -207,7 +207,7 @@ try { slot = Math.max(0, Math.min(SLOTS - 1, +(localStorage.getItem('bracken.slo
 let bossJumpOn = false;   /* THE PLAYTEST BOSS JUMP (docs/PLAYTEST.md): once a page has jumped into a fight it never writes a save - see saveProgress */
 const slotKey = i => 'bracken.progress.' + i;
 function readSlot(i) { try { const raw = localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); return raw ? JSON.parse(raw) : null; } catch { return null; } }
-function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; if (!PROG.deathCost) PROG.deathCost = freshDeathCost(); PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
+function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.hedgeHint = PROG.hedgeHint || 0; if (!PROG.deathCost) PROG.deathCost = freshDeathCost(); PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
   if (!PROG.perHero) { PROG.perHero = 1;                     /* the save's progress belongs to whoever was carrying it */
     const h = PROG.hero || 'knight', d = PROG.done[h] = PROG.done[h] || {};
     for (const lv of LEVELS) if (!lv.hidden && PROG[lv.id] && PROG[lv.id].cleared) d[lv.id] = 1;
@@ -15727,7 +15727,7 @@ function updateHedgeWardenBoss(e, dt) {
     sound: k => ({ heavy: SFX.heavy, crack: SFX.crack, whoosh: SFX.throwWhoosh, thorn: SFX.hiss, fire: SFX.puff, grow: SFX.rattle }[k] || SFX.thud)(),
     shake: n => shakeCam(n), dust: (x, y) => dust(x, y, 6), braziers: hedgeBraziers,
     smoke: (x, y) => smoke(x, y, 5, 9),   /* a blow on GREEN WOOD puffs smoke off it (claude/hedgewarden3) */
-    teach: () => { hintT = 4.5; hintMsg = 'GREEN WOOD: DRIVE HIM TO THE FIRE'; },   /* felled on the open lawn: say what to do (tools/textfit.mjs hints measures it) */
+    teach: () => { if ((PROG.hedgeHint = PROG.hedgeHint || 0) >= 2) return; PROG.hedgeHint++; hintT = 4.5; hintMsg = 'GREEN WOOD: DRIVE HIM TO THE FIRE'; },   /* felled on the open lawn: say what to do, at most twice per save (Daniel, 2026-09-29; tools/textfit.mjs hints measures it) */
     roots: (x, dir) => rootOut(L.hedgeRoots || (L.hedgeRoots = []), x, A.floor, dir, { lo: A.x0 + 8, hi: A.x1 - 8, boss: true }),   /* THE ROOTS: stepRoots runs them (updateHedgeRoots) */
     adds: () => enemies.filter(q => q.alive && q.fromHedge).length,
     sprout: x => { const n0 = enemies.length, sx = Math.max(A.x0 + 24, Math.min(A.x1 - 24, x)); spawnEnt({ t: 'topiary', x: Math.floor(sx / TS), y: Math.floor(A.floor / TS) - 1, face: Math.sign(P.x - sx) || 1 }); for (let i = n0; i < enemies.length; i++) enemies[i].fromHedge = true; burst(sx, A.floor - 6, 10, ['#3e7a3a', '#86c060'], 60, 0.5); } });

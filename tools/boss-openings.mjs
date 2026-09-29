@@ -85,11 +85,12 @@ try {
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='witchlight'));BK.state='play';BK.god=true;
    const M=BK.L.mini;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);const w=BK.enemies().find(e=>e.t==='hedgewarden'&&e.mini);
    const third=w.maxHp/3,root=w.maxHp-third+w.maxHp*0.16;
-   const fell=x=>{w.mode='stalk';w.cd=99;w.burnT=0;w.growth=0;w.greenUp=false;w.hp=Math.ceil(root)+2;w.x=x;BK.P.x=x-150;BKT.hurtEnemy(w,Math.ceil(third),w.x-20,false);BK.sim(20);return {mode:w.mode,open:+(w.open||0).toFixed(1),hint:(BK.hint||{}).msg||''};};
+   const fell=x=>{w.mode='stalk';w.cd=99;w.burnT=0;w.growth=0;w.greenUp=false;w.hp=Math.ceil(root)+2;w.x=x;BK.P.x=x-150;BKT.hurtEnemy(w,Math.ceil(third),w.x-20,false);BK.sim(20);return {mode:w.mode,open:+(w.open||0).toFixed(1),hint:(BK.hint||{}).t>0?(BK.hint||{}).msg||'':''};};
    const HW=await import('/src/hedge-warden.js'),call=()=>HW.brazierCall?HW.brazierCall(w):null;
    const smokeN=()=>BK.parts().filter(q=>q.grav<0&&(q.col==='#5a5460'||q.col==='#4a4450')).length;
    const bite=()=>{BK.sim(40);const h0=w.hp,s0=smokeN();BKT.hurtEnemy(w,30,w.x-20,false);const took=Math.round(h0-w.hp);BK.sim(20);   /* (past the blow's hitstop) */bite.smoke=smokeN()-s0;return took;};
-   const upCall=call();const lawn=fell(143*16);lawn.upCall=upCall;lawn.call=call();
+   BKT.PROG.hedgeHint=0;const upCall=call();const lawn=fell(143*16);lawn.upCall=upCall;lawn.call=call();
+   {const hints=[lawn.hint];for(let i=0;i<3;i++){BK.sim(300);BK.textLab.hint('',0);hints.push(fell(143*16).hint);}lawn.hints=hints;lawn.hintCount=BKT.PROG.hedgeHint;BKT.PROG.hedgeHint=undefined;}
    lawn.bite=bite();lawn.smoke=bite.smoke;lawn.left=Math.round(w.hp);   /* (claude/hedgewarden3: a green stump takes a quarter, and puffs smoke) */
    BK.P.x=w.x-150;BK.sim(330);const grew={mode:w.mode,hp:Math.round(w.hp),full:Math.round(w.maxHp),call:call()};
    /* up again on the green root: a blow on the open lawn chips a quarter and does not fell him; the same blow at a brazier fells him there, burning */
@@ -198,6 +199,7 @@ try {
      reason". This used to assert a stump left alone grows him back WHOLE; the rule now is that damage done stays done) */
   assert.ok(!['felled', 'stump'].includes(r.hedgeWarden.grew.mode) && r.hedgeWarden.grew.hp === r.hedgeWarden.lawn.left && r.hedgeWarden.grew.hp < r.hedgeWarden.grew.full, 'a stump left alone stands him up again, and the bar does not go up - no health grows back: ' + JSON.stringify(r.hedgeWarden));
   assert.equal(r.hedgeWarden.lawn.hint, 'GREEN WOOD: DRIVE HIM TO THE FIRE', 'felled on the open lawn, the hint says what to do: ' + JSON.stringify(r.hedgeWarden.lawn));
+  assert.ok(r.hedgeWarden.lawn.hints[1] === 'GREEN WOOD: DRIVE HIM TO THE FIRE' && !r.hedgeWarden.lawn.hints[2] && !r.hedgeWarden.lawn.hints[3] && r.hedgeWarden.lawn.hintCount === 2, 'the green-wood hint shows at most twice per save: ' + JSON.stringify(r.hedgeWarden.lawn));
   assert.ok(r.hedgeWarden.lawn.smoke > 0, 'a blow on a green stump puffs smoke off it: ' + JSON.stringify(r.hedgeWarden.lawn));
   assert.ok(r.hedgeWarden.lawn.upCall > 0 && r.hedgeWarden.grew.call > 0 && r.hedgeWarden.lawn.call === 0, 'his braziers glow and pulse while he is up (and not while he is a stump): ' + JSON.stringify(r.hedgeWarden));
   assert.ok(r.hedgeWarden.grew.upBite >= 5 && r.hedgeWarden.grew.upBite <= 10 && !['felled', 'stump'].includes(r.hedgeWarden.grew.upMode), 'up again on his green root, a blow on the open lawn chips a quarter and does not fell him: ' + JSON.stringify(r.hedgeWarden.grew));
