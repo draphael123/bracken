@@ -41,7 +41,7 @@ try {
   await W('ironclad', `const run=(iron)=>{__kit('knight',['ironclad'],[]);if(iron){BK.press('throw');BK.sim(2);}BK.press('atk');BK.sim(2);const hp=BK.P.hp;BK.P.inv=0;BK.damagePlayer(BK.P.x+10,10,{});return {hurt:BK.P.hurt>0,swinging:BK.P.atk>=0,took:hp-BK.P.hp};};return {plain:run(false),iron:run(true)}`);
   await W('realm', `const f=__kit('knight',['swordOfRealm'],[['sprig',50],['sprig',-60]]);const boss=f[1];boss.mini=true;boss.maxHp=boss.hp=500;const h0=f.map(e=>e.hp);
       BK.press('throw');let most=0;for(let i=0;i<60;i++){const b=boss.hp;BK.sim(1);most=Math.max(most,b-boss.hp);}const cast=f.map((e,i)=>h0[i]-e.hp);
-      const n0=BK.realmWaves().length;BK.press('atk');BK.sim(3);return {cast,capped:most,onSwing:BK.realmWaves().length>n0}`);
+      /* a NEW wave, not a longer list: the cast's own wave can still be running out here (how long depends on the hit-stops it landed, src/juice.js) */const w0=new Set(BK.realmWaves());BK.press('atk');BK.sim(3);return {cast,capped:most,onSwing:BK.realmWaves().some(w=>!w0.has(w))}`);
   const o = out;
   if (o.disarm) assert(o.disarm.plain.swing === 0 && o.disarm.stripped.dis && o.disarm.stripped.swing > 0, 'DISARM: the shield that turned his cut is gone, and the same cut lands (' + JSON.stringify(o.disarm) + ')');
   if (o.ironclad) { assert(o.ironclad.plain.hurt, '(without it a blow staggers him)'); assert(!o.ironclad.iron.hurt && o.ironclad.iron.swinging, 'IRONCLAD: the blow neither staggers him nor stops the swing'); assert(o.ironclad.iron.took > 0 && o.ironclad.iron.took === o.ironclad.plain.took, 'and it still hurts, as much as it would have (' + o.ironclad.iron.took + ' vs ' + o.ironclad.plain.took + ')'); }
