@@ -13762,8 +13762,14 @@ function updateCrow(e, dt) { // storm crows: they come down the wind in strings,
   /* TOLD (the combat pass, part 2): a string came down the wind with nothing said. Now each crow, when it wakes, hangs on the
      wind a beat with its wings up and CAWS (a red !!: it comes at the head, over a shield - get under it) - and only then comes,
      and it does not turn. */
-  if (!e.go) { if (!P.dead && Math.abs(e.x - P.x) < e.wake) { e.go = true; e.mode = 'diveTell'; e.modeT = 0.55 + (e.ph || 0) % 0.3; SFX.caw(); number(e.x, e.y - 10, '!!', '#ff6b6b'); } else return; }
+  if (!e.go) { if (!P.dead && Math.abs(e.x - P.x) < e.wake) { e.go = true; e.mode = 'diveTell'; e.modeT = 0.55 + (e.ph || 0) % 0.3; e.sinceTell = 0; e.retold = Math.abs(e.x - P.x) < 140; SFX.caw(); number(e.x, e.y - 10, '!!', '#ff6b6b'); } else return; }
   if (e.mode === 'diveTell') { e.modeT -= dt; e.y = e.hy + Math.sin(e.anim * 14) * 1.5; e.face = e.vx >= 0 ? 1 : -1; if (e.modeT <= 0) e.mode = 'fly'; return; }
+  /* A TELL GOES STALE (claude/crowfix): it wakes 330 px out and, at the pace it flies, gets to you three to five seconds (screen time) after its
+     caw - so a hero who waited was hit by a crow that had said nothing for three seconds (tools/untold-told, about half the runs).
+     A crow closing on you with its caw half a second behind it or more now hangs on the wind and CAWS again, once, a
+     hundred pixels short - the same red !! - and only then comes on. */
+  e.sinceTell = (e.sinceTell || 0) + dt;
+  if (!e.retold && !P.dead && e.sinceTell > 0.5 && Math.abs(P.x - e.x) < 100 && Math.sign(P.x - e.x) === Math.sign(e.vx)) { e.retold = true; e.sinceTell = 0; e.mode = 'diveTell'; e.modeT = 0.4; SFX.caw(); number(e.x, e.y - 10, '!!', '#ff6b6b'); return; }
   e.x += e.vx * dt; e.y = e.hy + Math.sin(e.anim * e.freq + e.ph) * e.amp; e.face = e.vx >= 0 ? 1 : -1;
   if (e.x < camX - 60) e.alive = false;
 }
