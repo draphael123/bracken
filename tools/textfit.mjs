@@ -20,6 +20,7 @@
 //   plates    every boss and mini's plate at the foot of the screen, in its fight (only the band under VH - 40): in the suite
 //   pick      THE HERO PICK, with each of its cards selected in turn: every hero's name under its card, and the words for the selected one
 //   practice  THE PRACTICE YARDS list, each row selected in turn
+//   bossjump  THE HIDDEN BOSS LIST (SHIFT+B on the title): each row selected in turn, and every hero on the hero line
 //   node tools/textfit.mjs --strict         exit 1 on any OVERFLOW, OFFSCREEN, CLIPPED, TRUNCATED, COVERS, COLLIDE or SMUDGE (LONGHINT only reports)
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
@@ -161,6 +162,11 @@ async function pageTextFit(input) {
   if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};
     for (let i = 0; i < 8; i++) frame('practice #' + i, () => { BK.state = 'practice'; BK.ui.practiceI = i; }, { settle: 20 });
     await yieldNow(); }
+  /* THE HIDDEN BOSS LIST (SHIFT+B on the title, docs/PLAYTEST.md): every row selected in turn (every boss and mini name against its wood's name), and every hero's name on the hero line */
+  if (want('bossjump')) { const n = BK.bossJump.table().length;
+    for (let i = 0; i < n; i++) frame('bossjump #' + i, () => { BK.state = 'bossjump'; BK.bossJump.cursor = i; BK.bossJump.hero = 'knight'; }, { settle: 20 });
+    for (const h of HEROES) frame('bossjump hero ' + h, () => { BK.state = 'bossjump'; BK.bossJump.cursor = 0; BK.bossJump.hero = h; }, { settle: 20 });
+    BK.state = 'play'; await yieldNow(); }
 
   if (want('menu')) { toPlay(0, 'knight'); BK.state = 'menu'; const n = BK.ui.menuCount();
     for (let i = 0; i < n; i++) frame('menu #' + i, () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.menuI = i; }, { settle: 40 });

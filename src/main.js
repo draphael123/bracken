@@ -202,6 +202,7 @@ const coopShownAlly = () => coopWant ? !!coopWant.ally : !!(players && players[1
    (his own talents still come from the save, where it has any). Nothing is written back: see gainXp and saveProgress. */
 const coopLent = h => coop() && h !== players[0].hero && players.some(p => p !== players[0] && p.hero === h);
 try { slot = Math.max(0, Math.min(SLOTS - 1, +(localStorage.getItem('bracken.slot') || 0))); } catch {}
+let bossJumpOn = false;   /* THE PLAYTEST BOSS JUMP (docs/PLAYTEST.md): once a page has jumped into a fight it never writes a save - see saveProgress */
 const slotKey = i => 'bracken.progress.' + i;
 function readSlot(i) { try { const raw = localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); return raw ? JSON.parse(raw) : null; } catch { return null; } }
 function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
@@ -240,7 +241,7 @@ function loadSlot(i) { coopWant = null; if (coop()) coopEnd(); slot = i; saveBlo
 function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { saveBlocked=''; for (const k in PROG) delete PROG[k]; Object.assign(PROG,migrateProgress(null).progress); progDefaults(); } }
 /* THE SAVE BELONGS TO PLAYER ONE. A co-op pass sets PROG.hero to whoever is being updated, and a level won or a
    coin banked inside player two's pass would otherwise write HIS name into the slot as the hero carrying it. */
-function saveProgress() { if (saveBlocked) return; const was = PROG.hero; if (passOn && players) PROG.hero = players[0].hero;
+function saveProgress() { if (saveBlocked || bossJumpOn) return; const was = PROG.hero; if (passOn && players) PROG.hero = players[0].hero;
   try { localStorage.setItem(slotKey(slot), JSON.stringify(PROG)); } catch {}
   PROG.hero = was; }
 loadSlot(slot);
@@ -4572,6 +4573,7 @@ const KEYS = {
 addEventListener('keydown', e => {
   if (e.repeat) { e.preventDefault(); return; }
   initAudio(); anyPress = true;
+  if (state === 'title' && e.shiftKey && e.key === 'B') { bjOpen(); e.preventDefault(); return; }   /* THE HIDDEN BOSS LIST: SHIFT+B on the title screen (docs/PLAYTEST.md) */
   if (state === 'editor') { // the editor owns the letters; only the arrows fall through, to pan
     const k = e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase();
     if (edKey(k, e)) { e.preventDefault(); return; }
@@ -7859,6 +7861,72 @@ const introCardUp = () => !!(SET.bossIntro && ((bossActive && boss && boss.mode 
 // The mini-boss slot used to be the Great Hound and nothing else. Any creature can hold it now.
 const MINI_NAME = { lancer: 'THE SERJEANT', propman: 'THE OVERMAN', forgemaster: 'THE FORGEMASTER', greathound: 'THE GREAT HOUND', troll: 'THE HILL TROLL', spider: 'THE WEAVER', sailer: 'THE MASTHEAD', lampreeve: 'THE LAMPREEVE', suncatcher: 'THE RIMEWRIGHT', golem: 'THE TEMPLE GUARDIAN', gravewarden: 'THE GRAVEYARD KEEPER' };
 const MINI_DONE = { sexton: 'THE BELL FRAME IS OPEN', barrowrider: 'THE GATE STANDS OPEN', hedgewarden: 'THE GARDEN GATE OPENS', gravewarden: 'THE OSSUARY DOOR LIFTS', homunculus: 'THE LAB DOOR LIFTS', ploughman: 'THE HEDGE GATE LIFTS', propman: 'NOTHING HOLDS IT UP NOW', forgemaster: 'THE FORGE GOES COLD', greathound: 'THE KENNELS OPEN', troll: 'THE GULLY IS CLEAR', spider: 'THE WEB COMES DOWN', sailer: 'THE ROAD IS OPEN', lampreeve: 'THE STREET KEEPS ITS LIGHTS', suncatcher: 'THE RIME COMES OFF THE ROAD', golem: 'THE HALL DOOR OPENS', assassin: 'THE PARK GATE IS OPEN' };
+/* ---------- THE PLAYTEST BOSS JUMP (docs/PLAYTEST.md) ----------
+   A hidden way to stand at any boss's or mini's door with the hero of your choice, for playtesting. Two ways in, one function (bossJump):
+     ?boss=<id>[&hero=<id>]   in the URL (id: the boss's own id, 'queen', 'greathound'; or a level id for its boss, 'wood'; or 'wood:mini' for a level's mini)
+     SHIFT+B on the title screen   a scrollable list of every boss and mini; UP/DOWN pick, LEFT/RIGHT the hero, ENTER (or Z) jumps, ESC backs out
+   The list is READ FROM THE LEVELS (every LEVELS[i].build().arena / .mini), so a new boss appears in it by being built into a level.
+   THE HERO STANDS ONE TILE INSIDE THE FIGHT'S OWN TRIGGER (the spot bossLab uses), with full health, no god mode, the level as it is, and that
+   spot is his checkpoint: a death puts him at the door again. The wood's other creatures are left alone (foes over ~420 px away are frozen).
+   IT NEVER WRITES A SAVE: bossJumpOn is set before anything else, and saveProgress (the only writer of a slot; markHeard, medals, unlocks, the
+   level-clear and every coin bank go through it) returns at once while it is set. It stays set for the life of the page: reload to play for real.
+   (Settings still save: they are not progress.) tools/boss-jump.mjs compares every localStorage key before and after a whole fight. */
+let bjTable = null, bjI = 0, bjWait = 0, bjHero = 'knight';
+const BJ_ROWS = 10;
+function bossTable() {
+  if (bjTable) return bjTable;
+  const rows = [];
+  LEVELS.forEach((lv, li) => { let b; try { b = lv.build(); } catch { return; }
+    for (const kind of ['mini', 'arena']) { const A = b[kind]; if (!A || !A.boss) continue;   /* a level's mini comes before its boss, the way the wood is walked */
+      const name = kind === 'mini' ? (A.name || MINI_NAME[A.boss] || (BEASTS.find(q => q.t === A.boss) || {}).name || 'THE ' + String(A.boss).toUpperCase()) : bossTitle({ t: A.boss });
+      rows.push({ t: A.boss, level: lv.id, levelName: lv.name, li, kind: kind === 'mini' ? 'mini' : 'boss', name }); } });
+  return (bjTable = rows);
+}
+function bossFind(spec) {
+  const s = String(spec || '').toLowerCase(), rows = bossTable(), m = s.match(/^([a-z0-9_-]+):mini$/);
+  return rows.find(r => r.t === s && r.kind === 'boss') || rows.find(r => r.t === s) || (m ? rows.find(r => r.level === m[1] && r.kind === 'mini') : rows.find(r => r.level === s && r.kind === 'boss')) || null;
+}
+function bossJump(spec, heroId) {
+  const row = bossFind(spec); if (!row) return false;
+  bossJumpOn = true;   /* FIRST: nothing below, and nothing in the fight that follows, can reach a save */
+  const h = heroId && HEROES.some(x => x.id === heroId) ? heroId : hero();
+  window.BK.setHero(h); window.BK.reset({ fresh: true });   /* PROG.hero / PROG.heroes in memory only: a fresh body for the hero, at full health */
+  if (row.kind === 'mini' && PROG[row.level]) PROG[row.level].mini = false;   /* a mini already put down in this slot is fought again (in memory, never saved) */
+  loadLevel(row.li); startGame();
+  const A = row.kind === 'mini' ? L.mini : L.arena;
+  if (A.carpet && L.carpetAt) { checkpoint = { x: L.carpetAt.x - 5 * TS, y: L.carpetAt.y + TS }; P.x = L.carpetAt.x; P.y = L.carpetAt.y; P.vx = P.vy = 0; }   /* the sky fight starts when the carpet is boarded: stand on it */
+  else { const tx = A.start ? A.start[0] : Math.round(A.trigger / TS) + (A.reverse ? -1 : 1), ty = A.start ? A.start[1] : Math.round(A.floor / TS) - 1;
+    checkpoint = { x: tx * TS + 8, y: (ty + 1) * TS }; respawn(); }
+  camX = P.x - VW / 2; camY = P.y - 100;
+  return true;
+}
+function bjOpen() { state = 'bossjump'; bjI = 0; bjWait = 0; bjHero = hero(); SFX.uiSel(); }
+function updateBossJump() {
+  if (pausePress) { state = 'title'; SFX.ui(); return; }
+  if (!bjTable) { if (bjWait++ >= 2) bossTable(); return; }   /* two frames of LISTING first: building every level takes a few seconds */
+  const n = bjTable.length, ids = HEROES.map(x => x.id);
+  if (upPress) { bjI = (bjI + n - 1) % n; SFX.ui(); }
+  if (downPress) { bjI = (bjI + 1) % n; SFX.ui(); }
+  if (leftPress) { bjHero = ids[(ids.indexOf(bjHero) + ids.length - 1) % ids.length]; SFX.ui(); }
+  if (rightPress) { bjHero = ids[(ids.indexOf(bjHero) + 1) % ids.length]; SFX.ui(); }
+  if (confirmPress) { SFX.uiSel(); bossJump(bjTable[bjI].kind === 'mini' ? bjTable[bjI].level + ':mini' : bjTable[bjI].t, bjHero); }
+}
+function drawBossJump() {
+  g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
+  const x = 16, y = 6, w = VW - 32, h = VH - 12; panel(x, y, w, h);
+  text('BOSS JUMP  (PLAYTEST)', VW / 2, y + 6, UI.title, 'center');
+  if (!bjTable) { text('LISTING THE BOSSES', VW / 2, VH / 2, UI.dim, 'center'); return; }
+  const n = bjTable.length, start = Math.max(0, Math.min(n - BJ_ROWS, bjI - (BJ_ROWS >> 1)));
+  for (let i = start; i < Math.min(n, start + BJ_ROWS); i++) { const r = bjTable[i], cy0 = y + 20 + (i - start) * 11, sel = i === bjI;
+    if (sel) text('>', x + 8, cy0, '#8fd160', 'left', 6);
+    text(fitText(r.name.replace(/^THE /, ''), 138, 6), x + 16, cy0, r.kind === 'mini' ? (sel ? '#ffd36b' : '#c9a24a') : (sel ? '#fff6e0' : '#c9d1dc'), 'left', 6);
+    text(fitText(r.levelName.replace(/^THE /, ''), 112, 6), x + w - 8, cy0, sel ? UI.text : UI.dim, 'right', 6); }
+  text((bjI + 1) + '/' + n, x + w - 8, y + 6, UI.dim, 'right', 6);
+  const hd = HEROES.find(q => q.id === bjHero);
+  text('HERO  <  ' + fitText(hd ? hd.name : bjHero.toUpperCase(), 120, 6) + '  >', VW / 2, y + h - 31, UI.sel, 'center', 6);
+  text('UP/DOWN pick   LEFT/RIGHT hero   gold = mini', VW / 2, y + h - 21, UI.dim, 'center', 6);
+  text('ENTER or Z jump   ESC back   nothing is saved', VW / 2, y + h - 11, UI.dim, 'center', 6);
+}
 const miniName = () => (L.mini && (L.mini.name || MINI_NAME[L.mini.boss] || (BEASTS.find(q => q.t === L.mini.boss) || {}).name)) || 'THE BEAST';   /* a level can name its own (THE STALKER, THE QUARRY DOG): the table is only the fallback. AND THEN THE BESTIARY, the way bossTitle asks it (E7): the Burial Caverns' mini was in neither, so his card and his bar both said THE BEAST - which is the name Daniel asked to have changed (2026-09-24) */
 const hallSealed = e => hallHolds(L.arena, bossActive, e, boss);
 /* THE SEXTON'S BELL PIT BITES ONCE AND THROWS YOU OUT (round 3): up past the deck and toward the nearer joist, so a fall through a plank
@@ -22770,6 +22838,7 @@ function update(dt) {
   if (state === 'heropick') { updateHeroPick(); return; }
   if (state === 'coop') { updateCoopPick(); return; }
   if (state === 'herocard') { if (confirmPress) startTrial(hero()); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
+  if (state === 'bossjump') { updateBossJump(); return; }
   if (state === 'soundtest') {
     const cats = [SFX_NAMES(), MUSIC_NAMES, AMBIENT_NAMES]; const list = cats[soundCat];
     if (leftPress) { soundCat = (soundCat + 2) % 3; soundI = 0; SFX.ui(); }
@@ -25894,7 +25963,7 @@ function drawTitle(cx, cy) {
 // SCREEN TRANSITIONS. Every change of screen comes up out of the dark instead of cutting, and a level opens
 // on an iris round the knight. Opening a pause menu or a talk box is not a change of screen.
 let transT = 0, transKind = 'fade', transPrev = null, transLast = 0, menuSince = 0;
-const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'soundtest', 'herocard', 'practice', 'win', 'gameover']);
+const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'soundtest', 'bossjump', 'herocard', 'practice', 'win', 'gameover']);
 function drawTransition() {
   const dt = Math.min(1, Math.max(0, time - transLast)); transLast = time;
   if (state !== transPrev) {
@@ -26191,7 +26260,7 @@ function render() {
     lines.forEach((l, i) => text(l, bx + 8, by + 7 + i * 11, '#fff6e0'));
     if (intro.chars >= INTRO[intro.card].length && Math.floor(time * 3) % 2 === 0) text('Z', bx + bw - 12, by + bh - 11, '#8fd160', 'right');
     text('ESC skip', VW - 6, 4, '#9aa39a', 'right');
-  } else if (state === 'title' || state === 'slots') drawTitle(cx, cy);
+  } else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
   else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else if (state === 'editor') drawEditor();
   else if (state === 'tree') { drawTree(); }
@@ -26449,6 +26518,7 @@ function render() {
   drawWarp(); // the door closing, over everything
   if (state === 'menu') drawMenu();
   if (state === 'soundtest') drawSoundTest();
+  if (state === 'bossjump') drawBossJump();
   if (state === 'controls') drawControls();
   if (state === 'practice') drawPractice();
   if (state === 'herocard') drawHeroCard();
@@ -26641,6 +26711,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
   get sea() { return { roll, wash, strike, msg: seaMsg, calm: seaCalm(), tilt: seaTilt(), hard: stormK('wash') }; },
   stormBolt(t = 0.34) { boltBack = { t, x: camX * 0.15 + VW / 2, i: 0 }; return { quiet: stormQuiet(), flash: boltFlash() }; },   /* the backdrop's lightning, now, for a picture of it (t: how much of it is left) */   /* the Hurricane's sea state, for the harness */
+  bossJump: { table: () => bossTable().map(r => ({ ...r })), go: bossJump, open: bjOpen, get on() { return bossJumpOn; }, get cursor() { return bjI; }, set cursor(v) { bjI = v; }, get hero() { return bjHero; }, set hero(v) { bjHero = v; }, rows: BJ_ROWS },   /* the hidden boss list, for tools/boss-jump.mjs and tools/textfit.mjs */
   rushStart, get rush() { return rush; }, RUSH,   // (the rush, for the harness)
   // THE CURSORS OF EVERY LIST, so the playtest bot can walk the TABS and the ROWS of a screen and not just
   // the screen's first face. Most menu bugs live on the third tab of something.
@@ -26690,4 +26761,5 @@ if (q.get('playtest') === '1') setTimeout(async () => {
   pre.textContent = r.text; document.body.appendChild(pre);
 }, 1200);
 if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
+if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'))) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 rafQueued = true; requestAnimationFrame(frame);
