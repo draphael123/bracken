@@ -1742,14 +1742,14 @@ export function bakeRamLog() { const [c, g] = canvas(12, 40); rect(g, 2, 0, 8, 4
 export function bakeLever(on) { const [c, g] = canvas(10, 14); rect(g, 3, 6, 4, 8, '#5a6270'); rect(g, 3, 6, 4, 1, '#9aa3b0'); line(g, 5, 8, on ? 9 : 1, 1, '#c9d1dc', 2); px(g, on ? 9 : 1, 1, '#c9463d'); return outline(c, OUT); }
 // Pressure plate.
 export function bakePlate(down) { const [c, g] = canvas(T, 6); rect(g, 1, down ? 4 : 2, T - 2, down ? 2 : 4, '#7c8797'); rect(g, 1, down ? 4 : 2, T - 2, 1, '#9aa3b0'); return c; }
-// The King's palanquin: a gilded throne on carrying poles. 48×30; the bearers are drawn separately.
+// The King's palanquin: a gilded throne on carrying poles. 64x30 (drawn 1.5x, 96 wide: wider than his 85 px belly, which used to overhang the 72-wide prop); the bearers are drawn separately.
 export function bakePalanquin() {
-  const [c, g] = canvas(48, 30);
-  rect(g, 0, 22, 48, 3, '#5c3a1d'); rect(g, 0, 22, 48, 1, '#7a4e28');
-  rect(g, 10, 4, 28, 20, '#8f2f28'); rect(g, 12, 6, 24, 16, '#c9463d'); rect(g, 12, 6, 24, 2, '#e07060');
-  rect(g, 8, 2, 4, 22, '#e0b040'); rect(g, 36, 2, 4, 22, '#e0b040'); rect(g, 8, 0, 32, 3, '#e0b040'); rect(g, 8, 0, 32, 1, '#fff6c8');
-  for (const x of [9, 22, 37]) px(g, x, 1, '#c9463d');
-  rect(g, 14, 18, 20, 6, '#b8842a'); rect(g, 14, 18, 20, 1, '#e0b040');
+  const [c, g] = canvas(64, 30);
+  rect(g, 0, 22, 64, 3, '#5c3a1d'); rect(g, 0, 22, 64, 1, '#7a4e28');
+  rect(g, 14, 4, 36, 20, '#8f2f28'); rect(g, 16, 6, 32, 16, '#c9463d'); rect(g, 16, 6, 32, 2, '#e07060');
+  rect(g, 10, 2, 4, 22, '#e0b040'); rect(g, 50, 2, 4, 22, '#e0b040'); rect(g, 10, 0, 44, 3, '#e0b040'); rect(g, 10, 0, 44, 1, '#fff6c8');
+  for (const x of [11, 31, 51]) px(g, x, 1, '#c9463d');
+  rect(g, 18, 18, 28, 6, '#b8842a'); rect(g, 18, 18, 28, 1, '#e0b040');
   return outline(c, OUT);
 }
 // Autumn tree canopy for the near layer: rust, amber and gold lobes on dark trunks.
