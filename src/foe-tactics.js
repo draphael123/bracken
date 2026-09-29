@@ -26,6 +26,48 @@ export const TAC = {
   braceAt: 3,            // the cut of a flurry the brute turns
 };
 
+// THE SPRINKLE CUT (Daniel, 2026-09-29, "FEWER, BETTER FOES"). The garrison SPRINKLER (src/level.js garrison()) filled open floor with a grid of
+// foes: "a dozen enemies, no challenge". Its rows are halved (sprinkle) and every level SECTION now stands at least one DESIGNED encounter, a
+// squad the builder places on purpose: a shield covering a bow, a priest to kill first, a hornblower behind a brute, a heavy alone on a
+// ledge; at a chokepoint, on a ledge, or beside spikes, water or barrels (garrison() scores every floor spot for exactly that).
+// Sprinkled foes carry garrison:true, squad members carry squad:'<name>' and NOT garrison. tools/sprinkle-cap.mjs holds every level to
+// the numbers below. PLAN is what each level's squads are made of, hero side first ('shield' first is the cover: it stands in front).
+export const SPRINKLE = {
+  sprinkle: 0.5,        // what is left of a garrison row after the cut (the old 0.75 * COMBAT.garrison stays, then this)
+  screenW: 30, screenH: 22,   // a screen, in tiles (a tall level is measured by rows too)
+  screenCap: 2,         // sprinkled foes in any one screen
+  avgCap: 1.0,          // sprinkled foes per screen, averaged over the level (a wide level by columns, a tall one by rows)
+  sectionW: 200, sectionH: 60,   // a SECTION: a wide level's columns / a tall level's rows; each holds >= 1 designed encounter
+  gap: 22,              // tiles between two designed encounters
+};
+export const PLAN = {
+  marsh: [['hopper', 'archer'], ['thorn', 'spit', 'archer']],
+  spore: [['sporeling', 'weaver'], ['thorn', 'spitcap']],
+  scree: [['goat', 'rockgoblin'], ['troll']],
+  hanging: [['rockgoblin', 'snuffer']],
+  spire: [['rockgoblin', 'gobpriest', 'gobmage'], ['sentry', 'gobpriest']],
+  moor: [['goat', 'rockgoblin'], ['troll']],
+  storm: [['shield', 'archer'], ['brute', 'horn'], ['pike', 'gobpriest']],
+  crown: [['shield', 'javelin'], ['heavy', 'javelin'], ['soldier', 'soldier', 'javelin']],
+  longwater: [['tideguard', 'scout'], ['tideguard', 'netter']],
+  reef: [['tideguard', 'scout'], ['sailor', 'netter']],
+  hurricane: [['cutlass', 'scout'], ['tideguard', 'marine']],
+  lamplit: [['tideguard', 'scout'], ['watch', 'wight'], ['tideguard', 'netter']],
+  keep: [['tideguard', 'watch'], ['wight', 'watch', 'wight']],
+  causeway: [['tideguard', 'scout'], ['cutlass', 'netter']],
+  harbor: [['boarder', 'horn'], ['marine', 'bosun'], ['tideguard', 'scout']],
+  fields: [['swornsword', 'wight'], ['hedgeknight']],
+  burial: [['zombie', 'bonearcher'], ['husk', 'bonegob', 'bonearcher']],
+  mage: [['armour', 'apprentice'], ['zombie', 'apprentice']],
+  fallingtower: [['armour', 'apprentice']],
+  burning: [['shield', 'archer', 'sapper'], ['pike', 'burngob']],
+  caravan: [['cutthroat', 'cutthroat'], ['scorpion']],
+  quarry: [['shield', 'archer'], ['brute', 'horn']],
+  hunt: [['shield', 'archer'], ['soldier', 'javelin']],
+  frost: [['wight', 'troll']],
+  skyship: [['shield', 'archer'], ['boarder', 'horn']],
+};
+
 // THE SQUAD HOOK. roles: what each kind is in a squad; capBonus: what a squad's banner adds to a hero's purse (0 until the squad
 // lane builds banners); coverFor: which squad member a shield covers. Read by main.js's TOKENS.cap and by nothing else yet.
 export const SQUAD = {

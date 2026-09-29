@@ -22,6 +22,17 @@ Every level lane reads it before it builds. When a rule here and a number elsewh
 ## 2. Difficulty
 - **Hard by placement, not by numbers** (RULES S): foes where they make the ground harder, jumps that can fail, an exam before
   the boss, checkpoints spaced (one per section, ~120-160 walked tiles apart and always one before every boss/mini/ambush door - RULES S4, Daniel 2026-09-28), healing earned. "Without overwhelming players with tons of enemies."
+- **FEWER, BETTER FOES (Daniel, 2026-09-28/29; the sprinkle cut).** Open floor is not filled with a grid of foes ("a dozen enemies, no challenge"). A level's
+  foes are DESIGNED ENCOUNTERS: a shield covering an archer, a hornblower behind a brute, a priest or banner to kill first, a lone heavy on a ledge; placed
+  at a chokepoint, on a ledge, or beside spikes, water or barrels, so the ground is part of the fight. Make a foe deadly one-on-one through damage and AI,
+  NEVER through more hp. The rules a level lane builds to (src/foe-tactics.js SPRINKLE and PLAN, enforced by tools/sprinkle-cap.mjs):
+  - Every SECTION of a level (200 columns; 60 rows on a tall level) stands at least one designed encounter: put the squad in the level's own builder,
+    or list its kinds in PLAN[levelId] and the garrison builder (src/level.js garrison()) places them on the best ground in each section: members
+    two tiles apart on one floor, hero side first, tagged squad:'<name>' (never garrison:true).
+  - What is still SPRINKLED (garrison rows in src/level.js, flagged garrison:true) is filler and is capped: at most 2 in any one screen (30 columns; on a
+    tall level 22 rows too) and 1 a screen over the whole level. A new level's row is small; the encounters carry it.
+  - No sprinkled topiary (the Folly's maze is gone). Boss arenas and ambush rooms keep their own designed spawns; the sprinkler never enters them.
+  - A level placed wholly by hand has no sprinkle to cap: it is still held to the same rule by hand (an encounter in every section, none of it filler).
 - **Levels were too easy next to their bosses.** Close that gap with the level, not by softening bosses.
 - **Nothing annoying:** no health sponges, untold off-screen shots, stun-locks, untold knockback into pits, respawns.
 - **Meters squeeze** (the desert sun drains harder the longer you stay out, with shade to earn).

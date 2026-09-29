@@ -1,4 +1,5 @@
 import { THIN, CHECK_DROP } from './checkpoint-thin.js';
+import { SPRINKLE, PLAN } from './foe-tactics.js';   /* THE SPRINKLE CUT: the halved rows and the designed encounters (see garrison()) */
 import {polishTower,buildTowerAscent} from './tower-ascent.js';
 import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER's flyers keep to its floors (round 3): the sprinkler asks it too (L.flatFlyers) */
 import {buildBurningVillage} from './burning-village.js';
@@ -7852,7 +7853,7 @@ function checkpoints(L) {
 }
 function garrison(L, id) {
   const source = GARRISON[id]; if (!source) return L;
-  const set = source.map(([kind,n])=>[kind,Math.max(1,Math.round(n*COMBAT.garrison))]);
+  const set = source.filter(([kind]) => kind !== 'topiary').map(([kind,n])=>[kind,Math.floor(Math.max(1,Math.round(n*COMBAT.garrison))*SPRINKLE.sprinkle+0.25)]).filter(([, n]) => n > 0);   /* THE SPRINKLE CUT (2026-09-29): half of what the row put down, and no topiary (the Folly's maze is gone) - the rest is DESIGNED encounters, below */
   const W = L.W, H = L.H, g = L.grid;
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
@@ -7904,6 +7905,36 @@ function garrison(L, id) {
   const fits = (kind, x, y, isWet) => !harmHere(x, y) && (!L.flatFlyers || !TOWER_FLYERS.has(kind) || (overFlat(L, T, x, y) && y > (L.flatFlyers.below ?? -1))) && !(L.fresh && x >= L.fresh[0] && x <= L.fresh[1] && SEA_ONLY.has(kind)) && (!SWIMS.has(kind) || clearHere(x, y)) && (!isWet || SWIMS.has(kind)) && (!INWATER.has(kind) || swimIn(x, y)) && (kind !== 'siren' || bySwim(x, y)) && (!BYWATER.has(kind) || !pools.length || isWet || byWater(x, y));
   const tall = W < 220, minDX = tall ? 4 : 8, minDY = tall ? 9 : 6;
   const taken = [], left = [];
+  /* DESIGNED ENCOUNTERS (the sprinkle cut): one squad in every section of the level (SPRINKLE.sectionW columns, or sectionH rows on a tall level),
+     made from PLAN[id] and placed BEFORE the sprinkle so the sprinkle steps round it. The spot is chosen, not drawn: a chokepoint (a low roof, a short
+     floor), a ledge over a drop, or ground beside spikes, water or a barrel scores highest. Members stand two tiles apart on one floor, hero side
+     first, all facing the road. They carry squad:'<id>' and are NOT garrison: the cap in tools/sprinkle-cap.mjs counts only the sprinkled. */
+  if (PLAN[id]) {
+    const spotAt = new Map(); for (const [sx, sy, sw] of spots) spotAt.set(sx + ',' + sy, sw);
+    const barrels = L.ents.filter(e => /barrel|keg|oilbarrel|powder/.test(e.t)).map(e => [e.x, e.y]);
+    const spikeNear = (x, y) => { for (let dx = -5; dx <= 5; dx++) for (let dy = -2; dy <= 3; dy++) if (at(x + dx, y + dy) === T.SPIKE) return true; return false; };
+    const dropAt = (x, y) => [1, -1].some(d => !stand(at(x + d, y + 1)) && !stand(at(x + d * 2, y + 1)) && !stand(at(x + d, y + 2)) && !stand(at(x + d, y + 3)));
+    const runLen = (x, y) => { let n = 1; for (let d = -1; d <= 1; d += 2) for (let k = 1; k < 9 && stand(at(x + d * k, y + 1)) && at(x + d * k, y) === T.AIR; k++) n++; return n; };
+    const score = (x, y) => (spikeNear(x, y) ? 3 : 0) + (pools.some(p => !p.swim && x * TS >= p.x0 - 5 * TS && x * TS <= p.x1 + 5 * TS && Math.abs(y * TS + 8 - p.y) < 3 * TS) ? 3 : 0) + (barrels.some(([bx, by]) => Math.abs(bx - x) <= 6 && Math.abs(by - y) <= 2) ? 3 : 0)
+      + (dropAt(x, y) ? 2 : 0) + (at(x, y - 3) !== T.AIR || at(x, y - 4) !== T.AIR ? 2 : 0) + (runLen(x, y) <= 7 ? 1 : 0);
+    const size = tall ? SPRINKLE.sectionH : SPRINKLE.sectionW, span = tall ? H : W, nSec = Math.max(1, Math.ceil(span / size)), plan = PLAN[id], placed = [];
+    for (let sec = 0; sec < nSec; sec++) {
+      const lo = sec * size, hi = (sec + 1) * size;
+      const cand = spots.filter(([sx, sy]) => (tall ? sy : sx) >= lo && (tall ? sy : sx) < hi && sx >= 24).map(([sx, sy]) => [sx, sy, score(sx, sy)]).sort((a, b) => b[2] - a[2] || a[0] - b[0] || a[1] - b[1]);
+      let done = false; (L.squadBands = L.squadBands || []).push({ lo, hi, spots: cand.length });
+      for (let pass = 0; pass < 3 && !done; pass++) for (const [cx, cy] of cand) {
+        if (placed.some(([px, py]) => Math.abs(px - cx) < SPRINKLE.gap && Math.abs(py - cy) < SPRINKLE.gap)) continue;
+        if (pass === 0 && score(cx, cy) < 2) break;   /* first look only at ground that MAKES a fight harder; then any ground */
+        for (let t = 0; t < (pass === 2 ? set.length : plan.length) && !done; t++) {
+          const tpl = pass === 2 ? [set[t % set.length][0]] : plan[(sec + t) % plan.length].slice(0, pass ? 1 : 9); const at0 = tpl.map((kind, i) => [kind, cx + 2 * i, cy]);
+          if (!at0.every(([kind, mx, my]) => spotAt.has(mx + ',' + my) && fits(kind, mx, my, spotAt.get(mx + ',' + my)) && !(held && held.has(mx + ',' + my)) && !taken.some(([tx, ty]) => Math.abs(tx - mx) < 2 && Math.abs(ty - my) < 2))) continue;
+          for (const [kind, mx, my] of at0) { taken.push([mx, my]); L.ents.push({ t: kind, x: mx, y: my, face: -1, squad: id + '-' + (sec + 1) }); }
+          placed.push([cx, cy]); done = true; L.squadBands[L.squadBands.length - 1].designed = true;
+        }
+        if (done) break;
+      }
+    }
+  }
   const squads = set.some(([k]) => k === 'shield' || k === 'soldier'); let squadN = 0;
   const rnd = mulberryL(id.length * 613 + id.charCodeAt(1) * 7 + 11);
   const want = set.reduce((s, [, n]) => s + n, 0);
@@ -7911,20 +7942,25 @@ function garrison(L, id) {
   const list = [];
   for (const [kind, n] of set) for (let i = 0; i < n; i++) list.push(kind);
   for (let i = list.length - 1; i > 0; i--) { const j = (rnd() * (i + 1)) | 0; const t = list[i]; list[i] = list[j]; list[j] = t; }
+  /* THE BUDGET AND THE SCREEN CAP (sprinkle cut): no more sprinkled foes than SPRINKLE.avgCap a screen over the whole level, and never more than
+     SPRINKLE.screenCap in any one screen (tools/sprinkle-cap.mjs measures both: a screen is screenW columns, and screenH rows on a tall level) */
+  list.length = Math.min(list.length, Math.floor(SPRINKLE.avgCap * (tall ? H / SPRINKLE.screenH : W / SPRINKLE.screenW)));
+  const sprinkled = [];
+  const crowdOK = (x, y) => { const pts = sprinkled.concat([[x, y]]); return !pts.some(([ax]) => pts.some(([, by]) => pts.filter(([px, py]) => px >= ax && px < ax + SPRINKLE.screenW && (!tall || (py >= by && py < by + SPRINKLE.screenH))).length > SPRINKLE.screenCap)); };
   for (let b = 0; b < list.length; b++) {
     const lo = Math.floor(spots.length * b / list.length), hi = Math.floor(spots.length * (b + 1) / list.length);
     let put = null;
     for (let k = lo; k < hi; k++) { const [x, y, isWet] = spots[(k + ((rnd() * (hi - lo)) | 0)) % Math.max(1, hi - lo) + lo] || spots[k];
       if (held && held.has(x + ',' + y)) continue;
       if (!fits(list[b], x, y, isWet)) continue;
-      if (taken.some(([tx, ty]) => Math.abs(tx - x) < minDX && Math.abs(ty - y) < minDY)) continue; put = [x, y]; break; }
+      if (taken.some(([tx, ty]) => Math.abs(tx - x) < minDX && Math.abs(ty - y) < minDY) || !crowdOK(x, y)) continue; put = [x, y]; break; }
     if (!put) { left.push(list[b]); continue; }
-    taken.push(put);
+    taken.push(put); sprinkled.push(put);
     L.ents.push({ t: list[b], x: put[0], y: put[1], face: rnd() < 0.5 ? -1 : 1, garrison: true });
     /* A SQUAD, NOT A SPRINKLE: in a goblin wood every other bow or spitter gets a shield in front of it, on its own ground */
     if (squads && ['archer', 'javelin', 'spit', 'scout', 'sapper'].includes(list[b]) && (squadN++ % 2 === 0)) {
       const sx = put[0] - 2, sy = put[1];
-      if (spots.some(([x2, y2]) => x2 === sx && y2 === sy) && !taken.some(([tx, ty]) => Math.abs(tx - sx) < 2 && Math.abs(ty - sy) < 2)) { taken.push([sx, sy]); L.ents.push({ t: 'shield', x: sx, y: sy, face: 1, garrison: true }); } }
+      if (spots.some(([x2, y2]) => x2 === sx && y2 === sy) && !taken.some(([tx, ty]) => Math.abs(tx - sx) < 2 && Math.abs(ty - sy) < 2) && crowdOK(sx, sy)) { taken.push([sx, sy]); sprinkled.push([sx, sy]); L.ents.push({ t: 'shield', x: sx, y: sy, face: 1, garrison: true }); } }
   }
   // whatever the bands could not fit goes anywhere still free: a band with no room used to simply lose its
   // creature, which is how the Sunspire asked for thirty-one and got thirteen
@@ -7933,9 +7969,9 @@ function garrison(L, id) {
     for (let k = 0; k < spots.length; k++) { const [x, y, isWet] = spots[((k * 7 + ((rnd() * spots.length) | 0)) % spots.length)];
       if (held && held.has(x + ',' + y)) continue;
       if (!fits(kind, x, y, isWet)) continue;
-      if (taken.some(([tx, ty]) => Math.abs(tx - x) < minDX && Math.abs(ty - y) < minDY)) continue; put = [x, y]; break; }
+      if (taken.some(([tx, ty]) => Math.abs(tx - x) < minDX && Math.abs(ty - y) < minDY) || !crowdOK(x, y)) continue; put = [x, y]; break; }
     if (!put) continue;   /* one kind with no water to go in is not a reason to drop every kind after it */
-    taken.push(put);
+    taken.push(put); sprinkled.push(put);
     L.ents.push({ t: kind, x: put[0], y: put[1], face: rnd() < 0.5 ? -1 : 1, garrison: true });
   }
   return L;
