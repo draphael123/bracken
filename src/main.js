@@ -2190,7 +2190,7 @@ function spawnEnt(e) {
       case 'gobmage': enemies.push({ ...base, t: 'gobmage', w: 10, h: 16, hp: EHP.gobmage, speed: MAGE.speed, mode: 'keep', modeT: 0, cd: 0.8 + Math.random(), boltCd: 0, runeCd: 2 + Math.random() }); break;   /* the goblin with the book: see updateGobMage */
       case 'pwheel': props.push({ t: 'pwheel', x: px, y: py, a: e.a, b: e.b, st: e.st || 0, from: e.st || 0, turnT: 0, cool: 0, spin: 0, pivot: e.pivot }); break;   /* THE MONASTERY: a prayer wheel and its stair */
       case 'tbell': props.push({ t: 'tbell', x: px, y: e.hang ? e.y * TS + 20 : py, top: e.y * TS, span: e.span || null, roc: !!e.roc, abbot: !!e.abbot, guard: !!e.guard, hang: !!e.hang, cool: 0, ring: 0, swing: 0, lowerT: 0, key: 'tbell:' + e.x + ',' + e.y, down: !!(e.span && marks.has('tbell:' + e.x + ',' + e.y)) }); break;   /* and a bell: a bridge, the guardian's crack, or the Roc's fall */
-      case 'gqueen': boss = { ...base, t: 'gqueen', w: 52, h: 52, /* FAT, NOT TALL: the body is half as wide again, so is the box */ hp: EHP.gqueen, maxHp: EHP.gqueen, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, pointT: 2.2, bombT: 4, guardT: 1, slamT: 2.5, sweepT: 1.5, chargeT: 5, gustT: 4, slateT: 2, leapT: 1.4, boltT: 3, throneX: px, throneY: py }; enemies.push(boss); break;
+      case 'gqueen': boss = { ...base, t: 'gqueen', w: 68, h: 52, /* FAT, NOT TALL: (2026-09-29) twice the belly she had - the sprite is 102 wide now, so the box is 68 (was 52) */ hp: EHP.gqueen, maxHp: EHP.gqueen, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, pointT: 2.2, bombT: 4, guardT: 1, slamT: 2.5, sweepT: 1.5, chargeT: 5, gustT: 4, slateT: 2, leapT: 1.4, boltT: 3, throneX: px, throneY: py }; enemies.push(boss); break;
       case 'sentry': enemies.push({ ...base, t: 'sentry', w: 8, h: 11, hp: EHP.sentry, speed: 26, section: e.section, range: (e.range || 4) * TS, ringer: true, mode: 'patrol', modeT: 2, hx: px }); break;
       case 'cargo': case 'loosegun': case 'cargowall': case 'davit': props.push(seaProp(e, px, py)); break;   /* the Hurricane's loose things: see HER SEA STATE */
       case 'keg': props.push({ t: 'keg', x: px, y: py, fuse: 0, gone: false }); break;
@@ -2288,7 +2288,7 @@ function spawnEnt(e) {
       case 'torchbracket': props.push({ t: 'torchbracket', x: px, y: py, taken: false, respawnT: 0 }); lights.push({ x: px, y: py - 14, r: 40, glow: true, warm: true, bracket: props[props.length - 1] }); break;
       case 'firevent': props.push({ t: 'firevent', x: px, y: py, every: e.every || 2.8, timer: 1 + Math.random() * 2, tell: 0, on: 0 }); break;
       case 'master': { const hm = { ...base, t: 'master', w: 30, h: 34, hp: EHP.master, maxHp: EHP.master, mounted: true, mode: 'sleep', modeT: 0, face: -1, phase: 1, open: 0, hitT: 0, speed: 130 }; if (L.arena && L.arena.boss === 'master') boss = hm; enemies.push(hm); } break;   /* THE HUNT's boss: off the bench, on the Great Hound's own body */
-      case 'king': boss = { ...base, t: 'king', w: 54, h: 45, hp: EHP.king, maxHp: EHP.king, mode: 'sleep', modeT: 0, phase: 1, dir: -1, gobletT: 3, summonT: 8, sweepT: 4, shoutT: 7, grabT: 5, cageT: 7, stepT: 0, throneT: 0, last: '' }; enemies.push(boss); break;
+      case 'king': boss = { ...base, t: 'king', w: 68, h: 45, /* (2026-09-29) FAT: robe and belly half as wide again as the 54 the box was */ hp: EHP.king, maxHp: EHP.king, mode: 'sleep', modeT: 0, phase: 1, dir: -1, gobletT: 3, summonT: 8, sweepT: 4, shoutT: 7, grabT: 5, cageT: 7, stepT: 0, throneT: 0, last: '' }; enemies.push(boss); break;
       /* THREE KINDS THAT DREW NOTHING AT ALL. `pot`, `punt` and `coffer` were placed in the Underleaf and
          the Undercrown and had no row here, so the map lookup came back undefined and the whole case broke
          out - a prop in the level list, a prop in the entity count, and nothing on the screen. (The coffer
@@ -16729,7 +16729,7 @@ function updateGQueen(e, dt) {
       if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 2.6; e.vx = e.face * 240; e.chargeX0 = e.x; SFX.charge(); } } break;
     case 'charge': { want = e.face * 240; if (Math.random() < dt * 20) dust(e.x - e.face * 12, e.y, 2);
       { const pl = gqPillars().find(p => !p.broken && Math.abs(p.x - e.x) < e.w / 2 && (p.x - (e.chargeX0 ?? e.x)) * e.face > 8); if (pl) { e.vx = 0; gqPillarBreak(pl, e); break; } }   /* INTO A PILLAR: it comes down on her */
-      if (!P.dead && e.hitT <= 0 && ad < 34 && Math.abs(P.y - e.y) < 34) { e.hitT = 0.8; const res = damagePlayer(e.x, DMG.gqCharge, { unblockable: true, up: true }); if (res === 'hit') { P.vx = e.face * 320; P.vy = -170; } }
+      if (!P.dead && e.hitT <= 0 && ad < e.w / 2 + 8 && Math.abs(P.y - e.y) < 34) { e.hitT = 0.8; const res = damagePlayer(e.x, DMG.gqCharge, { unblockable: true, up: true }); if (res === 'hit') { P.vx = e.face * 320; P.vy = -170; } }
       const edge = e.face > 0 ? e.x > A.x1 - 40 : e.x < A.x0 + 40;
       if (edge || e.modeT <= 0) { e.mode = 'dazed'; e.modeT = 2.2; e.vx = 0; SFX.heavy(); SFX.stone(); shakeCam(8); zoomKick(1.1, 0.3); dust(e.x + e.face * 16, e.y, 12); } break; }
     case 'slamRec': case 'rec': case 'dazed': want = 0; if (e.mode === 'dazed' && Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 24, y: e.y - 60, vx: 0, vy: -20, life: 0.5, max: 0.5, col: '#ffd36b', size: 2, grav: 0 });
