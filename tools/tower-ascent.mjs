@@ -33,8 +33,14 @@ assert.equal(L.H, 306, 'and 306 rows (it was 240)');
 const kinds = new Set(L.interiors.map(i => i[4])); assert.equal(kinds.size, 8, 'seven floors, seven rooms, and the spiral stair: ' + [...kinds]); assert.ok(kinds.has('spiral'));
 for (const f of L.towerFloors.slice(0, 6)) { const [x, y0, y1] = f.hole; for (let y = y0; y <= y1; y++) assert.equal(at(x, y), T.NET, f.name + ': the rope goes through its divider'); }
 assert.ok(!L.calm || L.calm.every(([x0, , , y1]) => y1 < TOWER.SKY - 4 || x0 > TOWER.X1), 'no blanket calm in the tower (the one over the spiral stair, east of its wall, is kept for his chase) (the rule the Codex levels broke; round 3 calms only the desert, over the sky rows)');
-const garrison = L.ents.filter(e => e.garrison); assert.ok(garrison.length >= 8, 'the GARRISON row places: ' + garrison.length);
-const gRows = new Set(garrison.map(e => L.towerFloors.findIndex(f => e.y >= f.top && e.y < f.bot))); assert.ok(gRows.size >= 3, 'and on more than the top floor (stackedFloors): ' + [...gRows]);
+/* THE SPRINKLE CUT (Daniel, 2026-09-29, "FEWER, BETTER FOES"; src/foe-tactics.js SPRINKLE/PLAN): the sprinkled row was halved and capped (8 -> 2 here),
+   and the tower's foes are now DESIGNED squads (armour covering an apprentice), one in every 60-row section that has ground. So: the row still places, under
+   the cap; every section with ground holds a squad; and the tower's foes (squads and sprinkle) still stand on most of its floors, not only the top one. */
+const garrison = L.ents.filter(e => e.garrison), squads = L.ents.filter(e => e.squad);
+assert.ok(garrison.length >= 1 && garrison.length <= Math.floor(L.H / 22), 'the GARRISON row places, under the sprinkle cap: ' + garrison.length);
+for (const b of L.squadBands || []) assert.ok(!b.spots || b.designed, 'a designed squad in every tower section with ground: rows ' + b.lo + '-' + b.hi);
+assert.ok(new Set(squads.map(e => e.squad)).size >= 4 && squads.some(e => e.t === 'armour') && squads.some(e => e.t === 'apprentice'), 'the tower is held by designed squads (armour covering an apprentice): ' + squads.map(e => e.t + '@' + e.squad));
+const gRows = new Set(garrison.concat(squads).map(e => L.towerFloors.findIndex(f => e.y >= f.top && e.y < f.bot))); assert.ok(gRows.size >= 4, 'and on more than the top floor (stackedFloors): ' + [...gRows]);
 const elites = L.ents.filter(e => e.elite); assert.equal(elites.length, 1, 'one elite, the cistern husk: the orrery armour captains the ambush and the loft warden is THE SEXTON since the rework (2026-09-25)');
 for (const e of elites) { assert.ok(e.x > TOWER.X0 && e.x < TOWER.X1 && e.y > TOWER.SKY && e.y < L.H, 'elite inside the tower: ' + JSON.stringify(e)); assert.notEqual(at(e.x, e.y + 1), T.AIR, 'elite stands on something'); }
 assert.equal(L.ents.filter(e => e.t === 'silver').length, 3);
