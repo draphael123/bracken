@@ -7,7 +7,7 @@
 //               is reached by the reach fill from the shrine. A dropped bundle that would land in a hazard goes to the footing, then the shrine.
 //   BOSS        a boss (or anything in a boss fight) never carries one: it lies at his arena door, and EVERY level's door is standing room the
 //               reach fill reaches (static, over every arena and mini in the game).
-//   SECOND      die again before recovering and the first bundle is gone; only one ever exists.
+//   SECOND      die again and DROP something new before recovering and the first bundle is gone; die carrying nothing and it stays. Only one ever exists.
 //   BANK        touching a shrine banks everything carried: a death right after drops nothing.
 //   CO-OP       each hero has his own bundle; one cannot pick up the other's.
 //   SAVE        the carried/banked split and a live bundle go through the save and back (nothing live - no creature - is ever written), a bundle
@@ -123,6 +123,10 @@ fresh('wood');{const o0=stand(0);for(let i=0;i<3;i++)coin();hit(null);BK.sim(1);
  if(!first||!second)fails.push('D: no bundles');else{if(second.coins!==2)fails.push('D: the second bundle is not just the second carry: '+second.coins);
   if(BKT.PROG.deathCost.bundle!==second)fails.push('D: two bundles exist');
   respawn();BK.P.x=first.x;BK.P.y=first.y;BK.sim(2);const c=dc.carry(0);if(c.coins||B()!==second)fails.push('D: the FIRST bundle could still be picked up after a second death: '+JSON.stringify([c,B()]));}}
+/* D2. DIE AGAIN CARRYING NOTHING: the first bundle stays where it lies and can still be picked up */
+fresh('wood');{const o0=stand(0);for(let i=0;i<3;i++)coin();hit(null);BK.sim(1);const first=B();respawn();stand(1,[o0.tx]);hit(null);BK.sim(1);
+ if(!first)fails.push('D2: no first bundle');else{if(B()!==first)fails.push('D2: a death with nothing carried replaced the bundle: '+JSON.stringify(B()));
+  respawn();BK.P.x=first.x;BK.P.y=first.y;BK.sim(2);if(B()||dc.carry(0).coins<1)fails.push('D2: the surviving bundle could not be picked up');}}
 /* E. A SHRINE BANKS IT: touch one, die, nothing is dropped */
 fresh('wood');{const sh=BK.shrines()[0];const o=open(Math.floor(sh.x/16)+2);goto(o);for(let i=0;i<4;i++)coin();BK.gainXp(25);if(!dc.carry(0).coins)fails.push('E: nothing carried before the shrine');
  BK.P.x=sh.x;BK.P.y=sh.y;BK.P.vx=0;BK.sim(2);const c=dc.carry(0);if(c.coins||c.xp||c.purse)fails.push('E: the shrine did not bank the carry: '+JSON.stringify(c));

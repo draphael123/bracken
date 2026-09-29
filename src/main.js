@@ -5174,7 +5174,7 @@ function killerLine(k) { const mark = !k.rule ? '' : '   ' + (k.red ? (SET.color
 /* ==== THE DEATH COST (Daniel, 2026-09-28; the rules are src/death-cost.js, the check is tools/death-cost.mjs) ====
    What you pick up between two shrines is UNBANKED. A death drops it: if a FOE killed you it carries the bundle (glowing, a bag over
    its head) and drops it when it falls; with no foe (a pit, spikes, water) it lies where you last stood safely; a boss never carries one,
-   it lies at his arena door. Die again before you get it and it is gone. A shrine banks everything you carry. Each hero has his own. */
+   it lies at his arena door. Die again with something new to drop before you get it and it is gone (die carrying nothing and it stays). A shrine banks everything you carry. Each hero has his own. */
 let dcSess = 0;   /* which start of a wood this is: coins dropped in this start go back into this start's count, older ones into the purse */
 const dcHid = b => { if (b && !Object.getOwnPropertyDescriptor(b, 'carrier')) Object.defineProperties(b, { carrier: { value: null, writable: true, enumerable: false }, sess: { value: -1, writable: true, enumerable: false }, name: { value: '', writable: true, enumerable: false }, where: { value: 'spot', writable: true, enumerable: false }, vy: { value: 0, writable: true, enumerable: false }, falling: { value: false, writable: true, enumerable: false }, chk: { value: 0, writable: true, enumerable: false } }); return b; };   /* (not enumerable: a bundle is SAVED, and a saved bundle must never hold the creature that carries it) */
 const carryOf = p => p.dcCarry || (p.dcCarry = emptyCarry());
@@ -5211,9 +5211,9 @@ function dcBankAll() { for (const q of players) q.dcCarry = emptyCarry(); dcMirr
 function deathCost(p, killer) {
   if (!dcOn() || p.dcDone) return; p.dcDone = true; p.dcLost = false;
   const c = carryOf(p), lone = p === players[0], h = hero(), old = bundleOf(p);
-  if (old) { dcSet(p, null); p.dcLost = true; }   /* ONLY ONE BUNDLE EVER EXISTS: dying again before you got it back is the end of it */
   const t = dcDrop(c, { got, purse: PROG.coins || 0, xp: heroXp(h) });
   p.dcCarry = emptyCarry();
+  if (old && (t.coins || t.purse || t.xp)) { dcSet(p, null); p.dcLost = true; }   /* ONLY ONE BUNDLE EVER EXISTS: dying AGAIN and dropping something new before you got it back is the end of the old one. Dying with nothing carried leaves it where it lies (Daniel, 2026-09-29) */
   if (t.coins || t.purse || t.xp) {
     got = t.got; PROG.coins = t.purseLeft; if (t.xp) { PROG.xp[h] = t.xpLeft; }
     const e = killer && killer.foe, bossy = !!e && (e === boss || !!e.mini || !!e.xpRole), fight = bossActive || miniActive, safe = dcSpot(p);
