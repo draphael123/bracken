@@ -1,0 +1,17 @@
+yard            spread 35.4  chroma 14.6  sep 12.6  warm 0.39  lit 0.008
+crusher         spread 32.6  chroma 15.5  sep 5.7  warm 0.40  lit 0.013
+loading-house   spread 35.1  chroma 14.2  sep 3.3  warm 0.36  lit 0.012
+first-span      spread 27.8  chroma 8.2  sep 14.5  warm 0.14  lit 0.003
+sorting-yard    spread 25.7  chroma 9.5  sep 4.5  warm 0.28  lit 0.004
+sorting-floor   spread 22.8  chroma 8.3  sep 2.0  warm 0.14  lit 0.011
+tower-top       spread 37.3  chroma 7.5  sep 9.5  warm 0.14  lit 0.016
+tipple-house    spread 44.0  chroma 7.2  sep 0.7  warm 0.14  lit 0.017
+collapsed-span  spread 37.4  chroma 6.7  sep 5.5  warm 0.12  lit 0.019
+wreck-head      spread 29.6  chroma 14.6  sep 2.0  warm 0.23  lit 0.003
+brakemans-hut   spread 12.6  chroma 11.9  sep 2.3  warm 0.11  lit 0.002
+winch-house     spread 32.9  chroma 13.0  sep 1.1  warm 0.10  lit 0.010
+drum-yard       spread 32.3  chroma 12.8  sep 1.7  warm 0.37  lit 0.013
+drum-house      spread 37.8  chroma 14.4  sep 6.1  warm 0.39  lit 0.016
+boss-shaft      spread 21.6  chroma 11.7  sep 0.0  warm 0.28  lit 0.006
+MEAN            spread 31.0  chroma 11.3  sep 4.8  warm 0.24  lit 0.010
+errors []

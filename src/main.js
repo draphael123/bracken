@@ -23663,12 +23663,27 @@ function drawSwimmers() {
    back - the eye adapting to the thing that moves, not a lamp hung on it - scaled by how dark it is here, so a lit room adds
    nothing and a lamp you carry into the black still makes the difference it made. */
 function drawDarkRims() {
-  const k = Math.min(1, Math.max(0, (darkNow - 0.1) / 0.4));
+  const k = Math.min(1, Math.max(0, (darkNow - 0.1) / 0.4)), rm = (L.palette && L.palette.darkRim) || ['#b8c8d8', 0.34, 0.3];   /* palette.darkRim: [rim colour, rim alpha, the body's breath back] - a warm level's creatures are not lit cold-white */
   if (k > 0.02) for (const q of darkQ) {
-    for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawTinted(q.set, q.key || null, q.frame, q.x + ox, q.y + oy, q.face, q.sx, q.sy, q.rot, '#b8c8d8', 0.34 * k * q.a);
-    drawSet(q.set, q.key || null, q.frame, q.x, q.y, q.face, q.white, q.sx, q.sy, 0.3 * k * q.a, q.rot);
+    for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawTinted(q.set, q.key || null, q.frame, q.x + ox, q.y + oy, q.face, q.sx, q.sy, q.rot, rm[0], rm[1] * k * q.a);
+    drawSet(q.set, q.key || null, q.frame, q.x, q.y, q.face, q.white, q.sx, q.sy, rm[2] * k * q.a, q.rot);
   }
   darkQ.length = 0;
+}
+/* THE LAMPS' OWN COLOUR in a dark level (palette.lampGlow = [r,g,b, alpha]): the dark's holes only take the black away, so a lamp's pool
+   was the level's own grey rock a little brighter. This lays warm light INTO the pool - a wide soft-light wash and a small additive core - for every
+   lit lamp, torch and forge on screen. Opt-in: no other level's look moves. */
+function drawLampGlow(cx, cy) {
+  if (SET.parts === 'low') return;
+  const [r, gg, b, a0] = L.palette.lampGlow, col = (al) => 'rgba(' + r + ',' + gg + ',' + b + ',' + al + ')';
+  for (const pass of ['soft-light', 'lighter']) { g.globalCompositeOperation = pass;
+    for (const lt of lights) { if (!(lt.warm || lt.torch || lt.forge || lt.lantern)) continue;
+      if (lt.x < cx - 140 || lt.x > cx + VW + 140 || lt.y < cy - 140 || lt.y > cy + VH + 140) continue;
+      if ((lt.ref && lt.ref.dark > 0) || (lt.lantern && !lt.lantern.lit) || (lt.bracket && lt.bracket.taken) || (lt.plate && !(lt.plate.hot > 0 || lt.plate.glow > 0))) continue;
+      const x = lt.x - cx, y = lt.y - cy, fl = 0.92 + 0.08 * Math.sin(time * 7 + lt.x), rad = (pass === 'lighter' ? lt.r * 0.55 : lt.r * 1.25) * fl;
+      const gr = g.createRadialGradient(x, y, 1, x, y, rad); gr.addColorStop(0, col(pass === 'lighter' ? a0 * 0.55 : Math.min(1, a0 * 2.6))); gr.addColorStop(1, col(0));
+      g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2); } }
+  g.globalCompositeOperation = 'source-over';
 }
 function drawWater(cx, cy, surfaceOnly = false) {
   for (const p of (L.pools || [])) {
@@ -25242,7 +25257,7 @@ function drawWorld(cx, cy, showPlayer) {
     { let dk = L.dark; for (const z of (L.darkZones || [])) if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y < z.y1) dk = z.dark;
       const jump = Math.abs(cx - DARK_A.cx) > VW / 2 || Math.abs(cy - DARK_A.cy) > VH / 2 || DARK_A.id !== curId(); DARK_A.cx = cx; DARK_A.cy = cy; DARK_A.id = curId();
       darkNow += (dk - darkNow) * (jump ? 1 : 0.08); }
-    dg.fillStyle = 'rgba(4,4,10,' + darkNow.toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH); dg.globalCompositeOperation = 'destination-out';
+    dg.fillStyle = 'rgba(' + ((L.palette && L.palette.darkCol) || '4,4,10') + ',' + darkNow.toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH);   /* palette.darkCol: a level's own dark (THE ORE ROAD's is a warm brown-black, not a cold one) */ dg.globalCompositeOperation = 'destination-out';
     const hole = (x, y, r, a = 1) => { const gr = dg.createRadialGradient(x, y, r * 0.15, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,' + a + ')'); gr.addColorStop(1, 'rgba(0,0,0,0)'); dg.fillStyle = gr; dg.fillRect(x - r, y - r, r * 2, r * 2); };
     for (const lt of lights) { if (lt.ref && lt.ref.t === 'grub') { if (!lt.ref.alive) continue; lt.x = lt.ref.x; lt.y = lt.ref.y - 4; } if (lt.plate && !(lt.plate.hot > 0 || lt.plate.glow > 0)) continue; if (lt.r > 0 && lt.x > cx - 120 && lt.x < cx + VW + 120 && !(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit) && !(lt.bracket && lt.bracket.taken)) hole(lt.x - cx, lt.y - cy, lt.r * 1.3); }
     for (const m of movers) if (m.kind === 'cart' && !m.gone && (m.ridden || Math.abs(m.vx) > 30)) hole(m.x + m.w / 2 - cx, m.y - cy, 66); // a cart on the move carries its own lamp
@@ -25258,7 +25273,7 @@ function drawWorld(cx, cy, showPlayer) {
     SEA.seaHoles(hole);   /* and a sea level's own lights, where its far water drew them this frame */
     for (const e of enemies) if (e.t === 'angler' && e.alive) hole(e.x - cx, e.y - 10 - cy, e.mode === 'biteTell' ? 44 : 26); // and an angler carries its own
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));
-    g.drawImage(DARKC, 0, 0); drawDarkRims();
+    g.drawImage(DARKC, 0, 0); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy);
     { const gx0 = Math.floor(cx / TS), gy0 = Math.floor(cy / TS); const ORE = ['#ffd36b', '#e07a4a', '#dfe8f0', '#ffd36b']; // veins of ore glint in the rock
       for (let ty = gy0; ty <= gy0 + Math.ceil(VH / TS); ty++) for (let tx = gx0; tx <= gx0 + Math.ceil(VW / TS); tx++) { if (tx < 1 || ty < 1 || tx >= LW - 1 || ty >= LH - 1 || L.grid[ty * LW + tx] !== T.SOLID) continue; const hsh = ((tx * 73856093) ^ (ty * 19349663)) >>> 0; if ((hsh % 100) >= 7) continue; if (tileAt(tx - 1, ty) !== T.AIR && tileAt(tx + 1, ty) !== T.AIR && tileAt(tx, ty - 1) !== T.AIR && tileAt(tx, ty + 1) !== T.AIR) continue;
         const tw = 0.5 + 0.5 * Math.sin(time * (2 + (hsh % 5) * 0.4) + hsh % 17); g.globalAlpha = 0.25 + 0.6 * tw; g.fillStyle = ORE[hsh % 4]; const ox = tx * TS + 3 + (hsh >> 3) % 10, oy = ty * TS + 3 + (hsh >> 7) % 10; g.fillRect(ox - cx, oy - cy, 2, 1); g.fillRect(ox - cx, oy - cy - 1, 1, 3); }

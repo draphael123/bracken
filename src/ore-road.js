@@ -137,7 +137,7 @@ export const OR = {
     /* ROUND FOUR (Daniel, 2026-09-28, from the look-and-feel review: "his shaft is dark"): HIS ROOM IS LIT, and only his room. The
        engine's dark eases to `dark` while you are inside the arena's columns (a dark zone: L.darkZones), and each housing has a
        lamp on its top at `lamps` [x, row] - so the drum houses, the lines and the skips on them read from anywhere in the room */
-    dark: 0.18, lamps: [[522, 13], [477, 8], [511, 8]] },
+    dark: 0.12, lamps: [[522, 13], [477, 8], [511, 8]] },
   PLACES: { yard: [0, 67], span1: [68, 135], tower: [136, 203], chute: [204, 271], collapse: [272, 339], steep: [340, 407], winch: [408, 475], drum: [476, 528] },
   /* THE BUCKET IS 46 PX WIDE, NOT 24. Daniel found this himself and it is the change everything else stands on: the
      knight's box is 10-14 px, so a 24 px skip had no room to swing or to dodge on and NO FIGHT COULD HAPPEN ON ONE.
@@ -530,8 +530,11 @@ export function buildOreRoad({ painter, T }) {
     /* THE REACH MODEL's footing for a ride (reachcore.js): each line is a band you can board anywhere along and leave anywhere along,
        the way a lift is. It is generous on a sloped line - the tools call this level ASSISTED, and that is the truth */
     cableBridges: cable.map(l => { const xs = l.pts.map(p => p[0]), ys = l.pts.map(p => p[1]); return [Math.floor(Math.min(...xs) / TS), Math.floor((Math.max(...xs) - 1) / TS), Math.floor(Math.min(...ys) / TS), Math.floor(Math.max(...ys) / TS)]; }),
-    palette: { sky: [[14, 12, 18], [34, 28, 30]], far: 'crag', mid: 'crag', near: 'none', dress: 'none', ledges: 'staging', haze: 'rgba(40,32,30,0.18)', murkCol: '#221e24', murkLit: '#6a4a2a',
-      grass: '#5a4a3a', grassL: '#7a6448', grassD: '#3a2e22', dirt: '#3e342c', dirtL: '#54483a', dirtD: '#241d18', canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
+    palette: { sky: [[14, 12, 18], [34, 28, 30]], far: 'crag', mid: 'crag', near: 'none', dress: 'none', ledges: 'staging', haze: 'rgba(40,32,30,0.18)', murkCol: '#34211c', murkLit: '#94572a',
+      /* THE COLOUR PASS (lane claude/orecolour): a WARM dark (darkCol), the lamps' own amber laid into their pools (lampGlow), warm-lit creatures
+         instead of cold-white ones (darkRim), and a copper grade over it all - the audit measured this level at chroma 4.9, the most washed-out */
+      darkCol: '18,9,5', lampGlow: [255, 150, 60, 0.24], darkRim: ['#c8843c', 0.26, 0.12], grade: ['#ff8a3c', 0.12],
+      grass: '#6a4a30', grassL: '#8a6440', grassD: '#42281a', dirt: '#4c3122', dirtL: '#6c4630', dirtD: '#2a170f', canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [{ x0: 0, x1: 99999, kind: 'dust' }], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: surf(A.deck), y0: 0, trigger: (A.x0 + 3) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'winchmaster', music: 'boss3', tint: '#5a4a3a', tintA: 0.06, fx: 'dust' },
     noCoin: [[68, 135, 0, H - 1], [204, 261, 0, H - 1], [353, 375, 0, H - 1], [385, 407, 0, H - 1], [421, 450, 0, H - 1], [476, 523, 0, H - 1]],   /* over the drop: the sprinkler must not put coins where only a bucket goes */
@@ -885,9 +888,9 @@ export function drawOreStructures(g, L, cx, cy, time, VW, VH, drumAng) {
    The far wall's own rock takes a tint from whichever place the camera is over - not the route itself (untouched),
    just the colour behind it: copper-warm through the working yard and the span, cool silver through the tower and
    the chute, the gem's violet through the collapse and the steep line, gold toward the winch house and the drum. */
-const SECTION_TINT = { yard: ['#241f1a', '#332720'], span1: ['#1e2018', '#2c2c22'], tower: ['#181e24', '#222a34'],
-  chute: ['#1a1f28', '#24293a'], collapse: ['#221a28', '#332038'], steep: ['#1e1826', '#2c2036'],
-  winch: ['#241e16', '#362c1c'], drum: ['#221a12', '#332818'] };
+const SECTION_TINT = { yard: ['#3a2418', '#5c3820'], span1: ['#26301c', '#404c26'], tower: ['#1a2c44', '#2e4c74'],
+  chute: ['#163640', '#255c66'], collapse: ['#3a2044', '#603468'], steep: ['#2a1c4e', '#443480'],
+  winch: ['#3c2a10', '#5e4420'], drum: ['#40200f', '#683218'] };   /* copper, verdigris, steel, teal, plum, indigo, amber, ember: the far wall, section by section */
 function sectionTint(cx) { const col = Math.floor(cx / TS);
   let name = 'drum'; for (const [n, [x0, x1]] of Object.entries(OR.PLACES)) if (col >= x0 - 20 && col <= x1 + 20) { name = n; break; }
   return SECTION_TINT[name] || SECTION_TINT.yard; }
