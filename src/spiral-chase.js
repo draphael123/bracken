@@ -56,7 +56,7 @@ export const CHASE = {
   settle: 0.5,
   flinch: 1.2,    /* s he hangs open when his mark finds no one: the fight's opening, shown */
   range: 330,     /* px: he casts at you from no further */
-  markR: MAGE.markR, markFuse: MAGE.markFuse,
+  get markR() { return MAGE.markR; }, get markFuse() { return MAGE.markFuse; },   /* (read late: undead-mage.js and this file can load in either order) */
 };
 const TELL = { fire: 'fireTell', ice: 'iceTell', mark: 'markTell' };
 const SAY = { fireTell: 'FIRE: GUARD IT', iceTell: 'FROST: GUARD IT', markTell: 'THE DEATH MARK: STEP OUT OF THE RING' };

@@ -65,7 +65,8 @@ export function pacing(lv) {
   const gate = ents.find(e => e.t === 'gate'), A = L.arena;
   let s0 = settle(L.START.x, L.START.y);
   /* THE END IS THE FIGHT. Several levels stand their gate at the arena door, so a route to the gate stops short of the boss */
-  const goalXY = A ? [Math.round((A.x0 + A.x1) / 2 / TS), Math.round(A.floor / TS) - 1] : gate ? [gate.x, gate.y] : null;
+  const goalXY = A && A.carpet && L.carpetAt ? [Math.floor(L.carpetAt.x / TS), Math.round(L.carpetAt.y / TS)]   /* A CARPET FIGHT starts where you board the carpet: the Falling Tower's is at the top of its spiral stair (2026-09-29), and the sky over the parapet is not the way to it */
+    : A ? [Math.round((A.x0 + A.x1) / 2 / TS), Math.round(A.floor / TS) - 1] : gate ? [gate.x, gate.y] : null;
   const dist = new Float64Array(N).fill(Infinity), par = new Int32Array(N).fill(-1);
   const run = srcs => { const B = []; for (const s of srcs) (B[dist[s]] ||= []).push(s);
     for (let k = 0; k < B.length; k++) { const b = B[k]; if (!b) continue; B[k] = null;
