@@ -2,10 +2,9 @@
    The Mage's Folly's boss (id 'archmage'; tools/archmage-pilot.mjs and archmage-rings.mjs are the OTHER archmage, the Falling
    Tower's undead one). Four decisions, each proved in the page on a real fight, and every assertion SOFT and printed, so a run on
    the old code lists everything it does not do:
-     1. THE WARD FIGHTS BACK   his third rune sits on a stack of books that rises out of the floor at an end of the room: sealed in
-                               the books until the stack's own rune (at its foot) is struck and the stack slides down into the
-                               floor. From the first rune cut the rest have a few seconds, counted down; then every cut rune seals
-                               again and the stack rises again. Cut all three in time and he is open.
+     1. THE WARD FIGHTS BACK   three plain runes stand round the room where a sword reaches them (claude/archfix: the rune on a
+                               stack of books is gone). From the first rune cut the rest have a few seconds, counted down; then
+                               every cut rune seals again. Cut all three in time and he is open.
      2. THE ROOM ATTACKS       in each room he rewrites, told (a mark over him, a mark where it lands, an answer tag): THE FLOOD
                                brings a stack down on you (red, dodge - a shield does not help), THE ORRERY throws the flying books
                                (yellow, block - the shield turns them), TURNED OVER opens a glyph under you that takes you standing
@@ -19,6 +18,9 @@
                                is coloured, theirs grey and harmless - an image struck breaks and is back at his next ward; the
                                ward reseals in 4 s there (6 s in the duel still); one apprentice through a told portal each
                                ward, never a second while the first stands, with an apprentice's health; openings x3 again.
+   claude/archfix (Daniel played him, 2026-09-29):
+     6. HE BLINKS ROUND THE ROOM every ~5-6 s, told by a flash where he will stand, never onto you.
+     7. HE CASTS FASTER: the gaps between his casts are ARCH.pace (0.83) of what they were; no tell is shorter.
    node tools/archmage-folly.mjs          (PORT from tools/ports.mjs) */
 import { MARK, ANSWER } from '../src/marks.js';
 import { openPage } from './cdp.mjs';
@@ -51,34 +53,45 @@ try {
     const called = () => BK.enemies().filter(q => q.archCalled && q.alive); let calledMax = 0; const calledHps = []; out.calledHps = calledHps;
     const swingAt = (x, face) => { const p = BK.P; p.x = x; p.vx = 0; p.face = face; BK.press('atk'); step(1); };
 
-    /* ======== 1. THE WARD ======== */
+    /* ======== 1. THE WARD: three plain runes around the room (claude/archfix: the rune on the book stack is gone) ======== */
+    const footY = (x, y) => { for (let ty = Math.floor(y / TS); ty < BK.L.H; ty++) if (BK.L.grid[ty * BK.L.W + Math.floor(x / TS)] === T.SOLID) return ty * TS; return BK.L.arena.floor; };
     { const { A, e } = fresh(); out.hp = e.maxHp; const fl = A.floor;
-      BK.tp(622 + LIB, fl / TS - 1); e.x = (626 + LIB) * TS; e.stage = 1; e.T.ward = 0; for (let i = 0; i < 120 && e.mode !== 'ward'; i++) step(1);
-      const W = R(); out.wardMode = e.mode; out.runes = W.runes.length; out.portal1 = W.portal ? +(W.portal.dur || 0).toFixed(2) : 0; out.calledAtWard = called().length; const sr = W.runes.find(q => q.stack), S = W.stack;
-      out.stackRune = !!sr; out.stack = !!S;
-      if (S) { out.stackEnd = S.x0 === A.x0 / TS || S.x1 === A.x1 / TS - 1; let solid = 0; for (let y = S.top; y < S.top + S.h; y++) for (let x = S.x0; x <= S.x1; x++) if (BK.L.grid[y * BK.L.W + x] === T.SOLID) solid++; out.stackSolid = solid === S.h * 2;
-        step(40); out.runeHigh = fl - sr.y;
-        /* a swing at the sealed rune (put the hero up beside it: the test's hand, not a jump) is held by the books */
-        const p = BK.P; p.y = sr.y + 12; p.x = sr.x + S.face * 12; p.vy = 0; p.face = -S.face; BK.press('atk'); step(3); out.sealedHeld = sr.hp === 1; BK.tp(622 + LIB, fl / TS - 1); step(20);
-        /* the stack's own rune, at its foot: struck, the stack slides down into the floor */
-        BK.P.y = fl; for (let k = 0; k < 6 && S.state === 'up'; k++) { swingAt(S.fx + S.face * 12, -S.face); step(12); } out.sliding = S.state; step(60); out.slid = S.state;
-        let air = 0; for (let y = S.top; y < S.top + S.h; y++) for (let x = S.x0; x <= S.x1; x++) if (BK.L.grid[y * BK.L.W + x] === T.AIR) air++; out.stackGone = air === S.h * 2; out.runeLow = fl - sr.y;
-        /* cut the stack's rune: the count starts */
-        for (let i = 0; i < 12 && sr.hp > 0; i++) { swingAt(sr.x + S.face * 14, -S.face); step(18); } out.stackCut = sr.hp <= 0; out.reseal = +(W.reseal || 0).toFixed(2);
-        /* and leave the other two standing: the ward seals again, the stack back up with its rune on it */
-        BK.tp(622 + LIB, fl / TS - 1); step(Math.round((cfg ? cfg.reseal : 6) * 60) + 30);
-        out.resealed = W.runes.every(q => q.hp > 0); out.stackBack = !!W.stack && W.stack.state === 'up'; out.stillWard = e.mode === 'ward';
-        /* now cut all three in time: the stack first, then the two round him */
-        const S2 = W.stack; if (S2) { step(30); BK.P.y = fl; for (let k = 0; k < 6 && S2.state === 'up'; k++) { swingAt(S2.fx + S2.face * 12, -S2.face); step(12); } step(60); const r2 = W.runes.find(q => q.stack); for (let i = 0; i < 12 && r2.hp > 0; i++) { swingAt(r2.x + S2.face * 14, -S2.face); step(18); } }
-        const t0 = performance.now(); let frames = 0; e.x = (626 + LIB) * TS; e.vx = 0;
-        for (; frames < 600 && e.mode === 'ward'; frames++) { const up = W.runes.filter(q => q.hp > 0 && !q.stack); if (!up.length) { step(1); continue; } const q = up[0]; BK.P.x = q.x - 18 * (Math.sign(q.x - e.x) || 1); BK.P.y = fl; BK.P.face = Math.sign(q.x - BK.P.x) || 1; if (frames % 10 === 0) BK.press('atk'); step(1); }
-        out.opened = e.mode === 'open' && e.open > 0; out.openLen = +(e.open || 0).toFixed(2);
-        /* 4. THE OPENING: real swings, as fast as the sword goes, until he recovers */
-        const hp0 = e.hp; let landed = 0, last = e.hp, f2 = 0; const openT = e.open;
-        for (; f2 < 400 && e.open > 0; f2++) { BK.P.x = e.x - 14; BK.P.y = fl; BK.P.face = 1; if (f2 % 3 === 0) BK.press('atk'); step(1); if (e.hp < last) { landed++; last = e.hp; } }
-        out.landed = landed; out.openFrames = f2; out.openTook = hp0 - e.hp; out.openT = openT;
-      }
+      BK.tp(622 + LIB, fl / TS - 1); e.x = (626 + LIB) * TS; e.stage = 1; e.T.ward = 0; for (let i = 0; i < 120 && e.mode !== 'ward'; i++) { step(1); e.T.blink = 99; }
+      const W = R(); out.wardMode = e.mode; out.runes = W.runes.length; out.portal1 = W.portal ? +(W.portal.dur || 0).toFixed(2) : 0; out.calledAtWard = called().length;
+      out.stackRune = W.runes.some(q => q.stack); out.stack = !!W.stack;
+      const at0 = W.runes.map(q => Math.round(q.x)); step(40); e.T.blink = 99;
+      out.runeAt = W.runes.map(q => ({ x: Math.round(q.x), up: Math.round(footY(q.x, q.y) - q.y), inWall: BK.L.grid[Math.floor(q.y / TS) * BK.L.W + Math.floor(q.x / TS)] === T.SOLID }));
+      out.runesStay = W.runes.every((q, i) => Math.abs(q.x - at0[i]) <= 3);   /* they stand where they were placed, around the room */
+      /* cut one: the count starts */
+      const q0 = W.runes[0]; for (let i = 0; i < 12 && q0.hp > 0; i++) { BK.P.y = footY(q0.x, q0.y); swingAt(q0.x - 14, 1); step(18); e.T.blink = 99; } out.firstCut = q0.hp <= 0; out.reseal = +(W.reseal || 0).toFixed(2);
+      /* and leave the other two standing: the ward seals again */
+      BK.tp(622 + LIB, fl / TS - 1); for (let i = 0; i < Math.round((cfg ? cfg.reseal : 6) * 60) + 30; i++) { step(1); e.T.blink = 99; }
+      out.resealed = W.runes.every(q => q.hp > 0); out.stillWard = e.mode === 'ward';
+      /* now cut all three in time, walking the room from rune to rune (the test's hand puts him beside each) */
+      let frames = 0; for (; frames < 600 && e.mode === 'ward'; frames++) { const q = W.runes.find(r => r.hp > 0); if (!q) { step(1); continue; } BK.P.x = q.x - 14; BK.P.y = footY(q.x, q.y); BK.P.vy = 0; BK.P.face = 1; if (frames % 10 === 0) BK.press('atk'); step(1); e.T.blink = 99; }
+      out.opened = e.mode === 'open' && e.open > 0; out.openLen = +(e.open || 0).toFixed(2);
+      /* 4. THE OPENING: real swings, as fast as the sword goes, until he recovers */
+      const hp0 = e.hp; let landed = 0, last = e.hp, f2 = 0; const openT = e.open;
+      for (; f2 < 400 && e.open > 0; f2++) { BK.P.x = e.x - 14; BK.P.y = fl; BK.P.face = 1; if (f2 % 3 === 0) BK.press('atk'); step(1); if (e.hp < last) { landed++; last = e.hp; } }
+      out.landed = landed; out.openFrames = f2; out.openTook = hp0 - e.hp; out.openT = openT;
       out.called1 = calledMax; }
+
+    /* ======== 6. HE BLINKS ROUND THE ROOM (claude/archfix): every ~5-6 s, told by a flash where he will stand, never onto you ======== */
+    { const { A, e } = fresh(); const fl = A.floor; e.stage = 1; quiet(e); e.T.blink = 0.5; BK.tp(Math.round((A.x0 + 70) / TS), fl / TS - 1); step(5);
+      const bl = out.blink = { starts: [], told: [], lands: [], onHero: 0, tellLens: [] }; let was = e.mode, tellAt = -1, to = null, onIt = false;
+      for (let f = 0; f < 60 * 34; f++) { e.T.ward = 99; e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; step(1);
+        if (e.mode === 'blinkTell' && was !== 'blinkTell') { tellAt = f; to = e.blinkTo ? { x: e.blinkTo.x, y: e.blinkTo.y } : null; bl.starts.push(f); bl.told.push(!!to);
+          onIt = bl.starts.length === 3; if (onIt && to) { BK.P.x = to.x; BK.P.vx = 0; } }   /* the third time, the hero stands on the flash: he must not land on him */
+        if (e.mode === 'blink' && was === 'blinkTell') { bl.tellLens.push(+((f - tellAt) / 60).toFixed(2)); bl.lands.push({ x: Math.round(e.x), to: to && Math.round(to.x), hero: Math.round(BK.P.x), onIt });
+          if (Math.abs(e.x - BK.P.x) < 20) bl.onHero++; }
+        if (onIt && to && e.mode === 'blinkTell') BK.P.x = to.x;
+        was = e.mode; } }
+
+    /* ======== 7. HE CASTS FASTER (claude/archfix: ~15-20% shorter gaps; every tell as long as it was) ======== */
+    { const { A, e } = fresh(); const fl = A.floor; e.stage = 1; quiet(e); BK.tp(Math.round((A.x0 + 70) / TS), fl / TS - 1); e.x = A.x0 + 340; e.T.bolt = 0; step(2);
+      const pc = out.pace = { bolts: [], tell: [], cfg: cfg && cfg.pace }; let was = e.mode;
+      for (let f = 0; f < 60 * 24; f++) { e.T.ward = 99; e.T.blink = 99; e.T.rend = 99; e.T.pair = 99; step(1); if (e.mode === 'boltTell' && was !== 'boltTell') { pc.bolts.push(f); pc.tell.push(+(e.modeT + 1 / 60).toFixed(2)); } was = e.mode; }
+      e.T.rend = 0; e.T.bolt = 99; BK.P.x = e.x - 60; for (let i = 0; i < 150 && e.mode !== 'rendTell'; i++) { e.T.ward = 99; e.T.blink = 99; step(1); } pc.rendTell = e.mode === 'rendTell' ? +(e.modeT + 1 / 60).toFixed(2) : null; }
 
     /* ======== 3. NO PAIRS IN THE DUEL ======== */
     { const { A, e } = fresh(); BK.tp(622 + LIB, A.floor / TS - 1); e.x = (630 + LIB) * TS; e.stage = 1; e.T.pair = 0; e.T.bolt = 0; let pairs = 0; for (let i = 0; i < 600; i++) { step(1); if (e.mode === 'pairTell') pairs++; e.T.pair = 0; e.T.ward = 99; } out.duelPairs = pairs; }
@@ -133,9 +146,9 @@ try {
         BK.tp(Math.round((A.x0 + 200) / TS), fl / TS - 1); step(10); e.T.ward = 0; for (let i = 0; i < 120 && e.mode !== 'ward'; i++) { step(1); e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; }
         s3.ward = e.mode; s3.imgsBack = I().filter(q => !q.gone).length; s3.portal = R().portal ? +(R().portal.dur || 0).toFixed(2) : 0; s3.calledAtOnce = called().length;
         for (let i = 0; i < 90; i++) { step(1); e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; } s3.called = called().length;
-        /* the ward reseals in 4 s here: slide the stack, cut its rune, and read the count */
-        const W = R(), S = W.stack, sr = W.runes.find(q => q.stack);
-        if (S && sr) { BK.P.y = fl; for (let k = 0; k < 6 && S.state === 'up'; k++) { swingAt(S.fx + S.face * 12, -S.face); step(12); e.T.bolt = 99; } step(60); for (let i = 0; i < 12 && sr.hp > 0; i++) { swingAt(sr.x + S.face * 14, -S.face); step(18); e.T.bolt = 99; } }
+        /* the ward reseals in 4 s here: cut one plain rune and read the count */
+        const W = R(), q3 = W.runes.find(q => q.hp > 0);
+        if (q3) { for (let i = 0; i < 12 && q3.hp > 0; i++) { BK.P.y = footY(q3.x, q3.y); swingAt(q3.x - 14, 1); step(18); e.T.bolt = 99; } }
         s3.reseal = +(W.reseal || 0).toFixed(2);
         /* a second ward while his apprentice still stands calls no second one */
         e.modeT = 0; step(2); e.T.ward = 0; for (let i = 0; i < 120 && e.mode !== 'ward'; i++) { step(1); e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; } for (let i = 0; i < 90; i++) { step(1); e.T.bolt = 99; } s3.calledSecond = called().length;
@@ -153,14 +166,28 @@ try {
   console.log(JSON.stringify(r));
   ok(r.cfg, 'the page carries his numbers (BK.archCfg)');
   { const ehp = (readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').match(/^const EHP = .*?[ ,]archmage: ([0-9]+),/m) || [])[1]; ok(ehp === '720', 'his health is what it was: ' + ehp + ' in EHP, ' + r.hp + ' in the fight (no bloat)'); }
-  // 1
-  ok(r.wardMode === 'ward' && r.runes === 3 && r.stackRune && r.stack, 'he wards with three runes, and one sits on a stack of books (mode ' + r.wardMode + ', runes ' + r.runes + ', stack ' + r.stack + ')');
-  ok(r.stackEnd && r.stackSolid, 'the stack stands at an end of the room, solid');
-  ok(r.runeHigh >= 70 && r.sealedHeld, 'its rune sits high on it (' + r.runeHigh + ' px over the floor) and the books hold it against a blow until the stack is slid');
-  ok(r.sliding === 'sinking' && r.slid === 'down' && r.stackGone && r.runeLow <= 16, "a blow on the stack's own rune slides it down into the floor (" + r.sliding + ' -> ' + r.slid + '), and brings its rune down to the sword (' + r.runeLow + ' px)');
-  ok(r.stackCut && r.reseal > 4, 'the first rune cut starts the count (' + r.reseal + ' s)');
-  ok(r.resealed && r.stackBack && r.stillWard, 'left standing, the ward seals again: every rune back, and the stack back up with its rune on it');
+  // 1 (claude/archfix: no rune on a book stack any more - three plain runes around the room)
+  ok(r.wardMode === 'ward' && r.runes === 3 && !r.stackRune && !r.stack, 'he wards with three plain runes, none on a stack of books, and no stack rises (mode ' + r.wardMode + ', runes ' + r.runes + ', stack rune ' + r.stackRune + ', stack ' + r.stack + ')');
+  { const at = r.runeAt || [], xs = at.map(q => q.x).sort((a, b) => a - b);
+    ok(at.length === 3 && at.every(q => q.up >= 6 && q.up <= 28 && !q.inWall), 'every rune is where a sword reaches it: ' + JSON.stringify(at));
+    ok(xs.length === 3 && xs[2] - xs[0] >= 160 && xs[1] - xs[0] >= 80 && xs[2] - xs[1] >= 80 && r.runesStay, 'they stand around the room, not in one place and not round him: ' + JSON.stringify(xs) + ' stay ' + r.runesStay); }
+  { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+    ok(!/archStack/.test(src) && !/stackH:/.test(src), 'the ward stack is gone from the code (archStack*, ARCH.stackH)');
+    const desc = (src.match(/t: 'archmage', name: 'THE ARCHMAGE'.*?desc: '([^']*)'/) || [])[1] || ''; ok(desc && !/stack|books/i.test(desc), 'his bestiary card says nothing of a stack: ' + desc.slice(0, 120)); }
+  ok(r.firstCut && r.reseal > 4, 'the first rune cut starts the count (' + r.reseal + ' s)');
+  ok(r.resealed && r.stillWard, 'left standing, the ward seals again: every rune back');
   ok(r.opened && r.openLen > 0 && r.openLen <= 3, 'all three cut in time and he is open - for ' + r.openLen + ' s (was 4.6)');
+  // 6 (claude/archfix: he teleports around the room)
+  { const b = r.blink || {}, st = b.starts || [], gaps = st.slice(1).map((f, i) => (f - st[i]) / 60), lands = b.lands || [], xs = lands.map(q => q.x);
+    ok(st.length >= 5 && gaps.every(g => g >= 4.4 && g <= 7), 'he blinks on a cadence, every ~5-6 s, with you far from him: ' + st.length + ' blinks in 34 s, gaps ' + JSON.stringify(gaps.map(g => +g.toFixed(1))));
+    ok((b.told || []).length > 0 && b.told.every(Boolean) && (b.tellLens || []).every(t => t >= 0.49), 'each blink is told: the flash where he will stand is up for the whole tell (' + JSON.stringify(b.tellLens) + ')');
+    ok(lands.length >= 4 && lands.every(q => q.to !== null && (q.onIt ? Math.abs(q.x - q.to) <= 40 : q.x === q.to)), 'he lands where the flash was: ' + JSON.stringify(lands));
+    ok(b.onHero === 0 && lands.some(q => q.onIt), 'never onto the hero - not even one standing on the flash (' + b.onHero + ')');
+    ok(new Set(xs).size >= 3 && Math.max(...xs) - Math.min(...xs) >= 300, 'the spots are spread across the room: ' + JSON.stringify(xs)); }
+  // 7 (claude/archfix: he attacks a bit faster, never a shorter tell)
+  { const p = r.pace || {}, b = p.bolts || [], gaps = b.slice(1).map((f, i) => (f - b[i]) / 60), avg = gaps.reduce((a, g) => a + g, 0) / Math.max(1, gaps.length);
+    ok(p.cfg >= 0.8 && p.cfg <= 0.85 && gaps.length >= 3 && avg <= 4.25 && avg >= 3.6, 'the gaps between his casts are x' + p.cfg + ' (15-20% shorter): a bolt every ' + avg.toFixed(2) + ' s, tell to tell (4.77 on the base)');
+    ok((p.tell || []).length > 0 && p.tell.every(t => t >= 0.79) && p.rendTell >= 0.84, 'and every tell is as long as it was: bolt ' + JSON.stringify(p.tell) + ', rend ' + p.rendTell); }
   // 4
   ok(r.landed >= 1 && r.landed <= 2, 'an opening is two clean blows: ' + r.landed + ' landed before he recovered (' + r.openTook + ' taken, ' + r.openFrames + ' frames)');
   // 3
