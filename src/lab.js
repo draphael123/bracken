@@ -53,23 +53,30 @@ export const DEFLECT_TAP = f => f % 8 < 2;
    pyromancer, the freebooter), since a guard already turns it and a guard turned is the knight's opening. */
 export function duckNow(BK, h, e) { const D = BK.duck && BK.duck(), P = BK.P; if (!D || !e || !e.alive || !P.ground || P.swim || P.climb || P.dead) return false;
   const near = Math.abs(e.x - P.x) < 120 && Math.abs(e.y - P.y) < 40, red = BK.markOf(e) === '!!';
-  if (!red && (SHIELDED(h) || emberReady(BK, h))) return false;   /* (a pyromancer with her ward to hand times it instead: emberNow) */
+  if (!red && SHIELDED(h)) return false;
   if (near && BK.telling(e) && D.height(e) === 'high' && (e.t === 'archer' || !(e.modeT > 0.3))) return true;
   if (near && D.high(e) && e.blowMode && e.mode === e.blowMode) return true;
   return !SHIELDED(h) && BK.seeds().some(s => s.high && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 56 && Math.abs(s.y - (P.y - 8)) < 20 && (s.x - P.x) * (s.vx || 0) < 0 && Math.abs(s.vy || 0) <= Math.abs(s.vx || 0) * 0.8); }
 /* THE EMBER WARD, in the hands (claude/ember-ward): the pyromancer's crouch is a dome of fire that turns a YELLOW blow and melts what flies
-   into it (src/ember-ward.js). The bot raises it LATE, to flare - into the last EMBER_LATE s of a yellow windup near her, or when a
-   yellow projectile is that far from the dome - and holds it while the blow is landing. It keeps off it once the ward's heat is at
-   EMBER_HOT (a block from overheating it: an overheat staggers her), in water, and while it is locked; then she rolls, as before. */
-export const EMBER_LATE = 0.1, EMBER_HOT = 70;
+   into it (src/ember-ward.js). emberPlan says, for one frame against one foe:
+     'raise' - hold down: a yellow windup near her is in its last EMBER_LATE s (raised then, the blow lands inside the perfect window and
+               the ward FLARES), or the ward is up and the blow is landing (held EMBER_HOLD s at least: the swing lands a beat after the
+               windup), or a yellow projectile is EMBER_LATE s from the dome
+     'wait'  - a yellow windup near her, not yet in its last beat: stand still for it (the common-foe frame; a boss frame keeps its own plan)
+     null    - nothing for the ward: the ward heat is at EMBER_HOT (a block or two from overheating, which staggers her), it is locked, she is
+               in water or off her feet - then she does what she did before (the roll)
+   The duck (duckNow) is left as it was: a HIGH yellow blow is still ducked early, and ducked is warded - it goes over her for nothing. */
+export const EMBER_LATE = 0.1, EMBER_HOT = 70, EMBER_HOLD = 0.45;
 export const emberReady = (BK, h) => { if (h !== 'pyro' || !BK.ember) return false; const W = BK.ember(), P = BK.P; return !!W && !(W.lock > 0) && !W.wet && W.heat < EMBER_HOT && P.ground && !P.swim && !P.dead; };
-export function emberNow(BK, h, e) {
-  if (!emberReady(BK, h)) return false; const P = BK.P, W = BK.ember();
+export function emberPlan(BK, h, e) {
+  if (!emberReady(BK, h)) return null; const P = BK.P, W = BK.ember();
+  if (W.up && W.t < EMBER_HOLD) return 'raise';
   if (e && e.alive && Math.abs(e.x - P.x) < 80 + (e.w || 12) / 2 && Math.abs(e.y - P.y) < 40 && BK.markOf(e) === '!') {
-    if (BK.telling(e)) { if (typeof e.modeT !== 'number' || e.modeT <= EMBER_LATE || W.up) return true; }   /* the last beat of the windup: raise it */
-    else if (W.up && W.t < 0.9 && e.blowMode && e.mode === e.blowMode) return true; }   /* the blow itself: keep it up */
+    if (BK.telling(e) || /Tell$/.test(e.mode || '')) return typeof e.modeT !== 'number' || e.modeT <= EMBER_LATE || W.up ? 'raise' : 'wait';   /* (a boss's windup is its ...Tell mode) */
+    if (W.up && W.t < 0.9 && e.blowMode && e.mode === e.blowMode) return 'raise'; }
   return BK.seeds().some(s => !s.dead && !s.reflected && !s.noBlock && !s.unblockable && !s.chain && (s.x - P.x) * (s.vx || 0) < 0 && Math.abs(s.y - (P.y - 6)) < 22
-    && Math.abs(s.x - P.x) < 18 + Math.max(10, Math.abs(s.vx || 0) * EMBER_LATE)); }
+    && Math.abs(s.x - P.x) < 18 + Math.max(10, Math.abs(s.vx || 0) * EMBER_LATE)) ? 'raise' : null; }
+export const emberNow = (BK, h, e) => emberPlan(BK, h, e) === 'raise';
 export const HELD = e => (e.broken || 0) > 0.3 || (e.pinned || 0) > 0.3;
 /* FIRE ON THE GROUND, under x (a sapper's pot, a burning stake): the fire hurts inside nine pixels of it, so the bot keeps fourteen off.
    A bot that plants its feet to wind a heavy or stands off to shoot was measured standing in one for four ticks of it in the Stockade's room */
@@ -171,7 +178,7 @@ function labBotFrame(BK, h, e, f) {
   k.left = false; k.right = false; k.block = false; k.atk = false; k.up = false; k.down = false; k.jump = false;
   if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
   if (duckNow(BK, h, e)) { defend = 1; k.down = true; BK.unpress(); }   /* THE DUCK: a high blow goes over (duckNow) */
-  else if (emberNow(BK, h, e)) { defend = 1; k.down = true; BK.unpress(); }   /* THE EMBER WARD: raised late, to flare (emberNow) */
+  else if (emberPlan(BK, h, e)) { defend = 1; k.down = emberPlan(BK, h, e) === 'raise'; BK.unpress(); }   /* THE EMBER WARD: stood still for a yellow windup and raised in its last beat, to flare (emberPlan) */
   else if (threat && P.atk < 0 && !(P.dash > 0)) {
     defend = 1;   /* (a heavy half wound goes if it can, and is dropped if it cannot) */
     if (HARD_TELLS.has(e.t + '|' + e.mode)) { k[d > 0 ? 'left' : 'right'] = true; if (f % 14 === 0) BK.press('dodge'); }
