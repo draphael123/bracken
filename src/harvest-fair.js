@@ -7,9 +7,9 @@
 //   118-246  THE STALL STAIR   DEVELOP  a pincer on a climb: two mummers you pass at the foot come up behind you while one waits at the top
 //   246-374  THE CAROUSEL      TWIST    ride it and it TURNS you (warned); the one you were holding frozen is behind you now
 //   374-502  THE HAYRICKS      COMBINE  hobby-horses on the lane and HAYSTACKS (the Sporewood cap bounce) to clear spikes and the charge
-//   502-618  THE LAST ROUND    EXAM     a mummer, a small carousel with a mummer and a horse on it, a haystack, the door guard: all of it at once
+//   502-620  THE LAST ROUND    EXAM     a mummer, a small carousel with a mummer and a horse on it, a haystack, and THE DOOR GUARD (the elite hobby-horse that holds the green's door)
 //   622-672  THE MAYPOLE GREEN the boss room (greybox, no boss yet): a maypole and a bonfire, a door, a checkpoint before it, a gate at the far end
-// Checkpoints: one per section (8, 124, 252, 380, 508) and the door's (614): 116-128 apart, none inside the green.
+// Checkpoints: one per section (8, 124, 252, 380, 508) and the door's (600): 92-128 apart, none inside the green.
 export const FAIR = { W: 672, H: 36, R: 28 };
 export const ARC = { teach: [0, 118], develop: [118, 246], twist: [246, 374], combine: [374, 502], exam: [502, 618] };
 
@@ -38,10 +38,10 @@ export function buildHarvestFair({ painter, T, TS }) {
   post(12); stall(16, 0); post(22); coins([14, S - 1], [18, S - 1], [24, S - 1]);
   sign(30, "DON'T TURN YOUR BACK ON THEM.");
   stall(38, 1); post(44);
-  sign(48, 'THE PLAYERS ONLY MOVE WHEN NOBODY IS LOOKING. FACE ONE AND IT STOPS. CUT IT DOWN WHILE IT STANDS.');
+  sign(48, 'THEY ONLY MOVE WHEN NOBODY LOOKS. FACE ONE AND IT STOPS. CUT IT DOWN.');
   foe('mummer', 62);                                     /* THE FIRST ONE, alone on a flat lane: facing it, it cannot move. There is nothing else here */
   coins([56, S - 1], [58, S - 1], [66, S - 1], [68, S - 1]);
-  sign(74, 'LISTEN FOR THE BELLS. THEY JINGLE WHEN IT MOVES, AND A RED MASK MEANS IT IS ABOUT TO STRIKE.');
+  sign(74, 'BELLS MEAN IT MOVES. A RED MASK MEANS IT STRIKES. LOOK AT IT.');
   post(80); stall(84, 0);
   plat(90, S - 3, 5); ent('coin', 92, S - 4); ent('coin', 94, S - 4);   /* a stall roof to hop, the first thing above the road */
   pit(100, 102); coins([100, S - 3], [101, S - 4], [102, S - 3]);
@@ -49,7 +49,7 @@ export function buildHarvestFair({ painter, T, TS }) {
 
   // ---------------- 2. THE STALL STAIR (118-246): DEVELOP ----------------
   ent('check', 124, S); post(120); stall(126, 1);
-  sign(130, 'THEY FOLLOW YOU UP. LOOK BACK, AND THE ONES BEHIND STOP. LOOK FORWARD, AND THE ONE AHEAD DOES.');
+  sign(130, 'LOOK BACK AND THE ONES BEHIND STOP. LOOK AHEAD AND THE ONE UP THERE DOES.');
   foe('mummer', 136);                                     /* the pair at the foot: ahead of you as you come, behind you the moment you pass */
   foe('mummer', 143);
   post(147);
@@ -66,7 +66,7 @@ export function buildHarvestFair({ painter, T, TS }) {
 
   // ---------------- 3. THE CAROUSEL (246-374): TWIST ----------------
   ent('check', 252, S); post(250); stall(256, 0);
-  sign(262, 'THE CAROUSEL TURNS WHOEVER RIDES IT. THE MUSIC RINGS BEFORE IT TURNS. FACE THE OTHER WAY AGAIN.');
+  sign(262, 'THE CAROUSEL TURNS ITS RIDERS. THE MUSIC RINGS FIRST. TURN BACK.');
   pit(272, 274); post(280); ent('deco', 284, S, { kind: 'bunting', v: 0 });
   block(288, 289, R - 1, R - 1);                          /* a step up, then the ride */
   block(290, 316, R - 2, R - 1);                          /* THE DISC: a raised floor, two tiles up, twenty-seven wide */
@@ -99,9 +99,9 @@ export function buildHarvestFair({ painter, T, TS }) {
   foe('mummer', 535, { y: R - 3 }); foe('hobbyhorse', 545, { y: R - 3 });
   post(552); stack(556, 558); spikes(559, 561, S);
   foe('mummer', 578); coins([570, S - 1], [574, S - 1]);
-  stall(586, 0); post(592); pit(596, 598);
-  foe('mummer', 606);                                     /* the door guard: the last thing before the green */
-  ent('check', 614, S);                                   /* the door's checkpoint */
+  stall(586, 0); post(594); pit(590, 592);
+  ent('check', 600, S);                                   /* the door's checkpoint: the last one the road passes before the green */
+  foe('hobbyhorse', 608, { elite: true, gate: 620 });     /* THE DOOR GUARD, the level's ELITE: it holds the green's door (the gate comes down over it) until it is dead. Facing it, it cannot charge: that is the exam's last answer */
 
   // ---------------- THE MAYPOLE GREEN (622-672): the boss room, greybox ----------------
   const G = { x0: 622, x1: 668, door: 620, maypole: 640, bonfire: 654, floor: R };

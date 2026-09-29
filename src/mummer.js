@@ -9,7 +9,7 @@
 //   THE MUMMER (masked player, sackcloth, painted wooden mask, cap bells): creeps toward the nearest hero ONLY while faced by nobody; the bells JINGLE
 //     as it creeps (the audio tell, and only while it moves); within strike reach its mask GLOWS RED for MUMMER.glow seconds (the visual tell), then it
 //     strikes; a look at any time during the glow cancels it.
-//   THE HOBBY-HORSE (the elite): the moment the hero's back is turned it winds up (HORSE.wind s, a told beat a look cancels) and CHARGES a fixed run
+//   THE HOBBY-HORSE (the elite): the moment the hero's back is turned it rears (HORSE.wind s, a told beat a look cancels) and CHARGES a fixed run
 //     (HORSE.dist px, HORSE.charge px/s), committed even if the hero then turns. It FREEZES where the charge ends and will not charge again until it
 //     has been looked at once.
 //   THE CAROUSEL: a riding hero is turned round (and cannot turn back for `lock` s) every `period` s, after a `warn` s warning.
@@ -74,9 +74,9 @@ export function horseStep(s, w, dt) {
   switch (s.mode) {
     case 'still':
       if (seen) { if (!s.armed) evs.push({ t: 'freeze' }); s.armed = true; break; }
-      if (near && s.armed) { s.mode = 'wind'; s.t = C.wind; s.face = s.dir = Math.sign(near.x - s.x) || s.face; evs.push({ t: 'wind' }); }
+      if (near && s.armed) { s.mode = 'rear'; s.t = C.wind; s.face = s.dir = Math.sign(near.x - s.x) || s.face; evs.push({ t: 'rear' }); }
       break;
-    case 'wind':
+    case 'rear':
       if (seen) { s.mode = 'still'; s.armed = true; evs.push({ t: 'freeze' }); break; }
       s.t -= dt; if (s.t <= 0) { s.mode = 'charge'; s.run = 0; evs.push({ t: 'charge' }); }
       break;

@@ -84,21 +84,21 @@ const mk = (x = 400, o = {}) => Object.assign(M.newMummer(x, 400), o);
 // ---- THE HOBBY-HORSE: charges on a back-turn, freezes where the charge ends ----
 const mkH = (x = 500) => M.newHorse(x, 400);
 { const s = mkH(500), h = hero(300, -1); let wind = null, charge = null, end = null, x = 500, maxV = 0, winded = 0;
-  for (let i = 0; i < 60 * 6; i++) { const evs = M.horseStep(s, world([h]), DT); for (const v of evs) { if (v.t === 'wind') wind = wind ?? i; if (v.t === 'charge') charge = charge ?? i; if (v.t === 'end') end = end ?? i; }
-    if (s.mode === 'wind') winded++; x += s.vx * DT; maxV = Math.max(maxV, Math.abs(s.vx)); if (i === 40) h.face = 1; if (i === 46) h.face = -1; }   // he turns to look mid charge: it commits anyway
+  for (let i = 0; i < 60 * 6; i++) { const evs = M.horseStep(s, world([h]), DT); for (const v of evs) { if (v.t === 'rear') wind = wind ?? i; if (v.t === 'charge') charge = charge ?? i; if (v.t === 'end') end = end ?? i; }
+    if (s.mode === 'rear') winded++; x += s.vx * DT; maxV = Math.max(maxV, Math.abs(s.vx)); if (i === 40) h.face = 1; if (i === 46) h.face = -1; }   // he turns to look mid charge: it commits anyway
   ok(wind !== null && charge !== null && charge > wind, 'the horse did not wind up and then charge when the hero\'s back was turned');
   ok(winded >= 0.3 * 60, 'the horse\'s wind-up is not a told beat (' + winded + ' frames)');
   ok(end !== null && s.mode === 'still' && s.vx === 0, 'the horse did not freeze where its charge ended: ' + s.mode);
   ok(500 - x >= M.HORSE.dist - 30 && 500 - x <= M.HORSE.dist + 60, 'the horse\'s charge covered ' + Math.round(500 - x) + ' px, not ~' + M.HORSE.dist);
   ok(maxV >= M.HORSE.charge - 1, 'the horse never reached its charge speed');
   // it does not charge again until it has been looked at: back turned again, nothing
-  let again = false; h.face = -1; s.x = x; for (let i = 0; i < 180; i++) for (const v of M.horseStep(s, world([{ ...h, x: s.x - 120 }]), DT)) if (v.t === 'wind' || v.t === 'charge') again = true;
+  let again = false; h.face = -1; s.x = x; for (let i = 0; i < 180; i++) for (const v of M.horseStep(s, world([{ ...h, x: s.x - 120 }]), DT)) if (v.t === 'rear' || v.t === 'charge') again = true;
   ok(!again, 'the horse charged a second time without being looked at in between');
   const looked = { ...h, x: s.x - 120, face: 1 }; M.horseStep(s, world([looked]), DT);
   let third = false; for (let i = 0; i < 120; i++) for (const v of M.horseStep(s, world([{ ...looked, face: -1 }]), DT)) if (v.t === 'charge') third = true;
   ok(third, 'a horse that was looked at does not charge again when the back is turned'); }
 { const s = mkH(500), h = hero(300, -1); let charged = false, aborted = false;   // a look during the wind-up cancels it
-  for (let i = 0; i < 12; i++) M.horseStep(s, world([h]), DT); ok(s.mode === 'wind', 'the horse is not winding up 0.2 s after the back turned: ' + s.mode);
+  for (let i = 0; i < 12; i++) M.horseStep(s, world([h]), DT); ok(s.mode === 'rear', 'the horse is not winding up 0.2 s after the back turned: ' + s.mode);
   h.face = 1; for (let i = 0; i < 60; i++) for (const v of M.horseStep(s, world([h]), DT)) { if (v.t === 'charge') charged = true; if (v.t === 'freeze') aborted = true; }
   ok(!charged && aborted && s.mode === 'still', 'a look during the wind-up did not stop the charge'); }
 { const s = mkH(500); let charged = false; for (let i = 0; i < 120; i++) for (const v of M.horseStep(s, world([hero(300, 1)]), DT)) if (v.t === 'charge') charged = true;
@@ -165,7 +165,8 @@ if (fair) {
     ok(!cks.some(x => x >= L.green.x0 && x <= L.green.x1), 'a checkpoint stands inside the green');
     ok(L.ents.some(e => e.t === 'gate' && e.x >= L.green.x0), 'the green has no gate at its far end');
     ok(L.green.maypole > L.green.x0 && L.green.bonfire > L.green.maypole && L.green.bonfire < L.green.x1 && L.green.floor > 0, 'the green has no maypole and bonfire');
-    ok(!L.arena && !L.ents.some(e => e.t === 'closedhelm' || e.boss), 'the fair already has a boss (this lane builds the green as a greybox)'); }
+    ok(!L.arena && !L.ents.some(e => e.t === 'closedhelm' || e.boss), 'the fair already has a boss (this lane builds the green as a greybox)');
+    ok(horse.some(h => h.elite && h.gate === L.green.door && Math.abs(h.x - L.green.door) >= 5 && h.x < L.green.door), 'the elite hobby-horse does not hold the door of the green (elite: true, gate: the door column)'); }
   ok(L.duskStart !== undefined && L.duskLen > 100 * TS, 'the fair does not go from sunset to dusk over its length (duskStart/duskLen)');
   ok(L.music === 'marketday' || !!L.music, 'the fair has no music');
   ok(!!L.ents.find(e => e.t === 'sign' && /BACK/.test(e.text || '')), 'no sign says the rule'); }
@@ -253,6 +254,12 @@ try {
     for (let i = 0; i < 60 * 16 && turnAt === null; i++) { BK.sim(1); if (warnAt === null && BK.fair().warns > w0) warnAt = i; if (BK.fair().turns > t0) { turnAt = i; faceAfter = BK.P.face; lockAfter = BK.P.faceLock; } }
     K.right = true; BK.sim(10); heldRight = BK.P.face; BK.sim(50); out.carousel = { warnAt, turnAt, faceAfter, lockAfter, heldRight, faceLater: BK.P.face, onRide: BK.P.ground };
     none();
+    // 6. THE ELITE holds the green's door: shut (a portcullis over the opening) until it is dead, then it lifts
+    BK.load(fi); BK.start(); BK.sim(5); BK.god = true; const el = BK.enemies().find(e => e.t === 'hobbyhorse' && e.elite), G = BK.L.green, dc = G.door, rowS = 27;
+    const shut = () => [24, 25, 26, 27].every(y => BK.L.grid[y * BK.L.W + dc] === 12);
+    const before = { elite: !!el, shut: shut(), hp: el && el.hp };
+    only([el]); el.hp = 1; BKT.hurtEnemy(el, 5, el.x - 10, false); BK.sim(60);
+    out.elite = { ...before, dead: !el.alive, open: !shut() };
     return out;
   })()`, 600000);
 } finally { pg2.close(); }
@@ -263,10 +270,11 @@ ok(R2.strikes >= 1 && R2.hpLost >= 8, 'the mummer\'s strike did not hurt the her
 ok(R2.glowCancel.glowSeen && R2.glowCancel.cancelled, 'a look during the glow did not cancel the strike in the page: ' + JSON.stringify(R2.glowCancel));
 ok(R2.coopOneFacing.moved < 0.5 && R2.coopOneFacing.mode === 'still', 'co-op: a mummer moved with one hero facing it: ' + JSON.stringify(R2.coopOneFacing));
 ok(R2.coopBothAway.moved > 8, 'co-op: a mummer stayed frozen with both heroes facing away: ' + JSON.stringify(R2.coopBothAway));
-ok(['wind', 'charge', 'skid'].every(m => R2.horse.modes.includes(m)) && R2.horse.charges === 1, 'the horse did not wind, charge and skid exactly once on a turned back: ' + JSON.stringify(R2.horse));
+ok(['rear', 'charge', 'skid'].every(m => R2.horse.modes.includes(m)) && R2.horse.charges === 1, 'the horse did not wind, charge and skid exactly once on a turned back: ' + JSON.stringify(R2.horse));
 ok(R2.horse.ranPx > 60 && R2.horse.stoodStill && R2.horse.stayed, 'the horse did not stand where its charge ended: ' + JSON.stringify(R2.horse));
 ok(R2.horse2.charges === 2, 'a looked-at horse did not charge again when the back was turned: ' + JSON.stringify(R2.horse2));
 ok(R2.carousel.warnAt !== null && R2.carousel.turnAt !== null && R2.carousel.warnAt < R2.carousel.turnAt && R2.carousel.faceAfter === -1 && R2.carousel.lockAfter > 0, 'the carousel did not warn and then turn the rider: ' + JSON.stringify(R2.carousel));
+ok(R2.elite.elite && R2.elite.shut && R2.elite.dead && R2.elite.open, 'the elite hobby-horse does not shut the green door and open it on its death: ' + JSON.stringify(R2.elite));
 ok(R2.carousel.heldRight === -1 && R2.carousel.faceLater === 1, 'the carousel did not hold his facing for a moment and then let him turn back: ' + JSON.stringify(R2.carousel));
 console.log(JSON.stringify(R));
 ok(R.n >= 6, 'the page spawned ' + R.n + ' mummers');
