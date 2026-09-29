@@ -1567,51 +1567,41 @@ export async function killLab(BK, opts = {}) {
 }
 
 
-/* THE SPIRAL STAIR, CLIMBED (claude/undead3, round undead4): the bot for the Undead Archmage's chase, shared by tools/tower-chase.mjs and
-   tools/archmage-pilot.mjs. It walks each flight's way and jumps at an edge or under the ledge over it; at a seal it strikes the brazier
-   (the one BEHIND it, when he has snuffed the other), JUMPS the brazier's fire as it comes by, and goes on up. m is the chase's Archmage.
-   o: { secs, strike (false: never touches a brazier), refill (hold health up and count what it took), each(t) } -> { t, taken, burnt, hits } */
+/* THE SPIRAL STAIR, CLIMBED (claude/undead3, round undead4; claude/towerscroll): the bot for the Undead Archmage's chase, shared by
+   tools/tower-chase.mjs, tools/stair-pilot.mjs and tools/archmage-pilot.mjs. It walks each flight's way and jumps off the lip for the next
+   step, or at an edge, or under the ledge over it; it does not wait (the rising dark under it is src/chase.js's: it climbs to keep ahead).
+   m is the chase's Archmage. o: { secs, refill (hold health up and count what it took), each(t), stop() (true: hand back now), guard() (true: stand and
+   guard this frame - a careful hand answering his tells) } -> { t, taken, died } */
 export function chaseClimb(BK, m, o = {}) {
-  const F = SPIRAL_FLIGHTS, secs = o.secs || 150, strike = o.strike !== false; let jh = 0, t = 0, taken = 0, burnt = 0, still = 0, lastX = 0, back = 0, inPlace = 0, kHere;
-  for (; t < 60 * secs && !BK.carpet(); t++) {
-    const P = BK.P, G = BK.L.grid, W = BK.L.W, seals = (BK.L.spiral && BK.L.spiral.seals) || [];
+  const F = SPIRAL_FLIGHTS, secs = o.secs || 150; let jh = 0, t = 0, taken = 0, died = 0, still = 0, lastX = 0, back = 0, kHere;
+  for (; t < 60 * secs && !BK.carpet() && !(o.stop && o.stop()); t++) {
+    const P = BK.P, G = BK.L.grid, W = BK.L.W;
+    if (P.dead > 0) { BK.keys.right = BK.keys.left = BK.keys.jump = false; BK.sim(1); if (o.each) o.each(t); continue; }   /* (a death: it waits to wake) */
     /* THE FLIGHT IT IS ON, by where its feet are (not how far it has ever been: a fall puts it back on a lower flight) */
     if (P.ground || kHere === undefined) { const feet = Math.round(P.y / 16); kHere = -1; for (let i = 0; i < F.length; i++) if (feet <= F[i].land[2]) kHere = i; }
     const k = kHere, dir = F[Math.min(F.length - 1, k + 1)].dir;   /* (gone through his door, he still left a stair to climb) */
-    let walk = dir, hold = false;
+    let walk = dir;
     /* STUCK (a knock or a fall left it against a wall): turn back a moment and come at it again */
     if (Math.abs(P.x - lastX) < 0.5 && P.ground) still++; else still = 0; lastX = P.x;
     if (still > 90 && !(back > 0)) { back = 70; still = 0; } if (back > 0) { back--; walk = -dir; }
-    if (strike) for (const s of seals) { if (s.broken || s.wall || s.k !== k + 1) continue;
-      const back = s.doused && s.rx !== null && s.rx !== undefined, bx = (back ? s.rx : s.bx) * 16 + 8, by = ((back ? s.ry : s.by) + 1) * 16;
-      if (back && Math.abs(P.y - by) < 40) walk = Math.sign(bx - P.x) || walk;   /* he snuffed it: back to the one behind */
-      const d = (bx - P.x) * walk;
-      if (d > -12 && d < 26 && Math.abs(P.y - by) < 20) { hold = true; if (d < 2) { BK.keys.right = walk < 0 && t % 10 < 2; BK.keys.left = walk > 0 && t % 10 < 2; } else { BK.keys.right = d > 6 && walk > 0; BK.keys.left = d > 6 && walk < 0; } if (P.ground && t % 10 === 0) BK.press('atk'); } }
-    /* AT A WARD STILL STANDING: wait at the foot of it for the fire (under the landing is a long way down) */
-    for (const s of seals) if (!s.broken && s.k === k + 1 && !hold && Math.abs(P.x - (s.x * 16 + 8)) < 40 && P.y > (s.y1 + 1) * 16 && P.ground && (s.wall || !strike)) hold = 'ward';
-    if (hold === 'ward') { BK.keys.right = BK.keys.left = false; }
-    else if (!hold) { BK.keys.right = walk > 0; BK.keys.left = walk < 0; }
-    if (inPlace > 0) { inPlace--; BK.keys.right = BK.keys.left = false; }   /* a jump over the fire goes straight up: it lands where it left */
-    /* THE BRAZIER'S FIRE: jump it as it comes by (its flare, then the wall) */
-    let jumpIt = false;
-    for (const s of seals) { const w = s.wall; if (!w || w.i >= w.pts.length - 2) continue; const nx = w.pts[w.i + 1] ? w.pts[w.i + 1][0] : w.x, going = Math.sign(nx - w.x) || 0;
-      const ahead = (P.x - w.x) * going; if (Math.abs(w.y - P.y) < 44 && ((w.kindle > 0 && w.kindle < 0.14 && Math.abs(P.x - w.x) < 22) || (!(w.kindle > 0) && ahead > -4 && ahead < 26))) jumpIt = true; }
+    BK.keys.right = walk > 0; BK.keys.left = walk < 0;
     /* THE STAIR IS A LIST (spiral-chase.js FLIGHTS): it knows the step it stands on and the next one its way, and jumps off the very lip
        of this one for that one (the heavy heroes need all of it), or - where the next is over it, on the floor - from under its edge */
     let leap = false;
-    if (P.ground && !hold) { const f = Math.min(F.length - 1, k + 1), S = BK.L.spiral, seq = [f === 0 ? [S.x0, S.x1 - S.x0 + 1, S.floor] : F[f - 1].land, ...F[f].steps, F[f].land], feet = Math.round(P.y / 16), tx = P.x / 16;
+    if (P.ground) { const f = Math.min(F.length - 1, k + 1), S = BK.L.spiral, seq = [f === 0 ? [S.x0, S.x1 - S.x0 + 1, S.floor] : F[f - 1].land, ...F[f].steps, F[f].land], feet = Math.round(P.y / 16), tx = P.x / 16;
       const at = seq.findIndex(([x0, len, row]) => row === feet && tx >= x0 - 0.4 && tx <= x0 + len + 0.4), nxt = at < 0 ? null : seq[at + (walk === dir ? 1 : -1)];
       if (nxt) { const cur = seq[at], lip = walk > 0 ? (cur[0] + cur[1]) * 16 - P.x : P.x - cur[0] * 16, near = walk > 0 ? nxt[0] * 16 - P.x : P.x - (nxt[0] + nxt[1]) * 16;
         if (near > lip + 4 ? lip < 4 : near < 18 && nxt[2] < cur[2]) leap = true; }
       else if (at < 0 && !G[Math.floor(P.y / 16) * W + Math.floor((P.x + walk * 3) / 16)]) leap = true; }   /* off the list (a landing it fell to): the old rule, jump at an edge */
-    if (jumpIt && P.ground && !(jh > 0)) { BK.keys.right = BK.keys.left = false; BK.press('jump'); jh = 22; inPlace = 34; }
-    else if (leap && !(jh > 0)) { BK.press('jump'); jh = 16; }
+    const guard = !!(o.guard && P.ground && !(jh > 0) && o.guard());
+    if (guard) { BK.keys.right = BK.keys.left = false; leap = false; } BK.keys.block = guard;
+    if (leap && !(jh > 0)) { BK.press('jump'); jh = 16; }
     BK.keys.jump = jh > 0; jh--;
 
     const was = P.hp; BK.sim(1); if (o.each) o.each(t);
-    const lost = Math.max(0, was - BK.P.hp); taken += lost; if (lost && seals.some(s => s.wall && s.wall.hitP && !s.wall.counted && (s.wall.counted = true))) burnt++;
-    if (o.refill) BK.P.hp = BK.P.maxHp;
+    if (BK.P.dead > 0) died++;
+    else { taken += Math.max(0, was - BK.P.hp); if (o.refill) BK.P.hp = BK.P.maxHp; }
   }
-  BK.keys.right = BK.keys.left = BK.keys.jump = false;
-  return { t, taken, burnt };
+  BK.keys.right = BK.keys.left = BK.keys.jump = BK.keys.block = false;
+  return { t, taken, died };
 }

@@ -59,7 +59,7 @@ import { lanceSupport, LANCE_SUPPORT } from './lance-support.js';   /* THE QUEEN
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
-import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
+import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease } from './attack-tokens.js';
 import { installTactics, braceHit } from './foe-tactics.js';
@@ -136,7 +136,7 @@ import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
-import { updateMageChase, drawRingDoor, inSpiral, drawSeals, lightBrazier } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
+import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
 
 // ---------- display ----------
@@ -1932,8 +1932,6 @@ function spawnEntities() {
        hanging there through the whole re-fight, because it lives on L and L is not rebuilt on a retry. Past it (on the
        sand) there is nothing to shut: sandWalk stays, and so does the gate it unlocks. */
     if(L.sanctum&&!L.sandWalk){L.sanctum.open=false;L.sanctum.outOpen=0;L.sanctum.out=null;}
-    /* HIS WARDS STAND AGAIN on a retry (claude/undead3): he burns the ones under the landing you wake on himself (spiral-chase.js) */
-    for(const s of (L.spiral&&L.spiral.seals)||[]){s.broken=false;s.wall=null;s.doused=false;s.snuffing=false;for(let y=s.y0;y<=s.y1;y++)cellSet(s.x,y,T.SOLID);}
   } else if (typeof P !== 'undefined' && P && P.carpet) P.carpet = null;   /* a rug ridden out of the tower (quit mid-fight) must not fly into the next level: carpetBox reads L.arena and threw every frame */
   eliteWatch();   /* an elite cut down in the same beat the hero fell (the world is still in its hitstop) is written down before the board is reset */
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) P.carry = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
@@ -16041,13 +16039,8 @@ function updateUndeadMage(e,dt){
    whole width and the landing he waits over (chaseView, asked by desiredView) - so nothing he throws comes from off the screen. */
 function chaseMage(e,dt){
  if(P.carpet){e.alive=false;return;}   /* the carpet is boarded: he is through his door ahead of you, and the fight is his hall's */
- const seals=(L.spiral&&L.spiral.seals)||[];
- /* HIS WARD'S BRAZIERS (claude/undead3): strike one and its fire goes up the stair to him */
- {const hb=attackBox();if(hb&&!P.dead)for(const s of seals)for(const which of ['main','relight']){const bx=which==='main'?s.bx:s.rx;if(bx===null||bx===undefined)continue;const x=bx*TS+8,y=((which==='main'?s.by:s.ry)+1)*TS,key=which==='main'?s:(s.rkey||(s.rkey={}));if(P.hitSet.has(key)||!overlap(hb,{l:x-9,r:x+9,t:y-22,b:y}))continue;P.hitSet.add(key);sparks(x,y-12,P.face,4);
-  if(lightBrazier(s,which)){SFX.puff&&SFX.puff();SFX.charge&&SFX.charge();shakeCam(2);burst(x,y-12,16,['#ff9b49','#ffe9b0','#c9463d'],90,.6,-40,2);number(x,y-30,'IT FLARES: JUMP ITS FIRE','#ff9b49');}else{SFX.clank();if(which==='main'&&s.doused)number(x,y-30,'HE SNUFFED IT. THE ONE BEHIND YOU BURNS','#bce8fa');}}}   /* (undead4: the second, relight brazier on the seal he snuffs) */
- updateMageChase(e,dt,{P,seals,
-  breakWard:(s,quiet)=>{for(let y=s.y0;y<=s.y1;y++)cellSet(s.x,y,T.AIR);resolveTiles();if(quiet)return;shakeCam(5);SFX.stone();SFX.crack();for(let y=s.y0;y<=s.y1;y+=2)burst(s.x*TS+8,y*TS+8,4,['#6fe08a','#c8ffd8','#ff9b49'],90,.7,120,2);number(s.x*TS+8,s.y0*TS-8,'THE WARD BURNS','#ff9b49');},
-  hit:(x,y,d,hard,blow)=>damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',mark:'THE DEATH MARK',wardfire:'THE BRAZIERS FIRE'})[blow]}),
+ updateMageChase(e,dt,{P,
+  hit:(x,y,d,hard,blow)=>damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',mark:'THE DEATH MARK'})[blow]}),
   say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),
   onScreen:(x,y,m=0)=>x>camX+m&&x<camX+VW-m&&y>camY+m&&y<camY+VH-m,
   solid:(x,y)=>tileAt(Math.floor(x/TS),Math.floor(y/TS))===T.SOLID,
@@ -16124,7 +16117,7 @@ function updateAscent(dt){
   crash:(f,y)=>{shakeCam(4);if(Math.abs(y*TS-P.y)<VH)SFX.stone();},
   warn:f=>{shakeCam(3);SFX.rumble&&SFX.rumble();if(!f.last)number(P.x,P.y-40,f.name+' GOES DOWN BEHIND YOU','#ff9a5c');}});
  updateCrumbles(dt);
- updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();dcBank();number(P.x,P.y-30,L.sanctum?'THROUGH THE DOOR':'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(L.sanctum){shakeCam(6);zoomKick(1.12,.5);flash=Math.max(flash,.3);burst(P.x,P.y,26,['#b07cf0','#e0c8ff','#4a2a7a'],150,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;}   /* A DOOR SNAPS. Without this the camera panned the 160px from the parapet up to the spawn, which reads as flying there - the one thing a portal is not */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();}});
+ updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();dcBank();number(P.x,P.y-30,L.sanctum?'THROUGH THE DOOR':'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(L.sanctum){shakeCam(6);zoomKick(1.12,.5);flash=Math.max(flash,.3);burst(P.x,P.y,26,['#b07cf0','#e0c8ff','#4a2a7a'],150,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;}   /* A DOOR SNAPS. Without this the camera panned the 160px from the parapet up to the spawn, which reads as flying there - the one thing a portal is not */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();for(const c of chases)if(c.sp.id==='towerscroll')chaseReset(c.st);   /* THE RISING DARK stays on the stair (claude/towerscroll) */}});
  /* THE SECOND DOOR: through it the carpet is left behind, the sky goes warm, and the last walk of the world is on sand */
  updateSanctum(L,P,dt,{leave:out=>{burst(out.x,out.y,26,['#e0b050','#ffe9b0','#8a5a1a'],150,.9,0,2);
   P.carpet=null;P.vx=0;P.vy=0;P.x=L.sanctum.sand.x;P.y=L.sanctum.sand.y;P.ground=true;P.face=1;L.sandWalk=true;L.sanctum.open=false;L.nightA=0;L.palette.noFg=true;   /* the desert is daylight: the tower's night wash is not laid over it, and the level's foreground grass strip is not drawn along the bottom of it (round 2) */
@@ -19413,7 +19406,7 @@ const chaseHero = sp => sp.axis === 'x' ? P.x : P.y - 7;
 function chaseMusicOff() { if (chaseMusicOn) { chaseMusicOn = false; music.play(L.music || 'theme'); } }
 function chaseEvent(c, e) {
   const sp = c.sp;
-  if (e.k === 'start') { if (sp.music) { music.play(sp.music); chaseMusicOn = true; } number(P.x, P.y - 34, 'RUN!', '#ff6b6b'); SFX.rumble(); shakeCam(4); }
+  if (e.k === 'start') { if (sp.music) { music.play(sp.music); chaseMusicOn = true; } number(P.x, P.y - 34, sp.say, '#ff6b6b'); SFX.rumble(); shakeCam(4); }
   else if (e.k === 'warn') { number(P.x, P.y - 40, e.text, '#ff6b6b'); SFX.thunder(); shakeCam(3); }
   else if (e.k === 'contact') { if (e.mode === 'kill') damagePlayer(P.x, 9999, { unblockable: true, pierce: true, name: sp.name }); else damagePlayer(P.x - sp.dir * 20, e.dmg, { unblockable: true, name: sp.name }); shakeCam(6); }
   else if (e.k === 'end') { number(P.x, P.y - 34, 'SAFE', '#8fd160'); SFX.rumble(); chaseMusicOff(); }
@@ -19424,7 +19417,7 @@ function updateChase(dt) {
   chaseBeamCd = Math.max(0, chaseBeamCd - dt);
   for (const c of chases) for (const b of c.sp.beams) if (chaseBeamCd <= 0 && beamHit(duckBox(P), duckClears(P, b.y), b, time)) { chaseBeamCd = CHASE_BEAM.cd; damagePlayer((b.x0 + b.x1) / 2, b.dmg, { unblockable: true, name: b.name }); SFX.thud(); shakeCam(3); }   /* THE DUCK answers a beam: duckClears, never the down key */
   for (const c of chases) {
-    if (c.st.phase === 'idle' && chases.some(o => o !== c && o.st.phase === 'run')) continue;
+    if (c.st.phase === 'idle' && (chases.some(o => o !== c && o.st.phase === 'run') || !chaseInZone(c.sp, P.x, P.y))) continue;   /* (a zone: its start line counts only there) */
     for (const e of chaseStep(c.sp, c.st, chaseHero(c.sp), dt)) chaseEvent(c, e);
     const k = chaseDanger(c.sp, c.st, chaseHero(c.sp)); c.st.rumT -= dt; const r = rumbleFor(k);
     if (r && c.st.rumT <= 0) { shakeCam(r.n); rumble(80, 0.25 * k); c.st.rumT = r.every; } }
@@ -24743,7 +24736,6 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.fields) drawFieldsTiles(cx, cy);   /* the phantom planks, the bales, the buildings' skins */
   if (L.mage) { drawMageTiles(cx, cy); drawArchImages(cx, cy); }   /* THE MAGE'S FOLLY: the tower's skins, the hedges, the holes, the cracks, the stacks and the ice; and the Archmage's images, behind every creature */
   drawCrumbles(cx, cy);   /* THE FALLING TOWER's failing stone: over its own skin, so its cracks are never painted out */
-  if (L.spiral && L.spiral.seals && !L.carpetUp) drawSeals(g, L.spiral.seals, cx, cy, time);   /* THE SPIRAL STAIR's wards, braziers and the fire going up to him (claude/undead3) */
   /* HIS HALL GOES ON AFTER THE TILES, NOT BEFORE THEM. Drawn first, the level's own tiles painted straight back over it -
      and the tower keeps two rows of CRENELLATIONS at rows 46-49, which are inside the room's box, so the merlons stood up
      through the floor of a sealed hall like masonry floating in mid-air. Nothing up here is supposed to be tiles at all

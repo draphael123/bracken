@@ -42,7 +42,7 @@
 import { crumbleInit, crumbleGone } from './tower-collapse.js';
 import { TOWER_FLYERS, FLAT, overFlat } from './tower-flyers.js';
 /* THE SPIRAL STAIR (Daniel, 2026-09-29): his ring on the parapet, the stair tower he is chased up, the carpet at its top - src/spiral-chase.js */
-import { buildSpiral, SPIRAL, TOP as SPIRAL_TOP, inSpiral } from './spiral-chase.js';
+import { buildSpiral, SPIRAL, TOP as SPIRAL_TOP, RISE as SPIRAL_RISE, inSpiral } from './spiral-chase.js';
 export const TOWER = { W: 72, H: 306, X0: 12, X1: 59, SKY: 50, FLOOR: 36, N: 7 };
 /* THE DESERT's rows (round 2, docs/briefs/falling-tower-round2.md §2), high in the empty sky rows where nothing else is built and no
    camera ever reaches except through the portal: sixteen rows over the sanctum's vault, which is itself painted and not built
@@ -374,7 +374,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra, interiors, gusts: [], flips, glyphBridges, crumbles,   /* FAILING STONE: src/tower-collapse.js */
     music: 'fallingtower', night: true, nightA: 0.12, edgeLit: true, duskStart: 99999, duskLen: 1, hasCryst: true,
     flatFlyers: { below: SKY }, calm: [[SAND.x0, SAND.x1, 0, SAND.deep + 1], [SPIRAL.x0 - 1, SPIRAL.x1 + 1, SPIRAL.top, SPIRAL.floor]],   /* (round 3) the sprinkler's flyers keep to flat ground under the parapet (his door's), and nothing of the tower's is sprinkled on the desert past the second door (a calm over the sky rows only: the tower itself has none) */
-    towerAscent: true, carpetAt: { x: SPIRAL_TOP.carpet * TS, y: SPIRAL_TOP.row * TS }, spiral,   /* (2026-09-29) the carpet lies at the top of THE SPIRAL STAIR now, before the door into his hall */ fallingTower: true, stackedFloors: true, skyRow: SKY,
+    towerAscent: true, carpetAt: { x: SPIRAL_TOP.carpet * TS, y: SPIRAL_TOP.row * TS }, spiral, chases: [{ ...SPIRAL_RISE }],   /* (claude/towerscroll) THE RISING DARK up the spiral stair: src/chase.js's chaser, the climb an upward auto-scroller */   /* (2026-09-29) the carpet lies at the top of THE SPIRAL STAIR now, before the door into his hall */ fallingTower: true, stackedFloors: true, skyRow: SKY,
     /* THE ARCHMAGE'S SANCTUM (src/sanctum.js). `in` is the door on the parapet and stands exactly where the carpet used
        to lie, so the carpet's own board check opens it; `spawn` is where you come out, inside his hall and well over the
        fire; `sand` is where the second door puts you when he is down. `out` is not here because it is not decided here:
