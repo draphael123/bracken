@@ -15,6 +15,7 @@
 import assert from 'node:assert/strict';
 import { LEVELS, T, TS } from '../src/level.js';
 import { pacing } from './pacing.mjs';
+import { assertRule } from './checkpoint-rule.mjs';
 import { VENT } from '../src/burial-expansion.js';
 
 const lv = LEVELS.find(l => l.id === 'burial'), L = lv.build(), out = [];
@@ -98,9 +99,8 @@ const harm = (L.pools || []).filter(p => p.harm), pitOf = p => [p.x0 / TS, p.x1 
   assert(x1 - x0 + 1 >= 60 && x1 - x0 + 1 <= 100, 'the exam is ' + (x1 - x0 + 1) + ' cols (S3: the last 60-100)');
   out.push('S3: the exam ' + x0 + '-' + x1); }
 // 8. S4 and S5 along the walked route
-{ const r = pacing(lv), c = r.stats.checkAt, gaps = c.slice(1).map((v, i) => [c[i], v]), close = gaps.filter(([a, b], i) => b - a < 40 && i < gaps.length - 1);
-  assert.deepEqual(close, [], 'S4: checkpoints closer than 40 route tiles: ' + JSON.stringify(close));
-  assert(r.stats.maxCheckGap <= 120, 'S4/B6: a run of ' + r.stats.maxCheckGap + ' route tiles with no checkpoint');
+{ const r = pacing(lv), c = r.stats.checkAt, gaps = c.slice(1).map((v, i) => [c[i], v]);
+  assertRule(lv, r, L);   /* RULES S4 as changed 2026-09-29 (Daniel: one per section): at most 175 apart, at least 80, one before every door - was 40 and 120 */
   assert.equal(r.stats.checksOnRoute, r.stats.checksTotal, 'a checkpoint off the walked route');
   const free = L.ents.filter(e => e.t === 'mend' && !e.stash).length;
   assert(free <= Math.floor(c.length / 2), 'S5: ' + free + ' free hearts for ' + c.length + ' checkpoints');

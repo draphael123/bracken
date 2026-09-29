@@ -10,9 +10,9 @@ assert(L.airRooms.length>=12);
 assert(!L.mini,'the Keep has no mini any more');assert(!L.ents.some(e=>e.vaultKeeper||e.mini),'nothing in the Keep is a mini');
 for(const x of [238,258]){assert.equal(L.grid[40*L.W+x],T.PORT);assert.equal(L.grid[30*L.W+x],T.AIR);assert(L.deep.gates.some(q=>q.col===x));}
 assert(L.ents.filter(e=>e.t==='ballast').length>=2);assert(L.deep.currents.length>=4);assert(L.deep.clams.some(e=>e.x===368));
-/* THE AIR HALLS: dry (no pool over their room), walked (a floor under it), with a checkpoint, a knight on the floor and failing stone */
+/* THE AIR HALLS: dry (no pool over their room), walked (a floor under it), a knight on the floor and failing stone */
 for(const H of KEEP_HALLS){const mid=Math.round((H.x0+H.x1)/2)*16,wet=L.pools.some(p=>p.swim&&mid>p.x0&&mid<p.x1&&(H.floor-2)*16>=p.y);
- assert(!wet,H.name+' is under water');assert(L.ents.some(e=>e.t==='check'&&e.x>=H.x0&&e.x<=H.x1&&e.y===H.floor-1),H.name+' has a checkpoint on its floor');
+ assert(!wet,H.name+' is under water');/* (a shrine on every hall's floor was an old-density rule - RULES S4, one per section, claude/checkpoints 2026-09-29; the halls keep their dry floor, their knight and their failing stone) */
  assert(L.ents.some(e=>e.t==='drownedknight'&&e.x>=H.x0&&e.x<=H.x1&&e.y===H.floor-1),H.name+' has a knight on its floor (F4: combat, swim, combat)');
  assert(L.crumbles.some(c=>c.x0>=H.x0&&c.x1<=H.x1),H.name+' has failing stone');assert(L.ents.some(e=>e.t==='rockfall'&&e.x>=H.x0&&e.x<=H.x1),H.name+' has told rockfalls');}
 /* A CASTLE: every section of the approach has its own wall and its own landmark */

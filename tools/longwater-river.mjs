@@ -6,8 +6,10 @@
 //             and on the dry ground it runs over, a stone to stand on is never more than six tiles away (any level with L.bore)
 //   lesson    the first swim pool, which comes before the swim sign, is empty
 //   rocks     no two creatures on one tile, and no creature on or beside a checkpoint
-//   spacing   checkpoints 40..100 route columns apart (RULES S4, B6), except the one at the Herald's door
+//   spacing   one checkpoint per section (RULES S4, changed 2026-09-29): 80..175 route tiles apart, one before every door
 import { LEVELS, T, TS, SEA_ONLY } from '../src/level.js';
+import { pacing } from './pacing.mjs';
+import { assertRule } from './checkpoint-rule.mjs';
 
 const SEA_DECO = new Set(['coralTuft', 'barnacleRock', 'kelp', 'shell']);
 const NOT_FOE = new Set(['coin', 'deco', 'sign', 'check', 'npc', 'mover', 'silver', 'stray', 'gate', 'sluice', 'relic', 'key', 'mend', 'lockgate', 'doorway', 'seabell']);
@@ -47,11 +49,8 @@ for (const lv of LEVELS) {
   const foes = L.ents.filter(e => !NOT_FOE.has(e.t)), checks = L.ents.filter(e => e.t === 'check');
   const seen = new Map(); for (const e of foes) { const k = e.x + ',' + e.y; if (seen.has(k)) say('rocks', 'longwater: ' + seen.get(k) + ' and ' + e.t + ' on one tile, ' + k); else seen.set(k, e.t); }
   for (const c of checks) for (const e of foes) if (Math.abs(e.x - c.x) <= 1 && Math.abs(e.y - c.y) <= 1) say('rocks', 'longwater: a ' + e.t + ' at ' + e.x + ',' + e.y + ' on the checkpoint at ' + c.x + ',' + c.y);
-  // spacing: RULES S4 (40) and B6 (100), the Herald's door excepted
-  const door = L.arena ? L.arena.wallL : Infinity, xs = checks.map(c => c.x).sort((a, b) => a - b);
-  for (let i = 1; i < xs.length; i++) { const d = xs[i] - xs[i - 1];
-    if (d > 100) say('spacing', 'longwater: ' + d + ' columns from the checkpoint at ' + xs[i - 1] + ' to ' + xs[i] + ' (B6: 100)');
-    if (d < 40 && !(xs[i] < door && door - xs[i] <= 8)) say('spacing', 'longwater: only ' + d + ' columns from the checkpoint at ' + xs[i - 1] + ' to ' + xs[i] + ' (RULES S4: 40)'); }
+  // spacing: RULES S4 as changed 2026-09-29 (Daniel: one per section) - along the walked route, at most 175 apart, at least 80, one before every door
+  try { assertRule(lv, pacing(lv), L); } catch (e) { say('spacing', lv.id + ': ' + e.message); }
 }
 if (fails.length) { for (const f of fails) console.log(f); console.log('\n' + fails.length + ' thing(s) wrong with the river.'); process.exitCode = 1; }
-else console.log('longwater-river: the river is fresh to Saltreach, the Bore is told and has stones, the lesson pool is empty, one thing to a rock, checkpoints 40-100 apart.');
+else console.log('longwater-river: the river is fresh to Saltreach, the Bore is told and has stones, the lesson pool is empty, one thing to a rock, checkpoints one per section (80-175 route tiles apart).');

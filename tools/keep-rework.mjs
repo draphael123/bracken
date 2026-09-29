@@ -13,6 +13,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync } from 'fs';
 import { LEVELS, T, TS } from '../src/level.js';
 import { pacing } from './pacing.mjs';
+import { assertRule } from './checkpoint-rule.mjs';
 import { KEEP_ROOMS, KEEP_LANDMARKS } from '../src/keep-looks.js';
 import { airBoxes } from '../src/deepair.js';
 
@@ -68,7 +69,7 @@ const X = S["THE KING'S DOOR"], A = L.arena, inX = e => e.x >= X.x0 && e.x <= X.
 // 6. S4 and S5 along the main route
 { const r = pacing(lv), c = r.stats.checkAt, end = r.cum[r.cum.length - 1];
   const gaps = c.slice(1).map((v, i) => [c[i], v]), close = gaps.filter(([a, b], i) => b - a < 40 && i < gaps.length - 1);
-  assert.deepEqual(close, [], 'S4: checkpoints closer than 40 route tiles: ' + JSON.stringify(close));
+  assertRule(lv, r, L);   /* RULES S4 as changed 2026-09-29 (Daniel: one per section): at most 175 apart, at least 80 (a door one excepted) - was 40 */
   const free = L.ents.filter(e => e.t === 'mend' && !e.stash).length;
   assert(free <= Math.floor(c.length / 2), 'S5: ' + free + ' free hearts for ' + c.length + ' checkpoints');
   out.push('S4: ' + c.length + ' checkpoints on the route, closest pair ' + Math.min(...gaps.slice(0, -1).map(([a, b]) => b - a)) + ' route tiles, worst gap ' + r.stats.maxCheckGap + '; S5: ' + free + ' free hearts'); }

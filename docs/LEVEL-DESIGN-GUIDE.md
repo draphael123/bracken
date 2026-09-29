@@ -21,7 +21,7 @@ Every level lane reads it before it builds. When a rule here and a number elsewh
 
 ## 2. Difficulty
 - **Hard by placement, not by numbers** (RULES S): foes where they make the ground harder, jumps that can fail, an exam before
-  the boss, checkpoints spaced, healing earned. "Without overwhelming players with tons of enemies."
+  the boss, checkpoints spaced (one per section, ~120-160 walked tiles apart and always one before every boss/mini/ambush door - RULES S4, Daniel 2026-09-28), healing earned. "Without overwhelming players with tons of enemies."
 - **Levels were too easy next to their bosses.** Close that gap with the level, not by softening bosses.
 - **Nothing annoying:** no health sponges, untold off-screen shots, stun-locks, untold knockback into pits, respawns.
 - **Meters squeeze** (the desert sun drains harder the longer you stay out, with shade to earn).

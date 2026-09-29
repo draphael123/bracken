@@ -1,3 +1,4 @@
+import { THIN, CHECK_DROP } from './checkpoint-thin.js';
 import {polishTower,buildTowerAscent} from './tower-ascent.js';
 import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER's flyers keep to its floors (round 3): the sprinkler asks it too (L.flatFlyers) */
 import {buildBurningVillage} from './burning-village.js';
@@ -4363,7 +4364,7 @@ function longWater() {
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 7 }, pools, falls, moversExtra: movers, airRooms, deep: D,
     duskStart: 99999, duskLen: 1, music: 'longwater', night: false,
-    checkRun: 100, noStack: true, calm: [[13, 19, 9, 15], [33, 39, 13, 19], [122, 127, 22, 28], [164, 169, 21, 26], [256, 261, 21, 26]],   /* the sprinkler steps past a hand-placed foe's tile, and leaves the two swim-lesson pools, the scout by the last lip and the two manned rocks alone (the Linn and the Bore Reach add their own) */
+    noStack: true, calm: [[13, 19, 9, 15], [33, 39, 13, 19], [122, 127, 22, 28], [164, 169, 21, 26], [256, 261, 21, 26]],   /* the sprinkler steps past a hand-placed foe's tile, and leaves the two swim-lesson pools, the scout by the last lip and the two manned rocks alone (the Linn and the Bore Reach add their own) */
     wetZone: [0, 107], fresh: [0, 277], bore: { x0: 140 * TS, x1: 278 * TS, surface: 28 * TS + 4, period: 12, speed: 280, h: 30 },
 
     palette: { set: 'shore', sky: 'sea', far: 'sea', mid: 'coast', near: 'shore', fg: 'shore', dress: 'shore', haze: 'rgba(248,220,176,0.10)',
@@ -7814,7 +7815,7 @@ function checkpoints(L) {
   // 2. and no run longer than seventy-two
   /* A LEVEL MAY ASK FOR THE CEILING (L.checkRun): B6 says a hundred columns, and RULES S4 (2026-09-25) says no two closer than forty, so
      a level spaced to S4 by hand must not have this put one back between two of them. THE LONG WATER asks for 100. */
-  const MAXRUN = L.checkRun || 72;
+  const MAXRUN = L.checkRun || 150;   /* was 72 until 2026-09-29: one shrine a section, not one every seventy tiles (RULES S4) */
   const place = (want) => {
     let best = null, bd = 1e9;
     for (let x = 4; x < W - 4; x++) for (let y = 2; y < H - 2; y++) {
@@ -8320,4 +8321,10 @@ export function groundCheckpoints(L) {
     if (!moved && !checkStands(L, e.x, e.y, false)) for (const d of [1, -1, 2, -2, 3, -3]) if (checkStands(L, e.x + d, e.y, false) && L.grid[e.y * L.W + e.x + d] === T.AIR && L.grid[(e.y - 1) * L.W + e.x + d] === T.AIR) { e.x += d; break; } }
   return L;
 }
-for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => groundCheckpoints(b(...a)); }
+/* ABOUT HALF AS MANY CHECKPOINTS (claude/checkpoints, 2026-09-29; Daniel: "too many checkpoints is part of the problem"): after the build and the grounding, so the
+   coordinates are the FINAL ones tools/checkpoint-thin.mjs measured, the checkpoints its route walk did not need are taken out (src/checkpoint-thin.js) */
+export function thinCheckpoints(L, id) {
+  const drop = !THIN.off && CHECK_DROP[id]; if (!drop || !L || !L.ents) return L;
+  L.ents = L.ents.filter(e => e.t !== 'check' || !drop.some(([x, y]) => x === e.x && y === e.y)); return L;
+}
+for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => thinCheckpoints(groundCheckpoints(b(...a)), lv.id); }

@@ -28,6 +28,8 @@ import { T, LEVELS } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { UF } from '../src/unburied-field.js';   /* the level's FINAL geometry (the bridges grown in at 265); the draft is the greybox record */
 import { audit } from './route-breaks.mjs';
+import { pacing } from './pacing.mjs';
+import { assertRule } from './checkpoint-rule.mjs';
 
 const SOURCE = 'LEVELS src/unburied-field.js';
 const build = () => LEVELS.find(l => l.id === 'unburied').build();
@@ -189,7 +191,7 @@ const checks = of('check').sort((a, b) => a.x - b.x);
 for (const c of checks) assert.ok(near(c), 'checkpoint at ' + c.x + ',' + c.y + ' is reached');
 { let prev = 0, worst = 0, at = 0; for (const c of checks) { if (c.x - prev > worst) { worst = c.x - prev; at = c.x; } prev = c.x; }
   if (W - 1 - prev > worst) { worst = W - 1 - prev; at = W - 1; }
-  assert.ok(worst <= 100, 'B6: checkpoints every 100 columns - worst gap ' + worst + ' ending at ' + at);
+  assertRule(LEVELS.find(l => l.id === 'unburied'), pacing(LEVELS.find(l => l.id === 'unburied')), L);   /* RULES S4 as changed 2026-09-29 (Daniel: one per section): was every 100 columns */
   assert.ok(checks.some(c => c.x < UF.ARENA.x0 && c.x > UF.ARENA.x0 - 12), 'B6: one checkpoint just outside the arena walls');
   ok('checkpoints', checks.length + ', worst gap ' + worst); }
 for (const e of L.encounters) assert.ok(e.n >= 3 && e.n <= 5, 'encounters are 3-5: ' + e.name + ' is ' + e.n);

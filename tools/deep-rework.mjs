@@ -65,7 +65,7 @@ for (const [a, b, dy] of SHIP.hatches) {
   assert.ok(stones.length >= 2, 'the deck over the hatch at ' + a + '-' + b + ' has stones to carry down it (' + stones.length + ')');
 }
 { const [a, b] = SHIP.breach, keel = Y + SHIP.rows - 5; for (let x = a; x <= b; x++) assert.equal(at(x, keel), T.AIR, 'her bilge is stove in at ' + x); }
-assert.ok(L.ents.filter(e => e.t === 'check' && e.y >= Y && e.y < Y + SHIP.rows).length >= 3, 'the ship carries its checkpoints');
+assert.ok(L.ents.filter(e => e.t === 'check' && e.y >= Y && e.y < Y + SHIP.rows).length >= 1, 'the ship carries a checkpoint (was three: one per section now, RULES S4, claude/checkpoints 2026-09-29)');
 
 /* AND THE WAY THROUGH HER IS OPEN: a body two tiles tall floods from the start to the Bell Grave's door (the first cut stood a mast from her deck
    to the rock and sealed the throat's landing off from the rest of her; tools/breath.mjs saw it as 'not reachable through the water') */
