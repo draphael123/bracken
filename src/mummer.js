@@ -39,7 +39,8 @@ export const newMummer = (x, y, face = -1) => ({ x, y, face, mode: 'still', t: 0
 /* one frame of a mummer. world = { heroes:[{x,y,face,alive}], canStep(x, dir) -> can it walk on }. Returns events: freeze, wake, bell, glow, strike { box, dmg } */
 export function mummerStep(s, w, dt) {
   const evs = [], C = MUMMER; s.vx = 0;
-  const near = nearestHero(s, w.heroes, C.sight, C.sightY), seen = facedBy(s, w.heroes, C.sight, C.sightY);
+  /* w.sight / w.sightY: a shorter LOOK (THE WICKER QUEEN's full dark, claude/fair3: only a near look holds her crowd). It finds its hero as far as ever */
+  const near = nearestHero(s, w.heroes, C.sight, C.sightY), seen = facedBy(s, w.heroes, w.sight || C.sight, w.sightY || C.sightY);
   const toward = () => { if (near) s.face = Math.sign(near.x - s.x) || s.face; };
   switch (s.mode) {
     case 'still':

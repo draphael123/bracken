@@ -159,7 +159,7 @@ if (fair) {
     ok(stacks.length >= 8, 'the fair has ' + stacks.length + ' haystack bouncer tiles (the Sporewood cap bounce): fewer than 8');
     ok(stacks.some(([x]) => x >= arc.combine[0] && x < arc.combine[1]), 'no haystack bouncers in the COMBINE section');
     for (const h of horse) ok(h.range === undefined || h.range > 0, ''); }
-  // THE GREEN: the boss room, greybox: a door and a checkpoint before it, no boss yet
+  // THE GREEN: the boss room: a door and a checkpoint before it, and (L3) THE WICKER QUEEN in it
   ok(L.green && L.green.x0 < L.green.x1 && L.green.door > 0 && L.green.x1 - L.green.x0 >= 30, 'the green (the maypole room) is not there or is too small: ' + JSON.stringify(L.green));
   if (L.green) {
     const cks = L.ents.filter(e => e.t === 'check').map(e => e.x);
@@ -167,7 +167,8 @@ if (fair) {
     ok(!cks.some(x => x >= L.green.x0 && x <= L.green.x1), 'a checkpoint stands inside the green');
     ok(L.ents.some(e => e.t === 'gate' && e.x >= L.green.x0), 'the green has no gate at its far end');
     ok(L.green.maypole > L.green.x0 && L.green.bonfire > L.green.maypole && L.green.bonfire < L.green.x1 && L.green.floor > 0, 'the green has no maypole and bonfire');
-    ok(!L.arena && !L.ents.some(e => e.t === 'closedhelm' || e.boss), 'the fair already has a boss (this lane builds the green as a greybox)');
+    /* L3 (claude/fair3): the green is THE WICKER QUEEN's arena now - one boss, and only her (tools/wicker-queen.mjs asks the rest of her) */
+    ok(L.arena && L.arena.boss === 'wickerqueen' && L.ents.filter(e => e.t === 'wickerqueen').length === 1 && !L.ents.some(e => e.t === 'closedhelm' || e.boss), 'the green is not the Wicker Queen\'s arena, with her alone in it: ' + JSON.stringify(L.arena));
     ok(horse.some(h => h.elite && h.gate === L.green.door && Math.abs(h.x - L.green.door) >= 5 && h.x < L.green.door), 'the elite hobby-horse does not hold the door of the green (elite: true, gate: the door column)'); }
   ok(L.duskStart !== undefined && L.duskLen > 100 * TS, 'the fair does not go from sunset to dusk over its length (duskStart/duskLen)');
   ok(L.music === 'marketday' || !!L.music, 'the fair has no music');

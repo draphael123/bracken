@@ -126,6 +126,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      glowing mask and its bells - a read (where to LOOK) rather than a fight. WEIGHED UP after Daniel approved the greybox (2026-09-29): the fair read INDEX 34 against ~117 and no bodies are to be added, so a mummer is a 5 (constant attention: you may never turn your back) and the hobby-horse a 6 (the elite that charges 22 the moment
      a back is turned, committed and long) */
   mummer: 5, hobbyhorse: 6,
+  /* THE WICKER QUEEN, the fair's boss (claude/fair3): a boss is a 6 */
+  wickerqueen: 6,
   /* THE DUNE WORM, the caravan's boss (2026-09-25): a boss is a 6. awningwinch is his trap and the camp's machine - furniture */
   duneworm: 6, awningwinch: 0,
 };

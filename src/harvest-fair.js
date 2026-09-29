@@ -8,7 +8,7 @@
 //   246-374  THE CAROUSEL      TWIST    ride it and it TURNS you (warned); the one you were holding frozen is behind you now
 //   374-502  THE HAYRICKS      COMBINE  hobby-horses on the lane and HAYSTACKS (the Sporewood cap bounce) to clear spikes and the charge
 //   502-620  THE LAST ROUND    EXAM     a mummer, a small carousel with a mummer and a horse on it, a haystack, and THE DOOR GUARD (the elite hobby-horse that holds the green's door)
-//   622-672  THE MAYPOLE GREEN the boss room (greybox, no boss yet): a maypole and a bonfire, a door, a checkpoint before it, a gate at the far end
+//   622-672  THE MAYPOLE GREEN THE WICKER QUEEN (claude/fair3, src/wicker-queen.js): a maypole and a bonfire, a door, a checkpoint before it, a gate at the far end
 // Checkpoints: one per section (8, 124, 252, 380, 508) and the door's (600): 92-128 apart, none inside the green.
 export const FAIR = { W: 672, H: 36, R: 28 };
 export const ARC = { teach: [0, 118], develop: [118, 246], twist: [246, 374], combine: [374, 502], exam: [502, 618] };
@@ -53,8 +53,9 @@ export function buildHarvestFair({ painter, T, TS }) {
   plat(90, S - 3, 5); ent('coin', 92, S - 4); ent('coin', 94, S - 4);   /* a stall roof to hop, the first thing above the road */
   pit(100, 102); coins([100, S - 3], [101, S - 4], [102, S - 3]);
   ent('deco', 112, S, { kind: 'fence', v: 0 });
-  /* THE ROOF CACHE: a stair of three roofs over the flat lane, and the relic (soles: the fair's players creep in felted feet) on the top one. The lane under it is flat, so a fall costs nothing */
-  plat(105, S - 3, 3); plat(109, S - 6, 3); plat(113, S - 9, 3); coins([106, S - 4], [110, S - 7]); ent('relic', 114, S - 10, { kind: 'soles' });
+  /* THE ROOF CACHE: a stair of three roofs over the flat lane, and a purse on the top one (the relic it held in L2 - the soles - is the Wicker Queen's reward now,
+     claude/fair3: the fair's one relic slot drops where she burns). The lane under it is flat, so a fall costs nothing */
+  plat(105, S - 3, 3); plat(109, S - 6, 3); plat(113, S - 9, 3); coins([106, S - 4], [110, S - 7], [113, S - 10], [114, S - 10], [115, S - 10], [114, S - 11], [113, S - 11]);
 
   // ---------------- 2. THE STALL STAIR (118-246): DEVELOP ----------------
   ent('check', 124, S); post(120); stall(126, 1); ent('deco', 130, S - 7, { kind: 'bunting', hang: true });
@@ -112,18 +113,21 @@ export function buildHarvestFair({ painter, T, TS }) {
   ent('check', 600, S);                                   /* the door's checkpoint: the last one the road passes before the green */
   foe('hobbyhorse', 608, { elite: true, gate: 620 });     /* THE DOOR GUARD, the level's ELITE: it holds the green's door (the gate comes down over it) until it is dead. Facing it, it cannot charge: that is the exam's last answer */
 
-  // ---------------- THE MAYPOLE GREEN (622-672): the boss room, greybox ----------------
+  // ---------------- THE MAYPOLE GREEN (622-672): THE WICKER QUEEN's arena (claude/fair3, src/wicker-queen.js) ----------------
   const G = { x0: 622, x1: 668, door: 620, maypole: 640, bonfire: 654, floor: R };
   block(620, 621, 0, R - 1);                              /* the door: a narrow gap under a lintel, then the green */
   for (let y = S - 3; y <= S; y++) { set(620, y, T.AIR); set(621, y, T.AIR); }
   block(669, 671, 0, R - 1);                              /* the wall behind the gate */
-  sign(624, 'THE GREEN. THE MAYPOLE, THE BONFIRE, AND WHOEVER DANCES ROUND THEM. (NO ONE YET.)');
-  ent('gate', 666, S);
+  sign(616, 'THE GREEN. SHE MOVES ONLY WHEN YOU LOOK AWAY. HER RIBBONS DO NOT WAIT.');   /* outside the door, beside its checkpoint: read before the walls close */
+  ent('wickerqueen', 662, S, { face: -1 });               /* THE WICKER QUEEN, past the bonfire: to draw her across it you turn your back on her */
+  ent('relic', 646, S, { kind: 'soles', bossDrop: true });   /* THE FAIR'S ONE RELIC is hers now: hidden until she falls, then it lies where she burned (spawn case 'relic') */
+  ent('gate', 666, S);                                    /* and the road goes on from here once she is down (gateAfterBoss) */
+  const arena = { x0: 623 * TS, x1: 667 * TS, floor: R * TS, y0: (R - 14) * TS, trigger: 627 * TS, wallL: 622, wallR: 667, boss: 'wickerqueen', music: 'houndmaster', tint: '#2a1a30', tintA: 0.12, fx: 'embers' };
 
   const tints = [[0, 118, [255, 196, 110], 0.10], [118, 246, [255, 160, 90], 0.12], [246, 374, [235, 120, 110], 0.14], [374, 502, [170, 100, 150], 0.16], [502, 622, [80, 80, 160], 0.18], [622, W, [60, 60, 130], 0.20]];
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: S }, pools: [], falls: [], moversExtra: [], interiors: [],
-    carousels, haystacks, lamps: lampsOut(lamps), arc: ARC, stair: { x0: 150, top: 162 }, green: G, tints,
+    carousels, haystacks, lamps: lampsOut(lamps), arc: ARC, stair: { x0: 150, top: 162 }, green: G, tints, arena, gateAfterBoss: true,
     music: 'marketday', duskStart: 120 * TS, duskLen: 520 * TS,         /* sunset at the gate; dusk by the last round */
     palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town',
       haze: 'rgba(230,160,110,0.14)', murkCol: '#2e2a34',
