@@ -1217,6 +1217,20 @@ Object.assign(SFX, {
   javCatch() { tone('square', vary(300), 200, 0.05, 0.06); noise(0.04, 0.1, 1400, 0.9); },
   springLand() { SFX.braceStop(); tone('sine', 110, 50, 0.3, 0.2); },
   stretch() { tone('triangle', 520, 1040, 0.35, 0.06); bell(1568, 0.4, 0.05, 0.12); },
+  /* A HERO'S OWN VICTORY JINGLE (dances lane, 2026-09-29), one short phrase each, played as the dance starts (and again on each turn of
+     an emote left running): the knight's salute is a fanfare on the steel; the pyromancer's a run of sparks; the freebooter's a jig in
+     six-eight; the death knight's two low tolls and a rising green chord; the geomancer's stones knocked out in a pattern; the
+     warden's a whoosh and a spear-tip ring; the paladin's a swelling choir with a bell over it. */
+  dance(h) {
+    const T = (type, notes, dur, v, gap, at = 0) => notes.forEach((f, i) => tone(type, f, f, dur, v, at + i * gap));
+    if (h === 'pyro') { T('triangle', [523, 659, 784, 1047, 1319, 1047, 1319], 0.16, 0.1, 0.09); crackle(6, 0.05); noise(0.5, 0.05, 3400, 1.2, 0.5); }
+    else if (h === 'pirate') { T('square', [392, 494, 587, 494, 587, 784, 587, 494, 392], 0.11, 0.06, 0.1); T('triangle', [196, 196, 196, 196], 0.14, 0.12, 0.225); }
+    else if (h === 'reaper') { bell(147, 1.1, 0.16); bell(110, 1.3, 0.16, 0.55); pad('sawtooth', 110, 165, 1.1, 0.05, 0.6, 700); T('triangle', [220, 277, 330], 0.5, 0.06, 0.15, 0.75); }
+    else if (h === 'geomancer') { [165, 220, 165, 196, 247, 196].forEach((f, i) => { tone('sine', f, f * 0.6, 0.16, 0.16, i * 0.15); noise(0.05, 0.12, 700 + (i % 3) * 250, 1.2, i * 0.15); }); pad('triangle', 165, 220, 1.0, 0.05, 0.05, 900); }
+    else if (h === 'warden') { noise(0.3, 0.1, 2600, 1.1); tone('triangle', 300, 1200, 0.28, 0.06); T('triangle', [440, 587, 740, 880], 0.2, 0.09, 0.11, 0.3); bell(1760, 0.6, 0.05, 0.75); }
+    else if (h === 'paladin') { pad('sine', 262, 262, 1.3, 0.08, 0, 1400, 0.25); pad('sine', 330, 330, 1.3, 0.07, 0.1, 1400, 0.25); pad('sine', 392, 392, 1.3, 0.07, 0.2, 1400, 0.25); bell(1568, 1.0, 0.07, 0.7); }
+    else { T('square', [392, 392, 523, 659, 784], 0.16, 0.06, 0.13); T('triangle', [392, 392, 523, 659, 784], 0.16, 0.1, 0.13); bell(2093, 0.8, 0.05, 0.7); noise(0.08, 0.1, 3800, 1.6, 0.66); }
+  },
   danceThrust() { noise(0.06, 0.12, 3200, 1.4); tone('triangle', vary(1100), 700, 0.05, 0.03); },
   rainCall() { tone('triangle', 300, 1200, 0.4, 0.07); noise(0.4, 0.12, 2400, 0.8); bell(2093, 0.5, 0.04, 0.3); },
   rainHit() { tone('square', vary(260), 130, 0.06, 0.05); noise(0.05, 0.1, 1100, 0.8); },

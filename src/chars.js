@@ -418,20 +418,20 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
     const drop = KF({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], sword: [sh[0] + 2, sh[1] + 2, sh[0] + 9, sh[1] + 6], plume: 2 });
     const thud = KF({ dy: 1, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 6], plume: 2 });   /* back in the turf as the idle has it: one pixel, not three */
     F.fidget = holdFrames([[lift, 2], [a, 2], [b, 2], [c, 2], [d, 3], [turn, 3], [back, 2], [drop, 2], [thud, 2], [F.idle[7], 2]]); }
-  /* HIS DANCE, for the victory card. He is the one hero in the wood carrying a BOARD, so his jig is a beat on it: the
-     blade swung up over the shoulder and rung off the top rim of the kite, twice, a stamp under each stroke and the
-     sparks coming off the steel. Nobody else has anything to hit, which is the whole reason this one is his. */
-  { const up = o => KF({ shield: true, ...o });
-    const spark = extra => [[14, 3, '#ffffff'], [13, 2, '#fff6c8'], [15, 2, '#fff6c8'], [15, 4, '#fff6c8'], ...(extra ? [[16, 1, '#fff6c8'], [12, 5, '#dfe8ff']] : [])];
-    const hiA = up({ dx: -1, legs: 'run1', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 4], sword: [sh[0] - 2, sh[1] - 4, sh[0] - 8, sh[1] - 10], plume: 1 });
-    const hiB = up({ dx: -1, legs: 'run5', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 5], sword: [sh[0] - 1, sh[1] - 5, sh[0] - 6, sh[1] - 11], plume: 2 });
-    /* the stroke lands ON the rim: the shield is painted after the sword, so the last inch of the blade goes behind
-       the oak and the spark - which is painted after everything - is what says the two of them met */
-    const ring = o => up({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 5], sword: [sh[0] + 2, sh[1] - 5, sh[0] + 7, sh[1] - 2], ...o });
-    const ring1 = ring({ legs: 'runC', plume: 2, bits: spark(false) });
-    const ring2 = ring({ legs: 'wide', plume: 0, bits: spark(true) });
-    const lift = up({ legs: 'stand', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 2], sword: [sh[0] + 1, sh[1] - 2, sh[0] - 3, sh[1] - 8], plume: 1 });
-    F.dance = holdFrames([[hiA, 2], [ring1, 2], [lift, 1], [hiB, 2], [ring2, 2], [lift, 1]]); }
+  /* HIS DANCE (dances lane, 2026-09-29): THE SWORD SALUTE. The blade comes up off the turf to stand before his face, point to the
+     sky, and a glint runs up it; he holds it there, sweeps it out level to the field like a man presenting arms, brings it back
+     up, and then lowers it, and himself with it, in a bow. Six poses, and every one is the sword: nobody else here salutes. */
+  { const at = (o = {}) => KF({ legs: 'stand', plume: 0, ...o });
+    const hilt = (h, tx, ty, o = {}) => at({ arm: [sh[0], sh[1], sh[0] + 3, sh[1] - h], sword: [sh[0] + 3, sh[1] - h, tx, ty], ...o });
+    const glint = (x, y) => [[x - BX, y - BY, '#ffffff'], [x - BX - 1, y - BY + 1, '#fff6c8'], [x - BX + 1, y - BY + 1, '#fff6c8'], [x - BX, y - BY - 1, '#fff6c8']];
+    const ready = at({ sword: rest(), plume: 1 });
+    const draw = at({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], sword: [sh[0] + 2, sh[1] + 1, sh[0] + 7, sh[1] - 7], plume: 1 });
+    const up = hilt(3, sh[0] + 3, sh[1] - 11, { plume: 2 });
+    const upGlint = hilt(3, sh[0] + 3, sh[1] - 11, { plume: 1, bits: glint(sh[0] + 3, sh[1] - 11) });
+    const present = at({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], sword: [sh[0] + 4, sh[1] - 1, sh[0] + 13, sh[1] - 3], plume: 2, bits: [[sh[0] + 13 - BX, sh[1] - 3 - BY, '#ffffff'], [sh[0] + 12 - BX, sh[1] - 3 - BY, '#fff6c8']] });
+    const bow1 = at({ dy: 1, hy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], sword: [sh[0] + 2, sh[1] + 1, sh[0] + 4, sh[1] + 8], plume: 2 });
+    const bow2 = at({ dy: 2, hy: 2, sho: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], sword: [sh[0] + 3, sh[1] + 2, sh[0] + 5, sh[1] + 8], plume: 2 });
+    F.dance = holdFrames([[ready, 2], [draw, 2], [up, 3], [upGlint, 2], [up, 2], [present, 3], [upGlint, 2], [bow1, 2], [bow2, 4], [bow1, 2]]); }
   /* HIS SLUMP. Not the hurt frame: nothing has hit him. The helm sinks into the shoulders, the shoulders themselves
      sag (sho below zero drops the outer pixels instead of lifting them), the kite hangs off a slack arm down by his
      knee, and the sword is not held so much as leant on, its point out in the turf in front of his boots. */
@@ -2261,18 +2261,20 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     const plant = grip(1, { plume: 2, bits: [[10, 15, '#8a7a5a'], [14, 15, '#8a7a5a'], [9, 14, '#5a4e38'], [15, 14, '#5a4e38']] });
     const lean1 = grip(1, { hy: 1, plume: 1 }), lean2 = grip(1, { hy: 1, sho: 1, plume: 0 }), lean3 = grip(1, { hy: 1, plume: 1, bits: dim(1) }), lean4 = grip(1, { hy: 1, sho: 1, plume: 0, bits: dim(1) });
     F.fidget = holdFrames([[turn, 2], [lift, 2], [plant, 2], [lean1, 3], [lean2, 3], [lean3, 3], [lean4, 3], [lean1, 2], [lift, 2], [turn, 2], [F.idle[7], 1]]); }
-  /* HIS DANCE, for the victory card. The biggest and slowest of them does not jig: he HOISTS the two-hander over
-     his head on straight arms and stamps, and the whole frame goes up and down with him. Two beats where everyone
-     else has four, and the green in the helm comes up bright on each of them - the same two lights his fidget puts
-     OUT. A bar of steel as long as he is, held level above the horns, is a silhouette only he owns. */
-  { const st = (x0, y0, x1, y1, legs, dy, plume, lit) => knightFrame({ legs, dy, plume,
-      arm: [sh[0], sh[1], sh[0], sh[1] - 6], greatsword: [x0, y0, x1, y1],
-      bits: lit ? [[4, 3, '#dfffc0'], [5, 3, '#dfffc0']] : null });
-    const hoist = st(sh[0] - 6, sh[1] - 8, sh[0] + 8, sh[1] - 8, 'wide', -1, 1, true);
-    const dropL = st(sh[0] - 6, sh[1] - 5, sh[0] + 7, sh[1] - 9, 'runC', 1, 2, false);
-    const hoist2 = st(sh[0] - 6, sh[1] - 8, sh[0] + 8, sh[1] - 8, 'run3', -1, 2, true);
-    const dropR = st(sh[0] - 6, sh[1] - 9, sh[0] + 7, sh[1] - 5, 'wide', 1, 0, false);
-    F.dance = holdFrames([[hoist, 3], [dropL, 3], [hoist2, 3], [dropR, 3]]); }
+  /* HIS DANCE (dances lane, 2026-09-29): THE PLANT AND THE BOW. The biggest and slowest of them does not jig. The greatsword is
+     hauled up, turned point-down and driven into the ground before him with both fists on the pommel, and the green in the helm
+     flares as it bites. Then he bows over it - the helm goes down, the shoulders come round it, the lights hang low - holds it,
+     and straightens, the lights coming up again. Where his fidget leans on the blade with the lights gone OUT, this is the
+     blade planted to be honoured: the lights are lit for all of it. */
+  { const lit = hy => [[4, 3 + hy, '#dfffc0'], [5, 3 + hy, '#dfffc0']];
+    const grip = (dy, o = {}) => knightFrame({ dy, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], greatsword: [sh[0] + 3, sh[1] - 1, sh[0] + 4, sh[1] + 15 - dy], ...o });
+    const turn = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], greatsword: [sh[0] + 2, sh[1] + 2, sh[0] + 10, sh[1] - 8], plume: 1 });
+    const lift = knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 4], greatsword: [sh[0] + 3, sh[1] - 4, sh[0] + 4, sh[1] + 11], plume: 2, bits: lit(0) });
+    const plant = grip(1, { legs: 'wide', plume: 2, bits: [...lit(0), [10, 15, '#8a7a5a'], [14, 15, '#8a7a5a'], [9, 14, '#5a4e38'], [15, 14, '#5a4e38'], [8, 15, '#5a4e38'], [16, 15, '#5a4e38']] });
+    const stand = grip(1, { plume: 1, bits: lit(0) });
+    const bow1 = grip(2, { hy: 1, plume: 2, bits: lit(1) });
+    const bow2 = grip(3, { hy: 2, sho: 1, plume: 2, bits: lit(2) });
+    F.dance = holdFrames([[turn, 2], [lift, 3], [plant, 3], [stand, 3], [bow1, 3], [bow2, 6], [bow1, 2], [stand, 3]]); }
   /* HIS SLUMP: the greatsword is neither planted nor carried - it is DRAGGED, hanging off one hand with the point
      out in the dirt behind him, and both lights in the helm are gone out. His fidget leans on the blade standing
      up in front of him; this is the same blade given up on, lying the other way. */
@@ -2674,18 +2676,18 @@ export function bakePaladin(skin = {}, previewOnly = false) {
     const lower = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], maul: [sh[0] + 2, sh[1] + 1, sh[0] + 5, sh[1] + 8], plume: 2 });
     const thud = knightFrame({ dy: 1, maul: [sh[0] + 2, sh[1] + 1, sh[0] + 5, sh[1] + 8], plume: 2, bits: flap([3, 4], 1, 0, 'b', 'B') });
     F.fidget = holdFrames([[lift, 2], [hold, 2], [w1, 2], [w2, 2], [w3, 2], [w1, 1], [w2, 1], [w3, 2], [shine, 2], [shine2, 2], [lower, 2], [thud, 2], [F.idle[7], 1]]); }
-  /* HIS DANCE, for the victory card: he SWINGS THE MAUL. It goes up over the winged helm and over again, side to
-     side on a long arc, and the light he spends on MEND and JUDGEMENT comes on at the top of every swing. The head
-     of a maul is a block of steel seven pixels across - it is the biggest thing any hero swings through the air
-     here, and following it round is the whole read. His fidget only ever polishes it standing still. */
-  { const hx = sh[0] + 1, hy0 = sh[1] - 2;
-    const sw = (mx, my, legs, dy, plume, glow) => knightFrame({ legs, dy, plume, glow,
-      arm: [sh[0], sh[1], hx, hy0], maul: [hx, hy0, mx, my] });
-    const outL = sw(sh[0] - 6, sh[1] - 7, 'wide', 0, 1, null);
-    const overA = sw(sh[0] + 1, sh[1] - 10, 'runC', -1, 2, [sh[0] + 1, sh[1] - 14]);
-    const outR = sw(sh[0] + 8, sh[1] - 7, 'wide', 0, 2, null);
-    const overB = sw(sh[0] + 1, sh[1] - 10, 'run5', -1, 0, [sh[0] + 1, sh[1] - 14]);
-    F.dance = holdFrames([[outL, 2], [overA, 2], [outR, 2], [overB, 2]]); }
+  /* HIS DANCE (dances lane, 2026-09-29): THE MAUL RAISED TO THE LIGHT. It comes up across his chest, then straight up over the winged
+     helm on both straight arms, and the light he spends on MEND and JUDGEMENT comes down it: the glow at the head, rays running out
+     to either side, a pulse. He holds it up to be lit, the arms shake once with the weight of it, and it is brought down, blessed. */
+  { const up = (o = {}) => knightFrame({ arm: [sh[0], sh[1], sh[0], sh[1] - 6], maul: [sh[0], sh[1] - 3, sh[0], sh[1] - 8], ...o });
+    const across = knightFrame({ arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 3], maul: [sh[0] + 1, sh[1] + 3, sh[0] + 7, sh[1] - 1], plume: 1 });
+    const chest = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], maul: [sh[0] + 2, sh[1] + 2, sh[0] + 3, sh[1] - 6], plume: 2 });
+    const rays = (r) => { const cx = sh[0] - BX, cy = sh[1] - 13 - BY, b = []; for (let i = 3; i <= 3 + r; i++) { b.push([cx - i - 1, cy + (i >> 1) + 1, '#fff6c8'], [cx + i + 1, cy + (i >> 1) + 1, '#fff6c8']); } b.push([cx, cy + 3 + r, '#ffe9a0'], [cx - 1, cy + 3 + r, '#fff6c8'], [cx + 1, cy + 3 + r, '#fff6c8']); return b; };
+    const held = up({ legs: 'wide', dy: -1, plume: 1, glow: [sh[0], sh[1] - 13] });
+    const lit1 = up({ legs: 'wide', dy: -1, plume: 2, glow: [sh[0], sh[1] - 13], bits: rays(1) });
+    const lit2 = up({ legs: 'wide', dy: -1, plume: 0, glow: [sh[0], sh[1] - 13], bits: rays(3) });
+    const strain = up({ legs: 'wide', dy: 0, hy: 1, plume: 2, glow: [sh[0], sh[1] - 13], bits: rays(2) });
+    F.dance = holdFrames([[F.idle[0], 2], [chest, 2], [up({ dy: -1, plume: 1 }), 2], [held, 2], [lit1, 3], [lit2, 3], [strain, 2], [lit2, 3], [lit1, 2], [across, 2]]); }
   /* HIS SLUMP: he goes down on his knees over the maul, both gauntlets on the haft and the head of it in the
      ground, helm bowed to it - a man at a grave, not a man in a fight. There is no glow anywhere on him: the light
      is the one thing this hero always has, and the card is where he has not got it. */
@@ -4189,11 +4191,18 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
   /* HER FIDGET: the stave hoisted across the back of her shoulders, her wrists hung over it, a roll of the neck, and back to guard */
   { const yoke = (d, hy) => knightFrame({ dy: d, hy, arm: [X, Y, X + 1, Y - 4], arm2: [OFF[0], OFF[1], X - 5, Y - 4], stave: [X - 9, Y - 3, X + 7, Y - 5], plume: d ? 2 : 1 });
     F.fidget = holdFrames([[F.idle[0], 2], [yoke(0, 0), 3], [yoke(0, 1), 3], [yoke(1, 1), 3], [yoke(0, 0), 2], [F.idle[0], 2]]); }
-  /* HER DANCE: the stave twirled round her two hands like a baton, a full turn in eight, her feet stepping under it */
-  { const hx = X, hy0 = Y - 1;
-    F.dance = holdFrames([0, 1, 2, 3, 4, 5, 6, 7].map(k => { const th = k * Math.PI / 4;
-      return [knightFrame({ legs: k % 4 === 0 ? 'stand' : k % 2 ? 'runC' : 'wide', dy: k % 4 === 2 ? 1 : 0, plume: k % 3, arm: [X, Y, hx, hy0], arm2: [OFF[0], OFF[1], hx - 1, hy0 + 1],
-        stave: [Math.round(hx - 8 * Math.cos(th)), Math.round(hy0 + 8 * Math.sin(th)), Math.round(hx + 8 * Math.cos(th)), Math.round(hy0 - 8 * Math.sin(th))] }), 1]; })); }
+  /* HER DANCE (dances lane, 2026-09-29): THE STONES ROUND THE STAFF. The butt is struck into the ground upright before her, both hands
+     on it, and three stones lift out of the floor and go round it - grey, sand and the amber of the geode - wide and flat like a ring
+     seen from the side, the near half of each turn lower and bigger, the far half small and high. Her feet keep the time under it
+     and the geode at the head burns on the beat. A stave used to be twirled like a baton here; the stones are hers, the baton is not. */
+  { const cx = X + 3, cy = Y - 4, STONES = [M, D, A];
+    const ring = (k, dy, legs, plume, glow) => { const b = [];
+      STONES.forEach((col, s) => { const th = (k / 6 + s / 3) * Math.PI * 2, near = Math.sin(th) > 0;
+        const sx = Math.round(cx + 11 * Math.cos(th)), sy = Math.round(cy + 4 * Math.sin(th) + (near ? 1 : -1));
+        for (let qx = 0; qx < (near ? 3 : 2); qx++) for (let qy = 0; qy < (near ? 3 : 2); qy++) b.push(o(sx - X + qx, sy - Y + qy, col)); });
+      if (glow) b.push(o(4, -13, '#fff6c8'), o(3, -12, '#fff6c8'), o(5, -12, '#fff6c8'));
+      return knightFrame({ wide: 8, legs, dy, plume, arm: [X, Y, X + 3, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X + 3, Y + 9, X + 3, Y - 10], bits: b }); };
+    F.dance = holdFrames([0, 1, 2, 3, 4, 5].map(k => [ring(k, k % 3 === 2 ? 1 : 0, k % 2 ? 'wide' : 'runC', k % 3, k % 2 === 0), 2])); }
   /* HER SLUMP: the stave planted and her weight hung on it, the hood down */
   { const lean = (d, hy) => knightFrame({ dy: 1 + d, hy, sho: -1, legs: 'stand', plume: 0, arm: [X, Y, X + 4, Y - 2 + d], arm2: [OFF[0], OFF[1], X + 3, Y + d], stave: [X + 5, Y + 9, X + 5, Y - 7] });
     F.slump = [lean(0, 2), lean(1, 3)]; }
