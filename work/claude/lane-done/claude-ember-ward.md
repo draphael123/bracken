@@ -42,7 +42,7 @@ Base: master d78b15e (batch46, with the universal duck, src/duck.js). Opus lane.
   turn-in-place ward (she must not move, checked).
 
 ## Checks
-All green, run by name: **ember-ward** (new; red on the base: ), duck (updated as above),
+All green, run by name: **ember-ward** (new; red on the base: "no BK.ember: there is no ember ward"), duck (updated as above),
 tells, untold-told, answer-tags, combat-feel, juice, ability-poses, comments, homepaths, and the 7 REQUIRED: architecture, checkpoints,
 skins, dangling-paths, boss-fight-end, slopes-trace (unchanged for every level), npc-removal. ember-ward, duck, boss-fight-end and
 untold-told were run again on the final bot. ember-ward proves: yellow swipe blocked + heat 24 + singed; high armour swing still goes
