@@ -66,6 +66,7 @@ import { POGO_CHAIN, bounce as pogoBounce, firedropSpares } from './pogo-chain.j
 import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { COMBAT, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
+import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving } from './progression.js';
 import { depthsOf } from './campaign-order.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
@@ -4939,14 +4940,15 @@ function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
 // every blow used to hold the frame for the same three hundredths of a second, whatever it was. Weight it:
 // a tap is a tap, a heavy blow leans on it, and the blow that kills something leans hardest of all.
 function blowStop(e, dmg) {
-  let t = impactPause(dmg || 0);   /* HEAVIER HANDS: the stop leans harder on a big number */
-  if (P.heavy) t += 0.05;
-  if (P.combo === 3) t += 0.025; if (P.dash > 0 || P.dashAtk > 0) t += 0.02; if (e && e.broken > 0) t += 0.02;
-  t *= isPaladin() || isReaper() ? 1.35 : isPirate() ? 0.8 : 1;   /* the weight of the weapon is in the stop */
-  if (e.maxHp) t *= 0.8;          // a boss does not stop the world every time you touch it
-  hitstop(t);
+  /* THE FREEZE IS THE TABLE'S (src/juice.js): ~40 ms for a tap, ~90 ms for a heavy blow, a third cut, a dash cut or a break, and a boss opening a little more. Only ever asked on a LANDED blow (hurtEnemy0's hit branch), and 0 for a blow that did nothing. The same for every hero. */
+  const cls = blowKind(e, dmg), open = !!(e && e.maxHp && (e.open > 0 || e.broken > 0));
+  hitstop(stopFor(cls, { boss: !!(e && e.maxHp), opening: open, dmg }));
 }
-function shakeCam(n, k = 0) { const a = SET.shakeAmt === undefined ? (SET.shake ? 1 : 0) : SET.shakeAmt; if (a > 0) { shake = Math.max(shake, n * a); kick += k * a; } }
+/* WHICH WEIGHT A BLOW IS: a held heavy blow, the run's third cut, a dash cut, a poise-break or a big number is heavy; anything else a tap */
+const blowKind = (e, dmg) => blowClass({ dmg, heavy: !!(P.heavy || P.combo === 3 || P.dash > 0 || P.dashAtk > 0 || (e && e.broken > 0)) });
+/* the foe's recoil on the SCREEN only (it moves nothing): thrown out the frame it is hit, eased back over a seventh of a second */
+const recoilX = e => e.rec > 0 ? (e.recD || 1) * (e.recA || 0) * (e.rec / 0.14) * (e.rec / 0.14) : 0;
+function shakeCam(n, k = 0) { const a = SET.reduceMotion ? 0 : SET.shakeAmt === undefined ? (SET.shake ? 1 : 0) : SET.shakeAmt; if (a > 0) { shake = shakeAdd(shake, n, { amount: a }); kick = Math.max(-8, Math.min(8, kick + k * a)); } }   /* ONE SHAKE BUDGET (src/juice.js SHAKE_CAP): shakes top each other up, never stack past the cap; reduce-motion is none at all */
 function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 function zoomKick(amt, t = 0.14) { if (SET.shake && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
 /* A DODGE IS UNTOUCHABLE FOR AS LONG AS ITS OWN GRACE LASTS, not for as long as it lasts. P.dodgeInv is set at the
@@ -4994,6 +4996,12 @@ function reflectSeed(s) { s.dead = false; s.reflected = true; s.g = 0; s.life = 
   SFX.parry(); streaks(s.x, s.y, 5, ['#fff6e0', '#c9d1dc'], 120); }
 function phoenixBurst() { SFX.pyreBoom(); shakeCam(8); zoomKick(1.1, 0.3); ringAt(P.x, P.y - 10, 50, '#ff6b2c', 0.5); flame(P.x, P.y - 10, 24, 14, 110, 4); smoke(P.x, P.y - 10, 6, 10);
   for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 64 && Math.abs(e.y - P.y) < 50) { hurtEnemy(e, 20, P.x, false); e.burn = Math.max(e.burn || 0, 2); } }
+/* IS x, seen from a hero standing at y, above ground he can stand on? Down five rows: a floor that is not spikes and not a deadly pool. */
+function knockLandsSafe(x, y) {
+  const c = Math.floor(x / TS); if (c < 1 || c >= LW - 1) return false;
+  for (let r = Math.floor((y - 2) / TS); r <= Math.floor((y - 2) / TS) + 5 && r < LH; r++) if (isSolid(c, r)) return tileAt(c, r - 1) !== T.SPIKE && tileAt(c, r) !== T.SPIKE && !dcHazard(x, r * TS - 1);
+  return false;
+}
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null } = {}) {
   { const src = who || updFoe; if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE)); }   /* DISARMED: it fights bare */   /* who / blow / name: for the line under a death (killerOf) - the creature, its blow's name, or a hazard's name */
   if (!(dmg > 0)) dmg = 10; // a missing table entry must never poison the health bar
@@ -5094,7 +5102,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
       if (!rushUp) guardEarlySay();
       const push = guardPush(dmg), hard = push > 150;   /* a heavy blow on the shield SLIDES him */
       if (!rushUp) { P.vx = -P.face * push; if (hard) { dust(P.x - P.face * 4, P.y, 5); number(P.x, P.y - 22, 'PUSHED BACK', '#c9d1dc'); } }
-      hitstop(hard ? 0.08 : 0.05); shakeCam(hard ? 3 : 1.5, -P.face * 2); SFX.block(); impactAt(P.x + P.face * 9, P.y - 9, 'steel'); ringAt(P.x + P.face * 8, P.y - 9, 10, '#c9d1dc', 0.2);
+      { const bj = JUICE[hard || dmg >= JUICE.heavyTaken ? 'blockHeavy' : 'block']; hitstop(bj.stop); shakeCam(bj.shake, -P.face * bj.kick); SFX[bj.sfx](); } impactAt(P.x + P.face * 9, P.y - 9, 'steel'); ringAt(P.x + P.face * 8, P.y - 9, 10, '#c9d1dc', 0.2);
       sparks(P.x + P.face * 9, P.y - 8, P.face, 7);
       return 'blocked';
     }
@@ -5129,9 +5137,9 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   const dir = Math.sign(P.x - fromX) || -P.face;
   if (noKnock) { }                                          /* NO BLOW BEHIND IT: running out of air hurts where you are, it does not throw you */
   else if (armoured) { P.vx = dir * 60; }                       /* he rocks, he does not fly: the arc has to finish */
-  else { P.vx = dir * 150; P.vy = up ? -230 : -170; P.ground = false; }
+  else { P.vx = P.ground ? safeKnock(dir * 150, dx => knockLandsSafe(P.x + dx, P.y)) : dir * 150; P.vy = up ? -230 : -170; P.ground = false; }   /* THE THROW NEVER TAKES HIM OFF A LEDGE INTO A PIT: a shorter throw, or none, when the landing is a drop, spikes or deadly water (src/juice.js safeKnock) */
   if (isPirate() && (P.rum || 0) > 0) dmg = Math.round(dmg * 1.25);   // and he feels it more
-  hitstop(0.08); shakeCam(5, dir * 3); flash = 0.14; SFX.pHurt(); rumble(180, 0.8);
+  { const hj = JUICE[takenClass(dmg)]; hitstop(hj.stop); shakeCam(hj.shake, dir * hj.kick); flash = hj.flash; SFX[hj.sfx](); if (!armoured) squash(1 + hj.squash, 1 - hj.squash, 0.14); rumble(180, 0.8); }   /* THE HERO TAKING ONE: the table's hurt / hurt-heavy row, every hero the same */
   burst(P.x, P.y - 8, 8, ['#e04848', '#ffd36b'], 60, 0.4);
   number(P.x, P.y - 20, '-' + dmg, '#ff6b6b'); hitsTaken++;
   if (isPyro() && tal('emberSkin')) { const f = nearFoe(fromX); if (f) { f.burn = Math.max(f.burn || 0, 2.4); flame(f.x, f.y - f.h / 2, 4, 4, 40, 2); } }
@@ -5915,7 +5923,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
     e.alive = false; if(e.ambushLeader)e.defeated=true; kills++; xpKill(e); startle(e); pirateSpoils(e); reaperRites(e); leaveBody(e); if (L.hush && !e.quiet) noiseAt(e.x, e.y, e.maxHp ? 200 : HEAVY.has(e.t) ? 150 : 116, null); if (isPyro() && tal('conflagration') && e.burn > 0) { for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - e.x) < 46 && Math.abs(q.y - e.y) < 34) { q.burn = Math.max(q.burn || 0, 2.4); flame(q.x, q.y - q.h / 2, 4, 4, 40, 2); } ringAt(e.x, e.y - e.h / 2, 30, '#ff9a5c', 0.3); } // CONFLAGRATION
     if (!P.ground && !P.plunge && !P.dead && !e.maxHp) { P.vy = Math.min(P.vy, -210); P.canCut = true; squash(0.88, 1.18, 0.1); } // KILLED IT IN THE AIR: up you go (never DOWN from a pogo already thrown this frame: her fire finishing a head she just came up off cut the 330 to 210)
     if (isPaladin() && tal('wrath')) gainLight(10);   /* WRATH */ killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry = SFX.dieOf(voiceOf(e)); if (cry) cry(); else SFX.kill(); } if (e.t === 'shield' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief') SFX.heavy(); // every creature dies in its own voice
-    { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : 0.09); shakeCam(big ? 8 : 3, dir * 2); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
+    { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : stopFor('finish')); SFX.hitFinish(); shakeCam(big ? 8 : JUICE.finish.shake, dir * JUICE.finish.kick); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
     burst(e.x, e.y - e.h / 2, e.t === 'queen' ? 40 : 12, COLS[e.t], 100, 0.6);
     sparks(e.x, e.y - e.h / 2, dir, 6);
     spawnCorpse(e, dir); beastSlain(e.t);
@@ -5948,7 +5956,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
     if (glance) { /* IT GLANCED: no cry, no stop worth the name, no hurt pose, no flinch and no shove - it did not feel that, and it shows */ }
     else {
     const voice = SFX.hurtOf(voiceOf(e)); if (voice) voice(); else SFX.hit(); // every creature is hurt in its own voice if (e.t === 'thorn' || e.t === 'sprig' || e.t === 'archer' || e.t === 'sapper' || e.t === 'shield' || e.t === 'brute' || e.t === 'chief') SFX.hit();
-    if (!P.jetHit) { if(dmg>=COMBAT.staggerDamage)SFX.thump(); blowStop(e, dmg, false); shakeCam(P.heavy ? 3 : 1.5, dir * (P.heavy ? 3 : 1.5)); }   /* a flame ticking over them does not stop the world ten times a second */
+    if (!P.jetHit) { const jc = blowKind(e, dmg), JR = JUICE[jc]; if (jc === 'heavy') SFX.hitHeavy(); blowStop(e, dmg, false); shakeCam(JR.shake, dir * JR.kick); e.flash = Math.max(e.flash, JR.flash); e.sq = Math.max(e.sq || 0, JR.squash); e.rec = 0.14; e.recD = dir; e.recA = JR.recoil; }   /* a flame ticking over them does not stop the world ten times a second */
     sparks(e.x - dir * 2, e.y - e.h / 2, dir, P.heavy ? 9 : 5);
     if (P.heavy) { ringAt(e.x, e.y - e.h / 2, 16, '#fff6e0', 0.22); impactAt(e.x, e.y - e.h / 2, 'steel'); }
     e.hurtT = HAS_HURT.has(e.t) && !(e.t === 'masthead' && windingUp(e)) && !(e.t === 'prince' && (windingUp(e) || e.mode === 'buried' || e.mode === 'rise' || e.mode === 'cut')) ? 0.2 : 0;
@@ -21102,7 +21110,7 @@ function updateEnemies(dt) {
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
     { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (!wu && e.wuWas) { e.relT = 0.18; if (Math.abs(e.x - P.x) < 380 && SFX.foeRelease) SFX.foeRelease(e.t, MAT[e.t], !!e.maxHp || !!e.big); } e.wuWas = wu; }
     if (Math.abs(e.x - P.x) < 420) temper(e, dt);
-    e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - (P.relic === 'blackflag' ? dt * 0.66 : dt)); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt); if (e.breakFlash > 0) e.breakFlash -= dt;
+    e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - (P.relic === 'blackflag' ? dt * 0.66 : dt)); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt); if (e.rec > 0) e.rec = Math.max(0, e.rec - dt); if (e.breakFlash > 0) e.breakFlash -= dt;
     if (e.maxHp && e.alive && e.phase === 2 && !e.enragedFx) { e.enragedFx = true; enrageBeat(e); }
     if (e.enrageT > 0) { e.enrageT -= dt; if (Math.floor(e.enrageT * 16) % 2 === 0) e.flash = Math.max(e.flash, 0.04); }
     /* ONE WIND-UP AT A TIME: two foes near you starting their tells together land together, and that is not readable. The second waits a beat */
@@ -25176,7 +25184,7 @@ function drawWorld(cx, cy, showPlayer) {
  const rx = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx, ry = e.y - cy + bob + ps.dy; g.globalAlpha = 0.5;
       for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawSet(sprSet, null, frame, rx + ox, ry + oy, ps.face, true, pSX, pSY, 1, pRot);
       g.globalAlpha = 1; }
-    { const dx0 = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx, dy0 = e.y - cy + bob + ps.dy;
+    { const dx0 = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx + Math.round(recoilX(e)), dy0 = e.y - cy + bob + ps.dy;
       /* REMEMBERED FOR THE PASSES THAT COME AFTER THE WATER AND THE DARK (drawSwimmers, drawDarkRims): a creature in the water is
          painted over by the water, and one in the dark by the dark, and both used to vanish into what was over them */
       if (sprSet && e.alive && !e.harmless && (inWater || inGloom)) { const q = { set: sprSet, frame, x: dx0, y: dy0, face: ps.face, sx: pSX, sy: pSY, rot: pRot, white: e.flash > 0, a: g.globalAlpha }; if (inWater) swimQ.push(q); if (inGloom) darkQ.push(q); }
@@ -25487,7 +25495,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 1;
   }
   drawGrade();
-  if (killFlash > 0 && SET.flashes) { g.fillStyle = 'rgba(255,255,255,' + (killFlash * 9) + ')'; g.fillRect(0, 0, VW, VH); }
+  if (killFlash > 0 && SET.flashes && !SET.reduceMotion) { g.fillStyle = 'rgba(255,255,255,' + (killFlash * 9) + ')'; g.fillRect(0, 0, VW, VH); }
   for (const n of nums) { if (isTell(n)) { tellQ.push({ txt: n.txt, x: n.x - cx, y: n.y - cy, col: n.col, a: Math.min(1, n.life * 3) }); continue; }   /* the tells go on after everything: drawTells() */
     const nx = n.x - cx, ny = n.y - cy, nw = inkW(String(n.txt), TYPE.popup); if (nx + nw / 2 < 0 || nx - nw / 2 > VW || ny + 8 < 0 || ny > VH) continue;   /* a number off a target off the screen is not shown; one half on is kept on */
     g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(Math.max(nw / 2 + 1, Math.min(VW - nw / 2 - 1, nx))), Math.round(Math.max(1, Math.min(VH - 9, ny))), n.col, 'center', TYPE.popup, 'outline'); }
@@ -26675,7 +26683,7 @@ function render() {
     g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.10 * k; g.fillStyle = '#f6f6ee'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1;
   }
-  if (flash > 0 && SET.flashes) { g.fillStyle = 'rgba(255,80,80,' + (flash * 2.5) + ')'; g.fillRect(0, 0, VW, VH); }
+  if (flash > 0 && SET.flashes && !SET.reduceMotion) { g.fillStyle = 'rgba(255,80,80,' + (flash * 2.5) + ')'; g.fillRect(0, 0, VW, VH); }
   if (state === 'talk' && talk) { // the words: a box along the bottom, the speaker named, a glyph for the next page
     const big = !!SET.bigText; const sz = big ? TYPE.big : 8; const bw = VW - 24, bx = 12; const body = talk.lines[talk.i] || ''; const lines = wrap(body, bw - 16, sz); const lh = big ? 18 : 10, nh = talk.name ? lh : 0; const bh = 14 + lines.length * lh + nh + 8;   /* (+8: the page count and the next glyph have a row of their own, off the last line) */
     /* NEVER OVER HIM: a page tall enough to reach his head goes up under the plates instead */
