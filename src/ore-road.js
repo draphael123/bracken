@@ -810,7 +810,17 @@ export function drawBucket(g, m, cx, cy, time) {
   g.fillStyle = pal[0]; for (let r = 4; r < w - 4; r += 6) g.fillRect(x + r, y + 3, 1, 1);   // rivets
   if (R) { g.fillStyle = '#1a0e08'; g.fillRect(x + 9, y + 3, 1, 3); g.fillRect(x + 10, y + 6, 1, 3); g.fillRect(x + 11, y + 9, 1, 2); }
   if (m.ore) { g.fillStyle = ORE[1]; g.fillRect(x + 3, y - 2, w - 6, 2); g.fillStyle = ORE[2]; g.fillRect(x + 5, y - 3, w - 12, 1); g.fillStyle = ORE[3]; g.fillRect(x + 9, y - 3, 2, 1); g.fillRect(x + w - 14, y - 2, 1, 1); }
+  /* A LIVE SKIP GLOWS (the Winchmaster's round six, claude/winch4): m.live is set by main.js updateBucket for a loaded, sound skip on a
+     line running into the drum he stands on - the one that jams him if you ride it in. Its ore burns: a warm halo pulsing over the
+     heap, the rim lit, and sparks of ore winking in it. A dead skip (rusted, bound away from him, or any skip once he is off his
+     drums) has none of it, so the one rule of his fight reads at a glance */
+  if (m.live && m.ore) { const k = 0.5 + 0.5 * Math.sin(time * 5 + (m.i || 0));
+    g.globalAlpha = 0.18 + 0.2 * k; g.fillStyle = LIVE[0]; g.fillRect(x - 2, y - 9, w + 4, 9); g.globalAlpha = 0.3 + 0.25 * k; g.fillRect(x + 1, y - 6, w - 2, 4);
+    g.globalAlpha = 0.75 + 0.25 * k; g.fillStyle = LIVE[1]; g.fillRect(x + 3, y - 3, w - 6, 1); g.fillRect(x, y, 1, 10); g.fillRect(x + w - 1, y, 1, 10);
+    g.fillStyle = LIVE[2]; for (let q = 0; q < 3; q++) { const px = x + 5 + ((Math.floor(time * 6) * 7 + q * 13 + (m.i || 0) * 5) % (w - 10)); g.fillRect(px, y - 4 - (q & 1), 1, 1); }
+    g.globalAlpha = 1; }
 }
+const LIVE = ['#ff9a3c', '#ffd36b', '#fff6c8'];   /* the live skip's glow: ember, gold, white-hot */
 /* THE PYLONS, the tower's timber, the tipple house, the wreck, the pillars and the drum house: drawn behind the tiles (none of it
    is solid beyond the tiles). B9: everything out over the gorge is stepped into something - a leg down into the dark, or a
    bracket back into the rock. */

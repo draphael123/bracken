@@ -4,7 +4,7 @@ import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame,
 import { THROW_KIND, isFireFoe, throwDamage, PYRO_HIT_FIELD } from './throwables.js';   /* CARRY & THROW (2026-09-28): the generic pick-up-and-throw system, and the water buckets built on it */
 import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins, ORES, ORE_NAMES, workSees, workLamp, hash as oreHash } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
 import { WALL_KINDS, wallHits, wallPop, wallRect, wallCentre, drawWalls } from './breakable-walls.js';   /* THE BREAKABLE-WALL ENGINE (2026-09-28): built once, THE ORE ROAD's the first level to use it */
-import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, winchRust, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
+import { WINCH, updateWinchmaster as stepWinchmaster, winchFrame, winchTake, winchOpen, winchJam, winchRust, winchLive, drawWinchFx } from './winchmaster.js';   /* (reworked 2026-09-25: three housings, four told attacks, a caused opening) */   /* THE WINCHMASTER, the Ore Road's boss */
 import { bakeWinchmaster } from './redraw/winchmaster.js';
 import { bakeScalder } from './redraw/scalder.js';
 import { bakeStoneFront, bakeTownRow } from './redraw/stone-town.js';
@@ -15173,6 +15173,9 @@ function updateBucket(m, dt) {
     if (ln.drum) m.cracked = winchRust(boss && boss.t === 'winchmaster' ? boss : null, m.i);   /* THE WINCHMASTER'S PHASE TWO: his skips rust HERE, in the station house, out of sight - so a rusted one is always seen rusted before it is boarded (winchmaster.js, round four) */
     return; }
   m.vis = true;
+  /* THE WINCHMASTER'S LIVE SKIPS GLOW (round six, claude/winch4): loaded, sound, and on a line running into the drum he stands on -
+     the skips that jam him if you ride one in. The rest do not: you tell a live one from a dead one at a glance (ore-road.js drawBucket) */
+  m.live = !!ln.drum && winchLive(boss && boss.t === 'winchmaster' && bossActive ? boss : null, winchInto(ln), m);
   const rider = oreRiders().find(p => p.onMover === m);
   /* THE ORE (brief section 3). HOLD DOWN ON A LOADED SKIP AND IT TIPS. One button, no new art, and it is exactly
      what a loaded cableway does: the skip empties, rides OR.BUCKET.lift px higher on its hanger for the rest of the
@@ -15235,7 +15238,8 @@ function winchC(e) {
   return { P, A: { x0: A.x0, x1: A.x1 }, H,
     hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }),
     say: (m, red, green) => number(e.x, e.y - 48, m, green ? '#8fd160' : red ? '#ff6b6b' : '#ffd36b'),
-    sound: k => ({ crash: SFX.crack, clank: SFX.clank, heavy: SFX.heavy, crack: SFX.crack, whoosh: SFX.throwWhoosh, roar: SFX.roar, thud: SFX.thud }[k] || SFX.thud)(),
+    sound: k => ({ crash: SFX.crack, clank: SFX.clank, heavy: SFX.heavy, crack: SFX.crack, whoosh: SFX.throwWhoosh, roar: SFX.roar, thud: SFX.thud, rumble: SFX.skipRumble, jam: SFX.drumJam }[k] || SFX.thud)(),
+    stall: t => hitstop(t),   /* round six: the jam stops the world a beat */
     shake: n => shakeCam(n), rand: () => Math.random(),
     shove: (vx, vy) => { P.vx = vx; P.vy = vy; P.ground = false; P.onMover = null; },
     /* THE HOOK DRAGS YOU TOWARD THE DROP: off whatever you stand on, toward him, and down */
@@ -15247,7 +15251,9 @@ function winchC(e) {
     solidAt: (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)),
     pVel: () => { const m = pm(); return [(P.vx || 0) + (m ? m.vxs || 0 : 0), (P.vy || 0) + (m ? m.vys || 0 : 0)]; },
     riding: h => { const m = pm(), q = H[h]; if (!m || !q || !q.ln || L.cableway.lines[m.line] !== q.ln || m.fallen > 0) return null;
-      const s = bucketS(q.ln, m.i), dist = q.sense > 0 ? q.ln.len - s : s; return { coming: q.ln.dir * q.sense > 0 && !(q.ln.jam > 0), dist }; },
+      const s = bucketS(q.ln, m.i), dist = q.sense > 0 ? q.ln.len - s : s;
+      /* armed: this ride WILL jam his drum if it gets there - the skip loaded and sound, boarded rideIn px out or more (updateBucket's own rule) */
+      return { coming: q.ln.dir * q.sense > 0 && !(q.ln.jam > 0), dist, armed: !!m.ore && !m.cracked && (m.boardD ?? 0) >= WINCH.rideIn }; },
     atMouth: (h, r) => { const q = H[h]; return !!q && !P.dead && Math.abs(P.y - q.mouthY) < 12 && Math.abs(P.x - q.drumX) < r; },
     /* ROUND TWO: is the hero up on this housing with him; where a rock shaken off the roof over x would come down, on the hero's
        screen (null if nowhere on it: the roof waits); and let it go */
@@ -15265,7 +15271,8 @@ function winchC(e) {
 }
 function winchJamWorld() { const e = boss, c = winchC(e), q = c.H[e.at]; if (!winchJam(e, c)) return;
   if (q && q.ln) { q.ln.jam = WINCH.thrownT + WINCH.downT + 0.4; q.ln.dir = q.sense; q.ln.mul = 1; }
-  zoomKick(1.1, 0.3); rumble(200, 0.8); burst(q.drumX, q.mouthY - 20, 24, ['#b09a5a', '#9a9aa4', '#ffd36b'], 120, 0.7); }
+  zoomKick(1.15, 0.4); rumble(320, 1); burst(q.drumX, q.mouthY - 20, 24, ['#b09a5a', '#9a9aa4', '#ffd36b'], 120, 0.7);
+  sparks(q.drumX, q.mouthY - OR.BUCKET.hang, -q.away, 14); sparks(q.drumX, q.mouthY - OR.BUCKET.hang, q.away, 8); }   /* (round six: the crash reads - sparks off the drum both ways) */
 function updateWinchBoss(e, dt) {
   if (!L.arena) return;
   /* A FRESH FIGHT STARTS AT THE GREAT DRUM with both lines running as the level built them: a death mid-reverse or mid-jam must
