@@ -25,7 +25,9 @@ Proof the save assertion bites: with the `bossJumpOn` guard removed from `savePr
 
 `node tools/textfit.mjs bossjump --strict` (new screen: every row selected in turn, every hero on the hero line): 0 overflow, 0 truncated. It first found 15 truncated names and wood names; fixed by dropping the leading "THE " on the list and widening the panel.
 
-Also run (see the final message for results): architecture, checkpoints, skins, dangling-paths, boss-fight-end, slopes-trace, npc-removal, zoom-coverage, syntax, comments, homepaths, tells.
+Also run and green: architecture, checkpoints, skins, dangling-paths, boss-fight-end, slopes-trace (unchanged for every level), npc-removal, zoom-coverage, textfit, syntax, comments, homepaths, tells.
+
+Note on cost: `boss-jump` is slow (45 fights, about 4 minutes idle, 9 under load from the other lanes). One full-suite-style run lost its test Chrome partway ("Inspected target navigated or closed", a machine-load flake, not a jump fault); the rerun alone was green. Add it to the flake list if it recurs.
 
 Docs: `docs/PLAYTEST.md` (new).
 
