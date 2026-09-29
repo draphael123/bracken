@@ -23,6 +23,7 @@
 import { MARK, ANSWER } from '../src/marks.js';
 import { openPage } from './cdp.mjs';
 import { readFileSync } from 'node:fs';
+const LIB = 150;   /* THE RUNE LIBRARY (claude/follylib) is cut in at column 64: the Archmage's room slid right by this, and the columns below are its old numbers */
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); console.log((c ? '  ok   ' : '  FAIL ') + m); };
 
 // ---- the tables: every new blow is told, and says what to do about it ----
@@ -31,7 +32,7 @@ for (const [m, [mk, an]] of Object.entries(want)) ok(MARK['archmage|' + m] === m
 
 const pg = await openPage({ audio: false, fonts: false });
 try {
-  const r = await pg.evalp(`(async()=>{
+  const r = await pg.evalp(`(async()=>{const LIB=${LIB};
     const { LEVELS, T } = await import('/src/level.js');
     BK.manualSimulation = true; BK.SET.speed = 1; const out = { notes: [] };   /* a frame is a sixtieth of a second of the fight: the numbers below are in frames */
     const P = () => BK.P, TS = 16;
@@ -52,24 +53,24 @@ try {
 
     /* ======== 1. THE WARD ======== */
     { const { A, e } = fresh(); out.hp = e.maxHp; const fl = A.floor;
-      BK.tp(622, fl / TS - 1); e.x = 626 * TS; e.stage = 1; e.T.ward = 0; for (let i = 0; i < 120 && e.mode !== 'ward'; i++) step(1);
+      BK.tp(622 + LIB, fl / TS - 1); e.x = (626 + LIB) * TS; e.stage = 1; e.T.ward = 0; for (let i = 0; i < 120 && e.mode !== 'ward'; i++) step(1);
       const W = R(); out.wardMode = e.mode; out.runes = W.runes.length; out.portal1 = W.portal ? +(W.portal.dur || 0).toFixed(2) : 0; out.calledAtWard = called().length; const sr = W.runes.find(q => q.stack), S = W.stack;
       out.stackRune = !!sr; out.stack = !!S;
       if (S) { out.stackEnd = S.x0 === A.x0 / TS || S.x1 === A.x1 / TS - 1; let solid = 0; for (let y = S.top; y < S.top + S.h; y++) for (let x = S.x0; x <= S.x1; x++) if (BK.L.grid[y * BK.L.W + x] === T.SOLID) solid++; out.stackSolid = solid === S.h * 2;
         step(40); out.runeHigh = fl - sr.y;
         /* a swing at the sealed rune (put the hero up beside it: the test's hand, not a jump) is held by the books */
-        const p = BK.P; p.y = sr.y + 12; p.x = sr.x + S.face * 12; p.vy = 0; p.face = -S.face; BK.press('atk'); step(3); out.sealedHeld = sr.hp === 1; BK.tp(622, fl / TS - 1); step(20);
+        const p = BK.P; p.y = sr.y + 12; p.x = sr.x + S.face * 12; p.vy = 0; p.face = -S.face; BK.press('atk'); step(3); out.sealedHeld = sr.hp === 1; BK.tp(622 + LIB, fl / TS - 1); step(20);
         /* the stack's own rune, at its foot: struck, the stack slides down into the floor */
         BK.P.y = fl; for (let k = 0; k < 6 && S.state === 'up'; k++) { swingAt(S.fx + S.face * 12, -S.face); step(12); } out.sliding = S.state; step(60); out.slid = S.state;
         let air = 0; for (let y = S.top; y < S.top + S.h; y++) for (let x = S.x0; x <= S.x1; x++) if (BK.L.grid[y * BK.L.W + x] === T.AIR) air++; out.stackGone = air === S.h * 2; out.runeLow = fl - sr.y;
         /* cut the stack's rune: the count starts */
         for (let i = 0; i < 12 && sr.hp > 0; i++) { swingAt(sr.x + S.face * 14, -S.face); step(18); } out.stackCut = sr.hp <= 0; out.reseal = +(W.reseal || 0).toFixed(2);
         /* and leave the other two standing: the ward seals again, the stack back up with its rune on it */
-        BK.tp(622, fl / TS - 1); step(Math.round((cfg ? cfg.reseal : 6) * 60) + 30);
+        BK.tp(622 + LIB, fl / TS - 1); step(Math.round((cfg ? cfg.reseal : 6) * 60) + 30);
         out.resealed = W.runes.every(q => q.hp > 0); out.stackBack = !!W.stack && W.stack.state === 'up'; out.stillWard = e.mode === 'ward';
         /* now cut all three in time: the stack first, then the two round him */
         const S2 = W.stack; if (S2) { step(30); BK.P.y = fl; for (let k = 0; k < 6 && S2.state === 'up'; k++) { swingAt(S2.fx + S2.face * 12, -S2.face); step(12); } step(60); const r2 = W.runes.find(q => q.stack); for (let i = 0; i < 12 && r2.hp > 0; i++) { swingAt(r2.x + S2.face * 14, -S2.face); step(18); } }
-        const t0 = performance.now(); let frames = 0; e.x = 626 * TS; e.vx = 0;
+        const t0 = performance.now(); let frames = 0; e.x = (626 + LIB) * TS; e.vx = 0;
         for (; frames < 600 && e.mode === 'ward'; frames++) { const up = W.runes.filter(q => q.hp > 0 && !q.stack); if (!up.length) { step(1); continue; } const q = up[0]; BK.P.x = q.x - 18 * (Math.sign(q.x - e.x) || 1); BK.P.y = fl; BK.P.face = Math.sign(q.x - BK.P.x) || 1; if (frames % 10 === 0) BK.press('atk'); step(1); }
         out.opened = e.mode === 'open' && e.open > 0; out.openLen = +(e.open || 0).toFixed(2);
         /* 4. THE OPENING: real swings, as fast as the sword goes, until he recovers */
@@ -80,7 +81,7 @@ try {
       out.called1 = calledMax; }
 
     /* ======== 3. NO PAIRS IN THE DUEL ======== */
-    { const { A, e } = fresh(); BK.tp(622, A.floor / TS - 1); e.x = 630 * TS; e.stage = 1; e.T.pair = 0; e.T.bolt = 0; let pairs = 0; for (let i = 0; i < 600; i++) { step(1); if (e.mode === 'pairTell') pairs++; e.T.pair = 0; e.T.ward = 99; } out.duelPairs = pairs; }
+    { const { A, e } = fresh(); BK.tp(622 + LIB, A.floor / TS - 1); e.x = (630 + LIB) * TS; e.stage = 1; e.T.pair = 0; e.T.bolt = 0; let pairs = 0; for (let i = 0; i < 600; i++) { step(1); if (e.mode === 'pairTell') pairs++; e.T.pair = 0; e.T.ward = 99; } out.duelPairs = pairs; }
 
     /* ======== 2 and 3 in the rooms he writes ======== */
     const toRoom = (sub) => { const { A, e } = fresh(); e.stage = 1; e.hp = Math.floor(e.maxHp * G[0]); for (let s = 1; s <= sub; s++) { for (let i = 0; i < 400 && !(e.stage === 2 && R().sub === s && e.mode === 'idle'); i++) { step(1); quiet(e); } if (s < sub) { e.hp = Math.floor(e.maxHp * G[s]); } }
@@ -97,7 +98,7 @@ try {
       onStack(); quiet(e); e.T.pair = 0; step(2); lost = 0; const pt = e.modeT; step(Math.max(0, Math.round((pt - 0.25) * 60))); BK.press('jump'); BK.keys.jump = true; for (let i = 0; i < 60 && e.mode !== 'idle'; i++) step(1); BK.keys.jump = false; out.pairJump = lost; step(40); }
     /* THE ORRERY: the books, taken standing and taken on the shield */
     { const { A, e } = toRoom(2); const fl = A.floor; out.orrerySub = R().sub; out.ride = !!R().ride;
-      const stand = () => { BK.tp(612, fl / TS - 1); step(10); };
+      const stand = () => { BK.tp(612 + LIB, fl / TS - 1); step(10); };
       stand(); e.T.room = 0; step(2); out.booksTell = e.mode; const b = R().books; out.booksFrom = b ? Math.round(Math.abs(b.x - BK.P.x)) : null;
       lost = 0; for (let i = 0; i < 180; i++) step(1); out.booksStill = lost;
       stand(); quiet(e); e.T.room = 0; step(2); const side = R().books ? R().books.side : 1; lost = 0; BK.P.face = side; BK.keys.block = true; for (let i = 0; i < 180; i++) { BK.P.face = side; step(1); } BK.keys.block = false; out.booksBlocked = lost;

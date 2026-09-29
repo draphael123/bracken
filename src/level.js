@@ -7609,7 +7609,7 @@ function follyLibrary(L0, ret) {
   deco('globe', 114, G - 1); coins([104, G - 4], [108, G - 6], [112, G - 6]);
   ent('check', 122, G - 1);   /* THE LIBRARY'S ONE CHECKPOINT: after the taught lock, before the crossing, the squad and the exam */
   // ---- 3. THE SPIKED CROSSING, AND THE SQUAD ON THE LEDGE ACROSS IT ----
-  sign(125, G - 1, 'TWO CASES, ONE PIT, AND TEETH UNDER IT. RIDE ONE, HOP TO THE NEXT. THE APPRENTICES ARE WATCHING.');
+  sign(125, G - 1, 'TWO CASES OVER A SPIKED PIT: RIDE ONE, HOP TO THE NEXT. THE APPRENTICES WATCH.');
   air(130, 145, G, G + 3); spikes(130, 145, G + 4);
   R.winds.push({ x0: 130, x1: 145, row: G + 4, wells: [133, 138, 143], exits: [[128, G - 1]] });
   bookcase(130, 138, G); bookcase(138, 146, G, { x: 143 * TS, dir: -1 });
@@ -7620,7 +7620,7 @@ function follyLibrary(L0, ret) {
   ent('armour', 153, G - 6, { face: -1 }); ent('apprentice', 157, G - 6, { face: -1 }); ent('apprentice', 160, G - 6, { face: -1 });   /* THE SQUAD: an armour plugging the top of the stair, two dead apprentices throwing over its shoulder */
   deco('candelabra', 156, G - 6, { v: 1 }); deco('bookpile', 168, G - 1); coins([154, G - 7], [158, G - 7]);
   // ---- 4. THE EXAM: the same lock, and now it fights back like his ward ----
-  sign(170, G - 1, "THE ARCHMAGE'S OWN LOCK. LIGHT ONE RUNE AND THE REST HAVE " + LOCK_WINDOW + ' SECONDS, OR THEY ALL GO DARK. THE HIGH RUNE SITS ON A STACK: STRIKE THE RUNE AT ITS FOOT.');
+  sign(170, G - 1, "HIS OWN LOCK. THE RUNES GO DARK IN " + LOCK_WINDOW + " SECONDS. THE HIGH ONE'S FOOT RUNE BRINGS IT DOWN.");
   const lock1 = vault(208, LOCK_WINDOW);
   lockrune(lock1, 182, G - 1);
   block(186, 187, G - 1, G - 1); block(188, 189, G - 2, G - 1); block(190, 199, G - 3, G - 1);   /* THE LOFT: three stacks of steps up to a reading loft, and a stack of books at its far end */
