@@ -98,13 +98,28 @@ function bakeRoom(st, w, h, tx0, ty0, blocked = null) {
     for (let x = 50; x < w - 40; x += 110 + Math.floor(r() * 40)) { chains.push({ x, y: h * 0.3, len: 40 + r() * 60, bell: r() < 0.6, ph: r() * 6 }); } }
   /* THE ROOF IS GONE. It was two great holes in the wall, and the crown's whole stair ran across them; now the back wall stands only to a
      broken line and over it is the night - a silhouette the ledges stand against, not a window they cut */
+  /* THE SPIRAL STAIR (src/spiral-chase.js, 2026-09-29): the Undead Archmage's stair tower. A great stone NEWEL stands up the middle of it, and
+     the stair's treads wind round it - a helix of steps socketed into the column, lit where they come round the front and lost in shadow
+     where they go behind, one turn to every two flights you climb - and high up, a hole in the wall with HIS MOON in it: the night he is
+     waiting under at the top. The treads you stand on are tiles in front of all this; these are the ones you cannot see the fronts of. */
+  if (st === 'spiral') { const cx = Math.round(w / 2), R = 30, turn = 320;
+    rect(g, cx - R - 4, 0, R * 2 + 8, h, BW.pier); rect(g, cx - R, 0, R * 2, h, BW.alt2); rect(g, cx - R, 0, 3, h, BW.stoneL); rect(g, cx + R - 4, 0, 4, h, BW.pier);
+    for (let y = 4; y < h; y += 12) rect(g, cx - R, y, R * 2, 1, BW.mortar);   /* its drums */
+    for (let y = -turn; y < h + turn; y += 6) { const a = (y / turn) * Math.PI * 2, x = cx + Math.sin(a) * (R + 10), front = Math.cos(a) > 0;
+      if (y < 0 || y >= h) continue;
+      if (front) { rect(g, x - 7, y, 14, 3, FT.stoneD); rect(g, x - 7, y, 14, 1, FT.stone); }   /* a tread coming round the front of the newel */
+      else rect(g, x - 5, y + 1, 10, 2, BW.pierL); }   /* ...and one going round behind it, in its shadow */
+    { let placed = null; for (let k = 0; k < 40 && !placed; k++) { const hx = k === 0 ? w * 0.22 : 30 + r() * (w - 60), hy = k === 0 ? 34 : 24 + r() * h * 0.3, b = holeBox(hx, hy, 34, 26);
+        if (b.x >= 0 && b.y >= 0 && b.x + b.w <= w && b.y + b.h <= h && fits(b)) { cut.push(b); hole(g, r, hx, hy, 34, 26, holes); placed = [hx, hy]; } }
+      if (placed) { const [mx, my] = placed; for (let dy = -9; dy <= 9; dy++) { const hw = Math.round(Math.sqrt(81 - dy * dy)); rect(g, mx + 6 - hw, my - 4 + dy, hw * 2, 1, dy < -3 ? '#f4f0dc' : '#e2dcc0'); }
+        px(g, mx + 3, my - 6, '#c8c0a0'); px(g, mx + 9, my - 1, '#c8c0a0'); rect(g, mx + 5, my + 1, 2, 2, '#cfc8aa'); } } }   /* HIS MOON, the one over his hall */
   if (st === 'dome') { const edge = []; for (let x = 0; x <= w + 8; x += 8) edge.push([x, Math.round(h * (0.3 + 0.1 * Math.sin(x * 0.011 + 1) + (r() - 0.5) * 0.06))]);
     fillPoly(g, [[0, 0], ...edge, [w + 8, 0]], FT.sky1); fillPoly(g, [[0, 0], ...edge.map(([x, y]) => [x, y * 0.6]), [w + 8, 0]], FT.sky0);
     for (let i = 0; i < w / 5; i++) { const x = r() * w, y = r() * h * 0.28; px(g, x, y, r() < 0.3 ? '#ffffff' : FT.star); }
     for (let k = 1; k < edge.length; k++) { line(g, edge[k - 1][0], edge[k - 1][1] + 1, edge[k][0], edge[k][1] + 1, FT.stoneLL); if (r() < 0.3) rect(g, edge[k][0] - 2, edge[k][1] - 2, 4, 3, FT.stoneD); }
     holes.push([0, 0, w, h * 0.26]); }
   /* THE HOLES the tower has taken, and its cracks */
-  const nh = st === 'dome' ? 1 : st === 'reading' ? 1 : 2 + Math.floor(r() * 2);
+  const nh = st === 'dome' || st === 'spiral' ? 1 : st === 'reading' ? 1 : 2 + Math.floor(r() * 2);
   for (let k = 0; k < nh; k++) putHole(w * (0.1 + k / nh * 0.8 + r() * 0.1), h * (0.1 + r() * 0.45) + (st === 'dome' ? h * 0.35 : 0), 30 + r() * 34, 22 + r() * 24);
   for (let k = 0; k < 5 + Math.floor(w / 160); k++) crack(g, r, r() * w, r() * h * 0.6, 6 + Math.floor(r() * 10));
   if (st !== 'flip') for (let x = 40; x < w; x += 150 + Math.floor(r() * 90)) if (r() < 0.6) chains.push({ x, y: 0, len: 30 + r() * 70, bell: false, ph: r() * 6 });

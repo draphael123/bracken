@@ -81,7 +81,8 @@ export function drawRug(g, x, y, t, tilt = 0) {
 export function drawCarpetWorld(g, L, P, cx, cy, time) {
   if (!L.carpetAt) return;
   const W = L.carpetWait; if (W) for (const q of W.ruin) { g.fillStyle = q.s > 4 ? '#4a4258' : '#6a6280'; g.fillRect(Math.round(q.x - cx), Math.round(q.y - cy), q.s, q.s); }
-  if (!P.carpet && !L.carpetUp && !L.sanctum) {   /* waiting: it hovers a hand over the walk and turns its tassels in the wind (with a sanctum there is a door here instead) */
+  if (!P.carpet && !L.carpetUp && (!L.sanctum || L.sanctum.rug)) {   /* waiting: it hovers a hand over the walk and turns its tassels in the wind (with a sanctum there is a door here instead - and since the spiral stair,
+     2026-09-29, the door AND the carpet: `sanctum.rug` lays it in front of the door at the top of the stair, src/spiral-chase.js) */
     const x = L.carpetAt.x - cx, y = L.carpetAt.y - cy - 6 + Math.sin(time * 2.4) * 2;
     drawRug(g, x, y, time); g.fillStyle = 'rgba(224,176,80,.18)'; g.fillRect(Math.round(x) - 16, Math.round(y) + 6, 32, 2);
   }

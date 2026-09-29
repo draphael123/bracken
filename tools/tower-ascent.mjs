@@ -18,6 +18,7 @@ import fs from 'node:fs'; import vm from 'node:vm';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { TOWER, SAND, SWING, gateOccupied } from '../src/tower-ascent.js';
+import { TOP as SPIRAL_TOP } from '../src/spiral-chase.js';   /* the carpet and the door into his hall wait at the top of THE SPIRAL STAIR (2026-09-29) */
 import { CARPET, carpetBox, mountCarpet, stepCarpet, knockCarpet } from '../src/carpet.js';
 import { updateUndeadMage, MAGE, UNDEADMAGE_F } from '../src/undead-mage.js';
 import { openPage } from './cdp.mjs';
@@ -26,12 +27,12 @@ const lv = LEVELS.find(l => l.id === 'fallingtower'), L = lv.build(), W = L.W;
 const at = (x, y) => L.grid[y * W + x];
 // ---- BUILT ----
 assert.equal(lv.needs, 'mage'); assert.equal(L.music, 'fallingtower'); assert.equal(lv.name, 'THE FALLING TOWER');
-assert.ok(L.H >= 200 && L.W < 100, 'a tower stood on its end: ' + L.W + 'x' + L.H);
+assert.ok(L.H >= 200 && L.W - (L.spiral ? L.W - TOWER.W : 0) < 100, 'a tower stood on its end: ' + L.W + 'x' + L.H);   /* (2026-09-29: the grid runs on east of the tower's 72 columns for THE SPIRAL STAIR, src/spiral-chase.js) */
 assert.equal(L.towerFloors.length, 7, 'seven floors since the tower was made longer');
 assert.equal(L.H, 306, 'and 306 rows (it was 240)');
-const kinds = new Set(L.interiors.map(i => i[4])); assert.equal(kinds.size, 7, 'seven floors, seven rooms: ' + [...kinds]);
+const kinds = new Set(L.interiors.map(i => i[4])); assert.equal(kinds.size, 8, 'seven floors, seven rooms, and the spiral stair: ' + [...kinds]); assert.ok(kinds.has('spiral'));
 for (const f of L.towerFloors.slice(0, 6)) { const [x, y0, y1] = f.hole; for (let y = y0; y <= y1; y++) assert.equal(at(x, y), T.NET, f.name + ': the rope goes through its divider'); }
-assert.ok(!L.calm || L.calm.every(([, , , y1]) => y1 < TOWER.SKY - 4), 'no blanket calm in the tower (the rule the Codex levels broke; round 3 calms only the desert, over the sky rows)');
+assert.ok(!L.calm || L.calm.every(([x0, , , y1]) => y1 < TOWER.SKY - 4 || x0 > TOWER.X1), 'no blanket calm in the tower (the one over the spiral stair, east of its wall, is kept for his chase) (the rule the Codex levels broke; round 3 calms only the desert, over the sky rows)');
 const garrison = L.ents.filter(e => e.garrison); assert.ok(garrison.length >= 8, 'the GARRISON row places: ' + garrison.length);
 const gRows = new Set(garrison.map(e => L.towerFloors.findIndex(f => e.y >= f.top && e.y < f.bot))); assert.ok(gRows.size >= 3, 'and on more than the top floor (stackedFloors): ' + [...gRows]);
 const elites = L.ents.filter(e => e.elite); assert.equal(elites.length, 1, 'one elite, the cistern husk: the orrery armour captains the ambush and the loft warden is THE SEXTON since the rework (2026-09-25)');
@@ -41,7 +42,7 @@ assert.equal(L.ents.filter(e => e.t === 'silver').length, 3);
    put the longer tower at 4.87 a screen against its own 3.5-4.6 band. The band is not widened and the level is not
    thinned - the tower's 94 creatures over 20.75 screens are 4.53. It only ever mattered here because no tower before
    this one had gravity glyphs in it. */
-const non = new Set(['check', 'sign', 'coin', 'deco', 'silver', 'stal', 'gate', 'mover', 'undeadmage', 'glyph', 'mend']);
+const non = new Set(['check', 'sign', 'coin', 'deco', 'silver', 'stal', 'gate', 'mover', 'undeadmage', 'magechase', 'ringdoor', 'glyph', 'mend']);   /* (the spiral stair's chase is him, and his ring is a door) */
 const foes = L.ents.filter(e => !non.has(e.t)), climb = L.START.y - TOWER.SKY;
 /* (round 3, Daniel 2026-09-27: 'too many flying foes') the forty flyers taken off the stairs came back as walkers where a ledge could hold one
    and as nothing where it could not (over the cistern's water, the gear pit's spikes, a crowd): 4.2 a screen went to 3.3, so the floor is 3.2 */
@@ -50,7 +51,7 @@ assert.ok(L.arena.carpet && L.arena.boss === 'undeadmage' && L.arena.trigger > L
 assert.ok(L.ents.some(e => e.t === 'undeadmage' && e.y < TOWER.SKY), 'he waits in the sky');
 // ---- REACH ----
 const R = floodReach(L, T, { rides: true });
-assert.ok(R.jumpNear(Math.round(L.carpetAt.x / 16), TOWER.SKY), 'the fill climbs to the carpet');
+assert.ok(R.jumpNear(Math.round(L.carpetAt.x / 16), Math.round(L.carpetAt.y / 16)), 'the fill climbs to the carpet (at the top of the spiral stair since 2026-09-29, through his ring)');
 /* THE GATE IS NOT IN THIS LIST ANY MORE. It stands on the sandy path, and the sandy path is behind the second door -
    the climb is not supposed to reach it, and if it ever does, something has gone wrong with the sky. So the gate gets
    its own fill below, started where the door puts you down: the requirement was never 'the gate can be walked to from
@@ -193,7 +194,7 @@ try {
      through it you stand on the sand under the Caravan's sky and WALK to the level's end - the level is won at the gate, not on the kill */
   const e2 = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
     BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;BK.sim(10);
-    BK.tp(36,${TOWER.SKY - 1});BK.sim(5);BK.board();BK.sim(30);const b=BK.boss||BK.enemies().find(e=>e.t==='undeadmage'&&e.alive);out.fought=!!BK.bossActive;for(let i=0;i<300&&b.mode==='wake';i++)BK.sim(1);b.hp=1;BKT.hurtEnemy(b,99,b.x-10,false);
+    BK.tp(${SPIRAL_TOP.check},${SPIRAL_TOP.row});BK.sim(5);BK.board();BK.sim(30);const b=BK.boss||BK.enemies().find(e=>e.t==='undeadmage'&&e.alive);out.fought=!!BK.bossActive;for(let i=0;i<300&&b.mode==='wake';i++)BK.sim(1);b.hp=1;BKT.hurtEnemy(b,99,b.x-10,false);
     const S=BK.L.sanctum;for(let i=0;i<600&&!(S.open&&S.outOpen>=1);i++)BK.sim(1);out.open=!!S.open;out.stillPlaying=BK.state==='play';
     for(let i=0;i<120&&!BK.L.sandWalk;i++){BK.P.x=S.out.x;BK.P.y=S.out.y;BK.sim(1);}out.sand=!!BK.L.sandWalk;out.onFoot=!BK.carpet();out.row=Math.round(BK.P.y/16);out.night=BK.L.nightA;
     for(let i=0;i<900&&BK.state==='play';i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;out.won=BK.state;return out;})()`, 240000);

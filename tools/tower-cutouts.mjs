@@ -21,8 +21,8 @@ const crossings = (cut, x0, y0) => { const out = [];
   for (const b of cut) { const a0 = Math.floor(b.x / TS) + x0, a1 = Math.floor((b.x + b.w - 1) / TS) + x0, c0 = Math.floor(b.y / TS) + y0, c1 = Math.floor((b.y + b.h - 1) / TS) + y0;
     for (let ty = c0; ty <= c1; ty++) for (let tx = a0; tx <= a1; tx++) if (blocked(tx, ty)) { out.push([tx, ty, L.grid[ty * W + tx]]); break; } }
   return out; };
-const rooms = L.interiors.filter(([, , , , k]) => ['library', 'reading', 'orrery', 'clock', 'lab', 'flip', 'dome'].includes(k));
-assert.equal(rooms.length, 7, 'seven rooms in the tower: ' + rooms.length);
+const rooms = L.interiors.filter(([, , , , k]) => ['library', 'reading', 'orrery', 'clock', 'lab', 'flip', 'dome', 'spiral'].includes(k));   /* (and THE SPIRAL STAIR's, 2026-09-29: its moon hole is held clear of its steps like any other) */
+assert.equal(rooms.length, 8, 'seven rooms in the tower and the spiral stair: ' + rooms.length);
 let blind = 0, n = 0; const bad = [], per = {};
 for (const [x0, x1, y0, y1, kind] of rooms) {
   const w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
