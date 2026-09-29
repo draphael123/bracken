@@ -321,6 +321,11 @@ export const SFX = {
   check() { [523, 659, 784, 1047].forEach((f, i) => tone('triangle', f, f, 0.25, 0.18, i * 0.09)); },
   win() { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone('triangle', f, f, 0.3, 0.2, i * 0.12)); },
   block() { tone('square', 520, 380, 0.07, 0.2); noise(0.09, 0.26, 900, 0.5); tone('sine', 260, 170, 0.12, 0.12, 0.01); }, // a dull wooden-backed shield taking it
+  /* THE WEIGHT CLASSES (src/juice.js): a heavy blow landing (a low body-thump over a crack), the blow that kills (a bright snap, the world's stopped for it), a shield taking a heavy one (iron, then the arm behind it), the hero taking a heavy one (lower, longer) */
+  hitHeavy() { tone('sine', 95, 38, 0.2, 0.34); noise(0.09, 0.3, 320, 0.7); tone('square', 260, 110, 0.08, 0.16, 0.01); },
+  hitFinish() { tone('sine', 120, 42, 0.26, 0.34); noise(0.14, 0.32, 600, 0.5); tone('triangle', 1000, 1900, 0.1, 0.13, 0.03); },
+  blockHeavy() { file('clang', 0.5) || (tone('square', 1200, 700, 0.06, 0.2), noise(0.06, 0.24, 2600)); tone('sine', 150, 60, 0.22, 0.3, 0.01); noise(0.1, 0.2, 400, 0.6, 0.02); },
+  pHurtHeavy() { SFX.pHurt(); tone('sine', 80, 34, 0.3, 0.32, 0.02); noise(0.14, 0.24, 300, 0.7, 0.02); },
   guardBreak() { file('stagger', 0.6) || (tone('sawtooth', 500, 90, 0.35, 0.3), noise(0.2, 0.3, 900)); },
   /* A CREATURE'S POISE BREAKS: not the hurt sound and not the player's guard going (guardBreak) - a dry snap high up, the body going
      slack under it, and two loose knocks as it settles. The big ones snap lower and settle heavier. */
