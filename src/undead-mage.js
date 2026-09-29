@@ -35,6 +35,7 @@
 //                    DROP out of it on the spot it opened over - it does not follow you. Get out from under it, or guard      !
 import { canvas, flipX, whiten } from './px.js';
 import { drawDesertOval } from './sanctum.js';
+import { REALM, OPEN as REALM_OPEN, realmDue, enterRealm, updateRealm } from './mage-realms.js';   /* HIS SPELL REALMS at 75/50/25% (claude/undead3) */
 export { bakeUndeadMage, UNDEADMAGE_F } from './redraw/lich.js';
 
 export function smallerFamiliar(s) {
@@ -61,7 +62,7 @@ const SAY = { fireTell: 'FIRE: GUARD OR FLY', iceTell: 'FROST: FLY ACROSS IT', s
 /* the ring moves - the ones that open a ring, and so never come straight out of one (a step comes out casting a spell, not a ring) */
 const RINGED = new Set(['step', 'bend', 'decoy', 'trap']);
 export const RING_COL = { rim: '#6fe08a', rimL: '#c8ffd8', fire: '#ff9b49', flare: '#ffffff' };
-export const mageOpen = e => e.mode === 'gather' || e.mode === 'breached';
+export const mageOpen = e => e.mode === 'gather' || e.mode === 'breached' || REALM_OPEN.has(e.mode);   /* (and a realm's opening: scorched, shattered, vented) */
 export const mageSpeed = e => e.enraged ? MAGE.fast : 1;
 /* HIS STAGE: 1, 2 under 70%, 3 once he burns (his enrage, under 40%) */
 export const mageStage = e => e.enraged ? 3 : e.hp <= (e.hp0 || e.maxHp || e.hp) * MAGE.stage2 ? 2 : 1;
@@ -140,6 +141,9 @@ export function updateUndeadMage(e, dt, c) {
   e.shots = e.shots.filter(q => q.t > 0);
   for (const cl of e.clouds) { cl.t -= dt; if (!P.dead && Math.hypot(P.x - cl.x, py - cl.y) < cl.r) c.venom(); }
   e.clouds = e.clouds.filter(cl => cl.t > 0);
+  /* IN ONE OF HIS REALMS (src/mage-realms.js): the realm runs the fight until its opening has been had, and then it tears */
+  e.realmRest = Math.max(0, (e.realmRest || 0) - dt);
+  if (e.realm) { updateRealm(e, dt, c); return; }
   // ---- the death mark on the air where you were ----
   /* e.deathMark, NOT e.mark: the Death Knight hero's markFoe() writes e.mark = 6 (a number) on whatever he strikes, and a
      number here crashed the fight on `.t` (tools/audit-bosslab, 2026-09-24). Two systems, one field name. */
@@ -154,6 +158,9 @@ export function updateUndeadMage(e, dt, c) {
   if (e.mode === 'blinkIn') { if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.35 / k; } return; }
   if (e.mode === 'gather' || e.mode === 'breached') { e.y += Math.sin(e.anim * 2) * 4 * dt; if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.4; e.blinkT = 0; } return; }   /* then he goes: the window closes on a blink */
   if (e.mode === 'markWait') { return; }
+  /* HE TEARS A PORTAL at 75, 50 and 25%: the tear is told (realmTell - his ring of the realm, flaring), then it takes you */
+  if (e.mode === 'hover' && e.modeT <= 0.2 && realmDue(e) >= 0) { const kind = REALM.kinds[e.realmN || 0]; e.mode = 'realmTell'; e.modeT = REALM.tear; e.spell = 'realm'; e.face = Math.sign(P.x - e.x) || 1; e.deathMark = null;
+    say('HE TEARS A PORTAL: ' + REALM.name[kind], true); sound('mageBolt'); return; }
   if (e.mode === 'hover') {
     const [tx, ty] = station(e, P, box), sp = 70 * k;
     const dx = tx - e.x, dy = ty - e.y, d = Math.hypot(dx, dy); if (d > 2) { e.x += dx / d * Math.min(d, sp * dt); e.y += dy / d * Math.min(d, sp * dt); }
@@ -170,6 +177,7 @@ export function updateUndeadMage(e, dt, c) {
   const hx = e.x + e.face * 12, hy = e.y - 34, aim = Math.atan2(py - hy, P.x - hx);
   const shot = (a, sp, r, dmg, kind, col, life = 4, from) => e.shots.push({ x: from ? from.x : hx, y: from ? from.y : hy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a, sp, r, dmg, kind, col, t: life });
   const spell = e.spell;
+  if (spell === 'realm') { enterRealm(e, c.A, P, c); return; }   /* THROUGH: you, him and the carpet */
   if (spell === 'fire') { const fr = e.fireRing && e.fireRing.t < e.fireRing.life ? e.fireRing : null, a0 = fr ? Math.atan2(py - fr.y, P.x - fr.x) : aim;
     if (fr) shot(Math.atan2(fr.y - hy, fr.x - hx), 260, 4, 0, 'feed', RING_COL.fire, Math.hypot(fr.x - hx, fr.y - hy) / 260);   /* into his hand's glow, out of the ring */
     for (const s of e.enraged ? [-0.24, 0, 0.24] : [0]) shot(a0 + s, MAGE.boltV, 5, MAGE.dmg.fire, 'fire', '#ff9b49', 4, fr); if (fr) fr.glow = null; e.fireRing = null; sound('mageBolt'); }
@@ -207,7 +215,7 @@ export function updateUndeadMage(e, dt, c) {
 }
 export function undeadFrame(e, F) {
   if (e.hurtT > 0) return F.hurt;
-  return ({ fireTell: F.fire, iceTell: F.ice, stormTell: F.storm, poisonTell: F.poison, handTell: F.death, markTell: F.death, markWait: F.death, stepTell: F.blinkOut, bendTell: F.fire, decoyTell: F.blinkOut, trapTell: F.fire, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
+  return ({ fireTell: F.fire, iceTell: F.ice, stormTell: F.storm, poisonTell: F.poison, handTell: F.death, markTell: F.death, markWait: F.death, stepTell: F.blinkOut, bendTell: F.fire, decoyTell: F.blinkOut, trapTell: F.fire, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wallTell: F.fire, sporeTell: F.poison, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
     ?? (e.enraged ? F.enraged[Math.floor(e.anim * 4) % 2] : F.idle[Math.floor(e.anim * 2.5) % 2]);
 }
 /* ONE RING: the desert inside it, and a rim of sparks in his green - the bolt's colour when a bolt is coming through it, and bright and

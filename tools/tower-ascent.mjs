@@ -150,10 +150,10 @@ assert.ok(checks[0] > TOWER.SKY + 1 && checks[0] <= TOWER.SKY + 8, "the last che
     const q = rig({ mode: 'markTell', modeT: 0, spell: 'mark' }); updateUndeadMage(q.e, 0.01, q.c); q.P.x += 90; run(q, MAGE.markFuse + 0.1);
     assert.equal(q.hits.length, 0); assert.equal(q.e.mode, 'gather', 'flown out of, it comes back on him'); assert.ok(q.e.open > 2, 'the window: ' + q.e.open); }
   // ENRAGE: faster tells, more blinks, pairs, the squeeze
-  { const r = rig({ hp: 350 }); run(r, 0.1); assert.ok(r.e.enraged); r.e.mode = 'hover'; r.e.modeT = 0; r.e.blinkT = 99; run(r, 0.05);
+  { const r = rig({ hp: 350, realmN: 3 }); run(r, 0.1);   /* (realmN 3: his three realms had - under 75% he would tear one first, claude/undead3) */ assert.ok(r.e.enraged); r.e.mode = 'hover'; r.e.modeT = 0; r.e.blinkT = 99; run(r, 0.05);
     const tell = r.e.modeT; assert.ok(tell < MAGE.tell[r.e.spell] * 0.7, 'enraged tells are faster: ' + tell.toFixed(2));
     const blinks = x => { const s = rig(x); let n = 0, m = ''; for (let i = 0; i < 60 * 30; i++) { updateUndeadMage(s.e, 1 / 60, s.c); if (s.e.mode === 'blinkOut' && m !== 'blinkOut') n++; m = s.e.mode; s.P.x = 300; } return n; };
-    const calm = blinks({ blinkT: MAGE.blinkEvery }), mad = blinks({ hp: 350, blinkT: MAGE.blinkEnraged });
+    const calm = blinks({ blinkT: MAGE.blinkEvery }), mad = blinks({ hp: 350, realmN: 3, blinkT: MAGE.blinkEnraged });
     assert.ok(mad >= calm * 2, 'enraged he blinks much more: ' + calm + ' -> ' + mad); run(r, 3.2); assert.equal(r.e.squeeze, 1); }
   assert.ok(UNDEADMAGE_F.idle.length === 2 && UNDEADMAGE_F.enraged.length === 2 && UNDEADMAGE_F.hurt > UNDEADMAGE_F.dead, 'the frame table (hurt LAST)'); }
 // ---- THE FOLLY'S POLISH (from tower-finish.mjs) ----

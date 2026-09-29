@@ -26,7 +26,8 @@ import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './su
 import { qsPatchAt, qsGameStep } from './quicksand.js';
 import * as DWM from './dune-worm.js'; import { newStorm, stormStep, gustDrift, STORM } from './desert-rules.js';   /* THE DUNE WORM, the caravan's boss (docs/briefs/dune-worm.md), and the storm he calls into his hollow */
 import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import * as CB from './redraw/caravan_bandits.js'; import * as CR from './redraw/caravan_ruins.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
-import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH} from './undead-mage.js';
+import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH,mageOpen} from './undead-mage.js';
+import {REALM,realmBox,realmWarded,realmFloor,strikeRealm,drawRealm,drawRealmFx,drawTear} from './mage-realms.js';   /* THE UNDEAD ARCHMAGE'S SPELL REALMS (claude/undead3) */
 import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT,quench} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
 import {carpetBox,stepCarpet,knockCarpet,updateCarpet,resetCarpet,drawRug,drawCarpetWorld,drawStormWalls,mountCarpet} from './carpet.js';
@@ -133,7 +134,7 @@ import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
-import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
+import { updateMageChase, drawRingDoor, inSpiral, drawSeals, lightBrazier } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
 
 // ---------- display ----------
@@ -1928,6 +1929,8 @@ function spawnEntities() {
        hanging there through the whole re-fight, because it lives on L and L is not rebuilt on a retry. Past it (on the
        sand) there is nothing to shut: sandWalk stays, and so does the gate it unlocks. */
     if(L.sanctum&&!L.sandWalk){L.sanctum.open=false;L.sanctum.outOpen=0;L.sanctum.out=null;}
+    /* HIS WARDS STAND AGAIN on a retry (claude/undead3): he burns the ones under the landing you wake on himself (spiral-chase.js) */
+    for(const s of (L.spiral&&L.spiral.seals)||[]){s.broken=false;s.wall=null;s.doused=false;s.snuffing=false;for(let y=s.y0;y<=s.y1;y++)cellSet(s.x,y,T.SOLID);}
   } else if (typeof P !== 'undefined' && P && P.carpet) P.carpet = null;   /* a rug ridden out of the tower (quit mid-fight) must not fly into the next level: carpetBox reads L.arena and threw every frame */
   eliteWatch();   /* an elite cut down in the same beat the hero fell (the world is still in its hitstop) is written down before the board is reset */
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) P.carry = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
@@ -4201,7 +4204,7 @@ const BEASTS = [
   { t: 'closedhelm', name: 'THE PALADIN', sub: 'sworn to the chapel', desc: 'A holy ward stands round him and every blade, bolt and flame comes off it. His own SWORD opens him: the cut and the thrust are single marks - meet them on the beat (a parry, a ward raised or let go as it lands, or a roll through it) and the ward breaks for a breath. THE BASH is a double mark along a red line: roll through it or be gone. JUDGEMENT marks where you stand: guard it or step off the mark. Enraged, his red OATH sweeps low: jump it. RADIANCE fixes three red columns: step into a gap. Neither can be blocked; both leave his ward open.' },
   { t: 'drunk', name: 'THE DRUNK', sub: 'a regular, gone rowdy', desc: 'He has been at the Broken Lance since noon and he has found a balcony. He throws what is to hand - a tankard, a turnip, a stool - and a yellow mark means the shield turns it. A red mark is a bottle: it cannot be blocked and it leaves glass. Watch the ring on the ground. One blow puts him on his back.' },
   { t: 'lancer', name: 'SERJEANT', sub: 'mounted, on the bridge', desc: 'A man-at-arms on a barded horse, riding his beat end to end. The charge is a single mark: take it on the shield and he goes over the back of his horse, or jump or roll it. Close to him he swipes with his sword. Mounted, the barding takes some of every cut; in the road he is a man with a sword and no horse.' },
-  { t: 'undeadmage', name: 'THE UNDEAD ARCHMAGE',sub:'the last spell outlives him',desc:'Fought from the carpet in his burning hall. Guard or fly from fire and ice, leave the lightning mark, keep out of the poison, out-fly the death hand. A DEATH MARK that finds no one comes back on him. His RINGS work both ways: dodge through the one he opens by you and come out beside him, open. Of two rings, only one holds the desert. Burning, he fights ring to ring.'},
+  { t: 'undeadmage', name: 'THE UNDEAD ARCHMAGE',sub:'the last spell outlives him',desc:'Fought from the carpet in his burning hall. Guard or fly from fire and ice, leave the lightning mark, keep out of the poison, out-fly the death hand. A DEATH MARK that finds no one comes back on him. His RINGS work both ways: dodge through the one he opens by you and come out beside him, open. Of two rings, only one holds the desert. Burning, he fights ring to ring. At three quarters, half and a quarter he tears a portal into a realm of his spells - fire, ice, poison - where his ward holds until you find its opening.'},
   { t: 'burieddead', name: 'THE BURIED DEAD',sub:'the whole grave wakes',desc:'Jump the marked slam or climb a grave shelf. Guard the arm sweep. Follow the moving shadow, then leave the bright crack before he erupts. Cut down the zombies he calls. Wait on a ledge or far off and he throws a lit skull: guard it. When the earth cracks in a line towards you the GRAVE HANDS follow it: jump them, or stand in the light of a burning vent, where the dead cannot rise. Light a vent under him and the gas opens him. At half health his slam reaches farther, more dead answer, and his GRAVE BREATH puts out every fire in the room, yours too: take fire again from the candles at the walls.' },
   { t: 'corpse', name: 'THE FALLEN', sub: 'the battle is still being fought', desc: 'A soldier of a war nobody buried. It lies where it fell until a banner stands over it, then it gets up and cuts - guard it. Cut down under a banner it only falls again: strike it while it lies there, or burn it, and it stays down.' },
   { t: 'duneworm', name: 'THE DUNE WORM', sub: 'the caravan\'s grave keeps its keeper', desc: 'He hunts under the hollow\'s sand: a ripple runs at you and bursts up where it locks - step off it late. Up, he spits sand (a shield takes it), lunges where his shadow falls, and opens the sand under you: jump, and keep jumping. Wind the awning out and let him come up INTO it: tangled, he takes double. At half he calls the storm.' },
@@ -5745,7 +5748,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
   if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing */
-  if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake')return;}   /* between two places, he is in neither */
+  if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake'||e.mode==='realmTell')return;
+   if(realmWarded(e)&&!(e.open>0)){if(!(e.wardSaidT>time)){e.wardSaidT=time+1.2;number(e.x,e.y-52,'HIS REALM WARDS HIM: FIND ITS OPENING','#bce8fa');}SFX.clank();sparks(e.x,e.y-24,P.face,4);return;}}   /* IN A REALM his ward holds until its one opening (src/mage-realms.js) */   /* between two places, he is in neither */
   if(e.t==='burieddead'&&(e.mode==='burrow'||e.mode==='eruptTell'))return;
   if(e.t==='familiar')dmg*=e.open>0?1.8:.6;
   if(e.t==='bellcrab') dmg*=e.phase===3?BELL.out.soft:e.open>0?BELL.openMul:BELL.shutMul;   /* shut, until a stone on his crown opens him; out of the bell, soft (src/bellcrab.js BELL) */
@@ -5900,7 +5904,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (dmg > 0 && !e.trainer && !glance && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
   if (e.broken > 0 && dmg > 0 && e.offBalAt !== time) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body (and not the blow that threw it OFF BALANCE: that one is paid once, as a key) */
   if (!glance) addPoise(e, dmg, fromX, plunge);   /* a glancing blow moves nothing, the bar included */
-  if(e.t==='undeadmage'&&(e.mode==='gather'||e.mode==='breached'))dmg=Math.round(dmg*LICH.openMul);   /* the mark come back on him, or a dodge through his own ring (round 2) */
+  if(e.t==='undeadmage'&&mageOpen(e))dmg=Math.round(dmg*LICH.openMul);
+  if(e.t==='undeadmage'&&e.realm){const f=realmFloor(e);if(f>0&&e.hp>f)dmg=Math.min(dmg,e.hp-f);}   /* a realm takes him no lower than the next realm's mark: each one is had */   /* the mark come back on him, or a dodge through his own ring (round 2) */
   if(e.t==='owl'&&e.lampT>0)dmg=Math.round(dmg*2);   /* THE OWL REEVE, lamp-struck: double (Daniel, 2026-09-21) */   /* THE OPENING: the mark came back on him, and he is open while he gathers himself */
   /* HIS HEALTH IS GATED BY THE STAGE, so while he holds the floor down no blow can take any of it - which left the one
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
@@ -8132,7 +8137,7 @@ function bossStart() {
   bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; } if (bossZooms(boss.t)) setView('zoom'); camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
   setWall(L.arena.wallL, true); setWall(L.arena.wallR, true);
   if (boss.t === 'prince') number(boss.x, boss.y - 14, 'FORGOTTEN UNDER THE HILL', '#c9d1dc');   /* his subtitle, under the name */
-  ({ duneworm: SFX.boreRoar, bellcrab: SFX.seaBell, closedhelm: SFX.judgement, drownedking: SFX.bellow, prince: SFX.wightMoan, queen: SFX.queenShriek, frog: SFX.frogBoom, chief: SFX.chiefBark, mother: SFX.gillOpen, king: SFX.kingLaugh, ram: SFX.bellow, owl: SFX.owlHoot, forgemaster: SFX.forgeHammer, golem: SFX.golemChime, windcaller: SFX.callerChant, lance: SFX.bellow, suncatcher: SFX.golemChime, roc: SFX.queenShriek, gqueen: SFX.bellow, grandmother: SFX.heard, troll: SFX.snort, master: SFX.whistleCall, masthead: SFX.whistleCall, kraken: SFX.boreRoar, strawking: SFX.bellow, archmage: SFX.callerChant }[boss.t] || SFX.roar)(); shakeCam(6); music.stop(); bossMusicT = 1.1; number(boss.x, boss.y - 30, boss.t === 'grandmother' ? (boss.mode === 'listen' || boss.mode === 'listenTell' ? 'THE GRANDMOTHER  LISTENING' : 'THE GRANDMOTHER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE QUEEN'S LANCE  OPEN" : boss.phase === 2 ? "THE QUEEN'S LANCE  NO LANCE" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'THE BULLFROG KING' : boss.t === 'chief' ? 'THE GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM UNDERLEAF' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE PALADIN  THE WARD IS DOWN' : boss.phase === 2 ? 'THE PALADIN  HIS OATH' : 'THE PALADIN') : boss.t === 'drownedking' ? (boss.mode === 'whirl' || boss.mode === 'whirlTell' ? 'THE DROWNED KING  THE MAELSTROM' : boss.mode === 'gulp' || boss.mode === 'gulpTell' ? 'THE DROWNED KING  HE TAKES THE AIR' : boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'prince' ? (boss.mode === 'buried' ? 'THE BURIED PRINCE  BURIED AGAIN' : princeShrouded(boss) ? 'THE BURIED PRINCE  SHROUDED' : boss.bare > 0 ? 'THE BURIED PRINCE  BAREHEADED' : princeLight(boss) ? 'THE BURIED PRINCE  IN THE LIGHT' : 'THE BURIED PRINCE') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'master' ? 'THE HOUND MASTER' : boss.t === 'kraken' ? 'THE KRAKEN' : boss.t === 'queen' ? 'THE HORNET QUEEN' : bossTitle(boss), '#ffd36b'); zoomKick(1.1, 0.4);   /* the rest ask the bestiary, the way the card does: the Herald, the Reefmaw, the Quartermaster, the Captain, the Tollmaster and the Masthead all woke as THE HORNET QUEEN */
+  ({ duneworm: SFX.boreRoar, bellcrab: SFX.seaBell, closedhelm: SFX.judgement, drownedking: SFX.bellow, prince: SFX.wightMoan, queen: SFX.queenShriek, frog: SFX.frogBoom, chief: SFX.chiefBark, mother: SFX.gillOpen, king: SFX.kingLaugh, ram: SFX.bellow, owl: SFX.owlHoot, forgemaster: SFX.forgeHammer, golem: SFX.golemChime, windcaller: SFX.callerChant, lance: SFX.bellow, suncatcher: SFX.golemChime, roc: SFX.queenShriek, gqueen: SFX.bellow, grandmother: SFX.heard, troll: SFX.snort, master: SFX.whistleCall, masthead: SFX.whistleCall, kraken: SFX.boreRoar, strawking: SFX.bellow, archmage: SFX.callerChant }[boss.t] || SFX.roar)(); shakeCam(6); if (!(boss.t === 'undeadmage' && music.want === (L.arena.music || 'boss'))) { music.stop(); bossMusicT = 1.1; }   /* (the Undead Archmage's track is already up: it came in on his spiral stair) */ number(boss.x, boss.y - 30, boss.t === 'grandmother' ? (boss.mode === 'listen' || boss.mode === 'listenTell' ? 'THE GRANDMOTHER  LISTENING' : 'THE GRANDMOTHER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE QUEEN'S LANCE  OPEN" : boss.phase === 2 ? "THE QUEEN'S LANCE  NO LANCE" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'THE BULLFROG KING' : boss.t === 'chief' ? 'THE GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM UNDERLEAF' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE PALADIN  THE WARD IS DOWN' : boss.phase === 2 ? 'THE PALADIN  HIS OATH' : 'THE PALADIN') : boss.t === 'drownedking' ? (boss.mode === 'whirl' || boss.mode === 'whirlTell' ? 'THE DROWNED KING  THE MAELSTROM' : boss.mode === 'gulp' || boss.mode === 'gulpTell' ? 'THE DROWNED KING  HE TAKES THE AIR' : boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'prince' ? (boss.mode === 'buried' ? 'THE BURIED PRINCE  BURIED AGAIN' : princeShrouded(boss) ? 'THE BURIED PRINCE  SHROUDED' : boss.bare > 0 ? 'THE BURIED PRINCE  BAREHEADED' : princeLight(boss) ? 'THE BURIED PRINCE  IN THE LIGHT' : 'THE BURIED PRINCE') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'master' ? 'THE HOUND MASTER' : boss.t === 'kraken' ? 'THE KRAKEN' : boss.t === 'queen' ? 'THE HORNET QUEEN' : bossTitle(boss), '#ffd36b'); zoomKick(1.1, 0.4);   /* the rest ask the bestiary, the way the card does: the Herald, the Reefmaw, the Quartermaster, the Captain, the Tollmaster and the Masthead all woke as THE HORNET QUEEN */
   burst(L.arena.wallL * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6); burst(L.arena.wallR * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6);
 }
 // THE COMB IS WAX, NOT A BALCONY: a slam shakes a told piece loose; it breaks on the floor instead of becoming a ledge.
@@ -15974,10 +15979,16 @@ function updateGargoyleBoss(e, dt) {
   e.x = Math.max(A.x0 + 12, Math.min(A.x1 + 40, e.x));
   if (e.alive && e.mode === 'stunned' && stompOn(P, e)) stompStone(e);   /* HIS OPENING: jump on him while he lies on the spikes */
 }
+/* IN ONE OF HIS REALMS (src/mage-realms.js): the room you are held in is the realm's, not his hall's */
+const mageRealm=()=>boss&&boss.t==='undeadmage'&&boss.alive&&boss.realm?boss:null;
+const skyBox=()=>{const m=mageRealm();return m?realmBox(m,L.arena):carpetBox(L.arena,boss&&boss.t==='undeadmage'?boss.squeeze||0:0);};
 function updateUndeadMage(e,dt){
- e.hp0??=e.maxHp;const A=L.arena,box=carpetBox(A,e.squeeze||0);
- stepUndeadMage(e,dt,{P,box,rnd:Math.random,
-  hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK',bent:'BENT BOLT',trap:'RING TRAP'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
+ e.hp0??=e.maxHp;const A=L.arena,box=e.realm?realmBox(e,A):carpetBox(A,e.squeeze||0);
+ stepUndeadMage(e,dt,{P,box,A,rnd:Math.random,
+  hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK',bent:'BENT BOLT',trap:'RING TRAP',pillar:'THE BURNING FLOOR',firewall:'HIS FIRE WALL',icicle:'AN ICICLE',mire:'THE MIRE'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
+  /* THROUGH HIS TEAR, AND BACK: a flash and a snap - a portal is not a flight */
+  pull:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.45);shakeCam(7);zoomKick(1.14,.5);SFX.mageBolt?SFX.mageBolt():SFX.leap();burst(P.x,P.y-8,28,C,160,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;number(P.x,P.y-40,REALM.name[kind],C[0]);},
+  leave:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.4);shakeCam(6);SFX.stone();burst(P.x,P.y-8,24,C,150,.8,0,2);number(P.x,P.y-40,'THE REALM TEARS: BACK TO HIS HALL','#e0c8ff');},
   venom:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);},
   say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),
   /* HIS RINGS WORK BOTH WAYS (round 2): a dodge on the carpet through an open exit ring carries you out beside him */
@@ -15990,8 +16001,13 @@ function updateUndeadMage(e,dt){
    whole width and the landing he waits over (chaseView, asked by desiredView) - so nothing he throws comes from off the screen. */
 function chaseMage(e,dt){
  if(P.carpet){e.alive=false;return;}   /* the carpet is boarded: he is through his door ahead of you, and the fight is his hall's */
- updateMageChase(e,dt,{P,
-  hit:(x,y,d,hard,blow)=>damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',mark:'THE DEATH MARK'})[blow]}),
+ const seals=(L.spiral&&L.spiral.seals)||[];
+ /* HIS WARD'S BRAZIERS (claude/undead3): strike one and its fire goes up the stair to him */
+ {const hb=attackBox();if(hb&&!P.dead)for(const s of seals)for(const which of ['main','relight']){const bx=which==='main'?s.bx:s.rx;if(bx===null||bx===undefined)continue;const x=bx*TS+8,y=((which==='main'?s.by:s.ry)+1)*TS,key=which==='main'?s:(s.rkey||(s.rkey={}));if(P.hitSet.has(key)||!overlap(hb,{l:x-9,r:x+9,t:y-22,b:y}))continue;P.hitSet.add(key);sparks(x,y-12,P.face,4);
+  if(lightBrazier(s,which)){SFX.puff&&SFX.puff();SFX.charge&&SFX.charge();shakeCam(2);burst(x,y-12,16,['#ff9b49','#ffe9b0','#c9463d'],90,.6,-40,2);number(x,y-30,'IT FLARES: JUMP ITS FIRE','#ff9b49');}else{SFX.clank();if(which==='main'&&s.doused)number(x,y-30,'HE SNUFFED IT. THE ONE BEHIND YOU BURNS','#bce8fa');}}}   /* (undead4: the second, relight brazier on the seal he snuffs) */
+ updateMageChase(e,dt,{P,seals,
+  breakWard:(s,quiet)=>{for(let y=s.y0;y<=s.y1;y++)cellSet(s.x,y,T.AIR);resolveTiles();if(quiet)return;shakeCam(5);SFX.stone();SFX.crack();for(let y=s.y0;y<=s.y1;y+=2)burst(s.x*TS+8,y*TS+8,4,['#6fe08a','#c8ffd8','#ff9b49'],90,.7,120,2);number(s.x*TS+8,s.y0*TS-8,'THE WARD BURNS','#ff9b49');},
+  hit:(x,y,d,hard,blow)=>damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',mark:'THE DEATH MARK',wardfire:'THE BRAZIERS FIRE'})[blow]}),
   say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),
   onScreen:(x,y,m=0)=>x>camX+m&&x<camX+VW-m&&y>camY+m&&y<camY+VH-m,
   solid:(x,y)=>tileAt(Math.floor(x/TS),Math.floor(y/TS))===T.SOLID,
@@ -16004,12 +16020,14 @@ function carpetPlayer(dt){
  const ax=(keys.right?1:0)-(keys.left?1:0),ay=(keys.down?1:0)-((keys.up||keys.jump)?1:0);
  P.dodgeCd=Math.max(0,(P.dodgeCd||0)-dt);P.stDelay=Math.max(0,P.stDelay-dt);if(P.stDelay<=0&&P.st<P.maxSt)P.st=Math.min(P.maxSt,P.st+ST.regen*dt);
  if(dodgePress&&P.dodgeCd<=0&&spend(dodgeCost())){P.dodge=0.22;P.dodgeCd=0.55;P.inv=Math.max(P.inv,0.3);P.vx=(ax||P.face)*300;P.vy=ay*260;SFX.pDodge();}
- const sky=carpetBox(L.arena,boss&&boss.t==='undeadmage'?boss.squeeze||0:0);
+ const sky=skyBox();
+ P.carpet.grip=mageRealm()&&boss.realm.kind==='ice'?REALM.ice.grip:1;   /* THE ICE REALM: the cold takes the carpet's grip */
  if(P.dodge>0){P.dodge-=dt;ghosts.push({x:P.x,y:P.y,face:P.face,life:0.2,frame:0});P.x=Math.max(sky.x0,Math.min(sky.x1,P.x+P.vx*dt));P.y=Math.max(sky.y0,Math.min(sky.y1,P.y+P.vy*dt));}
  P.block=!!keys.block&&P.atk<0&&!(P.dodge>0);
  if(!(P.dodge>0))stepCarpet(P,{ax:P.block?ax*0.5:ax,ay:P.block?ay*0.5:ay},dt,sky);
  if(ax&&!P.block)P.face=ax;P.anim+=dt;P.ground=false;P.swim=false;P.climb=false;
  P.abuf=Math.max(0,(P.abuf||0)-dt);
+ {const m=mageRealm(),hb=m&&attackBox();if(hb)strikeRealm(m,hb,P.hitSet,{box:realmBox(m,L.arena),say:(t,h)=>number(P.x,P.y-40,t,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)()});}   /* A REALM'S OPENING is struck on the realm: an icicle, the vent */
  if(P.abuf>0&&P.atk<0){P.abuf=0;if(spend((P.relic==='gauntlet'?0.5:1)*(isPaladin()?28:sword().cost))){P.atk=0;P.hitSet.clear();SFX.pSlash();P.swingMul=1;P.heavySwing=false;}}
  if(P.atk>=0){P.atk+=dt*(isPaladin()?0.56:1);if(P.atk>0.3)P.atk=-1;}
  {const hb=attackBox();if(hb)for(const e of enemies){if(!e.alive||P.hitSet.has(e)||e.gone>0||!overlap(hb,box(e)))continue;P.hitSet.add(e);openBefore(e);hurtAs(meleeBlow(false),e,swingDmg(e),P.x,false);swordEffect(e);if(isPaladin())gainLight(8);}}
@@ -16018,7 +16036,7 @@ function carpetPlayer(dt){
  /* THE FLOOR OF HIS ROOM. carpetBox's bottom was an invisible floor you could not fall through, so the lowest part of
     the arena was the safest part of it. It burns now: a warning glow, then a bite and a shove back up, every tick you
     stay. It HURTS AND DOES NOT KILL - the way out is up, and up is always there. */
- if(L.sanctum&&burnSanctum(P,L.arena,dt,{ember:(x,y)=>{if(Math.random()<dt*24)parts.push({x:x+(Math.random()-.5)*26,y:y+2,vx:(Math.random()-.5)*30,vy:-40-Math.random()*50,life:.5,max:.5,col:Math.random()<.5?'#c88aff':'#ffe9ff',size:1,grav:-40});}}))
+ if(L.sanctum&&!(mageRealm()&&boss.realm.kind!=='fire')&&burnSanctum(P,L.arena,dt,{ember:(x,y)=>{if(Math.random()<dt*24)parts.push({x:x+(Math.random()-.5)*26,y:y+2,vx:(Math.random()-.5)*30,vy:-40-Math.random()*50,life:.5,max:.5,col:Math.random()<.5?'#c88aff':'#ffe9ff',size:1,grav:-40});}}))
   {damagePlayer(P.x,DMG.sanctumFire,{unblockable:true,blow:'THE FLOOR BURNS'});SFX.sizzle?SFX.sizzle():SFX.crack();shakeCam(3);burst(P.x,P.y+4,10,['#c88aff','#9a52e0','#ffe9ff'],90,.6,-30,1);}
 }
 /* FAILING STONE (src/tower-collapse.js is the rule; this is its hands). Weight on a cracked section starts its count: a crack on
@@ -16055,6 +16073,9 @@ function updateAscent(dt){
  /* THE SPIRAL STAIR IS FRAMED ON ITS OWN WALLS: the camera holds to the stair tower's width (centred on it when the view is wider), so the
     landing he waits over is on the screen with you and the rock beside the tower is not. Let go the moment you are out of it. */
  if(L.spiral&&!bossActive){if(chaseView()){if(!camLock||!camLock.spiral)camLock={x0:(L.spiral.x0-1)*TS,x1:(L.spiral.x1+2)*TS,spiral:true};}else if(camLock&&camLock.spiral)camLock=null;}
+ /* HIS MUSIC FROM THE FIRST STEP (claude/undead3, Daniel: "boss music"): the stair is his fight's first act, so it has his fight's track -
+    from the ring's far side to the carpet, and on through the fight without a break (bossStart leaves it running) */
+ if(L.spiral&&!bossActive&&chaseView()&&L.arena&&music.want!==(L.arena.music||'boss'))music.play(L.arena.music||'boss');
  updateTowerAscent(L,P,dt,{
   change:(x,y,how)=>{const i=y*LW+x,t=L.grid[i];
    if(how==='seal'){cellSet(x,y,T.SOLID);return true;}
@@ -24619,11 +24640,12 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.fields) drawFieldsTiles(cx, cy);   /* the phantom planks, the bales, the buildings' skins */
   if (L.mage) { drawMageTiles(cx, cy); drawArchImages(cx, cy); }   /* THE MAGE'S FOLLY: the tower's skins, the hedges, the holes, the cracks, the stacks and the ice; and the Archmage's images, behind every creature */
   drawCrumbles(cx, cy);   /* THE FALLING TOWER's failing stone: over its own skin, so its cracks are never painted out */
+  if (L.spiral && L.spiral.seals && !L.carpetUp) drawSeals(g, L.spiral.seals, cx, cy, time);   /* THE SPIRAL STAIR's wards, braziers and the fire going up to him (claude/undead3) */
   /* HIS HALL GOES ON AFTER THE TILES, NOT BEFORE THEM. Drawn first, the level's own tiles painted straight back over it -
      and the tower keeps two rows of CRENELLATIONS at rows 46-49, which are inside the room's box, so the merlons stood up
      through the floor of a sealed hall like masonry floating in mid-air. Nothing up here is supposed to be tiles at all
      (see the head of src/sanctum.js), so the room covering them is the right way round as well as the good-looking one. */
-  if (L.sanctum && L.carpetUp && !L.sandWalk) drawSanctum(g, L, L.arena, cx, cy, time, carpetBox(L.arena, 0));
+  if (L.sanctum && L.carpetUp && !L.sandWalk) { if (mageRealm()) drawRealm(g, boss, L.arena, cx, cy, time); else drawSanctum(g, L, L.arena, cx, cy, time, carpetBox(L.arena, 0)); }   /* (in one of his realms, the realm's room: src/mage-realms.js) */
   if (L.sanctum) drawSanctumDoors(g, L, cx, cy, time);
   drawComb(cx, cy);
   drawGroundLight(cx, cy, tx0, ty0);
@@ -25374,8 +25396,8 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
-  if(L.sanctum&&L.carpetUp&&!L.sandWalk)drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
-  drawCarpetWorld(g,L,P,cx,cy,time);drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);for(const q of enemies)if(q.t==='magechase'&&q.alive)drawUndeadMage(g,q,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage')drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
+  if(L.sanctum&&L.carpetUp&&!L.sandWalk&&!mageRealm())drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
+  drawCarpetWorld(g,L,P,cx,cy,time);drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(boss?.t==='undeadmage'){drawRealmFx(g,boss,cx,cy,time);drawTear(g,boss,cx,cy,time);}for(const q of enemies)if(q.t==='magechase'&&q.alive)drawUndeadMage(g,q,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage'&&!mageRealm())drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if (L.witch) drawRoots(g, L.hedgeRoots, L.witch, cx, cy, time);   /* THE ROOTS crawling, THE ROOTED GARDEN's braziers and its shivering hedges (hedge-warden.js) */
   if(L.witch)drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time,P);
   if(L.winds)drawWinds(g,L,P,cx,cy,time,VW,VH);   /* the wells in the spiked moat, and the wind round a hero it carries */

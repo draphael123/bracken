@@ -24,7 +24,7 @@ export function stepCarpet(P, input, dt, box) {
   let ax = input.ax || 0, ay = input.ay || 0; const m = Math.hypot(ax, ay); if (m > 1) { ax /= m; ay /= m; }
   // THE DRIFT: a slow figure-of-eight under whatever you are doing, so a held carpet is still a carpet in the wind
   const tvx = ax * CARPET.speed + Math.sin(C.t * 0.7) * CARPET.drift, tvy = ay * CARPET.speed + Math.sin(C.t * 1.3) * CARPET.drift * 0.5;
-  const k = Math.min(1, dt * (C.hitT > 0 ? 1.6 : CARPET.accel));   /* knocked back, it takes a moment to answer the reins again */
+  const k = Math.min(1, dt * (C.hitT > 0 ? 1.6 : CARPET.accel * (C.grip ?? 1)));   /* (grip: the Undead Archmage's ice realm takes most of it - src/mage-realms.js) */   /* knocked back, it takes a moment to answer the reins again */
   P.vx += (tvx - P.vx) * k; P.vy += (tvy - P.vy) * k;
   P.x += P.vx * dt; P.y += P.vy * dt;
   const hit = {};

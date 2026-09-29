@@ -463,6 +463,7 @@ export const music = {
   duck(on) { const t = on ? 0.35 : 1; if (t === duckT) return; duckT = t; if (musicGain && currentTrack && musicOn) musicGain.gain.setTargetAtTime(trackVol(currentTrack), ac.currentTime, 0.25); },
   get on() { return musicOn; },
   get track() { return currentTrack; },
+  get want() { return wantTrack; },   /* the track asked for last (null: stopped) - what is meant to be playing, loaded or not, sound on or not */
   muffle(on) { if (!!on === muffled) return; muffled = !!on; applyMusicFilter(); },
   lowHealth(on) { if (!!on === lowHp) return; lowHp = !!on; applyMusicFilter(); },
 };

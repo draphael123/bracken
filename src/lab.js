@@ -7,6 +7,8 @@ import { mulberry } from './px.js';   /* bossLab seeds Math.random for the row i
 //   await BK.fightLab({ levels: ['wood', 'spire', 'waymeet'], heroes: [...], foes: [...], reps: 2 })   -> window.__lab
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 import { MARK } from './marks.js';
+import { FLIGHTS as SPIRAL_FLIGHTS } from './spiral-chase.js';   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
+import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
 import { GEO as GEO_K } from './geomancer.js';   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
 import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
@@ -582,8 +584,27 @@ async function runbossLab(BK, opts) {
           const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
           if(SHIELDED(h)&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
           const nx=-q.vy/sp,ny=q.vx/sp,s2=(rx*nx+ry*ny)>=0?1:-1;vx+=nx*s2*1.4;vy+=ny*s2*1.4;threat=true;if(d<24&&P.st>20&&!(P.dodge>0))BK.press('dodge');}   /* and the dash's i-frames through the one that is about to land */
+        /* HIS SPELL REALMS (claude/undead3, round undead4: "teach the bot the three openings"). In a realm his ward holds, so the bot does
+           not close on him: it reads the realm's hazards and goes for its ONE opening - FIRE: over or under his wall going out, and a DODGE
+           THROUGH it coming back (it runs on into him); ICE: under the ceiling at the icicle over his shell, and a swing at it; POISON: over
+           the mire and out of the spore rings, and while the beam is cut, down to the vent and a swing at it. Open, it goes in as ever. */
+        let realmGoal=null;const RL=boss.realm;
+        if(RL&&boss.alive&&!(boss.open>0)){const b=realmBox(boss,A),toward=(gx,gy,w=1.6)=>{if(Math.abs(gx-P.x)>4)vx+=Math.sign(gx-P.x)*w;if(Math.abs(gy-py)>4)vy+=Math.sign(gy-py)*w;};
+          if(RL.kind==='fire'){const tw=(b.x1-b.x0)/7,ti=Math.floor((P.x-b.x0)/tw);
+            if((RL.ph==='tell'||RL.ph==='burn')&&RL.lit&&RL.lit.includes(ti)){let best=null;for(let j=0;j<7;j++)if(!RL.lit.includes(j)&&(best===null||Math.abs(j-ti)<Math.abs(best-ti)))best=j;if(best!==null){vx+=Math.sign(b.x0+(best+0.5)*tw-P.x)*2.5;threat=true;}}
+            const W=RL.wall;if(W){const closing=(P.x-W.x)*W.d>0,dd=Math.abs(P.x-W.x);
+              if(!W.back&&closing&&dd<110&&Math.abs(py-W.y)<60){vy+=(py<W.y?-1:1)*2.5;threat=true;}
+              if(W.back&&closing&&dd<46&&!W.hitP){threat=true;if(P.st>=10&&!(P.dodge>0)&&dd<34){P.face=-W.d;k.left=W.d>0;k.right=W.d<0;BK.press('dodge');}}}
+            realmGoal=[boss.x+(P.x<boss.x?-110:110),by];}
+          if(RL.kind==='ice'){for(const q of RL.icicles)if((q.st==='crack'||(q.st==='fall'&&!q.struck))&&Math.abs(q.x-P.x)<24){vx+=Math.sign(P.x-q.x||1)*2.5;threat=true;}
+            let over=null;for(const q of RL.icicles)if(q.st==='hang'&&(!over||Math.abs(q.x-boss.x)<Math.abs(over.x-boss.x)))over=q;
+            if(over){realmGoal=[over.x-10,b.y0+2-8];if(Math.abs(over.x-boss.x)<12&&Math.abs(P.x-(over.x-10))<8&&py<b.y0+10&&P.atk<0){P.face=1;BK.press('atk');swings++;}}}
+          if(RL.kind==='poison'){if(RL.exposedT<=0&&P.y>RL.mire-26){vy-=2.5;threat=true;}for(const s of [...(RL.spores||[]),...(RL.clouds||[])])away(s.x,s.y,(s.r||26)+24,3);
+            if(RL.exposedT>0){realmGoal=[RL.vent.x-12,RL.mire-6];if(Math.abs(P.x-(RL.vent.x-12))<8&&Math.abs(py-(RL.mire-6))<10&&P.atk<0){P.face=1;BK.press('atk');swings++;}}
+            else realmGoal=[RL.vent.x-110,RL.mire-70];}
+          if(realmGoal)toward(realmGoal[0],realmGoal[1],threat?0.8:1.6);}
         const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
-        if(!threat){const want=boss.open>0?LAB_REACH[h]*0.55:(rest?150:LAB_REACH[h]*0.7);const gx=boss.x-side*want,gy=by;
+        if(!threat&&!realmGoal){const want=boss.open>0?LAB_REACH[h]*0.55:(rest?150:LAB_REACH[h]*0.7);const gx=boss.x-side*want,gy=by;
           if(Math.abs(gx-P.x)>6)vx+=Math.sign(gx-P.x);if(Math.abs(gy-py)>6)vy+=Math.sign(gy-py);}
         if(vx>0.3)k.right=true;else if(vx<-0.3)k.left=true;if(vy>0.3)k.down=true;else if(vy<-0.3)k.up=true;
         if(block){k.block=true;}
@@ -1533,3 +1554,52 @@ export async function killLab(BK, opts = {}) {
   return out;
 }
 
+
+/* THE SPIRAL STAIR, CLIMBED (claude/undead3, round undead4): the bot for the Undead Archmage's chase, shared by tools/tower-chase.mjs and
+   tools/archmage-pilot.mjs. It walks each flight's way and jumps at an edge or under the ledge over it; at a seal it strikes the brazier
+   (the one BEHIND it, when he has snuffed the other), JUMPS the brazier's fire as it comes by, and goes on up. m is the chase's Archmage.
+   o: { secs, strike (false: never touches a brazier), refill (hold health up and count what it took), each(t) } -> { t, taken, burnt, hits } */
+export function chaseClimb(BK, m, o = {}) {
+  const F = SPIRAL_FLIGHTS, secs = o.secs || 150, strike = o.strike !== false; let jh = 0, t = 0, taken = 0, burnt = 0, still = 0, lastX = 0, back = 0, inPlace = 0, kHere;
+  for (; t < 60 * secs && !BK.carpet(); t++) {
+    const P = BK.P, G = BK.L.grid, W = BK.L.W, seals = (BK.L.spiral && BK.L.spiral.seals) || [];
+    /* THE FLIGHT IT IS ON, by where its feet are (not how far it has ever been: a fall puts it back on a lower flight) */
+    if (P.ground || kHere === undefined) { const feet = Math.round(P.y / 16); kHere = -1; for (let i = 0; i < F.length; i++) if (feet <= F[i].land[2]) kHere = i; }
+    const k = kHere, dir = F[Math.min(F.length - 1, k + 1)].dir;   /* (gone through his door, he still left a stair to climb) */
+    let walk = dir, hold = false;
+    /* STUCK (a knock or a fall left it against a wall): turn back a moment and come at it again */
+    if (Math.abs(P.x - lastX) < 0.5 && P.ground) still++; else still = 0; lastX = P.x;
+    if (still > 90 && !(back > 0)) { back = 70; still = 0; } if (back > 0) { back--; walk = -dir; }
+    if (strike) for (const s of seals) { if (s.broken || s.wall || s.k !== k + 1) continue;
+      const back = s.doused && s.rx !== null && s.rx !== undefined, bx = (back ? s.rx : s.bx) * 16 + 8, by = ((back ? s.ry : s.by) + 1) * 16;
+      if (back && Math.abs(P.y - by) < 40) walk = Math.sign(bx - P.x) || walk;   /* he snuffed it: back to the one behind */
+      const d = (bx - P.x) * walk;
+      if (d > -12 && d < 26 && Math.abs(P.y - by) < 20) { hold = true; if (d < 2) { BK.keys.right = walk < 0 && t % 10 < 2; BK.keys.left = walk > 0 && t % 10 < 2; } else { BK.keys.right = d > 6 && walk > 0; BK.keys.left = d > 6 && walk < 0; } if (P.ground && t % 10 === 0) BK.press('atk'); } }
+    /* AT A WARD STILL STANDING: wait at the foot of it for the fire (under the landing is a long way down) */
+    for (const s of seals) if (!s.broken && s.k === k + 1 && !hold && Math.abs(P.x - (s.x * 16 + 8)) < 40 && P.y > (s.y1 + 1) * 16 && P.ground && (s.wall || !strike)) hold = 'ward';
+    if (hold === 'ward') { BK.keys.right = BK.keys.left = false; }
+    else if (!hold) { BK.keys.right = walk > 0; BK.keys.left = walk < 0; }
+    if (inPlace > 0) { inPlace--; BK.keys.right = BK.keys.left = false; }   /* a jump over the fire goes straight up: it lands where it left */
+    /* THE BRAZIER'S FIRE: jump it as it comes by (its flare, then the wall) */
+    let jumpIt = false;
+    for (const s of seals) { const w = s.wall; if (!w || w.i >= w.pts.length - 2) continue; const nx = w.pts[w.i + 1] ? w.pts[w.i + 1][0] : w.x, going = Math.sign(nx - w.x) || 0;
+      const ahead = (P.x - w.x) * going; if (Math.abs(w.y - P.y) < 44 && ((w.kindle > 0 && w.kindle < 0.14 && Math.abs(P.x - w.x) < 22) || (!(w.kindle > 0) && ahead > -4 && ahead < 26))) jumpIt = true; }
+    /* THE STAIR IS A LIST (spiral-chase.js FLIGHTS): it knows the step it stands on and the next one its way, and jumps off the very lip
+       of this one for that one (the heavy heroes need all of it), or - where the next is over it, on the floor - from under its edge */
+    let leap = false;
+    if (P.ground && !hold) { const f = Math.min(F.length - 1, k + 1), S = BK.L.spiral, seq = [f === 0 ? [S.x0, S.x1 - S.x0 + 1, S.floor] : F[f - 1].land, ...F[f].steps, F[f].land], feet = Math.round(P.y / 16), tx = P.x / 16;
+      const at = seq.findIndex(([x0, len, row]) => row === feet && tx >= x0 - 0.4 && tx <= x0 + len + 0.4), nxt = at < 0 ? null : seq[at + (walk === dir ? 1 : -1)];
+      if (nxt) { const cur = seq[at], lip = walk > 0 ? (cur[0] + cur[1]) * 16 - P.x : P.x - cur[0] * 16, near = walk > 0 ? nxt[0] * 16 - P.x : P.x - (nxt[0] + nxt[1]) * 16;
+        if (near > lip + 4 ? lip < 4 : near < 18 && nxt[2] < cur[2]) leap = true; }
+      else if (at < 0 && !G[Math.floor(P.y / 16) * W + Math.floor((P.x + walk * 3) / 16)]) leap = true; }   /* off the list (a landing it fell to): the old rule, jump at an edge */
+    if (jumpIt && P.ground && !(jh > 0)) { BK.keys.right = BK.keys.left = false; BK.press('jump'); jh = 22; inPlace = 34; }
+    else if (leap && !(jh > 0)) { BK.press('jump'); jh = 16; }
+    BK.keys.jump = jh > 0; jh--;
+
+    const was = P.hp; BK.sim(1); if (o.each) o.each(t);
+    const lost = Math.max(0, was - BK.P.hp); taken += lost; if (lost && seals.some(s => s.wall && s.wall.hitP && !s.wall.counted && (s.wall.counted = true))) burnt++;
+    if (o.refill) BK.P.hp = BK.P.maxHp;
+  }
+  BK.keys.right = BK.keys.left = BK.keys.jump = false;
+  return { t, taken, burnt };
+}
