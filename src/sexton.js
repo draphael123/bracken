@@ -24,7 +24,7 @@
 export const SEXTON = {
   hp: 520, walk: 28, keep: 34, cd: 1.25, cdP2: 0.95,
   tell: { swing: 0.8, rush: 0.85, toll: 1.0, drop: 0.95 },
-  dmg: { swing: 17, rush: 14, toll: 14, drop: 16, pit: 12 },   /* pit: the bell pit's spikes (round 3), a bite like one of his own blows - and it throws you out (bellPitThrow) */
+  dmg: { swing: 17, rush: 14, toll: 14, drop: 16, pit: 50 },   /* pit: the bell pit's spikes (round 3; 50, Daniel 2026-09-29: they must hurt), far worse than his own blows - and it throws you out (bellPitThrow) */
   swingReach: 48, rushV: 150, rushT: 0.7, rushFrom: 80, tollR: 80, tollHit: 150, count: 3, countP2: 2,
   dropHalf: 14, pairGap: 44, pit: 3.2, pitMul: 2, climb: 0.55, pitDepth: 32,
   leapT: 0.75, leapH: 50, leapReach: 150,   /* THE LEAP over a ringers' walk: its length, how high he goes (the walks stand 32 px), how far he looks for the far side */
