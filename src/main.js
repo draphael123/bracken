@@ -1929,7 +1929,7 @@ function spawnEntities() {
        sand) there is nothing to shut: sandWalk stays, and so does the gate it unlocks. */
     if(L.sanctum&&!L.sandWalk){L.sanctum.open=false;L.sanctum.outOpen=0;L.sanctum.out=null;}
     /* HIS WARDS STAND AGAIN on a retry (claude/undead3): he burns the ones under the landing you wake on himself (spiral-chase.js) */
-    for(const s of (L.spiral&&L.spiral.seals)||[]){s.broken=false;s.wall=null;for(let y=s.y0;y<=s.y1;y++)cellSet(s.x,y,T.SOLID);}
+    for(const s of (L.spiral&&L.spiral.seals)||[]){s.broken=false;s.wall=null;s.doused=false;s.snuffing=false;for(let y=s.y0;y<=s.y1;y++)cellSet(s.x,y,T.SOLID);}
   } else if (typeof P !== 'undefined' && P && P.carpet) P.carpet = null;   /* a rug ridden out of the tower (quit mid-fight) must not fly into the next level: carpetBox reads L.arena and threw every frame */
   eliteWatch();   /* an elite cut down in the same beat the hero fell (the world is still in its hitstop) is written down before the board is reset */
   shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) P.carry = null; if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
@@ -15852,11 +15852,11 @@ function chaseMage(e,dt){
  if(P.carpet){e.alive=false;return;}   /* the carpet is boarded: he is through his door ahead of you, and the fight is his hall's */
  const seals=(L.spiral&&L.spiral.seals)||[];
  /* HIS WARD'S BRAZIERS (claude/undead3): strike one and its fire goes up the stair to him */
- {const hb=attackBox();if(hb&&!P.dead)for(const s of seals){const x=s.bx*TS+8,y=(s.by+1)*TS;if(P.hitSet.has(s)||!overlap(hb,{l:x-9,r:x+9,t:y-22,b:y}))continue;P.hitSet.add(s);sparks(x,y-12,P.face,4);
-  if(lightBrazier(s)){SFX.puff&&SFX.puff();SFX.charge&&SFX.charge();shakeCam(2);burst(x,y-12,16,['#ff9b49','#ffe9b0','#c9463d'],90,.6,-40,2);number(x,y-30,'THE FIRE CLIMBS THE STAIR','#ff9b49');}else SFX.clank();}}
+ {const hb=attackBox();if(hb&&!P.dead)for(const s of seals)for(const which of ['main','relight']){const bx=which==='main'?s.bx:s.rx;if(bx===null||bx===undefined)continue;const x=bx*TS+8,y=((which==='main'?s.by:s.ry)+1)*TS,key=which==='main'?s:(s.rkey||(s.rkey={}));if(P.hitSet.has(key)||!overlap(hb,{l:x-9,r:x+9,t:y-22,b:y}))continue;P.hitSet.add(key);sparks(x,y-12,P.face,4);
+  if(lightBrazier(s,which)){SFX.puff&&SFX.puff();SFX.charge&&SFX.charge();shakeCam(2);burst(x,y-12,16,['#ff9b49','#ffe9b0','#c9463d'],90,.6,-40,2);number(x,y-30,'IT FLARES: JUMP ITS FIRE','#ff9b49');}else{SFX.clank();if(which==='main'&&s.doused)number(x,y-30,'HE SNUFFED IT. THE ONE BEHIND YOU BURNS','#bce8fa');}}}   /* (undead4: the second, relight brazier on the seal he snuffs) */
  updateMageChase(e,dt,{P,seals,
   breakWard:(s,quiet)=>{for(let y=s.y0;y<=s.y1;y++)cellSet(s.x,y,T.AIR);resolveTiles();if(quiet)return;shakeCam(5);SFX.stone();SFX.crack();for(let y=s.y0;y<=s.y1;y+=2)burst(s.x*TS+8,y*TS+8,4,['#6fe08a','#c8ffd8','#ff9b49'],90,.7,120,2);number(s.x*TS+8,s.y0*TS-8,'THE WARD BURNS','#ff9b49');},
-  hit:(x,y,d,hard,blow)=>damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',mark:'THE DEATH MARK'})[blow]}),
+  hit:(x,y,d,hard,blow)=>damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',mark:'THE DEATH MARK',wardfire:'THE BRAZIERS FIRE'})[blow]}),
   say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),
   onScreen:(x,y,m=0)=>x>camX+m&&x<camX+VW-m&&y>camY+m&&y<camY+VH-m,
   solid:(x,y)=>tileAt(Math.floor(x/TS),Math.floor(y/TS))===T.SOLID,
