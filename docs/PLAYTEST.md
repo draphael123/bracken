@@ -54,3 +54,9 @@ the end of its fight, and requires every `localStorage` key and value to be byte
 
 `BK.bossJump.table()` (the rows), `BK.bossJump.go(id, hero)`, `BK.bossJump.open()`, `BK.bossJump.on`.
 `node tools/boss-jump.mjs` and `node tools/textfit.mjs bossjump` cover it.
+
+## The chase demo
+
+    http://localhost:<port>/?chase=demo[&hero=<id>]
+
+A short corridor cut into the first level in memory (never saved, like `?boss=`): one chaser (src/chase.js) that starts when you cross the line, warns before it speeds up, pushes the camera, kills on contact, and one timed low beam to duck. Nothing in a real level uses it; `tools/chase.mjs` holds the rules.
