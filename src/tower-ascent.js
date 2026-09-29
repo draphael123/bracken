@@ -48,7 +48,7 @@ export const TOWER = { W: 72, H: 306, X0: 12, X1: 59, SKY: 50, FLOOR: 36, N: 7 }
    camera ever reaches except through the portal: sixteen rows over the sanctum's vault, which is itself painted and not built
    (src/sanctum.js). It was a sandstone cutting walled at both ends; it is open sand now, from one edge of the world to the other,
    under THE SUNKEN CARAVAN's sky. `arrive` is where the second door puts you, `gate` the level's end. */
-export const SAND = { x0: 0, x1: SPIRAL.W - 1, row: 6, deep: 12, arrive: 20, gate: 34 };
+export const SAND = { x0: 0, row: 6, deep: 12, arrive: 20, gate: 34 };
 /* HIS HALL, THE TOP OF THE TOWER (round 3, Daniel 2026-09-27: "move his arena higher so walking foes cannot wander in", its backdrop
    "the top of the tower open to the night with the moon behind"). It sat on the crown: its burning floor was row 50 and the parapet
    walk row 51, so anything that walked the crown's last tiers stood with its head in his fire. It is TWELVE ROWS higher now - its floor
@@ -79,6 +79,7 @@ const endRise = () => Math.round(SWING.arm * (1 - Math.cos(SWING.th)) / 16);
 
 export function buildTowerAscent({ painter, T, TS }) {
   const { H, X0, X1, SKY, FLOOR, N } = TOWER, W = SPIRAL.W;   /* the grid is the tower's 72 columns and, east of its wall, THE SPIRAL STAIR's own (src/spiral-chase.js) */
+  SAND.x1 = W - 1;
   const L = painter(W, H), { set, ent, coins } = L;
   const rect = (x0, x1, y0, y1, t) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, t); };
   rect(0, W - 1, 0, H - 1, T.SOLID);
