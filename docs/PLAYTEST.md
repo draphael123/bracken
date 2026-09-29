@@ -60,3 +60,9 @@ the end of its fight, and requires every `localStorage` key and value to be byte
     http://localhost:<port>/?chase=demo[&hero=<id>]
 
 A short corridor cut into the first level in memory (never saved, like `?boss=`): one chaser (src/chase.js) that starts when you cross the line, warns before it speeds up, pushes the camera, kills on contact, and one timed low beam to duck. Nothing in a real level uses it; `tools/chase.mjs` holds the rules.
+
+## Weighty combat (prototype, off by default)
+
+    http://localhost:<port>/?combat=weighty        (or Settings > Combat: CLASSIC / WEIGHTY, which is saved; ?combat=classic forces it off)
+
+A Salt & Sanctuary-style prototype behind one switch (src/weighty.js). With it on: every swing ends in a short recovery you cannot jump, dodge or guard out of; the Hornet Queen (Bracken Wood) takes a whole blow at any time, her openings are a bonus, she holds and feints her dive, and her ! arrives halfway into each windup; in Kingswood a brute swings through two cuts and breaks on the third, a shield parries a third cut on its guard and counters on a yellow !, a brute feints, a pike lunges and an archer backs off; common foes hit x1.4 instead of x1.25. Play the Hornet Queen and Kingswood once each way.
