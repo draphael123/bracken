@@ -301,7 +301,7 @@ export const HARD_TELLS = new Set(["troll|slamTell","troll|ripTell","assassin|ma
 HARD_TELLS.add('owl|skimTell');
 HARD_TELLS.add('gobmage|runeTell');   /* THE GOBLIN MAGE'S RUNE: stepped off, never guarded */
 for (const m of ['sweepTell', 'baleTell', 'lanternTell', 'leapTell']) HARD_TELLS.add('strawking|' + m); HARD_TELLS.add('ploughman|chargeTell');   /* THE HEXED FIELDS' red marks */
-for (const m of ['scuttleTell', 'poundTell', 'flaskTell']) HARD_TELLS.add('homunculus|' + m); for (const m of ['rendTell', 'slamTell']) HARD_TELLS.add('archmage|' + m);   /* THE MAGE'S FOLLY's red marks */
+for (const m of ['scuttleTell', 'poundTell', 'flaskTell']) HARD_TELLS.add('homunculus|' + m); for (const m of ['rendTell', 'slamTell', 'crushTell', 'glyphTell', 'pairTell']) HARD_TELLS.add('archmage|' + m);   /* THE MAGE'S FOLLY's red marks */
 for (const m of ['whirlTell', 'gulpTell']) HARD_TELLS.add('drownedking|' + m);   /* THE MAELSTROM and DROWNED BREATH: a current and a burst, and no shield is in either */
 HARD_TELLS.add('herald|glideTell');   /* THE TIDE HERALD'S GLIDE ends in his low sweep: gone from, never guarded */
 HARD_TELLS.add('drownedking|ramTell'); HARD_TELLS.add('drownedking|diveTell');   /* THE DROWNED KING'S CHARGE AND FALL: gone across, never guarded */
@@ -1020,6 +1020,11 @@ async function runbossLab(BK, opts) {
           if (f-(P.labMageTap??-99)>20) { P.labMageTap=f; BK.press('right'); }
           else if (f-P.labMageTap===2) BK.press('right');
         }
+        /* THE HARDER ARCHMAGE (claude/archmage2): the room's attacks and his pairs, answered the way the marks say - roll out from under the
+           stack and off the glyph late in the tell, jump straight up over a pair, and take the flying books on a shield (or jump them) */
+        if (MA.dodge) { if (MA.dodgeAt < 0.3 && f % 4 === 0) { k.left = MA.dodge < 0; k.right = MA.dodge > 0; BK.press('dodge'); } else goal = P.x + MA.dodge * 40; }
+        if (MA.jumpAt !== undefined && MA.jumpAt < 0.25 && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 16; goal = null; }
+        if (MA.book) { if (SHIELDED(h)) { k.block = true; P.face = MA.book; goal = null; if (h === 'paladin') holdC = f + 30; } else if (!(P.labJump > 0)) { BK.press('jump'); P.labJump = 16; } }
         if (P.labJump > 0) { P.labJump--; k.jump = true; } }
       else /* THE SCARECROW KING is read from the field (BK.straw): cut the pole he hangs on, strike the trough by the vine he stands at,
          knock his lantern with the third blow of a run (a heavy one), and jump his low scythe and his bales */
