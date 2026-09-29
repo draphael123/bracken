@@ -15659,10 +15659,19 @@ function orePickBack(e, k, dt) {
   if (ty >= LH || tx < 0 || tx >= LW || isSolid(tx, ty)) { e.pk = null; e.pick = 'lost'; SFX.clank(); burst(k.x, k.y, 4, ['#8a919c'], 40, 0.3); }
 }
 const oreRiders = () => (players || [P]).filter(p => !p.dead);
+/* THE STATION SETS YOU DOWN ON ITS DECK (claude/batch45 fixer): a skip goes into its station house riding OR.BUCKET.lift px over the end of its line, and
+   on THE DOWN LINE that end is beside the Head Frame's climbing net - so a rider who did nothing was let go INTO the net, a rung over the deck, and hung
+   there until something knocked him off (tools/ore-ride.mjs passed on a sheargob's blow and failed when the seeded fight moved it). The line's own end is
+   the deck: a rider let go within 40 px of it, over it, is put down on it. (Not a drum line: the Winchmaster's drums throw their riders on purpose.) */
+function stationSetDown(p, ln, m) {
+  const cx = m.x + m.w / 2, e0 = ln.pts[0], e1 = ln.pts[ln.pts.length - 1], ep = Math.abs(e0[0] - cx) < Math.abs(e1[0] - cx) ? e0 : e1;
+  const c = Math.floor(ep[0] / TS), r = Math.round(ep[1] / TS), deck = tileAt(c, r);
+  if (Math.abs(p.x - ep[0]) < 40 && ep[1] - p.y >= 0 && ep[1] - p.y < 40 && (deck === T.SOLID || deck === T.ONEWAY || deck === T.PLANK) && !isSolid(c, r - 1)) { p.x = ep[0]; p.y = r * TS; p.vx = 0; p.vy = 0; p.climb = false; }
+}
 function updateBucket(m, dt) {
   const ln = L.cableway.lines[m.line], b = bucketAt(ln, m.i), ox = m.x, oy = m.y, wasVis = m.vis;
   if (!b.vis) {   /* in the return, inside a station house: nobody rides it there, and a rusted one comes back mended - AND RELOADED, which is why the ore is a decision you get to make again and not a resource you spend */
-    if (wasVis) { for (const p of oreRiders()) if (p.onMover === m) p.onMover = null; for (const e of enemies) if (e.bucket === m && e.alive) { e.alive = false; e.silentGone = true; } }
+    if (wasVis) { for (const p of oreRiders()) if (p.onMover === m) { p.onMover = null; if (!ln.drum) stationSetDown(p, ln, m); } for (const e of enemies) if (e.bucket === m && e.alive) { e.alive = false; e.silentGone = true; } }
     m.vis = false; m.fallen = 0; m.fallV = 0; m.crackT = 0; m.broken = false; m.y = -9999; m.dx = 0; m.dy = 0;
     m.ore = !ln.riders; m.lift = ln.riders ? OR.BUCKET.lift : 0; m.dump = 0;
     if (ln.drum) m.cracked = winchRust(boss && boss.t === 'winchmaster' ? boss : null, m.i);   /* THE WINCHMASTER'S PHASE TWO: his skips rust HERE, in the station house, out of sight - so a rusted one is always seen rusted before it is boarded (winchmaster.js, round four) */
