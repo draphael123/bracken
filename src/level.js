@@ -1014,6 +1014,14 @@ function sporewood() {
   /* -- and more of the wood swings (Daniel's backlog, 2026-09-28): a vine over the pillars' gap, one more way
      across besides the webbed caps - rope-and-vine crossings (`kind: 'swing'`) are otherwise unused here. */
   R.moversExtra = (R.moversExtra || []).concat([{ kind: 'swing', px: 383 * 16 + 8, py: 10 * 16, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.6, vine: true }]);
+  /* ==== THE SECOND HALF FIRMS UP (claude/firsthour: the Sporewood -> Kingswood wall, backlog item 9) ====
+     Kingswood asked for twice the kinds of foe Sporewood did (19 to 9), so the step between them was a wall (INDEX 87 -> 123). Two
+     of the Stockade's goblins, already learned there, come down into the fungus in DESIGNED spots, and two sporelings of filler go
+     to make room (fewer, better): a BRUTE on the lantern terrace, walking at you through the spitcap's cloud - fight him out of it -
+     and a SAPPER past the pillars' checkpoint, running his bomb at you along the ledge with the Deep Gills' drop at his back; and a
+     BOW on the bog's far bank, over its last sink, so the last jump of the crossing is under fire too (the bog's own stated shape). */
+  R.ents = R.ents.filter(e => !(e.t === 'sporeling' && e.y === 13 && (e.x === 298 || e.x === 313)));
+  R.ents.push({ t: 'brute', x: 322, y: 13, face: -1 }, { t: 'sapper', x: 427, y: 13, face: -1 }, { t: 'archer', x: 371, y: 13, face: -1 });
   return R;
 ;
 }
@@ -1078,7 +1086,7 @@ function kingswood() {
   ent('firepit', 93, 21, { period: 3.2, on: 1.4, phase: 0 }); ent('brazier', 114, 21); ent('firepit', 127, 21, { period: 3.2, on: 1.4, phase: 1.6 }); // the burrow burns in gouts
   ent('sprig', 118, 21, { face: -1 }); ent('plate', 124, 21, { cage: 128 }); ent('dropcage', 128, 17); ent('brute', 132, 21, { face: -1 });
   ent('sign', 90, 21, { text: 'THEIR TRAPS WORK ON THEM: THE LEVER SWINGS THE RAM, THE PLATE DROPS THE CAGE.' });
-  ent('sprig', 142, 21, { face: -1 }); ent('gobmage', 137, 21, { face: -1 });   /* a composed pair: the reader keeps its distance behind the brute at 132, so closing on one means passing the other */
+  ent('sprig', 142, 21, { face: -1 }); ent('archer', 137, 21, { face: -1 });   /* a composed pair: the bow keeps its distance behind the brute at 132, so closing on one means passing the other. (claude/firsthour: it was a goblin mage, a kind of foe met nowhere before and nowhere else in this level - a bow is the Stockade's, already learned, and the first third of the level eases by one new thing; the mage waits for the Spire) */
   coins([93, 20], [114, 20], [126, 19], [138, 20], [147, 20]);
   // the roads rejoin at 150: a slope of ledges from the burrow up to the yard
   block(150, 152, 18, 27); block(153, 158, 16, 27); block(159, 164, 14, 27); block(165, 190, 14, 27);
@@ -1245,7 +1253,8 @@ function kingswood() {
   K.ent('heavy', 95, 19, { face: -1 });
   K.ent('soldier', 108, 19, { face: -1 }); K.ent('soldier', 112, 19, { face: -1 });
   K.ent('heavy', 126, 19, { face: -1 });
-  K.ent('javelin', 114, 19, { face: -1 });
+  /* (claude/firsthour) THE JAVELIN WENT: the Knights' Road met you with four kinds of foe you had never seen at once - plate, shield,
+     javelin and shaman - straight out of Sporewood. The shaman on the stone is its ranged threat; the javelin is the Scree's to teach. */
   K.ent('sign', 90, 19, { text: 'SHIELD UP IN FRONT OF PLATE AND HE GRABS IT. A RED MARK MEANS MOVE.' });
   K.ent('stormshaman', 119, 16, { face: -1 });   /* the near stone stays empty: the lone knight is a lesson, not an ambush */
   /* THE WALL WALK: the roof road off the hall, carried across the open to the canopy - no gap over three, no step over two */
