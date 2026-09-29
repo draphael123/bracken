@@ -1,6 +1,7 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
+import { emptyCarry, carryHas, drop as dcDrop, doorSpot, freshDeathCost } from './death-cost.js';   /* THE DEATH COST: the rules and the save shape, no game in them */
 import { THROW_KIND, isFireFoe, throwDamage, PYRO_HIT_FIELD } from './throwables.js';   /* CARRY & THROW (2026-09-28): the generic pick-up-and-throw system, and the water buckets built on it */
 import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins, ORES, ORE_NAMES, workSees, workLamp, hash as oreHash } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
 import { WALL_KINDS, wallHits, wallPop, wallRect, wallCentre, drawWalls } from './breakable-walls.js';   /* THE BREAKABLE-WALL ENGINE (2026-09-28): built once, THE ORE ROAD's the first level to use it */
@@ -206,7 +207,7 @@ try { slot = Math.max(0, Math.min(SLOTS - 1, +(localStorage.getItem('bracken.slo
 let bossJumpOn = false;   /* THE PLAYTEST BOSS JUMP (docs/PLAYTEST.md): once a page has jumped into a fight it never writes a save - see saveProgress */
 const slotKey = i => 'bracken.progress.' + i;
 function readSlot(i) { try { const raw = localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); return raw ? JSON.parse(raw) : null; } catch { return null; } }
-function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
+function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; if (!PROG.deathCost) PROG.deathCost = freshDeathCost(); PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
   if (!PROG.perHero) { PROG.perHero = 1;                     /* the save's progress belongs to whoever was carrying it */
     const h = PROG.hero || 'knight', d = PROG.done[h] = PROG.done[h] || {};
     for (const lv of LEVELS) if (!lv.hidden && PROG[lv.id] && PROG[lv.id].cleared) d[lv.id] = 1;
@@ -242,7 +243,7 @@ function loadSlot(i) { coopWant = null; if (coop()) coopEnd(); slot = i; saveBlo
 function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { saveBlocked=''; for (const k in PROG) delete PROG[k]; Object.assign(PROG,migrateProgress(null).progress); progDefaults(); } }
 /* THE SAVE BELONGS TO PLAYER ONE. A co-op pass sets PROG.hero to whoever is being updated, and a level won or a
    coin banked inside player two's pass would otherwise write HIS name into the slot as the hero carrying it. */
-function saveProgress() { if (saveBlocked || bossJumpOn) return; const was = PROG.hero; if (passOn && players) PROG.hero = players[0].hero;
+function saveProgress() { if (saveBlocked || bossJumpOn) return; dcMirror(); const was = PROG.hero; if (passOn && players) PROG.hero = players[0].hero;
   try { localStorage.setItem(slotKey(slot), JSON.stringify(PROG)); } catch {}
   PROG.hero = was; }
 loadSlot(slot);
@@ -1161,7 +1162,7 @@ function coopWatch() {
   if (!coop()) return;
   if (!coopFall && players.some(upright)) return;
   coopFall = false;
-  for (const p of players) p.score.deaths++;
+  for (const p of players) p.score.deaths++; for (const p of players) if (!p.dcDone) asPlayer(p, () => deathCost(P, p.killer));
   deaths++;                                                          /* the run's own count: one fall, however many of them went down in it */
   number(players[0].x, players[0].y - 40, 'BACK TO THE SHRINE', '#ff6b6b');
   for (const p of players) { p.down = 0; p.reviveT = 0; p.dead = 0; }
@@ -2452,7 +2453,7 @@ function ambushClear(A) {
   A.st = 'done'; for(const e of A.foes)if(e.alive){e.fleeT=2;e.harmless=true;e.face=e.x<P.x?-1:1;} ambushLift(A, true); if (A.cam) { camLock = null; A.cam = false; }
   ambushSay('THE WAY IS OPEN', A.name || '', '#8fd160', 2.2); SFX.medal(); shakeCam(3); zoomKick(1.05, 0.25);
   /* THE PURSE AND A HEART: a room that shuts you in pays for it */
-  const gold = A.gold || 10; PROG.coins = (PROG.coins || 0) + gold; number(P.x, P.y - 34, gold, '#ffd34a');
+  const gold = A.gold || 10; PROG.coins = (PROG.coins || 0) + gold; carryOf(P).purse += gold; number(P.x, P.y - 34, gold, '#ffd34a');
   for (let i = 0; i < 4; i++) dropCoinAt(P.x + (Math.random() - 0.5) * 30, P.y - 16);
   A.heart = { x: P.x + P.face * 14, y: P.y - 24, vy: -160, t: 0 }; healths.push(A.heart); A.paid = gold;   /* kept on the room, so a lab can see it paid */
 }
@@ -2588,7 +2589,7 @@ function eliteWatch() {
       e.shut = []; resolveTiles(); for (const [col, ys] of cols) gateFx.push({ col, ys, t: 0, dur: 0.7, closing: false }); SFX.gateLift();
       ambushSay('THE WAY IS OPEN', ELITE[e.t].name, '#8fd160', 2.2); }
     /* THE PURSE AND A HEART, for one that was put down (not one a lab swept off the board) */
-    if (e.hp <= 0) { PROG.coins = (PROG.coins || 0) + EL.gold; number(e.x, e.y - e.h - 14, EL.gold, '#ffd34a'); for (let i = 0; i < 5; i++) dropCoinAt(e.x + (Math.random() - 0.5) * 24, e.y - 16);
+    if (e.hp <= 0) { PROG.coins = (PROG.coins || 0) + EL.gold; carryOf(P).purse += EL.gold; number(e.x, e.y - e.h - 14, EL.gold, '#ffd34a'); for (let i = 0; i < 5; i++) dropCoinAt(e.x + (Math.random() - 0.5) * 24, e.y - 16);
       healths.push({ x: e.x, y: e.y - 20, vy: -160, t: 0 }); SFX.medal(); ringAt(e.x, e.y - 12, 30, '#ffd36b', 0.4); e.paidGold = EL.gold; }
   }
 }
@@ -2907,6 +2908,7 @@ function respawn() { P.windRide = null; P.martyrUsed = false; P.airRolled = fals
   for (const m of movers) if (m.kind === 'raft' && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.returning = false; m.called = false; m.offT = 0; m.bored = false; m.frogT = 0; } // EVERY RAFT AHEAD OF THE SHRINE POLES BACK TO ITS DOCK: only the Ferryman's did, so a fall off the marsh rafts left them docked on the far bank and the stream uncrossable
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
   P.breath=breathCapacity(L,P.relic);P.drownT=0;
+  dcRespawn();
   coopRegroup();   /* the room is back: whoever else is in the party is stood up at the same shrine, not left in the old one */
 }
 // the order is not the story order: a rush wants a ramp with a pulse in it, and the minis are the breathers
@@ -3066,7 +3068,7 @@ function startGame() {
      shop and the rush are one hero's business, so they run alone and the pair are put back together on the next wood.
      Nothing is ever armed in single player, so players stays one long and this line is the only thing that happened. */
   if (coopWant && L && !L.trial && !L.shop && !rushOn()) coopStart(coopWant.hero, coopWant.ally); else if (coop()) coopEnd();
-  for (const p of players) p.score = freshScore();   /* the card's tally is THIS wood's; p.total is the run's, and winLevel adds this to it */
+  dcStart(); for (const p of players) p.score = freshScore();   /* the card's tally is THIS wood's; p.total is the run's, and winLevel adds this to it */
   state = 'play'; levelTime = 0; deaths = 0; P.phoenixUsed = false; kills = 0; got = 0; lives = SET.iron ? 3 : Infinity; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
@@ -3093,7 +3095,7 @@ function xpStart() { levelXp = woodXp(); xpRun = 0; xpBoost = 0; lvAtStart = her
 function gainXp(n) { n = Math.round(n); if (!(n > 0)) return;
   if (passOn && players && passOn !== players[0]) return;   /* THE XP IS PLAYER ONE'S. A borrowed hero is lent a level for the run; levelling him in the save off the back of it would hand the save a hero it never earned */
   const h = hero(), was = heroLevel(h), paid = xpWood() ? xpCatchUp(n, heroXp(h), expectedLv()) : n;   /* CATCH-UP: below the wood's expected level he is paid x3, up to the curve and no further */
-  PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + paid; xpRun += paid; xpBoost += paid - n; const now = heroLevel(h); if (now > was) levelUp(now, was); }
+  PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + paid; carryOf(P).xp += paid; xpRun += paid; xpBoost += paid - n; const now = heroLevel(h); if (now > was) levelUp(now, was); }
 /* THE FIRST TIME A PLACED FOE FALLS it pays in full and goes on this hero's list for the wood. After a death, a shrine or a second walk it is
    on the list (or the wood is finished) and pays XP_AGAIN. The list is saved with the XP, so leaving a wood and coming back is no way round it. */
 function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) return; e.xpPaid = true;
@@ -3173,7 +3175,7 @@ function winLevel() {
   if (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret) { heroDone()[id] = 1; const gw = (PROG.xpGot[hero()] || {})[id]; if (gw) delete gw.k; }   /* a finished wood pays a fifth for everything in it, so its list of the fallen can go */
   if (winLevelUp) { applyUpgrades(); P.hp = P.maxHp; setTimeout(() => { if (state === 'win') SFX.rankUp(); }, 1500); }
   { const was = p.medal || 0, now = medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now); }
-  if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true;
+  if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true; dcBankAll();
   saveProgress();
 }
 
@@ -5164,18 +5166,132 @@ function killerOf(fromX, o = {}) {
   if (!e) { let bd = 260; for (const q of enemies) if (q.alive && !q.harmless) { const d = Math.abs(q.x - fromX) + Math.abs(q.y - P.y) * 0.5; if (d < bd) { bd = d; e = q; } } }   /* a shooter is not near the arrow */
   if (!e) return { name: 'A TRAP', red: false, rule: '' };
   const blow = o.blow || blowWord(e), red = !!o.unblockable;
-  return { name: beastName(e) + (blow ? '   ' + blow : ''), red, rule: red ? 'DODGE IT' : o.pierce ? 'PARRY IT' : 'THE SHIELD TURNS IT' };
+  return { foe: e, name: beastName(e) + (blow ? '   ' + blow : ''), red, rule: red ? 'DODGE IT' : o.pierce ? 'PARRY IT' : 'THE SHIELD TURNS IT' };
 }
 /* THE LINE ITSELF, sized to the screen: the whole thing at 6px if it fits, else without the blow's name, else the name alone */
 function killerLine(k) { const mark = !k.rule ? '' : '   ' + (k.red ? (SET.colorSafe ? 'BLUE' : 'RED') : 'YELLOW') + ': ' + k.rule;
   for (const s of [k.name + mark, k.name.split('   ')[0] + mark, k.name.split('   ')[0]]) if (inkW(s, 6) <= VW - 8) return s; return k.name.split('   ')[0]; }
+/* ==== THE DEATH COST (Daniel, 2026-09-28; the rules are src/death-cost.js, the check is tools/death-cost.mjs) ====
+   What you pick up between two shrines is UNBANKED. A death drops it: if a FOE killed you it carries the bundle (glowing, a bag over
+   its head) and drops it when it falls; with no foe (a pit, spikes, water) it lies where you last stood safely; a boss never carries one,
+   it lies at his arena door. Die again before you get it and it is gone. A shrine banks everything you carry. Each hero has his own. */
+let dcSess = 0;   /* which start of a wood this is: coins dropped in this start go back into this start's count, older ones into the purse */
+const dcHid = b => { if (b && !Object.getOwnPropertyDescriptor(b, 'carrier')) Object.defineProperties(b, { carrier: { value: null, writable: true, enumerable: false }, sess: { value: -1, writable: true, enumerable: false }, name: { value: '', writable: true, enumerable: false }, where: { value: 'spot', writable: true, enumerable: false }, vy: { value: 0, writable: true, enumerable: false }, falling: { value: false, writable: true, enumerable: false }, chk: { value: 0, writable: true, enumerable: false } }); return b; };   /* (not enumerable: a bundle is SAVED, and a saved bundle must never hold the creature that carries it) */
+const carryOf = p => p.dcCarry || (p.dcCarry = emptyCarry());
+const dcGot = n => { carryOf(P).coins += n; };
+const bundleOf = p => (p === players[0] ? (PROG.deathCost && PROG.deathCost.bundle) : p.bundle) || null;
+const dcSet = (p, b) => { if (p === players[0]) { PROG.deathCost = PROG.deathCost || freshDeathCost(); PROG.deathCost.bundle = b; } else p.bundle = b; };
+const dcOn = () => !!L && !rushOn() && !bossJumpOn && !L.trial && !L.shop && !L.openYard && !edTesting;
+const dcMine = (b, p) => !!b && dcOn() && b.lv === curId() && b.hero === (p && p !== players[0] && p.hero ? p.hero : hero());   /* (his own hero: the pair have one bundle each) */
+/* WHAT COUNTS AS NOT A PLACE TO LIE: spikes at the feet, a deadly pool over the spot, the bottom of the world */
+function dcHazard(x, y) {
+  if (y >= LH * TS - 2 || y < 4 || x < 4 || x > LW * TS - 4) return true;
+  const r0 = Math.floor((y - 1) / TS), r1 = Math.floor(y / TS);
+  for (const ox of [-5, 0, 5]) { const c = Math.floor((x + ox) / TS); if (tileAt(c, r0) === T.SPIKE || tileAt(c, r1) === T.SPIKE) return true; }
+  return (L.pools || []).some(p => (!p.shallow && !p.swim && !p.dry && x > p.x0 && x < p.x1 && y > p.y + 9) || (p.harm && x > p.x0 && x < p.x1 && y > p.y - 12));
+}
+/* THE LAST SAFE FOOTING: standing still on something that stays, for a fifth of a second. A bundle with no foe to carry it is put HERE when
+   the place you died is not a place to lie (a pit, spikes, water, the air, a raft), and if there is none the shrine you woke at. */
+function dcNoteFooting() {
+  if (P.ground && !P.onMover && !P.dead && !(P.down > 0) && !P.swim && !dcHazard(P.x, P.y)) { P.dcGT = (P.dcGT || 0) + 1; if (P.dcGT > 12) P.dcSafe = { x: P.x, y: P.y, L }; }
+  else if (!P.ground) P.dcGT = 0;
+}
+function dcSpot(p) {
+  if (((p.ground && !p.onMover) || p.swim) && !dcHazard(p.x, p.y)) return { x: p.x, y: p.y };   /* (in a swimming water a place is where he was: he swam there, and can again) */
+  if (p.dcSafe && p.dcSafe.L === L && !dcHazard(p.dcSafe.x, p.dcSafe.y)) return { x: p.dcSafe.x, y: p.dcSafe.y };
+  return { x: checkpoint.x, y: checkpoint.y };
+}
+const dcPop = (x, y, txt, col) => { if (SET.colorSafe && col === '#ff9a5c') col = '#c080ff'; nums.push({ x, y, txt, col, life: 1.1, vy: -26 }); };
+const dcMirror = () => { if (!PROG.deathCost || !players || !players[0]) return; const c = players[0].dcCarry; PROG.deathCost.carried = { xp: c && c.xp > 0 ? { [hero()]: c.xp } : {}, purse: c ? c.purse : 0 }; };
+function dcGiveXp(n) { const h = hero(), was = heroLevel(h); PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + n; carryOf(P).xp += n; const now = heroLevel(h); if (now > was) levelUp(now, was); }
+function dcStart() { dcSess++; for (const q of players) { q.dcCarry = emptyCarry(); q.dcDone = false; q.dcLost = false; if (q !== players[0]) q.bundle = null; } dcMirror(); }
+function dcBank() { const c = carryOf(P); if (!carryHas(c)) return; P.dcCarry = emptyCarry(); if (P === players[0]) { dcMirror(); saveProgress(); } dcPop(P.x, P.y - 40, 'BANKED', '#8fd160'); SFX.coinUp(8); burst(P.x, P.y - 22, 8, ['#8fd160', '#fff6c8'], 40, 0.4, -30, 1); }
+function dcBankAll() { for (const q of players) q.dcCarry = emptyCarry(); dcMirror(); }
+/* THE DEATH ITSELF. p is the hero who fell (P inside his own pass); killer is what killerOf wrote down at the blow. */
+function deathCost(p, killer) {
+  if (!dcOn() || p.dcDone) return; p.dcDone = true; p.dcLost = false;
+  const c = carryOf(p), lone = p === players[0], h = hero(), old = bundleOf(p);
+  if (old) { dcSet(p, null); p.dcLost = true; }   /* ONLY ONE BUNDLE EVER EXISTS: dying again before you got it back is the end of it */
+  const t = dcDrop(c, { got, purse: PROG.coins || 0, xp: heroXp(h) });
+  p.dcCarry = emptyCarry();
+  if (t.coins || t.purse || t.xp) {
+    got = t.got; PROG.coins = t.purseLeft; if (t.xp) { PROG.xp[h] = t.xpLeft; }
+    const e = killer && killer.foe, bossy = !!e && (e === boss || !!e.mini || !!e.xpRole), fight = bossActive || miniActive, safe = dcSpot(p);
+    const b = dcHid({ lv: curId(), hero: h, x: safe.x, y: safe.y, coins: t.coins, purse: t.purse, xp: t.xp, foe: null, mode: 'spot', safe: { x: safe.x, y: safe.y } });
+    b.sess = dcSess; b.chk = 0;
+    if (bossy || fight) {   /* A BOSS NEVER CARRIES ONE: it lies at his arena door (the fight's own door, where the wall will shut) */
+      const A = (miniActive || (e && e.mini)) ? L.mini : L.arena, d = doorSpot(A, checkpoint, (x, y) => isSolid(x, y), (x, y) => tileAt(x, y) === T.SPIKE, LH);
+      const at = d && !dcHazard(d.x, d.y) ? d : { x: checkpoint.x, y: checkpoint.y }; b.x = at.x; b.y = at.y; b.safe = { x: at.x, y: at.y }; b.where = 'door'; }
+    else if (e && e.alive && e.xpKey && !e.harmless && enemies.includes(e)) { b.mode = 'foe'; b.foe = e.xpKey; b.carrier = e; b.x = e.x; b.y = e.y; b.name = beastName(e); b.where = 'foe'; }
+    dcSet(p, b); dcPop(p.x, p.y - 34, 'DROPPED', '#ff9a5c');
+    if (lone) { PROG.deathCost.told = (PROG.deathCost.told || 0) + 1; if (PROG.deathCost.told <= 2) { hintT = 4.5; hintMsg = 'YOU DROPPED WHAT YOU WERE CARRYING. GET IT BACK, OR DIE AGAIN AND IT IS GONE.'; } }
+  }
+  if (lone) { dcMirror(); saveProgress(); }
+}
+/* THE LINE UNDER THE DEATH: what was dropped, and where it is. It says the last bundle is gone when a second death took it. */
+function dcLine() {
+  const b = bundleOf(P), out = [];
+  if (b && dcMine(b) && P.dcDone) { const n = b.coins + b.purse, amt = [n ? n + ' GOLD' : '', b.xp ? b.xp + ' XP' : ''].filter(Boolean).join(' AND ');
+    for (const s of ['DROPPED ' + amt + ': ' + (b.where === 'foe' ? b.name + ' HAS IT' : b.where === 'door' ? 'AT THE ARENA DOOR' : 'WHERE YOU FELL'), 'DROPPED ' + amt + (b.where === 'foe' ? ': A FOE HAS IT' : ''), 'DROPPED ' + amt]) if (inkW(s, 6) <= VW - 8) { out.push([s, '#ffd36b']); break; } }
+  if (P.dcLost) out.push(['THE LAST BUNDLE IS GONE', '#c9d1dc']);
+  return out;
+}
+/* THE BUNDLE, every frame: a foe that carries it is followed, and lets go where it falls (or where it is let go: harmless, gone, off the
+   world). A carrier that is not on the board yet (an ambusher who comes when the room is tripped) is waited for; one that never can be
+   (its room done, or a placed foe that is not there) lets go at the last safe footing. A dropped one falls to the floor, and a floor
+   that is a hazard (spikes, deadly water, the bottom of the world) is never where it stays: it goes to the safe footing, then the shrine. */
+function dcRelocate(b) { const s = b.safe && !dcHazard(b.safe.x, b.safe.y) ? b.safe : { x: checkpoint.x, y: checkpoint.y }; b.x = s.x; b.y = s.y; b.falling = false; b.vy = 0; }
+function dcTick(dt) {
+  if (!players) return;
+  for (const p of players) { const b = dcHid(bundleOf(p)); if (!dcMine(b, p)) continue;
+    if (b.mode === 'foe') {
+      let e = b.carrier;
+      if (e && (!e.alive || e.harmless || !enemies.includes(e) || e.y > LH * TS - 4)) { b.mode = 'spot'; b.carrier = null; b.x = e.x; b.y = Math.min(e.y, LH * TS - 6); b.vy = -70; b.falling = true; if (e.y > LH * TS - 4) dcRelocate(b); if (p === players[0]) saveProgress(); dcPop(b.x, b.y - 20, 'DROPPED', '#ffd36b'); SFX.coinUp(6); burst(b.x, b.y - 10, 10, ['#ffd36b', '#fff6c8'], 60, 0.5, -60, 1); continue; }
+      if (e) { b.x = e.x; b.y = e.y; continue; }
+      e = enemies.find(q => q.alive && q.xpKey === b.foe && !q.harmless);
+      if (e) { b.carrier = e; b.name = beastName(e); b.x = e.x; b.y = e.y; continue; }
+      const A = b.foe.charAt(0) === 'a' ? (L.ambushes || [])[parseInt(b.foe.slice(1), 10)] : null;
+      if (!A || A.st === 'done') { b.mode = 'spot'; dcRelocate(b); if (p === players[0]) saveProgress(); }
+      continue; }
+    if (b.falling) { b.vy = Math.min(300, b.vy + 500 * dt); const ny = b.y + b.vy * dt, tx = Math.floor(b.x / TS), ty = Math.floor(ny / TS);
+      if (b.vy > 0 && (isSolid(tx, ty) || isOneWay(tileAt(tx, ty)))) { b.y = ty * TS; b.vy = 0; b.falling = false; if (dcHazard(b.x, b.y)) dcRelocate(b); if (p === players[0]) saveProgress(); }
+      else { b.y = ny; if (b.y >= LH * TS - 4) { dcRelocate(b); if (p === players[0]) saveProgress(); } } }
+    else if (++b.chk >= 30) { b.chk = 0; if (dcHazard(b.x, b.y)) { dcRelocate(b); if (p === players[0]) saveProgress(); } }   /* a flood that rose over it, once a half second */
+  }
+}
+/* THE HERO'S OWN PASS: banking at a shrine, and picking his bundle up (the pair have one each, and neither can take the other's) */
+function dcTouch() {
+  if (P.dead || !dcOn()) return;
+  for (const s of shrines) if (shrineLights(s, P.x, P.y, P.swim)) { dcBank(); break; }
+  const b = dcHid(bundleOf(P)); if (!dcMine(b) || b.mode !== 'spot' || Math.abs(b.x - P.x) > 12 || Math.abs(b.y - P.y) > 20) return;
+  const c = carryOf(P);
+  if (b.coins) { if (b.sess === dcSess) { got += b.coins; c.coins += b.coins; } else { PROG.coins = (PROG.coins || 0) + b.coins; c.purse += b.coins; } }
+  if (b.purse) { PROG.coins = (PROG.coins || 0) + b.purse; c.purse += b.purse; }
+  if (b.xp && P === players[0]) dcGiveXp(b.xp);
+  dcSet(P, null); dcMirror(); saveProgress();
+  dcPop(P.x, P.y - 40, 'RECOVERED', '#ffd36b'); SFX.coinUp(10); SFX.mend && SFX.mend(); burst(b.x, b.y - 10, 14, ['#ffd36b', '#fff6c8'], 70, 0.6, -50, 1);
+}
+/* THE PICTURE: a small bag, and a warm light. Over a foe's head it is the mark that says THIS ONE HAS IT; on the ground it is the bundle. */
+function dcBag(x, y, col) { g.fillStyle = '#2a1608'; g.fillRect(x - 4, y - 8, 9, 8); g.fillRect(x - 2, y - 10, 5, 3); g.fillStyle = col; g.fillRect(x - 3, y - 7, 7, 6); g.fillRect(x - 1, y - 9, 3, 2); g.fillStyle = '#fff6c8'; g.fillRect(x - 1, y - 5, 2, 2); }
+const dcDraws = { foe: 0, spot: 0 };   /* what the last frames drew (tools/death-cost.mjs asks that a carrier is MARKED, not just flagged) */
+function drawBundles(cx, cy) {
+  if (!players) return;
+  for (const p of players) { const b = bundleOf(p); if (!dcMine(b, p)) continue;
+    const col = p === players[0] ? '#d9a441' : '#4fb3c9', kind = p === players[0] ? 'gold' : 'cool', pulse = 0.5 + 0.18 * Math.sin(time * 5);
+    if (b.mode === 'foe') { const e = b.carrier; if (!e || !e.alive) continue; const sx = e.x - cx, sy = e.y - cy - (e.h || 16) / 2;
+      if (sx < -30 || sx > VW + 30) continue; dcDraws.foe++; fbloom(sx, sy, Math.max(16, (e.w || 14) * 1.3), pulse, kind); dcBag(Math.round(sx), Math.round(e.y - cy - (e.h || 16) - 4 + Math.sin(time * 4) * 1.5), col); }
+    else { const sx = b.x - cx, sy = b.y - cy; if (sx < -30 || sx > VW + 30) continue; dcDraws.spot++; fbloom(sx, sy - 6, 14, pulse, kind); dcBag(Math.round(sx), Math.round(sy + Math.sin(time * 3) * 1), col); } }
+}
+/* ==== end of THE DEATH COST ==== */
+/* A RESPAWN PUTS THE ROOM BACK: every creature is a new one, so a bundle a foe was carrying is handed to the same placed foe (its key) in the new room */
+function dcRespawn() { for (const q of players) q.dcDone = false; P.dcSafe = null; P.dcGT = 0; for (const q of players) { const b = dcHid(bundleOf(q)); if (b && b.mode === 'foe') b.carrier = null; } dcTick(0); }
 function die(killer) {
   if (P.dead) return;
   /* IN CO-OP HE GOES DOWN, NOT OUT - as long as somebody is still standing to come and get him (goDown) */
   if (coop() && !(P.down > 0) && players.some(q => q !== P && upright(q))) { goDown(killer); return; }
   P.killer = killer || null;
   P.dead = 1.2; deaths++; P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7); crowdJeer(true); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
-  burst(P.x, P.y - 8, 22, ['#c9d1dc', '#3d5aa8', '#c9463d'], 120, 0.9);
+  burst(P.x, P.y - 8, 22, ['#c9d1dc', '#3d5aa8', '#c9463d'], 120, 0.9); deathCost(P, killer);
 }
 // Per-enemy death: a corpse object animates the fall so every foe dies its own way.
 function openYardRespawn(dt) {   // in the open yard a straw man is back on his feet in two seconds
@@ -5279,7 +5395,7 @@ function swordEffect(e) {
   if (w.freeze && e.alive) { e.stagger = Math.max(e.stagger, 0.9); e.frozen = 0.9; burst(e.x, e.y - e.h / 2, 5, ['#bfe6f5', '#ffffff'], 30, 0.4, 0, 1); }
   if (w.leech && P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 2); number(P.x, P.y - 24, '+2', '#8fd160'); }
   if (w.heavy && e.alive && e.t !== 'heavy' && e.t !== 'queen' && e.t !== 'frog' && e.t !== 'chief' && e.t !== 'mother' && e.t !== 'gill' && e.t !== 'heart') { e.vx = (Math.sign(e.x - P.x) || P.face) * 200; }
-  if (w.gold && !e.alive) { PROG.coins = (PROG.coins || 0) + 1; earned++; number(e.x, e.y - e.h - 12, '+1 gold', '#ffd34a'); SFX.coin(); }
+  if (w.gold && !e.alive) { PROG.coins = (PROG.coins || 0) + 1; carryOf(P).purse += 1; earned++; number(e.x, e.y - e.h - 12, '+1 gold', '#ffd34a'); SFX.coin(); }
 }
 const ONE_HIT = new Set(['rook', 'wasp', 'harpy', 'bat', 'kite', 'drone', 'crow']); // wings: one blow of anything brings it down
 const fullHp = e => e.maxHp || e.hp0 || e.hp; // what it stood up with
@@ -7726,7 +7842,7 @@ function updatePlayer(dt) {
     else { die({ name: p.fire ? 'THE FIRE' : 'DROWNED', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.8; }
     break;
   }
-  if (P.ground && !P.onMover && !P.dead && !(L.pools || []).some(p => !p.shallow && P.x > p.x0 - 12 && P.x < p.x1 + 12)) P.safe = { x: P.x, y: P.y, L };   /* the last dry footing, for the water above */
+  if (P.ground && !P.onMover && !P.dead && !(L.pools || []).some(p => !p.shallow && P.x > p.x0 - 12 && P.x < p.x1 + 12)) P.safe = { x: P.x, y: P.y, L }; dcNoteFooting();   /* the last dry footing, for the water above */
 
   const hb = attackBox();
   if (hb) {
@@ -7857,10 +7973,10 @@ function updatePlayer(dt) {
   for (const a of acorns) {
     if (a.got) continue;
     if (a.vy !== undefined) { a.vy += 400 * dt; a.y += a.vy * dt; const ty = Math.floor((a.y + 3) / TS); if (isSolid(Math.floor(a.x / TS), ty)) { a.y = ty * TS - 3; a.vy = 0; } }
-    if (Math.abs(a.x - P.x) < 10 && Math.abs(a.y - (P.y - 7)) < 12) { a.got = true; got++; if (P.score) P.score.coins++;   /* the purse is the SAVE'S and stays shared: this line is only who bent down for it */
+    if (Math.abs(a.x - P.x) < 10 && Math.abs(a.y - (P.y - 7)) < 12) { a.got = true; got++; dcGot(1); if (P.score) P.score.coins++;   /* the purse is the SAVE'S and stays shared: this line is only who bent down for it */
       if (isPirate()) { gainPlunder(4); if (tal('shareOut')) P.hp = Math.min(P.maxHp, P.hp + 2); if (tal('greased')) P.st = Math.min(P.maxSt, P.st + 6); if (tal('paidInGold') && P.cds) for (const k in P.cds) P.cds[k] = Math.max(0, P.cds[k] - 0.33); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
-  for (const s of shrines) if (!s.lit && shrineLights(s, P.x, P.y, P.swim)) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
+  dcTouch(); for (const s of shrines) if (!s.lit && shrineLights(s, P.x, P.y, P.swim)) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
   if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
   // boss arena trigger
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 40 * TS) music.preload(L.arena.music || 'boss');
@@ -11001,7 +11117,7 @@ function magePlayer(dt) {
   { const tx = Math.floor(P.x / TS), ty0 = Math.floor((P.y - P.h + 1) / TS), ty1 = Math.floor((P.y - 1) / TS); for (let ty = ty0; ty <= ty1; ty++) if (tileAt(tx, ty) === T.SPIKE && !P.dead && !windFall(tx, ty)) { spikeBite(tx, null); break; } }
   /* THE ACID: it eats a hero walking the ceiling exactly as it eats one walking the floor */
   { const pl = (L.pools || []).find(p => p.harm && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 4 && (p.bottom === undefined || P.y <= p.bottom + 4));
-    if (pl && pl.deadly && !P.dead && P.y > pl.y + 10) { P.hp = 0; P.dead = 1.2; P.vx = 0; P.vy = 0; SFX.splash(); SFX.pDie(); burst(P.x, pl.y, 16, ['#1c3212', '#a6e04a', '#d9d6c0'], 90, 0.6, 300, 2); number(P.x, pl.y - 20, 'THE WATER KILLS', '#ff6b6b'); }   /* DEADLY WATER is a death, and quick: not five seconds of sinking (deadly-water.js) */
+    if (pl && pl.deadly && !P.dead && P.y > pl.y + 10) { deathCost(P, { name: 'THE WATER' }); P.hp = 0; P.dead = 1.2; P.vx = 0; P.vy = 0; SFX.splash(); SFX.pDie(); burst(P.x, pl.y, 16, ['#1c3212', '#a6e04a', '#d9d6c0'], 90, 0.6, 300, 2); number(P.x, pl.y - 20, 'THE WATER KILLS', '#ff6b6b'); }   /* DEADLY WATER is a death, and quick: not five seconds of sinking (deadly-water.js) */
     else if (pl && !P.dead) { P.acidT = (P.acidT || 0) - dt; if (P.acidT <= 0) { P.acidT = 0.6; damagePlayer(P.x, DMG.foul, { unblockable: true, noKnock: true }); } P.vy = Math.min(P.vy, 40);
       /* AND THE GREEN WATER SAYS SO. It was taking twelve health a tick in silence, with the hero bobbing upright at the
          waterline as if he were standing on a green floor: measured, it hurt; played, it read as scenery. Now it names
@@ -11010,10 +11126,10 @@ function magePlayer(dt) {
         P.venomT = 2.4; if (!keys.up) P.vy = Math.max(P.vy, 26);   /* it pulls you under - but never against a swimmer who is climbing out */
         if (Math.random() < dt * 30) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - Math.random() * 16, vx: 0, vy: -24, life: 0.7, max: 0.7, col: Math.random() < 0.5 ? '#a6e04a' : '#5c8a24', size: 2, grav: -12 }); } } }
 
-  if (P.y > LH * TS + 30 && !P.dead) { P.hp = 0; P.dead = 1.2; SFX.pDie(); }
+  if (P.y > LH * TS + 30 && !P.dead) { deathCost(P, { name: 'THE FALL' }); P.hp = 0; P.dead = 1.2; SFX.pDie(); }
   /* the coins, the hearts and the shrines */
   for (const a of acorns) if (!a.got && Math.abs(a.x - P.x) < 12 && Math.abs(a.y - (P.y - P.h / 2 * gs)) < 14) collectAcorn(a);
-  for (const s of shrines) if (!s.lit && shrineLights(s, P.x, P.y, P.swim)) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
+  dcTouch(); for (const s of shrines) if (!s.lit && shrineLights(s, P.x, P.y, P.swim)) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
   return true;
 }
 /* ---------- the props and the machinery, every frame ---------- */
@@ -15796,7 +15912,7 @@ function updateAscent(dt){
   crash:(f,y)=>{shakeCam(4);if(Math.abs(y*TS-P.y)<VH)SFX.stone();},
   warn:f=>{shakeCam(3);SFX.rumble&&SFX.rumble();if(!f.last)number(P.x,P.y-40,f.name+' GOES DOWN BEHIND YOU','#ff9a5c');}});
  updateCrumbles(dt);
- updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();number(P.x,P.y-30,L.sanctum?'THROUGH THE DOOR':'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(L.sanctum){shakeCam(6);zoomKick(1.12,.5);flash=Math.max(flash,.3);burst(P.x,P.y,26,['#b07cf0','#e0c8ff','#4a2a7a'],150,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;}   /* A DOOR SNAPS. Without this the camera panned the 160px from the parapet up to the spawn, which reads as flying there - the one thing a portal is not */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();}});
+ updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();dcBank();number(P.x,P.y-30,L.sanctum?'THROUGH THE DOOR':'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(L.sanctum){shakeCam(6);zoomKick(1.12,.5);flash=Math.max(flash,.3);burst(P.x,P.y,26,['#b07cf0','#e0c8ff','#4a2a7a'],150,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;}   /* A DOOR SNAPS. Without this the camera panned the 160px from the parapet up to the spawn, which reads as flying there - the one thing a portal is not */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();}});
  /* THE SECOND DOOR: through it the carpet is left behind, the sky goes warm, and the last walk of the world is on sand */
  updateSanctum(L,P,dt,{leave:out=>{burst(out.x,out.y,26,['#e0b050','#ffe9b0','#8a5a1a'],150,.9,0,2);
   P.carpet=null;P.vx=0;P.vy=0;P.x=L.sanctum.sand.x;P.y=L.sanctum.sand.y;P.ground=true;P.face=1;L.sandWalk=true;L.sanctum.open=false;L.nightA=0;L.palette.noFg=true;   /* the desert is daylight: the tower's night wash is not laid over it, and the level's foreground grass strip is not drawn along the bottom of it (round 2) */
@@ -19344,7 +19460,7 @@ function updateSentry(e, dt) {
 // the shaman. (The sword is no use up here: both hands are on the kite. The roll is a dart.)
 let flight = null;
 const freeAt = (x, y) => { for (let ty = Math.floor((y - 13) / TS); ty <= Math.floor((y - 1) / TS); ty++) for (let tx = Math.floor((x - 5) / TS); tx <= Math.floor((x + 5) / TS); tx++) if (isSolid(tx, ty)) return false; return true; };
-function collectAcorn(a) { a.got = true; got++; if (P.score) P.score.coins++; if (tal('pieces') && got % 8 === 0) { got += 9; number(a.x, a.y - 14, 'PIECES OF EIGHT', '#ffd36b'); SFX.coinUp(10); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
+function collectAcorn(a) { a.got = true; got++; dcGot(1); if (P.score) P.score.coins++; if (tal('pieces') && got % 8 === 0) { got += 9; dcGot(9); number(a.x, a.y - 14, 'PIECES OF EIGHT', '#ffd36b'); SFX.coinUp(10); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
 function startFlight(pr) {
   const F = L.flight; if (!F || flight) return;
   flight = { cx: camX, cy: camY, lift: 1.3, F }; P.fly = true;
@@ -22347,7 +22463,7 @@ function updateProps(dt) {
       if (Math.random() < dt * 40) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y + Math.random() * 8, vx: 0, vy: -50, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7cc8c8' : '#dff0f5', size: 1, grav: -30 }); }
   }
   for (const p of (L.pools || [])) if (p.draining && !p.frogDry) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
-  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateMonkProps(dt, hb); updateAlarms(dt); updateAmbush(dt); updateGateFx(dt); updateHealths(dt); updateHoly(dt); updateSceptres(dt); updateTrial(); openYardRespawn(dt); updateRisen(dt); updateCulls(dt); updateGrips(dt); updateUnholy(dt); updateSevers(dt); updateWakes(dt); updatePortal(dt);
+  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateMonkProps(dt, hb); updateAlarms(dt); updateAmbush(dt); updateGateFx(dt); updateHealths(dt); dcTick(dt); updateHoly(dt); updateSceptres(dt); updateTrial(); openYardRespawn(dt); updateRisen(dt); updateCulls(dt); updateGrips(dt); updateUnholy(dt); updateSevers(dt); updateWakes(dt); updatePortal(dt);
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }
     if (pr.t === 'barrel' && !pr.gone) {
@@ -24425,7 +24541,7 @@ function drawWorld(cx, cy, showPlayer) {
         g.fillStyle = '#c9b27c'; g.fillRect(hx + 7, hy, 1, drop); g.fillRect(hx + 12, hy, 1, drop); for (let yy = 4; yy < drop; yy += 6) g.fillRect(hx + 7, hy + yy, 6, 1); } }
     g.drawImage(PROP.treehouse[pr.v], hx - 20, hy - 30); }
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) if (tx >= 0 && ty > 0 && tx < LW && ty < LH && L.grid[ty * LW + tx] === T.PALISADE && L.grid[(ty - 1) * LW + tx] !== T.PALISADE) g.drawImage(TILE.palisadeTop, tx * TS - cx, ty * TS - 6 - cy);
-  drawGateFx(cx, cy); drawHoly(cx, cy); drawPhalanx(cx, cy); drawHealths(cx, cy);
+  drawGateFx(cx, cy); drawHoly(cx, cy); drawPhalanx(cx, cy); drawHealths(cx, cy); drawBundles(cx, cy);
   // SCAFFOLDING: poles from the top deck down to the bottom of the pit, braced in an X between each pair, lashed where
   // they cross the planks; the crane on the last tower reaches out over the hoist
   for (const pr of props) if (pr.t === 'scaffold' && pr.x1 > cx - 20 && pr.x0 < cx + VW + 20) { const bot = LH * TS - cy, top = Math.round(pr.top - cy) - 4;
@@ -26870,7 +26986,7 @@ function render() {
   } else { winT = 0; winStamped = false; }
   if (P.dead && state === 'play') { g.fillStyle = 'rgba(10,6,14,' + Math.min(0.7, (1.2 - P.dead) * 1.2) + ')'; g.fillRect(0, 0, VW, VH);
     /* WHAT JUST HAPPENED: the blow and its rule, in the mark's colour, once the screen has gone dark enough to read it on (killerOf) */
-    if (P.killer && P.dead < 0.95) { const k = P.killer; g.globalAlpha = Math.min(1, (0.95 - P.dead) * 5); text(killerLine(k), VW / 2, VH / 2 + 22, k.rule ? (k.red ? (SET.colorSafe ? '#5aa8ff' : '#ff6b6b') : '#ffd36b') : '#fff6e0', 'center', 6, 'outline'); g.globalAlpha = 1; } }
+    if (P.killer && P.dead < 0.95) { const k = P.killer; g.globalAlpha = Math.min(1, (0.95 - P.dead) * 5); text(killerLine(k), VW / 2, VH / 2 + 22, k.rule ? (k.red ? (SET.colorSafe ? '#5aa8ff' : '#ff6b6b') : '#ffd36b') : '#fff6e0', 'center', 6, 'outline'); { let ly = VH / 2 + 30; for (const [s2, c2] of dcLine()) { text(s2, VW / 2, ly, c2, 'center', 6, 'outline'); ly += 8; } } g.globalAlpha = 1; } }
   if (!audioReady() && state === 'play') {
     const t0 = (soundNoteT += 1 / 60), full = t0 < 10, k = full ? Math.min(1, t0 * 3) : Math.max(0, 1 - (t0 - 10) * 2);
     if (full || k > 0) { const lab = touchOn ? 'TAP A BUTTON FOR SOUND' : 'PRESS A KEY FOR SOUND', w = lab.length * 6 + 24;   /* on a phone there is no key: a tap on the pad is what starts the audio */
@@ -26959,6 +27075,8 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   risen: () => risen, bodies: () => bodies,
   get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, wardJav: () => wardJav, spearRain: () => spearRain, geo: () => GEO, geoK: GEO_K, realmWaves: () => realmWaves, damagePlayer: (x, d, o) => damagePlayer(x, d, o), skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'skill3') skill3Press = true; if (k === 'skill4') skill4Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; if (k === 'left') leftPress = true; if (k === 'right') rightPress = true; }, get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get front() { return { fade: frontFade, covered: frontCovered }; }, set hideHero(v) { heroHidden = !!v; }, set frontOff(v) { frontOff = !!v; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, tileSpr: () => tileSpr, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, vines: () => vines, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
+  /* THE DEATH COST, for tools/death-cost.mjs: whose bundle and carry, a blow on a chosen hero (by a chosen creature, or a hazard), and the level count */
+  dc: { bundle: n => bundleOf(players[n || 0]), carry: n => carryOf(players[n || 0]), tick: dt => dcTick(dt), hit: (n, who) => asPlayer(players[n || 0], () => damagePlayer(P.x, 999, who ? { who, unblockable: true, blow: 'the test' } : { name: 'THE SPIKES' })), get got() { return got; }, set got(v) { got = v; }, sess: () => dcSess, draws: () => dcDraws, hazard: (x, y) => dcHazard(x, y), checkpoint: () => checkpoint },
   /* LOCAL CO-OP, for a harness driving the page: the list, whether it is on, and a way to arm and start it */
   players: () => players, get coop() { return coop(); }, coopArm(h, ally) { coopWant = h ? { hero: h, ally: !!ally } : null; return coopWant; },
   coopStart: (h, ally) => { coopStart(h, ally); return players.map(p => p.hero); }, coopEnd: () => { coopWant = null; coopEnd(); return players.length; },
