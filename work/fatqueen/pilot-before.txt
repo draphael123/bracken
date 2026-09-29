@@ -1,0 +1,7 @@
+{"b":"crown","h":"knight","out":"win","secs":76.7,"left":0,"perMin":202,"hitBy":{"sceptreWait":30,"stand":70,"slamTell":32,"slamRec":54,"decree":44,"sweepTell":12,"pinned":16}}
+{"b":"crown","h":"warden","out":"win","secs":74.2,"left":0,"perMin":163,"hitBy":{"stand":16,"decree":22,"slamRec":22,"sweepTell":16,"slamTell":22,"rec":76,"sceptreWait":15,"crownRain":12}}
+{"b":"crown","h":"pyro","out":"win","secs":75.2,"left":0,"perMin":129,"hitBy":{"sceptreWait":45,"slamRec":22,"decreeTell":16,"slamTell":66,"crownRain":12}}
+{"b":"kings","h":"knight","out":"win","secs":19.9,"left":0,"perMin":57,"hitBy":{"carried":19}}
+{"b":"kings","h":"warden","out":"win","secs":16.6,"left":0,"perMin":51,"hitBy":{"walk":14}}
+{"b":"kings","h":"pyro","out":"win","secs":17.6,"left":0,"perMin":65,"hitBy":{"carried":19}}
+errors []
