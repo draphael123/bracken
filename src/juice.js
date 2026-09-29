@@ -14,9 +14,9 @@ export const JUICE = {
   light:  { stop: 0.040, shake: 0,   kick: 0,   flash: 0.07, squash: 0.16, recoil: 2, sfx: 'hit' },
   heavy:  { stop: 0.090, shake: 3,   kick: 3,   flash: 0.10, squash: 0.22, recoil: 4, sfx: 'hitHeavy' },
   finish: { stop: 0.090, shake: 3,   kick: 2,   flash: 0.10, squash: 0.22, recoil: 5, sfx: 'hitFinish' },
-  /* THE HERO TAKING ONE: a stronger reaction than a landed blow, and weightier for a heavy one */
-  hurt:   { stop: 0.090, shake: 5,   kick: 3,   flash: 0.16, squash: 0.14, sfx: 'pHurt' },
-  hurtHeavy: { stop: 0.120, shake: 7, kick: 4,   flash: 0.20, squash: 0.18, sfx: 'pHurtHeavy' },
+  /* THE HERO TAKING ONE: a stronger reaction than a landed blow (80 ms: boss-openings and the slopes traces time their steps to it), and a heavy one weightier in shake, flash and sound */
+  hurt:   { stop: 0.080, shake: 5,   kick: 3,   flash: 0.16, squash: 0.14, sfx: 'pHurt' },
+  hurtHeavy: { stop: 0.080, shake: 7, kick: 4,   flash: 0.20, squash: 0.18, sfx: 'pHurtHeavy' },
   /* THE SHIELD TAKING ONE */
   block:  { stop: 0.050, shake: 1.5, kick: 2,   sfx: 'block' },
   blockHeavy: { stop: 0.080, shake: 3, kick: 2, sfx: 'blockHeavy' },
