@@ -22,6 +22,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
 import * as M from '../src/mummer.js';
 import { LEVELS } from '../src/level.js';
+import { THREAT, measureLevel, indexOf, spanOf } from '../src/threat.js';
+import * as FA from '../src/redraw/fair_world.js';
 
 const bad = [], ok = (c, m) => { if (!c) bad.push(m); };
 const DT = 1 / 60;
@@ -171,6 +173,37 @@ if (fair) {
   ok(L.music === 'marketday' || !!L.music, 'the fair has no music');
   ok(!!L.ents.find(e => e.t === 'sign' && /BACK/.test(e.text || '')), 'no sign says the rule'); }
 
+
+// ---- L2 (2026-09-29): THE INDEX WEIGHTS, THE FURNITURE, THE LAMPS, THE ART AND THE AUDIO ----
+{ const fair = LEVELS.find(l => l.id === 'fair'), L = fair.build(), T2 = { BOUNCER: 10, SPIKE: 3, AIR: 0, SOLID: 1 }, TS2 = 16;
+  // Daniel approved the greybox with the index at 34 against ~117 and no extra bodies: the mummer is a 5, the hobby-horse a 6
+  ok(THREAT.mummer >= 5 && THREAT.hobbyhorse >= 6, 'the mummer / hobby-horse are not weighed 5 / 6 in src/threat.js: ' + THREAT.mummer + ' / ' + THREAT.hobbyhorse);
+  { const m = measureLevel(L, { T: T2, TS: TS2 }); const idx = indexOf({ threat: m.threat, kinds: m.kinds, hazTiles: m.hazTiles, gap: m.gap, span: spanOf(L.W, L.H) });
+    ok(idx >= 38 && idx <= 60, 'the fair INDEX is ' + idx + ' (about 45 after the weights, 34 before): ' + JSON.stringify(m)); }
+  ok(L.ents.filter(e => e.t === 'mummer' || e.t === 'hobbyhorse').length === 13, 'the fair foe count moved (no extra bodies): ' + L.ents.filter(e => e.t === 'mummer' || e.t === 'hobbyhorse').length);
+  // FURNITURE: what Waymeet and the Fields carry (three silvers, a relic, hearts); NO NPCs (pickups only)
+  const cnt = t => L.ents.filter(e => e.t === t).length;
+  ok(cnt('silver') === 3, 'the fair has ' + cnt('silver') + ' silvers, not the campaign three');
+  ok(cnt('relic') === 1 && L.ents.find(e => e.t === 'relic').kind === 'soles', 'the fair has not one relic (the felted soles): ' + cnt('relic'));
+  ok(cnt('mend') >= 3, 'the fair has ' + cnt('mend') + ' hearts (mend): three, one after each hard stretch');
+  ok(!L.ents.some(e => ['npc', 'stray', 'captive', 'folk', 'squire'].includes(e.t)), 'an NPC or stray stands in the fair (pickups only)');
+  ok(L.ents.filter(e => e.t === 'check').length >= 6, 'fewer than six shrines (checkpoints) in the fair');
+  // THE LAMPS GUTTER OUT: steady at the gate, more of them out the further along, the last lamps before the door guttering
+  { const lp = L.lamps || [], at = (a, b) => lp.filter(l => l.x >= a && l.x < b), share = ls => ls.length ? ls.filter(l => l.life <= 0).length / ls.length : 0;
+    ok(lp.length >= 16, 'the fair has ' + lp.length + ' lamps'); ok(at(0, 118).every(l => l.life === 1), 'a lamp is out or guttering at the GATE (sunset)');
+    ok(share(at(374, 640)) > share(at(0, 246)) + 0.3, 'the lamps do not go out along the way: ' + share(at(0, 246)).toFixed(2) + ' out early, ' + share(at(374, 640)).toFixed(2) + ' late');
+    ok(lp.some(l => l.life > 0 && l.life < 1), 'no lamp is guttering'); ok(lp.every(l => l.x > 0 && l.x < L.W), 'a lamp stands off the map'); }
+  // THE MUSIC BOX WINDS DOWN, section by section: a fresh spring at the gate, run down at the green; never speeds up
+  { let prev = -1; for (const c of [0, 60, 118, 180, 246, 310, 374, 440, 502, 560, 620, 650]) { const w = FA.windAt(c); ok(w >= prev, 'the music box wound UP between columns (' + c + ')'); prev = w; }
+    ok(FA.windAt(5) < 0.1 && FA.windAt(640) >= 0.99 && FA.windAt(374) > FA.windAt(246) && FA.windAt(502) > FA.windAt(374), 'the music box does not wind down section by section'); }
+  const au = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
+  ok(/export const musicBox/.test(au) && /BOX_TUNE/.test(au) && /mummerBell()/.test(au) && /horseRear()/.test(au) && /hayRustle()/.test(au), 'the audio has no music box, bells, horse-rear or hay rustle');
+  ok(L.music === 'marketday', 'the fair base track is not marketday');
+  // THE ART: the foes and the world are real art files, not the L1 rectangles
+  ok(existsSync(new URL('../src/redraw/fair_art.js', import.meta.url)) && existsSync(new URL('../src/redraw/fair_world.js', import.meta.url)) && !existsSync(new URL('../src/redraw/fair_' + 'greybox.js', import.meta.url)), 'the fair art files are not fair_art.js + fair_world.js (the L1 greybox file is gone)');
+  const mainSrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  ok(/FAW.drawCarousel/.test(mainSrc) && /FAW.drawGreen/.test(mainSrc) && /FAW.drawCrowd/.test(mainSrc) && /FAW.drawGlow/.test(mainSrc) && /FAW.drawHay/.test(mainSrc), 'drawFair does not draw the carousel, the green, the crowd, the glow and the haystacks from src/redraw/fair_world.js'); }
+
 if (bad.length) { console.error('HARVEST-FAIR (pure + level): ' + bad.length + ' failure(s)\n  ' + bad.join('\n  ')); process.exit(1); }
 console.log('harvest-fair pure + level: ok');
 
@@ -260,10 +293,15 @@ try {
     const before = { elite: !!el, shut: shut(), hp: el && el.hp };
     only([el]); el.hp = 1; BKT.hurtEnemy(el, 5, el.x - 10, false); BK.sim(60);
     out.elite = { ...before, dead: !el.alive, open: !shut() };
+    // 7. L2: every section draws without a throw (carousel, haystacks, lamps, the green, the crowd), the lamps are engine lights that follow their life, and a glowing mask draws its halo
+    BK.load(fi); BK.start(); BK.sim(5); BK.god = true; out.drawn = 0; for (const c of [30, 130, 300, 400, 526, 580, 646]) { BK.tp(c, 27); BK.sim(20); BK.step(1); out.drawn++; }
+    out.lamps = BK.fair().lamps.map(l => [l.life, l.lit]); out.musicBox = (await import('/src/audio.js')).musicBox.on;
     return out;
   })()`, 600000);
 } finally { pg2.close(); }
-console.log(JSON.stringify(R2));
+console.log(JSON.stringify(R2).slice(0, 600));
+ok(R2.drawn === 7, 'a section of the fair did not draw (' + R2.drawn + ' of 7)');
+ok(R2.lamps.length >= 16 && R2.lamps.every(([life, lit]) => life >= 1 ? lit : life <= 0 ? !lit : true) && R2.lamps.some(([life]) => life === 0) && R2.lamps.some(([life]) => life === 1), 'the lamps are not engine lights that follow their life: ' + JSON.stringify(R2.lamps));
 ok(R2.modes.includes('creep') && R2.modes.includes('glow') && R2.modes.includes('strike'), 'a mummer with the hero\'s back turned did not creep, glow and strike: ' + R2.modes);
 ok(R2.bells >= 3, 'the bells did not jingle while a mummer crept (' + R2.bells + ')');
 ok(R2.strikes >= 1 && R2.hpLost >= 8, 'the mummer\'s strike did not hurt the hero from behind (' + R2.hpLost + ')');

@@ -58,7 +58,7 @@ import { lanceSupport, LANCE_SUPPORT } from './lance-support.js';   /* THE QUEEN
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
-import * as MU from './mummer.js'; import * as FG from './redraw/fair_greybox.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its greybox art */
+import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
 import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease } from './attack-tokens.js';
@@ -137,7 +137,7 @@ import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, 
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
 import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
 
 // ---------- display ----------
 let VW = 320, VH = 180;
@@ -2076,8 +2076,8 @@ function spawnEnt(e) {
       /* THE BANDITS (2026-09-25, in the goblins' place: docs/briefs/caravan-ruins-bandits.md) */
       case 'cutthroat': { const st = DF.newCutthroat(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'cutthroat', w: DF.CUTTHROAT.w, h: DF.CUTTHROAT.h, hp: EHP.cutthroat, mode: st.mode, st }); break; }
       case 'slinger': { const st = DF.newSlinger(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'slinger', w: DF.SLINGER.w, h: DF.SLINGER.h, hp: EHP.slinger, mode: st.mode, st }); break; }
-      case 'mummer': { const st = MU.newMummer(px, py, e.face || -1); enemies.push({ ...base, t: 'mummer', w: MU.MUMMER.w, h: MU.MUMMER.h, hp: EHP.mummer, mode: st.mode, st, speed: 0 }); break; }   /* THE HARVEST FAIR's players (src/mummer.js): they move only while nobody faces them */
-      case 'hobbyhorse': { const st = MU.newHorse(px, py, e.face || -1); enemies.push({ ...base, t: 'hobbyhorse', w: MU.HORSE.w, h: MU.HORSE.h, hp: EHP.hobbyhorse, mode: st.mode, st, speed: 0 }); break; }   /* and the elite: it charges the moment a back is turned */
+      case 'mummer': { const st = MU.newMummer(px, py, e.face || -1); enemies.push({ ...base, t: 'mummer', w: MU.MUMMER.w, h: MU.MUMMER.h, markH: 34, hp: EHP.mummer, mode: st.mode, st, speed: 0 }); break; }   /* THE HARVEST FAIR's players (src/mummer.js): they move only while nobody faces them */
+      case 'hobbyhorse': { const st = MU.newHorse(px, py, e.face || -1); enemies.push({ ...base, t: 'hobbyhorse', w: MU.HORSE.w, h: MU.HORSE.h, markH: 36, hp: EHP.hobbyhorse, mode: st.mode, st, speed: 0 }); break; }   /* and the elite: it charges the moment a back is turned */
       case 'ambusher': { const st = DF.newAmbusher(px, py); enemies.push({ ...base, t: 'ambusher', w: DF.AMBUSHER.w, h: DF.AMBUSHER.h, hp: EHP.ambusher, mode: st.mode, st }); break; }
       case 'vulture': { const st = DF.newVulture(px, py); st.a = (e.x % 7) * 0.9; enemies.push({ ...base, t: 'vulture', w: DF.VULTURE.w, h: DF.VULTURE.h, hp: EHP.vulture, noGrav: true, y: st.y, mode: st.mode, st }); break; }
       case 'awningwinch': props.push({ t: 'awningwinch', x: px, y: py, canopy: e.canopy, hollow: !!e.hollow, out: 1, k: 1, cd: 0 }); break;   /* hollow: THE DUNE WORM's (it only ever rolls OUT: a blow meant for him must not roll his trap in) */
@@ -7826,8 +7826,9 @@ function updatePlayer(dt) {
   if (camLock) { P.x = Math.max(camLock.x0 + 6, Math.min(camLock.x1 - 6, P.x)); }
   if (!P.ground) P.fallV = Math.max(P.fallV || 0, P.vy);
   if (P.ground && !wasGround && P.groundTile === T.BOUNCER) { // springy cap
-    const plunged = P.plunge; P.ground = false; P.vy = plunged ? -560 : keys.jump ? -480 : -400; P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pPogo(); }
-    const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 2) / TS); const i = ty * LW + tx; if (L.grid[i] === T.BOUNCER) { tileSpr[i] = TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
+    const plunged = P.plunge; P.ground = false; P.vy = plunged ? -560 : keys.jump ? -480 : -400; P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, FAIR ? ['#dcb44e', '#f4d878', '#a8802c'] : ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pPogo(); }
+    const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 2) / TS); const i = ty * LW + tx; if (FAIR && L.haystacks) { const hz = L.haystacks.find(z => tx >= z[0] && tx <= z[1]); if (hz) { FAIR.sq[hz[0]] = 1; SFX.hayRustle(); } }
+    if (L.grid[i] === T.BOUNCER) { tileSpr[i] = TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
   }
   if (P.ground && !P.onMover && L.scree && !P.dead) for (const z of L.scree) if (Math.abs(P.y - z.y * TS) < 2 && P.x >= z.x0 * TS && P.x < (z.x1 + 1) * TS) { const sp = P.block ? 24 : 70; P.x += z.dir * sp * dt; P.screeT = (P.screeT || 0) - dt; if (P.screeT <= 0) { P.screeT = 0.12; dust(P.x - z.dir * 4, P.y, 1); if (Math.random() < 0.5) SFX.step(); } }
   if (P.ground && P.groundTile === T.SHELF) { // shelf fungus snaps under a standing weight
@@ -17674,9 +17675,11 @@ function drawUnburied(cx, cy) { if (!UNB_FIELD) return; UNBF.drawField(g, UNB_FI
    it creeps, its mask glows red within strike reach; the hobby-horse charges the moment a back is turned; the carousel turns a rider round. ================= */
 let FAIR = null;
 function fairReset() {
-  FAIR = null; for (const pp of players) { pp.faceLock = 0; pp.car = null; }
+  FAIR = null; musicBox.stop(); for (const pp of players) { pp.faceLock = 0; pp.car = null; }
   if (!L || !(L.carousels || enemies.some(e => e.t === 'mummer' || e.t === 'hobbyhorse'))) return;
-  FAIR = { bells: 0, strikes: 0, charges: 0, turns: 0, warns: 0, freezes: 0 };
+  FAIR = { bells: 0, strikes: 0, charges: 0, turns: 0, warns: 0, freezes: 0, lamps: (L.lamps || []).map(l => ({ ...l, lit: l.life > 0, b: l.life >= 1 ? 1 : 0 })), sq: {} };
+  for (const lp of FAIR.lamps) if (lp.life > 0) lights.push({ x: lp.x * TS + 8, y: (lp.y + 1) * TS - 32, r: 46, warm: true, lantern: lp });   /* a lamp is an engine light: the dusk lays its glow, and a guttering one is on and off */
+  if (L.green) lights.push({ x: L.green.bonfire * TS + 8, y: L.green.floor * TS - 14, r: 58, warm: true });
   if (window.BK) Object.assign(window.BK, { fair: () => FAIR });
 }
 /* may it walk on? ground ahead of its feet (a slope counts), no spike, no wall at its body: a haystack or a pit ends a charge */
@@ -17706,7 +17709,7 @@ function updateMummer(e, dt) {
   for (const v of evs) {
     if (v.t === 'bell') { if (FAIR) FAIR.bells++; SFX.mummerBell(); }
     else if (v.t === 'freeze') { if (FAIR) FAIR.freezes++; if (time - (e.stillAt || -9) > 0.9) { e.stillAt = time; number(e.x, e.y - e.h - 8, 'STILL', '#c9d1dc'); SFX.mummerStill(); } }
-    else if (v.t === 'rear') number(e.x, e.y - e.h - 8, '!!', '#ff6b6b');
+    else if (v.t === 'rear') { number(e.x, e.y - e.h - 8, '!!', '#ff6b6b'); SFX.horseRear(); }
     else if (v.t === 'glow') number(e.x, e.y - e.h - 8, '!!', '#ff6b6b');
     else if (v.t === 'charge') { if (FAIR) FAIR.charges++; SFX.horseCharge(); dust(e.x, e.y, 5); }
     else if (v.t === 'strike') { if (FAIR) FAIR.strikes++; SFX.mummerStrike();
@@ -17718,6 +17721,8 @@ function updateMummer(e, dt) {
 /* THE CAROUSEL: standing on the ride, a hero is TURNED ROUND every period seconds after a warning, and cannot turn back for a moment */
 function updateFair(dt) {
   for (const pp of players) if (pp.faceLock > 0) pp.faceLock = Math.max(0, pp.faceLock - dt);
+  if (FAIR) for (const lp of FAIR.lamps) if (lp.life > 0 && lp.life < 1) { const was = lp.lit; lp.b = FAW.lampBright(lp, time); lp.lit = lp.b > 0.3; if (lp.lit !== was && Math.abs(lp.x * TS - P.x) < 240 && SET.ambient && Math.random() < 0.35) SFX.lampGutter(); }
+  if (FAIR) { for (const k in FAIR.sq) FAIR.sq[k] = Math.max(0, FAIR.sq[k] - dt * 5); if (state === 'play' && !P.dead) musicBox.wind(FAW.windAt(P.x / TS)); }
   if (FAIR && L.green && state === 'play' && Math.abs(P.x - L.green.bonfire * TS) < 260 && Math.random() < dt * 30) flame(L.green.bonfire * TS + 8, L.green.floor * TS - 8, 2, 4, 40, 3);   /* the bonfire */
   if (!FAIR || !L.carousels || state !== 'play') return;
   for (const pp of players) asPlayer(pp, () => {
@@ -17728,25 +17733,14 @@ function updateFair(dt) {
       else if (v.t === 'turn') { FAIR.turns++; P.face = -(P.face || 1); P.faceLock = v.lock; SFX.calliopeTurn(); number(P.x, P.y - 34, 'TURNED', '#ff9a9a'); }
     } });
 }
-/* the greybox dressing the tiles do not carry: the carousel's canopy and horses, the haystacks over their spring caps, the maypole and the bonfire */
+/* the dressing the tiles do not carry (src/redraw/fair_world.js): the haystacks over their spring caps, the carousel, the lamps, the maypole green and its bonfire, and the halo behind a glowing mask */
 function drawFair(cx, cy) {
   if (!FAIR) return;
-  for (const z of (L.haystacks || [])) { const x0 = z[0] * TS, x1 = (z[1] + 1) * TS, y = z[2] * TS; if (x1 < cx - 8 || x0 > cx + VW + 8) continue;
-    g.fillStyle = '#c9a03a'; g.fillRect(x0 - cx - 1, y - cy + 3, x1 - x0 + 2, 2 * TS - 3); g.fillStyle = '#e0bc55'; g.fillRect(x0 - cx + 2, y - cy, x1 - x0 - 4, 5); g.fillRect(x0 - cx, y - cy + 4, x1 - x0, 2);
-    g.fillStyle = '#8f6a22'; for (let i = 0; i < (x1 - x0) / 6; i++) g.fillRect(x0 - cx + 3 + i * 6, y - cy + 8 + (i % 2) * 5, 4, 1); }
-  for (const z of (L.carousels || [])) { const x0 = z.x0 * TS, x1 = (z.x1 + 1) * TS, top = z.row * TS; if (x1 < cx - 8 || x0 > cx + VW + 8) continue;
-    const warn = P.car && P.car.warned, w = x1 - x0, roofY = top - 7 * TS;
-    g.fillStyle = '#5a3a24'; for (const px of [x0 + 6, x1 - 8]) g.fillRect(px - cx, roofY - cy, 3, top - roofY);   /* the two end poles, the centre pole */
-    g.fillRect(Math.round((x0 + x1) / 2) - 1 - cx, roofY - cy, 3, top - roofY);
-    for (let i = 0; i < Math.floor(w / 8); i++) { g.fillStyle = i % 2 ? '#e8dcc0' : '#b8382c'; g.fillRect(x0 + i * 8 - cx, roofY - 8 - cy, 8, 10); }   /* the striped canopy */
-    g.fillStyle = '#7a2818'; g.fillRect(x0 - cx, roofY + 2 - cy, w, 2);
-    for (let i = 0; i < Math.floor(w / 8); i++) { const on = warn ? Math.floor(time * 8) % 2 === i % 2 : Math.floor(time * 2 + i) % 3 !== 0; g.fillStyle = on ? (warn ? '#ff6b6b' : '#ffd36b') : '#6a5a3a'; g.fillRect(x0 + i * 8 + 3 - cx, roofY + 5 - cy, 2, 2); }   /* the bulbs: red when it is about to turn */
-    const n = Math.max(3, Math.floor(w / 40)); for (let i = 0; i < n; i++) { const hx = x0 + ((i / n) * w + time * 14) % w, hy = top - 22 + Math.sin(time * 3 + i * 2) * 4;
-      g.fillStyle = '#8f6a3a'; g.fillRect(Math.round(hx) - 5 - cx, Math.round(hy) - cy, 10, 6); g.fillRect(Math.round(hx) + 3 - cx, Math.round(hy) - 4 - cy, 3, 4); g.fillStyle = '#c9962a'; g.fillRect(Math.round(hx) - 5 - cx, Math.round(hy) + 6 - cy, 1, 14); g.fillRect(Math.round(hx) + 4 - cx, Math.round(hy) + 6 - cy, 1, 14); }   /* painted horses going round on their brass poles */ }
-  const G = L.green; if (G) { const mx = G.maypole * TS + 8, fx = G.bonfire * TS + 8, gy = G.floor * TS;
-    if (mx > cx - 30 && mx < cx + VW + 30) { const top = gy - 9 * TS; g.fillStyle = '#7a5230'; g.fillRect(Math.round(mx) - 2 - cx, top - cy, 4, gy - top);
-      for (let i = 0; i < 6; i++) { const a = time * 0.8 + i * 1.05; g.strokeStyle = ['#b8382c', '#e8c23a', '#3a7ab8', '#8fd160', '#c9a0ff', '#ff9a5c'][i]; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(mx) - cx, top + 2 - cy); g.lineTo(Math.round(mx + Math.cos(a) * 26) - cx, Math.round(gy - 40 + Math.sin(a) * 6) - cy); g.stroke(); } }
-    if (fx > cx - 30 && fx < cx + VW + 30) { g.fillStyle = '#4a3020'; g.fillRect(Math.round(fx) - 10 - cx, gy - 5 - cy, 20, 5); g.globalAlpha = 0.18; g.fillStyle = '#ff9a3c'; g.beginPath(); g.arc(Math.round(fx) - cx, gy - 14 - cy, 34, 0, 7); g.fill(); g.globalAlpha = 1; } }
+  for (const z of (L.haystacks || [])) { const x0 = z[0] * TS, x1 = (z[1] + 1) * TS; if (x1 < cx - 8 || x0 > cx + VW + 8) continue; FAW.drawHay(g, cx, cy, z, FAIR.sq[z[0]] || 0); }
+  for (const z of (L.carousels || [])) FAW.drawCarousel(g, cx, cy, VW, z, time, !!(P.car && P.car.warned && P.ground && P.x >= z.x0 * TS && P.x <= (z.x1 + 1) * TS), false);
+  FAW.drawLamps(g, cx, cy, VW, FAIR.lamps, time, false);
+  if (L.green) FAW.drawGreen(g, cx, cy, VW, L.green, time, dusk());
+  for (const e of enemies) if (e.alive && e.t === 'mummer' && e.mode === 'glow' && e.x > cx - 40 && e.x < cx + VW + 40) FAW.drawGlow(g, Math.round(e.x - cx), Math.round(e.y - 24 - cy), time);   /* the glow tell: a red halo behind the mask, so it reads against the dusk */
 }
 
 /* ================= THE SUNKEN CARAVAN (src/sunken-caravan.js builds it; src/desert-foes.js, src/sunstroke.js and src/quicksand.js
@@ -17758,7 +17752,7 @@ const CV_FOES = new Set(['scorpion', 'sandgob', 'vulture', 'cutthroat', 'slinger
 const CV_STEP = { scorpion: DF.scorpionStep, sandgob: DF.sandGobStep, vulture: DF.vultureStep, cutthroat: DF.cutthroatStep, slinger: DF.slingerStep, ambusher: DF.ambusherStep };
 const CV_HURT = { scorpion: 6, cutthroat: 6, slinger: 6, ambusher: 7 };   /* the frame each set is hurt in (the vulture's set ends perched and the goblin's burrowing) */
 const CV_BANDITS = new Set(['cutthroat', 'slinger', 'ambusher']);   /* THE LOOTERS: men, not desert creatures - the sun takes them too */
-SPR.mummer = FG.bakeMummer(); SPR.hobbyhorse = FG.bakeHobbyHorse(); HAS_HURT.add('mummer'); HAS_HURT.add('hobbyhorse');   /* THE HARVEST FAIR's greybox pair */
+SPR.mummer = FG.bakeMummer(); SPR.hobbyhorse = FG.bakeHobbyHorse(); HAS_HURT.add('mummer'); HAS_HURT.add('hobbyhorse');   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
 SPR.cutthroat = CB.bakeCutthroat(); SPR.slinger = CB.bakeSlinger(); SPR.ambusher = CB.bakeAmbusher(); const CV_STONE = CB.bakeSlingStone();
 HAS_HURT.add('cutthroat'); HAS_HURT.add('slinger'); HAS_HURT.add('ambusher');
 let CV = null, CVART = null;
@@ -24606,6 +24600,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.eye) { const ek = seaCalm(); if (ek > 0) drawEyeSky(ek); }   /* THE HURRICANE'S EYE: stars over the haze, high in the sky where no hull reaches */
   // a wood with parts in different light (L.tints: [x0, x1, rgb, alpha] in tiles), crossfaded over two dozen tiles at each seam
   if (L.tints) { const mx = (cx + VW / 2) / TS; for (const [x0, x1, c, a] of L.tints) { const k = Math.max(0, Math.min(1, Math.min(mx - x0 + 12, x1 - mx + 12) / 24)); if (k > 0.01) { g.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } }
+  if (FAIR) FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time);   /* THE HARVEST FAIR: the figures at the edge of the light, more of them the later it gets */
   if (L.deep) drawDeepTint(cx, cy);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
@@ -25403,7 +25398,7 @@ function drawWorld(cx, cy, showPlayer) {
     { const bl = e === boss || bossActive || miniActive; if (openCommon(e, bl)) drawOpen(g, e, Math.round(e.x - cx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 6, time, finishReady(e, P, bl)); }   /* OPEN: the stars over a broken foe, closing in and going white when the next blow will finish it (src/poise-break.js, src/finishers.js) */
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
     const windMark = wind ? markOf(e) : '';
-    if (windMark) tellQ.push({ txt: windMark, x: e.x - cx, y: e.y - e.h - 12 - cy, col: windMark === '!!' ? '#ff6b6b' : '#ffd36b', a: 1, lane: laneOf(tellKey(e)) });   /* (the lane: the DUCK or the JUMP mark beside it, src/marks.js HEIGHT) */   /* drawn last of all: drawTells(). THE MARK OVER A WINDUP IS THE TABLE'S (src/marks.js, written and checked by tools/tells.mjs): it used to be a yellow ! over every windup in the game, over every red !! slam and over a priest's rite that strikes nobody */
+    if (windMark) tellQ.push({ txt: windMark, x: e.x - cx, y: e.y - (e.markH || e.h) - 12 - cy, col: windMark === '!!' ? '#ff6b6b' : '#ffd36b', a: 1, lane: laneOf(tellKey(e)) });   /* (the lane: the DUCK or the JUMP mark beside it, src/marks.js HEIGHT) */   /* drawn last of all: drawTells(). THE MARK OVER A WINDUP IS THE TABLE'S (src/marks.js, written and checked by tools/tells.mjs): it used to be a yellow ! over every windup in the game, over every red !! slam and over a priest's rite that strikes nobody */
     else if (e.emoteT > 0 && e.alive) drawEmote(e, Math.round(e.x - cx + ps.dx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy + ps.dy) - 5);
     if (e.mark > 0 && e.alive) { const mx = Math.round(e.x - cx), my = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 12, k2 = 0.6 + 0.4 * Math.sin(time * 6 + e.x);
       g.globalAlpha = Math.min(1, e.mark) * k2; g.fillStyle = '#8fd160';

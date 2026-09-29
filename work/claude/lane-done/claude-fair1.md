@@ -17,7 +17,7 @@ behind this branch). Nothing of L2 (art) or L3 (the Wicker Queen) was started.
     bulbs go red) and cannot turn back for 0.5 s (under the mask's 0.6 s glow, so a turn never lands a blow he could not answer). New `P.faceLock`, read in
     the two movement lines that set `P.face`.
   - Hooks in `src/main.js`: `updateMummer`, `updateFair`, `drawFair` (canopy, painted horses, hay over the spring caps, maypole, bonfire), spawn cases,
-    `EHP`, `COLS`, ELITE row, `windingUp`, frame picks, bestiary rows, six SFX in `src/audio.js`. Greybox art `src/redraw/fair_greybox.js` (placeholder).
+    `EHP`, `COLS`, ELITE row, `windingUp`, frame picks, bestiary rows, six SFX in `src/audio.js`. Greybox art (placeholder; now `src/redraw/fair_art.js`).
 - **THE LEVEL, `src/harvest-fair.js`** (W 672 x H 36, placed wholly by hand, no garrison sprinkle, no filler; appended to LEVELS so no index or save moves):
 
   | section | columns | beat | encounter |

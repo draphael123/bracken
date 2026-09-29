@@ -715,13 +715,38 @@ Object.assign(SFX, {
   // ---- the telegraph: every enemy that winds up says so, a glint for the small ones, a low bell for the big ----
   tell(big) { if (!gate(big ? 'tellB' : 'tell', 0.12)) return; if (big) { tone('triangle', 523, 1046, 0.12, 0.08); bell(1568, 0.3, 0.04, 0.02); } else { tone('triangle', 1318, 1760, 0.07, 0.05); tone('sine', 2637, 2637, 0.1, 0.025, 0.02); } },
   // ---- THE HARVEST FAIR (src/mummer.js): the mummer's cap bells (its audio tell: they jingle ONLY while it moves), the look that stills it, its strike, the hobby-horse's charge and the carousel's calliope ----
-  mummerBell() { if (!gate('mbell', 0.16)) return; const f = [2093, 2349, 2637][Math.floor(Math.random() * 3)]; bell(f, 0.14, 0.03); bell(f * 1.5, 0.1, 0.018, 0.03); },
+  mummerBell() { if (!gate('mbell', 0.16)) return; const f = [2093, 2349, 2637, 2794][Math.floor(Math.random() * 4)];   /* the cap's three bells, shaken: the creep cue (jingles ONLY while it moves) */
+    bell(f, 0.16, 0.034); bell(f * 1.19, 0.12, 0.022, 0.025); bell(f * 1.5, 0.1, 0.018, 0.055); noise(0.03, 0.02, 6200, 2.2, 0.01); },
+  horseRear() { if (!gate('hrear', 0.5)) return; for (let i = 0; i < 4; i++) bell(1568 * (1 + (i % 2) * 0.12), 0.22, 0.04, i * 0.05); noise(0.16, 0.06, 900, 0.7, 0.02); tone('sawtooth', 200, 320, 0.2, 0.05); },   /* the bridle bells shaken as the head is flung up */
+  hayRustle() { noise(0.22, 0.12, 2600, 0.7); noise(0.16, 0.08, 4200, 1.2, 0.04); noise(0.3, 0.06, 1400, 0.6, 0.09); },   /* a haystack takes you and throws you back */
+  lampGutter() { if (!gate('lampg', 0.25)) return; noise(0.05, 0.04, 1800, 1.4); tone('triangle', 240, 120, 0.06, 0.03); },   /* a lantern going down to its wick */
   mummerStill() { if (!gate('mstill', 0.3)) return; tone('sine', 660, 440, 0.12, 0.05); },
   mummerStrike() { tone('square', 220, 90, 0.16, 0.12); noise(0.1, 0.12, 900, 0.6); },
   horseCharge() { noise(0.4, 0.16, 500, 0.5); tone('sawtooth', 140, 90, 0.35, 0.1); bell(1568, 0.2, 0.05, 0.05); },
   calliope() { if (!gate('calli', 0.5)) return; [523, 659, 784].forEach((f, i) => tone('square', f, f, 0.16, 0.05, i * 0.12)); },
   calliopeTurn() { [784, 659, 523, 392].forEach((f, i) => tone('square', f, f, 0.12, 0.06, i * 0.08)); },
 });
+// ---------- THE MUSIC BOX (THE HARVEST FAIR): a tune the level plays over its own track (marketday stays the base) and that WINDS DOWN as you go: each note comes later, flatter and
+// quieter, and more of the comb's teeth are missing, until at the green it drops one note into the quiet now and then. Synth only (no file). main.js hands it the wind (0 = a
+// fresh spring, 1 = run down) from the section the hero is in, and stops it on leaving the level. It plays into the music bus, so the music volume and the mute cover it.
+const BOX_N = { C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880, B5: 987.77, C6: 1046.5, D6: 1174.66, E6: 1318.51, F6: 1396.91, G6: 1567.98, A6: 1760 };
+const BOX_TUNE = ['C6','E6','G6','E6','C6','G5','A5','C6','F6','E6','D6','B5','C6','E6','G6','A6','G6','E6','F6','D6','B5','G5','C6','C6'];
+let boxW = null, boxTimer = null, boxI = 0;
+function boxStep() {
+  boxTimer = null; if (boxW === null || !ac) return;
+  if (wantTrack !== 'marketday') { boxW = null; return; }   /* the box plays only under the fair's own track: the map, a menu or another level's music ends it */
+  const w = boxW, per = 0.3 + w * w * 1.7;   /* a note every 0.3 s fresh, every 2 s at the end */
+  const nm = BOX_TUNE[boxI % BOX_TUNE.length]; boxI++;
+  if (musicOn && musicGain && Math.random() > w * w * 0.8) {   /* the missing teeth: none at first, most at the end */
+    const f = BOX_N[nm] * (1 - 0.08 * w * w), d = 0.45 + w * 0.9;
+    tone('sine', f, f * (1 - 0.012 * w), d, 0.2 * (1 - 0.45 * w), 0, musicGain); tone('sine', f * 4.01, f * 4, 0.14, 0.05 * (1 - w * 0.6), 0, musicGain); }
+  boxTimer = setTimeout(boxStep, per * 1000);
+}
+export const musicBox = {
+  wind(w) { boxW = Math.max(0, Math.min(1, w)); if (!boxTimer && ac) boxTimer = setTimeout(boxStep, 50); },
+  stop() { boxW = null; if (boxTimer) clearTimeout(boxTimer); boxTimer = null; },
+  get on() { return boxW !== null; }, get wound() { return boxW; },
+};
 // ---------- personality: every goblin has a voice of its own pitch, and the beasts their own calls ----------
 const GOB_V = { burngob: 0.95, sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, temperer: 0.85, scalder: 1.05, miner: 0.9, tippler: 0.7, sheargob: 1.2, gaffer: 0.95, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7, gobpriest: 1.05, gobmage: 1.15 };
 Object.assign(SFX, {

@@ -37,7 +37,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   const ramp = (x0, n) => { for (let k = 0; k < n; k++) { const r = R - 1 - k, x = x0 + 2 * k; for (let y = r + 1; y < R; y++) { set(x, y, T.SOLID); set(x + 1, y, T.SOLID); } set(x, r, T.SLOPE_R2A); set(x + 1, r, T.SLOPE_R2B); } };
   const rampDown = (x0, n) => { for (let k = 0; k < n; k++) { const r = R - n + k, x = x0 + 2 * k; for (let y = r + 1; y < R; y++) { set(x, y, T.SOLID); set(x + 1, y, T.SOLID); } set(x, r, T.SLOPE_L2B); set(x + 1, r, T.SLOPE_L2A); } };
   const carousels = [], lamps = [];
-  for (const x of [34, 58, 94, 134, 192, 222, 238, 266, 298, 342, 368, 394, 412, 426, 444, 464, 486, 520, 566, 580, 606]) post(x);   /* the lamps along the road, in the order the light goes: a lamp every ~25 tiles */
+  for (const x of [34, 58, 94, 134, 192, 222, 238, 266, 286, 322, 342, 368, 394, 412, 426, 444, 464, 486, 520, 566, 580, 606]) post(x);   /* the lamps along the road, in the order the light goes: a lamp every ~25 tiles */
 
   // ---------------- 1. THE GATE (0-118): TEACH ----------------
   sign(5, 'THE HARVEST FAIR. THE MUSIC IS STILL PLAYING. NOBODY IS LEFT TO HEAR IT.');
@@ -83,7 +83,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   foe('mummer', 296, { y: R - 3 });                       /* two riders already aboard, one at each end of the ride */
   foe('mummer', 311, { y: R - 3 });
   coins([300, S - 3], [303, S - 3], [306, S - 3]);
-  post(322); stall(326, 1); ent('deco', 330, S - 7, { kind: 'bunting', hang: true }); coins([328, S - 1], [332, S - 1], [336, S - 1]);
+  stall(326, 1); ent('deco', 330, S - 7, { kind: 'bunting', hang: true }); coins([328, S - 1], [332, S - 1], [336, S - 1]);
   plat(340, S - 3, 5); plat(344, S - 6, 3); ent('silver', 345, S - 7); ent('coin', 342, S - 4);   /* the third silver, a hop up over the stall roof before the last pit */ pit(350, 352); post(358); sign(362, 'THE HAYRICKS. THE HORSES DO NOT WAIT TO BE LOOKED AT. THE HAY WILL THROW YOU CLEAR.');
 
   // ---------------- 4. THE HAYRICKS (374-502): COMBINE ----------------

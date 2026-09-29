@@ -1,7 +1,6 @@
 # THE HARVEST FAIR - brief (L1: brief + greybox + the facing mechanic)
 
-Status: L1 built on `claude/fair1` (greybox, placeholder art). L2 (art, sound, real dressing) and L3 (the Wicker Queen, the boss of the maypole green)
-wait for Daniel's approval of this greybox. Design approved by Daniel; this file is the record of what was built and why.
+Status: L1 (greybox) approved by Daniel 2026-09-29; L2 (art, sound, real dressing) built on `claude/fair2`. L3 (the Wicker Queen, the boss of the maypole green) is next. Design approved by Daniel; this file is the record of what was built and why.
 
 ## What it is
 
@@ -30,7 +29,7 @@ A hero **looks at** a foe when he is alive, on the same screen (300 px across, 1
 - **CO-OP: a foe is frozen if ANY hero faces it** (a dead or downed hero looks at nothing). It moves, and the horse charges, only when EVERY hero has his
   back to it. Said in the bestiary cards for both.
 - Hooks: `src/main.js` `updateMummer` (its hands: gravity, edge/wall check, damage), `updateFair` (the carousel, the lock), `drawFair` (canopy, hay,
-  maypole, bonfire), `windingUp` (the tell sound), the frame picks, the bestiary. Art: `src/redraw/fair_greybox.js` (placeholder). Proved by
+  maypole, bonfire), `windingUp` (the tell sound), the frame picks, the bestiary. Art: `src/redraw/fair_art.js` and `src/redraw/fair_world.js` (L2). Proved by
   `tools/harvest-fair.mjs` (pure rule + the level + the page).
 
 ## THE ARC (built: `src/harvest-fair.js`; W 672, placed wholly by hand, no garrison sprinkle, an encounter in every section, none of it filler)
@@ -55,11 +54,15 @@ Two new foes, neither a boss: THE MUMMER and THE HOBBY-HORSE. Both weighed in `s
 
 THE WICKER QUEEN on the maypole green, per Daniel's approved design. The green is a greybox room with its door, its checkpoint and its gate until then.
 
-## Art and sound (L2, NOT built)
+## Art and sound (L2, BUILT on claude/fair2, 2026-09-29)
 
-Real mummer and horse art (sackcloth, painted masks, cap bells), the carousel as a real set-piece (horses that go round, the calliope as a music box that
-winds down through the level), bunting and lanterns that gutter section by section, the figures that multiply in the background as the light goes, the
-haystack art over the spring caps, a level track and the boss's.
+L1 was approved by Daniel with all recommendations (keep the carousel's 0.5 s facing lock, the unblockable back strikes, the elite on the door, the look that re-arms the horse). Difficulty: the fair read INDEX 34 against ~117 and no bodies are to be added, so the mummer is weighed 5 and the hobby-horse 6 in `src/threat.js` (the index is now about 43); tuning happens by play. Layout and the facing rule's numbers are unchanged.
+
+- **Foes** (`src/redraw/fair_art.js`, the L1 greybox file renamed): the mummer (patched sackcloth, rope belt, straw, a painted wooden mask with white-ringed eyes and red cheeks, a floppy three-bell cap; frames 0 frozen mid-step, 1-2 creep, 3 GLOW (arms up, the mask burning red, white-hot eyes), 4 strike, 5 hurt) and the hobby-horse (a red and cream skirt over a masked player, a carved horse head on a pole with pegged teeth, a straw mane, brass bells; 0 stand, 1 rear, 2-3 charge, 4 skid, 5 hurt). The glow also lays an additive red halo behind the mask (`FAW.drawGlow`) so it reads against the dusk, and the mark above a windup is lifted clear of the taller art (`e.markH`).
+- **The world** (`src/redraw/fair_world.js`, drawn by `drawFair` in src/main.js): baked round haystacks (a squash and a rustle when they throw you), the carousel (a painted skirt over the deck, painted horses going round on brass poles, a scalloped striped canopy with pennants and a flag; it spins faster and the bulbs beat red when it is about to turn you), the lamps (real engine lights that gutter: steady at the gate, more of them out the further along, the last ones before the door guttering), the maypole green (a ribboned pole with a wreath, a ring of trampled flowers, a wicker and marigold arch over the door, a big animated bonfire) and the crowd (dark figures at the edge of the light on a parallax layer, none at the gate and more of them the later it gets). Sections keep L1's tints (sunset to dusk).
+- **Furniture**: three silvers (the hayrick ledge, a roof over the stall lane, a hop before the last pit), the relic (the felted soles) on a three-roof stair over the gate's flat lane, three hearts (after the pincer's terrace, after the horses, before the door guard), six shrines (the checkpoints). No NPCs; no quest strays (Waymeet and the Fields have none).
+- **Sound**: the cap bells are a shaken cluster of three (the creep cue, only while it moves); the horse's bridle bells on the rear; a haystack rustle; a lantern's flutter. THE MUSIC BOX is a synth tune (`musicBox` in src/audio.js) played over the level's track that winds down section by section (`windAt` in fair_world.js): a note every 0.3 s at the gate, later, flatter and quieter with more missing teeth each section, one note into the quiet by the green. The base track is still `marketday` (Waymeet's neighbour); the level has no track of its own.
+
 
 ## Questions for Daniel
 
