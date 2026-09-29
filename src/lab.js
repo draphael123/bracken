@@ -539,7 +539,7 @@ async function runbossLab(BK, opts) {
            the other branches' reach-4) that left slack for the lunge and a closing foe to eat between them: measured (batch34),
            reach-4 still left the Mother's warden row at the limit (2 of 6, 33%); reach-2 clears every row with room to spare. */
         const add=BK.enemies().filter(q=>q.alive&&q.fromMother&&Math.abs(q.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0],addNear=add&&boss.mode!=='open'&&Math.abs(add.x-P.x)<110;
-        if(addNear&&!bad(add.x)){gx=add.x-(Math.sign(add.x-P.x)||1)*(LAB_REACH[h]-2);safe=false;}
+        if(addNear&&!bad(add.x)){gx=add.x-(Math.sign(add.x-P.x)||1)*(LAB_REACH[h]-(h==='geomancer'?6:2));safe=false;}   /* (geomancer stands 4 px closer, sprinkle cut 2026-09-29: her stave's stone lands 21-26 out, and with the halved garrison shifting the pinned dice she swung past 3 of 5 sporelings; 29% worst row now) */
         const shelf=P.ground&&P.y<fl-20;
         const clap=m==='capClapTell'&&Math.abs(P.x-boss.x)<125,sweep=m==='sporeSweepTell'&&P.y<fl-30&&P.y>fl-80;
         const vine=(BK.vines?BK.vines():[]).find(v=>v.t>=v.tell-.05&&(P.x-v.x)*v.dir>-6&&(P.x-v.x)*v.dir<34);
