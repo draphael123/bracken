@@ -7531,7 +7531,7 @@ function theMagesFolly() {
   net(449, 5, F - 2);                                              /* up through the corridor's ceiling onto the roof leads */
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
 
-  return {
+  const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G - 1 }, pools, falls: [], moversExtra, interiors, gusts: [], winds,   /* THE WARDED COURTYARD's drain and gate ditch (spike-winds.js) */
     music: 'musUnder', night: true, nightA: 0.14, edgeLit: true, duskStart: 99999, duskLen: 1,
     mage: { shelves, skins, hedges, chains, dais: [632, 640], flood: [611, 632], stacks: [614, 619, 624, 629], weight: 616, cage: [[633, 2], [641, 2]], hung: [[520, 6], [570, 2]], outside: 64, yard: G, portcullis: [53, 56, G - 11, G - 5] },   /* (yard: the courtyard's paving row, for its backdrop - src/tower-ascent.js) */
@@ -7548,6 +7548,94 @@ function theMagesFolly() {
     calm: [[0, 70, 0, 47], [90, 104, 0, 47], [122, 160, 26, 47], [179, 210, 0, 47], [236, 264, 22, 47], [264, 292, 0, 47], [308, 318, 0, 47], [332, 382, 30, 47], [382, 448, 0, 47], [447, 536, 0, 47], [537, 602, 0, 47]],   /* no garrison on the lanes, the flipped floor or the test room, nor on the three floors thinned by hand (the stacks' crossing, the bench, the gilded armour's) */
     arena: { x0: 603 * TS, x1: 646 * TS, floor: F * TS, y0: 0, trigger: 608 * TS, wallL: 602, wallR: 646, boss: 'archmage', music: 'boss4', tint: '#2a1a40', tintA: 0.04, fx: 'motes' },
   };
+  return follyLibrary(L, ret);
+}
+
+/* ============================================================================================================
+   THE RUNE LIBRARY (claude/follylib; Daniel, 2026-09-29: the Folly should be a bit LONGER): 150 columns cut in at the yard's door (x 64),
+   between THE WARDED COURTYARD and the tower proper. Everything the tower had from x 64 on (the great library, the lab, the orrery, the
+   flipped floor, the observatory and the Archmage's study, all written above in their own numbers, 64-646) slides right by LIB with
+   grow() - the courtyard, which is before the cut, does not move - and this paints the gap. It is the Archmage's own trick, taught:
+     1. THE SLIDING CASES (x 66-101): a bookcase on a rail carries you over a pit. A pit with no teeth in it, so the first one is only slow.
+     2. THE FIRST RUNE-LOCK (x 102-121): a runed vault door opens when every rune on it is lit; the runes HOLD their light. Safe.
+     3. THE SPIKED CROSSING AND THE SQUAD (x 122-167): two cases hand you across a spiked pit (a fall is one bite and the wind brings you
+        back, as in the yard); across it an ARMOUR plugs the top of a bookcase ledge with two dead apprentices behind it, throwing over it.
+     4. THE EXAM (x 168-213): a second vault door, three runes, and now the ward fights back like his: strike the first and the others
+        have LOCK_WINDOW seconds or every rune goes dark and the stack rises again. One rune sits on a book stack, out of reach; its FOOT
+        rune, on the loft the stack stands on, slides the stack down into the floor and brings the rune down with it (his round-3 trick).
+   ONE designed squad and ONE checkpoint; no filler (the whole stretch is calm). The engine half is src/main.js (lockrune, bookcase). */
+const LIB = 150, LIB_X0 = 64, LOCK_WINDOW = 9;
+function follyLibrary(L0, ret) {
+  const G = 40, N = grow(L0, ret, LIB_X0, LIB), R = N.R, M = R.mage, sh = x => x >= LIB_X0 ? x + LIB : x;
+  /* what grow() does not know about the Folly: the tower's own tables, in columns. (The courtyard's winds, its portcullis and the yard's own
+     zones are all before the cut and stay; `outside` is the yard's door and stays too.) */
+  M.shelves = M.shelves.map(s => ({ ...s, x0: sh(s.x0), x1: sh(s.x1) }));
+  M.skins = M.skins.map(([x0, x1, y0, y1, k]) => [sh(x0), sh(x1), y0, y1, k]);
+  M.hedges = (M.hedges || []).map(([x0, x1, y0, y1]) => [sh(x0), sh(x1), y0, y1]);
+  M.chains = M.chains.map(([x, t, b]) => [sh(x), t, b]);
+  for (const k of ['dais', 'flood', 'stacks']) M[k] = M[k].map(sh);
+  M.weight = sh(M.weight); M.cage = M.cage.map(([x, y]) => [sh(x), y]); M.hung = M.hung.map(([x, y]) => [sh(x), y]);
+  R.noCoin = R.noCoin.map(([x0, x1, y0, y1]) => [x0 === LIB_X0 ? x0 : sh(x0), sh(x1), y0, y1]);   /* (the first roof starts at the cut and runs over the new one) */
+  R.ambient = [{ x0: 0, x1: 64 * TS, kind: 'wind' }, { x0: 64 * TS, x1: sh(447) * TS, kind: 'hall' }, { x0: sh(447) * TS, x1: 99999, kind: 'wind' }];
+  {
+  const { block, ent, coins, set, spikes } = N, X1 = LIB_X0 + LIB - 1, H = R.H;
+  const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const sign = (x, y, text) => ent('sign', x, y, { text }), deco = (kind, x, y, o) => ent('deco', x, y, Object.assign({ kind }, o || {}));
+  const skin = (x0, x1, y0, y1, kind) => M.skins.push([x0, x1, y0, y1, kind]);
+  /* A BOOKCASE ON A RAIL: a platform three tiles wide that slides between x0 and x1 (tiles; its right end never passes x1) and carries you. */
+  const bookcase = (x0, x1, y, o) => R.moversExtra.push(Object.assign({ kind: 'bookcase', mage: true, x0: x0 * TS, x1: x1 * TS, x: x0 * TS, y: y * TS, w: 48, h: 8, speed: 30, dir: 1, ph: 0 }, o || {}));
+  const lane = (x0, x1, y, what) => R.moversExtra.push({ kind: 'lane', mage: true, what, x0: x0 * TS, x1: x1 * TS, x: x0 * TS, y: y * TS, w: 16, h: 2 });
+  /* THE VAULT DOOR: a frame from the ceiling down to a portcullis six rows tall; the lock opens the portcullis (L.mage.locks) */
+  const vault = (col, window) => { block(col, col, 14, G - 7); for (let y = G - 6; y <= G - 1; y++) set(col, y, T.PORT); M.locks.push({ gate: col, window, n: 0 }); return M.locks.length - 1; };
+  const lockrune = (lock, x, y, o) => { M.locks[lock].n++; ent('lockrune', x, y, Object.assign({ lock }, o || {})); };
+  M.locks = [];
+  // ---- the shell: a hall in the tower's stone, and the door out into the great library (which starts at LIB_X0 + LIB) ----
+  block(LIB_X0, X1, 6, H - 1); block(LIB_X0, X1, G, H - 1); skin(LIB_X0, X1, 6, G - 1, 'tower');
+  air(66, 211, 14, G - 1); air(LIB_X0, 65, 36, G - 1); air(212, X1, 36, G - 1);
+  R.interiors.push([66, 211, 14, G - 1, 'library']);
+  sign(67, G - 1, 'THE RUNE LIBRARY. THE CASES SLIDE ON RAILS: STEP ON WHEN ONE COMES, OFF WHEN IT LANDS.');
+  deco('bookpile', 70, G - 1); deco('candelabra', 73, G - 1); deco('lectern', 89, G - 1, { v: 1 });
+  // ---- 1. THE SLIDING CASES: a pit with nothing in it, ten wide, and a case on a rail across it ----
+  air(76, 85, G, G + 3); block(76, 77, G + 2, G + 3); block(84, 85, G + 2, G + 3);   /* (a step at each side of the pit's bed: a fall is a climb out, never a trap) */
+  bookcase(76, 86, G);
+  lane(76, 86, G - 1, 'bookcase');
+  coins([80, G - 3], [82, G - 3]);
+  // ---- 2. THE FIRST LOCK: two runes, and they hold their light ----
+  sign(92, G - 1, 'THE VAULT DOOR IS RUNED. LIGHT EVERY RUNE ON IT AND IT OPENS. THESE RUNES HOLD THEIR LIGHT.');
+  const lock0 = vault(118, 0);
+  lockrune(lock0, 98, G - 1);
+  block(103, 104, G - 2, G - 1); block(105, 106, G - 3, G - 1); block(107, 112, G - 4, G - 1);   /* a stair of stacks up to a reading shelf, a step a row */
+  lockrune(lock0, 110, G - 5);
+  skin(103, 112, G - 4, G - 1, 'books');
+  deco('globe', 114, G - 1); coins([104, G - 4], [108, G - 6], [112, G - 6]);
+  ent('check', 122, G - 1);   /* THE LIBRARY'S ONE CHECKPOINT: after the taught lock, before the crossing, the squad and the exam */
+  // ---- 3. THE SPIKED CROSSING, AND THE SQUAD ON THE LEDGE ACROSS IT ----
+  sign(125, G - 1, 'TWO CASES OVER A SPIKED PIT: RIDE ONE, HOP TO THE NEXT. THE APPRENTICES WATCH.');
+  air(130, 145, G, G + 3); spikes(130, 145, G + 4);
+  R.winds.push({ x0: 130, x1: 145, row: G + 4, wells: [133, 138, 143], exits: [[128, G - 1]] });
+  bookcase(130, 138, G); bookcase(138, 146, G, { x: 143 * TS, dir: -1 });
+  lane(130, 146, G - 1, 'bookcase');
+  coins([133, G - 3], [140, G - 3]);
+  block(148, 149, G - 2, G - 1); block(150, 151, G - 4, G - 1); block(152, 161, G - 5, G - 1); block(162, 163, G - 4, G - 1); block(164, 165, G - 2, G - 1);   /* THE LEDGE: a bookcase's top, ten wide, a step a stride up and down */
+  skin(148, 165, G - 5, G - 1, 'books');
+  ent('armour', 153, G - 6, { face: -1 }); ent('apprentice', 157, G - 6, { face: -1 }); ent('apprentice', 160, G - 6, { face: -1 });   /* THE SQUAD: an armour plugging the top of the stair, two dead apprentices throwing over its shoulder */
+  deco('candelabra', 156, G - 6, { v: 1 }); deco('bookpile', 168, G - 1); coins([154, G - 7], [158, G - 7]);
+  // ---- 4. THE EXAM: the same lock, and now it fights back like his ward ----
+  sign(170, G - 1, "HIS OWN LOCK. THE RUNES GO DARK IN " + LOCK_WINDOW + " SECONDS. THE HIGH ONE'S FOOT RUNE BRINGS IT DOWN.");
+  const lock1 = vault(208, LOCK_WINDOW);
+  lockrune(lock1, 182, G - 1);
+  block(186, 187, G - 1, G - 1); block(188, 189, G - 2, G - 1); block(190, 199, G - 3, G - 1);   /* THE LOFT: three stacks of steps up to a reading loft, and a stack of books at its far end */
+  skin(186, 199, G - 3, G - 1, 'books');
+  M.shelves.push({ x0: 198, x1: 199, yDown: G - 9, yUp: G - 3, h: 6, lock: lock1 });
+  const stackIx = M.shelves.length - 1;
+  ent('rune', 195, G - 4, { shelf: stackIx });   /* its foot rune, on the loft, two columns short of it */
+  lockrune(lock1, 198, G - 10, { onShelf: stackIx });   /* the rune on its top: built at the stack's height, and it rides it down */
+  lockrune(lock1, 205, G - 1);
+  deco('candelabra', 178, G - 1); deco('globe', 202, G - 1, { v: 1 }); coins([192, G - 5], [196, G - 5], [200, G - 2]);
+  }
+  N.done();
+  R.calm.push([LIB_X0, LIB_X0 + LIB - 1, 0, 47]);   /* nothing sprinkled: the squad is the whole garrison */
+  return R;
 }
 
 /* THIS ARRAY IS AN APPEND LOG. ITS ORDER IS NOT THE CAMPAIGN'S ORDER — the `needs` chain is, and nothing else.

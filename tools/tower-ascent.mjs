@@ -160,7 +160,9 @@ assert.ok(checks[0] > TOWER.SKY + 1 && checks[0] <= TOWER.SKY + 8, "the last che
 { assert.ok(gateOccupied(5, [9], [{ x: 0, y: 0 }, { x: 88, y: 160, w: 10, h: 14 }])); assert.ok(!gateOccupied(5, [9], [{ x: 64, y: 160, w: 10, h: 14 }]));
   const m = LEVELS.find(l => l.id === 'mage').build(); assert.ok(!m.pools.some(p => p.acid && !p.magePool)); assert.ok(m.mage.skins.some(z => z[0] === m.mage.outside && m.mage.outside === 64 &&   /* the tower's door (118 before THE WARDED COURTYARD shortened the yard, claude/courtyard) */ z[1] === m.W - 1 && z[2] === 0 && z[3] === m.H - 1));
   const s = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), c = vm.createContext({ MG: { A: { sub: 3 } } });
-  vm.runInContext(s.slice(s.indexOf('function archGate('), s.indexOf('function homHurt(')), c); assert.equal(c.archGate({ stage: 2, maxHp: 1000 }), 0);
+  /* claude/folly3: the gates moved into ARCH.gates and the rooms now end at 30%, where THE MIRRORS take the rest (stage 3, no gate) */
+  vm.runInContext(s.slice(s.indexOf('const ARCH = {'), s.indexOf('/* THE WARD RESEALS FASTER')), c);
+  vm.runInContext(s.slice(s.indexOf('function archGate('), s.indexOf('function homHurt(')), c); assert.equal(c.archGate({ stage: 2, maxHp: 1000 }), 300); assert.equal(c.archGate({ stage: 3, maxHp: 1000 }), 0);
   assert.ok(!/updateCarpet\([^)]*\)[^;]*;[^\n]*function updateSea|function updateSea[\s\S]{0,4000}updateAscent\(/.test(s.slice(s.indexOf('function updateSea('), s.indexOf('function updateSea(') + 4000)), 'the carpet is never hooked inside updateSea'); }
 console.log(JSON.stringify({ built: { W: L.W, H: L.H, floors: L.towerFloors.map(f => f.name), foes: foes.length, garrison: garrison.length, density: +density.toFixed(2) }, reach: R.seen.size }));
 

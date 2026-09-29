@@ -17,12 +17,13 @@ import { openPage } from './cdp.mjs';
 install();
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); console.log((c ? '  ok   ' : '  FAIL ') + m); };
 const WHF = await import('../src/gargoyle-whelp.js'), { GARG } = await import('../src/gate-gargoyle.js');
+const LIB = 150;   /* THE RUNE LIBRARY (claude/follylib) is cut in at the yard's door: everything after the door slid right by this */
 const I = LEVELS.findIndex(l => l.id === 'mage'), L = LEVELS[I].build(), G = 40, at = (x, y, LL = L) => LL.grid[y * LL.W + x];
 const door = L.mage && L.mage.outside, yard = L.ents.filter(e => e.x < door);
 // 1. THE WARDED COURTYARD: its size, and the tower after it moved whole
-ok(door >= 60 && door <= 70 && L.W === 712 - (118 - door), 'the yard is ' + door + ' columns (60-70), and the level is shorter by what the grounds lost: W ' + L.W);
+ok(door >= 60 && door <= 70 && L.W === 712 - (118 - door) + LIB, 'the yard is ' + door + ' columns (60-70), and the level is shorter by what the grounds lost, longer by THE RUNE LIBRARY (' + LIB + '): W ' + L.W);
 ok(at(door, G - 1) === T.AIR && at(door + 1, G - 1) === T.AIR && at(door + 2, G - 3) === T.AIR, 'the tower\'s front door opens at the yard\'s end (column ' + door + ')');
-ok(L.arena && L.arena.x0 === (657 - (118 - door)) * 16 && L.mini && L.mini.gate === 262 - (118 - door), 'the Archmage\'s room and the Homunculus\'s gate moved with the tower: ' + (L.arena && L.arena.x0 / 16) + ', ' + (L.mini && L.mini.gate));
+ok(L.arena && L.arena.x0 === (657 - (118 - door) + LIB) * 16 && L.mini && L.mini.gate === 262 - (118 - door) + LIB, 'the Archmage\'s room and the Homunculus\'s gate moved with the tower: ' + (L.arena && L.arena.x0 / 16) + ', ' + (L.mini && L.mini.gate));
 ok(!yard.some(e => ['topiary', 'imp', 'broom'].includes(e.t)) && !(L.mage.hedges || []).length, 'no hedge maze left: no topiary, imp or broom in the yard, no hedges');
 ok(yard.filter(e => e.t === 'apprentice').length >= 2 && yard.filter(e => e.t === 'whelp').length >= 2, 'its foes are his apprentices and whelps: ' + yard.filter(e => e.t === 'apprentice' || e.t === 'whelp').map(e => e.t + '@' + e.x).join(' '));
 ok((L.mage.skins || []).some(s => s[4] === 'paving' && s[0] === 0 && s[1] >= door - 1), 'the yard is paved (its own skin), not grass');
