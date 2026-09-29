@@ -1,13 +1,15 @@
 // tools/answer-tags.mjs — EVERY BLOW HAS AN ANSWER, AND EVERY LEVEL ASKS FOR THREE OF THEM (the combat pass, 2026-09-28).
 //
 // src/marks.js says over every windup whether the shield turns it. Its ANSWER table says what the player DOES about it:
-// block, dodge, jump or duck (the planned universal crouch). This fails when:
+// block, dodge, jump or duck (the universal duck, src/duck.js). This fails when:
 //   - a told blow of a common foe (a '!' or '!!' row of MARK whose creature stands in some level outside its boss fight) has
 //     no ANSWER row, or a row names something other than the four answers
 //   - a yellow ! is answered with anything but block, or a red !! with block (the mark and the answer would disagree)
 //   - an ANSWER row names no blow at all (a stale row), or a common foe with no told blow is missing from UNTOLD
 //   - UNTOLD (the common foes whose harm has no told windup) is not empty (part 2: no untold hits), or a common foe with no
 //     told blow is not named HARMLESS
+//   - THE UNIVERSAL DUCK (claude/duck): a told blow of a common foe has no HEIGHT row ('high': a ducking hero lets it over him;
+//     'low': it reaches the floor), a 'duck' answer is not high, or a 'jump' answer is not low
 // and it REPORTS, without failing, every level whose foe mix asks for fewer than three different answers: those are the
 // design lanes' to fix (Daniel, backlog item 13), and the list is here so they can see them.
 //   node tools/answer-tags.mjs            (--quiet: the offenders only)
@@ -15,7 +17,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS } from '../src/level.js';
 import * as MARKS from '../src/marks.js';
-const { MARK, ANSWER } = MARKS, UNTOLD = MARKS.UNTOLD || {}, HARMLESS = MARKS.HARMLESS || new Set();
+const { MARK, ANSWER } = MARKS, HEIGHT = MARKS.HEIGHT || {}, UNTOLD = MARKS.UNTOLD || {}, HARMLESS = MARKS.HARMLESS || new Set();
 
 const SRC = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const ANSWERS = new Set(['block', 'dodge', 'jump', 'duck']);
@@ -46,6 +48,9 @@ for (const t of common) {
   for (const k of bl) {
     const a = ANSWER[k];
     if (!a) { bad.push(`${k} (${MARK[k]}): no ANSWER row`); continue; }
+    if (HEIGHT[k] !== 'high' && HEIGHT[k] !== 'low') bad.push(`${k}: no HEIGHT row (high or low: does a ducking hero let it over him?)`);
+    else if (a === 'duck' && HEIGHT[k] !== 'high') bad.push(`${k}: answered 'duck' but its HEIGHT is ${HEIGHT[k]}`);
+    else if (a === 'jump' && HEIGHT[k] !== 'low') bad.push(`${k}: answered 'jump' but its HEIGHT is ${HEIGHT[k]}`);
     if (!ANSWERS.has(a)) bad.push(`${k}: '${a}' is not block, dodge, jump or duck`);
     else if (MARK[k] === '!' && a !== 'block') bad.push(`${k}: a yellow ! (the shield turns it) answered '${a}'`);
     else if (MARK[k] === '!!' && a === 'block') bad.push(`${k}: a red !! (nothing turns it) answered 'block'`);
@@ -62,7 +67,9 @@ const answersOf = t => { const s = new Set(blowsOf(t).map(k => ANSWER[k])); if (
 const low = [], quiet = process.argv.includes('--quiet');
 for (const [id, here] of mixes) {
   const got = new Set(); for (const t of here) for (const a of answersOf(t)) got.add(a);
-  const line = id.padEnd(14) + [...ANSWERS].map(a => (got.has(a) ? a : '-'.repeat(a.length))).join(' ') + '  (' + got.size + ')';
+  const high = new Set([...here].flatMap(t => blowsOf(t).filter(k => HEIGHT[k] === 'high')));   /* THE DUCK: the blows here a ducking hero lets over him - a yellow one is blocked OR ducked, so a level with one asks for the duck too */
+  if (high.size) got.add('duck');
+  const line = id.padEnd(14) + [...ANSWERS].map(a => (got.has(a) ? a : '-'.repeat(a.length))).join(' ') + '  (' + got.size + ')' + (high.size ? '  ducks ' + high.size : '');
   if (got.size < 3) low.push(line);
   if (!quiet) console.log(line);
 }

@@ -217,7 +217,7 @@ export const MARK = {
 //   block  the shield (or a parry) - every yellow ! is a block, and nothing else is
 //   dodge  the roll, or simply not being there: the ring, the spot, the overhead, the charge
 //   jump   over it: a sweep along the floor, a wave, a rolled stone
-//   duck   under it: THE UNIVERSAL CROUCH (planned, not built yet) - tagged now so the crouch lands with its foes waiting
+//   duck   under it: THE UNIVERSAL DUCK (claude/duck) - hold down on the ground and a HIGH blow goes over (HEIGHT below, src/duck.js)
 // One row per told blow of every COMMON foe ('type|mode', as MARK above; bosses and minis answer in their own fights), kept by
 // hand: tools/answer-tags.mjs fails on a told blow with no row, a row with no blow, and a ! that is not a block.
 /* ANSWER:BEGIN */
@@ -331,7 +331,7 @@ export const ANSWER = {
   'bonearcher|draw': 'block',
   'boo|swoopTell': 'dodge',        // through a shield: turn and face it, or be elsewhere
   'clinger|dropTell': 'dodge',     // from above: out from under
-  'crow|diveTell': 'duck',         // at the head, over the shield: under it (the planned crouch; until then a roll)
+  'crow|diveTell': 'duck',         // at the head, over the shield: under it (the universal duck: hold down)
   'emberwisp|flareTell': 'dodge',
   'holdfast|gripTell': 'dodge',
   'horn|tell': 'duck',             // the gust: crouch and brace (the level guide: crouch braces for everyone)
@@ -358,6 +358,150 @@ export const ANSWER = {
   'wight|graspTell': 'dodge',      // mist round a shield: out of its reach
 };
 /* ANSWER:END */
+// THE HEIGHT OF EVERY BLOW (THE UNIVERSAL DUCK, claude/duck, Daniel 2026-09-29: "crouch = universal duck"). The mark says whether the
+// shield turns it and the ANSWER says what the player does; the HEIGHT says whether a ducking hero lets it go over him:
+//   high  it flies or swings at the chest and the head and never reaches the floor - an arrow or a bolt loosed level, a thrown
+//         line, a pistol ball, a head-high thrust or scythe, a crow coming at the face, the horn's gust (a crouch braces). HOLD DOWN
+//         on the ground and it goes over (src/duck.js); its windup wears the DUCK MARK beside its ! or !! (drawTells)
+//   low   it reaches the floor - a sweep, a wave, a roll, a slam, a stamp, a lob, a dive from above, a bite, a charge, a grab: a
+//         ducking hero is hit by it the same as a standing one. The ones answered 'jump' wear the JUMP MARK beside theirs.
+// One row per ANSWER row (every told blow of every common foe, and the few bosses kept there), and the Queen's Lance's thrust
+// (high: duck it and it whiffs, as if rolled) and sweep (low: jump it). Kept by hand: tools/answer-tags.mjs fails on a common foe's
+// blow with no row, a row that is not high or low, a 'duck' answer that is not high, and a 'jump' answer that is not low.
+// A SHOT FROM ABOVE STILL FINDS A DUCKER: a high seed passes over only while it flies near level (src/duck.js seedOver).
+/* HEIGHT:BEGIN */
+export const HEIGHT = {
+'*|eliteLungeTell': 'low', '*|eliteSlamTell': 'low',
+  'ambusher|cutTell': 'low',
+  'angler|biteTell': 'low', 'angler|castTell': 'low', 'angler|dive': 'low', 'angler|hookTell': 'low', 'angler|swellTell': 'low',
+  'apprentice|castTell': 'low', 'apprentice|grabTell': 'low',
+  'archer|draw': 'high', 'archer|elVolleyTell': 'low',
+  'archmage|boltTell': 'low', 'archmage|booksTell': 'low', 'archmage|crushTell': 'low', 'archmage|glyphTell': 'low', 'archmage|pairTell': 'low', 'archmage|rendTell': 'low',
+  'armour|swingTell': 'high',
+  'assassin|markTell': 'low', 'assassin|stabTell': 'low',
+  'badger|chargeTell': 'low',
+  'bale|rollTell': 'low',
+  'bannerbearer|poleTell': 'low',
+  'bellguard|hookTell': 'low', 'bellguard|knellTell': 'low',
+  'berserker|flailTell': 'low', 'berserker|windTell': 'low',
+  'boarder|shootTell': 'high', 'boarder|slashTell': 'low', 'boarder|swingTell': 'low', 'boarder|throwTell': 'high',
+  'bonearcher|draw': 'high',
+  'bonecorsair|cleaveTell': 'low', 'bonecorsair|cutTell': 'low',
+  'bonegob|throw': 'low',
+  'boo|swoopTell': 'low',
+  'bosun|salvageBroadsideTell': 'low', 'bosun|salvageCargoTell': 'low', 'bosun|salvageCrossfireTell': 'low', 'bosun|salvageHookTell': 'low', 'bosun|salvagePinTell': 'low', 'bosun|shootTell': 'high', 'bosun|slashTell': 'low', 'bosun|swingTell': 'low', 'bosun|throwTell': 'high',
+  'broom|dashTell': 'low', 'broom|sweepTell': 'low',
+  'brute|elCut1Tell': 'low', 'brute|elCut2Tell': 'low', 'brute|elOverTell': 'low', 'brute|raise': 'low', 'brute|wind': 'low',
+  'burngob|swingTell': 'low',
+  'clinger|dropTell': 'low',
+  'corpse|cutTell': 'low',
+  'crab|lungeTell': 'low', 'crab|pinchTell': 'low', 'crab|snapTell': 'low', 'crab|strikeTell': 'low', 'crab|thrustTell': 'low',
+  'crossbow|aim': 'high', 'crossbow|cutTell': 'low', 'crossbow|leapTell': 'low', 'crossbow|shout': 'low', 'crossbow|stabTell': 'low', 'crossbow|swingTell': 'low',
+  'crow|diveTell': 'high',
+  'cutlass|shootTell': 'high', 'cutlass|slashTell': 'low', 'cutlass|swingTell': 'low', 'cutlass|throwTell': 'high',
+  'cutter|raise': 'low',
+  'cutthroat|slashTell': 'low',
+  'drownedcaptain|comboTell': 'low', 'drownedcaptain|lungeTell': 'low',
+  'drownedknight|comboTell': 'low', 'drownedknight|lungeTell': 'low',
+  'drunk|bottleTell': 'low', 'drunk|lobTell': 'low',
+  'eel|leapTell': 'low', 'eel|lungeTell': 'low', 'eel|pinchTell': 'low', 'eel|snapTell': 'low', 'eel|strikeTell': 'low', 'eel|thrustTell': 'low',
+  'emberwisp|flareTell': 'low',
+  'farmhand|swingTell': 'high',
+  'feeler|lashTell': 'low',
+  'fledgling|peckTell': 'low',
+  'frog|crouch': 'low', 'frog|inhaleTell': 'low', 'frog|spitTell': 'low', 'frog|tongueTell': 'low',
+  'gaffer|haftTell': 'low', 'gaffer|hookTell': 'high',
+  'gar|lungeTell': 'low',
+  'goat|charge': 'low',
+  'gobmage|boltTell': 'high', 'gobmage|runeTell': 'low',
+  'gobpriest|bellTell': 'low', 'gobpriest|censerTell': 'low',
+  'grub|spit': 'low',
+  'hare|run': 'low',
+  'harpy|aim': 'low',
+  'haunt|throwTell': 'low',
+  'hearthgob|raise': 'low',
+  'heavy|grabTell': 'low', 'heavy|raise': 'low', 'heavy|slashTell': 'low', 'heavy|windUp': 'low',
+  'hedgeknight|aim': 'high', 'hedgeknight|cutTell': 'low', 'hedgeknight|leapTell': 'low', 'hedgeknight|shout': 'low', 'hedgeknight|stabTell': 'low', 'hedgeknight|swingTell': 'low',
+  'heronfoe|lungeTell': 'low', 'heronfoe|pinchTell': 'low', 'heronfoe|snapTell': 'low', 'heronfoe|strikeTell': 'low', 'heronfoe|thrustTell': 'low',
+  'holdfast|gripTell': 'low',
+  'hopper|hopTell': 'low',
+  'horn|tell': 'high',
+  'hound|pounceTell': 'low',
+  'husk|grabTell': 'low',
+  'imp|throwTell': 'low',
+  'javelin|grabTell': 'low', 'javelin|raise': 'low', 'javelin|slashTell': 'low', 'javelin|windUp': 'low',
+  'jelly|biteTell': 'low', 'jelly|castTell': 'low', 'jelly|dive': 'low', 'jelly|hookTell': 'low', 'jelly|swellTell': 'low',
+  'kite|dropTell': 'low',
+  'lamprey|lungeTell': 'low',
+  'lance|sweepTell': 'low', 'lance|thrustTell': 'low',
+  'lanternshade|flareTell': 'low',
+  'lookout|shootTell': 'high', 'lookout|slashTell': 'low', 'lookout|swingTell': 'low', 'lookout|throwTell': 'high',
+  'lurker|springTell': 'low',
+  'magechase|fireTell': 'low', 'magechase|iceTell': 'low', 'magechase|markTell': 'low',
+  'manta|diveTell': 'low',
+  'marine|shootTell': 'high', 'marine|slashTell': 'low', 'marine|swingTell': 'low', 'marine|throwTell': 'high',
+  'marshlight|flareTell': 'low',
+  'merrowbrute|ramTell': 'low',
+  'merrowcaller|surgeTell': 'low',
+  'merrowspear|throwTell': 'high',
+  'mimic|biteTell': 'low',
+  'miner|swingTell': 'low', 'miner|throwTell': 'low',
+  'netter|biteTell': 'low', 'netter|castTell': 'low', 'netter|dive': 'low', 'netter|hookTell': 'low', 'netter|swellTell': 'low',
+  'petrel|biteTell': 'low', 'petrel|castTell': 'low', 'petrel|dive': 'low', 'petrel|diveTell': 'low', 'petrel|hookTell': 'low', 'petrel|swellTell': 'low',
+  'pike|elSweepTell': 'low', 'pike|tell': 'low',
+  'prise|reachTell': 'low',
+  'propman|raise': 'low', 'propman|throwTell': 'low',
+  'puffer|biteTell': 'low', 'puffer|castTell': 'low', 'puffer|dive': 'low', 'puffer|hookTell': 'low', 'puffer|swellTell': 'low',
+  'pumpkin|biteTell': 'low', 'pumpkin|puffTell': 'low',
+  'queen|aim': 'low', 'queen|slamHang': 'low', 'queen|sweepStart': 'low', 'queen|volleyUp': 'low',
+  'rockgoblin|throw': 'low',
+  'rook|diveTell': 'low',
+  'runner|aim': 'high', 'runner|cutTell': 'low', 'runner|leapTell': 'low', 'runner|shout': 'low', 'runner|stabTell': 'low', 'runner|swingTell': 'low',
+  'sailer|sail': 'low',
+  'sailor|biteTell': 'low', 'sailor|castTell': 'low', 'sailor|dive': 'low', 'sailor|hookTell': 'low', 'sailor|swellTell': 'low',
+  'sapper|lightTell': 'low',
+  'scalder|ladleTell': 'low', 'scalder|pourTell': 'low',
+  'scarecrow|swipeTell': 'low',
+  'scorpion|clawTell': 'low', 'scorpion|tailTell': 'low',
+  'scout|lungeTell': 'low', 'scout|pinchTell': 'low', 'scout|snapTell': 'low', 'scout|strikeTell': 'low', 'scout|thrustTell': 'low',
+  'seawitch|callTell': 'low',
+  'shardling|shedTell': 'low',
+  'sheargob|cutTell': 'low', 'sheargob|snipTell': 'low',
+  'shield|elChargeTell': 'low', 'shield|shoveTell': 'low',
+  'siren|lungeTell': 'low', 'siren|pinchTell': 'low', 'siren|snapTell': 'low', 'siren|strikeTell': 'low', 'siren|thrustTell': 'low',
+  'slinger|kickTell': 'low', 'slinger|slingTell': 'low',
+  'snuffer|swipeTell': 'low',
+  'soldier|grabTell': 'low', 'soldier|raise': 'low', 'soldier|slashTell': 'low', 'soldier|windUp': 'low',
+  'spider|drop': 'low', 'spider|dropTell': 'low', 'spider|reelTell': 'low', 'spider|spitTell': 'low',
+  'spitcap|swellTell': 'low',
+  'spit|spitTell': 'low',
+  'sporeling|biteTell': 'low',
+  'sprig|biteTell': 'low',
+  'stormshaman|callTell': 'low',
+  'sweep|popTell': 'low',
+  'swornsword|aim': 'high', 'swornsword|cutTell': 'low', 'swornsword|leapTell': 'low', 'swornsword|shout': 'low', 'swornsword|stabTell': 'low', 'swornsword|swingTell': 'low',
+  'temperer|cutTell': 'low', 'temperer|quenchTell': 'low', 'temperer|shoveTell': 'low',
+  'thief|snatchTell': 'low',
+  'thorn|wind': 'low',
+  'tideguard|lungeTell': 'low', 'tideguard|pinchTell': 'low', 'tideguard|snapTell': 'low', 'tideguard|strikeTell': 'low', 'tideguard|thrustTell': 'low',
+  'tidemarauder|harpoonTell': 'high', 'tidemarauder|rakeTell': 'low',
+  'tippler|barTell': 'low', 'tippler|heaveTell': 'low',
+  'tome|tell': 'low',
+  'topiary|swipeTell': 'low',
+  'troll|hurlTell': 'low', 'troll|ripTell': 'low', 'troll|slamTell': 'low', 'troll|swatTell': 'low', 'troll|throwTell': 'low',
+  'turret|chargeTell': 'low',
+  'turtle|lungeTell': 'low', 'turtle|pinchTell': 'low', 'turtle|snapTell': 'low', 'turtle|strikeTell': 'low', 'turtle|thrustTell': 'low',
+  'urchin|biteTell': 'low', 'urchin|castTell': 'low', 'urchin|dive': 'low', 'urchin|hookTell': 'low', 'urchin|swellTell': 'low',
+  'vulture|watch': 'low',
+  'wasp|stingTell': 'low',
+  'watch|sweepTell': 'low', 'watch|thrustTell': 'high',
+  'weaver|spitTell': 'low',
+  'whelp|crouchTell': 'low', 'whelp|fireTell': 'low',
+  'wight|graspTell': 'low',
+  'winchmaster|descendTell': 'low', 'winchmaster|hookTell': 'low', 'winchmaster|leapTell': 'low', 'winchmaster|leverTell': 'low', 'winchmaster|rideTell': 'low', 'winchmaster|sendTell': 'low', 'winchmaster|whirlTell': 'low', 'winchmaster|wrenchTell': 'low',
+  'zombie|grabTell': 'low',
+};
+/* HEIGHT:END */
 // THE COMMON FOES WHOSE HARM IS NOT A TOLD WINDUP (touch, a lunge from hiding, a latch, a burst, a gust), and what the player does
 // about each. EMPTY, and tools/answer-tags.mjs keeps it so (the combat pass, part 2: Daniel's "no untold hits"): the 24 that were
 // here - the lurker's lunge, the hound's leap, the sapper's bomb and the rest - each wind up on a mark now and answer in ANSWER.
@@ -369,6 +513,13 @@ export const answerOf = (t, mode) => ANSWER[t + '|' + mode] || ANSWER['*|' + mod
 const MISSED = new Set();
 // THE MARK OVER THIS CREATURE NOW: '!', '!!', or '' for none. A windup with no row wears no mark - and says so once in
 // the console, because a windup the table does not know is a hole in the audit, not a quiet tell.
+/* THE KEY A WINDUP IS READ BY ('type|mode', or an elite's own '*|mode'), the same one markOf reads the mark by: the duck reads its
+   HEIGHT and the tell its lane off it (src/duck.js) */
+export const tellKey = e => { const mode = e.t === 'archer' && e.draw > 0.3 && !(typeof e.mode === 'string' && e.mode.endsWith('Tell')) ? 'draw' : e.mode;
+  return e.elite && ('*|' + mode) in MARK ? '*|' + mode : e.t + '|' + mode; };
+export const heightOf = k => HEIGHT[k] || '';
+/* THE LANE BESIDE THE MARK: 'duck' over a high blow, 'jump' over a blow answered with a jump, '' over the rest */
+export const laneOf = k => HEIGHT[k] === 'high' ? 'duck' : (ANSWER[k] || ANSWER['*|' + k.split('|')[1]]) === 'jump' ? 'jump' : '';
 export function markOf(e) {
   const mode = e.t === 'archer' && e.draw > 0.3 && !(typeof e.mode === 'string' && e.mode.endsWith('Tell')) ? 'draw' : e.mode;
   if (e.elite && ('*|' + mode) in MARK) return MARK['*|' + mode];

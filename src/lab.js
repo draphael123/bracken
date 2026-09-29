@@ -45,6 +45,16 @@ export const DEFLECT_TAP = f => f % 8 < 2;
 /* A BROKEN OR PINNED FOE IS NOT SWINGING. Its AI stands still (main.js skips it) with its wind-up frozen where it was, so its mode still
    reads as a tell - and the bot that broke a brute with a heavy blow then stood behind its shield for the whole of the opening. Until the
    last third of a second of it, that is time to cut, not to guard. (The boss lab keeps threatOf as it was: its numbers are its own.) */
+/* THE UNIVERSAL DUCK, in the hands (claude/duck): a HIGH blow told at the hero (src/marks.js HEIGHT) is ducked - down held, nothing
+   else - from the last 0.3 s of its windup until it has gone over (its blow's own mode, or a high arrow still in the air at him). A
+   RED high blow (a crow, the gaff's hook) is ducked by every hero; a yellow one by the heroes with no held guard (the warden, the
+   pyromancer, the freebooter), since a guard already turns it and a guard turned is the knight's opening. */
+export function duckNow(BK, h, e) { const D = BK.duck && BK.duck(), P = BK.P; if (!D || !e || !e.alive || !P.ground || P.swim || P.climb || P.dead) return false;
+  const near = Math.abs(e.x - P.x) < 120 && Math.abs(e.y - P.y) < 40, red = BK.markOf(e) === '!!';
+  if (!red && SHIELDED(h)) return false;
+  if (near && BK.telling(e) && D.height(e) === 'high' && (e.t === 'archer' || !(e.modeT > 0.3))) return true;
+  if (near && D.high(e) && e.blowMode && e.mode === e.blowMode) return true;
+  return !SHIELDED(h) && BK.seeds().some(s => s.high && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 56 && Math.abs(s.y - (P.y - 8)) < 20 && (s.x - P.x) * (s.vx || 0) < 0 && Math.abs(s.vy || 0) <= Math.abs(s.vx || 0) * 0.8); }
 export const HELD = e => (e.broken || 0) > 0.3 || (e.pinned || 0) > 0.3;
 /* FIRE ON THE GROUND, under x (a sapper's pot, a burning stake): the fire hurts inside nine pixels of it, so the bot keeps fourteen off.
    A bot that plants its feet to wind a heavy or stands off to shoot was measured standing in one for four ticks of it in the Stockade's room */
@@ -145,7 +155,8 @@ function labBotFrame(BK, h, e, f) {
   const threat = threatOf(e) && !HELD(e) && ad < 70 && Math.abs(e.y - P.y) < 50;
   k.left = false; k.right = false; k.block = false; k.atk = false; k.up = false; k.down = false; k.jump = false;
   if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
-  if (threat && P.atk < 0 && !(P.dash > 0)) {
+  if (duckNow(BK, h, e)) { defend = 1; k.down = true; BK.unpress(); }   /* THE DUCK: a high blow goes over (duckNow) */
+  else if (threat && P.atk < 0 && !(P.dash > 0)) {
     defend = 1;   /* (a heavy half wound goes if it can, and is dropped if it cannot) */
     if (HARD_TELLS.has(e.t + '|' + e.mode)) { k[d > 0 ? 'left' : 'right'] = true; if (f % 14 === 0) BK.press('dodge'); }
     else if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
@@ -1402,6 +1413,7 @@ async function runbossLab(BK, opts) {
         if (h === 'reaper' && boss.t === 'herald') { const goLeft = f % 40 < 20; k.left = goLeft; k.right = !goLeft; }
         else k[f % 40 < 20 ? 'left' : 'right'] = true;
         if (P.ground) { BK.press('jump'); P.labJump = 18; BK.press('dodge'); } }
+      if (duckNow(BK, h, boss)) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }   /* THE DUCK, last: whatever else the hands meant, a high blow at them goes over (duckNow) */
       const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
       if (boss.t === 'lance') for (const q of BK.enemies()) if (q.lanceBow) bowSeen.add(q);
       if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }
