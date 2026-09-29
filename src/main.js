@@ -26,7 +26,8 @@ import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './su
 import { qsPatchAt, qsGameStep } from './quicksand.js';
 import * as DWM from './dune-worm.js'; import { newStorm, stormStep, gustDrift, STORM } from './desert-rules.js';   /* THE DUNE WORM, the caravan's boss (docs/briefs/dune-worm.md), and the storm he calls into his hollow */
 import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import * as CB from './redraw/caravan_bandits.js'; import * as CR from './redraw/caravan_ruins.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
-import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH} from './undead-mage.js';
+import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH,mageOpen} from './undead-mage.js';
+import {REALM,realmBox,realmWarded,realmFloor,strikeRealm,drawRealm,drawRealmFx,drawTear} from './mage-realms.js';   /* THE UNDEAD ARCHMAGE'S SPELL REALMS (claude/undead3) */
 import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT,quench} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
 import {carpetBox,stepCarpet,knockCarpet,updateCarpet,resetCarpet,drawRug,drawCarpetWorld,drawStormWalls,mountCarpet} from './carpet.js';
@@ -5738,7 +5739,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
   if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing */
-  if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake')return;}   /* between two places, he is in neither */
+  if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake'||e.mode==='realmTell')return;
+   if(realmWarded(e)&&!(e.open>0)){if(!(e.wardSaidT>time)){e.wardSaidT=time+1.2;number(e.x,e.y-52,'HIS REALM WARDS HIM: FIND ITS OPENING','#bce8fa');}SFX.clank();sparks(e.x,e.y-24,P.face,4);return;}}   /* IN A REALM his ward holds until its one opening (src/mage-realms.js) */   /* between two places, he is in neither */
   if(e.t==='burieddead'&&(e.mode==='burrow'||e.mode==='eruptTell'))return;
   if(e.t==='familiar')dmg*=e.open>0?1.8:.6;
   if(e.t==='bellcrab') dmg*=e.phase===3?BELL.out.soft:e.open>0?BELL.openMul:BELL.shutMul;   /* shut, until a stone on his crown opens him; out of the bell, soft (src/bellcrab.js BELL) */
@@ -5893,7 +5895,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (dmg > 0 && !e.trainer && !glance && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
   if (e.broken > 0 && dmg > 0 && e.offBalAt !== time) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body (and not the blow that threw it OFF BALANCE: that one is paid once, as a key) */
   if (!glance) addPoise(e, dmg, fromX, plunge);   /* a glancing blow moves nothing, the bar included */
-  if(e.t==='undeadmage'&&(e.mode==='gather'||e.mode==='breached'))dmg=Math.round(dmg*LICH.openMul);   /* the mark come back on him, or a dodge through his own ring (round 2) */
+  if(e.t==='undeadmage'&&mageOpen(e))dmg=Math.round(dmg*LICH.openMul);
+  if(e.t==='undeadmage'&&e.realm){const f=realmFloor(e);if(f>0&&e.hp>f)dmg=Math.min(dmg,e.hp-f);}   /* a realm takes him no lower than the next realm's mark: each one is had */   /* the mark come back on him, or a dodge through his own ring (round 2) */
   if(e.t==='owl'&&e.lampT>0)dmg=Math.round(dmg*2);   /* THE OWL REEVE, lamp-struck: double (Daniel, 2026-09-21) */   /* THE OPENING: the mark came back on him, and he is open while he gathers himself */
   /* HIS HEALTH IS GATED BY THE STAGE, so while he holds the floor down no blow can take any of it - which left the one
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
@@ -15825,10 +15828,16 @@ function updateGargoyleBoss(e, dt) {
   e.x = Math.max(A.x0 + 12, Math.min(A.x1 + 40, e.x));
   if (e.alive && e.mode === 'stunned' && stompOn(P, e)) stompStone(e);   /* HIS OPENING: jump on him while he lies on the spikes */
 }
+/* IN ONE OF HIS REALMS (src/mage-realms.js): the room you are held in is the realm's, not his hall's */
+const mageRealm=()=>boss&&boss.t==='undeadmage'&&boss.alive&&boss.realm?boss:null;
+const skyBox=()=>{const m=mageRealm();return m?realmBox(m,L.arena):carpetBox(L.arena,boss&&boss.t==='undeadmage'?boss.squeeze||0:0);};
 function updateUndeadMage(e,dt){
- e.hp0??=e.maxHp;const A=L.arena,box=carpetBox(A,e.squeeze||0);
- stepUndeadMage(e,dt,{P,box,rnd:Math.random,
-  hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK',bent:'BENT BOLT',trap:'RING TRAP'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
+ e.hp0??=e.maxHp;const A=L.arena,box=e.realm?realmBox(e,A):carpetBox(A,e.squeeze||0);
+ stepUndeadMage(e,dt,{P,box,A,rnd:Math.random,
+  hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK',bent:'BENT BOLT',trap:'RING TRAP',pillar:'THE BURNING FLOOR',firewall:'HIS FIRE WALL',icicle:'AN ICICLE',mire:'THE MIRE'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
+  /* THROUGH HIS TEAR, AND BACK: a flash and a snap - a portal is not a flight */
+  pull:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.45);shakeCam(7);zoomKick(1.14,.5);SFX.mageBolt?SFX.mageBolt():SFX.leap();burst(P.x,P.y-8,28,C,160,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;number(P.x,P.y-40,REALM.name[kind],C[0]);},
+  leave:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.4);shakeCam(6);SFX.stone();burst(P.x,P.y-8,24,C,150,.8,0,2);number(P.x,P.y-40,'THE REALM TEARS: BACK TO HIS HALL','#e0c8ff');},
   venom:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);},
   say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),
   /* HIS RINGS WORK BOTH WAYS (round 2): a dodge on the carpet through an open exit ring carries you out beside him */
@@ -15860,12 +15869,14 @@ function carpetPlayer(dt){
  const ax=(keys.right?1:0)-(keys.left?1:0),ay=(keys.down?1:0)-((keys.up||keys.jump)?1:0);
  P.dodgeCd=Math.max(0,(P.dodgeCd||0)-dt);P.stDelay=Math.max(0,P.stDelay-dt);if(P.stDelay<=0&&P.st<P.maxSt)P.st=Math.min(P.maxSt,P.st+ST.regen*dt);
  if(dodgePress&&P.dodgeCd<=0&&spend(dodgeCost())){P.dodge=0.22;P.dodgeCd=0.55;P.inv=Math.max(P.inv,0.3);P.vx=(ax||P.face)*300;P.vy=ay*260;SFX.pDodge();}
- const sky=carpetBox(L.arena,boss&&boss.t==='undeadmage'?boss.squeeze||0:0);
+ const sky=skyBox();
+ P.carpet.grip=mageRealm()&&boss.realm.kind==='ice'?REALM.ice.grip:1;   /* THE ICE REALM: the cold takes the carpet's grip */
  if(P.dodge>0){P.dodge-=dt;ghosts.push({x:P.x,y:P.y,face:P.face,life:0.2,frame:0});P.x=Math.max(sky.x0,Math.min(sky.x1,P.x+P.vx*dt));P.y=Math.max(sky.y0,Math.min(sky.y1,P.y+P.vy*dt));}
  P.block=!!keys.block&&P.atk<0&&!(P.dodge>0);
  if(!(P.dodge>0))stepCarpet(P,{ax:P.block?ax*0.5:ax,ay:P.block?ay*0.5:ay},dt,sky);
  if(ax&&!P.block)P.face=ax;P.anim+=dt;P.ground=false;P.swim=false;P.climb=false;
  P.abuf=Math.max(0,(P.abuf||0)-dt);
+ {const m=mageRealm(),hb=m&&attackBox();if(hb)strikeRealm(m,hb,P.hitSet,{box:realmBox(m,L.arena),say:(t,h)=>number(P.x,P.y-40,t,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)()});}   /* A REALM'S OPENING is struck on the realm: an icicle, the vent */
  if(P.abuf>0&&P.atk<0){P.abuf=0;if(spend((P.relic==='gauntlet'?0.5:1)*(isPaladin()?28:sword().cost))){P.atk=0;P.hitSet.clear();SFX.pSlash();P.swingMul=1;P.heavySwing=false;}}
  if(P.atk>=0){P.atk+=dt*(isPaladin()?0.56:1);if(P.atk>0.3)P.atk=-1;}
  {const hb=attackBox();if(hb)for(const e of enemies){if(!e.alive||P.hitSet.has(e)||e.gone>0||!overlap(hb,box(e)))continue;P.hitSet.add(e);openBefore(e);hurtAs(meleeBlow(false),e,swingDmg(e),P.x,false);swordEffect(e);if(isPaladin())gainLight(8);}}
@@ -15874,7 +15885,7 @@ function carpetPlayer(dt){
  /* THE FLOOR OF HIS ROOM. carpetBox's bottom was an invisible floor you could not fall through, so the lowest part of
     the arena was the safest part of it. It burns now: a warning glow, then a bite and a shove back up, every tick you
     stay. It HURTS AND DOES NOT KILL - the way out is up, and up is always there. */
- if(L.sanctum&&burnSanctum(P,L.arena,dt,{ember:(x,y)=>{if(Math.random()<dt*24)parts.push({x:x+(Math.random()-.5)*26,y:y+2,vx:(Math.random()-.5)*30,vy:-40-Math.random()*50,life:.5,max:.5,col:Math.random()<.5?'#c88aff':'#ffe9ff',size:1,grav:-40});}}))
+ if(L.sanctum&&!(mageRealm()&&boss.realm.kind!=='fire')&&burnSanctum(P,L.arena,dt,{ember:(x,y)=>{if(Math.random()<dt*24)parts.push({x:x+(Math.random()-.5)*26,y:y+2,vx:(Math.random()-.5)*30,vy:-40-Math.random()*50,life:.5,max:.5,col:Math.random()<.5?'#c88aff':'#ffe9ff',size:1,grav:-40});}}))
   {damagePlayer(P.x,DMG.sanctumFire,{unblockable:true,blow:'THE FLOOR BURNS'});SFX.sizzle?SFX.sizzle():SFX.crack();shakeCam(3);burst(P.x,P.y+4,10,['#c88aff','#9a52e0','#ffe9ff'],90,.6,-30,1);}
 }
 /* FAILING STONE (src/tower-collapse.js is the rule; this is its hands). Weight on a cracked section starts its count: a crack on
@@ -24473,7 +24484,7 @@ function drawWorld(cx, cy, showPlayer) {
      and the tower keeps two rows of CRENELLATIONS at rows 46-49, which are inside the room's box, so the merlons stood up
      through the floor of a sealed hall like masonry floating in mid-air. Nothing up here is supposed to be tiles at all
      (see the head of src/sanctum.js), so the room covering them is the right way round as well as the good-looking one. */
-  if (L.sanctum && L.carpetUp && !L.sandWalk) drawSanctum(g, L, L.arena, cx, cy, time, carpetBox(L.arena, 0));
+  if (L.sanctum && L.carpetUp && !L.sandWalk) { if (mageRealm()) drawRealm(g, boss, L.arena, cx, cy, time); else drawSanctum(g, L, L.arena, cx, cy, time, carpetBox(L.arena, 0)); }   /* (in one of his realms, the realm's room: src/mage-realms.js) */
   if (L.sanctum) drawSanctumDoors(g, L, cx, cy, time);
   drawComb(cx, cy);
   drawGroundLight(cx, cy, tx0, ty0);
@@ -25224,8 +25235,8 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
-  if(L.sanctum&&L.carpetUp&&!L.sandWalk)drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
-  drawCarpetWorld(g,L,P,cx,cy,time);drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);for(const q of enemies)if(q.t==='magechase'&&q.alive)drawUndeadMage(g,q,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage')drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
+  if(L.sanctum&&L.carpetUp&&!L.sandWalk&&!mageRealm())drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
+  drawCarpetWorld(g,L,P,cx,cy,time);drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(boss?.t==='undeadmage'){drawRealmFx(g,boss,cx,cy,time);drawTear(g,boss,cx,cy,time);}for(const q of enemies)if(q.t==='magechase'&&q.alive)drawUndeadMage(g,q,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage'&&!mageRealm())drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if (L.witch) drawRoots(g, L.hedgeRoots, L.witch, cx, cy, time);   /* THE ROOTS crawling, THE ROOTED GARDEN's braziers and its shivering hedges (hedge-warden.js) */
   if(L.witch)drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time,P);
   if(L.winds)drawWinds(g,L,P,cx,cy,time,VW,VH);   /* the wells in the spiked moat, and the wind round a hero it carries */

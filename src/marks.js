@@ -75,6 +75,7 @@ export const BY_HAND = {
   'gargoyle|diveTell':'!!','gargoyle|fireballTell':'!','gargoyle|breathTell':'!','gargoyle|flareTell':'!!',   /* THE GATE GARGOYLE (gate-gargoyle.js, by hand): the dive and the flare wear the red cross; the fireball (the wing gust's place, 2026-09-28) and the fire breath a shield turns */   /* THE WITCHLIGHT STAIR's aqueduct broom (sweepBroom, by hand): a sweep at the ankles a shield braces against */
   'gravewarden|cleaveTell':'!','gravewarden|tossTell':'!','gravewarden|swingTell':'!!','gravewarden|digTell':'!!','gravewarden|tollTell':'',   /* THE GRAVE WARDEN (grave-warden.js, by hand like the Archmage): spade and dirt a shield turns; the lantern and the hand nothing does; the toll strikes nobody */
   'undeadmage|fireTell':'!','undeadmage|iceTell':'!','undeadmage|stormTell':'!!','undeadmage|poisonTell':'!','undeadmage|handTell':'!','undeadmage|markTell':'!!','undeadmage|bendTell':'!','undeadmage|stepTell':'','undeadmage|decoyTell':'','undeadmage|trapTell':'!',   /* (round 3: the decoy throws nothing of its own, as the step; the trap's bolts are fire a shield turns) (round 2) HIS RINGS: the bent bolts are fire, a shield turns them; the step throws no blow of its own - the spell he comes out casting wears its own mark */
+  'undeadmage|realmTell':'','undeadmage|wallTell':'!!','undeadmage|sporeTell':'!!',   /* HIS SPELL REALMS (mage-realms.js, by hand, claude/undead3): the tear throws no blow - the realm it opens tells its own; the fire wall is a sheet of flame and the spores a cloud, and no shield turns either */
   'magechase|fireTell':'!','magechase|iceTell':'!','magechase|markTell':'!!',   /* THE SPIRAL STAIR's chase (spiral-chase.js, by hand): his fight's firebolt and ice a shield turns; his death mark nothing does - step out of the ring */
  'burieddead|clawTell':'!!','burieddead|slamTell':'!!','burieddead|cleaveTell':'!','burieddead|callTell':'','burieddead|sinkTell':'','burieddead|eruptTell':'!!','burieddead|skullTell':'!','burieddead|handsTell':'!!','burieddead|breathTell':'!','zombie|riseTell':'','zombie|grabTell':'!',
   'harbormaster|anchorTell': '!', 'harbormaster|harpoonTell': '!', 'harbormaster|lowTell': '!!', 'harbormaster|highTell': '!!', 'harbormaster|pressureTell': '!!', 'harbormaster|twinTell': '!!',
@@ -202,12 +203,12 @@ export const MARK = {
   'troll|hurlTell': '!', 'troll|ripTell': '!!', 'troll|slamTell': '!!', 'troll|swatTell': '!', 'troll|throwTell': '!', 'turret|chargeTell': '!',
   'turtle|lungeTell': '!', 'turtle|pinchTell': '!', 'turtle|snapTell': '!', 'turtle|strikeTell': '!', 'turtle|thrustTell': '!', 'undeadmage|bendTell': '!',
   'undeadmage|decoyTell': '', 'undeadmage|fireTell': '!', 'undeadmage|handTell': '!', 'undeadmage|iceTell': '!', 'undeadmage|markTell': '!!', 'undeadmage|poisonTell': '!',
-  'undeadmage|stepTell': '', 'undeadmage|stormTell': '!!', 'undeadmage|trapTell': '!', 'urchin|biteTell': '!', 'urchin|castTell': '!', 'urchin|dive': '!',
-  'urchin|hookTell': '!', 'urchin|swellTell': '!', 'vulture|watch': '!!', 'wasp|stingTell': '!', 'watch|sweepTell': '!', 'watch|thrustTell': '!',
-  'weaver|spitTell': '!', 'whelp|crouchTell': '!', 'whelp|fireTell': '!', 'wight|graspTell': '!!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!',
-  'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|whirlTell': '!!',
-  'winchmaster|wrenchTell': '!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!',
-  'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'undeadmage|realmTell': '', 'undeadmage|sporeTell': '!!', 'undeadmage|stepTell': '', 'undeadmage|stormTell': '!!', 'undeadmage|trapTell': '!', 'undeadmage|wallTell': '!!',
+  'urchin|biteTell': '!', 'urchin|castTell': '!', 'urchin|dive': '!', 'urchin|hookTell': '!', 'urchin|swellTell': '!', 'vulture|watch': '!!',
+  'wasp|stingTell': '!', 'watch|sweepTell': '!', 'watch|thrustTell': '!', 'weaver|spitTell': '!', 'whelp|crouchTell': '!', 'whelp|fireTell': '!',
+  'wight|graspTell': '!!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '',
+  'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!',
+  'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
 };
 /* MARK:END */
 
