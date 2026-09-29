@@ -17780,7 +17780,7 @@ function updateWickerQueen(e, dt) {
   const A = L.arena; if (!A || !L.green) return;
   const fl = A.floor, mx = L.green.maypole * TS + 8, heroes = players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p) }));
   e.y = fl;
-  const evs = WQN.updateWickerQueen(e, dt, { heroes, A: { x0: A.x0, x1: A.x1, floor: fl }, embers: wqEmbers(),
+  const evs = WQN.updateWickerQueen(e, dt, { heroes, anim: false, A: { x0: A.x0, x1: A.x1, floor: fl }, embers: wqEmbers(),
     canStep: dir => { const nx = e.x + dir * 16; return nx > A.x0 + 12 && nx < A.x1 - 12; },
     say: (m, col, low) => number(e.x, e.y - 78 + (low ? 10 : 0), m, col || '#ffd36b'),
     sound: k => { const fn = ({ catch: SFX.wqCatch, burn: SFX.wqBurn, rise: SFX.wqBank, still: SFX.mummerStill, sickleTell: SFX.wqSickleTell, sickle: SFX.wqSickle, lashTell: SFX.wqLashTell, lash: SFX.wqLash, crownTell: SFX.wqCrown, crown: SFX.mummerBell, rustle: SFX.wqRustle, dark: SFX.wqDark, alight: SFX.wqAlight })[k]; if (fn) fn(); },

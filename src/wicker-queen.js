@@ -90,7 +90,8 @@ export function newWickerQueen(e) {
 export function updateWickerQueen(e, dt, c) {
   const ev = [];
   if (!e.alive || e.mode === 'sleep') return ev;
-  e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.vx = 0;
+  if (c.anim !== false) e.anim = (e.anim || 0) + dt;   /* (the game ticks it for every creature: its hands pass anim: false) */
+  e.modeT -= dt; e.vx = 0;
   e.bank = Math.max(0, (e.bank || 0) - dt);
   const busy = e.mode === 'catch' || e.mode === 'burn' || e.mode === 'rise';
   if (!busy) { e.lashCd -= dt; e.crownCd -= dt; }
