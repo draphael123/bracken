@@ -4161,8 +4161,8 @@ const BEASTS = [
   { t: 'sailer', name: 'SAIL GOBLIN', sub: 'carried, not driven', desc: 'A plank of sail and no way to steer. In the lull she shuffles at you and is nothing. When the gust takes her she is a battering ram: block her and she spills, or step aside and let the stone take her. THE MASTHEAD is the biggest of them.' },
   { t: 'horn', name: 'HORNBLOWER', sub: 'a gale of his own', desc: 'A goblin on a mound with a ram\'s horn. He winds it at you and a horn\'s worth of wind comes with it: on the ground it slides you back, in the air it throws you. Get under it or get to him; one good cut and he stops blowing.' },
   { t: 'crow', name: 'STORM CROW', sub: 'they do not turn', desc: 'They come down the wind over the high moor in strings of four and five, and a string does not turn for anyone. On the Sky Road there is no ground to stand and cut them from: go over, go under, or go through with a dart.' },
-  { t: 'queen', name: 'HORNET QUEEN', sub: 'hive ruler', desc: 'Hovers out of reach and calls drones you can pogo off. While TWO of them are up the swarm closes over her and turns most of a blow: cut the drones down, or catch her winded. Block her dive and she is staggered on the floor, where she takes double damage. Jump or block her low sweep. Half health and she is enraged.' },
-  { t: 'frog', name: 'BULLFROG KING', sub: 'lord of the marsh', desc: 'Sits on his mud dais and hops the court. Tongue, leap, venom, and a great breath in: block to dig your heels in or be dragged to his teeth. His throat is soft mid-croak; his head takes two stomps before he hops off.' },
+  { t: 'queen', name: 'HORNET QUEEN', sub: 'hive ruler', desc: 'Hovers out of reach and calls drones. While TWO are up the swarm closes over her and turns most of a blow. Her dive pulls up off bare earth, but lure it onto wood and leave late: her sting sticks, and she is open. Block the dive and she staggers. At half health she hangs in her comb and comes down only to sting.' },
+  { t: 'frog', name: 'BULLFROG KING', sub: 'lord of the marsh', desc: 'Sits on his mud dais and hops the court; his wet hide turns half a blow. Stand where he leaps and leave once he is in the air, or shield the landing, and he flops. Block his tongue or his great breath in and he chokes. His throat is soft mid-croak. At half health he pulls the court out.' },
   { t: 'sporeling', name: 'SPORELING', sub: 'walking cap', desc: 'Wanders and bites. Kill it and it bursts into a spore cloud that slows and tires you, so finish it at range or step back.' },
   { t: 'spitcap', name: 'SPITCAP', sub: 'rooted lobber', desc: 'Rooted, so it lobs. The bomb is nothing: the sleeping cloud it leaves is everything. It swells before it throws, and while it is swollen it comes apart in one blow.' },
   { t: 'weaver', name: 'WEAVER', sub: 'pale spider', desc: 'Hangs in its curtain and spits web that holds your feet. Mash out of the web, and cut the curtains: they are what it hides behind.' },
@@ -5635,12 +5635,14 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
      teaches the oldest rule in it, thin the small things before you go for the big one, and her CALLS THE SWARM is a
      move with a cost instead of a flourish. Her own openings are still hers: winded on the floor after a dive, and
      sitting in her slam, she takes it all whatever is flying. */
-  if (e.t === 'queen' && !e.mini && e.mode !== 'winded' && e.mode !== 'slamRest' && e.mode !== 'buck') {
+  /* (claude/firsthour) HER OPENINGS ARE CAUSED NOW: stuck in the wood (a dive lured onto it) and winded (a dive or a sweep taken on the
+     shield). Sitting in her own slam was a rest after her own blow, open whatever the player did (the weak-boss pattern), and is not. */
+  if (e.t === 'queen' && !e.mini && e.mode !== 'winded' && e.mode !== 'stuck' && e.mode !== 'buck') {
     const swarm = enemies.filter(d => d.alive && d.t === 'wasp' && d.drone).length;
     if (swarm >= 2) { dmg = Math.max(1, Math.round(dmg * 0.45)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 10, e.y - 8, Math.sign(e.x - fromX) || 1, 3);
       if (!(e.swarmSaid > 0)) { e.swarmSaid = 2.4; number(e.x, e.y - e.h - 14, 'THE SWARM CLOSES', '#ffd36b');
         PROG.qSwarmTold = (PROG.qSwarmTold || 0) + 1;
-        if (PROG.qSwarmTold <= 3) { hintT = 4.5; hintMsg = 'HER DRONES CLOSE OVER HER AND TURN MOST OF A BLOW. CUT THE SWARM DOWN, OR CATCH HER WINDED ON THE FLOOR.'; } } } }
+        if (PROG.qSwarmTold <= 3) { hintT = 4.5; hintMsg = 'HER DRONES CLOSE OVER HER AND TURN MOST OF A BLOW. THIN THEM, OR STICK HER STING IN WOOD.'; } } } }
   if (e.t === 'tollmaster' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 7); } // both hands over his head
   else if (e.t === 'tollmaster' && !e.onFoot) { dmg = Math.max(1, Math.round(dmg * 0.7)); } // up on the bier, out of an easy reach
   if (e.t === 'temperer' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 6); }   /* THE TEMPERER at his fire: both hands on the blade, his back to the room, and you are the reason he is standing there */
@@ -5702,7 +5704,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 20, e.y - 30, Math.sign(e.x - fromX) || 1, 5); return; } // his crown turns every blade: only a cage brings his head down
   if (e.t === 'bearer') { SFX.clank(); return; }
   if (e.t === 'gill' && mother && !mother.gillsOpen) { SFX.clank(); sparks(e.x, e.y - 6, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 18, 'SHE HOLDS HER BREATH', '#9aa39a'); P.grace = Math.max(P.grace, 0.3); return; }
-  if (e.t === 'queen' && e.mode === 'winded') dmg *= 2;
+  if (e.t === 'queen' && e.mode === 'winded') dmg *= 2; else if (e.t === 'queen' && e.mode === 'stuck') dmg = Math.round(dmg * 1.5);   /* (claude/firsthour) stuck in the wood is the long window, so it bites a little less than a staggered dive: the first pilot's knight took her in 23 s off one of them at double */
   if (e.t === 'chief' && e.mode === 'planted') dmg *= 2;
   if (e.t === 'ram' && ramOpen(e)) dmg *= 2;
   if (e.t === 'heart') { if (!mother || mother.mode !== 'open') return; dmg = 1; mother.mode = 'idle'; mother.modeT=2; mother.nodeRest=10; mother.tipped=false; mother.gillsOpen=false; mother.nodeMove=true; e.burn=0; e.bleed=0; } // each cut closes the heart: return to the living knot
@@ -5743,6 +5745,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
     number(e.x, e.y - e.h - 20, 'OFF BALANCE', '#ffd36b'); breakBeat(e); lessonHint('dashatk'); return; }
   if (e.t === 'lance') { if (lanceOpen(e)) { if (e.mode === 'planted') dmg = Math.round(dmg * 1.6); } else { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 18, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - e.h - 8, 'HIS PLATE TURNS IT', '#9aa39a'); return; } }
   if (e.t === 'forgemaster') { if (forgeOpen(e)) dmg *= 2; else { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 16, Math.sign(e.x - fromX) || 1, 3); } } // his iron turns half of every cut; stunned or scalded he takes it doubled
+  if (e.t === 'frog' && !frogOpen(e) && e.mode !== 'sleep') { dmg = Math.max(1, Math.round(dmg * 0.5)); if (!(e.hideSaid > 0)) { e.hideSaid = 2.5; number(e.x, e.y - e.h - 16, 'THE HIDE TURNS IT', '#9aa39a');
+      PROG.frogHideTold = (PROG.frogHideTold || 0) + 1; if (PROG.frogHideTold <= 2) { hintT = 4.5; hintMsg = 'HIS WET HIDE TURNS HALF A BLOW. MAKE HIM FLOP, CHOKE OR BITE HIS TONGUE, THEN CUT.'; } } }
   if (e.t === 'frog' && (e.mode === 'croak' || e.mode === 'dazed')) { dmg *= 2; if (e.mode === 'croak') number(e.x, e.y - e.h - 16, 'THROAT', '#8fd160'); }
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
   if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
@@ -7746,7 +7750,7 @@ function updatePlayer(dt) {
           P.inv = 0; damagePlayer(e.x, e.t === 'frog' ? DMG.crown : DMG.spined, { up: true, unblockable: true }); P.vy = -250;
           continue;
         }
-        if (e.t === 'queen') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 3 && e.mode !== 'winded') { e.headHits = 0; e.mode = 'buck'; e.modeT = 0.3; e.vx = (Math.sign(e.x - P.x) || 1) * 320; e.vy = -60; P.inv = 0; P.vx = -e.vx * 0.7; P.vy = -170; P.hurt = 0.3; P.plunge = false; P.ground = false; number(e.x, e.y - 20, 'BUCKS', '#ff6b6b'); SFX.roar(); shakeCam(4); continue; } }
+        if (e.t === 'queen') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 3 && e.mode !== 'winded' && e.mode !== 'stuck') { e.headHits = 0; e.mode = 'buck'; e.modeT = 0.3; e.vx = (Math.sign(e.x - P.x) || 1) * 320; e.vy = -60; P.inv = 0; P.vx = -e.vx * 0.7; P.vy = -170; P.hurt = 0.3; P.plunge = false; P.ground = false; number(e.x, e.y - 20, 'BUCKS', '#ff6b6b'); SFX.roar(); shakeCam(4); continue; } }
         if (isReaper()) {
           // THE CULL: the landing itself is nothing - one point, so the hit registers and he bounces - and a
           // SHADE tears out of whatever he came down on and does the killing.
@@ -7805,7 +7809,7 @@ function updatePlayer(dt) {
   const cb = { l: pb.l + 1, r: pb.r - 1, t: pb.t + 2, b: pb.b - 1 };
   for (const e of enemies) {
     if (!e.alive || e.flash > 0 || e.gone > 0 || !overlap(cb, box(e))) continue;
-    if (e.t === 'queen' && (e.mode === 'winded' || e.mode === 'sleep' || e.mode === 'slamRest')) continue;
+    if (e.t === 'queen' && (e.mode === 'winded' || e.mode === 'stuck' || e.mode === 'sleep' || e.mode === 'slamRest')) continue;
     const stompable = !P.plunge && P.vy > 40 && pb.b <= e.y - e.h + 7 && P.dodge <= 0;
     if (e.t === 'frog' && (e.mode === 'sleep' || (e.mode === 'dazed' && !stompable))) continue;
     if (e.t === 'frog' && stompable && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
@@ -7819,7 +7823,7 @@ function updatePlayer(dt) {
       if (e.t === 'master' && e.mounted && (e.stagger > 0 || e.open > 0)) { hurtEnemy(e, 20, P.x, true); e.stagger = Math.max(e.stagger, 0.7); number(e.x, e.y - 24, 'STUNNED', '#8fd160'); SFX.gobHurtLow(); SFX.thud(); P.vy = -260; P.plunge = false; P.ground = false; P.canCut = false; burst(e.x, e.y - 8, 12, COLS.master, 80, 0.6); continue; }
       if (e.t === 'crab' && e.mode !== 'flipped') { e.mode = 'flipped'; e.modeT = 3; e.vy = -140; SFX.clank(); number(e.x, e.y - 18, 'OVER IT GOES', '#8fd160'); P.vy = keys.jump ? -260 : -190; P.canCut = false; P.ground = false; continue; }
       if (e.t === 'shield' || e.t === 'soldier' || e.t === 'heavy' || e.t === 'turtle' || e.t === 'tideguard' || e.t === 'herald' || e.t === 'sailor' || e.t === 'reefmaw' || e.t === 'bosun' || e.t === 'boarder' || e.t === 'quarter' || e.t === 'queen' || e.t === 'brute' || e.t === 'chief' || e.t === 'king' || e.t === 'merrowbrute' || (e.t === 'master' && e.mounted) || (e.t === 'ram' && !ramOpen(e))) { P.vy = keys.jump ? -260 : -190; SFX.clank(); sparks(e.x, e.y - e.h, P.face, 6); e.stagger = Math.max(e.stagger, 0.3); number(e.x, e.y - e.h - 6, 'HELM', '#c9d1dc'); squash(0.85, 1.2, 0.1); continue; }
-      if (e.t === 'queen') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 3 && e.mode !== 'winded') { e.headHits = 0; e.mode = 'buck'; e.modeT = 0.3; e.vx = (Math.sign(e.x - P.x) || 1) * 320; e.vy = -60; P.vx = -e.vx * 0.7; P.vy = -170; P.hurt = 0.3; P.ground = false; number(e.x, e.y - 20, 'BUCKS', '#ff6b6b'); SFX.roar(); shakeCam(4); continue; } }
+      if (e.t === 'queen') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 3 && e.mode !== 'winded' && e.mode !== 'stuck') { e.headHits = 0; e.mode = 'buck'; e.modeT = 0.3; e.vx = (Math.sign(e.x - P.x) || 1) * 320; e.vy = -60; P.vx = -e.vx * 0.7; P.vy = -170; P.hurt = 0.3; P.ground = false; number(e.x, e.y - 20, 'BUCKS', '#ff6b6b'); SFX.roar(); shakeCam(4); continue; } }
       hurtAs('plunge', e, P.relic === 'crown' ? plungeDmg() : 10, P.x, true); pogoBounce(POGO_API, 'stomp'); continue;   /* a stomp is a pogo too: it counts in the chain (src/pogo-chain.js) */
     }
     if (e.t === 'grandmother' || e.t === 'zombie' || e.t === 'husk' || e.t === 'apprentice' || e.t === 'undeadmage' || e.t === 'burieddead' || e.t === 'harbormaster' || e.t === 'bellcrab' || e.t === 'bellguard' || e.t === 'sprig' || e.t === 'shield' || e.t === 'cutlass' || e.t === 'boarder' || e.t === 'marine' || e.t === 'bosun' || e.t === 'lookout' || e.t === 'quarter' || e.t === 'masthead' || e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'feeler' || e.t === 'sailor' || e.t === 'netter' || e.t === 'angler' || e.t === 'petrel' || e.t === 'reefmaw' || e.t === 'turtle' || e.t === 'eel' || e.t === 'heronfoe' || e.t === 'crab' || e.t === 'scout' || e.t === 'siren' || e.t === 'tideguard' || e.t === 'herald' || e.t === 'dummy' || e.t === 'brute' || e.t === 'chief' || e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'folk' || e.t === 'king' || e.t === 'bearer' || e.t === 'pike' || e.t === 'master' || e.t === 'thief' || e.t === 'ram' || e.t === 'goat' || e.t === 'harpy' || e.t === 'troll' || e.t === 'greathound' || e.t === 'spider' || e.t === 'owl' || e.t === 'miner' || e.t === 'bat' || e.t === 'propman' || e.t === 'prince' || e.t === 'courtier' || e.t === 'drownedking' || e.t === 'swornsword' || e.t === 'hedgeknight' || e.t === 'crossbow' || e.t === 'closedhelm' || e.t === 'lancer' || e.t === 'drunk' || e.t === 'holdfast' || e.t === 'forgemaster' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'gqueen' || e.t === 'scarecrow' || e.t === 'farmhand' || e.t === 'pumpkin' || e.t === 'haunt' || e.t === 'ploughman' || e.t === 'strawking' || e.t === 'gobpriest' || e.t === 'gobmage' || e.t === 'puffer' || e.t === 'lamprey' || e.t === 'manta' || (e.big && e.t !== 'sailer') || (e.t === 'bale' && Math.abs(e.vx) < 40) || (e.t === 'boo' && e.mode === 'freeze')) continue; // their damage comes from their attacks, not from touching them (the boo is the one thing here whose touch IS the attack, and only while it is not covering its face; the puffer only hurts when it bursts, the lamprey's bite is a latch handled in its own update, and the manta only hurts on the dive)
@@ -7829,6 +7833,7 @@ function updatePlayer(dt) {
        kinds hurt on every touch, attacking or not: soldiers, casters, the Archmage, a squirrel. */
     if (!TOUCH_ALWAYS.has(e.t) && !(BODY_BLOW.has(e.t) && bodyAttacking(e)) && !(e.drone && e.t === 'hopper')) continue;   /* (the Hornet Queen's drones keep their old touch: her fight is her own script) */
     const res = e.turncoat ? 'none' : damagePlayer(e.x, e.t === 'hopper' ? HOP[e.color || 'green'].dmg : e.pack ? 12 : (DMG[e.t] || 12), { who: e, unblockable: e.t === 'emberwisp' || (e.t === 'hound' && e.mode === 'leap') || e.t === 'bale' || e.t === 'crow' || e.t === 'boo' });   /* (part 2: a pouncing hound goes under the shield, a rolling bale bowls it over, a crow comes at the head over it and the shy dead through it - each told in red) */ if (e.t === 'emberwisp') e.recoil = 1.2;   /* THE WISP's touch is its blow, and nothing turns it */
+    if (e.t === 'frog' && e.mode === 'leap') { if (res === 'hit') e.leapHit = true; else if (res === 'blocked') e.leapBlocked = true; }   /* (claude/firsthour) the landing found you, or your shield: updateFrog reads it when he comes down */
     if (res === 'blocked') {
       if (e.t === 'sapper' && e.fleeT <= 0) { bombs.push({ x: e.x, y: e.y - 4, vx: -Math.sign(P.x - e.x) * 20, vy: -40, fuse: 0.45 }); e.fleeT = 0; e.stagger = 0.7; e.vx = 0; number(e.x, e.y - 18, 'DROPPED IT', '#ffd36b'); }
       if (e.t === 'queen') { if (e.mode === 'dive' || e.mode === 'sweep') queenWinded(e, true); }
@@ -8048,6 +8053,19 @@ function smashBarricade(pr, e) {
 }
 const barricadeAt = (wx, wy) => { const tx = Math.floor(wx / TS), ty = Math.floor(wy / TS);
   return props.find(p => p.t === 'barricade' && p.alive && tx >= p.tx && tx < p.tx + p.w && ty > p.ty - p.h && ty <= p.ty); };
+/* THE HORNET QUEEN'S WOOD (claude/firsthour). Wood is a one-way perch or a plank (the felled pine) inside her clearing, above its
+   floor: the two combs' perches and the pine. Her comb itself hangs as wax (tools/queen-comb.mjs) and is not wood. */
+const QUEEN_COMB_Y = 92;   /* how far over the floor she hangs in her second phase: up in the comb, under its wax (the map's top is 9 rows over the floor) */
+function queenWood(x, y) {
+  const A = L.arena; if (!A || x < A.x0 || x > A.x1 || y >= A.floor - 4) return false;
+  const t = L.grid[Math.floor(y / TS) * LW + Math.floor(x / TS)]; return t === T.ONEWAY || t === T.PLANK;
+}
+function queenStuck(e) {
+  e.mode = 'stuck'; e.modeT = e.phase === 2 ? 1.8 : 2.2; e.vx = 0; e.vy = 0; e.y = Math.floor(e.y / TS) * TS; e.twice = false;
+  shakeCam(5); SFX.thud(); SFX.crack(); hitstop(0.05); burst(e.x, e.y, 14, ['#8a5a32', '#c9a26a', '#e0b040'], 90, 0.6);
+  number(e.x, e.y - 22, 'STUCK IN THE WOOD', '#8fd160');
+  if (!(PROG.qStuckTold > 1)) { PROG.qStuckTold = (PROG.qStuckTold || 0) + 1; hintT = 4; hintMsg = 'HER STING IS IN THE WOOD. SHE IS OPEN, SWARM OR NO SWARM: CUT HER NOW.'; }
+}
 function queenWinded(e, blocked) {
   e.mode = 'winded'; e.modeT = e.phase === 2 ? 1.1 : 1.5; e.vx = 0; e.vy = 0; e.y = L.arena.floor;
   shakeCam(4); SFX.thud(); dust(e.x, e.y, 10); number(e.x, e.y - 20, blocked ? 'STAGGERED' : 'WINDED', '#8fd160');
@@ -8900,12 +8918,13 @@ function updateQueen(e, dt) {
   if (e.headT > 0) { e.headT -= dt; if (e.headT <= 0) e.headHits = 0; }
   e.swarmSaid = Math.max(0, (e.swarmSaid || 0) - dt);   /* THE SWARM CLOSES, said once and not every blow (hurtEnemy0) */
   const drones = enemies.filter(d => d.alive && d.t === 'wasp' && d.drone).length;
-  const hoverTo = (tx, ty, sp) => { e.vx += (Math.max(-sp, Math.min(sp, (tx - e.x) * 3)) - e.vx) * Math.min(1, dt * 4); e.vy += (Math.max(-sp, Math.min(sp, (ty - e.y) * 3)) - e.vy) * Math.min(1, dt * 4); };
+  if (p2 && !e.combSaid) { e.combSaid = true; number(e.x, e.y - 40, 'SHE GOES UP INTO HER COMB', '#ffd36b'); hintT = 4.5; hintMsg = 'SHE HANGS IN HER COMB NOW AND COMES DOWN ONLY TO STING. FIGHT FROM THE WOOD.'; }
+  const hoverTo =(tx, ty, sp) => { e.vx += (Math.max(-sp, Math.min(sp, (tx - e.x) * 3)) - e.vx) * Math.min(1, dt * 4); e.vy += (Math.max(-sp, Math.min(sp, (ty - e.y) * 3)) - e.vy) * Math.min(1, dt * 4); };
   switch (e.mode) {
     case 'sleep': e.y = e.ty + Math.sin(e.anim * 1.5) * 3; return;
     case 'wake': hoverTo((A.x0 + A.x1) / 2, floor - 74, 60); if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 1.2; } break;
     case 'hover': {
-      hoverTo(P.x + Math.sin(e.anim * 0.9) * 30, floor - 74 + Math.sin(e.anim * 2) * 6, p2 ? 110 : 75);
+      hoverTo(P.x + Math.sin(e.anim * 0.9) * 30, floor - (p2 ? QUEEN_COMB_Y : 74) + Math.sin(e.anim * 2) * 6, p2 ? 110 : 75);   /* (claude/firsthour) in her second phase she hangs up in her comb, out of reach from the floor: reached from the wood */
       e.face = Math.sign(P.x - e.x) || e.face;
       if (e.modeT <= 0) {
         // pick a move she hasn't just used; drones first if the swarm is thin
@@ -8914,7 +8933,9 @@ function updateQueen(e, dt) {
            three. That is the rhythm of the fight - thin the swarm, cut her while it is thin, thin it again. Measured:
            calling EVERY time she was short put her out of four heroes' reach inside the 150 s cap, and leaving it at
            one chance in three changed her length not at all, so it sits between the two. */
-        const pool = ['dive', 'sweep', 'volley', 'slam'];
+        /* (claude/firsthour) PHASE TWO CHANGES THE FIGHT: up in the comb she no longer comes down to slam - she comes down only to
+           sting, and the dive is most of what she does. So the wood lesson of phase one is the whole of phase two */
+        const pool = p2 ? ['dive', 'dive', 'sweep', 'volley'] : ['dive', 'sweep', 'volley', 'slam'];
         if (drones < (p2 ? 3 : 2)) pool.push('call', 'call', 'call');
         let pick = drones === 0 ? 'call' : pool[(Math.random() * pool.length) | 0];
         if (pick === e.last && pick !== 'call') pick = pool[(Math.random() * pool.length) | 0];
@@ -8955,10 +8976,18 @@ function updateQueen(e, dt) {
     case 'slamRest': if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.6; } break;
     case 'buck': if (e.modeT <= 0) { e.vx = 0; e.vy = 0; e.mode = 'hover'; e.modeT = 1.2; } break;
     case 'call': hoverTo(e.x, floor - 84, 60); if (e.modeT <= 0) { for (let i = 0; i < 2; i++) { const dx = A.x0 + (A.x1 - A.x0) * (0.3 + i * 0.4) + (Math.random() - 0.5) * 30; enemies.push({ t: 'wasp', x: dx, y: floor - 40, hx: dx, hy: floor - 40, vx: 0, vy: 0, w: 8, h: 6, hp: EHP.wasp, face: -1, alive: true, dying: 0, anim: Math.random() * 6, flash: 0, stagger: 0, drone: true }); burst(dx, floor - 40, 6, COLS.wasp, 50, 0.4); } e.mode = 'hover'; e.modeT = p2 ? 1.2 : 1.8; } break;
-    case 'aim': hoverTo(P.x, floor - 78, 140); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { const dx = P.x - e.x, dy = floor - e.y, d = Math.hypot(dx, dy) || 1, sp = p2 ? 280 : 220; e.vx = dx / d * sp; e.vy = dy / d * sp; e.mode = 'dive'; e.modeT = 1.2; SFX.charge(); } break;
-    case 'dive': if (e.y >= floor || e.modeT <= 0) { e.y = Math.min(e.y, floor); queenWinded(e, false); } break;
+    /* THE STING GOES IN THE WOOD (claude/firsthour: the opening is CAUSED). Her dive is aimed at you - at your feet, on the floor or
+       up on the wood. Into bare earth she only skims and is up again, and nothing is open; but a dive that meets WOOD (the two combs'
+       perches, or the pine you felled across them) drives her sting into it and she hangs there STUCK, open. Stand on the wood, or
+       under it, and leave late. (A dive taken on the shield still staggers her: the blow answered.) */
+    case 'aim': hoverTo(P.x, floor - 78, 140); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { const ty = P.ground && P.y < floor - 4 ? P.y : floor; const dx = P.x - e.x, dy = Math.max(12, ty - e.y), d = Math.hypot(dx, dy) || 1, sp = p2 ? 280 : 220; e.vx = dx / d * sp; e.vy = dy / d * sp; e.mode = 'dive'; e.modeT = 1.2; SFX.charge(); } break;
+    case 'dive': if (e.vy > 0 && queenWood(e.x, e.y)) queenStuck(e);
+      else if (e.y >= floor || e.modeT <= 0) { e.y = Math.min(e.y, floor); e.mode = 'skim'; e.modeT = 0.35; e.vx *= 0.25; e.vy = -90; dust(e.x, floor, 6); number(e.x, e.y - 20, 'SHE PULLS UP', '#9aa39a');
+        if (!(PROG.qWoodTold > 1)) { PROG.qWoodTold = (PROG.qWoodTold || 0) + 1; hintT = 4.5; hintMsg = 'BARE EARTH DOES NOT HOLD HER STING. STAND ON THE WOOD AS SHE DIVES, THEN LEAVE: IT GOES IN.'; } } break;
+    case 'skim': if (e.modeT <= 0) { if (p2 && !e.twice && Math.random() < 0.5) { e.twice = true; e.mode = 'aim'; e.modeT = 0.55; SFX.buzz(); } else { e.twice = false; e.mode = 'rise'; e.modeT = 0.5; } } break;   /* up in her comb she may come straight back down: a second dive, told the same way */
+    case 'stuck': e.vx = 0; e.vy = 0; if (Math.random() < dt * 16) parts.push({ x: e.x + (Math.random() - 0.5) * 20, y: e.y, vx: (Math.random() - 0.5) * 40, vy: -30, life: 0.4, max: 0.4, col: '#c9a26a', size: 1, grav: 200 }); if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.6; e.twice = false; number(e.x, e.y - 20, 'SHE TEARS FREE', '#ffd36b'); } break;
     case 'winded': if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.6; } break;
-    case 'rise': hoverTo(e.x, floor - 74, 130); if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = p2 ? 1.3 : 2.0; } break;
+    case 'rise': hoverTo(e.x, floor - (p2 ? QUEEN_COMB_Y : 74), 130); if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = p2 ? 1.3 : 2.0; } break;
     case 'sweepStart': hoverTo(e.face > 0 ? A.x0 + 16 : A.x1 - 16, floor - 16, 220); if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 2.4; e.vx = e.face * (p2 ? 180 : 140); e.vy = 0; SFX.charge(); } break;
     case 'sweep': e.y += (floor - 16 - e.y) * Math.min(1, dt * 6); if ((e.face > 0 && e.x > A.x1 - 16) || (e.face < 0 && e.x < A.x0 + 16) || e.modeT <= 0) { e.vx = 0; e.mode = 'rise'; e.modeT = 0.6; if (p2 && Math.random() < 0.5) { e.mode = 'sweepStart'; e.modeT = 0.4; e.face = -e.face; } } break;
   }
@@ -8971,6 +9000,11 @@ function updateQueen(e, dt) {
 
 // ---------- boss: the Bullfrog King ----------
 const frogFloor = (A, x) => { const tx = Math.floor(x / TS); for (let ty = Math.floor(A.floor / TS) - 3; ty <= Math.floor(A.floor / TS) + 2; ty++) if (isSolid(tx, ty)) return ty * TS; return A.floor; }; // the real ground: the dais lifts him, the shallows drop him to the pond bed (he used to stand on the water)
+const FROG_DRAIN_AT = 0.5;   /* (claude/firsthour) his court goes out at half his health: his second phase is the pit (it was a third) */
+/* HIS OPENINGS (claude/firsthour): a leap that lands on nothing or on a shield, a tongue or a breath turned on the shield (dazed), the
+   croak (his throat), and the mud. Anywhere else his wet hide turns half a blow - so the openings are the fight, not a bonus on it. */
+const FROG_OPEN = new Set(['dazed', 'croak', 'mired']);
+const frogOpen = e => FROG_OPEN.has(e.mode);
 const frogPool = A => (L.pools || []).find(p => p.frogDry) || (L.pools || []).find(p => p.shallow && p.x0 >= A.x0 - 40 && p.x1 <= A.x1 + 40);
 // HE PULLS HIS OWN PLUG. Everything that made the pond a pond stops: it will not rise for him again, and the
 // bed of it is the new floor of the fight.
@@ -8998,14 +9032,17 @@ function frogPit(A) {
 }
 function updateFrog(e, dt) {
   const A = L.arena, p2 = e.phase >= 2, p3 = e.phase === 3; const floor = frogFloor(A, e.x);
-  if (e.phase === 2 && e.hp <= e.maxHp * 0.34 && !e.drained) { frogDrain(e); return; }
+  /* HIS SECOND PHASE IS THE PIT (claude/firsthour: a phase two that changes the fight). It used to be ENRAGED and nothing else -
+     the same court, a little faster - with the drain held back to a third of his health. Now the court goes out at HALF: the
+     pond pulled, the bed a pit with his hoppers on the mud, and his leap for water ends STUCK IN THE MUD. */
+  if (e.phase === 2 && e.hp <= e.maxHp * FROG_DRAIN_AT && !e.drained) { frogDrain(e); return; }
   if (e.drain > 0) { /* the pond going out: it takes a moment, and neither of you can do anything about it */
     e.drain -= dt; const pl = frogPool(A);
     if (pl) { pl.y += 22 * dt; pl.depth = Math.max(0, pl.depth - 22 * dt); pl.shallow = pl.depth > 1; pl.dry = pl.depth <= 1;
       if (Math.random() < dt * 40) parts.push({ x: pl.x0 + Math.random() * (pl.x1 - pl.x0), y: pl.y, vx: (Math.random() - 0.5) * 40, vy: -30, life: 0.5, max: 0.5, col: '#bfe6f5', size: 1, grav: 120 }); }
     if (e.drain <= 0) { e.drain = 0; frogPit(A); }
     e.y = floor; e.vy = 0; e.modeT -= dt; return; }
-  e.modeT -= dt; e.anim += dt;
+  e.modeT -= dt; e.anim += dt; e.hideSaid = Math.max(0, (e.hideSaid || 0) - dt);
   if (e.headT > 0) { e.headT -= dt; if (e.headT <= 0) e.headHits = 0; }
   const flies = enemies.filter(d => d.alive && d.t === 'hopper' && d.drone).length;
   e.vy += 1000 * dt; if (e.vy > 400) e.vy = 400;
@@ -9020,12 +9057,13 @@ function updateFrog(e, dt) {
         let pick = pool[(Math.random() * pool.length) | 0]; if (pick === e.last) pick = pool[(Math.random() * pool.length) | 0]; e.last = pick;
         if (pick === 'tongue') { e.mode = 'tongueTell'; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.modeT = p2 ? 0.35 : 0.5; SFX.buzz(); }
         else if (pick === 'leap') { e.mode = 'crouch'; e.modeT = p2 ? 0.3 : 0.45; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); }
-        else if (pick === 'spit') { e.mode = 'spit'; e.modeT = 0.6; e.shots = p2 ? 2 : 1; e.shotT = 0.2; }
+        else if (pick === 'spit') { e.mode = 'spitTell'; e.modeT = p2 ? 0.4 : 0.5; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.gasp(); }   /* (claude/firsthour) HIS SPIT WAS UNTOLD: the venom left his mouth the frame he chose it. Now his cheeks fill first, on a yellow ! - a shield turns venom */
         else if (pick === 'hopAway') { e.mode = 'hopAway'; e.modeT = 0.15; }
         else if (pick === 'inhale') { e.mode = 'inhaleTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.5; number(e.x, e.y - e.h - 12, 'BREATHES IN', '#ffd36b'); SFX.gasp(); }
         else { e.mode = 'croak'; e.modeT = 1.0; SFX.croak(); number(e.x, e.y - e.h - 12, 'CROAK', '#ffd36b'); }
       }
       break;
+    case 'spitTell': e.y = floor; e.vy = 0; if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 14, y: e.y - 16, vx: e.face * 10, vy: -10, life: 0.3, max: 0.3, col: '#8fd160', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'spit'; e.modeT = 0.6; e.shots = p2 ? 2 : 1; e.shotT = 0; } break;
     case 'tongueTell': if (e.modeT <= 0) { e.mode = 'tongue'; e.modeT = 0.55; tongue = { x0: e.x + e.face * 22, y: floor - 13, dir: e.face, len: 0, max: p2 ? 130 : 110, active: true }; SFX.tongue(); } break;
     case 'inhaleTell': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'inhale'; e.modeT = p2 ? 1.6 : 1.3; SFX.buzz(); } break;
     case 'inhale': { e.y = floor; e.vy = 0; // the pull: block to dig in, or you are dragged to his mouth and bitten
@@ -9037,19 +9075,25 @@ function updateFrog(e, dt) {
     case 'hop': e.x += e.vx * dt; e.y += e.vy * dt; if (e.vy > 0 && e.y >= frogFloor(A, e.x)) { e.y = frogFloor(A, e.x); e.vy = 0; e.vx = 0; dust(e.x, e.y, 6); e.mode = 'idle'; e.modeT = 0.5; e.idleHits = 0; } break;
     case 'crouch': if (e.modeT <= 0) { e.mode = 'leap';
         if (e.vault) { const away = Math.sign((A.x0 + A.x1) / 2 - e.x) || 1, tx = Math.max(A.x0 + 30, Math.min(A.x1 - 30, e.x + away * (220 + Math.random() * 80))); e.vy = -470; e.vx = (tx - e.x) / 0.94; e.face = away; } /* a high bound over your head to the far side */
-        else { const dx = Math.max(A.x0 + 20, Math.min(A.x1 - 20, P.x)) - e.x; e.vy = -380; e.vx = dx / 0.76; }
+        else { const tx = Math.max(A.x0 + 20, Math.min(A.x1 - 20, P.x)), dx = tx - e.x; e.vy = -380; e.vx = dx / 0.76; e.leapOn = Math.abs(P.x - tx) < 30 && Math.abs(P.y - frogFloor(A, tx)) < 40; e.leapHit = false; e.leapBlocked = false; }   /* (claude/firsthour) he leaps AT you: note whether you were standing on the spot he took off for */
         e.modeT = 2; SFX.leap(); } break;
     case 'leap': e.x += e.vx * dt; e.y += e.vy * dt; /* he never left the ground before: vy was integrated but never applied */ if (e.vy > 0 && e.y >= frogFloor(A, e.x) && e.vault) { const fl2 = frogFloor(A, e.x); e.y = fl2; e.vy = 0; e.vx = 0; e.vault = false; e.vaultT = 3.5; shakeCam(5); SFX.heavy(); dust(e.x, e.y, 12); if (p2) for (const d of [-1, 1]) waves.push({ x: e.x + d * 22, y: fl2, dir: d, life: 1.6, sp: 150 }); e.mode = 'idle'; e.modeT = 0.55; e.idleHits = 0; break; }
       if (e.vy > 0 && e.y >= frogFloor(A, e.x)) { const fl2 = frogFloor(A, e.x); e.y = fl2; e.vy = 0; e.vx = 0; shakeCam(7); SFX.heavy(); zoomKick(1.12, 0.2); dust(e.x, e.y, 16); for (const d of [-1, 1]) waves.push({ x: e.x + d * 22, y: fl2, dir: d, life: 2.2, sp: p2 ? 180 : 150 });
         const inBed = p3 && fl2 > A.floor + 4;                 /* he went for the water and it is not there */
-        e.mode = inBed ? 'mired' : 'dazed'; e.modeT = inBed ? 2.2 : (p2 ? 0.7 : 1.0);
-        number(e.x, e.y - e.h - 12, inBed ? 'STUCK IN THE MUD' : 'DAZED', '#8fd160');
+        /* HE LANDS ON NOTHING (claude/firsthour: the opening is CAUSED). DAZED was his rest after every leap, whatever you did. Now it
+           is earned: be on the spot he leapt for and leave it once he is in the air (he flops onto bare ground, winded), or take the
+           landing on the shield (the ! over his crouch). A leap that lands on you, or on a spot you had already left, opens nothing. */
+        const flop = !inBed && ((e.leapOn && !e.leapHit && Math.abs(P.x - e.x) > 26) || e.leapBlocked);
+        e.mode = inBed ? 'mired' : flop ? 'dazed' : 'land'; e.modeT = inBed ? 2.2 : flop ? (p2 ? 1.4 : 1.8) : 0.35;
+        if (inBed || flop) number(e.x, e.y - e.h - 12, inBed ? 'STUCK IN THE MUD' : e.leapBlocked ? 'TURNED' : 'BELLY-FLOP', '#8fd160');
+        else if (!(PROG.frogFlopTold > 1)) { PROG.frogFlopTold = (PROG.frogFlopTold || 0) + 1; hintT = 4.5; hintMsg = 'STAND WHERE HE LEAPS FOR AND LEAVE ONCE HE IS IN THE AIR, OR SHIELD THE LANDING: HE FLOPS.'; }
         if (inBed) { SFX.splash(); burst(e.x, fl2, 14, ['#5a4a3c', '#3d3128', '#736050'], 80, 0.7); } } break;
     case 'croak3': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.6; } break;
     // THE MUD: out of water he still goes for the bed, and there is nothing in it to push off
     case 'mired': e.y = floor; e.vy = 0; if (Math.random() < dt * 24) parts.push({ x: e.x + (Math.random() - 0.5) * 26, y: e.y - 2, vx: (Math.random() - 0.5) * 50, vy: -40, life: 0.5, max: 0.5, col: '#5a4a3c', size: 2, grav: 300 });
       if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.5; e.idleHits = 0; } break;
     case 'dazed': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.8; } break;
+    case 'land': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = p2 ? 0.5 : 0.7; e.idleHits = 0; } break;   /* a leap that found you, or found nothing you left: he is up at once */
     case 'spit': { e.y = floor; e.vy = 0; e.shotT -= dt; if (e.shots > 0 && e.shotT <= 0) { e.shots--; e.shotT = 0.35; SFX.spit(); const n = 3; for (let i = 0; i < n; i++) { const dx = P.x - e.x, dir = Math.sign(dx) || e.face; const a = -1.15 + i * 0.2; seeds.push({ x: e.x + dir * 20, y: e.y - 18, vx: Math.cos(a) * 170 * dir, vy: Math.sin(a) * 170, dead: false, life: 3, venom: true, g: 320 }); } } if (e.modeT <= 0 && e.shots <= 0) { e.mode = 'idle'; e.modeT = 0.9; } break; }
     case 'croak': e.y = floor; e.vy = 0; if (!e.rose) { e.rose = true;
       if (p3) { number(e.x, e.y - e.h - 24, 'AND NOTHING COMES', '#9aa39a'); SFX.croak(); }
@@ -24754,7 +24798,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.hurtT > 0 && HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) frame = SPR[e.t].R.length - 1; // knocked about, and it shows
     else if (e.t === 'spit') frame = e.mouth > 0 ? 2 : (Math.floor(e.anim * 1.5) % 4 === 1 ? 1 : 0);
     else if (e.t === 'wasp') frame = Math.floor(e.anim * 30) % 3;
-    else if (e.t === 'queen') frame = e.mode === 'winded' || e.mode === 'slamRest' ? 6 : e.mode === 'aim' ? 2 : e.mode === 'dive' ? 3 : (e.mode === 'volley' || e.mode === 'volleyUp') ? 4 : (e.mode === 'slamUp' || e.mode === 'slamHang' || e.mode === 'slam') ? 5 : (e.mode === 'sweep' || e.mode === 'sweepStart') ? 7 : Math.floor(e.anim * 26) % 2;
+    else if (e.t === 'queen') frame = e.mode === 'winded' || e.mode === 'stuck' || e.mode === 'slamRest' ? 6 : e.mode === 'aim' ? 2 : e.mode === 'dive' ? 3 : (e.mode === 'volley' || e.mode === 'volleyUp') ? 4 : (e.mode === 'slamUp' || e.mode === 'slamHang' || e.mode === 'slam') ? 5 : (e.mode === 'sweep' || e.mode === 'sweepStart') ? 7 : Math.floor(e.anim * 26) % 2;
     else if (e.t === 'hopper') frame = e.air ? (e.vy < 0 ? 1 : 3) : (e.mode === 'hopTell' || (e.drone && e.timer < 0.2 && Math.abs(P.x - e.x) < 170) ? 2 : 0);
     else if (e.t === 'frog') frame = e.mode === 'dazed' ? 6 : e.mode === 'crouch' ? 3 : (e.mode === 'leap' || e.mode === 'hop') ? (e.vy < 40 ? 4 : 5) : e.mode === 'croak' ? 1 : (e.mode === 'inhale' || e.mode === 'tongue' || e.mode === 'inhaleTell') ? 2 : 0;
     else if (e.t === 'sapper') frame = e.fleeT > 0 ? 4 + Math.floor(e.anim * 12) % 2 : Math.floor(e.anim * 12) % 4;

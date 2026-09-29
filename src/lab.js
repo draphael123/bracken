@@ -981,7 +981,7 @@ async function runbossLab(BK, opts) {
       let goal = null, strike = false, princeT = null;
       /* HER DRONES, while two of them are up: the nearest one, and the queen's own openings come first */
       const swarm = boss.t === 'queen' ? BK.enemies().filter(q => q.alive && q.t === 'wasp' && q.drone) : [];
-      const swarmT = swarm.length >= 2 && boss.mode !== 'winded' && boss.mode !== 'slamRest' ? swarm.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;
+      const swarmT = swarm.length >= 2 && boss.mode !== 'winded' && boss.mode !== 'stuck' ? swarm.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;
       /* THE GUN FOR HER GUARD: a deck gun on her own deck, cold, inside the arena - the nearest one to the bot */
       const gunT = boss.t === 'quarter' && boss.guard ? BK.props().filter(q => q.t === 'cannon' && q.deck && !(q.cool > 0) && Math.abs(q.y - boss.y) < 30 && q.x > A.x0 - 16 && q.x < A.x1 + 16)
         .sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] || null : null;
@@ -1143,6 +1143,17 @@ async function runbossLab(BK, opts) {
       /* THE HORNET QUEEN'S SWARM closes over her while two of her drones are up and turns most of a blow (hurtEnemy0),
          so the hands thin it first, the way her hint says. A drone posts a tile and a half over the floor and darts at
          you, so it is taken with the rising cut when it is above and a plain one when it comes down. */
+      /* THE HORNET QUEEN'S STING GOES IN THE WOOD (claude/firsthour): her only openings are a dive taken on the shield and a dive lured
+         into wood. So while she aims, the hands get up onto the nearest perch (a comb's, or the felled pine) and, once she is diving
+         and close, roll off it: the sting goes into the plank and she is open - then the generic 'open' branch below cuts her. */
+      else if (boss.t === 'queen' && (boss.mode === 'aim' || (boss.mode === 'dive' && P.y < A.floor - 4))) {
+        const LL = BK.L, onWood = P.ground && P.y < A.floor - 4; strike = false; k.block = false;
+        if (boss.mode === 'dive') { if (Math.abs(boss.x - P.x) < 80 && f % 4 === 0) { k[boss.x < P.x ? 'right' : 'left'] = true; BK.press('dodge'); } }
+        else if (onWood) goal = P.x;
+        else { let best = null; for (let ty = Math.floor(A.floor / TS) - 5; ty < Math.floor(A.floor / TS) - 1; ty++) for (let tx = Math.ceil(A.x0 / TS) + 1; tx < Math.floor(A.x1 / TS) - 1; tx++) {
+            const t = LL.grid[ty * LL.W + tx]; if ((t === T.ONEWAY || t === T.PLANK) && LL.grid[(ty - 1) * LL.W + tx] === T.AIR) { const x = tx * TS + 8; if (!best || Math.abs(x - P.x) < Math.abs(best - P.x)) best = x; } }
+          if (best !== null) { goal = best; if (Math.abs(best - P.x) < 22 && P.ground) { BK.press('jump'); P.labJump = 22; } } }
+        if (P.labJump > 0) { P.labJump--; k.jump = true; } }
       else if (swarmT) { goal = swarmT.x;
         /* a drone posts two and a half tiles over the floor: the rising cut reaches one that is a little up, and one
            posted higher is jumped at (her own bestiary row says you can pogo off them) */
