@@ -52,7 +52,7 @@ export function drawLamps(g, cx, cy, VW, lamps, time, glowOnly) {
       gr.addColorStop(0, 'rgba(255,190,90,' + (0.42 * b) + ')'); gr.addColorStop(1, 'rgba(255,150,60,0)'); g.fillStyle = gr; g.fillRect(lx - r, ly - r, r * 2, r * 2); } } }
 
 // ---------------- THE CAROUSEL: painted horses on brass poles going round under a scalloped, striped canopy ----------------
-const HORSE = (v) => once('chorse' + v, () => { const [c, g] = canvas(24, 22), P = [['#efe6d0', '#c8b890', '#8a3a3a'], ['#c8d4e0', '#8a9ab0', '#3a5a8a'], ['#e8c878', '#b08838', '#8a2a2a'], ['#d8c4d8', '#a488a4', '#4a3a6a']][v % 4], [b, s, m] = P;
+export const HORSE = (v) => once('chorse' + v, () => { const [c, g] = canvas(24, 22), P = [['#efe6d0', '#c8b890', '#8a3a3a'], ['#c8d4e0', '#8a9ab0', '#3a5a8a'], ['#e8c878', '#b08838', '#8a2a2a'], ['#d8c4d8', '#a488a4', '#4a3a6a']][v % 4], [b, s, m] = P;
   fillPoly(g, [[5, 10], [17, 9], [19, 15], [16, 16], [6, 16]], b); rect(g, 6, 15, 2, 6, b); rect(g, 8, 15, 2, 5, s); rect(g, 14, 15, 2, 6, b); rect(g, 16, 15, 2, 5, s);          // body, legs
   fillPoly(g, [[16, 10], [18, 3], [22, 4], [23, 9], [21, 10], [19, 8]], b); px(g, 20, 5, S.ink); px(g, 23, 8, s); px(g, 18, 2, b); px(g, 17, 2, s);                                 // neck and head
   line(g, 17, 3, 12, 7, m, 2); line(g, 4, 10, 1, 15, m, 1); rect(g, 8, 8, 6, 2, S.gold); rect(g, 8, 9, 6, 1, S.brassD);                                                              // mane, tail, saddle
@@ -100,7 +100,7 @@ export function drawGreen(g, cx, cy, VW, G, time, dusk) {
   if (ax > -60 && ax < VW + 60) { g.fillStyle = '#6a4a22'; g.fillRect(Math.round(ax) - 2, Math.round(gy - 6 * TS - cy), 6, 3 * TS + 10); g.fillRect(Math.round(ax + 2 * TS) - 4, Math.round(gy - 6 * TS - cy), 6, 3 * TS + 10);
     for (let i = 0; i < 16; i++) { const t = i / 15, x = ax - 2 + t * (2 * TS + 4), y = gy - 6 * TS - cy - Math.sin(t * Math.PI) * 10; g.fillStyle = i % 2 ? '#b89050' : '#8a6a34'; g.fillRect(Math.round(x), Math.round(y), 3, 5); g.fillStyle = i % 3 ? '#f0a020' : '#c23a30'; g.fillRect(Math.round(x), Math.round(y - 2), 2, 2); } }
   // the ring of trampled flowers and straw round the pole
-  if (mx > cx - 90 && mx < cx + VW + 90) { const r = mulberry(4242);
+  if (!G.carousel && mx > cx - 90 && mx < cx + VW + 90) { const r = mulberry(4242);   /* (on THE WICKER QUEEN's carousel the column and the firebox are src/redraw/carousel_ring.js's) */
     for (let i = 0; i < 46; i++) { const a = r() * Math.PI * 2, d = 20 + r() * 26, x = mx + Math.cos(a) * d * 1.4, y = gy - 1 - Math.abs(Math.sin(a)) * 2 - r() * 2; g.fillStyle = r() < 0.5 ? RIB[(r() * 8) | 0] : '#c9a03a'; g.fillRect(Math.round(x - cx), Math.round(y - cy), r() < 0.3 ? 2 : 1, 1); }
     // the pole, banded with ribbon
     const top = gy - 10 * TS, sway = Math.sin(time * 0.7) * 1.5;
@@ -112,7 +112,7 @@ export function drawGreen(g, cx, cy, VW, G, time, dusk) {
     for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 + 0.4, ex = mx + Math.cos(a) * (34 + (i % 3) * 6), ey = gy - 4 - (i % 2) * 3; g.strokeStyle = RIB[i]; g.lineWidth = 1; g.beginPath();
       g.moveTo(Math.round(mx - cx + Math.cos(a) * 10), Math.round(top + 4 + Math.sin(a) * 4 - cy)); g.quadraticCurveTo(Math.round(mx - cx + Math.cos(a) * 24 + sway), Math.round((top + gy) / 2 - cy + Math.sin(time + i) * 2), Math.round(ex - cx), Math.round(ey - cy)); g.stroke(); } }
   // the bonfire: a pyre of logs, tongues of flame, a great warm bloom (the only light on the green now the lamps are out)
-  if (fx > cx - 90 && fx < cx + VW + 90) { const x = Math.round(fx - cx), y = Math.round(gy - cy);
+  if (!G.carousel && fx > cx - 90 && fx < cx + VW + 90) { const x = Math.round(fx - cx), y = Math.round(gy - cy);
     for (let i = 0; i < 7; i++) { const a = -0.6 + i * 0.2; g.save(); g.translate(x, y - 3); g.rotate(a * (i % 2 ? 1 : -1)); g.fillStyle = i % 2 ? '#4a3020' : '#5e3e24'; g.fillRect(-18, -2 - (i % 3), 36, 5); g.fillStyle = '#7a5230'; g.fillRect(-18, -2 - (i % 3), 36, 1); g.restore(); }
     for (let k = 0; k < 4; k++) { const f = Math.sin(time * (7 + k * 2.1) + k) * 0.5 + 0.5, hgt = 36 + k * 9 - f * 8, wd = 13 - k * 2; const cols = ['#a01c10', '#d84a14', '#f08a28', '#ffc850'][k];
       g.fillStyle = cols; g.beginPath(); g.moveTo(x - wd, y - 6); g.quadraticCurveTo(x - wd + f * 3, y - hgt * 0.6, x + Math.sin(time * 6 + k) * 3, y - hgt - 4 + k * 3); g.quadraticCurveTo(x + wd - f * 3, y - hgt * 0.6, x + wd, y - 6); g.closePath(); g.fill(); }

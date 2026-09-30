@@ -14,7 +14,8 @@
 //                                          the ghost-train yard (reserved), a rick and a ledge
 //   502-618  THE LAST ROUND    EXAM        the small carousel with a mummer AND a horse on it, a rick over spikes, a lane mummer; a second, taller STRIKER throws you onto THE NIGHT LANE
 //                                          (lanterns guttering overhead) or you walk the ground; the PRIZE BOOTH (tickets for a silver); the door guard (the elite hobby-horse)
-//   622-672  THE MAYPOLE GREEN THE WICKER QUEEN (claude/fair3, src/wicker-queen.js; claude/fairboss rebuilds it): a maypole and a bonfire, a door, a checkpoint before it, a gate
+//   622-672  THE MAYPOLE GREEN THE WICKER QUEEN (claude/fair3, src/wicker-queen.js) ON THE FAIR'S GREAT CAROUSEL (claude/fairboss, src/wicker-carousel.js): the
+//            ring turns under you, its horses bob on their poles, the firebox under the centre column; a door, a checkpoint before it, a gate at the far end
 // Checkpoints (six, as before): 8, 124, 252, 388 (the slide's foot), 480 and the door's (600).
 import { makeWall } from './breakable-walls.js';
 export const FAIR = { W: 672, H: 36, R: 28 };
@@ -29,6 +30,8 @@ export function lampsOut(lamps) {
     const h = (i * 0.618034) % 1, ground = l.x < 118 ? 1 : l.x > 590 ? 0.5 : h < (f - 0.25) * 1.3 ? 0 : h < (f - 0.05) * 1.3 ? 0.5 : 1;   /* a golden-ratio scatter: the further along, the more are out */
     const row = l.y, life = l.life !== undefined ? l.life : row >= 24 ? ground : row >= 17 ? Math.min(ground, 0.5) : 0;
     return { x: l.x, y: l.y, life }; }); }
+
+import { newRing, horseAt, RING } from './wicker-carousel.js';
 
 export function buildHarvestFair({ painter, T, TS }) {
   const { W, H, R } = FAIR, S = R - 1;
@@ -240,16 +243,19 @@ export function buildHarvestFair({ painter, T, TS }) {
   post(594); ent('check', 600, S);                        /* the door's checkpoint: the last one the road passes before the green */
   foe('hobbyhorse', 608, { elite: true, gate: 620, squad: 'guard' });     /* THE DOOR GUARD, the level's ELITE: it holds the green's door (the gate comes down over it) until it is dead. Facing it, it cannot charge: that is the exam's last answer */
 
-  // ---------------- THE MAYPOLE GREEN (622-672): THE WICKER QUEEN's arena (claude/fair3, src/wicker-queen.js) ----------------
-  const G = { x0: 622, x1: 668, door: 620, maypole: 640, bonfire: 654, floor: R };
+  // ---------------- THE MAYPOLE GREEN (622-672): THE WICKER QUEEN's arena (claude/fair3, src/wicker-queen.js), ON THE CAROUSEL (claude/fairboss) ----------------
+  /* the whole green is one turning ride (src/wicker-carousel.js): the maypole is its CENTRE COLUMN, the bonfire the engine's FIREBOX just downstream of it */
+  const G = { x0: 622, x1: 668, door: 620, maypole: 644, bonfire: 647, floor: R, carousel: true };
   block(620, 621, 0, R - 1);                              /* the door: a narrow gap under a lintel, then the green */
   for (let y = S - 3; y <= S; y++) { set(620, y, T.AIR); set(621, y, T.AIR); }
   block(669, 671, 0, R - 1);                              /* the wall behind the gate */
-  sign(616, 'THE GREEN. SHE MOVES ONLY WHEN YOU LOOK AWAY. HER RIBBONS DO NOT WAIT.');   /* outside the door, beside its checkpoint: read before the walls close */
-  ent('wickerqueen', 662, S, { face: -1 });               /* THE WICKER QUEEN, past the bonfire: to draw her across it you turn your back on her */
+  sign(616, 'THE CAROUSEL. SHE MOVES ONLY WHEN YOU LOOK AWAY. WHEN THE FLOOR BURNS, RIDE A HORSE.');   /* outside the door, beside its checkpoint: read before the walls close */
+  ent('wickerqueen', 634, S, { face: -1 });               /* THE WICKER QUEEN, UPSTREAM of her fire: the first lesson is the ride's - hold her in your look and it carries her onto it. After a burn she is flung off downstream, and then you turn your back to draw her across it against the ride */
   ent('relic', 646, S, { kind: 'maypole', bossDrop: true });   /* THE FAIR'S ONE RELIC is hers now (the maypole ribbon: your look reaches half as far again; the felted soles stay in the levels that hold them): hidden until she falls, then it lies where she burned (spawn case 'relic') */
   ent('gate', 666, S);                                    /* and the road goes on from here once she is down (gateAfterBoss) */
   const arena = { x0: 623 * TS, x1: 667 * TS, floor: R * TS, y0: (R - 14) * TS, trigger: 627 * TS, wallL: 622, wallR: 667, boss: 'wickerqueen', music: 'wickerqueen', tint: '#2a1a30', tintA: 0.12, fx: 'embers' };
+  /* THE HORSES: platforms (movers of kind 'carhorse', turned by main.js from the ride's state), placed where the ride stands before she wakes */
+  { const ring = newRing(arena); for (let i = 0; i < RING.horses; i++) { const h = horseAt(ring, i); moversExtra.push({ kind: 'carhorse', i, x: h.x - RING.w / 2, y: h.y, w: RING.w, h: RING.h, broken: !h.front }); } }
 
   /* THE MARKS FOR THE TOOLS: every game and ride the level is built round is also an entity of its own kind (the spawner ignores them; src/fair-games.js keeps the state) */
   for (const s of strikers) ent('striker', s.x, S, { launch: s.launch, big: s.big });

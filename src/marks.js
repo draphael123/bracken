@@ -73,7 +73,7 @@ export const BY_HAND = {
   'broom|sweepTell':'!',
   'winchmaster|reverseTell':'','winchmaster|sendTell':'!!','winchmaster|hookTell':'!!','winchmaster|leverTell':'!','winchmaster|leapTell':'!!','winchmaster|descendTell':'!!','winchmaster|whirlTell':'!!','winchmaster|wrenchTell':'!','winchmaster|rideTell':'!!',   /* THE WINCHMASTER (winchmaster.js, by hand): the send and the hook no shield turns, the brake bar it does, and the reverse throws no blow so it is QUIET */
   'abbot|censerTell':'!','abbot|castTell':'!','abbot|processTell':'!!','abbot|coalsTell':'!!','abbot|knellTell':'!!','abbot|riteTell':'',   /* THE FALSE ABBOT (false-abbot.js, by hand: a module-file boss the audit cannot follow): the censer and the chain a shield turns; the procession, the coals and the knell nothing does; the rite throws no blow at all */
-  'wickerqueen|sickleTell':'!!','wickerqueen|lashLowTell':'!!','wickerqueen|lashHighTell':'!!','wickerqueen|crownTell':'',   /* THE WICKER QUEEN (wicker-queen.js, by hand: a module-file boss the audit cannot follow; claude/fair3): the sickle comes from behind a turned back and the ribbons fly the whole green, so no shield turns either; the crowning calls mummers who strike on their own marks */
+  'wickerqueen|sickleTell':'!!','wickerqueen|lashLowTell':'!!','wickerqueen|lashHighTell':'!!','wickerqueen|floorTell':'!!','wickerqueen|throwTell':'!!','wickerqueen|crownTell':'',   /* (claude/fairboss, the carousel: the burning floor and the thrown sickle are unblockable too - fire under your feet, and a blade from across the ride at a turned back) */   /* THE WICKER QUEEN (wicker-queen.js, by hand: a module-file boss the audit cannot follow; claude/fair3): the sickle comes from behind a turned back and the ribbons fly the whole green, so no shield turns either; the crowning calls mummers who strike on their own marks */
   'tome|tell':'!',   /* THE TOME (tome.js, by hand: a module-file foe the audit cannot follow): the dart is a blow, and the shield does not just turn it - it SHUTS the book */
   'gargoyle|diveTell':'!!','gargoyle|fireballTell':'!','gargoyle|breathTell':'!','gargoyle|flareTell':'!!',   /* THE GATE GARGOYLE (gate-gargoyle.js, by hand): the dive and the flare wear the red cross; the fireball (the wing gust's place, 2026-09-28) and the fire breath a shield turns */   /* THE WITCHLIGHT STAIR's aqueduct broom (sweepBroom, by hand): a sweep at the ankles a shield braces against */
   'gravewarden|cleaveTell':'!','gravewarden|tossTell':'!','gravewarden|swingTell':'!!','gravewarden|digTell':'!!','gravewarden|tollTell':'',   /* THE GRAVE WARDEN (grave-warden.js, by hand like the Archmage): spade and dirt a shield turns; the lantern and the hand nothing does; the toll strikes nobody */
@@ -212,10 +212,10 @@ export const MARK = {
   'undeadmage|realmTell': '', 'undeadmage|sporeTell': '!!', 'undeadmage|stepTell': '', 'undeadmage|stormTell': '!!', 'undeadmage|trapTell': '!', 'undeadmage|wallTell': '!!',
   'urchin|biteTell': '!', 'urchin|castTell': '!', 'urchin|dive': '!', 'urchin|hookTell': '!', 'urchin|swellTell': '!', 'vulture|watch': '!!',
   'wasp|stingTell': '!', 'watch|sweepTell': '!', 'watch|thrustTell': '!', 'weaver|spitTell': '!', 'whelp|crouchTell': '!', 'whelp|fireTell': '!',
-  'wickerqueen|crownTell': '', 'wickerqueen|lashHighTell': '!!', 'wickerqueen|lashLowTell': '!!', 'wickerqueen|sickleTell': '!!', 'wight|graspTell': '!!', 'winchmaster|descendTell': '!!',
-  'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!',
-  'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!',
-  'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'wickerqueen|crownTell': '', 'wickerqueen|floorTell': '!!', 'wickerqueen|lashHighTell': '!!', 'wickerqueen|lashLowTell': '!!', 'wickerqueen|sickleTell': '!!', 'wickerqueen|throwTell': '!!',
+  'wight|graspTell': '!!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '',
+  'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!',
+  'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
 };
 /* MARK:END */
 
@@ -372,7 +372,7 @@ export const ANSWER = {
   'winchmaster|sendTell': 'jump', 'winchmaster|hookTell': 'jump', 'winchmaster|leverTell': 'block', 'winchmaster|leapTell': 'dodge',
   'winchmaster|descendTell': 'dodge', 'winchmaster|whirlTell': 'dodge', 'winchmaster|wrenchTell': 'block', 'winchmaster|rideTell': 'jump',
   /* THE WICKER QUEEN (a boss; claude/fair3): the sickle is answered by the LOOK - turn and it is cancelled, or be out of her reach - so it is a dodge; the low ribbon is jumped, the high one ducked (src/duck.js) */
-  'wickerqueen|sickleTell': 'dodge', 'wickerqueen|lashLowTell': 'jump', 'wickerqueen|lashHighTell': 'duck',
+  'wickerqueen|sickleTell': 'dodge', 'wickerqueen|lashLowTell': 'jump', 'wickerqueen|lashHighTell': 'duck', 'wickerqueen|floorTell': 'jump', 'wickerqueen|throwTell': 'duck',   /* the floor: up onto a horse; the thrown sickle: down on the boards, ducked (claude/fairboss) */
   'wight|graspTell': 'dodge',      // mist round a shield: out of its reach
 };
 /* ANSWER:END */
@@ -520,7 +520,7 @@ export const HEIGHT = {
   'watch|sweepTell': 'low', 'watch|thrustTell': 'high',
   'weaver|spitTell': 'low',
   'whelp|crouchTell': 'low', 'whelp|fireTell': 'low',
-  'wickerqueen|lashHighTell': 'high', 'wickerqueen|lashLowTell': 'low', 'wickerqueen|sickleTell': 'low',
+  'wickerqueen|lashHighTell': 'high', 'wickerqueen|lashLowTell': 'low', 'wickerqueen|sickleTell': 'low', 'wickerqueen|floorTell': 'low', 'wickerqueen|throwTell': 'high',
   'wight|graspTell': 'low',
   'winchmaster|descendTell': 'low', 'winchmaster|hookTell': 'low', 'winchmaster|leapTell': 'low', 'winchmaster|leverTell': 'low', 'winchmaster|rideTell': 'low', 'winchmaster|sendTell': 'low', 'winchmaster|whirlTell': 'low', 'winchmaster|wrenchTell': 'low',
   'zombie|grabTell': 'low',
