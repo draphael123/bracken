@@ -145,6 +145,7 @@ import { floodReach } from './reachcore.js';
 import { WEIGHTY, weighty, setWeighty, combatFrom, weightyHere, recoveryFor, poiseRule, guardCount } from './weighty.js';   /* COMBAT: CLASSIC / WEIGHTY (claude/ssproto): one switch, off by default */
 import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
+import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 
@@ -436,14 +437,6 @@ const HERO_LOOP = {
   warden: 'THE POINT PAYS, NOT THE HAFT: KEEP THEM OUT THERE. TAP C AND THE SHAFT TURNS A BLOW.',
   geomancer: 'HOLD C: A RUNE-WARD. SHE IS PLANTED, AND ON THE BEAT IT EMPOWERS HER. HOLD X: A FAULT LINE.',   /* the deflect, not the old brace; 504 px, two lines on the card's 270 (the brace wording took three) */
 };
-const TRAINING = [
-  { id: 'vigour', name: 'VIGOUR', per: '+10 health a rank', max: 5, prices: [40, 60, 90, 130, 180] },
-  { id: 'breath', name: 'BREATH', per: '+10 stamina a rank', max: 5, prices: [40, 60, 90, 130, 180] },
-  { id: 'recovery', name: 'RECOVERY', per: 'stamina returns 15% faster a rank', max: 3, prices: [60, 100, 160] },
-  { id: 'temper', name: 'TEMPER', per: '+1 damage a rank', max: 5, prices: [50, 80, 120, 170, 230] },
-  { id: 'footing', name: 'FOOTING', per: 'dodge and plunge cost 2 less a rank', max: 3, prices: [60, 100, 160] },
-];
-const rankOf = id => (PROG.ranks && PROG.ranks[id]) || 0; // (TRAINING is gone from the store: kept only to refund old saves)
 // THE TALENT TREES. Every hero has three trees side by side, and a hero has the points for ONE of them: a point for every
 // wood cleared the first time, and never more than thirty. A tree costs twenty-four to fill. The bottom of each tree is its
 // CAPSTONE, which wants eighteen points spent in that tree first, and a hero carries one capstone at a time - so a hero is
@@ -478,7 +471,6 @@ const ROW_LV = [0, 2, 5, 10];        // the level a row opens at
 const ROW_NEED = [0, 2, 5, 10];      // and the points it wants spent in its own tree
 const CAP_NEED = 18, PTS_CAP = 30;   /* what a capstone asks of its tree, and the most points a hero ever has */
 const TREE = LEGACY_NODES; // frozen historical metadata, retained for migration and art icons
-const TALENTS = [{ id: 'tree', name: 'SKILL LOADOUT', desc: 'buy abilities with coins and put two on F and G. passives are never bought: they arrive with levels, and so do health, stamina and damage. Z to open' }];
 const heroXp = h => ((PROG.xp || {})[h || hero()] || 0);   /* THIS hero's XP, not the save's: every hero carries his own */
 const heroLevel = h => levelOfXp(heroXp(coopLent(h || PROG.hero || 'knight') ? players[0].hero : h));   /* THE LEVEL IS XP (src/xp.js): the fights pay it and a wood's first finish pays a share. It was the woods walked, and a straight run still lands within one of that */
 const heroDone = () => (PROG.done[hero()] = PROG.done[hero()] || {});
@@ -517,14 +509,14 @@ window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, skillIcon:
   treeNodes: () => treeNodes(), get treeI() { return treeI; }, set treeI(v) { treeI = v; }, get treeMsg() { return treeMsg; }, get treeResetT() { return treeResetT; }, get talentsBackT() { return talentsBackT; }, get talentsBackWho() { return talentsBackWho; }, novas: () => novas, wardCap: () => wardCap(), raiseCue: () => raiseCue(), raisePips: () => raisePips(), heroSet: (s, w, p, h) => heroSet(s, w, p, h), skinIds: () => SKINS.map(k => k.id) };   /* for the labs and the harnesses */
 /* THE PRACTICE YARD, from the store: a portal into the straw men and plain platforms, for trying a hero without a wood to lose */
 const PRACTICE = [{ id: 'heroTrial', name: "THE HERO'S TRIAL", price: 0, practice: 'trial', desc: 'the guided yard for the hero you are, a gate a verb: the dash attack, rising cut and low sweep too.' }, { id: 'practiceYard', name: 'THE PRACTICE YARD', price: 0, practice: true, desc: 'step through the portal into a yard of straw men and plain platforms. nothing there can kill you. pause to leave.' }];
-const STORE_TABS = [{ name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { name: 'WEAPONS', items: SWORDS, key: 'sword', owned: 'swords' }, { name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { name: 'SKILLS', items: TALENTS, key: null, owned: 'talents', talent: true }, { name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }, { name: 'PRACTICE', items: PRACTICE, key: null, owned: 'items' }];
-let storeMode = 'buy', equipFrom = 'map';
+const STORE_TABS = [{ id: 'heroes', name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { id: 'skins', name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { id: 'weapons', name: 'WEAPONS', items: SWORDS, key: 'sword', owned: 'swords' }, { id: 'charms', name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { id: 'skills', name: 'SKILLS', items: [], key: null, owned: 'talents', talent: true }, { id: 'smith', name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { id: 'music', name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }, { id: 'practice', name: 'PRACTICE', items: PRACTICE, key: null, owned: 'items' }];   /* THE ONE STORE's tabs, in src/store.js's order (tools/store.mjs holds the two together) */
 function setEquip(key, id) { PROG[key] = id; if (key === 'charm') { PROG.charmOf = PROG.charmOf || {}; PROG.charmOf[hero()] = id; } }   /* a charm is worn by a hero: the next hero starts bare */
-const EQUIP_TABS = STORE_TABS.filter(t => t.key || t.talent); // (talents can be learned from the map and the pause menu too)
-const storeTabs = () => storeMode === 'equip' ? EQUIP_TABS : STORE_TABS;
-const equipItems = tab => tab.talent ? tab.items : (tab.key === 'skill' || tab.key === 'charm' ? [{ id: 'none', name: 'NONE', desc: tab.key === 'skill' ? 'nothing on F' : 'nothing worn', price: 0 }] : []).concat(tab.items.filter(k => owns(tab, k.id)));
-const storeItems = tab => (storeMode === 'equip' ? equipItems(tab) : tab.items).filter(k => !k.hero || k.hero === hero());
-function openEquip(from) { storeMode = 'equip'; equipFrom = from; storeTab = 0; storeI = 0; storeMsgT = 0; state = 'store'; SFX.uiSel(); }
+const NO_CHARM = { id: 'none', name: 'NONE', desc: 'nothing worn', price: 0 };   /* the first line of CHARMS: take the charm off */
+const storeItems = tab => (tab.key === 'charm' ? [NO_CHARM].concat(tab.items) : tab.items).filter(k => !k.hero || k.hero === hero());
+const SKILLS_TAB = STORE_TABS.findIndex(t => t.talent);
+/* WHAT A LINE OF THE STORE IS TO YOU RIGHT NOW: equipped, owned, locked (by its own gate: src/store.js lockOf), buyable, or an entrance */
+const storeRowState = (tab, k) => tab.talent ? 'skills' : k.practice ? 'enter' : k.consumable ? ((PROG.tonics || 0) >= k.max ? 'owned' : 'buy')
+  : (k.id === 'none' || owns(tab, k.id)) ? (tab.key && (PROG[tab.key] === k.id || (k.id === 'none' && (!PROG[tab.key] || PROG[tab.key] === 'none'))) ? 'equipped' : 'owned') : lockOf(k, PROG, featDone) ? 'locked' : 'buy';
 const skinById = id => SKINS.find(k => k.id === id) || SKINS[0];
 const swordById = id => SWORDS.find(k => k.id === id) || SWORDS[0];
 const sword = () => swordById(PROG.sword);
@@ -3557,7 +3549,7 @@ function updateMap(dt) {
     else if (nd.kind !== 'store' && !nodeLocked(nd)) { const id = LEVELS[nd.level].id; PROG.diff = PROG.diff || {}; PROG.diff[id] = DIFFS[(DIFFS.indexOf(diffOf(id)) + (upPress ? 1 : -1) + DIFFS.length) % DIFFS.length]; SFX.ui(); saveProgress(); } }
   if (confirmPress && !map.walking) { const nd = NODES[map.node]; if (nd.kind === 'store') { selI = LEVELS.findIndex(l => l.id === (nd.shop || 'shop')); selectStart(); } else { selI = nd.level; selectStart(); } }
   if (atkPress && !map.walking) { state = 'bestiary'; bestI = 0; SFX.uiSel(); }
-  if (dodgePress && !map.walking) openEquip('map');
+  if (dodgePress && !map.walking) openStore('map', 'heroes');
   /* THE MAP'S OWN CO-OP TOGGLE, on F: off arms the same picker LOCAL CO-OP uses (a pick returns here, unlike the
      title's own flow), on ends it at once - nothing else to ask, same as the pause menu's line. */
   if (throwPress && !map.walking) {
@@ -3756,19 +3748,23 @@ function drawMap() {
 }
 
 // ---------- store ----------
-let storeI = 0, storeMsg = '', storeMsgT = 0, storeTab = 0;
-function learnTalent(k) { treeFrom = state; treeI = 0; treeBranch = 0; state = 'tree'; SFX.menuOpen(); }
-// ---------- the tree screen ----------
-let treeFrom = 'store', treeI = 0, treeMsg = '', treeMsgT = 0, treeBranch = 0;
+let storeI = 0, storeMsg = '', storeMsgT = 0, storeTab = 0, storeBack = 'map';   /* storeBack: the state the store goes back to when it closes: map, menu or play */
+// ---------- the skills tab: the tree is no longer a screen of its own (state 'tree' is gone), it is a tab of the one store ----------
+let treeI = 0, treeMsg = '', treeMsgT = 0, treeBranch = 0;
 const SKILL_NEEDS = { coldComfort: ['summonSkeleton'], gleaner: ['summonSkeleton'], press: ['summonSkeleton'], ossuary: ['summonSkeleton'], graveProvides: ['summonSkeleton'], gripAll: ['deathGrip'], bidden: ['summonSkeleton','gravecall'], secondDeath: ['summonSkeleton','gravecall'] };
 const skillNeeds = n => n?.hero === 'reaper' ? SKILL_NEEDS[n.id] || [] : [];
 const treeNodesFor = h => skillsFor(h).filter(n => n.active).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));
 const treeNodes = () => treeBranch === 1 ? passiveLadder(hero()) : skillsFor(hero()).filter(n => n.active).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));   /* the PASSIVES tab is the ladder: the order they arrive in */
-const loadoutSafe = () => { const from = state === 'tree' ? treeFrom : state, origin = from === 'menu' ? menuFrom : from;
-  if (['map','select'].includes(origin) || (from === 'store' && equipFrom === 'map' && storeMode === 'equip')) return true;
-  if (bossActive || miniActive || ambushLive()) return false;
-  return !!(L && L.shop) || shrines.some(s => s.lit && Math.abs(s.x-P.x)<36 && Math.abs(s.y-P.y)<32) && !enemies.some(e => e.alive && !e.harmless && Math.abs(e.x-P.x)<140 && Math.abs(e.y-P.y)<70); };
-function updateTree(dt) {
+/* THE ONE STORE (src/store.js). Every way in comes through openStore(back, tab): the map's V and Q, Q in a wood, the pause menu's Store and Skills, a keeper's counter.
+   `back` is the state it returns to. It opens anywhere outside a fight; BUYING (and slotting a skill) wants the map, a shop room or a lit shrine: loadoutSafe(). */
+const inFight = () => !!(bossActive || miniActive || ambushLive() || enemies.some(e => e.alive && !e.harmless && Math.abs(e.x - P.x) < 140 && Math.abs(e.y - P.y) < 70));
+const storeWhere = () => storeBack === 'map' ? 'map' : L && L.shop ? 'shop' : 'wood';
+const atShrine = () => shrines.some(s => s.lit && Math.abs(s.x - P.x) < 36 && Math.abs(s.y - P.y) < 32);
+const loadoutSafe = () => { const away = storeBack !== 'map'; return mayBuy({ where: storeWhere(), fight: away && inFight(), atShrine: away && atShrine() }); };
+function openStore(back, tab) {
+  if (back !== 'map') { const no = storeRefusalOf({ fight: inFight() }); if (no) { SFX.buzz(); if (back === 'menu') { menuMsg = no.toLowerCase(); menuMsgT = 2; } else { hintMsg = no; hintT = 1.5; } return false; } }
+  storeBack = back; storeTab = storeTabIndex(tab); storeI = 0; treeI = 0; treeBranch = 0; treePage = 0; storeMsgT = 0; state = 'store'; SFX.menuOpen(); return true; }
+function updateSkills(dt) {
  treeMsgT = Math.max(0, treeMsgT-dt); const ns=treeNodes();treeI=Math.max(0,Math.min(ns.length-1,treeI));const old=treeI;
  if(leftPress||rightPress){treeBranch=1-treeBranch;treeI=0;treePage=0;treeMsgT=0;SFX.ui();return;}
  if(upPress)treeI=(treeI+ns.length-1)%ns.length;if(downPress)treeI=(treeI+1)%ns.length;
@@ -3777,7 +3773,7 @@ function updateTree(dt) {
  if(confirmPress&&n&&!n.active){say(passiveOn(PROG,hero(),n.id,heroLevel())?n.name+' is always on':'Arrives at level '+n.level);}
  else if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}
  [throwPress,skill2Press,skill3Press,skill4Press].forEach((pressed,index)=>{if(!pressed||!n)return;if(!n.active){say('Passives are always on: slots are for abilities');return;}const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
- if(pausePress||talentsPress){state=treeFrom;SFX.menuClose();}
+ /* (leaving is the store's: ESC; and Q is the tab before) */
 }
 const TREE_ICON = {};
 // WHAT A TALENT IS, AS A SHAPE. Eight glyphs, picked off what the talent does rather than which tree it is
@@ -3932,50 +3928,50 @@ const treePreview = (n, x, y, w, h) => { if (!n) return;
   if (!n.active) { g.fillStyle = 'rgba(14,12,22,0.92)'; g.fillRect(x, y, w, h); g.strokeStyle = 'rgba(255,255,255,0.14)'; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1); const ic = treeIcon(n); g.drawImage(ic, 0, 0, ic.width, ic.height, Math.round(x + w / 2 - ic.width * 1.5), y + 5, ic.width * 3, ic.height * 3); const cat = talCat(n); text(cat.word, x + w / 2, y + 5 + ic.height * 3 + 4, cat.col, 'center', 6); text('ALWAYS ON', x + w / 2, y + h - 20, UI.dim, 'center', 6); text('WHEN IT ARRIVES', x + w / 2, y + h - 10, UI.dim, 'center', 6); return; }
   const set = preview('vignette:' + hero() + ':' + PROG.skin + ':' + PROG.sword, () => heroSet(PROG.skin, PROG.sword, true));
   drawAbilityPreview(g, x, y, w, h, { id: n.id, hero: hero(), t: time, idle: set.R.idle, atk: set.R.atk, icon: treeIcon(n) }); };
-function drawTree() {
- g.drawImage(MAPC,0,0);g.fillStyle='rgba(10,9,18,0.94)';g.fillRect(0,0,VW,VH);panel(3,2,VW-6,VH-4);
+function drawSkills() {   /* the SKILLS tab of the one store: the loadout on F and G, the abilities and passives, and the live preview of the one under the cursor */
  const h=hero(),lv=heroLevel(),ns=treeNodes(),idx=Math.max(0,Math.min(ns.length-1,treeI)),n=ns[idx],list=equipped(PROG,h,lv),limit=slotsAt(lv),width=(VW-20)/limit;
- text('SKILLS / LOADOUT',10,6,UI.title,'left',6);text('LV '+lv+'   '+(PROG.coins||0)+' COINS',VW-10,6,UI.gold,'right',6);
- for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),key=['F','G'][i];g.fillStyle=i<limit?'#302c3e':'#191622';g.fillRect(x,19,width-3,23);text(i<limit?(sk&&!sk.active?'PASSIVE':key):'LEVEL '+(i===2?8:16),x+4,21,i<limit?UI.gold:UI.dim,'left',6);text(fitName(sk?sk.name:i<limit?'EMPTY':'LOCKED',width-11,6),x+4,31,UI.text,'left',6);}
- for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,46,91,12);text(tab===0?'ACTIVES':'PASSIVES',x+45,49,treeBranch===tab?UI.gold:UI.dim,'center',6);}text((Math.floor(idx/6)+1)+' / '+Math.ceil(ns.length/6),VW-12,49,UI.dim,'right',6);
- const LW=192,start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,LW,10);}
+ text('LV '+lv,VW/2,6,UI.dim,'center',6);
+ for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),lab=sk&&!sk.active?'PASSIVE':['F','G'][i],lw=inkW(lab,6)+8;g.fillStyle='#302c3e';g.fillRect(x,38,width-3,11);text(lab,x+4,40,UI.gold,'left',6);text(fitName(sk?sk.name:'EMPTY',width-lw-8,6),x+4+lw,40,UI.text,'left',6);}
+ for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,51,91,11);text(tab===0?'ACTIVES':'PASSIVES',x+45,53,treeBranch===tab?UI.gold:UI.dim,'center',6);}
+ const LW=192,start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=64+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,LW,10);}
   /* THE PASSIVE LADDER: what he has is lit and says ON; what is coming is dim and says the level it arrives at */
   if(!q.active){const on=passiveOn(PROG,h,q.id,lv),bg=on?'ON':'LV '+q.level;text(fitName(q.name,LW-10-inkW(bg,6)-4,6),13,y,on?UI.sel:UI.dim,'left',6);text(bg,9+LW-4,y,on?UI.sel:UI.dim,'right',6);continue;}
   const bg=eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price;text(fitName(q.name,LW-10-inkW(bg,6)-4,6),13,y,eq?UI.sel:UI.title,'left',6);text(bg,9+LW-4,y,owned?UI.sel:UI.gold,'right',6);}
- treePreview(n,9+LW+6,46,VW-9-(9+LW+6),76);
- if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):passiveOn(PROG,h,n.id,lv)?'PASSIVE  ALWAYS ON':'PASSIVE  ARRIVES AT LEVEL '+n.level),12,124,UI.gold,'left',6);
+ treePreview(n,9+LW+6,51,VW-9-(9+LW+6),76);
+ if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):passiveOn(PROG,h,n.id,lv)?'PASSIVE  ALWAYS ON':'PASSIVE  ARRIVES AT LEVEL '+n.level),12,128,UI.gold,'left',6);
  const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
- const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,134+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
- const help=treeMsgT>0?treeMsg:!loadoutSafe()?'VIEW ONLY: EQUIP AT A SAFE SHRINE':treeBranch===1?'PASSIVES COME WITH LEVELS  LEFT/RIGHT TABS':('LEFT/RIGHT TABS  Z BUY  F/G EQUIP  X MORE');text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
+ const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,137+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
+ const help=treeMsgT>0?treeMsg:!loadoutSafe()?STORE_HELP.skillsLook:treeBranch===1?STORE_HELP.passives:STORE_HELP.skills;text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
 }
 function updateStore(dt) {
-  if (morePress() && storePages > 1) { storePage = (storePage + 1) % storePages; SFX.ui(); }   /* the next page of a long description */
   if (PROG.refundNote) { storeMsg = PROG.refundNote + ' gold refunded from older training'; storeMsgT = 4; PROG.refundNote = 0; saveProgress(); }
   storeMsgT = Math.max(0, storeMsgT - dt);
-  const tabs = storeTabs(), tab = tabs[storeTab], items = storeItems(tab);
-  if (leftPress) { storeTab = (storeTab + tabs.length - 1) % tabs.length; storeI = 0; SFX.ui(); }
-  if (rightPress) { storeTab = (storeTab + 1) % tabs.length; storeI = 0; SFX.ui(); }
+  const tab = STORE_TABS[storeTab];
+  /* THE TABS: TAB or E (LB on a pad) the next, Q (RB) the one before - the settings' own keys. LEFT and RIGHT turn the tabs too, except on SKILLS, where they switch ACTIVES / PASSIVES. */
+  const step = mapPress || talkPress ? 1 : talentsPress ? -1 : !tab.talent && rightPress ? 1 : !tab.talent && leftPress ? -1 : 0;
+  if (step) { storeTab = stepStoreTab(storeTab, step); storeI = 0; storeMsgT = 0; SFX.ui(); return; }
+  if (pausePress) { state = storeBack; SFX.menuClose(); return; }
+  if (tab.talent) { updateSkills(dt); return; }
+  const items = storeItems(tab);
+  if (morePress() && storePages > 1) { storePage = (storePage + 1) % storePages; SFX.ui(); }   /* the next page of a long description */
   if (items.length && upPress) { storeI = (storeI + items.length - 1) % items.length; SFX.ui(); }
   if (items.length && downPress) { storeI = (storeI + 1) % items.length; SFX.ui(); }
   if (confirmPress && items.length) {
-    const k = items[storeI], owned = tab.talent || k.consumable ? false : (k.id === 'none' || owns(tab, k.id));
+    const k = items[storeI], owned = k.consumable ? false : (k.id === 'none' || owns(tab, k.id)), lock = lockOf(k, PROG, featDone);
     if (k.practice === 'trial') { startTrial(hero()); return; }   /* THE GUIDED YARD, from the store as well as the pause menu */
     if (k.practice) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { rush = null; loadLevel(i); introSeen = true; startGame(); SFX.uiSel(); } return; }
-    if (tab.talent) learnTalent(k);
-    else if (k.consumable) { const n = PROG.tonics || 0; if (n >= k.max) { SFX.ui(); storeMsg = 'you carry all you can'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.price) { if (!godMode()) PROG.coins -= k.price; PROG.tonics = n + 1; saveProgress(); SFX.coin(); storeMsg = k.name + ' ' + (n + 1) + ' of ' + k.max; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; } }
-    else if (tab.rank) { const r = rankOf(k.id); if (r >= k.max) { SFX.ui(); storeMsg = k.name + ' is at its peak'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.prices[r]) { if (!godMode()) PROG.coins -= k.prices[r]; PROG.ranks[k.id] = r + 1; applyUpgrades(); if (k.id === 'vigour') P.hp = Math.min(P.maxHp, P.hp + 10); if (k.id === 'breath') P.st = Math.min(P.maxSt, P.st + 10); saveProgress(); SFX.coin(); SFX.rankUp(); statFlash = 0.8; storeMsg = k.name + ' rank ' + (r + 1); storeMsgT = 2; burst(VW / 2 + camX, 60 + camY, 16, ['#8fd160', '#fff6c8'], 60, 0.6, -20, 1); } else { SFX.buzz(); storeMsg = 'need ' + (k.prices[r] - PROG.coins) + ' more gold'; storeMsgT = 2; } }
-    else if (owned && tab.key) { setEquip(tab.key, k.id); if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.equip(); storeMsg = k.passive ? k.name + ' is always on' : k.name + ' equipped' + (tab.key === 'skill' ? ' on F' : tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2;
+    if (owned && tab.key) { setEquip(tab.key, k.id); if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.equip(); storeMsg = k.passive ? k.name + ' is always on' : k.name + ' equipped' + (tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2;
       if (tab.key === 'hero' && heroLevel(k.id) === 0) { storeMsg = k.name + ' starts at nothing: no levels, no skills, no charm. Walk a wood with him and he grows.'; storeMsgT = 5.5; }
       else if (tab.key === 'hero' && !(PROG.tried && PROG.tried[k.id])) { storeMsg = k.name + ' equipped. HIS TRIAL IS IN THE PAUSE MENU: A PRACTICE YARD FOR EVERY VERB HE HAS.'; storeMsgT = 5; } }
     else if (owned) { SFX.ui(); storeMsg = 'already yours'; storeMsgT = 1.5; }
-    else if (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) { SFX.buzz(); storeMsg = 'clear ' + k.needsName + ' first'; storeMsgT = 2; }
-    else if (k.feat && !featDone(k.feat)) { SFX.buzz(); storeMsg = k.featName + ' to earn it'; storeMsgT = 2; }
+    else if (lock) { SFX.buzz(); storeMsg = lock; storeMsgT = 2; }   /* every lock is the item's own: a level cleared or a feat done (src/store.js lockOf) */
+    else if (!loadoutSafe()) { SFX.buzz(); storeMsg = 'buy at a shrine, the map or a shop'; storeMsgT = 2.5; }   /* coins are spent where they are safe: the carried ones are at risk between shrines (src/death-cost.js) */
+    else if (k.consumable) { const n = PROG.tonics || 0; if (n >= k.max) { SFX.ui(); storeMsg = 'you carry all you can'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.price) { if (!godMode()) PROG.coins -= k.price; PROG.tonics = n + 1; saveProgress(); SFX.coin(); storeMsg = k.name + ' ' + (n + 1) + ' of ' + k.max; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; } }
     else if (k.silver && coinRoute(k) && PROG.coins >= k.coinPrice) { buyHeroCoins(k.id); setEquip(tab.key, k.id); applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); saveProgress(); SFX.coin(); SFX.sting(); SFX.medal(); storeMsg = 'bought ' + k.name + ' for ' + k.coinPrice + ' gold'; storeMsgT = 2.5; }   /* THE CLASS LEVEL'S ROUTE: cleared, she is also sold for gold (and gold is spent before the scarcer silver) */
     else if (k.silver) { if (silverAvail() >= k.price) { PROG.silverSpent = (PROG.silverSpent || 0) + k.price; PROG[tab.owned][k.id] = true; setEquip(tab.key, k.id); applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); saveProgress(); SFX.coin(); SFX.sting(); SFX.medal(); storeMsg = 'bought ' + k.name; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - silverAvail()) + ' more silver'; storeMsgT = 2; } }
     else if (PROG.coins >= k.price) { PROG.coins -= k.price; PROG[tab.owned][k.id] = true; if (tab.key) setEquip(tab.key, k.id); if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); applyUpgrades(); saveProgress(); SFX.coin(); SFX.sting(); storeMsg = 'bought ' + k.name; storeMsgT = 2; if (PROG.storeHint === k.id) PROG.storeHint = null; burst(VW / 2 + camX, 60 + camY, 16, ['#ffd36b', '#fff6c8'], 60, 0.6, -20, 1); }
     else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; }
   }
-  if (pausePress) { if (storeMode === 'equip') { storeMode = 'buy'; state = equipFrom === 'map' ? 'map' : 'menu'; SFX.ui(); } else if (L && L.shop && state === 'store') { state = 'play'; SFX.ui(); } else { state = 'map'; SFX.ui(); } }
 }
 const previewCache = {};
 /* A LONG DESCRIPTION IS PAGED, NOT CUT: X (or V with Z and X swapped, so it is never the key that buys) turns the page */
@@ -3995,57 +3991,48 @@ const skinPreview = (k, icon = false) => preview('skin:' + hero() + ':' + k.id +
 const preview = (key, make) => previewCache[key] || (previewCache[key] = make());
 const weaponPreview = (k, icon = false) => preview('weapon:' + hero() + ':' + PROG.skin + ':' + k.id + ':' + icon, () => heroSet(PROG.skin, k.id, icon ? 'weaponIcon' : 'atk'));
 function drawStore() {
-  if (storeMode === 'equip' && equipFrom !== 'map') { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); } else { g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH); }
-  const x = 12, y = 6, w = VW - 24, h = VH - 12; const tabs = storeTabs();
+  if (storeBack === 'map') { g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH); } else { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); }
+  const x = 3, y = 2, w = VW - 6, h = VH - 4;
   panel(x, y, w, h);
-  text(storeMode === 'equip' ? 'EQUIP' : 'THE STORE', x + 8, y + 6, UI.title);
+  text('THE STORE', x + 8, y + 4, UI.title);
   { const gold = String(PROG.coins), silv = String(silverAvail());
     const gx = x + w - 10 - textW(gold, 8), sx0 = gx - 22 - textW(silv, 8);
-    if (storeKeyLast !== storeMode + ':' + storeTab + ':' + storeI) { storeKeyLast = storeMode + ':' + storeTab + ':' + storeI; storePage = 0; }
-    g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], sx0 - 11, y + 5); text(silv, sx0, y + 6, UI.silver, 'left');
-    g.drawImage(PROP.coin[Math.floor(time * 8) % 4], gx - 11, y + 5); text(gold, gx, y + 6, UI.gold, 'left'); }
-  // two rows of tabs, four across
-  const perRow = 4, tw = Math.floor((w - 16) / perRow);
-  tabs.forEach((t, k) => { const row = Math.floor(k / perRow), col = k % perRow, tx = x + 8 + col * tw, ty = y + 17 + row * 12, sel = k === storeTab; g.fillStyle = sel ? 'rgba(60,90,60,0.8)' : 'rgba(40,36,50,0.7)'; g.fillRect(tx, ty, tw - 3, 11); if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(tx + 0.5, ty + 0.5, tw - 4, 10); } text(t.name, tx + (tw - 3) / 2, ty + 3, sel ? UI.sel : UI.dim, 'center', 6); });
-  const tab = tabs[storeTab], items = storeItems(tab);
+    if (storeKeyLast !== storeTab + ':' + storeI) { storeKeyLast = storeTab + ':' + storeI; storePage = 0; }
+    g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], sx0 - 11, y + 3); text(silv, sx0, y + 4, UI.silver, 'left');
+    g.drawImage(PROP.coin[Math.floor(time * 8) % 4], gx - 11, y + 3); text(gold, gx, y + 4, UI.gold, 'left'); }
+  // TWO ROWS OF TABS, FOUR ACROSS (the order is src/store.js's); each is 9 tall so the skills tab still has its room
+  { const perRow = 4, tw = Math.floor((w - 16) / perRow);
+    STORE_TABS.forEach((t, k) => { const row = Math.floor(k / perRow), col = k % perRow, tx = x + 8 + col * tw, ty = 16 + row * 10, sel = k === storeTab; g.fillStyle = sel ? 'rgba(60,90,60,0.8)' : 'rgba(40,36,50,0.7)'; g.fillRect(tx, ty, tw - 3, 9); if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(tx + 0.5, ty + 0.5, tw - 4, 8); } text(t.name, tx + (tw - 3) / 2, ty + 2, sel ? UI.sel : UI.dim, 'center', 6); }); }
+  const tab = STORE_TABS[storeTab];
+  if (tab.talent) { drawSkills(); return; }   /* SKILLS is the tree and its loadout, with the live previews */
+  const items = storeItems(tab);
   // The list carries names and prices only; everything you have to read lives in the panel on the right,
   // where it has the room to be read. The old rows clipped every description at two short lines.
-  const listX = x + 8, listW = w - 16 - 112, pvX = x + w - 108, pvY = y + 42, pvW = 100, pvH = h - 60;
-  const ROWS = 8, ROWH = 13, off = Math.max(0, Math.min(Math.max(0, items.length - ROWS), storeI - ROWS + 2));
+  const listX = x + 8, listW = w - 16 - 112, pvX = x + w - 108, pvY = 38, pvW = 100, pvH = h - 53;
+  const ROWS = 9, ROWH = 13, off = Math.max(0, Math.min(Math.max(0, items.length - ROWS), storeI - ROWS + 2));
   // the scroll marks go in the GUTTER left of the list, not over the first and last rows' prices
-  if (off > 0) text('^', listX - 5, y + 46, UI.dim, 'center', 6);
-  if (off + ROWS < items.length) text('v', listX - 5, y + h - 24, UI.dim, 'center', 6);
-  if (!items.length) text('nothing here yet.', listX + listW / 2, y + 70, UI.dim, 'center');
+  if (off > 0) text('^', listX - 5, 41, UI.dim, 'center', 6);
+  if (off + ROWS < items.length) text('v', listX - 5, 38 + ROWS * ROWH - 10, UI.dim, 'center', 6);
+  if (!items.length) text('nothing here yet.', listX + listW / 2, 77, UI.dim, 'center');
   const iconOf = k => k.id === 'none' ? null
     : tab.key === 'skin' ? skinPreview(k, true).R.idle[0]
     : tab.key === 'sword' ? weaponPreview(k, true).R.atk[1]
-    : k.practice ? PORTAL_ICON : tab.talent ? treeIcon(treeNodes()[0]) : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
+    : k.practice ? PORTAL_ICON : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
     : k.active ? skillIcon(k.id)   /* EVERY HERO'S ABILITIES SHOW THEIR OWN ICON IN THE STORE (Daniel, 2026-09-26: "can the store have icons for the abilities") - it only knew the Pyromancer's set, so the rest showed a bolt */
     : PYRO_ICONS[k.id] ? PYRO_ICONS[k.id] : GEO_ICONS[k.id] ? GEO_ICONS[k.id]
     : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt;
-  const lockedOf = k => (k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat));
   items.forEach((k, i) => {
     if (i < off || i >= off + ROWS) return;
-    const yy = y + 44 + (i - off) * ROWH, sel = i === storeI;
-    const owned = tab.talent ? false : k.consumable ? (PROG.tonics || 0) >= k.max : tab.rank ? rankOf(k.id) >= k.max : (k.id === 'none' || owns(tab, k.id));
-    const eq = tab.key && (PROG[tab.key] === k.id || (k.id === 'none' && (!PROG[tab.key] || PROG[tab.key] === 'none') && !(tab.key === 'skill' && skillNow())));
+    const yy = 40 + (i - off) * ROWH, sel = i === storeI, st = storeRowState(tab, k), owned = st === 'owned' || st === 'equipped', eq = st === 'equipped', locked = st === 'locked';
     if (sel) { g.fillStyle = 'rgba(60,90,60,0.45)'; g.fillRect(listX, yy - 2, listW, ROWH - 1); g.fillStyle = UI.sel; g.fillRect(listX, yy - 2, 2, ROWH - 1); }
     const icon = iconOf(k);
     if (icon) { if (tab.key === 'skin' || tab.key === 'sword') g.drawImage(icon, 0, 0, icon.width, icon.height, listX + 4, yy - 3, 12, 12); else g.drawImage(icon, 0, 0, icon.width, icon.height, listX + 5, yy - 1, 9, 9); }
     else { g.fillStyle = '#5a5f5a'; g.fillRect(listX + 8, yy + 2, 5, 5); }
     // the badge goes on first and the name takes what is left of the row: they used to be laid out from
     // opposite ends with nothing measuring the gap, and on a long name they met in the middle
-    const nameOf = () => (tab.talent && k.tier > 1 ? '  '.repeat(k.tier - 1) : '') + k.name;
-    const rowName = (badge, extra = 0) => text(fitName(nameOf(), listW - 26 - (badge ? inkW(badge, 6) + 6 : 0) - extra, 6), listX + 20, yy, sel ? UI.title : UI.text, 'left', 6);
-    if (tab.talent) { const bg = 'Z OPEN';
-      rowName(bg); text(bg, listX + listW - 4, yy, UI.sel, 'right', 6); return; }
+    const rowName = (badge, extra = 0) => text(fitName(k.name, listW - 26 - (badge ? inkW(badge, 6) + 6 : 0) - extra, 6), listX + 20, yy, sel ? UI.title : UI.text, 'left', 6);
     if (k.consumable) { const bg = (PROG.tonics || 0) + '/' + k.max + '  ' + k.price + ' GOLD';
       rowName(bg); text(bg, listX + listW - 4, yy, (PROG.tonics || 0) >= k.max ? UI.sel : PROG.coins >= k.price ? UI.gold : '#ff6b6b', 'right', 6); return; }
-    if (tab.rank) { const rr = rankOf(k.id); const bg = rr >= k.max ? 'PEAK' : k.prices[rr] + 'g';
-      rowName(bg + '     ');   /* the rank pips sit left of the price and want room too */
-      for (let q = 0; q < k.max; q++) { g.fillStyle = q < rr ? UI.sel : '#3a3a44'; g.fillRect(listX + listW - 46 - k.max * 5 + q * 5, yy + 1, 4, 4); }
-      text(bg, listX + listW - 4, yy, rr >= k.max ? UI.sel : PROG.coins >= k.prices[rr] ? UI.gold : '#ff6b6b', 'right', 6); return; }
-    const locked = lockedOf(k);
     // THE BADGE THE ROW ACTUALLY DRAWS, not an approximation of it. It was measured against `k.price` while
     // the thing drawn was "60 GOLD", so the name was cut to leave room for two characters and then ran into
     // seven - which is how THE ADVENTURE BEGINS ended up lying across its own price.
@@ -4061,25 +4048,18 @@ function drawStore() {
   g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(pvX + 0.5, pvY + 0.5, pvW - 1, pvH - 1);
   { const k = items[storeI]; const mx = pvX + pvW / 2;
     if (k) {
+      const st = storeRowState(tab, k), owned = st === 'owned' || st === 'equipped', eq = st === 'equipped', locked = st === 'locked', lockWhy = lockOf(k, PROG, featDone);
       // the art sits in the top 46px, feet on that line - unless the words need the room: then the art shrinks and
       // the words move up (the WISP's line ran off the bottom of the box)
-      const lk0 = lockedOf(k), body0 = lk0 ? (k.feat ? k.featName : 'clear ' + k.needsName + ' first') : (k.desc || k.per || '');
+      const body0 = locked ? lockWhy : (k.desc || k.per || '');
       const need = 8 * Math.min(2, wrap(k.name, pvW - 10, 6).length) + 11 + BODY_LH * wrap(body0, pvW - 10, 6).length, room = pvH - 10 - 50;
-      const squeeze = tab.talent ? 0 : Math.max(0, Math.min(24, need - room)), artB = pvY + 46 - squeeze;
+      const squeeze = Math.max(0, Math.min(24, need - room)), artB = pvY + 46 - squeeze;
       if (tab.key === 'skin' || tab.key === 'sword' || tab.key === 'hero') {
         const set = tab.key === 'hero' ? preview('hero:' + k.id + ':' + PROG.skin + ':' + PROG.sword, () => heroSet(PROG.skin, PROG.sword, 'idle', k.id))
           : tab.key === 'skin' ? skinPreview(k)
           : weaponPreview(k);
         const fr = tab.key === 'sword' ? set.R.atk[Math.floor(time * 6) % 2 + 1] : set.R.idle[Math.floor(time * 4.5) % set.R.idle.length];
         const sc = Math.max(1, Math.min(3, (46 - squeeze) / fr.height)); g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(mx - fr.width * sc / 2), Math.round(artB - fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
-      } else if (tab.rank) {
-        const rr = rankOf(k.id);
-        text(rr + ' / ' + k.max, mx, pvY + 10, UI.title, 'center');
-        for (let q = 0; q < k.max; q++) { g.fillStyle = q < rr ? UI.sel : '#3a3a44'; g.fillRect(mx - k.max * 5 + q * 10 + 1, pvY + 24, 8, 8); }
-        text(k.id === 'vigour' ? 'HEALTH' : k.id === 'breath' ? 'STAMINA' : k.id === 'recovery' ? 'REGEN' : k.id === 'temper' ? 'DAMAGE' : 'COST', mx, pvY + 36, UI.dim, 'center', 6);
-      } else if (tab.talent) {   /* the SKILLS shop window: your hero's abilities performed one after another (src/ability-preview.js) */
-        const acts = treeNodesFor(hero()), a = acts[Math.floor(time / 3.6) % Math.max(1, acts.length)];
-        if (a) { treePreview(a, pvX + 2, pvY + 2, pvW - 4, 44 - squeeze); text(fitName(a.name, pvW - 6, 6), pvX + 3, pvY + 4, UI.gold, 'left', 6); }
       } else {
         const icon = iconOf(k);
         const isc = squeeze > 8 ? 2 : 3; if (icon) g.drawImage(icon, 0, 0, icon.width, icon.height, Math.round(mx - icon.width * isc / 2), Math.round(artB - icon.height * isc), icon.width * isc, icon.height * isc);
@@ -4088,21 +4068,18 @@ function drawStore() {
       let ty = pvY + 50 - squeeze;
       for (const ln of wrap(k.name, pvW - 10, 6).slice(0, 2)) { text(ln, mx, ty, UI.title, 'center', 6); ty += 8; }
       // what it costs, or what you already have
-      const locked = lockedOf(k);
-      const owned = tab.rank ? rankOf(k.id) >= k.max : (k.id === 'none' || owns(tab, k.id));
-      const eq = tab.key && PROG[tab.key] === k.id;
-      const cost = tab.talent ? 'LV ' + heroLevel() + '  COINS' : k.consumable ? (PROG.tonics || 0) + ' OF ' + k.max + ' CARRIED' : tab.rank ? (rankOf(k.id) >= k.max ? 'AT ITS PEAK' : k.prices[rankOf(k.id)] + ' GOLD')
+      const cost = k.consumable ? (PROG.tonics || 0) + ' OF ' + k.max + ' CARRIED'
         : tab.key === 'hero' && (eq || owned) ? (eq ? 'EQUIPPED  L' : 'OWNED  L') + heroLevel(k.id)   /* a hero carries his own level now: the card has to say which */
         : k.practice ? 'Z TO STEP THROUGH' : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD') + (coinRoute(k) ? ' OR ' + k.coinPrice + ' GOLD' : '');
       text(cost, mx, ty, eq || owned ? UI.sel : locked ? '#ff9a5c' : k.silver ? UI.silver : UI.gold, 'center', 6); ty += 11;
-      const body = locked ? (k.feat ? k.featName : 'clear ' + k.needsName + ' first') : (k.desc || k.per || '');
+      const body = locked ? lockWhy : (k.desc || k.per || '');
       /* THE WHOLE OF WHAT IT DOES, A PAGE AT A TIME: a hero's description ran to thirty lines and the panel showed the first eight */
       const bl = wrap(body, pvW - 10, 6), per = Math.max(1, Math.floor((pvY + pvH - 12 - ty) / BODY_LH)), pages = Math.max(1, Math.ceil(bl.length / per)), pg = storePage % pages; storePages = pages;
       if (pages > 1 && window.__textRec) textRec('paged', { s: body, pages });
       bl.slice(pg * per, pg * per + per).forEach((ln, i) => text(ln, pvX + 5, ty + i * BODY_LH, locked ? '#ff9a5c' : UI.text, 'left', 6));
       if (pages > 1) text(moreKey() + ' MORE ' + (pg + 1) + '/' + pages, pvX + pvW - 5, pvY + pvH - 10, UI.sel, 'right', 6);
     } else storePages = 1; }
-  text(storeMsgT > 0 ? storeMsg : storeMode === 'equip' ? 'LEFT/RIGHT tabs   Z equip   ESC back' : 'LEFT/RIGHT tabs   Z buy or equip   ESC back', VW / 2, y + h - 10, storeMsgT > 0 ? UI.title : UI.dim, 'center', 6);
+  text(storeMsgT > 0 ? storeMsg : fitName(loadoutSafe() ? STORE_HELP.buy : STORE_HELP.look, w - 16, 6), VW / 2, y + h - 10, storeMsgT > 0 ? UI.title : UI.dim, 'center', 6);
 }
 
 // ---------- bestiary ----------
@@ -4371,7 +4348,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
-const PAUSE_ITEMS = ['Resume', 'Map', 'Skills', 'Equip', 'Hero', 'Co-op', 'Co-op guide', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
+const PAUSE_ITEMS = ['Resume', 'Map', 'Skills', 'Store', 'Hero', 'Co-op', 'Co-op guide', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
 /* THE SETTINGS LIST IS FIVE TABS (src/settings-ui.js: AUDIO, DISPLAY, GAMEPLAY, CONTROLS, ACCESSIBILITY). 'Slot 3 key' and 'Slot 4 key' left the menu with the third and fourth slots (MAX_SLOTS = 2); their handlers stay in menuAdjust. */
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
@@ -4379,7 +4356,7 @@ const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 :
 let menuKind = 'pause';
 // one line each, so nobody has to guess what a switch does
 const SETTING_TIPS = {
-  'Skills': 'skills, coin purchases and equipped techniques (Q)', 'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
+  'Skills': 'the store, open on your abilities and their loadout (Q)', 'Store': 'heroes, skins, weapons, charms, skills: buy and equip (V on the map)', 'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
   'Combat': 'WEIGHTY: swings commit you, foes push back (a prototype)',
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk boxes fill',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
@@ -4450,8 +4427,8 @@ function menuConfirm() {
   else if (k === 'Back') { if (menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.ui(); } else { state = menuFrom; SFX.menuClose(); } }
   else if(k==='Export save'){ const raw=saveBlocked?localStorage.getItem(slotKey(slot)):exportProgress(PROG);if(!raw){menuMsg='No saved data to export';menuMsgT=4;return;}const url=URL.createObjectURL(new Blob([raw],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='bracken-slot-'+(slot+1)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);menuMsg='Save exported';menuMsgT=4; }
   else if(k==='Import save'){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.onchange=async()=>{const file=input.files[0];if(!file)return;try{if(file.size>8000000)throw Error('Save file is too large');importProgress(localStorage,slotKey(slot),await file.text(),LEVELS.filter(l=>!l.hidden).map(l=>l.id));loadSlot(slot);applySkin();applyUpgrades();menuMsg='Imported; previous save backed up';}catch(error){menuMsg=error.message;}menuMsgT=8;};input.click(); }
-  else if (k === 'Skills') { treeFrom = 'menu'; treeI = 0; treeBranch = 0; state = 'tree'; SFX.menuOpen(); }
-  else if (k === 'Equip') { openEquip('menu'); }
+  else if (k === 'Skills') openStore('menu', 'skills');
+  else if (k === 'Store') openStore('menu', 'heroes');
   else if (k === 'Hero') { state = 'herocard'; SFX.uiSel(); }
   else if (k === 'Return to map' && rushOn()) { rush = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
   else if (k === 'Return to map') { setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
@@ -4819,7 +4796,7 @@ function layoutTouch() {
     {k:'skill4',x:W-b*6.4,y:H-b*4.1,w:b*1.2,h:b*1.2,label:'4',skill:3},
   ];
 }
-const zoneOn = z => z.skill === undefined || (state === 'tree' ? z.skill < slotsAt(heroLevel()) : !!skillAt(z.skill));
+const zoneOn = z => z.skill === undefined || (state === 'store' ? z.skill < slotsAt(heroLevel()) : !!skillAt(z.skill));
 function zoneAt(x, y) { for (const z of touchZones) if (zoneOn(z) && x >= z.x && x < z.x + z.w && y >= z.y && y < z.y + z.h) return z.k; return null; }
 function touchPress(k) { initAudio(); anyPress = true; if (k === 'jump') { jumpPress = true; confirmPress = true; } if (k === 'atk') atkPress = true; if (k === 'dodge') dodgePress = true; if (k === 'throw') throwPress = true; if(k==='skill2')skill2Press=true;if(k==='skill3')skill3Press=true;if(k==='skill4')skill4Press=true; if (k === 'up') talkPress = true; if (k === 'pause') pausePress = true; if (k === 'left') leftPress = true; if (k === 'right') rightPress = true; if (k === 'up') upPress = true; if (k === 'down') downPress = true; if (k !== 'pause' && k !== 'up') keys[k] = true; }
 function touchRelease(k) { if (k && k !== 'pause' && k !== 'up') keys[k] = false; }
@@ -23503,7 +23480,7 @@ function updateProps(dt) {
        middle of was left standing while the shop menu came up over it. The keepers are gone from every level now, and the
        branch asks the room as well - only the three rooms that ARE the store (`shop: true`) can open it. The store is
        reached from its own node on the map, as it always was. */
-    if (pr.t === 'npc' && pr.kind === 'keeper' && L && L.shop && !P.dead && state === 'play' && talkPress && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 20) { storeMode = 'buy'; state = 'store'; storeI = 0; SFX.uiSel(); SFX.menuOpen && SFX.menuOpen(); }
+    if (pr.t === 'npc' && pr.kind === 'keeper' && L && L.shop && !P.dead && state === 'play' && talkPress && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 20) openStore('play', SHOP_START[LEVELS[levelIndex].id] || 'heroes');
     if (pr.t === 'exit' && !P.dead && state === 'play' && talkPress && Math.abs(P.x - pr.x) < 14) { state = 'map'; map.node = Math.max(0, NODES.findIndex(n => n.kind === 'store' && (n.shop || 'shop') === LEVELS[levelIndex].id)); map.seg = NODE_AT[map.node]; map.t = 0; setView('normal'); SFX.uiSel(); music.play(menuTrack()); }
     if (pr.t === 'npc' && pr.ride) { const fm = movers.find(mv => mv.ferry); if (fm) { pr.x = fm.x + 16; pr.y = fm.y; } }
     if (pr.t === 'npc' && pr.kind === 'ferryman' && !P.dead && state === 'play' && talkPress && Math.abs(P.x - pr.x) < 30 && Math.abs(P.y - pr.y) < 24) { const fm = movers.find(mv => mv.ferry); if (fm && !fm.paid && !fm.free && fm.toll) { if (PROG.coins >= fm.toll) { PROG.coins -= fm.toll; saveProgress(); fm.paid = true; marks.add('ferry:' + fm.x0); SFX.coin(); SFX.uiSel(); number(pr.x, pr.y - 28, 'PAID ' + fm.toll + ' GOLD', '#ffd34a'); number(pr.x, pr.y - 38, 'STEP ABOARD', '#bfe6f5'); } else { SFX.clank(); number(pr.x, pr.y - 28, 'NOT ENOUGH GOLD', '#ff6b6b'); } } }
@@ -24109,10 +24086,9 @@ function update(dt) {
     return;
   }
   if (state === 'gameover') { if (confirmPress || pausePress) { state = 'map'; gotoLevelNode(levelIndex); SFX.uiSel(); } return; }
-  if (talentsPress && (state === 'play' || state === 'map' || state === 'paused' || state === 'store' || state === 'equip')) { treeFrom = state === 'paused' ? 'paused' : state; treeI = 0; treeBranch = 0; state = 'tree'; talentsPress = false; SFX.menuOpen(); }
+  if (talentsPress && (state === 'play' || state === 'map')) { talentsPress = false; openStore(state, 'skills'); }   /* Q opens the store on SKILLS (in the store itself, Q is the tab before) */
   if (state === 'map') { updateMap(dt); updateParticles(dt); return; }
   if (state === 'store') { updateStore(dt); updateParticles(dt); return; }
-  if (state === 'tree') { updateTree(dt); updateParticles(dt); return; }
   if (state === 'bestiary' && throwPress) { // F on a boss you have already put down: fight it again, on its own
     const b = beastList()[bestI], ix = b ? RUSH.findIndex(q => q.boss === b.t) : -1;
     if (ix >= 0 && (PROG.beasts || {})[b.t]) { SFX.uiSel(); rushStart(ix); return; }
@@ -27570,7 +27546,6 @@ function render() {
   } else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
   else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else if (state === 'editor') drawEditor();
-  else if (state === 'tree') { drawTree(); }
   else if (state === 'store') { drawStore(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else {
     const z = (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt = seaTilt();
@@ -28036,7 +28011,6 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   // THE CURSORS OF EVERY LIST, so the playtest bot can walk the TABS and the ROWS of a screen and not just
   // the screen's first face. Most menu bugs live on the third tab of something.
   ui: {
-    get storeMode() { return storeMode; }, set storeMode(v) { storeMode = v; },
     get storeTab() { return storeTab; }, set storeTab(v) { storeTab = v; },
     get storeI() { return storeI; }, set storeI(v) { storeI = v; },
     get treeI() { return treeI; }, set treeI(v) { treeI = v; },
@@ -28053,7 +28027,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
     controlsRows: () => controlsCardRows(),
     coopPickOpen: from => { coopPickFrom = from; coopPick = { i: 0, ally: false }; state = 'coop'; }, coopPickList: () => coopPickList(),
     coopHelp: { pages: () => coopHelpPages(), get page() { return coopHelpPage; }, set page(v) { coopHelpPage = v; }, open: from => openCoopHelp(from) },
-    tabs: () => storeTabs().length, items: () => storeItems(storeTabs()[storeTab]).length, menuCount: () => menuItems().length,
+    tabs: () => STORE_TABS.length, items: () => storeItems(STORE_TABS[storeTab]).length, skillsTab: SKILLS_TAB, get storeBack() { return storeBack; }, set storeBack(v) { storeBack = v; }, storeOpen: (back, tab) => openStore(back, tab), storeRows: () => STORE_TABS.map(t => ({ id: t.id, rows: t.talent ? [] : storeItems(t).map(k => ({ id: k.id, state: storeRowState(t, k), price: k.price, silver: !!k.silver })) })), menuCount: () => menuItems().length,
     treeRows: () => treeNodes().length, beasts: () => beastList().length,
   },
   // THE PLAYTEST BOT. Loaded only when it is asked for, so it costs nothing to ship it.
