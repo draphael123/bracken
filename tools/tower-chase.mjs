@@ -183,7 +183,8 @@ try {
    /* 2. EVERY HERO GETS UP IT UNDER THE SCROLL: no god mode, health held up (his spells counted, not fatal) - the dark must never catch it */
    for(const h of ${JSON.stringify(HEROES)}){boot(h,false);through();const q=LB.chaseClimb(BK,chase(),{secs:150,refill:true});out.heroes[h]={carpet:!!BK.carpet(),secs:Math.round(q.t/60),taken:Math.round(q.taken),died:q.died};}
    /* 3. STAND ON THE STAIR AND THE DARK TAKES YOU: you wake at the foot, the dark at rest, him over the first landing */
-   boot('knight',false);through();BK.tp(${FLIGHTS[0].steps[1][0] + 1},${FLIGHTS[0].steps[1][2] - 1});let died=-1;for(let i=0;i<60*60&&died<0;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);if(BK.P.dead>0)died=i;}
+   boot('knight',false);through();for(let i=0;i<60&&BK.P.x<${checks[0].x * TS + 16};i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;out.lit=BK.P.x>=${checks[0].x * TS + 8};   /* (out of the ring and past the foot's shrine, as the way to the first step goes) */
+   BK.tp(${FLIGHTS[0].steps[1][0] + 1},${FLIGHTS[0].steps[1][2] - 1});let died=-1;for(let i=0;i<60*60&&died<0;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);if(BK.P.dead>0)died=i;}
    out.standDied=died>=0?Math.round(died/60):null;out.standPhase=D().phase;BK.sim(400);BK.sim(90);
    const m2=chase();out.respawn=[Math.floor(BK.P.x/16),Math.round(BK.P.y/16)-1];out.after=D().phase;out.m2=m2&&[m2.mode,Math.round(m2.x/16),Math.round(m2.y/16)];out.tuneRespawn=AU.music.want;
    return out;})()`, 1500000);
