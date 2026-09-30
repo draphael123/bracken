@@ -127,6 +127,7 @@ if (lv) {
   ok(L.ents.filter(e => e.t === 'silver').length === 3, 'the theatre does not carry the campaign\'s three silvers');
   const M = L.mainStage; ok(M && M.door > 0 && M.x1 - M.x0 >= 30 && ck.some(e => e.x < M.door && e.x >= M.door - 10) && L.ents.some(e => e.t === 'gate' && e.x > M.door), 'THE MAIN STAGE (the Puppeteer\'s room: a door, a checkpoint before it, a room and a gate) is not there: ' + JSON.stringify(M));
   ok(!L.ents.some(e => ['npc', 'stray', 'captive', 'folk'].includes(e.t)), 'an NPC or stray stands in the theatre');
+  ok(M && [...Array(40).keys()].every(k => L.grid[(M.floor + 2) * L.W + M.stageX + k] === T.SOLID) && [...Array(38).keys()].every(k => [...Array(16).keys()].every(r => L.grid[(M.floor - 16 + r) * L.W + M.stageX + 1 + k] === T.AIR)), 'THE MAIN STAGE is not kept for the Puppeteer: 40 columns from ' + (M && M.stageX) + ' open from row R-16 to R-1 inside the walls (his builder lays R and R+1), and row R+2 solid under it (PUPPETEER2: his trapdoor pits stand on it)');
 }
 
 // ---------------- THE PAGE ----------------

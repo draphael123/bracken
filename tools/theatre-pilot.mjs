@@ -54,10 +54,10 @@ try {
       const on = id => !!(P().onMover && P().onMover.line === id);
       // ---- 0. THE HOUSE: the grand stair, the usher on the dress circle, the chandelier, down the stalls, the pit, the drum, the apron ----
       leg('up the grand stair to the dress circle', walk(20) && P().y < 25 * TS);
-      walk(30); walk(36, { tol: 3 }); strike(1); wait(90); leg('the chandelier struck down onto the stalls', BK.movers().some(m => m.chandelier && m.y > 30 * TS));
-      walk(40); walk(46); leg('down the raked stalls', P().y > 34 * TS);
-      walk(47); hop(1, 20); walk(52); hop(1, 14); walk(54, { tol: 3, noFight: true }); leg('into the pit, onto the drum riser', P().y > 37 * TS);
-      for (let i = 0; i < 8 && P().y > 34 * TS; i++) { clear(); k.jump = true; BK.press('jump'); k.right = true; for (let j = 0; j < 90 && P().y > 34 * TS - 2; j++) { k.right = P().x < 55 * TS || P().y < 34 * TS; tick(1); } clear(); tick(4); if (P().x < 52 * TS) { walk(52); hop(1, 14); walk(54, { tol: 3, noFight: true }); } }
+      walk(30); walk(36, { tol: 3 }); strike(1); wait(220); leg('the chandelier struck down onto the stalls', BK.movers().some(m => m.chandelier && m.y > 30 * TS));
+      walk(40); walk(46); leg('down the raked stalls', P().y >= 33 * TS);
+      walk(47); hop(1, 20); walk(51); hop(1, 12); hop(1, 12); walk(54, { tol: 3, noFight: true }); leg('into the pit, onto the drum riser', P().y > 37 * TS);
+      for (let i = 0; i < 8 && P().y > 34 * TS; i++) { clear(); k.jump = true; BK.press('jump'); k.right = true; for (let j = 0; j < 90 && P().y > 34 * TS - 2; j++) { k.right = P().x < 55 * TS || P().y < 34 * TS; tick(1); } clear(); tick(4); if (P().x < 52 * TS) { walk(51); hop(1, 12); hop(1, 12); walk(54, { tol: 3, noFight: true }); } }
       leg('the kettle drum throws you onto the apron', walk(62) && P().y <= 34 * TS);
       leg('through the pass door (checkpoint one)', walk(X(15)));
       // ---- 1. the store and the rope up; the dressing rooms: the chorus plugged, the quick-change door, the mirror room, the fitting ----
@@ -66,8 +66,8 @@ try {
       leg('up the rope into the dressing rooms', P().y <= 25 * TS);
       walk(X(49), { tol: 3 }); strike(-1); const cl = TH().spots.find(s => Math.abs(s.x - (X(48) * TS + 8)) < 4); if (cl && cl.i !== 1) strike(-1); leg('the lamp swung onto the wardrobe door', cl && cl.i === 1);
       walk(X(69), { tol: 3 }); strike(-1); for (let j = 0; j < 400 && FL('quick-change').at !== FL('quick-change').b; j++) { if (!fight()) wait(1); } leg('the quick-change door flown out', FL('quick-change').at === FL('quick-change').b);
-      walk(X(88), { tol: 3 }); const fl = TH().spots.find(s => Math.abs(s.x - (X(90) * TS + 8)) < 4); strike(1); if (fl && fl.i !== 1) strike(1); leg('the carvers\' lamp pinned on one of the fitting', fl && fl.i === 1);
-      walk(X(92)); leg('down into the workshop', P().y > 30 * TS);
+      walk(X(88), { tol: 3 }); const fl = TH().spots.find(s => Math.abs(s.x - (X(90) * TS + 8)) < 4); strike(1); if (fl && fl.i !== 1) strike(1); leg('the carvers lamp pinned on one of the fitting', fl && fl.i === 1);
+      walk(X(92)); wait(20); leg('down into the workshop', P().y > 26 * TS);
       leg('through the workshop', walk(X(110)));
       // ---- 2. the dock: the winch, the ground row, up the sill ----
       walk(X(111), { tol: 3 }); strike(1); wait(80); leg('the ground row slid to the sill', FL('ground row').at === FL('ground row').b);
@@ -104,6 +104,7 @@ try {
       for (let i = 0; i < 5 && FL('wing flat').at !== FL('wing flat').b; i++) { walk(X(244), { tol: 3 }); if (FL('wing flat').to !== FL('wing flat').b) strike(1); for (let j = 0; j < 200 && FL('wing flat').at !== FL('wing flat').b; j++) { if (!fight()) wait(1); } }
       leg('the wing flat slid open', FL('wing flat').at === FL('wing flat').b);
       for (let i = 0; i < 4 && !on('G'); i++) { walk(X(250)); hop(1, 12); walk(X(252), { tol: 3, noFight: true }); wait(20); }
+      walk(X(251), { tol: 2, noFight: true });   /* the batten's left end, beside its lock */
       strike(-1); wait(120); leg('batten G flown up to the loading gallery', P().y < 27 * TS);
       leg('along the loading gallery', walk(X(290)));
       for (let i = 0; i < 10 && BK.enemies().some(e => e.elite && e.alive); i++) { walk(X(286)); for (let j = 0; j < 120; j++) { if (!fight()) wait(1); } }

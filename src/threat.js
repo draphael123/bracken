@@ -126,7 +126,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      glowing mask and its bells - a read (where to LOOK) rather than a fight. WEIGHED UP after Daniel approved the greybox (2026-09-29): the fair read INDEX 34 against ~117 and no bodies are to be added, so a mummer is a 5 (constant attention: you may never turn your back) and the hobby-horse a 6 (the elite that charges 22 the moment
      a back is turned, committed and long) */
   mummer: 5, hobbyhorse: 6,
-  stagehand: 4,   /* THE STAGEHAND (the Maskwright's Theatre): 56 health, an unblockable 18 in front and a 16 dropped on you from above; slow */
+  stagehand: 5,   /* THE STAGEHAND (the Maskwright's Theatre): 56 health, an unblockable 18 in front and a 16 dropped on you from above; slow */
   spotlamp: 0, flylock: 0, flatwinch: 0, stagetrap: 0, startrap: 0,   /* THE MASKWRIGHT'S THEATRE's machinery (src/theatre-rig.js): a lamp, a rope-lock, a winch, a stage trap and the star trap fight nobody */
   /* THE WICKER QUEEN, the fair's boss (claude/fair3): a boss is a 6 */
   wickerqueen: 6,

@@ -120,7 +120,7 @@ function buildBackstage({ painter, T, TS }) {
   air(65, 88, 27, 33); air(89, 110, 18, 33);                                 /* the low workshop under the rooms, and the tall one past their end */
   lamp(90, 25, [[91, ST], [86, ST], [95, ST]], { hang: true });              /* at first on the landing itself */
   foe('mummer', 86, 33, { squad: 'the fitting' }); foe('mummer', 95, 33, { squad: 'the fitting' });
-  foe('bat', 100, 19);
+  foe('bat', 100, 19); foe('haunt', 104, 26, { squad: 'the workshop' });   /* a carving knife nobody is holding */
   block(100, 102, 32, 33); coins([101, 30], [104, 32], [107, 32]); ent('mend', 109, 33);
   /* THE GLUE STORE (a secret): the low workshop's dead end, back under the rooms past the fitting */
   ent('silver', 67, 33); coins([70, 33], [73, 33]); deco('props', 72, 33);
@@ -211,6 +211,7 @@ function buildBackstage({ painter, T, TS }) {
   air(146, 155, 38, 43); air(156, 157, 40, 43);
   flat({ a: 40, b: 36, axis: 'y', x0: 156, w: 2, h: 4, winch: [159, UN - 1], name: 'the prop store shutter' });
   ent('silver', 148, UN - 1); coins([150, UN - 1], [152, UN - 1], [154, UN - 1]); ent('mend', 147, UN - 1);
+  foe('haunt', 151, 40, { squad: 'the prop store' });                         /* a prop that will not stay put: the store's guard */
   deco('props', 151, UN - 1);
   /* THE STAR TRAP: a spring on a pedestal under a hole in the far wing's floor. Hold jump */
   block(222, 223, 42, 43); block(224, 225, 41, 43); block(226, 230, 39, 43); block(231, 232, 41, 43); for (let x = 228; x <= 230; x++) set(x, 39, T.BOUNCER); ent('startrap', 229, 38);   /* two steps up to the pedestal, the spring on it */
@@ -243,11 +244,13 @@ function buildBackstage({ painter, T, TS }) {
   sign(298, 33, "THE MAIN STAGE. HE WORKS THEM FROM THE FLIES.");
 
   // ---------------- 10. THE MAIN STAGE (300-343): THE PUPPETEER's room - A HOOK, NOT A FIGHT (claude/puppeteer wires him in at the merge) ----------------
-  /* >>> THE PUPPETEER'S STAGE GOES HERE. It is kept free for him: columns 300-339 (his 40-column stage, west wall on the stage door's column), rows
-     R-16..R+1 = 18-35 over the floor row R = ST = 34. The call (claude/puppeteer at e13f1b1, its stagePuppeteer, imported from its own module):
+  /* >>> THE PUPPETEER'S STAGE GOES HERE. (THEATRE2: THE HOUSE is grown in at the front, so in the BUILT level every column below is +HOUSE (72): his
+     stage's west wall is column 372, and the call is made in buildMaskwrightTheatre, after the shift, as stagePuppeteer({ set, block, plat, ent }, T, TS, 372, ST)
+     on the built level's painter - L.mainStage.stageX says 372.) Backstage columns, as written here: 300-339 (his 40-column stage, west wall on the stage door's column), rows
+     R-16..R+1 = 18-35 over the floor row R = ST = 34, and row R+2 = 36 SOLID under the whole stage (PUPPETEER2, 82c60e6: the floor of his trapdoor pits - it is rock here, keep it). The call (claude/puppeteer at e13f1b1, its stagePuppeteer, imported from its own module):
          const P = stagePuppeteer({ set, block, plat: boards, ent }, T, TS, 300, ST);   // lays the walls, the grid, the boards, the gallery, him and his two puppets
          movers.push(...P.movers);                                                     // the batten lift, into moversExtra
-     and in the return: arena: P.arena, gateAfterBoss: true, and the gate below moved to (341, 33), past his east wall (his west door is this door).
+     and in the return: arena: P.arena, gateAfterBoss: true, and the gate below moved to (341, 33) here (413 built), past his east wall (his west door is this door).
      His track stays 'puppeteer' (arena.music); the level's stays 'theatre'. Until then the room is empty and the gate stands just inside the door. <<< */
   block(300, 300, 4, 29); air(300, 300, 30, 33);                             /* the stage door: a doorway under the lintel (his west wall and door when he lands) */
   air(301, 342, 4, 33);
@@ -327,8 +330,8 @@ export function buildMaskwrightTheatre(ctx) {
   /* THE STALLS: raked, a row down every four seats, from under the balcony to the pit rail */
   for (let k = 0; k < 7; k++) { const x0 = 19 + k * 4, top = 30 + k; block(x0, x0 + 3, top, H - 1); }
   block(47, 56, 42, H - 1); air(47, 56, 37, 41);                             /* THE ORCHESTRA PIT: five rows under the last row of seats */
-  spikes2(48, 50, 41);                                                       /* broken music stands, under the pit rail */
-  block(53, 56, 40, 41); for (let x = 54; x <= 56; x++) set(x, 40, T.BOUNCER);   /* THE KETTLE DRUMS on their riser: they throw you up onto the apron */
+  spikes2(48, 51, 41);                                                       /* broken music stands, under the pit rail */
+  block(52, 52, 40, 41); block(53, 56, 39, 41); for (let x = 54; x <= 56; x++) set(x, 39, T.BOUNCER);   /* THE KETTLE DRUMS on their riser: they throw you up onto the apron */
   block(57, 71, 34, H - 1);                                                  /* THE APRON, level with the stage door's passage */
   block(57, 71, 12, 20);                                                     /* the proscenium over the apron */
   for (let x = 58; x <= 63; x++) set(x, 24, T.ONEWAY);                       /* THE STAGE BOX over the apron, a rope up to it */
@@ -341,15 +344,17 @@ export function buildMaskwrightTheatre(ctx) {
   sign(20, 23, 'THE PLAYERS MOVE ONLY WHEN NOBODY WATCHES. FACE ONE AND IT STOPS. CUT IT DOWN.');
   sign(34, 23, 'BELLS: IT IS MOVING. A RED MASK: IT IS ABOUT TO STRIKE. LOOK AT IT.');
   foe('mummer', 29, 23, { squad: 'the usher' });                             /* THE USHER, alone on the dress circle: the facing rule, taught */
-  foe('stagehand', 41, 34, { squad: 'the stalls' }); foe('stagehand', 45, 35, { squad: 'the stalls' });   /* two crew in the stalls, one under the chandelier */
+  foe('stagehand', 41, 34, { squad: 'the stalls' }); foe('stagehand', 45, 35, { squad: 'the front stalls' });   /* two crew in the stalls, one under the chandelier */
   foe('mummer', 51, 41, { squad: 'the pit' });                               /* in the pit, among the music stands */
   foe('bat', 50, 14);
   deco('stands', 49, 41); deco('stands', 52, 41, { v: 1 }); deco('seats', 24, 30); deco('seats', 32, 32, { v: 1 });
   ent('silver', 61, 23); coins([59, 23], [63, 23]); rope(64, 24, 33);          /* the stage box: a silver, off the way */
+  foe('boo', 60, 23, { squad: 'the stage box' }); foe('boo', 52, 30, { squad: 'the pit ghost' });   /* THE HOUSE'S OWN DEAD (the shy dead): one in the stage box with its silver, one over the pit - they drift only while your back is turned, like the players */
   coins([12, 30], [14, 28], [16, 26], [24, 22], [28, 22], [40, 32], [50, 39], [55, 37], [66, 32]);
   function rope(x, y0, y1) { for (let y = y0; y <= y1; y++) set(x, y, T.NET); }
   return Object.assign(B, { W, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 },
     interiors: [[2, 9, 27, 33, 'thFoyer'], [10, 71, 12, 40, 'thHouse']].concat(B.interiors),
     darkZones: B.darkZones.concat([{ x0: 10 * TS, x1: 72 * TS, y0: 12 * TS, y1: 41 * TS, dark: 0.35 }]),
-    calm: [[0, W - 1, 0, H - 1]] });
+    calm: [[0, W - 1, 0, H - 1]],
+    squadBands: [{ lo: 400, hi: 599, spots: 0, why: 'THE MAIN STAGE: the Puppeteer arena-to-be (claude/puppeteer), kept free - no squad stands in a boss arena' }] });
 }
