@@ -26,6 +26,7 @@
 //                                               door's guard, a lamp on the gallery: all of it at once. The stage door's checkpoint
 //   300-343  THE MAIN STAGE       THE PUPPETEER's (claude/puppeteer): the door, the room, and a gate (the level's end until his fight lands)
 import { BAG_H } from './theatre-rig.js';
+import { stagePuppeteer } from './puppeteer.js';   /* THE PUPPETEER's stage (his boss, src/puppeteer.js): laid on the built level, at the end of buildMaskwrightTheatre */
 
 export const THEATRE = { W: 344, H: 50, GR: 8, FL: 16, BX: 25, ST: 34, UN: 44 };
 /* every machine's arc (tile columns), read by tools/theatre.mjs and written up in the brief */
@@ -244,17 +245,11 @@ function buildBackstage({ painter, T, TS }) {
   sign(298, 33, "THE MAIN STAGE. HE WORKS THEM FROM THE FLIES.");
 
   // ---------------- 10. THE MAIN STAGE (300-343): THE PUPPETEER's room - A HOOK, NOT A FIGHT (claude/puppeteer wires him in at the merge) ----------------
-  /* >>> THE PUPPETEER'S STAGE GOES HERE. (THEATRE2: THE HOUSE is grown in at the front, so in the BUILT level every column below is +HOUSE (72): his
-     stage's west wall is column 372, and the call is made in buildMaskwrightTheatre, after the shift, as stagePuppeteer({ set, block, plat, ent }, T, TS, 372, ST)
-     on the built level's painter - L.mainStage.stageX says 372.) Backstage columns, as written here: 300-339 (his 40-column stage, west wall on the stage door's column), rows
-     R-16..R+1 = 18-35 over the floor row R = ST = 34, and row R+2 = 36 SOLID under the whole stage (PUPPETEER2, 82c60e6: the floor of his trapdoor pits - it is rock here, keep it). The call (claude/puppeteer at e13f1b1, its stagePuppeteer, imported from its own module):
-         const P = stagePuppeteer({ set, block, plat: boards, ent }, T, TS, 300, ST);   // lays the walls, the grid, the boards, the gallery, him and his two puppets
-         movers.push(...P.movers);                                                     // the batten lift, into moversExtra
-     and in the return: arena: P.arena, gateAfterBoss: true, and the gate below moved to (341, 33) here (413 built), past his east wall (his west door is this door).
-     His track stays 'puppeteer' (arena.music); the level's stays 'theatre'. Until then the room is empty and the gate stands just inside the door. <<< */
+  /* THE PUPPETEER'S STAGE IS WIRED (claude/integ51): buildMaskwrightTheatre calls stagePuppeteer(..., L.mainStage.stageX = 372, ST) after the shift: his west wall is column 372 (built), his east wall 411,
+     row ST+2 = 36 is rock under it; his arena and gateAfterBoss are in the return and the level's gate stands at built column 413, past his east wall. His track stays 'puppeteer' (arena.music); the level's stays 'theatre'. */
   block(300, 300, 4, 29); air(300, 300, 30, 33);                             /* the stage door: a doorway under the lintel (his west wall and door when he lands) */
   air(301, 342, 4, 33);
-  ent('gate', 303, 33);                                                      /* the level's end until his fight lands: just inside the door (then 341, past his east wall) */
+  /* (the level's gate is laid in buildMaskwrightTheatre, past his east wall: built column 413) */
 
   // ================= THE FLATS: what is under each track, then the flat in the position the tools walk =================
   for (const f of flats) {
@@ -352,7 +347,11 @@ export function buildMaskwrightTheatre(ctx) {
   foe('boo', 60, 23, { squad: 'the stage box' }); foe('boo', 52, 30, { squad: 'the pit ghost' });   /* THE HOUSE'S OWN DEAD (the shy dead): one in the stage box with its silver, one over the pit - they drift only while your back is turned, like the players */
   coins([12, 30], [14, 28], [16, 26], [24, 22], [28, 22], [40, 32], [50, 39], [55, 37], [66, 32]);
   function rope(x, y0, y1) { for (let y = y0; y <= y1; y++) set(x, y, T.NET); }
-  return Object.assign(B, { W, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 },
+  /* THE MAIN STAGE: THE PUPPETEER's room, laid on the built level (his west wall is the stage door's column, built 372, his east wall 411); row ST+2 = 36 is rock under it. The gate (the level's end, past his east wall) opens when he falls */
+  const P = stagePuppeteer({ set, block, plat: L.plat, ent }, T, TS, B.mainStage.stageX, ST);
+  B.moversExtra.push(...P.movers);
+  ent('gate', B.mainStage.stageX + 41, 33);
+  return Object.assign(B, { W, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 }, arena: P.arena, gateAfterBoss: true,
     interiors: [[2, 9, 27, 33, 'thFoyer'], [10, 71, 12, 40, 'thHouse']].concat(B.interiors),
     darkZones: B.darkZones.concat([{ x0: 10 * TS, x1: 72 * TS, y0: 12 * TS, y1: 41 * TS, dark: 0.35 }]),
     calm: [[0, W - 1, 0, H - 1]],

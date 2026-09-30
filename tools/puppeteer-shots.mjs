@@ -1,11 +1,11 @@
-// tools/puppeteer-shots.mjs [hero=knight] [level=puppetstage] [salt=1] - THE PUPPETEER in the page (claude/puppeteer, PUPPETEER3): stills of one whole fight,
+// tools/puppeteer-shots.mjs [hero=knight] [level=theatre] [salt=1] - THE PUPPETEER in the page (claude/puppeteer, PUPPETEER3): stills of one whole fight,
 // the human bot playing it (src/puppeteer.js puppetPlan) at normal health, drawn frame by frame, saved at 2x into work/claude/puppeteer/ - one for each
 // beat the first time it happens: a CUT (the snap, the string whipping away, the limb limp), the Brute's windup, the Harlequin mid-combo, both down and
 // him OPEN on the boards, the duo together (phase 2), the slam's broken boards, the masterpiece, the curtain. Not in the suite: pictures are for eyes.
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync, readdirSync, unlinkSync } from 'fs';
 import { join } from 'path';
-const hero = process.argv[2] || 'knight', level = process.argv[3] || 'puppetstage', salt = +(process.argv[4] || 1);
+const hero = process.argv[2] || 'knight', level = process.argv[3] || 'theatre', salt = +(process.argv[4] || 1);
 const out = join(ROOT, 'work/claude/puppeteer'); mkdirSync(out, { recursive: true });
 for (const f of readdirSync(out)) if (f.endsWith('.png')) unlinkSync(join(out, f));
 const pg = await openPage({ audio: false });

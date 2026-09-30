@@ -371,20 +371,6 @@ export function stagePuppeteer(W, T, TS, sx, R) {
   const batten = { kind: 'lift', batten: true, x: (sx + 1) * TS, y: R * TS, y0: R * TS, y1: G * TS, down: R * TS, up: G * TS, w: 32, h: 8, speed: 0, st: 'down', t: 0 };
   return { arena, movers: [batten] };
 }
-export function buildPuppetStage({ painter, T, TS }) {
-  const W = 64, H = 24, R = 20, S = R - 1, L = painter(W, H), { set, block, plat, ent } = L;
-  L.floor(0, W - 1, R); block(0, 0, 0, R - 1); block(W - 1, W - 1, 0, R - 1);
-  block(1, 13, 0, R - 8);
-  ent('sign', 4, S, { text: 'THE MAIN STAGE. DROP HIS PUPPETS AND HE COMES DOWN TO YOU.' });
-  ent('check', 7, S);
-  const { arena, movers } = stagePuppeteer({ set, block, plat, ent }, T, TS, 14, R);
-  ent('gate', 58, S);
-  block(54, 62, 0, R - 8);
-  return { W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: S }, pools: [], falls: [], moversExtra: movers, interiors: [[1, 13, 13, S], [15, 52, 5, S], [54, 62, 13, S]], arena, gateAfterBoss: true,
-    music: 'puppeteer', palette: { set: 'village', dress: 'village', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town', haze: 'rgba(120,40,60,0.10)' },
-    ambient: [{ x0: 0, x1: 99999, kind: 'tavern' }] };
-}
-
 /* ---------- THE BOT'S READING (src/lab.js): A HUMAN BOT ----------
    It sees a tell PLAN.react s after it began, misreads PLAN.missDodge of them, and goes for a string (rather than the body) PLAN.goString of the time.
    s = { P: { x, y, face, ground, atk }, e, show, reach, shield, onBatten, t, rng, mem } */

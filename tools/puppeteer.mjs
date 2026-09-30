@@ -12,7 +12,7 @@
 //   - THE PHASES: 1, the duo never START together; 2, they strike together, and the Brute's slam breaks the boards (a pit that mends once it is empty);
 //     the slam reaches a hero on a flat or in a pit; 3, the Brute is packed away, the masterpiece comes with the Harlequin, and both down drag him down
 //   - every attack fires (rule A3) and wears its mark, answer and height; the scene change lays its flats
-// THE STAGE: the standalone level (walls, trigger past the door, a checkpoint outside, ~40 wide, the gallery, the batten, the duo, his music, R+2 solid)
+// THE STAGE: the theatre's main stage (walls, trigger past the door, a checkpoint outside, ~40 wide, the gallery, the batten, the duo, his music, R+2 solid)
 // IN THE PAGE: a body blow takes a puppet's health (and the number shows); a real swing across a string cuts it; both dropped, he comes down open and a
 //   blow bites; the pin rail is free from the start; the gallery is iron; his death ends the fight; and THE HUMAN BOT wins a fight while taking real damage.
 //   node tools/puppeteer.mjs        (PORT from tools/ports.mjs)
@@ -119,7 +119,7 @@ const ROWS = { 'harlequin|jabTell': ['!', 'block', 'low'], 'harlequin|kickTell':
   'puppeteer|whipLowTell': ['!!', 'jump', 'low'], 'puppeteer|whipHighTell': ['!!', 'duck', 'high'] };
 for (const [k, [m, a, hgt]] of Object.entries(ROWS)) { ok(MARK[k] === m, k + ' wears ' + JSON.stringify(MARK[k]) + ', not ' + m); ok(ANSWER[k] === a, k + ' is answered ' + JSON.stringify(ANSWER[k]) + ', not ' + a); ok(HEIGHT[k] === hgt, k + ' is ' + JSON.stringify(HEIGHT[k]) + ', not ' + hgt); }
 // ---- THE STAGE ----
-{ const lv = LEVELS.find(l => l.id === 'puppetstage'); ok(lv && lv.hidden, 'the standalone stage is not a hidden level');
+{ const lv = LEVELS.find(l => l.id === 'theatre'); ok(lv && !lv.hidden, 'the Maskwright Theatre (his stage) is missing or hidden');
   if (lv) { const L = lv.build(), A2 = L.arena; ok(A2 && A2.boss === 'puppeteer' && A2.music === 'puppeteer', 'the stage is not his arena with his music');
     const w = A2.wallR - A2.wallL; ok(w >= 36 && w <= 44, 'the stage is ' + w + ' wide');
     ok(A2.trigger > (A2.wallL + 1) * 16 && L.ents.some(e => e.t === 'check' && e.x < A2.wallL), 'the trigger is not past the door, or no checkpoint stands outside');
@@ -131,7 +131,7 @@ for (const [k, [m, a, hgt]] of Object.entries(ROWS)) { ok(MARK[k] === m, k + ' w
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const r = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out={};
-    const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='puppetstage'));BK.state='play';BK.god=true;BK.sim(10);
+    const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='theatre'));BK.state='play';BK.god=true;BK.sim(10);
       const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);return BK.boss;};
     const e=boot(),PH=BK.puppeteerHands(),S=PH.show(),A=BK.L.arena,P=BK.P;
     out.woke=BK.bossActive&&e&&e.t==='puppeteer';out.iron=PH.read().iron;out.free=S.free;
@@ -146,7 +146,7 @@ try {
     const e3=boot();e3.hp=1;e3.mode='downed';e3.modeT=3;BKT.hurtEnemy(e3,99,e3.x-10,false);for(let i=0;i<200&&BK.bossActive;i++){BK.P.inv=99;BK.sim(1);}
     const S3=BK.puppeteerHands().show();out.death={alive:e3.alive,active:BK.bossActive,curtain:S3.curtain>0};
     /* THE HUMAN BOT: one whole fight, the knight, normal health */
-    const o=await BK.bossLab({bosses:['puppetstage'],heroes:['knight'],healthMode:'normal',maxSecs:300,salt:1});const row=o.rows[0];
+    const o=await BK.bossLab({bosses:['theatre'],heroes:['knight'],healthMode:'normal',maxSecs:300,salt:1});const row=o.rows[0];
     out.bot={out:row.outcome,taken:Math.round(row.health.damageTaken),secs:row.secs};
     return out;})()`, 900000);
   ok(r.woke, 'the fight did not wake past the stage door');

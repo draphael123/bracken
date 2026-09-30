@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {openPage} from './cdp.mjs';
 const pg=await openPage({audio:false,fonts:false});
 try {
-  for (const [lvl,h] of [['reef','warden'],['longwater','reaper'],['flotilla','knight'],['puppetstage','knight']]) {
+  for (const [lvl,h] of [['reef','warden'],['longwater','reaper'],['flotilla','knight'],['theatre','knight']]) {
     await pg.reload();
     const result=await pg.evalp(`(async()=>{
       BK.manualSimulation=true;let seed=1919;
@@ -13,7 +13,7 @@ try {
     })()`);
     const row=result.row;
     if(lvl==='flotilla') assert.deepEqual(result.groundedPhases,[1,2,3],'the pilot must stand on each fighting deck, not just jump within sword range');
-    if(lvl==='puppetstage') assert.ok(result.loft,'THE PUPPETEER: the pilot must ride the batten up and stand on the fly gallery (claude/puppeteer)');
+    if(lvl==='theatre') assert.ok(result.loft,'THE PUPPETEER: the pilot must ride the batten up and stand on the fly gallery (claude/puppeteer)');
     assert.equal(row.killed,true,`${h} must reach and finish ${lvl} through ordinary inputs`);
     assert.ok(row.damage.other>row.damage.plunge,'ordinary attacks must remain the majority of credited damage');
     if(lvl==='reef') assert.ok(row.modes.stuck>0,'evading the bite must create a genuine stuck-jaw opening');

@@ -178,8 +178,8 @@ try {
    const run=turnAt=>{b.mode='still';b.x=mid+110;b.bank=0;b.open=0;b.lashCd=99;b.crownCd=99;let turned=false,op=0;for(let i=0;i<60*6;i++){if(!turned&&turnAt(b))turned=true;BK.P.x=mid-160;BK.P.y=fl;BK.P.vx=0;BK.P.face=turned?1:-1;BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='burn'||b.mode==='sickleTell')break;}return{mode:b.mode,open:+op.toFixed(1)};};
    out.wicker={short:run(q=>q.x<mid+70),unseen:run(()=>false),embers:run(q=>q.x<mid+20)};}
   /* THE PUPPETEER (claude/puppeteer): left alone a minute his puppets wind up and strike and nothing opens him; both cut down by the hero's swings in their
-     windups, he comes down his line and kneels re-stringing them - open (the standalone stage until the Maskwright's Theatre holds him) */
-  {const b=boot('puppetstage');const S=BK.puppeteerHands().show(),A=BK.L.arena,P=BK.P;let alone=0;
+     windups, he comes down his line and kneels re-stringing them - open (on the Maskwright's Theatre's main stage) */
+  {const b=boot('theatre');const S=BK.puppeteerHands().show(),A=BK.L.arena,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+60;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let cutF=0,op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const p=S.puppets.find(q=>q.alive&&q.mode!=='heap'&&/Tell$/.test(q.mode));
      if(p&&P.atk<0){P.x=p.x-(p.t==='harlequin'?14:18);P.face=1;P.vx=0;BK.press('atk');cutF++;}BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='downed')mode='downed';}

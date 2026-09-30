@@ -1,12 +1,12 @@
-// tools/puppeteer-pilot.mjs [salts=1] [heroes=knight,warden,pyro] [level=puppetstage] - THE PUPPETEER (src/puppeteer.js) at NORMAL health, one pass per salt
+// tools/puppeteer-pilot.mjs [salts=1] [heroes=knight,warden,pyro] [level=theatre] - THE PUPPETEER (src/puppeteer.js) at NORMAL health, one pass per salt
 // (bossLab pins its dice per row; docs/INTEGRATOR.md section 6). One life per fight, no refills. Prints a row a fight (outcome, seconds, health left, his
 // health left, the phase reached, how many strings were cut, how often he came down / re-strung in the loft / fell with his masterpiece, how often the
 // batten was ridden, what did the damage) and a summary against the house band (60-75% wins, median win 90-150 s). Not in the suite: it is too long.
-// The level defaults to the standalone stage; once THE MASKWRIGHT'S THEATRE holds him, pass its id.
+// The level defaults to the theatre (his main stage is its end).
 import { openPage } from './cdp.mjs';
 const salts = (process.argv[2] || '1').split(',').map(Number);
 const heroes = (process.argv[3] || 'knight,warden,pyro').split(',');
-const level = process.argv[4] || 'puppetstage';
+const level = process.argv[4] || 'theatre';
 const pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
   for (const salt of salts) { await pg.reload();
