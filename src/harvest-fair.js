@@ -249,7 +249,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   ent('wickerqueen', 662, S, { face: -1 });               /* THE WICKER QUEEN, past the bonfire: to draw her across it you turn your back on her */
   ent('relic', 646, S, { kind: 'maypole', bossDrop: true });   /* THE FAIR'S ONE RELIC is hers now (the maypole ribbon: your look reaches half as far again; the felted soles stay in the levels that hold them): hidden until she falls, then it lies where she burned (spawn case 'relic') */
   ent('gate', 666, S);                                    /* and the road goes on from here once she is down (gateAfterBoss) */
-  const arena = { x0: 623 * TS, x1: 667 * TS, floor: R * TS, y0: (R - 14) * TS, trigger: 627 * TS, wallL: 622, wallR: 667, boss: 'wickerqueen', music: 'houndmaster', tint: '#2a1a30', tintA: 0.12, fx: 'embers' };
+  const arena = { x0: 623 * TS, x1: 667 * TS, floor: R * TS, y0: (R - 14) * TS, trigger: 627 * TS, wallL: 622, wallR: 667, boss: 'wickerqueen', music: 'wickerqueen', tint: '#2a1a30', tintA: 0.12, fx: 'embers' };
 
   /* THE MARKS FOR THE TOOLS: every game and ride the level is built round is also an entity of its own kind (the spawner ignores them; src/fair-games.js keeps the state) */
   for (const s of strikers) ent('striker', s.x, S, { launch: s.launch, big: s.big });
@@ -268,7 +268,7 @@ export function buildHarvestFair({ painter, T, TS }) {
     walls, gallery: galleries[0], galleries, strikers, tickets, booth, hall, tower, wheel: WH, slide: { x0: 367, y0: tower.top, n: 14 }, corn, scarecrows, effigies, reserved,
     maze: { x0: mx0, x1: mx1, tiers: [R - 1, 22, 17], blind: [mx0 - 1, mx1 + 1, 12 * TS, R * TS] },
     fairNight: NIGHT,   /* (not `night`: the game reads L.night as its camp-night wash) */
-    music: 'marketday', duskStart: 120 * TS, duskLen: 520 * TS,         /* sunset at the gate; dusk by the last round */
+    music: 'harvestfair', duskStart: 120 * TS, duskLen: 520 * TS,         /* sunset at the gate; dusk by the last round */
     palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town',
       haze: 'rgba(230,160,110,0.14)', murkCol: '#2e2a34', darkCol: '10,6,16', darkRim: ['#c8905c', 0.16, 0.22],   /* THE WICKER QUEEN's full dark (claude/fair3): a warm ember-lit edge on what moves in it, not the mines' cold white */
       grass: '#6a8a46', grassL: '#8fb060', grassD: '#47612e', dirt: '#7a6248', dirtL: '#8f7458', dirtD: '#54402c',
