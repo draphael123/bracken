@@ -17,7 +17,9 @@ try {
   const r = await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); const L = BK.L, P = BK.P;
     const o = { state: BK.state, id: LEVELS.findIndex(l => l.build && L && l.id === 'theatre'), theatre: !!(L && L.theatre), hero: BK.PROG.hero, hp: P.hp, maxHp: P.maxHp, god: BK.god,
       at: [Math.floor(P.x / 16), Math.floor((P.y - 1) / 16)], start: [L.START.x, L.START.y] };
-    BK.manualSimulation = true; if (L.gateAfterBoss) L.gateOpen = true;   /* the theatre's gate opens when THE PUPPETEER falls (gateAfterBoss): this check is about the save, not the fight, so the gate is opened by hand */
+    BK.manualSimulation = true; BK.god = true;
+    if (L.gateAfterBoss) { const A = L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(150); const e = BK.boss; if (e) { e.hp = 1; e.mode = 'downed'; e.modeT = 3; BKT.hurtEnemy(e, 99, e.x - 10, false); } for (let i = 0; i < 400 && BK.bossActive; i++) BK.sim(1); for (let i = 0; i < 300 && !L.gateOpen; i++) BK.sim(1); }   /* the theatre's gate opens when THE PUPPETEER falls (gateAfterBoss): he is put down on his stage first, as in tools/puppeteer.mjs */
+    BK.god = false;
     const g = L.ents.find(e => e.t === 'gate'); BK.tp(g.x - 1, g.y);   /* one column off the gate, outside his arena wall */ for (let i = 0; i < 400 && BK.state === 'play'; i++) { BK.keys.right = true; BK.sim(1); } BK.keys.right = false; for (let i = 0; i < 300; i++) BK.sim(1);
     o.after = BK.state; return o; })()`, 120000);
   ok(r.state === 'play' && r.theatre, '?level=theatre did not land in play on the theatre: ' + JSON.stringify(r));
