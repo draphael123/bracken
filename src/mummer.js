@@ -25,9 +25,10 @@ export const RIBBON_REACH = 1.5;
 /* does ONE hero look at this foe? */
 export function looks(e, h, sight = MUMMER.sight, sightY = MUMMER.sightY) {
   if (!h || h.alive === false) return false;
+  if (h.blind) return false;   /* a wall between (the corn maze's blind corners, src/fair-games.js blocked): you cannot look at what you cannot see */
   if (h.reach > 0) { sight *= h.reach; sightY *= h.reach; }
   const dx = e.x - h.x; if (Math.abs(dx) > sight || Math.abs((e.y || 0) - (h.y || 0)) > sightY) return false;
-  return dx === 0 || Math.sign(dx) === (h.face >= 0 ? 1 : -1);
+  return h.mirror || dx === 0 || Math.sign(dx) === (h.face >= 0 ? 1 : -1);   /* h.mirror: the hall of mirrors' glass ahead of him watches what is at his back (src/fair-games.js mirrorSees) */
 }
 /* is the foe faced by ANY hero (co-op: one is enough)? */
 export const facedBy = (e, heroes, sight = MUMMER.sight, sightY = MUMMER.sightY) => (heroes || []).some(h => looks(e, h, sight, sightY));
@@ -74,7 +75,7 @@ export const newHorse = (x, y, face = -1) => ({ x, y, face, mode: 'still', t: 0,
 /* one frame of the hobby-horse. Events: freeze (looked at), wind, charge, end (the charge is over: it stands where it stopped) */
 export function horseStep(s, w, dt) {
   const evs = [], C = HORSE; s.vx = 0;
-  const near = nearestHero(s, w.heroes, C.sight, C.sightY), seen = facedBy(s, w.heroes, C.sight, C.sightY);
+  const near = nearestHero(s, w.heroes, C.sight, C.sightY), seen = facedBy(s, w.heroes, w.sight || C.sight, w.sightY || C.sightY);   /* w.sight: the dark (src/fair-games.js sightFor) shortens the look, as it does the mummer's */
   switch (s.mode) {
     case 'still':
       if (seen) { if (!s.armed) evs.push({ t: 'freeze' }); s.armed = true; break; }

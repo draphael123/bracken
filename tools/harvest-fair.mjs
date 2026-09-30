@@ -25,6 +25,7 @@ import * as WQ from '../src/wicker-queen.js';
 import { LEVELS } from '../src/level.js';
 import { THREAT, measureLevel, indexOf, spanOf } from '../src/threat.js';
 import * as FA from '../src/redraw/fair_world.js';
+import * as FGM from '../src/fair-games.js';
 
 const bad = [], ok = (c, m) => { if (!c) bad.push(m); };
 const DT = 1 / 60;
@@ -162,7 +163,7 @@ if (fair) {
     ok(L.grid.some(t => t === 22) && L.grid.some(t => t === 23) && L.grid.some(t => t === 24), 'the climb is not built of slopes (a mummer must be able to walk up it)');
     ok(inn('twist', 'mummer').length >= 2, 'the TWIST section (the carousel) has fewer than two mummers');
     ok(inn('combine', 'hobbyhorse').length >= 1, 'the COMBINE section has no hobby-horse');
-    ok(inn('exam').length >= 3 && inn('exam', 'hobbyhorse').length >= 1 && inn('exam', 'mummer').length >= 2, 'the EXAM does not combine the horse and the mummers');
+    ok(inn('exam').length >= 3 && inn('exam', 'hobbyhorse').length >= 2 && inn('exam', 'mummer').length >= 1, 'the EXAM does not combine the small carousel\'s mummer and horse with the door guard');
     ok(Array.isArray(L.carousels) && L.carousels.length >= 1 && L.carousels.every(c => c.x0 < c.x1 && c.period >= 3 && c.warn >= 1), 'the fair has no carousel with a period and a warning');
     ok(L.carousels && L.carousels.some(c => c.x0 >= arc.twist[0] && c.x1 <= arc.twist[1]), 'no carousel stands in the TWIST section');
     const stacks = []; for (let x = 0; x < L.W; x++) for (let y = 0; y < L.H; y++) if (L.grid[y * L.W + x] === T.BOUNCER) stacks.push([x, y]);
@@ -191,8 +192,7 @@ if (fair) {
   ok(THREAT.mummer >= 5 && THREAT.hobbyhorse >= 6, 'the mummer / hobby-horse are not weighed 5 / 6 in src/threat.js: ' + THREAT.mummer + ' / ' + THREAT.hobbyhorse);
   { const m = measureLevel(L, { T: T2, TS: TS2 }); const idx = indexOf({ threat: m.threat, kinds: m.kinds, hazTiles: m.hazTiles, gap: m.gap, span: spanOf(L.W, L.H) });
     ok(idx >= 38 && idx <= 60, 'the fair INDEX is ' + idx + ' (about 45 after the weights, 34 before): ' + JSON.stringify(m)); }
-  ok(L.ents.filter(e => e.t === 'mummer' || e.t === 'hobbyhorse').length === 13, 'the fair foe count moved (no extra bodies): ' + L.ents.filter(e => e.t === 'mummer' || e.t === 'hobbyhorse').length);
-  // FURNITURE: what Waymeet and the Fields carry (three silvers, a relic, hearts); NO NPCs (pickups only)
+    // FURNITURE: what Waymeet and the Fields carry (three silvers, a relic, hearts); NO NPCs (pickups only)
   const cnt = t => L.ents.filter(e => e.t === t).length;
   ok(cnt('silver') === 3, 'the fair has ' + cnt('silver') + ' silvers, not the campaign three');
   ok(cnt('relic') === 1 && L.ents.find(e => e.t === 'relic').kind === 'maypole', 'the fair has not one relic (the maypole ribbon): ' + cnt('relic'));
@@ -214,6 +214,92 @@ if (fair) {
   ok(existsSync(new URL('../src/redraw/fair_art.js', import.meta.url)) && existsSync(new URL('../src/redraw/fair_world.js', import.meta.url)) && !existsSync(new URL('../src/redraw/fair_' + 'greybox.js', import.meta.url)), 'the fair art files are not fair_art.js + fair_world.js (the L1 greybox file is gone)');
   const mainSrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   ok(/FAW.drawCarousel/.test(mainSrc) && /FAW.drawGreen/.test(mainSrc) && /FAW.drawCrowd/.test(mainSrc) && /FAW.drawGlow/.test(mainSrc) && /FAW.drawHay/.test(mainSrc), 'drawFair does not draw the carousel, the green, the crowd, the glow and the haystacks from src/redraw/fair_world.js'); }
+
+// ---- A SLOPE IS DRAWN AS A SLOPE (claude/fairlevel): the art baked from a level's own top and fill follows slopes.js heightAt, kind by kind ----
+{ const { install } = await import('./node-canvas.mjs'); install(); const { slopeTile } = await import('../src/redraw/ground-slopes.js'), SL = await import('../src/slopes.js'), { canvas } = await import('../src/px.js');
+  const mkS = col => { const [c, g] = canvas(16, 16); g.fillStyle = col; g.fillRect(0, 0, 16, 16); return c; }, top = mkS('#6a8a46'), fill = mkS('#7a6248');
+  for (const kind of [20, 21, 22, 23, 24, 25]) { const c = slopeTile(kind, top, fill), d = c.getContext('2d').getImageData(0, 0, 16, 16).data; let worst = 0, opaque = 0;
+    for (let x = 0; x < 16; x++) { let first = 16; for (let y = 0; y < 16; y++) if (d[(y * 16 + x) * 4 + 3] > 0) { first = y; break; } const want = Math.min(16, Math.round(SL.heightAt(kind, x + 0.5))); worst = Math.max(worst, Math.abs(first - want)); if (first < 16) opaque++; }
+    ok(worst <= 1, 'the slope art for kind ' + kind + ' does not follow the slope (its top edge is ' + worst + ' px off the surface)'); ok(opaque >= 8, 'the slope art for kind ' + kind + ' is nearly empty'); }
+  delete globalThis.document; }
+// ---- THE VERTICAL REBUILD (claude/fairlevel, 2026-09-30): the fairground climbs and loops; three fair mechanics are taught, developed, twisted and examined; two secrets; a set piece ----
+{ const fair = LEVELS.find(l => l.id === 'fair'), L = fair.build(), R = 28, TS3 = 16, TT = (await import('../src/level.js')).T, { floodReach } = await import('../src/reachcore.js');
+  const cnt = t => L.ents.filter(e => e.t === t).length, at = (x, y) => L.grid[y * L.W + x];
+  // FEWER, BETTER FOES: 12 mummers, 3 horses (the door guard among them); the last count was 13 and a grid of them
+  ok(cnt('mummer') === 12 && cnt('hobbyhorse') === 3, 'the fair foe count moved (12 mummers + 3 horses, each in a designed encounter): ' + cnt('mummer') + ' + ' + cnt('hobbyhorse'));
+  // HEIGHT BANDS: the reach fill (with the rides) stands in five bands of height - the cellars, the road, the roofs, the boardwalk, the tops - and nothing is a corridor
+  { const seen = floodReach(L, TT, { rides: true }).seen, rows = new Set([...seen].map(k => +k.split(',')[1])), band = r => r >= 29 ? 0 : r >= 24 ? 1 : r >= 19 ? 2 : r >= 15 ? 3 : 4, bands = new Set([...rows].map(band));
+    ok(bands.size === 5, 'the fair is not five bands of height (cellar, road, roofs, boardwalk, tops): ' + [...bands].sort() + ' rows ' + Math.min(...rows) + '-' + Math.max(...rows));
+    ok(Math.min(...rows) <= 13, 'nothing in the fair stands higher than row ' + Math.min(...rows) + ' (the tower top is row 14 and the night lane row 13)'); }
+  // THE RIDES: the big wheel (six cars evenly spaced on one circle), the swing ride (three chairs), the helter-skelter (a tower and a 14-row slide of steep slopes)
+  { const cars = (L.moversExtra || []).filter(m => m.kind === 'wheel' && m.fair === 'gondola'), chairs = (L.moversExtra || []).filter(m => m.kind === 'swing' && m.fair === 'chair');
+    ok(cars.length === 6 && cars.every(c => c.px === cars[0].px && c.py === cars[0].py && c.r === cars[0].r) && new Set(cars.map(c => c.phase.toFixed(3))).size === 6, 'the big wheel is not six cars on one circle');
+    ok(cars[0] && cars[0].py + cars[0].r <= 28 * TS3 && cars[0].py + cars[0].r >= 27 * TS3 - 1 && (28 * TS3 - (cars[0].py - cars[0].r)) / TS3 >= 10, 'the wheel does not run from a hop above the road to the boardwalk\'s height: ' + JSON.stringify(cars[0] && { py: cars[0].py, r: cars[0].r }));
+    ok(chairs.length >= 3 && chairs.every(c => c.mast && c.mast.length === 4), 'the swing ride has fewer than three chairs hung from masts: ' + chairs.length);
+    ok(chairs.every(c => c.arm >= 88 && c.period >= 3), 'a chair swings too short or too fast');
+    const sl = L.slide, T1 = 21; let run = 0; for (let k = 0; k < sl.n; k++) if (at(sl.x0 + k, sl.y0 + k) === T1) run++;
+    ok(sl && sl.n >= 14 && run === sl.n && at(sl.x0 + sl.n, R - 1) === 0 && at(sl.x0 + sl.n, R) === 1, 'the helter-skelter is not a 14-column, 14-row slide of steep slopes that meets the road: ' + JSON.stringify(sl) + ' run ' + run);
+    ok(L.tower && L.tower.top <= 14 && at(L.tower.x0, L.tower.top) === 1 && at(L.tower.x0, L.tower.top - 1) === 0, 'the helter-skelter tower is not a solid column to the road with a top at row 14');
+    ok(L.arc.twist[1] - L.arc.twist[0] >= 120 && sl.x0 + sl.n <= L.arc.twist[1] + 3, 'the slide does not land in the section after the twist'); }
+  // TWO ROADS: the low road (the hall of mirrors and the tower stair) and the high road (the wheel and the swing ride) both reach the tower top (the route pilot walks them: tools/fair-route.mjs)
+  { const seenPlain = floodReach(L, TT, {}).seen, tower = (L.tower.x0 + 1) + ',' + (L.tower.top - 1); ok(seenPlain.has(tower), 'the tower top is not on the low road (the stair): the plain fill does not reach it');
+    const hall = L.hall; ok(hall && hall.mirrors.some(m => m.kind === 'true') && hall.mirrors.some(m => m.kind === 'cracked') && hall.x1 - hall.x0 >= 20, 'the hall of mirrors has no true and cracked glass');
+    const A = L.ents.filter(e => e.t === 'mummer' && e.x >= hall.x0 && e.x <= hall.x1).sort((a, b) => a.x - b.x);
+    ok(A.length === 2 && A[0].x < hall.mirrors.find(m => m.kind === 'true').x1 + 1 && A[1].x >= hall.mirrors.find(m => m.kind === 'cracked').x0 && A[1].x <= hall.mirrors.find(m => m.kind === 'cracked').x1, 'the hall\'s mummers are not one at the door and one in front of the cracked glass (' + A.map(e => e.x) + ')'); }
+  // THE GAMES, each taught -> developed -> twisted -> examined
+  { const S = L.strikers || [], G = L.gallery, B = L.booth, tk = L.tickets || [];
+    ok(S.length === 2 && S[0].x < S[1].x && S[1].launch < S[0].launch && S[1].big && !S[0].big, 'the fair has not two strikers, the second taller (TAUGHT at the gate, EXAMINED before the door): ' + JSON.stringify(S));
+    for (const s of S) { const rise = s.launch * s.launch / 2000 / TS3; let top = null; for (let y = R - 1; y >= 0; y--) if (at(s.x, y) === TT.ONEWAY) { top = y; break; }   // the plank over the pad
+      ok(top !== null && R - top + 1 <= rise && R - top >= 8, 'the striker at ' + s.x + ' does not throw you onto a plank over it: plank row ' + top + ', it throws ' + rise.toFixed(1) + ' rows'); }
+    ok(G && G.targets.length === 3 && G.planks.length >= 3 && G.window >= 8 && G.window <= 15, 'the shooting gallery is not three targets with a window and planks: ' + JSON.stringify(G && { t: G.targets.length, p: G.planks.length, w: G.window }));
+    ok(G && G.planks.every(([x0, x1, row]) => { for (let x = x0; x <= x1; x++) if (at(x, row) !== 0) return false; return true; }), 'a gallery plank is already built: it should only exist once the targets are hit');
+    ok(G && L.ents.some(e => e.t === 'silver' && e.x >= G.nest.x0 && e.x <= G.nest.x1 && e.y === G.nest.row - 1), 'the crow\'s nest holds no silver');
+    ok(B && B.cost === 8 && tk.length >= 12 && tk.length + S.reduce((a, s) => a + s.tickets, 0) >= B.cost + 6, 'the tickets do not pay for the booth with a little to spare: ' + tk.length + ' found, cost ' + (B && B.cost));
+    ok(B && L.ents.some(e => e.t === 'silver' && e.x === B.silver.x), 'the prize booth\'s silver is not on the level');
+    const sil = L.ents.filter(e => e.t === 'silver'); ok(sil.length === 3 && sil.some(e => e.y >= R + 1) && G && sil.some(e => e.x >= G.nest.x0 && e.x <= G.nest.x1) && B && sil.some(e => e.x === B.silver.x), 'the three silvers are not the back lot\'s, the crow\'s nest\'s and the booth\'s'); }
+  // TWO SECRETS: a plug of plain rock in the road, a cellar with a stair back up, and something in it (the back lot; the closet behind the cracked glass)
+  { const W = L.walls || []; ok(W.length === 2 && W.every(w => w.kind === 'secret' && w.reach === true && w.y0 === R && w.y1 === R && w.x1 - w.x0 === 1), 'the fair has not two secret plugs in the road: ' + W.length);
+    for (const w of W) {
+      ok(at(w.x0, R) === 1 && at(w.x1, R) === 1, 'a secret plug is not solid rock (plain, so it reads as road)');
+      ok(at(w.x0, R + 1) === 0 && at(w.x0 + 5, R + 6) === 0 && at(w.x0, R + 7) === 1, 'the cellar under the plug at ' + w.x0 + ' is not a room (rows 29-34, a floor at 35)');
+      ok(at(w.x0 + 2, R + 4) === TT.ONEWAY && at(w.x0, R + 2) === TT.ONEWAY, 'the cellar under ' + w.x0 + ' has no stair back up (a step at row 32 and one at row 30 under the plug)');
+      ok(L.ents.some(e => (e.t === 'mend' || e.t === 'silver') && e.x >= w.x0 - 12 && e.x <= w.x0 + 12 && e.y >= R + 1) && (L.tickets || []).some(t => t.x >= w.x0 - 12 && t.x <= w.x0 + 12 && t.row >= R + 1), 'the cellar under ' + w.x0 + ' holds no reward (a silver or a heart, and tickets)'); }
+    const seen = floodReach(L, TT, {}).seen; ok(W.every(w => seen.has((w.x0 + 2) + ',' + (R + 6))), 'a cellar is not reached by the fill with its plug broken'); }
+  // THE CORN MAZE: three tiers, two chimneys, blind corners with a scarecrow that is not straw at each turn, and the walls stop your look
+  { const Mz = L.maze, sc = L.ents.filter(e => e.t === 'mummer' && e.scare);
+    ok(Mz && sc.length === 2 && sc.every(e => e.x >= Mz.x0 - 1 && e.x <= Mz.x1 + 1) && (L.scarecrows || []).length >= 4, 'the corn maze has not two disguised mummers among four or more straw ones: ' + sc.length + ' / ' + (L.scarecrows || []).length);
+    ok(Mz && Mz.tiers.length === 3 && (L.corn || []).length >= 1 && Mz.blind && FGM.blocked(L, (tx, ty) => at(tx, ty) === 1, { x: (Mz.x0 + 12) * TS3, y: 23 * TS3 - 1 }, { x: (Mz.x0 + 12) * TS3, y: R * TS3 - 1 }), 'the maze\'s tiers do not hide a mummer one floor up (walls must stop the look)');
+    ok(Mz && !FGM.blocked(L, (tx, ty) => at(tx, ty) === 1, { x: (Mz.x0 + 20) * TS3, y: R * TS3 - 1 }, { x: (Mz.x0 + 10) * TS3, y: R * TS3 - 1 }), 'the maze\'s walls block a look along one corridor');
+    ok(sc.some(e => e.y <= 17) && sc.some(e => e.y === 22), 'the disguised mummers are not one in the middle tier and one in the dark tier'); }
+  // THE NIGHT THAT COMES WITH HEIGHT: the light goes out with rows; a guttering lantern by the tower stair's mummer is the way to see it
+  { const N = L.night; ok(N && N.full < N.start && N.start <= 26 && N.full <= 14 && N.dim >= 60 && N.dim <= 120, 'the night does not come with height: ' + JSON.stringify(N));
+    const lp = L.lamps; ok(lp.filter(l => l.y < 17).every(l => l.life <= 0.5) && lp.some(l => l.y < 17 && l.life === 0.5) && lp.some(l => l.y < 17 && l.life === 0), 'up in the rides the lamps do not gutter and go out with height');
+    const st = L.ents.find(e => e.t === 'mummer' && e.x >= 354 && e.x <= 358 && e.y <= 20); ok(!!st && lp.some(l => l.life === 0.5 && Math.abs(l.x - st.x) <= 3 && l.y <= 19), 'the tower stair\'s mummer has no guttering lantern by it');
+    ok(FGM.sightFor(L, [], { x: 100 * TS3, y: 27 * TS3 }) === null && FGM.sightFor(L, [], { x: 358 * TS3, y: 18 * TS3 }) !== null && FGM.sightFor(L, [{ x: 357, y: 18, life: 1, lit: true }], { x: 358 * TS3, y: 18 * TS3 }) === null, 'the night sight does not follow height and the lit lantern');
+    ok(FGM.sightFor(L, [], { x: (L.hall.x0 + 3) * TS3, y: 27 * TS3 }) !== null, 'the hall of mirrors is not dark'); }
+  // THE MIRROR: inside the hall, a hero who faces a true mirror within reach sees behind him; cracked glass does not; nowhere else
+  { const at3 = (x, f) => ({ x: x * TS3, y: 27 * TS3, face: f });
+    ok(FGM.mirrorSees(L, at3(331, 1)) && FGM.mirrorSees(L, at3(327, 1)), 'a hero facing the true glass ahead does not see behind him');
+    ok(!FGM.mirrorSees(L, at3(324, 1)) && !FGM.mirrorSees(L, at3(331, -1)), 'the cracked stretch (and a back to the glass) shows behind him: it should not');
+    ok(!FGM.mirrorSees(L, at3(300, 1)) && !FGM.mirrorSees(L, at3(345, -1)), 'a hero outside the hall sees behind him');
+    const foe = { x: 400, y: 27 * TS3 }, back = { x: 500, y: 27 * TS3, face: 1, alive: true };
+    ok(!M.looks(foe, back) && M.looks(foe, { ...back, mirror: true }) && !M.looks(foe, { ...back, mirror: true, blind: true }), 'the mirror flag does not turn the look round, or a wall does not stop it');
+    ok(!M.looks({ x: 500 + 120, y: 27 * TS3 }, { ...back, reach: 1 }, 88, 88), '(a foe 120 px ahead is out of a dim 88 px look)');
+    ok(M.looks({ x: 500 + 120, y: 27 * TS3 }, { ...back, reach: M.RIBBON_REACH }, 88, 88), 'THE MAYPOLE RIBBON does not stretch the dim look from 88 to 132 px (the night and the hall are where it helps)'); }
+  // THE GHOST-TRAIN YARD (reserved for the chase set piece): a straight road with nothing on it but a boarded arch
+  { const G = L.reserved && L.reserved.ghostTrain; ok(G && G.x1 - G.x0 >= 30 && G.arch > G.x0 && G.arch < G.x1, 'the ghost-train yard is not reserved (a marked lane of 30+ columns)');
+    ok(G && L.ents.filter(e => e.x >= G.x0 && e.x <= G.x1 && !['coin', 'mend', 'check', 'deco'].includes(e.t)).length === 0, 'something stands in the reserved ghost-train yard');
+    ok(G && (() => { for (let x = G.x0; x <= G.x1; x++) if (at(x, R) !== 1 || at(x, R - 1) !== 0 || at(x, R - 2) !== 0) return false; return true; })(), 'the reserved ghost-train yard is not flat road'); }
+  // THE WICKER EFFIGY going up behind the fair, five stages, passed again and again
+  { const E = L.effigies || []; ok(E.length === 5 && E.every((e, i) => e.stage === i && (i === 0 || e.x > E[i - 1].x)), 'the wicker effigy is not five stages in order along the road'); }
+  // NO LONG FLAT WALK: every 40 columns of the fair proper hold something (a foe, a pit or spikes, a ride, a slope, a game, a climb, a plank)
+  { const feats = new Array(L.W).fill(0); for (let x = 0; x < L.W; x++) for (let y = 0; y < L.H; y++) { const t = at(x, y); if (t === TT.ONEWAY || t === TT.SPIKE || t === TT.BOUNCER || (t >= 20 && t <= 25)) feats[x]++; }
+    for (const e of L.ents) if (['mummer', 'hobbyhorse', 'check'].includes(e.t)) feats[e.x] += 3; for (const m of L.moversExtra || []) feats[Math.max(0, Math.min(L.W - 1, Math.floor((m.px || m.x) / TS3)))] += 4; for (const c of L.carousels) feats[c.x0] += 5;
+    const ghost = L.reserved.ghostTrain, flat = []; for (let s = 0; s + 40 <= 618; s += 20) { if (s + 40 > ghost.x0 && s < ghost.x1 + 1) continue; let n = 0; for (let x = s; x < s + 40; x++) n += feats[x]; if (n < 8) flat.push(s + '-' + (s + 39)); }
+    ok(!flat.length, 'long flat walks (40 columns with next to nothing in them): ' + flat.join(', ')); }
+  // SHRINES (Daniel: fewer checkpoints): the same six, 85-140 columns apart, one before the door
+  { const cp = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b); ok(cp.length === 6 && cp.every((x, i) => i === 0 || (x - cp[i - 1] >= 85 && x - cp[i - 1] <= 140)), 'the shrines are not six, 85-140 columns apart: ' + cp); }
+}
 
 if (bad.length) { console.error('HARVEST-FAIR (pure + level): ' + bad.length + ' failure(s)\n  ' + bad.join('\n  ')); process.exit(1); }
 console.log('harvest-fair pure + level: ok');
@@ -331,5 +417,72 @@ ok(R.facedMoved < 0.5, 'in the page a faced mummer moved ' + R.facedMoved + ' px
 ok(R.creepDx > 20, 'in the page a mummer with the hero\'s back turned crept only ' + R.creepDx + ' px in 2 s');
 ok(R.hit.hp1 < R.hit.hp0, 'a frozen mummer was not hurt by the hero facing it');
 ok(!R.hit.alive && R.hit.blows >= 2 && R.hit.blows <= 5, 'a frozen mummer took ' + R.hit.blows + ' blows (about three)');
+// ---- IN THE PAGE, THE VERTICAL REBUILD (claude/fairlevel): slopes drawn, the strikers for EVERY hero, the gallery, the tickets and the booth, the hall's glass, the night, the maze's walls, the scarecrows ----
+const pg3 = await openPage({ audio: false, fonts: false });
+let R3;
+try {
+  R3 = await pg3.evalp(`(async()=>{
+    const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true;
+    const fi = LEVELS.findIndex(l => l.id === 'fair'); const out = {};
+    const K = BK.keys, none = () => { for (const k of ['left', 'right', 'up', 'down', 'jump', 'block', 'atk']) K[k] = false; };
+    const load = (hero, keep) => { BK.setHero(hero || 'knight'); BK.reset({ fresh: true }); BK.load(fi); BK.start(); BK.sim(5); if (!keep) for (const e of BK.enemies()) e.alive = false; none(); BK.god = true; };
+    const G = () => BK.fair().games, grid = (x, y) => BK.L.grid[y * BK.L.W + x];
+    // 0. EVERY SLOPE CELL IS DRAWN (the tile painter reached only the Sunken Caravan: the Stall Stair was empty air over a staircase of grass tops)
+    load(); out.slope = BK.slopeArt();
+    // 1. THE HIGH STRIKER, EVERY HERO: jump, come down on the pad with the plunge, and land on the boardwalk (row 19). The light blow only hops. The bell pays tickets once.
+    out.strike = {};
+    for (const hero of ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer']) { load(hero); const S = G().strikers[0], o = {};
+      BK.tp(118, 27); BK.P.face = 1; BK.sim(30); const t0 = G().tickets; let ph = 0, minY = 1e9, landed = false;
+      for (let i = 0; i < 400; i++) { const p = BK.P; K.jump = false; K.down = false;
+        if (ph === 0 && p.ground) { K.jump = true; BK.press('jump'); ph = 1; } else if (ph === 1 && p.vy > 40) { K.down = true; BK.press('atk'); ph = 2; } else if (ph === 2) { K.down = true; if (p.vy < -300) ph = 3; }
+        BK.sim(1); minY = Math.min(minY, BK.P.y); if (ph === 3 && BK.P.ground && Math.abs(BK.P.y - 19 * 16) < 4) { landed = true; break; } }
+      none(); out.strike[hero] = { minY: Math.round(minY), landed, tickets: G().tickets - t0, rang: S.hits >= 1 }; }
+    { load(); const S = G().strikers[0]; BK.tp(118, 27); BK.P.face = 1; BK.sim(30); const y0 = BK.P.y; let minY = 1e9; BK.press('atk'); for (let i = 0; i < 40; i++) { BK.sim(1); minY = Math.min(minY, BK.P.y); } out.lightHop = { rise: y0 - minY, tickets: G().tickets, rang: S.hits }; }
+    // 2. THE GALLERY: three targets inside the window opens the planks (the tiles appear), two and the clock runs out resets them
+    load(); { const Gy = G().gallery, ts = Gy.targets; out.gal0 = { open: Gy.open, plank: grid(186, 19), n: ts.length };
+      const hitAt = t => { BK.tp(t.x - 1, 21); BK.P.face = 1; BK.sim(4); BK.press('atk'); BK.sim(10); };
+      hitAt(ts[0]); hitAt(ts[1]); out.gal2 = { hits: ts.filter(t => t.hit).length, open: Gy.open }; hitAt(ts[2]); out.gal3 = { hits: ts.filter(t => t.hit).length, open: Gy.open, plank: grid(186, 19), plank2: grid(183, 16), nest: grid(178, 13) }; }
+    load(); { const Gy = G().gallery, ts = Gy.targets; const hitAt = t => { BK.tp(t.x - 1, 21); BK.P.face = 1; BK.sim(4); BK.press('atk'); BK.sim(10); };
+      hitAt(ts[0]); hitAt(ts[1]); BK.tp(160, 27); BK.sim(60 * 24); out.galReset = { hits: ts.filter(t => t.hit).length, open: Gy.open, plank: grid(186, 19) }; }
+    // 3. THE TICKETS AND THE PRIZE BOOTH: a touch takes one; eight buy the silver (it is out of the world until then); seven do not
+    load(); { const g0 = G().tickets; BK.tp(114, 18); BK.sim(6); out.tk1 = { got: G().tickets - g0, taken: G().taken.size };
+      const B = G().booth, sv = () => BK.silvers().find(s => Math.abs(s.x - (B.silver.x * 16 + 8)) < 8), before = { hidden: BK.silvers().some(s => s.x < 0) };
+      G().tickets = 7; BK.tp(586, 27); BK.sim(4); K.up = true; BK.sim(3); K.up = false; BK.sim(3); out.boothShort = { tickets: G().tickets, bought: B.bought, silver: !!sv() };
+      G().tickets = 8; K.up = true; BK.sim(3); K.up = false; BK.sim(3); out.boothBuy = { tickets: G().tickets, bought: B.bought, silver: !!sv(), before }; }
+    // 4. THE HALL OF MIRRORS: the mummer by the door creeps up behind you where the glass cannot see, and is held where a true mirror is ahead; the dark shortens the look
+    load(undefined, true); { const ms = BK.enemies().filter(e => e.t === 'mummer').sort((a, b) => a.x - b.x), B0 = ms.find(e => e.x >= 317 * 16 && e.x <= 340 * 16), A0 = ms.filter(e => e.x >= 317 * 16 && e.x <= 340 * 16).pop(); for (const e of ms) if (e !== B0 && e !== A0) e.alive = false; B0.alive = true; A0.alive = false;
+      const run = (hx, face, frames) => { const x0 = B0.x; B0.st.mode = 'still'; for (let i = 0; i < frames; i++) { BK.P.x = hx * 16; BK.P.y = 28 * 16; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = face; BK.sim(1); } return Math.abs(x0 - B0.x); };
+      B0.x = 319 * 16; B0.st.x = B0.x; out.hallHeld = run(328, 1, 90); B0.x = 319 * 16; B0.st.x = B0.x; out.hallCracked = run(324, 1, 90);   // 328 has a true mirror within 7 tiles ahead; 324 does not
+      out.hallMoved = { held: out.hallHeld, cracked: out.hallCracked }; }
+    // 5. THE NIGHT: a mummer up in the dark is held only within 88 px (132 with the ribbon), a lantern's light restores the full look
+    load(undefined, true); { const e = BK.enemies().find(q => q.t === 'mummer' && q.x > 350 * 16 && q.x < 360 * 16); e.alive = true; for (const q of BK.enemies()) if (q !== e) q.alive = false; const y = e.y;
+      const ex0 = e.x, dist = (d, relic) => { e.st.mode = 'still'; e.x = ex0; e.st.x = ex0; e.y = y; BK.P.relic = relic || null; for (const l of BK.fair().lamps) { l.life = 0; l.lit = false; } const x0 = e.x; for (let i = 0; i < 60; i++) { BK.P.x = e.x - d; BK.P.y = y; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = 1; BK.sim(1); } return Math.abs(e.x - x0) > 1.5 ? 'moved' : 'held'; };
+      out.night = { d60: dist(60), d120: dist(120), d120ribbon: dist(120, 'maypole'), d200ribbon: dist(200, 'maypole') }; BK.P.relic = null; }
+    // 6. THE CORN MAZE: a mummer one tier up is not held by a hero looking straight at its column (the wall is between), and the disguised ones wake only when they move
+    load(undefined, true); { const M = BK.L.maze, sc = BK.enemies().filter(q => q.t === 'mummer' && q.scare); out.scare = { n: sc.length, woke: sc.filter(q => q.woke).length }; for (const q of BK.enemies()) q.alive = false; const e = sc[1]; e.alive = true;
+      const hy = 28 * 16, ex = (M.x0 + 12) * 16; e.st.mode = 'still'; e.x = ex; e.y = 23 * 16; e.st.x = e.x; e.st.y = e.y; e.woke = false; const x0 = e.x; for (let i = 0; i < 90; i++) { BK.P.x = ex - 50; BK.P.y = hy; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = 1; BK.sim(1); }
+      out.blind = { crept: Math.abs(e.x - x0) > 1.5, woke: !!e.woke, mode: e.mode }; }
+    // 7. EVERYTHING DRAWS (the rides, the tower, the hall, the maze, the effigies, the night) with no throw
+    load(); out.drawn = 0; for (const [x, y] of [[52, 27], [118, 27], [172, 21], [205, 27], [276, 25], [304, 27], [316, 16], [326, 27], [354, 18], [372, 13], [425, 27], [424, 17], [484, 27], [536, 25], [572, 13], [588, 27], [646, 27]]) { BK.tp(x, y); BK.sim(25); BK.step(1); out.drawn++; }
+    return out; })()`, 900000);
+} finally { pg3.close(); }
+console.log(JSON.stringify(R3).slice(0, 1400));
+ok(R3.slope.cells >= 24 && R3.slope.drawn === R3.slope.cells, 'a slope cell has no picture: ' + JSON.stringify(R3.slope) + ' (the tile painter draws slopes only for levels its guard names)');
+for (const h of ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer']) { const s = R3.strike[h]; ok(s && s.landed && s.minY <= 19 * 16 - 8 && s.rang && s.tickets === 2, 'the high striker does not throw ' + h + ' onto the boardwalk with a plunge: ' + JSON.stringify(s)); }
+ok(R3.lightHop.rang >= 1 && R3.lightHop.rise >= 10 && R3.lightHop.rise <= 40 && R3.lightHop.tickets === 0, 'a light blow on the striker does more than hop (or pays): ' + JSON.stringify(R3.lightHop));
+ok(R3.gal0.n === 3 && !R3.gal0.open && R3.gal0.plank === 0, 'the gallery starts open: ' + JSON.stringify(R3.gal0));
+ok(R3.gal2.hits === 2 && !R3.gal2.open, 'the gallery opened on two hits: ' + JSON.stringify(R3.gal2));
+ok(R3.gal3.open && R3.gal3.plank === 2 && R3.gal3.plank2 === 2 && R3.gal3.nest === 2, 'three hits inside the window did not run the planks up to the crow\'s nest: ' + JSON.stringify(R3.gal3));
+ok(R3.galReset.hits === 0 && !R3.galReset.open && R3.galReset.plank === 0, 'two hits and a missed window did not reset the gallery: ' + JSON.stringify(R3.galReset));
+ok(R3.tk1.got === 1 && R3.tk1.taken === 1, 'a ticket touched was not taken: ' + JSON.stringify(R3.tk1));
+ok(R3.boothShort.tickets === 7 && !R3.boothShort.bought && !R3.boothShort.silver, 'the booth sold a silver for seven tickets: ' + JSON.stringify(R3.boothShort));
+ok(R3.boothBuy.tickets === 0 && R3.boothBuy.bought && R3.boothBuy.silver && R3.boothBuy.before.hidden, 'the booth did not sell its silver for eight tickets (it is out of the world until then): ' + JSON.stringify(R3.boothBuy));
+ok(R3.hallHeld < 1.5, 'the mummer behind a hero who faces true glass crept ' + R3.hallHeld + ' px: the mirror does not hold it');
+ok(R3.hallCracked > 6, 'the mummer behind a hero in the cracked stretch did not creep (' + R3.hallCracked + ' px): nothing watches his back there');
+ok(R3.night.d60 === 'held' && R3.night.d120 === 'moved' && R3.night.d120ribbon === 'held' && R3.night.d200ribbon === 'moved', 'the night look is not 88 px (132 with the ribbon): ' + JSON.stringify(R3.night));
+ok(R3.scare.n === 2 && R3.scare.woke === 0, 'the corn maze has not two mummers in scarecrows\' coats, asleep: ' + JSON.stringify(R3.scare));
+ok(R3.blind.crept && R3.blind.woke, 'a mummer one tier up (a wall between) was held by a look through the wall: ' + JSON.stringify(R3.blind));
+ok(R3.drawn === 17, 'a set piece of the fair did not draw (' + R3.drawn + ' of 17)');
+
 if (bad.length) { console.error('HARVEST-FAIR (page): ' + bad.length + ' failure(s)\n  ' + bad.join('\n  ')); process.exit(1); }
 console.log('harvest-fair ok');

@@ -20,7 +20,7 @@ import { SEXTON, updateSexton as stepSexton, sextonFrame, sextonTake, sextonHove
 import { crumbleStart as crumbleStartAt, crumbleBreak as crumbleBreakAt } from './tower-collapse.js';   /* THE HEDGE WARDEN (batch 4c) */
 import { drawWitchTower, towerStep, stairProgress, drawWitchSky, drawWitchLandmarks, witchMotes, libraryBooks } from './witchlight.js';   /* THE WITCHLIGHT STAIR: its tower, its sky, its landmarks, its loose magic */
 import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed stone */
-import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, aheadTile, slopeRise, slopeGrade } from './slopes.js';
+import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, aheadTile, slopeRise, slopeGrade } from './slopes.js'; import { slopeTile } from './redraw/ground-slopes.js';   /* a slope in the level's own ground (claude/fairlevel) */
 import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, the vulture and the sand goblin, as pure state machines */
 import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */
 import { qsPatchAt, qsGameStep } from './quicksand.js';
@@ -60,6 +60,7 @@ import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
+import * as FGM from './fair-games.js'; import * as FR from './redraw/fair_rides.js';   /* THE HARVEST FAIR's vertical rebuild (claude/fairlevel): the games and the sight (pure), and the rides' art */
 import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
@@ -934,7 +935,7 @@ function resolveTiles() {
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
     const t = tileAt(x, y); let s = null; const ZG = zoneG(y);
-    if (L.caravan && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock */
+    if ((L.caravan || SLOPES_ON) && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock. ANY LEVEL WITH SLOPES paints them (claude/fairlevel: the guard said L.caravan, so the fair's Stall Stair and the Ore Road's ramps were invisible) */
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
     const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = ((L.palette && L.palette.set === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
     const villT = L.palette && L.palette.set === 'village' && VILL;
@@ -950,7 +951,7 @@ function resolveTiles() {
       const up = tileAt(x, y - 1), l = tileAt(x - 1, y), r = tileAt(x + 1, y);
       const inZone = (L.stone || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) || (L.scree || []).some(z => x >= z.x0 && x <= z.x1 && y === z.y);
       const eL = l === T.AIR || isOneWay(l) || l === T.SPIKE ? 1 : 0, eR = r === T.AIR || isOneWay(r) || r === T.SPIKE ? 1 : 0;
-      if (up !== T.SOLID && up !== T.CRATE) {
+      if (up !== T.SOLID && up !== T.CRATE && !isSlope(up)) {   /* the rock under a slope is fill: the slope carries the skin */
         const villDrain = villT && linesDrain(x, y);
         s = villDrain ? VILL.silt[(rnd() * 3) | 0] : deckZ ? FLOT.deckTop[(rnd() * 4) | 0] : timber ? hullSpr(true, x, y, eL, eR, (rnd() * 4) | 0) : SET2 ? (wetT && eL + '' + eR === '00' ? SET2.wet[(rnd() * 3) | 0] : SET2.top[eL + '' + eR][(rnd() * 4) | 0]) : L.palette && L.palette.myc ? TILE.mycTop[eL + '' + eR][(rnd() * 3) | 0] : TILE.top[eL + '' + eR][(rnd() * 4) | 0];
         const zoneKit = (L.kits || []).find(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);   /* A PLACE'S OWN KIT (L.kits): the Monastery's garden grows herbs and bees, its belfry does not */
@@ -2092,7 +2093,7 @@ function spawnEnt(e) {
       /* THE BANDITS (2026-09-25, in the goblins' place: docs/briefs/caravan-ruins-bandits.md) */
       case 'cutthroat': { const st = DF.newCutthroat(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'cutthroat', w: DF.CUTTHROAT.w, h: DF.CUTTHROAT.h, hp: EHP.cutthroat, mode: st.mode, st }); break; }
       case 'slinger': { const st = DF.newSlinger(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'slinger', w: DF.SLINGER.w, h: DF.SLINGER.h, hp: EHP.slinger, mode: st.mode, st }); break; }
-      case 'mummer': { const st = MU.newMummer(px, py, e.face || -1); enemies.push({ ...base, t: 'mummer', w: MU.MUMMER.w, h: MU.MUMMER.h, markH: 34, hp: EHP.mummer, mode: st.mode, st, speed: 0 }); break; }   /* THE HARVEST FAIR's players (src/mummer.js): they move only while nobody faces them */
+      case 'mummer': { const st = MU.newMummer(px, py, e.face || -1); enemies.push({ ...base, t: 'mummer', w: MU.MUMMER.w, h: MU.MUMMER.h, markH: 34, hp: EHP.mummer, mode: st.mode, st, speed: 0, scare: !!e.scare }); break; }   /* scare: THE CORN MAZE's mummer in a scarecrow's coat: drawn as straw until it first moves */   /* THE HARVEST FAIR's players (src/mummer.js): they move only while nobody faces them */
       case 'wickerqueen': { const a = WQN.newWickerQueen({ ...base, t: 'wickerqueen', w: WQN.WQ.w, h: WQN.WQ.h, hp: EHP.wickerqueen, maxHp: EHP.wickerqueen, noGrav: true, markH: 90, face: e.face || -1 }); boss = a; enemies.push(a); break; }   /* THE WICKER QUEEN (src/wicker-queen.js): asleep on the green until you come through its door; every clock a number (A3) */
       case 'hobbyhorse': { const st = MU.newHorse(px, py, e.face || -1); enemies.push({ ...base, t: 'hobbyhorse', w: MU.HORSE.w, h: MU.HORSE.h, markH: 36, hp: EHP.hobbyhorse, mode: st.mode, st, speed: 0 }); break; }   /* and the elite: it charges the moment a back is turned */
       case 'ambusher': { const st = DF.newAmbusher(px, py); enemies.push({ ...base, t: 'ambusher', w: DF.AMBUSHER.w, h: DF.AMBUSHER.h, hp: EHP.ambusher, mode: st.mode, st }); break; }
@@ -18206,8 +18207,10 @@ function fairReset() {
   FAIR = { bells: 0, strikes: 0, charges: 0, turns: 0, warns: 0, freezes: 0, lamps: (L.lamps || []).map(l => ({ ...l, lit: l.life > 0, b: l.life >= 1 ? 1 : 0 })), sq: {} };
   for (const lp of FAIR.lamps) if (lp.life > 0) lights.push({ x: lp.x * TS + 8, y: (lp.y + 1) * TS - 32, r: 46, warm: true, lantern: lp });   /* a lamp is an engine light: the dusk lays its glow, and a guttering one is on and off */
   if (L.green) lights.push(FAIR.fire = { x: L.green.bonfire * TS + 8, y: L.green.floor * TS - 14, r: 58, warm: true });
+  FAIR.games = FGM.newGames(L);   /* THE GAMES (src/fair-games.js): tickets, the strikers, the gallery, the prize booth. Level-local: a load starts them over */
+  { const B = FAIR.games.booth; if (B) { const sv = silvers.find(s => Math.abs((s.fairX ?? s.x) - (B.silver.x * TS + 8)) < 8); if (sv && !sv.got) { if (sv.fairX === undefined) sv.fairX = sv.x; B.sv = sv; B.svx = sv.fairX; sv.x = -99999; } else if (sv) B.bought = true; } }   /* (fairX remembers where it belongs: a level is reset more than once) */   /* the booth's silver is out of the world until it is bought */
   L.dark = 0; L.gateOpen = false;   /* THE WICKER QUEEN: a retry finds the green at dusk again, and its gate shut until she is down (claude/fair3) */
-  if (window.BK) Object.assign(window.BK, { fair: () => FAIR });
+  if (window.BK) Object.assign(window.BK, { fair: () => FAIR, slopeArt: () => { let n = 0, drawn = 0; for (let i = 0; i < L.grid.length; i++) if (isSlope(L.grid[i])) { n++; if (tileSpr && tileSpr[i]) drawn++; } return { cells: n, drawn }; } });   /* (tools/harvest-fair.mjs: every slope cell has its picture) */
 }
 /* may it walk on? ground ahead of its feet (a slope counts), no spike, no wall at its body: a haystack or a pit ends a charge */
 function fairStep(e, dir) {
@@ -18225,9 +18228,10 @@ function updateMummer(e, dt) {
     if (s.mode === 'glow') { s.mode = 'still'; }
     e.mode = s.mode; grav(); return; }
   s.x = e.x; s.y = e.y;
-  const heroes = players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p), reach: p.relic === 'maypole' ? MU.RIBBON_REACH : 1 }));
-  const x0 = e.x, was = s.mode;
-  const evs = (horse ? MU.horseStep : MU.mummerStep)(s, { heroes, canStep: (x, dir) => fairStep(e, dir), sight: wqNearSight(e), sightY: wqNearSight(e) ? WQN.WQ.nearY : 0 }, dt);
+  const heroes = players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p), reach: p.relic === 'maypole' ? MU.RIBBON_REACH : 1, mirror: FGM.mirrorSees(L, p), blind: FGM.blocked(L, (tx, ty) => isSolid(tx, ty), e, p) }));   /* the hall's glass sees behind you; the corn's walls stop your look (src/fair-games.js) */
+  const x0 = e.x, was = s.mode, dk = FGM.sightFor(L, FAIR && FAIR.lamps, e);   /* THE NIGHT: only a lit lantern (or a near look) shows you a mummer up in the dark */
+  const evs = (horse ? MU.horseStep : MU.mummerStep)(s, { heroes, canStep: (x, dir) => fairStep(e, dir), sight: wqNearSight(e) || (dk ? dk.sight : 0), sightY: wqNearSight(e) ? WQN.WQ.nearY : dk ? dk.sightY : 0 }, dt);
+  if (s.mode !== 'still') e.woke = true;   /* a scarecrow that is not straw stops being one the moment it moves */
   const dx = s.vx * dt;
   if (dx) { const r = moveBody(e, dx, 0, false); if (r.hitX && horse && s.mode === 'charge') { s.mode = 'skid'; s.t = MU.HORSE.skid; s.armed = false; } }
   grav(); s.x = e.x; s.y = e.y;
@@ -18252,6 +18256,7 @@ function updateFair(dt) {
   if (FAIR) { for (const k in FAIR.sq) FAIR.sq[k] = Math.max(0, FAIR.sq[k] - dt * 5); if (state === 'play' && !P.dead) musicBox.wind(FAW.windAt(P.x / TS)); }
   if (FAIR && L.green && state === 'play' && Math.abs(P.x - L.green.bonfire * TS) < 260 && Math.random() < dt * 30) flame(L.green.bonfire * TS + 8, L.green.floor * TS - 8, 2, 4, 40, 3);   /* the bonfire */
   if (!FAIR || !L.carousels || state !== 'play') return;
+  updateFairGames(dt);
   for (const pp of players) asPlayer(pp, () => {
     if (!P.car) P.car = MU.newCarousel();
     const z = !P.dead && upright(P) ? L.carousels.find(q => P.ground && P.x >= q.x0 * TS && P.x <= (q.x1 + 1) * TS && Math.abs(P.y - q.row * TS) < 5) : null;
@@ -18260,12 +18265,25 @@ function updateFair(dt) {
       else if (v.t === 'turn') { FAIR.turns++; P.face = -(P.face || 1); P.faceLock = v.lock; SFX.calliopeTurn(); number(P.x, P.y - 34, 'TURNED', '#ff9a9a'); }
     } });
 }
+/* THE GAMES' HANDS (src/fair-games.js): the strikers' throw, the gallery's planks, the tickets and the prize booth. Every hero reads the same: a heavy blow, a plunge, an attack box on a target */
+function updateFairGames(dt) {
+  const G = FAIR && FAIR.games; if (!G || P.dead && !coop()) return;
+  const hs = []; for (const pp of players) asPlayer(pp, () => hs.push({ p: pp, x: P.x, y: P.y, ground: P.ground, dead: !upright(P), box: attackBox(), heavy: !!(P.heavy || P.combo === 3 || P.dashAtk > 0 || P.dash > 0), plunge: !!(P.plunge || P.plungeRec > 0), up: !!keys.up, hit: P.hitSet, n: pp.n || 0 }));
+  FGM.step(G, L, hs, {
+    launch: (h, vy) => asPlayer(h.p, () => { P.vy = vy; P.ground = false; P.onMover = null; P.coyote = 0; P.plunge = false; P.plungeRec = 0; P.canCut = false; P.jbuf = 0; dust(P.x, P.y, 6); }),
+    say: t => callout(t), tickets: () => callout('TICKETS: ' + G.tickets),
+    sound: k => (({ bell: SFX.tollBell, tink: SFX.tink, coin: SFX.coin, open: SFX.gateOpen })[k] || (() => {}))(),
+    open: planks => { for (const [x0, x1, row] of planks) for (let x = x0; x <= x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; tileSpr[i] = null; grid0[i] = T.ONEWAY; } } resolveTiles(); shakeCam(2); },
+    buy: B => { if (B.sv) B.sv.x = B.svx; burst(B.x * TS + 8, (B.row + 1) * TS - 24, 12, ['#dfe8ff', '#ffffff', '#ffd36b'], 70, 0.6); SFX.heart(); },
+  }, dt);
+}
 /* the dressing the tiles do not carry (src/redraw/fair_world.js): the haystacks over their spring caps, the carousel, the lamps, the maypole green and its bonfire, and the halo behind a glowing mask */
 function drawFair(cx, cy) {
   if (!FAIR) return;
   for (const z of (L.haystacks || [])) { const x0 = z[0] * TS, x1 = (z[1] + 1) * TS; if (x1 < cx - 8 || x0 > cx + VW + 8) continue; FAW.drawHay(g, cx, cy, z, FAIR.sq[z[0]] || 0); }
   for (const z of (L.carousels || [])) FAW.drawCarousel(g, cx, cy, VW, z, time, !!(P.car && P.car.warned && P.ground && P.x >= z.x0 * TS && P.x <= (z.x1 + 1) * TS), false);
   FAW.drawLamps(g, cx, cy, VW, FAIR.lamps, time, false);
+  FR.drawFront(g, cx, cy, VW, VH, L, FAIR, time, { SPR });   /* the corn, the tower and slide, the games, the booth, the tickets, the scarecrows (src/redraw/fair_rides.js) */
   if (L.green) FAW.drawGreen(g, cx, cy, VW, L.green, time, dusk());
   if (L.green && L.arena && L.arena.boss === 'wickerqueen') drawWickerGround(cx, cy);   /* her embers */
   for (const e of enemies) if (e.alive && e.t === 'mummer' && e.mode === 'glow' && e.x > cx - 40 && e.x < cx + VW + 40) FAW.drawGlow(g, Math.round(e.x - cx), Math.round(e.y - 24 - cy), time);   /* the glow tell: a red halo behind the mask, so it reads against the dusk */
@@ -18362,7 +18380,7 @@ const CV_FOES = new Set(['scorpion', 'sandgob', 'vulture', 'cutthroat', 'slinger
 const CV_STEP = { scorpion: DF.scorpionStep, sandgob: DF.sandGobStep, vulture: DF.vultureStep, cutthroat: DF.cutthroatStep, slinger: DF.slingerStep, ambusher: DF.ambusherStep };
 const CV_HURT = { scorpion: 6, cutthroat: 6, slinger: 6, ambusher: 7 };   /* the frame each set is hurt in (the vulture's set ends perched and the goblin's burrowing) */
 const CV_BANDITS = new Set(['cutthroat', 'slinger', 'ambusher']);   /* THE LOOTERS: men, not desert creatures - the sun takes them too */
-SPR.mummer = FG.bakeMummer(); SPR.hobbyhorse = FG.bakeHobbyHorse(); SPR.wickerqueen = bakeWickerQueen(); HAS_HURT.add('mummer'); HAS_HURT.add('hobbyhorse');   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
+SPR.mummer = FG.bakeMummer(); SPR.scarecrow = FG.bakeScarecrow(false); SPR.scarecrowM = FG.bakeScarecrow(true); SPR.hobbyhorse = FG.bakeHobbyHorse(); SPR.wickerqueen = bakeWickerQueen(); HAS_HURT.add('mummer'); HAS_HURT.add('hobbyhorse');   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
 SPR.cutthroat = CB.bakeCutthroat(); SPR.slinger = CB.bakeSlinger(); SPR.ambusher = CB.bakeAmbusher(); const CV_STONE = CB.bakeSlingStone();
 HAS_HURT.add('cutthroat'); HAS_HURT.add('slinger'); HAS_HURT.add('ambusher');
 let CV = null, CVART = null;
@@ -18405,6 +18423,10 @@ function cvBackdrop() { BG.sky = DZ.bakeDesertSky(VH); BG.far = DZ.bakeFarMesas(
 /* THE GROUND: the sand skin on every slope and every flat top, the skin carried down under a slope, and the rock's own skin
    (sandstone) where the level says it is rock - the arch, the caravanserai, the rim's overhang */
 function cvTile(x, y, t) {
+  if (!L.caravan) {   /* A SLOPE IN THE LEVEL'S OWN GROUND (src/redraw/ground-slopes.js): its own top and fill, so a village ramp is cobble and earth, not sand */
+    if (!isSlope(t)) return false;
+    const gs = ({ village: VILL, shore: SHORE, reef: REEF, city: CITY })[L.palette && L.palette.set] || null, h3 = ((x * 7 + y * 13) % 3 + 3) % 3, top = gs ? gs.top['00'] : TILE.top['00'], fill = gs ? gs.fill : TILE.dirt;
+    tileSpr[y * LW + x] = slopeTile(t, top[h3 % top.length], fill[h3 % fill.length]); return true; }
   const A = cvArt(), i = y * LW + x, h = ((x * 7 + y * 13) % 3 + 3) % 3;
   /* THE RUINS (2026-09-25): what the masons laid (L.masonry) is coursed ashlar, not the rock's strata and not sand - a cracked block
      now and then, and the sun-bleached, bitten top course wherever the stone meets the sky */
@@ -25262,7 +25284,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.eye) { const ek = seaCalm(); if (ek > 0) drawEyeSky(ek); }   /* THE HURRICANE'S EYE: stars over the haze, high in the sky where no hull reaches */
   // a wood with parts in different light (L.tints: [x0, x1, rgb, alpha] in tiles), crossfaded over two dozen tiles at each seam
   if (L.tints) { const mx = (cx + VW / 2) / TS; for (const [x0, x1, c, a] of L.tints) { const k = Math.max(0, Math.min(1, Math.min(mx - x0 + 12, x1 - mx + 12) / 24)); if (k > 0.01) { g.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } }
-  if (FAIR) FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time);   /* THE HARVEST FAIR: the figures at the edge of the light, more of them the later it gets */
+  if (FAIR) FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time);
   if (L.deep) drawDeepTint(cx, cy);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
@@ -25299,6 +25321,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.monk) drawMonkBack(cx, cy);   /* THE MONASTERY: the sun over the cloud, the cloud bank, the walkway posts and the prayer flags */
   if (L.fields) drawFieldsBack(cx, cy);   /* the boughs and the posts under the ledges */
   if (L.mage) drawMageBack(cx, cy);   /* THE MAGE'S FOLLY: the chains, the orrery's arms and hubs */
+  if (FAIR) FR.drawBack(g, cx, cy, VW, VH, L, FAIR, time, { dusk: dusk(), heroes: players.map(p => ({ x: p.x, y: p.y })), foes: enemies.filter(q => q.alive && q.t === 'mummer' && Math.abs(q.x - P.x) < 420).map(q => ({ x: q.x, y: q.y, mode: q.mode })) });   /* the effigy, the wheel's frame, the swing ride's gantry, the hall of mirrors' back wall and glass */   /* THE HARVEST FAIR: the figures at the edge of the light, more of them the later it gets */   /* (after the near layer, so the hall's glass is not sat under a skyline) */
   // THE TRUNKS STAY BEHIND THE ROAD: scenery cannot turn into a wall, or flash when a hero crosses its ink.
   drawHarborLandmarks(g,L,cx,cy);
   drawBelfry(cx, cy); drawMoorWeather(cx, cy); drawScenery(cx, cy); drawStructures(cx, cy); drawLightHolders(cx, cy); drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
@@ -25339,6 +25362,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const m of movers) {
     if (m.kind === 'bucket') { if (m.vis && m.x + m.w > cx - 10 && m.x < cx + VW + 10) drawBucket(g, m, cx, cy, time); continue; }
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
+    if (m.fair && FR.drawMover(g, m, cx, cy, time)) continue;   /* THE HARVEST FAIR: a gondola on the wheel, a chair on the swing ride */
     if (L.burialLook && drawBurialMover(g, m, cx, cy, time)) continue;   /* THE BURIAL CAVERNS: stone slabs on chains, stone coffins, floating biers - no timber (burial-looks.js) */
     if (m.kind === 'pushblock') { const bx = Math.round(m.x) - cx, by = Math.round(m.y) - cy;   /* a block of the level's own ground tile (backlog #12): it is baked fresh per palette (bakeAll), so it always matches the set it stands in, with a mortar line round it so it still reads as a loose object and not the floor */
       g.drawImage(TILE.dirt[0], bx, by); g.strokeStyle = 'rgba(20,16,12,0.55)'; g.lineWidth = 1; g.strokeRect(bx + 0.5, by + 0.5, m.w - 1, m.h - 1); g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(bx + 1.5, by + 1.5, m.w - 3, m.h - 3); continue; }
@@ -26030,7 +26054,7 @@ function drawWorld(cx, cy, showPlayer) {
     /* THE HURT FRAME (the redraw pass): a blow that lands shows on the body - but never over a windup, which is the tell */
     if (V2_HURT[e.t] !== undefined && e.flash > 0.06 && e.alive && !(typeof e.mode === 'string' && /Tell$|swing|swipe|dive|leap|aim|stab|cut/.test(e.mode))) frame = V2_HURT[e.t];
     /* THE HEXED FIELDS' BATS are the farm's dead ones, pale and red-eyed: baked the first time one is drawn, from the cave bat */
-    const sprSet = e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.fam ? SPR.familiar : SPR[e.t];
+    const sprSet = e.t === 'mummer' && e.scare && !e.woke && !(e.hurtT > 0) ? SPR.scarecrowM : e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.fam ? SPR.familiar : SPR[e.t];
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
     const bigF = e.t === 'winchmaster' ? WINCH.scale : e.t === 'bloodknight' ? UNBF.BK_SCALE : e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : e.elite ? EL.big : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
@@ -26342,6 +26366,7 @@ function drawWorld(cx, cy, showPlayer) {
         const tw = 0.5 + 0.5 * Math.sin(time * (2 + (hsh % 5) * 0.4) + hsh % 17); g.globalAlpha = 0.25 + 0.6 * tw; g.fillStyle = ORE[hsh % 4]; const ox = tx * TS + 3 + (hsh >> 3) % 10, oy = ty * TS + 3 + (hsh >> 7) % 10; g.fillRect(ox - cx, oy - cy, 2, 1); g.fillRect(ox - cx, oy - cy - 1, 1, 3); }
       g.globalAlpha = 1; }
   }
+  if (FAIR) FR.drawNight(g, cx, cy, VW, VH, L, FAIR, { time, text, skip: !!L.dark || (L.green && P.x > L.green.door * TS), heroes: players.filter(p => !p.dead).map(p => ({ x: p.x, y: p.y })), glows: enemies.filter(q => q.alive && q.t === 'mummer' && q.mode === 'glow') });   /* THE NIGHT that comes with height, and the ticket count (src/redraw/fair_rides.js) */
   if (FAIR) drawWickerOver(cx, cy);   /* THE WICKER QUEEN's ribbons, glows and flames: over the dark of her green, so a told blow is never hidden by it */
   if (L.night || L.glowNight) { // the camp at night: a dark wash, then warm pools of torchlight and a glow around the knight (a glow-only wood skips the wash)
     if (L.night) { g.fillStyle = 'rgba(8,10,30,' + (L.nightA !== undefined ? L.nightA : 0.42) + ')'; g.fillRect(0, 0, VW, VH); }

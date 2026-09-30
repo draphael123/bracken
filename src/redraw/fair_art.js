@@ -124,3 +124,25 @@ export function bakeHobbyHorse() {
   });
   return pack(F, cx + 4, H - 1, HORSE.w, HORSE.h);
 }
+
+// ================= THE SCARECROW (claude/fairlevel: the corn maze) =================
+// A straw man on a pole in a sackcloth smock, a burlap head with a stitched face and a floppy hat. bakeScarecrow(false) is the straw one (decor); bakeScarecrow(true) is the one that is NOT
+// straw: three tiny brass bells sewn to the hat's brim (the tell you can see, before the one you can hear). One frame, the mummer's own contract (so the game can draw a mummer as one until it moves).
+export function bakeScarecrow(bells) {
+  const W = 30, H = 38, cx = 13;
+  const F = frames(W, H, 1, g => {
+    rect(g, cx - 1, 12, 3, 26, C.woodD); rect(g, cx - 1, 12, 1, 26, C.wood);                                   // the pole
+    rect(g, cx - 11, 15, 23, 2, C.woodD); rect(g, cx - 11, 15, 23, 1, C.wood);                                 // the cross-piece
+    fillPoly(g, [[cx - 4, 15], [cx + 5, 15], [cx + 8, 32], [cx - 7, 32]], C.sack); line(g, cx - 3, 16, cx - 6, 31, C.sackL); line(g, cx + 4, 16, cx + 7, 31, C.sackD);   // the smock
+    rect(g, cx - 4, 22, 4, 4, C.patch); rect(g, cx + 2, 25, 4, 3, C.patch2); rect(g, cx - 5, 20, 11, 2, C.rope);
+    for (let x = cx - 7; x <= cx + 8; x++) if ((x & 1) === 0) px(g, x, 32, C.sack); else px(g, x, 33, C.sackD);
+    for (const sx of [cx - 11, cx + 11]) { rect(g, sx - 1, 15, 3, 6, C.sack); for (let i = 0; i < 4; i++) px(g, sx - 1 + i, 21 + (i & 1), C.straw); }   // sleeves and straw cuffs
+    px(g, cx - 5, 16, C.straw); px(g, cx + 6, 16, C.strawD); px(g, cx - 6, 33, C.straw); px(g, cx + 7, 33, C.strawD);
+    ellipse(g, cx, 9, 5, 5, '#c8a468'); rect(g, cx - 5, 6, 2, 6, '#a8844a');                                   // the head: burlap
+    px(g, cx - 3, 8, C.eye); px(g, cx - 2, 9, C.eye); px(g, cx - 2, 8, C.eye); px(g, cx + 2, 8, C.eye); px(g, cx + 3, 9, C.eye); px(g, cx + 3, 8, C.eye);   // stitched eyes
+    rect(g, cx - 3, 12, 7, 1, C.eye); for (let i = 0; i < 4; i++) px(g, cx - 3 + i * 2, 11, C.eye);            // the stitched mouth
+    fillPoly(g, [[cx - 8, 5], [cx + 8, 5], [cx + 4, 1], [cx - 4, 1]], '#7a6238'); rect(g, cx - 9, 4, 19, 2, '#5e4a2a'); px(g, cx - 3, 0, C.straw); px(g, cx + 3, 1, C.straw);   // the hat
+    if (bells) for (const bx of [cx - 8, cx, cx + 8]) { rect(g, bx, 5, 2, 2, C.bell); px(g, bx, 5, C.bellL); px(g, bx + 1, 6, C.bellD); }
+  });
+  return pack(F, cx, H - 1, MUMMER.w, MUMMER.h);
+}

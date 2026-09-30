@@ -32,6 +32,14 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     for (const [x0, x1, y] of (L.fields.phantoms || [])) for (let x = x0; x <= x1; x++) if (g[y * W + x] === T.PLANK) g[y * W + x] = T.AIR;
     for (const s of (L.fields.shrinks || [])) for (let y = s.y0; y <= s.y1; y++) for (let x = s.x0; x <= s.x1; x++) g[y * W + x] = T.SOLID;
   }
+  /* THE FAIR'S OWN GIVES (src/harvest-fair.js): a secret wall that says `reach` is one heavy blow (every hero has one), the gallery's planks stand once three targets are hit, and a striker's pad throws
+     you as high as its launch: all of it is something every hero can do, so the fill counts it as done (the plain fill does not: it is legs and nothing else) */
+  const strikeUp = new Map();
+  if (!plain) {
+    for (const w of (L.walls || [])) if (w.reach) for (let y = w.y0; y <= w.y1; y++) for (let x = w.x0; x <= w.x1; x++) g[y * W + x] = T.AIR;
+    for (const [x0, x1, row] of ((L.gallery && L.gallery.planks) || [])) for (let x = x0; x <= x1; x++) if (g[row * W + x] === T.AIR) g[row * W + x] = T.ONEWAY;
+    for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
+  }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
   // model treats them as already done rather than calling the far side unreachable
   for (const e of (L.ents || [])) {
@@ -145,7 +153,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     return true; };
   // everywhere you can get to from one tile (push is handed in, so tools/traps.mjs can run it backwards)
   const expand = (x, y, push) => {
-    const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)), up = springy ? BOUNCE_UP : buds.has(key(x, y)) ? BUD_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
+    const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)), up = strikeUp.has(key(x, y)) ? strikeUp.get(key(x, y)) : springy ? BOUNCE_UP : buds.has(key(x, y)) ? BUD_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
     for (const v of vents) if (Math.abs(v.x - x) <= 1 && v.y === y) { const top = Math.floor(v.y + 1 - (v.h || 112) / TSZ);
       const half = opts.rides ? Math.max(3, Math.ceil((v.w || 0) / 2 / TSZ)) : 3;
       for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -half; dx <= half; dx++) push(v.x + dx, ty); }
