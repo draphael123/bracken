@@ -16,7 +16,7 @@
 // hero, the bestiary (all seen), the store and equip lists for every hero, the talent tree for every hero, the pause menu,
 // the HUD with every meter full, and every boss and mini name card as the fight starts.
 //   node tools/textfit.mjs                  everything (report mode: prints, writes textfit.json, exits 0)
-//   node tools/textfit.mjs hints,talk       only those screens (hints talk bestiary store tree menu hud boss pick practice)
+//   node tools/textfit.mjs hints,talk       only those screens (hints talk bestiary store tree menu settings hud boss pick practice)
 //   plates    every boss and mini's plate at the foot of the screen, in its fight (only the band under VH - 40): in the suite
 //   pick      THE HERO PICK, with each of its cards selected in turn: every hero's name under its card, and the words for the selected one
 //   practice  THE PRACTICE YARDS list, each row selected in turn
@@ -173,6 +173,17 @@ async function pageTextFit(input) {
     /* THE PAUSE MAP: its title, its legend and its controls line, on a wood with every kind of mark (Stormhold: gates, keys, doors) */
     for (const id of ['wood', 'storm']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; toPlay(li, 'knight'); frame('menu map ' + id, () => { BK.state = 'menu'; BK.ui.mapOpen(); }, { settle: 40 }); }
     BK.ui.menuKind = 'pause'; }
+  /* SETTINGS IN TABS, THE CONTROLS CARD, THE REBIND PAGES AND THE CO-OP GUIDE (claude/storeui): every row of every tab selected in turn, the card for every hero, every rebind page with every row, and every guide page */
+  if (want('settings')) { toPlay(0, 'knight'); BK.ui.openMenu('title');
+    for (const tb of ['audio', 'display', 'gameplay', 'controls', 'access']) { BK.ui.settingsTab = tb; const n = BK.ui.menuCount();
+      for (let i = 0; i < n; i++) frame('settings ' + tb + ' #' + i, () => { BK.state = 'menu'; BK.ui.menuKind = 'settings'; BK.ui.settingsTab = tb; BK.ui.menuI = i; }, { settle: 40 }); }
+    for (const h of [...HEROES, 'geomancer']) frame('controls [' + h + ']', () => { BK.setHero(h); BK.state = 'controls'; }, { settle: 5 });
+    for (const p of [0, 1, 2]) for (let i = -1; i <= 15; i++) frame('rebind p' + p + ' #' + i, () => { BK.state = 'menu'; BK.ui.rebind.open(p); BK.ui.rebind.state().i = i; }, { settle: 5 });
+    frame('rebind listening', () => { BK.ui.rebind.open(0); const r = BK.ui.rebind.state(); r.i = 3; r.listening = true; r.msg = 'PRESS A KEY  (ESC CANCELS)'; r.msgT = 8; }, { settle: 5 });
+    frame('rebind conflict', () => { BK.ui.rebind.open(0); const r = BK.ui.rebind.state(); r.i = 4; r.msg = 'ALSO USED BY: C: GUARD / ABILITY'; r.msgT = 8; const b = BK.ui.settings().binds; b.kb.jump = ['c', 'Space']; }, { settle: 5 }); BK.ui.readSettings('{}');
+    for (let p = 0; p < BK.ui.coopHelp.pages().length; p++) frame('coophelp page ' + (p + 1), () => { BK.ui.coopHelp.open('map'); BK.ui.coopHelp.page = p; }, { settle: 5 });
+    BK.ui.settingsTab = 'gameplay'; BK.state = 'play'; BK.ui.menuKind = 'pause'; await yieldNow(); }
+
 
   /* THE SOUND TEST'S MUSIC TAB (2026-09-27): every song, unlocked first so the longest credit lines (the worst case
      for the row under the list) are the ones actually measured, not '???' and 'not yet heard' every time.

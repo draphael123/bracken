@@ -13,10 +13,11 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
+import { cardRows } from '../src/controls.js';
 
 const HEROES = ['knight', 'pyro', 'pirate', 'reaper', 'warden', 'paladin', 'geomancer'];
 const MAIN = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-assert.ok(/\['emote', 'H = DANCE/.test(MAIN), 'the controls list does not name the emote key (H)');
+assert.ok(cardRows({ hero: 'knight' }).some(r => r[0] === 'emote' && /^H: DANCE/.test(r[1])), 'the controls list does not name the emote key (H)');   /* (the card is built by src/controls.js since claude/storeui) */
 const pg = await openPage({ audio: false, fonts: false });
 try {
   /* 1. BAKED, in every skin */
