@@ -1168,7 +1168,7 @@ function kingswood() {
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
 
-    arena: { x0: 316 * TS, x1: 370 * TS, floor: 14 * TS, trigger: 322 * TS, wallL: 315, wallR: 371, boss: 'king', music: 'king', tint: '#c9463d', tintA: 0.12, fx: 'embers' },
+    arena: { x0: 316 * TS, x1: 370 * TS, floor: 14 * TS, trigger: 322 * TS, wallL: 315, wallR: 371, boss: 'king', music: 'goblinroyal', tint: '#c9463d', tintA: 0.12, fx: 'embers' },
     mini: { x0: 168 * TS, x1: 189 * TS, floor: 14 * TS, trigger: 172 * TS, wallL: 167, gate: 190, boss: 'greathound' },
   }
   // ---- 5c. THE TOLL BRIDGE: a rope bridge over the gorge. Pikes hold it, a cutter waits at the far post; if it falls, ledges below lead back up. ----
@@ -2996,7 +2996,7 @@ function deepAndKeep() {
       grass: '#2e4a4a', grassL: '#3e5e5c', grassD: '#1c3030', dirt: '#22343c', dirtL: '#2e444c', dirtD: '#14222a',
       canopy: ['#0c1820', '#122230', '#182c3c', '#1e3648'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'deep' }],
-    arena: { x0: 252 * TS, x1: 294 * TS, floor: 199 * TS, trigger: 256 * TS, wallL: 252, wallR: 294, boss: 'drownedking', music: 'boss3', tint: '#123040', tintA: 0.16, fx: 'motes', y0: 164 * TS, y1: 199 * TS, throne: [282 * TS + 8, 192 * TS] },
+    arena: { x0: 252 * TS, x1: 294 * TS, floor: 199 * TS, trigger: 256 * TS, wallL: 252, wallR: 294, boss: 'drownedking', music: 'drownedking', tint: '#123040', tintA: 0.16, fx: 'motes', y0: 164 * TS, y1: 199 * TS, throne: [282 * TS + 8, 192 * TS] },
   };
 }
 
@@ -3156,7 +3156,7 @@ function highcrown() {
       grass: '#8a8a98', grassL: '#a8a8b8', grassD: '#5a5a66', dirt: '#4a4a58', dirtL: '#5e5e6c', dirtD: '#32323c',
       canopy: ['#2a2a38', '#3a3a4a', '#4a4a5c', '#5a5a6e'] },
     weather: [{ x0: 0, x1: 123 * TS, kind: 'snow' }], ambient: [{ x0: 0, x1: 123 * TS, kind: 'wind' }],
-    arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 224 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'queen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
+    arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 224 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'goblinroyal', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
       roof: 8 * TS, hole: { x0: 221, x1: 224, y0: 8, y1: 9 }, rubble: [[216, 17, 4], [221, 15, 4], [216, 13, 4], [221, 11, 4], [221, 9, 4]] },
   };
 }
@@ -7549,7 +7549,7 @@ function theMagesFolly() {
     ambushes: [{ name: 'THE READING ROOM', row: G - 1, wallL: 164, wallR: 180, check: false, waves: [[['armour', 167], ['broom', 168], ['imp', 176, G - 6], ['broom', 177]]] }],
     noCoin: [[64, 208, 0, 13], [209, 326, 0, 21], [51, 57, 0, 25], [327, 446, 0, 5]],   /* the tower's roofs and the gatehouse top: the sprinkler treats an assisted level as all reachable */
     calm: [[0, 70, 0, 47], [90, 104, 0, 47], [122, 160, 26, 47], [179, 210, 0, 47], [236, 264, 22, 47], [264, 292, 0, 47], [308, 318, 0, 47], [332, 382, 30, 47], [382, 448, 0, 47], [447, 536, 0, 47], [537, 602, 0, 47]],   /* no garrison on the lanes, the flipped floor or the test room, nor on the three floors thinned by hand (the stacks' crossing, the bench, the gilded armour's) */
-    arena: { x0: 603 * TS, x1: 646 * TS, floor: F * TS, y0: 0, trigger: 608 * TS, wallL: 602, wallR: 646, boss: 'archmage', music: 'boss4', tint: '#2a1a40', tintA: 0.04, fx: 'motes' },
+    arena: { x0: 603 * TS, x1: 646 * TS, floor: F * TS, y0: 0, trigger: 608 * TS, wallL: 602, wallR: 646, boss: 'archmage', music: 'archmage', tint: '#2a1a40', tintA: 0.04, fx: 'motes' },
   };
   return follyLibrary(L, ret);
 }

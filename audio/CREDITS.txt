@@ -192,3 +192,4 @@ CONVERTED TO OGG FROM THE ORIGINAL WAV (ffmpeg, libvorbis q3, no fades, loop poi
   https://opengameart.org/content/desert-theme-8bit-chiptune-theme - THE SUNKEN CARAVAN's own level track, benching musBeach.ogg (kept, part of the same stage-select set).
 - monasterygolem.ogg = "Boss Battle #6 [8-bit]" V1 by nene, CC0 -
   https://opengameart.org/content/boss-battle-6-8-bit - THE MONASTERY's GOLEM mini's own track, overriding the shared mini fallback (minicharge.ogg).
+- archmage / goblinroyal = no file: synthesised for this game in src/boss-music.js (the Archmages' theme, shared by the Archmage and the Undead Archmage on an undead voicing; the Goblin royals' theme, shared by the Goblin King and Queen)
