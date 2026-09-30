@@ -5394,7 +5394,7 @@ function theLamplitStreet() {
   port(240, 16, 21);                            // the gate itself, shut until he is down
   interiors.push([196, 239, 14, 21, 'drowned']);
   darkZones.push({ x0: 196 * TS, x1: 240 * TS, y0: 13 * TS, y1: 23 * TS, dark: 0.66 });
-  ent('sign', 190, UP - 1, { text: 'SOMETHING IN THE MARKET HALL IS PUTTING THE LAMPS OUT, ONE AT A TIME.' });
+  ent('sign', 190, UP - 1, { text: 'HE HOODS THE LAMPS ONE BY ONE. STRIKE THE LAMP UNDER HIS HOOD: ITS FLARE BLINDS HIM.' });
   ent('check', 190, UP - 1);                    // the one outside his wall
   for (const x of [200, 210, 220, 230, 237]) lampUp(x);
   ent('deco', 206, UP - 1, { kind: 'stall', v: 1 }); ent('deco', 226, UP - 1, { kind: 'drownedCart' });
@@ -7067,8 +7067,8 @@ function theHexedFields() {
 
   // ---------------- THE FURROWS (x 291-331). The Headless Ploughman, and the hedge-bank gate he stands in front of. ----------------
   ent('check', 291, G - 1);
-  sign(293, G - 1, 'THE PLOUGHMAN. RED: JUMP HIS PLOUGH. AT THE END OF THE FURROW IT STICKS: CUT HIM THEN.');
-  ent('ploughman', 320, G - 1, { face: -1, mini: true });
+  sign(293, G - 1, 'THE PLOUGHMAN. JUMP HIS PLOUGH INTO THE TROUGH OR THE FENCE: IT STICKS THERE, AND ONLY THERE.');
+  ent('ploughman', 316, G - 1, { face: -1, mini: true });   /* (claude/weakboss: off the fence at 320, which his field now stands in) */
   block(327, 331, G - 12, G - 1); air(327, 331, G - 6, G - 1); interiors.push([327, 331, G - 6, G - 1, 'earth']);
   for (let y = G - 6; y <= G - 1; y++) set(327, y, T.PORT);       /* the hedge gate: it lifts when he falls */
 
@@ -7217,7 +7217,8 @@ function theHexedFields() {
       grass: '#7a946e', grassL: '#a4bc8e', grassD: '#4a6048', dirt: '#5e5444', dirtL: '#7a6c54', dirtD: '#3c3428', canopy: ['#161a2a', '#1e2436', '#262e44', '#303a52'] },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 340 * TS, kind: 'wind' }, { x0: 340 * TS, x1: 402 * TS, kind: 'hall' }, { x0: 402 * TS, x1: 464 * TS, kind: 'wind' }, { x0: 464 * TS, x1: 539 * TS, kind: 'hold' }, { x0: 539 * TS, x1: 99999, kind: 'wind' }],
-    mini: { x0: 296 * TS, x1: 327 * TS, floor: G * TS, y0: (G - 10) * TS, y1: (G + 1) * TS, trigger: 300 * TS, wallL: 295, gate: 327, boss: 'ploughman', name: 'THE HEADLESS PLOUGHMAN' },
+    mini: { x0: 296 * TS, x1: 327 * TS, floor: G * TS, y0: (G - 10) * TS, y1: (G + 1) * TS, trigger: 300 * TS, wallL: 295, gate: 327, boss: 'ploughman', name: 'THE HEADLESS PLOUGHMAN',
+      baits: [[303, 'trough'], [320, 'fence']] },   /* THE BAIT (claude/weakboss): a stone trough and a rail fence standing in his field - his plough sticks in them, and nowhere else. Drawn and run in main.js (plBaits) */
     ambushes: [{ name: 'THE PICKERS\' SUPPER', row: O - 1, wallL: 152, wallR: 178, check: [151, O - 1], waves: [[['scarecrow', 158], ['scarecrow', 174], ['pumpkin', 163], ['pumpkin', 170]], [['farmhand', 160, O - 3], ['swornsword', 167], ['pumpkin', 176], ['hedgeknight', 171]]] }],   /* wave two, the road's patrol walking in on the supper: a sworn sword that plants, a hedge knight to BREAK (poise-heavy, where the hounds were), a pumpkin light enough to throw into the brambles, and the ghost through the wall */
     calm: [[0, 22, 0, 43], [52, 68, 24, 43], [104, 156, 12, 33], [186, 198, 26, 43], [206, 285, 26, 43], [336, 404, 0, 43], [410, 460, 0, 43], [462, 540, 0, 33], [539, 634, 18, 43], [636, 668, 20, 43]],   /* no garrison on the lane's first steps, the planks, the roofs, the ride, or the graves */
     arena: { x0: 670 * TS, x1: 710 * TS, floor: G * TS, y0: 8 * TS, trigger: 675 * TS, wallL: 669, wallR: 710, boss: 'strawking', music: 'scarecrowking', tint: '#3a1a10', tintA: 0.1, fx: 'embers', poles: [675, 686, 707] },

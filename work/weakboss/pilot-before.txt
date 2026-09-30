@@ -1,0 +1,26 @@
+{"lv":"lamplit","h":"knight","out":"win","secs":12.1,"left":0,"taken":0,"perMin":0,"opened":1,"swings":26,"modes":{"wake":1,"stalk":3,"sweepTell":1,"sweep":1,"toLamp":1,"snuffTell":1,"snuff":1,"reach":1},"hitBy":{}}
+{"lv":"lamplit","h":"warden","out":"win","secs":11.1,"left":0,"taken":0,"perMin":0,"opened":1,"swings":31,"modes":{"wake":1,"stalk":2,"sweepTell":1,"sweep":1,"toLamp":1,"snuffTell":1,"snuff":1,"reach":1},"hitBy":{}}
+{"lv":"lamplit","h":"pyro","out":"win","secs":9.4,"left":0,"taken":0,"perMin":0,"opened":1,"swings":14,"modes":{"wake":1,"stalk":2,"sweepTell":1,"sweep":1,"toLamp":1,"snuffTell":1,"snuff":1,"reach":1},"hitBy":{}}
+{"lv":"fields","h":"knight","out":"win","secs":34,"left":0,"taken":58,"perMin":102,"opened":1,"swings":103,"modes":{"wake":1,"walk":6,"chargeTell":1,"charge":1,"stuck":1,"wrench":1,"goadTell":5,"goad":4},"hitBy":{"charge":28,"goadTell":30}}
+{"lv":"fields","h":"warden","out":"win","secs":33.7,"left":0,"taken":101,"perMin":180,"opened":1,"swings":125,"modes":{"wake":1,"walk":5,"chargeTell":2,"charge":2,"stuck":1,"wrench":1,"goadTell":3,"goad":3},"hitBy":{"charge":28,"goadTell":48,"walk":25}}
+{"lv":"fields","h":"pyro","out":"win","secs":20.2,"left":0,"taken":48,"perMin":143,"opened":1,"swings":85,"modes":{"wake":1,"walk":3,"chargeTell":2,"charge":2,"stuck":1,"wrench":1,"goadTell":1,"goad":1},"hitBy":{"charge":28,"goadTell":20}}
+{"lv":"mage","h":"knight","out":"win","secs":35.4,"left":0,"taken":62,"perMin":105,"opened":1,"swings":215,"modes":{"wake":1,"walk":6,"swipeTell":4,"swipe":4,"scuttleTell":1,"scurry":1,"spent":3,"flaskTell":1,"lob":1,"pounceTell":1,"leap":1,"dive":1},"hitBy":{"swipeTell":33,"lob":8,"dive":21}}
+{"lv":"mage","h":"warden","out":"win","secs":24.4,"left":0,"taken":43,"perMin":106,"opened":1,"swings":87,"modes":{"wake":1,"walk":4,"swipeTell":2,"swipe":2,"scuttleTell":1,"scurry":1,"spent":2,"flaskTell":1,"lob":1},"hitBy":{"scurry":24,"spent":19}}
+{"lv":"mage","h":"pyro","out":"win","secs":16.1,"left":0,"taken":0,"perMin":0,"opened":1,"swings":62,"modes":{"wake":1,"walk":3,"swipeTell":2,"swipe":2,"scuttleTell":1,"scurry":1,"spent":1},"hitBy":{}}
+{"lv":"unburied","h":"knight","out":"win","secs":111,"left":0,"taken":45,"perMin":24,"opened":1,"swings":219,"modes":{"wake":1,"raiseTell":5,"raise":5,"stalk":32,"cleaveTell":9,"stuck":7,"wrench":7,"bladeTell":7,"blade":7,"wardTell":3,"ward":3,"rest":10,"rushTell":7,"rush":7,"surgeTell":1,"surge":1,"cleave":2},"hitBy":{"blade":20,"rush":15,"stalk":10}}
+{"lv":"unburied","h":"warden","out":"win","secs":125.2,"left":0,"taken":41,"perMin":20,"opened":1,"swings":176,"modes":{"wake":1,"raiseTell":5,"raise":5,"stalk":34,"cleaveTell":9,"stuck":8,"wrench":7,"bladeTell":8,"blade":8,"wardTell":4,"ward":4,"rest":13,"rushTell":9,"rush":9,"surgeTell":1,"surge":1,"cleave":1},"hitBy":{"rush":28,"ward":13}}
+{"lv":"unburied","h":"pyro","out":"win","secs":38.1,"left":0,"taken":0,"perMin":0,"opened":1,"swings":54,"modes":{"wake":1,"raiseTell":2,"raise":2,"stalk":9,"cleaveTell":4,"stuck":4,"wrench":3,"bladeTell":2,"blade":2,"surgeTell":1,"surge":1,"rushTell":1,"rush":1,"rest":1},"hitBy":{}}
+| boss | hero | outcome | secs | hp taken | per min | opened |
+| lamplit | knight | win | 12.1 | 0 | 0 | 1 |
+| lamplit | warden | win | 11.1 | 0 | 0 | 1 |
+| lamplit | pyro | win | 9.4 | 0 | 0 | 1 |
+| fields | knight | win | 34 | 58 | 102 | 1 |
+| fields | warden | win | 33.7 | 101 | 180 | 1 |
+| fields | pyro | win | 20.2 | 48 | 143 | 1 |
+| mage | knight | win | 35.4 | 62 | 105 | 1 |
+| mage | warden | win | 24.4 | 43 | 106 | 1 |
+| mage | pyro | win | 16.1 | 0 | 0 | 1 |
+| unburied | knight | win | 111 | 45 | 24 | 1 |
+| unburied | warden | win | 125.2 | 41 | 20 | 1 |
+| unburied | pyro | win | 38.1 | 0 | 0 | 1 |
+errors []

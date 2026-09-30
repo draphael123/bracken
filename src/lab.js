@@ -1283,6 +1283,24 @@ async function runbossLab(BK, opts) {
       /* THE GOBLIN QUEEN'S QUAKE (claude/gqueen2): her shadow is where she lands - off the floor as she comes down on it, and over her floor waves;
          asked before the open branch, because plate off she leaps AT you */
       else if (boss.t === 'gqueen' && ((boss.mode === 'hallLeap' && boss.tx !== undefined && Math.abs(boss.tx - P.x) < 100 && boss.modeT - 0.8 < 0.16) || BK.waves().some(w => w.royal && w.life > 0 && Math.abs(w.x - P.x) < 30 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 4))) { goal = null; strike = false; if (P.ground) { BK.press('jump'); P.labJump = 14; } }
+      /* THE LAMPREEVE (claude/weakboss), played the way his hall teaches it: when he goes for a lamp, get to that lamp first, on its far side
+         from him, and strike it while the hood is on it - the flare blinds him, and then he is open (the branch below). With your light taken
+         (his phase two), go to the nearest burning lamp and stand at it until it is back. Nothing is flared for the bot: a real swing on the lamp. */
+      else if (boss.t === 'lampreeve' && !open) { const t = boss.target, hooding = t && (boss.mode === 'toLamp' || boss.mode === 'snuffTell' || boss.mode === 'snuff');
+        if (hooding) { const side = Math.sign(boss.x - t.x) || 1; goal = t.x - side * 12; strike = false;
+          if (boss.mode !== 'toLamp' && Math.abs(P.x - t.x) < 20 && P.ground && P.atk < 0) { P.face = side; k.left = k.right = false; goal = null; BK.press('atk'); swings++; } }
+        else if (P.snuffed) { const lp = BK.props().filter(p => p.t === 'lantern' && p.city && p.lit && !(p.gut > 0) && p.x > A.x0 - 8 && p.x < A.x1 + 8).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+          if (lp) { goal = lp.x; strike = false; } else { goal = boss.x; strike = true; } }
+        else { goal = boss.x; strike = true; } }
+      /* THE HEADLESS PLOUGHMAN (claude/weakboss): his plough sticks only in the trough or the fence, so the hands stand just beyond one, on its
+         far side from him - his plough comes at them and goes into it - and cut him while he heaves (the open branch below). The bait picked is
+         the one furthest from him, so his walk in does not carry him past it. His head and his furrows are red tells: rolled (above). */
+      else if (boss.t === 'ploughman' && !open && L.mini && L.mini.baits) { const bs = L.mini.baits.map(([tx]) => tx * 16 + 8);
+        const spots = bs.map(bx => { const side = Math.sign(bx - boss.x) || 1; return { bx, x: bx + side * 26, far: Math.abs(bx - boss.x) }; }).filter(s => s.x > A.x0 + 18 && s.x < A.x1 - 18 && s.far > 40);
+        const s = spots.sort((a, b) => b.far - a.far)[0];
+        if (s && boss.mode !== 'charge') { goal = s.x; strike = false; if (Math.abs(boss.x - P.x) < LAB_REACH[h] + 14 && Math.abs(P.x - s.x) < 8 && P.atk < 0) { P.face = Math.sign(boss.x - P.x) || P.face; BK.press('atk'); swings++; } }
+        else if (boss.mode === 'charge') { goal = null; strike = false; if (P.ground && Math.abs(boss.x - P.x) < 70 && (P.x - boss.x) * boss.face > 0) { BK.press('jump'); P.labJump = 20; } }
+        else { goal = boss.x; strike = true; } }
       else if (open) { goal = boss.x; strike = true; }
       /* THE PLATE THAT TURNS EVERY BLADE (the Queen's Lance): chipping at it does nothing at all, so the hands MAKE the
          opening the way a player does - stand a dash's length off and come at his guard at a run. His own gate says a

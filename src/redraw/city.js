@@ -34,6 +34,9 @@
 //           8 draw (he straightens and takes in water, ribs out, cheeks full)
 //           9 douse (bent double, the black of it coming out of him in a cone)
 //           10 hurt, 11 kneel
+//           12 lunge tell (claude/weakboss: back into the dark, crouched, the pole levelled at your middle)
+//           13 lunge (driven out of the dark, the cone ahead of him at chest height, a smear behind)
+//           14 blinded (the flare in his face: head back, both hands up over his eyes, the pole let fall across his back)
 //   canvas 44x40   anchor ax 21, ay 39
 //   reach: stride the cone ax-1..ax+5, ay-38..ay-30;
 //          SNUFF TELL cone ax+8..ax+16, ay-36..ay-28 — up and out over the lamp;
@@ -390,7 +393,14 @@ export function bakeLampreeve() {
     far: [[-5, 24], [-9, 26]], near: [[2, 23], [5, 27]], pole: [[5, 27], 56, 20] });
   const kneel = frame({ legs: 'kneel', dy: 4, down: true,
     far: [[-4, 25], [-7, 28]], near: [[3, 25], [5, 30]], pole: [[5, 30], 86, 20] });
-  return pack([stride(0), stride(1), stride(2), stride(3), snuffTell, snuff, sweepTell, sweep, draw, douse, hurtF, kneel], X + 1, H + 1, 14, 30);
+  const lungeTell = frame({ legs: 'coil', dx: -2, down: true, hx: -1, ladder: true,
+    far: [[-5, 22], [-8, 23]], near: [[0, 23], [-3, 24]], pole: [[-3, 24], -4, 21] });
+  const lunge = frame({ legs: 'lunge', dx: 3, dy: 2, down: true, ladder: true,
+    far: [[1, 21], [5, 22]], near: [[5, 22], [10, 22]], pole: [[10, 22], 2, 22],
+    smear: [1 + X + 12, 1 + 22, 14, -60, 0] });
+  const blinded = frame({ legs: 'stand', dx: -1, up: true, ladder: true,
+    far: [[-2, 18], [1, 14]], near: [[3, 18], [4, 14]], pole: [[-4, 24], -120, 20, 'back'] });
+  return pack([stride(0), stride(1), stride(2), stride(3), snuffTell, snuff, sweepTell, sweep, draw, douse, hurtF, kneel, lungeTell, lunge, blinded], X + 1, H + 1, 14, 30);
 }
 
 // ---------- THE TOLLMASTER ----------
