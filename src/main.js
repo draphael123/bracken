@@ -145,6 +145,7 @@ import { floodReach } from './reachcore.js';
 import { WEIGHTY, weighty, setWeighty, combatFrom, weightyHere, recoveryFor, poiseRule, guardCount } from './weighty.js';   /* COMBAT: CLASSIC / WEIGHTY (claude/ssproto): one switch, off by default */
 import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
+import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 
 // ---------- display ----------
@@ -3761,6 +3762,7 @@ function learnTalent(k) { treeFrom = state; treeI = 0; treeBranch = 0; state = '
 let treeFrom = 'store', treeI = 0, treeMsg = '', treeMsgT = 0, treeBranch = 0;
 const SKILL_NEEDS = { coldComfort: ['summonSkeleton'], gleaner: ['summonSkeleton'], press: ['summonSkeleton'], ossuary: ['summonSkeleton'], graveProvides: ['summonSkeleton'], gripAll: ['deathGrip'], bidden: ['summonSkeleton','gravecall'], secondDeath: ['summonSkeleton','gravecall'] };
 const skillNeeds = n => n?.hero === 'reaper' ? SKILL_NEEDS[n.id] || [] : [];
+const treeNodesFor = h => skillsFor(h).filter(n => n.active).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));
 const treeNodes = () => treeBranch === 1 ? passiveLadder(hero()) : skillsFor(hero()).filter(n => n.active).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));   /* the PASSIVES tab is the ladder: the order they arrive in */
 const loadoutSafe = () => { const from = state === 'tree' ? treeFrom : state, origin = from === 'menu' ? menuFrom : from;
   if (['map','select'].includes(origin) || (from === 'store' && equipFrom === 'map' && storeMode === 'equip')) return true;
@@ -3925,16 +3927,22 @@ const BRANCH_PIX = {
   paladin: [['....y.....', '.y..y..y..', '..yyyyy...', 'yyywwyyyy.', '..yyyyy...', '.y..y..y..', '....y.....', '..........', '..........', '..........'],
     ['...yyyy...', '..y....y..', '.y......y.', '.y......y.', '.y..ww..y.', '.y......y.', 'ssssssssss', '..........', '..........', '..........'],
     ['.sssss....', '.swwws....', '.sssss....', '...b......', '...b......', '...b......', '...b......', '..........', '..........', '..........']] };
+/* THE PREVIEW BOX: the highlighted ability performed by your hero on a training post, looping (src/ability-preview.js). A passive has nothing to perform, so it shows its glyph and what it is. */
+const treePreview = (n, x, y, w, h) => { if (!n) return;
+  if (!n.active) { g.fillStyle = 'rgba(14,12,22,0.92)'; g.fillRect(x, y, w, h); g.strokeStyle = 'rgba(255,255,255,0.14)'; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1); const ic = treeIcon(n); g.drawImage(ic, 0, 0, ic.width, ic.height, Math.round(x + w / 2 - ic.width * 2), y + 14, ic.width * 4, ic.height * 4); const cat = talCat(n); text(cat.word, x + w / 2, y + 14 + ic.height * 4 + 8, cat.col, 'center', 6); text('ALWAYS ON WHEN IT ARRIVES', x + w / 2, y + h - 10, UI.dim, 'center', 6); return; }
+  const set = preview('vignette:' + hero() + ':' + PROG.skin + ':' + PROG.sword, () => heroSet(PROG.skin, PROG.sword, true));
+  drawAbilityPreview(g, x, y, w, h, { id: n.id, hero: hero(), t: time, idle: set.R.idle, atk: set.R.atk, icon: treeIcon(n) }); };
 function drawTree() {
  g.drawImage(MAPC,0,0);g.fillStyle='rgba(10,9,18,0.94)';g.fillRect(0,0,VW,VH);panel(3,2,VW-6,VH-4);
  const h=hero(),lv=heroLevel(),ns=treeNodes(),idx=Math.max(0,Math.min(ns.length-1,treeI)),n=ns[idx],list=equipped(PROG,h,lv),limit=slotsAt(lv),width=(VW-20)/limit;
  text('SKILLS / LOADOUT',10,6,UI.title,'left',6);text('LV '+lv+'   '+(PROG.coins||0)+' COINS',VW-10,6,UI.gold,'right',6);
  for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),key=['F','G'][i];g.fillStyle=i<limit?'#302c3e':'#191622';g.fillRect(x,19,width-3,23);text(i<limit?(sk&&!sk.active?'PASSIVE':key):'LEVEL '+(i===2?8:16),x+4,21,i<limit?UI.gold:UI.dim,'left',6);text(fitName(sk?sk.name:i<limit?'EMPTY':'LOCKED',width-11,6),x+4,31,UI.text,'left',6);}
  for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,46,91,12);text(tab===0?'ACTIVES':'PASSIVES',x+45,49,treeBranch===tab?UI.gold:UI.dim,'center',6);}text((Math.floor(idx/6)+1)+' / '+Math.ceil(ns.length/6),VW-12,49,UI.dim,'right',6);
- const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}
+ const LW=162,start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,LW,10);}
   /* THE PASSIVE LADDER: what he has is lit and says ON; what is coming is dim and says the level it arrives at */
-  if(!q.active){const on=passiveOn(PROG,h,q.id,lv);text(fitName(q.name,VW-145,6),13,y,on?UI.sel:UI.dim,'left',6);text(on?'ON':'LV '+q.level,VW-13,y,on?UI.sel:UI.dim,'right',6);continue;}
-  text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
+  if(!q.active){const on=passiveOn(PROG,h,q.id,lv),bg=on?'ON':'LV '+q.level;text(fitName(q.name,LW-10-inkW(bg,6)-4,6),13,y,on?UI.sel:UI.dim,'left',6);text(bg,9+LW-4,y,on?UI.sel:UI.dim,'right',6);continue;}
+  const bg=eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price;text(fitName(q.name,LW-10-inkW(bg,6)-4,6),13,y,eq?UI.sel:UI.title,'left',6);text(bg,9+LW-4,y,owned?UI.sel:UI.gold,'right',6);}
+ treePreview(n,9+LW+6,46,VW-9-(9+LW+6),76);
  if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):passiveOn(PROG,h,n.id,lv)?'PASSIVE  ALWAYS ON':'PASSIVE  ARRIVES AT LEVEL '+n.level),12,124,UI.gold,'left',6);
  const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
  const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,134+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
@@ -4057,7 +4065,7 @@ function drawStore() {
       // the words move up (the WISP's line ran off the bottom of the box)
       const lk0 = lockedOf(k), body0 = lk0 ? (k.feat ? k.featName : 'clear ' + k.needsName + ' first') : (k.desc || k.per || '');
       const need = 8 * Math.min(2, wrap(k.name, pvW - 10, 6).length) + 11 + BODY_LH * wrap(body0, pvW - 10, 6).length, room = pvH - 10 - 50;
-      const squeeze = Math.max(0, Math.min(24, need - room)), artB = pvY + 46 - squeeze;
+      const squeeze = tab.talent ? 0 : Math.max(0, Math.min(24, need - room)), artB = pvY + 46 - squeeze;
       if (tab.key === 'skin' || tab.key === 'sword' || tab.key === 'hero') {
         const set = tab.key === 'hero' ? preview('hero:' + k.id + ':' + PROG.skin + ':' + PROG.sword, () => heroSet(PROG.skin, PROG.sword, 'idle', k.id))
           : tab.key === 'skin' ? skinPreview(k)
@@ -4069,6 +4077,9 @@ function drawStore() {
         text(rr + ' / ' + k.max, mx, pvY + 10, UI.title, 'center');
         for (let q = 0; q < k.max; q++) { g.fillStyle = q < rr ? UI.sel : '#3a3a44'; g.fillRect(mx - k.max * 5 + q * 10 + 1, pvY + 24, 8, 8); }
         text(k.id === 'vigour' ? 'HEALTH' : k.id === 'breath' ? 'STAMINA' : k.id === 'recovery' ? 'REGEN' : k.id === 'temper' ? 'DAMAGE' : 'COST', mx, pvY + 36, UI.dim, 'center', 6);
+      } else if (tab.talent) {   /* the SKILLS shop window: your hero's abilities performed one after another (src/ability-preview.js) */
+        const acts = treeNodesFor(hero()), a = acts[Math.floor(time / 3.6) % Math.max(1, acts.length)];
+        if (a) { treePreview(a, pvX + 2, pvY + 2, pvW - 4, 44 - squeeze); text(fitName(a.name, pvW - 12, 6), pvX + 6, pvY + 4, UI.gold, 'left', 6); }
       } else {
         const icon = iconOf(k);
         const isc = squeeze > 8 ? 2 : 3; if (icon) g.drawImage(icon, 0, 0, icon.width, icon.height, Math.round(mx - icon.width * isc / 2), Math.round(artB - icon.height * isc), icon.width * isc, icon.height * isc);
