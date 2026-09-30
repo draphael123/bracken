@@ -390,7 +390,7 @@ export function stagePuppeteer(W, T, TS, sx, R) {
   return { arena, movers: [batten] };
 }
 /* THE STANDALONE ARENA (level 'puppetstage', hidden): a short wing corridor with a checkpoint, the stage, and the way on past it. Only for testing him
-   until THE MASKWRIGHT'S THEATRE (src/maskwright-theatre.js, claude/theatre) lands with the main stage at its end - then this level goes */
+   until THE MASKWRIGHT'S THEATRE (the claude/theatre lane's level) lands with the main stage at its end - then this level goes */
 export function buildPuppetStage({ painter, T, TS }) {
   const W = 64, H = 24, R = 20, S = R - 1, L = painter(W, H), { set, block, plat, ent } = L;
   L.floor(0, W - 1, R); block(0, 0, 0, R - 1); block(W - 1, W - 1, 0, R - 1);
