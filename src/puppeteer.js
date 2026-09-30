@@ -31,8 +31,8 @@
 export const PUP = {
   hp: 720, w: 16, h: 40, markH: 50,
   ward: 0.05, openMul: 1.0, joltMul: 1.0,
-  downOpenT: 3.4,                      // BOTH PUPPETS DOWN: he is on the boards this long
-  joltT: 1.6, joltCd: 8.0,             // THE HARD WAY: his line struck from the gallery
+  downOpenT: 3.0,                      // BOTH PUPPETS DOWN: he is on the boards this long
+  joltT: 1.2, joltCd: 12.0,             // THE HARD WAY: his line struck from the gallery
   hangLow: 56,                         // one puppet down: his bar sinks this far below the gallery (still out of reach from the boards)
   descendT: 0.7, haulT: 1.2, riseT: 0.8,
   sceneT: 1.6,
@@ -41,7 +41,7 @@ export const PUP = {
   flySpeed: 170,
   harl: { hp: 40, speed: 130, jabTell: 0.36, jabNext: 0.24, jabT: 0.1, jabs: 3, jabReach: 26, jab: 10, kickTell: 0.5, kickT: 0.2, kickReach: 34, kick: 12,
     rest: 0.35, still: 0.7, dart: 2.2 },
-  brute: { hp: 110, speed: 38, chopTell: 1.0, chopReach: 40, chop: 28, slamTell: 1.15, slamReach: 70, slamTop: 12, slam: 30, grabTell: 1.0, grabReach: 30, grab: 32,
+  brute: { hp: 110, speed: 58, chopTell: 1.0, chopReach: 40, chop: 32, slamTell: 1.15, slamReach: 70, slamTop: 12, slam: 34, grabTell: 1.0, grabReach: 30, grab: 35,
     recover: 1.2, range: 44, scale: 1.5 },
   master: { hp: 150, swatTell: 0.9, swatReach: 58, swatTop: 64, swat: 24, stompTell: 1.1, stompHalf: 24, stomp: 30, reachTell: 1.0, reachT: 0.45, reachSpan: 200, reach: 22,
     recover: 1.6, speed: 34, lowerT: 1.6 },
@@ -250,7 +250,7 @@ function puppetStep(p, e, show, dt, c, ev, hero, mayStrike) {
       p.slamY = onFlat ? hf : null;
       if (opts.length) { const k = opts[(p.blows = (p.blows || 0) + 1) % opts.length]; show.turn = e.phase >= 2 ? show.turn : p;
         startTell(p, k + 'Tell', PUP.brute[k + 'Tell']); ev.push({ t: k + 'Tell', p }); c.say('!!', '#ff6b6b'); c.sound(k + 'Tell'); return; } }
-    if ((same || onFlat) && adx > PUP.brute.range - 12) { p.hopT = (p.hopT || 0) + dt; if (p.hopT % 0.5 < 0.3) { p.vx = Math.sign(dx) * PUP.brute.speed; p.x = Math.max(A.x0 + 14, Math.min(A.x1 - 14, p.x + p.vx * dt)); } }
+    if ((same || onFlat) && adx > PUP.brute.range - 12) { p.hopT = (p.hopT || 0) + dt; { p.vx = Math.sign(dx) * PUP.brute.speed; p.x = Math.max(A.x0 + 14, Math.min(A.x1 - 14, p.x + p.vx * dt)); } }
     return; }
   if (big) {
     if (mayStrike && show.gap <= 0) { const M = PUP.master;
@@ -374,7 +374,7 @@ export function stagePuppeteer(W, T, TS, sx, R) {
 /* ---------- THE BOT'S READING (src/lab.js): A HUMAN BOT ----------
    It sees a tell PLAN.react s after it began, misreads PLAN.missDodge of them, and goes for a string (rather than the body) PLAN.goString of the time.
    s = { P: { x, y, face, ground, atk }, e, show, reach, shield, onBatten, t, rng, mem } */
-export const PLAN = { react: 0.25, missDodge: 0.2, goString: 0.5 };
+export const PLAN = { react: 0.25, missDodge: 0.2, goString: 0.5, goLoft: 0.3 };
 export function puppetPlan(s) { const out = planOf(s), P = s.P, A = s.show.A;
   if (P.ground && P.y > A.floor + 8 && !out.down) { out.jump = true; if (out.gx == null) out.gx = P.x + (P.face || 1) * 30; }   /* in a broken-board pit, going somewhere: jump out */
   return out; }
@@ -406,6 +406,15 @@ function planOf(s) {
     if ((k === 'jab' || k === 'swat') && s.shield && (!tell || p.modeT < (k === 'jab' ? 0.2 : 0.35))) { out.block = true; out.atk = false; out.face = Math.sign(p.x - P.x) || 1; out.why = 'block the ' + k; return out; }
     if (tell && p.modeT < (k === 'jab' ? 0.25 : 0.45) && k !== 'slam' && k !== 'kick') { out.gx = clampX(p.x + (P.x < p.x ? -1 : 1) * (r + 22)); out.atk = false; out.why = 'back off the ' + k; return out; } }
   if (out.why === 'open' || out.why === 'under him') return out;
+  /* ---- 2b. THE HARD WAY, now and then (a roll per cycle): up the batten, strike the line he hangs from, and back down after the jolt ---- */
+  const wk = e.mode === 'whipLowTell' || (e.mode === 'whip' && e.whipKind === 'low') ? 'low' : e.mode === 'whipHighTell' || (e.mode === 'whip' && e.whipKind === 'high') ? 'high' : null;
+  if (wk && onGal && (e.mode === 'whip' || dodges(e))) { if (wk === 'low' && (e.mode === 'whip' || e.modeT < 0.2)) { out.jump = true; out.why = 'jump the whip'; return out; }
+    if (wk === 'high' && (e.mode === 'whip' || e.modeT < 0.3)) { out.down = true; out.why = 'duck the whip'; return out; } }
+  const goUp = show.joltCd <= 0 && ['work', 'hang1', 'whipLowTell', 'whipHighTell', 'whip'].includes(e.mode) && roll('loft|' + e.phase + '|' + show.n.drop + '|' + show.n.jolt, PLAN.goLoft);
+  if (goUp && onStage) return climb(out, P, show.batten, s);
+  if (goUp && onGal) { const l = hangLine(e, show), d = l.x0 - P.x; out.face = Math.sign(d) || 1; out.gx = Math.abs(d) > reach - 10 ? clampX(l.x0 - out.face * (reach - 12)) : null;
+    out.atk = Math.abs(d) < reach - 2; out.jump = out.atk && P.ground && l.y1 < P.y - 20; out.why = 'strike his line'; return out; }
+  if (onGal && !goUp) { out.drop = true; out.why = 'back down'; return out; }
   /* ---- 3. OFFENCE: the Brute in his recovery first (the big window), else the Harlequin when he is close, else the nearest one ---- */
   const brute = pups.find(p => p.t === 'marionette' || p.t === 'masterpiece'), harl = pups.find(p => p.t === 'harlequin');
   const recovering = brute && brute.mode === 'recover' && sees(brute);
@@ -425,6 +434,16 @@ function planOf(s) {
   /* THE HARLEQUIN PUNISHES STANDING STILL: shuffle */
   if (!out.gx && !out.atk && harl && near(harl, 50)) out.gx = clampX(P.x + (P.x < harl.x ? -14 : 14));
   return out;
+}
+
+/* the bot's way up: to the batten, strike the pin rail from it, ride it up, step off onto the gallery */
+function climb(out, P, bat, s) {
+  if (!bat) return out;
+  const onBat = s.onBatten, mid = bat.x + bat.w / 2;
+  if (bat.st === 'down' && !onBat) { out.gx = mid - 4; out.face = 1; out.why = 'to the batten'; return out; }
+  if (bat.st === 'down' && onBat) { out.gx = mid - 4; out.face = 1; out.atk = !(bat.t > 0); out.why = 'strike the pin rail'; return out; }
+  if (onBat && bat.st !== 'down') { out.gx = null; out.why = 'ride'; if (bat.st === 'up') { out.gx = bat.x + bat.w + 24; out.why = 'step off'; } return out; }
+  out.gx = mid + 40; out.why = 'wait for the batten'; return out;
 }
 
 /* ---------- THE FRAME each body shows ---------- */

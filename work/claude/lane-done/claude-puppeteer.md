@@ -408,3 +408,194 @@ beside a grey decoy.
    punishment.
 5. **The spotlight** blinds the strings' glow. The alternative is darkening the view; the glow loss is the mechanical sting. Recommend the
    glow loss.
+
+---
+
+# PUPPETEER3 (2026-09-30, after Daniel played PUPPETEER2)
+
+Daniel: "Still really easy, and the enemies are just health sponges. How do I actually attack the boss? Cutting strings doesn't seem to do
+anything. Why not make one puppet have fast, weak attacks and the other slow and heavy, and balance the fight around that?"
+
+That was a core-loop failure, so this round rebuilds the fight around **his duo**. Readability came first, difficulty second. His own health is
+unchanged (720 base, 648 at normal). The code is still `src/puppeteer.js` (the fight, rewritten), `src/puppeteer-hands.js` (rewritten) and
+`src/redraw/puppeteer_art.js`.
+
+## The duo
+
+- **THE HARLEQUIN is fast and weak.**
+  - Short strings of **jabs**: 10 each, a 0.36 s windup, `!`. Block them or step back.
+  - A **low kick**: 12, a 0.5 s windup, `!!`. Jump it.
+  - He runs at 130 px/s, **darts round to your other side** every couple of seconds, and **jumps a hero who stands still** (0.7 s still is
+    enough).
+  - Fragile: 40 health, and **one string: one cut drops him**.
+- **THE BRUTE is slow and heavy.** He is the old soldier puppet, drawn at 1.5x.
+  - A **HEAVY CHOP** (1.0 s windup, 32), a **GROUND SLAM** (1.15 s windup, 34; a shock along the boards, jump it) and a **GRAB** (1.0 s windup, 35,
+    and it holds you). All three are `!!`: get out from under. After the game's damage scaling, two or three of them put you in trouble.
+  - He walks steadily at 58 px/s. At first he hopped at 38, and the bot simply outpaced him: two fights saw no chop and no grab at all.
+  - After every swing he stands **SPENT for 1.2 s**, shown by a green bar over him: that is the window to hit him or cut him.
+  - 110 health. **Two strings**:
+    - the **ARM** string: cut it and the chop and the grab are gone, and the arm hangs limp;
+    - the **BACK** string: cut it and the slam is gone.
+- **The fight is balanced around the pair.** The Harlequin may strike during the Brute's recovery, so punishing the Brute means handling the
+  Harlequin. **Kill order is a real choice:** a dropped Harlequin is down only 4 s, the Brute 6 s, and he comes down only when both are down at
+  once.
+- **The Acrobat is dropped**, along with the paired high/low blows, the decoys, the re-ties, the spotlight, the sandbag and the scenery. Fewer,
+  clearer threats. The scene changes stay: they only bring new flats, during his haul back up. The trapdoors now come only from the Brute's slam.
+
+## Damage is readable
+
+- **Puppets take normal damage.** A blow lands with a flash, a knock, the number and a sound, and takes their health. A health bar sits under
+  every standing puppet (green, then yellow, then red, in quarters).
+- **Strings are always drawn**, bright, with a knot at the limb, and **cut whenever a blow crosses them**. They attach 13-15 px up, where every
+  hero's blade reaches from the boards: the knight's reaches 17 and the pyromancer's staff 15. The masterpiece's high strings need a jump.
+- **A cut in the GOLD** (during a windup or a blow) also **cancels that blow** and staggers the puppet: a bonus, not the only moment a cut works.
+- **A CUT FEELS HUGE:**
+  - a double snap sound;
+  - an 80-120 ms hit-stop and a shake;
+  - the cut length whips away into the flies;
+  - the limb it held falls limp (the Brute's pose sags);
+  - the hint box says which limb and which attack is gone ("THE ARM GOES LIMP: NO MORE CHOP OR GRAB").
+- **A dropped puppet** lies in a heap with a ring counting out its down time.
+
+## How to hurt him is obvious from the first minute
+
+- He **hangs from his control bar** on a thick line from the grid.
+- **Each puppet you drop lowers his bar** by 56 px: you can see him sink, and he is still out of reach. The hint box says "ONE DOWN: HIS BAR
+  DROPS".
+- **With both down he is dragged to the boards.** You get a gold ring, a big **OPEN**, a timer bar and "HE'S DOWN - STRIKE HIM", for **3.0 s at
+  x1.0**: every blow counts in full.
+- The first thing said on waking is "DROP BOTH PUPPETS AND HE COMES DOWN". A blow on him while he hangs does x0.05, and says "OUT OF REACH: DROP
+  HIS PUPPETS FIRST".
+- **The hard way, always there:** the batten and pin rail are free from the start. From the gallery, **strike the line he hangs from** (a jump
+  reaches it; it glows while you are up there and it is ready). He is **jolted** down onto the gallery boards, open for 1.2 s, and it can't be
+  done again for 12 s.
+- **The PUPPETEER2 multipliers (x3.0 / x3.2) are gone.** The opening is x1.0 and the jolt x1.0. The fight is paced by how quickly you drop the duo,
+  and the open window's length is the lever.
+
+## The phases now change how the duo combines
+
+1. **One at a time.** They never start a windup on the same frame. The Harlequin may come in while the Brute is well into a windup or spent.
+2. **Together** ("TOGETHER NOW: HIS SLAM BREAKS THE BOARDS").
+   - Both strike freely.
+   - The Brute's **slam breaks the boards** where it lands: a trapdoor pit, three columns wide, for 4 s, told by the red crack in its windup.
+   - A hero on a flat or down in a pit is still reached: the slam shakes the boards he stands on.
+   - A hero on the gallery gets the Harlequin flown up to him, plus the Puppeteer's whip.
+3. **The masterpiece** takes the Brute's place: the wooden king, 150 health, four strings, swat `!` / stomp `!!` / reach `!!`. The Harlequin stays
+   at your heels. "DROP THE KING AND THE HARLEQUIN: HE FALLS."
+
+## The bot
+
+It is the same human bot, retuned for the duo:
+- 0.25 s reaction;
+- misreads 20% of tells;
+- goes for a string half the time and the body otherwise;
+- works the Brute's recovery first;
+- waits out his windups;
+- runs to where he lands when dragged down;
+- drops off a flat to reach a target below;
+- jumps out of pits;
+- **and takes the hard way now and then.** A 30% roll per cycle sends it up the batten: strike the pin rail, ride up, step off, chase his line
+  and jump-cut it, then drop back to the stage after the jolt. On the gallery it jumps his low whip and ducks the high one.
+
+The loft route came back because `boss-navigation` (the check from round 1) demands that the pilot stands on the fly gallery, and the first
+PUPPETEER3 bot never climbed. I fixed the bot, not the check. It also made the fight easier, which is why the jolt got shorter and the Brute got
+heavier (next section).
+
+## Checks (each run by name)
+
+- **Green:** `puppeteer` (rewritten; it now also plays one whole knight fight and requires a win with at least 10 damage taken), tells,
+  hint-shown, audio-assets, architecture, skins, dangling-paths, npc-removal, checkpoints, comments, boss-openings (updated: drop both, then he is
+  down and open for at least 3 s), boss-fight-end, boss-navigation (with the bot now climbing: see above), attack-tokens (alone).
+- **The new check is red on each of fifteen sabotages:**
+  - health does not drop a puppet;
+  - only a gold string can be cut;
+  - a gold cut does not cancel;
+  - a cut limb keeps its attack;
+  - the Harlequin needs two cuts;
+  - a dropped puppet is strung again at once;
+  - his bar does not sink;
+  - both down do not drag him down;
+  - the jolt has no cooldown;
+  - phase 1 starts the duo together;
+  - phase 2's slam breaks nothing;
+  - a flat is out of the Brute's reach;
+  - the Harlequin hits hard;
+  - the Brute recovers at once;
+  - a body blow takes no health.
+- **attack-tokens failed twice under load** with "only 3 red !! blows over both crowds". It sits on its own edge: the base gets exactly 4, and the threshold is fewer than 4. I checked that the marks table differs from the base only in the puppet rows. It passed alone.
+- **A local-server note:** another checkout was serving on this worktree's default port 6670 (without the puppet stage), and `tools/cdp.mjs` can't
+  tell, because it compares `lookpass.js`, which is identical everywhere. I ran every page check with `PORT=6689`.
+
+## Pilots (knight / warden / pyro x 3 seeds, normal health, one life, human bot)
+
+**BEFORE** (82c60e6, PUPPETEER2): 6/9 wins (67%), median win 130 s.
+
+| seed salt | knight | warden | pyro |
+|---|---|---|---|
+| 1 | win 81.5 s, took 16 | win 137.8 s, took 18 | win 145.0 s, took 79 |
+| 2 | death 138.3 s | death 211.4 s | win 105.5 s, took 50 |
+| 3 | win 100.8 s, took 52 | win 130.3 s, took 41 | death 144.8 s |
+
+**AFTER** (PUPPETEER3, final numbers, **6 seeds** because 3 seeds swing by a whole fight): **14/18 wins (78%), median win 113 s**. That is **just
+above the 60-75% band**, and the swing between runs is about ±10% (see below). Damage taken is real: up to 98 of 100 on a win. "Him at" is his
+health left when the hero died.
+
+| seed salt | knight | warden | pyro |
+|---|---|---|---|
+| 1 | death 82.6 s (him at 13%) | death 187.5 s (him at 31%) | win 102.0 s, took 8 |
+| 2 | win 96.1 s, took 28 | win 207.6 s, took 98 | win 106.1 s, took 8 |
+| 3 | win 62.9 s, took 27 | death 171.1 s (him at 4%) | win 127.9 s, took 39 |
+| 4 | win 74.1 s, took 51 | win 211.2 s, took 93 | win 128.1 s, took 37 |
+| 5 | win 85.0 s, took 38 | death 186.4 s (him at 3%) | win 118.4 s, took 54 |
+| 6 | win 100.7 s, took 33 | win 200.1 s, took 64 | win 112.9 s, took 27 |
+
+- **What hurt them:** the slam, the masterpiece's swat and stomp, and the Harlequin, in that order. The warden's fights run 170-210 s, over the
+  median band.
+- **The hero split is uneven:** knight 5/6, pyro 6/6, warden 3/6.
+- **Noise:** the same build gave 7/9, then 9/9, then 8/9 on different runs, so a single 9-fight sample can't tell 67% from 89%.
+- **How the tuning went:**
+  - 100% at first;
+  - 67% (6/9) before the bot could climb;
+  - 78-89% once it took the loft;
+  - then these changes, which brought it to 78% on 18 fights:
+    - the open window 3.4 → 3.0 s;
+    - the jolt 1.6 → 1.2 s, and its cooldown 8 → 12 s;
+    - the Brute's blows 28/30/32 → 32/34/35;
+    - the Brute walks at 58 instead of hopping at 38.
+- **Not the levers:** health, and the Brute's 1.2 s spent window (the check holds it at 1.2 s or more: it is his punish window).
+
+## Captures
+
+`node tools/puppeteer-shots.mjs` (the human-bot fight, one still per beat) saved to `work/claude/puppeteer/`:
+- `1-a-cut.png`: the Brute's arm cut, "THE ARM GOES LIMP: NO MORE CHOP OR GRAB", the flash and the number.
+- `2-the-brute-winds-up.png`: his slam band along the boards, `!!`, his line gold.
+- `3-the-harlequin-mid-combo.png`: phase 2, jabs in, `!`.
+- `4-the-brute-spent.png`: the green recovery bar.
+- `5-one-down-his-bar-sinks.png`.
+- `6-he-is-down-open.png`: dragged to the boards, the gold ring, OPEN, "HE'S DOWN - STRIKE HIM", the boss bar reading OPEN.
+- `7-phase2-together.png`.
+- `8-phase2-the-slam-breaks-the-boards.png`.
+- `9-phase3-the-masterpiece.png`.
+- `10-the-curtain-falls.png`.
+
+I checked the four the brief asked for by eye: the cut, both down with him OPEN, the Brute's windup, and the Harlequin mid-combo.
+
+## UNVERIFIED (PUPPETEER3)
+
+- **Nobody has played this build with hands.** In particular, untested: whether the cut reads as huge, whether his sinking bar reads, and whether
+  the jolt route is found.
+- **Only three heroes were piloted.** paladin, pirate, reaper and geomancer are untested.
+- **The Brute is the soldier's art at 1.5x**, with a sagging pose for a limp limb. There is no dedicated limp-arm frame.
+
+## QUESTIONS FOR DANIEL (PUPPETEER3; recommendation first; the recommended option is built)
+
+1. **Phase 3:** the masterpiece king replaces the Brute, not "the Brute rebuilt huge". Recommend **keeping the king for now**. The rebuilt Brute
+   would need new art: the same heavy three at 2x, with his limp-limb rules.
+2. **The warden is the hard hero here** (3/6 by the bot, 170-210 s fights: its line-shaped thrust drops puppets slowly), while the knight and pyro win 11/12. Recommend
+   **playing it as the warden first**. If it's too hard, give the Harlequin 35 health rather than easing the whole fight.
+3. **Should the Brute's chop be blockable?** It is `!!` now, because a shield made it trivial. Recommend **keeping `!!`**: the Brute is answered
+   by reading and dodging, and the Harlequin's jabs are the blockable ones.
+4. **The bot lands at 78%, three points over the band.** Recommend **playing it before tuning further**. If it is still easy, the next lever is the
+   open window, 3.0 → 2.6 s: `boss-openings` would need its floor of 3 s lowered, and that is your call.
+5. **Is the gallery-line jolt too hidden** as the "always there, hard" route? Recommend **keeping it hard**. A sign by the pin rail could say it
+   if playtests show nobody finds it.
