@@ -2,6 +2,12 @@
 
 Newest first. Play it at https://bracken-nine.vercel.app
 
+## 30 September 2026
+- **One store.** The equip board, the three shop rooms and the skills screen are one store with tabs (HEROES, SKINS, WEAPONS, CHARMS,
+  SKILLS, SMITH, MUSIC, PRACTICE), reached from the map (V, or Q for skills), the pause menu (Store, Skills) and every shop keeper. TAB / E
+  and Q (LB / RB) change tab. It stays shut in a fight; buying still wants the map, a shop room or a lit shrine. Nothing costs more,
+  and every lock is still its own level, medal or feat.
+
 ## 28 September 2026
 - **Sound Test** on the main menu: every song you have heard in play unlocks there (the rest show as ???), with its credit;
   every sound effect is there from the start.
