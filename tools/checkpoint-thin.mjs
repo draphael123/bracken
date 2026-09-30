@@ -10,7 +10,7 @@ import { MIN, arenaOutside } from './checkpoint-rule.mjs';
 THIN.off = true;
 const { LEVELS } = await import('../src/level.js');
 const { pacing } = await import('./pacing.mjs');
-export const PICK_MAX = 150, IDEAL = 125;   /* the picker aims under the rule's ceiling (MAX 175) so the walk can differ a little */
+export const PICK_MAX = 175, IDEAL = 145;   /* the picker aims under the rule's ceiling (MAX 200, Daniel 2026-09-30; it was 150 under 175) so the walk can differ a little */
 export function pick(r, id, L) {
   const s = r.stats, end = s.endAt, pinned = (CHECK_PIN[id] || []), cands = s.checkList.filter(c => c.at !== null && (c.at > 0 || pinned.some(([x, y]) => x === c.x && y === c.y)) && c.at <= end + 30).map(c => ({ ...c, at: Math.min(c.at, end) })).sort((a, b) => a.at - b.at);
   const prot = new Set(); const need = [];

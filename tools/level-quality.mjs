@@ -22,6 +22,11 @@ const TS = 16;
 export const GATE = ['theatre', 'fair'];
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
+/* STOCK TRACKS: a tune that is in audio/ but was not written for any level - a stand-in. A level that plays one has borrowed its music as surely as one that plays a
+   neighbour's (claude/fairfix, Daniel 2026-09-30: the fair's music passed this lint on 'marketday', a stock market tune, and a boss arena on another boss's track) */
+/* THE BOSS POOL: the generic boss tracks many arenas share by design (a boss room may play one; it may not play another boss's OWN track, as the fair's green once played the Houndmaster's) */
+export const BOSS_POOL = ['boss', 'boss2', 'boss3', 'boss4'];
+export const STOCK_MUSIC = { marketday: 'a stock CC0 market tune (RandomMind "Market Day"): the stand-in the fair wore before it had its own band organ' };
 
 /* THE LIMITS. Each is set so THE MAGE'S FOLLY clears it with margin and the Harvest Fair (the old 672-column corridor) does not; the Folly's number is in the comment. */
 export const LIM = {
@@ -35,7 +40,8 @@ export const LIM = {
   secrets: 2,           /* silvers / relics off the route (Folly 3) */
   checksMin: 2,         /* checkpoints; the max is a spacing (below), not a count: a 700-column level cannot keep 4 */
   checkSpacing: 90,     /* route tiles per checkpoint at least (Folly 103): fewer, further apart, as Daniel wants */
-  densityLo: 2.0, densityHi: 4.5,   /* foes a screen (24 columns). DESIGN B7 says 2.5-4.5 and burning-village asserts it, counting every non-pickup ent; counting foes only, the Folly reads 2.4, so the floor is 2.0 */
+  densityLo: 0.8, densityHi: 2.0,   /* DESIGNED ENCOUNTERS a screen (24 columns), not bodies (claude/fairfix): the Folly reads 1.03; the campaign's walking levels 0.68-1.56 */
+  clump: 8,             /* foes that are not a squad or an elite and stand within this many columns of each other are ONE encounter */
   emptyShareMax: 0.30,  /* share of the screens with no foe at all (Folly 0.23) */
   section: 200,         /* a designed encounter in every stretch of this many columns */
   branches: 2,          /* dead-end pockets / branches off the route (Folly 5) */
@@ -73,6 +79,9 @@ function slopeArt() { if (SLOPE_ART) return SLOPE_ART; const why = [];
       if (!any || worst > 2) why.push(SLOPE_NAMES[kind] + (any ? ' surface off by ' + worst.toFixed(1) + ' px' : ' is empty')); } }
   catch (e) { why.push('could not bake: ' + e.message); }
   return SLOPE_ART = { ok: !why.length, why: why.join('; ') }; }
+/* THE TRACKS src/audio.js COMPOSES ITSELF (no file): the names its synth plays, read off its own source (`wantTrack === 'name'`) */
+let SYNTH = null;
+function synthTracks() { if (SYNTH) return SYNTH; const src = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8'); return SYNTH = new Set([...src.matchAll(/wantTrack === '([a-z0-9]+)'/g)].map(m => m[1])); }
 let GATE_SRC = null;
 function slopeGate() { if (GATE_SRC !== null) return GATE_SRC; const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), m = src.match(/if \(([^\n]*?) && cvTile\(x, y, t\)\) continue;/);
   return GATE_SRC = m ? m[1] : ''; }
@@ -130,10 +139,16 @@ export function measure(lv) {
   const developed = gadgets.filter(g => g.places >= 3);
 
   // ---- 4. MUSIC ----
-  const music = L.music || null, others = LEVELS.filter(d => d.id !== lv.id && !(d.hidden && !d.secret) && !/^trial_|^shop/.test(d.id));
-  const borrowedFrom = music ? others.filter(d => { let o; try { o = built(d); } catch { return false; } return o.music === music || (o.arena && o.arena.music === music); }).map(d => d.id) : [];
+  /* THE LEVEL'S TRACK AND ITS BOSS ROOM'S: each must be a real track (a file in audio/, or one src/audio.js composes itself: a synth track it plays by name), its own, and not a stock
+     stand-in. BORROWED = another campaign level (or its boss arena) plays it, or it is on STOCK_MUSIC. The level's arena may play the level's own track (the Unburied Field carries
+     its Night on Bald Mountain into its boss) but not another level's. */
+  const music = L.music || null, arenaMusic = (A && A.music) || null, others = LEVELS.filter(d => d.id !== lv.id && !(d.hidden && !d.secret) && !/^trial_|^shop/.test(d.id));
+  const usedBy = t => others.filter(d => { let o; try { o = built(d); } catch { return false; } return o.music === t || (o.arena && o.arena.music === t) || (o.mini && o.mini.music === t); }).map(d => d.id);
+  const borrowedFrom = music ? usedBy(music).concat(STOCK_MUSIC[music] ? ['STOCK (' + STOCK_MUSIC[music].split(':')[0] + ')'] : []) : [];
+  const arenaBorrowed = arenaMusic && arenaMusic !== music && !BOSS_POOL.includes(arenaMusic) ? usedBy(arenaMusic).concat(STOCK_MUSIC[arenaMusic] ? ['STOCK'] : []) : [];
   const shared = SHARED_MUSIC.includes(music);
-  const trackFile = music && existsSync(new URL('../audio/' + music + '.ogg', import.meta.url)) || music && existsSync(new URL('../audio/' + music + '.mp3', import.meta.url));
+  const real = t => !!t && (existsSync(new URL('../audio/' + t + '.ogg', import.meta.url)) || existsSync(new URL('../audio/' + t + '.mp3', import.meta.url)) || synthTracks().has(t));
+  const trackFile = real(music), arenaReal = !arenaMusic || real(arenaMusic);
 
   // ---- 5. SECRETS, CHECKPOINTS, ENCOUNTERS, DENSITY ----
   const loot = P.stats.offLoot.filter(s => /^(silver|relic)@/.test(s));
@@ -147,8 +162,21 @@ export function measure(lv) {
     const f = foes.filter(inSec).sort((a, b) => a.x - b.x);   /* or a knot of three foes within ten columns: authored by hand */
     for (let i = 0; i + 2 < f.length && !n; i++) if (f[i + 2].x - f[i].x <= 10) n++;
     if (x1 - x0 >= 60 && !n) holes.push(x0 + '-' + x1); }
-  const per = []; for (let x = 0; x + 24 <= end; x += 24) per.push(foes.filter(e => e.x >= x && e.x < x + 24).length + waves.filter(w => w.x >= x && w.x < x + 24).length);
-  const density = tall ? NaN : per.length ? per.reduce((a, b) => a + b, 0) / per.length : 0, emptyScreens = per.filter(n => n === 0).length, emptyShare = per.length ? emptyScreens / per.length : 0;
+  /* DENSITY COUNTS ENCOUNTERS, NOT BODIES (claude/fairfix, Daniel 2026-09-30). Counting bodies made "fewer, better foes" and this bar pull against each other: the fair
+     failed it with every foe in a designed encounter, and the cheap way to pass was padding. An ENCOUNTER is one squad (every member of a squad name), one elite, one
+     ambush room (its waves are one fight), the mini, or a clump of the other foes - any foes within LIM.clump columns of each other are one fight, whether a hand-placed
+     knot or a sprinkle's clump. Each is counted once, at its middle column. */
+  const enc = [], bySquad = new Map(), loose = [];
+  for (const e of foes) { if (e.squad) { if (!bySquad.has(e.squad)) bySquad.set(e.squad, []); bySquad.get(e.squad).push(e.x); } else if (e.elite) enc.push({ x: e.x, k: 'elite' }); else loose.push(e.x); }
+  for (const [k, xs] of bySquad) enc.push({ x: (Math.min(...xs) + Math.max(...xs)) / 2, k: 'squad ' + k });
+  for (const q of L.ambushes || []) enc.push({ x: (q.wallL + q.wallR) / 2, k: 'ambush' });
+  if (L.mini) enc.push({ x: (L.mini.x0 + L.mini.x1) / 2 / TS, k: 'mini' });
+  loose.sort((a, b) => a - b); for (let i = 0; i < loose.length;) { let j = i; while (j + 1 < loose.length && loose[j + 1] - loose[j] <= LIM.clump) j++; enc.push({ x: (loose[i] + loose[j]) / 2, k: 'clump' }); i = j + 1; }
+  const per = []; for (let x = 0; x + 24 <= end; x += 24) per.push(enc.filter(e => e.x >= x && e.x < x + 24).length);
+  const bodies = []; for (let x = 0; x + 24 <= end; x += 24) bodies.push(foes.filter(e => e.x >= x && e.x < x + 24).length + waves.filter(w => w.x >= x && w.x < x + 24).length);
+  const occupied = []; for (let x = 0; x + 24 <= end; x += 24) occupied.push(bodies[occupied.length] > 0 || per[occupied.length] > 0);
+  const mean = a => a.length ? a.reduce((p, q) => p + q, 0) / a.length : 0;
+  const density = tall ? NaN : mean(per), bodyDensity = tall ? NaN : mean(bodies), emptyScreens = occupied.filter(o => !o).length, emptyShare = occupied.length ? emptyScreens / occupied.length : 0;
 
   // ---- 6. VERTICAL / BRANCHING ROUTE ----
   const ys = route.map(p => p[1]), span = Math.max(...ys) - Math.min(...ys), back = P.stats.backtrack, pockets = P.stats.pockets;
@@ -157,16 +185,17 @@ export function measure(lv) {
   let slopeCells = 0; for (let i = 0; i < L.grid.length; i++) if (L.grid[i] >= 20 && L.grid[i] <= 25) slopeCells++;
   const sa = slopeArt(), painted = slopeCells ? slopesPainted(L) : true;
   const m = { id: lv.id, tall, emptyShare, slopeCells, slopePainted: painted, slopeArtOk: sa.ok, slopeArtWhy: sa.why, W, routeTiles, flat: flat.n, flatAt: flat.at, flatShare: flat.long / Math.max(1, end), terrainShare: terrainFlat.long / Math.max(1, end), terrainFlat: terrainFlat.n, terrainFlatAt: terrainFlat.at, routeBands: bands.size, multiShare, gadgetKinds: gadgets.length, gadgetDeveloped: developed.length, gadgets, music, borrowedFrom, shared, trackFile: !!trackFile,
-    secrets: loot.length, secretEnts, checks, checkSpacing: checks ? routeTiles / checks : Infinity, density, emptyScreens, holes, span, back, pockets, per };
+    encountersN: enc.length, bodyDensity, secrets: loot.length, secretEnts, checks, checkSpacing: checks ? routeTiles / checks : Infinity, density, emptyScreens, holes, span, back, pockets, per };
   const bar = [
     ['flat', m.flatShare <= LIM.flatShareMax && m.terrainShare <= LIM.terrainShareMax, Math.round(m.flatShare * 100) + '% of the route is long flat empty runs (<=' + Math.round(LIM.flatShareMax * 100) + '%), ' + Math.round(m.terrainShare * 100) + '% is long level ground (<=' + Math.round(LIM.terrainShareMax * 100) + '%); longest ' + m.flat + ' / ' + m.terrainFlat + ' columns'],
         ['bands', m.routeBands >= LIM.routeBands && m.multiShare >= LIM.multiHeightShare, m.routeBands + ' height bands on the route (>=' + LIM.routeBands + '), ' + Math.round(m.multiShare * 100) + '% of the width offers a second height (>=' + Math.round(LIM.multiHeightShare * 100) + '%)'],
     ['mechanics', m.gadgetKinds >= LIM.gadgetKinds && m.gadgetDeveloped >= LIM.gadgetDeveloped, m.gadgetKinds + ' gadget kinds (>=' + LIM.gadgetKinds + '), ' + m.gadgetDeveloped + ' in 3+ places (>=' + LIM.gadgetDeveloped + '): ' + gadgets.slice(0, 8).map(g => g.k + 'x' + g.places).join(' ')],
-    ['music', !!music && m.trackFile && (m.shared || !borrowedFrom.length), music ? music + (m.trackFile ? '' : ' (NO FILE in audio/)') + (borrowedFrom.length && !m.shared ? ' also used by ' + borrowedFrom.join(',') : '') : 'no track'],
+    ['music', !!music && m.trackFile && (m.shared || !borrowedFrom.length) && arenaReal && !arenaBorrowed.length, music ? music + (m.trackFile ? '' : ' (NO SUCH TRACK: no file in audio/ and no synth track of that name)') + (borrowedFrom.length && !m.shared ? ' BORROWED: also ' + borrowedFrom.join(',') : '')
+      + (arenaMusic ? '; boss room ' + arenaMusic + (arenaReal ? '' : ' (NO SUCH TRACK)') + (arenaBorrowed.length ? ' BORROWED: also ' + arenaBorrowed.join(',') : '') : '') : 'no track'],
     ['secrets', m.secrets >= LIM.secrets, m.secrets + ' silver/relic off the route (>=' + LIM.secrets + ')'],
     ['checks', m.checks >= LIM.checksMin && m.checkSpacing >= LIM.checkSpacing, m.checks + ' checkpoints, one per ' + Math.round(m.checkSpacing) + ' route tiles (>=' + LIM.checkSpacing + ')'],
     ['encounters', !m.holes.length, m.holes.length ? 'no designed encounter in columns ' + m.holes.join(', ') : 'a designed encounter in every ' + LIM.section + ' columns'],
-    ['density', m.tall || (m.density >= LIM.densityLo && m.density <= LIM.densityHi && m.emptyShare <= LIM.emptyShareMax), m.tall ? 'a tall level: not measured' : m.density.toFixed(2) + ' foes a screen (' + LIM.densityLo + '-' + LIM.densityHi + '), ' + m.emptyScreens + ' empty screens = ' + Math.round(m.emptyShare * 100) + '% (<=' + Math.round(LIM.emptyShareMax * 100) + '%)'],
+    ['density', m.tall || (m.density >= LIM.densityLo && m.density <= LIM.densityHi && m.emptyShare <= LIM.emptyShareMax), m.tall ? 'a tall level: not measured' : m.density.toFixed(2) + ' encounters a screen (' + LIM.densityLo + '-' + LIM.densityHi + '; ' + m.encountersN + ' encounters, ' + m.bodyDensity.toFixed(1) + ' foes a screen), ' + m.emptyScreens + ' empty screens = ' + Math.round(m.emptyShare * 100) + '% (<=' + Math.round(LIM.emptyShareMax * 100) + '%)'],
     ['slopes', m.slopeArtOk && m.slopePainted, !m.slopeCells ? 'no slope tiles' : m.slopeCells + ' slope cells: ' + (m.slopeArtOk ? (m.slopePainted ? 'drawn (diagonal tiles, guard: ' + slopeGateName() + ')' : 'INVISIBLE - the tile painter draws slope art only where ' + slopeGateName() + ', so these walkable slopes have no texture') : 'the slope tiles are not diagonal: ' + m.slopeArtWhy)],
     ['route', (m.span >= LIM.routeSpan || m.back >= LIM.routeSpan) && m.pockets >= LIM.branches, 'route spans ' + m.span + ' rows, ' + m.back + ' tiles back, ' + m.pockets + ' branches/pockets (>=' + LIM.branches + ')'],
   ];
@@ -185,7 +214,7 @@ if (isMain) {
     let clear = 0;
     for (const d of campaign) { let m; try { m = measure(d); } catch (e) { console.log(d.id.padEnd(12) + 'could not be measured: ' + e.message); continue; } if (m.pass) clear++;
       console.log(d.id.padEnd(12) + String(Math.round(m.flatShare * 100)).padStart(5) + String(Math.round(m.terrainShare * 100)).padStart(8) + (m.routeBands + '/' + Math.round(m.multiShare * 100) + '%').padStart(9) + (m.gadgetKinds + '/' + m.gadgetDeveloped).padStart(9) + String(m.secrets).padStart(5) + String(m.checks).padStart(5) + (m.tall ? '-' : m.density.toFixed(1)).padStart(5) + (m.slopeCells ? (m.slopePainted ? 'ok' : 'NONE') : '-').padStart(6) + '  ' + (m.pass ? 'PASS' : m.failed.join(','))); }
-    console.log('\n' + clear + ' of ' + campaign.length + ' clear the bar. Columns: flat% = share of the route in long flat empty runs (limit ' + LIM.flatShareMax * 100 + '), ground% = share in long level-ground runs (' + LIM.terrainShareMax * 100 + '), bands = height bands on the route / % of width with a second height, gadg/dev = gadget kinds / those in 3+ places, secr = silver+relic off the route, chk = checkpoints, dens = foes a screen.');
+    console.log('\n' + clear + ' of ' + campaign.length + ' clear the bar. Columns: flat% = share of the route in long flat empty runs (limit ' + LIM.flatShareMax * 100 + '), ground% = share in long level-ground runs (' + LIM.terrainShareMax * 100 + '), bands = height bands on the route / % of width with a second height, gadg/dev = gadget kinds / those in 3+ places, secr = silver+relic off the route, chk = checkpoints, dens = designed encounters a screen.');
     process.exit(0);
   }
   const want = ids.length ? ids : GATE; let failed = 0;

@@ -21,7 +21,7 @@ Every level lane reads it before it builds. When a rule here and a number elsewh
 
 ## 2. Difficulty
 - **Hard by placement, not by numbers** (RULES S): foes where they make the ground harder, jumps that can fail, an exam before
-  the boss, checkpoints spaced (one per section, ~120-160 walked tiles apart and always one before every boss/mini/ambush door - RULES S4, Daniel 2026-09-28), healing earned. "Without overwhelming players with tons of enemies."
+  the boss, checkpoints spaced (one per section, ~120-180 walked tiles apart, never more than 200 (Daniel widened it from 175 on 2026-09-30), and always one before every boss/mini/ambush door - RULES S4, Daniel 2026-09-28), healing earned. "Without overwhelming players with tons of enemies."
 - **FEWER, BETTER FOES (Daniel, 2026-09-28/29; the sprinkle cut).** Open floor is not filled with a grid of foes ("a dozen enemies, no challenge"). A level's
   foes are DESIGNED ENCOUNTERS: a shield covering an archer, a hornblower behind a brute, a priest or banner to kill first, a lone heavy on a ledge; placed
   at a chokepoint, on a ledge, or beside spikes, water or barrels, so the ground is part of the fight. Make a foe deadly one-on-one through damage and AI,
