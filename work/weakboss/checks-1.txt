@@ -1,0 +1,38 @@
+
+> check
+> node tools/check.mjs boss-openings,boss-fight-end,boss-jump,architecture,checkpoints,skins,dangling-paths,slopes-trace,npc-removal,folly-runtime,courtyard,archmage-folly,folly-library,weak-bosses
+
+ ok  syntax             0ms  0 files parse
+ ok  dangling-paths   450ms  ok  dangling-paths 2752 tracked files, every repo path they cite resolves in a fresh clone (8 known holes list
+ ok  checkpoints     7791ms  185 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  skins          16293ms  ok  roofs          44 houses: every roof picture sits on the slab you stand on.
+ ok  folly-runtime  25173ms  Co-op counterweight clearance and the final wizard defeat pass. ["gate","wizardDefeated"]
+FAIL boss-openings  81053ms  Node.js v24.19.0
+ ok  boss-fight-end253513ms  Every one of 46 boss and mini fights (33 bosses, 13 minis) ends when its boss dies.
+ ok  architecture    3435ms  45 levels, 348 built pieces declared; 2 grandfathered (harbor, waymeet). everything that was built stands on s
+ ok  npc-removal     3005ms  every NPC outside the shops is gone; the ferryman and the captives are mechanics without dialogue; every forme
+ ok  courtyard      31153ms  THE WARDED COURTYARD: a step, a bridge and a path in paving, taught before the library; every whelp over spike
+ ok  boss-jump     578674ms  BOSS-JUMP: all 46 boss and mini fights load through ?boss=<id> at full health with no god mode and wake at the
+ ok  archmage-folly 46899ms  ok  archmage-folly   the ward fights back, the room attacks told, pairs from stage two, two blows an opening
+ ok  folly-library  29947ms  THE RUNE LIBRARY: 150 columns, sliding bookcases, a taught lock and a timed one on the Archmage's own trick, o
+ ok  weak-bosses    27892ms  weak-bosses: OK
+ ok  slopes-trace   29995ms  slopes-trace: every frame of every level identical to the pre-slopes build
+
+---- boss-openings ----
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: A11: a Cleave committed on you and dodged sticks the blade, and he is open ~2 s: {"taken":{"mode":"stalk","open":0,"hurt":10},"far":{"mode":"stalk","open":0,"hurt":null},"dodged":{"mode":"stalk","open":1.5,"hurt":16},"boss":"bloodknight"}
+    at file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-weakboss/tools/boss-openings.mjs:224:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
+
+1 check(s) failed.

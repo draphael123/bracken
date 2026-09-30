@@ -4099,7 +4099,7 @@ const BEASTS = [
   { t: 'bosun', name: 'BOSUN', sub: 'he calls the watch', desc: 'Hits like a door with a belaying pin, and if he sees you before you are on him he puts the whistle to his mouth and the whole town knows. Close the distance or lose the level. The Salvage Captain also aims a grapnel, drops marked cargo and fires low quay guns: block the pin and hook, leave the cargo marks, jump the shots. Half wounded, both guns fire and three cargo lanes drop. Strike during his recovery.' },
   { t: 'lookout', name: 'LOOKOUT', sub: 'eyes, and a whistle', desc: 'Cannot fight at all. All he does is see you, and then fill his lungs. He needs a breath and a bit to do it: that is how long you have.' },
   { t: 'watch', name: 'THE DROWNED WATCH', sub: "a constable on his beat", desc: 'Still walking a beat in a city that drowned a hundred years ago. He guards with the haft of the halberd, so a light blow turns on it and only a HEAVY one gets through. He cannot see you under a burning lamp, and out of the light he hears you from twice as far and comes faster. His thrust has the longest reach of any foot soldier: step in or step out, never back. Crowd him and he takes your feet with the butt of the spear.' },
-  { t: 'lampreeve', name: 'THE LAMPREEVE', sub: 'he goes the other way now', desc: 'He lit this street for forty years and has been putting it out ever since. He walks to the nearest burning lamp and hoods it. STRIKE THE LAMP UNDER HIS HOOD: it flares in his face and he is blind, and everything lands double; otherwise his wet coat takes half. Jump the low sweep; the black water blinds you; a line beats the hook. Out of the light he lunges, red. At half health he takes YOUR light: relight it at a lamp.' },
+  { t: 'lampreeve', name: 'THE LAMPREEVE', sub: 'he goes the other way now', desc: 'He lit this street for forty years and has been putting it out ever since. He walks to the nearest burning lamp and hoods it. STRIKE THE LAMP UNDER HIS HOOD: it flares in his face and he is blind, and open; otherwise his wet coat takes most of a blow. Jump the low sweep; the black water blinds you; a line beats the hook. Out of the light he lunges, red. At half health he takes YOUR light: relight it at a lamp.' },
   { t: 'tollmaster', name: 'THE TOLLMASTER', sub: 'the magistrate of a drowned city', desc: 'He never stopped collecting. He is carried on a bier, which keeps him out of an easy reach, and the room is his weapon: he puts out a ring of lamps at a time, so the light you breathe and the light you see his tells by are the same light. PARRY the chained ledger and it staggers him outright. The coin weight cannot be blocked, only dodged. Jump the rod. Half down he sets the bier on the stones and the four bearers come off it, and that is the only time he is slow. Last of all he fills the square, and then the last lamp is the only air in the room.' },
   { t: 'captain', name: 'THE CAPTAIN', sub: 'he has not left her', desc: 'Four things, and he tells you every one: two cuts of the sabre up close, a brace of pistols levelled across her deck, a grapnel that hauls you in unless you have a hand on a line, and a lit keg kicked down her planking. He can call the sea himself - it carries him, nothing will cut him while it does, and it leaves him beached for a breath. Cut him in that breath.' },
   /* THE HEXED FIELDS */
@@ -4233,7 +4233,7 @@ const BEASTS = [
   { t: 'vulture', name: 'THE VULTURE', sub: 'it cools you while it hunts you', desc: 'It circles high over its patch of sand, and its shadow is shade. When it picks you its eye goes red and its shadow snaps onto your spot: move off the mark before it dives. On the ground it is open for a breath before it labours back up.' },
   { t: 'bannerbearer', name: 'THE BANNER-BEARER', sub: 'he carries what gets them up', desc: 'He walks his standard up to you and plants it, and the fallen round it rise. Guard his pole. Cut him and every man his standard raised lies down, and his stretch of the ridge stops firing.' },
   { t: 'barrowrider', name: 'THE BARROW RIDER', sub: 'the old order\'s last knight, and his horse', desc: 'Jump the ride-through: the ghost horse goes through you. Strike him as he passes and he is out of the saddle. Guard the trample and the grave-fire; step out of the lance line. When the horse falls apart, cut the bones crawling back to him.' },
-  { t: 'bloodknight', name: 'THE DEATH KNIGHT', sub: 'the order\'s last knight', desc: 'The Death Knight\'s own kit, turned on you. Guard the Cleave - or dodge it late, and his blade sticks in the floor: that is your window. Find the gap in the Planted Blade\'s bolts. Strike the ward from behind. Jump the rush. Past half he surges, and everything comes sooner.' },
+  { t: 'bloodknight', name: 'THE DEATH KNIGHT', sub: 'the order\'s last knight', desc: 'The Death Knight\'s own kit, turned on you. Guard the Cleave - or dodge it late, and his blade sticks in the floor: that is your window. Find the gap in the Planted Blade\'s bolts. Strike the ward from behind. Jump the rush. At three-fifths he surges, and everything comes sooner.' },
   { t: 'deathknight', name: 'THE REAPER', sub: 'the scythe the order left', desc: 'Close in under the Swathe. Jump the Reaping or stand on a tomb. Leave the mark the Passing leaves. Guard the short cut. Let his Reaping drag one of his own risen dead in: he cuts it, and he is open. Past half, what falls in his chapel gets up again - finish it on the floor.' },
   { t: 'zombie', name: 'ZOMBIE',sub:'earth in its hands',desc:'Moving soil warns before it rises. Guard its reaching hands or jump away. If caught, move, jump or strike to break the brief grab.' },
   { t: 'harbormaster', name: 'THE BREAKWATER WARDEN', sub: 'keeper of the sea gate', desc: 'Guard the anchor and harpoon. Jump the low surge; stay on the floor beneath the high surge. Leave the marked pressure columns. Each attack opens his helmet for a counterattack. At half strength he opens twin vents and calls the high tide.' },
@@ -5837,7 +5837,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'tollmaster' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 7); } // both hands over his head
   else if (e.t === 'tollmaster' && !e.onFoot) { dmg = Math.max(1, Math.round(dmg * 0.7)); } // up on the bier, out of an easy reach
   if (e.t === 'temperer' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 6); }   /* THE TEMPERER at his fire: both hands on the blade, his back to the room, and you are the reason he is standing there */
-  if (e.t === 'lampreeve') dmg = reeveHurt(e, dmg, fromX);   /* blind in the flare of the lamp you struck: double; out of it his wet coat takes half (claude/weakboss) */
+  if (e.t === 'lampreeve') dmg = reeveHurt(e, dmg, fromX);   /* blind in the flare of the lamp you struck he takes the blow; out of it his wet coat takes most of it (claude/weakboss) */
   if (e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'feeler') { const kd = krakenHurt(e, dmg, fromX, plunge); if (kd === false) return; dmg = kd; }
   if (e.t === 'strawking') { const sd = strawHurt(e, dmg, fromX, plunge); if (sd === false) return; dmg = sd; }
   if (e.t === 'archmage') { const md = archHurt(e, dmg, fromX, blow); if (md === false) return; dmg = md; }   /* THE MAGE'S FOLLY: nothing through the runes, twice when he is open, a third through the familiar's hide */
@@ -9995,8 +9995,8 @@ function cutLine(e, k) {
 //   LUNGE  (claude/weakboss) out of the dark, the pole level at your middle, red !!: he only does it while you
 //          stand OUT OF THE LIGHT, and nothing turns it. Roll through it, or be under a lamp.
 // His opening (A11, claude/weakboss): it is CAUSED. STRIKE THE LAMP HE IS HOODING, while the hood is on it, and
-// the flame flares up into his face: he is BLIND, open, and everything lands double on him. Leave it and the lamp
-// goes out and he walks on, whole. Out of the flare his sodden coat takes half of any blow.
+// the flame flares up into his face: he is BLIND, open, and a blow lands 1.4 times. Leave it and the lamp goes
+// out and he walks on, whole. Out of the flare his sodden coat takes three quarters of any blow.
 // PHASE TWO (half health) changes the room: HE TAKES YOUR LIGHT. The fire in your hand goes out and the light you
 // carry shrinks to nothing until you relight it at a burning lamp; out of the light he lunges sooner and oftener.
 // THE TOLLMASTER. The magistrate of a city that drowned a hundred years ago and never stopped collecting. He
@@ -10190,7 +10190,7 @@ function reeveFlare(e, pr) {
   burst(pr.x, pr.y - 40, 22, ['#fff6c8', '#ffd36b', '#ffffff'], 130, 0.6, -20, 1);
   number(pr.x, pr.y - 56, 'THE LAMP FLARES', '#ffd36b'); number(e.x, e.y - 46, 'BLIND: CUT HIM', '#8fd160');
 }
-/* HIS COAT: out of the flare it takes half of any blow */
+/* HIS COAT: out of the flare it takes three quarters of any blow; blind, 1.4 times gets through */
 function reeveHurt(e, dmg, fromX) {
   if (e.open > 0) { sparks(e.x, e.y - 30, Math.sign(e.x - fromX) || 1, 6); return Math.round(dmg * 1.4); }
   if ((PROG.reeveCoat || 0) < 2 && Math.random() < 0.25) { PROG.reeveCoat = (PROG.reeveCoat || 0) + 1; hintT = 4; hintMsg = 'HIS WET COAT TAKES MOST OF IT. STRIKE THE LAMP HE HOODS, AND THE FLARE BLINDS HIM.'; }
@@ -11595,7 +11595,7 @@ function updateTurret(e, dt) {
      SWIPE   (yellow !) up close: the shield turns it
    THE OPENING (A11) IS A TRICK THAT MISSES YOU. The bell jar it was grown in and still wears is its flask: a trick that finds
    nobody - jumped, rolled, turned on a shield, or thrown at the place you left - costs it the jar, which comes off and smashes
-   on the floor WHERE YOU WERE (the trick's aim), and it is BARE: on its knees, open, every blow double. A trick that lands costs
+   on the floor WHERE YOU WERE (the trick's aim), and it is BARE: on its knees, open, every blow 1.6 times. A trick that lands costs
    it nothing: it crows, and comes again. Out of the window its jar takes most of a blow.
    PHASE TWO (A10, half health): its tricks come in PAIRS, the second told as the first ends, and only the second's miss breaks
    the jar - and a broken jar now leaves a cloud of its smoke where it smashed, and when the bare window ends it HIDES IN THE

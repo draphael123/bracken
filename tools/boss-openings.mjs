@@ -26,6 +26,8 @@
                        shut, and the rack sets its stone back (the Deep rework, docs/briefs/deep-rework-2.md)
      THE WICKER QUEEN  turn round on her while she stands on the bonfire's embers: the wicker catches and burns open; the same look short of them,
                        or her crossing them unseen, opens nothing (claude/fair3)
+     THE LAMPREEVE, THE HEADLESS PLOUGHMAN, THE HOMUNCULUS (minis, claude/weakboss): strike the lamp he hoods / bait the plough into the
+                       trough or the fence / make a trick miss you - each against the same thing left alone, in tools/weak-bosses.mjs
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -221,7 +223,7 @@ try {
   assert.equal(r.deathKnight.boss, 'bloodknight', 'the Unburied Field ends in THE DEATH KNIGHT: ' + JSON.stringify(r.deathKnight));
   assert.equal(r.deathKnight.taken.open, 0, 'A11: a Cleave taken sticks nothing: ' + JSON.stringify(r.deathKnight));
   assert.equal(r.deathKnight.far.open, 0, 'A11: a Cleave nobody was under sticks nothing: ' + JSON.stringify(r.deathKnight));
-  assert.ok(r.deathKnight.dodged.open >= 1.8, 'A11: a Cleave committed on you and dodged sticks the blade, and he is open ~2 s: ' + JSON.stringify(r.deathKnight));
+  assert.ok(r.deathKnight.dodged.open >= 1.3, 'A11: a Cleave committed on you and dodged sticks the blade, and he is open ~1.5 s (UNB.bk.stuckT; it was 2 s until claude/weakboss - Daniel: "a bit too easy"): ' + JSON.stringify(r.deathKnight));
   assert.ok(r.deathKnight.dodged.hurt > r.deathKnight.taken.hurt, 'stuck, a blow takes more: ' + JSON.stringify(r.deathKnight));
   assert.equal(r.rider.alone.open, 0, 'a ride-through left alone opens nothing: ' + JSON.stringify(r.rider));
   assert.ok(r.rider.alone.mounted, 'and leaves him in the saddle: ' + JSON.stringify(r.rider));

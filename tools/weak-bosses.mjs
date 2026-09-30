@@ -44,9 +44,9 @@ try {
     o.lungeStand=lunge(false);o.lungeRoll=lunge(true);
     {b.mode='stalk';b.lungeT=0;b.snuffT=99;b.sweepT=99;b.douseT=99;b.hookT=99;BK.P.x=far.x;BK.P.wick=14;b.x=far.x+120;let seen=false;for(let i=0;i<120;i++){hold();BK.P.x=far.x;BK.P.wick=14;BK.sim(1);if(b.mode==='lungeTell')seen=true;}o.lungeInLight=seen;}
     /* PHASE TWO: your light */
-    const lit0=BK.playerLight();b.mode='stalk';b.phase=1;b.hp=Math.floor(b.maxHp*0.45);BK.P.wick=14;BK.P.x=b.x-120;let took=false;for(let i=0;i<200&&!took;i++){hold();BK.sim(1);if(BK.P.snuffed)took=true;}
-    o.p2={phase:b.phase,took,wick:+(BK.P.wick||0).toFixed(1),light:BK.playerLight(),lit0};
-    BK.P.x=far.x;BK.P.y=M.floor;for(let i=0;i<20;i++){hold();BK.P.x=far.x;BK.sim(1);}o.p2.relit=!BK.P.snuffed;o.p2.lightAfter=BK.playerLight();
+    const lit0=(BK.playerLight?BK.playerLight():null);b.mode='stalk';b.phase=1;b.hp=Math.floor(b.maxHp*0.45);BK.P.wick=14;BK.P.x=b.x-120;let took=false;for(let i=0;i<200&&!took;i++){hold();BK.sim(1);if(BK.P.snuffed)took=true;}
+    o.p2={phase:b.phase,took,wick:+(BK.P.wick||0).toFixed(1),light:(BK.playerLight?BK.playerLight():null),lit0};
+    BK.P.x=far.x;BK.P.y=M.floor;for(let i=0;i<20;i++){hold();BK.P.x=far.x;BK.sim(1);}o.p2.relit=!BK.P.snuffed;o.p2.lightAfter=(BK.playerLight?BK.playerLight():null);
     out.reeve=o;}
   if(!ONLY||ONLY==='plough'){const b=boot('fields');const M=BK.L.mini,o={};const bx=(M.baits||[]).map(([tx,k])=>[tx*16+8,k]);o.baits=bx.map(q=>q[1]);const HP0=b.hp;
     const fresh=()=>{b.mode='walk';b.open=0;b.hp=HP0;BK.P.inv=0;BK.P.dead=0;b.phase=1;b.furrows=[];b.T={charge:99,goad:99,head:99,furrow:99};b.vx=0;BK.P.hp=BK.P.maxHp;};
@@ -97,6 +97,9 @@ try {
       const tells=seq.map((m,i)=>[m,i]).filter(([m])=>/Tell$/.test(m));const firstBare=seq.indexOf('bare');const tellsBefore=tells.filter(([,i])=>i<firstBare).length;
       o.pair={seq:seq.slice(0,24),tellsBefore,smoke,hideBlow,hideThenScuttle:seq.indexOf('hide')>=0&&seq[seq.indexOf('hide')+1]==='scuttleTell'}; }
     out.hom=o;}
+  /* THE DEATH KNIGHT (Daniel: 'a bit too easy'): the stuck blade holds him a shorter while, and his phase two comes sooner - never more health.
+     His fight itself is asked by tools/unburied-fights.mjs and tools/boss-openings.mjs; this asks the two numbers, and that his health did not move */
+  if(!ONLY||ONLY==='dk'){const U=await import('/src/unburied-foes.js');out.dk={stuckT:U.UNB.bk.stuckT,p2At:U.UNB.bk.p2At,hp:U.UNB.hp.bloodknight};}
   return out;})()`, 600000);
   console.log(JSON.stringify(r, null, 1));
   if (r.reeve) { const o = r.reeve;
@@ -131,6 +134,7 @@ try {
     ok(o.bareBlow > 3 * o.jarBlow, 'bare it takes the blow, in its jar most glances: ' + o.bareBlow + ' vs ' + o.jarBlow);
     ok(o.pair.tellsBefore >= 2, 'phase two: a missed first trick opens nothing - a second is told before the jar breaks: ' + JSON.stringify(o.pair));
     ok(o.pair.smoke > 0 && o.pair.hideBlow === 0 && o.pair.hideThenScuttle, 'phase two: the broken jar leaves smoke, it hides there untouchable, and comes out on a told scuttle: ' + JSON.stringify(o.pair)); }
+  if (r.dk) { ok(r.dk.stuckT <= 1.5, 'the Death Knight stuck blade holds him 1.5 s at most: ' + r.dk.stuckT); ok(r.dk.p2At >= 0.6, 'his phase two comes at three-fifths: ' + r.dk.p2At); ok(r.dk.hp === 950, 'his health is not the lever (950, as it was): ' + r.dk.hp); }
   ok(!pg.errors.length, 'page errors: ' + JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }
 if (fails.length) { for (const f of fails) console.log('FAIL', f); process.exit(1); }

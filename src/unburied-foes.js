@@ -56,7 +56,7 @@ export const UNB = {
      bolts (boltsP2 in phase two) to land gap (gapP2) apart round where you stand, boltT in the air; the ward stands wardT; the rush
      runs rushV for up to rushT; the surge reaches surgeR; he raises two dead at a time and never keeps more than addsMax */
   bk: { walk: 34, walkP2: 1.3, keep: 40, cd: 1.1, p2: 0.75, tell: { cleave: 1.1, commit: 0.35, blade: 0.95, ward: 0.45, rush: 0.9, raise: 0.9, surge: 1.2 },
-    cleaveR: 62, cleaveBack: 8, stuckT: 2.0, openMul: 1.6, bolts: 3, boltsP2: 5, gap: 46, gapP2: 40, boltT: 0.85, boltG: 300,
+    cleaveR: 62, cleaveBack: 8, stuckT: 1.5, p2At: 0.6, openMul: 1.6,   /* (claude/weakboss, Daniel: 'a bit too easy' - the stuck blade held him 2.0 s, and his phase two came at half health) */ bolts: 3, boltsP2: 5, gap: 46, gapP2: 40, boltT: 0.85, boltG: 300,
     wardT: 2.4, rushV: 320, rushT: 1.2, surgeR: 90, raise: 2, addsMax: 3,
     order: ['cleave', 'blade', 'cleave', 'ward', 'rush', 'cleave', 'blade', 'raise'],
     orderP2: ['cleave', 'blade', 'rush', 'cleave', 'ward', 'blade', 'cleave', 'rush', 'raise'] },
@@ -372,7 +372,7 @@ export function updateBloodKnight(e, dt, c) {
     if (b.y >= floor - 2 || b.x < A.x0 + 4 || b.x > A.x1 - 4 || (b.vy > 0 && b.t > 0.2 && c.stand && c.stand(b.x, b.y))) b.done = true; }
   e.bolts = e.bolts.filter(b => !b.done);
   /* PHASE TWO: BLOOD SURGE, told, the moment he is free to */
-  if (e.phase === 1 && e.hp <= e.maxHp * 0.5 && !tells(e) && !bkOpen(e) && e.mode !== 'rush' && e.mode !== 'ward' && e.mode !== 'wake') { e.phase = 2; beginBK(e, 'surge', c); return; }
+  if (e.phase === 1 && e.hp <= e.maxHp * UNB.bk.p2At && !tells(e) && !bkOpen(e) && e.mode !== 'rush' && e.mode !== 'ward' && e.mode !== 'wake') { e.phase = 2; beginBK(e, 'surge', c); return; }
   if (e.mode === 'wake') { if (e.modeT <= 0) beginBK(e, 'raise', c); return; }
   if (e.mode === 'stuck') { if (e.modeT <= 0) { e.mode = 'wrench'; e.modeT = 0.35; c.say('HE WRENCHES IT FREE', '#ffd36b'); c.sound('crack'); } return; }
   if (e.mode === 'ward') { if (e.wardEvt) { e.wardEvt = 0; c.sound('crank'); }

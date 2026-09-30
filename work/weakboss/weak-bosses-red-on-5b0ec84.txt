@@ -1,0 +1,24 @@
+FAIL a hood left alone opens nothing and the lamp goes out: {"sawSnuff":true,"open":1.5,"lampLit":false,"gut":0,"mode":"stalk","lampOut":true}
+FAIL a lamp struck under the hood flares, he is blinded and open, the lamp burns on: {"struck":false,"mode":null,"open":0,"lampLit":false,"flares":0}
+FAIL blind he takes the blow, out of the flare his coat takes most of it: 10 vs 10
+FAIL the lunge from the dark is told and hurts a hero who stands: {"told":null,"mark":null,"hurt":0,"light":null}
+FAIL a hero who rolls through the lunge is not hurt: {"told":null,"mark":null,"hurt":0,"light":null}
+FAIL phase two takes your light: {"phase":2,"took":false,"wick":10.7,"light":null,"lit0":null,"relit":true,"lightAfter":null}
+FAIL a burning lamp gives your light back: {"phase":2,"took":false,"wick":10.7,"light":null,"lit0":null,"relit":true,"lightAfter":null}
+FAIL the lunge wears the red mark: null
+Error: TypeError: Cannot read properties of undefined (reading '0')
+FAIL its scuttle that lands opens nothing: {"mark":"!!","mode":"walk","open":0,"hurt":24,"aim":null,"modes":["scuttleTell","scurry","spent","walk"]}
+FAIL its scuttle that misses breaks the jar - it is bare and open: {"mark":"!!","mode":"walk","open":0,"hurt":0,"aim":null,"modes":["scuttleTell","scurry","spent","walk"]}
+FAIL its flask that lands opens nothing: {"mark":"!!","mode":"walk","open":0,"hurt":19,"aim":null,"modes":["flaskTell","lob","spent","walk"]}
+FAIL its flask that misses breaks the jar - it is bare and open: {"mark":"!!","mode":"walk","open":0,"hurt":0,"aim":null,"modes":["flaskTell","lob","spent","walk"]}
+FAIL its pounce that lands opens nothing: {"mark":"!","mode":"walk","open":0,"hurt":21,"aim":null,"modes":["pounceTell","leap","dive","spent","walk"]}
+FAIL its pounce that misses breaks the jar - it is bare and open: {"mark":"!","mode":"walk","open":0,"hurt":0,"aim":null,"modes":["pounceTell","leap","dive","spent","walk"]}
+FAIL its pound that lands opens nothing: {"mark":"!!","mode":"walk","open":0,"hurt":27,"aim":null,"modes":["poundTell","pound","spent","walk"]}
+FAIL its pound that misses breaks the jar - it is bare and open: {"mark":"!!","mode":"walk","open":0,"hurt":0,"aim":null,"modes":["poundTell","pound","spent","walk"]}
+FAIL its swipe that lands opens nothing: {"mark":"!","mode":"walk","open":0,"hurt":38,"aim":null,"modes":["swipeTell","swipe","walk"]}
+FAIL its swipe that misses breaks the jar - it is bare and open: {"mark":"!","mode":"walk","open":0,"hurt":0,"aim":null,"modes":["swipeTell","swipe","walk"]}
+FAIL the flask smashes where you were: null
+FAIL phase two: a missed first trick opens nothing - a second is told before the jar breaks: {"seq":["walk","scuttleTell","scurry","spent","walk","flaskTell","lob","spent","walk","pounceTell","leap","
+FAIL phase two: the broken jar leaves smoke, it hides there untouchable, and comes out on a told scuttle: {"seq":["walk","scuttleTell","scurry","spent","walk","flaskTell","lob","spent","walk","pounceT
+FAIL the Death Knight stuck blade holds him 1.5 s at most: 2
+FAIL his phase two comes at three-fifths: undefined
