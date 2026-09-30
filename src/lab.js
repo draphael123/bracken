@@ -85,16 +85,17 @@ export const emberNow = (BK, h, e) => emberPlan(BK, h, e) === 'raise';
                     of it the guard breaks). His crouched X is the SHIELD TRIP: the family table's sweep, when he is stood still for it
      setSpearNow  - THE WARDEN: a YELLOW charge (a tell CHARGE_TELL names) told in front of her, or the run itself coming at her - she
                     sets the spear and it runs onto the point. Her crouched X is the LOW POKE, under a shield (the table's sweep again)
-     reloadCrouchNow - THE FREEBOOTER: the pistol empty and the foe well out of the cutlass's reach - he kneels and reloads (twice as
-                    fast) instead of walking in, and the loaded pistol is then the table's heavy from range; winding it with his feet
-                    still, he holds down too, and the shot is the STEADY one */
+     reloadCrouchNow - THE FREEBOOTER: the pistol empty and the foe well out of the cutlass's reach and walking in on him - he kneels
+                    and reloads (twice as fast) while it comes, and the loaded pistol is then the table's heavy from range. (He does
+                    NOT wind the pistol from the crouch: on three pinned Kennel Yard seeds that cost him 12-29 more taken - knelt to
+                    aim in front of the room, the low blows find him - so the STEADY shot is the player's, not the bot's) */
 export const LOW_LATE = 0.35;
 export function lowGuardNow(BK, h, e) {
   if (h !== 'knight' || !BK.crouchA || !e || !e.alive) return false; const P = BK.P, C = BK.crouchA();
   if (!C || !P.ground || P.swim || P.climb || P.dead || P.st < 16 || P.atk >= 0 || P.dodge > 0 || HELD(e)) return false;
   if (Math.abs(e.x - P.x) > 64 + (e.w || 12) / 2 || Math.abs(e.y - P.y) > 30) return false;
   if (BK.telling(e)) return BK.markOf(e) === '!' && BK.duck().height(e) !== 'high' && !(typeof e.modeT === 'number' && e.modeT > LOW_LATE);
-  const k = e.toldK; return !!(k && MARK[k] === '!' && HEIGHT[k] !== 'high' && C.now - (e.toldAt ?? -9) < 0.7); }
+  const k = e.toldK; return !!(k && MARK[k] === '!' && HEIGHT[k] !== 'high' && C.now - (e.toldAt ?? -9) < 0.2); }
 export function setSpearNow(BK, h, e) {
   if (h !== 'warden' || !BK.crouchA || !e || !e.alive) return false; const P = BK.P, C = BK.crouchA();
   if (!C || !P.ground || P.swim || P.climb || P.dead || P.atk >= 0 || P.dodge > 0 || HELD(e)) return false;
@@ -105,7 +106,8 @@ export function reloadCrouchNow(BK, h, e) {
   if (h !== 'pirate' || !BK.crouchA) return false; const P = BK.P;
   if (P.loaded || !P.ground || P.swim || P.climb || P.dead || P.atk >= 0 || P.dodge > 0) return false;
   if (!e || !e.alive) return true;
-  return Math.abs(e.x - P.x) > LAB_REACH.pirate + (e.w || 12) / 2 + 40; }
+  const d = e.x - P.x, ad = Math.abs(d);   /* only while it comes to him: a shooter that keeps its distance is walked in on, as before */
+  return ad > LAB_REACH.pirate + (e.w || 12) / 2 + 40 && ad < 170 && d * (e.vx || 0) < 0 && Math.abs(e.vx || 0) > 12 && Math.abs(e.y - P.y) < 30 && !BK.telling(e); }
 export const HELD = e => (e.broken || 0) > 0.3 || (e.pinned || 0) > 0.3;
 /* FIRE ON THE GROUND, under x (a sapper's pot, a burning stake): the fire hurts inside nine pixels of it, so the bot keeps fourteen off.
    A bot that plants its feet to wind a heavy or stands off to shoot was measured standing in one for four ticks of it in the Stockade's room */
@@ -221,7 +223,6 @@ function labBotFrame(BK, h, e, f) {
     const s = strike(BK, h, e, f); swing = s.swing;
     /* THE WARDEN KEEPS HER POINT OUT: inside the haft she only shoves, so she steps back out of it (her step goes backward by itself) */
     if (h === 'warden' && ad < 20 && P.atk < 0 && !(P.charge > 0) && !(P.dodge > 0) && P.st >= 20 && f % 10 === 0) BK.press('dodge');
-    if (h === 'pirate' && P.charge > 0 && !k.left && !k.right) k.down = true;   /* winding the pistol with his feet still: from the crouch, the STEADY shot */
     if (!k.left && !k.right && !(P.charge > 0) && !(swing && s.verb === 'sweep' && (h === 'knight' || h === 'warden'))) { if (h === 'pirate' && s.verb === 'heavy' && ad < s.want - 8) k[d > 0 ? 'left' : 'right'] = true; else if (ad > s.want + 2) k[d > 0 ? 'right' : 'left'] = true; else if (s.verb === 'plunge' && !P.ground && ad > 3) k[d > 0 ? 'right' : 'left'] = true; }
   }
   { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */

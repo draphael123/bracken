@@ -39,7 +39,7 @@ import { MARK, HEIGHT, tellKey } from './marks.js';
 import { DUCK_WINDOW } from './duck.js';
 
 export const CROUCH = {
-  knight: { resolve: 8, tripMul: 0.6, down: 1.2, tripImm: 3.2, tripPoise: 18, reach: 26, slide: 20, live: [0.02, 0.15] },
+  knight: { resolve: 8, tripMul: 0.8, down: 1.2, tripImm: 3.2, tripPoise: 18, reach: 26, slide: 20, live: [0.02, 0.15] },
   warden: { point: 46, near: 4, line: [-11, -3], fast: 70, setDmg: 0.9, bossDmg: 1.0, again: 1.0, pokeReach: 46, slide: 15, live: [0.03, 0.16] },
   pirate: { reload: 2, reach: 1.5 },
 };

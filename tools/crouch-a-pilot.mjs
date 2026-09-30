@@ -5,17 +5,17 @@
         dice pinned (seed 2024): the room played straight, health put back, what it took counted
    Prints one row per fight, and the crouch's own counters (BK.crouchA, when there is one). Not in the suite: it is too long. */
 import { openPage } from './cdp.mjs';
-const label = process.argv[2] || 'run', HEROES = ['knight', 'warden', 'pirate'];
+const label = process.argv[2] || 'run', HEROES = process.argv[3] ? process.argv[3].split(',') : ['knight', 'warden', 'pirate'], ONLY = process.argv[4] || '';
 const pg = await openPage({ audio: false, fonts: false });
 try {
   for (const h of HEROES) {
-    await pg.reload();
+    if (ONLY !== 'ambush') { await pg.reload();
     const r = await pg.evalp(`(async()=>{BK.SET.speed=1;const o=await BK.bossLab({bosses:['storm'],heroes:['${h}'],healthMode:'refill',maxSecs:150,modes:true,salt:'duck-1'});
       return o.rows.map(r=>({h:r.h,out:r.outcome||r.skipped,secs:r.secs,taken:r.health?Math.round(r.health.damageTaken):null,tpm:r.takenPerMin}));})()`, 1800000);
     for (const x of r) console.log(label, 'lance', JSON.stringify(x));
-    console.log(label, 'lance crouch', h, JSON.stringify(await pg.evalp('window.BK.crouchA ? BK.crouchA().stats : null')));
+    console.log(label, 'lance crouch', h, JSON.stringify(await pg.evalp('window.BK.crouchA ? BK.crouchA().stats : null'))); }
     await pg.reload();
-    const a = await pg.evalp(`(async()=>{BK.SET.speed=1;let seed=2024;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
+    const a = await pg.evalp(`(async()=>{BK.SET.speed=1;let seed=${+(process.env.SEED||2024)};Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
       const o=await BK.ambushLab({levels:['stockade'],heroes:['${h}'],reps:1});return o.rows;})()`, 1800000);
     for (const x of a) console.log(label, 'ambush', JSON.stringify(x));
     console.log(label, 'ambush crouch', h, JSON.stringify(await pg.evalp('window.BK.crouchA ? BK.crouchA().stats : null')));
