@@ -300,11 +300,12 @@ export function bakeGuests() {
 //           over his shoulder)  5 throw (arm flung out, leaning into it)  6 bottle wind-up (both hands, overhead)
 //           7 down (flat on his back, the cup rolled away)  8 getting up (on one knee)  9 hurt (LAST: rocked back)
 //   canvas 48x44   anchor ax 22, ay 42
-export function bakeDrunk() {
+export function bakeDrunk(look) {   /* look 'patron': THE MASKED PATRON of the Maskwright's Theatre's boxes - the same body and frames, in evening black behind a porcelain mask, a programme to throw */
   const W = 48, H = 44, CX = 22, G = 42;
   const C = { jer: '#5e7a3a', jerD: '#3e5426', jerL: '#7e9a52', belly: '#c9b08a', shirt: '#e6d8b8', hose: '#7a4a3a', hoseD: '#54302a',
     skin: '#e0a882', skinD: '#b87a5a', nose: '#d0503e', hair: '#6a4a2e', stub: '#8a6a50', boot: '#3a2a20', belt: '#4a3222', buckle: '#c9a040',
     mug: '#c9a040', mugD: '#8a6a2a', foam: '#f7f2e4', glass: '#5aa05a', glassL: '#b8e0a0' };
+  if (look === 'patron') Object.assign(C, { jer: '#3a2448', jerD: '#221430', jerL: '#5a3a6a', belly: '#e8e0d0', shirt: '#f0e8d8', hose: '#1c1420', hoseD: '#0e0a12', skin: '#d8cbb8', skinD: '#a89888', nose: '#f4ecd8', hair: '#140e18', stub: '#b8a898', boot: '#0e0a10', belt: '#1a1018', buckle: '#c8a040', mug: '#efe4c0', mugD: '#a89870', foam: '#c02a30', glass: '#c8a040', glassL: '#fff0b0' });
   const P = (g, pts, k) => fillPoly(g, pts, C[k]);
   /* HIM, standing: lean tips his top half, sway rolls his hips, feet are [back, front] x offsets, arm is the throwing hand's
      place against the shoulder, held says what is in it. */
@@ -332,6 +333,7 @@ export function bakeDrunk() {
     P(g, [[hx - 4, hy - 2], [hx - 3, hy - 6], [hx, hy - 4], [hx + 2, hy - 7], [hx + 3, hy - 4], [hx + 4, hy - 3], [hx - 1, hy - 3]], 'hair');
     rect(g, hx + 3, hy - 1, 3, 3, C.nose); px(g, hx + 2, hy - 2, OUT);
     if (mouth) rect(g, hx + 1, hy + 2, 3, 2, '#5a1a1a');
+    if (look === 'patron') { rect(g, hx - 4, hy - 3, 9, 5, '#f4ecd8'); rect(g, hx - 4, hy - 3, 9, 1, '#c8a040'); rect(g, hx - 3, hy - 1, 2, 2, '#14101a'); rect(g, hx + 1, hy - 1, 2, 2, '#14101a'); px(g, hx - 3, hy + 1, '#c04048'); px(g, hx + 2, hy + 1, '#c04048'); rect(g, hx + 4, hy - 1, 3, 2, '#f4ecd8'); px(g, hx + 6, hy, '#b8a888'); rect(g, hx - 4, hy - 7, 9, 3, '#140e18'); rect(g, hx - 5, hy - 4, 11, 1, '#140e18'); px(g, hx + 3, hy - 6, '#c8a040'); }   /* the mask, the opera hat, the brass band */
     // the near arm and what is in it
     const ax = shX + arm[0], ay = shY + arm[1], [ex, ey] = ik(shX + 3, shY + 2, ax, ay, 5, 6, -1);
     limb(g, shX + 3, shY + 2, ex, ey, 4, 3, C.jer); limb(g, ex, ey, ax, ay, 3, 3, C.skin);
@@ -367,7 +369,7 @@ export function bakeDrunk() {
     /* 8 */ kneel(),
     /* 9 HURT, LAST */ man({ lean: -6, sway: -2, feet: [-5, 3], lift: [0, 1], arm: [4, -4], arm2: [-10, 0], held: 'none', head: -3, mouth: true }),
   ];
-  return pack(finish(F, 'drunk'), CX, G, 10, 22);
+  return pack(finish(F, look === 'patron' ? 'patron' : 'drunk'), CX, G, 10, 22);
 }
 /* THE TOWN'S SPIKES. The wood's thorns were laid under every set in the game, so a knight's market town had a bramble
    patch growing out of its cobbles. Here they are what a town puts where it does not want you: an iron railing with its

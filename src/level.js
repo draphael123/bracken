@@ -5,6 +5,7 @@ import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER'
 import {buildBurningVillage} from './burning-village.js';
 import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
+import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
 import {hauntedCoast} from './haunted-coast.js';
@@ -7719,7 +7720,10 @@ export const LEVELS = [
   { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'fault line, shield and quake', build: () => trialYard('geomancer'), hidden: true },
   /* THE HARVEST FAIR (claude/fair1, L1: greybox + the facing mechanic): the road inland's second stop, between WAYMEET and THE HEXED FIELDS (the Fields
      need it now). APPENDED, like every level since the log began, so no index and no save moves; its place on the road is its `needs` and its map node */
-  { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'waymeet' },
+  { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'theatre' },   /* (claude/theatre: the playhouse stands between Waymeet and the fair now) */
+  /* THE MASKWRIGHT'S THEATRE (claude/theatre, the greybox): the playhouse where the fair's masks are made, between WAYMEET and THE HARVEST FAIR (the fair
+     needs it now). APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE PUPPETEER (claude/puppeteer) is its boss */
+  { id: 'theatre', name: "THE MASKWRIGHT'S THEATRE", sub: 'the playhouse where the masks are made', rule: 'THE HOUSE IS WATCHING. WHAT STANDS IN THE LIGHT CANNOT MOVE.', build: () => buildMaskwrightTheatre({ painter, T, TS }), needs: 'waymeet' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
