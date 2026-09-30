@@ -11695,9 +11695,10 @@ function archWard(e) { const R = MG.A; R.reseal = 0; R.resealShown = 0;
   archCycle(e); }
 /* HIS BLINK (claude/archfix): where he will stand is chosen as the tell starts and flashes there for the whole of it (drawn with the
    circles); a spot across the room from him and never within ARCH.blinkClear of you, nor on one of his images */
-function archBlinkTell(e) { const R = MG.A, imgs = (R && R.imgs || []).filter(q => !q.gone), all = archSpots();
+function archBlinkTell(e) { const R = MG.A, imgs = (R && R.imgs || []).filter(q => !q.gone), up = (R && R.runes || []), lo = up.length ? Math.min(...up.map(r => r.x)) - 40 : -1e9, hi = up.length ? Math.max(...up.map(r => r.x)) + 40 : 1e9;
+  const all = archSpots().filter(([x]) => x >= lo && x <= hi);   /* WARDED, he blinks only among his runes: when the last one breaks he is never a room away (claude/archfix) */
   let c = all.filter(([x]) => Math.abs(x - e.x) > 60 && Math.abs(x - P.x) > ARCH.blinkClear && !imgs.some(q => Math.abs(q.x - x) < 20));
-  if (!c.length) c = [all.filter(([x]) => Math.abs(x - e.x) > 20).sort((a, b) => Math.abs(b[0] - P.x) - Math.abs(a[0] - P.x))[0] || all[0]];
+  if (!c.length) c = [all.filter(([x]) => Math.abs(x - e.x) > 20).sort((a, b) => Math.abs(b[0] - P.x) - Math.abs(a[0] - P.x))[0] || all[0] || [e.x, e.y]];
   const [x, y] = c[Math.floor(Math.random() * c.length)]; e.blinkTo = { x, y }; e.vx = 0; SFX.puff(); }   /* (the caller sets blinkTell: the mark table reads it there) */
 /* HE LANDS ON HIS FLASH - unless you have walked onto it in the tell: then beside it, on the side away from you, never on you */
 function archBlinkLand(e) { const A = L.arena, to = e.blinkTo || { x: archSpots()[0][0], y: archSpots()[0][1] }; let x = to.x;
@@ -11903,7 +11904,8 @@ function mageAdvice() {
     if (R.sub === 3 && !archReached(3) && !(e.open > 0)) { out.goal = (M.cage[0][0] + 4) * TS; out.strike = null; out.climb = true; return out; }
   }
   if (archRunesUp(R)) {   /* THE RUNES ROUND THE ROOM: the nearest standing one, then the next, while the count runs (claude/archfix) */
-    const r = R.runes.filter(q => q.hp > 0).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; out.goal = r.x - (Math.sign(r.x - P.x) || 1) * 14; out.strike = r.x; return out; }
+    const up = R.runes.filter(q => q.hp > 0), last = up.length > 1 ? up.slice().sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] : null;   /* the one nearest him last: he opens where you stand */
+    const r = up.filter(q => q !== last).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; out.goal = r.x - (Math.sign(r.x - P.x) || 1) * 14; out.strike = r.x; return out; }
   if (e.fam && !(e.open > 0)) { out.goal = e.x - Math.sign(e.x - P.x || 1) * 46; out.strike = null; return out; }
   return out;
 }
