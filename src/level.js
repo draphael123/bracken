@@ -2996,7 +2996,7 @@ function deepAndKeep() {
       grass: '#2e4a4a', grassL: '#3e5e5c', grassD: '#1c3030', dirt: '#22343c', dirtL: '#2e444c', dirtD: '#14222a',
       canopy: ['#0c1820', '#122230', '#182c3c', '#1e3648'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'deep' }],
-    arena: { x0: 252 * TS, x1: 294 * TS, floor: 199 * TS, trigger: 256 * TS, wallL: 252, wallR: 294, boss: 'drownedking', music: 'boss3', tint: '#123040', tintA: 0.16, fx: 'motes', y0: 164 * TS, y1: 199 * TS, throne: [282 * TS + 8, 192 * TS] },
+    arena: { x0: 252 * TS, x1: 294 * TS, floor: 199 * TS, trigger: 256 * TS, wallL: 252, wallR: 294, boss: 'drownedking', music: 'drownedking', tint: '#123040', tintA: 0.16, fx: 'motes', y0: 164 * TS, y1: 199 * TS, throne: [282 * TS + 8, 192 * TS] },
   };
 }
 

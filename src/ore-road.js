@@ -536,7 +536,7 @@ export function buildOreRoad({ painter, T }) {
       darkCol: '18,9,5', lampGlow: [255, 150, 60, 0.24], darkRim: ['#c8843c', 0.26, 0.12], footLip: ['#f0be7c', 0.62], grade: ['#ff8a3c', 0.12],
       grass: '#6a4a30', grassL: '#8a6440', grassD: '#42281a', dirt: '#4c3122', dirtL: '#6c4630', dirtD: '#2a170f', canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [{ x0: 0, x1: 99999, kind: 'dust' }], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
-    arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: surf(A.deck), y0: 0, trigger: (A.x0 + 3) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'winchmaster', music: 'boss3', tint: '#5a4a3a', tintA: 0.06, fx: 'dust' },
+    arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: surf(A.deck), y0: 0, trigger: (A.x0 + 3) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'winchmaster', music: 'winchmaster', tint: '#5a4a3a', tintA: 0.06, fx: 'dust' },
     noCoin: [[68, 135, 0, H - 1], [204, 261, 0, H - 1], [353, 375, 0, H - 1], [385, 407, 0, H - 1], [421, 450, 0, H - 1], [476, 523, 0, H - 1]],   /* over the drop: the sprinkler must not put coins where only a bucket goes */
     /* item 3's arena widening shifted where the general sprinkler's own seeded draw (level.js's dressLevel, its rnd() calls
        spent one per floor cell it considers) lands its decorations - which put a lanternPost on a vein at 430,5 that had

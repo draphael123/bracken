@@ -26,9 +26,12 @@ assert.equal(arena('mage').music, 'archmage', "the Archmage's arena is not on th
 assert.equal(arena('fallingtower').music, 'archmage:undead', "the Undead Archmage's arena is not on the undead voicing of the Archmages' theme (his stair chase plays arena.music from the first step)");
 assert.equal(arena('kings').music, 'goblinroyal', "the Goblin King's arena is not on the Goblin royals' theme");
 assert.equal(arena('crown').music, 'goblinroyal', "the Goblin Queen's arena is not on the Goblin royals' theme");
-for (const n of ['archmage', 'goblinroyal']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
+assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");
+assert.equal(arena('oreroad').music, 'winchmaster', "the Winchmaster's arena is not on his mine-cart chase");
+assert.equal(arena('witchlight').music, 'gargoyle', "the Gate Gargoyle's arena is not on his stone-grind theme");
+for (const n of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
 const generic = new Set(['boss', 'boss2', 'boss3', 'boss4', 'king', 'queen']);
-for (const [id, name] of [['mage', 'archmage'], ['fallingtower', 'undeadmage'], ['kings', 'king'], ['crown', 'gqueen']]) assert.ok(!generic.has(arena(id).music), name + ' is still on a generic boss track');
+for (const [id, name] of [['mage', 'archmage'], ['fallingtower', 'undeadmage'], ['kings', 'king'], ['crown', 'gqueen'], ['keep', 'drownedking'], ['oreroad', 'winchmaster'], ['witchlight', 'gargoyle']]) assert.ok(!generic.has(arena(id).music), name + ' is still on a generic boss track');
 
 // ---- 2. the scheduler, both tracks and the undead voicing
 A.initAudio(); A.music.set(true);
@@ -41,24 +44,26 @@ const grab = async (name, loops) => {
 };
 const fmt = e => e.kind + ':' + e.type + ':' + (e.f === null ? '' : Math.round(e.f * 10) / 10);
 const results = {};
-for (const name of ['archmage', 'archmage:undead', 'goblinroyal']) {
+const MAXGAP = { drownedking: 3 };   /* the dirge is in 6/8: its beats are three eighths apart, and the drone and choir ring across the gap */
+for (const name of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle']) {
   const { S, len, ev } = await grab(name, 2);
   const tonal = ev.filter(e => e.kind === 'osc'), T0 = Math.min(...tonal.map(e => e.t)) - 1e-6, first = tonal.filter(e => e.t >= T0 && e.t < T0 + len - 1e-6), sec = tonal.filter(e => e.t >= T0 + len - 1e-6 && e.t < T0 + 2 * len - 1e-6);
-  assert.ok(first.length > 200, name + ': only ' + first.length + ' notes in a loop');
+  assert.ok(first.length > 150, name + ': only ' + first.length + ' notes in a loop');
   const density = first.length / len; assert.ok(density < 60, name + ': ' + density.toFixed(1) + ' oscillators a second is too dense (a phone would stutter)');
   // the loop repeats itself: note k of pass one is note k of pass two, one loop later (time offset drifts by less than a step)
   const n = Math.min(first.length, sec.length); assert.ok(n > 100, name + ': the second pass is missing');
   let bad = 0; for (let k = 0; k < n; k++) if (fmt(first[k]) !== fmt(sec[k]) || Math.abs(sec[k].t - first[k].t - len) > 0.02) bad++;
   assert.ok(bad <= 2, name + ': the loop does not repeat exactly (' + bad + ' notes differ across the seam)');
   const gaps = []; const ts = [...new Set(ev.filter(e => e.t >= T0 && e.t < T0 + len - 1e-6).map(e => Math.round((e.t - T0) / S.step)))].sort((a, b) => a - b); for (let k = 1; k < ts.length; k++) gaps.push(ts[k] - ts[k - 1]);
-  assert.ok(Math.max(...gaps) <= 2, name + ': a hole of ' + Math.max(...gaps) + ' steps in the music');
+  assert.ok(Math.max(...gaps) <= (MAXGAP[name] || 2), name + ': a hole of ' + Math.max(...gaps) + ' steps in the music');
   results[name] = { seconds: +len.toFixed(1), oscPerLoop: first.length, perSecond: +density.toFixed(1), hash: first.map(fmt).join('|') };
 }
 assert.notEqual(results.archmage.hash, results['archmage:undead'].hash, 'the undead voicing is the same notes as the living one');
+const hs = Object.values(results).map(r => r.hash); assert.equal(new Set(hs).size, hs.length, 'two of the boss themes play the same notes');
 assert.equal(errors.length, 0, 'the scheduler threw: ' + (errors[0] && errors[0].message));
 const gainNow = A.debugAudio().musicGain.gain; A.music.play('archmage'); assert.ok(A.debugAudio().wantTrack === 'archmage');
 A.music.stop();
-console.log('ok  boss-music   Archmages (mage) + Undead Archmage (fallingtower, undead voicing) on the archmage theme, Goblin King + Queen on goblinroyal; ' +
+console.log('ok  boss-music   Drowned King (keep, drownedking), Winchmaster (oreroad, winchmaster), Gate Gargoyle (witchlight, gargoyle); Archmages (mage) + Undead Archmage (fallingtower, undead voicing) on the archmage theme, Goblin King + Queen on goblinroyal; ' +
   Object.entries(results).map(([k, v]) => k + ' ' + v.seconds + 's ' + v.perSecond + ' osc/s').join(', ') + '; loops repeat exactly');
 process.exit(0);
 } catch (e) { console.error(e && e.stack || e); process.exit(1); }

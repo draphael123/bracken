@@ -19,7 +19,15 @@
 //                that gets its last note wrong on purpose) and a MOCKING BASSOON / kazoo line (a narrow lowpassed square with a
 //                scoop into every note) that waddles a pompous tune in the second half and ends the loop on a
 //                trombone-fail slide down. Menacing, and a little absurd.
-export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1 };
+//   'drownedking' THE DROWNED KING. G minor, 6/8 at 50 (eighth = 0.4 s), 16 bars = 38 s: a flooded-hall dirge (sawtooth drone, a bell tolled
+//                every other bar, a low detuned choir, a triangle lament, water drips) whose second half SURGES (choir an octave up, a saw
+//                doubling the tune, drums in: kick on the one, tom and crack on the four, a tom roll and the big bell to end).
+//   'winchmaster' THE WINCHMASTER. E minor, 12/8 at 132 (eighth = 0.152 s), 16 bars = 29 s: a mine-cart chase. Chain rattle on every eighth,
+//                anvil (inharmonic bell) on beats two and four, kick on one and three, a pumping bass, a driving sawtooth brass riff, and a
+//                RATCHETING WINCH (square ticks that double up) on the last beat of every fourth bar.
+//   'gargoyle'   THE GATE GARGOYLE. C with Db and Gb (the tritone), 4/4 at 66 (eighth = 0.455 s), 16 bars = 58 s: a grinding sawtooth
+//                stone ostinato, a thud on every quarter, tritone stabs, the great bell and a falling peal of four bells every four bars.
+export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1 };
 
 /* 'archmage:undead' is one name for the sound test and two for the scheduler: split it once, here. */
 export function splitTrack(name) { const s = String(name || ''), i = s.indexOf(':'); return i < 0 ? [s, ''] : [s.slice(0, i), s.slice(i + 1)]; }
@@ -138,9 +146,103 @@ function goblinroyal(i, delay, variant, env) {
   if (bar === 15 && s === 5) held(env, 'sawtooth', nf('Db4'), GR_STEP * 3.4, 0.11 * g, delay, { lp: 1500, att: 0.03, hold: 0.3, from: 1, to: 0.55, slide: 1, det: 10 });
 }
 
+/* a struck bell: three inharmonic sine partials, long fall */
+function bell(env, f, dur, v, delay) { for (const [r, m] of [[1, 1], [2.76, 0.4], [5.4, 0.22]]) pluck(env, 'sine', f * r, dur / (1 + r * 0.2), v * m, delay); }
+
+// ---------------------------------------------------------------- THE DROWNED KING
+// G minor, 6/8 (two dotted-quarter beats of three eighths), dotted-quarter = 50, eighth = 0.4 s, 16 bars = 38.4 s. Bars 0-7 are
+// the flooded hall, bars 8-15 are the SURGE (nothing in the game tells the music when he lets go, so the second half is built in).
+const DK_STEP = 0.4, DK_LEN = 6, DK_BARSN = 16;
+const DK_BASS = ['G1', 'Eb2', 'C2', 'D2', 'G1', 'Eb2', 'C2', 'D2'];                                  // bass root, per bar
+const DK_CHOIR = [['G3', 'Bb3', 'D4'], ['Eb3', 'G3', 'Bb3'], ['C3', 'Eb3', 'G3'], ['D3', 'F#3', 'A3']];   // Gm - Eb - Cm - D, a chord a bar pair
+const DK_TUNE = [   // the dirge tune (triangle), six eighths a bar; second half doubles it an octave up on a soft saw
+  ['D4', '-', '-', 'Bb3', '-', 'C4'],
+  ['Bb3', '-', '-', 'G3', '-', '-'],
+  ['G4', '-', '-', 'Eb4', '-', 'F4'],
+  ['F#4', '-', 'D4', 'A4', '-', '-'],
+];
+function drownedking(i, delay, variant, env) {
+  const bar = Math.floor(i / DK_LEN), s = i % DK_LEN, second = bar >= 8, b = bar % 8, g = env.gain, bass = nf(DK_BASS[b]), long = DK_STEP * DK_LEN, chord = DK_CHOIR[b >> 1];
+  if (s === 0) {   // the drone, the choir and the bell
+    held(env, 'sawtooth', bass, long * 1.02, (second ? 0.07 : 0.05) * g, delay, { lp: 260, att: 0.5, hold: 0.85 });
+    held(env, 'sine', bass * 2, long * 1.02, 0.12 * g, delay, { att: 0.4, hold: 0.85 });
+    if (b % 2 === 0) for (const n of chord) held(env, 'sawtooth', nf(n), long * 2 * 0.98, (second ? 0.05 : 0.032) * g, delay, { lp: second ? 720 : 480, att: 1.0, hold: 0.7, det: 18 });   // THE LOW CHOIR, two bars a breath
+    if (second && b % 2 === 0) for (const n of chord) held(env, 'sawtooth', nf(n) * 2, long * 2 * 0.98, 0.03 * g, delay, { lp: 1100, att: 1.2, hold: 0.7, det: 26 });          // fuller: the choir an octave up too
+    if (b % 2 === 0) bell(env, nf(b === 6 ? 'D3' : 'G3'), 4.5, (second ? 0.2 : 0.17) * g, delay);   // the toll, every other bar
+  }
+  if (s === 0 || s === 3) pluck(env, 'sine', s === 0 ? bass : bass * 1.5, DK_STEP * 2.6, (s === 0 ? 0.36 : 0.16) * g, delay);   // the 6/8 rocking in the bass
+  const nn = nf(DK_TUNE[b & 3][s]);
+  if (nn) {
+    pluck(env, 'triangle', nn, DK_STEP * 2.4, (second ? 0.1 : 0.085) * g, delay);
+    if (second) held(env, 'sawtooth', nn * 2, DK_STEP * 2.2, 0.05 * g, delay, { lp: 1500, att: 0.05, hold: 0.5, det: 8 });
+  }
+  if (!second && s === 4 && b % 3 === 1) pluck(env, 'sine', nf('D6') * (b === 4 ? 1.5 : 1), 0.45, 0.05 * g, delay);       // water dripping in the hall
+  if (second) {    // THE SURGE: drums in
+    if (s === 0) { pluck(env, 'sine', 96, 0.4, 0.75 * g, delay, { to: 38 }); noise(env, 0.06, 0.12 * g, 200, 0.7, delay); }
+    if (s === 3) { pluck(env, 'sine', 150, 0.3, 0.55 * g, delay, { to: 60 }); noise(env, 0.18, 0.3 * g, 1500, 0.5, delay); }
+    if (s === 1 || s === 4) pluck(env, 'sine', 110, 0.14, 0.2 * g, delay, { to: 70 });
+    if (bar === 15 && s >= 2) { const tf = [200, 170, 140, 110][s - 2]; if (tf) pluck(env, 'sine', tf, 0.25, 0.6 * g, delay, { to: tf * 0.5 }); }
+    if (bar === 15 && s === 5) bell(env, nf('G2'), 5, 0.24 * g, delay);   // the loop ends on the big bell
+  }
+}
+
+// ---------------------------------------------------------------- THE WINCHMASTER
+// E minor with the major on the flat-sixth chord, 12/8 (four dotted-quarter beats), dotted-quarter = 132, eighth = 0.152 s, 16 bars = 29 s.
+const WM_STEP = 60 / 132 / 3, WM_LEN = 12, WM_BARSN = 16;
+const WM_ROOT = [['E2', 3], ['E2', 3], ['C2', 4], ['D2', 4], ['E2', 3], ['G2', 4], ['A2', 3], ['B1', 4]];   // [bass root, the third in semitones]
+const WM_RIFF = [[0, 0], [2, 0], [3, 3], [5, 3], [6, 7], [8, 5], [9, 3]];   // [eighth, semitones above the root]: the driving riff, same every bar
+function winchmaster(i, delay, variant, env) {
+  const bar = Math.floor(i / WM_LEN), s = i % WM_LEN, second = bar >= 8, b = bar % 8, g = env.gain, [rn, third] = WM_ROOT[b], root = nf(rn), off = k => root * Math.pow(2, k / 12);
+  // CHAIN AND ANVIL: a chain rattle on every eighth, the anvil on beats two and four, a kick on one and three
+  noise(env, 0.04, (s % 3 === 0 ? 0.075 : 0.04) * g, 7000, 0.6, delay);
+  if (s === 0 || s === 6) { pluck(env, 'sine', 115, 0.22, 0.85 * g, delay, { to: 44 }); noise(env, 0.04, 0.1 * g, 260, 0.7, delay); }
+  if (s === 3 || s === 9) { bell(env, 880, 0.9, 0.2 * g, delay); noise(env, 0.05, 0.22 * g, 3000, 0.9, delay); }   // the anvil
+  if (second && (s === 4 || s === 10)) noise(env, 0.1, 0.2 * g, 1800, 0.5, delay);   // a cart-wheel slap
+  // the bass, pumping on the dotted beat
+  if (s % 3 === 0) pluck(env, 'sawtooth', root, WM_STEP * 2.4, 0.2 * g, delay, { lp: 420 });
+  // THE BRASS RIFF
+  for (const [e, k] of WM_RIFF) if (e === s) {
+    const top = k === 3 ? third : k;
+    held(env, 'sawtooth', off(top) * 2, WM_STEP * (e === 9 ? 3 : 1.5), 0.13 * g, delay, { lp: 1700, att: 0.015, hold: 0.5, from: 0.95 });
+    if (second) held(env, 'sawtooth', off(top) * 4, WM_STEP * 1.4, 0.05 * g, delay, { lp: 2600, att: 0.015, hold: 0.5, from: 0.96 });
+  }
+  // THE RATCHET: the last beat of every fourth bar the winch cranks up, ticks doubling as it goes (and two ticks a step on every bar's last beat in the second half)
+  if (s >= 9 && (b % 4 === 3 || second)) {
+    const n = b % 4 === 3 ? s - 8 : Math.min(2, s - 8);
+    for (let k = 0; k < n; k++) pluck(env, 'square', 820 + (s - 9) * 180 + (bar % 4) * 40, 0.03, 0.05 * g, delay + k * WM_STEP / n, { lp: 3200 });
+  }
+  if (bar === 15 && s === 11) bell(env, 1100, 1.4, 0.22 * g, delay);   // the loop ends on the winch locking off: one more anvil
+}
+
+// ---------------------------------------------------------------- THE GATE GARGOYLE
+// C with Db and Gb (the tritone is the whole tune), 4/4 at 66, eighth = 0.455 s, 16 bars = 58 s. Heavy, slow, never stops.
+const GG_STEP = 60 / 66 / 2, GG_LEN = 8, GG_BARSN = 16;
+const GG_GRIND = ['C2', '-', 'C2', '-', 'C2', 'Db2', 'C2', '-'];   // THE STONE OSTINATO, the same every bar; the last bar of a phrase bends one note to the tritone
+const GG_PEAL = ['Gb4', 'Eb4', 'C4', 'Ab3'];   // a peal of four bells falling, end of each four-bar phrase
+function gargoyle(i, delay, variant, env) {
+  const bar = Math.floor(i / GG_LEN), s = i % GG_LEN, second = bar >= 8, b = bar % 4, g = env.gain, long = GG_STEP * GG_LEN;
+  // THE GRIND: the ostinato on a dry saw over a sine, and a slow rasp of stone
+  const gn = GG_GRIND[s];
+  if (gn !== '-') { const f = nf(gn) * (b === 3 && s === 6 ? nf('Gb2') / nf('C2') : 1); pluck(env, 'sawtooth', f, GG_STEP * 1.6, 0.26 * g, delay, { lp: 360 }); pluck(env, 'sine', f * 0.5, GG_STEP * 1.8, 0.3 * g, delay); }
+  if (s === 0 || s === 4) noise(env, GG_STEP * 3.6, 0.12 * g, 420, 1.2, delay);   // stone on stone, a long slow scrape
+  // the thud: every quarter, relentless
+  if (s % 2 === 0) pluck(env, 'sine', 78, 0.35, (s === 0 ? 0.85 : 0.6) * g, delay, { to: 32 });
+  if (second && s % 4 === 2) noise(env, 0.1, 0.26 * g, 1100, 0.6, delay);   // a stone clack on two and four
+  // THE TRITONE STABS: C against Gb, on the third beat of the odd bars (second half: every bar, and again on the last eighth)
+  if ((s === 4 && (b % 2 === 1 || second)) || (s === 7 && second)) for (const n of ['C3', 'Gb3', 'C4']) held(env, 'square', nf(n), GG_STEP * 1.4, 0.05 * g, delay, { lp: 1000, att: 0.01, hold: 0.4, det: 7 });
+  // BELL TOWER: the great bell on the one of each four bars, a falling peal in the last half bar
+  if (b === 0 && s === 0) bell(env, nf('C3'), 6, 0.26 * g, delay);
+  if (b === 3 && s >= 4) bell(env, nf(GG_PEAL[s - 4]), 3.2, (second ? 0.17 : 0.13) * g, delay);
+  if (second && b === 2 && s === 0) bell(env, nf('Gb3'), 5, 0.14 * g, delay);
+  if (s === 0 && b === 0) for (const n of second ? ['C2', 'Gb2', 'C3'] : ['C2', 'Gb2']) held(env, 'sawtooth', nf(n), long * 4 * 0.98, 0.03 * g, delay, { lp: 380, att: 1.4, hold: 0.7, det: 14 });   // four bars of low breath underneath
+}
+
 export const SYNTH_BOSS = {
   archmage: { step: AM_STEP, total: AM_LEN * AM_BARSN, play: archmage },
   goblinroyal: { step: GR_STEP, total: GR_LEN * GR_BARSN, play: goblinroyal },
+  drownedking: { step: DK_STEP, total: DK_LEN * DK_BARSN, play: drownedking },
+  winchmaster: { step: WM_STEP, total: WM_LEN * WM_BARSN, play: winchmaster },
+  gargoyle: { step: GG_STEP, total: GG_LEN * GG_BARSN, play: gargoyle },
 };
 /* the whole track's loudness, next to a file track's 0.5 x the file's own level (audio.js trackVol) */
 export const BOSS_SYNTH_GAIN = 0.62;
