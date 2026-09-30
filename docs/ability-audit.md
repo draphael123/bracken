@@ -2,6 +2,25 @@
 
 Scope: all 196 catalog skills (52 actives, 144 passives) across the seven heroes, plus each hero's innate C / F / G / duck kit. Read-only audit; no game code was changed.
 
+## 0. Status (icons lane, claude/icons)
+
+Fixed in code, guarded by `tools/skill-icons.mjs` (in `npm run check`):
+
+| # | Item | What was done |
+|---|---|---|
+| 1 | Passive icons | New table `src/skill-glyphs.js`, one row per hero and passive id (144 rows, keyed by hero so the five `sunder`s differ). `talIcon`/`TAL_KIND` read it first; the old regexes only serve growth nodes and old tree ids, and the cross-hero ones (`rum`, `second`, `hook`) are gone. The Geomancer's ten each wear a different glyph (seven new ones drawn in her stone, moss and amber: pillar, slab, fall, stones, shards, rune, wave). RUMBLE is a rune, SECOND BARREL the shot glyph, CUTTHROAT a blade, TURNCOAT the reflect glyph, LONG REACH and THE SECOND VOLLEY the sword glyph (item 17's icon half; the ids are not renamed). |
+| 2 | Borrowed active icons | Eight new pixel icons in `MORE_ICONS`: SKEWER, SET THE SPEARS, HARRIER, BLOOD BOIL, GRAVECALL, BROADSIDE, THE BLACK SPOT, KEELHAUL. `SKILL_KIN` is deleted. All 52 actives now have distinct pixels and none falls to the flame default. |
+| 3 | HOLY CHARGE | Now "lower the maul and charge." |
+| 4 | Hero cards | Freebooter: tap C = parry, hold C = hook, rum is a bought skill. Death Knight: F = summon skeleton (Gravelord tree), G = equipped skill, hold F on a full bar = Blood Surge. Knight: RESOLVE fills on blocks and heavy cuts, not third cuts. |
+| 18 | DEEP POCKETS, NO QUARTER | Say "PLUNDER bar". DEEP POCKETS now reads "everything that fills the PLUNDER bar fills it a third faster" because the code (`gainPlunder`, x1.33) scales every plunder gain, not only coins. |
+| 19 | Geomancer BULWARK | Text now names the STONE WALL half. |
+| 20 | CONSECRATE | "foes on it take a holy tick (the dead burn)". |
+| 21 | STOKE | The audit was wrong here: the code refunds 17 wind AND calls `gainHeat(6)`, so the text "and heat with it" is true. Left alone. The unused `PYRO_ICONS.kindle` is left in place (passives never call `skillIcon`); delete it or ignore it. |
+
+Not built, on purpose: item 5 (new late-game actives) is a design question, see **Question** below. Items 6-16, 22, 23 are behaviour, balance or renames and were out of this lane's brief.
+
+**Question (item 5): Pyromancer, Paladin, Freebooter and Death Knight have no active to buy after level 8.** Recommendation: yes, add them, but as a separate designed lane and not as a batch of filler. Two capstone actives per hero at about levels 14 and 20 (360 to 520 coins, like the Knight, Warden and Geomancer), each tied to the hero's own bar (a Pyromancer heat-filler, a Paladin light-filler, a Freebooter called shot, a Death Knight blood-spender), each with its own pose and icon (the pose ratchet and `tools/skill-icons.mjs` will catch a missing one). Cheaper alternative if you want no new art: let two existing passives per hero become buyable actives. Until you decide, nothing is added.
+
 ## 1. Method
 
 - Source of truth for the list: `SKILLS` in `src/progression-catalog.js`, read through `skillsFor(hero)` in `src/progression.js` (I loaded the catalog in Node and dumped id, name, active flag, level and description for every hero).
@@ -102,7 +121,7 @@ Innate kit: tap C MEND (half the bar), hold C AEGIS (a ward, not a shield: "it c
 | warded | WARDED | P | aegis covers the back too | FITS | same as Knight PLATED |
 | shockwave | SHOCKWAVE | P | hammerfall waves go twice as far | FITS | maul identity |
 | reflect | REFLECTION | P | aegis sends projectiles back | FITS | reflect template |
-| holyCharge | HOLY CHARGE | A | maul-levelled invulnerable charge, throws foes aside | WEAK FIT | description says "charge shield-first" but the Paladin has no shield (pose is "maul levelled like a ram"); dash template |
+| holyCharge | HOLY CHARGE | A | maul-levelled invulnerable charge, throws foes aside | WEAK FIT | (text FIXED: now "lower the maul and charge") description said "charge shield-first" but the Paladin has no shield (pose is "maul levelled like a ram"); dash template |
 | blessedHammer | BLESSED HAMMER | A | spiral of light hammers | FITS | |
 | mercy | MERCY | P | mend also gives 30 stamina | FITS | |
 | zeal | ZEAL | P | judgement kills give 8 health per foe struck | FITS | |
@@ -306,11 +325,11 @@ Size: S = under an hour of copy or one small table; M = a few hours; L = design 
 
 | # | Hero | Skill | Problem | Proposed change | Size | Risk |
 |---|---|---|---|---|---|---|
-| 1 | Geomancer (and others) | all passive icons | 7 of 10 Geomancer passives show a sword; RUMBLE shows a coin; Freebooter SECOND BARREL shows a skull; CUTTHROAT/TURNCOAT a grapnel; all `sunder` passives a sword | Add explicit `TAL_BY_NAME` keys for every `geo*` id, pin SECOND BARREL to the shot glyph, drop the cross-hero regexes (`rum`, `second`, `hook`), and key `sunder` per hero. Optionally add 3 Geomancer glyphs (stone, rune, crumbling piece). | S | none |
-| 2 | Warden, Death Knight, Freebooter | SKEWER, SET THE SPEARS, HARRIER, BLOOD BOIL, GRAVECALL, BROADSIDE, THE BLACK SPOT, KEELHAUL | Eight actives wear another skill's icon, three of them another hero's | Draw eight icons in `MORE_ICONS` and empty `SKILL_KIN`. | M | none |
-| 3 | Paladin | HOLY CHARGE | Description says "charge shield-first"; the Paladin has no shield | Reword to "charge maul-first" or "lower the maul and charge". | S | none |
-| 4 | Freebooter, Death Knight, Knight | hero cards in `HEROES` | Pirate card says tap C = hook, hold C = rum; code: tap C = parry, hold C = hook, rum is a bought active. Death Knight card says tap F is the equipped skill; `DK_KEYS` says F is summon. Knight card says third cuts fill RESOLVE; code fills it on blocks and heavy cuts. | Rewrite the three cards from the code. | S | none |
-| 5 | Pyromancer, Paladin, Freebooter, Death Knight | new actives | Nothing to buy after level 8, while Knight, Warden and Geomancer have capstones at 12 to 20 | Add two actives each at about levels 14 and 20, priced 360 to 520, each tied to the hero's bar (for example Pyromancer: a BONFIRE that fills heat; Paladin: a HALLOWED BANNER that fills light; Freebooter: a CANNON called shot; Death Knight: a BONE PRISON that holds foes for his blood). | L | balance, new art and poses; run the pose ratchet |
+| 1 | Geomancer (and others) | **FIXED.** all passive icons | 7 of 10 Geomancer passives show a sword; RUMBLE shows a coin; Freebooter SECOND BARREL shows a skull; CUTTHROAT/TURNCOAT a grapnel; all `sunder` passives a sword | Add explicit `TAL_BY_NAME` keys for every `geo*` id, pin SECOND BARREL to the shot glyph, drop the cross-hero regexes (`rum`, `second`, `hook`), and key `sunder` per hero. Optionally add 3 Geomancer glyphs (stone, rune, crumbling piece). | S | none |
+| 2 | Warden, Death Knight, Freebooter | **FIXED.** SKEWER, SET THE SPEARS, HARRIER, BLOOD BOIL, GRAVECALL, BROADSIDE, THE BLACK SPOT, KEELHAUL | Eight actives wear another skill's icon, three of them another hero's | Draw eight icons in `MORE_ICONS` and empty `SKILL_KIN`. | M | none |
+| 3 | Paladin | HOLY CHARGE | **FIXED.** Description says "charge shield-first"; the Paladin has no shield | Reword to "charge maul-first" or "lower the maul and charge". | S | none |
+| 4 | Freebooter, Death Knight, Knight | **FIXED.** hero cards in `HEROES` | Pirate card says tap C = hook, hold C = rum; code: tap C = parry, hold C = hook, rum is a bought active. Death Knight card says tap F is the equipped skill; `DK_KEYS` says F is summon. Knight card says third cuts fill RESOLVE; code fills it on blocks and heavy cuts. | Rewrite the three cards from the code. | S | none |
+| 5 | Pyromancer, Paladin, Freebooter, Death Knight | **QUESTION, not built (section 0).** new actives | Nothing to buy after level 8, while Knight, Warden and Geomancer have capstones at 12 to 20 | Add two actives each at about levels 14 and 20, priced 360 to 520, each tied to the hero's bar (for example Pyromancer: a BONFIRE that fills heat; Paladin: a HALLOWED BANNER that fills light; Freebooter: a CANNON called shot; Death Knight: a BONE PRISON that holds foes for his blood). | L | balance, new art and poses; run the pose ratchet |
 | 6 | Paladin | SMITE, BEACON, CONSECRATE text | Burning is the Pyromancer's status; the Paladin's holy ideas are wearing fire | Re-theme to holy effects: SMITE marks foes "judged" (take +25%), BEACON blinds or slows foes near you at full light, CONSECRATE text says they take holy damage. Remove the flame particle calls. | M | balance |
 | 7 | Knight | SWORD OF THE REALM | Light waves are the Paladin's element; gold sparkle icon and rings | Recolour to steel-white, rename (e.g. THE KING'S CUT), keep the mechanic. | S | none |
 | 8 | Knight | resource | RESOLVE is fed by blocks and heavy cuts and touched by no skill except BULL RUSH | Give WAR CRY a Resolve link (a fifth of the bar on cast) and turn two stat passives (FLURRY, STEADY ARM) into Resolve-aware ones (for example a perfect guard gives double Resolve). | M | balance |
@@ -322,11 +341,11 @@ Size: S = under an hour of copy or one small table; M = a few hours; L = design 
 | 14 | All | stat-only passives (list in section 3) | 17 passives are a number and nothing else | Replace each with a rule-changer over time (one per lane). Examples: Knight FLURRY becomes "a third cut costs nothing", Pyromancer LONG FLAME becomes "the jet wets the ground: burning ground for 2 s", Geomancer BEDROCK becomes "a crumbling piece bursts into shards", Warden KEEN POINT becomes "a tip hit rings the foe: staggered for 0.3 s". | L | balance, many small edits |
 | 15 | Knight, Freebooter, Warden | LUNGE, RUN THROUGH, THE LUNGE | Same word, different moves | Rename Freebooter's to CUTLASS THROUGH (or THE RAKE) and Knight's active to FENCER'S LUNGE (or keep and rename the Warden's dodge). | S | none |
 | 16 | Knight, Geomancer, Paladin | BULWARK, AFTERSHOCK | Two names shared across heroes | Rename Geomancer's to KEYSTONE and STONEFALL RECOIL. | S | none |
-| 17 | Death Knight | LONG REACH, THE SECOND VOLLEY, DEATH COIL | Scythe glyph and "scythe thrown" ids on a greatsword hero | Move both passives to the sword glyph; rename the internal id (with `RENAMED_SKILLS` in `src/progression.js`) only if you want the code to read cleanly. | S | saves (id rename needs migration) |
-| 18 | Freebooter | DEEP POCKETS, NO QUARTER | Descriptions say "purse"; the code fills the plunder bar | Say "plunder bar" in the descriptions. | S | none |
-| 19 | Geomancer | BULWARK | Description omits that a smashed STONE WALL survives once | Add the second half to the description. | S | none |
-| 20 | Paladin | CONSECRATE | Text says foes burn with holy fire; only wights do | Reword to a holy damage tick (or implement the burn if kept). | S | none |
-| 21 | Pyromancer | STOKE, KINDLE | STOKE text says heat comes back too (code only refunds wind); PYRO_ICONS.kindle is never displayed | Fix the text; delete or use the kindle icon. | S | none |
+| 17 | Death Knight | **ICONS FIXED, ids not renamed.** LONG REACH, THE SECOND VOLLEY, DEATH COIL | Scythe glyph and "scythe thrown" ids on a greatsword hero | Move both passives to the sword glyph; rename the internal id (with `RENAMED_SKILLS` in `src/progression.js`) only if you want the code to read cleanly. | S | saves (id rename needs migration) |
+| 18 | Freebooter | **FIXED.** DEEP POCKETS, NO QUARTER | Descriptions say "purse"; the code fills the plunder bar | Say "plunder bar" in the descriptions. | S | none |
+| 19 | Geomancer | **FIXED.** BULWARK | Description omits that a smashed STONE WALL survives once | Add the second half to the description. | S | none |
+| 20 | Paladin | **FIXED.** CONSECRATE | Text says foes burn with holy fire; only wights do | Reword to a holy damage tick (or implement the burn if kept). | S | none |
+| 21 | Pyromancer | **PARTLY WRONG (section 0).** STOKE, KINDLE | STOKE text says heat comes back too (code only refunds wind); PYRO_ICONS.kindle is never displayed | Fix the text; delete or use the kindle icon. | S | none |
 | 22 | All | growth nodes | Silent level-12 and level-24 stat bumps never appear in a list | Show them in the PASSIVES ladder at levels 12 and 24, or fold them into `growthAt`. | S | none |
 | 23 | Death Knight | 8 passives depending on SUMMON SKELETON etc. | Do nothing unless the active is owned | Already shown by `SKILL_NEEDS`; acceptable. Only revisit if new players report dead passives. | S | none |
 
