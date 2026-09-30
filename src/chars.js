@@ -2246,10 +2246,10 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 5, sh[0] - 6, sh[1] - 1], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', greatsword: [sh[0] + 2, sh[1] + 6, sh[0] - 6, sh[1] + 2], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 8], greatsword: rest(3) }),
-    /* BLOOD HARVEST (src/crouch-b.js): down on one knee over the body, the greatsword planted point-down behind him in the sword hand and
-       the free hand reaching down into what lies there - the blood coming up into the palm, more of it on the second beat */
-    harvest: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 3], greatsword: [sh[0] - 3, sh[1] - 4, sh[0] - 5, sh[1] + 10], arm2: [BX + 2, BY + 7, sh[0] + 6, sh[1] + 5], plume: i + 1,
-      bits: i ? [[14, 11, '#ff4a5a'], [15, 10, '#c0283a'], [13, 9, '#ff9a9a'], [16, 8, '#c0283a']] : [[14, 11, '#c0283a'], [15, 10, '#7a1020']] })),
+    /* BLOOD HARVEST (src/crouch-b.js): down on one knee over the body, the greatsword let down to lie on the ground behind him and the sword
+       hand reaching down into what lies there - the blood coming up into the palm, more of it on the second beat */
+    harvest: [0, 1].map(i => knightFrame({ dy: 3, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 6], greatsword: [sh[0] - 3, sh[1] + 6, sh[0] - 15, sh[1] + 8], plume: i + 1,
+      bits: i ? [[13, 12, '#ff4a5a'], [14, 11, '#c0283a'], [12, 10, '#ff9a9a'], [14, 9, '#c0283a']] : [[13, 12, '#c0283a'], [14, 11, '#7a1020']] })),
     /* THE TOLL: the point driven into the ground in both hands, head down, taking it out of them */
     block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 3 + i], greatsword: [sh[0] + 2, sh[1] - 4 + i, sh[0] + 3, sh[1] + 13 + i], glow: [sh[0] + 3, sh[1] + 13] })),
     /* RAISE: the sword held off to one side and the free hand down, green coming up out of the ground */
