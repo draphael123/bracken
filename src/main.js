@@ -146,8 +146,10 @@ import { WEIGHTY, weighty, setWeighty, combatFrom, weightyHere, recoveryFor, poi
 import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
+import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 
+await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
 // ---------- display ----------
 let VW = 320, VH = 180;
 const disp = document.getElementById('c');
@@ -543,7 +545,7 @@ const TAP_TWICE = 0.26;   /* s between the two taps of a way that make the dodge
 const medalCount = () => LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])).reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0);
 /* 'boss:<level id>': the boss of that level has been beaten (PROG.bossDown, set when he dies - not when the level is cleared) */
 const featDone = f => String(f).startsWith('boss:') ? !!(PROG.bossDown && PROG.bossDown[String(f).slice(5)]) : f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
-let K = bakeKnight();
+let K = null;   /* the hero's frames: baked once, by applySkin() ahead of the sprite bakes below (it used to be a plain knight here and the real hero at the end) */
 // TESTING (for now): GOD MODE owns everything and every wood is open, for as long as it is on - nothing is written into
 // the save, so switching it off puts the game back; INVINCIBLE takes no damage and a fall puts you back on the last checkpoint.
 const godMode = () => !!SET.godmode;
@@ -730,10 +732,11 @@ const skillsOwned = () => skillsFor(hero()).filter(n => n.active && (PROG.skillO
 const skillAt = index => { const id = equipped(PROG, hero(), heroLevel())[index]; if (skillFor(hero(), id)?.active) return id; if (trialLend) return [...trialLend].filter(k => skillFor(hero(), k)?.active)[index] || null; return null; };
 const skillNow = () => skillAt(0), skill2Now = () => skillAt(1);
 const skillPress = k => [P.fRelease || (throwPress && !(isReaper() && (P.harvest >= 100 || P.fHeld > 0))), skill2Press, skill3Press, skill4Press].some((pressed,i) => pressed && skillAt(i) === k);
-const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null };
+applySkin(); LS.heroReady(K); await LS.step('hero');   /* the hero first, so the loading screen has his dance to show */
+const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null }; await LS.step('art1');
 /* THE HEXED FIELDS' creatures, its family and its two big ones */ { try { SPR.scarecrow = FF.bakeScarecrow(); SPR.rook = FF.bakeRook(); SPR.farmhand = FF.bakeFarmhand(); SPR.pumpkin = FF.bakePumpkin(); SPR.marshlight = FF.bakeMarshlight(); SPR.haunt = FF.bakeHaunt(); SPR.boo = FF.bakeBoo(); const fg = FF.bakeFarmGhosts(); SPR.ghostfarmer = fg.farmer; SPR.ghostwife = fg.wife; SPR.ghostchild = fg.child; SPR.ploughman = SK.bakePloughman(); SPR.strawking = SK.bakeStrawKing(); SPR.ploughHead = SK.bakePloughHead(); } catch (err) { console.error('the fields art', err); } }
 /* THE MAGE'S FOLLY: what got loose in the tower, the mini, the boss and his familiar, and the apprentice */ { try { SPR.topiary = MF.bakeTopiary(); SPR.armour = MF.bakeArmour(); SPR.piece = MF.bakePiece(); SPR.broom = MF.bakeBroom(); SPR.mimic = MF.bakeMimic(); SPR.imp = MF.bakeImp(); SPR.turret = MF.bakeTurret(); SPR.homunculus = MF.bakeHomunculus(); SPR.archmage = MF.bakeArchmage(); SPR.undeadmage=bakeUndeadMage(); SPR.magechase=SPR.undeadmage; SPR.familiar = MF.bakeFamiliar(); SPR.familiarSmall=smallerFamiliar(SPR.familiar); SPR.apprentice = MF.bakeApprentice(); SPR.tome = bakeTome(); } catch (err) { console.error('the tower art', err); } }
-const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.crow = bakeCrow(); SPR.horn = bakeHornblower(); SPR.bale = bakeBale(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.tippler = bakeTippler(); SPR.sheargob = bakeSheargob(); SPR.gaffer = bakeGaffer();   /* THE ORE ROAD'S OWN THREE */ SPR.propman = bakePropman(); SPR.clinger = bakeClinger(); SPR.prince = bakeBuriedPrince(); SPR.courtier = bakeCourtier(); SPR.prise = bakePrise(); SPR.holdfast = bakeHoldfast(); SPR.bellcrab = bakeBellcrab(); SPR.bellcrabOut = bakeBellcrabOut(); SPR.bellShell = bakeBellShell(); SPR.harbormaster = bakeHarbormaster(); SPR.burieddead=bakeBuriedDeadKing(); SPR.bonegob=bakeBoneGob();SPR.bonearcher=bakeArcher({ H: '#3a3530', g: '#d9d6c0', G: '#8c8869', e: '#241f1a', b: '#4a4436', r: '#2e2a24', w: '#6a5a44' });SPR.husk=bakeDead(false,'husk');SPR.apprentice=bakeDead(false,'apprentice');SPR.zombie=bakeDead(); SPR.bellguard = bakeBellguard(); SPR.lanternshade = bakeCoastalFoe('lanternshade'); SPR.bonecorsair = bakeCoastalFoe('bonecorsair'); SPR.tidemarauder = bakeCoastalFoe('tidemarauder'); SPR.drownedking = bakeDrownedKing(); SPR.swornsword = bakeSwornSword(); SPR.hedgeknight = bakeHedgeKnight(); SPR.runner = bakeRunner(); SPR.crossbow = bakeCrossbowman(); SPR.closedhelm = bakePaladinBoss(); SPR.lancer = bakeLancer(false); SPR.lancerRed = bakeLancer(true); SPR.lancerHorse = bakeLancerHorse(); SPR.guests = bakeGuests(); SPR.barkeep = bakeBarkeep(); SPR.drunk = bakeDrunk(); /* THE PALADIN keeps the Closed Helm's id; the serjeants and the beer garden are Waymeet's own */ SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = MON.bakeGuardian(); SPR.fledgling = MON.bakeFledgling(); SPR.gobpriest = MON.bakeGoblinPriest(); SPR.gobmage = MON.bakeGoblinMage(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.cutlass = bakeCutlass(); SPR.boarder = bakeBoarder(); SPR.marine = bakeMarine(); SPR.bosun = bakeBosun(); SPR.lookout = bakeLookout(); SPR.captain = bakeCaptain(); SPR.captain = bakeCaptain(); SPR.quarter = bakeQuarter(); SPR.sailor = bakeSailor(); SPR.netter = bakeNetter(); SPR.netArt = bakeNet(); SPR.urchin = bakeUrchin(); SPR.angler = bakeAngler(); SPR.petrel = bakePetrel(); SPR.reefmaw = bakeReefmaw(); SPR.turtle = bakeTurtle(); SPR.eel = bakeEel(); SPR.heronfoe = bakeHeronFoe(); SPR.badger = bakeBadger(); SPR.gar = bakeGar(); SPR.crab = bakeCrab(); SPR.scout = bakeScout(); SPR.siren = bakeSiren(); SPR.tideguard = bakeTideguard(); SPR.herald = bakeHerald(); SPR.fisher = [bakeFisher(0), bakeFisher(1)]; SPR.fisherIcon = bakeFisherIcon(); SPR.soldier = bakeSoldier(); SPR.javelin = bakeJavelineer(); SPR.heavy = bakeHeavyKnight(); SPR.windcaller = bakeWindcaller(); SPR.stormshaman = bakeGoblinShaman(); /* the boss has his own sprite now; the storm shaman keeps the old one */ SPR.seawitch = bakeSeaWitch(); /* and the Hurricane's caster is the ship's own */ SPR.merrowspear = bakeMerrowSpear(); SPR.merrowcaller = bakeMerrowCaller(); SPR.merrowbrute = bakeMerrowBrute(); /* THE MERROW: the sea's own tribe */ SPR.drownedknight = DKN.bakeDrownedKnight(); SPR.drownedcaptain = DKN.bakeDrownedCaptain(); SPR.whelp = WHF.bakeWhelp(); /* THE LEADFOOT: the drowned keep's man-at-arms, who walks */
+const MASTER = bakeMaster(), KING = bakeKingBig(); SPR.chandelier = bakeChandelier(); SPR.harpy = bakeHarpy(); SPR.crow = bakeCrow(); SPR.horn = bakeHornblower(); SPR.bale = bakeBale(); SPR.goat = bakeCragRam(); SPR.troll = bakeTroll(); SPR.greathound = bakeGreatHound(); SPR.spider = bakeSpider(); SPR.squirrel = bakeSquirrel(); SPR.owl = bakeOwl(); SPR.lamplighter = bakeLamplighter(); await LS.step('art2'); SPR.keeper = bakeKeeper(); SPR.bard = bakeBard(); SPR.oldknight = bakeOldKnight(); SPR.miner = bakeMiner(); SPR.tippler = bakeTippler(); SPR.sheargob = bakeSheargob(); SPR.gaffer = bakeGaffer();   /* THE ORE ROAD'S OWN THREE */ SPR.propman = bakePropman(); SPR.clinger = bakeClinger(); SPR.prince = bakeBuriedPrince(); SPR.courtier = bakeCourtier(); SPR.prise = bakePrise(); await LS.step('art3'); SPR.holdfast = bakeHoldfast(); SPR.bellcrab = bakeBellcrab(); SPR.bellcrabOut = bakeBellcrabOut(); SPR.bellShell = bakeBellShell(); SPR.harbormaster = bakeHarbormaster(); SPR.burieddead=bakeBuriedDeadKing(); SPR.bonegob=bakeBoneGob();SPR.bonearcher=bakeArcher({ H: '#3a3530', g: '#d9d6c0', G: '#8c8869', e: '#241f1a', b: '#4a4436', r: '#2e2a24', w: '#6a5a44' });SPR.husk=bakeDead(false,'husk');SPR.apprentice=bakeDead(false,'apprentice');SPR.zombie=bakeDead(); SPR.bellguard = bakeBellguard(); SPR.lanternshade = bakeCoastalFoe('lanternshade'); SPR.bonecorsair = bakeCoastalFoe('bonecorsair'); SPR.tidemarauder = bakeCoastalFoe('tidemarauder'); SPR.drownedking = bakeDrownedKing(); SPR.swornsword = bakeSwornSword(); SPR.hedgeknight = bakeHedgeKnight(); await LS.step('art4'); SPR.runner = bakeRunner(); SPR.crossbow = bakeCrossbowman(); SPR.closedhelm = bakePaladinBoss(); SPR.lancer = bakeLancer(false); SPR.lancerRed = bakeLancer(true); SPR.lancerHorse = bakeLancerHorse(); SPR.guests = bakeGuests(); SPR.barkeep = bakeBarkeep(); SPR.drunk = bakeDrunk(); /* THE PALADIN keeps the Closed Helm's id; the serjeants and the beer garden are Waymeet's own */ SPR.bat = bakeBat(); SPR.forgemaster = bakeForgemasterBig(); SPR.grub = bakeGrub(); await LS.step('art5'); SPR.rockgoblin = bakeRockGoblin(); SPR.golem = MON.bakeGuardian(); SPR.fledgling = MON.bakeFledgling(); SPR.gobpriest = MON.bakeGoblinPriest(); SPR.gobmage = MON.bakeGoblinMage(); SPR.hare = bakeHare(); SPR.wight = bakeWight(); SPR.kite = SPR.sprig; SPR.cutlass = bakeCutlass(); SPR.boarder = bakeBoarder(); SPR.marine = bakeMarine(); SPR.bosun = bakeBosun(); await LS.step('art6'); SPR.lookout = bakeLookout(); SPR.captain = bakeCaptain(); SPR.captain = bakeCaptain(); SPR.quarter = bakeQuarter(); SPR.sailor = bakeSailor(); SPR.netter = bakeNetter(); SPR.netArt = bakeNet(); SPR.urchin = bakeUrchin(); SPR.angler = bakeAngler(); SPR.petrel = bakePetrel(); SPR.reefmaw = bakeReefmaw(); SPR.turtle = bakeTurtle(); await LS.step('art7'); SPR.eel = bakeEel(); SPR.heronfoe = bakeHeronFoe(); SPR.badger = bakeBadger(); SPR.gar = bakeGar(); SPR.crab = bakeCrab(); SPR.scout = bakeScout(); SPR.siren = bakeSiren(); SPR.tideguard = bakeTideguard(); SPR.herald = bakeHerald(); SPR.fisher = [bakeFisher(0), bakeFisher(1)]; SPR.fisherIcon = bakeFisherIcon(); SPR.soldier = bakeSoldier(); await LS.step('art8'); SPR.javelin = bakeJavelineer(); SPR.heavy = bakeHeavyKnight(); SPR.windcaller = bakeWindcaller(); SPR.stormshaman = bakeGoblinShaman(); /* the boss has his own sprite now; the storm shaman keeps the old one */ SPR.seawitch = bakeSeaWitch(); /* and the Hurricane's caster is the ship's own */ SPR.merrowspear = bakeMerrowSpear(); SPR.merrowcaller = bakeMerrowCaller(); SPR.merrowbrute = bakeMerrowBrute(); /* THE MERROW: the sea's own tribe */ SPR.drownedknight = DKN.bakeDrownedKnight(); SPR.drownedcaptain = DKN.bakeDrownedCaptain(); SPR.whelp = WHF.bakeWhelp(); /* THE LEADFOOT: the drowned keep's man-at-arms, who walks */ await LS.step('art9');
 SPR.watch = bakeWatch(); SPR.lampreeve = bakeLampreeve(); SPR.tollmaster = bakeTollmaster();
 SPR.puffer = bakePuffer(); SPR.jelly = bakeJellyfish(); SPR.lamprey = bakeLamprey(); SPR.manta = bakeManta();   /* the sea's own new wildlife */
 SPR.dummy = (() => { const pal = { s: '#b8a888', S: '#8a7a60', e: '#2a2230', w: '#6a4a2c', W: '#4a3220', y: '#c9b27c', Y: '#9a8050', r: '#c9463d' };
@@ -767,48 +770,73 @@ function redressProps() { const r = redressOf(); if (!r) return null; const k = 
 let TILE, PROP, BG, VILL = null, SHORE = null, REEF = null, FLOT = null, CITY = null, CROWN = null, MONK = null, RAINART = null;
 /* UNDER THE GROUND: a level that is all cave (L.underground) and the Ore Road's mine, which draws its own cave */
 function belowGround(Lv) { return !!(Lv && (Lv.underground || Lv.oreRoad)); }
-function bakeAll(pal = {}) {
+function bakeAll(pal = {}) { for (const _ of bakeAllG(pal)); }   /* synchronous, as it always was */
+function* bakeAllG(pal = {}) {   /* the same bake as a generator: it yields a step after the tiles, the props and the sky, and the loading screen drives it */
   Object.assign(ART.C, PAL0, pal);
   TILE = {
     dirt: [0, 1, 2, 3, 4, 5].map(i => ART.bakeDirt(10 + i)), deep: [0, 1, 2].map(b => [0, 1, 2, 3, 4, 5, 6, 7].map(i => ART.bakeDirtDeep(140 + b * 17 + i, b))), top: {}, edge: {},   /* eight ways to be a foot of earth instead of four: the deep fill is the biggest mass on the screen */
     log: [0, 1, 2, 3, 4].map(i => ART.bakeLog(50 + i)), logL: ART.bakeLogEnd(60, false), logR: ART.bakeLogEnd(61, true), comb: [0, 1, 2].map(i => ART.bakeCombPlat(560 + i)), combL: ART.bakeCombPlat(563, 'L'), combR: ART.bakeCombPlat(564, 'R'), ropeNet: [0, 1].map(i => ART.bakeRopeNet(i)), climbVine: [0, 1].map(i => ART.bakeVine(i)), rail: [0, 1].map(i => ART.bakeRail(i)), soft: [0, 1, 2].map(i => ART.bakeSoftRock(930 + i)), ladder: { S: [0, 1].map(i => ART.bakeRopeLadder(i, null)), L: [0, 1].map(i => ART.bakeRopeLadder(i, 'L')), R: [0, 1].map(i => ART.bakeRopeLadder(i, 'R')) }, ledge: [0, 1, 2].map(i => ART.bakeLedge(570 + i, null)), ledgeL: ART.bakeLedge(573, 'L'), ledgeR: ART.bakeLedge(574, 'R'),
+  };
+  yield 'sub';
+  Object.assign(TILE, {
     beam: [0, 1, 2].map(i => ART.bakeBeam(700 + i, null)), beamL: ART.bakeBeam(703, 'L'), beamR: ART.bakeBeam(704, 'R'),
     staging: [0, 1, 2].map(i => ART.bakeStaging(710 + i, null)), stagingL: ART.bakeStaging(713, 'L'), stagingR: ART.bakeStaging(714, 'R'),
+  });
+  yield 'sub';
+  Object.assign(TILE, {
     lashed: [0, 1, 2].map(i => ART.bakeLashed(720 + i, null)), lashedL: ART.bakeLashed(723, 'L'), lashedR: ART.bakeLashed(724, 'R'), duck: [0, 1, 2].map(i => ART.bakeDuckboard(580 + i, null)), duckL: ART.bakeDuckboard(583, 'L'), duckR: ART.bakeDuckboard(584, 'R'), capLedge: [0, 1, 2].map(i => ART.bakeCapLedge(590 + i, null)), capLedgeL: ART.bakeCapLedge(593, 'L'), capLedgeR: ART.bakeCapLedge(594, 'R'), climb: [ART.bakeClimbFace(0), ART.bakeClimbFace(1)],
     thorns: [0, 1, 2, 3].map(i => ART.bakeThorns(70 + i)), crate: ART.bakeCrate(), roots: [0, 1, 2].map(i => ART.bakeDirtRoots(80 + i)),
     reeds: [0, 1, 2].map(i => ART.bakeReeds(90 + i)), silt: [0, 1, 2].map(i => ART.bakeSilt(85 + i)), palisade: [0, 1, 2].map(i => ART.bakePalisade(300 + i)), palisadeTop: ART.bakePalisadeTop(), bouncer: ART.bakeBouncer(), shelf: [0, 1].map(i => ART.bakeShelf(330 + i)), shelfMyc: [0, 1].map(i => ART.bakeShelfFungus(332 + i)), looseRock: [0, 1].map(i => ART.bakeLooseRock(340 + i)), cryst: [0, 1].map(l => [0, 1, 2].map(st => ART.bakeCrystalTile(st, !!l))), spire: [0, 1].map(l => [0, 1].map(v => ART.bakeSpire(v, !!l))), port: [0, 1].map(i => ART.bakePortcullis(600 + i)), drystone: [0, 1, 2].map(i => ART.bakeDrystone(700 + i)), drystoneTop: [0, 1].map(i => ART.bakeDrystoneTop(710 + i)), scree: { 1: ART.bakeScreeTop(720, 1), '-1': ART.bakeScreeTop(721, -1) }, hall: [0, 1, 2].map(i => ART.bakeHallWall(610 + i)), mycTop: {}, mycDirt: [0, 1, 2].map(i => ART.bakeMycDirt(340 + i)), plank: [0, 1].map(i => ART.bakeBridgePlank(310 + i)), plankL: ART.bakeBridgePlankEnd(312, -1), plankR: ART.bakeBridgePlankEnd(313, 1), net: ART.bakeNet(), vine: [0, 1, 2, 3].map(i => ART.bakeVineWall(95 + i)),
-  };
+  });
   for (const eL of [0, 1]) for (const eR of [0, 1]) {
     TILE.mycTop[eL + '' + eR] = [0, 1, 2].map(i => ART.bakeMycTop(350 + i + eL * 7 + eR * 13, eL, eR));
     TILE.top[eL + '' + eR] = [0, 1, 2, 3].map(i => ART.bakeGrassTop(100 + i + eL * 7 + eR * 13, eL, eR));
     TILE.edge[eL + '' + eR] = [0, 1].map(i => ART.bakeDirtEdge(140 + i + eL * 3 + eR * 5, eL, eR));
+    yield 'sub';
   }
+  yield 'tiles';
   PROP = {
     coin: ART.bakeCoin(), shrine: [ART.bakeShrine(false), ART.bakeShrine(true)],
     shrineOf: Object.fromEntries(['wood', 'marsh', 'crag', 'myc', 'hall', 'ship', 'reef', 'city', 'mine'].map(k => [k, [ART.bakeShrineKind(k, false), ART.bakeShrineKind(k, true)]])), gate: ART.bakeGate(), sign: ART.bakeSign(),
+  };
+  yield 'sub';
+  Object.assign(PROP, {
     tuft: [0, 1, 2, 3].map(i => ART.bakeTuft(200 + i)), flower: [0, 1, 2, 3].map(i => ART.bakeFlower(210 + i)),
     mushroom: [0, 1].map(i => ART.bakeMushroom(220 + i)), bush: [0, 1, 2].map(i => ART.bakeBush(230 + i)),
     shadow: ART.bakeShadow(6, 2), pad: ART.bakeLilyPad(), padBig: ART.bakeLilyPad(32), lilyFlowerBig: ART.bakeLilyFlowerBig(), padSpring: ART.bakeSpringPad(), raft: ART.bakeRaft(), throne: ART.bakeThronePad(), plank: ART.bakePlank(), drop: ART.bakeDrop(),
     motherCap: ART.bakeMotherCap(), impact: ART.bakeImpact(), impactSteel: ART.bakeImpact('#c9d1dc'), impactRed: ART.bakeImpact('#ff6b6b'),
+  });
+  yield 'sub';
+  Object.assign(PROP, {
     fern: [0, 1, 2].map(i => ART.bakeFern(400 + i)), stump: [0, 1].map(i => ART.bakeStump(410 + i)), rock: [0, 1, 2].map(i => ART.bakeRock(420 + i)), cattail: [0, 1, 2].map(i => ART.bakeCattail(430 + i)), lilyFlower: ART.bakeLilyFlower(), skullPost: ART.bakeSkullPost(), tent: [0, 1].map(i => ART.bakeTent(440 + i)), campfire: ART.bakeCampfire(), tinyCap: [ART.bakeTinyCap('#4aa0b0', 450), ART.bakeTinyCap('#ff7a9a', 451), ART.bakeTinyCap('#9a5aa8', 452), ART.bakeTinyCap('#4aa0b0', 453)], moss: [0, 1, 2].map(i => ART.bakeMoss(460 + i)), butterfly: [ART.bakeButterfly('#ffd36b'), ART.bakeButterfly('#ff9ab0'), ART.bakeButterfly('#bfe6f5')], dragonfly: ART.bakeDragonfly(), crow: ART.bakeCrow(),
     hiveBg: ART.bakeHiveBg(500), hiveBgs: [500, 503, 506].map(sd => ART.bakeHiveBg(sd)), honeyDrip: ART.bakeHoneyDrip(), frogStatue: [0, 1].map(i => ART.bakeFrogStatue(510 + i)), lilyLantern: ART.bakeLilyLantern(), banner: [0, 1].map(i => ART.bakeWarBanner(520 + i)), bannerHung: [0, 1].map(i => ART.bakeWarBanner(520 + i, true)), gibbet: ART.bakeGibbet(), eyrie: ART.bakeEyrie(), siege: ART.bakeSiege(), boneThrone: ART.bakeBoneThrone(), skullPile: [0, 1].map(i => ART.bakeSkullPile(530 + i)), hangCage: ART.bakeHangCage(), rootDecor: [0, 1, 2].map(i => ART.bakeRootDecor(540 + i)), sporePod: ART.bakeSporePod(),
     /* GOBLIN SET DRESSING: flags of every size, and the things a goblin leaves about (art.js, GOBLIN SET DRESSING) */
     gobPennant: [0, 1, 2, 3].map(v => ART.bakeGobPennant(v)), warStandard: [0, 1].map(v => ART.bakeWarStandard(v)), ragBanner: [0, 1, 2].map(v => ART.bakeRagBanner(v)), clothStrip: [0, 1, 2, 3].map(v => ART.bakeClothStrip(v)), hideBanner: [0, 1].map(v => ART.bakeHideBanner(v)), skullTotem: [0, 1].map(v => ART.bakeSkullTotem(v)), trophyRack: [0, 1].map(v => ART.bakeTrophyRack(v)), idol: [0, 1].map(v => ART.bakeIdol(v)), stakeFence: [0, 1].map(v => ART.bakeStakeFence(v)), lootHeap: [0, 1].map(v => ART.bakeLootHeap(v)), cookSpit: ART.bakeCookSpit(), cauldron: ART.bakeCauldron(), boneChime: [0, 1].map(v => ART.bakeBoneChime(v)), hideRack: [0, 1].map(v => ART.bakeHideRack(v)), warnPost: [0, 1].map(v => ART.bakeWarnPost(v)),
+  });
+  yield 'sub';
+  Object.assign(PROP, {
     oldOak: [0, 1].map(i => ART.bakeOldOak(470 + i)), boat: ART.bakeBoat(480), heron: ART.bakeHeron(), totem: [0, 1].map(i => ART.bakeTotem(490 + i)), giantCap: ART.bakeGiantCap(495),
     gardenWall: [0, 1, 2].map(i => ART.bakeGardenWall(300 + i)), beanpoles: [0, 1].map(i => ART.bakeBeanpoles(310 + i)),
     skep: ART.bakeSkep(320), trough: ART.bakeTrough(321), stocks: ART.bakeStocks(), dovecote: ART.bakeDovecote(),
     grave: [0, 1, 2].map(i => ART.bakeGrave(i)), lychgate: ART.bakeLychgate(), yew: [0, 1].map(i => ART.bakeYew(330 + i)),
+  });
+  yield 'sub';
+  Object.assign(PROP, {
     skullMini: ART.bakeSkullMini(), compass: ART.bakeCompass(), relic: ART.bakeRelics(), bough: ART.bakeBough(), charm: ART.bakeCharms(), counter: ART.bakeCounter(), wares: [ART.bakeWares(0), ART.bakeWares(1)], shopDoor: ART.bakeShopDoor(), lanternPost: ART.bakeLanternPost(), beehive: ART.bakeBeehive(), birdhouse: ART.bakeBirdhouse(), fishTrap: [0, 1].map(i => ART.bakeFishTrap(800 + i)), spearRack: ART.bakeSpearRack(), barrelStack: ART.bakeBarrelStack(), bones: [0, 1].map(i => ART.bakeBones(810 + i)), fallenLog: [0, 1].map(i => ART.bakeFallenLog(770 + i)), fence: [0, 1].map(i => ART.bakeFence(780 + i)), cart: ART.bakeCart(790), well: ART.bakeWell(), heather: [0, 1, 2].map(i => ART.bakeHeather(730 + i)), gorse: [0, 1].map(i => ART.bakeGorse(740 + i)), thistle: [0, 1].map(i => ART.bakeThistle(750 + i)), standingStone: [0, 1, 2].map(i => ART.bakeStandingStone(760 + i)), cairn: ART.bakeCairn(), boulder: ART.bakeBoulder(), bothy: ART.bakeBothy(), mill: ART.bakeMill(), sail: ART.bakeSail(), foldGate: ART.bakeFoldGate(),
     bell: ART.bakeBell(), ramLog: ART.bakeRamLog(), lever: [ART.bakeLever(false), ART.bakeLever(true)], plate: [ART.bakePlate(false), ART.bakePlate(true)], palanquin: ART.bakePalanquin(), door: [ART.bakeDoor(false), ART.bakeDoor(true)], carpet: ART.bakeCarpet(),
     puffball: ART.bakePuffball(), keyIcon: { brass: ART.bakeKeyIcon('brass'), iron: ART.bakeKeyIcon('iron'), bone: ART.bakeKeyIcon('bone') }, lockPlate: ART.bakeLockPlate(), doorway: ART.bakeDoorway(), cupIcon: ART.bakeCupIcon(), lensIcon: ART.bakeLensIcon(), honeyPot: ART.bakeHoneyPot(), coffer: ART.bakeCoffer(), brightCap: ART.bakeBrightCap(), questIcon: ART.bakeQuestIcon(), cabin: ART.bakeCabin(), pine: ART.bakePine(), fallenPine: ART.bakeFallenPine(14), sluice: [ART.bakeSluice(false), ART.bakeSluice(true)], catapult: [0, 1, 2].map(i => ART.bakeCatapult(i)), nest: ART.bakeNest(), chainPost: ART.bakeChainPost(), grate: ART.bakeGrate(), silver: ART.bakeSilver(), silverBig: ART.bakeSilverBig(), trunk: [0, 1, 2].map(i => ART.bakeTrunk(900 + i)), bracket: [ART.bakeBracket(0), ART.bakeBracket(1)], axle: ART.bakeAxle(), pillar: [0, 1, 2].map(i => ART.bakeRockPillar(910 + i)), strut: [ART.bakeStrut(0), ART.bakeStrut(1)], mineCart: ART.bakeMineCart(), canary: ART.bakeCanary(), gasSeam: ART.bakeGasSeam(), minerLamp: [ART.bakeMinerLamp(false), ART.bakeMinerLamp(true)], sarcophagus: bakeSarcophagus(), crownSpin: bakeCrownSpin(), timber: [ART.bakeTimberFrame(160), ART.bakeTimberFrame(144), ART.bakeTimberFrame(48)], orePan: ART.bakeOrePan(), hammer: ART.bakeHammer(), boiler: [ART.bakeBoiler(false), ART.bakeBoiler(true)], snowCap: (() => { const [c, g] = canvas(16, 5); g.fillStyle = '#dfe8ee'; g.fillRect(0, 2, 16, 3); g.fillStyle = '#ffffff'; g.fillRect(2, 1, 5, 2); g.fillRect(10, 1, 4, 2); return c; })(), lampIcon: ART.bakeLampIcon(), crownLantern: [ART.bakeCrownLantern(false), ART.bakeCrownLantern(true)], cottage: [ART.bakeCottage(false), ART.bakeCottage(true)], deadTree: [0, 1].map(i => ART.bakeDeadTree(880 + i)), glow: [ART.bakeGlowShroom(true), ART.bakeGlowShroom(false)], gillpod: ART.bakeGillPod(), moteV: ART.bakeMote('#9a5aa8'), moteT: ART.bakeMote('#4aa0b0'),
+  });
+  yield 'sub';
+  Object.assign(PROP, {
     innSign: ART.bakeInnSign(), sunshardIcon: ART.bakeSunshardIcon(), cobweb: [0, 1, 2].map(v => ART.bakeCobweb(v)), orbWeb: ART.bakeOrbWeb(), flot: { cannon: [FLP.bakeCannon(false), FLP.bakeCannon(true)], keg: [FLP.bakeKeg(false), FLP.bakeKeg(true)], kegStack: FLP.bakeKegStack(), gangplank: [FLP.bakeGangplank(false), FLP.bakeGangplank(true)], oarBench: FLP.bakeOarBench(), oar: FLP.bakeOar(), hammock: [0, 1].map(v => FLP.bakeHammock(v)), washing: FLP.bakeWashing(), cookPot: FLP.bakeCookPot(), rumBarrels: [0, 1].map(v => FLP.bakeRumBarrels(v)), chickenCoop: FLP.bakeChickenCoop(), chartTable: FLP.bakeChartTable(), plunder: [0, 1, 2].map(v => FLP.bakePlunder(v)), crowNest: FLP.bakeCrowNest(), mastTall: [0, 1].map(v => FLP.bakeMastTall(v)), pennant: [0, 1, 2].map(v => FLP.bakePennant(v)), boardingNet: FLP.bakeBoardingNet(), lanternDeck: [FLP.bakeLanternDeck(false), FLP.bakeLanternDeck(true)], waterButt: FLP.bakeWaterButt(), coiledCable: [0, 1].map(v => FLP.bakeCoiledCable(v)), gunport: [FLP.bakeGunport(false), FLP.bakeGunport(true)], sternWindows: FLP.bakeSternWindows(), shark: FLP.bakeShark(), whistle: FLP.bakeWhistle(), grapple: FLP.bakeGrapple() }, city: { lamp: [0, 1, 2].map(v => CTP.bakeStreetlamp(v)), lampWreck: [0, 1].map(v => CTP.bakeLampWreck(v)), stall: [0, 1].map(v => CTP.bakeStall(v)), column: [0, 1].map(v => CTP.bakeColumn(v)), clerkDesk: CTP.bakeClerkDesk(), sealDrift: [0, 1].map(v => CTP.bakeSealDrift(v)), bellows: CTP.bakeBellows(), tollPost: CTP.bakeTollPost(), magistrate: CTP.bakeMagistrate(), drownedCart: CTP.bakeDrownedCart(), grating: CTP.bakeGrating(), cityWeed: [0, 1, 2].map(v => CTP.bakeCityWeed(v)), shellDrift: [0, 1].map(v => CTP.bakeShellDrift(v)), cityBrazier: [CTP.bakeCityBrazier(false), CTP.bakeCityBrazier(true)], lampMain: [0, 1].map(v => CTP.bakeLampMain(v)) }, reef: { mastStump: RFP.bakeMastStump(), rigging: [0, 1].map(v => RFP.bakeRigging(v)), sailRag: [0, 1].map(v => RFP.bakeSailRag(v)), wreckBow: RFP.bakeWreckBow(), wreckStern: RFP.bakeWreckStern(), figurehead: RFP.bakeFigurehead(), capstan: RFP.bakeCapstan(), capstanWreck: RFP.bakeCapstanWreck(), bellWreck: RFP.bakeBellWreck(), manifest: RFP.bakeManifest(), manifestIcon: RFP.bakeManifestIcon(), anchor: RFP.bakeAnchor(), seaChest: RFP.bakeSeaChest(), sealChest: RFP.bakeSealChest(), seal: RFP.bakeSeal(), sealIcon: RFP.bakeSealIcon(), shipBell: RFP.bakeShipBell(), lanternBuoy: [RFP.bakeLanternBuoy(false), RFP.bakeLanternBuoy(true)], coralFan: [0, 1, 2].map(v => RFP.bakeCoralFan(v)), brainCoral: [0, 1].map(v => RFP.bakeBrainCoral(v)), urchinRock: [0, 1].map(v => RFP.bakeUrchinRock(v)), starfish: [0, 1, 2].map(v => RFP.bakeStarfish(v)), spar: [0, 1].map(v => RFP.bakeSpar(v)), bubbleVent: RFP.bakeBubbleVent(), airBell: RFP.bakeAirBell(), kelpTall: [0, 1, 2].map(v => RFP.bakeKelpTall(v)), wheel: RFP.bakeWheel(), reefRock: [0, 1].map(v => RFP.bakeReefRock(v)) }, lw: { coralTuft: [0, 1, 2].map(v => LWP.bakeCoralTuft(v)), barnacleRock: [0, 1].map(v => LWP.bakeBarnacleRock(v)), saltCrust: [0, 1].map(v => LWP.bakeSaltCrust(v)), drownedHut: LWP.bakeDrownedHut(), rushes: [0, 1, 2].map(v => LWP.bakeRushes(v)), driftwood: [0, 1].map(v => LWP.bakeDriftwood(v)), riverStone: [0, 1, 2].map(v => LWP.bakeRiverStone(v)), shell: [0, 1, 2].map(v => LWP.bakeShell(v)), netPoles: LWP.bakeNetPoles(), rowboat: LWP.bakeRowboat(), pierPost: LWP.bakePierPost(), cottage: [0, 1].map(v => LWP.bakeCottage(v)), bellTower: LWP.bakeBellTower(), seaLantern: [LWP.bakeSeaLantern(false), LWP.bakeSeaLantern(true)], buoy: LWP.bakeBuoy(), kelp: [0, 1, 2].map(v => LWP.bakeKelp(v)), tidePool: LWP.bakeTidePool(), glaive: LWP.bakeGlaive(), tributeChest: LWP.bakeTributeChest(), sirenRock: LWP.bakeSirenRock(), raftBig: LWP.bakeRaftBig() }, icicle: [0, 1, 2].map(v => ART.bakeIcicle(v)), frost: [0, 1].map(v => ART.bakeFrost(v)), frozen: [0, 1].map(v => ART.bakeFrozen(v)), stilt: ART.bakeStilt(), groundWeb: ART.bakeGroundWeb(), bridgePost: ART.bakeBridgePost(), bridgeTower: ART.bakeBridgeTower(), gatehouse: ART.bakeGatehouse(), forge: ART.bakeForge(), anvil: ART.bakeAnvil(), folkIcon: ART.bakeFolkIcon(), castle: ART.bakeCastle(5), towertop: ART.bakeTowerTop(), treehouse: [0, 1].map(i => ART.bakeTreehouse(320 + i)), torch: ART.bakeTorch(), cage: ART.bakeCage(), barrel: ART.bakeBarrel(), brazier: [ART.bakeBrazier(false), ART.bakeBrazier(true)], crank: ART.bakeCrank(), lift: ART.bakeLift(), horn: ART.bakeHorn(), fire: ART.bakeFire(),
     heart: outline(fromGrid(['.ww.ww.', 'wwwwwww', 'wLwwwww', '.wwwww.', '..www..', '...w...'], { w: '#e04848', L: '#ff9a9a' }, 1), ART.OUT),
     bolt: outline(fromGrid(['..gg.', '.gg..', 'gggg.', '..gg.', '.gg..'], { g: '#8fd160' }, 1), ART.OUT),
     lock: outline(fromGrid(['.SSS.', 'S...S', 'SSSSS', 'SSySS', 'SSSSS'], { S: '#8b8378', y: '#e0b040' }, 1), ART.OUT),
-  };
+  });
   PROP.town = { longTable: [0, 1].map(v => TWN.bakeLongTable(v)), bench: TWN.bakeBench(), hearth: TWN.bakeHearth(), caskRack: TWN.bakeCaskRack(), mugShelf: TWN.bakeMugShelf(),
     hayBale: [0, 1].map(v => TWN.bakeHayBale(v)), bunting: TWN.bakeBunting(96), shopSign: [0, 1, 2, 3].map(v => TWN.bakeShopSign(v)) };
   PROP.relic.veil = bakeVeilIcon(); PROP.relic.fleece = ART.bakeFleeceIcon(); PROP.relic.spurs = ART.bakeSpursIcon(); PROP.relic.shoes = ART.bakeShoesIcon(); PROP.relic.sunshard = MON.bakeBeadIcon(); PROP.relic.crampons = bakeCramponIcon(); PROP.relic.banner = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#5a6270'; g2.fillRect(1, 0, 1, 12); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 1, 7, 7); g2.fillStyle = '#e0b040'; g2.fillRect(4, 3, 3, 3); g2.fillStyle = '#5a2a7a'; g2.fillRect(2, 8, 3, 2); g2.fillRect(6, 8, 3, 2); return c; })(); PROP.sealIcon = (() => { const [c, g2] = canvas(10, 10); g2.fillStyle = '#7a1c24'; g2.beginPath(); g2.arc(5, 5, 4.5, 0, 7); g2.fill(); g2.fillStyle = '#c9463d'; g2.beginPath(); g2.arc(5, 5, 3, 0, 7); g2.fill(); g2.fillStyle = '#e0b040'; g2.fillRect(3, 3, 1, 1); g2.fillRect(6, 3, 1, 1); g2.fillRect(4, 5, 2, 2); g2.fillRect(3, 7, 4, 1); return c; })(); PROP.relic.lamp = PROP.relic.lamp || PROP.lampIcon; PROP.relic.tidecharm = (() => { const [c, g2] = canvas(10, 12); g2.fillStyle = '#c9b27c'; g2.fillRect(4, 0, 2, 3); g2.fillStyle = '#e8f4f0'; g2.beginPath(); g2.moveTo(5, 3); g2.lineTo(9, 7); g2.lineTo(8, 11); g2.lineTo(2, 11); g2.lineTo(1, 7); g2.closePath(); g2.fill(); g2.fillStyle = '#7cc8c8'; for (const x of [3, 5, 7]) g2.fillRect(x, 5, 1, 6); g2.fillStyle = '#4aa0a8'; g2.fillRect(2, 10, 7, 1); return c; })(); /* the Tide Charm: a scallop on a cord */ /* the miner's lamp relic had no icon: the HUD threw every frame once you held it */ PROP.relic.keelstone = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#9f8752'; g.fillRect(3, 0, 4, 1); g.fillRect(2, 1, 1, 3); g.fillRect(7, 1, 1, 3); g.fillStyle = '#3a3228'; g.fillRect(2, 4, 6, 8); g.fillRect(1, 6, 8, 4); g.fillStyle = '#6e6450'; g.fillRect(3, 5, 4, 6); g.fillRect(2, 7, 6, 2); g.fillStyle = '#c9b27c'; g.fillRect(3, 5, 2, 1); g.fillRect(3, 6, 1, 1); return c; })(); /* THE KEEL STONE: ballast off the sky ship, on a cord */ PROP.relic.windcloak = (() => { const [c, g] = canvas(10, 12); g.fillStyle = '#bfe6f5'; g.beginPath(); g.moveTo(5, 0); g.lineTo(9, 3); g.lineTo(9, 11); g.lineTo(5, 9); g.lineTo(1, 11); g.lineTo(1, 3); g.closePath(); g.fill(); g.fillStyle = '#7aa8c8'; g.fillRect(4, 1, 2, 8); g.fillStyle = '#ffd36b'; g.fillRect(4, 0, 2, 1); return c; })();
+  yield 'props';
   /* THE DEAD ARE IN THE GROUND (THE UNBURIED FIELD): a share of this level's own dirt tiles get a rib cage, a skull, a long bone or a helm painted
      into them. The tiles are rebaked on every level load, so no other level's earth is touched. */
   if (pal.boneSoil) { UW.boneSoil(TILE.dirt, 5, 0.2); TILE.deep.forEach((band, i) => UW.boneSoil(band, 11 + i, 0.14 - i * 0.04)); TILE.roots = TILE.dirt.slice(0, 3); }   /* and no tree roots: nothing grew here (the tiles are swapped, not the dice, so the level's scatter lands where it did) */
@@ -830,9 +858,9 @@ function bakeAll(pal = {}) {
       BG.mid = M.mid(r[1]); BG.near = M.near(r[1]); BG.nearTrees = null; } }
   if (pal.set === 'desert') cvBackdrop();   /* THE SUNKEN CARAVAN's own sky, mesas and dunes */
   if (pal.far === 'stormsea') BG.storm = { far: BG.far, mid: BG.mid, rain: SM.bakeRainSheets(), farS: SM.silhouette(BG.far), midS: SM.silhouette(BG.mid, '#10161c') };
+  yield 'sky';
 }
-bakeAll();
-applySkin();
+for (const st of bakeAllG()) await LS.step(st);   /* the first bake, a step at a time (the hero was baked above, by applySkin) */
 
 // ---------- level ----------
 let L = null, LW = 0, LH = 0, levelIndex = 0, grid0 = null, tileSpr = null, tileDeep = null;
@@ -1889,10 +1917,14 @@ function questDone(x, y) {
 }
 function drainPool(pr) { const p = (L.pools || []).find(p => p.x0 === pr.pool); if (!p) return; marks.add('pool:' + pr.pool); pr.open = true; p.yTo = pr.to * TS + 4; p.draining = true; number(pr.x, pr.y - 30, 'THE CHANNEL DRAINS', '#bfe6f5'); SFX.splash(); SFX.heavy(); shakeCam(2); }
 
-function loadLevel(i) {
+function loadLevel(i) { for (const _ of loadLevelG(i)); }   /* synchronous, as it always was: BK.load, the labs and the tools */
+/* THE PLAYER'S OWN LOADS (map to wood, restart, a trial) go through the loading screen: fast ones run straight through as before, slow ones show the bar and the dancing hero (LS.drive) */
+const loadThen = (i, cont) => LS.drive(loadLevelG(i), cont, { heroes: [K, players && players[1] && players[1].set] });
+/* THE SAME LOAD AS A GENERATOR, for the loading screen (src/loading-screen.js drive()): it yields a step id after each stage and does no work of its own between them */
+function* loadLevelG(i) {
   hintT = 0;   /* a lesson banner from the last level or the last life does not follow you into this one (the crouch lessons, src/crouch-a.js, are told from a foe near you; a stale one sat over burial-vents section 7) */
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
-  setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); bakeAll(L.palette || {});
+  setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
   SLOPES_ON = levelHasSlopes(L.grid);   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
@@ -1916,6 +1948,7 @@ function loadLevel(i) {
   }
   for (let i2 = 0; i2 < LW * LH; i2++) if (grid0[i2] === T.CRATE) total++;
   total += (L.veins || []).reduce((a, v) => a + (v.coins || 0), 0);   /* THE ORE ROAD's seams: what they spill is counted like a crate's */
+  yield 'deep';
   spawnEntities(); applyLevelRims();
   P.breath=breathCapacity(L,P.relic);P.drownT=0;
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
@@ -1924,6 +1957,7 @@ function loadLevel(i) {
   /* ...and built HERE when the arrow is on: the fill with its rides takes a quarter of a second on the Deep, and on the arrow's first ask in
      play that was fifteen frames of hitch. Inside a load nobody sees it. (Off by default, so the labs and tools never pay for it.) */
   if (SET.wayOn && !L.trial) { try { wayRoute = wayBuild(); } catch (err) { wayRoute = null; } }
+  yield 'rest';
 }
 /* THE CONTRAST RIM (src/contrast-rim.js, docs/sprite-quality-audit.md): on each level, a common foe whose body sits in the same value as
    most of this level's backdrop gets a one-pixel light rim along its top edges, tinted against that backdrop. The level's own sets are
@@ -3328,6 +3362,7 @@ const spurReqText = lv => { const o = lv.opensOn; const rank = MEDAL_RANK[o.meda
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']]);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
 let mapCamY = MAPH - 180;
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id; }
+await LS.step('misc1');
 const HUT = ART.bakeHut(), FLAG = ART.bakeFlag(), MAPICON = ART.bakeMapIcons();
 const map = { node: 0, seg: 0, t: 0, walking: 0, target: 0 }; // token position: on PATH segment seg at fraction t
 /* THE SIDE LEVEL-SELECT PANEL (map-life-and-select §1). It is the only way onto a spur now that mapGo steps past
@@ -3960,7 +3995,7 @@ function updateStore(dt) {
   if (confirmPress && items.length) {
     const k = items[storeI], owned = tab.talent || k.consumable ? false : (k.id === 'none' || owns(tab, k.id));
     if (k.practice === 'trial') { startTrial(hero()); return; }   /* THE GUIDED YARD, from the store as well as the pause menu */
-    if (k.practice) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { rush = null; loadLevel(i); introSeen = true; startGame(); SFX.uiSel(); } return; }
+    if (k.practice) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { rush = null; loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); } return; }
     if (tab.talent) learnTalent(k);
     else if (k.consumable) { const n = PROG.tonics || 0; if (n >= k.max) { SFX.ui(); storeMsg = 'you carry all you can'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.price) { if (!godMode()) PROG.coins -= k.price; PROG.tonics = n + 1; saveProgress(); SFX.coin(); storeMsg = k.name + ' ' + (n + 1) + ' of ' + k.max; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; } }
     else if (tab.rank) { const r = rankOf(k.id); if (r >= k.max) { SFX.ui(); storeMsg = k.name + ' is at its peak'; storeMsgT = 1.5; } else if (godMode() || PROG.coins >= k.prices[r]) { if (!godMode()) PROG.coins -= k.prices[r]; PROG.ranks[k.id] = r + 1; applyUpgrades(); if (k.id === 'vigour') P.hp = Math.min(P.maxHp, P.hp + 10); if (k.id === 'breath') P.st = Math.min(P.maxSt, P.st + 10); saveProgress(); SFX.coin(); SFX.rankUp(); statFlash = 0.8; storeMsg = k.name + ' rank ' + (r + 1); storeMsgT = 2; burst(VW / 2 + camX, 60 + camY, 16, ['#8fd160', '#fff6c8'], 60, 0.6, -20, 1); } else { SFX.buzz(); storeMsg = 'need ' + (k.prices[r] - PROG.coins) + ' more gold'; storeMsgT = 2; } }
@@ -4465,7 +4500,7 @@ function menuConfirm() {
   else if (k === 'Erase this save') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
   else if (k === 'Hero trial') { state = 'play'; startTrial(hero()); }
   else if (k === 'Back to shrine') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { state = 'play'; returnToShrine(); SFX.uiSel(); } }
-  else if (k === 'Restart level') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else if (menuMsg === 'press again to restart' && menuMsgT > 0) { loadLevel(levelIndex); startGame(); SFX.uiSel(); } else { menuMsg = 'press again to restart'; menuMsgT = 2.5; SFX.ui(); } }
+  else if (k === 'Restart level') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else if (menuMsg === 'press again to restart' && menuMsgT > 0) { loadThen(levelIndex, () => { startGame(); SFX.uiSel(); }); } else { menuMsg = 'press again to restart'; menuMsgT = 2.5; SFX.ui(); } }
   else menuAdjust(1);
 }
 // THE HERO CHOICE: a new save picks any one of the three to start with; the other two are 15 silver each at the store
@@ -4500,7 +4535,7 @@ function heroBanner(h, x, y, w, hh, sel) {
 const PICK = ['knight', 'warden', 'geomancer', 'pyro', 'paladin', 'pirate', 'reaper'];   /* the three starters first: the knight, THE WARDEN and THE GEOMANCER (Daniel 2026-09-24: she is free from the start too) */
 /* A HERO MAY HAVE NO YARD YET (the Warden's is a later phase), so this says whether it went, and every caller has
    somewhere to send you when it did not - a screen that waits for a trial that cannot load is a dead end. */
-function startTrial(h) { const i = LEVELS.findIndex(l => l.id === 'trial_' + h); if (i < 0) return false; rush = null; PROG.tried = PROG.tried || {}; PROG.tried[h] = true; saveProgress(); loadLevel(i); introSeen = true; startGame(); SFX.uiSel(); return true; }
+function startTrial(h) { const i = LEVELS.findIndex(l => l.id === 'trial_' + h); if (i < 0) return false; rush = null; PROG.tried = PROG.tried || {}; PROG.tried[h] = true; saveProgress(); loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); return true; }
 const hasTrial = h => LEVELS.some(l => l.id === 'trial_' + h);
 function updateHeroPick() {
   if (heroPick.stage === 'pick') {
@@ -4640,9 +4675,8 @@ function drawCoopPick() {
 function selectStart() {
   const lv = LEVELS[selI];
   if (levelLocked(lv)) { SFX.buzz(); return; }
-  if (levelIndex !== selI || !L) loadLevel(selI);
-  SFX.uiSel();
-  if (lv.hidden || introSeen || q.get('tx') || PROG[lv.id]) startGame(); else startIntro();
+  const go = () => { SFX.uiSel(); if (lv.hidden || introSeen || q.get('tx') || PROG[lv.id]) startGame(); else startIntro(); };
+  if (levelIndex !== selI || !L) loadThen(selI, go); else go();
 }
 
 // ---------- input ----------
@@ -18388,6 +18422,7 @@ function wqHoles(hole, cx, cy) {
 const CV_FOES = new Set(['scorpion', 'sandgob', 'vulture', 'cutthroat', 'slinger', 'ambusher']);
 const CV_STEP = { scorpion: DF.scorpionStep, sandgob: DF.sandGobStep, vulture: DF.vultureStep, cutthroat: DF.cutthroatStep, slinger: DF.slingerStep, ambusher: DF.ambusherStep };
 const CV_HURT = { scorpion: 6, cutthroat: 6, slinger: 6, ambusher: 7 };   /* the frame each set is hurt in (the vulture's set ends perched and the goblin's burrowing) */
+await LS.step('misc2');
 const CV_BANDITS = new Set(['cutthroat', 'slinger', 'ambusher']);   /* THE LOOTERS: men, not desert creatures - the sun takes them too */
 SPR.mummer = FG.bakeMummer(); SPR.hobbyhorse = FG.bakeHobbyHorse(); SPR.wickerqueen = bakeWickerQueen(); HAS_HURT.add('mummer'); HAS_HURT.add('hobbyhorse');   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
 SPR.cutthroat = CB.bakeCutthroat(); SPR.slinger = CB.bakeSlinger(); SPR.ambusher = CB.bakeAmbusher(); const CV_STONE = CB.bakeSlingStone();
@@ -18454,6 +18489,7 @@ function caravanReset() {
   if (window.BK) Object.assign(window.BK, { caravan: () => CV });
 }
 const cvCanopies = () => (CV && CV.winches || []).filter(w => w.canopy && w.k >= 0.95).map(w => { const c = w.canopy; return [c.x0 * TS, (c.x1 + 1) * TS, c.row * TS, LH * TS]; });   /* every great awning that is rolled OUT is shade */
+await LS.step('misc3');
 const inHollowStorm = x => !!(CV && CV.storm && L.arena && x > L.arena.x0 && x < L.arena.x1);   /* THE SUN GOES IN under the worm's storm, and only in his hollow */
 function cvShaded(x, y, h) {
   if (inShade(CV.zones, x, y - 1)) return true;
@@ -26914,7 +26950,7 @@ function updatePractice() {
   if (pausePress) { state = 'title'; SFX.menuClose(); return; }
   if (menuTake()) {
     const h = rows[practiceI];
-    if (h.free) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { rush = null; loadLevel(i); introSeen = true; startGame(); SFX.uiSel(); } return; }
+    if (h.free) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { rush = null; loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); } return; }
     if (!(PROG.heroes && PROG.heroes[h.id])) { SFX.buzz(); menuMsg = 'not yours yet'; menuMsgT = 2; return; }
     PROG.hero = h.id; applySkin(); applyUpgrades(); saveProgress();
     if (!startTrial(h.id)) { SFX.buzz(); menuMsg = 'no yard for her yet'; menuMsgT = 2; }   /* she is equipped either way: the yard is a later phase */
@@ -27940,6 +27976,7 @@ const fmt = t => { const m = Math.floor(t / 60), s = Math.floor(t % 60), d = Mat
 let last = performance.now(), acc = 0, lastTick = 0, rafQueued = false; const STEP = 1 / 60;
 let perf = { fps: 60, u: 0, r: 0, frames: 0, t0: 0 };
 function tick(now) {
+  if (LS.busy) return;   /* the loading screen is up: nothing moves under it */
   lastTick = performance.now();
   if (window.BK?.manualSimulation) { last = now; acc = 0; return; }
   pollGamepad();
@@ -27953,7 +27990,8 @@ function tick(now) {
 }
 function frame(now) { rafQueued = false; tick(now); if (!rafQueued) { rafQueued = true; requestAnimationFrame(frame); } }
 setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now()); }, 125);
-loadLevel(0);
+await LS.drive(loadLevelG(0));   /* the first wood, inside the boot bar */
+await LS.step('final');
 document.getElementById('boot').remove();
 window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
   xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
@@ -27983,7 +28021,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
       for (const k of Object.keys(keys)) keys[k] = false;
     }
     Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
-  get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel,
+  get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel, loadG: loadLevelG, loadThen,   /* the loading screen, for tools/loading-screen.mjs */
   /* THE SOUND TEST, for tools/soundtest.mjs: a harness can put the cursor straight on a category and a row without
      hunting for the up/down flags press() does not carry. */
   get soundCat() { return soundCat; }, set soundCat(v) { soundCat = v; }, get soundI() { return soundI; }, set soundI(v) { soundI = v; }, musicUnlocked,
@@ -28090,4 +28128,5 @@ if (q.get('playtest') === '1') setTimeout(async () => {
 if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
 if (q.get('chase') === 'demo') { chaseDemo(q.get('hero')); }   /* THE PLAYTEST CHASE DEMO: ?chase=demo[&hero=<id>] (docs/PLAYTEST.md), never saved */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'))) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
+LS.bootDone();
 rafQueued = true; requestAnimationFrame(frame);
