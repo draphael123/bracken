@@ -62,10 +62,17 @@ the drunk in a box IS the mask-thrower of the brief, re-read as the audience; se
 
 ## THE PUPPETEER's hook (claude/puppeteer)
 
-`L.mainStage = { door: 300, x0: 301, x1: 342, floor: 34, fly: 16 }`: a room 42 columns wide and 30 rows tall behind the stage door (x 300, a
-doorway rows 30-33), checkpoint three at 297 before it, a fly floor of boards at row 16 across 304-339 for his marionettes to work from. No
-`arena` is declared, so no boss check reads it yet; the level's `gate` stands at 303, just inside the door. His lane adds `arena` (x0 301, x1 342,
-wallL 300, wallR 343, floor 34*16) and his entity, and moves the gate past his room (gateAfterBoss). The music `theatre` can carry into the fight.
+`L.mainStage = { door: 300, x0: 301, x1: 342, floor: 34, stageX: 300, stageW: 40, free: [18, 35] }`: the room behind the stage door is kept
+free for his stage - columns 300-339 (his 40-column stage, its west wall on the stage door's column) and rows 18-35 (R-16..R+1, floor row R = 34).
+Checkpoint three stands at 297, outside it. No `arena` is declared on this branch, so no boss check reads it yet; the level's `gate` stands at 303,
+just inside the door. The wiring, done at the merge (claude/puppeteer at e13f1b1 exports `stagePuppeteer`; this branch does NOT merge it - the safer
+choice, since his lane also adds a hidden 'puppetstage' level and boss-check rows that must be re-pointed at the same time):
+
+    const P = stagePuppeteer({ set, block, plat: boards, ent }, T, TS, 300, ST);   // in section 10 of src/maskwright-theatre.js
+    movers.push(...P.movers);                                                      // his batten lift, into moversExtra
+    // the return: arena: P.arena, gateAfterBoss: true; the gate moves to (341, 33), past his east wall; delete 'puppetstage' and re-point his rows
+
+His track stays `puppeteer` (arena.music); the level's is `theatre`. The marker comment in section 10 says the same.
 
 ## Music
 

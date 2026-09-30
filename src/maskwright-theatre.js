@@ -223,11 +223,16 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   ent('check', 297, 33);                                                     /* CHECKPOINT THREE: the stage door */
   sign(298, 33, "THE MAIN STAGE. HE WORKS THEM FROM THE FLIES.");
 
-  // ---------------- 10. THE MAIN STAGE (300-343): THE PUPPETEER's room (claude/puppeteer builds his fight in it) ----------------
-  block(300, 300, 4, 29); air(300, 300, 30, 33);                             /* the stage door: a doorway under the lintel */
+  // ---------------- 10. THE MAIN STAGE (300-343): THE PUPPETEER's room - A HOOK, NOT A FIGHT (claude/puppeteer wires him in at the merge) ----------------
+  /* >>> THE PUPPETEER'S STAGE GOES HERE. It is kept free for him: columns 300-339 (his 40-column stage, west wall on the stage door's column), rows
+     R-16..R+1 = 18-35 over the floor row R = ST = 34. The call (claude/puppeteer at e13f1b1, its stagePuppeteer, imported from its own module):
+         const P = stagePuppeteer({ set, block, plat: boards, ent }, T, TS, 300, ST);   // lays the walls, the grid, the boards, the gallery, him and his two puppets
+         movers.push(...P.movers);                                                     // the batten lift, into moversExtra
+     and in the return: arena: P.arena, gateAfterBoss: true, and the gate below moved to (341, 33), past his east wall (his west door is this door).
+     His track stays 'puppeteer' (arena.music); the level's stays 'theatre'. Until then the room is empty and the gate stands just inside the door. <<< */
+  block(300, 300, 4, 29); air(300, 300, 30, 33);                             /* the stage door: a doorway under the lintel (his west wall and door when he lands) */
   air(301, 342, 4, 33);
-  for (let x = 304; x <= 339; x++) set(x, FL, T.ONEWAY);                     /* the main stage's own fly floor, where he works from (a greybox guess the boss lane may change) */
-  ent('gate', 303, 33);                                                      /* the level's end until his fight lands: just inside the door (claude/puppeteer moves it past his room) */
+  ent('gate', 303, 33);                                                      /* the level's end until his fight lands: just inside the door (then 341, past his east wall) */
 
   // ================= THE FLATS: what is under each track, then the flat in the position the tools walk =================
   for (const f of flats) {
@@ -251,7 +256,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
     theatre: { spots, lines, flats, traps, arcs: ARCS, sections: SECTIONS,
       show: { x0: 158 * TS, x1: 223 * TS, y0: 17 * TS, y1: ST * TS, curtain: [158, 212, 17, 33] } },
     rigBands,   /* THE FLY LINES, for the reach model (src/reachcore.js): a band of footing from each platform's high stop to its low one */
-    mainStage: { door: 300, x0: 301, x1: 342, floor: ST, fly: FL },   /* THE PUPPETEER's room (claude/puppeteer): the arena goes here */
+    mainStage: { door: 300, x0: 301, x1: 342, floor: ST, stageX: 300, stageW: 40, free: [ST - 16, ST + 1] },   /* THE PUPPETEER's room (claude/puppeteer): stagePuppeteer(..., 300, ST) goes here (see section 10) */
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,   /* three checkpoints on a 520-tile route (Daniel: fewer); src/level.js checkpoints() must not fill between them */
     music: 'theatre', dark: 0, night: true, nightA: 0.18, duskStart: 99999, duskLen: 1,
