@@ -71,7 +71,8 @@ const awake = r => { until(r, () => r.e.mode !== 'wake', 200); return r; };
   ok(r.log.lines.includes('SHE IS STRANDED: CUT HER'), 'her stranding was not said in the hint box');
   let t = 0; while (M.gtOpen(r.e) && t < 600) { r.step(); t++; } ok(t * DT <= 2.05, 'the stranded window ran ' + (t * DT).toFixed(2) + ' s (short: about two seconds)');
   const C0 = r.show.C.name; ok(until(r, () => r.show.cycle === 1, 60 * 5), 'after her stranding she did not drag herself back and refill the lock for a new cycle');
-  ok(r.show.C.name !== C0, 'the lock after her first stranding is the same lock (' + C0 + ')'); }
+  ok(r.show.C.name !== C0, 'the lock after her first stranding is the same lock (' + C0 + ')');
+  r.run(60 * 4); ok(r.show.n.strand === 1 && r.e.mode !== 'stranded', 'the water coming back up stranded her again (' + r.show.n.strand + ' strandings): aground is only as the drain runs'); }
 { const r = awake(rig()); r.place('walkE'); r.e.x = A.mid; r.show.cyc[1] = 1; M.applyCycle(r.show, 1, r.c); until(r, () => Math.abs(r.show.water.depth - GT.lv.half) < 1, 120);
   const res = M.strikePaddle(r.e, r.show, 'E'); r.run(60 * 5); ok(res === 'running' && r.e.mode !== 'stranded' && r.show.water.depth > GT.aground, 'a drain run against the running upper paddle stranded her (' + res + ', ' + r.e.mode + ')');
   ok(r.log.lines.includes('THE UPPER PADDLE IS RUNNING: SHUT IT FIRST'), 'the running upper paddle was not said'); }
@@ -81,6 +82,9 @@ for (const strike of [false, true]) { const r = awake(rig()); r.place('walkE'); 
   ok(until(r, () => r.e.mode === 'handTell', 60), 'the drain opened from half water and her hand never went to the paddle');
   if (strike) { r.step(); ok(M.handCut(r.e, r.show), 'her hand could not be struck off the paddle'); ok(until(r, () => r.e.mode === 'stranded', 60 * 3), 'her hand struck, the lock drained and she was not stranded (' + r.e.mode + ')'); }
   else { ok(until(r, () => !r.show.pad.E.open, 60 * 2) && r.show.n.shut === 1 && r.e.mode !== 'stranded', 'her hand left alone did not shut the drain (' + r.e.mode + ')'); ok(r.log.lines.includes('SHE SHUT THE PADDLE'), 'her shutting the paddle was not said'); } }
+/* WATER COMING BACK UP strands nobody: aground is only as the drain runs */
+{ const r = awake(rig()); r.place('walkE'); r.show.water.depth = 8; r.show.water.target = GT.lv.low; r.show.water.rate = 20; r.e.mode = r.e.base = 'lurk'; r.run(60 * 2);
+  ok(r.show.n.strand === 0, 'the water coming back up stranded her (' + r.show.n.strand + ')'); }
 ok(GT.strandT <= 2.0 && GT.flushT <= 2.0 && GT.bigT >= 2.5 && GT.bigT <= 3.2, 'the windows are not short (strand ' + GT.strandT + ', flush ' + GT.flushT + ', big ' + GT.bigT + ')');
 
 // ---- EVERY CYCLE CHANGES ----

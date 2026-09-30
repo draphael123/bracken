@@ -219,8 +219,9 @@ export function makeGreenteethHands(ctx) {
       for (const side of ['W', 'E']) { const L = show.lamps[side]; if (L.st === 'hook') lights.push([G[side].hook.x, G[side].hook.y + 6, 46]); if (L.st === 'lit' || L.st === 'fall') lights.push([L.x, L.y, 58]); }
       for (const pp of ctx.players) if (!pp.dead) lights.push([pp.x, pp.y - 10, 40]);
       const x0 = R(G.x0 - cx) - 32, y0 = R(G.top - cy) - 40, w = R(G.x1 - G.x0) + 64, hgt = R(G.bed - G.top) + 60;
-      for (const [k, sc] of [[0.55, 1.0], [0.3, 0.7], [0.15, 0.45]]) { g.fillStyle = 'rgba(150,170,160,' + (fa * k).toFixed(3) + ')'; g.beginPath(); g.rect(x0, y0, w, hgt);
+      for (const [k, sc] of [[0.55, 1.0], [0.3, 0.7], [0.15, 0.45]]) { g.fillStyle = 'rgba(16,24,24,' + (fa * k * 1.35).toFixed(3) + ')'; g.beginPath(); g.rect(x0, y0, w, hgt);
         for (const [lx, ly, r] of lights) { g.moveTo(R(lx - cx) + r * sc, R(ly - cy)); g.arc(R(lx - cx), R(ly - cy), r * sc, 0, Math.PI * 2, true); } g.fill('evenodd'); }
+      g.globalCompositeOperation = 'lighter'; for (const [lx, ly, r] of lights) { const gr = g.createRadialGradient(R(lx - cx), R(ly - cy), 2, R(lx - cx), R(ly - cy), r); gr.addColorStop(0, 'rgba(120,100,50,' + (0.35 * show.fog).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(R(lx - cx) - r, R(ly - cy) - r, r * 2, r * 2); } g.globalCompositeOperation = 'source-over';   /* the lantern light, warm in the fog */
       for (let i = 0; i < 6; i++) { const fx = x0 + ((i * 131 + time * 8 * (i % 2 ? 1 : -1)) % w + w) % w, fy = y0 + 40 + (i * 37) % (hgt - 60); g.globalAlpha = 0.08 * show.fog; g.fillStyle = '#c8d8d0'; g.fillRect(R(fx), R(fy), 60, 6); } g.globalAlpha = 1; }
     /* HER EYES: always, over the water, the weed and the fog - two points of yellow-green where her head is */
     if (e && !(e.hp <= 0)) { const hx = R(e.x + (e.face || 1) * 3 - cx), hy = R((e.mode === 'stranded' || e.mode === 'drag' ? e.y - 7 : e.mode === 'flushed' ? e.y - 5 : Math.max(e.y - GT.h + 4, surf + 2)) - cy);
