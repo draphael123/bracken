@@ -15,7 +15,7 @@ try {
     const m=()=>BK.enemies().find(e=>e.t==='magechase');
     BK.tp(33,50);for(let i=0;i<60;i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;run(40);snap('spiral-foot','through the ring: the foot of the spiral stair, and him waking over the first landing');
     /* (claude/towerscroll) THE RISING DARK: stand on the first flight and let it come up under you, the camera pushed up by it; then a told quickening */
-    BK.tp(91,119);run(60*9);snap('dark-rising','flight 1: his dark magic rising up the stairwell under you, the camera pushed up ahead of it');
+    BK.tp(91,119);run(60*14);snap('dark-rising','flight 1: his dark magic rising up the stairwell under you, the camera pushed up ahead of it');
     {const LB=await import('/src/lab.js'),S=()=>BK.chase.states()[0];LB.chaseClimb(BK,m(),{secs:40,stop:()=>S().warnT>1.8});run(4);snap('dark-told','a quickening told: the banner and the flashing line before it rises faster');BK.chase.reset();}
     BK.tp(95,117);run(30);const e=m();for(let i=0;i<400&&!(e.mode==='fireTell');i++)run(1);run(20);snap('fire-tell','flight 1: his FIREBOLT told, the yellow mark over him');run(40);snap('fire-bolt','the bolt on its way');
     BK.tp(91,102);run(10);e.reached=1;for(let i=0;i<600&&!(e.mode==='markWait');i++)run(1);run(30);snap('death-mark','flight 3: the DEATH MARK laid on you, the failing steps');

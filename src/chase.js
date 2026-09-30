@@ -146,7 +146,7 @@ export function chaseProblems(list, checkpoints) {   // checkpoints: [{x, y}] in
 
 /* ---------- THE DRAWING (world space; g = the frame's 2d context, cx/cy the camera) ---------- */
 const LOOKS = { rock: { body: '#2a2119', edge: '#6b5a48', deb: '#8a7660' }, fire: { body: '#4a1408', edge: '#ff8a2a', deb: '#ffd36b' },
-  drill: { body: '#1c2026', edge: '#a9b4c2', deb: '#e0a040' }, dark: { body: '#07120c', edge: '#6fe08a', deb: '#c8ffd8', deep: '#1f4a2c', haze: 'rgba(111,224,138,', wave: true } };
+  drill: { body: '#1c2026', edge: '#a9b4c2', deb: '#e0a040' }, dark: { body: '#07120c', edge: '#6fe08a', deb: '#c8ffd8', deep: '#1f4a2c', haze: 'rgba(111,224,138,', wave: true, wash: '60,190,110' } };
 export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
   if (st.phase === 'idle') return;
   const L = LOOKS[sp.look] || LOOKS.rock, x = Math.round(st.pos - (sp.axis === 'x' ? cx : cy)), depth = 260;
@@ -170,12 +170,12 @@ export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
     for (let i = 0; i < 6; i++) { const xx = (time * 90 + i * 53) % VW, yy = x - sp.dir * (10 + (i * 37) % 80); g.fillStyle = L.deb; g.fillRect(Math.round(xx), Math.round(yy), 3, 3); } }
   g.restore();
 }
-/* THE DANGER GLOW: a red wash on the screen edge the chaser comes from, k = chaseDanger (0..1), still (reduce motion) = steady, no pulse */
+/* THE DANGER GLOW: a red wash (a look's own `wash` colour: the dark's is his green, not fire) on the screen edge the chaser comes from, k = chaseDanger (0..1), still (reduce motion) = steady, no pulse */
 export function drawGlow(g, sp, st, k, VW, VH, time, still) {
   if (!(k > 0.02)) return;
   const a = k * (still ? 0.5 : 0.42 + 0.18 * Math.sin(time * (6 + 8 * k))), size = 30 + 60 * k, from = sp.dir > 0 ? 0 : 1, vert = sp.axis === 'y';
   const grad = vert ? g.createLinearGradient(0, from ? VH : 0, 0, from ? VH - size : size) : g.createLinearGradient(from ? VW : 0, 0, from ? VW - size : size, 0);
-  grad.addColorStop(0, 'rgba(255,60,30,' + a.toFixed(3) + ')'); grad.addColorStop(1, 'rgba(255,60,30,0)');
+  const wc = (LOOKS[sp.look] || {}).wash || '255,60,30'; grad.addColorStop(0, 'rgba(' + wc + ',' + a.toFixed(3) + ')'); grad.addColorStop(1, 'rgba(' + wc + ',0)');
   g.fillStyle = grad; if (vert) g.fillRect(0, from ? VH - size : 0, VW, size); else g.fillRect(from ? VW - size : 0, 0, size, VH);
 }
 /* THE RUMBLE the chaser gives through the shake budget: how strong a shake to ask of shakeCam this beat (0 = none), and how long to wait */

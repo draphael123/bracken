@@ -69,7 +69,7 @@ export const TOP = { carpet: 86, row: 78, check: 81 };
    px/s up the stairwell; every quickening is told. */
 export const RISE = (() => { const TS = 16, S = SPIRAL, f0 = FLIGHTS[0].steps[0][2], lastLand = FLIGHTS[FLIGHTS.length - 1].land[2];
   return { id: 'towerscroll', name: 'HIS DARK MAGIC', say: 'HIS DARK MAGIC RISES: CLIMB!', axis: 'y', dir: -1,
-    trigger: f0 * TS - 2, end: (lastLand + 1) * TS + 6, gap0: 160,
+    trigger: f0 * TS - 2, end: (lastLand + 1) * TS + 6, gap0: 120,
     curve: [[0, 11], [200, 13, 'THE DARK QUICKENS'], [420, 15, 'IT RISES FASTER']], lead: 1.6, accel: 30,
     rubber: { min: 96, max: 180, slow: 0.8, catch: 1 }, contact: 'kill', autoscroll: true, edge: 40, show: 16, showKeep: 0.6, glow: 200, look: 'dark',
     zone: [(S.x0 - 1) * TS, (S.x1 + 2) * TS, S.top * TS, (S.floor + 1) * TS], checkpoint: [S.check, S.floor - 1] }; })();
