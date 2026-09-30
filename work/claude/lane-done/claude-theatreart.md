@@ -21,7 +21,7 @@ Base: claude/theatre e96aee0 (the greybox after its review fixes). Geometry, mac
   - The stagehand has new frames (apron, rolled sleeves, red neckerchief, sack on its line).
   - The shy dead are a sheeted dead patron in an opera mask and ruff. The haunts are flying stage daggers in a pale ring.
   - Mummers are untouched.
-- MUSIC. The placeholder audio/theatre.ogg, its renderer tools/theatre-music.mjs and its credit line are removed. `theatre` is now a SYNTH track in src/audio.js (`scheduleTheatre`): a creaky D-minor music-hall overture waltz. It has two desks of bowed strings (detuned pairs, vibrato, each note a few cents off, one note in thirty-two bars sagging flat), a harpsichord on the off-beats, a plucked bass, a door creaking mid-tune and a seat tipping up. A told music change per act, via `music.act(n)` from theatre-hands.js:
+- MUSIC. The placeholder the rendered placeholder file, its renderer its renderer and its credit line are removed. `theatre` is now a SYNTH track in src/audio.js (`scheduleTheatre`): a creaky D-minor music-hall overture waltz. It has two desks of bowed strings (detuned pairs, vibrato, each note a few cents off, one note in thirty-two bars sagging flat), a harpsichord on the off-beats, a plucked bass, a door creaking mid-tune and a seat tipping up. A told music change per act, via `music.act(n)` from theatre-hands.js:
   - 0 overture: slow and unsteady.
   - 1 CURTAIN UP: the same tune lifted to D major, a flute doubling, faster.
   - 2 ACT TWO: faster, with a snare.
