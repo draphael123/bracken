@@ -48,3 +48,9 @@ See the list in the final message / below.
 2. Levels are unchanged: loudness (0.62) is shared with the other synth themes and may need +-20% after a listen.
 3. Remaining shared tracks: boss (Hornet Queen), boss2 (Chieftain, Harbor Warden), boss3 (Diving Bell, Buried Dead). Rec: Buried Dead
    next, then the Wicker Queen.
+
+## Checks run (all green)
+boss-music (extended; fails on the old arena values), audio-assets, soundtest, boss-openings, boss-fight-end (46 fights), homepaths,
+comments, dangling-paths, keep, keep-runtime, keep-expansion, keep-passages, keep-rework, ore-road, witchlight, gargoyle-smash,
+gargoyle-stomp, architecture, checkpoints, skins, npc-removal, slopes-trace (every level identical).
+UNVERIFIED: how any of it sounds; the mix level; that the surge timing suits the real fight.
