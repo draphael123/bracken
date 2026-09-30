@@ -14,6 +14,7 @@ import { updateGraveWarden as stepGraveWarden, drawGraveWarden, wardenFrame as g
 import { newPushBlock, updatePushBlock, PB } from './push-blocks.js';   /* PUSHABLE BLOCKS (backlog #12, 2026-09-28) */
 import { bakeGraveWarden, bakeHedgeWarden, bakeGateGargoyle } from './redraw/queue_bosses.js';
 import * as WHF from './gargoyle-whelp.js';   /* THE GARGOYLE WHELP: its numbers, frames and art (docs/briefs/witchlight-whelps.md) */
+import * as CNH from './canal-hands.js'; import * as CNF from './canal-foes.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): its hands on the game, and its two new foes (the grindylow, the will-o'-the-wisp) */
 import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGargoyleWorld, GARG, gargCam, gargRegrowT, gargKeepFooting, drawSlabGhost, gargStomped, stepBall, drawBall } from './gate-gargoyle.js';   /* THE GATE GARGOYLE, the Witchlight Stair's boss */
 import { WIND, windZoneAt, onSpikes, windCatch, windStep, windBite, stompOn, drawWinds } from './spike-winds.js';   /* THE SPIKED MOAT AND ITS WINDS (the battlements and the Gargoyle's room) */
 import { updateHedgeWarden as stepHedgeWarden, drawHedgeWarden, hedgeFrame, hedgeTake, HEDGE, stepRoots, drawRoots, rootOut } from './hedge-warden.js';
@@ -289,7 +290,7 @@ const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, worm
   dkLunge: DKN.DK.knight.dmg.lunge, dkCapLunge: DKN.DK.captain.dmg.lunge, dkSlash: DKN.DK.captain.dmg.slash, dkSlash2: DKN.DK.captain.dmg.slash2, whelpSwoop: WHF.WH.dmg.swoop, whelpFire: WHF.WH.dmg.fire };
 const EHP = { sexton: SEXTON.hp, duneworm: DWM.WORM.hp, scorpion: DF.SCORPION.hp, vulture: DF.VULTURE.hp, sandgob: DF.SANDGOB.hp, cutthroat: DF.CUTTHROAT.hp, slinger: DF.SLINGER.hp, ambusher: DF.AMBUSHER.hp, bannerbearer:UNBF.UNB.hp.bannerbearer, corpse:UNBF.UNB.hp.corpse, barrowrider:UNBF.UNB.hp.barrowrider, deathknight:UNBF.UNB.hp.deathknight, bloodknight:UNBF.UNB.hp.bloodknight, winchmaster:WINCH.hp, abbot:ABBOT.hp, tome:TOME.hp, gargoyle:410, hedgewarden:HEDGE.hp, gravewarden:380, burngob:26, emberwisp:8, pyromancer:587, bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22, temperer: 30, scalder: 26,
   prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, prince: 960, courtier: 22, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 500, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, seawitch: 20, crow: 6, horn: 22, bale: 12, shardling: 18, fledgling: 16, suncatcher: 430, roc: 1100, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, tippler: 26, sheargob: 30, gaffer: 44, bat: 8, forgemaster: 480, golem: 400, kite: 15, badger: 30, gar: 16, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 1450, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 8, mother: 8, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360, gobpriest: 14, merrowspear: 24, merrowcaller: 22, merrowbrute: 50, gobmage: 22, puffer: 12, jelly: 10, lamprey: 24, manta: 34,
-  drownedknight: DKN.DK.knight.hp, drownedcaptain: DKN.DK.captain.hp, whelp: WHF.WH.hp, mummer: MU.MUMMER.hp, hobbyhorse: MU.HORSE.hp, wickerqueen: WQN.WQ.hp };
+  drownedknight: DKN.DK.knight.hp, drownedcaptain: DKN.DK.captain.hp, whelp: WHF.WH.hp, mummer: MU.MUMMER.hp, hobbyhorse: MU.HORSE.hp, wickerqueen: WQN.WQ.hp, grindylow: CNF.GRIND.hp, willowisp: CNF.WISP.hp };
 
 /* THE FODDER STANDS UP LONGER (docs/combat-tuning.md, measured 2026-09-22). Three in four common fights ended in ONE swing. Scaling
    every foe balloons the tough ones (the hedge knight, sworn sword and tide guard go to 15-20 swings), so it is the fodder alone:
@@ -1966,7 +1967,7 @@ function spawnEntities() {
   ambushReset();
   tomeToken = newTomeToken();   /* ONE TOKEN A LEVEL: every tome on every shelf shares it, so only one is ever winding up or darting (one windup at a time) */
   L.ents.forEach((e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) enemies[i].xpKey = k + '.' + (i - n0); });   /* XP KEYS: which placed thing a foe is, so the second time it falls it pays a fifth (xpKill). A foe with no key was summoned, and pays nothing */
-  spawnEntitiesTail(); seaReset(); fieldsReset(); mageReset(); villageReset(); eliteGates();
+  spawnEntitiesTail(); seaReset(); fieldsReset(); mageReset(); villageReset(); canalReset(); eliteGates();
   lamps = props.filter(pr => pr.t === 'lantern' && pr.city); // THE LAMPLIT STREET gathers its lamps once
 }
 function spawnEnt(e) {
@@ -2102,6 +2103,9 @@ function spawnEnt(e) {
       case 'cutthroat': { const st = DF.newCutthroat(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'cutthroat', w: DF.CUTTHROAT.w, h: DF.CUTTHROAT.h, hp: EHP.cutthroat, mode: st.mode, st }); break; }
       case 'slinger': { const st = DF.newSlinger(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'slinger', w: DF.SLINGER.w, h: DF.SLINGER.h, hp: EHP.slinger, mode: st.mode, st }); break; }
       case 'mummer': { const st = MU.newMummer(px, py, e.face || -1); enemies.push({ ...base, t: 'mummer', w: MU.MUMMER.w, h: MU.MUMMER.h, markH: 34, hp: EHP.mummer, mode: st.mode, st, speed: 0 }); break; }   /* THE HARVEST FAIR's players (src/mummer.js): they move only while nobody faces them */
+      case 'grindylow': enemies.push(CNF.newGrindylow({ ...base, t: 'grindylow', w: CNF.GRIND.w, h: CNF.GRIND.h, hp: EHP.grindylow, markH: 16 })); break;   /* THE FOG CANAL (src/canal-foes.js) */
+      case 'willowisp': enemies.push(CNF.newWisp({ ...base, t: 'willowisp', w: CNF.WISP.w, h: CNF.WISP.h, hp: EHP.willowisp, lure: e.lure }, TS)); break;
+      case 'locksluice': case 'swingcap': case 'foghorn': case 'lanternpost': break;   /* THE FOG CANAL's machines: src/canal-hands.js reads them out of L.ents */
       case 'wickerqueen': { const a = WQN.newWickerQueen({ ...base, t: 'wickerqueen', w: WQN.WQ.w, h: WQN.WQ.h, hp: EHP.wickerqueen, maxHp: EHP.wickerqueen, noGrav: true, markH: 90, face: e.face || -1 }); boss = a; enemies.push(a); break; }   /* THE WICKER QUEEN (src/wicker-queen.js): asleep on the green until you come through its door; every clock a number (A3) */
       case 'hobbyhorse': { const st = MU.newHorse(px, py, e.face || -1); enemies.push({ ...base, t: 'hobbyhorse', w: MU.HORSE.w, h: MU.HORSE.h, markH: 36, hp: EHP.hobbyhorse, mode: st.mode, st, speed: 0 }); break; }   /* and the elite: it charges the moment a back is turned */
       case 'ambusher': { const st = DF.newAmbusher(px, py); enemies.push({ ...base, t: 'ambusher', w: DF.AMBUSHER.w, h: DF.AMBUSHER.h, hp: EHP.ambusher, mode: st.mode, st }); break; }
@@ -3295,6 +3299,7 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
 const COAST_PATH = [[260, 172], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [105, 80], [160, 100], [26, 96], [26, 26], [140, 8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
 const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' },
+  { id: 'canal', kind: 'level', level: LEVELS.findIndex(l => l.id === 'canal'), x: 48, y: 158, name: 'THE FOG CANAL' },   /* THE FOG CANAL (claude/canal): the main road out of WAYMEET, in road order (map-grammar); at the merge THE MASKWRIGHT'S THEATRE (56, 154) comes after it */
   { id: 'fair', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fair'), x: 72, y: 148, name: 'THE HARVEST FAIR' },   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): the second stop on the road inland, on the road between WAYMEET and THE HEXED FIELDS */
   { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 62, y: 122, name: 'THE HEXED FIELDS' },   /* moved up-left of Waymeet, off the entrance V (map-redesign §6, 2b) - the only node this fix moves */
   { id: 'burial', kind: 'level', level: LEVELS.findIndex(l=>l.id==='burial'), x: 130, y: 82, name: 'THE BURIAL CAVERNS' },
@@ -3306,7 +3311,7 @@ const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l 
    the return leg painted at full road weight on top of the outbound one, so the required town read as a dead end.
    Waymeet does not move. The road now enters, runs through it, and climbs away in a new direction; THE HEXED FIELDS
    moves so the road leaving Waymeet does not have to double back across its own entrance to reach it. */
-const INLAND_PATH = [[140, 176], [40, 162], [72, 148], [62, 122], [130, 82], [170, 66], [214, 76], [260, 34]];
+const INLAND_PATH = [[140, 176], [40, 162], [48, 158], [72, 148], [62, 122], [130, 82], [170, 66], [214, 76], [260, 34]];
 /* THE FIFTH SHEET, EMPTY (map-redesign §4.1/§8 step 2). DESERT_NODES is [] on purpose - none of the desert's eight
    levels is in LEVELS yet, and a node whose level index is -1 crashes nodeLocked's LEVELS[-1] on the map's first
    frame (§8). This is geometry and a seam only: the entry point the desert's own road will start from one day, and
@@ -4262,6 +4267,8 @@ const BEASTS = [
   { t: 'sandgob', name: 'THE SAND GOBLIN', sub: 'a mound with eyes', desc: 'Buried, it is only sand and two eyes, and a blade goes straight through it. Walk past and it rises with the sand pouring off - that is the tell - and cuts twice with a knife a shield turns. Then it goes under and comes up again ahead of you.' },
   { t: 'cutthroat', name: 'THE CUTTHROAT', sub: 'watch the mark, not the arm', desc: 'A veiled looter with a scimitar, and he feints: every other time he comes in, the blade half rises and he stamps - no mark, nothing behind it. Then the real one, high and back with a glint and a yellow mark, and a shield turns it. Hold your guard through the feint.' },
   { t: 'mummer', name: 'THE MUMMER', sub: 'do not turn your back', desc: 'A masked player in sackcloth with bells on his cap. He moves ONLY while nobody is looking at him: face him and he freezes where he stands, and a frozen mummer can be cut down in about three blows. Turn away and the bells jingle as he creeps up behind you. When his mask glows red he is at arm\'s length and about to strike: look at him. In two-player, he is frozen if EITHER hero faces him.' },
+  { t: 'grindylow', name: 'THE GRINDYLOW', sub: 'what lives under the towpath', desc: 'A weed-slick imp of the canal, one of Jenny Greenteeth\'s brood. Under the water it is only ripples and bubbles, and nothing you swing finds it. Stand at the edge over its water and it comes in under you: the water rings (a red !!), and then it has your ankle and pulls. Jump the ring, or strike it and knock the thing up out of the water; caught, shake it off - three quick presses - before it has you in the canal. Out of the water, dazed or left on the wall of a lock that drained away under it, it is weak.' },
+  { t: 'willowisp', name: "WILL-O'-THE-WISP", sub: 'a lantern with no post', desc: 'A cold green light in the fog that bobs with nothing under it. Every lantern on the canal burns yellow and stands on a post; this does neither. Come near and it drifts on ahead of you as if it marked the way - off the bank, over the water, onto the weed. Close to, it gutters (a yellow !) and flares in your face. One blow and it pops. A foghorn\'s clear air shows it for what it is.' },
   { t: 'hobbyhorse', name: 'THE HOBBY-HORSE', sub: 'it charges the moment you turn away', desc: 'A carved horse\'s head on a pole and a cloth skirt, and a player under it. The moment your back is turned it rears (a red eye, a bell) and CHARGES a long run in a straight line, and it will not stop for a look once it has begun. It stands where the charge ends and will not charge again until you have looked at it. Jump the charge, or climb a haystack out of its way. In two-player it charges only when BOTH heroes have their backs turned.' },
   { t: 'wickerqueen', name: 'THE WICKER QUEEN', sub: 'the maypole green at nightfall', desc: 'She moves only while you look away, and her ribbons turn even while you look: jump the low lash, duck the high. Turn your back to draw her across the green, then turn round while she stands on the embers: the wicker catches. Cut her while she burns. In two-player either look holds her.' },
   { t: 'slinger', name: 'THE ROOFTOP SLINGER', sub: 'he owns the tops of the ruins', desc: 'He stands on a tower\'s top and stones the road. As the sling whirls, a red arc falls to the spot you stand on: step off it, or take the stone on a shield. Climb the tower to him and he is only a man with a sling - up close he can do no more than kick.' },
@@ -5116,7 +5123,7 @@ const COLS = { sexton:['#4e4460','#b07a2a','#d8d0bc'], duneworm:['#a8805a','#e2b
   prise: ['#b8a898', '#e0d4c4', '#c9463d'], holdfast: ['#4a8a7a', '#c9463d', '#6a8a80'], drownedking: ['#4a7a6e', '#c9a83a', '#7ff0e0'], propman: ['#6faa4a', '#8a5a32', '#c9b27c'], clinger: ['#cfc8b8', '#9a9280', '#c9463d'], prince: ['#798a6c', '#5a3350', '#d4b24e'], courtier: ['#d8cfb4', '#4e2c48', '#c9a84a'], grandmother: ['#6a5a7a', '#7aa85a', '#f6f6ee'], assassin: ['#26222e', '#3a3448', '#d8e070'], berserker: ['#8fd160', '#4a7a32', '#c9463d'], watch: ['#36535e', '#9fb8a8', '#ccd4dc'], lampreeve: ['#2a3a34', '#8a6a44', '#14201e'], tollmaster: ['#5b3566', '#e6b94a', '#cfc6a8'], captain: ['#d14a3a', '#e6b94a', '#191622'], cutlass: ['#c9463d', '#8a4a2a', '#e8dcc0'], boarder: ['#8a6a3a', '#5a4424', '#c9b27c'], marine: ['#4a5a6a', '#2e3a48', '#c9d1dc'], bosun: ['#7a4a3a', '#4a2c22', '#ffd36b'], lookout: ['#9aa39a', '#6a7268', '#e8dcc0'], quarter: ['#3a2a4a', '#22182e', '#ffd36b'], sailor: ['#6a7a68', '#48584a', '#8a9a84'], netter: ['#5a6a60', '#3e4a44', '#7a8a80'], urchin: ['#2a2630', '#4a4458', '#8a84a0'], angler: ['#2e3a3e', '#1c2428', '#7ff0e0'], petrel: ['#3a3a44', '#22222a', '#c9d1dc'], reefmaw: ['#2e4a3a', '#1c2c24', '#8fb08a'], turtle: ['#5a6a3a', '#3e4a28', '#7a8a4a'], eel: ['#2a3a3a', '#3e5452', '#a8b8a0'], heronfoe: ['#8a96a0', '#c8d0d4', '#e0b040'], crab: ['#b8483a', '#e07060', '#e8c8a8'], scout: ['#a8cfc6', '#4a6a2a', '#7ff0e0'], siren: ['#a8cfc6', '#1f3a36', '#7ff0e0'], tideguard: ['#e07a6a', '#4a9a8a', '#a8cfc6'], herald: ['#e07a6a', '#4a9a8a', '#6a8a3a'], soldier: ['#5d4a8a', '#c9d1dc', '#6faa4a'], javelin: ['#8a5a32', '#5d4a8a', '#6faa4a'], heavy: ['#7c8797', '#c9d1dc', '#5d4a8a'], dummy: ['#c9b27c', '#8a5a32', '#e8dcc0'], sweep: ['#2a2630', '#5a7a3a', '#b8a888'], stormshaman: ['#6faa4a', '#c9a0ff', '#e8dcc0'], seawitch: ['#8a2f3a', '#c9a0ff', '#4a9a8a'], crow: ['#2a2433', '#4a4458', '#ff4a3a'], horn: ['#6faa4a', '#e0b040', '#c9463d'], bale: ['#d9b44a', '#8a6a32', '#9a5aa8'], shardling: ['#bfe6f5', '#eefaff', '#7aa8c8'], fledgling: ['#8a7a64', '#d8c8a8', '#e8b040'], gobpriest: ['#8e3a32', '#e8a83a', '#c9a44a'], gobmage: ['#34467a', '#f6f0dc', '#c9a44a'], suncatcher: ['#bfe6f5', '#7fe8ff', '#4a6a90'], roc: ['#8a8478', '#bfe6f5', '#c9a83a'], sentry: ['#6faa4a', '#5a2a7a', '#e0b040'], gqueen: ['#5a2a7a', '#6faa4a', '#e0b040'], hearthgob: ['#6faa4a', '#c9463d', '#8a5a32'], cutter: ['#6faa4a', '#8a919c', '#5d4a8a'], lance: ['#9aa3b0', '#c9463d', '#e0b040'], snuffer: ['#3a3448', '#8a5a32', '#ffd36b'], sailer: ['#6faa4a', '#c9b27c', '#c9463d'], miner: ['#6faa4a', '#c9b27c', '#8a919c'], tippler: ['#6faa4a', '#5a4a3a', '#8a919c'], sheargob: ['#6faa4a', '#c9d1dc', '#c9b27c'], gaffer: ['#6faa4a', '#8a7a68', '#8a5a32'], bat: ['#3a3448', '#5a5468'], grub: ['#b8d878', '#e8ff9a', '#7a9a48'], rockgoblin: ['#6faa4a', '#8a919c', '#ffd36b'], golem: ['#9a9082', '#c8bca8', '#6e7a44'], kite: ['#c9463d', '#ffd36b', '#6faa4a'], hare: ['#8a6a4a', '#e8dcc0'], wight: ['#c8d8c8', '#8aa08a'], windcaller: ['#6faa4a', '#c9a0ff', '#e8dcc0'], forgemaster: ['#8a919c', '#6a4a3a', '#ffd36b'], greathound: ['#5a4a3a', '#3a2e22', '#ff4a3a'], spider: ['#3a3448', '#5a5468'], owl: ['#7a5a3a', '#e8dcc0', '#ffd36b'], troll: ['#6a7a5a', '#3f6e2c', '#46543a'], harpy: ['#8a8478', '#c9a83a', '#5a5448'], goat: ['#e8e0d0', '#6faa4a', '#7a5a8a'], ram: ['#d8d0c0', '#c9a83a', '#c9463d'], thief: ['#6faa4a', '#7a5a2a', '#c9463d'], pike: ['#6faa4a', '#5a4a3a', '#c9d1dc'], folk: ['#6faa4a', '#c9b27c'], master: ['#8a7a68', '#5a4a3a', '#c9463d'], bearer: ['#6faa4a', '#c9463d'], king: ['#c9463d', '#ffd36b', '#6faa4a'], sporeling: ['#9a5aa8', '#f0e6c8', '#6a3a7a'], lurker: ['#7a5aa8', '#f0e6c8', '#c9463d'], spitcap: ['#9a5aa8', '#e8e0f0', '#c9a0ff'], weaver: ['#c8bcd0', '#8a7e9a', '#ff4a3a'], drone: ['#e8e0f0', '#c8bcb0'], shaman: ['#4aa0b0', '#f0e6c8', '#2a6a7a'], gill: ['#9a5aa8', '#e0b0f0', '#ffd0ff'], heart: ['#ff7a9a', '#ffd0ff', '#c9463d'], mother: ['#8a8a54', '#b8c060', '#4a3a2a'], sapper: ['#6faa4a', '#1b1626', '#c9463d'], brute: ['#6faa4a', '#5d4a8a', '#6b4a2a'], hound: ['#5a4a3a', '#3a2e22', '#c9463d'],
   puffer: ['#d9b968', '#a3813a', '#efe3b8'], jelly: ['#c890d8', '#8f5aa8', '#f0d8ff'], lamprey: ['#5c6858', '#38402f', '#7a2c3a'], manta: ['#3a4a5c', '#22303e', '#6c8598'], chief: ['#8f2f28', '#c9d1dc', '#6faa4a', '#e0b040'], fox: ['#d9782a', '#fff6e0'], hopper: ['#5a9a3a', '#d8e0a0', '#3a6a2a'], archer: ['#3f5a33', '#6b4a2a', '#6faa4a'], frog: ['#5a9a3a', '#d8e0a0', '#c9463d'], sprig: ['#6faa4a', '#c9463d', '#3f6e2c'], shield: ['#5d4a8a', '#8a5a32', '#c9d1dc'], spit: ['#c9463d', '#f0e6c8', '#ff9a5c'], thorn: ['#6faa4a', '#c9d1dc', '#c9463d'], wasp: ['#e0b040', '#1b1626', '#dfe8ff'], queen: ['#e0b040', '#1b1626', '#fff1a0', '#c9463d'],
   merrowspear: ['#3a9a80', '#173a30', '#e8e2c8'], merrowcaller: ['#2a8a72', '#1d4a44', '#7ff0e0'], merrowbrute: ['#3d8a72', '#1f5a48', '#e8d4d0'],
-  drownedknight: ['#56656c', '#3f8f7d', '#8ff0dc'], drownedcaptain: ['#56656c', '#9a2f40', '#d0a848'], whelp: ['#6a6280', '#8e86a4', '#9affd8'], mummer: ['#b89868', '#d9b877', '#b8382c'], hobbyhorse: ['#a83c3c', '#7a5230', '#e8c23a'], wickerqueen: ['#b08a4e', '#e8c23a', '#b8382c'] };   /* drowned plate, its shadow, and the verdigris on his gorget */
+  drownedknight: ['#56656c', '#3f8f7d', '#8ff0dc'], drownedcaptain: ['#56656c', '#9a2f40', '#d0a848'], whelp: ['#6a6280', '#8e86a4', '#9affd8'], grindylow: ['#3e6a4a', '#5e9a6a', '#e8f8c8'], willowisp: ['#6ae8b0', '#dcffe8', '#2a8a6a'], mummer: ['#b89868', '#d9b877', '#b8382c'], hobbyhorse: ['#a83c3c', '#7a5230', '#e8c23a'], wickerqueen: ['#b08a4e', '#e8c23a', '#b8382c'] };   /* drowned plate, its shadow, and the verdigris on his gorget */
 
 // ---------- damage ----------
 function rumble(ms, mag) { if (!SET.rumble) return; try { const gps = navigator.getGamepads ? navigator.getGamepads() : []; for (const gp of gps) if (gp && gp.vibrationActuator && gp.vibrationActuator.playEffect) { gp.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: mag, weakMagnitude: mag * 0.6 }); break; } } catch {} }
@@ -5912,6 +5919,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
   if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing */
+  if (e.t === 'grindylow') { const k = CNF.grindylowTake(e); if (!k) { SFX.splash && SFX.splash(); return; } dmg *= k; }   /* THE FOG CANAL: under the water nothing finds it; the ripple knocks it up; out of the water it takes double */
   if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake'||e.mode==='realmTell')return;
    if(realmWarded(e)&&!(e.open>0)){realmWardHit(e);SFX.clank();SFX.crack();shakeCam(2);ringAt(e.x,e.y-22,26,REALM.col[e.realm.kind][1],0.3);sparks(e.x,e.y-24,P.face,8);return;}}   /* WARDED (claude/archfix): a clang, a flare of his ward, the word over him (drawn by drawRealmFx: number() drops any sentence not a move word, so the old line here was never on the screen) and the banner naming the opening again */   /* IN A REALM his ward holds until its one opening (src/mage-realms.js) */   /* between two places, he is in neither */
   if(e.t==='burieddead'&&(e.mode==='burrow'||e.mode==='eruptTell'))return;
@@ -9545,7 +9553,7 @@ function sendHome(e, top, bot) { if (e.hx === undefined) return; e.x = e.hx; e.y
 // the bank - three tiles either side of the water they were put down by - and no further: a chase stops at the edge of
 // it, and one knocked out past it (or spawned outside it) walks back, over a step if it has to, to the nearest water.
 // One put down nowhere near water (a crab on a ship's deck) has no leash and keeps its old ways.
-const AMPHIB = new Set(['turtle', 'crab', 'heronfoe', 'netter', 'sailor', 'merrowspear', 'merrowcaller', 'merrowbrute']);
+const AMPHIB = new Set(['turtle', 'crab', 'heronfoe', 'netter', 'sailor', 'merrowspear', 'merrowcaller', 'merrowbrute', 'grindylow']);
 function shoreOf(x, y) {
   let best = null, bd = 1e9;
   for (const q of (L.pools || [])) { if (q.harm) continue;
@@ -14212,7 +14220,7 @@ function updateGaffer(e, dt) {
   switch (e.mode) {
     case 'hookTell': e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { e.mode = 'hook'; e.modeT = 0.45; e.cd = GAFFER.every; SFX.throwWhoosh(); SFX.clank();
-        if (!P.dead && Math.sign(d) === e.face && ad < GAFFER.reach && Math.abs(P.y - e.y) < 26) {
+        if (!P.dead && Math.sign(d) === e.face && ad < GAFFER.reach && (Math.abs(P.y - e.y) < 26 || (e.bargee && P.y > e.y && P.y - e.y < 54))) {
           damagePlayer(e.x, DMG.gafferHook, { unblockable: true, who: e, name: 'THE GAFF' });
           P.onMover = null; P.ground = false; P.vx = -Math.sign(d) * 150; P.vy = -70; number(P.x, P.y - 26, 'OFF THE BUCKET', '#ff6b6b'); } }
       break;
@@ -14229,7 +14237,7 @@ function updateGaffer(e, dt) {
       if (!near) { want = e.face * 10; break; }
       e.face = Math.sign(d) || e.face;
       if (ad < GAFFER.haft && Math.abs(P.y - e.y) < 22 && e.modeT <= 0) { e.mode = 'haftTell'; e.modeT = 0.45; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.gobHurt(); break; }
-      if (e.cd <= 0 && e.modeT <= 0 && ad < GAFFER.reach && Math.abs(P.y - e.y) < 26 && (P.onMover || ad > GAFFER.haft)) {
+      if (e.cd <= 0 && e.modeT <= 0 && ad < GAFFER.reach && (Math.abs(P.y - e.y) < 26 || (e.bargee && P.y > e.y && P.y - e.y < 54)) && (P.onMover || ad > GAFFER.haft)) {   /* (THE FOG CANAL's bargee, e.bargee: from a towpath he hooks down at the barge passing under him) */
         e.mode = 'hookTell'; e.modeT = GAFFER.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.tell(true); break; }
       want = ad > 22 ? e.face * e.speed : 0;
   }
@@ -18390,6 +18398,7 @@ const CV_STEP = { scorpion: DF.scorpionStep, sandgob: DF.sandGobStep, vulture: D
 const CV_HURT = { scorpion: 6, cutthroat: 6, slinger: 6, ambusher: 7 };   /* the frame each set is hurt in (the vulture's set ends perched and the goblin's burrowing) */
 const CV_BANDITS = new Set(['cutthroat', 'slinger', 'ambusher']);   /* THE LOOTERS: men, not desert creatures - the sun takes them too */
 SPR.mummer = FG.bakeMummer(); SPR.hobbyhorse = FG.bakeHobbyHorse(); SPR.wickerqueen = bakeWickerQueen(); HAS_HURT.add('mummer'); HAS_HURT.add('hobbyhorse');   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
+SPR.grindylow = CNF.bakeGrindylow(); SPR.willowisp = CNF.bakeWisp();   /* THE FOG CANAL's pair (src/canal-foes.js, greybox) */
 SPR.cutthroat = CB.bakeCutthroat(); SPR.slinger = CB.bakeSlinger(); SPR.ambusher = CB.bakeAmbusher(); const CV_STONE = CB.bakeSlingStone();
 HAS_HURT.add('cutthroat'); HAS_HURT.add('slinger'); HAS_HURT.add('ambusher');
 let CV = null, CVART = null;
@@ -18797,6 +18806,7 @@ function drawBurningTown(cx, cy) {
 }
 function updateVillage(dt) {
   updateUnburied(dt); updateCaravan(dt); updateFair(dt);
+  if (CANAL) CNH.canalUpdate(CANAL, CNX, dt);   /* THE FOG CANAL (src/canal-hands.js) */
   if (!VG) return;
   villageTick(dt);
   /* THE SMOKE RISES (THE ROOFTOPS): a hero in the air inside a plume while it is up is carried up with it, to its top */
@@ -19002,6 +19012,7 @@ function drawHeaps(cx, cy) {
 /* THE STRAW, THE CHAR AND THE PROPS, under the flames */
 function drawVillage(cx, cy) {
   drawUnburied(cx, cy); drawCaravan(cx, cy); drawFair(cx, cy);
+  if (CANAL) CNH.drawCanal(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL: the gates, the bridges, the weed, the machines */
   if (!VG) return;
   drawSmoke(cx, cy); drawHeaps(cx, cy); drawBuckets(cx, cy);
   for (const f of fires) if (f.pillar && f.delay > 0 && f.x > cx - 20 && f.x < cx + VW + 20) { const x = Math.round(f.x - cx), y = Math.round(f.y - cy), soon = f.delay < PILLAR.warn;   /* a pillar at rest: its vent glowing, and brighter just before it goes */
@@ -19956,6 +19967,21 @@ function updateFlood(dt) {
   if (flood.x1 < F.x1) { flood.x1 = Math.min(F.x1, flood.x1 + F.speed * dt); if (Math.random() < dt * 30) parts.push({ x: flood.x1 + (Math.random() - 0.5) * 12, y: flood.y - Math.random() * 10, vx: 40, vy: -40 - Math.random() * 40, life: 0.5, max: 0.5, col: '#eefaff', size: 2, grav: 300 }); if (Math.floor(flood.t * 2) !== Math.floor((flood.t - dt) * 2) && Math.abs(P.x - flood.x1) < 300) SFX.splash(); }
   else if (flood.t > 14) { flood.x0 += 90 * dt; if (flood.x0 >= flood.x1 - 4) { L.pools = L.pools.filter(p => p !== flood); flood = null; marks.add('flood'); } }
 }
+/* ================= THE FOG CANAL (src/fog-canal.js builds it, src/canal-rig.js is its machinery, src/canal-hands.js its hands, src/canal-foes.js its two new
+   foes): this is only the context those hands are given, and the reset. ================= */
+let CANAL = null;
+const CNX = { T, L: () => L, movers: () => movers, enemies: () => enemies, isSolid, box, overlap, cellSet: (x, y, t) => cellSet(x, y, t), resolve: () => resolveTiles(), attackBox: () => attackBox(),
+  eachHero: fn => { for (const pp of players) asPlayer(pp, () => fn(P)); }, hero: () => P, bodies: () => players.filter(p => !p.dead).concat(enemies.filter(e => e.alive && !e.noGrav)), sfx: SFX, sparks,
+  dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), near: (x, y, r) => Math.abs(x - P.x) < r && Math.abs(y - P.y) < r, hint: msg => { hintT = 4.5; hintMsg = msg; }, time: () => time,
+  checkpoint: () => (typeof checkpoint !== 'undefined' && checkpoint && L && L.START && !(checkpoint.x === L.START.x * TS + 8 && checkpoint.y === (L.START.y + 1) * TS)) ? checkpoint : null, hurtHero: (x, d, o) => damagePlayer(x, d, o),
+  solidUnder: (x, y) => { const t = tileAt(Math.floor(x / TS), Math.floor((y + 2) / TS)); return isSolid(Math.floor(x / TS), Math.floor((y + 2) / TS)) || isOneWay(t); }, makeCanvas: (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; } };
+/* the grindylow's and the wisp's context (src/canal-foes.js) */
+const CNFX = { hero: () => P, barge: () => CANAL && CANAL.barge, surfaceAt: x => CNH.surfaceAt(CANAL, CNX, x), solidAt: (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return isSolid(tx, ty) || isOneWay(tileAt(tx, ty)); },
+  press: () => ({ jump: jumpPress, atk: atkPress, left: leftPress, right: rightPress }), hurtHero: (x, d, o) => damagePlayer(x, d, o), mark: (e, txt, col) => number(e.x, e.y - (e.h || 10) - 10, txt, col), sfx: SFX,
+  hint: (k, msg) => CNH.tellHint(CANAL, CNX, k, msg), ring: (x, y, r, col) => ringAt(x, y, r, col, 0.4), cleared: (x, y) => CNH.clearedAt(CANAL, x, y) };
+function canalReset() { CANAL = L && L.canal ? CNH.canalReset(CNX) : null;
+  if (CANAL) for (const e of enemies) { const src = L.ents[+String(e.xpKey || '').split('.')[0]]; if (src && src.canal && src.t === e.t) Object.assign(e, src.canal); }   /* a bargee's hook, an archer's eyes in the fog (the ent's canal flags) */
+  if (window.BK) Object.assign(window.BK, { canal: () => CANAL }); }
 /* ---------- THE CHASE ENGINE (claude/chase, src/chase.js): L.chases = [spec], opt-in. The state is in memory, never saved. ---------- */
 let chases = [], chaseBeamCd = 0, chaseMusicOn = false;
 function chasesLoad() { chases = (L.chases || []).map(c => ({ sp: chaseSpec(c), st: newChase() })); chaseBeamCd = 0; chaseMusicOn = false; }
@@ -22331,6 +22357,7 @@ function updateEnemies(dt) {
     if (e.t === 'merrowbrute') { updateMerrowBrute(e, dt); continue; }
     if (e.t === 'drownedknight' || e.t === 'drownedcaptain') { updateDrownedKnight(e, dt); continue; }
     if (e.t === 'whelp') { beastSeen('whelp'); updateWhelp(e, dt); continue; }
+    if (CNF.CANAL_FOES.has(e.t)) { beastSeen(e.t); if (e.t === 'grindylow') CNF.stepGrindylow(e, dt, CNFX); else CNF.stepWisp(e, dt, CNFX); continue; }   /* THE FOG CANAL's two (src/canal-foes.js) */
     if (e.t === 'reefmaw') { updateMaw(e, dt); continue; }
     if (e.t === 'turtle' || e.t === 'eel' || e.t === 'heronfoe' || e.t === 'crab' || e.t === 'scout' || e.t === 'siren' || e.t === 'tideguard') { updateShore(e, dt); continue; }
     if (e.t === 'brute') { // slow, heavy: an unblockable overhead you dodge, a blockable sweep
@@ -22380,7 +22407,7 @@ function updateEnemies(dt) {
           /* THE COMBINE: this horn's own pack, woken where it stands behind the gate - not the generic camp squad */
           if (e.pack) for (const p of e.pack) { const hx = e.x + p.dx, hy = p.y; enemies.push({ x: hx, y: hy, vx: 0, vy: 0, face: 1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0, t: 'hound', w: 12, h: 7, hp: EHP.hound, speed: 105, timer: 0, air: false }); burst(hx, hy - 6, 5, COLS.hound, 40, 0.4); }
         } } else if (e.horn && !e.rafters && !e.blown) e.hornT = Math.max(0, e.hornT - dt * (e.stagger > 0 ? 3 : 1));
-      const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < 70) && !P.dead && !(e.trialSt && e.trialSt.done);   /* a trial's archer puts the bow down when his gate is up */
+      const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < 70) && !P.dead && !(e.trialSt && e.trialSt.done) && !(e.fogSight && !CNH.litAt(CANAL, P.x, P.y - 8));   /* (THE FOG CANAL, e.fogSight: in the fog he sees only a lit hero) */   /* a trial's archer puts the bow down when his gate is up */
       if (near) e.face = Math.sign(d) || e.face;
       e.timer -= dt; e.draw = Math.max(0, e.draw - dt); e.loose = Math.max(0, (e.loose || 0) - dt);
       let want = 0;
@@ -23674,6 +23701,7 @@ function updateMovers(dt) {
     if (m.kind === 'bucket') { updateBucket(m, dt); continue; }
     if ((m.kind === 'hexvine' || m.kind === 'haycart') && updateFieldsMover(m, dt)) continue;   /* THE HEXED FIELDS */
     if (m.mage && updateMageMover(m, dt)) continue;   /* THE MAGE'S FOLLY: the books and the lanes (a planet is a wheel, and falls through to the wheel) */
+    if (m.canal && CNH.canalMover(CANAL, CNX, m, dt)) continue;   /* THE FOG CANAL: the water in the locks, and the barge on it */
     const oldX = m.x, oldY = m.y; m.dy = 0;
     if (m.kind === 'pad') { // sinks while stood on, floats back up when left
       const on = P.onMover === m; m.sink = Math.max(0, Math.min(1, m.sink + (on ? (m.big ? 0.3 : 0.5) : -1.4) * dt));   /* the big leaf goes under at six-tenths the pace: three seconds and a bit, against two */
@@ -25388,6 +25416,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.fillStyle = m.state === 'wither' ? '#3a6a70' : '#2a8a90'; g.beginPath(); g.ellipse(cxm + wob, top + 4, m.w / 2, 6, 0, Math.PI, 0); g.fill(); g.fillRect(x + wob, top + 3, m.w, 3); // the cap
       g.fillStyle = '#bff0f0'; for (const dx of [-9, -2, 6]) g.fillRect(cxm + dx + wob, top + 1 - (dx === -2 ? 2 : 0), 2, 2); g.fillStyle = '#1b1626'; g.fillRect(x + wob, top + 6, m.w, 1);
       if (m.state === 'bud' && !(m.cd > 0) && Math.floor(time * 2) % 2) { g.globalAlpha = 0.5; g.strokeStyle = '#bff0f0'; g.lineWidth = 1; g.beginPath(); g.moveTo(cxm - 3, top - 5); g.lineTo(cxm, top - 9); g.lineTo(cxm + 3, top - 5); g.stroke(); g.globalAlpha = 1; } } // an up-arrow over a bud that is ready
+    else if (m.canal) CNH.drawCanalMover(CANAL, g, CNX, m, cx, cy, time);   /* THE FOG CANAL: the barge */
     else if (m.mage) drawMageMover(m, cx, cy);   /* THE MAGE'S FOLLY: the books and the planets */
     else if (m.kind === 'hexvine') drawHexVine(m, cx, cy);   /* THE HEXED FIELDS */
     else if (m.kind === 'haycart') drawHayCart(m, cx, cy);
@@ -25761,6 +25790,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (!e.alive || e.gone > 0 || e.x < cx - 40 || e.x > cx + VW + 40) continue;
     if (e.t === 'mother' || e.t === 'heart') continue;
     if (e.t === 'duneworm') { drawDuneWormFx(e, cx, cy); if (!dwShown(e)) continue; }   /* under the sand he is a ripple, a sinkhole or an arc: his own draw; up, the sprite below */
+    if (CNF.CANAL_FOES.has(e.t)) { CNH.drawCanalFoeFx(CANAL, g, CNX, e, cx, cy, time); if (!CNH.canalFoeShown(e)) continue; }   /* THE FOG CANAL: a grindylow under the water is its ripples (and its shadow in a lantern's light) */
     if (e.t === 'emberwisp') { drawEmberWisp(e, cx, cy); continue; } if (e.t === 'pyromancer') { drawPyromancer(e, cx, cy); continue; }
     if(e.t==='roc'&&L.belfry&&!rocOpen(e)&&e.mode!=='rise')drawRocArch(e,cx,cy);   /* her gust and talons; she herself is drawn below like anyone */
     if (e.t === 'gobmage' && e.mode === 'runeTell' && e.markX !== undefined) {   /* THE RUNE on the floor where it will go off: red, because no shield turns it, and closing as it comes */
@@ -25795,6 +25825,7 @@ function drawWorld(cx, cy, showPlayer) {
     let frame = 0;
     if (e.t === 'lancer') frame = lancerFrame(e);
     else if (e.t === 'mummer') frame = e.hurtT > 0 ? 5 : ({ glow: 3, strike: 4, recover: 0 })[e.mode] ?? (e.mode === 'creep' ? 1 + Math.floor(e.anim * 6) % 2 : 0);   /* THE MUMMER: 3 is the red mask */
+    else if (e.t === 'grindylow') frame = CNF.grindylowFrame(e); else if (e.t === 'willowisp') frame = CNF.wispFrame(e);   /* THE FOG CANAL */
     else if (e.t === 'hobbyhorse') frame = e.hurtT > 0 ? 5 : ({ rear: 1, skid: 4 })[e.mode] ?? (e.mode === 'charge' ? 2 + Math.floor(e.anim * 12) % 2 : 0);   /* THE HOBBY-HORSE: 1 is the reared head, 2-3 the charge */
     else if (CV_FOES.has(e.t)) frame = e.hurtT > 0 && CV_HURT[e.t] !== undefined ? CV_HURT[e.t] : e.st ? e.st.frame : 0;   /* THE SUNKEN CARAVAN: desert-foes.js names the frame */
     else if (UNBF.UNB_FOES.has(e.t)) frame = UNBF.unbFrame(e);   /* THE UNBURIED FIELD: each set ends in its hurt pose, and a corpse lying down is not one */   /* mounted and on foot share one set: his hurt pose depends on which */
@@ -26337,6 +26368,7 @@ function drawWorld(cx, cy, showPlayer) {
         if (P.wick > 0) hole(P.x - cx, P.y - 8 - cy, 72); }
       g.drawImage(FOGC, 0, 0); }
   }
+  if (CANAL && state !== 'win') CNH.drawCanalFog(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's fog: holes for the lit, the theatre's glow, the wisps and lanterns on top */
   drawBloom(cx, cy); drawWindFx(); drawSpiderSigns(cx, cy); drawSlick(cx, cy); drawSkillFx(cx, cy); if (L.hush) drawHush(cx, cy);
   if (L.dark && (L.dark > 0.05 || (L.darkZones || []).some(z => P.x > z.x0 - 200 && P.x < z.x1 + 200 && P.y > z.y0 - 100 && P.y < z.y1 + 100) || darkNow > 0.05)) { // the mine: black, with holes for every lamp, fire and the light you carry
     if (!DARKC || DARKC.width !== VW || DARKC.height !== VH) { DARKC = document.createElement('canvas'); DARKC.width = VW; DARKC.height = VH; }
@@ -26489,6 +26521,7 @@ const fallenBlocked = (tx, ty) => tx < 0 || ty < 0 || tx >= LW || ty >= LH || (g
 function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time, fallenBlocked)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's - its holes and windows only where no tile stands in front of them (round 2) */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
+  if (L.canal && CNH.paintCanalRoom(g, st, sx, sy, w, h)) return;   /* THE FOG CANAL (greybox rooms) */
   if (L.deepHolds && DH.paintHold(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE DEEP: a cargo hold, a galley, a gun deck, the tribute hold (src/deep-holds.js) */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
   if (L.caravan && CR.paintRuinRoom(g, st, sx, sy, w, h, tx0, ty0)) return;   /* and THE SUNKEN CARAVAN its ruins: the inside of a tower or a house, in the violet of the shade */

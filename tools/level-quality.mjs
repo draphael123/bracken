@@ -19,7 +19,7 @@ const TS = 16;
 
 /* WHICH LEVELS ARE HELD TO IT. New or reworked levels only: the old campaign misses the bar in places (--all shows where) and is not being reworked.
    Add a level id here in the lane that builds or reworks it. An id that is not in LEVELS yet is skipped with a note (the theatre lane lands later). */
-export const GATE = ['theatre', 'fair'];
+export const GATE = ['theatre', 'fair', 'canal'];   /* (claude/canal: THE FOG CANAL) */
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
 

@@ -5,6 +5,7 @@ import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER'
 import {buildBurningVillage} from './burning-village.js';
 import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
+import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
 import {hauntedCoast} from './haunted-coast.js';
@@ -7719,7 +7720,10 @@ export const LEVELS = [
   { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'fault line, shield and quake', build: () => trialYard('geomancer'), hidden: true },
   /* THE HARVEST FAIR (claude/fair1, L1: greybox + the facing mechanic): the road inland's second stop, between WAYMEET and THE HEXED FIELDS (the Fields
      need it now). APPENDED, like every level since the log began, so no index and no save moves; its place on the road is its `needs` and its map node */
-  { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'waymeet' },
+  { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'canal' },   /* (claude/canal: the canal runs between Waymeet and the fair on this branch; at the merge with claude/theatre the fair needs 'theatre' and the theatre needs 'canal') */
+  /* THE FOG CANAL (claude/canal, the greybox): out of WAYMEET by night barge into the old town's theatre quarter. APPENDED, so no index and no save
+     moves; its place on the road is its needs and its map node. JENNY GREENTEETH (claude/lockkeeper) is its boss, in the lock chamber at its end */
+  { id: 'canal', name: 'THE FOG CANAL', sub: 'out of Waymeet by night barge', rule: 'THE BARGE GOES WHERE THE WATER LETS IT. A LANTERN SHOWS YOU - TO THEM TOO.', build: () => buildFogCanal({ painter, T, TS }), needs: 'waymeet' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

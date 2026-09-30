@@ -69,12 +69,17 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   if (!plain) for (const [x0, x1, y, yb] of (L.glyphBridges || [])) lifts.push({ kind: 'glyph', x0, x1, y0: Math.min(y, yb ?? y), y1: Math.max(y, yb ?? y) });
   /* A CABLEWAY LINE (the Ore Road): its buckets are a clock of platforms along one cable - board anywhere along it, leave anywhere. L.cableBridges [x0, x1, y0, y1] */
   if (!plain) for (const [x0, x1, y0, y1] of (L.cableBridges || [])) lifts.push({ kind: 'cable', x0, x1, y0, y1 });
+  /* THE FLY LINES (THE MASKWRIGHT'S THEATRE, src/theatre-rig.js): a batten or its sandbag runs between two stops on its line - board it at either, leave it at either. L.rigBands [x0, x1, y0, y1] */
+  if (!plain) for (const [x0, x1, y0, y1] of (L.rigBands || [])) lifts.push({ kind: 'fly line', x0, x1, y0, y1 });
   if (!plain) for (const m of (L.moversExtra || [])) if (m.x0 !== undefined && m.x1 !== undefined && m.y !== undefined && m.kind !== 'lift' && m.kind !== 'growcap' && m.kind !== 'hexvine') lifts.push({ kind: m.kind, x0: Math.floor(m.x0 / TSZ), x1: Math.floor((m.x1 + (m.w || 16) - 1) / TSZ), y0: Math.floor(m.y / TSZ), y1: Math.floor(m.y / TSZ) });
   const swings = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'swing').map(m => { const pts = []; for (let k = -6; k <= 6; k++) { const th = 0.9 * k / 6; pts.push([Math.floor((m.px + Math.sin(th) * m.arm) / TSZ), Math.floor((m.py + Math.cos(th) * m.arm) / TSZ) - 1]); } return pts; });
   /* THE RIDES THE TOOLS ASK ABOUT (opts.rides): the lily pads, a wasp you pogo off, a water wheel's paddles, the width of a
      wind column and the great kite's flight. These are why Bracken Wood read 16% reachable and the Marsh 7%. The coin
      sprinkler in level.js does NOT pass the option, so no gold moves: only the audits see further. */
   const extraFoot = [], springs = new Set(), buds = new Set(), groups = []; let flight = null;
+  /* A FLY LINE'S TWO STOPS ARE LEDGES (THE MASKWRIGHT'S THEATRE): a batten stands at its high stop or its low one until its lock is struck, so each
+     stop is somewhere you can stand - which is how the model steps from one batten across to the next */
+  if (!plain) for (const [x0, x1, y0, y1] of (L.rigBands || [])) for (let x = x0; x <= x1; x++) for (const y of [y0, y1]) extraFoot.push(x + ',' + (y - 1));
   if (opts.rides && !plain) {
     for (const e of (L.ents || [])) {
       if (e.t === 'mover' && e.slab && !e.range && !e.vert && !e.sink) for (let x = e.x; x < e.x + (e.len || 3); x++) extraFoot.push(x + ',' + (e.y - 1));   /* A SLAB HELD STILL IS A LEDGE (the Witchlight Stair's cracked ledges and the Gargoyle's slabs): the band below only boards a mover from two tiles off */
@@ -123,6 +128,10 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     if (stand(at(x, y)) && !solid(at(x, y - 1)) && at(x, y - 1) !== T.SPIKE) footing.add(key(x, y - 1));
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (climbable(at(x, y))) footing.add(key(x, y));
   for (const k0 of extraFoot) footing.add(k0);
+  /* DEEP WATER THAT HURTS IS NOT A FLOOR (THE FOG CANAL, L.noWade): a fall into it costs health and hands you back to the bank (L.waterHurts), so the
+     canal's bed under it is nowhere anyone walks - only the barge (its L.rigBands) crosses. Only a level that says so: no other level's fill moves */
+  if (L.noWade) for (const p of (L.pools || [])) { if (p.swim || p.shallow) continue; const r0 = Math.floor(p.y / TSZ), r1 = Math.floor(((p.bottom ?? p.y + 64) - 1) / TSZ);
+    for (let x = Math.floor(p.x0 / TSZ); x < Math.ceil(p.x1 / TSZ); x++) for (let y = r0; y <= r1; y++) footing.delete(key(x, y)); }
   // SWIM WATER (the Long Water): every open cell of a swimmable pool is somewhere you can be - you swim to any
   // neighbour, and at the surface you can leap out. A tide pool counts at its high water; a boss's tide does not.
   const water = new Set(), surfRow = new Map();

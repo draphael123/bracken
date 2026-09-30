@@ -126,6 +126,11 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
      glowing mask and its bells - a read (where to LOOK) rather than a fight. WEIGHED UP after Daniel approved the greybox (2026-09-29): the fair read INDEX 34 against ~117 and no bodies are to be added, so a mummer is a 5 (constant attention: you may never turn your back) and the hobby-horse a 6 (the elite that charges 22 the moment
      a back is turned, committed and long) */
   mummer: 5, hobbyhorse: 6,
+  /* THE FOG CANAL (src/canal-foes.js; docs/briefs/fog-canal.md): the GRINDYLOW is 20 health and a told ankle grab (!!, jump it) that pulls you into the
+     canal (the water's 20 is the real cost), hidden under the surface until it rises - a read and a punish more than a fight, so a 3 (a sprig is 2);
+     the WILL-O'-THE-WISP is one blow of health and a small told flare, but it LURES you off the bank: a 1.5 (the marshlight). The canal's machinery
+     (a lock's paddle, a swing bridge's capstan, a foghorn, a lantern post) fights nobody */
+  grindylow: 3, willowisp: 1.5, locksluice: 0, swingcap: 0, foghorn: 0, lanternpost: 0,
   /* THE WICKER QUEEN, the fair's boss (claude/fair3): a boss is a 6 */
   wickerqueen: 6,
   /* THE DUNE WORM, the caravan's boss (2026-09-25): a boss is a 6. awningwinch is his trap and the camp's machine - furniture */
