@@ -273,7 +273,7 @@ const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
 // work is the fireball she sheds on the way, which lands where she was aiming and burns what it hits.
 const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (1 + 0.075 * LV_GROW())); // (HEAVY PLUNGE and FIREDROP were two ranks of this: the level brings it now)
-const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, wormLunge: DWM.WORM.dmg.lunge, wormBite: DWM.WORM.dmg.bite, sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lever, minerPick:16, abbot:ABBOT.dmg.censer, abbotChain:ABBOT.dmg.cast, abbotProcess:ABBOT.dmg.process, abbotKnell:ABBOT.dmg.knell, tome:TOME.dmg, hedgewarden:18, gravewarden:20, pyroCut:9, pyroThird:12, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroBellows:14, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 26, bellSlam: 34, bellPressure: 24, bellCharge: 32, bellSnip: 18, bellLeap: 24, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 14, homScurry: 18, homDive: 16, homSlam: 20, homFlask: 14, homPuddle: 6, archBolt: 18, archRend: 24, archCrush: 24, archBook: 12, archGlyph: 8, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 16, ploughFurrow: 20, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 26, krakSweep: 22, krakGrip: 6, krakDrag: 24, krakTide: 14, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7, temperCut: 13, scalderPour: 16, scalderLadle: 9, temperShove: 6, temperQuench: 20,
+const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, wormLunge: DWM.WORM.dmg.lunge, wormBite: DWM.WORM.dmg.bite, sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lever, minerPick:16, abbot:ABBOT.dmg.censer, abbotChain:ABBOT.dmg.cast, abbotProcess:ABBOT.dmg.process, abbotKnell:ABBOT.dmg.knell, tome:TOME.dmg, hedgewarden:18, gravewarden:20, pyroCut:9, pyroThird:12, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroBellows:14, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 26, bellSlam: 34, bellPressure: 24, bellCharge: 32, bellSnip: 18, bellLeap: 24, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 16, homScurry: 22, homDive: 20, homSlam: 22, homFlask: 18, homPuddle: 6, archBolt: 18, archRend: 24, archCrush: 24, archBook: 12, archGlyph: 8, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 22, ploughGoad: 16, ploughHead: 16, ploughFurrow: 20, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 26, krakSweep: 22, krakGrip: 6, krakDrag: 24, krakTide: 14, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7, temperCut: 13, scalderPour: 16, scalderLadle: 9, temperShove: 6, temperQuench: 20,
   owlSkim: 18,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16, drunkLob: 10, drunkStool: 14, drunkBottle: 12, drunkGlass: 8,
   priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, princeCut: 22, princeRise: 26, princeCrown: 16, princeWind: 12, courtier: 12, roofFall: 34, granSweep: 26, granFire: 22, granFeel: 18, granStick: 30, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveLunge: 24, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 22, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, venomTick: 5, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 15, heraldMaelstrom: 12, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawLunge: 22, mawTail: 18, mawRoll: 8, mawDrown: 20, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 18, heraldThrust: 16, heraldWave: 14, rocRake: 18, owlPlunge: 22, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, fledgling: 10, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, tipplerBar: 15, tipplerOre: 14, shearSnip: 12, shearCut: 16, gafferHook: 16, gafferHaft: 13, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 15, pounce: 19, snap: 11, spider: 15, owlSwoop: 25, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 30, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 25, tongue: 25, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 25, chiefOver: 35, chiefSweep: 20, chiefGrab: 20, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 28, litter: 24, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, badger: 12, gar: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 30, ramStamp: 20, rock: 20, gobpriest: 0, priestCenser: 10, priestBell: 7, gobmage: 0, gobBolt: 12, kingWhirl: 16, kingGulp: 10, merrowSpear: 12, merrowSurge: 8, merrowBrute: 16, gobRune: 16, pufferBurst: 10, jelly: 8, mantaDive: 16,
@@ -4121,7 +4121,7 @@ const BEASTS = [
   { t: 'tome', name: 'THE TOME', sub: 'the falling tower', desc: 'A book that was read too often. It drifts by its shelf, riffling; inside seven tiles it flings its covers wide on a yellow ! and darts at the spot you were standing on. It does not steer, so a step under a steep one or a jump over a flat one answers it - and so does the shield, which SLAMS IT SHUT: down it goes, and every blow counts twice while it lies there. It hurts only mid-dart.' },
   { t: 'imp', name: 'IMP', sub: "the mage's folly", desc: 'Out of its jar and pleased about it. It hovers off the floor, throws fire on a yellow mark, and hunches into a puff of smoke before it hops somewhere else.' },
   { t: 'turret', name: 'ARCANE TURRET', sub: "the mage's folly", desc: 'A brass eye he left switched on. It brightens for a long beat and spits a slow orb at where you were. Outrun it, or take it on the shield.' },
-  { t: 'homunculus', name: 'THE HOMUNCULUS', sub: 'the library cell', desc: 'Grown in a jar and still wearing it. A red SCUTTLE under you (jump it), a yellow POUNCE (the shield turns it), a red POUND along the floor (jump it), a red FLASK that leaves acid where you stood (move). After every trick it pants: cut it then.' },
+  { t: 'homunculus', name: 'THE HOMUNCULUS', sub: 'the library cell', desc: 'Grown in a jar and still wearing it. A red SCUTTLE under you (jump it), a yellow POUNCE and SWIPE (the shield turns them), a red POUND along the floor (jump it), a red FLASK onto the ring (move). A trick that MISSES you costs it the jar, smashed where you stood: bare, cut it. At half health its tricks come in pairs, and it hides in the smoke of its broken jar.' },
   { t: 'archmage', name: 'THE ARCHMAGE', sub: 'the top of the tower', desc: 'He blinks round his room every few seconds - a flash shows where he will stand. He draws circles under you (yellow the shield turns, red you leave), and he wards: three runes stand round the room, and they seal again if you are slow. At each ward a portal opens and one of his dead apprentices steps out. Then he rewrites the room three times; each room turns on you, and gives a way to him. Last, the room is put right and he is three: two images cast with him, but only his own spells are coloured. Strike an image and it breaks.' },
   { t: 'kraken', name: 'THE KRAKEN', sub: 'the end of the road', desc: 'Its arms come up along the road: the grab and the sweep turn on no shield, the slam does. Cut them where they lie. Then the tide keeps laying cargo on the stones: BREAK A CRATE and it goes back into him. A HIGH rake takes whoever stands on one. He is out in the sea, never on the road: break a crate while he is up and it hits him, while he is low it glances off. When he comes up close to look, his arms lie still - cut them. Ring the old bell while he breathes and they fall limp. Last: stand behind a waystone and his spear arm sticks in it.' },
   { t: 'feeler', name: 'FEELER', sub: 'an arm in the flats', desc: 'The mud stirs, and then there is an arm in it. It rears back over its root and lashes along the ground: the shield turns it, and a turned lash lies out on the stone to be cut. Hidden, it cannot be struck.' },
@@ -11388,7 +11388,7 @@ function updateMage(dt, hb) {
     if (s.fire && Math.random() < dt * 30) flame(s.x, s.y, 1, 2, 30, 2);
     const hitP = !P.dead && Math.abs(P.x - s.x) < P.w / 2 + 5 && s.y > P.y - P.h - 4 && s.y < P.y + 4, hitG = isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS));
     if (hitP || hitG || s.t <= 0 || s.x < camX - 200 || s.x > camX + VW + 200) { s.dead = true;
-      if (hitP) { const res = damagePlayer(s.x, s.dmg); if (res === 'blocked') { sparks(s.x, s.y, -P.face, 4); } }
+      if (hitP) { const res = damagePlayer(s.x, s.dmg); if (res === 'blocked') { sparks(s.x, s.y, -P.face, 4); } if (res === 'hit' && s.owner) s.owner.trickHit = true; }   /* (the Homunculus's pound: a wave that lands keeps its jar on) */
       burst(s.x, s.y, 8, s.fire ? ['#ff9a5c', '#ffd36b'] : s.gob ? ['#9a4ad0', '#e0c8ff'] : s.book ? ['#e8dcc0', '#5a2a3a', '#6a5038'] : [MVIO[2], MVIO[3]], 70, 0.4); if (s.fire) { SFX.puff(); for (const dx of [-8, 8]) if (hitG) fires.push({ x: s.x + dx, y: Math.floor(s.y / TS) * TS, life: 1.6, delay: 0 }); } } }
   MG.shots = MG.shots.filter(s => !s.dead);
   for (const K of MG.locks || []) { if (K.open) continue; if (K.wait) lockReraise(K);
@@ -11586,58 +11586,102 @@ function updateTurret(e, dt) {
       if (!P.dead && ad < 230 && Math.abs(dy) < 120 && e.cd <= 0) { e.mode = 'chargeTell'; e.modeT = 0.8; number(e.x, e.ceiling ? e.y + 6 : e.y - e.h - 12, '!', '#ffd36b'); SFX.lampOn(); }
   }
 }
-/* ---------- THE HOMUNCULUS (the mini): four tricks and a swipe, and it is slow after every trick ---------- */
+/* ---------- THE HOMUNCULUS (the mini; claude/weakboss, Daniel's HANDOFF item 15 - it used to pant after every trick, hit or
+   miss, so its opening came on its own). Five tricks, each its own told blow:
+     SCUTTLE (red !!)  down on all fours and under you, fast and low: jump it
+     FLASK   (red !!)  a flask off the shelf, lobbed onto the red ring (it follows you until the arm comes back): be off it
+     POUNCE  (yellow !) up, and down at you: the shield turns it, or be elsewhere
+     POUND   (red !!)  both fists on the floor, and it runs both ways: jump it
+     SWIPE   (yellow !) up close: the shield turns it
+   THE OPENING (A11) IS A TRICK THAT MISSES YOU. The bell jar it was grown in and still wears is its flask: a trick that finds
+   nobody - jumped, rolled, turned on a shield, or thrown at the place you left - costs it the jar, which comes off and smashes
+   on the floor WHERE YOU WERE (the trick's aim), and it is BARE: on its knees, open, every blow double. A trick that lands costs
+   it nothing: it crows, and comes again. Out of the window its jar takes most of a blow.
+   PHASE TWO (A10, half health): its tricks come in PAIRS, the second told as the first ends, and only the second's miss breaks
+   the jar - and a broken jar now leaves a cloud of its smoke where it smashed, and when the bare window ends it HIDES IN THE
+   SMOKE (a breath, at most HOM.hideT) and comes out of it at you with a scuttle. ---------- */
+const HOM = { bare: { swipe: 1.3, scuttle: 2.0, pounce: 2.0, pound: 2.0, flask: 2.2 }, bareP2: 0.85, gloat: 0.55, hideT: 1.4, smokeT: 4.5, smokeR: 22 };
+/* a trick is over: it landed (the jar stays on), or it missed and the jar breaks WHERE YOU WERE */
+function homDone(e) {
+  const tk = e.trick; e.trick = null;
+  if (e.phase === 2 && e.chain === 1) { e.chain = 2; const pool = ['scuttle', 'flask', 'pounce', 'pound'].filter(t => t !== tk); e.queue = pool[Math.floor(Math.random() * pool.length)]; e.mode = 'walk'; number(e.x, e.y - 40, 'AND AGAIN', MVIO[3]); return; }
+  e.chain = 0;
+  if (e.trickHit) { e.mode = 'gloat'; e.modeT = HOM.gloat; SFX.gobBark ? SFX.gobBark() : SFX.charge(); return; }
+  const x = Math.max(L.mini.x0 + 12, Math.min(L.mini.x1 - 12, e.aimX ?? P.x)), fy = L.mini.floor;
+  burst(x, fy - 4, 18, ['#c8e8f0', '#ffffff', '#8ab0c8', '#8fd160'], 110, 0.55); SFX.flaskBreak(); shakeCam(3);
+  number(x, fy - 26, 'MISSED: ITS JAR BREAKS', '#8fd160');
+  if (e.phase === 2) { MG.smokes = MG.smokes || []; MG.smokes.push({ x, y: fy, t: HOM.smokeT }); }
+  e.mode = 'bare'; e.modeT = HOM.bare[tk || 'swipe'] * (e.phase === 2 ? HOM.bareP2 : 1); e.open = e.modeT; e.vx = 0; e.bares = (e.bares || 0) + 1;
+  mageHint('bare', 'IT MISSED, AND ITS JAR IS GONE. CUT IT WHILE IT IS BARE - EVERY TRICK YOU DODGE IS ANOTHER JAR.');
+}
 function updateHomunculus(e, dt) {
-  const M = L.mini; e.modeT -= dt; e.T = e.T || { swipe: 1.2, trick: 3 }; for (const k in e.T) e.T[k] -= dt; if (e.open > 0) e.open -= dt;
-  e.vy += 1000 * dt; if (e.vy > 320) e.vy = 320;
+  const M = L.mini; e.modeT -= dt; e.T = e.T || { swipe: 1.2, trick: 2.5 }; for (const k in e.T) e.T[k] -= dt; if (e.open > 0) e.open -= dt;
+  for (const s of MG.smokes || []) s.t -= dt; if (MG.smokes) MG.smokes = MG.smokes.filter(s => s.t > 0);
+  if (e.mode !== 'hide') e.vy += 1000 * dt; if (e.vy > 320) e.vy = 320;
   const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
-  if (e.phase === 1 && e.hp < fullHp(e) * 0.5) { e.phase = 2; SFX.wightMoan(); shakeCam(4); number(e.x, e.y - 40, 'ITS JAR CRACKS, AND IT HURRIES', MVIO[3]); }
+  const busy = e.trick || e.mode === 'bare' || e.mode === 'hide';
+  if (e.phase === 1 && e.hp < fullHp(e) * 0.5 && !busy) { e.phase = 2; SFX.wightMoan(); shakeCam(4); number(e.x, e.y - 40, 'ITS JAR CRACKS: TWO TRICKS AT A TIME', MVIO[3]); }
+  /* THE TRICKS ARE BEGUN HERE, in its own update, so the mark audit (tools/tells.mjs) reads each tell with its mark */
+  const begin = (tk, fast) => {
+    const k = fast ? 0.75 : 1; e.trick = tk; e.trickHit = false; e.vx = 0;
+    if (tk === 'scuttle') { e.mode = 'scuttleTell'; e.modeT = 0.8 * k; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.rattle(); }
+    else if (tk === 'flask') { e.mode = 'flaskTell'; e.modeT = 0.9 * k; e.flaskAt = P.x; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.flaskClink(); mageHint('flask', 'THE RED RING IS WHERE THE FLASK BREAKS, AND IT FOLLOWS YOU UNTIL IT IS THROWN. MOVE LATE - A TRICK THAT MISSES COSTS IT ITS JAR.'); }
+    else if (tk === 'pounce') { e.mode = 'pounceTell'; e.modeT = 0.7 * k; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
+    else if (tk === 'pound') { e.mode = 'poundTell'; e.modeT = 0.9 * k; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.golemChime(); }
+    else { e.mode = 'swipeTell'; e.modeT = 0.5 * k; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
+    };
   const nextTrick = () => { const order = ['scuttle', 'flask', 'pounce', 'pound']; e.trickI = ((e.trickI ?? -1) + 1) % order.length;   /* the scuttle first: a short fight still sees all four */ return order[e.trickI]; };
+  e.hidden = e.mode === 'hide';
+  if (e.queue) { const q = e.queue; e.queue = null; begin(q, true); }   /* the second of a pair, or out of the smoke: told like the first */
   switch (e.mode) {
     case 'sleep': e.vx = 0; if (miniActive) { e.mode = 'wake'; e.modeT = 1.2; SFX.wightMoan(); } break;
     case 'wake': e.vx = 0; if (e.modeT <= 0) e.mode = 'walk'; break;
-    case 'swipeTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'swipe'; e.modeT = 0.3; SFX.throwWhoosh(); if (!P.dead && ad < 34 && dy < 26 && Math.sign(d) === e.face) damagePlayer(e.x, DMG.homSwipe); } break;
-    case 'swipe': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.T.swipe = 1.6; } break;
+    case 'swipeTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'swipe'; e.modeT = 0.3; e.aimX = P.x; SFX.throwWhoosh(); if (!P.dead && ad < 34 && dy < 26 && Math.sign(d) === e.face) { const res = damagePlayer(e.x, DMG.homSwipe); if (res === 'hit') e.trickHit = true; } } break;
+    case 'swipe': e.vx = 0; if (e.modeT <= 0) { e.T.swipe = 1.6; homDone(e); } break;
     /* THE SCUTTLE: down on all fours and under you, fast and low. Jump it */
-    case 'scuttleTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'scurry'; e.modeT = 1.1; e.hitP = false; e.face = Math.sign(d) || e.face; SFX.rattle(); } break;
+    case 'scuttleTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'scurry'; e.modeT = 1.1; e.hitP = false; e.face = Math.sign(d) || e.face; e.aimX = P.x; SFX.rattle(); } break;
     case 'scurry': e.vx = e.face * 250; e.h = 12; if (Math.random() < dt * 20) dust(e.x - e.face * 6, e.y, 1);
-      if (!e.hitP && !P.dead && Math.abs(P.x - e.x) < 16 && P.y > e.y - 16 && P.y - P.h < e.y) { e.hitP = true; damagePlayer(e.x, DMG.homScurry, { unblockable: true }); P.vx = e.face * 160; }
-      if (e.modeT <= 0 || e.hitWall || (M && (e.x < M.x0 + 20 || e.x > M.x1 - 20))) { e.h = 22; e.mode = 'spent'; e.modeT = 2.2; e.open = 2.2; e.vx = 0; SFX.gasp && SFX.gasp(); mageHint('spent', 'IT IS WINDED. CUT IT WHILE IT PANTS.'); } break;
-    /* THE FLASK: it takes a flask off the shelf behind it and lobs it at where you stand. The red ring on the floor follows you
-       until the arm comes back, then it is where the glass will break: be somewhere else. The acid it leaves burns a while, and
-       it lies between you and a panting homunculus more often than not */
+      if (!e.hitP && !P.dead && Math.abs(P.x - e.x) < 16 && P.y > e.y - 16 && P.y - P.h < e.y) { e.hitP = true; const res = damagePlayer(e.x, DMG.homScurry, { unblockable: true }); if (res === 'hit') { e.trickHit = true; P.vx = e.face * 160; } }
+      if (e.modeT <= 0 || e.hitWall || (M && (e.x < M.x0 + 20 || e.x > M.x1 - 20))) { e.h = 22; e.vx = 0; homDone(e); } break;
+    /* THE FLASK: the ring follows you until the arm comes back, then it is where the glass will break. The acid it leaves burns a while */
     case 'flaskTell': e.vx = 0; e.face = Math.sign(d) || e.face;
       if (e.modeT > 0.3 && !P.dead) e.flaskAt = Math.max(M.x0 + 24, Math.min(M.x1 - 24, P.x));
-      if (e.modeT <= 0) { e.mode = 'lob'; e.modeT = 0.35; const sx = e.x + e.face * 6, sy = e.y - 30, tx = e.flaskAt ?? P.x, ty = M.floor - 2, tt = 0.7;
-        MG.shots.push({ x: sx, y: sy, vx: (tx - sx) / tt, vy: (ty - sy) / tt - 0.5 * 700 * tt, g: 700, t: 2, flask: true, tx, dmg: DMG.homFlask }); SFX.throwWhoosh(); } break;
-    case 'lob': e.vx = 0; if (e.modeT <= 0) { e.mode = 'spent'; e.modeT = 1.9; e.open = 1.9; e.flaskAt = null; } break;
+      if (e.modeT <= 0) { e.mode = 'lob'; e.modeT = 1.2; const sx = e.x + e.face * 6, sy = e.y - 30, tx = e.flaskAt ?? P.x, ty = M.floor - 2, tt = 0.7; e.aimX = tx; e.flaskOut = true;
+        MG.shots.push({ x: sx, y: sy, vx: (tx - sx) / tt, vy: (ty - sy) / tt - 0.5 * 700 * tt, g: 700, t: 2, flask: true, tx, dmg: DMG.homFlask, owner: e }); SFX.throwWhoosh(); } break;
+    case 'lob': e.vx = 0; if (!e.flaskOut || e.modeT <= 0) { e.flaskAt = null; e.flaskOut = false; homDone(e); } break;   /* it watches the glass come down: where it breaks decides */
     /* THE POUNCE: up, then down at you. The shield turns it */
     case 'pounceTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'leap'; e.modeT = 0.6; e.vy = -260; SFX.leap(); } break;
-    case 'leap': e.vy = Math.min(e.vy, -120); e.vx = Math.sign(d) * 40; if (e.modeT <= 0) { e.mode = 'dive'; e.modeT = 0.9; e.hitP = false; const dx = P.x - e.x, dyy = (P.y - 8) - (e.y - 10), dd = Math.hypot(dx, dyy) || 1; e.vx = dx / dd * 280; e.vy = dyy / dd * 280; SFX.throwWhoosh(); } break;
-    case 'dive': if (!e.hitP && !P.dead && Math.abs(P.x - e.x) < 16 && Math.abs((P.y - 8) - (e.y - 10)) < 18) { e.hitP = true; damagePlayer(e.x, DMG.homDive); }
-      if (e.modeT <= 0 || e.onGround) { e.mode = 'spent'; e.modeT = 2; e.open = 2; e.vx = 0; dust(e.x, e.y, 6); SFX.thud(); } break;
+    case 'leap': e.vy = Math.min(e.vy, -120); e.vx = Math.sign(d) * 40; if (e.modeT <= 0) { e.mode = 'dive'; e.modeT = 0.9; e.hitP = false; e.aimX = P.x; const dx = P.x - e.x, dyy = (P.y - 8) - (e.y - 10), dd = Math.hypot(dx, dyy) || 1; e.vx = dx / dd * 280; e.vy = dyy / dd * 280; SFX.throwWhoosh(); } break;
+    case 'dive': if (!e.hitP && !P.dead && Math.abs(P.x - e.x) < 16 && Math.abs((P.y - 8) - (e.y - 10)) < 18) { e.hitP = true; const res = damagePlayer(e.x, DMG.homDive); if (res === 'hit') e.trickHit = true; }
+      if (e.modeT <= 0 || e.onGround) { e.vx = 0; dust(e.x, e.y, 6); SFX.thud(); homDone(e); } break;
     /* THE POUND: both fists down, and the floor jumps both ways. Jump it */
-    case 'poundTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'pound'; e.modeT = 0.4; SFX.golemStomp(); shakeCam(6); burst(e.x, e.y - 2, 16, ['#9a9088', '#c8c0b8'], 90, 0.6);
-      MG.shots.push({ x: e.x + 10, y: e.y - 6, vx: 200, vy: 0, g: 0, t: 0.9, wave: true, dmg: DMG.homSlam }, { x: e.x - 10, y: e.y - 6, vx: -200, vy: 0, g: 0, t: 0.9, wave: true, dmg: DMG.homSlam }); } break;
-    case 'pound': e.vx = 0; if (e.modeT <= 0) { e.mode = 'spent'; e.modeT = 2.4; e.open = 2.4; } break;
-    case 'spent': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.open = 0; e.T.trick = e.phase === 2 ? 2.2 : 3.5; } break;
+    case 'poundTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'pound'; e.modeT = 0.9; e.aimX = P.x; SFX.golemStomp(); shakeCam(6); burst(e.x, e.y - 2, 16, ['#9a9088', '#c8c0b8'], 90, 0.6);
+      MG.shots.push({ x: e.x + 10, y: e.y - 6, vx: 200, vy: 0, g: 0, t: 0.9, wave: true, dmg: DMG.homSlam, owner: e }, { x: e.x - 10, y: e.y - 6, vx: -200, vy: 0, g: 0, t: 0.9, wave: true, dmg: DMG.homSlam, owner: e }); } break;
+    case 'pound': e.vx = 0; if (e.modeT <= 0) homDone(e); break;   /* the waves run their length before it knows */
+    case 'gloat': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.T.trick = e.phase === 2 ? 1.6 : 2.2; } break;
+    /* THE OPENING: bare, its jar in pieces where you stood */
+    case 'bare': e.vx = 0; if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - 18, vx: 0, vy: 20, life: 0.4, max: 0.4, col: '#8fd160', size: 1, grav: 60 });
+      if (e.modeT <= 0) { e.open = 0; const sm = (MG.smokes || []).filter(s => s.t > HOM.hideT).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0];
+        if (e.phase === 2 && sm && !e.smoked) { e.smoked = true; e.hidden = true; e.mode = 'hide'; e.modeT = HOM.hideT; e.x = sm.x; e.vx = 0; e.vy = 0; SFX.puff(); burst(sm.x, sm.y - 10, 10, ['#6a5a7a', '#9a8aaa'], 50, 0.5); number(sm.x, sm.y - 34, 'IT IS IN THE SMOKE', MVIO[3]); }
+        else { e.mode = 'walk'; e.T.trick = e.phase === 2 ? 1.6 : 2.4; } } break;
+    /* PHASE TWO: it hides in the smoke of its own broken jar, and comes out of it at you */
+    case 'hide': e.vx = 0; e.vy = 0; if (e.modeT <= 0) { e.hidden = false; e.face = Math.sign(d) || e.face; e.chain = 0; begin('scuttle', true); } break;
+    case 'spent': e.mode = 'walk'; break;
     default: e.mode = 'walk'; e.face = Math.sign(d) || e.face; e.vx = ad > 30 ? e.face * (e.phase === 2 ? 46 : 36) : 0;
       /* THE THING THE FIGHT IS ABOUT GOES AT THE TOP OF THE CHAIN (rule E2): its tricks. A hero who backs off out of reach gets the flask, whoever's turn it was */
-      if (e.T.trick <= 0 && e.onGround) { const tk = ad > 110 && !P.dead ? 'flask' : nextTrick(); e.vx = 0;
-        if (tk === 'scuttle') { e.mode = 'scuttleTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.rattle(); }
-        else if (tk === 'flask') { e.mode = 'flaskTell'; e.modeT = 0.9; e.flaskAt = P.x; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.flaskClink(); mageHint('flask', 'THE RED RING IS WHERE THE FLASK BREAKS, AND IT FOLLOWS YOU UNTIL IT IS THROWN. MOVE LATE, AND KEEP OUT OF THE ACID IT LEAVES.'); }
-        else if (tk === 'pounce') { e.mode = 'pounceTell'; e.modeT = 0.7; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
-        else { e.mode = 'poundTell'; e.modeT = 0.9; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.golemChime(); } }
-      else if (ad < 32 && dy < 26 && e.T.swipe <= 0) { e.mode = 'swipeTell'; e.modeT = 0.5; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
+      if (e.T.trick <= 0 && e.onGround) { const tk = ad > 110 && !P.dead ? 'flask' : nextTrick(); e.chain = e.phase === 2 ? 1 : 0; e.smoked = false; begin(tk, false); }   /* (it hides at most once between pairs: out of the smoke, the next opening is a pair's again) */
+      else if (ad < 32 && dy < 26 && e.T.swipe <= 0) { e.chain = 0; begin('swipe', false); }
   }
-  const r = moveBody(e, e.vx * dt, e.vy * dt, false); e.onGround = !!r.ground; if (r.ground) e.vy = 0; e.hitWall = !!r.hitX; if (r.hitX && e.mode !== 'scurry') e.vx = 0;
+  e.alpha = e.mode === 'hide' ? 0.15 : undefined;
+  const r = e.mode === 'hide' ? { ground: true } : moveBody(e, e.vx * dt, e.vy * dt, false); e.onGround = !!r.ground; if (r.ground) e.vy = 0; e.hitWall = !!r.hitX; if (r.hitX && e.mode !== 'scurry') e.vx = 0;
 }
 /* THE FLASK BREAKS: on the floor where the ring was, or on whoever was still standing there. The glass is the blow and the
    acid is the ground it takes away: no shield turns either */
 function breakFlask(s) {
   s.dead = true; const M = L.mini, fy = M ? M.floor : Math.floor(s.y / TS) * TS, x = s.x;
   burst(x, fy - 4, 14, ['#c8e8f0', '#ffffff', '#8fd160', '#6a3a9a'], 90, 0.5); SFX.flaskBreak(); shakeCam(2);
-  if (!P.dead && Math.abs(P.x - x) < 16 && P.y > fy - 30 && P.y - P.h < fy + 2) damagePlayer(x, DMG.homFlask, { unblockable: true });
+  if (!P.dead && Math.abs(P.x - x) < 16 && P.y > fy - 30 && P.y - P.h < fy + 2) { const res = damagePlayer(x, DMG.homFlask, { unblockable: true }); if (res === 'hit' && s.owner) s.owner.trickHit = true; }
+  if (s.owner) s.owner.flaskOut = false;
   MG.puddles.push({ x, y: fy, w: 44, t: 3.6, max: 3.6 });
 }
 /* the puddles the flasks leave: they burn a hero standing in them, and dry away */
@@ -12014,7 +12058,7 @@ function archHurt(e, dmg, fromX, blow) {
 /* the health each part of the fight ends at (ARCH.gates): the duel at two thirds, the flood, the orrery and the room turned over 12% each
    (66-54-42-30), and THE MIRRORS from 30% to the end (claude/folly3) */
 function archGate(e) { const R = MG && MG.A, sub = R ? R.sub : 0; return e.stage === 1 ? e.maxHp * ARCH.gates[0] : e.stage === 2 ? e.maxHp * (ARCH.gates[sub] ?? 0) : 0; }
-function homHurt(e, dmg) { return e.open > 0 ? Math.round(dmg * 2) : Math.max(1, Math.round(dmg * 0.55)); }
+function homHurt(e, dmg) { if (e.hidden) return 0; return e.open > 0 ? Math.round(dmg * 1.6) : Math.max(1, Math.round(dmg * 0.35)); }   /* bare, it takes the blow; in its jar most of it glances; in the smoke there is nothing there to hit (claude/weakboss: 2 and 0.55 were) */
 const archBarName = b => b.fam ? (b.open > 0 ? 'THE FAMILIAR  THE EYE' : 'THE FAMILIAR  UNBOUND') : b.mode === 'ward' ? 'THE ARCHMAGE  WARDED' : b.open > 0 ? 'THE ARCHMAGE  OPEN' : b.stage === 2 ? (MG && MG.A && MG.A.sub === 1 ? 'THE ARCHMAGE  THE FLOOD' : MG && MG.A && MG.A.sub === 2 ? 'THE ARCHMAGE  THE ORRERY' : 'THE ARCHMAGE  TURNED OVER') : 'THE ARCHMAGE';
 /* the room's timekeeping that is not his: the circle he draws, and the orrery's counterweight */
 function updateArchmageRoom(dt, hb) {
@@ -12082,7 +12126,7 @@ const MAGE_FRAME = {
   imp: e => e.mode === 'throwTell' ? 2 : e.mode === 'throw' ? 3 : e.mode === 'puff' ? 4 : Math.floor(e.anim * 5) % 2,
   tome: e => tomeFrame(e),
   turret: e => e.mode === 'chargeTell' ? 1 : e.mode === 'fire' ? 2 : 0,
-  homunculus: e => { const F = MF.HOMUNCULUS_F; return ({ swipeTell: F.swipeTell, swipe: F.swipe, scuttleTell: F.scuttleTell, scurry: F.scurry, flaskTell: F.flaskTell, lob: F.lob, pounceTell: F.pounceTell, leap: F.pounceTell, dive: F.dive, poundTell: F.poundTell, pound: F.pound, spent: F.spent })[e.mode] ?? (Math.abs(e.vx) > 4 ? F.walk[Math.floor(e.anim * 5) % 2] : F.idle); },
+  homunculus: e => { const F = MF.HOMUNCULUS_F; return ({ swipeTell: F.swipeTell, swipe: F.swipe, scuttleTell: F.scuttleTell, scurry: F.scurry, flaskTell: F.flaskTell, lob: F.lob, pounceTell: F.pounceTell, leap: F.pounceTell, dive: F.dive, poundTell: F.poundTell, pound: F.pound, spent: F.spent, bare: F.bare, gloat: F.idle, hide: F.scuttleTell })[e.mode] ?? (Math.abs(e.vx) > 4 ? F.walk[Math.floor(e.anim * 5) % 2] : F.idle); },
   archmage: e => { if (e.fam) { const F = MF.FAMILIAR_F; return ({ swipeTell: F.swipeTell, swipe: F.swipe, slamTell: F.slamTell, slam: F.slam, spitTell: F.spitTell, spit: F.spit, open: F.open, openTell: F.idle })[e.mode] ?? F.idle; }
     const F = MF.ARCHMAGE_F; return ({ blinkTell: F.blink, blink: F.blink, change: F.blink, swallow: F.blink, boltTell: F.boltTell, bolt: F.bolt, rendTell: F.rendTell, rend: F.rend, ward: F.shield, wardTell: F.boltTell, open: F.open })[e.mode] ?? (Math.abs(e.vx) > 4 ? F.drift : F.idle); },
 };
@@ -12206,6 +12250,10 @@ function drawMageOverlay(cx, cy) {
     g.fillStyle = '#2a0e3e'; g.fillRect(x + 3, y - 5, w - 6, 6); g.fillRect(x, y - 3, w, 4); g.fillStyle = '#6a2a9a'; g.fillRect(x + 4, y - 4, w - 8, 3); g.fillStyle = '#8fd160'; g.fillRect(x + 3, y - 5, w - 6, 1); g.fillRect(x + 1, y - 3, 2, 1); g.fillRect(x + w - 3, y - 3, 2, 1);
     g.fillStyle = '#e0ffc0'; for (let i = 0; i < 4; i++) { const bxp = x + 4 + ((i * 11 + Math.floor(time * 4 + i) * 7) % Math.max(1, w - 8)); g.fillRect(bxp, y - 6 - (Math.floor(time * 8 + i) % 3), 1, 1); }
     fbloom(p.x - cx, y - 3, w * 0.6, 0.3, 'green'); }
+  /* THE HOMUNCULUS'S SMOKE (claude/weakboss, its phase two): a broken jar's cloud, where it may be hiding */
+  for (const s of (MG && MG.smokes) || []) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy), k = Math.min(1, s.t / 1.2);
+    for (let i = 0; i < 6; i++) { const a = time * 0.8 + i * 1.05, rx = x + Math.cos(a) * 12, ry = y - 14 + Math.sin(a * 1.3) * 6; g.globalAlpha = 0.28 * k; g.fillStyle = i % 2 ? '#6a5a7a' : '#9a8aaa'; g.beginPath(); g.arc(rx, ry, 9 + (i % 3) * 2, 0, 7); g.fill(); }
+    g.globalAlpha = 1; }
   /* THE HOMUNCULUS'S RING: where its flask will break, red, following you until it is thrown and then still */
   { const h = enemies.find(q => q.t === 'homunculus' && q.alive && q.mode === 'flaskTell' && q.flaskAt != null); if (h && L.mini) { const k = 0.5 + 0.5 * Math.sin(time * 16), x = Math.round(h.flaskAt - cx), y = Math.round(L.mini.floor - cy), locked = h.modeT <= 0.3; g.globalAlpha = locked ? 0.9 : 0.45 + 0.3 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 2, 20 + (locked ? 0 : k * 2), 5, 0, 0, 7); g.stroke(); g.beginPath(); g.ellipse(x, y - 2, 9, 2.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } }
   /* THE ARCHMAGE'S MARKS: his circle, his runes, his opening; the familiar's eye */
@@ -25882,7 +25930,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
     const bigF = e.t === 'winchmaster' ? WINCH.scale : e.t === 'bloodknight' ? UNBF.BK_SCALE : e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : e.elite ? EL.big : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
-    if ((e.t === 'scout' || e.t === 'siren' || e.t === 'herald' || e.t === 'grandmother' || e.t === 'farmhand' || e.t === 'boo' || e.t === 'jelly' || e.t === 'lampreeve') && e.alpha !== undefined && e.alpha < 1) g.globalAlpha = Math.max(0.05, e.alpha);
+    if ((e.t === 'scout' || e.t === 'siren' || e.t === 'herald' || e.t === 'grandmother' || e.t === 'farmhand' || e.t === 'boo' || e.t === 'jelly' || e.t === 'lampreeve' || e.t === 'homunculus') && e.alpha !== undefined && e.alpha < 1) g.globalAlpha = Math.max(0.05, e.alpha);
     if (e.t === 'gqueen' && e.mode === 'shadow') g.globalAlpha = 0.12; else if (e.t === 'gqueen' && e.mode === 'shadowTell') g.globalAlpha = 1 - 0.6 * Math.min(1, (0.5 - e.modeT) / 0.5);
     const roar = e.enrageT > 0 ? 1 + 0.14 * Math.sin(Math.min(1, (0.7 - e.enrageT) / 0.7) * Math.PI) : 1;   /* THE ROAR: the phase change swells the body and lets it settle */
     const ps = poseOf(e, wind), pSX = bigF * roar * (1 + sq * 0.22) * ps.sx, pSY = bigF * roar * (1 - sq * 0.22) * ps.sy, pRot = ps.rot || 0;

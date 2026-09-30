@@ -29,7 +29,9 @@
 // bakeHomunculus()  THE HOMUNCULUS (mini) — a pale little man grown in a jar, still wearing its glass bell like a hat.
 //   frames: 0 idle  1 walk A  2 walk B  3 SWIPE TELL  4 swipe  5 SCUTTLE TELL (down on all fours, hands flat, head low)  6 scurry
 //           7 POUNCE TELL (crouched on its heels, arms flung back)  8 dive (arms out ahead)  9 POUND TELL (fists joined over the jar)  10 pound  11 spent (OPENING: on its knees, panting)  12 hurt
-//           13 FLASK TELL (a flask held up and back)  14 lob (the arm thrown forward)
+//           12 FLASK TELL (a flask held up and back)  13 lob (the arm thrown forward)  14 BARE (claude/weakboss: the OPENING - a trick
+//           missed, the bell jar gone off its head and smashed, on its knees and dripping)  15 hurt (LAST, as HAS_HURT reads it: it was
+//           12, with the flask frames after it, so a struck homunculus showed its lob)
 //   canvas 48x40   anchor ax 24, ay 38   pack w/h 14x22
 // bakeArchmage()    THE ARCHMAGE (boss, stages I and II) — tall, gaunt, a violet robe, a brass staff, a beard.
 //   frames: 0 idle  1 drift  2 BLINK (robes swirling into smoke)  3 BOLT TELL (staff high, the circle drawn)  4 bolt
@@ -347,8 +349,8 @@ export function bakeTurret() {
 export function bakeHomunculus() {
   const W = 48, H = 40, X = 24, F = 37;
   const GLASS = ['#4a6a8a', '#8ab0c8', '#c8e8f0', '#ffffff'];
-  const frame = (pose) => {
-    const B = buf(W, H);
+  const frame = (pose0) => {
+    const B = buf(W, H), bare = pose0 === 'bare', pose = bare ? 'spent' : pose0;   /* BARE is the spent body with no jar on its head */
     const step = pose === 'walkA' ? 2 : pose === 'walkB' ? -2 : 0, low = pose === 'scuttleTell' || pose === 'scurry' || pose === 'spent' ? 6 : 0, big = pose === 'poundTell' || pose === 'pound' ? 1 : 0;
     const crouch = pose === 'pounceTell' ? 3 : pose === 'dive' ? -2 : 0;   /* down on its heels for the pounce, and up off the floor in the dive */
     const bx = X + (pose === 'scurry' ? 3 : 0), by = F - 12 + low + crouch;
@@ -383,7 +385,7 @@ export function bakeHomunculus() {
     const hy = by - 10 + (low ? 3 : 0) + (pose === 'spent' ? 2 : 0) + (lean ? 2 : 0), hx = bx + lean;
     layer(B, T => { ball(T, hx, hy, 6, 5.5, SKIN, { bias: 0.08 }); });
     dot(B, hx + 1, hy - 1, '#1b1626'); dot(B, hx + 4, hy - 1, '#1b1626'); for (let i = 0; i < 4; i++) dot(B, hx + i, hy + 2, i % 2 ? '#8a5a6a' : '#5a3040');
-    layer(B, T => { for (let y = hy - 9; y <= hy - 5; y++) for (let x = hx - 5; x <= hx + 5; x++) if ((x - hx) * (x - hx) / 30 + (y - hy + 7) * (y - hy + 7) / 6 <= 1) T.set(x, y, y === hy - 9 ? GLASS[3] : x === hx - 5 || x === hx + 5 ? GLASS[0] : GLASS[1]); seg(T, hx - 5, hy - 5, hx + 5, hy - 5, GLASS[2]); });
+    if (!bare) layer(B, T => { for (let y = hy - 9; y <= hy - 5; y++) for (let x = hx - 5; x <= hx + 5; x++) if ((x - hx) * (x - hx) / 30 + (y - hy + 7) * (y - hy + 7) / 6 <= 1) T.set(x, y, y === hy - 9 ? GLASS[3] : x === hx - 5 || x === hx + 5 ? GLASS[0] : GLASS[1]); seg(T, hx - 5, hy - 5, hx + 5, hy - 5, GLASS[2]); });
     if (pose === 'hurt') { B.del(bx - 1, by); B.del(bx + 2, by + 1); }
     floorCut(B, F);
     const c = toCanvas(B);
@@ -392,13 +394,14 @@ export function bakeHomunculus() {
     if (pose === 'pound') afterDots(c, [[bx + 16, by + 9, '#c8c0b8'], [bx + 6, by + 9, '#c8c0b8'], [bx + 18, by + 7, '#9a9088'], [bx + 4, by + 7, '#9a9088']]);   /* the floor it hit, kicking up both ways */
     if (pose === 'scurry') afterDots(c, [[bx - 10, F - 1, '#9a9088'], [bx - 13, F - 3, '#c8c0b8'], [bx - 16, F - 2, '#9a9088']]);   /* dust off its heels */
     if (pose === 'dive') afterDots(c, [[bx - 12, by - 4, SKIN[2]], [bx - 15, by - 6, SKIN[1]]]);
-    if (pose === 'spent') afterDots(c, [[bx + 8, hy - 4, GLASS[2]], [bx + 10, hy - 7, GLASS[3]], [bx + 9, hy - 10, GLASS[2]]]);
+    if (pose === 'spent' && !bare) afterDots(c, [[bx + 8, hy - 4, GLASS[2]], [bx + 10, hy - 7, GLASS[3]], [bx + 9, hy - 10, GLASS[2]]]);
+    if (bare) afterDots(c, [[hx - 2, hy - 6, '#8fd160'], [hx + 3, hy - 7, '#8fd160'], [hx + 1, hy - 5, '#e0ffc0'], [hx - 4, hy - 3, '#8fd160'], [hx + 6, hy - 2, '#6a9a3a'], [bx - 9, F - 1, GLASS[2]], [bx + 11, F - 1, GLASS[3]], [bx + 13, F - 2, GLASS[1]]]);   /* the jar's broth running off its bare head, and the glass round it */
     if (pose === 'hurt') afterDots(c, [[bx - 9, hy - 6, SKIN[3]], [bx + 9, hy - 8, SKIN[2]]]);
     return c;
   };
-  return pack(['idle', 'walkA', 'walkB', 'swipeTell', 'swipe', 'scuttleTell', 'scurry', 'pounceTell', 'dive', 'poundTell', 'pound', 'spent', 'hurt', 'flaskTell', 'lob'].map(frame), X, F + 1, 14, 22);
+  return pack(['idle', 'walkA', 'walkB', 'swipeTell', 'swipe', 'scuttleTell', 'scurry', 'pounceTell', 'dive', 'poundTell', 'pound', 'spent', 'flaskTell', 'lob', 'bare', 'hurt'].map(frame), X, F + 1, 14, 22);
 }
-export const HOMUNCULUS_F = { idle: 0, walk: [1, 2], swipeTell: 3, swipe: 4, scuttleTell: 5, scurry: 6, pounceTell: 7, dive: 8, poundTell: 9, pound: 10, spent: 11, hurt: 12, flaskTell: 13, lob: 14 };
+export const HOMUNCULUS_F = { idle: 0, walk: [1, 2], swipeTell: 3, swipe: 4, scuttleTell: 5, scurry: 6, pounceTell: 7, dive: 8, poundTell: 9, pound: 10, spent: 11, flaskTell: 12, lob: 13, bare: 14, hurt: 15 };
 
 // =====================================================================================================================
 // THE ARCHMAGE. Tall and thin in a violet robe that does not quite reach the floor, a pointed hat gone soft, a long

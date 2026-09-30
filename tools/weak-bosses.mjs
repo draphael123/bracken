@@ -71,6 +71,32 @@ try {
       const r={told,mark,hurt:Math.round(hp0-BK.P.hp)};BK.god=true;return r;};
     o.furrowOn=furrow(true);o.furrowOff=furrow(false);
     out.plough=o;}
+  if(!ONLY||ONLY==='hom'){const b=boot('mage');const M=BK.L.mini,o={};const HP0=b.hp;
+    const fresh=()=>{b.mode='walk';b.open=0;b.hp=HP0;b.phase=1;b.chain=0;b.trick=null;b.queue=null;b.smoked=false;b.T={swipe:99,trick:99};b.aimX=null;b.hidden=false;b.vx=0;b.x=(M.x0+M.x1)/2;b.y=M.floor;BK.P.inv=0;BK.P.dead=0;BK.P.hp=BK.P.maxHp;BK.mg().smokes=[];BK.mg().puddles=[];};
+    /* one trick, the hero either standing in it or out of it; 'force' puts the trick's tell on him */
+    const trick=(tell,where,opt={})=>{fresh();BK.god=false;if(opt.phase2){b.phase=2;b.hp=HP0*0.4;b.chain=1;}const px=b.x+(opt.dx||40);BK.P.x=px;BK.P.y=M.floor;b.face=1;b.mode=tell;b.modeT=opt.tellT||0.5;b.trick=opt.trick;b.trickHit=false;if(tell==='flaskTell')b.flaskAt=px;
+      let mark=null,modes={},hp0=BK.P.hp,aim=null,held=0,ringP=null;
+      for(let i=0;i<260;i++){hold();if(/Tell$/.test(b.mode)){mark=mark||BK.markShown(b);if(b.modeT>0.3)ringP=BK.P.x;}modes[b.mode]=1;if(b.aimX!=null&&aim===null&&!/Tell$/.test(b.mode))aim=b.aimX;
+        if(where==='away'&&!/Tell$/.test(b.mode))BK.P.x=Math.min(M.x1-12,px+120);else if(where==='up'&&!/Tell$/.test(b.mode)&&BK.P.ground&&!held){BK.press('jump');held=24;}if(held>0){held--;BK.keys.jump=true;}
+        if(opt.block){BK.keys.block=true;BK.P.face=-1;}BK.sim(1);if(b.mode==='bare'||b.mode==='gloat')break;}
+      const r={mark,mode:b.mode,open:+(b.open||0).toFixed(2),hurt:Math.round(hp0-BK.P.hp),aim:aim===null?null:Math.round(aim-(ringP??px)),modes:Object.keys(modes)};BK.god=true;BK.keys.block=false;return r;};
+    o.scuttleHit=trick('scuttleTell','stand',{trick:'scuttle'});o.scuttleMiss=trick('scuttleTell','up',{trick:'scuttle'});
+    o.flaskHit=trick('flaskTell','stand',{trick:'flask',dx:90,tellT:0.9});o.flaskMiss=trick('flaskTell','away',{trick:'flask',dx:90,tellT:0.9});
+    o.pounceHit=trick('pounceTell','stand',{trick:'pounce',dx:60});o.pounceMiss=trick('pounceTell','away',{trick:'pounce',dx:60});
+    o.poundHit=trick('poundTell','stand',{trick:'pound',dx:50});o.poundMiss=trick('poundTell','up',{trick:'pound',dx:50});
+    o.swipeHit=trick('swipeTell','stand',{trick:'swipe',dx:20});o.swipeBlocked=trick('swipeTell','stand',{trick:'swipe',dx:20,block:true});
+    { fresh();b.mode='bare';b.modeT=5;b.open=2;const h0=b.hp;BKT.hurtEnemy(b,10,b.x-20,false);o.bareBlow=Math.round(h0-b.hp);BK.sim(30);fresh();const h1=b.hp;BKT.hurtEnemy(b,10,b.x-20,false);o.jarBlow=Math.round(h1-b.hp);BK.sim(30); }
+    /* PHASE TWO: the first trick of a pair missed opens nothing - the second comes, told; its miss breaks the jar, leaves smoke, and it hides there */
+    { fresh();BK.god=true;b.phase=2;b.hp=HP0*0.4;b.T.trick=0;b.T.swipe=99;BK.P.x=b.x+60;BK.P.y=M.floor;const seq=[];let held=0,hideBlow=null,smoke=0;
+      for(let i=0;i<1400;i++){hold();const m=b.mode;if(seq[seq.length-1]!==m)seq.push(m);b.T.swipe=99;
+        /* the hero dodges everything: over the scuttle and the waves, out from under the pounce and the flask */
+        if((m==='scurry'||m==='pound'||m==='poundTell')&&BK.P.ground&&!(held>0)){BK.press('jump');held=24;}if(held>0){held--;BK.keys.jump=true;}
+        if(m==='dive'||m==='lob')BK.P.x=b.x+(BK.P.x>b.x?1:-1)*140;BK.P.x=Math.max(M.x0+14,Math.min(M.x1-14,BK.P.x));
+        if((BK.mg().smokes||[]).length)smoke=1;if(m==='hide'&&hideBlow===null){const h=b.hp;BKT.hurtEnemy(b,10,b.x-20,false);hideBlow=Math.round(h-b.hp);}
+        BK.sim(1);if(seq.includes('hide')&&seq[seq.length-1]==='scuttleTell'&&seq.indexOf('hide')<seq.length-1)break;}
+      const tells=seq.map((m,i)=>[m,i]).filter(([m])=>/Tell$/.test(m));const firstBare=seq.indexOf('bare');const tellsBefore=tells.filter(([,i])=>i<firstBare).length;
+      o.pair={seq:seq.slice(0,24),tellsBefore,smoke,hideBlow,hideThenScuttle:seq.indexOf('hide')>=0&&seq[seq.indexOf('hide')+1]==='scuttleTell'}; }
+    out.hom=o;}
   return out;})()`, 600000);
   console.log(JSON.stringify(r, null, 1));
   if (r.reeve) { const o = r.reeve;
@@ -96,6 +122,15 @@ try {
     ok(!o.p1Furrow, 'in phase one the furrows are only earth');
     ok(o.furrowOn.told && o.furrowOn.mark === '!!' && o.furrowOn.hurt > 0, 'phase two: the furrows are told red and burn a hero on one: ' + JSON.stringify(o.furrowOn));
     ok(o.furrowOff.told && o.furrowOff.hurt === 0, 'phase two: a hero off the furrows is not touched: ' + JSON.stringify(o.furrowOff)); }
+  if (r.hom) { const o = r.hom;
+    for (const t of ['scuttle', 'flask', 'pounce', 'pound', 'swipe']) { const hit = o[t + 'Hit'], miss = o[t + 'Miss'] || o[t + 'Blocked'];
+      ok(hit.hurt > 0 && hit.mode === 'gloat' && hit.open === 0, 'its ' + t + ' that lands opens nothing: ' + JSON.stringify(hit));
+      ok(miss.hurt === 0 && miss.mode === 'bare' && miss.open > 1, 'its ' + t + ' that misses breaks the jar - it is bare and open: ' + JSON.stringify(miss));
+      ok(hit.mark === (t === 'pounce' || t === 'swipe' ? '!' : '!!'), 'its ' + t + ' is told with its mark: ' + hit.mark); }
+    ok(o.flaskMiss.aim !== null && Math.abs(o.flaskMiss.aim) < 6, 'the flask smashes where you were: ' + o.flaskMiss.aim);
+    ok(o.bareBlow > 3 * o.jarBlow, 'bare it takes the blow, in its jar most glances: ' + o.bareBlow + ' vs ' + o.jarBlow);
+    ok(o.pair.tellsBefore >= 2, 'phase two: a missed first trick opens nothing - a second is told before the jar breaks: ' + JSON.stringify(o.pair));
+    ok(o.pair.smoke > 0 && o.pair.hideBlow === 0 && o.pair.hideThenScuttle, 'phase two: the broken jar leaves smoke, it hides there untouchable, and comes out on a told scuttle: ' + JSON.stringify(o.pair)); }
   ok(!pg.errors.length, 'page errors: ' + JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }
 if (fails.length) { for (const f of fails) console.log('FAIL', f); process.exit(1); }

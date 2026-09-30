@@ -1301,6 +1301,14 @@ async function runbossLab(BK, opts) {
         if (s && boss.mode !== 'charge') { goal = s.x; strike = false; if (Math.abs(boss.x - P.x) < LAB_REACH[h] + 14 && Math.abs(P.x - s.x) < 8 && P.atk < 0) { P.face = Math.sign(boss.x - P.x) || P.face; BK.press('atk'); swings++; } }
         else if (boss.mode === 'charge') { goal = null; strike = false; if (P.ground && Math.abs(boss.x - P.x) < 70 && (P.x - boss.x) * boss.face > 0) { BK.press('jump'); P.labJump = 20; } }
         else { goal = boss.x; strike = true; } }
+      /* THE HOMUNCULUS (claude/weakboss): it is only open when a trick has MISSED, so the hands stand off it a stride out of its swipe and
+         let it try - every red trick rolled or jumped, every yellow one guarded (the tell branch above) - and its pound's floor wave jumped.
+         Bare, it is cut (the open branch below). In the smoke there is nothing to cut: wait for it to come out. */
+      else if (boss.t === 'homunculus' && !open) { const mg = BK.mg && BK.mg(), wave = mg && mg.shots.some(s => s.wave && Math.abs(s.x - P.x) < 40 && (s.x - P.x) * s.vx < 0);
+        if (wave && P.ground) { BK.press('jump'); P.labJump = 12; goal = null; strike = false; }
+        else if (boss.mode === 'scurry' || boss.mode === 'dive' || boss.mode === 'leap' || boss.mode === 'hide') { goal = null; strike = false; }
+        else { goal = boss.x - Math.sign(d || 1) * 64; strike = false; }
+        if (P.labJump > 0) { P.labJump--; k.jump = true; } }
       else if (open) { goal = boss.x; strike = true; }
       /* THE PLATE THAT TURNS EVERY BLADE (the Queen's Lance): chipping at it does nothing at all, so the hands MAKE the
          opening the way a player does - stand a dash's length off and come at his guard at a run. His own gate says a
