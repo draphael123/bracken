@@ -44,7 +44,7 @@ let ferrymanSeen = false, captivesSeen = false;
 // pays for itself; it does not need to be reachable from every level that happens to share its name - some of
 // these kinds are deliberately reused by two different levels, which was already true before this change).
 const EXPECTED_RELIC_KINDS = new Set(['fleece', 'soles', 'sunshard', 'shoes', 'banner', 'gauntlet', 'windcloak',
-  'tidecharm', 'diverlamp', 'blackflag', 'stormline', 'wick', 'spurs', 'lamp']);
+  'tidecharm', 'diverlamp', 'blackflag', 'stormline', 'wick', 'spurs', 'lamp', 'maypole']);
 const relicKindsSeen = new Set();
 
 for (const lv of LEVELS) {

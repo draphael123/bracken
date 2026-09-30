@@ -11,11 +11,11 @@ export function stormShipPolish(L,id,T){
   for(const e of L.ents)if(e.t==='cannon'&&e.deck){const door=L.ents.filter(q=>q.t==='bulkhead').sort((a,b)=>Math.abs(a.x-e.x)-Math.abs(b.x-e.x))[0];if(door&&Math.abs(door.x-e.x)<18)e.aim=Math.sign(door.x-e.x);}
   for(const e of L.ents){if(e.t==='check'&&e.x===96&&e.y===19)e.x=98;if(e.t==='sign'&&e.x===580&&e.y===19)e.x=581;}
   L.deckBreaks=[];
-  for(const [x0,x1,ladder]of [[90,94,95],[238,242,243],[572,578,579]]){
+  for(const [x0,x1,ladder,warn]of [[90,94,95,'THE DECK IS SPLITTING. THE HOLD IS UNDER IT; THE ROPES LEAD BACK UP.'],[238,242,243,'IT SPLITS AGAIN. DROP INTO THE HOLD AND CLIMB THE NETS OUT.'],[572,578,579,'THE LAST SPLIT. THE HOLD IS THE WAY THROUGH; THE ROPES LEAD UP.']]){
    L.deckBreaks.push({x0,x1,row:20,t:-1,down:false});
    // A safe hold floor and a rope out remain after the upper deck comes down.
    for(let y=19;y<=26;y++)for(let x=ladder;x<=ladder+1;x++)L.grid[y*L.W+x]=T.NET;
-   L.ents.push({t:'sign',x:x0===238?235:x0-2,y:19,text:'THE DECK IS SPLITTING. FOLLOW THE HOLD AFT; THE ROPES LEAD BACK UP.'});
+   L.ents.push({t:'sign',x:x0===238?235:x0-2,y:19,text:warn});
    L.ents.push({t:'cutlass',x:x0+2,y:26,face:-1},{t:'deco',x:x1,y:26,kind:'rumBarrels',v:0});
   }
  }
