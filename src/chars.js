@@ -2246,6 +2246,10 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 5, sh[0] - 6, sh[1] - 1], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', greatsword: [sh[0] + 2, sh[1] + 6, sh[0] - 6, sh[1] + 2], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 8], greatsword: rest(3) }),
+    /* BLOOD HARVEST (src/crouch-b.js): down on one knee over the body, the greatsword planted point-down behind him in the sword hand and
+       the free hand reaching down into what lies there - the blood coming up into the palm, more of it on the second beat */
+    harvest: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 3], greatsword: [sh[0] - 3, sh[1] - 4, sh[0] - 5, sh[1] + 10], arm2: [BX + 2, BY + 7, sh[0] + 6, sh[1] + 5], plume: i + 1,
+      bits: i ? [[14, 11, '#ff4a5a'], [15, 10, '#c0283a'], [13, 9, '#ff9a9a'], [16, 8, '#c0283a']] : [[14, 11, '#c0283a'], [15, 10, '#7a1020']] })),
     /* THE TOLL: the point driven into the ground in both hands, head down, taking it out of them */
     block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 3 + i], greatsword: [sh[0] + 2, sh[1] - 4 + i, sh[0] + 3, sh[1] + 13 + i], glow: [sh[0] + 3, sh[1] + 13] })),
     /* RAISE: the sword held off to one side and the free hand down, green coming up out of the ground */
@@ -2660,6 +2664,10 @@ export function bakePaladin(skin = {}, previewOnly = false) {
     ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', maul: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 5], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', maul: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', maul: rest(3) }),
+    /* KNEEL IN PRAYER (src/crouch-b.js): down on one knee, the maul planted upright before him with both hands on the haft and his helm
+       bowed to it, the light gathering at its head - brighter, and a mote off it, on the second beat (and held there once his bar is full) */
+    kneel: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], maul: [sh[0] + 4, sh[1] + 6, sh[0] + 4, sh[1] - 6], glow: [sh[0] + 4, sh[1] - 10 - i], plume: 0,
+      bits: i ? [[10, -6, '#ffd36b'], [15, -8, '#fff6c8']] : null })),
     // AEGIS: the maul planted upright before him, both hands on the haft
     block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], maul: [sh[0] + 3, sh[1] + 9, sh[0] + 3, sh[1] - 5], glow: [sh[0] + 3, sh[1] - 9] })),
     // MEND: the free hand up, the light in it
@@ -4165,6 +4173,10 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', arm: [X, Y, X - 1, Y + 3], stave: [X + 4, Y + 6, X - 8, Y - 5], plume: 2 }),
       knightFrame({ dx: -2, dy: 2, legs: 'land', arm: [X, Y, X - 2, Y + 4], stave: [X + 3, Y + 7, X - 9, Y - 2], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [X, Y, X + 2, Y + 2], arm2: [OFF[0], OFF[1], X, Y + 4], stave: [X + 1, Y + 6, X + 4, Y - 12] }),   /* (down on her heels, the staff still upright by her) */
+    /* EARTH SENSE (src/crouch-b.js): down on one knee, her head bowed to the ground and the lead palm pressed flat to it, the staff held upright
+       behind her in the off hand - and the ground answering under the palm: amber at her fingers, and on the second beat a ripple out either side */
+    sense: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [X, Y, X + 5, Y + 5], arm2: [OFF[0], OFF[1], X - 1, Y + 2], stave: [X - 1, Y + 6, X + 1, Y - 12], plume: i,
+      bits: i ? [[13, 12, '#ffc860'], [10, 12, '#8c6a3a'], [17, 12, '#8c6a3a'], [8, 12, '#6a4e30'], [19, 12, '#6a4e30']] : [[13, 12, '#e8a83a']] })),
     /* THE RUNE-WARD (C held, round 3 - it was the ROCK SHIELD): the stave PLANTED upright in front of her, butt in the ground, both hands
        on it and her weight behind it - geomancer.js raises the ward out of the ground beyond it. She is rooted here, and it looks it */
     block: [0, 1].map(i => knightFrame({ dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y - 2 + i], arm2: [OFF[0], OFF[1], X + 2, Y + i], stave: [X + 4, Y + 8, X + 4, Y - 12 + i], plume: i + 1 })),

@@ -233,6 +233,15 @@ export const SFX = {
   emberSputter() { crackle(3); noise(0.06, 0.1, 2600, 1.2); tone('square', vary(300), 120, 0.05, 0.05, 0.02); },
   emberOverheat() { noise(0.5, 0.4, 520, 0.4); tone('sine', 72, 28, 0.6, 0.36); noise(0.6, 0.14, 3400, 0.8, 0.12); crackle(8, 0.05); },
   emberFlare() { if (!gate('emberFlare', 0.08)) return; noise(0.3, 0.24, 1600, 0.5); tone('sawtooth', 220, 660, 0.2, 0.08); bell(1568, 0.4, 0.07, 0.02); crackle(5, 0.04); },
+  /* THE CROUCH TWISTS, PART B (src/crouch-b.js). THE PRAYER: a low sung fifth, soft, swelling on each beat and rising a little as his light
+     fills, a small bell over it once the bar is half full. THE EARTH SENSE: her ear to the ground is a low thud and a hum out through the
+     rock; what it finds answers as a deep knock and a ring coming back (a sounding). THE HARVEST: a wet pull as the draw starts, and a
+     gulp with a heartbeat under it when the body gives it up */
+  kneelChant(k = 0) { if (!gate('kneelChant', 0.5)) return; const f = 196 * (1 + 0.12 * k); pad('triangle', f, f * 1.01, 0.85, 0.05, 0, 1400, 0.25); pad('sine', f * 1.5, f * 1.5, 0.85, 0.035, 0.05, 1400, 0.3); if (k > 0.5) bell(f * 4, 0.5, 0.025, 0.2); },
+  earthListen() { if (!gate('earthListen', 0.3)) return; tone('sine', 90, 55, 0.25, 0.18); noise(0.12, 0.08, 300, 0.6); pad('sine', 70, 64, 0.5, 0.05, 0.05, 400, 0.08); },
+  earthSense() { if (!gate('earthSense', 0.25)) return; tone('sine', 120, 70, 0.2, 0.22); noise(0.08, 0.12, 500, 0.8); bell(392, 0.7, 0.05, 0.08); tone('triangle', 784, 760, 0.35, 0.03, 0.12); },
+  bloodDraw() { if (!gate('bloodDraw', 0.15)) return; noise(0.35, 0.16, 420, 0.5); tone('sine', 180, 90, 0.35, 0.1); noise(0.2, 0.08, 1400, 1.5, 0.12); },
+  bloodHarvest() { if (!gate('bloodHarvest', 0.15)) return; noise(0.16, 0.24, 380, 0.5); tone('sine', 240, 60, 0.22, 0.18); tone('sine', 62, 40, 0.18, 0.26, 0.14); tone('sine', 62, 40, 0.16, 0.2, 0.34); },
   pyre() { if (!ac) return; const t = ac.currentTime; const src = ac.createBufferSource(); src.buffer = noiseBuf; const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(3200, t + 0.35); const gn = ac.createGain(); gn.gain.setValueAtTime(0.001, t); gn.gain.exponentialRampToValueAtTime(0.42, t + 0.08); gn.gain.exponentialRampToValueAtTime(0.001, t + 0.7); src.connect(f); f.connect(gn); gn.connect(sfxGain); src.start(t); src.stop(t + 0.75);
     tone('sawtooth', 110, 45, 0.5, 0.18); tone('sine', 80, 30, 0.6, 0.35, 0.04); crackle(6, 0.05); },
   pyreBoom() { noise(0.55, 0.45, 480, 0.4); tone('sine', 64, 26, 0.75, 0.42); noise(0.25, 0.2, 2600, 0.7, 0.05); crackle(8, 0.08); },
