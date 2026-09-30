@@ -54,19 +54,19 @@
    "furrows": 1
   },
   "trough": {
-   "open": 2.2,
+   "open": 1.8,
    "stuck": "trough",
    "turned": false,
    "furrows": 1
   },
   "fence": {
-   "open": 2.2,
+   "open": 1.8,
    "stuck": "fence",
    "turned": false,
    "furrows": 1
   },
   "shutBlow": 4,
-  "openBlow": 15,
+  "openBlow": 14,
   "headStand": {
    "mark": "!!",
    "ring": 0,
@@ -210,8 +210,8 @@
     "scuttleTell",
     "scurry",
     "walk",
-    "poundTell",
-    "pound",
+    "flaskTell",
+    "lob",
     "bare",
     "hide",
     "scuttleTell"
@@ -221,6 +221,11 @@
    "hideBlow": 0,
    "hideThenScuttle": true
   }
+ },
+ "dk": {
+  "stuckT": 1.5,
+  "p2At": 0.6,
+  "hp": 950
  }
 }
 weak-bosses: OK

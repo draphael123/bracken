@@ -1,0 +1,26 @@
+{"lv":"lamplit","h":"knight","out":"win","secs":33.3,"left":0,"taken":38,"perMin":68,"opened":2,"swings":83,"modes":{"wake":1,"stalk":8,"sweepTell":4,"sweep":4,"toLamp":2,"snuffTell":2,"blinded":2,"takeTell":1,"drawTell":1,"draw":1,"douse":1,"snuff":1},"hitBy":{"sweepTell":20,"draw":18}}
+{"lv":"lamplit","h":"warden","out":"win","secs":20.9,"left":0,"taken":20,"perMin":57,"opened":1,"swings":60,"modes":{"wake":1,"stalk":5,"sweepTell":2,"sweep":1,"toLamp":1,"snuffTell":1,"blinded":1,"takeTell":1,"drawTell":1,"draw":1,"douse":1},"hitBy":{"sweepTell":20}}
+{"lv":"lamplit","h":"pyro","out":"win","secs":25.5,"left":0,"taken":0,"perMin":0,"opened":0,"swings":47,"modes":{"wake":1,"stalk":7,"sweepTell":3,"sweep":3,"toLamp":1,"snuffTell":1,"snuff":1,"takeTell":1,"drawTell":1,"draw":1,"douse":1},"hitBy":{}}
+{"lv":"fields","h":"knight","out":"win","secs":49.4,"left":0,"taken":106,"perMin":129,"opened":5,"swings":75,"modes":{"wake":1,"walk":14,"chargeTell":5,"charge":5,"stuck":5,"wrench":4,"goadTell":3,"goad":3,"headTell":4,"headThrow":4,"furrowTell":2,"furrow":2},"hitBy":{"wrench":33,"stuck":28,"chargeTell":20,"furrowTell":25}}
+{"lv":"fields","h":"warden","out":"win","secs":57,"left":0,"taken":184,"perMin":194,"opened":6,"swings":84,"modes":{"wake":1,"walk":21,"chargeTell":6,"charge":6,"stuck":6,"wrench":5,"goadTell":5,"goad":5,"furrowTell":5,"furrow":5,"headTell":5,"headThrow":5},"hitBy":{"chargeTell":58,"stuck":76,"furrowTell":50}}
+{"lv":"fields","h":"pyro","out":"win","secs":30.7,"left":0,"taken":39,"perMin":76,"opened":3,"swings":27,"modes":{"wake":1,"walk":8,"chargeTell":3,"charge":3,"stuck":3,"wrench":2,"goadTell":2,"goad":2,"headTell":2,"headThrow":2,"furrowTell":1,"furrow":1},"hitBy":{"walk":19,"chargeTell":20}}
+{"lv":"mage","h":"knight","out":"win","secs":63.6,"left":0,"taken":0,"perMin":0,"opened":11,"swings":41,"modes":{"wake":1,"walk":11,"scuttleTell":6,"scurry":6,"bare":11,"swipeTell":3,"swipe":3,"flaskTell":1,"lob":1,"hide":3,"pounceTell":2,"leap":2,"dive":2,"poundTell":2,"pound":2},"hitBy":{}}
+{"lv":"mage","h":"warden","out":"win","secs":39.5,"left":0,"taken":138,"perMin":209,"opened":3,"swings":24,"modes":{"wake":1,"walk":7,"scuttleTell":3,"scurry":3,"gloat":4,"flaskTell":1,"lob":1,"pounceTell":2,"leap":2,"dive":2,"poundTell":1,"pound":1,"bare":3,"swipeTell":1,"swipe":1,"hide":1},"hitBy":{"scurry":87,"lob":24,"dive":27}}
+{"lv":"mage","h":"pyro","out":"win","secs":30.6,"left":0,"taken":41,"perMin":80,"opened":3,"swings":58,"modes":{"wake":1,"walk":4,"scuttleTell":1,"scurry":1,"bare":3,"flaskTell":1,"lob":1,"pounceTell":1,"leap":1,"dive":1,"gloat":1,"poundTell":1,"pound":1},"hitBy":{"bare":14,"dive":27}}
+{"lv":"unburied","h":"knight","out":"win","secs":117.2,"left":0,"taken":101,"perMin":52,"opened":1,"swings":132,"modes":{"wake":1,"raiseTell":5,"raise":5,"stalk":34,"cleaveTell":9,"stuck":8,"wrench":8,"bladeTell":8,"blade":8,"wardTell":3,"ward":3,"rest":12,"rushTell":9,"rush":9,"surgeTell":1,"surge":1,"cleave":1},"hitBy":{"blade":63,"rush":15,"stalk":10,"rushTell":13}}
+{"lv":"unburied","h":"warden","out":"win","secs":139.1,"left":0,"taken":92,"perMin":40,"opened":1,"swings":169,"modes":{"wake":1,"raiseTell":5,"raise":5,"stalk":40,"cleaveTell":10,"stuck":8,"wrench":8,"bladeTell":8,"blade":8,"wardTell":5,"ward":5,"rest":17,"rushTell":12,"rush":12,"surgeTell":1,"surge":1,"cleave":2},"hitBy":{"blade":23,"rush":30,"ward":26,"rest":13}}
+{"lv":"unburied","h":"pyro","out":"win","secs":47.8,"left":0,"taken":30,"perMin":38,"opened":1,"swings":56,"modes":{"wake":1,"raiseTell":2,"raise":2,"stalk":13,"cleaveTell":5,"stuck":4,"wrench":4,"bladeTell":3,"blade":3,"surgeTell":1,"surge":1,"rushTell":2,"rush":2,"rest":3,"wardTell":1,"ward":1,"cleave":1},"hitBy":{"blade":10,"cleaveTell":20}}
+| boss | hero | outcome | secs | hp taken | per min | opened |
+| lamplit | knight | win | 33.3 | 38 | 68 | 2 |
+| lamplit | warden | win | 20.9 | 20 | 57 | 1 |
+| lamplit | pyro | win | 25.5 | 0 | 0 | 0 |
+| fields | knight | win | 49.4 | 106 | 129 | 5 |
+| fields | warden | win | 57 | 184 | 194 | 6 |
+| fields | pyro | win | 30.7 | 39 | 76 | 3 |
+| mage | knight | win | 63.6 | 0 | 0 | 11 |
+| mage | warden | win | 39.5 | 138 | 209 | 3 |
+| mage | pyro | win | 30.6 | 41 | 80 | 3 |
+| unburied | knight | win | 117.2 | 101 | 52 | 1 |
+| unburied | warden | win | 139.1 | 92 | 40 | 1 |
+| unburied | pyro | win | 47.8 | 30 | 38 | 1 |
+errors []

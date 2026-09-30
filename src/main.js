@@ -5842,7 +5842,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   if (e.t === 'strawking') { const sd = strawHurt(e, dmg, fromX, plunge); if (sd === false) return; dmg = sd; }
   if (e.t === 'archmage') { const md = archHurt(e, dmg, fromX, blow); if (md === false) return; dmg = md; }   /* THE MAGE'S FOLLY: nothing through the runes, twice when he is open, a third through the familiar's hide */
   if (e.t === 'homunculus') dmg = homHurt(e, dmg);   /* and the Homunculus takes its blows while it pants */   /* THE HEXED FIELDS: straw takes little that finds no opening */
-  if (e.t === 'ploughman') dmg = e.open > 0 ? Math.round(dmg * 1.5) : Math.max(1, Math.round(dmg * 0.4));   /* (claude/weakboss: 1.8 and 0.6 were, and he stuck on his own) */   /* the plough takes the blows in front of him; heaving at his stuck share, nothing does */   /* an arm only lying on the road, the body only where the fight has opened it */
+  if (e.t === 'ploughman') dmg = e.open > 0 ? Math.round(dmg * 1.4) : Math.max(1, Math.round(dmg * 0.4));   /* (claude/weakboss: 1.8 and 0.6 were, and he stuck on his own) */   /* the plough takes the blows in front of him; heaving at his stuck share, nothing does */   /* an arm only lying on the road, the body only where the fight has opened it */
   if (e.t === 'masthead' && e.mode === 'sail') { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 50, 'THE SAIL TAKES IT', '#9aa39a'); return; }   /* under sail the canvas is in the way */
   if (e.t === 'masthead' && e.mode === 'fouled') dmg = Math.round(dmg * 2);   /* wrapped in his own canvas */
   if (e.t === 'masthead' && (e.mode === 'tangled' || e.mode === 'reel')) dmg = Math.round(dmg * 1.5);
@@ -10845,12 +10845,12 @@ function updateBoo(e, dt) {
      THE HEAD    (headTell, red !!) his own head, burning, lobbed in an arc onto the ring on the ground (it follows you
                  until the arm comes back): be off the ring, or over it. It burns where it lands. Nothing turns it.
      THE GOAD    (goadTell, yellow !) up close. The shield turns it.
-   THE OPENING (A11): the share stuck in a trough or a fence; he heaves at it and everything lands 1.5 times. Out of it the
+   THE OPENING (A11): the share stuck in a trough or a fence; he heaves at it and everything lands 1.4 times. Out of it the
    plough takes the blow in front of him and 0.4 gets through.
    PHASE TWO (A10, half health): HIS FURROWS WAKE. Every run of the plough leaves a furrow in the field, and from here on he
    calls them up (furrowTell, red !!): the ploughed ground glows, then bursts along its whole length. Off the furrows, or
    over them. So the ground you bait him across is the ground that will burn you. ---------- */
-const PL = { runOn: 72, furrowLife: 22, furrowMax: 4, stuck: 2.2, stuckP2: 1.7, chargeSp: 200, chargeSpP2: 225 };
+const PL = { runOn: 72, furrowLife: 22, furrowMax: 4, stuck: 1.8, stuckP2: 1.5, chargeSp: 200, chargeSpP2: 225 };
 function plBaits() { const M = L.mini; if (!M || !M.baits) return []; if (!M.baitRt) M.baitRt = M.baits.map(([tx, kind]) => ({ x: tx * TS + 8, kind, shake: 0, hits: 0 })); return M.baitRt; }
 function plFurrow(e, xa, xb) { const x0 = Math.min(xa, xb), x1 = Math.max(xa, xb); if (x1 - x0 < 24) return; e.furrows = e.furrows || []; e.furrows.push({ x0, x1, t: PL.furrowLife }); while (e.furrows.length > PL.furrowMax) e.furrows.shift(); }
 const plOnFurrow = (e, x) => (e.furrows || []).some(f => x > f.x0 - 6 && x < f.x1 + 6);
@@ -10882,7 +10882,7 @@ function updatePloughman(e, dt) {
         fieldsHint('turn', 'THE OPEN FIELD DOES NOT HOLD HIS PLOUGH. STAND SO THE TROUGH OR THE FENCE IS IN ITS PATH.'); }
       break; }
     case 'stuck': e.vx = 0; if (e.modeT <= 0) { e.open = 0; e.mode = 'wrench'; e.modeT = 0.5; } break;
-    case 'wrench': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.T.charge = p2 ? 3.2 : 4.2; } break;
+    case 'wrench': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.T.charge = p2 ? 3.8 : 5; } break;
     case 'turn': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.T.charge = p2 ? 2.6 : 3.4; } break;   /* he turns it at the hedge and comes again: a charge not baited costs you, not him */
     case 'goadTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'goad'; e.modeT = 0.3; SFX.throwWhoosh(); if (!P.dead && ad < 56 && dy < 30 && Math.sign(d) === e.face) damagePlayer(e.x, DMG.ploughGoad); } break;
     case 'goad': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.T.goad = 1.8; } break;
