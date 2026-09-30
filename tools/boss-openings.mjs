@@ -26,6 +26,8 @@
                        shut, and the rack sets its stone back (the Deep rework, docs/briefs/deep-rework-2.md)
      THE WICKER QUEEN  turn round on her while she stands on the bonfire's embers: the wicker catches and burns open; the same look short of them,
                        or her crossing them unseen, opens nothing (claude/fair3)
+     THE PUPPETEER     cut both his puppets down (a string is cut only while it glows, in a windup) and he rides his line down to re-string them:
+                       open on the stage; a minute of his puppets left alone - windups, blows, a heap left lying - opens nothing (claude/puppeteer)
      THE LAMPREEVE, THE HEADLESS PLOUGHMAN, THE HOMUNCULUS (minis, claude/weakboss): strike the lamp he hoods / bait the plough into the
                        trough or the fence / make a trick miss you - each against the same thing left alone, in tools/weak-bosses.mjs
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
@@ -175,6 +177,13 @@ try {
   {const b=boot('fair');const G=BK.L.green,A=BK.L.arena,mid=G.bonfire*16+8,fl=A.floor;for(const e of BK.enemies())if(e!==b)e.alive=false;
    const run=turnAt=>{b.mode='still';b.x=mid+110;b.bank=0;b.open=0;b.lashCd=99;b.crownCd=99;let turned=false,op=0;for(let i=0;i<60*6;i++){if(!turned&&turnAt(b))turned=true;BK.P.x=mid-160;BK.P.y=fl;BK.P.vx=0;BK.P.face=turned?1:-1;BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='burn'||b.mode==='sickleTell')break;}return{mode:b.mode,open:+op.toFixed(1)};};
    out.wicker={short:run(q=>q.x<mid+70),unseen:run(()=>false),embers:run(q=>q.x<mid+20)};}
+  /* THE PUPPETEER (claude/puppeteer): left alone a minute his puppets wind up and strike and nothing opens him; both cut down by the hero's swings in their
+     windups, he comes down his line and kneels re-stringing them - open (the standalone stage until the Maskwright's Theatre holds him) */
+  {const b=boot('puppetstage');const S=BK.puppeteerHands().show(),A=BK.L.arena,P=BK.P;let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+60;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
+   let cutF=0,op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const p=S.puppets.find(q=>q.alive&&q.mode!=='heap'&&/Tell$/.test(q.mode));
+     if(p&&P.atk<0){P.x=p.x-(p.t==='harlequin'?14:18);P.face=1;P.vx=0;BK.press('atk');cutF++;}BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='restring')mode='restring';}
+   out.puppeteer={alone:+alone.toFixed(1),swings:cutF,mode,open:+op.toFixed(1),onStage:b.y===A.floor};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -247,6 +256,8 @@ try {
   assert.ok(r.wicker.short.open === 0 && r.wicker.short.mode !== 'burn', 'THE WICKER QUEEN: frozen short of the embers she opened: ' + JSON.stringify(r.wicker));
   assert.ok(r.wicker.unseen.open === 0 && r.wicker.unseen.mode !== 'burn', 'crossing the embers with nobody looking opened her: ' + JSON.stringify(r.wicker));
   assert.ok(r.wicker.embers.mode === 'burn' && r.wicker.embers.open > 2, 'frozen ON the embers she did not burn open: ' + JSON.stringify(r.wicker));
+  assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
+  assert.ok(r.puppeteer.mode === 'restring' && r.puppeteer.open > 2 && r.puppeteer.onStage, 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

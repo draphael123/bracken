@@ -120,13 +120,15 @@ export function segHitsBox(x0, y0, x1, y1, b) {
     const r = q / p; if (p < 0) { if (r > t1) return false; if (r > t0) t0 = r; } else { if (r < t0) return false; if (r < t1) t1 = r; } }
   return t0 <= t1;
 }
-/* A BLOW IN BOX hb: every taut, uncut string it crosses is cut (once per swing: `seen` is the swing's hit set). Returns the cuts: [{ p, k }] */
+/* A BLOW IN BOX hb: a taut, uncut string it crosses is cut - one string of each puppet a swing (`seen` is the swing's hit set, so a swing held over
+   several frames still cuts one). Returns the cuts: [{ p, k }] */
 export function strikeStrings(e, show, hb, seen) {
   const cuts = []; if (!e || !show || !hb) return cuts;
-  for (const s of stringsOf(e, show)) { if (!s.taut) continue; const tag = s.lowering ? show.lowering : s.p.str[s.i];
-    if (seen && seen.has(tag)) continue;
+  const once = seen || new Set();   /* ONE STRING OF A PUPPET A SWING: the second is the second blow (a swing through both hands parts only one) */
+  for (const s of stringsOf(e, show)) { if (!s.taut) continue; const tag = s.lowering ? show.lowering : s.p.str[s.i], pt = s.p.strTag || (s.p.strTag = {});
+    if (once.has(tag) || (!s.lowering && once.has(pt))) continue;
     if (!segHitsBox(s.x0, s.y0, s.x1, s.y1, hb)) continue;
-    if (seen) seen.add(tag);
+    once.add(tag); if (!s.lowering) once.add(pt);
     if (s.lowering) { show.lowering = null; show.n.lowerCut++; cuts.push({ p: s.p, k: 'new' }); continue; }
     s.p.str[s.i].cut = true; s.p.str[s.i].cutAt = { x: (s.x0 + s.x1) / 2, y: (s.y0 + s.y1) / 2 }; show.n.cut++; cuts.push({ p: s.p, k: s.k }); }
   return cuts;
