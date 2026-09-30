@@ -72,13 +72,14 @@ try {
     setUp('geomancer');
     { home(); const P = BK.P, r = {};
       const [near] = BK.spawnFoe({ t: 'zombie', x: spot[0] + 5.5, y: spot[1], face: -1, buried: true });
+      const [mid] = BK.spawnFoe({ t: 'zombie', x: spot[0] + 7.5, y: spot[1] - 0, face: -1, buried: true });   /* 7.5 tiles: past the old six-tile sense, inside the eight-tile one */
       const [far] = BK.spawnFoe({ t: 'zombie', x: spot[0] - 9, y: spot[1], face: 1, buried: true });
       const wall = { x0: spot[0] - 4, x1: spot[0] - 4, y0: spot[1] - 1, y1: spot[1], kind: 'secret', ore: 0, colour: null, hits: 0, broken: false, flash: 0, crouchTest: true };
       (BK.L.walls = BK.L.walls || []).push(wall);
       r.nearMode0 = near && near.mode; r.farMode0 = far && far.mode;
       for (let k = 0; k < 30; k++) { hold(); BK.sim(1); } r.seenStanding = C().seen.length;
       K.down = true; for (let k = 0; k < 30; k++) { hold(); BK.sim(1); }
-      const c = C(); r.seen = c.seen; r.nearSeen = c.seen.some(s => s.t === 'zombie' && Math.abs(s.x - near.x) < 2); r.farSeen = c.seen.some(s => s.t === 'zombie' && Math.abs(s.x - far.x) < 2);
+      const c = C(); r.seen = c.seen; r.nearSeen = c.seen.some(s => s.t === 'zombie' && Math.abs(s.x - near.x) < 2); r.midSeen = c.seen.some(s => s.t === 'zombie' && Math.abs(s.x - mid.x) < 2); r.farSeen = c.seen.some(s => s.t === 'zombie' && Math.abs(s.x - far.x) < 2);
       r.wallSeen = c.seen.some(s => s.wall && s.x0 === wall.x0); r.found = c.stats.found; r.nearMode = near.mode; r.nearHp = near.hp; r.nearHp0 = near.hp0 ?? near.hp; r.hp = P.hp; r.box = box();
       BK.step(2); r.pose = P.lastKey;
       K.down = false; for (let k = 0; k < Math.round((${SENSE.after} - 0.5) * 60); k++) { hold(); BK.sim(1); } r.seenAfter = C().seen.length;
@@ -154,6 +155,8 @@ else {
   if (G.nearMode0 !== 'buried' || G.farMode0 !== 'buried') bad.push(`geomancer: the test's dead men did not start buried (${G.nearMode0}, ${G.farMode0})`);
   if (G.seenStanding) bad.push(`geomancer: ${G.seenStanding} shown while she stood`);
   if (!G.nearSeen) bad.push(`geomancer: a buried dead man 5.5 tiles off (inside ${SENSE.R} px) was not shown: ${JSON.stringify(G.seen)}`);
+  if (!G.midSeen) bad.push(`geomancer: a buried dead man 7.5 tiles off (inside the ${SENSE.R} px, eight-tile sense) was not shown`);
+  if (SENSE.R !== 128) bad.push(`geomancer: the sense reach is ${SENSE.R} px, the design is eight tiles (128)`);
   if (G.farSeen) bad.push('geomancer: a buried dead man 9 tiles off (outside the sense) was shown');
   if (!G.wallSeen) bad.push('geomancer: a breakable wall four tiles off was not shown');
   if (!(G.found >= 2)) bad.push(`geomancer: the find counted ${G.found} (want the dead man and the wall)`);
