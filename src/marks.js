@@ -269,6 +269,12 @@ export const ANSWER = {
   'gobmage|boltTell': 'block', 'gobmage|runeTell': 'dodge',
   'gobpriest|bellTell': 'block', 'gobpriest|censerTell': 'block',
   'gqueen|hallLeapTell': 'jump',   // THE GOBLIN QUEEN'S QUAKE (a boss: her row is her fight's, claude/gqueen2): she lands and it runs the floor - jump it
+  /* THE WEAK BOSSES MADE STRONG (minis, claude/weakboss: their rows are their fights'). THE LAMPREEVE's lunge from the dark: roll through it.
+     THE HEADLESS PLOUGHMAN: the plough and the waking furrows jumped, his head's ring left, the goad guarded. THE HOMUNCULUS: every trick
+     answered makes it miss, and a miss is its opening - the scuttle and the pound jumped, the flask's ring left, the pounce and swipe guarded */
+  'lampreeve|lungeTell': 'dodge',
+  'ploughman|chargeTell': 'jump', 'ploughman|furrowTell': 'jump', 'ploughman|headTell': 'dodge', 'ploughman|goadTell': 'block',
+  'homunculus|scuttleTell': 'jump', 'homunculus|poundTell': 'jump', 'homunculus|flaskTell': 'dodge', 'homunculus|pounceTell': 'block', 'homunculus|swipeTell': 'block',
   'grub|spit': 'block',
   'hare|run': 'block',
   'harpy|aim': 'block',
@@ -429,6 +435,9 @@ export const HEIGHT = {
   'gobmage|boltTell': 'high', 'gobmage|runeTell': 'low',
   'gobpriest|bellTell': 'low', 'gobpriest|censerTell': 'low',
   'gqueen|hallLeapTell': 'low',
+  'lampreeve|lungeTell': 'low',   /* (claude/weakboss: the pole comes level at your middle - a duck is still in it) */
+  'ploughman|chargeTell': 'low', 'ploughman|furrowTell': 'low', 'ploughman|headTell': 'low', 'ploughman|goadTell': 'low',
+  'homunculus|scuttleTell': 'low', 'homunculus|poundTell': 'low', 'homunculus|flaskTell': 'low', 'homunculus|pounceTell': 'low', 'homunculus|swipeTell': 'low',
   'grub|spit': 'low',
   'hare|run': 'low',
   'harpy|aim': 'low',

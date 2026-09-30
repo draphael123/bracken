@@ -7365,7 +7365,7 @@ function theMagesFolly() {
   ent('check', 162, G - 1); deco('longTable', 168, G - 1); deco('longTable', 176, G - 1, { v: 1 }); deco('candelabra', 172, G - 1);
   /* THE HOMUNCULUS'S CELL: the mini, behind a stone wall, and the gate into the lab lifts when he falls */
   ent('check', 183, G - 1);
-  sign(181, G - 1, 'THE THING NEXT DOOR WEARS ITS JAR. MAKE A TRICK MISS YOU AND THE JAR BREAKS: CUT IT THEN.');
+  sign(181, G - 1, 'IT WEARS ITS JAR. MAKE A TRICK MISS YOU AND THE JAR BREAKS: CUT IT THEN.');
   ent('homunculus', 200, G - 1, { face: -1, mini: true });
   for (let y = G - 6; y <= G - 1; y++) set(208, y, T.PORT);         /* the lab door: it lifts when he falls */
   coins([190, G - 2], [204, G - 2]);
