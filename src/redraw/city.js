@@ -395,9 +395,12 @@ export function bakeLampreeve() {
     far: [[-4, 25], [-7, 28]], near: [[3, 25], [5, 30]], pole: [[5, 30], 86, 20] });
   const lungeTell = frame({ legs: 'coil', dx: -2, down: true, hx: -1, ladder: true,
     far: [[-5, 22], [-8, 23]], near: [[0, 23], [-3, 24]], pole: [[-3, 24], -4, 21] });
-  const lunge = frame({ legs: 'lunge', dx: 3, dy: 2, down: true, ladder: true,
-    far: [[1, 21], [5, 22]], near: [[5, 22], [10, 22]], pole: [[10, 22], 2, 22],
-    smear: [1 + X + 12, 1 + 22, 14, -60, 0] });
+  /* THE LUNGE, at its real reach (claude/crouchart). The pole used to start at the hand 12 px out and run 22 more, off the right edge of the 46 px
+     canvas: the cone was cut away and what showed was a stump. The hit is DMG.reeveLunge inside 18 px of him (main.js updateLampreeve), so the
+     whole pole - shaft, cone and hook - is now inside ax+22: the body a step further back, the hands drawn in, the cone's mouth at the reach. */
+  const lunge = frame({ legs: 'lunge', dx: 1, dy: 2, down: true, ladder: true,
+    far: [[0, 21], [3, 22]], near: [[3, 22], [7, 22]], pole: [[7, 22], 2, 15],
+    smear: [1 + X + 6, 1 + 22, 8, -60, 0] });
   const blinded = frame({ legs: 'stand', dx: -1, up: true, ladder: true,
     far: [[-2, 18], [1, 14]], near: [[3, 18], [4, 14]], pole: [[-4, 24], -120, 20, 'back'] });
   return pack([stride(0), stride(1), stride(2), stride(3), snuffTell, snuff, sweepTell, sweep, draw, douse, hurtF, kneel, lungeTell, lunge, blinded], X + 1, H + 1, 14, 30);
