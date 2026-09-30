@@ -58,7 +58,7 @@ const boxOn = s => ({ l: s.x1 - 4, r: s.x1 + 4, t: s.y1 - 4, b: s.y1 + 4 });
   const c = M.strikeStrings(r.e, r.show, boxOn(s), new Set()); ok(c.length === 1 && c[0].limb === 'arm' && !c[0].gold, 'a swing across the Brute\'s SLACK arm string did not cut it');
   r.hero.x = 400; let chop = 0, grab = 0, slam = 0; for (let i = 0; i < 60 * 20; i++) { r.step(); if (r.bru.mode === 'chopTell') chop++; if (r.bru.mode === 'grabTell') grab++; if (r.bru.mode === 'slamTell') slam++; if (M.heaped(r.bru)) break; }
   ok(chop === 0 && grab === 0 && slam > 0, 'with his arm string cut the Brute still chopped or grabbed (chop ' + chop + ', grab ' + grab + ', slam ' + slam + ')'); }
-{ const r = rig({ noHarl: true, x: 200, bruX: 420 }); r.step(); M.strikeStrings(r.e, r.show, boxOn(strOf(r, r.bru, 'back')), new Set());
+{ const r = rig({ noHarl: true, x: 200, bruX: 420 }); r.step(); r.bru.str[1].cut = true;   /* (the back string, and only it) */
   r.hero.x = 400; let slam = 0, other = 0; for (let i = 0; i < 60 * 20; i++) { r.step(); if (r.bru.mode === 'slamTell') slam++; if (r.bru.mode === 'chopTell' || r.bru.mode === 'grabTell') other++; }
   ok(slam === 0 && other > 0, 'with his back string cut the Brute still slammed (slam ' + slam + ', chop/grab ' + other + ')'); }
 // ---- A GOLD CUT cancels the blow ----
@@ -111,7 +111,7 @@ const boxOn = s => ({ l: s.x1 - 4, r: s.x1 + 4, t: s.y1 - 4, b: s.y1 + 4 });
 // ---- EVERY ATTACK FIRES; THE MARKS ----
 { const fired = {}; let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (const ph of [1, 2, 3]) { const r = rig({ hp: ph === 1 ? 720 : ph === 2 ? 450 : 200, x: 420 }); if (ph > 1) r.e.phase = ph - 1;
-    for (let i = 0; i < 60 * 60; i++) { if (i % 120 === 0) { r.hero.x = A.x0 + 60 + rnd() * (A.x1 - A.x0 - 120); r.hero.y = ph > 1 && rnd() < 0.3 ? GAL : FLOOR; } r.step();
+    for (let i = 0; i < 60 * 60; i++) { if (i % 120 === 0) { r.hero.x = A.x0 + 60 + rnd() * (A.x1 - A.x0 - 120); r.hero.y = ph > 1 && rnd() < 0.3 ? GAL : FLOOR; const mp = r.show.puppets.find(p => p.t === 'masterpiece'); if (ph === 3 && mp && rnd() < 0.5) { r.hero.x = mp.x + (rnd() < 0.5 ? -40 : 40); r.hero.y = FLOOR; } } r.step();
       for (const k of ['jab', 'kick', 'chop', 'slam', 'grab', 'swat', 'stomp', 'reach', 'whip']) if (r.show.n[k]) fired[k] = true; } }
   for (const k of ['jab', 'kick', 'chop', 'slam', 'grab', 'swat', 'stomp', 'reach', 'whip']) ok(fired[k], 'THE ' + k.toUpperCase() + ' never fired in a fuzz of the three phases (rule A3)'); }
 const ROWS = { 'harlequin|jabTell': ['!', 'block', 'low'], 'harlequin|kickTell': ['!!', 'jump', 'low'], 'marionette|chopTell': ['!!', 'dodge', 'low'], 'marionette|slamTell': ['!!', 'jump', 'low'],

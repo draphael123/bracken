@@ -55,8 +55,8 @@ export const PUP = {
 export const PUPPETS = { marionette: { w: 18, h: 44 }, harlequin: { w: 12, h: 28 }, acrobat: { w: 12, h: 28 }, masterpiece: { w: PUP.mW, h: PUP.mH } };
 /* THE STRINGS: where each attaches, and the LIMB it holds up (cut it and that limb's attacks are gone) */
 export const STRINGS = {
-  marionette: [{ k: 'arm', limb: 'arm', dx: 10, up: 20 }, { k: 'back', limb: 'back', dx: -6, up: 30 }],
-  harlequin: [{ k: 'cross', limb: 'all', dx: 0, up: 16 }],
+  marionette: [{ k: 'arm', limb: 'arm', dx: 10, up: 9 }, { k: 'back', limb: 'back', dx: -7, up: 10 }],   /* (x the Brute's 1.5: 13-15 px up - where every hero's blade from the boards reaches: the knight's to 17, the pyromancer's staff to 15) */
+  harlequin: [{ k: 'cross', limb: 'all', dx: 0, up: 12 }],
   acrobat: [{ k: 'wrist', limb: 'all', dx: 5, up: 13 }],
   masterpiece: [{ k: 'left hand', limb: 'swat', dx: -18, up: 38 }, { k: 'right hand', limb: 'reach', dx: 18, up: 38 }, { k: 'head', limb: 'stomp', dx: 0, up: 94 }, { k: 'back', limb: 'body', dx: -6, up: 70 }],
 };
@@ -256,7 +256,7 @@ function puppetStep(p, e, show, dt, c, ev, hero, mayStrike) {
     if (mayStrike && show.gap <= 0) { const M = PUP.master;
       if (!same && hero.ground && canUse(p, 'reach')) { p.reachY = hf; startTell(p, 'reachTell', M.reachTell); show.turn = show.turn || p; ev.push({ t: 'reachTell', p }); c.say('!!', '#ff6b6b'); c.sound('reachTell'); return; }
       if (same && adx < M.swatReach + 6 && canUse(p, 'swat')) { startTell(p, 'swatTell', M.swatTell); show.turn = show.turn || p; ev.push({ t: 'swatTell', p }); c.say('!', '#ffd36b'); c.sound('swatTell'); return; }
-      if (same && adx < 160 && canUse(p, 'stomp')) { startTell(p, 'stompTell', M.stompTell); p.stompX = hero.x; show.turn = show.turn || p; ev.push({ t: 'stompTell', p }); c.say('!!', '#ff6b6b'); c.sound('stompTell'); return; } }
+      if (same && adx < 160 && adx > M.swatReach && canUse(p, 'stomp') && ((p.blows = (p.blows || 0) + 1) % 2 === 0)) { startTell(p, 'stompTell', M.stompTell); p.stompX = hero.x; show.turn = show.turn || p; ev.push({ t: 'stompTell', p }); c.say('!!', '#ff6b6b'); c.sound('stompTell'); return; } }
     if (same && adx > 44) { p.hopT = (p.hopT || 0) + dt; if (p.hopT % 0.5 < 0.3) { p.vx = Math.sign(dx) * PUP.master.speed; p.x = Math.max(A.x0 + 20, Math.min(A.x1 - 20, p.x + p.vx * dt)); } } }
 }
 
