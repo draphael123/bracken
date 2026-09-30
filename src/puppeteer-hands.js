@@ -112,7 +112,8 @@ export function makePuppeteerHands(ctx) {
   H.end = e => { if (!show) return;
     for (const p of show.puppets) if (p.alive) { p.mode = 'heap'; p.y = show.A.floor; p.str.forEach(s => { s.cut = true; }); p.decoy = false; ctx.burst(p.x, p.y - 12, 10, ['#c89a60', '#e8c23a', '#b8382c'], 60, 0.6); }
     show.curtain = 0.001; show.lowering = null; show.snare = null; show.mine = null; show.falls = []; for (const pp of ctx.players) pp.pupDazzle = 0; SOUND.curtain(); };
-  H.read = () => show && { mode: ctx.boss && ctx.boss.mode, n: { ...show.n }, free: show.free, line: show.line, cycle: show.cycle, scene: show.scene,
+  const ironCells = () => { const S = A(); if (!S || !SK) return 0; const st = S.stage, G = Math.round(st.gallery / ctx.TS); let n = 0; for (let x = Math.round(st.gx0 / ctx.TS); x < Math.round(st.gx1 / ctx.TS); x++) if (SK.grate.includes(ctx.cellGet(cellI(x, G))[1])) n++; return n; };
+  H.read = () => show && { iron: ironCells(), mode: ctx.boss && ctx.boss.mode, n: { ...show.n }, free: show.free, line: show.line, cycle: show.cycle, scene: show.scene,
     batten: show.batten && { st: show.batten.st, y: show.batten.y, up: show.batten.up, down: show.batten.down, x: show.batten.x, w: show.batten.w },
     puppets: show.puppets.map(p => ({ t: p.t, x: Math.round(p.x), y: Math.round(p.y), mode: p.mode, alive: p.alive, flown: !!p.flown, left: PM.stringsLeft(p), lvl: p.lvl, decoy: !!p.decoy })),
     strings: ctx.boss ? PM.stringsOf(ctx.boss, show).map(s => ({ t: s.p.t, k: s.k, taut: s.taut, decoy: !!s.decoy, x0: Math.round(s.x0), y0: Math.round(s.y0), x1: Math.round(s.x1), y1: Math.round(s.y1), lowering: !!s.lowering })) : [],

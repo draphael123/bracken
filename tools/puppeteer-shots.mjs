@@ -15,7 +15,7 @@ try {
     await BK.bossLab({bosses:[${JSON.stringify(level)}],heroes:[${JSON.stringify(hero)}],healthMode:'normal',maxSecs:360,draw:true,onFrame:({boss,P})=>{
       const s=BK.puppeteerHands().show();if(!s)return;const pups=s.puppets.filter(p=>p.alive);if(wait>0){wait--;return;}
       const m=boss.mode,A=s.A,taut=pups.some(p=>/Tell$/.test(p.mode)&&p.modeT<0.35);
-      if(boss.phase===1&&pups.some(p=>p.mode==='chopTell'&&p.modeT<0.55))snap('1-phase1-the-strings-glow','PHASE 1: the soldier winds up its chop - its strings are taut and glow gold: cut one and the blow is gone');
+      if(boss.phase===1&&pups.some(p=>p.mode==='chopTell'&&p.modeT<0.35))snap('1-phase1-the-strings-glow','PHASE 1: the soldier winds up its chop - its strings are taut and glow gold: cut one and the blow is gone');
       if(pups.some(p=>p.mode==='dropTell'&&p.modeT<0.5))snap('2-phase1-the-drop','PHASE 1: THE DROP - hoisted over you, its shadow on the boards (!!)');
       if(m==='restring'&&boss.onStage&&boss.modeT<3)snap('3-phase1-he-comes-down','PHASE 1: both puppets cut down - he rode his line to the stage and kneels re-stringing them: OPEN');
       if(boss.phase===2&&s.batten&&s.batten.st==='rise'&&P.onMover===s.batten){snap('4-phase2-the-batten','PHASE 2: the pin rail struck - the sandbag falls and the batten flies you up to the gallery');}
@@ -23,7 +23,13 @@ try {
       if((m==='whipLowTell'||m==='whipHighTell')&&boss.modeT<0.4)snap('6-phase2-the-whip','PHASE 2: THE WHIP told along the catwalk, '+(m==='whipLowTell'?'LOW (jump it)':'HIGH (duck it)'));
       if(m==='snareTell'&&boss.modeT<0.5)snap('7-phase2-the-snare','PHASE 2: THE SNARE - a loop of string on the boards at your feet (!!): step out');
       if(boss.phase===3&&pups.some(p=>p.t==='masterpiece'&&/Tell$/.test(p.mode)))snap('8-phase3-the-masterpiece','PHASE 3: THE MASTERPIECE, four strings from the great crossbar, winding up ('+pups.find(p=>p.t==='masterpiece').mode+')');
-      if(m==='fallen'&&boss.modeT<3.4)snap('9-phase3-he-fell','PHASE 3: all four cut - the masterpiece falls and the crossbar drags him off the gallery: OPEN');
+      if(m==='scene'&&boss.modeT<0.8)snap('11-scene-change','PUPPETEER2: A SCENE CHANGE, told - the lights drop, the flats ride in on their tracks, the boards that will open flash red');
+      if(s.scene>0&&m==='work'&&pups.length>=2&&boss.phase===1)snap('12-a-new-layout','PUPPETEER2: the next cycle plays on a new layout ('+['','THE FOREST','THE CASTLE','THE STORM AT SEA'][s.scene]+'): flats to stand on, trapdoors open, and a new pairing');
+      if(pups.filter(p=>/Tell$/.test(p.mode)&&p.pair).length>=2)snap('13-a-pair','PUPPETEER2: A PAIR - a high blow and a low one told together (duck, then jump - or cut one in its glow)');
+      if(m==='spotTell'&&boss.modeT<0.5)snap('14-the-spotlight','PUPPETEER2: THE SPOTLIGHT settling on you: step out of it, or be dazzled and lose the glow of the strings');
+      if(m==='sceneryTell'&&boss.modeT<0.6)snap('15-the-scenery','PUPPETEER2: he frays a line and a painted flat hangs over the red band (!!)');
+      if(pups.some(p=>p.decoy&&/Tell$/.test(p.mode)&&p.modeT<0.3))snap('16-gold-and-a-decoy','PUPPETEER2: gold strings in the glow, and the GREY DECOY with its red tags (cut it and it snares you)');
+      if(m==='fallen'&&boss.modeT<2.6)snap('9-phase3-he-fell','PHASE 3: all four cut - the masterpiece falls and the crossbar drags him off the gallery: OPEN');
     }});
     for(let i=0;i<70;i++){BK.P.inv=99;BK.sim(1);if(i%3===0)BK.step(1);}BK.step(1);snap('10-the-curtain-falls','HIS DEATH: the puppets drop where they hang, and the curtain comes down');
     return res;})()`, 1800000);
