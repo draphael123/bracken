@@ -5,6 +5,7 @@ import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER'
 import {buildBurningVillage} from './burning-village.js';
 import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
+import { buildPuppetStage } from './puppeteer.js';   /* THE PUPPETEER's standalone stage (claude/puppeteer), until THE MASKWRIGHT'S THEATRE lands */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
 import {hauntedCoast} from './haunted-coast.js';
@@ -7720,6 +7721,10 @@ export const LEVELS = [
   /* THE HARVEST FAIR (claude/fair1, L1: greybox + the facing mechanic): the road inland's second stop, between WAYMEET and THE HEXED FIELDS (the Fields
      need it now). APPENDED, like every level since the log began, so no index and no save moves; its place on the road is its `needs` and its map node */
   { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'waymeet' },
+  /* THE PUPPETEER'S STANDALONE STAGE (claude/puppeteer): hidden, no map node, no needs - only so ?boss=puppeteer, the boss lab and the boss checks can reach him
+     before THE MASKWRIGHT'S THEATRE (claude/theatre) lands with the same stage at its end (src/puppeteer.js stagePuppeteer). When it lands this row goes;
+     keep it the LAST row until then, so taking it out moves no other level's index */
+  { id: 'puppetstage', name: 'THE MAIN STAGE', sub: 'the puppeteer (a standalone stage)', build: () => buildPuppetStage({ painter, T, TS }), hidden: true },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

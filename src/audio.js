@@ -522,17 +522,31 @@ const WAY_BASS = ['D3', 'F3', 'A2', 'D3'];
 const DEEP_LEAD = [[null, null, null, 'E3', null, null, null, null], [null, null, 'C3', null, null, null, null, null],
   [null, null, null, null, 'B2', null, null, null], [null, 'E3', null, null, null, null, null, null]];
 const DEEP_BASS = ['E2', 'C2', 'E2', 'A1'];
+// THE PUPPETEER'S OVERTURE (claude/puppeteer): no file - a D-minor march for a toy theatre, a music-box line over an organ bass and a timpani on
+// the bar. It runs at 132 and does not let up: the strings are always moving. (Played for arena.music 'puppeteer'.)
+const PUP_N = { D4: 293.66, E4: 329.63, F4: 349.23, G4: 392, 'G#4': 415.3, A4: 440, Bb4: 466.16, 'C#5': 554.37, D5: 587.33, E5: 659.25, F5: 698.46, D2: 73.42, A1: 55, Bb1: 58.27, C2: 65.41 };
+const PUP_LEAD = [['D5', 'A4', 'F4', 'A4', 'D5', 'E5', 'F5', 'E5'], ['C#5', 'A4', 'E4', 'A4', 'C#5', 'D5', 'E5', 'C#5'],
+  ['D5', 'A4', 'F4', 'D4', 'Bb4', 'A4', 'G4', 'F4'], ['E4', 'F4', 'G4', 'A4', 'Bb4', 'A4', 'G#4', 'A4']];
+const PUP_BASS = ['D2', 'A1', 'Bb1', 'A1'];
+const STEP_PUP = 60 / 132 / 2;
 let step = 0, nextT = 0, timer = null;
 const STEP = 60 / 112 / 2, STEP_HUSH = 60 / 62 / 2, STEP_MINE = 60 / 48 / 2, STEP_DEEP = 60 / 40 / 2, STEP_TOWN = 60 / 96 / 2;
 function schedule() {
   if (!ac) return;
   if (currentTrack || silenced) { nextT = ac.currentTime; return; }
-  const hush = wantTrack === 'underleaf', mine = wantTrack === 'mineworks', deep = wantTrack === 'deep', town = wantTrack === 'waymeet', SL = town ? STEP_TOWN : deep ? STEP_DEEP : mine ? STEP_MINE : hush ? STEP_HUSH : STEP;
+  const hush = wantTrack === 'underleaf', mine = wantTrack === 'mineworks', deep = wantTrack === 'deep', town = wantTrack === 'waymeet', pupT = wantTrack === 'puppeteer', SL = pupT ? STEP_PUP : town ? STEP_TOWN : deep ? STEP_DEEP : mine ? STEP_MINE : hush ? STEP_HUSH : STEP;
   while (nextT < ac.currentTime + 0.25) {
     const bar = Math.floor(step / 8) % 4, i = step % 8;
     if (musicOn) {
       const delay = nextT - ac.currentTime;
-      if (town) {
+      if (pupT) {
+        const nm = PUP_N[PUP_LEAD[bar][i]];
+        tone('square', nm, nm, SL * 0.7, i % 4 === 0 ? 0.07 : 0.05, delay, musicGain); tone('sine', nm * 2, nm * 2, SL * 0.4, 0.03, delay, musicGain);   /* the music box */
+        if (i === 0 || i === 4) { const b = PUP_N[PUP_BASS[bar]]; tone('sawtooth', b * 2, b * 2, SL * 3.6, 0.07, delay, musicGain); tone('sine', b, b, SL * 3.8, 0.22, delay, musicGain); }   /* the organ */
+        if (i === 0) tone('sine', 72, 48, 0.35, 0.3, delay, musicGain);   /* the timpani */
+        if (i === 6 && bar === 3) tone('sine', 72, 48, 0.3, 0.24, delay, musicGain);
+        if (i === 2 || i === 6) tone('square', 2400, 2300, 0.02, 0.018, delay, musicGain);   /* a tick: the strings */
+      } else if (town) {
         const nm = WAY_LEAD[bar][i];
         if (nm) tone('triangle', N[nm], N[nm], SL * 1.5, 0.11, delay, musicGain);
         if (i === 0 || i === 3) { const b = N[WAY_BASS[bar]]; tone('sine', b, b, SL * 2.6, 0.2, delay, musicGain); }
@@ -756,6 +770,17 @@ Object.assign(SFX, {
   calliope() { if (!gate('calli', 0.5)) return; [523, 659, 784].forEach((f, i) => tone('square', f, f, 0.16, 0.05, i * 0.12)); },
   // ---- THE WICKER QUEEN (src/wicker-queen.js, claude/fair3): her creak while she moves (the audio tell, like the mummers' bells), the wicker catching, the burn, the embers banked,
   // the sickle's rasp and its red glow, the ribbons wound up and let fly, the crowning's bells, the green going dark and her going up ----
+  // ---- THE PUPPETEER (src/puppeteer.js, claude/puppeteer): a string snapping (the cut: a high twang that drops), wood on the boards, the rigging's creak,
+  // a knot pulled tight, the whip's wind-up and its crack, the curtain coming down, and his entrance: a theatre organ's chord and three music-box notes ----
+  pupSnap() { tone('triangle', 1800, 420, 0.12, 0.09); tone('square', 900, 260, 0.08, 0.04, 0.01); noise(0.05, 0.08, 4200, 1.2); },
+  pupClatter() { for (let i = 0; i < 5; i++) { tone('square', 520 - i * 60, 380 - i * 50, 0.05, 0.06, i * 0.06); noise(0.04, 0.1, 1800 - i * 150, 1.1, i * 0.06); } },   /* a puppet goes down in a heap of limbs */
+  pupCreak() { if (!gate('pupc', 0.25)) return; tone('sawtooth', 210, 150, 0.22, 0.035); noise(0.16, 0.05, 900, 1.3, 0.03); },   /* a rope over a pulley, a joint taking weight */
+  pupThud() { tone('sine', 110, 50, 0.22, 0.22); noise(0.14, 0.18, 500, 0.6); tone('square', 300, 200, 0.05, 0.05, 0.02); },   /* wood landing hard on the boards */
+  pupKnot() { noise(0.1, 0.06, 2400, 1.4); noise(0.08, 0.05, 1600, 1.4, 0.12); tone('triangle', 660, 620, 0.1, 0.04, 0.2); },   /* string drawn through and pulled tight */
+  pupWhipTell() { if (!gate('pupw', 0.3)) return; for (let i = 0; i < 4; i++) noise(0.06, 0.05, 1200 + i * 500, 1.8, i * 0.12); tone('sine', 300, 900, 0.5, 0.03); },   /* the string whirled up to speed */
+  pupWhip() { noise(0.05, 0.3, 5200, 0.9); tone('square', 2400, 600, 0.05, 0.08); noise(0.12, 0.08, 1400, 0.8, 0.03); },   /* the crack */
+  pupCurtain() { noise(1.4, 0.16, 400, 0.4); tone('sine', 120, 60, 1.2, 0.1); [587, 440, 349, 294].forEach((f, i) => bell(f, 0.7, 0.04, 0.3 + i * 0.28)); },   /* the drop coming down, and the music box running out */
+  pupWake() { [147, 175, 220, 294].forEach((f, i) => pad('sawtooth', f, f, 1.6, 0.05, i * 0.03, 1200)); [880, 698, 587].forEach((f, i) => bell(f, 0.5, 0.04, 0.6 + i * 0.16)); },
   wqRustle() { if (!gate('wqr', 0.3)) return; noise(0.14, 0.07, 1700, 0.9); noise(0.08, 0.05, 3400, 1.4, 0.05); tone('triangle', 180, 140, 0.1, 0.025, 0.02); },   /* dry wicker creaking as she glides */
   wqWake() { noise(0.6, 0.14, 1400, 0.7); tone('sawtooth', 110, 70, 0.8, 0.08); [659, 784, 988].forEach((f, i) => bell(f, 0.5, 0.03, 0.2 + i * 0.12)); },
   wqCatch() { noise(0.5, 0.2, 900, 0.5); noise(0.3, 0.12, 3200, 1.1, 0.05); tone('sawtooth', 90, 200, 0.4, 0.07); },   /* whoomph: the wicker takes the fire */
@@ -922,6 +947,7 @@ const DIE = {
   ploughman() { tone('sawtooth', 120, 40, 1.2, 0.22); noise(0.8, 0.3, 400, 0.6); },   /* the share goes into the furrow for good */
   mummer() { tone('triangle', 520, 200, 0.16, 0.08); noise(0.2, 0.12, 900, 0.5); [2349, 2093, 1760].forEach((f, i) => bell(f, 0.2, 0.03, 0.08 + i * 0.09)); },   /* THE MUMMER goes down: the wooden mask knocks, the sackcloth slumps, the cap bells roll away (claude/fair3: it fell back on the generic cry) */
   hobbyhorse() { noise(0.4, 0.2, 700, 0.5); tone('square', 300, 90, 0.3, 0.1); for (let i = 0; i < 4; i++) bell(1568 * (1 + (i % 2) * 0.12), 0.25, 0.04, 0.1 + i * 0.07); },   /* the pole cracks and the bridle bells scatter */
+  puppeteer() { tone('sawtooth', 260, 60, 1.2, 0.14); noise(0.9, 0.2, 1200, 0.4, 0.1); [587, 554, 523, 494, 466].forEach((f, i) => bell(f, 0.4, 0.04, 0.2 + i * 0.18)); },   /* THE PUPPETEER goes down: a long cry, and the music box winds down a semitone at a time */
   wickerqueen() { noise(1.6, 0.34, 800, 0.5); tone('sawtooth', 140, 40, 1.6, 0.18); for (let i = 0; i < 6; i++) noise(0.06, 0.1, 3000 - i * 300, 1.4, 0.2 + i * 0.15); },   /* THE WICKER QUEEN goes up: the whoomph, the crackle, the frame coming down */
   strawking() { noise(1.4, 0.36, 900, 0.5); tone('sawtooth', 120, 30, 1.6, 0.24); tone('sine', 70, 30, 2, 0.2, 0.2); },   /* the field burning down with him in it */
   kraken() { tone('sawtooth', 110, 28, 1.8, 0.3); tone('sine', 70, 24, 2.2, 0.26, 0.2); noise(1.4, 0.4, 380, 0.7); noise(0.9, 0.3, 1400, 0.5, 0.5); /* a bellow that goes down under the water with it */ },
@@ -1117,6 +1143,7 @@ const HURT = {
   ploughman() { tone('sawtooth', 150, 96, 0.22, 0.16); noise(0.18, 0.24, 500, 0.6); },
   mummer() { tone('triangle', 420, 300, 0.07, 0.07); noise(0.05, 0.08, 1200, 0.6); bell(2349, 0.08, 0.02, 0.02); },   /* a blow on a wooden mask, a bell shaken */
   hobbyhorse() { tone('square', 260, 180, 0.08, 0.08); noise(0.07, 0.1, 900, 0.5); bell(1568, 0.1, 0.025, 0.02); },   /* a knock on the carved head, the bridle jingles */
+  puppeteer() { tone('triangle', 320, 180, 0.18, 0.1); noise(0.1, 0.14, 1600, 0.6); },   /* a thin man in a good coat, struck: a yelp and a rustle */
   wickerqueen() { noise(0.18, 0.22, 1500, 0.6); tone('triangle', 200, 120, 0.2, 0.08); },   /* a blade into basketwork: a dry crunch, and the wicker creaks */
   strawking() { noise(0.2, 0.3, 1100, 0.4); tone('sawtooth', 130, 80, 0.3, 0.18); tone('sine', 90, 60, 0.3, 0.1, 0.05); },   /* a barn's worth of straw taking a blade, and a laugh under it */
   kraken() { tone('sawtooth', 140, 60, 0.4, 0.22); noise(0.3, 0.3, 500, 0.6); tone('sine', 80, 50, 0.5, 0.16, 0.05); },   /* something the size of a church taking a cut */
