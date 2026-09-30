@@ -4700,7 +4700,7 @@ addEventListener('blur', () => { for (const k in keys) keys[k] = false; edPaint 
    joke to play on him. */
 const pad = { prev: {} }, pad2 = { prev: {} };
 const padsNow = () => { const out = [], gps = navigator.getGamepads ? navigator.getGamepads() : []; for (const p of gps) if (p && p.connected) out.push(p); return out; };
-const padState = (gp, prof) => CTL.padStateOf(gp, padTab(prof));   /* the buttons are the player's own (src/controls.js: rebindable, one table for each pad) */
+const padState = (gp, prof = 'pad1') => CTL.padStateOf(gp, padTab(prof));   /* the buttons are the player's own (src/controls.js: rebindable, one table for each pad) */
 /* a pad into a player's OWN hands: his held keys and his one-shot presses, never the globals, which are player one's */
 function padIntoPlayer(gp, st, p) {
   const now = padState(gp, 'pad2'), rose = k => now[k] && !st.prev[k];

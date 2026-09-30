@@ -238,6 +238,7 @@ export const SFX = {
      rock; what it finds answers as a deep knock and a ring coming back (a sounding). THE HARVEST: a wet pull as the draw starts, and a
      gulp with a heartbeat under it when the body gives it up */
   kneelChant(k = 0) { if (!gate('kneelChant', 0.5)) return; const f = 196 * (1 + 0.12 * k); pad('triangle', f, f * 1.01, 0.85, 0.05, 0, 1400, 0.25); pad('sine', f * 1.5, f * 1.5, 0.85, 0.035, 0.05, 1400, 0.3); if (k > 0.5) bell(f * 4, 0.5, 0.025, 0.2); },
+  kneelRise() { if (!gate('kneelRise', 0.2)) return; tone('sine', 262, 392, 0.14, 0.05); tone('triangle', 784, 760, 0.2, 0.02, 0.06); },   /* up off his knee: the chant let go, a short lift */
   earthListen() { if (!gate('earthListen', 0.3)) return; tone('sine', 90, 55, 0.25, 0.18); noise(0.12, 0.08, 300, 0.6); pad('sine', 70, 64, 0.5, 0.05, 0.05, 400, 0.08); },
   earthSense() { if (!gate('earthSense', 0.25)) return; tone('sine', 120, 70, 0.2, 0.22); noise(0.08, 0.12, 500, 0.8); bell(392, 0.7, 0.05, 0.08); tone('triangle', 784, 760, 0.35, 0.03, 0.12); },
   bloodDraw() { if (!gate('bloodDraw', 0.15)) return; noise(0.35, 0.16, 420, 0.5); tone('sine', 180, 90, 0.35, 0.1); noise(0.2, 0.08, 1400, 1.5, 0.12); },

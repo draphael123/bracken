@@ -7,7 +7,7 @@ try {
     const yard=LEVELS.findIndex(l=>l.id==='trial_open');
     for(const hero of ['knight','warden','pyro','paladin','pirate','reaper','geomancer']) for(const face of [-1,1]) for(const kind of ['rise','sweep']){
       BK.setHero(hero);BK.load(yard);BK.state='play';BK.enemies().forEach(e=>e.alive=false);BK.tp(10,21);BK.sim(30);BK.reset();
-      const p=BK.P; p.face=face;p.st=p.maxSt;BK.keys[kind==='rise'?'up':'down']=true;BK.press('atk');
+      const p=BK.P; p.face=face;p.st=p.maxSt;BK.keys[kind==='rise'?'up':'down']=true;if(kind==='sweep'&&(hero==='knight'||hero==='warden'))BK.keys[face>0?'right':'left']=true;/* crouched STILL, their X is the shield trip / the low poke (src/crouch-a.js): the low sweep is down + X on the move */BK.press('atk');
       const frames=[];
       for(let f=0;f<100;f++){BK.sim(1);BK.step(0);if(p.atk>=0){
         if(p.swingKind!==kind||p.lastKey!==kind)throw Error(hero+' '+kind+' rendered '+p.lastKey+' for '+p.swingKind);
