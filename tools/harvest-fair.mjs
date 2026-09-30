@@ -21,6 +21,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
 import * as M from '../src/mummer.js';
+import * as WQ from '../src/wicker-queen.js';
 import { LEVELS } from '../src/level.js';
 import { THREAT, measureLevel, indexOf, spanOf } from '../src/threat.js';
 import * as FA from '../src/redraw/fair_world.js';
@@ -38,6 +39,15 @@ const world = hs => ({ heroes: hs, canStep: () => true });
   ok(!M.looks(e, hero(100, 1, { alive: false })), 'a dead hero looks at a foe');
   ok(!M.looks({ x: 100 + M.MUMMER.sight + 40, y: 400 }, hero(100, 1)), 'a hero looks at a foe past the screen (sight)');
   ok(!M.looks({ x: 200, y: 400 - M.MUMMER.sightY - 40 }, hero(100, 1)), 'a hero looks at a foe on a different storey');
+  // THE MAYPOLE RIBBON: reach 1.5 makes the look reach half as far again, and only for the one who carries it
+  { const far = { x: 100 + Math.round(M.MUMMER.sight * 1.25), y: 400 }, tall = { x: 200, y: 400 - Math.round(M.MUMMER.sightY * 1.25) };
+    ok(!M.looks(far, hero(100, 1)) && M.looks(far, hero(100, 1, { reach: M.RIBBON_REACH })), 'the ribbon does not stretch the look sideways by half');
+    ok(!M.looks(tall, hero(100, 1)) && M.looks(tall, hero(100, 1, { reach: M.RIBBON_REACH })), 'the ribbon does not stretch the look up by half');
+    ok(!M.looks({ x: 100 + M.MUMMER.sight * 1.6, y: 400 }, hero(100, 1, { reach: M.RIBBON_REACH })), 'the ribbon reaches past half again');
+    ok(!M.looks({ x: 100 - 40, y: 400 }, hero(100, 1, { reach: M.RIBBON_REACH })), 'the ribbon lets a hero look backwards');
+    ok(M.RIBBON_REACH === 1.5, 'the ribbon is not +50%: ' + M.RIBBON_REACH);
+    const q = { x: 100 + Math.round(WQ.WQ.nearR * 1.3), y: 400, phase: 2 };
+    ok(!WQ.wqSeen(q, [hero(100, 1)]) && WQ.wqSeen(q, [hero(100, 1, { reach: M.RIBBON_REACH })]), 'the ribbon does not reach her phase-2 cone (96 px) half as far again'); }
   // CO-OP: any hero facing it freezes it; only when every hero has his back to it does it move
   ok(M.facedBy(e, [hero(100, -1), hero(300, -1)]), 'co-op: a foe with one hero facing away and the other facing it is not faced');
   ok(!M.facedBy(e, [hero(100, -1), hero(300, 1)]), 'co-op: a foe with both heroes facing away is faced');
@@ -185,7 +195,7 @@ if (fair) {
   // FURNITURE: what Waymeet and the Fields carry (three silvers, a relic, hearts); NO NPCs (pickups only)
   const cnt = t => L.ents.filter(e => e.t === t).length;
   ok(cnt('silver') === 3, 'the fair has ' + cnt('silver') + ' silvers, not the campaign three');
-  ok(cnt('relic') === 1 && L.ents.find(e => e.t === 'relic').kind === 'soles', 'the fair has not one relic (the felted soles): ' + cnt('relic'));
+  ok(cnt('relic') === 1 && L.ents.find(e => e.t === 'relic').kind === 'maypole', 'the fair has not one relic (the maypole ribbon): ' + cnt('relic'));
   ok(cnt('mend') >= 3, 'the fair has ' + cnt('mend') + ' hearts (mend): three, one after each hard stretch');
   ok(!L.ents.some(e => ['npc', 'stray', 'captive', 'folk', 'squire'].includes(e.t)), 'an NPC or stray stands in the fair (pickups only)');
   ok(L.ents.filter(e => e.t === 'check').length >= 6, 'fewer than six shrines (checkpoints) in the fair');

@@ -36,9 +36,8 @@ if (bad.length) {
    that mentioned a removed thing to the same sentence with one regex, so the glade, the canyon, the fork and the Mother's door all said
    "FOLLOW THE CAPS...", and nothing noticed: each one fitted on two lines. The level review found it by reading them. Now a level that says the
    same words on two signs fails. KNOWN, NOT FORGIVEN: a level named here is over the line today and belongs to other work; the check fails an
-   entry that is no longer needed, so the list can only shrink. */
+   entry that is no longer needed, so the list can only shrink. (Empty since the Hurricane's three split-deck signs were given a line each.) */
 const SAME_KNOWN = new Map([
-  ['hurricane', 'THE HURRICANE DECK says "THE DECK IS SPLITTING. FOLLOW THE HOLD AFT; THE ROPES LEAD BACK UP." at 88, 235 and 570 - three splits, one warning. For the Hurricane\'s owner (and Daniel): a line each that says which split, or keep it as a refrain on purpose and say so here.'],
 ]);
 const same = [], sameStale = [];
 for (const lv of LEVELS) {

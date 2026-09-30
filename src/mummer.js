@@ -20,9 +20,12 @@ export const MUMMER = { w: 10, h: 22, hp: 40, creep: 40, reach: 22, glow: 0.6, s
 export const HORSE = { w: 26, h: 22, hp: 96, wind: 0.45, charge: 230, dist: 190, dmg: 22, sight: 320, sightY: 120, skid: 0.35 };
 export const CAROUSEL = { period: 5, warn: 1.3, lock: 0.9 };
 
+/* THE MAYPOLE RIBBON (a relic, the Wicker Queen's reward): the look reaches half as far again. A hero carries it as reach: RIBBON_REACH (main.js sets it from P.relic); nobody else changes */
+export const RIBBON_REACH = 1.5;
 /* does ONE hero look at this foe? */
 export function looks(e, h, sight = MUMMER.sight, sightY = MUMMER.sightY) {
   if (!h || h.alive === false) return false;
+  if (h.reach > 0) { sight *= h.reach; sightY *= h.reach; }
   const dx = e.x - h.x; if (Math.abs(dx) > sight || Math.abs((e.y || 0) - (h.y || 0)) > sightY) return false;
   return dx === 0 || Math.sign(dx) === (h.face >= 0 ? 1 : -1);
 }

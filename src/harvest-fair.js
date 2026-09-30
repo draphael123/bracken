@@ -120,7 +120,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   block(669, 671, 0, R - 1);                              /* the wall behind the gate */
   sign(616, 'THE GREEN. SHE MOVES ONLY WHEN YOU LOOK AWAY. HER RIBBONS DO NOT WAIT.');   /* outside the door, beside its checkpoint: read before the walls close */
   ent('wickerqueen', 662, S, { face: -1 });               /* THE WICKER QUEEN, past the bonfire: to draw her across it you turn your back on her */
-  ent('relic', 646, S, { kind: 'soles', bossDrop: true });   /* THE FAIR'S ONE RELIC is hers now: hidden until she falls, then it lies where she burned (spawn case 'relic') */
+  ent('relic', 646, S, { kind: 'maypole', bossDrop: true });   /* THE FAIR'S ONE RELIC is hers now (the maypole ribbon: your look reaches half as far again; the felted soles stay in the levels that hold them): hidden until she falls, then it lies where she burned (spawn case 'relic') */
   ent('gate', 666, S);                                    /* and the road goes on from here once she is down (gateAfterBoss) */
   const arena = { x0: 623 * TS, x1: 667 * TS, floor: R * TS, y0: (R - 14) * TS, trigger: 627 * TS, wallL: 622, wallR: 667, boss: 'wickerqueen', music: 'houndmaster', tint: '#2a1a30', tintA: 0.12, fx: 'embers' };
 
