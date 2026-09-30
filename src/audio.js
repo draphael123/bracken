@@ -224,6 +224,15 @@ export const SFX = {
   gargFire() { noise(0.8, 0.32, 900, 0.5); noise(0.6, 0.18, 2600, 0.8, 0.05); tone('sawtooth', 110, 70, 0.7, 0.12); crackle(6, 0.04); },   /* THE GATE GARGOYLE's FIRE BREATH: a furnace door opened */
   ember() { noise(0.1, 0.2, vary(2200), 0.7); tone('triangle', vary(440), 160, 0.12, 0.1); crackle(2, 0.02); },
   heatFull() { tone('triangle', 880, 880, 0.14, 0.08); tone('triangle', 1320, 1320, 0.2, 0.08, 0.07); noise(0.3, 0.12, 1200, 0.4); },
+  /* THE EMBER WARD (src/ember-ward.js): all fire, no iron. Raised, a soft whump and the crackle of it catching; a blow on it, a thud into
+     flame; a projectile melting, a short sizzle; sputtering, pops; overheated, a boom with a hiss running out of it; a flare, a bright
+     rising roar with a ring on top - the one sound of hers that rings, so the perfect ward is heard */
+  emberWard() { if (!gate('emberWard', 0.12)) return; noise(0.22, 0.16, 700, 0.5); tone('triangle', 160, 260, 0.16, 0.08); crackle(3, 0.04); },
+  emberBlock() { if (!gate('emberBlock', 0.05)) return; tone('sine', 150, 70, 0.14, 0.2); noise(0.14, 0.2, 1100, 0.6); crackle(2, 0.02); },
+  emberMelt() { if (!gate('emberMelt', 0.05)) return; noise(0.18, 0.16, 4200, 1.4); tone('sine', 900, 1500, 0.1, 0.04); crackle(2, 0.03); },
+  emberSputter() { crackle(3); noise(0.06, 0.1, 2600, 1.2); tone('square', vary(300), 120, 0.05, 0.05, 0.02); },
+  emberOverheat() { noise(0.5, 0.4, 520, 0.4); tone('sine', 72, 28, 0.6, 0.36); noise(0.6, 0.14, 3400, 0.8, 0.12); crackle(8, 0.05); },
+  emberFlare() { if (!gate('emberFlare', 0.08)) return; noise(0.3, 0.24, 1600, 0.5); tone('sawtooth', 220, 660, 0.2, 0.08); bell(1568, 0.4, 0.07, 0.02); crackle(5, 0.04); },
   pyre() { if (!ac) return; const t = ac.currentTime; const src = ac.createBufferSource(); src.buffer = noiseBuf; const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(3200, t + 0.35); const gn = ac.createGain(); gn.gain.setValueAtTime(0.001, t); gn.gain.exponentialRampToValueAtTime(0.42, t + 0.08); gn.gain.exponentialRampToValueAtTime(0.001, t + 0.7); src.connect(f); f.connect(gn); gn.connect(sfxGain); src.start(t); src.stop(t + 0.75);
     tone('sawtooth', 110, 45, 0.5, 0.18); tone('sine', 80, 30, 0.6, 0.35, 0.04); crackle(6, 0.05); },
   pyreBoom() { noise(0.55, 0.45, 480, 0.4); tone('sine', 64, 26, 0.75, 0.42); noise(0.25, 0.2, 2600, 0.7, 0.05); crackle(8, 0.08); },
