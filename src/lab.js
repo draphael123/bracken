@@ -1056,29 +1056,48 @@ async function runbossLab(BK, opts) {
         const was=P.hp,m0=mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,target,f,h});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='wickerqueen'){
-        /* THE WICKER QUEEN (claude/fair3): the bonfire opening, taught. Stand on the far side of the embers from her with your back turned; turn round the
-           moment she stands well onto them (in her dark, near enough for the look to reach her); cut her while she burns. The rest of the time: face her
-           (she cannot move), jump the low ribbon and duck the high one as it arrives, turn on a sickle's glow, and cut down a crowned mummer that gets near. */
+        /* THE WICKER QUEEN ON HER CAROUSEL (claude/fair3; the carousel, claude/fairboss): the fire opening, taught, and the read between up and down.
+           UP: when the floor is told to burn (or burns), get on a horse - the nearest one on the front run that will not go round the back under him - and
+           ride it; one near the far end, hop to the next. DOWN: when the high ribbons or her thrown sickle come, off the horse and ducked on the boards.
+           THE FIRE: stand on the far side of the embers from her with your back turned; turn round the moment she stands well onto them (in her dark, near
+           enough for the look to reach her); cut her while she burns. Looking at her he lets the ride carry him (it carries her the same, so the look
+           holds) rather than walk against it with his back to her. The rest of the time: face her (she cannot move), jump the low ribbon, turn on a reap's
+           glow, and cut down a crowned mummer that gets near. */
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const G=BK.L.green,mid=G.bonfire*16+8,mx=G.maypole*16+8,E=40,q=boss,dq=q.x-P.x,sq=Math.sign(dq)||1;
-        let gx=P.x,face=sq,swing=null;
+        let gx=P.x,face=sq,swing=null,look=false;
         const lashK=q.mode==='lashLowTell'?'low':q.mode==='lashHighTell'?'high':q.mode==='lash'?q.lashKind:null,front=q.mode==='lash'?(q.lashR||0):-1,dm=Math.abs(P.x-mx);
         const mums=BK.enemies().filter(e=>e.alive&&e.t==='mummer'&&Math.abs(e.x-P.x)<120&&Math.abs(e.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x));
         const glowM=mums.find(e=>e.mode==='glow'),nearM=mums.find(e=>Math.abs(e.x-P.x)<60);
+        const HS=BK.movers().filter(m=>m.kind==='carhorse'&&!m.broken),hc=m=>m.x+m.w/2,ride=P.onMover&&P.onMover.kind==='carhorse'?P.onMover:null;
+        const floorD=q.mode==='floorTell'||q.mode==='floor';
+        const skIn=q.sk&&(q.sk.dir>0?P.x>q.sk.x-4:P.x<q.sk.x+4)&&Math.abs(q.sk.x-P.x)<150;   /* her sickle in flight, coming his way */
+        const highD=lashK==='high'||q.mode==='throwTell'||skIn;
         const side=q.x>mid?-1:1,lureX=Math.max(A.x0+20,Math.min(A.x1-20,mid+side*(q.phase===2?64:110))),transit=Math.abs(lureX-P.x)>40&&Math.sign(lureX-P.x)!==sq;
-        if(q.open>0){gx=q.x-sq*Math.max(10,LAB_REACH[h]-6);face=sq;swing=q;}   /* she burns: get on her */
+        if(floorD&&!highD){   /* UP ON A HORSE */
+          const end=A.x1-70,ok=HS.filter(m=>hc(m)<end),pick=ok.sort((a,b)=>Math.abs(hc(a)-P.x)-Math.abs(hc(b)-P.x))[0];
+          if(ride&&hc(ride)<end+30){gx=hc(ride);face=sq;look=true;}
+          else if(pick){gx=hc(pick);face=Math.sign(gx-P.x)||sq;if((P.ground||ride)&&Math.abs(P.x-gx)<(ride?40:9)&&!(P.labJump>0)){BK.press('jump');P.labJump=22;}}
+        }
+        else if(highD){   /* DOWN ON THE BOARDS, AND DUCKED */
+          if(ride){const l=ride.x-6,r=ride.x+ride.w+6;gx=Math.abs(P.x-l)<Math.abs(P.x-r)?l:r;face=Math.sign(gx-P.x)||sq;}
+          else{gx=P.x;face=sq;look=true;}
+        }
+        else if(q.open>0){gx=q.x-sq*Math.max(10,LAB_REACH[h]-6);face=sq;swing=q;}   /* she burns: get on her */
         else if(glowM){face=Math.sign(glowM.x-P.x)||1;swing=glowM;}   /* a mummer's red mask: look at it (it stops), and cut it */
         else if(nearM){const ms=Math.sign(nearM.x-P.x)||1;face=ms;gx=nearM.x-ms*Math.max(10,LAB_REACH[h]-6);swing=nearM;}   /* one of her crowd near: face it, step in, cut it down */
-        else if(q.mode==='sickleTell'&&!transit){face=sq;}   /* the sickle's red glow: LOOK, and it is cancelled (or, already running for the far side, outrun it) */
-        else if(q.bank>0||q.mode==='rise'||q.mode==='catch'){face=sq;}   /* the embers banked: hold her with the look and wait */
-        else{gx=lureX;const deep=Math.abs(q.x-mid)<E-8,reach=q.phase===2?90:600;
-          if(Math.abs(gx-P.x)>8)face=Math.sign(gx-P.x)||1;else face=deep&&Math.abs(dq)<reach?sq:-sq;}   /* THE LURE: the far side of the embers from her, back turned until she is well onto them, then look */
-        if(lashK==='low'&&P.ground&&q.mode==='lash'&&front>dm-70&&front<dm+10){BK.press('jump');P.labJump=16;}
+        else if(q.mode==='sickleTell'&&!transit){face=sq;look=true;}   /* the reap's red glow: LOOK, and it is cancelled (or, already running for the far side, outrun it) */
+        else if(q.bank>0||q.mode==='rise'||q.mode==='catch'){face=sq;look=true;}   /* the embers banked: hold her with the look and wait */
+        else{gx=lureX;const deep=Math.abs(q.x-mid)<E-8,reach=q.phase===2?(P.relic==='maypole'?130:90):600;
+          if(Math.abs(gx-P.x)>8)face=Math.sign(gx-P.x)||1;else{face=deep&&Math.abs(dq)<reach?sq:-sq;look=face===sq;}}   /* THE LURE: the far side of the embers from her, back turned until she is well onto them, then look */
+        if(!ride&&lashK==='low'&&P.ground&&q.mode==='lash'&&front>dm-70&&front<dm+10){BK.press('jump');P.labJump=16;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        const duck=lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20));
-        if(duck&&P.ground){k.down=true;gx=P.x;swing=null;}
-        if(!duck&&Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;else P.face=face;
-        if(!duck&&swing&&P.atk<0&&Math.abs(swing.x-P.x)<LAB_REACH[h]+(swing.w||10)/2+4){P.face=Math.sign(swing.x-P.x)||1;BK.press('atk');swings++;}
+        const duck=!ride&&P.ground&&((lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20)))||(q.mode==='throwTell'&&q.modeT<0.3)||(skIn&&Math.abs(q.sk.x-P.x)<70));
+        if(duck){k.down=true;gx=P.x;swing=null;}
+        /* looking at her he does not walk with his back to her: the ride carries them both, so the look holds */
+        const want=Math.abs(gx-P.x)>5&&!(look&&Math.sign(gx-P.x)!==face);
+        if(!duck&&want)k[gx>P.x?'right':'left']=true;else P.face=face;
+        if(!duck&&!floorD&&swing&&P.atk<0&&Math.abs(swing.x-P.x)<LAB_REACH[h]+(swing.w||10)/2+4&&Math.abs(swing.y-P.y)<30){P.face=Math.sign(swing.x-P.x)||1;BK.press('atk');swings++;}
         const was=P.hp,m0=q.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:q.open>0});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='harbormaster'){

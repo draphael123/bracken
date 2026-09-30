@@ -60,6 +60,7 @@ import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
+import * as WC from './wicker-carousel.js'; import * as CRG from './redraw/carousel_ring.js';   /* THE WICKER QUEEN'S CAROUSEL (claude/fairboss): the ride, pure, and its look */
 import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
@@ -8460,7 +8461,7 @@ function bossEnd(e) {
       for (let i = 0; i < 10; i++) parts.push({ x: x + (Math.random() - 0.5) * 40, y: y - 20 - Math.random() * 30, vx: (Math.random() - 0.5) * 40, vy: -30, life: 2, max: 2, col: '#e0b050', size: 1, grav: -10 });
       movers = movers.filter(m => !m.arm); SFX.callerChant(); SFX.golemShatter && SFX.golemShatter(); say('THE TOWER IS QUIET', '#b07cf0'); break; }
     case 'wickerqueen': { /* THE FAIR IS OVER: the wicker goes up all at once, her players go back into the crowd, the green's light comes back, and the fair's one relic lies where she burned */
-      shakeCam(10); zoomKick(1.16, 0.6); killFlash = 0.12; L.dark = 0; if (FAIR) { if (FAIR.fire) FAIR.fire.r = 58; if (FAIR.wqLt) FAIR.wqLt.r = 0; }
+      shakeCam(10); zoomKick(1.16, 0.6); killFlash = 0.12; L.dark = 0; if (L.ring) WC.ringFor(L.ring, false); if (FAIR) { if (FAIR.fire) FAIR.fire.r = 58; if (FAIR.wqLt) FAIR.wqLt.r = 0; }
       for (let i = 0; i < 40; i++) parts.push({ x: x + (Math.random() - 0.5) * 30, y: y - Math.random() * 70, vx: (Math.random() - 0.5) * 80, vy: -40 - Math.random() * 90, life: 1.6, max: 1.6, col: ['#ffc850', '#f08a28', '#d84a14', '#b08a4e'][(Math.random() * 4) | 0], size: 2, grav: -30 });
       for (const q of enemies) if (q.alive && q.fromQueen) { q.alive = false; burst(q.x, q.y - 10, 10, COLS.mummer, 60, 0.5); spawnCorpse(q, 1); }
       { const rel = props.find(p => p.t === 'relic' && p.bossDrop); if (rel) { rel.hidden = false; if (A) rel.x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, x)); burst(rel.x, rel.y - 8, 16, ['#c9a0ff', '#fff6e0'], 70, 0.8); } }
@@ -18207,7 +18208,8 @@ function fairReset() {
   for (const lp of FAIR.lamps) if (lp.life > 0) lights.push({ x: lp.x * TS + 8, y: (lp.y + 1) * TS - 32, r: 46, warm: true, lantern: lp });   /* a lamp is an engine light: the dusk lays its glow, and a guttering one is on and off */
   if (L.green) lights.push(FAIR.fire = { x: L.green.bonfire * TS + 8, y: L.green.floor * TS - 14, r: 58, warm: true });
   L.dark = 0; L.gateOpen = false;   /* THE WICKER QUEEN: a retry finds the green at dusk again, and its gate shut until she is down (claude/fair3) */
-  if (window.BK) Object.assign(window.BK, { fair: () => FAIR });
+  L.ring = L.green && L.green.carousel && L.arena ? WC.newRing(L.arena) : null;   /* and her carousel standing still until she wakes (claude/fairboss) */
+  if (window.BK) Object.assign(window.BK, { fair: () => FAIR, fairRing: () => L && L.ring ? { on: L.ring.on, speed: L.ring.speed, phase: L.ring.phase, quicken: L.ring.quickT, rate: WC.organRate(L.ring) } : null });   /* (fairRing: the hook the boss track reads - the ride's speed and phase) */
 }
 /* may it walk on? ground ahead of its feet (a slope counts), no spike, no wall at its body: a haystack or a pit ends a charge */
 function fairStep(e, dir) {
@@ -18285,23 +18287,37 @@ function wqLight(q) {
   if (FAIR.fire) FAIR.fire.r = q && q.phase === 2 ? 34 : 58;
   if (!FAIR.wqLt) { FAIR.wqLt = { x: 0, y: 0, r: 0, warm: true }; lights.push(FAIR.wqLt); }
   FAIR.wqLt.r = q && (q.phase === 3 || q.mode === 'burn') ? 74 : 0; if (q) { FAIR.wqLt.x = q.x; FAIR.wqLt.y = q.y - 36; } }
+/* THE WICKER QUEEN'S CAROUSEL (src/wicker-carousel.js, claude/fairboss): a horse is a mover whose place is the ride's. The first horse turns the ride one
+   frame; each one then stands where the ride puts it (a platform on the front run, carrying its rider by dx/dy; round the back it is not, and a rider
+   still on it at the corner is set down on the boards) */
+function carHorse(m, dt) {
+  const R = L.ring; if (!R) { m.dx = 0; m.dy = 0; return; }
+  if (m.i === 0) WC.ringStep(R, dt);
+  const h = WC.horseAt(R, m.i), ox = m.x, oy = m.y; m.x = h.x - m.w / 2; m.y = h.y;
+  const was = !m.broken; m.broken = !h.front; m.dx = m.broken ? 0 : m.x - ox; m.dy = m.broken ? 0 : m.y - oy;
+  if (m.broken && was) for (const pp of players) if (pp.onMover === m) { pp.onMover = null; pp.ground = false; pp.vy = Math.min(pp.vy || 0, -60); }
+}
 function updateWickerQueen(e, dt) {
   const A = L.arena; if (!A || !L.green) return;
   const fl = A.floor, mx = L.green.maypole * TS + 8, heroes = players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p), reach: p.relic === 'maypole' ? MU.RIBBON_REACH : 1 }));
+  const R = L.ring, emb = wqEmbers();
   e.y = fl;
-  const evs = WQN.updateWickerQueen(e, dt, { heroes, anim: false, A: { x0: A.x0, x1: A.x1, floor: fl }, embers: wqEmbers(),
+  const evs = WQN.updateWickerQueen(e, dt, { heroes, anim: false, A: { x0: A.x0, x1: A.x1, floor: fl }, embers: emb, ringDir: R ? WC.RING.dir : 0,
     canStep: dir => { const nx = e.x + dir * 16; return nx > A.x0 + 12 && nx < A.x1 - 12; },
-    say: (m, col, low) => number(e.x, e.y - 78 + (low ? 10 : 0), m, col || '#ffd36b'),
-    sound: k => { const fn = ({ catch: SFX.wqCatch, burn: SFX.wqBurn, rise: SFX.wqBank, still: SFX.mummerStill, sickleTell: SFX.wqSickleTell, sickle: SFX.wqSickle, lashTell: SFX.wqLashTell, lash: SFX.wqLash, crownTell: SFX.wqCrown, crown: SFX.mummerBell, rustle: SFX.wqRustle, dark: SFX.wqDark, alight: SFX.wqAlight })[k]; if (fn) fn(); },
-    /* THE SICKLE: from behind, and nothing turns it */
+    number: (x, y, m, col) => number(x, y, m, col || '#ffd36b'),   /* (a teaching line - src/hint-lines.js - goes to the hint box; '!!' floats over her) */
+    sound: k => { const fn = ({ catch: SFX.wqCatch, burn: SFX.wqBurn, rise: SFX.wqBank, still: SFX.mummerStill, sickleTell: SFX.wqSickleTell, sickle: SFX.wqSickle, lashTell: SFX.wqLashTell, lash: SFX.wqLash, crownTell: SFX.wqCrown, crown: SFX.mummerBell, rustle: SFX.wqRustle, dark: SFX.wqDark, alight: SFX.wqAlight,
+      floorTell: SFX.wqCatch, floor: SFX.wqBurn, throwTell: SFX.wqSickleTell, throw: SFX.wqLash })[k]; if (fn) fn(); },
+    /* THE REAP: from behind, and nothing turns it */
     hit: (bx, d, name) => { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead) return; if (overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, box(P))) damagePlayer(e.x, d, { who: e, name, unblockable: true }); }); },
-    /* THE RIBBONS: the front sweeps out from the maypole both ways; each hero is judged once a lash, the moment it reaches him - at its height, against his
-       hurt box as it stands then (src/duck.js duckBox: ducked, or in the air, or standing in it) */
+    /* THE RIBBONS: the front sweeps out from the centre column both ways; each hero is judged once a lash, the moment it reaches him - at its height, against
+       his hurt box as it stands then (src/duck.js duckBox: ducked, or in the air, or up on a horse, or standing in it) */
     lash: (kind, r0, r1) => { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || pp.wqLash === e.n.lash) return; const d = Math.abs(P.x - mx);
       if (d < r0 - 2 || d >= r1) return; pp.wqLash = e.n.lash; const hb = duckBox(P);
       if (WQN.lashCatches(kind, fl, { t: hb.t, b: hb.b })) damagePlayer(P.x + (P.x < mx ? 10 : -10), WQN.WQ.dmg.lash, { who: e, name: 'THE RIBBONS', unblockable: true });
       else { number(P.x, P.y - 26, kind === 'low' ? 'OVER IT' : 'UNDER IT', '#8fd160'); } }); },
-    fire: x => fires.push({ x, y: fl, life: WQN.WQ.trailLife, delay: 0, wq: true }),
+    /* HER SICKLE, thrown: flat, at the height of a rider and a standing hero, out and back; each hero judged once a pass as it crosses him */
+    sickle: (x0, x1, pass) => { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || pp.wqSk === pass) return; if (P.x < x0 - 6 || P.x > x1 + 6) return;
+      const hb = duckBox(P); if (!WQN.sickleCatches(fl, { t: hb.t, b: hb.b })) return; pp.wqSk = pass; damagePlayer(e.sk ? e.sk.x : e.x, WQN.WQ.dmg.thrown, { who: e, name: 'HER SICKLE', unblockable: true }); }); },
     adds: () => enemies.filter(q => q.alive && q.fromQueen).length,
     /* THE CROWNING: the crowd at the edge of the light sends in her players - one behind the hero she means and one ahead of him, inside the green
        and on his screen (a mummer past 420 px would stand frozen by the game's own rule) */
@@ -18311,7 +18327,25 @@ function updateWickerQueen(e, dt) {
         for (let k = n0; k < enemies.length; k++) enemies[k].fromQueen = true;
         burst(px2, fl - 10, 10, ['#221a30', '#e8c23a', '#b8382c'], 50, 0.5); } },
   });
-  e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + e.vx * dt));
+  /* HER FEET, then THE RIDE: it carries her (frozen or not; flung by the fire it does not) and every hero with his feet on its boards */
+  const carry = R ? WC.ringCarry(R) : 0;
+  e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (e.vx + (e.mode === 'rise' ? 0 : carry)) * dt));
+  if (carry) for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || !P.ground || P.onMover || !WC.onBoards(R, P.x, P.y)) return; moveBody(P, carry * dt, 0, false); });
+  /* THE FLOOR BURNS: a hero with his feet on the boards burns (at once, then each WQ.floorTick), and the heat throws him up off them - toward a horse */
+  if (e.mode === 'floor') { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead) return;
+      const onHorse = !!(P.onMover && P.onMover.kind === 'carhorse');
+      if (P.ground && WQN.floorCatches(fl, P.y, onHorse)) { pp.wqFloorT = (pp.wqFloorT || 0) - dt; if (pp.wqFloorT <= 0) { pp.wqFloorT = WQN.WQ.floorTick; damagePlayer(P.x, WQN.WQ.dmg.floor, { who: e, name: 'THE BURNING FLOOR', unblockable: true, noKnock: true }); P.vy = Math.min(P.vy, -170); P.ground = false; } }
+      else pp.wqFloorT = Math.min(pp.wqFloorT || 0, 0); });
+    if (Math.random() < dt * 40) flame(A.x0 + Math.random() * (A.x1 - A.x0), fl - 2, 1, 3, 50, 2); }
+  else for (const pp of players) pp.wqFloorT = 0;
+  /* THE RIDE, SET BY HER: it starts when she wakes, quickens (told) with each phase, and her fight's teaching lines go to the hint box */
+  if (R) { const rev = WC.ringFor(R, bossActive && e.alive, e.phase);
+    if (rev === 'start') number(e.x, e.y - 78, 'LEAD HER ONTO THE FIRE, THEN FACE HER', '#ffd36b');
+    if (rev === 'quicken') { SFX.calliope(); SFX.calliopeTurn(); }
+    if (emb && e.seen && e.mode === 'still' && !(e.bank > 0) && Math.sign(emb.mid - e.x) === WC.RING.dir && Math.abs(emb.mid - e.x) < 200) number(e.x, e.y - 78, 'THE RIDE BRINGS HER TO THE FIRE', '#8fd160');
+    if (e.wasBank > 0 && !(e.bank > 0) && e.mode !== 'burn') number(e.x, e.y - 78, 'THE FIRE IS HOT AGAIN', '#ffb040');
+    e.wasBank = e.bank;
+    if (typeof music.tempo === 'function') music.tempo(WC.organRate(R)); }   /* (the band organ speeds up with the ride, when the boss track has a tempo: claude/fairmusic) */
   for (const v of evs) if (v.t === 'phase' && v.ph === 3) enrageBeat(e);   /* (phase two's beat the enemy tick gives every boss) */
   if ((e.mode === 'burn' || e.mode === 'catch' || e.phase === 3) && Math.random() < dt * (e.mode === 'burn' ? 40 : 18)) flame(e.x + (Math.random() - 0.5) * 22, e.y - 8 - Math.random() * 60, 1, 4, 40, 3);   /* the wicker burning */
   L.dark = e.phase === 2 ? 0.86 : 0;   /* FULL DARK, her phase two, only while she stands */
@@ -18330,6 +18364,11 @@ function drawWickerGround(cx, cy) {
 function drawWickerOver(cx, cy) {
   const q = wqBoss(); if (!q || !bossActive || !L.green || !L.arena) return;
   const fl = L.arena.floor, mx = L.green.maypole * TS + 8, x0 = L.arena.x0, x1 = L.arena.x1;
+  /* THE CAROUSEL's blows (claude/fairboss): the floor told and burning; her sickle's line told at the height it will fly, and the sickle in flight */
+  if (q.mode === 'floorTell' || q.mode === 'floor') CRG.drawRingFire(g, cx, cy, VW, L.arena, fl, q.mode, 1 - Math.max(0, q.modeT) / (q.mode === 'floor' ? WQN.WQ.floorT : WQN.WQ.floorTell), time);
+  if (q.mode === 'throwTell') { const [t, b] = WQN.sickleBand(fl), d = q.throwDir || q.face || 1, xa = d > 0 ? q.x : x0, xb = d > 0 ? x1 : q.x; g.globalAlpha = 0.25 + 0.5 * (Math.floor(time * 14) % 2); g.fillStyle = '#ff6b6b';
+    g.fillRect(Math.round(xa - cx), Math.round(t - cy), Math.round(xb - xa), 1); g.fillRect(Math.round(xa - cx), Math.round(b - 1 - cy), Math.round(xb - xa), 1); g.globalAlpha = 1; }
+  if (q.sk) { const [t, b] = WQN.sickleBand(fl); CRG.drawRingSickle(g, q.sk.x - cx, (t + b) / 2 - cy, q.sk.spin || 0); }
   const telling = q.mode === 'lashLowTell' || q.mode === 'lashHighTell', kind = telling ? (q.mode === 'lashLowTell' ? 'low' : 'high') : q.lashKind;
   if (telling || q.mode === 'lash') { const [t, b] = WQN.lashBand(kind, fl);
     if (telling) { const k = 1 - Math.max(0, q.modeT) / WQN.WQ.lashTell; g.globalAlpha = 0.2 + 0.45 * k * (0.6 + 0.4 * Math.sin(time * 30)); g.fillStyle = '#ff6b6b';
@@ -18351,6 +18390,7 @@ function wqHoles(hole, cx, cy) {
   if (q.mode.startsWith('lash')) hole(L.green.maypole * TS + 8 - cx, q.y - 30 - cy, 50, 0.7);
   for (const m of enemies) if (m.alive && m.fromQueen && m.mode === 'glow') hole(m.x - cx, m.y - 20 - cy, 30, 0.8);
   const emb = wqEmbers(); if (emb && !(q.bank > 0)) hole(emb.mid - cx, L.arena.floor - 6 - cy, 40, 0.6);
+  for (const m of movers) if (m.kind === 'carhorse' && !m.broken) hole(m.x + m.w / 2 - cx, m.y - 4 - cy, 22, 0.55);   /* the carousel's horses carry their own bulbs: you can always find one (claude/fairboss) */
 }
 
 /* ================= THE SUNKEN CARAVAN (src/sunken-caravan.js builds it; src/desert-foes.js, src/sunstroke.js and src/quicksand.js
@@ -23642,6 +23682,7 @@ function updateMovers(dt) {
   const pbs = movers.filter(q => q.kind === 'pushblock');   /* only a level with a block touches PB_CTX (tools that slice updateMovers alone, like rafts, never define it) */
   if (pbs.length) { PB_CTX.players = players; PB_CTX.blocks = pbs; }
   for (const m of movers) {
+    if (m.kind === 'carhorse') { carHorse(m, dt); continue; }   /* THE WICKER QUEEN'S CAROUSEL: its horses (claude/fairboss) */
     if (m.kind === 'pushblock') { updatePushBlock(m, dt, PB_CTX); continue; }
     if (m.kind === 'cart' || m.kind === 'orelift') continue;
     if (m.kind === 'bucket') { updateBucket(m, dt); continue; }
@@ -25336,7 +25377,9 @@ function drawWorld(cx, cy, showPlayer) {
   drawWater(cx, cy, false);
   if (L.cableway) { drawCables(g, L.cableway, cx, cy, time, VW); drawOreVeins(g, L, cx, cy, time, VW, VH); }   /* THE ORE ROAD's cables, and the empties coming back behind them */
   if (L.walls) drawWalls(g, L.walls, cx, cy, TS, time);   /* THE BREAKABLE-WALL ENGINE's own look, over the rock the tile renderer already drew */
+  if (FAIR && L.ring) CRG.drawRingBack(g, cx, cy, VW, L.ring, L.green, L.arena, time, L.ring.quickT > 0);   /* THE WICKER QUEEN'S CAROUSEL: the canopy, the column, the firebox, the back of the ride, under its horses */
   for (const m of movers) {
+    if (m.kind === 'carhorse') { if (!m.broken && L.ring && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.ring, m.i); continue; }
     if (m.kind === 'bucket') { if (m.vis && m.x + m.w > cx - 10 && m.x < cx + VW + 10) drawBucket(g, m, cx, cy, time); continue; }
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
     if (L.burialLook && drawBurialMover(g, m, cx, cy, time)) continue;   /* THE BURIAL CAVERNS: stone slabs on chains, stone coffins, floating biers - no timber (burial-looks.js) */

@@ -8,7 +8,8 @@
 //   246-374  THE CAROUSEL      TWIST    ride it and it TURNS you (warned); the one you were holding frozen is behind you now
 //   374-502  THE HAYRICKS      COMBINE  hobby-horses on the lane and HAYSTACKS (the Sporewood cap bounce) to clear spikes and the charge
 //   502-620  THE LAST ROUND    EXAM     a mummer, a small carousel with a mummer and a horse on it, a haystack, and THE DOOR GUARD (the elite hobby-horse that holds the green's door)
-//   622-672  THE MAYPOLE GREEN THE WICKER QUEEN (claude/fair3, src/wicker-queen.js): a maypole and a bonfire, a door, a checkpoint before it, a gate at the far end
+//   622-672  THE MAYPOLE GREEN THE WICKER QUEEN (claude/fair3, src/wicker-queen.js) ON THE FAIR'S GREAT CAROUSEL (claude/fairboss, src/wicker-carousel.js): the
+//            ring turns under you, its horses bob on their poles, the firebox under the centre column; a door, a checkpoint before it, a gate at the far end
 // Checkpoints: one per section (8, 124, 252, 380, 508) and the door's (600): 92-128 apart, none inside the green.
 export const FAIR = { W: 672, H: 36, R: 28 };
 export const ARC = { teach: [0, 118], develop: [118, 246], twist: [246, 374], combine: [374, 502], exam: [502, 618] };
@@ -18,6 +19,8 @@ export function lampsOut(lamps) {
   const end = 610; return lamps.map((l, i) => { const f = l.x / end;
     const h = (i * 0.618034) % 1, life = l.x < 118 ? 1 : l.x > 590 ? 0.5 : h < (f - 0.25) * 1.3 ? 0 : h < (f - 0.05) * 1.3 ? 0.5 : 1;   /* a golden-ratio scatter: the further along, the more are out */
     return { x: l.x, y: l.y, life }; }); }
+
+import { newRing, horseAt, RING } from './wicker-carousel.js';
 
 export function buildHarvestFair({ painter, T, TS }) {
   const { W, H, R } = FAIR, S = R - 1;
@@ -36,7 +39,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* A GENTLE CLIMB up n rows over 2n tiles from x0 (R2A + R2B pairs), and the way back down (L2B + L2A) from x1 */
   const ramp = (x0, n) => { for (let k = 0; k < n; k++) { const r = R - 1 - k, x = x0 + 2 * k; for (let y = r + 1; y < R; y++) { set(x, y, T.SOLID); set(x + 1, y, T.SOLID); } set(x, r, T.SLOPE_R2A); set(x + 1, r, T.SLOPE_R2B); } };
   const rampDown = (x0, n) => { for (let k = 0; k < n; k++) { const r = R - n + k, x = x0 + 2 * k; for (let y = r + 1; y < R; y++) { set(x, y, T.SOLID); set(x + 1, y, T.SOLID); } set(x, r, T.SLOPE_L2B); set(x + 1, r, T.SLOPE_L2A); } };
-  const carousels = [], lamps = [];
+  const carousels = [], lamps = [], moversExtra = [];
   for (const x of [34, 58, 94, 134, 192, 222, 238, 266, 286, 322, 342, 368, 394, 412, 426, 444, 464, 486, 520, 566, 580, 606]) post(x);   /* the lamps along the road, in the order the light goes: a lamp every ~25 tiles */
 
   // ---------------- 1. THE GATE (0-118): TEACH ----------------
@@ -113,20 +116,23 @@ export function buildHarvestFair({ painter, T, TS }) {
   ent('check', 600, S);                                   /* the door's checkpoint: the last one the road passes before the green */
   foe('hobbyhorse', 608, { elite: true, gate: 620 });     /* THE DOOR GUARD, the level's ELITE: it holds the green's door (the gate comes down over it) until it is dead. Facing it, it cannot charge: that is the exam's last answer */
 
-  // ---------------- THE MAYPOLE GREEN (622-672): THE WICKER QUEEN's arena (claude/fair3, src/wicker-queen.js) ----------------
-  const G = { x0: 622, x1: 668, door: 620, maypole: 640, bonfire: 654, floor: R };
+  // ---------------- THE MAYPOLE GREEN (622-672): THE WICKER QUEEN's arena (claude/fair3, src/wicker-queen.js), ON THE CAROUSEL (claude/fairboss) ----------------
+  /* the whole green is one turning ride (src/wicker-carousel.js): the maypole is its CENTRE COLUMN, the bonfire the engine's FIREBOX just downstream of it */
+  const G = { x0: 622, x1: 668, door: 620, maypole: 644, bonfire: 647, floor: R, carousel: true };
   block(620, 621, 0, R - 1);                              /* the door: a narrow gap under a lintel, then the green */
   for (let y = S - 3; y <= S; y++) { set(620, y, T.AIR); set(621, y, T.AIR); }
   block(669, 671, 0, R - 1);                              /* the wall behind the gate */
-  sign(616, 'THE GREEN. SHE MOVES ONLY WHEN YOU LOOK AWAY. HER RIBBONS DO NOT WAIT.');   /* outside the door, beside its checkpoint: read before the walls close */
-  ent('wickerqueen', 662, S, { face: -1 });               /* THE WICKER QUEEN, past the bonfire: to draw her across it you turn your back on her */
+  sign(616, 'THE CAROUSEL. SHE MOVES ONLY WHEN YOU LOOK AWAY. WHEN THE FLOOR BURNS, RIDE A HORSE.');   /* outside the door, beside its checkpoint: read before the walls close */
+  ent('wickerqueen', 662, S, { face: -1 });               /* THE WICKER QUEEN, downstream of her fire: to draw her across it against the ride you turn your back on her */
   ent('relic', 646, S, { kind: 'maypole', bossDrop: true });   /* THE FAIR'S ONE RELIC is hers now (the maypole ribbon: your look reaches half as far again; the felted soles stay in the levels that hold them): hidden until she falls, then it lies where she burned (spawn case 'relic') */
   ent('gate', 666, S);                                    /* and the road goes on from here once she is down (gateAfterBoss) */
   const arena = { x0: 623 * TS, x1: 667 * TS, floor: R * TS, y0: (R - 14) * TS, trigger: 627 * TS, wallL: 622, wallR: 667, boss: 'wickerqueen', music: 'houndmaster', tint: '#2a1a30', tintA: 0.12, fx: 'embers' };
+  /* THE HORSES: platforms (movers of kind 'carhorse', turned by main.js from the ride's state), placed where the ride stands before she wakes */
+  { const ring = newRing(arena); for (let i = 0; i < RING.horses; i++) { const h = horseAt(ring, i); moversExtra.push({ kind: 'carhorse', i, x: h.x - RING.w / 2, y: h.y, w: RING.w, h: RING.h, broken: !h.front }); } }
 
   const tints = [[0, 118, [255, 196, 110], 0.10], [118, 246, [255, 160, 90], 0.12], [246, 374, [235, 120, 110], 0.14], [374, 502, [170, 100, 150], 0.16], [502, 622, [80, 80, 160], 0.18], [622, W, [60, 60, 130], 0.20]];
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: S }, pools: [], falls: [], moversExtra: [], interiors: [],
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: S }, pools: [], falls: [], moversExtra, interiors: [],
     carousels, haystacks, lamps: lampsOut(lamps), arc: ARC, stair: { x0: 150, top: 162 }, green: G, tints, arena, gateAfterBoss: true,
     music: 'marketday', duskStart: 120 * TS, duskLen: 520 * TS,         /* sunset at the gate; dusk by the last round */
     palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town',
