@@ -273,7 +273,7 @@ if (fair) {
     ok(Mz && !FGM.blocked(L, (tx, ty) => at(tx, ty) === 1, { x: (Mz.x0 + 20) * TS3, y: R * TS3 - 1 }, { x: (Mz.x0 + 10) * TS3, y: R * TS3 - 1 }), 'the maze\'s walls block a look along one corridor');
     ok(sc.some(e => e.y <= 17) && sc.some(e => e.y === 22), 'the disguised mummers are not one in the middle tier and one in the dark tier'); }
   // THE NIGHT THAT COMES WITH HEIGHT: the light goes out with rows; a guttering lantern by the tower stair's mummer is the way to see it
-  { const N = L.night; ok(N && N.full < N.start && N.start <= 26 && N.full <= 14 && N.dim >= 60 && N.dim <= 120, 'the night does not come with height: ' + JSON.stringify(N));
+  { const N = L.fairNight; ok(N && N.full < N.start && N.start <= 26 && N.full <= 14 && N.dim >= 60 && N.dim <= 120, 'the night does not come with height: ' + JSON.stringify(N));
     const lp = L.lamps; ok(lp.filter(l => l.y < 17).every(l => l.life <= 0.5) && lp.some(l => l.y < 17 && l.life === 0.5) && lp.some(l => l.y < 17 && l.life === 0), 'up in the rides the lamps do not gutter and go out with height');
     const st = L.ents.find(e => e.t === 'mummer' && e.x >= 354 && e.x <= 358 && e.y <= 20); ok(!!st && lp.some(l => l.life === 0.5 && Math.abs(l.x - st.x) <= 3 && l.y <= 19), 'the tower stair\'s mummer has no guttering lantern by it');
     ok(FGM.sightFor(L, [], { x: 100 * TS3, y: 27 * TS3 }) === null && FGM.sightFor(L, [], { x: 358 * TS3, y: 18 * TS3 }) !== null && FGM.sightFor(L, [{ x: 357, y: 18, life: 1, lit: true }], { x: 358 * TS3, y: 18 * TS3 }) === null, 'the night sight does not follow height and the lit lantern');
