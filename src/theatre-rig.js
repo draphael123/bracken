@@ -17,7 +17,7 @@
 // And the show: in THE PERFORMANCE the lamps, one flat and the stage traps run on the prompt book's CUES, a loop that starts when the curtain goes up.
 export const TS = 16;
 export const RIG = {
-  flySpeed: 96,          /* px/s a line runs (a batten 9 rows takes about 1.5 s) */
+  flySpeed: 150,         /* px/s a line runs (world speed: at the game's default 0.6 a batten's nine rows take about a second and a half) */
   bagDmg: 60,            /* a sandbag landing on a foe (a mummer is 40, a sworn sword 60): it is the twist, and it should settle the one it lands on */
   flatStep: 0.08,        /* s a flat takes per column (a six-column slide is half a second) */
   swing: 0.35,           /* s a lamp takes to swing to its next aim */

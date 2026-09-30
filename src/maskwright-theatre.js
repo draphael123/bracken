@@ -145,7 +145,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
      under the gap, and a sandbag hangs over the far side where the fly floor's crew waits. Strike the lock: the batten flies up into the gap -
      a bridge - and its sandbag comes down on whoever stands under it. A fall is the whole tower again */
   sign(140, FL - 1, 'A BATTEN IS A BRIDGE WHEN IT IS FLOWN. AND ITS SANDBAG COMES DOWN SOMEWHERE.');
-  line('D', { x: 146, w: 8, rowIn: 22, rowOut: FL }, { x: 159, w: 2, rowIn: 10, rowOut: FL }, [[144, FL - 1]]);
+  line('D', { x: 145, w: 10, rowIn: 22, rowOut: FL }, { x: 159, w: 2, rowIn: 10, rowOut: FL }, [[144, FL - 1]]);
   foe('mummer', 160, FL - 1, { squad: 'the fly floor' });                    /* under the sandbag: face it and it stands there */
   foe('mummer', 164, FL - 1, { squad: 'the fly floor' });
   foe('swornsword', 171, FL - 1, { squad: 'the fly floor' });
@@ -171,8 +171,9 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   lamp(184, FL, [[172, ST], [184, ST], [196, ST]], { hang: true, cue: 2.3, r: 40, i: 1 });
   foe('mummer', 206, 33, { squad: 'the cast' }); foe('mummer', 191, 33, { squad: 'the cast' }); foe('mummer', 173, 33, { squad: 'the cast' });   /* THE CAST */
   sign(218, 33, 'THE PERFORMANCE. THE LAMPS KEEP THEIR CUES, THE AUDIENCE THROWS AT THE LIT, AND THE WAY OFF IS THE TRAP AT STAGE LEFT.');
-  /* THE SCENE CHANGE: a tall flat at stage left, on its cue; its winch takes it off the cue */
-  flat({ a: 166, b: 158, w: 2, y0: 30, y1: 33, winch: [170, 33], cue: { period: 7, hold: 3.5, at: 1 }, name: 'the scene change' });
+  /* THE SCENE CHANGE: a tall flat at stage left that runs on its cue and nothing else (no winch: the show changes its scenes whether you are ready or not).
+     It stands across the way to the trap for three and a half seconds in seven, and its track glows and the prompt bell rings before it moves */
+  flat({ a: 166, b: 158, w: 2, y0: 30, y1: 33, cue: { period: 7, hold: 3.5, at: 1 }, name: 'the scene change' });
   /* THE TRAPS: the way down at stage left, and two that drop into a spiked trap room each (a rope back up: a bite, never a shortcut) */
   trap(160, 163, { period: 6, open: 1.8, at: 1.5 }, 'the way down');
   trap(176, 178, { period: 5, open: 1.5, at: 0 }, 'a trap room');
@@ -197,7 +198,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   ent('silver', 148, UN - 1); coins([150, UN - 1], [152, UN - 1], [154, UN - 1]); ent('mend', 147, UN - 1);
   deco('props', 151, UN - 1);
   /* THE STAR TRAP: a spring on a pedestal under a hole in the far wing's floor. Hold jump */
-  block(224, 225, 42, 43); block(226, 230, 40, 43); for (let x = 228; x <= 230; x++) set(x, 40, T.BOUNCER); ent('startrap', 229, 39);
+  block(222, 223, 42, 43); block(224, 225, 41, 43); block(226, 230, 39, 43); for (let x = 228; x <= 230; x++) set(x, 39, T.BOUNCER); ent('startrap', 229, 38);   /* two steps up to the pedestal, the spring on it */
   air(228, 230, ST, ST + 1);
   sign(222, UN - 1, 'THE STAR TRAP. STAND ON IT AND HOLD JUMP: IT THROWS YOU UP THROUGH THE STAGE.');
   foe('spider', 232, 37);
