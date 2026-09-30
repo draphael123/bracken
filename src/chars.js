@@ -219,6 +219,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   }
   if (bits) for (const [bx, by, k] of bits) { const col = k[0] === '#' ? k : KP[k]; if (col) px(g, BX + dx + bx, BY + dy + by, col); }   /* loose pixels, over everything: a glint, a hand, a flap of cloth */
   outline(c, OUT);
+  { const lr = LEGS[legs] || LEGS.stand; c.feet = top + BY + 11 + legsDy + lr.reduce((n, r, i) => /[^.]/.test(r) ? i : n, 0); }   /* THE ROW HIS BOOTS STAND ON, kept for tools/crouch-feet.mjs: a crouch drawn on the standing legs cut short floats */
   return c;
 }
 function rotQuarter(c, q) { // rotate a square canvas by q quarter turns
@@ -284,7 +285,7 @@ function comboArcs(sh, key, len, extra = {}) {
    The new cuts can then travel overhead; the low blow bends at the knees and keeps its edge at ankle height. */
 const ATTACK_HEADROOM = 24;
 function padHeroFrames(F) {
-  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); if (c.tip) out.tip = [c.tip[0], c.tip[1] + ATTACK_HEADROOM]; memo.set(c, out); } return memo.get(c); };   /* (c.tip: the Geomancer's geode, carried down with the frame) */
+  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); if (c.tip) out.tip = [c.tip[0], c.tip[1] + ATTACK_HEADROOM]; if (c.feet !== undefined) out.feet = c.feet + ATTACK_HEADROOM; memo.set(c, out); } return memo.get(c); };   /* (c.tip: the Geomancer's geode, carried down with the frame) */
   for (const key in F) F[key] = Array.isArray(F[key]) ? F[key].map(c => c ? pad(c) : c) : pad(F[key]);
 }
 function storeFrames(card, knight, mode) {
@@ -399,7 +400,7 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
     // HURT is two beats too: the blow snaps him back, then he folds over it
     hurt: [KF({ dx: -1, dy: 1, legs: 'fall', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 6], plume: 2 }),
       KF({ dx: -2, dy: 2, legs: 'land', sword: [sh[0], sh[1] + 3, sh[0] + 4, sh[1] + 9], plume: 1 })],
-    crouch: KF({ dy: 3, legs: 'crouch', sword: rest(3) }),
+    crouch: KF({ dy: 3, legs: 'crouch', legsDy: 3, sword: rest(3) }),
     block: [
       KF({ legs: 'wide', shield: true, sword: [sh[0] - 4, sh[1] + 3, sh[0] - 6, sh[1] + 10] }),
       KF({ legs: 'wide', dy: 1, shield: true, sword: [sh[0] - 4, sh[1] + 4, sh[0] - 6, sh[1] + 11] }),
@@ -1447,6 +1448,7 @@ function pyroFrame(o = {}) {
     for (const [ddx, ddy, k] of pts) put(x + ddx, y + ddy + dy, k); }
   if (sparks) for (const [x, y, k] of sparks) put(x, y + dy, k);   /* loose sparks, over everything */
   outline(c, OUT);
+  c.feet = headroom + Math.max(...feet.map(f => f[1])) + dy;   /* the row her boots stand on (tools/crouch-feet.mjs) */
   return c;
 }
 /* EVERY ABILITY HAS A BODY: THE PYROMANCER'S BOUGHT ACTIVES (lane P, 2026-09-24). Vent, Wisp and Fire Wall played beside an idle
@@ -2111,7 +2113,7 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
       knightFrame({ dx: 1, dy: 1, legs: 'land', arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], cutlass: [sh[0] + 3, sh[1] - 1, sh[0] + 9, sh[1] + 2], pistol: holster(1), plume: 0 }),
     ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', cutlass: [sh[0] + 1, sh[1] + 3, sh[0] + 6, sh[1] + 6], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', cutlass: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8], pistol: holster(2), plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', cutlass: rest(3), pistol: holster(3) }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, cutlass: rest(3), pistol: holster(3) }),
     // THE PARRY: the blade up across him, both hands, and no shield anywhere
     block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 2], cutlass: [sh[0] + 2, sh[1] + 4, sh[0] + 4, sh[1] - 8], pistol: holster(i) })),
     // THE HOOK: the line away from the free hand
@@ -2263,7 +2265,7 @@ export function bakeReaper(skin = {}, previewOnly = false) {
       knightFrame({ dx: 1, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], greatsword: [sh[0] + 3, sh[1] + 4, sh[0] + 10, sh[1] + 9], plume: 0 }),
     ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 5, sh[0] - 6, sh[1] - 1], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', greatsword: [sh[0] + 2, sh[1] + 6, sh[0] - 6, sh[1] + 2], plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 8], greatsword: rest(3) }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 8], greatsword: rest(3) }),
     /* BLOOD HARVEST (src/crouch-b.js): down on one knee over the body, the greatsword let down to lie on the ground behind him and the sword
        hand reaching down into what lies there - the blood coming up into the palm, more of it on the second beat */
     harvest: [0, 1].map(i => knightFrame({ dy: 3, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 6], greatsword: [sh[0] - 3, sh[1] + 6, sh[0] - 15, sh[1] + 8], plume: i + 1,
@@ -2414,7 +2416,7 @@ export function bakeWarden(skin = {}, previewOnly = false) {
     plunge: knightFrame({ wide: WIDE, dx: -2, legs: 'fall2', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], spear: [sh[0] - 7, sh[1] - 8, sh[0] + 4, sh[1] + 16], plume: 2 }),
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 3], spear: [sh[0] + 2, sh[1] + 6, sh[0] - 10, sh[1] - 2], plume: 2 }),
       knightFrame({ dx: -2, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 4], spear: [sh[0] + 1, sh[1] + 7, sh[0] - 11, sh[1] + 1], plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 5], spear: rest(3) }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 5], spear: rest(3) }),
     /* THE BRACE (C): the heel driven into the turf behind her, the point levelled at chest height, her weight down
        behind it and both hands on the haft. This is the pose a charge runs onto, so it is the pose that must read. */
     block: [0, 1].map(i => knightFrame({ wide: WIDE, dx: -1, dy: i, legs: 'wide',
@@ -2690,7 +2692,7 @@ export function bakePaladin(skin = {}, previewOnly = false) {
       knightFrame({ dx: 1, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 5], maul: [sh[0] + 3, sh[1] + 5, sh[0] + 8, sh[1] + 10], plume: 0 }),
     ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', maul: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 5], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', maul: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8], plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', maul: rest(3) }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, maul: rest(3) }),
     /* KNEEL IN PRAYER (src/crouch-b.js): down on one knee, the maul planted upright before him with both hands on the haft and his helm
        bowed to it, the light gathering at its head - brighter, and a mote off it, on the second beat (and held there once his bar is full) */
     kneel: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], maul: [sh[0] + 4, sh[1] + 6, sh[0] + 4, sh[1] - 6], glow: [sh[0] + 4, sh[1] - 10 - i], plume: 0,
@@ -4199,7 +4201,7 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
     plunge: knightFrame({ legs: 'fall2', dx: -1, arm: [X, Y, X, Y + 4], arm2: [OFF[0], OFF[1], X - 1, Y + 1], stave: [X - 1, Y + 15, X - 3, Y - 6], plume: 2 }),
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', arm: [X, Y, X - 1, Y + 3], stave: [X + 4, Y + 6, X - 8, Y - 5], plume: 2 }),
       knightFrame({ dx: -2, dy: 2, legs: 'land', arm: [X, Y, X - 2, Y + 4], stave: [X + 3, Y + 7, X - 9, Y - 2], plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', arm: [X, Y, X + 2, Y + 2], arm2: [OFF[0], OFF[1], X, Y + 4], stave: [X + 1, Y + 6, X + 4, Y - 12] }),   /* (down on her heels, the staff still upright by her) */
+    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, arm: [X, Y, X + 2, Y + 2], arm2: [OFF[0], OFF[1], X, Y + 4], stave: [X + 1, Y + 6, X + 4, Y - 12] }),   /* (down on her heels, the staff still upright by her) */
     /* EARTH SENSE (src/crouch-b.js): down on one knee, her head bowed to the ground and the lead palm pressed flat to it, the staff held upright
        behind her in the off hand - and the ground answering under the palm: amber at her fingers, and on the second beat a ripple out either side */
     sense: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [X, Y, X + 5, Y + 5], arm2: [OFF[0], OFF[1], X - 1, Y + 2], stave: [X - 1, Y + 6, X + 1, Y - 12], plume: i,
