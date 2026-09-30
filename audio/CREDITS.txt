@@ -192,3 +192,5 @@ CONVERTED TO OGG FROM THE ORIGINAL WAV (ffmpeg, libvorbis q3, no fades, loop poi
   https://opengameart.org/content/desert-theme-8bit-chiptune-theme - THE SUNKEN CARAVAN's own level track, benching musBeach.ogg (kept, part of the same stage-select set).
 - monasterygolem.ogg = "Boss Battle #6 [8-bit]" V1 by nene, CC0 -
   https://opengameart.org/content/boss-battle-6-8-bit - THE MONASTERY's GOLEM mini's own track, overriding the shared mini fallback (minicharge.ogg).
+
+theatre.ogg - "The Maskwright's Waltz", THE MASKWRIGHT'S THEATRE's placeholder track: an original synthesized waltz (music box, plucked bass, reed organ, a bell) composed and rendered for BRACKEN by tools/theatre-music.mjs (claude/theatre, 2026-09-30); no external samples, nothing downloaded. 32 bars of 3/4, about 50 s, mono 22050 Hz, Vorbis. The art/music lane replaces it; the track name 'theatre' stays.

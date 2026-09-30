@@ -60,6 +60,7 @@ import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
+import * as THH from './theatre-hands.js';   /* THE MASKWRIGHT'S THEATRE's machinery in the game (claude/theatre): lamps, fly lines, flats, traps and the show */
 import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
@@ -3286,6 +3287,7 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
 const COAST_PATH = [[260, 172], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [105, 80], [160, 100], [26, 96], [26, 26], [140, 8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
 const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' },
+  { id: 'theatre', kind: 'level', level: LEVELS.findIndex(l => l.id === 'theatre'), x: 56, y: 154, name: "THE MASKWRIGHT'S THEATRE" },   /* THE MASKWRIGHT'S THEATRE (claude/theatre): on the road between WAYMEET and THE HARVEST FAIR (in road order: the map-grammar rule; saves keep the node by its id) */
   { id: 'fair', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fair'), x: 72, y: 148, name: 'THE HARVEST FAIR' },   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): the second stop on the road inland, on the road between WAYMEET and THE HEXED FIELDS */
   { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 62, y: 122, name: 'THE HEXED FIELDS' },   /* moved up-left of Waymeet, off the entrance V (map-redesign §6, 2b) - the only node this fix moves */
   { id: 'burial', kind: 'level', level: LEVELS.findIndex(l=>l.id==='burial'), x: 130, y: 82, name: 'THE BURIAL CAVERNS' },
@@ -3297,7 +3299,7 @@ const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l 
    the return leg painted at full road weight on top of the outbound one, so the required town read as a dead end.
    Waymeet does not move. The road now enters, runs through it, and climbs away in a new direction; THE HEXED FIELDS
    moves so the road leaving Waymeet does not have to double back across its own entrance to reach it. */
-const INLAND_PATH = [[140, 176], [40, 162], [72, 148], [62, 122], [130, 82], [170, 66], [214, 76], [260, 34]];
+const INLAND_PATH = [[140, 176], [40, 162], [56, 154], [72, 148], [62, 122], [130, 82], [170, 66], [214, 76], [260, 34]];
 /* THE FIFTH SHEET, EMPTY (map-redesign §4.1/§8 step 2). DESERT_NODES is [] on purpose - none of the desert's eight
    levels is in LEVELS yet, and a node whose level index is -1 crashes nodeLocked's LEVELS[-1] on the map's first
    frame (§8). This is geometry and a seam only: the entry point the desert's own road will start from one day, and
@@ -15377,7 +15379,7 @@ function updateDrunk(e, dt) {
   if (e.hpSeen === undefined) e.hpSeen = e.hp;
   /* ANY BLOW PUTS HIM ON HIS BACK, and whatever he was about to throw goes with him */
   if (e.hp < e.hpSeen) { e.hpSeen = e.hp; if (e.mode !== 'down') { e.mode = 'down'; e.modeT = 1.25; e.cd = Math.max(e.cd, 1.2); SFX.thud(); dust(e.x, e.y, 5); } }
-  const near = !P.dead && ad < 210 && dy > -48 && dy < 160;
+  const near = !P.dead && ad < 210 && dy > -48 && dy < 160 && (!e.footlights || (THEATRE && THH.litAt(THEATRE, THX, P.x, P.y)));   /* THE AUDIENCE (the Maskwright's Theatre, e.footlights): he sees you only in the light */
   let want = 0;
   switch (e.mode) {
     case 'lobTell': want = 0; e.face = Math.sign(e.aimX - e.x) || e.face;
@@ -18199,6 +18201,15 @@ function drawUnburied(cx, cy) { if (!UNB_FIELD) return; UNBF.drawField(g, UNB_FI
 /* ================= THE HARVEST FAIR (src/harvest-fair.js builds it; src/mummer.js is THE FACING RULE, pure and proved in tools/harvest-fair.mjs;
    this is only its hands). DON'T TURN YOUR BACK ON THEM: a mummer moves only while NO hero faces it (co-op: any hero facing it freezes it), its bells jingle as
    it creeps, its mask glows red within strike reach; the hobby-horse charges the moment a back is turned; the carousel turns a rider round. ================= */
+/* ================= THE MASKWRIGHT'S THEATRE (src/maskwright-theatre.js builds it, src/theatre-rig.js is its machinery, src/theatre-hands.js its hands):
+   this is only the context those hands are given, and the reset. ================= */
+let THEATRE = null;
+const THX = { T, L: () => L, lights: () => lights, enemies: () => enemies, isSolid, box, overlap, sfx: SFX,
+  cellSet: (x, y, t) => cellSet(x, y, t), resolve: () => resolveTiles(), attackBox: () => attackBox(), eachHero: fn => { for (const pp of players) asPlayer(pp, () => fn(P)); },
+  bodies: () => players.filter(p => !p.dead).concat(enemies.filter(e => e.alive && !e.noGrav)), hurt: (e, d, x) => hurtEnemy(e, d, x, false), sparks, dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n),
+  near: (x, y, r) => Math.abs(x - P.x) < r && Math.abs(y - P.y) < r, hint: msg => { hintT = 4.5; hintMsg = msg; } };
+function theatreReset() { THEATRE = L && L.theatre ? THH.theatreReset(THX) : null; if (THEATRE) FAIR = null;   /* the fair's mummers stand here, but none of the fair's dressing does */
+  if (window.BK) Object.assign(window.BK, { theatre: () => THEATRE }); }
 let FAIR = null;
 function fairReset() {
   FAIR = null; musicBox.stop(); for (const pp of players) { pp.faceLock = 0; pp.car = null; }
@@ -18226,6 +18237,7 @@ function updateMummer(e, dt) {
     e.mode = s.mode; grav(); return; }
   s.x = e.x; s.y = e.y;
   const heroes = players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p), reach: p.relic === 'maypole' ? MU.RIBBON_REACH : 1 }));
+  if (THEATRE && THH.litAt(THEATRE, THX, e.x, e.y)) heroes.push({ x: e.x, y: e.y, face: 1, alive: true });   /* THE MASKWRIGHT'S THEATRE: what stands in a lamp's light is SEEN, whichever way the heroes face */
   const x0 = e.x, was = s.mode;
   const evs = (horse ? MU.horseStep : MU.mummerStep)(s, { heroes, canStep: (x, dir) => fairStep(e, dir), sight: wqNearSight(e), sightY: wqNearSight(e) ? WQN.WQ.nearY : 0 }, dt);
   const dx = s.vx * dt;
@@ -18682,6 +18694,7 @@ function drawDuneStorm() {
 
 function villageReset() {
   unbReset(); caravanReset(); fairReset();   /* THE UNBURIED FIELD rides the village's hooks: reset, step and draw */
+  theatreReset();   /* THE MASKWRIGHT'S THEATRE (src/theatre-hands.js) */
   VG = L && L.village ? fireGrid(L) : null; if (!VG) return;
   for (const [x, y] of L.roofFire || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, barrier: true, tall: 46 });   /* THE FIRE ACROSS THE BARN ROOF: water puts it out for a while (villageSplash) */
   for (const [x, y, per, ph] of L.stillFires || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, pillar: !!per, per: per || 4, ph: ph || 0, tall: 14 });   /* FLAME PILLARS (villageTick) */
@@ -18770,6 +18783,7 @@ function drawBurningTown(cx, cy) {
 }
 function updateVillage(dt) {
   updateUnburied(dt); updateCaravan(dt); updateFair(dt);
+  if (THEATRE) THH.theatreUpdate(THEATRE, THX, dt);   /* THE MASKWRIGHT'S THEATRE */
   if (!VG) return;
   villageTick(dt);
   /* THE SMOKE RISES (THE ROOFTOPS): a hero in the air inside a plume while it is up is carried up with it, to its top */
@@ -18975,6 +18989,7 @@ function drawHeaps(cx, cy) {
 /* THE STRAW, THE CHAR AND THE PROPS, under the flames */
 function drawVillage(cx, cy) {
   drawUnburied(cx, cy); drawCaravan(cx, cy); drawFair(cx, cy);
+  if (THEATRE) THH.drawTheatre(THEATRE, g, THX, cx, cy, VW, VH, time);   /* THE MASKWRIGHT'S THEATRE: beams, flats, traps, gadgets, the curtain */
   if (!VG) return;
   drawSmoke(cx, cy); drawHeaps(cx, cy); drawBuckets(cx, cy);
   for (const f of fires) if (f.pillar && f.delay > 0 && f.x > cx - 20 && f.x < cx + VW + 20) { const x = Math.round(f.x - cx), y = Math.round(f.y - cy), soon = f.delay < PILLAR.warn;   /* a pillar at rest: its vent glowing, and brighter just before it goes */
@@ -23647,6 +23662,7 @@ function updateMovers(dt) {
     if (m.kind === 'bucket') { updateBucket(m, dt); continue; }
     if ((m.kind === 'hexvine' || m.kind === 'haycart') && updateFieldsMover(m, dt)) continue;   /* THE HEXED FIELDS */
     if (m.mage && updateMageMover(m, dt)) continue;   /* THE MAGE'S FOLLY: the books and the lanes (a planet is a wheel, and falls through to the wheel) */
+    if (m.theatre && THH.theatreMover(THEATRE, THX, m, dt)) continue;   /* THE MASKWRIGHT'S THEATRE: a fly line's batten or sandbag */
     const oldX = m.x, oldY = m.y; m.dy = 0;
     if (m.kind === 'pad') { // sinks while stood on, floats back up when left
       const on = P.onMover === m; m.sink = Math.max(0, Math.min(1, m.sink + (on ? (m.big ? 0.3 : 0.5) : -1.4) * dt));   /* the big leaf goes under at six-tenths the pace: three seconds and a bit, against two */
@@ -25360,6 +25376,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.fillStyle = m.state === 'wither' ? '#3a6a70' : '#2a8a90'; g.beginPath(); g.ellipse(cxm + wob, top + 4, m.w / 2, 6, 0, Math.PI, 0); g.fill(); g.fillRect(x + wob, top + 3, m.w, 3); // the cap
       g.fillStyle = '#bff0f0'; for (const dx of [-9, -2, 6]) g.fillRect(cxm + dx + wob, top + 1 - (dx === -2 ? 2 : 0), 2, 2); g.fillStyle = '#1b1626'; g.fillRect(x + wob, top + 6, m.w, 1);
       if (m.state === 'bud' && !(m.cd > 0) && Math.floor(time * 2) % 2) { g.globalAlpha = 0.5; g.strokeStyle = '#bff0f0'; g.lineWidth = 1; g.beginPath(); g.moveTo(cxm - 3, top - 5); g.lineTo(cxm, top - 9); g.lineTo(cxm + 3, top - 5); g.stroke(); g.globalAlpha = 1; } } // an up-arrow over a bud that is ready
+    else if (m.theatre) THH.drawTheatreMover(g, m, cx, cy, time);   /* THE MASKWRIGHT'S THEATRE */
     else if (m.mage) drawMageMover(m, cx, cy);   /* THE MAGE'S FOLLY: the books and the planets */
     else if (m.kind === 'hexvine') drawHexVine(m, cx, cy);   /* THE HEXED FIELDS */
     else if (m.kind === 'haycart') drawHayCart(m, cx, cy);
@@ -26460,6 +26477,7 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
 const fallenBlocked = (tx, ty) => tx < 0 || ty < 0 || tx >= LW || ty >= LH || (grid0 || L.grid)[ty * LW + tx] !== T.AIR;
 function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time, fallenBlocked)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's - its holes and windows only where no tile stands in front of them (round 2) */
+  if (L.theatre && THH.paintTheatreRoom(g, st, sx, sy, w, h)) return;   /* THE MASKWRIGHT'S THEATRE (greybox rooms) */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
   if (L.deepHolds && DH.paintHold(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE DEEP: a cargo hold, a galley, a gun deck, the tribute hold (src/deep-holds.js) */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
