@@ -25291,6 +25291,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (sx > VW || sx + w < 0) continue;
     drawRoom(st, sx, sy, w, h, x0, y0);
   }
+  if (L.palette && L.palette.farDim) { g.globalAlpha = L.palette.farDim; g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }   /* VALUE PASS (opt-in, palette.farDim = black alpha; 0.28 = x0.72): the back wall a step darker so the footing, foes and hazards read against it (lane claude/footlip) */
   /* A CABIN IS A PLACE: L.cabins [x0, x1, top row, floor row, kind] dress a stretch of a ship's interior as the room it is (src/redraw/cabins.js) */
   for (const cb of (L.cabins || [])) { const [x0, x1, y0, fl, kind] = cb, sx = Math.round(x0 * TS - cx), sy = Math.round(y0 * TS - cy);
     if (sx > VW || sx + (x1 - x0 + 1) * TS < 0 || sy > VH || sy + (fl - y0) * TS < 0) continue;
