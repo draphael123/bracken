@@ -1881,6 +1881,7 @@ function questDone(x, y) {
 function drainPool(pr) { const p = (L.pools || []).find(p => p.x0 === pr.pool); if (!p) return; marks.add('pool:' + pr.pool); pr.open = true; p.yTo = pr.to * TS + 4; p.draining = true; number(pr.x, pr.y - 30, 'THE CHANNEL DRAINS', '#bfe6f5'); SFX.splash(); SFX.heavy(); shakeCam(2); }
 
 function loadLevel(i) {
+  hintT = 0;   /* a lesson banner from the last level or the last life does not follow you into this one (the crouch lessons, src/crouch-a.js, are told from a foe near you; a stale one sat over burial-vents section 7) */
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
   setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); bakeAll(L.palette || {});
   SLOPES_ON = levelHasSlopes(L.grid);   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
