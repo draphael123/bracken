@@ -59,6 +59,7 @@ import { lanceSupport, LANCE_SUPPORT } from './lance-support.js';   /* THE QUEEN
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
+import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
 import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease } from './attack-tokens.js';
@@ -136,8 +137,9 @@ import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
+import { WEIGHTY, weighty, setWeighty, combatFrom, weightyHere, recoveryFor, poiseRule, guardCount } from './weighty.js';   /* COMBAT: CLASSIC / WEIGHTY (claude/ssproto): one switch, off by default */
 import { updateMageChase, drawRingDoor, inSpiral, drawSeals, lightBrazier } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
 
 // ---------- display ----------
 let VW = 320, VH = 180;
@@ -192,6 +194,7 @@ if (!SET.speedV2) { SET.speed = 0.6; SET.speedV2 = 1; try { localStorage.setItem
 function saveSettings() { try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
 function applySettings() { setVolume(SET.sfx); setMusicVolume(SET.musicVol); music.set(SET.music); setSfxFiles(SET.sfxFiles); setVoices(SET.voices !== false); setUiVolume(SET.uiVol); setAmbientVolume(SET.ambVol); resize(); }
 applySettings();
+setWeighty(combatFrom(q.get('combat'), SET.combat) === 'weighty');   /* COMBAT (src/weighty.js): ?combat=weighty|classic wins for this visit and is not saved; else the saved setting */
 // Progress lives in one of three save slots. The old single save becomes slot 1 the first time it is read.
 const PROG = {}; let saveBlocked = ''; const SLOTS = 3; let slot = 0, slotI = 0, slotMsg = '', slotMsgT = 0;
 /* LOCAL CO-OP is built further down (the players list, the pass, the shared camera, downed and revive). These four
@@ -276,7 +279,7 @@ const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, worm
   dkLunge: DKN.DK.knight.dmg.lunge, dkCapLunge: DKN.DK.captain.dmg.lunge, dkSlash: DKN.DK.captain.dmg.slash, dkSlash2: DKN.DK.captain.dmg.slash2, whelpSwoop: WHF.WH.dmg.swoop, whelpFire: WHF.WH.dmg.fire };
 const EHP = { sexton: SEXTON.hp, duneworm: DWM.WORM.hp, scorpion: DF.SCORPION.hp, vulture: DF.VULTURE.hp, sandgob: DF.SANDGOB.hp, cutthroat: DF.CUTTHROAT.hp, slinger: DF.SLINGER.hp, ambusher: DF.AMBUSHER.hp, bannerbearer:UNBF.UNB.hp.bannerbearer, corpse:UNBF.UNB.hp.corpse, barrowrider:UNBF.UNB.hp.barrowrider, deathknight:UNBF.UNB.hp.deathknight, bloodknight:UNBF.UNB.hp.bloodknight, winchmaster:WINCH.hp, abbot:ABBOT.hp, tome:TOME.hp, gargoyle:410, hedgewarden:HEDGE.hp, gravewarden:380, burngob:26, emberwisp:8, pyromancer:587, bonegob:30, bonearcher:26, undeadmage:600, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 280, archmage: 720, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 300, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22, temperer: 30, scalder: 26,
   prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, prince: 960, courtier: 22, grandmother: 430, assassin: 30, berserker: 96, watch: 56, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 500, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 640, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, seawitch: 20, crow: 6, horn: 22, bale: 12, shardling: 18, fledgling: 16, suncatcher: 430, roc: 1100, sentry: 14, gqueen: 650, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, tippler: 26, sheargob: 30, gaffer: 44, bat: 8, forgemaster: 480, golem: 400, kite: 15, badger: 30, gar: 16, hare: 8, wight: 12, windcaller: 170, grub: 26, rockgoblin: 20, greathound: 220, spider: 15, owl: 1450, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 220, archer: 10, frog: 280, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 400, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 8, mother: 8, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: 420, harpy: 18, goat: 20, ram: 360, gobpriest: 14, merrowspear: 24, merrowcaller: 22, merrowbrute: 50, gobmage: 22, puffer: 12, jelly: 10, lamprey: 24, manta: 34,
-  drownedknight: DKN.DK.knight.hp, drownedcaptain: DKN.DK.captain.hp, whelp: WHF.WH.hp };
+  drownedknight: DKN.DK.knight.hp, drownedcaptain: DKN.DK.captain.hp, whelp: WHF.WH.hp, mummer: MU.MUMMER.hp, hobbyhorse: MU.HORSE.hp, wickerqueen: WQN.WQ.hp };
 
 /* THE FODDER STANDS UP LONGER (docs/combat-tuning.md, measured 2026-09-22). Three in four common fights ended in ONE swing. Scaling
    every foe balloons the tough ones (the hedge knight, sworn sword and tide guard go to 15-20 swings), so it is the fodder alone:
@@ -291,7 +294,9 @@ for (const t of FODDER) if (EHP[t]) EHP[t] = Math.round(EHP[t] * FODDER_HP);
    `bless` s, taking `take` of every blow. A blow on the priest while the censer is up breaks it: dazed `daze` s, and `cd`
    again before the next. Its health is two of a knight's blows at the monastery: the first breaks the rite, the second
    finishes it */
-for (const key of COMMON_BLOWS) if (DMG[key]) DMG[key] = Math.round(DMG[key]*COMBAT.commonDamage);
+const DMG_COMMON = {}; for (const key of COMMON_BLOWS) if (DMG[key]) DMG_COMMON[key] = DMG[key];   /* the common blows unscaled, so the combat switch can scale them again (claude/ssproto) */
+const scaleCommon = () => { for (const key in DMG_COMMON) DMG[key] = Math.round(DMG_COMMON[key]*(weighty() ? WEIGHTY.commonDamage : COMBAT.commonDamage)); };
+scaleCommon();
 const PRIEST = { first: 0.3, tell: 1.5, cd: 7, reach: 110, smoke: 150, mend: 0.35, bless: 6, take: 0.5, daze: 1.4,
   /* AND IT HAS AN ANSWER AT EVERY RANGE (Daniel, 2026-09-25: "make goblin priests a real enemy"). THE CENSER: past censerMin and
      inside censerMax it swings the pot back for censerTell s (a yellow !) and throws it on its chain in a lob that lands where you
@@ -1966,7 +1971,7 @@ function spawnEnt(e) {
       case 'spit': enemies.push({ ...base, t: 'spit', w: 12, h: 12, hp: EHP.spit, timer: 1 + Math.random(), mouth: 0 }); break;
       case 'wasp': enemies.push({ ...base, t: 'wasp', hx: px, hy: py, w: 8, h: 6, hp: EHP.wasp, face: -1, ...(e.sting ? { sting: true, mode: 'hover', modeT: 0, cd: 1 } : {}) }); break;   /* sting: true darts at you from its post, on a yellow ! (the river wasps) */
       case 'thorn': enemies.push({ ...base, t: 'thorn', w: 12, h: 11, hp: EHP.thorn, speed: 22, mode: 'walk', modeT: 0 }); break;
-      case 'queen': boss = { ...base, t: 'queen', w: 40, h: 20, hp: EHP.queen, maxHp: EHP.queen, mode: 'sleep', modeT: 0, face: -1, tx: px, ty: py, dive: null, phase: 1 }; enemies.push(boss); break;
+      case 'queen': boss = { ...base, t: 'queen', w: 40, h: 20, hp: qHp(), maxHp: qHp(),   /* (weighty: more of it, since all of every blow lands) */ mode: 'sleep', modeT: 0, face: -1, tx: px, ty: py, dive: null, phase: 1 }; enemies.push(boss); break;
       case 'frog': boss = { ...base, t: 'frog', w: 40, h: 30, hp: EHP.frog, maxHp: EHP.frog, mode: 'sleep', modeT: 0, face: -1, phase: 1, last: '' }; enemies.push(boss); break;
       case 'archer': enemies.push({ ...base, t: 'archer', w: 8, h: 10, hp: EHP.archer, speed: 24, timer: 1 + Math.random(), draw: 0, horn: !!e.horn, hornT: 0, blown: false, fire: !!e.fire,
         /* THE STOCKADE'S TWIST (tower 3): a blower who starts on the ground and runs for his horn once he sees you, instead of standing on the tower */
@@ -2079,10 +2084,13 @@ function spawnEnt(e) {
       /* THE BANDITS (2026-09-25, in the goblins' place: docs/briefs/caravan-ruins-bandits.md) */
       case 'cutthroat': { const st = DF.newCutthroat(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'cutthroat', w: DF.CUTTHROAT.w, h: DF.CUTTHROAT.h, hp: EHP.cutthroat, mode: st.mode, st }); break; }
       case 'slinger': { const st = DF.newSlinger(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'slinger', w: DF.SLINGER.w, h: DF.SLINGER.h, hp: EHP.slinger, mode: st.mode, st }); break; }
+      case 'mummer': { const st = MU.newMummer(px, py, e.face || -1); enemies.push({ ...base, t: 'mummer', w: MU.MUMMER.w, h: MU.MUMMER.h, markH: 34, hp: EHP.mummer, mode: st.mode, st, speed: 0 }); break; }   /* THE HARVEST FAIR's players (src/mummer.js): they move only while nobody faces them */
+      case 'wickerqueen': { const a = WQN.newWickerQueen({ ...base, t: 'wickerqueen', w: WQN.WQ.w, h: WQN.WQ.h, hp: EHP.wickerqueen, maxHp: EHP.wickerqueen, noGrav: true, markH: 90, face: e.face || -1 }); boss = a; enemies.push(a); break; }   /* THE WICKER QUEEN (src/wicker-queen.js): asleep on the green until you come through its door; every clock a number (A3) */
+      case 'hobbyhorse': { const st = MU.newHorse(px, py, e.face || -1); enemies.push({ ...base, t: 'hobbyhorse', w: MU.HORSE.w, h: MU.HORSE.h, markH: 36, hp: EHP.hobbyhorse, mode: st.mode, st, speed: 0 }); break; }   /* and the elite: it charges the moment a back is turned */
       case 'ambusher': { const st = DF.newAmbusher(px, py); enemies.push({ ...base, t: 'ambusher', w: DF.AMBUSHER.w, h: DF.AMBUSHER.h, hp: EHP.ambusher, mode: st.mode, st }); break; }
       case 'vulture': { const st = DF.newVulture(px, py); st.a = (e.x % 7) * 0.9; enemies.push({ ...base, t: 'vulture', w: DF.VULTURE.w, h: DF.VULTURE.h, hp: EHP.vulture, noGrav: true, y: st.y, mode: st.mode, st }); break; }
       case 'awningwinch': props.push({ t: 'awningwinch', x: px, y: py, canopy: e.canopy, hollow: !!e.hollow, out: 1, k: 1, cd: 0 }); break;   /* hollow: THE DUNE WORM's (it only ever rolls OUT: a blow meant for him must not roll his trap in) */
-      case 'relic': props.push({ t: 'relic', x: px, y: py, kind: e.kind, got: false, ph: Math.random() * 6 }); break;
+      case 'relic': props.push({ t: 'relic', x: px, y: py, kind: e.kind, got: false, ph: Math.random() * 6, hidden: !!e.bossDrop, bossDrop: !!e.bossDrop }); break;   /* bossDrop: a boss's reward, hidden until it falls (THE WICKER QUEEN's, bossEnd) */
       /* A HEART PUT DOWN FOR GOOD: the dead-end stashes (payDeadEnds in src/level.js). It does not fall or fade like a crate's,
          it waits where it lies until you are hurt enough to take it, and once taken it stays taken until the level restarts */
       case 'mend': { const key = 'mend:' + e.x + ',' + e.y; if (!healCrates.has(key) && !healths.some(h => h.key === key)) healths.push({ x: px, y: py, vy: 0, t: 0, stay: true, key }); break; }
@@ -2556,6 +2564,7 @@ const ELITE = {
   husk: { name: 'THE GRAVE CAPTAIN', rule: 'call', calls: 'zombie', hp: 3 },   /* the caverns' captain: a husk that calls up the dead (batch 4b) */
   hopper: { name: 'THE OLD BULLFROG', rule: 'slam' }, troll: { name: 'THE CRAG TROLL', own: true }, armour: { name: 'THE WARDEN ARMOUR', rule: 'slam' },
   archer: { name: 'THE ARCHER CAPTAIN', hp: 17, own: true },
+  hobbyhorse: { name: 'THE HOBBY-HORSE', hp: 1, own: true },   /* THE HARVEST FAIR's door guard (src/mummer.js): its charge is its own (updateMummer), the elite adds the leash, the gate over the green's door and the purse; hp 1 because its health is already an elite's */
   drownedcaptain: { name: 'THE DROWNED CAPTAIN', hp: 1, own: true },   /* THE UNDERWATER KEEP's: a kind of his own (src/drowned-knights.js), his health already a captain's, his moves in updateDrownedKnight */
   apprentice: { name: 'THE HEAD NOVICE', rule: 'wall', hp: 3 },   /* THE FALLING TOWER's captain (THE ORRERY PIT, 2026-09-25): the Folly's apprentices led by their eldest, who wards the crowd round him - the tower's own casters, and not the Folly's armour again in the next room (rule Q) */
   scorpion: { name: 'THE OLD STINGER', rule: 'lunge', hp: 2.5 },
@@ -2627,6 +2636,7 @@ function updateElite(e, dt) {
   if (e.t === 'brute') return updateEliteBrute(e, dt);
   if (e.t === 'troll') return updateEliteTroll(e, dt);
   if (e.t === 'pike') return updateElitePike(e, dt);
+  if (e.t === 'hobbyhorse') return false;   /* the charge and the rear are its own (updateMummer): only the leash, the gate and the purse are the elite's */
   if (e.t === 'drownedcaptain') return false;   /* the lunge and the combo are his own (updateDrownedKnight): only the leash, the gate and the purse are the elite's */
   return updateEliteRule(e, dt);
 }
@@ -3268,6 +3278,7 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
 const COAST_PATH = [[260, 172], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [105, 80], [160, 100], [26, 96], [26, 26], [140, 8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
 const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' },
+  { id: 'fair', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fair'), x: 72, y: 148, name: 'THE HARVEST FAIR' },   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): the second stop on the road inland, on the road between WAYMEET and THE HEXED FIELDS */
   { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 62, y: 122, name: 'THE HEXED FIELDS' },   /* moved up-left of Waymeet, off the entrance V (map-redesign §6, 2b) - the only node this fix moves */
   { id: 'burial', kind: 'level', level: LEVELS.findIndex(l=>l.id==='burial'), x: 130, y: 82, name: 'THE BURIAL CAVERNS' },
   { id: 'witchlight', kind: 'level', level: LEVELS.findIndex(l => l.id === 'witchlight'), x: 170, y: 66, name: 'THE WITCHLIGHT STAIR' },   /* the road up the tower hill, between the caverns and the Folly (batch 4c) */
@@ -3278,7 +3289,7 @@ const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l 
    the return leg painted at full road weight on top of the outbound one, so the required town read as a dead end.
    Waymeet does not move. The road now enters, runs through it, and climbs away in a new direction; THE HEXED FIELDS
    moves so the road leaving Waymeet does not have to double back across its own entrance to reach it. */
-const INLAND_PATH = [[140, 176], [40, 162], [62, 122], [130, 82], [170, 66], [214, 76], [260, 34]];
+const INLAND_PATH = [[140, 176], [40, 162], [72, 148], [62, 122], [130, 82], [170, 66], [214, 76], [260, 34]];
 /* THE FIFTH SHEET, EMPTY (map-redesign §4.1/§8 step 2). DESERT_NODES is [] on purpose - none of the desert's eight
    levels is in LEVELS yet, and a node whose level index is -1 crashes nodeLocked's LEVELS[-1] on the map's first
    frame (§8). This is geometry and a seam only: the entry point the desert's own road will start from one day, and
@@ -4215,6 +4226,9 @@ const BEASTS = [
   { t: 'scorpion', name: 'THE DUNE SCORPION', sub: 'two answers in one shell', desc: 'Up close it lifts a claw - a yellow mark, and a shield turns it. Stand a little further off and the tail comes up over its back instead - a red mark, and nothing turns that: step out of it, then walk in and cut while the tail comes down.' },
   { t: 'sandgob', name: 'THE SAND GOBLIN', sub: 'a mound with eyes', desc: 'Buried, it is only sand and two eyes, and a blade goes straight through it. Walk past and it rises with the sand pouring off - that is the tell - and cuts twice with a knife a shield turns. Then it goes under and comes up again ahead of you.' },
   { t: 'cutthroat', name: 'THE CUTTHROAT', sub: 'watch the mark, not the arm', desc: 'A veiled looter with a scimitar, and he feints: every other time he comes in, the blade half rises and he stamps - no mark, nothing behind it. Then the real one, high and back with a glint and a yellow mark, and a shield turns it. Hold your guard through the feint.' },
+  { t: 'mummer', name: 'THE MUMMER', sub: 'do not turn your back', desc: 'A masked player in sackcloth with bells on his cap. He moves ONLY while nobody is looking at him: face him and he freezes where he stands, and a frozen mummer can be cut down in about three blows. Turn away and the bells jingle as he creeps up behind you. When his mask glows red he is at arm\'s length and about to strike: look at him. In two-player, he is frozen if EITHER hero faces him.' },
+  { t: 'hobbyhorse', name: 'THE HOBBY-HORSE', sub: 'it charges the moment you turn away', desc: 'A carved horse\'s head on a pole and a cloth skirt, and a player under it. The moment your back is turned it rears (a red eye, a bell) and CHARGES a long run in a straight line, and it will not stop for a look once it has begun. It stands where the charge ends and will not charge again until you have looked at it. Jump the charge, or climb a haystack out of its way. In two-player it charges only when BOTH heroes have their backs turned.' },
+  { t: 'wickerqueen', name: 'THE WICKER QUEEN', sub: 'the maypole green at nightfall', desc: 'She moves only while you look away, and her ribbons turn even while you look: jump the low lash, duck the high. Turn your back to draw her across the green, then turn round while she stands on the embers: the wicker catches. Cut her while she burns. In two-player either look holds her.' },
   { t: 'slinger', name: 'THE ROOFTOP SLINGER', sub: 'he owns the tops of the ruins', desc: 'He stands on a tower\'s top and stones the road. As the sling whirls, a red arc falls to the spot you stand on: step off it, or take the stone on a shield. Climb the tower to him and he is only a man with a sling - up close he can do no more than kick.' },
   { t: 'ambusher', name: 'THE SAND-CLOAK', sub: 'an ambusher under the dune', desc: 'Under his sand cloak he is a mound with two gold eyes, and a blade goes straight through. Walk past and he rises with the sand pouring off - that is the tell - and cuts twice with a knife a shield turns. Then he throws the cloak over himself and comes up ahead of you.' },
   { t: 'vulture', name: 'THE VULTURE', sub: 'it cools you while it hunts you', desc: 'It circles high over its patch of sand, and its shadow is shade. When it picks you its eye goes red and its shadow snaps onto your spot: move off the mark before it dives. On the ground it is open for a breath before it labours back up.' },
@@ -4323,7 +4337,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
 const PAUSE_ITEMS = ['Resume', 'Map', 'Skills', 'Equip', 'Hero', 'Co-op', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
-const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Game speed', 'Jump assist', 'Way-on arrow', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X',   /* 'Slot 3 key' and 'Slot 4 key' left the menu with the third and fourth slots (MAX_SLOTS = 2); their handlers stay */ 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Export save', 'Import save', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Hitboxes', 'Back'];
+const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Combat', 'Game speed', 'Jump assist', 'Way-on arrow', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X',   /* 'Slot 3 key' and 'Slot 4 key' left the menu with the third and fourth slots (MAX_SLOTS = 2); their handlers stay */ 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Export save', 'Import save', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Hitboxes', 'Back'];
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
 const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 : 1;
@@ -4331,6 +4345,7 @@ let menuKind = 'pause';
 // one line each, so nobody has to guess what a switch does
 const SETTING_TIPS = {
   'Skills': 'skills, coin purchases and equipped techniques (Q)', 'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
+  'Combat': 'WEIGHTY: a swing commits you, the Hornet Queen is always hittable, Kingswood fights back (a prototype)',
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk boxes fill',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
   'Map': 'where you have been, and what is still to find (TAB)', 'Way-on arrow': 'an arrow at the edge of the screen to the next thing on the way',
@@ -4352,9 +4367,9 @@ const menuItems = () => menuKind === 'pause' || menuKind === 'map' ? PAUSE_ITEMS
 const isHeader = k => k[0] === '-';
 const MENU_ROWS = 10;
 let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0, bestPage = 0, bestPages = 1;
-const BOSS_T = ['bellcrab', 'archmage', 'strawking', 'kraken', 'closedhelm', 'drownedking', 'prince', 'queen', 'frog', 'chief', 'mother', 'greathound', 'king', 'ram', 'owl', 'forgemaster', 'golem', 'windcaller', 'lance', 'roc', 'gqueen', 'herald', 'reefmaw', 'quarter', 'master', 'masthead'];
+const BOSS_T = ['bellcrab', 'archmage', 'strawking', 'kraken', 'closedhelm', 'drownedking', 'prince', 'queen', 'frog', 'chief', 'mother', 'greathound', 'king', 'ram', 'owl', 'forgemaster', 'golem', 'windcaller', 'lance', 'roc', 'gqueen', 'herald', 'reefmaw', 'quarter', 'master', 'masthead', 'wickerqueen'];
 const beastList = () => BEASTS.filter(b => bestTab === 1 ? BOSS_T.includes(b.t) : !BOSS_T.includes(b.t));
-const BEAST_SHORT = { sexton:'THE SEXTON', duneworm:'THE DUNE WORM', bannerbearer:'BANNER-BEARER', corpse:'THE FALLEN', barrowrider:'BARROW RIDER', deathknight:'THE REAPER', bloodknight:'DEATH KNIGHT', winchmaster:'THE WINCHMASTER', abbot:'THE FALSE ABBOT', hedgewarden:'HEDGE WARDEN', gargoyle:'GATE GARGOYLE', whelp:'WHELP', gravewarden:'GRAVEYARD KEEPER', burngob:'BURNING GOB', emberwisp:'EMBER WISP', pyromancer:'THE PYROMANCER', bonegob:'BONE GOBLIN', undeadmage:'UNDEAD ARCHMAGE', burieddead:'THE BURIED DEAD',zombie:'ZOMBIE', husk:'GRAVE HUSK', apprentice:'DEAD APPRENTICE', harbormaster: 'HARBOR WARDEN', familiar:'THE FAMILIAR', lanternshade:'LANTERN SHADE',bonecorsair:'BONE CORSAIR',tidemarauder:'TIDE MARAUDER', bellcrab: 'THE DIVING BELL', bellguard: 'BELLGUARD', homunculus: 'HOMUNCULUS', archmage: 'THE ARCHMAGE', armour: 'ARMOUR', topiary: 'TOPIARY', broom: 'BROOM', tome: 'THE TOME', mimic: 'MIMIC', turret: 'TURRET', piece: 'PIECE', ploughman: 'THE PLOUGHMAN', kraken: 'THE KRAKEN', swornsword: 'SWORN SWORD', hedgeknight: 'HEDGE KNIGHT', runner: 'THE RUNNER', crossbow: 'CROSSBOWMAN', closedhelm: 'THE PALADIN', lancer: 'SERJEANT', drunk: 'THE DRUNK', prise: 'THE PRISE', holdfast: 'THE HOLDFAST', drownedking: 'THE DROWNED KING', propman: 'THE PROPMAN', clinger: 'THE CLINGER', tippler: 'THE TIPPLER', sheargob: 'THE SHEARGOB', gaffer: 'THE GAFFER', prince: 'BURIED PRINCE', courtier: 'COURTIER', turtle: 'SNAPTURTLE', shield: 'SHIELDGOB', archer: 'GOBLIN BOW', thorn: 'THORNCASTER', javelin: 'JAVELINEER', hearthgob: 'HEARTH GOB', temperer: 'THE TEMPERER', tideguard: 'TIDEGUARD', drownedknight: 'DROWNED KNIGHT', drownedcaptain: 'DROWNED CAPTAIN', lampreeve: 'THE REEVE', tollmaster: 'TOLLMASTER', quarter: 'QUARTERMASTER', masthead: 'THE MASTHEAD', windcaller: 'WINDCALLER', suncatcher: 'RIMEWRIGHT', greathound: 'GREAT HOUND', master: 'HOUND MASTER', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
+const BEAST_SHORT = { sexton:'THE SEXTON', duneworm:'THE DUNE WORM', bannerbearer:'BANNER-BEARER', corpse:'THE FALLEN', barrowrider:'BARROW RIDER', deathknight:'THE REAPER', bloodknight:'DEATH KNIGHT', winchmaster:'THE WINCHMASTER', abbot:'THE FALSE ABBOT', wickerqueen:'THE WICKER QUEEN', hedgewarden:'HEDGE WARDEN', gargoyle:'GATE GARGOYLE', whelp:'WHELP', gravewarden:'GRAVEYARD KEEPER', burngob:'BURNING GOB', emberwisp:'EMBER WISP', pyromancer:'THE PYROMANCER', bonegob:'BONE GOBLIN', undeadmage:'UNDEAD ARCHMAGE', burieddead:'THE BURIED DEAD',zombie:'ZOMBIE', husk:'GRAVE HUSK', apprentice:'DEAD APPRENTICE', harbormaster: 'HARBOR WARDEN', familiar:'THE FAMILIAR', lanternshade:'LANTERN SHADE',bonecorsair:'BONE CORSAIR',tidemarauder:'TIDE MARAUDER', bellcrab: 'THE DIVING BELL', bellguard: 'BELLGUARD', homunculus: 'HOMUNCULUS', archmage: 'THE ARCHMAGE', armour: 'ARMOUR', topiary: 'TOPIARY', broom: 'BROOM', tome: 'THE TOME', mimic: 'MIMIC', turret: 'TURRET', piece: 'PIECE', ploughman: 'THE PLOUGHMAN', kraken: 'THE KRAKEN', swornsword: 'SWORN SWORD', hedgeknight: 'HEDGE KNIGHT', runner: 'THE RUNNER', crossbow: 'CROSSBOWMAN', closedhelm: 'THE PALADIN', lancer: 'SERJEANT', drunk: 'THE DRUNK', prise: 'THE PRISE', holdfast: 'THE HOLDFAST', drownedking: 'THE DROWNED KING', propman: 'THE PROPMAN', clinger: 'THE CLINGER', tippler: 'THE TIPPLER', sheargob: 'THE SHEARGOB', gaffer: 'THE GAFFER', prince: 'BURIED PRINCE', courtier: 'COURTIER', turtle: 'SNAPTURTLE', shield: 'SHIELDGOB', archer: 'GOBLIN BOW', thorn: 'THORNCASTER', javelin: 'JAVELINEER', hearthgob: 'HEARTH GOB', temperer: 'THE TEMPERER', tideguard: 'TIDEGUARD', drownedknight: 'DROWNED KNIGHT', drownedcaptain: 'DROWNED CAPTAIN', lampreeve: 'THE REEVE', tollmaster: 'TOLLMASTER', quarter: 'QUARTERMASTER', masthead: 'THE MASTHEAD', windcaller: 'WINDCALLER', suncatcher: 'RIMEWRIGHT', greathound: 'GREAT HOUND', master: 'HOUND MASTER', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
 function openMenu(from) { if (from === 'play') fogSave(); menuFrom = from; menuKind = from === 'play' ? 'pause' : 'settings'; menuI = menuKind === 'pause' ? 0 : 1; state = 'menu'; SFX.menuOpen(); }
 function menuAdjust(dir) {
   const k = menuItems()[menuI];
@@ -4380,6 +4395,7 @@ function menuAdjust(dir) {
   else if (k === 'Way-on arrow') { SET.wayOn = !SET.wayOn; menuMsg = SET.wayOn ? 'an arrow to the next gate, key, shrine or the way out' : 'no arrow: find your own way'; menuMsgT = 3; }
   else if (k === 'Hit stop') SET.hitstop = !SET.hitstop; else if (k === 'Hit numbers') SET.numbers = !SET.numbers; else if (k === 'Timer') SET.timer = !SET.timer; else if (k === 'Ambient life') SET.ambient = !SET.ambient;
   else if (k === 'Game speed') { const SP = [1, 0.85, 0.7, 0.6, 0.5]; SET.speed = SP[(SP.indexOf(SET.speed) + dir + SP.length * 2) % SP.length]; menuMsg = SET.speed < 1 ? 'the whole world runs at ' + Math.round(SET.speed * 100) + '%: his legs, their blows, the clock and all' : 'full tilt: the knight crosses the screen in three seconds'; menuMsgT = 3.5; } else if (k === 'Jump assist') { SET.assist = !SET.assist; menuMsg = SET.assist ? 'longer coyote time and jump buffer' : 'standard jumps'; menuMsgT = 3; } else if (k === 'Ambience vol') SET.ambVol = Math.round(Math.max(0, Math.min(1, SET.ambVol + dir * 0.1)) * 10) / 10; else if (k === 'UI volume') SET.uiVol = Math.round(Math.max(0, Math.min(1, SET.uiVol + dir * 0.1)) * 10) / 10; else if (k === 'Big text') SET.bigText = !SET.bigText; else if (k === 'FPS counter') SET.fps = !SET.fps; else if (k === 'Hitboxes') { const B = ['off', 'hits', 'all']; SET.boxes = B[(B.indexOf(SET.boxes) + dir + DIFFS.length) % DIFFS.length]; menuMsg = SET.boxes === 'off' ? 'no boxes' : SET.boxes === 'hits' ? 'what you hit with, and what hits you' : 'every body, blow and thing in the air'; menuMsgT = 3; } else if (k === 'Colour tells') { SET.colorSafe = !SET.colorSafe; menuMsg = SET.colorSafe ? 'red tells turn blue, orange turns violet' : 'the usual colours'; menuMsgT = 3; }
+  else if (k === 'Combat') { SET.combat = weighty() ? 'classic' : 'weighty'; setWeighty(SET.combat === 'weighty'); scaleCommon(); menuMsg = weighty() ? 'weighty: blows commit, the queen takes every blow, kingswood parries' : 'classic combat'; menuMsgT = 3; }
   else if (k === 'Difficulty') { if (menuFrom === 'play' && L && !L.shop) { PROG.diff = PROG.diff || {}; PROG.diff[curId()] = DIFFS[(DIFFS.indexOf(diffOf(curId())) + dir + DIFFS.length) % DIFFS.length]; saveProgress(); } else SET.difficulty = DIFFS[(DIFFS.indexOf(SET.difficulty) + dir + DIFFS.length) % DIFFS.length]; } else if (k === 'Music volume') SET.musicVol = Math.round(Math.max(0, Math.min(1, SET.musicVol + dir * 0.1)) * 10) / 10; else if (k === 'Slot 3 key' || k === 'Slot 4 key') { const field=k==='Slot 3 key'?'skill3Key':'skill4Key',other=field==='skill3Key'?'skill4Key':'skill3Key',choices=['3','4','5','6','7','8','9','0','u','i','o'].filter(v=>v!==SET[other]);SET[field]=choices[(choices.indexOf(SET[field])+dir+choices.length)%choices.length]; } else if (k === 'Swap Z / X') SET.swapZX = !SET.swapZX; else if (k === 'Scanlines') SET.scanlines = !SET.scanlines; else if (k === 'Pixel scale') SET.scale = SCALES[(SCALES.indexOf(SET.scale) + dir + 4) % 4]; else return;
   applySettings(); saveSettings(); SFX.ui();
 }
@@ -5001,7 +5017,7 @@ const COLS = { sexton:['#4e4460','#b07a2a','#d8d0bc'], duneworm:['#a8805a','#e2b
   prise: ['#b8a898', '#e0d4c4', '#c9463d'], holdfast: ['#4a8a7a', '#c9463d', '#6a8a80'], drownedking: ['#4a7a6e', '#c9a83a', '#7ff0e0'], propman: ['#6faa4a', '#8a5a32', '#c9b27c'], clinger: ['#cfc8b8', '#9a9280', '#c9463d'], prince: ['#798a6c', '#5a3350', '#d4b24e'], courtier: ['#d8cfb4', '#4e2c48', '#c9a84a'], grandmother: ['#6a5a7a', '#7aa85a', '#f6f6ee'], assassin: ['#26222e', '#3a3448', '#d8e070'], berserker: ['#8fd160', '#4a7a32', '#c9463d'], watch: ['#36535e', '#9fb8a8', '#ccd4dc'], lampreeve: ['#2a3a34', '#8a6a44', '#14201e'], tollmaster: ['#5b3566', '#e6b94a', '#cfc6a8'], captain: ['#d14a3a', '#e6b94a', '#191622'], cutlass: ['#c9463d', '#8a4a2a', '#e8dcc0'], boarder: ['#8a6a3a', '#5a4424', '#c9b27c'], marine: ['#4a5a6a', '#2e3a48', '#c9d1dc'], bosun: ['#7a4a3a', '#4a2c22', '#ffd36b'], lookout: ['#9aa39a', '#6a7268', '#e8dcc0'], quarter: ['#3a2a4a', '#22182e', '#ffd36b'], sailor: ['#6a7a68', '#48584a', '#8a9a84'], netter: ['#5a6a60', '#3e4a44', '#7a8a80'], urchin: ['#2a2630', '#4a4458', '#8a84a0'], angler: ['#2e3a3e', '#1c2428', '#7ff0e0'], petrel: ['#3a3a44', '#22222a', '#c9d1dc'], reefmaw: ['#2e4a3a', '#1c2c24', '#8fb08a'], turtle: ['#5a6a3a', '#3e4a28', '#7a8a4a'], eel: ['#2a3a3a', '#3e5452', '#a8b8a0'], heronfoe: ['#8a96a0', '#c8d0d4', '#e0b040'], crab: ['#b8483a', '#e07060', '#e8c8a8'], scout: ['#a8cfc6', '#4a6a2a', '#7ff0e0'], siren: ['#a8cfc6', '#1f3a36', '#7ff0e0'], tideguard: ['#e07a6a', '#4a9a8a', '#a8cfc6'], herald: ['#e07a6a', '#4a9a8a', '#6a8a3a'], soldier: ['#5d4a8a', '#c9d1dc', '#6faa4a'], javelin: ['#8a5a32', '#5d4a8a', '#6faa4a'], heavy: ['#7c8797', '#c9d1dc', '#5d4a8a'], dummy: ['#c9b27c', '#8a5a32', '#e8dcc0'], sweep: ['#2a2630', '#5a7a3a', '#b8a888'], stormshaman: ['#6faa4a', '#c9a0ff', '#e8dcc0'], seawitch: ['#8a2f3a', '#c9a0ff', '#4a9a8a'], crow: ['#2a2433', '#4a4458', '#ff4a3a'], horn: ['#6faa4a', '#e0b040', '#c9463d'], bale: ['#d9b44a', '#8a6a32', '#9a5aa8'], shardling: ['#bfe6f5', '#eefaff', '#7aa8c8'], fledgling: ['#8a7a64', '#d8c8a8', '#e8b040'], gobpriest: ['#8e3a32', '#e8a83a', '#c9a44a'], gobmage: ['#34467a', '#f6f0dc', '#c9a44a'], suncatcher: ['#bfe6f5', '#7fe8ff', '#4a6a90'], roc: ['#8a8478', '#bfe6f5', '#c9a83a'], sentry: ['#6faa4a', '#5a2a7a', '#e0b040'], gqueen: ['#5a2a7a', '#6faa4a', '#e0b040'], hearthgob: ['#6faa4a', '#c9463d', '#8a5a32'], cutter: ['#6faa4a', '#8a919c', '#5d4a8a'], lance: ['#9aa3b0', '#c9463d', '#e0b040'], snuffer: ['#3a3448', '#8a5a32', '#ffd36b'], sailer: ['#6faa4a', '#c9b27c', '#c9463d'], miner: ['#6faa4a', '#c9b27c', '#8a919c'], tippler: ['#6faa4a', '#5a4a3a', '#8a919c'], sheargob: ['#6faa4a', '#c9d1dc', '#c9b27c'], gaffer: ['#6faa4a', '#8a7a68', '#8a5a32'], bat: ['#3a3448', '#5a5468'], grub: ['#b8d878', '#e8ff9a', '#7a9a48'], rockgoblin: ['#6faa4a', '#8a919c', '#ffd36b'], golem: ['#9a9082', '#c8bca8', '#6e7a44'], kite: ['#c9463d', '#ffd36b', '#6faa4a'], hare: ['#8a6a4a', '#e8dcc0'], wight: ['#c8d8c8', '#8aa08a'], windcaller: ['#6faa4a', '#c9a0ff', '#e8dcc0'], forgemaster: ['#8a919c', '#6a4a3a', '#ffd36b'], greathound: ['#5a4a3a', '#3a2e22', '#ff4a3a'], spider: ['#3a3448', '#5a5468'], owl: ['#7a5a3a', '#e8dcc0', '#ffd36b'], troll: ['#6a7a5a', '#3f6e2c', '#46543a'], harpy: ['#8a8478', '#c9a83a', '#5a5448'], goat: ['#e8e0d0', '#6faa4a', '#7a5a8a'], ram: ['#d8d0c0', '#c9a83a', '#c9463d'], thief: ['#6faa4a', '#7a5a2a', '#c9463d'], pike: ['#6faa4a', '#5a4a3a', '#c9d1dc'], folk: ['#6faa4a', '#c9b27c'], master: ['#8a7a68', '#5a4a3a', '#c9463d'], bearer: ['#6faa4a', '#c9463d'], king: ['#c9463d', '#ffd36b', '#6faa4a'], sporeling: ['#9a5aa8', '#f0e6c8', '#6a3a7a'], lurker: ['#7a5aa8', '#f0e6c8', '#c9463d'], spitcap: ['#9a5aa8', '#e8e0f0', '#c9a0ff'], weaver: ['#c8bcd0', '#8a7e9a', '#ff4a3a'], drone: ['#e8e0f0', '#c8bcb0'], shaman: ['#4aa0b0', '#f0e6c8', '#2a6a7a'], gill: ['#9a5aa8', '#e0b0f0', '#ffd0ff'], heart: ['#ff7a9a', '#ffd0ff', '#c9463d'], mother: ['#8a8a54', '#b8c060', '#4a3a2a'], sapper: ['#6faa4a', '#1b1626', '#c9463d'], brute: ['#6faa4a', '#5d4a8a', '#6b4a2a'], hound: ['#5a4a3a', '#3a2e22', '#c9463d'],
   puffer: ['#d9b968', '#a3813a', '#efe3b8'], jelly: ['#c890d8', '#8f5aa8', '#f0d8ff'], lamprey: ['#5c6858', '#38402f', '#7a2c3a'], manta: ['#3a4a5c', '#22303e', '#6c8598'], chief: ['#8f2f28', '#c9d1dc', '#6faa4a', '#e0b040'], fox: ['#d9782a', '#fff6e0'], hopper: ['#5a9a3a', '#d8e0a0', '#3a6a2a'], archer: ['#3f5a33', '#6b4a2a', '#6faa4a'], frog: ['#5a9a3a', '#d8e0a0', '#c9463d'], sprig: ['#6faa4a', '#c9463d', '#3f6e2c'], shield: ['#5d4a8a', '#8a5a32', '#c9d1dc'], spit: ['#c9463d', '#f0e6c8', '#ff9a5c'], thorn: ['#6faa4a', '#c9d1dc', '#c9463d'], wasp: ['#e0b040', '#1b1626', '#dfe8ff'], queen: ['#e0b040', '#1b1626', '#fff1a0', '#c9463d'],
   merrowspear: ['#3a9a80', '#173a30', '#e8e2c8'], merrowcaller: ['#2a8a72', '#1d4a44', '#7ff0e0'], merrowbrute: ['#3d8a72', '#1f5a48', '#e8d4d0'],
-  drownedknight: ['#56656c', '#3f8f7d', '#8ff0dc'], drownedcaptain: ['#56656c', '#9a2f40', '#d0a848'], whelp: ['#6a6280', '#8e86a4', '#9affd8'] };   /* drowned plate, its shadow, and the verdigris on his gorget */
+  drownedknight: ['#56656c', '#3f8f7d', '#8ff0dc'], drownedcaptain: ['#56656c', '#9a2f40', '#d0a848'], whelp: ['#6a6280', '#8e86a4', '#9affd8'], mummer: ['#b89868', '#d9b877', '#b8382c'], hobbyhorse: ['#a83c3c', '#7a5230', '#e8c23a'], wickerqueen: ['#b08a4e', '#e8c23a', '#b8382c'] };   /* drowned plate, its shadow, and the verdigris on his gorget */
 
 // ---------- damage ----------
 function rumble(ms, mag) { if (!SET.rumble) return; try { const gps = navigator.getGamepads ? navigator.getGamepads() : []; for (const gp of gps) if (gp && gp.vibrationActuator && gp.vibrationActuator.playEffect) { gp.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: mag, weakMagnitude: mag * 0.6 }); break; } } catch {} }
@@ -5346,7 +5362,7 @@ function spawnCorpse(e, dir) {
   if(e.t==='bellcrab') e.lastFrame=e.phase===3?BELL_OUT_F.hurt:11;
   if (e.t === 'closedhelm') e.lastFrame = 12;   /* he goes down on one knee, the sword in the ground */
   if (e.t === 'duneworm') { e.lastSet = SPR.duneworm; e.lastFrame = DFA.DW_F.dead; e.lastBigF = 1; if (L.arena) e.y = L.arena.floor; }   /* THE DUNE WORM goes down out along the sand, wherever he was */
-  if ((e === boss || e.mini) && e.lastSet) { bossBodies.push({ set: e.lastSet, frame: e.t === 'prince' ? PRINCE_F.dead : e.t === 'archmage' ? (e.fam ? MF.FAMILIAR_F.dead : MF.ARCHMAGE_F.dead) : e.t === 'strawking' ? SK.STRAWKING_F.dead : (e.lastFrame || 0), x: e.x, y: e.y, face: e.face || 1, big: e.lastBigF || 1, t: 0, dur: 1.4, rider: e.lastRider || null }); (e.t==='bellcrab'?SFX.seaBell:SFX.gobDieLow)(); return; }   /* a boss leaves a body, not a tumble */
+  if ((e === boss || e.mini) && e.lastSet) { bossBodies.push({ set: e.lastSet, frame: e.t === 'prince' ? PRINCE_F.dead : e.t === 'archmage' ? (e.fam ? MF.FAMILIAR_F.dead : MF.ARCHMAGE_F.dead) : e.t === 'strawking' ? SK.STRAWKING_F.dead : e.t === 'wickerqueen' ? WQN.WQ_F.dead : (e.lastFrame || 0), x: e.x, y: e.y, face: e.face || 1, big: e.lastBigF || 1, t: 0, dur: 1.4, rider: e.lastRider || null }); (e.t==='bellcrab'?SFX.seaBell:SFX.gobDieLow)(); return; }   /* a boss leaves a body, not a tumble */
   if (isPirate() && !P.loaded && !P.dead) reloadPistol('');   /* a kill seats a ball: it used to be any coin, which made the pistol free */
   const c = { t: e.t, color: e.color, x: e.x, y: e.y, vx: 0, vy: 0, rot: 0, spin: 0, face: e.face, life: 1, max: 1, frame: 0, grav: 900, bounced: false, ground: false };
   if (HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) c.frame = SPR[e.t].R.length - 1;   /* it dies in the pose it was hit in, not mid-stride */
@@ -5526,7 +5542,7 @@ const foeOpen = e => e.openPreT === time ? e.openPre : foeOpen0(e);
    pressing. Full, they BREAK: they stop where they stand for a couple of seconds and take half as much again. Things
    that fly, and the bosses whose whole fight is their own opening, do not carry one. */
 const POISE_HEAVY = new Set(['lancer', 'brute', 'heavy', 'hedgeknight', 'troll', 'shield', 'swornsword', 'pike', 'berserker', 'watch', 'tideguard', 'bosun', 'boarder', 'soldier', 'hound', 'merrowbrute']);
-const POISE_SKIP = new Set(['winchmaster', 'sexton', 'duneworm', 'abbot', 'hedgewarden', 'gargoyle', 'gravewarden', 'pyromancer', 'emberwisp', 'undeadmage','burieddead', 'harbormaster', 'archmage', 'turret', 'broom', 'imp', 'tome', 'piece', 'strawking', 'rook', 'marshlight', 'haunt', 'boo', 'kraken', 'krakenarm', 'roc', 'owl', 'windcaller', 'queen', 'mother', 'gill', 'heart', 'king', 'bearer', 'dummy', 'wasp', 'drone', 'kite', 'captain', 'closedhelm', 'gqueen', 'golem', 'whelp']);
+const POISE_SKIP = new Set(['winchmaster', 'sexton', 'duneworm', 'abbot', 'hedgewarden', 'gargoyle', 'gravewarden', 'pyromancer', 'emberwisp', 'undeadmage','burieddead', 'harbormaster', 'archmage', 'turret', 'broom', 'imp', 'tome', 'piece', 'strawking', 'rook', 'marshlight', 'haunt', 'boo', 'kraken', 'krakenarm', 'roc', 'owl', 'windcaller', 'queen', 'mother', 'gill', 'heart', 'king', 'bearer', 'dummy', 'wasp', 'drone', 'kite', 'captain', 'closedhelm', 'gqueen', 'golem', 'whelp', 'wickerqueen']);
 /* THE SMALL ONES CARRY A BAR TOO. Everything in the family table without one of its own gets a short one (POISE_LIGHT) that a tap
    never moves: only a blow with weight in it fills it - the held heavy blow breaks it outright, and a plunge, the right tool, a
    riposte, a dash attack or a third cut lean on it - so a heavy blow visibly ROCKS a goblin instead of shoving it like a cut does.
@@ -5567,6 +5583,22 @@ function guardWheel(e, fromX) {
   if (!P.dead && Math.abs(P.x - e.x) < 30 && Math.abs(P.y - e.y) < 26) { P.vx = f * 150; }
   SFX.shieldScrape(); SFX.clank(); dust(e.x, e.y, 4); sparks(e.x + f * 7, e.y - (e.h || 14) / 2, f, 5);
   if (!L.trial && (PROG.wheelSeen || 0) < 2) { PROG.wheelSeen = (PROG.wheelSeen || 0) + 1; hintT = 4.5; hintMsg = 'CUT FROM BEHIND, A GUARD WHEELS ROUND. A HEAVY BLOW OR A LOW SWEEP BREAKS IT OPEN.'; }
+}
+/* WEIGHTY, IN KINGSWOOD (src/weighty.js poiseRule): true when the blow that just landed moves nothing - a brute or a plate swinging
+   through it, or a shield, pike or soldier hit light from the front - and on the blow that BREAKS a brute, the break itself. */
+function wPoise(e, fromX) {
+  if (!weightyHere(curId())) return false;
+  const r = poiseRule(e, time, !!(P.heavy || P.heavySwing), !!e.face && Math.sign(fromX - e.x) === -e.face);
+  if (r === 'absorb' || r === 'guard') { e.wHeldAt = time; return true; }
+  if (r === 'break') { e.wHeldAt = time; e.broken = Math.max(e.broken || 0, WEIGHTY.poise.broken); e.stagger = Math.max(e.stagger || 0, e.broken); e.vx = 0; e.poise = 0;
+    number(e.x, e.y - e.h - 20, 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - e.h / 2, 22, '#ffd36b', 0.3); breakBeat(e); return true; }
+  return false;
+}
+/* WEIGHTY, IN KINGSWOOD: a shield hit on its guard once too often in a breath PARRIES - the hero is thrown off it and reels, and the
+   shield's counter comes next (updateEnemies: counterTell, a yellow !) */
+function shieldParry(e) {
+  e.stagger = 0; e.parryNow = true; P.atk = -1; P.atkRec = 0; P.hurt = Math.max(P.hurt || 0, WEIGHTY.parry.reel); P.vx = e.face * 240; P.vy = Math.min(P.vy, -90); P.ground = false;
+  number(e.x, e.y - e.h - 14, 'PARRIED', '#ff6b6b'); SFX.parry(); hitstop(0.08); shakeCam(3, e.face * 3); sparks(e.x + e.face * 8, e.y - 8, e.face, 9);
 }
 function breakBeat(e) { broke(e, time); tokenRelease(TK, e, 'broken'); e.breakFlash = 0.07;   /* (part 2: the break gives its attack token back the moment it lands - board.on.release) */ hitstop(0.08); if (!SET.reduceMotion) shakeCam(4); if (SFX.poiseBreak) SFX.poiseBreak(!!(e.maxHp || e.big)); else SFX.clank(); }
 /* ==== WHAT RUNS ONTO THE POINT AND DIES THERE, AND WHAT DOES NOT. THE RULE IS ABSOLUTE: a YELLOW charge is stopped, a RED one
@@ -5726,7 +5758,7 @@ function thirdPay(e, kind, other, dir) {
    and is not thrown, which knockFoe already refuses) */
 function bowlTarget(e) { const b = box(e); b.l -= 2; b.r += 2;
   for (const q of enemies) if (q !== e && q.alive && !q.harmless && !(q.gone > 0) && !q.trainer && q.t !== 'dummy' && overlap(b, box(q))) return q; return null; }
-const KNOCK_SKIP = new Set(['sexton', 'duneworm', 'hedgewarden', 'gargoyle', 'gravewarden', 'emberwisp', 'pyromancer', 'archmage', 'homunculus', 'turret', 'strawking', 'ploughman', 'rook', 'marshlight', 'haunt', 'boo', 'farmhand', 'kraken', 'krakenarm', 'feeler', 'wasp', 'drone', 'bat', 'harpy', 'crow', 'kite', 'spit', 'gill', 'heart', 'bearer', 'folk', 'sheep', 'siren', 'eel', 'angler', 'petrel', 'gull', 'wisp', 'spider', 'dummy', 'turret', 'bale', 'clinger', 'urchin', 'lurker', 'jelly', 'lamprey', 'manta', 'whelp']);   /* NOT the puffer: deflated, it is light enough to throw */
+const KNOCK_SKIP = new Set(['sexton', 'duneworm', 'hedgewarden', 'gargoyle', 'gravewarden', 'emberwisp', 'pyromancer', 'archmage', 'homunculus', 'turret', 'strawking', 'ploughman', 'rook', 'marshlight', 'haunt', 'boo', 'farmhand', 'kraken', 'krakenarm', 'feeler', 'wasp', 'drone', 'bat', 'harpy', 'crow', 'kite', 'spit', 'gill', 'heart', 'bearer', 'folk', 'sheep', 'siren', 'eel', 'angler', 'petrel', 'gull', 'wisp', 'spider', 'dummy', 'turret', 'bale', 'clinger', 'urchin', 'lurker', 'jelly', 'lamprey', 'manta', 'whelp', 'wickerqueen']);   /* NOT the puffer: deflated, it is light enough to throw */
 function knockFoe(e, dir, push) {
   if (!e.alive || e.maxHp || e.mini || e.slamming || e.mounted || KNOCK_SKIP.has(e.t)) return false;   /* a horse is not thrown across the road by a sword */
   e.slammed = false; e.thirdT = 0;   /* (a throw is the knight's third-cut throw only if the third cut marks it, after this) */
@@ -5754,7 +5786,7 @@ function wardedDamage(e, dmg) {
   if (e.geoTomb && GEO) dmg = GEO.tombHit(e, dmg);   /* ENTOMBED: a blow on the tomb cracks it and lands half as hard again (geomancer.js) */
   if (e.t === 'hedgewarden') dmg = hedgeTake(e, dmg);
   if (e.t === 'sexton') { const d0 = dmg; dmg = sextonTake(e, dmg); if (dmg > d0) sparks(e.x, e.y - 30, -(e.face || 1), 6); }   /* THE SEXTON caught in his own bell pit: every blow lands double */   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
-  if (e.t === 'abbot') dmg = Math.max(1, Math.round(dmg * abbotTake(e)));   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
+  if (e.t === 'abbot') dmg = Math.max(1, Math.round(dmg * abbotTake(e))); if (e.t === 'wickerqueen') dmg = Math.max(1, Math.round(dmg * WQN.wqTake(e)));   /* THE WICKER QUEEN: the wicker takes a blow and stands; frozen on the embers it burns open (wicker-queen.js) */   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
   if (e.t === 'winchmaster') { const k = winchTake(e); dmg = Math.max(1, Math.round(dmg * k));   /* THE WINCHMASTER: double while the jammed drum has him down on his ledge - and HALF while his drum runs (round four), told over him */
     if (k < 1 && !(e.chipSaid > 0)) { e.chipSaid = WINCH.chipSay; number(e.x, e.y - (e.h || 36) - 14, 'THE IRON TAKES HALF: JAM HIS DRUM', '#9aa39a'); } }
   if (e.t === 'whelp') dmg = WHF.whelpTake(e, dmg);   /* THE WHELP IS STONE: nothing but a stomp while it is stuck on the spikes (last, so no finisher gets round it) */
@@ -5794,7 +5826,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
      sitting in her slam, she takes it all whatever is flying. */
   /* (claude/firsthour) HER OPENINGS ARE CAUSED NOW: stuck in the wood (a dive lured onto it) and winded (a dive or a sweep taken on the
      shield). Sitting in her own slam was a rest after her own blow, open whatever the player did (the weak-boss pattern), and is not. */
-  if (e.t === 'queen' && !e.mini && e.mode !== 'winded' && e.mode !== 'stuck' && e.mode !== 'buck') {
+  if (e.t === 'queen' && !e.mini && e.mode !== 'winded' && e.mode !== 'stuck' && e.mode !== 'buck' && !weighty()) {   /* (WEIGHTY: no swarm armour - every blow lands, and her openings are a bonus on top) */
     const swarm = enemies.filter(d => d.alive && d.t === 'wasp' && d.drone).length;
     if (swarm >= 2) { dmg = Math.max(1, Math.round(dmg * 0.45)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 10, e.y - 8, Math.sign(e.x - fromX) || 1, 3);
       if (!(e.swarmSaid > 0)) { e.swarmSaid = 2.4; number(e.x, e.y - e.h - 14, 'THE SWARM CLOSES', '#ffd36b');
@@ -5941,7 +5973,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
      spell (undead-mage.js), and that is the window the player makes in this fight. */
   dmg = wardedDamage(e, dmg);   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
-  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
+  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit && !wPoise(e, fromX)) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
   if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.7; }
@@ -5980,7 +6012,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
        (tools/boss-fight-end.mjs kills every boss and mini in the game and fails on any fight that runs on). The Mother is ended through
        her heart; if her body is put down any other way the wood breathes again all the same. */
     if (e === boss && e.t === 'mother') { L.violet = false; L.healed = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 0; }
-    if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'duneworm' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'bloodknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e.t === 'bellcrab' || e.t === 'closedhelm' || e.t === 'drownedking' || e.t === 'prince' || e.t === 'gqueen' || e.t === 'queen' || e.t === 'frog' || e.t === 'king' || e.t === 'ram' || e.t === 'owl' || e.t === 'forgemaster' || e.t === 'golem' || e.t === 'windcaller' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'herald' || e.t === 'reefmaw' || e.t === 'quarter' || e.t === 'captain' || e.t === 'masthead' || e.t === 'kraken' || e.t === 'strawking' || e.t === 'archmage' || e.t === 'tollmaster' || e.t === 'grandmother' || e.t === 'master' || (e.t === 'troll' && e.hill))) queenDies(e); // (a boss missing from this list leaves the walls shut and the fight running)
+    if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'duneworm' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'bloodknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e.t === 'bellcrab' || e.t === 'closedhelm' || e.t === 'drownedking' || e.t === 'prince' || e.t === 'gqueen' || e.t === 'queen' || e.t === 'frog' || e.t === 'king' || e.t === 'ram' || e.t === 'owl' || e.t === 'forgemaster' || e.t === 'golem' || e.t === 'windcaller' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'herald' || e.t === 'reefmaw' || e.t === 'quarter' || e.t === 'captain' || e.t === 'masthead' || e.t === 'kraken' || e.t === 'strawking' || e.t === 'wickerqueen' || e.t === 'archmage' || e.t === 'tollmaster' || e.t === 'grandmother' || e.t === 'master' || (e.t === 'troll' && e.hill))) queenDies(e); // (a boss missing from this list leaves the walls shut and the fight running)
     if (e.t === 'thief' && e.loot > 0) { for (let i = 0; i < e.loot + 3; i++) acorns.push({ x: e.x + (i - e.loot / 2) * 6, y: e.y - 10, got: false, ph: Math.random() * 6, crate: 'thief' + e.x + i, vy: -110 - Math.random() * 60 }); number(e.x, e.y - 24, 'WITH INTEREST', '#ffd34a'); SFX.coin(); }
     if (e.t === 'folk') number(e.x, e.y - 18, 'SHAME', '#9aa39a');
     if (e.t === 'gargoyle') { for (const q of enemies) if (q.alive && q.fromGarg) { q.alive = false; spawnCorpse(q, Math.sign(q.x - e.x) || 1); } }   /* THE WHELPS HE CALLED CRUMBLE WITH HIM */
@@ -7314,6 +7346,8 @@ function updatePlayer(dt) {
   const stunned = P.hurt > 0 || P.asleep > 0 || P.caged > 0;
   const attacking = P.atk >= 0;
   const dodging = P.dodge > 0;
+  if (P.atkRec > 0) P.atkRec = Math.max(0, P.atkRec - dt);
+  const bladeHeld = weighty() && (attacking || P.atkRec > 0);   /* WEIGHTY: THE BLADE COMMITS - no jump, no dodge and no guard out of a swing or its recovery */
   P.jet = false;
   if (isPyro()) { // C tapped = an ember; C held = the jet. A FULL bar banks for a few seconds and the next press of C is THE PYRE.
     P.heat = Math.max(0, Math.min(100, (P.heat || 0))); P.overheat = 0;
@@ -7446,7 +7480,7 @@ function updatePlayer(dt) {
       else if (!PROG.lcFooting) { PROG.lcFooting = 1; saveProgress(); hintT = 4.5; hintMsg = 'THE LAST CHARGE NEEDS FOOTING: TAP C ON THE GROUND OR IN THE WATER. THE BAR IS KEPT.'; }   /* said once a save; the bar is not spent */
     }
   }
-  P.block = !!keys.block && (P.ground || P.swim) && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown && !rushing() && hero() === 'knight' && !knightWinding();   /* THE HEAVY CUT's price: no shield while the sword is up */
+  P.block = !!keys.block && (P.ground || P.swim) && !attacking && !bladeHeld && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown && !rushing() && hero() === 'knight' && !knightWinding();   /* THE HEAVY CUT's price: no shield while the sword is up */
   P.blockT = P.block ? (P.blockT || 0) + dt : 0; P.riposteT = Math.max(0, (P.riposteT || 0) - dt); if (P.ground) P.airRolled = false;
   if (isPyro() && P.jet && !P.ground && tal('updraft')) P.vy = Math.min(P.vy, 45); // UPDRAFT: the jet holds her up
   if (isPyro() && P.jet) { // the jet: a held tongue of flame five tiles long. It burns what stands in it and what flies through it. Heat is the cost.
@@ -7498,7 +7532,7 @@ function updatePlayer(dt) {
      Geomancer's BURROW - floor only, so in the air hers is a plain dash.
      THE BLADE COMMITS: once swung, its recovery finishes before the feet may go. ==== */
   const airDodge = !P.ground && !P.swim;
-  if (P.dbuf > 0 && (!airDodge || !P.dashedAir) && !attacking && !stunned && !P.plunge && !dodging && !(P.perch > 0) && !(P.dashRec > 0) && !dashStriking() && P.dodgeCd <= 0 && !rushing()) {   /* (the dash attack is committed: no dodge out of it, nor out of its end-lag) */
+  if (P.dbuf > 0 && (!airDodge || !P.dashedAir) && !attacking && !bladeHeld && !stunned && !P.plunge && !dodging && !(P.perch > 0) && !(P.dashRec > 0) && !dashStriking() && P.dodgeCd <= 0 && !rushing()) {   /* (the dash attack is committed: no dodge out of it, nor out of its end-lag) */
     const held = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     const dir = P.dbufDir || (isWarden() ? -P.face : held || P.face);   /* the button: the way you hold, else the way you face - and the Warden's button is her back-step, as it always was; her double tap points it */
     P.dbuf = 0; P.dbufDir = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
@@ -7595,7 +7629,7 @@ function updatePlayer(dt) {
     const acc = P.swim ? 900 : P.ground ? (onSlick ? 260 : 1000) : 700;   /* ICE: 360 and a brake of 150 read as a sticky floor, not a slide */
     if (Math.abs(P.vx) > capW && Math.sign(P.vx) === move) P.vx = move * Math.max(capW, Math.abs(P.vx) - 400 * dt);
     else { P.vx += move * acc * dt; if (Math.abs(P.vx) > capW) P.vx = move * capW; }
-    if (!attacking) P.face = move;
+    if (!attacking && !(P.faceLock > 0)) P.face = move;   /* THE CAROUSEL holds his facing for a moment after it turns him (src/mummer.js CAROUSEL.lock) */
     if (P.ground) P.airHang = false;
   } else if (!dodging) {
     const fr = P.ground ? (groundAtk ? 1600 : onSlick ? 70 : 1100) : 200;
@@ -7636,7 +7670,7 @@ function updatePlayer(dt) {
   // not a jump - there is nothing to jump with. It is the only way up, and the ground jump was eating the
   // buffer before the water ever saw it.
   if (P.jbuf > 0 && P.ballast && P.swim) { P.jbuf = 0; dropBallast(true); }
-  else if (P.jbuf > 0 && !P.ground && !(P.coyote > 0) && P.airJump > 0 && tal('endlessSky') && !stunned && !P.plunge && (!dodging || P.dash > 0) && !P.swim && !P.climb) { P.airJump = 0; P.jbuf = 0; if (dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; } P.vy = JUMPV; P.canCut = true; P.jumpT = time; P.airHang = false; SFX.pJump(); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#bfe6f5'], 90); ringAt(P.x, P.y, 10, '#bfe6f5', 0.22); }   /* ENDLESS SKY: the jump the plunge gave back */
+  else if (P.jbuf > 0 && !P.ground && !(P.coyote > 0) && P.airJump > 0 && tal('endlessSky') && !bladeHeld && !stunned && !P.plunge && (!dodging || P.dash > 0) && !P.swim && !P.climb) { P.airJump = 0; P.jbuf = 0; if (dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; } P.vy = JUMPV; P.canCut = true; P.jumpT = time; P.airHang = false; SFX.pJump(); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#bfe6f5'], 90); ringAt(P.x, P.y, 10, '#bfe6f5', 0.22); }   /* ENDLESS SKY: the jump the plunge gave back */
   /* THE POLE VAULT: a jump taken OUT OF A DASH. She plants the heel and goes over - the same distance every time,
      never from the air, and it wants ground under the plant. It is a RIDE and not a jump: the reach model must never
      count it as ordinary footing, or levels read as reachable when they are not (tools/reach.mjs). */
@@ -7653,7 +7687,7 @@ function updatePlayer(dt) {
     noteVerb('vault'); SFX.pJump(); SFX.braceSet(); dust(P.x - P.face * 8, P.y, 6); squash(0.78, 1.26, 0.12);
     streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#c9b27c'], 150);
   }
-  else if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !P.plunge && (!dodging || P.dash > 0) && !P.block && !P.aegis && !rushing()) {   /* a jump out of the dodge is a running jump, as out of the dash: it ends the dodge and keeps the pace */
+  else if (P.jbuf > 0 && (P.ground || P.coyote > 0) && !stunned && !bladeHeld && !P.plunge && (!dodging || P.dash > 0) && !P.block && !P.aegis && !rushing()) {   /* a jump out of the dodge is a running jump, as out of the dash: it ends the dodge and keeps the pace */
     if (P.dash > 0 && dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; }
     if (keys.down && P.ground && isOneWay(P.groundTile)) { P.drop = 0.2; P.jbuf = 0; }
     else { P.vy = JUMPV * (PROG.charm === 'feather' ? 1.09 : 1); P.ground = false; P.coyote = 0; P.jbuf = 0;
@@ -7688,6 +7722,7 @@ function updatePlayer(dt) {
       if (P.heavy && isReaper()) { if (was < 0.17 && P.atk >= 0.17) plantBlade(1); if (twice && was < 0.3 && P.atk >= 0.3) plantBlade(2); }
       if (P.heavy && hero() === 'knight' && P.cutStage === 3 && !P.cutQuaked && was < 0.2 && P.atk >= 0.2 && (P.ground || P.swim)) { P.cutQuaked = true; cutQuake(); }   /* THE KNOCKDOWN's blade into the floor */   /* the blade goes into the ground, and the ground answers */
       if (P.atk > lim) { if (!P.heavy && P.ground && (P.combo || 0) % 3 === 0) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
+        if (weighty()) P.atkRec = recoveryFor(!!P.heavy, isPaladin() || isReaper());   /* WEIGHTY: the recovery by the blow's weight (src/weighty.js) */
         P.atk = -1; P.heavy = false; P.cutStage = 0; P.swingEndT = time; } }
     /* ==== AND THE RUN-THROUGH TRAVELS. It did not: measured in the page, holding the swing and letting it go moved her
        NOUGHT pixels across the whole thing, because a ground swing's friction (1600 a second) eats the shove fireHeavy
@@ -7826,8 +7861,9 @@ function updatePlayer(dt) {
   if (camLock) { P.x = Math.max(camLock.x0 + 6, Math.min(camLock.x1 - 6, P.x)); }
   if (!P.ground) P.fallV = Math.max(P.fallV || 0, P.vy);
   if (P.ground && !wasGround && P.groundTile === T.BOUNCER) { // springy cap
-    const plunged = P.plunge; P.ground = false; P.vy = plunged ? -560 : keys.jump ? -480 : -400; P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pPogo(); }
-    const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 2) / TS); const i = ty * LW + tx; if (L.grid[i] === T.BOUNCER) { tileSpr[i] = TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
+    const plunged = P.plunge; P.ground = false; P.vy = plunged ? -560 : keys.jump ? -480 : -400; P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, FAIR ? ['#dcb44e', '#f4d878', '#a8802c'] : ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pPogo(); }
+    const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 2) / TS); const i = ty * LW + tx; if (FAIR && L.haystacks) { const hz = L.haystacks.find(z => tx >= z[0] && tx <= z[1]); if (hz) { FAIR.sq[hz[0]] = 1; SFX.hayRustle(); } }
+    if (L.grid[i] === T.BOUNCER) { tileSpr[i] = TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
   }
   if (P.ground && !P.onMover && L.scree && !P.dead) for (const z of L.scree) if (Math.abs(P.y - z.y * TS) < 2 && P.x >= z.x0 * TS && P.x < (z.x1 + 1) * TS) { const sp = P.block ? 24 : 70; P.x += z.dir * sp * dt; P.screeT = (P.screeT || 0) - dt; if (P.screeT <= 0) { P.screeT = 0.12; dust(P.x - z.dir * 4, P.y, 1); if (Math.random() < 0.5) SFX.step(); } }
   if (P.ground && P.groundTile === T.SHELF) { // shelf fungus snaps under a standing weight
@@ -7957,12 +7993,13 @@ function updatePlayer(dt) {
       if (e.t === 'heavy' && !throughGuard(e) && !(e.broken > 0) && e.mode !== 'rest' && !(e.parried > 0)) { guardTurned(e); SFX.clank(); hitstop(0.04); sparks(e.x + P.face * -6, e.y - 14, P.face, 5); hurtEnemy(e, Math.max(1, Math.round(swingDmg(e) * 0.35)), P.x, false); continue; } // the plate turns most of it
       if (e.t === 'watch' && front && !throughGuard(e) && !(e.broken > 0) && e.mode !== 'thrustTell' && e.mode !== 'thrust' && e.stagger <= 0) { guardTurned(e); SFX.clank(); hitstop(0.05); P.vx = e.face * 140; sparks(e.x + e.face * 7, e.y - 12, e.face, 6); e.guardT = 0.5; number(e.x, e.y - e.h - 6, 'THE HAFT', '#c9d1dc'); continue; } // he guards with the shaft of it
       if ((e.t === 'shield' || e.t === 'merrowbrute') && front && !throughGuard(e) && !(e.broken > 0) &&!(e.elite && e.mode === 'elDazed')) {   /* (a shield captain turned or run into a wall has his shield flung wide; the merrow brute's clam shell does the same job) */
-        guardTurned(e); SFX.clank(); hitstop(0.05); P.vx = e.face * 170; P.vy = Math.min(P.vy, -70); P.ground = false; e.stagger = 0.4; P.atk = 0.22; shakeCam(2, e.face * 2);
+        guardTurned(e); SFX.clank(); hitstop(0.05); P.vx = e.face * 170; P.vy = Math.min(P.vy, -70); P.ground = false; if (!(e.t === 'shield' && !e.elite && weightyHere(curId()))) e.stagger = 0.4; P.atk = 0.22; shakeCam(2, e.face * 2);   /* (weighty, Kingswood: a guard is not a flinch, and it counts the blows it turns) */
+        if (e.t === 'shield' && !e.elite && weightyHere(curId()) && guardCount(e, time)) shieldParry(e);
         sparks(e.x + e.face * 8, e.y - 8, e.face, 7);
       } else { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); swordEffect(e); if (dashStriking()) dashStrikeHit(e); if (P.swingKind && e.alive && e.glancedAt !== time) swingKindHit(e);   /* a glancing sweep trips nothing, a glancing rise lifts nothing */
         if (P.heavy && e.alive) { // a heavy blow moves whatever it lands on, and SUNDER leaves it open
           const ram = P.bashing && tal('bash') ? 2 : 1;   /* BULL RUSH: the charge's bash staggers twice as long */
-          if (!e.maxHp && !(P.bashing && e.mini)) { e.stagger = Math.max(e.stagger || 0, 0.6 * ram); e.vx = P.face * 200; e.vy = Math.min(e.vy || 0, -40); }
+          if (!e.maxHp && !(P.bashing && e.mini) && e.wHeldAt !== time) { e.stagger = Math.max(e.stagger || 0, 0.6 * ram); e.vx = P.face * 200; e.vy = Math.min(e.vy || 0, -40); }
           else e.stagger = Math.max(e.stagger || 0, (e.maxHp ? 0.2 : 0.35) * ram);   /* a boss, or a mini under the knight's bash: rocked and its poise taken, never thrown */
           if (isReaper()) markFoe(e);
           if (tal('sunder')) { e.sunder = 2.5; number(e.x, e.y - e.h - 18, 'SUNDERED', '#ffd36b'); }
@@ -8173,7 +8210,7 @@ function bossStart() {
   bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; } if (bossZooms(boss.t)) setView('zoom'); camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
   setWall(L.arena.wallL, true); setWall(L.arena.wallR, true);
   if (boss.t === 'prince') number(boss.x, boss.y - 14, 'FORGOTTEN UNDER THE HILL', '#c9d1dc');   /* his subtitle, under the name */
-  ({ duneworm: SFX.boreRoar, bellcrab: SFX.seaBell, closedhelm: SFX.judgement, drownedking: SFX.bellow, prince: SFX.wightMoan, queen: SFX.queenShriek, frog: SFX.frogBoom, chief: SFX.chiefBark, mother: SFX.gillOpen, king: SFX.kingLaugh, ram: SFX.bellow, owl: SFX.owlHoot, forgemaster: SFX.forgeHammer, golem: SFX.golemChime, windcaller: SFX.callerChant, lance: SFX.bellow, suncatcher: SFX.golemChime, roc: SFX.queenShriek, gqueen: SFX.bellow, grandmother: SFX.heard, troll: SFX.snort, master: SFX.whistleCall, masthead: SFX.whistleCall, kraken: SFX.boreRoar, strawking: SFX.bellow, archmage: SFX.callerChant }[boss.t] || SFX.roar)(); shakeCam(6); if (!(boss.t === 'undeadmage' && music.want === (L.arena.music || 'boss'))) { music.stop(); bossMusicT = 1.1; }   /* (the Undead Archmage's track is already up: it came in on his spiral stair) */ number(boss.x, boss.y - 30, boss.t === 'grandmother' ? (boss.mode === 'listen' || boss.mode === 'listenTell' ? 'THE GRANDMOTHER  LISTENING' : 'THE GRANDMOTHER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE QUEEN'S LANCE  OPEN" : boss.phase === 2 ? "THE QUEEN'S LANCE  NO LANCE" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'THE BULLFROG KING' : boss.t === 'chief' ? 'THE GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM UNDERLEAF' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE PALADIN  THE WARD IS DOWN' : boss.phase === 2 ? 'THE PALADIN  HIS OATH' : 'THE PALADIN') : boss.t === 'drownedking' ? (boss.mode === 'whirl' || boss.mode === 'whirlTell' ? 'THE DROWNED KING  THE MAELSTROM' : boss.mode === 'gulp' || boss.mode === 'gulpTell' ? 'THE DROWNED KING  HE TAKES THE AIR' : boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'prince' ? (boss.mode === 'buried' ? 'THE BURIED PRINCE  BURIED AGAIN' : princeShrouded(boss) ? 'THE BURIED PRINCE  SHROUDED' : boss.bare > 0 ? 'THE BURIED PRINCE  BAREHEADED' : princeLight(boss) ? 'THE BURIED PRINCE  IN THE LIGHT' : 'THE BURIED PRINCE') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'master' ? 'THE HOUND MASTER' : boss.t === 'kraken' ? 'THE KRAKEN' : boss.t === 'queen' ? 'THE HORNET QUEEN' : bossTitle(boss), '#ffd36b'); zoomKick(1.1, 0.4);   /* the rest ask the bestiary, the way the card does: the Herald, the Reefmaw, the Quartermaster, the Captain, the Tollmaster and the Masthead all woke as THE HORNET QUEEN */
+  ({ duneworm: SFX.boreRoar, wickerqueen: SFX.wqWake, bellcrab: SFX.seaBell, closedhelm: SFX.judgement, drownedking: SFX.bellow, prince: SFX.wightMoan, queen: SFX.queenShriek, frog: SFX.frogBoom, chief: SFX.chiefBark, mother: SFX.gillOpen, king: SFX.kingLaugh, ram: SFX.bellow, owl: SFX.owlHoot, forgemaster: SFX.forgeHammer, golem: SFX.golemChime, windcaller: SFX.callerChant, lance: SFX.bellow, suncatcher: SFX.golemChime, roc: SFX.queenShriek, gqueen: SFX.bellow, grandmother: SFX.heard, troll: SFX.snort, master: SFX.whistleCall, masthead: SFX.whistleCall, kraken: SFX.boreRoar, strawking: SFX.bellow, archmage: SFX.callerChant }[boss.t] || SFX.roar)(); shakeCam(6); if (!(boss.t === 'undeadmage' && music.want === (L.arena.music || 'boss'))) { music.stop(); bossMusicT = 1.1; }   /* (the Undead Archmage's track is already up: it came in on his spiral stair) */ number(boss.x, boss.y - 30, boss.t === 'grandmother' ? (boss.mode === 'listen' || boss.mode === 'listenTell' ? 'THE GRANDMOTHER  LISTENING' : 'THE GRANDMOTHER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE QUEEN'S LANCE  OPEN" : boss.phase === 2 ? "THE QUEEN'S LANCE  NO LANCE" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'THE BULLFROG KING' : boss.t === 'chief' ? 'THE GOBLIN CHIEFTAIN' : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM UNDERLEAF' : boss.t === 'ram' ? (ramOpen(boss) ? 'THE RAM LORD  DAZED' : 'THE RAM LORD') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE PALADIN  THE WARD IS DOWN' : boss.phase === 2 ? 'THE PALADIN  HIS OATH' : 'THE PALADIN') : boss.t === 'drownedking' ? (boss.mode === 'whirl' || boss.mode === 'whirlTell' ? 'THE DROWNED KING  THE MAELSTROM' : boss.mode === 'gulp' || boss.mode === 'gulpTell' ? 'THE DROWNED KING  HE TAKES THE AIR' : boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'prince' ? (boss.mode === 'buried' ? 'THE BURIED PRINCE  BURIED AGAIN' : princeShrouded(boss) ? 'THE BURIED PRINCE  SHROUDED' : boss.bare > 0 ? 'THE BURIED PRINCE  BAREHEADED' : princeLight(boss) ? 'THE BURIED PRINCE  IN THE LIGHT' : 'THE BURIED PRINCE') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'master' ? 'THE HOUND MASTER' : boss.t === 'kraken' ? 'THE KRAKEN' : boss.t === 'queen' ? 'THE HORNET QUEEN' : bossTitle(boss), '#ffd36b'); zoomKick(1.1, 0.4);   /* the rest ask the bestiary, the way the card does: the Herald, the Reefmaw, the Quartermaster, the Captain, the Tollmaster and the Masthead all woke as THE HORNET QUEEN */
   burst(L.arena.wallL * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6); burst(L.arena.wallR * TS + 8, L.arena.floor - 40, 12, ['#2f3d2a', '#8fd160'], 60, 0.6);
 }
 // THE COMB IS WAX, NOT A BALCONY: a slam shakes a told piece loose; it breaks on the floor instead of becoming a ledge.
@@ -8338,6 +8375,12 @@ function bossEnd(e) {
       for (let i = 0; i < 30; i++) parts.push({ x: x + (Math.random() - 0.5) * 60, y: y - Math.random() * 60, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 100, life: 1.6, max: 1.6, col: ['#b07cf0', '#e0c8ff', '#726a8a'][(Math.random() * 3) | 0], size: 2, grav: 40 });
       for (let i = 0; i < 10; i++) parts.push({ x: x + (Math.random() - 0.5) * 40, y: y - 20 - Math.random() * 30, vx: (Math.random() - 0.5) * 40, vy: -30, life: 2, max: 2, col: '#e0b050', size: 1, grav: -10 });
       movers = movers.filter(m => !m.arm); SFX.callerChant(); SFX.golemShatter && SFX.golemShatter(); say('THE TOWER IS QUIET', '#b07cf0'); break; }
+    case 'wickerqueen': { /* THE FAIR IS OVER: the wicker goes up all at once, her players go back into the crowd, the green's light comes back, and the fair's one relic lies where she burned */
+      shakeCam(10); zoomKick(1.16, 0.6); killFlash = 0.12; L.dark = 0; if (FAIR) { if (FAIR.fire) FAIR.fire.r = 58; if (FAIR.wqLt) FAIR.wqLt.r = 0; }
+      for (let i = 0; i < 40; i++) parts.push({ x: x + (Math.random() - 0.5) * 30, y: y - Math.random() * 70, vx: (Math.random() - 0.5) * 80, vy: -40 - Math.random() * 90, life: 1.6, max: 1.6, col: ['#ffc850', '#f08a28', '#d84a14', '#b08a4e'][(Math.random() * 4) | 0], size: 2, grav: -30 });
+      for (const q of enemies) if (q.alive && q.fromQueen) { q.alive = false; burst(q.x, q.y - 10, 10, COLS.mummer, 60, 0.5); spawnCorpse(q, 1); }
+      { const rel = props.find(p => p.t === 'relic' && p.bossDrop); if (rel) { rel.hidden = false; if (A) rel.x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, x)); burst(rel.x, rel.y - 8, 16, ['#c9a0ff', '#fff6e0'], 70, 0.8); } }
+      SFX.wqAlight(); say('THE FAIR IS OVER', '#ffb040'); break; }
     case 'strawking': { /* THE FIELD GOES OUT: his straw burns down to its frame, the crows go up off the scaffold, and the fire goes out of the field */
       shakeCam(9); zoomKick(1.14, 0.6); killFlash = 0.1; if (FLD) { FLD.fire = null; FLD.shots = []; FLD.bales = []; }
       for (let i = 0; i < 30; i++) flame(x + (Math.random() - 0.5) * 50, y - Math.random() * 60, 2, 6, 80, 3);
@@ -9085,6 +9128,7 @@ function updateQueen(e, dt) {
   e.swarmSaid = Math.max(0, (e.swarmSaid || 0) - dt);   /* THE SWARM CLOSES, said once and not every blow (hurtEnemy0) */
   const drones = enemies.filter(d => d.alive && d.t === 'wasp' && d.drone).length;
   if (p2 && !e.combSaid) { e.combSaid = true; number(e.x, e.y - 40, 'SHE GOES UP INTO HER COMB', '#ffd36b'); hintT = 4.5; hintMsg = 'SHE HANGS IN HER COMB NOW AND COMES DOWN ONLY TO STING. FIGHT FROM THE WOOD.'; }
+  if (weighty() && e.tellLen && !e.markSaid && time - e.tellT0 >= WEIGHTY.queen.markAt * e.tellLen) { e.markSaid = true; if (windingUp(e)) { number(e.x, e.y - 18, markOf(e) || '!', '#ffd36b'); SFX.tell(false); } }   /* WEIGHTY: the mark, part-way into the windup */
   const hoverTo =(tx, ty, sp) => { e.vx += (Math.max(-sp, Math.min(sp, (tx - e.x) * 3)) - e.vx) * Math.min(1, dt * 4); e.vy += (Math.max(-sp, Math.min(sp, (ty - e.y) * 3)) - e.vy) * Math.min(1, dt * 4); };
   switch (e.mode) {
     case 'sleep': e.y = e.ty + Math.sin(e.anim * 1.5) * 3; return;
@@ -9107,9 +9151,9 @@ function updateQueen(e, dt) {
         if (pick === e.last && pick !== 'call') pick = pool[(Math.random() * pool.length) | 0];
         e.last = pick;
         if (pick === 'call') { e.mode = 'call'; e.modeT = 0.9; SFX.buzz(); number(e.x, e.y - 20, 'CALLS THE SWARM', '#ffd36b'); }
-        else if (pick === 'dive') { e.mode = 'aim'; e.modeT = p2 ? 0.6 : 0.8; SFX.buzz(); }
-        else if (pick === 'sweep') { e.mode = 'sweepStart'; e.modeT = 0.5; e.face = e.x < (A.x0 + A.x1) / 2 ? 1 : -1; }
-        else if (pick === 'volley') { e.mode = 'volleyUp'; e.modeT = 0.7; SFX.buzz(); }
+        else if (pick === 'dive') { e.mode = 'aim'; e.modeT = p2 ? 0.6 : 0.8; SFX.buzz(); if (weighty()) qWeigh(e, true); }
+        else if (pick === 'sweep') { e.mode = 'sweepStart'; e.modeT = 0.5; e.face = e.x < (A.x0 + A.x1) / 2 ? 1 : -1; if (weighty()) qWeigh(e); }
+        else if (pick === 'volley') { e.mode = 'volleyUp'; e.modeT = 0.7; SFX.buzz(); if (weighty()) qWeigh(e); }
         else { e.mode = 'slamUp'; e.modeT = 0.8; SFX.buzz(); }
       }
       break;
@@ -9131,7 +9175,7 @@ function updateQueen(e, dt) {
       break;
     }
     // slam: hover straight over you, drop like a stone, shockwaves run both ways along the floor. Jump them.
-    case 'slamUp': hoverTo(P.x, floor - 80, 150); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'slamHang'; e.modeT = p2 ? 0.45 : 0.6; number(e.x, e.y - 18, '!', '#ffd36b'); } break;
+    case 'slamUp': hoverTo(P.x, floor - 80, 150); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'slamHang'; e.modeT = p2 ? 0.45 : 0.6; if (weighty()) qWeigh(e); else number(e.x, e.y - 18, '!', '#ffd36b'); } break;
     case 'slamHang': e.vx = 0; e.vy = 0; if (e.modeT <= 0) { e.mode = 'slam'; e.vy = 250; e.vx = 0; SFX.charge(); } break;
     case 'slam': if (e.y >= floor) {
       e.y = floor; e.vy = 0; shakeCam(7); SFX.heavy(); dust(e.x, e.y, 14);
@@ -9146,16 +9190,20 @@ function updateQueen(e, dt) {
        up on the wood. Into bare earth she only skims and is up again, and nothing is open; but a dive that meets WOOD (the two combs'
        perches, or the pine you felled across them) drives her sting into it and she hangs there STUCK, open. Stand on the wood, or
        under it, and leave late. (A dive taken on the shield still staggers her: the blow answered.) */
-    case 'aim': hoverTo(P.x, floor - 78, 140); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { const ty = P.ground && P.y < floor - 4 ? P.y : floor; const dx = P.x - e.x, dy = Math.max(12, ty - e.y), d = Math.hypot(dx, dy) || 1, sp = p2 ? 280 : 220; e.vx = dx / d * sp; e.vy = dy / d * sp; e.mode = 'dive'; e.modeT = 1.2; SFX.charge(); } break;
+    case 'aim': hoverTo(P.x, floor - 78 - qRear(e), 140); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { const ty = P.ground && P.y < floor - 4 ? P.y : floor; const dx = P.x - e.x, dy = Math.max(12, ty - e.y), d = Math.hypot(dx, dy) || 1, sp = p2 ? 280 : 220; e.vx = dx / d * sp; e.vy = dy / d * sp; e.mode = 'dive'; e.modeT = 1.2; SFX.charge(); } break;
     case 'dive': if (e.vy > 0 && queenWood(e.x, e.y)) queenStuck(e);
       else if (e.y >= floor || e.modeT <= 0) { e.y = Math.min(e.y, floor); e.mode = 'skim'; e.modeT = 0.35; e.vx *= 0.25; e.vy = -90; dust(e.x, floor, 6); number(e.x, e.y - 20, 'SHE PULLS UP', '#9aa39a');
         if (!(PROG.qWoodTold > 1)) { PROG.qWoodTold = (PROG.qWoodTold || 0) + 1; hintT = 4.5; hintMsg = 'BARE EARTH DOES NOT HOLD HER STING. STAND ON THE WOOD AS SHE DIVES, THEN LEAVE: IT GOES IN.'; } } break;
-    case 'skim': if (e.modeT <= 0) { if (p2 && !e.twice && Math.random() < 0.5) { e.twice = true; e.mode = 'aim'; e.modeT = 0.55; SFX.buzz(); } else { e.twice = false; e.mode = 'rise'; e.modeT = 0.5; } } break;   /* up in her comb she may come straight back down: a second dive, told the same way */
+    case 'skim': if (e.modeT <= 0) { if (p2 && !e.twice && Math.random() < 0.5) { e.twice = true; e.mode = 'aim'; e.modeT = 0.55; SFX.buzz(); if (weighty()) qWeigh(e); } else { e.twice = false; e.mode = 'rise'; e.modeT = 0.5; } } break;   /* up in her comb she may come straight back down: a second dive, told the same way */
     case 'stuck': e.vx = 0; e.vy = 0; if (Math.random() < dt * 16) parts.push({ x: e.x + (Math.random() - 0.5) * 20, y: e.y, vx: (Math.random() - 0.5) * 40, vy: -30, life: 0.4, max: 0.4, col: '#c9a26a', size: 1, grav: 200 }); if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.6; e.twice = false; number(e.x, e.y - 20, 'SHE TEARS FREE', '#ffd36b'); } break;
     case 'winded': if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.6; } break;
+    /* WEIGHTY: THE FEINT. She rears exactly as she does for a dive, drops a hand's breadth - and goes back up. No blow, so no mark: the
+       mark arrives half-way into a real windup, and it never arrives over this one. Then the real dive, told as ever. */
+    case 'feint': hoverTo(P.x, floor - 78 - WEIGHTY.queen.rear, 140); e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { e.vy = 150; e.vx *= 0.3; e.mode = 'feintOff'; e.modeT = 0.24; SFX.buzz(); } break;
+    case 'feintOff': e.vy *= Math.max(0, 1 - dt * 6); if (e.modeT <= 0) { e.mode = 'aim'; e.modeT = 0.6; qWeigh(e); } break;
     case 'rise': hoverTo(e.x, floor - (p2 ? QUEEN_COMB_Y : 74), 130); if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = p2 ? 1.3 : 2.0; } break;
     case 'sweepStart': hoverTo(e.face > 0 ? A.x0 + 16 : A.x1 - 16, floor - 16, 220); if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 2.4; e.vx = e.face * (p2 ? 180 : 140); e.vy = 0; SFX.charge(); } break;
-    case 'sweep': e.y += (floor - 16 - e.y) * Math.min(1, dt * 6); if ((e.face > 0 && e.x > A.x1 - 16) || (e.face < 0 && e.x < A.x0 + 16) || e.modeT <= 0) { e.vx = 0; e.mode = 'rise'; e.modeT = 0.6; if (p2 && Math.random() < 0.5) { e.mode = 'sweepStart'; e.modeT = 0.4; e.face = -e.face; } } break;
+    case 'sweep': e.y += (floor - 16 - e.y) * Math.min(1, dt * 6); if ((e.face > 0 && e.x > A.x1 - 16) || (e.face < 0 && e.x < A.x0 + 16) || e.modeT <= 0) { e.vx = 0; e.mode = 'rise'; e.modeT = 0.6; if (p2 && Math.random() < 0.5) { e.mode = 'sweepStart'; e.modeT = 0.4; e.face = -e.face; if (weighty()) qWeigh(e); } } break;
   }
   e.x += e.vx * dt; e.y += e.vy * dt;
   if (e.mode !== 'dive' && e.mode !== 'sweep') { e.x = Math.max(A.x0 + 14, Math.min(A.x1 - 14, e.x)); }
@@ -9164,6 +9212,17 @@ function updateQueen(e, dt) {
   if (e.mode !== 'winded' && e.mode !== 'sleep') e.face = e.vx !== 0 && (e.mode === 'dive' || e.mode === 'sweep') ? Math.sign(e.vx) : (Math.sign(P.x - e.x) || e.face);
 }
 
+/* WEIGHTY (src/weighty.js): her windups are longer, the dive and the slam may be HELD, one dive in a few is a FEINT, and the mark over a
+   windup arrives part-way in (qMarkHeld hides it until then): the body first, the icon after. qRear lifts her into the rear-back of a dive. */
+const qHp = () => weighty() ? Math.round(EHP.queen * WEIGHTY.queen.hp) : EHP.queen;
+function qWeigh(e, canFeint) {
+  const Q = WEIGHTY.queen, held = e.mode === 'aim' || e.mode === 'slamHang';
+  e.modeT = e.modeT * Q.windK + (held && Math.random() < Q.holdP ? Math.random() * Q.holdMax : 0);
+  e.tellT0 = time; e.tellLen = e.modeT; e.markSaid = false;
+  if (canFeint && !e.feinted && Math.random() < Q.feintP) { e.mode = 'feint'; e.feinted = true; e.tellLen = 0; } else e.feinted = false;
+}
+const qMarkHeld = e => weighty() && e.t === 'queen' && !!e.tellLen && time - e.tellT0 < WEIGHTY.queen.markAt * e.tellLen;
+const qRear = e => qMarkHeld(e) && e.mode === 'aim' ? WEIGHTY.queen.rear : 0;
 // ---------- boss: the Bullfrog King ----------
 const frogFloor = (A, x) => { const tx = Math.floor(x / TS); for (let ty = Math.floor(A.floor / TS) - 3; ty <= Math.floor(A.floor / TS) + 2; ty++) if (isSolid(tx, ty)) return ty * TS; return A.floor; }; // the real ground: the dais lifts him, the shallows drop him to the pond bed (he used to stand on the water)
 const FROG_DRAIN_AT = 0.5;   /* (claude/firsthour) his court goes out at half his health: his second phase is the pit (it was a third) */
@@ -11116,7 +11175,7 @@ function magePlayer(dt) {
   if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper()) ghosts.push({ x: P.x, y: P.y, face: P.face, life: isWarden() ? 0.3 : 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2, step: isWarden() }); }
   const move = (stunned || dodging) ? 0 : (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
   /* walking */
-  if (!stunned) { if (move) { const acc = footed ? 1000 : 600; P.vx += move * acc * dt; if (Math.abs(P.vx) > RUN) P.vx = move * RUN; P.face = move; } else { const fr = footed ? 1100 : 200, s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0; } }
+  if (!stunned) { if (move) { const acc = footed ? 1000 : 600; P.vx += move * acc * dt; if (Math.abs(P.vx) > RUN) P.vx = move * RUN; if (!(P.faceLock > 0)) P.face = move; } else { const fr = footed ? 1100 : 200, s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0; } }
   else P.vx *= Math.pow(0.1, dt);
   P.abuf = Math.max(0, (P.abuf || 0) - dt);   /* the swing buffer is spent by the plunge OR by the sword, so it ages once, up here */
   /* THE PLUNGE, the other way up: down + swing in the air drives him at his floor, and his floor is the ceiling.
@@ -17913,6 +17972,163 @@ function updateUnburied(dt) {
 }
 function drawUnburied(cx, cy) { if (!UNB_FIELD) return; UNBF.drawField(g, UNB_FIELD, cx, cy, time, VW, VH); UNBF.drawUnbWorld(g, enemies, cx, cy, time); }
 
+/* ================= THE HARVEST FAIR (src/harvest-fair.js builds it; src/mummer.js is THE FACING RULE, pure and proved in tools/harvest-fair.mjs;
+   this is only its hands). DON'T TURN YOUR BACK ON THEM: a mummer moves only while NO hero faces it (co-op: any hero facing it freezes it), its bells jingle as
+   it creeps, its mask glows red within strike reach; the hobby-horse charges the moment a back is turned; the carousel turns a rider round. ================= */
+let FAIR = null;
+function fairReset() {
+  FAIR = null; musicBox.stop(); for (const pp of players) { pp.faceLock = 0; pp.car = null; }
+  if (!L || !(L.carousels || enemies.some(e => e.t === 'mummer' || e.t === 'hobbyhorse'))) return;
+  FAIR = { bells: 0, strikes: 0, charges: 0, turns: 0, warns: 0, freezes: 0, lamps: (L.lamps || []).map(l => ({ ...l, lit: l.life > 0, b: l.life >= 1 ? 1 : 0 })), sq: {} };
+  for (const lp of FAIR.lamps) if (lp.life > 0) lights.push({ x: lp.x * TS + 8, y: (lp.y + 1) * TS - 32, r: 46, warm: true, lantern: lp });   /* a lamp is an engine light: the dusk lays its glow, and a guttering one is on and off */
+  if (L.green) lights.push(FAIR.fire = { x: L.green.bonfire * TS + 8, y: L.green.floor * TS - 14, r: 58, warm: true });
+  L.dark = 0; L.gateOpen = false;   /* THE WICKER QUEEN: a retry finds the green at dusk again, and its gate shut until she is down (claude/fair3) */
+  if (window.BK) Object.assign(window.BK, { fair: () => FAIR });
+}
+/* may it walk on? ground ahead of its feet (a slope counts), no spike, no wall at its body: a haystack or a pit ends a charge */
+function fairStep(e, dir) {
+  const nx = e.x + dir * (e.w / 2 + 4), tx = Math.floor(nx / TS), ty = Math.floor((e.y + 2) / TS), t = aheadTile(tileAt, tx, ty, e.y, 10);
+  if (t === T.AIR || t === T.SPIKE) return false;
+  return !isSolid(tx, Math.floor((e.y - 6) / TS));
+}
+function updateMummer(e, dt) {
+  if (Math.abs(e.x - P.x) > 420) return;   /* the game's own rule: nothing past the screen acts */
+  const s = e.st, horse = e.t === 'hobbyhorse'; if (!s) return;
+  if (Math.abs(e.x - P.x) < 190) beastSeen(e.t);
+  const grav = () => { e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground || r.hitY) e.vy = 0; };
+  if (e.stagger > 0) {   /* struck: it reels, and its machine waits. A blow ends a charge where it is */
+    if (horse && s.mode === 'charge') { s.mode = 'skid'; s.t = 0.05; s.armed = false; }
+    if (s.mode === 'glow') { s.mode = 'still'; }
+    e.mode = s.mode; grav(); return; }
+  s.x = e.x; s.y = e.y;
+  const heroes = players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p) }));
+  const x0 = e.x, was = s.mode;
+  const evs = (horse ? MU.horseStep : MU.mummerStep)(s, { heroes, canStep: (x, dir) => fairStep(e, dir), sight: wqNearSight(e), sightY: wqNearSight(e) ? WQN.WQ.nearY : 0 }, dt);
+  const dx = s.vx * dt;
+  if (dx) { const r = moveBody(e, dx, 0, false); if (r.hitX && horse && s.mode === 'charge') { s.mode = 'skid'; s.t = MU.HORSE.skid; s.armed = false; } }
+  grav(); s.x = e.x; s.y = e.y;
+  e.face = s.face || e.face; e.mode = s.mode; e.vx = (e.x - x0) / Math.max(dt, 1e-4);
+  if (was !== s.mode && s.mode === 'charge') e.hitDone = false;
+  for (const v of evs) {
+    if (v.t === 'bell') { if (FAIR) FAIR.bells++; SFX.mummerBell(); }
+    else if (v.t === 'freeze') { if (FAIR) FAIR.freezes++; if (time - (e.stillAt || -9) > 0.9) { e.stillAt = time; number(e.x, e.y - e.h - 8, 'STILL', '#c9d1dc'); SFX.mummerStill(); } }
+    else if (v.t === 'rear') { number(e.x, e.y - e.h - 8, '!!', '#ff6b6b'); SFX.horseRear(); }
+    else if (v.t === 'glow') number(e.x, e.y - e.h - 8, '!!', '#ff6b6b');
+    else if (v.t === 'charge') { if (FAIR) FAIR.charges++; SFX.horseCharge(); dust(e.x, e.y, 5); }
+    else if (v.t === 'strike') { if (FAIR) FAIR.strikes++; SFX.mummerStrike();
+      for (const pp of players) asPlayer(pp, () => { if (!upright(pp)) return; const [l, r, t, b] = v.box; if (overlap({ l, r, t, b }, box(P))) damagePlayer(e.x, v.dmg, { who: e, name: 'A MUMMER', unblockable: true }); }); }
+  }
+  /* THE CHARGE HITS WHOM IT RUNS INTO, once per charge; a hero in the air over its back is not hit */
+  if (horse && (s.mode === 'charge') && !e.hitDone) for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || e.hitDone) return; if (overlap(box(e), box(P))) { e.hitDone = true; damagePlayer(e.x, MU.HORSE.dmg, { who: e, name: 'THE HOBBY-HORSE', unblockable: true }); } });
+}
+/* THE CAROUSEL: standing on the ride, a hero is TURNED ROUND every period seconds after a warning, and cannot turn back for a moment */
+function updateFair(dt) {
+  for (const pp of players) if (pp.faceLock > 0) pp.faceLock = Math.max(0, pp.faceLock - dt);
+  if (FAIR) for (const lp of FAIR.lamps) if (lp.life > 0 && lp.life < 1) { const was = lp.lit; lp.b = FAW.lampBright(lp, time); lp.lit = lp.b > 0.3; if (lp.lit !== was && Math.abs(lp.x * TS - P.x) < 240 && SET.ambient && Math.random() < 0.35) SFX.lampGutter(); }
+  if (FAIR) { for (const k in FAIR.sq) FAIR.sq[k] = Math.max(0, FAIR.sq[k] - dt * 5); if (state === 'play' && !P.dead) musicBox.wind(FAW.windAt(P.x / TS)); }
+  if (FAIR && L.green && state === 'play' && Math.abs(P.x - L.green.bonfire * TS) < 260 && Math.random() < dt * 30) flame(L.green.bonfire * TS + 8, L.green.floor * TS - 8, 2, 4, 40, 3);   /* the bonfire */
+  if (!FAIR || !L.carousels || state !== 'play') return;
+  for (const pp of players) asPlayer(pp, () => {
+    if (!P.car) P.car = MU.newCarousel();
+    const z = !P.dead && upright(P) ? L.carousels.find(q => P.ground && P.x >= q.x0 * TS && P.x <= (q.x1 + 1) * TS && Math.abs(P.y - q.row * TS) < 5) : null;
+    for (const v of MU.carouselStep(P.car, z || {}, !!z, dt)) {
+      if (v.t === 'warn') { FAIR.warns++; SFX.calliope(); number(P.x, P.y - 34, 'THE RIDE TURNS', '#ffd36b'); }
+      else if (v.t === 'turn') { FAIR.turns++; P.face = -(P.face || 1); P.faceLock = v.lock; SFX.calliopeTurn(); number(P.x, P.y - 34, 'TURNED', '#ff9a9a'); }
+    } });
+}
+/* the dressing the tiles do not carry (src/redraw/fair_world.js): the haystacks over their spring caps, the carousel, the lamps, the maypole green and its bonfire, and the halo behind a glowing mask */
+function drawFair(cx, cy) {
+  if (!FAIR) return;
+  for (const z of (L.haystacks || [])) { const x0 = z[0] * TS, x1 = (z[1] + 1) * TS; if (x1 < cx - 8 || x0 > cx + VW + 8) continue; FAW.drawHay(g, cx, cy, z, FAIR.sq[z[0]] || 0); }
+  for (const z of (L.carousels || [])) FAW.drawCarousel(g, cx, cy, VW, z, time, !!(P.car && P.car.warned && P.ground && P.x >= z.x0 * TS && P.x <= (z.x1 + 1) * TS), false);
+  FAW.drawLamps(g, cx, cy, VW, FAIR.lamps, time, false);
+  if (L.green) FAW.drawGreen(g, cx, cy, VW, L.green, time, dusk());
+  if (L.green && L.arena && L.arena.boss === 'wickerqueen') drawWickerGround(cx, cy);   /* her embers */
+  for (const e of enemies) if (e.alive && e.t === 'mummer' && e.mode === 'glow' && e.x > cx - 40 && e.x < cx + VW + 40) FAW.drawGlow(g, Math.round(e.x - cx), Math.round(e.y - 24 - cy), time);   /* the glow tell: a red halo behind the mask, so it reads against the dusk */
+}
+
+/* ================= THE WICKER QUEEN (src/wicker-queen.js is the fight, pure and proved in tools/wicker-queen.mjs; claude/fair3). These are her hands: the ribbons'
+   sweep over every hero, her sickle, the crowd she crowns, the fire she leaves, the green going dark and her own light. She moves ONLY while no hero looks at her
+   (co-op: any hero facing her freezes her) and her maypole's ribbons keep turning while she is frozen; freeze her ON THE EMBERS and the wicker burns open. ================= */
+const wqBoss = () => (boss && boss.t === 'wickerqueen' && boss.alive ? boss : null);
+const wqEmbers = () => (L && L.green ? WQN.embersOf(L.green.bonfire * TS + 8) : null);
+/* THE FULL DARK reaches her crowd too: in her phase two a mummer she crowned is held only by a near look */
+const wqNearSight = e => { const q = wqBoss(); return e.fromQueen && q && bossActive && q.phase === 2 ? WQN.WQ.nearR : 0; };
+const wqBarName = b => (b.mode === 'burn' || b.mode === 'catch' ? 'THE WICKER QUEEN  BURNING' : b.phase === 3 ? 'THE WICKER QUEEN  ALIGHT' : b.phase === 2 ? 'THE WICKER QUEEN  FULL DARK' : 'THE WICKER QUEEN');
+/* the bonfire gutters in her dark (phase two), and she carries her own light when she burns or is alight (phase three) */
+function wqLight(q) {
+  if (!FAIR) return;
+  if (FAIR.fire) FAIR.fire.r = q && q.phase === 2 ? 34 : 58;
+  if (!FAIR.wqLt) { FAIR.wqLt = { x: 0, y: 0, r: 0, warm: true }; lights.push(FAIR.wqLt); }
+  FAIR.wqLt.r = q && (q.phase === 3 || q.mode === 'burn') ? 74 : 0; if (q) { FAIR.wqLt.x = q.x; FAIR.wqLt.y = q.y - 36; } }
+function updateWickerQueen(e, dt) {
+  const A = L.arena; if (!A || !L.green) return;
+  const fl = A.floor, mx = L.green.maypole * TS + 8, heroes = players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p) }));
+  e.y = fl;
+  const evs = WQN.updateWickerQueen(e, dt, { heroes, anim: false, A: { x0: A.x0, x1: A.x1, floor: fl }, embers: wqEmbers(),
+    canStep: dir => { const nx = e.x + dir * 16; return nx > A.x0 + 12 && nx < A.x1 - 12; },
+    say: (m, col, low) => number(e.x, e.y - 78 + (low ? 10 : 0), m, col || '#ffd36b'),
+    sound: k => { const fn = ({ catch: SFX.wqCatch, burn: SFX.wqBurn, rise: SFX.wqBank, still: SFX.mummerStill, sickleTell: SFX.wqSickleTell, sickle: SFX.wqSickle, lashTell: SFX.wqLashTell, lash: SFX.wqLash, crownTell: SFX.wqCrown, crown: SFX.mummerBell, rustle: SFX.wqRustle, dark: SFX.wqDark, alight: SFX.wqAlight })[k]; if (fn) fn(); },
+    /* THE SICKLE: from behind, and nothing turns it */
+    hit: (bx, d, name) => { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead) return; if (overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, box(P))) damagePlayer(e.x, d, { who: e, name, unblockable: true }); }); },
+    /* THE RIBBONS: the front sweeps out from the maypole both ways; each hero is judged once a lash, the moment it reaches him - at its height, against his
+       hurt box as it stands then (src/duck.js duckBox: ducked, or in the air, or standing in it) */
+    lash: (kind, r0, r1) => { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || pp.wqLash === e.n.lash) return; const d = Math.abs(P.x - mx);
+      if (d < r0 - 2 || d >= r1) return; pp.wqLash = e.n.lash; const hb = duckBox(P);
+      if (WQN.lashCatches(kind, fl, { t: hb.t, b: hb.b })) damagePlayer(P.x + (P.x < mx ? 10 : -10), WQN.WQ.dmg.lash, { who: e, name: 'THE RIBBONS', unblockable: true });
+      else { number(P.x, P.y - 26, kind === 'low' ? 'OVER IT' : 'UNDER IT', '#8fd160'); } }); },
+    fire: x => fires.push({ x, y: fl, life: WQN.WQ.trailLife, delay: 0, wq: true }),
+    adds: () => enemies.filter(q => q.alive && q.fromQueen).length,
+    /* THE CROWNING: the crowd at the edge of the light sends in her players - one behind the hero she means and one ahead of him, inside the green
+       and on his screen (a mummer past 420 px would stand frozen by the game's own rule) */
+    summon: n => { const face = P.face || 1, xs = [P.x - face * 240, P.x + face * 280];
+      for (let i = 0; i < n; i++) { const px2 = Math.max(A.x0 + 24, Math.min(A.x1 - 24, xs[i % 2])), n0 = enemies.length;
+        spawnEnt({ t: 'mummer', x: Math.floor(px2 / TS), y: Math.floor(fl / TS) - 1, face: Math.sign(P.x - px2) || 1 });
+        for (let k = n0; k < enemies.length; k++) enemies[k].fromQueen = true;
+        burst(px2, fl - 10, 10, ['#221a30', '#e8c23a', '#b8382c'], 50, 0.5); } },
+  });
+  e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + e.vx * dt));
+  for (const v of evs) if (v.t === 'phase' && v.ph === 3) enrageBeat(e);   /* (phase two's beat the enemy tick gives every boss) */
+  if ((e.mode === 'burn' || e.mode === 'catch' || e.phase === 3) && Math.random() < dt * (e.mode === 'burn' ? 40 : 18)) flame(e.x + (Math.random() - 0.5) * 22, e.y - 8 - Math.random() * 60, 1, 4, 40, 3);   /* the wicker burning */
+  L.dark = e.phase === 2 ? 0.86 : 0;   /* FULL DARK, her phase two, only while she stands */
+  wqLight(e);
+}
+/* her embers on the green's floor: hot (they will catch her) or banked, grey, for WQ.bankT after a burn */
+function drawWickerGround(cx, cy) {
+  const emb = wqEmbers(), q = boss && boss.t === 'wickerqueen' ? boss : null; if (!emb || !L.arena) return;
+  const fy = Math.round(L.arena.floor - cy), banked = !!(q && q.alive && q.bank > 0);
+  for (let x = emb.x0; x <= emb.x1; x += 3) { const k = 0.5 + 0.5 * Math.sin(time * 5 + x * 0.3), sx = Math.round(x - cx); if (sx < -4 || sx > VW + 4) continue;
+    g.fillStyle = banked ? (k > 0.7 ? '#6a5a5a' : '#3a3036') : (k > 0.75 ? '#ffc850' : k > 0.35 ? '#f08a28' : '#a01c10'); g.fillRect(sx, fy - 2, 2, 2);
+    if (!banked && k > 0.9) { g.fillStyle = '#fff0b0'; g.fillRect(sx, fy - 3, 1, 1); } }
+}
+/* OVER THE DARK: the lash told across the whole green at the height it will fly (a hero who cannot see the maypole still sees it coming) and then the
+   ribbons going out, the sickle's red glow, a crowned mummer's glow in the dark */
+function drawWickerOver(cx, cy) {
+  const q = wqBoss(); if (!q || !bossActive || !L.green || !L.arena) return;
+  const fl = L.arena.floor, mx = L.green.maypole * TS + 8, x0 = L.arena.x0, x1 = L.arena.x1;
+  const telling = q.mode === 'lashLowTell' || q.mode === 'lashHighTell', kind = telling ? (q.mode === 'lashLowTell' ? 'low' : 'high') : q.lashKind;
+  if (telling || q.mode === 'lash') { const [t, b] = WQN.lashBand(kind, fl);
+    if (telling) { const k = 1 - Math.max(0, q.modeT) / WQN.WQ.lashTell; g.globalAlpha = 0.2 + 0.45 * k * (0.6 + 0.4 * Math.sin(time * 30)); g.fillStyle = '#ff6b6b';
+      g.fillRect(Math.round(x0 - cx), Math.round(t - cy), x1 - x0, 1); g.fillRect(Math.round(x0 - cx), Math.round(b - 1 - cy), x1 - x0, 1);
+      for (const pp of players) { const px2 = Math.round(pp.x - cx), py2 = Math.round(pp.y - 32 - cy); g.fillRect(px2 - 2, py2, 5, 1); g.fillRect(px2 - 1, kind === 'low' ? py2 - 1 : py2 + 1, 3, 1); g.fillRect(px2, kind === 'low' ? py2 - 2 : py2 + 2, 1, 1); }   /* an arrow at each hero: up, jump it; down, duck it */
+      g.globalAlpha = 1; }
+    else { const r = q.lashR || 0, RB = ['#b8382c', '#e8c23a', '#3a7ab8', '#8fd160', '#c9a0ff', '#f4ead0'];
+      for (let i = 0; i < 6; i++) { g.fillStyle = RB[i]; const yy = Math.round(t + (b - t) * (i / 6) - cy + Math.sin(time * 40 + i) * 1);
+        for (const d of [-1, 1]) { const lo = Math.max(x0, Math.min(mx, mx + d * r)), hi = Math.min(x1, Math.max(mx, mx + d * r)); if (hi > lo) g.fillRect(Math.round(lo - cx), yy, Math.round(hi - lo), 1); } } } }
+  if (q.mode === 'sickleTell') FAW.drawGlow(g, Math.round(q.x + (q.face || 1) * 2 - cx), Math.round(q.y - 70 - cy), time);
+  if (L.dark) for (const m of enemies) if (m.alive && m.t === 'mummer' && m.mode === 'glow') FAW.drawGlow(g, Math.round(m.x - cx), Math.round(m.y - 24 - cy), time);
+}
+/* HOLES IN HER DARK: the light of each hero's look (as far as it reaches, on the side he faces), her tells, the maypole winding up, a crowned mummer's
+   glow, and the embers while they are hot */
+function wqHoles(hole, cx, cy) {
+  const q = wqBoss(); if (!q || !bossActive || !L.green) return;
+  for (const pp of players) if (upright(pp)) { hole(pp.x + (pp.face || 1) * 44 - cx, pp.y - 12 - cy, 62, 0.85); hole(pp.x - cx, pp.y - 10 - cy, 30, 0.9); }
+  if (q.mode.endsWith('Tell') || q.mode === 'lash' || q.mode === 'catch') hole(q.x - cx, q.y - 40 - cy, 40, 0.8);
+  if (q.mode.startsWith('lash')) hole(L.green.maypole * TS + 8 - cx, q.y - 30 - cy, 50, 0.7);
+  for (const m of enemies) if (m.alive && m.fromQueen && m.mode === 'glow') hole(m.x - cx, m.y - 20 - cy, 30, 0.8);
+  const emb = wqEmbers(); if (emb && !(q.bank > 0)) hole(emb.mid - cx, L.arena.floor - 6 - cy, 40, 0.6);
+}
+
 /* ================= THE SUNKEN CARAVAN (src/sunken-caravan.js builds it; src/desert-foes.js, src/sunstroke.js and src/quicksand.js
    are its rules, pure and tested in tools/caravan.mjs; this is only their hands) =================
    THE SUN: open sand builds SUNSTROKE, shade resets it. The swim is drawn over the view, the meter is on the HUD, and every piece
@@ -17922,6 +18138,7 @@ const CV_FOES = new Set(['scorpion', 'sandgob', 'vulture', 'cutthroat', 'slinger
 const CV_STEP = { scorpion: DF.scorpionStep, sandgob: DF.sandGobStep, vulture: DF.vultureStep, cutthroat: DF.cutthroatStep, slinger: DF.slingerStep, ambusher: DF.ambusherStep };
 const CV_HURT = { scorpion: 6, cutthroat: 6, slinger: 6, ambusher: 7 };   /* the frame each set is hurt in (the vulture's set ends perched and the goblin's burrowing) */
 const CV_BANDITS = new Set(['cutthroat', 'slinger', 'ambusher']);   /* THE LOOTERS: men, not desert creatures - the sun takes them too */
+SPR.mummer = FG.bakeMummer(); SPR.hobbyhorse = FG.bakeHobbyHorse(); SPR.wickerqueen = bakeWickerQueen(); HAS_HURT.add('mummer'); HAS_HURT.add('hobbyhorse');   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
 SPR.cutthroat = CB.bakeCutthroat(); SPR.slinger = CB.bakeSlinger(); SPR.ambusher = CB.bakeAmbusher(); const CV_STONE = CB.bakeSlingStone();
 HAS_HURT.add('cutthroat'); HAS_HURT.add('slinger'); HAS_HURT.add('ambusher');
 let CV = null, CVART = null;
@@ -18240,7 +18457,7 @@ function drawDuneStorm() {
 
 
 function villageReset() {
-  unbReset(); caravanReset();   /* THE UNBURIED FIELD rides the village's hooks: reset, step and draw */
+  unbReset(); caravanReset(); fairReset();   /* THE UNBURIED FIELD rides the village's hooks: reset, step and draw */
   VG = L && L.village ? fireGrid(L) : null; if (!VG) return;
   for (const [x, y] of L.roofFire || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, barrier: true, tall: 46 });   /* THE FIRE ACROSS THE BARN ROOF: water puts it out for a while (villageSplash) */
   for (const [x, y, per, ph] of L.stillFires || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, pillar: !!per, per: per || 4, ph: ph || 0, tall: 14 });   /* FLAME PILLARS (villageTick) */
@@ -18328,7 +18545,7 @@ function drawBurningTown(cx, cy) {
   drawFacades(cx, cy);   /* THE VILLAGE'S OWN WALLS, over the town behind it: drawFacades runs before this backdrop, so the burning fronts and the barn's back wall were painted over by the sky (burning village rework, 2026-09-25) */
 }
 function updateVillage(dt) {
-  updateUnburied(dt); updateCaravan(dt);
+  updateUnburied(dt); updateCaravan(dt); updateFair(dt);
   if (!VG) return;
   villageTick(dt);
   /* THE SMOKE RISES (THE ROOFTOPS): a hero in the air inside a plume while it is up is carried up with it, to its top */
@@ -18533,7 +18750,7 @@ function drawHeaps(cx, cy) {
 }
 /* THE STRAW, THE CHAR AND THE PROPS, under the flames */
 function drawVillage(cx, cy) {
-  drawUnburied(cx, cy); drawCaravan(cx, cy);
+  drawUnburied(cx, cy); drawCaravan(cx, cy); drawFair(cx, cy);
   if (!VG) return;
   drawSmoke(cx, cy); drawHeaps(cx, cy); drawBuckets(cx, cy);
   for (const f of fires) if (f.pillar && f.delay > 0 && f.x > cx - 20 && f.x < cx + VW + 20) { const x = Math.round(f.x - cx), y = Math.round(f.y - cy), soon = f.delay < PILLAR.warn;   /* a pillar at rest: its vent glowing, and brighter just before it goes */
@@ -21312,7 +21529,7 @@ const TOUCH_ALWAYS = new Set(['anvil', 'barrel', 'boiler', 'cargo', 'cargowall',
 const BODY_BLOW = new Set(['frog', 'queen', 'ramlord', 'golem', 'hound', 'dog', 'badger', 'crow', 'kite', 'fledgling', 'gar', 'weaver', 'sailer', 'broom', 'mimic', 'familiar', 'topiary', 'sporeling', 'lurker', 'hopper', 'emberwisp', 'boo']);
 const BODY_MOVE = /charge|dive|lunge|pounce|swoop|leap|ram|butt|roll|dash|bite|sting|stomp|slam|rush|drop|tackle|sweep|hop|jump|peck|claw|trample|spin|buck|fly/i;
 const bodyAttacking = e => typeof e.mode === 'string' && !/Tell$|Wind$|Hang$|Up$|crouch|aim|rest|idle|wake|sleep|stun|winded|dazed|stuck|recover/i.test(e.mode) && BODY_MOVE.test(e.mode);
-const windingUp = e => !(e.broken > 0) && ((e.t === 'vulture' && e.mode === 'watch') || (e.t === 'magechase' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (/* audit 2026-09-24 (A2): windups that played no warning sound - the Hornet Queen's volley and sweep, the Chieftain's bow, the Herald's wave */ (e.t === 'chief' && e.mode === 'aim') || (e.t === 'herald' && e.mode === 'raise') || (e.t === 'deathknight' || e.t === 'bloodknight' || e.t === 'barrowrider' || e.t === 'bannerbearer' || e.t === 'corpse') && typeof e.mode === 'string' && e.mode.endsWith('Tell') && e.mode !== 'riseTell') || (e.t === 'gargoyle' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'whelp' && e.mode === 'crouchTell') || (e.t === 'whelp' && e.mode === 'fireTell') || (e.t === 'winchmaster' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'duneworm' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'hedgewarden' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sexton' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'pyromancer' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || ((e.t === 'burieddead' || e.t === 'zombie')&&e.mode.endsWith('Tell')) || (e.t === 'harbormaster' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || ((e.t === 'bellcrab' || e.t === 'bellguard') && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'mother' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'golem' && e.mode === 'sweepTell') || (e.t === 'fledgling' && e.mode === 'peckTell') || (e.t === 'gobpriest' && (e.mode === 'riteTell' || e.mode === 'censerTell' || e.mode === 'bellTell')) || (e.t === 'archmage' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'homunculus' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'strawking' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'kraken' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'master' && (e.mode === 'chargeTell' || e.mode === 'lashTell' || e.mode === 'leapTell' || e.mode === 'crackTell' || e.mode === 'whistleTell')) || (e.t === 'tome' && e.mode === 'tell') || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'blackoutTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang' || e.mode === 'volleyUp' || e.mode === 'sweepStart')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'hallLeapTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell' || e.mode === 'anchorTell' || e.mode === 'ramTell' || e.mode === 'diveTell' || e.mode === 'whirlTell' || e.mode === 'gulpTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'thrustTell' || e.mode === 'bashTell' || e.mode === 'judgeTell')) || (e.t === 'lancer' && (e.mode === 'chargeTell' || e.mode === 'swipeTell' || e.mode === 'cutTell')) || (e.t === 'prince' && (e.mode === 'cutTell' || e.mode === 'sinkTell' || e.mode === 'callTell' || e.mode === 'crownTell' || e.mode === 'snuffTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'masthead' && (e.mode === 'slashTell' || e.mode === 'sailTell' || e.mode === 'dropTell' || e.mode === 'boomTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell' || e.mode === 'spitTell' || e.mode === 'lungeTell' || e.mode === 'tailTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')) || (e.t === 'troll' && (e.mode === 'swatTell' || e.mode === 'throwTell' || e.mode === 'hurlTell' || e.mode === 'slamTell' || e.mode === 'ripTell')) || (e.t === 'suncatcher' && (e.mode === 'frostTell' || e.mode === 'spireTell' || e.mode === 'shardTell' || e.mode === 'clawTell' || e.mode === 'hailTell'))); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)   /* BROKEN IS NOT WINDING UP (the combat pass, part 2): a foe broken in the middle of a tell stands open - no mark over it, no token - and takes the tell up again, told again, when it comes to (src/poise-break.js broke) */
+const windingUp = e => !(e.broken > 0) && ((e.t === 'vulture' && e.mode === 'watch') || (e.t === 'mummer' && e.mode === 'glow') || (e.t === 'hobbyhorse' && e.mode === 'rear') || (e.t === 'wickerqueen' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'magechase' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (/* audit 2026-09-24 (A2): windups that played no warning sound - the Hornet Queen's volley and sweep, the Chieftain's bow, the Herald's wave */ (e.t === 'chief' && e.mode === 'aim') || (e.t === 'herald' && e.mode === 'raise') || (e.t === 'deathknight' || e.t === 'bloodknight' || e.t === 'barrowrider' || e.t === 'bannerbearer' || e.t === 'corpse') && typeof e.mode === 'string' && e.mode.endsWith('Tell') && e.mode !== 'riseTell') || (e.t === 'gargoyle' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'whelp' && e.mode === 'crouchTell') || (e.t === 'whelp' && e.mode === 'fireTell') || (e.t === 'winchmaster' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'duneworm' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'hedgewarden' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sexton' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'pyromancer' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || ((e.t === 'burieddead' || e.t === 'zombie')&&e.mode.endsWith('Tell')) || (e.t === 'harbormaster' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || ((e.t === 'bellcrab' || e.t === 'bellguard') && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'mother' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'golem' && e.mode === 'sweepTell') || (e.t === 'fledgling' && e.mode === 'peckTell') || (e.t === 'gobpriest' && (e.mode === 'riteTell' || e.mode === 'censerTell' || e.mode === 'bellTell')) || (e.t === 'archmage' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'homunculus' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'strawking' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'kraken' && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'master' && (e.mode === 'chargeTell' || e.mode === 'lashTell' || e.mode === 'leapTell' || e.mode === 'crackTell' || e.mode === 'whistleTell')) || (e.t === 'tome' && e.mode === 'tell') || (e.t === 'archer' && e.draw > 0.3) || (!e.harmless && typeof e.mode === 'string' && e.mode.endsWith('Tell')) || (e.t === 'sprig' && e.mode === 'biteTell') || (e.t === 'shield' && e.mode === 'shoveTell') || (e.t === 'tollmaster' && (e.mode === 'ledgerTell' || e.mode === 'tollTell' || e.mode === 'rodTell' || e.mode === 'darkTell' || e.mode === 'blackoutTell')) || (e.t === 'lampreeve' && (e.mode === 'sweepTell' || e.mode === 'snuffTell' || e.mode === 'drawTell' || e.mode === 'hookTell')) || (e.t === 'watch' && e.mode === 'thrustTell') || (e.t === 'thorn' && e.mode === 'wind') || (e.t === 'queen' && (e.mode === 'aim' || e.mode === 'slamHang' || e.mode === 'volleyUp' || e.mode === 'sweepStart')) || (e.t === 'frog' && e.mode === 'crouch') || (e.t === 'golem' && (e.mode === 'shroudTell' || e.mode === 'stompTell' || e.mode === 'throwTell')) || (e.t === 'windcaller' && (e.mode === 'howlTell' || e.mode === 'stoneTell' || e.mode === 'wallTell')) || (e.t === 'gqueen' && (e.mode === 'decreeTell' || e.mode === 'sceptreTell' || e.mode === 'slamTell' || e.mode === 'hallLeapTell' || e.mode === 'chandTell')) || ((e.t === 'brute' || e.t === 'chief') && (e.mode === 'raise' || e.mode === 'wind' || e.mode === 'slashWind' || e.mode === 'bashWind' || e.mode === 'crouch' || e.mode === 'whirlWind' || e.mode === 'rainAim')) || (e.t === 'pike' && e.mode === 'tell') || (e.t === 'snuffer' && (e.mode === 'swipeTell' || e.mode === 'snuffTell')) || (e.t === 'sailer' && e.big && e.mode === 'sail') || (e.t === 'lance' && (e.mode === 'couch' || e.mode === 'thrustTell' || e.mode === 'sweepTell' || e.mode === 'guardTell' || e.mode === 'rushTell' || e.mode === 'bashTell' || e.mode === 'vaultTell' || e.mode === 'javTell')) || (e.t === 'horn' && e.mode === 'tell') || (e.t === 'hearthgob' && e.mode === 'raise') || (e.t === 'assassin' && (e.mode === 'markTell' || e.mode === 'stabTell')) || (e.t === 'grandmother' && (e.mode === 'sweepTell' || e.mode === 'feelTell' || e.mode === 'throwTell' || e.mode === 'listenTell')) || (e.t === 'berserker' && e.mode === 'windTell') || (e.t === 'propman' && e.mode === 'raise') || (e.t === 'prise' && e.mode === 'reachTell') || (e.t === 'drownedking' && (e.mode === 'slamTell' || e.mode === 'haulTell' || e.mode === 'debtTell' || e.mode === 'anchorTell' || e.mode === 'ramTell' || e.mode === 'diveTell' || e.mode === 'whirlTell' || e.mode === 'gulpTell')) || (e.t === 'swornsword' && e.mode === 'cutTell') || (e.t === 'hedgeknight' && (e.mode === 'swingTell' || e.mode === 'leapTell')) || (e.t === 'crossbow' && e.mode === 'aim') || (e.t === 'runner' && e.mode === 'shout') || (e.t === 'closedhelm' && (e.mode === 'cutTell' || e.mode === 'thrustTell' || e.mode === 'bashTell' || e.mode === 'judgeTell')) || (e.t === 'lancer' && (e.mode === 'chargeTell' || e.mode === 'swipeTell' || e.mode === 'cutTell')) || (e.t === 'prince' && (e.mode === 'cutTell' || e.mode === 'sinkTell' || e.mode === 'callTell' || e.mode === 'crownTell' || e.mode === 'snuffTell')) || (e.t === 'cutter' && e.mode === 'raise') || (e.t === 'spider' && e.big && e.mode === 'dropTell') || (e.t === 'ram' && (e.mode === 'lower' || e.mode === 'stampTell' || e.mode === 'buttTell')) || (e.t === 'masthead' && (e.mode === 'slashTell' || e.mode === 'sailTell' || e.mode === 'dropTell' || e.mode === 'boomTell')) || (e.t === 'captain' && (e.mode === 'sabreTell' || e.mode === 'shootTell' || e.mode === 'hookTell' || e.mode === 'kegTell')) || (e.t === 'quarter' && (e.mode === 'slashTell' || e.mode === 'shootTell')) || (e.t === 'reefmaw' && (e.mode === 'biteTell' || e.mode === 'riseTell' || e.mode === 'thrashTell' || e.mode === 'spitTell' || e.mode === 'lungeTell' || e.mode === 'tailTell')) || (e.t === 'herald' && (e.mode === 'sweepTell' || e.mode === 'thrustTell' || e.mode === 'spearTell' || e.mode === 'maelTell')) || (e.t === 'owl' && (e.mode === 'fanTell' || e.mode === 'screechTell' || e.mode === 'hootTell')) || (e.t === 'king' && (e.mode === 'slamTell' || e.mode === 'chargeTell' || e.mode === 'grabTell' || e.mode === 'cageTell' || e.mode === 'liftTell' || e.mode === 'shoutTell')) || (e.t === 'troll' && (e.mode === 'swatTell' || e.mode === 'throwTell' || e.mode === 'hurlTell' || e.mode === 'slamTell' || e.mode === 'ripTell')) || (e.t === 'suncatcher' && (e.mode === 'frostTell' || e.mode === 'spireTell' || e.mode === 'shardTell' || e.mode === 'clawTell' || e.mode === 'hailTell'))); // (the sea arc and the King were winding up in silence: the tell sound is how you hear a blow coming off screen)   /* BROKEN IS NOT WINDING UP (the combat pass, part 2): a foe broken in the middle of a tell stands open - no mark over it, no token - and takes the tell up again, told again, when it comes to (src/poise-break.js broke) */
 // PERSONALITY. What they do besides fight, all of it said with the body and the voice (never words):
 //  - they NOTICE you: a jump and a startled cry the first time you come near, and they forget you when you leave;
 //  - they LAUGH when one of them hits you, and all of them cheer when you fall;
@@ -21527,9 +21744,11 @@ function updateEnemies(dt) {
     if(e.t==='burieddead'){if(bossActive){beastSeen(e.t);updateBuriedDead(e,dt);}continue;}
     if (UNBF.UNB_FOES.has(e.t)) { updateUnbFoe(e, dt); continue; }   /* THE UNBURIED FIELD */
     if (CV_FOES.has(e.t)) { updateDesertFoe(e, dt); continue; }   /* THE SUNKEN CARAVAN */
+    if (e.t === 'mummer' || e.t === 'hobbyhorse') { updateMummer(e, dt); continue; }   /* THE HARVEST FAIR: the facing rule */
     if (e.t === 'duneworm') { if (bossActive) { beastSeen('duneworm'); updateDuneWormBoss(e, dt); } continue; }   /* THE DUNE WORM (not in the Rush: it is parked) */
     if (e.t === 'pyromancer') { if (bossActive) { beastSeen('pyromancer'); updatePyromancer(e, dt); } continue; }
     if (e.t === 'abbot') { if (bossActive || rushOn()) { beastSeen('abbot'); updateFalseAbbotBoss(e, dt); } continue; }
+    if (e.t === 'wickerqueen') { if (bossActive) { beastSeen('wickerqueen'); updateWickerQueen(e, dt); } continue; }   /* THE WICKER QUEEN (not in the Rush: it is parked) */
     if (e.t === 'winchmaster') { if (bossActive || rushOn()) { beastSeen('winchmaster'); updateWinchBoss(e, dt); } else e.y = (OR.ARENA.housing + 1) * TS; continue; }
     if (e.t === 'gravewarden') { if (miniActive || rushOn()) { beastSeen('gravewarden'); updateGraveWardenBoss(e, dt); } continue; }
     if (e.t === 'gargoyle') { if (bossActive) { beastSeen('gargoyle'); updateGargoyleBoss(e, dt); } continue; }
@@ -21662,10 +21881,13 @@ function updateEnemies(dt) {
     }
     if (e.t === 'pike') { // holds a line: thrusts when you come within reach, turns slowly, parried if you block it
       const d = P.x - e.x, ad = Math.abs(d), near = ad < 100 && Math.abs(e.y - P.y) < 24 && !P.dead; e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270; e.modeT -= dt;
-      if (e.mode === 'guard') { if (near && Math.sign(d) !== e.face) { e.behindT = (e.behindT || 0) + dt; if (e.behindT > 0.6) { e.face = Math.sign(d); e.behindT = 0; } } else e.behindT = 0; if (near && Math.sign(d) === e.face && ad < 46 && e.stagger <= 0) { e.mode = 'tell'; e.modeT = 0.4; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); } }
-      else if (e.mode === 'tell' && e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.25; SFX.slash(); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 42 && Math.abs(P.y - e.y) < 20) { const res = damagePlayer(e.x, DMG.pike); if (res === 'blocked') { e.stagger = 0.9; number(e.x, e.y - e.h - 8, 'PARRIED', '#8fd160'); } } }
+      if (e.mode === 'guard') { if (near && Math.sign(d) !== e.face) { e.behindT = (e.behindT || 0) + dt; if (e.behindT > 0.6) { e.face = Math.sign(d); e.behindT = 0; } } else e.behindT = 0; if (near && Math.sign(d) === e.face && ad < (weightyHere(curId()) ? WEIGHTY.lunge.reach : 46) && e.stagger <= 0) { e.mode = 'tell'; e.modeT = 0.4; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); } }
+      else if (e.mode === 'tell' && e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.25; SFX.slash(); if (weightyHere(curId())) { e.lungeT = WEIGHTY.lunge.time; e.tHit = false; } else if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 42 && Math.abs(P.y - e.y) < 20) { const res = damagePlayer(e.x, DMG.pike); if (res === 'blocked') { e.stagger = 0.9; number(e.x, e.y - e.h - 8, 'PARRIED', '#8fd160'); } } }
       else if (e.mode === 'thrust' && e.modeT <= 0) { e.mode = 'guard'; e.modeT = 0.5; }
-      const r = moveBody(e, 0, e.vy * dt, false); if (r.ground) e.vy = 0; continue;
+      /* WEIGHTY, KINGSWOOD: THE LUNGE - the thrust carries it the gap it told you from, and lands the first time the point reaches you */
+      let lx = 0; if (e.lungeT > 0) { e.lungeT -= dt; const ahead = tileAt(Math.floor((e.x + e.face * (e.w / 2 + 3)) / TS), Math.floor((e.y + 1) / TS)); if (ahead !== T.AIR && !isOneWay(ahead)) lx = e.face * WEIGHTY.lunge.speed * dt;
+        if (!e.tHit && !P.dead && Math.sign(P.x - e.x) === e.face && Math.abs(P.x - e.x) < 42 && Math.abs(P.y - e.y) < 20) { e.tHit = true; e.lungeT = 0; const res = damagePlayer(e.x, DMG.pike); if (res === 'blocked') { e.stagger = 0.9; number(e.x, e.y - e.h - 8, 'PARRIED', '#8fd160'); } } }
+      const r = moveBody(e, lx, e.vy * dt, false); if (r.ground) e.vy = 0; continue;
     }
     if (e.t === 'sentry') { updateSentry(e, dt); continue; }
     if (e.t === 'shardling') { updateShardling(e, dt); continue; }
@@ -21864,10 +22086,12 @@ function updateEnemies(dt) {
       const d = P.x - e.x, ad = Math.abs(d), near = ad < 200 && Math.abs(e.y - P.y) < 40 && !P.dead;
       e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270; e.modeT -= dt;
       let want = 0;
-      if (e.mode === 'walk') { if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = ad > 26 ? e.face * e.speed : 0; if (ad <= 30) { e.mode = e.tokWantHeavy || Math.random() < 0.5 ? 'raise' : 'wind';   /* (part 2: an overhead turned away by the purse is the blow he throws when his turn comes - src/attack-tokens.js) */ e.modeT = e.mode === 'raise' ? 0.9 : 0.5; number(e.x, e.y - e.h - 12, e.mode === 'raise' ? '!!' : '!', e.mode === 'raise' ? '#ff6b6b' : '#ffd36b'); SFX.charge(); } } }
+      if (e.mode === 'walk') { if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = ad > 26 ? e.face * e.speed : 0; if (ad <= 30 && weightyHere(curId()) && !e.feinted && !e.tokWantHeavy && Math.random() < WEIGHTY.feint.p) { e.feinted = true; e.mode = 'feint'; e.modeT = WEIGHTY.feint.t; SFX.charge(); }   /* WEIGHTY, KINGSWOOD: the overhead's pose, held and lowered - no blow, so no mark */
+        else if (ad <= 30) { e.feinted = false; e.mode = e.tokWantHeavy || Math.random() < 0.5 ? 'raise' : 'wind';   /* (part 2: an overhead turned away by the purse is the blow he throws when his turn comes - src/attack-tokens.js) */ e.modeT = e.mode === 'raise' ? 0.9 : 0.5; number(e.x, e.y - e.h - 12, e.mode === 'raise' ? '!!' : '!', e.mode === 'raise' ? '#ff6b6b' : '#ffd36b'); SFX.charge(); } } }
       else if (e.mode === 'raise' && e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.35; shakeCam(4); SFX.heavy(); dust(e.x + e.face * 14, e.y, 8); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 30 && Math.abs(P.y - e.y) < 20) damagePlayer(e.x, DMG.bruteOver, { unblockable: true }); }
       else if (e.mode === 'wind' && e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; SFX.slash(); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 44 && Math.abs(P.y - e.y) < 20) { const res = damagePlayer(e.x, DMG.bruteSweep); if (res === 'blocked') e.stagger = 0.6; } }
       else if ((e.mode === 'slam' || e.mode === 'sweep') && e.modeT <= 0) { e.mode = 'rest'; e.modeT = e.mode === 'slam' ? 1.1 : 0.6; }
+      else if (e.mode === 'feint' && e.modeT <= 0) { e.mode = 'rest'; e.modeT = WEIGHTY.feint.rest; }
       else if (e.mode === 'rest' && e.modeT <= 0) e.mode = 'walk';
       if (e.stagger > 0 && e.mode !== 'walk' && e.mode !== 'rest') { e.mode = 'rest'; e.modeT = 0.8; }
       e.vx += (want - e.vx) * Math.min(1, dt * 6);
@@ -21909,7 +22133,7 @@ function updateEnemies(dt) {
       if (near) e.face = Math.sign(d) || e.face;
       e.timer -= dt; e.draw = Math.max(0, e.draw - dt); e.loose = Math.max(0, (e.loose || 0) - dt);
       let want = 0;
-      if (near && ad < SHOT_CLOSE && e.draw <= 0) want = -e.face * e.speed * 1.6; // back off: point-blank, the bow comes down
+      if (near && ad < (weightyHere(curId()) ? WEIGHTY.archer.keep : SHOT_CLOSE) && e.draw <= 0) want = -e.face * e.speed * 1.6;   /* (weighty, Kingswood: it backs off to keep its range) */ // back off: point-blank, the bow comes down
       else if (near && ad > SHOT_FAR && e.draw <= 0) want = e.face * e.speed * 0.6;
       if (near && e.timer <= 0 && e.draw <= 0 && ad > SHOT_CLOSE) { e.draw = 0.55; e.timer = 2.4; SFX.bow(); number(e.x, e.y - e.h - 10, '!', '#ffd36b'); }
       if (e.draw > 0 && e.draw - dt <= 0) { e.loose = 0.16;
@@ -21976,6 +22200,11 @@ function updateEnemies(dt) {
       if (e.mode === 'shoveTell' && e.modeT <= 0) { e.mode = 'shove'; e.modeT = 0.22; }
       else if (e.mode === 'shove') { want = e.face * 150; if (!e.shoveHit && !P.dead && overlap(box(e), box(P))) { e.shoveHit = true; const r = damagePlayer(e.x, Math.round((DMG.shield || 25) * 0.6)); if (r !== 'blocked') P.vx = e.face * 190; } if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.7; e.shoveCd = 1.6; } }
       else if (e.mode === 'rest') { want = 0; if (e.modeT <= 0) e.mode = 'walk'; }
+      /* WEIGHTY, KINGSWOOD: THE COUNTER after a parry (shieldParry) - braced on a yellow ! (a shield turns it), then the rim, off the front foot */
+      if (e.parryNow) { e.parryNow = false; e.mode = 'counterTell'; e.modeT = WEIGHTY.parry.tell; e.face = Math.sign(P.x - e.x) || e.face; e.cHit = false; number(e.x, e.y - 20, '!', '#ffd36b'); SFX.tell(false); }
+      if (e.stagger > 0 && (e.mode === 'counterTell' || e.mode === 'counter')) e.mode = 'walk';
+      if (e.mode === 'counterTell') { want = 0; e.modeT -= dt; if (e.modeT <= 0) { e.mode = 'counter'; e.modeT = 0.24; } }
+      else if (e.mode === 'counter') { e.modeT -= dt; want = e.face * 170; if (!e.cHit && !P.dead && overlap(box(e), box(P))) { e.cHit = true; const r = damagePlayer(e.x, DMG.shield || 25); if (r !== 'blocked') P.vx = e.face * 210; } if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.7; e.shoveCd = 1.6; } }
     }
     if (e.t === 'thorn') {
       const near = Math.abs(e.x - P.x) < 120 && Math.abs(e.y - P.y) < 30 && !P.dead;
@@ -22942,7 +23171,7 @@ function updateProps(dt) {
     }
   }
   for (const pr of props) {
-    if (pr.t === 'relic' && !pr.got && !P.dead && Math.abs(pr.x - P.x) < 15 && Math.abs(pr.y - 6 - (P.y - 8)) < 20) { pr.got = true; P.relic = pr.kind; const R = RELICS[pr.kind]; { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].relic = pr.kind; saveProgress(); } number(pr.x, pr.y - 26, R.name, R.col); number(pr.x, pr.y - 16, R.desc, '#fff6e0'); SFX.sting(); SFX.medal(); burst(pr.x, pr.y - 8, 18, [R.col, '#fff6e0'], 60, 0.8, -30, 1); ringAt(pr.x, pr.y - 8, 24, R.col, 0.4); slowT = 0.5; }
+    if (pr.t === 'relic' && !pr.got && !pr.hidden && !P.dead && Math.abs(pr.x - P.x) < 15 && Math.abs(pr.y - 6 - (P.y - 8)) < 20) { pr.got = true; P.relic = pr.kind; const R = RELICS[pr.kind]; { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].relic = pr.kind; saveProgress(); } number(pr.x, pr.y - 26, R.name, R.col); number(pr.x, pr.y - 16, R.desc, '#fff6e0'); SFX.sting(); SFX.medal(); burst(pr.x, pr.y - 8, 18, [R.col, '#fff6e0'], 60, 0.8, -30, 1); ringAt(pr.x, pr.y - 8, 24, R.col, 0.4); slowT = 0.5; }
     if (pr.t === 'bell' && pr.rung && pr.liftT > 0 && pr.gate !== undefined) { pr.liftT -= dt; if (pr.liftT <= 0) { openGate(pr.gate, 15, 19); SFX.clank(); number(pr.gate * TS + 8, 14 * TS, 'THE GATE LIFTS', '#8fd160'); } }   /* it winches itself back up */
     if (pr.t === 'bell' && !pr.broken) { if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 22, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hp--; SFX.clank(); sparks(pr.x, pr.y - 12, P.face, 5); pr.swing = 0.5; if (pr.hp <= 0) { pr.broken = true; SFX.crack(); burst(pr.x, pr.y - 12, 10, ['#e0b040', '#b8842a'], 70, 0.6); number(pr.x, pr.y - 30, 'SILENCED', '#8fd160'); } } if (pr.swing > 0) pr.swing -= dt; if (pr.ringT > 0 && !pr.rung && !enemies.some(e => e.alive && e.ringer && Math.abs(e.x - pr.x) < 10)) pr.ringT = Math.max(0, pr.ringT - dt); }
     if (pr.t === 'crusher' && Math.abs(P.x - pr.x) < 300) { // THE PRESS: dust, then the slab drops. Under it when it lands is the end of you.
@@ -23693,7 +23922,7 @@ function applyLook() { const t = themeNow(); for (const k of ['text', 'title', '
   if (SET.ink && SET.ink !== 'parchment') { UI.text = inkNow(); UI.title = inkNow(); } }
 let soundNoteT = 0, winT = 0, winStamped = false, hintT = 0, hintMsg = '';
 // WHAT IT SAYS WHEN THE THING IS DEAD. One line for every creature that holds an arena, in its own words.
-const BOSS_FELL = { duneworm: 'THE SAND LIES STILL', deathknight: 'THE BATTLE IS OVER', bloodknight: 'THE BATTLE IS OVER', winchmaster: 'THE ROAD STOPS RUNNING', gargoyle: 'THE TOWER GATE STANDS OPEN', pyromancer: 'THE VILLAGE STOPS BURNING', bellcrab: 'THE BELL FALLS SILENT', archmage: 'THE TOWER IS QUIET', strawking: 'THE FIELD GOES OUT', prince: 'HE IS LET LIE', closedhelm: 'HE KNEELS, AND THE WARD GOES OUT', kraken: 'THE SEA LETS GO', troll: 'THE HILL LETS YOU THROUGH', masthead: 'THE SAILS COME DOWN', grandmother: 'SHE SLEEPS NOW', queen: 'THE QUEEN FALLS', frog: 'THE KING CROAKS', chief: 'OUT OF THE FIRE',
+const BOSS_FELL = { duneworm: 'THE SAND LIES STILL', wickerqueen: 'THE FAIR IS OVER', deathknight: 'THE BATTLE IS OVER', bloodknight: 'THE BATTLE IS OVER', winchmaster: 'THE ROAD STOPS RUNNING', gargoyle: 'THE TOWER GATE STANDS OPEN', pyromancer: 'THE VILLAGE STOPS BURNING', bellcrab: 'THE BELL FALLS SILENT', archmage: 'THE TOWER IS QUIET', strawking: 'THE FIELD GOES OUT', prince: 'HE IS LET LIE', closedhelm: 'HE KNEELS, AND THE WARD GOES OUT', kraken: 'THE SEA LETS GO', troll: 'THE HILL LETS YOU THROUGH', masthead: 'THE SAILS COME DOWN', grandmother: 'SHE SLEEPS NOW', queen: 'THE QUEEN FALLS', frog: 'THE KING CROAKS', chief: 'OUT OF THE FIRE',
   mother: 'THE WOOD BREATHES AGAIN', king: 'THE KING IS DOWN', owl: 'THE REEVE FALLS',
   forgemaster: 'THE FORGE COOLS', herald: 'THE TIDE GOES OUT', ram: 'THE RAM LORD IS DOWN',
   golem: 'THE FACET GOES DARK', windcaller: 'THE WIND DROPS', lance: "THE QUEEN'S LANCE BREAKS",
@@ -24772,6 +25001,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.eye) { const ek = seaCalm(); if (ek > 0) drawEyeSky(ek); }   /* THE HURRICANE'S EYE: stars over the haze, high in the sky where no hull reaches */
   // a wood with parts in different light (L.tints: [x0, x1, rgb, alpha] in tiles), crossfaded over two dozen tiles at each seam
   if (L.tints) { const mx = (cx + VW / 2) / TS; for (const [x0, x1, c, a] of L.tints) { const k = Math.max(0, Math.min(1, Math.min(mx - x0 + 12, x1 - mx + 12) / 24)); if (k > 0.01) { g.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } }
+  if (FAIR) FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time);   /* THE HARVEST FAIR: the figures at the edge of the light, more of them the later it gets */
   if (L.deep) drawDeepTint(cx, cy);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
@@ -25158,7 +25388,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'firevent') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); g.fillStyle = '#4a3020'; g.fillRect(x - 5, y - 10, 10, 10); g.fillStyle = '#6a4a30'; g.fillRect(x - 4, y - 9, 3, 2); g.fillRect(x + 1, y - 6, 3, 2); g.fillRect(x - 4, y - 3, 3, 2); g.fillStyle = '#2c1a10'; g.fillRect(x - 6, y - 12, 12, 2); g.fillStyle = pr.on > 0 ? '#ffd36b' : '#1a1010'; g.fillRect(x - 3, y - 11, 6, 1); if (pr.on > 0) { g.fillStyle = Math.floor(time * 20) % 2 ? '#ff9a5c' : '#ffd36b'; g.fillRect(x - 3, y - 26, 6, 15); g.fillStyle = '#fff6c8'; g.fillRect(x - 1, y - 24, 2, 11); } }
     else if (pr.t === 'ram') { g.save(); g.translate(Math.round(pr.x - cx), Math.round(pr.y - cy)); g.rotate(-pr.th); g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(0.5, 0); g.lineTo(0.5, 34); g.stroke(); g.drawImage(PROP.ramLog, -6, 32); g.restore(); }
     else if (pr.t === 'dropcage') { const cy2 = Math.round(pr.y - cy); if (!pr.dropped) { g.fillStyle = '#8b8378'; for (let yy = Math.round(pr.y0 - 40 - cy); yy < cy2 - 16; yy += 3) g.fillRect(Math.round(pr.x - cx), yy, 2, 2); } g.drawImage(PROP.cage, Math.round(pr.x) - 8 - cx, cy2 - 16); }
-    else if (pr.t === 'relic' && !pr.got) { const R = RELICS[pr.kind], yy = Math.round(pr.y - 8 + Math.sin(time * 3 + pr.ph) * 2 - cy), xx = Math.round(pr.x - cx); g.globalAlpha = 0.35 + 0.15 * Math.sin(time * 4); g.fillStyle = R.col; g.beginPath(); g.arc(xx, yy - 4, 16, 0, 7); g.fill(); g.globalAlpha = 1; { const ic = big2(PROP.relic[pr.kind] || PROP.lampIcon || PROP.bolt); g.drawImage(ic, xx - (ic.width >> 1), yy - 4 - (ic.height >> 1)); } }
+    else if (pr.t === 'relic' && !pr.got && !pr.hidden) { const R = RELICS[pr.kind], yy = Math.round(pr.y - 8 + Math.sin(time * 3 + pr.ph) * 2 - cy), xx = Math.round(pr.x - cx); g.globalAlpha = 0.35 + 0.15 * Math.sin(time * 4); g.fillStyle = R.col; g.beginPath(); g.arc(xx, yy - 4, 16, 0, 7); g.fill(); g.globalAlpha = 1; { const ic = big2(PROP.relic[pr.kind] || PROP.lampIcon || PROP.bolt); g.drawImage(ic, xx - (ic.width >> 1), yy - 4 - (ic.height >> 1)); } }
     else if (pr.t === 'puffball' && !pr.popped) g.drawImage(PROP.puffball, Math.round(pr.x) - 7 - cx, Math.round(pr.y) - 12 + Math.round(Math.sin(time * 2 + pr.x) * 0.5) - cy);
     else if (pr.t === 'glaive') { const c = PROP.lw.glaive; g.drawImage(c, Math.round(pr.x - c.width / 2 - cx), Math.round(pr.y - c.height - cy)); }
     else if (pr.t === 'glowbud') { const on = pr.lit > 0; if (on) { g.globalAlpha = 0.18 + 0.06 * Math.sin(time * 4 + pr.x); g.fillStyle = '#4aa0b0'; g.beginPath(); g.arc(Math.round(pr.x - cx), Math.round(pr.y - 8 - cy), 34, 0, 7); g.fill(); g.globalAlpha = 1; } else if (Math.floor(time * 2 + pr.x) % 3 === 0) { g.fillStyle = '#bff0f0'; g.fillRect(Math.round(pr.x - cx), Math.round(pr.y - 12 - cy), 1, 1); } g.drawImage(PROP.glow[on ? 0 : 1], Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 14 - cy); }
@@ -25276,6 +25506,8 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t !== 'wasp' && e.t !== 'queen' && e.t !== 'drone' && e.t !== 'vulture' && e.t !== 'magechase') g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, Math.round(e.y) - 2 - cy);
     let frame = 0;
     if (e.t === 'lancer') frame = lancerFrame(e);
+    else if (e.t === 'mummer') frame = e.hurtT > 0 ? 5 : ({ glow: 3, strike: 4, recover: 0 })[e.mode] ?? (e.mode === 'creep' ? 1 + Math.floor(e.anim * 6) % 2 : 0);   /* THE MUMMER: 3 is the red mask */
+    else if (e.t === 'hobbyhorse') frame = e.hurtT > 0 ? 5 : ({ rear: 1, skid: 4 })[e.mode] ?? (e.mode === 'charge' ? 2 + Math.floor(e.anim * 12) % 2 : 0);   /* THE HOBBY-HORSE: 1 is the reared head, 2-3 the charge */
     else if (CV_FOES.has(e.t)) frame = e.hurtT > 0 && CV_HURT[e.t] !== undefined ? CV_HURT[e.t] : e.st ? e.st.frame : 0;   /* THE SUNKEN CARAVAN: desert-foes.js names the frame */
     else if (UNBF.UNB_FOES.has(e.t)) frame = UNBF.unbFrame(e);   /* THE UNBURIED FIELD: each set ends in its hurt pose, and a corpse lying down is not one */   /* mounted and on foot share one set: his hurt pose depends on which */
     /* THE ARCHMAGE'S LAST FRAME IS HIS BODY, not his hurt: his set ends hurt, dead, so every blow laid him out across the floor for a
@@ -25286,7 +25518,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.hurtT > 0 && HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) frame = SPR[e.t].R.length - 1; // knocked about, and it shows
     else if (e.t === 'spit') frame = e.mouth > 0 ? 2 : (Math.floor(e.anim * 1.5) % 4 === 1 ? 1 : 0);
     else if (e.t === 'wasp') frame = Math.floor(e.anim * 30) % 3;
-    else if (e.t === 'queen') frame = e.mode === 'winded' || e.mode === 'stuck' || e.mode === 'slamRest' ? 6 : e.mode === 'aim' ? 2 : e.mode === 'dive' ? 3 : (e.mode === 'volley' || e.mode === 'volleyUp') ? 4 : (e.mode === 'slamUp' || e.mode === 'slamHang' || e.mode === 'slam') ? 5 : (e.mode === 'sweep' || e.mode === 'sweepStart') ? 7 : Math.floor(e.anim * 26) % 2;
+    else if (e.t === 'queen') frame = e.mode === 'winded' || e.mode === 'stuck' || e.mode === 'slamRest' ? 6 : e.mode === 'aim' || e.mode === 'feint' ? 2 : e.mode === 'dive' || e.mode === 'feintOff' ? 3 : (e.mode === 'volley' || e.mode === 'volleyUp') ? 4 : (e.mode === 'slamUp' || e.mode === 'slamHang' || e.mode === 'slam') ? 5 : (e.mode === 'sweep' || e.mode === 'sweepStart') ? 7 : Math.floor(e.anim * 26) % 2;
     else if (e.t === 'hopper') frame = e.air ? (e.vy < 0 ? 1 : 3) : (e.mode === 'hopTell' || (e.drone && e.timer < 0.2 && Math.abs(P.x - e.x) < 170) ? 2 : 0);
     else if (e.t === 'frog') frame = e.mode === 'dazed' ? 6 : e.mode === 'crouch' ? 3 : (e.mode === 'leap' || e.mode === 'hop') ? (e.vy < 40 ? 4 : 5) : e.mode === 'croak' ? 1 : (e.mode === 'inhale' || e.mode === 'tongue' || e.mode === 'inhaleTell') ? 2 : 0;
     else if (e.t === 'sapper') frame = e.fleeT > 0 ? 4 + Math.floor(e.anim * 12) % 2 : Math.floor(e.anim * 12) % 4;
@@ -25307,9 +25539,9 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'drone') frame = Math.floor(e.anim * 1.1) % 6 === 0 && (e.anim * 1.1) % 1 < 0.15 ? 2 : [0, 3, 1, 3][Math.floor(e.anim * 5) % 4];
     else if (e.t === 'shaman') frame = e.cast > 0 ? (Math.floor(e.anim * 10) % 2 ? 4 : 1) : Math.abs(e.vx || 0) > 4 ? 2 + Math.floor(e.anim * 6) % 2 : 0;
     else if (e.t === 'hound') frame = e.air ? 2 : Math.floor(e.anim * 14) % 2;
-    else if (e.t === 'brute') frame = e.mode === 'elCut1Tell' || e.mode === 'elCut2Tell' || e.mode === 'elOverTell' || e.mode === 'elCryTell' ? 2 : e.mode === 'elCut1' || e.mode === 'elCut2' || e.mode === 'elOver' || e.mode === 'elStuck' ? 3 : e.mode === 'raise' ? 2 : (e.mode === 'slam' || e.mode === 'wind' || e.mode === 'sweep') ? 3 : (Math.abs(e.vx) > 4 ? Math.floor(e.anim * 6) % 2 : 0);
+    else if (e.t === 'brute') frame = e.mode === 'elCut1Tell' || e.mode === 'elCut2Tell' || e.mode === 'elOverTell' || e.mode === 'elCryTell' ? 2 : e.mode === 'elCut1' || e.mode === 'elCut2' || e.mode === 'elOver' || e.mode === 'elStuck' ? 3 : e.mode === 'raise' || e.mode === 'feint' ? 2 : (e.mode === 'slam' || e.mode === 'wind' || e.mode === 'sweep') ? 3 : (Math.abs(e.vx) > 4 ? Math.floor(e.anim * 6) % 2 : 0);
     else if (e.t === 'chief') frame = e.mode === 'leap' || e.mode === 'crouch' ? 9 : e.mode === 'whirl' ? (Math.floor(e.anim * 12) % 2 ? 4 : 3) : e.mode === 'whirlWind' ? 4 : e.mode === 'rainAim' || e.mode === 'rainLoose' ? 8 : e.mode === 'raise' ? 2 : e.mode === 'slam' || e.mode === 'planted' ? 3 : e.mode === 'wind' || e.mode === 'sweep' ? 4 : e.mode === 'reach' || e.mode === 'lunge' ? 5 : e.mode === 'slash' || e.mode === 'bash' ? 7 : e.mode === 'aim' || e.mode === 'shoot' ? 8 : (() => { const moving = Math.abs(e.vx) > 4, step = Math.floor(e.anim * 8) % 4; if (e.stance === 'sword') return moving ? [6, 11, 12, 11][step] : 6; if (e.stance === 'bow') return moving ? [8, 13, 14, 13][step] : 8; return moving ? [0, 1, 10, 1][step] : 0; })();
-    else if (e.t === 'shield') frame = e.mode === 'elChargeTell' || e.mode === 'elWallTell' ? 5 : e.mode === 'elCharge' ? 6 : e.mode === 'elDazed' || e.mode === 'elChargeEnd' ? 4 : e.mode === 'shoveTell' ? 5 : e.mode === 'shove' ? 6 : (e.behindT > 0.12 || e.turnT > 0.12) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;   /* bringing the shield round: the slow turn while you are behind it, or the skid off a fast one */
+    else if (e.t === 'shield') frame = e.mode === 'elChargeTell' || e.mode === 'elWallTell' ? 5 : e.mode === 'elCharge' ? 6 : e.mode === 'elDazed' || e.mode === 'elChargeEnd' ? 4 : e.mode === 'shoveTell' || e.mode === 'counterTell' ? 5 : e.mode === 'shove' || e.mode === 'counter' ? 6 : (e.behindT > 0.12 || e.turnT > 0.12) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;   /* bringing the shield round: the slow turn while you are behind it, or the skid off a fast one */
     else if (e.t === 'sprig' && (e.mode === 'biteTell' || e.mode === 'bite')) frame = e.mode === 'biteTell' ? 5 : 6;   /* the crouch, and the leap */
     else if (e.t === 'sprig' || e.t === 'bearer') frame = Math.abs(e.vx) > 4 || e.t === 'bearer' ? Math.floor(e.anim * 10) % 4 : (Math.floor(e.anim * 0.7) % 4 === 1 ? 4 : 0);
     else if (e.t === 'thief') frame = e.loot > 0 || Math.abs(e.vx) > 8 ? [0, 3, 1, 4][Math.floor(e.anim * 12) % 4] : (Math.floor(e.anim * 0.8) % 3 === 1 ? 2 : 0);
@@ -25375,6 +25607,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'assassin') frame = e.mode === 'lurk' ? 0 : e.mode === 'markTell' ? (Math.floor(e.anim * 8) % 2 ? 1 : 2) : e.mode === 'lunge' ? 3 : (e.mode === 'stab' || e.mode === 'stabTell') ? 4 : e.mode === 'fade' ? 5 : 1;
     else if (e.t === 'berserker') frame = e.mode === 'asleep' ? 0 : e.mode === 'wake' ? 1 : (e.mode === 'windTell' || e.mode === 'flailTell') ? 4 : (e.mode === 'swing' || e.mode === 'flail') ? 5 : e.mode === 'stumble' ? 6 : (Math.floor(e.anim * 7) % 2 ? 2 : 3);
     else if (e.t === 'abbot') frame = abbotFrame(e);
+    else if (e.t === 'wickerqueen') frame = WQN.wqFrame(e);
     else if (e.t === 'duneworm') frame = dwFrame(e);
     else if (e.t === 'winchmaster') frame = winchFrame(e);
     else if (e.t === 'gravewarden') frame = graveFrame(e);
@@ -25572,8 +25805,8 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 1;
     { const bl = e === boss || bossActive || miniActive; if (openCommon(e, bl)) drawOpen(g, e, Math.round(e.x - cx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 6, time, finishReady(e, P, bl)); }   /* OPEN: the stars over a broken foe, closing in and going white when the next blow will finish it (src/poise-break.js, src/finishers.js) */
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
-    const windMark = wind ? markOf(e) : '';
-    if (windMark) tellQ.push({ txt: windMark, x: e.x - cx, y: e.y - e.h - 12 - cy, col: windMark === '!!' ? '#ff6b6b' : '#ffd36b', a: 1, lane: laneOf(tellKey(e)) });   /* (the lane: the DUCK or the JUMP mark beside it, src/marks.js HEIGHT) */   /* drawn last of all: drawTells(). THE MARK OVER A WINDUP IS THE TABLE'S (src/marks.js, written and checked by tools/tells.mjs): it used to be a yellow ! over every windup in the game, over every red !! slam and over a priest's rite that strikes nobody */
+    const windMark = wind && !qMarkHeld(e) ? markOf(e) : '';   /* (weighty: the Hornet Queen's arrives part-way into her windup) */
+    if (windMark) tellQ.push({ txt: windMark, x: e.x - cx, y: e.y - (e.markH || e.h) - 12 - cy, col: windMark === '!!' ? '#ff6b6b' : '#ffd36b', a: 1, lane: laneOf(tellKey(e)) });   /* (the lane: the DUCK or the JUMP mark beside it, src/marks.js HEIGHT) */   /* drawn last of all: drawTells(). THE MARK OVER A WINDUP IS THE TABLE'S (src/marks.js, written and checked by tools/tells.mjs): it used to be a yellow ! over every windup in the game, over every red !! slam and over a priest's rite that strikes nobody */
     else if (e.emoteT > 0 && e.alive) drawEmote(e, Math.round(e.x - cx + ps.dx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy + ps.dy) - 5);
     if (e.mark > 0 && e.alive) { const mx = Math.round(e.x - cx), my = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 12, k2 = 0.6 + 0.4 * Math.sin(time * 6 + e.x);
       g.globalAlpha = Math.min(1, e.mark) * k2; g.fillStyle = '#8fd160';
@@ -25830,7 +26063,7 @@ function drawWorld(cx, cy, showPlayer) {
     for (const b of pyres) hole(b.x - cx, b.y - cy, 70);
     if (boss && boss.t === 'prince' && boss.alive && boss.mode !== 'sleep' && boss.mode !== 'sunk') hole(boss.x + (boss.face || 1) * 6 - cx, boss.y - 50 - cy, 40, 0.45);   /* the cold light in his eyes: in his own dark you can still find him */
     for (const sd of seeds) if (sd.lantern && !sd.dead) hole(sd.x - cx, sd.y - cy, 40);
-    for (const pr of props) if (pr.t === 'gas' && pr.lit > 0) hole(pr.x - cx, pr.y - cy, 50); burialHoles(L, hole, cx, cy, time, seeds, P);   /* the Burial Caverns' dark: a vent about to puff glows, and so does anything flying at you */
+    for (const pr of props) if (pr.t === 'gas' && pr.lit > 0) hole(pr.x - cx, pr.y - cy, 50); burialHoles(L, hole, cx, cy, time, seeds, P); if (FAIR) wqHoles(hole, cx, cy);   /* the Burial Caverns' dark: a vent about to puff glows, and so does anything flying at you */
     for (const b2 of airBells) hole(b2.x - cx, b2.y - cy, 56); // the diving bells burn down here
     if (L.deep) deepHoles(hole, cx, cy);
     SEA.seaHoles(hole);   /* and a sea level's own lights, where its far water drew them this frame */
@@ -25842,6 +26075,7 @@ function drawWorld(cx, cy, showPlayer) {
         const tw = 0.5 + 0.5 * Math.sin(time * (2 + (hsh % 5) * 0.4) + hsh % 17); g.globalAlpha = 0.25 + 0.6 * tw; g.fillStyle = ORE[hsh % 4]; const ox = tx * TS + 3 + (hsh >> 3) % 10, oy = ty * TS + 3 + (hsh >> 7) % 10; g.fillRect(ox - cx, oy - cy, 2, 1); g.fillRect(ox - cx, oy - cy - 1, 1, 3); }
       g.globalAlpha = 1; }
   }
+  if (FAIR) drawWickerOver(cx, cy);   /* THE WICKER QUEEN's ribbons, glows and flames: over the dark of her green, so a told blow is never hidden by it */
   if (L.night || L.glowNight) { // the camp at night: a dark wash, then warm pools of torchlight and a glow around the knight (a glow-only wood skips the wash)
     if (L.night) { g.fillStyle = 'rgba(8,10,30,' + (L.nightA !== undefined ? L.nightA : 0.42) + ')'; g.fillRect(0, 0, VW, VH); }
     g.globalCompositeOperation = 'lighter';
@@ -26545,7 +26779,7 @@ function drawMenu() {
     const yy = y + 22 + (i - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : UI.title) : (dim ? '#5a5f5a' : UI.dim);
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); g.fillStyle = '#ffd36b'; for (const dx of [x + w / 2 - hw - 2, x + w / 2 + hw + 1]) { g.fillRect(Math.round(dx), yy + 2, 1, 3); g.fillRect(Math.round(dx) - 1, yy + 3, 3, 1); } text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Slot 3 key' ? SET.skill3Key.toUpperCase() : k === 'Slot 4 key' ? SET.skill4Key.toUpperCase() : k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? onoff(SET.wayOn) : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
+    const v = k === 'Slot 3 key' ? SET.skill3Key.toUpperCase() : k === 'Slot 4 key' ? SET.skill4Key.toUpperCase() : k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? onoff(SET.wayOn) : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Combat' ? (weighty() ? 'WEIGHTY' : 'CLASSIC') : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
     const vs = v ? (sel ? '< ' + v + ' >' : String(v)) : '';
     const vw = vs ? textW(vs, 8) + 8 : 0;
     text(fitText(k, w - 30 - vw, 8), x + 16 + (sel ? 2 : 0), yy, col);
@@ -27247,7 +27481,8 @@ function render() {
    : boss.t === 'troll' ? (boss.mode === 'pinned' ? 'THE HILL TROLL  PINNED' : 'THE HILL TROLL')
    : boss.t === 'archmage' ? archBarName(boss)
    : boss.t === 'strawking' ? strawBarName(boss)
-   : boss.t === 'queen' ? 'HORNET QUEEN' : bossTitle(boss); bossPlate(boss.t === 'king' ? (boss.mode === 'held' ? nm + '  HELD' : boss.open > 0 ? nm + '  OPEN' : nm + '  CROWNED') : boss.phase === 2 && boss.t !== 'strawking' && !(boss.t === 'prince' && nm.includes('  ')) ? nm + '  ENRAGED' : nm, boss.phase >= 2 ? '#ff6b6b' : '#ffd36b', boss.t === 'pyromancer' ? PYRO_PLATE_LIFT : 0); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); if (boss.t === 'king' && (boss.mode === 'held' || boss.open > 0)) { bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.mode === 'held' ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#e0b040') : '#8fd160'); if (boss.open > 0) { g.fillStyle = '#8fd160'; g.fillRect(VW / 2 - 60, VH - 5, Math.round(120 * boss.open / 7), 1); } } else if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, VH - 11, 120, 5, ht ? ht.hp / EHP.heart : 1, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, (boss.t === 'ram' && ramOpen(boss)) || (boss.t === 'prince' && boss.mode === 'buried') ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#fff6c8') : boss.phase === 2 ? '#ff6b6b' : '#e0b040'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } }
+   : boss.t === 'wickerqueen' ? wqBarName(boss)
+   : boss.t === 'queen' ? 'HORNET QUEEN' : bossTitle(boss); bossPlate(boss.t === 'king' ? (boss.mode === 'held' ? nm + '  HELD' : boss.open > 0 ? nm + '  OPEN' : nm + '  CROWNED') : boss.phase === 2 && boss.t !== 'strawking' && boss.t !== 'wickerqueen' && !(boss.t === 'prince' && nm.includes('  ')) ? nm + '  ENRAGED' : nm, boss.phase >= 2 ? '#ff6b6b' : '#ffd36b', boss.t === 'pyromancer' ? PYRO_PLATE_LIFT : 0); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); if (boss.t === 'king' && (boss.mode === 'held' || boss.open > 0)) { bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, boss.mode === 'held' ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#e0b040') : '#8fd160'); if (boss.open > 0) { g.fillStyle = '#8fd160'; g.fillRect(VW / 2 - 60, VH - 5, Math.round(120 * boss.open / 7), 1); } } else if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, VH - 11, 120, 5, ht ? ht.hp / EHP.heart : 1, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, VH - 11, 120, 5, boss.hp / boss.maxHp, (boss.t === 'ram' && ramOpen(boss)) || (boss.t === 'prince' && boss.mode === 'buried') ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#fff6c8') : boss.phase === 2 ? '#ff6b6b' : '#e0b040'); for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, VH - 11, 1, 5); } }
     if (bossActive && boss && boss.alive && boss.t === 'gqueen' && state !== 'menu' && state !== 'win' && state !== 'gameover') drawGqPlate(boss);   /* HER PLATE, under her bar (round two) */
     if (bossActive && boss && boss.alive && boss.t === 'pyromancer' && state !== 'menu' && state !== 'win' && state !== 'gameover') drawPyroHeat(boss);   /* HIS HEAT, over his bar */
   }
@@ -27423,7 +27658,8 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   tileSpr: () => tileSpr, resolve: () => resolveTiles(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
      drawn from, so a bot reading it is reading exactly what a player is shown and nothing more. */
-  telling: e => !!e && windingUp(e), markOf: e => markOf(e), duck: () => ({ H: DUCK_H, ducking: !!P.ducking, box: duckBox(P), ducked: P.ducked || 0, tells: tellsDrawn, braced: braced(), clears: y => duckClears(P, y), high: e => blowHigh(e, time), lane: e => laneOf(tellKey(e)), height: e => heightOf(tellKey(e)) }),   /* THE UNIVERSAL DUCK, for tools/duck.mjs and the bot (src/duck.js) */ marksMissed: () => marksMissed(),   /* the mark the screen holds over a windup, and every windup the table had no row for */
+  telling: e => !!e && windingUp(e), markOf: e => markOf(e), markShown: e => !!e && windingUp(e) && !qMarkHeld(e) ? markOf(e) : '',   /* the mark the screen draws now: a weighty Hornet Queen's arrives part-way into her windup */
+  combat: () => weighty() ? 'weighty' : 'classic', setCombat: c => { setWeighty(c === 'weighty'); scaleCommon(); return weighty(); }, recovery: () => P.atkRec || 0, dmgCommon: () => Object.fromEntries(Object.keys(DMG_COMMON).map(k => [k, [DMG_COMMON[k], DMG[k]]])),   /* COMBAT: CLASSIC / WEIGHTY, for tools/weighty.mjs and the pilots */ duck: () => ({ H: DUCK_H, ducking: !!P.ducking, box: duckBox(P), ducked: P.ducked || 0, tells: tellsDrawn, braced: braced(), clears: y => duckClears(P, y), high: e => blowHigh(e, time), lane: e => laneOf(tellKey(e)), height: e => heightOf(tellKey(e)) }),   /* THE UNIVERSAL DUCK, for tools/duck.mjs and the bot (src/duck.js) */ marksMissed: () => marksMissed(),   /* the mark the screen holds over a windup, and every windup the table had no row for */
   sim(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */
   tp(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; },
   pyroDuel: { D: PYRO_DUEL, pose: e => pyroPose(e), stalls: e => pyroStalls(e) },   /* THE PYROMANCER's mirror duel, for tools/pyro-duel.mjs */
@@ -27520,7 +27756,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
      One answer, here, where the gate itself lives (hurtEnemy0): a second copy in the lab would drift the way the threat
      table did. null means "this one has no gate of its own", and the lab treats it as always open, as it always did. */
   gqShards: () => gqShards,   /* the pieces of the Goblin Queen's plate (tools/queen-court.mjs) */
-  bossOpen(e) { return e && e.t === 'gqueen' ? gqOpen(e) : e && e.t === 'reefmaw' ? ['stuck', 'reel', 'beached'].includes(e.mode) : e && e.t === 'duneworm' ? !!(e.st && DWM.wormOpen(e.st)) : e && e.t === 'gargoyle' ? gargOpen(e) : e && e.t === 'lance' ? lanceOpen(e) : e && e.t === 'pyromancer' ? e.open > 0 : e && e.t === 'abbot' ? abbotOpen(e) : e && e.t === 'winchmaster' ? winchOpen(e) : e && e.t === 'herald' ? (e.mode === 'mired' || e.mode === 'reel') : null; }, heavyCost: () => heavyCost(), stepCost: () => (isPaladin() ? 28 : isPirate() ? 9 : isReaper() ? 23 : sword().cost),
+  bossOpen(e) { return e && e.t === 'gqueen' ? gqOpen(e) : e && e.t === 'reefmaw' ? ['stuck', 'reel', 'beached'].includes(e.mode) : e && e.t === 'duneworm' ? !!(e.st && DWM.wormOpen(e.st)) : e && e.t === 'gargoyle' ? gargOpen(e) : e && e.t === 'lance' ? lanceOpen(e) : e && e.t === 'pyromancer' ? e.open > 0 : e && e.t === 'abbot' ? abbotOpen(e) : e && e.t === 'wickerqueen' ? WQN.wqOpen(e) : e && e.t === 'winchmaster' ? winchOpen(e) : e && e.t === 'herald' ? (e.mode === 'mired' || e.mode === 'reel') : null; }, heavyCost: () => heavyCost(), stepCost: () => (isPaladin() ? 28 : isPirate() ? 9 : isReaper() ? 23 : sword().cost),
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
      tool listens (damagePlayer and hurtEnemy write to it), else null; the rest are the numbers a blow leaves behind, the hero's live reach, his set, the particles */

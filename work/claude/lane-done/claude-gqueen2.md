@@ -99,10 +99,10 @@ what hit the knight most was her court (the arrows at 110), not her slam.
 - `tools/queen-court.mjs` is new and in `tools/check.mjs` in place of `queen-pillars`. **It was red on d78b15e**, with
   the chain, quake, court, pillar, plate and shatter items all failing; the output is in
   `work/gqueen2/court-red-on-d78b15e.txt`. It is green on this branch (`work/gqueen2/court-1.txt`).
-- **`tools/queen-pillars.mjs` is deleted and removed from check.mjs.** Its asserts (three pillars, rubble is drawn floor,
+- **The old queen-pillars check (its tool file) is deleted and removed from check.mjs.** Its asserts (three pillars, rubble is drawn floor,
   the pin matches the chandelier's, every hero, the lab gets a pillar pin) are folded into `queen-court`. The old brief is
   marked superseded.
-- Green (`work/gqueen2/checks.txt`, plus a separate signs/textfit run): queen-court, queen-chandelier, boss-openings (A11), arena-supplies, tells (after `--write`: the `gqueen|chargeTell` row went and `gqueen|hallLeapTell` !! came in), answer-tags, untold-told, attack-tokens, boss-fight-end, boss-jump, signs, textfit, comments, homepaths, syntax, and the 7 required: architecture, checkpoints, skins, dangling-paths, boss-fight-end, slopes-trace (unchanged for every level, no rebase), npc-removal. The full suite was NOT run.
+- Green (`work/gqueen2/checks.txt`, plus a separate signs/textfit run): queen-court, queen-chandelier, boss-openings (A11), arena-supplies, tells (after `--write`: the `gqueen|chargeTell` row went and `gqueen|hallLeapTell` !! came in), answer-tags, untold-told, attack-tokens, boss-fight-end, boss-jump, signs, textfit, comments, homepaths, syntax, and the 7 required: architecture, checkpoints, skins, dangling-paths, boss-fight-end, slopes-trace (unchanged for every level, no rebase), npc-removal. The full suite was NOT run. After merging origin/master (conflicts in main.js - windingUp, the boss bar, BK.bossOpen - and check.mjs, all names from both sides kept; tells --write) I re-ran syntax, tells, answer-tags, comments, dangling-paths and queen-court: green.
 
 ## UNVERIFIED
 - **Not played by hand.** Nobody has judged by eye in motion whether the crack states, the totter and the shadow read.
