@@ -191,7 +191,7 @@ export function drawTheatre(st, g, H, cx, cy, VW, VH, time) {
   for (const f of st.flats) { const cells = TR.flatCells(f, f.at); if (!cells.length) continue;
     const x0 = Math.min(...cells.map(c => c[0])), x1 = Math.max(...cells.map(c => c[0])), y0 = Math.min(...cells.map(c => c[1])), y1 = Math.max(...cells.map(c => c[1]));
     const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS; if (sx > VW || sx + w < 0 || sy > VH || sy + h < 0) continue;
-    if (f.axis === 'y') { g.fillStyle = '#4a3e3a'; g.fillRect(sx, sy, w, h); g.fillStyle = '#5a4c46'; for (let k = 3; k < h; k += 8) g.fillRect(sx + 1, sy + k, w - 2, 1); continue; }   /* the prop store's shutter is painted as the wall it hides */
+    if (f.axis === 'y' && /shutter/.test(f.name || '')) { g.fillStyle = '#4a3e3a'; g.fillRect(sx, sy, w, h); g.fillStyle = '#5a4c46'; for (let k = 3; k < h; k += 8) g.fillRect(sx + 1, sy + k, w - 2, 1); continue; }   /* the prop store's shutter is painted as the wall it hides */
     g.fillStyle = '#2a2230'; g.fillRect(sx, sy, w, h); g.fillStyle = f.cue ? '#7a3a4a' : '#3a5a7a'; g.fillRect(sx + 2, sy + 2, w - 4, h - 4);
     g.fillStyle = f.cue ? '#b06070' : '#6a90b0'; for (let k = 6; k < h - 4; k += 10) g.fillRect(sx + 4, sy + k, w - 8, 2);
     if (f.warn || f.at !== f.to) { const tx0 = Math.min(f.a, f.b) * TS - cx, tx1 = (Math.max(f.a, f.b) + f.w) * TS - cx, ty = (f.y1 + 1) * TS - cy;

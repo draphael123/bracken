@@ -35,7 +35,7 @@ try {
     snap('1-costume-store-teach', 'THE COSTUME STORE (teach): the limelight holds the masked player in its pool beside the rope, though the hero has his back to it');
     fresh(); BK.tp(X(52), 24); P.face = 1; run(260); snap('2-the-chorus-lock', 'LOCK ONE, THE CHORUS: the wardrobe keeps sending them out after you, until a lamp on its door plugs it');
     fresh(); BK.tp(X(76), 24); P.face = -1; run(60); snap('2b-the-mirror-room', 'THE MIRROR ROOM: the dresser cannot move while you are in the room with it, whichever way you face');
-    fresh(); BK.tp(X(88), 24); P.face = 1; run(40); snap('2c-the-fitting-lock', 'LOCK TWO, THE FITTING: the drop into the workshop between two players; the carvers\' lamp hangs over it');
+    fresh(); BK.tp(X(88), 24); P.face = 1; run(40); snap('2c-the-fitting-lock', 'LOCK TWO, THE FITTING: the drop into the workshop between two players; the carvers lamp hangs over it');
     fresh(); BK.tp(X(133), 32); run(10); TH().lines.find(l => l.id === 'A').out = true; TH().lines.find(l => l.id === 'B').out = false; run(70);
     snap('3-fly-tower-teach', 'THE FLY TOWER (teach + develop): riding batten A up while batten B comes in to meet it');
     fresh(); BK.tp(X(143), 15); P.face = 1; TH().lines.find(l => l.id === 'D').out = true; run(45); snap('4-fly-floor-twist', 'THE FLY FLOOR (twist): the batten flown into the gap is the bridge, and its sandbag comes down on the crew across it');
