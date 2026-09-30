@@ -29,6 +29,7 @@ export const CALL_LINES = new Set([
   /* claude/puppeteer: THE PUPPETEER's openings and his rule (src/puppeteer.js, src/puppeteer-hands.js) */
   'THE STRINGS GLOW WHEN THEY PULL: CUT THEM', 'HE IS RE-STRINGING THEM: CUT HIM', 'RIDE THE BATTEN UP: STRIKE THE PIN RAIL', 'HE RE-STRINGS THEM IN THE LOFT: CLIMB',
   'HIS HANDS ARE EMPTY: CUT HIM', 'CUT ALL FOUR OF ITS STRINGS', 'HE FELL WITH IT: CUT HIM', 'WOOD: CUT THE STRINGS', 'THE BARS TAKE IT: CUT HIS STRINGS FIRST', 'THE PIN RAIL IS LOCKED',
+  'SCENE CHANGE: WATCH THE BOARDS', 'A DECOY: IT SNARES. WAIT FOR THE GOLD',   /* (claude/puppeteer2) */
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 export const CALL_COUNTS = [/^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];

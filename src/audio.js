@@ -780,6 +780,8 @@ Object.assign(SFX, {
   pupWhipTell() { if (!gate('pupw', 0.3)) return; for (let i = 0; i < 4; i++) noise(0.06, 0.05, 1200 + i * 500, 1.8, i * 0.12); tone('sine', 300, 900, 0.5, 0.03); },   /* the string whirled up to speed */
   pupWhip() { noise(0.05, 0.3, 5200, 0.9); tone('square', 2400, 600, 0.05, 0.08); noise(0.12, 0.08, 1400, 0.8, 0.03); },   /* the crack */
   pupCurtain() { noise(1.4, 0.16, 400, 0.4); tone('sine', 120, 60, 1.2, 0.1); [587, 440, 349, 294].forEach((f, i) => bell(f, 0.7, 0.04, 0.3 + i * 0.28)); },   /* the drop coming down, and the music box running out */
+  pupSpot() { if (!gate('pups', 0.3)) return; tone('sine', 1760, 1760, 0.5, 0.03); tone('sawtooth', 60, 60, 0.4, 0.04); noise(0.3, 0.03, 5000, 2); },   /* the limelight's hiss and hum as it is swung and opened */
+  pupScene() { noise(1.2, 0.08, 300, 0.5); for (let i = 0; i < 6; i++) tone('square', 180 - i * 8, 170 - i * 8, 0.08, 0.03, i * 0.18); bell(587, 0.4, 0.03, 0.1); },   /* the stage lights drop and the flats rumble on their tracks */
   pupWake() { [147, 175, 220, 294].forEach((f, i) => pad('sawtooth', f, f, 1.6, 0.05, i * 0.03, 1200)); [880, 698, 587].forEach((f, i) => bell(f, 0.5, 0.04, 0.6 + i * 0.16)); },
   wqRustle() { if (!gate('wqr', 0.3)) return; noise(0.14, 0.07, 1700, 0.9); noise(0.08, 0.05, 3400, 1.4, 0.05); tone('triangle', 180, 140, 0.1, 0.025, 0.02); },   /* dry wicker creaking as she glides */
   wqWake() { noise(0.6, 0.14, 1400, 0.7); tone('sawtooth', 110, 70, 0.8, 0.08); [659, 784, 988].forEach((f, i) => bell(f, 0.5, 0.03, 0.2 + i * 0.12)); },

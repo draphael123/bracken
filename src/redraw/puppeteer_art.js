@@ -68,15 +68,19 @@ export function bakePuppeteer() { return bake(13, PW, PH, drawPuppeteer, PX, PUP
 const MW = 30, MH = 40, MX = 14;
 const MC = { wood: '#c89a60', woodD: '#8a6038', woodL: '#e8c890', red: '#b8382c', redD: '#7a2020', blue: '#3a5aa8', white: '#f0e8d8', gold: '#e8c23a', tin: '#c9d1dc', tinD: '#8a919c',
   cheek: '#e87a6a', black: '#1e1624', green: '#4a8a3a', yel: '#e8c23a', purp: '#7a3e8a' };
-/* the frames: 0 hang, 1-2 hop, 3 tell, 4 blow, 5 stagger, 6 heap, 7 rise, 8 drop (hoisted, splayed) */
+/* the frames: 0 hang, 1-2 hop, 3 tell, 4 blow, 5 stagger, 6 heap, 7 rise, 8 drop (hoisted, splayed), 9 HIGH TELL, 10 HIGH BLOW (PUPPETEER2: the
+   soldier's thrust drawn back and driven at the head, the harlequin's high kick, the acrobat's swing). THE ACROBAT: a tumbler in a teal and white
+   striped leotard, a topknot, bare wooden hands - the one that is hoisted and dropped */
 function drawToy(g, f, kind) {
-  const sol = kind === 'soldier';
-  const coat = sol ? MC.red : MC.purp, coatD = sol ? MC.redD : '#4a2258';
+  const sol = kind === 'soldier', acro = kind === 'acrobat';
+  const coat = sol ? MC.red : acro ? '#2a8a8a' : MC.purp, coatD = sol ? MC.redD : acro ? '#1a5a5a' : '#4a2258';
+  const hTell = f === 9, hBlow = f === 10;
   if (f === 6) {   /* A HEAP: limbs and a head in a pile, pegs showing */
     const y = MH - 3; fillPoly(g, [[MX - 9, y], [MX - 5, y - 5], [MX + 4, y - 6], [MX + 9, y]], coat);
     line(g, MX - 12, y, MX - 4, y - 3, MC.wood, 2); line(g, MX + 3, y - 2, MX + 12, y - 1, MC.wood, 2); line(g, MX - 2, y - 4, MX + 6, y - 9, MC.wood, 2);
     circle(g, MX + 9, y - 5, 3, MC.woodL); px(g, MX + 9, y - 6, MC.black); px(g, MX + 10, y - 4, MC.cheek);
     if (sol) { rect(g, MX + 7, y - 11, 5, 4, MC.black); rect(g, MX + 7, y - 8, 5, 1, MC.gold); line(g, MX - 12, y - 6, MX - 2, y - 2, MC.tin); }
+    else if (acro) { px(g, MX + 9, y - 9, MC.black); px(g, MX + 9, y - 10, MC.black); for (let x = MX - 8; x < MX + 8; x += 3) px(g, x, y - 4, MC.white); }
     else { px(g, MX + 6, y - 9, MC.yel); px(g, MX + 12, y - 9, MC.green); line(g, MX + 7, y - 8, MX + 6, y - 9, MC.yel); line(g, MX + 11, y - 8, MX + 12, y - 9, MC.green); }
     return; }
   const drop = f === 8, stag = f === 5, rise = f === 7, tell = f === 3, blow = f === 4, hop = f === 1 || f === 2;
@@ -85,22 +89,29 @@ function drawToy(g, f, kind) {
   /* legs: hanging slack, hopping, splayed for the drop, the harlequin's kick */
   if (drop) { limb(g, [MX - 2, hip], [MX - 7, hip + 4], [MX - 10, hip + 9], MC.wood, MC.woodD, MC.black); limb(g, [MX + 2, hip], [MX + 7, hip + 4], [MX + 10, hip + 9], MC.wood, MC.woodD, MC.black); }
   else if (!sol && blow) { limb(g, [MX - 2, hip], [MX - 3, hip + 6], [MX - 4, foot], MC.wood, MC.woodD, MC.black); limb(g, [MX + 2, hip], [MX + 8, hip + 2], [MX + 15, hip + 3], MC.wood, MC.woodD, MC.black); }
+  else if (hTell && !sol) { limb(g, [MX - 2, hip], [MX - 3, hip + 6], [MX - 3, foot], MC.wood, MC.woodD, MC.black); limb(g, [MX + 2, hip], [MX + 8, hip - 5], [MX + 6, hip + 1], MC.wood, MC.woodD, MC.black); }
+  else if (hBlow && !sol && !acro) { limb(g, [MX - 2, hip], [MX - 3, hip + 6], [MX - 4, foot], MC.wood, MC.woodD, MC.black); limb(g, [MX + 2, hip], [MX + 9, hip - 7], [MX + 15, hip - 10], MC.wood, MC.woodD, MC.black); }
+  else if (hBlow && acro) { limb(g, [MX - 2, hip], [MX + 5, hip + 2], [MX + 13, hip + 1], MC.wood, MC.woodD, MC.black); limb(g, [MX + 2, hip], [MX + 8, hip - 1], [MX + 15, hip - 3], MC.wood, MC.woodD, MC.black); }
   else if (!sol && tell) { limb(g, [MX - 2, hip], [MX - 4, hip + 6], [MX - 3, foot], MC.wood, MC.woodD, MC.black); limb(g, [MX + 2, hip], [MX + 7, hip - 1], [MX + 5, hip + 6], MC.wood, MC.woodD, MC.black); }
   else { const a = hop ? (f === 1 ? 3 : -2) : 0; limb(g, [MX - 2, hip], [MX - 3 - a, hip + 6], [MX - 3, foot - lift], MC.wood, MC.woodD, MC.black); limb(g, [MX + 2, hip], [MX + 3 + a, hip + 6], [MX + 3 + (stag ? 2 : 0), foot - lift], MC.wood, MC.woodD, MC.black); }
   /* the body: a carved block, the coat painted on */
   fillPoly(g, [[hx - 5, sh], [hx + 5, sh], [MX + 4, hip + 1], [MX - 4, hip + 1]], coat);
   if (sol) { line(g, hx - 4, sh + 2, MX + 3, hip - 1, MC.white); line(g, hx + 4, sh + 2, MX - 3, hip - 1, MC.white); rect(g, MX - 4, hip - 1, 9, 2, MC.black); px(g, MX, hip - 1, MC.gold); }
+  else if (acro) { for (let y = sh + 1; y < hip; y += 2) line(g, hx - 4, y, hx + 4, y, MC.white); }
   else { for (let y = sh + 1; y < hip; y += 3) for (let x = hx - 4 + ((y >> 1) & 1) * 2; x < hx + 5; x += 4) { px(g, x, y, (x + y) & 2 ? MC.yel : MC.green); px(g, x + 1, y + 1, coatD); } }
   /* the head: a carved ball, painted eyes and cheeks; a ruff for the harlequin */
-  if (!sol) { rect(g, hx - 5, sh - 1, 11, 2, MC.white); for (let x = hx - 5; x <= hx + 5; x += 2) px(g, x, sh, '#c8c0b0'); }
+  if (!sol && !acro) { rect(g, hx - 5, sh - 1, 11, 2, MC.white); for (let x = hx - 5; x <= hx + 5; x += 2) px(g, x, sh, '#c8c0b0'); }
   circle(g, hx, hy, 4, MC.woodL); px(g, hx + 1, hy - 1, MC.black); px(g, hx + 3, hy - 1, MC.black); px(g, hx + 2, hy + 1, MC.cheek); px(g, hx - 1, hy + 1, MC.cheek); line(g, hx + 1, hy + 2, hx + 3, hy + 2, MC.red);
-  if (!sol) { rect(g, hx, hy - 2, 5, 2, MC.black); }   /* the harlequin's black half-mask */
+  if (!sol && !acro) { rect(g, hx, hy - 2, 5, 2, MC.black); }   /* the harlequin's black half-mask */
   if (sol) { rect(g, hx - 3, hy - 10, 7, 7, MC.black); rect(g, hx - 3, hy - 5, 7, 1, MC.gold); rect(g, hx - 1, hy - 12, 3, 2, MC.red); }   /* the shako */
+  else if (acro) { rect(g, hx - 1, hy - 7, 3, 3, MC.black); px(g, hx, hy - 8, MC.black); rect(g, hx - 1, hy - 5, 3, 1, '#2a8a8a'); }   /* the topknot */
   else { fillPoly(g, [[hx - 4, hy - 3], [hx - 9, hy - 9], [hx - 1, hy - 4]], MC.yel); fillPoly(g, [[hx + 4, hy - 3], [hx + 9, hy - 9], [hx + 1, hy - 4]], MC.green); px(g, hx - 9, hy - 10, MC.gold); px(g, hx + 9, hy - 10, MC.gold); }
   /* the arms: hanging by their strings, or doing the blow */
   const sL = [hx - 5, sh + 1], sR = [hx + 5, sh + 1];
   let eR, hR, eL, hL;
-  if (drop) { eR = [hx + 9, sh - 3]; hR = [hx + 13, sh - 8]; eL = [hx - 9, sh - 3]; hL = [hx - 13, sh - 8]; }
+  if (hTell) { eR = sol ? [hx - 3, sh + 2] : [hx + 6, sh - 6]; hR = sol ? [hx - 8, sh + 1] : [hx + 6, sh - 12]; eL = [hx - 6, sh - 5]; hL = [hx - 6, sh - 11]; }
+  else if (hBlow) { eR = [hx + 8, sh]; hR = [hx + 14, sh - 1]; eL = acro ? [hx + 6, sh - 4] : [hx - 7, sh + 2]; hL = acro ? [hx + 12, sh - 5] : [hx - 10, sh]; }
+  else if (drop) { eR = [hx + 9, sh - 3]; hR = [hx + 13, sh - 8]; eL = [hx - 9, sh - 3]; hL = [hx - 13, sh - 8]; }
   else if (tell) { eR = [hx + 5, sh - 6]; hR = sol ? [hx + 7, sh - 12] : [hx + 9, sh - 3]; eL = [hx - 6, sh + 4]; hL = [hx - 7, sh + 9]; }
   else if (blow) { eR = [hx + 9, sh + 2]; hR = sol ? [hx + 15, sh + 8] : [hx + 12, sh - 2]; eL = [hx - 7, sh + 3]; hL = [hx - 10, sh + 1]; }
   else if (stag) { eR = [hx + 6, sh + 6]; hR = [hx + 5, sh + 12]; eL = [hx - 6, sh + 5]; hL = [hx - 7, sh + 11]; }
@@ -108,13 +119,30 @@ function drawToy(g, f, kind) {
   limb(g, sL, eL, hL, MC.wood, MC.woodD, MC.black); limb(g, sR, eR, hR, MC.wood, MC.woodD, MC.black);
   if (sol) {   /* the tin sword in the right hand, a painted round shield on the left */
     const [x, y] = hR, up = tell, sw = blow;
-    if (up) line(g, x, y, x - 2, y - 11, MC.tin, 2); else if (sw) line(g, x, y, x + 10, y + 5, MC.tin, 2); else line(g, x, y, x + 3, y + 10, MC.tin, 2);
+    if (hTell) line(g, x, y, x - 10, y, MC.tin, 2); else if (hBlow) line(g, x, y, x + 13, y - 1, MC.tin, 2); else if (up) line(g, x, y, x - 2, y - 11, MC.tin, 2); else if (sw) line(g, x, y, x + 10, y + 5, MC.tin, 2); else line(g, x, y, x + 3, y + 10, MC.tin, 2);
     px(g, x, y, MC.gold); circle(g, hL[0] - 1, hL[1] + 2, 3, MC.blue); px(g, hL[0] - 1, hL[1] + 2, MC.gold); }
   else { px(g, hR[0], hR[1], MC.gold); px(g, hL[0], hL[1], MC.gold); }
   if (rise) { px(g, hx - 7, sh - 4, MC.gold); px(g, hx + 7, sh - 4, MC.gold); }
 }
-export function bakeMarionette() { return bake(9, MW, MH, (g, f) => drawToy(g, f, 'soldier'), MX, 12, 30); }
-export function bakeHarlequin() { return bake(9, MW, MH, (g, f) => drawToy(g, f, 'harlequin'), MX, 12, 28); }
+export function bakeMarionette() { return bake(11, MW, MH, (g, f) => drawToy(g, f, 'soldier'), MX, 12, 30); }
+export function bakeHarlequin() { return bake(11, MW, MH, (g, f) => drawToy(g, f, 'harlequin'), MX, 12, 28); }
+export function bakeAcrobat() { return bake(11, MW, MH, (g, f) => drawToy(g, f, 'acrobat'), MX, 12, 28); }
+
+/* ================= THE STAGE'S IRON (PUPPETEER2: Daniel, "a wood platform that doesn't quite fit") =================
+   THE FLY GALLERY is an iron catwalk: a grating of flat bars on a channel-iron stringer, rivets, a truss under it, and a warm lit lip along its top edge so
+   the footing reads. A FLAT'S TOP is the painted flat's own capping rail: a gilt-edged batten with the canvas's top showing under it. */
+export function bakeStageSkins() {
+  const grate = [0, 1, 2].map(v => { const [c, g] = canvas(16, 16);
+    rect(g, 0, 0, 16, 3, '#3a3a46'); rect(g, 0, 0, 16, 1, '#ffd36b'); rect(g, 0, 1, 16, 1, '#c8a060');   /* the lit lip */
+    for (let x = 1; x < 16; x += 3) rect(g, x, 1, 1, 2, '#1e1e26');   /* the grating's gaps */
+    rect(g, 0, 3, 16, 3, '#55556a'); rect(g, 0, 3, 16, 1, '#7a7a90'); rect(g, 0, 5, 16, 1, '#2a2a34');   /* the stringer */
+    px(g, 3 + v * 3, 4, '#c9d1dc'); px(g, 11 - v, 4, '#c9d1dc');   /* rivets */
+    line(g, v === 1 ? 15 : 0, 6, v === 1 ? 0 : 15, 13, '#3a3a46'); line(g, 0, 6, 0, 13, '#2a2a34'); line(g, 15, 6, 15, 13, '#2a2a34');   /* the truss */
+    rect(g, 0, 13, 16, 1, '#2a2a34'); return c; });
+  const [fc, fg] = canvas(16, 16); rect(fg, 0, 0, 16, 4, '#8a6a2a'); rect(fg, 0, 0, 16, 1, '#ffd36b'); for (let x = 1; x < 16; x += 4) px(fg, x, 2, '#fff0b0');
+  rect(fg, 0, 4, 16, 12, '#3a5a6a'); for (let x = 0; x < 16; x += 5) line(fg, x, 4, x + 3, 15, '#4a7080');
+  return { grate, flatTop: fc };
+}
 
 /* ================= THE MASTERPIECE ================= */
 const GW = 80, GH = 104, GX = 38;
