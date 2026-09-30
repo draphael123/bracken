@@ -16,6 +16,7 @@ export function canalReset(H) {
   const L = H.L(); if (!L || !L.canal) return null;
   const D = L.canal, T = H.T;
   const st = R.newCanal(D); st.D = D; st.told = {}; st.props = []; st.beamCd = 0; st.hold = null; st.eyes = D.eyes || [];
+  st.brights = (D.weeds || []).filter(w => w[3] === 'bright').map(([x0, x1, row]) => ({ x0, x1, row, t: 0, gone: 0 }));   /* BRIGHT WEED: a floor for RIG.weedHold s, then water */
   /* WHERE SHE WAITS: the mooring of the checkpoint the hero wakes at (the start's, if none) - and the locks and bridges as they stood when he lit it */
   const cp = H.checkpoint(), cpT = cp ? [Math.floor(cp.x / TS), Math.floor(cp.y / TS) - 1] : null;
   const moor = (cpT && D.moorings.find(m => m.cp && Math.abs(m.cp[0] - cpT[0]) <= 1 && Math.abs(m.cp[1] - cpT[1]) <= 2)) || D.moorings.find(m => !m.cp);
@@ -41,12 +42,12 @@ export const tellHint = (st, H, key, msg) => { if (st) hint(st, H, key, msg); };
 
 /* is a hero standing on her */
 const aboard = (st, H) => { const m = bargeMover(H); let on = false; H.eachHero(P => { if (!P.dead && P.onMover === m) on = true; }); return on; };
-const ahead = (st, H) => { const b = st.barge; let a = false; H.eachHero(P => { if (!P.dead && P.x > b.x + b.w) a = true; }); return a; };
-/* THE WAY BACK FOR HER: nobody aboard, nobody ahead, a hero on dry ground behind her in the same water - she comes back up for him (never through
+const ahead = (st, H) => { const b = st.barge; let a = false; H.eachHero(P => { if (!P.dead && P.x > b.x + b.w / 2 + 8) a = true; }); return a; };   /* ahead of her middle: she comes on until she is under you */
+/* THE WAY BACK FOR HER: nobody aboard, nobody ahead, a hero on dry ground at her deck's height (a quay, a gate's top) behind her in the same water - she comes back up for him (never through
    a shut gate, a bridge across or a thick bank), so a fall is never a barge left out of reach */
 function comeBack(st, H, dt) {
   const b = st.barge; if (b.mode !== 'float') return;
-  let want = null; H.eachHero(P => { if (!P.dead && P.ground && !P.onMover && P.x < b.x && b.x - P.x < 520) want = want === null ? P.x : Math.max(want, P.x); });
+  let want = null; H.eachHero(P => { if (!P.dead && P.ground && !P.onMover && P.x < b.x && b.x - P.x < 520 && Math.abs(P.y - b.y) <= 24) want = want === null ? P.x : Math.max(want, P.x); });
   if (want === null) return;
   let floor = st.reaches[0].x0 * TS;
   for (const g of st.gates) { const gx = (g.x + 1) * TS; if (!g.open && gx <= b.x + 2 && gx > floor) floor = gx; }
@@ -89,7 +90,7 @@ export function canalUpdate(st, H, dt) {
   if (!st) return; const S = H.sfx, b = st.barge, m = bargeMover(H);
   st.clock += dt;
   // ---- THE STRIKES: any hero's blow on a paddle, a capstan, a horn, a post, or her tiller ----
-  const tiller = { t: 'tiller', x: b.x + 12, y: b.y };
+  const tiller = st.tiller = st.tiller || { t: 'tiller', flash: 0 }; tiller.x = b.x + b.w / 2; tiller.y = b.y;   /* the helm, amidships */   /* one object for the whole attempt: a swing strikes it once */
   H.eachHero(P => { const hb = H.attackBox(); if (!hb || P.dead) return;
     for (const pr of st.props.concat([tiller])) { if (P.hitSet.has(pr)) continue;
       const box = pr.t === 'lanternpost' ? { l: pr.x - 8, r: pr.x + 8, t: pr.y - 30, b: pr.y } : { l: pr.x - 10, r: pr.x + 10, t: pr.y - 24, b: pr.y + 2 };
@@ -102,6 +103,13 @@ export function canalUpdate(st, H, dt) {
       else if (pr.t === 'tiller' && P.onMover === m) { const helm = R.strikeTiller(b); S.clank(); H.hint(helm === 'cut' ? 'THE HELM: THE MILL CUT.' : 'THE HELM: THE WEIR.'); }
     } });
   for (const pr of st.props) if (pr.flash > 0) pr.flash -= dt;
+  // ---- THE BRIGHT WEED: stood on, it holds a moment and gives; empty, it knits together again ----
+  for (const w of st.brights) { const x0 = w.x0 * TS, x1 = (w.x1 + 1) * TS, top = w.row * TS; let on = false;
+    H.eachHero(P => { if (!P.dead && P.ground && !P.onMover && P.x > x0 - 3 && P.x < x1 + 3 && Math.abs(P.y - top) < 3) on = true; });
+    if (w.gone > 0) { w.gone -= dt; if (w.gone <= 0 && !H.bodies().some(q => { const bx = H.box(q); return bx.r > x0 && bx.l < x1 && bx.b > top && bx.t < top + TS; })) { for (let x = w.x0; x <= w.x1; x++) H.cellSet(x, w.row, H.T.ONEWAY); H.resolve(); } else if (w.gone <= 0) w.gone = 0.3; continue; }
+    w.t = on ? w.t + dt : Math.max(0, w.t - dt * 2);
+    if (on) hint(st, H, 'weed', 'BRIGHT WEED: IT HOLDS YOU A MOMENT, THEN GIVES. KEEP MOVING.');
+    if (w.t >= R.RIG.weedHold) { w.t = 0; w.gone = R.RIG.weedBack; for (let x = w.x0; x <= w.x1; x++) H.cellSet(x, w.row, H.T.AIR); H.resolve(); S.splash && S.splash(); } }
   // ---- THE SWING BRIDGES ----
   for (const br of st.bridges) { const ev = R.bridgeStep(br, dt); if (ev) { bridgeCells(H, br); H.resolve(); if (H.near(br.x0 * TS, br.row * TS, 360)) S.thud(); } }
   // ---- THE FOG ----
@@ -112,6 +120,7 @@ export function canalUpdate(st, H, dt) {
   // ---- THE WAY BACK: the last dry ground you stood on (the canal hands you back to it); on the weir run, the basin's bank ----
   H.eachHero(P => { if (P.dead) return;
     if (b.mode === 'loose' && P.onMover === m && st.D.weir) P.safe = { x: st.D.weir.bank[0], y: st.D.weir.bank[1], L: H.L() };
+    else if (P.onMover === m && b.mode === 'float') P.safe = { x: Math.max(b.x + 12, Math.min(b.x + b.w - 12, P.x)), y: b.y - 4, L: H.L() };   /* off her deck into the water: back onto her deck (she waits for whoever is not aboard) */
     else if (P.ground && !P.onMover && !P.climb && !R.inWeed(st.D, st, P.x, P.y) && H.solidUnder(P.x, P.y)) P.safe = { x: P.x, y: P.y, L: H.L() }; });
   // ---- THE HINTS THAT TEACH WHAT SHE DOES ----
   if (m && H.hero().onMover === m) hint(st, H, 'board', 'SHE CASTS OFF. SHE CARRIES YOU WHILE YOU RIDE HER, AND WAITS FOR YOU WHEN YOU ARE AHEAD.');
@@ -120,9 +129,9 @@ export function canalUpdate(st, H, dt) {
 /* IS (x, y) LIT: out of the fog, in air a horn has cleared, or in a lantern's light */
 export const litAt = (st, x, y) => !st || R.litAt(st, x, y);
 export const clearedAt = (st, x, y) => !!st && R.fogAt(st, x, y).some(f => f.fade < 0.3);
-/* the water surface under column x: { y, id } from the canal's reaches and its other deep pools (the race, the dock is shallow and has none) */
+/* the water surface under column x: { y, id } from the canal's reaches and its other deep pools  */
 export function surfaceAt(st, H, x) {
-  if (!st) return null; for (const p of H.L().pools || []) if (!p.shallow && !p.dry && x > p.x0 && x < p.x1 && p.canal) return { y: p.y, id: p.canal };
+  if (!st) return null; for (const p of H.L().pools || []) if (!p.dry && x > p.x0 && x < p.x1 && p.canal && p.canal !== 'dock') return { y: p.y, id: p.canal };   /* (the race and the lower river run shallow; the dock has no grindylows) */
   return null;
 }
 
@@ -134,15 +143,17 @@ export function drawCanalMover(st, g, H, m, cx, cy, time) {
   g.fillStyle = '#4a3a2a'; g.fillRect(x + 6, y - 34, 2, 34);                                                                                                        /* the lantern pole at her stern */
   const flick = 0.8 + 0.2 * Math.sin(time * 9); g.fillStyle = '#ffcf6a'; g.globalAlpha = flick; g.fillRect(x + 3, y - 40, 8, 7); g.globalAlpha = 1; g.fillStyle = '#6a5030'; g.fillRect(x + 3, y - 41, 8, 1);
   /* THE TILLER, and which way it has her helm (up: the mill cut; down: the weir) */
-  g.fillStyle = '#6a4a2a'; g.fillRect(x + 10, y - 8, 3, 8); g.fillRect(x + 12, y - 8, 7, 2);
-  if (b) { const up = b.helm === 'cut'; g.fillStyle = up ? '#8fd160' : '#ff9a5c'; if (up) { g.fillRect(x + 14, y - 16, 1, 5); g.fillRect(x + 13, y - 15, 3, 1); } else { g.fillRect(x + 14, y - 16, 1, 5); g.fillRect(x + 13, y - 12, 3, 1); } }
+  const hx = x + (w >> 1); g.fillStyle = '#6a4a2a'; g.fillRect(hx - 1, y - 8, 3, 8); g.fillRect(hx + 1, y - 8, 7, 2);
+  if (b) { const up = b.helm === 'cut'; g.fillStyle = up ? '#8fd160' : '#ff9a5c'; g.fillRect(hx + 3, y - 16, 1, 5); if (up) g.fillRect(hx + 2, y - 15, 3, 1); else g.fillRect(hx + 2, y - 12, 3, 1); }
 }
 export function drawCanal(st, g, H, cx, cy, VW, VH, time) {
   if (!st) return; const L = H.L(), D = st.D;
   const on = (x0, x1) => x1 * TS >= cx - 40 && x0 * TS <= cx + VW + 40;
   // ---- the weed: a green mat on the water that reads as ground (the teaching and the lie) ----
-  for (const [x0, x1, row] of D.weeds || []) { if (!on(x0, x1 + 1)) continue; const sx = x0 * TS - cx, w = (x1 - x0 + 1) * TS, r = R.reachById(st, (D.weedWater.find(q => q[0] <= x0 && q[1] >= x1) || [])[2]), sy = (r ? r.y - 4 : row * TS) - cy;
-    g.fillStyle = '#2e4a2a'; g.fillRect(sx, sy, w, 5); g.fillStyle = '#4a6a36'; for (let k = 0; k < w; k += 6) g.fillRect(sx + k, sy + ((k / 6) % 2), 4, 2); }
+  for (const [x0, x1, row, kind] of D.weeds || []) { if (!on(x0, x1 + 1)) continue; const sx = x0 * TS - cx, w = (x1 - x0 + 1) * TS, sy = row * TS - cy, br = kind === 'bright' && st.brights.find(q => q.x0 === x0 && q.row === row);
+    if (br && br.gone > 0) continue;   /* given way: nothing there but the water */
+    const k0 = br ? br.t / R.RIG.weedHold : 0, shake = br && br.t > 0 ? Math.round(Math.sin(time * 40) * k0 * 1.5) : 0;
+    g.fillStyle = kind === 'bright' ? '#4a8a3a' : '#1e3424'; g.fillRect(sx + shake, sy, w, 5); g.fillStyle = kind === 'bright' ? (k0 > 0.6 ? '#c8e070' : '#8ad060') : '#2e4a30'; for (let k = 0; k < w; k += 6) g.fillRect(sx + k + shake, sy + ((k / 6) % 2), 4, 2); }
   // ---- the lock gates: timber leaves over the rock the grid keeps for them, and the water line on each side ----
   for (const gt of st.gates) { if (!on(gt.x, gt.x + 1)) continue; const sx = gt.x * TS - cx, sy = gt.top * TS - cy, h = (gt.bot - gt.top + 1) * TS;
     if (gt.open) { g.fillStyle = '#3a2a1a'; g.fillRect(sx, sy, 3, 6); continue; }
@@ -172,7 +183,7 @@ export function drawCanal(st, g, H, cx, cy, VW, VH, time) {
 /* THE FOG, over everything: holes for the hero, each lit post and her lantern; the theatre's glow ahead through it; the wisps and the lanterns burning on top */
 let FOGC = null;
 export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
-  if (!st) return; const fogs = st.fogs.filter(f => f.x1 * TS >= cx && f.x0 * TS <= cx + VW && f.y1 * TS >= cy && f.y0 * TS <= cy + VH);
+  if (!st || st.noFog) return; const fogs = st.fogs.filter(f => f.x1 * TS >= cx && f.x0 * TS <= cx + VW && f.y1 * TS >= cy && f.y0 * TS <= cy + VH);
   if (!FOGC || FOGC.width !== VW || FOGC.height !== VH) { FOGC = H.makeCanvas(VW, VH); } if (!FOGC) return;
   const fg = FOGC.getContext('2d'); fg.globalCompositeOperation = 'source-over'; fg.clearRect(0, 0, VW, VH);
   for (const f of fogs) { const a = f.a * f.fade; if (a < 0.02) continue; const x0 = Math.max(0, f.x0 * TS - cx), x1 = Math.min(VW, (f.x1 + 1) * TS - cx), y0 = Math.max(0, f.y0 * TS - cy), y1 = Math.min(VH, (f.y1 + 1) * TS - cy);

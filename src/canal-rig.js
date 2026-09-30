@@ -26,7 +26,9 @@ export const RIG = {
   bargeW: 96, bargeH: 10,
   mast: 36,            /* px the lantern pole stands over the deck: why a swing bridge across the water holds the barge */
   swing: 0.9,          /* s a swing bridge takes to turn */
-  hornClear: 8,        /* s a foghorn's fog stays clear */
+  hornClear: 9,        /* s a foghorn's fog stays clear */
+  weedHold: 2.5,       /* s BRIGHT blanket weed holds a hero standing on it before it gives way (Jenny's weed, claude/lockkeeper's number) */
+  weedBack: 4,         /* s before it knits together again, with nobody in it */
   hornFade: 1.4,       /* s the fog takes to roll back (or away) */
   hornWind: 10,        /* s a horn takes to wind up again */
   postR: 58,           /* px a lantern post lights */
@@ -56,7 +58,8 @@ export function newBarge(st, x, helm = 'weir') {
   const b = { x, w: RIG.bargeW, h: RIG.bargeH, y: 0, reach: 0, mode: 'float', helm, v: 0, crashed: false, runT: 0 };
   b.reach = reachAt(st, x + b.w / 2); b.y = deckOf(st.reaches[b.reach].y); return b;
 }
-export const reachAt = (st, px) => { const i = st.reaches.findIndex(r => px >= r.x0 * TS && px < (r.x1 + 1) * TS); return i < 0 ? (px < st.reaches[0].x0 * TS ? 0 : st.reaches.length - 1) : i; };
+/* the reach under px: the one whose columns hold it, or - in a gate's own column between two reaches, or past the last - the nearest one upstream */
+export const reachAt = (st, px) => { let best = 0; for (let i = 0; i < st.reaches.length; i++) { const r = st.reaches[i]; if (px >= r.x0 * TS && px < (r.x1 + 1) * TS) return i; if (r.x0 * TS <= px) best = i; } return best; };
 export const reachById = (st, id) => st.reaches.find(r => r.id === id);
 
 /* ---------------- THE LOCKS ---------------- */
@@ -118,8 +121,8 @@ export function bargeStop(st, front) {
   const last = st.reaches[st.reaches.length - 1], end = (last.x1 + 1) * TS; if (end < stop) { stop = end; why = 'end'; }
   return { stop, why };
 }
-/* inside a thick bank the horn has let go of: she stops where she is */
-export const bargeFogged = (st) => { const b = st.barge; return st.fogs.some(f => fogThickAhead(f) && b.x + b.w > f.x0 * TS + 2 && b.x < (f.x1 + 1) * TS && f.y0 * TS < b.y && (f.y1 + 1) * TS > b.y); };
+/* inside a thick bank the horn has let go of (her bow in it): she stops where she is */
+export const bargeFogged = (st) => { const b = st.barge, fx = b.x + b.w; return st.fogs.some(f => fogThickAhead(f) && fx > f.x0 * TS + 2 && fx < (f.x1 + 1) * TS && f.y0 * TS < b.y && (f.y1 + 1) * TS > b.y); };   /* her bow in the bank: once her bow is out of it, she sees her way on */
 /* one frame of the barge while it floats. go: a hero is aboard or somewhere ahead of her. Returns events (hold, burst, move) */
 export function bargeStep(st, dt, go) {
   const b = st.barge, ev = [];

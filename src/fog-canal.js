@@ -67,7 +67,8 @@ export function buildFogCanal({ painter, T, TS }) {
   const bridge = (x0, x1, row, init, cap) => { bridges.push({ x0, x1, row, init, pivot: cap[0] > x1 ? 'R' : 'L' }); if (init !== 'open') boards(x0, row, x1 - x0 + 1); ent('swingcap', cap[0], cap[1], { bridge: bridges.length - 1 }); return bridges.length - 1; };
   const fog = (id, x0, x1, y0, y1, o = {}) => { fogs.push(Object.assign({ id, x0, x1, y0, y1, a: 0.74, thick: false }, o)); };
   const horn = (x, y, ids) => ent('foghorn', x, y, { fogs: ids });
-  const weed = (x0, x1, row) => weeds.push([x0, x1, row]);
+  /* THE TWO WEEDS (Jenny's, taught before her lock): BRIGHT blanket weed holds you for a moment (src/canal-rig.js RIG.weedHold) and then gives way; DARK weed is only water */
+  const weed = (x0, x1, row, kind = 'dark') => { weeds.push([x0, x1, row, kind]); if (kind === 'bright') boards(x0, row, x1 - x0 + 1); };
 
   // ================= THE GROUND =================
   /* the whole sheet starts as air (a town outdoors at night); the ground is laid section by section */
@@ -87,8 +88,8 @@ export function buildFogCanal({ painter, T, TS }) {
      step out at either end: THE WEED READ, taught where it costs a wetting and nothing else */
   air(20, 25, 39, 40); block(20, 25, 41, 41);
   pools.push({ x0: px(20), x1: px(26), y: 39 * TS + 4, shallow: true, swim: false, clear: true, bottom: 41 * TS, canal: 'dock' });   /* shallow: you wade out of it */
-  weed(20, 25, 39); coins([22, 38], [23, 38]);
-  sign(17, 38, 'GREEN ON THE WATER IS BLANKET WEED. IT LOOKS LIKE A FLOOR. IT IS NOT ONE.');
+  weed(20, 22, 39, 'bright'); weed(23, 25, 39); coins([21, 38], [24, 38]);   /* one of each, side by side, over water too shallow to hurt */
+  sign(17, 38, 'BRIGHT WEED HOLDS YOU A MOMENT, THEN GIVES. DARK WEED IS ONLY WATER.');
   bargee(28, 38, 'the warehouse');                                           /* by the door, on foot: an awkward weapon up close */
   /* THE QUAY and THE WAYMEET POUND (surface 40): the barge moored at the quay's edge */
   block(30, 35, 39, H - 1);                                                  /* the quay */
@@ -113,7 +114,7 @@ export function buildFogCanal({ painter, T, TS }) {
      gate's top works it from above. A ladder up the lower gate's face is the way back up for anyone left in the pound */
   const L1 = reach('L1', 69, 80, 45, 40, 33);
   block(69, 80, 46, H - 1);
-  gate('G1', 68, 32, 44, P0, L1); block(68, 68, 45, H - 1); ladder(67, 32, 39);
+  gate('G1', 68, 32, 44, P0, L1); block(68, 68, 45, H - 1); ladder(67, 32, 36);
   const P1 = reach('P1', 82, 197, 38, 33, 33, 'lo', { noBand: true });        /* THE MILL POUND, the weed reach and the fog, all one level: 33 */
   ride(82, 106, 33, 33); ride(124, 129, 33, 33); ride(148, 197, 33, 33);   /* (and not past the mill bridge from the mill side: she waits there until it is swung from the far bank) */                       /* (not under THE LONG ARCH: she goes through, nobody standing on her does) */
   block(82, 197, 39, H - 1);
@@ -123,12 +124,12 @@ export function buildFogCanal({ painter, T, TS }) {
   sign(66, 38, 'A LOCK. STRIKE THE PADDLE ON THE UPPER GATE AND THE CHAMBER FILLS.');
   /* THE MILL, built over the pound: its wharf floor is boards over the water (hop up from the barge), and four floors climb to its top, where the
      miller's door lets out onto the gallery over the mill bridge. The bridge holds the barge until it is swung */
-  boards(86, 30, 21);                                                        /* the wharf floor over the water */
+  boards(86, 30, 24);                                                        /* the wharf floor over the water (under the east wall too: the loading bay) */
   block(85, 85, 13, 29);                                                     /* the mill's west wall (the barge passes under it) */
-  block(107, 109, 13, 30); block(110, 111, 26, 30);                          /* its east wall, and the bridge pier past it: from the deck, the way up is the wharf floor */
+  block(107, 109, 13, 26); block(110, 111, 26, 30);                          /* its east wall, and the bridge pier past it: from the deck, the way up is the wharf floor */
   air(107, 109, 16, 17);                                                     /* the miller's door */
   block(85, 109, 12, 12);                                                    /* the roof */
-  boards(86, 27, 5); boards(93, 24, 5); boards(86, 21, 6); boards(94, 18, 13);   /* the floors, three rows apart: a climb */
+  boards(86, 27, 9); boards(90, 24, 9); boards(86, 21, 9); boards(90, 18, 17);   /* the floors, three rows apart and staggered: a climb, floor over floor */
   bargee(95, 23, 'the mill'); archer(104, 17, 'the mill'); bargee(88, 20, 'the mill');
   ent('check', 99, 17);                                                      /* CHECKPOINT ONE: the mill's top floor */
   coins([88, 26], [95, 23], [89, 20], [97, 17]);
@@ -149,7 +150,6 @@ export function buildFogCanal({ painter, T, TS }) {
   weedWater.push([124, 129, 'P1']); weed(124, 129, 33);
   sign(119, 29, 'A LANTERN STANDS ON A POST. A LIGHT WITH NO POST IS A WISP: STRIKE IT.');
   wisp(125, 28, [128, 31], 'the weed reach');
-  ladder(123, 31, 32);
   grindy(126, 33, 'the weed reach');                                         /* in the weed, at the barge's edge as she pushes through */
   /* THE LONG ARCH: a row of warehouses built over the canal. The tunnel under it is too low for anyone standing, even ducked: the barge goes
      through without you. Off at the loading step and up the ladder onto the rooftops, and catch her on the far side */
@@ -172,6 +172,7 @@ export function buildFogCanal({ painter, T, TS }) {
   /* THE FOG WALL (the fog as a LOCK): a bank so thick the barge will not go into it. A FOGHORN on the bank clears it for a while - long enough
      if you are quick. A second horn on a pier halfway, if the fog comes back on you */
   fog('F2', 165, 180, 0, 40, { thick: true, a: 0.9 });
+  fog('F3', 226, 262, 0, 30, { a: 0.6 });                                     /* the fog lies thin over the summit and the weir's head */
   horn(163, 29, ['F2']);
   boards(171, 30, 3); horn(172, 29, ['F2']);
   wisp(166, 28, [168, 32], 'the fog wall');
@@ -218,14 +219,14 @@ export function buildFogCanal({ painter, T, TS }) {
      archers and a bargee on the cut's bridges, and four small drops into the basin), THE WEIR goes straight over the broken sill into the lower
      river (one plunge that jars whoever is standing when she lands, then the rapids and their grindylows). Either way she comes out in the basin */
   gate('G7', 248, 17, 22, P4, P4, { weir: true }); block(248, 248, 23, H - 1);
-  const hr = (x0, x1, surf, bed) => { air(x0, x1, surf - 8, bed - 1); block(x0, x1, bed, H - 1); pools.push({ x0: px(x0), x1: px(x1 + 1), y: surf * TS + 4, shallow: false, swim: false, clear: true, bottom: bed * TS, canal: 'race' }); };
+  const hr = (x0, x1, surf, bed) => { air(x0, x1, surf - 8, bed - 1); block(x0, x1, bed, H - 1); pools.push({ x0: px(x0), x1: px(x1 + 1), y: surf * TS + 4, shallow: true, swim: false, clear: true, bottom: bed * TS, canal: 'race' }); };   /* THE RACE runs shallow and fast: a hero thrown off her wades on down it, the flood at his back */
   hr(249, 254, 18, 21); hr(255, 263, 22, 25); hr(264, 272, 26, 29);           /* THE HEAD RACE, three steps down */
-  block(258, 261, 16, 16); beams.push({ weir: true, x0: px(258), x1: px(262), y: 22 * TS - 2 - 9, name: 'THE FOOTBRIDGE' });   /* the footbridge over the first step */
+  block(259, 262, 16, 16); beams.push({ weir: true, x0: px(259), x1: px(263), y: 22 * TS - 2 - 9, name: 'THE FOOTBRIDGE' });   /* the footbridge over the first step */
   /* THE LOWER RIVER (the weir's side) under the cut's shelf: surface 44, straight into the basin */
   air(273, 325, 30, 43); block(273, 325, 49, H - 1);
-  pools.push({ x0: px(273), x1: px(326), y: 44 * TS + 4, shallow: false, swim: false, clear: true, bottom: 49 * TS, canal: 'lower river' });
+  pools.push({ x0: px(273), x1: px(326), y: 44 * TS + 4, shallow: true, swim: false, clear: true, bottom: 49 * TS, canal: 'lower river' });
   /* THE MILL CUT: a stone leat on the hillside over the lower river, four levels, each on a shelf of its own */
-  const cut = (x0, x1, surf) => { block(x0, x1, surf + 2, surf + 4); pools.push({ x0: px(x0), x1: px(x1 + 1), y: surf * TS + 4, shallow: false, swim: false, clear: true, bottom: (surf + 2) * TS, canal: 'cut' }); };
+  const cut = (x0, x1, surf) => { block(x0, x1, surf + 2, surf + 4); pools.push({ x0: px(x0), x1: px(x1 + 1), y: surf * TS + 4, shallow: true, swim: false, clear: true, bottom: (surf + 2) * TS, canal: 'cut' }); };
   cut(276, 290, 26); cut(291, 300, 30); cut(301, 308, 34); cut(309, 315, 38);
   for (const [x0, x1, y] of [[279, 281, 26], [285, 287, 26], [295, 297, 30]]) { block(x0, x1, y - 4, y - 4); beams.push({ weir: true, x0: px(x0), x1: px(x1 + 1), y: y * TS - 2 - 9, name: 'A LOW BEAM' }); }
   boards(283, 20, 5); archer(285, 19, 'the mill cut');                       /* a footbridge over the cut */
@@ -235,8 +236,8 @@ export function buildFogCanal({ painter, T, TS }) {
   block(299, 301, 42, 42); ent('silver', 300, 41);                          /* a ledge on the gorge wall, only from the lower river (a pocket) */
   const deckAt = s => s * TS - 2;
   const weirSpec = {
-    head: [[px(248), deckAt(18)], [px(254), deckAt(18)], [px(256), deckAt(22)], [px(263), deckAt(22)], [px(265), deckAt(26)], [px(273), deckAt(26)]],
-    cut: [[px(290), deckAt(26)], [px(292), deckAt(30)], [px(300), deckAt(30)], [px(302), deckAt(34)], [px(308), deckAt(34)], [px(310), deckAt(38)], [px(316), deckAt(38)], [px(319), deckAt(44)], [px(330), deckAt(44)]],
+    head: [[px(248), deckAt(18)], [px(254), deckAt(18)], [px(258), deckAt(22)], [px(263), deckAt(22)], [px(267), deckAt(26)], [px(273), deckAt(26)]],   /* (each step a ramp as long as it is deep: she carries you down it) */
+    cut: [[px(290), deckAt(26)], [px(294), deckAt(30)], [px(300), deckAt(30)], [px(304), deckAt(34)], [px(308), deckAt(34)], [px(312), deckAt(38)], [px(316), deckAt(38)], [px(322), deckAt(44)], [px(330), deckAt(44)]],
     fall: [[px(274), deckAt(26)], [px(277), deckAt(44)], [px(330), deckAt(44)]],
     junction: px(273), crash: px(277) + 8, end: px(326) + 48, bank: [px(327) + 8, 41 * TS],   /* bank: where a hero who falls off on the run is handed back (the basin's west bank) */
   };
@@ -251,38 +252,45 @@ export function buildFogCanal({ painter, T, TS }) {
      across (walk it; it holds her); the horn and the bridge's capstan are on the island past it, under the foreman; the archers on the theatre
      bridge loose at whatever is lit (her lantern, the posts - and everything, while the horn has the fog cleared); a wisp over the weed shines like the
      lock's own lamp. Clear the fog, swing the bridge, and be on her when she passes under the island - before the fog comes back */
-  const P5 = reach('P5', 326, 369, 49, 44, 44); block(326, 369, 50, H - 1);
-  fog('F4', 326, 375, 20, 52, { a: 0.7 }); fog('F5', 332, 347, 20, 52, { thick: true, a: 0.9 });
+  const P5 = reach('P5', 326, 354, 49, 44, 44); block(326, 354, 50, H - 1);
+  /* THE BASIN LOCK, last of all (the LOCK in the exam): the theatre's door is four rows over the basin, and only a full chamber puts her deck in reach of
+     it. Its paddle is on the upper gate's face, at her bow - and a grindylow is on the steps there */
+  const L5 = reach('L5', 356, 369, 49, 44, 40); block(356, 369, 50, H - 1);
+  gate('G9', 355, 39, 48, P5, L5); block(355, 355, 49, H - 1); sluice(369, 43, 'L5');
+  fog('F4', 326, 375, 20, 52, { a: 0.7 }); fog('F5', 332, 343, 20, 52, { thick: true, a: 0.9 });
   boards(326, 41, 10); post(329, 40);                                         /* the west bank */
   const B4 = bridge(336, 341, 41, 'across', [342, 40]);
   boards(342, 41, 8); horn(345, 40, ['F5']); post(348, 40);                  /* THE ISLAND */
-  foe('gaffer', 347, 40, { squad: 'the island', elite: true, gate: 374, canal: { bargee: true } });   /* THE DECK FOREMAN: the basin's elite, and the lock door is shut until he is down */
-  weedWater.push([350, 369, 'P5']); weed(350, 369, 44);
-  wisp(357, 40, [362, 44], 'the weed');                                       /* over the weed: the lock's lamp, it seems */
+  foe('gaffer', 347, 40, { squad: 'the island', elite: true, gate: 372, canal: { bargee: true } });   /* THE DECK FOREMAN: the basin's elite, and the lock door is shut until he is down */
+  weedWater.push([349, 354, 'P5']); weed(349, 350, 44); weed(351, 352, 44, 'bright'); weed(353, 354, 44);
+  wisp(353, 40, [354, 44], 'the weed');                                       /* over the weed: the lock's lamp, it seems */
   wisp(334, 40, [336, 45], 'the fog');                                        /* in the thick: over the water beside the bridge */
   grindy(331, 44, 'the basin'); grindy(368, 44, 'the lock steps');
   boards(340, 34, 20); archer(345, 33, 'the theatre bridge'); archer(355, 33, 'the theatre bridge');   /* THE THEATRE BRIDGE, high over the basin */
   post(350, 33); ladder(349, 34, 40);                                         /* a ladder up to it off the island: its archers can be reached */
-  moorings.push({ cp: [371, 40], x: 364, bridges: { [B4]: 'open' } });        /* a death at the lock door: she is moored at its foot */
+  moorings.push({ cp: [375, 40], x: 364, fill: ['L5'], bridges: { [B4]: 'open' } });        /* a death at the lock door: she is moored at its foot */
   coins([330, 40], [338, 40], [344, 40], [352, 33], [362, 40]);
   ent('mend', 327, 40);
 
-  // ---------------- 7. JENNY'S LOCK (370-431): JENNY GREENTEETH's room - A HOOK, NOT A FIGHT (claude/lockkeeper wires her in at the merge) ----------------
-  /* THE LOCK'S LOWER GATE is the room's west wall: the barge moors at its foot (a grindylow on its steps), you hop up onto it, walk through the lock
-     door (the foreman's gate) and the lock chamber opens under you.
-     >>> JENNY GREENTEETH'S LOCK CHAMBER GOES HERE. Kept free for her: columns 376-423 (48 wide), rows 20-49 over the chamber floor row 50,
-     the door corridor at 371-375 on row 41 (its floor) and the checkpoint in it. The expected call (claude/lockkeeper exports it from its own module):
-         const G = stageGreenteeth({ set, block, plat: boards, ent }, T, TS, 376, 50);   // lays the chamber, its sluices, the weed, her and her brood
-         pools.push(...G.pools); movers.push(...(G.movers || []));                        // her water (the flood/drain) and anything that rides it
-     and in the return: arena: G.arena, gateAfterBoss: true, the gate below moved past the chamber's east wall (her west door is this corridor).
-     Her track is her own (arena.music); the level's stays 'canal'. Until then the chamber is empty and the gate stands just inside the door. <<< */
-  block(370, 370, 41, H - 1);                                                 /* THE LOCK'S LOWER GATE, its top a step up from the deck */
-  block(370, 375, 30, 36); air(371, 375, 37, 40); block(371, 375, 41, 41);   /* the lock door: a corridor through the gate's head */
-  ent('check', 371, 40);                                                      /* CHECKPOINT THREE: the lock door */
-  sign(372, 40, "JENNY'S LOCK. THE GRINDYLOWS' MOTHER KEEPS IT.");
-  air(376, 423, 20, 49); block(376, 423, 50, H - 1); block(424, 425, 20, H - 1);
-  ent('gate', 376, 40);                                                        /* the level's end until her fight lands: at the chamber's mouth, so the empty room is not walked */
-  block(426, 431, 44, H - 1);                                                  /* the theatre quarter's quay, past her east wall */
+  // ---------------- 7. JENNY'S LOCK (370-431): JENNY GREENTEETH's lock chamber - A HOOK, NOT A FIGHT (claude/lockkeeper wires her in at the merge) ----------------
+  /* THE LOCK'S LOWER GATE is the corridor's floor: the barge moors at its foot (a grindylow on its steps), you hop up onto it, walk the corridor
+     through the foreman's gate to the checkpoint, and her WEST DOOR is at the corridor's end, at bed level.
+     >>> JENNY GREENTEETH'S LOCK CHAMBER GOES HERE (claude/lockkeeper 80de5c17's contract). Her footprint is kept free: columns 376-415 (sx = 376:
+     her gates at 376 and 415, her water 377-414), rows 25-42 (R = 41 is her bed; she lays rows 41 and 42 herself, row 43 is solid here), her doors at
+     rows 35-40 in each gate (the west door opens off this corridor at bed level; the east door, the way on when she dies, onto the quay at 416).
+     Nothing standable within five rows over her walkways (rows 28-32 are open air here). The call, with this level's sx and R:
+         import { stageGreenteeth } from './jenny-greenteeth.js';
+         const { arena, movers: gm, pools: gp } = stageGreenteeth({ set, block, plat: boards, ent }, T, TS, 376, 41);
+         movers.push(...gm); pools.push(...gp);   // into moversExtra and pools
+     and in the return: arena, gateAfterBoss: true, and the level's gate below moved out past her east door (onto the quay, x 420, row 40).
+     Her track is her own (arena.music); the level's stays 'canal'. Until then the chamber is a placeholder floor and the gate stands inside her west door. <<< */
+  block(370, 373, 37, H - 1);                                                 /* THE LOCK'S LOWER GATE and the corridor's first floor: a step up from her deck when the basin lock is full */
+  block(370, 375, 30, 33); air(371, 375, 34, 36); air(374, 375, 37, 40); block(374, 375, 41, H - 1);   /* the corridor, stepping down to her west door at her bed level */
+  ent('check', 375, 40);                                                      /* CHECKPOINT THREE: just outside her west door */
+  sign(373, 40, "JENNY'S LOCK. THE GRINDYLOWS' MOTHER KEEPS IT.");
+  air(376, 415, 25, 40); block(376, 415, 41, H - 1);                         /* HER FOOTPRINT (a placeholder floor on her bed row until she is wired) */
+  ent('gate', 377, 40);                                                        /* the level's end until her fight lands: just inside her west door */
+  block(416, 431, 41, H - 1);                                                  /* the theatre quarter's quay, past her east door */
 
   // ================= THE LADDERS, LAST =================
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
@@ -294,11 +302,11 @@ export function buildFogCanal({ painter, T, TS }) {
     interiors: [[14, 29, 19, 38, 'cnWarehouse'], [86, 106, 13, 29, 'cnMill'], [371, 375, 37, 40, 'cnDoor']],
     canal: { reaches, gates, bridges, fogs, weedWater, weeds, beams: beams.filter(b => !b.weir), moorings, weir: weirSpec, barge: { x: 36 }, arcs: ARCS, sections: SECTIONS,
       /* JENNY GREENTEETH, FORESHADOWED (cheap and told): eyes that open in the fog now and then [x, y, phase], a child's shoe on a step, bubbles by the bank where nothing lives */
-      eyes: [[146, 27, 0.1], [176, 29, 0.55], [235, 16, 0.75], [339, 38, 0.3]], shoes: [[35, 38], [370, 40]], bubbles: [[40, 40], [61, 40], [100, 33], [175, 33], [240, 18], [335, 44]] },
+      eyes: [[146, 27, 0.1], [176, 29, 0.55], [235, 16, 0.75], [339, 38, 0.3]], shoes: [[35, 38], [372, 36]], bubbles: [[40, 40], [61, 40], [100, 33], [175, 33], [240, 18], [335, 44]] },
     chases, rigBands,
     waterHurts: true, noWade: true,   /* THE CANAL IS JENNY'S WATER: a fall in costs health and hands you back to the last ground you stood on (main.js, as the Marsh); and it is
                                          not a floor to the reach model (src/reachcore.js L.noWade): only the barge crosses it */
-    lockArena: { door: 371, x0: 376, x1: 423, floor: 50, free: [20, 49] },   /* JENNY GREENTEETH's room (claude/lockkeeper): stageGreenteeth(..., 376, 50) goes here (see section 7) */
+    lockArena: { sx: 376, R: 41, x0: 376, x1: 415, rows: [25, 42], westDoor: [376, 35, 40], eastDoor: [415, 35, 40] },   /* JENNY GREENTEETH's lock (claude/lockkeeper): stageGreenteeth(..., 376, 41) goes here (see section 7) */
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* three checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */
     music: 'canal', dark: 0, night: true, nightA: 0.3, duskStart: 99999, duskLen: 1,

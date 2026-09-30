@@ -14221,8 +14221,8 @@ function updateGaffer(e, dt) {
     case 'hookTell': e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { e.mode = 'hook'; e.modeT = 0.45; e.cd = GAFFER.every; SFX.throwWhoosh(); SFX.clank();
         if (!P.dead && Math.sign(d) === e.face && ad < GAFFER.reach && (Math.abs(P.y - e.y) < 26 || (e.bargee && P.y > e.y && P.y - e.y < 54))) {
-          damagePlayer(e.x, DMG.gafferHook, { unblockable: true, who: e, name: 'THE GAFF' });
-          P.onMover = null; P.ground = false; P.vx = -Math.sign(d) * 150; P.vy = -70; number(P.x, P.y - 26, 'OFF THE BUCKET', '#ff6b6b'); } }
+          const hooked = damagePlayer(e.x, DMG.gafferHook, { unblockable: true, who: e, name: 'THE GAFF' });   /* (a hook ducked goes over: it takes nobody off anything - the answer the marks table gives it) */
+          if (hooked !== false) { P.onMover = null; P.ground = false; P.vx = -Math.sign(d) * 150; P.vy = -70; number(P.x, P.y - 26, 'OFF THE BUCKET', '#ff6b6b'); } } }
       break;
     case 'hook': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.5; } break;
     case 'haftTell': e.face = Math.sign(d) || e.face;

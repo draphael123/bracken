@@ -146,7 +146,7 @@ export function chaseProblems(list, checkpoints) {   // checkpoints: [{x, y}] in
 
 /* ---------- THE DRAWING (world space; g = the frame's 2d context, cx/cy the camera) ---------- */
 const LOOKS = { rock: { body: '#2a2119', edge: '#6b5a48', deb: '#8a7660' }, fire: { body: '#4a1408', edge: '#ff8a2a', deb: '#ffd36b' },
-  drill: { body: '#1c2026', edge: '#a9b4c2', deb: '#e0a040' }, dark: { body: '#07120c', edge: '#6fe08a', deb: '#c8ffd8', deep: '#1f4a2c', haze: 'rgba(111,224,138,', wave: true, wash: '60,190,110' } };
+  drill: { body: '#1c2026', edge: '#a9b4c2', deb: '#e0a040' }, water: { body: '#16323c', edge: '#bfe6f5', deb: '#eefaff', wash: '120,200,230' },   /* THE FOG CANAL's flood off the burst summit gate */ dark: { body: '#07120c', edge: '#6fe08a', deb: '#c8ffd8', deep: '#1f4a2c', haze: 'rgba(111,224,138,', wave: true, wash: '60,190,110' } };
 export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
   if (st.phase === 'idle') return;
   const L = LOOKS[sp.look] || LOOKS.rock, x = Math.round(st.pos - (sp.axis === 'x' ? cx : cy)), depth = 260;
