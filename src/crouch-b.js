@@ -7,7 +7,7 @@
 //     four seconds, a soft gold glow and a chant while it does). It is the whole bar of JUDGEMENT for four seconds on his knees
 //     with no guard - bought between fights, never inside one.
 //   THE GEOMANCER - EARTH SENSE: down, and what hides in the ground near her SHOWS - a buried dead man, a sand-cloak under his
-//     mound, a lurker, a pumpkin, an assassin in his shadow, a breakable wall - within SENSE.R px (six tiles), outlined and
+//     mound, a lurker, a pumpkin, an assassin in his shadow, a breakable wall - within SENSE.R px (eight tiles), outlined and
 //     pulsing for as long as she stays down and SENSE.after s after. A pulse sounds when something new is found. No damage and
 //     no waking: only knowing.
 //   THE DEATH KNIGHT - BLOOD HARVEST: down over a body (the ones his kills leave lying, main.js leaveBody: a body lies 24 s), and
@@ -23,7 +23,7 @@ export const KNEEL = {
   chantEvery: 0.9,    // the chant's beat
 };
 export const SENSE = {
-  R: 96,              // px from her: six tiles
+  R: 128,             // px from her: eight tiles (Daniel, 2026-09-30: was six, 96)
   after: 1.5,         // what she found stays outlined this long after she stands
   settle: 0.12,       // down this long before the earth answers (a duck under an arrow is not a look)
 };
