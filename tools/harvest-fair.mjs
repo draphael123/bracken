@@ -129,6 +129,47 @@ const mkH = (x = 500) => M.newHorse(x, 400);
   const c2 = M.newCarousel(); let any = false; for (let i = 0; i < 60 * 12; i++) if (M.carouselStep(c2, { period: 5, warn: 1.2 }, false, DT).length) any = true;
   ok(!any, 'the carousel turned nobody who was not on it'); }
 
+// ---- THE MARIONETTE (claude/fairfix, src/fair-foes.js): THE RULE INSIDE OUT - it moves ONLY while a hero looks at it ----
+const FF = await import('../src/fair-foes.js'), { DUCK_H } = await import('../src/duck.js');
+{ let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const s = FF.newMarionette(350, 400), h = hero(100, 1); let movedUnseen = 0, movedSeen = 0, x = 350;
+  for (let i = 0; i < 60 * 60; i++) { if (rnd() < 0.02) h.face = -h.face; const seen = FF.worked(s, [h]); FF.marionetteStep(s, world([h]), DT); x += s.vx * DT;
+    if (!seen && s.vx) movedUnseen++; if (seen && s.vx) movedSeen++;
+    if (Math.abs(x - h.x) < 30) { x = 350; s.x = 350; s.mode = 'hang'; } else s.x = x; }
+  ok(movedUnseen === 0, 'a marionette moved on ' + movedUnseen + ' frames nobody looked at it (the whole rule)');
+  ok(movedSeen > 60, 'the fuzz never let a marionette move (' + movedSeen + ' frames): the test measured nothing');
+  ok(FF.MARIONETTE.walk > M.MUMMER.creep, 'the marionette is not quicker than a mummer creeps: holding a mummer must bring it on fast'); }
+{ const h = hero(100, 1), s = FF.newMarionette(100 + FF.MARIONETTE.reach - 4, 400); let jerkAt = null, cutAt = null, box = null;
+  for (let i = 0; i < 120 && cutAt === null; i++) for (const v of FF.marionetteStep(s, world([h]), DT)) { if (v.t === 'jerk' && jerkAt === null) jerkAt = i; if (v.t === 'strike') { cutAt = i; box = v.box; } }
+  ok(jerkAt !== null && cutAt !== null && (cutAt - jerkAt) / 60 >= 0.4, 'the marionette does not jerk (a told beat of 0.4 s or more) before it cuts: ' + jerkAt + ' -> ' + cutAt);
+  ok(box && box[3] <= 400 - DUCK_H, 'the marionette\'s cut reaches the floor: a ducking hero (HEIGHT high) must let it over him: ' + JSON.stringify(box));
+  const s2 = FF.newMarionette(100 + FF.MARIONETTE.reach - 4, 400); let cut = false; for (let i = 0; i < 12; i++) FF.marionetteStep(s2, world([h]), DT);
+  ok(s2.mode === 'jerk', 'the marionette is not jerking inside reach while looked at: ' + s2.mode);
+  const away = hero(100, -1); for (let i = 0; i < 90; i++) for (const v of FF.marionetteStep(s2, world([away]), DT)) if (v.t === 'strike') cut = true;
+  ok(!cut && s2.mode === 'hang', 'turning your back during the jerk did not let the strings go slack (it cut anyway)'); }
+{ const s = FF.newMarionette(400, 400); FF.marionetteStep(s, world([hero(100, -1), hero(700, 1)]), DT); FF.marionetteStep(s, world([hero(100, -1), hero(700, 1)]), DT);
+  ok(s.mode === 'hang' && s.vx === 0, 'co-op: a marionette moved with every back turned');
+  FF.marionetteStep(s, world([hero(100, -1), hero(700, 1)]), DT); FF.marionetteStep(s, world([hero(100, 1), hero(700, 1)]), DT); FF.marionetteStep(s, world([hero(100, 1), hero(700, 1)]), DT);
+  ok(s.mode === 'walk' && s.vx < 0, 'co-op: one hero looking does not work its strings');
+  const t = FF.newMarionette(400, 400); for (let i = 0; i < 3; i++) FF.marionetteStep(t, world([hero(500, 1, { mirror: true })]), DT);
+  ok(t.mode === 'walk', 'the hall\'s true glass (the mirror look) does not work a marionette at a hero\'s back');
+  const d = FF.newMarionette(400, 400); for (let i = 0; i < 3; i++) FF.marionetteStep(d, { heroes: [hero(280, 1)], canStep: () => true, sight: 88, sightY: 88 }, DT);
+  ok(d.mode === 'hang', 'in the dark (a look of 88 px) a marionette 120 px off was still worked'); }
+// ---- THE BARKER (claude/fairfix): a told call that turns every hero in range to face him; a told cane ----
+{ const b = FF.newBarker(400, 400), hs = [hero(250, -1), hero(560, 1), hero(700, -1)]; let tellAt = null, callAt = null, turned = null;
+  for (let i = 0; i < 60 * 6 && callAt === null; i++) for (const v of FF.barkerStep(b, world(hs), DT)) { if (v.t === 'callTell' && tellAt === null) tellAt = i; if (v.t === 'call') { callAt = i; turned = v.turned; } }
+  ok(tellAt !== null && callAt !== null && (callAt - tellAt) / 60 >= 0.6, 'the barker\'s call is not told (a wind-up of 0.6 s or more): ' + tellAt + ' -> ' + callAt);
+  ok(turned && turned.length === 2 && turned.includes(hs[0]) && turned.includes(hs[1]) && !turned.includes(hs[2]), 'the call does not turn every hero in range (co-op) and nobody out of it: ' + (turned && turned.map(h => h.x)));
+  ok(FF.callFace(b, hs[0]) === 1 && FF.callFace(b, hs[1]) === -1, 'the call does not turn a hero to face the barker');
+  const c = FF.newBarker(400, 400), near = hero(400 - FF.BARKER.caneReach + 6, 1); let ct = null, cane = null;
+  for (let i = 0; i < 120 && cane === null; i++) for (const v of FF.barkerStep(c, world([near]), DT)) { if (v.t === 'caneTell' && ct === null) ct = i; if (v.t === 'cane') cane = i; }
+  ok(ct !== null && cane !== null && (cane - ct) / 60 >= 0.4, 'the barker\'s cane is not told (0.4 s or more): ' + ct + ' -> ' + cane); }
+// ---- THE HORSE IN THE DARK (claude/fairfix, the door guard's unlit stretch): it finds you only from twice as far as you can see it ----
+{ const s = M.newHorse(500, 400); for (let i = 0; i < 30; i++) M.horseStep(s, { heroes: [hero(500 - 250, -1)], canStep: () => true, sight: 88, sightY: 88, near: 176 }, DT);
+  ok(s.mode === 'still', 'a horse in the dark reared at a hero 250 px off (it should find him only within 176)');
+  const t = M.newHorse(500, 400); for (let i = 0; i < 12; i++) M.horseStep(t, { heroes: [hero(500 - 150, 1)], canStep: () => true, sight: 88, sightY: 88, near: 176 }, DT);
+  ok(t.mode === 'rear', 'a horse in the dark did not rear at a hero 150 px off who faces it but cannot see it (the dark look is 88): ' + t.mode); }
+
 // ---- THE LEVEL ----
 const fi = LEVELS.findIndex(l => l.id === 'fair'), fair = LEVELS[fi], fields = LEVELS.find(l => l.id === 'fields'), way = LEVELS.find(l => l.id === 'waymeet');
 ok(!!fair, 'there is no level with id "fair" in LEVELS');
@@ -157,13 +198,27 @@ if (fair) {
   for (const k of ['teach', 'develop', 'twist', 'combine', 'exam']) ok(Array.isArray(arc[k]) && arc[k].length === 2 && arc[k][0] < arc[k][1], 'L.arc.' + k + ' is not a [x0,x1] section');
   if (arc.teach && arc.exam) {
     const inn = (k, t) => facers.filter(e => e.x >= arc[k][0] && e.x < arc[k][1] && (t ? e.t === t : true));
-    ok(inn('teach', 'mummer').length === 1 && inn('teach', 'hobbyhorse').length === 0, 'the TEACH section is not exactly one mummer (' + inn('teach').length + ' facers)');
+    ok(inn('teach', 'mummer').filter(e => e.y === 27).length === 1 && inn('teach', 'hobbyhorse').length === 0, 'the TEACH section\'s road is not exactly one mummer (' + inn('teach').length + ' facers)');
+    /* THE HIGH ROADS CARRY THEIR OWN TESTS (claude/fairfix): the boardwalk (row 18, 82-163) a mummer on its planks and the barker at its far end; the chair islands a marionette and a horse;
+       the night lane a mummer by a guttering lantern; the corn-top walk a scarecrow that is not straw */
+    { const hi = L.ents.filter(e => ['mummer', 'hobbyhorse', 'marionette', 'barker'].includes(e.t)), on = (x0, x1, y0, y1) => hi.filter(e => e.x >= x0 && e.x <= x1 && e.y >= y0 && e.y <= y1);
+      ok(on(82, 163, 18, 18).some(e => e.t === 'mummer') && on(140, 163, 18, 18).some(e => e.t === 'barker' && e.elite), 'the boardwalk is a free road again (no mummer on its planks, no barker at its far end): ' + on(82, 163, 18, 18).map(e => e.t + e.x));
+      ok(on(326, 329, 16, 16).some(e => e.t === 'marionette') && on(344, 347, 15, 15).some(e => e.t === 'hobbyhorse' && e.face === 1), 'the swing ride\'s islands hold no marionette (A) and no horse facing the way you come (B)');
+      const lane = on(563, 595, 12, 14).filter(e => e.t === 'mummer'); ok(lane.length >= 1 && lane.every(e => (L.lamps || []).some(l => l.life === 0.5 && Math.abs(l.x - e.x) <= 3 && Math.abs(l.y - e.y) <= 2)), 'the night lane has no mummer held only in a guttering lantern\'s light: ' + lane.map(e => e.x));
+      ok(on(410, 438, 10, 11).some(e => e.t === 'mummer' && e.scare), 'the corn-top walk has no scarecrow that is not straw'); }
     ok(mum.indexOf(mum.slice().sort((a, b) => a.x - b.x)[0]) >= 0 && mum.slice().sort((a, b) => a.x - b.x)[0].x >= arc.teach[0] && mum.slice().sort((a, b) => a.x - b.x)[0].x < arc.teach[1], 'the first mummer in the level is not in the TEACH section');
     const dv = inn('develop', 'mummer'), st = L.stair || {}; ok(dv.length >= 3 && dv.filter(e => e.x < st.x0).length >= 2 && dv.some(e => e.x >= st.top), 'the DEVELOP section is not a pincer: two mummers at the foot of the climb (' + JSON.stringify(st) + ') and one at its top (' + dv.map(e => e.x).join(',') + ')');
     ok(L.grid.some(t => t === 22) && L.grid.some(t => t === 23) && L.grid.some(t => t === 24), 'the climb is not built of slopes (a mummer must be able to walk up it)');
     ok(inn('twist', 'mummer').length >= 2, 'the TWIST section (the carousel) has fewer than two mummers');
     ok(inn('combine', 'hobbyhorse').length >= 1, 'the COMBINE section has no hobby-horse');
-    ok(inn('exam').length >= 3 && inn('exam', 'hobbyhorse').length >= 2 && inn('exam', 'mummer').length >= 1, 'the EXAM does not combine the small carousel\'s mummer and horse with the door guard');
+    /* THE EXAM IS ONE SPACE (claude/fairfix): the small carousel under a dark canopy with a true mirror panel, a mummer and a marionette riding it; the night lane; a blind stall wall with a
+       mummer behind it; the barker on his crate; the door guard on an unlit stretch */
+    { const ex = L.ents.filter(e => e.x >= arc.exam[0] && e.x < arc.exam[1]), c = (L.carousels || []).find(q => q.x0 >= arc.exam[0] && q.x1 < arc.exam[1]), can = (L.halls || []).find(H => H.canopy);
+      ok(c && can && can.x0 === c.x0 && can.x1 === c.x1 && can.mirrors.some(m => m.kind === 'true') && ex.some(e => e.t === 'mummer' && e.y === c.row - 1 && e.x >= c.x0 && e.x <= c.x1) && ex.some(e => e.t === 'marionette' && e.y === c.row - 1 && e.x >= c.x0 && e.x <= c.x1), 'the exam\'s carousel is not under a dark canopy with a true mirror, with a mummer and a marionette riding it');
+      ok((L.lamps || []).filter(l => l.x >= c.x0 && l.x <= c.x1 && l.y < c.row).length >= 2 && (L.lamps || []).filter(l => l.x >= c.x0 && l.x <= c.x1 && l.y < c.row).every(l => l.life === 0.5), 'the canopy\'s lanterns are not failing (guttering)');
+      const bl = (L.blinds || [])[0]; ok(bl && ex.some(e => e.t === 'mummer' && e.x * 16 >= bl[0] * 16 && e.x <= bl[1] && e.y === 27) && FGM.blocked(L, (tx, ty) => L.grid[ty * L.W + tx] === 1, { x: 575 * 16 + 8, y: 28 * 16 }, { x: 566 * 16, y: 28 * 16, face: 1 }), 'no blind stall wall hides a mummer in the exam');
+      ok(ex.some(e => e.t === 'barker' && e.elite) && ex.some(e => e.t === 'hobbyhorse' && e.elite && e.gate === L.green.door), 'the exam has no barker, or no door guard');
+      const g0 = ex.find(e => e.t === 'hobbyhorse' && e.elite); ok(g0 && (L.unlit || []).some(([a, b]) => g0.x >= a && g0.x <= b) && FGM.sightFor(L, [], { x: g0.x * 16 + 8, y: 28 * 16 }) !== null && !(L.lamps || []).some(l => l.life > 0 && Math.abs(l.x - g0.x) <= 6), 'the door guard does not stand on an unlit stretch'); }
     ok(Array.isArray(L.carousels) && L.carousels.length >= 1 && L.carousels.every(c => c.x0 < c.x1 && c.period >= 3 && c.warn >= 1), 'the fair has no carousel with a period and a warning');
     ok(L.carousels && L.carousels.some(c => c.x0 >= arc.twist[0] && c.x1 <= arc.twist[1]), 'no carousel stands in the TWIST section');
     const stacks = []; for (let x = 0; x < L.W; x++) for (let y = 0; y < L.H; y++) if (L.grid[y * L.W + x] === T.BOUNCER) stacks.push([x, y]);
@@ -182,7 +237,7 @@ if (fair) {
     ok(L.arena && L.arena.boss === 'wickerqueen' && L.ents.filter(e => e.t === 'wickerqueen').length === 1 && !L.ents.some(e => e.t === 'closedhelm' || e.boss), 'the green is not the Wicker Queen\'s arena, with her alone in it: ' + JSON.stringify(L.arena));
     ok(horse.some(h => h.elite && h.gate === L.green.door && Math.abs(h.x - L.green.door) >= 5 && h.x < L.green.door), 'the elite hobby-horse does not hold the door of the green (elite: true, gate: the door column)'); }
   ok(L.duskStart !== undefined && L.duskLen > 100 * TS, 'the fair does not go from sunset to dusk over its length (duskStart/duskLen)');
-  ok(L.music === 'marketday' || !!L.music, 'the fair has no music');
+  ok(L.music === 'harvestfair' && L.arena && L.arena.music === 'wickerqueen', 'the fair does not play its own two tracks (harvestfair on the road, wickerqueen on the green): ' + L.music + ' / ' + (L.arena && L.arena.music));
   ok(!!L.ents.find(e => e.t === 'sign' && /BACK/.test(e.text || '')), 'no sign says the rule'); }
 
 
@@ -191,14 +246,14 @@ if (fair) {
   // Daniel approved the greybox with the index at 34 against ~117 and no extra bodies: the mummer is a 5, the hobby-horse a 6
   ok(THREAT.mummer >= 5 && THREAT.hobbyhorse >= 6, 'the mummer / hobby-horse are not weighed 5 / 6 in src/threat.js: ' + THREAT.mummer + ' / ' + THREAT.hobbyhorse);
   { const m = measureLevel(L, { T: T2, TS: TS2 }); const idx = indexOf({ threat: m.threat, kinds: m.kinds, hazTiles: m.hazTiles, gap: m.gap, span: spanOf(L.W, L.H) });
-    ok(idx >= 38 && idx <= 60, 'the fair INDEX is ' + idx + ' (about 45 after the weights, 34 before): ' + JSON.stringify(m)); }
+    ok(idx >= 70 && idx <= 110, 'the fair INDEX is ' + idx + ' (85 after claude/fairfix: the review asked for 22-26 designed foes and two new kinds; 45 before, the campaign ~117): ' + JSON.stringify(m)); }
     // FURNITURE: what Waymeet and the Fields carry (three silvers, a relic, hearts); NO NPCs (pickups only)
   const cnt = t => L.ents.filter(e => e.t === t).length;
   ok(cnt('silver') === 3, 'the fair has ' + cnt('silver') + ' silvers, not the campaign three');
   ok(cnt('relic') === 1 && L.ents.find(e => e.t === 'relic').kind === 'maypole', 'the fair has not one relic (the maypole ribbon): ' + cnt('relic'));
   ok(cnt('mend') >= 3, 'the fair has ' + cnt('mend') + ' hearts (mend): three, one after each hard stretch');
   ok(!L.ents.some(e => ['npc', 'stray', 'captive', 'folk', 'squire'].includes(e.t)), 'an NPC or stray stands in the fair (pickups only)');
-  ok(L.ents.filter(e => e.t === 'check').length >= 6, 'fewer than six shrines (checkpoints) in the fair');
+  ok(L.ents.filter(e => e.t === 'check').length === 5, 'the fair does not stand five shrines (claude/fairfix, under the 200-tile ceiling): ' + L.ents.filter(e => e.t === 'check').map(e => e.x));
   // THE LAMPS GUTTER OUT: steady at the gate, more of them out the further along, the last lamps before the door guttering
   { const lp = L.lamps || [], at = (a, b) => lp.filter(l => l.x >= a && l.x < b), share = ls => ls.length ? ls.filter(l => l.life <= 0).length / ls.length : 0;
     ok(lp.length >= 16, 'the fair has ' + lp.length + ' lamps'); ok(at(0, 118).every(l => l.life === 1), 'a lamp is out or guttering at the GATE (sunset)');
@@ -226,7 +281,10 @@ if (fair) {
 { const fair = LEVELS.find(l => l.id === 'fair'), L = fair.build(), R = 28, TS3 = 16, TT = (await import('../src/level.js')).T, { floodReach } = await import('../src/reachcore.js');
   const cnt = t => L.ents.filter(e => e.t === t).length, at = (x, y) => L.grid[y * L.W + x];
   // FEWER, BETTER FOES: 12 mummers, 3 horses (the door guard among them); the last count was 13 and a grid of them
-  ok(cnt('mummer') === 12 && cnt('hobbyhorse') === 4, 'the fair foe count moved (12 mummers + 4 horses, each in a designed encounter): ' + cnt('mummer') + ' + ' + cnt('hobbyhorse'));
+  // FEWER, BETTER FOES, EVERY ONE IN A DESIGNED ENCOUNTER (claude/fairfix): 18 mummers, 4 horses, 3 marionettes, 2 barkers - 27 - and every one a squad or an elite (no padding)
+  { const fs2 = L.ents.filter(e => ['mummer', 'hobbyhorse', 'marionette', 'barker'].includes(e.t));
+    ok(cnt('mummer') === 18 && cnt('hobbyhorse') === 4 && cnt('marionette') === 3 && cnt('barker') === 2, 'the fair foe count moved (18 mummers + 4 horses + 3 marionettes + 2 barkers): ' + [cnt('mummer'), cnt('hobbyhorse'), cnt('marionette'), cnt('barker')]);
+    ok(fs2.every(e => e.squad || e.elite) && cnt('barker') === L.ents.filter(e => e.t === 'barker' && e.elite).length, 'a fair foe is not in a designed encounter (a squad or an elite), or a barker is not an elite'); }
   // HEIGHT BANDS: the reach fill (with the rides) stands in five bands of height - the cellars, the road, the roofs, the boardwalk, the tops - and nothing is a corridor
   { const seen = floodReach(L, TT, { rides: true }).seen, rows = new Set([...seen].map(k => +k.split(',')[1])), band = r => r >= 29 ? 0 : r >= 24 ? 1 : r >= 19 ? 2 : r >= 15 ? 3 : 4, bands = new Set([...rows].map(band));
     ok(bands.size === 5, 'the fair is not five bands of height (cellar, road, roofs, boardwalk, tops): ' + [...bands].sort() + ' rows ' + Math.min(...rows) + '-' + Math.max(...rows));
@@ -238,14 +296,18 @@ if (fair) {
     ok(chairs.length >= 3 && chairs.every(c => c.mast && c.mast.length === 4), 'the swing ride has fewer than three chairs hung from masts: ' + chairs.length);
     ok(chairs.every(c => c.arm >= 88 && c.period >= 3), 'a chair swings too short or too fast');
     const sl = L.slide, T1 = 21; let run = 0; for (let k = 0; k < sl.n; k++) if (at(sl.x0 + k, sl.y0 + k) === T1) run++;
-    ok(sl && sl.n >= 14 && run === sl.n && at(sl.x0 + sl.n, R - 1) === 0 && at(sl.x0 + sl.n, R) === 1, 'the helter-skelter is not a 14-column, 14-row slide of steep slopes that meets the road: ' + JSON.stringify(sl) + ' run ' + run);
+    ok(sl && sl.n >= 11 && run === sl.n && at(sl.x0 + sl.n, R - 1) === 0 && at(sl.x0 + sl.n, R) === 1, 'the helter-skelter is not a slide of steep slopes that ends over the road: ' + JSON.stringify(sl) + ' run ' + run);
+    /* THE HORSE STALL (claude/fairfix): under the slide's foot a hollow open to the road, and a horse in it facing out - behind you when you land */
+    { const S2 = sl.stall, hf = L.ents.find(e => e.t === 'hobbyhorse' && S2 && e.x >= S2.x0 && e.x <= S2.x1); let open = !!S2; if (S2) for (let x = S2.x0; x <= S2.x1; x++) for (let y = sl.y0 + (x - sl.x0) + 1; y < R; y++) if (at(x, y) !== 0) open = false;
+      ok(open && hf && hf.face === 1 && hf.x < sl.x0 + sl.n && at(sl.x0 + sl.n, R - 1) === 0 && at(sl.x0 + sl.n, R - 3) === 0, 'there is no horse stall under the slide\'s foot with a horse facing out of it (behind the landing): ' + JSON.stringify(S2) + ' ' + (hf && hf.x)); }
     ok(L.tower && L.tower.top <= 14 && at(L.tower.x0, L.tower.top) === 1 && at(L.tower.x0, L.tower.top - 1) === 0, 'the helter-skelter tower is not a solid column to the road with a top at row 14');
-    ok(L.arc.twist[1] - L.arc.twist[0] >= 120 && sl.x0 + sl.n <= L.arc.twist[1] + 3, 'the slide does not land in the section after the twist'); }
+    ok(L.arc.twist[1] - L.arc.twist[0] >= 120 && sl.x0 + sl.n >= L.arc.combine[0] && sl.x0 + sl.n <= L.arc.combine[0] + 8, 'the slide does not land at the start of the section after the twist'); }
   // TWO ROADS: the low road (the hall of mirrors and the tower stair) and the high road (the wheel and the swing ride) both reach the tower top (the route pilot walks them: tools/fair-route.mjs)
   { const seenPlain = floodReach(L, TT, {}).seen, tower = (L.tower.x0 + 1) + ',' + (L.tower.top - 1); ok(seenPlain.has(tower), 'the tower top is not on the low road (the stair): the plain fill does not reach it');
     const hall = L.hall; ok(hall && hall.mirrors.some(m => m.kind === 'true') && hall.mirrors.some(m => m.kind === 'cracked') && hall.x1 - hall.x0 >= 20, 'the hall of mirrors has no true and cracked glass');
     const A = L.ents.filter(e => e.t === 'mummer' && e.x >= hall.x0 && e.x <= hall.x1).sort((a, b) => a.x - b.x);
-    ok(A.length === 2 && A[0].x < hall.mirrors.find(m => m.kind === 'true').x1 + 1 && A[1].x >= hall.mirrors.find(m => m.kind === 'cracked').x0 && A[1].x <= hall.mirrors.find(m => m.kind === 'cracked').x1, 'the hall\'s mummers are not one at the door and one in front of the cracked glass (' + A.map(e => e.x) + ')'); }
+    const Mh = L.ents.filter(e => e.t === 'marionette' && e.x >= hall.x0 && e.x <= hall.x1 && e.y === 27);
+    ok(A.length === 1 && Mh.length === 1 && Mh[0].x < hall.mirrors.find(m => m.kind === 'true').x1 + 1 && A[0].x >= hall.mirrors.find(m => m.kind === 'cracked').x0 && A[0].x <= hall.mirrors.find(m => m.kind === 'cracked').x1, 'the hall is not a marionette by the door (by the first true glass) and a mummer in front of the cracked glass (' + A.map(e => e.x) + ' / ' + Mh.map(e => e.x) + ')'); }
   // THE GAMES, each taught -> developed -> twisted -> examined
   { const S = L.strikers || [], GS = L.galleries || [], G = GS[0], B = L.booth, tk = L.tickets || [];
     ok(S.length === 3 && S[0].x < S[1].x && S[1].x < S[2].x && S[0].launch === -600 && S[1].big && S[2].big && !S[0].big && S[1].launch < S[0].launch, 'the fair has not three strikers, the first small (taught at the gate) and two tall (over the maze, before the door): ' + JSON.stringify(S));
@@ -268,7 +330,7 @@ if (fair) {
     const seen = floodReach(L, TT, {}).seen; ok(W.every(w => seen.has((w.x0 + 2) + ',' + (R + 6))), 'a cellar is not reached by the fill with its plug broken'); }
   // THE CORN MAZE: three tiers, two chimneys, blind corners with a scarecrow that is not straw at each turn, and the walls stop your look
   { const Mz = L.maze, sc = L.ents.filter(e => e.t === 'mummer' && e.scare);
-    ok(Mz && sc.length === 2 && sc.every(e => e.x >= Mz.x0 - 1 && e.x <= Mz.x1 + 1) && (L.scarecrows || []).length >= 4, 'the corn maze has not two disguised mummers among four or more straw ones: ' + sc.length + ' / ' + (L.scarecrows || []).length);
+    ok(Mz && sc.length === 3 && sc.every(e => e.x >= Mz.x0 - 1 && e.x <= Mz.x1 + 1) && (L.scarecrows || []).length >= 4, 'the corn maze has not three disguised mummers (two at the turns, one on the corn-top walk) among four or more straw ones: ' + sc.length + ' / ' + (L.scarecrows || []).length);
     ok(Mz && Mz.tiers.length === 3 && (L.corn || []).length >= 1 && Mz.blind && FGM.blocked(L, (tx, ty) => at(tx, ty) === 1, { x: (Mz.x0 + 12) * TS3, y: 23 * TS3 - 1 }, { x: (Mz.x0 + 12) * TS3, y: R * TS3 - 1 }), 'the maze\'s tiers do not hide a mummer one floor up (walls must stop the look)');
     ok(Mz && !FGM.blocked(L, (tx, ty) => at(tx, ty) === 1, { x: (Mz.x0 + 20) * TS3, y: R * TS3 - 1 }, { x: (Mz.x0 + 10) * TS3, y: R * TS3 - 1 }), 'the maze\'s walls block a look along one corridor');
     ok(sc.some(e => e.y <= 17) && sc.some(e => e.y === 22), 'the disguised mummers are not one in the middle tier and one in the dark tier'); }
@@ -287,20 +349,27 @@ if (fair) {
     ok(!M.looks(foe, back) && M.looks(foe, { ...back, mirror: true }) && !M.looks(foe, { ...back, mirror: true, blind: true }), 'the mirror flag does not turn the look round, or a wall does not stop it');
     ok(!M.looks({ x: 500 + 120, y: 27 * TS3 }, { ...back, reach: 1 }, 88, 88), '(a foe 120 px ahead is out of a dim 88 px look)');
     ok(M.looks({ x: 500 + 120, y: 27 * TS3 }, { ...back, reach: M.RIBBON_REACH }, 88, 88), 'THE MAYPOLE RIBBON does not stretch the dim look from 88 to 132 px (the night and the hall are where it helps)'); }
-  // THE GHOST-TRAIN YARD (reserved for the chase set piece): a straight road with nothing on it but a boarded arch
-  { const G = L.reserved && L.reserved.ghostTrain; ok(G && G.x1 - G.x0 >= 30 && G.arch > G.x0 && G.arch < G.x1 && G.row === R + 2, 'the ghost-train cutting is not reserved (a marked sunken lane of 30+ columns)');
-    ok(G && L.ents.filter(e => e.x >= G.x0 && e.x <= G.x1 && !['coin', 'mend', 'check', 'deco'].includes(e.t)).length === 0, 'something stands in the reserved ghost-train cutting');
-    ok(G && (() => { for (let x = G.x0 + 8; x <= G.x1 - 8; x++) if (at(x, R + 3) !== 1 || at(x, R + 2) !== 0 || at(x, R + 1) !== 0 || at(x, R) !== 0 || at(x, R - 1) !== 0) return false; return true; })(), 'the reserved ghost-train cutting is not a straight sunken lane (the road three rows down between two banks)');
-    ok(G && at(G.x0, R) === 25 && at(G.x0 + 1, R) === 24 && at(G.x1 - 1, R) === 22 && at(G.x1, R) === 23, 'the cutting has no slopes down and up'); }
+  // THE GHOST TRAIN (claude/fairfix): a chase down the sunken cutting from BEHIND, kill on contact like every chase, told speed-ups, timed beams to duck, the fair's own shrine within
+  // fifteen columns of its start, and two mummers in the way, each a few steps before a beam (run past it and the beam holds you with it at your back). No free heart in it
+  { const G = L.ghostTrain, C = (L.chases || [])[0]; ok(G && C && L.chases.length === 1 && C.id === 'ghosttrain' && C.dir === 1 && C.look === 'train' && (C.contact || 'kill') === 'kill' && C.runsOver, 'the ghost train is not a kill-on-contact chase that runs from behind: ' + JSON.stringify(C && { id: C.id, dir: C.dir, contact: C.contact }));
+    ok(G && G.x1 - G.x0 >= 54 && (() => { for (let x = G.x0 + 8; x <= G.x1 - 8; x++) if (at(x, R + 3) !== 1 || at(x, R + 2) !== 0 || at(x, R + 1) !== 0 || at(x, R) !== 0) return false; return true; })(), 'the ghost-train cutting is not a long sunken lane (the road three rows down, ~60 columns)');
+    ok(G && at(G.x0, R) === 25 && at(G.x0 + 1, R) === 24 && at(G.x1 - 1, R) === 22 && at(G.x1, R) === 23, 'the cutting has no slopes down and up');
+    ok(C && C.curve.length >= 3 && C.curve.slice(1).every(r => r[2]) && C.beams.length >= 3 && C.beams.every(b => b.period > b.up && b.up > 0.6) && new Set(C.beams.map(b => b.period)).size === C.beams.length, 'the chase has no told speed-ups, or its beams are not timed (three, each down part of a period, never all lifting together)');
+    const CH = await import('../src/chase.js'), cps = L.ents.filter(e => e.t === 'check').map(e => ({ x: e.x * 16 + 8, y: (e.y + 1) * 16 }));
+    ok(C && CH.chaseProblems(L.chases, cps).length === 0, 'the ghost train fails the chase lint: ' + (C && CH.chaseProblems(L.chases, cps).join('; ')));
+    const tm = L.ents.filter(e => e.t === 'mummer' && e.x * 16 > C.trigger && e.x * 16 < C.end && e.y === R + 2);
+    ok(tm.length >= 2 && tm.every(e => C.beams.some(b => b.x0 / 16 > e.x && b.x0 / 16 - e.x <= 8)), 'the chase does not put mummers in the way, each a few steps before a beam: ' + tm.map(e => e.x));
+    ok(!L.ents.some(e => e.t === 'mend' && e.x >= G.x0 && e.x <= G.x1) && !L.ents.some(e => e.t === 'mend' && e.x >= L.arc.exam[0] && e.x < L.green.door && e.y >= 26), 'a free heart lies in the cutting or on the exam\'s road (the review cut 470 and 597)'); }
   // THE WICKER EFFIGY going up behind the fair, five stages, passed again and again
   { const E = L.effigies || []; ok(E.length === 5 && E.every((e, i) => e.stage === i && (i === 0 || e.x > E[i - 1].x)), 'the wicker effigy is not five stages in order along the road'); }
   // NO LONG FLAT WALK: every 40 columns of the fair proper hold something (a foe, a pit or spikes, a ride, a slope, a game, a climb, a plank)
   { const feats = new Array(L.W).fill(0); for (let x = 0; x < L.W; x++) for (let y = 0; y < L.H; y++) { const t = at(x, y); if (t === TT.ONEWAY || t === TT.SPIKE || t === TT.BOUNCER || (t >= 20 && t <= 25)) feats[x]++; }
     for (const e of L.ents) if (['mummer', 'hobbyhorse', 'check'].includes(e.t)) feats[e.x] += 3; for (const m of L.moversExtra || []) feats[Math.max(0, Math.min(L.W - 1, Math.floor((m.px || m.x) / TS3)))] += 4; for (const c of L.carousels) feats[c.x0] += 5;
-    const ghost = L.reserved.ghostTrain, flat = []; for (let s = 0; s + 40 <= 618; s += 20) { if (s + 40 > ghost.x0 && s < ghost.x1 + 1) continue; let n = 0; for (let x = s; x < s + 40; x++) n += feats[x]; if (n < 8) flat.push(s + '-' + (s + 39)); }
+    for (const c of L.chases || []) for (const b of c.beams || []) feats[Math.floor(b.x0 / TS3)] += 4;   /* (the chase's beams are its features) */
+    const flat = []; for (let s = 0; s + 40 <= 618; s += 20) { let n = 0; for (let x = s; x < s + 40; x++) n += feats[x]; if (n < 8) flat.push(s + '-' + (s + 39)); }
     ok(!flat.length, 'long flat walks (40 columns with next to nothing in them): ' + flat.join(', ')); }
-  // SHRINES (Daniel: fewer checkpoints): the same six, 85-140 columns apart, one before the door
-  { const cp = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b); ok(cp.length === 6 && cp.every((x, i) => i === 0 || (x - cp[i - 1] >= 85 && x - cp[i - 1] <= 140)), 'the shrines are not six, 85-140 columns apart: ' + cp); }
+  // SHRINES (claude/fairfix; Daniel widened the game's ceiling to 200 route tiles): five, one before the ghost train and one before the door, 80-200 columns apart
+  { const cp = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), C = (L.chases || [])[0]; ok(cp.length === 5 && cp.every((x, i) => i === 0 || (x - cp[i - 1] >= 80 && x - cp[i - 1] <= 200)) && C && cp.some(x => x * 16 < C.trigger && C.trigger - x * 16 <= 240), 'the shrines are not five, 80-200 columns apart, one right before the ghost train: ' + cp); }
 }
 
 if (bad.length) { console.error('HARVEST-FAIR (pure + level): ' + bad.length + ' failure(s)\n  ' + bad.join('\n  ')); process.exit(1); }
@@ -370,7 +439,7 @@ try {
     out.coopBothAway = { moved: moved2, mode: m0.mode };
     BK.coopEnd();
     // 4. THE HOBBY-HORSE: back turned -> wind, charge, skid, and it stands where it ends; no second charge until it is looked at
-    BK.load(fi); BK.start(); BK.sim(5); none(); const h0 = hors().find(h => !h.elite && h.x > 500 * 16); only([h0]); BK.god = true;   /* the small carousel's horse: the slide-foot horse stands under a hill that would end its charge */
+    BK.load(fi); BK.start(); BK.sim(5); none(); const h0 = hors().find(h => !h.elite && h.rideIdx === undefined && h.x > 370 * 16 && h.x < 380 * 16); only([h0]); BK.god = true; h0.x = 45 * 16 + 8; h0.y = 28 * 16; h0.st.x = h0.x; h0.st.y = h0.y; h0.vy = 0; BK.sim(2);   /* (claude/fairfix: the small carousel's horse is gone; the slide-foot horse, set down on the gate's flat, lit road) */   /* the small carousel's horse: the slide-foot horse stands under a hill that would end its charge */
     const hh = h0.x - 180; const pinH = f => { BK.P.x = hh; BK.P.y = h0.y; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = f; };
     const hm = new Set(); const hx0 = h0.x; let stillFrames = 0, xEnd = null;
     for (let i = 0; i < 60 * 5; i++) { pinH(-1); BK.sim(1); hm.add(h0.mode); if (h0.mode === 'still' && hm.has('charge')) { stillFrames++; if (xEnd === null) xEnd = h0.x; } }
@@ -457,7 +526,7 @@ try {
       G().tickets = 7; BK.tp(586, 27); BK.sim(4); K.up = true; BK.sim(3); K.up = false; BK.sim(3); out.boothShort = { tickets: G().tickets, bought: B.bought, silver: !!sv() };
       G().tickets = 8; K.up = true; BK.sim(3); K.up = false; BK.sim(3); out.boothBuy = { tickets: G().tickets, bought: B.bought, silver: !!sv(), before }; }
     // 4. THE HALL OF MIRRORS: the mummer by the door creeps up behind you where the glass cannot see, and is held where a true mirror is ahead; the dark shortens the look
-    load(undefined, true); { const ms = BK.enemies().filter(e => e.t === 'mummer').sort((a, b) => a.x - b.x), B0 = ms.find(e => e.x >= 317 * 16 && e.x <= 340 * 16), A0 = ms.filter(e => e.x >= 317 * 16 && e.x <= 340 * 16).pop(); for (const e of ms) if (e !== B0 && e !== A0) e.alive = false; B0.alive = true; A0.alive = false;
+    load(undefined, true); { const ms = BK.enemies().filter(e => e.t === 'mummer').sort((a, b) => a.x - b.x), B0 = ms.find(e => e.x >= 317 * 16 && e.x <= 340 * 16); for (const e of BK.enemies()) if (e !== B0) e.alive = false; B0.alive = true;   /* (claude/fairfix: the hall's one mummer, set by the door; the marionette put away) */
       const run = (hx, face, frames) => { const x0 = B0.x; B0.st.mode = 'still'; for (let i = 0; i < frames; i++) { BK.P.x = hx * 16; BK.P.y = 28 * 16; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = face; BK.sim(1); } return Math.abs(x0 - B0.x); };
       B0.x = 319 * 16; B0.st.x = B0.x; out.hallHeld = run(328, 1, 90); B0.x = 319 * 16; B0.st.x = B0.x; out.hallCracked = run(324, 1, 90);   // 328 has a true mirror within 7 tiles ahead; 324 does not
       out.hallMoved = { held: out.hallHeld, cracked: out.hallCracked }; }
@@ -489,9 +558,62 @@ ok(R3.boothBuy.tickets === 0 && R3.boothBuy.bought && R3.boothBuy.silver && R3.b
 ok(R3.hallHeld < 1.5, 'the mummer behind a hero who faces true glass crept ' + R3.hallHeld + ' px: the mirror does not hold it');
 ok(R3.hallCracked > 6, 'the mummer behind a hero in the cracked stretch did not creep (' + R3.hallCracked + ' px): nothing watches his back there');
 ok(R3.night.d60 === 'held' && R3.night.d120 === 'moved' && R3.night.d120ribbon === 'held' && R3.night.d200ribbon === 'moved', 'the night look is not 88 px (132 with the ribbon): ' + JSON.stringify(R3.night));
-ok(R3.scare.n === 2 && R3.scare.woke === 0, 'the corn maze has not two mummers in scarecrows\' coats, asleep: ' + JSON.stringify(R3.scare));
+ok(R3.scare.n === 3 && R3.scare.woke === 0, 'the corn maze has not three mummers in scarecrows\' coats, asleep: ' + JSON.stringify(R3.scare));
 ok(R3.blind.crept && R3.blind.woke, 'a mummer one tier up (a wall between) was held by a look through the wall: ' + JSON.stringify(R3.blind));
 ok(R3.drawn === 17, 'a set piece of the fair did not draw (' + R3.drawn + ' of 17)');
+
+// ---- IN THE PAGE, THE FIX (claude/fairfix): the marionette and the barker in the real game, the carousel turns a runner and a hopper, the slide lands you with the horse behind, the ghost train ----
+const pg4 = await openPage({ audio: false, fonts: false });
+let R4;
+try {
+  R4 = await pg4.evalp(`(async()=>{
+    const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true;
+    const fi = LEVELS.findIndex(l => l.id === 'fair'); const out = {};
+    const K = BK.keys, none = () => { for (const k of ['left', 'right', 'up', 'down', 'jump', 'block', 'atk']) K[k] = false; };
+    const load = (keep) => { BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(fi); BK.start(); BK.sim(5); for (const e of BK.enemies()) if (!keep || !keep(e)) e.alive = false; none(); BK.god = true; };
+    const put = (e, col, row) => { e.alive = true; e.x = col * 16 + 8; e.y = (row + 1) * 16; e.vy = 0; if (e.st) { e.st.x = e.x; e.st.y = e.y; } };
+    const pin = (x, y, f) => { BK.P.x = x; BK.P.y = y; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = f; };
+    // 1. THE MARIONETTE: on the gate's lit road, looked at from 110 px it comes; with the hero's back to it, it does not move; its cut hurts a hero who looks and does not guard
+    load(e => e.t === 'marionette'); { const m = BK.enemies().find(e => e.t === 'marionette'); for (const e of BK.enemies()) if (e !== m) e.alive = false; put(m, 40, 27); m.st.mode = 'hang'; BK.sim(2);
+      const x0 = m.x; for (let i = 0; i < 60; i++) { pin(m.x - 110, m.y, -1); BK.sim(1); } out.mAway = Math.abs(m.x - x0);
+      const x1 = m.x; for (let i = 0; i < 30; i++) { pin(x1 - 110, m.y, 1); BK.sim(1); } out.mFaced = Math.abs(m.x - x1);
+      BK.god = false; BK.P.hp = BK.P.maxHp; const hp0 = BK.P.hp, c0 = BK.fair().cuts; for (let i = 0; i < 150; i++) { pin(m.x - 18, m.y, 1); BK.P.inv = 0; BK.sim(1); } out.mCut = { cuts: BK.fair().cuts - c0, lost: hp0 - BK.P.hp }; BK.god = true; }
+    // 2. THE BARKER: a hero with his back to him in range is turned to face him after the told wind-up, and held; a blow in the wind-up kills the call
+    load(e => e.t === 'barker'); { const b = BK.enemies().find(e => e.t === 'barker' && e.x > 500 * 16); for (const e of BK.enemies()) if (e !== b) e.alive = false; put(b, 40, 27); b.home = { x: b.x, y: b.y }; b.st.callT = 0.4; BK.sim(1);
+      let turnedAt = null, tellSeen = false, lockMax = 0; const c0 = BK.fair().calls;
+      for (let i = 0; i < 150 && turnedAt === null; i++) { pin(b.x - 140, b.y, -1); BK.sim(1); if (b.mode === 'callTell') tellSeen = true; if (BK.P.face === 1) { turnedAt = i; lockMax = BK.P.faceLock; } }
+      out.call = { tellSeen, turnedAt, lock: lockMax, calls: BK.fair().calls - c0 };
+      b.st.mode = 'stand'; b.st.callT = 0.2; let inTell = false; for (let i = 0; i < 40 && !inTell; i++) { pin(b.x - 140, b.y, -1); BK.sim(1); inTell = b.mode === 'callTell'; }
+      const c1 = BK.fair().calls; b.stagger = 0.4; for (let i = 0; i < 90; i++) { pin(b.x - 140, b.y, -1); BK.sim(1); if (b.mode === 'callTell') break; } out.cutShort = { inTell, calls: BK.fair().calls - c1 };
+      // co-op: both heroes turned
+      b.st.mode = 'stand'; b.st.callT = 0.3; BK.coopStart('warden', false); BK.sim(2); for (const e of BK.enemies()) if (e !== b) e.alive = false; const [A, B] = BK.players();
+      let both = false; for (let i = 0; i < 160 && !both; i++) { A.x = b.x - 120; A.y = b.y; A.vx = 0; A.vy = 0; B.x = b.x + 120; B.y = b.y; B.vx = 0; B.vy = 0; if (i === 0) { A.face = -1; B.face = 1; } BK.sim(1); both = A.face === 1 && B.face === -1; }
+      out.coopCall = both; BK.coopEnd(); }
+    // 3. THE CAROUSEL CANNOT BE CROSSED UNTURNED: running across it, and hopping across it
+    for (const hop of [false, true]) { load(); const c = BK.L.carousels[0]; BK.tp(c.x0, c.row - 1); BK.P.face = 1; BK.sim(2); const t0 = BK.fair().turns;   /* from the disc's near edge, flat out */
+      for (let i = 0; i < 600 && BK.P.x < (c.x1 + 3) * 16; i++) { K.right = true; K.jump = false; if (hop && BK.P.ground && BK.P.x > c.x0 * 16) { K.jump = true; BK.press('jump'); } BK.sim(1); }
+      none(); out[hop ? 'hopTurns' : 'runTurns'] = BK.fair().turns - t0; }
+    // 4. THE SLIDE LANDS YOU WITH THE HORSE AT YOUR BACK: come down it, stand, and the stall's horse rears and charges
+    load(e => e.t === 'hobbyhorse'); { const S = BK.L.slide, h = BK.enemies().find(e => e.t === 'hobbyhorse' && e.x >= S.stall.x0 * 16 && e.x <= (S.stall.x1 + 1) * 16); for (const e of BK.enemies()) if (e !== h) e.alive = false;
+      BK.tp(S.x0 - 1, S.y0 - 1); BK.P.face = 1; BK.sim(5); const c0 = BK.fair().charges; let chargeBehind = null; for (let i = 0; i < 400 && !(BK.P.ground && BK.P.x > (S.x0 + S.n) * 16); i++) { K.right = true; K.down = true; BK.sim(1); if (chargeBehind === null && h.mode === 'charge') chargeBehind = h.x < BK.P.x; } none();
+      out.land = { x: Math.round(BK.P.x / 16), face: BK.P.face, horseBehind: h.x < BK.P.x }; for (let i = 0; i < 90; i++) { BK.sim(1); if (chargeBehind === null && h.mode === 'charge') chargeBehind = h.x < BK.P.x; } out.land.charged = BK.fair().charges - c0; out.land.chargeBehind = chargeBehind; }   /* (it may rear as you pass over its stall: the charge meets you as you land) */
+    // 5. THE GHOST TRAIN: cross the start line and stand still - it kills; with god on, a mummer left behind in the cutting is run over
+    load(); { const C = BK.L.chases[0]; BK.god = false; BK.P.hp = BK.P.maxHp; BK.tp(Math.floor(C.trigger / 16) + 1, 30); BK.sim(2); let dead = false, t = 0;
+      for (let i = 0; i < 60 * 14 && !dead; i++) { none(); BK.sim(1); t = i; dead = !!BK.P.dead || BK.P.hp <= 0; } out.trainKills = { dead, secs: +(t / 60).toFixed(1) }; }
+    load(e => e.t === 'mummer' && e.y === 30 * 16 + 16); { const C = BK.L.chases[0], mm = BK.enemies().filter(e => e.t === 'mummer' && e.alive); const r0 = BK.fair().runOver; BK.tp(Math.floor(C.trigger / 16) + 1, 30); BK.sim(2);
+      for (let i = 0; i < 60 * 12 && BK.P.x < C.end - 40; i++) { K.right = true; BK.sim(1); } none(); out.runOver = { mummers: mm.length, runOver: BK.fair().runOver - r0 }; }
+    return out; })()`, 900000);
+} finally { pg4.close(); }
+console.log(JSON.stringify(R4));
+ok(R4.mAway < 0.5 && R4.mFaced > 12, 'in the page the marionette does not move only while looked at: ' + JSON.stringify({ away: R4.mAway, faced: R4.mFaced }));
+ok(R4.mCut.cuts >= 1 && R4.mCut.lost >= 8, 'in the page the marionette\'s cut did not hurt a hero looking at it: ' + JSON.stringify(R4.mCut));
+ok(R4.call.tellSeen && R4.call.turnedAt !== null && R4.call.lock > 0.3 && R4.call.calls === 1, 'in the page the barker\'s call did not turn the hero to face him (told, then held): ' + JSON.stringify(R4.call));
+ok(R4.cutShort.inTell && R4.cutShort.calls === 0, 'a blow in the barker\'s wind-up did not cut the call short: ' + JSON.stringify(R4.cutShort));
+ok(R4.coopCall, 'co-op: the barker\'s call did not turn both heroes');
+ok(R4.runTurns >= 1 && R4.hopTurns >= 1, 'the carousel can be crossed without being turned (run ' + R4.runTurns + ', hop ' + R4.hopTurns + ')');
+ok(R4.land.face === 1 && R4.land.horseBehind && R4.land.charged >= 1 && R4.land.chargeBehind === true, 'the slide does not land you with the stall\'s horse at your back (it should rear and charge): ' + JSON.stringify(R4.land));
+ok(R4.trainKills.dead, 'the ghost train did not kill a hero who stood still in the cutting: ' + JSON.stringify(R4.trainKills));
+ok(R4.runOver.mummers >= 2 && R4.runOver.runOver >= 1, 'the ghost train did not run over a mummer left behind in the cutting: ' + JSON.stringify(R4.runOver));
 
 if (bad.length) { console.error('HARVEST-FAIR (page): ' + bad.length + ' failure(s)\n  ' + bad.join('\n  ')); process.exit(1); }
 console.log('harvest-fair ok');

@@ -229,11 +229,11 @@ export function buildHarvestFair({ painter, T, TS }) {
      tunnel mouth BEHIND you and runs you down the cutting - kill on contact, like every chase. Its speed-ups are told. Three timed beams cross the cutting (duck under one that is down,
      or wait for it to lift), and two mummers stand in the way facing you: you must run past them, and the next beam holds you with a mummer at your back and the train behind it */
   cut(469, 3, 44);                                        /* the descent 469-474, the floor 475-518 (row 30), the climb 519-524 */
-  post(478, R + 2, 0.5); post(494, R + 2, 1); post(508, R + 2, 0.5);
+  post(478, R + 2, 0.5); post(494, R + 2, 1); post(508, R + 2, 0);
   foe('mummer', 478, { y: R + 2, squad: 'train' }); foe('mummer', 505, { y: R + 2, squad: 'train' });   /* each a few steps before a beam */
   const beam = (x, period) => ({ x0: x * TS, x1: (x + 2) * TS, y: (R + 3) * TS - 10, th: 6, dmg: 14, name: 'A GHOST-TRAIN BEAM', period, up: 1.2 });   /* down for period - 1.2 s, up for 1.2 s; three periods, so they never lift together */
   const chases = [{ id: 'ghosttrain', name: 'THE GHOST TRAIN', look: 'train', dir: 1, trigger: 476 * TS, end: 519 * TS, gap0: 200, runsOver: true, say: 'THE GHOST TRAIN! RUN!',
-    curve: [[0, 60], [240, 74, 'THE GHOST TRAIN GATHERS SPEED'], [480, 86, 'FASTER! DO NOT STOP']], zone: [468 * TS, 526 * TS, (R - 6) * TS, (R + 3) * TS],
+    curve: [[0, 60], [240, 74, 'THE GHOST TRAIN GATHERS SPEED'], [480, 86, 'FASTER! DO NOT STOP']], zone: [468 * TS, 526 * TS, (R - 6) * TS, (R + 3) * TS + 8],   /* (the bottom is under the floor: a hero's feet stand ON row R + 3) */
     beams: [beam(484, 2.6), beam(496, 2.3), beam(511, 2.9)], checkpoint: [466, S] }];
   const ghostTrain = { x0: 469, x1: 524, row: R + 2, arch: 471 };
 
@@ -273,7 +273,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   foe('barker', 591, { y: R - 2, elite: true, squad: 'caller2' });
   post(597); ent('check', 600, S);                        /* the door's checkpoint: the last one the road passes before the green */
   /* THE DOOR GUARD ON AN UNLIT STRETCH: no lamp from 603 to the door. In the dark a horse is held only from 88 px, and it finds you from twice that: walk in and it comes */
-  const unlit = [[603, 619]];
+  const unlit = [[603, 619]]; post(606, S, 0); post(613, S, 0);   /* its posts stand, their lamps out */
   foe('hobbyhorse', 612, { elite: true, gate: 620, squad: 'guard' });     /* THE DOOR GUARD, the level's ELITE: it holds the green's door (the gate comes down over it) until it is dead */
 
   // ---------------- THE MAYPOLE GREEN (622-672): THE WICKER QUEEN's arena (claude/fair3, src/wicker-queen.js), ON THE CAROUSEL (claude/fairboss) ----------------

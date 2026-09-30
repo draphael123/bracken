@@ -155,7 +155,7 @@ export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
   g.save();
   if (sp.zone) { const zx = sp.zone[0] - cx, zy = sp.zone[2] - cy; g.beginPath(); g.rect(Math.round(zx), Math.round(zy), Math.round(sp.zone[1] - sp.zone[0]), Math.round(sp.zone[3] - sp.zone[2])); g.clip(); }   /* only over its own place */
   const jag = i => Math.round(Math.sin(i * 1.7 + time * 9) * 3 + Math.sin(i * 0.6) * 4);
-  if (sp.look === 'train' && sp.axis === 'x') { drawTrain(g, sp, x, (sp.zone ? sp.zone[3] : cy + VH) - cy, time); g.restore(); return; }
+  if (sp.look === 'train' && sp.axis === 'x') { drawTrain(g, sp, x, (sp.zone ? Math.floor(sp.zone[3] / TS) * TS : cy + VH) - cy, time);   /* on the zone's floor tile */ g.restore(); return; }
   if (sp.axis === 'x') { const lo = sp.dir > 0 ? x - depth : x, hi = sp.dir > 0 ? x : x + depth;
     g.fillStyle = L.body; g.fillRect(lo, 0, hi - lo, VH);
     for (let y = 0; y < VH; y += 8) { const j = jag(y / 8), ex = sp.dir > 0 ? x + j : x + j - 6; g.fillStyle = L.body; g.fillRect(Math.min(ex, ex + 6 * sp.dir), y, 10, 8); g.fillStyle = L.edge; g.fillRect(sp.dir > 0 ? ex - 2 : ex + 4, y, 3, 8); }
