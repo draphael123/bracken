@@ -28027,7 +28027,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
     controlsRows: () => controlsCardRows(),
     coopPickOpen: from => { coopPickFrom = from; coopPick = { i: 0, ally: false }; state = 'coop'; }, coopPickList: () => coopPickList(),
     coopHelp: { pages: () => coopHelpPages(), get page() { return coopHelpPage; }, set page(v) { coopHelpPage = v; }, open: from => openCoopHelp(from) },
-    tabs: () => STORE_TABS.length, items: () => storeItems(STORE_TABS[storeTab]).length, skillsTab: SKILLS_TAB, get storeBack() { return storeBack; }, set storeBack(v) { storeBack = v; }, storeOpen: (back, tab) => openStore(back, tab), storeRows: () => STORE_TABS.map(t => ({ id: t.id, rows: t.talent ? [] : storeItems(t).map(k => ({ id: k.id, state: storeRowState(t, k), price: k.price, silver: !!k.silver })) })), menuCount: () => menuItems().length,
+    tabs: () => STORE_TABS.length, items: () => storeItems(STORE_TABS[storeTab]).length, skillsTab: SKILLS_TAB, get storeBack() { return storeBack; }, set storeBack(v) { storeBack = v; }, storeOpen: (back, tab) => openStore(back, tab), storeRows: () => STORE_TABS.map(t => ({ id: t.id, rows: t.talent ? [] : storeItems(t).map(k => ({ id: k.id, state: storeRowState(t, k), price: k.price, silver: !!k.silver, needs: k.needs || null, feat: k.feat || null })) })), menuCount: () => menuItems().length,
     treeRows: () => treeNodes().length, beasts: () => beastList().length,
   },
   // THE PLAYTEST BOT. Loaded only when it is asked for, so it costs nothing to ship it.
