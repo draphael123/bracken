@@ -27,7 +27,7 @@ import { qsPatchAt, qsGameStep } from './quicksand.js';
 import * as DWM from './dune-worm.js'; import { newStorm, stormStep, gustDrift, STORM } from './desert-rules.js';   /* THE DUNE WORM, the caravan's boss (docs/briefs/dune-worm.md), and the storm he calls into his hollow */
 import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import * as CB from './redraw/caravan_bandits.js'; import * as CR from './redraw/caravan_ruins.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
 import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH,mageOpen} from './undead-mage.js';
-import {REALM,realmBox,realmWarded,realmFloor,strikeRealm,drawRealm,drawRealmFx,drawTear} from './mage-realms.js';   /* THE UNDEAD ARCHMAGE'S SPELL REALMS (claude/undead3) */
+import {REALM,realmBox,realmWarded,realmFloor,strikeRealm,drawRealm,drawRealmFx,drawTear,realmCue,realmWardHit} from './mage-realms.js';   /* THE UNDEAD ARCHMAGE'S SPELL REALMS (claude/undead3) */
 import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT,quench} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
 import {carpetBox,stepCarpet,knockCarpet,updateCarpet,resetCarpet,drawRug,drawCarpetWorld,drawStormWalls,mountCarpet} from './carpet.js';
@@ -4124,7 +4124,7 @@ const BEASTS = [
   { t: 'imp', name: 'IMP', sub: "the mage's folly", desc: 'Out of its jar and pleased about it. It hovers off the floor, throws fire on a yellow mark, and hunches into a puff of smoke before it hops somewhere else.' },
   { t: 'turret', name: 'ARCANE TURRET', sub: "the mage's folly", desc: 'A brass eye he left switched on. It brightens for a long beat and spits a slow orb at where you were. Outrun it, or take it on the shield.' },
   { t: 'homunculus', name: 'THE HOMUNCULUS', sub: 'the library cell', desc: 'Grown in a jar and still wearing it. A red SCUTTLE under you (jump it), a yellow POUNCE (the shield turns it), a red POUND along the floor (jump it), a red FLASK that leaves acid where you stood (move). After every trick it pants: cut it then.' },
-  { t: 'archmage', name: 'THE ARCHMAGE', sub: 'the top of the tower', desc: 'He blinks, he draws circles under you (yellow the shield turns, red you leave), and he wards: three runes, one on a stack of books you slide down, and they seal again if you are slow. At each ward a portal opens and one of his dead apprentices steps out. Then he rewrites the room three times; each room turns on you, and gives a way to him. Last, the room is put right and he is three: two images cast with him, but only his own spells are coloured. Strike an image and it breaks.' },
+  { t: 'archmage', name: 'THE ARCHMAGE', sub: 'the top of the tower', desc: 'He blinks round his room every few seconds - a flash shows where he will stand. He draws circles under you (yellow the shield turns, red you leave), and he wards: three runes stand round the room, and they seal again if you are slow. At each ward a portal opens and one of his dead apprentices steps out. Then he rewrites the room three times; each room turns on you, and gives a way to him. Last, the room is put right and he is three: two images cast with him, but only his own spells are coloured. Strike an image and it breaks.' },
   { t: 'kraken', name: 'THE KRAKEN', sub: 'the end of the road', desc: 'Its arms come up along the road: the grab and the sweep turn on no shield, the slam does. Cut them where they lie. Then the tide keeps laying cargo on the stones: BREAK A CRATE and it goes back into him. A HIGH rake takes whoever stands on one. He is out in the sea, never on the road: break a crate while he is up and it hits him, while he is low it glances off. When he comes up close to look, his arms lie still - cut them. Ring the old bell while he breathes and they fall limp. Last: stand behind a waystone and his spear arm sticks in it.' },
   { t: 'feeler', name: 'FEELER', sub: 'an arm in the flats', desc: 'The mud stirs, and then there is an arm in it. It rears back over its root and lashes along the ground: the shield turns it, and a turned lash lies out on the stone to be cut. Hidden, it cannot be struck.' },
   { t: 'masthead', name: 'THE MASTHEAD', sub: 'the wind is his floor', desc: 'The biggest sail goblin. His gaff swing the shield turns. He fills his sail and rams you down the deck: block him, let him hit the rail, or turn the wind on him at the winch, and he fouls in his canvas. He drops out of the rigging and lets the boom go at your knees: nothing turns either.' },
@@ -5813,7 +5813,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
      pulling down is the risk you take to break the spell (see undead-mage.js). */
   if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing */
   if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake'||e.mode==='realmTell')return;
-   if(realmWarded(e)&&!(e.open>0)){if(!(e.wardSaidT>time)){e.wardSaidT=time+1.2;number(e.x,e.y-52,'HIS REALM WARDS HIM: FIND ITS OPENING','#bce8fa');}SFX.clank();sparks(e.x,e.y-24,P.face,4);return;}}   /* IN A REALM his ward holds until its one opening (src/mage-realms.js) */   /* between two places, he is in neither */
+   if(realmWarded(e)&&!(e.open>0)){realmWardHit(e);SFX.clank();SFX.crack();shakeCam(2);ringAt(e.x,e.y-22,26,REALM.col[e.realm.kind][1],0.3);sparks(e.x,e.y-24,P.face,8);return;}}   /* WARDED (claude/archfix): a clang, a flare of his ward, the word over him (drawn by drawRealmFx: number() drops any sentence not a move word, so the old line here was never on the screen) and the banner naming the opening again */   /* IN A REALM his ward holds until its one opening (src/mage-realms.js) */   /* between two places, he is in neither */
   if(e.t==='burieddead'&&(e.mode==='burrow'||e.mode==='eruptTell'))return;
   if(e.t==='familiar')dmg*=e.open>0?1.8:.6;
   if(e.t==='bellcrab') dmg*=e.phase===3?BELL.out.soft:e.open>0?BELL.openMul:BELL.shutMul;   /* shut, until a stone on his crown opens him; out of the bell, soft (src/bellcrab.js BELL) */
@@ -8375,7 +8375,7 @@ function bossEnd(e) {
       for (let i = 0; i < 50; i++) parts.push({ x: x + (Math.random() - 0.5) * 38, y: y - Math.random() * 44, vx: (Math.random() - 0.5) * 100, vy: -50 - Math.random() * 80, life: 1.8, max: 1.8, col: ['#d14a3a', '#e6b94a', '#dff0f5'][(Math.random() * 3) | 0], size: 2, grav: 70 });
       say('SHE HAS NO CAPTAIN', '#e6b94a'); break; }
     case 'archmage': { /* THE TOWER IS QUIET: the familiar shrinks back to a cat and runs, the room rights itself, and the light goes out of the runes */
-      shakeCam(10); zoomKick(1.16, 0.6); killFlash = 0.14; if (MG) { MG.shots = []; if (MG.A) { archStackGone(MG.A); archDrop(MG.A); MG.A.runes = []; MG.A.flipBack = 0; } } if (P.flip) setFlip(false);
+      shakeCam(10); zoomKick(1.16, 0.6); killFlash = 0.14; if (MG) { MG.shots = []; if (MG.A) { archDrop(MG.A); MG.A.runes = []; MG.A.flipBack = 0; } } if (P.flip) setFlip(false);
       for (let i = 0; i < 30; i++) parts.push({ x: x + (Math.random() - 0.5) * 60, y: y - Math.random() * 60, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 100, life: 1.6, max: 1.6, col: ['#b07cf0', '#e0c8ff', '#726a8a'][(Math.random() * 3) | 0], size: 2, grav: 40 });
       for (let i = 0; i < 10; i++) parts.push({ x: x + (Math.random() - 0.5) * 40, y: y - 20 - Math.random() * 30, vx: (Math.random() - 0.5) * 40, vy: -30, life: 2, max: 2, col: '#e0b050', size: 1, grav: -10 });
       movers = movers.filter(m => !m.arm); SFX.callerChant(); SFX.golemShatter && SFX.golemShatter(); say('THE TOWER IS QUIET', '#b07cf0'); break; }
@@ -11118,7 +11118,6 @@ function ma() {
 function mageHint(key, msg) { const k = 'mgHint' + key; if ((PROG[k] || 0) >= 2) return; PROG[k] = (PROG[k] || 0) + 1; hintT = 4.5; hintMsg = msg; }
 const cellSet = (x, y, t) => { const i = y * LW + x; if (L.grid[i] !== t) { L.grid[i] = t; tileSpr[i] = null; } };
 function mageReset() {
-  if (MG && MG.A) archStackGone(MG.A);   /* (the ward's stack is tiles: a death in the middle of his ward must not leave it standing) */
   MG = null; P.flip = false; P.flipT = 0; P.flareSlab = null; P.flareT = 0; P.windRide = null; if (!L || !L.mage) { P.w = 10; P.h = 14; return; }
   const M = L.mage;
   MG = { shelves: (M.shelves || []).map(s => ({ ...s, up: false, k: 0 })), shots: [], puddles: [], flipFx: 0, stacks: [], A: null, songT: 6, locks: (M.locks || []).map((l, i) => ({ ...l, i, lit: 0, t: 0, open: false, shown: 0, wait: false })) };
@@ -11605,16 +11604,17 @@ function updateArchmage(e, dt) {
     case 'wake': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; number(e.x, e.y - 50, 'YOU BROKE MY HEDGES', MVIO[3]); } break;
     /* ---- STAGE I ---- */
     case 'blinkTell': e.vx = 0; if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 20, y: e.y - Math.random() * 34, vx: (Math.random() - 0.5) * 30, vy: -20, life: 0.4, max: 0.4, col: MVIO[2], size: 2, grav: -20 });
-      if (e.modeT <= 0) { e.mode = 'blink'; e.modeT = 0.35; burst(e.x, e.y - 18, 14, [MVIO[1], MVIO[2]], 80, 0.5); const s = spots().filter(([x]) => Math.abs(x - e.x) > 40); const [nx, ny] = s.length ? s[Math.floor(Math.random() * s.length)] : spots()[0]; e.x = nx; e.y = ny; e.vy = 0; e.face = Math.sign(P.x - e.x) || e.face; ringAt(e.x, e.y - 18, 30, MVIO[3], 0.4); burst(e.x, e.y - 18, 14, [MVIO[2], MVIO[3]], 80, 0.5); SFX.zap(); e.T.blink = 5 + Math.random() * 3; } break;
-    case 'blink': e.vx = 0; grounded(); if (e.modeT <= 0) e.mode = 'idle'; break;
+      if (e.modeT <= 0) { e.mode = 'blink'; e.modeT = 0.35; burst(e.x, e.y - 18, 14, [MVIO[1], MVIO[2]], 80, 0.5); const [nx, ny] = archBlinkLand(e); e.x = nx; e.y = ny; e.vy = 0; e.blinkTo = null; e.face = Math.sign(P.x - e.x) || e.face; ringAt(e.x, e.y - 18, 30, MVIO[3], 0.4); burst(e.x, e.y - 18, 14, [MVIO[2], MVIO[3]], 80, 0.5); SFX.zap(); e.T.blink = ARCH.blinkEvery + (Math.random() - 0.5) * ARCH.blinkJit; } break;
+    case 'blink': e.vx = 0; grounded(); if (e.modeT <= 0) { const back = e.wardBack && R.runes.length; e.wardBack = false; e.mode = back ? 'ward' : 'idle'; if (back) e.modeT = Math.max(1, e.wardLeft || 0); } break;   /* a blink out of his ward goes back into it */
     case 'boltTell': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'bolt'; e.modeT = 0.4; const c = R.circle; if (c) { bolts.push({ x: c.x, y: c.y, life: 0.3, storm: false }); burst(c.x, c.y - 4, 14, [MVIO[2], MVIO[3]], 90, 0.5); SFX.zap(); SFX.thunder(); if (!P.dead && Math.abs(P.x - c.x) < 16 && P.y > c.y - 40 && P.y - P.h < c.y + 8) damagePlayer(c.x + (P.x < c.x ? 8 : -8), DMG.archBolt); } R.circle = null; } break;
-    case 'bolt': e.vx = 0; grounded(); if (e.modeT <= 0) { e.T.bolt = 3.4; if (e.wardBack && R.runes.length) { e.wardBack = false; e.mode = 'ward'; e.modeT = Math.max(1, e.wardLeft || 0); } else { e.wardBack = false; e.mode = 'idle'; } } break;   /* A BOLT CAST OUT OF HIS WARD GOES BACK INTO IT: it used to drop him to idle, and idle warded afresh - three whole runes again, and a last rune cut during the bolt was thrown away */
+    case 'bolt': e.vx = 0; grounded(); if (e.modeT <= 0) { e.T.bolt = ARCH.boltEvery * ARCH.pace; if (e.wardBack && R.runes.length) { e.wardBack = false; e.mode = 'ward'; e.modeT = Math.max(1, e.wardLeft || 0); } else { e.wardBack = false; e.mode = 'idle'; } } break;   /* A BOLT CAST OUT OF HIS WARD GOES BACK INTO IT: it used to drop him to idle, and idle warded afresh - three whole runes again, and a last rune cut during the bolt was thrown away */
     case 'rendTell': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'rend'; e.modeT = 0.45; const c = R.circle; if (c) { for (let i = -2; i <= 2; i++) parts.push({ x: c.x + i * 8, y: c.y, vx: 0, vy: -140 - Math.abs(i) * 20, life: 0.5, max: 0.5, col: '#ff6b6b', size: 2, grav: 300 }); burst(c.x, c.y, 18, ['#ff6b6b', '#ffd0d0', '#4a4258'], 110, 0.6); SFX.crack(); shakeCam(5); if (!P.dead && Math.abs(P.x - c.x) < 24 && P.y > c.y - 30 && P.y - P.h < c.y + 8) damagePlayer(c.x + (P.x < c.x ? 8 : -8), DMG.archRend, { unblockable: true, up: true }); } R.circle = null; } break;
-    case 'rend': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.T.rend = 4.5; } break;
-    case 'wardTell': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'ward'; e.modeT = ARCH.wardLen; archWard(e); SFX.golemChime(); ringAt(e.x, e.y - 18, 30, MVIO[2], 0.4); mageHint('ward', R.stack ? 'ONE RUNE SITS ON A STACK OF HIS BOOKS: STRIKE THE RUNE AT ITS FOOT AND IT SLIDES DOWN. CUT ALL THREE BEFORE THEY SEAL AGAIN.' : 'THE RUNES TAKE EVERY BLOW FOR HIM. CUT ALL THREE BEFORE THEY SEAL AGAIN, AND HE IS OPEN.'); } break;
+    case 'rend': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.T.rend = ARCH.rendEvery * ARCH.pace; } break;
+    case 'wardTell': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'ward'; e.modeT = ARCH.wardLen; archWard(e); SFX.golemChime(); ringAt(e.x, e.y - 18, 30, MVIO[2], 0.4); mageHint('ward', 'THREE RUNES STAND ROUND THE ROOM AND TAKE EVERY BLOW FOR HIM. CUT ALL THREE BEFORE THEY SEAL AGAIN, AND HE IS OPEN.'); } break;
     case 'ward': e.vx = 0; grounded(); e.face = Math.sign(d) || e.face;
       if (!archRunesUp(R)) { clearRunes(e); e.mode = 'open'; e.modeT = ARCH.open1; e.open = ARCH.open1; SFX.gasp && SFX.gasp(); number(e.x, e.y - 50, 'OPEN', '#8fd160'); }
       else if (e.modeT <= 0) { clearRunes(e); e.mode = 'idle'; e.T.ward = 8; }
+      else if (e.T.blink <= 0 && !P.dead) { e.wardLeft = e.modeT; e.wardBack = true; archBlinkTell(e); e.mode = 'blinkTell'; e.modeT = 0.5; }   /* HE BLINKS IN HIS WARD TOO: the runes stay where they stand */
       else if (e.T.bolt <= 0 && ad > 40) { e.wardLeft = e.modeT; e.mode = 'boltTell'; e.modeT = 0.8; mark(P.x, fl, '#ffd36b'); number(e.x, e.y - 50, '!', '#ffd36b'); SFX.charge(); e.wardBack = true; } break;
     case 'open': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.open = 0; e.T.ward = e.stage === 1 || e.stage === 3 ? ARCH.wardAgain : 9; e.T.blink = 0.5;   /* (in the duel the next ward comes round sooner: a hero whose blows are light needs a second opening before the line, and waited half a minute for it) */
         /* THE ROOM TAKES HIM BACK: off the floor and onto his arm again, or the hero who reached him is thrown back to the island to cross it again */
@@ -11634,18 +11634,18 @@ function updateArchmage(e, dt) {
                         you alone and you fall to the floor, and a breath later it turns you over again (red: be off it) */
     case 'crushTell': e.vx = 0; grounded(); if (R.crush && Math.random() < dt * 30) parts.push({ x: R.crush.x + (Math.random() - 0.5) * R.crush.w, y: 2 * TS + 4, vx: 0, vy: 40, life: 0.6, max: 0.6, col: '#6a5038', size: 1, grav: 200 });
       if (e.modeT <= 0) { e.mode = 'crush'; e.modeT = 0.55; const c = R.crush; if (c) { c.land = 0; SFX.golemStomp(); SFX.stone(); shakeCam(7); burst(c.x, c.fy - 4, 16, ['#4a3624', '#6a5038', MVIO[2]], 90, 0.5); if (!P.dead && archInCrush(c)) damagePlayer(c.x, DMG.archCrush, { unblockable: true }); } } break;
-    case 'crush': e.vx = 0; grounded(); if (R.crush) R.crush.land += dt; if (e.modeT <= 0) { e.mode = 'idle'; R.crush = null; e.T.room = ARCH.roomEvery; e.T.pair = Math.max(e.T.pair, 1.5); } break;
+    case 'crush': e.vx = 0; grounded(); if (R.crush) R.crush.land += dt; if (e.modeT <= 0) { e.mode = 'idle'; R.crush = null; e.T.room = ARCH.roomEvery * ARCH.pace; e.T.pair = Math.max(e.T.pair, 1.5); } break;
     case 'booksTell': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'books'; e.modeT = 0.3 + ARCH.bookGap * (ARCH.books - 1); const b = R.books; if (b) { for (let i = 0; i < ARCH.books; i++) MG.shots.push({ x: b.x, y: b.y, vx: -b.side * ARCH.bookSpeed, vy: 0, g: 0, t: 4, wait: i * ARCH.bookGap, book: true, dmg: DMG.archBook }); SFX.throwWhoosh(); } R.books = null; } break;
-    case 'books': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.T.room = ARCH.roomEvery; e.T.pair = Math.max(e.T.pair, 1.5); } break;
+    case 'books': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.T.room = ARCH.roomEvery * ARCH.pace; e.T.pair = Math.max(e.T.pair, 1.5); } break;
     case 'glyphTell': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'glyph'; e.modeT = 0.4; const q = R.glyph; if (q) { ringAt(q.x, q.y, 26, MVIO[3], 0.5); burst(q.x, q.y, 14, [MVIO[2], MVIO[3]], 80, 0.5); SFX.zap(); if (!P.dead && archOnGlyph(q)) { setFlip(false); R.flipBack = ARCH.flipBack; damagePlayer(q.x, DMG.archGlyph, { unblockable: true, noKnock: true }); number(P.x, P.y - 40, 'THE GLYPH TAKES YOU', MVIO[3]); } } R.glyph = null; } break;
-    case 'glyph': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.T.room = ARCH.roomEvery; e.T.pair = Math.max(e.T.pair, 1.5); } break;
+    case 'glyph': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.T.room = ARCH.roomEvery * ARCH.pace; e.T.pair = Math.max(e.T.pair, 1.5); } break;
     /* PAIRED SPELLS, from his second stage on: a red circle under you AND a yellow one a stride to one side, landing together. Two
        tells to read at once, never one you cannot answer: the far side of the red circle is clear, and a jump straight up clears both */
     case 'pairTell': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'pair'; e.modeT = 0.45; const c = R.circle, c2 = R.circle2;
         if (c) { for (let i = -2; i <= 2; i++) parts.push({ x: c.x + i * 8, y: c.y, vx: 0, vy: (c.flip ? 1 : -1) * (140 + Math.abs(i) * 20), life: 0.5, max: 0.5, col: '#ff6b6b', size: 2, grav: c.flip ? -300 : 300 }); burst(c.x, c.y, 18, ['#ff6b6b', '#ffd0d0', '#4a4258'], 110, 0.6); SFX.crack(); shakeCam(5); if (!P.dead && archInRend(c)) damagePlayer(c.x + (P.x < c.x ? 8 : -8), DMG.archRend, { unblockable: true, up: !c.flip }); }
         if (c2) { bolts.push({ x: c2.x, y: c2.y, life: 0.3, storm: false }); burst(c2.x, c2.y - 4, 14, [MVIO[2], MVIO[3]], 90, 0.5); SFX.zap(); if (!P.dead && archInBolt(c2)) damagePlayer(c2.x + (P.x < c2.x ? 8 : -8), DMG.archBolt); }
         R.circle = null; R.circle2 = null; } break;
-    case 'pair': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.T.pair = ARCH.pairEvery; e.T.room = Math.max(e.T.room, 1.5); } break;
+    case 'pair': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.T.pair = ARCH.pairEvery * ARCH.pace; e.T.room = Math.max(e.T.room, 1.5); } break;
     case 'swipeTell': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'swipe'; e.modeT = 0.4; SFX.throwWhoosh(); SFX.heavy(); if (!P.dead && Math.sign(d) === e.face && ad < 78 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.famSwipe); } break;
     case 'swipe': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.T.swipe = 3; e.count++; } break;
     case 'slamTell': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.5; SFX.golemStomp(); shakeCam(8); zoomKick(1.06, 0.2); burst(e.x, e.y - 2, 20, ['#726a8a', '#a09ab8', '#4a4258'], 100, 0.6);
@@ -11667,7 +11667,7 @@ function updateArchmage(e, dt) {
       if (e.stage === 2 && R.sub === 3) { e.vy = 0; e.vx = 0; } else grounded();
       /* THE THING THE FIGHT IS ABOUT GOES AT THE TOP OF THE CHAIN (rule E2): the ward, then the blink, then the circles */
       if ((e.stage === 1 || e.stage === 3) && e.T.ward <= 0) { e.mode = 'wardTell'; e.modeT = 0.8; SFX.callerChant(); e.vx = 0; }   /* (THE MIRRORS are the duel again, harder: his ward, his blink, his circles, with his images) */
-      else if ((e.stage === 1 || e.stage === 3) && e.T.blink <= 0 && ad < 60) { e.mode = 'blinkTell'; e.modeT = 0.5; e.vx = 0; SFX.puff(); }
+      else if ((e.stage === 1 || e.stage === 3) && e.T.blink <= 0 && !P.dead) { archBlinkTell(e); e.mode = 'blinkTell'; e.modeT = 0.5; }   /* ROUND THE ROOM, every few seconds, wherever you are (claude/archfix; it was only when you were on top of him) */
       /* THE ROOM TURNS ON YOU, once in a while, in each room he has written; and from the second stage his circles come in pairs */
       else if (e.stage === 2 && e.T.room <= 0 && archRoomReady(e, R.sub)) { e.vx = 0; const my = R.sub === 3 ? e.y + 16 : e.y - 50;
         if (R.sub === 1) { R.crush = { x: P.x, w: ARCH.crushW, fy: archFootY(), t: 0 };
@@ -11683,17 +11683,15 @@ function updateArchmage(e, dt) {
   }
   archMirrorsTick(e, dt);   /* his images, the grey spells they cast with his, and his apprentice's portal (claude/folly3) */
   /* the runes go round him, and a swing cuts them */
-  if (R.runes.length) { const hb = P.atk >= 0 && !P.dead ? attackBox() : null; archStackTick(dt, hb);
+  if (R.runes.length) { const hb = P.atk >= 0 && !P.dead ? attackBox() : null;
     for (const r of R.runes) { r.flash = Math.max(0, r.flash - dt);
-      if (r.stack) { const S = R.stack; if (S) { r.x = S.cx; r.y = archStackTop(S) - 8; } }   /* THE RUNE ON THE STACK rides its top: up out of reach until the stack is slid down */
-      else { r.a += dt * 2.2; r.x = e.x + Math.cos(r.a) * 28; r.y = e.y - 14 + Math.sin(r.a) * 10; }
+      r.a += dt * 2.2; r.y = r.y0 + Math.sin(r.a) * 2;   /* A RUNE STANDS WHERE IT WAS PUT, round the room, bobbing a little */
       if (r.hp <= 0 || !hb || P.hitSet.has(r) || !overlap(hb, { l: r.x - 5, r: r.x + 5, t: r.y - 5, b: r.y + 5 })) continue;
       P.hitSet.add(r);
-      if (r.stack && R.stack && R.stack.state !== 'down') { sparks(r.x, r.y, P.face, 3); SFX.clank(); number(r.x, r.y - 10, 'THE BOOKS HOLD IT', MVIO[2]); continue; }
       r.hp--; r.flash = 0.2; sparks(r.x, r.y, P.face, 5); SFX.clank();
       if (r.hp <= 0) { burst(r.x, r.y, 12, [MVIO[2], MVIO[3]], 80, 0.5); SFX.crack(); number(r.x, r.y - 10, 'A RUNE BREAKS', MVIO[3]); if (archRunesUp(R) && !(R.reseal > 0)) { R.reseal = R.resealLen = archResealLen(e); R.resealShown = 0; } } }
     /* THE WARD FIGHTS BACK: from the first rune cut, the rest have a few seconds. Counted down over him, and if any still stands
-       when it runs out, every cut rune seals again - and the stack comes back up out of the floor with its rune on it */
+       when it runs out, every cut rune seals again */
     if (R.reseal > 0) { if (!archRunesUp(R)) R.reseal = 0; else { R.reseal -= dt; const n = Math.ceil(R.reseal);
       if (n <= 3 && n > 0 && n !== R.resealShown) { R.resealShown = n; number(e.x, e.y - 58, String(n), MVIO[3]); SFX.charge(); }
       if (R.reseal <= 0) archReseal(e); } } }
@@ -11701,26 +11699,31 @@ function updateArchmage(e, dt) {
   e.light.x = e.x; e.light.y = e.y - (fam ? 40 : 30); e.light.r = fam ? 60 : 40;
   if (e.stage !== 2 || R.sub !== 3) { if (e.y > fl + 40) { e.y = fl; e.vy = 0; } }
 }
-function clearRunes(e) { const R = MG && MG.A; if (!R) return; for (const r of R.runes) if (r.hp > 0) burst(r.x || e.x, r.y || e.y - 18, 6, [MVIO[1], MVIO[2]], 50, 0.4); R.runes = []; R.reseal = 0; archStackGone(R); }
+function clearRunes(e) { const R = MG && MG.A; if (!R) return; for (const r of R.runes) if (r.hp > 0) burst(r.x || e.x, r.y || e.y - 18, 6, [MVIO[1], MVIO[2]], 50, 0.4); R.runes = []; R.reseal = 0; }
 /* ============================================================================================================
    THE ARCHMAGE, HARDER (Daniel, 2026-09-29: "the Archmage fight is a bit too easy"). Four things, all told:
      1. THE WARD FIGHTS BACK. From the first rune cut the others have ARCH.reseal seconds (counted down over him); if any still
-        stands then, every cut rune seals again. And the third rune does not go round him: it sits on a stack of his books that
-        rises out of the floor at one end of the room, too high to reach and sealed in the books - STRIKE THE STACK'S OWN RUNE AT
-        ITS FOOT and it slides down into the floor (the library's rule), bringing its rune down to you.
+        stands then, every cut rune seals again. (claude/archfix: the third rune no longer sits on a stack of books - Daniel played
+        it and it is gone. The three runes stand round the room, where a sword reaches them: archWard.)
      2. THE ROOM ATTACKS in each room he rewrites (updateArchmage: crushTell, booksTell, glyphTell), told like his own blows.
      3. PAIRED SPELLS from his second stage: a red circle under you and a yellow one a stride aside, together (pairTell).
      4. A SHORTER OPENING: ARCH.openHits clean blows and he recovers, in a window of about two and a half seconds - two good
         cuts, not a free combo. Each blow is worth ARCH.openMul while he is open, so the fight is about as many readings as it
         was, each one shorter and each one earned. His health is as it was.
    ============================================================================================================ */
-const ARCH = { reseal: 6, resealLate: 4, wardLen: 22, wardAgain: 4.5, stackH: 5, slide: 0.7, open1: 2.6, open2: 3.2, openHits: 2, openMul: 3, hitGap: 0.15,
+const ARCH = { reseal: 6, resealLate: 4, wardLen: 22, wardAgain: 4.5, open1: 2.6, open2: 3.2, openHits: 2, openMul: 3, hitGap: 0.15,
   roomFirst: 2.5, roomEvery: 6.5, pairFirst: 4, pairEvery: 5.5, pairGap: 48, crushW: 26, books: 3, bookGap: 0.3, bookSpeed: 210, bookFrom: 180, glyphR: 16, flipBack: 1.6,
   tell: { crush: 0.9, books: 0.8, glyph: 0.9, pair: 0.9 },
   /* claude/folly3 (Daniel played him, 2026-09-29: "he is too easy"): where each part ends, as a fraction of his health - the duel, the
      flood, the orrery, the room turned over - and from the last line to the end THE MIRRORS. His images, the grey their spells are cast
      in, how far from his circle theirs land; the portal his apprentice comes through, and how soon the apprentice first throws */
-  gates: [0.66, 0.54, 0.42, 0.30], imgs: 2, grey: '#a8a4b4', fakeGap: [40, 64], portal: 1.0, appFirst: 1.2 };
+  gates: [0.66, 0.54, 0.42, 0.30], imgs: 2, grey: '#a8a4b4', fakeGap: [40, 64], portal: 1.0, appFirst: 1.2,
+  /* claude/archfix (Daniel played him, 2026-09-29): HIS WARD is three plain runes standing round the room (runeFrom: the first post from the
+     room's left wall, runeGap apart, runeUp over the floor - a sword's height; he wards on the three posts nearest him). HE CASTS FASTER:
+     every gap between his casts (the bolt, the rend, the pair, the room's attacks) is `pace` of what it was - a tell is never shortened.
+     HE BLINKS ROUND THE ROOM every blinkEvery s after he lands (give or take blinkJit/2: about every 5-6 s, tell to tell), in the duel and the mirrors, told by a flash where he will stand
+     (blinkTell, 0.5 s as ever), to a spot never within blinkClear of you */
+  runeFrom: 90, runeGap: 120, runeUp: 16, pace: 0.83, boltEvery: 3.4, rendEvery: 4.5, blinkEvery: 4.8, blinkJit: 1.0, blinkClear: 56 };
 /* THE WARD RESEALS FASTER once the duel is behind him (4 s, not 6): the duel still teaches it */
 const archResealLen = e => e && e.stage >= 2 ? ARCH.resealLate : ARCH.reseal;
 const archRunesUp = R => !!R && R.runes.some(r => r.hp > 0);
@@ -11748,38 +11751,28 @@ const archInRend = c => Math.abs(P.x - c.x) < 24 && P.y > c.y - 30 && P.y - P.h 
 const archInBolt = c => Math.abs(P.x - c.x) < 16 && P.y > c.y - 40 && P.y - P.h < c.y + 8;
 const archInCrush = c => Math.abs(P.x - c.x) < c.w / 2 + P.w / 2 - 1 && P.y > 2 * TS && P.y - P.h < c.fy;
 const archOnGlyph = q => !!P.flip && Math.abs(P.x - q.x) < ARCH.glyphR + P.w / 2;
-/* THE STACK HIS THIRD RUNE SITS ON: at the end of the room nearer to him, clear of you and of him, on bare floor; it rises out of the floor */
-function archWard(e) { const R = MG.A, A = L.arena, fl = A.floor; R.reseal = 0; R.resealShown = 0; archStackGone(R);
-  const S = archStackRaise(e);
-  R.runes = S ? [{ a: 0, hp: 1, flash: 0 }, { a: Math.PI, hp: 1, flash: 0 }, { stack: true, hp: 1, flash: 0, x: S.cx, y: fl - S.h * TS }] : [0, 1, 2].map(i => ({ a: i * Math.PI * 2 / 3, hp: 1, flash: 0 }));
+/* HIS WARD (claude/archfix; Daniel played him: the rune on a stack of books you slid down is gone): three plain runes stand round the
+   room at a sword's height, on the three posts nearest him, ARCH.runeGap apart - the room is walked to cut them, and the count runs */
+function archRunePosts(e) { const A = L.arena, posts = []; for (let x = A.x0 + ARCH.runeFrom; x < A.x1 - 40; x += ARCH.runeGap) posts.push(x);
+  let c = 0; posts.forEach((x, i) => { if (Math.abs(x - e.x) < Math.abs(posts[c] - e.x)) c = i; }); const k = Math.max(0, Math.min(posts.length - 3, c - 1)); return posts.slice(k, k + 3); }
+function archWard(e) { const R = MG.A; R.reseal = 0; R.resealShown = 0;
+  R.runes = archRunePosts(e).map((x, i) => { const y = archFloorAt(x) - ARCH.runeUp; ringAt(x, y, 14, MVIO[2], 0.4); burst(x, y, 8, [MVIO[2], MVIO[3]], 60, 0.4); return { x, y, y0: y, a: i * 2.1, hp: 1, flash: 0 }; });
   archCycle(e); }
-function archStackCells(S, fn) { for (let y = S.top; y < S.top + S.h; y++) for (let x = S.x0; x <= S.x1; x++) fn(x, y); }
-function archStackRaise(e, keep) { const R = MG.A, A = L.arena, fl = A.floor, h = ARCH.stackH, top = fl / TS - h;
-  const ends = keep ? [keep] : [{ x0: A.x0 / TS, face: 1 }, { x0: A.x1 / TS - 2, face: -1 }].map(c => ({ ...c, x1: c.x0 + 1, cx: (c.x0 + 1) * TS })).sort((a, b) => Math.abs(a.cx - e.x) - Math.abs(b.cx - e.x));
-  for (const c of ends) { const S = { x0: c.x0, x1: c.x1, face: c.face, cx: (c.x0 + 1) * TS, h, top, lvl: L };
-    if (Math.abs(P.x - S.cx) < 40 || Math.abs(e.x - S.cx) < 40) continue;
-    let clear = true; archStackCells(S, (x, y) => { if (L.grid[y * LW + x] !== T.AIR) clear = false; }); if (!clear) continue;
-    S.fx = S.face > 0 ? (S.x1 + 1) * TS + 6 : S.x0 * TS - 6; S.fy = fl; S.state = 'up'; S.k = 0; S.rise = 0; S.gone = 0;
-    archStackCells(S, (x, y) => cellSet(x, y, T.SOLID)); resolveTiles(); R.stack = S;
-    burst(S.cx, fl - 4, 14, ['#4a3624', '#6a5038', MVIO[2]], 80, 0.5); SFX.stone(); shakeCam(3); return S; }
-  return null; }
-/* the stack goes: down into the floor wherever it was, its cells given back to the air */
-function archStackGone(R) { const S = R && R.stack; if (!S) return; if (S.lvl === L) { archStackCells(S, (x, y) => { if (L.grid[y * LW + x] === T.SOLID) cellSet(x, y, T.AIR); }); resolveTiles(); } R.stack = null; }
-/* the stack's top, as it rises out of the floor and as it slides back down into it */
-const archStackTop = S => L.arena.floor - S.h * TS * (S.state === 'up' ? Math.min(1, S.rise) : 1 - S.k);
-/* THE STACK'S OWN RUNE, at its foot on the room side: struck, the stack slides down into the floor, a course at a time */
-function archStackTick(dt, hb) { const R = MG.A, S = R && R.stack; if (!S) return;
-  S.rise = Math.min(1, (S.rise || 0) + dt / 0.45);
-  if (S.state === 'up' && hb && !P.dead && !P.hitSet.has(S) && overlap(hb, { l: S.fx - 7, r: S.fx + 7, t: S.fy - 14, b: S.fy })) { P.hitSet.add(S); S.state = 'sinking'; S.k = 0; S.gone = 0;
-    sparks(S.fx, S.fy - 6, P.face, 6); ringAt(S.fx, S.fy - 6, 20, MVIO[2], 0.4); SFX.zap(); SFX.stone(); shakeCam(3); mageHint('wardStack', 'THE RUNE TAKES THE BLOW AND THE STACK SLIDES DOWN INTO THE FLOOR. ITS RUNE COMES DOWN WITH IT: CUT IT.'); }
-  if (S.state === 'sinking') { S.k = Math.min(1, S.k + dt / ARCH.slide); const gone = Math.min(S.h, Math.floor(S.k * S.h + 1e-6));
-    if (gone !== S.gone) { for (let i = S.gone; i < gone; i++) for (let x = S.x0; x <= S.x1; x++) cellSet(x, S.top + i, T.AIR); S.gone = gone; resolveTiles(); }
-    if (S.k >= 1) { S.state = 'down'; SFX.thud(); shakeCam(2); dust(S.cx, L.arena.floor, 8); } } }
-/* THE WARD SEALS AGAIN: every cut rune comes back, and a slid stack rises again under its rune (if the hero is not standing where it rises) */
+/* HIS BLINK (claude/archfix): where he will stand is chosen as the tell starts and flashes there for the whole of it (drawn with the
+   circles); a spot across the room from him and never within ARCH.blinkClear of you, nor on one of his images */
+function archBlinkTell(e) { const R = MG.A, imgs = (R && R.imgs || []).filter(q => !q.gone), up = (R && R.runes || []), lo = up.length ? Math.min(...up.map(r => r.x)) - 40 : -1e9, hi = up.length ? Math.max(...up.map(r => r.x)) + 40 : 1e9;
+  const all = archSpots().filter(([x]) => x >= lo && x <= hi);   /* WARDED, he blinks only among his runes: when the last one breaks he is never a room away (claude/archfix) */
+  let c = all.filter(([x]) => Math.abs(x - e.x) > 60 && Math.abs(x - P.x) > ARCH.blinkClear && !imgs.some(q => Math.abs(q.x - x) < 20));
+  if (!c.length) c = [all.filter(([x]) => Math.abs(x - e.x) > 20).sort((a, b) => Math.abs(b[0] - P.x) - Math.abs(a[0] - P.x))[0] || all[0] || [e.x, e.y]];
+  const [x, y] = c[Math.floor(Math.random() * c.length)]; e.blinkTo = { x, y }; e.vx = 0; SFX.puff(); }   /* (the caller sets blinkTell: the mark table reads it there) */
+/* HE LANDS ON HIS FLASH - unless you have walked onto it in the tell: then beside it, on the side away from you, never on you */
+function archBlinkLand(e) { const A = L.arena, to = e.blinkTo || { x: archSpots()[0][0], y: archSpots()[0][1] }; let x = to.x;
+  if (!P.dead && Math.abs(P.x - x) < 24) { let d = Math.sign(x - P.x) || (x - A.x0 > A.x1 - x ? -1 : 1); if (x + d * 32 < A.x0 + 12 || x + d * 32 > A.x1 - 12) d = -d; x = P.x + d * 32; }
+  return x === to.x ? [to.x, to.y] : [x, archFloorAt(x)]; }
+/* THE WARD SEALS AGAIN: every cut rune comes back */
 function archReseal(e) { const R = MG.A; R.reseal = 0; R.resealShown = 0; let n = 0;
   for (const r of R.runes) if (r.hp <= 0) { r.hp = 1; r.flash = 0.4; n++; }
-  const S = R.stack; if (S && S.state !== 'up') { const keep = { x0: S.x0, x1: S.x1, face: S.face }; R.stack = null; if (!archStackRaise(e, keep)) R.stack = S; }
-  if (n || (R.stack && R.stack.state === 'up')) { number(e.x, e.y - 50, 'THE WARD SEALS AGAIN', MVIO[3]); SFX.golemChime(); ringAt(e.x, e.y - 18, 34, MVIO[2], 0.5); mageHint('reseal', 'CUT THE RUNES TOGETHER: ONCE ONE BREAKS, THE REST HAVE A FEW SECONDS BEFORE THE WARD SEALS AGAIN. THE STACK FIRST.'); } }
+  if (n) { number(e.x, e.y - 50, 'THE WARD SEALS AGAIN', MVIO[3]); SFX.golemChime(); ringAt(e.x, e.y - 18, 34, MVIO[2], 0.5); mageHint('reseal', 'CUT THE RUNES TOGETHER: ONCE ONE BREAKS, THE REST HAVE A FEW SECONDS BEFORE THE WARD SEALS AGAIN.'); } }
 /* THE ROOM HE REWRITES. sub 1: the flood. 2: the orrery. 3: turned over. 4: put right, for the familiar */
 function archRoom(e, sub) {
   const A = L.arena, fl = A.floor, M = L.mage, pl = (L.pools || []).find(p => p.magePool);
@@ -11821,12 +11814,12 @@ function archRoom(e, sub) {
    and one of the tower's dead apprentices steps out of it - an apprentice's health and no more, and the ember he throws at
    whoever stands still. Never a second while the first stands.
    ============================================================================================================ */
-const archSpots = () => { const A = L.arena, fl = A.floor; return [[A.x0 + 70, fl], [A.x0 + 200, fl], [A.x0 + 340, fl], [L.mage.dais[0] * TS + 64, fl - TS]]; };
+const archSpots = () => { const A = L.arena, fl = A.floor; return [[A.x0 + 70, fl], [A.x0 + 160, fl], [A.x0 + 250, fl], [A.x0 + 340, fl], [A.x0 + 430, fl], [L.mage.dais[0] * TS + 64, fl - TS]]; };   /* spread across the room (claude/archfix: he blinks round it) */
 /* the top of whatever stands at x on the room's floor: the floor, or his dais */
 function archFloorAt(x) { const fl = L.arena.floor, tx = Math.floor(x / TS); for (let ty = Math.floor(fl / TS) - 3; ty < Math.floor(fl / TS); ty++) if (isSolid(tx, ty)) return ty * TS; return fl; }
 function archMirrors(e) { const R = MG.A;
   e.stage = 3; e.phase = 3; R.sub = 4; archRoom(e, 4); e.ceiling = false; R.ride = false;
-  const [nx, ny] = archSpots()[3]; e.x = nx; e.y = ny; e.vx = 0; e.vy = 0; e.mode = 'blink'; e.modeT = 0.4; e.face = Math.sign(P.x - e.x) || e.face;
+  const [nx, ny] = archSpots()[archSpots().length - 1]; e.x = nx; e.y = ny; e.vx = 0; e.vy = 0; e.mode = 'blink'; e.modeT = 0.4; e.face = Math.sign(P.x - e.x) || e.face;
   ringAt(e.x, e.y - 18, 30, MVIO[3], 0.4); SFX.zap();
   e.T.ward = 3; e.T.blink = 4; e.T.bolt = 2; e.T.rend = 3; e.T.pair = ARCH.pairFirst;
   R.imgs = []; for (let i = 0; i < ARCH.imgs; i++) R.imgs.push({ x: e.x, y: e.y, face: e.face, gone: true, tell: null, tellT: 0 }); archImagesPlace(e, R.imgs);
@@ -11851,10 +11844,9 @@ function archImagesCast(e) { const R = MG.A, A = L.arena; R.fakes = [];
 function archCycle(e) { const R = MG.A;
   if (e.stage === 3 && R.imgs) { const back = R.imgs.filter(q => q.gone); if (back.length) { archImagesPlace(e, back); if (back.some(q => !q.gone)) number(e.x, e.y - 62, 'THE IMAGES RETURN', ARCH.grey); } }
   if ((e.stage === 1 || e.stage === 3) && !R.portal && !enemies.some(q => q.archCalled && q.alive)) archPortal(e); }
-/* THE PORTAL: on the floor a good stride from you, on the side with room, clear of his stack */
-function archPortal(e) { const R = MG.A, A = L.arena, S = R.stack, room = s => s > 0 ? A.x1 - P.x : P.x - A.x0;
+/* THE PORTAL: on the floor a good stride from you, on the side with room */
+function archPortal(e) { const R = MG.A, A = L.arena, room = s => s > 0 ? A.x1 - P.x : P.x - A.x0;
   let x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x + (room(1) > room(-1) ? 1 : -1) * 150));
-  if (S && Math.abs(x - S.cx) < 40) x = S.cx + S.face * 48;
   R.portal = { x, y: archFloorAt(x), t: 0, dur: ARCH.portal };
   number(x, R.portal.y - 40, 'A PORTAL OPENS', MVIO[3]); SFX.zap(); ringAt(x, R.portal.y - 14, 18, MVIO[2], 0.5); }
 /* HIS APPRENTICE steps out: health off the same line every apprentice in the level came through (spawnEntities), never more */
@@ -11976,12 +11968,9 @@ function mageAdvice() {
     /* THE ROOM TURNED OVER: walk the ceiling in under the bars */
     if (R.sub === 3 && !archReached(3) && !(e.open > 0)) { out.goal = (M.cage[0][0] + 4) * TS; out.strike = null; out.climb = true; return out; }
   }
-  if (archRunesUp(R)) { const S = R.stack, sr = R.runes.find(q => q.stack && q.hp > 0);
-    /* THE STACK FIRST: its rune starts no count, so slide it and cut the rune on it, then the two round him while the count runs */
-    if (sr && S && S.state === 'up') { out.goal = S.fx + S.face * 12; out.strike = S.fx; return out; }
-    if (sr && S && S.state === 'sinking') { out.goal = S.fx + S.face * 12; out.strike = null; return out; }
-    if (sr) { out.goal = sr.x + (S ? S.face : 1) * 14; out.strike = sr.x; return out; }
-    const r = R.runes.filter(q => q.hp > 0 && !q.stack).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; out.goal = e.x - Math.sign(e.x - P.x || 1) * 18; out.strike = r ? r.x : e.x; return out; }
+  if (archRunesUp(R)) {   /* THE RUNES ROUND THE ROOM: the nearest standing one, then the next, while the count runs (claude/archfix) */
+    const up = R.runes.filter(q => q.hp > 0), last = up.length > 1 ? up.slice().sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] : null;   /* the one nearest him last: he opens where you stand */
+    const r = up.filter(q => q !== last).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; out.goal = r.x - (Math.sign(r.x - P.x) || 1) * 14; out.strike = r.x; return out; }
   if (e.fam && !(e.open > 0)) { out.goal = e.x - Math.sign(e.x - P.x || 1) * 46; out.strike = null; return out; }
   return out;
 }
@@ -12061,14 +12050,6 @@ function drawMageTiles(cx, cy) {
     const cols = ['#5a2a3a', '#2a4a3a', '#3a2a5a', '#5a4a2a']; for (let yy = 3; yy < 2 * TS; yy += 11) { g.fillStyle = '#2e2016'; g.fillRect(x + 1, y + yy + 8, w - 2, 2); for (let xx = 2; xx < w - 2; xx += 3) { g.fillStyle = cols[((xx + yy + st.x) / 3 | 0) % 4]; g.fillRect(x + xx, y + yy, 2, 8); } }
     g.fillStyle = '#1b1626'; g.fillRect(x - 1, y, 1, 2 * TS); g.fillRect(x + w, y, 1, 2 * TS); g.fillStyle = 'rgba(236,224,255,0.5)'; g.fillRect(x, y, w, 1);
     g.fillStyle = 'rgba(122,63,191,0.55)'; g.fillRect(x, bot, w, 2); if (st.k < 1) { g.fillStyle = '#1e1828'; g.fillRect(x, y, w, 2 * TS - hh); } }
-  /* THE WARD'S STACK (his third rune sits on it): books from the floor up to its top, the dark over the part still to rise; and its own
-     rune at its foot on the room side, lit while it can still be struck */
-  { const S = MG.A && MG.A.stack; if (S && L.arena) { const fl = L.arena.floor, top = Math.round(archStackTop(S) - cy), x = S.x0 * TS - cx, w = (S.x1 - S.x0 + 1) * TS, full = S.h * TS, y0 = Math.round(fl - full - cy);
-    if (x > -40 && x < VW + 40) { g.fillStyle = '#1e1828'; g.fillRect(x, y0, w, full);
-      const hh = Math.round(fl - cy) - top; if (hh > 0) { g.fillStyle = '#4a3624'; g.fillRect(x, top, w, hh); g.fillStyle = '#6a5038'; g.fillRect(x, top, w, 1); g.fillRect(x, top, 1, hh);
-        const cols = ['#5a2a3a', '#2a4a3a', '#3a2a5a', '#5a4a2a']; for (let yy = 3; yy < hh - 2; yy += 11) { g.fillStyle = '#2e2016'; g.fillRect(x + 1, top + yy + 8, w - 2, 2); for (let xx = 2; xx < w - 2; xx += 3) { g.fillStyle = cols[((xx + yy + S.x0) / 3 | 0) % 4]; g.fillRect(x + xx, top + yy, 2, 8); } }
-        g.fillStyle = '#1b1626'; g.fillRect(x - 1, top, 1, hh); g.fillRect(x + w, top, 1, hh); g.fillStyle = 'rgba(236,224,255,0.5)'; g.fillRect(x, top, w, 1); }
-      if (S.state === 'up') { const lit = Math.floor(time * 3) % 2 === 0, c = A.rune && A.rune[lit ? 1 : 0]; if (c) g.drawImage(c, Math.round(S.fx - cx) - 5, Math.round(S.fy - cy) - 12); fbloom(S.fx - cx, S.fy - 7 - cy, 10, lit ? 0.35 : 0.15, 'green'); } } } }
 }
 function drawMageMover(m, cx, cy) {
   const A = ma();
@@ -12131,6 +12112,10 @@ function drawMageOverlay(cx, cy) {
   { const h = enemies.find(q => q.t === 'homunculus' && q.alive && q.mode === 'flaskTell' && q.flaskAt != null); if (h && L.mini) { const k = 0.5 + 0.5 * Math.sin(time * 16), x = Math.round(h.flaskAt - cx), y = Math.round(L.mini.floor - cy), locked = h.modeT <= 0.3; g.globalAlpha = locked ? 0.9 : 0.45 + 0.3 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 2, 20 + (locked ? 0 : k * 2), 5, 0, 0, 7); g.stroke(); g.beginPath(); g.ellipse(x, y - 2, 9, 2.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } }
   /* THE ARCHMAGE'S MARKS: his circle, his runes, his opening; the familiar's eye */
   const b = boss, R = MG.A; if (b && b.t === 'archmage' && b.alive && R) {
+    /* WHERE HE WILL STAND (claude/archfix): his blink's flash - a column of his light on the spot and an outline of him, brightening as he comes */
+    if (b.mode === 'blinkTell' && b.blinkTo && b.alive) { const x = Math.round(b.blinkTo.x - cx), y = Math.round(b.blinkTo.y - cy), k = Math.max(0, Math.min(1, 1 - b.modeT / 0.5)), p = Math.floor(time * 12) % 2;
+      g.globalAlpha = 0.3 + 0.45 * k; g.fillStyle = MVIO[2]; g.fillRect(x - 7, y - 44, 14, 44); g.globalAlpha = 0.6 + 0.4 * k; g.strokeStyle = p ? MVIO[3] : '#ffffff'; g.lineWidth = 1; g.strokeRect(x - 10.5, y - 44.5, 21, 44);
+      g.beginPath(); g.ellipse(x, y - 1, 14 + 6 * (1 - k), 4, 0, 0, 7); g.stroke(); g.globalAlpha = 1; fbloom(x, y - 20, 22, 0.25 + 0.3 * k, 'green'); }
     if (R.circle) { const c = R.circle, k = 0.5 + 0.5 * Math.sin(time * 16), x = Math.round(c.x - cx), y = Math.round(c.y - cy); g.globalAlpha = 0.4 + 0.4 * k; g.strokeStyle = c.col; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 2, 16 + k * 2, 5, 0, 0, 7); g.stroke(); g.beginPath(); g.ellipse(x, y - 2, 8, 2.5, 0, 0, 7); g.stroke(); g.fillStyle = c.col; g.fillRect(x - 1, y - 6, 2, 8); g.globalAlpha = 1; }
     /* THE IMAGES' CIRCLES: the same shape as his, in grey, and a slower pulse - nothing in them */
     for (const c of R.fakes || []) { const k = 0.5 + 0.5 * Math.sin(time * 9 + c.x), x = Math.round(c.x - cx), y = Math.round(c.y - cy); g.globalAlpha = 0.3 + 0.3 * k; g.strokeStyle = c.col; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 2, 16 + k * 2, 5, 0, 0, 7); g.stroke(); g.beginPath(); g.ellipse(x, y - 2, 8, 2.5, 0, 0, 7); g.stroke(); g.fillStyle = c.col; g.fillRect(x - 1, y - 6, 2, 8); g.globalAlpha = 1; }
@@ -12148,7 +12133,7 @@ function drawMageOverlay(cx, cy) {
     if (R.glyph) { const q = R.glyph, k = Math.min(1, q.t / ARCH.tell.glyph), p = 0.5 + 0.5 * Math.sin(time * 18), x = Math.round(q.x - cx), y = Math.round(q.y - cy); g.globalAlpha = 0.5 + 0.4 * p; g.strokeStyle = MVIO[3]; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y + 2, ARCH.glyphR + 6 - k * 4, 5, 0, 0, 7); g.stroke(); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y + 2, ARCH.glyphR + 10 - k * 4, 7, 0, 0, 7); g.stroke(); g.fillStyle = MVIO[2]; g.fillRect(x - 1, y, 2, 7); g.fillRect(x - 4, y + 3, 8, 1); g.globalAlpha = 1; fbloom(x, y + 2, 16, 0.3, 'green'); }
     for (const r of R.runes) { const x = Math.round(r.x - cx), y = Math.round(r.y - cy);
       if (r.hp <= 0) { if (R.reseal > 0) { const k = 1 - R.reseal / (R.resealLen || ARCH.reseal); g.globalAlpha = 0.15 + 0.5 * k * (0.5 + 0.5 * Math.sin(time * (8 + 16 * k))); g.strokeStyle = MVIO[2]; g.lineWidth = 1; g.strokeRect(x - 3.5, y - 3.5, 7, 7); g.globalAlpha = 1; } continue; }   /* A CUT RUNE, WAITING: a ghost that brightens and quickens as the ward comes back */
-      if (r.stack && R.stack && R.stack.state !== 'down') { g.fillStyle = MVIO[1]; g.fillRect(x - 3, y - 3, 6, 6); g.fillStyle = MVIO[0]; g.fillRect(x - 1, y - 2, 2, 4); g.fillStyle = '#5a2a3a'; g.fillRect(x - 5, y - 1, 10, 2); g.fillStyle = '#2a4a3a'; g.fillRect(x - 5, y + 2, 10, 1); continue; }   /* SEALED IN THE BOOKS: dim, with the spines across it */
+      { const fy = Math.round(r.y0 + ARCH.runeUp - cy), p = 0.5 + 0.5 * Math.sin(time * 5 + r.a); g.globalAlpha = 0.18 + 0.14 * p; g.fillStyle = MVIO[2]; g.fillRect(x - 2, y + 4, 4, Math.max(0, fy - y - 4)); g.globalAlpha = 0.5 + 0.3 * p; g.strokeStyle = MVIO[2]; g.lineWidth = 1; g.beginPath(); g.ellipse(x, fy - 1, 9, 2.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1; fbloom(x, y, 14, 0.35, 'green'); }   /* A RUNE STANDING IN THE ROOM (claude/archfix): a thread of its light down to a ring on the floor, so it is seen across the room */
       g.fillStyle = r.flash > 0 ? '#ffffff' : MVIO[2]; g.fillRect(x - 3, y - 3, 6, 6); g.fillStyle = r.flash > 0 ? MVIO[3] : MVIO[0]; g.fillRect(x - 1, y - 2, 2, 4); g.fillRect(x - 2, y, 4, 1); if (r.hp < 2) { g.fillStyle = '#1b1626'; g.fillRect(x - 2, y - 3, 1, 3); } fbloom(x, y, 8, 0.3, 'green'); }
     if (b.open > 0) { const k = 0.5 + 0.5 * Math.sin(time * 10), ox = b.fam ? b.x + b.face * 24 : b.x, oy = b.fam ? b.y - 30 : b.y - 2; g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(ox - cx), Math.round(oy - cy), (b.fam ? 14 : 20) + k * 3, b.fam ? 10 : 6, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
   }
@@ -16087,6 +16072,19 @@ function updateGargoyleBoss(e, dt) {
 /* IN ONE OF HIS REALMS (src/mage-realms.js): the room you are held in is the realm's, not his hall's */
 const mageRealm=()=>boss&&boss.t==='undeadmage'&&boss.alive&&boss.realm?boss:null;
 const skyBox=()=>{const m=mageRealm();return m?realmBox(m,L.arena):carpetBox(L.arena,boss&&boss.t==='undeadmage'?boss.squeeze||0:0);};
+/* THE REALM'S BANNER (claude/archfix; Daniel, in the fire realm under the pillars: "these need to be more obvious"): the realm's name and
+   its opening in plain words, every time you are pulled in (REALM.cueLen s) and again after a blow his ward turned (REALM.cueAgain s) - a
+   HUD band of its own, not the hint box (that waits for tells and is capped twice a save). While he is OPEN it says so, with the window */
+function drawRealmBanner(xpRow,cy){const m=mageRealm();if(!m)return;const q=realmCue(m,P);if(!q)return;const C=REALM.col[q.kind];
+ const open=q.open,show=open||q.bannerT>0;if(!show)return;const k=open?1:Math.min(1,q.bannerT*2.5);
+ const title=open?'HE IS OPEN: STRIKE HIM, x2':REALM.name[q.kind],lines=open?[]:wrap(q.text,VW-48,8),tw=inkW(title,6);
+ const bw=Math.min(VW-16,Math.max(tw,...lines.map(l=>inkW(l,8)))+20),bh=12+lines.length*11+(open?6:4);
+ const heroY=P.y-cy,top=48+xpRow,foot=VH-bh-(bossActive?32:6),by=heroY>top-8&&heroY-28<top+bh+4?foot:top,bx=Math.round(VW/2-bw/2);
+ g.globalAlpha=k;g.fillStyle='rgba(10,8,20,0.9)';g.beginPath();g.roundRect(bx,by,bw,bh,4);g.fill();
+ g.strokeStyle=open?(Math.floor(time*8)%2?'#ffd36b':'#ffffff'):C[0];g.lineWidth=1;g.beginPath();g.roundRect(bx+0.5,by+0.5,bw-1,bh-1,4);g.stroke();
+ text(title,VW/2,by+4,open?'#ffd36b':C[0],'center',6);lines.forEach((ln,i)=>text(ln,VW/2,by+14+i*11,C[1],'center',8));
+ if(open){const w=Math.max(0,Math.min(1,m.modeT/REALM.openT));g.fillStyle='rgba(255,255,255,0.15)';g.fillRect(bx+8,by+bh-6,bw-16,3);g.fillStyle='#ffd36b';g.fillRect(bx+8,by+bh-6,Math.round((bw-16)*w),3);}
+ g.globalAlpha=1;m.realm.bannerDrawn=open?'open':q.text;}
 function updateUndeadMage(e,dt){
  e.hp0??=e.maxHp;const A=L.arena,box=e.realm?realmBox(e,A):carpetBox(A,e.squeeze||0);
  stepUndeadMage(e,dt,{P,box,A,rnd:Math.random,
@@ -25724,6 +25722,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (e.breakFlash > 0 && SET.flashes && sprSet.white) for (const [ox, oy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, 1], [-1, 1], [1, -1]]) drawSet(sprSet, null, frame, dx0 + ox, dy0 + oy, ps.face, true, pSX, pSY, 1, pRot);
       drawSet(sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot);
       if (!(e.flash > 0)) drawWarm('tint', sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, e.x, e.y - e.h / 2);
+      if (e.alive && e.t === 'undeadmage' && e.realm) { const op = e.open > 0; drawTinted(sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, op ? (Math.floor(time * 8) % 2 ? '#ffd36b' : '#ff9b2c') : '#6a7488', op ? 0.65 : 0.4); e.realm.tint = op ? 'open' : 'warded'; }   /* IN ONE OF HIS REALMS his whole sprite says it: gold and flashing while OPEN, cold and grey while WARDED (claude/archfix) */
       if (e.alive && e.frozen > 0) drawTinted(sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, '#bfe6f5', 0.45 + 0.1 * Math.sin(time * 6));   /* held: pale, and still */
       if (e.alive && e.relT > 0 && !e.harmless && !FLYERS.has(e.t)) drawFoeSmear(e, bigF, cx, cy);
       /* HEAVY FEET: the big ones put a little of the road up every time a foot comes down */
@@ -25750,7 +25749,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
   if(L.sanctum&&L.carpetUp&&!L.sandWalk&&!mageRealm())drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
-  drawCarpetWorld(g,L,P,cx,cy,time);drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(boss?.t==='undeadmage'){drawRealmFx(g,boss,cx,cy,time);drawTear(g,boss,cx,cy,time);}for(const q of enemies)if(q.t==='magechase'&&q.alive)drawUndeadMage(g,q,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage'&&!mageRealm())drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
+  drawCarpetWorld(g,L,P,cx,cy,time);drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(boss?.t==='undeadmage'){drawRealmFx(g,boss,cx,cy,time,P,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));drawTear(g,boss,cx,cy,time);}for(const q of enemies)if(q.t==='magechase'&&q.alive)drawUndeadMage(g,q,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage'&&!mageRealm())drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if (L.witch) drawRoots(g, L.hedgeRoots, L.witch, cx, cy, time);   /* THE ROOTS crawling, THE ROOTED GARDEN's braziers and its shivering hedges (hedge-warden.js) */
   if(L.witch)drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time,P);
   if(L.winds)drawWinds(g,L,P,cx,cy,time,VW,VH);   /* the wells in the spiked moat, and the wind round a hero it carries */
@@ -27351,6 +27350,7 @@ function render() {
       g.strokeStyle = 'rgba(255,211,107,0.7)'; g.lineWidth = 1; g.beginPath(); g.roundRect(hbx + 0.5, hby + 0.5, bw - 1, bh - 1, 4); g.stroke();
       lines.forEach((ln, i) => text(ln, VW / 2, hby + 4 + i * BODY_LH, '#ffd36b', 'center', 6)); g.globalAlpha = 1; }
     else if (state !== 'play') hintT = 0;
+    if (state === 'play') drawRealmBanner(xpRow, cy);   /* THE UNDEAD ARCHMAGE'S REALMS: the opening in plain words (claude/archfix) */
     if (state === 'play' && L.alarmT > 0) { const k = Math.min(1, L.alarmT / 14), lab = 'THE WATCH IS UP', w = lab.length * 6 + 10;
       g.fillStyle = 'rgba(60,16,16,0.85)'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 0.2 + 0.2 * Math.sin(time * 8); g.fillStyle = '#c9463d'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 1;
       g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w / 2 + 0.5, 46.5, w - 1, 10); text(lab, VW / 2, 49, '#ffd0d0', 'center', 6);

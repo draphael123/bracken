@@ -18,10 +18,10 @@ try {
     run(120,()=>s.broken);run(8);snap('seal-burnt','the ward burns and he flees');
     BK.board();run(60);const b=BK.boss;for(let i=0;i<300&&b.mode==='wake';i++)BK.sim(1);
     for(let k=0;k<3;k++){b.hp=Math.floor(b.hp0*MR.REALM.at[k]);b.realmRest=0;run(600,()=>b.mode==='realmTell'&&b.modeT<0.6);snap('tear-'+k,'he tears a portal: '+MR.REALM.kinds[k]);
-      run(200,()=>!!b.realm);const R=b.realm;
-      if(R.kind==='fire'){run(400,()=>R.ph==='tell');snap('fire-tell','the fire realm: the tiles of the pattern glowing');run(120,()=>R.ph==='burn');run(10);snap('fire-burn','the pillars stand up');run(900,()=>R.wall&&R.wall.back);snap('fire-wall','his fire wall rolling back');b.mode='scorched';b.modeT=0.2;}
-      if(R.kind==='ice'){run(400,()=>R.icicles.some(q=>q.st==='crack'));run(20);snap('ice-crack','the ice realm: an icicle cracking over you, frost down to the floor; him in his shell');b.mode='shattered';b.modeT=0.2;}
-      if(R.kind==='poison'){run(300);run(600,()=>b.mode==='sporeTell');run(20);snap('poison-spores','the poison realm: the risen mire, the vent, the spore rings - the beam cut');b.mode='vented';b.modeT=0.2;}
+      run(200,()=>!!b.realm);const R=b.realm;run(20);snap(R.kind+"-banner","into the realm: the banner names its opening (claude/archfix)");
+      if(R.kind==='fire'){run(400,()=>R.ph==='tell');snap('fire-tell','the fire realm: the tiles of the pattern glowing');run(120,()=>R.ph==='burn');run(10);snap('fire-burn','the pillars stand up');run(900,()=>R.wall&&R.wall.back);snap('fire-wall','his fire wall rolling back');b.mode='scorched';b.modeT=2;b.open=2;run(12);snap('fire-open','open: bold OPEN x2 and the window');b.modeT=0.2;}
+      if(R.kind==='ice'){run(400,()=>R.icicles.some(q=>q.st==='crack'));run(20);snap('ice-crack','the ice realm: an icicle cracking over you, frost down to the floor; him in his shell');R.goT=99;R.goX=R.icicles[3].x;run(300,()=>Math.abs(b.x-R.goX)<2);run(4);snap('ice-cue','the icicle over his shell marked: STRIKE IT');BKT.hurtEnemy(b,20,b.x-10,false);run(6);snap('ice-warded','a blow on his ward: WARDED and the banner again');b.mode='shattered';b.modeT=2;b.open=2;run(12);snap('ice-open','open: bold OPEN x2 and the window');b.modeT=0.2;}
+      if(R.kind==='poison'){run(300);run(600,()=>b.mode==='sporeTell');run(20);snap('poison-spores','the poison realm: the risen mire, the vent, the spore rings - the beam cut');b.mode='vented';b.modeT=2;b.open=2;run(12);snap('poison-open','open: bold OPEN x2 and the window');b.modeT=0.2;}
       run(200,()=>!b.realm);}
     return res;})()`, 600000);
   r.forEach(([name, d, note], j) => { writeFileSync(join(out, String(j).padStart(2, '0') + '-' + name + '.png'), Buffer.from(d.split(',')[1], 'base64')); console.log(String(j).padStart(2, '0') + '-' + name, '-', note); });
