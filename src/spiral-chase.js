@@ -99,7 +99,7 @@ export function buildSpiral(k, T) {
      one checkpoint stands beside it, just under the rising dark's start line (src/chase.js's rule) */
   ent('ringdoor', S.arrive, S.floor - 1, { id: 'spiral-foot' });
   ent('check', S.check, S.floor - 1);
-  ent('sign', S.x0 + 1, S.floor - 1, { text: 'HIS MAGIC FLOODS UP THE STAIR: CLIMB. GUARD FIRE AND FROST, LEAVE HIS MARK.' });
+  ent('sign', S.x0 + 1, S.floor - 1, { text: 'HIS DARK RISES BEHIND YOU: CLIMB. GUARD HIS FIRE AND FROST, STEP OUT OF HIS MARK.' });
   ent('magechase', FLIGHTS[0].land[0] + 2, FLIGHTS[0].land[2] - CHASE.up, { face: -1 });
   return { ...S, flights: FLIGHTS.map(F => ({ ...F })), carpet: { ...TOP } };
 }
