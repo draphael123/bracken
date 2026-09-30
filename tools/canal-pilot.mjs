@@ -86,7 +86,7 @@ try {
       leg('off at the loading step, up the ladder onto the roofs', P().y <= 22 * TS && P().x > 129 * TS);
       walk(136); hop(1, 20); walk(141); walk(144); hop(1, 20); walk(147); tick(20);
       leg('over the roofs, past the light-well and the belfry', P().x > 146 * TS);
-      walk(150, { tol: 3 }); tick(30); if (C().bridges[1].across) strike(1); wait(90);
+      walk(152, { tol: 3, noFight: true }); if (C().bridges[1].across) strike(1); wait(90);   /* swing it before they come: the garrison goes into the canal */
       leg('the bridge garrison swung into the canal', !C().bridges[1].across);
       leg('onto her at the arch\\'s end', dropOn());
       ride(() => B().holdWhy === 'fog', 900, { stay: true });

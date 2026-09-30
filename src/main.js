@@ -3299,7 +3299,7 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
 const COAST_PATH = [[260, 172], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [105, 80], [160, 100], [26, 96], [26, 26], [140, 8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
 const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' },
-  { id: 'canal', kind: 'level', level: LEVELS.findIndex(l => l.id === 'canal'), x: 48, y: 158, name: 'THE FOG CANAL' },   /* THE FOG CANAL (claude/canal): the main road out of WAYMEET, in road order (map-grammar); at the merge THE MASKWRIGHT'S THEATRE (56, 154) comes after it */
+  { id: 'canal', kind: 'level', level: LEVELS.findIndex(l => l.id === 'canal'), x: 50, y: 154, name: 'THE FOG CANAL' },   /* THE FOG CANAL (claude/canal): the main road out of WAYMEET, in road order (map-grammar); at the merge THE MASKWRIGHT'S THEATRE comes after it (move it to about (62, 151) so the two do not crowd) */
   { id: 'fair', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fair'), x: 72, y: 148, name: 'THE HARVEST FAIR' },   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): the second stop on the road inland, on the road between WAYMEET and THE HEXED FIELDS */
   { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 62, y: 122, name: 'THE HEXED FIELDS' },   /* moved up-left of Waymeet, off the entrance V (map-redesign §6, 2b) - the only node this fix moves */
   { id: 'burial', kind: 'level', level: LEVELS.findIndex(l=>l.id==='burial'), x: 130, y: 82, name: 'THE BURIAL CAVERNS' },
@@ -3311,7 +3311,7 @@ const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l 
    the return leg painted at full road weight on top of the outbound one, so the required town read as a dead end.
    Waymeet does not move. The road now enters, runs through it, and climbs away in a new direction; THE HEXED FIELDS
    moves so the road leaving Waymeet does not have to double back across its own entrance to reach it. */
-const INLAND_PATH = [[140, 176], [40, 162], [48, 158], [72, 148], [62, 122], [130, 82], [170, 66], [214, 76], [260, 34]];
+const INLAND_PATH = [[140, 176], [40, 162], [50, 154], [72, 148], [62, 122], [130, 82], [170, 66], [214, 76], [260, 34]];
 /* THE FIFTH SHEET, EMPTY (map-redesign §4.1/§8 step 2). DESERT_NODES is [] on purpose - none of the desert's eight
    levels is in LEVELS yet, and a node whose level index is -1 crashes nodeLocked's LEVELS[-1] on the map's first
    frame (§8). This is geometry and a seam only: the entry point the desert's own road will start from one day, and

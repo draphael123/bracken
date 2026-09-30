@@ -2,8 +2,8 @@
 
 **Id** `canal`. **Road**: the main road inland, WAYMEET -> THE FOG CANAL -> (THE MASKWRIGHT'S THEATRE, claude/theatre) -> THE HARVEST FAIR.
 On this branch the theatre does not exist, so the canal `needs: 'waymeet'` and the fair `needs: 'canal'`. **At the merge with claude/theatre**:
-the theatre's `needs` becomes `'canal'`, the fair keeps `needs: 'theatre'`, and the inland map runs waymeet (40,162) -> canal (48,158) ->
-theatre (56,154) -> fair (72,148) (all four sit on one straight stretch of the road).
+the theatre's `needs` becomes `'canal'`, the fair keeps `needs: 'theatre'`, and the inland map runs waymeet (40,162) -> canal (50,154) ->
+theatre (move it from (56,154) to about (62,151), so the two do not crowd) -> fair (72,148).
 **Boss**: JENNY GREENTEETH (claude/lockkeeper, boss id `greenteeth`), in the lock chamber at the end. **Music**: its own track, `canal`
 (`audio/canal.ogg`, made by `tools/canal-music.mjs`: a slow barcarolle in A minor, 6/8, musette accordion and hurdy-gurdy; a placeholder
 for the art/music lane). **Code**: `src/fog-canal.js` (the level), `src/canal-rig.js` (the machinery, pure), `src/canal-hands.js` (its hands

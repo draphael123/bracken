@@ -69,7 +69,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   if (!plain) for (const [x0, x1, y, yb] of (L.glyphBridges || [])) lifts.push({ kind: 'glyph', x0, x1, y0: Math.min(y, yb ?? y), y1: Math.max(y, yb ?? y) });
   /* A CABLEWAY LINE (the Ore Road): its buckets are a clock of platforms along one cable - board anywhere along it, leave anywhere. L.cableBridges [x0, x1, y0, y1] */
   if (!plain) for (const [x0, x1, y0, y1] of (L.cableBridges || [])) lifts.push({ kind: 'cable', x0, x1, y0, y1 });
-  /* THE FLY LINES (THE MASKWRIGHT'S THEATRE, src/theatre-rig.js): a batten or its sandbag runs between two stops on its line - board it at either, leave it at either. L.rigBands [x0, x1, y0, y1] */
+  /* THE FLY LINES AND THE BARGE (THE MASKWRIGHT'S THEATRE's battens; THE FOG CANAL's barge on a reach or a lock, src/canal-rig.js): a platform that runs between two stops - board it at either, leave it at either. L.rigBands [x0, x1, y0, y1] */
   if (!plain) for (const [x0, x1, y0, y1] of (L.rigBands || [])) lifts.push({ kind: 'fly line', x0, x1, y0, y1 });
   if (!plain) for (const m of (L.moversExtra || [])) if (m.x0 !== undefined && m.x1 !== undefined && m.y !== undefined && m.kind !== 'lift' && m.kind !== 'growcap' && m.kind !== 'hexvine') lifts.push({ kind: m.kind, x0: Math.floor(m.x0 / TSZ), x1: Math.floor((m.x1 + (m.w || 16) - 1) / TSZ), y0: Math.floor(m.y / TSZ), y1: Math.floor(m.y / TSZ) });
   const swings = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'swing').map(m => { const pts = []; for (let k = -6; k <= 6; k++) { const th = 0.9 * k / 6; pts.push([Math.floor((m.px + Math.sin(th) * m.arm) / TSZ), Math.floor((m.py + Math.cos(th) * m.arm) / TSZ) - 1]); } return pts; });

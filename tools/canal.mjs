@@ -171,25 +171,25 @@ if (!NOPAGE && lv) {
       const C = () => BK.canal(), P = BK.P, k = BK.keys, sim = n => { for (let i = 0; i < n; i++) BK.sim(1); };
       const kill = f => BK.enemies().filter(f).forEach(e => e.alive = false);
       // 1. SHE CARRIES YOU; A LOW BEAM FINDS A RIDER STANDING, NOT ONE DUCKED
-      fresh(false); kill(e => true); BK.tp(38, 37); sim(20); const x0 = P.x; out.board = !!(P.onMover && P.onMover.canal); sim(120); out.carried = P.x - x0;
+      fresh(false); kill(e => true); BK.tp(38, 37); sim(40); const x0 = P.x; out.board = !!(P.onMover && P.onMover.canal); sim(120); out.carried = P.x - x0;
       let hp0 = P.hp; for (let i = 0; i < 1500 && C().barge.x < 60 * TS; i++) { k.down = true; BK.sim(1); } k.down = false; out.ducked = hp0 - P.hp;
       fresh(false); kill(e => true); C().barge.x = 44 * TS; BK.tp(47, 37); sim(20); hp0 = P.hp; for (let i = 0; i < 1500 && C().barge.x < 60 * TS; i++) BK.sim(1); out.stood = hp0 - P.hp;
       // 2. A PADDLE FILLS THE LOCK AND LIFTS HER; THE GATE ABOVE OPENS
       fresh(); kill(e => true); C().barge.x = 74 * TS; BK.tp(79, 38); sim(20); P.face = 1; BK.press('atk'); sim(12);
-      const g2 = () => BK.L.grid[34 * BK.L.W + 81]; out.lockPre = g2(); sim(300); out.lock = [Math.round(C().barge.y), Math.round(P.y), g2(), C().gates.find(g => g.id === 'G2').open];
+      const g2 = () => BK.L.grid[34 * BK.L.W + 81]; out.lockPre = g2(); sim(700); out.lock = [Math.round(C().barge.y), Math.round(P.y), g2(), C().gates.find(g => g.id === 'G2').open];
       // 3. A CAPSTAN SWINGS THE MILL BRIDGE OUT OF THE GRID
       fresh(); kill(e => true); BK.tp(117, 29); sim(20); const deck = () => BK.L.grid[30 * BK.L.W + 114]; out.bridgePre = deck(); P.face = 1; BK.press('atk'); sim(90); out.bridge = [deck(), C().bridges[0].across];
       // 4. THE FOG WALL HOLDS HER UNTIL A HORN CLEARS IT
-      fresh(); kill(e => true); for (const b of C().bridges.slice(0, 2)) { b.across = false; b.k = 1; } C().barge.x = 158 * TS; BK.tp(160, 32); sim(20); sim(300); out.fogHeld = [C().barge.holdWhy, Math.round((C().barge.x + 96) / TS)];
-      C().horns[0].cd = 0; for (const f of C().fogs) if (f.id === 'F2') f.clear = 9; sim(300); out.fogOn = Math.round((C().barge.x + 96) / TS);
+      fresh(); kill(e => true); for (const b of C().bridges.slice(0, 2)) { b.across = false; b.k = 1; } C().barge.x = 158 * TS; BK.tp(164, 29); sim(20); sim(300); out.fogHeld = [C().barge.holdWhy, Math.round((C().barge.x + 96) / TS)];
+      C().horns[0].cd = 0; for (const f of C().fogs) if (f.id === 'F2') f.clear = 9; BK.tp(173, 29); sim(300); out.fogOn = Math.round((C().barge.x + 96) / TS);
       // 5. AN ARCHER IN THE FOG LOOSES ONLY AT A LIT HERO
-      fresh(); const ar = BK.enemies().find(e => e.t === 'archer' && Math.abs(e.x - (178 * TS + 8)) < 20); kill(e => e !== ar); for (const p of C().posts) p.lit = false; C().barge.x = 120 * TS;
-      BK.tp(172, 29); let dark = 0; for (let i = 0; i < 400; i++) { BK.sim(1); if (ar.draw > 0.3) dark++; } C().posts.push({ x: P.x, y: P.y, lit: true }); let lit = 0; ar.timer = 0; for (let i = 0; i < 400; i++) { BK.sim(1); if (ar.draw > 0.3) lit++; } out.archer = [dark, lit];
+      fresh(); const ar = BK.enemies().find(e => e.t === 'archer' && Math.abs(e.x - (155 * TS + 8)) < 20); kill(e => e !== ar); for (const p of C().posts) p.lit = false; C().barge.x = 90 * TS;
+      BK.tp(150, 29); let dark = 0; for (let i = 0; i < 400; i++) { BK.sim(1); if (ar.draw > 0.3) dark++; } C().posts.push({ x: P.x, y: P.y, lit: true }); let lit = 0; ar.timer = 0; for (let i = 0; i < 400; i++) { BK.sim(1); if (ar.draw > 0.3) lit++; } out.archer = [dark, lit];
       // 6. THE GRINDYLOW AT THE QUAY'S EDGE: it grabs; three presses break it
       fresh(false); const gr = BK.enemies().find(e => e.t === 'grindylow' && e.x < 40 * TS); kill(e => e !== gr); C().barge.x = 50 * TS; BK.tp(35, 38); P.face = 1; let grabbed = false, freed = false;
       for (let i = 0; i < 400 && !freed; i++) { BK.sim(1); if (gr.mode === 'grab') grabbed = true; if (grabbed && gr.mode === 'grab' && i % 4 === 0) BK.press('jump'); if (grabbed && gr.mode !== 'grab') freed = true; } out.grind = [grabbed, freed, gr.mode];
       // 7. THE TWO WEEDS: bright holds a moment and gives; dark holds nothing
-      fresh(); kill(e => true); BK.tp(21, 38); sim(30); out.bright0 = Math.round(P.y); sim(200); out.bright1 = Math.round(P.y); BK.tp(24, 38); sim(30); out.dark = Math.round(P.y);
+      fresh(); kill(e => true); BK.tp(21, 38); sim(30); out.bright0 = Math.round(P.y); sim(500); out.bright1 = Math.round(P.y); BK.tp(24, 38); sim(30); out.dark = Math.round(P.y);
       // 8. THE CANAL BITES AND HANDS YOU BACK
       fresh(false); kill(e => true); BK.tp(33, 38); sim(20); hp0 = P.hp; BK.tp(50, 44); sim(30); out.water = [hp0 - P.hp, Math.round(P.x / TS), Math.round(P.y / TS)];
       // 9. THE WEIR GATE BURSTS AND THE CHASE RUNS

@@ -118,9 +118,9 @@ export function canalUpdate(st, H, dt) {
   // ---- THE LOW BEAMS (the teaching one on the Waymeet pound; the weir's are the chase's) ----
   st.beamCd = Math.max(0, st.beamCd - dt);
   H.eachHero(P => { if (P.dead || st.beamCd > 0) return; for (const bm of st.D.beams || []) if (beamHit(duckBox(P), duckClears(P, bm.y), bm, H.time())) { st.beamCd = 1; H.hurtHero((bm.x0 + bm.x1) / 2, bm.dmg || 10, { unblockable: true, name: bm.name }); S.thud(); H.shake(3); hint(st, H, 'beam', 'DUCK UNDER A LOW BEAM: HOLD DOWN ON THE DECK.'); } });
-  // ---- THE WAY BACK: the last dry ground you stood on (the canal hands you back to it); on the weir run, the basin's bank ----
+  // ---- THE WAY BACK: the last dry ground you stood on (the canal hands you back to it); on the weir run (and anywhere in the race below the burst gate), the basin's bank ----
   H.eachHero(P => { if (P.dead) return;
-    if (b.mode === 'loose' && P.onMover === m && st.D.weir) P.safe = { x: st.D.weir.bank[0], y: st.D.weir.bank[1], L: H.L() };
+    if (st.D.weir && ((b.mode === 'loose' && P.onMover === m) || (P.x > st.D.weir.head[0][0] && P.x < st.D.weir.end - 48 && !P.onMover))) P.safe = { x: st.D.weir.bank[0], y: st.D.weir.bank[1], L: H.L() };
     else if (P.onMover === m && b.mode === 'float') P.safe = { x: Math.max(b.x + 12, Math.min(b.x + b.w - 12, P.x)), y: b.y - 4, L: H.L() };   /* off her deck into the water: back onto her deck (she waits for whoever is not aboard) */
     else if (P.ground && !P.onMover && !P.climb && !R.inWeed(st.D, st, P.x, P.y) && H.solidUnder(P.x, P.y)) P.safe = { x: P.x, y: P.y, L: H.L() }; });
   // ---- THE HINTS THAT TEACH WHAT SHE DOES ----

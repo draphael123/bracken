@@ -130,7 +130,7 @@ export function buildFogCanal({ painter, T, TS }) {
   air(107, 109, 16, 17);                                                     /* the miller's door */
   block(85, 109, 12, 12);                                                    /* the roof */
   boards(86, 27, 9); boards(90, 24, 9); boards(86, 21, 9); boards(90, 18, 17);   /* the floors, three rows apart and staggered: a climb, floor over floor */
-  bargee(95, 23, 'the mill'); archer(104, 17, 'the mill'); bargee(88, 20, 'the mill');
+  bargee(95, 23, 'the mill floor'); archer(104, 17, 'the mill top'); bargee(88, 20, 'the mill loft');
   ent('check', 99, 17);                                                      /* CHECKPOINT ONE: the mill's top floor */
   coins([88, 26], [95, 23], [89, 20], [97, 17]);
   ent('mend', 102, 17);
@@ -149,7 +149,7 @@ export function buildFogCanal({ painter, T, TS }) {
      A WISP floats on past the bank's end over the weed, where no post stands. A ladder at the bank's end is the way out of the water */
   weedWater.push([124, 129, 'P1']); weed(124, 129, 33);
   sign(119, 29, 'A LANTERN STANDS ON A POST. A LIGHT WITH NO POST IS A WISP: STRIKE IT.');
-  wisp(125, 28, [128, 31], 'the weed reach');
+  wisp(125, 28, [128, 31], 'the weed reach lure');
   grindy(126, 33, 'the weed reach');                                         /* in the weed, at the barge's edge as she pushes through */
   /* THE LONG ARCH: a row of warehouses built over the canal. The tunnel under it is too low for anyone standing, even ducked: the barge goes
      through without you. Off at the loading step and up the ladder onto the rooftops, and catch her on the far side */
@@ -158,29 +158,29 @@ export function buildFogCanal({ painter, T, TS }) {
   air(138, 139, 22, 32);                                                     /* THE LIGHT-WELL: the one gap in the roofs, straight down to the water */
   block(132, 135, 19, 21); block(142, 144, 20, 21); block(145, 147, 17, 21);   /* a gable, a step of roof, the belfry */
   post(137, 21); post(141, 21);
-  wisp(138, 20, [138, 26], 'the rooftops');                                  /* over the light-well: a lamp where there is no roof */
-  archer(146, 16, 'the rooftops');                                           /* on the belfry: in the fog he sees only the lit (the posts beside the light-well) */
+  wisp(138, 20, [138, 26], 'the light-well');                                  /* over the light-well: a lamp where there is no roof */
+  archer(146, 16, 'the belfry');                                           /* on the belfry: in the fog he sees only the lit (the posts beside the light-well) */
   bargee(140, 21, 'the rooftops');
   coins([133, 18], [136, 21], [143, 19], [146, 16]);
   block(139, 139, 26, 26); ladder(138, 22, 25); ent('silver', 139, 25);     /* a corbel down the light-well, and its ladder back up (a pocket) */
   /* THE BRIDGE GARRISON (DEVELOP the bridge; the barge held on the far side of the arch): two archers stand on the swing bridge with a lantern
      between them. Swing it from its near end and they go into the canal */
-  boards(148, 30, 4);                                                        /* the near bank, under the arch's end */
-  const B2 = bridge(152, 157, 30, 'across', [151, 29]);
-  archer(153, 29, 'the bridge garrison'); archer(156, 29, 'the bridge garrison'); post(155, 29);
-  boards(158, 30, 7); post(160, 29);
+  boards(148, 30, 6);                                                        /* the near bank, under the arch's end (long enough to land on off the belfry) */
+  const B2 = bridge(154, 159, 30, 'across', [153, 29]);
+  archer(155, 29, 'the bridge garrison'); archer(158, 29, 'the bridge garrison'); post(157, 29);
+  boards(160, 30, 5); post(161, 29);
   /* THE FOG WALL (the fog as a LOCK): a bank so thick the barge will not go into it. A FOGHORN on the bank clears it for a while - long enough
      if you are quick. A second horn on a pier halfway, if the fog comes back on you */
   fog('F2', 165, 180, 0, 40, { thick: true, a: 0.9 });
   fog('F3', 226, 262, 0, 30, { a: 0.6 });                                     /* the fog lies thin over the summit and the weir's head */
   horn(163, 29, ['F2']);
   boards(171, 30, 3); horn(172, 29, ['F2']);
-  wisp(166, 28, [168, 32], 'the fog wall');
-  grindy(168, 33, 'the fog wall');                                           /* under the stopped barge */
-  boards(176, 25, 6); archer(178, 24, 'the fog wall');                       /* a footbridge high over the fog wall */
+  wisp(166, 28, [168, 32], 'the fog wall lure');
+  grindy(168, 33, 'the fog wall water');                                           /* under the stopped barge */
+  boards(176, 25, 6); archer(178, 24, 'the fog wall footbridge');                       /* a footbridge high over the fog wall */
   boards(181, 30, 5);                                                        /* out of the fog: the bank to the flight */
   coins([159, 29], [173, 29], [182, 29]);
-  ent('mend', 182, 29); post(185, 29); bargee(184, 29, 'the flight');         /* the first of the flight's bargees, on the bank at its foot */
+  ent('mend', 182, 29); post(185, 29); bargee(184, 29, 'the flight foot');         /* the first of the flight's bargees, on the bank at its foot */
 
   // ---------------- 4. THE FLIGHT (186-247): three locks up the hill, and the summit bridge ----------------
   /* A STAIRCASE: each chamber's upper gate is the next one's lower. The first paddle is on the gate's face again; the second is up on a balance
@@ -194,19 +194,19 @@ export function buildFogCanal({ painter, T, TS }) {
   const P4 = reach('P4', 232, 247, 23, 18, 18); block(232, 247, 24, H - 1);
   gate('G6', 231, 17, 22, L4, P4); block(231, 231, 23, H - 1);
   block(186, 197, 39, 39);                                                   /* (under the mill pound's end) */
-  sluice(208, 32, 'L2'); grindy(207, 33, 'the flight');
-  boards(203, 25, 6); bargee(206, 24, 'the flight');                         /* a ledge over the first chamber: he waits for her to come up to him */
+  sluice(208, 32, 'L2'); grindy(207, 33, 'the first chamber');
+  boards(203, 25, 6); bargee(206, 24, 'the first chamber ledge');                         /* a ledge over the first chamber: he waits for her to come up to him */
   boards(215, 16, 4); ladder(214, 16, 27); sluice(217, 15, 'L3');           /* THE BALANCE BEAM over the second chamber, its ladder and its paddle */
-  bargee(216, 15, 'the flight');
-  grindy(218, 28, 'the flight');                                             /* the second chamber's steps */
+  bargee(216, 15, 'the balance beam');
+  grindy(218, 28, 'the second chamber');                                             /* the second chamber's steps */
   ladder(230, 16, 22);                                                       /* up the summit gate's face to its top */
   weedWater.push([232, 236, 'P4']); weed(232, 236, 18);
   /* THE SUMMIT BRIDGE (TWIST: across, it is YOUR way over the weed to the last paddle; then it holds the barge, and it must be swung behind you) */
   const B3 = bridge(232, 236, 16, 'across', [237, 15]);   /* (a step up off the gate's top, level with the summit bank) */
   boards(237, 16, 10); sluice(239, 15, 'L4');
-  wisp(234, 13, [233, 17], 'the summit');                                   /* THE WEIR APPROACH: a light over the summit weed */
+  wisp(234, 13, [233, 17], 'the summit weed');                                   /* THE WEIR APPROACH: a light over the summit weed */
   block(244, 247, 11, 12);                                                   /* the keeper's hut roof over the summit bank (its posts are the bank) */
-  archer(246, 10, 'the summit');
+  archer(246, 10, 'the keeper hut');
   ent('check', 242, 15);                                                     /* CHECKPOINT TWO: the summit, right before the burst */
   sign(240, 15, 'PAST THE GATE THE RACE SPLITS: THE MILL CUT OR THE WEIR. THE TILLER STEERS.');
   coins([222, 20], [226, 20], [238, 14], [245, 14]);
@@ -229,8 +229,8 @@ export function buildFogCanal({ painter, T, TS }) {
   const cut = (x0, x1, surf) => { block(x0, x1, surf + 2, surf + 4); pools.push({ x0: px(x0), x1: px(x1 + 1), y: surf * TS + 4, shallow: true, swim: false, clear: true, bottom: (surf + 2) * TS, canal: 'cut' }); };
   cut(276, 290, 26); cut(291, 300, 30); cut(301, 308, 34); cut(309, 315, 38);
   for (const [x0, x1, y] of [[279, 281, 26], [285, 287, 26], [295, 297, 30]]) { block(x0, x1, y - 4, y - 4); beams.push({ weir: true, x0: px(x0), x1: px(x1 + 1), y: y * TS - 2 - 9, name: 'A LOW BEAM' }); }
-  boards(283, 20, 5); archer(285, 19, 'the mill cut');                       /* a footbridge over the cut */
-  boards(303, 28, 5); archer(305, 27, 'the mill cut');
+  boards(283, 20, 5); archer(285, 19, 'the high cut bridge');                       /* a footbridge over the cut */
+  boards(303, 28, 5); archer(305, 27, 'the low cut bridge');
   boards(292, 27, 4); bargee(293, 26, 'the mill cut');                       /* on a low plank over the cut: he hooks at her as she passes */
   grindy(288, 44, 'the lower river'); grindy(306, 44, 'the lower river');   /* on the rapids, at her edges */
   block(299, 301, 42, 42); ent('silver', 300, 41);                          /* a ledge on the gorge wall, only from the lower river (a pocket) */
@@ -265,7 +265,7 @@ export function buildFogCanal({ painter, T, TS }) {
   weedWater.push([349, 354, 'P5']); weed(349, 350, 44); weed(351, 352, 44, 'bright'); weed(353, 354, 44);
   wisp(353, 40, [354, 44], 'the weed');                                       /* over the weed: the lock's lamp, it seems */
   wisp(334, 40, [336, 45], 'the fog');                                        /* in the thick: over the water beside the bridge */
-  grindy(331, 44, 'the basin'); grindy(368, 44, 'the lock steps');
+  grindy(331, 44, 'the basin'); grindy(368, 44, 'the basin lock steps');
   boards(340, 34, 20); archer(345, 33, 'the theatre bridge'); archer(355, 33, 'the theatre bridge');   /* THE THEATRE BRIDGE, high over the basin */
   post(350, 33); ladder(349, 34, 40);                                         /* a ladder up to it off the island: its archers can be reached */
   moorings.push({ cp: [375, 40], x: 364, fill: ['L5'], bridges: { [B4]: 'open' } });        /* a death at the lock door: she is moored at its foot */
@@ -291,6 +291,7 @@ export function buildFogCanal({ painter, T, TS }) {
   air(376, 415, 25, 40); block(376, 415, 41, H - 1);                         /* HER FOOTPRINT (a placeholder floor on her bed row until she is wired) */
   ent('gate', 377, 40);                                                        /* the level's end until her fight lands: just inside her west door */
   block(416, 431, 41, H - 1);                                                  /* the theatre quarter's quay, past her east door */
+  bargee(426, 40, 'the theatre quay');                                        /* the last of them, waiting at the quay where the theatre's boats land (past her, when she is wired) */
 
   // ================= THE LADDERS, LAST =================
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
