@@ -233,6 +233,16 @@ export const SFX = {
   emberSputter() { crackle(3); noise(0.06, 0.1, 2600, 1.2); tone('square', vary(300), 120, 0.05, 0.05, 0.02); },
   emberOverheat() { noise(0.5, 0.4, 520, 0.4); tone('sine', 72, 28, 0.6, 0.36); noise(0.6, 0.14, 3400, 0.8, 0.12); crackle(8, 0.05); },
   emberFlare() { if (!gate('emberFlare', 0.08)) return; noise(0.3, 0.24, 1600, 0.5); tone('sawtooth', 220, 660, 0.2, 0.08); bell(1568, 0.4, 0.07, 0.02); crackle(5, 0.04); },
+  /* THE CROUCH TWISTS, PART A (src/crouch-a.js). The knight's LOW GUARD: oak on the turf and a short dull knock, no ring (the ring is
+     the standing parry's); his SHIELD TRIP: the rim scraped along the floor into ankles. The warden's SET: the heel bitten into the
+     ground and the haft creaking level; her LOW POKE: a quick hiss of the point along the grass. The freebooter's RAMROD: a thin
+     rattle of iron in the barrel, and the ball SEATED with a click and a cock of the lock */
+  lowGuard() { if (!gate('lowGuard', 0.05)) return; tone('sine', 130, 60, 0.12, 0.26); noise(0.07, 0.24, 520, 0.6); tone('square', 900, 620, 0.04, 0.08, 0.01); },
+  shieldTrip() { if (!gate('shieldTrip', 0.08)) return; noise(0.16, 0.2, 900, 0.5); tone('triangle', 200, 110, 0.12, 0.12); tone('square', 1100, 700, 0.04, 0.07, 0.06); },
+  spearSet() { if (!gate('spearSet', 0.2)) return; noise(0.06, 0.16, 420, 0.5); tone('sine', 110, 70, 0.1, 0.14); tone('triangle', 330, 300, 0.12, 0.05, 0.05); },
+  lowPoke() { if (!gate('lowPoke', 0.08)) return; noise(0.1, 0.14, 2600, 1.2); tone('triangle', 700, 1100, 0.07, 0.06); },
+  ramrod() { if (!gate('ramrod', 0.2)) return; noise(0.05, 0.1, 5200, 2); tone('square', 1800, 1500, 0.03, 0.04); tone('square', 1500, 1300, 0.03, 0.035, 0.07); },
+  pistolSeat() { tone('square', 2200, 1800, 0.025, 0.08); tone('square', 1200, 900, 0.03, 0.1, 0.06); noise(0.04, 0.12, 3600, 1.4, 0.06); },
   pyre() { if (!ac) return; const t = ac.currentTime; const src = ac.createBufferSource(); src.buffer = noiseBuf; const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(3200, t + 0.35); const gn = ac.createGain(); gn.gain.setValueAtTime(0.001, t); gn.gain.exponentialRampToValueAtTime(0.42, t + 0.08); gn.gain.exponentialRampToValueAtTime(0.001, t + 0.7); src.connect(f); f.connect(gn); gn.connect(sfxGain); src.start(t); src.stop(t + 0.75);
     tone('sawtooth', 110, 45, 0.5, 0.18); tone('sine', 80, 30, 0.6, 0.35, 0.04); crackle(6, 0.05); },
   pyreBoom() { noise(0.55, 0.45, 480, 0.4); tone('sine', 64, 26, 0.75, 0.42); noise(0.25, 0.2, 2600, 0.7, 0.05); crackle(8, 0.08); },

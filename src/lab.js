@@ -6,7 +6,8 @@ import { mulberry } from './px.js';   /* bossLab seeds Math.random for the row i
 // kill, and how much of your health it costs. Both yield between fights, so a page can be polled while they run.
 //   await BK.fightLab({ levels: ['wood', 'spire', 'waymeet'], heroes: [...], foes: [...], reps: 2 })   -> window.__lab
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
-import { MARK } from './marks.js';
+import { MARK, HEIGHT } from './marks.js';
+import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS } from './spiral-chase.js';   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
 import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
 import { GEO as GEO_K } from './geomancer.js';   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
@@ -77,6 +78,34 @@ export function emberPlan(BK, h, e) {
   return BK.seeds().some(s => !s.dead && !s.reflected && !s.noBlock && !s.unblockable && !s.chain && (s.x - P.x) * (s.vx || 0) < 0 && Math.abs(s.y - (P.y - 6)) < 22
     && Math.abs(s.x - P.x) < 18 + Math.max(10, Math.abs(s.vx || 0) * EMBER_LATE)) ? 'raise' : null; }
 export const emberNow = (BK, h, e) => emberPlan(BK, h, e) === 'raise';
+/* THE CROUCH TWISTS, PART A, in the hands (claude/croucha, src/crouch-a.js). Each says, for one frame against one foe, "hold down":
+     lowGuardNow  - THE KNIGHT: a YELLOW blow that is not a high one (a high one goes over him anyway), told near him and in its last
+                    LOW_LATE s, or landing now - he takes it on the low guard (no step back, so he is still in reach to answer) instead
+                    of standing up behind the shield. Not on a nearly empty bar (the low guard costs a raised shield's wind, and out
+                    of it the guard breaks). His crouched X is the SHIELD TRIP: the family table's sweep, when he is stood still for it
+     setSpearNow  - THE WARDEN: a YELLOW charge (a tell CHARGE_TELL names) told in front of her, or the run itself coming at her - she
+                    sets the spear and it runs onto the point. Her crouched X is the LOW POKE, under a shield (the table's sweep again)
+     reloadCrouchNow - THE FREEBOOTER: the pistol empty and the foe well out of the cutlass's reach - he kneels and reloads (twice as
+                    fast) instead of walking in, and the loaded pistol is then the table's heavy from range; winding it with his feet
+                    still, he holds down too, and the shot is the STEADY one */
+export const LOW_LATE = 0.35;
+export function lowGuardNow(BK, h, e) {
+  if (h !== 'knight' || !BK.crouchA || !e || !e.alive) return false; const P = BK.P, C = BK.crouchA();
+  if (!C || !P.ground || P.swim || P.climb || P.dead || P.st < 16 || P.atk >= 0 || P.dodge > 0 || HELD(e)) return false;
+  if (Math.abs(e.x - P.x) > 64 + (e.w || 12) / 2 || Math.abs(e.y - P.y) > 30) return false;
+  if (BK.telling(e)) return BK.markOf(e) === '!' && BK.duck().height(e) !== 'high' && !(typeof e.modeT === 'number' && e.modeT > LOW_LATE);
+  const k = e.toldK; return !!(k && MARK[k] === '!' && HEIGHT[k] !== 'high' && C.now - (e.toldAt ?? -9) < 0.7); }
+export function setSpearNow(BK, h, e) {
+  if (h !== 'warden' || !BK.crouchA || !e || !e.alive) return false; const P = BK.P, C = BK.crouchA();
+  if (!C || !P.ground || P.swim || P.climb || P.dead || P.atk >= 0 || P.dodge > 0 || HELD(e)) return false;
+  if (Math.abs(e.x - P.x) > 110 || Math.abs(e.y - P.y) > 30) return false;
+  if (BK.telling(e)) return BK.markOf(e) === '!' && CHARGE_TELL.test(String(e.mode || ''));
+  const k = e.toldK; return !!(k && MARK[k] === '!' && CHARGE_TELL.test(k.split('|')[1] || '') && e.blowMode && e.mode === e.blowMode && (e.x - P.x) * (e.vx || 0) < 0 && C.now - (e.toldAt ?? -9) < 1.5); }
+export function reloadCrouchNow(BK, h, e) {
+  if (h !== 'pirate' || !BK.crouchA) return false; const P = BK.P;
+  if (P.loaded || !P.ground || P.swim || P.climb || P.dead || P.atk >= 0 || P.dodge > 0) return false;
+  if (!e || !e.alive) return true;
+  return Math.abs(e.x - P.x) > LAB_REACH.pirate + (e.w || 12) / 2 + 40; }
 export const HELD = e => (e.broken || 0) > 0.3 || (e.pinned || 0) > 0.3;
 /* FIRE ON THE GROUND, under x (a sapper's pot, a burning stake): the fire hurts inside nine pixels of it, so the bot keeps fourteen off.
    A bot that plants its feet to wind a heavy or stands off to shoot was measured standing in one for four ticks of it in the Stockade's room */
@@ -179,6 +208,7 @@ function labBotFrame(BK, h, e, f) {
   if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
   if (duckNow(BK, h, e)) { defend = 1; k.down = true; BK.unpress(); }   /* THE DUCK: a high blow goes over (duckNow) */
   else if (emberPlan(BK, h, e)) { defend = 1; k.down = emberPlan(BK, h, e) === 'raise'; BK.unpress(); }   /* THE EMBER WARD: stood still for a yellow windup and raised in its last beat, to flare (emberPlan) */
+  else if (lowGuardNow(BK, h, e) || setSpearNow(BK, h, e)) { defend = 1; k.down = true; BK.unpress(); }   /* THE KNIGHT'S LOW GUARD, THE WARDEN'S SET SPEAR (src/crouch-a.js) */
   else if (threat && P.atk < 0 && !(P.dash > 0)) {
     defend = 1;   /* (a heavy half wound goes if it can, and is dropped if it cannot) */
     if (HARD_TELLS.has(e.t + '|' + e.mode)) { k[d > 0 ? 'left' : 'right'] = true; if (f % 14 === 0) BK.press('dodge'); }
@@ -186,11 +216,13 @@ function labBotFrame(BK, h, e, f) {
     else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
     else if (h === 'warden') { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); }
     else k.block = true;
-  } else {
+  } else if (reloadCrouchNow(BK, h, e)) { k.down = true; }   /* THE FREEBOOTER DUCKS AND RELOADS, well out of the cutlass's reach */
+  else {
     const s = strike(BK, h, e, f); swing = s.swing;
     /* THE WARDEN KEEPS HER POINT OUT: inside the haft she only shoves, so she steps back out of it (her step goes backward by itself) */
     if (h === 'warden' && ad < 20 && P.atk < 0 && !(P.charge > 0) && !(P.dodge > 0) && P.st >= 20 && f % 10 === 0) BK.press('dodge');
-    if (!k.left && !k.right && !(P.charge > 0)) { if (h === 'pirate' && s.verb === 'heavy' && ad < s.want - 8) k[d > 0 ? 'left' : 'right'] = true; else if (ad > s.want + 2) k[d > 0 ? 'right' : 'left'] = true; else if (s.verb === 'plunge' && !P.ground && ad > 3) k[d > 0 ? 'right' : 'left'] = true; }
+    if (h === 'pirate' && P.charge > 0 && !k.left && !k.right) k.down = true;   /* winding the pistol with his feet still: from the crouch, the STEADY shot */
+    if (!k.left && !k.right && !(P.charge > 0) && !(swing && s.verb === 'sweep' && (h === 'knight' || h === 'warden'))) { if (h === 'pirate' && s.verb === 'heavy' && ad < s.want - 8) k[d > 0 ? 'left' : 'right'] = true; else if (ad > s.want + 2) k[d > 0 ? 'right' : 'left'] = true; else if (s.verb === 'plunge' && !P.ground && ad > 3) k[d > 0 ? 'right' : 'left'] = true; }
   }
   { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */
   if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.block = true; }

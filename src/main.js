@@ -63,6 +63,7 @@ import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; i
 import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { makeEmberWard, EMBER as EMBER_K } from './ember-ward.js';   /* THE EMBER WARD (claude/ember-ward): the pyromancer's duck raises a half-dome of fire that runs on heat */
+import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease } from './attack-tokens.js';
 import { installTactics, braceHit } from './foe-tactics.js';
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
@@ -542,6 +543,7 @@ let K = bakeKnight();
 const godMode = () => !!SET.godmode;
 const owns = (tab, id) => godMode() || !!(PROG[tab.owned] && PROG[tab.owned][id]);
 const hero = () => PROG.hero || 'knight'; const isPyro = () => hero() === 'pyro'; const isPaladin = () => hero() === 'paladin'; const isPirate = () => hero() === 'pirate'; const isReaper = () => hero() === 'reaper'; const isWarden = () => hero() === 'warden'; const isGeo = () => hero() === 'geomancer'; let GEO = null; let EMBER = null;   /* THE PYROMANCER'S EMBER WARD (src/ember-ward.js), bound beside the Geomancer's kit */   /* THE GEOMANCER's kit (src/geomancer.js), bound below once the world it reaches into exists */
+let CA = null;   /* THE CROUCH TWISTS, PART A (src/crouch-a.js), bound beside the ember ward */
 const numWord = n => { const ONES = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
   const TENS = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
   if (n < 20) return ONES[n] || String(n);
@@ -5058,6 +5060,8 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   /* THE EMBER WARD (src/ember-ward.js): what did not go over her meets the dome - a yellow blow is blocked, singes its thrower and heats
      the ward (a flare on the beat), a red one breaks through */
   if (isPyro() && EMBER && P.emberUp) { const w = EMBER.takes(fromX, dmg, unblockable, who || updFoe); if (w === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; } }
+  /* THE KNIGHT'S LOW GUARD (src/crouch-a.js): crouched, the shield low in front of him turns what did not go over him - no step back */
+  if (CA && hero() === 'knight') { const w = CA.takes(fromX, dmg, unblockable, who || updFoe, pierce); if (w === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; } if (w === 'half') dmg = Math.ceil(dmg / 2); }
   { const sd = Math.sign(fromX - P.x) || P.face;
     let g2 = null, gd = 1e9;
     for (const r of risen) { if (r.life <= 0 || r.kind === 'wisp' || !(r.hp > 0)) continue;
@@ -6885,9 +6889,11 @@ function dropCoinAt(x, y) {   // shaken loose: it goes straight into his purse, 
 function firePistol() {
   P.barrels = (P.barrels || 0) - 1;
   if (P.barrels > 0) { P.loaded = true; } else { P.loaded = false; P.reloadT = reloadTime(); }
-  P.blastT = 0.34; P.vx = -P.face * 60; P.atk = -1;           // the shot throws him back a step
+  const steady = !!(CA && CA.steady());   /* FROM THE CROUCH (src/crouch-a.js): braced, it carries half as far again and does not throw him back */
+  P.blastT = 0.34; P.vx = steady ? 0 : -P.face * 60; P.atk = -1;           // the shot throws him back a step
   SFX.crack(); SFX.heavy(); shakeCam(5, P.face * 3); zoomKick(1.05, 0.2); hitstop(0.05); flash = Math.max(flash, 0.05);
-  const x0 = P.x + P.face * 12, y0 = P.y - 12, reach = 150 * (tal('longBarrel') ? 2 : 1);
+  const x0 = P.x + P.face * 12, y0 = P.y - (steady ? 9 : 12), reach = 150 * (tal('longBarrel') ? 2 : 1) * (steady ? CROUCH_A.pirate.reach : 1);
+  if (steady) number(P.x, P.y - 22, 'STEADY', '#ffd34a');
   let best = null, bd = 1e9;
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue;
     const d = (e.x - x0) * P.face; if (d < -6 || d > reach) continue;
@@ -7017,6 +7023,7 @@ function guardTurned(e) {
    to his size, so a change to her staff is a change to his. */
 const PYRO_STAFF = { reach: 32, top: 15, bot: 3, live: [0.04, 0.18], swing: 0.3, heavyReach: 38 };
 function attackBox() {
+  if (CA && (P.caTrip || P.caPoke) && P.swingKind === 'sweep') { const b = CA.box(); if (b) return b === 'none' ? null : b; }   /* THE SHIELD TRIP and THE LOW POKE (src/crouch-a.js) */
   if (dashStriking()) { const D = DASH_STRIKE[hero()];   /* THE DASH ATTACK: the blade (or the point) out in front the whole of the run, cut to the art (chars.js dashAtk) */
     if (P.dashAtk < D.t * 0.15) return null;
     return P.face > 0 ? { l: P.x + D.near, r: P.x + D.reach, t: P.y - D.top, b: P.y + 1 } : { l: P.x - D.reach, r: P.x - D.near, t: P.y - D.top, b: P.y + 1 };
@@ -7505,6 +7512,7 @@ function updatePlayer(dt) {
      so there it is only the keys that count. P.crouch is what the harbour lookout reads for a hero out of his sight. */
   P.ducking = !!(keys.down && P.ground && !move && ((isPyro() && P.emberUp) || (!keys.left && !keys.right)) && !P.climb && !P.cling && !P.swim && !P.dead && !P.plunge && P.atk < 0 && !dodging && !stunned
     && !P.block && !P.aegis && !P.warding && !(P.hurt > 0) && !P.fly && (P.onMover || Math.abs(P.vx) < 40)); P.crouch = P.ducking ? 1 : 0; if (isPyro() && EMBER) EMBER.settle();   /* (her ward turns with her: left and right face her about, and she stays down) */
+  if (CA) CA.update(dt);   /* THE CROUCH TWISTS (src/crouch-a.js): the warden's set spear watches its point, the freebooter reloads twice as fast */
   if (P.onMover) { const m = P.onMover; if (P.x + 4 > m.x && P.x - 4 < m.x + m.w && Math.abs(P.y - m.y) < 3) { P.x += m.dx; P.y += m.dy || 0; } else P.onMover = null; }
 
   /* (THE DASH - tap a way twice: distance, no grace, once in the air - was a move of its own until 2026-09-24. It is THE DODGE now,
@@ -21666,7 +21674,7 @@ function updateEnemies(dt) {
     if (coop()) P = nearestHero(e);
     tokenPre(TK, e, P, tkApi);   /* ATTACK TOKENS: may it ask for a blow at this hero? */
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
-    { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (wu) { if (!e.wuWas && !P.dead && Math.abs(e.x - P.x) < 260 && heightOf(tellKey(e)) === 'high') duckTeach(); if (!e.wuWas && !P.dead && isPyro() && Math.abs(e.x - P.x) < 200 && markOf(e) === '!') emberTeach(); noteTell(e, time); } else if (e.wuWas) noteRelease(e);   /* THE UNIVERSAL DUCK: which blow it told, and the mode that blow is (src/duck.js) */
+    { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (wu) { if (!e.wuWas && !P.dead && Math.abs(e.x - P.x) < 260 && heightOf(tellKey(e)) === 'high') duckTeach(); if (!e.wuWas && !P.dead && isPyro() && Math.abs(e.x - P.x) < 200 && markOf(e) === '!') emberTeach(); if (!e.wuWas && CA) CA.onTell(e); noteTell(e, time); } else if (e.wuWas) noteRelease(e);   /* THE UNIVERSAL DUCK: which blow it told, and the mode that blow is (src/duck.js) */
     if (!wu && e.wuWas) { e.relT = 0.18; if (Math.abs(e.x - P.x) < 380 && SFX.foeRelease) SFX.foeRelease(e.t, MAT[e.t], !!e.maxHp || !!e.big); } e.wuWas = wu; }
     if (Math.abs(e.x - P.x) < 420) temper(e, dt);
     e.flash = Math.max(0, e.flash - dt); e.stagger = Math.max(0, e.stagger - (P.relic === 'blackflag' ? dt * 0.66 : dt)); e.anim += dt; if (e.sq > 0) e.sq = Math.max(0, e.sq - dt); if (e.rec > 0) e.rec = Math.max(0, e.rec - dt); if (e.breakFlash > 0) e.breakFlash -= dt;
@@ -22416,6 +22424,18 @@ EMBER = makeEmberWard({ get P() { return P; }, get L() { return L; }, get enemie
   flame: (x, y, n, s, u, z) => flame(x, y, n, s, u, z), burst: (...a) => burst(...a), hitstop: t => hitstop(t), zoomKick: (a, b) => zoomKick(a, b), shakeCam: (n, k) => shakeCam(n, k),
   hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), swordDmg: () => swordDmg(), lcBig: e => lcBig(e), knockSkip: e => KNOCK_SKIP.has(e.t), reflectSeed: s => reflectSeed(s),
   noteParry: () => { noteVerb('parry'); parries++; trialEvent('parry'); } });
+/* THE CROUCH TWISTS, PART A (src/crouch-a.js): the knight's low guard and shield trip, the warden's set spear and low poke, the
+   freebooter's duck and reload. main.js owns the world; the module owns what the crouch adds. Called from updatePlayer (update),
+   damagePlayer0 (takes), lowSweep (lowSwing), attackBox (box), swingKindHit (trip, poke), firePistol (steady), a windup's first frame
+   (onTell) and the hero's draw (the poses, draw) */
+CA = makeCrouchA({ get P() { return P; }, get L() { return L; }, get enemies() { return enemies; }, get time() { return time; }, get PROG() { return PROG; }, get levelIndex() { return levelIndex; },
+  hint: m => { hintT = 5; hintMsg = m; }, hero: () => hero(), SFX, ST, tal: k => tal(k), number: (x, y, t, c) => number(x, y, t, c), dust: (x, y, n) => dust(x, y, n), sparks: (x, y, d, n) => sparks(x, y, d, n),
+  shakeCam: (n, k) => shakeCam(n, k), hitstop: t => hitstop(t), gainResolve: n => gainResolve(n), trialEvent: k => trialEvent(k), wardJav: () => !!wardJav,
+  blockFx: (x, y, sd) => { const bj = JUICE.block; hitstop(bj.stop); shakeCam(bj.shake, -P.face * bj.kick); SFX[bj.sfx](); impactAt(x, y, 'steel'); ringAt(x, y, 9, '#c9d1dc', 0.2); sparks(x, y, sd, 6); },
+  tipReach: e => tipReach(e), box: e => box(e), braceStops: e => BRACE_STOPS.has(e.t + '|' + (e.mode || '')), big: e => lcBig(e) || !!e.maxHp || !!e.mini, impale: e => impale(e),
+  hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), swordDmg: () => swordDmg(), reloadPistol: w => reloadPistol(w), floorFoe: (e, s) => floorFoe(e, s),
+  heavy: e => POISE_HEAVY.has(e.t) || POISE_EXTRA_HEAVY.has(e.t) || !!e.elite || !!e.big || !!e.mini || !!e.maxHp,
+  poiseLean: (e, n) => { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) addPoise(e, 1, P.x, false); } });
 /* TEACH THE WARD: the first yellow blow told near the pyromancer says what her crouch does to it. Twice in a save, once a level */
 let emberTaughtIn = null;
 function emberTeach() { if ((PROG.emberTold || 0) >= 2 || emberTaughtIn === levelIndex) return; emberTaughtIn = levelIndex; PROG.emberTold = (PROG.emberTold || 0) + 1;
@@ -22658,6 +22678,7 @@ function risingCut() { if (!spend(5)) { P.vx = P.face * 75; return; } P.swingKin
   else if (isReaper()) burst(P.x + P.face * 12, P.y - 10, 8, c, 70, 0.4, -40, 1);
   SFX.pJump(); }
 function lowSweep() { if (!spend(5)) { P.vx = P.face * 75; return; } P.swingKind = 'sweep'; noteVerb('sweep'); P.vx = P.face * (isPaladin() ? 60 : 130); squash(1.2, 0.8, 0.12);
+  if (CA) { CA.lowSwing(!!P.ducking); if (P.caTrip || P.caPoke) return; }   /* CROUCHED AND STILL: the knight's SHIELD TRIP, the warden's LOW POKE (src/crouch-a.js) */
   const c = specialCol(); dust(P.x + P.face * 10, P.y, 4);
   if (isPyro()) { for (let i = 0; i < 6; i++) parts.push({ x: P.x + P.face * (6 + i * 5), y: P.y - 1, vx: P.face * 30, vy: -10 - Math.random() * 20, life: 0.3, max: 0.3, col: c[i % 2], size: 1, grav: -30 }); }   /* fire along the floor */
   else if (isPaladin()) { shakeCam(2); SFX.thud(); }   /* the maul dragged through their ankles */
@@ -22670,6 +22691,8 @@ function swingKindHit(e) {
     else e.stagger = Math.max(e.stagger || 0, 0.25);
     burst(e.x, e.y - e.h / 2, 8, specialCol(), 90, 0.35, -60, 1);
   } else if (P.swingKind === 'sweep') {
+    if (CA && P.caTrip) { CA.trip(e, can); return; }   /* THE SHIELD TRIP: knocked down, or held by its weight (src/crouch-a.js) */
+    if (CA && P.caPoke) { CA.poke(e); return; }   /* THE LOW POKE: a thrust, it trips nothing */
     if (can && !(e.tripImm > time)) { e.broken = Math.max(e.broken || 0, 1.1); e.tripImm = time + 3.2; e.vx = 0; dust(e.x, e.y, 5); number(e.x, e.y - e.h - 8, 'TRIPPED', '#ffd36b'); breakBeat(e); trialEvent('sweep'); if (!L.trial && (PROG.tripSeen || 0) < 2) { PROG.tripSeen = (PROG.tripSeen || 0) + 1; hintT = 4; hintMsg = 'TRIPPED. HE IS DOWN A MOMENT, AND EVERY BLOW ON HIM LANDS HALF AS HARD AGAIN.'; } }   /* a second trip waits: it is an opening, not a lock */
     else e.stagger = Math.max(e.stagger || 0, 0.3);
   } }
@@ -25912,10 +25935,12 @@ function drawWorld(cx, cy, showPlayer) {
       else if (hero() === 'knight' && knightWinding() && K.R.windup) { key = 'windup'; frame = Math.max(0, cutStage(P.atkHeld || 0) - 1); }   /* THE HEAVY CUT: the sword up over the shield, a frame a stage */
       else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
+      else if (P.atk >= 0 && CA && CA.atkPose(K.R)) { [key, frame] = CA.atkPose(K.R); }   /* THE SHIELD TRIP and THE LOW POKE, from the crouch (src/crouch-a.js) */
       else if (P.atk >= 0) { const pose = attackPose(hero(), P, K.R); key = pose.key; frame = pose.frame; }
       else if (kitPoseFrame(P, K.R)) { [key, frame] = kitPoseFrame(P, K.R); }   /* EVERY ABILITY HAS A BODY (hero-poses.js): the active that just fired, in a pose of its own - DISARM's hook among them, which borrowed the combo's backhand */
       else if (isWarden() && wardPose()) { const wp = wardPose(); key = wp[0]; frame = wp[1]; }   /* THE WARDEN'S BOUGHT ACTIVES (wardenKit) */
       else if (P.riseT > 0) { if (K.R.rise) { key = 'rise'; frame = P.riseT > 0.26 ? 0 : P.riseT > 0.19 ? 1 : 2; } else { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; } }   /* THE BOUGHT RISING CUT: hip, then the blade overhead - the upward cut's own frames, never the forward swing's */
+      else if (CA && CA.shotPose(K.R)) { [key, frame] = CA.shotPose(K.R); }   /* THE STEADY SHOT: fired from the crouch, the arm braced level */
       else if ((isPyro() || isPaladin() || isPirate() || isReaper() || isWarden() || isGeo()) && P.blastT > 0) { key = 'blast'; frame = P.blastT > 0.2 ? 0 : 1; }
       else if (P.castT > 0 && K.R.cast) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }   /* any hero with cast frames: a list of four left the Warden out, so SKEWER's castT drew nothing (her own pose, hero-poses.js, now plays first) */
       else if (isWarden() && P.vaultT > 0 && K.R.vault) { key = 'vault'; frame = P.vaultT > 0.21 ? 1 : 0; }   /* up on the shaft, and coming down off it */
@@ -25928,7 +25953,7 @@ function drawWorld(cx, cy, showPlayer) {
         swimRot = Math.round(P.swimTiltA / SWIM_TILT_STEP) * SWIM_TILT_STEP; }
       else if (!P.ground) { [key, frame] = airPose(P, K.R); }   /* the arc, with a take-off where the hero has one (hero-poses.js) */
       else if (isPyro() && P.emberUp && K.R.ward) { key = 'ward'; frame = P.emberFlash > 0 ? 2 : Math.floor(time * ((P.emberHeat || 0) >= EMBER_K.sputter ? 14 : 6)) % 2; }   /* THE EMBER WARD: palm out over the dome, flung wide on a flare */
-      else if (P.ducking || (keys.down && Math.abs(P.vx) < 10)) key = 'crouch';   /* the pose is the hurt box: crouched is DUCK_H tall (src/duck.js) */
+      else if (P.ducking || (keys.down && Math.abs(P.vx) < 10)) { key = 'crouch'; const ca = CA && P.ducking ? CA.crouchPose(K.R) : null; if (ca) [key, frame] = ca; }   /* the pose is the hurt box: crouched is DUCK_H tall (src/duck.js) */
       else if (P.flourishT > 0 && K.R.atkC && Math.abs(P.vx) < 10 && P.ground) { key = 'atkC'; frame = 3; }
       else if (P.skidT > 0 && K.R.skid) key = 'skid';
       else if (Math.abs(P.vx) < 40 && landPose(P, K.R)) { [key, frame] = landPose(P, K.R); }   /* impact, settle, stand where the hero has three (hero-poses.js) */
@@ -25980,7 +26005,7 @@ function drawWorld(cx, cy, showPlayer) {
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
-      if (isPyro() && EMBER) EMBER.draw(g, cx, cy);   /* THE EMBER WARD, DRAWN: the dome, the burst, the heat over her head */
+      if (isPyro() && EMBER) EMBER.draw(g, cx, cy); if (CA) CA.draw(g, cx, cy);   /* THE EMBER WARD, DRAWN: the dome, the burst, the heat over her head */
       if (P.aegis) { const k = 0.5 + 0.5 * Math.sin(time * 8), ex = Math.round(P.x - cx), ey = Math.round(P.y - cy) - 12; g.globalAlpha = 0.14 + 0.08 * k; g.fillStyle = '#fff6c8'; g.beginPath(); g.ellipse(ex, ey, 17, 19, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 0.55 + 0.3 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(ex, ey, 17 + k, 19 + k, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } // the AEGIS
       if (isPyro() && P.full) { const k = 0.5 + 0.5 * Math.sin(time * 9); g.globalAlpha = 0.18 + 0.14 * k; g.fillStyle = '#ffd36b'; g.beginPath(); g.ellipse(Math.round(P.x - cx), Math.round(P.y - cy) - 9, 11 + k * 2, 14 + k * 2, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
       if (isPyro() && P.jet) { const jx = Math.round(P.x - cx) + P.face * 8, jy = Math.round(P.y - cy) - 9, f = time * 30; g.globalAlpha = 0.55; for (let i = 0; i < 6; i++) { const k = i / 6, w = 7 + k * 7 + Math.sin(f + i) * 2, len = jetLen() / 6 + 2; g.fillStyle = k < 0.25 ? '#fff6c8' : k < 0.6 ? '#ffd36b' : '#ff9a5c'; g.fillRect(Math.round(P.face > 0 ? jx + k * jetLen() : jx - k * jetLen() - len), Math.round(jy - w / 2 + Math.sin(f * 0.7 + i * 2) * 1.5), len, Math.round(w)); } g.globalAlpha = 1; }
@@ -27669,7 +27694,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   tileSpr: () => tileSpr, resolve: () => resolveTiles(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
      drawn from, so a bot reading it is reading exactly what a player is shown and nothing more. */
-  ember: () => EMBER ? EMBER.read() : null, emberReset: () => EMBER && EMBER.resetStats(),   /* THE EMBER WARD (tools/ember-ward.mjs) */
+  ember: () => EMBER ? EMBER.read() : null, emberReset: () => EMBER && EMBER.resetStats(), crouchA: () => CA ? CA.read() : null, crouchAReset: () => CA && CA.resetStats(),   /* THE CROUCH TWISTS, PART A (tools/crouch-a.mjs) */   /* THE EMBER WARD (tools/ember-ward.mjs) */
   telling: e => !!e && windingUp(e), markOf: e => markOf(e), markShown: e => !!e && windingUp(e) && !qMarkHeld(e) ? markOf(e) : '',   /* the mark the screen draws now: a weighty Hornet Queen's arrives part-way into her windup */
   combat: () => weighty() ? 'weighty' : 'classic', setCombat: c => { setWeighty(c === 'weighty'); scaleCommon(); return weighty(); }, recovery: () => P.atkRec || 0, dmgCommon: () => Object.fromEntries(Object.keys(DMG_COMMON).map(k => [k, [DMG_COMMON[k], DMG[k]]])),   /* COMBAT: CLASSIC / WEIGHTY, for tools/weighty.mjs and the pilots */ duck: () => ({ H: DUCK_H, ducking: !!P.ducking, box: duckBox(P), ducked: P.ducked || 0, tells: tellsDrawn, braced: braced(), clears: y => duckClears(P, y), high: e => blowHigh(e, time), lane: e => laneOf(tellKey(e)), height: e => heightOf(tellKey(e)) }),   /* THE UNIVERSAL DUCK, for tools/duck.mjs and the bot (src/duck.js) */ marksMissed: () => marksMissed(),   /* the mark the screen holds over a windup, and every windup the table had no row for */
   sim(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */
