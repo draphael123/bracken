@@ -300,8 +300,9 @@ export async function fightLab(BK, opts = {}) {
 // THE BOSS LAB. Each hero into each boss's room. A boss that has an OPENING is played the way its room teaches it:
 //   the paladin       - meet his sword ON THE BEAT, each hero its own way (see below); roll the bash; step off judgement's mark
 //   the king          - stand beside one of his cages until it comes down on him, then cut him while he is held or open
-//   the goblin queen  - bait her charge into one of her pillars (stand past it, away from her); with none standing, lead her under a chandelier, jump
-//                       and cut its chain; then cut her while she is pinned (2026-09-25; before that it was the chandelier alone, and before THAT her gallery)
+//   the goblin queen  - wait by a pillar, crack it twice, and the third blow when she holds court beside it (it comes down on her); in her second
+//                       round strike her back while she points and cut chandeliers down on her until her plate breaks; jump her quake; cut her
+//                       while she is pinned or her plate is off (2026-09-29, her court; before that her charge into a pillar, a chandelier, her gallery)
 //   the roc           - stand on the glass so her dive sticks in it, then cut her while she is down
 //   the buried prince - in the dark, light a lamp; with him under a timber set, cut its post; off the red mark when he is under the floor
 // Every other boss is cut whenever it is in reach. All of them are defended against on their tells. The hero's health is
@@ -309,7 +310,7 @@ export async function fightLab(BK, opts = {}) {
 /* AND THE ONES WHOSE GATE LIVES IN main.js ASK IT (BK.bossOpen): the Queen's Lance turns every blade until he is
    committed, so a bot that treated him as open swung at his plate for the whole fight. */
 const OPEN = (b, BK) => { const g = BK && BK.bossOpen ? BK.bossOpen(b) : null; return g === null || g === undefined ? OPEN0(b) : g; };
-const OPEN0 = b => b.t === 'ploughman' ? b.open > 0 : b.t === 'master' ? b.open > 0 : b.t === 'troll' && b.hill ? b.mode === 'pinned' : b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? b.mode === 'pinned' : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
+const OPEN0 = b => b.t === 'ploughman' ? b.open > 0 : b.t === 'master' ? b.open > 0 : b.t === 'troll' && b.hill ? b.mode === 'pinned' : b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || (b.phase === 2 && !!b.plateOff)) : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
 /* THE RED MARKS, from tools/tells.mjs (scratchpad hardtells.mjs writes this line): a tell no shield turns is dodged, never guarded */
 export const HARD_TELLS = new Set(["troll|slamTell","troll|ripTell","assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|bashTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|ladleTell","forgemaster|pourTell","forgemaster|slamTell","forgemaster|whirlTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","master|leapTell","masthead|boomTell","masthead|dropTell","owl|hootTell","prince|sinkTell","prince|snuffTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","suncatcher|frostTell","suncatcher|hailTell","suncatcher|spireTell","roc|shriekTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
 HARD_TELLS.add('owl|skimTell');
@@ -1232,6 +1233,9 @@ async function runbossLab(BK, opts) {
       else if (boss.t === 'herald' && boss.y < A.floor - 40 && P.y > boss.y + 30 && !open) { const side = (Math.sign(P.x - boss.x) || 1) * (P.x + (Math.sign(P.x - boss.x) || 1) * 80 > A.x1 - 18 || P.x + (Math.sign(P.x - boss.x) || 1) * 80 < A.x0 + 18 ? -1 : 1);
         goal = Math.max(A.x0 + 18, Math.min(A.x1 - 18, boss.x + side * 90)); strike = false; }
       else if (boss.t === 'herald') { goal = boss.x; strike = true; if (open) k.block = false; }
+      /* THE GOBLIN QUEEN'S QUAKE (claude/gqueen2): her shadow is where she lands - off the floor as she comes down on it, and over her floor waves;
+         asked before the open branch, because plate off she leaps AT you */
+      else if (boss.t === 'gqueen' && ((boss.mode === 'hallLeap' && boss.tx !== undefined && Math.abs(boss.tx - P.x) < 100 && boss.modeT - 0.8 < 0.16) || BK.waves().some(w => w.royal && w.life > 0 && Math.abs(w.x - P.x) < 30 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 4))) { goal = null; strike = false; if (P.ground) { BK.press('jump'); P.labJump = 14; } }
       else if (open) { goal = boss.x; strike = true; }
       /* THE PLATE THAT TURNS EVERY BLADE (the Queen's Lance): chipping at it does nothing at all, so the hands MAKE the
          opening the way a player does - stand a dash's length off and come at his guard at a run. His own gate says a
@@ -1282,26 +1286,33 @@ async function runbossLab(BK, opts) {
         // his cages drop from pressure plates up on the scaffold, where the bot cannot climb: when he walks under one, it drops it, as a player on that plate would
         /* opts.noCage takes the cage hand away, which is how the above was found: without it, zero swings and 100% of him */
         const under = opts.noCage ? null : cages.find(q => Math.abs(q.x - boss.x) < 18); if (under) { under.dropped = true; under.landed = 0; if (under.hit) under.hit.clear(); under.resetT = 5; } }
-      /* THE GOBLIN QUEEN, played as her hall teaches it now: she walks to within 56 px of you, so stand that far past a hanging chandelier
-         and she comes to stand under it; then step in, JUMP and cut the chain (a real jump and a real swing: nothing is dropped for the bot) */
+      /* THE GOBLIN QUEEN, played as her court teaches it (docs/briefs/goblin-queen-court.md, 2026-09-29). She holds court beside the standing
+         pillar nearest you, on its far side: so WAIT BY A PILLAR, crack it twice while she is away from it, and when she lands beside it and points,
+         the third blow - it totters, and comes down on her. In her second round the pillars are down: a blow to her back while she points cracks her
+         plate, and the chandeliers do the rest (and plate off she is simply open, the branch above). Nothing is broken or dropped for the bot: a real
+         swing on the pillar's own box, a real jump and swing at a chain. Her quake is jumped (the branch above, open or not). */
       else if (boss.t === 'gqueen') { const cs = BK.props().filter(p => p.t === 'weight' && p.gq && p.state === 'hang');
-        /* THE BAIT (docs/briefs/queen-pillars.md). She charges a hero more than 100 px off, and a pillar in the way comes down on her: so go and
-           stand PAST the nearest standing pillar, on the side away from her and far enough off, and wait. A spot the bot would have to cross her
-           to reach costs more than any other. Her charge is ridden out by standing still (it stops at the pillar); if she is coming and nothing
-           is between, it is jumped. Nothing is broken for the bot: the pillar falls because she ran into it. */
         const ps = BK.props().filter(p => p.t === 'qpillar' && !p.broken), AX0 = A.x0 + 24, fr = Math.floor(A.floor / 16) - 1;
-        let fx = Math.floor(A.x0 / 16); while (fx < Math.floor(A.x1 / 16) && L.grid[fr * L.W + fx + 1] !== T.SOLID) fx++; const AX1 = Math.min(A.x1 - 24, (fx + 1) * 16 - 10);   /* the hall floor ends at her dais: bait on the floor, not up its step */
-        let bait = null, bc = 1e9; for (const p of ps) { const side = Math.sign(p.x - boss.x) || 1, gx = Math.max(AX0, Math.min(AX1, p.x + side * Math.max(30, 118 - Math.abs(p.x - boss.x))));
-          if ((gx - boss.x) * side <= 104 || (p.x - boss.x) * side <= 8) continue; const cost = Math.abs(gx - P.x) + (Math.sign(P.x - boss.x) !== side ? 400 : 0); if (cost < bc) { bc = cost; bait = gx; } }
-        const coming = boss.mode === 'charge' && (P.x - boss.x) * boss.face > 0 && Math.abs(P.x - boss.x) < 70 && !ps.some(p => (p.x - boss.x) * boss.face > 0 && (P.x - p.x) * boss.face > 0);
+        let fx = Math.floor(A.x0 / 16); while (fx < Math.floor(A.x1 / 16) && L.grid[fr * L.W + fx + 1] !== T.SOLID) fx++; const AX1 = Math.min(A.x1 - 24, (fx + 1) * 16 - 10);   /* the hall floor ends at her dais */
         /* HER DECREE runs along the floor both ways, three beats: a wave coming at the hands is jumped (it only takes a hero standing on the floor) */
-        const wave = !OPEN(boss, BK) && BK.waves().some(w => w.royal && w.life > 0 && Math.abs(w.x - P.x) < 34 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 4);
-        if ((coming || wave) && P.ground) { BK.press('jump'); P.labJump = coming ? 18 : 12; goal = null; strike = false; }
+        const wave = BK.waves().some(w => w.royal && w.life > 0 && Math.abs(w.x - P.x) < 34 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 4);
+        const court = boss.mode === 'point' && boss.courtP && !boss.courtP.broken ? boss.courtP : null;
+        /* the pillar the hands wait by: the one she is going to (her aim), else the one it already cracked, else the nearest to the hands */
+        const aimP = (boss.mode === 'hallLeapTell' || boss.mode === 'hallLeap' || boss.mode === 'quake') && boss.court && boss.courtP && !boss.courtP.broken ? boss.courtP : null;
+        const tp = court || aimP || ps.filter(p => !(p.totter > 0)).sort((a, b) => ((b.blows || 0) - (a.blows || 0)) || (Math.abs(a.x - P.x) - Math.abs(b.x - P.x)))[0] || null;
+        const strikeP = p => { const side = Math.sign(p.x - P.x) || 1, at = Math.max(AX0, Math.min(AX1, p.x - side * 15)); goal = at; strike = false;
+          if (Math.abs(P.x - at) < 7 && P.ground && P.atk < 0 && !(p.totter > 0)) { P.face = side; k.left = false; k.right = false; goal = null; BK.press('atk'); swings++; } };
+        if (wave && P.ground) { BK.press('jump'); P.labJump = 12; goal = null; strike = false; }
         else if (P.labCut > 0) { P.labCut--; k.jump = true; if (P.labCut === 6 && P.atk < 0) { BK.press('atk'); swings++; } goal = null; }
+        else if (court) strikeP(court);                                                      /* SHE HOLDS COURT BESIDE IT: bring it down */
+        else if (tp && tp.totter > 0) { goal = Math.max(AX0, Math.min(AX1, tp.x - (Math.sign(boss.x - tp.x) || 1) * 40)); strike = false; }   /* it goes: stand off its fall */
+        else if (boss.phase === 2 && boss.mode === 'point') { goal = boss.x; strike = true; }  /* HER BACK, while she points (her plate) */
         else { const under = cs.find(c => Math.abs(c.x - boss.x) < boss.w / 2 + 6 && Math.abs(c.x - P.x) < 28);
-          if (under) { strike = false; goal = null; if (P.ground) { P.face = Math.sign(under.x - P.x) || P.face; BK.press('jump'); P.labCut = 16; } }
-          else if (bait !== null) { goal = bait; strike = false; if (Math.abs(bait - P.x) < 6) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face; } }
-          /* wait just on HER side of the nearest one: she stops 56 px short of you, which is right under it */
+          if (under && boss.mode !== 'hallLeapTell' && boss.mode !== 'hallLeap') { strike = false; goal = null; if (P.ground) { P.face = Math.sign(under.x - P.x) || P.face; BK.press('jump'); P.labCut = 16; } }
+          else if (tp && boss.phase !== 2) { const far = Math.abs(boss.x - tp.x) > 110 && !aimP;
+            if (far && (tp.blows || 0) < 2) strikeP(tp);                                        /* crack it twice while she is away from it */
+            else { goal = Math.max(AX0, Math.min(AX1, tp.x - (Math.sign((aimP ? boss.tx : boss.x) - tp.x) || 1) * 15)); strike = false; } }   /* and wait by it, on the side away from her */
+          /* wait just on HER side of the nearest chandelier: she stops 56 px short of you, which is right under it */
           else { const c = cs.sort((a, b) => Math.abs(a.x - boss.x) - Math.abs(b.x - boss.x))[0]; goal = c ? c.x - (Math.sign(boss.x - c.x) || 1) * 22 : boss.x - Math.sign(d || 1) * 70; strike = false; } } }
       else { goal = boss.x; strike = true; }
       /* THE OWL'S DEAD BOUGHS: when the Reeve is low under one the bot cuts its peg, as a player standing at it would, and it hops the skim */
