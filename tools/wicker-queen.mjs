@@ -18,7 +18,7 @@
 //   - THE HORSES: always inside a jump (their saddles 16-40 px up; a jump rises 51), above the low ribbon, one never far from any point of the boards, the
 //     front run the platforms and the back not
 //   - THE CROWNING never has more than two of hers alive
-// THE LEVEL: the green is her carousel (the arena, its eight horses, the firebox by the centre column, her downstream of it), the door checkpoint stands
+// THE LEVEL: the green is her carousel (the arena, its ten horses, the firebox by the centre column, her UPSTREAM of it: the first burn is the ride's), the door checkpoint stands
 //   before it, the elite still guards the door, her relic (the fair's one relic slot) waits for her death, and the gate ends the level after it
 // IN THE PAGE: the fight wakes past the door and the ride starts; faced her feet do not move (the ride carries her) and co-op one facing holds her; the
 //   boards carry a hero; a hero jumps onto a horse and it carries him up, down and along; her lash hurts a standing hero and passes over a jumping one or a
@@ -48,7 +48,7 @@ function rig(o = {}) {
   const c = { heroes: o.heroes || [hero(10300, -1)], A, embers: o.embers === undefined ? EMB : o.embers, ringDir: ride ? 1 : 0, canStep: () => true,
     number: (x, y, t) => log.says.push(t), sound: () => {}, hit: (box, d, name) => log.hits.push({ box, d, name }), lash: (kind, r0, r1) => log.lash.push({ kind, r0, r1 }),
     sickle: (x0, x1, pass) => log.sickle.push({ x0, x1, pass }), summon: n => { log.summons += n; log.adds = Math.min(99, log.adds + n); }, adds: () => log.adds };
-  const step = () => { const ev = W.updateWickerQueen(e, DT, c); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (e.vx + (e.mode === 'rise' ? 0 : ride)) * DT)); return ev; };
+  const step = () => { const ev = W.updateWickerQueen(e, DT, c); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (e.vx + (e.mode === 'rise' || e.mode === 'creep' ? 0 : ride)) * DT)); return ev; };
   return { e, c, log, step };
 }
 
@@ -200,7 +200,7 @@ const lv = LEVELS.find(l => l.id === 'fair'), L = lv.build(), G = L.green, Ar = 
     ok(G.carousel && G.maypole * 16 > Ar.x0 && G.bonfire * 16 < Ar.x1 && Math.abs((G.maypole + G.bonfire) * 8 - (Ar.x0 + Ar.x1) / 2) < 5 * 16, 'the green is not her carousel, with its column and firebox near its middle: ' + JSON.stringify(G));
     const hs = (L.moversExtra || []).filter(m => m.kind === 'carhorse');
     ok(hs.length === C.RING.horses && hs.every(m => m.x >= Ar.x0 && m.x + m.w <= Ar.x1 && m.y < Ar.floor - C.RING.lo + 1) && hs.filter(m => !m.broken).length >= 3, 'the carousel\'s horses are not on the ride: ' + JSON.stringify(hs));
-    const q = L.ents.filter(e => e.t === 'wickerqueen'); ok(q.length === 1 && q[0].x * 16 > Ar.x0 && q[0].x * 16 < Ar.x1 && Math.sign(q[0].x - G.bonfire) === C.RING.dir, 'she is not on the ride, downstream of her fire: ' + JSON.stringify(q));
+    const q = L.ents.filter(e => e.t === 'wickerqueen'); ok(q.length === 1 && q[0].x * 16 > Ar.x0 && q[0].x * 16 < Ar.x1 && Math.sign(G.bonfire - q[0].x) === C.RING.dir, 'she is not on the ride, upstream of her fire (the first burn is the ride to give): ' + JSON.stringify(q));
     const cks = L.ents.filter(e => e.t === 'check').map(e => e.x);
     ok(cks.some(x => x < G.door && x >= G.door - 40) && !cks.some(x => x * 16 > Ar.x0 && x * 16 < Ar.x1), 'no door checkpoint before the green, or one inside it: ' + cks);
     ok(L.ents.some(e => e.t === 'hobbyhorse' && e.elite && e.gate === G.door), 'the elite hobby-horse no longer guards the door');
@@ -310,10 +310,10 @@ try {
 } finally { pg.close(); }
 console.log(JSON.stringify(R));
 ok(R.woke.active && R.woke.t === 'wickerqueen' && R.woke.ring && R.woke.ring.on && R.woke.ring.speed > 0, 'the fight (and the ride) did not wake past the door: ' + JSON.stringify(R.woke));
-ok(R.faced.feet === 0 && R.faced.carried > 20, 'faced, her feet moved (' + R.faced.feet + ') or the ride did not carry her (' + R.faced.carried + ' px)');
+ok(R.faced.feet === 0 && R.faced.carried > 10, 'faced, her feet moved (' + R.faced.feet + ') or the ride did not carry her (' + R.faced.carried + ' px)');
 ok(R.away.moved > 20 && R.away.mode === 'creep', 'with his back turned she did not creep in the page: ' + JSON.stringify(R.away));
-ok(R.boards > 10, 'the ride\'s boards did not carry a hero standing on them: ' + R.boards);
-ok(R.horse.rode !== null && R.horse.onIt && R.horse.rise > 8 && R.horse.along > 20, 'a hero did not jump onto a horse and ride it up, down and along: ' + JSON.stringify(R.horse));
+ok(R.boards > 6, 'the ride\'s boards did not carry a hero standing on them: ' + R.boards);
+ok(R.horse.rode !== null && R.horse.onIt && R.horse.rise > 8 && R.horse.along > 10, 'a hero did not jump onto a horse and ride it up, down and along: ' + JSON.stringify(R.horse));
 ok(R.lash.lowStand > 0 && R.lash.highStand > 0, 'the ribbons did not hurt a standing hero who was looking at her: ' + JSON.stringify(R.lash));
 ok(R.lash.lowJump === 0 && R.lash.lowRide === 0, 'a hero who jumped the LOW ribbon, or rode a horse over it, was hurt: ' + JSON.stringify(R.lash));
 ok(R.lash.highDuck === 0 && R.lash.highRide > 0, 'the HIGH ribbon hurt a ducked hero, or missed a rider: ' + JSON.stringify(R.lash));

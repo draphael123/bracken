@@ -1,7 +1,8 @@
 // src/wicker-carousel.js - THE WICKER QUEEN'S CAROUSEL (claude/fairboss; Daniel 2026-09-30: "I'd like the boss to be in a moving carousel and you have to
 // jump on horses to avoid some attacks" - the platform SPINS and the painted horses BOB on their poles as moving platforms).
 //
-// THE RIDE: the whole maypole green is one great carousel. Its floor ring TURNS: everything standing on the boards (a hero, and the Queen herself) is carried
+// THE RIDE: the whole maypole green is one great carousel. Its floor ring TURNS: everything standing on the boards (a hero, and the Queen herself - but not
+// while she walks: she strides against it at her own pace) is carried
 // the ride's way (RING.dir, toward the far wall) at the ride's speed; a hero walks against it (he runs 92, the fastest ride is 42). The ride starts when she
 // wakes and stops when she falls. Each of her phases QUICKENS it (RING.speed), and the quickening is TOLD: the bulbs flash and the organ calls for
 // RING.warn s before the new speed comes in (and then it eases up to it).
@@ -18,7 +19,7 @@
 // PURE: no DOM. main.js holds the hands (carries the heroes, moves the horse movers, draws); tools/wicker-queen.mjs proves every line above.
 export const RING = {
   dir: 1,                          // the ride's way: toward the far wall (the Queen's end: she starts downstream of her fire)
-  speed: [20, 30, 42],             // px/s by her phase (a hero runs 92)
+  speed: [16, 24, 34],             // px/s by her phase (a hero runs 92; she walks 58, alight 88: against the ride she still comes to you)
   ease: 16,                        // px/s per second: the ride eases up to a new speed, never jumps
   warn: 1.5,                       // THE QUICKENING is told this long before it comes in
   horses: 10, w: 22, h: 6,         // the horses on the ring (five on the front run), and a saddle's platform

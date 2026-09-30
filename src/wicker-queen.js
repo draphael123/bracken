@@ -4,7 +4,7 @@
 // YOUR BACK ON HER.
 //
 // THE RULE (src/mummer.js's facing rule, the same one the mummers keep): her FEET move only while no hero looks at her. Co-op: any hero facing her freezes
-// her. But the RIDE carries her, frozen or not (it carries you too), and HER RIBBONS KEEP TURNING while she is frozen: a look stops her feet, not the dance.
+// her. But the RIDE carries her while she stands, frozen or at her blows (it carries you too; walking, she strides against it at her own pace), and HER RIBBONS KEEP TURNING while she is frozen: a look stops her feet, not the dance.
 //
 // THE READ BETWEEN UP AND DOWN (every blow told, rule A1; every one wears its mark, and every one is in windingUp() by its 'Tell'):
 //   LOW LASH        !!  LOW   the ribbons sweep out from the centre column along the boards at ankle height: JUMP it, or be UP ON A HORSE.
@@ -40,13 +40,13 @@ export const WQ = {
   sight: 720, sightY: 170,            // the look reaches across the whole ride (phases 1 and 3)
   nearR: 96, nearY: 64,               // PHASE 2, FULL DARK: the look reaches only this far (a radius on the side you face)
   reach: 26, glow: 0.6, strike: 0.2, recover: 1.0,   // THE REAP: the mummers' reach and glow, her own blow
-  lashEvery: [5.2, 4.6, 4.0], lashFirst: 3.2, lashTell: 1.0, lashT: 0.5, lashReach: 460,
+  lashEvery: [6.5, 5.5, 4.8], lashFirst: 3.2, lashTell: 1.0, lashT: 0.5, lashReach: 460,
   lowTop: 10,                         // the LOW ribbon runs from the boards to 10 px up: a hero in a jump or on a horse (16+) is over it
   highTop: 64, highBot: 10,           // the HIGH ribbon runs 10-64 px up: a standing hero (14) and every rider (saddle 16-40) are in it, a ducked one (8) is under it
-  floorEvery: [11, 9, 7], floorFirst: 7.5, floorTell: 1.5, floorT: 1.8, floorTick: 0.6,   // THE FLOOR BURNS: its told time, how long it burns, a burn's tick
-  throwEvery: [7, 6, 5], throwFirst: 4.5, throwTell: 0.8, throwMin: 110, throwSpd: 240, throwReach: 520,   // HER SICKLE, thrown: only unseen, only from across the ride
+  floorEvery: [12, 10, 8], floorFirst: 7.5, floorTell: 1.5, floorT: 1.8, floorTick: 0.6,   // THE FLOOR BURNS: its told time, how long it burns, a burn's tick
+  throwEvery: [10, 9, 8], throwFirst: 6, throwTell: 0.8, throwMin: 110, throwSpd: 240, throwReach: 520,   // HER SICKLE, thrown: only unseen, only from across the ride
   sickleTop: 46, sickleBot: 10,       // the thrown sickle flies 10-46 px up: a standing hero and a rider on any horse, never a ducked one
-  rest: 0.9,                          // a breath between one of her blows and the next
+  rest: 1.4,                          // a breath between one of her blows and the next (and a way for her to walk to you between them)
   crownEvery: [13, 10, 9], crownFirst: 7, crownTell: 1.2, crownCap: 2,
   emberHalf: 40,                      // the embers: this far each side of the firebox's middle
   catchT: 0.4, burnT: 2.8, burnTP3: 2.4, riseT: 0.6, throwBack: 44, bankT: 6,
@@ -183,8 +183,8 @@ export function updateWickerQueen(e, dt, c) {
   const dx = near ? Math.abs(near.x - e.x) : 1e9;
   if (near && !seen && dx <= WQ.reach && Math.abs((near.y || 0) - (e.y || 0)) < 40 && !e.sk) {
     toward(); e.mode = 'sickleTell'; e.modeT = WQ.glow; ev.push({ t: 'glow' }); c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.sound('sickleTell'); return ev; }
-  if (!(e.rest > 0)) {
-    if (near && !seen && !e.sk && e.throwCd <= 0 && dx >= WQ.throwMin && dx <= WQ.throwReach) {   /* A BACK TURNED FROM ACROSS THE RIDE: she throws */
+  if (!(e.rest > 0) && !e.sk) {   /* (nothing new while her sickle is in the air: a HIGH blow and a LOW one at once would have no answer) */
+    if (near && !seen && e.throwCd <= 0 && dx >= WQ.throwMin && dx <= WQ.throwReach) {   /* A BACK TURNED FROM ACROSS THE RIDE: she throws */
       toward(); e.throwDir = e.face; e.mode = 'throwTell'; e.modeT = WQ.throwTell; ev.push({ t: 'throwTell' });
       c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'HER SICKLE FLIES: DUCK', '#ff6b6b'); c.sound('throwTell'); return ev; }
     if (e.lashCd <= 0) { const kind = LASH_ORDER[(e.lashN++) % LASH_ORDER.length];

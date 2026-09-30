@@ -18327,9 +18327,10 @@ function updateWickerQueen(e, dt) {
         for (let k = n0; k < enemies.length; k++) enemies[k].fromQueen = true;
         burst(px2, fl - 10, 10, ['#221a30', '#e8c23a', '#b8382c'], 50, 0.5); } },
   });
-  /* HER FEET, then THE RIDE: it carries her (frozen or not; flung by the fire it does not) and every hero with his feet on its boards */
+  /* HER FEET, then THE RIDE: it carries her while she stands (frozen in a look, or at her blows; walking she strides against it at her own pace, and flung by
+     the fire she is off it) and every hero with his feet on its boards */
   const carry = R ? WC.ringCarry(R) : 0;
-  e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (e.vx + (e.mode === 'rise' ? 0 : carry)) * dt));
+  e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (e.vx + (e.mode === 'rise' || e.mode === 'creep' ? 0 : carry)) * dt));
   if (carry) for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || !P.ground || P.onMover || !WC.onBoards(R, P.x, P.y)) return; moveBody(P, carry * dt, 0, false); });
   /* THE FLOOR BURNS: a hero with his feet on the boards burns (at once, then each WQ.floorTick), and the heat throws him up off them - toward a horse */
   if (e.mode === 'floor') { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead) return;
