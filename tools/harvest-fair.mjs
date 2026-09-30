@@ -209,7 +209,7 @@ if (fair) {
     ok(FA.windAt(5) < 0.1 && FA.windAt(640) >= 0.99 && FA.windAt(374) > FA.windAt(246) && FA.windAt(502) > FA.windAt(374), 'the music box does not wind down section by section'); }
   const au = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
   ok(/export const musicBox/.test(au) && /BOX_TUNE/.test(au) && /mummerBell()/.test(au) && /horseRear()/.test(au) && /hayRustle()/.test(au), 'the audio has no music box, bells, horse-rear or hay rustle');
-  ok(L.music === 'marketday', 'the fair base track is not marketday');
+  ok(L.music === 'harvestfair', 'the fair base track is not its own harvestfair band organ');
   // THE ART: the foes and the world are real art files, not the L1 rectangles
   ok(existsSync(new URL('../src/redraw/fair_art.js', import.meta.url)) && existsSync(new URL('../src/redraw/fair_world.js', import.meta.url)) && !existsSync(new URL('../src/redraw/fair_' + 'greybox.js', import.meta.url)), 'the fair art files are not fair_art.js + fair_world.js (the L1 greybox file is gone)');
   const mainSrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');

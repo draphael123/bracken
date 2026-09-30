@@ -143,7 +143,7 @@ import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
 import { WEIGHTY, weighty, setWeighty, combatFrom, weightyHere, recoveryFor, poiseRule, guardCount } from './weighty.js';   /* COMBAT: CLASSIC / WEIGHTY (claude/ssproto): one switch, off by default */
 import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, WQ_TEMPO, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 
 // ---------- display ----------
@@ -18315,6 +18315,7 @@ function updateWickerQueen(e, dt) {
   for (const v of evs) if (v.t === 'phase' && v.ph === 3) enrageBeat(e);   /* (phase two's beat the enemy tick gives every boss) */
   if ((e.mode === 'burn' || e.mode === 'catch' || e.phase === 3) && Math.random() < dt * (e.mode === 'burn' ? 40 : 18)) flame(e.x + (Math.random() - 0.5) * 22, e.y - 8 - Math.random() * 60, 1, 4, 40, 3);   /* the wicker burning */
   L.dark = e.phase === 2 ? 0.86 : 0;   /* FULL DARK, her phase two, only while she stands */
+  if (music.want === 'wickerqueen') music.setTempo(WQ_TEMPO[e.phase] || 1);   /* THE ORGAN KEEPS HER PACE (src/audio.js WQ_TEMPO): the carousel speeds up by phase, the music with it */
   wqLight(e);
 }
 /* her embers on the green's floor: hot (they will catch her) or banked, grey, for WQ.bankT after a burn */
