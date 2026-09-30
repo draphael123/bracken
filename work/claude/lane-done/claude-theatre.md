@@ -21,7 +21,7 @@ the section-by-section beat table, the comparison with THE MAGE'S FOLLY, notes f
   brief's mask-thrower, re-read as the audience). One ELITE: the door guard (a sworn sword) holds the stage door (the elites check requires one).
 - 3 checkpoints (141,15 / 167,43 / 297,33), route 434 tiles, gaps 148/146/134 (checkpoint-gaps: <=175). 3 silvers, all off the route (costume loft,
   grid, prop store). No relic (question 4).
-- MUSIC: its own track `theatre` (audio/theatre.ogg, "The Maskwright's Waltz"), a PLACEHOLDER composed and synthesised by tools/theatre-music.mjs
+- MUSIC: its own track `theatre` (the placeholder rendered file (replaced by a synth track in THEATREART), "The Maskwright's Waltz"), a PLACEHOLDER composed and synthesised by its renderer (removed in THEATREART)
   (nothing downloaded; ffmpeg on this PC encodes it). Credited in audio/CREDITS.txt and MUSIC_CREDITS. The art/music lane composes the real one.
 - THE PUPPETEER: not merged (the safer choice - his branch also adds a hidden 'puppetstage' level and boss-check rows that must be re-pointed
   together). The main stage is KEPT FREE for his stage: columns 300-339, rows 18-35, floor row 34; the exact call is written in section 10 of
@@ -30,7 +30,7 @@ the section-by-section beat table, the comparison with THE MAGE'S FOLLY, notes f
 - src/reachcore.js: `L.rigBands` (a fly line's travel) is a ride band, and each line's two stops are footing (a batten stands at a stop until struck).
 - src/threat.js: the machinery's kinds weigh 0 (spotlamp, flylock, flatwinch, stagetrap, startrap).
 - Tools: tools/theatre.mjs (the CHECK, registered), tools/theatre-pilot.mjs (route pilot), tools/theatre-map.mjs (data map), tools/theatre-shots.mjs
-  (full-level image + sections), tools/theatre-music.mjs (the placeholder track). tools/harvest-fair.mjs and tools/additional-areas.mjs follow the
+  (full-level image + sections), its renderer (removed in THEATREART) (the placeholder track). tools/harvest-fair.mjs and tools/additional-areas.mjs follow the
   new road (Waymeet -> theatre -> fair). tools/slopes-trace.mjs traces the theatre too (baseline recorded with --rebase=theatre: a new level, so
   a regression baseline on the current mover; the other four levels' traces unchanged).
 
