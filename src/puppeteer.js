@@ -31,7 +31,7 @@
 export const PUP = {
   hp: 720, w: 16, h: 40, markH: 50,
   ward: 0.05, openMul: 1.0, joltMul: 1.0,
-  downOpenT: 3.4,                      // BOTH PUPPETS DOWN: he is on the boards this long
+  downOpenT: 4.0,                      // BOTH PUPPETS DOWN: he is on the boards this long
   joltT: 1.6, joltCd: 8.0,             // THE HARD WAY: his line struck from the gallery
   hangLow: 56,                         // one puppet down: his bar sinks this far below the gallery (still out of reach from the boards)
   descendT: 0.7, haulT: 1.2, riseT: 0.8,
@@ -39,7 +39,7 @@ export const PUP = {
   downT: { harlequin: 6.0, marionette: 8.0, masterpiece: 8.0 },   // a dropped puppet stays down this long, then he strings it again
   cutStun: 0.7,                        // a GOLD cut: the puppet staggers this long
   flySpeed: 170,
-  harl: { hp: 40, speed: 130, jabTell: 0.32, jabNext: 0.22, jabT: 0.1, jabs: 3, jabReach: 26, jab: 8, kickTell: 0.5, kickT: 0.2, kickReach: 34, kick: 10,
+  harl: { hp: 40, speed: 130, jabTell: 0.36, jabNext: 0.24, jabT: 0.1, jabs: 3, jabReach: 26, jab: 8, kickTell: 0.5, kickT: 0.2, kickReach: 34, kick: 10,
     rest: 0.35, still: 0.7, dart: 2.2 },
   brute: { hp: 110, speed: 38, chopTell: 1.1, chopReach: 40, chop: 28, slamTell: 1.3, slamReach: 70, slamTop: 12, slam: 30, grabTell: 1.0, grabReach: 30, grab: 32,
     recover: 1.4, range: 44, scale: 1.5 },

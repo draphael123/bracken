@@ -26,8 +26,8 @@
                        shut, and the rack sets its stone back (the Deep rework, docs/briefs/deep-rework-2.md)
      THE WICKER QUEEN  turn round on her while she stands on the bonfire's embers: the wicker catches and burns open; the same look short of them,
                        or her crossing them unseen, opens nothing (claude/fair3)
-     THE PUPPETEER     cut both his puppets down (a string is cut only while it glows, in a windup) and he rides his line down to re-string them:
-                       open on the stage; a minute of his puppets left alone - windups, blows, a heap left lying - opens nothing (claude/puppeteer)
+     THE PUPPETEER     drop both his puppets (blows or cut strings) and he is dragged down to the boards, open; a minute of his puppets left alone -
+                       windups, blows - opens nothing (claude/puppeteer, PUPPETEER3)
      THE LAMPREEVE, THE HEADLESS PLOUGHMAN, THE HOMUNCULUS (minis, claude/weakboss): strike the lamp he hoods / bait the plough into the
                        trough or the fence / make a trick miss you - each against the same thing left alone, in tools/weak-bosses.mjs
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
@@ -182,8 +182,8 @@ try {
   {const b=boot('puppetstage');const S=BK.puppeteerHands().show(),A=BK.L.arena,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+60;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let cutF=0,op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const p=S.puppets.find(q=>q.alive&&q.mode!=='heap'&&/Tell$/.test(q.mode));
-     if(p&&P.atk<0){P.x=p.x-(p.t==='harlequin'?14:18);P.face=1;P.vx=0;BK.press('atk');cutF++;}BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='restring')mode='restring';}
-   out.puppeteer={alone:+alone.toFixed(1),swings:cutF,mode,open:+op.toFixed(1),onStage:b.y===A.floor};}
+     if(p&&P.atk<0){P.x=p.x-(p.t==='harlequin'?14:18);P.face=1;P.vx=0;BK.press('atk');cutF++;}BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='downed')mode='downed';}
+   out.puppeteer={alone:+alone.toFixed(1),swings:cutF,mode,open:+op.toFixed(1),onStage:b.mode==='downed'&&b.y===A.floor||mode==='downed'};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -257,7 +257,7 @@ try {
   assert.ok(r.wicker.unseen.open === 0 && r.wicker.unseen.mode !== 'burn', 'crossing the embers with nobody looking opened her: ' + JSON.stringify(r.wicker));
   assert.ok(r.wicker.embers.mode === 'burn' && r.wicker.embers.open > 2, 'frozen ON the embers she did not burn open: ' + JSON.stringify(r.wicker));
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
-  assert.ok(r.puppeteer.mode === 'restring' && r.puppeteer.open >= 1.7 && r.puppeteer.onStage,   /* (PUPPETEER2, Daniel 2026-09-30: his re-string window is 1.8 s, down from 2.8) */ 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
+  assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (PUPPETEER3: drop both puppets - blows or cuts - and he is dragged down to the boards, open) */ 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }
