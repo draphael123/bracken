@@ -5,9 +5,11 @@
 // carries only a few one-line hooks. Brief: docs/briefs/maskwright-theatre.md.
 import * as TR from './theatre-rig.js';
 import * as FO from './theatre-foes.js';
+import * as TP from './redraw/theatre_props.js';
+import * as TRM from './redraw/theatre_rooms.js';
+import * as TTL from './redraw/theatre_tiles.js';
 const TS = 16;
 const GADGET = new Set(['spotlamp', 'flylock', 'flatwinch', 'cuelever']);
-const DECO = new Set(['mirror', 'wardrobe', 'seats', 'stands', 'rack', 'props']);
 
 /* A NEW ATTEMPT: the machinery as the level was built, the flats put where they stand at load, the show not started */
 export function theatreReset(H) {
@@ -15,7 +17,7 @@ export function theatreReset(H) {
   const D = L.theatre, T = H.T;
   const st = { spots: D.spots.map(TR.newSpot), lines: D.lines.map(l => ({ ...l })), traps: D.traps.map(t => ({ ...t, state: 'shut' })),
     show: { ...D.show, on: false, t: 0, lift: 0, hold: false }, told: {}, props: [], flats: [], clock: 0, shadows: [], sacks: [], mirrors: D.mirrors || [], choruses: (D.choruses || []).map(c => ({ ...c, t: 0 })) };
-  st.data = D;
+  st.data = D; if (H.musicAct) H.musicAct(0);   /* THE WALTZ starts as the overture, before the curtain */
   st.spots.forEach((s, i) => { s.off = !!s.show; s.light = { x: s.x, y: s.y, r: s.r * 1.25, warm: true, thSpot: i, lantern: { lit: false } };   /* an engine light: a dark pool is a lantern that is out */ H.lights().push(s.light); });
   for (const f0 of D.flats) {
     const f = { ...f0, base: new Map(f0.base.map(([x, y, t]) => [x + ',' + y, t])) };
@@ -76,13 +78,13 @@ export function theatreUpdate(st, H, dt) {
   // ---- THE SHOW: the curtain goes up when a hero sets foot on the stage, and the prompt book runs from then on ----
   const sh = st.show;
   if (!sh.on) { H.eachHero(P => { if (!P.dead && P.x > sh.x0 && P.x < sh.x1 && P.y > sh.y0 && P.y <= sh.y1 + 2 && P.ground) sh.on = true; });
-    if (sh.on) { for (const s of st.spots) if (s.show) s.off = false; S.sting(); S.calliope && S.calliope(); H.shake(3);
+    if (sh.on) { if (H.musicAct) H.musicAct(1); for (const s of st.spots) if (s.show) s.off = false; S.sting(); S.calliope && S.calliope(); H.shake(3);
       H.hint('THE CURTAIN RISES. THE LAMPS KEEP THEIR CUES, THE CAST FREEZES IN THE LIGHT, AND THE AUDIENCE THROWS AT WHATEVER IS LIT.'); } }
   if (sh.on) { sh.t += dt; sh.lift = Math.min(1, sh.lift + dt / 1.6);
     /* THE ACTS: a bell before each, and the change it announces; the audience grows; in ACT III the curtain comes down on the stage */
     const act = TR.actAt(sh.t), bell = TR.actBell(sh.t);
     if (bell && sh.rung !== bell) { sh.rung = bell; S.tollBell ? S.tollBell() : S.clank(); S.calliope && S.calliope(); }
-    if (act !== sh.act) { sh.act = act; if (act > 1) { H.shake(2); H.hint(act === 2 ? 'ACT TWO. A PAINTED CLOTH FLIES IN, AND THE SCENE FLAT STAYS DOWN: GO OVER IT. THE HOUSE IS FULLER.' : 'ACT THREE. THE WAY OFF IS OPEN, AND THE CURTAIN IS COMING DOWN. GET OFF THE STAGE BEFORE IT DOES.'); }
+    if (act !== sh.act) { sh.act = act; if (H.musicAct) H.musicAct(act); if (act > 1) { H.shake(2); H.hint(act === 2 ? 'ACT TWO. A PAINTED CLOTH FLIES IN, AND THE SCENE FLAT STAYS DOWN: GO OVER IT. THE HOUSE IS FULLER.' : 'ACT THREE. THE WAY OFF IS OPEN, AND THE CURTAIN IS COMING DOWN. GET OFF THE STAGE BEFORE IT DOES.'); }
       if (act === 2 && !sh.glimpsed) sh.jerkAt = sh.t + 3; }
     sh.fall = TR.curtainFall(sh.t);
     if (sh.fall >= 1) { let onStage = false; H.eachHero(P => { if (!P.dead && P.x > sh.x0 && P.x < sh.x1 && P.y > sh.y0 && P.y <= sh.y1 + 2) onStage = true; });
@@ -171,75 +173,9 @@ export function theatreMover(st, H, m, dt) {
   return true;
 }
 
-/* ================= THE LOOK (greybox: plain shapes; the art lane replaces them) ================= */
-export function drawTheatreMover(g, m, cx, cy, time) {
-  const x = Math.round(m.x - cx), y = Math.round(m.y - cy), w = m.w, top = Math.round(4 * TS - cy);
-  g.fillStyle = '#b8a888'; g.fillRect(x + 3, top, 1, y - top); g.fillRect(x + w - 4, top, 1, y - top);   /* the lines up to the grid */
-  if (m.role === 'bag') { g.fillStyle = '#5a4630'; g.fillRect(x + 1, y + 2, w - 2, m.h - 2); g.fillStyle = '#7a6040'; g.fillRect(x + 1, y, w - 2, 3); g.fillStyle = '#3a2c1e'; g.fillRect(x + w / 2 - 1, y + 3, 2, m.h - 4); return; }
-  g.fillStyle = '#2a2420'; g.fillRect(x, y, w, m.h); g.fillStyle = '#8a7a5a'; g.fillRect(x, y, w, 2); g.fillStyle = '#c0a060'; for (let k = 4; k < w - 2; k += 12) g.fillRect(x + k, y + 3, 4, 1);
-}
-
-export function drawTheatre(st, g, H, cx, cy, VW, VH, time) {
-  if (!st) return; const L = H.L();
-  // ---- the beams and the pools of light ----
-  for (const s of st.spots) { if (s.off) continue; const p = TR.poolOf(s); if (p.x < cx - 80 || p.x > cx + VW + 80) continue;
-    const lx = s.x - cx, ly = s.y - cy, px = p.x - cx, py = p.y - cy;
-    if (s.clear) { g.globalAlpha = 0.16; g.fillStyle = '#fff2b0'; g.beginPath(); g.moveTo(lx - 2, ly); g.lineTo(lx + 2, ly); g.lineTo(px + p.r, py); g.lineTo(px - p.r, py); g.closePath(); g.fill();
-      g.globalAlpha = 0.34; g.beginPath(); g.ellipse(px, py - 1, p.r, 4, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
-    else { g.globalAlpha = 0.5; g.strokeStyle = '#a08850'; g.setLineDash && g.setLineDash([2, 3]); g.beginPath(); g.moveTo(lx, ly); g.lineTo(px, py - 12); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1; } }
-  // ---- the flats: a painted canvas over the rock the grid holds for them, and the track under a moving or cued one ----
-  for (const f of st.flats) { const cells = TR.flatCells(f, f.at); if (!cells.length) continue;
-    const x0 = Math.min(...cells.map(c => c[0])), x1 = Math.max(...cells.map(c => c[0])), y0 = Math.min(...cells.map(c => c[1])), y1 = Math.max(...cells.map(c => c[1]));
-    const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS; if (sx > VW || sx + w < 0 || sy > VH || sy + h < 0) continue;
-    if (f.axis === 'y' && /shutter/.test(f.name || '')) { g.fillStyle = '#4a3e3a'; g.fillRect(sx, sy, w, h); g.fillStyle = '#5a4c46'; for (let k = 3; k < h; k += 8) g.fillRect(sx + 1, sy + k, w - 2, 1); continue; }   /* the prop store's shutter is painted as the wall it hides */
-    g.fillStyle = '#2a2230'; g.fillRect(sx, sy, w, h); g.fillStyle = f.cue ? '#7a3a4a' : '#3a5a7a'; g.fillRect(sx + 2, sy + 2, w - 4, h - 4);
-    g.fillStyle = f.cue ? '#b06070' : '#6a90b0'; for (let k = 6; k < h - 4; k += 10) g.fillRect(sx + 4, sy + k, w - 8, 2);
-    if (f.warn || f.at !== f.to) { const tx0 = Math.min(f.a, f.b) * TS - cx, tx1 = (Math.max(f.a, f.b) + f.w) * TS - cx, ty = (f.y1 + 1) * TS - cy;
-      g.globalAlpha = 0.5 + 0.5 * Math.sin(time * 18); g.fillStyle = '#ffd36b'; g.fillRect(tx0, ty - 2, tx1 - tx0, 2); g.globalAlpha = 1; } }
-  // ---- the traps: the edges glow before they drop ----
-  for (const tr of st.traps) { if (tr.state !== 'warn') continue; const sx = tr.x0 * TS - cx, w = (tr.x1 - tr.x0 + 1) * TS, sy = tr.row * TS - cy;
-    g.globalAlpha = 0.5 + 0.5 * Math.sin(time * 20); g.fillStyle = '#ff6b4a'; g.fillRect(sx, sy, w, 2); g.fillRect(sx, sy, 2, 6); g.fillRect(sx + w - 2, sy, 2, 6); g.globalAlpha = 1; }
-  // ---- the house's and the rooms' furniture (greybox stand-ins the art lane replaces: deco kinds only this level uses) ----
-  for (const e of L.ents) { if (e.t !== 'deco' || !DECO.has(e.kind)) continue; const x = Math.round(e.x * TS + 8 - cx), y = Math.round((e.y + 1) * TS - cy); if (x < -40 || x > VW + 40 || y < -60 || y > VH + 60) continue;
-    if (e.kind === 'mirror') { g.fillStyle = '#6a5a3a'; g.fillRect(x - 7, y - 26, 14, 20); g.fillStyle = '#9ab0c0'; g.fillRect(x - 5, y - 24, 10, 16); g.fillStyle = '#d8e8f0'; g.fillRect(x - 4, y - 23, 2, 6); }
-    else if (e.kind === 'wardrobe') { g.fillStyle = '#3a2a22'; g.fillRect(x - 10, y - 30, 20, 30); g.fillStyle = '#1a1210'; g.fillRect(x - 6, y - 26, 12, 26); }
-    else if (e.kind === 'seats') { for (let k = 0; k < 4; k++) { g.fillStyle = '#7a1a24'; g.fillRect(x - 24 + k * 14, y - 10, 10, 10); g.fillStyle = '#9a2a30'; g.fillRect(x - 24 + k * 14, y - 10, 10, 3); } }
-    else if (e.kind === 'stands') { g.fillStyle = '#8a8070'; g.fillRect(x, y - 16, 1, 16); g.fillRect(x - 5, y - 18, 11, 4); }
-    else if (e.kind === 'rack') { g.fillStyle = '#5a4a3a'; g.fillRect(x - 12, y - 24, 24, 2); g.fillRect(x - 12, y - 24, 2, 24); g.fillRect(x + 10, y - 24, 2, 24); g.fillStyle = e.v ? '#6a3a5a' : '#3a5a6a'; for (let k = 0; k < 5; k++) g.fillRect(x - 9 + k * 4, y - 22, 3, 14); }
-    else if (e.kind === 'props') { g.fillStyle = '#6a5a3a'; g.fillRect(x - 10, y - 10, 20, 10); g.fillStyle = '#c8a040'; g.fillRect(x - 6, y - 18, 8, 8); } }
-  // ---- the lamps, the rope-locks and the winches ----
-  for (const pr of st.props) { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -20 || x > VW + 20 || y < -40 || y > VH + 40) continue;
-    const fl = pr.flash > 0;
-    if (pr.t === 'spotlamp') { const s = st.spots[pr.spot]; const hy = Math.round(s.y - cy);
-      if (!pr.hang) { g.fillStyle = '#3a3440'; g.fillRect(x - 1, hy + 4, 2, y - hy - 4); g.fillRect(x - 5, y - 2, 10, 2); } else { g.fillStyle = '#3a3440'; g.fillRect(x - 1, hy - 8, 2, 6); }
-      g.fillStyle = fl ? '#ffffff' : '#50485a'; g.fillRect(x - 5, hy - 3, 10, 8); g.fillStyle = s.off ? '#5a5040' : s.clear ? '#fff2b0' : '#c0a060'; const d = Math.sign(TR.poolOf(s).x - s.x) || 1; g.fillRect(x + (d > 0 ? 3 : -5), hy - 2, 2, 6); }
-    else if (pr.t === 'flylock') { const ln = pr.line !== undefined ? st.lines.find(l => l.id === pr.line) : null, out = ln ? ln.out : (st.flats[pr.flat] || {}).to === (st.flats[pr.flat] || {}).b;
-      g.fillStyle = '#5a4430'; g.fillRect(x - 1, y - 22, 3, 22); g.fillStyle = fl ? '#ffffff' : out ? '#ff9a3c' : '#c8a040'; g.fillRect(x - 4, y - 18, 9, 4); g.fillStyle = '#d8c8a0'; g.fillRect(x - 3, y - 13, 7, 3); }
-    else if (pr.t === 'cuelever') { g.fillStyle = '#4a3a2a'; g.fillRect(x - 7, y - 14, 14, 14); g.fillStyle = fl ? '#ffffff' : st.show.hold ? '#ff6b4a' : '#8fd160'; g.fillRect(x - 2, y - 20, 4, 6); }
-    else { g.fillStyle = '#3a3a48'; g.fillRect(x - 6, y - 12, 12, 12); g.fillStyle = fl ? '#ffffff' : '#6a90b0'; g.fillRect(x - 4, y - 10, 8, 8); g.fillStyle = '#d0d8e0'; const a = time * 3; g.fillRect(x + Math.round(Math.cos(a) * 5) - 1, y - 7 + Math.round(Math.sin(a) * 5), 2, 2); }
-  }
-  // ---- THE STAGEHANDS' drops: a shadow growing under the spot, then the sack ----
-  for (const sd of st.shadows) { const k = 1 - sd.t / 1.0, x = Math.round(sd.x - cx), y = Math.round(sd.y - cy); g.globalAlpha = 0.3 + 0.5 * k; g.fillStyle = '#1a0a10'; g.beginPath(); g.ellipse(x, y - 1, 6 + 8 * k, 2 + k, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
-  for (const sk of st.sacks) { const x = Math.round(sk.x - cx), y = Math.round(sk.y - cy); g.fillStyle = '#b8a888'; g.fillRect(x, y - 60, 1, 46); g.fillStyle = '#6e5634'; g.fillRect(x - 5, y - 14, 10, 12); g.fillStyle = '#a88a5a'; g.fillRect(x - 5, y - 14, 10, 3); }
-  // ---- THE STRINGS: from the flies down to the cast while the show runs (the Puppeteer's; cosmetic), and the one that jerks, flashing before it does ----
-  if (st.show.on) for (const e of H.enemies()) { if (!e.alive || e.t !== 'mummer' || e.squad !== 'the cast') continue; const x = Math.round(e.x - cx), yT = Math.round(17 * TS - cy), yB = Math.round(e.y - (e.h || 22) - cy);
-    if (x < -10 || x > VW + 10) continue; const hot = st.show.jerkE === e && st.show.jerkAt; g.globalAlpha = hot ? 0.6 + 0.4 * Math.sin(time * 30) : 0.28; g.fillStyle = hot ? '#ffffff' : '#d8d0c0'; g.fillRect(x - 3, yT, 1, yB - yT); g.fillRect(x + 3, yT, 1, yB - yT + 4); g.globalAlpha = 1; }
-  // ---- THE GLIMPSE: a tall figure up in the rigging, a cross-bar in its hands, for a moment ----
-  if (st.glimpse && st.glimpse.t > 0 && D0(st).glimpse) { const G = D0(st).glimpse, x = Math.round(G.x * TS - cx), y = Math.round(G.y * TS - cy), a = Math.min(1, st.glimpse.t / 0.6, (2.4 - st.glimpse.t) / 0.4);
-    g.globalAlpha = 0.85 * a; g.fillStyle = '#0c0810'; g.fillRect(x - 3, y - 30, 7, 30); g.fillRect(x - 2, y - 36, 5, 6); g.fillRect(x - 10, y - 26, 21, 2); g.fillStyle = '#d8d0c0'; for (const d of [-9, -3, 3, 9]) g.fillRect(x + d, y - 24, 1, 22); g.fillStyle = '#ff4030'; g.fillRect(x - 1, y - 34, 1, 1); g.fillRect(x + 1, y - 34, 1, 1); g.globalAlpha = 1; }
-  // ---- THE AUDIENCE: more heads in the boxes each act (draw only) ----
-  if (st.show.on) { const n = 1 + (st.show.act || 1); for (const bx of D0(st).boxes || []) for (let i = 0; i < n; i++) { const x = Math.round((bx[0] + 0.5 + i * 1.2) * TS - cx), y = Math.round(bx[1] * TS - cy); if (x < -10 || x > VW + 10) continue; g.fillStyle = '#1a1420'; g.fillRect(x - 3, y - 12, 6, 12); g.fillRect(x - 2, y - 16, 4, 4); } }
-  // ---- THE CURTAIN: red over the stage until the show starts, it rises when it does, and in act three it comes down again ----
-  const [x0, x1, y0, y1] = st.show.curtain, k = Math.min(st.show.lift, 1 - (st.show.fall || 0)), sx = x0 * TS - cx, w = (x1 - x0 + 1) * TS, full = (y1 - y0 + 1) * TS, h = Math.round(full * (1 - k)), sy = y0 * TS - cy;
-  if (h > 0 && sx < VW && sx + w > 0) { g.fillStyle = '#7a1a24'; g.fillRect(sx, sy, w, h); g.fillStyle = '#9a2a30'; for (let q = 0; q < w; q += 12) g.fillRect(sx + q, sy, 4, h); g.fillStyle = '#c8a040'; g.fillRect(sx, sy + h - 3, w, 3); }
-}
-
-/* the rooms, greybox: a colour a room and a few lines, so the spaces read apart */
-const ROOM = { thPassage: ['#2a2430', '#322a38'], thCostume: ['#35283a', '#3e2e44'], thWorkshop: ['#3a2c2a', '#443430'], thDock: ['#2c2a34', '#34323e'], thFly: ['#221c28', '#2a2230'],
-  thStage: ['#1e1822', '#261e2a'], thUnder: ['#161218', '#1c171e'], thWings: ['#262030', '#2e2638'], thMain: ['#1a1420', '#241a2a'] };
-export function paintTheatreRoom(g, st, sx, sy, w, h) {
-  const c = ROOM[st]; if (!c) return false;
-  g.fillStyle = c[0]; g.fillRect(sx, sy, w, h); g.fillStyle = c[1]; for (let x = sx; x < sx + w; x += 32) g.fillRect(x, sy, 2, h);
-  if (st === 'thStage' || st === 'thMain') { g.fillStyle = '#2e2436'; g.fillRect(sx, sy + h - 40, w, 40); }   /* the cyclorama's foot */
-  return true;
-}
+/* ================= THE LOOK: src/redraw/theatre_props.js (the dressing and the machines), theatre_rooms.js (the rooms), theatre_tiles.js (the tile kit) ================= */
+export const drawTheatreMover = (g, m, cx, cy, time) => TP.drawMover(g, m, cx, cy, time);
+export const drawTheatre = (st, g, H, cx, cy, VW, VH, time) => { if (st) TP.drawScene(st, g, H, cx, cy, VW, VH, time); };
+export const drawTheatreFront = (st, g, H, cx, cy, VW, VH, time) => { if (st) TP.drawFront(st, g, H, cx, cy, VW, VH, time, (x, y) => litAt(st, H, x, y)); };
+export const paintTheatreRoom = (g, st, sx, sy, w, h, tx0, ty0, time, camX, camY) => TRM.paintTheatreRoom(g, st, w, h, tx0, ty0, time, camX, camY, tx0 * TS, ty0 * TS);
+export const theatreTile = (t, x, y, at, T, L) => TTL.theatreTile(t, x, y, at, { T, W: L.W, traps: L.theatre.traps });

@@ -62,7 +62,8 @@ if (lv) {
   const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), nodes = src.slice(src.indexOf('const INLAND_NODES'), src.indexOf('const INLAND_PATH'));
   const ids = [...nodes.matchAll(/id: '([a-z]+)', kind: 'level'/g)].map(m => m[1]);
   ok(ids.indexOf('theatre') === ids.indexOf('waymeet') + 1 && ids.indexOf('fair') === ids.indexOf('theatre') + 1, 'the map does not run Waymeet, the theatre, the fair: ' + ids.join(','));
-  ok(L.music === 'theatre' && existsSync(new URL('../audio/theatre.ogg', import.meta.url)), 'the theatre does not play its own track (audio/theatre.ogg)');
+  { const au = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
+    ok(L.music === 'theatre' && !existsSync(new URL('../audio/theatre.ogg', import.meta.url)) && au.includes('function scheduleTheatre(') && au.includes('export function theatreAct('), 'the theatre does not play its own synth track (src/audio.js scheduleTheatre / theatreAct; it has no file)'); }
   ok(existsSync(new URL('../docs/briefs/maskwright-theatre.md', import.meta.url)), 'the brief (docs/briefs/maskwright-theatre.md) is not committed');
   // FIVE FLOORS, and the route reaches every one of them
   const RF = floodReach(L, T, { rides: true }), rows = new Set([...RF.seen].map(k => +k.split(',')[1]));

@@ -1,7 +1,7 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
-const TRACKS = { theatre: './audio/theatre.ogg', unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
+const TRACKS = { unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
   ambWind: './audio/ambWind.ogg', ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
   /* CC0: MintoDog's stage-select set, skrjablin's Sailor Waltz, Memoraphile's Spooky Dungeon (audio/CREDITS.txt) */
   musForest: './audio/musForest.ogg', musCastle: './audio/musCastle.ogg', musMountain: './audio/musMountain.ogg', musUnder: './audio/musUnder.ogg',
@@ -483,9 +483,10 @@ export const music = {
     // A TRACK WITH NO FILE IS PLAYED BY THE SYNTH - but the synth only runs while `currentTrack` is null,
     // and nothing was clearing it. So walking into UNDERLEAF left the PREVIOUS level's file playing and
     // the level had no theme of its own at all, which is exactly what it sounded like.
-    if (!TRACKS[name]) { stopMusic(); currentTrack = null; nextT = ac.currentTime + 0.05; step = 0; return; }
+    if (!TRACKS[name]) { stopMusic(); currentTrack = null; nextT = ac.currentTime + 0.05; step = 0; if (name === 'theatre') thAct = 0; return; }
     loadTrack(name); },
   preload(name) { if (ac) loadTrack(name); },
+  act(n) { theatreAct(n); },   /* THE MASKWRIGHT'S THEATRE: which act the show is in (0 the overture, 1-3 the acts): the waltz is told lighter and faster */
   stop() { wantTrack = null; silenced = true; stopMusic(); currentTrack = null; },
   loaded(name) { return !!trackBuf[name]; },
   set(v) { musicOn = !!v; if (musicGain && currentTrack) musicGain.gain.value = musicOn ? trackVol(currentTrack) : 0; },
@@ -524,11 +525,70 @@ const DEEP_LEAD = [[null, null, null, 'E3', null, null, null, null], [null, null
 const DEEP_BASS = ['E2', 'C2', 'E2', 'A1'];
 let step = 0, nextT = 0, timer = null;
 const STEP = 60 / 112 / 2, STEP_HUSH = 60 / 62 / 2, STEP_MINE = 60 / 48 / 2, STEP_DEEP = 60 / 40 / 2, STEP_TOWN = 60 / 96 / 2;
+// THE MASKWRIGHT'S THEATRE: "OVERTURE FOR AN EMPTY HOUSE". A creaky music-hall waltz in D minor, played by a pit that has not been paid: bowed strings (two desks, a little
+// out of tune and never the same way twice), a harpsichord on the off-beats, a plucked bass, a door that creaks in the middle of the tune. Synth only (no file).
+// Sixteen bars of 3/4, an eighth to a step. The show is told in four levels, set by main.js through music.act(n): 0 THE OVERTURE (the level
+// before the curtain: minor, slow, unsteady), 1 CURTAIN UP (the same tune lifted into D major, a flute doubling the lead, faster), 2 ACT TWO (faster, a snare), 3 ACT THREE
+// (faster still, a drum on every bar - the curtain is coming down). The pitch map that lifts it: F to F#, Bb to B, C to C#, so the minor tune's every chord is the major's.
+const TH_M = [  // the lead, a token an eighth: a note, or '-' to let the last one ring
+  'D5 - A4 - F4 -', 'A4 - D5 - F5 -', 'E5 - C#5 - A4 C#5', 'D5 - - - - -', 'G4 - Bb4 - D5 -', 'F5 - D5 - A4 -', 'C#5 E5 A5 G5 E5 C#5', 'D5 - - - A4 -',
+  'Bb4 - D5 - F5 -', 'A5 - F5 - C5 -', 'Bb4 - D5 - G5 -', 'F5 E5 C#5 E5 A4 -', 'D5 - F5 - A5 -', 'G5 - F5 - D5 -', 'C#5 - E5 - G5 -', 'E5 - - D5 C#5 E5'].map(b => b.split(' '));
+const TH_ROOT = ['D3', 'D3', 'A2', 'D3', 'G2', 'A2', 'A2', 'D3', 'Bb2', 'F2', 'G2', 'A2', 'D3', 'Bb2', 'A2', 'A2'];
+const TH_CHORD = { Dm: ['D4', 'F4', 'A4'], A7: ['C#4', 'E4', 'G4'], Gm: ['Bb3', 'D4', 'G4'], Bb: ['D4', 'F4', 'Bb4'], F: ['C4', 'F4', 'A4'] };
+const TH_PROG = ['Dm', 'Dm', 'A7', 'Dm', 'Gm', 'Dm', 'A7', 'Dm', 'Bb', 'F', 'Gm', 'A7', 'Dm', 'Bb', 'A7', 'A7'];
+const TH_BPM = [112, 132, 146, 158];
+let thAct = 0, thLast = 0;
+const thHash = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return v - Math.floor(v); };
+function thHz(name, lift) {
+  const m = /^([A-G])(#|b)?(\d)$/.exec(name); if (!m) return 440; let semi = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0);
+  if (lift && !m[2] && (m[1] === 'F' || m[1] === 'C')) semi += 1;   // F -> F#, C -> C#
+  if (lift && m[2] === 'b' && m[1] === 'B') semi += 1;              // Bb -> B
+  return 440 * Math.pow(2, (semi + 12 * (+m[3] - 4) - 9) / 12);
+}
+const thCents = (hz, c) => hz * Math.pow(2, c / 1200);
+/* A BOWED NOTE: two saws a few cents apart, a slow vibrato, a lowpass that opens as the bow bites, a swell and a release. The pair is what makes a desk of players and not a synth. */
+function thBow(hz, dur, v, delay, cents, lp = 1500) {
+  if (!ac || !musicGain) return; const t = ac.currentTime + delay, o = ac.createOscillator(), o2 = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain(), l = ac.createOscillator(), lg = ac.createGain();
+  o.type = 'sawtooth'; o2.type = 'sawtooth'; o.frequency.value = hz; o2.frequency.value = hz; o.detune.value = cents - 7; o2.detune.value = cents + 8;
+  l.frequency.value = 5 + Math.random() * 0.9; lg.gain.value = hz * 0.007; l.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency);
+  f.type = 'lowpass'; f.Q.value = 0.5; f.frequency.setValueAtTime(lp * 0.55, t); f.frequency.linearRampToValueAtTime(lp, t + 0.18);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.09); g.gain.setValueAtTime(v, t + Math.max(0.1, dur * 0.7)); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+  o.connect(f); o2.connect(f); f.connect(g); g.connect(musicGain); o.start(t); o2.start(t); l.start(t); const end = t + dur + 0.05; o.stop(end); o2.stop(end); l.stop(end);
+}
+function scheduleTheatre(delay, stepN) {
+  const act = thAct, lift = act > 0, bar = Math.floor(stepN / 6) % 16, i = stepN % 6, lap = Math.floor(stepN / 96), beat = 60 / TH_BPM[act], SL = beat / 2;
+  const rub = 1 + 0.035 * Math.sin(stepN * 0.11) * (act ? 0.4 : 1);   // a pit that rushes and drags
+  const H = n => thHz(n, lift), tune = (hz, slot, amount) => thCents(hz, (thHash(stepN, slot) - 0.5) * amount), flat = lap % 2 === 1 && bar === 11 && i === 3;   // one note in thirty-two bars sags flat
+  // the lead, bowed (violins, and in the lift a flute over them)
+  const tok = TH_M[bar][i];
+  if (tok !== '-') { let n = 1; while (i + n < 6 && TH_M[bar][i + n] === '-') n++; if (i + n >= 6 && TH_M[(bar + 1) % 16][0] === '-') n += 2;
+    const hz = H(tok), dur = n * SL * 1.08, c = 14 + (thHash(bar, i) - 0.5) * 18 - (flat ? 55 : 0);
+    thBow(hz, dur, 0.085, delay, c, 1800); if (act >= 1) tone('triangle', thCents(hz * 2, c + 4), thCents(hz * 2, c + 4), dur * 0.8, 0.045, delay, musicGain); }
+  const ch = TH_CHORD[TH_PROG[bar]], root = TH_ROOT[bar];
+  // the second desk: the chord, held through the bar (violas: a little flat)
+  if (i === 0) for (let k = 0; k < 3; k++) thBow(H(ch[k]), SL * 6.1 * rub, 0.032, delay, -10 - k * 3, 950);
+  // the bass: one pizzicato on the one, the harpsichord and a pizzicato on the two and the three
+  if (i === 0) { const b = H(root); tone('triangle', thCents(b, -6), thCents(b, -6) * 0.97, SL * 1.6, 0.21, delay, musicGain); tone('sine', b, b * 0.98, SL * 1.2, 0.16, delay, musicGain); }
+  if (i === 2 || i === 4) for (let k = 0; k < 3; k++) { const hz = thCents(H(ch[k]) * 2, 18 + (thHash(stepN, k) - 0.5) * 20); tone('sawtooth', hz, hz * 0.996, SL * 0.9, 0.05, delay, musicGain); tone('square', hz * 2, hz * 2, SL * 0.35, 0.02, delay, musicGain); }   // the harpsichord: a bright stab, quickly gone
+  if (bar === 7 && i === 4) for (let k = 0; k < 5; k++) { const hz = thCents(H(['A4', 'C#5', 'E5', 'G5', 'A5'][k]), 18); tone('sawtooth', hz, hz, SL * 0.7, 0.05, delay + k * SL * 0.25, musicGain); }   // a flourish before the second strain
+  if (bar === 15 && i === 4) for (let k = 0; k < 5; k++) { const hz = thCents(H(['E5', 'D5', 'C#5', 'B4', 'A4'][k]), 18); tone('sawtooth', hz, hz, SL * 0.7, 0.05, delay + k * SL * 0.25, musicGain); }
+  // the house's own noises
+  if (!act && bar === 4 && i === 3 && lap % 2 === 0) tone('sawtooth', 120, 210, 0.7, 0.028, delay, musicGain);          // a door that creaks, in the middle of the tune
+  if (!act && bar === 12 && i === 1 && lap % 2 === 1) noise(0.25, 0.05, 900, 6, delay, musicGain);                      // a seat tipping up
+  if (act >= 2 && (i === 2 || i === 4)) noise(0.05, 0.06, 3600, 0.9, delay, musicGain);                               // a snare brush
+  if (act >= 3 && i === 0) { tone('sine', 110, 44, 0.22, 0.26, delay, musicGain); }                                     // a drum on every bar
+  return SL * rub;
+}
+export function theatreAct(n) {   // told: main.js sets it as the show's acts change
+  n = Math.max(0, Math.min(3, n | 0)); if (n === thAct) return; const up = n > thAct; thAct = n;
+  if (ac && up && musicGain && wantTrack === 'theatre') { noise(1.1, 0.12, 6500, 0.6, 0, musicGain); [1318.5, 1568, 2093].forEach((f, k) => tone('sine', f, f, 0.6, 0.06, k * 0.09, musicGain)); }   // a cymbal and a bell: the change is told
+}
 function schedule() {
   if (!ac) return;
   if (currentTrack || silenced) { nextT = ac.currentTime; return; }
   const hush = wantTrack === 'underleaf', mine = wantTrack === 'mineworks', deep = wantTrack === 'deep', town = wantTrack === 'waymeet', SL = town ? STEP_TOWN : deep ? STEP_DEEP : mine ? STEP_MINE : hush ? STEP_HUSH : STEP;
   while (nextT < ac.currentTime + 0.25) {
+    if (wantTrack === 'theatre') { nextT += musicOn ? scheduleTheatre(nextT - ac.currentTime, step) : 60 / TH_BPM[thAct] / 2; step++; continue; }   /* THE MASKWRIGHT'S THEATRE: its own waltz, synth only (scheduleTheatre) */
     const bar = Math.floor(step / 8) % 4, i = step % 8;
     if (musicOn) {
       const delay = nextT - ac.currentTime;
@@ -1366,7 +1426,7 @@ export const MUSIC_CREDITS = {
   houndmaster: '"Boss Fight 2" — ansimuz', masthead: '"Slay The Evil" — HydroGene', hilltroll: '"Boss Battle #6" — nene',
   rimewright: '"Fields of Ice" — Jonathan So', captain: '"Stereotypical Boss" — Spring',
   tollmaster: '"Infinite Darkness" — HydroGene', grandmother: '"Ghost Land" — HydroGene',
-  theatre: '"The Maskwright\'s Waltz" — BRACKEN', fields: '"Halloween Hullabaloo" — StarlightFrost', scarecrowking: '"Witch\'s Lair" — Juhani Junkala',
+  fields: '"Halloween Hullabaloo" — StarlightFrost', scarecrowking: '"Witch\'s Lair" — Juhani Junkala',
   causeway: '"Solemn Tide" — madameberry', kraken: '"Castle Boss" — madameberry',
   witchlight: '"Iremos Forest" — beardalaxy', oreroad: '"12 Music Loops" — SubspaceAudio',
   unburied: '"Void Estate" — Zane Little', deathknight: '"Bald Mountain" — Mussorgsky',

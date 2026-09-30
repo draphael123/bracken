@@ -343,7 +343,7 @@ export function buildMaskwrightTheatre(ctx) {
   sign(3, 33, "THE MASKWRIGHT'S THEATRE. THE HOUSE IS DARK, AND FULL.");
   sign(20, 23, 'THE PLAYERS MOVE ONLY WHEN NOBODY WATCHES. FACE ONE AND IT STOPS. CUT IT DOWN.');
   sign(34, 23, 'BELLS: IT IS MOVING. A RED MASK: IT IS ABOUT TO STRIKE. LOOK AT IT.');
-  foe('mummer', 29, 23, { squad: 'the usher' });                             /* THE USHER, alone on the dress circle: the facing rule, taught */
+  foe('mummer', 29, 23, { squad: 'the usher', usher: true });                             /* THE USHER, alone on the dress circle: the facing rule, taught */
   foe('stagehand', 41, 34, { squad: 'the stalls' }); foe('stagehand', 45, 35, { squad: 'the front stalls' });   /* two crew in the stalls, one under the chandelier */
   foe('mummer', 51, 41, { squad: 'the pit' });                               /* in the pit, among the music stands */
   foe('bat', 50, 14);

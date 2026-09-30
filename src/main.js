@@ -1038,6 +1038,7 @@ function resolveTiles() {
     else if (t === T.SOFT) s = villT ? VILL.turf[(tileAt(x - 1, y) === T.AIR ? 1 : 0) + '' + (tileAt(x + 1, y) === T.AIR ? 1 : 0)][(rnd() * 4) | 0] : TILE.soft[(x + y) % 3];
     else if (t === T.SPIKE) s = L.fallingTower ? (TILE.towerSpikes || (TILE.towerSpikes = FTW.bakeTowerSpikes()))[(rnd() * 4) | 0] : L.palette && L.palette.nearSet === 'town' ? (TILE.townSpikes || (TILE.townSpikes = bakeTownSpikes()))[(rnd() * 4) | 0] : TILE.thorns[(rnd() * 4) | 0];   /* A TOWN DOES NOT GROW BRAMBLES: a railing with its points up and glass in the kerb */
     else if (t === T.CRATE) s = TILE.crate;
+    if (L.theatre) { const ts = THH.theatreTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE MASKWRIGHT'S THEATRE's tile kit (src/redraw/theatre_tiles.js) */
     tileSpr[y * LW + x] = s;
     { // how far under the open air this tile sits: the ground gets heavier the deeper it goes
       tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; }
@@ -2376,7 +2377,7 @@ function spawnEnt(e) {
       if (made && made.x === px && made.y === py) { if (e.sleeper) made.sleeper = true; if (e.mini) { made.mini = true; if (!made.maxHp) { made.hp = Math.round(made.hp * 1.8); made.miniBig = true; } }   /* a small creature holding a mini is bigger and tougher than its kind; a boss-sized one (it has maxHp) already is */ if (e.awake) made.woke = 1; } }
   }
   if(e.balcony)for(let i=n0;i<enemies.length;i++)enemies[i].balcony={state:'wait',t:0};
-  if (e.footlights || e.cast) for (let i = n0; i < enemies.length; i++) { if (e.footlights) enemies[i].footlights = true; if (e.cast) enemies[i].cast = true; }   /* THE AUDIENCE (the Maskwright's Theatre): a drunk in a box who sees only what is in the light */
+  if (e.footlights || e.cast || e.usher) for (let i = n0; i < enemies.length; i++) { if (e.footlights) enemies[i].footlights = true; if (e.cast) enemies[i].cast = true; if (e.usher) enemies[i].usher = true; }   /* THE AUDIENCE (the Maskwright's Theatre): a drunk in a box who sees only what is in the light */
   if (e.elite && enemies.length > n0) eliteMake(enemies[n0], e);   /* before the tier scales it, like a mini's health */
   for (let i = n0; i < enemies.length; i++) if (AMPHIB.has(enemies[i].t)) enemies[i].shore = shoreOf(enemies[i].x, enemies[i].y);   /* an amphibious thing is given the water it was put down by (see shoreLeash) */
   const tr = tierOf(curId()); for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.xpRole = !isBoss ? '' : (L.arena && L.arena.boss === e2.t) ? 'boss' : 'mini'; e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * tr : 1 + 0.5 * tr) * (coop() ? 2 : 1)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; }   /* CO-OP DOUBLES EVERYTHING THAT FIGHTS. Two heroes, twice the health - and it is done HERE, on the one line every creature, mini and boss in the game already comes through, never per creature. (The other half is in damagePlayer0.) */
@@ -11264,7 +11265,7 @@ function drawFieldsOverlay(cx, cy) {
   for (const bl of FLD.bales) { const c = fa().ghost.bale; g.save(); g.translate(Math.round(bl.x - cx), Math.round(bl.y - 9 - cy)); g.rotate(bl.rot); g.drawImage(c, -12, -8, 24, 16); g.restore(); }
   for (const s of FLD.shots) { const c = fa().lantern[1]; g.drawImage(c, Math.round(s.x - cx) - 4, Math.round(s.y - cy) - 6); fbloom(s.x - cx, s.y - cy, 12, 0.4, 'warm'); }
   for (const s of seeds) if (s.plHead && !s.dead && SPR.ploughHead) { const c = SPR.ploughHead[Math.floor(time * 12) % SPR.ploughHead.length]; g.drawImage(c, Math.round(s.x - cx) - 6, Math.round(s.y - cy) - 6); }
-    else if (s.fork && !s.dead && SPR.haunt) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(Math.atan2(s.vy, s.vx)); g.drawImage(SPR.haunt.R[3], -14, -14); g.restore(); }
+    else if (s.fork && !s.dead && SPR.haunt) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(Math.atan2(s.vy, s.vx)); g.drawImage((L.theatre && THF.hauntThrown()) || SPR.haunt.R[3], -14, -14); g.restore(); }
 }
 /* ============================================================================================================
    THE MAGE'S FOLLY. The Archmage's tower (src/level.js theMagesFolly), and everything it does that no other level
@@ -18215,7 +18216,7 @@ function drawUnburied(cx, cy) { if (!UNB_FIELD) return; UNBF.drawField(g, UNB_FI
 /* ================= THE MASKWRIGHT'S THEATRE (src/maskwright-theatre.js builds it, src/theatre-rig.js is its machinery, src/theatre-hands.js its hands):
    this is only the context those hands are given, and the reset. ================= */
 let THEATRE = null;
-const THX = { T, L: () => L, lights: () => lights, enemies: () => enemies, isSolid, box, overlap, sfx: SFX,
+const THX = { T, L: () => L, musicAct: n => music.act(n), lights: () => lights, enemies: () => enemies, isSolid, box, overlap, sfx: SFX,
   cellSet: (x, y, t) => cellSet(x, y, t), resolve: () => resolveTiles(), attackBox: () => attackBox(), eachHero: fn => { for (const pp of players) asPlayer(pp, () => fn(P)); },
   bodies: () => players.filter(p => !p.dead).concat(enemies.filter(e => e.alive && !e.noGrav)), hurt: (e, d, x) => hurtEnemy(e, d, x, false), sparks, dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n),
   near: (x, y, r) => Math.abs(x - P.x) < r && Math.abs(y - P.y) < r, heal: n => { P.hp = Math.min(P.maxHp, P.hp + n); }, flower: (x, y) => burst(x, y, 8, ['#ff80a0', '#fff6c8', '#8fd160'], 40, 0.8), canStep: (e, d) => fairStep(e, d), move: (e, dx) => moveBody(e, dx, 0, false), gravity: (e, dt) => { e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground || r.hitY) e.vy = 0; },
@@ -18387,7 +18388,7 @@ const CV_FOES = new Set(['scorpion', 'sandgob', 'vulture', 'cutthroat', 'slinger
 const CV_STEP = { scorpion: DF.scorpionStep, sandgob: DF.sandGobStep, vulture: DF.vultureStep, cutthroat: DF.cutthroatStep, slinger: DF.slingerStep, ambusher: DF.ambusherStep };
 const CV_HURT = { scorpion: 6, cutthroat: 6, slinger: 6, ambusher: 7 };   /* the frame each set is hurt in (the vulture's set ends perched and the goblin's burrowing) */
 const CV_BANDITS = new Set(['cutthroat', 'slinger', 'ambusher']);   /* THE LOOTERS: men, not desert creatures - the sun takes them too */
-SPR.stagehand = THF.bakeStagehand(); HAS_HURT.add('stagehand');   /* THE STAGEHAND (the Maskwright's Theatre) */
+SPR.stagehand = THF.bakeStagehand(); HAS_HURT.add('stagehand'); THF.bakeTheatreCast(SPR.drunk, SPR.boo, SPR.haunt, SPR.mummer);   /* THE STAGEHAND (the Maskwright's Theatre) */
 SPR.mummer = FG.bakeMummer(); SPR.hobbyhorse = FG.bakeHobbyHorse(); SPR.wickerqueen = bakeWickerQueen(); HAS_HURT.add('mummer'); HAS_HURT.add('hobbyhorse');   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
 SPR.cutthroat = CB.bakeCutthroat(); SPR.slinger = CB.bakeSlinger(); SPR.ambusher = CB.bakeAmbusher(); const CV_STONE = CB.bakeSlingStone();
 HAS_HURT.add('cutthroat'); HAS_HURT.add('slinger'); HAS_HURT.add('ambusher');
@@ -26063,7 +26064,8 @@ function drawWorld(cx, cy, showPlayer) {
     /* THE HURT FRAME (the redraw pass): a blow that lands shows on the body - but never over a windup, which is the tell */
     if (V2_HURT[e.t] !== undefined && e.flash > 0.06 && e.alive && !(typeof e.mode === 'string' && /Tell$|swing|swipe|dive|leap|aim|stab|cut/.test(e.mode))) frame = V2_HURT[e.t];
     /* THE HEXED FIELDS' BATS are the farm's dead ones, pale and red-eyed: baked the first time one is drawn, from the cave bat */
-    const sprSet = e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.fam ? SPR.familiar : SPR[e.t];
+    let sprSet = e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.fam ? SPR.familiar : SPR[e.t];
+    if (L.theatre) sprSet = THF.foeSet(e) || sprSet;   /* THE THEATRE's own cast: the masked patron, the usher, the house's ghosts, the flying props */
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
     const bigF = e.t === 'winchmaster' ? WINCH.scale : e.t === 'bloodknight' ? UNBF.BK_SCALE : e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : e.elite ? EL.big : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
@@ -26321,6 +26323,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawFront(cx, cy);   /* the occluders, the near motes, the fg strip (a level with nothing between you and the sky asks for none: palette.noFg) and the near layer, faded where they cover the hero */
   if (L.causeTide || (L.arena && L.arena.boss === 'kraken')) drawCauseOverlay(cx, cy);
   if (L.fields) drawFieldsOverlay(cx, cy);   /* THE HEXED FIELDS: the cloud's shadow, the moon gauge, the marks and the fire */
+  if (THEATRE) THH.drawTheatreFront(THEATRE, g, THX, cx, cy, VW, VH, time);   /* THE MASKWRIGHT'S THEATRE: the light on whoever stands in a pool, over the bodies */
   if (L.mage) drawMageOverlay(cx, cy);   /* THE MAGE'S FOLLY: the form's ring and the bat's bar, the room turned over, the Archmage's circles, runes and openings */   /* THE DROWNED CAUSEWAY: its storm, its ink, the tide's foam line and gauge, and the Kraken's marks */
   if (dk > 0) { g.globalCompositeOperation = 'multiply'; g.globalAlpha = dk * 0.55; const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#8a6aa0'); gr.addColorStop(1, '#ffb070'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
   if (L.fog && L.fog.length && state !== 'win') { // a bank you see through only near yourself, the wisps, or (in the drowned city) a lamp
@@ -26493,7 +26496,7 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
 const fallenBlocked = (tx, ty) => tx < 0 || ty < 0 || tx >= LW || ty >= LH || (grid0 || L.grid)[ty * LW + tx] !== T.AIR;
 function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time, fallenBlocked)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's - its holes and windows only where no tile stands in front of them (round 2) */
-  if (L.theatre && THH.paintTheatreRoom(g, st, sx, sy, w, h)) return;   /* THE MASKWRIGHT'S THEATRE (greybox rooms) */
+  if (L.theatre && THH.paintTheatreRoom(g, st, sx, sy, w, h, tx0, ty0, time, camX, camY)) return;   /* THE MASKWRIGHT'S THEATRE's rooms (src/redraw/theatre_rooms.js) */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
   if (L.deepHolds && DH.paintHold(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE DEEP: a cargo hold, a galley, a gun deck, the tribute hold (src/deep-holds.js) */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
