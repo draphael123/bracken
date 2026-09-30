@@ -1,7 +1,7 @@
 // src/maskwright-theatre.js - THE MASKWRIGHT'S THEATRE (claude/theatre, the GREYBOX: geometry, machinery, encounters, wiring). Brief:
 // docs/briefs/maskwright-theatre.md. The playhouse where the fair's masks and puppets are made, gone strange at dusk: between WAYMEET and THE
 // HARVEST FAIR on the road inland. Its machinery is src/theatre-rig.js (pure) and its hands are in src/main.js (theatreReset / updateTheatre /
-// drawTheatre). THE PUPPETEER (the boss, a parallel lane: src/puppeteer.js) is fought on THE MAIN STAGE past the stage door at the end: this
+// drawTheatre). THE PUPPETEER (the boss, a parallel lane: claude/puppeteer, in a module of its own) is fought on THE MAIN STAGE past the stage door at the end: this
 // file leaves him the room (L.mainStage) and a door, and a gate so the level can be walked end to end without him.
 //
 // THE RULE: THE HOUSE IS WATCHING. A player in a mask moves only when nobody watches it (the facing rule, src/mummer.js - pre-taught here for the
@@ -76,7 +76,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
 
   // ---------------- 1. THE STAGE DOOR (0-27): TEACH the facing rule ----------------
   air(2, 27, 27, 33);
-  sign(4, 33, "THE MASKWRIGHT'S THEATRE. THE PLAYERS ARE STILL IN THEIR MASKS, AND THE HOUSE IS WATCHING.");
+  sign(4, 33, "THE MASKWRIGHT'S THEATRE. THE PLAYERS ARE STILL IN THEIR MASKS.");
   sign(8, 33, 'THE PLAYERS MOVE ONLY WHEN NOBODY WATCHES. FACE ONE AND IT STOPS. CUT IT DOWN.');
   block(12, 13, 33, 33); coins([12, 32], [13, 32]);                       /* a costume trunk left in the passage */
   foe('mummer', 20, 33, { squad: 'the stage door' });                        /* THE FIRST ONE, alone in a passage: facing it, it cannot move. Nothing else here */
@@ -108,14 +108,14 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   lamp(107, 33, [[98, ST], [85, ST]]);                                       /* the painters' lamp, on the floor at the far end */
   foe('mummer', 82, 33, { squad: 'the fitting' });                           /* THE FITTING: one held in the carvers' light, one on the floor in the dark past it, one on the mezzanine */
   foe('mummer', 95, 33, { squad: 'the fitting' });
-  foe('mummer', 97, 27, { squad: 'the fitting' });
+  foe('mummer', 97, 27, { squad: 'the carving floor' });   /* (its own squad: it stands on the mezzanine, not the floor) */
   foe('bat', 84, 20); foe('bat', 104, 21);                                   /* up in the rafters, round the lamps */
   coins([78, 27], [84, 27], [90, 27], [94, 27], [102, 30]); ent('mend', 109, 33);   /* a heart at the far door, after the fitting */
   block(111, 111, 18, 26); air(111, 111, 27, 33);                                                   /* the door into the scene dock */
 
   // ---------------- 4. THE SCENE DOCK (112-127): TEACH the flat ----------------
   air(112, 127, 27, 33);
-  sign(119, 33, 'THE SCENE DOCK. THE FLATS RUN ON TRACKS. STRIKE THE WINCH AND ITS FLAT SLIDES TO THE END OF ITS TRACK.');
+  sign(119, 33, 'THE FLATS RUN ON TRACKS. STRIKE A WINCH AND ITS FLAT SLIDES TO THE OTHER END.');
   block(123, 127, 30, 33);                                                   /* THE SILL of the fly tower's door: four rows up, one too many */
   flat({ a: 114, b: 121, w: 2, y0: 32, y1: 33, winch: [112, 33], name: 'the ground row' });   /* A GROUND ROW on its track: at the far end it is the step under the sill */
   coins([116, 31], [121, 30], [125, 28]);
@@ -124,7 +124,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   air(128, 156, 4, 33);
   block(157, 157, FL + 1, 33); air(157, 157, 4, FL - 1);                                               /* THE FIRE WALL between the tower and the stage, under the fly floor: the stage is reached from above or not at all */
   block(128, 131, 25, 26);                                                   /* the loading gallery on the tower's wall */
-  sign(129, 33, 'THE FLY LINES. STRIKE A ROPE-LOCK AND ITS LINE RUNS: THE BATTEN GOES UP IF IT WAS DOWN, AND ITS SANDBAG THE OTHER WAY.');
+  sign(129, 33, 'STRIKE A ROPE-LOCK AND ITS LINE RUNS: THE BATTEN ONE WAY, ITS SANDBAG THE OTHER.');
   line('A', { x: 132, w: 3, rowIn: 33, rowOut: 25 }, { x: 142, w: 2, rowIn: 18, rowOut: ST }, [[135, 33], [131, 24]]);   /* TAUGHT: step on, strike the lock beside it, ride up */
   line('B', { x: 137, w: 3, rowIn: 25, rowOut: FL }, { x: 152, w: 2, rowIn: 23, rowOut: ST }, [[136, 24]], true);      /* DEVELOPED: it hangs up at the fly floor. Call it down, step across, send it up */
   sign(129, 24, 'THIS ONE IS FLOWN OUT. STRIKE ITS LOCK TO CALL IT IN, STEP ON, AND STRIKE AGAIN.');
@@ -156,7 +156,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   coins([183, FL - 2], [203, FL - 2]);
   /* RIDE THE WEIGHT: the fly floor ends at the pin rail; the right wing is eighteen rows down. Line E's sandbag hangs level with the floor: stand on
      it, strike the lock, and the batten flies out on the stage while the weight takes you down */
-  sign(208, FL - 1, 'NO BATTEN HERE, ONLY ITS WEIGHT. STAND ON THE SANDBAG AND STRIKE THE LOCK: THE WEIGHT GOES DOWN.');
+  sign(208, FL - 1, 'NO BATTEN HERE. STAND ON THE SANDBAG AND STRIKE THE LOCK: RIDE THE WEIGHT DOWN.');
   line('E', { x: 203, w: 5, rowIn: 33, rowOut: 21 }, { x: 213, w: 2, rowIn: FL, rowOut: ST, ride: true }, [[215, FL - 1], [216, 33]]);
 
   // ---------------- 7. THE PERFORMANCE (158-222): the SET PIECE ----------------
@@ -170,7 +170,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   lamp(216, BX - 1, [[206, ST], [196, ST], [186, ST], [176, ST]], { hang: true, cue: 1.6, r: 36 });
   lamp(184, FL, [[172, ST], [184, ST], [196, ST]], { hang: true, cue: 2.3, r: 40, i: 1 });
   foe('mummer', 206, 33, { squad: 'the cast' }); foe('mummer', 191, 33, { squad: 'the cast' }); foe('mummer', 173, 33, { squad: 'the cast' });   /* THE CAST */
-  sign(218, 33, 'THE PERFORMANCE. THE LAMPS KEEP THEIR CUES, THE AUDIENCE THROWS AT THE LIT, AND THE WAY OFF IS THE TRAP AT STAGE LEFT.');
+  sign(218, 33, 'THE AUDIENCE THROWS AT WHAT IS LIT. THE WAY OFF IS THE TRAP AT STAGE LEFT.');
   /* THE SCENE CHANGE: a tall flat at stage left that runs on its cue and nothing else (no winch: the show changes its scenes whether you are ready or not).
      It stands across the way to the trap for three and a half seconds in seven, and its track glows and the prompt bell rings before it moves */
   flat({ a: 166, b: 158, w: 2, y0: 30, y1: 33, cue: { period: 7, hold: 3.5, at: 1 }, name: 'the scene change' });
@@ -198,7 +198,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   ent('silver', 148, UN - 1); coins([150, UN - 1], [152, UN - 1], [154, UN - 1]); ent('mend', 147, UN - 1);
   deco('props', 151, UN - 1);
   /* THE STAR TRAP: a spring on a pedestal under a hole in the far wing's floor. Hold jump */
-  block(222, 223, 42, 43); block(224, 225, 41, 43); block(226, 230, 39, 43); for (let x = 228; x <= 230; x++) set(x, 39, T.BOUNCER); ent('startrap', 229, 38);   /* two steps up to the pedestal, the spring on it */
+  block(222, 223, 42, 43); block(224, 225, 41, 43); block(226, 230, 39, 43); block(231, 232, 41, 43); for (let x = 228; x <= 230; x++) set(x, 39, T.BOUNCER); ent('startrap', 229, 38);   /* two steps up to the pedestal, the spring on it */
   air(228, 230, ST, ST + 1);
   sign(222, UN - 1, 'THE STAR TRAP. STAND ON IT AND HOLD JUMP: IT THROWS YOU UP THROUGH THE STAGE.');
   foe('spider', 232, 37);
@@ -209,16 +209,16 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   /* the lamp and the prompt box over it: light the one ahead, not yourself */
   lamp(234, 33, [[242, ST], [229, ST]]);
   boards(236, BX, 6); foe('drunk', 239, BX - 1, { footlights: true, range: 1, squad: 'the prompt box' });
-  foe('mummer', 244, 33, { squad: 'the prompt box' });
+  foe('mummer', 244, 33, { squad: 'the far wing' });
   /* the flat door: it blocks the floor at A; at B it blocks the floor past the batten, and the batten is the way on */
   flat({ a: 249, b: 262, w: 2, y0: 29, y1: 33, winch: [246, 33], name: 'the wing flat' });
   /* the line up to the loading gallery, and its sandbag over the stage door's guard */
   line('G', { x: 254, w: 3, rowIn: 33, rowOut: 26 }, { x: 272, w: 2, rowIn: 17, rowOut: ST }, [[253, 33], [257, 25]]);
   boards(257, 26, 35);                                                       /* THE LOADING GALLERY: boards, so the gallery lamp shines through them */
   lamp(268, 20, [[262, ST], [274, ST], [283, 26]], { hang: true });           /* the gallery lamp: onto the floor, or along the gallery */
-  foe('swornsword', 273, 33, { squad: 'the stage door' }); foe('mummer', 279, 33, { squad: 'the stage door' });   /* THE STAGE DOOR'S GUARD, under the sandbag */
+  foe('swornsword', 273, 33, { squad: 'the door guard', elite: true, gate: 300 });   /* THE DOOR GUARD, the level's ELITE: the stage door is shut over its doorway until he is down. His sandbag hangs over him: batten G flown drops it on him */ foe('mummer', 279, 33, { squad: 'the door guard' });   /* THE STAGE DOOR'S GUARD, under the sandbag */
   foe('mummer', 285, 25, { squad: 'the gallery' }); foe('drunk', 290, 25, { footlights: true, range: 1, squad: 'the gallery' });
-  block(292, 293, 30, 33); block(294, 295, 32, 33);                          /* the stair down off the gallery's end (a drop, then two steps) */
+  block(290, 291, 32, 33); block(292, 293, 30, 33); block(294, 295, 32, 33);   /* the stair off the gallery's end, and up to it from the wing floor (never a pocket) */
   coins([258, 24], [264, 24], [276, 24], [288, 24]); ent('mend', 296, 33);
   ent('check', 297, 33);                                                     /* CHECKPOINT THREE: the stage door */
   sign(298, 33, "THE MAIN STAGE. HE WORKS THEM FROM THE FLIES.");

@@ -2,7 +2,7 @@
 // nothing to license (it is ours; audio/CREDITS.txt says so). A slow music-hall waltz in D minor after dark: a music-box line over a plucked bass
 // and a reed-organ pad, the B half going up to F major and falling back, a tolling bell every eight bars. 32 bars of 3/4 at 116 bpm (about 50 s),
 // written as a loop (the last bar turns back to the first). The art/music lane replaces it with a composed track; the name 'theatre' stays.
-//   node tools/theatre-music.mjs            writes audio/theatre.wav, then (ffmpeg on PATH) audio/theatre.ogg and deletes the wav
+//   node tools/theatre-music.mjs            writes a .wav into audio/, then (ffmpeg on PATH) audio/theatre.ogg, and deletes the wav
 import { writeFileSync, unlinkSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
