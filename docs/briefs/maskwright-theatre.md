@@ -87,7 +87,7 @@ Numbers from `tools/level-quality.mjs` and `tools/pacing.mjs` on this branch.
 | | THE MAGE'S FOLLY | THE MASKWRIGHT'S THEATRE |
 |---|---|---|
 | size | 808 columns x 48 rows, route 723 tiles | 344 columns x 50 rows, route 434 tiles (shorter: denser, three stacked floors over the stage) |
-| heights used | 8 four-row bands on the route, 61% of the width has a second height, route spans 30 rows | 7 bands, 67% of the width has a second height, route spans 30 rows; five real floors (grid, fly floor, boxes, stage, under-stage) |
+| heights used | 8 four-row bands on the route, 61% of the width has a second height, route spans 30 rows | 7 bands, 57% of the width has a second height, route spans 30 rows; five real floors (grid, fly floor, boxes, stage, under-stage) |
 | mechanics | 12 gadget kinds, 4 in 3+ places: runes/rune-locks, glyphs, bookcases, books, counterweights, planets, vats | 6 kinds, 5 in 3+ places: THREE machines each taught/developed/twisted/examined (lamps, fly lines, flats) plus the stage traps and the star trap |
 | taught -> twisted | rune taught in the yard, developed in the library, twisted (the ward fights back, the timed exam door) | each machine has all four beats (table above); the twists change what the machine is FOR (the lamp becomes the audience's eye; the batten becomes a bridge and its weight a lift and a weapon; the flat becomes a floor and a painted wall) |
 | secrets | 3 off-route silvers (cellar, study, roof leads) | 3 off-route silvers (costume loft, grid, prop store) |

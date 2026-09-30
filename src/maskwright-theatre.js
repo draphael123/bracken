@@ -128,7 +128,8 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   line('A', { x: 132, w: 3, rowIn: 33, rowOut: 25 }, { x: 142, w: 2, rowIn: 18, rowOut: ST }, [[135, 33], [131, 24]]);   /* TAUGHT: step on, strike the lock beside it, ride up */
   line('B', { x: 137, w: 3, rowIn: 25, rowOut: FL }, { x: 152, w: 2, rowIn: 23, rowOut: ST }, [[136, 24]], true);      /* DEVELOPED: it hangs up at the fly floor. Call it down, step across, send it up */
   sign(129, 24, 'THIS ONE IS FLOWN OUT. STRIKE ITS LOCK TO CALL IT IN, STEP ON, AND STRIKE AGAIN.');
-  foe('swornsword', 150, 33, { squad: 'the tower floor' });                  /* A HIRED SWORD on the tower floor, where the sandbags come down */
+  foe('swornsword', 140, 33, { squad: 'the tower floor' });                  /* A HIRED SWORD on the tower floor, between the lines */
+  spikes(145, 156, 33);                                                      /* THE WELL under the fly floor's gap: scenery nails and broken flats. A fall from the bridge is a bite and the whole tower again */
   foe('bat', 148, 12);
   coins([133, 31], [138, 23], [141, 18]);
 
