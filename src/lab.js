@@ -597,7 +597,7 @@ async function runbossLab(BK, opts) {
           const nx=-q.vy/sp,ny=q.vx/sp,s2=(rx*nx+ry*ny)>=0?1:-1;vx+=nx*s2*1.4;vy+=ny*s2*1.4;threat=true;if(d<24&&P.st>20&&!(P.dodge>0))BK.press('dodge');}   /* and the dash's i-frames through the one that is about to land */
         /* HIS SPELL REALMS (claude/undead3, round undead4: "teach the bot the three openings"). In a realm his ward holds, so the bot does
            not close on him: it reads the realm's hazards and goes for its ONE opening - FIRE: over or under his wall going out, and a DODGE
-           THROUGH it coming back (it runs on into him); ICE: under the ceiling at the icicle over his shell, and a swing at it; POISON: over
+           THROUGH it coming back (it runs on into him); ICE: under the ceiling at the icicle over his shell (any within 30 px: a struck one homes onto him, claude/archfix), and a swing at it; POISON: over
            the mire and out of the spore rings, and while the beam is cut, down to the vent and a swing at it. Open, it goes in as ever. */
         let realmGoal=null;const RL=boss.realm;
         if(RL&&boss.alive&&!(boss.open>0)){const b=realmBox(boss,A),toward=(gx,gy,w=1.6)=>{if(Math.abs(gx-P.x)>4)vx+=Math.sign(gx-P.x)*w;if(Math.abs(gy-py)>4)vy+=Math.sign(gy-py)*w;};
@@ -609,7 +609,7 @@ async function runbossLab(BK, opts) {
             realmGoal=[boss.x+(P.x<boss.x?-110:110),by];}
           if(RL.kind==='ice'){for(const q of RL.icicles)if((q.st==='crack'||(q.st==='fall'&&!q.struck))&&Math.abs(q.x-P.x)<24){vx+=Math.sign(P.x-q.x||1)*2.5;threat=true;}
             let over=null;for(const q of RL.icicles)if(q.st==='hang'&&(!over||Math.abs(q.x-boss.x)<Math.abs(over.x-boss.x)))over=q;
-            if(over){realmGoal=[over.x-10,b.y0+2-8];if(Math.abs(over.x-boss.x)<12&&Math.abs(P.x-(over.x-10))<8&&py<b.y0+10&&P.atk<0){P.face=1;BK.press('atk');swings++;}}}
+            if(over){realmGoal=[over.x-10,b.y0+2-8];if(Math.abs(over.x-boss.x)<30&&Math.abs(P.x-(over.x-10))<8&&py<b.y0+10&&P.atk<0){P.face=1;BK.press('atk');swings++;}}}
           if(RL.kind==='poison'){if(RL.exposedT<=0&&P.y>RL.mire-26){vy-=2.5;threat=true;}for(const s of [...(RL.spores||[]),...(RL.clouds||[])])away(s.x,s.y,(s.r||26)+24,3);
             if(RL.exposedT>0){realmGoal=[RL.vent.x-12,RL.mire-6];if(Math.abs(P.x-(RL.vent.x-12))<8&&Math.abs(py-(RL.mire-6))<10&&P.atk<0){P.face=1;BK.press('atk');swings++;}}
             else realmGoal=[RL.vent.x-110,RL.mire-70];}

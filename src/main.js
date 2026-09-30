@@ -11549,7 +11549,7 @@ function updateArchmage(e, dt) {
     case 'ward': e.vx = 0; grounded(); e.face = Math.sign(d) || e.face;
       if (!archRunesUp(R)) { clearRunes(e); e.mode = 'open'; e.modeT = ARCH.open1; e.open = ARCH.open1; SFX.gasp && SFX.gasp(); number(e.x, e.y - 50, 'OPEN', '#8fd160'); }
       else if (e.modeT <= 0) { clearRunes(e); e.mode = 'idle'; e.T.ward = 8; }
-      else if (e.T.blink <= 0 && !P.dead) { e.wardLeft = e.modeT; e.wardBack = true; archBlinkTell(e); }   /* HE BLINKS IN HIS WARD TOO: the runes stay where they stand */
+      else if (e.T.blink <= 0 && !P.dead) { e.wardLeft = e.modeT; e.wardBack = true; archBlinkTell(e); e.mode = 'blinkTell'; e.modeT = 0.5; }   /* HE BLINKS IN HIS WARD TOO: the runes stay where they stand */
       else if (e.T.bolt <= 0 && ad > 40) { e.wardLeft = e.modeT; e.mode = 'boltTell'; e.modeT = 0.8; mark(P.x, fl, '#ffd36b'); number(e.x, e.y - 50, '!', '#ffd36b'); SFX.charge(); e.wardBack = true; } break;
     case 'open': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; e.open = 0; e.T.ward = e.stage === 1 || e.stage === 3 ? ARCH.wardAgain : 9; e.T.blink = 0.5;   /* (in the duel the next ward comes round sooner: a hero whose blows are light needs a second opening before the line, and waited half a minute for it) */
         /* THE ROOM TAKES HIM BACK: off the floor and onto his arm again, or the hero who reached him is thrown back to the island to cross it again */
@@ -11602,7 +11602,7 @@ function updateArchmage(e, dt) {
       if (e.stage === 2 && R.sub === 3) { e.vy = 0; e.vx = 0; } else grounded();
       /* THE THING THE FIGHT IS ABOUT GOES AT THE TOP OF THE CHAIN (rule E2): the ward, then the blink, then the circles */
       if ((e.stage === 1 || e.stage === 3) && e.T.ward <= 0) { e.mode = 'wardTell'; e.modeT = 0.8; SFX.callerChant(); e.vx = 0; }   /* (THE MIRRORS are the duel again, harder: his ward, his blink, his circles, with his images) */
-      else if ((e.stage === 1 || e.stage === 3) && e.T.blink <= 0 && !P.dead) archBlinkTell(e);   /* ROUND THE ROOM, every few seconds, wherever you are (claude/archfix; it was only when you were on top of him) */
+      else if ((e.stage === 1 || e.stage === 3) && e.T.blink <= 0 && !P.dead) { archBlinkTell(e); e.mode = 'blinkTell'; e.modeT = 0.5; }   /* ROUND THE ROOM, every few seconds, wherever you are (claude/archfix; it was only when you were on top of him) */
       /* THE ROOM TURNS ON YOU, once in a while, in each room he has written; and from the second stage his circles come in pairs */
       else if (e.stage === 2 && e.T.room <= 0 && archRoomReady(e, R.sub)) { e.vx = 0; const my = R.sub === 3 ? e.y + 16 : e.y - 50;
         if (R.sub === 1) { R.crush = { x: P.x, w: ARCH.crushW, fy: archFootY(), t: 0 };
@@ -11698,7 +11698,7 @@ function archWard(e) { const R = MG.A; R.reseal = 0; R.resealShown = 0;
 function archBlinkTell(e) { const R = MG.A, imgs = (R && R.imgs || []).filter(q => !q.gone), all = archSpots();
   let c = all.filter(([x]) => Math.abs(x - e.x) > 60 && Math.abs(x - P.x) > ARCH.blinkClear && !imgs.some(q => Math.abs(q.x - x) < 20));
   if (!c.length) c = [all.filter(([x]) => Math.abs(x - e.x) > 20).sort((a, b) => Math.abs(b[0] - P.x) - Math.abs(a[0] - P.x))[0] || all[0]];
-  const [x, y] = c[Math.floor(Math.random() * c.length)]; e.blinkTo = { x, y }; e.mode = 'blinkTell'; e.modeT = 0.5; e.vx = 0; SFX.puff(); }
+  const [x, y] = c[Math.floor(Math.random() * c.length)]; e.blinkTo = { x, y }; e.vx = 0; SFX.puff(); }   /* (the caller sets blinkTell: the mark table reads it there) */
 /* HE LANDS ON HIS FLASH - unless you have walked onto it in the tell: then beside it, on the side away from you, never on you */
 function archBlinkLand(e) { const A = L.arena, to = e.blinkTo || { x: archSpots()[0][0], y: archSpots()[0][1] }; let x = to.x;
   if (!P.dead && Math.abs(P.x - x) < 24) { let d = Math.sign(x - P.x) || (x - A.x0 > A.x1 - x ? -1 : 1); if (x + d * 32 < A.x0 + 12 || x + d * 32 > A.x1 - 12) d = -d; x = P.x + d * 32; }
