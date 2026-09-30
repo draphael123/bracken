@@ -116,6 +116,17 @@ L1 was approved by Daniel with all recommendations (keep the carousel's 0.5 s fa
 - **Sound**: the cap bells are a shaken cluster of three (the creep cue, only while it moves); the horse's bridle bells on the rear; a haystack rustle; a lantern's flutter. THE MUSIC BOX is a synth tune (`musicBox` in src/audio.js) played over the level's track that winds down section by section (`windAt` in fair_world.js): a note every 0.3 s at the gate, later, flatter and quieter with more missing teeth each section, one note into the quiet by the green. The base track is still `marketday` (Waymeet's neighbour); the level has no track of its own.
 
 
+## The review's fixes (BUILT on claude/fairfix, 2026-09-30; Daniel approved all of it)
+
+- **Every high road carries its own test.** Boardwalk: a mummer on its planks and THE BARKER at its far end. Swing ride: a marionette on island A, a horse on island B facing the way you come. Night lane: a mummer held only while its guttering lantern burns. Corn-top walk: a scarecrow mummer in the dark.
+- **The exam is one space (525-619):** the small carousel under a dark, striped canopy with failing lanterns and a true mirror panel, a mummer and a marionette riding it, then a rick, the tall striker to the night lane, a blind stall wall with a mummer behind it, the gallery and booth, the barker on his crate, and the door guard on an unlit stretch. In the dark the guard finds you from 176 px while you can hold it only from 88 px.
+- **Nothing resolves itself.** The slide ends in a drop over a horse stall, so the stall's horse is at your back when you land, with a mummer on the hill ahead. Both carousels turn you at least once: their periods are 3.6 s and 3.4 s, and a hop over the disc no longer resets the clock.
+- **The ghost train (469-524, src/chase.js):** it comes from behind and kills on contact, like every chase. Speed-ups are told. Three timed beams (duck, or wait for them to lift), and two mummers stand a few steps before beams, so the chase makes you turn your back. The shrine at 466 is before the start line. The train runs over any foe it overtakes in the cutting.
+- **New foes (src/fair-foes.js):** THE MARIONETTE moves only while you look at it, and the hall's true glass works its strings. THE BARKER is an elite whose told call turns every hero in range to face him.
+- **Signs 15 -> 8; shrines 6 -> 5** (8, 199, 383, 466, 600), under the game-wide 200-tile ceiling. The hearts at 470 and 597 are gone.
+- **Music:** `harvestfair` on the road, `wickerqueen` in the green.
+
+
 ## Questions for Daniel
 
 See the lane report (`work/claude/lane-done/claude-fair1.md`).

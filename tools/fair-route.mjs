@@ -2,7 +2,8 @@
 // the door of the Maypole Green by each road, and by the rides. Not "can the bot fight": "is every climb, hop, ride and slide a hero can be asked to do one a hero can do".
 //   node tools/fair-route.mjs [low|high|strike|all] [hero]     default all, knight. Prints each leg; exits 1 if a road does not reach the door (x 619, on the road).
 // LOW    the road under everything: pits, the slope stair, the terrace, the carousel, the hall of mirrors, the tower stair (three-row hops), the helter-skelter slide, two ricks (the hay throws you
-//        over their spikes), the corn maze (three tiers, two chimneys), the small carousel, a rick, the last pit, the door.
+//        over their spikes), the corn maze (three tiers, two chimneys), THE GHOST TRAIN (claude/fairfix: the chase runs - the pilot waits for each beam to lift), the small carousel under its
+//        canopy, a rick, the blind stall wall, the barker's crate, the door.
 // HIGH   the rides: the wheel (hop on a car coming round low, step off at the top), three swing-ride chairs (board at the beat, step off at the far island), the tower top, the slide.
 // STRIKE the roof stair up to the boardwalk by the striker (a plunge on the pad), the boardwalk, down to the terrace; the tall striker onto the night lane, and down its steps.
 import { openPage } from './cdp.mjs';
@@ -69,6 +70,11 @@ try {
         if (phase === 0 && p.ground) { K.jump = true; BK.press('jump'); phase = 1; } else if (phase === 1 && p.vy > 40) { K.down = true; BK.press('atk'); phase = 2; } else if (phase === 2) { K.down = true; if (p.vy < -300) phase = 3; } else if (phase === 3 && p.vy > -1) { phase = 4; }
         BK.sim(1); if (phase >= 3 && P().ground && Math.abs(P().y - landRow * 16) < 4) { none(); return true; } if (phase === 2 && P().ground) phase = 0; }
       none(); return fails('the striker at ' + tx + ' did not throw us onto row ' + landRow); };
+    /* THE GHOST TRAIN (claude/fairfix): cross the start line, and at each beam run up to it, wait for it to lift (the same clock as its hurt: BK.fairTime), and run under it. Never stop long: it is behind you */
+    const train = () => { const C = L().chases[0]; if (!walk(Math.floor(C.trigger / 16) - 2)) return false;
+      for (const b of C.beams) { const bx = Math.floor(b.x0 / 16); if (!walk(bx - 1)) return false;
+        for (let i = 0; i < 400; i++) { const ph = BK.fairTime() % b.period; if (ph <= b.up - 0.6) break; none(); BK.sim(1); if (P().dead) return fails('the ghost train caught us at the beam at ' + bx); } }
+      return walk(Math.floor(C.end / 16) + 3) || fails('the ghost train'); };
     const strikeRoad = () => { load();
       return to('the first striker onto the boardwalk', () => walk(86) && plungeOn(88, 19)) && to('the boardwalk to the terrace and down', () => walk(160) && walk(184) && walk(200))
       && to('(the carousel, the midway and the slide are the low road)', () => { BK.tp(402, 27); BK.sim(20); return true; })
@@ -85,8 +91,8 @@ try {
       && to('rick one', () => rick(403, 409)) && to('the corn maze, tier one', () => walk(431))
       && to('chimney one', () => hop(432, 26) && hop(430, 23)) && to('tier two', () => walk(420))
       && to('chimney two', () => hop(416, 21) && hop(418, 18, 44)) && to('tier three and out', () => walk(437) && walk(439) && walk(442) && walk(447))
-      && to('rick two', () => rick(449, 456)) && to('the ghost-train yard and the small carousel', () => walk(527) && walk(531) && walk(550))
-      && to('rick three', () => rick(556, 563)) && to('the last pit and the door', () => walk(619));
+      && to('rick two', () => rick(449, 456)) && to('the ghost train', () => train()) && to('the small carousel under its canopy', () => walk(527) && walk(531) && walk(550))
+      && to('rick three', () => rick(557, 563)) && to('the last pit and the door', () => walk(619));
     };
     const highRoad = () => { load();
       return to('gate to the wheel', () => walk(260) && walk(263) && walk(291)) && to('the big wheel up to the boardwalk', () => wheel(304, 309, 17))

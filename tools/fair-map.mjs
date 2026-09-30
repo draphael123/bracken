@@ -17,8 +17,9 @@ for (const w of (L.walls || [])) for (let y = w.y0; y <= w.y1; y++) for (let x =
 for (const [x, y] of R.seen ? [...R.seen].map(k => k.split(',').map(Number)) : []) if (L.grid[(y + 1) * L.W + x] !== 0) put(x, y, 'rgba(60,200,90,0.35)');
 for (const m of (L.moversExtra || [])) { if (m.kind === 'wheel') for (let a = 0; a < 48; a++) { const th = a / 48 * 6.283; put(Math.floor((m.px + Math.cos(th) * m.r) / 16), Math.floor((m.py + Math.sin(th) * m.r) / 16), '#5090ff'); }
   if (m.kind === 'swing') for (let k = -9; k <= 9; k++) { const th = 0.9 * k / 9; put(Math.floor((m.px + Math.sin(th) * m.arm) / 16), Math.floor((m.py + Math.cos(th) * m.arm) / 16), '#5090ff'); } }
-for (const e of L.ents) { const col = e.t === 'mummer' ? '#ff2020' : e.t === 'hobbyhorse' ? '#ff8000' : e.t === 'wickerqueen' ? '#c000c0' : e.t === 'check' ? '#20c020' : e.t === 'silver' ? '#ffffff' : e.t === 'mend' ? '#ff60a0' : e.t === 'sign' ? '#3060ff' : null; if (col) put(e.x, e.y, col, 1, e.t === 'check' ? 2 : 1); }
+for (const e of L.ents) { const col = e.t === 'mummer' ? '#ff2020' : e.t === 'hobbyhorse' ? '#ff8000' : e.t === 'marionette' ? '#20a0ff' : e.t === 'barker' ? '#ffff00' : e.t === 'wickerqueen' ? '#c000c0' : e.t === 'check' ? '#20c020' : e.t === 'silver' ? '#ffffff' : e.t === 'mend' ? '#ff60a0' : e.t === 'sign' ? '#3060ff' : null; if (col) put(e.x, e.y, col, 1, e.t === 'check' ? 2 : 1); }
 for (const t of (L.tickets || [])) put(t.x, t.row, '#00e0e0');
+for (const c of (L.chases || [])) { for (let x = Math.floor(c.trigger / 16); x <= Math.floor(c.end / 16); x++) put(x, Math.floor(c.zone[3] / 16) - 4, 'rgba(120,230,150,0.8)'); for (const q of c.beams || []) for (let x = Math.floor(q.x0 / 16); x < Math.ceil(q.x1 / 16); x++) put(x, Math.floor(q.y / 16), '#ffffff'); }   /* (claude/fairfix) the ghost train's run and its beams */
 for (const s of (L.strikers || [])) put(s.x, s.row - 1, '#ffb000', 1, 1);
 for (const t of ((L.gallery || {}).targets || [])) put(t.x, t.row, '#ff00ff');
 for (const [x0, x1, y] of ((L.gallery || {}).planks || [])) for (let x = x0; x <= x1; x++) put(x, y, '#e0a0ff');
