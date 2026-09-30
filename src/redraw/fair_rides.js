@@ -293,8 +293,8 @@ export function drawFoeExtras(g, e, cx, cy, time) {
   if (e.t === 'marionette') { const f = e.face >= 0 ? 1 : -1, taut = e.mode !== 'hang', bar = y - 64 - (taut ? Math.sin(time * 14) * 2 : 0), tw = taut ? Math.sin(time * 18) * 1.5 : 0;
     const hands = e.mode === 'jerk' ? [[x - 9 * f, y - 36], [x + 10 * f, y - 36]] : e.mode === 'hang' ? [[x - 7 * f, y - 12], [x + 6 * f, y - 11]] : [[x - 7 * f, y - 20], [x + 8 * f, y - 20]];
     const head = [x + (e.mode === 'hang' ? 2 * f : 0), y - (e.mode === 'hang' ? 36 : 39)];
-    g.globalAlpha = 0.75; g.strokeStyle = '#d8d0c0'; g.lineWidth = 1;
-    for (const [hx, hy] of [...hands, head]) { g.beginPath(); g.moveTo(hx + 0.5, hy + 0.5); if (taut) g.lineTo(x + (hx - x) * 0.4 + tw + 0.5, bar + 0.5); else g.quadraticCurveTo(hx + 6 * f, (hy + bar) / 2 + 10, x + (hx - x) * 0.4 + 0.5, bar + 0.5); g.stroke(); }
+    g.globalAlpha = 0.9; g.lineWidth = 1;
+    for (const [col, o] of [['#1a1210', 1], ['#e8e0d0', 0]]) { g.strokeStyle = col; for (const [hx, hy] of [...hands, head]) { g.beginPath(); g.moveTo(hx + 0.5 + o, hy + 0.5); if (taut) g.lineTo(x + (hx - x) * 0.4 + tw + 0.5 + o, bar + 0.5); else g.quadraticCurveTo(hx + 6 * f + o, (hy + bar) / 2 + 10, x + (hx - x) * 0.4 + 0.5 + o, bar + 0.5); g.stroke(); } }   /* a dark line under a pale one: it reads on the glass and in the dark */
     g.fillStyle = '#6a4a2a'; g.fillRect(x - 10 + Math.round(tw), bar - 1, 20, 2);   // the control bar
     const up = g.createLinearGradient(0, bar - 70, 0, bar); up.addColorStop(0, 'rgba(216,208,192,0)'); up.addColorStop(1, 'rgba(216,208,192,0.7)'); g.strokeStyle = up; g.beginPath(); g.moveTo(x + 0.5 + Math.round(tw), bar); g.lineTo(x + 0.5, bar - 70); g.stroke();   // and on up, into the dark
     g.globalAlpha = 1; return; }

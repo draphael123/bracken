@@ -18344,7 +18344,6 @@ function drawFair(cx, cy) {
   if (L.green) FAW.drawGreen(g, cx, cy, VW, L.green, time, dusk());
   if (L.green && L.arena && L.arena.boss === 'wickerqueen') drawWickerGround(cx, cy);   /* her embers */
   for (const e of enemies) if (e.alive && e.t === 'mummer' && e.mode === 'glow' && e.x > cx - 40 && e.x < cx + VW + 40) FAW.drawGlow(g, Math.round(e.x - cx), Math.round(e.y - 24 - cy), time);   /* the glow tell: a red halo behind the mask, so it reads against the dusk */
-  for (const e of enemies) if (e.alive && (e.t === 'marionette' || e.t === 'barker') && e.x > cx - 60 && e.x < cx + VW + 60) FR.drawFoeExtras(g, e, cx, cy, time);   /* the marionette's strings up into the dark; the barker's call going out (src/redraw/fair_rides.js) */
 }
 
 /* ================= THE WICKER QUEEN (src/wicker-queen.js is the fight, pure and proved in tools/wicker-queen.mjs; claude/fair3). These are her hands: the ribbons'
@@ -26473,6 +26472,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.globalAlpha = 1; }
   }
   if (FAIR) FR.drawNight(g, cx, cy, VW, VH, L, FAIR, { time, text, skip: !!L.dark || (L.green && P.x > L.green.door * TS), heroes: players.filter(p => !p.dead).map(p => ({ x: p.x, y: p.y })), glows: enemies.filter(q => q.alive && q.t === 'mummer' && q.mode === 'glow') });   /* THE NIGHT that comes with height, and the ticket count (src/redraw/fair_rides.js) */
+  if (FAIR) for (const e of enemies) if (e.alive && (e.t === 'marionette' || e.t === 'barker') && e.x > cx - 60 && e.x < cx + VW + 60) FR.drawFoeExtras(g, e, cx, cy, time);   /* the marionette's strings up into the dark and the barker's call going out, OVER the night so they read in it (src/redraw/fair_rides.js) */
   if (FAIR) drawWickerOver(cx, cy);   /* THE WICKER QUEEN's ribbons, glows and flames: over the dark of her green, so a told blow is never hidden by it */
   if (L.night || L.glowNight) { // the camp at night: a dark wash, then warm pools of torchlight and a glow around the knight (a glow-only wood skips the wash)
     if (L.night) { g.fillStyle = 'rgba(8,10,30,' + (L.nightA !== undefined ? L.nightA : 0.42) + ')'; g.fillRect(0, 0, VW, VH); }

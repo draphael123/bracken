@@ -7,15 +7,15 @@ import { join } from 'path';
 const tag = process.argv[2] || 'after', only = (process.argv[3] || '').split(',').filter(Boolean), out = join(ROOT, 'work/claude/fairfix', tag); mkdirSync(out, { recursive: true });
 const STOPS = [   // name, tile x, tile y (the hero's feet), facing, frames to run, [extra js], note, [crop]
   ['01-boardwalk-barker', 146, 18, 1, 70, 'for(const e of BK.enemies())if(e.t==="barker"&&e.x<200*16){e.st.callT=0.2;}', 'THE BOARDWALK is not free: a mummer on its planks behind you, the barker at its far end calling you round'],
-  ['02-islands', 322, 16, 1, 40, '', 'THE SWING RIDE: a marionette on island A coming to meet the chair, a horse on island B facing the way you come'],
+  ['02-islands', 312, 16, 1, 90, '', 'THE SWING RIDE: a marionette on island A coming to meet the chair, a horse on island B facing the way you come'],
   ['03-hall-marionette', 324, 27, 1, 50, '', 'THE HALL OF MIRRORS: the marionette by the door, the mummer at the cracked glass, the true glass ahead'],
   ['03z-hall-zoom', 324, 27, 1, 50, '', 'the hall, close up', [40, 30, 170, 95]],
-  ['04-slide-stall', 381, 27, 1, 20, '', 'THE SLIDE\'S FOOT: the horse stall under the slide, behind you as you land; a mummer on the hill ahead'],
+  ['04-slide-stall', 381, 27, 1, 90, '', 'THE SLIDE\'S FOOT: the horse stall under the slide, behind you as you land; a mummer on the hill ahead'],
   ['05-corn-top-dark', 428, 11, 1, 40, '', 'THE CORN-TOP WALK in the dark: a scarecrow that is not straw'],
-  ['06-ghost-train-chase', 478, 30, 1, 100, 'BK.P.x=477*16;', 'THE GHOST TRAIN in motion: out of the tunnel behind you, a beam ahead, a mummer in the way'],
+  ['06-ghost-train-chase', 478, 30, 1, 260, 'BK.P.x=477*16;', 'THE GHOST TRAIN in motion: out of the tunnel behind you, a beam ahead, a mummer in the way'],
   ['06b-ghost-train-beams', 492, 30, 1, 60, '', 'THE GHOST TRAIN\'s beams and the second mummer'],
   ['07-exam-canopy', 534, 25, 1, 60, '', 'THE LAST ROUND: the small carousel under its canopy, dark, lanterns failing, a mummer and a marionette riding it, the true mirror at the far end'],
-  ['08-night-lane', 574, 13, 1, 50, '', 'THE NIGHT LANE at night: a dark sky, the lantern\'s pool, the mummer held only in it'],
+  ['08-night-lane', 577, 13, 1, 50, '', 'THE NIGHT LANE at night: a dark sky, the lantern\'s pool, the mummer held only in it'],
   ['09-blind-stall-barker', 566, 27, 1, 60, '', 'THE LAST ROUND: the blind stall wall with a mummer behind it, the gallery, the booth, the barker on his crate'],
   ['10-door-guard-unlit', 600, 27, 1, 40, '', 'THE DOOR GUARD on the unlit stretch'],
 ];
