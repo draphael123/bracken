@@ -24,6 +24,8 @@
      THE SEXTON        make him rush you across a counting plank: it breaks under his charge and he is caught in the bell pit (2026-09-25)
      THE DIVING BELL   let a ballast stone go over the valve on his crown: he vents, open; every attack of his left alone keeps the shell
                        shut, and the rack sets its stone back (the Deep rework, docs/briefs/deep-rework-2.md)
+     THE WICKER QUEEN  turn round on her while she stands on the bonfire's embers: the wicker catches and burns open; the same look short of them,
+                       or her crossing them unseen, opens nothing (claude/fair3)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -166,6 +168,11 @@ try {
    b.mode='pressure';b.modeT=2;b.vx=0;b.open=0;const st=BK.props().find(p=>p.t==='ballast'&&p.rack);st.held=false;st.x=b.x;st.y=b.y-b.h-30;st.vy=40;let op=0;for(let i=0;i<60;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);op=Math.max(op,b.open);}
    const crowned={open:+op.toFixed(1),spent:!!st.gone};for(let i=0;i<200;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);}crowned.back=!st.gone&&Math.abs(st.x-st.hx)<2;
    out.bell={alone,crowned};}
+  /* THE WICKER QUEEN (claude/fair3): lured across the green and turned on as she stands on the embers, the wicker catches and burns open; the same look
+     short of them, or her crossing them with nobody looking, opens nothing (the look is the only verb, the embers the only place) */
+  {const b=boot('fair');const G=BK.L.green,A=BK.L.arena,mid=G.bonfire*16+8,fl=A.floor;for(const e of BK.enemies())if(e!==b)e.alive=false;
+   const run=turnAt=>{b.mode='still';b.x=mid+110;b.bank=0;b.open=0;b.lashCd=99;b.crownCd=99;let turned=false,op=0;for(let i=0;i<60*6;i++){if(!turned&&turnAt(b))turned=true;BK.P.x=mid-160;BK.P.y=fl;BK.P.vx=0;BK.P.face=turned?1:-1;BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='burn'||b.mode==='sickleTell')break;}return{mode:b.mode,open:+op.toFixed(1)};};
+   out.wicker={short:run(q=>q.x<mid+70),unseen:run(()=>false),embers:run(q=>q.x<mid+20)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -235,6 +242,9 @@ try {
   for (const [m, op] of Object.entries(r.bell.alone)) assert.equal(op, 0, 'A11: THE DIVING BELL left alone through ' + m + ' keeps his shell shut: ' + JSON.stringify(r.bell));
   assert.ok(r.bell.crowned.open > 2, 'a stone let go over his crown vents him, open: ' + JSON.stringify(r.bell));
   assert.ok(r.bell.crowned.spent && r.bell.crowned.back, 'the rack\'s stone splits on his valve and the rack sets it back (A12): ' + JSON.stringify(r.bell));
+  assert.ok(r.wicker.short.open === 0 && r.wicker.short.mode !== 'burn', 'THE WICKER QUEEN: frozen short of the embers she opened: ' + JSON.stringify(r.wicker));
+  assert.ok(r.wicker.unseen.open === 0 && r.wicker.unseen.mode !== 'burn', 'crossing the embers with nobody looking opened her: ' + JSON.stringify(r.wicker));
+  assert.ok(r.wicker.embers.mode === 'burn' && r.wicker.embers.open > 2, 'frozen ON the embers she did not burn open: ' + JSON.stringify(r.wicker));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }
