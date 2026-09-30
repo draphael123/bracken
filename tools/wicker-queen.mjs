@@ -96,6 +96,10 @@ function rig(o = {}) {
   const crossed = p => r.log.sickle.some(s => s.pass === p && s.x0 <= 10300 && s.x1 >= 10300);
   ok(thrownAt !== null && tellF >= W.WQ.throwTell * 60 - 1, 'HER SICKLE: not thrown, or thrown after only ' + tellF + ' frames of its tell (a look during the tell must not stop it)');
   ok(crossed(2) && crossed(3) && back !== null, 'HER SICKLE did not fly out past the hero and back to her hand: ' + JSON.stringify({ out: crossed(2), back: crossed(3), home: back }));
+  /* nothing new while it is in the air: a LOW blow (the floor, the low lash) told under a flying sickle would have no answer */
+  const busy = rig({ heroes: [hero(10300, -1)], crownCd: 1e9, throwCd: 0, lashCd: 1.2, floorCd: 1.2, embers: null }); let under = 0, flew = 0;
+  for (let i = 0; i < 60 * 8; i++) { const ev = busy.step(), had = !!busy.e.sk; if (had) flew++; for (const v of ev) if (had && (v.t === 'lashTell' || v.t === 'floorTell' || v.t === 'throwTell')) under++; }
+  ok(flew > 60 && under === 0, 'a blow was told while her sickle was in the air (' + under + ', over ' + flew + ' frames of flight)');
   const near = rig({ heroes: [hero(10540, -1)], ...QUIETCD, throwCd: 0, embers: null }); for (let i = 0; i < 60; i++) near.step();
   ok(near.e.n.thrown === 0, 'she threw her sickle at a hero ' + 60 + ' px away (it is thrown only from across the ride; near, she walks and reaps)'); }
 { ok(MARK['wickerqueen|sickleTell'] === '!!' && ANSWER['wickerqueen|sickleTell'] === 'dodge' && HEIGHT['wickerqueen|sickleTell'] === 'low', 'THE REAP is not !! / dodge (the look) / low in src/marks.js');
