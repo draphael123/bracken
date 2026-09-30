@@ -29,7 +29,9 @@
 //             hero must see what waits ahead (the stair's Archmage over the next landing) lets the front drop off when he is far ahead of it;
 //             and never past its zone
 //   glow      300  the distance at which the screen-edge danger glow and rumble begin
-//   look      'rock' | 'fire' | 'drill' | 'dark'    how the chaser is drawn ('dark': the Undead Archmage's magic, his ring's green-black)
+//   look      'rock' | 'fire' | 'drill' | 'dark' | 'train'    how the chaser is drawn ('dark': the Undead Archmage's magic, his ring's green-black; 'train': THE HARVEST FAIR's
+//             ghost train, a painted car with a skull on its nose and a lamp, drawn standing on its zone's floor - claude/fairfix)
+//   runsOver  true    (claude/fairfix) the front RUNS OVER the level's foes it overtakes inside its zone as well as the hero (the ghost train through its own cutting)
 //   say       'RUN!'   the banner when it starts
 //   zone      [x0, x1, y0, y1]  world px (optional): the start line only counts with the hero inside this box, and the chaser is drawn only
 //             across x0..x1 - for a chase that shares its rows (or columns) with another part of the level (the spiral stair: claude/towerscroll)
@@ -64,7 +66,7 @@ export function chaseSpec(c) {
     from: num(c.from, trigger - dir * gap0), gap0, curve, lead: num(c.lead, 1.6), accel: num(c.accel, 140), rubber: rb,
     contact: c.contact === 'hurt' ? 'hurt' : 'kill', dmg: num(c.dmg, 45), hold: num(c.hold, 0.7),
     autoscroll: !!c.autoscroll, edge: num(c.edge, 24), show: Number.isFinite(c.show) ? c.show : null, showKeep: num(c.showKeep, 0.1), glow: num(c.glow, 300), look: c.look || 'rock', music: c.music || null, say: c.say || 'RUN!', zone: Array.isArray(c.zone) && c.zone.length === 4 ? c.zone.slice() : null,
-    beams: (c.beams || []).map(b => ({ th: BEAM.th, dmg: BEAM.dmg, name: 'A LOW BEAM', ...b })), checkpoint: c.checkpoint || null };
+    beams: (c.beams || []).map(b => ({ th: BEAM.th, dmg: BEAM.dmg, name: 'A LOW BEAM', ...b })), checkpoint: c.checkpoint || null, runsOver: !!c.runsOver };
 }
 export const newChase = () => ({ phase: 'idle', pos: 0, dist: 0, speed: 0, t: 0, warned: {}, warnT: 0, warnText: '', hold: 0, crash: 0, rumT: 0 });
 export const chaseReset = st => Object.assign(st, newChase());
@@ -146,13 +148,14 @@ export function chaseProblems(list, checkpoints) {   // checkpoints: [{x, y}] in
 
 /* ---------- THE DRAWING (world space; g = the frame's 2d context, cx/cy the camera) ---------- */
 const LOOKS = { rock: { body: '#2a2119', edge: '#6b5a48', deb: '#8a7660' }, fire: { body: '#4a1408', edge: '#ff8a2a', deb: '#ffd36b' },
-  drill: { body: '#1c2026', edge: '#a9b4c2', deb: '#e0a040' }, dark: { body: '#07120c', edge: '#6fe08a', deb: '#c8ffd8', deep: '#1f4a2c', haze: 'rgba(111,224,138,', wave: true, wash: '60,190,110' } };
+  drill: { body: '#1c2026', edge: '#a9b4c2', deb: '#e0a040' }, train: { body: '#2a0e14', edge: '#9ae0a8', deb: '#ffd36b', wash: '120,230,150' }, dark: { body: '#07120c', edge: '#6fe08a', deb: '#c8ffd8', deep: '#1f4a2c', haze: 'rgba(111,224,138,', wave: true, wash: '60,190,110' } };
 export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
   if (st.phase === 'idle') return;
   const L = LOOKS[sp.look] || LOOKS.rock, x = Math.round(st.pos - (sp.axis === 'x' ? cx : cy)), depth = 260;
   g.save();
   if (sp.zone) { const zx = sp.zone[0] - cx, zy = sp.zone[2] - cy; g.beginPath(); g.rect(Math.round(zx), Math.round(zy), Math.round(sp.zone[1] - sp.zone[0]), Math.round(sp.zone[3] - sp.zone[2])); g.clip(); }   /* only over its own place */
   const jag = i => Math.round(Math.sin(i * 1.7 + time * 9) * 3 + Math.sin(i * 0.6) * 4);
+  if (sp.look === 'train' && sp.axis === 'x') { drawTrain(g, sp, x, (sp.zone ? sp.zone[3] : cy + VH) - cy, time); g.restore(); return; }
   if (sp.axis === 'x') { const lo = sp.dir > 0 ? x - depth : x, hi = sp.dir > 0 ? x : x + depth;
     g.fillStyle = L.body; g.fillRect(lo, 0, hi - lo, VH);
     for (let y = 0; y < VH; y += 8) { const j = jag(y / 8), ex = sp.dir > 0 ? x + j : x + j - 6; g.fillStyle = L.body; g.fillRect(Math.min(ex, ex + 6 * sp.dir), y, 10, 8); g.fillStyle = L.edge; g.fillRect(sp.dir > 0 ? ex - 2 : ex + 4, y, 3, 8); }
@@ -169,6 +172,19 @@ export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
     for (let xx = 0; xx < VW; xx += 8) { const j = jag(xx / 8), ey = sp.dir > 0 ? x + j : x + j - 6; g.fillStyle = L.body; g.fillRect(xx, Math.min(ey, ey + 6 * sp.dir), 8, 10); g.fillStyle = L.edge; g.fillRect(xx, sp.dir > 0 ? ey - 2 : ey + 4, 8, 3); }
     for (let i = 0; i < 6; i++) { const xx = (time * 90 + i * 53) % VW, yy = x - sp.dir * (10 + (i * 37) % 80); g.fillStyle = L.deb; g.fillRect(Math.round(xx), Math.round(yy), 3, 3); } }
   g.restore();
+}
+/* THE GHOST TRAIN (claude/fairfix): three painted cars on the zone's floor, the front one with a skull on its nose, a lamp and green ghost-light round it; its wheels turn */
+function drawTrain(g, sp, x, fy, time) {
+  const d = sp.dir, car = (x1, nose) => { const lo = d > 0 ? x1 - 76 : x1, top = fy - 50;
+    g.fillStyle = '#2a0e14'; g.fillRect(lo, top + 8, 76, 36); g.fillStyle = '#6a1a24'; g.fillRect(lo, top + 8, 76, 4); g.fillStyle = '#c8a040'; g.fillRect(lo, top + 20, 76, 2);
+    for (let i = 0; i < 3; i++) { g.fillStyle = '#140608'; g.fillRect(lo + 10 + i * 22, top + 26, 14, 12); g.fillStyle = 'rgba(154,224,168,' + (0.25 + 0.2 * Math.sin(time * 6 + i)).toFixed(2) + ')'; g.fillRect(lo + 12 + i * 22, top + 28, 10, 8); }
+    for (const wx of [lo + 14, lo + 62]) { g.fillStyle = '#1a1a1a'; g.beginPath(); g.arc(wx, fy - 5, 6, 0, 6.3); g.fill(); g.strokeStyle = '#8a8a8a'; g.lineWidth = 1; const a = time * 12 * d; g.beginPath(); g.moveTo(wx + Math.cos(a) * 5, fy - 5 + Math.sin(a) * 5); g.lineTo(wx - Math.cos(a) * 5, fy - 5 - Math.sin(a) * 5); g.stroke(); }
+    if (nose) { const nx = d > 0 ? x1 : x1 - 0, fx = nx - d * 4; g.fillStyle = '#3a1218'; g.beginPath(); g.moveTo(nx - d * 6, top + 6); g.lineTo(nx + d * 8, top + 20); g.lineTo(nx + d * 8, fy - 10); g.lineTo(nx - d * 6, fy - 6); g.fill();
+      g.fillStyle = '#ece0c4'; g.beginPath(); g.arc(fx + d * 4, top + 22, 8, 0, 6.3); g.fill(); g.fillStyle = '#120e14'; g.fillRect(fx + d * 4 - 5, top + 19, 3, 4); g.fillRect(fx + d * 4 + 2, top + 19, 3, 4); g.fillRect(fx + d * 4 - 3, top + 27, 6, 2);   // the skull
+      const gl = g.createRadialGradient(nx + d * 10, top + 8, 1, nx + d * 10, top + 8, 40); gl.addColorStop(0, 'rgba(255,230,140,0.9)'); gl.addColorStop(1, 'rgba(255,200,90,0)'); g.fillStyle = gl; g.fillRect(nx + d * 10 - 40, top - 32, 80, 80); } };
+  g.fillStyle = 'rgba(120,230,150,0.12)'; g.fillRect(d > 0 ? x - 260 : x, fy - 64, 260, 64);   // the ghost-light it trails
+  car(x, true); car(x - d * 80, false); car(x - d * 160, false);
+  for (let i = 0; i < 5; i++) { const px2 = x - d * (20 + ((time * 120 + i * 37) % 160)), py = fy - 56 - ((time * 30 + i * 13) % 20); g.fillStyle = 'rgba(154,224,168,0.5)'; g.fillRect(Math.round(px2), Math.round(py), 2, 2); }   // wisps off its roof
 }
 /* THE DANGER GLOW: a red wash (a look's own `wash` colour: the dark's is his green, not fire) on the screen edge the chaser comes from, k = chaseDanger (0..1), still (reduce motion) = steady, no pulse */
 export function drawGlow(g, sp, st, k, VW, VH, time, still) {

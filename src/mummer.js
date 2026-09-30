@@ -75,7 +75,7 @@ export const newHorse = (x, y, face = -1) => ({ x, y, face, mode: 'still', t: 0,
 /* one frame of the hobby-horse. Events: freeze (looked at), wind, charge, end (the charge is over: it stands where it stopped) */
 export function horseStep(s, w, dt) {
   const evs = [], C = HORSE; s.vx = 0;
-  const near = nearestHero(s, w.heroes, C.sight, C.sightY), seen = facedBy(s, w.heroes, w.sight || C.sight, w.sightY || C.sightY);   /* w.sight: the dark (src/fair-games.js sightFor) shortens the look, as it does the mummer's */
+  const near = nearestHero(s, w.heroes, w.near || C.sight, C.sightY), seen = facedBy(s, w.heroes, w.sight || C.sight, w.sightY || C.sightY);   /* w.near (claude/fairfix): in the dark it finds you only this near; w.sight: the dark (src/fair-games.js sightFor) shortens the look, as it does the mummer's */
   switch (s.mode) {
     case 'still':
       if (seen) { if (!s.armed) evs.push({ t: 'freeze' }); s.armed = true; break; }

@@ -9,7 +9,9 @@
 //   THE NIGHT         the light goes out with HEIGHT (and inside the hall of mirrors): `sightFor` says how far a look reaches a foe standing where it stands. A foe in a lit lantern's light
 //                     is seen as far as ever; one in the dark is seen only within `dim` px (the Maypole ribbon's x1.5 reach helps).
 //   THE MIRROR        in the hall, a hero facing a TRUE mirror within `reach` px sees behind him too (`mirrorSees`): a foe at his back is looked at. A CRACKED mirror does not.
-//   THE BLIND CORNER  in the corn maze the walls stop your look (`blocked`).
+//   THE BLIND CORNER  in the corn maze the walls stop your look (`blocked`), and so does any wall in a box the level names (L.blinds: the exam's blind stall).
+//   MORE THAN ONE HALL (claude/fairfix): L.halls lists every covered dark place with glass in it (the hall of mirrors, the last round's carousel canopy); L.hall is the
+//                     first. L.unlit lists stretches of the road with no light at all ([x0, x1] columns): the door guard's. Both are dark as the tops are dark.
 import { TS } from './mummer.js';
 export const GAMES = { strikerCd: 0.9, hop: -250, ticketR: 13, boothR: 30, padHalf: 16, window: 12, targetR: 9 };
 export const TEXT = { reset: 'THE TARGETS RESET', planks: 'THE PLANKS RUN UP', bell: 'THE BELL RINGS', booth: 'THE PRIZE BOOTH: EIGHT TICKETS FOR A SILVER. PRESS UP.', short: 'NOT ENOUGH TICKETS', sold: 'A SILVER: SOLD' };
@@ -17,6 +19,10 @@ export const TEXT = { reset: 'THE TARGETS RESET', planks: 'THE PLANKS RUN UP', b
 /* ---------------- the night and the mirror (pure) ---------------- */
 export const nightK = (N, yPx) => (N ? Math.max(0, Math.min(1, (N.start - yPx / TS) / (N.start - N.full))) : 0);
 export const inHall = (H, x, y) => !!H && x >= H.x0 * TS - 6 && x <= (H.x1 + 1) * TS + 6 && y >= (H.roof + 2) * TS && y <= H.floor * TS + 4;
+export const hallsOf = L => (L && (L.halls || (L.hall ? [L.hall] : []))) || [];
+export const hallAt = (L, x, y) => hallsOf(L).find(H => inHall(H, x, y)) || null;
+/* an unlit stretch of the road (L.unlit [[x0, x1] columns]): no lamp, no dusk glow, nothing - as dark as the tops */
+export const unlitAt = (L, x) => !!(L && L.unlit) && L.unlit.some(([a, b]) => x >= a * TS && x < (b + 1) * TS);
 /* is this spot in the light of a lit lantern? lamps: { x (col), y (row), lit, life } as the game keeps them (FAIR.lamps) */
 export function lampLit(lamps, x, y, r = 64) {
   for (const l of lamps || []) { if (!l.lit || !(l.life > 0)) continue; const lx = l.x * TS + 8, ly = (l.y + 1) * TS - 30; if (Math.abs(lx - x) <= r && Math.abs(ly - y) <= r) return true; }
@@ -26,19 +32,19 @@ export function sightFor(L, lamps, e) {
   const N = L && L.fairNight; if (!N) return null;
   const x = e.x, y = e.y - 8;
   if (lampLit(lamps, x, y, N.lampR)) return null;
-  const k = inHall(L.hall, x, e.y - 4) ? 1 : nightK(N, e.y);
+  const k = hallAt(L, x, e.y - 4) || unlitAt(L, x) ? 1 : nightK(N, e.y);
   return k < 0.5 ? null : { sight: N.dim, sightY: N.dim }; }
 /* does this hero see behind him? (facing a true mirror within reach, inside the hall) */
 export function mirrorSees(L, h) {
-  const H = L && L.hall; if (!H || !inHall(H, h.x, h.y - 4)) return false;
+  const H = L && hallAt(L, h.x, h.y - 4); if (!H || !H.mirrors) return false;
   const dir = h.face >= 0 ? 1 : -1;
   for (const m of H.mirrors) { if (m.kind !== 'true') continue; const x0 = m.x0 * TS, x1 = (m.x1 + 1) * TS;
     if (dir > 0 ? (x1 > h.x && x0 - h.x <= H.reach) : (x0 < h.x && h.x - x1 <= H.reach)) return true; }
   return false; }
 /* the corn maze's walls stop a look: a straight line from the hero's eye to the foe's chest, tile by tile (`solidAt(tx, ty)`). Only where the level says (L.maze.blind) */
 export function blocked(L, solidAt, e, h) {
-  const B = L && L.maze && L.maze.blind; if (!B) return false;
-  const inB = (x, y) => x >= B[0] * TS && x <= (B[1] + 1) * TS && y >= B[2] && y <= B[3];
+  const Bs = [L && L.maze && L.maze.blind, ...((L && L.blinds) || [])].filter(Boolean); if (!Bs.length) return false;
+  const inB = (x, y) => Bs.some(B => x >= B[0] * TS && x <= (B[1] + 1) * TS && y >= B[2] && y <= B[3]);
   if (!inB(e.x, e.y) && !inB(h.x, h.y)) return false;
   const x0 = h.x, y0 = h.y - 12, x1 = e.x, y1 = e.y - 10, n = Math.max(2, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 6));
   for (let i = 1; i < n; i++) { const t = i / n; if (solidAt(Math.floor((x0 + (x1 - x0) * t) / TS), Math.floor((y0 + (y1 - y0) * t) / TS))) return true; }

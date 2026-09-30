@@ -4,7 +4,8 @@
 //   drawFront  over the tiles, under the foes: the corn, the helter-skelter tower and slide, the strikers, the gallery, the prize booth, the tickets, the scarecrows, the ghost-train arch
 //   drawMover  a wheel's gondola, a swing ride's chair
 //   drawNight  the dark that comes with height, the holes a lit lantern cuts, and the ticket count
-import { nightK } from '../fair-games.js';
+import { nightK, hallsOf } from '../fair-games.js';
+import { beamLive } from '../chase.js';
 const TS = 16;
 const K = { wood: '#7a5230', woodL: '#a67a48', woodD: '#4e321a', woodDD: '#2e1e10', brass: '#e8c23a', brassD: '#a87a18', red: '#b8382c', redD: '#7a2418', cream: '#ece0c4', creamD: '#c8b890', gold: '#f0c840',
   wick: '#8a6a34', wickL: '#b89050', wickD: '#4e3a1a', straw: '#e6c95c', strawD: '#b8962e', blue: '#3a7ab8', ink: '#120e14', glass: '#9fb8c8', glassD: '#5a7286', steel: '#8a919c' };
@@ -68,11 +69,14 @@ function drawGantries(g, cx, cy, VW, L, time) {
 
 /* ================= THE HALL OF MIRRORS: its back wall, its glass, and what the glass shows ================= */
 const foeFig = (g, x, y, glow, dir) => { g.fillStyle = glow ? '#ff5a4a' : '#2a1c34'; g.fillRect(x - 2, y - 9, 4, 7); g.fillRect(x - 1, y - 12, 3, 3); g.fillRect(x - 2, y - 2, 1, 3); g.fillRect(x + 1, y - 2, 1, 3); g.fillStyle = '#e2c48a'; g.fillRect(x - 1 + (dir > 0 ? 1 : 0), y - 11, 1, 1); };
-function drawHallBack(g, cx, cy, VW, L, o, time) {
-  const H = L.hall; if (!H || !vis(H.x0 * TS, (H.x1 + 1) * TS, cx, VW)) return;
+function drawHallBack(g, cx, cy, VW, L, o, time) { for (const H of hallsOf(L)) drawOneHall(g, cx, cy, VW, H, o, time); }
+function drawOneHall(g, cx, cy, VW, H, o, time) {
+  if (!H || !vis(H.x0 * TS, (H.x1 + 1) * TS, cx, VW)) return;
   const x0 = H.x0 * TS - cx, x1 = (H.x1 + 1) * TS - cx, yt = (H.roof + 2) * TS - cy, yb = H.floor * TS - cy;
   const gr = g.createLinearGradient(0, yt, 0, yb); gr.addColorStop(0, '#221630'); gr.addColorStop(1, '#3a2848'); g.fillStyle = gr; g.fillRect(Math.round(x0), Math.round(yt), Math.round(x1 - x0), Math.round(yb - yt));
-  for (let x = Math.ceil(x0 / 48) * 48; x < x1; x += 48) r(g, x, yt, 2, yb - yt, 'rgba(0,0,0,0.25)');   // the dark ribs of the wall
+  if (H.canopy) { for (let x = x0, i = 0; x < x1; x += 12, i++) { r(g, x, yt, 12, 10, i % 2 ? K.cream : K.red); r(g, x, yt + 10, 12, 2, i % 2 ? K.creamD : K.redD); }   // THE CANOPY (claude/fairfix): the small ride's striped roof, and its centre pole
+    const mx = (x0 + x1) / 2; r(g, mx - 3, yt, 6, yb - yt, K.brassD); r(g, mx - 1, yt, 2, yb - yt, K.brass); }
+  else for (let x = Math.ceil(x0 / 48) * 48; x < x1; x += 48) r(g, x, yt, 2, yb - yt, 'rgba(0,0,0,0.25)');   // the dark ribs of the wall
   for (const m of H.mirrors) { const mx0 = m.x0 * TS - cx, mx1 = (m.x1 + 1) * TS - cx, my0 = yb - 4.7 * TS, my1 = yb - 1.0 * TS, w = mx1 - mx0, h = my1 - my0;
     r(g, mx0 - 3, my0 - 3, w + 6, h + 6, K.woodD); r(g, mx0 - 3, my0 - 3, w + 6, 1, K.brass); r(g, mx0 - 3, my0 - 3, 1, h + 6, K.brassD);
     if (m.kind === 'true') { const gl = g.createLinearGradient(mx0, my0, mx1, my1); gl.addColorStop(0, '#b8ccd8'); gl.addColorStop(0.5, '#7e98aa'); gl.addColorStop(1, '#a4bccc'); g.fillStyle = gl; g.fillRect(Math.round(mx0), Math.round(my0), Math.round(w), Math.round(h));
@@ -133,6 +137,9 @@ function drawTower(g, cx, cy, VW, L, time) {
   for (let i = 0; i < S.n * 2; i++) { g.fillStyle = i % 2 ? K.red : K.cream; const a = i * 8; g.beginPath(); g.moveTo(sx0 + a, sy0 + a - 1); g.lineTo(sx0 + a + 8, sy0 + a + 7); g.lineTo(sx0 + a + 8, sy0 + a + 10); g.lineTo(sx0 + a, sy0 + a + 2); g.closePath(); g.fill(); }
   for (let i = 0; i <= S.n; i += 3) { const a = i * TS; ln(g, sx0 + a, sy0 + a - 1, sx0 + a, sy0 + a - 9, K.woodD, 2); }
   ln(g, sx0, sy0 - 9, sx0 + n, sy0 + n - 9, K.brassD, 1);
+  if (S.stall) { const a = S.stall.x0, b = S.stall.x1;   /* THE HORSE STALL under the slide's foot (claude/fairfix): dark inside, trestles holding the chute, a lantern-less mouth */
+    for (let c = a; c <= b; c++) { const top = (S.y0 + (c - S.x0) + 1) * TS - cy, xx = c * TS - cx; r(g, xx, top, TS, gy - top, '#1c1218'); if ((c - a) % 2 === 0) { r(g, xx + 6, top, 3, gy - top, K.woodD); r(g, xx + 6, top, 1, gy - top, K.wood); } }
+    const mx = (b + 1) * TS - cx; r(g, mx - 2, (S.y0 + (b - S.x0) + 1) * TS - cy, 3, gy - (S.y0 + (b - S.x0) + 1) * TS + cy, K.woodD); }
 }
 
 /* ================= THE GAMES: strikers, the gallery, the booth, the tickets ================= */
@@ -176,7 +183,15 @@ function drawTickets(g, cx, cy, VW, L, G, time) {
     const y = t.row * TS + 8 - cy + Math.sin(time * 3 + t.x) * 2; g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(80,220,230,0.16)'; g.beginPath(); g.arc(x, y, 9, 0, 6.3); g.fill(); g.globalCompositeOperation = 'source-over';
     g.save(); g.translate(Math.round(x), Math.round(y)); g.rotate(Math.sin(time * 2 + t.x) * 0.25); g.drawImage(ticketSpr(), -6, -4); g.restore(); });
 }
+/* THE GHOST TRAIN'S BEAMS (claude/fairfix): a painted timber across the cutting on two chains; DOWN it is at head height (duck under it or wait), UP it hangs out of reach. The same clock as the hurt (src/chase.js beamLive) */
+function drawTrainBeams(g, cx, cy, VW, L, time) {
+  for (const c of L.chases || []) for (const b of c.beams || []) { if (!vis(b.x0, b.x1, cx, VW)) continue; const live = beamLive(b, time), y = (live ? b.y : b.y - 44) - cy, x0 = b.x0 - cx, w = b.x1 - b.x0, th = b.th || 6;
+    ln(g, x0 + 3, y - th, x0 + 3, y - th - 120, '#5a626c', 1); ln(g, x0 + w - 3, y - th, x0 + w - 3, y - th - 120, '#5a626c', 1);
+    r(g, x0, y - th, w, th, K.woodD); r(g, x0, y - th, w, 1, K.woodL); for (let i = 0; i < w; i += 8) r(g, x0 + i, y - 3, 4, 2, i % 16 ? K.cream : K.red);
+    if (live) { const k = 0.4 + 0.3 * Math.sin(time * 10); g.fillStyle = 'rgba(255,90,60,' + k.toFixed(2) + ')'; g.fillRect(Math.round(x0), Math.round(y), Math.round(w), 1); } }
+}
 function drawGhostArch(g, cx, cy, VW, L, time) {
+  if (L.ghostTrain && !L.reserved) L.reserved = { ghostTrain: L.ghostTrain };   /* (the chase is built now: claude/fairfix) */
   const G = L.reserved && L.reserved.ghostTrain; if (!G) return; const x = G.arch * TS - cx, gy = (G.row + 1) * TS - cy; if (x < -80 || x > VW + 80) return;
   r(g, x - 6, gy - 76, 6, 76, K.woodD); r(g, x + 48, gy - 76, 6, 76, K.woodD); g.fillStyle = '#1a1220'; g.beginPath(); g.moveTo(x, gy); g.lineTo(x, gy - 52); g.quadraticCurveTo(x + 24, gy - 82, x + 48, gy - 52); g.lineTo(x + 48, gy); g.closePath(); g.fill();
   g.strokeStyle = K.woodD; g.lineWidth = 6; g.beginPath(); g.moveTo(x - 4, gy - 52); g.quadraticCurveTo(x + 24, gy - 90, x + 52, gy - 52); g.stroke();
@@ -185,7 +200,23 @@ function drawGhostArch(g, cx, cy, VW, L, time) {
   for (const dy of [0, 4]) ln(g, x - 40, gy - 1 - dy * 0, x - 2, gy - 1, '#3a2a20', 1); ln(g, x - 70, gy - 3, x, gy - 3, '#5a4a40', 1);   // the rails run in
 }
 
+/* ================= THE NIGHT SKY (claude/fairfix: the captures showed a pink sunset over the night lane): behind the world, over the backdrop, the sky goes to night
+   with HEIGHT as the look does (fair-games.js nightK): deep blue, stars, a moon. The world is drawn over it and drawNight darkens the world, so what stands up there
+   reads as a dark shape against a lighter night, not as a shape against sunset ================= */
+const STARS = Array.from({ length: 90 }, (_, i) => [((i * 7919) % 997) / 997, ((i * 4507) % 613) / 613, (i * 13) % 3]);
+function drawNightSky(g, cx, cy, VW, VH, L, time) {
+  const N = L.fairNight; if (!N) return;
+  const yStart = (N.start - 2) * TS - cy, yFull = N.full * TS - cy; if (yStart <= 0) return;
+  const gr = g.createLinearGradient(0, Math.min(yFull, yStart - 1), 0, yStart); gr.addColorStop(0, 'rgba(22,26,58,0.97)'); gr.addColorStop(1, 'rgba(40,34,70,0)');
+  if (yFull > 0) { g.fillStyle = 'rgba(22,26,58,0.97)'; g.fillRect(0, 0, VW, Math.min(VH, yFull)); }
+  g.fillStyle = gr; g.fillRect(0, Math.max(0, yFull), VW, Math.min(VH, yStart) - Math.max(0, yFull));
+  const lim = Math.min(VH, yStart - 24);
+  for (const [u, v, k] of STARS) { const x = ((u * 1400 - cx * 0.05) % VW + VW) % VW, y = v * 900 - cy * 0.05 - 300; if (y < 0 || y > lim) continue;
+    const a = Math.max(0, Math.min(1, (lim - y) / 80)) * (0.5 + 0.5 * Math.sin(time * (1 + k) + u * 40)); g.fillStyle = 'rgba(230,236,255,' + a.toFixed(2) + ')'; g.fillRect(Math.round(x), Math.round(y), k ? 1 : 2, k ? 1 : 2); }
+  const mx = VW * 0.78 - ((cx * 0.03) % 60), my = Math.min(lim - 30, yFull - 60 + 40); if (my > 12) { g.fillStyle = 'rgba(236,232,210,0.9)'; g.beginPath(); g.arc(mx, my, 11, 0, 6.3); g.fill(); g.fillStyle = 'rgba(22,26,58,0.97)'; g.beginPath(); g.arc(mx + 5, my - 3, 10, 0, 6.3); g.fill(); }
+}
 export function drawBack(g, cx, cy, VW, VH, L, F, time, o) {
+  drawNightSky(g, cx, cy, VW, VH, L, time);
   drawEffigies(g, cx, cy, VW, L, time, o.dusk || 0);
   drawWheelFrame(g, cx, cy, VW, L.wheel, time);
   drawGantries(g, cx, cy, VW, L, time);
@@ -199,6 +230,7 @@ export function drawFront(g, cx, cy, VW, VH, L, F, time, o) {
   if (G) for (const s of G.strikers) drawStriker(g, cx, cy, VW, s);
   drawBooth(g, cx, cy, VW, G, o.SPR, time);
   drawGhostArch(g, cx, cy, VW, L, time);
+  drawTrainBeams(g, cx, cy, VW, L, time);
   drawScarecrows(g, cx, cy, VW, L, o.SPR, time);
   drawTickets(g, cx, cy, VW, L, G, time);
 }
@@ -227,21 +259,47 @@ let NC = null;
 export function drawNight(g, cx, cy, VW, VH, L, F, o) {
   const N = L.fairNight; if (!N) return;
   const G = F && F.games;
-  if (G && (G.tickets > 0 || G.spent > 0) && o.text) o.text('TICKETS ' + G.tickets, VW - 8, 66, '#7fe8f0', 'right', 8, 'shadow');
+  /* THE TICKET COUNT: a HUD plate under the health (it is the fair's own purse, it stays while you hold tickets; claude/fairfix: it read as a label stuck in the world) */
+  if (G && (G.tickets > 0 || G.spent > 0) && o.text && !o.skip) { const w = 58; g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(VW - 8 - w, 60, w, 13); g.drawImage(ticketSpr(), VW - 6 - w, 62); o.text(String(G.tickets) + (G.booth && !G.booth.bought ? '/' + G.booth.cost : ''), VW - 12, 63, '#7fe8f0', 'right', 8, 'shadow'); }
   if (o.skip) return;
-  const yFull = N.full * TS - cy, yStart = N.start * TS - cy, H = L.hall, hx0 = H ? H.x0 * TS - cx : 0, hx1 = H ? (H.x1 + 1) * TS - cx : 0, hyt = H ? (H.roof + 2) * TS - cy : 0, hyb = H ? H.floor * TS - cy : 0;
-  const hall = H && hx1 > 0 && hx0 < VW, sky = yFull > 0;
-  if (!hall && !sky && !(yStart > 0)) return;   // the whole screen is below the night line: nothing to draw
+  const yFull = N.full * TS - cy, yStart = N.start * TS - cy, halls = hallsOf(L).map(H => [H.x0 * TS - cx, (H.x1 + 1) * TS - cx, (H.roof + 2) * TS - cy, H.floor * TS - cy]).filter(([a, b]) => b > 0 && a < VW);
+  const unlit = (L.unlit || []).map(([a, b]) => [a * TS - cx, (b + 1) * TS - cx]).filter(([a, b]) => b > 0 && a < VW);
+  const hall = halls.length > 0, sky = yFull > 0;
+  if (!hall && !unlit.length && !sky && !(yStart > 0)) return;   // the whole screen is below the night line: nothing to draw
   if (!NC || NC.width !== VW || NC.height !== VH) { NC = document.createElement('canvas'); NC.width = VW; NC.height = VH; }
   const d = NC.getContext('2d'); d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, VW, VH);
-  const base = '10,8,26', top = 0.66;
+  const base = '8,8,24', top = 0.8;   /* (claude/fairfix: 0.66 left the tops at dusk) */
   if (yFull > 0) { d.fillStyle = 'rgba(' + base + ',' + top + ')'; d.fillRect(0, 0, VW, Math.min(VH, yFull)); }
   if (yStart > 0 && yFull < VH) { const gr = d.createLinearGradient(0, yFull, 0, yStart); gr.addColorStop(0, 'rgba(' + base + ',' + top + ')'); gr.addColorStop(1, 'rgba(' + base + ',0)'); d.fillStyle = gr; d.fillRect(0, Math.max(0, yFull), VW, Math.min(VH, yStart) - Math.max(0, yFull)); }
-  if (hall) { d.fillStyle = 'rgba(' + base + ',0.6)'; d.fillRect(Math.max(0, hx0), hyt, Math.min(VW, hx1) - Math.max(0, hx0), hyb - hyt + 2); }
+  for (const [hx0, hx1, hyt, hyb] of halls) { d.fillStyle = 'rgba(' + base + ',0.72)'; d.fillRect(Math.max(0, hx0), hyt, Math.min(VW, hx1) - Math.max(0, hx0), hyb - hyt + 2); }
+  for (const [ux0, ux1] of unlit) { const gy = 28 * TS - cy; d.fillStyle = 'rgba(' + base + ',0.72)'; d.fillRect(Math.max(0, ux0), Math.max(0, gy - 7 * TS), Math.min(VW, ux1) - Math.max(0, ux0), 7 * TS + 2); }   /* THE UNLIT STRETCH: the road itself is dark there */
   d.globalCompositeOperation = 'destination-out';
   const hole = (x, y, rad, a = 1) => { const gr = d.createRadialGradient(x, y, rad * 0.15, x, y, rad); gr.addColorStop(0, 'rgba(0,0,0,' + a + ')'); gr.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = gr; d.fillRect(x - rad, y - rad, rad * 2, rad * 2); };
   for (const l of (F && F.lamps) || []) { if (!l.lit || !(l.life > 0)) continue; const x = l.x * TS + 8 - cx, y = (l.y + 1) * TS - 30 - cy; if (x < -90 || x > VW + 90) continue; hole(x, y, N.lampR * (l.life >= 1 ? 1.5 : 1.25) * (0.94 + 0.06 * Math.sin((o.time || 0) * 9)), 0.96); }
   for (const h of o.heroes || []) hole(h.x - cx, h.y - 10 - cy, 40, 0.85);                     // your own small light
   for (const e of o.glows || []) hole(e.x - cx, e.y - 12 - cy, 30, 1);                             // a red mask is never lost in the dark
   g.drawImage(NC, 0, 0);
+  /* THE LANTERN POOLS: a warm light added under each lit lantern that stands in the dark, so a lit stretch reads as the place a mummer can be held */
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (const l of (F && F.lamps) || []) { if (!l.lit || !(l.life > 0)) continue; const x = l.x * TS + 8 - cx, y = (l.y + 1) * TS - 24 - cy; if (x < -90 || x > VW + 90) continue;
+    const dark = nightK(N, (l.y + 1) * TS) > 0.3 || halls.some(([a, b, t, bt]) => x >= a && x <= b && y >= t - 8 && y <= bt) || unlit.some(([a, b]) => x >= a && x <= b); if (!dark) continue;
+    const rad = N.lampR * (l.life >= 1 ? 1.2 : 1), gr = g.createRadialGradient(x, y, 2, x, y, rad); gr.addColorStop(0, 'rgba(255,190,90,' + (0.28 * (l.b || 1)).toFixed(2) + ')'); gr.addColorStop(1, 'rgba(255,140,40,0)'); g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2); }
+  g.restore();
+}
+/* ================= THE NEW FOES' EXTRAS (claude/fairfix): the marionette's strings, up into the dark (slack when nobody looks, taut and twitching when it moves), and
+   the barker's call: the trumpet's rings going out while it is told, a burst when it lands ================= */
+export function drawFoeExtras(g, e, cx, cy, time) {
+  const x = Math.round(e.x - cx), y = Math.round(e.y - cy);
+  if (e.t === 'marionette') { const f = e.face >= 0 ? 1 : -1, taut = e.mode !== 'hang', bar = y - 64 - (taut ? Math.sin(time * 14) * 2 : 0), tw = taut ? Math.sin(time * 18) * 1.5 : 0;
+    const hands = e.mode === 'jerk' ? [[x - 9 * f, y - 36], [x + 10 * f, y - 36]] : e.mode === 'hang' ? [[x - 7 * f, y - 12], [x + 6 * f, y - 11]] : [[x - 7 * f, y - 20], [x + 8 * f, y - 20]];
+    const head = [x + (e.mode === 'hang' ? 2 * f : 0), y - (e.mode === 'hang' ? 36 : 39)];
+    g.globalAlpha = 0.75; g.strokeStyle = '#d8d0c0'; g.lineWidth = 1;
+    for (const [hx, hy] of [...hands, head]) { g.beginPath(); g.moveTo(hx + 0.5, hy + 0.5); if (taut) g.lineTo(x + (hx - x) * 0.4 + tw + 0.5, bar + 0.5); else g.quadraticCurveTo(hx + 6 * f, (hy + bar) / 2 + 10, x + (hx - x) * 0.4 + 0.5, bar + 0.5); g.stroke(); }
+    g.fillStyle = '#6a4a2a'; g.fillRect(x - 10 + Math.round(tw), bar - 1, 20, 2);   // the control bar
+    const up = g.createLinearGradient(0, bar - 70, 0, bar); up.addColorStop(0, 'rgba(216,208,192,0)'); up.addColorStop(1, 'rgba(216,208,192,0.7)'); g.strokeStyle = up; g.beginPath(); g.moveTo(x + 0.5 + Math.round(tw), bar); g.lineTo(x + 0.5, bar - 70); g.stroke();   // and on up, into the dark
+    g.globalAlpha = 1; return; }
+  if (e.t === 'barker') { const f = e.face >= 0 ? 1 : -1, mx = x + 16 * f, my = y - 30;
+    if (e.mode === 'callTell') { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,211,107,' + (0.8 - k * 0.6).toFixed(2) + ')'; g.lineWidth = 2; for (let i = 0; i < 2; i++) { const rr = 6 + ((k + i * 0.5) % 1) * 18; g.beginPath(); g.arc(mx, my, rr, f > 0 ? -0.8 : Math.PI - 0.8, f > 0 ? 0.8 : Math.PI + 0.8); g.stroke(); } }
+    if (e.callFx > 0) { const k = 1 - e.callFx / 0.6; g.strokeStyle = 'rgba(255,230,160,' + (0.9 - k * 0.9).toFixed(2) + ')'; g.lineWidth = 3; for (let i = 0; i < 3; i++) { const rr = 20 + k * 200 + i * 26; g.beginPath(); g.arc(mx, my, rr, 0, 6.3); g.stroke(); } }
+  }
 }
