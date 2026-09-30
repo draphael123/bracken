@@ -14,15 +14,15 @@ try {
       const { LEVELS } = await import('/src/level.js'); const TS = 16;
       BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true });
       const fi = LEVELS.findIndex(l => l.id === 'canal'); BK.load(fi); BK.start ? BK.start() : (BK.state = 'play'); BK.god = ${god}; const FROM = ${from} || 1, TO = ${to}, TRACE = ${+process.env.TRACE || 0};
-      const P = () => BK.P, k = BK.keys, log = [], C = () => BK.canal(); let frames = 0; const lifted = [];
+      const P = () => BK.P, k = BK.keys, log = [], C = () => BK.canal(); let frames = 0, ARMED = null; const lifted = [];
       const clear = () => { k.left = k.right = k.jump = k.down = k.up = k.atk = k.block = false; };
       /* A GRAB IS MASHED OFF (three presses), and a hero knocked into the canal is back on the bank: both are the level working, not the pilot failing */
-      const TR = [], tick = n => { for (let i = 0; i < (n || 1); i++) { if (TRACE && frames % (+TRACE || 30) === 0) TR.push([frames, Math.round(P().x), Math.round(P().y), P().onMover ? 1 : 0, Math.round(C().barge.x), C().barge.holdWhy, P().caged > 0 ? 1 : 0, C().bridges.map(b=>b.k.toFixed(1)).join(''), P().atk.toFixed(2), Object.keys(k).filter(q => k[q]).join('+')]); if (P().caged > 0 && BK.enemies().some(e => e.t === 'grindylow' && e.mode === 'grab')) BK.press(i % 2 ? 'jump' : 'atk'); BK.sim(1); frames++; } };
+      const TR = [], tick = n => { for (let i = 0; i < (n || 1); i++) { if (ARMED !== null && deaths() > ARMED) throw 'DIED'; if (TRACE && frames % (+TRACE || 30) === 0) TR.push([frames, Math.round(P().x), Math.round(P().y), P().onMover ? 1 : 0, Math.round(C().barge.x), C().barge.holdWhy, P().caged > 0 ? 1 : 0, C().reaches.map(r=>Math.round(r.to)%100).join('.'), P().atk.toFixed(2), Math.round(P().hp) + BK.enemies().filter(e=>e.alive && Math.abs(e.x-P().x)<90 && Math.abs(e.y-P().y)<120).map(e=>e.t[0]+(e.mode||'')).join(' '), Object.keys(k).filter(q => k[q]).join('+')]); if (P().caged > 0 && BK.enemies().some(e => e.t === 'grindylow' && e.mode === 'grab')) BK.press(i % 2 ? 'jump' : 'atk'); BK.sim(1); frames++; } };
       const at = () => [Math.floor(P().x / TS), Math.floor((P().y - 1) / TS)];
       const deaths = () => BK.stats().deaths;
       const onBarge = () => !!(P().onMover && P().onMover.canal);
       const B = () => C().barge;
-      const fight = (o = {}) => { const e = BK.enemies().filter(q => q.alive && !q.harmless && q.t !== 'grindylow' && Math.abs(q.x - P().x) < 48 && Math.abs(q.y - P().y) < 16).sort((a, b) => Math.abs(a.x - P().x) - Math.abs(b.x - P().x))[0];
+      const fight = (o = {}) => { const e = BK.enemies().filter(q => q.alive && !q.harmless && q.t !== 'grindylow' && Math.abs(q.x - P().x) < 48 && Math.abs(q.y - P().y) < (q.t === 'willowisp' ? 34 : 16)).sort((a, b) => Math.abs(a.x - P().x) - Math.abs(b.x - P().x))[0];
         if (!e) return false; clear();
         for (let j = 0; j < 24 && Math.abs(e.x - P().x) > 14 && e.alive; j++) { clear(); k[e.x > P().x ? 'right' : 'left'] = true; tick(1); }
         clear(); P().face = Math.sign(e.x - P().x) || P().face; BK.press('atk'); tick(8); clear(); tick(4);
@@ -50,15 +50,17 @@ try {
       const leg = (name, ok) => { log.push({ name, ok: !!ok, at: at(), deaths: deaths(), hp: Math.round(P().hp), s: +(frames / 60).toFixed(1) }); return ok; };
       const reach = id => C().reaches.find(q => q.id === id), full = id => Math.abs(reach(id).y - (reach(id).hi * TS + 4)) < 1;
       const gate = id => C().gates.find(g => g.id === id);
+      /* THE THREE STRETCHES, one a checkpoint: a death sends the hand back to the stretch's start (where the game woke it), and it goes again */
+      const seg = (name, fn) => { for (let t = 0; t < 6; t++) { ARMED = deaths(); try { fn(); ARMED = null; return true; } catch (err) { if (err !== 'DIED') throw err; ARMED = null;
+          log.push({ name: name + ': died, from its checkpoint again', ok: true, died: true, at: at(), deaths: deaths(), hp: Math.round(P().hp), s: +(frames / 60).toFixed(1) });
+          clear(); for (let i = 0; i < 900 && (BK.state !== 'play' || P().dead); i++) { BK.sim(1); frames++; } for (let i = 0; i < 40; i++) { BK.sim(1); frames++; } } } ARMED = null; return false; };
       const go = async () => {
-      if (FROM <= 1 && TO >= 1) { if (FROM === 1) {  }
+      let ok1 = false, ok2 = false; ok1 = seg('to the mill (checkpoint one)', () => {
       // ---- 1. THE WAYMEET QUAY: down through the warehouse, onto the barge ----
       leg('down through the warehouse', walk(28));
       leg('out onto the quay', walk(34));
       walk(37, { noFight: true }); tick(20); if (!onBarge()) { walk(38, { noFight: true }); tick(20); }
       leg('aboard the barge', onBarge());
-      }
-      if (FROM <= 2 && TO >= 2) { if (FROM === 2) { BK.tp(36, 37); tick(20); }
       // ---- 2. THE POUND AND THE FIRST LOCK ----
       ride(() => B().holdWhy === 'gate' && B().x > 70 * TS, 3000, { stay: true });
       leg('the barge held at the first lock\\'s upper gate', B().holdWhy === 'gate');
@@ -66,20 +68,18 @@ try {
       leg('the paddle struck: the first lock full', full('L1') && P().y < 34 * TS);
       ride(() => B().holdWhy === 'bridge', 1200, { stay: true });
       leg('under the mill, held by the mill bridge', B().holdWhy === 'bridge');
-      }
-      if (FROM <= 3 && TO >= 3) { if (FROM === 3) { const r1=reach('L1'); r1.y=r1.to=r1.hi*TS+4; B().x=100*TS; tick(60); BK.tp(104,31); tick(20); }
       // ---- 3. THE MILL: up through its floors ----
       walk(108, { tol: 4, noFight: true }); hop(0, 20); tick(20); leg('up through the wharf floor into the mill', P().y <= 30 * TS + 2 && !onBarge());
       const up = (x, row) => { for (let i = 0; i < 4 && P().y > row * TS + 2; i++) { walk(x, { tol: 3 }); hop(0, 22); tick(10); } };
       up(88, 27); up(92, 24); up(91, 21); up(92, 18);
       leg('up the mill\\'s floors to the top (checkpoint one)', walk(99) && P().y < 19 * TS);
+      });
+      if (ok1) ok2 = seg('to the summit (checkpoint two)', () => {
       walk(106); walk(112); walk(110); tick(40); walk(116); tick(10);
       leg('out of the miller\\'s door, down to the mill bridge', P().x > 111 * TS);
       walk(117, { tol: 3 }); if (C().bridges[0].across) strike(1); wait(80);
       leg('the mill bridge swung', !C().bridges[0].across);
       walk(121); leg('onto the barge as she passes under the far bank', dropOn());
-      }
-      if (FROM <= 4 && TO >= 4) { if (FROM === 4) { const r1=reach('L1'); r1.y=r1.to=r1.hi*TS+4; C().bridges[0].across=false; C().bridges[0].k=1; B().x=118*TS; tick(60); BK.tp(121,31); tick(20); }
       // ---- 4. THE FOG BANK: the weed reach, off at the loading step, over the roofs ----
       ride(() => B().x + B().w / 2 > 126 * TS, 900, { stay: true });
       clear(); hop(1, 16); walk(129, { noFight: true }); for (let i = 0; i < 160 && P().y > 21 * TS + 2; i++) { clear(); k.up = true; tick(1); } clear(); hop(1, 16);
@@ -96,8 +96,6 @@ try {
       ride(() => B().x > 181 * TS, 900, { stay: true });
       if (B().x < 181 * TS) { clear(); hop(0, 18); walk(172, { tol: 3 }); strike(1); walk(172); dropOn(); ride(() => B().x > 181 * TS, 900, { stay: true }); }
       leg('through the fog wall', B().x > 181 * TS);
-      }
-      if (FROM <= 5 && TO >= 5) { if (FROM === 5) { const r1=reach('L1'); r1.y=r1.to=r1.hi*TS+4; for (const b of C().bridges.slice(0,2)) { b.across=false; b.k=1; } B().x=183*TS; tick(60); BK.tp(187,31); tick(20); }
       // ---- 5. THE FLIGHT ----
       ride(() => B().holdWhy === 'gate' && B().x > 198 * TS, 1200, { stay: true });
       walk(208, { tol: 3, noFight: true }); strike(1); ride(() => full('L2'), 600, { stay: true });
@@ -107,15 +105,15 @@ try {
       walk(216, { tol: 3 }); if (Math.abs(reach('L3').to - (reach('L3').hi * TS + 4)) > 1) strike(1); wait(200);
       leg('up the balance beam, its paddle struck: the second full', full('L3'));
       walk(217, { noFight: true }); dropOn(); ride(() => B().holdWhy && B().x > 220 * TS, 900, { stay: true });
-      walk(230, { tol: 2, noFight: true }); for (let i = 0; i < 400 && P().y > 17 * TS + 2; i++) { clear(); k.up = true; tick(1); } clear(); hop(1, 14);
+      walk(230, { tol: 2, noFight: true }); for (let i = 0; i < 400 && P().y > 17 * TS + 2; i++) { clear(); k.up = true; tick(1); } clear(); k.right = true; tick(12); clear(); walk(231, { tol: 3, noFight: true }); hop(1, 14);
       hop(1, 18); walk(238, { tol: 3 });
-      leg('up the summit gate and over the summit bridge', P().x > 237 * TS && P().y < 16 * TS);
+      leg('up the summit gate and over the summit bridge', P().x > 237 * TS && P().y <= 16 * TS + 2);
       strike(1); ride(() => full('L4'), 400, { stay: true }); wait(40);
       leg('the last paddle: the flight full to the summit', full('L4'));
       strike(-1); wait(60); leg('the summit bridge swung behind you', !C().bridges[2].across);
-      walk(242); leg('the summit (checkpoint two)', P().x > 241 * TS); dropOn();
-      }
-      if (FROM <= 6 && TO >= 6) { if (FROM === 6) { for (const id of ['L1','L2','L3','L4']) { const q=reach(id); q.y=q.to=q.hi*TS+4; } for (const b of C().bridges.slice(0,3)) { b.across=false; b.k=1; } B().x=235*TS; tick(60); BK.tp(240,16); tick(20); }
+      walk(242); leg('the summit (checkpoint two)', P().x > 241 * TS);
+      });
+      if (ok2) seg('down the weir, across the basin, to her door', () => { dropOn();
       // ---- 6. THE WEIR ----
       ride(() => B().mode === 'loose', 900, { stay: true });
       leg('the summit gate bursts', B().mode === 'loose');
@@ -123,8 +121,6 @@ try {
       leg('the tiller struck: steer for the mill cut', B().helm === 'cut');
       ride(() => B().mode !== 'loose', 1500, { stay: true, noFight: true });
       leg('down the race into the basin', B().mode === 'float' && B().x > 320 * TS);
-      }
-      if (FROM <= 7 && TO >= 7) { if (FROM === 7) { for (const b of C().bridges.slice(0,3)) { b.across=false; b.k=1; } B().x=326*TS; tick(30); BK.tp(329,42); tick(20); }
       // ---- 7. THE BASIN (the exam) ----
       ride(() => B().holdWhy === 'fog', 300, { stay: true });
       clear(); hop(1, 18); walk(335, { noFight: true }); walk(344);
@@ -139,14 +135,14 @@ try {
       walk(369, { tol: 3, noFight: true }); hop(1, 18); walk(371);
       leg('up onto the lock gate: the lock door (checkpoint three)', P().x > 370 * TS && P().y < 42 * TS);
       walk(375); leg('the checkpoint at her west door', BK.L.ents.some(e => e.t === 'check' && e.x === 375) && P().x > 374 * TS); walk(378); tick(30);
-      }
+      });
       };
       await go();
       return { TR, hero: ${JSON.stringify(hero)}, lifted, log, state: BK.state, deaths: deaths(), s: +(frames / 60).toFixed(1) };
     })()`, 1800000);
     console.log('== ' + r.hero + (god ? ' (god)' : '') + ': ' + r.state + ', ' + r.deaths + ' deaths, ' + r.s + ' s' + (r.lifted.length ? '; lifted out (the hand cannot parry): ' + r.lifted.join(' ') : ''));
     if (r.TR.length) for (const t of r.TR) console.log('  t ' + JSON.stringify(t));
-    for (const l of r.log) { console.log('  ' + (l.ok ? 'ok  ' : 'MISS') + ' ' + l.name.padEnd(56) + ' at ' + l.at.join(',') + '  hp ' + l.hp + '  deaths ' + l.deaths + '  ' + l.s + 's'); if (!l.ok) bad++; }
+    const last = new Map(); for (const l of r.log) last.set(l.name, l); for (const l of r.log) { if (!l.died && last.get(l.name) !== l) continue; console.log('  ' + (l.ok ? 'ok  ' : 'MISS') + ' ' + l.name.padEnd(56) + ' at ' + l.at.join(',') + '  hp ' + l.hp + '  deaths ' + l.deaths + '  ' + l.s + 's'); if (!l.ok) bad++; }
     if (r.state !== 'win' && r.state !== 'clear' && r.state !== 'levelclear') console.log('  (the run ended in state ' + r.state + ')');
   }
   if (pg.errors.length) console.log('page errors: ' + pg.errors.slice(0, 5).join(' | '));

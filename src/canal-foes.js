@@ -100,7 +100,7 @@ export function stepWisp(e, dt, X) {
   const go = (tx, ty, sp) => { const ex = tx - e.x, ey = ty - e.y, dd = Math.hypot(ex, ey) || 1, k = Math.min(dd, sp * dt); e.x += ex / dd * k; e.y += ey / dd * k; };
   if (X.cleared(e.x, e.y) && e.mode !== 'flare') { if (e.mode !== 'shy') { e.mode = 'shy'; X.hint('shy', 'IN THE CLEAR AIR THE WISP HAS NO POST, AND NOTHING UNDER IT BUT WATER.'); } go(e.hx, e.hy, W.drift * 0.6); e.bob = Math.sin(e.anim * 2) * 2; return; }
   switch (e.mode) {
-    case 'flareTell': e.x += Math.sin(e.anim * 40) * 0.4; if (e.modeT <= 0) { e.mode = 'flare'; e.modeT = 0.25; X.ring(e.x, e.y, W.flareR, '#c8ffe0'); S.zap && S.zap(); if (!P.dead && d < W.flareR) X.hurtHero(e.x, W.dmg, { who: e, name: 'THE WISP' }); } break;
+    case 'flareTell': e.x += Math.sin(e.anim * 40) * 0.4; if (e.modeT <= 0) { e.mode = 'flare'; e.modeT = 0.25; X.ring(e.x, e.y, W.flareR, '#c8ffe0'); S.zap && S.zap(); if (!P.dead && d < W.flareR) X.hurtHero(e.x, W.dmg, { who: e, name: 'THE WISP', noKnock: true });   /* a dazzle, not a shove: it never throws you into the water it lures you to */ } break;
     case 'flare': if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = W.rest; e.cd = W.cd; } break;
     case 'rest': if (e.modeT <= 0) e.mode = 'lure'; break;
     case 'shy': e.mode = 'bob'; break;

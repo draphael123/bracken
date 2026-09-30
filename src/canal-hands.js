@@ -95,7 +95,8 @@ export function canalUpdate(st, H, dt) {
     for (const pr of st.props.concat([tiller])) { if (P.hitSet.has(pr)) continue;
       const box = pr.t === 'lanternpost' ? { l: pr.x - 8, r: pr.x + 8, t: pr.y - 30, b: pr.y } : { l: pr.x - 10, r: pr.x + 10, t: pr.y - 24, b: pr.y + 2 };
       if (!H.overlap(hb, box)) continue; P.hitSet.add(pr); pr.flash = 0.25; H.sparks(pr.x, pr.y - 12, P.face || 1, 4);
-      if (pr.t === 'locksluice') { const what = R.strikeSluice(st, pr.reach); S.ratchet ? S.ratchet() : S.clank(); S.splash && S.splash();
+      if (pr.t === 'locksluice') { const rr = R.reachById(st, pr.reach); if (rr && Math.abs(rr.to - rr.y) > 0.5) { S.clank(); continue; }   /* the water is still moving: the paddle is fast until it settles (a fight beside it cannot undo it) */
+        const what = R.strikeSluice(st, pr.reach); S.ratchet ? S.ratchet() : S.clank(); S.splash && S.splash();
         hint(st, H, 'sluice', what === 'fill' ? 'THE PADDLE IS UP: THE CHAMBER FILLS. THE GATE AHEAD OPENS WHEN THE WATER IS LEVEL.' : 'THE PADDLE IS DOWN: THE CHAMBER EMPTIES.'); }
       else if (pr.t === 'swingcap') { const br = st.bridges[pr.bridge]; if (!br) continue; R.strikeBridge(br); S.chain ? S.chain() : S.clank(); S.gateLift && S.gateLift(); }
       else if (pr.t === 'foghorn') { const h = pr; h.fogs = h.fogs || []; if (R.blowHorn(st, h)) { S.roar ? S.roar() : S.thud(); H.shake(2); hint(st, H, 'horn', 'THE FOGHORN: THE FOG LIFTS - FOR A WHILE. EVERY ARCHER SEES YOU NOW.'); } else S.clank(); }

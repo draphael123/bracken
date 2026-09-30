@@ -44,7 +44,7 @@ const RECORD = process.argv.includes('--record');
    for reasons that have nothing to do with the mover. That level's entry is then a regression baseline on the current mover,
    not the pre-slopes one - the other three still hold the pre-slopes equivalence. Say which level and why in the commit. */
 const REBASE = (process.argv.find(a => a.startsWith('--rebase=')) || '').slice(9);
-const IDS = ['wood', 'kings', 'keep', 'burial'];   /* §8.3's four: a wood, a castle, an underwater one, a cavern */
+const IDS = ['wood', 'kings', 'keep', 'burial', 'canal'];   /* §8.3's four: a wood, a castle, an underwater one, a cavern - and THE FOG CANAL (claude/canal, 2026-09-30): a new level, so its entry is a regression baseline on the current mover, recorded with --rebase=canal */
 const STARTS = 24, PER = 60;
 
 /* THE SCRIPT, a pure function of the frame number within one start, so it is the same every run and on both sides of

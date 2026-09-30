@@ -202,15 +202,15 @@ export function buildFogCanal({ painter, T, TS }) {
   ladder(230, 16, 22);                                                       /* up the summit gate's face to its top */
   weedWater.push([232, 236, 'P4']); weed(232, 236, 18);
   /* THE SUMMIT BRIDGE (TWIST: across, it is YOUR way over the weed to the last paddle; then it holds the barge, and it must be swung behind you) */
-  const B3 = bridge(232, 236, 15, 'across', [237, 14]);
-  boards(237, 15, 10); sluice(239, 14, 'L4');
+  const B3 = bridge(232, 236, 16, 'across', [237, 15]);   /* (a step up off the gate's top, level with the summit bank) */
+  boards(237, 16, 10); sluice(239, 15, 'L4');
   wisp(234, 13, [233, 17], 'the summit');                                   /* THE WEIR APPROACH: a light over the summit weed */
   block(244, 247, 11, 12);                                                   /* the keeper's hut roof over the summit bank (its posts are the bank) */
   archer(246, 10, 'the summit');
-  ent('check', 242, 14);                                                     /* CHECKPOINT TWO: the summit, right before the burst */
-  sign(240, 14, 'PAST THE GATE THE RACE SPLITS: THE MILL CUT OR THE WEIR. THE TILLER STEERS.');
+  ent('check', 242, 15);                                                     /* CHECKPOINT TWO: the summit, right before the burst */
+  sign(240, 15, 'PAST THE GATE THE RACE SPLITS: THE MILL CUT OR THE WEIR. THE TILLER STEERS.');
   coins([222, 20], [226, 20], [238, 14], [245, 14]);
-  moorings.push({ cp: [242, 14], x: 225, fill: ['L2', 'L3', 'L4'], bridges: { [B3]: 'open' } });   /* a death past the summit: the flight full, she waits in the last chamber */
+  moorings.push({ cp: [242, 15], x: 225, fill: ['L2', 'L3', 'L4'], bridges: { [B3]: 'open' } });   /* a death past the summit: the flight full, she waits in the last chamber */
   moorings.push({ cp: [99, 17], x: 102 });                                   /* a death past the mill: she waits under its east end */
 
   // ---------------- 5. THE WEIR (248-325): the SET PIECE ----------------
@@ -243,7 +243,7 @@ export function buildFogCanal({ painter, T, TS }) {
   };
   chases.push({ id: 'weir', x: 248, name: 'THE FLOOD', axis: 'x', dir: 1, trigger: px(248) + 8, end: px(326), gap0: 180, curve: [[0, 70], [520, 96, 'THE FLOOD GAINS ON YOU']],
     contact: 'hurt', dmg: 30, look: 'water', say: 'THE GATE BURSTS! HOLD ON!', glow: 280, zone: [px(240), px(330), 0, H * TS],
-    beams: beams.filter(b => b.weir).map(b => ({ x0: b.x0, x1: b.x1, y: b.y, name: b.name, dmg: 14 })), checkpoint: [242, 14] });
+    beams: beams.filter(b => b.weir).map(b => ({ x0: b.x0, x1: b.x1, y: b.y, name: b.name, dmg: 14 })), checkpoint: [242, 15] });
   /* the reach model's view of the ride: footing along each stretch of her path */
   ride(249, 254, 18, 18); ride(255, 263, 22, 22); ride(264, 290, 26, 26); ride(291, 300, 30, 30); ride(301, 308, 34, 34); ride(309, 315, 38, 38); ride(273, 325, 44, 44);
 
