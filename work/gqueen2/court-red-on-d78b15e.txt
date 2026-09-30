@@ -1,0 +1,82 @@
+{"pillars":3,"leap":{"told":null,"tx":null,"standHurt":false,"landed":"stand","airHurt":0},"court":{"seen":null,"mode":"stand","dx":-60,"holdT":-2.73,"faceAway":false},"lastTotter":0,"blows":[0,0,0],"tookFromBlows":0,"totter":0,"brokeAt3":true,"fall":{"fellAfter":0.42,"pinned":false,"by":"pillar","dir":-1,"toward":true,"modeT":-9.18,"took":0,"want":54},"overlap":{"blows":0,"tookHer":0},"wasted":{"broken":false,"mode":"rec","rubble":[false,false,false]},"round2":{"phase":2,"standing":3,"before":2},"standChip":{"took":0},"pointChip":{"faceAway":true,"took":0},"chand":{"mode":"pinned"},"shatter":{"plateOff":false,"shards":-1,"open":null,"front":0,"leapAt":null},"round3":{"phase":3,"standing":3,"open":null,"first":"shadowTell","took":0},"modes":["stand","sceptreTell","sceptreWait","chandTell","rec","slamTell","slam","slamRec","decreeTell","decree","chargeTell","charge","pinned","sweepTell","sweep","shadowTell","shadow"],"every":{"knight":false,"warden":false,"geomancer":false,"pyro":false,"paladin":false,"pirate":false,"reaper":false},"lab":{"pillar":2,"chandelier":1},"errors":[]}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   'chain: updateGQueen still enters chargeTell, charge or dazed',
++   'chain: she charged in play ["stand","sceptreTell","sceptreWait","chandTell","rec","slamTell","slam","slamRec","decreeTell","decree","chargeTell","charge","pinned","sweepTell","sweep","shadowTell","shadow"]',
++   'chain: forty seconds a round never showed her leap, quake and court ["stand","sceptreTell","sceptreWait","chandTell","rec","slamTell","slam","slamRec","decreeTell","decree","chargeTell","charge","pinned","sweepTell","sweep","shadowTell","shadow"]',
++   'quake: her leap is not a red !! answered jump, low',
++   'quake: no landing spot (her shadow) through the tell {"told":null,"tx":null,"standHurt":false,"landed":"stand","airHurt":0}',
++   'quake: a hero standing by her landing was not hurt {"told":null,"tx":null,"standHurt":false,"landed":"stand","airHurt":0}',
++   'court: she did not leap to point beside the pillar, on its far side {"seen":null,"mode":"stand","dx":-60,"holdT":-2.73,"faceAway":false}',
++   'court: she holds it -2.73 s, not 3-4',
++   'court: she points with her face to the hero, not her back',
++   'pillar: three blows counted [0,0,0]',
++   'pillar: the third blow did not leave it tottering 1.5-2 s 0',
++   'pillar: it did not fall toward her and pin her {"fellAfter":0.42,"pinned":false,"by":"pillar","dir":-1,"toward":true,"modeT":-9.18,"took":0,"want":54}',
++   'pillar: it fell 0.42 s after the third blow, not after the grace',
++   `pillar: not the chandelier's pin (4.6 s, 7%) {"fellAfter":0.42,"pinned":false,"by":"pillar","dir":-1,"toward":true,"modeT":-9.18,"took":0,"want":54}`,
++   'pillar: with her body over it, the blow was eaten by her plate {"blows":0,"tookHer":0}',
++   'pillar: broken with her elsewhere it is not wasted rubble {"broken":false,"mode":"rec","rubble":[false,false,false]}',
++   'every: knight could not bring a pillar down on her',
++   'every: warden could not bring a pillar down on her',
++   'every: geomancer could not bring a pillar down on her',
++   'every: pyro could not bring a pillar down on her',
++   'every: paladin could not bring a pillar down on her',
++   'every: pirate could not bring a pillar down on her',
++   'every: reaper could not bring a pillar down on her',
++   'plate: round two did not start with a full plate and no pillar stood again {"phase":2,"standing":3,"before":2}',
++   'plate: a blow while she stands chipped it or hurt her {"took":0}',
++   'plate: a back blow and a heavy blow while she points did not take a piece each {"faceAway":true,"took":0}',
++   'plate: a chandelier on her did not pin her and take two {"mode":"pinned"}',
++   'shatter: the plate did not break in pieces and open her {"plateOff":false,"shards":-1,"open":null,"front":0,"leapAt":null}',
++   'shatter: a blow to her face after the plate broke did not land {"plateOff":false,"shards":-1,"open":null,"front":0,"leapAt":null}',
++   'shatter: plate off, her leap did not come at the hero {"plateOff":false,"shards":-1,"open":null,"front":0,"leapAt":null}'
++ ]
+- []
+
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'chain: updateGQueen still enters chargeTell, charge or dazed',
+    'chain: she charged in play ["stand","sceptreTell","sceptreWait","chandTell","rec","slamTell","slam","slamRec","decreeTell","decree","chargeTell","charge","pinned","sweepTell","sweep","shadowTell","shadow"]',
+    'chain: forty seconds a round never showed her leap, quake and court ["stand","sceptreTell","sceptreWait","chandTell","rec","slamTell","slam","slamRec","decreeTell","decree","chargeTell","charge","pinned","sweepTell","sweep","shadowTell","shadow"]',
+    'quake: her leap is not a red !! answered jump, low',
+    'quake: no landing spot (her shadow) through the tell {"told":null,"tx":null,"standHurt":false,"landed":"stand","airHurt":0}',
+    'quake: a hero standing by her landing was not hurt {"told":null,"tx":null,"standHurt":false,"landed":"stand","airHurt":0}',
+    'court: she did not leap to point beside the pillar, on its far side {"seen":null,"mode":"stand","dx":-60,"holdT":-2.73,"faceAway":false}',
+    'court: she holds it -2.73 s, not 3-4',
+    'court: she points with her face to the hero, not her back',
+    'pillar: three blows counted [0,0,0]',
+    'pillar: the third blow did not leave it tottering 1.5-2 s 0',
+    'pillar: it did not fall toward her and pin her {"fellAfter":0.42,"pinned":false,"by":"pillar","dir":-1,"toward":true,"modeT":-9.18,"took":0,"want":54}',
+    'pillar: it fell 0.42 s after the third blow, not after the grace',
+    `pillar: not the chandelier's pin (4.6 s, 7%) {"fellAfter":0.42,"pinned":false,"by":"pillar","dir":-1,"toward":true,"modeT":-9.18,"took":0,"want":54}`,
+    'pillar: with her body over it, the blow was eaten by her plate {"blows":0,"tookHer":0}',
+    'pillar: broken with her elsewhere it is not wasted rubble {"broken":false,"mode":"rec","rubble":[false,false,false]}',
+    'every: knight could not bring a pillar down on her',
+    'every: warden could not bring a pillar down on her',
+    'every: geomancer could not bring a pillar down on her',
+    'every: pyro could not bring a pillar down on her',
+    'every: paladin could not bring a pillar down on her',
+    'every: pirate could not bring a pillar down on her',
+    'every: reaper could not bring a pillar down on her',
+    'plate: round two did not start with a full plate and no pillar stood again {"phase":2,"standing":3,"before":2}',
+    'plate: a blow while she stands chipped it or hurt her {"took":0}',
+    'plate: a back blow and a heavy blow while she points did not take a piece each {"faceAway":true,"took":0}',
+    'plate: a chandelier on her did not pin her and take two {"mode":"pinned"}',
+    'shatter: the plate did not break in pieces and open her {"plateOff":false,"shards":-1,"open":null,"front":0,"leapAt":null}',
+    'shatter: a blow to her face after the plate broke did not land {"plateOff":false,"shards":-1,"open":null,"front":0,"leapAt":null}',
+    'shatter: plate off, her leap did not come at the hero {"plateOff":false,"shards":-1,"open":null,"front":0,"leapAt":null}'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

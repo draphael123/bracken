@@ -1,0 +1,22 @@
+ ok  syntax             0ms  0 files parse
+ ok  tells            691ms  the mark over every windup on the screen comes from this table (src/marks.js, 600 rows).
+ ok  comments         174ms  no swallowed code found.
+ ok  homepaths        545ms  ok  homepaths     585 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths   377ms  ok  dangling-paths 2694 tracked files, every repo path they cite resolves in a fresh clone (8 known holes list
+ ok  checkpoints    20049ms  179 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  skins          41212ms  ok  roofs          44 houses: every roof picture sits on the slab you stand on.
+ ok  boss-openings  95028ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"buriedGas":{"rest":{"mode":"rest","open":0},"c
+ ok  arena-supplies 13087ms  ok  arena-supplies  45 boss rooms, 14 height conditions scored against the ground their arenas actually offer;
+ ok  boss-fight-end326604ms  Every one of 45 boss and mini fights (32 bosses, 13 minis) ends when its boss dies.
+ ok  queen-chandelier106358ms  queen-chandelier: no gallery; every hero cuts a chain from the floor, and it pins her as the gallery did (4.6 
+ ok  architecture   37843ms  44 levels, 348 built pieces declared; 2 grandfathered (harbor, waymeet). everything that was built stands on s
+ ok  queen-court    98694ms  queen-court: no charge; her leap is a told, jumpable quake; she holds court beside a pillar, and three blows b
+ ok  npc-removal     6731ms  every NPC outside the shops is gone; the ferryman and the captives are mechanics without dialogue; every forme
+ ok  answer-tags    19427ms    caravan       block dodge ---- ----  (2)
+ ok  attack-tokens  63004ms  waymeet: at most 2 of six attacking at once over 31 attacks; 124 waiting foe-seconds, none still
+ ok  untold-told    41332ms  22 foes that were untold each wound up on a mark, and none hurt the hero without one (skipped, answer-tags hol
+ ok  boss-jump     626965ms  BOSS-JUMP: all 45 boss and mini fights load through ?boss=<id> at full health with no god mode and wake at the
+ ok  slopes-trace   37953ms  slopes-trace: every frame of every level identical to the pre-slopes build
+
+19 of 219 checks pass - A SUBSET (queen-court, queen-chandelier, boss-openings, arena-supplies, tells, answer-tags, untold-told, attack-tokens, boss-fight-end, boss-jump, architecture, checkpoints, skins, dangling-paths, slopes-trace, npc-removal, comments, homepaths, syntax), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.

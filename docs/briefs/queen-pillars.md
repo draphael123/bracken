@@ -1,5 +1,7 @@
 # THE QUEEN'S PILLARS (Highcrown, the Goblin Queen)
 
+> **SUPERSEDED 2026-09-29** by `docs/briefs/goblin-queen-court.md`: she no longer charges; she holds court, and the hero breaks the pillar.
+
 Daniel, 2026-09-25: *"We need some way of damaging her rather than just having her run into walls. The pillars weren't
 perfect - but we need some mechanic like that."* He chose three cracked, load-bearing stone pillars on her Great Hall
 floor, broken by her own charge. Decided; this is how it is built.
@@ -41,7 +43,7 @@ pillar standing, the chandelier play as now. Separately, Daniel's standing decis
 shelf rule that stops the hands striking a boss more than 24 px below them is looked at for her.
 
 ## Proof
-- `tools/queen-pillars.mjs` (new, in check.mjs), in the page: three pillars; every hero, from either side, baits a
+- the queen-pillars check (new, in check.mjs; retired 2026-09-29 into `tools/queen-court.mjs`), in the page: three pillars; every hero, from either side, baits a
   charge into a pillar and she is pinned 4.6 s for 7%; a charge into the hall's end only dazes her (no opening);
   rubble is floor and is drawn; the pillars stand again at her round change. RED FIRST on the build without them.
 - A11 (the opening is caused) and `arena-supplies` stay green; `queen-chandelier` stays green.

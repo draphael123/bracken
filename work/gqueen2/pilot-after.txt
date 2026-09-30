@@ -1,0 +1,5 @@
+{"h":"knight","out":"win","secs":87.2,"left":0,"perMin":141,"swings":186,"pins":{"pillar":3,"chandelier":1,"plateOffAt":69.2},"charges":0,"courts":4,"quakes":5,"hitBy":{"point":110,"pinned":38,"sceptreWait":15,"decree":22,"crownTell":20}}
+{"h":"warden","out":"win","secs":120.3,"left":0,"perMin":98,"swings":146,"pins":{"pillar":4,"chandelier":1,"plateOffAt":79.1},"charges":0,"courts":5,"quakes":5,"hitBy":{"point":80,"stand":56,"sweepTell":32,"slamTell":17,"crownRain":12}}
+{"h":"pyro","out":"win","secs":48.7,"left":0,"perMin":113,"swings":96,"pins":{"pillar":2,"chandelier":2},"charges":0,"courts":2,"quakes":2,"hitBy":{"stand":38,"decree":22,"pinned":12,"point":20}}
+fights 3, wins 3 (100%), median win 87.2 s, range 48.7-120.3 s
+errors []
