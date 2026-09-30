@@ -35,9 +35,17 @@ const S = { busy: false, shown: false, job: null, total: 0, doneW: 0, true: 0, d
 const hasDom = typeof document !== 'undefined';
 let cv = null, cg = null, art = null, ag = null;
 
-/* THE HERO'S DANCE: the frame lists of the heroes to draw (K.R.dance for player one, and player two's set in co-op) */
-function heroList(sets) { return (sets || []).map(s => s && s.R && s.R.dance && s.R.dance.length ? s.R.dance : null).filter(Boolean); }
-export function heroReady(...sets) { S.heroes = heroList(sets); }
+/* THE HERO'S DANCE: the frame lists of the heroes to draw (K.R.dance for player one, and player two's set in co-op), each with where his feet and his
+   middle are (read once from the pixels over every frame: the middle of the frames, so he stands on the ground and does not jitter as they change size) */
+function metrics(list) {
+  const bots = []; let cx = 0, n = 0;
+  try { for (const f of list) { const d = f.getContext('2d').getImageData(0, 0, f.width, f.height).data; let lo = -1, x0 = 1e9, x1 = -1;
+    for (let y = 0; y < f.height; y++) for (let x = 0; x < f.width; x++) if (d[(y * f.width + x) * 4 + 3] > 40) { lo = y; if (x < x0) x0 = x; if (x > x1) x1 = x; }
+    if (lo >= 0) { bots.push(lo + 1); cx += (x0 + x1 + 1) / 2; n++; } } } catch { /* a tainted or odd canvas: draw from the frame's own edge */ }
+  bots.sort((a, b) => b - a);   // his feet are where MOST frames have them (the median): a bow or a raised blade that reaches lower must not lift him off the ground
+  return { list, bottom: bots.length ? bots[bots.length >> 1] : list[0].height, cx: n ? cx / n : list[0].width / 2 };
+}
+export function heroReady(...sets) { S.heroes = (sets || []).map(s => s && s.R && s.R.dance && s.R.dance.length ? metrics(s.R.dance) : null).filter(Boolean); }
 
 function mount() {
   if (!hasDom || cv) return;
@@ -49,19 +57,64 @@ function mount() {
 
 /* ---- the picture: 320 x 180, scaled to a whole number of pixels ---- */
 function px(x, y, w, h, c) { ag.fillStyle = c; ag.fillRect(x | 0, y | 0, w | 0, h | 0); }
-function text(s, x, y, c, size = 8, align = 'left') { ag.font = size + 'px "Press Start 2P", monospace'; ag.textAlign = align; ag.textBaseline = 'top'; ag.fillStyle = INK; ag.fillText(s, x + 1, y + 1); ag.fillStyle = c; ag.fillText(s, x, y); }
-/* what to draw before a hero is baked (the first second of a cold boot, while the scripts are still arriving): a small hooded figure that
-   hops in time - the simplest frames there are, so the dance is never a blank */
+/* a 3 x 5 pixel font, capitals and digits: it is drawn by hand so the bar reads the same whether or not the game's web font has arrived */
+const GLYPH = {
+  '0': '###/#.#/#.#/#.#/###',
+  '1': '.#./##./.#./.#./###',
+  '2': '##./..#/.#./#../###',
+  '3': '##./..#/.#./..#/##.',
+  '4': '#.#/#.#/###/..#/..#',
+  '5': '###/#../##./..#/##.',
+  '6': '.##/#../###/#.#/###',
+  '7': '###/..#/.#./.#./.#.',
+  '8': '###/#.#/###/#.#/###',
+  '9': '###/#.#/###/..#/##.',
+  'A': '.#./#.#/###/#.#/#.#',
+  'B': '##./#.#/##./#.#/##.',
+  'C': '.##/#../#../#../.##',
+  'D': '##./#.#/#.#/#.#/##.',
+  'E': '###/#../##./#../###',
+  'F': '###/#../##./#../#..',
+  'G': '.##/#../#.#/#.#/.##',
+  'H': '#.#/#.#/###/#.#/#.#',
+  'I': '###/.#./.#./.#./###',
+  'J': '..#/..#/..#/#.#/.#.',
+  'K': '#.#/#.#/##./#.#/#.#',
+  'L': '#../#../#../#../###',
+  'M': '#.#/###/###/#.#/#.#',
+  'N': '##./#.#/#.#/#.#/#.#',
+  'O': '.#./#.#/#.#/#.#/.#.',
+  'P': '##./#.#/##./#../#..',
+  'Q': '.#./#.#/#.#/###/.##',
+  'R': '##./#.#/##./#.#/#.#',
+  'S': '.##/#../.#./..#/##.',
+  'T': '###/.#./.#./.#./.#.',
+  'U': '#.#/#.#/#.#/#.#/###',
+  'V': '#.#/#.#/#.#/#.#/.#.',
+  'W': '#.#/#.#/###/###/#.#',
+  'X': '#.#/#.#/.#./#.#/#.#',
+  'Y': '#.#/#.#/.#./.#./.#.',
+  'Z': '###/..#/.#./#../###',
+  '%': '#.#/..#/.#./#../#.#',
+  '.': '.../.../.../.../.#.',
+  '-': '.../.../###/.../...' };
+function text(s, x, y, c, sc = 1, align = 'left') {
+  s = String(s).toUpperCase(); const w = s.length * 4 * sc - sc; if (align === 'center') x -= Math.floor(w / 2); else if (align === 'right') x -= w;
+  for (const pass of [0, 1]) for (let k = 0; k < s.length; k++) { const g = GLYPH[s[k]]; if (!g) continue; const rows = g.split('/');
+    for (let i = 0; i < 15; i++) if (rows[Math.floor(i / 3)][i % 3] === '#') { const gx = x + k * 4 * sc + (i % 3) * sc, gy = y + Math.floor(i / 3) * sc; if (pass === 0) px(gx + Math.max(1, sc >> 1), gy + Math.max(1, sc >> 1), sc, sc, INK); else px(gx, gy, sc, sc, c); } }
+}
 function stand(t, x, gy) {
   const k = Math.floor(t / 130) % 4, up = k === 1 || k === 3 ? 0 : 1, arm = k === 1 ? -3 : k === 3 ? 3 : 0, y = gy - 16 - (k === 2 ? 3 : 0);
   px(x + 3, y, 8, 6, '#c9d1dc'); px(x + 4, y + 2, 6, 2, '#1b1626'); px(x + 2, y + 6, 10, 6, '#3f7fd0'); px(x + 5, y + 6, 4, 6, '#c9463d');
   px(x + 1 + arm, y + 6 + up, 2, 5, '#c9d1dc'); px(x + 11 - arm, y + 6 + up, 2, 5, '#c9d1dc'); px(x + 3, y + 12, 3, 4 + (k === 2 ? 0 : 0), '#3a2a1a'); px(x + 8, y + 12, 3, 4, '#3a2a1a');
 }
-function drawHero(list, t, x, gy, mirror) {
-  const n = list.length, f = list[Math.floor(t / 100) % n];   // ten frames a second, as the game plays it
+function drawHero(h, t, cx, gy, mirror) {
+  const n = h.list.length, f = h.list[Math.floor(t / 100) % n];   // ten frames a second, as the game plays it
   if (!f || !f.width) return;
-  const sc = f.height <= 34 ? 2 : 1, w = f.width * sc, h = f.height * sc;
-  ag.save(); if (mirror) { ag.translate(x + w, 0); ag.scale(-1, 1); ag.drawImage(f, 0, gy - h, w, h); } else ag.drawImage(f, x, gy - h, w, h); ag.restore();
+  const sc = 2, w = f.width * sc, hh = f.height * sc, mid = h.cx * sc, top = gy - h.bottom * sc;
+  ag.save();
+  if (mirror) { ag.translate(cx + mid, 0); ag.scale(-1, 1); ag.drawImage(f, 0, top, w, hh); } else ag.drawImage(f, Math.round(cx - mid), top, w, hh);
+  ag.restore();
 }
 function paint(now) {
   if (!cv || !S.shown) return;
@@ -74,7 +127,7 @@ function paint(now) {
   if (S.hist.length < 4000 && (!S.hist.length || S.hist[S.hist.length - 1] !== S.disp)) S.hist.push(S.disp);
   ag.clearRect(0, 0, 320, 180); px(0, 0, 320, 180, BG);
   for (let i = 0; i < 40; i++) px(((i * 97 + 13) % 320), ((i * 53 + 7) % 90), 1, 1, i % 5 === 0 ? '#3a4a44' : '#1f2c26');   // a few stars
-  text('BRACKEN', 160, 28, GOLD, 16, 'center');
+  text('BRACKEN', 160, 26, GOLD, 5, 'center');
   const gy = 124, bx = 96, bw = 176, bh = 10, by = gy - bh - 2;
   px(0, gy, 320, 56, '#16241c'); px(0, gy, 320, 2, '#2e5a2a'); px(0, gy + 2, 320, 1, '#0e1a12');   // the ground the hero dances on
   // the bar: a dark frame, a track, a fill in blocks with a light top edge, a notch every eighth
@@ -83,12 +136,12 @@ function paint(now) {
   if (fw > 0) { px(bx, by, fw, bh, '#4a8a3a'); px(bx, by, fw, 3, '#8fd160'); px(bx, by + bh - 2, fw, 2, '#2f6a2c'); if (fw > 2) px(bx + fw - 2, by, 2, bh, '#c8f090'); }
   for (let x = 8; x < bw; x += 8) px(bx + x, by, 1, bh, 'rgba(11,20,16,0.55)');
   const pct = Math.min(100, Math.floor(S.disp * 100 + 1e-6));
-  text(pct + '%', bx + bw, by + bh + 7, CREAM, 8, 'right');
-  text(S.label || 'LOADING', bx, by + bh + 7, DIM, 6, 'left');
+  text(pct + '%', bx + bw, by + bh + 7, CREAM, 2, 'right');
+  text(S.label || 'LOADING', bx, by + bh + 9, DIM, 1, 'left');
   // THE DANCERS: player one to the left of the bar, and in co-op player two to the right of it (his own dance)
   const list = S.heroes;
-  if (list.length) { drawHero(list[0], t, 34, gy + 4, false); if (list[1]) drawHero(list[1], t + 130, 320 - 34 - list[1][0].width * (list[1][0].height <= 34 ? 2 : 1), gy + 4, true); }
-  else stand(t, 52, gy + 4);
+  if (list.length) { drawHero(list[0], t, 58, gy + 2, false); if (list[1]) drawHero(list[1], t + 130, 300, gy + 2, true); }
+  else stand(t, 50, gy + 2);
   cg.imageSmoothingEnabled = false;
   const sc = Math.max(1, Math.floor(Math.min(cv.width / 320, cv.height / 180))), ox = Math.floor((cv.width - 320 * sc) / 2), oy = Math.floor((cv.height - 180 * sc) / 2);
   cg.fillStyle = BG; cg.fillRect(0, 0, cv.width, cv.height); cg.drawImage(art, 0, 0, 320, 180, ox, oy, 320 * sc, 180 * sc);

@@ -22,18 +22,28 @@ const arg = k => (process.argv.find(a => a.startsWith('--' + k + '=')) || '').sl
 const TIMES = process.argv.includes('--times'), SHOT = arg('shots');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-/* ---- a picture, mid-boot: the real page, screenshotted by the browser itself ---- */
+/* ---- a picture of a boot. AFTER: the loading screen's own canvas, taken in the page at about half way (what the player sees). BEFORE: the old code
+   never lets the browser paint mid-boot (it is one blocking script), so what the player sees is the page as it was when the script started: the
+   game's script is blocked here and the page is shot as it stands, which is exactly that frozen picture. ---- */
 if (SHOT) {
+  const before = SHOT === 'before';
   const pg = await openPage({ audio: false, fonts: false, noWait: true });
   try {
-    let got = false;
-    for (let i = 0; i < 400 && !got; i++) {
-      const p = await pg.evalp('(()=>{const s=window.BKLoad&&window.BKLoad.state;return s?Math.round(s.true*100):(document.getElementById("boot")?-1:-2)})()', 3000).catch(() => -3);
-      if (p >= 45 || (p === -1 && i > 30)) got = true; else await sleep(80);
-    }
-    const shot = await pg.send('Page.captureScreenshot', { format: 'png' });
     const dir = join(ROOT, 'work', 'loadbar'); mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, SHOT + '.png'), Buffer.from(shot.result.data, 'base64'));
+    if (before) {
+      await pg.send('Network.enable'); await pg.send('Network.setBlockedURLs', { urls: ['*/src/main.js'] });
+      await pg.send('Page.navigate', { url: 'http://localhost:' + pg.PORT + '/?shot=' + Date.now() }); await sleep(2500);
+      const shot = await pg.send('Page.captureScreenshot', { format: 'png' });
+      writeFileSync(join(dir, 'before.png'), Buffer.from(shot.result.data, 'base64'));
+    } else {
+      let url = null;
+      for (let i = 0; i < 600 && !url; i++) {
+        url = await pg.evalp('(()=>{const s=window.BKLoad&&window.BKLoad.state,c=document.getElementById("loadscreen");return s&&c&&s.shown&&s.true>=0.5&&s.disp>=0.45?c.toDataURL("image/png"):null})()', 4000).catch(() => null);
+        if (!url) await sleep(60);
+      }
+      assert.ok(url, 'the loading screen was never up at half way');
+      writeFileSync(join(dir, SHOT + '.png'), Buffer.from(url.split(',')[1], 'base64'));
+    }
     console.log('wrote work/loadbar/' + SHOT + '.png');
   } finally { await pg.close(); }
   process.exit(0);
