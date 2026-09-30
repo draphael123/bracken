@@ -5,14 +5,14 @@
 // carries only a few one-line hooks. Brief: docs/briefs/maskwright-theatre.md.
 import * as TR from './theatre-rig.js';
 const TS = 16;
-const GADGET = new Set(['spotlamp', 'flylock', 'flatwinch']);
+const GADGET = new Set(['spotlamp', 'flylock', 'flatwinch', 'cuelever']);
 
 /* A NEW ATTEMPT: the machinery as the level was built, the flats put where they stand at load, the show not started */
 export function theatreReset(H) {
   const L = H.L(); if (!L || !L.theatre) return null;
   const D = L.theatre, T = H.T;
   const st = { spots: D.spots.map(TR.newSpot), lines: D.lines.map(l => ({ ...l })), traps: D.traps.map(t => ({ ...t, state: 'shut' })),
-    show: { ...D.show, on: false, t: 0, lift: 0 }, told: {}, props: [], flats: [] };
+    show: { ...D.show, on: false, t: 0, lift: 0, hold: false }, told: {}, props: [], flats: [], clock: 0, choruses: (D.choruses || []).map(c => ({ ...c, t: 0 })) };
   st.spots.forEach((s, i) => { s.off = !!s.show; s.light = { x: s.x, y: s.y, r: s.r * 1.25, warm: true, thSpot: i, lantern: { lit: false } };   /* an engine light: a dark pool is a lantern that is out */ H.lights().push(s.light); });
   for (const f0 of D.flats) {
     const f = { ...f0, base: new Map(f0.base.map(([x, y, t]) => [x + ',' + y, t])) };
@@ -61,6 +61,8 @@ export function theatreUpdate(st, H, dt) {
       if (!H.overlap(hb, box)) continue; P.hitSet.add(pr); pr.flash = 0.25; H.sparks(pr.x, pr.y - 12, P.face || 1, 4);
       if (pr.t === 'spotlamp') { const s = st.spots[pr.spot]; if (s.off) { S.clank(); continue; } TR.strikeSpot(s); S.clank(); S.lampUp && S.lampUp();
         hint(st, H, 'lamp', 'THE LAMP SWINGS. WHATEVER STANDS IN ITS LIGHT IS SEEN: IT CANNOT MOVE, WHICHEVER WAY YOU FACE.'); }
+      else if (pr.t === 'cuelever') { const sh = st.show; sh.hold = !sh.hold; for (const s of st.spots) if (s.cue && s.show) s.held = sh.hold; S.clank(); S.tollBell && S.tollBell();
+        hint(st, H, 'cue', sh.hold ? 'THE PROMPT DESK: THE LAMPS HOLD WHERE THEY ARE.' : 'THE PROMPT DESK: THE LAMPS TAKE THEIR CUES AGAIN.'); }
       else if (pr.t === 'flylock' && pr.line !== undefined) { const ln = st.lines.find(l => l.id === pr.line); if (!ln) continue; ln.out = !ln.out; S.ratchet ? S.ratchet() : S.clank(); S.ropeHaul && S.ropeHaul();
         hint(st, H, 'line', 'THE LINE RUNS: THE BATTEN ONE WAY, ITS SANDBAG THE OTHER.'); }
       else { const f = st.flats[pr.flat]; if (!f) continue; if (f.cue) f.held = true; f.to = f.to === f.a ? f.b : f.a; S.chain ? S.chain() : S.clank(); S.gateLift();
@@ -73,13 +75,19 @@ export function theatreUpdate(st, H, dt) {
     if (sh.on) { for (const s of st.spots) if (s.show) s.off = false; S.sting(); S.calliope && S.calliope(); H.shake(3);
       H.hint('THE CURTAIN RISES. THE LAMPS KEEP THEIR CUES, THE CAST FREEZES IN THE LIGHT, AND THE AUDIENCE THROWS AT WHATEVER IS LIT.'); } }
   if (sh.on) { sh.t += dt; sh.lift = Math.min(1, sh.lift + dt / 1.6); }
+  st.clock += dt;   /* the clock of the cues that run whether or not the show has started (the sump's flat, the far wing's follow spot) */
+  // ---- THE CHORUS: the wardrobe sends them out after you ----
+  for (const c of st.choruses) { const P = H.hero(), px = c.x * TS + 8, py = (c.y + 1) * TS;
+    const near = !!P && !P.dead && P.x > px + 40 && Math.abs(P.x - px) < 420 && Math.abs(P.y - py) < 48;
+    const mine = H.enemies().filter(e => e.alive && e.chorusOf === c), busy = H.enemies().some(e => e.alive && Math.abs(e.x - px) < 14 && Math.abs(e.y - py) < 12);
+    if (TR.chorusStep(c, dt, near, mine.length, busy)) { const e = H.spawn('mummer', c.x, c.y, { face: 1, squad: c.squad }); if (e) { e.chorusOf = c; if (H.near(px, py, 300)) H.sfx.mummerBell && H.sfx.mummerBell(); } } }
   // ---- THE LAMPS ----
   const solidPx = (px, py) => H.isSolid(Math.floor(px / TS), Math.floor(py / TS));
-  for (const s of st.spots) { TR.spotStep(s, dt, sh.on); const p = TR.poolOf(s), clear = !s.off && TR.beamClear(s, solidPx, p);
+  for (const s of st.spots) { TR.spotStep(s, dt, sh.on || s.always); const p = TR.poolOf(s), clear = !s.off && TR.beamClear(s, solidPx, p);
     s.clear = clear; s.light.x = p.x; s.light.y = p.y - 10; s.light.lantern.lit = clear; }
   // ---- THE FLATS ----
   for (const f of st.flats) {
-    if (f.cue && sh.on && !f.held) { const c = TR.flatCue(f, sh.t); const want = c.posB ? f.b : f.a; if (c.warn && !f.warn && H.near(f.a * TS, f.y0 * TS, 300)) S.tollBell ? S.tollBell() : S.clank(); f.warn = c.warn; if (want !== f.to) f.to = want; }
+    if (f.cue && (sh.on || f.cue.always) && !f.held) { const c = TR.flatCue(f, f.cue.always ? st.clock : sh.t); const want = c.posB ? f.b : f.a; if (c.warn && !f.warn && H.near(f.a * TS, f.y0 * TS, 300)) S.tollBell ? S.tollBell() : S.clank(); f.warn = c.warn; if (want !== f.to) f.to = want; }
     const from = f.at, r = TR.flatStep(f, dt, next => flatCanStep(st, H, f, next));
     if (r === 'step' || r === 'done') { flatMove(H, f, from, f.at); if (H.near((f.axis === 'y' ? f.x0 : f.at) * TS, (f.axis === 'y' ? f.at : f.y0) * TS, 320)) S.stone(); }
     if (r === 'done') { H.resolve(); S.thud(); H.shake(1); }
@@ -90,6 +98,13 @@ export function theatreUpdate(st, H, dt) {
     const open = ph === 'open' || (was === 'open' && busy);
     tr.state = open ? 'open' : ph;
     if (open !== (was === 'open')) { for (let x = tr.x0; x <= tr.x1; x++) H.cellSet(x, tr.row, open ? T.AIR : T.ONEWAY); if (H.near(tr.x0 * TS, tr.row * TS, 300)) open ? S.gateDrop() : S.gateLand && S.gateLand(); } }
+}
+
+/* A BAT IN THE THEATRE (THEATRE2): it goes for whoever stands in the light, and otherwise to a lit pool; the dark is where you are safe from it */
+export function batTarget(st, H, e) {
+  const P = H.hero(); if (P && !P.dead && Math.abs(P.x - e.x) < 220 && Math.abs(P.y - e.y) < 300 && litAt(st, H, P.x, P.y)) return { x: P.x, y: P.y - 8, who: 'P' };
+  let best = null, bd = 190; for (const s of st.spots) { if (s.off || !s.clear) continue; const p = TR.poolOf(s), d = Math.hypot(p.x - e.x, p.y - 12 - e.y); if (d < bd) { bd = d; best = { x: p.x, y: p.y - 14, who: null }; } }
+  return best;
 }
 
 /* one frame of a fly line's mover (a batten or a sandbag): toward its stop; a sandbag coming down lands on whatever foe is under it */
@@ -140,6 +155,7 @@ export function drawTheatre(st, g, H, cx, cy, VW, VH, time) {
       g.fillStyle = fl ? '#ffffff' : '#50485a'; g.fillRect(x - 5, hy - 3, 10, 8); g.fillStyle = s.off ? '#5a5040' : s.clear ? '#fff2b0' : '#c0a060'; const d = Math.sign(TR.poolOf(s).x - s.x) || 1; g.fillRect(x + (d > 0 ? 3 : -5), hy - 2, 2, 6); }
     else if (pr.t === 'flylock') { const ln = pr.line !== undefined ? st.lines.find(l => l.id === pr.line) : null, out = ln ? ln.out : (st.flats[pr.flat] || {}).to === (st.flats[pr.flat] || {}).b;
       g.fillStyle = '#5a4430'; g.fillRect(x - 1, y - 22, 3, 22); g.fillStyle = fl ? '#ffffff' : out ? '#ff9a3c' : '#c8a040'; g.fillRect(x - 4, y - 18, 9, 4); g.fillStyle = '#d8c8a0'; g.fillRect(x - 3, y - 13, 7, 3); }
+    else if (pr.t === 'cuelever') { g.fillStyle = '#4a3a2a'; g.fillRect(x - 7, y - 14, 14, 14); g.fillStyle = fl ? '#ffffff' : st.show.hold ? '#ff6b4a' : '#8fd160'; g.fillRect(x - 2, y - 20, 4, 6); }
     else { g.fillStyle = '#3a3a48'; g.fillRect(x - 6, y - 12, 12, 12); g.fillStyle = fl ? '#ffffff' : '#6a90b0'; g.fillRect(x - 4, y - 10, 8, 8); g.fillStyle = '#d0d8e0'; const a = time * 3; g.fillRect(x + Math.round(Math.cos(a) * 5) - 1, y - 7 + Math.round(Math.sin(a) * 5), 2, 2); }
   }
   // ---- THE CURTAIN: red over the stage until the show starts, and it rises when it does ----

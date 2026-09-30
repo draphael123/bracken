@@ -66,3 +66,16 @@ A short corridor cut into the first level in memory (never saved, like `?boss=`)
     http://localhost:<port>/?combat=weighty        (or Settings > Combat: CLASSIC / WEIGHTY, which is saved; ?combat=classic forces it off)
 
 A Salt & Sanctuary-style prototype behind one switch (src/weighty.js). With it on: every swing ends in a short recovery you cannot jump, dodge or guard out of; the Hornet Queen (Bracken Wood) takes a whole blow at any time, her openings are a bonus, she holds and feints her dive, and her ! arrives halfway into each windup; in Kingswood a brute swings through two cuts and breaks on the third, a shield parries a third cut on its guard and counters on a yellow !, a brute feints, a pike lunges and an archer backs off; common foes hit x1.4 instead of x1.25. Play the Hornet Queen and Kingswood once each way.
+
+## The level jump (claude/theatre, THEATRE2)
+
+    http://localhost:<port>/?level=<id>[&hero=<id>]
+
+Starts any level from its own entrance (its START), the way `?boss=` starts a fight: `?level=theatre` puts you at THE MASKWRIGHT'S THEATRE's stage door.
+`<id>` is the level's id in `src/level.js` LEVELS (`wood`, `waymeet`, `theatre`, `fair`, `mage`, ...); `&hero=<id>` picks the hero as for `?boss=`. An id
+that matches nothing leaves the title screen alone and prints the known ids to the console. **It never writes a save**: it sets the same `bossJumpOn`
+guard first, so clearing the level, dying or going back to the map persists nothing; reload the page to play for real.
+
+`BK.levelJump(id, hero)` is the same function for harnesses. `node tools/level-jump.mjs` proves it (lands in play at the entrance with the hero asked
+for, at full health, no god mode; the save is byte-identical after the level is run to its gate; a bad id starts nothing). It was run red first with
+the save guard taken out (THE SAVE CHANGED), then green.

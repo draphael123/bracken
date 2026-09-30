@@ -8225,6 +8225,14 @@ function bossJump(spec, heroId) {
   camX = P.x - VW / 2; camY = P.y - 100;
   return true;
 }
+/* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md): ?level=<id>[&hero=<id>] starts any level from its own entrance, the way ?boss= starts a fight - and, like it, never writes a save (bossJumpOn first) */
+function levelJump(id, heroId) {
+  const li = LEVELS.findIndex(l => l.id === id); if (li < 0 || id === 'custom') return false;
+  bossJumpOn = true;   /* FIRST: nothing below can reach a save */
+  const h = heroId && HEROES.some(x => x.id === heroId) ? heroId : hero();
+  window.BK.setHero(h); window.BK.reset({ fresh: true }); loadLevel(li); startGame(); camX = P.x - VW / 2; camY = P.y - 100;
+  return true;
+}
 function bjOpen() { state = 'bossjump'; bjI = 0; bjWait = 0; bjHero = hero(); SFX.uiSel(); }
 function updateBossJump() {
   if (pausePress) { state = 'title'; SFX.ui(); return; }
@@ -14644,7 +14652,7 @@ function updateRockGoblin(e, dt) { // keeps its distance and throws lanterns: th
 function updateBat(e, dt) {
   e.modeT -= dt; e.cd = Math.max(0, e.cd - dt);
   const lightHere = (x, y) => { let best = null, bd = 150; const try1 = (lx, ly, lr, who) => { const dd = Math.hypot(lx - x, ly - y); if (dd < bd && lr > 20) { bd = dd; best = { x: lx, y: ly, who }; } }; for (const lt of lights) if (!(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit)) try1(lt.x, lt.y, lt.r, null); for (const f of fires) if (f.delay <= 0) try1(f.x, f.y - 6, 40, null); if (!P.dead && (playerLight() > 40 || Math.hypot(P.x - x, P.y - 8 - y) < 90)) try1(P.x, P.y - 8, Math.max(playerLight(), 60), 'P'); return best; }; // a bat goes for the nearest light, or for you if you are close enough to hear
-  if (e.mode === 'hang') { e.x = e.hx; e.y = e.hy + Math.sin(e.anim * 2) * 0.5; if (e.cd <= 0) { const tgt = lightHere(e.x, e.y); if (tgt) { e.mode = 'fly'; e.tgt = tgt; SFX.chitter(); } } }
+  if (e.mode === 'hang') { e.x = e.hx; e.y = e.hy + Math.sin(e.anim * 2) * 0.5; if (e.cd <= 0) { const tgt = THEATRE ? THH.batTarget(THEATRE, THX, e) : lightHere(e.x, e.y);   /* THE MASKWRIGHT'S THEATRE: a bat goes for whoever stands in the light */ if (tgt) { e.mode = 'fly'; e.tgt = tgt; SFX.chitter(); } } }
   else if (e.mode === 'fly') { const tgt = e.tgt.who === 'P' ? { x: P.x, y: P.y - 8 } : e.tgt; const dx = tgt.x - e.x, dy = tgt.y - e.y, dd = Math.hypot(dx, dy) || 1; e.x += dx / dd * 95 * dt; e.y += dy / dd * 80 * dt + Math.sin(e.anim * 9) * 10 * dt; e.face = Math.sign(dx) || e.face;
     if (!P.dead && Math.abs(P.x - e.x) < 10 && Math.abs((P.y - 8) - e.y) < 10) { const res = damagePlayer(e.x, DMG.bat); if (res === 'blocked') { e.alive = false; burst(e.x, e.y, 6, COLS.bat, 50, 0.4); kills++; xpKill(e); number(e.x, e.y - 10, 'SWATTED', '#8fd160'); return; } e.mode = 'back'; e.cd = 2; SFX.chitter(); }
     else if (dd < 8 || e.modeT < -6) { e.mode = 'back'; e.cd = 1.5; } }
@@ -18208,7 +18216,8 @@ let THEATRE = null;
 const THX = { T, L: () => L, lights: () => lights, enemies: () => enemies, isSolid, box, overlap, sfx: SFX,
   cellSet: (x, y, t) => cellSet(x, y, t), resolve: () => resolveTiles(), attackBox: () => attackBox(), eachHero: fn => { for (const pp of players) asPlayer(pp, () => fn(P)); },
   bodies: () => players.filter(p => !p.dead).concat(enemies.filter(e => e.alive && !e.noGrav)), hurt: (e, d, x) => hurtEnemy(e, d, x, false), sparks, dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n),
-  near: (x, y, r) => Math.abs(x - P.x) < r && Math.abs(y - P.y) < r, hint: msg => { hintT = 4.5; hintMsg = msg; } };
+  near: (x, y, r) => Math.abs(x - P.x) < r && Math.abs(y - P.y) < r, hint: msg => { hintT = 4.5; hintMsg = msg; }, hero: () => P,
+  spawn: (t, x, y, o) => { const n = enemies.length; spawnEnt({ t, x, y, ...(o || {}) }); return enemies[n] || null; } };   /* THE CHORUS (THEATRE2): a player sent out of the wardrobe */
 function theatreReset() { THEATRE = L && L.theatre ? THH.theatreReset(THX) : null; if (THEATRE) FAIR = null;   /* the fair's mummers stand here, but none of the fair's dressing does */
   if (window.BK) Object.assign(window.BK, { theatre: () => THEATRE }); }
 let FAIR = null;
@@ -28080,5 +28089,7 @@ if (q.get('playtest') === '1') setTimeout(async () => {
 }, 1200);
 if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
 if (q.get('chase') === 'demo') { chaseDemo(q.get('hero')); }   /* THE PLAYTEST CHASE DEMO: ?chase=demo[&hero=<id>] (docs/PLAYTEST.md), never saved */
+window.BK.levelJump = (id, h) => levelJump(id, h);
+if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'))) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'))) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 rafQueued = true; requestAnimationFrame(frame);

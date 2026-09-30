@@ -74,6 +74,30 @@ if (lv) {
   ok(foes[0] && foes[0].t === 'mummer' && inn(A.facing.teach, foes[0].x) && foes.filter(e => inn(A.facing.teach, e.x)).length === 1, 'the first foe is not one masked player alone in the stage door (' + (foes[0] && foes[0].t + '@' + foes[0].x) + ')');
   ok(L.ents.some(e => e.t === 'sign' && inn(A.facing.teach, e.x) && /FACE ONE AND IT STOPS/.test(e.text)), 'no sign in the stage door says the facing rule');
   ok(L.ents.some(e => e.t === 'sign' && inn(A.spot.teach, e.x) && /LIGHT IS SEEN/.test(e.text)), 'no sign teaches the limelight where it is taught');
+  // ---- THEATRE2 (the review): the opening is not a corridor; the lamp is a LOCK twice; the exam combines; the show can be reached; no sign spoils a twist ----
+  { const route = RF, onRow = r => [...RF.seen].some(k => { const [x, y] = k.split(',').map(Number); return x >= 34 && x <= 88 && y === r; });
+    ok(onRow(24) && L.ents.some(e => e.t === 'sign') && !L.ents.some(e => FOES.has(e.t) && e.x >= 60 && e.x <= 64 && e.y === 33), 'the dressing rooms (row 24 over 34-88) are not reached');
+    const g0 = L.grid, at = (x, y) => g0[y * L.W + x];
+    ok([...Array(5).keys()].every(k => at(60 + k, 33) === T.SOLID) && at(58, 30) === 9, 'the costume store does not end at the racks with a rope up through the hatch (the climb you MUST take)');
+    const ch = D.choruses || []; ok(ch.length >= 1 && ch.every(c => D.spots.some(s => s.aims.some(a => Math.abs(a[0] - (c.x * TS + 8)) < 20 && Math.abs(a[1] - (c.y + 1) * TS) < 20))), 'LOCK ONE: no wardrobe chorus with a lamp that can be swung onto its doorway');
+    const pin = D.spots.find(s => s.aims.length >= 3 && foes.filter(e => e.t === 'mummer' && s.aims.some(a => Math.abs(a[0] - (e.x * TS + 8)) < 20 && Math.abs(a[1] - (e.y + 1) * TS) < 20)).length >= 2 && foes.filter(e => e.t === 'mummer' && Math.abs(e.x * TS + 8 - s.x) < 7 * TS).some(e => e.x * TS + 8 < s.x) && foes.filter(e => e.t === 'mummer' && Math.abs(e.x * TS + 8 - s.x) < 7 * TS).some(e => e.x * TS + 8 > s.x));
+    ok(!!pin, 'LOCK TWO: no drop between two players, one either side, under a lamp that can be swung onto either before you go down');
+    // THE EXAM COMBINES: the wing flat decides which of the follow spot's aims is clear
+    const wf = D.flats.find(f => /wing flat/.test(f.name)), fs2 = D.spots.find(s => s.always);
+    if (wf && fs2) { const grid = pos => { const g = new Uint8Array(L.grid); for (const [x, y, t] of wf.base) g[y * L.W + x] = t; for (let y = wf.y0; y <= wf.y1; y++) for (let x = pos; x < pos + wf.w; x++) g[y * L.W + x] = T.SOLID; return (px, py) => g[Math.floor(py / TS) * L.W + Math.floor(px / TS)] === T.SOLID; };
+      const clearAt = (pos, i) => R.beamClear({ ...fs2, i, from: i, k: 1 }, grid(pos));
+      ok(!clearAt(wf.a, 0) && clearAt(wf.b, 0) && clearAt(wf.a, 1), 'THE EXAM: the wing flat does not decide the follow spot (shut, it should shadow the winch spot; open, light it; the batten foot always lit)'); }
+    else ok(false, 'THE EXAM: no wing flat or no always-running follow spot');
+    ok(L.ents.some(e => e.t === 'drunk' && e.footlights && e.x > 225 && e.x < 250), 'THE EXAM: no audience over the far wing');
+    // THE DOOR GUARD IS LURED, not crushed by riding: no sandbag falls where he stands, and a sandbag near him has a lock of its own
+    const el = L.ents.find(e => e.elite), bags = L.moversExtra.filter(m => m.kind === 'fly' && m.role === 'bag');
+    ok(el && !bags.some(m => el.x * TS + 8 > m.x - 4 && el.x * TS + 8 < m.x + m.w + 4) && bags.some(m => Math.abs(m.x - el.x * TS) < 8 * TS && L.moversExtra.filter(q => q.line === m.line).length === 1), 'THE DOOR GUARD stands under a sandbag, or has no sandbag of its own to be lured under');
+    // THE SHOW CAN BE REACHED: both boxes on foot, a prompt desk
+    ok([[158, 162], [216, 221]].every(([a, b]) => [...RF.seen].some(k => { const [x, y] = k.split(',').map(Number); return x >= a && x <= b && y === 24; })) && L.ents.some(e => e.t === 'cuelever'), 'a box cannot be reached on foot, or there is no prompt desk');
+    // THE SUMP'S FLAT RUNS ON A CUE (no winch) with an understudy on it
+    const sf = D.flats.find(f => /floor flat/.test(f.name)); ok(sf && sf.cue && sf.cue.always && !sf.winch && foes.some(e => e.t === 'mummer' && e.y === 43 && e.x >= sf.b && e.x < sf.b + sf.w), 'the sump\'s floor flat is not on a cue of its own with an understudy standing on it');
+    // NO SIGN SPOILS A TWIST
+    const spoil = L.ents.filter(e => e.t === 'sign' && /RIDE THE WEIGHT|TRAP AT STAGE LEFT|BATTEN IS A BRIDGE|FLOWN OUT|ON A TRACK|ALL OF IT/.test(e.text)); ok(!spoil.length, 'a sign spoils a twist: ' + spoil.map(e => e.text).join(' | ')); }
   // FEWER, BETTER: placed by hand, every foe in a named encounter
   ok(foes.every(e => typeof e.squad === 'string' || e.t === 'bat' || e.t === 'spider'), 'a foe stands in no named encounter: ' + foes.filter(e => !e.squad && e.t !== 'bat' && e.t !== 'spider').map(e => e.t + '@' + e.x).join(' '));
   ok(!L.ents.some(e => e.garrison), 'sprinkled garrison stands in the theatre');
@@ -93,9 +117,9 @@ if (!NOPAGE && lv) {
       BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); const fi = LEVELS.findIndex(l => l.id === 'theatre');
       const fresh = () => { BK.load(fi); BK.state = 'play'; BK.god = true; BK.sim(2); };
       const TH = () => BK.theatre(), P = BK.P;
-      // 1. THE LAMP HOLDS IT: the mummer at 60 stands in the first lamp's light with the hero's back to it for three seconds
-      fresh(); BK.enemies().filter(e => e.t === 'mummer' && e.x < 50 * TS).forEach(e => e.alive = false);
-      const m = BK.enemies().find(e => e.t === 'mummer' && Math.abs(e.x - (60 * TS + 8)) < 20); BK.tp(50, 33); P.face = -1; const x0 = m.x;
+      // 1. THE LAMP HOLDS IT: the mummer at 54 stands in the first lamp's light with the hero's back to it for three seconds
+      fresh(); BK.enemies().filter(e => e.t === 'mummer' && e.x < 40 * TS || e.t === 'bat').forEach(e => e.alive = false);
+      const m = BK.enemies().find(e => e.t === 'mummer' && Math.abs(e.x - (54 * TS + 8)) < 20); BK.tp(46, 33); P.face = -1; const x0 = m.x;
       for (let i = 0; i < 180; i++) { P.face = -1; BK.sim(1); } out.held = Math.abs(m.x - x0);
       TH().spots[0].i = 1; TH().spots[0].from = 1; TH().spots[0].k = 1; for (let i = 0; i < 180; i++) { P.face = -1; BK.sim(1); } out.freed = Math.abs(m.x - x0);
       // 2. A ROPE-LOCK: strike line A's lock from batten A, and it flies out
@@ -105,18 +129,27 @@ if (!NOPAGE && lv) {
       fresh(); BK.tp(150, 15); const u = BK.enemies().find(e => e.t === 'mummer' && Math.abs(e.x - (160 * TS + 8)) < 24); const hp0 = u ? u.hp : -1;
       TH().lines.find(l => l.id === 'D').out = true; for (let i = 0; i < 150; i++) { P.face = 1; BK.sim(1); } out.bag = [hp0, u ? (u.alive ? u.hp : 0) : -1];
       // 4. A WINCH: the dock's ground row slides to its far end, in the grid
-      fresh(); BK.tp(111, 33); BK.sim(10); P.face = 1; BK.press('atk'); BK.sim(90); const f0 = TH().flats[0]; out.flat = [f0.at, f0.b, BK.L.grid[33 * BK.L.W + f0.b], BK.L.grid[33 * BK.L.W + f0.a]];
+      fresh(); BK.tp(111, 33); BK.sim(10); P.face = 1; BK.press('atk'); BK.sim(90); const f0 = TH().flats.find(f => /ground row/.test(f.name)); out.flat = [f0.at, f0.b, BK.L.grid[33 * BK.L.W + f0.b], BK.L.grid[33 * BK.L.W + f0.a]];
       // 5. THE SHOW: the curtain goes up on the stage; the traps drop on their cues; the audience throws only at a lit hero
       fresh(); BK.tp(214, 33); BK.sim(30); out.show = TH().show.on; let dropped = false;
       for (let i = 0; i < 900 && !dropped; i++) { BK.sim(1); dropped = TH().traps.some(t => t.state === 'open' && BK.L.grid[t.row * BK.L.W + t.x0] === 0); } out.trap = dropped;
       fresh(); for (const s of TH().spots) { s.off = true; s.show = false; } BK.enemies().filter(e => e.t === 'mummer').forEach(e => e.alive = false);
       const dr = BK.enemies().find(e => e.t === 'drunk' && e.x > 215 * TS && e.x < 222 * TS); BK.tp(206, 33); let dark = 0;
       for (let i = 0; i < 400; i++) { BK.sim(1); if (dr.mode === 'lobTell' || dr.mode === 'bottleTell') dark++; }
-      const s1 = TH().spots[5]; s1.off = false; s1.aims = [[P.x, 34 * TS]]; s1.i = 0; s1.from = 0; s1.k = 1; s1.cue = 0; let lit = 0;
+      const s1 = TH().spots.find(s => Math.abs(s.x - (216 * TS + 8)) < 4); s1.off = false; s1.aims = [[P.x, 34 * TS]]; s1.i = 0; s1.from = 0; s1.k = 1; s1.cue = 0; let lit = 0;
       for (let i = 0; i < 600; i++) { BK.sim(1); if (dr.mode === 'lobTell' || dr.mode === 'bottleTell') lit++; } out.audience = [dark, lit];
       // 6. THE STAR TRAP: stand on the spring, hold jump, and it throws you up through the stage floor
       fresh(); BK.tp(226, 38); BK.sim(20); BK.keys.right = true; BK.keys.jump = true; BK.press('jump'); let top = 1e9;
       for (let i = 0; i < 150; i++) { BK.sim(1); if (P.x > 229 * TS) BK.keys.right = false; top = Math.min(top, P.y); } BK.keys.jump = false; out.star = Math.round(top);
+      // 7. LOCK ONE, THE CHORUS: past the wardrobe they keep coming; the lamp on its doorway plugs it
+      fresh(); BK.tp(60, 24); P.face = 1; let seen = 0; for (let i = 0; i < 600; i++) { P.face = 1; BK.sim(1); } seen = BK.enemies().filter(e => e.alive && e.chorusOf).length;
+      BK.enemies().filter(e => e.chorusOf).forEach(e => e.alive = false); const cl = TH().spots.find(s => Math.abs(s.x - (48 * TS + 8)) < 4); cl.i = 1; cl.from = 1; cl.k = 1;
+      for (let i = 0; i < 900; i++) { P.face = 1; BK.sim(1); } const pl = BK.enemies().filter(e => e.alive && e.chorusOf); out.chorus = [seen, pl.length, pl.length ? Math.round(Math.abs(pl[0].x - (36 * TS + 8))) : -1];
+      // 8. THE BATS go for a hero in the light and leave one in the dark
+      fresh(); for (const s of TH().spots) { s.off = true; s.show = false; } BK.enemies().filter(e => e.t !== 'bat').forEach(e => e.alive = false); BK.tp(100, 33);
+      const bat = BK.enemies().find(e => e.t === 'bat' && Math.abs(e.x - (100 * TS + 8)) < 20); let flewDark = 0; for (let i = 0; i < 240; i++) { BK.sim(1); if (bat.mode === 'fly' && bat.tgt && bat.tgt.who === 'P') flewDark++; }
+      const b0 = TH().spots.find(s => Math.abs(s.x - (90 * TS + 8)) < 4); b0.off = false; b0.aims = [[P.x, 34 * TS]]; b0.i = 0; b0.from = 0; b0.k = 1; bat.cd = 0; let flewLit = 0;
+      for (let i = 0; i < 240; i++) { BK.sim(1); if (bat.mode === 'fly' && bat.tgt && bat.tgt.who === 'P') flewLit++; } out.bat = [flewDark, flewLit];
       return out; })()`, 600000);
     ok(r.held < 1, 'a mummer in a lamp\'s light moved with the hero\'s back to it (' + r.held.toFixed(1) + ' px)');
     ok(r.freed > 16, 'a mummer out of the light did not creep when nobody looked (' + r.freed.toFixed(1) + ' px): the lamp is not what held it');
@@ -125,6 +158,8 @@ if (!NOPAGE && lv) {
     ok(r.flat[0] === r.flat[1] && r.flat[2] === 1 && r.flat[3] === 0, 'the winch did not slide the ground row along its track in the grid: ' + JSON.stringify(r.flat));
     ok(r.show && r.trap, 'the curtain did not go up on the stage, or no stage trap dropped on its cue');
     ok(r.audience[0] === 0 && r.audience[1] > 0, 'the audience threw at a hero in the dark, or not at one in the light (dark ' + r.audience[0] + ', lit ' + r.audience[1] + ')');
+    ok(r.chorus[0] >= 1 && r.chorus[1] === 1 && r.chorus[2] < 20, 'LOCK ONE: the wardrobe did not keep sending players, or the lamp on its door did not plug it with one (' + JSON.stringify(r.chorus) + ')');
+    ok(r.bat[0] === 0 && r.bat[1] > 0, 'the bats went for a hero in the dark, or not for one in the light (' + JSON.stringify(r.bat) + ')');
     ok(r.star < 34 * TS - 8, 'the star trap does not throw a hero up through the stage floor (top ' + r.star + ' px, the floor is ' + 34 * TS + ')');
     if (pg.errors.length) fails.push('page errors: ' + pg.errors.slice(0, 3).join(' | '));
   } finally { pg.close(); }

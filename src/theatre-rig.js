@@ -91,7 +91,7 @@ export const flatTarget = (f, posB) => posB ? f.b : f.a;
    it cannot shove. Returns 'step' (it moved), 'blocked', 'done' (it arrived this frame) or null */
 export function flatStep(f, dt, canStep) {
   if (f.at === f.to) return null;
-  f.t = (f.t || 0) + dt; if (f.t < RIG.flatStep) return null; f.t = 0;
+  f.t = (f.t || 0) + dt; if (f.t < (f.step || RIG.flatStep)) return null; f.t = 0;   /* f.step: a flat of its own pace (a flown shutter takes its time) */
   const next = f.at + Math.sign(f.to - f.at);
   if (canStep && !canStep(next)) return 'blocked';
   f.at = next; return f.at === f.to ? 'done' : 'step';
@@ -112,6 +112,16 @@ export function flatCue(f, t) {
   const c = f.cue; if (!c) return null;
   const u = ((t - (c.at || 0)) % c.period + c.period) % c.period;
   return { posB: u < c.hold, warn: (u >= c.hold - RIG.cueWarn && u < c.hold) || u >= c.period - RIG.cueWarn };
+}
+
+/* ---------------- THE CHORUS (THEATRE2) ----------------
+   A wardrobe that keeps sending players out while a hero is past it and near: one every `every` s, never more than `max` of its own about, and
+   never while a body stands in its doorway (a player frozen in the doorway - a lamp on it - plugs it). Returns true when one should come out now */
+export function chorusStep(c, dt, heroNear, alive, doorBusy) {
+  if (!heroNear) { c.t = Math.min(c.t || 0, c.every * 0.5); return false; }
+  c.t = (c.t || 0) + dt; if (c.t < c.every) return false;
+  if (alive >= c.max || doorBusy) return false;
+  c.t = 0; return true;
 }
 
 /* ---------------- WHAT THE LEVEL SAYS IT IS (for the check and the brief) ---------------- */
