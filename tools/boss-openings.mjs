@@ -257,7 +257,7 @@ try {
   assert.ok(r.wicker.unseen.open === 0 && r.wicker.unseen.mode !== 'burn', 'crossing the embers with nobody looking opened her: ' + JSON.stringify(r.wicker));
   assert.ok(r.wicker.embers.mode === 'burn' && r.wicker.embers.open > 2, 'frozen ON the embers she did not burn open: ' + JSON.stringify(r.wicker));
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
-  assert.ok(r.puppeteer.mode === 'restring' && r.puppeteer.open > 2 && r.puppeteer.onStage, 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
+  assert.ok(r.puppeteer.mode === 'restring' && r.puppeteer.open >= 1.7 && r.puppeteer.onStage,   /* (PUPPETEER2, Daniel 2026-09-30: his re-string window is 1.8 s, down from 2.8) */ 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

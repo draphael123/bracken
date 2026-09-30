@@ -207,3 +207,204 @@ stage's indoor backdrop, so the town and its clouds show through them. Stills 8-
 7. **His reward.** None built. A relic slot is the level's to decide. Recommend that the theatre lane decide it.
 8. **Difficulty.** The bot won 3/3 with a median of 97.5 s. Recommend playing him first. If he is too easy, shorten the re-string window
    (2.8 s) or lengthen the gap before the next string comes down (6.5 s); never raise his health.
+
+---
+
+# PUPPETEER2 (2026-09-30, after Daniel played it: "cool concept but repetitive and very easy", and the gallery was "a wood platform that doesn't quite fit")
+
+This round builds everything he approved, on `claude/puppeteer` in the same worktree. His health is unchanged (720 base, 648 at normal). All
+of this lives in `src/puppeteer.js`, `src/puppeteer-hands.js` and `src/redraw/puppeteer_art.js`.
+
+## 1. Every cycle changes
+
+A cycle ends when he re-strings, and each new cycle changes three things.
+
+- **The pairing (`PAIRINGS`).**
+  - Cycle 1: the Soldier and the Harlequin.
+  - Cycle 2: the Harlequin and **THE ACROBAT**, a new third puppet (a tumbler in a teal-striped leotard). It is the "Drop" of your list: it is
+    hoisted over you and dropped. As it lands its strings jerk taut for 1.1 s, and that is its cut window.
+  - Cycle 3 on: all three.
+  - A puppet not in the current act waits in the flies. One coming in is lowered from the gallery.
+- **One new move (`MOVES`, by `lvl`).** A puppet that comes back re-strung learns a HIGH move:
+  - the Soldier's **THRUST**, a head-high lunge;
+  - the Harlequin's **HIGH KICK**;
+  - the Acrobat's **SWING**, a head-high pendulum sweep across both sides of it.
+
+  All three are `!!` and answered by ducking. None of them fires in the first cycle.
+- **A told scene change (`SCENES`, `sceneOf`).**
+  - The lights drop and the scene's name is said ("SCENE CHANGE: WATCH THE BOARDS", in the hint box).
+  - Over 1.8 s the new painted flats ride in on their tracks (the tracks glow gold) and the old ones ride off, while the boards that will open
+    flash red.
+  - Then the layout lands. **Flats** are ONEWAY ledges 3-5 rows up with a painted canvas under them. **Trapdoors** open two-deep pits in the
+    boards (you jump out).
+  - The scenes are THE BARE STAGE, THE FOREST, THE CASTLE and THE STORM AT SEA. Two cycles in a row never share a layout.
+  - A trapdoor with a hero in its pit stays open until he is out.
+  - Puppets are flown to whatever height you stand at: a flat, the gallery, or a pit.
+  - Phase 3 changes the scene too, before each re-rig of the masterpiece.
+
+## 2. He fights too, and puppets pair
+
+- **His own blows from the loft**, when you are below. He rotates through three, one every 7 / 6 / 5 s by phase:
+  - **SANDBAG** (`!!`, dodge): its shadow follows you, then stops, then the bag falls. 16 damage.
+  - **SPOTLIGHT** (no mark; it throws no blow): a beam swings onto you and settles. If you are standing in it when it lands you are DAZZLED for
+    2.2 s: a white glare over the view, and **the strings' gold glow is lost in it**.
+  - **SCENERY** (`!!`, dodge): he frays a line and a painted flat hangs over a red band, then falls. 22 damage.
+- **One told threat at a time.** None of his blows begins over a puppet's windup, and no puppet begins over one of his. He also never starts
+  one while a puppet is half-cut, so your finishing window stays yours.
+- **PAIRS.** Every third turn, once the stage holds a high move and a low one on two different puppets, two puppets wind up together.
+  - **The high blow lands first; the low one 0.55 s later.** You duck, then jump (or step out of the drop's shadow), or cut one of them in its
+    glow, which cancels only that one.
+  - A pair's low half is always the spin or the drop, never the chop, so it never needs a block and a jump at once.
+  - The check proves it: a hero who ducks then jumps takes 0 damage, and one who stands still is hit.
+
+## 3. Harder cuts
+
+- **The glow is short.** A windup's strings are gold only for its **last 0.4 s** (`PUP.glowT`), not the whole windup. A swing before the gold
+  cuts nothing.
+- **Grey decoys** (from the second cycle, one per small puppet). A dull grey string with red tags that never glows. It runs from the middle of
+  the bar to the puppet's belt, between its two real strings, so a swing thrown before the gold crosses it.
+  - A swing that cuts nothing real and crosses a decoy **snares you** for 1.0 s ("A DECOY: IT SNARES. WAIT FOR THE GOLD").
+  - A swing that does cut a real string never springs the decoy.
+  - The decoy itself does no damage; what hurts is whatever lands while you are held.
+- **Re-tie.** A half-cut puppet ties its cut string back **3.5 s** after the cut unless you finish it. A ring closes over the knot and goes red
+  near the end. The masterpiece's strings re-tie too, 7 s after each cut.
+  - To make finishing it possible: the half-cut puppet takes the next turn at once (a 0.6 s stagger, then its next windup), and no pair or
+    blow of his starts meanwhile. That second glow is a chance, never a sure one.
+- **Also:** one string per puppet per swing; the lowering new string is still gold and can be cut.
+
+## 4. Tighter numbers (health unchanged)
+
+| number | before | now |
+|---|---|---|
+| re-string window, stage and loft | 2.8 s | **1.8 s** |
+| the king's fall | 4 s | **3 s** |
+| warded chip on him | x0.2 | **x0.05** |
+| chop / spin / drop / stomp / swat / reach | 16 / 18 / 22 / 26 / 20 / 20 | **18 / 20 / 22 / 28 / 22 / 22** |
+
+- The new blows: thrust 20, kick 20, swing 20, sandbag 16, scenery 22.
+- These sit with the Wicker Queen's lash (20) and sickle (26). The game's normal difficulty multiplies what you take by 0.8.
+- **Change beyond the brief:** a window is worth more.
+  - Being open while he re-strings is now **x3.0** (it was x1.25), and the fall is **x3.2** (it was x1.4).
+  - With 1.8 s windows at the old value, the pilots needed 8+ cycles and 200-400 s per fight.
+  - He has fewer windows now, each shorter, and each is the whole of a cycle's work (Question 3).
+
+## 5. The human bot (`PLAN` and `puppetPlan` in `src/puppeteer.js`, used by `src/lab.js`)
+
+- **Reaction:** it sees a tell or a glow 0.25 s after it begins.
+- **Decided once per windup:** it goes for the string or answers the blow, and it **lets 25% of glows go**.
+- **It misreads 12% of tells**, and **swings too early 8% of the time** (so it finds decoys).
+- **It can't see the gold while dazzled.**
+- **It anticipates like a player:**
+  - steps in toward a windup's string before the gold;
+  - runs to where he will land when he starts down;
+  - waits just outside a puppet's reach;
+  - stays on a half-cut puppet;
+  - jumps out of a pit.
+- The bot's dice are the boss lab's seeded row dice.
+
+## 6. The iron fly gallery, and nothing left reading as generic wood
+
+- **The gallery** now wears an iron grating tile: a warm lit lip, grating gaps, a channel stringer with rivets, and a truss under it
+  (`bakeStageSkins`). A glowing line along its edge makes the footing read against the flies.
+- **Behind it** runs a **fly rail**: an iron pipe on posts, brass belaying pins with coiled lines, and each line running up to the grid.
+- **The batten** is an **iron pipe on steel lines with a painted sky flat hung under it** (only the part above the boards shows).
+- **The pin rail** is iron with brass pins. The gallery's hangers are steel.
+- The control bars stay wood, because marionette controls are wood.
+- **One bug found and fixed:** a pilot bounced for a minute on a flown puppet's head (the game's stomp). He and his puppets are now outside the
+  touch-and-stomp contact loop in `src/main.js`.
+
+## The theatre lane: footprint change
+
+- `stagePuppeteer(W, T, TS, sx, R)` keeps its **signature**: it returns `{ arena, movers }`, still 40 columns, stage rows R-16..R+1.
+- **New:** **row R+2 must be SOLID under the whole stage.** Trapdoors open rows R and R+1, and the pit's floor is R+2.
+- **New:** the stage now places **three** puppet entities: marionette, harlequin and acrobat. The acrobat waits in the flies until its act.
+- The scene changes write into the level grid. A fresh attempt puts the boards back from the level's own cells.
+
+## Checks (each run by name)
+
+**Green:** `puppeteer` (rewritten), boss-fight-end (47 fights), boss-openings, boss-navigation (the puppeteer knight wins in refill mode and
+stands on the gallery), tells, hint-shown (132 routed, none new silent), audio-assets, architecture, skins, dangling-paths, npc-removal,
+attack-tokens, checkpoints, comments.
+
+**Test changes:**
+- `tools/boss-openings.mjs`: his open window must now be at least 1.7 s (it was more than 2 s), because the window is now 1.8 s.
+- `tools/puppeteer.mjs` asserts the new design and is **red on each of fourteen sabotages** of it:
+  - glow from the start of a windup;
+  - a decoy never springs;
+  - a decoy springs on a real cut too;
+  - no re-tie;
+  - the pairings never change;
+  - no new move;
+  - the scene change untold;
+  - the same layout every cycle;
+  - a trapdoor closes on a hero;
+  - a pair lands together;
+  - his blows start over a puppet's windup;
+  - the spotlight dazzles anyone;
+  - the old 2.8 s window;
+  - the gallery left as wood.
+- **One sabotage that could not go red:** skipping my own restore of the boards on a fresh attempt. The game's own death reload already rebuilds
+  the grid, so the page assertion ("a fresh attempt puts the boards back") holds either way; my restore is only a second safety net.
+
+**Flakes:** one sabotage run failed with "the page never put up window.BK" while other lanes were loading the PC, and passed on a re-run.
+
+## Pilots (normal health, one life; knight / warden / pyro)
+
+**BEFORE** (e13f1b1, the first build, perfect-reader bot): 3/3 wins.
+
+| hero | outcome | seconds | damage taken |
+|---|---|---|---|
+| knight | win | 83.8 | 0 |
+| warden | win | 113.0 | 0 |
+| pyro | win | 97.5 | 14 |
+
+**AFTER** (this build, the human bot):
+
+| seed salt | knight | warden | pyro |
+|---|---|---|---|
+| 1 | win 81.5 s, took 16 | win 137.8 s, took 18 | win 145.0 s, took 79 |
+| 2 | death 138.3 s (him at 93/648) | death 211.4 s (156/648) | win 105.5 s, took 50 |
+| 3 | win 100.8 s, took 52 | win 130.3 s, took 41 | death 144.8 s (7/648) |
+
+- **6 of 9 wins (67%), median win 130 s, and 16-79 damage taken on the wins.** That is inside the band (60-75% wins, median 90-150 s). Salt 1
+  is the brief's one-seed pilot; salts 2 and 3 are extra.
+- It takes about 3-5 cycles, and every cycle changes the pairing and the layout.
+- **How the tuning went:** the first cut of PUPPETEER2 killed every bot in phase 1 within 40-100 s. The fixes, in order:
+  - an acrobat that could not be cut (its only move hoisted it out of reach), fixed with the landing's taut strings;
+  - a drop that tracked faster than a hero can run, now slower and let go at half its windup;
+  - re-ties before a second glow could come, fixed with the half-cut turn priority;
+  - a turn held by a puppet out of range;
+  - he re-strung at the far end of the gallery, so in the loft he now works within reach;
+  - the flown-puppet head bounce.
+- **Bot calibration stages:** 0% wins → 50% (median 172 s) → 100% (median 128 s) → 22% → 67% (median 130 s).
+
+## Captures
+
+`node tools/puppeteer-shots.mjs` saved 16 stills in `work/claude/puppeteer/`: stills 1-10 from before (now with the iron gallery), plus 11 the
+scene change told, 12 a new layout (the forest flats and an open trapdoor), 13 a pair, 14 the spotlight, 15 the scenery, and 16 gold strings
+beside a grey decoy.
+
+## UNVERIFIED (PUPPETEER2)
+
+- **Nobody has played this build with hands.** Untested:
+  - whether 0.4 s of gold after a visible windup reads as fair;
+  - whether the decoy's red tags read against the gold;
+  - the dazzle glare's strength;
+  - a pair's 0.55 s gap for a human (the check proves ducking then jumping clears it, but a person's hands decide);
+  - whether the flats' tops read as ledges.
+- **Only three heroes were piloted, over three seeds.** Paladin, pirate, reaper and geomancer have not fought this build.
+- **The new sounds were written by numbers and never listened to:** `pupSpot` and `pupScene`.
+- **The standalone stage's floor is still the village cobble.** The theatre lane owns the real floor.
+
+## QUESTIONS FOR DANIEL (PUPPETEER2; recommendation first; the recommended option is built)
+
+1. **"Harlequin + Drop"** I read as a third puppet whose move is the drop: THE ACROBAT. The alternative is two puppets plus his own drop.
+   Recommend the Acrobat, because it gives the pairing progression a real third body.
+2. **The one-new-move ladder** stops at one high move each. From the third cycle on, the "new thing" is the pairs and the layouts. Recommend
+   keeping it; a third move each would be another round of tells to learn.
+3. **The window multiplier (x3.0 open, x3.2 fall) went up while the windows got shorter.** Without it the fight ran 200-400 s. Recommend
+   keeping it. The levers if he is too hard are the glow (0.4 s) and the re-tie (3.5 s), never his health.
+4. **Should the decoy hurt?** It snares but does no damage now (the pilots were dying to decoy chip). Recommend no damage: the snare is the
+   punishment.
+5. **The spotlight** blinds the strings' glow. The alternative is darkening the view; the glow loss is the mechanical sting. Recommend the
+   glow loss.
