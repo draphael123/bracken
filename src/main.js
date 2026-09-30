@@ -4356,7 +4356,7 @@ const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 :
 let menuKind = 'pause';
 // one line each, so nobody has to guess what a switch does
 const SETTING_TIPS = {
-  'Skills': 'the store, open on your abilities and their loadout (Q)', 'Store': 'heroes, skins, weapons, charms, skills: buy and equip (V on the map)', 'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
+  'Skills': 'the store, open on your abilities and their loadout (Q)', 'Store': 'buy and equip anything (V on the map)', 'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
   'Combat': 'WEIGHTY: swings commit you, foes push back (a prototype)',
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk boxes fill',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
