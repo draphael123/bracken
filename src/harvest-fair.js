@@ -98,7 +98,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   foe('mummer', 143, { squad: 'pincer' });
   ramp(150, 6);                                           /* the stair: six rows up over twelve tiles */
   block(162, 185, R - 6, H - 1);                          /* the stall-top terrace */
-  foe('mummer', 166, { y: R - 7, squad: 'pincer' });      /* THE ONE AT THE TOP: right where you stop to catch your breath */
+  foe('mummer', 166, { y: R - 7, squad: 'top' });      /* THE ONE AT THE TOP: right where you stop to catch your breath */
   ent('deco', 172, R - 7, { kind: 'stall', v: 0 }); post(180, R - 7, 1);
   ent('mend', 183, R - 7);                                /* a heart at the far end of the terrace, after the pincer */
   /* THE SHOOTING GALLERY (taught): on the terrace three targets hang at chest height on the gallery's back wall. Hit all three (any blow, any hero) inside twelve seconds and the planks run up the
@@ -194,8 +194,8 @@ export function buildHarvestFair({ painter, T, TS }) {
   plat(c1, 26, 2);                                        /* the step in chimney one (row 26) */
   for (let x = mx0 + 2; x <= mx0 + 5; x++) set(x, 18, T.AIR);
   plat(mx0 + 3, 21, 2);                                   /* the step in chimney two (row 21) */
-  foe('mummer', mx1 - 1, { y: 22, scare: true, squad: 'corn' });   /* THE FIRST TURN: right of chimney one, in tier two. You climb out and turn left to go on: it is behind you */
-  foe('mummer', mx0, { y: 17, scare: true, squad: 'corn' });       /* THE SECOND TURN: left of chimney two, in tier three (the dark tier). You climb out and turn right: it is behind you */
+  foe('mummer', mx1 - 1, { y: 22, scare: true, squad: 'corn1' });   /* THE FIRST TURN: right of chimney one, in tier two. You climb out and turn left to go on: it is behind you */
+  foe('mummer', mx0, { y: 17, scare: true, squad: 'corn2' });       /* THE SECOND TURN: left of chimney two, in tier three (the dark tier). You climb out and turn right: it is behind you */
   for (const [x, r] of [[mx0 + 6, R - 1], [mx0 + 16, R - 1], [mx0 + 8, 22], [mx0 + 18, 22], [mx0 + 12, 17], [mx0 + 12, 11]]) scarecrows.push({ x, row: r });   /* the straw ones: on a pole, a hat, arms out (one watches from the roof) */
   corn.push([mx0 - 1, mx1 + 1, 12, 27]);                  /* drawn as standing corn over the walls */
   post(mx0 + 10, R - 1, 0.5); post(mx0 + 14, 22, 0.5); post(mx0 + 18, 17, 0.5); post(mx0 + 4, 11, 0); post(mx0 + 20, 11, 0);   /* lanterns in the corn: they gutter; the higher, the darker */
@@ -238,7 +238,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   const booth = { x: 586, row: S, cost: 8, silver: { x: 587, row: S - 1 } };
   ent('silver', 587, S - 1); ent('deco', 586, S, { kind: 'stall', v: 0 }); ent('mend', 597, S);
   post(594); ent('check', 600, S);                        /* the door's checkpoint: the last one the road passes before the green */
-  foe('hobbyhorse', 608, { elite: true, gate: 620 });     /* THE DOOR GUARD, the level's ELITE: it holds the green's door (the gate comes down over it) until it is dead. Facing it, it cannot charge: that is the exam's last answer */
+  foe('hobbyhorse', 608, { elite: true, gate: 620, squad: 'guard' });     /* THE DOOR GUARD, the level's ELITE: it holds the green's door (the gate comes down over it) until it is dead. Facing it, it cannot charge: that is the exam's last answer */
 
   // ---------------- THE MAYPOLE GREEN (622-672): THE WICKER QUEEN's arena (claude/fair3, src/wicker-queen.js) ----------------
   const G = { x0: 622, x1: 668, door: 620, maypole: 640, bonfire: 654, floor: R };
@@ -267,7 +267,7 @@ export function buildHarvestFair({ painter, T, TS }) {
     carousels, haystacks, lamps: lampsOut(lamps), arc: ARC, stair: { x0: 150, top: 162 }, green: G, tints, arena, gateAfterBoss: true,
     walls, gallery: galleries[0], galleries, strikers, tickets, booth, hall, tower, wheel: WH, slide: { x0: 367, y0: tower.top, n: 14 }, corn, scarecrows, effigies, reserved,
     maze: { x0: mx0, x1: mx1, tiers: [R - 1, 22, 17], blind: [mx0 - 1, mx1 + 1, 12 * TS, R * TS] },
-    night: NIGHT,
+    fairNight: NIGHT,   /* (not `night`: the game reads L.night as its camp-night wash) */
     music: 'marketday', duskStart: 120 * TS, duskLen: 520 * TS,         /* sunset at the gate; dusk by the last round */
     palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town',
       haze: 'rgba(230,160,110,0.14)', murkCol: '#2e2a34', darkCol: '10,6,16', darkRim: ['#c8905c', 0.16, 0.22],   /* THE WICKER QUEEN's full dark (claude/fair3): a warm ember-lit edge on what moves in it, not the mines' cold white */

@@ -225,7 +225,7 @@ export function drawMover(g, m, cx, cy, time) {
 /* ================= THE NIGHT: the dark that comes with height, the light a lit lantern cuts, the ticket count ================= */
 let NC = null;
 export function drawNight(g, cx, cy, VW, VH, L, F, o) {
-  const N = L.night; if (!N) return;
+  const N = L.fairNight; if (!N) return;
   const G = F && F.games;
   if (G && (G.tickets > 0 || G.spent > 0) && o.text) o.text('TICKETS ' + G.tickets, VW - 8, 66, '#7fe8f0', 'right', 8, 'shadow');
   if (o.skip) return;

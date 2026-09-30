@@ -6,7 +6,7 @@ import { join } from 'path';
 const tag = process.argv[2] || 'after', only = (process.argv[3] || '').split(',').filter(Boolean), out = join(ROOT, 'work/claude/fairlevel', tag); mkdirSync(out, { recursive: true });
 const STOPS = [   // name, tile x, tile y (the hero's feet), facing, frames to run, [extra js], note
   ['01-gate-refresher', 52, 27, 1, 50, '', 'THE GATE: one sign, one mummer, faced and frozen'],
-  ['02-high-striker-boardwalk', 112, 27, 1, 40, '', 'THE HIGH STRIKER under the boardwalk, and the roof stair up to it'],
+  ['02-high-striker-boardwalk', 86, 27, 1, 40, '', 'THE HIGH STRIKER under the boardwalk, and the roof stair up to it'],
   ['03-stall-row-pincer', 148, 27, 1, 40, '', 'THE STALL ROW: the slope stair (drawn as slopes now), two mummers at its foot, one at the top'],
   ['04-gallery-crows-nest', 172, 21, 1, 40, '', 'THE SHOOTING GALLERY on the terrace: three targets, the clock bar over the awning'],
   ['05-back-lot', 205, 34, 1, 30, 'BK.P.y=35*16;', 'THE BACK LOT (secret): the cellar under the road: a silver, tickets, a heart'],
@@ -19,7 +19,9 @@ const STOPS = [   // name, tile x, tile y (the hero's feet), facing, frames to r
   ['11-helter-skelter', 372, 13, 1, 30, '', 'THE HELTER-SKELTER: the tower top and the slide down'],
   ['12-corn-maze', 425, 27, 1, 40, '', 'THE CORN MAZE: three tiers, blind corners, scarecrows (some are not straw)'],
   ['13-corn-top-tier', 424, 17, 1, 40, '', 'THE CORN MAZE, tier three: the dark tier'],
-  ['14-ghost-train-yard', 484, 27, 1, 30, '', 'THE GHOST-TRAIN YARD (reserved): a boarded arch on a straight lane'],
+  ['14-ghost-train-cutting', 476, 30, 1, 30, '', 'THE GHOST-TRAIN CUTTING (reserved): the road sunk three rows, a boarded arch'],
+  ['14b-corn-top-walk', 420, 11, 1, 30, '', 'THE CORN-TOP WALK over the maze, reached by the tall striker'],
+  ['07b-wide-car', 300, 27, 1, 30, '', 'THE BIG WHEEL: the wide car with a hobby-horse riding it'],
   ['15-last-round', 526, 27, 1, 60, '', 'THE LAST ROUND: the small carousel with a mummer and a horse aboard'],
   ['16-night-lane', 572, 13, 1, 30, '', 'THE NIGHT LANE: a plank run in full night, lanterns failing, reached by the tall striker'],
   ['17-prize-booth', 588, 27, 1, 30, '', 'THE PRIZE BOOTH: eight tickets for a silver'],

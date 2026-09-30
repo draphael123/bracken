@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 install();
 const { LEVELS, T } = await import('../src/level.js'); const { floodReach } = await import('../src/reachcore.js'); const { isSlope } = await import('../src/slopes.js');
 const L = LEVELS.find(l => l.id === 'fair').build(), R = floodReach(L, T, { rides: true });
-const S = 4, strips = 3, per = Math.ceil(L.W / strips), y0 = 0, rows = L.H, sh = rows * S + 10;
+const S = 6, strips = 3, per = Math.ceil(L.W / strips), y0 = 0, rows = L.H, sh = rows * S + 10;
 const c = newCanvas(per * S, strips * sh), g = c.getContext('2d'); g.fillStyle = '#d9a86a'; g.fillRect(0, 0, c.width, c.height);
 const put = (x, y, col, w = 1, h = 1) => { const st = Math.floor(x / per); if (st >= strips || y < 0) return; g.fillStyle = col; g.fillRect((x - st * per) * S, st * sh + (y - y0) * S, w * S, h * S); };
 for (let s = 0; s < strips; s++) { g.fillStyle = '#c99658'; g.fillRect(0, s * sh, c.width, sh - 8); }

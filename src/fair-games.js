@@ -23,7 +23,7 @@ export function lampLit(lamps, x, y, r = 64) {
   return false; }
 /* how far can a hero LOOK at a foe standing here? null = as far as ever; { sight, sightY } = only this far (mummer.js takes it as w.sight / w.sightY) */
 export function sightFor(L, lamps, e) {
-  const N = L && L.night; if (!N) return null;
+  const N = L && L.fairNight; if (!N) return null;
   const x = e.x, y = e.y - 8;
   if (lampLit(lamps, x, y, N.lampR)) return null;
   const k = inHall(L.hall, x, e.y - 4) ? 1 : nightK(N, e.y);
