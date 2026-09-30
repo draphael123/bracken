@@ -128,6 +128,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   mummer: 5, hobbyhorse: 6,
   /* THE WICKER QUEEN, the fair's boss (claude/fair3): a boss is a 6 */
   wickerqueen: 6,
+  /* JENNY GREENTEETH, THE FOG CANAL's boss (claude/lockkeeper): a boss is a 6 */
+  greenteeth: 6,
   /* THE DUNE WORM, the caravan's boss (2026-09-25): a boss is a 6. awningwinch is his trap and the camp's machine - furniture */
   duneworm: 6, awningwinch: 0,
 };

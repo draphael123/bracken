@@ -522,17 +522,30 @@ const WAY_BASS = ['D3', 'F3', 'A2', 'D3'];
 const DEEP_LEAD = [[null, null, null, 'E3', null, null, null, null], [null, null, 'C3', null, null, null, null, null],
   [null, null, null, null, 'B2', null, null, null], [null, 'E3', null, null, null, null, null, null]];
 const DEEP_BASS = ['E2', 'C2', 'E2', 'A1'];
+// JENNY GREENTEETH (claude/lockkeeper): no file - a folk lament drowned in a canal at night. A thin whistle line in D that keeps falling back to
+// where it started, over a drone of an open fifth that never moves; water dripping off the gates at odd beats, and a bell somewhere in the fog.
+// Slow (66), and it never builds: she does not need it to. (Played for arena.music 'greenteeth'.)
+const GT_LEAD = [['D4', null, 'F4', null, 'E4', 'D4', null, 'C4'], ['D4', null, null, 'A3', null, 'C4', 'D4', null],
+  ['F4', null, 'G4', null, 'A4', 'G4', 'F4', null], ['E4', null, 'D4', null, 'C4', null, 'D4', null]];
+const GT_DRIP = [3, 13, 18, 29];   /* the steps a drop falls on, out of the thirty-two */
+const STEP_GT = 60 / 66 / 2;
 let step = 0, nextT = 0, timer = null;
 const STEP = 60 / 112 / 2, STEP_HUSH = 60 / 62 / 2, STEP_MINE = 60 / 48 / 2, STEP_DEEP = 60 / 40 / 2, STEP_TOWN = 60 / 96 / 2;
 function schedule() {
   if (!ac) return;
   if (currentTrack || silenced) { nextT = ac.currentTime; return; }
-  const hush = wantTrack === 'underleaf', mine = wantTrack === 'mineworks', deep = wantTrack === 'deep', town = wantTrack === 'waymeet', SL = town ? STEP_TOWN : deep ? STEP_DEEP : mine ? STEP_MINE : hush ? STEP_HUSH : STEP;
+  const hush = wantTrack === 'underleaf', mine = wantTrack === 'mineworks', deep = wantTrack === 'deep', town = wantTrack === 'waymeet', gtT = wantTrack === 'greenteeth', SL = gtT ? STEP_GT : town ? STEP_TOWN : deep ? STEP_DEEP : mine ? STEP_MINE : hush ? STEP_HUSH : STEP;
   while (nextT < ac.currentTime + 0.25) {
     const bar = Math.floor(step / 8) % 4, i = step % 8;
     if (musicOn) {
       const delay = nextT - ac.currentTime;
-      if (town) {
+      if (gtT) {
+        const nm = GT_LEAD[bar][i];
+        if (nm) { tone('triangle', N[nm], N[nm] * 0.994, SL * 1.8, 0.1, delay, musicGain); tone('sine', N[nm] * 2, N[nm] * 1.99, SL * 1.2, 0.025, delay + 0.02, musicGain); }   /* the whistle, a little flat at the end of every note */
+        if (i === 0) { tone('sine', 73.42, 73.2, SL * 8.6, 0.26, delay, musicGain); tone('sine', 110, 109.6, SL * 8.6, 0.12, delay, musicGain); }   /* the drone: D and the A over it */
+        if (GT_DRIP.includes(bar * 8 + i)) { const d = 1760 + ((bar * 7 + i * 3) % 5) * 180; tone('sine', d, d * 0.62, 0.12, 0.035, delay + SL * 0.4, musicGain); }   /* water off the gates */
+        if (i === 4 && (bar === 0 || bar === 2)) bell(bar === 0 ? 293.66 : 220, 2.4, 0.03, delay);   /* the bell in the fog */
+      } else if (town) {
         const nm = WAY_LEAD[bar][i];
         if (nm) tone('triangle', N[nm], N[nm], SL * 1.5, 0.11, delay, musicGain);
         if (i === 0 || i === 3) { const b = N[WAY_BASS[bar]]; tone('sine', b, b, SL * 2.6, 0.2, delay, musicGain); }
@@ -756,6 +769,25 @@ Object.assign(SFX, {
   calliope() { if (!gate('calli', 0.5)) return; [523, 659, 784].forEach((f, i) => tone('square', f, f, 0.16, 0.05, i * 0.12)); },
   // ---- THE WICKER QUEEN (src/wicker-queen.js, claude/fair3): her creak while she moves (the audio tell, like the mummers' bells), the wicker catching, the burn, the embers banked,
   // the sickle's rasp and its red glow, the ribbons wound up and let fly, the crowning's bells, the green going dark and her going up ----
+  /* ---- JENNY GREENTEETH (src/jenny-greenteeth.js, claude/lockkeeper): bubbles boiling up in a ring (her grab coming), an arm bursting out of the water,
+     a wet grip, the lash along the water, a drip, her hiss, the snap of her teeth, weed torn, a culvert boiling, the surge, the paddle's iron ratchet,
+     the lock gurgling empty, her body slapping into the mud, the drag, the bell in the fog, and her waking: a gurgling laugh under the water ---- */
+  gtBubble() { if (!gate('gtb', 0.2)) return; for (let i = 0; i < 6; i++) tone('sine', 300 + i * 90 + Math.random() * 60, 700 + i * 120, 0.06, 0.03, i * 0.07); noise(0.3, 0.04, 600, 1.2); },
+  gtBurst() { noise(0.25, 0.22, 900, 0.6); noise(0.12, 0.12, 2600, 1.1, 0.03); tone('sine', 160, 60, 0.2, 0.12); },   /* an arm out of the water */
+  gtGrip() { noise(0.15, 0.12, 500, 0.8); tone('sawtooth', 90, 60, 0.3, 0.06, 0.05); },   /* wet fingers closing */
+  gtLash() { noise(0.2, 0.16, 1400, 0.9); tone('triangle', 500, 160, 0.18, 0.05); },
+  gtDrip() { if (!gate('gtd', 0.25)) return; tone('sine', 1900, 1100, 0.1, 0.05); tone('sine', 1400, 900, 0.08, 0.03, 0.18); },
+  gtHiss() { if (!gate('gth', 0.3)) return; noise(0.45, 0.1, 4200, 1.8); tone('sawtooth', 220, 180, 0.3, 0.02); },
+  gtBite() { tone('square', 900, 400, 0.05, 0.08); tone('square', 700, 300, 0.05, 0.07, 0.06); noise(0.08, 0.1, 3000, 1.2); },   /* two rows of teeth meeting */
+  gtWeed() { if (!gate('gtw', 0.2)) return; noise(0.22, 0.1, 1200, 1.4); noise(0.12, 0.06, 2600, 1.6, 0.08); },   /* wet weed tearing */
+  gtBoil() { if (!gate('gto', 0.4)) return; noise(0.9, 0.12, 400, 0.6); for (let i = 0; i < 8; i++) tone('sine', 200 + Math.random() * 300, 500, 0.05, 0.03, i * 0.1); },
+  gtSurge() { noise(1.1, 0.26, 700, 0.5); noise(0.7, 0.14, 2000, 0.8, 0.1); tone('sine', 70, 45, 0.9, 0.14); },
+  gtPaddle() { for (let i = 0; i < 4; i++) tone('square', 330 - i * 20, 300 - i * 20, 0.04, 0.05, i * 0.07); noise(0.05, 0.08, 3500, 1.2, 0.3); },   /* the ratchet and the pawl */
+  gtDrain() { noise(1.4, 0.12, 300, 0.7); for (let i = 0; i < 6; i++) tone('sine', 160 - i * 12, 90, 0.18, 0.05, 0.2 + i * 0.2); },   /* the lock gurgling out */
+  gtStrand() { tone('sine', 110, 50, 0.3, 0.2); noise(0.3, 0.2, 500, 0.6); noise(0.2, 0.1, 1800, 1, 0.1); },   /* a body into the mud */
+  gtDrag() { noise(0.7, 0.14, 700, 0.7); tone('sawtooth', 120, 80, 0.6, 0.04); },
+  gtBell() { bell(146.83, 3.0, 0.07); bell(220, 2.2, 0.03, 0.4); },
+  gtWake() { noise(1.0, 0.1, 500, 0.6); for (let i = 0; i < 5; i++) tone('sawtooth', 260 - i * 18, 200 - i * 18, 0.12, 0.05, 0.3 + i * 0.13); bell(146.83, 2.4, 0.05, 0.2); },   /* a gurgling laugh under the water */
   wqRustle() { if (!gate('wqr', 0.3)) return; noise(0.14, 0.07, 1700, 0.9); noise(0.08, 0.05, 3400, 1.4, 0.05); tone('triangle', 180, 140, 0.1, 0.025, 0.02); },   /* dry wicker creaking as she glides */
   wqWake() { noise(0.6, 0.14, 1400, 0.7); tone('sawtooth', 110, 70, 0.8, 0.08); [659, 784, 988].forEach((f, i) => bell(f, 0.5, 0.03, 0.2 + i * 0.12)); },
   wqCatch() { noise(0.5, 0.2, 900, 0.5); noise(0.3, 0.12, 3200, 1.1, 0.05); tone('sawtooth', 90, 200, 0.4, 0.07); },   /* whoomph: the wicker takes the fire */
@@ -922,6 +954,7 @@ const DIE = {
   ploughman() { tone('sawtooth', 120, 40, 1.2, 0.22); noise(0.8, 0.3, 400, 0.6); },   /* the share goes into the furrow for good */
   mummer() { tone('triangle', 520, 200, 0.16, 0.08); noise(0.2, 0.12, 900, 0.5); [2349, 2093, 1760].forEach((f, i) => bell(f, 0.2, 0.03, 0.08 + i * 0.09)); },   /* THE MUMMER goes down: the wooden mask knocks, the sackcloth slumps, the cap bells roll away (claude/fair3: it fell back on the generic cry) */
   hobbyhorse() { noise(0.4, 0.2, 700, 0.5); tone('square', 300, 90, 0.3, 0.1); for (let i = 0; i < 4; i++) bell(1568 * (1 + (i % 2) * 0.12), 0.25, 0.04, 0.1 + i * 0.07); },   /* the pole cracks and the bridle bells scatter */
+  greenteeth() { tone('sawtooth', 300, 70, 1.4, 0.12); noise(1.2, 0.2, 600, 0.5, 0.1); for (let i = 0; i < 6; i++) tone('sine', 600 - i * 60, 300, 0.1, 0.03, 0.5 + i * 0.15); bell(146.83, 3, 0.05, 0.6); },   /* JENNY GREENTEETH goes down: a long gurgling shriek, the bubbles, and the bell */
   wickerqueen() { noise(1.6, 0.34, 800, 0.5); tone('sawtooth', 140, 40, 1.6, 0.18); for (let i = 0; i < 6; i++) noise(0.06, 0.1, 3000 - i * 300, 1.4, 0.2 + i * 0.15); },   /* THE WICKER QUEEN goes up: the whoomph, the crackle, the frame coming down */
   strawking() { noise(1.4, 0.36, 900, 0.5); tone('sawtooth', 120, 30, 1.6, 0.24); tone('sine', 70, 30, 2, 0.2, 0.2); },   /* the field burning down with him in it */
   kraken() { tone('sawtooth', 110, 28, 1.8, 0.3); tone('sine', 70, 24, 2.2, 0.26, 0.2); noise(1.4, 0.4, 380, 0.7); noise(0.9, 0.3, 1400, 0.5, 0.5); /* a bellow that goes down under the water with it */ },
@@ -1117,6 +1150,7 @@ const HURT = {
   ploughman() { tone('sawtooth', 150, 96, 0.22, 0.16); noise(0.18, 0.24, 500, 0.6); },
   mummer() { tone('triangle', 420, 300, 0.07, 0.07); noise(0.05, 0.08, 1200, 0.6); bell(2349, 0.08, 0.02, 0.02); },   /* a blow on a wooden mask, a bell shaken */
   hobbyhorse() { tone('square', 260, 180, 0.08, 0.08); noise(0.07, 0.1, 900, 0.5); bell(1568, 0.1, 0.025, 0.02); },   /* a knock on the carved head, the bridle jingles */
+  greenteeth() { tone('sawtooth', 380, 220, 0.16, 0.08); noise(0.1, 0.14, 1800, 0.8); },   /* a blade into wet weed and skin: a hiss and a splash */
   wickerqueen() { noise(0.18, 0.22, 1500, 0.6); tone('triangle', 200, 120, 0.2, 0.08); },   /* a blade into basketwork: a dry crunch, and the wicker creaks */
   strawking() { noise(0.2, 0.3, 1100, 0.4); tone('sawtooth', 130, 80, 0.3, 0.18); tone('sine', 90, 60, 0.3, 0.1, 0.05); },   /* a barn's worth of straw taking a blade, and a laugh under it */
   kraken() { tone('sawtooth', 140, 60, 0.4, 0.22); noise(0.3, 0.3, 500, 0.6); tone('sine', 80, 50, 0.5, 0.16, 0.05); },   /* something the size of a church taking a cut */

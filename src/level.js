@@ -4,6 +4,7 @@ import {polishTower,buildTowerAscent} from './tower-ascent.js';
 import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER's flyers keep to its floors (round 3): the sprinkler asks it too (L.flatFlyers) */
 import {buildBurningVillage} from './burning-village.js';
 import {buildWitchlight} from './witchlight.js';
+import { buildGreenteethLock } from './jenny-greenteeth.js';   /* JENNY GREENTEETH's standalone lock (claude/lockkeeper), until THE FOG CANAL lands with the same chamber at its end */
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
@@ -7720,6 +7721,10 @@ export const LEVELS = [
   /* THE HARVEST FAIR (claude/fair1, L1: greybox + the facing mechanic): the road inland's second stop, between WAYMEET and THE HEXED FIELDS (the Fields
      need it now). APPENDED, like every level since the log began, so no index and no save moves; its place on the road is its `needs` and its map node */
   { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'waymeet' },
+  /* JENNY GREENTEETH'S STANDALONE LOCK (claude/lockkeeper): hidden, no map node, no needs - only so ?boss=greenteeth, the boss lab and the boss checks can
+     reach her before THE FOG CANAL (claude/canal) lands with the same chamber at its end (src/jenny-greenteeth.js stageGreenteeth). When it lands this row
+     goes; keep it the LAST row until then, so taking it out moves no other level's index */
+  { id: 'greenlock', name: 'THE LOCK', sub: 'jenny greenteeth (a standalone lock)', build: () => buildGreenteethLock({ painter, T, TS }), hidden: true },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
