@@ -293,7 +293,7 @@ export function drawScene(st, g, H, cx, cy, VW, VH, time) {
 export function drawFront(st, g, H, cx, cy, VW, VH, time, litAt) {
   for (const s of st.spots) { if (s.off || !s.clear) continue; const p = TR.poolOf(s); if (p.x < cx - 80 || p.x > cx + VW + 80) continue;
     g.save(); g.globalCompositeOperation = 'lighter'; const px0 = p.x - cx, py0 = p.y - cy;   // the pool's light falls on the bodies in it, not only on the boards
-    const pg = g.createRadialGradient(px0, py0 - 12, 0, px0, py0 - 12, p.r); pg.addColorStop(0, 'rgba(255,240,180,0.20)'); pg.addColorStop(1, 'rgba(255,240,180,0)'); g.fillStyle = pg; g.fillRect(px0 - p.r, py0 - 36, p.r * 2, 40); g.restore(); }
+    const pg = g.createRadialGradient(px0, py0 - 12, 0, px0, py0 - 12, p.r); pg.addColorStop(0, 'rgba(255,240,180,0.10)'); pg.addColorStop(1, 'rgba(255,240,180,0)'); g.fillStyle = pg; g.fillRect(px0 - p.r, py0 - 36, p.r * 2, 40); g.restore(); }
   const P = H.hero();
   if (P && !P.dead && litAt(P.x, P.y)) {   // the hero is SEEN: a cream rim at his feet and a watching eye over his head
     const x = Math.round(P.x - cx), y = Math.round(P.y - cy), b = Math.sin(time * 6) * 1;

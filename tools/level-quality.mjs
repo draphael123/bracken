@@ -133,7 +133,9 @@ export function measure(lv) {
   const music = L.music || null, others = LEVELS.filter(d => d.id !== lv.id && !(d.hidden && !d.secret) && !/^trial_|^shop/.test(d.id));
   const borrowedFrom = music ? others.filter(d => { let o; try { o = built(d); } catch { return false; } return o.music === music || (o.arena && o.arena.music === music); }).map(d => d.id) : [];
   const shared = SHARED_MUSIC.includes(music);
-  const trackFile = music && existsSync(new URL('../audio/' + music + '.ogg', import.meta.url)) || music && existsSync(new URL('../audio/' + music + '.mp3', import.meta.url));
+  /* A SYNTH TRACK OF ITS OWN (src/audio.js schedule(): a branch on wantTrack === '<name>', no file) is as much its own track as a rendered one - THE MASKWRIGHT'S THEATRE's waltz is one */
+  const synthOwn = !!music && readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8').includes("wantTrack === '" + music + "') {");
+  const trackFile = music && existsSync(new URL('../audio/' + music + '.ogg', import.meta.url)) || music && existsSync(new URL('../audio/' + music + '.mp3', import.meta.url)) || synthOwn;
 
   // ---- 5. SECRETS, CHECKPOINTS, ENCOUNTERS, DENSITY ----
   const loot = P.stats.offLoot.filter(s => /^(silver|relic)@/.test(s));

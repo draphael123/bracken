@@ -1,6 +1,6 @@
 # THE MASKWRIGHT'S THEATRE - brief (greybox: geometry, machinery, encounters, wiring) - THEATRE2
 
-Status: GREYBOX on `claude/theatre`. THEATRE1 (2026-09-30) was reviewed against THE MAGE'S FOLLY: FIX-FIRST (the middle - fly tower, fly floor,
+Status: ART + MUSIC on `claude/theatreart` (the greybox was `claude/theatre`; its art notes are kept at the end, with what was done). THEATRE1 (2026-09-30) was reviewed against THE MAGE'S FOLLY: FIX-FIRST (the middle - fly tower, fly floor,
 performance, under-stage - is a real place; the opening was a walk-right corridor, the lamp was never required, the exam was a queue). THEATRE2
 fixes all eight review points and adds Daniel's four picks (THE HOUSE, THE PERFORMANCE IN ACTS, THE MIRROR ROOM + THE STAGEHAND, the Puppeteer's
 strings and glimpse). Art and the composed track are the next lane's (notes at the end). THE PUPPETEER, its boss, is claude/puppeteer (a module of
@@ -69,8 +69,10 @@ His track stays `puppeteer`; the level's is `theatre`. The marker comment in sec
 
 ## Music
 
-Its own track **`theatre`** (`audio/theatre.ogg`, "The Maskwright's Waltz"), a placeholder composed and synthesised by `tools/theatre-music.mjs`
-(nothing downloaded): a slow D-minor music-hall waltz. The art/music lane composes the real one; the name stays.
+Its own track **`theatre`**, a SYNTH track in `src/audio.js` (`scheduleTheatre`, like the Waymeet and Underleaf tunes: no file, nothing downloaded; THEATREART replaced the placeholder
+`audio/theatre.ogg` and its renderer): a creaky music-hall overture waltz in D minor - bowed strings (two desks, a little out of tune), a harpsichord on the off-beats, a plucked bass, a door
+that creaks mid-tune. The show is TOLD in four levels, set through `music.act(n)` from `src/theatre-hands.js`: 0 the overture (minor, slow, unsteady), 1 CURTAIN UP (the same tune lifted to D major, a flute
+doubling, faster), 2 ACT TWO (faster, a snare), 3 ACT THREE (a drum on every bar); each change is a cymbal and a bell. `tools/audio-assets.mjs` lists `theatre` as no-file-by-design.
 
 ## Comparison with THE MAGE'S FOLLY (level-quality, this branch) - honest
 
@@ -103,3 +105,19 @@ Its own track **`theatre`** (`audio/theatre.ogg`, "The Maskwright's Waltz"), a p
 ## Questions for Daniel
 
 See the lane report (`work/claude/lane-done/claude-theatre.md`).
+
+## THEATREART: what the art lane drew (2026-09-30)
+
+- TILE KIT `src/redraw/theatre_tiles.js` (the hook in main.js's resolveTiles): plum brick (the house), timber-brown brick (backstage), near-black stone (the under-stage); floors capped as dark stage boards, an oxblood
+  runner with a gold thread (the house), velvet seats (the raked stalls), wet flags (under-stage); iron grating for the grid, the fly floor and the lighting bridge; gilt-fringed timber for the boxes; hatches (hazard chevrons,
+  hinges, a brass ring) for the stage traps; a kettle-drum head and a star trap for the springs; hemp rope with knots; stage spikes with warm tips.
+- ROOMS `src/redraw/theatre_rooms.js`: the foyer, stage-door passage, costume store (hat boxes, a rail of costumes), dressing rooms (mirrors, wardrobe), mask workshop (a wall of masks), scene dock, fly tower
+  (brick canyon, loft blocks, the lines going up), the stage (painted backcloth, black borders and legs), the under-stage, the wings (pin rail, belayed lines, sandbags). THE HOUSE is a PARALLAX backdrop: the dome,
+  the gods, two tiers of boxes (two layers sliding against the camera).
+- MACHINES + DRESSING `src/redraw/theatre_props.js`: limelights (a barrel that aims at its pool), beams with dust and pools with a bright rim and a spike mark; flats as painted scenes (forest, castle, sea, a door, a floor cloth)
+  with their TRACKS always drawn and glowing amber with running chevrons the moment they are about to move; rope-locks, winches, the prompt desk; every fly line wears a COLOUR TAG (A red, B blue, D gold, E green, G violet,
+  H orange, CH brass) on its lock, its batten's ends and its sandbag; the chandelier; the curtain (velvet folds, gold hem and fringe, valance, proscenium pilasters), footlights, the strings on the cast, the masked audience
+  in the boxes, HIS silhouette in the rigging. LIT v. UNLIT: a caught mummer stands in a ring of light; the HERO in a pool gets the ring at his feet and a watching EYE over his head.
+- CAST `src/redraw/theatre_foes.js` (+ `bakeDrunk('patron')` in `src/redraw/waymeet.js`): the box drunks are MASKED PATRONS (evening black, a porcelain mask, an opera hat, a programme to throw); the usher (oxblood livery,
+  pillbox cap, half-mask, a shuttered lantern); the stagehand (new frames); the house's ghosts (a sheeted dead patron in an opera mask and a ruff); the haunts are flying stage daggers.
+- The usher carries `usher: true` (maskwright-theatre.js, spawnEnt) so the art can tell him from the other players.
