@@ -10,6 +10,8 @@
 //   - THE DEATH KNIGHT: crouched over the body of what he killed he gets no HARVEST.hp health and HARVEST.blood BLOOD by HARVEST.time
 //     (or gets it early), the body gives twice, a body a stride away is drawn, a draw broken off part way still pays, the pose is not his
 //     harvest, or he is not EXPOSED while he draws (a low swipe finds him; his blood ward is not up)
+//   - THE BOT (src/lab.js crouchBPlan): calm with his light low the paladin does not kneel (or kneels with a foe three tiles off), calm
+//     the geomancer does not look, or the death knight does not walk to a body three tiles off and draw it
 //   - OTHER HEROES: the knight, the warden and the pyromancer pray, sense or harvest anything, or no longer duck / walk on down + a way
 //   - the page throws
 //   node tools/crouch-b.mjs            (PORT from tools/ports.mjs)
@@ -108,6 +110,14 @@ try {
     out.dkLow = fight('topiary', 2, 8, { pre: () => { const [s] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 0.2, y: spot[1], face: -1 }); s.hp = 1; BK.combat2().strike(s, 'light', 99); BK.sim(2); }, stopAt: k => false });
     out.dkHigh = fight('armour', 2, 6, { stopAt: k => false });
 
+    // ================= THE BOT (src/lab.js crouchBPlan): calm, each does it; with a foe near, none does =================
+    { const { crouchBPlan, crouchBKeys } = await import('/src/lab.js'); out.bot = {};
+      const drive = (h, n) => { let planned = 0; for (let k = 0; k < n; k++) { none(); if (crouchBKeys(BK, crouchBPlan(BK, h))) planned++; BK.sim(1); } none(); return planned; };
+      setUp('paladin'); home(); BK.P.light = 10; out.bot.pal = { planned: drive('paladin', 240), light: Math.round(BK.P.light) };
+      home(); BK.P.light = 10; BK.spawnFoe({ t: 'topiary', x: spot[0] + 3, y: spot[1], face: -1 }); out.bot.palNear = { planned: drive('paladin', 30), light: Math.round(BK.P.light) };
+      setUp('geomancer'); home(); out.bot.geo = { planned: drive('geomancer', 60), senses: C().stats.senses };
+      setUp('reaper'); home(); { const [s] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 3, y: spot[1], face: -1 }); s.hp = 1; BK.combat2().strike(s, 'light', 99); BK.sim(20); }
+      BK.P.hp = BK.P.maxHp - 30; BK.P.harvest = 0; const x0 = BK.P.x; out.bot.dk = { planned: drive('reaper', 150), harvests: C().stats.harvests, walked: Math.round(BK.P.x - x0) }; }
     // ================= OTHER HEROES: the plain duck, and nothing more =================
     out.others = [];
     for (const h of ['knight', 'warden', 'pyro']) { setUp(h); home(); const P = BK.P, r = { h }; P.light = 0; K.down = true; BK.sim(200); r.light = P.light || 0; r.ducking = BK.duck().ducking; r.box = box();
@@ -169,6 +179,12 @@ else {
   const DL = R.dkLow;
   if (DL.err) bad.push(DL.err); else { if (!(DL.lost > 0)) bad.push('death knight: a low swipe did not find him crouched (he must be exposed)'); if (DL.wardUp) bad.push('death knight: a guard came up while he crouched'); }
   if (R.dkHigh.lost > 0 || !(R.dkHigh.ducked > 0)) bad.push(`death knight: the armour's high swing did not go over him crouched (lost ${R.dkHigh.lost})`);
+  // ---- THE BOT ----
+  const Bt = R.bot;
+  if (!(Bt.pal.planned > 60) || !(Bt.pal.light > 50)) bad.push(`bot: calm with his light low, the paladin did not kneel for it: ${JSON.stringify(Bt.pal)}`);
+  if (Bt.palNear.planned > 0) bad.push(`bot: the paladin knelt with a topiary three tiles off: ${JSON.stringify(Bt.palNear)}`);
+  if (!(Bt.geo.senses > 0)) bad.push(`bot: calm, the geomancer did not look: ${JSON.stringify(Bt.geo)}`);
+  if (!(Bt.dk.harvests > 0) || !(Bt.dk.walked > 20)) bad.push(`bot: the death knight did not walk to the body three tiles off and draw it: ${JSON.stringify(Bt.dk)}`);
   // ---- OTHER HEROES ----
   for (const o of R.others) {
     if (o.light || o.kneelT || o.senseT || o.harvT || o.seen || o.stats.found || o.stats.harvests || o.stats.lightGiven) bad.push(`${o.h}: a crouch twist ran: ${JSON.stringify(o)}`);

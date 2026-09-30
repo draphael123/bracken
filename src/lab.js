@@ -9,7 +9,8 @@ import { mulberry } from './px.js';   /* bossLab seeds Math.random for the row i
 import { MARK } from './marks.js';
 import { FLIGHTS as SPIRAL_FLIGHTS } from './spiral-chase.js';   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
 import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
-import { GEO as GEO_K } from './geomancer.js';   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
+import { GEO as GEO_K } from './geomancer.js';
+import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
 import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
@@ -77,6 +78,34 @@ export function emberPlan(BK, h, e) {
   return BK.seeds().some(s => !s.dead && !s.reflected && !s.noBlock && !s.unblockable && !s.chain && (s.x - P.x) * (s.vx || 0) < 0 && Math.abs(s.y - (P.y - 6)) < 22
     && Math.abs(s.x - P.x) < 18 + Math.max(10, Math.abs(s.vx || 0) * EMBER_LATE)) ? 'raise' : null; }
 export const emberNow = (BK, h, e) => emberPlan(BK, h, e) === 'raise';
+/* THE CROUCH TWISTS, PART B, in the hands (claude/crouchb, src/crouch-b.js). Each is a crouch that leaves the hero exposed, so the bot
+   only ever does it when it is CALM (crouchCalm): nothing that can hurt him within CRB_CALM px on his level, nothing telling within
+   CRB_TELL px, nothing thrown at him within 140 px, his feet on dry ground. crouchBPlan says, for one frame:
+     'down'          - hold down where he stands:
+                         the PALADIN kneels while his light is under CRB_LOW (and once down, until it is full, while it stays calm)
+                         the GEOMANCER takes a LOOK (CRB_LOOK s) when she has not looked for CRB_EVERY s - in the labs a calm moment
+                         after a fight or on coming into a room is where a section starts
+                         the DEATH KNIGHT, over a body he has not drawn, draws it
+     'left'/'right'  - the death knight walks to a body within CRB_WALK px (health or blood not full)
+     null            - nothing: it is not calm, or there is nothing to do */
+export const CRB_CALM = 130, CRB_TELL = 220, CRB_LOW = 50, CRB_LOOK = 0.5, CRB_EVERY = 8, CRB_WALK = 64;
+export function crouchCalm(BK) { const P = BK.P;
+  if (!P.ground || P.swim || P.climb || P.dead || P.atk >= 0 || P.dodge > 0 || (P.hurt || 0) > 0 || (BK.L.pools || []).some(q => !q.dry && P.x > q.x0 && P.x < q.x1 && P.y > q.y + 1 && (q.bottom === undefined || P.y <= q.bottom + 4))) return false;
+  for (const e of BK.enemies()) { if (!e.alive || e.harmless || crouchHiding(e)) continue; const ad = Math.abs(e.x - P.x), dy = Math.abs(e.y - P.y);
+    if (ad < CRB_CALM && dy < 60) return false; if (ad < CRB_TELL && dy < 90 && (BK.telling(e) || /Tell$/.test(e.mode || ''))) return false; }
+  return !BK.seeds().some(s => !s.dead && !s.reflected && Math.hypot(s.x - P.x, s.y - (P.y - 8)) < 140); }
+export function crouchBPlan(BK, h) {
+  if (h !== 'paladin' && h !== 'geomancer' && h !== 'reaper') return null; const C = BK.crouchB && BK.crouchB(); if (!C) return null;
+  const P = BK.P; P.crbF = (P.crbF || 0) + 1;
+  if (!crouchCalm(BK)) { P.crbLook = 0; return null; }
+  if (h === 'paladin') return (P.light || 0) < (C.praying ? 100 : CRB_LOW) ? 'down' : null;
+  if (h === 'geomancer') { if (P.crbLook > 0) { P.crbLook--; return 'down'; }
+    if (P.crbF - (P.crbLookAt ?? -1e9) > CRB_EVERY * 60) { P.crbLookAt = P.crbF; P.crbLook = Math.round(CRB_LOOK * 60); return 'down'; } return null; }
+  if ((P.hp >= P.maxHp && (P.harvest || 0) >= 100) || !C.bodies.length) return null;
+  let b = null; for (const q of C.bodies) if (Math.abs(q.x - P.x) < CRB_WALK && q.y - P.y > -20 && q.y - P.y < 6 && (!b || Math.abs(q.x - P.x) < Math.abs(b.x - P.x))) b = q;
+  if (!b) return null; return Math.abs(b.x - P.x) <= 6 || C.drawing ? 'down' : b.x > P.x ? 'right' : 'left'; }
+/* the hands for it: only the keys it names, every other action key let go (false, and nothing pressed, for no plan) */
+export function crouchBKeys(BK, plan) { if (!plan) return false; const k = BK.keys; k.atk = k.block = k.jump = k.up = false; k.down = plan === 'down'; k.left = plan === 'left'; k.right = plan === 'right'; if (plan === 'down') BK.unpress(); return true; }
 export const HELD = e => (e.broken || 0) > 0.3 || (e.pinned || 0) > 0.3;
 /* FIRE ON THE GROUND, under x (a sapper's pot, a burning stake): the fire hurts inside nine pixels of it, so the bot keeps fourteen off.
    A bot that plants its feet to wind a heavy or stands off to shoot was measured standing in one for four ticks of it in the Stockade's room */
@@ -179,6 +208,7 @@ function labBotFrame(BK, h, e, f) {
   if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
   if (duckNow(BK, h, e)) { defend = 1; k.down = true; BK.unpress(); }   /* THE DUCK: a high blow goes over (duckNow) */
   else if (emberPlan(BK, h, e)) { defend = 1; k.down = emberPlan(BK, h, e) === 'raise'; BK.unpress(); }   /* THE EMBER WARD: stood still for a yellow windup and raised in its last beat, to flare (emberPlan) */
+  else if (crouchBKeys(BK, crouchBPlan(BK, h))) { /* nothing more */ }   /* THE CROUCH TWISTS: calm, the paladin kneels for light, the geomancer looks, the death knight draws a body (crouchBPlan) */
   else if (threat && P.atk < 0 && !(P.dash > 0)) {
     defend = 1;   /* (a heavy half wound goes if it can, and is dropped if it cannot) */
     if (HARD_TELLS.has(e.t + '|' + e.mode)) { k[d > 0 ? 'left' : 'right'] = true; if (f % 14 === 0) BK.press('dodge'); }
@@ -233,6 +263,7 @@ async function runambushLab(BK, opts) {
       const e = A.st === 'fight' && A.leader?.alive ? A.leader : null;
       if(P.ambRest){k.atk=k.block=k.up=k.down=false;}
       else if (e && e.y <= P.y+18) labBotFrame(BK, h, e, f);
+      else if (crouchBKeys(BK, crouchBPlan(BK, h))) { /* nothing more */ }   /* (between waves, calm: the crouch twists, crouchBPlan) */
       else { k.block = false; k.left = P.x > mid + 20; k.right = P.x < mid - 20; }   /* between waves: to the middle of the room */
       if(e&&e.y>P.y+18){P.ambLandSide=P.ambLandSide||Math.sign(P.x-e.x)||1;if(P.ambLandX!==undefined&&BK.enemies().some(q=>q.alive&&!q.harmless&&Math.abs(q.y-e.y)<32&&Math.abs(q.x-P.ambLandX)<(q.w||16)/2+25))P.ambLandX=undefined;const gx=P.ambLandX??(P.ambLandX=lowerFooting(BK,e,lvm.T));k.left=P.x>gx+4;k.right=P.x<gx-4;k.up=k.down=k.jump=k.block=k.atk=false;if(P.ground&&[lvm.T.ONEWAY,lvm.T.PLANK,lvm.T.SHELF,lvm.T.RAIL].includes(P.groundTile)){k.down=true;BK.press('jump');P.ambLandX=undefined;}}else{P.ambLandSide=0;P.ambLandX=undefined;if(e&&e.y<P.y-24){k.left=e.x<P.x;k.right=e.x>P.x;k.block=false;}}
       /* A PLAYER JUMPS THE ROOM'S OWN PIT. The fight lab's bot fights on a flat floor and walked straight into THE CLIFF HALL's
@@ -1498,6 +1529,7 @@ async function runbossLab(BK, opts) {
         if (h === 'reaper' && boss.t === 'herald') { const goLeft = f % 40 < 20; k.left = goLeft; k.right = !goLeft; }
         else k[f % 40 < 20 ? 'left' : 'right'] = true;
         if (P.ground) { BK.press('jump'); P.labJump = 18; BK.press('dodge'); } }
+      { const cb = crouchBPlan(BK, h); if (cb) { crouchBKeys(BK, cb); P.labJump = 0; } }   /* THE CROUCH TWISTS, when the room is calm (crouchBPlan) */
       if (duckNow(BK, h, boss) || emberNow(BK, h, boss)) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }   /* (and the pyromancer's EMBER WARD, raised late to flare: emberNow) */   /* THE DUCK, last: whatever else the hands meant, a high blow at them goes over (duckNow) */
       const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
       if (boss.t === 'lance') for (const q of BK.enemies()) if (q.lanceBow) bowSeen.add(q);
