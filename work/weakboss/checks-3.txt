@@ -1,0 +1,12 @@
+
+> check
+> node tools/check.mjs boss-fight-end,slopes-trace,skins,boss-jump
+
+ ok  syntax             0ms  0 files parse
+ ok  skins          15894ms  ok  roofs          44 houses: every roof picture sits on the slab you stand on.
+ ok  boss-fight-end248390ms  Every one of 46 boss and mini fights (33 bosses, 13 minis) ends when its boss dies.
+ ok  boss-jump     534343ms  BOSS-JUMP: all 46 boss and mini fights load through ?boss=<id> at full health with no god mode and wake at the
+ ok  slopes-trace   31066ms  slopes-trace: every frame of every level identical to the pre-slopes build
+
+5 of 224 checks pass - A SUBSET (boss-fight-end, slopes-trace, skins, boss-jump), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.

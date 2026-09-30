@@ -44,7 +44,8 @@
 //   frames (PLOUGHMAN_F): 0 idle, 1 walk A, 2 walk B, 3 chargeTell (braced low, dust at the share), 4 charge (driving,
 //     share up throwing dirt), 5 stuck (OPENING: share jammed in a furrow, heaving on the handles, head dropped and dim),
 //     6 goadTell (goad raised high behind), 7 goad (thrust forward level), 8 headTell (head lifted high, blazing),
-//     9 headThrow (arm flung forward, empty), 10 hurt (LAST)
+//     9 headThrow (arm flung forward, empty), 10 furrowTell (claude/weakboss: the goad held straight up, the head blazing, embers
+//     waking in the furrows), 11 furrow (the goad driven point-down into the ground ahead, the earth spurting), 12 hurt (LAST)
 //   canvas 84x52 (grid 82x50)   anchor ax 27, ay 49 (centred on his body, not the plough)   pack w/h 20x34
 //   reach: plough ax+11..ax+48 along the floor (share tip ax+38, wheel front ax+47); GOAD point ax+50, ay-29;
 //          goadTell point ax+22, ay-43; headTell head centre ax+13, ay-44; headThrow release hand ax+24, ay-29
@@ -643,9 +644,16 @@ export function bakePloughman() {
   const hurt = frame({ ...base, chest: [X - 3, FL - 26], hip: [X - 1, FL - 16], headAt: [X + 10, FL - 25], drift: 5, plough: [[X + 38, FL], -4],
     legs: { near: [[X + 3, FL - 9], [X + 5, FL]], far: [[X - 5, FL - 9], [X - 7, FL]] },
     near: { el: [X + 3, FL - 18], hd: [X + 11, FL - 19] }, far: { el: [X - 13, FL - 27], hd: [X - 17, FL - 32], hand: 'open' }, goad: [[X - 17, FL - 32], -130, 22] });
-  return pack([idle, walkA, walkB, chargeTell, charge, stuck, goadTell, goadThrust, headTell, headThrow, hurt], X + 1, FL + 2, 20, 34);
+  /* THE FURROWS WAKE (claude/weakboss, his phase two): the goad up, then down into the ploughed ground */
+  const furrowTell = frame({ ...base, chest: [X, FL - 27], hip: [X, FL - 17], glow: 'bright', legs: { near: [[X + 5, FL - 9], [X + 7, FL]], far: [[X - 4, FL - 9], [X - 8, FL]] },
+    far: { el: [X - 6, FL - 33], hd: [X - 2, FL - 41] }, goad: [[X - 2, FL - 41], -90, 26], goadFront: true,
+    fx: [[X + 30, FL - 1, ['E.e.E']], [X + 8, FL - 1, ['e.E']], [X + 44, FL - 1, ['E.e']]] });
+  const furrowStab = frame({ ...base, chest: [X + 3, FL - 23], hip: [X, FL - 15], headAt: [X + 14, FL - 20], glow: 'bright', legs: { near: [[X + 6, FL - 8], [X + 8, FL]], far: [[X - 5, FL - 7], [X - 10, FL]] },
+    far: { el: [X + 6, FL - 24], hd: [X + 14, FL - 20] }, goad: [[X + 14, FL - 20], 70, 22], goadFront: true, drift: -6,
+    fx: [[X + 20, FL - 4, ['n.N', '.E.']], [X + 30, FL - 2, ['E.e']], [X + 6, FL - 2, ['e.E']], [X + 40, FL - 3, ['.n', 'E.']]] });
+  return pack([idle, walkA, walkB, chargeTell, charge, stuck, goadTell, goadThrust, headTell, headThrow, furrowTell, furrowStab, hurt], X + 1, FL + 2, 20, 34);
 }
-export const PLOUGHMAN_F = { idle: 0, walk: [1, 2], chargeTell: 3, charge: 4, stuck: 5, goadTell: 6, goad: 7, headTell: 8, headThrow: 9, hurt: 10 };
+export const PLOUGHMAN_F = { idle: 0, walk: [1, 2], chargeTell: 3, charge: 4, stuck: 5, goadTell: 6, goad: 7, headTell: 8, headThrow: 9, furrowTell: 10, furrow: 11, hurt: 12 };
 
 // ---------- THE HEAD IN FLIGHT ----------
 export function bakePloughHead() {

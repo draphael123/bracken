@@ -1,0 +1,231 @@
+{
+ "reeve": {
+  "lamps": 5,
+  "mode0": "stalk",
+  "alone": {
+   "sawSnuff": true,
+   "open": 0,
+   "lampLit": true,
+   "gut": 0.08,
+   "mode": "stalk",
+   "lampOut": true
+  },
+  "struck": {
+   "struck": true,
+   "mode": "blinded",
+   "open": 1.9,
+   "lampLit": true,
+   "flares": 1
+  },
+  "openBlow": 14,
+  "shutBlow": 3,
+  "lungeStand": {
+   "told": "lungeTell",
+   "mark": "!!",
+   "hurt": 30,
+   "light": true
+  },
+  "lungeRoll": {
+   "told": "lungeTell",
+   "mark": "!!",
+   "hurt": 0,
+   "light": false
+  },
+  "lungeInLight": false,
+  "p2": {
+   "phase": 2,
+   "took": true,
+   "wick": 0,
+   "light": 10,
+   "lit0": 74,
+   "relit": true,
+   "lightAfter": 74
+  }
+ },
+ "plough": {
+  "baits": [
+   "trough",
+   "fence"
+  ],
+  "open": {
+   "open": 0,
+   "stuck": null,
+   "turned": true,
+   "furrows": 1
+  },
+  "trough": {
+   "open": 1.8,
+   "stuck": "trough",
+   "turned": false,
+   "furrows": 1
+  },
+  "fence": {
+   "open": 1.8,
+   "stuck": "fence",
+   "turned": false,
+   "furrows": 1
+  },
+  "shutBlow": 4,
+  "openBlow": 14,
+  "headStand": {
+   "mark": "!!",
+   "ring": 0,
+   "hurt": 20
+  },
+  "headLeave": {
+   "mark": "!!",
+   "ring": 0,
+   "hurt": 0
+  },
+  "p1Furrow": false,
+  "furrowOn": {
+   "told": true,
+   "mark": "!!",
+   "hurt": 25
+  },
+  "furrowOff": {
+   "told": true,
+   "mark": "!!",
+   "hurt": 0
+  }
+ },
+ "hom": {
+  "scuttleHit": {
+   "mark": "!!",
+   "mode": "gloat",
+   "open": 0,
+   "hurt": 29,
+   "aim": 0,
+   "modes": [
+    "scuttleTell",
+    "scurry"
+   ]
+  },
+  "scuttleMiss": {
+   "mark": "!!",
+   "mode": "bare",
+   "open": 2,
+   "hurt": 0,
+   "aim": 0,
+   "modes": [
+    "scuttleTell",
+    "scurry"
+   ]
+  },
+  "flaskHit": {
+   "mark": "!!",
+   "mode": "gloat",
+   "open": 0,
+   "hurt": 24,
+   "aim": 0,
+   "modes": [
+    "flaskTell",
+    "lob"
+   ]
+  },
+  "flaskMiss": {
+   "mark": "!!",
+   "mode": "bare",
+   "open": 2.2,
+   "hurt": 0,
+   "aim": 0,
+   "modes": [
+    "flaskTell",
+    "lob"
+   ]
+  },
+  "pounceHit": {
+   "mark": "!",
+   "mode": "gloat",
+   "open": 0,
+   "hurt": 27,
+   "aim": 0,
+   "modes": [
+    "pounceTell",
+    "leap",
+    "dive"
+   ]
+  },
+  "pounceMiss": {
+   "mark": "!",
+   "mode": "bare",
+   "open": 2,
+   "hurt": 0,
+   "aim": 94,
+   "modes": [
+    "pounceTell",
+    "leap",
+    "dive"
+   ]
+  },
+  "poundHit": {
+   "mark": "!!",
+   "mode": "gloat",
+   "open": 0,
+   "hurt": 29,
+   "aim": 0,
+   "modes": [
+    "poundTell",
+    "pound"
+   ]
+  },
+  "poundMiss": {
+   "mark": "!!",
+   "mode": "bare",
+   "open": 2,
+   "hurt": 0,
+   "aim": 0,
+   "modes": [
+    "poundTell",
+    "pound"
+   ]
+  },
+  "swipeHit": {
+   "mark": "!",
+   "mode": "gloat",
+   "open": 0,
+   "hurt": 21,
+   "aim": 0,
+   "modes": [
+    "swipeTell",
+    "swipe"
+   ]
+  },
+  "swipeBlocked": {
+   "mark": "!",
+   "mode": "bare",
+   "open": 1.3,
+   "hurt": 0,
+   "aim": 0,
+   "modes": [
+    "swipeTell",
+    "swipe"
+   ]
+  },
+  "bareBlow": 16,
+  "jarBlow": 4,
+  "pair": {
+   "seq": [
+    "walk",
+    "scuttleTell",
+    "scurry",
+    "walk",
+    "flaskTell",
+    "lob",
+    "bare",
+    "hide",
+    "scuttleTell"
+   ],
+   "tellsBefore": 2,
+   "smoke": 1,
+   "hideBlow": 0,
+   "hideThenScuttle": true
+  }
+ },
+ "dk": {
+  "stuckT": 1.5,
+  "p2At": 0.6,
+  "hp": 950
+ }
+}
+weak-bosses: OK
