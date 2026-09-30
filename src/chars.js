@@ -447,6 +447,16 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   { const c = F.idle[2], g2 = c.getContext('2d'); g2.fillStyle = '#dfe8ff'; g2.fillRect(BX + 4, BY + 4, 1, 1); }
+  /* THE LOW GUARD and THE SHIELD TRIP (src/crouch-a.js, claude/croucha). Down on his heels, boots on the ground, the kite brought round
+     off his arm and set square in front of his shins, the sword kept back over the hip; as a blow lands on it the rim takes a white edge and
+     it rocks a pixel (he does not). The trip: the kite drawn in close, then driven out low along the floor into the ankles, a white edge
+     where the rim meets them and his weight gone in behind it. */
+  { const low = { dy: 3, legsDy: 3, legs: 'crouch', arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 3], sword: [sh[0] - 2, sh[1] + 3, sh[0] - 9, sh[1] + 1] };
+    F.lowGuard = [KF({ ...low, kite: { x: 9, y: 5 }, plume: 1 }),
+      KF({ ...low, dx: -1, kite: { x: 10, y: 4 }, plume: 2, bits: [[15, 5, '#fff6e0'], [15, 7, '#ffffff'], [15, 9, '#ffffff'], [15, 11, '#fff6e0']] })];
+    F.trip = [KF({ ...low, dx: -1, kite: { x: 7, y: 5 }, plume: 1 }),
+      KF({ dx: 3, dy: 3, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 3], sword: [sh[0] - 1, sh[1] + 3, sh[0] - 8, sh[1] + 2], kite: { x: 10, y: 6 }, plume: 2,
+        bits: [[15, 9, '#fff6e0'], [15, 11, '#ffffff'], [15, 12, '#ffffff'], [16, 12, '#fff6e0'], [17, 13, '#c9b27c'], [18, 12, '#c9b27c']] })]; }
   directionalPoses(F, 'sword', { make: KF });
   /* THE HEAVY CUT (his held swing since 2026-09-23; it was THE SHIELD CHARGE). The WIND-UP is the sword raised over the shield, the
      kite square across him: straight up, then tipped back, then cocked right back behind the helm - one frame a stage, so how long
@@ -2145,6 +2155,14 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
       tread: i => ({ pistol: holster(TREAD_DY[i]), cutlass: [sh[0] + SCULL[i][0], sh[1] + SCULL[i][1] + TREAD_DY[i], sh[0] + SCULL[i][0] + 6, sh[1] + SCULL[i][1] + TREAD_DY[i] + 2] }) });
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  /* DUCK AND RELOAD (src/crouch-a.js, claude/croucha): down on one knee with the pistol stood muzzle-up on his thigh and the ramrod going
+     in and out of it (two beats), the cutlass laid by; and THE STEADY SHOT, the arm braced level from the crouch, then the flash off the
+     muzzle with the barrel barely lifted (a standing shot throws his arm up). */
+  { const knee = { dy: 3, legsDy: 3, legs: 'crouch', cutlass: [sh[0] + 1, sh[1] + 3, sh[0] + 7, sh[1] + 5] };
+    const rod = up => up ? [[11, 1, '#c9d1dc'], [11, 2, '#c9d1dc'], [11, 3, '#8a939f'], [12, 1, '#e8e0cc']] : [[11, 3, '#c9d1dc'], [11, 4, '#8a939f'], [12, 3, '#e8e0cc']];
+    F.reload = [0, 1].map(i => knightFrame({ ...knee, plume: i, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], pistol: [sh[0] + 2, sh[1] + 3, sh[0] + 3, sh[1] - 2], bits: rod(!i) }));
+    F.crouchShot = [knightFrame({ ...knee, plume: 1, arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 1], pistol: [sh[0] + 5, sh[1] + 1, sh[0] + 12, sh[1] + 1] }),
+      knightFrame({ ...knee, plume: 2, arm: [sh[0], sh[1], sh[0] + 5, sh[1]], pistol: [sh[0] + 5, sh[1], sh[0] + 12, sh[1] - 1], bits: [[21, 6, '#fff6c8'], [22, 6, '#ffd36b'], [21, 5, '#ffd36b']] })]; }
   directionalPoses(F, 'cutlass', { extra: { pistol: holster() } });
   pirateKitPoses(F, sh, holster, carry);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
@@ -2523,6 +2541,15 @@ export function bakeWarden(skin = {}, previewOnly = false) {
       tread: i => ({ spear: [sh[0] + 2, sh[1] + 4 + TREAD_DY[i], sh[0] + 3, sh[1] - 11 + TREAD_DY[i]], bits: flap([3, 4], TREAD_DY[i], 1, 'b', 'B') }) });
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  /* SET THE SPEAR and THE LOW POKE (src/crouch-a.js, claude/croucha). Down on her heels, the heel of the spear bitten into the turf
+     behind her and the haft levelled low across her knee, the point out at the full reach of her thrust a hand off the floor - the thing
+     a charge runs onto; then the haft bowed and the point flashing white as it takes one. The poke: drawn in along the floor, and driven
+     out flat at the ankles to the end of her reach, her weight gone after it. */
+  { const low = { wide: WIDE, dy: 3, legsDy: 3, legs: 'crouch' };
+    F.set = [knightFrame({ ...low, plume: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], spear: [sh[0] - 7, sh[1] + 5, 57, sh[1] + 1] }),
+      knightFrame({ ...low, dx: -1, plume: 2, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 4], spear: [sh[0] - 8, sh[1] + 5, 55, sh[1] + 2], bits: [[45, 9, '#ffffff'], [46, 9, '#dff0d8'], [45, 8, '#dff0d8']] })];
+    F.lowPoke = [knightFrame({ ...low, dx: -1, plume: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 4], spear: [sh[0] - 9, sh[1] + 4, 47, sh[1] + 2] }),
+      knightFrame({ wide: 38, dx: 2, dy: 3, legs: 'wide', plume: 2, arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 3], spear: [sh[0] - 2, sh[1] + 4, 59, sh[1] + 2] })]; }
   directionalPoses(F, 'spear', {});
   wardenKitPoses(F, sh, WIDE);
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
