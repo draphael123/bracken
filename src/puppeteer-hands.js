@@ -30,10 +30,13 @@ export function makePuppeteerHands(ctx) {
     if (kind === 'air') ctx.cellSet(i, T.AIR, null);
     else if (kind === 'ledge') ctx.cellSet(i, T.ONEWAY, skins().flatTop);
     else { const o = orig.get(i); ctx.cellSet(i, o[0], o[1]); } }
+  /* THE IRON GRATING of the fly gallery. Anything that re-resolves the level's tile sprites (the theatre's flats and traps do, at load) wears it off, so it is laid again whenever it is missing (H.update) */
+  function grate() { const S = A(); if (!S) return; const st = S.stage, G = Math.round(st.gallery / ctx.TS), gr = skins().grate;
+    for (let x = Math.round(st.gx0 / ctx.TS); x < Math.round(st.gx1 / ctx.TS); x++) { const i = cellI(x, G), c = ctx.cellGet(i); if (c[0] === ctx.T.ONEWAY && c[1] !== gr[x % 3]) ctx.cellSet(i, ctx.T.ONEWAY, gr[x % 3]); } }
   H.spawnBoss = base => { const S = A(); if (!S) return null; const st = S.stage;
     for (const [i, o] of orig) ctx.cellSet(i, o[0], o[1]); orig.clear();
     show = PM.newShow({ x0: S.x0, x1: S.x1, floor: S.floor, gallery: st.gallery, gx0: st.gx0, gx1: st.gx1, sx: st.sx, TS: ctx.TS, y0: S.y0 });
-    const G = Math.round(st.gallery / ctx.TS); for (let x = Math.round(st.gx0 / ctx.TS); x < Math.round(st.gx1 / ctx.TS); x++) { const i = cellI(x, G); if (ctx.cellGet(i)[0] === ctx.T.ONEWAY) ctx.cellSet(i, ctx.T.ONEWAY, skins().grate[x % 3]); }
+    grate();
     const b = battenOf(); if (b) { b.st = 'down'; b.t = 0; b.y = b.down; } show.batten = b;
     for (const pp of ctx.players) { pp.pupFloor = undefined; pp.pupStill = 0; }
     const e = PM.newPuppeteer({ ...base, t: 'puppeteer', w: PUP.w, h: PUP.h, hp: ctx.EHP.puppeteer, maxHp: ctx.EHP.puppeteer, noGrav: true, markH: PUP.markH, face: -1 });
@@ -46,7 +49,7 @@ export function makePuppeteerHands(ctx) {
   H.bigF = e => (e.t === 'marionette' ? PUP.brute.scale : 1);
 
   /* ---------- ONE FRAME OF HIM ---------- */
-  H.update = (e, dt) => {
+  H.update = (e, dt) => { if (SK) grate();
     if (!show) return;
     const S = A(); if (!S) return;
     show.batten = battenOf();
