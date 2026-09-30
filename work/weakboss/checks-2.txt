@@ -1,0 +1,21 @@
+
+> check
+> node tools/check.mjs weak-bosses,boss-openings,unburied-fights,unburied,tells,answer-tags,comments,signs,dangling-paths,homepaths,checkpoints,npc-removal,architecture
+
+ ok  syntax             0ms  0 files parse
+ ok  tells            541ms  the mark over every windup on the screen comes from this table (src/marks.js, 609 rows).
+ ok  comments         145ms  no swallowed code found.
+ ok  homepaths        200ms  ok  homepaths     605 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths   292ms  ok  dangling-paths 2755 tracked files, every repo path they cite resolves in a fresh clone (8 known holes list
+ ok  signs           7849ms  no level says the same sentence on two signs (1 known).
+ ok  checkpoints     7373ms  185 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  boss-openings  90990ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"buriedGas":{"rest":{"mode":"rest","open":0},"c
+ ok  unburied        3558ms        NOT SEEN HERE: the map spur (Lane B), and the music as heard (its track is asserted above); the look is 
+ ok  unburied-fights   294ms  ok  unburied-fights the banner rule, the Barrow Rider, the Death Knight (and the benched Reaper), the bridges 
+ ok  architecture    3443ms  45 levels, 348 built pieces declared; 2 grandfathered (harbor, waymeet). everything that was built stands on s
+ ok  npc-removal     3177ms  every NPC outside the shops is gone; the ferryman and the captives are mechanics without dialogue; every forme
+ ok  answer-tags     3108ms    fair          ----- dodge jump ----  (2)
+ ok  weak-bosses    32814ms  weak-bosses: OK
+
+14 of 224 checks pass - A SUBSET (weak-bosses, boss-openings, unburied-fights, unburied, tells, answer-tags, comments, signs, dangling-paths, homepaths, checkpoints, npc-removal, architecture), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.

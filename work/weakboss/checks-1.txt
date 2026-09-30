@@ -24,7 +24,7 @@ node:internal/modules/run_main:107
     ^
 
 AssertionError [ERR_ASSERTION]: A11: a Cleave committed on you and dodged sticks the blade, and he is open ~2 s: {"taken":{"mode":"stalk","open":0,"hurt":10},"far":{"mode":"stalk","open":0,"hurt":null},"dodged":{"mode":"stalk","open":1.5,"hurt":16},"boss":"bloodknight"}
-    at file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-weakboss/tools/boss-openings.mjs:224:10 {
+    at tools/boss-openings.mjs:224:10 {
   generatedMessage: false,
   code: 'ERR_ASSERTION',
   actual: false,
