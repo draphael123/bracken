@@ -1,6 +1,7 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
+import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
 import { emptyCarry, carryHas, drop as dcDrop, doorSpot, freshDeathCost } from './death-cost.js';   /* THE DEATH COST: the rules and the save shape, no game in them */
 import { THROW_KIND, isFireFoe, throwDamage, PYRO_HIT_FIELD } from './throwables.js';   /* CARRY & THROW (2026-09-28): the generic pick-up-and-throw system, and the water buckets built on it */
 import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins, ORES, ORE_NAMES, workSees, workLamp, hash as oreHash } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
@@ -145,6 +146,7 @@ import { floodReach } from './reachcore.js';
 import { WEIGHTY, weighty, setWeighty, combatFrom, weightyHere, recoveryFor, poiseRule, guardCount } from './weighty.js';   /* COMBAT: CLASSIC / WEIGHTY (claude/ssproto): one switch, off by default */
 import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
+import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 
 // ---------- display ----------
@@ -411,10 +413,10 @@ const MENU_MUSIC = [
 ];
 const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PROG.menu : 'select';
 const HEROES = [
-  { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X, the sword up over the shield, and let go: THE HEAVY CUT - held longer it breaks a guard, longer still it knocks them down, but no shield while it is up. blocks and third cuts fill RESOLVE: full, tap C on the ground for THE LAST CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam. X early in a dodge: THE SHOULDER CHARGE, through small foes, and a guard is thrown wide. his plunge is a POGO: off a foe he bounces, on the ground it rings out both ways' },
+  { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X, the sword up over the shield, and let go: THE HEAVY CUT - held longer it breaks a guard, longer still it knocks them down, but no shield while it is up. blocks and heavy cuts fill RESOLVE: full, tap C on the ground for THE LAST CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam. X early in a dodge: THE SHOULDER CHARGE, through small foes, and a guard is thrown wide. his plunge is a POGO: off a foe he bounces, on the ground it rings out both ways' },
   { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, coinPrice: 800, coinNeeds: 'burning', desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 88 health, quicker on foot, a lighter blow, one jump like anyone else. the plunge is THE FIRE STOMP: her boots do nothing, only the firedrop ahead of her and the landing ring burn. X early in a dodge: THE FLAMING SLIDE, through small foes, and a guard is thrown wide' },
-  { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, coinPrice: 800, coinNeeds: 'unburied', coinBoss: true, feat: 'boss:unburied', featName: 'beat the Death Knight in the Unburied Field', desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. Buy skills with coins and equip them in Skills & Loadout. At full blood, TAP F for the equipped skill or HOLD F for Blood Surge. the plunge drives the blade down into a GRAVE BURST. X early in a dodge: THE GREATSWORD RUSH, through small foes, and a guard is thrown wide." },
-  { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. hold C: RUM, which mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dodge: THE BOARDING LUNGE, through small foes, and a guard is thrown wide. no shield: he PARRIES" },
+  { id: 'reaper', name: 'THE DEATH KNIGHT', price: 10, silver: true, coinPrice: 800, coinNeeds: 'unburied', coinBoss: true, feat: 'boss:unburied', featName: 'beat the Death Knight in the Unburied Field', desc: "a two-handed sword, and 95 health. THE BIGGEST AND SLOWEST HERO IN THE GAME. THE CLEAVE comes down slow and hard through whatever is in front of him; HOLD the swing and he PLANTS THE BLADE for a fan of blood bolts. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go AS a blow lands and he RETURNS it, for no blood at all. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. Buy skills with coins and equip them in Skills & Loadout. F is SUMMON SKELETON once his Gravelord tree has it; G is the skill he has equipped; HOLD F on a full blood bar for Blood Surge. the plunge drives the blade down into a GRAVE BURST. X early in a dodge: THE GREATSWORD RUSH, through small foes, and a guard is thrown wide." },
+  { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. Gold reloads it the moment you pick it up, so his powder is whatever the wood is worth. tap C: THE PARRY, a quick guard that turns a blow met on the beat. HOLD C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. RUM is a skill bought with coins: it mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dodge: THE BOARDING LUNGE, through small foes, and a guard is thrown wide." },
   { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. X early in a dodge: THE SHIELDLESS CHARGE, through small foes, and a guard is thrown wide. the dead take double' },
   { id: 'geomancer', name: 'THE GEOMANCER', price: 10, silver: true, desc: 'a tall staff with an amber geode in stone claws, and 95 health. slower on foot, and every blow of hers is heavy. SHE BUILDS SOMETHING IN ITS WAY: hold C and she plants the stave and a RUNE-WARD of stone rises in front of her and over her head. It turns YELLOW blows and shots for wind, but she cannot walk while it stands; a RED blow breaks through. Raised as a blow lands it throws a shot back and EMPOWERS her for three seconds: harder blows, and TREMOR twice as fast. HOLD X and let go: FAULT LINE, a crack that races along the floor ahead of her and hits everything on it - the longer the hold, the longer and harder, and a full one ends in a spike that hits hardest and launches. UP+X is a stone SPUR for what is over her. Her third blow is a full spin that SHATTERS any stone of hers it hits into shards. Her plunge is STONEFALL: it knocks down what stands beside her. X early in a dodge kicks a ROLLING STONE. Blows the ward stops and foes her stone launches fill TREMOR: full, tap C on the ground for THE QUAKE. Only three stones stand at once, and each crumbles in four seconds' },
   { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 100 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last quarter of the shaft hits half as hard again and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it. X early in a dodge: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
@@ -510,7 +512,7 @@ const LV_GROW = h => growthAt(h || hero(), heroLevel(h)).ranks;
 const cdOf = k => k === 'summonSkeleton' && tal('gleaner') ? 12 : CD_MAX[k] || 3;
 const amul = k => skillScale(heroLevel()); // skill damage grows, cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
-window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
+window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, skillIcon: k => skillIcon(k), talIcon: (i, w) => talIcon(i, w), TAL_KIND: (i, w) => TAL_KIND(i, w), ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPress(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
   damagePlayer: (x, d, o) => damagePlayer(x, d, o), hurtEnemy: (e, d, x, pl) => hurtEnemy(e, d, x, pl), number: (x, y, t, c) => number(x, y, t, c), get hintNow() { return { t: hintT, msg: hintMsg }; }, respawn: () => respawn(), fullHp: e => fullHp(e), risen: () => risen, bodies: () => bodies, acorns: () => acorns, heavyWind: () => heavyWind(),
   treeNodes: () => treeNodes(), get treeI() { return treeI; }, set treeI(v) { treeI = v; }, get treeMsg() { return treeMsg; }, get treeResetT() { return treeResetT; }, get talentsBackT() { return talentsBackT; }, get talentsBackWho() { return talentsBackWho; }, novas: () => novas, wardCap: () => wardCap(), raiseCue: () => raiseCue(), raisePips: () => raisePips(), heroSet: (s, w, p, h) => heroSet(s, w, p, h), skinIds: () => SKINS.map(k => k.id) };   /* for the labs and the harnesses */
@@ -654,11 +656,18 @@ const MORE_ICONS = {
   disarm: pixIcon(['..........', '.s......yy', '.ss....yyy', '..ss....y.', '...ss.....', '....ss....', '..b.sss...', '...b.ww...', '....b.....', '.....b....', '..........', '..........']),
   ironclad: pixIcon(['..........', '...ssss...', '..swwwws..', '.sswwwwss.', '.ssddddss.', '.sswwwwss.', '.ssssssss.', '..ssssss..', 'y.ssssss.y', '.y......y.', '..........', '..........']),
   swordOfRealm: pixIcon(['....y.....', '.y..w..y..', '..y.w.y...', '....w.....', 'y...w...y.', '....w.....', '...yyy....', '....b.....', '....b.....', '...yyy....', 'yyyyyyyyyy', '..........']),
+  skewer: pixIcon(['..........', '......ggg.', '.....gnnnk', 'bbbbswwnnk', '.....gnnnk', '......kkk.', '.y......y.', '..y....y..', '..........', '..........', '..........', '..........']),
+  setSpears: pixIcon(['....w.....', '....s..w..', '.w..b..s..', '.s..b..b..', '.b..b..b..', '.b..b..b..', '.b..b..b..', '.b..b..b..', 'ssssssssss', 'bbbbbbbbbb', '..........', '..........']),
+  harrier: pixIcon(['..........', '..yyyyy...', '.y.....y..', 'y.......y.', 'y..rrrr.yw', '...rRRr...', '...rrrr.ww', '..........', 'ssssssssss', 'bbbbbbbbbb', '..........', '..........']),
+  harvestMoon: pixIcon(['..........', '..w.......', '.w.w..w...', '..w..w.w..', '....w..w..', 'rrrrrrrrrr', 'rRrrRrrRrr', 'RRRRRRRRRR', 'bbbbbbbbbb', '..........', '..........', '..........']),
+  gravecall: pixIcon(['..........', '..........', '..........', 'wwwsssyyy.', 'wdwsdsydy.', 'wwwsssyyy.', '.w..s..y..', '..........', 'ssssssssss', 'bbbbbbbbbb', '..........', '..........']),
+  broadside: pixIcon(['..........', 'y.........', 'yo..s.s.s.', 'oyw.s.s.s.', '.y..w.w.w.', '..........', '..........', '..........', '..........', '..........', '..........', '..........']),
+  blackSpot: pixIcon(['..........', '.wwwwwwww.', '.wwwddwww.', '.wwddddww.', '.wwddddww.', '.wwwddwww.', '.wwwwwwww.', '.w.w.w.w..', '..........', '..........', '..........', '..........']),
+  keelhaul: pixIcon(['b.........', 'bb........', '.bbb...ss.', '...bbbs..s', '......s..s', '.......ss.', '..........', 'w.ww.w.ww.', '.ww.ww.w.w', '..........', '..........', '..........']),
+  /* THE EIGHT THAT WORE ANOTHER SKILL'S ICON (ability audit item 2): a spear driven into a block, three spears out of the floor, a vault over a foe, boiling blood, one of each skeleton, five balls in a line, a black spot on a slip of paper, and a rope dragging through the water */
   rainOfSpears: pixIcon(['..........', 'b...b...b.', 'b...b...b.', 'b.b.b.b.b.', 's.b.s.b.s.', 'w.b.w.b.w.', '..s...s...', '..w...w...', '..........', 'y.y.y.y.y.', 'ssssssssss', 'bbbbbbbbbb']) };
-// the new actives borrow the icon of their nearest kin: a flame on a Reaper's tree reads as a bug
-const SKILL_KIN = { harvestMoon: 'scytheThrown', gravecall: 'graveTide', broadside: 'grapeshot', blackSpot: 'grapeshot', keelhaul: 'boarding',
-  skewer: 'lightLance', setSpears: 'graveTide', harrier: 'boarding' };   /* a lance, a row of points out of the floor, and a leap: the nearest kin each of hers has */
-const skillIcon = k => k === 'groundSlam' ? SLAM_ICON : k === 'shieldThrow' ? SHIELD_ICON : k === 'risingCut' ? RISE_ICON : PYRO_ICONS[k] || GEO_ICONS[k] || PAL_ICONS[k] || MORE_ICONS[k] || MORE_ICONS[SKILL_KIN[k]] || FLAME_ICON;
+/* every active has an icon of its own: nothing borrows a sibling's any more (tools/skill-icons.mjs) */
+const skillIcon = k => k === 'groundSlam' ? SLAM_ICON : k === 'shieldThrow' ? SHIELD_ICON : k === 'risingCut' ? RISE_ICON : PYRO_ICONS[k] || GEO_ICONS[k] || PAL_ICONS[k] || MORE_ICONS[k] || FLAME_ICON;
 let wisp = null; // the pyromancer's flame familiar
 let meteors = [], fireRings = [], lanceBeams = [], moons = []; // METEOR, RING OF FIRE, SPEAR OF LIGHT in flight, and the HARVEST MOON standing where he planted it
 function updateSkillFx(dt) {
@@ -3758,6 +3767,7 @@ function learnTalent(k) { treeFrom = state; treeI = 0; treeBranch = 0; state = '
 let treeFrom = 'store', treeI = 0, treeMsg = '', treeMsgT = 0, treeBranch = 0;
 const SKILL_NEEDS = { coldComfort: ['summonSkeleton'], gleaner: ['summonSkeleton'], press: ['summonSkeleton'], ossuary: ['summonSkeleton'], graveProvides: ['summonSkeleton'], gripAll: ['deathGrip'], bidden: ['summonSkeleton','gravecall'], secondDeath: ['summonSkeleton','gravecall'] };
 const skillNeeds = n => n?.hero === 'reaper' ? SKILL_NEEDS[n.id] || [] : [];
+const treeNodesFor = h => skillsFor(h).filter(n => n.active).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));
 const treeNodes = () => treeBranch === 1 ? passiveLadder(hero()) : skillsFor(hero()).filter(n => n.active).sort((a,b) => a.level-b.level || a.price-b.price || a.name.localeCompare(b.name));   /* the PASSIVES tab is the ladder: the order they arrive in */
 const loadoutSafe = () => { const from = state === 'tree' ? treeFrom : state, origin = from === 'menu' ? menuFrom : from;
   if (['map','select'].includes(origin) || (from === 'store' && equipFrom === 'map' && storeMode === 'equip')) return true;
@@ -3823,7 +3833,8 @@ const TAL_BY_NAME = {
   lightFoot: 'boot', vaulter: 'boot', giveGround: 'boot', longVault: 'boot', pinTwist: 'drop', freeHand: 'bolt',
   airPoint: 'boot', holdThem: 'hourglass', skirmisher: 'boot',
 };
-const TAL_KIND = id => {
+const TAL_KIND = (id, who) => {
+  const own = PASSIVE_GLYPH[who || hero()]; if (own && own[id]) return own[id];   /* THE TABLE (src/skill-glyphs.js): every catalog passive is in it; what follows is only for growth nodes and old tree ids */
   if (TAL_BY_NAME[id]) return TAL_BY_NAME[id];
   const k = id.toLowerCase();
   if (/(shield|guard|block|parry|plate|ward|hide)/.test(k)) return 'shield';
@@ -3833,16 +3844,16 @@ const TAL_KIND = id => {
   if (/(fire|flame|ember|heat|pyre|scorch|jet|cinder|blaze|brand)/.test(k)) return 'flame';
   if (/(light|holy|mend|aegis|divine|radiance|beacon)/.test(k)) return 'light';
   if (/(haft|swathe|keen|rend|circle|scythe)/.test(k)) return 'scythe';
-  if (/(grave|press|ossuary|gleaner|second|toll|brand|passing|rites|cold|wraith|tide)/.test(k)) return 'skull';
+  if (/(grave|press|ossuary|gleaner|toll|brand|passing|rites|cold|wraith|tide)/.test(k)) return 'skull';
   if (/(barrel|pistol|shot|powder|grape|eye|holed)/.test(k)) return 'shot';
-  if (/(purse|pocket|loot|ransom|share|quarter|plunder|rum|flag)/.test(k)) return 'coin';
-  if (/(line|hook|board|turncoat|cutthroat|blade|legs)/.test(k)) return 'hook';
+  if (/(purse|pocket|loot|ransom|share|quarter|plunder|flag)/.test(k)) return 'coin';
+  if (/(line|hook|board|legs)/.test(k)) return 'hook';
   if (/(twin|call|cry|horn|throw)/.test(k)) return 'chev';
   return 'blade';
 };
 const TAL_ICON = {};
-function talIcon(id) {
-  const kind = TAL_KIND(id);
+function talIcon(id, who) {
+  const kind = TAL_KIND(id, who);
   if (TAL_ICON[kind]) return TAL_ICON[kind];
   const [c, gg] = canvas(12, 12); const p = (x, y, col) => { gg.fillStyle = col; gg.fillRect(x, y, 1, 1); };
   const rows = (R, pal) => R.forEach((r, y) => { for (let x = 0; x < r.length; x++) if (r[x] !== '.') p(x, y, pal[r[x]]); });
@@ -3853,6 +3864,13 @@ function talIcon(id) {
     hourglass: [['..gggggggg..', '...wwwwww...', '...wyyyyw...', '....wyyw....', '.....ww.....', '....w..w....', '...w.yy.w...', '...wyyyyw...', '..gggggggg..', '............'], { g: '#c9a040', w: '#dfe8ff', y: '#ffd36b' }],
     cross: [['....GGGG....', '....GwwG....', '....GwwG....', 'GGGGGwwGGGGG', 'GwwwwwwwwwwG', 'GwwwwwwwwwwG', 'GGGGGwwGGGGG', '....GwwG....', '....GwwG....', '....GGGG....'], { G: '#3f8a4a', w: '#dfffa0' }],
     reflect: [['..ssssss....', '.sSSSSSSs...', '.sSs..sSs...', '.sS....Ss..a', '.sS....Ss.aa', '.sSs..sSsaaa', '..sSSSSs..aa', '...ssss....a', '............'], { s: '#8a96a8', S: '#dfe8ff', a: '#ff9a5c' }],
+    pillar: [['.....aa.....', '....aaaa....', '.....aa.....', '...gggggg...', '...gnnnnk...', '...gnnnnk...', '...gnnnnk...', '...gnnnnk...', '...gnnnnk...', '..kkkkkkkk..'], { g: '#a8a696', n: '#7c7a6e', k: '#5e5c54', a: '#e8a83a', m: '#6f9a4a', b: '#5c3a1d' }],
+    rune: [['..gggggggg..', '.gnnnnnnnnk.', '.gnnnaannnk.', '.gnnnannnnk.', '.gnnaaaannk.', '.gnnnannnnk.', '.gnnnannaak.', '.gnnnaannnk.', '.kkkkkkkkkk.'], { g: '#a8a696', n: '#7c7a6e', k: '#5e5c54', a: '#e8a83a', m: '#6f9a4a', b: '#5c3a1d' }],
+    slab: [['............', '..gggggggg..', '.gnnnnnnnnk.', '.kkkkkkkkkk.', 'gggggggggggg', 'nnnnnnnnnnnk', 'kkkkkkkkkkkk', '.bbbbbbbbbb.', 'bbbbbbbbbbbb'], { g: '#a8a696', n: '#7c7a6e', k: '#5e5c54', a: '#e8a83a', m: '#6f9a4a', b: '#5c3a1d' }],
+    shards: [['..g.....g...', '.gnk...gk...', '..k...g.....', '......nk.g..', '.g..gk..gnk.', 'gnk..k...k..', '.k....g.....', '...gnk.gk...', '...kk..k....'], { g: '#a8a696', n: '#7c7a6e', k: '#5e5c54', a: '#e8a83a', m: '#6f9a4a', b: '#5c3a1d' }],
+    fall: [['..a..a..a...', '..a..a..a...', '....gggg....', '...gnnnnk...', '...gnnnnk...', '....kkkk....', '............', 'bbbbbbbbbbbb', 'nnnnnnnnnnnn'], { g: '#a8a696', n: '#7c7a6e', k: '#5e5c54', a: '#e8a83a', m: '#6f9a4a', b: '#5c3a1d' }],
+    stones: [['.gg....gg...', 'gnnk..gnnk..', '.kk....kk...', '............', '.gg....gg...', 'gnnk..gnnk..', '.kk....kk...', 'mmmmmmmmmmmm'], { g: '#a8a696', n: '#7c7a6e', k: '#5e5c54', a: '#e8a83a', m: '#6f9a4a', b: '#5c3a1d' }],
+    wave: [['....aaaa....', '..aa....aa..', '.a..gggg..a.', 'a..gnnnnk..a', 'a.gnnnnnnk.a', 'gggggggggggg', 'nnnnnnnnnnnn'], { g: '#a8a696', n: '#7c7a6e', k: '#5e5c54', a: '#e8a83a', m: '#6f9a4a', b: '#5c3a1d' }],
     twin: [['............', '.bbbbb......', '.bFFFb......', '.bFFFbbbbb..', '.bbbbbGGGb..', '.....bGGGb..', '.....bbbbb..', '............'], { b: '#2a2230', F: '#ffd36b', G: '#8fd160' }],
   };
   if (NEW[kind]) { rows(NEW[kind][0], NEW[kind][1]); TAL_ICON[kind] = c; return c; }
@@ -3893,11 +3911,11 @@ function talIcon(id) {
   outline(c, ART.OUT);
   TAL_ICON[kind] = c; return c;
 }
-function treeIcon(n) { if (n.active) return skillIcon(n.id); return talIcon(n.id); }
+function treeIcon(n) { if (n.active) return skillIcon(n.id); return talIcon(n.id, n.hero); }
 const TAL_CATS = { attack: { word: 'ATTACK', bg: '#4a2020', col: '#ff9a7a' }, defence: { word: 'DEFENCE', bg: '#1f2c48', col: '#9ac0ff' }, area: { word: 'AREA', bg: '#33264a', col: '#c9a0ff' },
   movement: { word: 'MOVEMENT', bg: '#1f3a26', col: '#8fd160' }, sustain: { word: 'SUSTAIN', bg: '#3e3418', col: '#ffd36b' }, utility: { word: 'UTILITY', bg: '#2c2c38', col: '#c9d1dc' }, skill: { word: 'SKILL', bg: '#3a2a14', col: '#ffb347' } };
-const talCat = n => { if (n.active) return TAL_CATS.skill; const k = TAL_KIND(n.id);
-  return TAL_CATS[k === 'blade' || k === 'flame' || k === 'scythe' || k === 'shot' || k === 'hook' || k === 'drop' || k === 'eye' ? 'attack' : k === 'shield' || k === 'reflect' ? 'defence' : k === 'ring' ? 'area' : k === 'boot' ? 'movement' : k === 'heart' || k === 'light' || k === 'cross' || k === 'bolt' ? 'sustain' : 'utility']; };
+const talCat = n => { if (n.active) return TAL_CATS.skill; const k = TAL_KIND(n.id, n.hero);
+  return TAL_CATS[k === 'blade' || k === 'shards' || k === 'fall' || k === 'flame' || k === 'scythe' || k === 'shot' || k === 'hook' || k === 'drop' || k === 'eye' ? 'attack' : k === 'shield' || k === 'reflect' ? 'defence' : k === 'ring' || k === 'wave' ? 'area' : k === 'boot' ? 'movement' : k === 'heart' || k === 'light' || k === 'cross' || k === 'bolt' || k === 'rune' ? 'sustain' : 'utility']; };
 const BRANCH_PIX = {
   reaper: [['....ss....', '....ss....', '....ss....', '....ss....', '....ss....', '..wwssww..', '....ww....', '....ww....', '....WW....', '..........'],
     ['..........', '...yyy....', '..y...y...', '.y.....y..', '.y.yyy.y..', '.y.....y..', '..y...y...', '...yyy....', '..........', '..........'],
@@ -3914,16 +3932,22 @@ const BRANCH_PIX = {
   paladin: [['....y.....', '.y..y..y..', '..yyyyy...', 'yyywwyyyy.', '..yyyyy...', '.y..y..y..', '....y.....', '..........', '..........', '..........'],
     ['...yyyy...', '..y....y..', '.y......y.', '.y......y.', '.y..ww..y.', '.y......y.', 'ssssssssss', '..........', '..........', '..........'],
     ['.sssss....', '.swwws....', '.sssss....', '...b......', '...b......', '...b......', '...b......', '..........', '..........', '..........']] };
+/* THE PREVIEW BOX: the highlighted ability performed by your hero on a training post, looping (src/ability-preview.js). A passive has nothing to perform, so it shows its glyph and what it is. */
+const treePreview = (n, x, y, w, h) => { if (!n) return;
+  if (!n.active) { g.fillStyle = 'rgba(14,12,22,0.92)'; g.fillRect(x, y, w, h); g.strokeStyle = 'rgba(255,255,255,0.14)'; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1); const ic = treeIcon(n); g.drawImage(ic, 0, 0, ic.width, ic.height, Math.round(x + w / 2 - ic.width * 1.5), y + 5, ic.width * 3, ic.height * 3); const cat = talCat(n); text(cat.word, x + w / 2, y + 5 + ic.height * 3 + 4, cat.col, 'center', 6); text('ALWAYS ON', x + w / 2, y + h - 20, UI.dim, 'center', 6); text('WHEN IT ARRIVES', x + w / 2, y + h - 10, UI.dim, 'center', 6); return; }
+  const set = preview('vignette:' + hero() + ':' + PROG.skin + ':' + PROG.sword, () => heroSet(PROG.skin, PROG.sword, true));
+  drawAbilityPreview(g, x, y, w, h, { id: n.id, hero: hero(), t: time, idle: set.R.idle, atk: set.R.atk, icon: treeIcon(n) }); };
 function drawTree() {
  g.drawImage(MAPC,0,0);g.fillStyle='rgba(10,9,18,0.94)';g.fillRect(0,0,VW,VH);panel(3,2,VW-6,VH-4);
  const h=hero(),lv=heroLevel(),ns=treeNodes(),idx=Math.max(0,Math.min(ns.length-1,treeI)),n=ns[idx],list=equipped(PROG,h,lv),limit=slotsAt(lv),width=(VW-20)/limit;
  text('SKILLS / LOADOUT',10,6,UI.title,'left',6);text('LV '+lv+'   '+(PROG.coins||0)+' COINS',VW-10,6,UI.gold,'right',6);
  for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),key=['F','G'][i];g.fillStyle=i<limit?'#302c3e':'#191622';g.fillRect(x,19,width-3,23);text(i<limit?(sk&&!sk.active?'PASSIVE':key):'LEVEL '+(i===2?8:16),x+4,21,i<limit?UI.gold:UI.dim,'left',6);text(fitName(sk?sk.name:i<limit?'EMPTY':'LOCKED',width-11,6),x+4,31,UI.text,'left',6);}
  for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,46,91,12);text(tab===0?'ACTIVES':'PASSIVES',x+45,49,treeBranch===tab?UI.gold:UI.dim,'center',6);}text((Math.floor(idx/6)+1)+' / '+Math.ceil(ns.length/6),VW-12,49,UI.dim,'right',6);
- const start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,VW-18,10);}
+ const LW=192,start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=62+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,LW,10);}
   /* THE PASSIVE LADDER: what he has is lit and says ON; what is coming is dim and says the level it arrives at */
-  if(!q.active){const on=passiveOn(PROG,h,q.id,lv);text(fitName(q.name,VW-145,6),13,y,on?UI.sel:UI.dim,'left',6);text(on?'ON':'LV '+q.level,VW-13,y,on?UI.sel:UI.dim,'right',6);continue;}
-  text(fitName(q.name,VW-145,6),13,y,eq?UI.sel:UI.title,'left',6);text(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price,VW-13,y,owned?UI.sel:UI.gold,'right',6);}
+  if(!q.active){const on=passiveOn(PROG,h,q.id,lv),bg=on?'ON':'LV '+q.level;text(fitName(q.name,LW-10-inkW(bg,6)-4,6),13,y,on?UI.sel:UI.dim,'left',6);text(bg,9+LW-4,y,on?UI.sel:UI.dim,'right',6);continue;}
+  const bg=eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price;text(fitName(q.name,LW-10-inkW(bg,6)-4,6),13,y,eq?UI.sel:UI.title,'left',6);text(bg,9+LW-4,y,owned?UI.sel:UI.gold,'right',6);}
+ treePreview(n,9+LW+6,46,VW-9-(9+LW+6),76);
  if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):passiveOn(PROG,h,n.id,lv)?'PASSIVE  ALWAYS ON':'PASSIVE  ARRIVES AT LEVEL '+n.level),12,124,UI.gold,'left',6);
  const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
  const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,134+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
@@ -4046,7 +4070,7 @@ function drawStore() {
       // the words move up (the WISP's line ran off the bottom of the box)
       const lk0 = lockedOf(k), body0 = lk0 ? (k.feat ? k.featName : 'clear ' + k.needsName + ' first') : (k.desc || k.per || '');
       const need = 8 * Math.min(2, wrap(k.name, pvW - 10, 6).length) + 11 + BODY_LH * wrap(body0, pvW - 10, 6).length, room = pvH - 10 - 50;
-      const squeeze = Math.max(0, Math.min(24, need - room)), artB = pvY + 46 - squeeze;
+      const squeeze = tab.talent ? 0 : Math.max(0, Math.min(24, need - room)), artB = pvY + 46 - squeeze;
       if (tab.key === 'skin' || tab.key === 'sword' || tab.key === 'hero') {
         const set = tab.key === 'hero' ? preview('hero:' + k.id + ':' + PROG.skin + ':' + PROG.sword, () => heroSet(PROG.skin, PROG.sword, 'idle', k.id))
           : tab.key === 'skin' ? skinPreview(k)
@@ -4058,6 +4082,9 @@ function drawStore() {
         text(rr + ' / ' + k.max, mx, pvY + 10, UI.title, 'center');
         for (let q = 0; q < k.max; q++) { g.fillStyle = q < rr ? UI.sel : '#3a3a44'; g.fillRect(mx - k.max * 5 + q * 10 + 1, pvY + 24, 8, 8); }
         text(k.id === 'vigour' ? 'HEALTH' : k.id === 'breath' ? 'STAMINA' : k.id === 'recovery' ? 'REGEN' : k.id === 'temper' ? 'DAMAGE' : 'COST', mx, pvY + 36, UI.dim, 'center', 6);
+      } else if (tab.talent) {   /* the SKILLS shop window: your hero's abilities performed one after another (src/ability-preview.js) */
+        const acts = treeNodesFor(hero()), a = acts[Math.floor(time / 3.6) % Math.max(1, acts.length)];
+        if (a) { treePreview(a, pvX + 2, pvY + 2, pvW - 4, 44 - squeeze); text(fitName(a.name, pvW - 6, 6), pvX + 3, pvY + 4, UI.gold, 'left', 6); }
       } else {
         const icon = iconOf(k);
         const isc = squeeze > 8 ? 2 : 3; if (icon) g.drawImage(icon, 0, 0, icon.width, icon.height, Math.round(mx - icon.width * isc / 2), Math.round(artB - icon.height * isc), icon.width * isc, icon.height * isc);
@@ -25323,6 +25350,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (sx > VW || sx + w < 0) continue;
     drawRoom(st, sx, sy, w, h, x0, y0);
   }
+  if (L.palette && L.palette.farDim) { g.globalAlpha = L.palette.farDim; g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }   /* VALUE PASS (opt-in, palette.farDim = black alpha; 0.28 = x0.72): the back wall a step darker so the footing, foes and hazards read against it (lane claude/footlip) */
   /* A CABIN IS A PLACE: L.cabins [x0, x1, top row, floor row, kind] dress a stretch of a ship's interior as the room it is (src/redraw/cabins.js) */
   for (const cb of (L.cabins || [])) { const [x0, x1, y0, fl, kind] = cb, sx = Math.round(x0 * TS - cx), sy = Math.round(y0 * TS - cy);
     if (sx > VW || sx + (x1 - x0 + 1) * TS < 0 || sy > VH || sy + (fl - y0) * TS < 0) continue;

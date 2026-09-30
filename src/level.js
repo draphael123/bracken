@@ -2635,11 +2635,11 @@ function undercrown() {
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 23 }, pools, falls: [], moversExtra: movers, interiors,
-    timber: true, hasCryst: true, dark: 0.14, edgeLit: true, underground: true,   /* hasCryst: the Glitter Vein's ledges craze under you (updateCrystal) */   /* it was too dark to see the floor: less black, and every edge you can stand on is lit */
+    timber: true, hasCryst: true, dark: 0.14, edgeLit: 'rgba(255,226,176,0.9)', underground: true,   /* hasCryst: the Glitter Vein's ledges craze under you (updateCrystal) */   /* it was too dark to see the floor: less black, and every edge you can stand on is lit */
     duskStart: -1, duskLen: 1, music: 'barrows', night: true, glowNight: true, nightA: 0.12,   /* the readability pass: under the night wash, the tall gloom and the murk the open air measured L* 6-9 (a walkway needs 20 to read): the washes thinner, the far wall a lit brown, and the gloom a mine's grey, not the canopy's green */
     tall: { top: 10 * TS, bottom: 168 * TS, col: '18,16,22', deepest: 0.12 },
 
-    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(30,26,34,0.2)', murkCol: '#3e3846', murkLit: '#7a5a34',   /* a mine's platform is staging: sawn boards over a joist, not a felled tree */
+    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(30,26,34,0.2)', murkCol: '#3e3846', murkLit: '#7a5a34', farDim: 0.28, footLip: ['#f0be7c', 0.62],   /* a mine's platform is staging: sawn boards over a joist, not a felled tree */
       grass: '#5a4a3a', grassL: '#6e5c48', grassD: '#3a2e22', dirt: '#3a3028', dirtL: '#4a3e32', dirtD: '#241d18',
       canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
