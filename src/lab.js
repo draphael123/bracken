@@ -969,6 +969,32 @@ async function runbossLab(BK, opts) {
         if((h!=='paladin'||P.st>=44)&&!guard&&!eruption&&mode!=='sinkTell'&&!(mode==='slamTell'&&boss.modeT<.65)&&Math.abs(dx)<LAB_REACH[h]+target.w/2&&Math.abs(P.y-target.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
         const was=P.hp,m0=mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,target,f,h});if(f%600===599)await yieldNow();continue;
       }
+      if(boss.t==='wickerqueen'){
+        /* THE WICKER QUEEN (claude/fair3): the bonfire opening, taught. Stand on the far side of the embers from her with your back turned; turn round the
+           moment she stands well onto them (in her dark, near enough for the look to reach her); cut her while she burns. The rest of the time: face her
+           (she cannot move), jump the low ribbon and duck the high one as it arrives, turn on a sickle's glow, and cut down a crowned mummer that gets near. */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const G=BK.L.green,mid=G.bonfire*16+8,mx=G.maypole*16+8,E=40,q=boss,dq=q.x-P.x,sq=Math.sign(dq)||1;
+        let gx=P.x,face=sq,swing=null;
+        const lashK=q.mode==='lashLowTell'?'low':q.mode==='lashHighTell'?'high':q.mode==='lash'?q.lashKind:null,front=q.mode==='lash'?(q.lashR||0):-1,dm=Math.abs(P.x-mx);
+        const mums=BK.enemies().filter(e=>e.alive&&e.t==='mummer'&&Math.abs(e.x-P.x)<120&&Math.abs(e.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x));
+        const glowM=mums.find(e=>e.mode==='glow'),nearM=mums.find(e=>Math.abs(e.x-P.x)<60);
+        const side=q.x>mid?-1:1,lureX=Math.max(A.x0+20,Math.min(A.x1-20,mid+side*(q.phase===2?64:110))),transit=Math.abs(lureX-P.x)>40&&Math.sign(lureX-P.x)!==sq;
+        if(q.open>0){gx=q.x-sq*Math.max(10,LAB_REACH[h]-6);face=sq;swing=q;}   /* she burns: get on her */
+        else if(glowM){face=Math.sign(glowM.x-P.x)||1;swing=glowM;}   /* a mummer's red mask: look at it (it stops), and cut it */
+        else if(nearM){const ms=Math.sign(nearM.x-P.x)||1;face=ms;gx=nearM.x-ms*Math.max(10,LAB_REACH[h]-6);swing=nearM;}   /* one of her crowd near: face it, step in, cut it down */
+        else if(q.mode==='sickleTell'&&!transit){face=sq;}   /* the sickle's red glow: LOOK, and it is cancelled (or, already running for the far side, outrun it) */
+        else if(q.bank>0||q.mode==='rise'||q.mode==='catch'){face=sq;}   /* the embers banked: hold her with the look and wait */
+        else{gx=lureX;const deep=Math.abs(q.x-mid)<E-8,reach=q.phase===2?90:600;
+          if(Math.abs(gx-P.x)>8)face=Math.sign(gx-P.x)||1;else face=deep&&Math.abs(dq)<reach?sq:-sq;}   /* THE LURE: the far side of the embers from her, back turned until she is well onto them, then look */
+        if(lashK==='low'&&P.ground&&q.mode==='lash'&&front>dm-70&&front<dm+10){BK.press('jump');P.labJump=16;}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        const duck=lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20));
+        if(duck&&P.ground){k.down=true;gx=P.x;swing=null;}
+        if(!duck&&Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;else P.face=face;
+        if(!duck&&swing&&P.atk<0&&Math.abs(swing.x-P.x)<LAB_REACH[h]+(swing.w||10)/2+4){P.face=Math.sign(swing.x-P.x)||1;BK.press('atk');swings++;}
+        const was=P.hp,m0=q.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:q.open>0});if(f%600===599)await yieldNow();continue;
+      }
       if(boss.t==='harbormaster'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const dx=boss.x-P.x,side=Math.sign(dx)||1;let gx=boss.x-side*Math.max(18,LAB_REACH[h]*.65);

@@ -9,7 +9,7 @@
 //   - the page throws.
 // A foe that needs a place the flat floor cannot give it (the lamprey's water, the clinger's wall over a hero in the air) is named
 // in SKIP with the reason; answer-tags still holds it to its table row.
-//   node tools/untold-told.mjs            (PORT from tools/ports.mjs)
+//   node tools/untold-told.mjs            (PORT from tools/ports.mjs; --combat=weighty asks it with the combat switch on, src/weighty.js)
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
@@ -20,13 +20,14 @@ const FOES = [['spit', 5, 0], ['lurker', 3, 0], ['hopper', 6, 0], ['crow', 12, 0
   ['spitcap', 8, 0], ['weaver', 3, -4], ['thief', 6, 0], ['wight', 5, 0], ['holdfast', 0, 0], ['shardling', 4, 0], ['bonearcher', 9, 0],
   ['boo', 6, -1, null, true], ['husk', 4, 0], ['apprentice', 7, 0], ['emberwisp', 5, -1], ['kite', 0, -5], ['bale', 8, 0], ['sweep', 4, 0], ['horn', 6, 0]];
 const SKIP = { lamprey: 'it lives in deep water and reaches only a swimming hero', clinger: 'it hangs on a wall over a hero in the air' };
+const WEIGHTY_ON = process.argv.includes('--combat=weighty');
 const pg = await openPage({ audio: false, fonts: false });
 const out = [];
 try {
   await pg.reload();
   out.push(...await pg.evalp(`(async()=>{
     const { LEVELS } = await import('/src/level.js');
-    BK.load(LEVELS.findIndex(l => l.id === 'stockade')); BK.start(); BK.god = false;
+    BK.load(LEVELS.findIndex(l => l.id === 'stockade')); BK.start(); BK.god = false;${WEIGHTY_ON ? " BK.setCombat('weighty');" : ''}
     const L = BK.L, W = L.W, at = (x, y) => L.grid[y * W + x];
     let spot = null;
     for (let x0 = Math.floor(BK.P.x / 16); x0 < W - 30 && !spot; x0++) for (let y = 7; y < L.H - 2 && !spot; y++) {
