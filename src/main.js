@@ -4079,7 +4079,7 @@ function drawStore() {
         text(k.id === 'vigour' ? 'HEALTH' : k.id === 'breath' ? 'STAMINA' : k.id === 'recovery' ? 'REGEN' : k.id === 'temper' ? 'DAMAGE' : 'COST', mx, pvY + 36, UI.dim, 'center', 6);
       } else if (tab.talent) {   /* the SKILLS shop window: your hero's abilities performed one after another (src/ability-preview.js) */
         const acts = treeNodesFor(hero()), a = acts[Math.floor(time / 3.6) % Math.max(1, acts.length)];
-        if (a) { treePreview(a, pvX + 2, pvY + 2, pvW - 4, 44 - squeeze); text(fitName(a.name, pvW - 12, 6), pvX + 6, pvY + 4, UI.gold, 'left', 6); }
+        if (a) { treePreview(a, pvX + 2, pvY + 2, pvW - 4, 44 - squeeze); text(fitName(a.name, pvW - 6, 6), pvX + 3, pvY + 4, UI.gold, 'left', 6); }
       } else {
         const icon = iconOf(k);
         const isc = squeeze > 8 ? 2 : 3; if (icon) g.drawImage(icon, 0, 0, icon.width, icon.height, Math.round(mx - icon.width * isc / 2), Math.round(artB - icon.height * isc), icon.width * isc, icon.height * isc);
