@@ -121,11 +121,14 @@ const until = (r, pred, n = 600) => { for (let i = 0; i < n; i++) { if (pred()) 
   const b = run('none'); ok(b.r.log.hurt > 0, 'a hero who stood still through a pair was not hit: the test hits nothing');
   const c = run('cut'); ok(c.hiAt < 0 && c.loAt > 0, 'a cut in the high blow\'s glow did not cancel only it (high landed ' + (c.hiAt >= 0) + ', low landed ' + (c.loAt >= 0) + ')'); }
 // ---- HE FIGHTS TOO: each told its full time, never over a puppet's windup ----
-{ const r = rig({ x: 300 }); const told = {}, landed = {}; let overlap = 0;
+{ const r = rig({ x: 300 }); const told = {}, landed = {}; let overlap = 0, wasBusy = false;
   let seed = 3; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (let i = 0; i < 60 * 90; i++) { if (i % 120 === 0) r.hero.x = A.x0 + 40 + rnd() * (A.x1 - A.x0 - 80);
     const ev = r.step(); for (const v of ev) { if (['sandbagTell', 'spotTell', 'sceneryTell'].includes(v.t)) told[v.t.slice(0, -4)] = i; if (['sandbag', 'spot', 'scenery'].includes(v.t) && told[v.t] !== undefined) landed[v.t] = Math.max(landed[v.t] || 0, (i - told[v.t]) * DT); }
-    if (/^(sandbag|spot|scenery)Tell$/.test(r.e.mode) && [r.sol, r.har].some(p => p.alive && /Tell$/.test(p.mode) && p.tellLen - p.modeT < DT * 1.5)) overlap++;
+    const busy = [r.sol, r.har].some(p => p.alive && (/Tell$/.test(p.mode) || ['chop', 'spin', 'drop', 'thrust', 'kick', 'swing'].includes(p.mode)));
+    if (/^(sandbag|spot|scenery)Tell$/.test(r.e.mode) && [r.sol, r.har].some(p => p.alive && /Tell$/.test(p.mode) && p.tellLen - p.modeT < DT * 1.5)) overlap++;   /* a puppet began over his */
+    if (ev.some(v => ['sandbagTell', 'spotTell', 'sceneryTell'].includes(v.t)) && wasBusy) overlap++;   /* he began over a puppet's */
+    wasBusy = busy;
     for (const p of [r.sol, r.har]) if (p.alive && p.mode !== 'heap' && M.stringsLeft(p) < 2 && M.stringsLeft(p) > 0) { for (const s of p.str) s.cut = false; } }
   for (const k of ['sandbag', 'spot', 'scenery']) ok(landed[k] >= M.PUP[k + 'Tell'] - 0.03, 'his ' + k + ' never landed after its full told time (' + (landed[k] || 0).toFixed(2) + ' s)');
   ok(overlap === 0, 'a puppet began a windup over one of his own told blows (' + overlap + ' frames)'); }
