@@ -24,8 +24,15 @@
 //   dmg       45   the damage of 'hurt'; the chaser then falls back to rubber.min and holds `hold` seconds (0.7) so it cannot chain-hit
 //   autoscroll  true|false, edge px (default off)   THE CAMERA PUSHES: its trailing edge is never behind the chaser's front (minus edge, 24 px), so the
 //             hero cannot fall behind the screen without being caught, and the camera cannot run so far ahead that he is off it
+//   show      px (optional, with autoscroll): THE CAMERA TIED TO IT - its front is kept at least this far inside the screen's trailing edge, so
+//             you see what is coming - never at the cost of the hero: he keeps showKeep (0..1, default 0.1) of the view ahead of him, so a chase whose
+//             hero must see what waits ahead (the stair's Archmage over the next landing) lets the front drop off when he is far ahead of it;
+//             and never past its zone
 //   glow      300  the distance at which the screen-edge danger glow and rumble begin
-//   look      'rock' | 'fire' | 'drill'    how the chaser is drawn
+//   look      'rock' | 'fire' | 'drill' | 'dark'    how the chaser is drawn ('dark': the Undead Archmage's magic, his ring's green-black)
+//   say       'RUN!'   the banner when it starts
+//   zone      [x0, x1, y0, y1]  world px (optional): the start line only counts with the hero inside this box, and the chaser is drawn only
+//             across x0..x1 - for a chase that shares its rows (or columns) with another part of the level (the spiral stair: claude/towerscroll)
 //   music     'boss'    a track name from src/audio.js TRACKS; plays at the start, the level's own track returns at the end / on respawn
 //   beams     [{ x0, x1, y, th, dmg, name, period, up }]   OVERHEAD BEAMS / LOW CEILINGS. y = the beam's LOWEST point (world px), th = its
 //             thickness (default 6). A standing hero under it is hit; a hero DUCKED under it (src/duck.js duckClears) passes. Beams are
@@ -56,11 +63,13 @@ export function chaseSpec(c) {
   return { id: c.id || 'chase', name: c.name || 'THE CHASE', axis: c.axis === 'y' ? 'y' : 'x', dir, trigger, end: c.end,
     from: num(c.from, trigger - dir * gap0), gap0, curve, lead: num(c.lead, 1.6), accel: num(c.accel, 140), rubber: rb,
     contact: c.contact === 'hurt' ? 'hurt' : 'kill', dmg: num(c.dmg, 45), hold: num(c.hold, 0.7),
-    autoscroll: !!c.autoscroll, edge: num(c.edge, 24), glow: num(c.glow, 300), look: c.look || 'rock', music: c.music || null,
+    autoscroll: !!c.autoscroll, edge: num(c.edge, 24), show: Number.isFinite(c.show) ? c.show : null, showKeep: num(c.showKeep, 0.1), glow: num(c.glow, 300), look: c.look || 'rock', music: c.music || null, say: c.say || 'RUN!', zone: Array.isArray(c.zone) && c.zone.length === 4 ? c.zone.slice() : null,
     beams: (c.beams || []).map(b => ({ th: BEAM.th, dmg: BEAM.dmg, name: 'A LOW BEAM', ...b })), checkpoint: c.checkpoint || null };
 }
 export const newChase = () => ({ phase: 'idle', pos: 0, dist: 0, speed: 0, t: 0, warned: {}, warnT: 0, warnText: '', hold: 0, crash: 0, rumT: 0 });
 export const chaseReset = st => Object.assign(st, newChase());
+/* THE ZONE: is (x, y) where this chase's start line counts (no zone: everywhere) */
+export const chaseInZone = (sp, x, y) => !sp.zone || (x >= sp.zone[0] && x < sp.zone[1] && y >= sp.zone[2] && y < sp.zone[3]);
 
 /* THE STEP. hero = the hero's centre along the axis (px). Returns the events this step made: start, warn, speedup, contact, end. */
 export function chaseStep(sp, st, hero, dt) {
@@ -102,8 +111,11 @@ export function chaseDanger(sp, st, hero) {
 export function chaseCam(sp, st, cam, view, hero) {
   if (!sp.autoscroll || st.phase !== 'run') return cam;
   const e = sp.edge;
-  if (sp.dir > 0) { const lo = st.pos - e, hi = hero - e; return Math.min(Math.max(cam, lo), Math.max(hi, lo)); }
-  const hi = st.pos + e - view, lo = hero + e - view; return Math.max(Math.min(cam, hi), Math.min(lo, hi));
+  let c; if (sp.dir > 0) { const lo = st.pos - e, hi = hero - e; c = Math.min(Math.max(cam, lo), Math.max(hi, lo)); }
+  else { const hi = st.pos + e - view, lo = hero + e - view; c = Math.max(Math.min(cam, hi), Math.min(lo, hi)); }
+  if (sp.show === null || sp.show === undefined) return c;
+  const z = sp.zone, lim = !z ? null : sp.axis === 'y' ? (sp.dir < 0 ? z[3] : z[2]) : (sp.dir < 0 ? z[1] : z[0]), p = lim === null ? st.pos : sp.dir < 0 ? Math.min(st.pos, lim) : Math.max(st.pos, lim);   /* (a front still under its zone's floor is in the stone: show the floor) */
+  return sp.dir < 0 ? Math.max(c, Math.min(p + sp.show - view, hero - sp.showKeep * view)) : Math.min(c, Math.max(p - sp.show, hero - (1 - sp.showKeep) * view));
 }
 /* A BEAM against a hero: box = duckBox(P) {l,r,t,b}; clears = duckClears(P, beam.y) - the DUCK's answer, never the down key. t = the clock. */
 export function beamLive(b, t) { return !b.period || (t % b.period) >= (b.up || 0); }
@@ -134,28 +146,36 @@ export function chaseProblems(list, checkpoints) {   // checkpoints: [{x, y}] in
 
 /* ---------- THE DRAWING (world space; g = the frame's 2d context, cx/cy the camera) ---------- */
 const LOOKS = { rock: { body: '#2a2119', edge: '#6b5a48', deb: '#8a7660' }, fire: { body: '#4a1408', edge: '#ff8a2a', deb: '#ffd36b' },
-  drill: { body: '#1c2026', edge: '#a9b4c2', deb: '#e0a040' } };
+  drill: { body: '#1c2026', edge: '#a9b4c2', deb: '#e0a040' }, dark: { body: '#07120c', edge: '#6fe08a', deb: '#c8ffd8', deep: '#1f4a2c', haze: 'rgba(111,224,138,', wave: true, wash: '60,190,110' } };
 export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
   if (st.phase === 'idle') return;
   const L = LOOKS[sp.look] || LOOKS.rock, x = Math.round(st.pos - (sp.axis === 'x' ? cx : cy)), depth = 260;
   g.save();
+  if (sp.zone) { const zx = sp.zone[0] - cx, zy = sp.zone[2] - cy; g.beginPath(); g.rect(Math.round(zx), Math.round(zy), Math.round(sp.zone[1] - sp.zone[0]), Math.round(sp.zone[3] - sp.zone[2])); g.clip(); }   /* only over its own place */
   const jag = i => Math.round(Math.sin(i * 1.7 + time * 9) * 3 + Math.sin(i * 0.6) * 4);
   if (sp.axis === 'x') { const lo = sp.dir > 0 ? x - depth : x, hi = sp.dir > 0 ? x : x + depth;
     g.fillStyle = L.body; g.fillRect(lo, 0, hi - lo, VH);
     for (let y = 0; y < VH; y += 8) { const j = jag(y / 8), ex = sp.dir > 0 ? x + j : x + j - 6; g.fillStyle = L.body; g.fillRect(Math.min(ex, ex + 6 * sp.dir), y, 10, 8); g.fillStyle = L.edge; g.fillRect(sp.dir > 0 ? ex - 2 : ex + 4, y, 3, 8); }
     for (let i = 0; i < 6; i++) { const yy = (time * 90 + i * 53) % VH, xx = x - sp.dir * (10 + (i * 37) % 80); g.fillStyle = L.deb; g.fillRect(Math.round(xx), Math.round(yy), 3, 3); }
+  } else if (L.wave && sp.dir < 0) {   /* A FLOOD RISING (the 'dark' look): a slow swell for a surface, a bright rim, the body to the foot of the screen */
+    g.fillStyle = L.body; g.fillRect(0, x + 6, VW, Math.max(0, VH - x));
+    for (let xx = 0; xx < VW; xx += 2) { const w = Math.sin(xx * 0.045 + time * 2.2) * 3 + Math.sin(xx * 0.11 - time * 3.1) * 2, ey = Math.round(x + w);
+      g.fillStyle = L.body; g.fillRect(xx, ey, 2, 8); g.fillStyle = L.edge; g.fillRect(xx, ey, 2, 1); g.fillStyle = L.deep; g.fillRect(xx, ey + 14 + Math.round(w), 2, 2); }
+    for (let i = 0; i < 6; i++) { const xx = (time * 40 + i * 97) % VW, yy = x + 10 + ((i * 37 + time * 20) % 90); g.fillStyle = L.deb; g.fillRect(Math.round(xx), Math.round(yy), 2, 2); }
+    if (L.haze) { const grad = g.createLinearGradient(0, x, 0, x - 40); grad.addColorStop(0, L.haze + '0.28)'); grad.addColorStop(1, L.haze + '0)'); g.fillStyle = grad; g.fillRect(0, x - 40, VW, 40);   /* a haze of his light over it */
+      for (let i = 0; i < 9; i++) { const xx = (i * 71 + time * 23 * (i % 2 ? 1 : -1)) % VW, rise = ((time * 26 + i * 17) % 34); g.fillStyle = i % 3 ? L.edge : L.deb; g.fillRect(Math.round((xx + VW) % VW), Math.round(x - rise), 2, 2); } }   /* sparks off its surface */
   } else { const lo = sp.dir > 0 ? x - depth : x, hi = sp.dir > 0 ? x : x + depth;
     g.fillStyle = L.body; g.fillRect(0, lo, VW, hi - lo);
     for (let xx = 0; xx < VW; xx += 8) { const j = jag(xx / 8), ey = sp.dir > 0 ? x + j : x + j - 6; g.fillStyle = L.body; g.fillRect(xx, Math.min(ey, ey + 6 * sp.dir), 8, 10); g.fillStyle = L.edge; g.fillRect(xx, sp.dir > 0 ? ey - 2 : ey + 4, 8, 3); }
     for (let i = 0; i < 6; i++) { const xx = (time * 90 + i * 53) % VW, yy = x - sp.dir * (10 + (i * 37) % 80); g.fillStyle = L.deb; g.fillRect(Math.round(xx), Math.round(yy), 3, 3); } }
   g.restore();
 }
-/* THE DANGER GLOW: a red wash on the screen edge the chaser comes from, k = chaseDanger (0..1), still (reduce motion) = steady, no pulse */
+/* THE DANGER GLOW: a red wash (a look's own `wash` colour: the dark's is his green, not fire) on the screen edge the chaser comes from, k = chaseDanger (0..1), still (reduce motion) = steady, no pulse */
 export function drawGlow(g, sp, st, k, VW, VH, time, still) {
   if (!(k > 0.02)) return;
   const a = k * (still ? 0.5 : 0.42 + 0.18 * Math.sin(time * (6 + 8 * k))), size = 30 + 60 * k, from = sp.dir > 0 ? 0 : 1, vert = sp.axis === 'y';
   const grad = vert ? g.createLinearGradient(0, from ? VH : 0, 0, from ? VH - size : size) : g.createLinearGradient(from ? VW : 0, 0, from ? VW - size : size, 0);
-  grad.addColorStop(0, 'rgba(255,60,30,' + a.toFixed(3) + ')'); grad.addColorStop(1, 'rgba(255,60,30,0)');
+  const wc = (LOOKS[sp.look] || {}).wash || '255,60,30'; grad.addColorStop(0, 'rgba(' + wc + ',' + a.toFixed(3) + ')'); grad.addColorStop(1, 'rgba(' + wc + ',0)');
   g.fillStyle = grad; if (vert) g.fillRect(0, from ? VH - size : 0, VW, size); else g.fillRect(from ? VW - size : 0, 0, size, VH);
 }
 /* THE RUMBLE the chaser gives through the shake budget: how strong a shake to ask of shakeCam this beat (0 = none), and how long to wait */

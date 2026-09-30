@@ -38,8 +38,6 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     if (e.t === 'cannon' && e.hole) { const [x0, x1, y0, y1] = e.hole; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.AIR; }
     if (e.t === 'plank' && e.span) { for (let x = e.span[0]; x <= e.span[1]; x++) { const i = e.row * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; } }
     /* THE MONASTERY'S BELLS: one blow brings a tower's bridge down, and it stays down - a bell is a plank that rings */
-    /* THE UNDEAD ARCHMAGE'S WARDS on his spiral stair (src/spiral-chase.js): a blow on the flight's brazier burns one away, and it stays burnt */
-    if (e.t === 'ward' && e.y0 !== undefined) for (let y = e.y0; y <= e.y; y++) { const i = y * W + e.x; if (g[i] === T.SOLID) g[i] = T.AIR; }
     if (e.t === 'tbell' && e.span) { const [x0, x1, row] = e.span; for (let x = x0; x <= x1; x++) { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.PLANK; } }
     /* ITS PRAYER WHEELS: struck from their own floor, a wheel's stair stands either way, so the full fill has both at once. The
        plain fill has the stair as it was built and nothing else: a climb that needs it turned is a climb on the --plain list */

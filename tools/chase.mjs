@@ -1,5 +1,5 @@
 // tools/chase.mjs - THE CHASE ENGINE (claude/chase): the reusable chaser for the Minecart road, the Rockslide and the Ore Road collapse.
-// No level uses it yet; this fails when the ENGINE (src/chase.js + its hook in src/main.js) breaks:
+// The Falling Tower's spiral stair uses it (claude/towerscroll: tools/tower-chase.mjs); this fails when the ENGINE (src/chase.js + its hook in src/main.js) breaks:
 //   PURE (src/chase.js, no page):
 //     - THE CHASER advances, monotonically, and THE RUBBER BAND holds: with a hero running 60..92 px/s the gap never falls under rubber.min
 //       (never unfair on a first try) and with a hero running 300 px/s it never passes rubber.max x LEASH (never no threat)
@@ -14,7 +14,8 @@
 //     - THE LINT (chaseProblems): a good spec passes; no warning, no checkpoint, a rubber.max off the screen, a safe line behind the start are caught
 //     - the glow and the rumble: none far, some near, steady in reduce motion; the rumble stays under the shake budget
 //   IN THE PAGE:
-//     - NO LEVEL HAS L.chases (every level's build), the page without ?chase= has no chase and the demo is off
+//     - ONLY THE LEVELS LISTED HAVE L.chases (every level's build: the Falling Tower's rising dark), and each passes the lint with its own
+//       checkpoints; the page without ?chase= has no chase and the demo is off
 //     - ?chase=demo is the ONLY way in: the demo is up, bossJump.on is set, the whole run never writes the save
 //     - the demo: it starts when the hero crosses the line, the warning is told before it speeds up, the camera is pushed, the front kills a hero who
 //       stands (config 'kill'), hurts him (config 'hurt'), a death RESETS it (idle, at the checkpoint), the safe line ends it
@@ -156,9 +157,9 @@ let R = null, R0 = null;
 try {
   await nav('/?nochase=1');
   R0 = await pg.evalp(`(async()=>{
-    const { LEVELS } = await import('/src/level.js'); const withChases = [];
-    for (const lv of LEVELS) { let b; try { b = lv.build(); } catch { continue; } if (b.chases !== undefined) withChases.push(lv.id); }
-    return { withChases, n: LEVELS.length, on: BK.chase.on(), demoOn: BK.chase.demoOn, bj: BK.bossJump.on, chases: (BK.L && BK.L.chases) };
+    const { LEVELS } = await import('/src/level.js'); const CH = await import('/src/chase.js'); const withChases = [], lint = {};
+    for (const lv of LEVELS) { let b; try { b = lv.build(); } catch { continue; } if (b.chases !== undefined) { withChases.push(lv.id); lint[lv.id] = CH.chaseProblems(b.chases, b.ents.filter(e => e.t === 'check').map(e => ({ x: e.x * 16 + 8, y: (e.y + 1) * 16 })).concat([{ x: b.START.x * 16 + 8, y: (b.START.y + 1) * 16 }])); } }
+    return { withChases, lint, n: LEVELS.length, on: BK.chase.on(), demoOn: BK.chase.demoOn, bj: BK.bossJump.on, chases: (BK.L && BK.L.chases) };
   })()`, 120000);
   await nav('/?chase=demo');
   R = await pg.evalp(`(async()=>{
@@ -213,7 +214,8 @@ ok(/chaseDemo\(q\.get\('hero'\)\)/.test(src) && /if \(q\.get\('chase'\) === 'dem
 ok((src.match(/chaseDemo\(/g) || []).length === 2, 'chaseDemo is called from somewhere other than the param and the BK tool');
 
 console.log('level scan', JSON.stringify(R0));
-ok(R0.n > 40, 'the level scan saw too few levels'); ok(R0.withChases.length === 0, 'levels with L.chases already: ' + R0.withChases.join(', ') + ' (none may until the level lanes land: update this check)');
+ok(R0.n > 40, 'the level scan saw too few levels'); ok(JSON.stringify(R0.withChases) === JSON.stringify(['fallingtower']), 'the levels with L.chases are not the ones listed (the Falling Tower spiral stair; a new chase lane adds its level here): ' + R0.withChases.join(', '));
+for (const [id, p] of Object.entries(R0.lint)) ok(p.length === 0, id + ' fails the chase lint: ' + p.join('; '));
 ok(R0.on === false && R0.demoOn === false && R0.bj === false && !R0.chases, 'the page without ?chase= has a chase or is in playtest mode: ' + JSON.stringify(R0));
 const D = R; console.log('demo', JSON.stringify(D));
 ok(D.demoOn === true && D.bj === true && D.on === true, 'the demo is not up behind ?chase=demo, or is not marked never-save');
@@ -235,4 +237,4 @@ ok(D.beamDuck.ducking === true && D.beamDuck.clears === true && D.beamDuck.hp1 =
 ok(D.seed && D.saveSame, 'the demo run wrote the save (or the seed was not there): ' + JSON.stringify({ seed: D.seed, same: D.saveSame }));
 
 assert.deepEqual(bad, [], 'the chase engine:\n  ' + bad.join('\n  '));
-console.log('the chase engine holds: the chaser advances inside its rubber band (never under ' + MIN_FAIR + ' px, never past the leash), every speed-up is warned first, contact kills or hurts by config, autoscroll pushes the camera both ways on both axes, lines start and end it, a death resets it, beams answer the duck, and no level has L.chases; ?chase=demo is the only way in.');
+console.log('the chase engine holds: the chaser advances inside its rubber band (never under ' + MIN_FAIR + ' px, never past the leash), every speed-up is warned first, contact kills or hurts by config, autoscroll pushes the camera both ways on both axes, lines start and end it, a death resets it, beams answer the duck, and only the listed levels have L.chases (each passing the lint); ?chase=demo is the only way in.');

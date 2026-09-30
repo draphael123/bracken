@@ -32,14 +32,14 @@ try {
     medianLeftOnLoss: left.length ? left[left.length >> 1] : null, openedAvg: +(rows.reduce((a, r) => a + (r.opened || 0), 0) / Math.max(1, rows.length)).toFixed(1),
     breachedAvg: +(rows.reduce((a, r) => a + ((r.portal && r.portal.breached) || 0), 0) / Math.max(1, rows.length)).toFixed(1), markOpenAvg: +(rows.reduce((a, r) => a + ((r.portal && r.portal.gather) || 0), 0) / Math.max(1, rows.length)).toFixed(1),
     byHero: Object.fromEntries(Object.entries(by).map(([h, [w, n]]) => [h, w + '/' + n])), hitBy: Object.fromEntries(Object.entries(hit).map(([k, v]) => [k, Math.round(v)])) }));
-  /* THE SPIRAL STAIR (undead4): each hero climbs it with the lab's stair bot (src/lab.js chaseClimb: braziers struck, their fire jumped,
-     the snuffed one relit from behind), health held up, no god mode - the seconds, what it took, and how often the brazier's fire caught it */
+  /* THE SPIRAL STAIR (undead4; claude/towerscroll): each hero climbs it with the lab's stair bot (src/lab.js chaseClimb) ahead of the rising dark,
+     health held up, no god mode - the seconds, what it took, and how often the dark caught it (tools/stair-pilot.mjs is the normal-health pilot) */
   if (process.env.STAIR !== '0') for (const h of heroes) { await pg.reload();
     const q = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');const LB=await import('/src/lab.js');BK.manualSimulation=true;
       BK.setHero(${JSON.stringify(h)});BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=false;BK.sim(10);
       BK.tp(33,50);BK.sim(5);for(let i=0;i<90;i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;BK.sim(20);
       const r=LB.chaseClimb(BK,BK.enemies().find(e=>e.t==='magechase'),{secs:180,refill:true});
-      return {h:${JSON.stringify(h)},stair:BK.carpet()?'top':'stuck',secs:Math.round(r.t/60),taken:Math.round(r.taken),burnt:r.burnt,wards:BK.L.spiral.seals.filter(s=>s.broken).length,snuffed:BK.L.spiral.seals.some(s=>s.doused)};})()`, 600000);
+      return {h:${JSON.stringify(h)},stair:BK.carpet()?'top':'stuck',secs:Math.round(r.t/60),taken:Math.round(r.taken),died:r.died};})()`, 600000);
     console.log(JSON.stringify(q)); }
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }
