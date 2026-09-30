@@ -30,7 +30,7 @@ import { BAG_H } from './theatre-rig.js';
 export const THEATRE = { W: 344, H: 50, GR: 8, FL: 16, BX: 25, ST: 34, UN: 44 };
 /* every machine's arc (tile columns), read by tools/theatre.mjs and written up in the brief */
 export const ARCS = {
-  facing: { teach: [0, 27] },
+  facing: { teach: [18, 38] },   /* (THEATRE2: in THE HOUSE, on the dress circle - not shifted) */
   spot: { teach: [28, 64], develop: [65, 110], twist: [158, 222], exam: [225, 299] },
   fly: { teach: [128, 136], develop: [136, 156], twist: [176, 222], exam: [252, 280] },
   flat: { teach: [111, 127], develop: [158, 175], twist: [170, 196], exam: [245, 266] },
@@ -38,7 +38,7 @@ export const ARCS = {
 export const SECTIONS = [['THE STAGE DOOR', 0], ['THE COSTUME STORE', 28], ['THE MASK WORKSHOP', 65], ['THE SCENE DOCK', 111], ['THE FLY TOWER', 128], ['THE FLY FLOOR', 157],
   ['THE PERFORMANCE', 158], ['THE UNDER-STAGE', 146], ['THE WINGS', 225], ['THE MAIN STAGE', 300]];
 
-export function buildMaskwrightTheatre({ painter, T, TS }) {
+function buildBackstage({ painter, T, TS }) {
   const { W, H, GR, FL, BX, ST, UN } = THEATRE;
   const L = painter(W, H), { set, block, ent, coins } = L;
   const at = (x, y) => L.grid[y * W + x];
@@ -52,7 +52,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   const px = c => c * TS + 8, floorPx = r => r * TS;
 
   /* THE MACHINERY, as data for src/theatre-rig.js */
-  const spots = [], lines = [], flats = [], traps = [], movers = [], rigBands = [], choruses = [];
+  const spots = [], lines = [], flats = [], traps = [], movers = [], rigBands = [], choruses = [], mirrors = [];
   /* A LIMELIGHT at tile (x, y) - y is the row it stands in (on a floor) or hangs at (hang: on a rail). aims: [[col, floor row], ...] */
   const lamp = (x, y, aims, o = {}) => { const s = { x: px(x), y: o.hang ? y * TS + 10 : (y + 1) * TS - 24, aims: aims.map(([c, r]) => [px(c), floorPx(r)]), i: o.i || 0, r: o.r || 40, cue: o.cue || 0, show: !!o.cue && !o.always, always: !!o.always };   /* always: a cued lamp that runs whether or not the show has started */
     spots.push(s); ent('spotlamp', x, y, { spot: spots.length - 1, hang: !!o.hang }); return spots.length - 1; };
@@ -77,13 +77,12 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   // ---------------- 1. THE STAGE DOOR (0-27): TEACH the facing rule ----------------
   /* (THEATRE2: a HOUSE section - stalls, a balcony, the pit - may be grown in at the very front; everything from here on would slide right by grow().) */
   air(2, 64, 27, 33);                                                        /* the stage-door passage and, past it, the costume store's floor */
-  sign(4, 33, "THE MASKWRIGHT'S THEATRE. THE PLAYERS ARE STILL IN THEIR MASKS.");
-  sign(8, 33, 'THE PLAYERS MOVE ONLY WHEN NOBODY WATCHES. FACE ONE AND IT STOPS. CUT IT DOWN.');
+  sign(4, 33, 'THE STAGE DOOR. THE PLAYERS ARE STILL IN THEIR MASKS.');
   block(12, 13, 33, 33); coins([12, 32], [13, 32]);                       /* a costume trunk left in the passage */
   foe('mummer', 20, 33, { squad: 'the stage door' });                        /* THE FIRST ONE, alone in a passage: facing it, it cannot move. Nothing else here */
   coins([17, 33], [23, 33]);
-  sign(16, 33, 'BELLS: IT IS MOVING. A RED MASK: IT IS ABOUT TO STRIKE. LOOK AT IT.');
   block(24, 25, 32, 33);                                                     /* a hamper to hop */
+  ent('check', 14, 33);                                                      /* CHECKPOINT ONE (THEATRE2): the stage door, through the pass door from the house */
 
   // ---------------- 2. THE COSTUME STORE (28-59) and THE DRESSING ROOMS over it (34-88): TEACH, then the lamp as a LOCK ----------------
   /* THEATRE2: no longer a corridor. The store is the ground floor; the dressing rooms run over it and over the workshop (rows 19-24 on a slab at
@@ -106,7 +105,12 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   lamp(48, 24, [[62, 25], [36, 25]]);                                        /* the dressers' lamp: at first on the floor ahead of you, which helps nobody */
   choruses.push({ x: 36, y: 24, every: 2.2, max: 3, squad: 'the chorus' });
   flat({ axis: 'y', a: 19, b: 13, x0: 70, w: 1, h: 6, winch: [68, 24], step: 0.22, name: 'the quick-change door' });
-  foe('mummer', 80, 24, { squad: 'the dressers' });                          /* past the door, one at the mirrors */
+  /* THE MIRROR ROOM (THEATRE2, Daniel's pick C): past the quick-change door the dressing room is lined with mirrors, and a player the mirrors show you is
+     WATCHED - whichever way you face, while you are in the room with it. The dresser at the mirrors cannot move while you are in here; nor can whatever
+     followed you in. Leave the room (the drop at its end) and the mirrors watch nobody */
+  mirrors.push({ x0: 71, x1: 88, y: 24 });
+  sign(72, 24, 'THE MIRRORS SEE BEHIND YOU.');
+  foe('mummer', 80, 24, { squad: 'the dressers' });
   deco('mirror', 76, 24); deco('mirror', 84, 24, { v: 1 });
   coins([52, 23], [62, 23], [74, 23], [86, 23]);
 
@@ -136,7 +140,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   sign(129, 33, 'STRIKE A ROPE-LOCK AND ITS LINE RUNS: THE BATTEN ONE WAY, ITS SANDBAG THE OTHER.');
   line('A', { x: 132, w: 3, rowIn: 33, rowOut: 25 }, { x: 142, w: 2, rowIn: 18, rowOut: ST }, [[135, 33], [131, 24]]);   /* TAUGHT: step on, strike the lock beside it, ride up */
   line('B', { x: 137, w: 3, rowIn: 25, rowOut: FL }, { x: 152, w: 2, rowIn: 23, rowOut: ST }, [[136, 24]], true);      /* DEVELOPED: it hangs up at the fly floor. Call it down, step across, send it up */
-  foe('swornsword', 140, 33, { squad: 'the tower floor' });                  /* A HIRED SWORD on the tower floor, between the lines */
+  foe('stagehand', 140, 33, { squad: 'the tower floor' });                   /* THE TOWER'S CREW: a stagehand on the tower floor - and when you ride up over him, he hauls a line on you */
   spikes(145, 156, 33);                                                      /* THE WELL under the fly floor's gap: scenery nails and broken flats. A fall from the bridge is a bite and the whole tower again */
   foe('bat', 148, 12);
   coins([133, 31], [138, 23], [141, 18]);
@@ -146,7 +150,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   block(223, 224, 4, 33);                                                    /* THE FIRE WALL between the right wing and the far wing: the far wing is reached from below */
   for (let x = 140; x <= 144; x++) set(x, FL, T.SOLID);                      /* the fly floor's near end, on the tower */
   for (let x = 155; x <= 212; x++) set(x, FL, T.SOLID);                      /* ...and across the gap, the fly floor over the stage, to the pin rail over the right wing */
-  ent('check', 141, FL - 1);                                                 /* CHECKPOINT ONE: the top of the tower (the first of three) */
+  ent('check', 141, FL - 1);                                                 /* CHECKPOINT TWO: the top of the tower */
   /* THE GRID: the roof walk, up a rope from the fly floor's near end; a silver at the far end of it */
   boards(129, GR, 17); rope(143, GR + 1, FL - 1);
   ent('silver', 130, GR - 1); coins([134, GR - 1], [138, GR - 1]); foe('spider', 136, GR + 2);
@@ -155,12 +159,11 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
      a bridge - and its sandbag comes down on whoever stands under it. A fall is the whole tower again */
   line('D', { x: 145, w: 10, rowIn: 22, rowOut: FL }, { x: 159, w: 2, rowIn: 10, rowOut: FL }, [[144, FL - 1]]);
   foe('mummer', 160, FL - 1, { squad: 'the fly floor' });                    /* under the sandbag: face it and it stands there */
-  foe('mummer', 164, FL - 1, { squad: 'the fly floor' });
   foe('swornsword', 171, FL - 1, { squad: 'the fly floor' });
   coins([148, FL - 2], [151, FL - 2], [167, FL - 2]);
   /* THE LIGHTING BRIDGE: the fly floor over the stage, the crew's lamp on it and two more of the cast waiting in its light */
   lamp(186, FL - 1, [[196, FL], [178, FL]]);
-  foe('mummer', 194, FL - 1, { squad: 'the lighting bridge' }); foe('mummer', 199, FL - 1, { squad: 'the lighting bridge' }); foe('bat', 190, 9);
+  foe('mummer', 194, FL - 1, { squad: 'the lighting bridge' }); foe('stagehand', 199, FL - 1, { squad: 'the lighting bridge' });   /* one of the cast held in the crew's lamp, and the crewman who works it */ foe('bat', 190, 9);
   coins([183, FL - 2], [203, FL - 2]);
   /* RIDE THE WEIGHT: the fly floor ends at the pin rail; the right wing is eighteen rows down. Line E's sandbag hangs level with the floor: stand on
      it, strike the lock, and the batten flies out on the stage while the weight takes you down */
@@ -178,13 +181,15 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   lamp(161, BX - 1, [[167, ST], [177, ST], [188, ST], [198, ST]], { hang: true, cue: 1.9, r: 36 });   /* the show's lamps, on their cues */
   lamp(216, BX - 1, [[206, ST], [196, ST], [186, ST], [176, ST]], { hang: true, cue: 1.6, r: 36 });
   lamp(184, FL, [[172, ST], [184, ST], [196, ST]], { hang: true, cue: 2.3, r: 40, i: 1 });
-  foe('mummer', 206, 33, { squad: 'the cast' }); foe('mummer', 191, 33, { squad: 'the cast' }); foe('mummer', 173, 33, { squad: 'the cast' });   /* THE CAST */
+  foe('mummer', 206, 33, { squad: 'the cast', cast: true }); foe('mummer', 191, 33, { squad: 'the cast', cast: true }); foe('mummer', 173, 33, { squad: 'the cast', cast: true });   /* THE CAST */
   sign(218, 33, 'BEGINNERS, PLEASE.');
   /* THE SCENE CHANGE: a tall flat at stage left that runs on its cue and nothing else (no winch: the show changes its scenes whether you are ready or not).
      It stands across the way to the trap for three and a half seconds in seven, and its track glows and the prompt bell rings before it moves */
-  flat({ axis: 'y', x0: 165, w: 2, h: 4, a: 30, b: 25, step: 0.12, cue: { period: 7, hold: 3.5, at: 1 }, name: 'the scene change' });   /* (THEATRE2: FLOWN in and out, so the rope into the stage-left box hangs clear) */
+  flat({ axis: 'y', x0: 165, w: 2, h: 4, a: 30, b: 25, step: 0.12, cue: { period: 7, hold: 3.5, at: 1 }, acts: { 2: 'A', 3: 'B' }, name: 'the scene change' });   /* ACT II: it stays DOWN (a wall); ACT III: UP (the way off) */
+  /* THE CLOTH (THEATRE2, the acts): a painted cloth that flies in for ACT II as a platform - over the scene flat that is a wall in that act */
+  flat({ axis: 'y', x0: 167, w: 8, h: 1, a: 20, b: 31, step: 0.1, acts: { 1: 'A', 2: 'B', 3: 'A' }, tools: 'A', name: 'the cloth' });   /* (THEATRE2: FLOWN in and out, so the rope into the stage-left box hangs clear) */
   /* THE TRAPS: the way down at stage left, and two that drop into a spiked trap room each (a rope back up: a bite, never a shortcut) */
-  trap(160, 163, { period: 6, open: 1.8, at: 1.5 }, 'the way down');
+  trap(160, 163, { period: 6, open: 1.8, at: 1.5 }, 'the way down'); traps[traps.length - 1].act3open = true;   /* ACT III: it stays open */
   trap(176, 178, { period: 5, open: 1.5, at: 0 }, 'a trap room');
   trap(199, 201, { period: 5, open: 1.5, at: 2.5 }, 'a trap room');
   coins([210, 32], [196, 32], [182, 32], [168, 32]);
@@ -193,14 +198,14 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   air(158, 236, 36, 43);
   for (const tr of traps) { for (let x = tr.x0; x <= tr.x1; x++) { set(x, ST, T.ONEWAY); set(x, ST + 1, T.AIR); }
     if (tr.below === 'a trap room') { block(tr.x0 - 1, tr.x0 - 1, 36, 40); block(tr.x1 + 1, tr.x1 + 1, 36, 40); block(tr.x0, tr.x1, 40, 40); spikes(tr.x0, tr.x1, 39); rope(tr.x0 + 1, ST + 1, 38); } }   /* A TRAP ROOM: a walled shaft over the under-stage's passage, spikes in it and a rope out */
-  ent('check', 167, UN - 1);                                                 /* CHECKPOINT TWO: under the stage, after the performance */
+  ent('check', 167, UN - 1);                                                 /* CHECKPOINT THREE: under the stage, after the performance */
   /* THE SUMP, and THE FLAT THAT IS A FLOOR: a slab of the under-stage floor on a track that runs out over the spikes and back on a cue of its own
      (THEATRE2: no winch - you cross while it is out, and an understudy stands on it when it goes back) */
   air(182, 192, UN, UN + 1); spikes(182, 192, UN + 2);
   air(175, 181, UN, UN);                                                     /* (its slot: the flat stands in it at load) */
   flat({ a: 175, b: 184, w: 7, y0: UN, y1: UN, init: 'B', cue: { period: 7, hold: 3.5, at: 0, always: true }, name: 'the floor flat' });
   foe('mummer', 187, UN - 1, { squad: 'the understudies' });                 /* standing on the flat: when it slides home he goes into the sump */
-  foe('spider', 190, 37); foe('mummer', 197, UN - 1, { squad: 'the understudies' }); foe('mummer', 208, UN - 1, { squad: 'the understudies' }); foe('swornsword', 214, UN - 1, { squad: 'the understudies' });
+  foe('spider', 190, 37); foe('mummer', 197, UN - 1, { squad: 'the understudies' }); foe('bat', 206, 37); foe('swornsword', 214, UN - 1, { squad: 'the understudies' });
   coins([185, UN - 2], [188, UN - 2], [200, UN - 1], [212, UN - 1]);
   /* THE PROP STORE (a secret): under the tower floor, behind a painted shutter on a hidden line (its lock is low in the dark corner) */
   air(146, 155, 38, 43); air(156, 157, 40, 43);
@@ -234,7 +239,7 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
   foe('mummer', 274, 25, { squad: 'the gallery' }); foe('bat', 286, 18);
   block(290, 291, 32, 33); block(292, 293, 30, 33); block(294, 295, 32, 33);   /* the stair off the gallery's end, and up to it from the wing floor (never a pocket) */
   coins([258, 24], [264, 24], [276, 24], [288, 24]); ent('mend', 296, 33);
-  ent('check', 297, 33);                                                     /* CHECKPOINT THREE: the stage door */
+  ent('check', 297, 33);                                                     /* CHECKPOINT FOUR: the main stage's door */
   sign(298, 33, "THE MAIN STAGE. HE WORKS THEM FROM THE FLIES.");
 
   // ---------------- 10. THE MAIN STAGE (300-343): THE PUPPETEER's room - A HOOK, NOT A FIGHT (claude/puppeteer wires him in at the merge) ----------------
@@ -267,8 +272,8 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 }, pools: [], falls: [], moversExtra: movers,
     interiors: [[2, 27, 27, 33, 'thPassage'], [28, 64, 19, 33, 'thCostume'], [66, 110, 18, 33, 'thWorkshop'], [112, 127, 27, 33, 'thDock'], [128, 156, 4, 33, 'thFly'],
       [158, 222, 4, 33, 'thStage'], [146, 236, 36, 43, 'thUnder'], [225, 299, 12, 33, 'thWings'], [301, 342, 4, 33, 'thMain']],
-    theatre: { spots, lines, flats, traps, choruses, arcs: ARCS, sections: SECTIONS,
-      show: { x0: 158 * TS, x1: 223 * TS, y0: 17 * TS, y1: ST * TS, curtain: [158, 212, 17, 33] } },
+    theatre: { spots, lines, flats, traps, choruses, mirrors, arcs: ARCS, sections: SECTIONS,
+      show: { x0: 158 * TS, x1: 223 * TS, y0: 17 * TS, y1: ST * TS, curtain: [158, 212, 17, 33] }, boxes: [[158, BX], [216, BX]], glimpse: { x: 205, y: 12 } },
     rigBands,   /* THE FLY LINES, for the reach model (src/reachcore.js): a band of footing from each platform's high stop to its low one */
     mainStage: { door: 300, x0: 301, x1: 342, floor: ST, stageX: 300, stageW: 40, free: [ST - 16, ST + 1] },   /* THE PUPPETEER's room (claude/puppeteer): stagePuppeteer(..., 300, ST) goes here (see section 10) */
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
@@ -279,4 +284,72 @@ export function buildMaskwrightTheatre({ painter, T, TS }) {
       grass: '#5a4a52', grassL: '#7a6470', grassD: '#3a2e36', dirt: '#4a3a34', dirtL: '#6a5448', dirtD: '#2e241e', canopy: ['#1a1220', '#2a1a2e', '#3a2440', '#4a3050'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hall' }],
   };
+}
+
+/* ============================================================================================================
+   THE HOUSE (THEATRE2, Daniel's pick A): the front of house, grown in at the START of the level. Everything backstage (built above in its own
+   columns) slides right by HOUSE columns; this paints the house in front of it. Vertical, not a lobby: the foyer, the grand stair up to the DRESS
+   CIRCLE (the balcony), the CHANDELIER over the stalls (strike its rope-lock on the balcony: it falls - on whoever stands under it, and it lies there
+   as a step), the raked STALLS stepping down to the ORCHESTRA PIT (music stands, and the kettle drum that throws you up onto the apron), a box by the
+   proscenium, and the pass door onto the stage door's passage. The facing rule is taught here now: the usher on the balcony, alone.
+   ============================================================================================================ */
+export const HOUSE = 72;
+export function buildMaskwrightTheatre(ctx) {
+  const { painter, T, TS } = ctx, B = buildBackstage(ctx), HN = HOUSE, W = B.W + HN, H = B.H, { FL, BX, ST } = THEATRE;
+  const L = painter(W, H), { set, block, ent, coins } = L;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) L.grid[y * W + x] = x < HN ? T.SOLID : B.grid[y * B.W + x - HN];
+  // ---- everything backstage slides right by HN columns ----
+  const sx = x => x + HN, sp = p => p + HN * TS, D = B.theatre;
+  for (const e of B.ents) { e.x = sx(e.x); if (typeof e.gate === 'number') e.gate = sx(e.gate); L.ents.push(e); }
+  for (const m of B.moversExtra) m.x = sp(m.x);
+  B.rigBands = B.rigBands.map(([a, b, c, d]) => [sx(a), sx(b), c, d]);
+  for (const s of D.spots) { s.x = sp(s.x); s.aims = s.aims.map(([x, y]) => [sp(x), y]); }
+  for (const f of D.flats) { if (f.axis === 'y') { f.x0 = sx(f.x0); f.x1 = sx(f.x1); } else { f.a = sx(f.a); f.b = sx(f.b); } f.base = f.base.map(([x, y, t]) => [sx(x), y, t]); if (f.winch) f.winch = [sx(f.winch[0]), f.winch[1]]; }
+  for (const t of D.traps) { t.x0 = sx(t.x0); t.x1 = sx(t.x1); }
+  for (const c of D.choruses) c.x = sx(c.x);
+  for (const c of D.mirrors || []) { c.x0 = sx(c.x0); c.x1 = sx(c.x1); }
+  D.show.x0 = sp(D.show.x0); D.show.x1 = sp(D.show.x1); D.show.curtain = [sx(D.show.curtain[0]), sx(D.show.curtain[1]), D.show.curtain[2], D.show.curtain[3]];
+  D.boxes = (D.boxes || []).map(([x, y]) => [sx(x), y]); if (D.glimpse) D.glimpse = { ...D.glimpse, x: sx(D.glimpse.x) };
+  D.arcs = Object.fromEntries(Object.entries(ARCS).map(([k, v]) => [k, Object.fromEntries(Object.entries(v).map(([b, r]) => [b, k === 'facing' ? r : [sx(r[0]), sx(r[1])]]))]));
+  D.sections = [['THE HOUSE', 0]].concat(SECTIONS.map(([n, x]) => [n, sx(x)]));
+  B.interiors = B.interiors.map(([a, b, c, d, k]) => [sx(a), sx(b), c, d, k]);
+  B.darkZones = B.darkZones.map(z => ({ ...z, x0: sp(z.x0), x1: sp(z.x1) }));
+  const M = B.mainStage; B.mainStage = { ...M, door: sx(M.door), x0: sx(M.x0), x1: sx(M.x1), stageX: sx(M.stageX) };
+  // ---- THE HOUSE (columns 0 .. HN-1) ----
+  const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
+  const sign = (x, y, text) => ent('sign', x, y, { text }), deco = (kind, x, y, o) => ent('deco', x, y, Object.assign({ kind }, o || {}));
+  const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: -1 }, o || {}));
+  air(2, 9, 27, 33);                                                         /* THE FOYER */
+  air(10, 71, 12, 40);                                                       /* THE AUDITORIUM: the dress circle, the stalls, the pit, the apron */
+  block(10, 11, 32, 33); block(12, 13, 30, 33); block(14, 15, 28, 33); block(16, 17, 26, 33);   /* THE GRAND STAIR, two rows a step */
+  for (let x = 18; x <= 38; x++) { set(x, 24, T.SOLID); set(x, 25, T.SOLID); }   /* THE DRESS CIRCLE: the balcony over the stalls, its front at 38 */
+  block(18, 18, 25, 33);                                                     /* (the balcony's back wall comes down to the stair) */
+  /* THE STALLS: raked, a row down every four seats, from under the balcony to the pit rail */
+  for (let k = 0; k < 7; k++) { const x0 = 19 + k * 4, top = 30 + k; block(x0, x0 + 3, top, H - 1); }
+  block(47, 56, 42, H - 1); air(47, 56, 37, 41);                             /* THE ORCHESTRA PIT: five rows under the last row of seats */
+  spikes2(48, 50, 41);                                                       /* broken music stands, under the pit rail */
+  block(53, 56, 40, 41); for (let x = 54; x <= 56; x++) set(x, 40, T.BOUNCER);   /* THE KETTLE DRUMS on their riser: they throw you up onto the apron */
+  block(57, 71, 34, H - 1);                                                  /* THE APRON, level with the stage door's passage */
+  block(57, 71, 12, 20);                                                     /* the proscenium over the apron */
+  for (let x = 58; x <= 63; x++) set(x, 24, T.ONEWAY);                       /* THE STAGE BOX over the apron, a rope up to it */
+  function spikes2(x0, x1, y) { for (let x = x0; x <= x1; x++) set(x, y, T.SPIKE); }
+  for (let y = 30; y <= 33; y++) { set(HN, y, T.AIR); set(HN + 1, y, T.AIR); }   /* THE PASS DOOR into the stage door's passage */
+  // the chandelier: a light on a line over the stalls. Strike its rope-lock (on the balcony's front) and it comes down on whoever is under it, and lies there as a step
+  B.moversExtra.push({ kind: 'fly', theatre: true, role: 'bag', chandelier: true, line: 'CH', x: 40 * TS, w: 4 * TS, h: 14, y: 17 * TS - 14, yIn: 17 * TS - 14, yOut: 35 * TS - 14 });
+  D.lines.push({ id: 'CH', out: false }); ent('flylock', 37, 23, { line: 'CH' });
+  sign(3, 33, "THE MASKWRIGHT'S THEATRE. THE HOUSE IS DARK, AND FULL.");
+  sign(20, 23, 'THE PLAYERS MOVE ONLY WHEN NOBODY WATCHES. FACE ONE AND IT STOPS. CUT IT DOWN.');
+  sign(34, 23, 'BELLS: IT IS MOVING. A RED MASK: IT IS ABOUT TO STRIKE. LOOK AT IT.');
+  foe('mummer', 29, 23, { squad: 'the usher' });                             /* THE USHER, alone on the dress circle: the facing rule, taught */
+  foe('stagehand', 41, 34, { squad: 'the stalls' }); foe('stagehand', 45, 35, { squad: 'the stalls' });   /* two crew in the stalls, one under the chandelier */
+  foe('mummer', 51, 41, { squad: 'the pit' });                               /* in the pit, among the music stands */
+  foe('bat', 50, 14);
+  deco('stands', 49, 41); deco('stands', 52, 41, { v: 1 }); deco('seats', 24, 30); deco('seats', 32, 32, { v: 1 });
+  ent('silver', 61, 23); coins([59, 23], [63, 23]); rope(64, 24, 33);          /* the stage box: a silver, off the way */
+  coins([12, 30], [14, 28], [16, 26], [24, 22], [28, 22], [40, 32], [50, 39], [55, 37], [66, 32]);
+  function rope(x, y0, y1) { for (let y = y0; y <= y1; y++) set(x, y, T.NET); }
+  return Object.assign(B, { W, grid: L.grid, ents: L.ents, START: { x: 3, y: 33 },
+    interiors: [[2, 9, 27, 33, 'thFoyer'], [10, 71, 12, 40, 'thHouse']].concat(B.interiors),
+    darkZones: B.darkZones.concat([{ x0: 10 * TS, x1: 72 * TS, y0: 12 * TS, y1: 41 * TS, dark: 0.35 }]),
+    calm: [[0, W - 1, 0, H - 1]] });
 }

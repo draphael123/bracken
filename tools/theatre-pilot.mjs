@@ -50,50 +50,66 @@ try {
       /* OUT OF A TRAP ROOM: up its rope (a bite, and a climb, never a shortcut) */
       const outOfPit = () => { const tr = TH().traps.find(q => P().x > (q.x0 - 1) * TS && P().x < (q.x1 + 2) * TS && P().y > 35 * TS && P().y < 40 * TS); if (!tr) return;
         const rx = (tr.x0 + 1) * TS + 8; for (let j = 0; j < 400 && P().y > 34 * TS + 2; j++) { clear(); if (Math.abs(P().x - rx) > 3) k[rx > P().x ? 'right' : 'left'] = true; else k.up = true; if (j % 60 === 59) { k.jump = true; BK.press('jump'); } tick(1); } clear(); tick(10); };
-      // ---- 1. the stage door and the costume store: over the rail, down beside the lamp, strike it ----
-      leg('the stage door', walk(20));
-      leg('the rail walk', walk(46));
-      walk(51); strike(1); leg('struck the costume lamp (it swings back)', TH().spots[0].i === 1);
-      // ---- 2. the workshop, the dock: the winch, the ground row, up the sill ----
-      leg('through the workshop', walk(110));
-      walk(111, { tol: 3 }); strike(1); wait(80); leg('the ground row slid to the sill', FL('ground row').at === FL('ground row').b);
-      walk(120); hop(1, 16); hop(1, 20); leg('up the sill into the fly tower', walk(129));
-      // ---- 3. the fly tower: batten A up, call B, ride B ----
+      const { HOUSE } = await import('/src/maskwright-theatre.js'); const X = x => x + HOUSE;   /* backstage columns: the house (THEATRE2) is grown in at the front */
       const on = id => !!(P().onMover && P().onMover.line === id);
-      for (let i = 0; i < 4 && !on('A'); i++) { walk(131, { noFight: true }); hop(1, 12); walk(133, { tol: 4, noFight: true }); wait(20); }
+      // ---- 0. THE HOUSE: the grand stair, the usher on the dress circle, the chandelier, down the stalls, the pit, the drum, the apron ----
+      leg('up the grand stair to the dress circle', walk(20) && P().y < 25 * TS);
+      walk(30); walk(36, { tol: 3 }); strike(1); wait(90); leg('the chandelier struck down onto the stalls', BK.movers().some(m => m.chandelier && m.y > 30 * TS));
+      walk(40); walk(46); leg('down the raked stalls', P().y > 34 * TS);
+      walk(47); hop(1, 20); walk(52); hop(1, 14); walk(54, { tol: 3, noFight: true }); leg('into the pit, onto the drum riser', P().y > 37 * TS);
+      for (let i = 0; i < 8 && P().y > 34 * TS; i++) { clear(); k.jump = true; BK.press('jump'); k.right = true; for (let j = 0; j < 90 && P().y > 34 * TS - 2; j++) { k.right = P().x < 55 * TS || P().y < 34 * TS; tick(1); } clear(); tick(4); if (P().x < 52 * TS) { walk(52); hop(1, 14); walk(54, { tol: 3, noFight: true }); } }
+      leg('the kettle drum throws you onto the apron', walk(62) && P().y <= 34 * TS);
+      leg('through the pass door (checkpoint one)', walk(X(15)));
+      // ---- 1. the store and the rope up; the dressing rooms: the chorus plugged, the quick-change door, the mirror room, the fitting ----
+      leg('the costume store, past the one held in the light', walk(X(56)));
+      walk(X(58), { tol: 3, noFight: true }); for (let j = 0; j < 300 && P().y > 24 * TS + 4; j++) { clear(); k.up = true; tick(1); } clear(); k.right = true; k.jump = true; BK.press('jump'); tick(16); clear(); tick(10);
+      leg('up the rope into the dressing rooms', P().y <= 25 * TS);
+      walk(X(49), { tol: 3 }); strike(-1); const cl = TH().spots.find(s => Math.abs(s.x - (X(48) * TS + 8)) < 4); if (cl && cl.i !== 1) strike(-1); leg('the lamp swung onto the wardrobe door', cl && cl.i === 1);
+      walk(X(69), { tol: 3 }); strike(-1); for (let j = 0; j < 400 && FL('quick-change').at !== FL('quick-change').b; j++) { if (!fight()) wait(1); } leg('the quick-change door flown out', FL('quick-change').at === FL('quick-change').b);
+      walk(X(88), { tol: 3 }); const fl = TH().spots.find(s => Math.abs(s.x - (X(90) * TS + 8)) < 4); strike(1); if (fl && fl.i !== 1) strike(1); leg('the carvers\' lamp pinned on one of the fitting', fl && fl.i === 1);
+      walk(X(92)); leg('down into the workshop', P().y > 30 * TS);
+      leg('through the workshop', walk(X(110)));
+      // ---- 2. the dock: the winch, the ground row, up the sill ----
+      walk(X(111), { tol: 3 }); strike(1); wait(80); leg('the ground row slid to the sill', FL('ground row').at === FL('ground row').b);
+      walk(X(120)); hop(1, 16); hop(1, 20); leg('up the sill into the fly tower', walk(X(129)));
+      // ---- 3. the fly tower: batten A up, call B, ride B ----
+      for (let i = 0; i < 4 && !on('A'); i++) { walk(X(131), { noFight: true }); hop(1, 12); walk(X(133), { tol: 4, noFight: true }); wait(20); }
       leg('on batten A', on('A'));
       strike(1); wait(100); leg('batten A flown out', onRow(25));
-      walk(134, { tol: 3, noFight: true }); strike(1); wait(110); hop(1, 16); walk(138, { tol: 3, noFight: true }); leg('across onto batten B', onRow(25) && P().x > 137 * TS);
-      walk(137, { tol: 3, noFight: true }); strike(-1); wait(110); leg('batten B flown out to the fly floor', onRow(16));
-      leg('on the fly floor (checkpoint one)', walk(142, { noFight: true }));
+      walk(X(134), { tol: 3, noFight: true }); strike(1); wait(110); hop(1, 16); walk(X(138), { tol: 3, noFight: true }); leg('across onto batten B', onRow(25) && P().x > X(137) * TS);
+      walk(X(137), { tol: 3, noFight: true }); strike(-1); wait(110); leg('batten B flown out to the fly floor', onRow(16));
+      leg('on the fly floor (checkpoint two)', walk(X(142), { noFight: true }));
       // ---- 4. the bridge and the bag, the lighting bridge, the weight ----
-      walk(143, { tol: 3 }); strike(1); wait(90); leg('the bridge is up', Math.abs(BK.movers().find(m => m.theatre && m.line === 'D' && m.role === 'batten').y - 16 * TS) < 2);
-      leg('across the bridge', walk(156) && onRow(16));
-      leg('the lighting bridge, to the pin rail', walk(211));
-      hop(1, 14); walk(214, { tol: 3, noFight: true }); leg('on the sandbag', P().y < 16 * TS && P().x > 212 * TS);
-      strike(1); for (let j = 0; j < 400 && !onRow(34) && P().y < 34 * TS - 20; j++) { clear(); k.right = P().x < 213.4 * TS; k.left = P().x > 214.6 * TS; tick(1); } wait(20);
-      if (P().y < 30 * TS) { walk(215, { noFight: true }); wait(60); }
+      walk(X(143), { tol: 3 }); strike(1); wait(90); leg('the bridge is up', Math.abs(BK.movers().find(m => m.theatre && m.line === 'D' && m.role === 'batten').y - 16 * TS) < 2);
+      leg('across the bridge', walk(X(156)) && onRow(16));
+      leg('the lighting bridge, to the pin rail', walk(X(211)));
+      hop(1, 14); walk(X(214), { tol: 3, noFight: true }); leg('on the sandbag', P().y < 16 * TS && P().x > X(212) * TS);
+      strike(1); for (let j = 0; j < 400 && !onRow(34) && P().y < 34 * TS - 20; j++) { clear(); k.right = P().x < (X(213) + 0.4) * TS; k.left = P().x > (X(214) + 0.6) * TS; tick(1); } wait(20);
+      if (P().y < 30 * TS) { walk(X(215), { noFight: true }); wait(60); }
       leg('the weight rode down to the wing', P().y > 32 * TS);
-      // ---- 5. the performance: across the stage to the trap at stage left ----
+      // ---- 5. the performance, in acts: across to stage left; the way off is open when the scene flat is up (act one's cue, or act three) ----
       leg('the curtain is up', TH().show.on);
-      walk(172); outOfPit(); walk(172); let n = 0; while (FL('scene change').at !== FL('scene change').b && n++ < 900) { if (P().y > 35 * TS) { outOfPit(); walk(172); } wait(1); } leg('the scene-change flat opened', FL('scene change').at === FL('scene change').b);
-      for (let i = 0; i < 6 && P().y < 36 * TS; i++) { walk(161, { noFight: true, trap: 160 }); for (let j = 0; j < 120 && P().y < 36 * TS; j++) { clear(); k.down = true; tick(1); } clear(); }
+      walk(X(172)); outOfPit(); walk(X(172)); let n = 0; while (FL('scene change').at !== FL('scene change').b && n++ < 4000) { if (P().y > 35 * TS) { outOfPit(); walk(X(172)); } if (!fight()) wait(1); } leg('the scene-change flat up (act ' + TH().show.act + ')', FL('scene change').at === FL('scene change').b);
+      for (let i = 0; i < 6 && P().y < 36 * TS; i++) { walk(X(161), { noFight: true, trap: X(160) }); for (let j = 0; j < 120 && P().y < 36 * TS; j++) { clear(); k.down = true; tick(1); } clear(); }
       wait(30); leg('down through the trap into the under-stage', P().y > 36 * TS);
-      // ---- 6. the under-stage: the floor flat, across the sump, the star trap ----
-      walk(173, { tol: 3 }); strike(-1); wait(90); leg('the floor flat slid over the sump', FL('floor flat').at === FL('floor flat').b);
-      walk(183); hop(1, 18); walk(190); hop(1, 18); leg('across the sump', walk(196) && P().y > 40 * TS);
-      leg('to the star trap', walk(221)); hop(1, 14); hop(1, 14); walk(226, { tol: 3, noFight: true });
-      for (let i = 0; i < 8 && P().y > 34 * TS; i++) { if (P().x < 225 * TS || P().y > 40 * TS) { walk(221); hop(1, 14); hop(1, 14); walk(226, { tol: 3, noFight: true }); }
-        clear(); k.jump = true; BK.press('jump'); k.right = true; for (let j = 0; j < 90 && P().y > 34 * TS - 2; j++) { k.right = P().x < 229 * TS || P().y < 34 * TS; tick(1); } clear(); tick(4); }
-      walk(233); leg('up through the star trap into the far wing', P().y <= 34 * TS && P().x > 231 * TS);
-      // ---- 7. the wings: the flat door, batten G, the gallery, the stage door ----
-      for (let i = 0; i < 5 && FL('wing flat').at !== FL('wing flat').b; i++) { walk(245, { tol: 3 }); if (FL('wing flat').to !== FL('wing flat').b) strike(1); for (let j = 0; j < 200 && FL('wing flat').at !== FL('wing flat').b; j++) { if (!fight()) wait(1); } }
-      leg('the wing flat slid to B (' + FL('wing flat').at + ')', FL('wing flat').at === FL('wing flat').b);
-      for (let i = 0; i < 4 && !on('G'); i++) { walk(252); hop(1, 12); walk(254, { tol: 3, noFight: true }); wait(20); }
+      // ---- 6. the under-stage: the floor flat on its own cue, the sump, the star trap ----
+      walk(X(179), { tol: 3 }); for (let j = 0; j < 900 && FL('floor flat').at === FL('floor flat').b; j++) { if (!fight()) wait(1); } for (let j = 0; j < 900 && FL('floor flat').at !== FL('floor flat').b; j++) { if (!fight()) wait(1); }   /* wait for it to go home, then go the moment it is out again */
+      walk(X(183)); hop(1, 18); walk(X(190)); hop(1, 18); leg('across the sump on the floor flat', walk(X(196)) && P().y > 40 * TS);
+      leg('to the star trap', walk(X(221))); hop(1, 14); hop(1, 14); walk(X(226), { tol: 3, noFight: true });
+      for (let i = 0; i < 8 && P().y > 34 * TS; i++) { if (P().x < X(225) * TS || P().y > 40 * TS) { walk(X(221)); hop(1, 14); hop(1, 14); walk(X(226), { tol: 3, noFight: true }); }
+        clear(); k.jump = true; BK.press('jump'); k.right = true; for (let j = 0; j < 90 && P().y > 34 * TS - 2; j++) { k.right = P().x < X(229) * TS || P().y < 34 * TS; tick(1); } clear(); tick(4); }
+      walk(X(233)); leg('up through the star trap into the far wing', P().y <= 34 * TS && P().x > X(231) * TS);
+      // ---- 7. the exam: the floor lamp onto the one under the box, the winch, the flat, batten G, the gallery, the door guard, the stage door ----
+      walk(X(237), { tol: 3 }); const l1 = TH().spots.find(s => Math.abs(s.x - (X(236) * TS + 8)) < 4); if (l1 && l1.i !== 0) strike(-1); leg('the floor lamp off you and onto him', l1 && l1.i === 0);
+      for (let i = 0; i < 5 && FL('wing flat').at !== FL('wing flat').b; i++) { walk(X(244), { tol: 3 }); if (FL('wing flat').to !== FL('wing flat').b) strike(1); for (let j = 0; j < 200 && FL('wing flat').at !== FL('wing flat').b; j++) { if (!fight()) wait(1); } }
+      leg('the wing flat slid open', FL('wing flat').at === FL('wing flat').b);
+      for (let i = 0; i < 4 && !on('G'); i++) { walk(X(250)); hop(1, 12); walk(X(252), { tol: 3, noFight: true }); wait(20); }
       strike(-1); wait(120); leg('batten G flown up to the loading gallery', P().y < 27 * TS);
-      leg('along the loading gallery', walk(290));
-      leg('the stage door (checkpoint three)', walk(297));
-      walk(303); wait(30);
+      leg('along the loading gallery', walk(X(290)));
+      for (let i = 0; i < 10 && BK.enemies().some(e => e.elite && e.alive); i++) { walk(X(286)); for (let j = 0; j < 120; j++) { if (!fight()) wait(1); } }
+      leg('the door guard down (the stage door opens)', !BK.enemies().some(e => e.elite && e.alive));
+      leg('the stage door (checkpoint four)', walk(X(297)));
+      walk(X(303)); wait(30);
       return { hero: ${JSON.stringify(hero)}, lifted, log, state: BK.state, deaths: deaths(), s: +(frames / 60).toFixed(1) };
     })()`, 1200000);
     console.log('== ' + r.hero + (god ? ' (god)' : '') + ': ' + r.state + ', ' + r.deaths + ' deaths, ' + r.s + ' s' + (r.lifted.length ? '; lifted out (the hand cannot parry): ' + r.lifted.join(' ') : ''));

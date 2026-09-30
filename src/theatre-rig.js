@@ -114,6 +114,17 @@ export function flatCue(f, t) {
   return { posB: u < c.hold, warn: (u >= c.hold - RIG.cueWarn && u < c.hold) || u >= c.period - RIG.cueWarn };
 }
 
+/* ---------------- THE ACTS (THEATRE2, Daniel's pick B) ----------------
+   The performance runs in three acts of ACT.len s. A bell rings ACT.bell s before each act (the told scene change: the track of whatever moves glows),
+   then the act's change lands. ACT III is the last: the way off stays open and the CURTAIN comes down over ACT.fall s; if it reaches the boards with a
+   hero still on the stage, the show is over and starts again from ACT I (the curtain goes back up) - never a death. */
+export const ACT = { len: 14, bell: 1.5, fall: 18, cheer: 6 };
+export const actAt = t => Math.min(3, 1 + Math.floor(Math.max(0, t) / ACT.len));
+/* is a bell for the next act ringing at show time t (the told beat before a change)? returns the act about to start, or 0 */
+export const actBell = t => { const n = actAt(t); if (n >= 3) return 0; const u = n * ACT.len - t; return u > 0 && u <= ACT.bell ? n + 1 : 0; };
+/* the curtain in act III: 0 up .. 1 on the boards */
+export const curtainFall = t => actAt(t) < 3 ? 0 : Math.min(1, (t - 2 * ACT.len) / ACT.fall);
+
 /* ---------------- THE CHORUS (THEATRE2) ----------------
    A wardrobe that keeps sending players out while a hero is past it and near: one every `every` s, never more than `max` of its own about, and
    never while a body stands in its doorway (a player frozen in the doorway - a lamp on it - plugs it). Returns true when one should come out now */
