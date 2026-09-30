@@ -37,7 +37,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   const strikeUp = new Map();
   if (!plain) {
     for (const w of (L.walls || [])) if (w.reach) for (let y = w.y0; y <= w.y1; y++) for (let x = w.x0; x <= w.x1; x++) g[y * W + x] = T.AIR;
-    for (const [x0, x1, row] of ((L.gallery && L.gallery.planks) || [])) for (let x = x0; x <= x1; x++) if (g[row * W + x] === T.AIR) g[row * W + x] = T.ONEWAY;
+    for (const gl of (L.galleries || (L.gallery ? [L.gallery] : []))) for (const [x0, x1, row] of (gl.planks || [])) for (let x = x0; x <= x1; x++) if (g[row * W + x] === T.AIR) g[row * W + x] = T.ONEWAY;
     for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
   }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the

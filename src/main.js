@@ -2095,7 +2095,7 @@ function spawnEnt(e) {
       case 'slinger': { const st = DF.newSlinger(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'slinger', w: DF.SLINGER.w, h: DF.SLINGER.h, hp: EHP.slinger, mode: st.mode, st }); break; }
       case 'mummer': { const st = MU.newMummer(px, py, e.face || -1); enemies.push({ ...base, t: 'mummer', w: MU.MUMMER.w, h: MU.MUMMER.h, markH: 34, hp: EHP.mummer, mode: st.mode, st, speed: 0, scare: !!e.scare }); break; }   /* scare: THE CORN MAZE's mummer in a scarecrow's coat: drawn as straw until it first moves */   /* THE HARVEST FAIR's players (src/mummer.js): they move only while nobody faces them */
       case 'wickerqueen': { const a = WQN.newWickerQueen({ ...base, t: 'wickerqueen', w: WQN.WQ.w, h: WQN.WQ.h, hp: EHP.wickerqueen, maxHp: EHP.wickerqueen, noGrav: true, markH: 90, face: e.face || -1 }); boss = a; enemies.push(a); break; }   /* THE WICKER QUEEN (src/wicker-queen.js): asleep on the green until you come through its door; every clock a number (A3) */
-      case 'hobbyhorse': { const st = MU.newHorse(px, py, e.face || -1); enemies.push({ ...base, t: 'hobbyhorse', w: MU.HORSE.w, h: MU.HORSE.h, markH: 36, hp: EHP.hobbyhorse, mode: st.mode, st, speed: 0 }); break; }   /* and the elite: it charges the moment a back is turned */
+      case 'hobbyhorse': { const st = MU.newHorse(px, py, e.face || -1); enemies.push({ ...base, t: 'hobbyhorse', w: MU.HORSE.w, h: MU.HORSE.h, markH: 36, hp: EHP.hobbyhorse, mode: st.mode, st, speed: 0, rideIdx: e.ride }); break; }   /* ride: it stands on that car of THE BIG WHEEL (updateMummer carries it) */   /* and the elite: it charges the moment a back is turned */
       case 'ambusher': { const st = DF.newAmbusher(px, py); enemies.push({ ...base, t: 'ambusher', w: DF.AMBUSHER.w, h: DF.AMBUSHER.h, hp: EHP.ambusher, mode: st.mode, st }); break; }
       case 'vulture': { const st = DF.newVulture(px, py); st.a = (e.x % 7) * 0.9; enemies.push({ ...base, t: 'vulture', w: DF.VULTURE.w, h: DF.VULTURE.h, hp: EHP.vulture, noGrav: true, y: st.y, mode: st.mode, st }); break; }
       case 'awningwinch': props.push({ t: 'awningwinch', x: px, y: py, canopy: e.canopy, hollow: !!e.hollow, out: 1, k: 1, cd: 0 }); break;   /* hollow: THE DUNE WORM's (it only ever rolls OUT: a blow meant for him must not roll his trap in) */
@@ -18214,15 +18214,19 @@ function fairReset() {
 }
 /* may it walk on? ground ahead of its feet (a slope counts), no spike, no wall at its body: a haystack or a pit ends a charge */
 function fairStep(e, dir) {
+  if (e.ride) return dir > 0 ? e.rx < e.ride.w - e.w / 2 - 4 : e.rx > e.w / 2 + 4;   /* on a wheel's car the edge of the car ends the run */
   const nx = e.x + dir * (e.w / 2 + 4), tx = Math.floor(nx / TS), ty = Math.floor((e.y + 2) / TS), t = aheadTile(tileAt, tx, ty, e.y, 10);
   if (t === T.AIR || t === T.SPIKE) return false;
   return !isSolid(tx, Math.floor((e.y - 6) / TS));
 }
 function updateMummer(e, dt) {
+  if (e.rideIdx !== undefined) {   /* A HORSE ON A GONDOLA (THE BIG WHEEL's wide car): it goes where the car goes, even out of sight, and its run is the car's length */
+    if (!e.ride) { e.ride = movers.find(q => q.fair === 'gondola' && q.idx === e.rideIdx); if (e.ride) e.rx = e.ride.w * 0.75; }
+    if (e.ride) { e.x = e.ride.x + e.rx; e.y = e.ride.y; e.vy = 0; if (e.st) { e.st.x = e.x; e.st.y = e.y; } } }
   if (Math.abs(e.x - P.x) > 420) return;   /* the game's own rule: nothing past the screen acts */
   const s = e.st, horse = e.t === 'hobbyhorse'; if (!s) return;
   if (Math.abs(e.x - P.x) < 190) beastSeen(e.t);
-  const grav = () => { e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground || r.hitY) e.vy = 0; };
+  const grav = () => { if (e.ride) return; e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground || r.hitY) e.vy = 0; };
   if (e.stagger > 0) {   /* struck: it reels, and its machine waits. A blow ends a charge where it is */
     if (horse && s.mode === 'charge') { s.mode = 'skid'; s.t = 0.05; s.armed = false; }
     if (s.mode === 'glow') { s.mode = 'still'; }
@@ -18233,7 +18237,8 @@ function updateMummer(e, dt) {
   const evs = (horse ? MU.horseStep : MU.mummerStep)(s, { heroes, canStep: (x, dir) => fairStep(e, dir), sight: wqNearSight(e) || (dk ? dk.sight : 0), sightY: wqNearSight(e) ? WQN.WQ.nearY : dk ? dk.sightY : 0 }, dt);
   if (s.mode !== 'still') e.woke = true;   /* a scarecrow that is not straw stops being one the moment it moves */
   const dx = s.vx * dt;
-  if (dx) { const r = moveBody(e, dx, 0, false); if (r.hitX && horse && s.mode === 'charge') { s.mode = 'skid'; s.t = MU.HORSE.skid; s.armed = false; } }
+  if (dx && e.ride) { const nx = Math.max(e.w / 2 + 2, Math.min(e.ride.w - e.w / 2 - 2, e.rx + dx)); if (nx !== e.rx + dx && horse && s.mode === 'charge') { s.mode = 'skid'; s.t = MU.HORSE.skid; s.armed = false; } e.rx = nx; e.x = e.ride.x + e.rx; }
+  else if (dx) { const r = moveBody(e, dx, 0, false); if (r.hitX && horse && s.mode === 'charge') { s.mode = 'skid'; s.t = MU.HORSE.skid; s.armed = false; } }
   grav(); s.x = e.x; s.y = e.y;
   e.face = s.face || e.face; e.mode = s.mode; e.vx = (e.x - x0) / Math.max(dt, 1e-4);
   if (was !== s.mode && s.mode === 'charge') e.hitDone = false;

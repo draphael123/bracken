@@ -146,8 +146,9 @@ function drawStriker(g, cx, cy, VW, s) {
   if (s.ring > 0) { const k = 1 - s.ring, ry = y - 4 - k * (top - y + 8) * -1; g.fillStyle = K.red; g.beginPath(); g.arc(x, Math.max(top - 2, y - 6 + (top - y) * k), 4, 0, 6.3); g.fill(); g.globalAlpha = s.ring; ln(g, x - 12, top - 4, x - 18, top - 8, K.gold); ln(g, x + 12, top - 4, x + 18, top - 8, K.gold); g.globalAlpha = 1; }
   r(g, x - 15, y - 6, 30, 6, K.woodD); r(g, x - 15, y - 6, 30, 1, K.woodL); r(g, x - 13, y - 9, 26, 3, K.red); r(g, x - 13, y - 9, 26, 1, K.gold);   // the pad: a drum on a plinth
 }
-function drawGallery(g, cx, cy, VW, L, G, time) {
-  const Y = G && G.gallery; if (!Y) return; const xs = Y.targets.map(t => t.x * TS), x0 = Math.min(...xs) - 20 - cx, x1 = Math.max(...xs) + 36 - cx; if (x1 < -20 || x0 > VW + 20) return;
+function drawGalleries(g, cx, cy, VW, L, G, time) { for (const Y of (G && G.galleries) || []) drawGallery(g, cx, cy, VW, Y, time); }
+function drawGallery(g, cx, cy, VW, Y, time) {
+  const xs = Y.targets.map(t => t.x * TS), x0 = Math.min(...xs) - 20 - cx, x1 = Math.max(...xs) + 36 - cx; if (x1 < -20 || x0 > VW + 20) return;
   const ty = Y.targets[0].row * TS - cy, top = ty - 34;
   r(g, x0, top - 4, x1 - x0, 6, K.red); for (let i = 0; i < (x1 - x0) / 8; i++) if (i % 2) r(g, x0 + i * 8, top - 4, 8, 6, K.cream);   // the awning
   for (let i = 0; i < (x1 - x0) / 8; i += 1) { g.fillStyle = i % 2 ? K.cream : K.red; g.beginPath(); g.arc(x0 + i * 8 + 4, top + 2, 4, 0, Math.PI); g.fill(); }
@@ -158,7 +159,7 @@ function drawGallery(g, cx, cy, VW, L, G, time) {
     g.fillStyle = hit ? '#5a5060' : K.cream; g.beginPath(); g.arc(x, y, 7, 0, 6.3); g.fill(); g.fillStyle = hit ? '#3a3040' : K.red; g.beginPath(); g.arc(x, y, 5, 0, 6.3); g.fill();
     g.fillStyle = hit ? '#5a5060' : K.cream; g.beginPath(); g.arc(x, y, 3, 0, 6.3); g.fill(); g.fillStyle = hit ? '#3a3040' : K.gold; g.fillRect(x - 1, y - 1, 2, 2);
     if (t.flash > 0) { g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,220,120,' + t.flash * 2 + ')'; g.beginPath(); g.arc(x, y, 12, 0, 6.3); g.fill(); g.globalCompositeOperation = 'source-over'; } }
-  const left = Y.open ? 0 : Y.t > 0 ? Math.max(0, 1 - Y.t / (L.gallery.window || 12)) : 1;   // the bell's clock: a bar that runs down once the first target is hit
+  const left = Y.open ? 0 : Y.t > 0 ? Math.max(0, 1 - Y.t / Y.window) : 1;   // the bell's clock: a bar that runs down once the first target is hit
   r(g, x0 + 8, top + 4, x1 - x0 - 16, 3, '#1a1018'); r(g, x0 + 8, top + 4, (x1 - x0 - 16) * left, 3, Y.open ? '#5aa860' : Y.t > 0 ? K.gold : K.creamD);
 }
 function drawBooth(g, cx, cy, VW, G, SPR, time) {
@@ -194,7 +195,7 @@ export function drawFront(g, cx, cy, VW, VH, L, F, time, o) {
   drawCorn(g, cx, cy, VW, VH, L);
   drawTower(g, cx, cy, VW, L, time);
   const G = F && F.games;
-  drawGallery(g, cx, cy, VW, L, G, time);
+  drawGalleries(g, cx, cy, VW, L, G, time);
   if (G) for (const s of G.strikers) drawStriker(g, cx, cy, VW, s);
   drawBooth(g, cx, cy, VW, G, o.SPR, time);
   drawGhostArch(g, cx, cy, VW, L, time);

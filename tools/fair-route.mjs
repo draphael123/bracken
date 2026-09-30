@@ -64,14 +64,16 @@ try {
         BK.sim(1); if (seen && P().ground && !P().onMover && Math.abs(P().y - landRow * 16) < 4 && Math.abs(P().x - gx) < 56) { none(); return true; } if (P().dead) { none(); return fails('died on chair ' + idx); } }
       none(); return fails('chair ' + idx + ' did not carry us to ' + landTx); };
     /* A STRIKER: stand on the pad, jump, and come down on it with the plunge (down + attack): the bell rings and it throws you up; land on the plank over it */
-    const plungeOn = (tx, landRow) => { if (!walk(tx)) return false; let phase = 0;
+    const plungeOn = (tx, landRow) => { if (!walk(tx)) return false; none(); for (let s = 0; s < 25; s++) BK.sim(1); let phase = 0;   /* (stand still a moment: a jump keeps the run it started with) */
       for (let i = 0; i < 600; i++) { const p = P(); K.jump = false; K.down = false;
         if (phase === 0 && p.ground) { K.jump = true; BK.press('jump'); phase = 1; } else if (phase === 1 && p.vy > 40) { K.down = true; BK.press('atk'); phase = 2; } else if (phase === 2) { K.down = true; if (p.vy < -300) phase = 3; } else if (phase === 3 && p.vy > -1) { phase = 4; }
         BK.sim(1); if (phase >= 3 && P().ground && Math.abs(P().y - landRow * 16) < 4) { none(); return true; } if (phase === 2 && P().ground) phase = 0; }
       none(); return fails('the striker at ' + tx + ' did not throw us onto row ' + landRow); };
     const strikeRoad = () => { load();
-      return to('the roof stair striker onto the boardwalk', () => walk(116) && plungeOn(118, 19)) && to('the boardwalk to the terrace and down', () => walk(160) && walk(184) && walk(200))
-      && to('on to the tall striker', () => walk(260) && walk(263) && walk(291) && walk(345)) && to('(the slide, the maze and the rest are the low road)', () => { BK.tp(562, 27); BK.sim(20); return true; })
+      return to('the first striker onto the boardwalk', () => walk(86) && plungeOn(88, 19)) && to('the boardwalk to the terrace and down', () => walk(160) && walk(184) && walk(200))
+      && to('(the carousel, the midway and the slide are the low road)', () => { BK.tp(402, 27); BK.sim(20); return true; })
+      && to('the tall striker onto the corn-top walk', () => rick(403, 409) && walk(409) && plungeOn(409, 12)) && to('the corn-top walk and the stair down', () => walk(436) && walk(439) && walk(442) && walk(447))
+      && to('(the last round is the low road)', () => { BK.tp(562, 27); BK.sim(20); return true; })
       && to('the tall striker onto the night lane', () => plungeOn(566, 14)) && to('the night lane and its steps', () => walk(594) && walk(597) && walk(600) && walk(610));
     };
     if ('${which}' === 'strike' || '${which}' === 'all') { const ok = strikeRoad(); out.strike = { ok, at: at() }; if (!ok) out.fail.push('the STRIKER roads did not work'); }
@@ -80,7 +82,7 @@ try {
       return to('gate to the carousel', () => walk(260)) && to('the carousel disc', () => walk(263) && walk(291)) && to('the wheel yard and the hall of mirrors', () => walk(345))
       && to('the tower stair', () => hop(349, 25) && hop(352, 22) && hop(355, 19) && hop(360, 16) && hop(362, 14))
       && to('the helter-skelter slide', () => { const ok = walk(366); if (!ok) return false; K.right = true; K.down = true; for (let i = 0; i < 500 && P().x < 384 * 16; i++) BK.sim(1); none(); return P().ground && P().x > 380 * 16; })
-      && to('rick one', () => rick(402, 409)) && to('the corn maze, tier one', () => walk(431))
+      && to('rick one', () => rick(403, 409)) && to('the corn maze, tier one', () => walk(431))
       && to('chimney one', () => hop(432, 26) && hop(430, 23)) && to('tier two', () => walk(420))
       && to('chimney two', () => hop(416, 21) && hop(418, 18, 44)) && to('tier three and out', () => walk(437) && walk(439) && walk(442) && walk(447))
       && to('rick two', () => rick(449, 456)) && to('the ghost-train yard and the small carousel', () => walk(527) && walk(531) && walk(550))

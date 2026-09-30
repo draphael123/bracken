@@ -48,7 +48,7 @@ export function blocked(L, solidAt, e, h) {
 export function newGames(L) {
   return { tickets: 0, taken: new Set(), spent: 0,
     strikers: (L.strikers || []).map((s, i) => ({ ...s, i, ring: 0, cd: 0, paid: false, hits: 0, pad: { x: s.x * TS + 8, y: s.row * TS } })),
-    gallery: L.gallery ? { targets: L.gallery.targets.map(t => ({ ...t, hit: false, flash: 0 })), t: 0, open: false, opened: 0 } : null,
+    galleries: (L.galleries || (L.gallery ? [L.gallery] : [])).map((g, i) => ({ i, id: g.id || i + 1, targets: g.targets.map(t => ({ ...t, hit: false, flash: 0 })), t: 0, open: false, opened: 0, window: g.window || GAMES.window, planks: g.planks })),
     booth: L.booth ? { ...L.booth, sv: null, bought: false } : null, upWas: false, ringEv: 0 };
 }
 
@@ -56,7 +56,7 @@ export function newGames(L) {
    fx: { launch(h, vy), say(text), sound(name), open(planks), open2(nest) }. Returns nothing: the state and the fx are the result. */
 export function step(G, L, heroes, fx, dt) {
   for (const s of G.strikers) { s.ring = Math.max(0, s.ring - dt); s.cd = Math.max(0, s.cd - dt); }
-  if (G.gallery) for (const t of G.gallery.targets) t.flash = Math.max(0, t.flash - dt);
+  for (const Gy of G.galleries) for (const t of Gy.targets) t.flash = Math.max(0, t.flash - dt);
   for (const h of heroes) { if (h.dead) continue;
     /* THE STRIKERS */
     for (const s of G.strikers) { if (s.cd > 0) continue;
@@ -73,8 +73,7 @@ export function step(G, L, heroes, fx, dt) {
       else { fx.sound('tink'); if (standing) fx.launch(h, GAMES.hop); }
     }
     /* THE GALLERY */
-    const Gy = G.gallery;
-    if (Gy && !Gy.open && h.box) for (const t of Gy.targets) { if (t.hit) continue;
+    for (const Gy of G.galleries) if (!Gy.open && h.box) for (const t of Gy.targets) { if (t.hit) continue;
       const cx = t.x * TS + 8, cy = t.row * TS + 8, b = h.box;
       if (b.r > cx - GAMES.targetR && b.l < cx + GAMES.targetR && b.b > cy - GAMES.targetR && b.t < cy + GAMES.targetR && !(h.hit && h.hit.has(t))) { if (h.hit) h.hit.add(t); t.hit = true; t.flash = 0.3; if (!Gy.t) Gy.t = 0.0001; fx.sound('tink'); } }
     /* THE TICKETS lying about (a touch) */
@@ -90,8 +89,7 @@ export function step(G, L, heroes, fx, dt) {
   }
   G.upWas = heroes.some(h => h.up && !h.dead); G.heavyWas = G.heavyWas || {}; for (const h of heroes) G.heavyWas[h.n || 0] = !!h.heavy;
   /* THE GALLERY's clock: the window opens on the first hit; all hit inside it and the planks run up; miss the window and the targets reset */
-  const Gy = G.gallery;
-  if (Gy && !Gy.open && Gy.t > 0) { Gy.t += dt;
-    if (Gy.targets.every(t => t.hit)) { Gy.open = true; Gy.opened = 1; fx.open(L.gallery.planks); fx.say(TEXT.planks); fx.sound('open'); if (fx.tickets && L.gallery.reward) { G.tickets += L.gallery.reward; fx.tickets(L.gallery.reward); } }
-    else if (Gy.t > (L.gallery.window || GAMES.window)) { Gy.t = 0; for (const t of Gy.targets) t.hit = false; fx.say(TEXT.reset); } }
+  for (const Gy of G.galleries) if (!Gy.open && Gy.t > 0) { Gy.t += dt;
+    if (Gy.targets.every(t => t.hit)) { Gy.open = true; Gy.opened = 1; fx.open(Gy.planks); fx.say(TEXT.planks); fx.sound('open'); }
+    else if (Gy.t > Gy.window) { Gy.t = 0; for (const t of Gy.targets) t.hit = false; fx.say(TEXT.reset); } }
 }
