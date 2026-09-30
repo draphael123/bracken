@@ -62,6 +62,7 @@ import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /
 import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
 import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
+import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
 import { makeEmberWard, EMBER as EMBER_K } from './ember-ward.js';   /* THE EMBER WARD (claude/ember-ward): the pyromancer's duck raises a half-dome of fire that runs on heat */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease } from './attack-tokens.js';
 import { installTactics, braceHit } from './foe-tactics.js';
@@ -187,7 +188,10 @@ const DIFF = { easy: { take: 0.6, ehp: 0.75, bhp: 0.7, label: 'EASY', col: '#8fd
 const diffOf = id => (PROG.diff && DIFF[PROG.diff[id]] ? PROG.diff[id] : DIFF[SET.difficulty] ? SET.difficulty : 'normal');
 const diffNow = () => DIFF[diffOf(curId())];
 const DIFFS = ['easy', 'normal', 'hard', 'expert'], SCALES = ['auto', 2, 3, 4];
-try { Object.assign(SET, JSON.parse(localStorage.getItem('bracken.settings') || '{}')); } catch {}
+/* READ A SETTINGS FILE (boot, and tools/settings-tabs.mjs): every old key loads as it always did; the two fields the tabs added are cleaned
+   (binds, from src/controls.js, keeps only known actions and real keys; coopHelpSeen is a plain flag) so a file from before them has none. */
+function readSettings(raw) { let o = {}; try { o = JSON.parse(raw || '{}') || {}; } catch {} Object.assign(SET, o); SET.binds = CTL.cleanBinds(o.binds); SET.coopHelpSeen = !!o.coopHelpSeen; try { applyBinds(); } catch {} return SET; }
+{ let rawSet = null; try { rawSet = localStorage.getItem('bracken.settings'); } catch {} readSettings(rawSet); }
 // THE WORLD SLOWED DOWN, AND AN OLD SETTINGS FILE MUST NOT HOLD IT BACK. Anyone who has played before has a
 // saved `speed: 1` in their settings, which would silently keep them at the old pace. Take the new default
 // once, and never touch it again - if they turn it back up, that is their choice and it sticks.
@@ -445,7 +449,7 @@ const rankOf = id => (PROG.ranks && PROG.ranks[id]) || 0; // (TRAINING is gone f
 const DK_KEYS = { ward: 'HOLD C: THE BLOOD WARD. A BLOW ON ITS FACE COSTS A THIRD IN BLOOD, AND THE BLOOD FILLS IT', nova: 'LET GO OF C: A BLOOD NOVA THAT HEALS THE BLOOD BACK. A FULL WARD STRUCK AGAIN BREAKS', ret: 'LET GO AS A BLOW LANDS AND IT IS RETURNED, FOR NO BLOOD',
   summon: 'F: SUMMON SKELETON, ONCE HIS GRAVELORD TREE HAS IT', surge: 'HOLD F WITH A FULL BAR: BLOOD SURGE', skill: 'G: THE SKILL HE HAS CHOSEN FROM HIS TREES',
   hud: { ward: 'HOLD C  WARD', nova: 'LET GO: NOVA', full: 'FULL: LET GO', surge: 'HOLD F  SURGE' },   /* short: the timer plate sits right of this row's plate, and the coins are past that */
-  controls: { block: ['blood ward', 'HOLD C, LET GO: NOVA', 'LB RB'], skill: ['summon', 'F / B  (HOLD, FULL: SURGE)', 'Y'], 'skill two': ['his skill', 'G / N (CHOSEN)', 'RT'] } };
+};
 /* ==== THE WARDEN'S KEYS, IN WORDS. One place: her HUD prompts and the controls card read these, and her wood lesson
    should too when it is written. C is the one that has to be unlearned from the knight - it is not a shield. ==== */
 const WARDEN_KEYS = { deflect: 'TAP C: THE DEFLECT. THE SHAFT TURNS A YELLOW BLOW AND SWATS WHAT FLIES AT HER',
@@ -456,9 +460,7 @@ const WARDEN_KEYS = { deflect: 'TAP C: THE DEFLECT. THE SHAFT TURNS A YELLOW BLO
   runThrough: 'HOLD X AND LET GO: THE RUN-THROUGH, A LUNGE THAT SKEWERS A WHOLE LINE OF THEM',
   pin: 'DOWN+X IN THE AIR PINS WHAT YOU LAND ON: X TO STAB IT, Z TO PULL FREE',
   vault: 'JUMP OUT OF A STEP FORWARD AND SHE PLANTS THE SPEAR AND VAULTS',
-  controls: { block: ['the deflect', 'TAP C  (FULL: PHALANX)', 'LB RB'], dodge: ['step', 'V BACK, OR TAP A WAY TWICE', 'B'] } };
-/* ==== THE GEOMANCER'S KEYS, IN WORDS (her controls card): C is her RUNE-WARD (planted), and her held swing is FAULT LINE ==== */
-const GEO_KEYS = { controls: { block: ['rune-ward', 'HOLD C  (SHE IS PLANTED)', 'LB RB'], 'heavy blow': ['fault line', 'HOLD SWING, LET GO', 'HOLD X'] } };
+};
 const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'GRAVELORD', 'WARD'], warden: ['SPEARHEAD', 'THE DEFLECT', 'SKIRMISHER'], geomancer: ['EARTH', 'WARD', 'TREMOR'] };
 const TREE_WHO = { knight: ['COMBOS, BLEEDS AND FINISHERS', 'THE SHIELD: TURN IT, THEN ANSWER', 'THE AIR AND THE RUN: KEEP MOVING'],
   pyro: ['THROWN EMBERS: SKIP, SPLIT AND SPREAD', 'THE JET AND THE HEAT', 'FIGHT IN THE FIRE AND WALK OUT'],
@@ -1144,6 +1146,7 @@ function goDown(killer) {
   P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.emberUp = false; P.emberHeat = 0; P.emberLock = 0; P.deflectT = 0; P.deflectRec = 0; P.perch = 0; P.vaultCarry = 0;
   P.inv = 0.6; P.vx = 0; P.hitSet.clear();
   SFX.gasp(); SFX.thud(); shakeCam(5); number(P.x, P.y - 30, 'DOWN', '#ff6b6b');
+  if (coop() && coopTipDue(PROG, 'down')) { hintT = 4.5; hintMsg = 'DOWN, NOT DEAD: YOUR PARTNER STANDS ON YOU FOR A MOMENT TO LIFT YOU.'; saveProgress(); }   /* (the first two downs of a save say it) */
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
 }
 function downedPlayer(dt) {
@@ -1167,6 +1170,7 @@ function reviveBy(helper) {
   helper.score.revives++;
   SFX.mend(); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); motes(P.x, P.y - 10, 12, 10);
   number(P.x, P.y - 32, 'UP', '#8fd160');
+  if (coopTipDue(PROG, 'revive')) { hintT = 4.5; hintMsg = 'UP AGAIN AT A THIRD OF YOUR HEALTH, BRIEFLY SAFE. A REVIVE SCORES BEST.'; saveProgress(); }   /* (the first two lifts of a save say it) */
 }
 function coopWatch() {
   if (!coop()) return;
@@ -4335,8 +4339,8 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
-const PAUSE_ITEMS = ['Resume', 'Map', 'Skills', 'Equip', 'Hero', 'Co-op', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
-const SETTINGS_ITEMS = ['- GAME -', 'Difficulty', 'Combat', 'Game speed', 'Jump assist', 'Way-on arrow', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X',   /* 'Slot 3 key' and 'Slot 4 key' left the menu with the third and fourth slots (MAX_SLOTS = 2); their handlers stay */ 'Controls', 'Rumble', '- AUDIO -', 'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices', '- VIDEO -', 'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness', 'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes', 'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', '- SAVE -', 'Export save', 'Import save', 'Erase this save', '- TESTING -', 'God mode', 'Invincible', 'Hitboxes', 'Back'];
+const PAUSE_ITEMS = ['Resume', 'Map', 'Skills', 'Equip', 'Hero', 'Co-op', 'Co-op guide', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
+/* THE SETTINGS LIST IS FIVE TABS (src/settings-ui.js: AUDIO, DISPLAY, GAMEPLAY, CONTROLS, ACCESSIBILITY). 'Slot 3 key' and 'Slot 4 key' left the menu with the third and fourth slots (MAX_SLOTS = 2); their handlers stay in menuAdjust. */
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0, 0.5, 1];
 const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 : 1;
@@ -4344,11 +4348,11 @@ let menuKind = 'pause';
 // one line each, so nobody has to guess what a switch does
 const SETTING_TIPS = {
   'Skills': 'skills, coin purchases and equipped techniques (Q)', 'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
-  'Combat': 'WEIGHTY: a swing commits you, the Hornet Queen is always hittable, Kingswood fights back (a prototype)',
+  'Combat': 'WEIGHTY: swings commit you, foes push back (a prototype)',
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk boxes fill',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
   'Map': 'where you have been, and what is still to find (TAB)', 'Way-on arrow': 'an arrow at the edge of the screen to the next thing on the way',
-  'Co-op': 'a friend on a pad, or the game playing him',
+  'Co-op': 'a friend on a pad, or the game playing him', 'Co-op guide': 'how a second player joins, is downed and is lifted',
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth', 'Character voices': 'grunts, shouts and cries from heroes and foes',
   'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'full, or just the bars',
@@ -4361,9 +4365,12 @@ const SETTING_TIPS = {
   'Impact FX': 'stars and rings where things land', 'Hit numbers': 'the numbers off a hit', 'Timer': 'the run clock', 'Tenths': 'tenths on the clock',
   'Ambient life': 'birds, fish, critters and idle folk', 'Scanlines': 'CRT lines over the picture', 'Pixel scale': 'how the picture fits your screen',
   'Erase this save': 'erases this save', 'Sound test': 'listen to every track and cry',
+  'Controls': 'what every button does for your hero', 'Rebind keys': 'change any key or pad button, for each player', 'Co-op guide': 'how a second player joins, is downed and is lifted', 'Reset controls': 'every key and button back to its default (press twice)',
+  '@TABS': 'LEFT / RIGHT, TAB, Q E or LB RB change tab',
 };
-const menuItems = () => menuKind === 'pause' || menuKind === 'map' ? PAUSE_ITEMS : (menuFrom === 'play' ? SETTINGS_ITEMS.filter(k => k !== 'Sound test') : SETTINGS_ITEMS);
-const isHeader = k => k[0] === '-';
+let settingsTab = 'gameplay';   /* which tab Settings is on (kept for the session) */
+const menuItems = () => menuKind === 'pause' || menuKind === 'map' ? PAUSE_ITEMS : tabRows(settingsTab, menuFrom);
+const isHeader = isHeaderTab;
 const MENU_ROWS = 10;
 let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0, bestPage = 0, bestPages = 1;
 const BOSS_T = ['bellcrab', 'archmage', 'strawking', 'kraken', 'closedhelm', 'drownedking', 'prince', 'queen', 'frog', 'chief', 'mother', 'greathound', 'king', 'ram', 'owl', 'forgemaster', 'golem', 'windcaller', 'lance', 'roc', 'gqueen', 'herald', 'reefmaw', 'quarter', 'master', 'masthead', 'wickerqueen'];
@@ -4372,6 +4379,7 @@ const BEAST_SHORT = { sexton:'THE SEXTON', duneworm:'THE DUNE WORM', bannerbeare
 function openMenu(from) { if (from === 'play') fogSave(); menuFrom = from; menuKind = from === 'play' ? 'pause' : 'settings'; menuI = menuKind === 'pause' ? 0 : 1; state = 'menu'; SFX.menuOpen(); }
 function menuAdjust(dir) {
   const k = menuItems()[menuI];
+  if (k === '@TABS') { settingsTab = stepTab(settingsTab, dir); menuI = 0; menuBarY = null; SFX.ui(); return; }
   if (isHeader(k)) return;
   if (k === 'Brightness') SET.bright = BRIGHTS[(BRIGHTS.indexOf(SET.bright) + dir + BRIGHTS.length) % BRIGHTS.length];
   else if (k === 'Parallax') SET.parallax = PARALLAX[(PARALLAX.indexOf(SET.parallax) + dir + PARALLAX.length) % PARALLAX.length];
@@ -4416,7 +4424,11 @@ function menuConfirm() {
   else if (k === 'Return to map' && rushOn()) { rush = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
   else if (k === 'Return to map') { setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
   else if (k === 'Sound test') { state = 'soundtest'; soundI = 0; soundCat = 0; soundFrom = 'menu'; SFX.uiSel(); }
-  else if (k === 'Controls') { state = 'controls'; SFX.uiSel(); }
+  else if (k === '@TABS') { settingsTab = stepTab(settingsTab, 1); menuI = 0; menuBarY = null; SFX.ui(); }
+  else if (k === 'Controls') { controlsFrom = 'menu'; state = 'controls'; SFX.uiSel(); }
+  else if (k === 'Rebind keys') openRebind('menu');
+  else if (k === 'Co-op guide') openCoopHelp('menu');
+  else if (k === 'Reset controls') { if (menuMsg === 'press again to reset every key and button' && menuMsgT > 0) { CTL.resetAll(SET.binds); applyBinds(); saveSettings(); menuMsg = 'every key and button is back to its default'; menuMsgT = 3; SFX.ui(); } else { menuMsg = 'press again to reset every key and button'; menuMsgT = 3; SFX.ui(); } }
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); }
   else if (k === 'Erase this save') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
   else if (k === 'Hero trial') { state = 'play'; startTrial(hero()); }
@@ -4554,7 +4566,7 @@ function updateCoopPick() {
       const p2 = players[1];
       if (p2) { const side = players[0].face < 0 ? 1 : -1; Object.assign(p2, { x: players[0].x + side * 14, y: players[0].y, vx: 0, vy: players[0].vy, face: players[0].face, ground: players[0].ground }); }
     }
-    if (coopPickFrom === 'pause') { state = 'menu'; menuKind = 'pause'; } else state = 'map';
+    { const back = coopPickFrom === 'pause' ? 'menu' : 'map'; if (back === 'menu') menuKind = 'pause'; if (!SET.coopHelpSeen) openCoopHelp(back); else state = back; }   /* THE CO-OP GUIDE opens by itself the first time co-op is switched on (src/coop-help.js) */
     SFX.equip(); SFX.sting();
   }
   if (pausePress) {
@@ -4616,6 +4628,7 @@ const KEYS = {
 addEventListener('keydown', e => {
   if (e.repeat) { e.preventDefault(); return; }
   initAudio(); anyPress = true;
+  if (state === 'rebind' && rebindKey(e)) { e.preventDefault(); return; }   /* a key being chosen for an action: used up here (src/controls.js) */
   if (state === 'title' && e.shiftKey && e.key === 'B') { bjOpen(); e.preventDefault(); return; }   /* THE HIDDEN BOSS LIST: SHIFT+B on the title screen (docs/PLAYTEST.md) */
   if (state === 'editor') { // the editor owns the letters; only the arrows fall through, to pan
     const k = e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase();
@@ -4640,6 +4653,7 @@ addEventListener('keydown', e => {
   if (isKey(e, KEYS.right)) { keys.right = true; rightPress = true; }
   if (isKey(e, KEYS.down)) { keys.down = true; downPress = true; }
   if (isKey(e, KEYS.up)) { upPress = true; keys.up = true; }
+  if (state !== 'play' && state !== 'talk') { if (e.key === 'ArrowUp') upPress = true; if (e.key === 'ArrowDown') downPress = true; if (e.key === 'ArrowLeft') leftPress = true; if (e.key === 'ArrowRight') rightPress = true; }   /* the menus keep the arrows, whatever the wood's keys were rebound to */
   if (isKey(e, ['z', 'Z', 'Enter', ' ', 'Space'])) confirmPress = true;
   if (isKey(e, KEYS.pause)) pausePress = true;
   if (isKey(e, KEYS.talents)) talentsPress = true;
@@ -4682,11 +4696,10 @@ addEventListener('blur', () => { for (const k in keys) keys[k] = false; edPaint 
    joke to play on him. */
 const pad = { prev: {} }, pad2 = { prev: {} };
 const padsNow = () => { const out = [], gps = navigator.getGamepads ? navigator.getGamepads() : []; for (const p of gps) if (p && p.connected) out.push(p); return out; };
-const padState = gp => { const b = i => !!(gp.buttons[i] && gp.buttons[i].pressed), ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
-  return { jump: b(0), atk: b(2), dodge: b(1), throw: b(3), skill2: b(7), skill3: b(10), skill4: b(11), talk: b(12) || b(6), block: b(4) || b(5), dance: b(8), pause: b(9), left: b(14) || ax < -0.5, right: b(15) || ax > 0.5, up: b(12) || ay < -0.5, down: b(13) || ay > 0.5 }; };
+const padState = (gp, prof) => CTL.padStateOf(gp, padTab(prof));   /* the buttons are the player's own (src/controls.js: rebindable, one table for each pad) */
 /* a pad into a player's OWN hands: his held keys and his one-shot presses, never the globals, which are player one's */
 function padIntoPlayer(gp, st, p) {
-  const now = padState(gp), rose = k => now[k] && !st.prev[k];
+  const now = padState(gp, 'pad2'), rose = k => now[k] && !st.prev[k];
   if (Object.values(now).some(Boolean)) initAudio();
   const pr = p.press;
   for (const k of ['jump', 'atk', 'dodge', 'throw', 'skill2', 'skill3', 'skill4', 'talk', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
@@ -4695,16 +4708,67 @@ function padIntoPlayer(gp, st, p) {
 }
 function pollGamepad() {
   const gps = padsNow();
+  const used = padRawTick(gps);   /* the tab shoulders and a button being chosen for an action */
   if (coop() && players[1] && !players[1].ai && gps.length) padIntoPlayer(gps[0], pad2, players[1]);
   const gp = coop() ? gps[1] : gps[0];
   if (!gp) return;
-  const now = padState(gp);
+  const now = padState(gp, 'pad1');
+  if (used) { pad.prev = now; return; }
   const rose = k => now[k] && !pad.prev[k];
   if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; } }
-  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true; if (rose('talk')) talkPress = true; if (rose('pause')) pausePress = true;
+  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true; if (rose('talk')) talkPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
   if (rose('left')) leftPress = true; if (rose('right')) rightPress = true; if (rose('up')) upPress = true; if (rose('down')) downPress = true;
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance']) { if (now[k]) keys[k] = true; else if (pad.prev[k]) keys[k] = false; }
   pad.prev = now;
+}
+/* ====== THE GLUE FOR src/controls.js: the tables, the rebind screen and the raw pad tick ====== */
+let padTabs = null;
+function applyBinds() { const t = CTL.keysTable(SET.binds); for (const a in t) if (KEYS[a]) { KEYS[a].length = 0; KEYS[a].push(...t[a]); } padTabs = null; }
+const padTab = prof => (padTabs = padTabs || { pad1: CTL.padTable(SET.binds, 'pad1'), pad2: CTL.padTable(SET.binds, 'pad2') })[prof];
+applyBinds();
+let rebindS = CTL.newRebind(), rebindFrom = 'menu', rebindClear = false, rebindTab = 0, controlsFrom = 'menu', padRawPrev = [], padRaw = { a: false };
+let coopHelpPage = 0, coopHelpBack = 'map';
+const coopHelpPages = () => COOP_HELP_PAGES({ downT: DOWN_T, reviveT: REVIVE_T });
+const uiCtx = () => ({ g, text, wrap, fitText, textW, panel, UI, VW, VH, time });
+const controlsCardRows = () => CTL.cardRows({ hero: hero(), binds: SET.binds, prof: coop() ? 'pad2' : 'pad1', swapZX: SET.swapZX, blockToggle: SET.blockToggle });
+function openRebind(from) { rebindFrom = from; rebindS = CTL.newRebind(0); state = 'rebind'; SFX.uiSel(); }
+function openCoopHelp(back) { coopHelpBack = back; coopHelpPage = 0; state = 'coophelp'; if (!SET.coopHelpSeen) { SET.coopHelpSeen = true; saveSettings(); } SFX.uiSel(); }
+function closeCoopHelp() { state = coopHelpBack; SFX.menuClose(); }
+function updateCoopHelp() {
+  const n = coopHelpPages().length;
+  if (leftPress) { coopHelpPage = Math.max(0, coopHelpPage - 1); SFX.ui(); }
+  if (rightPress) { coopHelpPage = Math.min(n - 1, coopHelpPage + 1); SFX.ui(); }
+  if (confirmPress) { if (coopHelpPage < n - 1) { coopHelpPage++; SFX.ui(); } else closeCoopHelp(); } else if (pausePress) closeCoopHelp();
+}
+/* a key on the rebind screen: while a slot is listening it is used up here (ESC cancels; a pad page ignores keys); BACKSPACE clears the slot */
+function rebindKey(e) {
+  if (rebindS.listening) {
+    if (e.key === 'Escape') { rebindS.listening = false; rebindS.msg = 'CANCELLED'; rebindS.msgT = 1.5; return true; }
+    if (rebindS.prof !== 0) return true;
+    const k = CTL.normaliseKey(e); if (k) { CTL.rebindCapture(rebindS, SET.binds, 'key', k); applyBinds(); saveSettings(); SFX.ui(); }
+    return true;
+  }
+  if (e.key === 'Backspace' || e.key === 'Delete') { rebindClear = true; return true; }
+  return false;
+}
+function updateRebind(dt) {
+  const moved = upPress || downPress || leftPress || rightPress;
+  const res = CTL.rebindUpdate(rebindS, SET.binds, { up: upPress, down: downPress, left: leftPress, right: rightPress, ok: confirmPress, back: pausePress, clear: rebindClear, tabL: rebindTab < 0, tabR: mapPress || rebindTab > 0 }, dt);
+  rebindClear = false; rebindTab = 0; if (moved) SFX.ui();
+  if (res === 'changed') { applyBinds(); saveSettings(); SFX.ui(); }
+  if (res === 'exit') { state = rebindFrom === 'controls' ? 'controls' : 'menu'; SFX.menuClose(); }
+}
+/* THE PAD, RAW: LB / RB step the tab on Settings and on the rebind screen; a button pressed while a pad slot is listening is bound; the d-pad
+   and A keep working the menus whatever they were rebound to. Returns true when a press was used up (the normal poll skips that frame). */
+function padRawTick(gps) {
+  const cur = []; for (const p of gps) p.buttons.forEach((b, i) => { if (b && b.pressed) cur[i] = true; });
+  const rose = i => !!cur[i] && !padRawPrev[i]; let used = false;
+  padRaw = { a: rose(0) };
+  if (state === 'rebind' && rebindS.listening && rebindS.prof > 0) { for (let i = 0; i < 17; i++) if (rose(i)) { if (CTL.rebindCapture(rebindS, SET.binds, 'pad', i)) { applyBinds(); saveSettings(); SFX.ui(); used = true; } break; } }
+  else if (state === 'rebind') { if (rose(4)) rebindTab = -1; if (rose(5)) rebindTab = 1; }
+  else if (state === 'menu' && menuKind === 'settings') { if (rose(4)) { settingsTab = stepTab(settingsTab, -1); menuI = 0; menuBarY = null; SFX.ui(); } if (rose(5)) { settingsTab = stepTab(settingsTab, 1); menuI = 0; menuBarY = null; SFX.ui(); } }
+  if (state !== 'play' && state !== 'talk') { if (rose(12)) upPress = true; if (rose(13)) downPress = true; if (rose(14)) leftPress = true; if (rose(15)) rightPress = true; }
+  padRawPrev = cur; return used;
 }
 // Touch: on-screen pad on touch devices (or ?touch=1). Zones are in display pixels.
 const touchOn = ('ontouchstart' in window && navigator.maxTouchPoints > 0) || q.get('touch') === '1';
@@ -23795,7 +23859,7 @@ function update(dt) {
         else if (k === 'THE EDITOR') edEnter();
         else if (k === 'SETTINGS') openMenu('title');
         else if (k === 'SOUND TEST') { state = 'soundtest'; soundI = 0; soundCat = 0; soundFrom = 'title'; }
-        else if (k === 'CONTROLS') state = 'controls';
+        else if (k === 'CONTROLS') { controlsFrom = 'title'; state = 'controls'; }
       }
     }
     return; }
@@ -23809,7 +23873,9 @@ function update(dt) {
     return;
   }
   if (state === 'practice') { updatePractice(); return; }
-  if (state === 'controls') { if (pausePress || confirmPress) { state = 'menu'; SFX.menuClose(); } return; }
+  if (state === 'controls') { if (confirmPress) openRebind('controls'); else if (pausePress) { state = controlsFrom; SFX.menuClose(); } return; }
+  if (state === 'rebind') { updateRebind(dt); return; }
+  if (state === 'coophelp') { updateCoopHelp(); return; }
   if (state === 'heropick') { updateHeroPick(); return; }
   if (state === 'coop') { updateCoopPick(); return; }
   if (state === 'herocard') { if (confirmPress) startTrial(hero()); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
@@ -23848,6 +23914,7 @@ function update(dt) {
   if (state === 'menu') {
     menuMsgT = Math.max(0, menuMsgT - dt);
     if (menuKind === 'map') { if (mapPress && mapFrom === 'play') pausePress = true; updatePauseMap(dt); return; }
+    if (menuKind === 'settings') { const t = mapPress || talkPress ? 1 : talentsPress ? -1 : 0; if (t) { settingsTab = stepTab(settingsTab, t); menuI = 0; menuBarY = null; SFX.ui(); } }   /* TAB or E: the next tab; Q: the one before (LB / RB on a pad) */
     { const M = menuItems(); if (upPress) { do { menuI = (menuI + M.length - 1) % M.length; } while (isHeader(M[menuI])); SFX.ui(); }
     if (downPress) { do { menuI = (menuI + 1) % M.length; } while (isHeader(M[menuI])); SFX.ui(); } }
     if (leftPress) menuAdjust(-1); if (rightPress) menuAdjust(1);
@@ -26664,20 +26731,16 @@ function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 2, w = VW - 40, h = VH - 4; panel(x, y, w, h);   /* (eighteen rows of the small hand at 8, and a clear line between the header and the first) */
   text('CONTROLS', VW / 2, y + 5, UI.title, 'center');
-  const rows = [['move', 'ARROWS / WASD', 'STICK'], ['emote', 'H = DANCE, STOPS ON A MOVE', 'BACK'], ['jump', SET.swapZX ? 'X / SPACE' : 'Z / SPACE', 'A'], ['swing', SET.swapZX ? 'Z / J' : 'X / J', 'X'], ['plunge', 'DOWN+SWING IN AIR', 'DOWN+X'], hero() === 'knight' ? ['heavy cut', 'HOLD SWING, LET GO', 'HOLD X'] : ['heavy blow', 'HOLD SWING', 'HOLD X'], ['third cut', 'SWING x3 IN A RUN', 'X x3'], ['rising cut', 'UP+SWING', 'UP+X'], ['low sweep', 'DOWN+SWING', 'DOWN+X'], ['block', 'C / L ' + (SET.blockToggle ? 'TOGGLE' : 'HOLD'), 'LB RB'], ['dodge', 'TAP A WAY TWICE, OR V / SHIFT', 'B'], ['', 'TELLS ARE TIMED FOR ONE PRESS', 'B'], ['skill', 'F / B (equipped)', 'Y'], ['skill two', 'G / N (equipped)', 'RT'], ['skill three', SET.skill3Key.toUpperCase()+' (equipped)', 'L3'], ['skill four', SET.skill4Key.toUpperCase()+' (equipped)', 'R3'], ['talk', 'E / T (signs, folk)', 'D-PAD UP'], ['pause', 'ESC / P   (MAP: TAB)', 'START'], ['drop', 'DOWN+JUMP ON A LEDGE', 'DOWN+A'], ['to shrine', 'R (NOT A DEATH)', '-']];
+  const rows = controlsCardRows();   /* (src/controls.js: the hero's own words, the keys the player has chosen) */
   /* IN CO-OP THE TWO COLUMNS ARE TWO PEOPLE: player one on the keys, player two on the first pad */
-  text(coop() ? 'keyboard  P1' : 'keyboard', x + 80, y + 15, '#9aa39a', 'left', 6); text(coop() ? 'pad  P2' : 'pad', x + w - 10, y + 15, '#9aa39a', 'right', 6);
-  if (isReaper()) rows.forEach((r, i) => { const o = DK_KEYS.controls[r[0]]; if (o) rows[i] = o; });
-  /* THE WARDEN'S KEYS: C is not a shield, it is a planted spear, and her dodge goes backward */
-  if (isWarden()) rows.forEach((r, i) => { const o = WARDEN_KEYS.controls[r[0]]; if (o) rows[i] = o; });
-  if (isGeo()) rows.forEach((r, i) => { const o = GEO_KEYS.controls[r[0]]; if (o) rows[i] = o; });   /* THE GEOMANCER'S KEYS: C is her guard, and her held swing is FAULT LINE */   /* THE DEATH KNIGHT'S KEYS (DK_KEYS): C is his ward, F raises the dead, G is his chosen skill */
+  text(coop() ? 'KEYBOARD  P1' : 'KEYBOARD', x + 80, y + 15, '#9aa39a', 'left', 6); text(coop() ? 'PAD  P2' : 'PAD', x + w - 10, y + 15, '#9aa39a', 'right', 6);
   const step = Math.min(8, (h - 26) / rows.length);   /* THE CARD FITS ITS ROWS: at 8 apiece, drop and to shrine had run off its foot (twenty rows), and one dodge takes two */
   rows.forEach(([a, b, c], i) => { const yy = y + 24 + Math.round(i * step);
-    text(a, x + 8, yy, UI.text, 'left', 6); text(b, x + 80, yy, '#c9d1dc', 'left', 6);
+    text(a.toUpperCase(), x + 8, yy, UI.text, 'left', 6); text(b.toUpperCase(), x + 80, yy, '#c9d1dc', 'left', 6);
     const btn = { A: '#8fd160', B: '#ff6b6b', X: '#5aa0e0', Y: '#ffd36b' }[c];
     if (btn) { g.fillStyle = btn; g.beginPath(); g.arc(x + w - 12, yy + 3, 4, 0, 7); g.fill(); text(c, x + w - 12, yy + 1, '#1b1626', 'center', 6); }
-    else text(c, x + w - 8, yy, '#c9d1dc', 'right', 6); });
-  text('ESC back', x + 8, y + 15, UI.dim, 'left', 6);   /* up in the header: at the foot it sat on the last row */
+    else text(c.toUpperCase(), x + w - 8, yy, '#c9d1dc', 'right', 6); });
+  text('ESC BACK', x + 8, y + 15, UI.dim, 'left', 6); text('Z  REBIND', x + 8, y + 5, UI.dim, 'left', 6);   /* up in the header: at the foot it sat on the last row */
 }
 /* EFFECTS' OWN LAYOUT (2026-09-27 follow-up). It used to be a fixed three-column grid over a fixed-width crowd of
    hundreds of SFX ids - some ('priestCenserTell', 127px) wider than an 84px column has room for, no matter which of
@@ -26771,22 +26834,33 @@ function panel(x, y, w, h, col = UI.border) { board(x, y, w, h, col); }
 /* a little sword, for the row you are on */
 function swordCursor(x, y, col = UI.sel) { g.fillStyle = '#0a0810'; g.fillRect(x - 1, y + 1, 9, 3); g.fillStyle = '#dfe8ff'; g.fillRect(x + 2, y + 2, 6, 1); g.fillStyle = '#fff'; g.fillRect(x + 7, y + 2, 1, 1);
   g.fillStyle = col; g.fillRect(x + 1, y, 1, 5); g.fillStyle = '#8a5a32'; g.fillRect(x - 1, y + 2, 2, 1); }
+const SET_TABS_NAME = id => (SET_TABS.find(t => t.id === id) || SET_TABS[0]).name;
+/* THE TAB STRIP: five labels across the top of Settings; the row it lives on (the first) is selectable, and LEFT/RIGHT change tab there */
+function drawTabStrip(x, y, w) {
+  const sel = menuI === 0, gap = 4, ws = SET_TABS.map(t => textW(t.short, 6) + 8), tot = ws.reduce((a, b) => a + b, 0) + gap * (SET_TABS.length - 1); let sx = Math.round(x + (w - tot) / 2);
+  SET_TABS.forEach((t, k) => { const on = t.id === settingsTab;
+    g.fillStyle = on ? (sel ? 'rgba(143,209,96,0.34)' : 'rgba(255,211,107,0.22)') : 'rgba(255,255,255,0.06)'; g.fillRect(sx, y, ws[k], 10);
+    if (on) { g.fillStyle = '#ffd36b'; g.fillRect(sx, y + 10, ws[k], 1); }
+    text(t.short, sx + ws[k] / 2, y + 2, on ? UI.title : UI.dim, 'center', 6); sx += ws[k] + gap; });
+  if (sel) { text('<', x + 8, y + 2, UI.sel, 'center', 6); text('>', x + w - 8, y + 2, UI.sel, 'center', 6); }
+}
 function drawMenu() {
   if (menuKind === 'map') { drawPauseMap(); return; }
   const open = Math.min(1, (time - menuSince) / 0.22), eo = 1 - Math.pow(1 - open, 3);
   g.fillStyle = 'rgba(10,14,12,' + (0.7 * eo).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
-  const x = 54, y = 6 + Math.round((1 - eo) * -14), w = VW - 108, h = 168;
+  const tabbed = menuKind === 'settings', x = tabbed ? 24 : 54, y = 6 + Math.round((1 - eo) * -14), w = tabbed ? VW - 48 : VW - 108, h = 168;
   panel(x, y, w, h);
-  text(menuKind === 'pause' ? 'PAUSED' : 'SETTINGS', VW / 2, y + 6, UI.title, 'center');
-  const M = menuItems();
-  const off = Math.max(0, Math.min(M.length - MENU_ROWS, menuI - MENU_ROWS + 2));
+  text(menuKind === 'pause' ? 'PAUSED' : 'SETTINGS  ' + SET_TABS_NAME(settingsTab), VW / 2, y + 6, UI.title, 'center');
+  const M = menuItems(), base = tabbed ? 1 : 0, rowsN = tabbed ? 9 : MENU_ROWS, top0 = tabbed ? y + 30 : y + 22;
+  const off = Math.max(0, Math.min(M.length - base - rowsN, Math.max(0, menuI - base) - rowsN + 2));
+  if (tabbed) drawTabStrip(x, y + 17, w);
   // in the gutter, clear of the rows' values and of the level line along the foot of the board
-  if (off > 0) text('^', x + 6, y + 16, UI.dim, 'center', 6); if (off + MENU_ROWS < M.length) text('v', x + 6, y + h - 30, UI.dim, 'center', 6);
-  { const want = y + 22 + (menuI - off) * 12; menuBarY = menuBarY === null || Math.abs(menuBarY - want) > 60 ? want : menuBarY + (want - menuBarY) * 0.35;
-    if (!isHeader(M[menuI])) { g.fillStyle = 'rgba(143,209,96,0.13)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 11); g.fillStyle = 'rgba(255,255,255,0.06)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 1); swordCursor(x + 5, Math.round(menuBarY) + 1); } }
+  if (off > 0) text('^', x + 6, top0 - 6, UI.dim, 'center', 6); if (off + rowsN < M.length - base) text('v', x + 6, y + h - 30, UI.dim, 'center', 6);
+  { const want = top0 + (menuI - base - off) * 12; menuBarY = menuBarY === null || Math.abs(menuBarY - want) > 60 ? want : menuBarY + (want - menuBarY) * 0.35;
+    if (!isHeader(M[menuI]) && M[menuI] !== '@TABS') { g.fillStyle = 'rgba(143,209,96,0.13)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 11); g.fillStyle = 'rgba(255,255,255,0.06)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 1); swordCursor(x + 5, Math.round(menuBarY) + 1); } }
   M.forEach((k, i) => {
-    if (i < off || i >= off + MENU_ROWS) return;
-    const yy = y + 22 + (i - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : UI.title) : (dim ? '#5a5f5a' : UI.dim);
+    if (i < base + off || i >= base + off + rowsN) return;
+    const yy = top0 + (i - base - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : UI.title) : (dim ? '#5a5f5a' : UI.dim);
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); g.fillStyle = '#ffd36b'; for (const dx of [x + w / 2 - hw - 2, x + w / 2 + hw + 1]) { g.fillRect(Math.round(dx), yy + 2, 1, 3); g.fillRect(Math.round(dx) - 1, yy + 3, 3, 1); } text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     const onoff = v => v ? 'ON' : 'OFF';
     const v = k === 'Slot 3 key' ? SET.skill3Key.toUpperCase() : k === 'Slot 4 key' ? SET.skill4Key.toUpperCase() : k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? onoff(SET.wayOn) : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeAmt === 0 ? 'OFF' : SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Combat' ? (weighty() ? 'WEIGHTY' : 'CLASSIC') : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
@@ -26978,7 +27052,7 @@ function drawTitle(cx, cy) {
 // SCREEN TRANSITIONS. Every change of screen comes up out of the dark instead of cutting, and a level opens
 // on an iris round the knight. Opening a pause menu or a talk box is not a change of screen.
 let transT = 0, transKind = 'fade', transPrev = null, transLast = 0, menuSince = 0;
-const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'soundtest', 'bossjump', 'herocard', 'practice', 'win', 'gameover']);
+const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'rebind', 'coophelp', 'soundtest', 'bossjump', 'herocard', 'practice', 'win', 'gameover']);
 function drawTransition() {
   const dt = Math.min(1, Math.max(0, time - transLast)); transLast = time;
   if (state !== transPrev) {
@@ -27540,6 +27614,8 @@ function render() {
   if (state === 'soundtest') drawSoundTest();
   if (state === 'bossjump') drawBossJump();
   if (state === 'controls') drawControls();
+  if (state === 'rebind') CTL.drawRebind(uiCtx(), rebindS, SET.binds);
+  if (state === 'coophelp') drawCoopHelp(uiCtx(), coopHelpPage, coopHelpPages());
   if (state === 'practice') drawPractice();
   if (state === 'herocard') drawHeroCard();
   if (state === 'heropick') drawHeroPick();
@@ -27753,6 +27829,11 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
     get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(),
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),
+    openMenu: from => openMenu(from), pollPad: () => pollGamepad(), get settingsTab() { return settingsTab; }, set settingsTab(v) { settingsTab = v; }, menuRows: () => menuItems(), settings: () => SET, readSettings: raw => readSettings(raw),   /* (tools/settings-tabs.mjs) */
+    rebind: { open: p => { openRebind('menu'); rebindS.prof = p || 0; }, state: () => rebindS, conflicts: () => CTL.conflicts(SET.binds, CTL.rebindProfile(rebindS)) },
+    controlsRows: () => controlsCardRows(),
+    coopPickOpen: from => { coopPickFrom = from; coopPick = { i: 0, ally: false }; state = 'coop'; }, coopPickList: () => coopPickList(),
+    coopHelp: { pages: () => coopHelpPages(), get page() { return coopHelpPage; }, set page(v) { coopHelpPage = v; }, open: from => openCoopHelp(from) },
     tabs: () => storeTabs().length, items: () => storeItems(storeTabs()[storeTab]).length, menuCount: () => menuItems().length,
     treeRows: () => treeNodes().length, beasts: () => beastList().length,
   },
