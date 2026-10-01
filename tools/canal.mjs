@@ -99,11 +99,11 @@ if (D) {
 
 // ---------------- THE LEVEL ----------------
 if (lv && D) {
-  const fair = LEVELS.find(l => l.id === 'fair');
-  ok(lv.needs === 'waymeet' && fair && fair.needs === 'canal', 'the road does not run WAYMEET -> the canal -> THE HARVEST FAIR (canal needs ' + lv.needs + ', fair needs ' + (fair && fair.needs) + ')');
+  const fair = LEVELS.find(l => l.id === 'theatre');
+  ok(lv.needs === 'waymeet' && fair && fair.needs === 'canal', 'the road does not run WAYMEET -> the canal -> THE MASKWRIGHT THEATRE (canal needs ' + lv.needs + ', theatre needs ' + (fair && fair.needs) + ')');
   const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), nodes = src.slice(src.indexOf('const INLAND_NODES'), src.indexOf('const INLAND_PATH'));
   const ids = [...nodes.matchAll(/id: '([a-z]+)', kind: 'level'/g)].map(m => m[1]);
-  ok(ids.indexOf('canal') === ids.indexOf('waymeet') + 1 && ids.indexOf('fair') === ids.indexOf('canal') + 1, 'the map does not run Waymeet, the canal, the fair: ' + ids.join(','));
+  ok(ids.indexOf('canal') === ids.indexOf('waymeet') + 1 && ids.indexOf('theatre') === ids.indexOf('canal') + 1, 'the map does not run Waymeet, the canal, the theatre: ' + ids.join(','));
   ok(L.music === 'canal' && existsSync(new URL('../audio/canal.ogg', import.meta.url)), 'the canal does not play its own track (audio/canal.ogg)');
   ok(existsSync(new URL('../docs/briefs/fog-canal.md', import.meta.url)), 'the brief (docs/briefs/fog-canal.md) is not committed');
   const A = D.arcs, inn = ([a, b], x) => x >= a && x <= b, ents = t => L.ents.filter(e => e.t === t);

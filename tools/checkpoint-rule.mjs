@@ -1,10 +1,10 @@
 /* tools/checkpoint-rule.mjs - THE CHECKPOINT RULE, ONE COPY (claude/checkpoints, 2026-09-29; RULES-LEVELS-AND-BOSSES.md S4).
-   Daniel, 2026-09-28: "too many checkpoints is part of the problem". A level has one checkpoint per SECTION: at most MAX (175) walked route tiles
+   Daniel, 2026-09-28: "too many checkpoints is part of the problem". A level has one checkpoint per SECTION: at most MAX (200; it was 175 until Daniel widened it game-wide on 2026-09-30, claude/fairfix) walked route tiles
    apart, never two closer than MIN (80), and one right before each boss door, mini arena and ambush room. tools/checkpoint-gaps.mjs holds every level
    to it; the picker (tools/checkpoint-thin.mjs) chooses with it; a level's own exam tool that used to pin the old density (40..72, 100, 120) asks it instead. */
 import assert from 'node:assert/strict';
 import { CHECK_PIN } from '../src/checkpoint-thin.js';
-export const MAX = 175, MIN = 80;
+export const MAX = 200, MIN = 80;
 const TS = 16;
 /* the checkpoint just outside the boss arena's near wall (B6): on the arena's floor row, within 14 columns of the wall */
 export const arenaOutside = L => { const A = L.arena; if (!A) return []; const fy = A.floor / TS - 1;

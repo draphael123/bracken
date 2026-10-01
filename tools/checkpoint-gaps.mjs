@@ -1,4 +1,4 @@
-/* tools/checkpoint-gaps.mjs - CHECKPOINTS ARE SPACED, ONE PER SECTION: NO MORE THAN 175 ROUTE TILES BETWEEN THEM, NO TWO CLOSER THAN 80, AND ONE BEFORE EVERY DOOR.
+/* tools/checkpoint-gaps.mjs - CHECKPOINTS ARE SPACED, ONE PER SECTION: NO MORE THAN 200 ROUTE TILES BETWEEN THEM, NO TWO CLOSER THAN 80, AND ONE BEFORE EVERY DOOR.
    Node only: no page.
 
    THE RULE CHANGED (Daniel, 2026-09-28, the Salt & Sanctuary direction: "too many checkpoints is part of the problem"). Until then this held only a
@@ -6,7 +6,7 @@
    every ~45 walked tiles: a death cost a few seconds and nothing else. Now a level has one checkpoint per SECTION, about every 120-160 walked route
    tiles, and always one right before each boss door, mini arena and ambush room. This measures all three along the walked route (tools/pacing.mjs:
    the main route, start to the boss's trigger), and it fails
-     TOO SPARSE  a run longer than MAX (175) with no checkpoint: the picker aims for 150 and this leaves room for the walk to differ a little
+     TOO SPARSE  a run longer than MAX (200; 175 until Daniel widened it game-wide on 2026-09-30) with no checkpoint: the picker aims for 175 and this leaves room for the walk to differ a little
      TOO DENSE   two checkpoints closer than MIN (80) route tiles - the drift back to a shrine on every corner - unless one of the two is a DOOR
                  checkpoint (the last one before a boss, mini or ambush room, RULES Q5/S4, which stands where the room needs it)
      NO DOOR     a boss, mini or ambush room the route enters with no checkpoint before it, or one more than MAX back

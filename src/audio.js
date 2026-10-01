@@ -1,6 +1,7 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
+import { bossSynthOf, splitTrack, BOSS_SYNTH_GAIN } from './boss-music.js';   /* THE ARCHMAGES' and THE GOBLIN ROYALS' themes: synth tracks with no file (claude/bossmusic) */
 const TRACKS = { canal: './audio/canal.ogg', unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
   ambWind: './audio/ambWind.ogg', ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
   /* CC0: MintoDog's stage-select set, skrjablin's Sailor Waltz, Memoraphile's Spooky Dungeon (audio/CREDITS.txt) */
@@ -46,7 +47,7 @@ export function setSfxFiles(v) { sfxFiles = !!v; }
 /* CHARACTER VOICES OFF: no recorded grunt, shout, cry or laugh from anyone - every one of them has a non-vocal fallback */
 let voicesOn = true; export function setVoices(v) { voicesOn = !!v; }
 const VOCAL = new Set(['gobDie', 'gobHurt', 'laugh', 'effort', 'hurt', 'roar', 'bossHurt', 'croak']);
-export function setMusicVolume(v) { musicVol = Math.max(0, Math.min(1, v)); if (musicGain && currentTrack && musicOn) musicGain.gain.value = trackVol(currentTrack); }
+export function setMusicVolume(v) { musicVol = Math.max(0, Math.min(1, v)); if (musicGain && currentTrack && musicOn) musicGain.gain.value = trackVol(currentTrack); else applySynthBoss(); }
 export const musicIsFile = () => !!trackBuf[currentTrack];
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
 export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
@@ -224,14 +225,12 @@ export const SFX = {
   gargFire() { noise(0.8, 0.32, 900, 0.5); noise(0.6, 0.18, 2600, 0.8, 0.05); tone('sawtooth', 110, 70, 0.7, 0.12); crackle(6, 0.04); },   /* THE GATE GARGOYLE's FIRE BREATH: a furnace door opened */
   ember() { noise(0.1, 0.2, vary(2200), 0.7); tone('triangle', vary(440), 160, 0.12, 0.1); crackle(2, 0.02); },
   heatFull() { tone('triangle', 880, 880, 0.14, 0.08); tone('triangle', 1320, 1320, 0.2, 0.08, 0.07); noise(0.3, 0.12, 1200, 0.4); },
-  /* THE EMBER WARD (src/ember-ward.js): all fire, no iron. Raised, a soft whump and the crackle of it catching; a blow on it, a thud into
-     flame; a projectile melting, a short sizzle; sputtering, pops; overheated, a boom with a hiss running out of it; a flare, a bright
-     rising roar with a ring on top - the one sound of hers that rings, so the perfect ward is heard */
-  emberWard() { if (!gate('emberWard', 0.12)) return; noise(0.22, 0.16, 700, 0.5); tone('triangle', 160, 260, 0.16, 0.08); crackle(3, 0.04); },
-  emberBlock() { if (!gate('emberBlock', 0.05)) return; tone('sine', 150, 70, 0.14, 0.2); noise(0.14, 0.2, 1100, 0.6); crackle(2, 0.02); },
+  /* THE EMBER FLARE (src/ember-ward.js): all fire, no iron. THE PRESS, a short rising whoomp (emberBurst); A CATCH, a bright rising roar with a
+     ring on top - the one sound of hers that rings, so the caught blow is heard (emberFlare); a projectile melting in it, a short sizzle
+     (emberMelt); A MISTIME, a dull falling fizzle with no ring on it - the sound of a spent match (emberFizzle) */
+  emberBurst() { if (!gate('emberBurst', 0.1)) return; noise(0.16, 0.18, 900, 0.6); tone('triangle', 200, 520, 0.12, 0.08); crackle(2, 0.03); },
+  emberFizzle() { if (!gate('emberFizzle', 0.15)) return; noise(0.34, 0.14, 380, 0.4); tone('sine', 240, 70, 0.3, 0.1); tone('sawtooth', 130, 55, 0.22, 0.05, 0.04); },
   emberMelt() { if (!gate('emberMelt', 0.05)) return; noise(0.18, 0.16, 4200, 1.4); tone('sine', 900, 1500, 0.1, 0.04); crackle(2, 0.03); },
-  emberSputter() { crackle(3); noise(0.06, 0.1, 2600, 1.2); tone('square', vary(300), 120, 0.05, 0.05, 0.02); },
-  emberOverheat() { noise(0.5, 0.4, 520, 0.4); tone('sine', 72, 28, 0.6, 0.36); noise(0.6, 0.14, 3400, 0.8, 0.12); crackle(8, 0.05); },
   emberFlare() { if (!gate('emberFlare', 0.08)) return; noise(0.3, 0.24, 1600, 0.5); tone('sawtooth', 220, 660, 0.2, 0.08); bell(1568, 0.4, 0.07, 0.02); crackle(5, 0.04); },
   /* THE CROUCH TWISTS, PART B (src/crouch-b.js). THE PRAYER: a low sung fifth, soft, swelling on each beat and rising a little as his light
      fills, a small bell over it once the bar is half full. THE EARTH SENSE: her ear to the ground is a low thud and a hum out through the
@@ -455,6 +454,9 @@ export function loopCopy(ctx, b, len, dest, at, first) {
 // the files were mastered all over the place: the cave loop sits 7 dB under the rest and theme3/4 3 dB over
 const TRACK_GAIN = { witchlight: 1.0, fallingtower: 1.0, underkeep: 1.1, stormharbor: 1.0, burial: 1.0,   /* THE FOUR NEW LEVELS ARE COMPOSED TRACKS NOW, not 22 kHz mono synth: levelled to -15 LUFS like the rest of the library, so they need gain of about one. The 3.5 and 5.0 here were a script trying to make thin mono loops carry, and they would now be deafening. */ store: 1.8, hurricane: 1.25, drowned: 1.3, cave: 2.1, adventure: 1.7, theme3: 0.8, theme4: 0.75, reef: 1.5, longwater: 1.25, flotilla: 1.0 };
 const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT * musicVol;
+/* a synth boss theme has no currentTrack (the step scheduler plays it), so its loudness is set here: on play, on duck, on the volume slider */
+const synthBossGain = () => BOSS_SYNTH_GAIN * duckT * musicVol;
+const applySynthBoss = () => { if (musicGain && !currentTrack && musicOn && bossSynthOf(wantTrack)) musicGain.gain.setTargetAtTime(synthBossGain(), ac.currentTime, 0.05); };
 function playFile(name) {
   if (!ac || !trackBuf[name] || currentTrack === name) return;
   if (trackG && musicSrcs.length) { const og = trackG, olds = musicSrcs; og.gain.setTargetAtTime(0, ac.currentTime, 0.22); setTimeout(() => { for (const s of olds) { try { s.stop(); } catch {} } try { og.disconnect(); } catch {} }, 1000); if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicSrcs = []; musicGen++; } else stopMusic(); // the old track fades under the new one
@@ -478,22 +480,25 @@ function playFile(name) {
 let heardHook = null;
 export function setHeardHook(fn) { heardHook = fn; }
 export const music = {
-  play(name) { if (heardHook) heardHook(name); wantTrack = name; silenced = false; if (!ac) return;
+  play(name) { if (heardHook) heardHook(splitTrack(name)[0]); wantTrack = name; tempoT = tempoNow = 1; silenced = false; if (!ac) return;
     if (trackBuf[name]) { playFile(name); return; }
     // A TRACK WITH NO FILE IS PLAYED BY THE SYNTH - but the synth only runs while `currentTrack` is null,
     // and nothing was clearing it. So walking into UNDERLEAF left the PREVIOUS level's file playing and
     // the level had no theme of its own at all, which is exactly what it sounded like.
-    if (!TRACKS[name]) { stopMusic(); currentTrack = null; nextT = ac.currentTime + 0.05; step = 0; return; }
+    if (!TRACKS[name]) { stopMusic(); currentTrack = null; nextT = ac.currentTime + 0.05; step = 0; if (name === 'theatre') thAct = 0; if (bossSynthOf(name) && musicGain) musicGain.gain.value = musicOn ? synthBossGain() : 0; return; }
     loadTrack(name); },
   preload(name) { if (ac) loadTrack(name); },
+  act(n) { theatreAct(n); },   /* THE MASKWRIGHT'S THEATRE: which act the show is in (0 the overture, 1-3 the acts): the waltz is told lighter and faster */
   stop() { wantTrack = null; silenced = true; stopMusic(); currentTrack = null; },
   loaded(name) { return !!trackBuf[name]; },
-  set(v) { musicOn = !!v; if (musicGain && currentTrack) musicGain.gain.value = musicOn ? trackVol(currentTrack) : 0; },
-  duck(on) { const t = on ? 0.35 : 1; if (t === duckT) return; duckT = t; if (musicGain && currentTrack && musicOn) musicGain.gain.setTargetAtTime(trackVol(currentTrack), ac.currentTime, 0.25); },
+  set(v) { musicOn = !!v; if (musicGain && currentTrack) musicGain.gain.value = musicOn ? trackVol(currentTrack) : 0; else if (musicGain && bossSynthOf(wantTrack)) musicGain.gain.value = musicOn ? synthBossGain() : 0; },
+  duck(on) { const t = on ? 0.35 : 1; if (t === duckT) return; duckT = t; if (musicGain && currentTrack && musicOn) musicGain.gain.setTargetAtTime(trackVol(currentTrack), ac.currentTime, 0.25); else applySynthBoss(); },
   get on() { return musicOn; },
   get track() { return currentTrack; },
   get want() { return wantTrack; },   /* the track asked for last (null: stopped) - what is meant to be playing, loaded or not, sound on or not */
   muffle(on) { if (!!on === muffled) return; muffled = !!on; applyMusicFilter(); },
+  setTempo(m) { tempoT = Math.max(0.6, Math.min(2, +m || 1)); },   /* the fair's synth tracks only: a multiplier on their own speed (see WQ_TEMPO), eased in over about a bar */
+  get tempo() { return tempoT; },
   lowHealth(on) { if (!!on === lowHp) return; lowHp = !!on; applyMusicFilter(); },
 };
 
@@ -522,17 +527,138 @@ const WAY_BASS = ['D3', 'F3', 'A2', 'D3'];
 const DEEP_LEAD = [[null, null, null, 'E3', null, null, null, null], [null, null, 'C3', null, null, null, null, null],
   [null, null, null, null, 'B2', null, null, null], [null, 'E3', null, null, null, null, null, null]];
 const DEEP_BASS = ['E2', 'C2', 'E2', 'A1'];
+// THE HARVEST FAIR'S OWN MUSIC (Daniel, 2026-09-30: an eerie band organ). No file: a synth waltz, like underleaf/mineworks/deep.
+//  'harvestfair' (the level): a fairground band organ in A minor, 3/4, sixteen bars. Calliope pipes (two square/saw voices a few cents apart, one of them
+//    sagging flat and each bar a little differently, so the organ is never quite in tune), an oom-pah bass (root on 1, the chord on 2 and 3), a glockenspiel
+//    counter-line above it, and one wrong note in the last turn of the tune.
+//  'wickerqueen' (the boss): the same tune, a third faster, an octave of pipe added underneath, drums (kick on 1, snare and hat on 2 and 3, a tom fill at the
+//    end of every fourth bar) and the harmony darkened (bars 2 and 14 go to B-flat, bar 10 to G minor, the lead's B in that bar goes flat).
+//  THE TEMPO HOOK: music.setTempo(m) - a multiplier on the track's own speed (1 = as written; 1.3 = the carousel at full tilt), clamped 0.6..2. It eases in over
+//  about one bar, so a step up is heard as the ride catching, not as a jump; music.play() of any track puts it back to 1. WQ_TEMPO is the per-phase table.
+const FM = (() => { const S = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }; return n => { const m = /^([A-G])(#|b)?(\d)$/.exec(n); return 440 * Math.pow(2, (S[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0) + 12 * (+m[3] + 1) - 69) / 12); }; })();
+const FAIR_LEAD = [   /* six eighth-note steps a bar; a note, '-' to hold it, '.' for a rest */
+  'E5 - - C5 - E5', 'A5 - - G5 - E5', 'F5 - A5 - D5 -', 'C5 - E5 - A4 -', 'A5 - - G5 - F5', 'D5 - F5 - A5 -', 'B5 - G#5 - E5 -', 'E5 - D5 - B4 G#4',
+  'A5 - - C6 - B5', 'G5 - B5 - D6 -', 'C6 - A5 - F5 -', 'E6 - - D6 - B5', 'C6 - B5 - A5 -', 'F5 - A5 - D6 -', 'B5 - G#5 - E5 -', 'A5 - - . . E5'].map(s => s.split(' '));
+const FAIR_CH = { Am: ['A2', ['A3', 'C4', 'E4']], Dm: ['D3', ['D4', 'F4', 'A4']], F: ['F2', ['F3', 'A3', 'C4']], E: ['E2', ['E3', 'G#3', 'B3']], G: ['G2', ['G3', 'B3', 'D4']], Bb: ['Bb2', ['Bb3', 'D4', 'F4']], Gm: ['G2', ['G3', 'Bb3', 'D4']] };
+const FAIR_HARM = 'Am Am Dm Am F Dm E E Am G F E Am Dm E Am'.split(' ');
+const WQ_HARM = 'Am Bb Dm Am F Dm E E Am Gm F E Am Bb E Am'.split(' ');
+const FAIR_GLOCK = [null, 'E6 D6', null, 'C6 B5 A5', null, 'F6 D6', 'G#5', 'B5 G#5 E5', null, 'D6 B5', 'A5 F5', 'G#5 B5', null, 'A5 F5', 'G#5 E5', 'E6 C6 A5'].map(s => s && s.split(' '));
+const BASE_FAIR = 60 / 132 / 2, BASE_WQ = 60 / 164 / 2;
+export const WQ_TEMPO = [1, 1, 1.15, 1.32];   /* by the Wicker Queen's phase (0 unused, 1, 2, 3): the carousel turns faster, the organ follows */
+let tempoT = 1, tempoNow = 1;
+function pipe(f, dur, v, delay, bar, boss) {
+  if (!ac) return; const t = ac.currentTime + delay, sag = 1 - 0.006 * (1 + Math.sin(bar * 2.3)) - (boss ? 0.004 : 0);   /* the organ sags: a different few cents each bar */
+  const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = boss ? 2100 : 2700; lp.Q.value = 0.9;
+  const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + 0.025); g.gain.setValueAtTime(v, t + Math.max(0.03, dur * 0.7)); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  lp.connect(g); g.connect(musicGain);
+  for (const [type, k, w] of [['square', 1, 1], ['sawtooth', 1.011 * sag, 0.55]]) { const o = ac.createOscillator(); o.type = type; o.frequency.value = f * k * (type === 'square' ? sag : 1); const og = ac.createGain(); og.gain.value = w; o.connect(og); og.connect(lp); o.start(t); o.stop(t + dur + 0.05); }
+}
+function glock(f, v, delay) { tone('sine', f, f * 0.999, 0.7, v, delay, musicGain); tone('sine', f * 3.99, f * 3.98, 0.16, v * 0.3, delay, musicGain); tone('sine', f * 6.7, f * 6.6, 0.07, v * 0.1, delay, musicGain); }
+function fairStep(stp, SL, boss, delay) {
+  const bar = Math.floor(stp / 6) % 16, i = stp % 6, harm = boss ? WQ_HARM : FAIR_HARM, [root, tri] = FAIR_CH[harm[bar]], lead = FAIR_LEAD[bar];
+  const nm = lead[i];
+  if (nm !== '-' && nm !== '.') { let len = 1; while (i + len < 6 && lead[i + len] === '-') len++;
+    const n = boss && bar === 9 && nm[0] === 'B' ? nm.replace('B', 'Bb') : nm, f = FM(n) * (bar === 15 && i === 5 ? 0.97 : 1);   /* the last pickup is a quarter-tone flat: the wrong note */
+    pipe(f, SL * len * 0.95, boss ? 0.11 : 0.14, delay, bar, boss); if (boss) pipe(f / 2, SL * len * 0.95, 0.09, delay, bar, boss); }
+  if (i === 0) { const b = FM(root); tone('triangle', b, b * 0.995, SL * 1.8, 0.34, delay, musicGain); if (boss) tone('sine', b / 2, b / 2, SL * 2.5, 0.25, delay, musicGain); }
+  if (i === 2 || i === 4) for (const c of tri) tone('square', FM(c), FM(c) * 0.997, SL * 0.9, boss ? 0.05 : 0.045, delay, musicGain);
+  const gl = FAIR_GLOCK[bar]; if (gl && (i === 0 || i === 2 || i === 4)) { const k = i / 2 - (3 - gl.length); if (k >= 0 && gl[k]) glock(FM(gl[k]), 0.07, delay); }
+  if (boss) {
+    if (i === 0) { tone('sine', 120, 42, 0.16, 0.5, delay, musicGain); }
+    if (i === 2 || i === 4) noise(0.09, 0.16, 2600, 0.7, delay, musicGain);
+    if (i % 2 === 1) noise(0.03, 0.05, 7000, 1.2, delay, musicGain);
+    if (bar % 4 === 3 && (i === 4 || i === 5)) tone('sine', i === 4 ? 150 : 110, 60, 0.12, 0.3, delay, musicGain);
+  }
+}
+// THE PUPPETEER'S OVERTURE (claude/puppeteer): no file - a D-minor march for a toy theatre, a music-box line over an organ bass and a timpani on
+// the bar. It runs at 132 and does not let up: the strings are always moving. (Played for arena.music 'puppeteer'.)
+const PUP_N = { D4: 293.66, E4: 329.63, F4: 349.23, G4: 392, 'G#4': 415.3, A4: 440, Bb4: 466.16, 'C#5': 554.37, D5: 587.33, E5: 659.25, F5: 698.46, D2: 73.42, A1: 55, Bb1: 58.27, C2: 65.41 };
+const PUP_LEAD = [['D5', 'A4', 'F4', 'A4', 'D5', 'E5', 'F5', 'E5'], ['C#5', 'A4', 'E4', 'A4', 'C#5', 'D5', 'E5', 'C#5'],
+  ['D5', 'A4', 'F4', 'D4', 'Bb4', 'A4', 'G4', 'F4'], ['E4', 'F4', 'G4', 'A4', 'Bb4', 'A4', 'G#4', 'A4']];
+const PUP_BASS = ['D2', 'A1', 'Bb1', 'A1'];
+const STEP_PUP = 60 / 132 / 2;
 let step = 0, nextT = 0, timer = null;
 const STEP = 60 / 112 / 2, STEP_HUSH = 60 / 62 / 2, STEP_MINE = 60 / 48 / 2, STEP_DEEP = 60 / 40 / 2, STEP_TOWN = 60 / 96 / 2;
+// THE MASKWRIGHT'S THEATRE: "OVERTURE FOR AN EMPTY HOUSE". A creaky music-hall waltz in D minor, played by a pit that has not been paid: bowed strings (two desks, a little
+// out of tune and never the same way twice), a harpsichord on the off-beats, a plucked bass, a door that creaks in the middle of the tune. Synth only (no file).
+// Sixteen bars of 3/4, an eighth to a step. The show is told in four levels, set by main.js through music.act(n): 0 THE OVERTURE (the level
+// before the curtain: minor, slow, unsteady), 1 CURTAIN UP (the same tune lifted into D major, a flute doubling the lead, faster), 2 ACT TWO (faster, a snare), 3 ACT THREE
+// (faster still, a drum on every bar - the curtain is coming down). The pitch map that lifts it: F to F#, Bb to B, C to C#, so the minor tune's every chord is the major's.
+const TH_M = [  // the lead, a token an eighth: a note, or '-' to let the last one ring
+  'D5 - A4 - F4 -', 'A4 - D5 - F5 -', 'E5 - C#5 - A4 C#5', 'D5 - - - - -', 'G4 - Bb4 - D5 -', 'F5 - D5 - A4 -', 'C#5 E5 A5 G5 E5 C#5', 'D5 - - - A4 -',
+  'Bb4 - D5 - F5 -', 'A5 - F5 - C5 -', 'Bb4 - D5 - G5 -', 'F5 E5 C#5 E5 A4 -', 'D5 - F5 - A5 -', 'G5 - F5 - D5 -', 'C#5 - E5 - G5 -', 'E5 - - D5 C#5 E5'].map(b => b.split(' '));
+const TH_ROOT = ['D3', 'D3', 'A2', 'D3', 'G2', 'A2', 'A2', 'D3', 'Bb2', 'F2', 'G2', 'A2', 'D3', 'Bb2', 'A2', 'A2'];
+const TH_CHORD = { Dm: ['D4', 'F4', 'A4'], A7: ['C#4', 'E4', 'G4'], Gm: ['Bb3', 'D4', 'G4'], Bb: ['D4', 'F4', 'Bb4'], F: ['C4', 'F4', 'A4'] };
+const TH_PROG = ['Dm', 'Dm', 'A7', 'Dm', 'Gm', 'Dm', 'A7', 'Dm', 'Bb', 'F', 'Gm', 'A7', 'Dm', 'Bb', 'A7', 'A7'];
+const TH_BPM = [112, 132, 146, 158];
+let thAct = 0, thLast = 0;
+const thHash = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return v - Math.floor(v); };
+function thHz(name, lift) {
+  const m = /^([A-G])(#|b)?(\d)$/.exec(name); if (!m) return 440; let semi = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0);
+  if (lift && !m[2] && (m[1] === 'F' || m[1] === 'C')) semi += 1;   // F -> F#, C -> C#
+  if (lift && m[2] === 'b' && m[1] === 'B') semi += 1;              // Bb -> B
+  return 440 * Math.pow(2, (semi + 12 * (+m[3] - 4) - 9) / 12);
+}
+const thCents = (hz, c) => hz * Math.pow(2, c / 1200);
+/* A BOWED NOTE: two saws a few cents apart, a slow vibrato, a lowpass that opens as the bow bites, a swell and a release. The pair is what makes a desk of players and not a synth. */
+function thBow(hz, dur, v, delay, cents, lp = 1500) {
+  if (!ac || !musicGain) return; const t = ac.currentTime + delay, o = ac.createOscillator(), o2 = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain(), l = ac.createOscillator(), lg = ac.createGain();
+  o.type = 'sawtooth'; o2.type = 'sawtooth'; o.frequency.value = hz; o2.frequency.value = hz; o.detune.value = cents - 7; o2.detune.value = cents + 8;
+  l.frequency.value = 5 + Math.random() * 0.9; lg.gain.value = hz * 0.007; l.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency);
+  f.type = 'lowpass'; f.Q.value = 0.5; f.frequency.setValueAtTime(lp * 0.55, t); f.frequency.linearRampToValueAtTime(lp, t + 0.18);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.09); g.gain.setValueAtTime(v, t + Math.max(0.1, dur * 0.7)); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+  o.connect(f); o2.connect(f); f.connect(g); g.connect(musicGain); o.start(t); o2.start(t); l.start(t); const end = t + dur + 0.05; o.stop(end); o2.stop(end); l.stop(end);
+}
+function scheduleTheatre(delay, stepN) {
+  const act = thAct, lift = act > 0, bar = Math.floor(stepN / 6) % 16, i = stepN % 6, lap = Math.floor(stepN / 96), beat = 60 / TH_BPM[act], SL = beat / 2;
+  const rub = 1 + 0.035 * Math.sin(stepN * 0.11) * (act ? 0.4 : 1);   // a pit that rushes and drags
+  const H = n => thHz(n, lift), tune = (hz, slot, amount) => thCents(hz, (thHash(stepN, slot) - 0.5) * amount), flat = lap % 2 === 1 && bar === 11 && i === 3;   // one note in thirty-two bars sags flat
+  // the lead, bowed (violins, and in the lift a flute over them)
+  const tok = TH_M[bar][i];
+  if (tok !== '-') { let n = 1; while (i + n < 6 && TH_M[bar][i + n] === '-') n++; if (i + n >= 6 && TH_M[(bar + 1) % 16][0] === '-') n += 2;
+    const hz = H(tok), dur = n * SL * 1.08, c = 14 + (thHash(bar, i) - 0.5) * 18 - (flat ? 55 : 0);
+    thBow(hz, dur, 0.085, delay, c, 1800); if (act >= 1) tone('triangle', thCents(hz * 2, c + 4), thCents(hz * 2, c + 4), dur * 0.8, 0.045, delay, musicGain); }
+  const ch = TH_CHORD[TH_PROG[bar]], root = TH_ROOT[bar];
+  // the second desk: the chord, held through the bar (violas: a little flat)
+  if (i === 0) for (let k = 0; k < 3; k++) thBow(H(ch[k]), SL * 6.1 * rub, 0.032, delay, -10 - k * 3, 950);
+  // the bass: one pizzicato on the one, the harpsichord and a pizzicato on the two and the three
+  if (i === 0) { const b = H(root); tone('triangle', thCents(b, -6), thCents(b, -6) * 0.97, SL * 1.6, 0.21, delay, musicGain); tone('sine', b, b * 0.98, SL * 1.2, 0.16, delay, musicGain); }
+  if (i === 2 || i === 4) for (let k = 0; k < 3; k++) { const hz = thCents(H(ch[k]) * 2, 18 + (thHash(stepN, k) - 0.5) * 20); tone('sawtooth', hz, hz * 0.996, SL * 0.9, 0.05, delay, musicGain); tone('square', hz * 2, hz * 2, SL * 0.35, 0.02, delay, musicGain); }   // the harpsichord: a bright stab, quickly gone
+  if (bar === 7 && i === 4) for (let k = 0; k < 5; k++) { const hz = thCents(H(['A4', 'C#5', 'E5', 'G5', 'A5'][k]), 18); tone('sawtooth', hz, hz, SL * 0.7, 0.05, delay + k * SL * 0.25, musicGain); }   // a flourish before the second strain
+  if (bar === 15 && i === 4) for (let k = 0; k < 5; k++) { const hz = thCents(H(['E5', 'D5', 'C#5', 'B4', 'A4'][k]), 18); tone('sawtooth', hz, hz, SL * 0.7, 0.05, delay + k * SL * 0.25, musicGain); }
+  // the house's own noises
+  if (!act && bar === 4 && i === 3 && lap % 2 === 0) tone('sawtooth', 120, 210, 0.7, 0.028, delay, musicGain);          // a door that creaks, in the middle of the tune
+  if (!act && bar === 12 && i === 1 && lap % 2 === 1) noise(0.25, 0.05, 900, 6, delay, musicGain);                      // a seat tipping up
+  if (act >= 2 && (i === 2 || i === 4)) noise(0.05, 0.06, 3600, 0.9, delay, musicGain);                               // a snare brush
+  if (act >= 3 && i === 0) { tone('sine', 110, 44, 0.22, 0.26, delay, musicGain); }                                     // a drum on every bar
+  return SL * rub;
+}
+export function theatreAct(n) {   // told: main.js sets it as the show's acts change
+  n = Math.max(0, Math.min(3, n | 0)); if (n === thAct) return; const up = n > thAct; thAct = n;
+  if (ac && up && musicGain && wantTrack === 'theatre') { noise(1.1, 0.12, 6500, 0.6, 0, musicGain); [1318.5, 1568, 2093].forEach((f, k) => tone('sine', f, f, 0.6, 0.06, k * 0.09, musicGain)); }   // a cymbal and a bell: the change is told
+}
 function schedule() {
   if (!ac) return;
   if (currentTrack || silenced) { nextT = ac.currentTime; return; }
-  const hush = wantTrack === 'underleaf', mine = wantTrack === 'mineworks', deep = wantTrack === 'deep', town = wantTrack === 'waymeet', SL = town ? STEP_TOWN : deep ? STEP_DEEP : mine ? STEP_MINE : hush ? STEP_HUSH : STEP;
+  const SB = bossSynthOf(wantTrack), pupT = wantTrack === 'puppeteer', hush = wantTrack === 'underleaf', mine = wantTrack === 'mineworks', deep = wantTrack === 'deep', town = wantTrack === 'waymeet', SL = pupT ? STEP_PUP : SB ? SB.step : town ? STEP_TOWN : deep ? STEP_DEEP : mine ? STEP_MINE : hush ? STEP_HUSH : STEP;
   while (nextT < ac.currentTime + 0.25) {
+    if (wantTrack === 'harvestfair' || wantTrack === 'wickerqueen') {   /* THE FAIR'S TWO TRACKS: 3/4, sixteen bars, a step's length set by the tempo multiplier */
+      const boss = wantTrack === 'wickerqueen', SLf = (boss ? BASE_WQ : BASE_FAIR) / tempoNow;
+      if (musicOn) fairStep(step % 96, SLf, boss, nextT - ac.currentTime);
+      nextT += SLf; step++; tempoNow += (tempoT - tempoNow) * 0.25; continue; }
+    if (wantTrack === 'theatre') { nextT += musicOn ? scheduleTheatre(nextT - ac.currentTime, step) : 60 / TH_BPM[thAct] / 2; step++; continue; }   /* THE MASKWRIGHT'S THEATRE: its own waltz, synth only (scheduleTheatre) */
     const bar = Math.floor(step / 8) % 4, i = step % 8;
     if (musicOn) {
       const delay = nextT - ac.currentTime;
-      if (town) {
+      if (SB) SB.play(step % SB.total, delay, SB.variant, { ac, dest: musicGain, noise, gain: 1 });   /* src/boss-music.js: the Archmages' and the Goblin royals' themes */
+      else if (pupT) {
+        const nm = PUP_N[PUP_LEAD[bar][i]];
+        tone('square', nm, nm, SL * 0.7, i % 4 === 0 ? 0.07 : 0.05, delay, musicGain); tone('sine', nm * 2, nm * 2, SL * 0.4, 0.03, delay, musicGain);   /* the music box */
+        if (i === 0 || i === 4) { const b = PUP_N[PUP_BASS[bar]]; tone('sawtooth', b * 2, b * 2, SL * 3.6, 0.07, delay, musicGain); tone('sine', b, b, SL * 3.8, 0.22, delay, musicGain); }   /* the organ */
+        if (i === 0) tone('sine', 72, 48, 0.35, 0.3, delay, musicGain);   /* the timpani */
+        if (i === 6 && bar === 3) tone('sine', 72, 48, 0.3, 0.24, delay, musicGain);
+        if (i === 2 || i === 6) tone('square', 2400, 2300, 0.02, 0.018, delay, musicGain);   /* a tick: the strings */
+      } else if (town) {
         const nm = WAY_LEAD[bar][i];
         if (nm) tone('triangle', N[nm], N[nm], SL * 1.5, 0.11, delay, musicGain);
         if (i === 0 || i === 3) { const b = N[WAY_BASS[bar]]; tone('sine', b, b, SL * 2.6, 0.2, delay, musicGain); }
@@ -756,6 +882,19 @@ Object.assign(SFX, {
   calliope() { if (!gate('calli', 0.5)) return; [523, 659, 784].forEach((f, i) => tone('square', f, f, 0.16, 0.05, i * 0.12)); },
   // ---- THE WICKER QUEEN (src/wicker-queen.js, claude/fair3): her creak while she moves (the audio tell, like the mummers' bells), the wicker catching, the burn, the embers banked,
   // the sickle's rasp and its red glow, the ribbons wound up and let fly, the crowning's bells, the green going dark and her going up ----
+  // ---- THE PUPPETEER (src/puppeteer.js, claude/puppeteer): a string snapping (the cut: a high twang that drops), wood on the boards, the rigging's creak,
+  // a knot pulled tight, the whip's wind-up and its crack, the curtain coming down, and his entrance: a theatre organ's chord and three music-box notes ----
+  pupSnap() { tone('triangle', 1800, 420, 0.12, 0.09); tone('square', 900, 260, 0.08, 0.04, 0.01); noise(0.05, 0.08, 4200, 1.2); },
+  pupClatter() { for (let i = 0; i < 5; i++) { tone('square', 520 - i * 60, 380 - i * 50, 0.05, 0.06, i * 0.06); noise(0.04, 0.1, 1800 - i * 150, 1.1, i * 0.06); } },   /* a puppet goes down in a heap of limbs */
+  pupCreak() { if (!gate('pupc', 0.25)) return; tone('sawtooth', 210, 150, 0.22, 0.035); noise(0.16, 0.05, 900, 1.3, 0.03); },   /* a rope over a pulley, a joint taking weight */
+  pupThud() { tone('sine', 110, 50, 0.22, 0.22); noise(0.14, 0.18, 500, 0.6); tone('square', 300, 200, 0.05, 0.05, 0.02); },   /* wood landing hard on the boards */
+  pupKnot() { noise(0.1, 0.06, 2400, 1.4); noise(0.08, 0.05, 1600, 1.4, 0.12); tone('triangle', 660, 620, 0.1, 0.04, 0.2); },   /* string drawn through and pulled tight */
+  pupWhipTell() { if (!gate('pupw', 0.3)) return; for (let i = 0; i < 4; i++) noise(0.06, 0.05, 1200 + i * 500, 1.8, i * 0.12); tone('sine', 300, 900, 0.5, 0.03); },   /* the string whirled up to speed */
+  pupWhip() { noise(0.05, 0.3, 5200, 0.9); tone('square', 2400, 600, 0.05, 0.08); noise(0.12, 0.08, 1400, 0.8, 0.03); },   /* the crack */
+  pupCurtain() { noise(1.4, 0.16, 400, 0.4); tone('sine', 120, 60, 1.2, 0.1); [587, 440, 349, 294].forEach((f, i) => bell(f, 0.7, 0.04, 0.3 + i * 0.28)); },   /* the drop coming down, and the music box running out */
+  pupSpot() { if (!gate('pups', 0.3)) return; tone('sine', 1760, 1760, 0.5, 0.03); tone('sawtooth', 60, 60, 0.4, 0.04); noise(0.3, 0.03, 5000, 2); },   /* the limelight's hiss and hum as it is swung and opened */
+  pupScene() { noise(1.2, 0.08, 300, 0.5); for (let i = 0; i < 6; i++) tone('square', 180 - i * 8, 170 - i * 8, 0.08, 0.03, i * 0.18); bell(587, 0.4, 0.03, 0.1); },   /* the stage lights drop and the flats rumble on their tracks */
+  pupWake() { [147, 175, 220, 294].forEach((f, i) => pad('sawtooth', f, f, 1.6, 0.05, i * 0.03, 1200)); [880, 698, 587].forEach((f, i) => bell(f, 0.5, 0.04, 0.6 + i * 0.16)); },
   wqRustle() { if (!gate('wqr', 0.3)) return; noise(0.14, 0.07, 1700, 0.9); noise(0.08, 0.05, 3400, 1.4, 0.05); tone('triangle', 180, 140, 0.1, 0.025, 0.02); },   /* dry wicker creaking as she glides */
   wqWake() { noise(0.6, 0.14, 1400, 0.7); tone('sawtooth', 110, 70, 0.8, 0.08); [659, 784, 988].forEach((f, i) => bell(f, 0.5, 0.03, 0.2 + i * 0.12)); },
   wqCatch() { noise(0.5, 0.2, 900, 0.5); noise(0.3, 0.12, 3200, 1.1, 0.05); tone('sawtooth', 90, 200, 0.4, 0.07); },   /* whoomph: the wicker takes the fire */
@@ -770,7 +909,7 @@ Object.assign(SFX, {
   wqAlight() { noise(0.9, 0.24, 800, 0.5); tone('sawtooth', 70, 160, 0.9, 0.1); noise(0.5, 0.1, 3600, 1.2, 0.2); },
   calliopeTurn() { [784, 659, 523, 392].forEach((f, i) => tone('square', f, f, 0.12, 0.06, i * 0.08)); },
 });
-// ---------- THE MUSIC BOX (THE HARVEST FAIR): a tune the level plays over its own track (marketday stays the base) and that WINDS DOWN as you go: each note comes later, flatter and
+// ---------- THE MUSIC BOX (THE HARVEST FAIR): a tune the level plays over its own track (harvestfair stays the base) and that WINDS DOWN as you go: each note comes later, flatter and
 // quieter, and more of the comb's teeth are missing, until at the green it drops one note into the quiet now and then. Synth only (no file). main.js hands it the wind (0 = a
 // fresh spring, 1 = run down) from the section the hero is in, and stops it on leaving the level. It plays into the music bus, so the music volume and the mute cover it.
 const BOX_N = { C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880, B5: 987.77, C6: 1046.5, D6: 1174.66, E6: 1318.51, F6: 1396.91, G6: 1567.98, A6: 1760 };
@@ -778,7 +917,7 @@ const BOX_TUNE = ['C6','E6','G6','E6','C6','G5','A5','C6','F6','E6','D6','B5','C
 let boxW = null, boxTimer = null, boxI = 0;
 function boxStep() {
   boxTimer = null; if (boxW === null || !ac) return;
-  if (wantTrack !== 'marketday') { boxW = null; return; }   /* the box plays only under the fair's own track: the map, a menu or another level's music ends it */
+  if (wantTrack !== 'harvestfair') { boxW = null; return; }   /* the box plays only under the fair's own track: the map, a menu or another level's music ends it */
   const w = boxW, per = 0.3 + w * w * 1.7;   /* a note every 0.3 s fresh, every 2 s at the end */
   const nm = BOX_TUNE[boxI % BOX_TUNE.length]; boxI++;
   if (musicOn && musicGain && Math.random() > w * w * 0.8) {   /* the missing teeth: none at first, most at the end */
@@ -922,6 +1061,7 @@ const DIE = {
   ploughman() { tone('sawtooth', 120, 40, 1.2, 0.22); noise(0.8, 0.3, 400, 0.6); },   /* the share goes into the furrow for good */
   mummer() { tone('triangle', 520, 200, 0.16, 0.08); noise(0.2, 0.12, 900, 0.5); [2349, 2093, 1760].forEach((f, i) => bell(f, 0.2, 0.03, 0.08 + i * 0.09)); },   /* THE MUMMER goes down: the wooden mask knocks, the sackcloth slumps, the cap bells roll away (claude/fair3: it fell back on the generic cry) */
   hobbyhorse() { noise(0.4, 0.2, 700, 0.5); tone('square', 300, 90, 0.3, 0.1); for (let i = 0; i < 4; i++) bell(1568 * (1 + (i % 2) * 0.12), 0.25, 0.04, 0.1 + i * 0.07); },   /* the pole cracks and the bridle bells scatter */
+  puppeteer() { tone('sawtooth', 260, 60, 1.2, 0.14); noise(0.9, 0.2, 1200, 0.4, 0.1); [587, 554, 523, 494, 466].forEach((f, i) => bell(f, 0.4, 0.04, 0.2 + i * 0.18)); },   /* THE PUPPETEER goes down: a long cry, and the music box winds down a semitone at a time */
   wickerqueen() { noise(1.6, 0.34, 800, 0.5); tone('sawtooth', 140, 40, 1.6, 0.18); for (let i = 0; i < 6; i++) noise(0.06, 0.1, 3000 - i * 300, 1.4, 0.2 + i * 0.15); },   /* THE WICKER QUEEN goes up: the whoomph, the crackle, the frame coming down */
   strawking() { noise(1.4, 0.36, 900, 0.5); tone('sawtooth', 120, 30, 1.6, 0.24); tone('sine', 70, 30, 2, 0.2, 0.2); },   /* the field burning down with him in it */
   kraken() { tone('sawtooth', 110, 28, 1.8, 0.3); tone('sine', 70, 24, 2.2, 0.26, 0.2); noise(1.4, 0.4, 380, 0.7); noise(0.9, 0.3, 1400, 0.5, 0.5); /* a bellow that goes down under the water with it */ },
@@ -1117,6 +1257,7 @@ const HURT = {
   ploughman() { tone('sawtooth', 150, 96, 0.22, 0.16); noise(0.18, 0.24, 500, 0.6); },
   mummer() { tone('triangle', 420, 300, 0.07, 0.07); noise(0.05, 0.08, 1200, 0.6); bell(2349, 0.08, 0.02, 0.02); },   /* a blow on a wooden mask, a bell shaken */
   hobbyhorse() { tone('square', 260, 180, 0.08, 0.08); noise(0.07, 0.1, 900, 0.5); bell(1568, 0.1, 0.025, 0.02); },   /* a knock on the carved head, the bridle jingles */
+  puppeteer() { tone('triangle', 320, 180, 0.18, 0.1); noise(0.1, 0.14, 1600, 0.6); },   /* a thin man in a good coat, struck: a yelp and a rustle */
   wickerqueen() { noise(0.18, 0.22, 1500, 0.6); tone('triangle', 200, 120, 0.2, 0.08); },   /* a blade into basketwork: a dry crunch, and the wicker creaks */
   strawking() { noise(0.2, 0.3, 1100, 0.4); tone('sawtooth', 130, 80, 0.3, 0.18); tone('sine', 90, 60, 0.3, 0.1, 0.05); },   /* a barn's worth of straw taking a blade, and a laugh under it */
   kraken() { tone('sawtooth', 140, 60, 0.4, 0.22); noise(0.3, 0.3, 500, 0.6); tone('sine', 80, 50, 0.5, 0.16, 0.05); },   /* something the size of a church taking a cut */
@@ -1330,7 +1471,7 @@ Object.assign(SFX, {
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'canal'];
+export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
 // that page was CC0, checked before the file was pulled - see the credited lanes' own reports). Three tracks have

@@ -1,0 +1,3 @@
+  ok   the last stretch and the door {"x":619.2,"y":28,"hp":81} deaths 0 lost 100
+{"hero":"pyro","level":1,"maxHp":88,"done":true,"reached":{"x":619.2,"y":28,"hp":81},"lost":100,"deaths":0,"secs":223.9,"byWho":{"mummer":64,"hobbyhorse":36},"bySection":{"midway":32,"harvest":34,"lastround":34},"fail":[]}
+errors []

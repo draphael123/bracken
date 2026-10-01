@@ -32,6 +32,14 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     for (const [x0, x1, y] of (L.fields.phantoms || [])) for (let x = x0; x <= x1; x++) if (g[y * W + x] === T.PLANK) g[y * W + x] = T.AIR;
     for (const s of (L.fields.shrinks || [])) for (let y = s.y0; y <= s.y1; y++) for (let x = s.x0; x <= s.x1; x++) g[y * W + x] = T.SOLID;
   }
+  /* THE FAIR'S OWN GIVES (src/harvest-fair.js): a secret wall that says `reach` is one heavy blow (every hero has one), the gallery's planks stand once three targets are hit, and a striker's pad throws
+     you as high as its launch: all of it is something every hero can do, so the fill counts it as done (the plain fill does not: it is legs and nothing else) */
+  const strikeUp = new Map();
+  if (!plain) {
+    for (const w of (L.walls || [])) if (w.reach) for (let y = w.y0; y <= w.y1; y++) for (let x = w.x0; x <= w.x1; x++) g[y * W + x] = T.AIR;
+    for (const gl of (L.galleries || (L.gallery ? [L.gallery] : []))) for (const [x0, x1, row] of (gl.planks || [])) for (let x = x0; x <= x1; x++) if (g[row * W + x] === T.AIR) g[row * W + x] = T.ONEWAY;
+    for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
+  }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
   // model treats them as already done rather than calling the far side unreachable
   for (const e of (L.ents || [])) {
@@ -152,13 +160,15 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   const across = (x, dx, rTop, rBot) => { const s = Math.sign(dx);
     for (let c = x + s; c !== x + dx; c += s) { let ok = false; for (let r = rTop; r <= rBot && !ok; r++) ok = !wall(at(c, r)); if (!ok) return false; }
     return true; };
+  /* A LIFT IS NOT BOARDED THROUGH A WALL: a hero beside it (up to two columns off its footprint) steps on only along open ground - a solid tile between him and the footprint at his own height shuts it. (THE PUPPETEER's batten stands in the lee of the stage door's wall: with the elite's gate shut on that door the fill boarded it through the wall and walked round the gate - tools/elites.mjs.) */
+  const wallBetween = (x, y, lf) => { if (x >= lf.x0 && x <= lf.x1) return false; const step = x < lf.x0 ? 1 : -1, edge = x < lf.x0 ? lf.x0 : lf.x1; for (let tx = x + step; tx !== edge + step; tx += step) if (solid(at(tx, y))) return true; return false; };
   // everywhere you can get to from one tile (push is handed in, so tools/traps.mjs can run it backwards)
   const expand = (x, y, push) => {
-    const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)), up = springy ? BOUNCE_UP : buds.has(key(x, y)) ? BUD_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
+    const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)), up = strikeUp.has(key(x, y)) ? strikeUp.get(key(x, y)) : springy ? BOUNCE_UP : buds.has(key(x, y)) ? BUD_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
     for (const v of vents) if (Math.abs(v.x - x) <= 1 && v.y === y) { const top = Math.floor(v.y + 1 - (v.h || 112) / TSZ);
       const half = opts.rides ? Math.max(3, Math.ceil((v.w || 0) / 2 / TSZ)) : 3;
       for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -half; dx <= half; dx++) push(v.x + dx, ty); }
-    for (const lf of lifts) if (x >= lf.x0 - 2 && x <= lf.x1 + 2 && y >= lf.y0 - 2 && y <= lf.y1) for (let ty = lf.y0 - 1; ty <= lf.y1; ty++) for (let dx = -2; dx <= lf.x1 - lf.x0 + 2; dx++) push(lf.x0 + dx, ty);
+    for (const lf of lifts) if (x >= lf.x0 - 2 && x <= lf.x1 + 2 && y >= lf.y0 - 2 && y <= lf.y1 && !wallBetween(x, y, lf)) for (let ty = lf.y0 - 1; ty <= lf.y1; ty++) for (let dx = -2; dx <= lf.x1 - lf.x0 + 2; dx++) push(lf.x0 + dx, ty);
     for (const arc of swings) if (arc.some(([ax, ay]) => Math.abs(ax - x) <= 2 && y - ay >= -1 && y - ay <= 3)) for (const [ax, ay] of arc) for (let dy = -3; dy <= 2; dy++) for (let dx = -3; dx <= 3; dx++) push(ax + dx, ay + dy);
     for (const grp of groups) if (grp.set.has(key(x, y))) for (const [gx, gy] of grp.cells) push(gx, gy);   /* a wheel carries you round to any of its paddles */
     /* the great kite: take hold of it and the Sky Road lets you down anywhere along it */

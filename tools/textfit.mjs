@@ -143,13 +143,13 @@ async function pageTextFit(input) {
     await yieldNow(); }
 
   if (want('store')) for (const h of HEROES) { BK.setHero(h);
-    for (const mode of ['shop', 'equip']) { BK.state = 'store'; BK.ui.storeMode = mode; const tabs = BK.ui.tabs();
+    for (const back of ['map', 'menu']) { BK.state = 'store'; const tabs = BK.ui.tabs();   /* the ONE store: from the map (buying) and from the pause menu in a wood (buying wants a shrine: the other footer) */
       for (let tb = 0; tb < tabs; tb++) { BK.ui.storeTab = tb; BK.ui.storeI = 0; const n = BK.ui.items();
-        for (let i = 0; i < n; i++) frame('store ' + mode + ' [' + h + '] tab' + tb + ' #' + i, () => { BK.state = 'store'; BK.ui.storeMode = mode; BK.ui.storeTab = tb; BK.ui.storeI = i; }, { settle: 20 }); } }
+        for (let i = 0; i < n; i++) frame('store ' + back + ' [' + h + '] tab' + tb + ' #' + i, () => { BK.state = 'store'; BK.ui.storeBack = back; BK.ui.storeTab = tb; BK.ui.storeI = i; }, { settle: 20 }); } }
     await yieldNow(); }
 
-  if (want('tree')) for (const h of HEROES) for (const tab of [0,1]) { BK.setHero(h); BK.state = 'tree'; BK.ui.treeTab=tab; const n = BK.ui.treeRows();
-    for (let i = 0; i < n; i++) frame('tree [' + h + '] tab'+tab+' #' + i, () => { BK.state = 'tree'; BK.ui.treeI = i; });
+  if (want('tree')) for (const h of HEROES) for (const tab of [0,1]) { BK.setHero(h); BK.state = 'store'; BK.ui.storeTab = BK.ui.skillsTab; BK.ui.treeTab=tab; const n = BK.ui.treeRows();
+    for (let i = 0; i < n; i++) frame('tree [' + h + '] tab'+tab+' #' + i, () => { BK.state = 'store'; BK.ui.storeTab = BK.ui.skillsTab; BK.ui.treeI = i; });
     await yieldNow(); }
 
   /* THE HERO PICK (2026-09-24), drawn BEFORE the menu (whose pause map stays up and lays its window over later screens): seven cards across a 320-pixel screen, a name under each - DEATH KNIGHT ran off the right edge, unseen here */

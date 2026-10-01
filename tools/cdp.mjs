@@ -53,8 +53,8 @@ export async function openPage(opts = {}) {
   if(opts.fonts===false){await send('Network.enable');await send('Network.setBlockedURLs',{urls:['https://fonts.googleapis.com/*','https://fonts.gstatic.com/*']});}
   await send('Page.navigate', { url: URL0 });
   let ready = false;
-  for (let i = 0; i < 120 && !ready; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false); if (!ready) await sleep(250); }
-  if (!ready) throw new Error('the page never put up window.BK');
+  for (let i = 0; i < 120 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false); if (!ready) await sleep(250); }
+  if (!ready && !opts.noWait) throw new Error('the page never put up window.BK');   /* opts.noWait: the caller wants the page MID-BOOT (tools/loading-screen.mjs) */
   /* A KEY PRESS, so the page makes its AudioContext and stops drawing PRESS A KEY FOR SOUND over every frame */
   if (opts.audio !== false) for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'F8', code: 'F8', windowsVirtualKeyCode: 119 });
   const port = await evalp('location.port', 10000);
@@ -70,6 +70,6 @@ export async function openPage(opts = {}) {
     }
     if (!ready) throw new Error('the fresh lab page did not initialize');
   };
-  return { evalp, errors, PORT, reload, close() { try { ws.close(); } catch {} if (server) server.kill(); return run.close(); } };
+  return { evalp, send, errors, PORT, reload, close() { try { ws.close(); } catch {} if (server) server.kill(); return run.close(); } };
   } catch (e) { if (server) server.kill(); await run.close(); throw e; }
 }

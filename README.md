@@ -290,11 +290,10 @@ More scenery everywhere: beehives, birdhouses and lantern posts in the woods, fi
 banks, spear racks, barrel stacks and bones in the camp, carts and fences on the crags.
 
 
-## Equip
+## The store
 
-The store sells; EQUIP is where you choose. Press V on the map, or pick Equip from the pause menu,
-(the V key) for a screen with four tabs: SKINS, SWORDS, SKILLS (the spells on F, or NONE), and CHARMS (worn one at
-a time, or NONE). It only lists what you own. The bestiary plates are alive now: every beast paces and
+There is ONE store. Press V on the map, pick Store (or Skills) from the pause menu, press Q (it opens on SKILLS), or step up to the keeper in any walk-in shop: the same store opens, in tabs: HEROES, SKINS, WEAPONS, CHARMS, SKILLS (your abilities and the two on F and G, with a live preview of each), SMITH, MUSIC and PRACTICE. TAB or E is the next tab, Q the one before (LB and RB on a pad); LEFT and RIGHT turn the tabs too, except on SKILLS, where they switch ACTIVES and PASSIVES. What you own you equip; what you do not you buy, if its own lock is open (a wood cleared, a medal count, a feat). It will not open in a fight. Buying is for the map, a shop room or a lit shrine: in a wood, away from a shrine, it is a window to equip from. The rules are in src/store.js.
+The bestiary plates are alive now: every beast paces and
 animates on its plate, and every foe has its own death: thieves and bearers tumble, pikemen topple with
 their pikes, the Hound Master falls from the saddle, the King goes down standing.
 

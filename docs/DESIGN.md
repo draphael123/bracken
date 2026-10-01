@@ -29,7 +29,7 @@ Then say it three ways (**C4**), so a player who misses one still learns it:
 | **F2** | **Five landmarks, each one a PLACE** — somewhere you'd tell someone to meet you. |
 | **F4** | **It alternates.** Combat, then a climb or a crossing, then combat. Never two fights with only floor between. |
 | **F6** | **Distinct from its two neighbours at a glance** — different palette, different interior kind. |
-| **B6** | **A checkpoint every 100 columns**, and one outside the arena walls. |
+| **B6** | **One checkpoint per section**, never more than 200 walked route tiles apart (175 until 2026-09-30; RULES S4), and one outside the arena walls. |
 | **B7** | **Match the neighbours' density.** ~2.5–4.5 foes a screen (the sprinklecut design; burning-village asserts it). |
 
 ## Mechanics

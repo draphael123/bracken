@@ -1,0 +1,1 @@
+{"hero":"knight","level":1,"maxHp":100,"done":true,"reached":{"x":619.2,"y":28,"hp":111},"lost":284,"deaths":1,"gaveUp":["mummer@437,12"],"secs":344.7,"byWho":{"drunk":11,"mummer":39,"hobbyhorse":144,"archer":62,"ground":11,"crow":6,"barker":11},"bySection":{"gate":11,"stalls":14,"midway":139,"harvest":41,"lastround":79},"fail":[]}

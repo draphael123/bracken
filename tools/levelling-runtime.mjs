@@ -21,7 +21,7 @@ let n1=0;for(const h of PR.HERO_IDS){const ladder=PR.skillsFor(h).filter(n=>!n.a
 out.talReads=n1;
 /* 2. the hero menu: the PASSIVES tab is the ladder, and it neither sells nor slots */
 fresh('knight',6);BKT.PROG.coins=5000;BK.load(0);BK.state='map';dispatchEvent(new KeyboardEvent('keydown',{key:'q'}));BK.sim(1);dispatchEvent(new KeyboardEvent('keyup',{key:'q'}));
-if(BK.state!=='tree')fails.push('Q did not open the hero menu from the map');
+if(BK.state!=='store'||BK.ui.storeTab!==BK.ui.skillsTab)fails.push('Q did not open the store on SKILLS from the map');
 BK.ui.treeTab=1;const ns=BKT.treeNodes();if(!ns.length||ns.some(n=>n.active))fails.push('the PASSIVES tab lists an ability');
 for(let i=1;i<ns.length;i++)if(ns[i].level<ns[i-1].level)fails.push('the ladder is not in level order at '+ns[i].id);
 const before=JSON.stringify([BKT.PROG.coins,BKT.PROG.skillOwned,BKT.PROG.loadouts]);

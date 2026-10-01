@@ -1,0 +1,1 @@
+{"hero":"warden","level":1,"maxHp":100,"done":true,"reached":{"x":619.2,"y":28,"hp":111},"lost":314,"deaths":1,"gaveUp":["mummer@437,12"],"secs":437.8,"byWho":{"drunk":11,"mummer":88,"hobbyhorse":160,"archer":35,"stringjack":14,"crow":6},"bySection":{"gate":11,"stalls":60,"midway":173,"harvest":30,"lastround":40},"fail":[]}

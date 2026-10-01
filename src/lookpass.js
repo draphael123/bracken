@@ -75,6 +75,7 @@ export async function lookPass(BK, o = {}) {
   const want = o.levels || null, frames = [], shots = o.shots !== false;
   const idx = LEVELS.map((l, i) => i).filter(i => { const l = LEVELS[i]; return (!l.hidden || l.secret) && l.id !== 'custom' && (!want || want.includes(l.id)); });
   const shake0 = BK.SET.shake; BK.SET.shake = false;
+  const probe0 = BK.frontProbe; BK.frontProbe = true;   /* the foreground's coverage test (main.js drawFront) runs only while a tool asks: it reads the GPU back */
   for (const li of idx) {
     const id = LEVELS[li].id;
     try { BK.load(li); } catch (e) { frames.push({ id, error: 'will not load: ' + e.message }); continue; }
@@ -231,7 +232,7 @@ export async function lookPass(BK, o = {}) {
     if (mine.length) { const mid = L.W / 2; const rep = mine.filter(f => f.kind === 'route').sort((a, b) => Math.abs(a.tx - mid) - Math.abs(b.tx - mid))[0] || mine[0]; rep.rep = true; }
     for (const f of mine) { if (shots && (f.bad || f.rep || f.boss || f.kind === 'at')) f.png = annotate(f); delete f._img; delete f._low; delete f._imgB; }
   }
-  BK.SET.shake = shake0; BK.god = false;
+  BK.SET.shake = shake0; BK.god = false; BK.frontProbe = probe0;
   const out = { frames, look: LOOK };
   if (typeof window !== 'undefined') window.__lookPass = out;
   return out;

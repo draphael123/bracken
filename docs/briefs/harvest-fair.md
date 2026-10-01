@@ -1,6 +1,6 @@
-# THE HARVEST FAIR - brief (L1: brief + greybox + the facing mechanic)
+# THE HARVEST FAIR - brief (rebuilt 2026-09-30 as a vertical fairground)
 
-Status: L1 (greybox) approved by Daniel 2026-09-29; L2 (art, sound, real dressing) built on `claude/fair2`. L3 (THE WICKER QUEEN, the boss of the maypole green) built on `claude/fair3`. Design approved by Daniel; this file is the record of what was built and why.
+Status: REBUILT (claude/fairlevel, 2026-09-30: the map below replaces the corridor of L1-L3; the facing rule, the art, the boss and the wiring stand). L1 (greybox) approved by Daniel 2026-09-29; L2 (art, sound, real dressing) built on `claude/fair2`. L3 (THE WICKER QUEEN, the boss of the maypole green) built on `claude/fair3`. Design approved by Daniel; this file is the record of what was built and why.
 
 ## What it is
 
@@ -32,19 +32,49 @@ A hero **looks at** a foe when he is alive, on the same screen (300 px across, 1
   maypole, bonfire), `windingUp` (the tell sound), the frame picks, the bestiary. Art: `src/redraw/fair_art.js` and `src/redraw/fair_world.js` (L2). Proved by
   `tools/harvest-fair.mjs` (pure rule + the level + the page).
 
-## THE ARC (built: `src/harvest-fair.js`; W 672, placed wholly by hand, no garrison sprinkle, an encounter in every section, none of it filler)
+## THE MAP (REBUILT 2026-09-30, `claude/fairlevel`: a vertical fairground; `src/harvest-fair.js`, W 672, H 36, placed wholly by hand)
 
-| section | columns | beat | the encounter |
+Daniel's verdict on the first build: "a prototype rather than a real level ... the level is just walk right". He chose a VERTICAL FAIRGROUND and kept the facing rule, used better. The ground road is now rolling (hills of slopes, pits, a cutting), with a boardwalk over it, two towers to climb and a tunnel under it. Rows: the road is row 28, the boardwalk row 19, the tower top row 14, the night lane row 14, the corn-top walk row 12, the cutting row 31, the cellars rows 29-35.
+
+| section | columns | beat | what stands there |
 |---|---|---|---|
-| THE GATE | 0-118 | TEACH | ONE mummer alone on a flat lane, three signs (the rule, "face one and it stops", "listen for the bells / a red mask"). Then a stall-roof hop and a 3-wide spike pit |
-| THE STALL STAIR | 118-246 | DEVELOP | a PINCER on a climb: two mummers at the foot that you pass and that come up behind you, one at the top of the 12-tile slope stair where you stop for breath. Kill the front one while the ones behind close, or turn and hold them |
-| THE CAROUSEL | 246-374 | TWIST | a 27-wide ride with a mummer at each end; it turns you (warned). The one you froze is behind you |
-| THE HAYRICKS | 374-502 | COMBINE | two hobby-horses on the lane and three haystacks (the Sporewood cap bounce) each with 3 tiles of spikes past it: the hay is the way over, and the way out of a charge. Hold jump on the third and the high ledge pays a silver |
-| THE LAST ROUND | 502-618 | EXAM | a mummer, a small carousel with a mummer AND a horse on it, a haystack over spikes, another mummer, the door guard |
-| THE MAYPOLE GREEN | 622-672 | THE WICKER QUEEN (L3) | a door (the elite hobby-horse holds it), the checkpoint before it, the maypole, the bonfire and its embers, her; the gate at the far end opens when she falls |
+| THE GATE | 0-118 | REFRESHER | (the Maskwright's Theatre teaches the rule before the fair) one sign, ONE mummer on a flat lane, hills, two pits; THE HIGH STRIKER (a plunge on the pad rings its bell and throws you 11 rows onto THE BOARDWALK, a plank street at row 19 that runs over the pincer to the terrace); a stall-roof stair is the slow way up |
+| THE STALL ROW | 118-246 | DEVELOP | the PINCER on a slope stair (two mummers you pass, one at the top); THE SHOOTING GALLERY 1 on the terrace (three targets, twelve seconds: the planks run up to THE CROW'S NEST, a silver); THE BACK LOT (secret: a plug in the road, a cellar, a silver, a heart); roofs over the hills |
+| THE MIDWAY | 246-379 | TWIST | the carousel turns you; then TWO ROADS to the helter-skelter tower. LOW: THE HALL OF MIRRORS (dark; true glass ahead watches your back; a cracked stretch does not; a mummer by the door and one in front of the cracked glass; a closet under the cracked glass is the second secret) and THE TOWER STAIR (a mummer on the landing under a guttering lantern). HIGH: THE BIG WHEEL (six cars, one is wide and carries a hobby-horse) up to the boardwalk, three SWING-RIDE CHAIRS over the hall's roof. Both reach the tower top; THE HELTER-SKELTER slide (14 rows, hold DOWN) is the way on. Gallery 2 in the ticket yard raises planks to the hall roof |
+| THE HARVEST | 379-502 | COMBINE | a horse at the slide's foot, a hayrick over spikes, THE TALL STRIKER (18 rows, onto THE CORN-TOP WALK over the maze) or THE CORN MAZE itself (three tiers, two four-wide chimneys, blind corners, a mummer in a scarecrow's coat at each turn, walls that stop your look), a second rick, and THE GHOST-TRAIN CUTTING (reserved for the chase set piece: 36 columns sunk three rows) |
+| THE LAST ROUND | 502-618 | EXAM | lantern-walk planks, the small carousel with a mummer AND a horse on it, a rick over spikes, the tall striker onto THE NIGHT LANE (planks in full night, lanterns failing), gallery 3 (nine seconds, planks to a nest of tickets and a heart), THE PRIZE BOOTH (eight tickets for a silver), the door guard (the elite hobby-horse) |
+| THE MAYPOLE GREEN | 622-672 | THE WICKER QUEEN | unchanged here (the boss lane `fairboss` owns it) |
 
-Checkpoints: one per section at 8, 124, 252, 380, 508 and the door's at 614 (116-128 apart, none inside the green). Jumps: pits of 3 (the real jump is about
-3.2), each with spikes two tiles down (a fall hurts and is jumped out of). Five facing encounters, ten mummers, three horses.
+Checkpoints: 8, 124, 252, 383 (the slide's foot), 499 (out of the cutting), the door's at 600 (101-131 columns apart).
+Foes: 12 mummers and 4 hobby-horses (the door guard among them), every one in a DESIGNED encounter (squad-tagged): the gate, the pincer, the ride, the glass, the wheel, the stair, the foot, the corn (two), the round, the guard. The last count was 13 in a corridor; this level is far larger and carries 16, none of them filler.
+
+### The mechanics, each taught -> developed -> twisted -> examined
+
+- **The facing rule** (mummer.js unchanged in its rules): taught at the gate, developed by the pincer, twisted by the carousel (it turns you), by the MIRROR (in the hall a hero facing a true mirror within 7 tiles looks at what is behind him), by the NIGHT (only a lit lantern's light, or 88 px, shows you a mummer: `sightFor`; THE MAYPOLE RIBBON stretches 88 to 132 px: the hall and the tops are where it helps) and by the MAZE (walls stop your look: `blocked`), examined in the last round.
+- **The high striker**: a plunge onto the pad (or a held heavy blow) rings the bell and throws you up: 11 rows at the gate, 18 over the maze, 17 to the night lane. Every hero can plunge (tested for all seven). A light blow only hops.
+- **The shooting gallery**: three of them, windows 12, 10, 9 seconds; the targets are struck by any attack box; the planks appear as tiles.
+- **Tickets**: the fair's own level-local money (a rec; no existing currency fits a fair): 20 lie about, four more pay from the strikers; eight buy the silver at the booth.
+- **Rides**: the wheel and the chairs are movers (`moversExtra`, reusing the engine's `wheel` and `swing`), drawn by `src/redraw/fair_rides.js`; the slide is 14 steep slopes.
+- **Slopes are drawn**: the tile painter used to paint slopes only for the Sunken Caravan, so the Stall Stair was invisible (`src/redraw/ground-slopes.js`).
+
+### Comparison with THE MAGE'S FOLLY (`tools/level-quality.mjs`, claude/levelq; the numbers are its own)
+
+| | the Folly | the fair (now) | the fair (before) |
+|---|---|---|---|
+| columns / route tiles | 808 / 723 | 672 / 649 | 672 / 680 |
+| height bands the route uses | 8 (30 rows) | 5 (17 rows) | 4 |
+| share of the width with a second height | 61% | 42% | 32% |
+| gadget kinds / developed (3+ places) | 12 / 4 | 9 / 5 | 3 / 0 |
+| taught->twisted mechanics | runes, locks, glyphs, bookcases | facing rule (mirror, night, maze), striker, gallery, wheel + swing, tickets | facing rule only |
+| secrets (silver/relic off the route) | 3 | 4 silvers/hearts in 2 cellars, a nest, a booth | 2 |
+| set pieces | vault door, exam door, tower | wheel, swing ride, helter-skelter, hall of mirrors, corn maze, ghost cutting, night lane | a carousel |
+| longest flat stretch (empty / level ground) | 43 / 81 columns | 32 / 38 columns | 74 / 79 |
+| share of the route that is long flat empty runs | 11% | 9% | 35% |
+| designed encounter in every 200 columns | yes | yes | no |
+| foes a screen / empty screens | 2.4 / 23% | 0.6 / 60% | 0.6 / 60% |
+
+Honest gaps: the fair is three bands shorter than the Folly, has fewer kinds, and FAILS the density measure on purpose: 2 foes a screen is about 55 foes, the grid of foes Daniel cut on 2026-09-28. See the report's questions.
+
 
 ## Foes and the one-new-foe rule (F10)
 
@@ -84,6 +114,17 @@ L1 was approved by Daniel with all recommendations (keep the carousel's 0.5 s fa
 - **The world** (`src/redraw/fair_world.js`, drawn by `drawFair` in src/main.js): baked round haystacks (a squash and a rustle when they throw you), the carousel (a painted skirt over the deck, painted horses going round on brass poles, a scalloped striped canopy with pennants and a flag; it spins faster and the bulbs beat red when it is about to turn you), the lamps (real engine lights that gutter: steady at the gate, more of them out the further along, the last ones before the door guttering), the maypole green (a ribboned pole with a wreath, a ring of trampled flowers, a wicker and marigold arch over the door, a big animated bonfire) and the crowd (dark figures at the edge of the light on a parallax layer, none at the gate and more of them the later it gets). Sections keep L1's tints (sunset to dusk).
 - **Furniture**: three silvers (the hayrick ledge, a roof over the stall lane, a hop before the last pit), the relic (the felted soles) on a three-roof stair over the gate's flat lane, three hearts (after the pincer's terrace, after the horses, before the door guard), six shrines (the checkpoints). No NPCs; no quest strays (Waymeet and the Fields have none).
 - **Sound**: the cap bells are a shaken cluster of three (the creep cue, only while it moves); the horse's bridle bells on the rear; a haystack rustle; a lantern's flutter. THE MUSIC BOX is a synth tune (`musicBox` in src/audio.js) played over the level's track that winds down section by section (`windAt` in fair_world.js): a note every 0.3 s at the gate, later, flatter and quieter with more missing teeth each section, one note into the quiet by the green. The base track is still `marketday` (Waymeet's neighbour); the level has no track of its own.
+
+
+## The review's fixes (BUILT on claude/fairfix, 2026-09-30; Daniel approved all of it)
+
+- **Every high road carries its own test.** Boardwalk: a mummer on its planks and THE BARKER at its far end. Swing ride: a marionette on island A, a horse on island B facing the way you come. Night lane: a mummer held only while its guttering lantern burns. Corn-top walk: a scarecrow mummer in the dark.
+- **The exam is one space (525-619):** the small carousel under a dark, striped canopy with failing lanterns and a true mirror panel, a mummer and a marionette riding it, then a rick, the tall striker to the night lane, a blind stall wall with a mummer behind it, the gallery and booth, the barker on his crate, and the door guard on an unlit stretch. In the dark the guard finds you from 176 px while you can hold it only from 88 px.
+- **Nothing resolves itself.** The slide ends in a drop over a horse stall, so the stall's horse is at your back when you land, with a mummer on the hill ahead. Both carousels turn you at least once: their periods are 3.6 s and 3.4 s, and a hop over the disc no longer resets the clock.
+- **The ghost train (469-524, src/chase.js):** it comes from behind and kills on contact, like every chase. Speed-ups are told. Three timed beams (duck, or wait for them to lift), and two mummers stand a few steps before beams, so the chase makes you turn your back. The shrine at 466 is before the start line. The train runs over any foe it overtakes in the cutting.
+- **New foes (src/fair-foes.js):** THE MARIONETTE moves only while you look at it, and the hall's true glass works its strings. THE BARKER is an elite whose told call turns every hero in range to face him.
+- **Signs 15 -> 8; shrines 6 -> 5** (8, 199, 383, 466, 600), under the game-wide 200-tile ceiling. The hearts at 470 and 597 are gone.
+- **Music:** `harvestfair` on the road, `wickerqueen` in the green.
 
 
 ## Questions for Daniel

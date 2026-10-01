@@ -13,6 +13,7 @@ import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for t
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
 import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */
+import { puppetPlan } from './puppeteer.js';   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
@@ -69,7 +70,7 @@ export function duckNow(BK, h, e) { const D = BK.duck && BK.duck(), P = BK.P; if
                in water or off her feet - then she does what she did before (the roll)
    The duck (duckNow) is left as it was: a HIGH yellow blow is still ducked early, and ducked is warded - it goes over her for nothing. */
 export const EMBER_LATE = 0.1, EMBER_HOT = 70, EMBER_HOLD = 0.45;
-export const emberReady = (BK, h) => { if (h !== 'pyro' || !BK.ember) return false; const W = BK.ember(), P = BK.P; return !!W && !(W.lock > 0) && !W.wet && W.heat < EMBER_HOT && P.ground && !P.swim && !P.dead; };
+export const emberReady = (BK, h) => { if (h !== 'pyro' || !BK.ember) return false; const W = BK.ember(), P = BK.P; return !!W && !(W.rec > 0) && !(W.spent > 0) && !W.wet && P.ground && !P.swim && !P.dead; };   /* (the flare: not in a mistime's recovery, not in the beat after a catch) */
 export function emberPlan(BK, h, e) {
   if (!emberReady(BK, h)) return null; const P = BK.P, W = BK.ember();
   if (W.up && W.t < EMBER_HOLD) return 'raise';
@@ -1055,30 +1056,69 @@ async function runbossLab(BK, opts) {
         if((h!=='paladin'||P.st>=44)&&!guard&&!eruption&&mode!=='sinkTell'&&!(mode==='slamTell'&&boss.modeT<.65)&&Math.abs(dx)<LAB_REACH[h]+target.w/2&&Math.abs(P.y-target.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
         const was=P.hp,m0=mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,target,f,h});if(f%600===599)await yieldNow();continue;
       }
+      if(boss.t==='puppeteer'){
+        /* THE PUPPETEER (claude/puppeteer): src/puppeteer.js puppetPlan reads what a player sees - a glowing string in reach is cut, a told blow is blocked,
+           jumped, ducked or stepped out of, the opening (him re-stringing, or fallen) is run to, and from phase 2 the batten takes it up to the gallery */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const PH=BK.puppeteerHands(),show=PH&&PH.show(),bat=show&&show.batten;
+        if(f===0||!P.labPupMem)P.labPupMem={};
+        const pl=show?puppetPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,snare:P.snare,dazzle:P.pupDazzle||0},e:boss,show,reach:LAB_REACH[h],shield:SHIELDED(h),onBatten:!!bat&&P.onMover===bat,t:f/60,rng:Math.random,mem:P.labPupMem}):{gx:null,face:P.face};   /* A HUMAN BOT (claude/puppeteer2): it sees a tell or a glow a quarter-second late, lets some glows go, misreads some tells (puppeteer.js PLAN); Math.random is the row's own seeded dice */
+        if(pl.drop&&P.ground){k.down=true;if(P.labDrop===undefined||f-P.labDrop>20){BK.press('jump');P.labDrop=f;}}
+        else if(pl.jump&&P.ground){BK.press('jump');P.labJump=16;}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.down&&P.ground)k.down=true;
+        if(pl.block)k.block=true;
+        if(!pl.down&&!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>4)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.atk&&P.atk<0&&!pl.down){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0,why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
       if(boss.t==='wickerqueen'){
-        /* THE WICKER QUEEN (claude/fair3): the bonfire opening, taught. Stand on the far side of the embers from her with your back turned; turn round the
-           moment she stands well onto them (in her dark, near enough for the look to reach her); cut her while she burns. The rest of the time: face her
-           (she cannot move), jump the low ribbon and duck the high one as it arrives, turn on a sickle's glow, and cut down a crowned mummer that gets near. */
+        /* THE WICKER QUEEN ON HER CAROUSEL (claude/fair3; the carousel, claude/fairboss): the fire opening, taught, and the read between up and down.
+           UP: when the floor is told to burn (or burns), get on a horse - the nearest one on the front run that will not go round the back under him - and
+           ride it; one near the far end, hop to the next. DOWN: when the high ribbons or her high spear thrust come, off the horse and ducked on the boards;
+           her LOW thrust is jumped (claude/fairfix2-spear: her spear replaced her sickle).
+           THE FIRE: stand on the far side of the embers from her with your back turned; turn round the moment she stands well onto them (in her dark, near
+           enough for the look to reach her); cut her while she burns. Looking at her he lets the ride carry him (it carries her the same, so the look
+           holds) rather than walk against it with his back to her. The rest of the time: face her (she cannot move), jump the low ribbon, turn on a reap's
+           glow, and cut down a crowned mummer that gets near. */
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const G=BK.L.green,mid=G.bonfire*16+8,mx=G.maypole*16+8,E=40,q=boss,dq=q.x-P.x,sq=Math.sign(dq)||1;
-        let gx=P.x,face=sq,swing=null;
+        let gx=P.x,face=sq,swing=null,look=false;
         const lashK=q.mode==='lashLowTell'?'low':q.mode==='lashHighTell'?'high':q.mode==='lash'?q.lashKind:null,front=q.mode==='lash'?(q.lashR||0):-1,dm=Math.abs(P.x-mx);
         const mums=BK.enemies().filter(e=>e.alive&&e.t==='mummer'&&Math.abs(e.x-P.x)<120&&Math.abs(e.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x));
         const glowM=mums.find(e=>e.mode==='glow'),nearM=mums.find(e=>Math.abs(e.x-P.x)<60);
-        const side=q.x>mid?-1:1,lureX=Math.max(A.x0+20,Math.min(A.x1-20,mid+side*(q.phase===2?64:110))),transit=Math.abs(lureX-P.x)>40&&Math.sign(lureX-P.x)!==sq;
-        if(q.open>0){gx=q.x-sq*Math.max(10,LAB_REACH[h]-6);face=sq;swing=q;}   /* she burns: get on her */
+        const HS=BK.movers().filter(m=>m.kind==='carhorse'&&!m.broken),hc=m=>m.x+m.w/2,ride=P.onMover&&P.onMover.kind==='carhorse'?P.onMover:null;
+        const floorD=q.mode==='floorTell'||q.mode==='floor';
+        const thrK=q.mode==='thrustHighTell'?'high':q.mode==='thrustLowTell'?'low':q.mode==='thrust'?q.thrustKind:null,thrTell=q.mode==='thrustHighTell'||q.mode==='thrustLowTell',adq=Math.abs(dq);
+        const thrIn=!!thrK&&adq<96+12&&Math.sign(P.x-q.x)===(q.thrustDir||q.face)&&!(q.mode==='thrust'&&(q.tip||0)>adq+8);   /* her spear told (or running out) his way, and not yet past him */
+        const highD=lashK==='high'||(thrK==='high'&&thrIn);
+        const side=-1,lureX=Math.max(A.x0+20,Math.min(A.x1-20,mid+side*46)),transit=Math.abs(lureX-P.x)>40&&Math.sign(lureX-P.x)!==sq;
+        if(floorD&&!highD){   /* UP ON A HORSE */
+          const end=A.x1-70,ok=HS.filter(m=>hc(m)<end),pick=ok.sort((a,b)=>Math.abs(hc(a)-P.x)-Math.abs(hc(b)-P.x))[0];
+          if(ride&&hc(ride)<end+30){gx=hc(ride);face=glowM?Math.sign(glowM.x-P.x)||1:sq;look=true;}
+          else if(pick){gx=hc(pick);face=Math.sign(gx-P.x)||sq;if((P.ground||ride)&&Math.abs(P.x-gx)<(ride?40:9)&&!(P.labJump>0)){BK.press('jump');P.labJump=22;}}
+        }
+        else if(highD){   /* DOWN ON THE BOARDS, AND DUCKED (her ribbons, and a thrust once told, do not care which way he faces: mid-lure, he keeps his back to her) */
+          if(ride){const l=ride.x-6,r=ride.x+ride.w+6;gx=Math.abs(P.x-l)<Math.abs(P.x-r)?l:r;face=Math.sign(gx-P.x)||sq;}
+          else{gx=P.x;face=glowM?Math.sign(glowM.x-P.x)||1:(lashK!=='high'&&!(thrK==='high'&&thrIn)&&P.face===-sq)?-sq:sq;look=true;}   /* (ducked, he still looks at a mummer whose mask glows: it stops) */
+        }
+        else if(q.open>0){gx=q.x-sq*Math.max(10,LAB_REACH[h]-6);face=sq;swing=q;}   /* she burns: get on her */
         else if(glowM){face=Math.sign(glowM.x-P.x)||1;swing=glowM;}   /* a mummer's red mask: look at it (it stops), and cut it */
         else if(nearM){const ms=Math.sign(nearM.x-P.x)||1;face=ms;gx=nearM.x-ms*Math.max(10,LAB_REACH[h]-6);swing=nearM;}   /* one of her crowd near: face it, step in, cut it down */
-        else if(q.mode==='sickleTell'&&!transit){face=sq;}   /* the sickle's red glow: LOOK, and it is cancelled (or, already running for the far side, outrun it) */
-        else if(q.bank>0||q.mode==='rise'||q.mode==='catch'){face=sq;}   /* the embers banked: hold her with the look and wait */
-        else{gx=lureX;const deep=Math.abs(q.x-mid)<E-8,reach=q.phase===2?90:600;
-          if(Math.abs(gx-P.x)>8)face=Math.sign(gx-P.x)||1;else face=deep&&Math.abs(dq)<reach?sq:-sq;}   /* THE LURE: the far side of the embers from her, back turned until she is well onto them, then look */
-        if(lashK==='low'&&P.ground&&q.mode==='lash'&&front>dm-70&&front<dm+10){BK.press('jump');P.labJump=16;}
+        else if(q.mode==='stabTell'&&!transit){face=sq;look=true;}   /* the stab's red glow: LOOK, and it is cancelled (or, already running for the far side, outrun it) */
+        else if(q.mode==='rise'||q.mode==='catch'){face=sq;look=true;}   /* flung off the fire: hold her with the look */
+        else if(q.x<mid-E+4){gx=q.x+34;face=-1;look=P.x>q.x;}   /* UPSTREAM of the fire: stand by her, looking - the ride carries them both, and brings her onto it */
+        else{gx=lureX;const deep=Math.abs(q.x-mid)<E-8&&!(q.bank>0),reach=q.phase===2?(P.relic==='maypole'?130:90):600;
+          if(Math.abs(gx-P.x)>8)face=Math.sign(gx-P.x)||1;else{face=(deep&&Math.abs(dq)<reach)||Math.abs(dq)<60?sq:-sq;look=face===sq;}}   /* THE LURE: upstream of the embers, back turned until she is well onto them (banked, she comes on across them to be brought back), then look */
+        if(!ride&&lashK==='low'&&P.ground&&q.mode==='lash'&&front>dm-70&&front<dm+10){BK.press('jump');P.labJump=16;}
+        if(!ride&&thrK==='low'&&thrIn&&P.ground&&((thrTell&&q.modeT<0.12)||q.mode==='thrust')){BK.press('jump');P.labJump=16;}   /* her LOW thrust: over it as the line runs out */
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        const duck=lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20));
-        if(duck&&P.ground){k.down=true;gx=P.x;swing=null;}
-        if(!duck&&Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;else P.face=face;
-        if(!duck&&swing&&P.atk<0&&Math.abs(swing.x-P.x)<LAB_REACH[h]+(swing.w||10)/2+4){P.face=Math.sign(swing.x-P.x)||1;BK.press('atk');swings++;}
+        const duck=!ride&&P.ground&&((lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20)))||(thrK==='high'&&thrIn&&(!thrTell||q.modeT<0.3)));
+        if(duck){k.down=true;gx=P.x;swing=null;}
+        /* looking at her he does not walk with his back to her: the ride carries them both, so the look holds */
+        const want=Math.abs(gx-P.x)>5&&!(look&&Math.sign(gx-P.x)!==face);
+        if(!duck&&want)k[gx>P.x?'right':'left']=true;else P.face=face;
+        if(!duck&&!floorD&&swing&&P.atk<0&&Math.abs(swing.x-P.x)<LAB_REACH[h]+(swing.w||10)/2+4&&Math.abs(swing.y-P.y)<30){P.face=Math.sign(swing.x-P.x)||1;BK.press('atk');swings++;}
         const was=P.hp,m0=q.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:q.open>0});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='harbormaster'){

@@ -76,7 +76,7 @@ Innate kit: shield on C (perfect guard on the beat), heavy cut (hold X), LAST CH
 
 ### 2.2 Pyromancer (runs on HEAT)
 
-Innate kit: tap C ember, hold C jet, full bar then C = the Pyre, down-held EMBER WARD (`src/ember-ward.js`, a fire dome that burns melee and melts projectiles, runs on its own ward heat), firedrop plunge. Only six actives, all bought by level 8.
+Innate kit: tap C ember, hold C jet, full bar then C = the Pyre, a tap of down = the EMBER FLARE (`src/ember-ward.js`, a 0.25 s burst: a blow caught in it is cancelled, its attacker scorched and she gains heat; a mistime roots and exposes her; held down is the plain duck), firedrop plunge. Only six actives, all bought by level 8.
 
 | id | Name | A/P | What it really does | Verdict | Note |
 |---|---|---|---|---|---|

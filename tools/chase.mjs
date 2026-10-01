@@ -14,7 +14,7 @@
 //     - THE LINT (chaseProblems): a good spec passes; no warning, no checkpoint, a rubber.max off the screen, a safe line behind the start are caught
 //     - the glow and the rumble: none far, some near, steady in reduce motion; the rumble stays under the shake budget
 //   IN THE PAGE:
-//     - ONLY THE LEVELS LISTED HAVE L.chases (every level's build: the Falling Tower's rising dark), and each passes the lint with its own
+//     - ONLY THE LEVELS LISTED HAVE L.chases (every level's build: the Falling Tower's rising dark, the Harvest Fair's ghost train), and each passes the lint with its own
 //       checkpoints; the page without ?chase= has no chase and the demo is off
 //     - ?chase=demo is the ONLY way in: the demo is up, bossJump.on is set, the whole run never writes the save
 //     - the demo: it starts when the hero crosses the line, the warning is told before it speeds up, the camera is pushed, the front kills a hero who
@@ -214,7 +214,7 @@ ok(/chaseDemo\(q\.get\('hero'\)\)/.test(src) && /if \(q\.get\('chase'\) === 'dem
 ok((src.match(/chaseDemo\(/g) || []).length === 2, 'chaseDemo is called from somewhere other than the param and the BK tool');
 
 console.log('level scan', JSON.stringify(R0));
-ok(R0.n > 40, 'the level scan saw too few levels'); ok(JSON.stringify(R0.withChases) === JSON.stringify(['fallingtower', 'canal']), 'the levels with L.chases are not the ones listed (the Falling Tower spiral stair, THE FOG CANAL weir; a new chase lane adds its level here): ' + R0.withChases.join(', '));
+ok(R0.n > 40, 'the level scan saw too few levels'); ok(JSON.stringify(R0.withChases) === JSON.stringify(['fallingtower', 'fair', 'canal']), 'the levels with L.chases are not the ones listed (the Falling Tower spiral stair; the Harvest Fair ghost train, claude/fairfix; THE FOG CANAL weir; a new chase lane adds its level here): ' + R0.withChases.join(', '));
 for (const [id, p] of Object.entries(R0.lint)) ok(p.length === 0, id + ' fails the chase lint: ' + p.join('; '));
 ok(R0.on === false && R0.demoOn === false && R0.bj === false && !R0.chases, 'the page without ?chase= has a chase or is in playtest mode: ' + JSON.stringify(R0));
 const D = R; console.log('demo', JSON.stringify(D));

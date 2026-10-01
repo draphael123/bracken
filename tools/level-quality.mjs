@@ -7,6 +7,8 @@
    docs/LEVEL-QUALITY.md says what each number means and why the limit is where it is. Everything is read from the built level (grid, ents,
    moversExtra, arrays) and its walked main route (tools/pacing.mjs): no browser, ~10 s for the whole campaign. */
 import { existsSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 import { SLOPE, SLOPE_NAMES, heightAt } from '../src/slopes.js';
 import { bakeSandSlopes } from '../src/redraw/slopes.js';
 import { install } from './node-canvas.mjs';
@@ -14,14 +16,25 @@ import { LEVELS, T } from '../src/level.js';
 import { THREAT } from '../src/threat.js';
 import { floodReach } from '../src/reachcore.js';
 import { pacing } from './pacing.mjs';
+import { BOSS_SYNTH_BASE, splitTrack } from '../src/boss-music.js';
 install();
 const TS = 16;
 
 /* WHICH LEVELS ARE HELD TO IT. New or reworked levels only: the old campaign misses the bar in places (--all shows where) and is not being reworked.
    Add a level id here in the lane that builds or reworks it. An id that is not in LEVELS yet is skipped with a note (the theatre lane lands later). */
-export const GATE = ['theatre', 'fair', 'canal'];   /* (claude/canal: THE FOG CANAL) */
+export const GATE = ['theatre', 'fair'];   /* the fair re-gated by claude/fairfix2 (the rework it waited for) */
+/* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
+   Daniel decides when it is lifted; each row carries the TODO and the reason. */
+export const REPORT_ONLY = {
+  theatre: ['roles'],   /* TODO(Daniel decides): the theatre has two roles (melee: mummers, stagehands, spiders, bats, swornswords; ranged: the drunks) and no support, heavy or runner. Lift this when a lane gives it a third role */
+};
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
+/* STOCK TRACKS: a tune that is in audio/ but was not written for any level - a stand-in. A level that plays one has borrowed its music as surely as one that plays a
+   neighbour's (claude/fairfix, Daniel 2026-09-30: the fair's music passed this lint on 'marketday', a stock market tune, and a boss arena on another boss's track) */
+/* THE BOSS POOL: the generic boss tracks many arenas share by design (a boss room may play one; it may not play another boss's OWN track, as the fair's green once played the Houndmaster's) */
+export const BOSS_POOL = ['boss', 'boss2', 'boss3', 'boss4'];
+export const STOCK_MUSIC = { marketday: 'a stock CC0 market tune (RandomMind "Market Day"): the stand-in the fair wore before it had its own band organ' };
 
 /* THE LIMITS. Each is set so THE MAGE'S FOLLY clears it with margin and the Harvest Fair (the old 672-column corridor) does not; the Folly's number is in the comment. */
 export const LIM = {
@@ -35,13 +48,33 @@ export const LIM = {
   secrets: 2,           /* silvers / relics off the route (Folly 3) */
   checksMin: 2,         /* checkpoints; the max is a spacing (below), not a count: a 700-column level cannot keep 4 */
   checkSpacing: 90,     /* route tiles per checkpoint at least (Folly 103): fewer, further apart, as Daniel wants */
-  densityLo: 2.0, densityHi: 4.5,   /* foes a screen (24 columns). DESIGN B7 says 2.5-4.5 and burning-village asserts it, counting every non-pickup ent; counting foes only, the Folly reads 2.4, so the floor is 2.0 */
+  densityLo: 0.8, densityHi: 2.5,   /* DESIGNED ENCOUNTERS a screen (24 columns), not bodies (claude/fairfix): the Folly reads 1.03; the campaign's walking levels 0.68-1.56; THE MASKWRIGHT'S THEATRE (gated, built and merged under the old bodies bar at 2.7 foes a screen) reads 2.13, so the ceiling is 2.5 (claude/fairfix2) */
+  clump: 8,             /* foes that are not a squad or an elite and stand within this many columns of each other are ONE encounter */
   emptyShareMax: 0.30,  /* share of the screens with no foe at all (Folly 0.23) */
   section: 200,         /* a designed encounter in every stretch of this many columns */
   branches: 2,          /* dead-end pockets / branches off the route (Folly 5) */
+  pilotHits: 2,         /* a fresh level-1 hero with no abilities, walked by the pilot bot with no god mode, takes at least this many blows over 3 runs summed (tools/level1-pilot.mjs). A FLOOR, NOT A TARGET: the bot cannot work the Folly's runes and is lifted ~48 times a run, so the Folly reads only a few; a level that costs the bot nothing is a walk */
+  roles: 3,             /* distinct foe roles (melee, ranged, support, heavy, runner) among the level's foes and ambush waves */
   routeSpan: 8,         /* OR the walked route climbs/drops this many rows, or doubles back this many tiles (Folly 30 rows) */
 };
 
+/* FOE ROLES. The game has no role field on a foe, so the roles are named here, by what the foe DOES to you; a foe not listed is MELEE. Keep the lists to kinds whose AI
+   was read (a thrown or shot attack; a bomb or net; a heal/horn/banner/snuff; plate or a big swing; a fast chase or a grab). Add a kind when a lane builds one. */
+export const ROLES = {
+  ranged: ['archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder', 'skybolt', 'catapult', 'towertop', 'pyromancer', 'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest'],
+  support: ['barker', 'gobpriest', 'bannerbearer', 'horn', 'snuffer', 'priest', 'acolyte', 'merrowcaller', 'bearer'],
+  heavy: ['heavy', 'brute', 'troll', 'golem', 'merrowbrute', 'tideguard', 'hedgeknight', 'armour', 'bloodknight', 'berserker', 'drownedknight', 'bellguard', 'holdfast', 'gaffer', 'barrowrider', 'shield'],
+  runner: ['hobbyhorse', 'runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog'],
+};
+const rolesOf = t => { const r = Object.keys(ROLES).filter(k => ROLES[k].includes(t)); return r.length ? r : ['melee']; };
+/* COLLECTIBLES AND INTERACTIVES THAT MUST UNLOCK SOMETHING. A pickup or a lever that opens nothing is clutter. What each kind can open is named here; a level states its own
+   in L.unlocks = [{ kind, opens: 'gate'|'relic'|'shortcut'|'secret'|'lift'|.., hud: 'the line the HUD or a callout shows' }] (a collectible a level invents - a candle stub, a cog - goes
+   there). The tool then asks: is every collectible kind in the level either known here or declared, and does an interactive have something in the level to work. */
+export const COLLECT_KNOWN = { silver: 'a hero or upgrade in the shop (the HUD counts them)', relic: 'itself (a relic)', key: 'a lock gate', stray: 'a quest relic', pickup: 'a pickup', chest: 'its contents', heart: 'health', coin: 'the shop' };
+const COLLECT_KINDS = new Set(['key', 'stray', 'quest', 'pickup', 'chest']);
+const INTERACTIVE_KINDS = new Set(['lever', 'crank', 'winch', 'flatwinch', 'cuelever', 'capstan', 'pump', 'sluice', 'plate', 'pushblock', 'lockrune', 'rune', 'glyph', 'valve', 'siphon', 'pulley']);
+const TARGET_ENTS = new Set(['lockgate', 'door', 'doorway', 'ringdoor', 'gate', 'bridge', 'cart', 'plank', 'lift', 'hoist', 'cage', 'dropcage', 'deadfall', 'felltree', 'mover', 'pad', 'sluice', 'cargowall', 'bulkhead', 'davit', 'flylock', 'stagetrap', 'startrap', 'timber', 'weight']);
+const TARGET_ARRAYS = ['bridges', 'locks', 'hoists', 'risers', 'crumbles', 'glyphBridges', 'cableBridges', 'carousels', 'masts', 'pits', 'seams', 'sluices', 'stagetraps', 'flies'];
 const GENERIC = new Set(['coin', 'deco', 'sign', 'check', 'silver', 'relic', 'stray', 'mend', 'torch', 'npc', 'guest', 'shop', 'shrine', 'gate', 'captive', 'folk', 'stal', 'web', 'quest', 'pickup', 'chest', 'heart', 'key']);
 /* A GADGET is something the hero works or rides, not something that hits him: non-foe, non-generic ent kinds that are level-specific (used by <= 3 levels), the set-piece and
    platform kinds pacing.mjs recognises everywhere, moving platforms (moversExtra kinds), and the level's own machine arrays. */
@@ -73,11 +106,19 @@ function slopeArt() { if (SLOPE_ART) return SLOPE_ART; const why = [];
       if (!any || worst > 2) why.push(SLOPE_NAMES[kind] + (any ? ' surface off by ' + worst.toFixed(1) + ' px' : ' is empty')); } }
   catch (e) { why.push('could not bake: ' + e.message); }
   return SLOPE_ART = { ok: !why.length, why: why.join('; ') }; }
+/* THE TRACKS src/audio.js COMPOSES ITSELF (no file): the names its synth plays, read off its own source (`wantTrack === 'name'`) */
+let SYNTH = null;
+function synthTracks() { if (SYNTH) return SYNTH; const src = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8'); SYNTH = new Set([...src.matchAll(/wantTrack === '([a-z0-9]+)'/g)].map(m => m[1])); for (const b of Object.keys(BOSS_SYNTH_BASE)) SYNTH.add(b); return SYNTH; }   /* + the boss themes src/boss-music.js composes (a 'name:variant' plays the base's theme) */
 let GATE_SRC = null;
 function slopeGate() { if (GATE_SRC !== null) return GATE_SRC; const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), m = src.match(/if \(([^\n]*?) && cvTile\(x, y, t\)\) continue;/);
   return GATE_SRC = m ? m[1] : ''; }
 const slopeGateName = () => slopeGate() || 'nothing (no guard found)';
 function slopesPainted(L) { const g = slopeGate(); if (!g) return false; try { return !!new Function('L', 'return !!(' + g + ')')(L); } catch { return true; /* a guard that reads more than L: assume it reaches everything */ } }
+
+/* A HASH OF THE LEVEL'S DATA: the pilot cache (docs/level1-pilot.json) is stamped with it, so a level edit makes the cached pilot row stale. */
+export function levelHash(lv) { const L = built(lv); return createHash('sha1').update(JSON.stringify([L.W, L.H, Array.from(L.grid), L.ents, L.moversExtra || null, L.ambushes || null])).digest('hex').slice(0, 12); }
+export const PILOT_FILE = fileURLToPath(new URL('../docs/level1-pilot.json', import.meta.url));
+let PILOT = null; const pilotCache = () => PILOT || (PILOT = existsSync(PILOT_FILE) ? JSON.parse(readFileSync(PILOT_FILE, 'utf8')) : {});
 
 export function measure(lv) {
   const L = built(lv), P = pacing(lv), W = L.W, H = L.H, ents = L.ents || [], route = P.route, A = arena(L), end = A ? Math.floor(A.x0 / TS) : W;
@@ -130,10 +171,16 @@ export function measure(lv) {
   const developed = gadgets.filter(g => g.places >= 3);
 
   // ---- 4. MUSIC ----
-  const music = L.music || null, others = LEVELS.filter(d => d.id !== lv.id && !(d.hidden && !d.secret) && !/^trial_|^shop/.test(d.id));
-  const borrowedFrom = music ? others.filter(d => { let o; try { o = built(d); } catch { return false; } return o.music === music || (o.arena && o.arena.music === music); }).map(d => d.id) : [];
+  /* THE LEVEL'S TRACK AND ITS BOSS ROOM'S: each must be a real track (a file in audio/, or one src/audio.js composes itself: a synth track it plays by name), its own, and not a stock
+     stand-in. BORROWED = another campaign level (or its boss arena) plays it, or it is on STOCK_MUSIC. The level's arena may play the level's own track (the Unburied Field carries
+     its Night on Bald Mountain into its boss) but not another level's. */
+  const music = L.music || null, arenaMusic = (A && A.music) || null, others = LEVELS.filter(d => d.id !== lv.id && !(d.hidden && !d.secret) && !/^trial_|^shop/.test(d.id));
+  const usedBy = t => others.filter(d => { let o; try { o = built(d); } catch { return false; } return o.music === t || (o.arena && o.arena.music === t) || (o.mini && o.mini.music === t); }).map(d => d.id);
+  const borrowedFrom = music ? usedBy(music).concat(STOCK_MUSIC[music] ? ['STOCK (' + STOCK_MUSIC[music].split(':')[0] + ')'] : []) : [];
+  const arenaBorrowed = arenaMusic && arenaMusic !== music && !BOSS_POOL.includes(arenaMusic) ? usedBy(arenaMusic).concat(STOCK_MUSIC[arenaMusic] ? ['STOCK'] : []) : [];
   const shared = SHARED_MUSIC.includes(music);
-  const trackFile = music && existsSync(new URL('../audio/' + music + '.ogg', import.meta.url)) || music && existsSync(new URL('../audio/' + music + '.mp3', import.meta.url));
+  const real = t => !!t && (existsSync(new URL('../audio/' + t + '.ogg', import.meta.url)) || existsSync(new URL('../audio/' + t + '.mp3', import.meta.url)) || synthTracks().has(splitTrack(t)[0]));
+  const trackFile = real(music), arenaReal = !arenaMusic || real(arenaMusic);
 
   // ---- 5. SECRETS, CHECKPOINTS, ENCOUNTERS, DENSITY ----
   const loot = P.stats.offLoot.filter(s => /^(silver|relic)@/.test(s));
@@ -147,30 +194,76 @@ export function measure(lv) {
     const f = foes.filter(inSec).sort((a, b) => a.x - b.x);   /* or a knot of three foes within ten columns: authored by hand */
     for (let i = 0; i + 2 < f.length && !n; i++) if (f[i + 2].x - f[i].x <= 10) n++;
     if (x1 - x0 >= 60 && !n) holes.push(x0 + '-' + x1); }
-  const per = []; for (let x = 0; x + 24 <= end; x += 24) per.push(foes.filter(e => e.x >= x && e.x < x + 24).length + waves.filter(w => w.x >= x && w.x < x + 24).length);
-  const density = tall ? NaN : per.length ? per.reduce((a, b) => a + b, 0) / per.length : 0, emptyScreens = per.filter(n => n === 0).length, emptyShare = per.length ? emptyScreens / per.length : 0;
+  /* DENSITY COUNTS ENCOUNTERS, NOT BODIES (claude/fairfix, Daniel 2026-09-30). Counting bodies made "fewer, better foes" and this bar pull against each other: the fair
+     failed it with every foe in a designed encounter, and the cheap way to pass was padding. An ENCOUNTER is one squad (every member of a squad name), one elite, one
+     ambush room (its waves are one fight), the mini, or a clump of the other foes - any foes within LIM.clump columns of each other are one fight, whether a hand-placed
+     knot or a sprinkle's clump. Each is counted once, at its middle column. */
+  const enc = [], bySquad = new Map(), loose = [];
+  for (const e of foes) { if (e.squad) { if (!bySquad.has(e.squad)) bySquad.set(e.squad, []); bySquad.get(e.squad).push(e.x); } else if (e.elite) enc.push({ x: e.x, k: 'elite' }); else loose.push(e.x); }
+  for (const [k, xs] of bySquad) enc.push({ x: (Math.min(...xs) + Math.max(...xs)) / 2, k: 'squad ' + k });
+  for (const q of L.ambushes || []) enc.push({ x: (q.wallL + q.wallR) / 2, k: 'ambush' });
+  if (L.mini) enc.push({ x: (L.mini.x0 + L.mini.x1) / 2 / TS, k: 'mini' });
+  loose.sort((a, b) => a - b); for (let i = 0; i < loose.length;) { let j = i; while (j + 1 < loose.length && loose[j + 1] - loose[j] <= LIM.clump) j++; enc.push({ x: (loose[i] + loose[j]) / 2, k: 'clump' }); i = j + 1; }
+  const per = []; for (let x = 0; x + 24 <= end; x += 24) per.push(enc.filter(e => e.x >= x && e.x < x + 24).length);
+  const bodies = []; for (let x = 0; x + 24 <= end; x += 24) bodies.push(foes.filter(e => e.x >= x && e.x < x + 24).length + waves.filter(w => w.x >= x && w.x < x + 24).length);
+  const occupied = []; for (let x = 0; x + 24 <= end; x += 24) occupied.push(bodies[occupied.length] > 0 || per[occupied.length] > 0);
+  const mean = a => a.length ? a.reduce((p, q) => p + q, 0) / a.length : 0;
+  const density = tall ? NaN : mean(per), bodyDensity = tall ? NaN : mean(bodies), emptyScreens = occupied.filter(o => !o).length, emptyShare = occupied.length ? emptyScreens / occupied.length : 0;
 
   // ---- 6. VERTICAL / BRANCHING ROUTE ----
   const ys = route.map(p => p[1]), span = Math.max(...ys) - Math.min(...ys), back = P.stats.backtrack, pockets = P.stats.pockets;
 
   // ---- 7. INVISIBLE SLOPES: every slope collision cell (ids 20-25) needs a drawn diagonal tile of its own kind ----
   let slopeCells = 0; for (let i = 0; i < L.grid.length; i++) if (L.grid[i] >= 20 && L.grid[i] <= 25) slopeCells++;
+  // ---- 8. ROLES: ranged present, role mix ----
+  const roleCount = {}; for (const f of allFoes) for (const r of rolesOf(f.t)) roleCount[r] = (roleCount[r] || 0) + 1;
+  const roleKinds = Object.keys(roleCount).sort(), rangedN = roleCount.ranged || 0;
+
+  // ---- 9. COLLECTIBLES / INTERACTIVES UNLOCK SOMETHING ----
+  const declared = new Map((Array.isArray(L.unlocks) ? L.unlocks : []).map(u => [u.kind, u]));
+  const collectKinds = [...new Set(ents.filter(e => COLLECT_KINDS.has(e.t) || e.collect).map(e => e.t))];
+  const mageLocks = !!(L.mage && Array.isArray(L.mage.locks) && L.mage.locks.length);
+  const interactKinds = [...new Set([...ents.filter(e => INTERACTIVE_KINDS.has(e.t)).map(e => e.t), ...(mageLocks ? ['mage:lock'] : [])])];
+  const hasTarget = ents.some(e => TARGET_ENTS.has(e.t)) || TARGET_ARRAYS.some(k => Array.isArray(L[k]) && L[k].length) || (L.moversExtra || []).length > 0 || mageLocks;
+  const unmapped = collectKinds.filter(k => !(k in COLLECT_KNOWN) && !declared.has(k));
+  const badDecl = [...declared.values()].filter(u => !u.opens || !u.hud || !(ents.some(e => e.t === u.kind) || (Array.isArray(L[u.kind]) && L[u.kind].length)));
+  const keyNoGate = collectKinds.includes('key') && !ents.some(e => e.t === 'lockgate' || (e.t === 'gate' && (e.lock || e.needs))) && !(L.locks || []).length;
+  const deadInteract = interactKinds.length && !hasTarget ? interactKinds : [];
+  const unlockOk = !unmapped.length && !badDecl.length && !keyNoGate && !deadInteract.length;
+  const unlockMsg = (collectKinds.length + interactKinds.length + declared.size === 0 ? 'no collectible or interactive kinds beyond silver/relic' : collectKinds.length + ' collectible kinds [' + collectKinds.join(',') + '], ' + interactKinds.length + ' interactive kinds [' + interactKinds.join(',') + '], ' + declared.size + ' declared in L.unlocks')
+    + (unmapped.length ? '; NO UNLOCK NAMED for ' + unmapped.join(',') + ' (declare it in L.unlocks)' : '') + (badDecl.length ? '; L.unlocks entry missing opens/hud or not in the level: ' + badDecl.map(u => u.kind).join(',') : '') + (keyNoGate ? '; a key with no lock gate' : '') + (deadInteract.length ? '; ' + deadInteract.join(',') + ' with nothing in the level to open' : '');
+
+  // ---- 10. THE LEVEL-1 NO-ABILITY PILOT (cached; tools/level1-pilot.mjs) ----
+  const gated = GATE.includes(lv.id), prow = pilotCache()[lv.id], phash = prow ? levelHash(lv) : null;
+  const pilotState = !prow ? (gated ? 'missing' : 'none') : phash !== prow.hash ? 'stale' : !prow.bare ? 'notbare' : prow.hits >= LIM.pilotHits ? 'ok' : 'soft';
+  const pilotOk = pilotState === 'ok' || (!gated && (pilotState === 'none' || pilotState === 'stale'));
+  const pilotMsg = pilotState === 'none' ? 'not run (required for gated levels only; node tools/level1-pilot.mjs ' + lv.id + ' --write)'
+    : pilotState === 'missing' ? 'NO PILOT ROW in docs/level1-pilot.json: run node tools/level1-pilot.mjs ' + lv.id + ' --write and commit it'
+    : pilotState === 'stale' ? 'the level changed since its pilot ran (hash ' + prow.hash + ' now ' + phash + '): re-run node tools/level1-pilot.mjs ' + lv.id + ' --write'
+    : pilotState === 'notbare' ? 'the pilot ran with talents or skills present: it must be a fresh level-1 hero'
+    : prow.hits + ' blows taken by a fresh level-1 ' + prow.hero + ' (' + prow.deaths + ' deaths, walked ' + prow.walked + '%) (>=' + LIM.pilotHits + (pilotState === 'soft' ? '): A WALK, NOT A LEVEL' : ')') + (prow.lifts !== undefined ? ', ' + prow.lifts + ' lifts' : '');
   const sa = slopeArt(), painted = slopeCells ? slopesPainted(L) : true;
   const m = { id: lv.id, tall, emptyShare, slopeCells, slopePainted: painted, slopeArtOk: sa.ok, slopeArtWhy: sa.why, W, routeTiles, flat: flat.n, flatAt: flat.at, flatShare: flat.long / Math.max(1, end), terrainShare: terrainFlat.long / Math.max(1, end), terrainFlat: terrainFlat.n, terrainFlatAt: terrainFlat.at, routeBands: bands.size, multiShare, gadgetKinds: gadgets.length, gadgetDeveloped: developed.length, gadgets, music, borrowedFrom, shared, trackFile: !!trackFile,
-    secrets: loot.length, secretEnts, checks, checkSpacing: checks ? routeTiles / checks : Infinity, density, emptyScreens, holes, span, back, pockets, per };
+    encountersN: enc.length, bodyDensity, roleKinds, roleCount, rangedN, unmapped, collectKinds, interactKinds, pilotState, pilotHits: prow ? prow.hits : null, secrets: loot.length, secretEnts, checks, checkSpacing: checks ? routeTiles / checks : Infinity, density, emptyScreens, holes, span, back, pockets, per };
   const bar = [
     ['flat', m.flatShare <= LIM.flatShareMax && m.terrainShare <= LIM.terrainShareMax, Math.round(m.flatShare * 100) + '% of the route is long flat empty runs (<=' + Math.round(LIM.flatShareMax * 100) + '%), ' + Math.round(m.terrainShare * 100) + '% is long level ground (<=' + Math.round(LIM.terrainShareMax * 100) + '%); longest ' + m.flat + ' / ' + m.terrainFlat + ' columns'],
         ['bands', m.routeBands >= LIM.routeBands && m.multiShare >= LIM.multiHeightShare, m.routeBands + ' height bands on the route (>=' + LIM.routeBands + '), ' + Math.round(m.multiShare * 100) + '% of the width offers a second height (>=' + Math.round(LIM.multiHeightShare * 100) + '%)'],
     ['mechanics', m.gadgetKinds >= LIM.gadgetKinds && m.gadgetDeveloped >= LIM.gadgetDeveloped, m.gadgetKinds + ' gadget kinds (>=' + LIM.gadgetKinds + '), ' + m.gadgetDeveloped + ' in 3+ places (>=' + LIM.gadgetDeveloped + '): ' + gadgets.slice(0, 8).map(g => g.k + 'x' + g.places).join(' ')],
-    ['music', !!music && m.trackFile && (m.shared || !borrowedFrom.length), music ? music + (m.trackFile ? '' : ' (NO FILE in audio/)') + (borrowedFrom.length && !m.shared ? ' also used by ' + borrowedFrom.join(',') : '') : 'no track'],
+    ['music', !!music && m.trackFile && (m.shared || !borrowedFrom.length) && arenaReal && !arenaBorrowed.length, music ? music + (m.trackFile ? '' : ' (NO SUCH TRACK: no file in audio/ and no synth track of that name)') + (borrowedFrom.length && !m.shared ? ' BORROWED: also ' + borrowedFrom.join(',') : '')
+      + (arenaMusic ? '; boss room ' + arenaMusic + (arenaReal ? '' : ' (NO SUCH TRACK)') + (arenaBorrowed.length ? ' BORROWED: also ' + arenaBorrowed.join(',') : '') : '') : 'no track'],
     ['secrets', m.secrets >= LIM.secrets, m.secrets + ' silver/relic off the route (>=' + LIM.secrets + ')'],
     ['checks', m.checks >= LIM.checksMin && m.checkSpacing >= LIM.checkSpacing, m.checks + ' checkpoints, one per ' + Math.round(m.checkSpacing) + ' route tiles (>=' + LIM.checkSpacing + ')'],
     ['encounters', !m.holes.length, m.holes.length ? 'no designed encounter in columns ' + m.holes.join(', ') : 'a designed encounter in every ' + LIM.section + ' columns'],
-    ['density', m.tall || (m.density >= LIM.densityLo && m.density <= LIM.densityHi && m.emptyShare <= LIM.emptyShareMax), m.tall ? 'a tall level: not measured' : m.density.toFixed(2) + ' foes a screen (' + LIM.densityLo + '-' + LIM.densityHi + '), ' + m.emptyScreens + ' empty screens = ' + Math.round(m.emptyShare * 100) + '% (<=' + Math.round(LIM.emptyShareMax * 100) + '%)'],
+    ['density', m.tall || (m.density >= LIM.densityLo && m.density <= LIM.densityHi && m.emptyShare <= LIM.emptyShareMax), m.tall ? 'a tall level: not measured' : m.density.toFixed(2) + ' encounters a screen (' + LIM.densityLo + '-' + LIM.densityHi + '; ' + m.encountersN + ' encounters, ' + m.bodyDensity.toFixed(1) + ' foes a screen), ' + m.emptyScreens + ' empty screens = ' + Math.round(m.emptyShare * 100) + '% (<=' + Math.round(LIM.emptyShareMax * 100) + '%)'],
     ['slopes', m.slopeArtOk && m.slopePainted, !m.slopeCells ? 'no slope tiles' : m.slopeCells + ' slope cells: ' + (m.slopeArtOk ? (m.slopePainted ? 'drawn (diagonal tiles, guard: ' + slopeGateName() + ')' : 'INVISIBLE - the tile painter draws slope art only where ' + slopeGateName() + ', so these walkable slopes have no texture') : 'the slope tiles are not diagonal: ' + m.slopeArtWhy)],
+    ['ranged', m.rangedN > 0, m.rangedN ? m.rangedN + ' ranged foes: ' + [...new Set(allFoes.filter(f => rolesOf(f.t).includes('ranged')).map(f => f.t))].join(',') : 'NO RANGED FOE: nothing in this level shoots, throws or casts (ROLES.ranged in tools/level-quality.mjs)'],
+    ['roles', m.roleKinds.length >= LIM.roles, m.roleKinds.length + ' foe roles (>=' + LIM.roles + '): ' + m.roleKinds.map(r => r + 'x' + roleCount[r]).join(' ')],
+    ['unlocks', unlockOk, unlockMsg],
+    ['pilot', pilotOk, pilotMsg],
     ['route', (m.span >= LIM.routeSpan || m.back >= LIM.routeSpan) && m.pockets >= LIM.branches, 'route spans ' + m.span + ' rows, ' + m.back + ' tiles back, ' + m.pockets + ' branches/pockets (>=' + LIM.branches + ')'],
   ];
-  m.bar = bar; m.pass = bar.every(b => b[1]); m.failed = bar.filter(b => !b[1]).map(b => b[0]);
+  const soft = (REPORT_ONLY[lv.id] || []);
+  m.bar = bar; m.pass = bar.every(b => b[1] || soft.includes(b[0])); m.failed = bar.filter(b => !b[1] && !soft.includes(b[0])).map(b => b[0]); m.reportOnly = bar.filter(b => !b[1] && soft.includes(b[0])).map(b => b[0]);
   return m;
 }
 
@@ -181,11 +274,11 @@ if (isMain) {
   if (ALL) {
     const cols = ['flat', 'terrain', 'bands', 'mechanics', 'music', 'secrets', 'checks', 'encounters', 'density', 'route'];
     console.log('LEVEL QUALITY, every campaign level (a report: nothing here fails the suite; the gated list is ' + GATE.join(', ') + ')\n');
-    console.log('level'.padEnd(12) + 'flat% ground%   bands gadg/dev secr chk dens slope  fails');
+    console.log('level'.padEnd(12) + 'flat% ground%   bands gadg/dev secr chk dens slope rng roles unlk pilot  fails');
     let clear = 0;
     for (const d of campaign) { let m; try { m = measure(d); } catch (e) { console.log(d.id.padEnd(12) + 'could not be measured: ' + e.message); continue; } if (m.pass) clear++;
-      console.log(d.id.padEnd(12) + String(Math.round(m.flatShare * 100)).padStart(5) + String(Math.round(m.terrainShare * 100)).padStart(8) + (m.routeBands + '/' + Math.round(m.multiShare * 100) + '%').padStart(9) + (m.gadgetKinds + '/' + m.gadgetDeveloped).padStart(9) + String(m.secrets).padStart(5) + String(m.checks).padStart(5) + (m.tall ? '-' : m.density.toFixed(1)).padStart(5) + (m.slopeCells ? (m.slopePainted ? 'ok' : 'NONE') : '-').padStart(6) + '  ' + (m.pass ? 'PASS' : m.failed.join(','))); }
-    console.log('\n' + clear + ' of ' + campaign.length + ' clear the bar. Columns: flat% = share of the route in long flat empty runs (limit ' + LIM.flatShareMax * 100 + '), ground% = share in long level-ground runs (' + LIM.terrainShareMax * 100 + '), bands = height bands on the route / % of width with a second height, gadg/dev = gadget kinds / those in 3+ places, secr = silver+relic off the route, chk = checkpoints, dens = foes a screen.');
+      console.log(d.id.padEnd(12) + String(Math.round(m.flatShare * 100)).padStart(5) + String(Math.round(m.terrainShare * 100)).padStart(8) + (m.routeBands + '/' + Math.round(m.multiShare * 100) + '%').padStart(9) + (m.gadgetKinds + '/' + m.gadgetDeveloped).padStart(9) + String(m.secrets).padStart(5) + String(m.checks).padStart(5) + (m.tall ? '-' : m.density.toFixed(1)).padStart(5) + (m.slopeCells ? (m.slopePainted ? 'ok' : 'NONE') : '-').padStart(6) + String(m.rangedN).padStart(4) + String(m.roleKinds.length).padStart(6) + (m.bar.find(b => b[0] === 'unlocks')[1] ? 'ok' : 'NO').padStart(5) + (m.pilotHits === null ? '-' : String(m.pilotHits)).padStart(6) + '  ' + (m.pass ? 'PASS' : m.failed.join(','))); }
+    console.log('\n' + clear + ' of ' + campaign.length + ' clear the bar. Columns: flat% = share of the route in long flat empty runs (limit ' + LIM.flatShareMax * 100 + '), ground% = share in long level-ground runs (' + LIM.terrainShareMax * 100 + '), bands = height bands on the route / % of width with a second height, gadg/dev = gadget kinds / those in 3+ places, secr = silver+relic off the route, chk = checkpoints, dens = designed encounters a screen.');
     process.exit(0);
   }
   const want = ids.length ? ids : GATE; let failed = 0;
@@ -194,7 +287,7 @@ if (isMain) {
     if (!lv) { console.log('== ' + id + ': not built on this branch - skipped' + (GATE.includes(id) ? ' (it is on the gated list: the lane that adds it must clear this bar)' : '')); continue; }
     const m = measure(lv);
     console.log('== ' + id.toUpperCase() + ' (' + m.W + ' columns, route ' + m.routeTiles + ' tiles): ' + (m.pass ? 'CLEARS THE BAR' : 'MISSES THE BAR: ' + m.failed.join(', ')));
-    for (const [k, ok, msg] of m.bar) console.log('  ' + (ok ? 'ok   ' : 'FAIL ') + k.padEnd(11) + msg);
+    for (const [k, ok, msg] of m.bar) console.log('  ' + (ok ? 'ok   ' : m.reportOnly.includes(k) ? 'WARN ' : 'FAIL ') + k.padEnd(11) + msg + (!ok && m.reportOnly.includes(k) ? '   [REPORT-ONLY for ' + id + ': see REPORT_ONLY in tools/level-quality.mjs]' : ''));
     if (!m.pass) failed++;
   }
   console.log(failed ? '\n' + failed + ' level(s) miss the quality bar (docs/LEVEL-QUALITY.md).' : '\nevery gated level clears the quality bar.');

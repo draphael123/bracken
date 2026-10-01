@@ -13,7 +13,7 @@ export const SHAPE = {
   risingCut: 'rise', lunge: 'dash', shieldThrow: 'boomerang', warCry: 'ring', groundSlam: 'quake', whirlwind: 'spin',
   disarm: 'mark', ironclad: 'aura', swordOfRealm: 'waves',
   // pyromancer
-  vent: 'burst', meteor: 'sky', wisp: 'wisp', flameRing: 'ring', fireWall: 'wall', cinderStep: 'dash',
+  vent: 'burst', emberFlare: 'flare', meteor: 'sky', wisp: 'wisp', flameRing: 'ring', fireWall: 'wall', cinderStep: 'dash',
   // paladin
   consecrate: 'zone', lightLance: 'thrust', holyCharge: 'dash', divineShield: 'aura', blessedHammer: 'spiral', hammerLeap: 'leap',
   // freebooter
@@ -29,7 +29,7 @@ export const shapeOf = id => SHAPE[id] || 'cast';
 
 /* how each shape reads on the post: [hit window in fx progress, push in px] (0 push = it flinches in place) */
 const HIT = { thrust: [.12, .5, 5], dash: [.35, .7, 6], boomerang: [.3, .5, 3], ring: [.15, .6, 7], quake: [.2, .7, 3], spin: [.2, .7, 4], mark: [.2, .9, 0], aura: [2, 2, 0],
-  waves: [.2, .9, 4], burst: [.1, .5, 6], sky: [.55, .9, 4], wisp: [.4, .9, 2], wall: [.2, .6, 2], zone: [.1, .95, 0], spiral: [.25, .8, 3], leap: [.5, .7, 5], cone: [.1, .4, 5],
+  flare: [.4, .85, 0], waves: [.2, .9, 4], burst: [.1, .5, 6], sky: [.55, .9, 4], wisp: [.4, .9, 2], wall: [.2, .6, 2], zone: [.1, .95, 0], spiral: [.25, .8, 3], leap: [.5, .7, 5], cone: [.1, .4, 5],
   hook: [.35, .7, -14], hands: [.1, .9, 0], summon: [.6, .9, 3], bolt: [.4, .6, 5], spikes: [.3, .8, 0], flurry: [.1, .9, 2], rain: [.3, .9, 0], pillar: [2, 2, 0],
   roll: [.4, .7, 7], arch: [2, 2, 0], entomb: [.2, .9, 0], rise: [.15, .6, 0], cast: [.2, .5, 3] };
 
@@ -109,6 +109,11 @@ const FX = {
   mark(S, ph, px) { if (ph !== 'over' || S.p <= 0) return; sparks(S.g, px, S.gy - 30, S.p, S.c1, 6, 8); if (S.p > .3) { S.g.globalAlpha = .9; S.g.fillStyle = S.c2; S.g.fillRect(px - 1, S.gy - 40 - Math.round(Math.sin(S.c * 6) * 1), 3, 4); S.g.globalAlpha = 1; } },
   aura(S, ph, px, hx, hy) { if (ph !== 'over' || S.p <= 0) return; const a = S.p < .8 ? .55 : .55 * (1 - (S.p - .8) / .2); ringAt(S.g, S.hx, S.gy - 1, 12 + Math.sin(S.c * 8) * 1, S.c1, a); band(S.g, S.hx - 10, S.gy - 30, 21, 32, S.c1, a * .18); },
   waves(S, ph) { if (ph !== 'over' || S.p <= 0) return; for (let i = 0; i < 3; i++) { const q = clamp((S.p - i * .22) / .4); if (q > 0 && q < 1) band(S.g, S.hx + 8 + q * (S.dx - S.hx), S.gy - 8, 3, 8, S.c1, 1 - q * .5); } },
+  /* THE EMBER FLARE: a yellow blow comes in off the post, meets a burst of fire round her and is cancelled there; the post is left burning */
+  flare(S, ph, px) { if (S.p <= 0) return; if (ph === 'over') { const q = clamp(S.p / .36), cx = S.hx + 4, cy = S.gy - 12;
+      if (q < 1) band(S.g, px - 6 - (px - S.hx - 24) * q, S.gy - 16, 8, 3, '#e8d070');
+      if (S.p > .3 && S.p < .62) { const k = (S.p - .3) / .32; ringAt(S.g, cx, cy, 5 + k * 17, S.c1, fade(k)); ringAt(S.g, cx, cy, 3 + k * 11, '#fff', fade(k) * .8); sparks(S.g, cx + 16, cy - 4, k, S.c2, 6, 12); }
+      if (S.p > .4 && S.p < .95) for (let i = 0; i < 3; i++) band(S.g, px - 3 + i * 3, S.gy - 26 - Math.round(((S.c * 22 + i * 5) % 8)), 2, 3, i % 2 ? S.c1 : S.c2, .8); } },
   burst(S, ph) { if (ph !== 'over' || S.p <= 0) return; ringAt(S.g, S.hx, S.gy - 12, 4 + S.p * 40, S.c1, fade(S.p)); sparks(S.g, S.hx, S.gy - 14, S.p, S.c2, 10, 34); },
   sky(S, ph, px) { if (ph !== 'over' || S.p <= 0) return; const q = clamp(S.p / .55); if (q < 1) { band(S.g, px - 3 + (1 - q) * 14, S.y + 4 + q * (S.gy - S.y - 16), 6, 6, S.c1); band(S.g, px + (1 - q) * 14 + 1, S.y + 2 + q * (S.gy - S.y - 22), 3, 5, S.c2, .7); } else { ringAt(S.g, px, S.gy - 2, 4 + (S.p - .55) * 60, S.c1, fade(S.p - .3)); sparks(S.g, px, S.gy - 8, (S.p - .55) / .45, S.c2, 8, 16); } },
   wisp(S, ph) { if (ph !== 'over' || S.p <= 0) return; const q = clamp((S.p - .1) / .4), xx = S.hx + 10 + (S.dx - S.hx - 10) * q * .8 + Math.cos(S.c * 7) * 2, yy = S.gy - 26 + q * 6 + Math.sin(S.c * 7) * 3;

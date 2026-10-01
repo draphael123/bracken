@@ -25,9 +25,10 @@ export const RIBBON_REACH = 1.5;
 /* does ONE hero look at this foe? */
 export function looks(e, h, sight = MUMMER.sight, sightY = MUMMER.sightY) {
   if (!h || h.alive === false) return false;
+  if (h.blind) return false;   /* a wall between (the corn maze's blind corners, src/fair-games.js blocked): you cannot look at what you cannot see */
   if (h.reach > 0) { sight *= h.reach; sightY *= h.reach; }
   const dx = e.x - h.x; if (Math.abs(dx) > sight || Math.abs((e.y || 0) - (h.y || 0)) > sightY) return false;
-  return dx === 0 || Math.sign(dx) === (h.face >= 0 ? 1 : -1);
+  return h.mirror || dx === 0 || Math.sign(dx) === (h.face >= 0 ? 1 : -1);   /* h.mirror: the hall of mirrors' glass ahead of him watches what is at his back (src/fair-games.js mirrorSees) */
 }
 /* is the foe faced by ANY hero (co-op: one is enough)? */
 export const facedBy = (e, heroes, sight = MUMMER.sight, sightY = MUMMER.sightY) => (heroes || []).some(h => looks(e, h, sight, sightY));
@@ -41,7 +42,7 @@ export function nearestHero(e, heroes, sight = MUMMER.sight, sightY = MUMMER.sig
 export const newMummer = (x, y, face = -1) => ({ x, y, face, mode: 'still', t: 0, vx: 0, bellT: MUMMER.bell * 0.5 });
 /* one frame of a mummer. world = { heroes:[{x,y,face,alive}], canStep(x, dir) -> can it walk on }. Returns events: freeze, wake, bell, glow, strike { box, dmg } */
 export function mummerStep(s, w, dt) {
-  const evs = [], C = MUMMER; s.vx = 0;
+  const evs = [], C = w.C || MUMMER; s.vx = 0;   /* w.C: a level's own sharper mummer (THE HARVEST FAIR's, claude/fairfix2: src/fair-keys.js FAIR_MUMMER); the theatre keeps MUMMER */
   /* w.sight / w.sightY: a shorter LOOK (THE WICKER QUEEN's full dark, claude/fair3: only a near look holds her crowd). It finds its hero as far as ever */
   const near = nearestHero(s, w.heroes, C.sight, C.sightY), seen = facedBy(s, w.heroes, w.sight || C.sight, w.sightY || C.sightY);
   const toward = () => { if (near) s.face = Math.sign(near.x - s.x) || s.face; };
@@ -73,8 +74,8 @@ export function mummerStep(s, w, dt) {
 export const newHorse = (x, y, face = -1) => ({ x, y, face, mode: 'still', t: 0, vx: 0, armed: true, dir: face, run: 0 });
 /* one frame of the hobby-horse. Events: freeze (looked at), wind, charge, end (the charge is over: it stands where it stopped) */
 export function horseStep(s, w, dt) {
-  const evs = [], C = HORSE; s.vx = 0;
-  const near = nearestHero(s, w.heroes, C.sight, C.sightY), seen = facedBy(s, w.heroes, C.sight, C.sightY);
+  const evs = [], C = w.C || HORSE; s.vx = 0;   /* w.C: the fair's own horse (src/fair-keys.js FAIR_HORSE) */
+  const near = nearestHero(s, w.heroes, w.near || C.sight, C.sightY), seen = facedBy(s, w.heroes, w.sight || C.sight, w.sightY || C.sightY);   /* w.near (claude/fairfix): in the dark it finds you only this near; w.sight: the dark (src/fair-games.js sightFor) shortens the look, as it does the mummer's */
   switch (s.mode) {
     case 'still':
       if (seen) { if (!s.armed) evs.push({ t: 'freeze' }); s.armed = true; break; }

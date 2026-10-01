@@ -400,7 +400,7 @@ export function makeBot(BK) {
 // overflow this game has ever shipped came from somebody laying a plate out against 400. This walks the lot,
 // renders each one, and the fillText instrument catches anything that leaves the frame. It also catches a
 // screen that throws, which is worse and harder to notice.
-const SCREENS = ['title', 'slots', 'heropick', 'map', 'store', 'equip', 'tree', 'bestiary', 'controls',
+const SCREENS = ['title', 'slots', 'heropick', 'map', 'store', 'bestiary', 'controls',
   'soundtest', 'practice', 'menu', 'win', 'gameover', 'rushover', 'rushwin', 'herocard'];
 async function sweepScreens(BK, inst, F) {
   const was = BK.state;
@@ -427,9 +427,9 @@ async function sweepScreens(BK, inst, F) {
     const U = BK.ui;
     if (U) {
       const faces = [];
-      if (st === 'store' || st === 'equip') { U.storeMode = st === 'equip' ? 'equip' : 'store';
-        for (let t = 0; t < U.tabs(); t++) for (const r of [0, 1, 99]) faces.push(() => { U.storeTab = t; U.storeI = Math.min(r, Math.max(0, U.items() - 1)); }); }
-      else if (st === 'tree') { for (let i = 0; i < U.treeRows(); i += 3) faces.push(() => { U.treeI = i; }); }
+      if (st === 'store') {   /* the ONE store: every tab, and the SKILLS tab's own rows (the old 'tree' screen) */
+        for (let t = 0; t < U.tabs(); t++) for (const r of [0, 1, 99]) faces.push(() => { U.storeTab = t; U.storeI = Math.min(r, Math.max(0, U.items() - 1)); });
+        for (let i = 0; i < U.treeRows(); i += 3) faces.push(() => { U.storeTab = U.skillsTab; U.treeI = i; }); }
       else if (st === 'bestiary') { for (const tb of [0, 1]) for (let i = 0; i < 40; i += 7) faces.push(() => { U.bestTab = tb; U.bestI = Math.min(i, Math.max(0, U.beasts() - 1)); }); }
       else if (st === 'practice') { for (let i = 0; i < 6; i++) faces.push(() => { U.practiceI = i; }); }
       else if (st === 'title') { for (let i = 0; i < 7; i++) faces.push(() => { U.titleI = i; }); }

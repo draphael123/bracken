@@ -236,7 +236,7 @@ export function buildWitchlight({ painter, T, TS }) {
     palette: { sky: [[64, 46, 96], [236, 150, 112]], far: 'mage', mid: 'mage', near: 'none', dress: 'village', haze: 'rgba(200,120,160,0.08)',
       grass: '#5a6a4a', grassL: '#7c8c5c', grassD: '#3a4632', dirt: '#5a4c5a', dirtL: '#76647a', dirtD: '#382e3c', canopy: ['#2a2238', '#3a2e4a', '#4e3a5c', '#6a4a6e'] },
     weather: [{ x0: 0, x1: 140 * TS, kind: 'leaves' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: WL.ARENA.x0 * TS, x1: WL.ARENA.x1 * TS, floor: (G + 1) * TS, y0: (WL.TOP - 14) * TS, top: WL.TOP * TS, trigger: (WL.ARENA.x0 + 2) * TS, wallL: WL.ARENA.x0 - 1, wallR: WL.ARENA.x1, boss: 'gargoyle', music: 'boss4', start: [WL.SLABS[0][0] + 3, WL.LOW - 1] },   /* (start: the bot's lab begins on his first slab, not on his spikes) */
+    arena: { x0: WL.ARENA.x0 * TS, x1: WL.ARENA.x1 * TS, floor: (G + 1) * TS, y0: (WL.TOP - 14) * TS, top: WL.TOP * TS, trigger: (WL.ARENA.x0 + 2) * TS, wallL: WL.ARENA.x0 - 1, wallR: WL.ARENA.x1, boss: 'gargoyle', music: 'gargoyle', start: [WL.SLABS[0][0] + 3, WL.LOW - 1] },   /* (start: the bot's lab begins on his first slab, not on his spikes) */
     mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'hedgewarden', name: 'THE HEDGE WARDEN' },
     noCoin: [[0, 9, 0, FOOT - 6], [140, 219, 0, WL.ROOF[0] - 1]],
   };
