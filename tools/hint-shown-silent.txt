@@ -1,5 +1,4 @@
 # number() text the filter drops, on purpose: old silent flavour (file, count, text). It may only shrink (tools/hint-shown.mjs).
-src/ember-ward.js	1	"OVERHEATED"
 src/geomancer.js	1	"A BRIDGE"
 src/geomancer.js	1	"AN ARCH"
 src/geomancer.js	1	"BOUNCED OFF"

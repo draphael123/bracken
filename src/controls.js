@@ -171,8 +171,9 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['third cut', 'SWING x3 IN A RUN', pd('atk') + ' x3'],
     ['rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
-    /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's raises the EMBER WARD (src/ember-ward.js) */
-    hero === 'pyro' ? ['ember ward', 'HOLD ' + k1('down') + ' (STILL)', 'HOLD ' + pd('down')] : ['crouch', 'HOLD ' + k1('down') + ' (STILL)', 'HOLD ' + pd('down')],
+    /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's PRESS of down is also the EMBER FLARE (src/ember-ward.js) */
+    ['crouch', 'HOLD ' + k1('down') + ' (STILL)', 'HOLD ' + pd('down')],
+    ...(hero === 'pyro' ? [['ember flare', 'TAP ' + k1('down') + ' AS A BLOW LANDS', 'TAP ' + pd('down')]] : []),
     [cRow[0], cRow[1](tk), pd('block')],
     ['dodge', hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
     ['', 'TELLS ARE TIMED FOR ONE PRESS', pd('dodge')],
