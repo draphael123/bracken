@@ -169,7 +169,7 @@ function viewFor(mode) {
 }
 function setView(mode) {
   viewMode = mode; const [w, h] = viewFor(mode); if (VW === w && VH === h) return;
-  VW = w; VH = h; buf.width = w; buf.height = h; g.imageSmoothingEnabled = false; resize(); if (L) bakeAll(L.palette || {});
+  VW = w; VH = h; buf.width = w; buf.height = h; g.imageSmoothingEnabled = false; resize(); if (L) { Object.assign(ART.C, PAL0, L.palette || {}); bakeBackdrop(L.palette || {}); }
 }
 let S = 3, offX = 0, offY = 0, scanPat = null, DPR = 1;
 function resize() {
@@ -842,8 +842,15 @@ function* bakeAllG(pal = {}) {   /* the same bake as a generator: it yields a st
     /* AND NO TURF ON TOP OF IT (claude/burial2): the floor under the hill is packed earth, not a lawn - its own top and cut-face tiles, the same
        dice, so the level's scatter lands where it did. tools/skins.mjs holds every level below the ground to it. */
     if (below) for (const eL of [0, 1]) for (const eR of [0, 1]) { TILE.top[eL + '' + eR] = [0, 1, 2, 3].map(i => ART.bakeEarthTop(900 + i + eL * 7 + eR * 13, eL, eR)); TILE.edge[eL + '' + eR] = [0, 1].map(i => ART.bakeEarthEdge(940 + i + eL * 3 + eR * 5, eL, eR)); } }
-  const sky = (pal.sky === 'unburied' || pal.sky === 'mage' || pal.sky === 'fields' || pal.sky === 'night' || pal.sky === 'teal' || pal.sky === 'autumn' || pal.sky === 'crag' || pal.sky === 'sea' || pal.sky === 'storm' || pal.sky === 'glare') ? null : (pal.sky || [[104, 170, 220], [205, 232, 210]]);
   CROWN = CROWN || CRT.bakeCrownTiles(); VILL = VILL || bakeVillageTiles(); SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };
+  bakeBackdrop(pal);
+  yield 'sky';
+}
+/* THE BACKDROP ALONE: the sky, the far, mid and near layers and the foreground sheet - the only art whose size follows the view (VW, VH). setView
+   used to run the whole bakeAll when the view changed: every tile and prop again, 1-2 s with the game stopped, at every boss that zooms (on his
+   wake and again at every respawn) and with the WIDE camera at every level entry, menu and death (claude/perf51). It bakes only this now. */
+function bakeBackdrop(pal) {
+  const sky = (pal.sky === 'unburied' || pal.sky === 'mage' || pal.sky === 'fields' || pal.sky === 'night' || pal.sky === 'teal' || pal.sky === 'autumn' || pal.sky === 'crag' || pal.sky === 'sea' || pal.sky === 'storm' || pal.sky === 'glare') ? null : (pal.sky || [[104, 170, 220], [205, 232, 210]]);
   BG = { sky: pal.sky === 'unburied' ? UW.bakeSkyUnburied(VH) : pal.sky === 'mage' && MW.bakeSkyMage ? MW.bakeSkyMage(VH) : pal.sky === 'fields' && FW.bakeSkyFields ? FW.bakeSkyFields(VH) : pal.sky === 'drowned' ? CTT.bakeSkyDrowned(VH) : pal.sky === 'harbour' ? HB.bakeSkyHarbour(VH) : pal.sky === 'glare' ? FLT.bakeSkyGlare(VH) : pal.sky === 'storm' ? RFT.bakeSkyStorm(VH) : pal.sky === 'sea' ? LWT.bakeSkySea(VH) : sky ? ART.bakeSky(VH, sky[0], sky[1]) : pal.sky === 'teal' ? ART.bakeSkyTeal(VH) : pal.sky === 'autumn' ? ART.bakeSkyAutumn(VH) : pal.sky === 'crag' ? ART.bakeSkyCrag(VH) : ART.bakeSkyNight(VH), skyDusk: ART.bakeSkyDusk(VH), sun: ART.bakeSun(), far: pal.far === 'unburied' ? UW.bakeFarUnburied(320, 90, 1) : pal.far === 'mage' && MW.bakeFarMage ? MW.bakeFarMage(320, 90, 1) : pal.far === 'fields' && FW.bakeFarFields ? FW.bakeFarFields(320, 90, 1) : pal.far === 'causeway' ? KRA.bakeFarCauseway(320, 90, 1) : pal.far === 'city' ? CTT.bakeFarCity(320, 90, 1) : pal.far === 'harbour' ? HB.bakeFarHarbour() : pal.far === 'stormsea' ? SM.bakeStormSea() : pal.far === 'fleet' ? FLT.bakeFarFleet(320, 90, 1) : pal.far === 'reef' ? RFT.bakeFarReef(320, 90, 1) : pal.far === 'sea' ? LWT.bakeFarSea(320, 90, 1) : pal.far === 'town' ? TWN.bakeFarTown(320, 90, 1) : pal.far === 'village' ? ART.bakeFarVillage(320, 90, 1) : pal.far === 'crag' ? ART.bakeFarCrags(320, 90, 1) : ART.bakeFar(320, 90, 1), mid: pal.mid === 'unburied' ? UW.bakeMidUnburied(480, 140, 1) : pal.mid === 'mage' && MW.bakeMidMage ? MW.bakeMidMage(480, 140, 2) : pal.mid === 'fields' && FW.bakeMidFields ? FW.bakeMidFields(480, 140, 2) : pal.mid === 'causeway' ? KRA.bakeMidCauseway(480, 140, 2) : pal.mid === 'crown' ? CRT.bakeMidCrown(480, 140, 2) : pal.mid === 'city' ? CTT.bakeMidCity(480, 140, 2) : pal.mid === 'harbour' ? HB.bakeMidHarbour() : pal.mid === 'swells' ? SM.bakeSwells() : pal.mid === 'ships' ? FLT.bakeMidShips(480, 140, 2) : pal.mid === 'wrecks' ? RFT.bakeMidWrecks(480, 140, 2) : pal.mid === 'coast' ? LWT.bakeMidCoast(480, 140, 2) : pal.mid === 'town' ? TWN.bakeMidTown(480, 140, 2) : pal.mid === 'village' ? ART.bakeMidVillage(480, 140, 2) : pal.mid === 'crag' ? ART.bakeMidCrags(480, 140, 2) : ART.bakeMid(480, 140, 2), near: pal.near === 'unburied' ? UW.bakeNearUnburied(640, 300, 1) : pal.near === 'mage' && MW.bakeNearMage ? MW.bakeNearMage(640, 300, 3) : pal.near === 'fields' && FW.bakeNearFields ? FW.bakeNearFields(640, 300, 3) : pal.near === 'city' ? CTT.bakeNearCity(640, 300, 3) : pal.near === 'harbour' ? HB.bakeNearHarbour() : pal.near === 'none' ? canvas(VW, 1)[0] : pal.near === 'hulls' ? FLT.bakeNearHulls(640, 300, 3) : pal.near === 'reef' ? RFT.bakeNearReef(640, 300, 3) : pal.near === 'shore' ? LWT.bakeNearShore(640, 300, 3) : pal.near === 'town' ? TWN.bakeYardsTown(640, 300, 3) : pal.near === 'village' ? ART.bakeNearVillage(640, 300, 3) : pal.near === 'crag' ? ART.bakeNearCrag(640, 300, 3) : pal.near === 'mushroom' ? ART.bakeNearMushrooms(640, 300, 3) : pal.near === 'autumn' ? ART.bakeNearAutumn(640, 300, 3) : ART.bakeNear(640, 300, 3, pal.canopy), nearTrees: pal.near === 'mushroom' ? ART.bakeNear(640, 300, 5, pal.canopy) : null, fg: pal.dress === 'battlefield' ? UW.bakeFGUnburied(640, VH, 4) : pal.fg === 'city' ? CTT.bakeFGCity(640, VH, 4) : pal.fg === 'rig' ? FLT.bakeFGRig(640, VH, 4) : pal.fg === 'reef' ? RFT.bakeFGReef(640, VH, 4) : pal.fg === 'shore' ? LWT.bakeFGShore(640, VH, 4) : ART.bakeFG(640, VH, 4) };
   { let r = null; try { r = L ? redressOf() : null; } catch { }   /* the first bakeAll runs before L and levelIndex exist */
     if (r) { const M = r[0] === 'crag' ? { sky: CRR.bakeCragSky, far: CRR.bakeCragFar, mid: CRR.bakeCragMid, near: CRR.bakeCragNear } : { sky: RD2.bakeRedressSky, far: RD2.bakeRedressFar, mid: RD2.bakeRedressMid, near: RD2.bakeRedressNear };
@@ -852,7 +859,6 @@ function* bakeAllG(pal = {}) {   /* the same bake as a generator: it yields a st
       BG.mid = M.mid(r[1]); BG.near = M.near(r[1]); BG.nearTrees = null; } }
   if (pal.set === 'desert') cvBackdrop();   /* THE SUNKEN CARAVAN's own sky, mesas and dunes */
   if (pal.far === 'stormsea') BG.storm = { far: BG.far, mid: BG.mid, rain: SM.bakeRainSheets(), farS: SM.silhouette(BG.far), midS: SM.silhouette(BG.mid, '#10161c') };
-  yield 'sky';
 }
 for (const st of bakeAllG()) await LS.step(st);   /* the first bake, a step at a time (the hero was baked above, by applySkin) */
 
@@ -24600,10 +24606,12 @@ let FRONTC = null, frontFade = 0, frontCovered = false;
 let heroHidden = false, frontOff = false;   /* the readability pass's two switches (BK.hideHero, BK.frontOff): a frame without the hero, and the foreground as it was before this rule */
 function drawFront(cx, cy) {
   if (!FRONTC || FRONTC.width !== VW || FRONTC.height !== VH) { FRONTC = document.createElement('canvas'); FRONTC.width = VW; FRONTC.height = VH; }
-  /* READ BACK CHEAPLY. The test below reads this sheet's pixels, and reading a GPU canvas back every frame stalls the graphics card - the
-     castle levels, all posts and wall faces in front of the play, hitched with it. The sheet lives on the CPU side (willReadFrequently)
-     and the small coverage read is diagnostic only: it never switches the light or the fade. */
-  const fc = FRONTC.getContext('2d', { willReadFrequently: true }); fc.globalAlpha = 1; fc.globalCompositeOperation = 'source-over'; fc.clearRect(0, 0, VW, VH);
+  /* NO READ BACK IN PLAY (claude/perf51). The coverage test below is diagnostic only - it never switches the light or the fade - and it ran every
+     frame. Reading a GPU sheet back stalled the graphics card, so on 09-15 the sheet was put on the CPU side (willReadFrequently); but the near
+     layer's art drawn onto it lives on the GPU, so every frame Chrome had to pull that art back to the CPU to paint the sheet: ~3 ms a frame in
+     every outdoor level and, with the card busy, single frames of 100-600 ms. Now the sheet stays on the GPU with the rest of the picture, and
+     the test runs only while a tool asks for it (BK.frontProbe, set by src/lookpass.js, which reports it). */
+  const fc = FRONTC.getContext('2d'); fc.globalAlpha = 1; fc.globalCompositeOperation = 'source-over'; fc.clearRect(0, 0, VW, VH);
   const g1 = g; g = fc;
   try { drawMotes(cx, cy, true);
     if (BG.storm && SET.ambient !== false) SM.drawStormFront(g, BG.storm, { cx, cy, time, VW, VH, TS, rails: stormRails(), quiet: stormQuiet(), calm: seaCalm() });   /* her rags, a block on its fall, the sea over her rail: on this sheet, so they fade off the hero */
@@ -24614,7 +24622,7 @@ function drawFront(cx, cy) {
   frontFade = P.dead ? 0 : 1; frontCovered = false;
   if (frontFade) {
     const bx = Math.max(0, hx - 8), by = Math.max(0, hy - 16), bw = Math.min(VW - bx, 16), bh = Math.min(VH - by, 30);
-    if (bw > 0 && bh > 0) { const d = fc.getImageData(bx, by, bw, bh).data; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) { frontCovered = true; break; } }
+    if (bw > 0 && bh > 0 && window.BK && window.BK.frontProbe) { const d = fc.getImageData(bx, by, bw, bh).data; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) { frontCovered = true; break; } }
     fc.globalCompositeOperation = 'destination-out';
     const mask = fc.createRadialGradient(hx, hy, 14, hx, hy, 64);
     mask.addColorStop(0, 'rgba(0,0,0,0.65)'); mask.addColorStop(1, 'rgba(0,0,0,0)');
@@ -28032,7 +28040,9 @@ function tick(now) {
   const tr = performance.now(); render(); const te = performance.now();
   perf.u += (tr - tu - perf.u) * 0.1; perf.r += (te - tr - perf.r) * 0.1; perf.frames++; if (te - perf.t0 > 500) { perf.fps = Math.round(perf.frames * 1000 / (te - perf.t0)); perf.frames = 0; perf.t0 = te; }
 }
-function frame(now) { rafQueued = false; tick(now); if (!rafQueued) { rafQueued = true; requestAnimationFrame(frame); } }
+/* THE NEXT FRAME IS ASKED FOR EVEN IF THIS ONE THREW (claude/perf51): one exception used to end the requestAnimationFrame chain for good, and
+   the game went on only on the 125 ms fallback below - four frames a second until a reload, which reads as lag, not as a crash */
+function frame(now) { rafQueued = false; try { tick(now); } finally { if (!rafQueued) { rafQueued = true; requestAnimationFrame(frame); } } }
 setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now()); }, 125);
 await LS.drive(loadLevelG(0));   /* the first wood, inside the boot bar */
 await LS.step('final');

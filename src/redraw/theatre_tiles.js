@@ -79,6 +79,15 @@ function trim(c, house, l, r, below) {
   if (below) { rect(g, 0, 13, 16, 3, house ? TH.brass0 : '#0a0608'); rect(g, 0, 13, 16, 1, house ? TH.brass2 : TH.iron1); if (house) for (let x = 2; x < 16; x += 4) px2(g, x, 14, TH.brass3); }
   return c;
 }
+/* A TRIMMED COPY, MADE ONCE (claude/perf51). A flat that lands re-resolves every tile of the level, and each side-lit block used to be copied
+   onto a fresh canvas again: ~270 new canvases a second in the theatre, each one more texture for the GPU. One copy per tile and edge set. */
+const TRIMS = new WeakMap();
+function trimmed(c, house, l, r, below) {
+  let m = TRIMS.get(c); if (!m) TRIMS.set(c, m = new Map());
+  const k = (house ? 1 : 0) + (l ? 2 : 0) + (r ? 4 : 0) + (below ? 8 : 0);
+  if (!m.has(k)) { const [n, g] = canvas(16, 16); g.drawImage(c, 0, 0); m.set(k, trim(n, house, l, r, below)); }
+  return m.get(k);
+}
 
 // ---- the galleries: iron grating (the fly floor, the grid, the lighting bridge), and gilt-edged timber (the boxes, the dress circle, the dressing rooms) ----
 function ironGrate(l, r, v) {
@@ -169,7 +178,7 @@ export function theatreTile(t, x, y, at, ctx) {
       void dressCircle;
     } else if (!house && !under && y >= 34 && y <= 35 && x >= 72) c = joistFill(v);   // the stage's understructure: the timber under the boards
     else if (under && !deepUnder) c = brickFill('under', v, 0); else c = brickFill(mass, v, deepUnder ? 1 : 0);
-    if (!top && (l || r || below)) { c = (() => { const [n, g] = canvas(16, 16); g.drawImage(c, 0, 0); return trim(n, house, l, r, below); })(); }
+    if (!top && (l || r || below)) c = trimmed(c, house, l, r, below);
     return c;
   }
   if (t === T.ONEWAY) {
