@@ -75,6 +75,19 @@ try {
       for (const b of C.beams) { const bx = Math.floor(b.x0 / 16); if (!walk(bx - 1)) return false;
         for (let i = 0; i < 400; i++) { const ph = BK.fairTime() % b.period; if (ph <= b.up - 0.6) break; none(); BK.sim(1); if (P().dead) return fails('the ghost train caught us at the beam at ' + bx); } }
       return walk(Math.floor(C.end / 16) + 3) || fails('the ghost train'); };
+
+    /* THE WHEEL OVER ITS PIT (claude/fairfix2): stand on the near bank, board a car as it rises past it, ride it over the top, and jump off to the far bank as it comes down the far side */
+    const wheelLow = (standTx, landTx) => { if (!walk(standTx)) return false; const W0 = BK.movers().find(m => m.fair === 'gondola'), hubX = W0.px, hubY = W0.py; let boarded = false, off = 0;
+      for (let i = 0; i < 2400; i++) { const p = P(); K.right = false; K.left = false; K.jump = false;
+        if (!boarded && !p.onMover && p.ground) { const c = BK.movers().find(m => m.fair === 'gondola' && m.dy < 0 && m.x + m.w / 2 < hubX - 30 && m.x + m.w / 2 > p.x + 4 && m.y > p.y - 60 && m.y < p.y - 20); if (c) { K.jump = true; BK.press('jump'); K.right = true; } }
+        else if (!boarded && !p.ground && p.vy < 0) { K.jump = true; K.right = true; }
+        if (p.onMover && p.onMover.fair === 'gondola') { boarded = true; const c = p.onMover; K.right = (c.x + c.w / 2) > p.x + 6; K.left = (c.x + c.w / 2) < p.x - 6;
+          if (c.x + c.w / 2 > hubX + 48 && c.y > hubY + 10) { K.right = true; K.left = false; K.jump = true; BK.press('jump'); off = 1; } }
+        else if (boarded && !p.ground) { K.right = true; if (p.vy < 0) K.jump = true; }
+        BK.sim(1); if (boarded && P().ground && !P().onMover && P().x >= landTx * 16 - 8 && Math.abs(P().y - 28 * 16) < 4) { none(); return true; }
+        if (!P().onMover && P().ground && boarded && P().y > 28 * 16 + 4) { none(); return fails('fell into the pit under the wheel'); }
+        if (boarded && P().ground && !P().onMover && Math.abs(P().y - 17 * 16) < 4) { /* the car set us down on the boardwalk landing at the top: walk off its far end, down to the road past the pit */ if (!walk(313)) return false; for (let j = 0; j < 200 && !(P().ground && P().y > 27 * 16); j++) { K.right = P().x < 315 * 16; K.left = P().x > 315.6 * 16; BK.sim(1); } none(); return P().x >= landTx * 16 - 8 - 48 && Math.abs(P().y - 28 * 16) < 4 || fails('off the landing to the road'); } }
+      none(); return fails('the wheel did not carry us over its pit to ' + landTx); };
     const strikeRoad = () => { load();
       return to('the first striker onto the boardwalk', () => walk(86) && plungeOn(88, 19)) && to('the boardwalk to the terrace and down', () => walk(160) && walk(184) && walk(200))
       && to('(the carousel, the midway and the slide are the low road)', () => { BK.tp(402, 27); BK.sim(20); return true; })
@@ -85,17 +98,17 @@ try {
     if ('${which}' === 'strike' || '${which}' === 'all') { const ok = strikeRoad(); out.strike = { ok, at: at() }; if (!ok) out.fail.push('the STRIKER roads did not work'); }
     const lowRoad = () => {
       load();
-      return to('gate to the carousel', () => walk(260)) && to('the carousel disc', () => walk(263) && walk(291)) && to('the wheel yard and the hall of mirrors', () => walk(345))
+      return to('gate to the tent poles', () => walk(96)) && to('the fallen big top: pole to pole', () => hop(98, 26, 50) && hop(101, 25, 60) && hop(103, 28, 50)) && to('to the collapsing stalls', () => walk(235)) && to('the collapsing stalls', () => hop(237, 26, 40) && hop(240, 25, 60) && hop(244, 28, 60)) && to('to the carousel', () => walk(258)) && to('the carousel disc', () => walk(263) && walk(291)) && to('the wheel over its pit', () => wheelLow(298, 311)) && to('the hall of mirrors', () => walk(345))
       && to('the tower stair', () => hop(349, 25) && hop(352, 22) && hop(355, 19) && hop(360, 16) && hop(362, 14))
-      && to('the helter-skelter slide', () => { const ok = walk(366); if (!ok) return false; K.right = true; K.down = true; for (let i = 0; i < 500 && P().x < 384 * 16; i++) BK.sim(1); none(); return P().ground && P().x > 380 * 16; })
+      && to('the helter-skelter slide and the pit at its foot', () => { const ok = walk(366); if (!ok) return false; K.right = true; K.down = true; for (let i = 0; i < 500 && P().x < 384 * 16; i++) BK.sim(1); none(); return P().ground && P().x > 380 * 16; })
       && to('rick one', () => rick(403, 409)) && to('the corn maze, tier one', () => walk(431))
       && to('chimney one', () => hop(432, 26) && hop(430, 23)) && to('tier two', () => walk(420))
       && to('chimney two', () => hop(416, 21) && hop(418, 18, 44)) && to('tier three and out', () => walk(437) && walk(439) && walk(442) && walk(447))
-      && to('rick two', () => rick(449, 456)) && to('the ghost train', () => train()) && to('the small carousel under its canopy', () => walk(527) && walk(531) && walk(550))
+      && to('rick two', () => rick(449, 456)) && to('the burning effigy (the low lane: bunting and fallen stalls)', () => train()) && to('the small carousel under its canopy', () => walk(527) && walk(531) && walk(550))
       && to('rick three', () => rick(557, 563)) && to('the last pit and the door', () => walk(619));
     };
     const highRoad = () => { load();
-      return to('gate to the wheel', () => walk(260) && walk(263) && walk(291)) && to('the big wheel up to the boardwalk', () => wheel(304, 309, 17))
+      return to('gate to the wheel', () => walk(96) && hop(98, 26, 50) && hop(101, 25, 60) && hop(103, 28, 50) && walk(235) && hop(237, 26, 40) && hop(240, 25, 60) && hop(244, 28, 60) && walk(258) && walk(263) && walk(291)) && to('the big wheel up to the boardwalk', () => wheel(299, 309, 17))
       && to('walk the landing to the first chair', () => walk(313)) && to('chair one', () => chair(0, 1, 327, 17)) && to('chair two', () => walk(329) && chair(1, 1, 345, 16))
       && to('chair three', () => walk(347) && chair(2, 1, 362, 14)) && to('the tower top and the slide', () => { if (!walk(366)) return false; K.right = true; K.down = true; for (let i = 0; i < 500 && P().x < 384 * 16; i++) BK.sim(1); none(); return P().ground && P().x > 380 * 16; }); };
     if ('${which}' === 'high' || '${which}' === 'all') { const ok = highRoad(); out.high = { ok, at: at() }; if (!ok) out.fail.push('HIGH road did not reach the tower'); }

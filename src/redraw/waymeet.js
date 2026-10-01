@@ -305,6 +305,7 @@ export function bakeDrunk(look) {   /* look 'patron': THE MASKED PATRON of the M
   const C = { jer: '#5e7a3a', jerD: '#3e5426', jerL: '#7e9a52', belly: '#c9b08a', shirt: '#e6d8b8', hose: '#7a4a3a', hoseD: '#54302a',
     skin: '#e0a882', skinD: '#b87a5a', nose: '#d0503e', hair: '#6a4a2e', stub: '#8a6a50', boot: '#3a2a20', belt: '#4a3222', buckle: '#c9a040',
     mug: '#c9a040', mugD: '#8a6a2a', foam: '#f7f2e4', glass: '#5aa05a', glassL: '#b8e0a0' };
+  if (look === 'shy') Object.assign(C, { jer: '#b8382c', jerD: '#7a2418', jerL: '#ece0c4', belly: '#ece0c4', shirt: '#ece0c4', hose: '#5a4630', hoseD: '#3e2e20', nose: '#d89a78', mug: '#6a4a2a', mugD: '#3e2a16', foam: '#9a7a4a', glass: '#c8a040', glassL: '#fff0b0' });   /* look 'shy': THE COCONUT SHY's stallholder (the Harvest Fair, claude/fairfix2) - a red-and-cream striped coat, a straw boater, a coconut where the tankard was */
   if (look === 'patron') Object.assign(C, { jer: '#3a2448', jerD: '#221430', jerL: '#5a3a6a', belly: '#e8e0d0', shirt: '#f0e8d8', hose: '#1c1420', hoseD: '#0e0a12', skin: '#d8cbb8', skinD: '#a89888', nose: '#f4ecd8', hair: '#140e18', stub: '#b8a898', boot: '#0e0a10', belt: '#1a1018', buckle: '#c8a040', mug: '#efe4c0', mugD: '#a89870', foam: '#c02a30', glass: '#c8a040', glassL: '#fff0b0' });
   const P = (g, pts, k) => fillPoly(g, pts, C[k]);
   /* HIM, standing: lean tips his top half, sway rolls his hips, feet are [back, front] x offsets, arm is the throwing hand's
@@ -333,6 +334,7 @@ export function bakeDrunk(look) {   /* look 'patron': THE MASKED PATRON of the M
     P(g, [[hx - 4, hy - 2], [hx - 3, hy - 6], [hx, hy - 4], [hx + 2, hy - 7], [hx + 3, hy - 4], [hx + 4, hy - 3], [hx - 1, hy - 3]], 'hair');
     rect(g, hx + 3, hy - 1, 3, 3, C.nose); px(g, hx + 2, hy - 2, OUT);
     if (mouth) rect(g, hx + 1, hy + 2, 3, 2, '#5a1a1a');
+    if (look === 'shy') { rect(g, hx - 6, hy - 4, 13, 1, '#e8c878'); rect(g, hx - 4, hy - 7, 9, 3, '#e8c878'); rect(g, hx - 4, hy - 5, 9, 1, '#b8382c'); px(g, hx - 6, hy - 4, '#b8962e'); for (let k = 0; k < 3; k++) rect(g, shX - 5 + k * 4, shY + 2, 2, 8, '#ece0c4'); }   /* the boater, and the stripes down his coat */
     if (look === 'patron') { rect(g, hx - 4, hy - 3, 9, 5, '#f4ecd8'); rect(g, hx - 4, hy - 3, 9, 1, '#c8a040'); rect(g, hx - 3, hy - 1, 2, 2, '#14101a'); rect(g, hx + 1, hy - 1, 2, 2, '#14101a'); px(g, hx - 3, hy + 1, '#c04048'); px(g, hx + 2, hy + 1, '#c04048'); rect(g, hx + 4, hy - 1, 3, 2, '#f4ecd8'); px(g, hx + 6, hy, '#b8a888'); rect(g, hx - 4, hy - 7, 9, 3, '#140e18'); rect(g, hx - 5, hy - 4, 11, 1, '#140e18'); px(g, hx + 3, hy - 6, '#c8a040'); }   /* the mask, the opera hat, the brass band */
     // the near arm and what is in it
     const ax = shX + arm[0], ay = shY + arm[1], [ex, ey] = ik(shX + 3, shY + 2, ax, ay, 5, 6, -1);

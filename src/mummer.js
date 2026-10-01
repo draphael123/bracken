@@ -42,7 +42,7 @@ export function nearestHero(e, heroes, sight = MUMMER.sight, sightY = MUMMER.sig
 export const newMummer = (x, y, face = -1) => ({ x, y, face, mode: 'still', t: 0, vx: 0, bellT: MUMMER.bell * 0.5 });
 /* one frame of a mummer. world = { heroes:[{x,y,face,alive}], canStep(x, dir) -> can it walk on }. Returns events: freeze, wake, bell, glow, strike { box, dmg } */
 export function mummerStep(s, w, dt) {
-  const evs = [], C = MUMMER; s.vx = 0;
+  const evs = [], C = w.C || MUMMER; s.vx = 0;   /* w.C: a level's own sharper mummer (THE HARVEST FAIR's, claude/fairfix2: src/fair-keys.js FAIR_MUMMER); the theatre keeps MUMMER */
   /* w.sight / w.sightY: a shorter LOOK (THE WICKER QUEEN's full dark, claude/fair3: only a near look holds her crowd). It finds its hero as far as ever */
   const near = nearestHero(s, w.heroes, C.sight, C.sightY), seen = facedBy(s, w.heroes, w.sight || C.sight, w.sightY || C.sightY);
   const toward = () => { if (near) s.face = Math.sign(near.x - s.x) || s.face; };
@@ -74,7 +74,7 @@ export function mummerStep(s, w, dt) {
 export const newHorse = (x, y, face = -1) => ({ x, y, face, mode: 'still', t: 0, vx: 0, armed: true, dir: face, run: 0 });
 /* one frame of the hobby-horse. Events: freeze (looked at), wind, charge, end (the charge is over: it stands where it stopped) */
 export function horseStep(s, w, dt) {
-  const evs = [], C = HORSE; s.vx = 0;
+  const evs = [], C = w.C || HORSE; s.vx = 0;   /* w.C: the fair's own horse (src/fair-keys.js FAIR_HORSE) */
   const near = nearestHero(s, w.heroes, w.near || C.sight, C.sightY), seen = facedBy(s, w.heroes, w.sight || C.sight, w.sightY || C.sightY);   /* w.near (claude/fairfix): in the dark it finds you only this near; w.sight: the dark (src/fair-games.js sightFor) shortens the look, as it does the mummer's */
   switch (s.mode) {
     case 'still':

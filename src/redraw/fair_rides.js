@@ -129,7 +129,7 @@ function drawStriker(g, cx, cy, VW, s) {
   if (s.ring > 0) { const k = 1 - s.ring, ry = y - 4 - k * (top - y + 8) * -1; g.fillStyle = K.red; g.beginPath(); g.arc(x, Math.max(top - 2, y - 6 + (top - y) * k), 4, 0, 6.3); g.fill(); g.globalAlpha = s.ring; ln(g, x - 12, top - 4, x - 18, top - 8, K.gold); ln(g, x + 12, top - 4, x + 18, top - 8, K.gold); g.globalAlpha = 1; }
   r(g, x - 15, y - 6, 30, 6, K.woodD); r(g, x - 15, y - 6, 30, 1, K.woodL); r(g, x - 13, y - 9, 26, 3, K.red); r(g, x - 13, y - 9, 26, 1, K.gold);   // the pad: a drum on a plinth
 }
-function drawGalleries(g, cx, cy, VW, L, G, time) { for (const Y of (G && G.galleries) || []) drawGallery(g, cx, cy, VW, Y, time); }
+function drawGalleries(g, cx, cy, VW, L, G, time) { for (const Y of (G && G.galleries) || []) if (Y.targets.length > 1) drawGallery(g, cx, cy, VW, Y, time); }   /* (a lone BULL'S-EYE - on a ride or a post - is src/redraw/fair_keys.js's: claude/fairfix2) */
 function drawGallery(g, cx, cy, VW, Y, time) {
   const xs = Y.targets.map(t => t.x * TS), x0 = Math.min(...xs) - 20 - cx, x1 = Math.max(...xs) + 36 - cx; if (x1 < -20 || x0 > VW + 20) return;
   const ty = Y.targets[0].row * TS - cy, top = ty - 34;
@@ -161,7 +161,7 @@ function drawTickets(g, cx, cy, VW, L, G, time) {
 }
 /* THE GHOST TRAIN'S BEAMS (claude/fairfix): a painted timber across the cutting on two chains; DOWN it is at head height (duck under it or wait), UP it hangs out of reach. The same clock as the hurt (src/chase.js beamLive) */
 function drawTrainBeams(g, cx, cy, VW, L, time) {
-  for (const c of L.chases || []) for (const b of c.beams || []) { if (!vis(b.x0, b.x1, cx, VW)) continue; const live = beamLive(b, time), y = (live ? b.y : b.y - 44) - cy, x0 = b.x0 - cx, w = b.x1 - b.x0, th = b.th || 6;
+  for (const c of L.chases || []) for (const b of c.beams || []) { if (b.bunting || !vis(b.x0, b.x1, cx, VW)) continue;   /* (burning bunting: src/redraw/fair_keys.js) */ const live = beamLive(b, time), y = (live ? b.y : b.y - 44) - cy, x0 = b.x0 - cx, w = b.x1 - b.x0, th = b.th || 6;
     ln(g, x0 + 3, y - th, x0 + 3, y - th - 120, '#5a626c', 1); ln(g, x0 + w - 3, y - th, x0 + w - 3, y - th - 120, '#5a626c', 1);
     r(g, x0, y - th, w, th, K.woodD); r(g, x0, y - th, w, 1, K.woodL); for (let i = 0; i < w; i += 8) r(g, x0 + i, y - 3, 4, 2, i % 16 ? K.cream : K.red);
     if (live) { const k = 0.4 + 0.3 * Math.sin(time * 10); g.fillStyle = 'rgba(255,90,60,' + k.toFixed(2) + ')'; g.fillRect(Math.round(x0), Math.round(y), Math.round(w), 1); } }
@@ -236,7 +236,8 @@ export function drawNight(g, cx, cy, VW, VH, L, F, o) {
   const N = L.fairNight; if (!N) return;
   const G = F && F.games;
   /* THE TICKET COUNT: a HUD plate under the health (it is the fair's own purse, it stays while you hold tickets; claude/fairfix: it read as a label stuck in the world) */
-  if (G && (G.tickets > 0 || G.spent > 0) && o.text && !o.skip) { const w = 58; g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(VW - 8 - w, 60, w, 13); g.drawImage(ticketSpr(), VW - 6 - w, 62); o.text(String(G.tickets) + (G.booth && !G.booth.bought ? '/' + G.booth.cost : ''), VW - 12, 63, '#7fe8f0', 'right', 8, 'shadow'); }
+  /* THE TICKET PLATE (claude/fairfix2: Daniel, 'tickets are unclear'): from the gate on, what you hold of all the fair has, and what they are FOR - the gates, and all of them the back lot */
+  if (G && o.text && !o.skip) { const w = 104; g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(VW - 8 - w, 60, w, 22); g.drawImage(ticketSpr(), VW - 6 - w, 62); o.text('TICKETS ' + G.tickets + '/' + (G.total || 0), VW - 12, 63, '#7fe8f0', 'right', 8, 'shadow'); o.text('KEYS TO THE GATES. ALL: THE BACK LOT', VW - 12, 73, '#c8d8e0', 'right', 6, 'shadow'); }
   if (o.skip) return;
   const yFull = N.full * TS - cy, yStart = N.start * TS - cy, halls = hallsOf(L).map(H => [H.x0 * TS - cx, (H.x1 + 1) * TS - cx, (H.roof + 2) * TS - cy, H.floor * TS - cy]).filter(([a, b]) => b > 0 && a < VW);
   const unlit = (L.unlit || []).map(([a, b]) => [a * TS - cx, (b + 1) * TS - cx]).filter(([a, b]) => b > 0 && a < VW);

@@ -57,7 +57,7 @@ export function buildHarvestFair({ painter, T, TS }) {
      a second (2 up) right under the plug, and the road (2 up). Never a softlock */
   const cellar = (x0, x1, plug) => { walls.push(Object.assign(makeWall(plug, plug + 1, R, R, 'secret'), { reach: true })); for (let y = R + 1; y <= R + 6; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR);
     plat(plug + 2, R + 4, 3); plat(plug, R + 2, 2); };
-  const haystacks = [], tickets = [], corn = [], scarecrows = [], strikers = [], walls = [], galleries = [], gallery = g => (galleries.push(g), g);
+  const haystacks = [], tickets = [], corn = [], scarecrows = [], strikers = [], walls = [], poles = [], crumbles = [], ticketGates = [], zipLines = [], cages = [], fallen = [], galleries = [], gallery = g => (galleries.push(g), g);
   /* A GENTLE CLIMB up n rows over 2n tiles from x0 (R2A + R2B pairs), and the way back down (L2B + L2A) from x1 */
   const ramp = (x0, n) => { for (let k = 0; k < n; k++) { const r = R - 1 - k, x = x0 + 2 * k; for (let y = r + 1; y < R; y++) { set(x, y, T.SOLID); set(x + 1, y, T.SOLID); } set(x, r, T.SLOPE_R2A); set(x + 1, r, T.SLOPE_R2B); } };
   const rampDown = (x0, n) => { for (let k = 0; k < n; k++) { const r = R - n + k, x = x0 + 2 * k; for (let y = r + 1; y < R; y++) { set(x, y, T.SOLID); set(x + 1, y, T.SOLID); } set(x, r, T.SLOPE_L2B); set(x + 1, r, T.SLOPE_L2A); } };
@@ -81,7 +81,10 @@ export function buildHarvestFair({ painter, T, TS }) {
   sign(28, "DON'T TURN YOUR BACK ON THEM.");   /* the refresher, short: the Maskwright's Theatre before the fair teaches the facing rule (claude/theatre); one sign, one mummer */
   foe('mummer', 40, { squad: 'gate' });                  /* THE FIRST ONE, alone on a flat lane: facing it, it cannot move. There is nothing else here */
   stall(36, 1); ent('deco', 44, S - 7, { kind: 'bunting', hang: true }); coins([34, S - 1], [38, S - 1], [42, S - 1]);
-  plat(30, R - 3, 3); plat(33, R - 6, 4); plat(37, R - 3, 3); plat(41, R - 3, 4); coins([31, R - 4], [34, R - 7], [38, R - 4], [42, R - 4]);   /* stall roofs along the bunting: a second height over the first lane */
+  plat(30, R - 3, 3); plat(33, R - 6, 4); plat(37, R - 3, 3); plat(41, R - 3, 4); coins([31, R - 4], [37, R - 7], [38, R - 4], [42, R - 4]);   /* stall roofs along the bunting: a second height over the first lane */
+  /* THE COCONUT SHY (claude/fairfix2: Daniel, "it needs RANGED foes"): the stallholder up on his roof (the Waymeet drunk's arm, a coconut for a tankard). He pelts you as you come, and
+     when you stand facing the mummer ahead he is at your BACK: climb to him first, or hold the mummer with coconuts landing on you */
+  foe('drunk', 35, { y: R - 7, shy: true, squad: 'gate', range: 1 });
   pit(46, 48); coins([46, S - 2], [47, S - 3], [48, S - 2]);
   hill(52, 3, 4);                                        /* a stall building's roof street: three rows up over six, a level top (58-61), down (52-67) */
   coins([58, R - 4], [60, R - 4]);
@@ -95,7 +98,8 @@ export function buildHarvestFair({ painter, T, TS }) {
   strikers.push({ id: 1, x: 88, row: R, launch: -600, tickets: 2, big: false });   /* the pad on the road, under the boardwalk's plank */
   tk(84, R - 10); coins([92, R - 10], [98, R - 10], [104, R - 10], [110, R - 10], [116, R - 10], [122, R - 10], [128, R - 10], [134, R - 10]);
   plat(92, R - 3, 5); coins([93, R - 4], [95, R - 4]);   /* a stall roof to hop under the boardwalk */
-  pit(98, 100); coins([98, S - 2], [99, S - 3], [100, S - 2]);
+  /* THE FALLEN BIG TOP (claude/fairfix2: real platforming): its canvas is gone into a spiked pit six wide - too wide to jump - and only its two TENT POLES stand: hop pole to pole */
+  pit(97, 102); block(98, 98, R - 2, R + 1); block(101, 101, R - 3, R + 1); poles.push([98, R - 2], [101, R - 3]); coins([98, R - 3], [101, R - 4]);
   hill(104, 2, 6);                                       /* another: the road over the stalls (104-117) */
   coins([109, R - 3], [111, R - 3]);
 
@@ -107,6 +111,9 @@ export function buildHarvestFair({ painter, T, TS }) {
   foe('barker', 157, { y: R - 10, elite: true, squad: 'caller1' });
   foe('mummer', 136, { squad: 'pincer' });                /* the pair at the foot: ahead of you as you come, behind you the moment you pass. (The boardwalk goes over them: too high for them to see you) */
   foe('mummer', 143, { squad: 'pincer' });
+  /* THE KNIFE JUGGLER over the pincer (claude/fairfix2; the goblin archer's draw and loose, knives for arrows): on a stall roof behind the pair. Face the far mummer to hold it and his
+     knives come into your back; face him and both mummers walk. Up on his roof he is a jump and a cut away */
+  plat(127, R - 4, 3); foe('archer', 128, { y: R - 5, juggler: true, squad: 'pincer' });
   ramp(150, 6);                                           /* the stair: six rows up over twelve tiles */
   block(162, 185, R - 6, H - 1);                          /* the stall-top terrace */
   foe('mummer', 170, { y: R - 7, squad: 'top' });      /* THE ONE AT THE TOP: on the terrace where you stop to catch your breath, by the gallery */
@@ -119,6 +126,9 @@ export function buildHarvestFair({ painter, T, TS }) {
     nest: { x0: 176, x1: 181, row: R - 15 } });
   ent('sign', 168, R - 7, { text: 'THE SHOOTING GALLERY. HIT ALL THREE TARGETS BEFORE THE BELL. THE PRIZES ARE UP THE STALL.' });
   ent('silver', 178, R - 16); tk(176, R - 16); tk(180, R - 16); coins([177, R - 16], [179, R - 16]);   /* the crow's nest: the fair's first silver, and two tickets more */
+  /* THE LOFT (claude/fairfix2: TICKETS ARE KEYS): past the crow's nest a striped gate stands on a plank walk over the stall row - SHOW 5 TICKETS. Behind it, the stall men's loft */
+  plat(182, R - 15, 14); ticketGates.push({ x: 188, y0: R - 20, y1: R - 16, need: 5, name: 'THE LOFT' }); ent('sign', 185, R - 16, { text: 'THE LOFT. SHOW 5 TICKETS.' });   /* (the gate stands five high, out of a jump's reach, and nothing under the loft reaches it) */
+  tk(191, R - 16); tk(194, R - 16); ent('mend', 192, R - 16); coins([190, R - 16], [193, R - 16]);
   rampDown(186, 6);
   ent('deco', 204, S, { kind: 'barrels' });
   /* THE BACK LOT (a secret): the stalls kept their takings under the floor. The plug in the floor is plain rock until struck (a plunge breaks it in one); a room below with its own stair back up,
@@ -131,7 +141,16 @@ export function buildHarvestFair({ painter, T, TS }) {
   hill(221, 2, 6);                                        /* the last stall roofs before the carousel (221-234) */
   tk(227, R - 3); coins([225, R - 3], [229, R - 3]);
   plat(224, R - 5, 7); plat(232, R - 8, 5); coins([226, R - 6], [229, R - 6], [234, R - 9]);   /* the roofs over the hill: a lane above the road */
-  pit(239, 241);
+  /* THE COLLAPSING STALLS (claude/fairfix2): a spiked pit eight wide and two stall roofs over it that give way under you (src/tower-collapse.js counts them down: about a second
+     and they go, and come back four seconds later). Keep moving */
+  pit(236, 243); plat(237, R - 2, 2); plat(240, R - 3, 2);
+  /* AND A HORSE AT THE EDGE (claude/fairfix2: 'horse charges at edges'): it stands on the hill top over the pit, facing on. Walk past it to the roofs and your back is to it - it
+     rears and charges, and the charge puts you in the spikes. Hold it in your look and cut it down first, or time the roofs with it behind you */
+  foe('hobbyhorse', 227, { y: R - 3, face: 1, squad: 'edge' });
+  crumbles.push({ x0: 237, x1: 238, row: R - 2, rows: 1, count: 1.1, kind: 'stall' }, { x0: 240, x1: 241, row: R - 3, rows: 1, count: 1.1, kind: 'stall' });
+  /* OR THE BUNTING ROPE (claude/fairfix2): from the top roof over the hill (232-236, row 20) a line of bunting runs down over the pit to the road beyond. Stand at its end and press UP:
+     you ride it down (the Falling Tower's slide line). The climb to it is the price */
+  zipLines.push({ x0: 236 * TS + 10, y0: (R - 8) * TS - 12, x1: 247 * TS, y1: R * TS - 20, bunting: true });
 
   // ---------------- 3. THE MIDWAY (246-379): TWIST ----------------
   stall(256, 0); ent('deco', 260, S - 7, { kind: 'bunting', hang: true });
@@ -149,6 +168,13 @@ export function buildHarvestFair({ painter, T, TS }) {
   for (let i = 0; i < WH.n; i++) { const ph = i * 2 * Math.PI / WH.n, w = i === 0 ? 64 : WH.w; moversExtra.push({ kind: 'wheel', fair: 'gondola', idx: i, px: WH.px, py: WH.py, r: WH.r, phase: ph, period: WH.period, x: WH.px + Math.cos(ph) * WH.r - w / 2, y: WH.py + Math.sin(ph) * WH.r, w, h: 6, horse: i === 0 }); }
   foe('hobbyhorse', 304, { ride: 0, squad: 'wheel' });   /* A HORSE ON A GONDOLA: car 0 is a wide one and a hobby-horse rides it. Board it and you ride up facing it (a look holds it; its charge is the length of the car); or hop on another */
   sign(298, 'THE BIG WHEEL. HOP ON WHEN A CAR COMES ROUND LOW. STEP OFF AT THE TOP.');
+  /* THE PIT UNDER THE WHEEL (claude/fairfix2: "pits under rides"): the yard under the wheel's foot is a spiked pit ten wide. The only way over is ON the wheel: board a car as it
+     comes round low on the near side, ride it up and over, and step off on the far side as it comes down - or at the top, onto the boardwalk landing (the high road) */
+  pit(300, 309);
+  /* A BULL'S-EYE ON A CAR (claude/fairfix2: bull's-eyes open things, some on the rides): a target hangs under car 3 and goes round with it. Strike it as it passes and planks run
+     up off the landing to the prize shelf over the wheel (two tickets and a heart) */
+  gallery({ id: 4, targets: [{ x: 304, row: 27, on: { kind: 'gondola', idx: 3, dy: 18 } }], window: 1, planks: [[308, 309, 14], [311, 313, 11]], nest: { x0: 311, x1: 313, row: 11 }, say: 'A BULL\'S-EYE! THE PLANKS RUN UP OVER THE WHEEL' });
+  tk(311, 10); tk(313, 10); ent('mend', 312, 10);
   /* --- THE HIGH ROAD: the wheel lets off at the top onto the boardwalk (row 17); three swing-ride chairs carry you across the hall's roof to the tower --- */
   plat(306, 17, 8);                                       /* cols 306-313: the boardwalk's landing (eight wide: a hop off a car carries you a long way) */
   plat(326, 17, 4);                                       /* island A: cols 326-329 */
@@ -163,6 +189,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* --- THE LOW ROAD: THE HALL OF MIRRORS (a covered lane, dark; its roof is row 21-22) --- */
   const hx0 = 317, hx1 = 339;                             /* the hall's inside; its roof runs 316-340 */
   block(316, 340, 21, 22);                                /* the roof: a way for anybody who falls off a chair */
+  spikes(317, 324, 20);                                   /* (claude/fairfix2: "swing chairs over pits/spikes") the hall's roof under chair one is a bed of spikes: miss the island and it bites */
   foe('stringjack', 320, { squad: 'glass' });             /* B (claude/fairfix): A MARIONETTE by the door, in the door lantern's light. Look at it and it comes; pass it and a TRUE mirror ahead of you works its strings from behind */
   foe('mummer', 330, { squad: 'glass' });                 /* A: stands in front of the CRACKED glass, the one place no mirror can watch your back. Stand where a true mirror is ahead of you, and fight it there */
   const hall = { x0: hx0, x1: hx1, roof: 21, floor: R, dim: 88, reach: 112,
@@ -170,6 +197,13 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* THE CLOSET BEHIND THE CRACKED GLASS (a secret): a plug in the floor in front of the cracked panel, and a room below with a stair back up */
   cellar(321, 337, 328);
   tk(323, R + 6); tk(325, R + 6); ent('mend', 336, R + 6); coins([322, R + 6], [324, R + 6], [326, R + 6]);
+  /* THE DOOR IN THE GLASS (claude/fairfix2: hidden paths via mirror reflections): stand by the cracked panel facing the TRUE glass at the door end and it shows a door at your back
+     that is not on this side of the glass. Step through it (UP) into the fortune-teller's room under the ticket yard: tickets and a silver, and a door back */
+  ent('doorway', 324, S, { id: 'glassA', to: 'glassB', mirror: true, kind: 'goblin' });
+  for (let y = R + 2; y <= R + 5; y++) for (let x = 340; x <= 347; x++) set(x, y, T.AIR);
+  ent('doorway', 341, R + 5, { id: 'glassB', to: 'glassA', kind: 'goblin' });
+  ent('silver', 345, R + 5); tk(343, R + 5); tk(346, R + 5); coins([344, R + 5], [347, R + 5]);
+  const fortune = { x0: 340, x1: 347, y0: R + 2, y1: R + 5 };
   post(322, S, 1); post(335, S, 0.5);             /* a lantern in the dark: it holds by the door, and gutters at the far end */
   /* the ticket yard, and THE TOWER'S STAIR: three flights up to the landing (a mummer waits there under a lantern that gutters), then the step to the tower top */
   sign(346, 'THE HELTER-SKELTER. THE STAIR IS DARK. HOLD DOWN ON THE SLIDE AND RIDE IT.');
@@ -197,7 +231,9 @@ export function buildHarvestFair({ painter, T, TS }) {
   stack(403, 405); spikes(406, 408, S);                   /* a rick, and three tiles of spikes past it: the hay is the way over */
   /* THE TALL STRIKER (twisted): past the spikes, under a plank at the maze's roof (row 12): a plunge throws you 18 rows, onto THE CORN-TOP WALK over the maze. The maze is the road; the roof is the way over it */
   strikers.push({ id: 2, x: 409, row: R, launch: -760, tickets: 2, big: true });
-  plat(407, 12, 4);
+  plat(399, 12, 12);   /* the plank at the maze's roof (407-410) and, west of it, THE HAYLOFT (claude/fairfix2): only the tall striker throws you this high, and a gate stands on the plank - SHOW 12 TICKETS */
+  ticketGates.push({ x: 403, y0: 7, y1: 11, need: 12, name: 'THE HAYLOFT' }); ent('sign', 405, 11, { text: 'THE HAYLOFT. SHOW 12 TICKETS.' });
+  ent('silver', 400, 11); tk(399, 11); tk(401, 11); coins([402, 11]);
   /* --- THE CORN MAZE (cols 412-436): three tiers, each a corridor, each turn a blind corner (walls stop your look), a mummer in a scarecrow's coat at the turn --- */
   const mx0 = 412, mx1 = 436;
   block(mx0 - 1, mx0 - 1, 12, 22);                        /* the left wall (tier one is open at the foot) */
@@ -222,20 +258,30 @@ export function buildHarvestFair({ painter, T, TS }) {
   tk(mx0 + 6, 11); tk(mx0 + 16, 11); coins([mx0 + 2, 11], [mx0 + 9, 11], [mx0 + 13, 11], [mx0 + 19, 11], [mx0 + 23, 11]);   /* the corn-top walk pays */
   /* the way out: from the end of tier three (row 18) steps down outside the corn to the road; the roof walk comes down the same stair (rows 15, 18, 21, 24) */
   plat(mx1 + 2, 15, 2); plat(mx1 + 5, 18, 2); plat(mx1 + 2, 21, 2); plat(mx1 + 5, 24, 2);
+  /* THE CAGE IN THE CORN (claude/fairfix2: a bull's-eye opens a cage): a target nailed to a post in tier one; strike it and the bars at the far end of the tier drop - a ticket in the pocket behind */
+  gallery({ id: 5, targets: [{ x: mx0 + 8, row: S }], window: 1, bars: [[mx1 - 1, mx1 - 1, 24, 27]], planks: [] }); block(mx1 - 1, mx1 - 1, 24, 27); cages.push([mx1 - 1, mx1 - 1, 24, 27]); tk(mx1, 27);
+  /* THE CROWS (claude/fairfix2: the storm crows, at a harvest): a mummer at the foot of the maze's stair - you come down past it - and two crows that come in low off the field ahead
+     and caw before they dive. Face them to duck and cut and the mummer is at your back; face the mummer and they come into it */
+  foe('mummer', mx1 + 4, { squad: 'crows' }); foe('crow', 468, { y: R - 4, squad: 'crows' }); foe('crow', 473, { y: R - 6, squad: 'crows', ph: 1.3 });
   stack(449, 451); spikes(452, 454, S);                   /* the second rick */
   plat(449, R - 10, 7); tk(455, R - 11); coins([450, R - 11], [453, R - 11]);   /* a ledge over the second rick and its spikes (the hay throws you up through it): a ticket */
-  ent('check', 466, S);                                   /* the fourth shrine: on the bank, right before the ghost train (a chase keeps a shrine within fifteen columns of its start) */
-  /* THE GHOST TRAIN (claude/fairfix; src/chase.js): the road sinks three rows into a long cutting (469-524). Cross the start line at the foot of the slope and the train comes out of the
-     tunnel mouth BEHIND you and runs you down the cutting - kill on contact, like every chase. Its speed-ups are told. Three timed beams cross the cutting (duck under one that is down,
-     or wait for it to lift), and two mummers stand in the way facing you: you must run past them, and the next beam holds you with a mummer at your back and the train behind it */
-  cut(469, 3, 44);                                        /* the descent 469-474, the floor 475-518 (row 30), the climb 519-524 */
+  ent('check', 466, S);                                   /* the fourth shrine: on the bank, right before the fire (a chase keeps a shrine within fifteen columns of its start) */
+  /* THE EFFIGY CATCHES FIRE (claude/fairfix2; Daniel: the ghost train was anachronistic. src/chase.js, look 'fire'): the half-built wicker effigy you have watched go up behind the
+     fair stands on the bank here. Cross the start line and it goes up, and the fire runs down the straw after you - kill on contact, like every chase; the speed-ups are told.
+     The road sinks into a straw lane (469-524) and you CHOOSE YOUR LANE:
+       LOW  the straw lane: burning BUNTING slung across it (a line that sags and lifts: duck under it or wait for it), fallen stalls to jump, and two mummers to run past
+       HIGH the stall roofs over the lane: no bunting, but every roof GIVES WAY under you a breath after you land (src/tower-collapse.js) - keep jumping, or drop into the lane
+     The fire takes the mummers it overtakes (runsOver). It pays off the effigy you watched them build, and it is the Queen's fire before you meet her */
+  cut(469, 3, 44);                                        /* the descent 469-474, the lane 475-518 (floor row 31), the climb 519-524 */
   post(478, R + 2, 0.5); post(494, R + 2, 1); post(508, R + 2, 0);
-  foe('mummer', 478, { y: R + 2, squad: 'train' }); foe('mummer', 505, { y: R + 2, squad: 'train' });   /* each a few steps before a beam */
-  const beam = (x, period) => ({ x0: x * TS, x1: (x + 2) * TS, y: (R + 3) * TS - 10, th: 6, dmg: 14, name: 'A GHOST-TRAIN BEAM', period, up: 1.2 });   /* down for period - 1.2 s, up for 1.2 s; three periods, so they never lift together */
-  const chases = [{ id: 'ghosttrain', name: 'THE GHOST TRAIN', look: 'train', dir: 1, trigger: 476 * TS, end: 519 * TS, gap0: 200, runsOver: true, say: 'THE GHOST TRAIN! RUN!',
-    curve: [[0, 60], [240, 74, 'THE GHOST TRAIN GATHERS SPEED'], [480, 86, 'FASTER! DO NOT STOP']], zone: [468 * TS, 526 * TS, (R - 6) * TS, (R + 3) * TS + 8],   /* (the bottom is under the floor: a hero's feet stand ON row R + 3) */
+  foe('mummer', 478, { y: R + 2, squad: 'fire' }); foe('mummer', 505, { y: R + 2, squad: 'fire' });   /* each a few steps before a line of bunting */
+  block(490, 490, R + 2, R + 2); block(502, 502, R + 2, R + 2); fallen.push(490, 502);   /* two fallen stalls across the lane: a tile high, a hop */
+  for (const [x0, row] of [[471, R - 1], [478, R - 2], [485, R - 1], [492, R - 2], [499, R - 1], [506, R - 2], [513, R - 1], [519, R - 2]]) {   /* the HIGH lane: eight stall roofs, a three-tile gap between, each one gives */
+    plat(x0, row, 4); crumbles.push({ x0, x1: x0 + 3, row, rows: 1, count: 0.7, kind: 'stall', fire: true }); }
+  const beam = (x, period) => ({ x0: x * TS, x1: (x + 2) * TS, y: (R + 3) * TS - 10, th: 6, dmg: 14, name: 'THE BURNING BUNTING', period, up: 1.2, bunting: true });   /* down for period - 1.2 s, up for 1.2 s; three periods, so they never lift together */
+  const chases = [{ id: 'effigy', name: 'THE BURNING EFFIGY', look: 'fire', dir: 1, trigger: 476 * TS, end: 525 * TS, gap0: 200, runsOver: true, say: 'THE EFFIGY IS ALIGHT! RUN!',
+    curve: [[0, 60], [240, 74, 'THE FIRE CATCHES THE BUNTING'], [480, 86, 'THE STALLS ARE BURNING! RUN!']], zone: [468 * TS, 527 * TS, (R - 6) * TS, (R + 3) * TS + 8],   /* (the bottom is under the floor: a hero's feet stand ON row R + 3) */
     beams: [beam(484, 2.6), beam(496, 2.3), beam(511, 2.9)], checkpoint: [466, S] }];
-  const ghostTrain = { x0: 469, x1: 524, row: R + 2, arch: 471 };
 
   // ---------------- 5. THE LAST ROUND (525-619): EXAM - ONE SPACE THAT ASKS ALL OF IT AT ONCE (claude/fairfix) ----------------
   /* THE SMALL CAROUSEL UNDER ITS CANOPY: a striped roof over the disc, dark inside (a covered place, like the hall), two lanterns that gutter, a TRUE mirror panel at the far end
@@ -250,6 +296,9 @@ export function buildHarvestFair({ painter, T, TS }) {
   post(535, 22, 0.5); post(548, 22, 0.5);                 /* its two lanterns, hung from the canopy: both gutter */
   foe('mummer', 540, { y: R - 3, squad: 'round' }); foe('stringjack', 547, { y: R - 3, squad: 'round' });
   stack(557, 559); spikes(560, 562, S);                   /* a rick, and spikes past it */
+  /* THE KNIFE JUGGLER OVER THE RICK (claude/fairfix2): on a stall roof past the disc. The ride turns you, and when it does his knives are in your back; the hay under him throws you
+     up to him, if you go */
+  plat(556, R - 5, 3); foe('archer', 557, { y: R - 6, juggler: true, squad: 'round' });
   /* THE TALL STRIKER AGAIN (examined): it throws you onto THE NIGHT LANE, a plank run over the last round in full night. Its mummer is held ONLY while the lantern by it burns
      (the lantern gutters: it creeps in the dark beats) or from an arm's length or two */
   strikers.push({ id: 3, x: 566, row: R, launch: -740, tickets: 2, big: true });
@@ -265,9 +314,14 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* THE GALLERY, EXAMINED: three targets along the last stalls, a short window (nine seconds); the planks run up to a nest under the night lane (tickets and a heart) */
   gallery({ id: 3, targets: [{ x: 580, row: S }, { x: 583, row: S }, { x: 588, row: S }], window: 9, planks: [[583, 584, R - 3], [579, 580, R - 6], [576, 578, R - 9]], nest: { x0: 576, x1: 578, row: R - 9 } });
   tk(576, 18); tk(578, 18); ent('mend', 577, 18);
-  /* THE PRIZE BOOTH: press UP at the counter to spend tickets (eight for a silver) */
-  const booth = { x: 586, row: S, cost: 8, silver: { x: 587, row: S - 1 } };
-  ent('silver', 587, S - 1); ent('deco', 586, S, { kind: 'stall', v: 0 });
+  /* THE BACK LOT (claude/fairfix2: TICKETS ARE KEYS; it was the prize booth): a hatch in the road by the last stall, and a sign - ALL THE TICKETS. Hold every ticket the fair has
+     and the hatch drops open into the stall men's back lot: THE FORTUNE-TELLER'S GLASS (the fair's own relic) and a silver, and a stair back up */
+  ent('deco', 589, S, { kind: 'stall', v: 0 }); ent('sign', 584, S, { text: 'THE BACK LOT. SHOW ALL THE TICKETS.' });
+  for (let y = R + 1; y <= R + 6; y++) for (let x = 580; x <= 592; x++) set(x, y, T.AIR);
+  plat(588, R + 4, 3); plat(586, R + 2, 2);   /* the stair back up through the hatch */
+  ticketGates.push({ x: 586, w: 2, y0: R, y1: R, all: true, hatch: true, name: 'THE BACK LOT' });
+  ent('relic', 582, R + 6, { kind: 'handglass' }); ent('silver', 584, R + 6); coins([581, R + 6], [583, R + 6], [590, R + 6]);
+  const backLot = { x0: 580, x1: 592, y0: R + 1, y1: R + 6 };
   /* THE BARKER AGAIN, on his crate over the gallery and the booth: his call turns you to him, off the stall's mummer and the carousel's */
   block(590, 592, R - 1, R - 1);
   foe('barker', 591, { y: R - 2, elite: true, squad: 'caller2' });
@@ -282,7 +336,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   block(620, 621, 0, R - 1);                              /* the door: a narrow gap under a lintel, then the green */
   for (let y = S - 3; y <= S; y++) { set(620, y, T.AIR); set(621, y, T.AIR); }
   block(669, 671, 0, R - 1);                              /* the wall behind the gate */
-  sign(616, 'THE CAROUSEL. SHE MOVES ONLY WHEN YOU LOOK AWAY. WHEN THE FLOOR BURNS, RIDE A HORSE.');   /* outside the door, beside its checkpoint: read before the walls close */
+  sign(616, 'THE CAROUSEL. SHE MOVES ONLY WHEN YOU LOOK AWAY. DUCK HER HIGH SPEAR, JUMP THE LOW. WHEN THE FLOOR BURNS, RIDE A HORSE.');   /* outside the door, beside its checkpoint: read before the walls close */
   ent('wickerqueen', 634, S, { face: -1 });               /* THE WICKER QUEEN, UPSTREAM of her fire: the first lesson is the ride's - hold her in your look and it carries her onto it. After a burn she is flung off downstream, and then you turn your back to draw her across it against the ride */
   ent('relic', 646, S, { kind: 'maypole', bossDrop: true });   /* THE FAIR'S ONE RELIC is hers now (the maypole ribbon: your look reaches half as far again; the felted soles stay in the levels that hold them): hidden until she falls, then it lies where she burned (spawn case 'relic') */
   ent('gate', 666, S);                                    /* and the road goes on from here once she is down (gateAfterBoss) */
@@ -291,21 +345,21 @@ export function buildHarvestFair({ painter, T, TS }) {
   { const ring = newRing(arena); for (let i = 0; i < RING.horses; i++) { const h = horseAt(ring, i); moversExtra.push({ kind: 'carhorse', i, x: h.x - RING.w / 2, y: h.y, w: RING.w, h: RING.h, broken: !h.front }); } }
 
   /* THE MARKS FOR THE TOOLS: every game and ride the level is built round is also an entity of its own kind (the spawner ignores them; src/fair-games.js keeps the state) */
+  for (const g of ticketGates) if (!g.hatch) block(g.x, g.x + (g.w || 1) - 1, g.y0, g.y1);   /* a TICKET GATE is solid until its price is shown (src/fair-keys.js); a hatch is the road itself */
   for (const s of strikers) ent('striker', s.x, S, { launch: s.launch, big: s.big });
   for (const g of galleries) for (const q of g.targets) ent('gtarget', q.x, q.row, { gallery: g.id });
   for (const q of tickets) ent('ticket', q.x, q.row);
-  ent('booth', booth.x, S, { cost: booth.cost });
   for (const m of hall.mirrors) ent('mirror', m.x0, S, { kind: m.kind });
   const baseRow = x => { for (let y = 23; y < H; y++) { const q = L.grid[y * W + x]; if (q !== T.AIR && q !== T.SPIKE) return y - 1; } return S; };   /* a lamp with no row stands on the road under it (from row 23 down, so a roof over the road does not take it) */
   for (const l of lamps) if (l.y === undefined) l.y = baseRow(l.x);
   const tints = [[0, 118, [255, 196, 110], 0.10], [118, 246, [255, 160, 90], 0.12], [246, 372, [235, 120, 110], 0.14], [372, 525, [170, 100, 150], 0.16], [525, 622, [80, 80, 160], 0.18], [622, W, [60, 60, 130], 0.20]];
   /* THE WICKER EFFIGY going up behind the fair: five stages, one every hundred columns or so, so you pass it again and again as you climb (the queen, finished, stands by the door) */
-  const effigies = [{ x: 78, stage: 0 }, { x: 196, stage: 1 }, { x: 322, stage: 2 }, { x: 460, stage: 3 }, { x: 592, stage: 4 }];
+  const effigies = [{ x: 78, stage: 0 }, { x: 196, stage: 1 }, { x: 322, stage: 2 }, { x: 461, stage: 3, burns: true, world: true }, { x: 592, stage: 'ash' }];   /* (claude/fairfix2) the fourth stands on the bank at the fire's start line and BURNS; after it, ash */
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: S }, pools: [], falls: [], moversExtra, interiors: [],
     carousels, haystacks, lamps: lampsOut(lamps), arc: ARC, stair: { x0: 150, top: 162 }, green: G, tints, arena, gateAfterBoss: true,
-    walls, gallery: galleries[0], galleries, strikers, tickets, booth, hall, halls: [hall, canopy], blinds, unlit, tower, wheel: WH, slide: { x0: 367, y0: tower.top, n: 11, stall: { x0: 372, x1: 377 } }, corn, scarecrows, effigies,
-    chases, ghostTrain,
+    walls, gallery: galleries[0], galleries, strikers, tickets, booth: null, backLot, hall, halls: [hall, canopy], blinds, unlit, tower, wheel: WH, slide: { x0: 367, y0: tower.top, n: 11, stall: { x0: 372, x1: 377 } }, corn, scarecrows, effigies,
+    chases, fallen, zipLines, poles, cages, ticketGates, crumbles, fortune,
     maze: { x0: mx0, x1: mx1, tiers: [R - 1, 22, 17], blind: [mx0 - 1, mx1 + 1, 12 * TS, R * TS] },
     checkRun: 200,   /* the level filler adds no shrine inside a run shorter than the game's ceiling (claude/fairfix: five shrines, placed by hand) */
     fairNight: NIGHT,   /* (not `night`: the game reads L.night as its camp-night wash) */

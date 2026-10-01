@@ -14,7 +14,7 @@
 //                     first. L.unlit lists stretches of the road with no light at all ([x0, x1] columns): the door guard's. Both are dark as the tops are dark.
 import { TS } from './mummer.js';
 export const GAMES = { strikerCd: 0.9, hop: -250, ticketR: 13, boothR: 30, padHalf: 16, window: 12, targetR: 9 };
-export const TEXT = { reset: 'THE TARGETS RESET', planks: 'THE PLANKS RUN UP', bell: 'THE BELL RINGS', booth: 'THE PRIZE BOOTH: EIGHT TICKETS FOR A SILVER. PRESS UP.', short: 'NOT ENOUGH TICKETS', sold: 'A SILVER: SOLD' };
+export const TEXT = { reset: 'THE TARGETS RESET', planks: 'THE PLANKS RUN UP', bars: 'THE CAGE OPENS', bell: 'THE BELL RINGS', booth: 'THE PRIZE BOOTH: EIGHT TICKETS FOR A SILVER. PRESS UP.', short: 'NOT ENOUGH TICKETS', sold: 'A SILVER: SOLD' };
 
 /* ---------------- the night and the mirror (pure) ---------------- */
 export const nightK = (N, yPx) => (N ? Math.max(0, Math.min(1, (N.start - yPx / TS) / (N.start - N.full))) : 0);
@@ -52,9 +52,9 @@ export function blocked(L, solidAt, e, h) {
 
 /* ---------------- the state a level load starts with ---------------- */
 export function newGames(L) {
-  return { tickets: 0, taken: new Set(), spent: 0,
+  return { tickets: 0, taken: new Set(), spent: 0, total: (L.tickets || []).length + (L.strikers || []).reduce((n, s) => n + (s.tickets || 0), 0),   /* total: every ticket the level holds (src/fair-keys.js ticketTotal) */
     strikers: (L.strikers || []).map((s, i) => ({ ...s, i, ring: 0, cd: 0, paid: false, hits: 0, pad: { x: s.x * TS + 8, y: s.row * TS } })),
-    galleries: (L.galleries || (L.gallery ? [L.gallery] : [])).map((g, i) => ({ i, id: g.id || i + 1, targets: g.targets.map(t => ({ ...t, hit: false, flash: 0 })), t: 0, open: false, opened: 0, window: g.window || GAMES.window, planks: g.planks })),
+    galleries: (L.galleries || (L.gallery ? [L.gallery] : [])).map((g, i) => ({ i, id: g.id || i + 1, targets: g.targets.map(t => ({ ...t, hit: false, flash: 0 })), t: 0, open: false, opened: 0, window: g.window || GAMES.window, planks: g.planks || [], bars: g.bars || [], say: g.say || null })),   /* bars: a CAGE's bars a bull's-eye drops (claude/fairfix2); say: what opening it says */
     booth: L.booth ? { ...L.booth, sv: null, bought: false } : null, upWas: false, ringEv: 0 };
 }
 
@@ -80,7 +80,7 @@ export function step(G, L, heroes, fx, dt) {
     }
     /* THE GALLERY */
     for (const Gy of G.galleries) if (!Gy.open && h.box) for (const t of Gy.targets) { if (t.hit) continue;
-      const cx = t.x * TS + 8, cy = t.row * TS + 8, b = h.box;
+      const cx = t.px ?? t.x * TS + 8, cy = t.py ?? t.row * TS + 8, b = h.box;   /* (px/py: a bull's-eye hung on a ride, moved with it: src/fair-keys.js liveTargets) */
       if (b.r > cx - GAMES.targetR && b.l < cx + GAMES.targetR && b.b > cy - GAMES.targetR && b.t < cy + GAMES.targetR && !(h.hit && h.hit.has(t))) { if (h.hit) h.hit.add(t); t.hit = true; t.flash = 0.3; if (!Gy.t) Gy.t = 0.0001; fx.sound('tink'); } }
     /* THE TICKETS lying about (a touch) */
     (L.tickets || []).forEach((tk, i) => { if (G.taken.has(i)) return; const cx = tk.x * TS + 8, cy = tk.row * TS + 8;
@@ -96,6 +96,6 @@ export function step(G, L, heroes, fx, dt) {
   G.upWas = heroes.some(h => h.up && !h.dead); G.heavyWas = G.heavyWas || {}; for (const h of heroes) G.heavyWas[h.n || 0] = !!h.heavy;
   /* THE GALLERY's clock: the window opens on the first hit; all hit inside it and the planks run up; miss the window and the targets reset */
   for (const Gy of G.galleries) if (!Gy.open && Gy.t > 0) { Gy.t += dt;
-    if (Gy.targets.every(t => t.hit)) { Gy.open = true; Gy.opened = 1; fx.open(Gy.planks); fx.say(TEXT.planks); fx.sound('open'); }
+    if (Gy.targets.every(t => t.hit)) { Gy.open = true; Gy.opened = 1; fx.open(Gy.planks, Gy.bars); fx.say(Gy.say || (Gy.bars.length && !Gy.planks.length ? TEXT.bars : TEXT.planks)); fx.sound('open'); }
     else if (Gy.t > Gy.window) { Gy.t = 0; for (const t of Gy.targets) t.hit = false; fx.say(TEXT.reset); } }
 }
