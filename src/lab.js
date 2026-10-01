@@ -1098,7 +1098,7 @@ async function runbossLab(BK, opts) {
           if(ride&&hc(ride)<end+30){gx=hc(ride);face=glowM?Math.sign(glowM.x-P.x)||1:sq;look=true;}
           else if(pick){gx=hc(pick);face=Math.sign(gx-P.x)||sq;if((P.ground||ride)&&Math.abs(P.x-gx)<(ride?40:9)&&!(P.labJump>0)){BK.press('jump');P.labJump=22;}}
         }
-        else if(highD){   /* DOWN ON THE BOARDS, AND DUCKED (her spear and her ribbons do not care which way he faces: mid-lure, he keeps his back to her) */
+        else if(highD){   /* DOWN ON THE BOARDS, AND DUCKED (her ribbons, and a thrust once told, do not care which way he faces: mid-lure, he keeps his back to her) */
           if(ride){const l=ride.x-6,r=ride.x+ride.w+6;gx=Math.abs(P.x-l)<Math.abs(P.x-r)?l:r;face=Math.sign(gx-P.x)||sq;}
           else{gx=P.x;face=glowM?Math.sign(glowM.x-P.x)||1:(lashK!=='high'&&!(thrK==='high'&&thrIn)&&P.face===-sq)?-sq:sq;look=true;}   /* (ducked, he still looks at a mummer whose mask glows: it stops) */
         }

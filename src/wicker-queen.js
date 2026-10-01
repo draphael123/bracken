@@ -6,13 +6,14 @@
 //
 // THE RULE (src/mummer.js's facing rule, the same one the mummers keep): her FEET move only while no hero looks at her. Co-op: any hero facing her freezes
 // her. But the RIDE carries her while she stands, frozen or at her blows (it carries you too; walking, she strides against it at her own pace), and HER
-// ARMS ARE NOT HER FEET: a look stops her feet, not the ribbons and not the spear.
+// ARMS ARE NOT HER FEET: a look stops her feet, not the ribbons - and it is the look that brings the spear (held, she answers with her arms; with your
+// back turned she walks to you instead, and stabs).
 //
 // THE READ BETWEEN UP AND DOWN (every blow told, rule A1; every one wears its mark, and every one is in windingUp() by its 'Tell'):
 //   LOW LASH         !!  LOW   the ribbons sweep out from the centre column along the boards at ankle height: JUMP it, or be UP ON A HORSE.
 //   HIGH LASH        !!  HIGH  the ribbons fly from the canopy at the horses' height: a rider is in them, and so is a hero standing on the boards.
 //                              GET DOWN on the boards and DUCK (src/duck.js).
-//   HIGH THRUST      !!  HIGH  a hero within her spear's reach (WQ.thrustReach px, looked at or not): she draws the spear back to her shoulder for
+//   HIGH THRUST      !!  HIGH  a hero LOOKING AT HER within her spear's reach (WQ.thrustReach px): she draws the spear back to her shoulder for
 //                              WQ.thrustTell s - the red line runs out along the ride at the height and the length it will cover, and when it has run
 //                              its length she lunges - then the spear goes out flat at the height of a standing hero and of a rider on any horse.
 //                              DUCK on the boards.
@@ -49,7 +50,7 @@ export const WQ = {
   lowTop: 10,                         // the LOW ribbon runs from the boards to 10 px up: a hero in a jump or on a horse (16+) is over it
   highTop: 64, highBot: 10,           // the HIGH ribbon runs 10-64 px up: a standing hero (14) and every rider (saddle 16-40) are in it, a ducked one (8) is under it
   floorEvery: [12, 10, 8], floorFirst: 7.5, floorTell: 1.5, floorT: 1.8, floorTick: 0.6,   // THE FLOOR BURNS: its told time, how long it burns, a burn's tick
-  /* HER SPEAR, THRUST: within its reach (from her middle), looked at or not; told for thrustTell s (the red line runs out to its length), the lunge takes
+  /* HER SPEAR, THRUST: at a hero looking at her within its reach (from her middle); told for thrustTell s (the red line runs out to its length), the lunge takes
      thrustT s to carry the blade from her hand (thrustFrom) to the end of its reach, it is held out thrustHold s and drawn back over thrustBack s */
   thrustEvery: [7, 6, 5], thrustFirst: 4.5, thrustTell: 1.1, thrustT: 0.25, thrustHold: 0.3, thrustBack: 0.45, thrustFrom: 14, thrustReach: 96, thrustY: 70,
   spearLen: 76,                       // the spear, butt to point: an ash shaft, wheat bound under a leaf blade (src/redraw/wicker_queen.js draws it)
@@ -209,7 +210,7 @@ export function updateWickerQueen(e, dt, c) {
   if (near && !seen && dx <= WQ.reach && Math.abs((near.y || 0) - (e.y || 0)) < 40) {
     toward(); e.mode = 'stabTell'; e.modeT = WQ.glow; ev.push({ t: 'glow' }); c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.sound('stabTell'); return ev; }
   if (!(e.rest > 0)) {
-    if (near && e.thrustCd <= 0 && dx <= WQ.thrustReach - 8 && Math.abs((near.y || 0) - (e.y || 0)) < WQ.thrustY) {   /* IN HER SPEAR'S REACH, looked at or not: she thrusts */
+    if (near && seen && e.thrustCd <= 0 && dx <= WQ.thrustReach - 8 && Math.abs((near.y || 0) - (e.y || 0)) < WQ.thrustY) {   /* LOOKED AT, IN HER SPEAR'S REACH: her feet are held, so her arms answer - she thrusts */
       toward(); const kind = THRUST_ORDER[(e.thrustN++) % THRUST_ORDER.length]; e.thrustDir = e.face; e.thrustKind = kind;
       e.mode = kind === 'low' ? 'thrustLowTell' : 'thrustHighTell'; e.modeT = WQ.thrustTell; e.tip = thrustTip(e); ev.push({ t: 'thrustTell', kind, dir: e.thrustDir });
       c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, kind === 'low' ? 'HER SPEAR, LOW: JUMP' : 'HER SPEAR, HIGH: DUCK', '#ff6b6b'); c.sound('thrustTell'); return ev; }

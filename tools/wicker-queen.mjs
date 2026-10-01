@@ -9,8 +9,8 @@
 //     (no mark); each blow comes only after its own windup has run its full told time. THE READ BETWEEN UP AND DOWN: the floor blows (low lash, low
 //     thrust, burning floor) miss a hero on any horse and in a jump, and catch him on the boards; the high blows (high lash, high thrust) catch a rider on
 //     any horse and a standing hero, and miss a ducked one
-//   - HER SPEAR (claude/fairfix2-spear: it replaced her sickle): within its long reach she thrusts whether he looks at her or not (a look stops her feet,
-//     not her arms), told at least a second, high and low mixed and never three alike, the blade running out its whole reach; out of reach, no thrust
+//   - HER SPEAR (claude/fairfix2-spear: it replaced her sickle): at a hero looking at her within its long reach she thrusts (a look stops her feet, not
+//     her arms; at a turned back she walks and stabs instead, never thrusts), told at least a second, high and low mixed and never three alike, the blade running out its whole reach; out of reach, no thrust
 //   - THE FIRE, ONLY BY FREEZING HER ON THE EMBERS: lured against the ride and frozen on them she catches and burns open (a blow worth more); UPSTREAM of
 //     the fire, held in the look, THE RIDE BRINGS HER ONTO IT (the carousel's half of the opening); after a burn she is flung off the ride's way and the
 //     embers are banked; crossing them unseen, frozen short of them, left alone for a minute, or frozen on them banked, opens nothing
@@ -105,6 +105,9 @@ function rig(o = {}) {
   ok(told && t2.e.n.thrust === 1, 'HER SPEAR: the thrust told at a hero looking at her did not come');
   const far = rig({ heroes: [hero(10600 - W.WQ.thrustReach - 40, 1)], ...QUIETCD, thrustCd: 0, embers: null }); for (let i = 0; i < 60 * 10; i++) far.step();
   ok(far.e.n.thrust === 0 && !far.log.thrust.length, 'HER SPEAR: she thrust at a hero out of its reach (' + far.e.n.thrust + ')');
+  const back = rig({ heroes: [hero(10540, -1)], ...QUIETCD, thrustCd: 0, embers: null }); let stabs = 0;   /* a turned back in her reach: she walks to it and stabs; she never thrusts */
+  for (let i = 0; i < 60 * 8; i++) { back.step(); if (back.e.mode === 'stab') { stabs++; back.e.mode = 'still'; back.e.x = 10600; } }
+  ok(back.e.n.thrust === 0 && stabs > 0, 'HER SPEAR: she thrust at a turned back (' + back.e.n.thrust + ' thrusts, ' + stabs + ' stabs) - a turned back is walked to and stabbed');
   /* nothing else told while her spear is out: a LOW blow and a HIGH one at once would have no answer */
   const busy = rig({ heroes: [hero(10540, 1)], crownCd: 1e9, thrustCd: 0, lashCd: 0.5, floorCd: 0.5, embers: null }); let under = 0, out = 0;
   for (let i = 0; i < 60 * 20; i++) { const was = busy.e.mode, ev = busy.step(); if (was.startsWith('thrust')) { out++; for (const v of ev) if (v.t.endsWith('Tell') || v.t === 'glow') under++; } }
