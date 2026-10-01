@@ -22,6 +22,11 @@
 //                                          UNLIT stretch - in the dark it finds you from further than you can see it
 //   622-672  THE MAYPOLE GREEN THE WICKER QUEEN (claude/fair3, src/wicker-queen.js) ON THE FAIR'S GREAT CAROUSEL (claude/fairboss, src/wicker-carousel.js): the
 //            ring turns under you, its horses bob on their poles, the firebox under the centre column; a door, a checkpoint before it, a gate at the far end
+// FAIRFIX2 (2026-10-01, Daniel: ranged foes, real platforming, a real challenge at level 1 with no abilities, tickets as keys, more bull's-eyes and hidden paths): the
+//   ranged reskins (a coconut shy - the drunk; knife jugglers - the archer; crows) cover the facing foes from roofs; the fair's mummers and horses are sharper and the
+//   mummers drop off roofs after you (src/fair-keys.js); the fallen big top's poles, the pit under the wheel, the collapsing stalls and their bunting rope, spikes under
+//   chair one; TICKET GATES (the loft, the hayloft) and THE BACK LOT (all the tickets: the fortune-teller's glass); bull's-eyes on a wheel car and in the corn; the door in
+//   the glass; and THE EFFIGY CATCHES FIRE where the ghost train ran (two lanes). The level-1 pilot is tools/fair-pilot.mjs.
 // Checkpoints (five, claude/fairfix; the game-wide ceiling is 200 route tiles now): 8, 199 (past the terrace), 383 (the slide's foot), 466 (before the ghost train) and the door's (600).
 import { makeWall } from './breakable-walls.js';
 export const FAIR = { W: 672, H: 36, R: 28 };
