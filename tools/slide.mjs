@@ -56,13 +56,13 @@ try {
     out.freeOn = free.filter(r => r.on).length; out.freeMax = Math.max(...free.map(r => Math.abs(r.vx)));
     const onRows = free.filter(r => r.on); out.speedUp = onRows.length > 8 && Math.abs(onRows[onRows.length - 1].vx) > Math.abs(onRows[0].vx) + 40;
     const walk = lap({ noDown: true }); out.walkMax = Math.max(...walk.map(r => Math.abs(r.vx))); out.walkOn = walk.filter(r => r.on).length;
-    out.downNoMove = (() => { const r = lap({ script: f => { if (f === 0) { BK.P.x = free.find(q => q.on).x; BK.P.y = free.find(q => q.on).y; BK.P.vx = 0; } BK.keys.down = true; BK.keys.right = false; }, frames: 60 }); return { on: r.filter(q => q.on).length, dx: r[r.length - 1].x - r[0].x }; })();
+    out.downNoMove = (() => { const r = lap({ script: f => { if (f === 0) { BK.P.x = (free.find(q => q.on) || free[20]).x; BK.P.y = (free.find(q => q.on) || free[20]).y; BK.P.vx = 0; } BK.keys.down = true; BK.keys.right = false; }, frames: 60 }); return { on: r.filter(q => q.on).length, dx: r[r.length - 1].x - r[0].x }; })();
     /* ENDS: let go of down mid-hill; a jump out of it */
     const rel = lap({ script: f => { BK.keys.right = true; BK.keys.down = f < 30; }, frames: 60 }); out.relOn = rel.slice(36).filter(r => r.on).length; out.relBefore = rel.slice(20, 30).filter(r => r.on).length;
     const jmp = lap({ script: f => { BK.keys.right = true; BK.keys.down = true; if (f === 36) { BK.keys.jump = true; BK.press('jump'); } if (f === 40) BK.keys.jump = false; }, frames: 60 });
     out.jumpOnAfter = jmp.slice(40).filter(r => r.on && !r.g).length; out.jumpAir = jmp.slice(38).some(r => !r.g); out.jumpBefore = jmp.slice(30, 36).filter(r => r.on).length;
     /* FOES. Calibrate where the boots are at a good speed, put the foe just ahead of them there on the same line, rerun. */
-    const spot = free.find(r => r.on && r.g && Math.abs(r.vx) > 110); out.spot = spot ? [spot.x, spot.y, spot.f, spot.vx] : null;
+    const spot = free.find(r => r.on && r.g && Math.abs(r.vx) > 110) || free[20]; out.spot = free.some(r => r.on) ? [spot.x, spot.y, spot.f, spot.vx] : null;   /* (the fallback keeps the page from throwing on code with no slide: the asserts then fail cleanly) */
     const foeRun = (type, tweak) => { let foe = null;
       const rr = lap({ frames: 80, foeAt: Math.max(0, spot.f - 6), foe: () => { [foe] = BK.spawnFoe({ t: type, x: (spot.x + 22) / 16, y: spot.y / 16, face: -1 }); if (foe) { if (tweak) tweak(foe); foe.stagger = 6; foe.vx = 0; foe.hp0x = foe.hp; } } });
       return { foe, rr }; };
@@ -80,16 +80,17 @@ try {
     { const { rr } = foeRun('brute'); const first = rr.findIndex(r => r.flat > 0);
       if (first >= 0) { none(); let w = 0; while (!BK.P.ground && w++ < 90) BK.sim(1); BK.keys.jump = true; BK.press('jump'); let up = false; for (let f = 0; f < 6; f++) { BK.sim(1); if (BK.P.vy < -50) up = true; } BK.keys.jump = false; out.flatJump = up; out.flatLeft = BK.P.flatT; } }
     /* A SLOW SLIDE HURTS NOTHING, a fast one hurts once: the real function on a fake world, one foe in the boot box */
-    { const m = await import('/src/slide.js'); const run = vx => { const hits = []; const P = { x: 100, y: 100, vx, face: 1, ground: true, slideHits: null }, ss = { sliding: true, vx }, e = { alive: true, x: 108, y: 100, w: 8, h: 10, t: 'sprig', hp: 10 };
+    const m = await import('/src/slide.js').catch(() => null);   /* (no src/slide.js on code without the slide: the asserts below fail cleanly) */
+    if (m) { const run = vx => { const hits = []; const P = { x: 100, y: 100, vx, face: 1, ground: true, slideHits: null }, ss = { sliding: true, vx }, e = { alive: true, x: 108, y: 100, w: 8, h: 10, t: 'sprig', hp: 10 };
         const c = { P, ss, dt: 1 / 60, time: 0, enemies: [e], box: q => ({ l: q.x - 4, r: q.x + 4, t: q.y - q.h, b: q.y }), overlap: (p, q) => p.l < q.r && p.r > q.l && p.t < q.b && p.b > q.t, poiseMax: () => 0, swordDmg: () => 12,
           hurtEnemy: (f, d) => { hits.push(d); e.alive = false; }, knockFoe() {}, SFX: {}, dust() {}, parts: [], shakeCam() {}, hitstop() {}, sparks() {}, lowParts: true };
         m.buttUpdate(c); m.buttUpdate(c); return hits; };
       out.slowHits = run(m.BUTT.minSpeed - 10).length; out.fastHits = run(m.BUTT.minSpeed + 40).length; }
     /* THE SPEED SCALE (the pure function) */
-    { const m = await import('/src/slide.js'); out.blow = [60, 70, 120, 180].map(v => m.slideBlow(v, 12)); out.minSpeed = m.BUTT.minSpeed; out.chip = m.BUTT.chip; }
+    if (m) { out.blow = [60, 70, 120, 180].map(v => m.slideBlow(v, 12)); out.minSpeed = m.BUTT.minSpeed; out.chip = m.BUTT.chip; }
     /* THE PYROMANCER: a press of down on the slope is a slide, on the flat the flare */
     setUp('pyro'); clear();
-    { const on0 = free.find(r => r.on); BK.P.x = on0.x; BK.P.y = on0.y; BK.P.vx = 0; BK.sim(2); none(); BK.press('down'); BK.keys.down = true; let flare = 0, slide = 0; for (let f = 0; f < 30; f++) { BK.sim(1); if (BK.P.emberUp) flare++; if (BK.P.slideOn) slide++; } none(); out.pyroSlope = { flare, slide }; }
+    { const on0 = free.find(r => r.on) || free[20]; BK.P.x = on0.x; BK.P.y = on0.y; BK.P.vx = 0; BK.sim(2); none(); BK.press('down'); BK.keys.down = true; let flare = 0, slide = 0; for (let f = 0; f < 30; f++) { BK.sim(1); if (BK.P.emberUp) flare++; if (BK.P.slideOn) slide++; } none(); out.pyroSlope = { flare, slide }; }
     { BK.tp(flat[0], flat[1]); BK.sim(8); none(); BK.press('down'); BK.keys.down = true; let flare = 0; for (let f = 0; f < 12; f++) { BK.sim(1); if (BK.P.emberUp) flare++; } none(); out.pyroFlat = { flare }; }
     /* THE POSE: every hero, every skin */
     out.poses = [];
