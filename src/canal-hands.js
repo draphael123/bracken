@@ -27,7 +27,8 @@ export function canalReset(H) {
   for (const g of st.gates) gateCells(H, g);
   for (const b of st.bridges) bridgeCells(H, b);
   syncPools(st, H);
-  for (const e of L.ents) if (GADGET.has(e.t)) { const p = { t: e.t, e, x: e.x * TS + 8, y: (e.y + 1) * TS, reach: e.reach, bridge: e.bridge, fogs: e.fogs, flash: 0, cd: 0, lit: true };
+  st.carriers = []; st.gang = { on: false, t: 0, skiff: null }; st.boomCd = 0; st.lapCd = 0;
+  for (const e of L.ents) if (GADGET.has(e.t)) { const p = { t: e.t, e, x: e.x * TS + 8, y: (e.y + 1) * TS, reach: e.reach, bridge: e.bridge, fogs: e.fogs, clear: e.clear, flash: 0, cd: 0, lit: e.lit !== false };
     st.props.push(p); if (e.t === 'lanternpost') st.posts.push(p); if (e.t === 'foghorn') st.horns.push(p); }
   const m = bargeMover(H); if (m) { m.x = st.barge.x; m.y = st.barge.y; m.dx = 0; m.dy = 0; }
   H.resolve();
@@ -65,11 +66,22 @@ export function canalMover(st, H, m, dt) {
     if (ev.t === 'open' || ev.t === 'shut') { gateCells(H, ev.g); H.resolve(); if (H.near(ev.g.x * TS, ev.g.top * TS, 320)) { H.sfx.gateLift ? H.sfx.gateLift() : H.sfx.clank(); } }
     if (ev.t === 'still' && H.near(ev.r.x0 * TS, ev.r.y, 360)) H.sfx.thud(); }
   syncPools(st, H);
-  const x0 = b.x, y0 = b.y, go = aboard(st, H) || ahead(st, H);
+  const x0 = b.x, y0 = b.y, on = aboard(st, H), go = on || ahead(st, H) || underArch(st, on);
   for (const ev of R.bargeStep(st, dt, go)) bargeEvent(st, H, ev);
   if (!go && b.mode === 'float') { comeBack(st, H, dt); b.reach = R.reachAt(st, b.x + b.w / 2); b.y = R.deckOf(st.reaches[b.reach].y); }
   m.x = b.x; m.y = b.y; m.dx = b.x - x0; m.dy = b.y - y0; m.w = b.w;
+  floodLaps(st, H);
   return true;
+}
+/* THE LONG ARCH (claude/canalfix, review fix 7): with her bow at the arch's mouth and nobody aboard, she goes on through it - whoever was scraped
+   off at the face is not left waiting for her to come back under him */
+function underArch(st, on) { const a = st.D.arch, b = st.barge; return !!a && !on && b.mode === 'float' && b.x + b.w >= a[0] * TS - 10 && b.x < (a[1] + 1) * TS; }
+/* THE FLOOD LAPS HER STERN (claude/canalfix, review fix 3): on THE HEAD RACE's steps she runs slow (RIG.headRace) and the flood's front is kept at
+   least at her stern + RIG.lap - a rider standing aft is in it (the chase's own contact: its damage, then its hold); one standing forward is not */
+function floodLaps(st, H) {
+  const b = st.barge; if (!R.onHeadRace(st) || !H.chases) return;
+  for (const c of H.chases()) { if (!c.sp || c.sp.id !== 'weir' || !c.st || c.st.phase !== 'run' || c.st.hold > 0) continue;
+    const front = b.x + R.RIG.lap; if (c.st.pos < front) c.st.pos = front; }
 }
 function bargeEvent(st, H, ev) {
   const S = H.sfx;
@@ -78,7 +90,7 @@ function bargeEvent(st, H, ev) {
     else if (why === 'bridge') hint(st, H, 'hold-bridge', 'THE BRIDGE STANDS ACROSS THE WATER: HER LANTERN POLE WILL NOT PASS UNDER IT.');
     else if (why === 'fog') hint(st, H, 'hold-fog', 'SHE WILL NOT GO INTO FOG THAT THICK. A FOGHORN CLEARS IT FOR A WHILE.'); }
   else if (ev.t === 'burst') { const g = ev.g; gateCells(H, g); H.resolve(); S.gateDrop ? S.gateDrop() : S.thud(); S.splash && S.splash(); H.shake(6);
-    hint(st, H, 'burst', 'THE GATE BURSTS AND SHE RUNS FOR THE WEIR. THE TILLER STEERS HER: STRIKE IT FOR THE MILL CUT.'); }
+    hint(st, H, 'burst', 'THE GATE BURSTS AND SHE RUNS FOR THE WEIR. STAND FORWARD OF THE FLOOD - AND STRIKE THE TILLER BEFORE THE STEPS END FOR THE MILL CUT.'); }
   else if (ev.t === 'junction') H.hint(ev.helm === 'cut' ? 'THE MILL CUT: LOW BEAMS AHEAD - DUCK.' : 'OVER THE BROKEN WEIR: BRACE - OR BE IN THE AIR WHEN SHE LANDS.');
   else if (ev.t === 'crash') { H.shake(8); S.thud(); S.splash && S.splash(); const m = bargeMover(H);
     H.eachHero(P => { if (!P.dead && P.onMover === m && P.ground) H.hurtHero(P.x, R.RIG.crash, { unblockable: true, name: 'THE WEIR' }); }); }
@@ -101,8 +113,16 @@ export function canalUpdate(st, H, dt) {
       else if (pr.t === 'swingcap') { const br = st.bridges[pr.bridge]; if (!br) continue; R.strikeBridge(br); S.chain ? S.chain() : S.clank(); S.gateLift && S.gateLift(); }
       else if (pr.t === 'foghorn') { const h = pr; h.fogs = h.fogs || []; if (R.blowHorn(st, h)) { S.roar ? S.roar() : S.thud(); H.shake(2); hint(st, H, 'horn', 'THE FOGHORN: THE FOG LIFTS - FOR A WHILE. EVERY ARCHER SEES YOU NOW.'); } else S.clank(); }
       else if (pr.t === 'lanternpost') { const lit = R.strikePost(pr); S.clank(); hint(st, H, 'post', lit ? 'THE LANTERN IS LIT: YOU SEE - AND ARE SEEN.' : 'THE LANTERN IS OUT: IN THE DARK THE ARCHERS CANNOT SEE YOU. NOR CAN YOU.'); }
-      else if (pr.t === 'tiller' && P.onMover === m) { const helm = R.strikeTiller(b); S.clank(); H.hint(helm === 'cut' ? 'THE HELM: THE MILL CUT.' : 'THE HELM: THE WEIR.'); }
+      else if (pr.t === 'tiller' && P.onMover === m) {
+        if (!R.tillerOpen(st)) { S.clank(); hint(st, H, 'helmset', 'THE HELM IS SET: SHE IS IN THE RACE AND ANSWERS NOTHING NOW.'); continue; }   /* (claude/canalfix: a window, not a choice made at leisure) */
+        const helm = R.strikeTiller(b); S.clank(); S.ratchet && S.ratchet();
+        if (b.mode === 'loose') H.hint(helm === 'cut' ? 'THE HELM: THE MILL CUT.' : 'THE HELM: THE WEIR.');
+        else H.hint(helm === 'cut' ? 'THE HELM: THE OFFSIDE - OUT OF THE TOWPATH HOOKS, UNDER THE BRIDGE TIMBERS.' : 'THE HELM: THE TOWPATH SIDE - CLEAR OF THE TIMBERS, IN REACH OF THE HOOKS.'); }
     } });
+  // ---- (claude/canalfix) THE LAMPLIGHTERS' LANTERNS: each one alive lights the hero near him for every archer (R.litAt) ----
+  st.carriers = H.enemies().filter(e => e.alive && e.lamplighter).map(e => ({ x: e.x, y: e.y }));
+  // ---- (claude/canalfix, UPGRADE C) THE BOARDING GANG: held at the fog wall with a hero aboard or beside her, a skiff comes out of the fog and they board ----
+  gangStep(st, H, dt, b, m);
   for (const pr of st.props) if (pr.flash > 0) pr.flash -= dt;
   // ---- THE BRIGHT WEED: stood on, it holds a moment and gives; empty, it knits together again ----
   for (const w of st.brights) { const x0 = w.x0 * TS, x1 = (w.x1 + 1) * TS, top = w.row * TS; let on = false;
@@ -117,7 +137,17 @@ export function canalUpdate(st, H, dt) {
   for (const ev of R.fogStep(st, dt)) if (ev.t === 'rollback' && H.near((ev.f.x0 + ev.f.x1) * 8, H.hero().y, 400)) { S.roar ? S.roar() : S.thud(); }
   // ---- THE LOW BEAMS (the teaching one on the Waymeet pound; the weir's are the chase's) ----
   st.beamCd = Math.max(0, st.beamCd - dt);
-  H.eachHero(P => { if (P.dead || st.beamCd > 0) return; for (const bm of st.D.beams || []) if (beamHit(duckBox(P), duckClears(P, bm.y), bm, H.time())) { st.beamCd = 1; H.hurtHero((bm.x0 + bm.x1) / 2, bm.dmg || 10, { unblockable: true, name: bm.name }); S.thud(); H.shake(3); hint(st, H, 'beam', 'DUCK UNDER A LOW BEAM: HOLD DOWN ON THE DECK.'); } });
+  const side = R.sideOf(st, st.D);
+  H.eachHero(P => { if (P.dead || st.beamCd > 0) return; for (const bm of st.D.beams || []) { if (bm.side && P.onMover === m && side && side !== bm.side) continue;   /* (a beam on one side of a pound: her helm decides) */
+    if (beamHit(duckBox(P), duckClears(P, bm.y), bm, H.time())) { st.beamCd = 1; H.hurtHero((bm.x0 + bm.x1) / 2, bm.dmg || 10, { unblockable: true, name: bm.name }); S.thud(); H.shake(3); hint(st, H, 'beam', 'DUCK UNDER A LOW BEAM: HOLD DOWN ON THE DECK.'); } } });
+  // ---- (claude/canalfix, review fix 3) THE BOOMS ON THE WEIR RUN: a log chained across the race at her deck's height sweeps the deck as she runs over it - JUMP it (ducking does nothing) ----
+  st.boomCd = Math.max(0, st.boomCd - dt);
+  if (b.mode === 'loose' && st.D.weir) for (const bm of st.D.weir.booms || []) { if (!boomLive(st, bm)) continue;
+    H.eachHero(P => { if (P.dead || st.boomCd > 0 || P.onMover !== m || !P.ground) return;
+      if (Math.abs(P.x - bm.x) < 9) { st.boomCd = 0.8; H.hurtHero(bm.x - 8, bm.dmg || 14, { unblockable: true, name: 'A BOOM' }); P.vy = -90; P.ground = false; S.thud(); H.shake(3); hint(st, H, 'boom', 'A BOOM ACROSS THE RACE SWEEPS HER DECK: JUMP IT. A LOW BEAM: DUCK IT.'); } });
+    if (!st.told.boomSeen && Math.abs(bm.x - b.x - b.w) < 120) hint(st, H, 'boomSeen', 'A BOOM ACROSS THE RACE SWEEPS HER DECK: JUMP IT. A LOW BEAM: DUCK IT.'); }
+  // ---- (claude/canalfix) THE FLOOD AT HER STERN, told once ----
+  if (R.onHeadRace(st) && aboard(st, H)) hint(st, H, 'lap', 'THE FLOOD LAPS HER STERN ON THE STEPS: STAND FORWARD.');
   // ---- THE WAY BACK: the last dry ground you stood on (the canal hands you back to it); on the weir run (and anywhere in the race below the burst gate), the basin's bank ----
   H.eachHero(P => { if (P.dead) return;
     if (st.D.weir && ((b.mode === 'loose' && P.onMover === m) || (P.x > st.D.weir.head[0][0] && P.x < st.D.weir.end - 48 && !P.onMover))) P.safe = { x: st.D.weir.bank[0], y: st.D.weir.bank[1], L: H.L() };
@@ -125,7 +155,40 @@ export function canalUpdate(st, H, dt) {
     else if (P.ground && !P.onMover && !P.climb && !R.inWeed(st.D, st, P.x, P.y) && H.solidUnder(P.x, P.y)) P.safe = { x: P.x, y: P.y, L: H.L() }; });
   // ---- THE HINTS THAT TEACH WHAT SHE DOES ----
   if (m && H.hero().onMover === m) hint(st, H, 'board', 'SHE CASTS OFF. SHE CARRIES YOU WHILE YOU RIDE HER, AND WAITS FOR YOU WHEN YOU ARE AHEAD.');
-  if (b.x > 128 * TS && b.x < 150 * TS && !aboard(st, H)) hint(st, H, 'arch', 'SHE GOES ON THROUGH THE ARCH WITHOUT YOU. CATCH HER ON THE FAR SIDE.');
+  { const a = st.D.arch; if (a && b.x + b.w >= a[0] * TS - 10 && b.x < (a[1] + 1) * TS && !aboard(st, H)) hint(st, H, 'arch', 'TOO LOW FOR ANYONE STANDING: SHE GOES ON THROUGH THE ARCH WITHOUT YOU. CATCH HER ON THE FAR SIDE.'); }   /* (claude/canalfix, review fix 7: told at the mouth, where she stalled before) */
+  if (side && aboard(st, H)) hint(st, H, 'side', 'THE TILLER AMIDSHIPS STEERS HER: STRIKE IT TO TURN HER HELM.');
+}
+/* ---------------- (claude/canalfix) THE PIECES THE FIX LANE ADDED ---------------- */
+/* a boom is live on the path she is taking: 'head' always, 'cut' / 'fall' by her helm (or the branch she took) */
+const boomLive = (st, bm) => { const b = st.barge, way = b.chosen || b.helm; return bm.path === 'head' || (bm.path === 'cut' ? way === 'cut' : way === 'weir'); };
+/* HER SIDE OF THE POUND, for the towpath's hooks: true when a hero aboard is out of their reach (main.js updateGaffer asks) */
+export const offside = (st, H, P) => !!st && R.sideOf(st, st.D) === 'off' && !!P && P.onMover === bargeMover(H);
+/* THE LAMPLIGHTER (src/main.js updateSnuffer, e.lamplighter: the snuffer's walk-to-a-lamp, reversed): the nearest DOUSED post on his level */
+export function lampTarget(st, e) { if (!st) return null; let best = null, bd = 1e9; for (const p of st.posts) if (!p.lit && Math.abs(p.y - e.y) < 40) { const q = Math.abs(p.x - e.x); if (q < bd) { bd = q; best = p; } } return best; }
+export function relightPost(st, H, p) { if (!st || !p || p.lit) return; p.lit = true; p.flash = 0.4; H.sfx.clank(); hint(st, H, 'relit', 'THE LAMPLIGHTER LIGHTS IT AGAIN, AND HIS LANTERN SHOWS YOU: CUT HIM DOWN FIRST.'); }
+/* a gang member still in the fog (not yet over her rail) is not drawn and not hit */
+export const foeHidden = e => !!(e.boarder && e.waiting);
+/* THE BOARDING GANG (UPGRADE C): e.boarder foes wait in the fog wall (e.waiting: held where they stand, unseen, doing nothing) until she is held at the
+   wall with a hero aboard or on the bank beside her. Then a skiff comes out of the fog to her bow and they leap aboard one after another; on her deck
+   they ride her (pinned to it), and fight there - hooks that throw a rider into the canal, the haft up close */
+function gangStep(st, H, dt, b, m) {
+  const gang = H.enemies().filter(e => e.boarder && e.alive); if (!gang.length) return; const G = st.gang, S = H.sfx;
+  for (const e of gang) if (e.waiting === undefined) { e.waiting = true; e.hx = e.x; e.hy = e.y; }
+  const wall = st.D.gangAt;   /* the fog wall's front column: she must be held there */
+  if (!G.on && wall && b.mode === 'float' && b.holdWhy === 'fog' && Math.abs(b.x + b.w - wall * TS) < 24) {
+    let near = false; H.eachHero(P => { if (!P.dead && (P.onMover === m || (Math.abs(P.x - b.x - b.w / 2) < 120 && Math.abs(P.y - b.y) < 60))) near = true; });
+    if (near) { G.on = true; G.t = 0; G.skiff = { x: wall * TS + 120, to: b.x + b.w + 4 }; S.splash && S.splash(); hint(st, H, 'gang', 'OARS IN THE FOG: BOARDERS! FIGHT THEM ON HER DECK - A HOOK THROWS YOU INTO THE CANAL.'); } }
+  if (G.on) { G.t += dt; const sk = G.skiff; if (sk) sk.x += (sk.to - sk.x) * Math.min(1, dt * 3); }
+  let k = 0; for (const e of gang) {
+    if (e.waiting) {
+      const go = G.on && G.t > 1.0 + k * 0.4; k++;
+      if (!go) { e.x = e.hx; e.y = e.hy; e.vx = 0; e.vy = 0; e.modeT = 0.5; e.cd = 1; continue; }
+      e.waiting = false; e.leap = { t: 0, x0: G.skiff ? G.skiff.x : e.x, y0: b.y - 4, bx: b.w - 12 - (k - 1) * 22 }; S.leap ? S.leap() : S.thud(); }
+    if (e.leap) { const L0 = e.leap; L0.t += dt; const u = Math.min(1, L0.t / 0.45), tx = b.x + L0.bx;
+      e.x = L0.x0 + (tx - L0.x0) * u; e.y = L0.y0 + (b.y - L0.y0) * u - Math.sin(u * Math.PI) * 30; e.vx = 0; e.vy = 0; e.modeT = 0.3; e.cd = Math.max(e.cd, 0.6);
+      if (u >= 1) { e.leap = null; e.onDeck = true; e.lastB = b.x; H.dust(e.x, e.y, 6); S.thud(); } continue; }
+    if (e.onDeck) { e.x += b.x - (e.lastB ?? b.x); e.lastB = b.x; e.x = Math.max(b.x + 6, Math.min(b.x + b.w - 6, e.x)); e.y = b.y; e.vy = 0; }
+  }
 }
 /* IS (x, y) LIT: out of the fog, in air a horn has cleared, or in a lantern's light */
 export const litAt = (st, x, y) => !st || R.litAt(st, x, y);
@@ -145,6 +208,8 @@ export function drawCanalMover(st, g, H, m, cx, cy, time) {
   const flick = 0.8 + 0.2 * Math.sin(time * 9); g.fillStyle = '#ffcf6a'; g.globalAlpha = flick; g.fillRect(x + 3, y - 40, 8, 7); g.globalAlpha = 1; g.fillStyle = '#6a5030'; g.fillRect(x + 3, y - 41, 8, 1);
   /* THE TILLER, and which way it has her helm (up: the mill cut; down: the weir) */
   const hx = x + (w >> 1); g.fillStyle = '#6a4a2a'; g.fillRect(hx - 1, y - 8, 3, 8); g.fillRect(hx + 1, y - 8, 7, 2);
+  /* (claude/canalfix) HER SIDE of a wide pound: on the offside she is drawn a shade further off (dimmer, a wake line on the near water), greybox */
+  if (b && st.D && R.sideOf(st, st.D) === 'off') { g.globalAlpha = 0.28; g.fillStyle = '#0a1418'; g.fillRect(x, y - 2, w, 12); g.globalAlpha = 0.6; g.fillStyle = '#bfe6f5'; for (let k = 4; k < w; k += 10) g.fillRect(x + k, y + 13, 5, 1); g.globalAlpha = 1; }
   if (b) { const up = b.helm === 'cut'; g.fillStyle = up ? '#8fd160' : '#ff9a5c'; g.fillRect(hx + 3, y - 16, 1, 5); if (up) g.fillRect(hx + 2, y - 15, 3, 1); else g.fillRect(hx + 2, y - 12, 3, 1); }
 }
 export function drawCanal(st, g, H, cx, cy, VW, VH, time) {
@@ -177,6 +242,15 @@ export function drawCanal(st, g, H, cx, cy, VW, VH, time) {
       const k = pr.cd > 0 ? 1 - pr.cd / R.RIG.hornWind : 1; g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 32, 16, 3); g.fillStyle = k >= 1 ? '#8fd160' : '#c8a040'; g.fillRect(x - 7, y - 31, Math.round(14 * k), 1); }   /* the wind-up gauge: green, it will sound */
     else if (pr.t === 'lanternpost') { g.fillStyle = '#3a3040'; g.fillRect(x - 1, y - 26, 2, 26); g.fillStyle = pr.lit ? '#ffcf6a' : '#4a4038'; g.fillRect(x - 3, y - 32, 6, 6); g.fillStyle = '#2a2020'; g.fillRect(x - 4, y - 33, 8, 1); }
   }
+  // ---- (claude/canalfix) THE ARCH'S LIP: a timber sill with a warning band, one row over her gunwale - "too low" before anyone reaches it ----
+  if (D.arch) { const ax = D.arch[0] * TS - cx, ay = (D.arch[2] + 1) * TS - cy; if (ax > -30 && ax < VW + 30) { g.fillStyle = '#4a3422'; g.fillRect(ax - 3, ay - 6, 10, 7);
+    for (let q = 0; q < 10; q += 4) { g.fillStyle = (q / 4) % 2 ? '#1b1626' : '#ffd36b'; g.fillRect(ax - 3 + q, ay - 2, 3, 3); } } }
+  // ---- (claude/canalfix) THE BOOMS: a chained log across the race, live on her way (a red-and-white band: JUMP), and the lane mark over it ----
+  if (D.weir) for (const bm of D.weir.booms || []) { const sx = bm.x - cx; if (sx < -30 || sx > VW + 30) continue; const y = bm.y - cy, live = boomLive(st, bm);
+    g.fillStyle = '#5a3a22'; g.fillRect(sx - 7, y - 5, 14, 5); g.fillStyle = '#3a2618'; g.fillRect(sx - 7, y - 1, 14, 1); g.fillStyle = '#8a8a94'; g.fillRect(sx - 9, y - 3, 2, 1); g.fillRect(sx + 7, y - 3, 2, 1);
+    if (live && st.barge.mode !== 'float') { const fl = Math.floor(time * 8) % 2; g.fillStyle = fl ? '#ff6b6b' : '#ffffff'; for (const o of [-2, 2]) { g.fillRect(sx + o, y - 18, 1, 6); g.fillRect(sx + o, y - 10, 1, 1); } } }
+  // ---- (claude/canalfix) THE BOARDERS' SKIFF ----
+  if (st.gang && st.gang.skiff) { const sk = st.gang.skiff, sx = sk.x - cx, y = st.barge.y - cy + 2; if (sx > -40 && sx < VW + 40) { g.fillStyle = '#2a1a10'; g.fillRect(sx, y, 30, 5); g.fillStyle = '#5a3a22'; g.fillRect(sx + 2, y - 2, 26, 2); } }
   // ---- JENNY'S SIGNS, cheap and told: a child's shoe on a lock step, bubbles by the bank where nothing lives ----
   for (const [sx0, sy0] of D.shoes || []) { const x = sx0 * TS + 6 - cx, y = (sy0 + 1) * TS - cy; if (x < -10 || x > VW + 10) continue; g.fillStyle = '#6a3a2a'; g.fillRect(x, y - 3, 6, 3); g.fillStyle = '#8a5a3a'; g.fillRect(x, y - 4, 3, 1); }
   for (const [bx, row] of D.bubbles || []) { const x = bx * TS + 8 - cx, s = surfaceAt(st, H, bx * TS + 8), y = (s ? s.y : row * TS) - cy; if (x < -10 || x > VW + 10) continue; const ph = (time * 0.7 + bx * 0.37) % 1; if (ph < 0.45) { g.globalAlpha = 0.6 - ph; g.strokeStyle = '#9ad8c0'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + Math.sin(bx) * 6, y, 2 + ph * 14, 1 + ph * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
@@ -194,6 +268,7 @@ export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
   H.eachHero(P => { if (!P.dead) hole(P.x - cx, P.y - 8 - cy, 34); });
   for (const p of st.posts) if (p.lit) hole(p.x - cx, p.y - 20 - cy, R.RIG.postR);
   const b = st.barge; hole(b.x + 10 - cx, b.y - 30 - cy, R.RIG.bargeR);
+  for (const c of st.carriers || []) hole(c.x - cx, c.y - 20 - cy, R.RIG.carryR);   /* (claude/canalfix) a lamplighter's lantern */
   fg.globalCompositeOperation = 'source-over';
   /* THE THEATRE, lit, ahead through the fog the whole way: a warm glow low in the fog at the screen's far side, stronger the nearer you come */
   const k = Math.min(1, Math.max(0, cx / (360 * TS))), gx = VW * 0.86, gy = VH * 0.42, gr = fg.createRadialGradient(gx, gy, 4, gx, gy, 90 + 60 * k);
@@ -201,6 +276,9 @@ export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
   g.drawImage(FOGC, 0, 0);
   /* the lanterns and the wisps burn on top of the fog - the one warm, the other cold: that is the read */
   for (const p of st.posts) if (p.lit) { const x = p.x - cx, y = p.y - 29 - cy; if (x < -20 || x > VW + 20) continue; g.globalAlpha = 0.5 + 0.1 * Math.sin(time * 7 + p.x); g.fillStyle = '#ffcf6a'; g.fillRect(x - 3, y - 3, 6, 6); g.globalAlpha = 1; }
+  /* (claude/canalfix) THE LAMPLIGHTER's pole and lantern, over his shoulder (the greybox reskin of the snuffer: the art lane gives him his own coat) */
+  for (const e of H.enemies()) if (e.alive && e.lamplighter) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy); if (x < -20 || x > VW + 20) continue; const f = e.face || 1;
+    g.fillStyle = '#4a3a2a'; g.fillRect(x - f * 2, y - 26, 1, 14); g.fillRect(x - f * 2, y - 26, f * 8, 1); g.globalAlpha = 0.75 + 0.2 * Math.sin(time * 8 + e.x); g.fillStyle = '#ffcf6a'; g.fillRect(x + f * 5 - 2, y - 25, 5, 5); g.globalAlpha = 1; }
   for (const e of H.enemies()) if (e.alive && e.t === 'willowisp') { const x = e.x - cx, y = e.y + (e.bob || 0) - 6 - cy; if (x < -20 || x > VW + 20) continue; const gr2 = g.createRadialGradient(x, y, 1, x, y, 16);
     gr2.addColorStop(0, 'rgba(160,255,210,' + (e.mode === 'flareTell' ? 0.9 : 0.55) + ')'); gr2.addColorStop(1, 'rgba(160,255,210,0)'); g.fillStyle = gr2; g.fillRect(x - 16, y - 16, 32, 32); }
   /* EYES IN THE FOG (Jenny's, glimpsed): a pair that opens now and then where the fog is thickest, and is gone */

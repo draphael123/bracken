@@ -52,11 +52,18 @@ if (D) {
     R.strikeBridge(st.bridges[0]); for (let i = 0; i < 120; i++) R.bridgeStep(st.bridges[0], DT);
     st.bridges[1].across = false; st.bridges[1].k = 1;
     for (let i = 0; i < 9000; i++) R.bargeStep(st, DT, true); ok(b.holdWhy === 'fog' && Math.abs(b.x + b.w - 165 * TS) < 3, 'the barge did not stop at the edge of the thick fog wall (' + (b.x + b.w) / TS + ', ' + b.holdWhy + ')');
-    const h = { fogs: ['F2'], cd: 0 }; st.horns.push(h); ok(R.blowHorn(st, h) && !R.blowHorn(st, h), 'a foghorn did not sound, or sounded twice without winding up');
+    /* (claude/canalfix, review fix 6) THE FOG WALL NEEDS BOTH ITS HORNS: the bank horn's own clear carries her in and the fog closes on her beside the pier; the pier's carries her out */
+    const hornsF2 = L.ents.filter(e => e.t === 'foghorn' && e.fogs.includes('F2')).sort((a, c) => a.x - c.x).map(e => ({ fogs: e.fogs, clear: e.clear, cd: 0, x: e.x }));
+    ok(hornsF2.length === 2, 'the fog wall does not have its two horns (the bank, the pier)');
+    const h = hornsF2[0]; st.horns.push(h); ok(R.blowHorn(st, h) && !R.blowHorn(st, h), 'a foghorn did not sound, or sounded twice without winding up');
     for (let i = 0; i < 90; i++) { R.fogStep(st, DT); R.bargeStep(st, DT, true); } ok(b.x + b.w > 165 * TS + 8, 'the horn cleared the fog wall and the barge did not go into it');
     for (let i = 0; i < 60 * 16; i++) { R.fogStep(st, DT); R.bargeStep(st, DT, true); }
-    ok(b.x > 181 * TS, 'one horn, blown the moment she was held, was not enough to carry her through the fog wall (' + (b.x / TS).toFixed(1) + ')');
+    const F2 = D.fogs.find(f => f.id === 'F2'), stall = (b.x + b.w) / TS;
+    ok(stall < F2.x1 + 1 && b.holdWhy === 'fog', 'ONE horn carried her through the fog wall (the second is redundant): her bow at ' + stall.toFixed(1));
+    const pier = hornsF2[1]; ok(pier && Math.abs(pier.x - stall) <= 5, 'the pier horn is not where the fog closes on her (' + (pier && pier.x) + ' against her bow at ' + stall.toFixed(1) + ')');
     ok(st.fogs.find(f => f.id === 'F2').fade > 0.9, 'the fog did not roll back after the horn');
+    st.horns.push(pier); R.blowHorn(st, pier); for (let i = 0; i < 60 * 12; i++) { R.fogStep(st, DT); R.bargeStep(st, DT, true); }
+    ok(b.x + b.w > (F2.x1 + 1) * TS, 'the second horn did not carry her out of the fog wall (' + ((b.x + b.w) / TS).toFixed(1) + ')');
   }
   { // THE WEIR: her gate bursts, she runs loose, her helm picks the path; only the weir jars her
     for (const helm of ['cut', 'weir']) { const st = R.newCanal(D); for (const id of ['L1', 'L2', 'L3', 'L4']) { const r = R.reachById(st, id); r.y = r.to = R.surfaceY(r.hi); } R.gatesSettle(st);
@@ -66,13 +73,31 @@ if (D) {
       ok(ev.some(e => e.t === 'crash') === (helm === 'weir'), 'the broken weir ' + (helm === 'weir' ? 'did not jar' : 'jarred') + ' her on the ' + helm);
       ok(st.barge.mode === 'float' && st.barge.x > 325 * TS && Math.abs(st.barge.y - R.deckOf(R.surfaceY(44))) < 1, 'the ' + helm + ' did not bring her out into the basin'); }
     const b = { helm: 'weir' }; ok(R.strikeTiller(b) === 'cut' && R.strikeTiller(b) === 'weir', 'the tiller does not turn her helm');
+    /* (claude/canalfix, review fix 3) THE HEAD RACE: she runs slow on its steps; the tiller is a window that shuts before the junction */
+    { const st = R.newCanal(D); for (const id of ['L1', 'L2', 'L3', 'L4']) { const r = R.reachById(st, id); r.y = r.to = R.surfaceY(r.hi); } R.gatesSettle(st); for (const q of st.bridges) { q.across = false; q.k = 1; } st.barge = R.newBarge(st, 238 * TS);
+      let i = 0; while (st.barge.mode !== 'loose' && i++ < 3000) R.bargeStep(st, DT, true); const x0 = st.barge.x; R.bargeStep(st, 0.5, true);
+      ok(Math.abs((st.barge.x - x0) / 0.5 - R.RIG.headRace) < 1 && R.RIG.headRace < 70, 'she does not run slow on the head race steps: ' + ((st.barge.x - x0) / 0.5).toFixed(1) + ' px/s');
+      ok(R.tillerOpen(st), 'the tiller does not answer just after the burst');
+      while (st.barge.x + st.barge.w / 2 < D.weir.helmBy + 4 && i++ < 9000) R.bargeStep(st, DT, true); ok(!R.tillerOpen(st), 'the tiller still answers past col ' + D.weir.helmBy / TS + ' (it must be a window)');
+      ok((D.weir.booms || []).some(q => q.path === 'head') && D.weir.booms.some(q => q.path === 'cut') && D.weir.booms.some(q => q.path === 'fall') && (L.chases[0].beams || []).length >= 3, 'the weir run does not mix its reads: a duck (a beam) AND a jump (a boom) on the head race and on each branch');
+      ok(L.chases[0].rubber && L.chases[0].rubber.min === 64, 'the flood rubber band is not at MIN_FAIR (64)'); }
   }
   { // THE FOG: only the lit are seen; a post lights, a doused one does not; the barge's lantern lights
     const st = R.newCanal(D); st.posts.push({ x: 150 * TS, y: 30 * TS, lit: true }); st.barge = R.newBarge(st, 100 * TS);
-    ok(R.litAt(st, 20 * TS, 20 * TS), 'out of the fog is not lit');
+    ok(R.litAt(st, 5 * TS, 20 * TS), 'out of the fog is not lit');   /* (the street: the town's thin fog starts at the warehouse, claude/canalfix) */
     ok(!R.litAt(st, 140 * TS, 29 * TS) && R.litAt(st, 150 * TS, 29 * TS) && R.litAt(st, 101 * TS, 32 * TS), 'in the fog, the dark is lit (or a lantern is not)');
     R.strikePost(st.posts[0]); ok(!R.litAt(st, 150 * TS, 29 * TS), 'a doused post still lights');
   }
+  { // (claude/canalfix, review fix 2) IT COMES ABOARD: a rider amidships on a HELD barge is not out of reach; and (UPGRADE A) a lock that drains strands one
+    const hero = { x: 1000 + 48, y: 600, face: 1, ground: true, dead: false, onMover: { canal: true } }, barge = { x: 1000, w: 96, y: 600, mode: 'float', holdWhy: 'gate', v: 0 };
+    const e = F.newGrindylow({ t: 'grindylow', x: 990, y: 610, hp: 20, anim: 0 }); let hit = 0;
+    const X = { hero: () => hero, barge: () => barge, surfaceAt: () => ({ y: 606, id: 'P0' }), solidAt: () => false, press: () => ({}), hurtHero: () => hit++, mark: () => {}, sfx: {}, hint: () => {}, ring: () => {} };
+    for (let i = 0; i < 600 && !hit; i++) F.stepGrindylow(e, DT, X);
+    ok(e.aboard && hit === 1 && e.mode === 'grab', 'a grindylow did not come aboard a held barge and grab a rider standing amidships (' + JSON.stringify([e.aboard, e.mode, hit]) + ')');
+    ok(F.grindylowTake({ aboard: true, mode: 'deck' }) === F.GRIND.weak, 'a grindylow on her deck is not weak (double)');
+    const g2 = F.newGrindylow({ t: 'grindylow', x: 600, y: 440, hp: 20, anim: 0 }); let surf = 452; const X2 = { ...X, hero: () => ({ x: 0, y: 0, dead: false }), barge: () => null, surfaceAt: () => ({ y: surf, id: 'L2' }) };
+    for (let i = 0; i < 60; i++) F.stepGrindylow(g2, DT, X2); for (let i = 0; i < 200 && g2.mode !== 'stranded'; i++) { surf = Math.min(532, surf + 34 * DT); F.stepGrindylow(g2, DT, X2); }
+    ok(g2.mode === 'stranded', 'a lock draining at its own pace (34 px/s) did not strand the grindylow in it'); }
   { // THE GRINDYLOW (pure, against a mock world): a ring before the grab; a jump beats it; three presses break it; nothing finds it under the water
     const mk = (hero) => { const e = F.newGrindylow({ t: 'grindylow', x: 600, y: 630, hp: 20, anim: 0 }); const marks = [];
       const X = { hero: () => hero, barge: () => null, surfaceAt: x => x > 576 ? { y: 644, id: 'P0' } : null, solidAt: (x, y) => x <= 576 && y >= 624, press: () => hero.press || {},
@@ -121,23 +146,34 @@ if (lv && D) {
   ok(reached(R0, gate.x, gate.y), 'the level\'s gate is not reached at all');
   ok(!reached(floodReach({ ...L, rigBands: [] }, T, { rides: true }), gate.x, gate.y), 'THE BARGE is not required: the gate is reached with no barge');
   const flat = L.rigBands.filter(([x0, x1, y0, y1]) => y0 === y1);   /* the pounds and the race; the lock chambers' bands (a rise) left out */
-  const cp1 = ents('check').sort((a, b) => a.x - b.x)[0];
-  ok(!reached(floodReach({ ...L, rigBands: flat }, T, { rides: true }), cp1.x, cp1.y), 'THE LOCK is not required: the mill is reached with no lock rising');
+  ok(!reached(floodReach({ ...L, rigBands: flat }, T, { rides: true }), 99, 17), 'THE LOCK is not required: the mill is reached with no lock rising');
+  /* (claude/canalfix, UPGRADE A) A LOCK SET AGAINST HER: the flight's first chamber starts FULL, with a paddle on its lower gate's face to drain it and a grindylow up in it */
+  { const L2 = D.reaches.find(r => r.id === 'L2'), G3 = D.gates.find(g => g.id === 'G3');
+    ok(L2 && L2.init === 'hi' && ents('locksluice').some(e => e.reach === 'L2' && e.x === G3.x - 1) && ents('grindylow').some(e => e.x >= L2.x0 && e.x <= L2.x1 && e.y === L2.hi - 1), 'the flight first chamber is not set against her (full, a drain paddle at her bow, a grindylow up in it to strand)'); }
   ok(D.fogs.some(f => f.thick && D.reaches.some(r => f.x0 > r.x0 && f.x1 < r.x1)) && ents('foghorn').length >= 2, 'THE FOG is not a lock: no thick bank across a reach with a horn to clear it');
   ok(D.bridges.filter(b => b.init !== 'open').length >= 3, 'THE SWING BRIDGE is not a lock: the bridges must stand across (holding the barge) where she has to pass');
   // THE EXAM COMBINES: in the basin, one space: thick fog, a horn and the bridge's capstan past the bridge, archers who see only the lit, weed (both kinds), a wisp, a grindylow, the elite
   const ex = A.bridge.exam, inEx = e => inn(ex, e.x), horn = ents('foghorn').find(inEx), capE = ents('swingcap').find(inEx), br = D.bridges.find(b => inn(ex, b.x0));
-  ok(D.fogs.some(f => f.thick && inn(ex, f.x0)) && horn && capE && br && horn.x > br.x1 && capE.x > br.x1 && horn.fogs.some(id => D.fogs.find(f => f.id === id && f.thick && f.x1 >= br.x0)),
-    'THE EXAM: the thick fog, its horn and the bridge\'s capstan are not one problem (the horn and the capstan past the bridge, the horn clearing the fog over it)');
+  ok(D.fogs.some(f => f.thick && inn(ex, f.x0)) && horn && capE && br && horn.x < br.x0 && capE.x > br.x1 && horn.clear >= 6 && horn.clear <= 7 && horn.fogs.some(id => D.fogs.find(f => f.id === id && f.thick && f.x1 >= br.x0)),
+    'THE EXAM is not two stops (claude/canalfix, review fix 4): its horn on the west bank with its own 6-7 s, the capstan on the island past the bridge, the horn clearing the fog over it');
+  /* (claude/canalfix, review fix 5) THE GARRISON BRIDGE's capstan is on its FAR bank, past its archers; a lantern lights the way on to it, and a lamplighter keeps it lit */
+  { const B2 = D.bridges[1], capG = ents('swingcap').find(e => e.bridge === 1), postG = ents('lanternpost').find(e => e.x >= B2.x0 - 4 && e.x <= B2.x0);
+    ok(capG && capG.x > B2.x1 && ents('archer').filter(e => e.x >= B2.x0 && e.x <= B2.x1).length === 2 && postG && L.ents.some(e => e.t === 'snuffer' && e.canal && e.canal.lamplighter && Math.abs(e.x - B2.x0) < 8),
+      'the bridge garrison resolves itself: its capstan must be on the far bank past both archers, with a lantern on the way and a lamplighter to relight it'); }
+  ok(L.ents.filter(e => e.t === 'snuffer' && e.canal && e.canal.lamplighter).length >= 2 && L.ents.filter(e => e.t === 'snuffer').every(e => e.canal && e.canal.lamplighter && D.fogs.some(f => !f.thick && e.x >= f.x0 && e.x <= f.x1)), 'the kill-first LAMPLIGHTERS (the snuffer reskinned) are not in the fog bank and the basin');
+  ok(L.ents.filter(e => e.canal && e.canal.boarder).length >= 3 && D.gangAt && D.fogs.some(f => f.thick && f.x0 === D.gangAt), 'the boarding gang (UPGRADE C) does not wait at the fog wall');
+  ok((D.sides || []).length && (D.beams || []).some(b => b.side === 'off') && ents('sign').some(e => /TILLER/.test(e.text) && e.x < 70), 'the tiller is not taught before the weir (UPGRADE B: her side of the Waymeet pound)');
+  ok(D.arch && D.arch[0] === 130, 'THE LONG ARCH is not told to the hands (L.canal.arch)');
   ok(ents('archer').filter(inEx).every(e => e.canal && e.canal.fogSight) && ents('archer').filter(inEx).length >= 2 && ents('willowisp').some(inEx) && ents('grindylow').some(inEx) && L.ents.some(e => e.elite && inEx(e))
     && (D.weeds || []).some(w => inn(ex, w[0]) && w[3] === 'bright') && (D.weeds || []).some(w => inn(ex, w[0]) && w[3] !== 'bright'), 'THE EXAM does not hold every foe and both weeds in its one space');
   // THE SET PIECE: a chase with agency (the tiller: her helm picks the cut or the weir), low beams to duck, a checkpoint before it
   const ch = (L.chases || [])[0]; ok(ch && ch.beams && ch.beams.length >= 3 && D.weir && D.weir.cut && D.weir.fall && D.weir.junction, 'THE WEIR is not a chase with low beams and a junction the tiller steers');
   ok(ents('check').some(e => ch && ch.trigger - (e.x * TS + 8) >= 0 && ch.trigger - (e.x * TS + 8) <= 240), 'no checkpoint in the 240 px before the weir chase');
   // SIGNS TEACH, NEVER SPOIL
-  const spoil = ents('sign').filter(e => /WITHOUT YOU|ROOF|INTO THE CANAL|BEHIND YOU|OVER THE ROOF|TWICE|ISLAND|CUT IS SAFE|WEIR IS/.test(e.text)); ok(!spoil.length, 'a sign spoils a twist or an exam: ' + spoil.map(e => e.text).join(' | '));
+  const spoil = ents('sign').filter(e => /WITHOUT YOU|ROOF|INTO THE CANAL|BEHIND YOU|OVER THE ROOF|TWICE|ISLAND|CUT IS SAFE|WEIR IS|SPLITS|THE MILL CUT OR|NO POST IS A WISP/.test(e.text)); ok(!spoil.length, 'a sign spoils a twist or an exam: ' + spoil.map(e => e.text).join(' | '));
   // FEWER, BETTER: every foe in a named encounter, and every foe type bound to the level's mechanics
-  const FOES = new Set(['gaffer', 'archer', 'grindylow', 'willowisp']), foes = L.ents.filter(e => FOES.has(e.t));
+  const FOES = new Set(['gaffer', 'archer', 'grindylow', 'willowisp', 'snuffer']), foes = L.ents.filter(e => FOES.has(e.t));
+  ok(foes.every(e => e.x < L.lockArena.sx), 'a foe stands past the end gate, where nobody can reach it until Jenny is wired: ' + foes.filter(e => e.x >= L.lockArena.sx).map(e => e.t + '@' + e.x).join(' '));
   ok(L.ents.every(e => !(['mummer', 'hobbyhorse', 'drunk', 'swornsword', 'hedgeknight', 'crossbow'].includes(e.t))), 'a foe from outside the canal\'s cast stands in it (no mummers: they are the theatre\'s)');
   ok(foes.every(e => typeof e.squad === 'string'), 'a foe stands in no named encounter: ' + foes.filter(e => !e.squad).map(e => e.t + '@' + e.x).join(' '));
   ok(!L.ents.some(e => e.garrison), 'sprinkled garrison stands in the canal');
@@ -171,9 +207,10 @@ if (!NOPAGE && lv) {
       const C = () => BK.canal(), P = BK.P, k = BK.keys, sim = n => { for (let i = 0; i < n; i++) BK.sim(1); };
       const kill = f => BK.enemies().filter(f).forEach(e => e.alive = false);
       // 1. SHE CARRIES YOU; A LOW BEAM FINDS A RIDER STANDING, NOT ONE DUCKED
-      fresh(false); kill(e => true); BK.tp(38, 37); sim(40); const x0 = P.x; out.board = !!(P.onMover && P.onMover.canal); sim(120); out.carried = P.x - x0;
+      fresh(false); kill(e => true); C().barge.helm = 'cut'; BK.tp(38, 37); sim(40); const x0 = P.x; out.board = !!(P.onMover && P.onMover.canal); sim(120); out.carried = P.x - x0;   /* (the offside: the low bridge's timbers hang there, claude/canalfix) */
       let hp0 = P.hp; for (let i = 0; i < 1500 && C().barge.x < 60 * TS; i++) { k.down = true; BK.sim(1); } k.down = false; out.ducked = hp0 - P.hp;
-      fresh(false); kill(e => true); C().barge.x = 44 * TS; BK.tp(47, 37); sim(20); hp0 = P.hp; for (let i = 0; i < 1500 && C().barge.x < 60 * TS; i++) BK.sim(1); out.stood = hp0 - P.hp;
+      fresh(false); kill(e => true); C().barge.helm = 'cut'; C().barge.x = 44 * TS; BK.tp(47, 37); sim(20); hp0 = P.hp; for (let i = 0; i < 1500 && C().barge.x < 60 * TS; i++) BK.sim(1); out.stood = hp0 - P.hp;
+      fresh(false); kill(e => true); C().barge.helm = 'weir'; C().barge.x = 44 * TS; BK.tp(47, 37); sim(20); hp0 = P.hp; for (let i = 0; i < 1500 && C().barge.x < 60 * TS; i++) BK.sim(1); out.towpathSide = hp0 - P.hp;   /* the towpath side: clear of the timbers */
       // 2. A PADDLE FILLS THE LOCK AND LIFTS HER; THE GATE ABOVE OPENS
       fresh(); kill(e => true); C().barge.x = 74 * TS; BK.tp(79, 38); sim(20); P.face = 1; BK.press('atk'); sim(12);
       const g2 = () => BK.L.grid[34 * BK.L.W + 81]; out.lockPre = g2(); sim(700); out.lock = [Math.round(C().barge.y), Math.round(P.y), g2(), C().gates.find(g => g.id === 'G2').open];
@@ -181,7 +218,7 @@ if (!NOPAGE && lv) {
       fresh(); kill(e => true); BK.tp(117, 29); sim(20); const deck = () => BK.L.grid[30 * BK.L.W + 114]; out.bridgePre = deck(); P.face = 1; BK.press('atk'); sim(90); out.bridge = [deck(), C().bridges[0].across];
       // 4. THE FOG WALL HOLDS HER UNTIL A HORN CLEARS IT
       fresh(); kill(e => true); for (const b of C().bridges.slice(0, 2)) { b.across = false; b.k = 1; } C().barge.x = 158 * TS; BK.tp(164, 29); sim(20); sim(300); out.fogHeld = [C().barge.holdWhy, Math.round((C().barge.x + 96) / TS)];
-      C().horns[0].cd = 0; for (const f of C().fogs) if (f.id === 'F2') f.clear = 9; BK.tp(173, 29); sim(300); out.fogOn = Math.round((C().barge.x + 96) / TS);
+      C().horns[0].cd = 0; for (const f of C().fogs) if (f.id === 'F2') f.clear = 9; BK.tp(183, 29); sim(300); out.fogOn = Math.round((C().barge.x + 96) / TS);
       // 5. AN ARCHER IN THE FOG LOOSES ONLY AT A LIT HERO
       fresh(); const ar = BK.enemies().find(e => e.t === 'archer' && Math.abs(e.x - (155 * TS + 8)) < 20); kill(e => e !== ar); for (const p of C().posts) p.lit = false; C().barge.x = 90 * TS;
       BK.tp(150, 29); let dark = 0; for (let i = 0; i < 400; i++) { BK.sim(1); if (ar.draw > 0.3) dark++; } C().posts.push({ x: P.x, y: P.y, lit: true }); let lit = 0; ar.timer = 0; for (let i = 0; i < 400; i++) { BK.sim(1); if (ar.draw > 0.3) lit++; } out.archer = [dark, lit];
@@ -195,9 +232,27 @@ if (!NOPAGE && lv) {
       // 9. THE WEIR GATE BURSTS AND THE CHASE RUNS
       fresh(); kill(e => true); const cb = C(); for (const id of ['L1', 'L2', 'L3', 'L4']) { const q = cb.reaches.find(r => r.id === id); q.y = q.to = q.hi * TS + 4; } for (const b of cb.bridges) { b.across = false; b.k = 1; }
       cb.barge.x = 238 * TS; sim(30); BK.tp(241, 16); sim(20); for (let i = 0; i < 900 && cb.barge.mode !== 'loose'; i++) BK.sim(1); sim(200); out.weir = [cb.barge.mode, BK.L.grid[20 * BK.L.W + 248], (BK.chases ? BK.chases() : null)];
+      // 10. (claude/canalfix) A GRINDYLOW COMES ABOARD A HELD BARGE and grabs a rider standing AMIDSHIPS (the mill wharf's, the bridge holding her)
+      fresh(false); { const gw = BK.enemies().find(e => e.t === 'grindylow' && Math.abs(e.x - (104 * TS + 8)) < 20); kill(e => e !== gw); const cb = C(); const l1 = cb.reaches.find(r => r.id === 'L1'); l1.y = l1.to = 33 * TS + 4;
+        cb.barge.x = 112 * TS - 97; sim(10); BK.tp(Math.round((cb.barge.x + 48) / TS), 31); sim(20); let aboard = false, grab = false; const hp1 = P.hp;
+        for (let i = 0; i < 900 && !grab; i++) { BK.sim(1); if (gw.aboard) aboard = true; if (gw.mode === 'grab') grab = true; } out.boarded = [aboard, grab, hp1 - P.hp, cb.barge.holdWhy]; }
+      // 11. (claude/canalfix, UPGRADE C) THE BOARDING GANG comes aboard at the fog wall
+      fresh(false); { const cb = C(); for (const b of cb.bridges.slice(0, 2)) { b.across = false; b.k = 1; } kill(e => !e.boarder); cb.barge.x = 158 * TS; BK.tp(162, 31); sim(10);
+        let onDeck = 0; for (let i = 0; i < 400; i++) { BK.sim(1); onDeck = BK.enemies().filter(e => e.alive && e.onDeck).length; if (onDeck >= 3) break; } out.gang = [onDeck, cb.barge.holdWhy, Math.round((cb.barge.x + 96) / TS)]; }
+      // 12. (claude/canalfix) THE FLOOD LAPS HER STERN on the head race: a rider at the stern is hurt by it, one at the bow is not
+      const lapRun = (bow) => { fresh(false); kill(e => true); P.hp = 100; const cb = C(); for (const id of ['L1', 'L2', 'L3', 'L4']) { const q = cb.reaches.find(r => r.id === id); q.y = q.to = q.hi * TS + 4; } for (const b of cb.bridges) { b.across = false; b.k = 1; }
+        cb.barge.x = 238 * TS; sim(2); BK.tp(241, 15); P.y = cb.barge.y; P.vy = 0; sim(5); const want = () => bow ? cb.barge.x + 84 : cb.barge.x + 12;
+        for (let i = 0; i < 900 && cb.barge.mode !== 'loose'; i++) { k.right = P.x < want() - 3; k.left = P.x > want() + 3; BK.sim(1); } k.left = k.right = false; let hits = 0, lastHold = 0;
+        for (let i = 0; i < 900 && cb.barge.x + 48 < 262 * TS; i++) { const w = want(), far = Math.abs(P.x - w) > 6; k.right = far && P.x < w; k.left = far && P.x > w; k.down = !far; BK.sim(1); const ch = BK.chase.states()[0]; if (ch.hold > lastHold + 0.3) hits++; lastHold = ch.hold; }
+        k.left = k.right = k.down = false; return [hits, Math.round(P.x - cb.barge.x), Math.round(100 - P.hp)]; };   /* [the flood's contacts, where he ended on her deck, damage]: ducked all the way, so a beam is not what finds him */
+      out.lapStern = lapRun(false); out.lapBow = lapRun(true);
       return out; })()`, 900000);
     ok(r.board && r.carried > 16, 'the barge did not carry a hero standing on her (' + JSON.stringify([r.board, r.carried]) + ')');
     ok(r.ducked === 0 && r.stood > 0, 'the low bridge did not find a rider standing, or found one ducked (ducked ' + r.ducked + ', stood ' + r.stood + ')');
+    ok(r.towpathSide === 0, 'on the towpath side her rider was still hit by the offside timbers (' + r.towpathSide + ')');
+    ok(r.boarded[0] && r.boarded[1] && r.boarded[2] > 0, 'a grindylow did not come aboard the held barge and grab a rider amidships: ' + JSON.stringify(r.boarded));
+    ok(r.gang[0] >= 3 && r.gang[1] === 'fog', 'the boarding gang did not come aboard her at the fog wall: ' + JSON.stringify(r.gang));
+    ok(r.lapStern[0] > 0 && r.lapBow[0] === 0, 'the flood does not lap her stern on the head race (stern ' + JSON.stringify(r.lapStern) + ', bow ' + JSON.stringify(r.lapBow) + ')');
     ok(r.lockPre === 1 && r.lock[0] < 33 * TS && r.lock[1] < 33 * TS && r.lock[2] === 0 && r.lock[3], 'the paddle did not fill the lock, lift her and the hero, and open the upper gate: ' + JSON.stringify([r.lockPre, r.lock]));
     ok(r.bridgePre === 2 && r.bridge[0] === 0 && r.bridge[1] === false, 'the capstan did not swing the mill bridge out of the grid: ' + JSON.stringify([r.bridgePre, r.bridge]));
     ok(r.fogHeld[0] === 'fog' && r.fogHeld[1] === 165 && r.fogOn > 170, 'the fog wall did not hold her until the horn cleared it: ' + JSON.stringify([r.fogHeld, r.fogOn]));

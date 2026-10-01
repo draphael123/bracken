@@ -5,8 +5,8 @@ On this branch the theatre does not exist, so the canal `needs: 'waymeet'` and t
 the theatre's `needs` becomes `'canal'`, the fair keeps `needs: 'theatre'`, and the inland map runs waymeet (40,162) -> canal (50,154) ->
 theatre (move it from (56,154) to about (62,151), so the two do not crowd) -> fair (72,148).
 **Boss**: JENNY GREENTEETH (claude/lockkeeper, boss id `greenteeth`), in the lock chamber at the end. **Music**: its own track, `canal`
-(`audio/canal.ogg`, made by `tools/canal-music.mjs`: a slow barcarolle in A minor, 6/8, musette accordion and hurdy-gurdy; a placeholder
-for the art/music lane). **Code**: `src/fog-canal.js` (the level), `src/canal-rig.js` (the machinery, pure), `src/canal-hands.js` (its hands
+(`audio/canal.ogg`: "Lanterns in the Hollowed Forest" by Tsorthan Grove, CC0, a dedicated loop - Daniel's pick, claude/canalfix 2026-10-01; it replaced
+the lane's synthesized placeholder barcarolle). **Code**: `src/fog-canal.js` (the level), `src/canal-rig.js` (the machinery, pure), `src/canal-hands.js` (its hands
 in the game), `src/canal-foes.js` (the two new foes). **Checks**: `tools/canal.mjs` (the rule, pure + level + page), `tools/canal-pilot.mjs`
 (the route with real keys), `tools/canal-shots.mjs` (pictures).
 

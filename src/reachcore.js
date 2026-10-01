@@ -139,7 +139,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   /* DEEP WATER THAT HURTS IS NOT A FLOOR (THE FOG CANAL, L.noWade): a fall into it costs health and hands you back to the bank (L.waterHurts), so the
      canal's bed under it is nowhere anyone walks - only the barge (its L.rigBands) crosses. Only a level that says so: no other level's fill moves */
   if (L.noWade) for (const p of (L.pools || [])) { if (p.swim || p.shallow) continue; const r0 = Math.floor(p.y / TSZ), r1 = Math.floor(((p.bottom ?? p.y + 64) - 1) / TSZ);
-    for (let x = Math.floor(p.x0 / TSZ); x < Math.ceil(p.x1 / TSZ); x++) for (let y = r0; y <= r1; y++) footing.delete(key(x, y)); }
+    const onRide = (x, y) => (L.rigBands || []).some(([a, b, y0, y1]) => x >= a && x <= b && y >= y0 - 1 && y <= y1);   /* (claude/canalfix) her deck at any level her water can stand at stays footing: a lock that starts FULL must not drown its own low stop */
+    for (let x = Math.floor(p.x0 / TSZ); x < Math.ceil(p.x1 / TSZ); x++) for (let y = r0; y <= r1; y++) if (!onRide(x, y)) footing.delete(key(x, y)); }
   // SWIM WATER (the Long Water): every open cell of a swimmable pool is somewhere you can be - you swim to any
   // neighbour, and at the surface you can leap out. A tide pool counts at its high water; a boss's tide does not.
   const water = new Set(), surfRow = new Map();

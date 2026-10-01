@@ -14277,7 +14277,7 @@ function updateGaffer(e, dt) {
   switch (e.mode) {
     case 'hookTell': e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { e.mode = 'hook'; e.modeT = 0.45; e.cd = GAFFER.every; SFX.throwWhoosh(); SFX.clank();
-        if (!P.dead && Math.sign(d) === e.face && ad < GAFFER.reach && (Math.abs(P.y - e.y) < 26 || (e.bargee && P.y > e.y && P.y - e.y < 54))) {
+        if (!P.dead && Math.sign(d) === e.face && ad < GAFFER.reach && (Math.abs(P.y - e.y) < 26 || (e.bargee && P.y > e.y && P.y - e.y < 54 && !CNH.offside(CANAL, CNX, P)))) {   /* (claude/canalfix: on the offside of a wide pound she is out of the towpath's reach) */
           const hooked = damagePlayer(e.x, DMG.gafferHook, { unblockable: true, who: e, name: 'THE GAFF' });   /* (a hook ducked goes over: it takes nobody off anything - the answer the marks table gives it) */
           if (hooked !== false) { P.onMover = null; P.ground = false; P.vx = -Math.sign(d) * 150; P.vy = -70; number(P.x, P.y - 26, 'OFF THE BUCKET', '#ff6b6b'); } } }
       break;
@@ -14294,7 +14294,7 @@ function updateGaffer(e, dt) {
       if (!near) { want = e.face * 10; break; }
       e.face = Math.sign(d) || e.face;
       if (ad < GAFFER.haft && Math.abs(P.y - e.y) < 22 && e.modeT <= 0) { e.mode = 'haftTell'; e.modeT = 0.45; number(e.x, e.y - e.h - 10, '!', '#ffd36b'); SFX.gobHurt(); break; }
-      if (e.cd <= 0 && e.modeT <= 0 && ad < GAFFER.reach && (Math.abs(P.y - e.y) < 26 || (e.bargee && P.y > e.y && P.y - e.y < 54)) && (P.onMover || ad > GAFFER.haft)) {   /* (THE FOG CANAL's bargee, e.bargee: from a towpath he hooks down at the barge passing under him) */
+      if (e.cd <= 0 && e.modeT <= 0 && ad < GAFFER.reach && (Math.abs(P.y - e.y) < 26 || (e.bargee && P.y > e.y && P.y - e.y < 54 && !CNH.offside(CANAL, CNX, P))) && (P.onMover || ad > GAFFER.haft)) {   /* (THE FOG CANAL's bargee, e.bargee: from a towpath he hooks down at the barge passing under him) */
         e.mode = 'hookTell'; e.modeT = GAFFER.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.tell(true); break; }
       want = ad > 22 ? e.face * e.speed : 0;
   }
@@ -19909,12 +19909,14 @@ function updateSnuffer(e, dt) {
   const d = P.x - e.x, ad = Math.abs(d);
   let want = 0;
   // its target is the nearest lamp still burning on its own level
-  if (!e.target || !e.target.lit || e.target.gone) {
+  if (e.lamplighter) { if (!e.target || e.target.lit) e.target = CNH.lampTarget(CANAL, e); }   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalfix): the same walk, to the nearest DOUSED post */
+  else if (!e.target || !e.target.lit || e.target.gone) {
     let best = null, bd = 1e9;
     for (const pr of props) if ((pr.t === 'lantern' || pr.t === 'minerlamp') && pr.lit && Math.abs(pr.y - e.y) < 40) { const q = Math.abs(pr.x - e.x); if (q < bd) { bd = q; best = pr; } }
     e.target = best;
   }
-  if (e.mode === 'snuffTell') { if (e.modeT <= 0) { const pr = e.target; if (pr && pr.lit && pr.city) { snuffLamp(pr, 0.9); e.mode = 'seek'; e.modeT = 0.6; e.target = null; return; } if (pr && pr.lit) { pr.lit = false; pr.hits = 0; burst(pr.x, pr.y - 10, 10, ['#3a3448', '#5a5468', '#8a919c'], 40, 0.8, -20, 2); number(pr.x, pr.y - 26, 'PUT OUT', '#9aa39a'); SFX.puff(); } e.target = null; e.mode = 'seek'; e.modeT = 0.6; } }
+  if (e.mode === 'snuffTell' && e.lamplighter) { if (e.modeT <= 0) { CNH.relightPost(CANAL, CNX, e.target); e.target = null; e.mode = 'seek'; e.modeT = 0.6; } }   /* he LIGHTS it */
+  else if (e.mode === 'snuffTell') { if (e.modeT <= 0) { const pr = e.target; if (pr && pr.lit && pr.city) { snuffLamp(pr, 0.9); e.mode = 'seek'; e.modeT = 0.6; e.target = null; return; } if (pr && pr.lit) { pr.lit = false; pr.hits = 0; burst(pr.x, pr.y - 10, 10, ['#3a3448', '#5a5468', '#8a919c'], 40, 0.8, -20, 2); number(pr.x, pr.y - 26, 'PUT OUT', '#9aa39a'); SFX.puff(); } e.target = null; e.mode = 'seek'; e.modeT = 0.6; } }
   else if (e.mode === 'swipe') { if (e.modeT <= 0) { e.mode = 'seek'; e.modeT = 0.3; } }
   else if (e.mode === 'swipeTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'swipe'; e.modeT = 0.3; SFX.slash(); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 30 && Math.abs(P.y - e.y) < 20) { const res = damagePlayer(e.x, DMG.snuffer); if (res === 'blocked') { e.stagger = 0.8; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } } } }
   else if (e.stagger > 0) want = 0;
@@ -20186,6 +20188,7 @@ let CANAL = null;
 const CNX = { T, L: () => L, movers: () => movers, enemies: () => enemies, isSolid, box, overlap, cellSet: (x, y, t) => cellSet(x, y, t), resolve: () => resolveTiles(), attackBox: () => attackBox(),
   eachHero: fn => { for (const pp of players) asPlayer(pp, () => fn(P)); }, hero: () => P, bodies: () => players.filter(p => !p.dead).concat(enemies.filter(e => e.alive && !e.noGrav)), sfx: SFX, sparks,
   dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), near: (x, y, r) => Math.abs(x - P.x) < r && Math.abs(y - P.y) < r, hint: msg => { hintT = 4.5; hintMsg = msg; }, time: () => time,
+  chases: () => chases,   /* (claude/canalfix: the flood laps her stern on the head race) */
   checkpoint: () => (typeof checkpoint !== 'undefined' && checkpoint && L && L.START && !(checkpoint.x === L.START.x * TS + 8 && checkpoint.y === (L.START.y + 1) * TS)) ? checkpoint : null, hurtHero: (x, d, o) => damagePlayer(x, d, o),
   solidUnder: (x, y) => { const t = tileAt(Math.floor(x / TS), Math.floor((y + 2) / TS)); return isSolid(Math.floor(x / TS), Math.floor((y + 2) / TS)) || isOneWay(t); }, makeCanvas: (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; } };
 /* the grindylow's and the wisp's context (src/canal-foes.js) */
@@ -26030,6 +26033,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (!e.alive || e.gone > 0 || e.x < cx - 40 || e.x > cx + VW + 40) continue;
     if (e.t === 'mother' || e.t === 'heart') continue;
     if (e.t === 'duneworm') { drawDuneWormFx(e, cx, cy); if (!dwShown(e)) continue; }   /* under the sand he is a ripple, a sinkhole or an arc: his own draw; up, the sprite below */
+    if (e.boarder && CNH.foeHidden(e)) continue;   /* THE FOG CANAL's boarding gang, still out in the fog (claude/canalfix) */
     if (CNF.CANAL_FOES.has(e.t)) { CNH.drawCanalFoeFx(CANAL, g, CNX, e, cx, cy, time); if (!CNH.canalFoeShown(e)) continue; }   /* THE FOG CANAL: a grindylow under the water is its ripples (and its shadow in a lantern's light) */
     if (e.t === 'emberwisp') { drawEmberWisp(e, cx, cy); continue; } if (e.t === 'pyromancer') { drawPyromancer(e, cx, cy); continue; }
     if(e.t==='roc'&&L.belfry&&!rocOpen(e)&&e.mode!=='rise')drawRocArch(e,cx,cy);   /* her gust and talons; she herself is drawn below like anyone */

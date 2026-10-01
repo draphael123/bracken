@@ -71,7 +71,7 @@ theatre glows ahead through the fog the whole way. It is 432 columns and 56 rows
   - The grindylows (her grab in miniature).
   - **The two weeds are taught safely before her lock**, side by side over shallow water in the warehouse dock, with a sign: BRIGHT weed holds you 2.5 s then gives way; DARK weed is only water. They come back in the basin.
 - **Checkpoints**: 3 (the mill top, the summit before the weir, her west door). The worst gap is 159 route tiles.
-- **Music**: its own track `canal` (`audio/canal.ogg`). It is a 65 s barcarolle in A minor, 6/8, with a musette accordion and a hurdy-gurdy (drone and buzz), made by `tools/canal-music.mjs`. It is registered in TRACKS, MUSIC_NAMES, MUSIC_CREDITS and audio/CREDITS.txt.
+- **Music**: its own track `canal` (`audio/canal.ogg`). It is a 65 s barcarolle in A minor, 6/8, with a musette accordion and a hurdy-gurdy (drone and buzz), made by the lane's own synth tool (removed by claude/canalfix, 2026-10-01, when the canal took a real track). It is registered in TRACKS, MUSIC_NAMES, MUSIC_CREDITS and audio/CREDITS.txt.
 - **Wiring**: canal `needs: 'waymeet'`, and the fair `needs: 'canal'` on this branch. The map node is at (50,154) on the inland sheet, between Waymeet and the fair.
 
 ## Code
@@ -84,7 +84,7 @@ theatre glows ahead through the fog the whole way. It is 432 columns and 56 rows
   - `tools/canal.mjs` (the check)
   - `tools/canal-pilot.mjs` (route pilot)
   - `tools/canal-shots.mjs`, `tools/canal-map.mjs` (pictures)
-  - `tools/canal-music.mjs`
+  - the canal's synth music tool (since removed, claude/canalfix)
   - `docs/briefs/fog-canal.md`
 - **main.js** gets about 45 one-line hooks: imports; EHP/COLS/spawn cases and bestiary cards; the grindylow's hurt rule and AMPHIB; the foe step, draw and frame; the reset, update and draw hooks; the mover hook; the fog overlay; the context block; the map node. There are also two small in-place edits:
   - The gaffer's downward hook for bargees, plus the fix that a ducked hook knocks nobody off. This also changes the Ore Road's gaffer; ore-road is green.

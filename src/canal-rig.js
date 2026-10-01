@@ -20,8 +20,11 @@
 export const TS = 16;
 export const RIG = {
   fill: 34,            /* px/s a lock's water moves (a five-row lock is about two and a half seconds) */
-  drift: 55,           /* px/s the barge drifts (the hero runs 92: he can always get ahead of it and wait) */
+  drift: 72,           /* px/s the barge drifts (the hero runs 92: he can always get ahead of it and wait). claude/canalfix: 55 -> 72, the rides were long (review fix 12) */
   loose: 88,           /* px/s the barge runs down the weir, loose */
+  headRace: 58,        /* px/s she runs on THE HEAD RACE's steps (claude/canalfix, review fix 3): slow enough that the flood laps her stern there */
+  lap: 34,             /* px of her deck at the stern the flood washes while she is on the head race: stand forward of it */
+  carryR: 64,          /* px a LAMPLIGHTER's own lantern lights round him (claude/canalfix: the kill-first support) */
   deck: 6,             /* px the deck stands over the water */
   bargeW: 96, bargeH: 10,
   mast: 36,            /* px the lantern pole stands over the deck: why a swing bridge across the water holds the barge */
@@ -92,7 +95,7 @@ export const fogAt = (st, x, y) => st.fogs.filter(f => x >= f.x0 * TS && x < (f.
 export const fogThickAhead = (f) => f.thick && f.fade > 0.35;   /* a thick bank the barge will not go into (it is clear enough once the horn has it two-thirds gone) */
 export function blowHorn(st, h) {
   if (h.cd > 0) return false;
-  for (const f of st.fogs) if (h.fogs.includes(f.id)) f.clear = RIG.hornClear;
+  for (const f of st.fogs) if (h.fogs.includes(f.id)) f.clear = h.clear || RIG.hornClear;   /* a horn may carry its own clear (claude/canalfix: the fog wall's bank horn is short, the basin's 6.5 s) */
   h.cd = RIG.hornWind; return true;
 }
 export function fogStep(st, dt) {
@@ -107,6 +110,7 @@ export function litAt(st, x, y) {
   const fz = fogAt(st, x, y); if (!fz.length || fz.every(f => f.fade < 0.3)) return true;
   for (const p of st.posts) if (p.lit && Math.hypot(p.x - x, p.y - 16 - y) < RIG.postR) return true;
   const b = st.barge; if (b && Math.hypot(b.x + 10 - x, b.y - 24 - y) < RIG.bargeR) return true;
+  for (const c of st.carriers || []) if (Math.hypot(c.x - x, c.y - 20 - y) < RIG.carryR) return true;   /* a LAMPLIGHTER's lantern */
   return false;
 }
 export const strikePost = p => { p.lit = !p.lit; return p.lit; };
@@ -154,13 +158,24 @@ export function weirStep(st, dt) {
   b.runT += dt;
   if (!b.chosen && b.x + b.w / 2 >= W.junction) { b.chosen = b.helm; ev.push({ t: 'junction', helm: b.helm }); }
   const path = weirPath(W, b.chosen || b.helm), x0 = b.x;
-  b.x += RIG.loose * dt; const y0 = b.y; b.y = pathY(path, b.x + b.w / 2);
+  b.x += (onHeadRace(st) ? RIG.headRace : RIG.loose) * dt; const y0 = b.y; b.y = pathY(path, b.x + b.w / 2);
   b.v = (b.x - x0) / Math.max(dt, 1e-6); b.vy = (b.y - y0) / Math.max(dt, 1e-6);
   if ((b.chosen || b.helm) === 'weir' && !b.crashed && b.x + b.w / 2 >= W.crash) { b.crashed = true; ev.push({ t: 'crash' }); }
   if (b.x + b.w / 2 >= W.end) { b.mode = 'float'; b.reach = reachAt(st, b.x + b.w / 2); b.y = deckOf(st.reaches[b.reach].y); ev.push({ t: 'landed' }); }
   return ev;
 }
 export const strikeTiller = b => { b.helm = b.helm === 'cut' ? 'weir' : 'cut'; return b.helm; };
+/* (claude/canalfix) THE HEAD RACE: loose, her middle not yet at the end of its steps (W.slowTo) - she runs slow there and the flood laps her stern */
+export const onHeadRace = st => { const b = st.barge, W = st.weir; return !!W && b.mode === 'loose' && b.x + b.w / 2 < (W.slowTo || W.junction); };
+/* THE TILLER ANSWERS (claude/canalfix, review fix 3): on the weir run only between the burst and W.helmBy (about col 268), then the helm is set;
+   before the weir always (her side of the Waymeet pound) */
+export const tillerOpen = st => { const b = st.barge, W = st.weir; if (b.mode !== 'loose') return !b.crashed && !b.chosen; return !!W && !b.chosen && b.x + b.w / 2 < (W.helmBy || W.junction); };
+/* HER SIDE (claude/canalfix, UPGRADE B - the tiller taught before the weir): where D.sides marks a pound wide enough, her helm puts her on the
+   TOWPATH SIDE ('weir', the arrow down: in reach of the towpath's hooks) or the OFFSIDE ('cut', the arrow up: out of their reach, under the far
+   half of a low bridge's timbers). Returns 'towpath' | 'off' | null (no sides here) */
+export const sideOf = (st, D) => { const b = st.barge; if (!b || b.mode !== 'float') return null; const mid = b.x + b.w / 2;
+  for (const [x0, x1] of (D && D.sides) || []) if (mid >= x0 * TS && mid < (x1 + 1) * TS) return b.helm === 'cut' ? 'off' : 'towpath';
+  return null; };
 
 /* ---------------- THE WEED ---------------- */
 export const inWeed = (D, st, x, y) => (D.weedWater || []).some(([x0, x1, id]) => { const r = reachById(st, id); return r && x >= x0 * TS && x < (x1 + 1) * TS && y > r.y + 6 && y < r.bed * TS + 4; });

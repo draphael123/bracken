@@ -35,17 +35,38 @@ export function edgeOf(P, X) {
     if (s && s.y - P.y >= 2 && s.y - P.y <= 30 && !X.solidAt(P.x + dir * 14, P.y + 2)) return { x: P.x + dir * 10, y: P.y, dir, barge: false }; }   /* a low bank: the water within two rows under his feet, beside him */
   return null;
 }
-export function newGrindylow(e) { Object.assign(e, { hx: e.x, mode: 'lurk', modeT: 0, cd: 0.8 + (e.x % 5) * 0.2, noGrav: true, lastSurf: null, presses: 0, grabbed: null, bubT: 0 }); return e; }
+export function newGrindylow(e) { Object.assign(e, { hx: e.x, mode: 'lurk', modeT: 0, cd: 0.8 + (e.x % 5) * 0.2, noGrav: true, lastSurf: null, wet: null, presses: 0, grabbed: null, bubT: 0, aboard: false, bx: 0, offT: 0 }); return e; }
+/* (claude/canalfix, review fix 2) IT COMES ABOARD. A rider amidships was out of every grindylow's reach for the whole level. Now, while she is HELD (at a
+   gate, a bridge, the fog) - or, for the one at the weir's junction (e.junction), while she runs loose past it - a grindylow at her hull with a hero on
+   her deck rings the water at her near end (!!) and hauls itself aboard. On the deck it is out of the water: it creeps at the rider, rings its !! (jump
+   it), and grabs his ankle and drags him for the nearest end and the water. It is weak there (double), and slips back in when nobody is aboard. */
+const held = b => !!b && b.mode === 'float' && (!!b.holdWhy || Math.abs(b.v || 0) < 1);
+function boardable(e, X, P) {
+  const b = X.barge(); if (!b || !P || P.dead || !(P.onMover && P.onMover.canal) || e.boards === false) return null;
+  if (!(held(b) || (b.mode === 'loose' && e.junction))) return null;
+  if (e.hx < b.x - 28 || e.hx > b.x + b.w + 28) return null;
+  return e.hx < b.x + b.w / 2 ? 6 : b.w - 6;   /* the near end */
+}
 /* one frame. X: { hero(), barge(), surfaceAt(x), solidAt(x, y), press(), hurtHero(x, dmg, o), mark(e, txt, col), sfx, hint(k, msg), ring(x, y, r, col) } */
 export function stepGrindylow(e, dt, X) {
   const G = GRIND, P = X.hero(), S = X.sfx;
   e.modeT -= dt; e.cd -= dt; e.bubT -= dt;
+  if (e.aboard) return stepAboard(e, dt, X, P);
   const s = X.surfaceAt(e.mode === 'stranded' ? e.x : e.hx) || X.surfaceAt(e.x);
-  /* STRANDED: the lock drained away under it, and it clings to the wall where the water was - out of the water, weak, and it grabs nobody */
-  if (e.mode === 'stranded') { if (!s || Math.abs(s.y - e.y) < 8 || e.modeT <= 0) { e.mode = 'lurk'; e.cd = 1; } e.vx = 0; return; }
+  /* STRANDED: the lock drained away under it, and it is left on the wet steps at the water's new edge - out of the water, weak, and it grabs nobody.
+     (claude/canalfix: it is left where a blade finds it, at the waterline, not up the wall where the water was; and it is measured against the
+     water it settled in (e.wet), so a lock that drains at its own slow pace strands it - the old frame-to-frame test never could) */
+  if (e.mode === 'stranded') { if (s) e.y = s.y - 1; if (!s || s.y <= e.wet + 8 || e.modeT <= 0) { e.mode = 'lurk'; e.cd = 1; e.wet = s ? s.y : null; } e.vx = 0; e.vy = 0; return; }
   if (!s) { e.mode = 'stranded'; e.modeT = G.strandT; return; }
-  if (e.lastSurf !== null && s.y - e.lastSurf > 20 && (e.mode === 'lurk' || e.mode === 'dunk')) { e.mode = 'stranded'; e.modeT = G.strandT; e.y = e.lastSurf + 2; X.mark(e, 'STRANDED', '#8fd160'); X.hint('strand', 'THE WATER FELL AWAY FROM IT: A GRINDYLOW OUT OF THE WATER IS WEAK. CUT IT.'); return; }
+  if (e.mode === 'lurk' || e.mode === 'dunk') { if (e.wet === null || s.y < e.wet) e.wet = s.y;
+    if (s.y - e.wet > 20) { e.mode = 'stranded'; e.modeT = G.strandT; e.y = s.y - 1; X.mark(e, 'STRANDED', '#8fd160'); S.splash && S.splash(); X.hint('strand', 'THE WATER FELL AWAY FROM IT: A GRINDYLOW OUT OF THE WATER IS WEAK. CUT IT.'); return; } }
   e.lastSurf = s.y;
+  /* COMING ABOARD: from the lurk, at a held barge (or the loose one at the junction) with a rider */
+  if (e.mode === 'lurk' && e.cd <= 0) { const end = boardable(e, X, P);
+    if (end !== null) { const b = X.barge(); e.mode = 'boardTell'; e.modeT = 0.55; e.bx = end; e.x = b.x + end; e.y = s.y + 4; X.mark(e, '!!', '#ff6b6b'); S.tell && S.tell(true); S.splash && S.splash(); X.ring(e.x, s.y, 10, '#9ad8c0'); } }
+  if (e.mode === 'boardTell') { const b = X.barge(); if (!b) { e.mode = 'lurk'; return; } e.x = b.x + e.bx; e.y = s.y + 4;
+    if (e.modeT <= 0) { e.aboard = true; e.mode = 'deck'; e.modeT = 0.4; e.cd = 0.5; e.y = b.y; S.splash && S.splash(); X.mark(e, 'ABOARD', '#ff6b6b'); X.hint('board', 'A GRINDYLOW HAULS ITSELF ABOARD. OUT OF THE WATER IT IS WEAK: CUT IT, AND JUMP ITS GRAB.'); }
+    e.vx = 0; e.vy = 0; return; }
   const edge = edgeOf(P, X), inReach = edge && Math.abs(edge.x - e.hx) <= G.leash + 8;
   switch (e.mode) {
     case 'rippleTell': {
@@ -82,14 +103,49 @@ export function stepGrindylow(e, dt, X) {
   }
   e.vx = 0; e.vy = 0;
 }
+/* ON HER DECK (claude/canalfix): it rides her where it came aboard, creeps at the rider, rings (!!: jump it) and grabs; a grab drags him for her
+   nearest end. Three presses or a blow break it. Nobody aboard for a while: it slips back into the water where it stands */
+function stepAboard(e, dt, X, P) {
+  const G = GRIND, S = X.sfx, b = X.barge();
+  if (!b) { e.aboard = false; e.mode = 'dunk'; e.modeT = 1; return; }
+  const rider = P && !P.dead && P.onMover && P.onMover.canal;
+  e.offT = rider || (e.grabbed) ? 0 : e.offT + dt;
+  if (e.offT > 2.5 && e.mode !== 'grab') { e.aboard = false; e.hx = e.x; e.wet = null; e.mode = 'dunk'; e.modeT = 1.2; e.cd = G.cd; S.splash && S.splash(); return; }
+  const endOf = x => x < b.x + b.w / 2 ? { x: b.x + 2, dir: -1 } : { x: b.x + b.w - 2, dir: 1 };
+  switch (e.mode) {
+    case 'deckTell':
+      if (e.modeT <= 0) { const end = endOf(P.x);
+        if (rider && P.ground && Math.abs(P.x - e.x) < G.reach + 4) { e.mode = 'grab'; e.modeT = G.hold; e.presses = 0; e.grabbed = P; e.edge = { x: end.x, y: P.y, dir: end.dir, barge: true };
+          S.splash && S.splash(); X.hurtHero(e.x, G.grabDmg, { unblockable: true, who: e, name: 'THE GRINDYLOW' }); X.hint('grab', 'IT HAS YOUR ANKLE: JUMP, STRIKE, PULL AWAY - QUICKLY, OR INTO THE WATER.'); }
+        else { e.mode = 'deck'; e.cd = G.cd * 0.6; } }
+      break;
+    case 'grab': {
+      const H = e.grabbed; if (!H || H.dead) { e.mode = 'deck'; e.cd = G.cd; e.grabbed = null; break; }
+      H.caged = Math.max(H.caged || 0, 0.12); H.vx = 0; const ed = e.edge; H.x += ed.dir * G.pull * dt; e.bx = Math.max(4, Math.min(b.w - 4, H.x - b.x - ed.dir * 6));
+      const pr = X.press(); if (pr.jump || pr.atk || pr.left || pr.right) e.presses++;
+      if (e.presses >= G.mash) { e.mode = 'stun'; e.modeT = G.stun; e.cd = G.cd; H.caged = 0; H.vy = -140; H.ground = false; e.grabbed = null; S.clank && S.clank(); X.mark(e, 'SHAKEN OFF', '#8fd160'); break; }
+      const over = ed.dir < 0 ? H.x < b.x - 2 : H.x > b.x + b.w + 2;
+      if (over || e.modeT <= 0) { H.caged = 0; H.onMover = null; H.ground = false; H.x = ed.dir < 0 ? Math.min(H.x, b.x - 8) : Math.max(H.x, b.x + b.w + 8); H.vy = 60; e.mode = 'deck'; e.cd = G.cd; e.grabbed = null; S.splash && S.splash(); }
+      break; }
+    case 'stun': if (e.modeT <= 0) { e.mode = 'deck'; e.cd = Math.max(e.cd, 0.6); } break;
+    default: {   /* 'deck': creep at the rider */
+      e.mode = 'deck';
+      if (rider) { const want = P.x - b.x; e.bx += Math.sign(want - e.bx) * Math.min(Math.abs(want - e.bx), 34 * dt); e.face = Math.sign(P.x - e.x) || e.face;
+        if (Math.abs(P.x - e.x) < G.reach && e.cd <= 0 && e.modeT <= 0) { e.mode = 'deckTell'; e.modeT = G.tell; X.mark(e, '!!', '#ff6b6b'); S.tell && S.tell(true); } }
+    }
+  }
+  e.bx = Math.max(4, Math.min(b.w - 4, e.bx)); e.x = b.x + e.bx; e.y = b.y; e.vx = 0; e.vy = 0;
+}
 /* A BLOW ON A GRINDYLOW: nothing under the water; the ripple knocked up out of it; double out of it. Returns the damage multiplier (0: it finds nothing) */
 export function grindylowTake(e) {
+  if (e.mode === 'boardTell') { e.mode = 'lurk'; e.cd = GRIND.cd; return 1; }   /* struck as it hauls itself up: knocked back in */
+  if (e.aboard && (e.mode === 'deck' || e.mode === 'deckTell')) return GRIND.weak;   /* on her deck: out of the water */
   if (e.mode === 'lurk' || e.mode === 'dunk') return 0;
   if (e.mode === 'rippleTell') { e.mode = 'stun'; e.modeT = GRIND.stun; e.cd = GRIND.cd; return 1; }
   if (e.mode === 'grab') { if (e.grabbed) { e.grabbed.caged = 0; e.grabbed = null; } e.mode = 'stun'; e.modeT = GRIND.stun; e.cd = GRIND.cd; return 1; }
   return GRIND.weak;   /* stun, stranded: out of the water */
 }
-export const grindylowUp = e => e.mode !== 'lurk' && e.mode !== 'dunk';   /* is there a body above the water to see (and to hit) */
+export const grindylowUp = e => e.aboard || (e.mode !== 'lurk' && e.mode !== 'dunk');   /* is there a body above the water to see (and to hit) */
 
 /* ================= THE WILL-O'-THE-WISP ================= */
 export function newWisp(e, TS) { const [lx, ly] = e.lure || [Math.floor(e.x / TS), Math.floor(e.y / TS)]; Object.assign(e, { hx: e.x, hy: e.y - 10, lx: lx * TS + 8, ly: ly * TS, mode: 'bob', modeT: 0, cd: 0, noGrav: true, y: e.y - 10 }); return e; }
@@ -111,6 +167,8 @@ export function stepWisp(e, dt, X) {
       const ax = e.lx - e.hx, ay = e.ly - e.hy, len = Math.hypot(ax, ay) || 1, ux = ax / len, uy = ay / len;
       const along = Math.max(0, Math.min(len, (P.x - e.hx) * ux + (P.y - 10 - e.hy) * uy + W.ahead));
       go(e.hx + ux * along, e.hy + uy * along, W.drift);
+      /* (claude/canalfix, review fix 10) THE TELL COMES AFTER THE LURE: once it has led you to the end of its line, the game names it */
+      if (along >= len - 2 && d < 90 && X.hint) X.hint('wisp', 'A LIGHT WITH NO POST UNDER IT IS A WISP: STRIKE IT.');
       if (d < W.near && e.cd <= 0 && !P.dead) { e.mode = 'flareTell'; e.modeT = W.tell; X.mark(e, '!', '#ffd36b'); S.tell && S.tell(false); }
     }
   }
@@ -146,5 +204,5 @@ export function bakeWisp() {
     ellipse(g, 7, 10, 1 + big, 1 + big, C.c); return c; });
   return pack(fr, 7, H - 1, WISP.w, WISP.h);
 }
-export const grindylowFrame = e => e.hurtT > 0 ? 2 : e.mode === 'grab' || e.mode === 'rippleTell' ? 1 : e.mode === 'stranded' ? 3 : e.mode === 'stun' ? 2 : 0;
+export const grindylowFrame = e => e.hurtT > 0 ? 2 : e.mode === 'grab' || e.mode === 'rippleTell' || e.mode === 'deckTell' || e.mode === 'boardTell' ? 1 : e.mode === 'stranded' ? 3 : e.mode === 'stun' ? 2 : 0;
 export const wispFrame = e => e.mode === 'flareTell' ? 2 : Math.floor(e.anim * 8) % 2;
