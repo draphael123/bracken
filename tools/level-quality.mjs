@@ -62,9 +62,9 @@ export const LIM = {
    was read (a thrown or shot attack; a bomb or net; a heal/horn/banner/snuff; plate or a big swing; a fast chase or a grab). Add a kind when a lane builds one. */
 export const ROLES = {
   ranged: ['archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder', 'skybolt', 'catapult', 'towertop', 'pyromancer', 'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest'],
-  support: ['gobpriest', 'bannerbearer', 'horn', 'snuffer', 'priest', 'acolyte', 'merrowcaller', 'bearer'],
+  support: ['barker', 'gobpriest', 'bannerbearer', 'horn', 'snuffer', 'priest', 'acolyte', 'merrowcaller', 'bearer'],
   heavy: ['heavy', 'brute', 'troll', 'golem', 'merrowbrute', 'tideguard', 'hedgeknight', 'armour', 'bloodknight', 'berserker', 'drownedknight', 'bellguard', 'holdfast', 'gaffer', 'barrowrider', 'shield'],
-  runner: ['runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog'],
+  runner: ['hobbyhorse', 'runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog'],
 };
 const rolesOf = t => { const r = Object.keys(ROLES).filter(k => ROLES[k].includes(t)); return r.length ? r : ['melee']; };
 /* COLLECTIBLES AND INTERACTIVES THAT MUST UNLOCK SOMETHING. A pickup or a lever that opens nothing is clutter. What each kind can open is named here; a level states its own

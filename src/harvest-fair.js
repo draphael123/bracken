@@ -368,6 +368,10 @@ export function buildHarvestFair({ painter, T, TS }) {
     carousels, haystacks, lamps: lampsOut(lamps), arc: ARC, stair: { x0: 150, top: 162 }, green: G, tints, arena, gateAfterBoss: true,
     walls, gallery: galleries[0], galleries, strikers, tickets, booth: null, backLot, hall, halls: [hall, canopy], blinds, unlit, tower, wheel: WH, slide: { x0: 367, y0: tower.top, n: 11, stall: { x0: 372, x1: 377 } }, corn, scarecrows, effigies,
     chases, fallen, zipLines, poles, cages, ticketGates, crumbles, fortune,
+    unlocks: [   /* (claude/batch52) what each collectible or target opens, for tools/level-quality.mjs; the HUD lines are src/fair-keys.js KEYS_TEXT */
+      { kind: 'ticket', opens: 'the ticket gates (the loft, the hayloft) and, all of them, THE BACK LOT', hud: 'TICKETS OPEN THE GATES; ALL OF THEM, THE BACK LOT' },
+      { kind: 'gtarget', opens: 'the cage, the planks and the bell of its game (and a ticket)', hud: 'THE TARGETS RESET' },
+      { kind: 'striker', opens: 'a ticket paid on its first ring (a gate price)', hud: 'THE BELL RINGS' }],
     maze: { x0: mx0, x1: mx1, tiers: [R - 1, 22, 17], blind: [mx0 - 1, mx1 + 1, 12 * TS, R * TS] },
     checkRun: 200,   /* the level filler adds no shrine inside a run shorter than the game's ceiling (claude/fairfix: five shrines, placed by hand) */
     fairNight: NIGHT,   /* (not `night`: the game reads L.night as its camp-night wash) */

@@ -12,14 +12,26 @@
   "bare": true
  },
  "theatre": {
-  "hash": "99a8359b5e65",
+  "hash": "e61c937cd348",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 16,
+  "hits": 15,
   "deaths": 0,
-  "kills": 39,
+  "kills": 41,
   "lifts": 63,
+  "walked": 100,
+  "bare": true
+ },
+ "fair": {
+  "hash": "fe1961c59bc9",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 42,
+  "deaths": 1,
+  "kills": 24,
+  "lifts": 80,
   "walked": 100,
   "bare": true
  }
