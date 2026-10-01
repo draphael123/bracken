@@ -62,7 +62,7 @@ import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
 import * as FAF from './fair-foes.js';   /* THE HARVEST FAIR's marionette and barker (claude/fairfix): pure, tools/harvest-fair.mjs */
-import * as FGM from './fair-games.js'; import * as FR from './redraw/fair_rides.js';   /* THE HARVEST FAIR's vertical rebuild (claude/fairlevel): the games and the sight (pure), and the rides' art */
+import * as FGM from './fair-games.js'; import * as FR from './redraw/fair_rides.js'; import * as FB from './redraw/fair_backdrop.js';   /* THE HARVEST FAIR's vertical rebuild (claude/fairlevel): the games and the sight (pure), and the rides' art */
 import * as WC from './wicker-carousel.js'; import * as CRG from './redraw/carousel_ring.js';   /* THE WICKER QUEEN'S CAROUSEL (claude/fairboss): the ride, pure, and its look */
 import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.js';   /* THE MASKWRIGHT'S THEATRE's machinery in the game (claude/theatre): lamps, fly lines, flats, traps and the show */
 import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
@@ -25481,6 +25481,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (SET.parallax === 'full') HB.drawHarbourLayer(g, 'far', BG.far, 0.15, VH - 186, cx, dY, time, VW, VH);
     HB.drawHarbourLayer(g, 'mid', BG.mid, 0.3, VH - 215, cx, dY, time, VW, VH); }
   else if (BG.storm) SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() });   /* THE HURRICANE: only her and the sea */
+  else if (FAIR) FB.drawBackdrop(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), SET.parallax === 'full');   /* THE HARVEST FAIR's own far fields, steeple, tents and wheel (src/redraw/fair_backdrop.js), not Waymeet's town */
   else { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
   else drawCastleBack(cx, cy);
@@ -25490,7 +25491,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.eye) { const ek = seaCalm(); if (ek > 0) drawEyeSky(ek); }   /* THE HURRICANE'S EYE: stars over the haze, high in the sky where no hull reaches */
   // a wood with parts in different light (L.tints: [x0, x1, rgb, alpha] in tiles), crossfaded over two dozen tiles at each seam
   if (L.tints) { const mx = (cx + VW / 2) / TS; for (const [x0, x1, c, a] of L.tints) { const k = Math.max(0, Math.min(1, Math.min(mx - x0 + 12, x1 - mx + 12) / 24)); if (k > 0.01) { g.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } }
-  if (FAIR) FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time);
+  if (FAIR) { FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time); if (SET.parallax !== 'off') { FB.drawNear(g, cx, cy, VW, L, dusk(), time); FB.drawMotes(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy)); } }   /* the crowd and the bunting, the fireflies and sparks */
   if (L.deep) drawDeepTint(cx, cy);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
@@ -25499,7 +25500,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
   if (BG.nearTrees && !L.colosseum) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
-  else if (!L.castle && !L.colosseum && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
+  else if (!L.castle && !L.colosseum && !FAIR && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
   SEA.seaBack(g, cx, cy, VW, VH, time, state === 'play' && !P.dead ? P : null);   /* and its living water, behind the tiles and everything that matters */
   if (L.cloudSea !== undefined) drawSkyRig(cx, cy);   /* the sky ship: her cloud, her gasbags, her sails */
   if (L.hangingTown && L.groundZones && SET.parallax !== 'off') HV.drawHangingBack(g, L, cx, cy, time, VW, VH);   /* THE CLIFF THE VILLAGE HANGS FROM, and each floor's landmark on it: behind the ropes, the rooms and the tiles */
@@ -25528,7 +25529,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.monk) drawMonkBack(cx, cy);   /* THE MONASTERY: the sun over the cloud, the cloud bank, the walkway posts and the prayer flags */
   if (L.fields) drawFieldsBack(cx, cy);   /* the boughs and the posts under the ledges */
   if (L.mage) drawMageBack(cx, cy);   /* THE MAGE'S FOLLY: the chains, the orrery's arms and hubs */
-  if (FAIR) FR.drawBack(g, cx, cy, VW, VH, L, FAIR, time, { dusk: dusk(), heroes: players.map(p => ({ x: p.x, y: p.y })), foes: enemies.filter(q => q.alive && (q.t === 'mummer' || q.t === 'stringjack') && Math.abs(q.x - P.x) < 420).map(q => ({ x: q.x, y: q.y, mode: q.mode })) });   /* the effigy, the wheel's frame, the swing ride's gantry, the hall of mirrors' back wall and glass */   /* THE HARVEST FAIR: the figures at the edge of the light, more of them the later it gets */   /* (after the near layer, so the hall's glass is not sat under a skyline) */
+  if (FAIR) FR.drawBack(g, cx, cy, VW, VH, L, FAIR, time, { dusk: dusk(), burnT: FAIR.effigyBurnT || 0, burnDone: !!FAIR.effigyBurnDone, heroes: players.map(p => ({ x: p.x, y: p.y })), foes: enemies.filter(q => q.alive && (q.t === 'mummer' || q.t === 'stringjack') && Math.abs(q.x - P.x) < 420).map(q => ({ x: q.x, y: q.y, mode: q.mode })) });   /* the effigy, the wheel's frame, the swing ride's gantry, the hall of mirrors' back wall and glass */   /* THE HARVEST FAIR: the figures at the edge of the light, more of them the later it gets */   /* (after the near layer, so the hall's glass is not sat under a skyline) */
   // THE TRUNKS STAY BEHIND THE ROAD: scenery cannot turn into a wall, or flash when a hero crosses its ink.
   drawHarborLandmarks(g,L,cx,cy);
   drawBelfry(cx, cy); drawMoorWeather(cx, cy); drawScenery(cx, cy); drawStructures(cx, cy); drawLightHolders(cx, cy); drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);

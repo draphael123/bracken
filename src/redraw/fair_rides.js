@@ -6,6 +6,7 @@
 //   drawNight  the dark that comes with height, the holes a lit lantern cuts, and the ticket count
 import { nightK, hallsOf } from '../fair-games.js';
 import { beamLive } from '../chase.js';
+import * as FB from './fair_backdrop.js';
 const TS = 16;
 const K = { wood: '#7a5230', woodL: '#a67a48', woodD: '#4e321a', woodDD: '#2e1e10', brass: '#e8c23a', brassD: '#a87a18', red: '#b8382c', redD: '#7a2418', cream: '#ece0c4', creamD: '#c8b890', gold: '#f0c840',
   wick: '#8a6a34', wickL: '#b89050', wickD: '#4e3a1a', straw: '#e6c95c', strawD: '#b8962e', blue: '#3a7ab8', ink: '#120e14', glass: '#9fb8c8', glassD: '#5a7286', steel: '#8a919c' };
@@ -15,32 +16,7 @@ const r = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x),
 const ln = (g, x0, y0, x1, y1, col, w = 1) => { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(Math.round(x0) + 0.5, Math.round(y0) + 0.5); g.lineTo(Math.round(x1) + 0.5, Math.round(y1) + 0.5); g.stroke(); };
 const vis = (x0, x1, cx, VW, pad = 60) => x1 >= cx - pad && x0 <= cx + VW + pad;
 
-/* ================= THE WICKER EFFIGY going up behind the fair: five stages (0 a scaffold, 1 legs, 2 a torso, 3 arms and an empty head, 4 the queen, crowned and lit) ================= */
-const PAR = 0.6;
-function effigy(g, sx, gy, stage, time) {
-  const s = 1.15, ink = 'rgba(30,20,40,0.92)';
-  const wv = (path, fill, hatch) => { g.save(); g.beginPath(); path(); g.fillStyle = fill; g.fill(); g.clip(); g.strokeStyle = hatch; g.lineWidth = 1; for (let i = -140; i < 140; i += 4) { g.beginPath(); g.moveTo(sx + i, gy - 150); g.lineTo(sx + i + 60, gy + 10); g.stroke(); } g.restore(); };
-  const P = (x, y) => [sx + x * s, gy - y * s];
-  const poly = pts => () => { pts.forEach(([x, y], i) => { const [a, b] = P(x, y); i ? g.lineTo(a, b) : g.moveTo(a, b); }); g.closePath(); };
-  if (stage >= 1) { wv(poly([[-16, 0], [-6, 0], [-3, 44], [-15, 46]]), '#5a4520', '#3a2c12'); wv(poly([[6, 0], [16, 0], [15, 46], [3, 44]]), '#5a4520', '#3a2c12'); }
-  if (stage >= 2) { wv(poly([[-19, 44], [19, 44], [22, 60], [16, 92], [-16, 92], [-22, 60]]), '#644c22', '#3a2c12'); }
-  if (stage >= 3) { wv(poly([[-22, 84], [-58, 108], [-62, 100], [-24, 74]]), '#5a4520', '#3a2c12'); wv(poly([[22, 84], [58, 108], [62, 100], [24, 74]]), '#5a4520', '#3a2c12');
-    g.strokeStyle = '#5a4520'; g.lineWidth = 3; g.beginPath(); const [ha, hb] = P(0, 110); g.arc(ha, hb, 15 * s, 0, 6.3); g.stroke(); }
-  if (stage >= 4) { const [ha, hb] = P(0, 110); g.fillStyle = '#644c22'; g.beginPath(); g.arc(ha, hb, 14 * s, 0, 6.3); g.fill();
-    g.fillStyle = '#c8901c'; for (let i = -3; i <= 3; i++) { const a = -1.57 + i * 0.38, [x0, y0] = [ha + Math.cos(a) * 14 * s, hb + Math.sin(a) * 14 * s]; g.beginPath(); g.moveTo(x0 - 3, y0); g.lineTo(x0 + Math.cos(a) * 14, y0 + Math.sin(a) * 14); g.lineTo(x0 + 3, y0); g.fill(); }   // the crown of wheat
-    g.globalCompositeOperation = 'lighter'; const gl = 0.5 + 0.4 * Math.sin(time * 3); for (const ex of [-5, 5]) { g.fillStyle = 'rgba(255,120,40,' + gl + ')'; g.fillRect(Math.round(ha + ex * s - 1), Math.round(hb - 2), 3, 3); } g.globalCompositeOperation = 'source-over'; }
-  if (stage < 4) {   // the scaffold: poles, beams and braces, and the little dark builders on it
-    const top = 138 - stage * 8; g.strokeStyle = ink; g.lineWidth = 2;
-    for (const x of [-52, 52]) { const [a, b] = P(x, 0), [c, d] = P(x, top); g.beginPath(); g.moveTo(a, b); g.lineTo(c, d); g.stroke(); }
-    for (const y of [36, 76, 116].filter(y => y < top)) { const [a, b] = P(-52, y), [c, d] = P(52, y); g.beginPath(); g.moveTo(a, b); g.lineTo(c, d); g.stroke(); }
-    g.lineWidth = 1; for (const [x0, y0, x1, y1] of [[-52, 0, 52, 36], [52, 0, -52, 36], [-52, 36, 52, 76]]) { const [a, b] = P(x0, y0), [c, d] = P(x1, y1); g.beginPath(); g.moveTo(a, b); g.lineTo(c, d); g.stroke(); }
-    for (let i = 0; i < 2 + (stage & 1); i++) { const [a, b] = P(-40 + i * 40 + Math.sin(time * 0.6 + i) * 6, 36 + (i % 2) * 40); g.fillStyle = ink; g.fillRect(Math.round(a), Math.round(b - 9), 3, 9); g.fillRect(Math.round(a) - 1, Math.round(b - 11), 5, 3); } }
-}
-function drawEffigies(g, cx, cy, VW, L, time, dusk) {
-  const gy = (L.green ? L.green.floor : 28) * TS - cy;
-  for (const e of L.effigies || []) { const sx = Math.round((e.x * TS - cx) * PAR + 90); if (sx < -90 || sx > VW + 90) continue; g.globalAlpha = Math.min(0.85, 0.4 + dusk * 0.5); effigy(g, sx, gy, e.stage, time); g.globalAlpha = 1; }
-}
-
+/* THE WICKER EFFIGY (five stages, one that burns, the ash) moved to src/redraw/fair_backdrop.js with the rest of the fair's backdrop */
 /* ================= THE BIG WHEEL: the rim, the spokes, the legs, the lamps; the cars are movers (drawMover) ================= */
 function drawWheelFrame(g, cx, cy, VW, W, time) {
   if (!W || !vis(W.px - W.r - 40, W.px + W.r + 40, cx, VW)) return;
@@ -217,7 +193,7 @@ function drawNightSky(g, cx, cy, VW, VH, L, time) {
 }
 export function drawBack(g, cx, cy, VW, VH, L, F, time, o) {
   drawNightSky(g, cx, cy, VW, VH, L, time);
-  drawEffigies(g, cx, cy, VW, L, time, o.dusk || 0);
+  FB.drawEffigies(g, cx, cy, VW, L, time, o.dusk || 0, o.burnT || 0, o.burnDone);
   drawWheelFrame(g, cx, cy, VW, L.wheel, time);
   drawGantries(g, cx, cy, VW, L, time);
   drawHallBack(g, cx, cy, VW, L, o, time);
@@ -277,7 +253,8 @@ export function drawNight(g, cx, cy, VW, VH, L, F, o) {
   const hole = (x, y, rad, a = 1) => { const gr = d.createRadialGradient(x, y, rad * 0.15, x, y, rad); gr.addColorStop(0, 'rgba(0,0,0,' + a + ')'); gr.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = gr; d.fillRect(x - rad, y - rad, rad * 2, rad * 2); };
   for (const l of (F && F.lamps) || []) { if (!l.lit || !(l.life > 0)) continue; const x = l.x * TS + 8 - cx, y = (l.y + 1) * TS - 30 - cy; if (x < -90 || x > VW + 90) continue; hole(x, y, N.lampR * (l.life >= 1 ? 1.5 : 1.25) * (0.94 + 0.06 * Math.sin((o.time || 0) * 9)), 0.96); }
   for (const h of o.heroes || []) hole(h.x - cx, h.y - 10 - cy, 40, 0.85);                     // your own small light
-  for (const e of o.glows || []) hole(e.x - cx, e.y - 12 - cy, 30, 1);                             // a red mask is never lost in the dark
+  for (const e of o.glows || []) hole(e.x - cx, e.y - 12 - cy, 30, 1);
+  for (const [fx, fy, fr, fa] of FB.fireHoles(cx, cy, VW, L)) hole(fx, fy, fr, fa);                   // the burning effigy's glow is not put out by the night                             // a red mask is never lost in the dark
   g.drawImage(NC, 0, 0);
   /* THE LANTERN POOLS: a warm light added under each lit lantern that stands in the dark, so a lit stretch reads as the place a mummer can be held */
   g.save(); g.globalCompositeOperation = 'lighter';
