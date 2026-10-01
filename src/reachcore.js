@@ -77,12 +77,17 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   if (!plain) for (const [x0, x1, y, yb] of (L.glyphBridges || [])) lifts.push({ kind: 'glyph', x0, x1, y0: Math.min(y, yb ?? y), y1: Math.max(y, yb ?? y) });
   /* A CABLEWAY LINE (the Ore Road): its buckets are a clock of platforms along one cable - board anywhere along it, leave anywhere. L.cableBridges [x0, x1, y0, y1] */
   if (!plain) for (const [x0, x1, y0, y1] of (L.cableBridges || [])) lifts.push({ kind: 'cable', x0, x1, y0, y1 });
+  /* THE FLY LINES (THE MASKWRIGHT'S THEATRE, src/theatre-rig.js): a batten or its sandbag runs between two stops on its line - board it at either, leave it at either. L.rigBands [x0, x1, y0, y1] */
+  if (!plain) for (const [x0, x1, y0, y1] of (L.rigBands || [])) lifts.push({ kind: 'fly line', x0, x1, y0, y1 });
   if (!plain) for (const m of (L.moversExtra || [])) if (m.x0 !== undefined && m.x1 !== undefined && m.y !== undefined && m.kind !== 'lift' && m.kind !== 'growcap' && m.kind !== 'hexvine') lifts.push({ kind: m.kind, x0: Math.floor(m.x0 / TSZ), x1: Math.floor((m.x1 + (m.w || 16) - 1) / TSZ), y0: Math.floor(m.y / TSZ), y1: Math.floor(m.y / TSZ) });
   const swings = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'swing').map(m => { const pts = []; for (let k = -6; k <= 6; k++) { const th = 0.9 * k / 6; pts.push([Math.floor((m.px + Math.sin(th) * m.arm) / TSZ), Math.floor((m.py + Math.cos(th) * m.arm) / TSZ) - 1]); } return pts; });
   /* THE RIDES THE TOOLS ASK ABOUT (opts.rides): the lily pads, a wasp you pogo off, a water wheel's paddles, the width of a
      wind column and the great kite's flight. These are why Bracken Wood read 16% reachable and the Marsh 7%. The coin
      sprinkler in level.js does NOT pass the option, so no gold moves: only the audits see further. */
   const extraFoot = [], springs = new Set(), buds = new Set(), groups = []; let flight = null;
+  /* A FLY LINE'S TWO STOPS ARE LEDGES (THE MASKWRIGHT'S THEATRE): a batten stands at its high stop or its low one until its lock is struck, so each
+     stop is somewhere you can stand - which is how the model steps from one batten across to the next */
+  if (!plain) for (const [x0, x1, y0, y1] of (L.rigBands || [])) for (let x = x0; x <= x1; x++) for (const y of [y0, y1]) extraFoot.push(x + ',' + (y - 1));
   if (opts.rides && !plain) {
     for (const e of (L.ents || [])) {
       if (e.t === 'mover' && e.slab && !e.range && !e.vert && !e.sink) for (let x = e.x; x < e.x + (e.len || 3); x++) extraFoot.push(x + ',' + (e.y - 1));   /* A SLAB HELD STILL IS A LEDGE (the Witchlight Stair's cracked ledges and the Gargoyle's slabs): the band below only boards a mover from two tiles off */
@@ -151,13 +156,15 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   const across = (x, dx, rTop, rBot) => { const s = Math.sign(dx);
     for (let c = x + s; c !== x + dx; c += s) { let ok = false; for (let r = rTop; r <= rBot && !ok; r++) ok = !wall(at(c, r)); if (!ok) return false; }
     return true; };
+  /* A LIFT IS NOT BOARDED THROUGH A WALL: a hero beside it (up to two columns off its footprint) steps on only along open ground - a solid tile between him and the footprint at his own height shuts it. (THE PUPPETEER's batten stands in the lee of the stage door's wall: with the elite's gate shut on that door the fill boarded it through the wall and walked round the gate - tools/elites.mjs.) */
+  const wallBetween = (x, y, lf) => { if (x >= lf.x0 && x <= lf.x1) return false; const step = x < lf.x0 ? 1 : -1, edge = x < lf.x0 ? lf.x0 : lf.x1; for (let tx = x + step; tx !== edge + step; tx += step) if (solid(at(tx, y))) return true; return false; };
   // everywhere you can get to from one tile (push is handed in, so tools/traps.mjs can run it backwards)
   const expand = (x, y, push) => {
     const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)), up = strikeUp.has(key(x, y)) ? strikeUp.get(key(x, y)) : springy ? BOUNCE_UP : buds.has(key(x, y)) ? BUD_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
     for (const v of vents) if (Math.abs(v.x - x) <= 1 && v.y === y) { const top = Math.floor(v.y + 1 - (v.h || 112) / TSZ);
       const half = opts.rides ? Math.max(3, Math.ceil((v.w || 0) / 2 / TSZ)) : 3;
       for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -half; dx <= half; dx++) push(v.x + dx, ty); }
-    for (const lf of lifts) if (x >= lf.x0 - 2 && x <= lf.x1 + 2 && y >= lf.y0 - 2 && y <= lf.y1) for (let ty = lf.y0 - 1; ty <= lf.y1; ty++) for (let dx = -2; dx <= lf.x1 - lf.x0 + 2; dx++) push(lf.x0 + dx, ty);
+    for (const lf of lifts) if (x >= lf.x0 - 2 && x <= lf.x1 + 2 && y >= lf.y0 - 2 && y <= lf.y1 && !wallBetween(x, y, lf)) for (let ty = lf.y0 - 1; ty <= lf.y1; ty++) for (let dx = -2; dx <= lf.x1 - lf.x0 + 2; dx++) push(lf.x0 + dx, ty);
     for (const arc of swings) if (arc.some(([ax, ay]) => Math.abs(ax - x) <= 2 && y - ay >= -1 && y - ay <= 3)) for (const [ax, ay] of arc) for (let dy = -3; dy <= 2; dy++) for (let dx = -3; dx <= 3; dx++) push(ax + dx, ay + dy);
     for (const grp of groups) if (grp.set.has(key(x, y))) for (const [gx, gy] of grp.cells) push(gx, gy);   /* a wheel carries you round to any of its paddles */
     /* the great kite: take hold of it and the Sky Road lets you down anywhere along it */

@@ -155,7 +155,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   plat(344, 16, 4);                                       /* island B: cols 344-347, a row higher */
   /* THE HIGH ROAD'S OWN TEST (claude/fairfix): a MARIONETTE on island A - you ride the chair toward it looking at it, so it comes to meet you; and a HORSE at the near end of island B,
      facing the way you come: you land past it, with your back to it, and chair three swings in from the other side */
-  foe('marionette', 328, { y: 16, squad: 'islandA' });
+  foe('stringjack', 328, { y: 16, squad: 'islandA' });
   foe('hobbyhorse', 344, { y: 15, face: 1, squad: 'islandB' });
   const chair = (cx, py, arm, ph, per, mast) => { const th = Math.sin(ph) * 0.9; moversExtra.push({ kind: 'swing', fair: 'chair', px: cx * TS, py, arm, x: cx * TS + Math.sin(th) * arm - 24, y: py + Math.cos(th) * arm, w: 48, h: 8, period: per, phase: ph, mast }); };   /* mast: [x, base y, x, base y] of the two masts the beam hangs between (drawn) */
   chair(320, 11 * TS, 96, 0, 3.2, [313 * TS + 8, 17 * TS, 326 * TS + 8, 17 * TS]); chair(337, 10 * TS, 96, 1.6, 3.4, [329 * TS + 8, 17 * TS, 344 * TS + 8, 16 * TS]); chair(353, 8 * TS, 96, 0.7, 3.0, [347 * TS + 8, 16 * TS, 361 * TS + 8, 14 * TS]);   /* seats rest at rows 17, 16, 14: the levels of the islands and the tower top */
@@ -163,7 +163,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* --- THE LOW ROAD: THE HALL OF MIRRORS (a covered lane, dark; its roof is row 21-22) --- */
   const hx0 = 317, hx1 = 339;                             /* the hall's inside; its roof runs 316-340 */
   block(316, 340, 21, 22);                                /* the roof: a way for anybody who falls off a chair */
-  foe('marionette', 320, { squad: 'glass' });             /* B (claude/fairfix): A MARIONETTE by the door, in the door lantern's light. Look at it and it comes; pass it and a TRUE mirror ahead of you works its strings from behind */
+  foe('stringjack', 320, { squad: 'glass' });             /* B (claude/fairfix): A MARIONETTE by the door, in the door lantern's light. Look at it and it comes; pass it and a TRUE mirror ahead of you works its strings from behind */
   foe('mummer', 330, { squad: 'glass' });                 /* A: stands in front of the CRACKED glass, the one place no mirror can watch your back. Stand where a true mirror is ahead of you, and fight it there */
   const hall = { x0: hx0, x1: hx1, roof: 21, floor: R, dim: 88, reach: 112,
     mirrors: [{ x0: 318, x1: 322, kind: 'true' }, { x0: 326, x1: 331, kind: 'cracked' }, { x0: 334, x1: 338, kind: 'true' }], plug: { x0: 328, x1: 329 }, fake: 328 };
@@ -248,7 +248,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   block(529, 555, 19, 20);                                /* THE CANOPY: its roof (a walk over it for anyone up there) */
   const canopy = { x0: 530, x1: 554, roof: 19, floor: R - 2, canopy: true, dim: 88, reach: 112, mirrors: [{ x0: 530, x1: 533, kind: 'cracked' }, { x0: 550, x1: 554, kind: 'true' }] };
   post(535, 22, 0.5); post(548, 22, 0.5);                 /* its two lanterns, hung from the canopy: both gutter */
-  foe('mummer', 540, { y: R - 3, squad: 'round' }); foe('marionette', 547, { y: R - 3, squad: 'round' });
+  foe('mummer', 540, { y: R - 3, squad: 'round' }); foe('stringjack', 547, { y: R - 3, squad: 'round' });
   stack(557, 559); spikes(560, 562, S);                   /* a rick, and spikes past it */
   /* THE TALL STRIKER AGAIN (examined): it throws you onto THE NIGHT LANE, a plank run over the last round in full night. Its mummer is held ONLY while the lantern by it burns
      (the lantern gutters: it creeps in the dark beats) or from an arm's length or two */

@@ -125,13 +125,17 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   /* THE HARVEST FAIR (src/mummer.js; docs/briefs/harvest-fair.md): a mummer is 40 health and a 14 blow that comes only from behind you, told by a
      glowing mask and its bells - a read (where to LOOK) rather than a fight. WEIGHED UP after Daniel approved the greybox (2026-09-29): the fair read INDEX 34 against ~117 and no bodies are to be added, so a mummer is a 5 (constant attention: you may never turn your back) and the hobby-horse a 6 (the elite that charges 22 the moment
      a back is turned, committed and long) */
-  mummer: 5, hobbyhorse: 6, marionette: 5, barker: 7,   /* (claude/fairfix) the marionette weighs a mummer; the barker an elite caller who does little harm himself but turns every hero */
+  mummer: 5, hobbyhorse: 6, stringjack: 5, barker: 7,   /* (claude/fairfix) the string-jack weighs a mummer; the barker an elite caller who does little harm himself but turns every hero */
+  stagehand: 5,   /* THE STAGEHAND (the Maskwright's Theatre): 56 health, an unblockable 18 in front and a 16 dropped on you from above; slow */
+  spotlamp: 0, flylock: 0, flatwinch: 0, stagetrap: 0, startrap: 0,   /* THE MASKWRIGHT'S THEATRE's machinery (src/theatre-rig.js): a lamp, a rope-lock, a winch, a stage trap and the star trap fight nobody */
   /* THE WICKER QUEEN, the fair's boss (claude/fair3): a boss is a 6 */
   wickerqueen: 6,
   /* THE FAIR'S GAMES (claude/fairlevel, src/fair-games.js): a striker's pad, a gallery's target, a ticket and the prize booth are machines you work, not foes - furniture, written down at 0 so the tools read them as gadgets */
   striker: 0, gtarget: 0, ticket: 0, booth: 0,
   /* THE DUNE WORM, the caravan's boss (2026-09-25): a boss is a 6. awningwinch is his trap and the camp's machine - furniture */
   duneworm: 6, awningwinch: 0,
+  /* THE PUPPETEER, the Maskwright's Theatre's boss (claude/puppeteer): a boss is a 6; his soldier, harlequin and masterpiece are his fight, not a crowd of their own */
+  puppeteer: 6, marionette: 0, harlequin: 0, acrobat: 0, masterpiece: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and

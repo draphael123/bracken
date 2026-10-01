@@ -13,6 +13,7 @@ import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for t
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
 import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */
+import { puppetPlan } from './puppeteer.js';   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
@@ -1054,6 +1055,22 @@ async function runbossLab(BK, opts) {
         if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
         if((h!=='paladin'||P.st>=44)&&!guard&&!eruption&&mode!=='sinkTell'&&!(mode==='slamTell'&&boss.modeT<.65)&&Math.abs(dx)<LAB_REACH[h]+target.w/2&&Math.abs(P.y-target.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
         const was=P.hp,m0=mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,target,f,h});if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='puppeteer'){
+        /* THE PUPPETEER (claude/puppeteer): src/puppeteer.js puppetPlan reads what a player sees - a glowing string in reach is cut, a told blow is blocked,
+           jumped, ducked or stepped out of, the opening (him re-stringing, or fallen) is run to, and from phase 2 the batten takes it up to the gallery */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const PH=BK.puppeteerHands(),show=PH&&PH.show(),bat=show&&show.batten;
+        if(f===0||!P.labPupMem)P.labPupMem={};
+        const pl=show?puppetPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,snare:P.snare,dazzle:P.pupDazzle||0},e:boss,show,reach:LAB_REACH[h],shield:SHIELDED(h),onBatten:!!bat&&P.onMover===bat,t:f/60,rng:Math.random,mem:P.labPupMem}):{gx:null,face:P.face};   /* A HUMAN BOT (claude/puppeteer2): it sees a tell or a glow a quarter-second late, lets some glows go, misreads some tells (puppeteer.js PLAN); Math.random is the row's own seeded dice */
+        if(pl.drop&&P.ground){k.down=true;if(P.labDrop===undefined||f-P.labDrop>20){BK.press('jump');P.labDrop=f;}}
+        else if(pl.jump&&P.ground){BK.press('jump');P.labJump=16;}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.down&&P.ground)k.down=true;
+        if(pl.block)k.block=true;
+        if(!pl.down&&!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>4)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.atk&&P.atk<0&&!pl.down){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0,why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='wickerqueen'){
         /* THE WICKER QUEEN ON HER CAROUSEL (claude/fair3; the carousel, claude/fairboss): the fire opening, taught, and the read between up and down.

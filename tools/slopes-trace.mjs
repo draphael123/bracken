@@ -44,7 +44,7 @@ const RECORD = process.argv.includes('--record');
    for reasons that have nothing to do with the mover. That level's entry is then a regression baseline on the current mover,
    not the pre-slopes one - the other three still hold the pre-slopes equivalence. Say which level and why in the commit. */
 const REBASE = (process.argv.find(a => a.startsWith('--rebase=')) || '').slice(9);
-const IDS = ['wood', 'kings', 'keep', 'burial'];   /* §8.3's four: a wood, a castle, an underwater one, a cavern */
+const IDS = ['wood', 'kings', 'keep', 'burial'];   /* §8.3's four: a wood, a castle, an underwater one, a cavern. (THE MASKWRIGHT'S THEATRE was traced here in THEATRE1; THEATRE2 took it out again: its stage machinery runs on clocks of its own and its stage door is an elite's gate, so a walk that reaches the door differs between two recordings of the same build - it is no baseline for the mover. It has no slopes.) */
 const STARTS = 24, PER = 60;
 
 /* THE SCRIPT, a pure function of the frame number within one start, so it is the same every run and on both sides of

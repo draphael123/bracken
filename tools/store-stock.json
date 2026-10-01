@@ -1,0 +1,419 @@
+[
+ {
+  "id": "heroes",
+  "rows": [
+   {
+    "id": "knight",
+    "price": 10,
+    "silver": true,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "pyro",
+    "price": 10,
+    "silver": true,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "reaper",
+    "price": 10,
+    "silver": true,
+    "needs": null,
+    "feat": "boss:unburied"
+   },
+   {
+    "id": "pirate",
+    "price": 10,
+    "silver": true,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "paladin",
+    "price": 10,
+    "silver": true,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "geomancer",
+    "price": 10,
+    "silver": true,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "warden",
+    "price": 10,
+    "silver": true,
+    "needs": null,
+    "feat": null
+   }
+  ]
+ },
+ {
+  "id": "skins",
+  "rows": [
+   {
+    "id": "bracken",
+    "price": 0,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "black",
+    "price": 30,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "purple",
+    "price": 40,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "blue",
+    "price": 50,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "marsh",
+    "price": 35,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "rose",
+    "price": 40,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "crimson",
+    "price": 45,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "verdant",
+    "price": 45,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "frost",
+    "price": 55,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "shadow",
+    "price": 60,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "gilded",
+    "price": 70,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "iron",
+    "price": 0,
+    "silver": false,
+    "needs": null,
+    "feat": "iron"
+   },
+   {
+    "id": "spore",
+    "price": 0,
+    "silver": false,
+    "needs": null,
+    "feat": "spore"
+   },
+   {
+    "id": "dawn",
+    "price": 60,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "emberplate",
+    "price": 75,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "tide",
+    "price": 90,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "laurel",
+    "price": 40,
+    "silver": false,
+    "needs": null,
+    "feat": "medals:15"
+   },
+   {
+    "id": "silverknight",
+    "price": 4,
+    "silver": true,
+    "needs": null,
+    "feat": null
+   }
+  ]
+ },
+ {
+  "id": "weapons",
+  "rows": [
+   {
+    "id": "steel",
+    "price": 0,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "ember",
+    "price": 25,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "frost",
+    "price": 35,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "gilded",
+    "price": 45,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "shadow",
+    "price": 55,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "thorn",
+    "price": 60,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "silverleaf",
+    "price": 8,
+    "silver": true,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "laurelBlade",
+    "price": 70,
+    "silver": false,
+    "needs": null,
+    "feat": "medals:30"
+   },
+   {
+    "id": "moon",
+    "price": 80,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   }
+  ]
+ },
+ {
+  "id": "charms",
+  "rows": [
+   {
+    "id": "none",
+    "price": 0,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "lucky",
+    "price": 70,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "iron",
+    "price": 90,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "feather",
+    "price": 80,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "heart",
+    "price": 100,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "swift",
+    "price": 80,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "ribbon",
+    "price": 90,
+    "silver": false,
+    "needs": null,
+    "feat": "medals:45"
+   }
+  ]
+ },
+ {
+  "id": "skills",
+  "rows": []
+ },
+ {
+  "id": "smith",
+  "rows": [
+   {
+    "id": "heart",
+    "price": 60,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "wind",
+    "price": 60,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "edge",
+    "price": 90,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "edge2",
+    "price": 160,
+    "silver": false,
+    "needs": "spore",
+    "feat": null
+   },
+   {
+    "id": "edge3",
+    "price": 260,
+    "silver": false,
+    "needs": "spire",
+    "feat": null
+   },
+   {
+    "id": "mail",
+    "price": 150,
+    "silver": false,
+    "needs": "kings",
+    "feat": null
+   },
+   {
+    "id": "plate",
+    "price": 280,
+    "silver": false,
+    "needs": "moor",
+    "feat": null
+   },
+   {
+    "id": "tonic",
+    "price": 40,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   }
+  ]
+ },
+ {
+  "id": "music",
+  "rows": [
+   {
+    "id": "select",
+    "price": 0,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "town",
+    "price": 60,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "adventure",
+    "price": 60,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   }
+  ]
+ },
+ {
+  "id": "practice",
+  "rows": [
+   {
+    "id": "heroTrial",
+    "price": 0,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   },
+   {
+    "id": "practiceYard",
+    "price": 0,
+    "silver": false,
+    "needs": null,
+    "feat": null
+   }
+  ]
+ }
+]

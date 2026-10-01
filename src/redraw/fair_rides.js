@@ -290,7 +290,7 @@ export function drawNight(g, cx, cy, VW, VH, L, F, o) {
    the barker's call: the trumpet's rings going out while it is told, a burst when it lands ================= */
 export function drawFoeExtras(g, e, cx, cy, time) {
   const x = Math.round(e.x - cx), y = Math.round(e.y - cy);
-  if (e.t === 'marionette') { const f = e.face >= 0 ? 1 : -1, taut = e.mode !== 'hang', bar = y - 64 - (taut ? Math.sin(time * 14) * 2 : 0), tw = taut ? Math.sin(time * 18) * 1.5 : 0;
+  if (e.t === 'stringjack') { const f = e.face >= 0 ? 1 : -1, taut = e.mode !== 'hang', bar = y - 64 - (taut ? Math.sin(time * 14) * 2 : 0), tw = taut ? Math.sin(time * 18) * 1.5 : 0;
     const hands = e.mode === 'jerk' ? [[x - 9 * f, y - 36], [x + 10 * f, y - 36]] : e.mode === 'hang' ? [[x - 7 * f, y - 12], [x + 6 * f, y - 11]] : [[x - 7 * f, y - 20], [x + 8 * f, y - 20]];
     const head = [x + (e.mode === 'hang' ? 2 * f : 0), y - (e.mode === 'hang' ? 36 : 39)];
     g.globalAlpha = 0.9; g.lineWidth = 1;

@@ -174,7 +174,7 @@ const FF = await import('../src/fair-foes.js'), { DUCK_H } = await import('../sr
 const fi = LEVELS.findIndex(l => l.id === 'fair'), fair = LEVELS[fi], fields = LEVELS.find(l => l.id === 'fields'), way = LEVELS.find(l => l.id === 'waymeet');
 ok(!!fair, 'there is no level with id "fair" in LEVELS');
 if (fair) {
-  ok(fair.needs === 'waymeet', 'the fair does not need WAYMEET: ' + fair.needs);
+  ok(fair.needs === 'theatre', 'the fair does not need THE MASKWRIGHT\'S THEATRE (claude/theatre: the playhouse stands between Waymeet and the fair now): ' + fair.needs);
   ok(fields && fields.needs === 'fair', 'THE HEXED FIELDS do not need the fair: ' + (fields && fields.needs));
   ok(way && way.needs === 'causeway', 'Waymeet\'s road changed');
   ok(/DON'T TURN YOUR BACK ON THEM/.test(fair.rule || ''), 'the level\'s rule is not DON\'T TURN YOUR BACK ON THEM: ' + fair.rule);
@@ -182,7 +182,7 @@ if (fair) {
   const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   const nodes = src.slice(src.indexOf('const INLAND_NODES'), src.indexOf('const INLAND_PATH'));
   const ids = [...nodes.matchAll(/id: '([a-z]+)', kind: 'level'/g)].map(m => m[1]);
-  ok(ids.indexOf('waymeet') >= 0 && ids.indexOf('fair') === ids.indexOf('waymeet') + 1 && ids.indexOf('fields') === ids.indexOf('fair') + 1, 'the map does not run Waymeet, the fair, the Hexed Fields in that order: ' + ids.join(','));
+  ok(ids.indexOf('waymeet') >= 0 && ids.indexOf('theatre') === ids.indexOf('waymeet') + 1 && ids.indexOf('fair') === ids.indexOf('theatre') + 1 && ids.indexOf('fields') === ids.indexOf('fair') + 1, 'the map does not run Waymeet, the theatre, the fair, the Hexed Fields in that order: ' + ids.join(','));
   ok(existsSync(new URL('../docs/briefs/harvest-fair.md', import.meta.url)), 'docs/briefs/harvest-fair.md (the brief) is not committed');
   const L = fair.build(), T = { BOUNCER: 10, SPIKE: 3 }, TS = 16;
   const facers = L.ents.filter(e => e.t === 'mummer' || e.t === 'hobbyhorse'), mum = L.ents.filter(e => e.t === 'mummer'), horse = L.ents.filter(e => e.t === 'hobbyhorse');
@@ -201,9 +201,9 @@ if (fair) {
     ok(inn('teach', 'mummer').filter(e => e.y === 27).length === 1 && inn('teach', 'hobbyhorse').length === 0, 'the TEACH section\'s road is not exactly one mummer (' + inn('teach').length + ' facers)');
     /* THE HIGH ROADS CARRY THEIR OWN TESTS (claude/fairfix): the boardwalk (row 18, 82-163) a mummer on its planks and the barker at its far end; the chair islands a marionette and a horse;
        the night lane a mummer by a guttering lantern; the corn-top walk a scarecrow that is not straw */
-    { const hi = L.ents.filter(e => ['mummer', 'hobbyhorse', 'marionette', 'barker'].includes(e.t)), on = (x0, x1, y0, y1) => hi.filter(e => e.x >= x0 && e.x <= x1 && e.y >= y0 && e.y <= y1);
+    { const hi = L.ents.filter(e => ['mummer', 'hobbyhorse', 'stringjack', 'barker'].includes(e.t)), on = (x0, x1, y0, y1) => hi.filter(e => e.x >= x0 && e.x <= x1 && e.y >= y0 && e.y <= y1);
       ok(on(82, 163, 18, 18).some(e => e.t === 'mummer') && on(140, 163, 18, 18).some(e => e.t === 'barker' && e.elite), 'the boardwalk is a free road again (no mummer on its planks, no barker at its far end): ' + on(82, 163, 18, 18).map(e => e.t + e.x));
-      ok(on(326, 329, 16, 16).some(e => e.t === 'marionette') && on(344, 347, 15, 15).some(e => e.t === 'hobbyhorse' && e.face === 1), 'the swing ride\'s islands hold no marionette (A) and no horse facing the way you come (B)');
+      ok(on(326, 329, 16, 16).some(e => e.t === 'stringjack') && on(344, 347, 15, 15).some(e => e.t === 'hobbyhorse' && e.face === 1), 'the swing ride\'s islands hold no marionette (A) and no horse facing the way you come (B)');
       const lane = on(563, 595, 12, 14).filter(e => e.t === 'mummer'); ok(lane.length >= 1 && lane.every(e => (L.lamps || []).some(l => l.life === 0.5 && Math.abs(l.x - e.x) <= 3 && Math.abs(l.y - e.y) <= 2)), 'the night lane has no mummer held only in a guttering lantern\'s light: ' + lane.map(e => e.x));
       ok(on(410, 438, 10, 11).some(e => e.t === 'mummer' && e.scare), 'the corn-top walk has no scarecrow that is not straw'); }
     ok(mum.indexOf(mum.slice().sort((a, b) => a.x - b.x)[0]) >= 0 && mum.slice().sort((a, b) => a.x - b.x)[0].x >= arc.teach[0] && mum.slice().sort((a, b) => a.x - b.x)[0].x < arc.teach[1], 'the first mummer in the level is not in the TEACH section');
@@ -214,7 +214,7 @@ if (fair) {
     /* THE EXAM IS ONE SPACE (claude/fairfix): the small carousel under a dark canopy with a true mirror panel, a mummer and a marionette riding it; the night lane; a blind stall wall with a
        mummer behind it; the barker on his crate; the door guard on an unlit stretch */
     { const ex = L.ents.filter(e => e.x >= arc.exam[0] && e.x < arc.exam[1]), c = (L.carousels || []).find(q => q.x0 >= arc.exam[0] && q.x1 < arc.exam[1]), can = (L.halls || []).find(H => H.canopy);
-      ok(c && can && can.x0 === c.x0 && can.x1 === c.x1 && can.mirrors.some(m => m.kind === 'true') && ex.some(e => e.t === 'mummer' && e.y === c.row - 1 && e.x >= c.x0 && e.x <= c.x1) && ex.some(e => e.t === 'marionette' && e.y === c.row - 1 && e.x >= c.x0 && e.x <= c.x1), 'the exam\'s carousel is not under a dark canopy with a true mirror, with a mummer and a marionette riding it');
+      ok(c && can && can.x0 === c.x0 && can.x1 === c.x1 && can.mirrors.some(m => m.kind === 'true') && ex.some(e => e.t === 'mummer' && e.y === c.row - 1 && e.x >= c.x0 && e.x <= c.x1) && ex.some(e => e.t === 'stringjack' && e.y === c.row - 1 && e.x >= c.x0 && e.x <= c.x1), 'the exam\'s carousel is not under a dark canopy with a true mirror, with a mummer and a marionette riding it');
       ok((L.lamps || []).filter(l => l.x >= c.x0 && l.x <= c.x1 && l.y < c.row).length >= 2 && (L.lamps || []).filter(l => l.x >= c.x0 && l.x <= c.x1 && l.y < c.row).every(l => l.life === 0.5), 'the canopy\'s lanterns are not failing (guttering)');
       const bl = (L.blinds || [])[0]; ok(bl && ex.some(e => e.t === 'mummer' && e.x * 16 >= bl[0] * 16 && e.x <= bl[1] && e.y === 27) && FGM.blocked(L, (tx, ty) => L.grid[ty * L.W + tx] === 1, { x: 575 * 16 + 8, y: 28 * 16 }, { x: 566 * 16, y: 28 * 16, face: 1 }), 'no blind stall wall hides a mummer in the exam');
       ok(ex.some(e => e.t === 'barker' && e.elite) && ex.some(e => e.t === 'hobbyhorse' && e.elite && e.gate === L.green.door), 'the exam has no barker, or no door guard');
@@ -282,8 +282,8 @@ if (fair) {
   const cnt = t => L.ents.filter(e => e.t === t).length, at = (x, y) => L.grid[y * L.W + x];
   // FEWER, BETTER FOES: 12 mummers, 3 horses (the door guard among them); the last count was 13 and a grid of them
   // FEWER, BETTER FOES, EVERY ONE IN A DESIGNED ENCOUNTER (claude/fairfix): 18 mummers, 4 horses, 3 marionettes, 2 barkers - 27 - and every one a squad or an elite (no padding)
-  { const fs2 = L.ents.filter(e => ['mummer', 'hobbyhorse', 'marionette', 'barker'].includes(e.t));
-    ok(cnt('mummer') === 18 && cnt('hobbyhorse') === 4 && cnt('marionette') === 3 && cnt('barker') === 2, 'the fair foe count moved (18 mummers + 4 horses + 3 marionettes + 2 barkers): ' + [cnt('mummer'), cnt('hobbyhorse'), cnt('marionette'), cnt('barker')]);
+  { const fs2 = L.ents.filter(e => ['mummer', 'hobbyhorse', 'stringjack', 'barker'].includes(e.t));
+    ok(cnt('mummer') === 18 && cnt('hobbyhorse') === 4 && cnt('stringjack') === 3 && cnt('barker') === 2, 'the fair foe count moved (18 mummers + 4 horses + 3 marionettes + 2 barkers): ' + [cnt('mummer'), cnt('hobbyhorse'), cnt('stringjack'), cnt('barker')]);
     ok(fs2.every(e => e.squad || e.elite) && cnt('barker') === L.ents.filter(e => e.t === 'barker' && e.elite).length, 'a fair foe is not in a designed encounter (a squad or an elite), or a barker is not an elite'); }
   // HEIGHT BANDS: the reach fill (with the rides) stands in five bands of height - the cellars, the road, the roofs, the boardwalk, the tops - and nothing is a corridor
   { const seen = floodReach(L, TT, { rides: true }).seen, rows = new Set([...seen].map(k => +k.split(',')[1])), band = r => r >= 29 ? 0 : r >= 24 ? 1 : r >= 19 ? 2 : r >= 15 ? 3 : 4, bands = new Set([...rows].map(band));
@@ -306,7 +306,7 @@ if (fair) {
   { const seenPlain = floodReach(L, TT, {}).seen, tower = (L.tower.x0 + 1) + ',' + (L.tower.top - 1); ok(seenPlain.has(tower), 'the tower top is not on the low road (the stair): the plain fill does not reach it');
     const hall = L.hall; ok(hall && hall.mirrors.some(m => m.kind === 'true') && hall.mirrors.some(m => m.kind === 'cracked') && hall.x1 - hall.x0 >= 20, 'the hall of mirrors has no true and cracked glass');
     const A = L.ents.filter(e => e.t === 'mummer' && e.x >= hall.x0 && e.x <= hall.x1).sort((a, b) => a.x - b.x);
-    const Mh = L.ents.filter(e => e.t === 'marionette' && e.x >= hall.x0 && e.x <= hall.x1 && e.y === 27);
+    const Mh = L.ents.filter(e => e.t === 'stringjack' && e.x >= hall.x0 && e.x <= hall.x1 && e.y === 27);
     ok(A.length === 1 && Mh.length === 1 && Mh[0].x < hall.mirrors.find(m => m.kind === 'true').x1 + 1 && A[0].x >= hall.mirrors.find(m => m.kind === 'cracked').x0 && A[0].x <= hall.mirrors.find(m => m.kind === 'cracked').x1, 'the hall is not a marionette by the door (by the first true glass) and a mummer in front of the cracked glass (' + A.map(e => e.x) + ' / ' + Mh.map(e => e.x) + ')'); }
   // THE GAMES, each taught -> developed -> twisted -> examined
   { const S = L.strikers || [], GS = L.galleries || [], G = GS[0], B = L.booth, tk = L.tickets || [];
@@ -574,7 +574,7 @@ try {
     const put = (e, col, row) => { e.alive = true; e.x = col * 16 + 8; e.y = (row + 1) * 16; e.vy = 0; if (e.st) { e.st.x = e.x; e.st.y = e.y; } };
     const pin = (x, y, f) => { BK.P.x = x; BK.P.y = y; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = f; };
     // 1. THE MARIONETTE: on the gate's lit road, looked at from 110 px it comes; with the hero's back to it, it does not move; its cut hurts a hero who looks and does not guard
-    load(e => e.t === 'marionette'); { const m = BK.enemies().find(e => e.t === 'marionette'); for (const e of BK.enemies()) if (e !== m) e.alive = false; put(m, 40, 27); m.st.mode = 'hang'; BK.sim(2);
+    load(e => e.t === 'stringjack'); { const m = BK.enemies().find(e => e.t === 'stringjack'); for (const e of BK.enemies()) if (e !== m) e.alive = false; put(m, 40, 27); m.st.mode = 'hang'; BK.sim(2);
       const x0 = m.x; for (let i = 0; i < 60; i++) { pin(m.x - 110, m.y, -1); BK.sim(1); } out.mAway = Math.abs(m.x - x0);
       const x1 = m.x; for (let i = 0; i < 30; i++) { pin(x1 - 110, m.y, 1); BK.sim(1); } out.mFaced = Math.abs(m.x - x1);
       BK.god = false; BK.P.hp = BK.P.maxHp; const hp0 = BK.P.hp, c0 = BK.fair().cuts; for (let i = 0; i < 150; i++) { pin(m.x - 18, m.y, 1); BK.P.inv = 0; BK.sim(1); } out.mCut = { cuts: BK.fair().cuts - c0, lost: hp0 - BK.P.hp }; BK.god = true; }
