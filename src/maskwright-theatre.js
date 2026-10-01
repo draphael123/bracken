@@ -325,7 +325,7 @@ export function buildMaskwrightTheatre(ctx) {
   /* THE STALLS: raked, a row down every four seats, from under the balcony to the pit rail */
   for (let k = 0; k < 7; k++) { const x0 = 19 + k * 4, top = 30 + k; block(x0, x0 + 3, top, H - 1); }
   block(47, 56, 42, H - 1); air(47, 56, 37, 41);                             /* THE ORCHESTRA PIT: five rows under the last row of seats */
-  spikes2(48, 51, 41);                                                       /* broken music stands, under the pit rail */
+  spikes2(48, 50, 41);                                                       /* broken music stands, under the pit rail */
   block(52, 52, 40, 41); block(53, 56, 39, 41); for (let x = 54; x <= 56; x++) set(x, 39, T.BOUNCER);   /* THE KETTLE DRUMS on their riser: they throw you up onto the apron */
   block(57, 71, 34, H - 1);                                                  /* THE APRON, level with the stage door's passage */
   block(57, 71, 12, 20);                                                     /* the proscenium over the apron */
