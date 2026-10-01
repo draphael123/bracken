@@ -3,7 +3,7 @@
 // fog the whole way. Between WAYMEET and THE MASKWRIGHT'S THEATRE on the road inland. Its machinery is src/canal-rig.js (pure), its hands
 // src/canal-hands.js, its two new foes (the GRINDYLOW, Jenny Greenteeth's weed-imp brood, and the WILL-O'-THE-WISP, a false lantern)
 // src/canal-foes.js. JENNY GREENTEETH (the boss: a parallel lane, claude/lockkeeper, in a module of its own) is fought in the LOCK CHAMBER past
-// the basin: this file leaves her the room (L.lockArena), a door and a gate so the level can be walked end to end without her.
+// the basin: this file lays her chamber (stageGreenteeth, section 7), her doors and the level's gate on the quay past her east door.
 //
 // THE RULE: THE BARGE GOES WHERE THE WATER LETS IT. A LANTERN SHOWS YOU - TO THEM TOO.
 //
@@ -22,6 +22,7 @@
 //                                                               the low beams; the TILLER steers the cut or the broken weir
 //   326-369  THE THEATRE BASIN   EXAM                           fog, horn, bridge, barge, archers, weed, wisps, the foreman: all at once
 //   370-431  JENNY'S LOCK        (claude/lockkeeper)            the door, the chamber kept free for her, and the gate
+import { stageGreenteeth } from './jenny-greenteeth.js';   /* JENNY GREENTEETH's lock chamber and fight (claude/lockkeeper's module, wired by claude/greenwire) */
 export const CANAL = { W: 432, H: 56 };
 /* every machine's arc (tile columns), read by tools/canal.mjs and written up in the brief */
 export const ARCS = {
@@ -304,34 +305,30 @@ export function buildFogCanal({ painter, T, TS }) {
   coins([330, 40], [338, 40], [344, 40], [352, 33], [362, 40]);
   ent('mend', 327, 40);
 
-  // ---------------- 7. JENNY'S LOCK (370-431): JENNY GREENTEETH's lock chamber - A HOOK, NOT A FIGHT (claude/lockkeeper wires her in at the merge) ----------------
+  // ---------------- 7. JENNY'S LOCK (370-431): JENNY GREENTEETH's lock chamber and her fight (claude/lockkeeper's module, wired by claude/greenwire) ----------------
   /* THE LOCK'S LOWER GATE is the corridor's floor: the barge moors at its foot (a grindylow on its steps), you hop up onto it, walk the corridor
-     through the foreman's gate to the checkpoint, and her WEST DOOR is at the corridor's end, at bed level.
-     >>> JENNY GREENTEETH'S LOCK CHAMBER GOES HERE (claude/lockkeeper 80de5c17's contract). Her footprint is kept free: columns 376-415 (sx = 376:
-     her gates at 376 and 415, her water 377-414), rows 25-42 (R = 41 is her bed; she lays rows 41 and 42 herself, row 43 is solid here), her doors at
-     rows 35-40 in each gate (the west door opens off this corridor at bed level; the east door, the way on when she dies, onto the quay at 416).
-     Nothing standable within five rows over her walkways (rows 28-32 are open air here). The call, with this level's sx and R:
-         import { stageGreenteeth } from './jenny-greenteeth.js';
-         const { arena, movers: gm, pools: gp } = stageGreenteeth({ set, block, plat: boards, ent }, T, TS, 376, 41);
-         movers.push(...gm); pools.push(...gp);   // into moversExtra and pools
-     and in the return: arena, gateAfterBoss: true, and the level's gate below moved out past her east door (onto the quay, x 420, row 40).
-     Her track is her own (arena.music); the level's stays 'canal'. Until then the chamber is a placeholder floor and the gate stands inside her west door. <<< */
+     through the foreman's gate to the checkpoint, and her WEST DOOR is at the corridor's end, at bed level. Her chamber is stageGreenteeth(sx 376, R 41):
+     columns 376-415 (gates at 376 and 415, water 377-414), rows 25-42 (she lays rows 41 and 42 herself; row 43 is solid here), her doors at rows 35-40 in
+     each gate - the west door opens off this corridor, the east door (the way on once she is down: the arena walls close both while she wakes) onto the
+     quay at 416. Her track is her own (arena.music 'greenteeth'); the level's stays 'canal'. */
   block(370, 373, 37, H - 1);                                                 /* THE LOCK'S LOWER GATE and the corridor's first floor: a step up from her deck when the basin lock is full */
   block(370, 375, 30, 33); air(371, 375, 34, 36); air(374, 375, 37, 40); block(374, 375, 41, H - 1);   /* the corridor, stepping down to her west door at her bed level */
   ent('check', 375, 40);                                                      /* CHECKPOINT THREE: just outside her west door */
   sign(373, 40, "JENNY'S LOCK. THE GRINDYLOWS' MOTHER KEEPS IT.");
-  air(376, 415, 25, 40); block(376, 415, 41, H - 1);                         /* HER FOOTPRINT (a placeholder floor on her bed row until she is wired) */
-  ent('gate', 377, 40);                                                        /* the level's end until her fight lands: just inside her west door */
+  air(376, 415, 25, 40); block(376, 415, 41, H - 1);                         /* her footprint, cleared before she lays herself into it */
+  const jenny = stageGreenteeth({ set, block, plat: boards, ent }, T, TS, 376, 41);
+  ent('gate', 420, 40);                                                        /* the level's end, out on the quay past her east door: it opens when she dies (gateAfterBoss) */
   block(416, 431, 41, H - 1);                                                  /* the theatre quarter's quay, past her east door */
-  /* (claude/canalfix, review fix 8: the bargee who waited on this quay could never be reached past the end gate - removed until Jenny is wired) */
+  /* (claude/canalfix, review fix 8: the bargee who waited on this quay could never be reached past the end gate - removed; claude/greenwire kept it so: nothing stands past her) */
 
   // ================= THE LADDERS, LAST =================
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
 
   const START = { x: 2, y: 25 };
   return {
-    W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra: [
-      { kind: 'barge', canal: true, x: px(36), y: 40 * TS - 2, w: 96, h: 10 } ],
+    W, H, grid: L.grid, ents: L.ents, START, pools: [...pools, ...jenny.pools], falls: [], moversExtra: [
+      { kind: 'barge', canal: true, x: px(36), y: 40 * TS - 2, w: 96, h: 10 }, ...jenny.movers ],
+    arena: jenny.arena, gateAfterBoss: true,
     interiors: [[14, 29, 19, 38, 'cnWarehouse'], [86, 106, 13, 29, 'cnMill'], [371, 375, 37, 40, 'cnDoor']],
     canal: { reaches, gates, bridges, fogs, weedWater, weeds, beams: beams.filter(b => !b.weir), moorings, weir: weirSpec, barge: { x: 36 }, arcs: ARCS, sections: SECTIONS,
       sides, arch: [130, 147, 32], gangAt: 165,   /* (claude/canalfix) her sides of the Waymeet pound; THE LONG ARCH [x0, x1, the tunnel roof's lowest row]; the fog wall's front, where the gang boards */
@@ -340,7 +337,7 @@ export function buildFogCanal({ painter, T, TS }) {
     chases, rigBands,
     waterHurts: true, noWade: true,   /* THE CANAL IS JENNY'S WATER: a fall in costs health and hands you back to the last ground you stood on (main.js, as the Marsh); and it is
                                          not a floor to the reach model (src/reachcore.js L.noWade): only the barge crosses it */
-    lockArena: { sx: 376, R: 41, x0: 376, x1: 415, rows: [25, 42], westDoor: [376, 35, 40], eastDoor: [415, 35, 40] },   /* JENNY GREENTEETH's lock (claude/lockkeeper): stageGreenteeth(..., 376, 41) goes here (see section 7) */
+    lockArena: { sx: 376, R: 41, x0: 376, x1: 415, rows: [25, 42], westDoor: [376, 35, 40], eastDoor: [415, 35, 40] },   /* JENNY GREENTEETH's lock (claude/greenwire): the footprint stageGreenteeth(..., 376, 41) lays (see section 7) */
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* three checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */
     /* WHAT EACH MACHINE OPENS, and the line that says so (claude/canalfix: tools/level-quality.mjs `unlocks`; the lines are the hints src/canal-hands.js shows) */

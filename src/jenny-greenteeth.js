@@ -31,16 +31,16 @@
 // Health is never the lever. A blow on her anywhere else lands at GT.ward.
 //
 // PURE: no DOM, no main.js. The world is a context `c` (src/jenny-greenteeth-hands.js binds it); the frame's events are returned for
-// tools/greenteeth.mjs. The chamber is laid by stageGreenteeth (THE FOG CANAL calls it); buildGreenteethLock is the standalone level 'greenlock'.
+// tools/greenteeth.mjs. The chamber is laid by stageGreenteeth (THE FOG CANAL calls it, src/fog-canal.js section 7: the hidden standalone level 'greenlock' is gone, claude/greenwire).
 
 export const GT = {
   hp: 720, w: 18, h: 24, markH: 34,
-  ward: 0.05, openMul: 2.4, bigMul: 2.8,
+  ward: 0.05, openMul: 1.5, bigMul: 2.8,   /* (claude/greenwire: the stranded and flushed windows are 3.0 s, so x1.5: the same blow-for-blow damage per opening as 1.8 s at x2.4) */
   /* THE WATER: its heights over the bed, and how fast it moves */
   lv: { dry: 0, low: 48, half: 80, high: 112 },   /* (each leaves one waler a row over the water, and HIGH a row under the walkways) */
   drainRate: 36, fillRate: 60, wakeRate: 32, aground: 26,
   /* THE OPENINGS (Daniel: short, earned, obvious; the big one about three seconds) */
-  strandT: 1.8, flushT: 1.8, bigT: 3.0, crawl: 30, dragT: 0.7,
+  strandT: 3.0, flushT: 3.0, bigT: 3.0, crawl: 30, dragT: 0.7,
   /* HER BODY */
   swim: { low: 105, half: 135, high: 165 }, keep: 24, lairRest: 2.2, visits: [3, 3, 2],
   /* HER ARMS */
@@ -468,29 +468,6 @@ export function stageGreenteeth(W, T, TS, sx, R) {
   const pools = [{ x0: A.x0, x1: A.x1, y: A.bed, y0: A.bed, base: A.bed, bottom: A.bed, swim: true, clear: true, shallow: true, shallow0: true, depth: 0, depth0: 0, dry: true, grad: false, wash: 0.42, lock: true }];
   return { arena, movers, pools };
 }
-/* THE STANDALONE LOCK (hidden level 'greenlock'): a canal bank at bed height, the chamber, and the canal on beyond it - only so ?boss=greenteeth, the
-   boss lab and the boss checks can reach her before THE FOG CANAL (claude/canal) lands with the same chamber at its end */
-export function buildGreenteethLock({ painter, T, TS }) {
-  const W = 72, H = 26, R = 21, S = R - 1, L = painter(W, H), { set, block, plat, ent } = L;
-  L.floor(0, W - 1, R); block(0, 0, 0, R - 1); block(W - 1, W - 1, 0, R - 1);
-  /* THE TEACHING DITCH: a hand's depth of canal water with a mat of each weed on it - the bright one holds you, the dark one lets you down, and
-     nothing in it can hurt you */
-  for (let x = 5; x <= 11; x++) set(x, R, T.AIR);
-  ent('sign', 3, S, { text: 'THE BRIGHT WEED HOLDS YOU A WHILE. THE DARK WEED IS ONLY WATER WITH A SKIN ON IT.' });
-  ent('check', 14, S);
-  ent('sign', 16, S, { text: 'THE LOCK. SHE IS THE WATER\'S: DRAIN IT UNDER HER, AND SHE IS STRANDED.' });
-  const sx = 20, { arena, movers, pools } = stageGreenteeth({ set, block, plat, ent }, T, TS, sx, R);
-  block(sx - 1, sx - 1, 0, R - 7); block(sx + 40, sx + 40, 0, R - 7);   /* the lock's stone quoins, out to the banks */
-  ent('gate', 66, S);
-  arena.lock.quoins = true; arena.lock.teach = { x0: 8 * TS, x1: 12 * TS, y: R * TS + 3 };
-  const ditch = { x0: 5 * TS, x1: 12 * TS, y: R * TS + 4, base: (R + 1) * TS, bottom: (R + 1) * TS, swim: false, shallow: true, depth: 12, clear: true };
-  const ditchWeed = [{ kind: 'lift', weedTeach: true, x: 5 * TS, y: R * TS + 3, y0: R * TS + 3, y1: R * TS + 3, w: 3 * TS, h: 6, speed: 0 }];
-  return { W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: S }, pools: [ditch, ...pools], falls: [], moversExtra: [...movers, ...ditchWeed], interiors: [], arena, gateAfterBoss: true,
-    music: 'greenteeth',
-    palette: { set: 'village', dress: 'none', sky: 'night', far: 'village', mid: 'village', near: 'village', haze: 'rgba(90,120,100,0.16)' },
-    ambient: [{ x0: 0, x1: 99999, kind: 'river' }] };
-}
-
 /* ---------- THE BOT'S READING (src/lab.js) ----------
    A HUMAN BOT (the Puppeteer's lesson): it sees a tell PLAN.react s after it began, misreads some (PLAN.missDodge), lets some chances go
    (PLAN.missHand: her hand on the paddle; PLAN.late: a paddle struck late), and mashes a hold like a person (not every frame).

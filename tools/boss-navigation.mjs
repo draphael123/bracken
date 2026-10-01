@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {openPage} from './cdp.mjs';
 const pg=await openPage({audio:false,fonts:false});
 try {
-  for (const [lvl,h] of [['reef','warden'],['longwater','reaper'],['flotilla','knight'],['greenlock','knight'],['theatre','knight']]) {
+  for (const [lvl,h] of [['reef','warden'],['longwater','reaper'],['flotilla','knight'],['canal','knight'],['theatre','knight']]) {
     await pg.reload();
     const result=await pg.evalp(`(async()=>{
       BK.manualSimulation=true;let seed=1919;${lvl==='theatre'?"(await import('/src/puppeteer.js')).PLAN.goLoft=1;":""}
@@ -15,7 +15,7 @@ try {
     if(lvl==='flotilla') assert.deepEqual(result.groundedPhases,[1,2,3],'the pilot must stand on each fighting deck, not just jump within sword range');
     /* THE PUPPETEER: the pilot takes the hard way only on a roll (PLAN.goLoft per cycle), so this row pins the roll to 1: the question is whether it CAN ride the batten and stand on the gallery through ordinary inputs, not whether a seed happens to roll it (claude/integ51: in the theatre the seed-1919 fight won in 71 s without a roll) */
     if(lvl==='theatre') assert.ok(result.loft,'THE PUPPETEER: the pilot must ride the batten up and stand on the fly gallery (claude/puppeteer)');
-    if(lvl==='greenlock') assert.ok(result.walk>60&&result.swam>60,'JENNY GREENTEETH (claude/lockkeeper): the pilot must swim her lock and climb the walers to a gate walkway: '+JSON.stringify({walk:result.walk,swam:result.swam}));
+    if(lvl==='canal') assert.ok(result.walk>60&&result.swam>60,'JENNY GREENTEETH (claude/lockkeeper): the pilot must swim her lock and climb the walers to a gate walkway: '+JSON.stringify({walk:result.walk,swam:result.swam}));
     assert.equal(row.killed,true,`${h} must reach and finish ${lvl} through ordinary inputs`);
     assert.ok(row.damage.other>row.damage.plunge,'ordinary attacks must remain the majority of credited damage');
     if(lvl==='reef') assert.ok(row.modes.stuck>0,'evading the bite must create a genuine stuck-jaw opening');

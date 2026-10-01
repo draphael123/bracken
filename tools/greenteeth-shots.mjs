@@ -1,4 +1,4 @@
-// tools/greenteeth-shots.mjs [hero=knight] [level=greenlock] - JENNY GREENTEETH in the page (claude/lockkeeper): stills of one whole fight, the bot
+// tools/greenteeth-shots.mjs [hero=knight] [level=canal] - JENNY GREENTEETH in the page (claude/lockkeeper): stills of one whole fight, the bot
 // playing it (src/jenny-greenteeth.js greenteethPlan), drawn frame by frame and saved at 2x into work/claude/greenteeth/ - one for each beat the
 // first time it happens: the empty lock, the green lawn and a grab's ring, her stranded, the upper paddle running, the surge, the flood and her
 // culvert, the flush, the fog and the lamp, the big one. Refill health, so the pictures reach the end. Not in the suite: pictures are for eyes.
@@ -6,7 +6,7 @@
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-const hero = process.argv[2] || 'knight', level = process.argv[3] || 'greenlock';
+const hero = process.argv[2] || 'knight', level = process.argv[3] || 'canal';
 const out = join(ROOT, 'work/claude/greenteeth'); mkdirSync(out, { recursive: true });
 const pg = await openPage({ audio: false });
 try {

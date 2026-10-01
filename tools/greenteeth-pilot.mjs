@@ -1,13 +1,12 @@
-// tools/greenteeth-pilot.mjs [salts=1] [heroes=knight,warden,pyro] [level=greenlock] - JENNY GREENTEETH (src/jenny-greenteeth.js) at NORMAL health,
+// tools/greenteeth-pilot.mjs [salts=1] [heroes=knight,warden,pyro] [level=canal] - JENNY GREENTEETH (src/jenny-greenteeth.js) at NORMAL health,
 // one pass per salt (bossLab pins its dice per row; docs/INTEGRATOR.md section 6). One life per fight, no refills; the bot is the HUMAN one
 // (src/jenny-greenteeth.js PLAN: a quarter-second late, and it misses some). Prints a row a fight (outcome, seconds, health lost, her health left,
 // the phase reached, the cycles, her openings - stranded, thrown out, the big one - and what did the damage) and a summary against the house band
-// (60-75% wins, median win 90-150 s). Not in the suite: it is too long. The level defaults to the standalone lock; once THE FOG CANAL holds her,
-// pass its id.
+// (60-75% wins, median win 90-150 s). Not in the suite: it is too long. The level is THE FOG CANAL (her lock is its last stretch).
 import { openPage } from './cdp.mjs';
 const salts = (process.argv[2] || '1').split(',').map(Number);
 const heroes = (process.argv[3] || 'knight,warden,pyro').split(',');
-const level = process.argv[4] || 'greenlock';
+const level = process.argv[4] || 'canal';
 const pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
   for (const salt of salts) { await pg.reload();

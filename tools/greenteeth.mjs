@@ -12,7 +12,7 @@
 //   - PHASE 3: the fog; a lamp's hook is fast before it; struck in the fog the lamp falls, she goes for the light and will not leave it, and
 //     that gate's paddle then gives THE BIG ONE (drained: stranded; flooded: thrown) at GT.bigMul
 //   - THE HUMAN BOT: it reacts late and misses some (src/jenny-greenteeth.js PLAN)
-// THE STAGE: the standalone lock is a hidden level with her arena (40 wide, the walers two rows apart, the high water a row under the walkways,
+// THE STAGE: THE FOG CANAL (src/fog-canal.js section 7) holds her arena (40 wide, the walers two rows apart, the high water a row under the walkways,
 //   her music, a checkpoint outside the gate, the trigger past it)
 // IN THE PAGE: she wakes and floods the lock; a bright weed mat holds a hero and then gives; a blow on her swimming is warded; a real swing at the
 //   lower paddle from its walkway drains the lock under her, and stranded a blow bites; her death ends the fight.
@@ -67,9 +67,9 @@ const awake = r => { until(r, () => r.e.mode !== 'wake', 200); return r; };
 { const r = awake(rig({ ex: A.E.face - 90 })); r.place('walkE'); r.e.x = A.E.face - 90;
   const res = M.strikePaddle(r.e, r.show, 'E'); ok(res === 'drain', 'the lower paddle struck in her first cycle did not drain (' + res + ')');
   ok(until(r, () => r.e.mode === 'stranded', 60 * 3), 'the lock drained under her and she was not stranded (mode ' + r.e.mode + ', depth ' + r.show.water.depth.toFixed(0) + ')');
-  ok(M.gtOpen(r.e) && M.gtTake(r.e) === GT.openMul && r.e.modeT <= 2.0 && r.e.modeT >= 1.4, 'stranded she is not open at ' + GT.openMul + ' for a short window (' + r.e.modeT.toFixed(2) + ' s)');
+  ok(M.gtOpen(r.e) && M.gtTake(r.e) === GT.openMul && r.e.modeT <= 3.6 && r.e.modeT >= 3, 'stranded she is not open at ' + GT.openMul + ' for at least 3 s (' + r.e.modeT.toFixed(2) + ' s)');
   ok(r.log.lines.includes('SHE IS STRANDED: CUT HER'), 'her stranding was not said in the hint box');
-  let t = 0; while (M.gtOpen(r.e) && t < 600) { r.step(); t++; } ok(t * DT <= 2.05, 'the stranded window ran ' + (t * DT).toFixed(2) + ' s (short: about two seconds)');
+  let t = 0; while (M.gtOpen(r.e) && t < 600) { r.step(); t++; } ok(t * DT >= 2.95 && t * DT <= 3.65, 'the stranded window ran ' + (t * DT).toFixed(2) + ' s (the boss rule: at least 3 s, and still short)');
   const C0 = r.show.C.name; ok(until(r, () => r.show.cycle === 1, 60 * 5), 'after her stranding she did not drag herself back and refill the lock for a new cycle');
   ok(r.show.C.name !== C0, 'the lock after her first stranding is the same lock (' + C0 + ')');
   r.run(60 * 4); ok(r.show.n.strand === 1 && r.e.mode !== 'stranded', 'the water coming back up stranded her again (' + r.show.n.strand + ' strandings): aground is only as the drain runs'); }
@@ -85,7 +85,7 @@ for (const strike of [false, true]) { const r = awake(rig()); r.place('walkE'); 
 /* WATER COMING BACK UP strands nobody: aground is only as the drain runs */
 { const r = awake(rig()); r.place('walkE'); r.show.water.depth = 8; r.show.water.target = GT.lv.low; r.show.water.rate = 20; r.e.mode = r.e.base = 'lurk'; r.run(60 * 2);
   ok(r.show.n.strand === 0, 'the water coming back up stranded her (' + r.show.n.strand + ')'); }
-ok(GT.strandT <= 2.0 && GT.flushT <= 2.0 && GT.bigT >= 2.5 && GT.bigT <= 3.2, 'the windows are not short (strand ' + GT.strandT + ', flush ' + GT.flushT + ', big ' + GT.bigT + ')');
+ok(GT.strandT >= 3 && GT.flushT >= 3 && GT.bigT >= 3 && GT.bigT <= 3.6 && GT.strandT <= 3.6 && GT.flushT <= 3.6, 'the windows are not 3-3.6 s: the boss rule is an opening of at least 3 s (strand ' + GT.strandT + ', flush ' + GT.flushT + ', big ' + GT.bigT + ')');
 
 // ---- EVERY CYCLE CHANGES ----
 { const sig = C => [C.lvl, C.weed, !!C.flood, !!C.knot, C.lair, !!C.tear, !!C.pairs].join('|');
@@ -125,8 +125,8 @@ ok(GT.strandT <= 2.0 && GT.flushT <= 2.0 && GT.bigT >= 2.5 && GT.bigT <= 3.2, 't
 // ---- THE HUMAN BOT ----
 ok(M.PLAN.react >= 0.2 && M.PLAN.missDodge > 0 && M.PLAN.missHand > 0 && M.PLAN.late > 0, 'the bot plays perfectly (PLAN ' + JSON.stringify(M.PLAN) + ')');
 
-// ---- THE STAGE (the standalone lock) ----
-{ const lv = LEVELS.find(l => l.id === 'greenlock'); ok(lv && lv.hidden, 'the standalone lock is not a hidden level');
+// ---- THE STAGE (the canal's lock) ----
+{ const lv = LEVELS.find(l => l.id === 'canal'); ok(lv && !lv.hidden && !LEVELS.some(l => l.id === 'greenlock'), 'the canal is not the one level that holds her (a hidden standalone lock is gone)');
   if (lv) { const L = lv.build(), A2 = L.arena, g = (x, y) => L.grid[y * L.W + x];
     ok(A2 && A2.boss === 'greenteeth' && A2.music === 'greenteeth', 'the lock is not her arena with her music');
     const w = A2.wallR - A2.wallL; ok(w >= 36 && w <= 44, 'the lock is ' + w + ' wide (rule A7: about forty)');
@@ -141,7 +141,7 @@ if (!process.argv.includes('--pure')) {
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const r = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out={};
-    const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='greenlock'));BK.start();BK.god=true;BK.sim(10);
+    const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='canal'));BK.start();BK.god=true;BK.sim(10);
       const A=BK.L.arena;BK.tp(A.start[0],A.start[1]);BK.sim(200);return BK.boss;};
     const e=boot(),GH=BK.greenteethHands(),S=GH.show(),A=S.A,P=BK.P;
     out.woke=BK.bossActive&&e&&e.t==='greenteeth';out.depth=Math.round(S.water.depth);out.pool=Math.round(BK.L.pools.find(p=>p.lock).y);

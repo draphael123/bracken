@@ -173,7 +173,7 @@ if (lv && D) {
   const spoil = ents('sign').filter(e => /WITHOUT YOU|ROOF|INTO THE CANAL|BEHIND YOU|OVER THE ROOF|TWICE|ISLAND|CUT IS SAFE|WEIR IS|SPLITS|THE MILL CUT OR|NO POST IS A WISP/.test(e.text)); ok(!spoil.length, 'a sign spoils a twist or an exam: ' + spoil.map(e => e.text).join(' | '));
   // FEWER, BETTER: every foe in a named encounter, and every foe type bound to the level's mechanics
   const FOES = new Set(['gaffer', 'archer', 'grindylow', 'willowisp', 'snuffer']), foes = L.ents.filter(e => FOES.has(e.t));
-  ok(foes.every(e => e.x < L.lockArena.sx), 'a foe stands past the end gate, where nobody can reach it until Jenny is wired: ' + foes.filter(e => e.x >= L.lockArena.sx).map(e => e.t + '@' + e.x).join(' '));
+  ok(foes.every(e => e.x < L.lockArena.sx), 'a foe stands past the end gate, where nobody can reach it: ' + foes.filter(e => e.x >= L.lockArena.sx).map(e => e.t + '@' + e.x).join(' '));
   ok(L.ents.every(e => !(['mummer', 'hobbyhorse', 'drunk', 'swornsword', 'hedgeknight', 'crossbow'].includes(e.t))), 'a foe from outside the canal\'s cast stands in it (no mummers: they are the theatre\'s)');
   ok(foes.every(e => typeof e.squad === 'string'), 'a foe stands in no named encounter: ' + foes.filter(e => !e.squad).map(e => e.t + '@' + e.x).join(' '));
   ok(!L.ents.some(e => e.garrison), 'sprinkled garrison stands in the canal');
@@ -185,12 +185,16 @@ if (lv && D) {
   ok(ents('silver').length === 3, 'the canal does not carry the campaign\'s three silvers');
   ok(!L.ents.some(e => ['npc', 'stray', 'captive', 'folk'].includes(e.t)), 'an NPC or stray stands in the canal');
   const J = L.lockArena, g = (x, y) => L.grid[y * L.W + x];
-  ok(J && J.sx === 376 && J.R === 41, 'JENNY\'S LOCK is not reserved at sx 376, R 41: ' + JSON.stringify(J));
-  if (J) { let clear = true; for (let y = J.R - 16; y <= J.R - 1; y++) for (let x = J.sx; x <= J.sx + 39; x++) if (g(x, y) !== T.AIR) clear = false;
-    ok(clear, 'her footprint (columns ' + J.sx + '-' + (J.sx + 39) + ', rows ' + (J.R - 16) + '-' + (J.R - 1) + ') is not kept clear');
-    ok([...Array(40).keys()].every(k => g(J.sx + k, J.R + 2) === T.SOLID), 'the row under her bed (R+2) is not solid');
-    ok(ck.some(e => e.x === J.sx - 1 && e.y === J.R - 1) && g(J.sx - 1, J.R) === T.SOLID, 'no checkpoint just outside her west door, at her bed level');
-    ok(!L.ents.some(e => e.x >= J.sx && e.x <= J.sx + 39 && e.t !== 'gate'), 'something stands in her footprint'); }
+  ok(J && J.sx === 376 && J.R === 41, 'JENNY\x27S LOCK is not at sx 376, R 41: ' + JSON.stringify(J));
+  // HER LOCK IS WIRED (claude/greenwire): her arena is the level's, the doors stand open at bed level, the row under her bed is solid, a checkpoint just outside the west door, the gate on the quay past the east door
+  ok(L.arena && L.arena.boss === 'greenteeth' && L.arena.music === 'greenteeth' && L.arena.lock && L.arena.lock.sx === J.sx && L.arena.lock.R === J.R && L.gateAfterBoss, 'the canal is not wired to JENNY GREENTEETH (arena, music, gateAfterBoss)');
+  ok(ents('greenteeth').length === 1 && ents('greenteeth')[0].x === J.sx + 20, 'she is not in her lock once');
+  ok([...Array(40).keys()].every(k => g(J.sx + k, J.R + 2) === T.SOLID && g(J.sx + k, J.R) === T.SOLID), 'the rows under her bed are not solid');
+  ok([J.R - 6, J.R - 3, J.R - 1].every(y => g(J.sx, y) === T.AIR && g(J.sx + 39, y) === T.AIR), 'her doors (rows ' + (J.R - 6) + '-' + (J.R - 1) + ') are not open at both gates');
+  ok(ck.some(e => e.x === J.sx - 1 && e.y === J.R - 1) && g(J.sx - 1, J.R) === T.SOLID, 'no checkpoint just outside her west door, at her bed level');
+  ok(!L.ents.some(e => e.x >= J.sx && e.x <= J.sx + 39 && e.t !== 'greenteeth'), 'something but her stands in her footprint');
+  const gt = ents('gate'); ok(gt.length === 1 && gt[0].x > J.sx + 39 && g(gt[0].x, gt[0].y + 1) === T.SOLID, 'the end gate does not stand on the quay past her east door: ' + JSON.stringify(gt));
+  ok(L.pools.some(p => p.lock && p.swim) && (L.moversExtra || []).filter(m => m.weed).length > 0, 'her water and her bright weed are not in the level');
   // JENNY, FORESHADOWED: her eyes in the fog, a child\'s shoe, bubbles by the bank; THE TWO WEEDS taught (safely) before her lock, with a sign
   ok(D.eyes.length >= 2 && D.shoes.length >= 1 && D.bubbles.length >= 3, 'Jenny Greenteeth is not foreshadowed (eyes, a shoe, bubbles)');
   const w0 = (D.weeds || []).filter(w => w[0] < 40); ok(w0.some(w => w[3] === 'bright') && w0.some(w => w[3] !== 'bright') && L.pools.some(p => p.shallow && p.x0 <= w0[0][0] * TS && p.x1 >= (w0[0][1] + 1) * TS)
