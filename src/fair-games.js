@@ -4,8 +4,8 @@
 //   THE HIGH STRIKER  a pad on the road under a bell. A HEAVY blow on it (a held heavy, the third cut, a dash cut, or a plunge onto it) rings the bell and THROWS you straight up (`launch`);
 //                     a light blow only hops you. The first heavy ring pays tickets. Every hero has a heavy blow (the Geomancer's is her spur; the pad takes a plunge too).
 //   THE GALLERY       targets hung at chest height. Hit all of them (any blow that reaches: every hero's melee does) inside `window` seconds and the planks run up the stall (tiles) and it pays.
-//   TICKETS           the fair's own level-local money (rec: level-local; no existing currency fits a fair). Earned from the games, found in secrets; spent at THE PRIZE BOOTH (UP at the counter)
-//                     for a silver. State lives in the level's own FAIR record: it does not leave the level.
+//   TICKETS           the fair's own level-local keys (rec: level-local; no existing currency fits a fair). Earned from the games, found in secrets; never spent - held, they open the
+//                     ticket gates (src/fair-keys.js; claude/fairfix2 retired the prize booth, claude/fairfix3 its last text). State lives in the level's own FAIR record.
 //   THE NIGHT         the light goes out with HEIGHT (and inside the hall of mirrors): `sightFor` says how far a look reaches a foe standing where it stands. A foe in a lit lantern's light
 //                     is seen as far as ever; one in the dark is seen only within `dim` px (the Maypole ribbon's x1.5 reach helps).
 //   THE MIRROR        in the hall, a hero facing a TRUE mirror within `reach` px sees behind him too (`mirrorSees`): a foe at his back is looked at. A CRACKED mirror does not.
@@ -14,7 +14,7 @@
 //                     first. L.unlit lists stretches of the road with no light at all ([x0, x1] columns): the door guard's. Both are dark as the tops are dark.
 import { TS } from './mummer.js';
 export const GAMES = { strikerCd: 0.9, hop: -250, ticketR: 13, boothR: 30, padHalf: 16, window: 12, targetR: 9 };
-export const TEXT = { reset: 'THE TARGETS RESET', planks: 'THE PLANKS RUN UP', bars: 'THE CAGE OPENS', bell: 'THE BELL RINGS', booth: 'THE PRIZE BOOTH: EIGHT TICKETS FOR A SILVER. PRESS UP.', short: 'NOT ENOUGH TICKETS', sold: 'A SILVER: SOLD' };
+export const TEXT = { reset: 'THE TARGETS RESET', planks: 'THE PLANKS RUN UP', bars: 'THE CAGE OPENS', bell: 'THE BELL RINGS', booth: 'THE PRIZE BOOTH', short: 'NOT ENOUGH TICKETS', sold: 'A SILVER: SOLD' };   /* (booth/short/sold: only a level that still builds a booth - none does since claude/fairfix2) */
 
 /* ---------------- the night and the mirror (pure) ---------------- */
 export const nightK = (N, yPx) => (N ? Math.max(0, Math.min(1, (N.start - yPx / TS) / (N.start - N.full))) : 0);
@@ -47,7 +47,8 @@ export function blocked(L, solidAt, e, h) {
   const inB = (x, y) => Bs.some(B => x >= B[0] * TS && x <= (B[1] + 1) * TS && y >= B[2] && y <= B[3]);
   if (!inB(e.x, e.y) && !inB(h.x, h.y)) return false;
   const x0 = h.x, y0 = h.y - 12, x1 = e.x, y1 = e.y - 10, n = Math.max(2, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 6));
-  for (let i = 1; i < n; i++) { const t = i / n; if (solidAt(Math.floor((x0 + (x1 - x0) * t) / TS), Math.floor((y0 + (y1 - y0) * t) / TS))) return true; }
+  const barred = (tx, ty) => ((L && L.cages) || []).some(([a, b, c, d]) => tx >= a && tx <= b && ty >= c && ty <= d);   /* (claude/fairfix3) iron BARS are not a wall: you see through a cage */
+  for (let i = 1; i < n; i++) { const t = i / n, tx = Math.floor((x0 + (x1 - x0) * t) / TS), ty = Math.floor((y0 + (y1 - y0) * t) / TS); if (solidAt(tx, ty) && !barred(tx, ty)) return true; }
   return false; }
 
 /* ---------------- the state a level load starts with ---------------- */

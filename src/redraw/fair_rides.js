@@ -2,11 +2,12 @@
 // Every sprite is drawn from canvas primitives in the palette of the village kit (fair_world.js), so it sits with the carousel, the hay and the lamps.
 //   drawBack   behind the tiles: the wicker effigy going up, the big wheel's frame, the swing ride's masts and beams, the hall of mirrors' back wall, its glass and what the glass shows
 //   drawFront  over the tiles, under the foes: the corn, the helter-skelter tower and slide, the strikers, the gallery, the prize booth, the tickets, the scarecrows, the ghost-train arch
-//   drawMover  a wheel's gondola, a swing ride's chair
-//   drawNight  the dark that comes with height, the holes a lit lantern cuts, and the ticket count
+//   drawMover  a wheel's gondola, a swing ride's chair (and, claude/fairfix3, the swingboats and the chair-o-plane: src/redraw/fair_newrides.js)
+//   drawNight  the dark that comes with height, the holes a lit lantern cuts, and the ticket plate (held, and left area by area)
 import { nightK, hallsOf } from '../fair-games.js';
 import { beamLive } from '../chase.js';
 import * as FB from './fair_backdrop.js';
+import * as NR from './fair_newrides.js';   /* (claude/fairfix3) the swingboats, the chair-o-plane, the prize floors */
 const TS = 16;
 const K = { wood: '#7a5230', woodL: '#a67a48', woodD: '#4e321a', woodDD: '#2e1e10', brass: '#e8c23a', brassD: '#a87a18', red: '#b8382c', redD: '#7a2418', cream: '#ece0c4', creamD: '#c8b890', gold: '#f0c840',
   wick: '#8a6a34', wickL: '#b89050', wickD: '#4e3a1a', straw: '#e6c95c', strawD: '#b8962e', blue: '#3a7ab8', ink: '#120e14', glass: '#9fb8c8', glassD: '#5a7286', steel: '#8a919c' };
@@ -197,12 +198,14 @@ export function drawBack(g, cx, cy, VW, VH, L, F, time, o) {
   drawWheelFrame(g, cx, cy, VW, L.wheel, time);
   drawGantries(g, cx, cy, VW, L, time);
   drawHallBack(g, cx, cy, VW, L, o, time);
+  NR.drawBack(g, cx, cy, VW, VH, L, F, time, o);
 }
 export function drawFront(g, cx, cy, VW, VH, L, F, time, o) {
   drawCorn(g, cx, cy, VW, VH, L);
   drawTower(g, cx, cy, VW, L, time);
   const G = F && F.games;
   drawGalleries(g, cx, cy, VW, L, G, time);
+  NR.drawNests(g, cx, cy, VW, L, F, time);
   if (G) for (const s of G.strikers) drawStriker(g, cx, cy, VW, s);
   drawBooth(g, cx, cy, VW, G, o.SPR, time);
   drawGhostArch(g, cx, cy, VW, L, time);
@@ -214,6 +217,7 @@ export function drawFront(g, cx, cy, VW, VH, L, F, time, o) {
 /* ================= THE MOVERS: a gondola on the big wheel, a chair on the swing ride ================= */
 const PAINT = [[K.red, K.cream], [K.blue, K.cream], [K.gold, K.red], [K.cream, K.blue], [K.red, K.gold], [K.blue, K.gold]];
 export function drawMover(g, m, cx, cy, time) {
+  if (NR.drawMover(g, m, cx, cy, time)) return true;   /* (claude/fairfix3) a swingboat, a chair-o-plane's chair */
   const x = Math.round(m.x - cx), y = Math.round(m.y - cy);
   if (m.fair === 'gondola') { const [a, b] = PAINT[m.idx % 6], mid = x + m.w / 2;
     ln(g, x + 2, y + 1, mid, y - 18, K.woodD, 1); ln(g, x + m.w - 2, y + 1, mid, y - 18, K.woodD, 1); r(g, mid - 2, y - 20, 4, 3, K.brassD);   // its hangers, up to the pivot on the rim
@@ -236,8 +240,15 @@ export function drawNight(g, cx, cy, VW, VH, L, F, o) {
   const N = L.fairNight; if (!N) return;
   const G = F && F.games;
   /* THE TICKET COUNT: a HUD plate under the health (it is the fair's own purse, it stays while you hold tickets; claude/fairfix: it read as a label stuck in the world) */
-  /* THE TICKET PLATE (claude/fairfix2: Daniel, 'tickets are unclear'): from the gate on, what you hold of all the fair has, and what they are FOR - the gates, and all of them the back lot */
-  if (G && o.text && !o.skip) { const w = 104; g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(VW - 8 - w, 60, w, 22); g.drawImage(ticketSpr(), VW - 6 - w, 62); o.text('TICKETS ' + G.tickets + '/' + (G.total || 0), VW - 12, 63, '#7fe8f0', 'right', 8, 'shadow'); o.text('KEYS TO THE GATES. ALL: THE BACK LOT', VW - 12, 73, '#c8d8e0', 'right', 6, 'shadow'); }
+  /* THE TICKET PLATE (claude/fairfix2: Daniel, 'tickets are unclear'): what you hold of all the fair has, and how many still lie in the stretch you stand in (claude/fairfix3:
+     "the HUD shows tickets LEFT PER AREA"; the review's #6: the old second line lay across the play field on every screen). For a few seconds after a pickup or a gate's ask
+     (o.tkShow) it opens out: every area's count, and what thirty of them open */
+  if (G && o.text && !o.skip) { const w = 92, x0 = VW - 8 - w, rows = o.areas || [], here = rows[o.areaI] || null, open = (o.tkShow || 0) > 0, h = open ? 24 + rows.length * 8 + 9 : 22;
+    g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(x0, 60, w, h); g.drawImage(ticketSpr(), x0 + 2, 62);
+    o.text('TICKETS ' + G.tickets + '/' + (G.total || 0), VW - 12, 63, '#7fe8f0', 'right', 8, 'shadow');
+    if (here) o.text('HERE: ' + here.left + ' LEFT', VW - 12, 73, here.left ? '#c8d8e0' : '#8fd160', 'right', 6, 'shadow');
+    if (open) { rows.forEach((r, i) => o.text(r.name + '  ' + r.left, VW - 12, 83 + i * 8, i === o.areaI ? '#fff6e0' : r.left ? '#c8d8e0' : '#6a8a6a', 'right', 6, 'shadow'));
+      o.text('30 OPEN THE BACK LOT', VW - 12, 84 + rows.length * 8, '#ffd36b', 'right', 6, 'shadow'); } }
   if (o.skip) return;
   const yFull = N.full * TS - cy, yStart = N.start * TS - cy, halls = hallsOf(L).map(H => [H.x0 * TS - cx, (H.x1 + 1) * TS - cx, (H.roof + 2) * TS - cy, H.floor * TS - cy]).filter(([a, b]) => b > 0 && a < VW);
   const unlit = (L.unlit || []).map(([a, b]) => [a * TS - cx, (b + 1) * TS - cx]).filter(([a, b]) => b > 0 && a < VW);

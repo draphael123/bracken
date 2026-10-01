@@ -173,7 +173,8 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
     /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's PRESS of down is also the EMBER FLARE (src/ember-ward.js) */
     [hero === 'pyro' ? 'weak guard' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)', 'HOLD ' + pd('down')],
-    ...(hero === 'pyro' ? [['ember flare', 'TAP ' + k1('down') + ' AS A BLOW LANDS', 'TAP ' + pd('down')]] : []),
+    ['slide', 'HOLD ' + k1('down') + ' ON A SLOPE', 'HOLD ' + pd('down')],   /* THE BUTT-SLIDE (src/slide.js): down on any slope, feet first; it wins over the weak guard there */
+    ...(hero === 'pyro' ? [['ember flare', 'TAP ' + k1('down') + ' ON A HIT', 'TAP ' + pd('down')]] : []),
     [cRow[0], cRow[1](tk), pd('block')],
     ['dodge', hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
     ['', 'TELLS ARE TIMED FOR ONE PRESS', pd('dodge')],

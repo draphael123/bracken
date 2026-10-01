@@ -46,6 +46,16 @@ writes one row a level into `docs/level1-pilot.json`, stamped with a hash of the
 row: a gated level with no row, a stale row (the level changed after the pilot ran) or a row under the floor fails, and the message says which command to run. The build
 lane runs the pilot once, at the end, and commits the file. A level that is not gated shows its row if it has one and is otherwise not asked.
 
+### The mash gate (the fifteenth measure; REPORT-ONLY today)
+
+`node tools/mash-bot.mjs <id>` runs a player who ONLY MASHES ATTACK (never blocks, dodges, jumps on purpose, or uses a mechanic or an opening) against the level's boss and
+mini with the knight, warden and pyromancer, two seeds each, at the hero level the level expects (its depth on the gate chain, no skills bought); `--level <id>` holds right
+and mashes through the main route (lifted where it is stuck, counted). Daniel's target is Hollow Knight / Salt and Sanctuary: a first attempt at a boss usually ends in death and
+a level pushes you under half health. **THE TARGET RULE: the mash bot must LOSE to the level's boss with all three heroes, and in the level must die or drop under 40% health.**
+The result is cached in `docs/mash-bot.json` (stamped with `levelHash`, like the pilot's cache; a boss-module edit does not stale it, so re-run after a boss change) and read by the
+`mash` row for GATED levels; `node tools/mash-bot.mjs --assert <id>` is the same check for a boss check's own use. It is REPORT-ONLY (WARN) while `MASH_ENFORCE` in
+`tools/level-quality.mjs` is false: the combat pass and the boss fixes turn it on. The audit of the whole campaign is `docs/BOSS-AUDIT.md`.
+
 ### Report-only measures
 
 `REPORT_ONLY = { levelId: [measure] }` in the tool lets a measure print as WARN without failing one level, with a TODO naming who decides. Today: `theatre: ['roles']` (the

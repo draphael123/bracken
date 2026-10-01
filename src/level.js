@@ -1758,7 +1758,7 @@ function underleaf() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs, houses,
     indoorRow: 18, hush: true,
-    duskStart: -1, duskLen: 1, music: 'sleepers', night: true, glowNight: true, nightA: 0.24,
+    duskStart: -1, duskLen: 1, music: 'underleaf', night: true, glowNight: true, nightA: 0.24,
     // the mill's own din: inside this, nothing you do can be heard over the wheel
     din: [{ x0: 108 * TS, x1: 136 * TS }],
 
@@ -2991,7 +2991,7 @@ function deepAndKeep() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 6, y: 27 }, pools, falls: [], moversExtra: movers, interiors, airRooms, darkZones, facades, deep: D,
     ballast: true, dark: 0.08, edgeLit: 'rgba(200,236,240,0.6)',   /* the readability pass: the open water sat under the 20 L* a walkway needs to read, so less black in the zones, and a cold lit lip on every edge you can stand on */
-    duskStart: -1, duskLen: 1, music: 'trench', night: true, glowNight: true, nightA: 0.1,
+    duskStart: -1, duskLen: 1, music: 'deep', night: true, glowNight: true, nightA: 0.1,
     tall: { top: 20 * TS, bottom: 199 * TS, col: '6,16,28', deepest: 0.18 },   /* the deeper you go the less there is, and down here it is blue-black, not the canopy's green */
 
     palette: { set: 'reef', sky: 'drowned', far: 'sea', mid: 'wrecks', near: 'reef', dress: 'reef', haze: 'rgba(10,24,34,0.34)', murkCol: '#265260', murkLit: '#4a949c',   /* (the readability pass: the wrecks behind the water are the open water's own colour, and at '#183440' they measured L* 19 under the washes) */

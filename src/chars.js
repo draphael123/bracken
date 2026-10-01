@@ -53,6 +53,8 @@ const LEGS = {
   wide:  ['SS.....SS.', 'SS.....SS.', 'ww.....ww.', 'ww.....ww.', 'WWW...WWW.'],
   // on a ladder: one knee up on the higher rung, the other leg straight down to the lower one, then the other way
   climbA:['.SS.SSS...', '.SS..SW...', '.ww.WWW...', '.ww.......', 'WWW.......'],
+  /* THE BUTT-SLIDE (src/slide.js): sat on the ground, the legs run out level in front of him, the boots toes-up at the end; the lower row is the boot row, so it stands on the same line as the standing hero (tools/slide.mjs) */
+  slide: ['....SSSSSwW.', '....wwwwwWWW'],
   climbB:['.SSSS.SS..', '.WWW..SS..', '......ww..', '......ww..', '.....WWW..'],
 };
 const W = 34, H = 32, BX = 11, BY = 6; // body drawn at (BX,BY); feet bottom at BY+16 = 22
@@ -400,7 +402,9 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
     // HURT is two beats too: the blow snaps him back, then he folds over it
     hurt: [KF({ dx: -1, dy: 1, legs: 'fall', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 6, sh[1] + 6], plume: 2 }),
       KF({ dx: -2, dy: 2, legs: 'land', sword: [sh[0], sh[1] + 3, sh[0] + 4, sh[1] + 9], plume: 1 })],
-    crouch: KF({ dy: 3, legs: 'crouch', legsDy: 3, sword: rest(3) }),
+    crouch: KF({ dy: 3, legs: 'crouch', legsDy: 3, sword: rest(-5) }),   /* (the point stays above the floor line: rest(3) put it 9 px under the boots) */
+    /* THE BUTT-SLIDE (src/slide.js): sat back on the ground with the legs run out in front, leaning away from the hill, the weapon tucked behind (a second frame for the cloth) */
+    slide: [0, 1].map(i => KF({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 4], sword: [sh[0] - 2, sh[1] + 4, sh[0] - 10, sh[1] + 1], kite: BACK })),
     block: [
       KF({ legs: 'wide', shield: true, sword: [sh[0] - 4, sh[1] + 3, sh[0] - 6, sh[1] + 10] }),
       KF({ legs: 'wide', dy: 1, shield: true, sword: [sh[0] - 4, sh[1] + 4, sh[0] - 6, sh[1] + 11] }),
@@ -1678,12 +1682,15 @@ export function bakePyro(skin = {}, previewOnly = false) {
     ],
     hurt: [pyroFrame({ lean: -2, trail: -1, dy: 1, feet: [[10, 18], [15, 18]], staff: [5, 17, 13, 3, 'back'], arm: [15, 9, 18, 6], arm2: [10, 9, 7, 6], cowl: 2 }),
       pyroFrame({ lean: -3, trail: -2, dy: 2, feet: [[10, 18], [15, 18]], staff: [5, 18, 13, 4, 'back'], arm: [15, 10, 18, 8], arm2: [10, 10, 7, 8], cowl: 2 })],
-    crouch: pyroFrame({ sit: 3, hemW: 13, staff: up(0, 3), arm: [16, 14, 17, 15], cowl: 0 }),
+    crouch: pyroFrame({ sit: 3, hemW: 13, staff: up(0, -1), arm: [16, 14, 17, 15], cowl: 0 }),
+    /* THE BUTT-SLIDE (src/slide.js): sat back in her robe with the hem run out along the ground and the boots toes-up at the end, the staff slung behind her */
+    slide: [0, 1].map(i => pyroFrame({ sit: 3, lean: -2, trail: i, hemW: 13, feet: [[21, 18], [23, 18]], staff: [13, 15, 2, 4, 'back'], arm: [15, 14, 14, 17], cowl: i,
+      sparks: [[16, 18, 's'], [17, 18, 's'], [18, 18, 's'], [19, 18, 's'], [20, 18, 's'], [17, 17, 's'], [18, 17, 's'], [19, 17, 's'], [20, 17, 'W'], [21, 17, 'W']] })),
     /* THE EMBER WARD (src/ember-ward.js): down in the crouch with the staff slung back and the free palm pushed out with the fire in it -
        the dome is raised off that palm (main.js draws it). Two beats of the palm's fire, and THE FLARE: arms flung wide, cowl thrown back */
-    ward: [pyroFrame({ sit: 3, hemW: 13, staff: [9, 21, 10, 3, 'back'], arm: [16, 13, 20, 12], palm: [21, 12], cowl: 0 }),
-      pyroFrame({ sit: 3, hemW: 13, staff: [9, 21, 10, 3, 'back'], arm: [16, 13, 20, 13], palm: [21, 13], cowl: 0, flick: 1 }),
-      pyroFrame({ sit: 3, hemW: 14, bell: 1, staff: [9, 21, 10, 3, 'back'], arm: [16, 12, 21, 9], arm2: [11, 12, 7, 9], palm: [22, 8], cowl: 2, flick: 1, sparks: [[20, 5, 'y'], [23, 6, 'r'], [6, 7, 'y']] })],
+    ward: [pyroFrame({ sit: 3, hemW: 13, staff: [9, 17, 10, 3, 'back'], arm: [16, 13, 20, 12], palm: [21, 12], cowl: 0 }),
+      pyroFrame({ sit: 3, hemW: 13, staff: [9, 17, 10, 3, 'back'], arm: [16, 13, 20, 13], palm: [21, 13], cowl: 0, flick: 1 }),
+      pyroFrame({ sit: 3, hemW: 14, bell: 1, staff: [9, 17, 10, 3, 'back'], arm: [16, 12, 21, 9], arm2: [11, 12, 7, 9], palm: [22, 8], cowl: 2, flick: 1, sparks: [[20, 5, 'y'], [23, 6, 'r'], [6, 7, 'y']] })],
     // the jet: braced wide, the staff levelled in both hands
     block: [0, 1].map(i => pyroFrame({ lean: 1, feet: [[9, 18], [17, 18]], staff: [7, 12, 23, 10], arm: [16, 10, 20, 11], arm2: [12, 10, 15, 12], cowl: 0, flick: i, trail: -i })),
     // an ember off the palm: the other hand does the work, the staff stays up
@@ -2113,7 +2120,9 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
       knightFrame({ dx: 1, dy: 1, legs: 'land', arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], cutlass: [sh[0] + 3, sh[1] - 1, sh[0] + 9, sh[1] + 2], pistol: holster(1), plume: 0 }),
     ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', cutlass: [sh[0] + 1, sh[1] + 3, sh[0] + 6, sh[1] + 6], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', cutlass: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8], pistol: holster(2), plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, cutlass: rest(3), pistol: holster(3) }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, cutlass: rest(-4), pistol: holster(0) }),
+    /* THE BUTT-SLIDE (src/slide.js): sat back on the ground with the legs run out in front, leaning away from the hill, the weapon tucked behind (a second frame for the cloth) */
+    slide: [0, 1].map(i => knightFrame({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 4], cutlass: [sh[0] - 2, sh[1] + 4, sh[0] - 9, sh[1] + 2], pistol: holster(0) })),
     // THE PARRY: the blade up across him, both hands, and no shield anywhere
     block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 2], cutlass: [sh[0] + 2, sh[1] + 4, sh[0] + 4, sh[1] - 8], pistol: holster(i) })),
     // THE HOOK: the line away from the free hand
@@ -2265,10 +2274,12 @@ export function bakeReaper(skin = {}, previewOnly = false) {
       knightFrame({ dx: 1, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], greatsword: [sh[0] + 3, sh[1] + 4, sh[0] + 10, sh[1] + 9], plume: 0 }),
     ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', greatsword: [sh[0] + 2, sh[1] + 5, sh[0] - 6, sh[1] - 1], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', greatsword: [sh[0] + 2, sh[1] + 6, sh[0] - 6, sh[1] + 2], plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 8], greatsword: rest(3) }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 2], greatsword: rest(-6) }),
+    /* THE BUTT-SLIDE (src/slide.js): sat back on the ground with the legs run out in front, leaning away from the hill, the weapon tucked behind (a second frame for the cloth) */
+    slide: [0, 1].map(i => knightFrame({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [sh[0], sh[1], sh[0] - 3, sh[1]], greatsword: [sh[0] - 3, sh[1] - 1, sh[0] - 15, sh[1] - 10] })),
     /* BLOOD HARVEST (src/crouch-b.js): down on one knee over the body, the greatsword let down to lie on the ground behind him and the sword
        hand reaching down into what lies there - the blood coming up into the palm, more of it on the second beat */
-    harvest: [0, 1].map(i => knightFrame({ dy: 3, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 6], greatsword: [sh[0] - 3, sh[1] + 6, sh[0] - 15, sh[1] + 8], plume: i + 1,
+    harvest: [0, 1].map(i => knightFrame({ dy: 3, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 4], greatsword: [sh[0] - 3, sh[1] - 1, sh[0] - 15, sh[1] + 1], plume: i + 1,
       bits: i ? [[13, 12, '#ff4a5a'], [14, 11, '#c0283a'], [12, 10, '#ff9a9a'], [14, 9, '#c0283a']] : [[13, 12, '#c0283a'], [14, 11, '#7a1020']] })),
     /* THE TOLL: the point driven into the ground in both hands, head down, taking it out of them */
     block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 3 + i], greatsword: [sh[0] + 2, sh[1] - 4 + i, sh[0] + 3, sh[1] + 13 + i], glow: [sh[0] + 3, sh[1] + 13] })),
@@ -2416,7 +2427,9 @@ export function bakeWarden(skin = {}, previewOnly = false) {
     plunge: knightFrame({ wide: WIDE, dx: -2, legs: 'fall2', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], spear: [sh[0] - 7, sh[1] - 8, sh[0] + 4, sh[1] + 16], plume: 2 }),
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', arm: [sh[0], sh[1], sh[0] - 2, sh[1] + 3], spear: [sh[0] + 2, sh[1] + 6, sh[0] - 10, sh[1] - 2], plume: 2 }),
       knightFrame({ dx: -2, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 4], spear: [sh[0] + 1, sh[1] + 7, sh[0] - 11, sh[1] + 1], plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 5], spear: rest(3) }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 1], spear: rest(-3) }),
+    /* THE BUTT-SLIDE (src/slide.js): sat back on the ground with the legs run out in front, leaning away from the hill, the weapon tucked behind (a second frame for the cloth) */
+    slide: [0, 1].map(i => knightFrame({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], spear: [sh[0] + 3, sh[1] + 1, sh[0] - 14, sh[1] - 6] })),
     /* THE BRACE (C): the heel driven into the turf behind her, the point levelled at chest height, her weight down
        behind it and both hands on the haft. This is the pose a charge runs onto, so it is the pose that must read. */
     block: [0, 1].map(i => knightFrame({ wide: WIDE, dx: -1, dy: i, legs: 'wide',
@@ -2692,10 +2705,12 @@ export function bakePaladin(skin = {}, previewOnly = false) {
       knightFrame({ dx: 1, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 5], maul: [sh[0] + 3, sh[1] + 5, sh[0] + 8, sh[1] + 10], plume: 0 }),
     ],
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', maul: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 5], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', maul: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8], plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, maul: rest(3) }),
+    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, maul: rest(-6) }),
+    /* THE BUTT-SLIDE (src/slide.js): sat back on the ground with the legs run out in front, leaning away from the hill, the weapon tucked behind (a second frame for the cloth) */
+    slide: [0, 1].map(i => knightFrame({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 4], maul: [sh[0] - 1, sh[1] + 4, sh[0] - 9, sh[1] - 4] })),
     /* KNEEL IN PRAYER (src/crouch-b.js): down on one knee, the maul planted upright before him with both hands on the haft and his helm
        bowed to it, the light gathering at its head - brighter, and a mote off it, on the second beat (and held there once his bar is full) */
-    kneel: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], maul: [sh[0] + 4, sh[1] + 6, sh[0] + 4, sh[1] - 6], glow: [sh[0] + 4, sh[1] - 10 - i], plume: 0,
+    kneel: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], maul: [sh[0] + 4, sh[1] + 5, sh[0] + 4, sh[1] - 6], glow: [sh[0] + 4, sh[1] - 10 - i], plume: 0,
       bits: i ? [[10, -6, '#ffd36b'], [15, -8, '#fff6c8']] : null })),
     // AEGIS: the maul planted upright before him, both hands on the haft
     block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], maul: [sh[0] + 3, sh[1] + 9, sh[0] + 3, sh[1] - 5], glow: [sh[0] + 3, sh[1] - 9] })),
@@ -4201,10 +4216,12 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
     plunge: knightFrame({ legs: 'fall2', dx: -1, arm: [X, Y, X, Y + 4], arm2: [OFF[0], OFF[1], X - 1, Y + 1], stave: [X - 1, Y + 15, X - 3, Y - 6], plume: 2 }),
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', arm: [X, Y, X - 1, Y + 3], stave: [X + 4, Y + 6, X - 8, Y - 5], plume: 2 }),
       knightFrame({ dx: -2, dy: 2, legs: 'land', arm: [X, Y, X - 2, Y + 4], stave: [X + 3, Y + 7, X - 9, Y - 2], plume: 1 })],
-    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, arm: [X, Y, X + 2, Y + 2], arm2: [OFF[0], OFF[1], X, Y + 4], stave: [X + 1, Y + 6, X + 4, Y - 12] }),   /* (down on her heels, the staff still upright by her) */
+    crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, arm: [X, Y, X + 2, Y + 2], arm2: [OFF[0], OFF[1], X, Y + 4], stave: [X + 1, Y + 5, X + 4, Y - 12] }),   /* (down on her heels, the staff still upright by her) */
+    /* THE BUTT-SLIDE (src/slide.js): sat back on the ground with the legs run out in front, leaning away from the hill, the weapon tucked behind (a second frame for the cloth) */
+    slide: [0, 1].map(i => knightFrame({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [X, Y, X - 2, Y + 4], arm2: [OFF[0], OFF[1], X - 3, Y + 3], stave: [X - 2, Y + 4, X - 13, Y - 10] })),   /* (down on her heels, the staff still upright by her) */
     /* EARTH SENSE (src/crouch-b.js): down on one knee, her head bowed to the ground and the lead palm pressed flat to it, the staff held upright
        behind her in the off hand - and the ground answering under the palm: amber at her fingers, and on the second beat a ripple out either side */
-    sense: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [X, Y, X + 5, Y + 5], arm2: [OFF[0], OFF[1], X - 1, Y + 2], stave: [X - 1, Y + 6, X + 1, Y - 12], plume: i,
+    sense: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [X, Y, X + 5, Y + 5], arm2: [OFF[0], OFF[1], X - 1, Y + 2], stave: [X - 1, Y + 5, X + 1, Y - 12], plume: i,
       bits: i ? [[13, 12, '#ffc860'], [10, 12, '#8c6a3a'], [17, 12, '#8c6a3a'], [8, 12, '#6a4e30'], [19, 12, '#6a4e30']] : [[13, 12, '#e8a83a']] })),
     /* THE RUNE-WARD (C held, round 3 - it was the ROCK SHIELD): the stave PLANTED upright in front of her, butt in the ground, both hands
        on it and her weight behind it - geomancer.js raises the ward out of the ground beyond it. She is rooted here, and it looks it */

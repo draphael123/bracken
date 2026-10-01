@@ -13,7 +13,8 @@ import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for t
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
 import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */
-import { puppetPlan } from './puppeteer.js';   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
+import { puppetPlan } from './puppeteer.js';
+import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fairfix3) THE WICKER QUEEN's ribbon sweep, read off her own module */   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
@@ -1082,7 +1083,11 @@ async function runbossLab(BK, opts) {
            holds) rather than walk against it with his back to her. The rest of the time: face her (she cannot move), jump the low ribbon, turn on a reap's
            glow, and cut down a crowned mummer that gets near. */
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
-        const G=BK.L.green,mid=G.bonfire*16+8,mx=G.maypole*16+8,E=40,q=boss,dq=q.x-P.x,sq=Math.sign(dq)||1;
+        /* (claude/fairfix3) HER FIRES ARE SEVERAL NOW (BK.L.wqPits: the firebox and the ring pits): lure her to the hot one nearest her; her ball is jumped, her sweep read like a
+           lash (low: jump each pass; high: duck), her leap's crouch looked at (it holds her), and a told landing stepped away from */
+        const G=BK.L.green,q=boss,mx=G.maypole*16+8,hot=(BK.L.wqPits||[]).filter(p=>!(p.fire?q.bank>0:p.bank>0)),pit=hot.sort((a,b)=>Math.abs(a.mid-q.x)-Math.abs(b.mid-q.x))[0],mid=pit?pit.mid:G.bonfire*16+8,E=pit?(pit.x1-pit.x0)/2:40,dq=q.x-P.x,sq=Math.sign(dq)||1;
+        const balls=(BK.fair()&&BK.fair().wqBalls)||[],ballNear=balls.find(b=>Math.abs(b.x-P.x)<36&&Math.sign(P.x-b.x)===b.dir),sweepK=q.mode==='sweepLowTell'?'low':q.mode==='sweepHighTell'?'high':q.mode==='sweep'?q.sweepKind:null,sFront=q.mode==='sweep'?wqSweepFront(A,q.sweepK||0,q.sweepDir||1):null;
+        const landing=(q.mode==='leapTell'||q.mode==='leap')&&q.leapTo&&q.leapTo.kind==='floor'&&Math.abs(q.leapTo.x-P.x)<36;
         let gx=P.x,face=sq,swing=null,look=false;
         const lashK=q.mode==='lashLowTell'?'low':q.mode==='lashHighTell'?'high':q.mode==='lash'?q.lashKind:null,front=q.mode==='lash'?(q.lashR||0):-1,dm=Math.abs(P.x-mx);
         const mums=BK.enemies().filter(e=>e.alive&&e.t==='mummer'&&Math.abs(e.x-P.x)<120&&Math.abs(e.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x));
@@ -1091,9 +1096,11 @@ async function runbossLab(BK, opts) {
         const floorD=q.mode==='floorTell'||q.mode==='floor';
         const thrK=q.mode==='thrustHighTell'?'high':q.mode==='thrustLowTell'?'low':q.mode==='thrust'?q.thrustKind:null,thrTell=q.mode==='thrustHighTell'||q.mode==='thrustLowTell',adq=Math.abs(dq);
         const thrIn=!!thrK&&adq<96+12&&Math.sign(P.x-q.x)===(q.thrustDir||q.face)&&!(q.mode==='thrust'&&(q.tip||0)>adq+8);   /* her spear told (or running out) his way, and not yet past him */
-        const highD=lashK==='high'||(thrK==='high'&&thrIn);
+        const highD=lashK==='high'||(thrK==='high'&&thrIn)||(sweepK==='high'&&(q.mode==='sweep'?Math.abs(sFront-P.x)<70:q.modeT<0.35));
         const side=-1,lureX=Math.max(A.x0+20,Math.min(A.x1-20,mid+side*46)),transit=Math.abs(lureX-P.x)>40&&Math.sign(lureX-P.x)!==sq;
-        if(floorD&&!highD){   /* UP ON A HORSE */
+        if(landing&&!highD){gx=P.x+(P.x<q.leapTo.x?-1:1)*60;face=sq;}   /* (claude/fairfix3) her landing is marked: off the mark */
+        else if(q.mode==='leapTell'){face=sq;look=true;gx=P.x;}   /* her crouch: look at her, and the leap is held */
+        else if(floorD&&!highD){   /* UP ON A HORSE */
           const end=A.x1-70,ok=HS.filter(m=>hc(m)<end),pick=ok.sort((a,b)=>Math.abs(hc(a)-P.x)-Math.abs(hc(b)-P.x))[0];
           if(ride&&hc(ride)<end+30){gx=hc(ride);face=glowM?Math.sign(glowM.x-P.x)||1:sq;look=true;}
           else if(pick){gx=hc(pick);face=Math.sign(gx-P.x)||sq;if((P.ground||ride)&&Math.abs(P.x-gx)<(ride?40:9)&&!(P.labJump>0)){BK.press('jump');P.labJump=22;}}
@@ -1112,8 +1119,10 @@ async function runbossLab(BK, opts) {
           if(Math.abs(gx-P.x)>8)face=Math.sign(gx-P.x)||1;else{face=(deep&&Math.abs(dq)<reach)||Math.abs(dq)<60?sq:-sq;look=face===sq;}}   /* THE LURE: upstream of the embers, back turned until she is well onto them (banked, she comes on across them to be brought back), then look */
         if(!ride&&lashK==='low'&&P.ground&&q.mode==='lash'&&front>dm-70&&front<dm+10){BK.press('jump');P.labJump=16;}
         if(!ride&&thrK==='low'&&thrIn&&P.ground&&((thrTell&&q.modeT<0.12)||q.mode==='thrust')){BK.press('jump');P.labJump=16;}   /* her LOW thrust: over it as the line runs out */
+        if(!ride&&P.ground&&ballNear){BK.press('jump');P.labJump=16;}   /* (claude/fairfix3) her wicker ball: over it */
+        if(!ride&&P.ground&&sweepK==='low'&&q.mode==='sweep'&&Math.abs(sFront-P.x)<34){BK.press('jump');P.labJump=16;}   /* her low sweep: over each pass */
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        const duck=!ride&&P.ground&&((lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20)))||(thrK==='high'&&thrIn&&(!thrTell||q.modeT<0.3)));
+        const duck=!ride&&P.ground&&((lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20)))||(thrK==='high'&&thrIn&&(!thrTell||q.modeT<0.3))||(sweepK==='high'&&q.mode==='sweep'&&Math.abs(sFront-P.x)<60));   /* (claude/fairfix3) and under her high sweep as each pass comes by */
         if(duck){k.down=true;gx=P.x;swing=null;}
         /* looking at her he does not walk with his back to her: the ride carries them both, so the look holds */
         const want=Math.abs(gx-P.x)>5&&!(look&&Math.sign(gx-P.x)!==face);

@@ -95,6 +95,11 @@ against THE MAGE'S FOLLY (Daniel's benchmark) and says which box is empty, with 
 - [ ] **Every hero can do it** (the shield-bracing lesson): test the Pyromancer and the Freebooter beside the Knight. No softlocks: the real jump is
       about 3.2-4.5 tiles, not the reach model's 6; walk it with real keys.
 
+### Mash test (target rule; report-only until the combat pass lands, `MASH_ENFORCE` in tools/level-quality.mjs)
+- [ ] **A player who only mashes attack LOSES.** `node tools/mash-bot.mjs <id> --level <id> --write`: the mash bot (no block, dodge, jump or mechanic) must lose to the level's
+      boss with the knight, the warden and the pyromancer, and must die or drop under 40% health in the level. Daniel's target is Hollow Knight / Salt and Sanctuary: a first
+      attempt at a boss usually ends in death. Commit `docs/mash-bot.json`; the gate's `mash` row reads it. See `docs/BOSS-AUDIT.md` for where the campaign stands.
+
 ### Music and look
 - [ ] **Its own music.** A synth track written for the level (a `wantTrack === '<name>'` branch in `src/audio.js`, no file) is as good as a rendered
       one. No borrowed, reused or stock tracks (`SHARED_MUSIC` is empty on purpose), and never a download. New SFX need an audio-table entry (`audio-assets`).

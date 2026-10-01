@@ -47,7 +47,7 @@ import { openPage } from './cdp.mjs';
 /* HER SET'S FRAME COUNTS, key by key, as they were before the staff (master 52cfebb, less THE MEND's gMend): the staff redraws every
    frame and must not add or drop one */
 /* dance 8 -> 12 (2026-09-29, claude/dances: Daniel asked for a dance per hero; hers is the stones orbiting her staff) */
-const STAFF_FRAMES = {"idle":8, "run":6, "jump":2, "fall":2, "land":3, "takeoff":1, "apex":1, "skid":1, "climb":2, "atk":5, "plunge":1, "hurt":2, "crouch":1, "sense":2, "block":2, "dashAtk":3, "atkB":5, "atkC":5, "air":5, "cast":2, "fidget":15, "dance":12, "slump":2, "swim":4, "tread":4, "roll":4, "burrow":3, "rise":5, "sweep":5, "heavy":3, "windup":3, "blast":2, "gStep":2, "gHeave":3, "gSpikes":2, "gArch":2, "gWall":3, "gTomb":2, "gFault":2, "gGolem":2, "gAval":2};
+const STAFF_FRAMES = {"idle":8, "run":6, "jump":2, "fall":2, "land":3, "takeoff":1, "apex":1, "skid":1, "climb":2, "atk":5, "plunge":1, "hurt":2, "crouch":1, "slide":2, "sense":2, "block":2, "dashAtk":3, "atkB":5, "atkC":5, "air":5, "cast":2, "fidget":15, "dance":12, "slump":2, "swim":4, "tread":4, "roll":4, "burrow":3, "rise":5, "sweep":5, "heavy":3, "windup":3, "blast":2, "gStep":2, "gHeave":3, "gSpikes":2, "gArch":2, "gWall":3, "gTomb":2, "gFault":2, "gGolem":2, "gAval":2};
 const pg = await openPage({ audio: false, fonts: false });
 try {
   await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');

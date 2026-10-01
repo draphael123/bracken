@@ -5,6 +5,8 @@
    (main.js), which draws them in the hint box (one line, 1.8 s, never over a longer hint being read). Everything else number() drops is the
    old silent flavour, counted in tools/hint-shown-silent.txt so that no NEW dead line can be added (tools/hint-shown.mjs). */
 export const CALL_LINES = new Set([
+  /* claude/slide: the first slope a hero stands on */
+  'HOLD DOWN TO SLIDE: FEET FIRST',
   /* claude/croucha + crouchb + weakboss (batch49): the crouch twists' feedback and the three reworked bosses' openings */
   'GUARD BREAK', 'HOLDS', 'UNDER THE SHIELD', 'IMPALED', 'BLOOD', 'READY', 'STEADY',
   'HE REACHES FOR YOUR LIGHT', 'FROM THE DARK', 'HOODING IT: STRIKE THE LAMP', 'HE LEAVES ONE BURNING', 'YOUR LIGHT IS OUT: RELIGHT IT AT A LAMP',
@@ -13,6 +15,8 @@ export const CALL_LINES = new Set([
   /* claude/fairboss: THE WICKER QUEEN on her carousel - her opening, her read between up and down, the ride quickening (they were never shown before: src/wicker-queen.js said them through number()) */
   'LEAD HER ONTO THE FIRE, THEN FACE HER', 'THE RIDE BRINGS HER TO THE FIRE', 'THE WICKER CATCHES', 'SHE BURNS: CUT HER', 'THE FIRE IS BANKED', 'THE FIRE IS HOT AGAIN',
   'HIGH: DUCK IT', 'THE FLOOR BURNS: RIDE A HORSE', 'HER SPEAR, HIGH: DUCK', 'HER SPEAR, LOW: JUMP', 'FULL DARK: THE RIDE QUICKENS', 'SHE IS ALIGHT: THE RIDE QUICKENS', 'THE CROWNING',
+  /* claude/fairfix3: her ball, her ribbon sweep, her fires (src/wicker-queen.js, src/main.js wqBallsStep / wqLightPit) */
+  'THE WICKER BALL: JUMP IT', 'THE RIBBONS SWEEP LOW: JUMP TWICE', 'THE RIBBONS SWEEP HIGH: DUCK', 'THAT FIRE IS SPENT', 'THE BALL RELIGHTS THE FIRE',
   /* the states that mean "hit him now" / "the ward is down" */
   'OPEN', 'WARDED', 'HE IS OPEN', 'DOUSED - HE IS OPEN', 'HIS HEAD IS UP. HE IS OPEN', 'HER SIDE IS OPEN', 'HER GUARD IS BROKEN',
   'THE GOBLIN QUEEN  OPEN', "THE QUEEN'S LANCE  OPEN", 'THE PALADIN  THE WARD IS DOWN', 'THE RAM LORD  DAZED', 'THE ROC  GROUNDED', 'THE RIMEWRIGHT  THAWED',

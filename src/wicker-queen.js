@@ -35,6 +35,19 @@
 //   3  ALIGHT       (at 1/3) she catches for good and lights the green herself: the look reaches across it again, but she walks faster, the floor
 //                   burns more often, she thrusts more often, and the ride quickens again.
 // Touching her never hurts (the touch rule): her damage is the lashes, the burning floor, and her spear (thrust, and stabbed from behind).
+// FAIRFIX3 (Daniel 2026-10-01, "Queen 6-7/10"): the boss rules (her burn is at least 3 s in every phase; a blow outside it is worth WQ.ward = 0.05) and more of her:
+//   MORE FIRES        the firebox is one of up to WQ.pits.cap ember pits round the ring: RING PITS ride the boards with the carousel and burn out (WQ.pits.life s),
+//                     and SHE LIGHTS THEM - where her burning floor goes out, and where her wicker ball stops. c.embers is the list (the host keeps it: src/main.js);
+//                     frozen on ANY hot one she catches. A ring pit she burns on is spent; the firebox is banked as before.
+//   SHE IS FASTER     (creep 68, alight 90) AND SHE LEAPS: with every back turned and the nearest hero far off she crouches (LEAP TELL !!, its landing marked on
+//                     the boards) and leaps - to the floor at your back (her landing stamps: HER LANDING), up onto the CENTRE POLE's collar, or onto a HORSE (it
+//                     carries her). A look in the crouch holds her (the leap is feet); once in the air it is committed. Up on a perch she cannot be lured onto a
+//                     fire: she throws and sweeps from it, and comes down only when every back is turned again.
+//   THE WICKER BALL   !!  LOW   she sets a ball of her own wicker alight and bowls it along the ring: JUMP it, or be up on a horse when it passes. Where it stops
+//                     (a wall) it lights a ring pit; rolled over the banked firebox, it lights that again.
+//   THE RIBBON SWEEP  !!  LOW/HIGH (phases 2 and 3) the maypole's ribbons pull TAUT across the whole ring at one height (the tell: drawn tightening), then
+//                     whip from one wall to the other and back - TWO passes. Low: jump each one; high: duck (and off the horses).
+//   EVERY CYCLE CHANGES: after each burn her next blows come in a new order (WQ_CYCLES), and her leaps take turns between the floor, the pole and a horse.
 //
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`; updateWickerQueen returns the events of the frame (for tools/wicker-queen.mjs,
 // which proves every line above in Node and in the page). The host moves her by e.vx (her feet), adds the ride's carry, and clamps her to the ring.
@@ -42,7 +55,7 @@ import { facedBy, nearestHero } from './mummer.js';
 
 export const WQ = {
   hp: 640, w: 22, h: 60,
-  creep: 58, creepP3: 88,             // px/s while nobody looks (a hero runs 92; she is never faster). The ride's carry is on top of it
+  creep: 68, creepP3: 90,             // px/s while nobody looks (a hero runs 92; she is never faster). The ride's carry is on top of it (claude/fairfix3: 58 / 88 before)
   sight: 720, sightY: 170,            // the look reaches across the whole ride (phases 1 and 3)
   nearR: 96, nearY: 64,               // PHASE 2, FULL DARK: the look reaches only this far (a radius on the side you face)
   reach: 26, glow: 0.6, strike: 0.2, recover: 1.0, stabReach: 46,   // THE STAB: the mummers' reach and glow to start it; her spear's jab reaches stabReach px
@@ -60,14 +73,25 @@ export const WQ = {
   rest: 1.4,                          // a breath between one of her blows and the next (and a way for her to walk to you between them)
   crownEvery: [13, 10, 9], crownFirst: 7, crownTell: 1.2, crownCap: 2,
   emberHalf: 40,                      // the embers: this far each side of the firebox's middle
-  catchT: 0.4, burnT: 2.8, burnTP3: 2.4, riseT: 0.6, throwBack: 44, bankT: 6,
-  burnMul: 1.35, ward: 0.25,           // what a blow is worth burning, and against the standing wicker
+  catchT: 0.4, burnT: 3.2, burnTP3: 3.0, riseT: 0.6, throwBack: 44, bankT: 6,   // (claude/fairfix3: the opening is at least 3 s in every phase - the boss rule; it was 2.8 / 2.4)
+  burnMul: 0.9, ward: 0.05,           // what a blow is worth burning, and against the standing wicker (claude/fairfix3: x0.05 chip outside the burn, the boss rule; it was 0.25. And a burn is worth 0.9 a blow, from 1.35: with her ring pits and a 3 s burn the human bot won in 46-56 s, under the 90-150 s band)
+  thrustClear: 24,                    // (claude/fairfix3, review #11) no thrust STARTS while she stands within this far of hot embers: a committed thrust no longer carries her across the opening
   rustle: 0.35,                       // her audio tell while she moves: the wicker creaks
-  dmg: { stab: 26, lash: 20, floor: 16, thrust: 22 },
+  dmg: { stab: 26, lash: 20, floor: 16, thrust: 22, ball: 18, sweep: 18, stomp: 18 },
+  /* (claude/fairfix3) HER NEW BLOWS AND HER FIRES */
+  tossEvery: [9, 8, 6.5], tossFirst: 5.5, tossTell: 0.9, tossT: 0.35, ballSpeed: 150, ballTop: 14,   // THE WICKER BALL: told, bowled along the boards; it hurts what stands in its 14 px
+  sweepEvery: [0, 10, 8.5], sweepFirst: 3.5, sweepTell: 1.2, sweepT: 1.8,                              // THE RIBBON SWEEP (phases 2-3): told by the ribbons going taut, then two passes
+  leapEvery: [11, 7.5, 6], leapFirst: 6.5, leapTell: 0.7, leapT: 0.6, leapMin: 150, leapArc: 44, stompR: 26, perchT: 2.6, poleLift: 76, horseOff: 2.2,
+  pits: { ring: 2, half: 22, life: 8, cap: 4 },                                                          // the ring pits: how many she starts with, their half-width, life, and the most at once (with the firebox)
   p2: 2 / 3, p3: 1 / 3,
 };
 /* THE LASH ORDER: low and high mixed, never three alike, so the height has to be READ, not remembered */
 export const LASH_ORDER = ['low', 'high', 'low', 'low', 'high', 'high', 'low', 'high'];
+/* THE SWEEP ORDER (claude/fairfix3): low and high, out of step with the lash's */
+export const SWEEP_ORDER = ['high', 'low', 'low', 'high', 'low', 'high'];
+/* EVERY CYCLE CHANGES (claude/fairfix3): after each burn the next blows are reseeded in a new order (seconds until each may come); the leaps take turns floor, pole, horse */
+export const WQ_CYCLES = [{ toss: 1.6, leap: 5, sweep: 7, floor: 9.5 }, { sweep: 1.6, toss: 4.5, leap: 7, floor: 6 }, { leap: 1.6, floor: 4.5, toss: 6.5, sweep: 8.5 }];
+export const LEAP_TO = ['floor', 'pole', 'horse'];
 /* THE THRUST ORDER: the same rule, out of step with the lash's, so a high lash is not the cue for a high thrust */
 export const THRUST_ORDER = ['high', 'low', 'high', 'high', 'low', 'low', 'high', 'low', 'low', 'high'];
 /* the frames of bakeWickerQueen (src/redraw/wicker_queen.js) */
@@ -84,7 +108,14 @@ export const embersOf = bonfireX => ({ x0: bonfireX - WQ.emberHalf, x1: bonfireX
 export const wqOpen = e => e.mode === 'burn';
 /* WHAT A BLOW IS WORTH: burning, WQ.burnMul; the rest of the time the wicker takes it and stands */
 export const wqTake = e => (wqOpen(e) ? WQ.burnMul : WQ.ward);
-export const WQ_TELLS = ['stabTell', 'lashLowTell', 'lashHighTell', 'floorTell', 'thrustHighTell', 'thrustLowTell', 'crownTell'];
+export const WQ_TELLS = ['stabTell', 'lashLowTell', 'lashHighTell', 'floorTell', 'thrustHighTell', 'thrustLowTell', 'crownTell', 'tossTell', 'sweepLowTell', 'sweepHighTell', 'leapTell'];
+/* HER FIRES (claude/fairfix3): c.embers is one pit { x0, x1, mid } (the firebox, banked by e.bank: the old shape) or a list of them, each with its own bank */
+export const pitsOf = (c, e) => (!c || !c.embers ? [] : Array.isArray(c.embers) ? c.embers : [{ ...c.embers, fire: true, bank: e.bank }]);
+export const pitUnder = (x, pits) => (pits || []).find(p => !(p.bank > 0) && onEmbers(x, p)) || null;
+/* a ring pit as the host keeps it: centred at mid, WQ.pits.half each side */
+export const ringPit = (mid, life = WQ.pits.life) => ({ mid, x0: mid - WQ.pits.half, x1: mid + WQ.pits.half, life, ring: true, bank: 0 });
+/* THE SWEEP's front: where the ribbon's end is through the sweep (k 0..1): out from one wall to the other, and back */
+export const sweepFront = (A, k, from = 1) => { const a = from > 0 ? A.x0 : A.x1, b = from > 0 ? A.x1 : A.x0, u = k < 0.5 ? k * 2 : 2 - k * 2; return a + (b - a) * u; };
 /* THE RIBBON'S BAND, in world y: [top, bottom] */
 export const lashBand = (kind, floor) => (kind === 'low' ? [floor - WQ.lowTop, floor] : [floor - WQ.highTop, floor - WQ.highBot]);
 /* does a ribbon at this height catch a hero whose hurt box runs from t to b (world y; src/duck.js duckBox gives it ducked or standing)? */
@@ -115,6 +146,9 @@ export function wqFrame(e) {
     case 'lashLowTell': case 'lashHighTell': return WQ_F.lashTell; case 'lash': return WQ_F.lash;
     case 'floorTell': return WQ_F.floorTell; case 'floor': return WQ_F.floor;
     case 'crownTell': case 'crown': return WQ_F.crownTell;
+    case 'tossTell': return WQ_F.lashTell; case 'toss': return WQ_F.lash;   /* (claude/fairfix3) the ball wound up over her head, and bowled */
+    case 'sweepLowTell': case 'sweepHighTell': return WQ_F.lashTell; case 'sweep': return WQ_F.lash;
+    case 'leapTell': return WQ_F.thrustLowTell; case 'leap': return WQ_F.rise;
     case 'catch': return WQ_F.catch; case 'burn': return WQ_F.burn[Math.floor((e.anim || 0) * 8) % 2];
     case 'rise': return WQ_F.rise;
     case 'creep': return WQ_F.creep[Math.floor((e.anim || 0) * 5) % 2];
@@ -125,8 +159,10 @@ export function wqFrame(e) {
 
 export function newWickerQueen(e) {
   return Object.assign(e, { mode: 'sleep', modeT: 0, phase: 1, open: 0, bank: 0, lashCd: WQ.lashFirst, crownCd: WQ.crownFirst, floorCd: WQ.floorFirst, thrustCd: WQ.thrustFirst,
+    tossCd: WQ.tossFirst, sweepCd: WQ.sweepFirst, leapCd: WQ.leapFirst, cycle: 0, leapN: 0, sweepN: 0, lift: 0, perch: null, horseI: -1, perchT: 0, leapTo: null, leapFrom: null,
+    sweepKind: null, sweepDir: 1, burnPit: null,
     lashN: 0, thrustN: 0, rest: 0, rustleT: 0, anim: 0, vx: 0, lashR: 0, lashKind: null, thrustKind: null, thrustDir: 1, tip: 0, seen: false,
-    n: { catch: 0, burn: 0, lash: 0, stab: 0, crown: 0, floor: 0, thrust: 0 } });
+    n: { catch: 0, burn: 0, lash: 0, stab: 0, crown: 0, floor: 0, thrust: 0, toss: 0, sweep: 0, leap: 0 } });
 }
 
 /* ONE FRAME OF HER. c = { heroes: [{x, y, face, alive}], A: {x0, x1, floor}, embers: {x0, x1, mid} | null, ringDir (the ride's way, 1 or -1; 0: no ride),
@@ -139,8 +175,9 @@ export function updateWickerQueen(e, dt, c) {
   if (c.anim !== false) e.anim = (e.anim || 0) + dt;   /* (the game ticks it for every creature: its hands pass anim: false) */
   e.modeT -= dt; e.vx = 0;
   e.bank = Math.max(0, (e.bank || 0) - dt); e.rest = Math.max(0, (e.rest || 0) - dt);
-  const busy = e.mode === 'catch' || e.mode === 'burn' || e.mode === 'rise';
-  if (!busy) { e.lashCd -= dt; e.crownCd -= dt; e.floorCd -= dt; e.thrustCd -= dt; }
+  const busy = e.mode === 'catch' || e.mode === 'burn' || e.mode === 'rise' || e.mode === 'leap';
+  if (!busy) { e.lashCd -= dt; e.crownCd -= dt; e.floorCd -= dt; e.thrustCd -= dt; e.tossCd -= dt; e.sweepCd -= dt; e.leapCd -= dt; e.perchT = Math.max(0, (e.perchT || 0) - dt); }
+  const pits = pitsOf(c, e);
   const ph = wqPhase(e);
   if (ph !== e.phase) { e.phase = ph; ev.push({ t: 'phase', ph });
     c.number(e.x, e.y - 78, ph === 2 ? 'FULL DARK: THE RIDE QUICKENS' : 'SHE IS ALIGHT: THE RIDE QUICKENS', '#ff6b6b'); c.sound(ph === 2 ? 'dark' : 'alight'); }
@@ -151,8 +188,9 @@ export function updateWickerQueen(e, dt, c) {
   e.open = wqOpen(e) ? Math.max(0, e.modeT) : 0;
   const tipWas = e.tip || 0; e.tip = thrustTip(e);
   /* ---- THE OPENING FIRST (rule E2: the thing the fight is about goes at the top of the chain): frozen ON the embers, and they are not banked ---- */
-  if ((e.mode === 'still' || e.mode === 'creep') && seen && onEmbers(e.x, c.embers) && !(e.bank > 0)) {
-    e.mode = 'catch'; e.modeT = WQ.catchT; e.n.catch++; ev.push({ t: 'catch' });
+  const pit = (e.mode === 'still' || e.mode === 'creep') && seen && !(e.lift > 0) && !e.perch ? pitUnder(e.x, pits) : null;
+  if (pit) {
+    e.mode = 'catch'; e.modeT = WQ.catchT; e.n.catch++; e.burnPit = pit; ev.push({ t: 'catch', pit });
     c.number(e.x, e.y - 78, 'THE WICKER CATCHES', '#ffb040'); c.sound('catch'); return ev; }
   switch (e.mode) {
     case 'catch':
@@ -160,10 +198,13 @@ export function updateWickerQueen(e, dt, c) {
       return ev;
     case 'burn':
       if (e.modeT <= 0) {   /* the fire goes out of the wicker; she is flung off the embers THE RIDE'S WAY (no ride: the side she came from), and they are banked */
-        const emb = c.embers || { x0: e.x, x1: e.x, mid: e.x }, side = c.ringDir ? Math.sign(c.ringDir) : near ? (Math.sign(e.x - near.x) || 1) : (e.face > 0 ? -1 : 1);
+        const emb = e.burnPit || pits.find(p => p.fire) || { x0: e.x, x1: e.x, mid: e.x }, side = c.ringDir ? Math.sign(c.ringDir) : near ? (Math.sign(e.x - near.x) || 1) : (e.face > 0 ? -1 : 1);
         e.throwTo = Math.max(c.A.x0 + 16, Math.min(c.A.x1 - 16, emb.mid + side * ((emb.x1 - emb.x0) / 2 + WQ.throwBack)));
-        e.mode = 'rise'; e.modeT = WQ.riseT; e.open = 0; e.bank = WQ.bankT; ev.push({ t: 'banked' });
-        c.number(e.x, e.y - 78, 'THE FIRE IS BANKED', '#c9d1dc'); c.sound('rise'); }
+        const spent = !!(e.burnPit && e.burnPit.ring);   /* a ring pit she burned on is spent (the host puts it out); the firebox is banked */
+        e.mode = 'rise'; e.modeT = WQ.riseT; e.open = 0; if (!spent) e.bank = WQ.bankT; ev.push({ t: 'banked', pit: e.burnPit, spent });
+        /* EVERY CYCLE CHANGES (claude/fairfix3): her next blows in a new order */
+        e.cycle = (e.cycle || 0) + 1; const cy = WQ_CYCLES[e.cycle % WQ_CYCLES.length]; e.tossCd = cy.toss; e.sweepCd = cy.sweep; e.leapCd = cy.leap; e.floorCd = Math.max(e.floorCd, cy.floor); e.burnPit = null;
+        c.number(e.x, e.y - 78, spent ? 'THAT FIRE IS SPENT' : 'THE FIRE IS BANKED', '#c9d1dc'); c.sound('rise'); }
       return ev;
     case 'rise': {   /* flung, not creeping: this is the fire throwing her off, and a look does not hold it */
       const k = Math.min(1, dt * 7); e.vx = ((e.throwTo ?? e.x) - e.x) * k / Math.max(dt, 1e-4);
@@ -205,25 +246,72 @@ export function updateWickerQueen(e, dt, c) {
         e.mode = 'crown'; e.modeT = 0.5; c.sound('crown'); }
       return ev;
     case 'crown': if (e.modeT <= 0) { e.mode = 'still'; e.crownCd = WQ.crownEvery[ph - 1]; } return ev;
+    /* ---- (claude/fairfix3) THE WICKER BALL: wound up over her head, bowled along the boards toward the nearest hero (the host rolls it: c.ball) ---- */
+    case 'tossTell':
+      if (e.modeT <= 0) { e.mode = 'toss'; e.modeT = WQ.tossT; e.n.toss++; const dir = near ? (Math.sign(near.x - e.x) || e.face || -1) : (e.face || -1);
+        ev.push({ t: 'ball', x: e.x + dir * 14, dir, lift: e.lift || 0 }); if (c.ball) c.ball(e.x + dir * 14, dir, e.lift || 0); c.sound('lash'); }
+      return ev;
+    case 'toss': if (e.modeT <= 0) { e.mode = 'still'; e.tossCd = WQ.tossEvery[ph - 1]; e.rest = WQ.rest; } return ev;
+    /* ---- THE RIBBON SWEEP: taut across the ring at one height, then out from one wall to the other and back (two passes; the host judges each: c.sweep) ---- */
+    case 'sweepLowTell': case 'sweepHighTell':
+      if (e.modeT <= 0) { e.sweepKind = e.mode === 'sweepLowTell' ? 'low' : 'high'; e.mode = 'sweep'; e.modeT = WQ.sweepT; e.n.sweep++; e.sweepDir = near && near.x > (c.A.x0 + c.A.x1) / 2 ? 1 : -1;
+        ev.push({ t: 'sweep', kind: e.sweepKind }); c.sound('lash'); e.sweepK = 0; }
+      return ev;
+    case 'sweep': { const k0 = e.sweepK || 0, k1 = Math.min(1, 1 - Math.max(0, e.modeT) / WQ.sweepT); e.sweepK = k1;
+      if (c.sweep) c.sweep(e.sweepKind, sweepFront(c.A, k0, e.sweepDir), sweepFront(c.A, k1, e.sweepDir), k1 < 0.5 ? 0 : 1);
+      if (e.modeT <= 0) { e.mode = 'still'; e.sweepCd = WQ.sweepEvery[ph - 1] || 99; e.rest = WQ.rest; e.sweepK = 0; }
+      return ev; }
+    /* ---- HER LEAP: crouched (a look holds her - the leap is her feet), then committed through the air to the floor at a hero's back, the pole's collar or a horse ---- */
+    case 'leapTell':
+      if (seen) { e.mode = 'still'; e.leapTo = null; e.leapCd = 2.5; ev.push({ t: 'freeze', cancel: 'leap' }); c.sound('still'); return ev; }
+      if (e.modeT <= 0) { e.mode = 'leap'; e.modeT = WQ.leapT; e.n.leap++; e.leapFrom = { x: e.x, lift: e.lift || 0 }; e.perch = null; ev.push({ t: 'leap', to: e.leapTo }); c.sound('rise'); }
+      return ev;
+    case 'leap': { const T = e.leapTo || { kind: 'floor', x: e.x, lift: 0 }, F = e.leapFrom || { x: e.x, lift: 0 };
+      if (T.kind === 'horse' && c.horses) { const h = c.horses().find(q => q.i === T.i); if (h && h.front) { T.x = h.x; T.lift = h.lift; } else { T.kind = 'floor'; T.lift = 0; } }
+      const k = Math.min(1, 1 - Math.max(0, e.modeT) / WQ.leapT), nx = F.x + (T.x - F.x) * k;
+      e.vx = (nx - e.x) / Math.max(dt, 1e-4); e.lift = F.lift + (T.lift - F.lift) * k + WQ.leapArc * Math.sin(Math.PI * k);
+      if (e.modeT <= 0) { e.vx = (T.x - e.x) / Math.max(dt, 1e-4); e.lift = T.lift; e.mode = 'still'; e.rest = 0.6; e.leapCd = WQ.leapEvery[ph - 1];
+        if (T.kind === 'floor') { e.lift = 0; e.perch = null; const box = [T.x - WQ.stompR, T.x + WQ.stompR, c.A.floor - 30, c.A.floor]; ev.push({ t: 'stomp', box }); c.hit(box, WQ.dmg.stomp, 'HER LANDING'); c.sound('stab'); }
+        else { e.perch = T.kind; e.horseI = T.i ?? -1; e.perchT = WQ.perchT; ev.push({ t: 'perch', on: T.kind }); } }
+      return ev; }
   }
+  /* ---- (claude/fairfix3) UP ON A PERCH: the pole's collar holds her where it stands; a horse carries her (and sets her down where it goes round the back). She does
+     not walk off a perch: her arms still fight (the ball, the sweep, the lash), and she leaps down only when every back is turned ---- */
+  if (e.perch === 'horse') { const h = c.horses && c.horses().find(q => q.i === e.horseI);
+    if (h && h.front) { e.vx = (h.x - e.x) / Math.max(dt, 1e-4); e.lift = h.lift; } else { e.perch = null; e.lift = 0; ev.push({ t: 'setDown' }); } }
   /* ---- STILL OR CREEPING: choose ---- */
-  const dx = near ? Math.abs(near.x - e.x) : 1e9;
-  if (near && !seen && dx <= WQ.reach && Math.abs((near.y || 0) - (e.y || 0)) < 40) {
+  const dx = near ? Math.abs(near.x - e.x) : 1e9, up = !!e.perch;
+  if (!up && near && !seen && dx <= WQ.reach && Math.abs((near.y || 0) - (e.y || 0)) < 40) {
     toward(); e.mode = 'stabTell'; e.modeT = WQ.glow; ev.push({ t: 'glow' }); c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.sound('stabTell'); return ev; }
   if (!(e.rest > 0)) {
-    if (near && seen && e.thrustCd <= 0 && dx <= WQ.thrustReach - 8 && Math.abs((near.y || 0) - (e.y || 0)) < WQ.thrustY) {   /* LOOKED AT, IN HER SPEAR'S REACH: her feet are held, so her arms answer - she thrusts */
+    const byFire = pits.some(p => !(p.bank > 0) && e.x >= p.x0 - WQ.thrustClear && e.x <= p.x1 + WQ.thrustClear);   /* (claude/fairfix3, review #11) no thrust starts at the fire's edge: a committed thrust no longer carries her across the opening */
+    if (!up && !byFire && near && seen && e.thrustCd <= 0 && dx <= WQ.thrustReach - 8 && Math.abs((near.y || 0) - (e.y || 0)) < WQ.thrustY) {   /* LOOKED AT, IN HER SPEAR'S REACH: her feet are held, so her arms answer - she thrusts */
       toward(); const kind = THRUST_ORDER[(e.thrustN++) % THRUST_ORDER.length]; e.thrustDir = e.face; e.thrustKind = kind;
       e.mode = kind === 'low' ? 'thrustLowTell' : 'thrustHighTell'; e.modeT = WQ.thrustTell; e.tip = thrustTip(e); ev.push({ t: 'thrustTell', kind, dir: e.thrustDir });
       c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, kind === 'low' ? 'HER SPEAR, LOW: JUMP' : 'HER SPEAR, HIGH: DUCK', '#ff6b6b'); c.sound('thrustTell'); return ev; }
     if (e.lashCd <= 0) { const kind = LASH_ORDER[(e.lashN++) % LASH_ORDER.length];
       e.mode = kind === 'low' ? 'lashLowTell' : 'lashHighTell'; e.modeT = WQ.lashTell; ev.push({ t: 'lashTell', kind });
       c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, kind === 'low' ? 'LOW: JUMP IT' : 'HIGH: DUCK IT', '#ff6b6b'); c.sound('lashTell'); return ev; }
-    if (e.floorCd <= 0) { e.mode = 'floorTell'; e.modeT = WQ.floorTell; ev.push({ t: 'floorTell' });
+    if (ph >= 2 && e.sweepCd <= 0) { const kind = SWEEP_ORDER[(e.sweepN++) % SWEEP_ORDER.length];   /* (claude/fairfix3) THE RIBBON SWEEP, phases 2 and 3 */
+      e.mode = kind === 'low' ? 'sweepLowTell' : 'sweepHighTell'; e.modeT = WQ.sweepTell; ev.push({ t: 'sweepTell', kind });
+      c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, kind === 'low' ? 'THE RIBBONS SWEEP LOW: JUMP TWICE' : 'THE RIBBONS SWEEP HIGH: DUCK', '#ff6b6b'); c.sound('lashTell'); return ev; }
+    if (e.tossCd <= 0 && near) { e.mode = 'tossTell'; e.modeT = WQ.tossTell; ev.push({ t: 'tossTell' });   /* (claude/fairfix3) THE WICKER BALL */
+      c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE WICKER BALL: JUMP IT', '#ff6b6b'); c.sound('lashTell'); return ev; }
+    if (!up && e.floorCd <= 0) { e.mode = 'floorTell'; e.modeT = WQ.floorTell; ev.push({ t: 'floorTell' });
       c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE FLOOR BURNS: RIDE A HORSE', '#ff6b6b'); c.sound('floorTell'); return ev; }
     if (e.crownCd <= 0) {
       if (c.adds() < WQ.crownCap) { e.mode = 'crownTell'; e.modeT = WQ.crownTell; ev.push({ t: 'crownTell' }); c.number(e.x, e.y - 78, 'THE CROWNING', '#e8c23a'); c.sound('crownTell'); return ev; }
       e.crownCd = 2;   /* her court is full: she asks again in a moment */ }
   }
+  /* (claude/fairfix3) HER LEAP: every back turned, and the nearest hero far off (or she is up on a perch with her time there done): she crouches to leap */
+  if (near && !seen && !(e.rest > 0) && ((up && e.perchT <= 0) || (!up && e.leapCd <= 0 && dx >= WQ.leapMin))) {
+    const kind = up ? 'floor' : ph === 1 ? 'floor' : LEAP_TO[(e.leapN++) % LEAP_TO.length]; let T = null;
+    if (kind === 'pole' && c.mx !== undefined) T = { kind: 'pole', x: c.mx, lift: WQ.poleLift };
+    else if (kind === 'horse' && c.horses) { const hs = c.horses().filter(h => h.front && Math.abs(h.x - near.x) > 40).sort((a, b) => Math.abs(a.x - near.x) - Math.abs(b.x - near.x)); if (hs[0]) T = { kind: 'horse', x: hs[0].x, lift: hs[0].lift, i: hs[0].i }; }
+    if (!T) { const back = -(near.face >= 0 ? 1 : -1), tx = Math.max(c.A.x0 + 24, Math.min(c.A.x1 - 24, near.x + back * 56)); T = { kind: 'floor', x: tx, lift: 0 }; }
+    e.leapTo = T; e.mode = 'leapTell'; e.modeT = WQ.leapTell; ev.push({ t: 'leapTell', to: T });
+    c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.sound('stabTell'); return ev; }
+  if (up) { if (e.mode === 'creep') ev.push({ t: 'freeze' }); e.mode = 'still'; return ev; }   /* on a perch she does not walk */
   if (near && !seen) {
     toward(); const dir = e.face, sp = ph === 3 ? WQ.creepP3 : WQ.creep;
     if (!c.canStep || c.canStep(dir)) e.vx = dir * sp;

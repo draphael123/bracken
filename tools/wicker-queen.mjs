@@ -40,13 +40,14 @@ const bad = [], ok = (c, m) => { if (!c) bad.push(m); };
 const DT = 1 / 60, FLOOR = 448;
 const A = { x0: 9968, x1: 10672, floor: FLOOR }, EMB = W.embersOf(10360);
 const hero = (x, face, o = {}) => ({ x, y: FLOOR, face, alive: true, ...o });
-const QUIETCD = { lashCd: 1e9, crownCd: 1e9, floorCd: 1e9, thrustCd: 1e9 };
+const QUIETCD = { lashCd: 1e9, crownCd: 1e9, floorCd: 1e9, thrustCd: 1e9, tossCd: 1e9, sweepCd: 1e9, leapCd: 1e9 };   /* (claude/fairfix3: and her ball, her sweep and her leap) */
 /* a queen and a world. The host moves her by vx and, on a ride (o.ride px/s), carries her the ride's way; `log` counts what the world was asked to do */
 function rig(o = {}) {
   const e = W.newWickerQueen({ t: 'wickerqueen', x: o.x ?? 10600, y: FLOOR, hp: o.hp ?? W.WQ.hp, maxHp: W.WQ.hp, alive: true, face: -1 });
-  e.mode = o.mode || 'still'; for (const k of ['lashCd', 'crownCd', 'floorCd', 'thrustCd']) if (o[k] !== undefined) e[k] = o[k];
-  const log = { hits: [], lash: [], thrust: [], summons: 0, adds: 0, says: [] }, ride = o.ride || 0;
-  const c = { heroes: o.heroes || [hero(10300, -1)], A, embers: o.embers === undefined ? EMB : o.embers, ringDir: ride ? 1 : 0, canStep: () => true,
+  e.mode = o.mode || 'still'; for (const k of ['lashCd', 'crownCd', 'floorCd', 'thrustCd', 'tossCd', 'sweepCd', 'leapCd']) if (o[k] !== undefined) e[k] = o[k];
+  const log = { hits: [], lash: [], thrust: [], summons: 0, adds: 0, says: [], balls: [], sweep: [] }, ride = o.ride || 0;
+  const c = { heroes: o.heroes || [hero(10300, -1)], A, embers: o.embers === undefined ? EMB : o.embers, ringDir: ride ? 1 : 0, canStep: () => true, mx: 10312, horses: () => o.horses || [],
+    ball: (x, dir) => log.balls.push({ x, dir }), sweep: (kind, xa, xb, pass) => log.sweep.push({ kind, xa, xb, pass }),
     number: (x, y, t) => log.says.push(t), sound: () => {}, hit: (box, d, name) => log.hits.push({ box, d, name }), lash: (kind, r0, r1) => log.lash.push({ kind, r0, r1 }),
     thrust: (kind, x0, x1) => log.thrust.push({ kind, x0, x1, n: e.n.thrust }), summon: n => { log.summons += n; log.adds = Math.min(99, log.adds + n); }, adds: () => log.adds };
   const step = () => { const ev = W.updateWickerQueen(e, DT, c); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (e.vx + (e.mode === 'rise' || e.mode === 'creep' ? 0 : ride)) * DT)); return ev; };
@@ -120,7 +121,10 @@ function rig(o = {}) {
   ok(MARK['wickerqueen|thrustLowTell'] === '!!' && ANSWER['wickerqueen|thrustLowTell'] === 'jump' && HEIGHT['wickerqueen|thrustLowTell'] === 'low', 'HER SPEAR thrust LOW is not !! / jump / low in src/marks.js');
   ok(!('wickerqueen|throwTell' in MARK) && !('wickerqueen|sickleTell' in MARK), 'her sickle rows are still in src/marks.js');
   ok(MARK['wickerqueen|crownTell'] === '' && !ANSWER['wickerqueen|crownTell'], 'THE CROWNING wears a mark (it throws no blow)');
-  ok(W.WQ_TELLS.every(m => m in { stabTell: 1, lashLowTell: 1, lashHighTell: 1, floorTell: 1, thrustHighTell: 1, thrustLowTell: 1, crownTell: 1 }) && W.WQ_TELLS.length === 7, 'WQ_TELLS is not her seven windups');
+  ok(W.WQ_TELLS.every(m => m in { stabTell: 1, lashLowTell: 1, lashHighTell: 1, floorTell: 1, thrustHighTell: 1, thrustLowTell: 1, crownTell: 1, tossTell: 1, sweepLowTell: 1, sweepHighTell: 1, leapTell: 1 }) && W.WQ_TELLS.length === 11, 'WQ_TELLS is not her eleven windups (claude/fairfix3: the ball, the two sweeps and the leap)');
+  ok(MARK['wickerqueen|tossTell'] === '!!' && ANSWER['wickerqueen|tossTell'] === 'jump' && HEIGHT['wickerqueen|tossTell'] === 'low', 'THE WICKER BALL is not !! / jump / low in src/marks.js');
+  ok(MARK['wickerqueen|sweepLowTell'] === '!!' && ANSWER['wickerqueen|sweepLowTell'] === 'jump' && MARK['wickerqueen|sweepHighTell'] === '!!' && ANSWER['wickerqueen|sweepHighTell'] === 'duck' && HEIGHT['wickerqueen|sweepHighTell'] === 'high', 'THE RIBBON SWEEP is not !! / jump low, duck high in src/marks.js');
+  ok(MARK['wickerqueen|leapTell'] === '!!' && ANSWER['wickerqueen|leapTell'] === 'dodge', 'HER LEAP is not !! / dodge in src/marks.js');
   /* THE READ BETWEEN UP AND DOWN, in hurt boxes: a hero stands 14, ducks 8; a rider stands on a saddle 16-40 px up; a jump puts his feet 18+ up */
   const stand = { t: FLOOR - 14, b: FLOOR }, duck = { t: FLOOR - 8, b: FLOOR }, jump = { t: FLOOR - 40, b: FLOOR - 18 };
   const riders = [C.RING.lo, (C.RING.lo + C.RING.hi) / 2, C.RING.hi].map(s => ({ t: FLOOR - s - 14, b: FLOOR - s }));
@@ -160,6 +164,45 @@ const lure = (turnAt, o = {}) => { const r = rig({ ...QUIETCD, ...o }); const h 
   ok(brought.e.mode === 'burn' && feet === 0, 'held in the look UPSTREAM of the fire, the ride did not bring her onto it (or her own feet did): ' + JSON.stringify({ mode: brought.e.mode, feet, x: Math.round(brought.e.x) }));
   for (let i = 0; i < 60 * 5 && brought.e.mode !== 'still'; i++) brought.step();
   ok(brought.e.x > EMB.x1 && brought.e.bank > 0, 'on the ride, after the burn she was not flung off the fire the RIDE\'S way: ' + Math.round(brought.e.x - EMB.x1)); }
+
+// ---- (claude/fairfix3) THE BOSS RULES: her opening is at least 3 s in every phase, a blow outside it a twentieth ----
+ok(W.WQ.burnT >= 3 && W.WQ.burnTP3 >= 3 && W.WQ.ward <= 0.05, 'her burn is not at least 3 s in every phase, or the chip outside it is more than x0.05: ' + JSON.stringify({ burnT: W.WQ.burnT, burnTP3: W.WQ.burnTP3, ward: W.WQ.ward }));
+// ---- (claude/fairfix3) MORE FIRES: a ring pit is a fire too, and a ring pit she burned on is spent (the firebox is banked) ----
+{ const ring = W.ringPit(10150), r = rig({ ...QUIETCD, embers: [{ ...EMB, fire: true, bank: 0 }, ring], x: 10250, heroes: [hero(10050, -1)] }); let ev = [];
+  for (let i = 0; i < 60 * 10 && r.e.mode !== 'burn'; i++) { if (W.onEmbers(r.e.x, ring) && r.e.x < ring.mid) r.c.heroes[0].face = 1; ev.push(...r.step()); }
+  ok(r.e.mode === 'burn' && r.e.burnPit === ring, 'frozen on a RING PIT she did not burn: ' + JSON.stringify({ mode: r.e.mode, x: Math.round(r.e.x) }));
+  for (let i = 0; i < 60 * 6 && r.e.mode !== 'still'; i++) ev.push(...r.step());
+  const b = ev.find(v => v.t === 'banked'); ok(b && b.spent && b.pit === ring && !(r.e.bank > 0), 'a ring pit she burned on was not spent (or the firebox was banked instead): ' + JSON.stringify(b && { spent: b.spent, bank: r.e.bank }));
+  ok(r.e.cycle === 1 && W.WQ_CYCLES[1].sweep !== W.WQ_CYCLES[0].sweep && Math.abs(r.e.tossCd - W.WQ_CYCLES[1].toss) < 0.2, 'EVERY CYCLE CHANGES: after a burn her next blows were not reseeded in a new order: ' + JSON.stringify({ cycle: r.e.cycle, toss: r.e.tossCd }));
+  /* review #11: no thrust STARTS at the fire's edge (a committed thrust used to carry her across the opening) */
+  const edge = rig({ ...QUIETCD, thrustCd: 0, x: EMB.x1 + 12, heroes: [hero(EMB.x1 + 12 + 60, -1)] }); let thr = 0; for (let i = 0; i < 40; i++) for (const v of edge.step()) if (v.t === 'thrustTell') thr++;
+  const away = rig({ ...QUIETCD, thrustCd: 0, x: EMB.x1 + 140, heroes: [hero(EMB.x1 + 200, -1)] }); let thr2 = 0; for (let i = 0; i < 40; i++) for (const v of away.step()) if (v.t === 'thrustTell') thr2++;
+  ok(thr === 0 && thr2 >= 1, 'a thrust started at the fire\'s edge, or none away from it: ' + JSON.stringify({ edge: thr, away: thr2 })); }
+// ---- (claude/fairfix3) THE WICKER BALL, THE RIBBON SWEEP, HER LEAP: told, then the blow; a look in the crouch holds the leap ----
+{ const r = rig({ ...QUIETCD, tossCd: 0, embers: null, heroes: [hero(10300, 1)], x: 10500 }); let tell = null, ball = null;
+  for (let i = 0; i < 120 && ball === null; i++) for (const v of r.step()) { if (v.t === 'tossTell' && tell === null) tell = i; if (v.t === 'ball') ball = { i, dir: v.dir }; }
+  ok(tell !== null && ball && (ball.i - tell) / 60 >= W.WQ.tossTell - 0.05 && ball.dir === -1 && r.log.balls.length === 1 && r.log.says.includes('THE WICKER BALL: JUMP IT'), 'THE WICKER BALL is not told and then bowled at the hero: ' + JSON.stringify({ tell, ball }));
+  const s = rig({ ...QUIETCD, sweepCd: 0, hp: W.WQ.hp * 0.6, embers: null, heroes: [hero(10300, 1)], x: 10500 }); let st = null, sw = null;
+  for (let i = 0; i < 240; i++) for (const v of s.step()) { if (v.t === 'sweepTell' && st === null) st = i; if (v.t === 'sweep' && sw === null) sw = i; }
+  const xs = s.log.sweep.flatMap(q => [q.xa, q.xb]);
+  ok(st !== null && sw !== null && (sw - st) / 60 >= W.WQ.sweepTell - 0.05 && Math.min(...xs) <= A.x0 + 4 && Math.max(...xs) >= A.x1 - 4 && s.log.sweep.some(q => q.pass === 0) && s.log.sweep.some(q => q.pass === 1), 'THE RIBBON SWEEP is not told and then two passes wall to wall: ' + JSON.stringify({ st, sw, lo: Math.min(...xs), hi: Math.max(...xs) }));
+  const s1 = rig({ ...QUIETCD, sweepCd: 0, embers: null, heroes: [hero(10300, 1)], x: 10500 }); for (let i = 0; i < 240; i++) s1.step();
+  ok(!s1.log.sweep.length, 'THE RIBBON SWEEP came in phase one (it is phases two and three)');
+  const L1 = rig({ ...QUIETCD, leapCd: 0, embers: null, heroes: [hero(10100, -1)], x: 10500 }); let lt = null, land = null;
+  for (let i = 0; i < 180 && land === null; i++) for (const v of L1.step()) { if (v.t === 'leapTell' && lt === null) lt = { i, to: v.to }; if (v.t === 'stomp') land = { i, box: v.box }; }
+  ok(lt && land && (land.i - lt.i) / 60 >= W.WQ.leapTell + W.WQ.leapT - 0.05 && lt.to.kind === 'floor' && lt.to.x > 10100 && Math.abs(L1.e.x - lt.to.x) < 2 && L1.log.hits.some(h => h.name === 'HER LANDING'), 'HER LEAP (unseen, far) is not told, then a landing at the hero\'s back that stamps: ' + JSON.stringify({ lt, land, x: Math.round(L1.e.x) }));
+  const L2 = rig({ ...QUIETCD, leapCd: 0, embers: null, heroes: [hero(10100, -1)], x: 10500 }); let held = false, leapt = false;
+  for (let i = 0; i < 120; i++) { for (const v of L2.step()) { if (v.t === 'leapTell') L2.c.heroes[0].face = 1; if (v.t === 'freeze' && v.cancel === 'leap') held = true; if (v.t === 'leap') leapt = true; } }
+  ok(held && !leapt, 'a look in her crouch did not hold the leap (it is her feet): ' + JSON.stringify({ held, leapt }));
+  const L3 = rig({ ...QUIETCD, leapCd: 0, hp: W.WQ.hp * 0.3, embers: null, heroes: [hero(10100, -1)], x: 10500 });   /* (phase three: alight, her look reaches across the green again) */ L3.e.leapN = 1; let perch = null;
+  for (let i = 0; i < 180 && !perch; i++) for (const v of L3.step()) if (v.t === 'perch') perch = v.on;
+  ok(perch === 'pole' && L3.e.lift === W.WQ.poleLift && Math.abs(L3.e.x - 10312) < 2, 'her leap onto the CENTRE POLE did not perch her on its collar: ' + JSON.stringify({ perch, lift: L3.e.lift, x: L3.e.x }));
+  L3.c.heroes[0].face = 1; const px = L3.e.x; for (let i = 0; i < 60 * 4; i++) L3.step();
+  ok(L3.e.perch === 'pole' && L3.e.x === px, 'looked at on her perch she came down (or walked): ' + JSON.stringify({ perch: L3.e.perch, x: L3.e.x }));
+  L3.c.heroes[0].face = -1; let down = false; for (let i = 0; i < 60 * 4 && !down; i++) for (const v of L3.step()) if (v.t === 'stomp') down = true;
+  ok(down && !L3.e.perch && L3.e.lift === 0, 'with every back turned she did not leap down off her perch: ' + JSON.stringify({ down, perch: L3.e.perch }));
+  const onE = rig({ ...QUIETCD, embers: [{ ...EMB, fire: true, bank: 0 }], x: EMB.mid, heroes: [hero(EMB.mid - 150, 1)] }); onE.e.perch = 'pole'; onE.e.lift = W.WQ.poleLift; for (let i = 0; i < 30; i++) onE.step();
+  ok(onE.e.mode !== 'catch' && onE.e.mode !== 'burn', 'up on a perch over the fire she caught: the fire is on the boards'); }
 
 // ---- PHASE 2: the look holds her only near; PHASE 3: faster, and the floor burns more often ----
 { const far = rig({ hp: W.WQ.hp * 0.6, ...QUIETCD, heroes: [hero(10400, 1)], embers: null, x: 10620 }); const x0 = far.e.x; for (let i = 0; i < 30; i++) far.step();
@@ -240,7 +283,7 @@ try {
       const A = BK.L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.P.face = 1; BK.sim(150); return BK.boss; };
     const q = boot(), A = BK.L.arena, G = BK.L.green, fl = A.floor, emb = { x0: G.bonfire * 16 + 8 - 40, x1: G.bonfire * 16 + 8 + 40, mid: G.bonfire * 16 + 8 };
     for (const e of BK.enemies()) if (e !== q) e.alive = false;
-    const quiet = () => { q.lashCd = 99; q.crownCd = 99; q.floorCd = 99; q.thrustCd = 99; q.rest = 0; };
+    const quiet = () => { q.lashCd = 99; q.crownCd = 99; q.floorCd = 99; q.thrustCd = 99; q.tossCd = 99; q.sweepCd = 99; q.leapCd = 99; q.rest = 0; };   /* (claude/fairfix3: her ball, her sweep and her leap too) */
     const ring = () => BK.fairRing(), horses = () => BK.movers().filter(m => m.kind === 'carhorse' && !m.broken);
     out.woke = { active: BK.bossActive, t: q && q.t, mode: q && q.mode, ring: ring() };
     const hold = (x, face) => { BK.P.x = x; BK.P.y = fl; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = face; BK.P.onMover = null; };
@@ -311,7 +354,7 @@ try {
     out.alight = { phase: q.phase, dark: +(BK.L.dark || 0).toFixed(2), speed: ring().speed };
     // 12. THE CROWNING: at most two of hers
     q.mode = 'still'; q.x = A.x1 - 40; let maxQ = 0; q.crownCd = 0;
-    for (let i = 0; i < 60 * 40; i++) { hold(A.x0 + 60, 1); q.lashCd = 99; q.floorCd = 99; q.thrustCd = 99; if (q.crownCd > 0.5) q.crownCd = 0.5; BK.P.inv = 99; BK.sim(1); maxQ = Math.max(maxQ, BK.enemies().filter(e => e.alive && e.fromQueen).length); if (i === 1200) for (const e of BK.enemies()) if (e.fromQueen) e.alive = false; }
+    for (let i = 0; i < 60 * 40; i++) { hold(A.x0 + 60, 1); q.lashCd = 99; q.floorCd = 99; q.thrustCd = 99; q.tossCd = 99; q.sweepCd = 99; q.leapCd = 99; if (q.crownCd > 0.5) q.crownCd = 0.5; BK.P.inv = 99; BK.sim(1); maxQ = Math.max(maxQ, BK.enemies().filter(e => e.alive && e.fromQueen).length); if (i === 1200) for (const e of BK.enemies()) if (e.fromQueen) e.alive = false; }
     out.crown = { calls: q.n.crown, max: maxQ };
     // 13. CO-OP: the warden facing her holds her feet while the knight's back is turned
     for (const e of BK.enemies()) if (e.fromQueen) e.alive = false;

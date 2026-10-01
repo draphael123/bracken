@@ -26,6 +26,15 @@ const STOPS = [   // name, tile x, tile y (the hero's feet), facing, frames to r
   ['16-night-lane', 572, 13, 1, 30, '', 'THE NIGHT LANE: a plank run in full night, lanterns failing, reached by the tall striker'],
   ['17-prize-booth', 588, 27, 1, 30, '', 'THE PRIZE BOOTH: eight tickets for a silver'],
   ['18-maypole-green', 646, 27, 1, 60, '', 'THE MAYPOLE GREEN (the boss arena, not this lane\'s)'],
+  /* (claude/fairfix3) the first ask, the two new rides, the prize floors, the spike yard and the shutter */
+  ['19-first-ask', 9, 27, 1, 40, '', 'THE FIRST ASK: a spiked pit on screen one under the coconut shy\'s stall'],
+  ['20-swingboats', 213, 21, 1, 70, '', 'THE SWINGBOATS: step off the stall roof into the boat, let go at the top'],
+  ['21-high-stall', 231, 21, 1, 40, '', 'THE HIGH STALL past the swingboats, the horse at its edge'],
+  ['22-chair-o-plane', 444, 27, 1, 70, '', 'THE CHAIR-O-PLANE: chairs on chains from a turning crown, over spikes'],
+  ['22z-chair-zoom', 444, 27, 1, 70, '', 'the chair-o-plane, close up', [60, 30, 200, 110]],
+  ['23-gallery-nest-open', 172, 21, 1, 40, 'for(const t of BK.fair().games.galleries[0].targets)t.hit=true;BK.fair().games.galleries[0].t=0.01;', 'THE CROW\'S NEST opened: boards with a lip, the prize stall\'s awning'],
+  ['24-night-lane-yard', 570, 13, 1, 40, '', 'THE NIGHT LANE over THE SPIKE YARD: the lane\'s targets, the crates back up'],
+  ['25-shutter', 592, 13, 1, 40, '', 'THE SHUTTER over the lane\'s end, the way down behind it'],
 ];
 const pg = await openPage({ audio: false });
 try {
