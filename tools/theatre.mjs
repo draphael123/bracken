@@ -134,6 +134,10 @@ if (lv) {
     ok(L.arena && L.arena.boss === 'puppeteer' && L.arena.wallL === M.stageX && L.arena.music === 'puppeteer' && L.gateAfterBoss === true && pe.length === 1 && gt && gt.x > L.arena.wallR && gt.x === M.stageX + 41 && (L.moversExtra || []).some(m => m.batten), 'THE PUPPETEER is not wired into the main stage (arena on the stage, one him, the batten, the gate past his east wall, gateAfterBoss): ' + JSON.stringify(L.arena && { wallL: L.arena.wallL, wallR: L.arena.wallR }) + ' gate ' + (gt && gt.x)); }
 }
 
+/* THE PUPPETEER'S RELIC (claude/theatrepolish): the theatre grants exactly one, THE CUT STRING, hidden until he falls and standing inside his arena */
+if (L) { const rl = L.ents.filter(e => e.t === 'relic');
+  ok(rl.length === 1 && rl[0].kind === 'cutstring' && rl[0].bossDrop === true && L.arena && rl[0].x >= L.arena.wallL && rl[0].x <= L.arena.wallR, 'the theatre does not grant exactly one relic, THE CUT STRING, from the Puppeteer: ' + JSON.stringify(rl)); }
+
 // ---------------- THE PAGE ----------------
 if (!NOPAGE && lv) {
   const { openPage } = await import('./cdp.mjs'); const pg = await openPage({ audio: false, fonts: false });

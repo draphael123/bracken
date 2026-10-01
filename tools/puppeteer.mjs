@@ -143,7 +143,9 @@ try {
     P.x=q.x1-14;P.y=A.floor;P.face=1;P.vx=0;BK.sim(2);const l0=bru.str.filter(s=>!s.cut).length;BK.press('atk');BK.sim(14);out.swing={l0,l1:bru.str.filter(s=>!s.cut).length};
     for(const p of [bru,har])p.hp=0;let f=0;for(;f<400&&e.mode!=='downed';f++)BK.sim(1);
     const oh=e.hp;BKT.hurtEnemy(e,50,e.x-10,false);out.open={mode:e.mode,y:e.y,dmg:oh-e.hp,floor:A.floor,bar:BK.bossOpen(e)};
-    const e3=boot();e3.hp=1;e3.mode='downed';e3.modeT=3;BKT.hurtEnemy(e3,99,e3.x-10,false);for(let i=0;i<200&&BK.bossActive;i++){BK.P.inv=99;BK.sim(1);}
+    const e3=boot();const rl0=BK.props().find(q=>q.t==='relic'&&q.bossDrop);out.relic={kind:rl0&&rl0.kind,hiddenBefore:!!(rl0&&rl0.hidden)};e3.hp=1;e3.mode='downed';e3.modeT=3;BKT.hurtEnemy(e3,99,e3.x-10,false);for(let i=0;i<200&&BK.bossActive;i++){BK.P.inv=99;BK.sim(1);}
+    { const rl=BK.props().find(q=>q.t==='relic'&&q.bossDrop);out.relic.shownAfter=!!(rl&&!rl.hidden);BK.sim(240);if(rl){BK.P.inv=99;BK.P.relic=null;BK.P.x=rl.x;BK.P.y=rl.y;BK.sim(3);}out.relic.held=BK.P.relic;out.relic.saved=BKT.PROG.theatre&&BKT.PROG.theatre.relic;BK.sim(120);
+      const snare=rel=>{BK.P.relic=rel;BK.P.snare=1;BK.sim(40);return BK.P.snare;};out.relic.snareWith=snare('cutstring');out.relic.snareWithout=snare(null);BK.P.relic='cutstring'; }
     const S3=BK.puppeteerHands().show();out.death={alive:e3.alive,active:BK.bossActive,curtain:S3.curtain>0};
     /* THE HUMAN BOT: one whole fight, the knight, normal health */
     const o=await BK.bossLab({bosses:['theatre'],heroes:['knight'],healthMode:'normal',maxSecs:300,salt:1});const row=o.rows[0];
@@ -157,6 +159,8 @@ try {
   ok(r.swing.l1 === r.swing.l0 - 1, 'a real swing across the Brute\'s string did not cut it: ' + JSON.stringify(r.swing));
   ok(r.open.mode === 'downed' && r.open.y === r.open.floor && r.open.bar && r.open.dmg >= 45, 'both puppets down, he did not come down open to a full blow: ' + JSON.stringify(r.open));
   ok(!r.death.alive && !r.death.active && r.death.curtain, 'his death did not end the fight and bring the curtain down: ' + JSON.stringify(r.death));
+  ok(r.relic.kind === 'cutstring' && r.relic.hiddenBefore && r.relic.shownAfter && r.relic.held === 'cutstring' && r.relic.saved === 'cutstring', 'THE CUT STRING is not the Puppeteer reward (hidden until he falls, then a pickup that is held and saved): ' + JSON.stringify(r.relic));
+  ok(r.relic.snareWith <= 0 && r.relic.snareWithout > 0.2, 'THE CUT STRING does not free a snare in half the time: ' + JSON.stringify(r.relic));
   ok(r.bot.out === 'win' && r.bot.taken >= 10, 'the human bot (knight, salt 1) did not win while taking real damage: ' + JSON.stringify(r.bot));
   ok(pg.errors.length === 0, 'the page threw: ' + pg.errors.slice(0, 3).join(' | '));
   console.log(JSON.stringify(r));
