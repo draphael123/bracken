@@ -4,7 +4,6 @@
 //                  horses going round the BACK (small and dim, the other way), and the boards of the ring scrolling the ride's way
 //   drawRingHorse  one FRONT horse, a platform: its brass pole from the canopy, the horse on it at its saddle's height
 //   drawRingFire   over the dark: the floor told to burn (the boards glowing the length of the ride) and burning (a row of flame on the boards)
-//   drawRingSickle her thrown sickle, spinning
 import { HORSE } from './fair_world.js';
 import { horseAt, RING } from '../wicker-carousel.js';
 
@@ -73,11 +72,3 @@ export function drawRingFire(g, cx, cy, VW, A, fl, mode, k, time) {
   }
 }
 
-/* her sickle, spinning (a crescent blade on a short haft) */
-export function drawRingSickle(g, x, y, spin) {
-  g.save(); g.translate(Math.round(x), Math.round(y)); g.rotate(spin * 18);
-  g.strokeStyle = '#d8dce4'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, 7, -0.3, Math.PI * 1.1); g.stroke();
-  g.strokeStyle = '#8a919c'; g.lineWidth = 1; g.beginPath(); g.arc(0, 0, 5, 0, Math.PI); g.stroke();
-  g.fillStyle = C.wood; g.fillRect(-1, -1, 7, 3); g.restore();
-  g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#ff6b6b'; g.fillRect(Math.round(x) - 9, Math.round(y) - 1, 18, 2); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-}

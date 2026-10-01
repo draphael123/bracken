@@ -1075,7 +1075,8 @@ async function runbossLab(BK, opts) {
       if(boss.t==='wickerqueen'){
         /* THE WICKER QUEEN ON HER CAROUSEL (claude/fair3; the carousel, claude/fairboss): the fire opening, taught, and the read between up and down.
            UP: when the floor is told to burn (or burns), get on a horse - the nearest one on the front run that will not go round the back under him - and
-           ride it; one near the far end, hop to the next. DOWN: when the high ribbons or her thrown sickle come, off the horse and ducked on the boards.
+           ride it; one near the far end, hop to the next. DOWN: when the high ribbons or her high spear thrust come, off the horse and ducked on the boards;
+           her LOW thrust is jumped (claude/fairfix2-spear: her spear replaced her sickle).
            THE FIRE: stand on the far side of the embers from her with your back turned; turn round the moment she stands well onto them (in her dark, near
            enough for the look to reach her); cut her while she burns. Looking at her he lets the ride carry him (it carries her the same, so the look
            holds) rather than walk against it with his back to her. The rest of the time: face her (she cannot move), jump the low ribbon, turn on a reap's
@@ -1088,29 +1089,31 @@ async function runbossLab(BK, opts) {
         const glowM=mums.find(e=>e.mode==='glow'),nearM=mums.find(e=>Math.abs(e.x-P.x)<60);
         const HS=BK.movers().filter(m=>m.kind==='carhorse'&&!m.broken),hc=m=>m.x+m.w/2,ride=P.onMover&&P.onMover.kind==='carhorse'?P.onMover:null;
         const floorD=q.mode==='floorTell'||q.mode==='floor';
-        const skIn=q.sk&&(q.sk.dir>0?P.x>q.sk.x-24:P.x<q.sk.x+24)&&Math.abs(q.sk.x-P.x)<150;   /* her sickle in flight, coming his way (or only just past him) */
-        const highD=lashK==='high'||q.mode==='throwTell'||skIn;
+        const thrK=q.mode==='thrustHighTell'?'high':q.mode==='thrustLowTell'?'low':q.mode==='thrust'?q.thrustKind:null,thrTell=q.mode==='thrustHighTell'||q.mode==='thrustLowTell',adq=Math.abs(dq);
+        const thrIn=!!thrK&&adq<96+12&&Math.sign(P.x-q.x)===(q.thrustDir||q.face)&&!(q.mode==='thrust'&&(q.tip||0)>adq+8);   /* her spear told (or running out) his way, and not yet past him */
+        const highD=lashK==='high'||(thrK==='high'&&thrIn);
         const side=-1,lureX=Math.max(A.x0+20,Math.min(A.x1-20,mid+side*46)),transit=Math.abs(lureX-P.x)>40&&Math.sign(lureX-P.x)!==sq;
         if(floorD&&!highD){   /* UP ON A HORSE */
           const end=A.x1-70,ok=HS.filter(m=>hc(m)<end),pick=ok.sort((a,b)=>Math.abs(hc(a)-P.x)-Math.abs(hc(b)-P.x))[0];
           if(ride&&hc(ride)<end+30){gx=hc(ride);face=glowM?Math.sign(glowM.x-P.x)||1:sq;look=true;}
           else if(pick){gx=hc(pick);face=Math.sign(gx-P.x)||sq;if((P.ground||ride)&&Math.abs(P.x-gx)<(ride?40:9)&&!(P.labJump>0)){BK.press('jump');P.labJump=22;}}
         }
-        else if(highD){   /* DOWN ON THE BOARDS, AND DUCKED (her sickle does not care which way he faces: mid-lure, he keeps his back to her) */
+        else if(highD){   /* DOWN ON THE BOARDS, AND DUCKED (her ribbons, and a thrust once told, do not care which way he faces: mid-lure, he keeps his back to her) */
           if(ride){const l=ride.x-6,r=ride.x+ride.w+6;gx=Math.abs(P.x-l)<Math.abs(P.x-r)?l:r;face=Math.sign(gx-P.x)||sq;}
-          else{gx=P.x;face=glowM?Math.sign(glowM.x-P.x)||1:(lashK!=='high'&&q.mode!=='throwTell'&&P.face===-sq)?-sq:sq;look=true;}   /* (ducked, he still looks at a mummer whose mask glows: it stops) */
+          else{gx=P.x;face=glowM?Math.sign(glowM.x-P.x)||1:(lashK!=='high'&&!(thrK==='high'&&thrIn)&&P.face===-sq)?-sq:sq;look=true;}   /* (ducked, he still looks at a mummer whose mask glows: it stops) */
         }
         else if(q.open>0){gx=q.x-sq*Math.max(10,LAB_REACH[h]-6);face=sq;swing=q;}   /* she burns: get on her */
         else if(glowM){face=Math.sign(glowM.x-P.x)||1;swing=glowM;}   /* a mummer's red mask: look at it (it stops), and cut it */
         else if(nearM){const ms=Math.sign(nearM.x-P.x)||1;face=ms;gx=nearM.x-ms*Math.max(10,LAB_REACH[h]-6);swing=nearM;}   /* one of her crowd near: face it, step in, cut it down */
-        else if(q.mode==='sickleTell'&&!transit){face=sq;look=true;}   /* the reap's red glow: LOOK, and it is cancelled (or, already running for the far side, outrun it) */
+        else if(q.mode==='stabTell'&&!transit){face=sq;look=true;}   /* the stab's red glow: LOOK, and it is cancelled (or, already running for the far side, outrun it) */
         else if(q.mode==='rise'||q.mode==='catch'){face=sq;look=true;}   /* flung off the fire: hold her with the look */
         else if(q.x<mid-E+4){gx=q.x+34;face=-1;look=P.x>q.x;}   /* UPSTREAM of the fire: stand by her, looking - the ride carries them both, and brings her onto it */
         else{gx=lureX;const deep=Math.abs(q.x-mid)<E-8&&!(q.bank>0),reach=q.phase===2?(P.relic==='maypole'?130:90):600;
           if(Math.abs(gx-P.x)>8)face=Math.sign(gx-P.x)||1;else{face=(deep&&Math.abs(dq)<reach)||Math.abs(dq)<60?sq:-sq;look=face===sq;}}   /* THE LURE: upstream of the embers, back turned until she is well onto them (banked, she comes on across them to be brought back), then look */
         if(!ride&&lashK==='low'&&P.ground&&q.mode==='lash'&&front>dm-70&&front<dm+10){BK.press('jump');P.labJump=16;}
+        if(!ride&&thrK==='low'&&thrIn&&P.ground&&((thrTell&&q.modeT<0.12)||q.mode==='thrust')){BK.press('jump');P.labJump=16;}   /* her LOW thrust: over it as the line runs out */
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        const duck=!ride&&P.ground&&((lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20)))||(q.mode==='throwTell'&&q.modeT<0.3)||(skIn&&Math.abs(q.sk.x-P.x)<70));
+        const duck=!ride&&P.ground&&((lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20)))||(thrK==='high'&&thrIn&&(!thrTell||q.modeT<0.3)));
         if(duck){k.down=true;gx=P.x;swing=null;}
         /* looking at her he does not walk with his back to her: the ride carries them both, so the look holds */
         const want=Math.abs(gx-P.x)>5&&!(look&&Math.sign(gx-P.x)!==face);

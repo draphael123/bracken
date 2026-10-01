@@ -3,13 +3,14 @@
 // PURE (src/wicker-queen.js and src/wicker-carousel.js, no page):
 //   - FROZEN WHEN FACED: over a long fuzz with the hero turning at random, her FEET never move on a frame a hero looks at her; CO-OP any hero facing her
 //     freezes her, and she creeps only when every hero has his back to her. THE RIDE carries her all the same, frozen or not, at its speed
-//   - THE RIBBONS TURN WHILE SHE IS FROZEN: a hero who never takes his eyes off her is still lashed, low and high, and the floor still burns (but she never
-//     throws her sickle at a hero who is looking at her)
-//   - EVERY ATTACK IS TOLD, with the right mark, answer and height: the reap (!!, dodge = look, low), the low lash (!!, jump, low), the high lash (!!, duck,
-//     high), THE FLOOR BURNS (!!, jump - up on a horse, low), HER SICKLE thrown (!!, duck, high), the crowning (no mark); each blow comes only after its
-//     own windup has run its full told time. THE READ BETWEEN UP AND DOWN: the floor blows (low lash, burning floor) miss a hero on any horse and in a
-//     jump, and catch him on the boards; the high blows (high lash, thrown sickle) catch a rider on any horse and a standing hero, and miss a ducked one
-//   - HER SICKLE is thrown only at a turned back from across the ride (never near, never at a hero looking at her); it flies out and comes BACK to her
+//   - THE RIBBONS TURN WHILE SHE IS FROZEN: a hero who never takes his eyes off her is still lashed, low and high, and the floor still burns
+//   - EVERY ATTACK IS TOLD, with the right mark, answer and height: the stab from behind (!!, dodge = look, low), the low lash (!!, jump, low), the high
+//     lash (!!, duck, high), THE FLOOR BURNS (!!, jump - up on a horse, low), HER SPEAR thrust high (!!, duck, high) and low (!!, jump, low), the crowning
+//     (no mark); each blow comes only after its own windup has run its full told time. THE READ BETWEEN UP AND DOWN: the floor blows (low lash, low
+//     thrust, burning floor) miss a hero on any horse and in a jump, and catch him on the boards; the high blows (high lash, high thrust) catch a rider on
+//     any horse and a standing hero, and miss a ducked one
+//   - HER SPEAR (claude/fairfix2-spear: it replaced her sickle): at a hero looking at her within its long reach she thrusts (a look stops her feet, not
+//     her arms; at a turned back she walks and stabs instead, never thrusts), told at least a second, high and low mixed and never three alike, the blade running out its whole reach; out of reach, no thrust
 //   - THE FIRE, ONLY BY FREEZING HER ON THE EMBERS: lured against the ride and frozen on them she catches and burns open (a blow worth more); UPSTREAM of
 //     the fire, held in the look, THE RIDE BRINGS HER ONTO IT (the carousel's half of the opening); after a burn she is flung off the ride's way and the
 //     embers are banked; crossing them unseen, frozen short of them, left alone for a minute, or frozen on them banked, opens nothing
@@ -22,8 +23,8 @@
 //   before it, the elite still guards the door, her relic (the fair's one relic slot) waits for her death, and the gate ends the level after it
 // IN THE PAGE: the fight wakes past the door and the ride starts; faced her feet do not move (the ride carries her) and co-op one facing holds her; the
 //   boards carry a hero; a hero jumps onto a horse and it carries him up, down and along; her lash hurts a standing hero and passes over a jumping one or a
-//   rider (low), passes under a ducked one and hurts a rider (high); the burning floor hurts a hero on the boards and not a rider; her sickle hurts a
-//   standing hero and not a ducked one; the reap from behind hurts; lured onto the embers she burns and a blow bites harder; held upstream the ride brings
+//   rider (low), passes under a ducked one and hurts a rider (high); the burning floor hurts a hero on the boards and not a rider; her spear thrust high
+//   hurts a standing hero and a rider and not a ducked one, thrust low hurts a standing hero and not a jumping one or a rider; the stab from behind hurts; lured onto the embers she burns and a blow bites harder; held upstream the ride brings
 //   her onto them; phase two darkens the green, only a near look holds her, and the ride quickens (told); phase three quickens it again; the crowning keeps
 //   two at most; her death stops the ride, drops the relic, the gate opens and walking to it clears the level.
 //   node tools/wicker-queen.mjs        (PORT from tools/ports.mjs)
@@ -39,15 +40,15 @@ const bad = [], ok = (c, m) => { if (!c) bad.push(m); };
 const DT = 1 / 60, FLOOR = 448;
 const A = { x0: 9968, x1: 10672, floor: FLOOR }, EMB = W.embersOf(10360);
 const hero = (x, face, o = {}) => ({ x, y: FLOOR, face, alive: true, ...o });
-const QUIETCD = { lashCd: 1e9, crownCd: 1e9, floorCd: 1e9, throwCd: 1e9 };
+const QUIETCD = { lashCd: 1e9, crownCd: 1e9, floorCd: 1e9, thrustCd: 1e9 };
 /* a queen and a world. The host moves her by vx and, on a ride (o.ride px/s), carries her the ride's way; `log` counts what the world was asked to do */
 function rig(o = {}) {
   const e = W.newWickerQueen({ t: 'wickerqueen', x: o.x ?? 10600, y: FLOOR, hp: o.hp ?? W.WQ.hp, maxHp: W.WQ.hp, alive: true, face: -1 });
-  e.mode = o.mode || 'still'; for (const k of ['lashCd', 'crownCd', 'floorCd', 'throwCd']) if (o[k] !== undefined) e[k] = o[k];
-  const log = { hits: [], lash: [], sickle: [], summons: 0, adds: 0, says: [] }, ride = o.ride || 0;
+  e.mode = o.mode || 'still'; for (const k of ['lashCd', 'crownCd', 'floorCd', 'thrustCd']) if (o[k] !== undefined) e[k] = o[k];
+  const log = { hits: [], lash: [], thrust: [], summons: 0, adds: 0, says: [] }, ride = o.ride || 0;
   const c = { heroes: o.heroes || [hero(10300, -1)], A, embers: o.embers === undefined ? EMB : o.embers, ringDir: ride ? 1 : 0, canStep: () => true,
     number: (x, y, t) => log.says.push(t), sound: () => {}, hit: (box, d, name) => log.hits.push({ box, d, name }), lash: (kind, r0, r1) => log.lash.push({ kind, r0, r1 }),
-    sickle: (x0, x1, pass) => log.sickle.push({ x0, x1, pass }), summon: n => { log.summons += n; log.adds = Math.min(99, log.adds + n); }, adds: () => log.adds };
+    thrust: (kind, x0, x1) => log.thrust.push({ kind, x0, x1, n: e.n.thrust }), summon: n => { log.summons += n; log.adds = Math.min(99, log.adds + n); }, adds: () => log.adds };
   const step = () => { const ev = W.updateWickerQueen(e, DT, c); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (e.vx + (e.mode === 'rise' || e.mode === 'creep' ? 0 : ride)) * DT)); return ev; };
   return { e, c, log, step };
 }
@@ -57,7 +58,7 @@ function rig(o = {}) {
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (let i = 0; i < 60 * 90; i++) { if (rnd() < 0.03) r.c.heroes[0].face *= -1; if (rnd() < 0.01) r.c.heroes[0].x = 10000 + rnd() * 600;
     const x0 = r.e.x; r.step(); frames++; const seen = r.e.seen; if (r.e.x !== x0) { moves++; if (seen && r.e.mode !== 'rise') movedSeen++; }
-    if (r.e.mode === 'sickle' || r.e.mode === 'recover') { r.e.mode = 'still'; r.e.x = 10600; } }
+    if (r.e.mode === 'stab' || r.e.mode === 'recover') { r.e.mode = 'still'; r.e.x = 10600; } }
   ok(moves > 200, 'the fuzz never let her move (' + moves + ' moving frames): the test is not testing anything');
   ok(movedSeen === 0, 'her feet moved on ' + movedSeen + ' frames a hero was looking at her (of ' + frames + ')');
   const ride = rig({ ...QUIETCD, embers: null, ride: 20, x: 10100, heroes: [hero(10000, 1)] }); let feet = 0; const x0 = ride.e.x;
@@ -79,44 +80,56 @@ function rig(o = {}) {
   ok(moved === 0, 'she moved while a hero looked at her the whole time (' + moved + ' frames)');
   ok(kinds.has('low') && kinds.has('high'), 'the ribbons did not turn while she was frozen, low and high: ' + [...kinds]);
   ok(floors >= 2 && r.e.n.floor >= 2, 'the floor did not burn while she was frozen (' + floors + ' in 30 s)');
-  ok(r.e.n.thrown === 0 && !r.log.sickle.length, 'she threw her sickle at a hero who was looking at her (' + r.e.n.thrown + ')');
   ok(r.log.lash.length > 20 && r.log.lash.some(l => l.r1 >= W.WQ.lashReach - 1), 'the lash never swept the green');
   ok(blowAfterShort === 0, blowAfterShort + ' lash(es) or burning floor(s) came without their full told windup'); }
-{ const r = rig({ heroes: [hero(10560, -1)], ...QUIETCD, embers: null }); let glowFrames = 0, hitAt = null;   // the reap, from behind
-  for (let i = 0; i < 240 && hitAt === null; i++) { r.step(); if (r.e.mode === 'sickleTell') glowFrames++; if (r.log.hits.length) hitAt = i; }
-  ok(hitAt !== null && r.log.hits[0].name === 'THE SICKLE' && r.log.hits[0].d === W.WQ.dmg.sickle, 'the reap never came from behind: ' + JSON.stringify(r.log.hits));
-  ok(glowFrames >= W.WQ.glow * 60 - 1, 'the reap came after only ' + glowFrames + ' frames of its red glow');
+{ const r = rig({ heroes: [hero(10560, -1)], ...QUIETCD, embers: null }); let glowFrames = 0, hitAt = null;   // the stab, from behind
+  for (let i = 0; i < 240 && hitAt === null; i++) { r.step(); if (r.e.mode === 'stabTell') glowFrames++; if (r.log.hits.length) hitAt = i; }
+  ok(hitAt !== null && r.log.hits[0].name === 'HER SPEAR' && r.log.hits[0].d === W.WQ.dmg.stab, 'the stab never came from behind (HER SPEAR): ' + JSON.stringify(r.log.hits));
+  ok(glowFrames >= W.WQ.glow * 60 - 1, 'the stab came after only ' + glowFrames + ' frames of its red glow');
   const q = rig({ heroes: [hero(10560, -1)], ...QUIETCD, embers: null }); let glowed = false;
-  for (let i = 0; i < 240; i++) { q.step(); if (q.e.mode === 'sickleTell' && !glowed) { glowed = true; q.c.heroes[0].face = 1; } }
-  ok(glowed && q.log.hits.length === 0 && q.e.mode === 'still', 'a look during the glow did not cancel the reap: ' + JSON.stringify({ glowed, hits: q.log.hits.length, mode: q.e.mode })); }
-{ // HER SICKLE, THROWN: at a turned back from across the ride, told in full, out past him and back to her hand; a look during the tell does not stop it (she is not walking)
-  const r = rig({ heroes: [hero(10300, -1)], ...QUIETCD, throwCd: 0, embers: null }); let tellF = 0, thrownAt = null, back = null, h = r.c.heroes[0];
-  for (let i = 0; i < 60 * 6; i++) { const ev = r.step(); if (r.e.mode === 'throwTell') { tellF++; if (tellF === 5) h.face = 1; }
-    for (const v of ev) if (v.t === 'throw') thrownAt = i; if (thrownAt !== null && back === null && !r.e.sk && i > thrownAt) back = i; }
-  const crossed = p => r.log.sickle.some(s => s.pass === p && s.x0 <= 10300 && s.x1 >= 10300);
-  ok(thrownAt !== null && tellF >= W.WQ.throwTell * 60 - 1, 'HER SICKLE: not thrown, or thrown after only ' + tellF + ' frames of its tell (a look during the tell must not stop it)');
-  ok(crossed(2) && crossed(3) && back !== null, 'HER SICKLE did not fly out past the hero and back to her hand: ' + JSON.stringify({ out: crossed(2), back: crossed(3), home: back }));
-  /* nothing new while it is in the air: a LOW blow (the floor, the low lash) told under a flying sickle would have no answer */
-  const busy = rig({ heroes: [hero(10300, -1)], crownCd: 1e9, throwCd: 0, lashCd: 1.2, floorCd: 1.2, embers: null }); let under = 0, flew = 0;
-  for (let i = 0; i < 60 * 8; i++) { const ev = busy.step(), had = !!busy.e.sk; if (had) flew++; for (const v of ev) if (had && (v.t === 'lashTell' || v.t === 'floorTell' || v.t === 'throwTell')) under++; }
-  ok(flew > 60 && under === 0, 'a blow was told while her sickle was in the air (' + under + ', over ' + flew + ' frames of flight)');
-  const near = rig({ heroes: [hero(10540, -1)], ...QUIETCD, throwCd: 0, embers: null }); for (let i = 0; i < 60; i++) near.step();
-  ok(near.e.n.thrown === 0, 'she threw her sickle at a hero ' + 60 + ' px away (it is thrown only from across the ride; near, she walks and reaps)'); }
-{ ok(MARK['wickerqueen|sickleTell'] === '!!' && ANSWER['wickerqueen|sickleTell'] === 'dodge' && HEIGHT['wickerqueen|sickleTell'] === 'low', 'THE REAP is not !! / dodge (the look) / low in src/marks.js');
+  for (let i = 0; i < 240; i++) { q.step(); if (q.e.mode === 'stabTell' && !glowed) { glowed = true; q.c.heroes[0].face = 1; } }
+  ok(glowed && q.log.hits.length === 0 && q.e.mode === 'still', 'a look during the glow did not cancel the stab: ' + JSON.stringify({ glowed, hits: q.log.hits.length, mode: q.e.mode })); }
+{ // HER SPEAR, THRUST (claude/fairfix2-spear): at a hero in its reach LOOKING AT HER (a look stops her feet, not her arms), told in full - a look during the
+  // tell does not stop it - and then the blade runs out its whole reach along the ride, past him, at the height of its kind
+  ok(W.WQ.thrustTell >= 1.0 && W.WQ.thrustReach >= 5 * 16 && W.WQ.spearLen >= 4 * 16, 'HER SPEAR is not long and long told: tell ' + W.WQ.thrustTell + ' s (>= 1), reach ' + W.WQ.thrustReach + ' px (>= 5 tiles), spear ' + W.WQ.spearLen + ' px');
+  const r = rig({ heroes: [hero(10540, 1)], ...QUIETCD, thrustCd: 0, embers: null }); let tellF = 0, at = null, kinds = [], longest = 0, moved = 0;
+  for (let i = 0; i < 60 * 40; i++) { const x0 = r.e.x, ev = r.step(); if (r.e.x !== x0) moved++; if (r.e.mode.startsWith('thrust') && r.e.mode.endsWith('Tell')) tellF++;
+    for (const v of ev) if (v.t === 'thrust') { kinds.push(v.kind); if (at === null) at = tellF; longest = Math.max(longest, tellF); tellF = 0; } }
+  const swept = n => r.log.thrust.filter(t => t.n === n), lo = n => Math.min(...swept(n).map(t => t.x0)), hi = n => Math.max(...swept(n).map(t => t.x1));
+  ok(at !== null && at >= W.WQ.thrustTell * 60 - 1 && kinds.length >= 4, 'HER SPEAR: never thrust at a hero in its reach who was looking at her, or thrust after only ' + at + ' frames of its tell (' + kinds.length + ' thrusts)');
+  ok(moved === 0, 'her feet moved while she thrust at a hero looking at her (' + moved + ' frames)');
+  ok(kinds.includes('high') && kinds.includes('low') && !kinds.some((k, i) => i >= 2 && k === kinds[i - 1] && k === kinds[i - 2]), 'HER SPEAR: not high and low mixed, never three alike: ' + kinds);
+  ok(swept(1).length > 3 && lo(1) <= 10540 - 6 && lo(1) <= r.e.x - W.WQ.thrustReach + 1 && hi(1) >= r.e.x - W.WQ.thrustFrom - 1, 'HER SPEAR did not run out its whole reach past the hero: ' + JSON.stringify(swept(1).slice(0, 2)) + ' ... ' + lo(1));
+  const t2 = rig({ heroes: [hero(10540, 1)], ...QUIETCD, thrustCd: 0, embers: null }); let told = false;   /* a look in the tell (he turns away and back): still committed */
+  for (let i = 0; i < 60 * 3; i++) { t2.step(); if (t2.e.mode === 'thrustHighTell' && !told) { told = true; t2.c.heroes[0].face = -1; } else if (told) t2.c.heroes[0].face = 1; }
+  ok(told && t2.e.n.thrust === 1, 'HER SPEAR: the thrust told at a hero looking at her did not come');
+  const far = rig({ heroes: [hero(10600 - W.WQ.thrustReach - 40, 1)], ...QUIETCD, thrustCd: 0, embers: null }); for (let i = 0; i < 60 * 10; i++) far.step();
+  ok(far.e.n.thrust === 0 && !far.log.thrust.length, 'HER SPEAR: she thrust at a hero out of its reach (' + far.e.n.thrust + ')');
+  const back = rig({ heroes: [hero(10540, -1)], ...QUIETCD, thrustCd: 0, embers: null }); let stabs = 0;   /* a turned back in her reach: she walks to it and stabs; she never thrusts */
+  for (let i = 0; i < 60 * 8; i++) { back.step(); if (back.e.mode === 'stab') { stabs++; back.e.mode = 'still'; back.e.x = 10600; } }
+  ok(back.e.n.thrust === 0 && stabs > 0, 'HER SPEAR: she thrust at a turned back (' + back.e.n.thrust + ' thrusts, ' + stabs + ' stabs) - a turned back is walked to and stabbed');
+  /* nothing else told while her spear is out: a LOW blow and a HIGH one at once would have no answer */
+  const busy = rig({ heroes: [hero(10540, 1)], crownCd: 1e9, thrustCd: 0, lashCd: 0.5, floorCd: 0.5, embers: null }); let under = 0, out = 0;
+  for (let i = 0; i < 60 * 20; i++) { const was = busy.e.mode, ev = busy.step(); if (was.startsWith('thrust')) { out++; for (const v of ev) if (v.t.endsWith('Tell') || v.t === 'glow') under++; } }
+  ok(out > 60 && under === 0, 'a blow was told while her spear was out (' + under + ', over ' + out + ' frames)'); }
+{ ok(MARK['wickerqueen|stabTell'] === '!!' && ANSWER['wickerqueen|stabTell'] === 'dodge' && HEIGHT['wickerqueen|stabTell'] === 'low', 'THE STAB is not !! / dodge (the look) / low in src/marks.js');
   ok(MARK['wickerqueen|lashLowTell'] === '!!' && ANSWER['wickerqueen|lashLowTell'] === 'jump' && HEIGHT['wickerqueen|lashLowTell'] === 'low', 'THE LOW LASH is not !! / jump / low in src/marks.js');
   ok(MARK['wickerqueen|lashHighTell'] === '!!' && ANSWER['wickerqueen|lashHighTell'] === 'duck' && HEIGHT['wickerqueen|lashHighTell'] === 'high', 'THE HIGH LASH is not !! / duck / high in src/marks.js');
   ok(MARK['wickerqueen|floorTell'] === '!!' && ANSWER['wickerqueen|floorTell'] === 'jump' && HEIGHT['wickerqueen|floorTell'] === 'low', 'THE FLOOR BURNS is not !! / jump (up on a horse) / low in src/marks.js');
-  ok(MARK['wickerqueen|throwTell'] === '!!' && ANSWER['wickerqueen|throwTell'] === 'duck' && HEIGHT['wickerqueen|throwTell'] === 'high', 'HER SICKLE (thrown) is not !! / duck / high in src/marks.js');
+  ok(MARK['wickerqueen|thrustHighTell'] === '!!' && ANSWER['wickerqueen|thrustHighTell'] === 'duck' && HEIGHT['wickerqueen|thrustHighTell'] === 'high', 'HER SPEAR thrust HIGH is not !! / duck / high in src/marks.js');
+  ok(MARK['wickerqueen|thrustLowTell'] === '!!' && ANSWER['wickerqueen|thrustLowTell'] === 'jump' && HEIGHT['wickerqueen|thrustLowTell'] === 'low', 'HER SPEAR thrust LOW is not !! / jump / low in src/marks.js');
+  ok(!('wickerqueen|throwTell' in MARK) && !('wickerqueen|sickleTell' in MARK), 'her sickle rows are still in src/marks.js');
   ok(MARK['wickerqueen|crownTell'] === '' && !ANSWER['wickerqueen|crownTell'], 'THE CROWNING wears a mark (it throws no blow)');
-  ok(W.WQ_TELLS.every(m => m in { sickleTell: 1, lashLowTell: 1, lashHighTell: 1, floorTell: 1, throwTell: 1, crownTell: 1 }) && W.WQ_TELLS.length === 6, 'WQ_TELLS is not her six windups');
+  ok(W.WQ_TELLS.every(m => m in { stabTell: 1, lashLowTell: 1, lashHighTell: 1, floorTell: 1, thrustHighTell: 1, thrustLowTell: 1, crownTell: 1 }) && W.WQ_TELLS.length === 7, 'WQ_TELLS is not her seven windups');
   /* THE READ BETWEEN UP AND DOWN, in hurt boxes: a hero stands 14, ducks 8; a rider stands on a saddle 16-40 px up; a jump puts his feet 18+ up */
   const stand = { t: FLOOR - 14, b: FLOOR }, duck = { t: FLOOR - 8, b: FLOOR }, jump = { t: FLOOR - 40, b: FLOOR - 18 };
   const riders = [C.RING.lo, (C.RING.lo + C.RING.hi) / 2, C.RING.hi].map(s => ({ t: FLOOR - s - 14, b: FLOOR - s }));
   ok(W.lashCatches('low', FLOOR, stand) && W.lashCatches('low', FLOOR, duck) && !W.lashCatches('low', FLOOR, jump) && riders.every(b => !W.lashCatches('low', FLOOR, b)), 'the LOW ribbon: catches a hero on the boards, misses a jumping one and every rider');
   ok(W.lashCatches('high', FLOOR, stand) && !W.lashCatches('high', FLOOR, duck) && riders.every(b => W.lashCatches('high', FLOOR, b)), 'the HIGH ribbon: catches a standing hero and every rider, misses a ducked one');
-  ok(W.sickleCatches(FLOOR, stand) && !W.sickleCatches(FLOOR, duck) && riders.every(b => W.sickleCatches(FLOOR, b)), 'HER SICKLE: catches a standing hero and every rider, misses a ducked one');
+  ok(W.spearCatches('high', FLOOR, stand) && !W.spearCatches('high', FLOOR, duck) && riders.every(b => W.spearCatches('high', FLOOR, b)), 'HER SPEAR thrust HIGH: catches a standing hero and every rider, misses a ducked one');
+  ok(W.spearCatches('low', FLOOR, stand) && W.spearCatches('low', FLOOR, duck) && !W.spearCatches('low', FLOOR, jump) && riders.every(b => !W.spearCatches('low', FLOOR, b)), 'HER SPEAR thrust LOW: catches a hero on the boards (ducked too), misses a jumping one and every rider');
   ok(W.floorCatches(FLOOR, FLOOR, false) && !W.floorCatches(FLOOR, FLOOR - C.RING.lo, true) && !W.floorCatches(FLOOR, FLOOR - 20, false), 'THE FLOOR BURNS: a hero on the boards, not a rider, not a hero in the air');
-  for (const l of ['HIGH: DUCK IT', 'LOW: JUMP IT', 'THE FLOOR BURNS: RIDE A HORSE', 'HER SICKLE FLIES: DUCK', 'SHE BURNS: CUT HER', 'THE RIDE BRINGS HER TO THE FIRE', 'LEAD HER ONTO THE FIRE, THEN FACE HER', 'FULL DARK: THE RIDE QUICKENS', 'SHE IS ALIGHT: THE RIDE QUICKENS'])
+  for (const l of ['HIGH: DUCK IT', 'LOW: JUMP IT', 'THE FLOOR BURNS: RIDE A HORSE', 'HER SPEAR, HIGH: DUCK', 'HER SPEAR, LOW: JUMP', 'SHE BURNS: CUT HER', 'THE RIDE BRINGS HER TO THE FIRE', 'LEAD HER ONTO THE FIRE, THEN FACE HER', 'FULL DARK: THE RIDE QUICKENS', 'SHE IS ALIGHT: THE RIDE QUICKENS'])
     ok(CALL_LINES.has(l), 'her teaching line "' + l + '" is not in src/hint-lines.js (number() would drop it: the archfix lesson)');
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), wu = main.split('\n').find(l => l.startsWith('const windingUp ='));
   ok(/e\.t === 'wickerqueen' && typeof e\.mode === 'string' && e\.mode\.endsWith\('Tell'\)/.test(wu), 'her tells are not in windingUp() (rule A2: they would wind up in silence)'); }
@@ -131,9 +144,9 @@ const lure = (turnAt, o = {}) => { const r = rig({ ...QUIETCD, ...o }); const h 
   const early = lure(e => e.x < EMB.x1 + 30 && !W.onEmbers(e.x, EMB));   // turned while she is still short of the embers: frozen off them
   for (let i = 0; i < 120; i++) early.r.step();
   ok(!early.modes.has('catch') && early.r.e.mode === 'still', 'frozen SHORT of the embers she caught anyway: ' + [...early.modes]);
-  const unseen = rig({ ...QUIETCD, heroes: [hero(10200, -1)] }); const um = new Set(); for (let i = 0; i < 60 * 8; i++) { unseen.step(); um.add(unseen.e.mode); if (unseen.e.mode === 'sickleTell') break; }
+  const unseen = rig({ ...QUIETCD, heroes: [hero(10200, -1)] }); const um = new Set(); for (let i = 0; i < 60 * 8; i++) { unseen.step(); um.add(unseen.e.mode); if (unseen.e.mode === 'stabTell') break; }
   ok(unseen.e.x < EMB.x0 && !um.has('catch') && !um.has('burn'), 'crossing the embers UNSEEN opened her: ' + [...um]);
-  const alone = rig({ heroes: [hero(10300, 1)], embers: null }); let op = 0; for (let i = 0; i < 60 * 60; i++) { alone.step(); op = Math.max(op, alone.e.open || 0); if (alone.e.mode === 'sickle') alone.e.mode = 'still'; }
+  const alone = rig({ heroes: [hero(10300, 1)], embers: null }); let op = 0; for (let i = 0; i < 60 * 60; i++) { alone.step(); op = Math.max(op, alone.e.open || 0); if (alone.e.mode === 'stab') alone.e.mode = 'still'; }
   ok(op === 0 && !alone.e.n.burn, 'A11: left to her own attacks for a minute she opened by herself: ' + op);
   const r = on.r; for (let i = 0; i < 60 * 5 && r.e.mode !== 'still'; i++) r.step();
   ok(r.e.bank > 0 && !W.onEmbers(r.e.x, EMB), 'after the burn she was not flung off the embers, or they were not banked: ' + JSON.stringify({ x: r.e.x, bank: r.e.bank }));
@@ -227,7 +240,7 @@ try {
       const A = BK.L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.P.face = 1; BK.sim(150); return BK.boss; };
     const q = boot(), A = BK.L.arena, G = BK.L.green, fl = A.floor, emb = { x0: G.bonfire * 16 + 8 - 40, x1: G.bonfire * 16 + 8 + 40, mid: G.bonfire * 16 + 8 };
     for (const e of BK.enemies()) if (e !== q) e.alive = false;
-    const quiet = () => { q.lashCd = 99; q.crownCd = 99; q.floorCd = 99; q.throwCd = 99; q.rest = 0; };
+    const quiet = () => { q.lashCd = 99; q.crownCd = 99; q.floorCd = 99; q.thrustCd = 99; q.rest = 0; };
     const ring = () => BK.fairRing(), horses = () => BK.movers().filter(m => m.kind === 'carhorse' && !m.broken);
     out.woke = { active: BK.bossActive, t: q && q.t, mode: q && q.mode, ring: ring() };
     const hold = (x, face) => { BK.P.x = x; BK.P.y = fl; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = face; BK.P.onMover = null; };
@@ -258,16 +271,23 @@ try {
       for (let i = 0; i < 60 * 4; i++) { none(); BK.P.face = 1; BK.P.inv = 0; if (act !== 'ride' && BK.P.ground) { BK.P.x = A.x0 + 200; BK.P.vx = 0; } if (q.mode === 'floorTell') told.frames++; BK.sim(1); if (q.mode === 'still' && i > 60) break; }
       const lost = hp - BK.P.hp; BK.god = true; BK.P.hp = BK.P.maxHp; BK.P.onMover = null; return { lost, told: told.frames, mark: null }; };
     out.floor = { stand: floorAs('stand'), ride: floorAs('ride') };
-    // 6. HER SICKLE, thrown at a turned back from across the ride: standing it hurts, ducked it passes over
-    const throwAs = act => { quiet(); q.x = A.x1 - 60; q.mode = 'still'; q.throwCd = 0; BK.god = false; BK.P.hp = BK.P.maxHp; BK.P.inv = 0; const hp = BK.P.hp; let mark = null;
-      for (let i = 0; i < 60 * 4; i++) { hold(A.x1 - 280, -1); BK.P.inv = 0; none(); if (act === 'duck') K.down = true; if (q.mode === 'throwTell' && !mark) mark = BK.markOf(q); BK.sim(1); if (q.n.thrown && !q.sk && i > 30) break; }
-      none(); const lost = hp - BK.P.hp; BK.god = true; BK.P.hp = BK.P.maxHp; return { lost, mark, thrown: q.n.thrown }; };
-    out.thrown = { stand: throwAs('stand'), duck: throwAs('duck') };
+    // 6. HER SPEAR, thrust at him while he looks at her: HIGH hurts a standing hero and a rider, passes over a ducked one; LOW hurts a standing hero, passes
+    //    under a jumping one and a rider (real keys: down held, jump pressed as the told line runs out)
+    const thrustAs = (kind, act) => { quiet(); q.mode = 'still'; q.vx = 0; q.thrustN = kind === 'high' ? 0 : 1; BK.god = false; BK.P.hp = BK.P.maxHp; BK.P.inv = 0; const hp = BK.P.hp; let mark = null, n0 = q.n.thrust;
+      if (act === 'ride') { onHorse(); q.x = BK.P.x + 60; } else { q.x = A.x0 + 160; hold(q.x - 60, 1); }
+      q.thrustCd = 0;
+      for (let i = 0; i < 60 * 4; i++) { BK.P.face = 1; BK.P.inv = 0; none(); if (act !== 'ride' && BK.P.ground) { BK.P.x = q.x - 60; BK.P.vx = 0; }
+        if (act === 'duck') K.down = true;
+        if (act === 'jump' && BK.P.ground && q.mode === 'thrustLowTell' && q.modeT < 0.12) { BK.press('jump'); K.jump = true; } else if (act === 'jump' && !BK.P.ground) K.jump = true;
+        if (q.mode.startsWith('thrust') && q.mode.endsWith('Tell') && !mark) mark = BK.markOf(q);
+        BK.sim(1); if (q.n.thrust > n0 && q.mode === 'still') break; }
+      none(); const lost = hp - BK.P.hp; BK.god = true; BK.P.hp = BK.P.maxHp; BK.P.onMover = null; return { lost, mark, n: q.n.thrust - n0 }; };
+    out.thrust = { highStand: thrustAs('high', 'stand'), highDuck: thrustAs('high', 'duck'), highRide: thrustAs('high', 'ride'), lowStand: thrustAs('low', 'stand'), lowJump: thrustAs('low', 'jump'), lowRide: thrustAs('low', 'ride') };
     quiet();
-    // 7. THE REAP from behind hurts (and wore its red mark)
+    // 7. THE STAB from behind hurts (and wore its red mark)
     BK.god = false; BK.P.hp = BK.P.maxHp; BK.P.inv = 0; q.mode = 'still'; q.x = emb.x0 - 60; let mark = null, hurt = 0;
-    for (let i = 0; i < 180; i++) { hold(q.x - 18, -1); BK.P.inv = 0; const h0 = BK.P.hp; BK.sim(1); if (q.mode === 'sickleTell' && !mark) mark = BK.markOf(q); hurt += Math.max(0, h0 - BK.P.hp); if (q.mode === 'recover') break; }
-    out.sickle = { mark, hurt }; BK.god = true; BK.P.hp = BK.P.maxHp;
+    for (let i = 0; i < 180; i++) { hold(q.x - 18, -1); BK.P.inv = 0; const h0 = BK.P.hp; BK.sim(1); if (q.mode === 'stabTell' && !mark) mark = BK.markOf(q); hurt += Math.max(0, h0 - BK.P.hp); if (q.mode === 'recover') break; }
+    out.stab = { mark, hurt }; BK.god = true; BK.P.hp = BK.P.maxHp;
     // 8. THE FIRE: lure her across against the ride, turn on the embers: she burns, and a blow bites harder than against the standing wicker
     quiet(); q.mode = 'still'; q.x = emb.x1 + 70; q.bank = 0; let modes = new Set(), turned = false;
     for (let i = 0; i < 60 * 6; i++) { const f = !turned && q.x < emb.mid ? (turned = true, 1) : turned ? 1 : -1; hold(emb.x0 - 60, f); BK.sim(1); modes.add(q.mode); if (q.mode === 'burn') break; }
@@ -291,7 +311,7 @@ try {
     out.alight = { phase: q.phase, dark: +(BK.L.dark || 0).toFixed(2), speed: ring().speed };
     // 12. THE CROWNING: at most two of hers
     q.mode = 'still'; q.x = A.x1 - 40; let maxQ = 0; q.crownCd = 0;
-    for (let i = 0; i < 60 * 40; i++) { hold(A.x0 + 60, 1); q.lashCd = 99; q.floorCd = 99; q.throwCd = 99; if (q.crownCd > 0.5) q.crownCd = 0.5; BK.P.inv = 99; BK.sim(1); maxQ = Math.max(maxQ, BK.enemies().filter(e => e.alive && e.fromQueen).length); if (i === 1200) for (const e of BK.enemies()) if (e.fromQueen) e.alive = false; }
+    for (let i = 0; i < 60 * 40; i++) { hold(A.x0 + 60, 1); q.lashCd = 99; q.floorCd = 99; q.thrustCd = 99; if (q.crownCd > 0.5) q.crownCd = 0.5; BK.P.inv = 99; BK.sim(1); maxQ = Math.max(maxQ, BK.enemies().filter(e => e.alive && e.fromQueen).length); if (i === 1200) for (const e of BK.enemies()) if (e.fromQueen) e.alive = false; }
     out.crown = { calls: q.n.crown, max: maxQ };
     // 13. CO-OP: the warden facing her holds her feet while the knight's back is turned
     for (const e of BK.enemies()) if (e.fromQueen) e.alive = false;
@@ -322,8 +342,10 @@ ok(R.lash.lowStand > 0 && R.lash.highStand > 0, 'the ribbons did not hurt a stan
 ok(R.lash.lowJump === 0 && R.lash.lowRide === 0, 'a hero who jumped the LOW ribbon, or rode a horse over it, was hurt: ' + JSON.stringify(R.lash));
 ok(R.lash.highDuck === 0 && R.lash.highRide > 0, 'the HIGH ribbon hurt a ducked hero, or missed a rider: ' + JSON.stringify(R.lash));
 ok(R.floor.stand.lost > 0 && R.floor.ride.lost === 0 && R.floor.stand.told >= 80, 'THE FLOOR BURNS: on the boards it must hurt, on a horse not, told first: ' + JSON.stringify(R.floor));
-ok(R.thrown.stand.thrown && R.thrown.stand.lost > 0 && R.thrown.duck.lost === 0 && R.thrown.stand.mark === '!!', 'HER SICKLE: thrown at a turned back it must hurt a standing hero and pass over a ducked one: ' + JSON.stringify(R.thrown));
-ok(R.sickle.mark === '!!' && R.sickle.hurt > 0, 'the reap from behind: ' + JSON.stringify(R.sickle));
+{ const T = R.thrust; ok(Object.values(T).every(t => t.n === 1 && t.mark === '!!'), 'HER SPEAR in the page: a thrust was not told with its !! or did not come: ' + JSON.stringify(T));
+  ok(T.highStand.lost > 0 && T.highRide.lost > 0 && T.highDuck.lost === 0, 'HER SPEAR thrust HIGH: it must hurt a standing hero and a rider and pass over a ducked one: ' + JSON.stringify(T));
+  ok(T.lowStand.lost > 0 && T.lowJump.lost === 0 && T.lowRide.lost === 0, 'HER SPEAR thrust LOW: it must hurt a standing hero and pass under a jumping one and a rider: ' + JSON.stringify(T)); }
+ok(R.stab.mark === '!!' && R.stab.hurt > 0, 'the stab from behind: ' + JSON.stringify(R.stab));
 ok(R.burn.mode === 'burn' && R.burn.modes.includes('catch') && R.burn.open > 2, 'lured onto the embers against the ride and faced she did not burn in the page: ' + JSON.stringify(R.burn));
 ok(R.burn.bite > R.burn.cold * 4, 'a blow while she burns does not bite far harder than against the standing wicker: ' + JSON.stringify(R.burn));
 ok(R.brought.mode === 'burn' && R.brought.feet === 0 && R.brought.flung > 0, 'held in the look upstream of the fire, the ride did not bring her onto it (and fling her off downstream) in the page: ' + JSON.stringify(R.brought));
