@@ -2,7 +2,7 @@
 // A page of the title menu's CREDITS (and the victory card's X): every outside composer whose music the game plays, read back
 // from MUSIC_CREDITS so a new track's credit line is one edit, and the licence of the two CC-BY tracks named in full.
 // Everything else is CC0 or public domain from OpenGameArt.org (the exact files and links are in audio/CREDITS.txt).
-// Pure data and layout: no drawing here (src/main.js drawCredits), so tools/credits.mjs can read it in Node.
+// Pure data and layout: no drawing here (src/main.js drawCredits), so tools/textfit.mjs can drive it in the page.
 export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence] - the licence names the version; creativecommons.org/licenses/by/3.0/ */
   ['harvestfair', 'Dark Carnival', 'Machine', 'CC-BY 3.0'],
   ['mineworks', 'At Work', 'HorrorPen', 'CC-BY 3.0'],
