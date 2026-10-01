@@ -38,6 +38,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 /* KNOWN HOLES. Each one is a path a tracked file points at that no clone has, with why. Delete a line the moment the
    file is committed - the tool tells you when that happens. A list that only ever grows is a way of not fixing it. */
 const MISSING = new Map([
+  ['tools/lit-church.mjs', 'NOT BUILT YET, SAID SO. docs/concepts/the-lit-church.md and its brief name the level check the church lane will write; the level is scheduled after FAIRFIX2. Delete this line when the file is committed.'],
   ['.claude/briefs/desert-arc.md', 'AN INSTRUCTION NOT YET CARRIED OUT, not lost design. docs/desert-arc-brief.md:5 says to copy itself here when its branch merges; the branch has not merged, and the design is readable at docs/desert-arc-brief.md meanwhile. Delete this line when the copy happens - or drop the instruction if the arc is going to keep living in docs/.'],
   ['work/', 'SCRATCH, AND SEVERAL OF THESE CARRY A SESSION UUID (work/a33bc100-.../). Tracked documents cite a directory no clone has. Harmless where it is an aside about how a number was got; a dead end where a reader is told to go and read it. Re-point or drop them as each document is next touched.'],
   ['audits/audio-audit.json', 'GENERATED. tools/audit-audio.mjs writes it; audits/*/ and this file are tool output, kept out of git on purpose. The citation is a tool naming its own output, which is right.'],
