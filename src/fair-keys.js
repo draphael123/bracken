@@ -13,8 +13,8 @@
 import { MUMMER, HORSE, TS } from './mummer.js';
 import { mirrorSees } from './fair-games.js';
 
-export const FAIR_MUMMER = { ...MUMMER, creep: 54, glow: 0.45, dmg: 18, recover: 0.75 };
-export const FAIR_HORSE = { ...HORSE, dmg: 26, dist: 220 };
+export const FAIR_MUMMER = { ...MUMMER, creep: 64, glow: 0.42, dmg: 22, recover: 0.6 };
+export const FAIR_HORSE = { ...HORSE, dmg: 30, dist: 240 };
 export const KEYS_TEXT = { gate: n => 'SHOW ' + n + ' TICKETS', open: 'THE GATE SWINGS OPEN', all: n => 'THE BACK LOT. ALL ' + n + ' TICKETS', hud: 'TICKETS OPEN THE GATES; ALL OF THEM, THE BACK LOT' };
 
 /* every ticket the level holds: the ones lying about and what the strikers pay on their first ring */
@@ -47,3 +47,23 @@ export const mirrorDoorOpen = (L, door, h) => !!door && !!h && Math.abs(h.x - do
 /* THE FORTUNE-TELLER'S GLASS (the back lot's relic): a hand mirror at the belt. What creeps up within GLASS_R px behind you is seen, as if a true mirror stood in front of you */
 export const GLASS_R = 64;
 export const glassSees = (p, e) => !!p && !!e && p.relic === 'handglass' && Math.abs(e.x - p.x) < GLASS_R && Math.abs(e.y - p.y) < 40;
+
+/* THE RANGED PAIR, made deadly by their hands, not their health (claude/fairfix2: "INCREDIBLY EASY at level 1"):
+   THE KNIFE JUGGLER (the archer's AI) throws FLAT and FAST - a knife at chest height, 300 px/s, aimed where you will be when it arrives - every 1.7 s, after a told 0.45 s draw.
+   THE COCONUT SHY (the drunk's AI) throws every 1.4-1.9 s, and at the release he leads you: the coconut comes down where you are running to (its ring shows it in the air). */
+export const JUGGLER = { draw: 0.45, every: 1.7, speed: 300, dy: 120 };   /* dy: he throws down from a roof or a tower top, further than an archer looks */
+export const SHY = { every: 1.4, lead: 0.8, coconut: 14, ball: 18 };
+export function knifeShot(sx, sy, tx, ty, tvx) {
+  let T = Math.max(0.2, Math.hypot(tx - sx, ty - sy) / JUGGLER.speed); const ax = tx + tvx * T; T = Math.max(0.2, Math.hypot(ax - sx, ty - sy) / JUGGLER.speed);
+  const lx = tx + tvx * T * 0.9, d = Math.hypot(lx - sx, ty - sy) || 1;
+  return { x: sx, y: sy, vx: (lx - sx) / d * JUGGLER.speed, vy: (ty - sy) / d * JUGGLER.speed };
+}
+export function shyLead(e, P, surfaceUnder) { if (!P || P.dead) return; const tx = P.x + Math.max(-110, Math.min(110, (P.vx || 0) * SHY.lead)); e.aimX = tx; e.aimY = surfaceUnder ? surfaceUnder(tx, P.y - 8) : P.y; }
+
+/* THE DROP (the fair's mummers, claude/fairfix2): a mummer at a roof's edge may step off after you if footing lies within DROP rows below - and it is not spikes or a pit.
+   tileAt(x, y) -> tile id; the column tx, the row ty under its feet */
+export const DROP = 4;
+export function dropOk(tileAt, tx, ty, T) {
+  for (let y = ty; y <= ty + DROP; y++) { const t = tileAt(tx, y); if (t === T.SPIKE) return false; if (t !== T.AIR) return true; }
+  return false;
+}

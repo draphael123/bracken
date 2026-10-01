@@ -15410,7 +15410,7 @@ function drunkThrow(e, o) {
   const bottle = !!(o && o.unblockable), kind = e.shy ? (bottle ? 'shyball' : 'coconut') : bottle ? 'bottle' : DRUNK_KINDS[(Math.random() * DRUNK_KINDS.length) | 0];   /* (e.shy: the fair's coconut shy - a coconut the shield turns, a hard shy-ball it does not) */
   const tx = e.aimX, ty = e.aimY, G = DRUNK_G, { sx, sy, Tf, vx, vy } = drunkArc(e, tx, ty);
   seeds.push({ x: sx, y: sy, vx, vy, g: G, dead: false, life: Tf + 1.2, drunkLob: true, kind, tx, ty, owner: e,
-    dmg: bottle ? DMG.drunkBottle : kind === 'stool' ? DMG.drunkStool : DMG.drunkLob, unblockable: bottle, spin: (Math.random() < 0.5 ? -1 : 1) * (7 + Math.random() * 5) });
+    dmg: e.shy ? (bottle ? FK.SHY.ball : FK.SHY.coconut) : bottle ? DMG.drunkBottle : kind === 'stool' ? DMG.drunkStool : DMG.drunkLob, unblockable: bottle, spin: (Math.random() < 0.5 ? -1 : 1) * (7 + Math.random() * 5) });
   SFX.throwWhoosh ? SFX.throwWhoosh() : SFX.bow();
 }
 function drunkLand(s) {
@@ -15465,10 +15465,10 @@ function updateDrunk(e, dt) {
   switch (e.mode) {
     case 'lobTell': want = 0; e.face = Math.sign(e.aimX - e.x) || e.face;
       if (Math.random() < dt * 3) SFX.hic();
-      if (e.modeT <= 0) { e.mode = 'lob'; e.modeT = 0.35; drunkThrow(e, null); }
+      if (e.modeT <= 0) { e.mode = 'lob'; e.modeT = 0.35; if (e.shy) FK.shyLead(e, P, surfaceUnder); drunkThrow(e, null); }   /* (the coconut shy's stallholder leads you: src/fair-keys.js shyLead) */
       break;
     case 'bottleTell': want = 0; e.face = Math.sign(e.aimX - e.x) || e.face;
-      if (e.modeT <= 0) { e.mode = 'lob'; e.modeT = 0.4; drunkThrow(e, { unblockable: true }); }
+      if (e.modeT <= 0) { e.mode = 'lob'; e.modeT = 0.4; if (e.shy) FK.shyLead(e, P, surfaceUnder); drunkThrow(e, { unblockable: true }); }
       break;
     case 'lob': want = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.3; } break;
     case 'down': want = 0; if (e.modeT <= 0) { e.mode = 'getup'; e.modeT = 0.7; SFX.slur(); number(e.x, e.y - 30, DRUNK_GRUMBLE[(Math.random() * DRUNK_GRUMBLE.length) | 0], '#e8dcc0'); } break;
@@ -15478,7 +15478,7 @@ function updateDrunk(e, dt) {
       const coming = near && e.cd <= 0 ? enemies.filter(q => q.t === 'drunk' && q.alive && (q.mode === 'lobTell' || q.mode === 'bottleTell')).length + seeds.filter(s => s.drunkLob && !s.dead).length : 9;
       const aimY = near ? surfaceUnder(P.x, P.y - 8) : 0;
       if (near && e.cd <= 0 && ad > 18 && e.ground && e.modeT <= 0 && coming < 2 && drunkArcClear(e, P.x, aimY)) {
-        e.aimX = P.x; e.aimY = aimY; e.cd = 2.4 + Math.random() * 1.2;
+        e.aimX = P.x; e.aimY = aimY; e.cd = e.shy ? FK.SHY.every + Math.random() * 0.5 : 2.4 + Math.random() * 1.2;
         if (e.bottleT <= 0 && Math.random() < 0.4) { e.bottleT = 6 + Math.random() * 3; e.mode = 'bottleTell'; e.modeT = 0.95; number(e.x, e.y - e.h - 14, '!!', '#ff6b6b'); SFX.charge(); }
         else { e.mode = 'lobTell'; e.modeT = 0.75; number(e.x, e.y - e.h - 14, '!', '#ffd36b'); SFX.hic(); }
       } else {
@@ -18313,6 +18313,7 @@ function fairReset() {
 function fairStep(e, dir) {
   if (e.ride) return dir > 0 ? e.rx < e.ride.w - e.w / 2 - 4 : e.rx > e.w / 2 + 4;   /* on a wheel's car the edge of the car ends the run */
   const nx = e.x + dir * (e.w / 2 + 4), tx = Math.floor(nx / TS), ty = Math.floor((e.y + 2) / TS), t = aheadTile(tileAt, tx, ty, e.y, 10);
+  if (t === T.AIR && e.t === 'mummer' && FAIR && !e.fromQueen && !e.scare && FK.dropOk((x, y) => tileAt(x, y), tx, ty, T)) return !isSolid(tx, Math.floor((e.y - 6) / TS));   /* (claude/fairfix2) THE FAIR's mummers DROP off a roof after you (four rows at most, never onto spikes) */
   if (t === T.AIR || t === T.SPIKE) return false;
   return !isSolid(tx, Math.floor((e.y - 6) / TS));
 }
@@ -22594,17 +22595,18 @@ function updateEnemies(dt) {
           /* THE COMBINE: this horn's own pack, woken where it stands behind the gate - not the generic camp squad */
           if (e.pack) for (const p of e.pack) { const hx = e.x + p.dx, hy = p.y; enemies.push({ x: hx, y: hy, vx: 0, vy: 0, face: 1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0, t: 'hound', w: 12, h: 7, hp: EHP.hound, speed: 105, timer: 0, air: false }); burst(hx, hy - 6, 5, COLS.hound, 40, 0.4); }
         } } else if (e.horn && !e.rafters && !e.blown) e.hornT = Math.max(0, e.hornT - dt * (e.stagger > 0 ? 3 : 1));
-      const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < 70) && !P.dead && !(e.trialSt && e.trialSt.done);   /* a trial's archer puts the bow down when his gate is up */
+      const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < (e.juggler ? FK.JUGGLER.dy : 70)) && !P.dead && !(e.trialSt && e.trialSt.done);   /* a trial's archer puts the bow down when his gate is up */
       if (near) e.face = Math.sign(d) || e.face;
       e.timer -= dt; e.draw = Math.max(0, e.draw - dt); e.loose = Math.max(0, (e.loose || 0) - dt);
       let want = 0;
       if (near && ad < (weightyHere(curId()) ? WEIGHTY.archer.keep : SHOT_CLOSE) && e.draw <= 0) want = -e.face * e.speed * 1.6;   /* (weighty, Kingswood: it backs off to keep its range) */ // back off: point-blank, the bow comes down
       else if (near && ad > SHOT_FAR && e.draw <= 0) want = e.face * e.speed * 0.6;
-      if (near && e.timer <= 0 && e.draw <= 0 && ad > SHOT_CLOSE) { e.draw = 0.55; e.timer = 2.4; SFX.bow(); number(e.x, e.y - e.h - 10, '!', '#ffd36b'); }
+      if (near && e.timer <= 0 && e.draw <= 0 && ad > SHOT_CLOSE) { e.draw = e.juggler ? FK.JUGGLER.draw : 0.55; e.timer = e.juggler ? FK.JUGGLER.every : 2.4; SFX.bow(); number(e.x, e.y - e.h - 10, '!', '#ffd36b'); }
       if (e.draw > 0 && e.draw - dt <= 0) { e.loose = 0.16;
+        if (e.juggler) { const k = FK.knifeShot(e.x + e.face * 5, e.y - 16, P.x, P.y - 9, P.vx || 0); seeds.push({ knife: true, x: k.x, y: k.y, vx: k.vx, vy: k.vy, dead: false, life: 2, arrow: true, g: 0, owner: e }); } else {   /* THE JUGGLER's knife: flat and fast, thrown where you are going (src/fair-keys.js knifeShot) */
         const sx = e.x + e.face * 5, sy = e.y - 7, dx = P.x - sx, Tf = e.bowman ? Math.max(0.75, Math.abs(dx) / 300) : 0.75, G = 320, dy = (P.y - 8) - sy; /* a royal bowman lobs it the length of the hall */
         seeds.push({ knife: !!e.juggler, x: sx, y: sy, vx: Math.max(-(e.bowman ? 320 : 200), Math.min(e.bowman ? 320 : 200, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, arrow: true, g: G, owner: e, fire: e.fire });
-        if (e.fire) number(e.x, e.y - 20, 'FIRE', '#ff9a5c');
+        if (e.fire) number(e.x, e.y - 20, 'FIRE', '#ff9a5c'); }
       }
       if (e.stagger > 0 || e.draw > 0) want = 0;
       e.vx += (want - e.vx) * Math.min(1, dt * 8);

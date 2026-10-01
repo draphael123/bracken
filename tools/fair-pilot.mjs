@@ -23,7 +23,7 @@ try {
     const stand = t => solid(t) || t === 2 || t === 8 || t === 10 || t === 11 || t === 14 || t === 18 || (t >= 20 && t <= 25);
     const at = () => ({ x: +(P().x / 16).toFixed(1), y: +(P().y / 16).toFixed(2), hp: Math.round(P().hp) });
     /* THE TALLY: every frame, a drop in health is damage; the nearest foe (or a shot) within 220 px is who did it */
-    const T = { lost: 0, deaths: 0, byWho: {}, bySection: {}, frames: 0, maxHp: P().maxHp, level: BK.heroLevel ? BK.heroLevel() : 1 };
+    const T = { gaveUp: [], lost: 0, deaths: 0, byWho: {}, bySection: {}, frames: 0, maxHp: P().maxHp, level: BK.heroLevel ? BK.heroLevel() : 1 };
     let lastHp = P().hp, wasDead = false;
     const sect = x => x < 118 ? 'gate' : x < 246 ? 'stalls' : x < 372 ? 'midway' : x < 525 ? 'harvest' : x < 622 ? 'lastround' : 'green';
     const tickOne = () => { BK.sim(1); T.frames++; const p = P();
@@ -36,8 +36,9 @@ try {
     const step = n => { for (let i = 0; i < n; i++) tickOne(); };
     /* THE HAND: a quarter-second to see a foe and turn to it; then close and swing. It fights what is within ~5 tiles on its own height, nearest first */
     let react = 0;
-    const foeNear = () => BK.enemies().filter(e => e.alive && !e.harmless && !e.noHurt && e.t !== 'folk' && Math.abs(e.x - P().x) < 80 && Math.abs((e.y - (e.h || 16) / 2) - (P().y - 8)) < 30).sort((a, b) => Math.abs(a.x - P().x) - Math.abs(b.x - P().x))[0];
+    const foeNear = () => BK.enemies().filter(e => e.alive && !e.harmless && !e.noHurt && e.t !== 'folk' && !(e.pilotTries > 12) && Math.abs(e.x - P().x) < 80 && Math.abs((e.y - (e.h || 16) / 2) - (P().y - 8)) < 30).sort((a, b) => Math.abs(a.x - P().x) - Math.abs(b.x - P().x))[0];
     const fight = () => { const e = foeNear(); if (!e) { react = 0; return false; } if (react < 15) { react++; return false; }
+      e.pilotTries = (e.pilotTries || 0) + 1; if (e.pilotTries === 13) T.gaveUp.push(e.t + '@' + Math.round(e.x / 16) + ',' + Math.round(e.y / 16));   /* THE HAND GIVES UP on a foe it cannot reach or finish in a dozen goes (said in the summary), as a player walks on */
       for (let j = 0; j < 150 && e.alive && !P().dead; j++) { const d = Math.sign(e.x - P().x) || 1, gap = Math.abs(e.x - P().x);
         none(); if (gap > 18) K[d > 0 ? 'right' : 'left'] = true; else { P().face = d; if (j % 14 === 0) BK.press('atk'); }
         tickOne(); if (Math.abs(e.y - P().y) > 40) break; }
@@ -67,12 +68,12 @@ try {
     const slideDown = (top, endX) => { if (!walk(top)) return false; K.right = true; K.down = true; for (let i = 0; i < 500 && P().x < endX * 16 && !dead(); i++) tickOne(); none(); return P().ground && P().x > (endX - 4) * 16; };
     const chase = () => { const C = (L().chases || [])[0]; if (!C) return true; if (!walk(Math.floor(C.trigger / 16) - 2)) return false;
       for (const b of C.beams || []) { const bx = Math.floor(b.x0 / 16); if (!walk(bx - 1)) return false;
-        for (let i = 0; i < 400; i++) { const ph = BK.fairTime() % b.period; if (ph <= b.up - 0.6) break; none(); tickOne(); if (dead()) return false; } }
+        for (let i = 0; i < 400; i++) { const ph = BK.fairTime() % b.period; if (ph <= b.up - 0.6) break; if (fight()) continue; none(); tickOne(); if (dead()) return false; } }
       return walk(Math.floor(C.end / 16) + 3); };
 
     /* THE WHEEL OVER ITS PIT (claude/fairfix2): stand on the near bank, board a car as it rises past it, ride it over the top, and jump off to the far bank as it comes down the far side */
     const wheelLow = (standTx, landTx) => { if (!walk(standTx)) return false; const W0 = BK.movers().find(m => m.fair === 'gondola'), hubX = W0.px, hubY = W0.py; let boarded = false, off = 0;
-      for (let i = 0; i < 2400; i++) { if (dead()) return false; const p = P(); K.right = false; K.left = false; K.jump = false;
+      for (let i = 0; i < 2400; i++) { if (dead()) return false; if (!boarded && P().ground && !P().onMover && fight()) { walk(standTx); continue; } const p = P(); K.right = false; K.left = false; K.jump = false;
         if (!boarded && !p.onMover && p.ground) { const c = BK.movers().find(m => m.fair === 'gondola' && m.dy < 0 && m.x + m.w / 2 < hubX - 30 && m.x + m.w / 2 > p.x + 4 && m.y > p.y - 60 && m.y < p.y - 20); if (c) { K.jump = true; BK.press('jump'); K.right = true; } }
         else if (!boarded && !p.ground && p.vy < 0) { K.jump = true; K.right = true; }
         if (p.onMover && p.onMover.fair === 'gondola') { boarded = true; const c = p.onMover; K.right = (c.x + c.w / 2) > p.x + 6; K.left = (c.x + c.w / 2) < p.x - 6;
@@ -101,5 +102,5 @@ try {
     out.reached = at(); out.done = i >= ROUTE.length; out.T = T; out.secs = +(T.frames / 60).toFixed(1);
     return out; })()`, 1800000);
 } finally { if (R) { for (const l of R.legs) console.log('  ' + l); const T = R.T; for (const k in T.byWho) T.byWho[k] = Math.round(T.byWho[k]); for (const k in T.bySection) T.bySection[k] = Math.round(T.bySection[k]);
-    console.log(JSON.stringify({ hero, level: T.level, maxHp: T.maxHp, done: R.done, reached: R.reached, lost: Math.round(T.lost), deaths: T.deaths, secs: R.secs, byWho: T.byWho, bySection: T.bySection, fail: R.fail.slice(0, 4) })); }
+    console.log(JSON.stringify({ hero, level: T.level, maxHp: T.maxHp, done: R.done, reached: R.reached, lost: Math.round(T.lost), deaths: T.deaths, gaveUp: T.gaveUp, secs: R.secs, byWho: T.byWho, bySection: T.bySection, fail: R.fail.slice(0, 4) })); }
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3))); pg.close(); }

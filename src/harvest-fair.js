@@ -109,7 +109,8 @@ export function buildHarvestFair({ painter, T, TS }) {
      THE BARKER. His call turns you to him: on the planks your back goes to the mummer you passed; from the terrace below, to the mummer at the top of the stair */
   foe('mummer', 110, { y: R - 10, squad: 'planks' });
   foe('barker', 157, { y: R - 10, elite: true, squad: 'caller1' });
-  foe('mummer', 136, { squad: 'pincer' });                /* the pair at the foot: ahead of you as you come, behind you the moment you pass. (The boardwalk goes over them: too high for them to see you) */
+  plat(131, R - 4, 3); foe('mummer', 132, { y: R - 5, squad: 'pincer' });   /* THE PINCER (claude/fairfix2: one of the pair is UP on a stall roof now): you walk under it to the other, and it
+     DROPS off the roof behind you (the fair's mummers come down after you) - a mummer each side and you can face only one. (The boardwalk goes over them: too high for them to see you) */
   foe('mummer', 143, { squad: 'pincer' });
   /* THE KNIFE JUGGLER over the pincer (claude/fairfix2; the goblin archer's draw and loose, knives for arrows): on a stall roof behind the pair. Face the far mummer to hold it and his
      knives come into your back; face him and both mummers walk. Up on his roof he is a jump and a cut away */
@@ -146,7 +147,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   pit(236, 243); plat(237, R - 2, 2); plat(240, R - 3, 2);
   /* AND A HORSE AT THE EDGE (claude/fairfix2: 'horse charges at edges'): it stands on the hill top over the pit, facing on. Walk past it to the roofs and your back is to it - it
      rears and charges, and the charge puts you in the spikes. Hold it in your look and cut it down first, or time the roofs with it behind you */
-  foe('hobbyhorse', 227, { y: R - 3, face: 1, squad: 'edge' });
+  foe('hobbyhorse', 227, { y: R - 3, face: 1, squad: 'edge' }); foe('mummer', 229, { y: R - 6, squad: 'edge' });   /* and a mummer on the roof over it, that drops after you onto the hill */
   crumbles.push({ x0: 237, x1: 238, row: R - 2, rows: 1, count: 1.1, kind: 'stall' }, { x0: 240, x1: 241, row: R - 3, rows: 1, count: 1.1, kind: 'stall' });
   /* OR THE BUNTING ROPE (claude/fairfix2): from the top roof over the hill (232-236, row 20) a line of bunting runs down over the pit to the road beyond. Stand at its end and press UP:
      you ride it down (the Falling Tower's slide line). The climb to it is the price */
@@ -160,7 +161,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   carousels.push({ x0: 264, x1: 290, row: R - 2, period: 3.6, warn: 1.2, lock: 0.5 });   /* 27 tiles is 4.7 s at a run: a 3.6 s turn turns everyone once (claude/fairfix: at 5 s you could run it and never be turned) */
   for (const x of [264, 277, 290]) ent('carousel', x, R - 3);   /* (its three brass poles: the ride's marks for the tools) */
   foe('mummer', 269, { y: R - 3, squad: 'ride' });        /* two riders already aboard, one at each end of the ride */
-  foe('mummer', 285, { y: R - 3, squad: 'ride' });
+  foe('hobbyhorse', 285, { y: R - 3, squad: 'ride' });   /* (claude/fairfix2) a HORSE rides the far end now: the ride turns your back to it, and its charge runs you off the disc */
   coins([274, S - 3], [277, S - 3], [280, S - 3]);
   ent('deco', 294, S - 7, { kind: 'bunting', hang: true }); coins([292, S - 1], [294, S - 1]);
   /* --- THE BIG WHEEL (hub column 304): six open gondolas on a circle, ten seconds a turn. The bottom of its run is a hop above the road; the top is the boardwalk's height (row 17) --- */
@@ -171,6 +172,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* THE PIT UNDER THE WHEEL (claude/fairfix2: "pits under rides"): the yard under the wheel's foot is a spiked pit ten wide. The only way over is ON the wheel: board a car as it
      comes round low on the near side, ride it up and over, and step off on the far side as it comes down - or at the top, onto the boardwalk landing (the high road) */
   pit(300, 309);
+  foe('archer', 312, { juggler: true, squad: 'wheel' });   /* (claude/fairfix2) a KNIFE JUGGLER on the far bank: his knives come over the pit while you wait for a car, and while you ride one */
   /* A BULL'S-EYE ON A CAR (claude/fairfix2: bull's-eyes open things, some on the rides): a target hangs under car 3 and goes round with it. Strike it as it passes and planks run
      up off the landing to the prize shelf over the wheel (two tickets and a heart) */
   gallery({ id: 4, targets: [{ x: 304, row: 27, on: { kind: 'gondola', idx: 3, dy: 18 } }], window: 1, planks: [[308, 309, 14], [311, 313, 11]], nest: { x0: 311, x1: 313, row: 11 }, say: 'A BULL\'S-EYE! THE PLANKS RUN UP OVER THE WHEEL' });
@@ -208,7 +210,8 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* the ticket yard, and THE TOWER'S STAIR: three flights up to the landing (a mummer waits there under a lantern that gutters), then the step to the tower top */
   sign(346, 'THE HELTER-SKELTER. THE STAIR IS DARK. HOLD DOWN ON THE SLIDE AND RIDE IT.');
   plat(348, R - 3, 3); plat(351, R - 6, 3); plat(354, R - 9, 5); plat(359, R - 12, 2);   /* rows 25, 22, 19 (the landing, cols 354-358), 16: a 3-row step each; the tower top is row 14 */
-  foe('mummer', 357, { y: S - 9, squad: 'stair' });       /* on the landing: your dusk is short here; it is held only in the lantern's light or within arm's length */
+  foe('mummer', 357, { y: S - 9, squad: 'stair' });       /* on the landing: your dusk is short here; it is held only in the lantern's light or within arm's length. It drops after you (claude/fairfix2) */
+  foe('archer', 364, { y: 13, juggler: true, squad: 'stair' });   /* and a KNIFE JUGGLER on the tower top (claude/fairfix2): his knives come down the stair at you while the landing's mummer holds your look */
   post(355, 18, 0.5);
   /* THE GALLERY AGAIN (developed): three targets in the ticket yard, a shorter window; the planks run up to the hall's roof (a nest of tickets and a heart) */
   gallery({ id: 2, targets: [{ x: 341, row: S }, { x: 343, row: S }, { x: 345, row: S }], window: 10, planks: [[344, 345, R - 3], [342, 343, R - 6]], nest: { x0: 326, x1: 339, row: 21 } });
@@ -262,7 +265,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   gallery({ id: 5, targets: [{ x: mx0 + 8, row: S }], window: 1, bars: [[mx1 - 1, mx1 - 1, 24, 27]], planks: [] }); block(mx1 - 1, mx1 - 1, 24, 27); cages.push([mx1 - 1, mx1 - 1, 24, 27]); tk(mx1, 27);
   /* THE CROWS (claude/fairfix2: the storm crows, at a harvest): a mummer at the foot of the maze's stair - you come down past it - and two crows that come in low off the field ahead
      and caw before they dive. Face them to duck and cut and the mummer is at your back; face the mummer and they come into it */
-  foe('mummer', mx1 + 4, { squad: 'crows' }); foe('crow', 468, { y: R - 4, squad: 'crows' }); foe('crow', 473, { y: R - 6, squad: 'crows', ph: 1.3 });
+  foe('mummer', mx1 + 4, { squad: 'crows' }); foe('crow', 468, { y: S, squad: 'crows' }); foe('crow', 474, { y: S - 1, squad: 'crows', ph: 1.3 });   /* at head height: duck them */
   stack(449, 451); spikes(452, 454, S);                   /* the second rick */
   plat(449, R - 10, 7); tk(455, R - 11); coins([450, R - 11], [453, R - 11]);   /* a ledge over the second rick and its spikes (the hay throws you up through it): a ticket */
   ent('check', 466, S);                                   /* the fourth shrine: on the bank, right before the fire (a chase keeps a shrine within fifteen columns of its start) */
