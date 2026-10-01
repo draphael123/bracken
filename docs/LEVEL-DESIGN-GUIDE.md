@@ -2,7 +2,7 @@
 
 Written 2026-09-26 from Daniel's playtests and decisions across the 25-26 September cycle. It is the *why* behind
 RULES-LEVELS-AND-BOSSES.md: the rules say what a level must pass; this says what Daniel wants a level to feel like.
-Every level lane reads it before it builds. When a rule here and a number elsewhere disagree, ask Daniel.
+Every level lane reads it before it builds, and works down `docs/NEW-LEVEL-CHECKLIST.md` (the process: concept, greybox, review, fixes, art; and every lesson as a box). When a rule here and a number elsewhere disagree, ask Daniel.
 
 ## 1. What a level is
 - **One rule, carried all the way.** A level has one idea (the tide, the sun, the wind, the buckets) and it is TAUGHT safely,

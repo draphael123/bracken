@@ -8,10 +8,12 @@ the walked main route from `tools/pacing.mjs`) and measures it against THE MAGE'
     node tools/level-quality.mjs <id> [<id>]   any level, in full
     node tools/level-quality.mjs --all         a table of every campaign level (a report, exit 0; about 80 s, run it rarely)
 
-**Gated levels** are the new or reworked ones: `GATE` at the top of the tool (today `theatre`, `fair`). Add your level's id in the lane that builds
+**Gated levels** are the new or reworked ones: `GATE` at the top of the tool (today `theatre`; the fair is re-gated when FAIRFIX2 ships). Add your level's id in the lane that builds
 or reworks it. A gated id that is not built yet is skipped with a note. The old campaign is NOT gated: many of its levels miss the bar (see `--all`).
 
-## The ten measures (limit; the Folly's own number)
+The process and the lessons behind these numbers are in `docs/NEW-LEVEL-CHECKLIST.md` (concept, Opus greybox, review against the Folly, fixes, Sonnet art and music, this gate).
+
+## The fourteen measures (limit; the Folly's own number)
 
 | measure | what it counts | limit | Folly |
 |---|---|---|---|
@@ -23,8 +25,31 @@ or reworks it. A gated id that is not built yet is skipped with a note. The old 
 | checks | checkpoints, and route tiles per checkpoint (Daniel wants fewer). Not "2-4": a 700-column level cannot keep four and stay under the 200-tile rule | >= 2, >= 90 tiles each | 7, 103 |
 | encounters | a DESIGNED encounter in every 200 columns: a squad-tagged or elite foe, an ambush room, the mini, or a hand-placed knot of three foes within ten columns | none missing | all four sections |
 | density | DESIGNED ENCOUNTERS a screen (24 columns), not bodies: a squad (all its members), an elite, an ambush room, the mini, or a clump of other foes within 8 columns of each other each count once; and the share of screens with no foe | 0.8-2.5, <= 30% empty | 1.03, 23% |
+| ranged | a RANGED foe is present among the foes and ambush waves. Roles are named in `ROLES` in the tool (the game has no role field): ranged = shoots, throws, lobs or casts (archer, crossbow, javelin, drunk, scout, rockgoblin, apprentice, priest...) | >= 1 | apprentice x7 |
+| roles | distinct foe roles among melee (everything not listed), ranged, support (healer, horn, banner, snuffer), heavy (plate, a big told swing) and runner (thief, hound, bomb carrier) | >= 3 | melee, heavy, ranged |
+| unlocks | every collectible kind (key, stray, quest, pickup, chest, or anything flagged `collect`) is either known (`COLLECT_KNOWN`) or declared on the level as `L.unlocks = [{ kind, opens, hud }]` (`opens` = what it opens, `hud` = the line the player sees; the tool checks the entry is complete and the kind is in the level, a reviewer reads the line in play); a key needs a lock gate; an interactive (lever, winch, rune, plate...) needs something in the level to open | no orphan kind | key + 4 rune kinds, all with locks |
+| pilot | the LEVEL-1 NO-ABILITY pilot (below): a fresh knight with no talents or skills, walked along the main route with the play bot and no god mode, takes real blows. GATED LEVELS ONLY; read from `docs/level1-pilot.json`, never run live | >= 2 blows over 3 runs; a gated level with no row, or a stale one, fails | 3 (theatre 16) |
 | route | the walked route drops/climbs 8+ rows or doubles back 8+ tiles, AND has 2+ dead-end pockets (branches) | both | 30 rows, 5 pockets |
 | slopes | every slope collision cell (ids 20-25) needs drawn diagonal art. Baked sprites are checked against `heightAt`; the level must be one the tile painter reaches (the guard in `src/main.js` before `cvTile`, read by the tool) | no invisible slope | no slopes |
+
+### The level-1 no-ability pilot, and why it is cached
+
+`node tools/level1-pilot.mjs <id> [<id>] [--write] [--runs=3] [--steps=30000] [--hero=knight]` opens headless Chrome, starts a FRESH save (level 1, no
+talents, no skills; the tool prints NOT BARE if it is not), loads the level with no god mode, and walks the level's main route (`tools/pacing.mjs`, a waypoint every
+~8 columns) with the play bot's hands. The bot cannot work locks, winches or levers, so where it makes no progress in 4 s it is LIFTED to the next waypoint (counted and
+printed: the Folly needs about 48 a run, the theatre 21); every stretch of the level is still met by the hero, and what the foes there do to him is counted. Three runs
+are summed because one run is noisy (the Folly read 2, 1, 1, then 3 over its three). A damage count that is a floor, not a target: it proves the level is not a walk;
+it does not say the level is fair. Deaths are reported, not required.
+
+**Why a cache, not a live call.** `level-quality` is a no-browser check that runs in seconds inside the suite; the pilot needs Chrome and 30-60 s a level. The pilot
+writes one row a level into `docs/level1-pilot.json`, stamped with a hash of the level's data (`levelHash`: size, grid, entities, movers, ambushes). The gate reads the
+row: a gated level with no row, a stale row (the level changed after the pilot ran) or a row under the floor fails, and the message says which command to run. The build
+lane runs the pilot once, at the end, and commits the file. A level that is not gated shows its row if it has one and is otherwise not asked.
+
+### Report-only measures
+
+`REPORT_ONLY = { levelId: [measure] }` in the tool lets a measure print as WARN without failing one level, with a TODO naming who decides. Today: `theatre: ['roles']` (the
+theatre has two roles, melee and ranged: no support, heavy or runner). Daniel decides whether to lift it by giving the theatre a third role or by accepting two.
 
 Tall levels (floors, not a walk: Hanging Village, Spire, Deep, Falling Tower, Undercrown, Crown, Keep, Burial, Witchlight) skip flat and density.
 
@@ -42,6 +67,11 @@ encounters, 2.4 bodies); the campaign's walking levels read 0.68-1.56. The floor
 **Music is judged on what is borrowed** (claude/fairfix). The first version passed any level with a track name set whose file existed, so the fair passed
 on `marketday` (a stock tune) and its boss room on the Houndmaster's own track. Now a stock stand-in fails, another level's or boss's track fails, and a
 track the synth composes (the fair's `harvestfair` and `wickerqueen`) counts as real.
+
+## What the new measures cannot see
+
+`ranged` and `roles` read a table of foe kinds named by hand (`ROLES`): a kind that is not listed counts as melee, so a lane that builds a foe adds it there. `unlocks` knows what
+it is told: it cannot tell that a declared `hud` line is actually shown or that a lever's target is the thing it is wired to (the reviewer plays it). `pilot` is a noisy bot.
 
 ## What it does not judge
 
