@@ -1122,7 +1122,7 @@ async function runbossLab(BK, opts) {
         if(!ride&&P.ground&&ballNear){BK.press('jump');P.labJump=16;}   /* (claude/fairfix3) her wicker ball: over it */
         if(!ride&&P.ground&&sweepK==='low'&&q.mode==='sweep'&&Math.abs(sFront-P.x)<34){BK.press('jump');P.labJump=16;}   /* her low sweep: over each pass */
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        const duck=!ride&&P.ground&&((lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20)))||(thrK==='high'&&thrIn&&(!thrTell||q.modeT<0.3)));
+        const duck=!ride&&P.ground&&((lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20)))||(thrK==='high'&&thrIn&&(!thrTell||q.modeT<0.3))||(sweepK==='high'&&q.mode==='sweep'&&Math.abs(sFront-P.x)<60));   /* (claude/fairfix3) and under her high sweep as each pass comes by */
         if(duck){k.down=true;gx=P.x;swing=null;}
         /* looking at her he does not walk with his back to her: the ride carries them both, so the look holds */
         const want=Math.abs(gx-P.x)>5&&!(look&&Math.sign(gx-P.x)!==face);

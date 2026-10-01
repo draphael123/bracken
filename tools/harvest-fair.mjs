@@ -565,13 +565,13 @@ ok(!R.hit.alive && R.hit.blows >= 2 && R.hit.blows <= 5, 'a frozen mummer took '
     ok(cage && cage.bars.some(([x0, , y0, y1]) => x0 === 429 && y0 <= 24 && y1 >= 27) && !tier(reach({ ...L, galleries: (L.galleries || []).filter(g => g.id !== 5), strikers: [] })) && tier(reach({ ...L, strikers: [] })), 'the corn\'s bull\'s-eye does not open the way up (its bars stand across tier one before chimney one: struck, the chimney is the way)');
     /* THE SWINGBOATS: a boat on the swing over a spiked pit; the high stall past it is out of any jump from the road, and the top of the boat's swing is a hop from it */
     const B = (L.moversExtra || []).find(m => m.fair === 'boat');
-    ok(B && spikedPit(216, 228) && at(229, 22) === 1 && at(229, 21) === 0 && at(228, 27) === 0, 'there is no swingboat over a spiked pit with the high stall past it');
+    ok(B && spikedPit(219, 225) && at(216, R) === 0 && at(228, R) === 0 && at(229, 22) === 1 && at(229, 21) === 0 && at(228, 27) === 0, 'there is no swingboat over a spiked pit with the high stall past it');
     if (B) { let top = null; for (let t = 0; t < B.period; t += 0.02) { const p = FRD.boatAt(B, t); if (p.x > B.px && (!top || p.y < top.y)) top = p; }
       ok(top && 22 * 16 - top.y >= -40 && 22 * 16 - top.y <= 0 && 229 * 16 - (top.x + 24) >= 0 && 229 * 16 - (top.x + 24) <= 24, 'the top of the swingboat\'s swing is not a hop from the high stall: ' + JSON.stringify(top && { x: top.x, y: top.y }));
       ok(!reach({ ...L, moversExtra: (L.moversExtra || []).filter(m => m.fair !== 'boat') }).has('231,21'), 'the high stall is reached without the swingboat'); }
     /* THE CHAIR-O-PLANE: chairs on a turning ring over a spiked pit; the near ones come toward you (right to left) slower than a hero runs; two mummers ride the opposite chairs */
     const CO = (L.chairos || [])[0];
-    ok(CO && spikedPit(446, 464) && CO.n >= 8 && FRD.chairSpeed(CO) < 92 && L.ents.filter(e => e.t === 'mummer' && e.rideFair === 'chairo').length === 2, 'there is no chair-o-plane over a spiked pit with two mummers riding it');
+    ok(CO && spikedPit(452, 460) && at(449, R) === 0 && at(463, R) === 0 && at(448, R) === 1 && at(464, R) === 1 && CO.n >= 8 && FRD.chairSpeed(CO) < 92 && L.ents.filter(e => e.t === 'mummer' && e.rideFair === 'chairo').length === 2, 'there is no chair-o-plane over a spiked pit with two mummers riding it');
     if (CO) { const a = FRD.chairAt(CO, 0, 2.0), b = FRD.chairAt(CO, 0, 2.1); ok(!a.front || !b.front || b.x < a.x, 'the chair-o-plane\'s near chairs do not come right to left (against you)');
       ok(!reach({ ...L, chairos: [] }).has('466,27') || true, '');   /* (the fill's ride band is the chairs: without them the far bank would need the chase's start) */ }
     /* TICKETS LEFT, AREA BY AREA: five areas, every ticket in one of them */

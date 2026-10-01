@@ -157,7 +157,8 @@ export function buildHarvestFair({ painter, T, TS }) {
      building six rows up (229-235, top row 22) - out of any jump from the road. The way on is the boat: from the stall roof at the pit's lip (211-214, six up) step off into it as it
      comes up to you, ride its arc down through the pit and up the far side, and LET GO AT THE TOP: from the top of its swing the high stall's roof is a hop up and over. Let go
      low, or late, and it is the spikes (a fall is climbed out of on the near side, and you go again). Its partner boat swings behind it, the other way (drawn only) */
-  pit(216, 228); plat(208, R - 3, 3); plat(211, R - 6, 4); coins([212, R - 7], [221, R - 6], [222, R - 6]);   /* the boarding stair: two stall roofs (rows 25 and 22); the top one's lip is over the boat's near apex */
+  pit(216, 228); for (const x of [216, 217, 218, 226, 227, 228]) set(x, R + 1, T.SOLID);   /* (bare boards three wide at each lip of the spikes, 219-225: a fall at the bottom of the swing is climbed out of on the near side - see the chair-o-plane's note) */
+  plat(208, R - 3, 3); plat(211, R - 6, 4); coins([212, R - 7], [221, R - 6], [222, R - 6]);   /* the boarding stair: two stall roofs (rows 25 and 22); the top one's lip is over the boat's near apex */
   block(229, 235, R - 6, R - 1);                          /* THE HIGH STALL: solid to the road, its roof row 22 */
   boats.push({ px: 221.5 * TS, py: 314, arm: 112, period: 3.6, phase: 0 });   /* the pivot over the pit's middle: the seat swings from 216 (row 24) through 221 (row 26.6) to 227 (row 24) */
   tk(231, R - 7); coins([230, R - 7], [233, R - 7]);
@@ -292,13 +293,17 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* A MUMMER AT THE FOOT OF THE MAZE'S STAIR (claude/fairfix3: its two crows are cut - they dove whether you looked or not, the review's foe that ignores the mechanics): you come down
      past it, and it is at your back while you time the chairs */
   foe('mummer', mx1 + 4, { squad: 'stairfoot' });
-  /* THE CHAIR-O-PLANE (claude/fairfix3; Daniel: "more rides" - the swing carousel of the Edwardian fairs, chairs on chains flung out from a turning crown): a spiked pit nineteen
-     wide (446-464) and the ride's mast in its middle (455). Its twelve chairs fly round on their chains; seen from the road the near ones come TOWARD you (right to left) at the
+  /* THE CHAIR-O-PLANE (claude/fairfix3; Daniel: "more rides" - the swing carousel of the Edwardian fairs, chairs on chains flung out from a turning crown): a spiked pit fifteen
+     wide (449-463) and the ride's mast in its middle (455). Its twelve chairs fly round on their chains; seen from the road the near ones come TOWARD you (right to left) at the
      height of a stall roof, and the far ones go round behind the mast, up under the crown, where no one can stand. So you cross AGAINST the ride: step into a chair as it
      slows at the near end, and before it swings round behind, hop to the next one coming - chair to chair, out over the spikes, until the one that has just come round on the far
      side lets you off onto the bank. Two MUMMERS ride the opposite chairs (0 and 6): come round at you, they stand while you face them; ride past one and it is at your back.
      A ticket hangs over the mast's foot, for a hop up off a chair (src/fair-rides.js; drawn by src/redraw/fair_newrides.js) */
-  pit(446, 464); chairos.push({ cx: 455 * TS + 8, cy: (R - 2) * TS, R: 8 * TS, period: 12, n: 12, phase: 0 });   /* the near seats run at row 26 (two up from the road: a hop), the ends a little higher */
+  /* (the pit is 449-463: each bank runs out under an end of the ride (448, 464), so a chair that swings round behind sets its rider down on the bank, not in the spikes - the
+     ride's own turn is a reset, a missed hop is the cost. Its spikes are 452-460, bare boards three wide at each lip: a fall is climbed out of at either end - the far one only
+     after you have ridden most of it. A spike bed wider than a hop holds a hero who falls in its middle, bouncing, until it kills him: a ride's pit costs, it does not execute) */
+  for (let x = 449; x <= 463; x++) { set(x, R, T.AIR); set(x, R + 1, T.AIR); } spikes(452, 460, R + 1);
+  chairos.push({ cx: 455 * TS + 8, cy: (R - 2) * TS, R: 8 * TS, period: 14, n: 12, phase: 0 });   /* the near seats run at row 26 (two up from the road: a hop), the ends a little higher */
   foe('mummer', 455, { ride: 0, rideFair: 'chairo', squad: 'chairs' }); foe('mummer', 455, { ride: 6, rideFair: 'chairo', squad: 'chairs' });
   tk(455, 23); coins([447, S - 4], [463, S - 4]);
   ent('check', 466, S);                                   /* the fourth shrine: on the bank, right before the fire (a chase keeps a shrine within fifteen columns of its start) */

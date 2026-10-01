@@ -74,7 +74,7 @@ export const WQ = {
   crownEvery: [13, 10, 9], crownFirst: 7, crownTell: 1.2, crownCap: 2,
   emberHalf: 40,                      // the embers: this far each side of the firebox's middle
   catchT: 0.4, burnT: 3.2, burnTP3: 3.0, riseT: 0.6, throwBack: 44, bankT: 6,   // (claude/fairfix3: the opening is at least 3 s in every phase - the boss rule; it was 2.8 / 2.4)
-  burnMul: 1.35, ward: 0.05,           // what a blow is worth burning, and against the standing wicker (claude/fairfix3: x0.05 chip outside the burn, the boss rule; it was 0.25)
+  burnMul: 0.9, ward: 0.05,           // what a blow is worth burning, and against the standing wicker (claude/fairfix3: x0.05 chip outside the burn, the boss rule; it was 0.25. And a burn is worth 0.9 a blow, from 1.35: with her ring pits and a 3 s burn the human bot won in 46-56 s, under the 90-150 s band)
   thrustClear: 24,                    // (claude/fairfix3, review #11) no thrust STARTS while she stands within this far of hot embers: a committed thrust no longer carries her across the opening
   rustle: 0.35,                       // her audio tell while she moves: the wicker creaks
   dmg: { stab: 26, lash: 20, floor: 16, thrust: 22, ball: 18, sweep: 18, stomp: 18 },
