@@ -88,7 +88,7 @@ The map nodes are canal (48, 156) and theatre (60, 151). tools/canal.mjs, tools/
 - Conversion: local ffmpeg, Vorbis q4, 44.1 kHz stereo, +8 dB. That gives mean -16.4 dB and peak -1.4 dB; Waymeet is -15.9 and witchlight -15.2.
 - The loop seam is continuous: 38.40 s, exactly 1,693,440 samples, and the step across the seam is 0.003 against a largest in-file step of 0.129.
 - It is credited in MUSIC_CREDITS and audio/CREDITS.txt (URL and licence).
-- `tools/canal-music.mjs` is deleted. Its citations in the old lane report and the brief are reworded.
+- The canal synth tool (canal-music) is deleted. Its citations in the old lane report and the brief are reworded.
 - level-quality `music` passes: an own track, borrowed by nobody.
 
 **The gate.** 'canal' is added to GATE in tools/level-quality.mjs. `grindylow` is added to ROLES.runner (a grab). `L.unlocks` declares the paddle, capstan, foghorn and lantern post, each with its hint line. docs/level1-pilot.json has the canal's row.
