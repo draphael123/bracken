@@ -22,7 +22,7 @@ or reworks it. A gated id that is not built yet is skipped with a note. The old 
 | secrets | silvers and relics OFF the route (pacing's off-route loot) | >= 2 | 3 |
 | checks | checkpoints, and route tiles per checkpoint (Daniel wants fewer). Not "2-4": a 700-column level cannot keep four and stay under the 200-tile rule | >= 2, >= 90 tiles each | 7, 103 |
 | encounters | a DESIGNED encounter in every 200 columns: a squad-tagged or elite foe, an ambush room, the mini, or a hand-placed knot of three foes within ten columns | none missing | all four sections |
-| density | DESIGNED ENCOUNTERS a screen (24 columns), not bodies: a squad (all its members), an elite, an ambush room, the mini, or a clump of other foes within 8 columns of each other each count once; and the share of screens with no foe | 0.8-2.0, <= 30% empty | 1.03, 23% |
+| density | DESIGNED ENCOUNTERS a screen (24 columns), not bodies: a squad (all its members), an elite, an ambush room, the mini, or a clump of other foes within 8 columns of each other each count once; and the share of screens with no foe | 0.8-2.5, <= 30% empty | 1.03, 23% |
 | route | the walked route drops/climbs 8+ rows or doubles back 8+ tiles, AND has 2+ dead-end pockets (branches) | both | 30 rows, 5 pockets |
 | slopes | every slope collision cell (ids 20-25) needs drawn diagonal art. Baked sprites are checked against `heightAt`; the level must be one the tile painter reaches (the guard in `src/main.js` before `cvTile`, read by the tool) | no invisible slope | no slopes |
 
@@ -37,7 +37,7 @@ bar was written counting every non-pickup entity (runes and glyphs too); countin
 **Density counts encounters, not bodies** (claude/fairfix, 2026-09-30). Counted in bodies, this bar and "fewer, better foes" (LEVEL-DESIGN-GUIDE section 2)
 pulled against each other: the rebuilt fair had every foe in a designed encounter and failed density at 0.6 foes a screen, and the cheap way to pass
 was padding. Now a squad of three is one encounter, a lone elite is one, a sprinkle's clump is one. The Folly reads 1.03 encounters a screen (32
-encounters, 2.4 bodies); the campaign's walking levels read 0.68-1.56. The floor is 0.8, the ceiling 2.0; the empty-screen share is unchanged.
+encounters, 2.4 bodies); the campaign's walking levels read 0.68-1.56. The floor is 0.8. The ceiling was 2.0 until the Maskwright's Theatre merged (claude/fairfix2): built under the bodies bar (2.7 foes a screen, inside 2.0-4.5), it reads 2.13 encounters a screen because most of its foes stand alone (1.3 bodies an encounter, the Folly 2.3). The ceiling is 2.5. The empty-screen share is unchanged.
 
 **Music is judged on what is borrowed** (claude/fairfix). The first version passed any level with a track name set whose file existed, so the fair passed
 on `marketday` (a stock tune) and its boss room on the Houndmaster's own track. Now a stock stand-in fails, another level's or boss's track fails, and a

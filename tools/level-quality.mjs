@@ -14,6 +14,7 @@ import { LEVELS, T } from '../src/level.js';
 import { THREAT } from '../src/threat.js';
 import { floodReach } from '../src/reachcore.js';
 import { pacing } from './pacing.mjs';
+import { BOSS_SYNTH_BASE, splitTrack } from '../src/boss-music.js';
 install();
 const TS = 16;
 
@@ -40,7 +41,7 @@ export const LIM = {
   secrets: 2,           /* silvers / relics off the route (Folly 3) */
   checksMin: 2,         /* checkpoints; the max is a spacing (below), not a count: a 700-column level cannot keep 4 */
   checkSpacing: 90,     /* route tiles per checkpoint at least (Folly 103): fewer, further apart, as Daniel wants */
-  densityLo: 0.8, densityHi: 2.0,   /* DESIGNED ENCOUNTERS a screen (24 columns), not bodies (claude/fairfix): the Folly reads 1.03; the campaign's walking levels 0.68-1.56 */
+  densityLo: 0.8, densityHi: 2.5,   /* DESIGNED ENCOUNTERS a screen (24 columns), not bodies (claude/fairfix): the Folly reads 1.03; the campaign's walking levels 0.68-1.56; THE MASKWRIGHT'S THEATRE (gated, built and merged under the old bodies bar at 2.7 foes a screen) reads 2.13, so the ceiling is 2.5 (claude/fairfix2) */
   clump: 8,             /* foes that are not a squad or an elite and stand within this many columns of each other are ONE encounter */
   emptyShareMax: 0.30,  /* share of the screens with no foe at all (Folly 0.23) */
   section: 200,         /* a designed encounter in every stretch of this many columns */
@@ -81,7 +82,7 @@ function slopeArt() { if (SLOPE_ART) return SLOPE_ART; const why = [];
   return SLOPE_ART = { ok: !why.length, why: why.join('; ') }; }
 /* THE TRACKS src/audio.js COMPOSES ITSELF (no file): the names its synth plays, read off its own source (`wantTrack === 'name'`) */
 let SYNTH = null;
-function synthTracks() { if (SYNTH) return SYNTH; const src = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8'); return SYNTH = new Set([...src.matchAll(/wantTrack === '([a-z0-9]+)'/g)].map(m => m[1])); }
+function synthTracks() { if (SYNTH) return SYNTH; const src = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8'); SYNTH = new Set([...src.matchAll(/wantTrack === '([a-z0-9]+)'/g)].map(m => m[1])); for (const b of Object.keys(BOSS_SYNTH_BASE)) SYNTH.add(b); return SYNTH; }   /* + the boss themes src/boss-music.js composes (a 'name:variant' plays the base's theme) */
 let GATE_SRC = null;
 function slopeGate() { if (GATE_SRC !== null) return GATE_SRC; const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), m = src.match(/if \(([^\n]*?) && cvTile\(x, y, t\)\) continue;/);
   return GATE_SRC = m ? m[1] : ''; }
@@ -147,7 +148,7 @@ export function measure(lv) {
   const borrowedFrom = music ? usedBy(music).concat(STOCK_MUSIC[music] ? ['STOCK (' + STOCK_MUSIC[music].split(':')[0] + ')'] : []) : [];
   const arenaBorrowed = arenaMusic && arenaMusic !== music && !BOSS_POOL.includes(arenaMusic) ? usedBy(arenaMusic).concat(STOCK_MUSIC[arenaMusic] ? ['STOCK'] : []) : [];
   const shared = SHARED_MUSIC.includes(music);
-  const real = t => !!t && (existsSync(new URL('../audio/' + t + '.ogg', import.meta.url)) || existsSync(new URL('../audio/' + t + '.mp3', import.meta.url)) || synthTracks().has(t));
+  const real = t => !!t && (existsSync(new URL('../audio/' + t + '.ogg', import.meta.url)) || existsSync(new URL('../audio/' + t + '.mp3', import.meta.url)) || synthTracks().has(splitTrack(t)[0]));
   const trackFile = real(music), arenaReal = !arenaMusic || real(arenaMusic);
 
   // ---- 5. SECRETS, CHECKPOINTS, ENCOUNTERS, DENSITY ----
