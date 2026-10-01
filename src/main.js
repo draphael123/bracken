@@ -56,6 +56,7 @@ import {whirlInit,updateWhirlpools,drawWhirlpools,strikeLever,whirlKey} from './
 import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js';
 import {bakeBellcrab,bakeBellguard,bakeBellcrabOut,bakeBellShell,BELL,BELL_OUT_F,bellOutFrame} from './bellcrab.js';
 import * as DH from './deep-holds.js';
+import { creditPages, CC_BY } from './credits.js';   /* THE MUSIC CREDITS page: every outside composer, the CC-BY tracks with their licence */
 import { lanceSupport, LANCE_SUPPORT } from './lance-support.js';   /* THE QUEEN'S BOWS: the archers he calls to the end lookouts (docs/briefs/lance-support.md) */
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import {fallBounds} from './waterfalls.js';
@@ -1466,6 +1467,7 @@ let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
 // the existing one inside Settings. Back ('pause') has to land wherever it was opened - the title screen itself for
 // the new entry, the Settings list (as it always has) for the old one - so this remembers which door it came in.
 let soundFrom = 'menu';
+let creditsPage = 0;   /* the title's CREDITS: which page (src/credits.js) */
 let stop = 0, shake = 0, kick = 0, camX = 0, camY = 0, flash = 0, killFlash = 0, introSeen = false, earned = 0;
 /* THE HERO'S FEET, DOWN THE SCREEN (look-and-feel review, 2026-09-26): on flat ground the follow camera used to hold them at
    58% down the buffer, so about 40% of every ordinary screen was fill under the floor and the backdrop - where the polish
@@ -8244,7 +8246,7 @@ function updatePlayer(dt) {
 let titleI = 0, titleBarY = null;
 const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {}).cleared);
 const titleItems = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE'], MODES_PARKED ? [] : ['THE EDITOR'], ['SETTINGS', 'SOUND TEST', 'CONTROLS']); };
+  return base.concat(['LOCAL CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE'], MODES_PARKED ? [] : ['THE EDITOR'], ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'CREDITS']); };
 /* THE EDITOR AND THE BOSS RUSH ARE PARKED, NOT DELETED (Daniel, 2026-09-23): "we need to work on the core game before working on
    these modes." They leave the title menu and every line of their code stays. `?modes=1` brings both back for testing. Do not add
    new bosses, tiles or terrain to either while this is true. */
@@ -24360,6 +24362,7 @@ function update(dt) {
         else if (k === 'SETTINGS') openMenu('title');
         else if (k === 'SOUND TEST') { state = 'soundtest'; soundI = 0; soundCat = 0; soundFrom = 'title'; }
         else if (k === 'CONTROLS') { controlsFrom = 'title'; state = 'controls'; }
+        else if (k === 'CREDITS') { creditsPage = 0; state = 'credits'; }
       }
     }
     return; }
@@ -24380,6 +24383,10 @@ function update(dt) {
   if (state === 'coop') { updateCoopPick(); return; }
   if (state === 'herocard') { if (confirmPress) startTrial(hero()); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
   if (state === 'bossjump') { updateBossJump(); return; }
+  if (state === 'credits') { const n = creditPages(MUSIC_CREDITS).length;
+    if (leftPress || upPress) { creditsPage = (creditsPage + n - 1) % n; SFX.ui(); } if (rightPress || downPress || confirmPress) { creditsPage = (creditsPage + 1) % n; SFX.ui(); }
+    if (pausePress) { state = 'title'; SFX.menuClose(); }
+    return; }
   if (state === 'soundtest') {
     const cats = [SFX_NAMES(), MUSIC_NAMES, AMBIENT_NAMES]; const list = cats[soundCat];
     if (leftPress) { soundCat = (soundCat + 2) % 3; soundI = 0; SFX.ui(); }
@@ -27301,6 +27308,26 @@ function fxPages(colW, rows) {
   fxPagesCache = { colW, rows, pages };
   return pages;
 }
+/* THE CREDITS (title menu): page 1 the CC-BY music in full, then every outside composer, two columns a page. Pure layout in src/credits.js. */
+function drawCredits() {
+  g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
+  const x = 24, y = 6, w = VW - 48, h = VH - 12; panel(x, y, w, h);
+  const pages = creditPages(MUSIC_CREDITS), pg = pages[Math.min(creditsPage, pages.length - 1)];
+  text('CREDITS - MUSIC', VW / 2, y + 6, UI.title, 'center');
+  if (pg.kind === 'ccby') {
+    text('CREDIT REQUIRED (CC-BY 3.0)', VW / 2, y + 22, '#8fd160', 'center', 6);
+    CC_BY.forEach(([, track, who, lic], i) => { const yy = y + 36 + i * 22;
+      text(fitText('"' + track + '" - ' + who, w - 16, 6), VW / 2, yy, UI.text, 'center', 6);
+      text(lic + ': creativecommons.org/licenses/by/3.0', VW / 2, yy + 9, UI.dim, 'center', 6); });
+    text('ALL THE REST IS CC0 OR PUBLIC DOMAIN,', VW / 2, y + 88, UI.dim, 'center', 6);
+    text('FROM OPENGAMEART.ORG. THANK YOU:', VW / 2, y + 97, UI.dim, 'center', 6);
+  } else {
+    const colW = (w - 20) / 2;
+    pg.names.forEach((n, i) => { const col = Math.floor(i / 8), row = i % 8; text(fitText(n, colW - 10, 6), x + 12 + col * colW, y + 24 + row * 11, UI.text, 'left', 6); });
+  }
+  text('page ' + (Math.min(creditsPage, pages.length - 1) + 1) + '/' + pages.length, x + w - 8, y + h - 20, '#9aa39a', 'right', 6);
+  text('LEFT/RIGHT page   ESC back', VW / 2, y + h - 10, UI.dim, 'center', 6);
+}
 function drawSoundTest() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 24, y = 6, w = VW - 48, h = VH - 12; panel(x, y, w, h);
@@ -27584,7 +27611,7 @@ function drawTitle(cx, cy) {
 // SCREEN TRANSITIONS. Every change of screen comes up out of the dark instead of cutting, and a level opens
 // on an iris round the knight. Opening a pause menu or a talk box is not a change of screen.
 let transT = 0, transKind = 'fade', transPrev = null, transLast = 0, menuSince = 0;
-const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'rebind', 'coophelp', 'soundtest', 'bossjump', 'herocard', 'practice', 'win', 'gameover']);
+const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'rebind', 'coophelp', 'soundtest', 'credits', 'bossjump', 'herocard', 'practice', 'win', 'gameover']);
 function drawTransition() {
   const dt = Math.min(1, Math.max(0, time - transLast)); transLast = time;
   if (state !== transPrev) {
@@ -28144,6 +28171,7 @@ function render() {
   drawWarp(); // the door closing, over everything
   if (state === 'menu') drawMenu();
   if (state === 'soundtest') drawSoundTest();
+  if (state === 'credits') drawCredits();
   if (state === 'bossjump') drawBossJump();
   if (state === 'controls') drawControls();
   if (state === 'rebind') CTL.drawRebind(uiCtx(), rebindS, SET.binds);
@@ -28304,6 +28332,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel, loadG: loadLevelG, loadThen,   /* the loading screen, for tools/loading-screen.mjs */
   /* THE SOUND TEST, for tools/soundtest.mjs: a harness can put the cursor straight on a category and a row without
      hunting for the up/down flags press() does not carry. */
+  get creditsPage() { return creditsPage; }, set creditsPage(v) { creditsPage = v; }, creditPageCount: () => creditPages(MUSIC_CREDITS).length,
   get soundCat() { return soundCat; }, set soundCat(v) { soundCat = v; }, get soundI() { return soundI; }, set soundI(v) { soundI = v; }, musicUnlocked,
   /* EFFECTS' page starts (drawSoundTest's own fxPages, see there): a full-width row for a too-wide id makes pages an
      uneven item count, so a harness (tools/textfit.mjs's 'soundtest' sweep) asks for the real boundaries instead of

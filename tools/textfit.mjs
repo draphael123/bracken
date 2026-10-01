@@ -21,6 +21,7 @@
 //   pick      THE HERO PICK, with each of its cards selected in turn: every hero's name under its card, and the words for the selected one
 //   practice  THE PRACTICE YARDS list, each row selected in turn
 //   bossjump  THE HIDDEN BOSS LIST (SHIFT+B on the title): each row selected in turn, and every hero on the hero line
+//   credits   THE CREDITS (title menu): the CC-BY music page and every page of composers
 //   bossfix   the boss fights of the five levels whose words were found on one another, and a damage number on the HUD (in the suite)
 //   node tools/textfit.mjs --strict         exit 1 on any OVERFLOW, OFFSCREEN, CLIPPED, TRUNCATED, COVERS, COLLIDE or SMUDGE (LONGHINT only reports)
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
@@ -203,6 +204,10 @@ async function pageTextFit(input) {
     frame('soundtest ambience #0', () => { BK.state = 'soundtest'; BK.soundCat = 2; BK.soundI = 0; }, { settle: 20 });
     BK.state = 'soundtest'; BK.soundCat = 0; const fxStarts = BK.soundFxPages();
     for (let p = 0; p < fxStarts.length; p++) frame('soundtest effects page #' + p, () => { BK.state = 'soundtest'; BK.soundCat = 0; BK.soundI = fxStarts[p]; }, { settle: 20 });
+    await yieldNow(); }
+  /* THE CREDITS (title menu, src/credits.js): the CC-BY page and every page of composers */
+  if (want('credits')) { toPlay(0, 'knight');
+    for (let p = 0; p < BK.creditPageCount(); p++) frame('credits page #' + p, () => { BK.state = 'credits'; BK.creditsPage = p; }, { settle: 20 });
     await yieldNow(); }
 
   if (want('hud')) for (const h of HEROES) { toPlay(campaign.findIndex(([l]) => l.id === 'waymeet') >= 0 ? campaign.find(([l]) => l.id === 'waymeet')[1] : 0, h);
