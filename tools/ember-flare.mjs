@@ -14,6 +14,7 @@
 //     not cost more than the same blow with her at rest, a press in recovery flares again, and with nothing near the flare costs nothing
 //   - A REAL FIGHT: the topiary's swipe, the dry run's landing frame known, is not cancelled by a press a few frames before it, or lands
 //     for nothing when the press was a half second early
+//   - THE WEAK GUARD: down held after the window does not chip a yellow blow to half, gives heat or scorches, lets a red blow through short, or comes up before a mistime's recovery is over (or never after it)
 //   - THE REGULAR GUARD: the knight's C no longer blocks a yellow blow; a high blow no longer goes over the pyromancer's held duck
 //   - WATER: a flare lights in a pool
 //   - OTHER HEROES: the knight, the warden and the paladin open a flare on down, stop ducking, or stop walking on down + a way
@@ -70,6 +71,11 @@ try {
     out.late = pressThen(40, {});
     out.lateFar = pressThen(80, { far: true });
     out.lateNoPress = (() => { home(); BK.emberReset(); const f = foeAt(FAR); hold(); BK.sim(5); const r = blow(f); K.down = false; return r; })();
+    // ---- THE WEAK PLAIN GUARD: down held after the window: half of a yellow blow, no heat, no scorch; red comes through; a mistime delays it ----
+    out.guard = pressThen(80, { far: true });
+    out.guardRed = pressThen(80, { far: true, red: true });
+    out.guardDelayed = pressThen(40, {});
+    out.guardAfterMiss = pressThen(95, {});
     // ---- THE MISTIME: nothing caught, a foe near -> recovery ----
     { home(); BK.emberReset(); const f = foeAt(NEAR); f.hp = 9999; const P = BK.P; const r = {}; K.down = true; hold(); BK.sim(1); K.down = false; for (let k = 0; k < 32; k++) { hold(); f.x = spot[0] * 16 + NEAR; BK.sim(1); }
       r.rec = E().rec; r.missed = E().stats.missed; r.flaring = E().flare;
@@ -127,6 +133,13 @@ else {
     if (W.res === 'blocked' || !(W.lost > 0)) bad.push(`a blow ${k} did not land: ${JSON.stringify(W)}`);
     if (W.burn > 0) bad.push(`a blow ${k} scorched its attacker`);
     if (W.heat > 0) bad.push(`a blow ${k} gained heat`); }
+  const Gd = R.guard, Gr = R.guardRed, Gm = R.guardDelayed, Ga = R.guardAfterMiss, rest = R.lateNoPress.lost;
+  if (!(Gd.lost > 0 && Gd.lost < rest)) bad.push(`a held guard did not chip a yellow blow to a share of it: lost ${Gd.lost} against ${rest} unguarded`);
+  if (Gd.heat > 0 || Gd.burn > 0) bad.push(`the plain guard gave heat or scorched: ${JSON.stringify(Gd)}`);
+  if (!(Gd.stats.guards > 0)) bad.push('the guard stat did not count the guarded blow');
+  if (!(Gr.lost >= rest) || Gr.stats.guardThrough < 1) bad.push(`a red blow did not break through the guard whole: ${JSON.stringify(Gr)}`);
+  if (!(Gm.lost > rest) || Gm.stats.guards > 0) bad.push(`a mistime did not delay the guard (a blow 40 frames after, down held, should cost more than at rest): ${JSON.stringify(Gm)}`);
+  if (!(Ga.lost > 0 && Ga.lost < rest) || !(Ga.stats.guards > 0)) bad.push(`the guard did not come up after the mistime's recovery: ${JSON.stringify(Ga)}`);
   const M = R.miss;
   if (!(M.missed > 0) || !(M.rec > 0)) bad.push(`a flare that caught nothing with a foe near left no recovery: ${JSON.stringify(M)}`);
   if (M.moved > 2) bad.push(`she walked ${M.moved} px in the recovery`);

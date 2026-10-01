@@ -35,3 +35,10 @@ Text: hero card (main.js 'pyro' desc), controls card now lists `crouch HOLD DOWN
 4. Window 0.25 s, recovery 0.5 s at x1.5 damage. Recommendation (built): keep for a first playtest; widen the window to 0.3 s if it feels too strict at the 100-ms-human level.
 5. Should the flare also work while running (it plants her: vx=0)? Built: yes, any grounded press. Alternative: only stood still (as the old ward required).
 6. Should the flare have a skill-store/catalog entry (so the ability preview vignette can show it)? Recommendation: no, keep innate.
+
+## UPDATE (Daniel's answers): the weak plain guard
+- Q1 answered: HOLD DOWN after the flare = a WEAK PLAIN GUARD. Built in src/ember-ward.js `guardTakes` (called from damagePlayer0 AFTER the duck check, so a high blow still goes over her first): down held, ducked, no flare open, no mistime recovering. A yellow blow from the front costs half (rounded up, EMBER.guardTake) - the game has no literal "chip" for a plain guard, its convention for a guard that is not whole is "half the blow" (the knight's low guard and the geomancer ward on a guard break), so I used it; she is not flinched differently from any half-blow. NO heat, NO scorch, no flare. Red and piercing blows come through whole; a blow from behind too.
+- The mistime's 0.5 s recovery (rooted, x1.5) comes BEFORE the guard can come up. Press = flare as built; Q2-6 unchanged.
+- Cards: the controls card row for her is now `weak guard HOLD DOWN` beside `ember flare TAP DOWN`; hero card says "hold down after it: a weak guard, half of a yellow blow".
+- ember-flare.mjs asserts: held guard chips a yellow blow (4 lost vs 9 unguarded), no heat, no scorch; red costs 9 (whole) and counts as through; a blow 40 frames after a mistime with down held costs 14 (guard delayed); a blow 95 frames after (recovery over) is guarded (4).
+- QUESTION: is half the right "weak" share? Recommendation (built): half; use a third if she should be softer than the knight's guard on a break.

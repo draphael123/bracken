@@ -1,4 +1,4 @@
-// src/ember-ward.js - THE EMBER FLARE (claude/emberflare, Daniel 2026-10-01). It was THE EMBER WARD: down held raised a dome of fire
+// src/ember-ward.js - THE EMBER FLARE + A WEAK PLAIN GUARD (claude/emberflare, Daniel 2026-10-01). It was THE EMBER WARD: down held raised a dome of fire
 // that blocked everything for as long as she stood there, and Daniel's verdict was "strictly better than a regular guard". He turned
 // down every tuning lever (heat drain, singe, chip, cooldown) and chose a different thing: a TIMED FLARE.
 //
@@ -11,6 +11,8 @@
 //   - A MISTIME, a flare that catches nothing with a threat near (a live foe or a hostile projectile within EMBER.threat), FIZZLES: she
 //     is rooted and EXPOSED for EMBER.rec (blows cost EMBER.exposed x) and cannot flare again. With nothing near it costs nothing, so a
 //     crouch in a quiet place is not a trap.
+//   - HOLD DOWN AFTER THE WINDOW = A WEAK PLAIN GUARD (guardTakes): yellow blows from the front cost half, no heat, no scorch; the mistime's recovery comes
+//     BEFORE it can come up; a high blow still goes over her (the duck) before the guard is asked.
 //   - A RED blow breaks through, as every guard's does. WATER puts it out: in a pool the flare will not light.
 // Other heroes are untouched. main.js binds it (makeEmberWard) and calls: update (the pyromancer's block of updatePlayer), settle
 // (after P.ducking is known), catchSeeds (before the seeds meet her body), takes (in damagePlayer0, before the duck), exposed (the
@@ -25,10 +27,11 @@ export const EMBER = {
   reach: 52,          // a melee attacker this close (centre to centre, less half its width) is the one caught
   R: 20,              // the flare's radius, px: a projectile this near is caught
   threat: 160,        // a foe or projectile this near makes a miss a mistime
+  guardTake: 0.5,     // THE PLAIN GUARD (down held after the window, no recovery running): a yellow blow from the front costs this share, rounded up - the game's "half the blow" of a guard that is not whole
 };
 
 export function makeEmberWard(api) {
-  const stats = { flares: 0, caught: 0, melted: 0, missed: 0, fizzled: 0, through: 0, doused: 0 };
+  const stats = { guards: 0, guardThrough: 0, flares: 0, caught: 0, melted: 0, missed: 0, fizzled: 0, through: 0, doused: 0 };
   const P = () => api.P;
   const addParts = (...a) => api.parts.push(...a);
   /* IS SHE IN WATER? any pool she is stood in, wading or deeper (the same pool shape the swim reads) */
@@ -70,6 +73,16 @@ export function makeEmberWard(api) {
   }
   /* A flare ends here only if she has left the ground or been hit; down let go does not end it - a tap is a flare (main.js sets P.ducking after update) */
   function settle() { const p = P(); if (p.emberUp && (p.dead || p.hurt > 0 || !p.ground)) { p.emberUp = false; p.emberT = 0; } }
+  /* THE PLAIN GUARD (damagePlayer0, AFTER the duck has let a high blow go over): down still held once the flare is over - she is ducked, no flare open, no
+     mistime recovering - and a yellow blow from the front costs half. NO heat, NO scorch, no flare: the guard only softens. A red blow (or a piercing one),
+     or one from behind, comes through whole. 'half' (main.js halves the damage), or null */
+  function guardTakes(fromX, dmg, unblockable, who, pierce) {
+    const p = P(); if (!p.ducking || p.emberUp || (p.emberRec || 0) > 0 || wet(p)) return null;
+    if (unblockable || pierce) { stats.guardThrough++; return null; }
+    if (!(Math.sign(fromX - p.x) === p.face || fromX === p.x)) return null;
+    stats.guards++; api.guardFx(p.x + (Math.sign(fromX - p.x) || p.face) * 9, p.y - 6, Math.sign(fromX - p.x) || p.face);
+    return 'half';
+  }
   /* THE DAMAGE LINE: while the mistime lasts a blow costs more */
   const exposed = () => ((P().emberRec || 0) > 0 ? EMBER.exposed : 1);
 
@@ -125,5 +138,5 @@ export function makeEmberWard(api) {
 
   /* FOR THE TOOLS (BK.ember) */
   const read = () => { const p = P(); return { flare: !!p.emberUp, up: !!p.emberUp, t: p.emberT || 0, rec: p.emberRec || 0, spent: p.emberSpent || 0, window: EMBER.window, wet: wet(p), flash: p.emberFlash || 0, stats: { ...stats } }; };
-  return { update, settle, takes, catchSeeds, exposed, draw, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };
+  return { update, settle, takes, guardTakes, catchSeeds, exposed, draw, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };
 }
