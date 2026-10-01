@@ -1,4 +1,4 @@
-Music (CC0 / public domain, from OpenGameArt.org):
+Music (CC0 / public domain, from OpenGameArt.org; since 2026-10-01 CC-BY is also fine WITH a credit line - 'At Work' below is the first):
 - theme.ogg = "Juhani Junkala [Chiptune Adventures] 1. Stage 1.ogg" from "4 Chiptunes (Adventure)" by Juhani Junkala (SubspaceAudio)
   https://opengameart.org/content/4-chiptunes-adventure
 
@@ -94,8 +94,8 @@ ONE THEME PER LEVEL, ONE PER BOSS (all CC0, licence field read on each OpenGameA
 Every file: edge silence trimmed, lowpassed at 9 kHz, levelled to a -14 dB mean with a limiter, OGG Vorbis q4 (q3 over 140 s).
 Where a page offers several licences, CC0 is one of them and is the one used.
 LEVELS
-- sleepers.ogg    = "Haunting Chiptune Loop [Void Estate]" (void_estate_0.ogg) by Zane Little Music - https://opengameart.org/content/haunting-chiptune-loop-void-estate - UNDERLEAF
-- trench.ogg      = "Underwater Theme" (2nd variation) by Spring Spring - https://opengameart.org/content/underwater-theme-1 - THE DEEP
+- sleepers.ogg    = "Haunting Chiptune Loop [Void Estate]" (void_estate_0.ogg) by Zane Little Music - https://opengameart.org/content/haunting-chiptune-loop-void-estate - was UNDERLEAF's theme until 2026-10-01 (now underleaf.ogg; still in the Sound Test)
+- trench.ogg      = "Underwater Theme" (2nd variation) by Spring Spring - https://opengameart.org/content/underwater-theme-1 - was THE DEEP's theme until 2026-10-01 (now deep.ogg; still in the Sound Test)
 - barrows.ogg     = "8-bit - Perilous Dungeon" by HydroGene - https://opengameart.org/content/8-bit-perilous-dungeon - THE UNDERCROWN
 - quarry.ogg      = "Cavern and Blade" by zesona - https://opengameart.org/content/cavern-and-blade - THE QUARRY PASS
 - skysail.ogg     = "Ile Flotante / Village In The Air" by Le Mandrill - https://opengameart.org/content/%C3%AEle-flotante-village-in-the-air - THE SKY SHIP
@@ -193,3 +193,10 @@ CONVERTED TO OGG FROM THE ORIGINAL WAV (ffmpeg, libvorbis q3, no fades, loop poi
 - monasterygolem.ogg = "Boss Battle #6 [8-bit]" V1 by nene, CC0 -
   https://opengameart.org/content/boss-battle-6-8-bit - THE MONASTERY's GOLEM mini's own track, overriding the shared mini fallback (minicharge.ogg).
 - archmage / goblinroyal = no file: synthesised for this game in src/boss-music.js (the Archmages' theme, shared by the Archmage and the Undead Archmage on an undead voicing; the Goblin royals' theme, shared by the Goblin King and Queen)
+
+LEVEL MUSIC SWAP (2026-10-01, claude/musicswap). Real recordings replace the code-synthesised underleaf / mineworks / deep tracks (the synth code is gone from src/audio.js).
+Each: converted to OGG Vorbis q4, 44.1 kHz stereo, edge silence trimmed, levelled to about -12.5 LUFS integrated like the rest of the library.
+- deep.ogg      = "Underwater Theme II" by CleytonKauffman, CC0 - https://opengameart.org/content/underwater-theme-ii - THE DEEP's theme (1:45, a seamless loop, used whole)
+- deepdread.ogg = "the_abyss" from "Ambience of a Fallen Age" by Umplix, CC0 - https://opengameart.org/node/138647 - a quiet dread layer under deep.ogg in THE DEEP (an 80 s section, 0:30-1:54 of the source, its last 6 s crossfaded onto its first 6 s so it loops seamlessly; played at half the track's gain)
+- underleaf.ogg = "Lush, Mossy Grotto" by Tarush Singhal, CC0 - https://opengameart.org/content/lush-mossy-grotto - UNDERLEAF's theme (2:17, the composer's own loop; trimmed of 30 ms of encoder silence)
+- mineworks.ogg = "At Work (Loop)" by HorrorPen, Creative Commons Attribution 3.0 (CC-BY 3.0, CREDIT REQUIRED) - https://opengameart.org/content/little-people-at-work-loop - the Sound Test's "mineworks" song (no level plays it yet). Credit line: "At Work" by HorrorPen, CC-BY 3.0, https://creativecommons.org/licenses/by/3.0/ - the Sound Test shows it shortened to fit one row ("At Work" - HorrorPen (CC-BY)); this file is the full credit.

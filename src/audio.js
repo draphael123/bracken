@@ -2,7 +2,7 @@
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
 import { bossSynthOf, splitTrack, BOSS_SYNTH_GAIN } from './boss-music.js';   /* THE ARCHMAGES' and THE GOBLIN ROYALS' themes: synth tracks with no file (claude/bossmusic) */
-const TRACKS = { unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', marketday: './audio/marketday.ogg',
+const TRACKS = { unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', deep: './audio/deep.ogg', deepdread: './audio/deepdread.ogg', underleaf: './audio/underleaf.ogg', mineworks: './audio/mineworks.ogg', marketday: './audio/marketday.ogg',
   ambWind: './audio/ambWind.ogg', ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
   /* CC0: MintoDog's stage-select set, skrjablin's Sailor Waltz, Memoraphile's Spooky Dungeon (audio/CREDITS.txt) */
   musForest: './audio/musForest.ogg', musCastle: './audio/musCastle.ogg', musMountain: './audio/musMountain.ogg', musUnder: './audio/musUnder.ogg',
@@ -426,7 +426,8 @@ for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'pa
 function loadTrack(name) {
   if (!ac || !TRACKS[name] || trackBuf[name] || trackPending[name]) return;
   trackPending[name] = true;
-  fetch(TRACKS[name]).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[name] = b; trackEnd[name] = audibleEnd(b); if (wantTrack === name) playFile(name); }).catch(() => {}).finally(() => { trackPending[name] = false; });
+  if (TRACK_LAYER[name]) loadTrack(TRACK_LAYER[name].file);   /* the layer under a track loads with it */
+  fetch(TRACKS[name]).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[name] = b; trackEnd[name] = audibleEnd(b); if (wantTrack === name) playFile(name); else addLayer(wantTrack); }).catch(() => {}).finally(() => { trackPending[name] = false; });
 }
 // A LOOP ENDS WHERE THE MUSIC DOES, NOT WHERE THE FILE DOES. Copies are played back to back, so a silent tail
 // on a file is a hole in the music every time it comes round: the Hurricane's ran 1.77 s of nothing. A tail
@@ -451,6 +452,16 @@ export function loopCopy(ctx, b, len, dest, at, first) {
   s.start(at, 0, len); s.addEventListener('ended', () => { try { g.disconnect(); } catch {} });
   return s;
 }
+// A DREAD LAYER UNDER A TRACK (Daniel 10-01, THE DEEP): a second, quiet file that loops under the main one on the same gain node, so it
+// fades, ducks, muffles and stops with the track and costs nothing else. The file is a seamless loop (its tail is crossfaded onto its head),
+// so it is looped natively. gain is relative to the track: 0.5 sits about 14 dB under it. deepdread.ogg is not a Sound Test song.
+const TRACK_LAYER = { deep: { file: 'deepdread', gain: 0.5 } };
+let layerFor = null;
+function addLayer(name) {
+  const L = TRACK_LAYER[name]; if (!L || !ac || currentTrack !== name || !trackG || trackG === layerFor || !trackBuf[L.file]) return;
+  layerFor = trackG;
+  const s = ac.createBufferSource(), g = ac.createGain(); s.buffer = trackBuf[L.file]; s.loop = true; g.gain.value = L.gain; s.connect(g); g.connect(trackG); s.start(); musicSrcs.push(s);
+}
 // the files were mastered all over the place: the cave loop sits 7 dB under the rest and theme3/4 3 dB over
 const TRACK_GAIN = { witchlight: 1.0, fallingtower: 1.0, underkeep: 1.1, stormharbor: 1.0, burial: 1.0,   /* THE FOUR NEW LEVELS ARE COMPOSED TRACKS NOW, not 22 kHz mono synth: levelled to -15 LUFS like the rest of the library, so they need gain of about one. The 3.5 and 5.0 here were a script trying to make thin mono loops carry, and they would now be deafening. */ store: 1.8, hurricane: 1.25, drowned: 1.3, cave: 2.1, adventure: 1.7, theme3: 0.8, theme4: 0.75, reef: 1.5, longwater: 1.25, flotilla: 1.0 };
 const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT * musicVol;
@@ -470,7 +481,7 @@ function playFile(name) {
     const startAt = at; at += len - LOOP_XF;   // the next copy comes in under the last LOOP_XF of this one
     musicTimer = setTimeout(() => chain(false), Math.max(50, (startAt + len * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
   };
-  chain(true);
+  chain(true); addLayer(name);
   musicGain.gain.value = musicOn ? trackVol(name) : 0;
 }
 // THE SOUND TEST'S LOCK (Daniel's design, 2026-09-27): a song unlocks once it is actually heard in play - a level,
@@ -506,28 +517,12 @@ export const music = {
 const N = { E2: 82.41, A1: 55, E5: 659.25, A5: 880, C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196, A3: 220, B3: 246.94, C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392, A4: 440, B4: 493.88, C5: 523.25, C2: 65.41, G2: 98, A2: 110, F2: 87.31 };
 const LEAD = [['C4', 'E4', 'G4', 'C5', 'G4', 'E4', 'D4', 'E4'], ['G3', 'B3', 'D4', 'G4', 'D4', 'B3', 'A3', 'B3'], ['A3', 'C4', 'E4', 'A4', 'E4', 'C4', 'B3', 'C4'], ['F3', 'A3', 'C4', 'F4', 'C4', 'A3', 'G3', 'A3']];
 const BASS = ['C2', 'G2', 'A2', 'F2'];
-// UNDERLEAF HAS NO FILE, AND DOES NOT WANT ONE. It is the quietest level in the game, so it gets the
-// quietest music there is: one low drone, a handful of plucked notes with more rest than note between them,
-// and a bell a long way off that never resolves. Nothing here builds, because nothing here is allowed to.
-const HUSH_LEAD = [['A3', null, 'C4', null, 'E4', null, null, 'D4'], [null, 'A3', null, null, 'G3', null, 'E3', null],
-  ['F3', null, 'A3', null, 'C4', null, null, 'B3'], [null, 'E3', null, null, 'A3', null, null, null]];
-const HUSH_BASS = ['A2', 'F2', 'C3', 'E2'];
-// THE UNDERCROWN. Slower than the hush and an octave under it: a drone that does not move, a figure that
-// takes four bars to say anything, and the ring of a pick on rock somewhere below you that never answers.
-const MINE_LEAD = [[null, null, 'D3', null, null, null, 'F3', null], [null, null, null, 'C3', null, null, null, null],
-  [null, 'A2', null, null, 'D3', null, null, null], [null, null, null, null, 'A2', null, null, null]];
-const MINE_BASS = ['D2', 'D2', 'A1', 'D2'];
-// THE DEEP. Two notes a bar and neither of them resolves, over a drone that is barely a note at all, and
-// a long way off something that might be a hull settling. Nothing down here is in a hurry.
 // WAYMEET. A tune somebody is playing badly in a common room: a three-beat lilt, a fiddle line that
 // keeps going where you expect it to stop, and a drone under it like a room full of people talking.
 const WAY_LEAD = [['D4', null, 'F4', null, 'A4', null, 'G4', null], ['F4', null, 'A4', null, 'D5', null, 'C5', null],
   ['A4', null, 'G4', null, 'F4', null, 'E4', null], ['D4', null, 'F4', null, 'E4', null, 'D4', null]];
 const WAY_BASS = ['D3', 'F3', 'A2', 'D3'];
-const DEEP_LEAD = [[null, null, null, 'E3', null, null, null, null], [null, null, 'C3', null, null, null, null, null],
-  [null, null, null, null, 'B2', null, null, null], [null, 'E3', null, null, null, null, null, null]];
-const DEEP_BASS = ['E2', 'C2', 'E2', 'A1'];
-// THE HARVEST FAIR'S OWN MUSIC (Daniel, 2026-09-30: an eerie band organ). No file: a synth waltz, like underleaf/mineworks/deep.
+// THE HARVEST FAIR'S OWN MUSIC (Daniel, 2026-09-30: an eerie band organ). No file: a synth waltz (underleaf/mineworks/deep were synth too until the real recordings of 10-01).
 //  'harvestfair' (the level): a fairground band organ in A minor, 3/4, sixteen bars. Calliope pipes (two square/saw voices a few cents apart, one of them
 //    sagging flat and each bar a little differently, so the organ is never quite in tune), an oom-pah bass (root on 1, the chord on 2 and 3), a glockenspiel
 //    counter-line above it, and one wrong note in the last turn of the tune.
@@ -578,7 +573,7 @@ const PUP_LEAD = [['D5', 'A4', 'F4', 'A4', 'D5', 'E5', 'F5', 'E5'], ['C#5', 'A4'
 const PUP_BASS = ['D2', 'A1', 'Bb1', 'A1'];
 const STEP_PUP = 60 / 132 / 2;
 let step = 0, nextT = 0, timer = null;
-const STEP = 60 / 112 / 2, STEP_HUSH = 60 / 62 / 2, STEP_MINE = 60 / 48 / 2, STEP_DEEP = 60 / 40 / 2, STEP_TOWN = 60 / 96 / 2;
+const STEP = 60 / 112 / 2, STEP_TOWN = 60 / 96 / 2;
 // THE MASKWRIGHT'S THEATRE: "OVERTURE FOR AN EMPTY HOUSE". A creaky music-hall waltz in D minor, played by a pit that has not been paid: bowed strings (two desks, a little
 // out of tune and never the same way twice), a harpsichord on the off-beats, a plucked bass, a door that creaks in the middle of the tune. Synth only (no file).
 // Sixteen bars of 3/4, an eighth to a step. The show is told in four levels, set by main.js through music.act(n): 0 THE OVERTURE (the level
@@ -640,7 +635,7 @@ export function theatreAct(n) {   // told: main.js sets it as the show's acts ch
 function schedule() {
   if (!ac) return;
   if (currentTrack || silenced) { nextT = ac.currentTime; return; }
-  const SB = bossSynthOf(wantTrack), pupT = wantTrack === 'puppeteer', hush = wantTrack === 'underleaf', mine = wantTrack === 'mineworks', deep = wantTrack === 'deep', town = wantTrack === 'waymeet', SL = pupT ? STEP_PUP : SB ? SB.step : town ? STEP_TOWN : deep ? STEP_DEEP : mine ? STEP_MINE : hush ? STEP_HUSH : STEP;
+  const SB = bossSynthOf(wantTrack), pupT = wantTrack === 'puppeteer', town = wantTrack === 'waymeet', SL = pupT ? STEP_PUP : SB ? SB.step : town ? STEP_TOWN : STEP;
   while (nextT < ac.currentTime + 0.25) {
     if (wantTrack === 'harvestfair' || wantTrack === 'wickerqueen') {   /* THE FAIR'S TWO TRACKS: 3/4, sixteen bars, a step's length set by the tempo multiplier */
       const boss = wantTrack === 'wickerqueen', SLf = (boss ? BASE_WQ : BASE_FAIR) / tempoNow;
@@ -664,25 +659,6 @@ function schedule() {
         if (i === 0 || i === 3) { const b = N[WAY_BASS[bar]]; tone('sine', b, b, SL * 2.6, 0.2, delay, musicGain); }
         if (i === 2 || i === 6) tone('square', N[WAY_BASS[bar]] * 2, N[WAY_BASS[bar]] * 2, SL * 0.7, 0.05, delay, musicGain);  /* somebody keeping time on a table */
         if (bar === 3 && i === 7) tone('triangle', 196, 220, SL * 2, 0.07, delay, musicGain);
-      } else if (deep) {
-        const nm = DEEP_LEAD[bar][i];
-        if (nm) tone('sine', N[nm], N[nm] * 0.995, SL * 3.4, 0.13, delay, musicGain);
-        if (i === 0) { const b = N[DEEP_BASS[bar]]; tone('sine', b, b * 0.99, SL * 8.8, 0.36, delay, musicGain); }
-        if (bar === 3 && i === 4) { tone('triangle', 70, 52, 1.6, 0.09, delay, musicGain); }   /* a hull settling, a long way off */
-        if (bar === 1 && i === 6) { tone('sine', 44, 40, 2.4, 0.11, delay, musicGain); }       /* and the pressure */
-      } else if (mine) {
-        const nm = MINE_LEAD[bar][i];
-        if (nm) tone('triangle', N[nm], N[nm], SL * 2.2, 0.15, delay, musicGain);
-        if (i === 0) { const b = N[MINE_BASS[bar]]; tone('sine', b, b, SL * 8.6, 0.34, delay, musicGain); }
-        if (i === 4 && bar % 2 === 1) { const b2 = N[MINE_BASS[bar]] * 1.5; tone('sine', b2, b2, SL * 4, 0.1, delay, musicGain); }
-        if (bar === 2 && i === 6) { tone('square', N.E5, N.E5 * 0.4, 0.09, 0.035, delay, musicGain); }   /* a pick on rock, a long way down */
-        if (bar === 0 && i === 2) { tone('square', N.E5, N.E5 * 0.4, 0.08, 0.028, delay, musicGain); }
-      } else if (hush) {
-        const nm = HUSH_LEAD[bar][i];
-        if (nm) tone('triangle', N[nm], N[nm], SL * 1.7, 0.19, delay, musicGain);
-        if (i === 0) { const b = N[HUSH_BASS[bar]]; tone('sine', b, b, SL * 8.4, 0.30, delay, musicGain); }
-        if (i === 3 && bar % 2 === 0) { const b2 = N[HUSH_BASS[bar]] * 2; tone('sine', b2, b2, SL * 4, 0.08, delay, musicGain); }
-        if (bar === 3 && i === 5) tone('sine', N.A5, N.A5 * 0.998, 2.6, 0.055, delay, musicGain);   /* the bell, somewhere else */
       } else {
         const f = N[LEAD[bar][i]];
         tone('triangle', f, f, SL * 0.9, i === 0 ? 0.5 : 0.32, delay, musicGain);
@@ -1474,10 +1450,9 @@ export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'f
 export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
-// that page was CC0, checked before the file was pulled - see the credited lanes' own reports). Three tracks have
+// that page was CC0 until Daniel's 10-01 rule change: CC-BY is fine WITH a credit line, 'At Work' is the first - see the credited lanes' own reports). Three tracks have
 // no outside credit because nothing outside BRACKEN made them (store, underkeep, fallingtower, stormharbor, burial
-// all note they were synthesised for this game in CREDITS.txt); mineworks/underleaf/deep have no file at all, so no
-// line for them either - the Sound Test shows nothing under a track this map does not name.
+// all note they were synthesised for this game in CREDITS.txt); the Sound Test shows nothing under a track this map does not name.
 // Kept short on purpose: this line sits on ONE row under the list (tools/textfit.mjs 'soundtest'), so the title is
 // trimmed to what fits and the pack/parenthetical detail stays in audio/CREDITS.txt, the full record.
 export const MUSIC_CREDITS = {
@@ -1518,4 +1493,6 @@ export const MUSIC_CREDITS = {
   duneworm: '"Negev Fight Loop" — Dizzy Crow', lance: '"Boss Battle #3" — nene',
   caravan: '"Desert Theme" — Wolfgang_', monasterygolem: '"Boss Battle #6" — nene',
   store: '"The Warm Counter" — BRACKEN',
+  deep: '"Underwater II" — C. Kauffman', underleaf: '"Mossy Grotto" — Tarush Singhal', mineworks: '"At Work" — HorrorPen (CC-BY)',
+  deepdread: '"The Abyss" — Umplix',
 };
