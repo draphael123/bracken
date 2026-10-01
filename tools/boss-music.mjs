@@ -29,7 +29,7 @@ assert.equal(arena('crown').music, 'goblinroyal', "the Goblin Queen's arena is n
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");
 assert.equal(arena('oreroad').music, 'winchmaster', "the Winchmaster's arena is not on his mine-cart chase");
 assert.equal(arena('witchlight').music, 'gargoyle', "the Gate Gargoyle's arena is not on his stone-grind theme");
-for (const n of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
+for (const n of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
 const generic = new Set(['boss', 'boss2', 'boss3', 'boss4', 'king', 'queen']);
 for (const [id, name] of [['mage', 'archmage'], ['fallingtower', 'undeadmage'], ['kings', 'king'], ['crown', 'gqueen'], ['keep', 'drownedking'], ['oreroad', 'winchmaster'], ['witchlight', 'gargoyle']]) assert.ok(!generic.has(arena(id).music), name + ' is still on a generic boss track');
 
