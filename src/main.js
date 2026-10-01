@@ -1659,7 +1659,7 @@ function drawGateHints(cx, cy) {
     g.fillStyle = hot ? '#5a6270' : '#c9d1dc'; g.fillRect(gx - 6, gy - 2, 11, 4); g.fillRect(gx + 5, gy - 1, 2, 2);
     if (!hot) { g.globalAlpha = 0.5 + 0.5 * k; g.fillStyle = '#ffd36b'; g.fillRect(gx + 7, gy - 2, 2, 2); g.fillRect(gx + 6, gy - 4, 1, 1); g.globalAlpha = 1; }
     else { g.fillStyle = '#3a3040'; g.fillRect(gx - 8, gy + 6, 16, 1); g.fillStyle = '#ff9a5c'; g.fillRect(gx - 8, gy + 6, Math.round(16 * (1 - pr.cool / 7)), 1); }
-    if (!hot && Math.abs(pr.x - P.x) < 60) text('X', gx, gy - 17, '#ffd36b', 'center', 6);
+    if (!hot && Math.abs(pr.x - P.x) < 60 && gx > 6 && gx < VW - 6) text('X', gx, gy - 17, '#ffd36b', 'center', 6);   /* (only over a gun you can see) */
   }
   for (const pr of props) if (pr.t === 'winch' && !(pr.open > 0)) { const top = gateTop(pr.gate); if (top < 0) continue; const gx = pr.gate * TS + 8 - cx, gy = top * TS - cy; if (gx < -60 || gx > VW + 60) continue;
     g.strokeStyle = 'rgba(201,178,124,0.75)'; g.lineWidth = 1; g.setLineDash([2, 2]); g.beginPath(); g.moveTo(pr.x - cx + 0.5, pr.y - 18 - cy); g.lineTo(pr.x - cx + 0.5, gy - 4); g.lineTo(gx, gy - 4); g.stroke(); g.setLineDash([]); // the rope from the drum to the gate
@@ -8795,7 +8795,7 @@ function drawWash(cx, cy) {
     // and the warning, counted down, across the top of the screen
     const n = Math.max(1, Math.ceil(Math.max(0, wash.t)));
     if (Math.floor(time * 8) % 2 === 0 || k > 0.72) {
-      const l1 = (wash.dir > 0 ? '>>> ' : '') + 'SEA TO ' + (wash.dir > 0 ? 'PORT' : 'STARBOARD') + (wash.dir > 0 ? '' : ' <<<'), l2 = 'HOLD ON  ' + '|'.repeat(n), ww2 = Math.max(inkW(l1, 6), inkW(l2, 6)) + 14, wy = seaMsg && seaMsg.t > 0 ? 70 : 50;
+      const l1 = (wash.dir > 0 ? '>>> ' : '') + 'SEA TO ' + (wash.dir > 0 ? 'PORT' : 'STARBOARD') + (wash.dir > 0 ? '' : ' <<<'), l2 = 'HOLD ON  ' + '|'.repeat(n), ww2 = Math.max(inkW(l1, 6), inkW(l2, 6)) + 14, wy = Math.max(seaMsg && seaMsg.t > 0 ? 70 : 50, ambushMsgT > 0 && ambushMsg ? Math.round(VH * 0.26) + (ambushSub ? 27 : 19) : 0);   /* (under the captain's name banner when it is up: THE WAY IS OPEN was drawn across this plate) */
       if (!introCardUp()) {   /* on a plate of its own, under the HUD plates and off the clock, below the sea's own message when there is one; the boss's name card goes first */
         g.fillStyle = 'rgba(10,12,20,0.72)'; g.fillRect(Math.round(VW / 2 - ww2 / 2), wy, ww2, 21);
         text(l1, VW / 2, wy + 3, k > 0.72 ? '#ff6b6b' : '#dff0f5', 'center', 6); text(l2, VW / 2, wy + 12, '#a8cfc6', 'center', 6); }
@@ -25736,7 +25736,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (taut) { g.fillRect(px2, top, 1, Math.max(0, fy - 10 - top)); g.fillRect(x, top, 1, Math.max(0, by - 5 - top)); } else { g.fillRect(px2, top, 1, 12); g.fillRect(x, top, 1, 16); }
       if (pr.block && !(boss && boss.alive && boss.pinBy === pr)) { g.fillStyle = '#1b1626'; g.fillRect(x - 11, by - 9, 22, 18); g.fillStyle = '#5a6270'; g.fillRect(x - 10, by - 8, 20, 16); g.fillStyle = '#8a919c'; g.fillRect(x - 10, by - 8, 20, 2); g.fillStyle = '#3a3e48'; g.beginPath(); g.arc(x, by, 5, 0, 7); g.fill(); g.fillStyle = '#c9b27c'; g.fillRect(x - 1, by - 1, 3, 3); }   /* THE HOIST'S IRON BLOCK */
       else if (!(boss && boss.alive && boss.pinBy === pr)) { g.fillStyle = '#1b1626'; g.fillRect(x - 23, by - 5, 46, 10); g.fillRect(x + 3, by - 11, 4, 7); g.fillStyle = '#6a4a2a'; g.fillRect(x - 22, by - 4, 44, 8); g.fillStyle = '#3e2a16'; g.fillRect(x - 22, by + 2, 44, 2); g.fillRect(x - 12, by - 2, 6, 1); g.fillRect(x + 9, by - 1, 7, 1); g.fillRect(x + 4, by - 10, 2, 6); g.fillStyle = '#7a8a4a'; g.fillRect(x - 17, by - 4, 5, 2); g.fillRect(x + 13, by - 4, 4, 2); if (taut) { g.fillStyle = '#c9b27c'; g.fillRect(x - 1, by - 6, 3, 3); } }
-      if (hot) { const k = 0.5 + 0.5 * Math.sin(time * 8); text('CUT', px2, fy - 22 + Math.round(k * 2), '#ffd36b', 'center', 6); } }
+      if (hot && px2 > 12 && px2 < VW - 12 && fy - 22 > 2 && fy < VH + 24) { const k = 0.5 + 0.5 * Math.sin(time * 8); text('CUT', px2, fy - 22 + Math.round(k * 2), '#ffd36b', 'center', 6); } }   /* (a label for a peg you can see: the owl under a bough far off the screen drew it 1500 px up) */
     else if (pr.t === 'works') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), k = pr.kind, f = Math.floor(time * 10 + pr.ph) % 3;
       if (k === 'kiln') { g.fillStyle = '#4a3a34'; g.fillRect(x - 12, y - 26, 24, 26); g.fillStyle = '#6a4a3a'; for (let yy = y - 24; yy < y; yy += 4) for (let xx = x - 11 + ((yy / 4) % 2 ? 3 : 0); xx < x + 11; xx += 6) g.fillRect(xx, yy, 5, 3); g.fillStyle = '#2a1a14'; g.fillRect(x - 7, y - 12, 14, 12); g.fillStyle = f === 1 ? '#ffb040' : '#ff8030'; g.fillRect(x - 6, y - 11, 12, 10); g.fillStyle = '#fff0a0'; g.fillRect(x - 3, y - 8, 6, 5); g.fillStyle = '#3a3a44'; g.fillRect(x - 3, y - 34, 6, 8); g.globalAlpha = 0.22 + 0.06 * Math.sin(time * 7 + pr.ph); g.fillStyle = '#ffb060'; g.beginPath(); g.arc(x, y - 6, 26, 0, 7); g.fill(); g.globalAlpha = 1; if (Math.random() < 0.15) parts.push({ x: pr.x + (Math.random() - 0.5) * 4, y: pr.y - 34, vx: (Math.random() - 0.5) * 8, vy: -30, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); }
       else if (k === 'rack') { g.fillStyle = '#5c3a1d'; g.fillRect(x - 12, y - 22, 24, 2); g.fillRect(x - 12, y - 12, 24, 2); g.fillRect(x - 12, y - 22, 2, 22); g.fillRect(x + 10, y - 22, 2, 22); const cols = ['#bfe6f5', '#c8a8ff', '#a8ffb8', '#ffd36b', '#ff9ab0']; for (let i = 0; i < 4; i++) { g.fillStyle = cols[(i + pr.v) % 5]; g.fillRect(x - 9 + i * 5, y - 20, 3, 7); g.fillRect(x - 8 + i * 5, y - 21, 1, 1); g.fillStyle = cols[(i + pr.v + 2) % 5]; g.fillRect(x - 9 + i * 5, y - 10, 3, 9); } g.fillStyle = 'rgba(255,255,255,0.35)'; for (let i = 0; i < 4; i++) { g.fillRect(x - 9 + i * 5, y - 20, 1, 3); g.fillRect(x - 9 + i * 5, y - 10, 1, 4); } }
@@ -26483,7 +26483,9 @@ function drawWorld(cx, cy, showPlayer) {
   if (killFlash > 0 && SET.flashes && !SET.reduceMotion) { g.fillStyle = 'rgba(255,255,255,' + (killFlash * 9) + ')'; g.fillRect(0, 0, VW, VH); }
   for (const n of nums) { if (isTell(n)) { tellQ.push({ txt: n.txt, x: n.x - cx, y: n.y - cy, col: n.col, a: Math.min(1, n.life * 3) }); continue; }   /* the tells go on after everything: drawTells() */
     const nx = n.x - cx, ny = n.y - cy, nw = inkW(String(n.txt), TYPE.popup); if (nx + nw / 2 < 0 || nx - nw / 2 > VW || ny + 8 < 0 || ny > VH) continue;   /* a number off a target off the screen is not shown; one half on is kept on */
-    g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(Math.max(nw / 2 + 1, Math.min(VW - nw / 2 - 1, nx))), Math.round(Math.max(1, Math.min(VH - 9, ny))), n.col, 'center', TYPE.popup, 'outline'); }
+    g.globalAlpha = Math.min(1, n.life * 3); const px = Math.round(Math.max(nw / 2 + 1, Math.min(VW - nw / 2 - 1, nx))); let py = Math.round(Math.max(1, Math.min(VH - 9, ny)));
+    for (let pass = 0; pass < 3; pass++) for (const r of hudRects) if (boxHit([px - nw / 2, py, nw, 8], r)) py = r[1] + r[3] + 1;   /* a damage number never lands on the HUD plate (the -20 over LV 0 x3 in the Witchlight): it is set just under the plate, as the tells are */
+    text(String(n.txt), px, Math.min(VH - 9, py), n.col, 'center', TYPE.popup, 'outline'); }
   g.globalAlpha = 1; g.__world = false;
 }
 

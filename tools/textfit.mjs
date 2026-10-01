@@ -21,6 +21,7 @@
 //   pick      THE HERO PICK, with each of its cards selected in turn: every hero's name under its card, and the words for the selected one
 //   practice  THE PRACTICE YARDS list, each row selected in turn
 //   bossjump  THE HIDDEN BOSS LIST (SHIFT+B on the title): each row selected in turn, and every hero on the hero line
+//   bossfix   the boss fights of the five levels whose words were found on one another, and a damage number on the HUD (in the suite)
 //   node tools/textfit.mjs --strict         exit 1 on any OVERFLOW, OFFSCREEN, CLIPPED, TRUNCATED, COVERS, COLLIDE or SMUDGE (LONGHINT only reports)
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
@@ -79,7 +80,7 @@ async function pageTextFit(input) {
       /* (a board() is a box on purpose, so any overlap makes it the plate; a bare rectangle must hold a third of the text and its full height) */
       /* (and nothing laid down UNDER a later board: a world rectangle or a HUD plate beneath the talk box or the pause menu is not the box its words are in) */
       const under = rec.filter(r => r.kind === 'rect' && r.i < t.i && ((r.m === 'board' && ax >= r.x0 && ax <= r.x0 + r.w && ay >= r.y0 && ay <= r.y0 + r.h)
-        || (r.w < VW - 2 && t.x0 >= r.x0 && t.x0 + t.w <= r.x0 + r.w && t.y0 >= r.y0 && t.y0 + t.h <= r.y0 + r.h))).pop(), floor = under ? under.i : -1;   /* (or any plate that holds the whole string) */
+        || ((r.w < VW - 2 || r.h <= 40) && t.x0 >= r.x0 && t.x0 + t.w <= r.x0 + r.w && t.y0 >= r.y0 && t.y0 + t.h <= r.y0 + r.h))).pop(), floor = under ? under.i : -1;   /* (or any plate that holds the whole string) */
       const cands = rec.filter(r => r.kind === 'rect' && r.i < t.i && r.i >= floor && ax >= r.x0 && ax <= r.x0 + r.w && ay >= r.y0 && ay <= r.y0 + r.h && r.h >= t.h && r.w >= 20 && !(r.w >= VW - 2 && r.h >= VH - 2)
         && (r.m === 'board' ? inside(r) > 0 : inside(r) >= 0.35 && t.y0 >= r.y0 - 1 && t.y0 + t.h <= r.y0 + r.h + 1));
       if (cands.length && t.style !== 'outline') { const p = cands.reduce(   /* (outlined text is drawn over the world on purpose, with no plate: a tell, a prompt over a gate) */(a, b) => a.w * a.h <= b.w * b.h ? a : b);
@@ -217,8 +218,16 @@ async function pageTextFit(input) {
       BK.tp(Math.round((A.trigger || (A.x0 + A.x1) / 2) / 16) + 1, Math.round(A.floor / 16) - 1);
       for (let f = 0; f < 24; f++) { BK.sim(12); if (boss.heat !== undefined) boss.heat = 20 + f * 3; frame('boss plate ' + l.id + ' ' + nm, () => { BK.state = 'play'; }, { band: BK.view.VH - 40 }); if (BK.P.dead) BK.reset(); } }
     await yieldNow(); }
-  if (want('boss')) { const meas = document.createElement('canvas').getContext('2d');
-    for (const [l, i] of campaign) { let Lb; try { toPlay(i, 'knight'); Lb = BK.L; } catch (e) { continue; }
+  /* BOSSFIX: the boss-screen words that were found overflowing, off the screen or on one another (the Hurricane's THE WAY IS OPEN across the sea warning, the hanging bough's CUT 1500 px
+     up, the Flotilla gun's X off the left edge, the Oreroad captain's sub-line) in their five levels only, so the suite can hold them under --strict; and a damage number set on the HUD's level
+     label (the -20 over LV 0 x3 in the Witchlight). 'boss' runs every level's fights the same way and is the long run. */
+  const FIX = ['hurricane', 'oreroad', 'hanging', 'flotilla', 'witchlight'];
+  if (want('bossfix')) for (const id of FIX) { const k = campaign.find(([l]) => l.id === id); if (!k) { issues.push({ type: 'ERROR', screen: 'bossfix ' + id, s: 'level missing', n: 1 }); continue; }
+    toPlay(k[1], 'knight'); BK.step(3); const [cx, cy] = BK.cam;   /* (a frame or two first: the HUD plates are measured as they are drawn) */
+    for (const [px, py] of [[14, 34], [30, 37], [60, 24]]) { frame('popup on the HUD ' + id, () => { BK.state = 'play'; TL.nums().push({ x: cx + px, y: cy + py, txt: '-20', col: '#ff6b6b', life: 5, vy: 0 }); }, { settle: 2 }); TL.nums().length = 0; }
+    await yieldNow(); }
+  if (want('boss') || want('bossfix')) { const meas = document.createElement('canvas').getContext('2d');
+    for (const [l, i] of campaign) { if (!want('boss') && !FIX.includes(l.id)) continue; let Lb; try { toPlay(i, 'knight'); Lb = BK.L; } catch (e) { continue; }
       for (const [nm, A] of [['arena', Lb.arena], ['mini', Lb.mini]]) { if (!A) continue;
         const boss = BK.enemies().find(e => e.t === A.boss && e.alive);
         const names = nm === 'mini' ? [TL.miniName()] : boss ? [TL.bossTitle(boss), TL.bossTitle(Object.assign({}, boss, { phase: 3 })), TL.bossTitle(Object.assign({}, boss, { need: 'violet' }))] : [];
