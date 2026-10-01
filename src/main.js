@@ -60,7 +60,7 @@ import { lanceSupport, LANCE_SUPPORT } from './lance-support.js';   /* THE QUEEN
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
-import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
+import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen, drawSpear as wqDrawSpear } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
 import * as FAF from './fair-foes.js';   /* THE HARVEST FAIR's marionette and barker (claude/fairfix): pure, tools/harvest-fair.mjs */
 import * as FGM from './fair-games.js'; import * as FR from './redraw/fair_rides.js';   /* THE HARVEST FAIR's vertical rebuild (claude/fairlevel): the games and the sight (pure), and the rides' art */
 import * as WC from './wicker-carousel.js'; import * as CRG from './redraw/carousel_ring.js';   /* THE WICKER QUEEN'S CAROUSEL (claude/fairboss): the ride, pure, and its look */
@@ -4300,7 +4300,7 @@ const BEASTS = [
   { t: 'hobbyhorse', name: 'THE HOBBY-HORSE', sub: 'it charges the moment you turn away', desc: 'A carved horse\'s head on a pole and a cloth skirt, and a player under it. The moment your back is turned it rears (a red eye, a bell) and CHARGES a long run in a straight line, and it will not stop for a look once it has begun. It stands where the charge ends and will not charge again until you have looked at it. Jump the charge, or climb a haystack out of its way. In two-player it charges only when BOTH heroes have their backs turned.' },
   { t: 'stringjack', name: 'THE STRING-JACK', sub: 'it moves only while you look at it', desc: 'A jointed wooden puppet on strings that run up into the dark. The rule the other way round: it moves ONLY while somebody is looking at it, and hangs limp the moment every back is turned. Looking at a mummer to hold it is looking at the marionette to bring it on. When it jerks (a yellow !) it is about to cut: take it on the shield, duck under it, or turn your back and the strings go slack. In the hall of mirrors the true glass looks behind you, and works its strings.' },
   { t: 'barker', name: 'THE BARKER', sub: 'roll up, roll up', desc: 'The fair\'s caller, on his crate with a speaking trumpet. Every few seconds he raises the trumpet (you hear it drawn and see the rings go out) and CALLS: every hero in earshot is turned to face him and held that way a moment - off the mummers you were watching. Hit him while the trumpet is up and the call dies in his throat. Come too close and he swings his cane (a yellow !). Kill him first. In two-player his call turns you both.' },
-  { t: 'wickerqueen', name: 'THE WICKER QUEEN', sub: 'the maypole green at nightfall', desc: 'She moves only while you look away, and her ribbons turn even while you look: jump the low lash, duck the high. Turn your back to draw her across the green, then turn round while she stands on the embers: the wicker catches. Cut her while she burns. In two-player either look holds her.' },
+  { t: 'wickerqueen', name: 'THE WICKER QUEEN', sub: 'the maypole green at nightfall', desc: 'She moves only while you look away, but her arms do not need your back: her ribbons and her long spear come even while you look. Duck the high lash and the high thrust, jump the low ones; when the boards burn, ride a horse. Turn your back to draw her across the green, then turn round while she stands on the embers: the wicker catches. Cut her while she burns. In two-player either look holds her.' },
   { t: 'puppeteer', name: 'THE PUPPETEER', sub: "the main stage of the Maskwright's Theatre", desc: 'He hangs from his control bar over the stage and works a duo: THE HARLEQUIN, fast and weak, and THE BRUTE, slow and heavy. Hit them, or cut their strings - a cut limb goes limp and its attack is gone. Every puppet you drop lowers his bar; drop both and he is dragged down to the boards, open. From the gallery his own line can be struck, the hard way.' },
   { t: 'marionette', name: 'THE BRUTE', sub: 'a toy soldier half again your height', desc: 'Slow and heavy: a told chop no shield holds, a ground slam you jump, a grab you step out of - two or three of them and you are in trouble. After every swing he stands spent: hit him, or cut a string. The ARM string takes his chop and grab, the BACK string his slam.' },
   { t: 'acrobat', name: 'THE ACROBAT', sub: 'a tumbler on two strings', desc: 'He hoists it over you and lets it fall: its shadow on the boards is where. Re-strung, it learns to swing across the stage at head height - duck it.' },
@@ -18432,7 +18432,7 @@ function drawFair(cx, cy) {
 }
 
 /* ================= THE WICKER QUEEN (src/wicker-queen.js is the fight, pure and proved in tools/wicker-queen.mjs; claude/fair3). These are her hands: the ribbons'
-   sweep over every hero, her sickle, the crowd she crowns, the fire she leaves, the green going dark and her own light. She moves ONLY while no hero looks at her
+   sweep over every hero, her spear (claude/fairfix2-spear: it replaced her sickle), the crowd she crowns, the fire she leaves, the green going dark and her own light. She moves ONLY while no hero looks at her
    (co-op: any hero facing her freezes her) and her maypole's ribbons keep turning while she is frozen; freeze her ON THE EMBERS and the wicker burns open. ================= */
 const wqBoss = () => (boss && boss.t === 'wickerqueen' && boss.alive ? boss : null);
 const wqEmbers = () => (L && L.green ? WQN.embersOf(L.green.bonfire * TS + 8) : null);
@@ -18463,9 +18463,9 @@ function updateWickerQueen(e, dt) {
   const evs = WQN.updateWickerQueen(e, dt, { heroes, anim: false, A: { x0: A.x0, x1: A.x1, floor: fl }, embers: emb, ringDir: R ? WC.RING.dir : 0,
     canStep: dir => { const nx = e.x + dir * 16; return nx > A.x0 + 12 && nx < A.x1 - 12; },
     number: (x, y, m, col) => number(x, y, m, col || '#ffd36b'),   /* (a teaching line - src/hint-lines.js - goes to the hint box; '!!' floats over her) */
-    sound: k => { const fn = ({ catch: SFX.wqCatch, burn: SFX.wqBurn, rise: SFX.wqBank, still: SFX.mummerStill, sickleTell: SFX.wqSickleTell, sickle: SFX.wqSickle, lashTell: SFX.wqLashTell, lash: SFX.wqLash, crownTell: SFX.wqCrown, crown: SFX.mummerBell, rustle: SFX.wqRustle, dark: SFX.wqDark, alight: SFX.wqAlight,
-      floorTell: SFX.wqCatch, floor: SFX.wqBurn, throwTell: SFX.wqSickleTell, throw: SFX.wqLash })[k]; if (fn) fn(); },
-    /* THE REAP: from behind, and nothing turns it */
+    sound: k => { const fn = ({ catch: SFX.wqCatch, burn: SFX.wqBurn, rise: SFX.wqBank, still: SFX.mummerStill, stabTell: SFX.wqSickleTell, stab: SFX.wqSickle, lashTell: SFX.wqLashTell, lash: SFX.wqLash, crownTell: SFX.wqCrown, crown: SFX.mummerBell, rustle: SFX.wqRustle, dark: SFX.wqDark, alight: SFX.wqAlight,
+      floorTell: SFX.wqCatch, floor: SFX.wqBurn, thrustTell: SFX.wqSickleTell, thrust: SFX.wqSickle })[k]; if (fn) fn(); },   /* (her spear keeps the sickle's two sounds: the blade drawn back, the blade going in) */
+    /* THE STAB: her spear from behind, and nothing turns it */
     hit: (bx, d, name) => { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead) return; if (overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, box(P))) damagePlayer(e.x, d, { who: e, name, unblockable: true }); }); },
     /* THE RIBBONS: the front sweeps out from the centre column both ways; each hero is judged once a lash, the moment it reaches him - at its height, against
        his hurt box as it stands then (src/duck.js duckBox: ducked, or in the air, or up on a horse, or standing in it) */
@@ -18473,9 +18473,11 @@ function updateWickerQueen(e, dt) {
       if (d < r0 - 2 || d >= r1) return; pp.wqLash = e.n.lash; const hb = duckBox(P);
       if (WQN.lashCatches(kind, fl, { t: hb.t, b: hb.b })) damagePlayer(P.x + (P.x < mx ? 10 : -10), WQN.WQ.dmg.lash, { who: e, name: 'THE RIBBONS', unblockable: true });
       else { number(P.x, P.y - 26, kind === 'low' ? 'OVER IT' : 'UNDER IT', '#8fd160'); } }); },
-    /* HER SICKLE, thrown: flat, at the height of a rider and a standing hero, out and back; each hero judged once a pass as it crosses him */
-    sickle: (x0, x1, pass) => { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || pp.wqSk === pass) return; if (P.x < x0 - 6 || P.x > x1 + 6) return;
-      const hb = duckBox(P); if (!WQN.sickleCatches(fl, { t: hb.t, b: hb.b })) return; pp.wqSk = pass; damagePlayer(e.sk ? e.sk.x : e.x, WQN.WQ.dmg.thrown, { who: e, name: 'HER SICKLE', unblockable: true }); }); },
+    /* HER SPEAR, THRUST: the blade runs out flat along the ride at its height; each hero is judged once a thrust, the moment it reaches him - against his hurt
+       box as it stands then (src/duck.js duckBox: ducked under the high one, in the air or up on a horse over the low one, or standing in it) */
+    thrust: (kind, x0, x1) => { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || pp.wqTh === e.n.thrust) return; if (P.x < x0 - 6 || P.x > x1 + 6) return;
+      pp.wqTh = e.n.thrust; const hb = duckBox(P);
+      if (WQN.spearCatches(kind, fl, { t: hb.t, b: hb.b })) damagePlayer(e.x, WQN.WQ.dmg.thrust, { who: e, name: 'HER SPEAR', unblockable: true }); }); },
     adds: () => enemies.filter(q => q.alive && q.fromQueen).length,
     /* THE CROWNING: the crowd at the edge of the light sends in her players - one behind the hero she means and one ahead of him, inside the green
        and on his screen (a mummer past 420 px would stand frozen by the game's own rule) */
@@ -18526,9 +18528,17 @@ function drawWickerOver(cx, cy) {
   const fl = L.arena.floor, mx = L.green.maypole * TS + 8, x0 = L.arena.x0, x1 = L.arena.x1;
   /* THE CAROUSEL's blows (claude/fairboss): the floor told and burning; her sickle's line told at the height it will fly, and the sickle in flight */
   if (q.mode === 'floorTell' || q.mode === 'floor') CRG.drawRingFire(g, cx, cy, VW, L.arena, fl, q.mode, 1 - Math.max(0, q.modeT) / (q.mode === 'floor' ? WQN.WQ.floorT : WQN.WQ.floorTell), time);
-  if (q.mode === 'throwTell') { const [t, b] = WQN.sickleBand(fl), d = q.throwDir || q.face || 1, xa = d > 0 ? q.x : x0, xb = d > 0 ? x1 : q.x; g.globalAlpha = 0.25 + 0.5 * (Math.floor(time * 14) % 2); g.fillStyle = '#ff6b6b';
-    g.fillRect(Math.round(xa - cx), Math.round(t - cy), Math.round(xb - xa), 1); g.fillRect(Math.round(xa - cx), Math.round(b - 1 - cy), Math.round(xb - xa), 1); g.globalAlpha = 1; }
-  if (q.sk) { const [t, b] = WQN.sickleBand(fl); CRG.drawRingSickle(g, q.sk.x - cx, (t + b) / 2 - cy, q.sk.spin || 0); }
+  /* HER SPEAR (claude/fairfix2-spear): drawn back in the tell, its told line RUNS OUT along the ride at the height and to the length it will cover (when the
+     line has run its length, she lunges - a beat you can count, not a flash you must react to), an arrow at each hero (up: jump it; down: duck it); then the
+     spear itself out along the ride, its point at q.tip */
+  const thrK = q.mode === 'thrustHighTell' ? 'high' : q.mode === 'thrustLowTell' ? 'low' : q.mode === 'thrust' ? q.thrustKind : null;
+  if (thrK) { const d = q.thrustDir || q.face || 1, sy = WQN.spearY(thrK, fl) - cy, tip = q.x + d * (q.tip || 0), S = WQN.WQ.spearLen;
+    if (q.mode !== 'thrust') { const k = Math.min(1, 1 - Math.max(0, q.modeT) / WQN.WQ.thrustTell), [t, b] = WQN.spearBand(thrK, fl), xa = tip, xb = q.x + d * (WQN.WQ.thrustFrom + (WQN.WQ.thrustReach - WQN.WQ.thrustFrom) * k);
+      g.globalAlpha = 0.35 + 0.5 * k * (0.6 + 0.4 * Math.sin(time * 30)); g.fillStyle = '#ff6b6b'; const l = Math.round(Math.min(xa, xb) - cx), w = Math.round(Math.abs(xb - xa));
+      g.fillRect(l, Math.round(t - cy), w, 1); g.fillRect(l, Math.round(b - 1 - cy), w, 1); g.fillRect(Math.round(xb - cx), Math.round(t - cy), 1, Math.round(b - t));
+      for (const pp of players) if (upright(pp) && Math.abs(pp.x - q.x) < WQN.WQ.thrustReach + 20) { const px2 = Math.round(pp.x - cx), py2 = Math.round(pp.y - 32 - cy); g.fillRect(px2 - 2, py2, 5, 1); g.fillRect(px2 - 1, thrK === 'low' ? py2 - 1 : py2 + 1, 3, 1); g.fillRect(px2, thrK === 'low' ? py2 - 2 : py2 + 2, 1, 1); }
+      g.globalAlpha = 1; }
+    wqDrawSpear(g, Math.round(tip - d * S - cx), Math.round(sy), Math.round(tip - cx), Math.round(sy), q.mode !== 'thrust' && q.modeT < 0.25); }
   const telling = q.mode === 'lashLowTell' || q.mode === 'lashHighTell', kind = telling ? (q.mode === 'lashLowTell' ? 'low' : 'high') : q.lashKind;
   if (telling || q.mode === 'lash') { const [t, b] = WQN.lashBand(kind, fl);
     if (telling) { const k = 1 - Math.max(0, q.modeT) / WQN.WQ.lashTell; g.globalAlpha = 0.2 + 0.45 * k * (0.6 + 0.4 * Math.sin(time * 30)); g.fillStyle = '#ff6b6b';
@@ -18538,7 +18548,7 @@ function drawWickerOver(cx, cy) {
     else { const r = q.lashR || 0, RB = ['#b8382c', '#e8c23a', '#3a7ab8', '#8fd160', '#c9a0ff', '#f4ead0'];
       for (let i = 0; i < 6; i++) { g.fillStyle = RB[i]; const yy = Math.round(t + (b - t) * (i / 6) - cy + Math.sin(time * 40 + i) * 1);
         for (const d of [-1, 1]) { const lo = Math.max(x0, Math.min(mx, mx + d * r)), hi = Math.min(x1, Math.max(mx, mx + d * r)); if (hi > lo) g.fillRect(Math.round(lo - cx), yy, Math.round(hi - lo), 1); } } } }
-  if (q.mode === 'sickleTell') FAW.drawGlow(g, Math.round(q.x + (q.face || 1) * 2 - cx), Math.round(q.y - 70 - cy), time);
+  if (q.mode === 'stabTell') FAW.drawGlow(g, Math.round(q.x + (q.face || 1) * 2 - cx), Math.round(q.y - 70 - cy), time);
   if (L.dark) for (const m of enemies) if (m.alive && m.t === 'mummer' && m.mode === 'glow') FAW.drawGlow(g, Math.round(m.x - cx), Math.round(m.y - 24 - cy), time);
 }
 /* HOLES IN HER DARK: the light of each hero's look (as far as it reaches, on the side he faces), her tells, the maypole winding up, a crowned mummer's
