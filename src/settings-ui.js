@@ -26,7 +26,7 @@ export const TAB_ITEMS = {
   display: ['- PICTURE -', 'Full screen', 'Pixel scale', 'Camera', 'Brightness', 'Screen filter', 'Scanlines', 'Film grain', 'Vignette',
     '- LOOK -', 'UI colour', 'Font', 'Text colour', 'HUD', 'Foe health', 'Hit numbers', 'Timer', 'Tenths', 'FPS counter',
     '- WORLD -', 'Ground light', 'The air', 'Parallax', 'Arena tint', 'Weather', 'Ambient life', 'Look down',
-    '- EFFECTS -', 'Screen shake', 'Particles', 'Impact FX', 'Boss intro'],
+    '- EFFECTS -', 'Screen shake', 'Shake strength', 'Particles', 'Impact FX', 'Boss intro'],
   gameplay: ['- RULES -', 'Difficulty', 'Combat', 'Game speed', 'Hit stop', 'Iron Knight',
     '- HELPERS -', 'Jump assist', 'Way-on arrow', 'Text speed',
     '- SAVE -', 'Export save', 'Import save', 'Erase this save',
