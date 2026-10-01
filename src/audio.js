@@ -943,6 +943,9 @@ Object.assign(SFX, {
   foeMutter(t) { const r = GOB_V[t]; if (!r || !gate('mutter', 1.6)) return; const n = 3 + ((Math.random() * 3) | 0); for (let i = 0; i < n; i++) tone('square', vary(240 * r), vary(200 * r), 0.05, 0.025, i * 0.075); },
   foeGasp(t) { if (!gate('gasp', 0.5)) return; const r = GOB_V[t] || 1.2; file('gobHurt', 0.24, r * 1.4) || tone('sawtooth', 600 * r, 300 * r, 0.12, 0.06); },
   foeStep(heavy) { if (!gate(heavy ? 'fstepH' : 'fstep', heavy ? 0.12 : 0.09)) return; if (heavy) { tone('sine', 90, 45, 0.1, 0.12); noise(0.05, 0.08, 300, 0.7); } else noise(0.03, 0.045, vary(900), 0.8); },
+  /* THE BUTT-SLIDE (src/slide.js): a long scrape of cloth and boot over sand and scree, and the thump of heels meeting something */
+  slide() { if (!gate('slide', 0.25)) return; noise(0.32, 0.1, 1400, 0.7); noise(0.22, 0.06, 500, 0.5, 0.04); },
+  slideHit() { if (!gate('slideHit', 0.2)) return; tone('sine', 120, 50, 0.22, 0.2); noise(0.14, 0.2, 700, 0.6); },
   skid() { if (!gate('skid', 0.3)) return; noise(0.18, 0.09, 1800, 0.6); noise(0.1, 0.05, 700, 0.5, 0.05); },
 });
 // ---------- UI and skill voices ----------
