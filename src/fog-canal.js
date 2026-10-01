@@ -193,7 +193,7 @@ export function buildFogCanal({ painter, T, TS }) {
   boarder(168, 31); boarder(170, 31); boarder(172, 31);                      /* UPGRADE C: THE BOARDING GANG, waiting in the fog wall (a skiff brings them to her bow) */
   boards(176, 25, 6); archer(178, 24, 'the fog wall footbridge');                       /* a footbridge high over the fog wall */
   grindy(179, 33, 'the fog wall water');                                           /* under her second stop: it comes aboard while you are at the horn */
-  boards(181, 30, 5); horn(183, 29, ['F2'], 6);                              /* THE PIER and its horn, in the thick of it */
+  boards(175, 30, 11); horn(183, 29, ['F2'], 6);                             /* THE PIER and its horn, in the thick of it: a long jetty over the water she stalls under, wherever the bank horn's clear ran out */
   coins([159, 29], [173, 29], [182, 29]);
   ent('mend', 182, 29); post(185, 29); bargee(184, 29, 'the second horn');   /* the pier's bargee, by its horn: he hooks at her deck below */
 
@@ -244,7 +244,7 @@ export function buildFogCanal({ painter, T, TS }) {
   grindy(270, 26, 'the junction', { canal: { junction: true } });           /* (claude/canalfix, review fix 2) at THE JUNCTION: the one that boards her while she runs loose */
   const booms = [];   /* (claude/canalfix, review fix 3) BOOMS: a log chained across the race at her deck's height - JUMP it, where a beam asks for a DUCK */
   const boom = (c, path, surf) => booms.push({ x: px(c) + 8, y: surf * TS - 2, path, dmg: 14 });
-  boom(267, 'head', 26);
+  boom(252, 'head', 18);   /* on the first step's flat, in the tiller's window: a jump before the footbridge's duck */
   /* THE LOWER RIVER (the weir's side) under the cut's shelf: surface 44, straight into the basin */
   air(273, 325, 30, 43); block(273, 325, 49, H - 1);
   pools.push({ x0: px(273), x1: px(326), y: 44 * TS + 4, shallow: true, swim: false, clear: true, bottom: 49 * TS, canal: 'lower river' });
@@ -255,10 +255,10 @@ export function buildFogCanal({ painter, T, TS }) {
   /* (claude/canalfix) THE WEIR's own duck: the cut's lowest shelf (309-315) hangs one row over a rider standing on the rapids - told as a beam now, not
      only a stone face that scrapes him off */
   beams.push({ weir: true, x0: px(309), x1: px(316), y: 43 * TS, name: 'THE CUT SHELF' });
-  boom(286, 'cut', 26); boom(305, 'cut', 34); boom(292, 'fall', 44);
+  boom(286, 'cut', 26); boom(307, 'cut', 34); boom(292, 'fall', 44);
   boards(283, 20, 5); archer(285, 19, 'the high cut bridge');                       /* a footbridge over the cut */
   boards(303, 28, 5); archer(305, 27, 'the low cut bridge');
-  boards(292, 27, 4); bargee(293, 26, 'the mill cut');                       /* on a low plank over the cut: he hooks at her as she passes */
+  boards(288, 23, 4); bargee(289, 22, 'the mill cut');                       /* on a plank over the cut: he hooks at her as she passes (claude/canalfix: raised and moved off the step, where it caught a rider as her deck dropped away under him) */
   grindy(288, 44, 'the lower river'); grindy(306, 44, 'the lower river');   /* on the rapids, at her edges */
   block(299, 301, 42, 42); ent('silver', 300, 41);                          /* a ledge on the gorge wall, only from the lower river (a pocket) */
   const deckAt = s => s * TS - 2;
@@ -293,7 +293,7 @@ export function buildFogCanal({ painter, T, TS }) {
   const B4 = bridge(336, 341, 41, 'across', [342, 40]);
   boards(342, 41, 8); post(348, 40);                                         /* THE ISLAND */
   foe('gaffer', 347, 40, { squad: 'the island', elite: true, gate: 372, canal: { bargee: true } });   /* THE DECK FOREMAN: the basin's elite, and the lock door is shut until he is down */
-  lamplighter(345, 40, 'the island');                                        /* kill him first: he relights the island's post, and his lantern shows you to the theatre bridge */
+  lamplighter(349, 40, 'the island');                                        /* kill him first: he keeps the island's east post lit, and his lantern shows you to the theatre bridge (the bridge itself is dark: cross it unseen) */
   weedWater.push([349, 354, 'P5']); weed(349, 350, 44); weed(351, 352, 44, 'bright'); weed(353, 354, 44);
   wisp(353, 40, [354, 44], 'the weed');                                       /* over the weed: the lock's lamp, it seems */
   wisp(334, 40, [336, 45], 'the fog');                                        /* in the thick: over the water beside the bridge */
