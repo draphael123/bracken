@@ -34,5 +34,17 @@
   "lifts": 80,
   "walked": 100,
   "bare": true
+ },
+ "canal": {
+  "hash": "21f335666900",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 65,
+  "deaths": 6,
+  "kills": 27,
+  "lifts": 91,
+  "walked": 100,
+  "bare": true
  }
 }

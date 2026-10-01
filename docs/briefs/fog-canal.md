@@ -109,6 +109,29 @@ are fewer (3) as Daniel asked. It has no mini and no ambush room.
   arms, needle teeth, weed hair; the ripple ring is its tell. **The wisp**: a flame with no wick, a faint face in it close up.
 - **Jenny's foreshadowing**: the eyes in the fog should be green and low, at water level; the child's shoe a small red-brown buckle shoe.
 
+- **(claude/canalfix, for the art lane: review items 13 and 14)** The backdrop's far, mid and near layers are still `town` (Waymeet's and the
+  fair's): the canal wants its own parallax - warehouse backs, lock beams, the theatre's glow growing ahead. The fog banks draw as hard vertical
+  slabs (`drawCanalFog` in `src/canal-hands.js`): give them soft, drifting edges, a lip on the thick ones. New greybox pieces to dress: the
+  LAMPLIGHTER (a snuffer reskin: give him a lamplighter's coat and a real pole-lantern), the boarders' skiff, the booms (a chained log, its
+  !! lane mark), the arch's "too low" sill, the barge on the OFFSIDE of the Waymeet pound (drawn now as a shade darker with a wake line: art
+  could set her back a few pixels), the keeper's loft and the mill attic.
+
+## The fix lane (claude/canalfix, 2026-10-01): what changed after the review
+
+- **Grindylows come aboard** a HELD barge (and the junction one aboard her LOOSE on the weir): on the deck they creep, ring (!!: jump) and grab
+  for the nearest end; weak out of the water. A lock that drains strands one (measured against the water it settled in).
+- **THE WEIR RUN**: slow on the head race's steps (58 px/s) with the flood kept at her stern + 34 px (stand forward); a boom (jump) on the first
+  step and the footbridge (duck) on the second; the tiller answers only until col 268; an archer on the footbridge; booms and beams on both
+  branches; the flood's rubber band at 64.
+- **THE EXAM is two stops**: the horn on the west bank (6.5 s), the capstan on the island. **The garrison's capstan is on the far bank**, a
+  lantern at the bridge's near end, a LAMPLIGHTER (kill first) beside it. **The fog wall needs both horns** (bank 4 s, a long pier with the
+  second, 6 s), and a BOARDING GANG comes out of it to her deck when she is held at its edge. **The arch** tells you when she stalls at its
+  mouth, goes on through without you, and has a "too low" sill.
+- **A lock set against her** (the flight's first chamber starts full: drain it). **The tiller taught** on the Waymeet pound (her side: the
+  towpath's hooks or the offside's timbers). **Pockets**: the light-well (deeper), the mill attic, the keeper's loft (not yet a pocket by the
+  measure), plus the loading bay and the gorge ledge. **Checkpoints**: the mill's moved to the arch's end (149, 29) - see the lane report.
+- **Music**: Tsorthan Grove's "Lanterns in the Hollowed Forest" (CC0), Daniel's pick, replaced the synthesized placeholder.
+
 ## What is deliberately not here
 
 No NPCs (the barge has no bargeman), no mummers, no slopes (so the slope guard in main.js is not widened), no new tiles.
