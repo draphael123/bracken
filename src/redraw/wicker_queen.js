@@ -92,7 +92,7 @@ function drawQueen(g, f) {
   const arm = (s, e, fingers = true) => { line(g, s[0], s[1], e[0], e[1], burn ? C.charM : C.dark, 2); line(g, s[0], s[1] - 1, e[0], e[1] - 1, burn ? C.char : C.light);
     if (fingers) for (const [dx, dy] of [[2, -2], [3, 0], [2, 2]]) line(g, e[0], e[1], e[0] + Math.sign(e[0] - s[0] || 1) * dx, e[1] + dy, burn ? C.charD : C.dark); };
   const fist = e => { px(g, e[0], e[1] - 1, C.dark); px(g, e[0] + 1, e[1] - 1, C.dark); px(g, e[0], e[1] + 1, C.dark); px(g, e[0] + 1, e[1] + 1, C.dark); };
-  const hiY = FL - Math.round((WQ.spearHighTop + WQ.spearHighBot) / 2), loY = FL - Math.round(WQ.spearLowTop / 2);   // the thrusts' heights, in the frame
+  const hiY = FL - WQ.spearHighY, loY = FL - WQ.spearLowY;   // the thrusts' heights, in the frame
   let aL, aR, sp = null;   /* sp: the spear held [butt x, y, point x, y, glint] */
   if (still) { aL = [CX - 13, top + 20]; aR = [CX + 14, top + 14]; sp = [CX + 15, FL, CX + 15, FL - WQ.spearLen]; }
   else if (creep) { aL = [CX + 8 + lean, top + 16 - bob]; aR = [CX + 18 + lean, top + 12 + bob]; sp = held(aR[0], aR[1], 10, -4, 30); }

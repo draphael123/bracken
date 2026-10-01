@@ -56,6 +56,7 @@ export const WQ = {
   spearLen: 76,                       // the spear, butt to point: an ash shaft, wheat bound under a leaf blade (src/redraw/wicker_queen.js draws it)
   spearHighTop: 46, spearHighBot: 10, // the HIGH thrust flies 10-46 px up: a standing hero and a rider on any horse, never a ducked one
   spearLowTop: 10,                    // the LOW thrust skims the boards to 10 px up: a hero in a jump or on a horse is over it
+  spearHighY: 14, spearLowY: 5,       // where the shaft is DRAWN: the high one at a standing hero's head (a ducked one, 8, is plainly under it), the low one at his ankles
   rest: 1.4,                          // a breath between one of her blows and the next (and a way for her to walk to you between them)
   crownEvery: [13, 10, 9], crownFirst: 7, crownTell: 1.2, crownCap: 2,
   emberHalf: 40,                      // the embers: this far each side of the firebox's middle
@@ -91,8 +92,8 @@ export const lashCatches = (kind, floor, box) => { const [t, b] = lashBand(kind,
 /* HER SPEAR's band for a thrust, in world y, and whether it catches a hurt box */
 export const spearBand = (kind, floor) => (kind === 'low' ? [floor - WQ.spearLowTop, floor] : [floor - WQ.spearHighTop, floor - WQ.spearHighBot]);
 export const spearCatches = (kind, floor, box) => { const [t, b] = spearBand(kind, floor); return box.b > t && box.t < b; };
-/* the height the shaft is drawn at (the middle of its band) */
-export const spearY = (kind, floor) => { const [t, b] = spearBand(kind, floor); return Math.round((t + b) / 2); };
+/* the height the shaft is drawn at (inside its band, where it reads against the hero: src/redraw/wicker_queen.js puts her hands there) */
+export const spearY = (kind, floor) => floor - (kind === 'low' ? WQ.spearLowY : WQ.spearHighY);
 /* THE FLOOR BURNS whom? a hero whose feet are on the boards (not in the air, not on a horse) */
 export const floorCatches = (floor, feetY, onHorse) => !onHorse && Math.abs(feetY - floor) < 3;
 /* where the blade is, px in front of her middle along e.thrustDir, through a thrust: drawn back in the tell, out to its reach in the lunge, held, drawn back */
