@@ -66,7 +66,8 @@ Every level lane reads it before it builds, and works down `docs/NEW-LEVEL-CHECK
 
 ## 6. Sound
 - **Every level and boss has its own track**; minis share a mini theme unless they deserve their own. Downloads need Daniel's
-  yes per file (CC0 only). The level's track can carry into its boss (the Unburied Field's Night on Bald Mountain).
+  yes per file: CC0, or CC-BY WITH its credit (Daniel, 2026-10-01: the line in audio/CREDITS.txt and the Sound Test's MUSIC_CREDITS). A found track is still a level's OWN
+  only if no other level plays it and it is not a stock stand-in (tools/level-quality.mjs SHARED_MUSIC / STOCK_MUSIC). The level's track can carry into its boss (the Unburied Field's Night on Bald Mountain).
 
 ## 7. How to work with Daniel
 - **Ask design questions with a recommendation;** never decide them. Bundle them; keep them short.

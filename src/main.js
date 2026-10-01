@@ -62,6 +62,7 @@ import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen, drawSpear as wqDrawSpear } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
 import * as FAF from './fair-foes.js'; import * as FK from './fair-keys.js'; import * as FKD from './redraw/fair_keys.js';   /* (claude/fairfix2) the fair's keys: ticket gates, bull's-eyes on rides, the mirror door, its sharper foes; and their drawing */   /* (fair-foes.js: THE HARVEST FAIR's string-jack and barker, claude/fairfix) */
+import * as FRS from './fair-rides.js'; import * as WQD from './redraw/wicker_fx.js';   /* (claude/fairfix3) the Wicker Queen's new fires, balls, sweep and leap marks */   /* (claude/fairfix3) THE SWINGBOATS and THE CHAIR-O-PLANE: the chairs' clock (src/redraw/fair_newrides.js draws them, from fair_rides.js) */
 import * as FGM from './fair-games.js'; import * as FR from './redraw/fair_rides.js'; import * as FB from './redraw/fair_backdrop.js';   /* THE HARVEST FAIR's vertical rebuild (claude/fairlevel): the games and the sight (pure), and the rides' art */
 import * as WC from './wicker-carousel.js'; import * as CRG from './redraw/carousel_ring.js';   /* THE WICKER QUEEN'S CAROUSEL (claude/fairboss): the ride, pure, and its look */
 import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.js';   /* THE MASKWRIGHT'S THEATRE's machinery in the game (claude/theatre): lamps, fly lines, flats, traps and the show */
@@ -149,7 +150,7 @@ import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
 import { WEIGHTY, weighty, setWeighty, combatFrom, weightyHere, recoveryFor, poiseRule, guardCount } from './weighty.js';   /* COMBAT: CLASSIC / WEIGHTY (claude/ssproto): one switch, off by default */
 import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, WQ_TEMPO, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
@@ -2141,7 +2142,7 @@ function spawnEnt(e) {
       case 'cutthroat': { const st = DF.newCutthroat(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'cutthroat', w: DF.CUTTHROAT.w, h: DF.CUTTHROAT.h, hp: EHP.cutthroat, mode: st.mode, st }); break; }
       case 'slinger': { const st = DF.newSlinger(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'slinger', w: DF.SLINGER.w, h: DF.SLINGER.h, hp: EHP.slinger, mode: st.mode, st }); break; }
       case 'stagehand': { const st = THF.newStagehand(px, py, e.face || -1); enemies.push({ ...base, t: 'stagehand', w: THF.STAGEHAND.w, h: THF.STAGEHAND.h, markH: 32, hp: EHP.stagehand, mode: st.mode, st }); break; }   /* THE STAGEHAND (the Maskwright's Theatre, src/theatre-foes.js) */
-      case 'mummer': { const st = MU.newMummer(px, py, e.face || -1); enemies.push({ ...base, t: 'mummer', w: MU.MUMMER.w, h: MU.MUMMER.h, markH: 34, hp: EHP.mummer, mode: st.mode, st, speed: 0, scare: !!e.scare }); break; }   /* scare: THE CORN MAZE's mummer in a scarecrow's coat: drawn as straw until it first moves */   /* THE HARVEST FAIR's players (src/mummer.js): they move only while nobody faces them */
+      case 'mummer': { const st = MU.newMummer(px, py, e.face || -1); enemies.push({ ...base, t: 'mummer', w: MU.MUMMER.w, h: MU.MUMMER.h, markH: 34, hp: EHP.mummer, mode: st.mode, st, speed: 0, scare: !!e.scare, rideIdx: e.ride, rideFair: e.rideFair }); break; }   /* (ride/rideFair, claude/fairfix3: a mummer riding a chair of THE CHAIR-O-PLANE) */   /* scare: THE CORN MAZE's mummer in a scarecrow's coat: drawn as straw until it first moves */   /* THE HARVEST FAIR's players (src/mummer.js): they move only while nobody faces them */
       case 'puppeteer': { const a = PUPH.spawnBoss(base); if (a) { boss = a; enemies.push(a); } break; }   /* THE PUPPETEER (src/puppeteer.js): up on the fly gallery; his show is made here, and his puppets join it */
       case 'marionette': case 'harlequin': case 'acrobat': case 'masterpiece': { const a = PUPH.spawnPuppet(e.t, base); if (a) enemies.push(a); break; }
       case 'wickerqueen': { const a = WQN.newWickerQueen({ ...base, t: 'wickerqueen', w: WQN.WQ.w, h: WQN.WQ.h, hp: EHP.wickerqueen, maxHp: EHP.wickerqueen, noGrav: true, markH: 90, face: e.face || -1 }); boss = a; enemies.push(a); break; }   /* THE WICKER QUEEN (src/wicker-queen.js): asleep on the green until you come through its door; every clock a number (A3) */
@@ -4299,8 +4300,10 @@ const BEASTS = [
   { t: 'mummer', name: 'THE MUMMER', sub: 'do not turn your back', desc: 'A masked player in sackcloth with bells on his cap. He moves ONLY while nobody is looking at him: face him and he freezes where he stands, and a frozen mummer can be cut down in about three blows. Turn away and the bells jingle as he creeps up behind you. When his mask glows red he is at arm\'s length and about to strike: look at him. In two-player, he is frozen if EITHER hero faces him.' },
   { t: 'hobbyhorse', name: 'THE HOBBY-HORSE', sub: 'it charges the moment you turn away', desc: 'A carved horse\'s head on a pole and a cloth skirt, and a player under it. The moment your back is turned it rears (a red eye, a bell) and CHARGES a long run in a straight line, and it will not stop for a look once it has begun. It stands where the charge ends and will not charge again until you have looked at it. Jump the charge, or climb a haystack out of its way. In two-player it charges only when BOTH heroes have their backs turned.' },
   { t: 'stringjack', name: 'THE STRING-JACK', sub: 'it moves only while you look at it', desc: 'A jointed wooden puppet on strings that run up into the dark. The rule the other way round: it moves ONLY while somebody is looking at it, and hangs limp the moment every back is turned. Looking at a mummer to hold it is looking at the marionette to bring it on. When it jerks (a yellow !) it is about to cut: take it on the shield, duck under it, or turn your back and the strings go slack. In the hall of mirrors the true glass looks behind you, and works its strings.' },
+  { t: 'juggler', name: 'THE KNIFE JUGGLER', sub: 'he throws at your back', desc: 'A fairground juggler on a stall roof, three knives always in the air. He keeps the fair\'s rule: while you look at him he only juggles. Turn your back and he draws one down (a yellow !) and throws it flat and fast at where you are going. He stands where you cannot face him and the mummer he covers at once: climb to him, or keep moving.' },
+  { t: 'shy', name: 'THE STALLHOLDER', sub: 'three throws a penny', desc: 'The coconut shy\'s man, up on his stall roof with a basket of coconuts. Looked at, he only tosses one from hand to hand. Turn your back and he lobs it where you are running to (its ring shows where it lands); a hard shy-ball (red !!) goes through a shield. Any blow puts him on his back.' },
   { t: 'barker', name: 'THE BARKER', sub: 'roll up, roll up', desc: 'The fair\'s caller, on his crate with a speaking trumpet. Every few seconds he raises the trumpet (you hear it drawn and see the rings go out) and CALLS: every hero in earshot is turned to face him and held that way a moment - off the mummers you were watching. Hit him while the trumpet is up and the call dies in his throat. Come too close and he swings his cane (a yellow !). Kill him first. In two-player his call turns you both.' },
-  { t: 'wickerqueen', name: 'THE WICKER QUEEN', sub: 'the maypole green at nightfall', desc: 'She moves only while you look away, but her arms do not need your back: her ribbons and her long spear come even while you look. Duck the high lash and the high thrust, jump the low ones; when the boards burn, ride a horse. Turn your back to draw her across the green, then turn round while she stands on the embers: the wicker catches. Cut her while she burns. In two-player either look holds her.' },
+  { t: 'wickerqueen', name: 'THE WICKER QUEEN', sub: 'the maypole green at nightfall', desc: 'She moves only while you look away, but her arms do not need your back: her ribbons and her long spear come even while you look. Duck the high lash and the high thrust, jump the low ones; when the boards burn, ride a horse. Jump her burning wicker ball, and the ribbons when they sweep the ring. With every back turned she leaps - to your back, the pole or a horse - and the landing is marked. Turn your back to draw her across the green, then turn round while she stands on any hot embers: the wicker catches. Cut her while she burns. In two-player either look holds her.' },
   { t: 'puppeteer', name: 'THE PUPPETEER', sub: "the main stage of the Maskwright's Theatre", desc: 'He hangs from his control bar over the stage and works a duo: THE HARLEQUIN, fast and weak, and THE BRUTE, slow and heavy. Hit them, or cut their strings - a cut limb goes limp and its attack is gone. Every puppet you drop lowers his bar; drop both and he is dragged down to the boards, open. From the gallery his own line can be struck, the hard way.' },
   { t: 'marionette', name: 'THE BRUTE', sub: 'a toy soldier half again your height', desc: 'Slow and heavy: a told chop no shield holds, a ground slam you jump, a grab you step out of - two or three of them and you are in trouble. After every swing he stands spent: hit him, or cut a string. The ARM string takes his chop and grab, the BACK string his slam.' },
   { t: 'acrobat', name: 'THE ACROBAT', sub: 'a tumbler on two strings', desc: 'He hoists it over you and lets it fall: its shadow on the boards is where. Re-strung, it learns to swing across the stage at head height - duck it.' },
@@ -4449,7 +4452,7 @@ const MENU_ROWS = 10;
 let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0, bestPage = 0, bestPages = 1;
 const BOSS_T = ['bellcrab', 'archmage', 'strawking', 'kraken', 'closedhelm', 'drownedking', 'prince', 'queen', 'frog', 'chief', 'mother', 'greathound', 'king', 'ram', 'owl', 'forgemaster', 'golem', 'windcaller', 'lance', 'roc', 'gqueen', 'herald', 'reefmaw', 'quarter', 'master', 'masthead', 'wickerqueen', 'puppeteer'];
 const beastList = () => BEASTS.filter(b => bestTab === 1 ? BOSS_T.includes(b.t) : !BOSS_T.includes(b.t));
-const BEAST_SHORT = { sexton:'THE SEXTON', duneworm:'THE DUNE WORM', bannerbearer:'BANNER-BEARER', corpse:'THE FALLEN', barrowrider:'BARROW RIDER', deathknight:'THE REAPER', bloodknight:'DEATH KNIGHT', winchmaster:'THE WINCHMASTER', abbot:'THE FALSE ABBOT', wickerqueen:'THE WICKER QUEEN', puppeteer:'THE PUPPETEER', marionette:'THE BRUTE', harlequin:'THE HARLEQUIN', acrobat:'THE ACROBAT', masterpiece:'THE MASTERPIECE', hedgewarden:'HEDGE WARDEN', gargoyle:'GATE GARGOYLE', whelp:'WHELP', gravewarden:'GRAVEYARD KEEPER', burngob:'BURNING GOB', emberwisp:'EMBER WISP', pyromancer:'THE PYROMANCER', bonegob:'BONE GOBLIN', undeadmage:'UNDEAD ARCHMAGE', burieddead:'THE BURIED DEAD',zombie:'ZOMBIE', husk:'GRAVE HUSK', apprentice:'DEAD APPRENTICE', harbormaster: 'HARBOR WARDEN', familiar:'THE FAMILIAR', lanternshade:'LANTERN SHADE',bonecorsair:'BONE CORSAIR',tidemarauder:'TIDE MARAUDER', bellcrab: 'THE DIVING BELL', bellguard: 'BELLGUARD', homunculus: 'HOMUNCULUS', archmage: 'THE ARCHMAGE', armour: 'ARMOUR', topiary: 'TOPIARY', broom: 'BROOM', tome: 'THE TOME', mimic: 'MIMIC', turret: 'TURRET', piece: 'PIECE', ploughman: 'THE PLOUGHMAN', kraken: 'THE KRAKEN', swornsword: 'SWORN SWORD', hedgeknight: 'HEDGE KNIGHT', runner: 'THE RUNNER', crossbow: 'CROSSBOWMAN', closedhelm: 'THE PALADIN', lancer: 'SERJEANT', drunk: 'THE DRUNK', prise: 'THE PRISE', holdfast: 'THE HOLDFAST', drownedking: 'THE DROWNED KING', propman: 'THE PROPMAN', clinger: 'THE CLINGER', tippler: 'THE TIPPLER', sheargob: 'THE SHEARGOB', gaffer: 'THE GAFFER', prince: 'BURIED PRINCE', courtier: 'COURTIER', turtle: 'SNAPTURTLE', shield: 'SHIELDGOB', archer: 'GOBLIN BOW', thorn: 'THORNCASTER', javelin: 'JAVELINEER', hearthgob: 'HEARTH GOB', temperer: 'THE TEMPERER', tideguard: 'TIDEGUARD', drownedknight: 'DROWNED KNIGHT', drownedcaptain: 'DROWNED CAPTAIN', lampreeve: 'THE REEVE', tollmaster: 'TOLLMASTER', quarter: 'QUARTERMASTER', masthead: 'THE MASTHEAD', windcaller: 'WINDCALLER', suncatcher: 'RIMEWRIGHT', greathound: 'GREAT HOUND', master: 'HOUND MASTER', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
+const BEAST_SHORT = { juggler: 'KNIFE JUGGLER', shy: 'STALLHOLDER', sexton:'THE SEXTON', duneworm:'THE DUNE WORM', bannerbearer:'BANNER-BEARER', corpse:'THE FALLEN', barrowrider:'BARROW RIDER', deathknight:'THE REAPER', bloodknight:'DEATH KNIGHT', winchmaster:'THE WINCHMASTER', abbot:'THE FALSE ABBOT', wickerqueen:'THE WICKER QUEEN', puppeteer:'THE PUPPETEER', marionette:'THE BRUTE', harlequin:'THE HARLEQUIN', acrobat:'THE ACROBAT', masterpiece:'THE MASTERPIECE', hedgewarden:'HEDGE WARDEN', gargoyle:'GATE GARGOYLE', whelp:'WHELP', gravewarden:'GRAVEYARD KEEPER', burngob:'BURNING GOB', emberwisp:'EMBER WISP', pyromancer:'THE PYROMANCER', bonegob:'BONE GOBLIN', undeadmage:'UNDEAD ARCHMAGE', burieddead:'THE BURIED DEAD',zombie:'ZOMBIE', husk:'GRAVE HUSK', apprentice:'DEAD APPRENTICE', harbormaster: 'HARBOR WARDEN', familiar:'THE FAMILIAR', lanternshade:'LANTERN SHADE',bonecorsair:'BONE CORSAIR',tidemarauder:'TIDE MARAUDER', bellcrab: 'THE DIVING BELL', bellguard: 'BELLGUARD', homunculus: 'HOMUNCULUS', archmage: 'THE ARCHMAGE', armour: 'ARMOUR', topiary: 'TOPIARY', broom: 'BROOM', tome: 'THE TOME', mimic: 'MIMIC', turret: 'TURRET', piece: 'PIECE', ploughman: 'THE PLOUGHMAN', kraken: 'THE KRAKEN', swornsword: 'SWORN SWORD', hedgeknight: 'HEDGE KNIGHT', runner: 'THE RUNNER', crossbow: 'CROSSBOWMAN', closedhelm: 'THE PALADIN', lancer: 'SERJEANT', drunk: 'THE DRUNK', prise: 'THE PRISE', holdfast: 'THE HOLDFAST', drownedking: 'THE DROWNED KING', propman: 'THE PROPMAN', clinger: 'THE CLINGER', tippler: 'THE TIPPLER', sheargob: 'THE SHEARGOB', gaffer: 'THE GAFFER', prince: 'BURIED PRINCE', courtier: 'COURTIER', turtle: 'SNAPTURTLE', shield: 'SHIELDGOB', archer: 'GOBLIN BOW', thorn: 'THORNCASTER', javelin: 'JAVELINEER', hearthgob: 'HEARTH GOB', temperer: 'THE TEMPERER', tideguard: 'TIDEGUARD', drownedknight: 'DROWNED KNIGHT', drownedcaptain: 'DROWNED CAPTAIN', lampreeve: 'THE REEVE', tollmaster: 'TOLLMASTER', quarter: 'QUARTERMASTER', masthead: 'THE MASTHEAD', windcaller: 'WINDCALLER', suncatcher: 'RIMEWRIGHT', greathound: 'GREAT HOUND', master: 'HOUND MASTER', owl: 'OWL REEVE', forgemaster: 'FORGEMASTER', king: 'KING GORM', chief: 'CHIEFTAIN', mother: 'MOTHER CAP', ram: 'RAM LORD' };
 function openMenu(from) { if (from === 'play') fogSave(); menuFrom = from; menuKind = from === 'play' ? 'pause' : 'settings'; menuI = menuKind === 'pause' ? 0 : 1; state = 'menu'; SFX.menuOpen(); }
 function menuAdjust(dir) {
   const k = menuItems()[menuI];
@@ -5361,7 +5364,8 @@ function returnToShrine() {
    falls back to the creature's name alone, and with no creature in reach to A TRAP. */
 const NOT_A_BLOW = new Set(['walk', 'rest', 'guard', 'idle', 'sleep', 'wake', 'stalk', 'swim', 'fly', 'hover', 'flee', 'hide', 'stunned', 'mired', 'reel', 'downed', 'rise', 'dead', 'ride', 'dying', 'held', 'wait', 'watch', 'patrol', 'circle', 'perch', 'land', 'sit', 'stand', 'turn', 'back', 'retreat', 'approach', 'chase', 'run', 'jump', 'fall', 'hop', 'climb', 'float', 'drift', 'sink', 'open', 'closed', 'tell', 'wind', 'raise', 'aim', 'draw', 'crouch', 'seek', 'go', 'toRack', 'swap', 'winded', 'dazed', 'stuck', 'tangled', 'fouled', 'beach', 'lurk', 'buried', 'vanish', 'appear', 'blink', 'listen', 'shadow', 'gone', 'thaw', 'crack', 'stagger', 'counter', 'drink', 'still', 'hopAway', 'up', 'down', 'off', 'on', 'none']);
 function blowWord(e) { const m = e && e.mode; if (typeof m !== 'string' || !m) return null; const w = m.replace(/Tell$/, '').replace(/[0-9]+$/, ''); if (w.length < 3 || NOT_A_BLOW.has(w)) return null; return 'THE ' + w.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase(); }
-function beastName(e) { if (!e) return null; if (BEAST_SHORT[e.t]) return BEAST_SHORT[e.t]; const row = BEASTS.find(q => q.t === e.t); return row ? row.name : String(e.t || 'beast').toUpperCase(); }
+function beastName(e) { if (!e) return null; if (e.juggler) return BEAST_SHORT.juggler; if (e.shy) return BEAST_SHORT.shy;   /* (claude/fairfix3) the fair's reskins wear their own names, not GOBLIN BOW and THE DRUNK */
+  if (BEAST_SHORT[e.t]) return BEAST_SHORT[e.t]; const row = BEASTS.find(q => q.t === e.t); return row ? row.name : String(e.t || 'beast').toUpperCase(); }
 function killerOf(fromX, o = {}) {
   if (o.name) return { name: o.name, red: false, rule: '' };   /* a hazard names itself, and has no mark */
   let e = o.who && o.who.alive ? o.who : nearFoe(fromX);
@@ -5954,6 +5958,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
   if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing */
+  if(e.behind)return;   /* (claude/fairfix3) a mummer riding a chair-o-plane's chair round the back of the mast */
   if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake'||e.mode==='realmTell')return;
    if(realmWarded(e)&&!(e.open>0)){realmWardHit(e);SFX.clank();SFX.crack();shakeCam(2);ringAt(e.x,e.y-22,26,REALM.col[e.realm.kind][1],0.3);sparks(e.x,e.y-24,P.face,8);return;}}   /* WARDED (claude/archfix): a clang, a flare of his ward, the word over him (drawn by drawRealmFx: number() drops any sentence not a move word, so the old line here was never on the screen) and the banner naming the opening again */   /* IN A REALM his ward holds until its one opening (src/mage-realms.js) */   /* between two places, he is in neither */
   if(e.t==='burieddead'&&(e.mode==='burrow'||e.mode==='eruptTell'))return;
@@ -7655,7 +7660,7 @@ function updatePlayer(dt) {
     && !P.block && !P.aegis && !P.warding && !(P.hurt > 0) && !P.fly && (P.onMover || Math.abs(P.vx) < 40)); P.crouch = P.ducking ? 1 : 0; if (isPyro() && EMBER) EMBER.settle();   /* (her ward turns with her: left and right face her about, and she stays down) */
   if (CRB) CRB.update(dt);   /* THE CROUCH TWISTS (src/crouch-b.js): the paladin's prayer, the geomancer's earth sense, the death knight's harvest - each only while P.ducking */
   if (CA) CA.update(dt);   /* THE CROUCH TWISTS (src/crouch-a.js): the warden's set spear watches its point, the freebooter reloads twice as fast */
-  if (P.onMover) { const m = P.onMover; if (P.x + 4 > m.x && P.x - 4 < m.x + m.w && Math.abs(P.y - m.y) < 3) { P.x += m.dx; P.y += m.dy || 0; } else P.onMover = null; }
+  if (P.onMover) { const m = P.onMover; if (P.x + 4 > m.x && P.x - 4 < m.x + m.w && Math.abs(P.y - m.y + (m.fair ? m.dy || 0 : 0)) < 3) {   /* (claude/fairfix3: a fair ride is matched where it stood before this frame's move - a swingboat drops 4 px a frame, past the 3 px of slack) */ P.x += m.dx; P.y += m.dy || 0; } else P.onMover = null; }
 
   /* (THE DASH - tap a way twice: distance, no grace, once in the air - was a move of its own until 2026-09-24. It is THE DODGE now,
      below: one move, asked for by the double tap or by the button.) */
@@ -14503,11 +14508,12 @@ function updateWight(e, dt) { // bog-mist with hands: slow, cold, and it holds y
 function updateTowerSlides(dt){
   P.zipRelease=Math.max(0,(P.zipRelease||0)-dt);
   if(P.dead||P.hurt>0||!L.zipLines||!L.zipLines.includes(P.zip))P.zip=null;
-  if(!P.zip&&keys.up&&!P.zipRelease&&!P.dead)P.zip=(L.zipLines||[]).find(z=>Math.hypot(P.x-z.x0,P.y-z.y0-12)<22)||null;
+  if(!P.zip&&keys.up&&!P.zipRelease&&!P.dead){P.zip=(L.zipLines||[]).find(z=>Math.hypot(P.x-z.x0,P.y-z.y0-12)<22)||null;P.zipT=0;if(P.zip&&P.zip.snap){SFX.ratchet();callout('THE ROPE FRAYS: JUMP OFF BEFORE IT GOES');}}   /* (claude/fairfix3) a FRAYED line says so as you take it */
   const z=P.zip;if(!z)return;
+  if(z.snap){P.zipT=(P.zipT||0)+dt;if(P.zipT>=z.snap){P.zip=null;P.zipRelease=.6;P.vy=0;P.vx=60;SFX.crack();burst(P.x,P.y-16,8,['#b8382c','#e8c23a','#5a4630'],60,0.5);callout('THE ROPE SNAPS');return;}}   /* THE BUNTING ROPE SNAPS over the pit, `snap` s after you take it (claude/fairfix3, review #12: no slide carries you across) */
   if(jumpPress){P.zip=null;P.zipRelease=.6;P.jbuf=0;P.vy=-240;P.ground=false;P.climb=false;SFX.pJump();return;}
   const k=Math.max(0,Math.min(1,(P.x-z.x0)/(z.x1-z.x0))),ty=z.y0+(z.y1-z.y0)*k+12;
-  P.climb=false;P.cling=true;P.ground=false;P.coyote=0;P.vx=210;P.vy=(z.y1-z.y0)/(z.x1-z.x0)*210+(ty-P.y)*10;
+  const zs=z.speed||210;P.climb=false;P.cling=true;P.ground=false;P.coyote=0;P.vx=zs;P.vy=(z.y1-z.y0)/(z.x1-z.x0)*zs+(ty-P.y)*10;
   if(P.x>=z.x1-5){P.zip=null;P.zipRelease=.6;P.vy=0;P.vx=100;}
 }
 function towerLever(pr){
@@ -15465,11 +15471,11 @@ function updateDrunk(e, dt) {
   const near = !P.dead && ad < 210 && dy > -48 && dy < 160 && (!e.footlights || (THEATRE && THH.litAt(THEATRE, THX, P.x, P.y)));   /* THE AUDIENCE (the Maskwright's Theatre, e.footlights): he sees you only in the light */
   let want = 0;
   switch (e.mode) {
-    case 'lobTell': want = 0; e.face = Math.sign(e.aimX - e.x) || e.face;
+    case 'lobTell': want = 0; e.face = Math.sign(e.aimX - e.x) || e.face; if (e.shy && fairWatched(e)) { e.mode = 'idle'; e.modeT = 0.3; e.cd = Math.max(e.cd, FK.JUGGLER.rethrow); break; }   /* (claude/fairfix3) THE STALLHOLDER keeps the rule: looked at, the coconut goes back in the basket */
       if (Math.random() < dt * 3) SFX.hic();
       if (e.modeT <= 0) { e.mode = 'lob'; e.modeT = 0.35; if (e.shy) FK.shyLead(e, P, surfaceUnder); drunkThrow(e, null); }   /* (the coconut shy's stallholder leads you: src/fair-keys.js shyLead) */
       break;
-    case 'bottleTell': want = 0; e.face = Math.sign(e.aimX - e.x) || e.face;
+    case 'bottleTell': want = 0; e.face = Math.sign(e.aimX - e.x) || e.face; if (e.shy && fairWatched(e)) { e.mode = 'idle'; e.modeT = 0.3; e.cd = Math.max(e.cd, FK.JUGGLER.rethrow); break; }
       if (e.modeT <= 0) { e.mode = 'lob'; e.modeT = 0.4; if (e.shy) FK.shyLead(e, P, surfaceUnder); drunkThrow(e, { unblockable: true }); }
       break;
     case 'lob': want = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.3; } break;
@@ -15479,7 +15485,7 @@ function updateDrunk(e, dt) {
       /* NOT ALL AT ONCE: two throws coming (told or in the air) is a crowd, a third waits its turn (one windup at a time, near enough) */
       const coming = near && e.cd <= 0 ? enemies.filter(q => q.t === 'drunk' && q.alive && (q.mode === 'lobTell' || q.mode === 'bottleTell')).length + seeds.filter(s => s.drunkLob && !s.dead).length : 9;
       const aimY = near ? surfaceUnder(P.x, P.y - 8) : 0;
-      if (near && e.cd <= 0 && ad > 18 && e.ground && e.modeT <= 0 && coming < 2 && drunkArcClear(e, P.x, aimY)) {
+      if (near && e.cd <= 0 && ad > 18 && e.ground && e.modeT <= 0 && coming < 2 && drunkArcClear(e, P.x, aimY) && !(e.shy && fairWatched(e))) {
         e.aimX = P.x; e.aimY = aimY; e.cd = e.shy ? FK.SHY.every + Math.random() * 0.5 : 2.4 + Math.random() * 1.2;
         if (e.bottleT <= 0 && Math.random() < 0.4) { e.bottleT = 6 + Math.random() * 3; e.mode = 'bottleTell'; e.modeT = 0.95; number(e.x, e.y - e.h - 14, '!!', '#ff6b6b'); SFX.charge(); }
         else { e.mode = 'lobTell'; e.modeT = 0.75; number(e.x, e.y - e.h - 14, '!', '#ffd36b'); SFX.hic(); }
@@ -18319,12 +18325,17 @@ function fairStep(e, dir) {
   if (t === T.AIR || t === T.SPIKE) return false;
   return !isSolid(tx, Math.floor((e.y - 6) / TS));
 }
+/* (claude/fairfix3) IS THIS THROWER WATCHED? The fair's knife jugglers and its coconut shy's stallholder throw only at a TURNED BACK: any hero looking at him (the night's short look,
+   the glass, the walls - the mummers' own look) and he only juggles. Seeing him close fills in his bestiary card under his own name */
+function fairWatched(e) { if (!FAIR) return false; if (Math.abs(e.x - P.x) < 200) beastSeen(e.juggler ? 'juggler' : e.shy ? 'shy' : e.t); const dk = FGM.sightFor(L, FAIR.lamps, e); return MU.facedBy(e, fairLooks(e), dk ? dk.sight : FK.WATCH.sight, dk ? dk.sightY : FK.WATCH.sightY); }
 /* EVERY HERO'S LOOK at this foe: where he stands, which way he faces, the ribbon's reach, the glass behind him, the wall between (src/fair-games.js) */
 const fairLooks = e => players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p), reach: p.relic === 'maypole' ? MU.RIBBON_REACH : 1, mirror: FGM.mirrorSees(L, p) || FK.glassSees(p, e), blind: FGM.blocked(L, (tx, ty) => isSolid(tx, ty), e, p), p }));
 function updateMummer(e, dt) {
   if (e.rideIdx !== undefined) {   /* A HORSE ON A GONDOLA (THE BIG WHEEL's wide car): it goes where the car goes, even out of sight, and its run is the car's length */
-    if (!e.ride) { e.ride = movers.find(q => q.fair === 'gondola' && q.idx === e.rideIdx); if (e.ride) e.rx = e.ride.w * 0.75; }
-    if (e.ride) { e.x = e.ride.x + e.rx; e.y = e.ride.y; e.vy = 0; if (e.st) { e.st.x = e.x; e.st.y = e.y; } } }
+    if (!e.ride) { e.ride = movers.find(q => q.fair === (e.rideFair || 'gondola') && q.idx === e.rideIdx); if (e.ride) e.rx = e.ride.w * (e.rideFair ? 0.5 : 0.75); }
+    if (e.ride) { e.x = e.ride.x + e.rx; e.y = e.ride.y; e.vy = 0; if (e.st) { e.st.x = e.x; e.st.y = e.y; } }
+    e.behind = !!(e.ride && e.rideFair === 'chairo' && e.ride.broken);   /* (claude/fairfix3) round the back of the chair-o-plane's mast: out of reach, and it neither moves nor strikes (src/redraw/fair_newrides.js draws it there) */
+    if (e.behind) { e.mode = e.st ? e.st.mode : e.mode; return; } }
   if (Math.abs(e.x - P.x) > 420) return;   /* the game's own rule: nothing past the screen acts */
   const s = e.st, horse = e.t === 'hobbyhorse'; if (!s) return;
   if (Math.abs(e.x - P.x) < 190) beastSeen(e.t);
@@ -18402,7 +18413,7 @@ function updateBarker(e, dt) {
 function updateFair(dt) {
   for (const pp of players) if (pp.faceLock > 0) pp.faceLock = Math.max(0, pp.faceLock - dt);
   if (FAIR) for (const lp of FAIR.lamps) if (lp.life > 0 && lp.life < 1) { const was = lp.lit; lp.b = FAW.lampBright(lp, time); lp.lit = lp.b > 0.3; if (lp.lit !== was && Math.abs(lp.x * TS - P.x) < 240 && SET.ambient && Math.random() < 0.35) SFX.lampGutter(); }
-  if (FAIR) { for (const k in FAIR.sq) FAIR.sq[k] = Math.max(0, FAIR.sq[k] - dt * 5); if (state === 'play' && !P.dead) musicBox.wind(FAW.windAt(P.x / TS)); }
+  if (FAIR) { FAIR.tkShow = Math.max(0, (FAIR.tkShow || 0) - dt); for (const k in FAIR.sq) FAIR.sq[k] = Math.max(0, FAIR.sq[k] - dt * 5); if (state === 'play' && !P.dead) musicBox.wind(FAW.windAt(P.x / TS)); }
   if (FAIR && L.green && state === 'play' && Math.abs(P.x - L.green.bonfire * TS) < 260 && Math.random() < dt * 30) flame(L.green.bonfire * TS + 8, L.green.floor * TS - 8, 2, 4, 40, 3);   /* the bonfire */
   if (FAIR && state === 'play') { if (L.crumbles && L.crumbles.length) updateCrumbles(dt);   /* (claude/fairfix2) the collapsing stalls (src/tower-collapse.js) */
     const ch = chases.find(c => c.sp.id === 'effigy'); if (ch) { if (ch.st.phase === 'run' || FAIR.effigyBurnDone) FAIR.effigyBurnT += dt; else FAIR.effigyBurnT = 0; if (ch.st.phase === 'done') FAIR.effigyBurnDone = true; } }   /* THE EFFIGY CATCHES FIRE with its chase, and is ash once you outrun it */
@@ -18423,7 +18434,7 @@ function updateFairGames(dt) {
   FK.liveTargets(G.galleries, movers);   /* a bull's-eye hung on a ride goes round with it (claude/fairfix2) */
   FGM.step(G, L, hs, {
     launch: (h, vy) => asPlayer(h.p, () => { P.vy = vy; P.ground = false; P.onMover = null; P.coyote = 0; P.plunge = false; P.plungeRec = 0; P.canCut = false; P.jbuf = 0; dust(P.x, P.y, 6); }),
-    say: t => callout(t), tickets: () => callout('TICKETS ' + G.tickets + '/' + G.total + ': THEY OPEN THE GATES'),
+    say: t => callout(t), tickets: () => { FAIR.tkShow = 4; callout('TICKETS ' + G.tickets + '/' + G.total + ': THEY OPEN THE GATES'); },   /* (claude/fairfix3) the plate opens out for 4 s: every area's count */
     sound: k => (({ bell: SFX.tollBell, tink: SFX.tink, coin: SFX.coin, open: SFX.gateOpen })[k] || (() => {}))(),
     open: (planks, bars) => { for (const [x0, x1, row] of planks) for (let x = x0; x <= x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; tileSpr[i] = null; grid0[i] = T.ONEWAY; } }
       for (const [x0, x1, y0, y1] of bars || []) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * LW + x; L.grid[i] = T.AIR; tileSpr[i] = null; grid0[i] = T.AIR; burst(x * TS + 8, y * TS + 8, 3, ['#c9d1dc', '#8a919c'], 50, 0.5, 300, 1); }   /* a CAGE's bars drop (claude/fairfix2) */
@@ -18432,6 +18443,7 @@ function updateFairGames(dt) {
   }, dt);
   /* THE TICKET GATES (src/fair-keys.js): a hero at a shut gate is told its price; holding enough, it swings open for good (its tiles go) */
   for (const v of FK.keysStep(FAIR.keys, L, hs, G.tickets, dt)) {
+    FAIR.tkShow = 4;   /* (claude/fairfix3) a gate's ask or its opening opens the plate out too */
     if (v.t === 'ask') { callout(v.g.all ? FK.KEYS_TEXT.all(v.need) + ' (YOU HAVE ' + v.have + ')' : v.g.name + ': ' + FK.KEYS_TEXT.gate(v.need) + ' (YOU HAVE ' + v.have + ')'); SFX.clank(); }
     else if (v.t === 'open') { const g2 = v.g; for (let y = g2.y0; y <= g2.y1; y++) for (let x = g2.x; x < g2.x + (g2.w || 1); x++) { const i = y * LW + x; L.grid[i] = T.AIR; tileSpr[i] = null; grid0[i] = T.AIR; } resolveTiles(); callout(g2.name + ': ' + FK.KEYS_TEXT.open); SFX.gateOpen(); shakeCam(2); burst((g2.x + 0.5) * TS, (g2.y0 + g2.y1 + 1) * TS / 2, 14, ['#e8c23a', '#ece0c4', '#b8382c'], 70, 0.7); } }
 }
@@ -18476,8 +18488,14 @@ function updateWickerQueen(e, dt) {
   const A = L.arena; if (!A || !L.green) return;
   const fl = A.floor, mx = L.green.maypole * TS + 8, heroes = players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p), reach: p.relic === 'maypole' ? MU.RIBBON_REACH : 1 }));
   const R = L.ring, emb = wqEmbers();
-  e.y = fl;
-  const evs = WQN.updateWickerQueen(e, dt, { heroes, anim: false, A: { x0: A.x0, x1: A.x1, floor: fl }, embers: emb, ringDir: R ? WC.RING.dir : 0,
+  e.y = fl - (e.lift || 0);   /* (claude/fairfix3) up on the pole's collar, on a horse, or in a leap */
+  const pits = wqPits(e, R, dt);
+  const evs = WQN.updateWickerQueen(e, dt, { heroes, anim: false, A: { x0: A.x0, x1: A.x1, floor: fl }, embers: pits, ringDir: R ? WC.RING.dir : 0,
+    mx, horses: () => movers.filter(m => m.kind === 'carhorse').map(m => ({ i: m.i, x: m.x + m.w / 2, lift: fl - m.y, front: !m.broken })),
+    ball: (x, dir) => { FAIR.wqBalls = FAIR.wqBalls || []; FAIR.wqBalls.push({ x, dir, t: 0, n: e.n.toss }); },   /* (claude/fairfix3) THE WICKER BALL: rolled by wqBallsStep */
+    /* THE RIBBON SWEEP: the ribbon's end runs from xa to xb this frame; each hero is judged once a pass, as it reaches him, at its height (the lash's bands) */
+    sweep: (kind, xa, xb, pass) => { const lo = Math.min(xa, xb) - 2, hi = Math.max(xa, xb) + 2, tag = e.n.sweep * 2 + pass; for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || pp.wqSw === tag || P.x < lo || P.x > hi) return;
+      pp.wqSw = tag; const hb = duckBox(P); if (WQN.lashCatches(kind, fl, { t: hb.t, b: hb.b })) damagePlayer(P.x + (xb > xa ? -10 : 10), WQN.WQ.dmg.sweep, { who: e, name: 'THE RIBBONS', unblockable: true }); }); },
     canStep: dir => { const nx = e.x + dir * 16; return nx > A.x0 + 12 && nx < A.x1 - 12; },
     number: (x, y, m, col) => number(x, y, m, col || '#ffd36b'),   /* (a teaching line - src/hint-lines.js - goes to the hint box; '!!' floats over her) */
     sound: k => { const fn = ({ catch: SFX.wqCatch, burn: SFX.wqBurn, rise: SFX.wqBank, still: SFX.mummerStill, stabTell: SFX.wqSickleTell, stab: SFX.wqSickle, lashTell: SFX.wqLashTell, lash: SFX.wqLash, crownTell: SFX.wqCrown, crown: SFX.mummerBell, rustle: SFX.wqRustle, dark: SFX.wqDark, alight: SFX.wqAlight,
@@ -18507,7 +18525,12 @@ function updateWickerQueen(e, dt) {
   /* HER FEET, then THE RIDE: it carries her while she stands (frozen in a look, or at her blows; walking she strides against it at her own pace, and flung by
      the fire she is off it) and every hero with his feet on its boards */
   const carry = R ? WC.ringCarry(R) : 0;
-  e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (e.vx + (e.mode === 'rise' || e.mode === 'creep' ? 0 : carry)) * dt));
+  e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x + (e.vx + (e.mode === 'rise' || e.mode === 'creep' || e.mode === 'leap' || e.perch ? 0 : carry)) * dt));   /* (a leap or a perch is off the boards: the ride does not carry her) */
+  for (const v of evs) {   /* (claude/fairfix3) HER FIRES: a ring pit she burned on is spent; where her burning floor goes out a pit is left alight */
+    if (v.t === 'banked' && v.spent && v.pit) FAIR.wqPits = (FAIR.wqPits || []).filter(p => p !== v.pit);
+    if (v.t === 'floorOut') wqLightPit(e.x, 'THE BOARDS SMOULDER');
+    if (v.t === 'leapTell') SFX.wqSickleTell(); if (v.t === 'stomp') { shakeCam(3); dust(e.x, fl, 10); } }
+  wqBallsStep(e, fl, A, carry, dt);
   if (carry) for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || !P.ground || P.onMover || !WC.onBoards(R, P.x, P.y)) return; moveBody(P, carry * dt, 0, false); });
   /* THE FLOOR BURNS: a hero with his feet on the boards burns (at once, then each WQ.floorTick), and the heat throws him up off them - toward a horse */
   if (e.mode === 'floor') { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead) return;
@@ -18527,13 +18550,34 @@ function updateWickerQueen(e, dt) {
   for (const v of evs) if (v.t === 'phase' && v.ph === 3) enrageBeat(e);   /* (phase two's beat the enemy tick gives every boss) */
   if ((e.mode === 'burn' || e.mode === 'catch' || e.phase === 3) && Math.random() < dt * (e.mode === 'burn' ? 40 : 18)) flame(e.x + (Math.random() - 0.5) * 22, e.y - 8 - Math.random() * 60, 1, 4, 40, 3);   /* the wicker burning */
   L.dark = e.phase === 2 ? 0.86 : 0;   /* FULL DARK, her phase two, only while she stands */
-  if (music.want === 'wickerqueen') music.setTempo(R ? 1 + 0.32 * (WC.organRate(R) - 1) / (WC.RING.speed[2] / WC.RING.speed[0] - 1) : WQ_TEMPO[e.phase] || 1);   /* THE ORGAN KEEPS THE RIDE'S PACE (claude/fairfix): the ring's rate 1..2.1 maps onto the track's tempo 1..1.32 (src/audio.js clamps it; WQ_TEMPO, by phase, when there is no ring) */
+  /* (claude/fairfix3) her arena plays a FILE now ("Ring Master", audio/wickerqueen.ogg): the organ no longer follows the ride's pace - a file's playbackRate would pitch it up a fourth */   /* THE ORGAN KEEPS THE RIDE'S PACE (claude/fairfix): the ring's rate 1..2.1 maps onto the track's tempo 1..1.32 (src/audio.js clamps it; WQ_TEMPO, by phase, when there is no ring) */
   wqLight(e);
+}
+/* (claude/fairfix3) HER FIRES, kept here: the firebox (banked by her own e.bank) and the RING PITS - riding the boards with the ride, burning out, lit again by her burning
+   floor and her wicker ball. Started with WQ.pits.ring of them round the ring when she wakes. L.wqPits is the list the bot reads (src/lab.js) */
+function wqPits(e, R, dt) {
+  const fire = wqEmbers(); if (!fire || !FAIR) return fire;
+  if (!FAIR.wqPits) { FAIR.wqPits = [{ ...fire, fire: true }]; const A = L.arena; for (let i = 0; i < WQN.WQ.pits.ring; i++) FAIR.wqPits.push(WQN.ringPit(A.x0 + (A.x1 - A.x0) * (i ? 0.78 : 0.2), WQN.WQ.pits.life + i * 3)); }
+  const carry = R ? WC.ringCarry(R) : 0, A = L.arena;
+  FAIR.wqPits = FAIR.wqPits.filter(p => { if (p.fire) { p.bank = e.bank; return true; } if (!bossActive) return true; p.life -= dt; p.mid += carry * dt; p.x0 = p.mid - WQN.WQ.pits.half; p.x1 = p.mid + WQN.WQ.pits.half; return p.life > 0 && p.mid < A.x1 - 10 && p.mid > A.x0 + 10; });
+  L.wqPits = FAIR.wqPits; return FAIR.wqPits;
+}
+function wqLightPit(x, say) { const A = L.arena, ps = FAIR.wqPits || []; if (ps.length >= WQN.WQ.pits.cap || ps.some(p => Math.abs(p.mid - x) < 60) || x < A.x0 + 30 || x > A.x1 - 30) return; ps.push(WQN.ringPit(x)); if (say) callout(say); }
+/* THE WICKER BALL: it rolls along the boards (and the ride carries it), hurts what stands in its WQ.ballTop px once, passes over a rider and a jumper; at a wall it stops and
+   lights a ring pit there, and rolled over the banked firebox it lights that again */
+function wqBallsStep(e, fl, A, carry, dt) {
+  if (!FAIR || !FAIR.wqBalls) return; const fire = wqEmbers();
+  FAIR.wqBalls = FAIR.wqBalls.filter(b => { b.t += dt; b.x += (b.dir * WQN.WQ.ballSpeed + carry) * dt; if (Math.random() < dt * 30) flame(b.x, fl - 8, 1, 3, 40, 2);
+    for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || (pp.wqBall || -1) === b.n) return; const hb = duckBox(P); if (Math.abs(P.x - b.x) < 10 && hb.b > fl - WQN.WQ.ballTop) { pp.wqBall = b.n; damagePlayer(b.x, WQN.WQ.dmg.ball, { who: e, name: 'THE WICKER BALL', unblockable: true }); } });
+    if (fire && e.bank > 0 && b.x > fire.x0 && b.x < fire.x1) { e.bank = 0; number(b.x, fl - 30, 'THE BALL RELIGHTS THE FIRE', '#ffb040'); }
+    if (b.x < A.x0 + 12 || b.x > A.x1 - 12 || b.t > 8) { wqLightPit(Math.max(A.x0 + 40, Math.min(A.x1 - 40, b.x)), 'THE BALL LIGHTS THE BOARDS'); burst(b.x, fl - 8, 10, ['#ffc850', '#f08a28', '#4e3a1a'], 70, 0.5); return false; }
+    return true; });
 }
 /* her embers on the green's floor: hot (they will catch her) or banked, grey, for WQ.bankT after a burn */
 function drawWickerGround(cx, cy) {
   const emb = wqEmbers(), q = boss && boss.t === 'wickerqueen' ? boss : null; if (!emb || !L.arena) return;
   const fy = Math.round(L.arena.floor - cy), banked = !!(q && q.alive && q.bank > 0);
+  WQD.drawPits(g, cx, cy, VW, (FAIR && FAIR.wqPits || []).filter(p => !p.fire), L.arena.floor, time);   /* (claude/fairfix3) the ring pits (src/redraw/wicker_fx.js) */
   for (let x = emb.x0; x <= emb.x1; x += 3) { const k = 0.5 + 0.5 * Math.sin(time * 5 + x * 0.3), sx = Math.round(x - cx); if (sx < -4 || sx > VW + 4) continue;
     g.fillStyle = banked ? (k > 0.7 ? '#6a5a5a' : '#3a3036') : (k > 0.75 ? '#ffc850' : k > 0.35 ? '#f08a28' : '#a01c10'); g.fillRect(sx, fy - 2, 2, 2);
     if (!banked && k > 0.9) { g.fillStyle = '#fff0b0'; g.fillRect(sx, fy - 3, 1, 1); } }
@@ -18552,7 +18596,9 @@ function drawWickerOver(cx, cy) {
   if (thrK) { const d = q.thrustDir || q.face || 1, sy = WQN.spearY(thrK, fl) - cy, tip = q.x + d * (q.tip || 0), S = WQN.WQ.spearLen;
     if (q.mode !== 'thrust') { const k = Math.min(1, 1 - Math.max(0, q.modeT) / WQN.WQ.thrustTell), [t, b] = WQN.spearBand(thrK, fl), xa = tip, xb = q.x + d * (WQN.WQ.thrustFrom + (WQN.WQ.thrustReach - WQN.WQ.thrustFrom) * k);
       g.globalAlpha = 0.35 + 0.5 * k * (0.6 + 0.4 * Math.sin(time * 30)); g.fillStyle = '#ff6b6b'; const l = Math.round(Math.min(xa, xb) - cx), w = Math.round(Math.abs(xb - xa));
-      g.fillRect(l, Math.round(t - cy), w, 1); g.fillRect(l, Math.round(b - 1 - cy), w, 1); g.fillRect(Math.round(xb - cx), Math.round(t - cy), 1, Math.round(b - t));
+      const lw = thrK === 'low' ? 2 : 1; if (thrK === 'low') g.fillStyle = '#ff8a6a';   /* (claude/fairfix3, review #15) the low line at the ankles is 2 px and brighter, with sparks along the boards where it will run */
+      g.fillRect(l, Math.round(t - cy) - (lw - 1), w, lw); g.fillRect(l, Math.round(b - 1 - cy), w, lw); g.fillRect(Math.round(xb - cx), Math.round(t - cy), lw, Math.round(b - t));
+      if (thrK === 'low') for (let i = 0; i < w; i += 6) if (Math.floor(time * 20 + i) % 3 === 0) g.fillRect(l + i, Math.round(b - cy) - 1, 1, 2);
       for (const pp of players) if (upright(pp) && Math.abs(pp.x - q.x) < WQN.WQ.thrustReach + 20) { const px2 = Math.round(pp.x - cx), py2 = Math.round(pp.y - 32 - cy); g.fillRect(px2 - 2, py2, 5, 1); g.fillRect(px2 - 1, thrK === 'low' ? py2 - 1 : py2 + 1, 3, 1); g.fillRect(px2, thrK === 'low' ? py2 - 2 : py2 + 2, 1, 1); }
       g.globalAlpha = 1; }
     wqDrawSpear(g, Math.round(tip - d * S - cx), Math.round(sy), Math.round(tip - cx), Math.round(sy), q.mode !== 'thrust' && q.modeT < 0.25); }
@@ -18566,6 +18612,7 @@ function drawWickerOver(cx, cy) {
       for (let i = 0; i < 6; i++) { g.fillStyle = RB[i]; const yy = Math.round(t + (b - t) * (i / 6) - cy + Math.sin(time * 40 + i) * 1);
         for (const d of [-1, 1]) { const lo = Math.max(x0, Math.min(mx, mx + d * r)), hi = Math.min(x1, Math.max(mx, mx + d * r)); if (hi > lo) g.fillRect(Math.round(lo - cx), yy, Math.round(hi - lo), 1); } } } }
   if (q.mode === 'stabTell') FAW.drawGlow(g, Math.round(q.x + (q.face || 1) * 2 - cx), Math.round(q.y - 70 - cy), time);
+  WQD.drawOver(g, cx, cy, VW, q, L.arena, fl, mx, FAIR && FAIR.wqBalls, players, time);   /* (claude/fairfix3) her wicker balls, the ribbon sweep (taut, then whipping round), her leap's landing mark, the pole's collar */
   if (L.dark) for (const m of enemies) if (m.alive && m.t === 'mummer' && m.mode === 'glow') FAW.drawGlow(g, Math.round(m.x - cx), Math.round(m.y - 24 - cy), time);
 }
 /* HOLES IN HER DARK: the light of each hero's look (as far as it reaches, on the side he faces), her tells, the maypole winding up, a crowned mummer's
@@ -18577,6 +18624,7 @@ function wqHoles(hole, cx, cy) {
   if (q.mode.startsWith('lash')) hole(L.green.maypole * TS + 8 - cx, q.y - 30 - cy, 50, 0.7);
   for (const m of enemies) if (m.alive && m.fromQueen && m.mode === 'glow') hole(m.x - cx, m.y - 20 - cy, 30, 0.8);
   const emb = wqEmbers(); if (emb && !(q.bank > 0)) hole(emb.mid - cx, L.arena.floor - 6 - cy, 40, 0.6);
+  for (const p of (FAIR && FAIR.wqPits) || []) if (!p.fire) hole(p.mid - cx, L.arena.floor - 6 - cy, 30, 0.55); for (const b of (FAIR && FAIR.wqBalls) || []) hole(b.x - cx, L.arena.floor - 8 - cy, 26, 0.7);   /* (claude/fairfix3) her ring pits and balls light her dark */
   for (const m of movers) if (m.kind === 'carhorse' && !m.broken) hole(m.x + m.w / 2 - cx, m.y - 4 - cy, 22, 0.55);   /* the carousel's horses carry their own bulbs: you can always find one (claude/fairboss) */
 }
 
@@ -22598,12 +22646,13 @@ function updateEnemies(dt) {
           if (e.pack) for (const p of e.pack) { const hx = e.x + p.dx, hy = p.y; enemies.push({ x: hx, y: hy, vx: 0, vy: 0, face: 1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0, t: 'hound', w: 12, h: 7, hp: EHP.hound, speed: 105, timer: 0, air: false }); burst(hx, hy - 6, 5, COLS.hound, 40, 0.4); }
         } } else if (e.horn && !e.rafters && !e.blown) e.hornT = Math.max(0, e.hornT - dt * (e.stagger > 0 ? 3 : 1));
       const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < (e.juggler ? FK.JUGGLER.dy : 70)) && !P.dead && !(e.trialSt && e.trialSt.done);   /* a trial's archer puts the bow down when his gate is up */
+      const watched = e.juggler && fairWatched(e); e.juggling = watched; if (watched && e.draw > 0) { e.draw = 0; e.timer = Math.max(e.timer, FK.JUGGLER.rethrow); }   /* (claude/fairfix3) THE KNIFE JUGGLER KEEPS THE FAIR'S RULE: looked at, he juggles (a draw in hand goes back up into the air); at a turned back he throws */
       if (near) e.face = Math.sign(d) || e.face;
       e.timer -= dt; e.draw = Math.max(0, e.draw - dt); e.loose = Math.max(0, (e.loose || 0) - dt);
       let want = 0;
       if (near && ad < (weightyHere(curId()) ? WEIGHTY.archer.keep : SHOT_CLOSE) && e.draw <= 0) want = -e.face * e.speed * 1.6;   /* (weighty, Kingswood: it backs off to keep its range) */ // back off: point-blank, the bow comes down
       else if (near && ad > SHOT_FAR && e.draw <= 0) want = e.face * e.speed * 0.6;
-      if (near && e.timer <= 0 && e.draw <= 0 && ad > SHOT_CLOSE) { e.draw = e.juggler ? FK.JUGGLER.draw : 0.55; e.timer = e.juggler ? FK.JUGGLER.every : 2.4; SFX.bow(); number(e.x, e.y - e.h - 10, '!', '#ffd36b'); }
+      if (near && !watched && e.timer <= 0 && e.draw <= 0 && ad > SHOT_CLOSE) { e.draw = e.juggler ? FK.JUGGLER.draw : 0.55; e.timer = e.juggler ? FK.JUGGLER.every : 2.4; SFX.bow(); number(e.x, e.y - e.h - 10, '!', '#ffd36b'); }
       if (e.draw > 0 && e.draw - dt <= 0) { e.loose = 0.16;
         if (e.juggler) { const k = FK.knifeShot(e.x + e.face * 5, e.y - 16, P.x, P.y - 9, P.vx || 0); seeds.push({ knife: true, x: k.x, y: k.y, vx: k.vx, vy: k.vy, dead: false, life: 2, arrow: true, g: 0, owner: e }); } else {   /* THE JUGGLER's knife: flat and fast, thrown where you are going (src/fair-keys.js knifeShot) */
         const sx = e.x + e.face * 5, sy = e.y - 7, dx = P.x - sx, Tf = e.bowman ? Math.max(0.75, Math.abs(dx) / 300) : 0.75, G = 320, dy = (P.y - 8) - sy; /* a royal bowman lobs it the length of the hall */
@@ -23895,6 +23944,8 @@ function updateMovers(dt) {
   if (pbs.length) { PB_CTX.players = players; PB_CTX.blocks = pbs; }
   for (const m of movers) {
     if (m.kind === 'carhorse') { carHorse(m, dt); continue; }   /* THE WICKER QUEEN'S CAROUSEL: its horses (claude/fairboss) */
+    if (m.kind === 'chairo') { const ox = m.x, oy = m.y, h = FRS.chairAt(m.ring, m.idx, time), was = !m.broken; m.x = h.x - m.w / 2; m.y = h.y; m.depth = h.depth; m.broken = !h.front; m.dx = m.broken ? 0 : m.x - ox; m.dy = m.broken ? 0 : m.y - oy;   /* THE CHAIR-O-PLANE (claude/fairfix3, src/fair-rides.js): round the back of the mast a chair bears no one */
+      if (m.broken && was) for (const pp of players) if (pp.onMover === m) { pp.onMover = null; pp.ground = false; pp.vy = Math.max(pp.vy || 0, 30); } continue; }
     if (m.kind === 'pushblock') { updatePushBlock(m, dt, PB_CTX); continue; }
     if (m.kind === 'cart' || m.kind === 'orelift') continue;
     if (m.kind === 'bucket') { updateBucket(m, dt); continue; }
@@ -25994,6 +26045,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   /* what they were made of, after the bodies and before the living */
   if (boss && boss.t === 'lance' && boss.alive && boss.bowCall) drawBowCall(boss.bowCall, cx, cy);   /* drawn whether he is on the screen or not: his bowman is coming to where YOU are */
   for (const e of enemies) {
+    if (e.behind) continue;   /* (claude/fairfix3) round the back of the chair-o-plane: drawn small behind its mast (src/redraw/fair_newrides.js) */
     if (e.alive && (e.poise > 0 || e.broken > 0)) drawPoise(e, cx, cy);   /* the stagger bar over its head */
     if (e.t === 'kraken') { drawKraken(e, cx, cy); continue; }   /* most of it is off the screen and in the sea: it draws itself, dead or alive */
     if (e.t === 'krakenarm') continue;
@@ -26618,7 +26670,7 @@ function drawWorld(cx, cy, showPlayer) {
         const tw = 0.5 + 0.5 * Math.sin(time * (2 + (hsh % 5) * 0.4) + hsh % 17); g.globalAlpha = 0.25 + 0.6 * tw; g.fillStyle = ORE[hsh % 4]; const ox = tx * TS + 3 + (hsh >> 3) % 10, oy = ty * TS + 3 + (hsh >> 7) % 10; g.fillRect(ox - cx, oy - cy, 2, 1); g.fillRect(ox - cx, oy - cy - 1, 1, 3); }
       g.globalAlpha = 1; }
   }
-  if (FAIR) FR.drawNight(g, cx, cy, VW, VH, L, FAIR, { time, text, skip: !!L.dark || (L.green && P.x > L.green.door * TS), heroes: players.filter(p => !p.dead).map(p => ({ x: p.x, y: p.y })), glows: enemies.filter(q => q.alive && q.t === 'mummer' && q.mode === 'glow') });   /* THE NIGHT that comes with height, and the ticket count (src/redraw/fair_rides.js) */
+  if (FAIR) FR.drawNight(g, cx, cy, VW, VH, L, FAIR, { time, text, tkShow: FAIR.tkShow || 0, areas: FAIR.games ? FK.ticketsLeft(L, FAIR.games) : [], areaI: FK.areaAt(L, P.x / TS), skip: !!L.dark || (L.green && P.x > L.green.door * TS), heroes: players.filter(p => !p.dead).map(p => ({ x: p.x, y: p.y })), glows: enemies.filter(q => q.alive && q.t === 'mummer' && q.mode === 'glow') });   /* THE NIGHT that comes with height, and the ticket count (src/redraw/fair_rides.js) */
   if (FAIR) for (const e of enemies) if (e.alive && (e.t === 'stringjack' || e.t === 'barker') && e.x > cx - 60 && e.x < cx + VW + 60) FR.drawFoeExtras(g, e, cx, cy, time);   /* the marionette's strings up into the dark and the barker's call going out, OVER the night so they read in it (src/redraw/fair_rides.js) */
   if (FAIR) drawWickerOver(cx, cy);   /* THE WICKER QUEEN's ribbons, glows and flames: over the dark of her green, so a told blow is never hidden by it */
   if (PUPH && PUPH.on()) PUPH.drawTells(cx, cy, time);   /* THE PUPPETEER's tells on the boards (the drop's shadow, the stomp, the snare, the whip and the reach), OPEN over him, and the curtain */
@@ -28281,7 +28333,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   textLab: { draw: (...a) => text(...a), width: (s, z) => textW(s, z), TYPE, nums: () => nums, hint(m, t) { hintT = t === undefined ? 4.5 : t; hintMsg = m; }, talk(lines, name) { openTalk({ lines, name: name || null, who: null }); }, get talking() { return talk; },
     talkers: () => [...signs.map(s => ({ kind: 'sign', x: Math.floor(s.x / TS), y: Math.floor(s.y / TS), lines: [s.text], name: null })),
       ...props.filter(p => p.t === 'npc').map(p => { let lines = []; try { lines = NPC_LINES(p); } catch (e) { lines = ['(NPC_LINES threw: ' + e.message + ')']; } return { kind: 'npc:' + p.kind, x: Math.floor(p.x / TS), y: Math.floor(p.y / TS), lines, name: p.name || NPC_NAME[p.kind] || null }; })],
-    bossTitle: b => bossTitle(b), miniName: () => miniName(), beasts: () => BEASTS,
+    bossTitle: b => bossTitle(b), miniName: () => miniName(), beasts: () => BEASTS, beastName: e => beastName(e),   /* (claude/fairfix3: the name a foe wears in the threat read and the death line - the fair's reskins wear their own) */
     cardFit: s => { const z = fitSize(s, VW - 16, [TYPE.title, 8]); return [z, inkW(s, z)]; } },   /* the size the boss's name card draws a name at, and how wide it comes out */
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
   get sea() { return { roll, wash, strike, msg: seaMsg, calm: seaCalm(), tilt: seaTilt(), hard: stormK('wash') }; },

@@ -15,12 +15,25 @@ import { mirrorSees } from './fair-games.js';
 
 export const FAIR_MUMMER = { ...MUMMER, creep: 64, glow: 0.42, dmg: 22, recover: 0.6 };
 export const FAIR_HORSE = { ...HORSE, dmg: 30, dist: 240 };
-export const KEYS_TEXT = { gate: n => 'SHOW ' + n + ' TICKETS', open: 'THE GATE SWINGS OPEN', all: n => 'THE BACK LOT. ALL ' + n + ' TICKETS', hud: 'TICKETS OPEN THE GATES; ALL OF THEM, THE BACK LOT' };
+export const KEYS_TEXT = { gate: n => 'SHOW ' + n + ' TICKETS', open: 'THE GATE SWINGS OPEN', all: n => 'THE BACK LOT. SHOW ' + n + ' TICKETS', hud: 'TICKETS OPEN THE GATES; 30 OPEN THE BACK LOT' };
 
 /* every ticket the level holds: the ones lying about and what the strikers pay on their first ring */
 export const ticketTotal = L => (L.tickets || []).length + (L.strikers || []).reduce((n, s) => n + (s.tickets || 0), 0);
-/* a gate's price: `all` is every ticket in the level */
-export const gateNeed = (L, g) => (g.all ? ticketTotal(L) : g.need);
+/* a gate's price: its `need`; `all` with no need is every ticket in the level (claude/fairfix3: the back lot asks 30 of the 35 now - review #5, one ticket missed
+   behind the slide made it unopenable) */
+export const gateNeed = (L, g) => (g.need !== undefined ? g.need : g.all ? ticketTotal(L) : 0);
+/* TICKETS LEFT, AREA BY AREA (claude/fairfix3; Daniel: "the HUD shows tickets LEFT PER AREA"): the level's sections (L.arc, or L.ticketAreas) and how many of each
+   section's tickets are still lying there or unpaid by its striker. G: the games' state (src/fair-games.js newGames: taken, strikers[].paid) */
+export const TICKET_AREAS = [['GATE', 'teach'], ['STALLS', 'develop'], ['MIDWAY', 'twist'], ['HARVEST', 'combine'], ['LAST ROUND', 'exam']];   /* (short: they stand in a narrow column under the plate) */
+export function ticketsLeft(L, G) {
+  const arc = L.arc || {}, rows = TICKET_AREAS.map(([name, k]) => ({ name, x0: (arc[k] || [0, 0])[0], x1: k === 'exam' ? L.W : (arc[k] || [0, 0])[1], left: 0, all: 0 }));
+  const area = x => rows.find(r => x >= r.x0 && x < r.x1) || rows[rows.length - 1];
+  (L.tickets || []).forEach((t, i) => { const r = area(t.x); r.all++; if (!(G && G.taken && G.taken.has(i))) r.left++; });
+  for (const s of (L.strikers || [])) { const r = area(s.x), st = G && G.strikers && G.strikers.find(q => q.x === s.x); r.all += s.tickets || 0; if (!(st && st.paid)) r.left += s.tickets || 0; }
+  return rows;
+}
+/* which area a column stands in (its index in TICKET_AREAS) */
+export const areaAt = (L, x) => { const rows = ticketsLeft(L, null); const i = rows.findIndex(r => x >= r.x0 && x < r.x1); return i < 0 ? rows.length - 1 : i; };
 
 export function newKeys(L) { return { gates: (L.ticketGates || []).map((g, i) => ({ ...g, i, open: false, told: 0 })) }; }
 /* one frame. heroes [{ x, y, dead }]; tickets = how many the heroes hold. Returns events: { t: 'open', g } (clear its tiles), { t: 'ask', g, have } (a hero at a shut gate) */
@@ -51,7 +64,11 @@ export const glassSees = (p, e) => !!p && !!e && p.relic === 'handglass' && Math
 /* THE RANGED PAIR, made deadly by their hands, not their health (claude/fairfix2: "INCREDIBLY EASY at level 1"):
    THE KNIFE JUGGLER (the archer's AI) throws FLAT and FAST - a knife at chest height, 300 px/s, aimed where you will be when it arrives - every 1.7 s, after a told 0.45 s draw.
    THE COCONUT SHY (the drunk's AI) throws every 1.4-1.9 s, and at the release he leads you: the coconut comes down where you are running to (its ring shows it in the air). */
-export const JUGGLER = { draw: 0.45, every: 1.7, speed: 300, dy: 120 };   /* dy: he throws down from a roof or a tower top, further than an archer looks */
+export const JUGGLER = { draw: 0.45, every: 1.7, speed: 300, dy: 120, rethrow: 0.5 };   /* dy: he throws down from a roof or a tower top, further than an archer looks. rethrow: after a look breaks his draw, the beat before he can draw again (claude/fairfix3) */
+/* THE FAIR'S RULE FOR ITS THROWERS (claude/fairfix3; review UPGRADE A): a knife juggler or the coconut shy's stallholder throws only at a TURNED BACK - while a hero LOOKS at
+   him (src/mummer.js looks: the same look that holds a mummer, shortened by the night, turned by the glass, stopped by a wall) he only juggles. WATCH: how far that look reaches
+   him in the light (past his own throwing range, so a look from where he can hit you always counts) */
+export const WATCH = { sight: 320, sightY: 160 };
 export const SHY = { every: 1.4, lead: 0.8, coconut: 14, ball: 18 };
 export function knifeShot(sx, sy, tx, ty, tvx) {
   let T = Math.max(0.2, Math.hypot(tx - sx, ty - sy) / JUGGLER.speed); const ax = tx + tvx * T; T = Math.max(0.2, Math.hypot(ax - sx, ty - sy) / JUGGLER.speed);

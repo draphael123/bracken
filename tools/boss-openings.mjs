@@ -175,7 +175,7 @@ try {
   /* THE WICKER QUEEN (claude/fair3): lured across the green and turned on as she stands on the embers, the wicker catches and burns open; the same look
      short of them, or her crossing them with nobody looking, opens nothing (the look is the only verb, the embers the only place) */
   {const b=boot('fair');const G=BK.L.green,A=BK.L.arena,mid=G.bonfire*16+8,fl=A.floor;for(const e of BK.enemies())if(e!==b)e.alive=false;
-   const run=turnAt=>{b.mode='still';b.x=mid+110;b.bank=0;b.open=0;b.lashCd=99;b.crownCd=99;b.floorCd=99;b.throwCd=99;b.rest=0;let turned=false,op=0;for(let i=0;i<60*6;i++){if(!turned&&turnAt(b))turned=true;BK.P.x=mid-160;BK.P.y=fl;BK.P.vx=0;BK.P.face=turned?1:-1;BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='burn'||b.mode==='sickleTell')break;}return{mode:b.mode,open:+op.toFixed(1)};};
+   const run=turnAt=>{b.mode='still';b.x=mid+110;b.bank=0;b.open=0;b.lashCd=99;b.crownCd=99;b.floorCd=99;b.throwCd=99;b.tossCd=99;b.sweepCd=99;b.leapCd=99;b.thrustCd=99;b.rest=0;let turned=false,op=0;for(let i=0;i<60*6;i++){if(!turned&&turnAt(b))turned=true;BK.P.x=mid-160;BK.P.y=fl;BK.P.vx=0;BK.P.face=turned?1:-1;BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='burn'||b.mode==='sickleTell')break;}return{mode:b.mode,open:+op.toFixed(1)};};
    out.wicker={short:run(q=>q.x<mid+70),unseen:run(()=>false),embers:run(q=>q.x<mid+20)};}
   /* THE PUPPETEER (claude/puppeteer): left alone a minute his puppets wind up and strike and nothing opens him; both cut down by the hero's swings in their
      windups, he comes down his line and kneels re-stringing them - open (on the Maskwright's Theatre's main stage) */
@@ -255,7 +255,7 @@ try {
   assert.ok(r.bell.crowned.spent && r.bell.crowned.back, 'the rack\'s stone splits on his valve and the rack sets it back (A12): ' + JSON.stringify(r.bell));
   assert.ok(r.wicker.short.open === 0 && r.wicker.short.mode !== 'burn', 'THE WICKER QUEEN: frozen short of the embers she opened: ' + JSON.stringify(r.wicker));
   assert.ok(r.wicker.unseen.open === 0 && r.wicker.unseen.mode !== 'burn', 'crossing the embers with nobody looking opened her: ' + JSON.stringify(r.wicker));
-  assert.ok(r.wicker.embers.mode === 'burn' && r.wicker.embers.open > 2, 'frozen ON the embers she did not burn open: ' + JSON.stringify(r.wicker));
+  assert.ok(r.wicker.embers.mode === 'burn' && r.wicker.embers.open >= 3, 'frozen ON the embers she did not burn open for 3 s or more (the boss rule; claude/fairfix3 tightened this from > 2): ' + JSON.stringify(r.wicker));
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (PUPPETEER3: drop both puppets - blows or cuts - and he is dragged down to the boards, open) */ 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
   assert.deepEqual(pg.errors, []);

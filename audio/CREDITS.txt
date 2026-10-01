@@ -1,4 +1,4 @@
-Music (CC0 / public domain, from OpenGameArt.org):
+Music (CC0 / public domain, and - from 2026-10-01, with Daniel's say-so - CC-BY tracks WITH their credit here and in the Sound Test, from OpenGameArt.org):
 - theme.ogg = "Juhani Junkala [Chiptune Adventures] 1. Stage 1.ogg" from "4 Chiptunes (Adventure)" by Juhani Junkala (SubspaceAudio)
   https://opengameart.org/content/4-chiptunes-adventure
 
@@ -193,3 +193,13 @@ CONVERTED TO OGG FROM THE ORIGINAL WAV (ffmpeg, libvorbis q3, no fades, loop poi
 - monasterygolem.ogg = "Boss Battle #6 [8-bit]" V1 by nene, CC0 -
   https://opengameart.org/content/boss-battle-6-8-bit - THE MONASTERY's GOLEM mini's own track, overriding the shared mini fallback (minicharge.ogg).
 - archmage / goblinroyal = no file: synthesised for this game in src/boss-music.js (the Archmages' theme, shared by the Archmage and the Undead Archmage on an undead voicing; the Goblin royals' theme, shared by the Goblin King and Queen)
+
+THE HARVEST FAIR'S OWN TWO TRACKS (claude/fairfix3, Daniel 2026-10-01; the coordinator pulled the files, converted here with ffmpeg: libvorbis q5, 44.1 kHz stereo, no fades,
+two-pass loudnorm to the library's level, about -13.5 LUFS integrated, true peak under -1.5 dBTP). They replace the synth band organ the fair played before:
+- harvestfair.ogg = "Dark Carnival" (dark_carnival_extended.mp3) by Machine, licensed CC-BY 3.0 (https://creativecommons.org/licenses/by/3.0/) -
+  https://opengameart.org/content/dark-carnival - THE HARVEST FAIR's level track. Credit: "Dark Carnival" by Machine, CC-BY 3.0. Changes: cut to a 66.80 s loop
+  (samples 0-2945132 at 44.1 kHz: the end found where the tune comes round to its own opening - pitch-class match 0.90 over 6 s, waveform match 0.58 at the seam),
+  levelled (+3 dB) and re-encoded to OGG.
+- wickerqueen.ogg = "Ring Master" (ring_master_slower.mp3, the slower version) by Bobjt, CC0 - the author asks for an attribution to "bobjt", given here and in
+  the Sound Test - https://opengameart.org/content/ring-master - THE WICKER QUEEN's arena track. Changes: cut to an 81.06 s loop (samples 0-3574557: pitch-class
+  match 0.93, waveform 0.55 at the seam), turned down about 10 dB (the source decodes past full scale) and re-encoded to OGG.

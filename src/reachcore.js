@@ -38,6 +38,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   if (!plain) {
     for (const w of (L.walls || [])) if (w.reach) for (let y = w.y0; y <= w.y1; y++) for (let x = w.x0; x <= w.x1; x++) g[y * W + x] = T.AIR;
     for (const gl of (L.galleries || (L.gallery ? [L.gallery] : []))) for (const [x0, x1, row] of (gl.planks || [])) for (let x = x0; x <= x1; x++) if (g[row * W + x] === T.AIR) g[row * W + x] = T.ONEWAY;
+    /* (claude/fairfix3) and a bull's-eye's BARS drop once its targets are struck - the corn's bars over chimney one and the shutter over the night lane's end are the way on now */
+    for (const gl of (L.galleries || [])) for (const [x0, x1, y0, y1] of (gl.bars || [])) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.AIR;
     for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
   }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
@@ -97,6 +99,11 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     }
     for (const m of (L.moversExtra || [])) if (m.kind === 'wheel' && m.r) { const cells = [];
       for (let a = 0; a < 24; a++) { const th = a / 24 * Math.PI * 2; cells.push([Math.floor((m.px + Math.cos(th) * m.r) / TSZ), Math.floor((m.py + Math.sin(th) * m.r) / TSZ) - 1]); }
+      for (const [cx, cy] of cells) extraFoot.push(cx + ',' + cy); groups.push({ cells, set: new Set(cells.map(([cx, cy]) => cx + ',' + cy)) }); }
+    /* A CHAIR-O-PLANE (the Harvest Fair, claude/fairfix3; src/fair-rides.js): its near chairs are footing along the front of the ring, and one hop to the next carries you
+       round to any of them - the model treats the front run as one ride, as it treats a wheel's paddles */
+    for (const c of (L.chairos || [])) { const cells = [];
+      for (let a = 0; a < 24; a++) { const th = a / 24 * Math.PI * 2, s = Math.sin(th); if (s <= 0.15) continue; cells.push([Math.floor((c.cx + Math.cos(th) * c.R) / TSZ), Math.floor((c.cy - (1 - s) / 2 * 24) / TSZ) - 1]); }
       for (const [cx, cy] of cells) extraFoot.push(cx + ',' + cy); groups.push({ cells, set: new Set(cells.map(([cx, cy]) => cx + ',' + cy)) }); }
     const kite = (L.ents || []).find(e => e.t === 'stormkite');
     if (L.flight && kite) flight = { x: kite.x, y: kite.y, x1: Math.floor(L.flight.x1 / TSZ) };
