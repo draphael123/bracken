@@ -35,7 +35,7 @@
 
 export const GT = {
   hp: 720, w: 18, h: 24, markH: 34,
-  ward: 0.05, openMul: 1.5, bigMul: 2.8,   /* (claude/greenwire: the stranded and flushed windows are 3.0 s, so x1.5: the same blow-for-blow damage per opening as 1.8 s at x2.4) */
+  ward: 0.05, openMul: 1.3, bigMul: 2.5,   /* (claude/greenwire: the stranded and flushed windows are 3.0 s, so x1.3 (was 1.8 s at x2.4) and the big one x2.5 (was 2.8): tuned with the human-bot pilot to 67% wins over 24 fights) */
   /* THE WATER: its heights over the bed, and how fast it moves */
   lv: { dry: 0, low: 48, half: 80, high: 112 },   /* (each leaves one waler a row over the water, and HIGH a row under the walkways) */
   drainRate: 36, fillRate: 60, wakeRate: 32, aground: 26,

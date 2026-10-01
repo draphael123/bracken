@@ -7998,5 +7998,167 @@
     "heroLevel": 21
    }
   }
+ },
+ "canal": {
+  "hash": "63f77d968beb",
+  "boss": {
+   "boss": "greenteeth",
+   "wins": 0,
+   "fights": 6,
+   "byHero": {
+    "knight": [
+     "timeout:84/60",
+     "timeout:69/55"
+    ],
+    "warden": [
+     "timeout:75/65",
+     "timeout:75/65"
+    ],
+    "pyro": [
+     "timeout:62/53",
+     "timeout:65/49"
+    ]
+   },
+   "rows": [
+    {
+     "hero": "knight",
+     "seed": 1,
+     "tag": "expected",
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 84,
+     "bossLeftPct": 60,
+     "landed": 209,
+     "swings": 1793,
+     "reprisalPct": 0,
+     "chip": [
+      {
+       "f": 240,
+       "mul": 0.05,
+       "open": false,
+       "mode": "grabTell"
+      },
+      {
+       "f": 720,
+       "mul": 0.05,
+       "open": false,
+       "mode": "lashTell"
+      },
+      {
+       "f": 1500,
+       "mul": 0.05,
+       "open": false,
+       "mode": "lurk"
+      },
+      {
+       "f": 3000,
+       "mul": 0.05,
+       "open": false,
+       "mode": "lurk"
+      }
+     ]
+    },
+    {
+     "hero": "knight",
+     "seed": 2,
+     "tag": "expected",
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 69,
+     "bossLeftPct": 55,
+     "landed": 246,
+     "swings": 2270,
+     "reprisalPct": 14,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "expected",
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 75,
+     "bossLeftPct": 65,
+     "landed": 227,
+     "swings": 1550,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 2,
+     "tag": "expected",
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 75,
+     "bossLeftPct": 65,
+     "landed": 227,
+     "swings": 1550,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "expected",
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 62,
+     "bossLeftPct": 53,
+     "landed": 286,
+     "swings": 2227,
+     "reprisalPct": 25,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 65,
+     "bossLeftPct": 49,
+     "landed": 311,
+     "swings": 2156,
+     "reprisalPct": 43,
+     "chip": []
+    }
+   ]
+  },
+  "level": {
+   "knight": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 247,
+    "hits": 33,
+    "walked": 100,
+    "lifts": 40,
+    "frames": 10135,
+    "kills": 5,
+    "heroLevel": 21
+   },
+   "warden": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 192,
+    "hits": 27,
+    "walked": 100,
+    "lifts": 40,
+    "frames": 10106,
+    "kills": 4,
+    "heroLevel": 21
+   },
+   "pyro": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 202,
+    "hits": 29,
+    "walked": 100,
+    "lifts": 40,
+    "frames": 10103,
+    "kills": 10,
+    "heroLevel": 21
+   }
+  }
  }
 }
