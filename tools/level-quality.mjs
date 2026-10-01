@@ -20,7 +20,7 @@ const TS = 16;
 
 /* WHICH LEVELS ARE HELD TO IT. New or reworked levels only: the old campaign misses the bar in places (--all shows where) and is not being reworked.
    Add a level id here in the lane that builds or reworks it. An id that is not in LEVELS yet is skipped with a note (the theatre lane lands later). */
-export const GATE = ['theatre'];   /* fair re-gated when FAIRFIX2 ships (the OLD fair is live and is not a reworked level on this branch) */
+export const GATE = ['theatre', 'fair'];   /* the fair re-gated by claude/fairfix2 (the rework it waited for) */
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
 /* STOCK TRACKS: a tune that is in audio/ but was not written for any level - a stand-in. A level that plays one has borrowed its music as surely as one that plays a

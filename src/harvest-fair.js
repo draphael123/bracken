@@ -279,7 +279,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   post(478, R + 2, 0.5); post(494, R + 2, 1); post(508, R + 2, 0);
   foe('mummer', 478, { y: R + 2, squad: 'fire' }); foe('mummer', 505, { y: R + 2, squad: 'fire' });   /* each a few steps before a line of bunting */
   block(490, 490, R + 2, R + 2); block(502, 502, R + 2, R + 2); fallen.push(490, 502);   /* two fallen stalls across the lane: a tile high, a hop */
-  for (const [x0, row] of [[471, R - 1], [478, R - 2], [485, R - 1], [492, R - 2], [499, R - 1], [506, R - 2], [513, R - 1], [519, R - 2]]) {   /* the HIGH lane: eight stall roofs, a three-tile gap between, each one gives */
+  for (const [x0, row] of [[471, R - 1], [478, R - 2], [485, R - 1], [492, R - 2], [499, R - 1], [506, R - 2], [513, R - 1]]) {   /* the HIGH lane: seven stall roofs, a three-tile gap between, each one gives; past the last the lanes meet - drop into the straw and run the climb out with the fire behind */
     plat(x0, row, 4); crumbles.push({ x0, x1: x0 + 3, row, rows: 1, count: 0.7, kind: 'stall', fire: true }); }
   const beam = (x, period) => ({ x0: x * TS, x1: (x + 2) * TS, y: (R + 3) * TS - 10, th: 6, dmg: 14, name: 'THE BURNING BUNTING', period, up: 1.2, bunting: true });   /* down for period - 1.2 s, up for 1.2 s; three periods, so they never lift together */
   const chases = [{ id: 'effigy', name: 'THE BURNING EFFIGY', look: 'fire', dir: 1, trigger: 476 * TS, end: 525 * TS, gap0: 200, runsOver: true, say: 'THE EFFIGY IS ALIGHT! RUN!',
