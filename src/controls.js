@@ -16,7 +16,7 @@
 // reserved: they cannot be bound. A key shared by two actions is FLAGGED (both rows go red and the screen says which), not refused.
 //
 // The card (cardRows) is the one place the hero-by-hero button words live: it used to be a fixed table in main.js with the Pyromancer's
-// C listed as 'block' (it is her ember and her jet; her crouch is the EMBER WARD).
+// C listed as 'block' (it is her ember and her jet; her down is the EMBER FLARE).
 
 export const KB_ACTIONS = [
   { id: 'left', label: 'MOVE LEFT' }, { id: 'right', label: 'MOVE RIGHT' }, { id: 'up', label: 'UP / LOOK UP' }, { id: 'down', label: 'CROUCH / DOWN' },

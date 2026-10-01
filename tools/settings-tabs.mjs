@@ -36,7 +36,7 @@ assert.equal(tabOf('Combat'), 'gameplay'); assert.equal(tabOf('Sound test'), 'au
   for (const h of ['knight', 'warden', 'paladin', 'pirate', 'reaper', 'geomancer']) { const r = cardRows({ hero: h }); assert(r.find(x => x[0] === 'crouch' && /HOLD DOWN/.test(x[1])), h + ' has the universal duck on the card'); assert(!r.find(x => x[0] === 'ember flare'), h + ' has no ember flare'); }
   const b = emptyBinds(); setSlot(b, 'kb', 'jump', 0, 'i'); setSlot(b, 'kb', 'block', 0, 'o'); setSlot(b, 'kb', 'down', 0, 'k');
   const rows = cardRows({ hero: 'knight', binds: b }); assert(/^I \//.test(rows.find(r => r[0] === 'jump')[1]), 'the card shows the chosen jump key'); assert(/HOLD O/.test(rows.find(r => r[0] === 'block')[1]), 'and the chosen C');
-  assert(/HOLD K/.test(cardRows({ hero: 'pyro', binds: b }).find(r => r[0] === 'ember flare')[1]), 'and the ember flare follows the crouch key'); }
+  assert(/TAP K/.test(cardRows({ hero: 'pyro', binds: b }).find(r => r[0] === 'ember flare')[1]), 'and the ember flare follows the crouch key'); }
 
 const shots = process.env.SETTINGS_SHOTS; if (shots) mkdirSync(shots, { recursive: true });
 const pg = await openPage({ audio: false, fonts: false });
