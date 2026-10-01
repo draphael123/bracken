@@ -200,11 +200,11 @@ export function buildHarvestFair({ painter, T, TS }) {
   cellar(321, 337, 328);
   tk(323, R + 6); tk(325, R + 6); ent('mend', 336, R + 6); coins([322, R + 6], [324, R + 6], [326, R + 6]);
   /* THE DOOR IN THE GLASS (claude/fairfix2: hidden paths via mirror reflections): stand by the cracked panel facing the TRUE glass at the door end and it shows a door at your back
-     that is not on this side of the glass. Step through it (UP) into the fortune-teller's room under the ticket yard: tickets and a silver, and a door back */
+     that is not on this side of the glass. Step through it (UP) into the fortune-teller's room under the ticket yard: two tickets and a heart, and a door back */
   ent('doorway', 324, S, { id: 'glassA', to: 'glassB', mirror: true, kind: 'goblin' });
   for (let y = R + 2; y <= R + 5; y++) for (let x = 340; x <= 347; x++) set(x, y, T.AIR);
   ent('doorway', 341, R + 5, { id: 'glassB', to: 'glassA', kind: 'goblin' });
-  ent('silver', 345, R + 5); tk(343, R + 5); tk(346, R + 5); coins([344, R + 5], [347, R + 5]);
+  ent('mend', 345, R + 5); tk(343, R + 5); tk(346, R + 5); coins([344, R + 5], [347, R + 5]);
   const fortune = { x0: 340, x1: 347, y0: R + 2, y1: R + 5 };
   post(322, S, 1); post(335, S, 0.5);             /* a lantern in the dark: it holds by the door, and gutters at the far end */
   /* the ticket yard, and THE TOWER'S STAIR: three flights up to the landing (a mummer waits there under a lantern that gutters), then the step to the tower top */
@@ -236,7 +236,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   strikers.push({ id: 2, x: 409, row: R, launch: -760, tickets: 2, big: true });
   plat(399, 12, 12);   /* the plank at the maze's roof (407-410) and, west of it, THE HAYLOFT (claude/fairfix2): only the tall striker throws you this high, and a gate stands on the plank - SHOW 12 TICKETS */
   ticketGates.push({ x: 403, y0: 7, y1: 11, need: 12, name: 'THE HAYLOFT' }); ent('sign', 405, 11, { text: 'THE HAYLOFT. SHOW 12 TICKETS.' });
-  ent('silver', 400, 11); tk(399, 11); tk(401, 11); coins([402, 11]);
+  ent('mend', 400, 11); tk(399, 11); tk(401, 11); coins([402, 11]);
   /* --- THE CORN MAZE (cols 412-436): three tiers, each a corridor, each turn a blind corner (walls stop your look), a mummer in a scarecrow's coat at the turn --- */
   const mx0 = 412, mx1 = 436;
   block(mx0 - 1, mx0 - 1, 12, 22);                        /* the left wall (tier one is open at the foot) */
