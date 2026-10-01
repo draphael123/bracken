@@ -1,0 +1,26 @@
+{
+ "mage": {
+  "hash": "622b724f3f34",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 3,
+  "deaths": 0,
+  "kills": 10,
+  "lifts": 142,
+  "walked": 100,
+  "bare": true
+ },
+ "theatre": {
+  "hash": "99a8359b5e65",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 16,
+  "deaths": 0,
+  "kills": 39,
+  "lifts": 63,
+  "walked": 100,
+  "bare": true
+ }
+}

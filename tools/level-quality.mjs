@@ -7,6 +7,8 @@
    docs/LEVEL-QUALITY.md says what each number means and why the limit is where it is. Everything is read from the built level (grid, ents,
    moversExtra, arrays) and its walked main route (tools/pacing.mjs): no browser, ~10 s for the whole campaign. */
 import { existsSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 import { SLOPE, SLOPE_NAMES, heightAt } from '../src/slopes.js';
 import { bakeSandSlopes } from '../src/redraw/slopes.js';
 import { install } from './node-canvas.mjs';
@@ -20,6 +22,11 @@ const TS = 16;
 /* WHICH LEVELS ARE HELD TO IT. New or reworked levels only: the old campaign misses the bar in places (--all shows where) and is not being reworked.
    Add a level id here in the lane that builds or reworks it. An id that is not in LEVELS yet is skipped with a note (the theatre lane lands later). */
 export const GATE = ['theatre'];   /* fair re-gated when FAIRFIX2 ships (the OLD fair is live and is not a reworked level on this branch) */
+/* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
+   Daniel decides when it is lifted; each row carries the TODO and the reason. */
+export const REPORT_ONLY = {
+  theatre: ['roles'],   /* TODO(Daniel decides): the theatre has two roles (melee: mummers, stagehands, spiders, bats, swornswords; ranged: the drunks) and no support, heavy or runner. Lift this when a lane gives it a third role */
+};
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
 
@@ -39,9 +46,28 @@ export const LIM = {
   emptyShareMax: 0.30,  /* share of the screens with no foe at all (Folly 0.23) */
   section: 200,         /* a designed encounter in every stretch of this many columns */
   branches: 2,          /* dead-end pockets / branches off the route (Folly 5) */
+  pilotHits: 2,         /* a fresh level-1 hero with no abilities, walked by the pilot bot with no god mode, takes at least this many blows over 3 runs summed (tools/level1-pilot.mjs). A FLOOR, NOT A TARGET: the bot cannot work the Folly's runes and is lifted ~48 times a run, so the Folly reads only a few; a level that costs the bot nothing is a walk */
+  roles: 3,             /* distinct foe roles (melee, ranged, support, heavy, runner) among the level's foes and ambush waves */
   routeSpan: 8,         /* OR the walked route climbs/drops this many rows, or doubles back this many tiles (Folly 30 rows) */
 };
 
+/* FOE ROLES. The game has no role field on a foe, so the roles are named here, by what the foe DOES to you; a foe not listed is MELEE. Keep the lists to kinds whose AI
+   was read (a thrown or shot attack; a bomb or net; a heal/horn/banner/snuff; plate or a big swing; a fast chase or a grab). Add a kind when a lane builds one. */
+export const ROLES = {
+  ranged: ['archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder', 'skybolt', 'catapult', 'towertop', 'pyromancer', 'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest'],
+  support: ['gobpriest', 'bannerbearer', 'horn', 'snuffer', 'priest', 'acolyte', 'merrowcaller', 'bearer'],
+  heavy: ['heavy', 'brute', 'troll', 'golem', 'merrowbrute', 'tideguard', 'hedgeknight', 'armour', 'bloodknight', 'berserker', 'drownedknight', 'bellguard', 'holdfast', 'gaffer', 'barrowrider', 'shield'],
+  runner: ['runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog'],
+};
+const rolesOf = t => { const r = Object.keys(ROLES).filter(k => ROLES[k].includes(t)); return r.length ? r : ['melee']; };
+/* COLLECTIBLES AND INTERACTIVES THAT MUST UNLOCK SOMETHING. A pickup or a lever that opens nothing is clutter. What each kind can open is named here; a level states its own
+   in L.unlocks = [{ kind, opens: 'gate'|'relic'|'shortcut'|'secret'|'lift'|.., hud: 'the line the HUD or a callout shows' }] (a collectible a level invents - a candle stub, a cog - goes
+   there). The tool then asks: is every collectible kind in the level either known here or declared, and does an interactive have something in the level to work. */
+export const COLLECT_KNOWN = { silver: 'a hero or upgrade in the shop (the HUD counts them)', relic: 'itself (a relic)', key: 'a lock gate', stray: 'a quest relic', pickup: 'a pickup', chest: 'its contents', heart: 'health', coin: 'the shop' };
+const COLLECT_KINDS = new Set(['key', 'stray', 'quest', 'pickup', 'chest']);
+const INTERACTIVE_KINDS = new Set(['lever', 'crank', 'winch', 'flatwinch', 'cuelever', 'capstan', 'pump', 'sluice', 'plate', 'pushblock', 'lockrune', 'rune', 'glyph', 'valve', 'siphon', 'pulley']);
+const TARGET_ENTS = new Set(['lockgate', 'door', 'doorway', 'ringdoor', 'gate', 'bridge', 'cart', 'plank', 'lift', 'hoist', 'cage', 'dropcage', 'deadfall', 'felltree', 'mover', 'pad', 'sluice', 'cargowall', 'bulkhead', 'davit', 'flylock', 'stagetrap', 'startrap', 'timber', 'weight']);
+const TARGET_ARRAYS = ['bridges', 'locks', 'hoists', 'risers', 'crumbles', 'glyphBridges', 'cableBridges', 'carousels', 'masts', 'pits', 'seams', 'sluices', 'stagetraps', 'flies'];
 const GENERIC = new Set(['coin', 'deco', 'sign', 'check', 'silver', 'relic', 'stray', 'mend', 'torch', 'npc', 'guest', 'shop', 'shrine', 'gate', 'captive', 'folk', 'stal', 'web', 'quest', 'pickup', 'chest', 'heart', 'key']);
 /* A GADGET is something the hero works or rides, not something that hits him: non-foe, non-generic ent kinds that are level-specific (used by <= 3 levels), the set-piece and
    platform kinds pacing.mjs recognises everywhere, moving platforms (moversExtra kinds), and the level's own machine arrays. */
@@ -78,6 +104,11 @@ function slopeGate() { if (GATE_SRC !== null) return GATE_SRC; const src = readF
   return GATE_SRC = m ? m[1] : ''; }
 const slopeGateName = () => slopeGate() || 'nothing (no guard found)';
 function slopesPainted(L) { const g = slopeGate(); if (!g) return false; try { return !!new Function('L', 'return !!(' + g + ')')(L); } catch { return true; /* a guard that reads more than L: assume it reaches everything */ } }
+
+/* A HASH OF THE LEVEL'S DATA: the pilot cache (docs/level1-pilot.json) is stamped with it, so a level edit makes the cached pilot row stale. */
+export function levelHash(lv) { const L = built(lv); return createHash('sha1').update(JSON.stringify([L.W, L.H, Array.from(L.grid), L.ents, L.moversExtra || null, L.ambushes || null])).digest('hex').slice(0, 12); }
+export const PILOT_FILE = fileURLToPath(new URL('../docs/level1-pilot.json', import.meta.url));
+let PILOT = null; const pilotCache = () => PILOT || (PILOT = existsSync(PILOT_FILE) ? JSON.parse(readFileSync(PILOT_FILE, 'utf8')) : {});
 
 export function measure(lv) {
   const L = built(lv), P = pacing(lv), W = L.W, H = L.H, ents = L.ents || [], route = P.route, A = arena(L), end = A ? Math.floor(A.x0 / TS) : W;
@@ -157,9 +188,36 @@ export function measure(lv) {
 
   // ---- 7. INVISIBLE SLOPES: every slope collision cell (ids 20-25) needs a drawn diagonal tile of its own kind ----
   let slopeCells = 0; for (let i = 0; i < L.grid.length; i++) if (L.grid[i] >= 20 && L.grid[i] <= 25) slopeCells++;
+  // ---- 8. ROLES: ranged present, role mix ----
+  const roleCount = {}; for (const f of allFoes) for (const r of rolesOf(f.t)) roleCount[r] = (roleCount[r] || 0) + 1;
+  const roleKinds = Object.keys(roleCount).sort(), rangedN = roleCount.ranged || 0;
+
+  // ---- 9. COLLECTIBLES / INTERACTIVES UNLOCK SOMETHING ----
+  const declared = new Map((Array.isArray(L.unlocks) ? L.unlocks : []).map(u => [u.kind, u]));
+  const collectKinds = [...new Set(ents.filter(e => COLLECT_KINDS.has(e.t) || e.collect).map(e => e.t))];
+  const mageLocks = !!(L.mage && Array.isArray(L.mage.locks) && L.mage.locks.length);
+  const interactKinds = [...new Set([...ents.filter(e => INTERACTIVE_KINDS.has(e.t)).map(e => e.t), ...(mageLocks ? ['mage:lock'] : [])])];
+  const hasTarget = ents.some(e => TARGET_ENTS.has(e.t)) || TARGET_ARRAYS.some(k => Array.isArray(L[k]) && L[k].length) || (L.moversExtra || []).length > 0 || mageLocks;
+  const unmapped = collectKinds.filter(k => !(k in COLLECT_KNOWN) && !declared.has(k));
+  const badDecl = [...declared.values()].filter(u => !u.opens || !u.hud || !(ents.some(e => e.t === u.kind) || (Array.isArray(L[u.kind]) && L[u.kind].length)));
+  const keyNoGate = collectKinds.includes('key') && !ents.some(e => e.t === 'lockgate' || (e.t === 'gate' && (e.lock || e.needs))) && !(L.locks || []).length;
+  const deadInteract = interactKinds.length && !hasTarget ? interactKinds : [];
+  const unlockOk = !unmapped.length && !badDecl.length && !keyNoGate && !deadInteract.length;
+  const unlockMsg = (collectKinds.length + interactKinds.length + declared.size === 0 ? 'no collectible or interactive kinds beyond silver/relic' : collectKinds.length + ' collectible kinds [' + collectKinds.join(',') + '], ' + interactKinds.length + ' interactive kinds [' + interactKinds.join(',') + '], ' + declared.size + ' declared in L.unlocks')
+    + (unmapped.length ? '; NO UNLOCK NAMED for ' + unmapped.join(',') + ' (declare it in L.unlocks)' : '') + (badDecl.length ? '; L.unlocks entry missing opens/hud or not in the level: ' + badDecl.map(u => u.kind).join(',') : '') + (keyNoGate ? '; a key with no lock gate' : '') + (deadInteract.length ? '; ' + deadInteract.join(',') + ' with nothing in the level to open' : '');
+
+  // ---- 10. THE LEVEL-1 NO-ABILITY PILOT (cached; tools/level1-pilot.mjs) ----
+  const gated = GATE.includes(lv.id), prow = pilotCache()[lv.id], phash = prow ? levelHash(lv) : null;
+  const pilotState = !prow ? (gated ? 'missing' : 'none') : phash !== prow.hash ? 'stale' : !prow.bare ? 'notbare' : prow.hits >= LIM.pilotHits ? 'ok' : 'soft';
+  const pilotOk = pilotState === 'ok' || (!gated && (pilotState === 'none' || pilotState === 'stale'));
+  const pilotMsg = pilotState === 'none' ? 'not run (required for gated levels only; node tools/level1-pilot.mjs ' + lv.id + ' --write)'
+    : pilotState === 'missing' ? 'NO PILOT ROW in docs/level1-pilot.json: run node tools/level1-pilot.mjs ' + lv.id + ' --write and commit it'
+    : pilotState === 'stale' ? 'the level changed since its pilot ran (hash ' + prow.hash + ' now ' + phash + '): re-run node tools/level1-pilot.mjs ' + lv.id + ' --write'
+    : pilotState === 'notbare' ? 'the pilot ran with talents or skills present: it must be a fresh level-1 hero'
+    : prow.hits + ' blows taken by a fresh level-1 ' + prow.hero + ' (' + prow.deaths + ' deaths, walked ' + prow.walked + '%) (>=' + LIM.pilotHits + (pilotState === 'soft' ? '): A WALK, NOT A LEVEL' : ')') + (prow.lifts !== undefined ? ', ' + prow.lifts + ' lifts' : '');
   const sa = slopeArt(), painted = slopeCells ? slopesPainted(L) : true;
   const m = { id: lv.id, tall, emptyShare, slopeCells, slopePainted: painted, slopeArtOk: sa.ok, slopeArtWhy: sa.why, W, routeTiles, flat: flat.n, flatAt: flat.at, flatShare: flat.long / Math.max(1, end), terrainShare: terrainFlat.long / Math.max(1, end), terrainFlat: terrainFlat.n, terrainFlatAt: terrainFlat.at, routeBands: bands.size, multiShare, gadgetKinds: gadgets.length, gadgetDeveloped: developed.length, gadgets, music, borrowedFrom, shared, trackFile: !!trackFile,
-    secrets: loot.length, secretEnts, checks, checkSpacing: checks ? routeTiles / checks : Infinity, density, emptyScreens, holes, span, back, pockets, per };
+    roleKinds, roleCount, rangedN, unmapped, collectKinds, interactKinds, pilotState, pilotHits: prow ? prow.hits : null, secrets: loot.length, secretEnts, checks, checkSpacing: checks ? routeTiles / checks : Infinity, density, emptyScreens, holes, span, back, pockets, per };
   const bar = [
     ['flat', m.flatShare <= LIM.flatShareMax && m.terrainShare <= LIM.terrainShareMax, Math.round(m.flatShare * 100) + '% of the route is long flat empty runs (<=' + Math.round(LIM.flatShareMax * 100) + '%), ' + Math.round(m.terrainShare * 100) + '% is long level ground (<=' + Math.round(LIM.terrainShareMax * 100) + '%); longest ' + m.flat + ' / ' + m.terrainFlat + ' columns'],
         ['bands', m.routeBands >= LIM.routeBands && m.multiShare >= LIM.multiHeightShare, m.routeBands + ' height bands on the route (>=' + LIM.routeBands + '), ' + Math.round(m.multiShare * 100) + '% of the width offers a second height (>=' + Math.round(LIM.multiHeightShare * 100) + '%)'],
@@ -170,9 +228,14 @@ export function measure(lv) {
     ['encounters', !m.holes.length, m.holes.length ? 'no designed encounter in columns ' + m.holes.join(', ') : 'a designed encounter in every ' + LIM.section + ' columns'],
     ['density', m.tall || (m.density >= LIM.densityLo && m.density <= LIM.densityHi && m.emptyShare <= LIM.emptyShareMax), m.tall ? 'a tall level: not measured' : m.density.toFixed(2) + ' foes a screen (' + LIM.densityLo + '-' + LIM.densityHi + '), ' + m.emptyScreens + ' empty screens = ' + Math.round(m.emptyShare * 100) + '% (<=' + Math.round(LIM.emptyShareMax * 100) + '%)'],
     ['slopes', m.slopeArtOk && m.slopePainted, !m.slopeCells ? 'no slope tiles' : m.slopeCells + ' slope cells: ' + (m.slopeArtOk ? (m.slopePainted ? 'drawn (diagonal tiles, guard: ' + slopeGateName() + ')' : 'INVISIBLE - the tile painter draws slope art only where ' + slopeGateName() + ', so these walkable slopes have no texture') : 'the slope tiles are not diagonal: ' + m.slopeArtWhy)],
+    ['ranged', m.rangedN > 0, m.rangedN ? m.rangedN + ' ranged foes: ' + [...new Set(allFoes.filter(f => rolesOf(f.t).includes('ranged')).map(f => f.t))].join(',') : 'NO RANGED FOE: nothing in this level shoots, throws or casts (ROLES.ranged in tools/level-quality.mjs)'],
+    ['roles', m.roleKinds.length >= LIM.roles, m.roleKinds.length + ' foe roles (>=' + LIM.roles + '): ' + m.roleKinds.map(r => r + 'x' + roleCount[r]).join(' ')],
+    ['unlocks', unlockOk, unlockMsg],
+    ['pilot', pilotOk, pilotMsg],
     ['route', (m.span >= LIM.routeSpan || m.back >= LIM.routeSpan) && m.pockets >= LIM.branches, 'route spans ' + m.span + ' rows, ' + m.back + ' tiles back, ' + m.pockets + ' branches/pockets (>=' + LIM.branches + ')'],
   ];
-  m.bar = bar; m.pass = bar.every(b => b[1]); m.failed = bar.filter(b => !b[1]).map(b => b[0]);
+  const soft = (REPORT_ONLY[lv.id] || []);
+  m.bar = bar; m.pass = bar.every(b => b[1] || soft.includes(b[0])); m.failed = bar.filter(b => !b[1] && !soft.includes(b[0])).map(b => b[0]); m.reportOnly = bar.filter(b => !b[1] && soft.includes(b[0])).map(b => b[0]);
   return m;
 }
 
@@ -183,10 +246,10 @@ if (isMain) {
   if (ALL) {
     const cols = ['flat', 'terrain', 'bands', 'mechanics', 'music', 'secrets', 'checks', 'encounters', 'density', 'route'];
     console.log('LEVEL QUALITY, every campaign level (a report: nothing here fails the suite; the gated list is ' + GATE.join(', ') + ')\n');
-    console.log('level'.padEnd(12) + 'flat% ground%   bands gadg/dev secr chk dens slope  fails');
+    console.log('level'.padEnd(12) + 'flat% ground%   bands gadg/dev secr chk dens slope rng roles unlk pilot  fails');
     let clear = 0;
     for (const d of campaign) { let m; try { m = measure(d); } catch (e) { console.log(d.id.padEnd(12) + 'could not be measured: ' + e.message); continue; } if (m.pass) clear++;
-      console.log(d.id.padEnd(12) + String(Math.round(m.flatShare * 100)).padStart(5) + String(Math.round(m.terrainShare * 100)).padStart(8) + (m.routeBands + '/' + Math.round(m.multiShare * 100) + '%').padStart(9) + (m.gadgetKinds + '/' + m.gadgetDeveloped).padStart(9) + String(m.secrets).padStart(5) + String(m.checks).padStart(5) + (m.tall ? '-' : m.density.toFixed(1)).padStart(5) + (m.slopeCells ? (m.slopePainted ? 'ok' : 'NONE') : '-').padStart(6) + '  ' + (m.pass ? 'PASS' : m.failed.join(','))); }
+      console.log(d.id.padEnd(12) + String(Math.round(m.flatShare * 100)).padStart(5) + String(Math.round(m.terrainShare * 100)).padStart(8) + (m.routeBands + '/' + Math.round(m.multiShare * 100) + '%').padStart(9) + (m.gadgetKinds + '/' + m.gadgetDeveloped).padStart(9) + String(m.secrets).padStart(5) + String(m.checks).padStart(5) + (m.tall ? '-' : m.density.toFixed(1)).padStart(5) + (m.slopeCells ? (m.slopePainted ? 'ok' : 'NONE') : '-').padStart(6) + String(m.rangedN).padStart(4) + String(m.roleKinds.length).padStart(6) + (m.bar.find(b => b[0] === 'unlocks')[1] ? 'ok' : 'NO').padStart(5) + (m.pilotHits === null ? '-' : String(m.pilotHits)).padStart(6) + '  ' + (m.pass ? 'PASS' : m.failed.join(','))); }
     console.log('\n' + clear + ' of ' + campaign.length + ' clear the bar. Columns: flat% = share of the route in long flat empty runs (limit ' + LIM.flatShareMax * 100 + '), ground% = share in long level-ground runs (' + LIM.terrainShareMax * 100 + '), bands = height bands on the route / % of width with a second height, gadg/dev = gadget kinds / those in 3+ places, secr = silver+relic off the route, chk = checkpoints, dens = foes a screen.');
     process.exit(0);
   }
@@ -196,7 +259,7 @@ if (isMain) {
     if (!lv) { console.log('== ' + id + ': not built on this branch - skipped' + (GATE.includes(id) ? ' (it is on the gated list: the lane that adds it must clear this bar)' : '')); continue; }
     const m = measure(lv);
     console.log('== ' + id.toUpperCase() + ' (' + m.W + ' columns, route ' + m.routeTiles + ' tiles): ' + (m.pass ? 'CLEARS THE BAR' : 'MISSES THE BAR: ' + m.failed.join(', ')));
-    for (const [k, ok, msg] of m.bar) console.log('  ' + (ok ? 'ok   ' : 'FAIL ') + k.padEnd(11) + msg);
+    for (const [k, ok, msg] of m.bar) console.log('  ' + (ok ? 'ok   ' : m.reportOnly.includes(k) ? 'WARN ' : 'FAIL ') + k.padEnd(11) + msg + (!ok && m.reportOnly.includes(k) ? '   [REPORT-ONLY for ' + id + ': see REPORT_ONLY in tools/level-quality.mjs]' : ''));
     if (!m.pass) failed++;
   }
   console.log(failed ? '\n' + failed + ' level(s) miss the quality bar (docs/LEVEL-QUALITY.md).' : '\nevery gated level clears the quality bar.');
