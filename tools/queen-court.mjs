@@ -45,6 +45,8 @@ try {
       res.leap={told,tx:told&&Math.round(told.tx)};let hurtStand=0;const tx=q.tx;
       for(let i=0;i<90&&q.mode!=='quake';i++){BK.P.x=tx+30;BK.P.vx=0;BK.P.inv=0;BK.P.hp=BK.P.maxHp;BK.sim(1);if(BK.P.hp<BK.P.maxHp)hurtStand=1;}
       res.leap.standHurt=hurtStand||(BK.P.hp<BK.P.maxHp);res.leap.landed=q.mode;
+      /* the first quake's two waves (royal, 1.4 s) are still running the hall: let them die with the hero shielded, or one that rolls over the second test's hero reads as the quake hurting a jumper (it flaked whenever her second landing fell on the far side of the first) */
+      only(q,[]);for(let i=0;i<100;i++){hold(A.x0+300);BK.sim(1);}
       only(q,['hLeapT']);q.x=A.x0+120;BK.P.x=A.x0+300;for(let i=0;i<60&&q.mode!=='hallLeap';i++){hold(A.x0+300);BK.P.inv=0;BK.sim(1);}
       let air=0,hurtAir=0;const tx2=q.tx;for(let i=0;i<90&&q.mode!=='quake';i++){BK.P.x=tx2+30;BK.P.vx=0;BK.P.inv=0;BK.P.hp=BK.P.maxHp;if(q.modeT-0.8<0.2&&BK.P.ground&&!air){BK.press('jump');BK.keys.jump=true;air=1;}BK.sim(1);if(BK.P.hp<BK.P.maxHp)hurtAir=1;}
       for(let i=0;i<30;i++){BK.P.hp=BK.P.maxHp;BK.P.inv=9;BK.sim(1);}BK.keys.jump=false;res.leap.airHurt=hurtAir;
