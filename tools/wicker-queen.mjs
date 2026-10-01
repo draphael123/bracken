@@ -221,7 +221,7 @@ const lv = LEVELS.find(l => l.id === 'fair'), L = lv.build(), G = L.green, Ar = 
     const cks = L.ents.filter(e => e.t === 'check').map(e => e.x);
     ok(cks.some(x => x < G.door && x >= G.door - 40) && !cks.some(x => x * 16 > Ar.x0 && x * 16 < Ar.x1), 'no door checkpoint before the green, or one inside it: ' + cks);
     ok(L.ents.some(e => e.t === 'hobbyhorse' && e.elite && e.gate === G.door), 'the elite hobby-horse no longer guards the door');
-    const rel = L.ents.filter(e => e.t === 'relic'); ok(rel.length === 1 && rel[0].bossDrop && rel[0].x * 16 > Ar.x0 && rel[0].x * 16 < Ar.x1, 'her reward is not the fair\'s one relic slot, waiting in the green for her death: ' + JSON.stringify(rel));
+    const rel = L.ents.filter(e => e.t === 'relic' && e.bossDrop); ok(rel.length === 1 && rel[0].kind === 'maypole' && rel[0].x * 16 > Ar.x0 && rel[0].x * 16 < Ar.x1 && L.ents.filter(e => e.t === 'relic').every(e => e.bossDrop || e.x * 16 < Ar.x0), 'her reward is not the fair\'s one boss-drop relic, waiting in the green for her death (the back lot\'s glass is the level\'s own, before the door - claude/fairfix2): ' + JSON.stringify(rel));
     ok(L.gateAfterBoss && L.ents.some(e => e.t === 'gate' && e.x * 16 > Ar.x0 && e.x * 16 < Ar.x1), 'the level does not end at the gate after her death (gateAfterBoss)');
   } }
 
@@ -322,7 +322,7 @@ try {
     out.coop = { oneFacing: m1, bothAway: Math.round(m2) }; BK.coopEnd();
     // 14. HER DEATH: the ride stops, the relic, the gate, the level cleared at the gate
     for (const e of BK.enemies()) if (e.fromQueen) e.alive = false;
-    const rel = () => BK.props().find(p => p.t === 'relic'); out.death = { relicHidden: !!(rel() && rel().hidden) };
+    const rel = () => BK.props().find(p => p.t === 'relic' && p.kind === 'maypole');   /* (hers: the back lot holds the fair's own glass, claude/fairfix2) */ out.death = { relicHidden: !!(rel() && rel().hidden) };
     q.hp = 1; q.mode = 'burn'; q.modeT = 2; q.inv = 0; BKT.hurtEnemy(q, 50, q.x - 10, false); for (let i = 0; i < 420 && !BK.L.gateOpen; i++) { BK.P.inv = 99; BK.sim(1); }   /* the slow beat of her fall, then THE ROAD GOES ON */
     for (let i = 0; i < 240; i++) BK.sim(1); out.death.ring = ring();
     out.death.dead = !q.alive; out.death.active = BK.bossActive; out.death.relicShown = !!(rel() && !rel().hidden); out.death.relicKind = rel() && rel().kind; out.death.gateOpen = !!BK.L.gateOpen;
