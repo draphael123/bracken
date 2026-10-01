@@ -12,6 +12,7 @@ import { FLIGHTS as SPIRAL_FLIGHTS } from './spiral-chase.js';   /* THE SPIRAL S
 import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
+import { greenteethPlan, gtOpen } from './jenny-greenteeth.js';   /* JENNY GREENTEETH (claude/lockkeeper): the bot reads her rings, bands, hand and paddles off her own module */
 import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */
 import { puppetPlan } from './puppeteer.js';
 import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fairfix3) THE WICKER QUEEN's ribbon sweep, read off her own module */   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
@@ -527,7 +528,7 @@ async function runbossLab(BK, opts) {
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
-      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='greenteeth'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1056,6 +1057,24 @@ async function runbossLab(BK, opts) {
         if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
         if((h!=='paladin'||P.st>=44)&&!guard&&!eruption&&mode!=='sinkTell'&&!(mode==='slamTell'&&boss.modeT<.65)&&Math.abs(dx)<LAB_REACH[h]+target.w/2&&Math.abs(P.y-target.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
         const was=P.hp,m0=mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,target,f,h});if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='greenteeth'){
+        /* JENNY GREENTEETH (claude/lockkeeper): src/jenny-greenteeth.js greenteethPlan reads what a player sees - the ring on the water, the bands, the
+           surge's crest, her hand on the paddle, OPEN - a quarter-second late and not always right (PLAN: it misreads some tells, lets some hands go, is
+           late to some paddles); it swims, climbs the walers, works the paddles and drops the lamps. It rests inside its own branch */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const GH=BK.greenteethHands(),show=GH&&GH.show();
+        if(f===0||!P.labGtMem)P.labGtMem={};
+        const mv=P.onMover,wi=mv&&mv.weed&&show?show.weed.findIndex(q=>q.m===mv.wi&&q.firm&&!(q.broken>0)):-1;
+        const pl=show?greenteethPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,swim:!!P.swim,snare:P.snare||0,atk:P.atk,onWeed:P.ground?wi:-1,onTile:!!P.ground&&!P.onMover},e:boss,show,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labGtMem}):{gx:null,face:P.face};
+        if(pl.drop&&P.ground){k.down=true;if(P.labDrop===undefined||f-P.labDrop>20){BK.press('jump');P.labDrop=f;}}
+        else if(pl.jump&&(P.ground||P.swim)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.down)k.down=true;if(pl.up)k.up=true;
+        if(pl.block)k.block=true;
+        if(!(pl.down&&P.ground)&&!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:gtOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='puppeteer'){
         /* THE PUPPETEER (claude/puppeteer): src/puppeteer.js puppetPlan reads what a player sees - a glowing string in reach is cut, a told blow is blocked,

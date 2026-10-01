@@ -28,6 +28,8 @@
                        or her crossing them unseen, opens nothing (claude/fair3)
      THE PUPPETEER     drop both his puppets (blows or cut strings) and he is dragged down to the boards, open; a minute of his puppets left alone -
                        windups, blows - opens nothing (claude/puppeteer, PUPPETEER3)
+     JENNY GREENTEETH  drain her lock (strike the lower paddle) while she is at your gate: the water runs out from under her and she is stranded in
+                       the mud, open; a minute of her left alone opens nothing (claude/lockkeeper)
      THE LAMPREEVE, THE HEADLESS PLOUGHMAN, THE HOMUNCULUS (minis, claude/weakboss): strike the lamp he hoods / bait the plough into the
                        trough or the fence / make a trick miss you - each against the same thing left alone, in tools/weak-bosses.mjs
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
@@ -184,6 +186,12 @@ try {
    let cutF=0,op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const p=S.puppets.find(q=>q.alive&&q.mode!=='heap'&&/Tell$/.test(q.mode));
      if(p&&P.atk<0){P.x=p.x-(p.t==='harlequin'?14:18);P.face=1;P.vx=0;BK.press('atk');cutF++;}BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='downed')mode='downed';}
    out.puppeteer={alone:+alone.toFixed(1),swings:cutF,mode,open:+op.toFixed(1),onStage:b.mode==='downed'&&b.y===A.floor||mode==='downed'};}
+  /* JENNY GREENTEETH (claude/lockkeeper): a minute of her left alone in her lock, the hero on a gate's walkway, opens nothing; a real swing at the
+     lower paddle with her at that gate drains the lock from under her - stranded, open (the standalone lock until THE FOG CANAL holds her) */
+  {const b=boot('greenlock');const S=BK.greenteethHands().show(),G=S.A,P=BK.P;let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.W.stand;P.y=G.walk;P.vy=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
+   let op=0,mode=null;for(let i=0;i<60*6&&!(op>0);i++){P.hp=P.maxHp;P.x=G.E.paddle.x-14;P.y=G.walk;P.vy=0;P.face=1;b.x=Math.min(b.x,G.E.face-90);if(!S.pad.E.open&&!(S.pad.E.cd>0)&&P.atk<0)BK.press('atk');BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='stranded')mode='stranded';}
+   out.greenteeth={alone:+alone.toFixed(1),mode,open:+op.toFixed(1),drains:S.n.drain};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -256,6 +264,8 @@ try {
   assert.ok(r.wicker.short.open === 0 && r.wicker.short.mode !== 'burn', 'THE WICKER QUEEN: frozen short of the embers she opened: ' + JSON.stringify(r.wicker));
   assert.ok(r.wicker.unseen.open === 0 && r.wicker.unseen.mode !== 'burn', 'crossing the embers with nobody looking opened her: ' + JSON.stringify(r.wicker));
   assert.ok(r.wicker.embers.mode === 'burn' && r.wicker.embers.open >= 3, 'frozen ON the embers she did not burn open for 3 s or more (the boss rule; claude/fairfix3 tightened this from > 2): ' + JSON.stringify(r.wicker));
+  assert.equal(r.greenteeth.alone, 0, 'JENNY GREENTEETH: a minute of her left alone opened her: ' + JSON.stringify(r.greenteeth));
+  assert.ok(r.greenteeth.mode === 'stranded' && r.greenteeth.open >= 1.4, 'the lock drained with her at the gate and she was not stranded open: ' + JSON.stringify(r.greenteeth));
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (PUPPETEER3: drop both puppets - blows or cuts - and he is dragged down to the boards, open) */ 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
   assert.deepEqual(pg.errors, []);
