@@ -29,7 +29,7 @@ assert.equal(arena('crown').music, 'goblinroyal', "the Goblin Queen's arena is n
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");
 assert.equal(arena('oreroad').music, 'winchmaster', "the Winchmaster's arena is not on his mine-cart chase");
 assert.equal(arena('witchlight').music, 'gargoyle', "the Gate Gargoyle's arena is not on his stone-grind theme");
-for (const n of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
+for (const n of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
 const generic = new Set(['boss', 'boss2', 'boss3', 'boss4', 'king', 'queen']);
 for (const [id, name] of [['mage', 'archmage'], ['fallingtower', 'undeadmage'], ['kings', 'king'], ['crown', 'gqueen'], ['keep', 'drownedking'], ['oreroad', 'winchmaster'], ['witchlight', 'gargoyle']]) assert.ok(!generic.has(arena(id).music), name + ' is still on a generic boss track');
 
@@ -56,9 +56,18 @@ for (const name of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking',
   assert.ok(bad <= 2, name + ': the loop does not repeat exactly (' + bad + ' notes differ across the seam)');
   const gaps = []; const ts = [...new Set(ev.filter(e => e.t >= T0 && e.t < T0 + len - 1e-6).map(e => Math.round((e.t - T0) / S.step)))].sort((a, b) => a - b); for (let k = 1; k < ts.length; k++) gaps.push(ts[k] - ts[k - 1]);
   assert.ok(Math.max(...gaps) <= (MAXGAP[name] || 2), name + ': a hole of ' + Math.max(...gaps) + ' steps in the music');
-  results[name] = { seconds: +len.toFixed(1), oscPerLoop: first.length, perSecond: +density.toFixed(1), hash: first.map(fmt).join('|') };
+  const clicks = ev.filter(e => e.kind === 'src' && e.t >= T0 && e.t < T0 + len - 1e-6).length;
+  results[name] = { clicks, step: S.step, tonal: first, pitches: new Set(first.map(e => Math.round(e.f))), seconds: +len.toFixed(1), oscPerLoop: first.length, perSecond: +density.toFixed(1), hash: first.map(fmt).join('|') };
 }
 assert.notEqual(results.archmage.hash, results['archmage:undead'].hash, 'the undead voicing is the same notes as the living one');
+// THE UNDEAD ARCHMAGE HAS A SOUND OF HIS OWN (Daniel: "needs to sound a bit different"): his theme rotted, not the living one with a filter
+{ const L = results.archmage, U = results['archmage:undead'], hz = s => BM.nf(s);
+  assert.ok(U.step > L.step * 1.4, 'the undead theme is not slower (step ' + U.step + ' s against ' + L.step + ' s)');
+  assert.ok(U.seconds > L.seconds * 1.4, 'the undead loop is not longer than the living one (' + U.seconds + ' s against ' + L.seconds + ' s)');
+  const flat = f => [...U.pitches].some(p => Math.abs(p - Math.round(f * Math.pow(2, -1 / 12))) <= 1);
+  assert.ok(flat(hz('D3')) && flat(hz('A2')), 'the undead organ is not a semitone flat of the living one (no Db3 / Ab2 in it)');
+  const types = r => new Set(r.tonal.map(e => e.type)); assert.ok(types(L).has('triangle') && !types(U).has('triangle'), "the undead theme still has the living harpsichord's triangle voice");
+  assert.ok(U.clicks >= 40 && U.clicks > L.clicks * 4, 'the undead theme has no bone percussion: ' + U.clicks + ' dry clicks a loop against the living ' + L.clicks); }
 const hs = Object.values(results).map(r => r.hash); assert.equal(new Set(hs).size, hs.length, 'two of the boss themes play the same notes');
 assert.equal(errors.length, 0, 'the scheduler threw: ' + (errors[0] && errors[0].message));
 const gainNow = A.debugAudio().musicGain.gain; A.music.play('archmage'); assert.ok(A.debugAudio().wantTrack === 'archmage');

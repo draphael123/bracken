@@ -482,7 +482,7 @@ function playFile(name) {
 let heardHook = null;
 export function setHeardHook(fn) { heardHook = fn; }
 export const music = {
-  play(name) { if (heardHook) heardHook(splitTrack(name)[0]); wantTrack = name; silenced = false; if (!ac) return;
+  play(name) { if (heardHook) heardHook(name);   /* the whole name: 'archmage:undead' is its own Sound Test entry and unlocks on its own */ wantTrack = name; silenced = false; if (!ac) return;
     if (trackBuf[name]) { playFile(name); return; }
     // A TRACK WITH NO FILE IS PLAYED BY THE SYNTH - but the synth only runs while `currentTrack` is null,
     // and nothing was clearing it. So walking into UNDERLEAF left the PREVIOUS level's file playing and
@@ -1424,12 +1424,13 @@ Object.assign(SFX, {
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre'];
+export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
 // that page was CC0, checked before the file was pulled - see the credited lanes' own reports). Three tracks have
-// no outside credit because nothing outside BRACKEN made them (store, underkeep, fallingtower, stormharbor, burial
-// all note they were synthesised for this game in CREDITS.txt); mineworks/underleaf/deep have no file at all, so no
+// no outside credit because nothing outside BRACKEN made them (the store theme and the synth boss themes, archmage,
+// archmage:undead, goblinroyal and so on, which have no file at all). NOT stormharbor, underkeep, fallingtower or burial: those four
+// were script-synthesised on 2026-09-19 but replaced by CC0 recordings on 2026-09-20 (cad146c6), so they ARE credited below); mineworks/underleaf/deep have no file at all, so no
 // line for them either - the Sound Test shows nothing under a track this map does not name.
 // Kept short on purpose: this line sits on ONE row under the list (tools/textfit.mjs 'soundtest'), so the title is
 // trimmed to what fits and the pack/parenthetical detail stays in audio/CREDITS.txt, the full record.
