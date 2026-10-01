@@ -5,7 +5,7 @@
 //   3. the tabs answer to the keyboard (left/right on the strip, TAB) and to a gamepad (LB / RB), and the COMBAT switch still flips
 //   4. REBINDING: with the defaults, KEYS answers to the keys it always did; a rebound jump answers to its new key in play and no longer
 //      to the old one; a conflict is flagged; a reserved key is refused; the pad rebinds through a real pad poll; it saves, loads and resets
-//   5. THE CARD: every hero's rows show the chosen keys; the Pyromancer's has an EMBER WARD row (HOLD DOWN) and no 'block' row
+//   5. THE CARD: every hero's rows show the chosen keys; the Pyromancer's has an EMBER FLARE row (TAP DOWN) beside the crouch (HOLD DOWN) and no 'block' row
 //   6. THE CO-OP PAGE opens by itself the first time co-op is switched on, once, and again from the pause menu
 //   SETTINGS_SHOTS=<dir> also writes a capture of each tab, the rebind page, the card and the co-op pages (work/storeui/).
 import assert from 'node:assert/strict';
@@ -31,12 +31,12 @@ assert.equal(tabOf('Combat'), 'gameplay'); assert.equal(tabOf('Sound test'), 'au
 
 /* ---- 5a. the card, statically ---- */
 { const pyro = cardRows({ hero: 'pyro' }), names = pyro.map(r => r[0]);
-  const ward = pyro.find(r => r[0] === 'ember ward'); assert(ward && /HOLD DOWN/.test(ward[1]), 'the Pyromancer\'s card has an EMBER WARD row: HOLD DOWN');
+  const ward = pyro.find(r => r[0] === 'ember flare'); assert(ward && /TAP DOWN/.test(ward[1]), 'the Pyromancer\'s card has an EMBER FLARE row: TAP DOWN'); assert(pyro.find(r => r[0] === 'weak guard' && /HOLD DOWN/.test(r[1])), 'and the weak guard: HOLD DOWN');
   assert(!names.includes('block'), 'her card no longer lists C as block'); assert(pyro.find(r => /EMBER/.test(r[1]) && r[0] === 'ember / jet'), 'C is her ember and jet');
-  for (const h of ['knight', 'warden', 'paladin', 'pirate', 'reaper', 'geomancer']) { const r = cardRows({ hero: h }); assert(r.find(x => x[0] === 'crouch' && /HOLD DOWN/.test(x[1])), h + ' has the universal duck on the card'); assert(!r.find(x => x[0] === 'ember ward'), h + ' has no ember ward'); }
+  for (const h of ['knight', 'warden', 'paladin', 'pirate', 'reaper', 'geomancer']) { const r = cardRows({ hero: h }); assert(r.find(x => x[0] === 'crouch' && /HOLD DOWN/.test(x[1])), h + ' has the universal duck on the card'); assert(!r.find(x => x[0] === 'ember flare'), h + ' has no ember flare'); }
   const b = emptyBinds(); setSlot(b, 'kb', 'jump', 0, 'i'); setSlot(b, 'kb', 'block', 0, 'o'); setSlot(b, 'kb', 'down', 0, 'k');
   const rows = cardRows({ hero: 'knight', binds: b }); assert(/^I \//.test(rows.find(r => r[0] === 'jump')[1]), 'the card shows the chosen jump key'); assert(/HOLD O/.test(rows.find(r => r[0] === 'block')[1]), 'and the chosen C');
-  assert(/HOLD K/.test(cardRows({ hero: 'pyro', binds: b }).find(r => r[0] === 'ember ward')[1]), 'and the ember ward follows the crouch key'); }
+  assert(/TAP K/.test(cardRows({ hero: 'pyro', binds: b }).find(r => r[0] === 'ember flare')[1]), 'and the ember flare follows the crouch key'); }
 
 const shots = process.env.SETTINGS_SHOTS; if (shots) mkdirSync(shots, { recursive: true });
 const pg = await openPage({ audio: false, fonts: false });
@@ -115,10 +115,10 @@ try {
   assert.deepEqual(o.padJump, [6, null], 'the pad rebinds through a real poll (LT)');
   assert(o.savedHasBinds, 'the bindings are in the saved settings'); assert.equal(o.afterBlank, JSON.stringify({ kb: {}, pad1: {}, pad2: {} })); assert.equal(o.reloaded, JSON.stringify(['i', 'Space']), 'and load back');
   assert(o.armed, 'reset asks twice'); assert.equal(o.afterReset, '{}', 'and puts the page back to its defaults');
-  assert(o.card_pyro.some(x => /^ember ward\|HOLD DOWN/.test(x)) && !o.card_pyro.some(x => /^block\|/.test(x)), 'the game\'s Pyromancer card: ' + o.card_pyro.join(' ; ')); assert(o.card_knight.some(x => /^block\|HOLD C/.test(x)));
+  assert(o.card_pyro.some(x => /^ember flare\|TAP DOWN/.test(x)) && !o.card_pyro.some(x => /^block\|/.test(x)), 'the game\'s Pyromancer card: ' + o.card_pyro.join(' ; ')); assert(o.card_knight.some(x => /^block\|HOLD C/.test(x)));
   assert.equal(o.coopFirst, 'coophelp', 'the co-op page opens the first time co-op is switched on'); assert(o.coopSeen1); assert.equal(o.coopClosed, 'map'); assert.equal(o.coopSecond, 'map', 'and only the first time');
   assert.equal(o.pauseGuide, 'coophelp', 'the pause menu opens it again');
   assert.deepEqual(pg.errors, []);
   if (shots) for (const s of r.shots) writeFileSync(shots + '/' + s.name + '.png', Buffer.from(s.png.split(',')[1], 'base64'));
-  console.log('settings-tabs ok: 5 tabs,', o.union.length, 'rows, rebinding saves/loads/flags/resets, ember ward row, co-op page once');
+  console.log('settings-tabs ok: 5 tabs,', o.union.length, 'rows, rebinding saves/loads/flags/resets, ember flare row, co-op page once');
 } finally { pg.close(); }

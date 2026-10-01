@@ -70,7 +70,7 @@ export function duckNow(BK, h, e) { const D = BK.duck && BK.duck(), P = BK.P; if
                in water or off her feet - then she does what she did before (the roll)
    The duck (duckNow) is left as it was: a HIGH yellow blow is still ducked early, and ducked is warded - it goes over her for nothing. */
 export const EMBER_LATE = 0.1, EMBER_HOT = 70, EMBER_HOLD = 0.45;
-export const emberReady = (BK, h) => { if (h !== 'pyro' || !BK.ember) return false; const W = BK.ember(), P = BK.P; return !!W && !(W.lock > 0) && !W.wet && W.heat < EMBER_HOT && P.ground && !P.swim && !P.dead; };
+export const emberReady = (BK, h) => { if (h !== 'pyro' || !BK.ember) return false; const W = BK.ember(), P = BK.P; return !!W && !(W.rec > 0) && !(W.spent > 0) && !W.wet && P.ground && !P.swim && !P.dead; };   /* (the flare: not in a mistime's recovery, not in the beat after a catch) */
 export function emberPlan(BK, h, e) {
   if (!emberReady(BK, h)) return null; const P = BK.P, W = BK.ember();
   if (W.up && W.t < EMBER_HOLD) return 'raise';

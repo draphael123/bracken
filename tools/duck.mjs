@@ -62,7 +62,7 @@ try {
       r.after = BK.duck().ducking;
       out.heroes.push(r); }
     // ---- THE BLOWS: the warden holds no guard, so only the duck is between her and each blow (the pyromancer's duck is her EMBER WARD now,
-    //      claude/ember-ward, which blocks and melts what the duck lets through: tools/ember-ward.mjs holds that) ----
+    //      claude/ember-ward, which blocks and melts what the duck lets through: tools/ember-flare.mjs holds that) ----
     setUp('warden');
     const trial = (t, dx, duck, extra, secs = 8) => { home(); BK.P.face = 1;
       const [f] = BK.spawnFoe({ t, x: spot[0] + dx, y: spot[1], face: -1, ...(extra || {}) }); if (!f) return { err: t + ' did not spawn' };
@@ -102,7 +102,7 @@ else {
     if (r.duckH !== DUCK_H) bad.push(`${r.h}: ducked hurt box ${r.duckH} px tall, not DUCK_H ${DUCK_H}`);
     if (!(r.stand > DUCK_H)) bad.push(`${r.h}: standing hurt box ${r.stand} px, not taller than the duck`);
     if (r.guardDucks) bad.push(`${r.h}: ducked with a guard up`);
-    if (r.walkDucks && !(r.h === 'pyro' && r.walkWard && r.walkMoved <= 1)) bad.push(`${r.h}: ducked while walking`);   /* (the pyromancer's EMBER WARD turns her on a way held, and she does not walk: tools/ember-ward.mjs) */
+    if (r.walkDucks && !(r.h === 'pyro' && r.walkWard && r.walkMoved <= 1)) bad.push(`${r.h}: ducked while walking`);   /* (the pyromancer's EMBER WARD turns her on a way held, and she does not walk: tools/ember-flare.mjs) */
     if (r.airDucks) bad.push(`${r.h}: ducked in the air`);
     if (r.after) bad.push(`${r.h}: still ducked with down let go`);
   }
