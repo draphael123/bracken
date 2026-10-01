@@ -155,7 +155,7 @@ if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headles
 if (take('slopes-trace')) results.push(run('slopes-trace', process.execPath, ['tools/slopes-trace.mjs'], { PORT: String(portFor(7)) }));
 /* THE WORDS FIT: every hint, the bestiary, the store, the talent trees, the pause menu and every hero's HUD, drawn and measured (tools/textfit.mjs;
    the talk pages of every level and the boss fights are the long run: node tools/textfit.mjs --strict) */
-if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,pick,practice,plates,soundtest', '--strict'], { PORT: String(portFor(4)) }));
+if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,pick,practice,plates,bossfix,soundtest', '--strict'], { PORT: String(portFor(4)) }));
 /* THE SOUND TEST'S LOCK, in the page (docs: a song unlocks on being heard in play, never by browsing the menu itself;
    sound effects are always open): tools/soundtest.mjs */
 if (take('soundtest')) results.push(run('soundtest', process.execPath, ['tools/soundtest.mjs'], { PORT: String(portFor(8)) }));
