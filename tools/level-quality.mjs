@@ -118,6 +118,24 @@ function slopesPainted(L) { const g = slopeGate(); if (!g) return false; try { r
 /* A HASH OF THE LEVEL'S DATA: the pilot cache (docs/level1-pilot.json) is stamped with it, so a level edit makes the cached pilot row stale. */
 export function levelHash(lv) { const L = built(lv); return createHash('sha1').update(JSON.stringify([L.W, L.H, Array.from(L.grid), L.ents, L.moversExtra || null, L.ambushes || null])).digest('hex').slice(0, 12); }
 export const PILOT_FILE = fileURLToPath(new URL('../docs/level1-pilot.json', import.meta.url));
+export const MASH_FILE = fileURLToPath(new URL('../docs/mash-bot.json', import.meta.url));
+/* THE MASH GATE (claude/mashbot, 2026-10-01; tools/mash-bot.mjs, docs/BOSS-AUDIT.md). A player who ONLY MASHES ATTACK must lose to the level's boss (all three heroes) and
+   must die or drop under MASH_HP percent health in the level. Read from the cache docs/mash-bot.json (hash-stamped like the pilot's), never run live. REPORT-ONLY (WARN) until
+   MASH_ENFORCE is set: the combat pass and the boss fixes turn it on; the target rule is already in docs/NEW-LEVEL-CHECKLIST.md. */
+export const MASH_ENFORCE = false, MASH_HP = 40;
+let MASHC = null; const mashCache = () => MASHC || (MASHC = existsSync(MASH_FILE) ? JSON.parse(readFileSync(MASH_FILE, 'utf8')) : {});
+export function mashVerdict(lv) {
+  const row = mashCache()[lv.id], gated = GATE.includes(lv.id), cmd = 'node tools/mash-bot.mjs ' + lv.id + ' --level ' + lv.id + ' --write';
+  if (!row) return { ok: false, state: 'missing', msg: 'no mash-bot row in docs/mash-bot.json (' + (gated ? 'gated' : 'not gated') + '): run ' + cmd };
+  if (row.hash !== levelHash(lv)) return { ok: false, state: 'stale', msg: 'the level changed since the mash bot ran: re-run ' + cmd };
+  const why = [], parts = [];
+  for (const key of ['boss', 'mini']) { const b = row[key]; if (!b) continue; const wonBy = Object.entries(b.byHero).filter(([, v]) => v.some(x => x.startsWith('win'))).map(([h]) => h);
+    parts.push(key + ' ' + (wonBy.length ? 'BEATEN by mashing (' + wonBy.join(',') + '; ' + b.wins + '/' + b.fights + ' fights won)' : 'holds (0/' + b.fights + ' mash wins)')); if (wonBy.length) why.push(key); }
+  if (row.level) { const worst = Object.entries(row.level).sort((a, b) => b[1].minHpPct - a[1].minHpPct)[0], r = worst[1], cleared = r.deaths === 0 && r.minHpPct >= MASH_HP;
+    parts.push('level: best mash hero ' + worst[0] + ' lowest hp ' + r.minHpPct + '%, ' + r.deaths + ' deaths, walked ' + r.walked + '%, ' + r.lifts + ' lifts' + (cleared ? ' (CLEARED without dropping under ' + MASH_HP + '%)' : '')); if (cleared) why.push('level'); }
+  else parts.push('level mode not run: ' + cmd);
+  return { ok: !why.length && !!row.level, state: why.length ? 'beaten' : 'ok', msg: parts.join('; ') + (why.length ? ' - THE MASH BOT BEATS THE ' + why.join(' AND ').toUpperCase() : '') };
+}
 let PILOT = null; const pilotCache = () => PILOT || (PILOT = existsSync(PILOT_FILE) ? JSON.parse(readFileSync(PILOT_FILE, 'utf8')) : {});
 
 export function measure(lv) {
@@ -242,6 +260,7 @@ export function measure(lv) {
     : pilotState === 'stale' ? 'the level changed since its pilot ran (hash ' + prow.hash + ' now ' + phash + '): re-run node tools/level1-pilot.mjs ' + lv.id + ' --write'
     : pilotState === 'notbare' ? 'the pilot ran with talents or skills present: it must be a fresh level-1 hero'
     : prow.hits + ' blows taken by a fresh level-1 ' + prow.hero + ' (' + prow.deaths + ' deaths, walked ' + prow.walked + '%) (>=' + LIM.pilotHits + (pilotState === 'soft' ? '): A WALK, NOT A LEVEL' : ')') + (prow.lifts !== undefined ? ', ' + prow.lifts + ' lifts' : '');
+  const mashV = gated ? mashVerdict(lv) : { ok: true, msg: '' };
   const sa = slopeArt(), painted = slopeCells ? slopesPainted(L) : true;
   const m = { id: lv.id, tall, emptyShare, slopeCells, slopePainted: painted, slopeArtOk: sa.ok, slopeArtWhy: sa.why, W, routeTiles, flat: flat.n, flatAt: flat.at, flatShare: flat.long / Math.max(1, end), terrainShare: terrainFlat.long / Math.max(1, end), terrainFlat: terrainFlat.n, terrainFlatAt: terrainFlat.at, routeBands: bands.size, multiShare, gadgetKinds: gadgets.length, gadgetDeveloped: developed.length, gadgets, music, borrowedFrom, shared, trackFile: !!trackFile,
     encountersN: enc.length, bodyDensity, roleKinds, roleCount, rangedN, unmapped, collectKinds, interactKinds, pilotState, pilotHits: prow ? prow.hits : null, secrets: loot.length, secretEnts, checks, checkSpacing: checks ? routeTiles / checks : Infinity, density, emptyScreens, holes, span, back, pockets, per };
@@ -260,9 +279,10 @@ export function measure(lv) {
     ['roles', m.roleKinds.length >= LIM.roles, m.roleKinds.length + ' foe roles (>=' + LIM.roles + '): ' + m.roleKinds.map(r => r + 'x' + roleCount[r]).join(' ')],
     ['unlocks', unlockOk, unlockMsg],
     ['pilot', pilotOk, pilotMsg],
+    ['mash', !gated || mashV.ok, gated ? mashV.msg : 'not gated (node tools/mash-bot.mjs ' + lv.id + ' to measure)'],
     ['route', (m.span >= LIM.routeSpan || m.back >= LIM.routeSpan) && m.pockets >= LIM.branches, 'route spans ' + m.span + ' rows, ' + m.back + ' tiles back, ' + m.pockets + ' branches/pockets (>=' + LIM.branches + ')'],
   ];
-  const soft = (REPORT_ONLY[lv.id] || []);
+  const soft = (REPORT_ONLY[lv.id] || []).concat(MASH_ENFORCE ? [] : ['mash']);   /* the mash gate is report-only until MASH_ENFORCE */
   m.bar = bar; m.pass = bar.every(b => b[1] || soft.includes(b[0])); m.failed = bar.filter(b => !b[1] && !soft.includes(b[0])).map(b => b[0]); m.reportOnly = bar.filter(b => !b[1] && soft.includes(b[0])).map(b => b[0]);
   return m;
 }
