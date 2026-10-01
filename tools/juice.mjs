@@ -73,7 +73,7 @@ if (!bad.length || J) {
         if (ok) spot = [x0 + 6, y]; }
       if (!spot) return { err: 'no flat floor' };
       for (const e of BK.enemies()) e.alive = false;
-      BK.SET.hitstop = true; BK.SET.shake = true; BK.SET.shakeAmt = 1; BK.SET.reduceMotion = false; BK.god = false;
+      BK.SET.hitstop = true; BK.SET.shake = true; BK.SET.shakeMode = 'full'; BK.SET.shakeAmt = 1; BK.SET.reduceMotion = false; BK.god = false;
       const out = {};
       const fresh = () => { for (const e of BK.enemies()) e.alive = false; BK.tp(spot[0], spot[1]); BK.sim(2); const f = BK.spawnFoe({ t: 'brute', x: spot[0] + 1, y: spot[1], face: -1 })[0]; f.hp = f.maxHpx = 9999; return f; };
       const blow = (kind, dmg) => { const f = fresh(); BK.sim(2); BK.P.hp = BK.P.maxHp; BK.combat2().strike(f, kind, dmg); const s = BK.stop, sh = BK.shake; BK.sim(120); return { s, sh }; };
