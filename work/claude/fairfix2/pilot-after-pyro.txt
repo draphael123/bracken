@@ -1,0 +1,1 @@
+{"hero":"pyro","level":1,"maxHp":88,"done":true,"reached":{"x":619.2,"y":28,"hp":75},"lost":185,"deaths":0,"gaveUp":["mummer@437,12"],"secs":274.1,"byWho":{"drunk":11,"archer":56,"hobbyhorse":72,"mummer":30,"crow":16},"bySection":{"gate":11,"stalls":28,"midway":38,"harvest":56,"lastround":52},"fail":[]}
