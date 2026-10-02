@@ -8226,13 +8226,13 @@
   }
  },
  "welltown": {
-  "hash": "80978686d57f",
+  "hash": "a4f23f29c9fc",
   "level": {
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 126,
-    "hits": 24,
+    "hpLostPct": 117,
+    "hits": 23,
     "walked": 100,
     "lifts": 46,
     "frames": 11126,
