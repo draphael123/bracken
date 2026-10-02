@@ -229,7 +229,10 @@ try {
   ok(s3.portal >= 0.8 && s3.called === 1, 'each ward, one apprentice through a told portal (' + s3.portal + ' s, ' + s3.called + ')');
   ok(s3.reseal > 3.5 && s3.reseal <= 4.05, 'in the mirrors the ward reseals in 4 s (' + s3.reseal + ' s)');
   ok(s3.calledSecond === 1 && s3.calledNext === 1 && r.calledMax === 1, 'never a second apprentice while the first stands (' + s3.calledSecond + '), the next one only when he is down (' + s3.calledNext + '); most ever at once: ' + r.calledMax);
-  ok(s3.shut > 0 && s3.opened > 0 && Math.abs(s3.opened / s3.shut - 3) < 0.35, 'open in the mirrors, a blow is x3 too: ' + s3.opened + ' against ' + s3.shut);
+  /* RULES CHANGE (claude/combat3): this asked that a shut blow land whole and an open one at x3 of it (opened / shut = 3). Daniel's 10-01 difficulty
+     decision put every boss at x0.05 outside his openings (src/boss-greed.js), so the shut blow is now a chip of the same raw blow the open one triples:
+     opened = 3 x raw, and shut <= a twentieth of raw (rounded up, plus the carried fraction) */
+  ok(s3.shut >= 0 && s3.opened > 0 && s3.shut <= Math.ceil(s3.opened / 3 * 0.05) + 1, 'open in the mirrors, a blow is x3 too, and shut it is a chip: ' + s3.opened + ' against ' + s3.shut);
   ok(!r.errors || !r.errors.length, 'no page errors');
   ok(!pg.errors.length, 'the page threw nothing: ' + JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }

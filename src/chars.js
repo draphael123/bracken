@@ -303,6 +303,13 @@ function directionalPoses(F, weapon, { make = knightFrame, extra = {}, pyro = fa
   padHeroFrames(F);
   const ay = pyro ? 20 : 22, ax = 16, reach = weapon === 'spear' ? 40 : ['maul', 'greatsword', 'staff'].includes(weapon) ? 34 : 28;
   const pose = (kind, i) => {
+    /* THE AIR UP-SLASH (claude/combat3): in the air, up + attack - the blade from in front of him up over his head and on behind it, legs tucked */
+    if (kind === 'airUp') { const L2 = weapon === 'spear' ? 1.15 : 1, dxA = [0, 0, 1, 0][i], dyA = [-1, -2, -2, -1][i];
+      const endA = [[16, -18], [10, -36], [-2, -42], [-12, -30]][i].map((v, j) => Math.round(v * (j ? L2 : 1))), handA = [[3, -12], [3, -19], [1, -22], [-2, -18]][i];
+      const xyA = ([x, y]) => [ax + Math.round(x / scale) - dxA, ay + Math.round(y / scale) - dyA], gA = xyA(handA), tA = xyA(endA), armA = [16, 12, ...gA];
+      if (pyro) return pyroFrame({ top: ATTACK_HEADROOM, wide: 32, lean: dxA, dy: dyA, sit: 0, trail: i === 1 || i === 2 ? 3 : 1, feet: [[11, 16], [16, 15]], hemW: 11,
+        staff: [...gA, ...tA], arm: armA, arm2: [11, 11, gA[0] - 3, gA[1] + 2], cowl: i % 3, flame: i, flick: i % 2 });
+      return make({ ...extra, top: ATTACK_HEADROOM, wide: 32, dx: dxA, dy: dyA, legs: 'jump2', arm: armA, [weapon]: [...gA, ...tA], plume: i === 1 || i === 2 ? 2 : 1, sho: i === 1 ? 1 : 0 }); }
     const rise = kind === 'rise', dx = [-1, 1, 2, 1][i], dy = rise ? [2, 0, -1, 0][i] : [2, 3, 3, 1][i];
     const end = rise ? [[18, -3], [weapon === 'spear' ? 14 : 24, -25], [weapon === 'spear' ? 8 : 12, weapon === 'spear' ? -43 : -39], [18, -24]][i] : [[14, -12], [reach - 5, -5], [reach - 1, -4], [20, -10]][i];
     const hand = rise ? [[1, -7], [6, -15], [5, -21], [4, -12]][i] : [[1, -9], [5, -6], [7, -6], [3, -8]][i];
@@ -316,6 +323,7 @@ function directionalPoses(F, weapon, { make = knightFrame, extra = {}, pyro = fa
   };
   F.rise = [0, 1, 2, 3].map(i => pose('rise', i)).concat(F.atk[4]);
   F.sweep = [0, 1, 2, 3].map(i => pose('sweep', i)).concat(F.atk[4]);
+  F.airUp = [0, 1, 2, 3].map(i => pose('airUp', i)).concat(F.jump ? F.jump[1] || F.jump[0] || F.atk[4] : F.atk[4]);   /* (claude/combat3: the air up-slash, each hero's own weapon and body) */
 }
 
 /* THE BREATH, eight beats, for every hero on the knight's rig: [dy, hy, sho, plume]. The shoulders lift, the plume answers

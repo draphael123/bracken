@@ -14,6 +14,7 @@
 //                   or onto the weed. Close to, it gutters (a yellow !) and FLARES in your face (a shield turns it; duck it). One blow pops it
 //                   in a harmless flash. A foghorn's clear air shows it for what it is: it shies back to where it started and lures nobody.
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten } from './px.js';
+import * as CFA from './redraw/canal_foes_art.js';   /* (claude/canalart) the grindylow's and the wisp's pictures */
 
 export const GRIND = { hp: 20, w: 14, h: 14, leash: 56, swim: 60, tell: 0.75, reach: 18, hold: 2.4, pull: 26, mash: 3, grabDmg: 6, stun: 1.6, cd: 2.4, weak: 2, strandT: 7, edgeNear: 16 };
 export const WISP = { hp: 1, w: 10, h: 10, notice: 170, ahead: 56, drift: 36, near: 22, tell: 0.7, flareR: 30, dmg: 8, rest: 1.3, cd: 2.4 };
@@ -180,29 +181,8 @@ export function stepWisp(e, dt, X) {
 function pack(frames, ax, ay, w, h) { const R = frames, L = frames.map(c => flipX(c)), white = frames.map(c => whiten(c)), whiteL = white.map(c => flipX(c)); return { R, L, white: { R: white, L: whiteL }, ax, ay, w, h }; }
 const OUT = '#1b1626';
 /* THE GRINDYLOW: a hunched green imp, slick with weed, long thin arms and long fingers, big pale eyes. 0 surfaced | 1 the reach (the grab) | 2 hurt | 3 stranded (flat on the wall) */
-export function bakeGrindylow() {
-  const W = 26, H = 20, cx = 12, C = { b: '#3e6a4a', bL: '#5e9a6a', bD: '#24402c', weed: '#2e5a30', eye: '#e8f8c8', pup: '#101810', claw: '#c8d8a0' };
-  const fr = [0, 1, 2, 3].map(f => { const [c, g] = canvas(W, H);
-    const y0 = f === 3 ? 10 : 6;
-    ellipse(g, cx, y0 + 7, 6, 5, C.b); ellipse(g, cx - 1, y0 + 6, 4, 3, C.bL);                      /* the body, hunched */
-    ellipse(g, cx + 2, y0 + 1, 4, 4, C.b); rect(g, cx + 1, y0 - 1, 5, 2, C.bD);                      /* the head */
-    px(g, cx + 3, y0, C.eye); px(g, cx + 5, y0, C.eye); px(g, cx + 3, y0 + 1, C.pup); px(g, cx + 5, y0 + 1, C.pup);
-    for (let k = 0; k < 4; k++) px(g, cx - 5 + k * 3, y0 + 11, C.weed);                              /* weed trailing off it */
-    if (f === 1) { line(g, cx + 4, y0 + 5, cx + 13, y0 + 9, C.bL, 2); line(g, cx + 13, y0 + 9, cx + 13, y0 + 12, C.claw); line(g, cx - 3, y0 + 5, cx + 9, y0 + 11, C.b, 2); }   /* the reach: both arms out low */
-    else if (f === 2) { line(g, cx + 3, y0 + 5, cx + 8, y0 + 1, C.bL, 2); line(g, cx - 3, y0 + 5, cx - 8, y0 + 1, C.bL, 2); }
-    else if (f === 3) { line(g, cx - 5, y0 + 5, cx - 11, y0 + 8, C.bL, 2); line(g, cx + 5, y0 + 5, cx + 11, y0 + 8, C.bL, 2); }
-    else { line(g, cx + 4, y0 + 6, cx + 8, y0 + 10, C.bL, 2); line(g, cx - 4, y0 + 6, cx - 7, y0 + 10, C.b, 2); }
-    outline(c, OUT); return c; });
-  return pack(fr, 12, H - 1, GRIND.w, GRIND.h);
-}
+export function bakeGrindylow() { return CFA.bakeGrindylow(GRIND.w, GRIND.h); }   /* (claude/canalart: src/redraw/canal_foes_art.js - the rim-lit imp; same frames and box) */
 /* THE WISP: a cold green flame with no post under it. 0, 1 the flicker | 2 guttering (the tell, brighter) */
-export function bakeWisp() {
-  const W = 14, H = 16, C = { o: '#2a8a6a', m: '#6ae8b0', c: '#dcffe8' };
-  const fr = [0, 1, 2].map(f => { const [c, g] = canvas(W, H); const lean = f === 1 ? 1 : 0, big = f === 2 ? 1 : 0;
-    fillPoly(g, [[7 + lean, 1 - big], [11 + big, 8], [10, 13], [4, 13], [3 - big, 8]], C.o);
-    fillPoly(g, [[7 + lean, 4 - big], [9 + big, 9], [8, 12], [5, 12], [5 - big, 9]], C.m);
-    ellipse(g, 7, 10, 1 + big, 1 + big, C.c); return c; });
-  return pack(fr, 7, H - 1, WISP.w, WISP.h);
-}
+export function bakeWisp() { return CFA.bakeWisp(WISP.w, WISP.h); }
 export const grindylowFrame = e => e.hurtT > 0 ? 2 : e.mode === 'grab' || e.mode === 'rippleTell' || e.mode === 'deckTell' || e.mode === 'boardTell' ? 1 : e.mode === 'stranded' ? 3 : e.mode === 'stun' ? 2 : 0;
 export const wispFrame = e => e.mode === 'flareTell' ? 2 : Math.floor(e.anim * 8) % 2;

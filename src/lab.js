@@ -1544,6 +1544,13 @@ async function runbossLab(BK, opts) {
         if(!down){strike=false;const lamps=BK.props().filter(p=>p.owl&&!p.perch);const lamp=lamps.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];if(lamp){goal=lamp.x;if(!lamp.lit&&Math.abs(P.x-lamp.x)<22&&P.atk<0){k.block=false;P.face=Math.sign(lamp.x-P.x)||1;BK.press('atk');swings++;}}}
         if (boss.mode === 'skim' && Math.abs(boss.x-P.x)<64 && (boss.x-P.x)*boss.vx<0 && P.ground){k.jump=true;BK.press('jump');}
       }
+      /* THE CHIP AND THE GREED REPRISAL (claude/combat3, src/boss-greed.js): outside an opening a hero's blow on a boss is a twentieth, and
+         the GREED.n-th in a few seconds is answered by a told burst round him. A player stops one blow short of it and stands off for the
+         opening; when the ring closes on him he steps out of it. (BK.greed.open is strict: a boss with no rule is not "open" here, so a
+         mini with none is never mashed into his reprisal either.) */
+      if (BK.greed) { const G = BK.greed, out = (G.reach || 60) + (boss.w || 20) / 2;
+        if (strike && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - 1) { strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * ((LAB_STAND[h] || 12) + (boss.w || 20) / 2); }   /* (it holds its ground at sword's length and keeps answering him: it only stops swinging) */
+        if (boss.greedT > 0 && ad < out + 18) { strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * (out + 30); } }
       // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
       // THE DECK MUST BE UNDER HER FEET: sword reach is not the top of the ladder.
       const shipAscending=lvId==='flotilla'&&(boss.y<P.y-30||!P.ground&&boss.y<P.y+8);

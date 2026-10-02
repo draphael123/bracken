@@ -48,6 +48,8 @@ export const CALL_LINES = new Set([
   'THE SUN LETS GO OF YOU', 'THE SUN IS OUT: DRINK FROM YOUR SKIN (E)', 'HE CUT YOUR SKIN: CATCH HIM', 'THE SIP IS BACK',
   'STRIKE THE WINDLASS: THE BUCKET GOES DOWN', 'THE BUCKET GOES UP', 'THE DRY CISTERN WANTS FOUR WATER-SKINS', 'THE CISTERN FILLS: THE VAULT OPENS',
   'HE BURNS: POUR YOUR SKIN ON HIM', 'THE STEAM BLINDS HIM: CUT HIM', 'HE IS NOT BURNING: IT RUNS OFF HIM', 'THE MUD PLATE TURNS IT', 'HIS MEN TAKE THE WELL',
+  /* claude/combat3: THE GLOBAL BOSS RULE (src/boss-greed.js) - a blow outside his opening is a scratch, and greed is answered */
+  'A SCRATCH: WAIT FOR HIS OPENING', 'TOO GREEDY: HE HITS BACK',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 export const CALL_COUNTS = [/^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];

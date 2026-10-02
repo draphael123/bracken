@@ -20,6 +20,7 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { WEIGHTY, combatFrom } from '../src/weighty.js';
+import { COMBAT } from '../src/combat.js';
 
 const bad = [];
 // ---- THE SWITCH, in Node ----
@@ -38,7 +39,7 @@ try {
     /* ---- THE COMMON BLOWS ---- */
     const dm = () => BK.dmgCommon();
     const c0 = dm(); BK.setCombat('weighty'); const w = dm(); BK.setCombat('classic'); const c1 = dm();
-    out.dmg = { n: Object.keys(c0).length, offOk: Object.values(c0).every(([b, v]) => v === Math.round(b * 1.25)), onOk: Object.values(w).every(([b, v]) => v === Math.round(b * ${WEIGHTY.commonDamage})),
+    out.dmg = { n: Object.keys(c0).length, offOk: Object.values(c0).every(([b, v]) => v === Math.round(b * ${COMBAT.commonDamage}))   /* RULES CHANGE (claude/combat3): was the literal 1.25; Daniel's 10-01 difficulty decision set COMBAT.commonDamage to 1.6 (src/combat.js) */, onOk: Object.values(w).every(([b, v]) => v === Math.round(b * ${WEIGHTY.commonDamage})),
       backOk: JSON.stringify(c0) === JSON.stringify(c1), sample: c0.archer ? [c0.archer, w.archer] : null };
 
     /* ---- THE HORNET QUEEN ---- */
