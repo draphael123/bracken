@@ -137,8 +137,9 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* THE SHOOTING GALLERY (taught): on the terrace three targets hang at chest height on the gallery's back wall. Hit all three (any blow, any hero) inside twelve seconds and the planks run up the
      stall fronts to THE CROW'S NEST (the silver, two tickets) */
   gallery({ id: 1, targets: [{ x: 171, row: R - 7 }, { x: 176, row: R - 7 }, { x: 181, row: R - 7 }], window: 12,
-    planks: [[186, 187, R - 9], [183, 184, R - 12], [176, 181, R - 15]],      /* the terrace top is row 22; 3 up, 3 up, 3 up */
+    planks: [[186, 187, R - 9], [183, 184, R - 12]],      /* the terrace top is row 22; 3 up, 3 up - the way in - and the nest's floor 3 up again */
     nest: { x0: 176, x1: 181, row: R - 15 } });
+  plat(176, R - 15, 6);                                   /* THE NEST'S FLOOR STANDS FROM THE START (claude/fairfix4, Daniel: "the floors must be VISIBLE"): the bull's-eye opens the way in, not the floor */
   ent('sign', 168, R - 7, { text: 'THE SHOOTING GALLERY. HIT ALL THREE TARGETS BEFORE THE BELL. THE PRIZES ARE UP THE STALL.' });
   tk(176, R - 16); tk(180, R - 16); coins([177, R - 16], [178, R - 16], [179, R - 16]);   /* the crow's nest: two tickets - and the key to what is past it */
   /* THE LOFT (claude/fairfix2: TICKETS ARE KEYS): past the crow's nest a striped gate stands on a plank walk over the stall row - SHOW 5 TICKETS. Behind it, the stall men's loft, and in it
@@ -199,7 +200,8 @@ export function buildHarvestFair({ painter, T, TS }) {
   pit(300, 309);
   /* A BULL'S-EYE ON A CAR (claude/fairfix2: bull's-eyes open things, some on the rides): a target hangs under car 3 and goes round with it. Strike it as it passes and planks run
      up off the landing to the prize shelf over the wheel (two tickets and a heart) */
-  gallery({ id: 4, targets: [{ x: 304, row: 27, on: { kind: 'gondola', idx: 3, dy: 18 } }], window: 1, planks: [[308, 309, 14], [311, 313, 11]], nest: { x0: 311, x1: 313, row: 11 }, say: 'A BULL\'S-EYE! THE PLANKS RUN UP OVER THE WHEEL' });
+  gallery({ id: 4, targets: [{ x: 304, row: 27, on: { kind: 'gondola', idx: 3, dy: 18 } }], window: 1, planks: [[308, 309, 14]], nest: { x0: 311, x1: 313, row: 11 }, say: 'A BULL\'S-EYE! THE PLANKS RUN UP OVER THE WHEEL' });
+  plat(311, 11, 3);                                       /* the shelf's floor stands from the start (claude/fairfix4): the bull's-eye drops the gangplank up to it */
   tk(311, 10); tk(313, 10); ent('mend', 312, 10);
   /* --- THE HIGH ROAD: the wheel lets off at the top onto the boardwalk (row 17); three swing-ride chairs carry you across the hall's roof to the tower --- */
   plat(306, 17, 8);                                       /* cols 306-313: the boardwalk's landing (eight wide: a hop off a car carries you a long way) */

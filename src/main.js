@@ -155,7 +155,7 @@ import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
 import { WEIGHTY, weighty, setWeighty, combatFrom, weightyHere, recoveryFor, poiseRule, guardCount } from './weighty.js';   /* COMBAT: CLASSIC / WEIGHTY (claude/ssproto): one switch, off by default */
 import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
@@ -18359,7 +18359,7 @@ function theatreReset() { THEATRE = L && L.theatre ? THH.theatreReset(THX) : nul
 let FAIR = null;
 function fairReset() {
   const kept = FAIR && FAIR.L === L ? { games: FAIR.games, keys: FAIR.keys, burnDone: FAIR.effigyBurnDone } : null;   /* (claude/fairfix2) TICKETS ARE KEYS: a death on this level keeps every ticket held, every gate opened and every target struck */
-  FAIR = null; musicBox.stop(); for (const pp of players) { pp.faceLock = 0; pp.car = null; }
+  FAIR = null; for (const pp of players) { pp.faceLock = 0; pp.car = null; }
   if (!L || !(L.carousels || enemies.some(e => e.t === 'mummer' || e.t === 'hobbyhorse'))) return;
   FAIR = { bells: 0, strikes: 0, charges: 0, turns: 0, warns: 0, freezes: 0, calls: 0, cuts: 0, works: 0, runOver: 0, lamps: (L.lamps || []).map(l => ({ ...l, lit: l.life > 0, b: l.life >= 1 ? 1 : 0 })), sq: {} };
   for (const lp of FAIR.lamps) if (lp.life > 0) lights.push({ x: lp.x * TS + 8, y: (lp.y + 1) * TS - 32, r: 46, warm: true, lantern: lp });   /* a lamp is an engine light: the dusk lays its glow, and a guttering one is on and off */
@@ -18468,7 +18468,7 @@ function updateBarker(e, dt) {
 function updateFair(dt) {
   for (const pp of players) if (pp.faceLock > 0) pp.faceLock = Math.max(0, pp.faceLock - dt);
   if (FAIR) for (const lp of FAIR.lamps) if (lp.life > 0 && lp.life < 1) { const was = lp.lit; lp.b = FAW.lampBright(lp, time); lp.lit = lp.b > 0.3; if (lp.lit !== was && Math.abs(lp.x * TS - P.x) < 240 && SET.ambient && Math.random() < 0.35) SFX.lampGutter(); }
-  if (FAIR) { FAIR.tkShow = Math.max(0, (FAIR.tkShow || 0) - dt); for (const k in FAIR.sq) FAIR.sq[k] = Math.max(0, FAIR.sq[k] - dt * 5); if (state === 'play' && !P.dead) musicBox.wind(FAW.windAt(P.x / TS)); }
+  if (FAIR) { FAIR.tkShow = Math.max(0, (FAIR.tkShow || 0) - dt); for (const k in FAIR.sq) FAIR.sq[k] = Math.max(0, FAIR.sq[k] - dt * 5); }   /* (claude/fairfix4: the synth music box that wound down over the fair's track is gone - the fair plays only its file, "Dark Carnival") */
   if (FAIR && L.green && state === 'play' && Math.abs(P.x - L.green.bonfire * TS) < 260 && Math.random() < dt * 30) flame(L.green.bonfire * TS + 8, L.green.floor * TS - 8, 2, 4, 40, 3);   /* the bonfire */
   if (FAIR && state === 'play') { if (L.crumbles && L.crumbles.length) updateCrumbles(dt);   /* (claude/fairfix2) the collapsing stalls (src/tower-collapse.js) */
     const ch = chases.find(c => c.sp.id === 'effigy'); if (ch) { if (ch.st.phase === 'run' || FAIR.effigyBurnDone) FAIR.effigyBurnT += dt; else FAIR.effigyBurnT = 0; if (ch.st.phase === 'done') FAIR.effigyBurnDone = true; } }   /* THE EFFIGY CATCHES FIRE with its chase, and is ash once you outrun it */
