@@ -8,6 +8,14 @@ const KP0 = { // knight palette
   w: '#7a4a2a', W: '#4c2c17', y: '#e0b040', v: '#2a2f3d', o: OUT,
 };
 let KP = Object.assign({}, KP0);
+/* WEAPON SKINS (Daniel 10-02: a weapon skin is the WEAPON, not a recolour of the whole character). A weapon's palette is {s: light, S: dark} and it
+   lives HERE, apart from the hero's own palette: the bakers merge a skin into KP, but a weapon is applied only by the weapon-drawing code below
+   (WL/WT), so the helm, cloth, armour and skin can never wear a weapon's colours. No weapon (STEEL) = null = every weapon keeps its own colours. */
+let WP = null;
+export function withWeapon(pal, fn) { const was = WP; WP = pal && pal.s && pal.S ? pal : null; try { return fn(); } finally { WP = was; } }
+const hexMix = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('');
+const WT = (def, t) => WP ? hexMix(WP.S, WP.s, t) : def;   /* a weapon tone: t 0 = the skin's dark, 1 = its light (STEEL: the weapon's own colour) */
+const WL = def => WT(def, 1);
 const BODY = [ // 10 wide, rows 0..10 (helmet + torso + belt)
   '..rSSSS...',
   '.rSssssS..',
@@ -88,7 +96,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   if (arm) line(g, arm[0] + dx, arm[1] + dy, arm[2] + dx, arm[3] + dy, KP.S, 2);
   if (sword) {
     const [x0, y0, x1, y1] = sword.map((v, i) => v + (i & 1 ? dy : dx));
-    line(g, x0, y0, x1, y1, KP.s, 2);
+    line(g, x0, y0, x1, y1, WL(KP.s), 2); if (WP) line(g, x0, y0 + 1, x1, y1 + 1, WP.S, 1);   /* the blade (and, in a weapon skin, its dark edge) */
     px(g, x0, y0, KP.w); px(g, x0 + 1, y0, KP.w);
     const gx = Math.sign(x1 - x0), gy = Math.sign(y1 - y0);
     px(g, x0 + gx - gy, y0 + gy + gx, KP.y); px(g, x0 + gx + gy, y0 + gy - gx, KP.y);
@@ -108,7 +116,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
       Math.round(hx + ax * t - qx * hw), Math.round(hy + ay * t - qy * hw),
       Math.round(hx + ax * t + qx * hw), Math.round(hy + ay * t + qy * hw), col, 1);
     for (let t = -2; t <= 2; t++) across(t, 3.5, KP.o);                                   // the block, outlined all round
-    for (let t = -1; t <= 1; t++) across(t, 2.5, t === -1 ? '#6e7a8c' : t === 1 ? '#e8eef6' : '#aab6c6');
+    for (let t = -1; t <= 1; t++) across(t, 2.5, t === -1 ? WT('#6e7a8c', 0.15) : t === 1 ? WT('#e8eef6', 1) : WT('#aab6c6', 0.6));
     across(-3, 1.6, KP.y);                                                                // the langet, gold on the haft
   }
   if (spear && !SPEARLESS) { // THE WARDEN'S SPEAR: an ash haft, a bronze collar, a long leaf head, and an iron spike at the heel.
@@ -122,8 +130,8 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     px(g, ...at(-5), '#7c8797'); px(g, ...at(-6), '#c9d1dc');            // the butt-spike: she fights with both ends
     px(g, ...at(len - 5), KP.y);                                         // the collar the head is socketed into
     for (let t = 4; t >= 1; t--) {                                       // the head: a leaf, widest at its base
-      px(g, ...at(len - t), t > 2 ? '#8a939f' : '#e8eef6');
-      if (t === 3 || t === 2) px(g, ...at(len - t, 1), '#7c8797');
+      px(g, ...at(len - t), t > 2 ? WT('#8a939f', 0.35) : WT('#e8eef6', 1));
+      if (t === 3 || t === 2) px(g, ...at(len - t, 1), WT('#7c8797', 0.2));
     }
     px(g, ...at(len), '#ffffff');                                        // the point, the brightest pixel she owns
   }
@@ -145,7 +153,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     for (const s of [-1, 1]) { px(g, ...at(len - 4, s), '#6c6a60'); px(g, ...at(len - 3, s * 2), '#8c8a7e'); px(g, ...at(len - 2, s * 2), '#8c8a7e'); px(g, ...at(len - 1, s * 2), '#a8a696'); px(g, ...at(len, s), '#a8a696'); }
     px(g, ...at(len - 4, 0), '#4e4c45');   /* the socket */
     /* THE GEODE: a knot of amber in the claws, a dark facet at its foot and one near-white spark of light in it */
-    for (const [t, o, col] of [[len - 3, 0, '#b8741c'], [len - 2, -1, '#e8a83a'], [len - 2, 0, '#e8a83a'], [len - 2, 1, '#d08a24'], [len - 1, -1, '#e8a83a'], [len - 1, 0, '#ffc860'], [len - 1, 1, '#e8a83a'], [len, 0, '#e8a83a'], [len - 1, -0.5, '#fff0c0']]) px(g, ...at(t, o), col);
+    for (const [t, o, col] of [[len - 3, 0, WT('#b8741c', 0.1)], [len - 2, -1, WT('#e8a83a', 0.6)], [len - 2, 0, WT('#e8a83a', 0.6)], [len - 2, 1, WT('#d08a24', 0.35)], [len - 1, -1, WT('#e8a83a', 0.6)], [len - 1, 0, WT('#ffc860', 0.85)], [len - 1, 1, WT('#e8a83a', 0.6)], [len, 0, WT('#e8a83a', 0.6)], [len - 1, -0.5, WT('#fff0c0', 1)]]) px(g, ...at(t, o), col);
     px(g, ...at(len - 2, -2.5), '#6f9a4a');   /* moss on a claw */
     const tp = at(len - 1.5); c.tip = [tp[0], tp[1] + top];   /* (the geode's centre, in this canvas - padHeroFrames carries it down with the headroom) */
   }
@@ -158,8 +166,8 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     for (let t = 0; t <= len; t++) {                       // the curve: it bows a pixel and a half off the straight
       const k = t / len, bend = Math.sin(k * Math.PI) * 1.7;
       const bx = x0 + ax * t + qx * bend, by = y0 + ay * t + qy * bend;
-      px(g, Math.round(bx), Math.round(by), k > 0.82 ? '#ffffff' : '#d8dee8');
-      px(g, Math.round(bx - qx), Math.round(by - qy), k > 0.5 ? '#8a939f' : '#6e7885');
+      px(g, Math.round(bx), Math.round(by), k > 0.82 ? WT('#ffffff', 1) : WT('#d8dee8', 0.8));
+      px(g, Math.round(bx - qx), Math.round(by - qy), k > 0.5 ? WT('#8a939f', 0.4) : WT('#6e7885', 0.2));
     }
     px(g, Math.round(x0 - ax), Math.round(y0 - ay), '#3a2a18');                                   // the grip
     for (const [ox, oy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) px(g, Math.round(x0 + ox * qx - ax * 0.4), Math.round(y0 + oy * qy - ay * 0.4), '#e0b040');
@@ -167,8 +175,8 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   if (pistol) { // A SHORT PISTOL: a brass barrel, a walnut butt, and the lock over the hand
     const [x0, y0, x1, y1] = pistol.map((v, i) => v + (i & 1 ? dy : dx));
     const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax;
-    line(g, x0, y0, x1, y1, '#c9a85a', 2);
-    px(g, Math.round(x1), Math.round(y1), '#fff0c0'); px(g, Math.round(x1 - ax), Math.round(y1 - ay), '#e0c070');
+    line(g, x0, y0, x1, y1, WT('#c9a85a', 0.6), 2);
+    px(g, Math.round(x1), Math.round(y1), WT('#fff0c0', 1)); px(g, Math.round(x1 - ax), Math.round(y1 - ay), WT('#e0c070', 0.8));
     for (let t = 0; t <= 3; t++) px(g, Math.round(x0 - ax * t + qx * t * 0.9), Math.round(y0 - ay * t + qy * t * 0.9), t > 1 ? '#4a2e18' : '#6a4428');
     px(g, Math.round(x0 + ax + qx), Math.round(y0 + ay + qy), '#8a8f98');                           // the lock
   }
@@ -187,11 +195,11 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     line(g, Math.round(x0 - ax * 4), Math.round(y0 - ay * 4), Math.round(x0 + ax), Math.round(y0 + ay), '#2a2218', 2);   /* the long grip */
     px(g, Math.round(x0 - ax * 5), Math.round(y0 - ay * 5), '#8a7a5a');                                                  /* the pommel */
     px(g, Math.round(x0 - ax * 6), Math.round(y0 - ay * 6), '#5a4e38');
-    line(g, Math.round(x0 + ax * 2), Math.round(y0 + ay * 2), Math.round(x1 - ax * 2), Math.round(y1 - ay * 2), '#7a828e', 3);  /* the blade, three wide */
-    line(g, Math.round(x0 + ax * 2 + qx), Math.round(y0 + ay * 2 + qy), Math.round(x1 - ax * 2 + qx), Math.round(y1 - ay * 2 + qy), '#c9d1dc', 1);
-    line(g, Math.round(x0 + ax * 3), Math.round(y0 + ay * 3), Math.round(x1 - ax * 4), Math.round(y1 - ay * 4), '#3e444e', 1);  /* the fuller down the middle */
+    line(g, Math.round(x0 + ax * 2), Math.round(y0 + ay * 2), Math.round(x1 - ax * 2), Math.round(y1 - ay * 2), WT('#7a828e', 0.3), 3);  /* the blade, three wide */
+    line(g, Math.round(x0 + ax * 2 + qx), Math.round(y0 + ay * 2 + qy), Math.round(x1 - ax * 2 + qx), Math.round(y1 - ay * 2 + qy), WT('#c9d1dc', 1), 1);
+    line(g, Math.round(x0 + ax * 3), Math.round(y0 + ay * 3), Math.round(x1 - ax * 4), Math.round(y1 - ay * 4), WT('#3e444e', 0), 1);  /* the fuller down the middle */
     for (let t = 4; t < len - 3; t += 5) px(g, Math.round(x0 + ax * t), Math.round(y0 + ay * t), '#8fd160');             /* the runes cut into it */
-    px(g, Math.round(x1), Math.round(y1), '#eef4fa'); px(g, Math.round(x1 - ax), Math.round(y1 - ay), '#eef4fa');        /* the point */
+    px(g, Math.round(x1), Math.round(y1), WT('#eef4fa', 1)); px(g, Math.round(x1 - ax), Math.round(y1 - ay), WT('#eef4fa', 1));        /* the point */
     line(g, Math.round(x0 + ax * 2 - qx * 4), Math.round(y0 + ay * 2 - qy * 4), Math.round(x0 + ax * 2 + qx * 4), Math.round(y0 + ay * 2 + qy * 4), '#8a939f', 2);  /* the cross */
     px(g, Math.round(x0 + ax * 2 - qx * 4), Math.round(y0 + ay * 2 - qy * 4), '#c9d1dc');
     px(g, Math.round(x0 + ax * 2 + qx * 4), Math.round(y0 + ay * 2 + qy * 4), '#c9d1dc');
@@ -207,8 +215,8 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     for (let t = 0; t <= BL; t++) {
       const k = t / BL, curl = k * k * 3.2;                                   // it curves forward as it goes out
       const bx = x1 + qx * t - ax * curl, by = y1 + qy * t - ay * curl;
-      px(g, Math.round(bx), Math.round(by), k > 0.55 ? '#eef4fa' : '#c9cfd8');
-      if (k < 0.8) px(g, Math.round(bx - ax), Math.round(by - ay), '#7a828e');
+      px(g, Math.round(bx), Math.round(by), k > 0.55 ? WT('#eef4fa', 1) : WT('#c9cfd8', 0.7));
+      if (k < 0.8) px(g, Math.round(bx - ax), Math.round(by - ay), WT('#7a828e', 0.25));
     }
     px(g, Math.round(x1 + qx * BL - ax * 3.2), Math.round(y1 + qy * BL - ay * 3.2), '#ffffff');
   }
@@ -219,7 +227,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     rows.forEach((r, yy) => { for (let xx = 0; xx < r.length; xx++) { const k = r[xx]; if (k !== '.') px(g, sx + xx, sy + yy, k === 'S' ? KP.S : k === 'w' ? KP.w : KP.y); } });
     px(g, sx + 1, sy + 1, KP.s); px(g, sx + 2, sy + 1, KP.s); px(g, sx + 1, sy + 2, KP.s);
   }
-  if (bits) for (const [bx, by, k] of bits) { const col = k[0] === '#' ? k : KP[k]; if (col) px(g, BX + dx + bx, BY + dy + by, col); }   /* loose pixels, over everything: a glint, a hand, a flap of cloth */
+  if (bits) for (const [bx, by, k] of bits) { const col = k[0] === '#' ? k : k === 'n' ? WL(KP.s) : KP[k]; if (col) px(g, BX + dx + bx, BY + dy + by, col); }   /* loose pixels, over everything: a glint, a hand, a flap of cloth */
   outline(c, OUT);
   { const lr = LEGS[legs] || LEGS.stand; c.feet = top + BY + 11 + legsDy + lr.reduce((n, r, i) => /[^.]/.test(r) ? i : n, 0); }   /* THE ROW HIS BOOTS STAND ON, kept for tools/crouch-feet.mjs: a crouch drawn on the standing legs cut short floats */
   return c;
@@ -394,7 +402,7 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
        in on the slant: at a glance, a sword under him or a spear ahead of her.) */
     plunge: KF({ legs: 'tuck', hy: 1, kite: BACK, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 1], sword: [sh[0] - 2, sh[1] + 3, sh[0] - 2, sh[1] + 17], plume: 2,
       bits: [[6, 5, 'y'], [6, 6, 'W'], [5, 7, 'v'], [6, 7, 'v'], [7, 7, 'v'], [5, 8, 'v'], [6, 8, 'v'], [7, 8, 'v'], [6, 9, 'W'], [4, 10, 'y'], [5, 10, 'y'], [6, 10, 'y'], [7, 10, 'y'], [8, 10, 'y'],
-        ...[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map(r => [7, r, 's']), [6, 22, '#ffffff'], [6, 23, '#ffffff'], [6, 24, '#ffffff']] }),
+        ...[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map(r => [7, r, 'n']), [6, 22, '#ffffff'], [6, 23, '#ffffff'], [6, 24, '#ffffff']] }),
     /* THE DASH ATTACK: his shoulder in behind the shield, square across his front, and the blade driven out past its rim - then the
        full stretch of it, and a stumble to a stop that is the price of it (the third frame is the end-lag) */
     dashAtk: [KF({ wide: 4, dx: 2, dy: 1, legs: 'runC', shield: true, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], sword: [sh[0] + 3, sh[1] + 2, sh[0] + 15, sh[1] + 1], plume: 2 }),
@@ -1415,21 +1423,22 @@ function pyroFrame(o = {}) {
   const [c, g] = canvas(W + wide, H + headroom); g.translate(0, headroom);
   const put = (x, y, k) => { if (KP[k]) px(g, Math.round(x), Math.round(y), KP[k]); };
   // the staff goes behind her when she carries it, in front when she works it
+  const putW = (x, y, k) => { if (WP && (k === 'r' || k === 'y')) px(g, Math.round(x), Math.round(y), k === 'y' ? WP.s : WP.S); else put(x, y, k); };   /* the staff's cage and flame: the weapon skin's, never the robe's */
   const drawStaff = () => { if (!staff) return;
-    const [x0, y0, x1, y1] = staff; line(g, x0, y0 + dy, x1, y1 + dy, KP.w, 2);
+    const [x0, y0, x1, y1] = staff; line(g, x0, y0 + dy, x1, y1 + dy, KP.w, 2);   /* (the shaft keeps its wood: a recoloured shaft across her sleeve read as a blue band on the robe, not a staff) */
     const ux = Math.sign(x1 - x0), uy = Math.sign(y1 - y0);
     // a brass cage at the head with the flame in it
     const hx = x1, hy = y1 + dy;
     if (flame !== null) { /* THE FLAME AT REST stands straight up out of the cage whatever the lean of the staff, and burns a
          different shape on every beat: 0-3 the licks, 4 the flare when it is fed */
-      put(hx - 1, hy, 'y'); put(hx + 1, hy, 'y'); put(hx - 1, hy - 1, 'y'); put(hx + 1, hy - 1, 'y'); put(hx, hy, 'r'); put(hx, hy - 1, 'y');
+      putW(hx - 1, hy, 'y'); putW(hx + 1, hy, 'y'); putW(hx - 1, hy - 1, 'y'); putW(hx + 1, hy - 1, 'y'); putW(hx, hy, 'r'); putW(hx, hy - 1, 'y');
       const LICK = [[[0, -2, 'r'], [0, -3, 'r']], [[0, -2, 'y'], [1, -2, 'r'], [1, -3, 'r']], [[0, -2, 'r']], [[0, -2, 'y'], [-1, -2, 'r'], [0, -3, 'r']],
         [[0, -2, 'y'], [-1, -2, 'r'], [1, -2, 'r'], [0, -3, 'y'], [-1, -3, 'r'], [1, -3, 'r'], [0, -4, 'r'], [-2, -1, 'r'], [2, -1, 'r']]];
-      for (const [ox, oy, k] of LICK[flame]) put(hx + ox, hy + oy, k);
+      for (const [ox, oy, k] of LICK[flame]) putW(hx + ox, hy + oy, k);
       return; }
-    put(hx - uy, hy + ux, 'y'); put(hx + uy, hy - ux, 'y'); put(hx + ux, hy + uy, 'y');
-    put(hx, hy, flick ? 'y' : 'r'); put(hx + ux * 2, hy + uy * 2, flick ? 'r' : 'y');
-    put(hx + ux * 2 - uy, hy + uy * 2 + ux, 'r'); };
+    putW(hx - uy, hy + ux, 'y'); putW(hx + uy, hy - ux, 'y'); putW(hx + ux, hy + uy, 'y');
+    putW(hx, hy, flick ? 'y' : 'r'); putW(hx + ux * 2, hy + uy * 2, flick ? 'r' : 'y');
+    putW(hx + ux * 2 - uy, hy + uy * 2 + ux, 'r'); };
   if (staff && staff[4] === 'back') drawStaff();
   // boots, under the hem
   for (const [fx, fy] of feet) { put(fx, fy + dy, 'W'); put(fx + 1, fy + dy, 'W'); }
