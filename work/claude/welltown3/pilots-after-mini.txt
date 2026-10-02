@@ -1,0 +1,4 @@
+welltown knight: {"outcome":"win","secs":37,"bossLeft":0,"taken":0,"endHp":206,"opened":5,"swings":38}
+welltown warden: {"outcome":"death","secs":47.6,"bossLeft":12,"taken":206,"endHp":0,"opened":4,"swings":76}
+welltown pyro: {"outcome":"win","secs":47.3,"bossLeft":0,"taken":0,"endHp":194,"opened":6,"swings":52}
+welltown 2/3

@@ -1,0 +1,13 @@
+welltown BOSS expected L30 knight#1: DEAD 61.7s, hero lost 100%, boss left 100%, 0/481 blows
+welltown BOSS expected L30 knight#2: DEAD 61.7s, hero lost 100%, boss left 100%, 0/481 blows
+welltown BOSS expected L30 warden#1: DEAD 56.5s, hero lost 100%, boss left 100%, 2/498 blows
+welltown BOSS expected L30 warden#2: DEAD 56.5s, hero lost 100%, boss left 100%, 2/498 blows
+welltown BOSS expected L30 pyro#1: DEAD 87.3s, hero lost 100%, boss left 93%, 7/866 blows
+welltown BOSS expected L30 pyro#2: DEAD 87.3s, hero lost 100%, boss left 93%, 7/866 blows
+welltown MINI expected L30 knight#1: WIN 44.6s, hero lost 15%, boss left 0%, 39/125 blows
+welltown MINI expected L30 knight#2: WIN 47s, hero lost 48%, boss left 0%, 44/209 blows
+welltown MINI expected L30 warden#1: WIN 61.2s, hero lost 56%, boss left 0%, 31/470 blows
+welltown MINI expected L30 warden#2: WIN 59.9s, hero lost 67%, boss left 0%, 34/444 blows
+welltown MINI expected L30 pyro#1: WIN 54.9s, hero lost 62%, boss left 0%, 62/393 blows
+welltown MINI expected L30 pyro#2: WIN 58.1s, hero lost 21%, boss left 0%, 50/411 blows
+errors []

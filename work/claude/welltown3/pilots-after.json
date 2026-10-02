@@ -1,0 +1,35 @@
+[
+ {
+  "id": "welltown",
+  "hero": "knight",
+  "outcome": "death",
+  "secs": 116.2,
+  "bossLeft": 13,
+  "taken": 206,
+  "endHp": 0,
+  "opened": 6,
+  "swings": 32
+ },
+ {
+  "id": "welltown",
+  "hero": "warden",
+  "outcome": "timeout",
+  "secs": 180,
+  "bossLeft": 22,
+  "taken": 182,
+  "endHp": 24,
+  "opened": 6,
+  "swings": 155
+ },
+ {
+  "id": "welltown",
+  "hero": "pyro",
+  "outcome": "win",
+  "secs": 114.1,
+  "bossLeft": 0,
+  "taken": 193,
+  "endHp": 1,
+  "opened": 8,
+  "swings": 52
+ }
+]
