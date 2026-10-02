@@ -77,7 +77,7 @@ export const OPEN_RULE = {
   reefmaw: e => e.mode === 'stuck' || e.mode === 'reel' || e.mode === 'beached',
   quarter: e => e.mode === 'cut' || e.mode === 'reel',                       // her blade in a rope
   captain: e => e.mode === 'beach' || e.mode === 'reel',                     // beached on his own planking
-  tollmaster: e => e.open > 0,                                               // both hands over his head
+  tollmaster: e => e.open > 0,                                               // (claude/bosswave1) the ledger turned on a shield, only (THE DARK is no longer open)
   bellcrab: e => e.phase === 3 || e.open > 0,                                // a stone on his crown, or out of the bell
   drownedking: e => e.open > 0,
   harbormaster: e => e.open > 0,
@@ -94,6 +94,7 @@ export const OPEN_RULE = {
   duneworm: e => !!(e.st && wormOpen(e.st)),                                 // tangled in the awning
   wickerqueen: e => wqOpen(e),                                               // burning
   puppeteer: e => pupOpen(e),
+  grandmother: e => H.granOpen(e),                                           // (claude/bosswave1) her rap after a silent listen, or her feel turned on a shield
   greenteeth: e => gtOpen(e),                                                // stranded or flushed (her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,
@@ -108,7 +109,6 @@ export const NO_GREED = new Set(['pyromancer']);
 export const OWN_WARD = new Set(['puppeteer', 'wickerqueen', 'greenteeth']);
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
-  grandmother: 'TODO boss wave: no opening in code (only a vanish that nothing hits); left at full damage',
   mother: 'her body is armoured to every blade already (ARMOURED); the heart node is her opening and it is not the boss',
   kraken: 'no blade reaches the body; the arms carry his openings (knelled, pinned, looking) in krakenHurt',
 };

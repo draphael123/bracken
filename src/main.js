@@ -6084,7 +6084,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   if (e.t === 'gill' && mother && !mother.gillsOpen) { SFX.clank(); sparks(e.x, e.y - 6, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 18, 'SHE HOLDS HER BREATH', '#9aa39a'); P.grace = Math.max(P.grace, 0.3); return; }
   if (e.t === 'queen' && e.mode === 'winded') dmg *= 2; else if (e.t === 'queen' && e.mode === 'stuck') dmg = Math.round(dmg * 1.5);   /* (claude/firsthour) stuck in the wood is the long window, so it bites a little less than a staggered dive: the first pilot's knight took her in 23 s off one of them at double */
   if (e.t === 'chief' && e.mode === 'planted') dmg *= 2;
-  if (e.t === 'ram' && ramOpen(e)) dmg *= 2;
+  /* (claude/bosswave1) the Ram's daze lands WHOLE, not double: a 3 s daze at double took the whole of him in one charge dodged */
   if (e.t === 'heart') { if (!mother || mother.mode !== 'open') return; dmg = 1; mother.mode = 'idle'; mother.modeT=2; mother.nodeRest=10; mother.tipped=false; mother.gillsOpen=false; mother.nodeMove=true; e.burn=0; e.bleed=0; } // each cut closes the heart: return to the living knot
   /* (claude/bosswave1) her windows pay x1.3 now, not double (the boss rule chips her everywhere else): the old double on the boards, and 2.5x under the bough,
      gave the mash bot 92% of her in one grounded window. The bough, the window the player makes, still pays best. */
@@ -10234,6 +10234,11 @@ function cutLine(e, k) {
 //               stood still with both hands over his head and everything lands DOUBLE on him.
 // Phase two he sets the bier down and the four bearers come off it, and that is the only time he is slow.
 // At low health he blacks out the lamps; relighting them restores the room.
+/* HIS OPENING IS THE PARRY (claude/bosswave1, Daniel 10-02). THE DARK came on his own clock whenever a lamp burned, and it was open at double for 2 s -
+   the mash bot took 70-77% of him in it and beat him. A clock is not an earned window. Now his one opening is THE LEDGER turned on a shield, on the
+   beat: THE BOOK TURNS: CUT HIM, and he reels TOLL_OPEN s (it was 1.2) taking double. Through THE DARK he is chipped like anywhere else (and his
+   poise bar still breaks him open to the heavy blows and plunges that fill it: the hero with no shield's way in). */
+const TOLL_OPEN = 3.0;
 function updateTollmaster(e, dt) {
   const A = L.arena, floor = A.floor; e.modeT -= dt; e.anim += dt; if (e.open > 0) e.open -= dt;
   const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - floor) < 46;
@@ -10264,7 +10269,7 @@ function updateTollmaster(e, dt) {
         if (!P.dead && Math.sign(d) === e.face && ad < 43 && Math.abs(P.y - e.y) < 34) {
           const res = damagePlayer(e.x, DMG.tollLedger);
           // a parry on the ledger is the showcase: it knocks the book out of his swing and opens him
-          if (res === 'blocked') { e.stagger = Math.max(e.stagger || 0, 1.2); e.open = Math.max(e.open, 1.2); e.mode = 'reel'; e.modeT = 1.2; number(e.x, e.y - 48, 'THE BOOK TURNS: CUT HIM', '#8fd160'); SFX.parry ? SFX.parry() : SFX.clank(); }
+          if (res === 'blocked') { e.stagger = Math.max(e.stagger || 0, TOLL_OPEN); e.open = Math.max(e.open, TOLL_OPEN); e.mode = 'reel'; e.modeT = TOLL_OPEN; number(e.x, e.y - 48, 'THE BOOK TURNS: CUT HIM', '#8fd160'); SFX.parry ? SFX.parry() : SFX.clank(); }
           else if (res === 'hit') { P.vx = e.face * 300; P.vy = -150; } } }
       break; }
     case 'ledger': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break;
@@ -10280,8 +10285,7 @@ function updateTollmaster(e, dt) {
     case 'rod': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break;
     case 'darkTell': { want = 0;
       if (Math.random() < dt * 26) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 44 - Math.random() * 10, vx: 0, vy: -20, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#2b403c' : '#9a5aa8', size: 2, grav: -18 });
-      if (e.modeT <= 0) { e.mode = 'dark'; e.modeT = p3 ? 1.5 : 2; e.open = e.modeT; tollDark(e);
-        number(e.x, e.y - 54, 'HIS HANDS ARE UP: CUT HIM', '#8fd160'); } break; }
+      if (e.modeT <= 0) { e.mode = 'dark'; e.modeT = p3 ? 1.5 : 2; tollDark(e); } break; }   /* (claude/bosswave1) no longer an opening: see TOLL_OPEN */
     case 'dark': { want = 0;
       if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * 26, y: e.y - 40, vx: 0, vy: -12, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break; }
@@ -10295,7 +10299,7 @@ function updateTollmaster(e, dt) {
         e.mode = 'borne'; e.modeT = 0.6; }
       break; }
     case 'blackoutTell': want = 0;
-      if (e.modeT <= 0) { tollDark(e); e.open = 2; e.mode = 'dark'; e.modeT = 2; number(e.x,e.y-54,'HIS HANDS ARE UP: CUT HIM','#8fd160'); }
+      if (e.modeT <= 0) { tollDark(e); e.mode = 'dark'; e.modeT = 2; }
       break;
     case 'dead': return;
   }
@@ -18057,6 +18061,11 @@ function granEar(x, r) {                           // something happened, and sh
   if (boss.mode === 'listen') boss.caught = true;
   ringAt(x, boss.y - 6, 12, '#f6f6ee', 0.3);
 }
+/* HER OPENINGS (claude/bosswave1, Daniel 10-02: the Grandmother had none in code, so the boss rule left her at full damage and the mash bot beat her 2/6).
+   Both are EARNED and both are told: stay silent through her LISTEN and she raps the floor (SHE RAPS THE FLOOR: CUT HER), or turn her FEEL on a
+   raised shield (NOTHING THERE: CUT HER). Each holds her GRAN_OPEN s (they were 1.9 and 1.5). Anywhere else a blade is the boss rule's chip. */
+const GRAN_OPEN = 3.2;
+const granOpen = e => e.mode === 'rap' || e.mode === 'reel';
 function updateGrandmother(e, dt) {
   const A = L.arena, floor = A.floor, p2 = e.phase === 2;
   const d = P.x - e.x, ad = Math.abs(d);
@@ -18101,7 +18110,7 @@ function updateGrandmother(e, dt) {
     case 'feelTell': want = 0; e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { e.mode = 'feel'; e.modeT = 0.3; SFX.slash();
         if (!P.dead && Math.sign(d) === e.face && ad < 28 && Math.abs(P.y - e.y) < 22) { const res = damagePlayer(e.x, DMG.granFeel);
-          if (res === 'blocked') { e.mode = 'reel'; e.modeT = 1.5; e.stagger = 1.5; e.vx = -e.face * 60; number(e.x, e.y - e.h - 14, 'NOTHING THERE', '#8fd160'); SFX.clank(); }
+          if (res === 'blocked') { e.mode = 'reel'; e.modeT = GRAN_OPEN; e.stagger = GRAN_OPEN; e.vx = -e.face * 60; number(e.x, e.y - e.h - 14, 'NOTHING THERE: CUT HER', '#8fd160'); SFX.clank(); }
           else if (res === 'hit') P.vx = e.face * 160; } } break;
     case 'feel': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.5; } break;
     case 'reel': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.5; e.stagger = 0; } break;
@@ -18114,10 +18123,10 @@ function updateGrandmother(e, dt) {
       if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 16 - Math.random() * 10, vx: 0, vy: -10, life: 0.5, max: 0.5, col: '#f6f6ee', size: 1, grav: 0 });
       hushT = Math.max(hushT, e.modeT);
       if (e.caught) { e.mode = 'throwTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.4; number(e.x, e.y - e.h - 16, 'SHE HEARD THAT', '#ff6b6b'); SFX.snort(); music.duck(false); hushT = 0; shakeCam(3); break; }
-      if (e.modeT <= 0) { e.mode = 'rap'; e.modeT = 1.9; e.stagger = 1.9; music.duck(false); hushT = 0;
+      if (e.modeT <= 0) { e.mode = 'rap'; e.modeT = GRAN_OPEN; e.stagger = GRAN_OPEN; music.duck(false); hushT = 0;
         SFX.stone(); SFX.thud(); shakeCam(6); zoomKick(1.05, 0.25); hitstop(0.05); noiseAt(e.x, e.y, 120, null);
         ringAt(e.x, e.y, 46, '#f6f6ee', 0.5); dust(e.x, e.y, 10);
-        number(e.x, e.y - e.h - 16, 'NOTHING. AND THAT IS HER OWN NOISE', '#8fd160'); }
+        number(e.x, e.y - e.h - 16, 'SHE RAPS THE FLOOR: CUT HER', '#8fd160'); }
       break; }
     case 'throwTell': want = 0; e.face = Math.sign(e.ear - e.x) || e.face;
       if (e.modeT <= 0) { e.mode = 'thrown'; e.modeT = 0.8; SFX.throwWhoosh();
@@ -20189,7 +20198,8 @@ function updateGoat(e, dt) {
   if (r.ground && !e.air && !(e.flung > 0) && tileAt(ftx, fty) === T.AIR && !isOneWay(tileAt(ftx, fty))) skid();
   if (r.hitX && !(e.flung > 0)) skid();
 }
-const ramOpen = e => e.mode === 'crash' || e.mode === 'land'; // the two windows: into the wall, and off the leap
+const ramOpen = e => e.mode === 'crash';   // (claude/bosswave1) his one window: into the wall off a charge you dodged (the 1 s off his leap was under the boss rule's 3 s, and came to anyone)
+const RAM_DAZE = 3.0, RAM_DAZE_TAKE = 0.4;   /* s he stays in the stone, or until 40% of his blood has gone in it */
 function updateRam(e, dt) {
   const A = L.arena, floor = A.floor, p2 = e.phase === 2; e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, (e.hitT || 0) - dt);
   e.vy += 1000 * dt; if (e.vy > 400) e.vy = 400;
@@ -20204,7 +20214,10 @@ function updateRam(e, dt) {
     case 'charge': want = e.face * (p2 ? 290 : 220);
       for (const gt of enemies) if (gt.alive && gt.t === 'goat' && gt.called && !gt.flung && Math.abs(gt.x - e.x) < 18 && Math.abs(gt.y - e.y) < 16) { gt.flung = 1.2; gt.air = true; gt.vx = e.face * 250; gt.vy = -190; gt.y -= 2; gt.hitT = 0; SFX.goatCry(); number(gt.x, gt.y - gt.h - 8, 'FLUNG', '#ffd36b'); } // he goes through the flock and the flock goes through you
       if (e.feint && e.modeT < 2.55) { e.feint = false; e.mode = 'rear'; e.modeT = 0.55; e.vx *= 0.2; dust(e.x + e.face * 12, e.y, 10); SFX.snort(); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); break; } // THE FEINT: he pulls up short and rears; the real charge follows
-      if (!P.dead && ad < 22 && Math.abs(P.y - e.y) < 24 && e.hitT <= 0) { e.hitT = 0.8; const res = damagePlayer(e.x, DMG.ramLord); if (res === 'hit') { P.vx = e.face * 260; P.vy = -160; } else if (res === 'blocked') { P.vx = e.face * 200; number(P.x, P.y - 24, 'SHOVED', '#c9d1dc'); } }
+      if (!P.dead && ad < 22 && Math.abs(P.y - e.y) < 24 && e.hitT <= 0) { e.hitT = 0.8; const res = damagePlayer(e.x, DMG.ramLord); if (res === 'hit') { P.vx = e.face * 260; P.vy = -160; } else if (res === 'blocked') { P.vx = e.face * 200; number(P.x, P.y - 24, 'SHOVED', '#c9d1dc'); }
+        /* A CHARGE THAT FINDS YOU STOPS ON YOU (claude/bosswave1): it no longer runs on into the wall and dazes him - only a charge you got out of the way of
+           (jumped, rolled through) carries him into the stone. Every charge reached the wall before, so his daze came to anyone who stood there. */
+        if (res === 'hit' || res === 'blocked') { e.mode = 'pace'; e.modeT = 0.7; e.vx *= 0.25; e.banks = 0; dust(e.x + e.face * 12, e.y, 8); SFX.snort(); break; } }
       // ENRAGED, HE DOES NOT RUN THE SAME LINE TWICE. In the second phase he takes the wall at an angle and
       // BANKS off it instead of burying his horns in it: the charge comes back down the arena without the
       // dazed pause, and the safe ground behind him stops being safe. Twice, and then he crashes like before.
@@ -20219,7 +20232,7 @@ function updateRam(e, dt) {
         // A11: THE SCREE BANK is a CAUSED opening, not a waited one - baiting his charge into the banked wall (A.bank)
         // buries him deeper than an ordinary wall hit: more rock, a longer daze, and the same double damage window (ramOpen).
         const atBank = A.bank && hitWall === A.bank;
-        e.mode = 'crash'; e.modeT = (p2 ? 1.7 : 2.4) + (atBank ? 0.8 : 0);
+        e.mode = 'crash'; e.modeT = RAM_DAZE + (atBank ? 0.8 : 0);   /* (claude/bosswave1: 3 s in both phases, it was 2.4 and 1.7 - he only gets here off a charge you got out of the way of now) */
         shakeCam(atBank ? 13 : 9); SFX.heavy(); SFX.stone(); SFX.sting(); zoomKick(atBank ? 1.16 : 1.12, 0.3);
         dust(e.x + e.face * 14, e.y, atBank ? 26 : 14);
         number(e.x, e.y - e.h - 12, atBank ? 'INTO THE BANK: HE BURIES HIMSELF' : 'INTO THE WALL', atBank ? '#ffd36b' : '#8fd160');
@@ -20231,7 +20244,9 @@ function updateRam(e, dt) {
     case 'leap': want = e.vx; e.airT += dt; // THE LEAP: he comes down where you stood; the shadow shows where
       if (e.airT > 0.2 && e.vy >= 0 && e.y >= floor - 1) { e.y = floor; e.vy = 0; e.vx = 0; e.mode = 'land'; e.modeT = 1.0; e.stagger = 1.0; shakeCam(9); SFX.heavy(); SFX.thud(); SFX.sting(); zoomKick(1.1, 0.25); dust(e.x - 12, e.y, 10); dust(e.x + 12, e.y, 10); for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 16, y: floor, dir: dd, life: 1.6, sp: p2 ? 185 : 155 }); if (!P.dead && ad < 28 && Math.abs(P.y - e.y) < 22) damagePlayer(e.x, DMG.ramLeap, { unblockable: true, up: true }); const n = p2 ? 2 : 1; for (let i = 0; i < n; i++) rocks.push({ x: A.x0 + 24 + Math.random() * (A.x1 - A.x0 - 48), y: floor - 150, vy: 0, t: 0, dead: false }); for (const lx of [A.x0 + 40, A.x1 - 40]) rocks.push({ x: lx + (Math.random() - 0.5) * 12, y: floor - 160, vy: 0, t: 0, dead: false }); } break; // the ledges are safe from the stamp, not from the leap
     case 'land': want = 0; if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.5; e.stagger = 0; } break;
-    case 'crash': if (Math.floor(e.modeT / 0.7) !== Math.floor((e.modeT + dt) / 0.7)) number(e.x, e.y - e.h - 12, 'DAZED: HIT HIM', '#8fd160'); if (e.modeT <= 0) { if (e.chain > 0) { e.chain--; e.face = -e.face; e.mode = 'charge'; e.modeT = 3; SFX.bellow(); number(e.x, e.y - e.h - 12, 'AGAIN', '#ff6b6b'); } else { e.mode = 'pace'; e.modeT = 0.6 + Math.random() * 0.6; } } break;
+    case 'crash': if (Math.floor(e.modeT / 0.7) !== Math.floor((e.modeT + dt) / 0.7)) number(e.x, e.y - e.h - 12, 'DAZED: HIT HIM', '#8fd160');
+      if (e.crashHp === undefined) e.crashHp = e.hp; if (e.modeT > 0 && e.crashHp - e.hp >= e.maxHp * RAM_DAZE_TAKE) { e.modeT = 0; SFX.snort(); number(e.x, e.y - e.h - 12, 'HE SHAKES IT OFF', '#ff9a5c'); }   /* (claude/bosswave1) a daze is worth a share of him */
+      if (e.modeT <= 0) { e.crashHp = undefined; if (e.chain > 0) { e.chain--; e.face = -e.face; e.mode = 'charge'; e.modeT = 3; SFX.bellow(); number(e.x, e.y - e.h - 12, 'AGAIN', '#ff6b6b'); } else { e.mode = 'pace'; e.modeT = 0.6 + Math.random() * 0.6; } } break;
     case 'stampTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'stamp'; e.modeT = 0.5; shakeCam(6); SFX.heavy(); dust(e.x, e.y, 12); for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 18, y: floor, dir: dd, life: 1.7, sp: p2 ? 170 : 140 }); if (!P.dead && ad < 30 && Math.abs(P.y - e.y) < 20 && P.ground) damagePlayer(e.x, DMG.ramStamp, { unblockable: true }); } break;
     case 'stamp': if (e.modeT <= 0) { e.mode = 'pace'; e.modeT = 0.7; } break;
     case 'callTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'call'; e.modeT = 0.6; for (const s of [-1, 1]) { const x = s < 0 ? A.x0 + 20 : A.x1 - 20; enemies.push({ t: 'goat', x, y: floor, vx: 0, vy: -80, w: 14, h: 11, hp: EHP.goat, hp0: EHP.goat, speed: 30, mode: 'patrol', modeT: 0, rider: false, timer: 0, air: false, hitT: 0, face: -s, fleeT: 4.5, called: true, alive: true, dying: 0, anim: Math.random(), flash: 0, stagger: 0 }); burst(x, floor - 6, 8, COLS.goat, 60, 0.5); } number(P.x, P.y - 30, 'JUMP THE FLOCK', '#ffd36b'); SFX.goatCry(); } break;
@@ -22267,7 +22282,7 @@ const POGO_API = { get P() { return P; }, keys, SFX, number: (x, y, t, c) => num
 installTempo(TK, TOKENS);   /* TIGHTER, STILL TOLD (claude/combat3, src/foe-tempo.js): first on the grant, so a held wind-up adds its beat to the tightened tell */
 const TAC_HOOK = installTactics(TK, TOKENS, { turned: () => SFX.shieldScrape() });   /* held wind-ups on a grant, and each kind's own way of waiting (src/foe-tactics.js) */
 /* THE GREED REPRISAL'S WORLD (claude/combat3, src/boss-greed.js): the openings that live here, and what the told counter may touch */
-GB.install({ frogOpen: e => frogOpen(e), ramOpen: e => ramOpen(e), callerOpen: e => callerOpen(e), lanceOpen: e => lanceOpen(e), gqOpen: e => gqOpen(e), forgeOpen: e => forgeOpen(e) });
+GB.install({ frogOpen: e => frogOpen(e), ramOpen: e => ramOpen(e), callerOpen: e => callerOpen(e), lanceOpen: e => lanceOpen(e), gqOpen: e => gqOpen(e), forgeOpen: e => forgeOpen(e), granOpen: e => granOpen(e) });
 const GREED_API = { dt: 0, get time() { return time; }, get P() { return P; },
   hurt: (e, d) => damagePlayer(e.x, d, { who: e, unblockable: true, name: 'HIS REPRISAL' }),
   ring: (x, y, r, c, l) => ringAt(x, y, r, c, l),

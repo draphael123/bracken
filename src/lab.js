@@ -1533,6 +1533,12 @@ async function runbossLab(BK, opts) {
       /* THE WINDCALLER'S HOWL (claude/bosswave1: his fall is now his only opening): HE CALLS THE WIND is told, and a player braces through it -
          DOWN held on the ground (every hero has it; block is the same brace) - and he falls */
       if (boss.t === 'windcaller' && (boss.mode === 'howlTell' || boss.mode === 'howl') && P.ground) { strike = false; goal = null; k.left = k.right = false; k.down = true; }
+      /* THE RAM'S CHARGE (claude/bosswave1: a charge that finds you stops on you and dazes nothing): rolled through as it arrives, so it runs on into the wall */
+      else if (boss.t === 'ram' && boss.mode === 'charge' && Math.abs(boss.x - P.x) < 72 && (boss.x - P.x) * (boss.vx || 0) < 0 && !(P.dodge > 0)) { strike = false; k.block = false; k[boss.x > P.x ? 'right' : 'left'] = true; BK.press('dodge'); }
+      else if (boss.t === 'ram' && (boss.mode === 'lower' || boss.mode === 'rear')) strike = false;   /* (his head goes down: no swing started that would still be running when he comes) */
+      /* THE GRANDMOTHER LISTENS (claude/bosswave1: her rap and her feel turned are her openings now): SHE IS LISTENING is told, and a player stands
+         still and silent through it - no step, no swing - and she raps the floor, open */
+      else if (boss.t === 'grandmother' && (boss.mode === 'listenTell' || boss.mode === 'listen')) { strike = false; goal = null; k.left = k.right = false; }
       /* and his twister walks the heather toward him: a player keeps out of its way (it lifts and cuts whatever it touches), on the side away from it */
       else if (boss.t === 'windcaller' && boss.twister && boss.mode !== 'fallen' && Math.abs(P.x - boss.twister.x) < 70) { strike = false; goal = boss.twister.x + (Math.sign(P.x - boss.twister.x) || 1) * 90; }
       /* THE CHIP AND THE GREED REPRISAL (claude/combat3, src/boss-greed.js): outside an opening a hero's blow on a boss is a twentieth, and

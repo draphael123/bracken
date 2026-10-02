@@ -7,7 +7,8 @@
        the same blow from the ROOM (hurtEnemy, no hero blow) is not chipped; inside his opening, or broken by his poise bar, the
        hero's blow lands whole
      - a boss with his own twentieth (the Puppeteer) keeps HIS number: never a chip of a chip
-     - a boss with no opening (the Grandmother) is left at full damage, never made unbeatable
+     - a boss with no opening (NO_OPENING: the Spore Mother, the Kraken) is left at full damage, never made unbeatable (Node: the chip never applies
+       to one); the Grandmother had none and was the page's sample until claude/bosswave1 gave her two (her rap, her feel turned): she is chipped now
      - GREED.n hero blows outside an opening start the reprisal: the red !! goes up, and only after GREED.tell does it land - on a hero
        beside him, not on one who stood off; blows inside an opening never count
      - his burn outside an opening is chipped too
@@ -15,7 +16,7 @@
    Red on master 3fd06c78: no src/boss-greed.js (and BK.greed undefined). Run: node tools/boss-greed.mjs */
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/level.js';
-import { OPEN_RULE, NO_OPENING, MINI_EVERY_BLOW, GREED } from '../src/boss-greed.js';
+import { OPEN_RULE, NO_OPENING, MINI_EVERY_BLOW, GREED, chipped } from '../src/boss-greed.js';
 import { openPage } from './cdp.mjs';
 
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
@@ -29,6 +30,7 @@ for (const lv of campaign) {
   if (L.mini && L.mini.boss) { minis++; ok(OPEN_RULE[L.mini.boss] || MINI_EVERY_BLOW.has(L.mini.boss), lv.id + ': the mini ' + L.mini.boss + ' has no opening rule and is not on MINI_EVERY_BLOW'); }
 }
 ok(bosses >= 30, 'only ' + bosses + ' campaign bosses found');
+for (const t of Object.keys(NO_OPENING)) ok(!chipped({ t }, true), t + ' is on NO_OPENING and must never be chipped (left at full damage, never made unbeatable)');
 
 const pg = await openPage({ audio: false, fonts: false });
 let R;
@@ -47,9 +49,9 @@ try {
     /* a closed mode for each sampled boss (his own idle) */
     const shut = { wood: b => { b.mode = 'hover'; b.modeT = 9; for (const d of BK.enemies()) if (d.t === 'wasp' && d.drone) d.alive = false; },
       hurricane: b => { b.mode = 'idle'; b.modeT = 9; }, lamplit: b => { b.mode = 'idle'; b.open = 0; b.modeT = 9; }, spire: b => { b.mode = 'idle'; b.modeT = 9; },
-      theatre: b => { b.mode = 'idle'; b.modeT = 9; }, underleaf: b => { b.mode = 'idle'; b.alpha = 1; b.modeT = 9; }, burning: b => { b.mode = 'idle'; b.open = 0; b.modeT = 9; } };
+      theatre: b => { b.mode = 'idle'; b.modeT = 9; }, underleaf: b => { b.mode = 'walk'; b.alpha = 1; b.modeT = 9; b.listenT = b.sweepT = b.teleT = b.fireT = b.callT = b.feelT = 99; b.stagger = 0; }, burning: b => { b.mode = 'idle'; b.open = 0; b.modeT = 9; } };
     const opener = { wood: b => { b.mode = 'winded'; b.modeT = 9; }, hurricane: b => { b.mode = 'beach'; b.modeT = 9; }, lamplit: b => { b.open = 3; b.onFoot = true; }, spire: b => { b.mode = 'downed'; b.modeT = 9; },
-      theatre: b => { b.mode = 'downed'; b.modeT = 9; }, burning: b => { b.open = 3; } };
+      theatre: b => { b.mode = 'downed'; b.modeT = 9; }, burning: b => { b.open = 3; }, underleaf: b => { b.mode = 'rap'; b.modeT = 9; } };   /* (claude/bosswave1: her rap after a silent listen) */
     for (const id of ['wood', 'hurricane', 'lamplit', 'spire', 'theatre', 'underleaf', 'burning']) {
       const b = boot(id); if (!b) { out[id] = { missing: true }; continue; }
       const o = { t: b.t, bossActive: BK.bossActive !== undefined ? BK.bossActive : null };
@@ -59,7 +61,7 @@ try {
       b.broken = 1; o.heroBroken = hero(b, 40); b.broken = 0; freeze(b);
       if (opener[id]) { opener[id](b); o.openOpen = BK.greed.open(b); o.heroOpen = hero(b, 40); freeze(b); shut[id](b); }
       /* GREED: n blows in a breath, a hero beside him and then one stood off */
-      if (id !== 'underleaf' && id !== 'burning') {   /* (the Pyromander reads blows and runs his own fire: his chip is asked, his greed is the others') */ freeze(b); shut[id](b); const P = BK.P; BK.god = false; P.inv = 0; P.dead = 0; P.hp = P.maxHp; P.x = b.x - 30; P.y = b.y; let began = -1;
+      if (id !== 'burning') {   /* (the Pyromander reads blows and runs his own fire: his chip is asked, his greed is the others') */ freeze(b); shut[id](b); const P = BK.P; BK.god = false; P.inv = 0; P.dead = 0; P.hp = P.maxHp; P.x = b.x - 30; P.y = b.y; let began = -1;
         for (let i = 0; i < ${GREED.n}; i++) { shut[id](b); BKT.hurtAs('light', b, 10, b.x - 12, false); if (b.greedT > 0 && began < 0) began = i + 1; }
         o.greedBegan = began; o.markUp = false; const hp0 = P.hp; let firstHurtT = -1, t = 0;
         for (let f = 0; f < 90; f++) { shut[id](b); P.x = b.x - 30; P.y = b.y; P.inv = 0; P.vx = 0; BK.sim(1); t += 1 / 60; if (BK.textLab && BK.textLab.nums().some(n => n.txt === '!!')) o.markUp = true; if (P.hp < hp0 && firstHurtT < 0) firstHurtT = t; }
