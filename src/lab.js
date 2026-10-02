@@ -1512,7 +1512,7 @@ async function runbossLab(BK, opts) {
          opening; when the ring closes on him he steps out of it. (BK.greed.open is strict: a boss with no rule is not "open" here, so a
          mini with none is never mashed into his reprisal either.) */
       if (BK.greed) { const G = BK.greed, out = (G.reach || 60) + (boss.w || 20) / 2;
-        if (strike && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - 1) { strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * (out + 12); }
+        if (strike && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - 1) { strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * ((LAB_STAND[h] || 12) + (boss.w || 20) / 2); }   /* (it holds its ground at sword's length and keeps answering him: it only stops swinging) */
         if (boss.greedT > 0 && ad < out + 18) { strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * (out + 30); } }
       // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
       // THE DECK MUST BE UNDER HER FEET: sword reach is not the top of the ladder.

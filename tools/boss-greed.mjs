@@ -79,7 +79,7 @@ try {
     return out; })()`, 600000);
 } finally { pg.close(); }
 
-const chipMax = d => Math.ceil(d * GREED.chip);
+const chipMax = (d, t) => Math.ceil(d * (GREED.chipBy[t] ?? GREED.chip));   /* (a boss with his own chip - the first boss, the Pyromancer - GREED.chipBy) */
 for (const [id, o] of Object.entries(R)) {
   if (id === 'bosunMini') continue;
   if (o.missing) { ok(false, id + ': no boss found'); continue; }
@@ -87,10 +87,11 @@ for (const [id, o] of Object.entries(R)) {
   if (exempt) { ok(o.heroShut >= 20, id + ' (' + o.t + ', no opening): a hero blow of 40 must land whole-ish, not chipped (took ' + o.heroShut + ')'); continue; }
   ok(o.openShut === false, id + ': the sampled closed mode must read as NOT open (BK.greed.open = ' + o.openShut + ')');
   if (own) ok(o.heroShut === Math.max(1, Math.round(40 * 0.05)), id + ': his own ward keeps his own number (a blow of 40 took ' + o.heroShut + ', not ' + Math.max(1, Math.round(40 * 0.05)) + ': a chip of a chip?)');
-  else ok(o.heroShut <= chipMax(40), id + ': a hero blow of 40 outside his opening must take at most ' + chipMax(40) + ' (took ' + o.heroShut + ')');
-  if (!own) ok((o.t === 'pyromancer' || o.heroRun >= 20 * 20 * GREED.chip - 1) && o.heroRun <= 20 * 20 * GREED.chip + 1, id + ': 20 hero blows of 20 outside his opening must add up to a twentieth (' + 20 * 20 * GREED.chip + '), took ' + o.heroRun);
-  if (!own) ok(o.roomShut > chipMax(40), id + ': a blow from the ROOM (no hero blow) must not be chipped (took ' + o.roomShut + ')');
-  if (!own) ok(o.heroBroken > chipMax(40) * 3, id + ': broken by his poise bar he is open (a hero blow of 40 took ' + o.heroBroken + ')');
+  else ok(o.heroShut <= chipMax(40, o.t), id + ': a hero blow of 40 outside his opening must take at most ' + chipMax(40, o.t) + ' (took ' + o.heroShut + ')');
+  const cr = GREED.chipBy[o.t] ?? GREED.chip;
+  if (!own) ok((o.t === 'pyromancer' || o.heroRun >= 20 * 20 * cr - 1) && o.heroRun <= 20 * 20 * cr + 1, id + ': 20 hero blows of 20 outside his opening must add up to a twentieth (' + 20 * 20 * GREED.chip + '), took ' + o.heroRun);
+  if (!own && cr < 0.5) ok(o.roomShut > chipMax(40, o.t), id + ': a blow from the ROOM (no hero blow) must not be chipped (took ' + o.roomShut + ')');
+  if (!own && cr < 0.5) ok(o.heroBroken > chipMax(40, o.t) * 3, id + ': broken by his poise bar he is open (a hero blow of 40 took ' + o.heroBroken + ')');
   if (o.openOpen !== undefined) { ok(o.openOpen === true, id + ': forced into his opening, BK.greed.open must say so'); ok(o.heroOpen >= 30, id + ': in his opening a hero blow of 40 lands whole (took ' + o.heroOpen + ')'); }
   if (o.greedBegan === undefined) continue;   /* (a boss sampled for the chip only) */
   ok(o.greedBegan === GREED.n, id + ': the reprisal must begin on the ' + GREED.n + 'th greedy blow (began on ' + o.greedBegan + ')');
@@ -98,7 +99,7 @@ for (const [id, o] of Object.entries(R)) {
   ok(o.hurt > 0 && o.hurtAfter >= GREED.tell - 0.05, id + ': the reprisal lands on the hero beside him only after its tell (' + GREED.tell + ' s): hurt ' + o.hurt + ' at ' + o.hurtAfter + ' s');
   ok(o.hurtFar === 0, id + ': a hero who stood off is not hurt by it (lost ' + o.hurtFar + ')');
   if (o.greedInOpen !== undefined) ok(!o.greedInOpen, id + ': blows in his opening must never count as greed');
-  if (!own) ok(o.burn4s <= 4 * 2 / 0.3 * GREED.chip + 1, id + ': his burn outside an opening is chipped (2 s of burn took ' + o.burn4s + ')');
+  if (!own) ok(o.burn4s <= 4 * 2 / 0.3 * cr + 1, id + ': his burn outside an opening is chipped (2 s of burn took ' + o.burn4s + ')');
 }
 { const m = R.bosunMini; ok(m && m.t === 'bosun', 'the bosun mini was not found');
   if (m && m.t) { ok(m.heroBlow >= 20, 'a mini keeps his damage taken: a hero blow of 40 on the bosun took ' + m.heroBlow);

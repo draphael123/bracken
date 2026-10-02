@@ -39,6 +39,11 @@ import { brOpen, bkOpen } from './unburied-foes.js';
 import { wardenOpen as graveOpen } from './grave-warden.js';
 
 export const GREED = {
+  chipBy: { queen: 1, pyromancer: 0.25, herald: 0.2 },   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
+                           // drones are up) and is not chipped: at a twentieth - and at a quarter, and at a half - the human-speed bot lost her 2-3 of 3 (it won
+                           // 2 of 3 before; the mash bot never beat her). Her greed reprisal stands. THE PYROMANCER takes a quarter: blows are what open him
+                           // (each heats him), and at a twentieth the bot won 1 of 3 (3 of 3 before), at a quarter 2 of 3. THE TIDE HERALD takes a fifth (he took
+                           // 0.35 outside mired/reel before): at a twentieth his fight ran 121-365 s for the bot (the reaper 263, the warden 365), at a fifth 63-247. (Qs for Daniel)
   chip: 0.05,      // outside an opening a hero's blow lands at a twentieth (docs/NEW-LEVEL-CHECKLIST.md "x0.05 chip otherwise")
   n: 4,            // blows outside an opening inside `window` that provoke the reprisal (a boss)
   nMini: 5,        // and a mini: he takes his blows whole, so it takes one more to make him answer
@@ -93,6 +98,9 @@ export const OPEN_RULE = {
   barrowrider: e => brOpen(e), sexton: e => sextonOpen(e), hedgewarden: e => hedgeOpen(e),
 };
 /* BOSSES WITH THEIR OWN TWENTIETH: the rule leaves their number alone (it would be a twentieth of a twentieth) and only counts greed */
+/* BLOWS ARE HIS MECHANIC: the Pyromancer is opened by being HIT while he runs hot (every blow heats him, src/main.js hurtEnemy0), so a run of
+   blows is the answer, not greed: no reprisal (his chip stands - a blow outside his opening is still a twentieth) */
+export const NO_GREED = new Set(['pyromancer']);
 export const OWN_WARD = new Set(['puppeteer', 'wickerqueen', 'greenteeth']);
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
@@ -118,7 +126,7 @@ export const chipped = (e, isBoss) => !!(e && isBoss && OPEN_RULE[e.t] && !NO_OP
    Returns what comes off the bar. Called only for a hero's blow (or his burn) on THE boss. */
 export function chipOf(e, dmg, raw) {
   if (!(dmg > 0) || OWN_WARD.has(e.t) || openOf(e)) return dmg;
-  const c = Math.max(0, raw) * GREED.chip;
+  const c = Math.max(0, raw) * (GREED.chipBy[e.t] ?? GREED.chip);
   if (dmg <= c) return dmg;                       /* his own ward already took it lower: never a chip of a chip */
   e.chipAcc = (e.chipAcc || 0) + c;               /* a twentieth of a small blow is a fraction: it is kept, not rounded up to a whole point */
   const out = Math.floor(e.chipAcc); e.chipAcc -= out; e.chipT = 0.25;
@@ -127,7 +135,7 @@ export function chipOf(e, dmg, raw) {
 
 /* A HERO'S BLOW LANDED ON HIM OUTSIDE AN OPENING: count it, and start the reprisal when it is greed. Returns true if it began. */
 export function noteGreed(e, time, isBoss, isMini) {
-  if (!e || !e.alive || !(isBoss || isMini) || e.mode === 'sleep' || NO_OPENING[e.t]) return false;
+  if (!e || !e.alive || !(isBoss || isMini) || e.mode === 'sleep' || NO_OPENING[e.t] || NO_GREED.has(e.t)) return false;
   if (openOf(e)) { e.greedLog = []; return false; }   /* a blow in an opening is the right blow: the count starts again */
   if (e.greedT > 0 || (e.greedCd || 0) > time) return false;
   const log = (e.greedLog || []).filter(t => time - t <= GREED.window); log.push(time); e.greedLog = log;
