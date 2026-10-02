@@ -23,7 +23,7 @@ export const GL = {
   throwTell: 0.5, fly: 0.85, fireT: 3.2, fireR: 18, fireTick: 0.5,
   dodge: 0.75, dodgeT: 0.28, dodgeDist: 64, dodgeCd: 1.0, riposteTell: 0.42, recoverT: 0.35,   /* (he slips most blows while he stalks you; after each of his own blows he is OFF BALANCE for recoverT - the window, and he cannot slip a blade in it) */
   reflectR: 16, back: 340,
-  dmg: { cut: 15, whirl: 26, bottle: 10, fire: 5, riposte: 22 },
+  dmg: { cut: 15, whirl: 29, bottle: 10, fire: 5, riposte: 22 },
 };
 /* EVERY CYCLE CHANGES (k % n); phase two from half health */
 export const CHAINS = {
