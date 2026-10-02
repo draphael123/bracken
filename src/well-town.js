@@ -160,6 +160,7 @@ export function buildWellTown({ painter, T, TS }) {
   ent('windlass', gx + 2, 39, { bucket: 'great', top: false });              /* the bucket's foot: the bottom windlass winds it back up */
   ent('check', 194, 39);                                                      /* CHECKPOINT TWO: past the cistern's well, at the foot of the gallery's ladder (earned: the well's scorpions are behind it) */
   skin(234, 33);                                                              /* WATER-SKIN TWO: at the end of the gallery (the round way pays) */
+  foe('scorpion', 206, 33, 'gallery'); foe('scorpion', 213, 33, 'gallery');  /* (claude/welltown3) the round way is not free: two of the Queen's brood on the pillar caps */
   foe('scorpion', 183, 39, 'cistern'); foe('scorpion', 186, 39, 'cistern');  /* THE CISTERN'S OWN WELL IS HELD: the refill at the bucket's foot is a fight */
   thief(218, 39, 'sump'); foe('scorpion', 222, 39, 'sump');
   /* THE OLD STINGER: the cistern's elite holds the gate in front of the rungs up (eliteGates: it opens when he dies) */
@@ -250,6 +251,7 @@ export function buildWellTown({ painter, T, TS }) {
   ent('check', 519, K - 1);                                                   /* CHECKPOINT FIVE: the old well's head, the boss's door */
   awn(521, K - 1, true);
   sign(523, K - 1, 'THE OLD WELL. IT RAN DRY THE YEAR SHE CAME.');
+  foe('scorpion', 516, K - 1, 'oldwell'); foe('scorpion', 526, K - 1, 'oldwell');   /* HER BROOD, up out of the shaft onto the street: the old well's mouth is held (the Old Stinger in the cisterns is one of hers) */
   const QF = 56;                                                              /* the cistern hall's floor row */
   block(524, 571, K + 1, H - 1);                                              /* the rock under the street, the hall carved out of it */
   const queen = stageCisternQueen({ set, block, ent, air }, T, TS, 528, QF, K);
