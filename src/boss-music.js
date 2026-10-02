@@ -29,7 +29,9 @@
 //   'banditking' THE BANDIT KING (claude/welltown-fix, his own theme). D Phrygian dominant, 6/8 at 76 (eighth = 0.263 s), 16 bars = 25 s:
 //                a war-drum ostinato, a D-A drone, a reedy zurna lead with a late vibrato, and a half-step off-beat stab. 'banditking:p2' is his
 //                second phase: faster (eighth 0.21 s), the zurna an octave up, the drum doubled.
-export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1 };
+//   'cisternqueen' THE CISTERN QUEEN (claude/welltown3). C# Phrygian, 4/4 at 91, 16 bars = 42 s: a low pulsing drone, scraping percussion, a hissing rising motif;
+//                ':p2' (the well shaft) quicker with the motif an octave up, ':p3' (the flood) adds the water: a surge and drips.
+export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1 };
 
 /* 'archmage:undead' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -286,7 +288,7 @@ function gargoyle(i, delay, variant, env) {
 //     drawn as frequency automation so it costs no oscillator), climbing the augmented second (Eb - F#) and falling back. Second time round
 //     (bars 8-15) a grace note a step above leads into each long note.
 //   THE OFF-BEAT STAB: on the "and" of the second beat (eighth five) a low brass stab that steps a HALF-STEP, D and then Eb, two bars each.
-// 'banditking:p2' is HIS SECOND PHASE (bandit-king-hands.js plays it when his men take the well): the same piece faster (eighth 0.21 s), the
+// 'banditking:p2' is HIS SECOND PHASE (src/gang-leader.js plays it at half health: THE GANG LEADER, the King's old courtyard, keeps the theme): the same piece faster (eighth 0.21 s), the
 // zurna an octave up, the drum doubled on the twos.
 const BKM_STEP = 60 / 76 / 3, BKM_LEN = 6, BKM_BARSN = 16, BKM_STEP2 = 60 / 95 / 3;
 const BKM_TUNE = [   // the zurna, six eighths a bar ('-' holds the note before)
@@ -335,7 +337,42 @@ function banditking(i, delay, variant, env) {
     else reed(env, f, len, v, delay); }
 }
 
+// ---------------------------------------------------------------- THE CISTERN QUEEN (claude/welltown3: her own theme, Daniel's spec 10-02)
+// C# Phrygian (C# D E F# G# A B), 4/4, eighth = 0.33 s (quarter = 91), 16 bars = 42 s. Under the town, in the dark: menace that crawls.
+//   THE DRONE: a low C# that PULSES - a sub sine struck on every quarter and two detuned saws under a lowpass that breathe in and out over two bars,
+//     the fifth (G#) joining in the second half, and the flat second (D) leaning on it in bars 7 and 15.
+//   THE SCRAPING: chitin on stone - a narrow high noise scraped on the off-beats (a longer drag on the 'and' of four), a dry click of claws on every
+//     eighth (a short square tick, alternating pitch), a low stone knock on the one.
+//   THE HISSING MOTIF: three notes that RISE (C# - E - G#, then D - F# - A, then E - G# - B: each bar a step higher) on a thin saw scooped up into each
+//     note with a hiss of noise under it, on the last three eighths of every other bar - the tail coming up.
+// 'cisternqueen:p2' THE WELL SHAFT (her second phase, src/cistern-queen-hands.js): quicker (eighth 0.27 s), the motif an octave up and every bar,
+//   the clicks doubled. 'cisternqueen:p3' THE FLOOD: the same quick clock, and the WATER comes in - a SURGE (a low sine falling a fifth under a
+//   swell of wide noise) every two bars and drips (high sine plinks) on the off-beats.
+const CQM_STEP = 60 / 91 / 2, CQM_STEP2 = 60 / 111 / 2, CQM_LEN = 8, CQM_BARSN = 16;
+const CQM_MOTIF = [['C#4', 'E4', 'G#4'], ['D4', 'F#4', 'A4'], ['E4', 'G#4', 'B4'], ['D4', 'F#4', 'A4']];
+function cisternqueen(i, delay, variant, env) {
+  const fast = variant === 'p2' || variant === 'p3', flood = variant === 'p3', step = fast ? CQM_STEP2 : CQM_STEP, bar = Math.floor(i / CQM_LEN), s = i % CQM_LEN, second = bar >= 8, g = env.gain, b = bar % 8;
+  // THE DRONE: the sub on every quarter, the breathing saws every two bars (the fifth in the second half, the flat second leaning on it)
+  if (s % 2 === 0) pluck(env, 'sine', nf('C#1') * (b === 6 && s >= 4 ? Math.pow(2, 1 / 12) : 1), step * 1.9, (s === 0 ? 0.5 : 0.32) * g, delay, { to: nf('C#1') * 0.97 });
+  if (s === 0 && bar % 2 === 0) { const ns = second || fast ? ['C#2', 'G#2'] : ['C#2']; for (const n of ns) held(env, 'sawtooth', nf(n), step * CQM_LEN * 2 * 0.98, (fast ? 0.06 : 0.05) * g, delay, { lp: 380, att: step * 6, hold: 0.55, det: 14 }); }
+  if (s === 0 && b === 6) held(env, 'sawtooth', nf('D2'), step * CQM_LEN * 0.95, 0.05 * g, delay, { lp: 420, att: 0.4, hold: 0.6, det: 9 });
+  // THE SCRAPING: the stone knock, the claws' clicks, the scrape on the off-beats
+  if (s === 0) { pluck(env, 'sine', 70, 0.3, 0.6 * g, delay, { to: 38 }); noise(env, 0.05, 0.12 * g, 300, 0.8, delay); }
+  pluck(env, 'square', s % 2 ? 1900 : 2400, 0.03, (fast ? 0.035 : 0.028) * g, delay, { lp: 3200 });
+  if (fast) pluck(env, 'square', 2150, 0.025, 0.022 * g, delay + step / 2, { lp: 3000 });
+  if (s % 2 === 1) noise(env, s === 7 ? step * 0.95 : step * 0.45, (s === 7 ? 0.07 : 0.045) * g, s === 7 ? 4200 : 5200, 9, delay);
+  // THE HISSING MOTIF: three notes rising, scooped, with a hiss under each (every other bar; every bar in her later phases)
+  if (s >= 5 && (fast || bar % 2 === 1)) { const row = CQM_MOTIF[(bar >> (fast ? 0 : 1)) % 4], n = nf(row[s - 5]) * (variant === 'p2' ? 2 : 1), last = s === 7;
+    held(env, 'sawtooth', n, step * (last ? 2.4 : 1.0), 0.05 * g, delay, { lp: 2200, att: 0.03, hold: 0.5, from: 0.88 });
+    held(env, 'triangle', n * 2, step * (last ? 2.0 : 0.9), 0.03 * g, delay, { lp: 3000, att: 0.03, hold: 0.4, from: 0.9 });
+    noise(env, step * 0.8, 0.04 * g, 6400 + (s - 5) * 900, 4, delay); }
+  // THE FLOOD (her third phase): the surge every two bars, drips on the off-beats
+  if (flood) { if (s === 0 && bar % 2 === 0) { pluck(env, 'sine', nf('G#2'), step * 6, 0.32 * g, delay, { to: nf('C#2') }); noise(env, step * 5, 0.06 * g, 500, 0.5, delay); }
+    if (s % 2 === 1) pluck(env, 'sine', [1660, 1980, 1480, 2220][(bar + s) % 4], 0.12, 0.06 * g, delay, { to: 1200 }); }
+}
+
 export const SYNTH_BOSS = {
+  cisternqueen: { step: CQM_STEP, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
   banditking: { step: BKM_STEP, total: BKM_LEN * BKM_BARSN, play: banditking },
   archmage: { step: AM_STEP, total: AM_LEN * AM_BARSN, play: archmage },
   goblinroyal: { step: GR_STEP, total: GR_LEN * GR_BARSN, play: goblinroyal },
@@ -345,7 +382,8 @@ export const SYNTH_BOSS = {
 };
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = { 'archmage:undead': { step: UD_STEP, total: UD_LEN * AM_BARSN, play: undeadmage },
-  'banditking:p2': { step: BKM_STEP2, total: BKM_LEN * BKM_BARSN, play: banditking } };   /* THE BANDIT KING's second phase: faster, the zurna an octave up */
+  'banditking:p2': { step: BKM_STEP2, total: BKM_LEN * BKM_BARSN, play: banditking },
+  'cisternqueen:p2': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen }, 'cisternqueen:p3': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen } };   /* THE BANDIT KING's second phase: faster, the zurna an octave up */
 /* the whole track's loudness, next to a file track's 0.5 x the file's own level (audio.js trackVol) */
 export const BOSS_SYNTH_GAIN = 0.62;
 

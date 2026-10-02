@@ -12,13 +12,15 @@
 //   THE THEMED KEY             four water-skins, the dry cistern, its vault holding a silver and coins (NO relic: Daniel 10-02), shut until it is poured full
 //   THE FOES                   every foe is in a designed squad (or the elite); the ranged foe is the reskinned bowman; the one new kind is the
 //                              water-thief; the roles are melee, ranged and runner
-//   THE SHOP AND THE BOSS      the market shrine, THE WELL STORE's room and map node; THE BANDIT KING's courtyard, its well, his opening >= 3 s, x0.05
+//   THE SHOP AND THE BOSSES    the market shrine, THE WELL STORE's room and map node; THE GANG LEADER's courtyard (a mini, his opening >= 3 s, a third of
+//                              him a burning); THE CISTERN QUEEN's hall under the old well (her springs, her windlass, her openings >= 3 s, the global x0.05)
 // node tools/welltown.mjs
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
-import { KING, STAGE } from '../src/bandit-king.js';
+import { CQ, STAGE as QSTAGE } from '../src/cistern-queen.js';
+import { GL, STAGE as GSTAGE } from '../src/gang-leader.js';
 import { OPEN_RULE, OWN_WARD, NO_OPENING, GREED } from '../src/boss-greed.js';
 import { ROLES } from './level-quality.mjs';
 import { CALL_LINES } from '../src/hint-lines.js';
@@ -27,7 +29,9 @@ import { pacing } from './pacing.mjs';
 
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; console.log('  ok  ' + m); };
 const lv = LEVELS.find(l => l.id === 'welltown'); assert.ok(lv, 'no welltown in LEVELS');
-const L = lv.build(), TS = 16, W = L.W, H = L.H;
+const L0 = lv.build(), TS = 16, W = L0.W, H = L0.H;
+/* THE GANG LEADER's gate is shut until he falls: the reach tests walk the town with it lifted (as it is after the mini) */
+const L = { ...L0, grid: L0.grid.map((t, i) => (t === T.PORT && i % W === L0.mini.gate ? T.AIR : t)) };
 ok(lv.needs === 'caravan', "THE WELL TOWN needs 'caravan' (the desert-arc concept, not the old brief's 'sunkencaravan')");
 const A = L.arena, ax0 = A.x0 / TS, ax1 = A.x1 / TS;
 const fires = L.ents.filter(e => e.t === 'oilfire').map(e => { let y0 = e.y; while (y0 > 0 && L.grid[(y0 - 1) * W + e.x] === T.AIR) y0--; return { x0: e.x, x1: e.x, y0, y1: e.y, kind: e.barricade ? 'barricade' : e.gateway ? 'gateway' : 'stall' }; });
@@ -102,8 +106,23 @@ const sunLong = [];
 { const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   ok(L.ents.some(e => e.t === 'check' && e.x >= 64 && e.x < 90) && L.ents.some(e => e.t === 'sign' && /SHRINE KEEPS A SHOP/.test(e.text)), 'THE MARKET SHRINE: a checkpoint in the market, and the sign that says a lit shrine is a shop');
   ok(LEVELS.some(l => l.id === 'shopWell' && l.hidden && l.build().shop) && /id: 'wellstore', kind: 'store', shop: 'shopWell'/.test(main), "THE WELL STORE: the desert's walk-in room (shopWell) and its map node");
-  ok(A.boss === 'banditking' && L.ents.some(e => e.t === 'skinwell' && e.arena && e.x >= ax0 && e.x <= ax1) && A.x1 - A.x0 === STAGE.W * TS, 'THE BANDIT KING\'s courtyard: ' + STAGE.W + ' tiles, its own well in it');
-  ok(KING.openT >= 3 && OPEN_RULE.banditking && OPEN_RULE.banditking({ mode: 'open' }) && !OPEN_RULE.banditking({ mode: 'walk' }) && !OWN_WARD.has('banditking') && !NO_OPENING.banditking && GREED.chip === 0.05 && GREED.chipBy.banditking === undefined && KING.chip === undefined,
-    'his opening is ' + KING.openT + ' s (>= 3), it is his OPEN_RULE row (the steam), and outside it the ONE chip is the global x0.05 (no local chip of his own)');
-  ok(!L.mini, 'no mini (the desert concept: one boss a level)'); }
+  /* THE CISTERN QUEEN (claude/welltown3): her hall is forty tiles of dry cistern under the old well, its two springs, its windlass, the shaft down from the street */
+  const wells = L.ents.filter(e => e.t === 'skinwell' && e.arena && e.x >= ax0 && e.x <= ax1), wl = L.ents.find(e => e.t === 'qwindlass');
+  ok(A.boss === 'cisternqueen' && A.music === 'cisternqueen' && wells.length === 2 && wl && wl.x > ax0 && wl.x < ax1 && A.x1 - A.x0 === QSTAGE.W * TS,
+    "THE CISTERN QUEEN's hall: " + QSTAGE.W + ' tiles, two springs and the windlass in it, on her own theme');
+  { const q = A.queen, sh = [q.sx + QSTAGE.shaft[0], q.sx + QSTAGE.shaft[1]]; let open = true; for (let y = q.top; y <= q.vault; y++) for (let x = sh[0]; x <= sh[1]; x++) if (L.grid[y * W + x] !== T.AIR) open = false;
+    ok(open && reaches(L, inArena), 'THE OLD WELL: its shaft runs open from the street down through the vault into her hall, and the hall is reached'); }
+  ok(CQ.openT >= 3 && OPEN_RULE.cisternqueen && OPEN_RULE.cisternqueen({ mode: 'soaked', open: 2 }) && OPEN_RULE.cisternqueen({ mode: 'fallen', open: 1 }) && OPEN_RULE.cisternqueen({ mode: 'rear', open: 1 }) && !OPEN_RULE.cisternqueen({ mode: 'walk', open: 0 })
+    && !OWN_WARD.has('cisternqueen') && !NO_OPENING.cisternqueen && GREED.chip === 0.05 && GREED.chipBy.cisternqueen === undefined,
+    'her openings (SOAKED, ON HER BACK, REARING) are ' + CQ.openT + ' s (>= 3), her OPEN_RULE row, and outside them the global x0.05');
+  /* THE GANG LEADER: the courtyard's mini (Daniel 10-02: the Bandit King "feels like a mini") */
+  const M = L0.mini;
+  ok(M && M.boss === 'gangleader' && /GANG LEADER/.test(M.name) && M.music === 'banditking' && L.ents.some(e => e.t === 'gangleader' && e.mini) && (M.x1 - M.x0) / TS === GSTAGE.W && L.ents.some(e => e.t === 'skinwell' && e.arena && e.x * TS >= M.x0 && e.x * TS <= M.x1),
+    "THE GANG LEADER: a mini in the Kasbah's courtyard (" + GSTAGE.W + ' tiles, its well), on the old King\'s theme');
+  ok(GL.openT >= 3 && GL.capK <= 1 / 3 + 1e-9 && OPEN_RULE.gangleader && OPEN_RULE.gangleader({ mode: 'burning', open: 2 }) && !OPEN_RULE.gangleader({ mode: 'walk', open: 0 }),
+    'his opening (BURNING, his own bottle struck home) is ' + GL.openT + ' s (>= 3), and one burning takes a third of him at most (Daniel\'s mini rule)');
+  { const g = L0.grid, gate = []; for (let y = 0; y < H; y++) if (g[y * W + M.gate] === T.PORT) gate.push(y);
+    const shut = { ...L, grid: L.grid.map((t, i) => (i % W === M.gate && gate.includes(Math.floor(i / W)) ? T.SOLID : t)) };
+    ok(gate.length >= 5 && !reaches(shut, inArena), 'his gate (' + gate.length + ' rows) shuts the way on to the old well until he falls'); }
+  ok(!L.ents.some(e => e.t === 'banditking'), 'no Bandit King: the courtyard is the Gang Leader\'s, the boss is the Queen\'s'); }
 console.log('welltown: ' + n + ' checks pass');

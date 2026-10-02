@@ -34,6 +34,8 @@ import { mageOpen } from './undead-mage.js';
 import { pupOpen } from './puppeteer.js';
 import { wqOpen } from './wicker-queen.js';
 import { gtOpen } from './jenny-greenteeth.js';
+import { qOpen } from './cistern-queen.js';
+import { glOpen } from './gang-leader.js';
 import { sextonOpen } from './sexton.js';
 import { hedgeOpen } from './hedge-warden.js';
 import { brOpen, bkOpen } from './unburied-foes.js';
@@ -95,12 +97,13 @@ export const OPEN_RULE = {
   wickerqueen: e => wqOpen(e),                                               // burning
   puppeteer: e => pupOpen(e),
   greenteeth: e => gtOpen(e),                                                // stranded or flushed (her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
-  banditking: e => e.mode === 'open',                                        // the steam: poured on while he burns (his mud plate keeps its own twentieth, src/bandit-king.js KING.chip: never a chip of a chip)
+  cisternqueen: e => qOpen(e),                                               // soaked out of her burrow, on her back off her wall, rearing from a broken grab (claude/welltown3)
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,
   gravewarden: e => graveOpen(e), forgemaster: e => H.forgeOpen(e), golem: e => e.crackT > 0 || e.mode === 'stagger',
   lancer: e => !e.mounted || e.mode === 'blown' || e.mode === 'rear' || e.mode === 'reel' || e.open > 0,
   barrowrider: e => brOpen(e), sexton: e => sextonOpen(e), hedgewarden: e => hedgeOpen(e),
+  gangleader: e => glOpen(e),                                                // burning: his own bottle, struck home (claude/welltown3)
 };
 /* BOSSES WITH THEIR OWN TWENTIETH: the rule leaves their number alone (it would be a twentieth of a twentieth) and only counts greed */
 /* BLOWS ARE HIS MECHANIC: the Pyromancer is opened by being HIT while he runs hot (every blow heats him, src/main.js hurtEnemy0), so a run of

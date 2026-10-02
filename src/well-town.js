@@ -28,7 +28,8 @@
 //                                                     BARRICADE under the parapet: a pour you cannot go round
 //   426-521  THE KASBAH          EXAM + BOSS          the last well, held; the Kasbah's bricked door and the fire behind it - two pours from a
 //                                                     three-sip skin in the sun under a bowman; THE DRY CISTERN and its vault; the courtyard of
-//                                                     THE BANDIT KING (src/bandit-king.js stageBanditKing) and the road out
+//                                                     THE GANG LEADER, a mini (src/gang-leader.js stageGangLeader); THE OLD WELL down into
+//                                                     THE QUEEN'S CISTERN under the street (src/cistern-queen.js stageCisternQueen) and the road out
 //
 // THE SHADE PLAN (claude/welltown-fix, the review's P1: the sun did 88% of a level-1 hero's damage). Every fight and climb stands in shade a
 // PROP casts - a market awning (`awn`, the caravan's own deco art; its shade is SHADE_OF.awning's span, so the art and the rule are the same
@@ -36,10 +37,11 @@
 // and no walk between two shades on the route is longer than SUN.maxWalk (tools/welltown.mjs THE SUN walks the pacing route and holds it).
 // The roofs' bandits stand IN their roof's awning: the shade is taken from them.
 import { SLOPE } from './slopes.js';
-import { stageBanditKing } from './bandit-king.js';
+import { stageGangLeader } from './gang-leader.js';
+import { stageCisternQueen } from './cistern-queen.js';
 import { SHADE_OF } from './redraw/desert.js';
 
-export const WELLTOWN = { W: 522, H: 44, street: 30 };
+export const WELLTOWN = { W: 584, H: 60, street: 30 };
 export const SECTIONS = [['THE CARAVAN GATE', 0], ['THE LOWER MARKET', 64], ['THE WELL SQUARE', 150], ['THE CISTERNS', 166], ['THE MUD QUARTER', 259],
   ["THE BANDITS' ROOST", 326], ['THE KASBAH', 426]];
 /* each mechanic's arc (tile columns) - TAUGHT, DEVELOPED, TWISTED, COMBINED/EXAMINED - read by tools/welltown.mjs and the concept page */
@@ -238,20 +240,33 @@ export function buildWellTown({ painter, T, TS }) {
   fire(464, K - 1, { gateway: true });                                        /* and a fire in it */
   shade.push([460 * TS, 469 * TS, 25 * TS, K * TS + 1]);
   ent('check', 470, K - 1);                                                   /* CHECKPOINT FOUR: the courtyard door */
-  /* THE COURTYARD: THE BANDIT KING's arena (src/bandit-king.js), forty tiles from 474, his walls at 473 and 514, the road out past 514 */
-  ground(473, W - 1, K);
-  const king = stageBanditKing({ set, block, ent, air }, T, TS, 474, K);
-  shade.push([473 * TS, 515 * TS, (K - 16) * TS, K * TS + 1]);                /* the courtyard lies in the shadow of the Kasbah's walls: his fight is not the sun's (the skin is for pouring here) */
-  ent('gate', 517, K - 1);
+  /* THE COURTYARD: THE GANG LEADER's (src/gang-leader.js stageGangLeader, a MINI: Daniel 10-02 - the Bandit King "feels like a mini"), forty tiles from
+     474, the wall shut behind you at 473 and his gate at 514, which lifts when he falls */
+  ground(473, 583, K);
+  const gang = stageGangLeader({ set, block, ent, air }, T, TS, 474, K);
+  shade.push([473 * TS, 515 * TS, (K - 16) * TS, K * TS + 1]);                /* the courtyard lies in the shadow of the Kasbah's walls: his fight is not the sun's */
+  /* THE OLD WELL: past his gate, the Kasbah's own well, dry - its shaft goes down through the street into THE QUEEN'S CISTERN (src/cistern-queen.js
+     stageCisternQueen): forty tiles of dry cistern, fifteen rows high, under the street from 528. You drop in down the shaft */
+  ent('check', 519, K - 1);                                                   /* CHECKPOINT FIVE: the old well's head, the boss's door */
+  awn(521, K - 1, true);
+  sign(523, K - 1, 'THE OLD WELL. IT RAN DRY THE YEAR SHE CAME.');
+  const QF = 56;                                                              /* the cistern hall's floor row */
+  block(524, 571, K + 1, H - 1);                                              /* the rock under the street, the hall carved out of it */
+  const queen = stageCisternQueen({ set, block, ent, air }, T, TS, 528, QF, K);
+  for (const n of queen.ladders) nets.push(n);
+  shade.push([528 * TS, 568 * TS, (K + 1) * TS, QF * TS + 1]);
+  interiors.push([528, 567, QF - 15, QF - 1, 'wtQueen'], [545, 550, QF, QF + 1, 'wtQueen']);   /* (and the sump under the shaft) */
+  /* THE WAY OUT: her east wall opens when she dies (the arena's own wall) onto the cistern's old outflow, and the road out of town */
+  air(569, 579, QF - 6, QF - 1);
+  ent('gate', 576, QF - 1);
   block(W - 2, W - 1, 0, H - 1);
-
   // ================= THE LADDERS, LAST =================
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
 
   const START = { x: 3, y: S - 1 };
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra, interiors,
-    arena: king.arena, gateAfterBoss: true,
+    arena: queen.arena, mini: gang.mini, gateAfterBoss: true,
     welltown: true,
     mudWalls, vaultDoors,
     shade: [...shade, ...cast], shadeArt: shade.slice(),   /* (an awning paints its own shade: only the rest is tinted) */

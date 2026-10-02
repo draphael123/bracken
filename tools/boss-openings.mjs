@@ -32,8 +32,9 @@
                        the mud, open; a minute of her left alone opens nothing (claude/lockkeeper)
      THE LAMPREEVE, THE HEADLESS PLOUGHMAN, THE HOMUNCULUS (minis, claude/weakboss): strike the lamp he hoods / bait the plough into the
                        trough or the fence / make a trick miss you - each against the same thing left alone, in tools/weak-bosses.mjs
-     THE BANDIT KING   pour your skin on him while he burns (he walks through his own fire): the steam blinds him, open; a pour while he does not burn runs
-                       off him, and a minute of him left alone opens nothing (claude/welltown)
+     THE CISTERN QUEEN flood her burrow (a pour on her mound): SOAKED; a pour down her wall from its ledge: ON HER BACK; her claw struck as it comes: REARING -
+                       each open; E at her on the open floor pours nothing; a minute of her left alone opens nothing. THE GANG LEADER (a mini): his bottle
+                       struck home sets him alight, open, a third of him a burning (claude/welltown3)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -194,13 +195,29 @@ try {
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.W.stand;P.y=G.walk;P.vy=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let op=0,mode=null;for(let i=0;i<60*6&&!(op>0);i++){P.hp=P.maxHp;P.x=G.E.paddle.x-14;P.y=G.walk;P.vy=0;P.face=1;b.x=Math.min(b.x,G.E.face-90);if(!S.pad.E.open&&!(S.pad.E.cd>0)&&P.atk<0)BK.press('atk');BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='stranded')mode='stranded';}
    out.greenteeth={alone:+alone.toFixed(1),mode,open:+op.toFixed(1),drains:S.n.drain};}
-  /* THE BANDIT KING (claude/welltown): a minute of him left alone - jars, fire, charges - opens nothing; a pour at him while he is not burning runs off him;
-     a pour while he burns (he walked through his own fire) blinds him in the steam - open (THE WELL TOWN holds him) */
-  {const b=boot('welltown');const F=BK.banditKingHands().fight(),A=BK.L.arena,P=BK.P;let alone=0;
-   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+40;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
-   F.B.data.burning=0;F.B.data.fires=[];P.skin.sips=3;P.x=b.x-20;P.face=1;let dry=0;BK.press('talk');for(let i=0;i<40;i++){P.hp=P.maxHp;BK.sim(1);dry=Math.max(dry,b.open||0);}const dryPours=F.n.wasted;
-   let op=0,mode=null;for(let i=0;i<60*20&&!(op>0);i++){P.hp=P.maxHp;if(!(F.B.data.burning>0)&&F.B.mode==='walk')F.B.data.fires=[{x:F.B.x,t:3}];if(F.B.data.burning>0&&F.B.openCd<=0){P.skin.sips=3;P.x=b.x-20;P.face=1;BK.press('talk');}BK.sim(1);if(b.mode==='open')mode='open';op=Math.max(op,b.open||0);}
-   out.banditking={alone:+alone.toFixed(1),dry:+dry.toFixed(1),dryPours,mode,open:+op.toFixed(1)};}
+  /* THE CISTERN QUEEN (claude/welltown3): a minute of her left alone opens nothing; a pour while she walks the floor runs into the sand; a pour on her
+     mound floods her burrow - SOAKED, open; on her wall, a pour from that wall's ledge - ON HER BACK, open; in the flood, her claw struck as it comes -
+     the grab broken, REARING, open (THE WELL TOWN holds her) */
+  {const b=boot('welltown');const QH=BK.cisternQueenHands(),S=QH.show(),G=S.G,P=BK.P;let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.x0+30;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
+   let dry=0;for(let i=0;i<60*20&&b.mode!=='walk';i++){P.hp=P.maxHp;BK.sim(1);}P.skin.sips=3;P.x=b.x-60;P.face=1;BK.press('talk');for(let i=0;i<30;i++){P.hp=P.maxHp;BK.sim(1);dry=Math.max(dry,b.open||0);}const drySips=P.skin.sips;
+   const op={};const take=(how,setup,act)=>{let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;if(setup())act();BK.sim(1);if(b.mode===how)o=Math.max(o,b.open||0);}
+     let peak=o;for(let i=0;i<60*4&&b.mode===how;i++){P.hp=P.maxHp;BK.sim(1);}op[how]=+peak.toFixed(1);};
+   take('soaked',()=>S.pose==='burrow'&&S.mound&&b.mode==='burrow',()=>{P.skin.sips=3;P.x=S.mound.x-30;P.y=G.floor;P.vy=0;P.face=1;BK.press('talk');});
+   b.hp=Math.round(b.maxHp*0.6);
+   take('fallen',()=>S.pose==='wall'&&b.mode==='cling',()=>{P.skin.sips=3;P.x=S.wall==='W'?G.ledgeW[0]+30:G.ledgeE[1]-30;P.y=G.ledgeY;P.vy=0;P.ground=true;P.face=S.wall==='W'?-1:1;BK.press('talk');});
+   b.hp=Math.round(b.maxHp*0.3);
+   take('rear',()=>b.mode==='grab'&&S.claw,()=>{P.x=S.claw.x-(b.face>0?16:-16);P.y=G.floor;P.face=b.face>0?1:-1;if(P.atk<0)BK.press('atk');});
+   out.cisternqueen={alone:+alone.toFixed(1),dry:+dry.toFixed(1),drySips,open:op,n:{soaked:S.n.soaked,fallen:S.n.fallen,rear:S.n.rear,countered:S.n.countered}};}
+  /* THE GANG LEADER (claude/welltown3, a mini): a minute of him left alone (his bottles land and burn) opens nothing; his bottle struck back sets him
+     alight - open; and one burning takes no more than a third of him (Daniel's mini rule) */
+  {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='welltown'));BK.state='play';BK.god=true;const M=BK.L.mini,P=BK.P;
+   for(const e of BK.enemies())if(e.t!=='gangleader')e.alive=false;BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(120);
+   const b=BK.enemies().find(e=>e.t==='gangleader'),F=BK.gangLeaderHands().fight();let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=M.x0+30;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
+   let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;const bt=F.bottles.find(q=>!q.back);if(bt&&P.atk<0){P.x=bt.x-14;P.y=Math.min(M.floor,bt.y+12);P.face=1;BK.press('atk');}BK.sim(1);o=Math.max(o,b.open||0);}
+   const hp0=b.hp,cap=b.maxHp/3;for(let k=0;k<12&&b.mode==='burning';k++){BKT.hurtAs('light',b,60,b.x-10,false);BK.sim(2);}const took=hp0-b.hp;
+   out.gangleader={alone:+alone.toFixed(1),open:+o.toFixed(1),reflects:F.n.reflects,took:Math.round(took),cap:Math.round(cap)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -277,9 +294,12 @@ try {
   assert.ok(r.greenteeth.mode === 'stranded' && r.greenteeth.open >= 3, 'the lock drained with her at the gate and she was not stranded open for 3 s or more (the boss rule; claude/greenwire raised this from 1.4: her stranded window was 1.8 s): ' + JSON.stringify(r.greenteeth));
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (PUPPETEER3: drop both puppets - blows or cuts - and he is dragged down to the boards, open) */ 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
-  assert.equal(r.banditking.alone, 0, 'THE BANDIT KING: a minute of him left alone opened him: ' + JSON.stringify(r.banditking));
-  assert.ok(r.banditking.dry === 0 && r.banditking.dryPours >= 1, 'a pour at him while he was not burning opened him (or was not counted as wasted): ' + JSON.stringify(r.banditking));
-  assert.ok(r.banditking.mode === 'open' && r.banditking.open >= 3, 'a pour while he burned did not blind him open for 3 s or more (the boss rule): ' + JSON.stringify(r.banditking));
+  assert.equal(r.cisternqueen.alone, 0, 'THE CISTERN QUEEN: a minute of her left alone opened her: ' + JSON.stringify(r.cisternqueen));
+  assert.ok(r.cisternqueen.dry === 0 && r.cisternqueen.drySips === 3, 'E at her on the open floor opened her (or spent a sip on nothing: the HUD never says POUR there): ' + JSON.stringify(r.cisternqueen));
+  assert.ok(r.cisternqueen.open.soaked >= 3 && r.cisternqueen.open.fallen >= 3 && r.cisternqueen.open.rear >= 3, 'her three openings (her burrow flooded, a pour down her wall, a grab broken) are not each 3 s or more (the boss rule): ' + JSON.stringify(r.cisternqueen));
+  assert.equal(r.gangleader.alone, 0, 'THE GANG LEADER: a minute of him left alone opened him: ' + JSON.stringify(r.gangleader));
+  assert.ok(r.gangleader.open >= 3 && r.gangleader.reflects >= 1, 'his bottle struck back did not set him alight for 3 s or more: ' + JSON.stringify(r.gangleader));
+  assert.ok(r.gangleader.took <= r.gangleader.cap + 1 && r.gangleader.took >= r.gangleader.cap * 0.6, 'one burning took more than a third of him (or nothing like it): ' + JSON.stringify(r.gangleader));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

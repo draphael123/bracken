@@ -1,7 +1,7 @@
 // tools/welltown-probe.mjs - THE WELL TOWN in the page, quickly (claude/welltown): ?level=welltown lands on its entrance; the skin fills at a well
 // and pours a mud wall open and a fire out (and both stay so after a death, while an unpoured fire comes back); the windlass sends the bucket down
 // and the bottom windlass brings it up; the dry cistern opens its vault on four skins; a water-thief's cut takes a sip and cutting him down gives it
-// back; THE BANDIT KING wakes, burns, opens to a pour (and a blow in the opening lands x2.6, outside it x0.05). A smoke test, not a suite check:
+// back; THE CISTERN QUEEN wakes, burrows, and a pour on her mound soaks her open (her claws turn a frontal blow, from behind x0.05, open x2.2). A smoke test, not a suite check:
 //   node tools/welltown-probe.mjs
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false }); let bad = 0;
@@ -25,7 +25,7 @@ try {
   for(const pr of BK.props().filter(p=>p.t==='stray'&&!p.got)){BK.P.x=pr.x;BK.P.y=pr.y;BK.sim(3);}out.skins=BK.village().saved();
   tp(436,32);BK.press('talk');BK.sim(3);out.cistern={full:W().cistern.full,vault:W().vault.map(v=>v.open)};
   return out;})()`, 300000);
-  ok(r.loaded.wells === 8 && r.loaded.walls === 5 && r.loaded.fires === 3, 'the town as built: 7 wells and a jar, 5 mud walls (the first lesson: a postern, claude/welltown3), 3 fires ' + JSON.stringify(r.loaded));
+  ok(r.loaded.wells === 10 && r.loaded.walls === 5 && r.loaded.fires === 3, 'the town as built: 7 wells and a jar (and the two springs in her hall), 5 mud walls (the first lesson: a postern, claude/welltown3), 3 fires ' + JSON.stringify(r.loaded));
   ok(r.fill === 3, 'E at a well fills the skin (3 sips)');
   ok(r.wall.open && r.wall.sips === 2, 'E facing a mud wall pours a sip on it: it gives way');
   ok(!r.stall.lit && r.stall.sips === 1, 'E facing a fire pours it out');
@@ -37,16 +37,18 @@ try {
   BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='welltown'));BK.state='play';BK.god=false;BK.sim(10);const P=BK.P;
   const th=BK.enemies().find(e=>e.t==='waterthief'&&e.alive);P.skin.sips=3;BK.tp(Math.floor(th.x/16)-2,Math.floor(th.y/16)-1);
   let stole=0;for(let i=0;i<900&&!stole;i++){P.hp=P.maxHp;BK.sim(1);if(th.st.carry)stole=1;}out.stole=[stole,P.skin.sips,th.st.mode];th.hp=1;BKT.hurtEnemy(th,99,th.x-10,false);BK.sim(30);out.back=P.skin.sips;
-  BK.god=true;const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);const b=BK.boss;out.king={active:BK.bossActive,t:b.t};
-  let opened=0;for(let i=0;i<60*60&&!opened;i++){P.hp=P.maxHp;if(b.burning>0){P.skin.sips=3;P.x=b.x-20;P.face=1;BK.press('talk');}BK.sim(1);if(b.mode==='open')opened=1;}
-  const h0=b.hp;BKT.hurtEnemy(b,40,b.x-10,false);out.openHit=+(h0-b.hp).toFixed(2);for(let i=0;i<600&&b.mode==='open';i++)BK.sim(1);b.chipAcc=0;b.greedLog=[];b.chipSaid=0;BKT.PROG.chipTold=9;BK.textLab.hint('',0);const h1=b.hp;BKT.hurtAs('light',b,40,b.x-10,false);out.chipHit=+(h1-b.hp).toFixed(2);const hn=BKT.hintNow;out.chipLines=[hn&&hn.msg].filter(x=>/SCRATCH|PLATE/.test(x||''));const h2=b.hp;BKT.hurtEnemy(b,40,b.x-10,false);out.roomHit=+(h2-b.hp).toFixed(2);out.opened=opened;out.n=BK.banditKing().n;
+  BK.god=true;const A=BK.L.arena;BK.tp(A.start[0],A.start[1]);BK.sim(150);const b=BK.boss,S=BK.cisternQueenHands().show();out.queen={active:BK.bossActive,t:b.t};
+  /* her raised claws: a blow from the front outside an opening is turned (0); from behind it is the global chip; in an opening it lands x2.2 */
+  for(let i=0;i<60*20&&b.mode!=='walk';i++){P.hp=P.maxHp;BK.sim(1);}
+  b.chipAcc=0;b.greedLog=[];b.chipSaid=0;BKT.PROG.chipTold=9;P.x=b.x+(b.face||1)*50;let h=b.hp;BKT.hurtAs('light',b,40,P.x,false);out.front=+(h-b.hp).toFixed(2);
+  b.chipAcc=0;b.greedLog=[];P.x=b.x-(b.face||1)*44;h=b.hp;BKT.hurtAs('light',b,40,P.x,false);out.behind=+(h-b.hp).toFixed(2);
+  let opened=0;for(let i=0;i<60*60&&!opened;i++){P.hp=P.maxHp;if(S.pose==='burrow'&&S.mound&&b.mode==='burrow'){P.skin.sips=3;P.x=S.mound.x-30;P.y=S.G.floor;P.face=1;BK.press('talk');}BK.sim(1);if(b.mode==='soaked')opened=1;}
+  out.opened=opened;b.greedLog=[];h=b.hp;P.x=b.x+(b.face||1)*40;BKT.hurtAs('light',b,40,P.x,false);out.openHit=+(h-b.hp).toFixed(2);out.n=BK.cisternQueen().n;
   return out;})()`, 300000);
   ok(t.stole[0] && t.stole[1] === 2 && t.stole[2] === 'flee' && t.back === 3, "a water-thief's cut takes a sip and he runs; cut down, the sip is back " + JSON.stringify(t.stole) + ' back ' + t.back);
-  ok(t.king.active && t.king.t === 'banditking' && t.opened, 'THE BANDIT KING wakes, burns, and a pour while he burns opens him');
-  ok(Math.abs(t.openHit - 40 * 2.6) < 1 && Math.abs(t.chipHit - 2) < 0.01, 'a blow lands x2.6 in the opening and a hero\'s x0.05 outside it (the global chip): ' + t.openHit + ' / ' + t.chipHit);
-  ok(t.chipLines.length === 1 && /SCRATCH/.test(t.chipLines[0]), 'ONE chip line, the global one (his own THE MUD PLATE TURNS IT is gone): ' + JSON.stringify(t.chipLines));
-  ok(Math.abs(t.roomHit - 40) < 0.01, 'the room\'s blow on him lands whole (the global rule chips only a hero): ' + t.roomHit);
-  /* THE FIX LANE (claude/welltown-fix): the deep well winds, the ride is contested, a respawn refills the skin, E with a full skin beside a burning King pours */
+  ok(t.queen.active && t.queen.t === 'cisternqueen' && t.opened, 'THE CISTERN QUEEN wakes, burrows, and a pour on her mound floods her out: SOAKED');
+  ok(t.front === 0 && Math.abs(t.behind - 2) < 0.01 && Math.abs(t.openHit - 40 * 2.2) < 1, 'her claws turn a blow from the front (0), from behind it is the global x0.05 (' + t.behind + '), soaked it lands x2.2 (' + t.openHit + ')');
+  /* THE FIX LANE (claude/welltown-fix): the deep well winds, the ride is contested, a respawn refills the skin; and WELL CLARITY (claude/welltown3): the HUD's verb */
   const u = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
   BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='welltown'));BK.state='play';BK.god=true;BK.sim(10);const P=BK.P,W=()=>BK.welltown();
   out.startSips=P.skin.sips;
@@ -61,15 +63,16 @@ try {
   BK.tp(448,27);BK.sim(4);BK.press('talk');BK.sim(3);out.deepFill=P.skin.sips;out.downAgain=!dw.up;
   /* A RESPAWN refills the skin */
   P.skin.sips=0;BKT.respawn&&BKT.respawn();BK.sim(5);out.respawnSips=P.skin.sips;
-  /* THE COURTYARD WELL: a full skin, the King burning beside it - E pours on him */
-  const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);const b=BK.boss;let opened=0,tried=0;
-  for(let i=0;i<60*60&&!opened;i++){P.hp=P.maxHp;if(b.burning>0&&b.mode!=='open'){P.skin.sips=P.skin.max;const wx=A.well;b.x=wx+18;BK.banditKingHands().fight().B.x=b.x-A.x0;P.x=wx;P.face=1;tried++;BK.press('talk');}BK.sim(1);if(b.mode==='open')opened=1;}
-  out.wellPour={opened,tried,sips:P.skin.sips,max:P.skin.max};
+  /* WELL CLARITY (claude/welltown3): the HUD's verb - FILL at a well with room in the skin, POUR facing the first lesson's mud postern, DRINK in the sun with nothing to pour on, WIND at a deep well that is down */
+  const H=BK.welltownHands();P.skin.sips=0;BK.tp(11,29);BK.sim(3);out.verbWell=(H.verbNow(P)||{}).verb;
+  P.skin.sips=3;BK.tp(13,29);BK.sim(3);P.face=1;out.verbWall=(H.verbNow(P)||{}).verb;BK.press('talk');BK.sim(3);out.lesson={open:W().walls.find(m=>m.x0===14).open,sips:P.skin.sips};
+  BK.tp(150,25);BK.sim(3);P.sun=P.sun||{};P.sun.v=0.8;out.verbSun=(H.verbNow(P)||{}).verb;
+  P.skin.sips=1;W().wells.find(w=>w.deep).up=false;BK.tp(448,27);BK.sim(3);out.verbDeep=(H.verbNow(P)||{}).verb;
   return out;})()`, 300000);
   ok(u.followers.length === 2 && u.followers.every(([x, y]) => y >= 37 && x >= 170 && x <= 184), 'THE RIDE IS CONTESTED: the bucket gone, the well head\'s thief and a square cutthroat are down at its foot ' + JSON.stringify(u.followers));
   ok(u.deepDown === 0 && u.winding && u.up && u.deepFill === 3 && u.downAgain, 'THE DEEP WELL: nothing until its windlass is struck, then the bucket winds up (2 s) and it fills, and the bucket goes down again ' + JSON.stringify(u));
   ok(u.respawnSips === 3, 'A CHECKPOINT RESPAWN REFILLS THE SKIN (Daniel): ' + u.respawnSips);
-  ok(u.wellPour.opened && u.wellPour.sips < u.wellPour.max, 'E AT THE COURTYARD WELL with a full skin, the King burning beside it: it POURS on him (not swallowed by the well) ' + JSON.stringify(u.wellPour));
+  ok(u.verbWell === 'FILL' && u.verbWall === 'POUR' && u.lesson.open && u.lesson.sips === 2 && u.verbSun === 'DRINK' && u.verbDeep === 'WIND', 'THE HUD SAYS WHAT E DOES: FILL at a well, POUR facing the first lesson mud (and it opens), DRINK in the sun, WIND at a deep well that is down ' + JSON.stringify([u.verbWell, u.verbWall, u.lesson, u.verbSun, u.verbDeep]));
   if (pg.errors.length) { ok(false, 'page errors: ' + pg.errors.slice(0, 3).join(' | ')); }
 } finally { pg.close(); }
 console.log(bad ? bad + ' FAILED' : 'welltown-probe: all passed'); process.exitCode = bad ? 1 : 0;
