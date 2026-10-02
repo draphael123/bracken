@@ -46,6 +46,8 @@ export function makeWellTownHands(ctx) {
     WT.followT = 0; WT.followed = false;
     const m = ctx.movers().find(q => q.windlass); if (m) { m.locked = true; if (WT.bucketY !== undefined) m.y = WT.bucketY; m.dir = 0; }
     if (window.BK) Object.assign(window.BK, { welltown: () => WT, welltownHands: () => H });
+    /* THE PHONE'S ACTION BUTTON (claude/mobile src/touch-interact.js reads BK.touchVerbs): what E would do here, as one word */
+    if (window.BK && window.BK.touchVerbs && !window.BK.touchVerbs.includes(H.welltownVerb)) window.BK.touchVerbs.push(H.welltownVerb);
   };
   H.on = () => !!WT;
   H.state = () => WT;
@@ -172,6 +174,9 @@ export function makeWellTownHands(ctx) {
     if (P.sun && P.sun.v > DRINK_AT) return { verb: 'DRINK' };
     return null;
   };
+
+  /* the verb as one word, or null (pure: the HUD's own read) - 'FILL' | 'POUR' | 'DRINK' | 'WIND' | null */
+  H.welltownVerb = () => { const v = WT && H.verbNow(ctx.hero()); if (!v) return null; return v.verb === 'POUR IN' ? 'POUR' : v.verb === 'EMPTY' ? null : v.verb; };
 
   /* ---------- DRAWING: src/redraw/welltown_props.js draws each thing; this says where, and what state it is in ---------- */
   H.drawWorld = (g, cx, cy, time) => {
