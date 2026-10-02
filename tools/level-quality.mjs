@@ -22,11 +22,12 @@ const TS = 16;
 
 /* WHICH LEVELS ARE HELD TO IT. New or reworked levels only: the old campaign misses the bar in places (--all shows where) and is not being reworked.
    Add a level id here in the lane that builds or reworks it. An id that is not in LEVELS yet is skipped with a note (the theatre lane lands later). */
-export const GATE = ['theatre', 'fair', 'canal'];   /* the fair re-gated by claude/fairfix2 (the rework it waited for); THE FOG CANAL gated by claude/canalfix */
+export const GATE = ['theatre', 'fair', 'canal', 'welltown'];   /* the fair re-gated by claude/fairfix2 (the rework it waited for); THE FOG CANAL gated by claude/canalfix */
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
-  theatre: ['roles'],   /* TODO(Daniel decides): the theatre has two roles (melee: mummers, stagehands, spiders, bats, swornswords; ranged: the drunks) and no support, heavy or runner. Lift this when a lane gives it a third role */
+  theatre: ['roles'],
+  welltown: ['music'],   /* TODO(Daniel picks the track): THE WELL TOWN's greybox (claude/welltown) borrows THE SUNKEN CARAVAN's track ('caravan') as a placeholder until Daniel picks its own CC0/CC-BY file (nothing is downloaded by a lane); its boss room already plays its own synth hook ('banditking', src/boss-music.js) */   /* TODO(Daniel decides): the theatre has two roles (melee: mummers, stagehands, spiders, bats, swornswords; ranged: the drunks) and no support, heavy or runner. Lift this when a lane gives it a third role */
 };
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
@@ -64,7 +65,7 @@ export const ROLES = {
   ranged: ['archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder', 'skybolt', 'catapult', 'towertop', 'pyromancer', 'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest'],
   support: ['barker', 'gobpriest', 'bannerbearer', 'horn', 'snuffer', 'priest', 'acolyte', 'merrowcaller', 'bearer'],
   heavy: ['heavy', 'brute', 'troll', 'golem', 'merrowbrute', 'tideguard', 'hedgeknight', 'armour', 'bloodknight', 'berserker', 'drownedknight', 'bellguard', 'holdfast', 'gaffer', 'barrowrider', 'shield'],
-  runner: ['hobbyhorse', 'runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog', 'grindylow'],   /* (claude/canalfix: the grindylow is a grab - it comes for your ankle, and aboard) */
+  runner: ['hobbyhorse', 'runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog', 'grindylow', 'waterthief'],   /* (claude/welltown: the water-thief cuts your skin and RUNS for a well) (claude/canalfix: the grindylow is a grab - it comes for your ankle, and aboard) */
 };
 const rolesOf = t => { const r = Object.keys(ROLES).filter(k => ROLES[k].includes(t)); return r.length ? r : ['melee']; };
 /* COLLECTIBLES AND INTERACTIVES THAT MUST UNLOCK SOMETHING. A pickup or a lever that opens nothing is clutter. What each kind can open is named here; a level states its own

@@ -44,7 +44,7 @@ export const ENTRIES = {
 };
 
 /* THE WALK-IN ROOMS OPEN THE SAME STORE, each on a tab that suits the room (flavour only: every tab is there in all three) */
-export const SHOP_START = { shop: 'heroes', shopCrag: 'smith', shopSea: 'charms' };
+export const SHOP_START = { shop: 'heroes', shopCrag: 'smith', shopSea: 'charms', shopWell: 'weapons' };   /* (claude/welltown: THE WELL STORE, the desert's room) */
 
 export const tabIndex = id => Math.max(0, TAB_IDS.indexOf(id));
 export const tabId = i => TAB_IDS[((i % TAB_IDS.length) + TAB_IDS.length) % TAB_IDS.length];

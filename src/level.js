@@ -5,7 +5,8 @@ import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER'
 import {buildBurningVillage} from './burning-village.js';
 import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
-import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
+import { buildFogCanal } from './fog-canal.js';
+import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its boss is THE BANDIT KING (src/bandit-king.js) */   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
@@ -3762,6 +3763,24 @@ function theShopSea() {
     palette: { set: 'ship', hall: true, sky: 'night', dress: 'none',
       dirt: '#4a4038', dirtL: '#5e5246', dirtD: '#2e2620', grass: '#6a5c4c', grassL: '#8a7a64', grassD: '#453c2c' },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'water' }],
+  };
+}
+/* THE WELL STORE (claude/welltown): the desert arc's walk-in shop, in THE WELL TOWN (its map node stands on the road at the town). The same ONE STORE as the
+   other three rooms (src/store.js: the room is flavour; it opens on WEAPONS); a water-seller's cool room with a well in its floor */
+function theShopWell() {
+  const L = painter(40, 28);
+  const { block, floor, ent } = L;
+  floor(0, 39, 20); block(0, 1, 0, 27); block(38, 39, 0, 27); block(0, 39, 0, 12);
+  ent('sign', 7, 19, { text: 'THE WELL STORE. UP AT THE COUNTER TO TRADE. UP AT THE DOOR TO LEAVE.' });
+  ent('exit', 3, 19); ent('torch', 10, 19); ent('torch', 31, 19);
+  ent('deco', 14, 19, { kind: 'wares', v: 1 }); ent('deco', 34, 19, { kind: 'wares', v: 0 });
+  ent('deco', 23, 19, { kind: 'counter' }); ent('npc', 24, 19, { kind: 'keeper' });
+  ent('deco', 18, 19, { kind: 'lanternPost' }); ent('deco', 29, 19, { kind: 'barrels' }); ent('deco', 27, 19, { kind: 'waterButt' });
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [],
+    duskStart: -1, duskLen: 1, music: 'store', night: true, shop: true, interiors: [[2, 37, 13, 19, 'hall']],
+    palette: { hall: true, sky: 'night', dress: 'none', dirt: '#8a7a5a', dirtL: '#a8987a', dirtD: '#5e5038', grass: '#c9b089', grassL: '#e0cca8', grassD: '#9a8462' },
+    weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
   };
 }
 function theShopCrag() {
@@ -7728,6 +7747,10 @@ export const LEVELS = [
   /* THE FOG CANAL (claude/canal, the greybox): out of WAYMEET by night barge into the old town's theatre quarter. APPENDED, so no index and no save
      moves; its place on the road is its needs and its map node. JENNY GREENTEETH (claude/lockkeeper, wired by claude/greenwire) is its boss, in the lock chamber at its end */
   { id: 'canal', name: 'THE FOG CANAL', sub: 'out of Waymeet by night barge', rule: 'THE BARGE GOES WHERE THE WATER LETS IT. A LANTERN SHOWS YOU - TO THEM TOO.', build: () => buildFogCanal({ painter, T, TS }), needs: 'waymeet' },
+  /* THE WELL TOWN (claude/welltown, the GREYBOX, 2026-10-01): desert arc level 2 - the arc's town and its shop - after THE SUNKEN CARAVAN (the desert-arc concept
+     of 2026-10-01: needs 'caravan', not the brief's 'sunkencaravan'). APPENDED, so no index and no save moves. THE BANDIT KING is its boss, in the Kasbah's courtyard */
+  { id: 'welltown', arc: 'the desert', name: 'THE WELL TOWN', sub: 'the wells are the only blue in it', rule: 'WATER IS CARRIED. FILL YOUR SKIN AT A WELL: POUR IT ON MUD AND FIRE, OR DRINK IT.', build: () => buildWellTown({ painter, T, TS }), needs: 'caravan' },
+  { id: 'shopWell', name: 'THE WELL STORE', sub: 'ask the keeper', build: theShopWell, hidden: true },   /* THE WELL TOWN's walk-in store (claude/welltown): APPENDED, like every level */
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

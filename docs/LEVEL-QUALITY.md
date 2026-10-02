@@ -60,7 +60,7 @@ parts the mash bot still beats are listed in `MASH_REPORT_ONLY` in `tools/level-
 ### Report-only measures
 
 `REPORT_ONLY = { levelId: [measure] }` in the tool lets a measure print as WARN without failing one level, with a TODO naming who decides. Today: `theatre: ['roles']` (the
-theatre has two roles, melee and ranged: no support, heavy or runner). Daniel decides whether to lift it by giving the theatre a third role or by accepting two.
+theatre has two roles, melee and ranged: no support, heavy or runner). Daniel decides whether to lift it by giving the theatre a third role or by accepting two. And `welltown: ['music']` (claude/welltown): THE WELL TOWN's greybox plays THE SUNKEN CARAVAN's track as a placeholder until Daniel picks its own file (its boss room already has its own synth hook); lift it when the track lands.
 
 Tall levels (floors, not a walk: Hanging Village, Spire, Deep, Falling Tower, Undercrown, Crown, Keep, Burial, Witchlight) skip flat and density.
 

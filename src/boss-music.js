@@ -26,7 +26,10 @@
 //                RATCHETING WINCH (square ticks that double up) on the last beat of every fourth bar.
 //   'gargoyle'   THE GATE GARGOYLE. C with Db and Gb (the tritone), 4/4 at 66 (eighth = 0.455 s), 16 bars = 58 s: a grinding sawtooth
 //                stone ostinato, a thud on every quarter, tritone stabs, the great bell and a falling peal of four bells every four bars.
-export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1 };
+//   'banditking' THE BANDIT KING (claude/welltown, a PLACEHOLDER HOOK - TODO(Daniel/a music lane): his own theme). D Phrygian dominant, 4/4 at 104 (eighth =
+//                0.288 s), 8 bars = 18 s: a darbuka (doum on one and the and-of-two, teks between), a held drone, and a snake-charmer hook on a
+//                nasal saw that climbs the augmented second and falls back. Enough to be his, and to be replaced.
+export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1 };
 
 /* 'archmage:undead' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -274,7 +277,20 @@ function gargoyle(i, delay, variant, env) {
   if (s === 0 && b === 0) for (const n of second ? ['C2', 'Gb2', 'C3'] : ['C2', 'Gb2']) held(env, 'sawtooth', nf(n), long * 4 * 0.98, 0.03 * g, delay, { lp: 380, att: 1.4, hold: 0.7, det: 14 });   // four bars of low breath underneath
 }
 
+// ---------------------------------------------------------------- THE BANDIT KING (a placeholder hook, claude/welltown)
+const BKM_STEP = 60 / 104 / 2, BKM_LEN = 8, BKM_BARSN = 8;
+const BKM_HOOK = ['D4', 'Eb4', 'F#4', 'G4', 'F#4', '-', 'Eb4', 'D4'], BKM_HOOK2 = ['A4', 'Bb4', 'A4', 'G4', 'F#4', 'G4', 'Eb4', 'D4'];
+function banditking(i, delay, variant, env) {
+  const bar = Math.floor(i / BKM_LEN), s = i % BKM_LEN, g = env.gain;
+  if (s === 0 || s === 3) pluck(env, 'sine', 96, 0.3, 0.8 * g, delay, { to: 52 });   // the doum
+  if (s === 2 || s === 5 || s === 6 || s === 7) noise(env, 0.05, (s === 6 ? 0.16 : 0.1) * g, 3200, 1.1, delay);   // the teks
+  if (s === 0 && bar % 4 === 0) for (const n of ['D2', 'A2']) held(env, 'sawtooth', nf(n), BKM_STEP * BKM_LEN * 4 * 0.98, 0.05 * g, delay, { lp: 420, att: 0.6, hold: 0.8, det: 9 });   // the drone
+  const n = (bar % 4 === 3 ? BKM_HOOK2 : BKM_HOOK)[s];
+  if (bar % 2 === 1 && n !== '-') held(env, 'sawtooth', nf(n), BKM_STEP * 0.9, 0.09 * g, delay, { lp: 1900, att: 0.02, hold: 0.5, from: 0.97 });   // the hook, every other bar
+}
+
 export const SYNTH_BOSS = {
+  banditking: { step: BKM_STEP, total: BKM_LEN * BKM_BARSN, play: banditking },
   archmage: { step: AM_STEP, total: AM_LEN * AM_BARSN, play: archmage },
   goblinroyal: { step: GR_STEP, total: GR_LEN * GR_BARSN, play: goblinroyal },
   drownedking: { step: DK_STEP, total: DK_LEN * DK_BARSN, play: drownedking },
