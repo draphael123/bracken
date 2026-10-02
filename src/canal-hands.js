@@ -8,8 +8,16 @@ import * as R from './canal-rig.js';
 import * as F from './canal-foes.js';
 import { duckBox, duckClears } from './duck.js';
 import { beamHit } from './chase.js';
+import * as CTL from './redraw/canal_tiles.js';
+import * as CP from './redraw/canal_props.js';
 const TS = 16;
 const GADGET = new Set(['locksluice', 'swingcap', 'foghorn', 'lanternpost']);
+
+/* THE TILE KIT (src/redraw/canal_tiles.js): the level's own data tells it where the water stands, the gates, the bridges and the weed */
+export function canalTile(t, x, y, at, T, L) { const D = L.canal; if (!D) return null;
+  if (!D.tctx) D.tctx = { T, gates: D.gates, bridges: D.bridges, lock: L.lockArena ? { sx: L.lockArena.sx, R: L.lockArena.R } : null, weedCells: new Set((D.weeds || []).flatMap(([x0, x1, row]) => { const o = []; for (let i = x0; i <= x1; i++) o.push(i + ',' + row); return o; })),
+    levels: (D.reaches || []).flatMap(r => [...new Set([r.lo, r.hi])].map(row => ({ row, x0: r.x0, x1: r.x1 }))) };
+  return CTL.canalTile(t, x, y, at, D.tctx); }
 
 /* A NEW ATTEMPT: the canal as the level was built, and the barge where the last checkpoint left her */
 export function canalReset(H) {
@@ -201,16 +209,8 @@ export function surfaceAt(st, H, x) {
 
 /* ================= THE LOOK (greybox: plain shapes; the art lane replaces them) ================= */
 export function drawCanalMover(st, g, H, m, cx, cy, time) {
-  const b = st ? st.barge : null, x = Math.round(m.x - cx), y = Math.round(m.y - cy), w = m.w;
-  g.fillStyle = '#3a2618'; g.fillRect(x, y, w, 10); g.fillStyle = '#5a3a22'; g.fillRect(x, y, w, 3); g.fillStyle = '#2a1a10'; g.fillRect(x + 2, y + 9, w - 4, 3);   /* the hull and her gunwale */
-  g.fillStyle = '#7a5a36'; for (let k = 8; k < w - 6; k += 14) g.fillRect(x + k, y + 4, 8, 2);                                                                    /* the hatch boards */
-  g.fillStyle = '#4a3a2a'; g.fillRect(x + 6, y - 34, 2, 34);                                                                                                        /* the lantern pole at her stern */
-  const flick = 0.8 + 0.2 * Math.sin(time * 9); g.fillStyle = '#ffcf6a'; g.globalAlpha = flick; g.fillRect(x + 3, y - 40, 8, 7); g.globalAlpha = 1; g.fillStyle = '#6a5030'; g.fillRect(x + 3, y - 41, 8, 1);
-  /* THE TILLER, and which way it has her helm (up: the mill cut; down: the weir) */
-  const hx = x + (w >> 1); g.fillStyle = '#6a4a2a'; g.fillRect(hx - 1, y - 8, 3, 8); g.fillRect(hx + 1, y - 8, 7, 2);
-  /* (claude/canalfix) HER SIDE of a wide pound: on the offside she is drawn a shade further off (dimmer, a wake line on the near water), greybox */
-  if (b && st.D && R.sideOf(st, st.D) === 'off') { g.globalAlpha = 0.28; g.fillStyle = '#0a1418'; g.fillRect(x, y - 2, w, 12); g.globalAlpha = 0.6; g.fillStyle = '#bfe6f5'; for (let k = 4; k < w; k += 10) g.fillRect(x + k, y + 13, 5, 1); g.globalAlpha = 1; }
-  if (b) { const up = b.helm === 'cut'; g.fillStyle = up ? '#8fd160' : '#ff9a5c'; g.fillRect(hx + 3, y - 16, 1, 5); if (up) g.fillRect(hx + 2, y - 15, 3, 1); else g.fillRect(hx + 2, y - 12, 3, 1); }
+  const x = Math.round(m.x - cx), y = Math.round(m.y - cy); if (st) st.sideOff = !!(st.barge && st.D && R.sideOf(st, st.D) === 'off');   /* (claude/canalfix) her side of a wide pound: the offside is drawn in shade with a wake (src/redraw/canal_props.js, claude/canalart) */
+  CP.drawBarge(g, x, y, m.w, st, time);
 }
 export function drawCanal(st, g, H, cx, cy, VW, VH, time) {
   if (!st) return; const L = H.L(), D = st.D;
@@ -219,40 +219,34 @@ export function drawCanal(st, g, H, cx, cy, VW, VH, time) {
   for (const [x0, x1, row, kind] of D.weeds || []) { if (!on(x0, x1 + 1)) continue; const sx = x0 * TS - cx, w = (x1 - x0 + 1) * TS, sy = row * TS - cy, br = kind === 'bright' && st.brights.find(q => q.x0 === x0 && q.row === row);
     if (br && br.gone > 0) continue;   /* given way: nothing there but the water */
     const k0 = br ? br.t / R.RIG.weedHold : 0, shake = br && br.t > 0 ? Math.round(Math.sin(time * 40) * k0 * 1.5) : 0;
-    g.fillStyle = kind === 'bright' ? '#4a8a3a' : '#1e3424'; g.fillRect(sx + shake, sy, w, 5); g.fillStyle = kind === 'bright' ? (k0 > 0.6 ? '#c8e070' : '#8ad060') : '#2e4a30'; for (let k = 0; k < w; k += 6) g.fillRect(sx + k + shake, sy + ((k / 6) % 2), 4, 2); }
-  // ---- the lock gates: timber leaves over the rock the grid keeps for them, and the water line on each side ----
-  for (const gt of st.gates) { if (!on(gt.x, gt.x + 1)) continue; const sx = gt.x * TS - cx, sy = gt.top * TS - cy, h = (gt.bot - gt.top + 1) * TS;
-    if (gt.open) { g.fillStyle = '#3a2a1a'; g.fillRect(sx, sy, 3, 6); continue; }
-    g.fillStyle = '#4a3422'; g.fillRect(sx, sy, TS, h); g.fillStyle = '#6a4a2e'; for (let k = 6; k < h; k += 12) g.fillRect(sx + 1, sy + k, TS - 2, 2); g.fillStyle = '#8a6a44'; g.fillRect(sx, sy, TS, 3);
-    g.fillStyle = '#2a1a10'; g.fillRect(sx + 3, sy + 2, 2, h - 4); }
-  // ---- the swing bridges: the deck across, or swung (a short stub at its pivot, foreshortened) ----
+    CP.drawWeed(g, kind, sx, sy, w, k0, shake, time); }
+  // ---- the lock gates (the leaf is a tile: src/redraw/canal_tiles.js): the balance beam over a shut one, a stub of it on an open one ----
+  for (const gt of st.gates) { if (!on(gt.x - 2, gt.x + 2)) continue; const sx = gt.x * TS - cx, sy = gt.top * TS - cy, h = (gt.bot - gt.top + 1) * TS;
+    if (gt.open) CP.drawGateOpen(g, sx, sy); else CP.drawGateTop(g, gt, sx, sy, h, time); }
+  // ---- the swing bridges: the deck across (a tile) or swung (a short stub at its pivot, foreshortened), the white rail and the pivot drum ----
   for (const br of st.bridges) { if (!on(br.x0 - 1, br.x1 + 1)) continue; const sy = br.row * TS - cy, k = br.k, w = (br.x1 - br.x0 + 1) * TS;
     const px0 = (br.pivot === 'R' ? (br.x1 + 1) * TS : br.x0 * TS) - cx, len = Math.round(w * Math.cos(k * Math.PI / 2)), sx = br.pivot === 'R' ? px0 - len : px0;
-    g.fillStyle = '#5a4028'; g.fillRect(sx, sy, Math.max(4, len), 5); g.fillStyle = '#8a6a44'; g.fillRect(sx, sy, Math.max(4, len), 2);
-    g.fillStyle = '#3a2a1a'; for (let q = 4; q < len - 2; q += 12) g.fillRect(sx + q, sy - 8, 2, 8); if (len > 8) g.fillRect(sx, sy - 8, len, 2); }
+    CP.drawBridge(g, br, sy, sx, len, px0, k, time); }
   // ---- the low beams of the Waymeet pound: timbers hanging from the footbridge ----
   for (const bm of D.beams || []) { const sx = bm.x0 - cx, w = bm.x1 - bm.x0; if (sx > VW || sx + w < 0) continue; const top = Math.floor(bm.y / TS) * TS - 24 - cy;
     g.fillStyle = '#4a3422'; g.fillRect(sx, top, w, bm.y - cy - top); g.fillStyle = '#ff9a5c'; g.globalAlpha = 0.6; g.fillRect(sx, bm.y - cy - 2, w, 2); g.globalAlpha = 1; }
   // ---- the machines ----
   for (const pr of st.props) { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -30 || x > VW + 30 || y < -60 || y > VH + 40) continue; const fl = pr.flash > 0;
-    if (pr.t === 'locksluice') { const r = R.reachById(st, pr.reach), up = r && Math.abs(r.to - R.surfaceY(r.hi)) < 1; g.fillStyle = '#3a3a44'; g.fillRect(x - 2, y - 18, 4, 18);
-      g.strokeStyle = fl ? '#ffffff' : up ? '#8fd160' : '#c8a040'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 18, 6, 0, Math.PI * 2); g.stroke(); const a = (r ? r.y : 0) / 6; g.fillStyle = g.strokeStyle; g.fillRect(x + Math.round(Math.cos(a) * 5) - 1, y - 18 + Math.round(Math.sin(a) * 5) - 1, 2, 2); }
-    else if (pr.t === 'swingcap') { const br = st.bridges[pr.bridge]; g.fillStyle = '#4a3a2a'; g.fillRect(x - 6, y - 10, 12, 10); g.fillStyle = fl ? '#ffffff' : br && R.bridgeHolds(br) ? '#c8a040' : '#8fd160'; g.fillRect(x - 8, y - 12, 16, 2); g.fillRect(x - 1, y - 16, 2, 6); }
-    else if (pr.t === 'foghorn') { g.fillStyle = '#5a5048'; g.fillRect(x - 1, y - 20, 3, 20); g.fillStyle = fl ? '#ffffff' : '#b8a060'; g.beginPath(); g.moveTo(x, y - 22); g.lineTo(x + 12, y - 28); g.lineTo(x + 12, y - 14); g.closePath(); g.fill();
-      const k = pr.cd > 0 ? 1 - pr.cd / R.RIG.hornWind : 1; g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 32, 16, 3); g.fillStyle = k >= 1 ? '#8fd160' : '#c8a040'; g.fillRect(x - 7, y - 31, Math.round(14 * k), 1); }   /* the wind-up gauge: green, it will sound */
-    else if (pr.t === 'lanternpost') { g.fillStyle = '#3a3040'; g.fillRect(x - 1, y - 26, 2, 26); g.fillStyle = pr.lit ? '#ffcf6a' : '#4a4038'; g.fillRect(x - 3, y - 32, 6, 6); g.fillStyle = '#2a2020'; g.fillRect(x - 4, y - 33, 8, 1); }
+    if (pr.t === 'locksluice') { const r = R.reachById(st, pr.reach), up = r && Math.abs(r.to - R.surfaceY(r.hi)) < 1; CP.drawSluice(g, x, y, up, fl, r); }
+    else if (pr.t === 'swingcap') { const br = st.bridges[pr.bridge]; CP.drawCapstan(g, x, y, br && R.bridgeHolds(br), fl); }
+    else if (pr.t === 'foghorn') { CP.drawHorn(g, x, y, fl, pr.cd > 0 ? 1 - pr.cd / R.RIG.hornWind : 1); }
+    else if (pr.t === 'lanternpost') { CP.drawPost(g, pr, x, y, time); }
   }
-  // ---- (claude/canalfix) THE ARCH'S LIP: a timber sill with a warning band, one row over her gunwale - "too low" before anyone reaches it ----
-  if (D.arch) { const ax = D.arch[0] * TS - cx, ay = (D.arch[2] + 1) * TS - cy; if (ax > -30 && ax < VW + 30) { g.fillStyle = '#4a3422'; g.fillRect(ax - 3, ay - 6, 10, 7);
-    for (let q = 0; q < 10; q += 4) { g.fillStyle = (q / 4) % 2 ? '#1b1626' : '#ffd36b'; g.fillRect(ax - 3 + q, ay - 2, 3, 3); } } }
+  // ---- (claude/canalfix) THE ARCH'S LIP: a stone sill with a warning band, one row over her gunwale - "too low" before anyone reaches it ----
+  if (D.arch) { const ax = D.arch[0] * TS - cx, ay = (D.arch[2] + 1) * TS - cy; if (ax > -30 && ax < VW + 30) CP.drawSill(g, ax, ay); }
   // ---- (claude/canalfix) THE BOOMS: a chained log across the race, live on her way (a red-and-white band: JUMP), and the lane mark over it ----
-  if (D.weir) for (const bm of D.weir.booms || []) { const sx = bm.x - cx; if (sx < -30 || sx > VW + 30) continue; const y = bm.y - cy, live = boomLive(st, bm);
-    g.fillStyle = '#5a3a22'; g.fillRect(sx - 7, y - 5, 14, 5); g.fillStyle = '#3a2618'; g.fillRect(sx - 7, y - 1, 14, 1); g.fillStyle = '#8a8a94'; g.fillRect(sx - 9, y - 3, 2, 1); g.fillRect(sx + 7, y - 3, 2, 1);
-    if (live && st.barge.mode !== 'float') { const fl = Math.floor(time * 8) % 2; g.fillStyle = fl ? '#ff6b6b' : '#ffffff'; for (const o of [-2, 2]) { g.fillRect(sx + o, y - 18, 1, 6); g.fillRect(sx + o, y - 10, 1, 1); } } }
+  if (D.weir) for (const bm of D.weir.booms || []) { const sx = bm.x - cx; if (sx < -30 || sx > VW + 30) continue; CP.drawBoom(g, sx, bm.y - cy, boomLive(st, bm), st.barge.mode === 'float', time); }
   // ---- (claude/canalfix) THE BOARDERS' SKIFF ----
-  if (st.gang && st.gang.skiff) { const sk = st.gang.skiff, sx = sk.x - cx, y = st.barge.y - cy + 2; if (sx > -40 && sx < VW + 40) { g.fillStyle = '#2a1a10'; g.fillRect(sx, y, 30, 5); g.fillStyle = '#5a3a22'; g.fillRect(sx + 2, y - 2, 26, 2); } }
+  if (st.gang && st.gang.skiff) { const sk = st.gang.skiff, sx = sk.x - cx; if (sx > -40 && sx < VW + 40) CP.drawSkiff(g, sx, st.barge.y - cy + 2, time); }
+  // ---- JENNY'S LOCK, dressed: weed in curtains, slime, the sunken narrowboat that is her lair (src/redraw/canal_props.js) ----
+  if (L.lockArena) CP.drawLair(g, L.lockArena, cx, cy, VW, VH, time);
   // ---- JENNY'S SIGNS, cheap and told: a child's shoe on a lock step, bubbles by the bank where nothing lives ----
-  for (const [sx0, sy0] of D.shoes || []) { const x = sx0 * TS + 6 - cx, y = (sy0 + 1) * TS - cy; if (x < -10 || x > VW + 10) continue; g.fillStyle = '#6a3a2a'; g.fillRect(x, y - 3, 6, 3); g.fillStyle = '#8a5a3a'; g.fillRect(x, y - 4, 3, 1); }
+  for (const [sx0, sy0] of D.shoes || []) { const x = sx0 * TS + 6 - cx, y = (sy0 + 1) * TS - cy; if (x < -10 || x > VW + 10) continue; CP.drawShoe(g, x, y); }
   for (const [bx, row] of D.bubbles || []) { const x = bx * TS + 8 - cx, s = surfaceAt(st, H, bx * TS + 8), y = (s ? s.y : row * TS) - cy; if (x < -10 || x > VW + 10) continue; const ph = (time * 0.7 + bx * 0.37) % 1; if (ph < 0.45) { g.globalAlpha = 0.6 - ph; g.strokeStyle = '#9ad8c0'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + Math.sin(bx) * 6, y, 2 + ph * 14, 1 + ph * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
 }
 /* THE FOG, over everything: holes for the hero, each lit post and her lantern; the theatre's glow ahead through it; the wisps and the lanterns burning on top */
@@ -261,8 +255,7 @@ export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
   if (!st || st.noFog) return; const fogs = st.fogs.filter(f => f.x1 * TS >= cx && f.x0 * TS <= cx + VW && f.y1 * TS >= cy && f.y0 * TS <= cy + VH);
   if (!FOGC || FOGC.width !== VW || FOGC.height !== VH) { FOGC = H.makeCanvas(VW, VH); } if (!FOGC) return;
   const fg = FOGC.getContext('2d'); fg.globalCompositeOperation = 'source-over'; fg.clearRect(0, 0, VW, VH);
-  for (const f of fogs) { const a = f.a * f.fade; if (a < 0.02) continue; const x0 = Math.max(0, f.x0 * TS - cx), x1 = Math.min(VW, (f.x1 + 1) * TS - cx), y0 = Math.max(0, f.y0 * TS - cy), y1 = Math.min(VH, (f.y1 + 1) * TS - cy);
-    fg.fillStyle = 'rgba(' + (f.thick ? '176,190,188' : '150,168,166') + ',' + a.toFixed(3) + ')'; fg.fillRect(x0, y0, x1 - x0, y1 - y0); }
+  for (const f of fogs) { const a = f.a * f.fade; if (a < 0.02) continue; CP.featherBank(fg, H.makeCanvas, f, f.x0 * TS - cx, (f.x1 + 1) * TS - cx, f.y0 * TS - cy, (f.y1 + 1) * TS - cy, a, time, VW, VH); }   /* (claude/canalart) soft, drifting edges, a lip on the thick ones: the same extents as before */
   fg.globalCompositeOperation = 'destination-out';
   const hole = (x, y, r) => { const gr = fg.createRadialGradient(x, y, r * 0.35, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); fg.fillStyle = gr; fg.fillRect(x - r, y - r, r * 2, r * 2); };
   H.eachHero(P => { if (!P.dead) hole(P.x - cx, P.y - 8 - cy, 34); });
@@ -275,12 +268,22 @@ export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
   gr.addColorStop(0, 'rgba(255,196,110,' + (0.28 + 0.3 * k).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,196,110,0)'); fg.fillStyle = gr; fg.fillRect(gx - 160, gy - 160, 320, 320);
   g.drawImage(FOGC, 0, 0);
   /* the lanterns and the wisps burn on top of the fog - the one warm, the other cold: that is the read */
-  for (const p of st.posts) if (p.lit) { const x = p.x - cx, y = p.y - 29 - cy; if (x < -20 || x > VW + 20) continue; g.globalAlpha = 0.5 + 0.1 * Math.sin(time * 7 + p.x); g.fillStyle = '#ffcf6a'; g.fillRect(x - 3, y - 3, 6, 6); g.globalAlpha = 1; }
-  /* (claude/canalfix) THE LAMPLIGHTER's pole and lantern, over his shoulder (the greybox reskin of the snuffer: the art lane gives him his own coat) */
-  for (const e of H.enemies()) if (e.alive && e.lamplighter) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy); if (x < -20 || x > VW + 20) continue; const f = e.face || 1;
-    g.fillStyle = '#4a3a2a'; g.fillRect(x - f * 2, y - 26, 1, 14); g.fillRect(x - f * 2, y - 26, f * 8, 1); g.globalAlpha = 0.75 + 0.2 * Math.sin(time * 8 + e.x); g.fillStyle = '#ffcf6a'; g.fillRect(x + f * 5 - 2, y - 25, 5, 5); g.globalAlpha = 1; }
-  for (const e of H.enemies()) if (e.alive && e.t === 'willowisp') { const x = e.x - cx, y = e.y + (e.bob || 0) - 6 - cy; if (x < -20 || x > VW + 20) continue; const gr2 = g.createRadialGradient(x, y, 1, x, y, 16);
-    gr2.addColorStop(0, 'rgba(160,255,210,' + (e.mode === 'flareTell' ? 0.9 : 0.55) + ')'); gr2.addColorStop(1, 'rgba(160,255,210,0)'); g.fillStyle = gr2; g.fillRect(x - 16, y - 16, 32, 32); }
+  for (const p of st.posts) if (p.lit) { const x = p.x - cx, y = p.y - 29 - cy; if (x < -30 || x > VW + 30) continue; const fl = 0.8 + 0.2 * Math.sin(time * 7 + p.x), gl = g.createRadialGradient(x, y, 1, x, y, 26); gl.addColorStop(0, 'rgba(255,207,106,' + (0.5 * fl).toFixed(3) + ')'); gl.addColorStop(1, 'rgba(255,207,106,0)'); g.fillStyle = gl; g.fillRect(x - 26, y - 26, 52, 52);
+    g.globalAlpha = 0.75 * fl; g.fillStyle = '#ffcf6a'; g.fillRect(Math.round(x) - 2, Math.round(y) - 3, 4, 6); g.fillStyle = '#fff2b0'; g.fillRect(Math.round(x) - 1, Math.round(y) - 1, 2, 2); g.globalAlpha = 1; }   /* a REAL lantern: warm amber, square, steady, on a post */
+  /* (claude/canalfix) THE LAMPLIGHTER's pole-lantern, over his shoulder: a long iron-shod pole, a hook, a caged lantern hung from it (his coat and cap are his sprite's, src/redraw/canal_foes_art.js) */
+  for (const e of H.enemies()) if (e.alive && e.lamplighter) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy); if (x < -20 || x > VW + 20) continue; const f = e.face || 1, tell = /Tell$|swipe/.test(e.mode || ''), fl = 0.8 + 0.2 * Math.sin(time * 8 + e.x);
+    if (!tell) { g.fillStyle = '#3a2c1c'; g.fillRect(x - f * 3, y - 27, 1, 16); g.fillRect(x - f * 3, y - 27, f * 9, 1); g.fillStyle = '#6a5a40'; g.fillRect(x - f * 3, y - 12, 1, 2); }
+    const lx = x + f * 6, ly = y - 24; g.fillStyle = '#1b1b20'; g.fillRect(lx - 3, ly - 1, 6, 1); g.fillRect(lx - 3, ly + 6, 6, 1); g.fillRect(lx - 3, ly, 1, 6); g.fillRect(lx + 2, ly, 1, 6);
+    const gl2 = g.createRadialGradient(lx, ly + 3, 1, lx, ly + 3, 18); gl2.addColorStop(0, 'rgba(255,207,106,' + (0.45 * fl).toFixed(3) + ')'); gl2.addColorStop(1, 'rgba(255,207,106,0)'); g.fillStyle = gl2; g.fillRect(lx - 18, ly - 15, 36, 36);
+    g.globalAlpha = fl; g.fillStyle = '#ffcf6a'; g.fillRect(lx - 2, ly, 4, 6); g.fillStyle = '#fff2b0'; g.fillRect(lx - 1, ly + 2, 2, 2); g.globalAlpha = 1; }
+  /* THE WISP, the false lantern: a COLD green teardrop with no post and no cage, a faint face in it close up, flecks trailing off it - nothing like a real lantern (warm, square, on a post) */
+  for (const e of H.enemies()) if (e.alive && e.t === 'willowisp') { const x = e.x - cx, y = e.y + (e.bob || 0) - 6 - cy; if (x < -24 || x > VW + 24) continue; const tell = e.mode === 'flareTell', pu = 0.5 + 0.5 * Math.sin(time * 5 + e.x), gr2 = g.createRadialGradient(x, y, 1, x, y, tell ? 22 : 17);
+    gr2.addColorStop(0, 'rgba(160,255,210,' + (tell ? 0.9 : 0.5 + 0.12 * pu) + ')'); gr2.addColorStop(1, 'rgba(160,255,210,0)'); g.fillStyle = gr2; g.fillRect(x - 22, y - 22, 44, 44);
+    const rx = Math.round(x), ry = Math.round(y), sw = Math.round(Math.sin(time * 6 + e.x));
+    g.fillStyle = '#2a8a6a'; g.fillRect(rx - 2, ry - 1, 5, 6); g.fillRect(rx - 1 + sw, ry - 4, 3, 4); g.fillRect(rx + sw, ry - 6, 1, 2); g.fillStyle = '#6ae8b0'; g.fillRect(rx - 1, ry, 3, 4); g.fillRect(rx + sw, ry - 3, 1, 3); g.fillStyle = '#dcffe8'; g.fillRect(rx, ry + 1, 1, 2);
+    if (Math.abs(e.x - H.hero().x) < 90) { g.fillStyle = '#0a3a2a'; g.fillRect(rx - 1, ry + 1, 1, 1); g.fillRect(rx + 1, ry + 1, 1, 1); g.fillRect(rx, ry + 3, 1, 1); }   /* a faint face, close up */
+    g.fillStyle = '#a0ffd2'; g.globalAlpha = 0.6; for (let k = 0; k < 3; k++) g.fillRect(rx - 4 - k * 3 + sw, ry + 4 + k * 2, 1, 1); g.globalAlpha = 1;
+    if (tell) { g.strokeStyle = Math.floor(time * 12) % 2 ? '#ffd36b' : '#dcffe8'; g.lineWidth = 1; g.beginPath(); g.arc(x, y + 1, 9, 0, 6.3); g.stroke(); } }
   /* EYES IN THE FOG (Jenny's, glimpsed): a pair that opens now and then where the fog is thickest, and is gone */
   for (const [ex, ey, ph] of st.eyes) { const x = ex * TS - cx, y = ey * TS - cy; if (x < -10 || x > VW + 10 || y < -10 || y > VH + 10) continue; const u = (time * 0.23 + (ph || 0)) % 1; if (u > 0.12) continue;
     g.globalAlpha = Math.sin(u / 0.12 * Math.PI) * 0.8; g.fillStyle = '#b8ff8a'; g.fillRect(x, y, 2, 1); g.fillRect(x + 5, y, 2, 1); g.globalAlpha = 1; }
@@ -291,12 +294,14 @@ export function drawCanalFoeFx(st, g, H, e, cx, cy, time) {
   if (e.mode === 'rippleTell') { const k = 1 - Math.max(0, e.modeT) / F.GRIND.tell; g.strokeStyle = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#c8ffe0'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.ellipse(x, y, 4 + q * 5 + k * 4, 1.5 + q, 0, 0, Math.PI * 2); g.stroke(); } }
   else if (e.mode === 'lurk' || e.mode === 'dunk') { if (litAt(st, e.x, s.y - 8)) { g.globalAlpha = 0.35; g.fillStyle = '#1e3a28'; g.beginPath(); g.ellipse(x, y + 7, 7, 3, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#e8f8c8'; g.fillRect(x + 1, y + 5, 1, 1); g.fillRect(x + 4, y + 5, 1, 1); g.globalAlpha = 1; } }
 }
+/* THE WATER: a sheen on every pound, a lantern's reflection (amber for the barge's and the posts', a cold shimmer under a wisp) - after the engine's own surface (src/redraw/canal_props.js) */
+export function drawCanalWater(st, g, H, cx, cy, VW, VH, time) {
+  if (!st) return; const b = st.barge, lan = [{ x: b.x + 12, col: '#ffcf6a' }];
+  for (const p of st.posts) if (p.lit && Math.abs(p.x - cx - VW / 2) < VW) lan.push({ x: p.x, col: '#ffcf6a', y: p.y });
+  for (const c of st.carriers || []) lan.push({ x: c.x, col: '#ffcf6a', k: 0.7 });
+  const wis = H.enemies().filter(e => e.alive && e.t === 'willowisp' && Math.abs(e.x - cx - VW / 2) < VW).map(e => ({ x: e.x, k: 1 }));
+  CP.drawWater(g, st, H.L().pools || [], cx, cy, VW, VH, time, lan, wis); }
 export const canalFoeShown = e => e.t !== 'grindylow' || F.grindylowUp(e);
 
-/* the rooms, greybox: a colour a room and a few lines, so the spaces read apart */
-const ROOM = { cnWarehouse: ['#2a2622', '#322c26'], cnMill: ['#2e2820', '#3a3226'], cnDoor: ['#1a2224', '#222c2e'] };
-export function paintCanalRoom(g, rs, sx, sy, w, h) {
-  const c = ROOM[rs]; if (!c) return false;
-  g.fillStyle = c[0]; g.fillRect(sx, sy, w, h); g.fillStyle = c[1]; for (let x = sx; x < sx + w; x += 32) g.fillRect(x, sy, 2, h);
-  return true;
-}
+/* the rooms behind the tiles (src/redraw/canal_props.js paintRoom): the warehouse, the mill, Jenny's door */
+export function paintCanalRoom(g, rs, sx, sy, w, h, time) { return CP.paintRoom(g, rs, sx, sy, w, h, time || 0); }
