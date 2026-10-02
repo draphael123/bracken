@@ -3577,9 +3577,10 @@ function secretWants(lv) {
 }
 /* A TAP ON THE MAP (src/touch.js): a node you are not on is walked to along the road (mapGoal steps updateMap takes), a side road is jumped to as the panel does, and a tap on the one you stand on goes in - the same as ENTER */
 let mapGoal = null;
+const lockedSay = nd => number(nd.x, nd.y - 14, LEVELS[nd.level].secret ? 'NOT YET' : 'LOCKED', '#9aa39a');   /* what a shut node says when it is walked onto or tapped */
 function mapTap(nd) { if (mapPanel.open || map.walking || state !== 'map') return; const i = NODES.indexOf(nd);
   if (i === map.node) { confirmPress = true; return; }
-  if (nodeLocked(nd) && nd.kind === 'level') { SFX.buzz(); number(nd.x, nd.y - 14, LEVELS[nd.level].secret ? 'NOT YET' : 'LOCKED', '#9aa39a'); return; }
+  if (nodeLocked(nd) && nd.kind === 'level') { SFX.buzz(); lockedSay(nd); return; }
   if (nd.spur) { map.node = i; map.seg = NODE_AT[i]; map.t = 0; PROG.mapNode = i; PROG.mapNodeId = nd.id; const a = PATH[NODE_AT[i]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55)); SFX.uiSel(); return; }
   mapGoal = i; }
 function mapGo(dir) {
@@ -3592,7 +3593,7 @@ function mapGo(dir) {
   while (nx >= 0 && nx < NODES.length && (NODES[nx].spur || nodeSecret(NODES[nx]) || (NODES[nx].kind === 'level' && LEVELS[NODES[nx].level].hidden && nodeLocked(NODES[nx])))) nx += dir;   /* walk straight past a spur, past what you have not found - and past a found secret you have not earned: the road does not wait on any of them */
   if (nx < 0 || nx >= NODES.length) { SFX.buzz(); return; }
   if (nodeLocked(NODES[nx]) && NODES[nx].kind === 'level') { const lv = LEVELS[NODES[nx].level];
-    SFX.buzz(); number(NODES[nx].x, NODES[nx].y - 14, lv.secret ? 'NOT YET' : 'LOCKED', '#9aa39a'); return; }
+    SFX.buzz(); lockedSay(NODES[nx]); return; }
   map.target = nx; map.walking = dir; SFX.ui();
 }
 /* THE WALKABLE BRANCH (map-life-and-select, this task, 2026-09-25). UP or DOWN at a junction node - whichever
