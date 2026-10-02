@@ -22,7 +22,8 @@
 //                              length of the ride), then it burns for WQ.floorT s. Anything with its feet on the boards burns: GET UP ON A HORSE.
 //   THE STAB         !!        if she reaches you unseen she draws her spear back and her eye holes burn red (the mummers' glow), then she stabs. Nothing
 //                              turns a blow from behind; a LOOK during the glow freezes her and cancels it.
-//   THE CROWNING     (no mark) she lifts her wheat crown and the crowd sends in mummers: never more than WQ.crownCap of hers alive (the QUIET list).
+//   THE CROWNING     (no mark; phases 2 and 3) she lifts her wheat crown and WICKER COPIES of her stand up out of the straw (claude/fairfix4: it called the crowd's
+//                    mummers in before - they are gone; the copies are her pressure now). See THE COPIES below.
 // THE FIRE (the opening, rule A11: the thing YOU do): the engine's firebox under the centre column, its embers on the boards. Look at her while she
 //   stands ON the embers and the look FREEZES HER ON THEM: the wicker catches and burns open. A blow in the burn is worth WQ.burnMul; anywhere else the
 //   wicker takes a blow and stands (WQ.ward). Two ways onto it: UPSTREAM of the fire, hold her in your look and the ride brings her onto it; DOWNSTREAM,
@@ -48,6 +49,17 @@
 //   THE RIBBON SWEEP  !!  LOW/HIGH (phases 2 and 3) the maypole's ribbons pull TAUT across the whole ring at one height (the tell: drawn tightening), then
 //                     whip from one wall to the other and back - TWO passes. Low: jump each one; high: duck (and off the horses).
 //   EVERY CYCLE CHANGES: after each burn her next blows come in a new order (WQ_CYCLES), and her leaps take turns between the floor, the pole and a horse.
+// FAIRFIX4 (Daniel 2026-10-02: the mash bot must LOSE to her; her own summoned adds out, her own fire turned on her, copies, one new fire attack):
+//   HER OWN FIRE, STRUCK BACK  her burning WICKER BALL can be STRUCK BACK into her: a blow BEGUN as the ball reaches you (WQ.retLate-WQ.retReach px in front of you, the ball
+//                     flashes white there) by a hero who had not swung for WQ.retSet s - a mashed blade only scatters sparks off it - or the Pyromancer's EMBER
+//                     FLARE sends it back along the boards, and when it reaches her she CATCHES FIRE: the same opening as the fire pits (at least 3 s, x WQ.burnMul),
+//                     and nothing is banked. The fire pits stay as the second way. (wqIgnite: the host calls it when the ball reaches her.)
+//   THE COPIES        (phases 2-3: the crowning) WQ.copies[phase] wicker copies of her stand up round the ring, and she may trade places with one. The tells are
+//                     small and always there: HER crown flickers with real fire, HER ribbons blow, SHE casts the only shadow - and THE COPIES FREEZE WHEN WATCHED
+//                     (the fair's facing rule: frozen dead, not a reed moving) while the real one, held by the same look, never stops moving. A copy keeps the mummers'
+//                     ways (it creeps at a turned back, glows and stabs - a look cancels it); struck, it bursts into burning straw (a small hurt). Never a coin flip.
+//   THE BONFIRE RING  !!  LOW   (her one new fire attack) told by the ring's lanterns FLARING - all but the ones over the gap - then a wall of fire runs round the
+//                     boards with ONE GAP that travels along the ring (gapSpeed): stand in the gap, or ride a horse over it. Anything on the boards outside it burns.
 //
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`; updateWickerQueen returns the events of the frame (for tools/wicker-queen.mjs,
 // which proves every line above in Node and in the page). The host moves her by e.vx (her feet), adds the ride's carry, and clamps her to the ring.
@@ -62,7 +74,7 @@ export const WQ = {
   lashEvery: [6.5, 5.5, 4.8], lashFirst: 3.2, lashTell: 1.0, lashT: 0.5, lashReach: 460,
   lowTop: 10,                         // the LOW ribbon runs from the boards to 10 px up: a hero in a jump or on a horse (16+) is over it
   highTop: 64, highBot: 10,           // the HIGH ribbon runs 10-64 px up: a standing hero (14) and every rider (saddle 16-40) are in it, a ducked one (8) is under it
-  floorEvery: [12, 10, 8], floorFirst: 7.5, floorTell: 1.5, floorT: 1.8, floorTick: 0.6,   // THE FLOOR BURNS: its told time, how long it burns, a burn's tick
+  floorEvery: [11, 10, 8], floorFirst: 7.5, floorTell: 1.5, floorT: 1.8, floorTick: 0.6,   // THE FLOOR BURNS: its told time, how long it burns, a burn's tick (claude/fairfix4: every 11 s in phase one, from 12 - the bonfire ring shares its turns)
   /* HER SPEAR, THRUST: at a hero looking at her within its reach (from her middle); told for thrustTell s (the red line runs out to its length), the lunge takes
      thrustT s to carry the blade from her hand (thrustFrom) to the end of its reach, it is held out thrustHold s and drawn back over thrustBack s */
   thrustEvery: [7, 6, 5], thrustFirst: 4.5, thrustTell: 1.1, thrustT: 0.25, thrustHold: 0.3, thrustBack: 0.45, thrustFrom: 14, thrustReach: 96, thrustY: 70,
@@ -71,15 +83,23 @@ export const WQ = {
   spearLowTop: 10,                    // the LOW thrust skims the boards to 10 px up: a hero in a jump or on a horse is over it
   spearHighY: 14, spearLowY: 5,       // where the shaft is DRAWN: the high one at a standing hero's head (a ducked one, 8, is plainly under it), the low one at his ankles
   rest: 1.4,                          // a breath between one of her blows and the next (and a way for her to walk to you between them)
-  crownEvery: [13, 10, 9], crownFirst: 7, crownTell: 1.2, crownCap: 2,
+  crownEvery: [0, 11, 9], crownFirst: 2.5, crownTell: 1.2,   // THE CROWNING calls her COPIES now (claude/fairfix4), in phases 2 and 3 only: [phase 1 never]
+  /* (claude/fairfix4) THE COPIES: how many stand with her in each phase, how far round the ring they stand, a copy's creep and stab, and the straw a struck one bursts into */
+  copies: [0, 2, 3], copySpread: 140, copyCreep: 58, copyStab: 20, copyBurst: 8, copyBurstR: 30,
+  /* (claude/fairfix4) HER OWN FIRE STRUCK BACK: the reach in front of a hero where a blow begun sends the ball back, how long he must have held his blade (a mash scatters it),
+     the speed it comes back at, and how near her it catches her */
+  retReach: 32, retLate: 6, retSet: 0.7, retSpeed: 240, retHit: 16,   // (a mashing hero begins a blow every 0.38-0.5 s: never a held blade; the window is ~0.17 s of the ball's run)
+  /* (claude/fairfix4) THE BONFIRE RING: told (the lanterns flare, not the ones over the gap), then the wall of fire round the ring for ringT s with one gap gapHalf px each side
+     of its middle, travelling gapSpeed px/s; it burns what is on the boards outside the gap up to ringTop px, every ringTick s */
+  ringEvery: [16, 13, 11], ringFirst: 12, ringTell: 1.5, ringT: 2.8, gapHalf: 30, gapSpeed: 46, gapFrom: [110, 220], ringTop: 34, ringTick: 0.45,
   emberHalf: 40,                      // the embers: this far each side of the firebox's middle
   catchT: 0.4, burnT: 3.2, burnTP3: 3.0, riseT: 0.6, throwBack: 44, bankT: 6,   // (claude/fairfix3: the opening is at least 3 s in every phase - the boss rule; it was 2.8 / 2.4)
   burnMul: 0.9, ward: 0.05,           // what a blow is worth burning, and against the standing wicker (claude/fairfix3: x0.05 chip outside the burn, the boss rule; it was 0.25. And a burn is worth 0.9 a blow, from 1.35: with her ring pits and a 3 s burn the human bot won in 46-56 s, under the 90-150 s band)
   thrustClear: 24,                    // (claude/fairfix3, review #11) no thrust STARTS while she stands within this far of hot embers: a committed thrust no longer carries her across the opening
   rustle: 0.35,                       // her audio tell while she moves: the wicker creaks
-  dmg: { stab: 26, lash: 20, floor: 16, thrust: 22, ball: 18, sweep: 18, stomp: 18 },
+  dmg: { stab: 26, lash: 20, floor: 16, thrust: 22, ball: 18, sweep: 18, stomp: 18, ring: 14 },
   /* (claude/fairfix3) HER NEW BLOWS AND HER FIRES */
-  tossEvery: [9, 8, 6.5], tossFirst: 5.5, tossTell: 0.9, tossT: 0.35, ballSpeed: 150, ballTop: 14,   // THE WICKER BALL: told, bowled along the boards; it hurts what stands in its 14 px
+  tossEvery: [8, 7, 6], tossFirst: 4, tossTell: 0.9, tossT: 0.35, ballSpeed: 150, ballTop: 14,   // THE WICKER BALL: told, bowled along the boards; it hurts what stands in its 14 px
   sweepEvery: [0, 10, 8.5], sweepFirst: 3.5, sweepTell: 1.2, sweepT: 1.8,                              // THE RIBBON SWEEP (phases 2-3): told by the ribbons going taut, then two passes
   leapEvery: [11, 7.5, 6], leapFirst: 6.5, leapTell: 0.7, leapT: 0.6, leapMin: 150, leapArc: 44, stompR: 26, perchT: 2.6, poleLift: 76, horseOff: 2.2,
   pits: { ring: 2, half: 22, life: 8, cap: 4 },                                                          // the ring pits: how many she starts with, their half-width, life, and the most at once (with the firebox)
@@ -108,7 +128,37 @@ export const embersOf = bonfireX => ({ x0: bonfireX - WQ.emberHalf, x1: bonfireX
 export const wqOpen = e => e.mode === 'burn';
 /* WHAT A BLOW IS WORTH: burning, WQ.burnMul; the rest of the time the wicker takes it and stands */
 export const wqTake = e => (wqOpen(e) ? WQ.burnMul : WQ.ward);
-export const WQ_TELLS = ['stabTell', 'lashLowTell', 'lashHighTell', 'floorTell', 'thrustHighTell', 'thrustLowTell', 'crownTell', 'tossTell', 'sweepLowTell', 'sweepHighTell', 'leapTell'];
+export const WQ_TELLS = ['stabTell', 'lashLowTell', 'lashHighTell', 'floorTell', 'thrustHighTell', 'thrustLowTell', 'crownTell', 'tossTell', 'sweepLowTell', 'sweepHighTell', 'leapTell', 'ringTell'];
+/* (claude/fairfix4) THE BONFIRE RING's gap, [x0, x1] in world x, and does the ring burn a hero standing here (on the boards, not on a horse, outside the gap)? */
+export const gapOf = e => [(e.gapX || 0) - WQ.gapHalf, (e.gapX || 0) + WQ.gapHalf];
+export const ringCatches = (e, x, feetY, floor, onHorse) => { const [a, b] = gapOf(e); return !onHorse && feetY > floor - WQ.ringTop && (x < a || x > b); };
+/* (claude/fairfix4) HER OWN FIRE STRUCK BACK: the struck-back ball reaches her and she catches - unless she is already burning, flung, or in the air. Up on a perch the
+   ball knocks her down onto the boards. c: { number, sound }. Returns whether she caught */
+export function wqIgnite(e, c) {
+  if (!e.alive || ['sleep', 'wake', 'catch', 'burn', 'rise', 'leap'].includes(e.mode)) return false;
+  e.perch = null; e.lift = 0; e.mode = 'catch'; e.modeT = WQ.catchT; e.burnPit = null; e.burnBy = 'ball'; e.n.catch++; e.n.ret = (e.n.ret || 0) + 1; e.vx = 0; e.tip = 0;
+  if (c && c.number) c.number(e.x, e.y - 78, 'HER OWN FIRE: SHE CATCHES', '#ffb040'); if (c && c.sound) c.sound('catch'); return true;
+}
+/* (claude/fairfix4) A COPY STRUCK: it bursts into burning straw. Returns the copy (the host bursts it and burns what stands in WQ.copyBurstR), or null */
+export function strikeCopy(e, i) { const f = (e.fakes || [])[i]; if (!f) return null; e.fakes.splice(i, 1); e.n.copyBurst = (e.n.copyBurst || 0) + 1; return f; }
+/* THE COPIES, one frame (the facing rule, the phase's reach): watched, a copy is frozen dead; unwatched it creeps to the nearest hero and, at his back, glows and stabs */
+function stepCopies(e, dt, c, heroes, ph, ev) {
+  const [s, sy] = wqSight(ph);
+  for (const f of e.fakes || []) {
+    f.y = c.A.floor; f.seen = facedBy(f, heroes, s, sy); f.modeT -= dt; f.vx = 0;
+    const near = nearestHero(f, heroes, WQ.sight, WQ.sightY);
+    if (f.mode === 'glow') { if (f.seen) { f.mode = 'still'; ev.push({ t: 'copyFreeze', f }); continue; }
+      if (f.modeT <= 0) { f.mode = 'recover'; f.modeT = WQ.recover; const x0 = f.face > 0 ? f.x - 4 : f.x - WQ.stabReach, box = [x0, x0 + WQ.stabReach + 4, c.A.floor - 44, c.A.floor];
+        ev.push({ t: 'copyStab', box, f }); c.sound('stab'); c.hit(box, WQ.copyStab, 'HER COPY'); }
+      continue; }
+    if (f.mode === 'recover') { if (f.modeT <= 0) f.mode = 'still'; continue; }
+    if (near && !f.seen && Math.abs(near.x - f.x) <= WQ.reach && Math.abs((near.y || 0) - f.y) < 40) { f.face = Math.sign(near.x - f.x) || f.face; f.mode = 'glow'; f.modeT = WQ.glow;
+      ev.push({ t: 'copyGlow', f }); c.number(f.x, f.y - 78, '!!', '#ff6b6b'); c.sound('stabTell'); continue; }
+    if (near && !f.seen) { f.face = Math.sign(near.x - f.x) || f.face; const nx = f.x + f.face * WQ.copyCreep * dt; if (nx > c.A.x0 + 16 && nx < c.A.x1 - 16) { f.vx = f.face * WQ.copyCreep; f.x = nx; }
+      f.mode = 'creep'; f.anim = (f.anim || 0) + dt; }
+    else f.mode = 'still';   /* (frozen dead: its anim does not run - the real one's does) */
+  }
+}
 /* HER FIRES (claude/fairfix3): c.embers is one pit { x0, x1, mid } (the firebox, banked by e.bank: the old shape) or a list of them, each with its own bank */
 export const pitsOf = (c, e) => (!c || !c.embers ? [] : Array.isArray(c.embers) ? c.embers : [{ ...c.embers, fire: true, bank: e.bank }]);
 export const pitUnder = (x, pits) => (pits || []).find(p => !(p.bank > 0) && onEmbers(x, p)) || null;
@@ -145,6 +195,7 @@ export function wqFrame(e) {
       return low ? (out ? WQ_F.thrustLow : WQ_F.thrustLowTell) : (out ? WQ_F.thrustHigh : WQ_F.thrustHighTell); }
     case 'lashLowTell': case 'lashHighTell': return WQ_F.lashTell; case 'lash': return WQ_F.lash;
     case 'floorTell': return WQ_F.floorTell; case 'floor': return WQ_F.floor;
+    case 'ringTell': return WQ_F.floorTell; case 'ring': return WQ_F.floor;   /* (claude/fairfix4) THE BONFIRE RING: the spear's butt over the boards, then driven in
     case 'crownTell': case 'crown': return WQ_F.crownTell;
     case 'tossTell': return WQ_F.lashTell; case 'toss': return WQ_F.lash;   /* (claude/fairfix3) the ball wound up over her head, and bowled */
     case 'sweepLowTell': case 'sweepHighTell': return WQ_F.lashTell; case 'sweep': return WQ_F.lash;
@@ -159,15 +210,15 @@ export function wqFrame(e) {
 
 export function newWickerQueen(e) {
   return Object.assign(e, { mode: 'sleep', modeT: 0, phase: 1, open: 0, bank: 0, lashCd: WQ.lashFirst, crownCd: WQ.crownFirst, floorCd: WQ.floorFirst, thrustCd: WQ.thrustFirst,
-    tossCd: WQ.tossFirst, sweepCd: WQ.sweepFirst, leapCd: WQ.leapFirst, cycle: 0, leapN: 0, sweepN: 0, lift: 0, perch: null, horseI: -1, perchT: 0, leapTo: null, leapFrom: null,
+    tossCd: WQ.tossFirst, sweepCd: WQ.sweepFirst, leapCd: WQ.leapFirst, ringCd: WQ.ringFirst, gapX: 0, gapDir: 1, fakes: [], burnBy: null, cycle: 0, leapN: 0, sweepN: 0, lift: 0, perch: null, horseI: -1, perchT: 0, leapTo: null, leapFrom: null,
     sweepKind: null, sweepDir: 1, burnPit: null,
     lashN: 0, thrustN: 0, rest: 0, rustleT: 0, anim: 0, vx: 0, lashR: 0, lashKind: null, thrustKind: null, thrustDir: 1, tip: 0, seen: false,
-    n: { catch: 0, burn: 0, lash: 0, stab: 0, crown: 0, floor: 0, thrust: 0, toss: 0, sweep: 0, leap: 0 } });
+    n: { catch: 0, burn: 0, lash: 0, stab: 0, crown: 0, floor: 0, thrust: 0, toss: 0, sweep: 0, leap: 0, ret: 0, ring: 0, copies: 0, copyBurst: 0 } });
 }
 
 /* ONE FRAME OF HER. c = { heroes: [{x, y, face, alive}], A: {x0, x1, floor}, embers: {x0, x1, mid} | null, ringDir (the ride's way, 1 or -1; 0: no ride),
    canStep(dir), number(x, y, text, col) (her lines: '!!' floats, a teaching line goes to the hint box), sound(key), hit(box [l, r, t, b], dmg, name),
-   lash(kind, r0, r1), thrust(kind, x0, x1) (the blade swept from x0 to x1 this frame, world x), summon(n), adds() }.
+   lash(kind, r0, r1), thrust(kind, x0, x1) (the blade swept from x0 to x1 this frame, world x) }. (claude/fairfix4: summon / adds are gone - the copies are hers, e.fakes.)
    Returns the frame's events. */
 export function updateWickerQueen(e, dt, c) {
   const ev = [];
@@ -176,7 +227,7 @@ export function updateWickerQueen(e, dt, c) {
   e.modeT -= dt; e.vx = 0;
   e.bank = Math.max(0, (e.bank || 0) - dt); e.rest = Math.max(0, (e.rest || 0) - dt);
   const busy = e.mode === 'catch' || e.mode === 'burn' || e.mode === 'rise' || e.mode === 'leap';
-  if (!busy) { e.lashCd -= dt; e.crownCd -= dt; e.floorCd -= dt; e.thrustCd -= dt; e.tossCd -= dt; e.sweepCd -= dt; e.leapCd -= dt; e.perchT = Math.max(0, (e.perchT || 0) - dt); }
+  if (!busy) { e.lashCd -= dt; e.crownCd -= dt; e.floorCd -= dt; e.thrustCd -= dt; e.tossCd -= dt; e.sweepCd -= dt; e.leapCd -= dt; e.ringCd -= dt; e.perchT = Math.max(0, (e.perchT || 0) - dt); }
   const pits = pitsOf(c, e);
   const ph = wqPhase(e);
   if (ph !== e.phase) { e.phase = ph; ev.push({ t: 'phase', ph });
@@ -185,6 +236,7 @@ export function updateWickerQueen(e, dt, c) {
   e.seen = seen;
   const toward = () => { if (near) e.face = Math.sign(near.x - e.x) || e.face || -1; };
   if (e.mode === 'wake') { if (e.modeT <= 0) e.mode = 'still'; return ev; }
+  stepCopies(e, dt, c, heroes, ph, ev);   /* (claude/fairfix4) her copies keep their own feet, whatever she is doing */
   e.open = wqOpen(e) ? Math.max(0, e.modeT) : 0;
   const tipWas = e.tip || 0; e.tip = thrustTip(e);
   /* ---- THE OPENING FIRST (rule E2: the thing the fight is about goes at the top of the chain): frozen ON the embers, and they are not banked ---- */
@@ -199,12 +251,13 @@ export function updateWickerQueen(e, dt, c) {
     case 'burn':
       if (e.modeT <= 0) {   /* the fire goes out of the wicker; she is flung off the embers THE RIDE'S WAY (no ride: the side she came from), and they are banked */
         const emb = e.burnPit || pits.find(p => p.fire) || { x0: e.x, x1: e.x, mid: e.x }, side = c.ringDir ? Math.sign(c.ringDir) : near ? (Math.sign(e.x - near.x) || 1) : (e.face > 0 ? -1 : 1);
-        e.throwTo = Math.max(c.A.x0 + 16, Math.min(c.A.x1 - 16, emb.mid + side * ((emb.x1 - emb.x0) / 2 + WQ.throwBack)));
-        const spent = !!(e.burnPit && e.burnPit.ring);   /* a ring pit she burned on is spent (the host puts it out); the firebox is banked */
-        e.mode = 'rise'; e.modeT = WQ.riseT; e.open = 0; if (!spent) e.bank = WQ.bankT; ev.push({ t: 'banked', pit: e.burnPit, spent });
+        const byBall = e.burnBy === 'ball'; e.burnBy = null;   /* (claude/fairfix4) set alight by her own ball: she burns out where she stands, and no fire is banked or spent */
+        e.throwTo = byBall ? e.x : Math.max(c.A.x0 + 16, Math.min(c.A.x1 - 16, emb.mid + side * ((emb.x1 - emb.x0) / 2 + WQ.throwBack)));
+        const spent = !byBall && !!(e.burnPit && e.burnPit.ring);   /* a ring pit she burned on is spent (the host puts it out); the firebox is banked */
+        e.mode = 'rise'; e.modeT = WQ.riseT; e.open = 0; if (!spent && !byBall) e.bank = WQ.bankT; ev.push({ t: byBall ? 'burnOut' : 'banked', pit: e.burnPit, spent });
         /* EVERY CYCLE CHANGES (claude/fairfix3): her next blows in a new order */
         e.cycle = (e.cycle || 0) + 1; const cy = WQ_CYCLES[e.cycle % WQ_CYCLES.length]; e.tossCd = cy.toss; e.sweepCd = cy.sweep; e.leapCd = cy.leap; e.floorCd = Math.max(e.floorCd, cy.floor); e.burnPit = null;
-        c.number(e.x, e.y - 78, spent ? 'THAT FIRE IS SPENT' : 'THE FIRE IS BANKED', '#c9d1dc'); c.sound('rise'); }
+        if (!byBall) c.number(e.x, e.y - 78, spent ? 'THAT FIRE IS SPENT' : 'THE FIRE IS BANKED', '#c9d1dc'); c.sound('rise'); }
       return ev;
     case 'rise': {   /* flung, not creeping: this is the fire throwing her off, and a look does not hold it */
       const k = Math.min(1, dt * 7); e.vx = ((e.throwTo ?? e.x) - e.x) * k / Math.max(dt, 1e-4);
@@ -241,11 +294,22 @@ export function updateWickerQueen(e, dt, c) {
       if (e.modeT <= 0) { e.mode = 'floor'; e.modeT = WQ.floorT; e.n.floor++; ev.push({ t: 'floor' }); c.sound('floor'); }
       return ev;
     case 'floor': if (e.modeT <= 0) { e.mode = 'still'; e.floorCd = WQ.floorEvery[ph - 1]; e.rest = WQ.rest; ev.push({ t: 'floorOut' }); } return ev;
-    case 'crownTell':
-      if (e.modeT <= 0) { const n = Math.max(0, WQ.crownCap - c.adds()); if (n > 0) c.summon(n); e.n.crown++; ev.push({ t: 'crown', n });
-        e.mode = 'crown'; e.modeT = 0.5; c.sound('crown'); }
+    case 'crownTell':   /* (claude/fairfix4) THE COPIES stand up out of the straw round the ring, and she may trade places with one of them */
+      if (e.modeT <= 0) { const want = WQ.copies[ph - 1] || 0, n = Math.max(0, want - e.fakes.length); e.n.crown++;
+        const xs = []; for (const k of [-1, 1, -2, 2, 3, -3]) { const x = e.x + k * WQ.copySpread; if (x > c.A.x0 + 24 && x < c.A.x1 - 24 && ![e.x, ...xs, ...e.fakes.map(f => f.x)].some(q => Math.abs(q - x) < 60)) xs.push(x); if (xs.length >= n) break; }
+        for (const x of xs) { e.fakes.push({ x, y: c.A.floor, face: e.face, mode: 'still', modeT: 0, anim: 0, vx: 0, id: ++e.n.copies }); }
+        const swap = xs.length ? (e.n.crown % (xs.length + 1)) : 0;   /* she trades places with a new copy two crownings in three: the read, not the place, tells you which is her */
+        if (swap > 0) { const f = e.fakes[e.fakes.length - xs.length + swap - 1], x0 = e.x; e.x = f.x; f.x = x0; }
+        ev.push({ t: 'crown', n: xs.length, swap: swap > 0 }); e.mode = 'crown'; e.modeT = 0.5; c.sound('crown'); }
       return ev;
-    case 'crown': if (e.modeT <= 0) { e.mode = 'still'; e.crownCd = WQ.crownEvery[ph - 1]; } return ev;
+    case 'crown': if (e.modeT <= 0) { e.mode = 'still'; e.crownCd = WQ.crownEvery[ph - 1] || 99; } return ev;
+    /* ---- (claude/fairfix4) THE BONFIRE RING: the lanterns flare (not the ones over the gap), then the fire runs round the boards and the gap travels along them ---- */
+    case 'ringTell': if (e.modeT <= 0) { e.mode = 'ring'; e.modeT = WQ.ringT; e.n.ring++; ev.push({ t: 'ring', gap: gapOf(e) }); c.sound('floor'); } return ev;
+    case 'ring': {
+      e.gapX += e.gapDir * WQ.gapSpeed * dt; const lo = c.A.x0 + WQ.gapHalf + 8, hi = c.A.x1 - WQ.gapHalf - 8;
+      if (e.gapX < lo || e.gapX > hi) { e.gapX = Math.max(lo, Math.min(hi, e.gapX)); e.gapDir = -e.gapDir; }
+      if (e.modeT <= 0) { e.mode = 'still'; e.ringCd = WQ.ringEvery[ph - 1]; e.rest = WQ.rest; ev.push({ t: 'ringOut' }); }
+      return ev; }
     /* ---- (claude/fairfix3) THE WICKER BALL: wound up over her head, bowled along the boards toward the nearest hero (the host rolls it: c.ball) ---- */
     case 'tossTell':
       if (e.modeT <= 0) { e.mode = 'toss'; e.modeT = WQ.tossT; e.n.toss++; const dir = near ? (Math.sign(near.x - e.x) || e.face || -1) : (e.face || -1);
@@ -295,13 +359,18 @@ export function updateWickerQueen(e, dt, c) {
     if (ph >= 2 && e.sweepCd <= 0) { const kind = SWEEP_ORDER[(e.sweepN++) % SWEEP_ORDER.length];   /* (claude/fairfix3) THE RIBBON SWEEP, phases 2 and 3 */
       e.mode = kind === 'low' ? 'sweepLowTell' : 'sweepHighTell'; e.modeT = WQ.sweepTell; ev.push({ t: 'sweepTell', kind });
       c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, kind === 'low' ? 'THE RIBBONS SWEEP LOW: JUMP TWICE' : 'THE RIBBONS SWEEP HIGH: DUCK', '#ff6b6b'); c.sound('lashTell'); return ev; }
-    if (e.tossCd <= 0 && near) { e.mode = 'tossTell'; e.modeT = WQ.tossTell; ev.push({ t: 'tossTell' });   /* (claude/fairfix3) THE WICKER BALL */
-      c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE WICKER BALL: JUMP IT', '#ff6b6b'); c.sound('lashTell'); return ev; }
-    if (!up && e.floorCd <= 0) { e.mode = 'floorTell'; e.modeT = WQ.floorTell; ev.push({ t: 'floorTell' });
+    if (!up && e.floorCd <= 0) { e.mode = 'floorTell'; e.modeT = WQ.floorTell; ev.push({ t: 'floorTell' });   /* (claude/fairfix4: the floor before the ball, so the ball's quicker turns do not crowd it out) */
       c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE FLOOR BURNS: RIDE A HORSE', '#ff6b6b'); c.sound('floorTell'); return ev; }
-    if (e.crownCd <= 0) {
-      if (c.adds() < WQ.crownCap) { e.mode = 'crownTell'; e.modeT = WQ.crownTell; ev.push({ t: 'crownTell' }); c.number(e.x, e.y - 78, 'THE CROWNING', '#e8c23a'); c.sound('crownTell'); return ev; }
-      e.crownCd = 2;   /* her court is full: she asks again in a moment */ }
+    if (e.tossCd <= 0 && near) { e.mode = 'tossTell'; e.modeT = WQ.tossTell; ev.push({ t: 'tossTell' });   /* (claude/fairfix3) THE WICKER BALL */
+      c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE WICKER BALL: STRIKE IT BACK', '#ff6b6b'); c.sound('lashTell'); return ev; }
+    if (!up && e.ringCd <= 0 && near) {   /* (claude/fairfix4) THE BONFIRE RING: the gap is put a good run from the nearest hero, on the side with the room */
+      const A = c.A, d = WQ.gapFrom[0] + ((e.n.ring * 53) % (WQ.gapFrom[1] - WQ.gapFrom[0])), side = (near.x - A.x0 > A.x1 - near.x) ? -1 : 1;
+      e.gapX = Math.max(A.x0 + WQ.gapHalf + 8, Math.min(A.x1 - WQ.gapHalf - 8, near.x + side * d)); e.gapDir = c.ringDir ? Math.sign(c.ringDir) : -side;
+      e.mode = 'ringTell'; e.modeT = WQ.ringTell; ev.push({ t: 'ringTell', gap: gapOf(e) });
+      c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE BONFIRE RING: FIND THE GAP', '#ff6b6b'); c.sound('floorTell'); return ev; }
+    if (ph >= 2 && e.crownCd <= 0) {
+      if (e.fakes.length < (WQ.copies[ph - 1] || 0)) { e.mode = 'crownTell'; e.modeT = WQ.crownTell; ev.push({ t: 'crownTell' }); c.number(e.x, e.y - 78, 'THE CROWNING', '#e8c23a'); c.sound('crownTell'); return ev; }
+      e.crownCd = 2;   /* her copies all stand: she asks again in a moment */ }
   }
   /* (claude/fairfix3) HER LEAP: every back turned, and the nearest hero far off (or she is up on a perch with her time there done): she crouches to leap */
   if (near && !seen && !(e.rest > 0) && ((up && e.perchT <= 0) || (!up && e.leapCd <= 0 && dx >= WQ.leapMin))) {
