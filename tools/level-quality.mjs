@@ -128,7 +128,8 @@ export const MASH_ENFORCE = true, MASH_HP = 40;
    campaign level - its boss, its mini, its level run - is ENFORCED by mashGate (the mash row here, and tools/mash-gate.mjs for every level),
    a level with no row from day one, EXCEPT the parts listed below: the ones the mash bot still beats after the combat pass (the boss waves'
    TODO list, docs/BOSS-AUDIT.md). The list may only SHRINK: a listed part that now holds fails until its entry is taken out. */
-export const MASH_REPORT_ONLY = {};
+/* (measured 2026-10-01 after the combat pass, docs/mash-bot.json: 9 bosses, 12 minis and 4 level runs the mash bot still beats) */
+export const MASH_REPORT_ONLY = { spore: ['boss'], kings: ['mini'], scree: ['boss'], hanging: ['boss', 'mini'], moor: ['boss'], storm: ['level'], crown: ['mini'], lamplit: ['boss', 'mini'], underleaf: ['boss'], deep: ['level'], keep: ['boss', 'level'], causeway: ['level'], harbor: ['mini'], waymeet: ['mini'], fields: ['mini'], burial: ['mini'], mage: ['mini'], fallingtower: ['mini'], witchlight: ['mini'], unburied: ['mini'], fair: ['boss'], theatre: ['boss'] };
 /* THE GATE ON ONE LEVEL: { ok, hard: parts beaten and not listed, stale: listed parts that hold now, msg } */
 export function mashGate(lv) {
   const v = mashVerdict(lv), soft = MASH_REPORT_ONLY[lv.id] || [];

@@ -46,12 +46,14 @@ export const GREED = {
                            // 0.35 outside mired/reel before): at a twentieth his fight ran 121-365 s for the bot (the reaper 263, the warden 365), at a fifth 63-247. (Qs for Daniel)
   chip: 0.05,      // outside an opening a hero's blow lands at a twentieth (docs/NEW-LEVEL-CHECKLIST.md "x0.05 chip otherwise")
   n: 4,            // blows outside an opening inside `window` that provoke the reprisal (a boss)
-  nMini: 5,        // and a mini: he takes his blows whole, so it takes one more to make him answer
+  nMini: 4,        // and a mini: he takes his blows whole, so it takes one more to make him answer
   window: 2.5,     // s: the greedy blows have to come this close together to count as one greed
   tell: 0.6,       // s: the reprisal's told windup (two and a half human reactions: ~250 ms each)
   cool: 3.0,       // s after a reprisal before greed is counted again
   reach: 60,       // px either side of his centre the burst reaches (plus half his body)
   reachY: 52,      // px above his feet (and a little below)
+  dmgMini: 26,    // a mini's (he is a duel and takes his blows whole: his answer is the harder one)
+  coolMini: 1.5,   // s after a mini's reprisal before greed counts again
   dmg: 16,         // the burst's blow, before damagePlayer's difficulty and tier scaling (every blow goes through that line)
   miniHit: 1.3,    // a mini's own blows land this much harder (the combat pass: minis keep their damage taken, and hit harder)
 };
@@ -140,7 +142,7 @@ export function noteGreed(e, time, isBoss, isMini) {
   if (e.greedT > 0 || (e.greedCd || 0) > time) return false;
   const log = (e.greedLog || []).filter(t => time - t <= GREED.window); log.push(time); e.greedLog = log;
   if (log.length < (isBoss ? GREED.n : GREED.nMini)) return false;
-  e.greedLog = []; e.greedT = GREED.tell; e.greedCd = time + GREED.tell + GREED.cool; e.greedN = (e.greedN || 0) + 1;
+  e.greedLog = []; e.greedT = GREED.tell; e.greedCd = time + GREED.tell + (isBoss ? GREED.cool : GREED.coolMini); e.greedMini = !isBoss; e.greedN = (e.greedN || 0) + 1;
   return true;
 }
 /* how many greedy blows he has taken toward the next reprisal (the boss lab's bot reads it, as a player reads the boss) */
@@ -158,5 +160,5 @@ export function greedStep(e, c) {
   if (e.greedT > 0) return;
   e.greedT = 0; c.boom(e);
   const P = c.P; if (!P || P.dead) return;
-  if (Math.abs(P.x - e.x) <= GREED.reach + (e.w || 20) / 2 && P.y > e.y - (e.h || 20) - GREED.reachY && P.y < e.y + 24) c.hurt(e, GREED.dmg);
+  if (Math.abs(P.x - e.x) <= GREED.reach + (e.w || 20) / 2 && P.y > e.y - (e.h || 20) - GREED.reachY && P.y < e.y + 24) c.hurt(e, e.greedMini ? GREED.dmgMini : GREED.dmg);
 }

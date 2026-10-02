@@ -7,16 +7,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/93",
-     "dead:100/46"
+     "dead:100/47",
+     "dead:100/78"
     ],
     "warden": [
-     "dead:100/92",
-     "dead:100/87"
+     "timeout:94/83",
+     "dead:100/82"
     ],
     "pyro": [
-     "dead:100/67",
-     "dead:100/65"
+     "dead:100/98",
+     "dead:100/80"
     ]
    },
    "rows": [
@@ -25,136 +25,142 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 39.3,
+     "secs": 80.3,
      "hpLostPct": 100,
-     "bossLeftPct": 93,
+     "bossLeftPct": 47,
+     "landed": 12,
+     "swings": 1092,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
        "mul": 1,
-       "open": null,
+       "open": false,
        "mode": "hover"
       },
       {
        "f": 720,
-       "mul": 1.5,
-       "open": null,
-       "mode": "stuck"
+       "mul": 1,
+       "open": false,
+       "mode": "sweep"
       },
       {
        "f": 1500,
+       "mul": 1,
+       "open": false,
+       "mode": "hover"
+      },
+      {
+       "f": 3000,
        "mul": 0.45,
-       "open": null,
+       "open": false,
        "mode": "hover"
       }
-     ],
-     "landed": 2,
-     "swings": 523
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 64.7,
+     "secs": 39,
      "hpLostPct": 100,
-     "bossLeftPct": 46,
+     "bossLeftPct": 78,
+     "landed": 7,
+     "swings": 513,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 9,
-     "swings": 885
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 94,
+     "bossLeftPct": 83,
+     "landed": 16,
+     "swings": 2133,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 2,
+     "tag": "expected",
      "out": "dead",
-     "secs": 90.3,
+     "secs": 128.3,
+     "hpLostPct": 100,
+     "bossLeftPct": 82,
+     "landed": 16,
+     "swings": 1863,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 26.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 98,
+     "landed": 1,
+     "swings": 329,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 99.2,
+     "hpLostPct": 100,
+     "bossLeftPct": 80,
+     "landed": 11,
+     "swings": 1427,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "knight",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 71.8,
      "hpLostPct": 100,
      "bossLeftPct": 92,
+     "landed": 2,
+     "swings": 1020,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 7,
-     "swings": 1338
+     "chip": []
     },
     {
      "hero": "warden",
-     "seed": 2,
-     "tag": "expected",
+     "seed": 1,
+     "tag": "l1",
      "out": "dead",
-     "secs": 133.8,
+     "secs": 71.8,
      "hpLostPct": 100,
      "bossLeftPct": 87,
+     "landed": 4,
+     "swings": 993,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 11,
-     "swings": 1921
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 91.8,
-     "hpLostPct": 100,
-     "bossLeftPct": 67,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 14,
-     "swings": 1316
-    },
-    {
-     "hero": "pyro",
-     "seed": 2,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 133.6,
-     "hpLostPct": 100,
-     "bossLeftPct": 65,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 14,
-     "swings": 1895
-    },
-    {
-     "hero": "knight",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 71.3,
-     "hpLostPct": 100,
-     "bossLeftPct": 60,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 9,
-     "swings": 981
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 54.3,
-     "hpLostPct": 100,
-     "bossLeftPct": 77,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 12,
-     "swings": 726
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 42.3,
+     "secs": 75.5,
      "hpLostPct": 100,
-     "bossLeftPct": 97,
+     "bossLeftPct": 79,
+     "landed": 7,
+     "swings": 1118,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 2,
-     "swings": 625
+     "chip": []
     }
    ]
   },
@@ -162,12 +168,12 @@
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 194,
-    "hits": 8,
+    "hpLostPct": 161,
+    "hits": 6,
     "walked": 100,
     "lifts": 47,
     "frames": 11280,
-    "kills": 6,
+    "kills": 7,
     "heroLevel": 1
    }
   }
@@ -181,15 +187,15 @@
    "byHero": {
     "knight": [
      "dead:100/100",
-     "dead:100/91"
+     "timeout:97/94"
     ],
     "warden": [
-     "dead:100/98",
-     "dead:100/61"
+     "dead:100/100",
+     "dead:100/100"
     ],
     "pyro": [
-     "dead:100/89",
-     "dead:100/100"
+     "dead:100/100",
+     "dead:100/84"
     ]
    },
    "rows": [
@@ -198,151 +204,145 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 52.6,
+     "secs": 27,
      "hpLostPct": 100,
      "bossLeftPct": 100,
+     "landed": 1,
+     "swings": 1380,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
-       "mul": 0.5,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "idle"
       },
       {
        "f": 720,
        "mul": 2,
-       "open": null,
+       "open": true,
        "mode": "croak"
       },
       {
        "f": 1500,
-       "mul": 0.5,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "idle"
-      },
-      {
-       "f": 3000,
-       "mul": 0.5,
-       "open": null,
-       "mode": "hop"
       }
-     ],
-     "landed": 0,
-     "swings": 2984
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "dead",
-     "secs": 39.3,
-     "hpLostPct": 100,
-     "bossLeftPct": 91,
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 97,
+     "bossLeftPct": 94,
+     "landed": 15,
+     "swings": 2557,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 4,
-     "swings": 1439
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 31.4,
-     "hpLostPct": 100,
-     "bossLeftPct": 98,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 1,
-     "swings": 1680
-    },
-    {
-     "hero": "warden",
-     "seed": 2,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 80.2,
-     "hpLostPct": 100,
-     "bossLeftPct": 61,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 21,
-     "swings": 1599
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 60.3,
-     "hpLostPct": 100,
-     "bossLeftPct": 89,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 6,
-     "swings": 2856
-    },
-    {
-     "hero": "pyro",
-     "seed": 2,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 31.8,
+     "secs": 44.5,
      "hpLostPct": 100,
      "bossLeftPct": 100,
+     "landed": 1,
+     "swings": 1511,
      "reprisalPct": 0,
-     "chip": [],
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 37.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 100,
      "landed": 0,
-     "swings": 1731
+     "swings": 1707,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 44.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 100,
+     "landed": 1,
+     "swings": 1931,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 41,
+     "hpLostPct": 100,
+     "bossLeftPct": 84,
+     "landed": 9,
+     "swings": 1676,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 33.2,
+     "secs": 124.8,
      "hpLostPct": 100,
-     "bossLeftPct": 98,
+     "bossLeftPct": 27,
+     "landed": 29,
+     "swings": 2705,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 1,
-     "swings": 1818
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 44,
+     "secs": 40.4,
      "hpLostPct": 100,
-     "bossLeftPct": 97,
+     "bossLeftPct": 100,
+     "landed": 0,
+     "swings": 2206,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 2,
-     "swings": 2281
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 53.4,
+     "secs": 36.3,
      "hpLostPct": 100,
-     "bossLeftPct": 85,
+     "bossLeftPct": 86,
+     "landed": 2,
+     "swings": 1852,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 9,
-     "swings": 1978
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 19,
-    "hpLostPct": 221,
-    "hits": 15,
+    "minHpPct": 18,
+    "hpLostPct": 179,
+    "hits": 14,
     "walked": 100,
     "lifts": 37,
     "frames": 8880,
@@ -380,35 +380,35 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
+     "landed": 0,
+     "swings": 2176,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "walk"
       },
       {
        "f": 720,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "walk"
       },
       {
        "f": 1500,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "walk"
       },
       {
        "f": 3000,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "walk"
       }
-     ],
-     "landed": 0,
-     "swings": 2165
+     ]
     },
     {
      "hero": "knight",
@@ -418,10 +418,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2172
+     "swings": 2172,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -431,10 +431,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2172
+     "swings": 2172,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -444,10 +444,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2172
+     "swings": 2172,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -457,10 +457,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2172
+     "swings": 2172,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -470,10 +470,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2172
+     "swings": 2172,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
@@ -483,10 +483,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2218
+     "swings": 2218,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -496,10 +496,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2218
+     "swings": 2218,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -509,10 +509,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2218
+     "swings": 2218,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
@@ -520,12 +520,12 @@
    "knight": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 241,
+    "hpLostPct": 243,
     "hits": 16,
     "walked": 100,
     "lifts": 43,
     "frames": 10320,
-    "kills": 11,
+    "kills": 12,
     "heroLevel": 2
    }
   }
@@ -559,6 +559,8 @@
      "secs": 4,
      "hpLostPct": 0,
      "bossLeftPct": 0,
+     "landed": 0,
+     "swings": 9,
      "reprisalPct": 0,
      "chip": [
       {
@@ -567,126 +569,124 @@
        "open": null,
        "mode": "idle"
       }
-     ],
-     "landed": 0,
-     "swings": 9
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 78,
+     "secs": 52.8,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 1077
+     "swings": 713,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 70,
+     "secs": 56,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 1005
+     "swings": 838,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 68,
+     "secs": 65,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 906
+     "swings": 828,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 60.8,
+     "secs": 53.2,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 851
+     "swings": 750,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 68.2,
+     "secs": 52.9,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 928
+     "swings": 694,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 44.8,
+     "secs": 81.1,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 633
+     "swings": 1220,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 65.1,
+     "secs": 74.3,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 964
+     "swings": 1067,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 70.5,
+     "secs": 67.7,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 1010
+     "swings": 957,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 26,
-    "hpLostPct": 96,
-    "hits": 7,
+    "minHpPct": 24,
+    "hpLostPct": 131,
+    "hits": 8,
     "walked": 100,
     "lifts": 45,
-    "frames": 10981,
-    "kills": 15,
+    "frames": 11036,
+    "kills": 16,
     "heroLevel": 3
    }
   }
@@ -720,29 +720,29 @@
      "secs": 37.4,
      "hpLostPct": 100,
      "bossLeftPct": 100,
+     "landed": 0,
+     "swings": 533,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "carried"
       },
       {
        "f": 720,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "charge"
       },
       {
        "f": 1500,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "carried"
       }
-     ],
-     "landed": 0,
-     "swings": 533
+     ]
     },
     {
      "hero": "knight",
@@ -752,10 +752,10 @@
      "secs": 37.4,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 533
+     "swings": 533,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -765,10 +765,10 @@
      "secs": 44.9,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 657
+     "swings": 657,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -778,10 +778,10 @@
      "secs": 44.9,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 657
+     "swings": 657,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -791,10 +791,10 @@
      "secs": 58.1,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 875
+     "swings": 875,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -804,10 +804,10 @@
      "secs": 58.1,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 875
+     "swings": 875,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
@@ -817,10 +817,10 @@
      "secs": 58.1,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 895
+     "swings": 895,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -830,10 +830,10 @@
      "secs": 58.2,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 923
+     "swings": 923,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -843,10 +843,10 @@
      "secs": 43.5,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 635
+     "swings": 635,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
@@ -856,16 +856,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:0/0",
-     "win:10/0"
+     "win:7/0",
+     "win:28/0"
     ],
     "warden": [
-     "win:0/0",
-     "win:0/0"
+     "win:57/0",
+     "win:48/0"
     ],
     "pyro": [
-     "win:11/0",
-     "win:11/0"
+     "win:63/0",
+     "win:63/0"
     ]
    },
    "rows": [
@@ -874,9 +874,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 21.7,
-     "hpLostPct": 0,
+     "secs": 21.2,
+     "hpLostPct": 7,
      "bossLeftPct": 0,
+     "landed": 13,
+     "swings": 144,
      "reprisalPct": 0,
      "chip": [
       {
@@ -891,113 +893,111 @@
        "open": null,
        "mode": "howl"
       }
-     ],
+     ]
+    },
+    {
+     "hero": "knight",
+     "seed": 2,
+     "tag": "expected",
+     "out": "win",
+     "secs": 12.1,
+     "hpLostPct": 28,
+     "bossLeftPct": 0,
+     "landed": 12,
+     "swings": 61,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "expected",
+     "out": "win",
+     "secs": 30.9,
+     "hpLostPct": 57,
+     "bossLeftPct": 0,
      "landed": 13,
-     "swings": 154
-    },
-    {
-     "hero": "knight",
-     "seed": 2,
-     "tag": "expected",
-     "out": "win",
-     "secs": 21.6,
-     "hpLostPct": 10,
-     "bossLeftPct": 0,
+     "swings": 367,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 14,
-     "swings": 193
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "expected",
-     "out": "win",
-     "secs": 20.8,
-     "hpLostPct": 0,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 21,
-     "swings": 113
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 20.8,
-     "hpLostPct": 0,
+     "secs": 28.9,
+     "hpLostPct": 48,
      "bossLeftPct": 0,
+     "landed": 13,
+     "swings": 299,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 21,
-     "swings": 113
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 22.1,
-     "hpLostPct": 11,
+     "secs": 36.7,
+     "hpLostPct": 63,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 21,
-     "swings": 120
+     "swings": 392,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 22.1,
-     "hpLostPct": 11,
+     "secs": 36.7,
+     "hpLostPct": 63,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 21,
-     "swings": 120
+     "swings": 392,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "win",
-     "secs": 15.8,
-     "hpLostPct": 11,
+     "secs": 22.9,
+     "hpLostPct": 46,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 17,
-     "swings": 84
+     "swings": 222,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "win",
-     "secs": 24.9,
-     "hpLostPct": 11,
+     "secs": 30.7,
+     "hpLostPct": 96,
      "bossLeftPct": 0,
-     "reprisalPct": 100,
-     "chip": [],
-     "landed": 25,
-     "swings": 211
+     "landed": 23,
+     "swings": 324,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "win",
-     "secs": 22.7,
-     "hpLostPct": 13,
+     "secs": 23.5,
+     "hpLostPct": 80,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 24,
-     "swings": 150
+     "swings": 204,
+     "reprisalPct": 34,
+     "chip": []
     }
    ]
   },
@@ -1005,12 +1005,12 @@
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 100,
+    "hpLostPct": 134,
     "hits": 8,
     "walked": 100,
     "lifts": 56,
     "frames": 13440,
-    "kills": 13,
+    "kills": 14,
     "heroLevel": 4
    }
   }
@@ -1023,16 +1023,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:85/0",
-     "dead:100/83"
+     "win:60/0",
+     "win:97/0"
     ],
     "warden": [
-     "dead:100/79",
-     "win:98/0"
+     "dead:100/47",
+     "dead:100/31"
     ],
     "pyro": [
-     "dead:100/76",
-     "dead:100/77"
+     "dead:100/83",
+     "dead:100/83"
     ]
    },
    "rows": [
@@ -1041,149 +1041,149 @@
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 26.3,
-     "hpLostPct": 85,
+     "secs": 34.5,
+     "hpLostPct": 60,
      "bossLeftPct": 0,
+     "landed": 11,
+     "swings": 360,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "leapTell"
       },
       {
        "f": 720,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "pace"
       },
       {
        "f": 1500,
-       "mul": 1,
-       "open": null,
-       "mode": "charge"
+       "mul": 0.05,
+       "open": false,
+       "mode": "pace"
       }
-     ],
-     "landed": 11,
-     "swings": 250
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
+     "out": "win",
+     "secs": 26.4,
+     "hpLostPct": 97,
+     "bossLeftPct": 0,
+     "landed": 11,
+     "swings": 282,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "expected",
      "out": "dead",
-     "secs": 19.2,
+     "secs": 38,
+     "hpLostPct": 100,
+     "bossLeftPct": 47,
+     "landed": 8,
+     "swings": 447,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 49.2,
+     "hpLostPct": 100,
+     "bossLeftPct": 31,
+     "landed": 17,
+     "swings": 596,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 16,
      "hpLostPct": 100,
      "bossLeftPct": 83,
+     "landed": 8,
+     "swings": 137,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 2,
-     "swings": 198
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 37.7,
-     "hpLostPct": 100,
-     "bossLeftPct": 79,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 5,
-     "swings": 452
-    },
-    {
-     "hero": "warden",
-     "seed": 2,
-     "tag": "expected",
-     "out": "win",
-     "secs": 49,
-     "hpLostPct": 98,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 23,
-     "swings": 578
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 20.5,
-     "hpLostPct": 100,
-     "bossLeftPct": 76,
-     "reprisalPct": 27,
-     "chip": [],
-     "landed": 22,
-     "swings": 179
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 14.9,
+     "secs": 18.1,
      "hpLostPct": 100,
-     "bossLeftPct": 77,
-     "reprisalPct": 27,
-     "chip": [],
-     "landed": 19,
-     "swings": 138
+     "bossLeftPct": 83,
+     "landed": 8,
+     "swings": 181,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
-     "out": "win",
-     "secs": 33.4,
-     "hpLostPct": 51,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 29.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 82,
+     "landed": 3,
+     "swings": 325,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 14,
-     "swings": 355
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 16.4,
+     "secs": 52.9,
      "hpLostPct": 100,
-     "bossLeftPct": 89,
+     "bossLeftPct": 2,
+     "landed": 21,
+     "swings": 655,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 2,
-     "swings": 200
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 11.4,
+     "secs": 27.9,
      "hpLostPct": 100,
-     "bossLeftPct": 100,
+     "bossLeftPct": 37,
+     "landed": 12,
+     "swings": 280,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 0,
-     "swings": 142
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
-    "deaths": 1,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 202,
-    "hits": 12,
+    "hpLostPct": 296,
+    "hits": 13,
     "walked": 100,
     "lifts": 47,
     "frames": 11280,
-    "kills": 8,
+    "kills": 9,
     "heroLevel": 5
    }
   }
@@ -1196,16 +1196,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "timeout:81/44",
-     "timeout:89/51"
+     "win:20/0",
+     "dead:100/26"
     ],
     "warden": [
-     "dead:100/22",
-     "win:36/0"
+     "timeout:40/24",
+     "win:70/0"
     ],
     "pyro": [
-     "dead:100/50",
-     "win:39/0"
+     "dead:100/10",
+     "dead:100/28"
     ]
    },
    "rows": [
@@ -1213,162 +1213,156 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "timeout",
-     "secs": 150,
-     "hpLostPct": 81,
-     "bossLeftPct": 44,
-     "reprisalPct": 0,
+     "out": "win",
+     "secs": 46.2,
+     "hpLostPct": 20,
+     "bossLeftPct": 0,
+     "landed": 27,
+     "swings": 458,
+     "reprisalPct": 100,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "sit"
       },
       {
        "f": 720,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "fly"
       },
       {
        "f": 1500,
-       "mul": 2,
-       "open": null,
-       "mode": "swoop"
-      },
-      {
-       "f": 3000,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "sit"
       }
-     ],
-     "landed": 30,
-     "swings": 1996
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "timeout",
-     "secs": 150,
-     "hpLostPct": 89,
-     "bossLeftPct": 51,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 19,
-     "swings": 2053
+     "out": "dead",
+     "secs": 131.2,
+     "hpLostPct": 100,
+     "bossLeftPct": 26,
+     "landed": 29,
+     "swings": 1713,
+     "reprisalPct": 20,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
-     "out": "dead",
-     "secs": 128,
-     "hpLostPct": 100,
-     "bossLeftPct": 22,
-     "reprisalPct": 60,
-     "chip": [],
-     "landed": 54,
-     "swings": 1584
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 40,
+     "bossLeftPct": 24,
+     "landed": 32,
+     "swings": 1953,
+     "reprisalPct": 51,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 139.4,
-     "hpLostPct": 36,
+     "secs": 145.1,
+     "hpLostPct": 70,
      "bossLeftPct": 0,
-     "reprisalPct": 100,
-     "chip": [],
-     "landed": 95,
-     "swings": 1589
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 116.8,
-     "hpLostPct": 100,
-     "bossLeftPct": 50,
-     "reprisalPct": 45,
-     "chip": [],
-     "landed": 61,
-     "swings": 1548
-    },
-    {
-     "hero": "pyro",
-     "seed": 2,
-     "tag": "expected",
-     "out": "win",
-     "secs": 63.3,
-     "hpLostPct": 39,
-     "bossLeftPct": 0,
-     "reprisalPct": 58,
-     "chip": [],
-     "landed": 57,
-     "swings": 657
-    },
-    {
-     "hero": "knight",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 76.1,
-     "hpLostPct": 100,
-     "bossLeftPct": 64,
-     "reprisalPct": 25,
-     "chip": [],
-     "landed": 22,
-     "swings": 1113
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "l1",
-     "out": "timeout",
-     "secs": 150,
-     "hpLostPct": 71,
-     "bossLeftPct": 72,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 26,
-     "swings": 2157
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 75.8,
-     "hpLostPct": 100,
-     "bossLeftPct": 79,
+     "landed": 73,
+     "swings": 1786,
      "reprisalPct": 22,
-     "chip": [],
-     "landed": 12,
-     "swings": 1040
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 107.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 10,
+     "landed": 53,
+     "swings": 1294,
+     "reprisalPct": 50,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 103.2,
+     "hpLostPct": 100,
+     "bossLeftPct": 28,
+     "landed": 42,
+     "swings": 1312,
+     "reprisalPct": 37,
+     "chip": []
+    },
+    {
+     "hero": "knight",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 89,
+     "hpLostPct": 100,
+     "bossLeftPct": 45,
+     "landed": 24,
+     "swings": 1241,
+     "reprisalPct": 31,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 90.7,
+     "hpLostPct": 100,
+     "bossLeftPct": 45,
+     "landed": 51,
+     "swings": 1151,
+     "reprisalPct": 81,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "l1",
+     "out": "win",
+     "secs": 96.2,
+     "hpLostPct": 75,
+     "bossLeftPct": 0,
+     "landed": 52,
+     "swings": 1226,
+     "reprisalPct": 36,
+     "chip": []
     }
    ]
   },
   "mini": {
    "boss": "spider",
-   "wins": 6,
+   "wins": 3,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:26/0",
-     "win:26/0"
+     "win:34/0",
+     "dead:100/14"
     ],
     "warden": [
-     "win:70/0",
-     "win:70/0"
+     "dead:100/34",
+     "dead:100/34"
     ],
     "pyro": [
-     "win:29/0",
-     "win:29/0"
+     "win:62/0",
+     "win:62/0"
     ]
    },
    "rows": [
@@ -1378,9 +1372,11 @@
      "tag": "expected",
      "out": "win",
      "secs": 11.4,
-     "hpLostPct": 26,
+     "hpLostPct": 34,
      "bossLeftPct": 0,
-     "reprisalPct": 34,
+     "landed": 9,
+     "swings": 60,
+     "reprisalPct": 36,
      "chip": [
       {
        "f": 240,
@@ -1388,113 +1384,111 @@
        "open": null,
        "mode": "dropTell"
       }
-     ],
-     "landed": 9,
-     "swings": 60
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 11.8,
-     "hpLostPct": 26,
-     "bossLeftPct": 0,
-     "reprisalPct": 34,
-     "chip": [],
+     "out": "dead",
+     "secs": 23.2,
+     "hpLostPct": 100,
+     "bossLeftPct": 14,
      "landed": 10,
-     "swings": 61
+     "swings": 237,
+     "reprisalPct": 25,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 33.9,
-     "hpLostPct": 70,
-     "bossLeftPct": 0,
-     "reprisalPct": 26,
-     "chip": [],
-     "landed": 29,
-     "swings": 311
+     "out": "dead",
+     "secs": 31.8,
+     "hpLostPct": 100,
+     "bossLeftPct": 34,
+     "landed": 19,
+     "swings": 335,
+     "reprisalPct": 29,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 33.9,
-     "hpLostPct": 70,
-     "bossLeftPct": 0,
-     "reprisalPct": 26,
-     "chip": [],
-     "landed": 29,
-     "swings": 311
+     "out": "dead",
+     "secs": 31.8,
+     "hpLostPct": 100,
+     "bossLeftPct": 34,
+     "landed": 19,
+     "swings": 335,
+     "reprisalPct": 29,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 13.1,
-     "hpLostPct": 29,
+     "secs": 13.2,
+     "hpLostPct": 62,
      "bossLeftPct": 0,
-     "reprisalPct": 34,
-     "chip": [],
-     "landed": 25,
-     "swings": 63
+     "landed": 27,
+     "swings": 63,
+     "reprisalPct": 60,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 13.1,
-     "hpLostPct": 29,
+     "secs": 13.2,
+     "hpLostPct": 62,
      "bossLeftPct": 0,
-     "reprisalPct": 34,
-     "chip": [],
-     "landed": 25,
-     "swings": 63
+     "landed": 27,
+     "swings": 63,
+     "reprisalPct": 60,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
-     "out": "win",
-     "secs": 19.9,
-     "hpLostPct": 53,
-     "bossLeftPct": 0,
-     "reprisalPct": 21,
-     "chip": [],
-     "landed": 15,
-     "swings": 197
+     "out": "dead",
+     "secs": 20.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 52,
+     "landed": 8,
+     "swings": 229,
+     "reprisalPct": 15,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 35.1,
+     "secs": 22.4,
      "hpLostPct": 100,
-     "bossLeftPct": 28,
-     "reprisalPct": 37,
-     "chip": [],
-     "landed": 29,
-     "swings": 388
+     "bossLeftPct": 57,
+     "landed": 17,
+     "swings": 240,
+     "reprisalPct": 20,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 39,
+     "secs": 18.1,
      "hpLostPct": 100,
-     "bossLeftPct": 2,
-     "reprisalPct": 30,
-     "chip": [],
-     "landed": 20,
-     "swings": 451
+     "bossLeftPct": 32,
+     "landed": 13,
+     "swings": 151,
+     "reprisalPct": 17,
+     "chip": []
     }
    ]
   },
@@ -1502,11 +1496,11 @@
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 125,
-    "hits": 8,
+    "hpLostPct": 145,
+    "hits": 9,
     "walked": 100,
     "lifts": 42,
-    "frames": 10673,
+    "frames": 10671,
     "kills": 7,
     "heroLevel": 6
    }
@@ -1516,20 +1510,20 @@
   "hash": "23ddb18ec388",
   "boss": {
    "boss": "abbot",
-   "wins": 3,
+   "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/10",
-     "win:43/0"
+     "dead:100/100",
+     "dead:100/98"
     ],
     "warden": [
-     "dead:100/45",
-     "dead:100/29"
+     "dead:100/98",
+     "dead:100/100"
     ],
     "pyro": [
-     "win:79/0",
-     "win:75/0"
+     "dead:100/86",
+     "dead:100/98"
     ]
    },
    "rows": [
@@ -1538,142 +1532,136 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 65,
+     "secs": 46.5,
      "hpLostPct": 100,
-     "bossLeftPct": 10,
-     "reprisalPct": 71,
+     "bossLeftPct": 100,
+     "landed": 11,
+     "swings": 599,
+     "reprisalPct": 14,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
+       "mul": 0.05,
        "open": false,
        "mode": "riteTell"
       },
       {
        "f": 720,
-       "mul": 0.2,
+       "mul": 0.05,
        "open": false,
        "mode": "stalk"
       },
       {
        "f": 1500,
-       "mul": 0.2,
+       "mul": 0.05,
        "open": false,
        "mode": "cast"
-      },
-      {
-       "f": 3000,
-       "mul": 1,
-       "open": false,
-       "mode": "riteTell"
       }
-     ],
-     "landed": 56,
-     "swings": 680
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 64.6,
-     "hpLostPct": 43,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 55.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 98,
+     "landed": 23,
+     "swings": 578,
      "reprisalPct": 35,
-     "chip": [],
-     "landed": 49,
-     "swings": 631
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 65.3,
+     "secs": 48.1,
      "hpLostPct": 100,
-     "bossLeftPct": 45,
-     "reprisalPct": 48,
-     "chip": [],
-     "landed": 65,
-     "swings": 686
+     "bossLeftPct": 98,
+     "landed": 11,
+     "swings": 573,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 96.5,
+     "secs": 51,
      "hpLostPct": 100,
-     "bossLeftPct": 29,
-     "reprisalPct": 37,
-     "chip": [],
-     "landed": 112,
-     "swings": 956
+     "bossLeftPct": 100,
+     "landed": 15,
+     "swings": 648,
+     "reprisalPct": 44,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 71.3,
-     "hpLostPct": 79,
-     "bossLeftPct": 0,
-     "reprisalPct": 61,
-     "chip": [],
-     "landed": 87,
-     "swings": 676
+     "out": "dead",
+     "secs": 54.8,
+     "hpLostPct": 100,
+     "bossLeftPct": 86,
+     "landed": 22,
+     "swings": 693,
+     "reprisalPct": 11,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 82.5,
-     "hpLostPct": 75,
-     "bossLeftPct": 0,
-     "reprisalPct": 81,
-     "chip": [],
-     "landed": 117,
-     "swings": 789
+     "out": "dead",
+     "secs": 46.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 98,
+     "landed": 16,
+     "swings": 529,
+     "reprisalPct": 59,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 53.8,
+     "secs": 37.5,
      "hpLostPct": 100,
-     "bossLeftPct": 56,
-     "reprisalPct": 36,
-     "chip": [],
-     "landed": 37,
-     "swings": 688
+     "bossLeftPct": 100,
+     "landed": 2,
+     "swings": 468,
+     "reprisalPct": 18,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 68.4,
+     "secs": 50.8,
      "hpLostPct": 100,
-     "bossLeftPct": 67,
-     "reprisalPct": 71,
-     "chip": [],
-     "landed": 72,
-     "swings": 738
+     "bossLeftPct": 99,
+     "landed": 14,
+     "swings": 606,
+     "reprisalPct": 16,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 58.6,
+     "secs": 51.5,
      "hpLostPct": 100,
-     "bossLeftPct": 52,
-     "reprisalPct": 67,
-     "chip": [],
-     "landed": 57,
-     "swings": 591
+     "bossLeftPct": 98,
+     "landed": 18,
+     "swings": 524,
+     "reprisalPct": 74,
+     "chip": []
     }
    ]
   },
@@ -1691,8 +1679,8 @@
      "dead:100/100"
     ],
     "pyro": [
-     "dead:100/82",
-     "dead:100/82"
+     "dead:100/89",
+     "dead:100/89"
     ]
    },
    "rows": [
@@ -1701,149 +1689,149 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 48.8,
+     "secs": 35.3,
      "hpLostPct": 100,
      "bossLeftPct": 100,
+     "landed": 0,
+     "swings": 329,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "walk"
       },
       {
        "f": 720,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "sweepTell"
       },
       {
        "f": 1500,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "walk"
       }
-     ],
-     "landed": 0,
-     "swings": 484
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 48.8,
+     "secs": 35.3,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 484
+     "swings": 329,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 40.9,
+     "secs": 35.3,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 364
+     "swings": 316,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 40.9,
+     "secs": 35.3,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 364
+     "swings": 316,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 40.9,
+     "secs": 26.6,
      "hpLostPct": 100,
-     "bossLeftPct": 82,
+     "bossLeftPct": 89,
+     "landed": 24,
+     "swings": 222,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 40,
-     "swings": 380
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 40.9,
+     "secs": 26.6,
      "hpLostPct": 100,
-     "bossLeftPct": 82,
+     "bossLeftPct": 89,
+     "landed": 24,
+     "swings": 222,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 40,
-     "swings": 380
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 35.3,
+     "secs": 26.6,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 389
+     "swings": 269,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 35.3,
+     "secs": 26.6,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 351
+     "swings": 245,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 35.3,
+     "secs": 26.6,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 363
+     "swings": 253,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
-    "deaths": 1,
-    "minHpPct": 0,
-    "hpLostPct": 100,
-    "hits": 7,
+    "deaths": 0,
+    "minHpPct": 20,
+    "hpLostPct": 120,
+    "hits": 9,
     "walked": 100,
-    "lifts": 40,
-    "frames": 11138,
-    "kills": 8,
+    "lifts": 43,
+    "frames": 11347,
+    "kills": 7,
     "heroLevel": 7
    }
   }
@@ -1856,15 +1844,15 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/45",
-     "dead:100/53"
+     "win:81/0",
+     "dead:100/86"
     ],
     "warden": [
-     "win:90/0",
-     "win:81/0"
+     "win:65/0",
+     "timeout:86/10"
     ],
     "pyro": [
-     "win:72/0",
+     "win:55/0",
      "win:72/0"
     ]
    },
@@ -1873,91 +1861,91 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "dead",
-     "secs": 108.9,
-     "hpLostPct": 100,
-     "bossLeftPct": 45,
+     "out": "win",
+     "secs": 94.8,
+     "hpLostPct": 81,
+     "bossLeftPct": 0,
+     "landed": 12,
+     "swings": 1247,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
        "mul": 0.5,
-       "open": null,
+       "open": true,
        "mode": "cast"
       },
       {
        "f": 720,
        "mul": 1,
-       "open": null,
+       "open": true,
        "mode": "fallen"
       },
       {
        "f": 1500,
        "mul": 1,
-       "open": null,
+       "open": true,
        "mode": "cast"
       },
       {
        "f": 3000,
        "mul": 1,
-       "open": null,
+       "open": true,
        "mode": "twister"
       }
-     ],
-     "landed": 9,
-     "swings": 1505
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 79.3,
+     "secs": 66,
      "hpLostPct": 100,
-     "bossLeftPct": 53,
+     "bossLeftPct": 86,
+     "landed": 2,
+     "swings": 851,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 7,
-     "swings": 1072
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 83.2,
-     "hpLostPct": 90,
+     "secs": 108.5,
+     "hpLostPct": 65,
      "bossLeftPct": 0,
+     "landed": 24,
+     "swings": 1403,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 21,
-     "swings": 1104
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 120.5,
-     "hpLostPct": 81,
-     "bossLeftPct": 0,
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 86,
+     "bossLeftPct": 10,
+     "landed": 14,
+     "swings": 1995,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 26,
-     "swings": 1614
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 80.4,
-     "hpLostPct": 72,
+     "secs": 56.5,
+     "hpLostPct": 55,
      "bossLeftPct": 0,
+     "landed": 33,
+     "swings": 724,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 17,
-     "swings": 1030
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -1967,49 +1955,49 @@
      "secs": 80.4,
      "hpLostPct": 72,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 17,
-     "swings": 1030
+     "swings": 1030,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 64.3,
+     "secs": 78.7,
      "hpLostPct": 100,
-     "bossLeftPct": 92,
+     "bossLeftPct": 87,
+     "landed": 2,
+     "swings": 1141,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 1,
-     "swings": 918
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 42.7,
+     "secs": 62,
      "hpLostPct": 100,
-     "bossLeftPct": 84,
+     "bossLeftPct": 85,
+     "landed": 3,
+     "swings": 955,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 4,
-     "swings": 611
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 38.2,
+     "secs": 99.1,
      "hpLostPct": 100,
-     "bossLeftPct": 97,
+     "bossLeftPct": 25,
+     "landed": 17,
+     "swings": 1424,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 1,
-     "swings": 561
+     "chip": []
     }
    ]
   },
@@ -2017,11 +2005,11 @@
    "knight": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 330,
-    "hits": 23,
+    "hpLostPct": 340,
+    "hits": 21,
     "walked": 100,
-    "lifts": 61,
-    "frames": 14932,
+    "lifts": 60,
+    "frames": 15014,
     "kills": 3,
     "heroLevel": 8
    }
@@ -2043,8 +2031,8 @@
      "dead:100/98"
     ],
     "pyro": [
-     "dead:100/79",
-     "dead:100/79"
+     "dead:100/93",
+     "dead:100/93"
     ]
    },
    "rows": [
@@ -2056,6 +2044,8 @@
      "secs": 38.1,
      "hpLostPct": 100,
      "bossLeftPct": 86,
+     "landed": 3,
+     "swings": 361,
      "reprisalPct": 0,
      "chip": [
       {
@@ -2076,9 +2066,7 @@
        "open": true,
        "mode": "planted"
       }
-     ],
-     "landed": 3,
-     "swings": 361
+     ]
     },
     {
      "hero": "knight",
@@ -2088,10 +2076,10 @@
      "secs": 38.1,
      "hpLostPct": 100,
      "bossLeftPct": 76,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 4,
-     "swings": 352
+     "swings": 352,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -2101,10 +2089,10 @@
      "secs": 36.8,
      "hpLostPct": 100,
      "bossLeftPct": 98,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 2,
-     "swings": 330
+     "swings": 330,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -2114,10 +2102,10 @@
      "secs": 36.8,
      "hpLostPct": 100,
      "bossLeftPct": 98,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 2,
-     "swings": 330
+     "swings": 330,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -2126,11 +2114,11 @@
      "out": "dead",
      "secs": 33.6,
      "hpLostPct": 100,
-     "bossLeftPct": 79,
+     "bossLeftPct": 93,
+     "landed": 9,
+     "swings": 295,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 37,
-     "swings": 295
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -2139,11 +2127,11 @@
      "out": "dead",
      "secs": 33.6,
      "hpLostPct": 100,
-     "bossLeftPct": 79,
+     "bossLeftPct": 93,
+     "landed": 9,
+     "swings": 295,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 37,
-     "swings": 295
+     "chip": []
     },
     {
      "hero": "knight",
@@ -2153,10 +2141,10 @@
      "secs": 150,
      "hpLostPct": 99,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2228
+     "swings": 2228,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -2166,10 +2154,10 @@
      "secs": 22.6,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 265
+     "swings": 265,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -2179,18 +2167,18 @@
      "secs": 20.8,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 229
+     "swings": 229,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 74,
-    "hpLostPct": 26,
+    "minHpPct": 70,
+    "hpLostPct": 30,
     "hits": 2,
     "walked": 100,
     "lifts": 58,
@@ -2213,11 +2201,11 @@
     ],
     "warden": [
      "dead:100/62",
-     "dead:100/62"
+     "dead:100/66"
     ],
     "pyro": [
-     "dead:100/46",
-     "dead:100/37"
+     "dead:100/51",
+     "dead:100/55"
     ]
    },
    "rows": [
@@ -2226,9 +2214,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 54.9,
+     "secs": 63.8,
      "hpLostPct": 100,
      "bossLeftPct": 60,
+     "landed": 15,
+     "swings": 588,
      "reprisalPct": 0,
      "chip": [
       {
@@ -2255,74 +2245,72 @@
        "open": false,
        "mode": "hallLeapTell"
       }
-     ],
-     "landed": 15,
-     "swings": 496
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 58.9,
+     "secs": 63.8,
      "hpLostPct": 100,
      "bossLeftPct": 60,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 15,
-     "swings": 548
+     "swings": 588,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 60.4,
+     "secs": 60.5,
      "hpLostPct": 100,
      "bossLeftPct": 62,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 22,
-     "swings": 590
+     "swings": 590,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 60.4,
+     "secs": 77.7,
      "hpLostPct": 100,
-     "bossLeftPct": 62,
+     "bossLeftPct": 66,
+     "landed": 29,
+     "swings": 717,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 22,
-     "swings": 590
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 59.7,
+     "secs": 61,
      "hpLostPct": 100,
-     "bossLeftPct": 46,
+     "bossLeftPct": 51,
+     "landed": 29,
+     "swings": 601,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 53,
-     "swings": 605
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 59.7,
+     "secs": 54.1,
      "hpLostPct": 100,
-     "bossLeftPct": 37,
-     "reprisalPct": 13,
-     "chip": [],
-     "landed": 62,
-     "swings": 583
+     "bossLeftPct": 55,
+     "landed": 30,
+     "swings": 599,
+     "reprisalPct": 17,
+     "chip": []
     },
     {
      "hero": "knight",
@@ -2332,55 +2320,55 @@
      "secs": 48.1,
      "hpLostPct": 100,
      "bossLeftPct": 76,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 12,
-     "swings": 513
+     "swings": 513,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 51.6,
+     "secs": 26.7,
      "hpLostPct": 100,
-     "bossLeftPct": 69,
+     "bossLeftPct": 93,
+     "landed": 1,
+     "swings": 392,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 26,
-     "swings": 578
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 49,
+     "secs": 43.1,
      "hpLostPct": 100,
-     "bossLeftPct": 57,
+     "bossLeftPct": 78,
+     "landed": 15,
+     "swings": 485,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 29,
-     "swings": 520
+     "chip": []
     }
    ]
   },
   "mini": {
    "boss": "forgemaster",
-   "wins": 2,
+   "wins": 1,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:36/0",
-     "win:99/0"
+     "win:46/0",
+     "dead:100/71"
     ],
     "warden": [
      "dead:100/30",
      "dead:100/30"
     ],
     "pyro": [
-     "dead:100/5",
-     "dead:100/5"
+     "dead:100/12",
+     "dead:100/12"
     ]
    },
    "rows": [
@@ -2390,148 +2378,148 @@
      "tag": "expected",
      "out": "win",
      "secs": 39.9,
-     "hpLostPct": 36,
+     "hpLostPct": 46,
      "bossLeftPct": 0,
+     "landed": 12,
+     "swings": 391,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
        "mul": 0.5,
-       "open": null,
+       "open": false,
        "mode": "stride"
       },
       {
        "f": 720,
        "mul": 0.5,
-       "open": null,
+       "open": false,
        "mode": "pace"
       },
       {
        "f": 1500,
        "mul": 2,
-       "open": null,
+       "open": true,
        "mode": "stun"
       }
-     ],
-     "landed": 12,
-     "swings": 391
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 72.7,
-     "hpLostPct": 99,
-     "bossLeftPct": 0,
-     "reprisalPct": 36,
-     "chip": [],
-     "landed": 19,
-     "swings": 910
+     "out": "dead",
+     "secs": 59.4,
+     "hpLostPct": 100,
+     "bossLeftPct": 71,
+     "landed": 9,
+     "swings": 729,
+     "reprisalPct": 23,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 88.5,
+     "secs": 71.5,
      "hpLostPct": 100,
      "bossLeftPct": 30,
-     "reprisalPct": 21,
-     "chip": [],
-     "landed": 42,
-     "swings": 1044
+     "landed": 41,
+     "swings": 795,
+     "reprisalPct": 23,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 88.5,
+     "secs": 71.5,
      "hpLostPct": 100,
      "bossLeftPct": 30,
-     "reprisalPct": 21,
-     "chip": [],
-     "landed": 42,
-     "swings": 1043
+     "landed": 41,
+     "swings": 796,
+     "reprisalPct": 23,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 103.6,
+     "secs": 96.6,
      "hpLostPct": 100,
-     "bossLeftPct": 5,
-     "reprisalPct": 60,
-     "chip": [],
-     "landed": 83,
-     "swings": 1222
+     "bossLeftPct": 12,
+     "landed": 71,
+     "swings": 1123,
+     "reprisalPct": 56,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 103.6,
+     "secs": 96.6,
      "hpLostPct": 100,
-     "bossLeftPct": 5,
-     "reprisalPct": 60,
-     "chip": [],
-     "landed": 83,
-     "swings": 1222
+     "bossLeftPct": 12,
+     "landed": 71,
+     "swings": 1123,
+     "reprisalPct": 56,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 49.9,
+     "secs": 39.1,
      "hpLostPct": 100,
-     "bossLeftPct": 72,
-     "reprisalPct": 24,
-     "chip": [],
-     "landed": 18,
-     "swings": 637
+     "bossLeftPct": 76,
+     "landed": 14,
+     "swings": 474,
+     "reprisalPct": 20,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 80.6,
+     "secs": 66.8,
      "hpLostPct": 100,
-     "bossLeftPct": 35,
-     "reprisalPct": 39,
-     "chip": [],
-     "landed": 46,
-     "swings": 987
+     "bossLeftPct": 60,
+     "landed": 34,
+     "swings": 820,
+     "reprisalPct": 20,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 72.6,
+     "secs": 40.7,
      "hpLostPct": 100,
-     "bossLeftPct": 64,
-     "reprisalPct": 17,
-     "chip": [],
-     "landed": 30,
-     "swings": 959
+     "bossLeftPct": 74,
+     "landed": 21,
+     "swings": 499,
+     "reprisalPct": 23,
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
-    "deaths": 5,
+    "deaths": 6,
     "minHpPct": 0,
-    "hpLostPct": 630,
-    "hits": 38,
+    "hpLostPct": 653,
+    "hits": 32,
     "walked": 100,
-    "lifts": 103,
-    "frames": 25464,
-    "kills": 20,
+    "lifts": 104,
+    "frames": 25620,
+    "kills": 19,
     "heroLevel": 11
    }
   }
@@ -2544,16 +2532,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "timeout:56/97",
+     "timeout:56/96",
      "timeout:59/100"
     ],
     "warden": [
-     "timeout:56/98",
-     "timeout:67/98"
+     "timeout:48/92",
+     "timeout:48/92"
     ],
     "pyro": [
-     "timeout:89/90",
-     "timeout:77/90"
+     "timeout:77/95",
+     "timeout:77/95"
     ]
    },
    "rows": [
@@ -2564,36 +2552,36 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 56,
-     "bossLeftPct": 97,
+     "bossLeftPct": 96,
+     "landed": 32,
+     "swings": 7239,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
-       "mul": 0.35,
+       "mul": 0.2,
        "open": false,
        "mode": "stride"
       },
       {
        "f": 720,
-       "mul": 0.35,
+       "mul": 0.2,
        "open": false,
        "mode": "stride"
       },
       {
        "f": 1500,
-       "mul": 0.35,
+       "mul": 0.2,
        "open": false,
        "mode": "wave"
       },
       {
        "f": 3000,
-       "mul": 0.35,
+       "mul": 0.2,
        "open": false,
-       "mode": "stride"
+       "mode": "thrustTell"
       }
-     ],
-     "landed": 25,
-     "swings": 7276
+     ]
     },
     {
      "hero": "knight",
@@ -2603,10 +2591,10 @@
      "secs": 150,
      "hpLostPct": 59,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 7287
+     "swings": 7287,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -2614,12 +2602,12 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 56,
-     "bossLeftPct": 98,
+     "hpLostPct": 48,
+     "bossLeftPct": 92,
+     "landed": 8,
+     "swings": 6706,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 2,
-     "swings": 7245
+     "chip": []
     },
     {
      "hero": "warden",
@@ -2627,12 +2615,12 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 67,
-     "bossLeftPct": 98,
+     "hpLostPct": 48,
+     "bossLeftPct": 92,
+     "landed": 8,
+     "swings": 6706,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 2,
-     "swings": 7244
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -2640,12 +2628,12 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 89,
-     "bossLeftPct": 90,
+     "hpLostPct": 77,
+     "bossLeftPct": 95,
+     "landed": 22,
+     "swings": 6959,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 36,
-     "swings": 6953
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -2654,11 +2642,11 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 77,
-     "bossLeftPct": 90,
+     "bossLeftPct": 95,
+     "landed": 22,
+     "swings": 6959,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 36,
-     "swings": 6959
+     "chip": []
     },
     {
      "hero": "knight",
@@ -2667,24 +2655,24 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 69,
-     "bossLeftPct": 97,
-     "reprisalPct": 0,
-     "chip": [],
+     "bossLeftPct": 98,
      "landed": 6,
-     "swings": 7109
+     "swings": 7109,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 111.9,
+     "secs": 112,
      "hpLostPct": 100,
-     "bossLeftPct": 93,
+     "bossLeftPct": 95,
+     "landed": 12,
+     "swings": 5022,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 10,
-     "swings": 5048
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -2693,23 +2681,23 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 97,
-     "bossLeftPct": 98,
+     "bossLeftPct": 99,
+     "landed": 5,
+     "swings": 7113,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 6,
-     "swings": 7082
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 44,
-    "hpLostPct": 97,
-    "hits": 14,
+    "minHpPct": 28,
+    "hpLostPct": 115,
+    "hits": 16,
     "walked": 100,
     "lifts": 44,
-    "frames": 11570,
+    "frames": 11575,
     "kills": 10,
     "heroLevel": 12
    }
@@ -2719,20 +2707,20 @@
   "hash": "d3ac9ad0d725",
   "boss": {
    "boss": "reefmaw",
-   "wins": 1,
+   "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/46",
-     "dead:100/54"
+     "dead:100/89",
+     "dead:100/94"
     ],
     "warden": [
-     "win:38/0",
-     "dead:100/45"
+     "dead:100/42",
+     "dead:100/73"
     ],
     "pyro": [
-     "dead:100/52",
-     "dead:100/46"
+     "dead:100/67",
+     "dead:100/71"
     ]
    },
    "rows": [
@@ -2741,10 +2729,12 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 58.8,
+     "secs": 53.7,
      "hpLostPct": 100,
-     "bossLeftPct": 46,
-     "reprisalPct": 0,
+     "bossLeftPct": 89,
+     "landed": 55,
+     "swings": 591,
+     "reprisalPct": 13,
      "chip": [
       {
        "f": 240,
@@ -2754,129 +2744,127 @@
       },
       {
        "f": 720,
-       "mul": 0.5,
+       "mul": 0.05,
        "open": false,
-       "mode": "thrash"
+       "mode": "riseTell"
       },
       {
        "f": 1500,
-       "mul": 0.5,
+       "mul": 0,
        "open": false,
-       "mode": "bite"
+       "mode": "lurk"
       },
       {
        "f": 3000,
-       "mul": 0.7,
+       "mul": 0,
        "open": false,
-       "mode": "riseTell"
+       "mode": "lurk"
       }
-     ],
-     "landed": 56,
-     "swings": 1530
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 51.9,
-     "hpLostPct": 100,
-     "bossLeftPct": 54,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 38,
-     "swings": 1426
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "expected",
-     "out": "win",
      "secs": 43.5,
-     "hpLostPct": 38,
-     "bossLeftPct": 0,
+     "hpLostPct": 100,
+     "bossLeftPct": 94,
+     "landed": 34,
+     "swings": 486,
+     "reprisalPct": 13,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 62.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 42,
+     "landed": 28,
+     "swings": 1358,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 42,
-     "swings": 423
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 75.6,
+     "secs": 64.1,
      "hpLostPct": 100,
-     "bossLeftPct": 45,
-     "reprisalPct": 5,
-     "chip": [],
-     "landed": 45,
-     "swings": 1034
+     "bossLeftPct": 73,
+     "landed": 29,
+     "swings": 561,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 57.7,
+     "secs": 81.3,
      "hpLostPct": 100,
-     "bossLeftPct": 52,
+     "bossLeftPct": 67,
+     "landed": 40,
+     "swings": 846,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 70,
-     "swings": 2113
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 64.7,
+     "secs": 70.4,
      "hpLostPct": 100,
-     "bossLeftPct": 46,
+     "bossLeftPct": 71,
+     "landed": 37,
+     "swings": 692,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 80,
-     "swings": 1661
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 51.8,
+     "secs": 33.4,
      "hpLostPct": 100,
-     "bossLeftPct": 64,
+     "bossLeftPct": 99,
+     "landed": 7,
+     "swings": 426,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 27,
-     "swings": 594
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 50.7,
+     "secs": 39.1,
      "hpLostPct": 100,
-     "bossLeftPct": 51,
+     "bossLeftPct": 96,
+     "landed": 12,
+     "swings": 427,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 38,
-     "swings": 809
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 55.6,
+     "secs": 37.1,
      "hpLostPct": 100,
-     "bossLeftPct": 64,
+     "bossLeftPct": 91,
+     "landed": 13,
+     "swings": 402,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 37,
-     "swings": 616
+     "chip": []
     }
    ]
   },
@@ -2884,12 +2872,12 @@
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 118,
+    "hpLostPct": 133,
     "hits": 6,
     "walked": 100,
     "lifts": 34,
-    "frames": 10712,
-    "kills": 8,
+    "frames": 10719,
+    "kills": 9,
     "heroLevel": 13
    }
   }
@@ -2902,16 +2890,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "timeout:74/63",
-     "timeout:42/49"
+     "dead:100/75",
+     "timeout:42/58"
     ],
     "warden": [
-     "timeout:29/46",
-     "timeout:29/46"
+     "timeout:42/63",
+     "timeout:42/63"
     ],
     "pyro": [
-     "timeout:17/56",
-     "timeout:17/56"
+     "timeout:17/63",
+     "timeout:17/63"
     ]
    },
    "rows": [
@@ -2919,39 +2907,39 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "timeout",
-     "secs": 150,
-     "hpLostPct": 74,
-     "bossLeftPct": 63,
+     "out": "dead",
+     "secs": 53.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 75,
+     "landed": 50,
+     "swings": 611,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "stride"
       },
       {
        "f": 720,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "stride"
       },
       {
        "f": 1500,
        "mul": 1,
-       "open": null,
-       "mode": "slashTell"
+       "open": false,
+       "mode": "stride"
       },
       {
        "f": 3000,
-       "mul": 0,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "stride"
       }
-     ],
-     "landed": 51,
-     "swings": 1901
+     ]
     },
     {
      "hero": "knight",
@@ -2960,11 +2948,11 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 42,
-     "bossLeftPct": 49,
-     "reprisalPct": 30,
-     "chip": [],
+     "bossLeftPct": 58,
      "landed": 35,
-     "swings": 1854
+     "swings": 1860,
+     "reprisalPct": 30,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -2972,12 +2960,12 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 29,
-     "bossLeftPct": 46,
+     "hpLostPct": 42,
+     "bossLeftPct": 63,
+     "landed": 15,
+     "swings": 1845,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 12,
-     "swings": 1865
+     "chip": []
     },
     {
      "hero": "warden",
@@ -2985,12 +2973,12 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 29,
-     "bossLeftPct": 46,
+     "hpLostPct": 42,
+     "bossLeftPct": 63,
+     "landed": 15,
+     "swings": 1845,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 12,
-     "swings": 1865
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -2999,11 +2987,11 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 17,
-     "bossLeftPct": 56,
+     "bossLeftPct": 63,
+     "landed": 13,
+     "swings": 1876,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 20,
-     "swings": 1873
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -3012,11 +3000,11 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 17,
-     "bossLeftPct": 56,
+     "bossLeftPct": 63,
+     "landed": 13,
+     "swings": 1876,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 20,
-     "swings": 1873
+     "chip": []
     },
     {
      "hero": "knight",
@@ -3025,11 +3013,11 @@
      "out": "dead",
      "secs": 25.7,
      "hpLostPct": 100,
-     "bossLeftPct": 83,
+     "bossLeftPct": 84,
+     "landed": 3,
+     "swings": 330,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 4,
-     "swings": 330
+     "chip": []
     },
     {
      "hero": "warden",
@@ -3037,25 +3025,25 @@
      "tag": "l1",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 87,
-     "bossLeftPct": 61,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 18,
-     "swings": 2167
+     "hpLostPct": 96,
+     "bossLeftPct": 64,
+     "landed": 22,
+     "swings": 2125,
+     "reprisalPct": 15,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
-     "out": "timeout",
-     "secs": 150,
-     "hpLostPct": 78,
-     "bossLeftPct": 63,
+     "out": "dead",
+     "secs": 27.3,
+     "hpLostPct": 100,
+     "bossLeftPct": 68,
+     "landed": 11,
+     "swings": 326,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 14,
-     "swings": 2209
+     "chip": []
     }
    ]
   },
@@ -3063,12 +3051,12 @@
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 183,
-    "hits": 22,
+    "hpLostPct": 192,
+    "hits": 23,
     "walked": 100,
     "lifts": 28,
     "frames": 6720,
-    "kills": 11,
+    "kills": 13,
     "heroLevel": 14
    }
   }
@@ -3077,20 +3065,20 @@
   "hash": "f80f308ae376",
   "boss": {
    "boss": "captain",
-   "wins": 6,
+   "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:85/0",
-     "win:99/0"
+     "dead:100/91",
+     "dead:100/93"
     ],
     "warden": [
-     "win:90/0",
-     "win:90/0"
+     "dead:100/97",
+     "dead:100/97"
     ],
     "pyro": [
-     "win:83/0",
-     "win:83/0"
+     "dead:100/96",
+     "dead:100/96"
     ]
    },
    "rows": [
@@ -3098,156 +3086,150 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 54.3,
-     "hpLostPct": 85,
-     "bossLeftPct": 0,
-     "reprisalPct": 23,
+     "out": "dead",
+     "secs": 43.2,
+     "hpLostPct": 100,
+     "bossLeftPct": 91,
+     "landed": 68,
+     "swings": 426,
+     "reprisalPct": 72,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "stride"
       },
       {
        "f": 720,
-       "mul": 1,
-       "open": null,
-       "mode": "sabre2"
-      },
-      {
-       "f": 1500,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "stride"
       },
       {
-       "f": 3000,
-       "mul": 1,
-       "open": null,
-       "mode": "sabre2"
+       "f": 1500,
+       "mul": 0.05,
+       "open": false,
+       "mode": "stride"
       }
-     ],
-     "landed": 84,
-     "swings": 479
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 60.2,
-     "hpLostPct": 99,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 38.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 93,
+     "landed": 54,
+     "swings": 410,
+     "reprisalPct": 23,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 37,
+     "hpLostPct": 100,
+     "bossLeftPct": 97,
+     "landed": 25,
+     "swings": 374,
      "reprisalPct": 20,
-     "chip": [],
-     "landed": 84,
-     "swings": 614
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "expected",
-     "out": "win",
-     "secs": 64.5,
-     "hpLostPct": 90,
-     "bossLeftPct": 0,
-     "reprisalPct": 23,
-     "chip": [],
-     "landed": 49,
-     "swings": 729
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 64.5,
-     "hpLostPct": 90,
-     "bossLeftPct": 0,
-     "reprisalPct": 23,
-     "chip": [],
-     "landed": 49,
-     "swings": 729
+     "out": "dead",
+     "secs": 37,
+     "hpLostPct": 100,
+     "bossLeftPct": 97,
+     "landed": 25,
+     "swings": 374,
+     "reprisalPct": 20,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 63,
-     "hpLostPct": 83,
-     "bossLeftPct": 0,
-     "reprisalPct": 30,
-     "chip": [],
-     "landed": 92,
-     "swings": 710
+     "out": "dead",
+     "secs": 46.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 96,
+     "landed": 36,
+     "swings": 457,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 63,
-     "hpLostPct": 83,
-     "bossLeftPct": 0,
-     "reprisalPct": 30,
-     "chip": [],
-     "landed": 92,
-     "swings": 710
+     "out": "dead",
+     "secs": 46.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 96,
+     "landed": 36,
+     "swings": 457,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 45.3,
+     "secs": 31.6,
      "hpLostPct": 100,
-     "bossLeftPct": 52,
-     "reprisalPct": 15,
-     "chip": [],
-     "landed": 34,
-     "swings": 515
+     "bossLeftPct": 99,
+     "landed": 12,
+     "swings": 409,
+     "reprisalPct": 1,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 68.2,
+     "secs": 26.4,
      "hpLostPct": 100,
-     "bossLeftPct": 39,
-     "reprisalPct": 31,
-     "chip": [],
-     "landed": 63,
-     "swings": 881
+     "bossLeftPct": 99,
+     "landed": 7,
+     "swings": 341,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 62.5,
+     "secs": 25.9,
      "hpLostPct": 100,
-     "bossLeftPct": 47,
-     "reprisalPct": 25,
-     "chip": [],
-     "landed": 43,
-     "swings": 892
+     "bossLeftPct": 99,
+     "landed": 6,
+     "swings": 336,
+     "reprisalPct": 10,
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
-    "deaths": 1,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 245,
-    "hits": 25,
+    "hpLostPct": 270,
+    "hits": 28,
     "walked": 100,
-    "lifts": 52,
-    "frames": 13543,
-    "kills": 9,
+    "lifts": 54,
+    "frames": 13645,
+    "kills": 14,
     "heroLevel": 15
    }
   }
@@ -3256,20 +3238,20 @@
   "hash": "5e6d60a842b9",
   "boss": {
    "boss": "tollmaster",
-   "wins": 5,
+   "wins": 2,
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/42",
-     "win:93/0"
+     "win:23/0",
+     "win:29/0"
     ],
     "warden": [
-     "win:38/0",
-     "win:64/0"
+     "dead:100/7",
+     "dead:100/13"
     ],
     "pyro": [
-     "win:48/0",
-     "win:48/0"
+     "dead:100/37",
+     "dead:100/37"
     ]
    },
    "rows": [
@@ -3277,162 +3259,156 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "dead",
-     "secs": 56.4,
-     "hpLostPct": 100,
-     "bossLeftPct": 42,
+     "out": "win",
+     "secs": 37.8,
+     "hpLostPct": 23,
+     "bossLeftPct": 0,
+     "landed": 67,
+     "swings": 218,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
-       "mul": 0.7,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "borne"
       },
       {
        "f": 720,
-       "mul": 0.7,
-       "open": null,
-       "mode": "borne"
+       "mul": 0.05,
+       "open": false,
+       "mode": "ledgerTell"
       },
       {
        "f": 1500,
-       "mul": 0.7,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "borne"
-      },
-      {
-       "f": 3000,
-       "mul": 1,
-       "open": null,
-       "mode": "toll"
       }
-     ],
-     "landed": 65,
-     "swings": 533
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 47.8,
-     "hpLostPct": 93,
+     "secs": 39.8,
+     "hpLostPct": 29,
      "bossLeftPct": 0,
-     "reprisalPct": 34,
-     "chip": [],
-     "landed": 63,
-     "swings": 456
+     "landed": 61,
+     "swings": 267,
+     "reprisalPct": 54,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 48.1,
-     "hpLostPct": 38,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 26,
-     "swings": 427
-    },
-    {
-     "hero": "warden",
-     "seed": 2,
-     "tag": "expected",
-     "out": "win",
-     "secs": 60,
-     "hpLostPct": 64,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 34,
-     "swings": 536
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "expected",
-     "out": "win",
-     "secs": 59.5,
-     "hpLostPct": 48,
-     "bossLeftPct": 0,
-     "reprisalPct": 24,
-     "chip": [],
-     "landed": 62,
-     "swings": 461
-    },
-    {
-     "hero": "pyro",
-     "seed": 2,
-     "tag": "expected",
-     "out": "win",
-     "secs": 59.2,
-     "hpLostPct": 48,
-     "bossLeftPct": 0,
-     "reprisalPct": 24,
-     "chip": [],
-     "landed": 58,
-     "swings": 453
-    },
-    {
-     "hero": "knight",
-     "seed": 1,
-     "tag": "l1",
      "out": "dead",
-     "secs": 52.7,
+     "secs": 77,
      "hpLostPct": 100,
-     "bossLeftPct": 2,
+     "bossLeftPct": 7,
+     "landed": 48,
+     "swings": 662,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 40,
-     "swings": 564
+     "chip": []
     },
     {
      "hero": "warden",
-     "seed": 1,
-     "tag": "l1",
-     "out": "win",
-     "secs": 61.6,
-     "hpLostPct": 95,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 49,
-     "swings": 682
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "l1",
+     "seed": 2,
+     "tag": "expected",
      "out": "dead",
-     "secs": 62,
+     "secs": 63,
      "hpLostPct": 100,
      "bossLeftPct": 13,
+     "landed": 45,
+     "swings": 503,
      "reprisalPct": 16,
-     "chip": [],
-     "landed": 57,
-     "swings": 610
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 69.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 37,
+     "landed": 60,
+     "swings": 620,
+     "reprisalPct": 20,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 69,
+     "hpLostPct": 100,
+     "bossLeftPct": 37,
+     "landed": 60,
+     "swings": 624,
+     "reprisalPct": 20,
+     "chip": []
+    },
+    {
+     "hero": "knight",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 40.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 47,
+     "landed": 25,
+     "swings": 416,
+     "reprisalPct": 15,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 45.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 56,
+     "landed": 30,
+     "swings": 425,
+     "reprisalPct": 14,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 41.8,
+     "hpLostPct": 100,
+     "bossLeftPct": 79,
+     "landed": 22,
+     "swings": 451,
+     "reprisalPct": 23,
+     "chip": []
     }
    ]
   },
   "mini": {
    "boss": "lampreeve",
-   "wins": 6,
+   "wins": 4,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:47/0",
-     "win:22/0"
+     "win:58/0",
+     "win:86/0"
     ],
     "warden": [
-     "win:62/0",
-     "win:62/0"
+     "win:95/0",
+     "win:95/0"
     ],
     "pyro": [
-     "win:21/0",
-     "win:21/0"
+     "dead:100/9",
+     "dead:100/9"
     ]
    },
    "rows": [
@@ -3442,8 +3418,10 @@
      "tag": "expected",
      "out": "win",
      "secs": 56.3,
-     "hpLostPct": 47,
+     "hpLostPct": 58,
      "bossLeftPct": 0,
+     "landed": 75,
+     "swings": 556,
      "reprisalPct": 0,
      "chip": [
       {
@@ -3470,113 +3448,111 @@
        "open": false,
        "mode": "sweepTell"
       }
-     ],
-     "landed": 75,
-     "swings": 556
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 39.2,
-     "hpLostPct": 22,
+     "secs": 42.1,
+     "hpLostPct": 86,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 42,
-     "swings": 275
+     "swings": 358,
+     "reprisalPct": 24,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 57.9,
-     "hpLostPct": 62,
+     "secs": 55.5,
+     "hpLostPct": 95,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 43,
-     "swings": 513
+     "landed": 40,
+     "swings": 495,
+     "reprisalPct": 28,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 57.9,
-     "hpLostPct": 62,
+     "secs": 55.5,
+     "hpLostPct": 95,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 43,
-     "swings": 513
+     "landed": 40,
+     "swings": 495,
+     "reprisalPct": 28,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 37.2,
-     "hpLostPct": 21,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 61.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 9,
+     "landed": 79,
+     "swings": 586,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 41,
-     "swings": 254
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 37.2,
-     "hpLostPct": 21,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 61.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 9,
+     "landed": 79,
+     "swings": 586,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 41,
-     "swings": 254
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
-     "out": "win",
-     "secs": 47.2,
-     "hpLostPct": 40,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 34,
-     "swings": 530
+     "out": "dead",
+     "secs": 35.4,
+     "hpLostPct": 100,
+     "bossLeftPct": 73,
+     "landed": 19,
+     "swings": 409,
+     "reprisalPct": 74,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 69.4,
+     "secs": 43.1,
      "hpLostPct": 100,
-     "bossLeftPct": 26,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 65,
-     "swings": 826
+     "bossLeftPct": 71,
+     "landed": 33,
+     "swings": 496,
+     "reprisalPct": 33,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
-     "out": "win",
-     "secs": 53.5,
-     "hpLostPct": 63,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 35.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 79,
+     "landed": 21,
+     "swings": 433,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 47,
-     "swings": 600
+     "chip": []
     }
    ]
   },
@@ -3584,12 +3560,12 @@
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 153,
-    "hits": 15,
+    "hpLostPct": 162,
+    "hits": 14,
     "walked": 100,
     "lifts": 58,
     "frames": 13920,
-    "kills": 2,
+    "kills": 3,
     "heroLevel": 16
    }
   }
@@ -3598,20 +3574,20 @@
   "hash": "a367d0388076",
   "boss": {
    "boss": "grandmother",
-   "wins": 3,
+   "wins": 2,
    "fights": 6,
    "byHero": {
     "knight": [
      "dead:100/33",
-     "win:68/0"
+     "dead:100/24"
     ],
     "warden": [
-     "win:93/0",
-     "win:97/0"
+     "win:16/0",
+     "win:99/0"
     ],
     "pyro": [
-     "dead:100/70",
-     "dead:100/45"
+     "dead:100/48",
+     "dead:100/46"
     ]
    },
    "rows": [
@@ -3623,6 +3599,8 @@
      "secs": 49.3,
      "hpLostPct": 100,
      "bossLeftPct": 33,
+     "landed": 18,
+     "swings": 558,
      "reprisalPct": 0,
      "chip": [
       {
@@ -3643,35 +3621,33 @@
        "open": null,
        "mode": "cast"
       }
-     ],
-     "landed": 18,
-     "swings": 558
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 43.7,
-     "hpLostPct": 68,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 42,
+     "hpLostPct": 100,
+     "bossLeftPct": 24,
+     "landed": 21,
+     "swings": 429,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 26,
-     "swings": 447
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 49.9,
-     "hpLostPct": 93,
+     "secs": 40.3,
+     "hpLostPct": 16,
      "bossLeftPct": 0,
+     "landed": 28,
+     "swings": 365,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 24,
-     "swings": 610
+     "chip": []
     },
     {
      "hero": "warden",
@@ -3679,38 +3655,38 @@
      "tag": "expected",
      "out": "win",
      "secs": 59.8,
-     "hpLostPct": 97,
+     "hpLostPct": 99,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 24,
-     "swings": 677
+     "swings": 677,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 45.7,
+     "secs": 49.1,
      "hpLostPct": 100,
-     "bossLeftPct": 70,
+     "bossLeftPct": 48,
+     "landed": 48,
+     "swings": 585,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 40,
-     "swings": 547
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 42.7,
+     "secs": 42.6,
      "hpLostPct": 100,
-     "bossLeftPct": 45,
+     "bossLeftPct": 46,
+     "landed": 44,
+     "swings": 462,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 45,
-     "swings": 462
+     "chip": []
     },
     {
      "hero": "knight",
@@ -3720,23 +3696,23 @@
      "secs": 43.6,
      "hpLostPct": 100,
      "bossLeftPct": 45,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 19,
-     "swings": 555
+     "swings": 555,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 53.4,
+     "secs": 52.9,
      "hpLostPct": 100,
-     "bossLeftPct": 31,
-     "reprisalPct": 14,
-     "chip": [],
-     "landed": 26,
-     "swings": 679
+     "bossLeftPct": 18,
+     "landed": 37,
+     "swings": 571,
+     "reprisalPct": 24,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -3746,10 +3722,10 @@
      "secs": 43.9,
      "hpLostPct": 100,
      "bossLeftPct": 62,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 18,
-     "swings": 537
+     "swings": 537,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
@@ -3757,12 +3733,12 @@
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 146,
-    "hits": 9,
+    "hpLostPct": 197,
+    "hits": 12,
     "walked": 100,
     "lifts": 41,
     "frames": 9840,
-    "kills": 11,
+    "kills": 9,
     "heroLevel": 5
    }
   }
@@ -3771,20 +3747,20 @@
   "hash": "fb9c1812d4ee",
   "boss": {
    "boss": "bellcrab",
-   "wins": 1,
+   "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:86/0",
-     "dead:100/51"
+     "dead:100/77",
+     "dead:100/86"
     ],
     "warden": [
-     "dead:100/80",
-     "dead:100/80"
+     "dead:100/97",
+     "dead:100/97"
     ],
     "pyro": [
-     "dead:100/87",
-     "dead:100/87"
+     "dead:100/95",
+     "dead:100/95"
     ]
    },
    "rows": [
@@ -3792,111 +3768,111 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 47.9,
-     "hpLostPct": 86,
-     "bossLeftPct": 0,
-     "reprisalPct": 29,
+     "out": "dead",
+     "secs": 35.8,
+     "hpLostPct": 100,
+     "bossLeftPct": 77,
+     "landed": 52,
+     "swings": 1773,
+     "reprisalPct": 51,
      "chip": [
       {
        "f": 240,
-       "mul": 0.45,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "scuttleTell"
       },
       {
        "f": 720,
        "mul": 0.45,
-       "open": null,
+       "open": false,
        "mode": "pressure"
       },
       {
        "f": 1500,
-       "mul": 0.45,
-       "open": null,
-       "mode": "pressureTell"
+       "mul": 0.05,
+       "open": false,
+       "mode": "idle"
       }
-     ],
-     "landed": 89,
-     "swings": 2668
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 37.4,
+     "secs": 25.6,
      "hpLostPct": 100,
-     "bossLeftPct": 51,
+     "bossLeftPct": 86,
+     "landed": 40,
+     "swings": 1280,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 57,
-     "swings": 1890
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 26.5,
+     "secs": 20.7,
      "hpLostPct": 100,
-     "bossLeftPct": 80,
+     "bossLeftPct": 97,
+     "landed": 11,
+     "swings": 900,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 26,
-     "swings": 1308
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 26.5,
+     "secs": 20.7,
      "hpLostPct": 100,
-     "bossLeftPct": 80,
+     "bossLeftPct": 97,
+     "landed": 11,
+     "swings": 900,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 26,
-     "swings": 1308
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 28.8,
+     "secs": 28.9,
      "hpLostPct": 100,
-     "bossLeftPct": 87,
+     "bossLeftPct": 95,
+     "landed": 12,
+     "swings": 1380,
      "reprisalPct": 21,
-     "chip": [],
-     "landed": 42,
-     "swings": 1378
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 28.8,
+     "secs": 28.9,
      "hpLostPct": 100,
-     "bossLeftPct": 87,
+     "bossLeftPct": 95,
+     "landed": 12,
+     "swings": 1380,
      "reprisalPct": 21,
-     "chip": [],
-     "landed": 42,
-     "swings": 1378
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 25.2,
+     "secs": 22.5,
      "hpLostPct": 100,
-     "bossLeftPct": 87,
+     "bossLeftPct": 96,
+     "landed": 7,
+     "swings": 1115,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 14,
-     "swings": 1338
+     "chip": []
     },
     {
      "hero": "warden",
@@ -3905,11 +3881,11 @@
      "out": "dead",
      "secs": 14.1,
      "hpLostPct": 100,
-     "bossLeftPct": 97,
+     "bossLeftPct": 100,
+     "landed": 3,
+     "swings": 573,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 6,
-     "swings": 573
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -3918,24 +3894,24 @@
      "out": "dead",
      "secs": 14.6,
      "hpLostPct": 100,
-     "bossLeftPct": 98,
+     "bossLeftPct": 99,
+     "landed": 3,
+     "swings": 700,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 4,
-     "swings": 700
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 13,
-    "hpLostPct": 131,
-    "hits": 24,
+    "minHpPct": 45,
+    "hpLostPct": 135,
+    "hits": 31,
     "walked": 100,
-    "lifts": 21,
-    "frames": 9000,
-    "kills": 14,
+    "lifts": 31,
+    "frames": 9838,
+    "kills": 11,
     "heroLevel": 17
    }
   }
@@ -3944,7 +3920,7 @@
   "hash": "aef376ddfd5f",
   "boss": {
    "boss": "drownedking",
-   "wins": 1,
+   "wins": 2,
    "fights": 6,
    "byHero": {
     "knight": [
@@ -3952,12 +3928,12 @@
      "dead:100/100"
     ],
     "warden": [
-     "win:78/0",
-     "dead:100/45"
+     "win:88/0",
+     "win:99/0"
     ],
     "pyro": [
-     "dead:100/88",
-     "dead:100/92"
+     "dead:100/98",
+     "dead:100/99"
     ]
    },
    "rows": [
@@ -3966,90 +3942,90 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 84.6,
+     "secs": 95.1,
      "hpLostPct": 100,
      "bossLeftPct": 98,
+     "landed": 25,
+     "swings": 1699,
      "reprisalPct": 3,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "swim"
       },
       {
        "f": 720,
-       "mul": 1.35,
-       "open": true,
-       "mode": "stunned"
+       "mul": 0.05,
+       "open": false,
+       "mode": "swim"
       },
       {
        "f": 1500,
-       "mul": 1,
-       "open": null,
-       "mode": "whirl"
+       "mul": 0.05,
+       "open": false,
+       "mode": "diveUp"
       },
       {
        "f": 3000,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "swim"
       }
-     ],
-     "landed": 25,
-     "swings": 1481
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 88.2,
+     "secs": 95.6,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 1440
+     "swings": 1690,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 108.9,
-     "hpLostPct": 78,
+     "secs": 90.8,
+     "hpLostPct": 88,
      "bossLeftPct": 0,
-     "reprisalPct": 4,
-     "chip": [],
-     "landed": 28,
-     "swings": 1629
+     "landed": 39,
+     "swings": 1427,
+     "reprisalPct": 7,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
-     "out": "dead",
-     "secs": 107,
-     "hpLostPct": 100,
-     "bossLeftPct": 45,
-     "reprisalPct": 6,
-     "chip": [],
-     "landed": 15,
-     "swings": 1872
+     "out": "win",
+     "secs": 99,
+     "hpLostPct": 99,
+     "bossLeftPct": 0,
+     "landed": 40,
+     "swings": 1643,
+     "reprisalPct": 9,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 85.7,
+     "secs": 97.9,
      "hpLostPct": 100,
-     "bossLeftPct": 88,
-     "reprisalPct": 29,
-     "chip": [],
-     "landed": 67,
-     "swings": 1566
+     "bossLeftPct": 98,
+     "landed": 14,
+     "swings": 1642,
+     "reprisalPct": 3,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -4058,62 +4034,62 @@
      "out": "dead",
      "secs": 83.7,
      "hpLostPct": 100,
-     "bossLeftPct": 92,
-     "reprisalPct": 15,
-     "chip": [],
-     "landed": 44,
-     "swings": 1243
+     "bossLeftPct": 99,
+     "landed": 6,
+     "swings": 1243,
+     "reprisalPct": 3,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 56.9,
+     "secs": 66.1,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 953
+     "swings": 1128,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 72.7,
+     "secs": 64,
      "hpLostPct": 100,
-     "bossLeftPct": 93,
-     "reprisalPct": 0,
-     "chip": [],
+     "bossLeftPct": 100,
      "landed": 5,
-     "swings": 1267
+     "swings": 1093,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 59.3,
+     "secs": 45.8,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 1037
+     "swings": 765,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 61,
-    "hpLostPct": 83,
-    "hits": 14,
+    "minHpPct": 60,
+    "hpLostPct": 101,
+    "hits": 15,
     "walked": 100,
     "lifts": 25,
-    "frames": 13926,
+    "frames": 13932,
     "kills": 3,
     "heroLevel": 18
    }
@@ -4148,6 +4124,8 @@
      "secs": 150,
      "hpLostPct": 59,
      "bossLeftPct": 86,
+     "landed": 4,
+     "swings": 457,
      "reprisalPct": 0,
      "chip": [
       {
@@ -4174,9 +4152,7 @@
        "open": null,
        "mode": "stride"
       }
-     ],
-     "landed": 4,
-     "swings": 457
+     ]
     },
     {
      "hero": "knight",
@@ -4186,10 +4162,10 @@
      "secs": 150,
      "hpLostPct": 59,
      "bossLeftPct": 86,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 4,
-     "swings": 457
+     "swings": 457,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -4199,10 +4175,10 @@
      "secs": 59.4,
      "hpLostPct": 100,
      "bossLeftPct": 87,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 6,
-     "swings": 683
+     "swings": 683,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -4212,10 +4188,10 @@
      "secs": 59.4,
      "hpLostPct": 100,
      "bossLeftPct": 87,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 6,
-     "swings": 683
+     "swings": 683,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -4225,10 +4201,10 @@
      "secs": 47,
      "hpLostPct": 100,
      "bossLeftPct": 86,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 5,
-     "swings": 524
+     "swings": 524,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -4238,10 +4214,10 @@
      "secs": 47,
      "hpLostPct": 100,
      "bossLeftPct": 86,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 5,
-     "swings": 524
+     "swings": 524,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
@@ -4251,10 +4227,10 @@
      "secs": 44.4,
      "hpLostPct": 100,
      "bossLeftPct": 80,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 10,
-     "swings": 594
+     "swings": 594,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -4264,10 +4240,10 @@
      "secs": 29,
      "hpLostPct": 100,
      "bossLeftPct": 90,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 7,
-     "swings": 376
+     "swings": 376,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -4277,19 +4253,19 @@
      "secs": 29.1,
      "hpLostPct": 100,
      "bossLeftPct": 82,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 9,
-     "swings": 363
+     "swings": 363,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 51,
-    "hpLostPct": 49,
-    "hits": 10,
+    "minHpPct": 59,
+    "hpLostPct": 41,
+    "hits": 8,
     "walked": 100,
     "lifts": 45,
     "frames": 12168,
@@ -4302,20 +4278,20 @@
   "hash": "ce45ca81cf76",
   "boss": {
    "boss": "harbormaster",
-   "wins": 4,
+   "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:72/0",
-     "win:43/0"
+     "dead:100/67",
+     "dead:100/68"
     ],
     "warden": [
-     "dead:100/40",
-     "dead:100/16"
+     "dead:100/68",
+     "dead:100/68"
     ],
     "pyro": [
-     "win:39/0",
-     "win:75/0"
+     "dead:100/31",
+     "dead:100/31"
     ]
    },
    "rows": [
@@ -4323,143 +4299,143 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 72.9,
-     "hpLostPct": 72,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 61.2,
+     "hpLostPct": 100,
+     "bossLeftPct": 67,
+     "landed": 96,
+     "swings": 230,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "anchorTell"
       },
       {
        "f": 720,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "lowTell"
       },
       {
        "f": 1500,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "pressureTell"
       },
       {
        "f": 3000,
-       "mul": 1,
-       "open": null,
-       "mode": "rally"
+       "mul": 1.3,
+       "open": true,
+       "mode": "vent"
       }
-     ],
-     "landed": 123,
-     "swings": 207
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 69.8,
-     "hpLostPct": 43,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 61,
+     "hpLostPct": 100,
+     "bossLeftPct": 68,
+     "landed": 77,
+     "swings": 230,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 105,
-     "swings": 240
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 98.7,
+     "secs": 67.5,
      "hpLostPct": 100,
-     "bossLeftPct": 40,
+     "bossLeftPct": 68,
+     "landed": 50,
+     "swings": 490,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 117,
-     "swings": 763
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 112,
+     "secs": 67.5,
      "hpLostPct": 100,
-     "bossLeftPct": 16,
-     "reprisalPct": 12,
-     "chip": [],
-     "landed": 145,
-     "swings": 833
+     "bossLeftPct": 68,
+     "landed": 50,
+     "swings": 490,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 78.6,
-     "hpLostPct": 39,
-     "bossLeftPct": 0,
-     "reprisalPct": 19,
-     "chip": [],
-     "landed": 108,
-     "swings": 503
+     "out": "dead",
+     "secs": 85,
+     "hpLostPct": 100,
+     "bossLeftPct": 31,
+     "landed": 115,
+     "swings": 659,
+     "reprisalPct": 10,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 78.3,
-     "hpLostPct": 75,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 102,
-     "swings": 573
+     "out": "dead",
+     "secs": 85,
+     "hpLostPct": 100,
+     "bossLeftPct": 31,
+     "landed": 115,
+     "swings": 659,
+     "reprisalPct": 10,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 61.5,
+     "secs": 46,
      "hpLostPct": 100,
-     "bossLeftPct": 65,
+     "bossLeftPct": 94,
+     "landed": 18,
+     "swings": 580,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 53,
-     "swings": 702
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 55,
+     "secs": 39.3,
      "hpLostPct": 100,
-     "bossLeftPct": 82,
+     "bossLeftPct": 95,
+     "landed": 11,
+     "swings": 481,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 55,
-     "swings": 611
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 40,
+     "secs": 45,
      "hpLostPct": 100,
-     "bossLeftPct": 86,
+     "bossLeftPct": 98,
+     "landed": 10,
+     "swings": 574,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 30,
-     "swings": 446
+     "chip": []
     }
    ]
   },
@@ -4469,16 +4445,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:0/0",
-     "win:0/0"
+     "win:35/0",
+     "win:50/0"
     ],
     "warden": [
-     "win:0/0",
-     "win:0/0"
+     "win:20/0",
+     "win:20/0"
     ],
     "pyro": [
-     "win:0/0",
-     "win:0/0"
+     "win:31/0",
+     "win:45/0"
     ]
    },
    "rows": [
@@ -4487,25 +4463,44 @@
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 24.3,
-     "hpLostPct": 0,
+     "secs": 32.3,
+     "hpLostPct": 35,
      "bossLeftPct": 0,
-     "landed": 34,
-     "swings": 45,
-     "reprisalPct": 0,
-     "chip": []
+     "landed": 49,
+     "swings": 99,
+     "reprisalPct": 26,
+     "chip": [
+      {
+       "f": 240,
+       "mul": 1,
+       "open": null,
+       "mode": "salvageRest"
+      },
+      {
+       "f": 720,
+       "mul": 1,
+       "open": null,
+       "mode": "salvageAdvance"
+      },
+      {
+       "f": 1500,
+       "mul": 1,
+       "open": null,
+       "mode": "salvageAdvance"
+      }
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 24.3,
-     "hpLostPct": 0,
+     "secs": 33.2,
+     "hpLostPct": 50,
      "bossLeftPct": 0,
-     "landed": 34,
-     "swings": 45,
-     "reprisalPct": 0,
+     "landed": 45,
+     "swings": 177,
+     "reprisalPct": 100,
      "chip": []
     },
     {
@@ -4513,8 +4508,8 @@
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 20.4,
-     "hpLostPct": 0,
+     "secs": 20.5,
+     "hpLostPct": 20,
      "bossLeftPct": 0,
      "landed": 22,
      "swings": 37,
@@ -4526,8 +4521,8 @@
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 20.4,
-     "hpLostPct": 0,
+     "secs": 20.5,
+     "hpLostPct": 20,
      "bossLeftPct": 0,
      "landed": 22,
      "swings": 37,
@@ -4539,12 +4534,12 @@
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 33.3,
-     "hpLostPct": 0,
+     "secs": 36.4,
+     "hpLostPct": 31,
      "bossLeftPct": 0,
-     "landed": 46,
-     "swings": 100,
-     "reprisalPct": 0,
+     "landed": 55,
+     "swings": 203,
+     "reprisalPct": 100,
      "chip": []
     },
     {
@@ -4552,38 +4547,38 @@
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 33.3,
-     "hpLostPct": 0,
+     "secs": 36.1,
+     "hpLostPct": 45,
      "bossLeftPct": 0,
-     "landed": 46,
-     "swings": 100,
-     "reprisalPct": 0,
+     "landed": 53,
+     "swings": 178,
+     "reprisalPct": 64,
      "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
-     "out": "win",
-     "secs": 62.1,
-     "hpLostPct": 64,
-     "bossLeftPct": 0,
-     "landed": 67,
-     "swings": 657,
-     "reprisalPct": 63,
+     "out": "dead",
+     "secs": 34.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 65,
+     "landed": 25,
+     "swings": 346,
+     "reprisalPct": 100,
      "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
-     "out": "win",
-     "secs": 97.2,
-     "hpLostPct": 82,
-     "bossLeftPct": 0,
-     "landed": 128,
-     "swings": 910,
-     "reprisalPct": 22,
+     "out": "dead",
+     "secs": 40.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 46,
+     "landed": 43,
+     "swings": 367,
+     "reprisalPct": 55,
      "chip": []
     },
     {
@@ -4591,12 +4586,12 @@
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 74,
+     "secs": 21.8,
      "hpLostPct": 100,
-     "bossLeftPct": 5,
-     "landed": 89,
-     "swings": 714,
-     "reprisalPct": 55,
+     "bossLeftPct": 82,
+     "landed": 17,
+     "swings": 184,
+     "reprisalPct": 51,
      "chip": []
     }
    ]
@@ -4605,12 +4600,12 @@
    "knight": {
     "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 329,
-    "hits": 40,
+    "hpLostPct": 325,
+    "hits": 35,
     "walked": 100,
-    "lifts": 84,
-    "frames": 21351,
-    "kills": 11,
+    "lifts": 85,
+    "frames": 21417,
+    "kills": 9,
     "heroLevel": 20
    }
   }
@@ -4631,8 +4626,8 @@
      "dead:100/100"
     ],
     "pyro": [
-     "dead:100/88",
-     "dead:100/88"
+     "dead:100/100",
+     "dead:100/100"
     ]
    },
    "rows": [
@@ -4644,35 +4639,35 @@
      "secs": 56.1,
      "hpLostPct": 100,
      "bossLeftPct": 100,
+     "landed": 0,
+     "swings": 300,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "stalk"
       },
       {
        "f": 720,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "stalk"
       },
       {
        "f": 1500,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "stalk"
       },
       {
        "f": 3000,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "cutTell"
       }
-     ],
-     "landed": 0,
-     "swings": 300
+     ]
     },
     {
      "hero": "knight",
@@ -4682,10 +4677,10 @@
      "secs": 55.9,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 300
+     "swings": 300,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -4695,10 +4690,10 @@
      "secs": 56.6,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 373
+     "swings": 373,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -4708,10 +4703,10 @@
      "secs": 56.6,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 373
+     "swings": 373,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -4720,11 +4715,11 @@
      "out": "dead",
      "secs": 56.4,
      "hpLostPct": 100,
-     "bossLeftPct": 88,
+     "bossLeftPct": 100,
+     "landed": 4,
+     "swings": 399,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 49,
-     "swings": 399
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -4733,11 +4728,11 @@
      "out": "dead",
      "secs": 56.4,
      "hpLostPct": 100,
-     "bossLeftPct": 88,
+     "bossLeftPct": 100,
+     "landed": 4,
+     "swings": 399,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 49,
-     "swings": 399
+     "chip": []
     },
     {
      "hero": "knight",
@@ -4747,10 +4742,10 @@
      "secs": 34.7,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 415
+     "swings": 415,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -4760,10 +4755,10 @@
      "secs": 35,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 370
+     "swings": 370,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -4773,10 +4768,10 @@
      "secs": 29.4,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 314
+     "swings": 314,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
@@ -4786,16 +4781,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:34/0",
-     "win:29/0"
+     "win:39/0",
+     "win:39/0"
     ],
     "warden": [
-     "win:17/0",
-     "win:17/0"
+     "win:22/0",
+     "win:22/0"
     ],
     "pyro": [
-     "win:45/0",
-     "win:45/0"
+     "win:78/0",
+     "win:60/0"
     ]
    },
    "rows": [
@@ -4804,38 +4799,38 @@
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 65.1,
-     "hpLostPct": 34,
+     "secs": 64.5,
+     "hpLostPct": 39,
      "bossLeftPct": 0,
+     "landed": 68,
+     "swings": 163,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
        "mul": 0.6,
-       "open": null,
+       "open": false,
        "mode": "ride"
       },
       {
        "f": 720,
        "mul": 0.6,
-       "open": null,
+       "open": false,
        "mode": "ride"
       },
       {
        "f": 1500,
        "mul": 0.6,
-       "open": null,
+       "open": false,
        "mode": "ride"
       },
       {
        "f": 3000,
        "mul": 1,
-       "open": null,
+       "open": true,
        "mode": "blown"
       }
-     ],
-     "landed": 68,
-     "swings": 203
+     ]
     },
     {
      "hero": "knight",
@@ -4843,12 +4838,12 @@
      "tag": "expected",
      "out": "win",
      "secs": 61.5,
-     "hpLostPct": 29,
+     "hpLostPct": 39,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 51,
-     "swings": 158
+     "swings": 158,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -4856,12 +4851,12 @@
      "tag": "expected",
      "out": "win",
      "secs": 53.4,
-     "hpLostPct": 17,
+     "hpLostPct": 22,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 33,
-     "swings": 397
+     "swings": 397,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -4869,25 +4864,25 @@
      "tag": "expected",
      "out": "win",
      "secs": 53.4,
-     "hpLostPct": 17,
+     "hpLostPct": 22,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 33,
-     "swings": 397
+     "swings": 397,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 83.1,
-     "hpLostPct": 45,
+     "secs": 86.9,
+     "hpLostPct": 78,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 65,
-     "swings": 821
+     "swings": 917,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -4895,25 +4890,25 @@
      "tag": "expected",
      "out": "win",
      "secs": 83.1,
-     "hpLostPct": 45,
+     "hpLostPct": 60,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 65,
-     "swings": 821
+     "swings": 821,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 78.2,
+     "secs": 51.4,
      "hpLostPct": 100,
-     "bossLeftPct": 74,
+     "bossLeftPct": 93,
+     "landed": 6,
+     "swings": 723,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 17,
-     "swings": 1088
+     "chip": []
     },
     {
      "hero": "warden",
@@ -4921,25 +4916,25 @@
      "tag": "l1",
      "out": "win",
      "secs": 77.7,
-     "hpLostPct": 58,
+     "hpLostPct": 76,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 62,
-     "swings": 896
+     "swings": 896,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 67.2,
+     "secs": 51.7,
      "hpLostPct": 100,
-     "bossLeftPct": 89,
+     "bossLeftPct": 94,
+     "landed": 7,
+     "swings": 698,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 12,
-     "swings": 918
+     "chip": []
     }
    ]
   },
@@ -4947,12 +4942,12 @@
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 180,
-    "hits": 14,
+    "hpLostPct": 161,
+    "hits": 11,
     "walked": 100,
     "lifts": 63,
     "frames": 15120,
-    "kills": 1,
+    "kills": 0,
     "heroLevel": 20
    }
   }
@@ -4965,16 +4960,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/40",
-     "dead:100/34"
+     "dead:100/63",
+     "dead:100/48"
     ],
     "warden": [
-     "dead:100/53",
-     "dead:100/53"
+     "dead:100/95",
+     "dead:100/95"
     ],
     "pyro": [
-     "dead:100/29",
-     "dead:100/29"
+     "dead:100/65",
+     "dead:100/65"
     ]
    },
    "rows": [
@@ -4983,136 +4978,136 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 44.3,
+     "secs": 42.3,
      "hpLostPct": 100,
-     "bossLeftPct": 40,
-     "reprisalPct": 0,
+     "bossLeftPct": 63,
+     "landed": 74,
+     "swings": 350,
+     "reprisalPct": 22,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "stalk"
       },
       {
        "f": 720,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "stalk"
       },
       {
        "f": 1500,
-       "mul": 1,
-       "open": null,
-       "mode": "stalk"
+       "mul": 0.05,
+       "open": false,
+       "mode": "cutTell"
       }
-     ],
-     "landed": 73,
-     "swings": 425
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 47.5,
+     "secs": 54.4,
      "hpLostPct": 100,
-     "bossLeftPct": 34,
-     "reprisalPct": 9,
-     "chip": [],
-     "landed": 69,
-     "swings": 486
+     "bossLeftPct": 48,
+     "landed": 92,
+     "swings": 482,
+     "reprisalPct": 24,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 41.9,
+     "secs": 33.8,
      "hpLostPct": 100,
-     "bossLeftPct": 53,
-     "reprisalPct": 8,
-     "chip": [],
-     "landed": 28,
-     "swings": 390
+     "bossLeftPct": 95,
+     "landed": 7,
+     "swings": 403,
+     "reprisalPct": 20,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 41.9,
+     "secs": 33.8,
      "hpLostPct": 100,
-     "bossLeftPct": 53,
-     "reprisalPct": 8,
-     "chip": [],
-     "landed": 28,
-     "swings": 390
+     "bossLeftPct": 95,
+     "landed": 7,
+     "swings": 403,
+     "reprisalPct": 20,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 67.8,
+     "secs": 46.8,
      "hpLostPct": 100,
-     "bossLeftPct": 29,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 125,
-     "swings": 623
+     "bossLeftPct": 65,
+     "landed": 67,
+     "swings": 380,
+     "reprisalPct": 33,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 67.8,
+     "secs": 46.8,
      "hpLostPct": 100,
-     "bossLeftPct": 29,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 125,
-     "swings": 623
+     "bossLeftPct": 65,
+     "landed": 67,
+     "swings": 380,
+     "reprisalPct": 33,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 44.6,
+     "secs": 24.8,
      "hpLostPct": 100,
-     "bossLeftPct": 54,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 41,
-     "swings": 485
+     "bossLeftPct": 91,
+     "landed": 15,
+     "swings": 255,
+     "reprisalPct": 14,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 42,
+     "secs": 24.7,
      "hpLostPct": 100,
-     "bossLeftPct": 64,
-     "reprisalPct": 6,
-     "chip": [],
-     "landed": 45,
-     "swings": 445
+     "bossLeftPct": 94,
+     "landed": 10,
+     "swings": 268,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 38.4,
+     "secs": 24.9,
      "hpLostPct": 100,
-     "bossLeftPct": 70,
+     "bossLeftPct": 93,
+     "landed": 13,
+     "swings": 268,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 38,
-     "swings": 359
+     "chip": []
     }
    ]
   },
@@ -5120,12 +5115,12 @@
    "knight": {
     "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 326,
-    "hits": 9,
+    "hpLostPct": 345,
+    "hits": 11,
     "walked": 100,
     "lifts": 40,
     "frames": 9600,
-    "kills": 22,
+    "kills": 26,
     "heroLevel": 12
    }
   }
@@ -5142,8 +5137,8 @@
      "timeout:0/100"
     ],
     "warden": [
-     "timeout:0/86",
-     "timeout:0/85"
+     "timeout:0/98",
+     "timeout:0/99"
     ],
     "pyro": [
      "timeout:0/100",
@@ -5159,35 +5154,35 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 97,
+     "landed": 25,
+     "swings": 295,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
-       "mul": 0.45,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "walk"
       },
       {
        "f": 720,
-       "mul": 0.45,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "callTell"
       },
       {
        "f": 1500,
-       "mul": 0.45,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "walk"
       },
       {
        "f": 3000,
-       "mul": 0.45,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "fork"
       }
-     ],
-     "landed": 25,
-     "swings": 294
+     ]
     },
     {
      "hero": "knight",
@@ -5197,10 +5192,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 296
+     "swings": 295,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -5209,11 +5204,11 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 0,
-     "bossLeftPct": 86,
-     "reprisalPct": 0,
-     "chip": [],
+     "bossLeftPct": 98,
      "landed": 7,
-     "swings": 1629
+     "swings": 1607,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -5222,11 +5217,11 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 0,
-     "bossLeftPct": 85,
+     "bossLeftPct": 99,
+     "landed": 6,
+     "swings": 1624,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 7,
-     "swings": 1615
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -5236,10 +5231,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 1623
+     "swings": 1668,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -5249,10 +5244,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 1626
+     "swings": 1645,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
@@ -5262,10 +5257,10 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2165
+     "swings": 2149,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -5274,11 +5269,11 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 0,
-     "bossLeftPct": 96,
+     "bossLeftPct": 100,
+     "landed": 4,
+     "swings": 2137,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 5,
-     "swings": 2162
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -5288,29 +5283,29 @@
      "secs": 150,
      "hpLostPct": 0,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2163
+     "swings": 2163,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
   "mini": {
    "boss": "ploughman",
-   "wins": 6,
+   "wins": 4,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:65/0",
-     "win:65/0"
+     "dead:100/52",
+     "dead:100/31"
     ],
     "warden": [
-     "win:15/0",
-     "win:15/0"
+     "win:61/0",
+     "win:61/0"
     ],
     "pyro": [
-     "win:49/0",
-     "win:49/0"
+     "win:95/0",
+     "win:95/0"
     ]
    },
    "rows": [
@@ -5318,150 +5313,150 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 45.6,
-     "hpLostPct": 65,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
+     "out": "dead",
+     "secs": 39.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 52,
+     "landed": 57,
+     "swings": 193,
+     "reprisalPct": 23,
      "chip": [
       {
        "f": 240,
        "mul": 0.4,
-       "open": null,
+       "open": false,
        "mode": "chargeTell"
       },
       {
        "f": 720,
        "mul": 0.4,
-       "open": null,
+       "open": false,
        "mode": "goadTell"
       },
       {
        "f": 1500,
        "mul": 0.4,
-       "open": null,
+       "open": false,
        "mode": "walk"
       }
-     ],
-     "landed": 85,
-     "swings": 201
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 45.5,
-     "hpLostPct": 65,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 51,
+     "hpLostPct": 100,
+     "bossLeftPct": 31,
+     "landed": 56,
+     "swings": 249,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 66,
-     "swings": 201
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 36,
-     "hpLostPct": 15,
+     "secs": 38.2,
+     "hpLostPct": 61,
      "bossLeftPct": 0,
+     "landed": 41,
+     "swings": 170,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 44,
-     "swings": 112
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 36,
-     "hpLostPct": 15,
+     "secs": 38.2,
+     "hpLostPct": 61,
      "bossLeftPct": 0,
+     "landed": 41,
+     "swings": 170,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 44,
-     "swings": 112
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 44.5,
-     "hpLostPct": 49,
+     "secs": 45.1,
+     "hpLostPct": 95,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 86,
-     "swings": 273
+     "swings": 317,
+     "reprisalPct": 20,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 44.5,
-     "hpLostPct": 49,
+     "secs": 45.1,
+     "hpLostPct": 95,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 86,
-     "swings": 273
+     "swings": 317,
+     "reprisalPct": 20,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 31.2,
+     "secs": 15.8,
      "hpLostPct": 100,
-     "bossLeftPct": 85,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 21,
-     "swings": 359
+     "bossLeftPct": 97,
+     "landed": 5,
+     "swings": 149,
+     "reprisalPct": 43,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 37.3,
+     "secs": 22.6,
      "hpLostPct": 100,
-     "bossLeftPct": 81,
+     "bossLeftPct": 86,
+     "landed": 18,
+     "swings": 210,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 29,
-     "swings": 426
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 39.5,
+     "secs": 13.8,
      "hpLostPct": 100,
-     "bossLeftPct": 77,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 44,
-     "swings": 361
+     "bossLeftPct": 98,
+     "landed": 5,
+     "swings": 119,
+     "reprisalPct": 35,
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
-    "deaths": 0,
-    "minHpPct": 1,
-    "hpLostPct": 99,
-    "hits": 8,
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 246,
+    "hits": 24,
     "walked": 100,
-    "lifts": 68,
-    "frames": 16320,
-    "kills": 6,
+    "lifts": 65,
+    "frames": 15836,
+    "kills": 12,
     "heroLevel": 23
    }
   }
@@ -5470,20 +5465,20 @@
   "hash": "84b835bdfeca",
   "boss": {
    "boss": "burieddead",
-   "wins": 2,
+   "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/69",
-     "dead:100/70"
+     "dead:100/96",
+     "dead:100/98"
     ],
     "warden": [
-     "dead:100/9",
-     "dead:100/9"
+     "dead:100/98",
+     "dead:100/98"
     ],
     "pyro": [
-     "win:92/0",
-     "win:97/0"
+     "dead:100/91",
+     "dead:100/91"
     ]
    },
    "rows": [
@@ -5492,155 +5487,155 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 49.7,
+     "secs": 49,
      "hpLostPct": 100,
-     "bossLeftPct": 69,
-     "reprisalPct": 15,
+     "bossLeftPct": 96,
+     "landed": 46,
+     "swings": 286,
+     "reprisalPct": 23,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "skullTell"
       },
       {
        "f": 720,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "slamTell"
       },
       {
        "f": 1500,
-       "mul": 1,
-       "open": null,
-       "mode": "walk"
+       "mul": 0.05,
+       "open": false,
+       "mode": "handsTell"
       }
-     ],
-     "landed": 46,
-     "swings": 286
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 49.5,
+     "secs": 48.9,
      "hpLostPct": 100,
-     "bossLeftPct": 70,
-     "reprisalPct": 0,
-     "chip": [],
+     "bossLeftPct": 98,
      "landed": 27,
-     "swings": 286
+     "swings": 286,
+     "reprisalPct": 9,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 59.1,
+     "secs": 44.4,
      "hpLostPct": 100,
-     "bossLeftPct": 9,
+     "bossLeftPct": 98,
+     "landed": 17,
+     "swings": 400,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 39,
-     "swings": 482
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 59.1,
+     "secs": 44.4,
      "hpLostPct": 100,
-     "bossLeftPct": 9,
+     "bossLeftPct": 98,
+     "landed": 17,
+     "swings": 400,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 39,
-     "swings": 482
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 55.7,
-     "hpLostPct": 92,
-     "bossLeftPct": 0,
-     "reprisalPct": 6,
-     "chip": [],
-     "landed": 74,
-     "swings": 483
+     "out": "dead",
+     "secs": 51.4,
+     "hpLostPct": 100,
+     "bossLeftPct": 91,
+     "landed": 41,
+     "swings": 436,
+     "reprisalPct": 4,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 47.9,
-     "hpLostPct": 97,
-     "bossLeftPct": 0,
-     "reprisalPct": 6,
-     "chip": [],
-     "landed": 64,
-     "swings": 518
+     "out": "dead",
+     "secs": 51.4,
+     "hpLostPct": 100,
+     "bossLeftPct": 91,
+     "landed": 41,
+     "swings": 436,
+     "reprisalPct": 4,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 35.3,
+     "secs": 24.7,
      "hpLostPct": 100,
-     "bossLeftPct": 82,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 22,
-     "swings": 417
+     "bossLeftPct": 100,
+     "landed": 3,
+     "swings": 339,
+     "reprisalPct": 14,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 34.7,
+     "secs": 24.1,
      "hpLostPct": 100,
-     "bossLeftPct": 94,
+     "bossLeftPct": 100,
+     "landed": 1,
+     "swings": 334,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 22,
-     "swings": 422
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 34.8,
+     "secs": 24.1,
      "hpLostPct": 100,
-     "bossLeftPct": 87,
+     "bossLeftPct": 100,
+     "landed": 1,
+     "swings": 334,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 22,
-     "swings": 422
+     "chip": []
     }
    ]
   },
   "mini": {
    "boss": "gravewarden",
-   "wins": 6,
+   "wins": 2,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:79/0",
-     "win:79/0"
+     "dead:100/48",
+     "dead:100/51"
     ],
     "warden": [
-     "win:80/0",
-     "win:73/0"
+     "dead:100/49",
+     "dead:100/49"
     ],
     "pyro": [
-     "win:66/0",
-     "win:69/0"
+     "win:94/0",
+     "win:94/0"
     ]
    },
    "rows": [
@@ -5648,143 +5643,137 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 51.8,
-     "hpLostPct": 79,
-     "bossLeftPct": 0,
-     "reprisalPct": 11,
+     "out": "dead",
+     "secs": 46.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 48,
+     "landed": 41,
+     "swings": 282,
+     "reprisalPct": 12,
      "chip": [
       {
        "f": 240,
        "mul": 1,
-       "open": null,
+       "open": false,
        "mode": "tossTell"
       },
       {
        "f": 720,
        "mul": 1,
-       "open": null,
+       "open": false,
        "mode": "stalk"
       },
       {
        "f": 1500,
        "mul": 1,
-       "open": null,
+       "open": false,
        "mode": "dig"
-      },
-      {
-       "f": 3000,
-       "mul": 1,
-       "open": null,
-       "mode": "cleaveTell"
       }
-     ],
-     "landed": 55,
-     "swings": 290
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 51.5,
-     "hpLostPct": 79,
-     "bossLeftPct": 0,
-     "reprisalPct": 11,
-     "chip": [],
-     "landed": 36,
-     "swings": 290
+     "out": "dead",
+     "secs": 46.4,
+     "hpLostPct": 100,
+     "bossLeftPct": 51,
+     "landed": 22,
+     "swings": 282,
+     "reprisalPct": 12,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 48.8,
-     "hpLostPct": 80,
-     "bossLeftPct": 0,
-     "reprisalPct": 8,
-     "chip": [],
-     "landed": 24,
-     "swings": 407
+     "out": "dead",
+     "secs": 39.4,
+     "hpLostPct": 100,
+     "bossLeftPct": 49,
+     "landed": 10,
+     "swings": 286,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 48.7,
-     "hpLostPct": 73,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 39.4,
+     "hpLostPct": 100,
+     "bossLeftPct": 49,
+     "landed": 10,
+     "swings": 286,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 24,
-     "swings": 407
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 46.2,
-     "hpLostPct": 66,
+     "secs": 44.9,
+     "hpLostPct": 94,
      "bossLeftPct": 0,
+     "landed": 34,
+     "swings": 387,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 40,
-     "swings": 411
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 46.7,
-     "hpLostPct": 69,
+     "secs": 44.9,
+     "hpLostPct": 94,
      "bossLeftPct": 0,
-     "reprisalPct": 14,
-     "chip": [],
-     "landed": 39,
-     "swings": 421
+     "landed": 34,
+     "swings": 387,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 40.2,
-     "hpLostPct": 100,
-     "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 0,
-     "swings": 570
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 40.2,
-     "hpLostPct": 100,
-     "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 0,
-     "swings": 570
-    },
-    {
-     "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
      "secs": 38.5,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 528
+     "swings": 528,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 38.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 100,
+     "landed": 0,
+     "swings": 528,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 36.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 100,
+     "landed": 0,
+     "swings": 505,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
@@ -5792,12 +5781,12 @@
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 163,
-    "hits": 20,
+    "hpLostPct": 153,
+    "hits": 16,
     "walked": 100,
     "lifts": 63,
     "frames": 15686,
-    "kills": 9,
+    "kills": 6,
     "heroLevel": 24
    }
   }
@@ -5819,7 +5808,7 @@
     ],
     "pyro": [
      "dead:100/100",
-     "dead:100/99"
+     "dead:100/100"
     ]
    },
    "rows": [
@@ -5828,161 +5817,161 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 61.2,
+     "secs": 53,
      "hpLostPct": 100,
      "bossLeftPct": 99,
+     "landed": 7,
+     "swings": 376,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "bolt"
       },
       {
        "f": 720,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "ward"
       },
       {
        "f": 1500,
        "mul": 0,
-       "open": null,
-       "mode": "boltTell"
+       "open": false,
+       "mode": "bolt"
       },
       {
        "f": 3000,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "ward"
       }
-     ],
-     "landed": 7,
-     "swings": 317
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 52.3,
+     "secs": 60.2,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 375
+     "swings": 349,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 60.1,
+     "secs": 71.4,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 564
+     "swings": 735,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 60.3,
+     "secs": 60.7,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 602
+     "swings": 568,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 67.3,
+     "secs": 65.9,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 716
+     "swings": 740,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 72,
+     "secs": 71.3,
      "hpLostPct": 100,
-     "bossLeftPct": 99,
+     "bossLeftPct": 100,
+     "landed": 0,
+     "swings": 745,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 7,
-     "swings": 772
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 44.7,
+     "secs": 31.9,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 585
+     "swings": 469,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 32.7,
+     "secs": 34,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 466
+     "swings": 448,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 24.8,
+     "secs": 34.8,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 343
+     "swings": 448,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
   "mini": {
    "boss": "homunculus",
-   "wins": 6,
+   "wins": 5,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:46/0",
-     "win:71/0"
+     "dead:100/37",
+     "win:90/0"
     ],
     "warden": [
-     "win:12/0",
-     "win:12/0"
+     "win:73/0",
+     "win:73/0"
     ],
     "pyro": [
-     "win:45/0",
-     "win:45/0"
+     "win:64/0",
+     "win:64/0"
     ]
    },
    "rows": [
@@ -5990,11 +5979,13 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 41,
-     "hpLostPct": 46,
-     "bossLeftPct": 0,
-     "reprisalPct": 59,
+     "out": "dead",
+     "secs": 43.3,
+     "hpLostPct": 100,
+     "bossLeftPct": 37,
+     "landed": 69,
+     "swings": 235,
+     "reprisalPct": 55,
      "chip": [
       {
        "f": 240,
@@ -6014,9 +6005,7 @@
        "open": false,
        "mode": "walk"
       }
-     ],
-     "landed": 76,
-     "swings": 191
+     ]
     },
     {
      "hero": "knight",
@@ -6024,103 +6013,103 @@
      "tag": "expected",
      "out": "win",
      "secs": 47.9,
-     "hpLostPct": 71,
+     "hpLostPct": 90,
      "bossLeftPct": 0,
-     "reprisalPct": 21,
-     "chip": [],
      "landed": 74,
-     "swings": 320
+     "swings": 320,
+     "reprisalPct": 22,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 36.1,
-     "hpLostPct": 12,
+     "secs": 41.6,
+     "hpLostPct": 73,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 42,
-     "swings": 104
+     "landed": 48,
+     "swings": 190,
+     "reprisalPct": 27,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 36.1,
-     "hpLostPct": 12,
+     "secs": 41.6,
+     "hpLostPct": 73,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 42,
-     "swings": 104
+     "landed": 48,
+     "swings": 190,
+     "reprisalPct": 27,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 44.3,
-     "hpLostPct": 45,
+     "secs": 40,
+     "hpLostPct": 64,
      "bossLeftPct": 0,
-     "reprisalPct": 36,
-     "chip": [],
-     "landed": 77,
-     "swings": 225
+     "landed": 64,
+     "swings": 243,
+     "reprisalPct": 32,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 44.3,
-     "hpLostPct": 45,
+     "secs": 40,
+     "hpLostPct": 64,
      "bossLeftPct": 0,
-     "reprisalPct": 36,
-     "chip": [],
-     "landed": 77,
-     "swings": 225
+     "landed": 64,
+     "swings": 243,
+     "reprisalPct": 32,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 34.9,
+     "secs": 24.6,
      "hpLostPct": 100,
-     "bossLeftPct": 79,
+     "bossLeftPct": 88,
+     "landed": 17,
+     "swings": 292,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 29,
-     "swings": 415
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 36.1,
+     "secs": 26,
      "hpLostPct": 100,
-     "bossLeftPct": 86,
+     "bossLeftPct": 91,
+     "landed": 21,
+     "swings": 272,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 36,
-     "swings": 414
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 34.4,
+     "secs": 24.7,
      "hpLostPct": 100,
-     "bossLeftPct": 87,
+     "bossLeftPct": 92,
+     "landed": 19,
+     "swings": 277,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 31,
-     "swings": 406
+     "chip": []
     }
    ]
   },
@@ -6128,12 +6117,12 @@
    "knight": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 285,
-    "hits": 28,
+    "hpLostPct": 334,
+    "hits": 33,
     "walked": 100,
     "lifts": 59,
     "frames": 14345,
-    "kills": 5,
+    "kills": 6,
     "heroLevel": 26
    }
   }
@@ -6146,16 +6135,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/46",
-     "dead:100/71"
+     "dead:100/93",
+     "dead:100/96"
     ],
     "warden": [
-     "dead:100/72",
-     "dead:100/79"
+     "dead:100/99",
+     "dead:100/99"
     ],
     "pyro": [
-     "dead:100/34",
-     "dead:100/29"
+     "dead:100/38",
+     "dead:100/95"
     ]
    },
    "rows": [
@@ -6164,161 +6153,161 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 68.1,
+     "secs": 83.9,
      "hpLostPct": 100,
-     "bossLeftPct": 46,
-     "reprisalPct": 12,
+     "bossLeftPct": 93,
+     "landed": 54,
+     "swings": 1207,
+     "reprisalPct": 13,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "fireTell"
       },
       {
        "f": 720,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "hover"
       },
       {
        "f": 1500,
-       "mul": 0,
-       "open": null,
-       "mode": "rhover"
+       "mul": 2,
+       "open": true,
+       "mode": "gather"
       },
       {
        "f": 3000,
-       "mul": 0,
-       "open": null,
-       "mode": "blinkOut"
+       "mul": 0.05,
+       "open": false,
+       "mode": "markWait"
       }
-     ],
-     "landed": 55,
-     "swings": 892
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 53.4,
+     "secs": 60,
      "hpLostPct": 100,
-     "bossLeftPct": 71,
-     "reprisalPct": 20,
-     "chip": [],
-     "landed": 31,
-     "swings": 720
+     "bossLeftPct": 96,
+     "landed": 30,
+     "swings": 861,
+     "reprisalPct": 2,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 90.9,
+     "secs": 45.3,
      "hpLostPct": 100,
-     "bossLeftPct": 72,
+     "bossLeftPct": 99,
+     "landed": 5,
+     "swings": 565,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 15,
-     "swings": 1237
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 45.6,
+     "secs": 49.3,
      "hpLostPct": 100,
-     "bossLeftPct": 79,
-     "reprisalPct": 4,
-     "chip": [],
-     "landed": 13,
-     "swings": 529
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 105.9,
-     "hpLostPct": 100,
-     "bossLeftPct": 34,
-     "reprisalPct": 25,
-     "chip": [],
-     "landed": 98,
-     "swings": 1480
-    },
-    {
-     "hero": "pyro",
-     "seed": 2,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 111,
-     "hpLostPct": 100,
-     "bossLeftPct": 29,
-     "reprisalPct": 7,
-     "chip": [],
-     "landed": 126,
-     "swings": 1593
-    },
-    {
-     "hero": "knight",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 35.2,
-     "hpLostPct": 100,
-     "bossLeftPct": 91,
-     "reprisalPct": 0,
-     "chip": [],
+     "bossLeftPct": 99,
      "landed": 8,
-     "swings": 535
+     "swings": 630,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 109.8,
+     "hpLostPct": 100,
+     "bossLeftPct": 38,
+     "landed": 44,
+     "swings": 1625,
+     "reprisalPct": 9,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 99.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 95,
+     "landed": 26,
+     "swings": 1452,
+     "reprisalPct": 15,
+     "chip": []
+    },
+    {
+     "hero": "knight",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 32.8,
+     "hpLostPct": 100,
+     "bossLeftPct": 100,
+     "landed": 2,
+     "swings": 496,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 44.2,
+     "secs": 34.8,
      "hpLostPct": 100,
-     "bossLeftPct": 91,
-     "reprisalPct": 7,
-     "chip": [],
-     "landed": 13,
-     "swings": 667
+     "bossLeftPct": 100,
+     "landed": 4,
+     "swings": 499,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 34.9,
+     "secs": 41.8,
      "hpLostPct": 100,
-     "bossLeftPct": 90,
+     "bossLeftPct": 100,
+     "landed": 4,
+     "swings": 591,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 12,
-     "swings": 496
+     "chip": []
     }
    ]
   },
   "mini": {
    "boss": "sexton",
-   "wins": 4,
+   "wins": 3,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:55/0",
-     "dead:100/3"
+     "dead:100/36",
+     "win:90/0"
     ],
     "warden": [
-     "win:34/0",
-     "dead:100/9"
+     "dead:100/57",
+     "dead:100/64"
     ],
     "pyro": [
-     "win:72/0",
-     "win:81/0"
+     "win:89/0",
+     "win:91/0"
     ]
    },
    "rows": [
@@ -6326,124 +6315,118 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 34.8,
-     "hpLostPct": 55,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
+     "out": "dead",
+     "secs": 20.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 36,
+     "landed": 36,
+     "swings": 158,
+     "reprisalPct": 44,
      "chip": [
       {
        "f": 240,
        "mul": 1,
-       "open": null,
+       "open": false,
        "mode": "rushTell"
       },
       {
        "f": 720,
        "mul": 1,
-       "open": null,
-       "mode": "stalk"
-      },
-      {
-       "f": 1500,
-       "mul": 1,
-       "open": null,
+       "open": false,
        "mode": "stalk"
       }
-     ],
-     "landed": 69,
-     "swings": 186
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "dead",
-     "secs": 19.5,
-     "hpLostPct": 100,
-     "bossLeftPct": 3,
-     "reprisalPct": 57,
-     "chip": [],
-     "landed": 31,
-     "swings": 112
+     "out": "win",
+     "secs": 26.7,
+     "hpLostPct": 90,
+     "bossLeftPct": 0,
+     "landed": 44,
+     "swings": 165,
+     "reprisalPct": 25,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 52.5,
-     "hpLostPct": 34,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 18.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 57,
+     "landed": 21,
+     "swings": 116,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 77,
-     "swings": 379
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 44.8,
+     "secs": 21.6,
      "hpLostPct": 100,
-     "bossLeftPct": 9,
-     "reprisalPct": 34,
-     "chip": [],
-     "landed": 62,
-     "swings": 282
+     "bossLeftPct": 64,
+     "landed": 24,
+     "swings": 157,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 21.8,
-     "hpLostPct": 72,
+     "secs": 33.3,
+     "hpLostPct": 89,
      "bossLeftPct": 0,
-     "reprisalPct": 38,
-     "chip": [],
-     "landed": 36,
-     "swings": 155
+     "landed": 60,
+     "swings": 225,
+     "reprisalPct": 16,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 26.3,
-     "hpLostPct": 81,
+     "secs": 22.6,
+     "hpLostPct": 91,
      "bossLeftPct": 0,
-     "reprisalPct": 34,
-     "chip": [],
-     "landed": 49,
-     "swings": 204
+     "landed": 43,
+     "swings": 197,
+     "reprisalPct": 36,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 13.7,
+     "secs": 10.2,
      "hpLostPct": 100,
-     "bossLeftPct": 79,
+     "bossLeftPct": 92,
+     "landed": 6,
+     "swings": 98,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 12,
-     "swings": 107
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
-     "out": "win",
-     "secs": 68.2,
-     "hpLostPct": 82,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 9.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 97,
+     "landed": 5,
+     "swings": 62,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 92,
-     "swings": 904
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -6453,10 +6436,10 @@
      "secs": 9.1,
      "hpLostPct": 100,
      "bossLeftPct": 95,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 5,
-     "swings": 63
+     "swings": 62,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
@@ -6464,12 +6447,12 @@
    "knight": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 211,
-    "hits": 17,
+    "hpLostPct": 212,
+    "hits": 19,
     "walked": 100,
-    "lifts": 59,
-    "frames": 15017,
-    "kills": 16,
+    "lifts": 57,
+    "frames": 14751,
+    "kills": 15,
     "heroLevel": 27
    }
   }
@@ -6478,20 +6461,20 @@
   "hash": "c4d0fd689ed1",
   "boss": {
    "boss": "pyromancer",
-   "wins": 2,
+   "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/7",
-     "dead:100/43"
+     "dead:100/45",
+     "dead:100/82"
     ],
     "warden": [
-     "win:87/0",
-     "win:77/0"
+     "dead:100/47",
+     "dead:100/47"
     ],
     "pyro": [
-     "dead:100/65",
-     "dead:100/45"
+     "dead:100/73",
+     "dead:100/73"
     ]
    },
    "rows": [
@@ -6500,142 +6483,142 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 71.4,
+     "secs": 77.8,
      "hpLostPct": 100,
-     "bossLeftPct": 7,
-     "reprisalPct": 13,
+     "bossLeftPct": 45,
+     "landed": 37,
+     "swings": 1043,
+     "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
+       "mul": 0.25,
        "open": false,
        "mode": "stalk"
       },
       {
        "f": 720,
-       "mul": 1,
+       "mul": 0.25,
        "open": false,
        "mode": "stalk"
       },
       {
        "f": 1500,
-       "mul": 1,
+       "mul": 0.25,
        "open": false,
-       "mode": "cut"
+       "mode": "stalk"
       },
       {
        "f": 3000,
-       "mul": 1,
+       "mul": 0.25,
        "open": false,
-       "mode": "cutEnd"
+       "mode": "cut"
       }
-     ],
-     "landed": 35,
-     "swings": 991
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 69,
+     "secs": 70,
      "hpLostPct": 100,
-     "bossLeftPct": 43,
+     "bossLeftPct": 82,
+     "landed": 25,
+     "swings": 911,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 27,
-     "swings": 860
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 68.3,
-     "hpLostPct": 87,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 68.4,
+     "hpLostPct": 100,
+     "bossLeftPct": 47,
+     "landed": 37,
+     "swings": 1076,
      "reprisalPct": 14,
-     "chip": [],
-     "landed": 45,
-     "swings": 946
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 61.4,
-     "hpLostPct": 77,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 35,
-     "swings": 716
+     "out": "dead",
+     "secs": 68.4,
+     "hpLostPct": 100,
+     "bossLeftPct": 47,
+     "landed": 37,
+     "swings": 1076,
+     "reprisalPct": 14,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 60.5,
+     "secs": 54.9,
      "hpLostPct": 100,
-     "bossLeftPct": 65,
-     "reprisalPct": 8,
-     "chip": [],
-     "landed": 23,
-     "swings": 894
+     "bossLeftPct": 73,
+     "landed": 30,
+     "swings": 765,
+     "reprisalPct": 16,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 60.2,
+     "secs": 57.7,
      "hpLostPct": 100,
-     "bossLeftPct": 45,
-     "reprisalPct": 21,
-     "chip": [],
-     "landed": 33,
-     "swings": 891
+     "bossLeftPct": 73,
+     "landed": 31,
+     "swings": 831,
+     "reprisalPct": 24,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 61,
+     "secs": 70.3,
      "hpLostPct": 100,
-     "bossLeftPct": 54,
+     "bossLeftPct": 78,
+     "landed": 29,
+     "swings": 906,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 22,
-     "swings": 842
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 69.5,
+     "secs": 72.8,
      "hpLostPct": 100,
-     "bossLeftPct": 10,
+     "bossLeftPct": 55,
+     "landed": 49,
+     "swings": 913,
      "reprisalPct": 8,
-     "chip": [],
-     "landed": 40,
-     "swings": 905
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 67,
+     "secs": 54.5,
      "hpLostPct": 100,
-     "bossLeftPct": 32,
-     "reprisalPct": 9,
-     "chip": [],
-     "landed": 44,
-     "swings": 863
+     "bossLeftPct": 85,
+     "landed": 26,
+     "swings": 638,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
@@ -6643,8 +6626,8 @@
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 183,
-    "hits": 17,
+    "hpLostPct": 188,
+    "hits": 16,
     "walked": 100,
     "lifts": 41,
     "frames": 10058,
@@ -6670,7 +6653,7 @@
     ],
     "pyro": [
      "dead:100/100",
-     "dead:100/100"
+     "dead:100/86"
     ]
    },
    "rows": [
@@ -6679,9 +6662,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 60.5,
+     "secs": 56.4,
      "hpLostPct": 100,
      "bossLeftPct": 100,
+     "landed": 0,
+     "swings": 238,
      "reprisalPct": 0,
      "chip": [
       {
@@ -6700,140 +6685,138 @@
        "f": 1500,
        "mul": 0,
        "open": false,
-       "mode": "breath"
+       "mode": "shriek"
       },
       {
        "f": 3000,
        "mul": 0,
        "open": false,
-       "mode": "perchFly"
+       "mode": "fireballTell"
       }
-     ],
-     "landed": 0,
-     "swings": 283
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 44.5,
+     "secs": 47.8,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 265
+     "swings": 218,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 40.8,
+     "secs": 32.2,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 401
+     "swings": 297,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 46.3,
+     "secs": 35.5,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 407
+     "swings": 278,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 56.7,
+     "secs": 42.6,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 633
+     "swings": 341,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 48.1,
+     "secs": 73,
      "hpLostPct": 100,
-     "bossLeftPct": 100,
+     "bossLeftPct": 86,
+     "landed": 1,
+     "swings": 708,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 0,
-     "swings": 471
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 35.7,
+     "secs": 38,
      "hpLostPct": 100,
-     "bossLeftPct": 100,
+     "bossLeftPct": 86,
+     "landed": 1,
+     "swings": 532,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 0,
-     "swings": 440
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 50,
+     "secs": 29.5,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 599
+     "swings": 343,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 21.8,
+     "secs": 38.2,
      "hpLostPct": 100,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 266
+     "swings": 474,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
   "mini": {
    "boss": "hedgewarden",
-   "wins": 6,
+   "wins": 2,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:8/0",
-     "win:16/0"
+     "dead:100/49",
+     "dead:100/14"
     ],
     "warden": [
-     "win:71/0",
-     "win:7/0"
+     "dead:100/20",
+     "win:60/0"
     ],
     "pyro": [
-     "win:12/0",
-     "win:8/0"
+     "dead:100/14",
+     "win:36/0"
     ]
    },
    "rows": [
@@ -6841,137 +6824,137 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 35.5,
-     "hpLostPct": 8,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
+     "out": "dead",
+     "secs": 40.3,
+     "hpLostPct": 100,
+     "bossLeftPct": 49,
+     "landed": 54,
+     "swings": 232,
+     "reprisalPct": 24,
      "chip": [
       {
        "f": 240,
        "mul": 1,
-       "open": null,
+       "open": false,
        "mode": "rushTell"
       },
       {
        "f": 720,
        "mul": 0.25,
-       "open": null,
+       "open": false,
        "mode": "stump"
       },
       {
        "f": 1500,
        "mul": 0.25,
-       "open": null,
-       "mode": "stump"
+       "open": false,
+       "mode": "stalk"
       }
-     ],
-     "landed": 85,
-     "swings": 66
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 24.9,
-     "hpLostPct": 16,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 31,
-     "swings": 87
+     "out": "dead",
+     "secs": 36,
+     "hpLostPct": 100,
+     "bossLeftPct": 14,
+     "landed": 53,
+     "swings": 184,
+     "reprisalPct": 35,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 75,
-     "hpLostPct": 71,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 115,
-     "swings": 428
+     "out": "dead",
+     "secs": 39.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 20,
+     "landed": 29,
+     "swings": 255,
+     "reprisalPct": 18,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 23.2,
-     "hpLostPct": 7,
+     "secs": 31.8,
+     "hpLostPct": 60,
      "bossLeftPct": 0,
+     "landed": 25,
+     "swings": 192,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 28,
-     "swings": 42
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 24.4,
-     "hpLostPct": 12,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 39,
-     "swings": 83
+     "out": "dead",
+     "secs": 41.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 14,
+     "landed": 79,
+     "swings": 252,
+     "reprisalPct": 64,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 20.8,
-     "hpLostPct": 8,
+     "secs": 21.4,
+     "hpLostPct": 36,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 37,
-     "swings": 38
+     "landed": 42,
+     "swings": 77,
+     "reprisalPct": 100,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 62,
+     "secs": 18.9,
      "hpLostPct": 100,
-     "bossLeftPct": 34,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 80,
-     "swings": 622
+     "bossLeftPct": 83,
+     "landed": 11,
+     "swings": 188,
+     "reprisalPct": 45,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 47.1,
+     "secs": 18.1,
      "hpLostPct": 100,
-     "bossLeftPct": 75,
+     "bossLeftPct": 85,
+     "landed": 18,
+     "swings": 135,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 61,
-     "swings": 494
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 57,
+     "secs": 19.4,
      "hpLostPct": 100,
-     "bossLeftPct": 25,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 76,
-     "swings": 521
+     "bossLeftPct": 80,
+     "landed": 18,
+     "swings": 191,
+     "reprisalPct": 2,
+     "chip": []
     }
    ]
   },
@@ -6979,12 +6962,12 @@
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 168,
-    "hits": 22,
+    "hpLostPct": 143,
+    "hits": 19,
     "walked": 100,
-    "lifts": 53,
-    "frames": 12720,
-    "kills": 11,
+    "lifts": 52,
+    "frames": 12646,
+    "kills": 13,
     "heroLevel": 25
    }
   }
@@ -7018,35 +7001,35 @@
      "secs": 150,
      "hpLostPct": 99,
      "bossLeftPct": 100,
+     "landed": 0,
+     "swings": 2000,
      "reprisalPct": 0,
      "chip": [
       {
        "f": 240,
-       "mul": 0.5,
+       "mul": 0.05,
        "open": false,
        "mode": "stalk"
       },
       {
        "f": 720,
-       "mul": 0.5,
+       "mul": 0.05,
        "open": false,
        "mode": "stalk"
       },
       {
        "f": 1500,
-       "mul": 0.5,
+       "mul": 0.05,
        "open": false,
        "mode": "stalk"
       },
       {
        "f": 3000,
-       "mul": 0.5,
+       "mul": 0.05,
        "open": false,
-       "mode": "send"
+       "mode": "stalk"
       }
-     ],
-     "landed": 0,
-     "swings": 1997
+     ]
     },
     {
      "hero": "knight",
@@ -7056,10 +7039,10 @@
      "secs": 150,
      "hpLostPct": 99,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2006
+     "swings": 2049,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -7069,10 +7052,10 @@
      "secs": 150,
      "hpLostPct": 99,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2049
+     "swings": 2049,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -7082,10 +7065,10 @@
      "secs": 150,
      "hpLostPct": 99,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2006
+     "swings": 2039,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -7095,10 +7078,10 @@
      "secs": 150,
      "hpLostPct": 99,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2040
+     "swings": 2006,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -7108,10 +7091,10 @@
      "secs": 150,
      "hpLostPct": 99,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2040
+     "swings": 2040,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
@@ -7121,10 +7104,10 @@
      "secs": 150,
      "hpLostPct": 99,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2218
+     "swings": 2218,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -7134,10 +7117,10 @@
      "secs": 150,
      "hpLostPct": 99,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2218
+     "swings": 2218,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -7147,18 +7130,18 @@
      "secs": 150,
      "hpLostPct": 99,
      "bossLeftPct": 100,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 0,
-     "swings": 2218
+     "swings": 2232,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
-    "deaths": 0,
-    "minHpPct": 3,
-    "hpLostPct": 99,
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 102,
     "hits": 6,
     "walked": 100,
     "lifts": 27,
@@ -7172,20 +7155,20 @@
   "hash": "b3b559848578",
   "boss": {
    "boss": "bloodknight",
-   "wins": 6,
+   "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:81/0",
-     "win:61/0"
+     "dead:100/91",
+     "dead:100/91"
     ],
     "warden": [
-     "win:59/0",
-     "win:59/0"
+     "dead:100/95",
+     "dead:100/95"
     ],
     "pyro": [
-     "win:59/0",
-     "win:59/0"
+     "dead:100/84",
+     "dead:100/84"
     ]
    },
    "rows": [
@@ -7193,162 +7176,162 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 76.3,
-     "hpLostPct": 81,
-     "bossLeftPct": 0,
-     "reprisalPct": 19,
+     "out": "dead",
+     "secs": 83.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 91,
+     "landed": 96,
+     "swings": 546,
+     "reprisalPct": 23,
      "chip": [
       {
        "f": 240,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "raise"
       },
       {
        "f": 720,
-       "mul": 1,
-       "open": null,
+       "mul": 0.05,
+       "open": false,
        "mode": "stalk"
       },
       {
        "f": 1500,
        "mul": 0,
-       "open": null,
+       "open": false,
        "mode": "ward"
       },
       {
        "f": 3000,
-       "mul": 1,
-       "open": null,
-       "mode": "raise"
+       "mul": 0.05,
+       "open": false,
+       "mode": "stalk"
       }
-     ],
-     "landed": 104,
-     "swings": 486
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 86.2,
-     "hpLostPct": 61,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 73.3,
+     "hpLostPct": 100,
+     "bossLeftPct": 91,
+     "landed": 85,
+     "swings": 530,
+     "reprisalPct": 14,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 54.7,
+     "hpLostPct": 100,
+     "bossLeftPct": 95,
+     "landed": 43,
+     "swings": 469,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 90,
-     "swings": 395
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "expected",
-     "out": "win",
-     "secs": 66.9,
-     "hpLostPct": 59,
-     "bossLeftPct": 0,
-     "reprisalPct": 11,
-     "chip": [],
-     "landed": 57,
-     "swings": 500
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 66.9,
-     "hpLostPct": 59,
-     "bossLeftPct": 0,
-     "reprisalPct": 11,
-     "chip": [],
-     "landed": 57,
-     "swings": 500
+     "out": "dead",
+     "secs": 54.7,
+     "hpLostPct": 100,
+     "bossLeftPct": 95,
+     "landed": 43,
+     "swings": 469,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 54.7,
-     "hpLostPct": 59,
-     "bossLeftPct": 0,
-     "reprisalPct": 38,
-     "chip": [],
-     "landed": 92,
-     "swings": 485
+     "out": "dead",
+     "secs": 93.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 84,
+     "landed": 63,
+     "swings": 867,
+     "reprisalPct": 11,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 54.7,
-     "hpLostPct": 59,
-     "bossLeftPct": 0,
-     "reprisalPct": 38,
-     "chip": [],
-     "landed": 92,
-     "swings": 485
+     "out": "dead",
+     "secs": 93.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 84,
+     "landed": 63,
+     "swings": 867,
+     "reprisalPct": 11,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 61.6,
+     "secs": 41.4,
      "hpLostPct": 100,
-     "bossLeftPct": 62,
-     "reprisalPct": 9,
-     "chip": [],
-     "landed": 42,
-     "swings": 715
+     "bossLeftPct": 98,
+     "landed": 17,
+     "swings": 443,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 61.7,
+     "secs": 63.6,
      "hpLostPct": 100,
-     "bossLeftPct": 78,
-     "reprisalPct": 12,
-     "chip": [],
-     "landed": 42,
-     "swings": 725
+     "bossLeftPct": 99,
+     "landed": 15,
+     "swings": 687,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 74.9,
+     "secs": 40.9,
      "hpLostPct": 100,
-     "bossLeftPct": 56,
-     "reprisalPct": 10,
-     "chip": [],
-     "landed": 69,
-     "swings": 774
+     "bossLeftPct": 99,
+     "landed": 14,
+     "swings": 433,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
   "mini": {
    "boss": "barrowrider",
-   "wins": 6,
+   "wins": 2,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:83/0",
-     "win:83/0"
+     "dead:100/26",
+     "dead:100/27"
     ],
     "warden": [
-     "win:38/0",
-     "win:38/0"
+     "dead:100/8",
+     "dead:100/8"
     ],
     "pyro": [
-     "win:34/0",
-     "win:34/0"
+     "win:77/0",
+     "win:77/0"
     ]
    },
    "rows": [
@@ -7356,152 +7339,152 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 72,
-     "hpLostPct": 83,
-     "bossLeftPct": 0,
-     "reprisalPct": 17,
+     "out": "dead",
+     "secs": 64.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 26,
+     "landed": 59,
+     "swings": 416,
+     "reprisalPct": 19,
      "chip": [
       {
        "f": 240,
        "mul": 1,
-       "open": null,
+       "open": false,
        "mode": "fire"
       },
       {
        "f": 720,
        "mul": 1,
-       "open": null,
+       "open": false,
        "mode": "drawBack"
       },
       {
        "f": 1500,
        "mul": 1,
-       "open": null,
+       "open": false,
        "mode": "lanceTell"
       },
       {
        "f": 3000,
        "mul": 1,
-       "open": null,
+       "open": false,
        "mode": "stalk"
       }
-     ],
-     "landed": 75,
-     "swings": 468
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 72.3,
-     "hpLostPct": 83,
-     "bossLeftPct": 0,
-     "reprisalPct": 12,
-     "chip": [],
-     "landed": 58,
-     "swings": 469
+     "out": "dead",
+     "secs": 64.2,
+     "hpLostPct": 100,
+     "bossLeftPct": 27,
+     "landed": 40,
+     "swings": 416,
+     "reprisalPct": 14,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 48.2,
-     "hpLostPct": 38,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 43,
-     "swings": 299
+     "out": "dead",
+     "secs": 59.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 8,
+     "landed": 30,
+     "swings": 487,
+     "reprisalPct": 22,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 48.2,
-     "hpLostPct": 38,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 43,
-     "swings": 299
+     "out": "dead",
+     "secs": 59.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 8,
+     "landed": 30,
+     "swings": 487,
+     "reprisalPct": 22,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 46.1,
-     "hpLostPct": 34,
+     "secs": 48.3,
+     "hpLostPct": 77,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 51,
-     "swings": 308
+     "landed": 55,
+     "swings": 354,
+     "reprisalPct": 23,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 2,
      "tag": "expected",
      "out": "win",
-     "secs": 46.1,
-     "hpLostPct": 34,
+     "secs": 48.3,
+     "hpLostPct": 77,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 51,
-     "swings": 308
+     "landed": 55,
+     "swings": 354,
+     "reprisalPct": 23,
+     "chip": []
     },
     {
      "hero": "knight",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 39.1,
+     "secs": 27.3,
      "hpLostPct": 100,
-     "bossLeftPct": 71,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 25,
-     "swings": 471
+     "bossLeftPct": 88,
+     "landed": 10,
+     "swings": 328,
+     "reprisalPct": 32,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 43.2,
+     "secs": 31.3,
      "hpLostPct": 100,
-     "bossLeftPct": 75,
+     "bossLeftPct": 87,
+     "landed": 18,
+     "swings": 368,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 32,
-     "swings": 507
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "l1",
      "out": "dead",
-     "secs": 72.5,
+     "secs": 51.2,
      "hpLostPct": 100,
-     "bossLeftPct": 41,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 54,
-     "swings": 858
+     "bossLeftPct": 67,
+     "landed": 28,
+     "swings": 627,
+     "reprisalPct": 17,
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
-    "deaths": 0,
-    "minHpPct": 4,
-    "hpLostPct": 132,
-    "hits": 16,
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 158,
+    "hits": 17,
     "walked": 100,
     "lifts": 41,
     "frames": 9840,
@@ -7514,20 +7497,20 @@
   "hash": "83f6b6a91ee9",
   "boss": {
    "boss": "duneworm",
-   "wins": 4,
+   "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:87/0",
-     "win:89/0"
+     "dead:100/95",
+     "dead:100/72"
     ],
     "warden": [
-     "dead:100/71",
-     "dead:100/61"
+     "dead:100/98",
+     "dead:100/98"
     ],
     "pyro": [
-     "win:82/0",
-     "win:90/0"
+     "dead:100/89",
+     "dead:100/89"
     ]
    },
    "rows": [
@@ -7535,11 +7518,13 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 47.2,
-     "hpLostPct": 87,
-     "bossLeftPct": 0,
-     "reprisalPct": 25,
+     "out": "dead",
+     "secs": 42.4,
+     "hpLostPct": 100,
+     "bossLeftPct": 95,
+     "landed": 58,
+     "swings": 313,
+     "reprisalPct": 11,
      "chip": [
       {
        "f": 240,
@@ -7549,123 +7534,121 @@
       },
       {
        "f": 720,
-       "mul": 0,
+       "mul": 0.05,
        "open": false,
-       "mode": "swallowTell"
+       "mode": "surfaced"
       },
       {
        "f": 1500,
-       "mul": 1,
+       "mul": 0,
        "open": false,
-       "mode": "breach"
+       "mode": "under"
       }
-     ],
-     "landed": 80,
-     "swings": 169
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 59.1,
-     "hpLostPct": 89,
-     "bossLeftPct": 0,
+     "out": "dead",
+     "secs": 40.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 72,
+     "landed": 47,
+     "swings": 311,
      "reprisalPct": 0,
-     "chip": [],
-     "landed": 92,
-     "swings": 149
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 43.6,
+     "secs": 41.9,
      "hpLostPct": 100,
-     "bossLeftPct": 71,
-     "reprisalPct": 32,
-     "chip": [],
-     "landed": 40,
-     "swings": 316
+     "bossLeftPct": 98,
+     "landed": 25,
+     "swings": 158,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 51.8,
+     "secs": 38.4,
      "hpLostPct": 100,
-     "bossLeftPct": 61,
-     "reprisalPct": 20,
-     "chip": [],
-     "landed": 56,
-     "swings": 328
+     "bossLeftPct": 98,
+     "landed": 25,
+     "swings": 228,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
-     "out": "win",
-     "secs": 59.8,
-     "hpLostPct": 82,
-     "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 96,
-     "swings": 424
-    },
-    {
-     "hero": "pyro",
-     "seed": 2,
-     "tag": "expected",
-     "out": "win",
-     "secs": 60.1,
-     "hpLostPct": 90,
-     "bossLeftPct": 0,
-     "reprisalPct": 14,
-     "chip": [],
-     "landed": 106,
-     "swings": 347
-    },
-    {
-     "hero": "knight",
-     "seed": 1,
-     "tag": "l1",
      "out": "dead",
-     "secs": 21,
-     "hpLostPct": 100,
-     "bossLeftPct": 93,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 9,
-     "swings": 189
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 20.4,
-     "hpLostPct": 100,
-     "bossLeftPct": 97,
-     "reprisalPct": 0,
-     "chip": [],
-     "landed": 10,
-     "swings": 183
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 24.9,
+     "secs": 55,
      "hpLostPct": 100,
      "bossLeftPct": 89,
-     "reprisalPct": 49,
-     "chip": [],
-     "landed": 22,
-     "swings": 222
+     "landed": 60,
+     "swings": 281,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 50.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 89,
+     "landed": 57,
+     "swings": 297,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "knight",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 20.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 100,
+     "landed": 3,
+     "swings": 204,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 20.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 100,
+     "landed": 2,
+     "swings": 183,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 21.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 99,
+     "landed": 9,
+     "swings": 167,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
@@ -7696,46 +7679,24 @@
     "frames": 14654,
     "kills": 7,
     "heroLevel": 22
-   },
-   "warden": {
-    "deaths": 1,
-    "minHpPct": 0,
-    "hpLostPct": 190,
-    "hits": 20,
-    "walked": 100,
-    "lifts": 61,
-    "frames": 14652,
-    "kills": 8,
-    "heroLevel": 22
-   },
-   "pyro": {
-    "deaths": 1,
-    "minHpPct": 0,
-    "hpLostPct": 154,
-    "hits": 20,
-    "walked": 100,
-    "lifts": 61,
-    "frames": 14652,
-    "kills": 7,
-    "heroLevel": 22
    }
   },
   "boss": {
    "boss": "wickerqueen",
-   "wins": 4,
+   "wins": 1,
    "fights": 6,
    "byHero": {
     "knight": [
-     "win:85/0",
-     "win:77/0"
+     "win:99/0",
+     "dead:100/25"
     ],
     "warden": [
-     "dead:100/70",
-     "dead:100/78"
+     "dead:100/65",
+     "dead:100/65"
     ],
     "pyro": [
-     "win:89/0",
-     "win:72/0"
+     "dead:100/16",
+     "dead:100/16"
     ]
    },
    "rows": [
@@ -7744,25 +7705,50 @@
      "seed": 1,
      "tag": "expected",
      "out": "win",
-     "secs": 68.4,
-     "hpLostPct": 85,
+     "secs": 68.6,
+     "hpLostPct": 99,
      "bossLeftPct": 0,
-     "landed": 98,
-     "swings": 433,
-     "reprisalPct": 8,
-     "chip": []
+     "landed": 121,
+     "swings": 514,
+     "reprisalPct": 23,
+     "chip": [
+      {
+       "f": 240,
+       "mul": 0.05,
+       "open": false,
+       "mode": "still"
+      },
+      {
+       "f": 720,
+       "mul": 0.05,
+       "open": false,
+       "mode": "still"
+      },
+      {
+       "f": 1500,
+       "mul": 0.9,
+       "open": true,
+       "mode": "burn"
+      },
+      {
+       "f": 3000,
+       "mul": 0.05,
+       "open": false,
+       "mode": "thrustLowTell"
+      }
+     ]
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "win",
-     "secs": 65.3,
-     "hpLostPct": 77,
-     "bossLeftPct": 0,
-     "landed": 118,
-     "swings": 311,
-     "reprisalPct": 17,
+     "out": "dead",
+     "secs": 71.4,
+     "hpLostPct": 100,
+     "bossLeftPct": 25,
+     "landed": 136,
+     "swings": 285,
+     "reprisalPct": 19,
      "chip": []
     },
     {
@@ -7770,12 +7756,12 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 80.4,
+     "secs": 74.7,
      "hpLostPct": 100,
-     "bossLeftPct": 70,
-     "landed": 106,
-     "swings": 574,
-     "reprisalPct": 28,
+     "bossLeftPct": 65,
+     "landed": 78,
+     "swings": 635,
+     "reprisalPct": 10,
      "chip": []
     },
     {
@@ -7783,38 +7769,77 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 65.4,
+     "secs": 74.7,
      "hpLostPct": 100,
-     "bossLeftPct": 78,
-     "landed": 64,
-     "swings": 513,
+     "bossLeftPct": 65,
+     "landed": 78,
+     "swings": 635,
+     "reprisalPct": 10,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 85.3,
+     "hpLostPct": 100,
+     "bossLeftPct": 16,
+     "landed": 153,
+     "swings": 907,
+     "reprisalPct": 29,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 85.3,
+     "hpLostPct": 100,
+     "bossLeftPct": 16,
+     "landed": 153,
+     "swings": 907,
+     "reprisalPct": 29,
+     "chip": []
+    },
+    {
+     "hero": "knight",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 38.2,
+     "hpLostPct": 100,
+     "bossLeftPct": 80,
+     "landed": 20,
+     "swings": 505,
+     "reprisalPct": 26,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 36.3,
+     "hpLostPct": 100,
+     "bossLeftPct": 92,
+     "landed": 21,
+     "swings": 463,
+     "reprisalPct": 13,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "l1",
+     "out": "dead",
+     "secs": 37,
+     "hpLostPct": 100,
+     "bossLeftPct": 86,
+     "landed": 24,
+     "swings": 456,
      "reprisalPct": 7,
-     "chip": []
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "expected",
-     "out": "win",
-     "secs": 68.8,
-     "hpLostPct": 89,
-     "bossLeftPct": 0,
-     "landed": 152,
-     "swings": 548,
-     "reprisalPct": 23,
-     "chip": []
-    },
-    {
-     "hero": "pyro",
-     "seed": 2,
-     "tag": "expected",
-     "out": "win",
-     "secs": 75.4,
-     "hpLostPct": 72,
-     "bossLeftPct": 0,
-     "landed": 169,
-     "swings": 529,
-     "reprisalPct": 17,
      "chip": []
     }
    ]
@@ -7849,6 +7874,8 @@
      "secs": 70,
      "hpLostPct": 21,
      "bossLeftPct": 0,
+     "landed": 71,
+     "swings": 212,
      "reprisalPct": 16,
      "chip": [
       {
@@ -7875,9 +7902,7 @@
        "open": true,
        "mode": "downed"
       }
-     ],
-     "landed": 71,
-     "swings": 212
+     ]
     },
     {
      "hero": "knight",
@@ -7887,10 +7912,10 @@
      "secs": 76.7,
      "hpLostPct": 32,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 48,
-     "swings": 260
+     "swings": 260,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -7900,10 +7925,10 @@
      "secs": 141.5,
      "hpLostPct": 14,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 74,
-     "swings": 651
+     "swings": 651,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -7913,10 +7938,10 @@
      "secs": 150,
      "hpLostPct": 19,
      "bossLeftPct": 6,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 83,
-     "swings": 690
+     "swings": 690,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -7926,10 +7951,10 @@
      "secs": 106.5,
      "hpLostPct": 67,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 38,
-     "swings": 661
+     "swings": 661,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -7939,10 +7964,10 @@
      "secs": 108,
      "hpLostPct": 44,
      "bossLeftPct": 0,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 42,
-     "swings": 440
+     "swings": 440,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "knight",
@@ -7952,10 +7977,10 @@
      "secs": 77.1,
      "hpLostPct": 100,
      "bossLeftPct": 52,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 30,
-     "swings": 624
+     "swings": 624,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "warden",
@@ -7965,10 +7990,10 @@
      "secs": 150,
      "hpLostPct": 35,
      "bossLeftPct": 55,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 82,
-     "swings": 1003
+     "swings": 1003,
+     "reprisalPct": 0,
+     "chip": []
     },
     {
      "hero": "pyro",
@@ -7978,23 +8003,23 @@
      "secs": 52.1,
      "hpLostPct": 100,
      "bossLeftPct": 76,
-     "reprisalPct": 0,
-     "chip": [],
      "landed": 20,
-     "swings": 362
+     "swings": 362,
+     "reprisalPct": 0,
+     "chip": []
     }
    ]
   },
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 49,
-    "hpLostPct": 69,
-    "hits": 10,
+    "minHpPct": 39,
+    "hpLostPct": 80,
+    "hits": 11,
     "walked": 100,
     "lifts": 48,
     "frames": 11520,
-    "kills": 5,
+    "kills": 6,
     "heroLevel": 21
    }
   }
