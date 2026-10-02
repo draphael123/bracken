@@ -62,7 +62,16 @@ export function makeGorgeCrabHands(ctx) {
     if (!F.said.wheel && Math.abs(P.x - e.x) < 400) { F.said.wheel = 1; ctx.number(P.x, P.y - 40, 'HIS SHELL TURNS A BLADE: RELEASE THE DAM ON HIM', '#ffd36b'); }
   };
   /* A BLOW ON HIM: x CRAB.openMul on his back (the global rule makes every other blow a scratch) */
-  H.take = e => GC.crabTake(F);
+  H.take = e => { const k = GC.crabTake(F);
+    /* THE SPRAY DAMPS FIRE (claude/crabharden): while the released burst still runs over him, the pyromancer's staff and its burn hiss in the
+       spray - x CRAB.douse, half the opening, with steam and a hiss; the warden's blade and the knight's sword go through water. Her staff reached him
+       from the bank all through the burst, where the knight's sword cannot (it waits the burst out): the 21-fight pilot read pyro 6/7 against 4/7
+       and 4/7 (tools/redgorge-pilot.mjs); damped, 4/7. Her whole x CRAB.openMul comes back the moment the burst has passed */
+    if (k > 1 && ctx.pyro && ctx.pyro() && water().burst && GC.inChannel(F.B.x)) { F.n.doused = (F.n.doused || 0) + 1; const t = ctx.time();
+      if (!(F.douseAt > t - 0.25)) { F.douseAt = t; ctx.burst(e.x, e.y - 18, 8, ['#e8f4f8', '#c8d0d8', '#9aa3aa'], 50, 0.6, 0, 1); ctx.sfx.hiss && ctx.sfx.hiss(); }
+      if (!F.said.douse) { F.said.douse = 1; ctx.number(e.x, e.y - 56, 'THE SPRAY DAMPS YOUR FIRE', '#9ad0e8'); }
+      return CRAB.douse; }
+    return k; };
   H.frame = e => { const m = e.mode; if (m === 'open') return CRAB_F.open; if (m === 'rear') return CRAB_F.rear;   /* (his own pose: the front of him up, claws wide, hissing - redraw/redgorge_art.js) */ if (m === 'wake' || m === 'sleep' || m === 'recover') return CRAB_F.stand;
     if (CRAB_F[m] !== undefined && !Array.isArray(CRAB_F[m])) return CRAB_F[m]; return CRAB_F.walk[Math.floor(ctx.time() * 5) % 2]; };
   H.barName = e => 'THE GREAT RED CRAB' + (e.mode === 'open' ? '  ON HIS BACK' : e.mode === 'dug' ? '  DUG IN' : '');

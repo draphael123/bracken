@@ -16,6 +16,7 @@ import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { REDGORGE, BRIDGES } from '../src/red-gorge.js';
 import * as GC from '../src/gorge-crab.js';
+import { makeGorgeCrabHands } from '../src/gorge-crab-hands.js';
 import { GATE } from './level-quality.mjs';
 
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); else console.log('  ok   ' + m); };
@@ -97,7 +98,16 @@ ok(keeper && keeper.gate === 27 && keeper.y === 135, 'THE FALLS\' KEEPER (an eli
   F = GC.newFight(A, GC.CRAB.hp); F.B.phase = 2; F.B.hp = GC.CRAB.hp * 0.4; F.phase = 2; F.B.x = GC.CH.x1 + 60; let inWalk = 0, inScuttle = 0;
   for (let i = 0; i < 60 * 60; i++) { const px = i % 900 < 450 ? GC.CH.x0 - 80 : (GC.CH.x0 + GC.CH.x1) / 2; GC.stepFight(F, { x: px }, F.B.hp, { held: true }, dt); const inc = GC.inChannel(F.B.x);
     if (inc && F.B.mode === 'walk' && !F.wasIn) inWalk++; if (inc && F.B.mode === 'act' && F.B.a && F.B.a.name === 'scuttle') inScuttle++; F.wasIn = inc; }
-  ok(inWalk === 0 && inScuttle > 0, 'in phase two, with the gate holding water, he never walks into the channel (' + inWalk + ') - only his scuttle carries him in (' + inScuttle + ' frames)'); }
+  ok(inWalk === 0 && inScuttle > 0, 'in phase two, with the gate holding water, he never walks into the channel (' + inWalk + ') - only his scuttle carries him in (' + inScuttle + ' frames)');
+  /* (claude/crabharden) THE SPRAY DAMPS FIRE: on his back with the released burst still on him, the pyromancer's blow lands x CRAB.douse (half the
+     opening); the knight's and the warden's land the whole x openMul, and so does hers once the burst has passed. Told: steam, a hiss, one line */
+  { let pyro = true, burst = true; const said = [];
+    const ctx = { L: { arena: { boss: 'gorgecrab', x0: 0, floor: 320, ch: [GC.CH.x0, GC.CH.x1] } }, EHP: { gorgecrab: GC.CRAB.hp }, gorge: { dam: () => ({ burst, held: false, horn: false, running: false, gate: 'open' }) },
+      pyro: () => pyro, time: () => 0, burst: () => {}, sfx: {}, number: (x, y, t) => said.push(t) };
+    const H = makeGorgeCrabHands(ctx), e = H.spawnBoss({ x: 0, y: 0 }), Fh = H.fight(); Fh.B.mode = 'open'; Fh.B.t = 3; Fh.B.x = (GC.CH.x0 + GC.CH.x1) / 2;
+    const inSpray = H.take(e); pyro = false; const knight = H.take(e); pyro = true; burst = false; const after = H.take(e);
+    ok(inSpray === GC.CRAB.douse && GC.CRAB.douse < GC.CRAB.openMul && knight === GC.CRAB.openMul && after === GC.CRAB.openMul && said.includes('THE SPRAY DAMPS YOUR FIRE'),
+      'the burst\'s spray damps the pyromancer\'s blows on his back (x' + inSpray + ', a sword x' + knight + ', hers after the burst x' + after + '; told: ' + said.join(' / ') + ')'); } }
 
 if (fails.length) { for (const f of fails) console.log('  FAIL ' + f); console.log('REDGORGE: ' + fails.length + ' failed'); process.exit(1); }
 console.log('REDGORGE: the gorge climbs, its flood never traps a crossing, its jam, baskets and nest are locks, and its crab opens only to released water.');

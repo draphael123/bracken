@@ -29,6 +29,7 @@ export const CRAB = {
   speed: 58, scuttleV: 250, dugT: 1.4, keep: 40,
   rearT: 0.6, rearEvery: 3.0,                  /* phase two: at the bank, the held water stops him - he rears and hisses (src/gorge-crab-hands.js) */
   dryP2: 4.5,                                   /* phase two: the dry spell between floods (src/red-gorge-hands.js GORGE.dry otherwise) */
+  douse: 0.8,                                   /* the pyromancer's fire in the burst's spray: x0.8, half the opening's x1.6, until it has passed (src/gorge-crab-hands.js take, claude/crabharden) */
 };
 /* EVERY CYCLE CHANGES: the order of each pass, phase one and phase two (cycle k uses [k % n]) */
 export const CHAINS = {
