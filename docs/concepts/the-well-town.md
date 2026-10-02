@@ -49,21 +49,54 @@ chimney ledge). The HUD counts them (WATER-SKINS n/4). Poured into THE DRY CISTE
 opens: the third silver and a purse of coins (no relic: Daniel 10-02, relics are leaving the game). Silvers: the bazaar roof walk, the dovecote's roof,
 the vault.
 
-BOSS - THE BANDIT KING (the Kasbah courtyard, 40 tiles, the courtyard well in the middle, two troughs a row up)
-His moves are the desert engine's (`src/desert-bosses.js` BANDIT_KING): SCIMITAR SWEEP (!), KNIFE FAN (!), OIL JAR (a red mark where you
-stand, then a burning patch), THE CHARGE (red, shoulder first). THE OPENING IS CAUSED BY THE LEVEL'S VERB: he walks through his own fire and
-BURNS; pour your skin on him while he burns and the steam blinds him - OPEN for 3.0 s at x2.6 (tuned with the human-bot pilot: 15/21 = 71%). A pour while he does not burn runs off him.
-x0.05 chip otherwise (the global rule: A SCRATCH: WAIT FOR HIS OPENING). He always fights; EVERY CYCLE CHANGES (each pass of his chain is a new order: jar first, knives
-first with a charge after the jar, a charge into a jar). PHASE TWO (half health): two jars at once, and THE LIEUTENANTS - two cutthroats take
-the courtyard well (win it back to refill). The trough fire of the old brief is NOT built (Daniel: no). Pilot target: the human bot (~250 ms) wins 60-75% with knight, warden, pyromancer; the mash bot loses.
+BOSS - see THE WELL TOWN BOSS CHANGE below (the Bandit King of the greybox is now THE GANG LEADER, a mini; the boss is THE CISTERN QUEEN).
 
 MUSIC: Daniel's pick, "Desert Calmness and Fighting (Orchestral)" by Dizzy Crow, CC0 (`audio/welltown.ogg`: its intro once, then its loop).
-The boss plays his own synth theme ('banditking', `src/boss-music.js`): 6/8 war drums, a Phrygian-dominant drone, a zurna; faster in phase two.
-BACKDROP: the caravan's sky and far ruins for now; the art lane gives it whitewash, blue doors, the wells' blue, the dovecote and the Kasbah.
+The Gang Leader plays the old King's synth theme ('banditking', `src/boss-music.js`); the Queen her own ('cisternqueen').
+BACKDROP: its own (claude/welltown3-art: `src/redraw/welltown_backdrop.js`, domes, a minaret, the dovecote and the Kasbah on the skyline), and its own tile kit (`src/redraw/welltown_tiles.js`).
 
-SIZE / RULES: 522 columns, 44 rows; four checkpoints (the market shrine, past the cistern's well, roof A outside the dovecote's window, the
-courtyard door), one per ~128 route tiles, and a respawn refills the skin (Daniel 10-02); three silvers and one relic; no mini (desert concept: one boss per level, no minis); the level's own checks
+SIZE / RULES: 584 columns, 60 rows; five checkpoints (the market shrine, past the cistern's well, roof A outside the dovecote's window, the
+courtyard door, the old well's head), one per ~115 route tiles, and a respawn refills the skin (Daniel 10-02); three silvers, no relic; one mini (THE GANG LEADER: Daniel's exception, 10-02); the level's own checks
 `tools/welltown.mjs` and `tools/welltown-pilot.mjs`, and `level-quality` gates it.
 
 PROCESS: concept (this page) -> Opus greybox (claude/welltown) -> reviewer against THE MAGE'S FOLLY -> fixes -> Sonnet art and music.
 Nothing ships without Daniel's playtest.
+
+THE WELL TOWN BOSS CHANGE (Daniel, 2026-10-02, after playing the greybox; copied here from the desert-arc concept brief, which is not in the repo)
+- The Bandit King "feels like a mini" and is "way too easy". NEW BOSS: THE CISTERN QUEEN - a giant scorpion matriarch nested in the dry cistern
+  (why the wells fail; the Old Stinger elite is her brood). P1 she burrows and strikes from the sand: flood her burrow (windlass / pour) -> she bursts
+  out soaked and slow = a 3 s opening; P2 she climbs the well shaft, red-told tail sweeps on its walls; P3 the cistern floods and her brood pours in.
+  Screen-filling silhouette, lit stinger.
+- EXCEPTION to "no minis": the Bandit King becomes THE GANG LEADER, a MINI-BOSS: throws MOLOTOVS you can REFLECT (strike them back) to set him alight
+  EASILY; TWO SWORDS (faster attacks); occasional DODGE; NO charge attack. He fights in the MARKET COURTYARD (where the King's arena was).
+- Difficulty: new bosses target the human bot at 50-60%, plus Daniel's playtest gate (the bot over-rated the King at 71%).
+- Well clarity: skin HUD (3 pips + 'E: FILL / POUR / DRINK'), glinting fillable wells, cracked dry walls and smouldering fires with a pour marker, a
+  safe first lesson (the gate well + a wall, no foes), a pour-arc preview. With the art pass.
+- CISTERN QUEEN MOVESET (Daniel: "she needs more attacks" -> expanded, 10-02):
+  P1 SAND: Sand Strike (!! erupts from a bulging mound - roll off); Burrow Charge (!! dune wave ploughs at you - jump); Pincer Snap (! waist scissor -
+  block); Snap-Snap-Lunge (! ! !! - roll the last); Tail Lance (!! stinger floor stab - jump); Sand Flick (! arcing stones - block/step out).
+  OPEN: flood her burrow (pour on the mound / windlass) -> soaked 3 s.
+  P2 WELL SHAFT: Venom Spit (! arc, poison puddle); Tail Sweep high/low (!! lit band - duck/jump); Drop Pounce (!! growing shadow); Skitter Ambush (!!
+  from a side tunnel, dust trickle tells which); Wall Slam (!! rubble, ledge shadows); Stinger Pin (!! lunge - dodged, the stinger sticks briefly).
+  OPEN: pour on the wall above her -> loses grip, on her back 3 s.
+  P3 FLOOD: Wave Thrash (!! jump); Grab and Sting (!! strike the claw/mash or a heavy poison sting); Death Roll (!! through the water - jump/roll);
+  Tidal Tail (!! venom-water whip - duck/get above); Brood Shield (hides behind up to 3 one-hit brood that drown in deep water).
+  OPEN: a broken grab -> she rears flailing 3 s. ENRAGE < 15%: Snap-Snap-Sting into Death Roll.
+  ALWAYS: raised claws turn frontal hits outside openings (visible guard); venom stacks slow stamina regen; x0.05 chip + greed reprisal; mash bot 0/6;
+  human bot 50-60%; screen-filling silhouette, lit stinger.
+
+AS BUILT (claude/welltown3)
+- THE GANG LEADER (`src/gang-leader.js`, a mini in the Kasbah courtyard, 474-513; his gate at 514 lifts when he falls): DOUBLE CUT and CROSS CUT (! a
+  shield turns them; his other blade guards while he cuts, so a blow from the front then is turned), THE WHIRL (!!), MOLOTOVS (!: strike one back and it
+  flies home and sets him ALIGHT - open 3.2 s at x1.4, a fifth of him a burning at most, inside Daniel's third). He slips most blades while he stalks you
+  and comes back with a RIPOSTE (!!); after each of his own blows he is OFF BALANCE (0.35 s, two clean cuts). No charge. The douse at the well is gone.
+  He keeps the King's theme ('banditking', faster at half health).
+- THE OLD WELL (515-527, checkpoint five at its head, two of her brood at its mouth) drops down a shaft into THE QUEEN'S CISTERN (`src/cistern-queen.js`
+  stageCisternQueen): 528-567, fifteen rows high under the street, a stone LEDGE and rope ladder on each wall, a spring BASIN under each ledge, THE
+  WINDLASS on the floor (it drops the shaft's great bucket into the sump), a grated SUMP under the shaft (deep water once she floods it). The way out
+  (her east wall) opens on the cistern's old outflow and the level's gate.
+- THE CISTERN QUEEN: all the moves above, by phase, every cycle a different order; her three openings (SOAKED, ON HER BACK, REARING) are 3.2 s at x1.9,
+  one opening taking no more than 14% of her (about seven openings a fight). Her raised claws turn a frontal blow outside them (0); from behind, the
+  global x0.05. Venom: a stack a sting/spit/lance/pin/tidal hit, each -25% stamina regen for 6 s (three at most). Her own synth theme ('cisternqueen':
+  a low pulsing C# drone, scraping clicks, a hissing rising motif; ':p2' quicker and an octave up; ':p3' adds the surge and drips).
+- Measured: human bot 7/12 = 58% on her, 4/6 on him; mash bot 0/6 on each; `tools/cistern-queen.mjs` holds the spec.

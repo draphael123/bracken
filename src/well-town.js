@@ -4,7 +4,7 @@
 // game runs, laid by hand so the encounters, the heights and the water budget are written where they are, not sprinkled.
 //
 // THE RULE: WATER IS CARRIED. A skin you fill at a well (INTERACT at a well: three sips). INTERACT away from a well pours it in front of you:
-// a MUD WALL softens away, a FIRE goes out, and THE BANDIT KING, burning, is blinded in the steam. INTERACT with nothing to pour on drinks it:
+// a MUD WALL softens away, a FIRE goes out, and under the town THE CISTERN QUEEN is flooded out of her burrow and off her walls. INTERACT with nothing to pour on drinks it:
 // sunstroke cured outright. Bandits hold the wells; WATER-THIEVES cut your skin and run. Said three ways (C4): the wells are the only blue in
 // the town, every mud wall is cracked dark where water would take it, and the skin's sips are on the HUD under the sun meter.
 //

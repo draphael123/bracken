@@ -43,11 +43,11 @@ try {
   b.chipAcc=0;b.greedLog=[];b.chipSaid=0;BKT.PROG.chipTold=9;P.x=b.x+(b.face||1)*50;let h=b.hp;BKT.hurtAs('light',b,40,P.x,false);out.front=+(h-b.hp).toFixed(2);
   b.chipAcc=0;b.greedLog=[];P.x=b.x-(b.face||1)*44;h=b.hp;BKT.hurtAs('light',b,40,P.x,false);out.behind=+(h-b.hp).toFixed(2);
   let opened=0;for(let i=0;i<60*60&&!opened;i++){P.hp=P.maxHp;if(S.pose==='burrow'&&S.mound&&b.mode==='burrow'){P.skin.sips=3;P.x=S.mound.x-30;P.y=S.G.floor;P.face=1;BK.press('talk');}BK.sim(1);if(b.mode==='soaked')opened=1;}
-  out.opened=opened;b.greedLog=[];h=b.hp;P.x=b.x+(b.face||1)*40;BKT.hurtAs('light',b,40,P.x,false);out.openHit=+(h-b.hp).toFixed(2);out.n=BK.cisternQueen().n;
+  out.opened=opened;b.greedLog=[];h=b.hp;P.x=b.x+(b.face||1)*40;BKT.hurtAs('light',b,40,P.x,false);out.openHit=+(h-b.hp).toFixed(2);out.mul=(await import('/src/cistern-queen.js')).CQ.openMul;out.n=BK.cisternQueen().n;
   return out;})()`, 300000);
   ok(t.stole[0] && t.stole[1] === 2 && t.stole[2] === 'flee' && t.back === 3, "a water-thief's cut takes a sip and he runs; cut down, the sip is back " + JSON.stringify(t.stole) + ' back ' + t.back);
   ok(t.queen.active && t.queen.t === 'cisternqueen' && t.opened, 'THE CISTERN QUEEN wakes, burrows, and a pour on her mound floods her out: SOAKED');
-  ok(t.front === 0 && Math.abs(t.behind - 2) < 0.01 && Math.abs(t.openHit - 40 * 2.2) < 1, 'her claws turn a blow from the front (0), from behind it is the global x0.05 (' + t.behind + '), soaked it lands x2.2 (' + t.openHit + ')');
+  ok(t.front === 0 && Math.abs(t.behind - 2) < 0.01 && Math.abs(t.openHit - 40 * t.mul) < 1, 'her claws turn a blow from the front (0), from behind it is the global x0.05 (' + t.behind + '), soaked it lands x' + t.mul + ' (' + t.openHit + ')');
   /* THE FIX LANE (claude/welltown-fix): the deep well winds, the ride is contested, a respawn refills the skin; and WELL CLARITY (claude/welltown3): the HUD's verb */
   const u = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
   BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='welltown'));BK.state='play';BK.god=true;BK.sim(10);const P=BK.P,W=()=>BK.welltown();

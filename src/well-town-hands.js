@@ -46,7 +46,7 @@ export function makeWellTownHands(ctx) {
     WT.followT = 0; WT.followed = false;
     const m = ctx.movers().find(q => q.windlass); if (m) { m.locked = true; if (WT.bucketY !== undefined) m.y = WT.bucketY; m.dir = 0; }
     if (window.BK) Object.assign(window.BK, { welltown: () => WT, welltownHands: () => H });
-    /* THE PHONE'S ACTION BUTTON (claude/mobile src/touch-interact.js reads BK.touchVerbs): what E would do here, as one word */
+    /* THE PHONE'S ACTION BUTTON (the claude/mobile lane's touch module reads BK.touchVerbs): what E would do here, as one word */
     if (window.BK && window.BK.touchVerbs && !window.BK.touchVerbs.includes(H.welltownVerb)) window.BK.touchVerbs.push(H.welltownVerb);
   };
   H.on = () => !!WT;
@@ -70,7 +70,7 @@ export function makeWellTownHands(ctx) {
     const w = nearWell(P.x, P.y);
     /* a DEEP well gives nothing until its bucket is wound up (its windlass); a fill sends the bucket down again */
     if (w && w.deep && !w.up && sk.sips < sk.max) { ctx.number(P.x, P.y - 30, 'THE BUCKET IS DOWN: STRIKE THE WINDLASS', '#ffd36b'); ctx.sfx.buzz && ctx.sfx.buzz(); return true; }
-    /* a FULL skin at a well falls through to the pour (or the drink): beside the courtyard well, E at a burning King must pour, not be swallowed */
+    /* a FULL skin at a well falls through to the pour (or the drink): beside a spring in her hall, E at the Queen must pour, not be swallowed */
     /* A WATER JAR: what is in it (a sip), once a life - not a well */
     if (w && w.jar) { if (w.left > 0 && sk.sips < sk.max) { const n = Math.min(w.left, sk.max - sk.sips); w.left -= n; sk.sips += n; WT.n.jars = (WT.n.jars || 0) + 1; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(w.x, w.y - 12, 5, ['#7ab8e8', '#e8f4f8'], 40, 0.4); ctx.number(P.x, P.y - 30, 'A JAR: ONE SIP', '#7ab8e8'); return true; } }
     else if (w && sk.sips < sk.max) { if (w.deep) w.up = false; sk.sips = sk.max; WT.n.fills++; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(w.x, w.y - 12, 8, ['#7ab8e8', '#e8f4f8'], 50, 0.5);
