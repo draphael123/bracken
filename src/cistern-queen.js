@@ -32,7 +32,7 @@
 
 export const CQ = {
   hp: 1000, w: 76, h: 38, markH: 78,
-  openMul: 1.6, openT: 3.2, openCap: 0.14,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
+  openMul: 1.9, openT: 3.2, openCap: 0.14,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
    */                       /* her three openings (SOAKED, ON HER BACK, REARING): >= 3 s (tools/boss-openings.mjs), the blow x openMul */
   p2: 2 / 3, p3: 1 / 3, enrage: 0.15,
   walk: 62, keep: 40, turn: 0.45,                  /* she walks you down; she turns to face you only between blows, and only after you have been behind her this long */
