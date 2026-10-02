@@ -146,7 +146,7 @@ export function buildFogCanal({ painter, T, TS }) {
   bargee(92, 29, 'the mill wharf'); bargee(98, 29, 'the mill wharf');
   coins([88, 26], [95, 23], [89, 20], [97, 17]);
   ent('mend', 102, 17);
-  post(101, 29); grindy(104, 33, 'the mill wharf');                            /* under the wharf floor: it comes aboard while the bridge holds her */
+  post(101, 29); grindy(104, 33, 'under the mill wharf');                            /* under the wharf floor: it comes aboard while the bridge holds her */
   boards(110, 18, 3);                                                        /* the gallery outside the miller's door */
   /* THE MILL BRIDGE (TEACH): across the pound at the towpath's height. The barge waits under the mill's east end; swing it clear from its capstan
      (the far end) and she passes under the far bank, where you drop onto her */
@@ -314,7 +314,7 @@ export function buildFogCanal({ painter, T, TS }) {
   block(370, 373, 37, H - 1);                                                 /* THE LOCK'S LOWER GATE and the corridor's first floor: a step up from her deck when the basin lock is full */
   block(370, 375, 30, 33); air(371, 375, 34, 36); air(374, 375, 37, 40); block(374, 375, 41, H - 1);   /* the corridor, stepping down to her west door at her bed level */
   ent('check', 375, 40);                                                      /* CHECKPOINT THREE: just outside her west door */
-  sign(373, 40, "JENNY'S LOCK. THE GRINDYLOWS' MOTHER KEEPS IT.");
+  sign(375, 40, "JENNY'S LOCK. THE GRINDYLOWS' MOTHER KEEPS IT.");
   air(376, 415, 25, 40); block(376, 415, 41, H - 1);                         /* her footprint, cleared before she lays herself into it */
   const jenny = stageGreenteeth({ set, block, plat: boards, ent }, T, TS, 376, 41);
   ent('gate', 420, 40);                                                        /* the level's end, out on the quay past her east door: it opens when she dies (gateAfterBoss) */
@@ -338,6 +338,7 @@ export function buildFogCanal({ painter, T, TS }) {
     waterHurts: true, noWade: true,   /* THE CANAL IS JENNY'S WATER: a fall in costs health and hands you back to the last ground you stood on (main.js, as the Marsh); and it is
                                          not a floor to the reach model (src/reachcore.js L.noWade): only the barge crosses it */
     lockArena: { sx: 376, R: 41, x0: 376, x1: 415, rows: [25, 42], westDoor: [376, 35, 40], eastDoor: [415, 35, 40] },   /* JENNY GREENTEETH's lock (claude/greenwire): the footprint stageGreenteeth(..., 376, 41) lays (see section 7) */
+    squadBands: [{ lo: 400, hi: 599, spots: 0, why: "JENNY'S LOCK: the last columns are her chamber's east end and the quay past her door - nothing stands past her, and no squad stands in a boss arena (as the theatre)" }],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* three checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */
     /* WHAT EACH MACHINE OPENS, and the line that says so (claude/canalfix: tools/level-quality.mjs `unlocks`; the lines are the hints src/canal-hands.js shows) */
