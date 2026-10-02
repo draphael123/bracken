@@ -291,6 +291,7 @@ export const ANSWER = {
   'grub|spit': 'block',
   'grindylow|rippleTell': 'jump',   // THE FOG CANAL: the ring on the water is a hand coming for your ankle - be in the air when it closes (or strike the ring first)
   'grindylow|deckTell': 'jump', 'grindylow|boardTell': 'jump',   // (claude/canalfix) aboard: the same hand for your ankle, on her deck
+  'willowisp|flareTell': 'block',   // THE FOG CANAL: the false lantern flares (a yellow !) - the shield turns the burst, as every yellow ! does
   'hare|run': 'block',
   'harpy|aim': 'block',
   'haunt|throwTell': 'block',
