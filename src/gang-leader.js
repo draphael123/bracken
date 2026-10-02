@@ -13,15 +13,15 @@
 // main.js calls makeGangLeaderHands(ctx): spawn, owns, update, take, frame, barName, drawOver, end, read. The bot's reading is glPlan (src/lab.js).
 
 export const GL = {
-  hp: 430, w: 16, h: 30, markH: 44,
+  hp: 720, w: 16, h: 30, markH: 44,
   openMul: 1.6, openT: 3.2, capK: 1 / 3,
   walk: 78, keep: 26, gap: [0.5, 0.36],            /* phase two (half health): quicker between blows */
   cutTell: 0.42, cutT: 0.14, cut2Tell: 0.24, crossTell: 0.2, cutReach: 30,
   whirlTell: 0.62, whirlT: 0.5, whirlR: 40,
   throwTell: 0.5, fly: 0.85, fireT: 3.2, fireR: 18, fireTick: 0.5,
-  dodge: 0.3, dodgeT: 0.28, dodgeDist: 64, dodgeCd: 2.2, riposteTell: 0.32,
+  dodge: 0.35, dodgeT: 0.28, dodgeDist: 64, dodgeCd: 1.8, riposteTell: 0.32,
   reflectR: 16, back: 340,
-  dmg: { cut: 11, whirl: 15, bottle: 9, fire: 3, riposte: 12 },
+  dmg: { cut: 13, whirl: 17, bottle: 10, fire: 4, riposte: 14 },
 };
 /* EVERY CYCLE CHANGES (k % n); phase two from half health */
 export const CHAINS = {
