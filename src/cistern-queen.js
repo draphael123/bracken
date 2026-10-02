@@ -100,7 +100,8 @@ export function stageCisternQueen(W, T, TS, sx, F, top) {
   const { set, block, ent, air } = W, ex = sx + STAGE.W, vault = F - STAGE.H - 1;
   air(sx, ex - 1, vault + 1, F - 1);                                                      /* the hall */
   air(sx + STAGE.shaft[0], sx + STAGE.shaft[1], top, vault);                              /* the old well's shaft, from the street down through the vault */
-  air(sx + STAGE.sump[0], sx + STAGE.sump[1], F, F + 1);                                  /* the dry sump under it */
+  air(sx + STAGE.sump[0], sx + STAGE.sump[1], F, F + 1);                                  /* the dry sump under it, a GRATE over it at the floor (you walk on it; the brood that wade in over it drown, once she floods the hall) */
+  for (let x = sx + STAGE.sump[0]; x <= sx + STAGE.sump[1]; x++) set(x, F, T.ONEWAY);
   const lr = F - STAGE.ledgeRow - 1;                                                      /* the ledges' row (boards) */
   for (let x = sx; x < sx + STAGE.ledge; x++) set(x, lr, T.ONEWAY);
   for (let x = ex - STAGE.ledge; x < ex; x++) set(x, lr, T.ONEWAY);
@@ -372,7 +373,7 @@ function stepPuddles(e, S, dt, c) {
 /* HER BROOD: one blow each; the deep water of the sump drowns them (only once the cistern is flooded) */
 function stepBrood(e, S, dt, c) {
   const G = S.G;
-  for (const b of S.brood) if (b.alive && S.flood && b.x > G.sump[0] + 4 && b.x < G.sump[1] - 4 && b.y > G.floor + 4) { b.alive = false; S.n.drowned++; c.drown(b); }
+  for (const b of S.brood) if (b.alive && S.flood && S.water > CQ.waterH - 2 && b.x > G.sump[0] + 4 && b.x < G.sump[1] - 4) { b.alive = false; S.n.drowned++; c.drown(b); }
   S.brood = S.brood.filter(b => b.alive);
   if (!S.brood.length && S.keepBack) S.keepBack = 0;
 }

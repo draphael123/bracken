@@ -81,7 +81,8 @@ export function makeCisternQueenHands(ctx) {
   /* ---------- ONE FRAME OF HER ---------- */
   H.update = (e, dt) => {
     if (!S || !e.alive) return; const Ar = A(); if (!Ar) return;
-    if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.6; }
+    /* she wakes: you came down the old well with water (the courtyard's well is the last before her door, and a checkpoint refills it) - the skin is full */
+    if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.6; for (const pp of ctx.players) if (pp.skin) pp.skin.sips = pp.skin.max || 3; }
     const c = world(e), hs = heroes();
     CQG.stepQueen(e, S, dt, hs, c);
     /* her body's box follows her pose: long and low on the floor, tall on a wall, nothing under the sand or up the shaft */

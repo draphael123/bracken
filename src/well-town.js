@@ -254,7 +254,7 @@ export function buildWellTown({ painter, T, TS }) {
   block(524, 571, K + 1, H - 1);                                              /* the rock under the street, the hall carved out of it */
   const queen = stageCisternQueen({ set, block, ent, air }, T, TS, 528, QF, K);
   for (const n of queen.ladders) nets.push(n);
-  shade.push([528 * TS, 568 * TS, (K + 1) * TS, QF * TS + 1]);
+  shade.push([528 * TS, 568 * TS, (K + 1) * TS, (QF + 2) * TS + 1]);
   interiors.push([528, 567, QF - 15, QF - 1, 'wtQueen'], [545, 550, QF, QF + 1, 'wtQueen']);   /* (and the sump under the shaft) */
   /* THE WAY OUT: her east wall opens when she dies (the arena's own wall) onto the cistern's old outflow, and the road out of town */
   air(569, 579, QF - 6, QF - 1);
