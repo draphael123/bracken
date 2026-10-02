@@ -26,8 +26,9 @@
                        shut, and the rack sets its stone back (the Deep rework, docs/briefs/deep-rework-2.md)
      THE WICKER QUEEN  turn round on her while she stands on the bonfire's embers: the wicker catches and burns open; the same look short of them,
                        or her crossing them unseen, opens nothing (claude/fair3)
-     THE PUPPETEER     drop both his puppets (blows or cut strings) and he is dragged down to the boards, open; a minute of his puppets left alone -
-                       windups, blows - opens nothing (claude/puppeteer, PUPPETEER3)
+     THE PUPPETEER     drop both his puppets (gold cuts in their windups) and his bar goes slack - that alone opens nothing; climb to the gallery and
+                       cut the slack bar and he falls to the boards, open; a minute of his puppets left alone - windups, blows - opens nothing
+                       (claude/puppeteer, PUPPETEER3; claude/theatre3)
      JENNY GREENTEETH  drain her lock (strike the lower paddle) while she is at your gate: the water runs out from under her and she is stranded in
                        the mud, open; a minute of her left alone opens nothing (claude/lockkeeper)
      THE LAMPREEVE, THE HEADLESS PLOUGHMAN, THE HOMUNCULUS (minis, claude/weakboss): strike the lamp he hoods / bait the plough into the
@@ -152,8 +153,9 @@ try {
   {const b=boot('moor');const A=BK.L.arena;for(const e of BK.enemies())if(e!==b&&!e.maxHp)e.alive=false;
    const howl=brace=>{b.mode='howlTell';b.modeT=0.01;b.hits=0;b.howlT=99;b.stoneT=99;b.wallT=99;b.specialT=99;b.braceT=0;BK.P.x=(A.x0+A.x1)/2+60;BK.P.y=A.floor;BK.P.vy=0;BK.P.vx=0;
      let fell=false,moved=0;const x0=BK.P.x;for(let i=0;i<60*3;i++){BK.keys.block=brace;BK.sim(1);moved=Math.max(moved,Math.abs(BK.P.x-x0));if(b.mode==='fallen'){fell=true;break;}if(b.mode==='blink'||b.mode==='appear')break;}
-     BK.keys.block=false;const o={mode:b.mode,fell,moved:Math.round(moved),braceT:+(b.braceT||0).toFixed(2)};b.mode='cast';b.modeT=9;BK.sim(5);return o;};
-   const left=howl(false),held=howl(true);out.windcaller={left,held};}
+     BK.keys.block=false;let open=0;if(fell){BK.P.x=A.x0+20;for(let i=0;i<60*6&&BK.bossOpen(b);i++){BK.sim(1);open+=1/60;}}   /* (claude/bosswave1) how long the fall is open, left alone */
+     const o={mode:b.mode,fell,moved:Math.round(moved),braceT:+(b.braceT||0).toFixed(2),open:+open.toFixed(2)};b.mode='cast';b.modeT=9;BK.sim(5);return o;};
+   const left=howl(false),held=howl(true);b.mode='cast';b.modeT=9;b.hits=0;const castOpen=BK.bossOpen(b);out.windcaller={left,held,castOpen};}
 
   /* THE DUNE WORM: one breach, three ways. The hero stands where it will lock and leaves LATE (after the commit), as a player baits it */
   {const b=boot('caravan');const A=BK.L.arena;const w=BK.caravan().winches.find(q=>q.hollow);
@@ -178,17 +180,20 @@ try {
    const crowned={open:+op.toFixed(1),spent:!!st.gone};for(let i=0;i<200;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);}crowned.back=!st.gone&&Math.abs(st.x-st.hx)<2;
    out.bell={alone,crowned};}
   /* THE WICKER QUEEN (claude/fair3): lured across the green and turned on as she stands on the embers, the wicker catches and burns open; the same look
-     short of them, or her crossing them with nobody looking, opens nothing (the look is the only verb, the embers the only place) */
+     short of them, or her crossing them with nobody looking, opens nothing (the look is the only verb, the embers the only place; claude/fairfix4: her bonfire ring held off too, as her other blows are) */
   {const b=boot('fair');const G=BK.L.green,A=BK.L.arena,mid=G.bonfire*16+8,fl=A.floor;for(const e of BK.enemies())if(e!==b)e.alive=false;
-   const run=turnAt=>{b.mode='still';b.x=mid+110;b.bank=0;b.open=0;b.lashCd=99;b.crownCd=99;b.floorCd=99;b.throwCd=99;b.tossCd=99;b.sweepCd=99;b.leapCd=99;b.thrustCd=99;b.rest=0;let turned=false,op=0;for(let i=0;i<60*6;i++){if(!turned&&turnAt(b))turned=true;BK.P.x=mid-160;BK.P.y=fl;BK.P.vx=0;BK.P.face=turned?1:-1;BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='burn'||b.mode==='sickleTell')break;}return{mode:b.mode,open:+op.toFixed(1)};};
+   const run=turnAt=>{b.mode='still';b.x=mid+110;b.bank=0;b.open=0;b.lashCd=99;b.crownCd=99;b.floorCd=99;b.throwCd=99;b.tossCd=99;b.sweepCd=99;b.leapCd=99;b.thrustCd=99;b.ringCd=99;b.rest=0;let turned=false,op=0;for(let i=0;i<60*6;i++){if(!turned&&turnAt(b))turned=true;BK.P.x=mid-160;BK.P.y=fl;BK.P.vx=0;BK.P.face=turned?1:-1;BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='burn'||b.mode==='sickleTell')break;}return{mode:b.mode,open:+op.toFixed(1)};};
    out.wicker={short:run(q=>q.x<mid+70),unseen:run(()=>false),embers:run(q=>q.x<mid+20)};}
   /* THE PUPPETEER (claude/puppeteer): left alone a minute his puppets wind up and strike and nothing opens him; both cut down by the hero's swings in their
      windups, he comes down his line and kneels re-stringing them - open (on the Maskwright's Theatre's main stage) */
   {const b=boot('theatre');const S=BK.puppeteerHands().show(),A=BK.L.arena,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+60;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
-   let cutF=0,op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const p=S.puppets.find(q=>q.alive&&q.mode!=='heap'&&/Tell$/.test(q.mode));
+   let cutF=0,op=0,mode=null;S.houseCd=1e9;for(let i=0;i<60*40&&!(op>0)&&b.mode!=='slack';i++){P.hp=P.maxHp;const p=S.puppets.find(q=>q.alive&&q.mode!=='heap'&&(/Tell$/.test(q.mode)||q.mode==='recover'||q.mode==='stagger'));   /* (THEATRE3: in a windup - a gold cut - or glowing green in its recovery) */
      if(p&&P.atk<0){P.x=p.x-(p.t==='harlequin'?14:18);P.face=1;P.vx=0;BK.press('atk');cutF++;}BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='downed')mode='downed';}
-   out.puppeteer={alone:+alone.toFixed(1),swings:cutF,mode,open:+op.toFixed(1),onStage:b.mode==='downed'&&b.y===A.floor||mode==='downed'};}
+   const slackMode=b.mode;let slackOpen=0;for(let i=0;i<60*3;i++){P.hp=P.maxHp;BK.sim(1);slackOpen=Math.max(slackOpen,b.open||0);if(b.mode==='downed')mode='downed';}   /* (THEATRE3: both down, the bar slack: nothing opens on its own) */
+   if(b.mode==='slack'){P.x=b.x-16;P.y=A.stage.gallery;P.vx=0;P.vy=0;P.face=1;BK.sim(2);P.face=1;BK.press('atk');for(let i=0;i<60*2&&b.mode!=='downed';i++){P.hp=P.maxHp;BK.sim(1);}}   /* up on the gallery: a real swing at the slack bar */
+   for(let i=0;i<10;i++){BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='downed')mode=mode||'downed';}
+   out.puppeteer={alone:+alone.toFixed(1),swings:cutF,slackMode,slackOpen:+slackOpen.toFixed(1),mode:b.mode==='downed'?'downed':mode,open:+op.toFixed(1),onStage:b.mode==='downed'&&b.y===A.floor};}
   /* JENNY GREENTEETH (claude/lockkeeper): a minute of her left alone in her lock, the hero on a gate's walkway, opens nothing; a real swing at the
      lower paddle with her at that gate drains the lock from under her - stranded, open (THE FOG CANAL holds her) */
   {const b=boot('canal');const S=BK.greenteethHands().show(),G=S.A,P=BK.P;let alone=0;
@@ -278,6 +283,8 @@ try {
   assert.ok(!r.windcaller.left.fell, 'A11: a howl left to blow opens nothing: ' + JSON.stringify(r.windcaller));
   assert.ok(r.windcaller.left.moved > 40, 'and it walks an unbraced hero across the room: ' + JSON.stringify(r.windcaller));
   assert.ok(r.windcaller.held.fell, 'A11: braced through his howl, his own wind fails him and he falls, open: ' + JSON.stringify(r.windcaller));
+  assert.ok(r.windcaller.held.open >= 3, 'the fall is his opening, and it lasts 3 s or more left alone (the boss rule; claude/bosswave1): ' + JSON.stringify(r.windcaller));
+  assert.ok(r.windcaller.castOpen === false, 'casting on his stone he is NOT open (claude/bosswave1: callerOpen counted his casting as open - the mash bot beat him 4/6): ' + JSON.stringify(r.windcaller));
   assert.equal(r.worm.openSand.tangled, 0, 'THE DUNE WORM: a breach in the open sand opens nothing: ' + JSON.stringify(r.worm));
   assert.equal(r.worm.rolledIn.tangled, 0, 'a breach under his awning ROLLED IN opens nothing: ' + JSON.stringify(r.worm));
   assert.ok(r.worm.rolledOut.tangled >= 2.4 && r.worm.rolledOut.open >= 2.4, 'a breach under the awning rolled OUT comes up into it: tangled and open, the window: ' + JSON.stringify(r.worm));
@@ -293,7 +300,8 @@ try {
   assert.equal(r.greenteeth.alone, 0, 'JENNY GREENTEETH: a minute of her left alone opened her: ' + JSON.stringify(r.greenteeth));
   assert.ok(r.greenteeth.mode === 'stranded' && r.greenteeth.open >= 3, 'the lock drained with her at the gate and she was not stranded open for 3 s or more (the boss rule; claude/greenwire raised this from 1.4: her stranded window was 1.8 s): ' + JSON.stringify(r.greenteeth));
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
-  assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (PUPPETEER3: drop both puppets - blows or cuts - and he is dragged down to the boards, open) */ 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
+  assert.ok(r.puppeteer.slackMode === 'slack' && r.puppeteer.slackOpen === 0, 'THE PUPPETEER: both puppets down opened him by itself (THEATRE3: his bar goes slack; only the cut opens him): ' + JSON.stringify(r.puppeteer));
+  assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (THEATRE3: drop both puppets, climb, cut the slack bar - he falls to the boards, open >= 3 s) */ 'both puppets cut down and his slack bar cut, he did not come down open: ' + JSON.stringify(r.puppeteer));
   assert.equal(r.cisternqueen.alone, 0, 'THE CISTERN QUEEN: a minute of her left alone opened her: ' + JSON.stringify(r.cisternqueen));
   assert.ok(r.cisternqueen.dry === 0 && r.cisternqueen.drySips === 3, 'E at her on the open floor opened her (or spent a sip on nothing: the HUD never says POUR there): ' + JSON.stringify(r.cisternqueen));
   assert.ok(r.cisternqueen.open.soaked >= 3 && r.cisternqueen.open.fallen >= 3 && r.cisternqueen.open.rear >= 3, 'her three openings (her burrow flooded, a pour down her wall, a grab broken) are not each 3 s or more (the boss rule): ' + JSON.stringify(r.cisternqueen));

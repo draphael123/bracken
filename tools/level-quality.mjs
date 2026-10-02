@@ -26,7 +26,7 @@ export const GATE = ['theatre', 'fair', 'canal', 'welltown'];   /* the fair re-g
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
-  theatre: ['roles'],
+  /* (claude/theatre3: the theatre's roles row is lifted - THE PROMPTER, the goblin priest reskinned, is its support; THE FLYMAN, the archer reskinned, throws) */
 };
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
@@ -129,7 +129,7 @@ export const MASH_ENFORCE = true, MASH_HP = 40;
    a level with no row from day one, EXCEPT the parts listed below: the ones the mash bot still beats after the combat pass (the boss waves'
    TODO list, docs/BOSS-AUDIT.md). The list may only SHRINK: a listed part that now holds fails until its entry is taken out. */
 /* (measured 2026-10-01 after the combat pass, docs/mash-bot.json: 9 bosses, 12 minis and 4 level runs the mash bot still beats) */
-export const MASH_REPORT_ONLY = { spore: ['boss'], kings: ['mini'], scree: ['boss'], hanging: ['boss', 'mini'], moor: ['boss'], storm: ['level'], crown: ['mini'], lamplit: ['boss', 'mini'], underleaf: ['boss'], deep: ['level'], keep: ['boss', 'level'], causeway: ['level'], harbor: ['mini'], waymeet: ['mini'], fields: ['mini'], burial: ['mini'], mage: ['mini'], fallingtower: ['mini'], witchlight: ['mini'], unburied: ['mini'], fair: ['boss'], theatre: ['boss'] };
+export const MASH_REPORT_ONLY = { spore: ['boss'], hanging: ['mini'], storm: ['level'], crown: ['mini'], lamplit: ['mini'], deep: ['level'], keep: ['level'], causeway: ['level'], fields: ['mini'], burial: ['mini'], fallingtower: ['mini'], witchlight: ['mini'], unburied: ['mini'] };
 /* THE GATE ON ONE LEVEL: { ok, hard: parts beaten and not listed, stale: listed parts that hold now, msg } */
 export function mashGate(lv) {
   const v = mashVerdict(lv), soft = MASH_REPORT_ONLY[lv.id] || [];

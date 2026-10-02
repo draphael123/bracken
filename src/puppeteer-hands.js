@@ -98,8 +98,13 @@ export function makePuppeteerHands(ctx) {
       else if (c.limb === 'arm') ctx.number(c.at.x, c.at.y - 20, 'THE ARM GOES LIMP: NO MORE CHOP OR GRAB', '#8fd160');
       else if (c.limb === 'back') ctx.number(c.at.x, c.at.y - 20, 'THE BACK GOES LIMP: NO MORE SLAM', '#8fd160');
       else ctx.number(c.at.x, c.at.y - 20, 'A STRING PARTS', '#8fd160'); }
-    /* THE HARD WAY: his line, struck from the gallery */
-    if (Math.abs(P.y - show.A.gallery) < 8 && PM.strikeLine(e, show, hb)) { SOUND.snap(); SOUND.land(); ctx.hitstop(0.1); ctx.shakeCam(6); ctx.burst(e.x, e.y - 30, 16, ['#ffd36b', '#fff6c8'], 120, 0.5); ctx.number(e.x, e.y - 60, 'JOLTED: STRIKE HIM', '#ffd36b'); }
+    /* THE WOOD TURNS THE BLADE: a slack string on a puppet that is not spent - a clank, a grey spark, and the first time, said */
+    for (const k of show.clanks.splice(0)) clank(k.at.x, k.at.y);
+    /* HIS CONTROL BAR: slack (both puppets down), a blow cuts it and he falls to the boards; taut, it clanks */
+    if (!(seen && seen.has(show))) { const r = PM.cutBar(e, show, hb);
+      if (r && seen) seen.add(show);
+      if (r === 'cut') { SOUND.snap(); SOUND.land(); ctx.hitstop(0.14); ctx.shakeCam(7); ctx.burst(e.x, e.y - 14, 20, ['#ffd36b', '#fff6c8', '#6a4a2a'], 140, 0.6); ctx.number(e.x, e.y - 60, 'HIS BAR IS CUT: HE FALLS', '#ffd36b'); }
+      else if (r === 'taut') { ctx.SFX.clank(); ctx.sparks(e.x, e.y - 34, P.face || 1, 4); if (!(show.tautSaid > ctx.time)) { show.tautSaid = ctx.time + 6; ctx.number(e.x, e.y - 60, 'HIS BAR IS TAUT: DROP BOTH PUPPETS FIRST', '#9aa39a'); } } }
     const b = battenOf(), S = A(); if (!b || !S) return;
     const px = S.stage.pinX, py = S.floor;
     if (seen && seen.has(b)) return;
@@ -108,18 +113,22 @@ export function makePuppeteerHands(ctx) {
       if (r === 'free') { show.n.pin++; SOUND.release(); ctx.shakeCam(3); ctx.burst(px, py - 24, 8, ['#c9a86a', '#e8dcc0'], 60, 0.4); }
       else ctx.SFX.clank(); }
   };
-  /* A BLOW ON A PUPPET: it lands like any blow and takes its health. A heap takes nothing (it is already down) */
+  /* THE CLANK (THEATRE3): wood that is not spent turns the blade - heard, seen, and said once (readability: never "nothing works") */
+  function clank(x, y) { ctx.SFX.clank(); ctx.sparks(x, y, (ctx.P && ctx.P.face) || 1, 4); ctx.burst(x, y, 4, ['#9aa39a', '#c9d1dc'], 40, 0.25); ctx.hitstop(0.02);
+    if (show && !show.clankSaid) { show.clankSaid = true; ctx.number(x, y - 24, 'CLANK: STRIKE A PUPPET WHEN IT GLOWS GREEN', '#9aa39a'); } }
+  /* A BLOW ON A PUPPET: in its told recovery (glowing green) it lands like any blow and takes its health; any other time it clanks. A heap takes nothing */
   H.hurtPuppet = (p, dmg, fromX) => {
     if (!show || PM.heaped(p)) { ctx.SFX.stone(); return; }
+    if (!PM.hurtable(p)) { show.n.clank = (show.n.clank || 0) + 1; clank(p.x, p.y - (p.h || 20) / 2); return; }
     const d = Math.max(1, Math.round(dmg)), dir = Math.sign(p.x - fromX) || 1;
     p.hp = Math.max(0, p.hp - d); p.flash = 0.12; p.hitT = 0.25;
     if (p.t === 'harlequin') p.x += dir * 10; else if (p.t === 'marionette') p.x += dir * 3;
     ctx.SFX.hit && ctx.SFX.hit(); ctx.sparks(p.x, p.y - (p.h || 20) / 2, dir, 5); ctx.number(p.x, p.y - (p.h || 20) - 8, d, '#fff6e0'); ctx.hitstop(0.03);
     show.n.hitPuppet = (show.n.hitPuppet || 0) + d;
   };
-  H.warded = e => { if (!(e.wardSaid > ctx.time)) { e.wardSaid = ctx.time + 5; ctx.number(e.x, e.y - 60, 'OUT OF REACH: DROP HIS PUPPETS FIRST', '#9aa39a'); } };
+  H.warded = e => { if (!(e.wardSaid > ctx.time)) { e.wardSaid = ctx.time + 5; ctx.number(e.x, e.y - 60, e.slackBar ? 'STRIKE HIS BAR, NOT HIM' : 'OUT OF REACH: DROP HIS PUPPETS FIRST', '#9aa39a'); } };
   H.take = e => PM.pupTake(e);
-  H.barName = b => (PM.pupOpen(b) ? 'THE PUPPETEER  OPEN' : b.phase >= 3 ? 'THE PUPPETEER  THE MASTERPIECE' : b.phase === 2 ? 'THE PUPPETEER  TOGETHER' : 'THE PUPPETEER');
+  H.barName = b => (PM.pupOpen(b) ? 'THE PUPPETEER  OPEN' : show && PM.barSlack(b, show) ? 'THE PUPPETEER  HIS BAR IS SLACK' : b.phase >= 3 ? 'THE PUPPETEER  THE MASTERPIECE' : b.phase === 2 ? 'THE PUPPETEER  TOGETHER' : 'THE PUPPETEER');
   H.batten = (m, dt) => { PM.stepBatten(m, dt); if (m.st === 'rise' && Math.random() < dt * 8) SOUND.creak(); };
   H.camY = ty => { const S = A(); if (!S) return ty; const VH = ctx.VH(), top = S.y0 - 8, bot = S.floor + 3 * ctx.TS;
     if (bot - top <= VH) return (top + bot) / 2 - VH / 2;
@@ -128,7 +137,7 @@ export function makePuppeteerHands(ctx) {
     for (const p of show.puppets) if (p.alive) { p.mode = 'heap'; p.y = show.A.floor; p.str.forEach(s => { s.cut = true; }); p.downT = 0; ctx.burst(p.x, p.y - 12, 10, ['#c89a60', '#e8c23a', '#b8382c'], 60, 0.6); }
     show.curtain = 0.001; SOUND.curtain(); };
   const ironCells = () => { const S = A(); if (!S || !SK) return 0; const st = S.stage, G = Math.round(st.gallery / ctx.TS); let n = 0; for (let x = Math.round(st.gx0 / ctx.TS); x < Math.round(st.gx1 / ctx.TS); x++) if (SK.grate.includes(ctx.cellGet(cellI(x, G))[1])) n++; return n; };
-  H.read = () => show && { iron: ironCells(), mode: ctx.boss && ctx.boss.mode, n: { ...show.n }, free: show.free, cycle: show.cycle, scene: show.scene, hurt: { ...(show.hurt || {}) },
+  H.read = () => show && { iron: ironCells(), mode: ctx.boss && ctx.boss.mode, n: { ...show.n }, free: show.free, cycle: show.cycle, scene: show.scene, slack: show.slack, drops: show.drops.length, moves: PM.movesOf(show.cycle), hurt: { ...(show.hurt || {}) },
     batten: show.batten && { st: show.batten.st, y: show.batten.y, up: show.batten.up, down: show.batten.down, x: show.batten.x, w: show.batten.w },
     puppets: show.puppets.map(p => ({ t: p.t, x: Math.round(p.x), y: Math.round(p.y), mode: p.mode, alive: p.alive, hp: p.hp, maxHp: p.maxHp, left: PM.stringsLeft(p), downT: p.downT })),
     strings: ctx.boss ? PM.stringsOf(ctx.boss, show).map(s => ({ t: s.p.t, k: s.k, limb: s.limb, taut: s.taut, x0: Math.round(s.x0), y0: Math.round(s.y0), x1: Math.round(s.x1), y1: Math.round(s.y1) })) : [] };
@@ -177,11 +186,15 @@ export function makePuppeteerHands(ctx) {
       if (b.st === 'down' && !(b.t > 0)) { const k2 = 0.5 + 0.5 * Math.sin(time * 6); g.globalAlpha = 0.25 + 0.3 * k2; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(px - 6.5, py - 31.5, 14, 32); g.globalAlpha = 1; } }
     if (!e) return;
     /* HIS LINE: the rope he hangs from, thick, from the grid to his bar; from the gallery, when it can be struck, it glows */
-    if (!['downed', 'descend', 'haul'].includes(e.mode)) { const l = PM.hangLine(e, show), ready = show.joltCd <= 0 && ctx.P && Math.abs(ctx.P.y - show.A.gallery) < 8 && Math.abs(ctx.P.x - l.x0) < 90;
-      g.fillStyle = '#c9a86a'; g.fillRect(R(l.x0 - cx) - 1, R(l.y0 - cy), 2, R(l.y1 - l.y0)); if (ready) { g.globalAlpha = 0.35 + 0.35 * Math.sin(time * 8); g.fillStyle = '#ffd36b'; g.fillRect(R(l.x0 - cx) - 2, R(l.y0 - cy), 4, R(l.y1 - l.y0)); g.globalAlpha = 1; } }
+    const slack = PM.barSlack(e, show);
+    if (!PM.OPEN_MODES.includes(e.mode) && !['descend', 'haul'].includes(e.mode)) { const l = PM.hangLine(e, show), y1 = slack ? e.y - 16 : l.y1;
+      g.fillStyle = '#c9a86a'; if (!slack) g.fillRect(R(l.x0 - cx) - 1, R(l.y0 - cy), 2, R(y1 - l.y0));
+      else for (let y = l.y0; y < y1; y += 2) g.fillRect(R(l.x0 + Math.sin(y * 0.15 + time * 3) * 3 - cx), R(y - cy), 1, 2); }   /* SLACK: his line hangs in a wave */
     const master = show.puppets.find(p => p.t === 'masterpiece' && p.alive);
-    const bar = PM.barOf(e, !!master && e.phase >= 3);
-    g.fillStyle = '#6a4a2a'; g.fillRect(R(bar.x0 - cx), R(bar.y - cy), R(bar.x1 - bar.x0) + 1, 3); g.fillRect(R((bar.x0 + bar.x1) / 2 - cx), R(bar.y - 5 - cy), 2, 10);
+    const bar = PM.barOf(e, !!master && e.phase >= 3 && !slack);
+    g.fillStyle = '#6a4a2a'; g.fillRect(R(bar.x0 - cx), R(bar.y - cy), R(bar.x1 - bar.x0) + 1, 3); if (!slack) g.fillRect(R((bar.x0 + bar.x1) / 2 - cx), R(bar.y - 5 - cy), 2, 10);
+    /* SLACK: the bar in his lap GLOWS GOLD - cut it (and the gold ring says where) */
+    if (slack) { const k = 0.5 + 0.5 * Math.sin(time * 10), bb = PM.barBox(e); g.globalAlpha = 0.45 + 0.45 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.strokeRect(R(bb.l - cx) + 0.5, R(bb.t - cy) + 0.5, bb.r - bb.l, bb.b - bb.t); g.fillStyle = '#fff6c8'; g.fillRect(R(bar.x0 - cx), R(bar.y - cy), R(bar.x1 - bar.x0) + 1, 1); g.globalAlpha = 1; }
     /* THE STRINGS, always drawn: straight and bright (white, gold in a windup: the bonus cut) - never a thin line you can miss */
     for (const s of PM.stringsOf(e, show)) {
       const x0 = s.x0 - cx, y0 = s.y0 - cy, x1 = s.x1 - cx, y1 = s.y1 - cy;
@@ -213,15 +226,26 @@ export function makePuppeteerHands(ctx) {
       if (p.mode === 'chopTell') { g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(px + f * 6, fy - 26, PUP.brute.chopReach - 6, f > 0 ? -Math.PI / 2 : Math.PI / 2 + Math.PI / 2, f > 0 ? Math.PI / 4 : Math.PI * 3 / 4 + Math.PI / 2); g.stroke(); g.globalAlpha = 1; }
       if (p.mode === 'grabTell') { g.globalAlpha = 0.3 + 0.5 * k * pulse; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(f > 0 ? px : px - PUP.brute.grabReach, fy - 40, PUP.brute.grabReach, 40); g.globalAlpha = 1; }
       if (p.mode === 'kickTell') { g.globalAlpha = 0.3 + 0.5 * k * pulse; g.fillStyle = '#ff6b6b'; g.fillRect(f > 0 ? px : px - PUP.harl.kickReach, fy - PUP.lowTop, PUP.harl.kickReach, 1); g.globalAlpha = 1; }
-      if (p.mode === 'recover' && p.t === 'marionette') { g.globalAlpha = 0.4 + 0.3 * pulse; g.fillStyle = '#8fd160'; g.fillRect(px - 10, fy - 70, 21, 1); g.globalAlpha = 1; }   /* his recovery: the window, a green bar over him */
+      if (PM.hurtable(p)) { const hh = p.t === 'masterpiece' ? 96 : p.t === 'marionette' ? 66 : 30, ww = p.t === 'masterpiece' ? 40 : p.t === 'marionette' ? 30 : 16;   /* THE WINDOW (THEATRE3): spent, it GLOWS GREEN - now a blow lands and a string cuts */
+        g.globalAlpha = 0.35 + 0.35 * pulse; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(px + 0.5, fy - hh / 2, ww / 2 + 4, hh / 2 + 4, 0, 0, 7); g.stroke();
+        g.globalAlpha = 0.12 + 0.1 * pulse; g.fillStyle = '#8fd160'; g.beginPath(); g.ellipse(px + 0.5, fy - hh / 2, ww / 2 + 3, hh / 2 + 3, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
       if (p.mode === 'stompTell') { g.globalAlpha = 0.35 + 0.45 * pulse; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(R(p.stompX - cx), R(S.floor - 2 - cy), PUP.master.stompHalf, 5, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
       if (p.mode === 'reachTell' || p.mode === 'reach') bandDraw(g, 'high', p.reachY || st.gallery, p.x - PUP.master.reachSpan, p.x + PUP.master.reachSpan, p.mode === 'reachTell' ? k : -1, cx, cy, time);
       if (p.mode === 'reach') { const r = p.reachR || 0, sx2 = R(p.x - cx), sy = R(p.y - 62 - cy), ry = p.reachY || st.gallery;
         for (const d of [-1, 1]) { const tx = R(p.x + d * r - cx), ty = R(ry - 18 - cy); g.strokeStyle = '#b8844c'; g.lineWidth = 4; g.beginPath(); g.moveTo(sx2, sy); g.lineTo(tx, ty); g.stroke(); } } }
     if (e && (e.mode === 'whipLowTell' || e.mode === 'whipHighTell' || e.mode === 'whip')) { const f = e.face || 1, kind = e.mode === 'whip' ? e.whipKind : e.mode === 'whipLowTell' ? 'low' : 'high';
       bandDraw(g, kind, st.gallery, f > 0 ? e.x : e.x - PUP.whipReach, f > 0 ? e.x + PUP.whipReach : e.x, e.mode === 'whip' ? -1 : 1 - Math.max(0, e.modeT) / PUP.whipTell, cx, cy, time); }
+    /* THE HOUSE THROWS: a shadow growing where it will land, and the prop (or the sandbag) coming down onto it */
+    for (const d of show.drops) { const k = 1 - Math.max(0, d.t) / d.len, sx = R(d.x - cx), sy = R(d.fy - cy);
+      g.globalAlpha = 0.25 + 0.45 * k; g.fillStyle = d.bag ? '#3a0a10' : '#1e1624'; g.beginPath(); g.ellipse(sx + 0.5, sy - 1, d.half * (0.4 + 0.6 * k), 3, 0, 0, 7); g.fill();
+      g.strokeStyle = d.bag ? '#ff6b6b' : '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(sx + 0.5, sy - 1, d.half, 4, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
+      const top = S.y0 - 10, py = R(top + (d.fy - 6 - top) * k * k - cy);
+      if (d.bag) { g.fillStyle = '#7a6a4a'; g.fillRect(sx - 6, py - 10, 12, 12); g.fillStyle = '#9a8a62'; g.fillRect(sx - 5, py - 9, 10, 3); g.fillStyle = '#4a3a2a'; g.fillRect(sx - 6, py + 1, 12, 1); g.fillStyle = '#9aa3b0'; g.fillRect(sx, R(top - cy), 1, py - 10 - R(top - cy)); }
+      else { g.save(); g.translate(sx, py); g.rotate(time * 9 + d.id); const v = d.id % 3; g.fillStyle = v === 0 ? '#c83a2a' : v === 1 ? '#8a5a32' : '#c9d1dc'; if (v === 0) { g.beginPath(); g.arc(0, 0, 3, 0, 7); g.fill(); g.fillStyle = '#3f6e2c'; g.fillRect(-1, -4, 2, 2); } else if (v === 1) { g.fillRect(-5, -1, 10, 2); g.fillStyle = '#c9d1dc'; g.fillRect(3, -3, 3, 6); } else { g.fillRect(-1, -4, 3, 8); g.fillStyle = '#e8c23a'; g.fillRect(-2, -5, 5, 2); } g.restore(); } }   /* a rotten apple, a hammer, a prop candlestick */
+    /* HIS FLAIL from the boards: a red low band round him through its windup */
+    if (e && e.mode === 'flailTell') { const k = 1 - Math.max(0, e.modeT) / PUP.flailTell; g.globalAlpha = 0.3 + 0.5 * k * pulse; g.fillStyle = '#ff6b6b'; g.fillRect(R(e.x - PUP.flailReach - cx), R(S.floor - PUP.lowTop - 2 - cy), PUP.flailReach * 2, 1); g.fillRect(R(e.x - PUP.flailReach - cx), R(S.floor - 2 - cy), PUP.flailReach * 2, 2); g.globalAlpha = 1; }
     /* HE IS OPEN: a gold ring, OPEN, and the time running out under him */
-    if (e && PM.pupOpen(e)) { const full = e.mode === 'downed' ? PUP.downOpenT : PUP.joltT, k = Math.max(0, e.modeT) / full;
+    if (e && PM.pupOpen(e)) { const full = PUP.downOpenT, k = Math.max(0, e.openT || 0) / full;
       g.globalAlpha = 0.5 + 0.4 * pulse; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(R(e.x - cx), R(e.y - 18 - cy), 18, 24, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
       g.fillStyle = '#1e1624'; g.fillRect(R(e.x - 16 - cx), R(e.y + 3 - cy), 32, 4); g.fillStyle = '#ffd36b'; g.fillRect(R(e.x - 15 - cx), R(e.y + 4 - cy), R(30 * k), 2);
       ctx.text('OPEN', R(e.x - cx), R(e.y - 54 - cy), pulse > 0.5 ? '#fff6c8' : '#ffd36b', 'center', 8); }
@@ -248,6 +272,8 @@ export function makePuppeteerHands(ctx) {
     whipTell: () => S_.pupWhipTell(), whip: () => S_.pupWhip(),
     swatTell: () => S_.pupCreak(), swat: () => S_.throwWhoosh(), stompTell: () => S_.pupCreak(), stomp: () => { S_.pupThud(); S_.golemStomp(); }, reachTell: () => S_.pupCreak(), reach: () => S_.throwWhoosh(),
     sceneTell: () => S_.pupScene(), land: () => S_.pupThud(),
+    flailTell: () => { S_.pupCreak(); S_.tell && S_.tell(true); }, flail: () => { S_.throwWhoosh(); S_.pupThud(); },   /* THEATRE3: he fights back from the boards */
+    propTell: () => S_.throwWhoosh(), bagTell: () => { S_.ropeHaul(); S_.tell && S_.tell(true); }, propLand: () => S_.pupClatter(), bagLand: () => { S_.pupThud(); S_.golemStomp(); },   /* THE HOUSE throws; the sandbag */
     snap: () => { S_.pupSnap(); S_.pupSnap(); }, release: () => { S_.pupSnap(); S_.ropeHaul(); }, creak: () => S_.pupCreak(), curtain: () => S_.pupCurtain(),
   };
   return H;

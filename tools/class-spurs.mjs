@@ -54,9 +54,9 @@ try {
     wipe();
     BKT.PROG.witchlight = { cleared: true, medal: 3 };
     out.wAt = goTo('witchlight');
-    press('ArrowUp');
+    press('ArrowDown')   /* claude/mapspace moved the Unburied Field BELOW its junction (map y 47 vs the Witchlight Stair's 43): down walks onto it, up walks back */;
     out.wOpen = BKT.PROG.mapNodeId;
-    press('ArrowDown');
+    press('ArrowUp');
     out.wBack = BKT.PROG.mapNodeId;
 
     // BRONZE IS NOT ENOUGH: silver is asked for, so a bronze-only clear stays shut

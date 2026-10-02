@@ -27,7 +27,9 @@ try {
         if (!P().dead) { if (T.was !== null && T.was >= 0.4 * m && h < 0.4 * m) T.dips++; T.minHp = Math.min(T.minHp, h); } T.was = P().dead ? null : h; };
       /* A GRAB IS MASHED OFF (three presses), and a hero knocked into the canal is back on the bank: both are the level working, not the pilot failing */
       const TRACE = ${+process.env.TRACE || 0}, TR = [];   /* TRACE=n: every n frames, where he is, his health, her state and what is near him */
-      const tick = n => { for (let i = 0; i < (n || 1); i++) { if (ARMED !== null && deaths() > ARMED) throw 'DIED'; if (TRACE && frames % TRACE === 0) TR.push([frames, +(P().x / TS).toFixed(1), +(P().y / TS).toFixed(1), Math.round(P().hp), onBarge() ? 1 : 0, +((B().x + B().w) / TS).toFixed(1), B().holdWhy, BK.enemies().filter(e => e.alive && Math.abs(e.x - P().x) < 100 && Math.abs(e.y - P().y) < 120).map(e => e.t.slice(0, 3) + (e.mode || '') + Math.round(e.x / TS)).join(' '), Object.keys(k).filter(q => k[q]).join('+')]); if (P().caged > 0 && BK.enemies().some(e => e.t === 'grindylow' && e.mode === 'grab')) BK.press(i % 2 ? 'jump' : 'atk'); BK.sim(1); frames++; tally(); } };
+      const tick = n => { for (let i = 0; i < (n || 1); i++) { if (ARMED !== null && deaths() > ARMED) throw 'DIED'; if (TRACE && frames % TRACE === 0) TR.push([frames, +(P().x / TS).toFixed(1), +(P().y / TS).toFixed(1), Math.round(P().hp), onBarge() ? 1 : 0, +((B().x + B().w) / TS).toFixed(1), B().holdWhy, BK.enemies().filter(e => e.alive && Math.abs(e.x - P().x) < 100 && Math.abs(e.y - P().y) < 120).map(e => e.t.slice(0, 3) + (e.mode || '') + Math.round(e.x / TS)).join(' '), Object.keys(k).filter(q => k[q]).join('+')]); if (P().caged > 0 && BK.enemies().some(e => e.t === 'grindylow' && e.mode === 'grab')) BK.press(i % 2 ? 'jump' : 'atk'); BK.sim(1); frames++; tally(); stalls(); } };
+      /* (claude/canalfix3) EVERY STALL POINT on the route: each time something holds her, what glints (src/canal-hands.js holdTarget) and how long it held */
+      const HOLDS = []; let holdKey = null; function stalls() { const g = C().glint, key = g ? g.why + '@' + Math.floor(g.prop.x / TS) + ',' + Math.floor(g.prop.y / TS - 1) : null; if (key !== holdKey) { if (holdKey) HOLDS[HOLDS.length - 1].s = +((frames - HOLDS[HOLDS.length - 1].f) / 100).toFixed(1); if (key) HOLDS.push({ key, f: frames, bx: Math.round((B().x + B().w) / TS) }); holdKey = key; } }
       const at = () => [Math.floor(P().x / TS), Math.floor((P().y - 1) / TS)];
       const deaths = () => BK.stats().deaths;
       const onBarge = () => !!(P().onMover && P().onMover.canal);
@@ -170,11 +172,12 @@ try {
       leg('up onto the lock gate: the lock door', P().x > 370 * TS && P().y < 42 * TS);
       walk(375); leg('the checkpoint at her west door', BK.L.ents.some(e => e.t === 'check' && e.x === 375) && P().x > 374 * TS); walk(378); tick(30);
       });
-      return { TR, hero: ${JSON.stringify(hero)}, bare, lifted, log, state: BK.state, deaths: deaths(), s: +(frames / 60).toFixed(1), taken: Math.round(T.taken), minHp: Math.round(T.minHp), dips: T.dips, maxHp: T.maxHp };
+      return { HOLDS, TR, hero: ${JSON.stringify(hero)}, bare, lifted, log, state: BK.state, deaths: deaths(), s: +(frames / 60).toFixed(1), taken: Math.round(T.taken), minHp: Math.round(T.minHp), dips: T.dips, maxHp: T.maxHp };
     })()`, 1800000);
     console.log('== ' + r.hero + (god ? ' (god)' : '') + (r.bare ? ', fresh save (level 1, no talents, no skills)' : ', NOT BARE') + ': ' + r.state + ', ' + r.deaths + ' deaths, ' + r.s + ' s' + (r.lifted.length ? '; lifted out (the hand cannot parry): ' + r.lifted.join(' ') : ''));
     console.log('   TALLY: ' + r.taken + ' damage taken, lowest health ' + r.minHp + ' of ' + r.maxHp + ', ' + r.dips + ' dip(s) under 40%' + ((r.dips >= 2 || r.deaths >= 1) ? '  (the level-1 target: met)' : '  (the level-1 target - two dips or a death: NOT met)'));
     for (const t of r.TR || []) console.log('  t ' + JSON.stringify(t));
+    console.log('   STALL POINTS (what held her, what glinted, for how long): ' + (r.HOLDS || []).map(h => h.key + ' ' + (h.s ?? '-') + 's').join('  |  '));
     const last = new Map(); for (const l of r.log) last.set(l.name, l); for (const l of r.log) { if (!l.died && last.get(l.name) !== l) continue; console.log('  ' + (l.ok ? 'ok  ' : 'MISS') + ' ' + l.name.padEnd(72) + ' at ' + l.at.join(',') + '  hp ' + String(l.hp).padStart(3) + '  took ' + String(l.took).padStart(3) + '  deaths ' + l.deaths + '  ' + l.s + 's'); if (!l.ok) bad++; }
     if (r.state !== 'win' && r.state !== 'clear' && r.state !== 'levelclear') console.log('  (the run ended in state ' + r.state + ')');
   }

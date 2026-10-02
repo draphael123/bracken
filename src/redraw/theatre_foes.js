@@ -133,16 +133,69 @@ export function bakeHauntProp() {
   return pack(fr, X, 26, 8, 22);
 }
 
+// ================= THE FLYMAN (claude/theatre3): the archer's reskin - a stagehand up on the catwalks who throws =================
+//   bakeFlyman()  shirt sleeves, a flat cap, a tool belt; the archer's frames: 0 stand | 1 DRAW (a hammer back over his shoulder) | 2,3 walk | 4 a look down |
+//                 5 the throw coming | 6 loosed (arm through) | 7 SANDBAG TELL (a sack hoisted over his head, both hands: red, no shield turns it). 30x36, ax 14
+export function bakeFlyman() {
+  const W = 30, H = 36, cx = 14, y0 = 12;
+  const F = frames(W, H, 8, (g, f) => {
+    const walk = f === 2 || f === 3, st = f === 2 ? 2 : f === 3 ? -2 : 0, draw = f === 1 || f === 5, loose = f === 6, bag = f === 7, look = f === 4, lean = draw ? -2 : loose ? 3 : look ? 1 : 0;
+    for (const [lx, back] of [[cx - 4 - st, 1], [cx + 1 + st, 0]]) { rect(g, lx, y0 + 13, 4, 8, back ? K.trouserD : K.trouser); rect(g, lx - 1, y0 + 20, 6, 2, K.boot); }
+    fillPoly(g, [[cx - 5 + lean, y0 + 2], [cx + 5 + lean, y0 + 2], [cx + 6, y0 + 14], [cx - 6, y0 + 14]], K.shirt); rect(g, cx - 5 + lean, y0 + 2, 2, 12, K.shirtD); rect(g, cx + 3 + lean, y0 + 3, 1, 10, K.shirtL);
+    rect(g, cx - 6, y0 + 12, 13, 2, K.apronD); px(g, cx - 3, y0 + 13, K.steel); px(g, cx + 2, y0 + 13, K.brass); rect(g, cx + 3, y0 + 13, 2, 3, K.apron);   // the tool belt, a pouch
+    const hx = cx + lean, hy = y0 - 6;
+    rect(g, hx - 3, hy, 7, 7, K.skin); rect(g, hx - 3, hy, 2, 7, K.skinD); px(g, hx + 2, hy + 3, '#1a1210'); rect(g, hx - 2, hy + 5, 6, 1, '#7a6050'); rect(g, hx - 3, hy + 6, 7, 2, K.neck);
+    rect(g, hx - 4, hy - 2, 9, 3, K.cap); rect(g, hx - 4, hy - 2, 9, 1, K.capL); rect(g, hx + 1, hy, 5, 1, K.cap);
+    const arm = (sx, sy, ex, ey, back) => { line(g, sx, sy, ex, ey, back ? K.shirtD : K.shirt, 3); rect(g, ex - 1, ey - 1, 3, 3, back ? K.skinD : K.skin); };
+    const hammer = (x, y, up) => { line(g, x, y, x + (up ? -2 : 3), y + (up ? -6 : -5), '#7a5232', 2); rect(g, x + (up ? -4 : 2), y + (up ? -8 : -7), 5, 3, K.steel); px(g, x + (up ? -4 : 2), y + (up ? -8 : -7), '#d8dee8'); };
+    if (bag) { arm(cx + 4, y0 + 3, cx + 2, y0 - 10, false); arm(cx - 4, y0 + 3, cx - 4, y0 - 10, true); const sx = cx - 1, sy = y0 - 21;
+      rect(g, sx - 6, sy + 3, 12, 9, K.sack); rect(g, sx - 5, sy + 2, 10, 2, K.sackL); rect(g, sx - 6, sy + 11, 12, 2, K.sackD); rect(g, sx - 1, sy, 3, 3, K.rope); px(g, sx - 3, sy + 6, '#c03038'); px(g, sx + 2, sy + 6, '#c03038'); }   // the sack over his head, a red stencil on it
+    else if (draw) { arm(cx + 4, y0 + 3, cx - 3, y0 - 6, false); hammer(cx - 3, y0 - 6, true); arm(cx - 4, y0 + 4, cx + 6, y0 + 8, true); }
+    else if (loose) { arm(cx + 4 + lean, y0 + 3, cx + 12, y0 + 6, false); arm(cx - 4, y0 + 4, cx - 7, y0 + 10, true); }
+    else { arm(cx + 4, y0 + 3, cx + 7 + st, y0 + 11, false); hammer(cx + 7 + st, y0 + 12, false); arm(cx - 4, y0 + 3, cx - 7 - st, y0 + 11, true); }
+  });
+  return pack(F, cx, F[0].height - 1, 10, 22);
+}
+
+// ================= THE PROMPTER (claude/theatre3): the goblin priest's reskin - the support who keeps the cast on its lines =================
+//   bakePrompter()  a stooped man in rusty black, half-spectacles, a prompt book and a candle on a stick; the priest's frames: 0 stand | 1,2 walk | 3,4 THE RITE
+//                   (the book held up open, the candle high: the cast mends) | 5 book drawn back to throw | 6 thrown | 7 hand bell up | 8 rung | 9 knocked back
+export function bakePrompter() {
+  const W = 30, H = 36, cx = 14, y0 = 12;
+  const P2 = { coat: '#2a2430', coatL: '#4a4054', coatD: '#16121c', shirt: '#e8e0d0', book: '#7a1a24', bookL: '#a83a40', page: '#f0e8d0', candle: '#f0e8c8', flame: '#ffd36b', flameL: '#fff6c8', skin: '#d8b090', skinD: '#a88060', hair: '#c8c0b8', glass: '#c8e0f0', bell: '#e0b840' };
+  const F = frames(W, H, 10, (g, f) => {
+    const walk = f === 1 || f === 2, st = f === 1 ? 2 : f === 2 ? -2 : 0, rite = f === 3 || f === 4, back = f === 5, thrown = f === 6, bellUp = f === 7, rung = f === 8, broken = f === 9;
+    const lean = broken ? -3 : thrown ? 3 : back ? -2 : 1;
+    for (const [lx, b] of [[cx - 4 - st, 1], [cx + 1 + st, 0]]) { rect(g, lx, y0 + 14, 4, 7, b ? P2.coatD : P2.coat); rect(g, lx - 1, y0 + 20, 5, 2, '#100c10'); }
+    fillPoly(g, [[cx - 4 + lean, y0 + 2], [cx + 5 + lean, y0 + 2], [cx + 7, y0 + 17], [cx - 6, y0 + 17]], P2.coat); rect(g, cx - 4 + lean, y0 + 2, 2, 15, P2.coatD); rect(g, cx + 3 + lean, y0 + 3, 1, 13, P2.coatL); rect(g, cx - 1 + lean, y0 + 2, 3, 3, P2.shirt);   // a long black coat, a white stock
+    const hx = cx + lean + 1, hy = y0 - 6;
+    rect(g, hx - 3, hy, 7, 7, P2.skin); rect(g, hx - 3, hy, 2, 7, P2.skinD); rect(g, hx - 4, hy - 1, 9, 2, P2.hair); rect(g, hx - 4, hy, 2, 4, P2.hair); rect(g, hx + 1, hy + 3, 4, 1, P2.glass); px(g, hx + 2, hy + 3, '#1a1a24'); rect(g, hx, hy + 5, 4, 1, '#8a6050');   // grey hair, half-spectacles
+    const arm = (sx, sy, ex, ey, b) => { line(g, sx, sy, ex, ey, b ? P2.coatD : P2.coat, 3); rect(g, ex - 1, ey - 1, 3, 3, P2.skin); };
+    const book = (x, y, open) => { if (open) { rect(g, x - 5, y, 11, 6, P2.page); rect(g, x, y, 1, 6, P2.bookL); for (let k = 0; k < 3; k++) { rect(g, x - 4, y + 1 + k * 2, 3, 1, '#7a7068'); rect(g, x + 2, y + 1 + k * 2, 3, 1, '#7a7068'); } rect(g, x - 5, y + 6, 11, 1, P2.book); }
+      else { rect(g, x - 3, y, 6, 8, P2.book); rect(g, x - 3, y, 6, 1, P2.bookL); rect(g, x + 2, y + 1, 1, 6, P2.page); } };
+    const candle = (x, y, lit) => { rect(g, x, y, 1, 8, '#6a5a48'); rect(g, x - 1, y - 3, 3, 3, P2.candle); if (lit) { px(g, x, y - 5, P2.flame); px(g, x, y - 4, P2.flameL); } };
+    if (rite) { arm(cx + 4, y0 + 4, cx + 6, y0 - 3, false); book(cx + 6, y0 - 9, true); arm(cx - 3, y0 + 4, cx - 6, y0 - 2, true); candle(cx - 6, y0 - 4 - (f === 4 ? 1 : 0), true); }
+    else if (back) { arm(cx + 4, y0 + 4, cx - 4, y0 - 4, false); book(cx - 5, y0 - 10, false); arm(cx - 3, y0 + 5, cx + 5, y0 + 9, true); }
+    else if (thrown) { arm(cx + 4 + lean, y0 + 4, cx + 13, y0 + 4, false); arm(cx - 3, y0 + 5, cx - 6, y0 + 11, true); }
+    else if (bellUp || rung) { arm(cx + 4, y0 + 4, cx + 8, rung ? y0 + 4 : y0 - 4, false); rect(g, cx + 7, (rung ? y0 + 4 : y0 - 4) - 1, 4, 4, P2.bell); px(g, cx + 8, rung ? y0 + 7 : y0 - 1, '#8a6a1c'); arm(cx - 3, y0 + 5, cx - 5, y0 + 11, true); book(cx - 5, y0 + 9, false); }
+    else if (broken) { arm(cx - 3, y0 + 4, cx - 9, y0 + 8, true); arm(cx + 4, y0 + 4, cx + 8, y0 + 11, false); book(cx + 9, y0 + 12, true); }
+    else { arm(cx + 4, y0 + 4, cx + 7 + st, y0 + 10, false); book(cx + 8 + st, y0 + 7, false); arm(cx - 3, y0 + 4, cx - 6, y0 + 10, true); candle(cx - 6, y0 + 3, true); }
+  });
+  return pack(F, cx, F[0].height - 1, 10, 22);
+}
+
 // ================= the set a creature wears in this level =================
 let SETS = null;
 export function bakeTheatreCast() {
   if (SETS) return SETS;
-  SETS = { patron: bakeDrunk('patron'), usher: bakeUsher(), ghost: bakeGhost(), haunt: bakeHauntProp() };
+  SETS = { patron: bakeDrunk('patron'), usher: bakeUsher(), ghost: bakeGhost(), haunt: bakeHauntProp(), flyman: bakeFlyman(), prompter: bakePrompter() };
   return SETS;
 }
 export function foeSet(e) {
   if (!SETS) bakeTheatreCast();
-  if (e.t === 'drunk' && e.footlights) return SETS.patron;
+  if (e.t === 'archer' && e.flyman) return SETS.flyman;
+  if (e.t === 'gobpriest' && e.prompter) return SETS.prompter;
+  if (e.t === 'drunk' && (e.footlights || e.patron)) return SETS.patron;
   if (e.t === 'mummer' && e.usher) return SETS.usher;
   if (e.t === 'boo') return SETS.ghost;
   if (e.t === 'haunt') return SETS.haunt;

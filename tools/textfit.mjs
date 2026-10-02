@@ -21,6 +21,7 @@
 //   pick      THE HERO PICK, with each of its cards selected in turn: every hero's name under its card, and the words for the selected one
 //   practice  THE PRACTICE YARDS list, each row selected in turn
 //   bossjump  THE HIDDEN BOSS LIST (SHIFT+B on the title): each row selected in turn, and every hero on the hero line
+//   slots     THE FIVE SAVE SLOTS (title > play): five full saves with the longest words, then a mix of full and empty, each card selected in turn
 //   credits   THE CREDITS (title menu): the CC-BY music page and every page of composers
 //   bossfix   the boss fights of the five levels whose words were found on one another, and a damage number on the HUD (in the suite)
 //   node tools/textfit.mjs --strict         exit 1 on any OVERFLOW, OFFSCREEN, CLIPPED, TRUNCATED, COVERS, COLLIDE or SMUDGE (LONGHINT only reports)
@@ -160,6 +161,16 @@ async function pageTextFit(input) {
        own canvas are not plates the words are on */
     for (let i = 0; i < n; i++) { BK.state = 'heropick'; BK.ui.heroPickI = i; BK.step(1); }
     for (let i = 0; i < n; i++) frame('pick #' + i, () => { BK.state = 'heropick'; BK.ui.heroPickI = i; }, { settle: 20 });
+    await yieldNow(); }
+  if (want('slots')) { const ls = localStorage, was = {}; for (let i = 0; i < 5; i++) was[i] = ls.getItem('bracken.progress.' + i);
+    /* FIVE FULL SAVES, the worst words: the longest hero names, a three-digit level, a big purse, every wood cleared (COMPLETE), a long medal count */
+    const xp = await import('/src/xp.js'), done = {}; for (const l of lvm.LEVELS) if (!l.hidden) done[l.id] = { cleared: true, medal: 3 };
+    ['pyro', 'reaper', 'geomancer', 'paladin', 'pirate'].forEach((h, i) => ls.setItem('bracken.progress.' + i, JSON.stringify(Object.assign({ hero: h, heroes: { knight: true, [h]: true }, coins: 99999 - i, xp: { [h]: xp.xpFloor(30) }, xpVersion: 1, perHero: 1, done: { [h]: { wood: 1 } } }, done))));
+    BK.state = 'slots'; BK.step(1); for (let i = 0; i < 5; i++) { BK.ui.slotI = i; BK.step(1); }   /* (each hero is baked the first time it is drawn) */
+    for (let i = 0; i < 5; i++) frame('slots full #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; }, { settle: 20 });
+    for (const i of [1, 4]) ls.removeItem('bracken.progress.' + i);   /* and empty ones among full ones */
+    for (let i = 0; i < 5; i++) frame('slots mixed #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; }, { settle: 20 });
+    for (let i = 0; i < 5; i++) { if (was[i] === null) ls.removeItem('bracken.progress.' + i); else ls.setItem('bracken.progress.' + i, was[i]); }
     await yieldNow(); }
   if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};
     for (let i = 0; i < 8; i++) frame('practice #' + i, () => { BK.state = 'practice'; BK.ui.practiceI = i; }, { settle: 20 });

@@ -33,6 +33,9 @@ const ctx = {
   SFX: new Proxy({}, { get: () => noop }),
   DMG: new Proxy({}, { get: () => 10 }),
 };
+/* claude/bosswave1 made the daze a module const above updateRam: read its real values from main.js so the slice can see them */
+const dz = /const RAM_DAZE = ([\d.]+), RAM_DAZE_TAKE = ([\d.]+)/.exec(main); assert(dz, 'RAM_DAZE consts found in main.js');
+ctx.RAM_DAZE = +dz[1]; ctx.RAM_DAZE_TAKE = +dz[2];
 vm.createContext(ctx);
 vm.runInContext(src, ctx);
 

@@ -198,6 +198,11 @@ CONVERTED TO OGG FROM THE ORIGINAL WAV (ffmpeg, libvorbis q3, no fades, loop poi
   https://opengameart.org/node/181239 - THE FOG CANAL's own level track (claude/canalfix, 2026-10-01; Daniel's pick, the file fetched by the coordinator).
   Converted from the 24-bit/48 kHz FLAC loop to Vorbis q4, 44.1 kHz stereo, +8 dB to sit with the soundtrack (mean -16.4 dB, peak -1.4 dB);
   the loop seam is continuous (38.40 s, 1693440 samples). It replaces the lane's synthesized placeholder barcarolle.
+- theatre.ogg = "Apparitions Ball" by Bobjt, CC0 - https://opengameart.org/content/apparitions-ball - THE MASKWRIGHT'S THEATRE's own level track
+  (claude/theatre3, 2026-10-02; Daniel's pick, the file fetched with his yes). The source (37.89 s) ends abruptly, so it is cut to a 25.58 s loop:
+  samples 4096-1132367 at 44.1 kHz, the end where the tune comes round to its own opening (band-energy match 0.54 over 4 s), with a 30 ms crossfade
+  at the seam; turned down 1.9 dB (the source decodes past full scale) to about -13.7 LUFS integrated, true peak -1.5 dBTP, Vorbis q5, 44.1 kHz stereo.
+  It replaces the synthesized waltz the theatre played before (the show's act changes are still told over it with a cymbal and a bell).
 - archmage / archmage:undead / goblinroyal = no file: synthesised for this game in src/boss-music.js (the Archmages' theme; the Undead Archmage's own corrupted echo of it, 'archmage:undead', slower and a semitone flat on a detuned pipe organ, low choir, bone percussion and a slow bell; the Goblin royals' theme, shared by the Goblin King and Queen)
 
 THE HARVEST FAIR'S OWN TWO TRACKS (claude/fairfix3, Daniel 2026-10-01; the coordinator pulled the files, converted here with ffmpeg: libvorbis q5, 44.1 kHz stereo, no fades,

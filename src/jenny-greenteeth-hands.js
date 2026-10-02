@@ -17,7 +17,8 @@ export function makeGreenteethHands(ctx) {
   const skins = () => SK || (SK = bakeLockSkins());
   const R = Math.round;
   /* WHAT HURT: the health each of her blows took, by name (the pilots print it) */
-  const hurt = (name, fn) => { const P = ctx.P, h0 = P.hp; fn(); if (show) { const k = String(name); show.hurt = show.hurt || {}; show.hurt[k] = (show.hurt[k] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
+  const hurt = (name, fn) => { const P = ctx.P, h0 = P.hp; fn(); if (show) { const k = String(name), lost = Math.max(0, h0 - Math.max(0, P.hp)); show.hurt = show.hurt || {}; show.hurt[k] = (show.hurt[k] || 0) + lost;
+    if (lost > 0 && show.working) { const was = show.pad[show.working].work; GM.crankShaken(show); if (was > 0) ctx.number(P.x, P.y - 40, 'SHAKEN OFF THE PADDLE', '#ff6b6b'); } } };   /* (claude/canalfix3) her blow shakes you off the paddle you work */
   H.show = () => show;
   H.on = () => !!(show && A());
   H.clear = () => { show = null; };
@@ -115,7 +116,8 @@ export function makeGreenteethHands(ctx) {
         ctx.burst(r.a.held ? r.a.held.x : r.a.x, (r.a.held ? r.a.held.y : G.bed) - 8, 8, ['#5e8a4a', '#86b060', '#e8f4f0'], 70, 0.4); }
       if (r.what === 'hand' && GM.handCut(e, show)) { SOUND.hiss(); ctx.hitstop && ctx.hitstop(0.05); ctx.number(G.E.paddle.x, G.walk - 40, 'SHE LETS GO', '#8fd160'); ctx.burst(G.E.paddle.x, G.E.paddle.y - 14, 8, ['#5e8a4a', '#86b060'], 60, 0.4); }
       if (r.what === 'paddle') { const pd = G[r.side].paddle;
-        if (r.res === 'knot') { SOUND.weed(); ctx.burst(pd.x, pd.y - 18, 6, ['#3e6030', '#9ac850'], 50, 0.4); ctx.number(pd.x, pd.y - 40, 'THE WEED CHOKES THE PADDLE: CUT IT', '#ffd36b'); }
+        if (r.res === 'crank') { SOUND.paddle(); const p0 = show.pad[r.side]; ctx.burst(pd.x, pd.y - 18, 3, ['#9aa3b0', '#e8f4f0'], 30, 0.25); if (!show.told.crank) { show.told.crank = true; ctx.number(pd.x, pd.y - 40, 'WORK THE PADDLE: SHE COMES FOR YOU', '#ffd36b'); } void p0; }   /* (claude/canalfix3) */
+        else if (r.res === 'knot') { SOUND.weed(); ctx.burst(pd.x, pd.y - 18, 6, ['#3e6030', '#9ac850'], 50, 0.4); ctx.number(pd.x, pd.y - 40, 'THE WEED CHOKES THE PADDLE: CUT IT', '#ffd36b'); }
         else if (r.res === 'knotCut') { SOUND.weed(); SOUND.paddle(); ctx.number(pd.x, pd.y - 40, 'THE PADDLE IS FREE', '#8fd160'); }
         else if (r.res === 'unjam') { SOUND.weed(); SOUND.paddle(); ctx.number(pd.x, pd.y - 40, 'THE UPPER PADDLE DROPS', '#8fd160'); }
         else if (r.res === 'drain' || r.res === 'drainBig') { SOUND.paddle(); SOUND.drain(); ctx.shakeCam(2); }
@@ -125,7 +127,9 @@ export function makeGreenteethHands(ctx) {
         else if (r.res === 'notHere') { SOUND.paddle(); ctx.number(pd.x, pd.y - 40, 'SHE IS NOT IN THAT CULVERT', '#9aa39a'); }
         else if (r.res === 'flood') { SOUND.paddle(); SOUND.surge(); }
         else ctx.SFX.clank(); }
-      if (r.what === 'hook') { if (r.res === 'fast') { ctx.SFX.clank(); if (!show.told.fast) { show.told.fast = true; ctx.number(G[r.side].hook.x, G.walk - 40, 'THE LAMP IS HOOKED FAST', '#9aa39a'); } } else if (r.res === 'drop') { SOUND.lampDrop(); } }
+      if (r.what === 'hook') { if (r.res === 'hookKnot') { SOUND.weed(); ctx.burst(G[r.side].hook.x, G[r.side].hook.y, 6, ['#3e6030', '#9ac850'], 50, 0.4); if (!show.told.hookKnot) { show.told.hookKnot = true; ctx.number(G[r.side].hook.x, G.walk - 40, 'THE WEED BINDS THE LAMP: CUT IT', '#ffd36b'); } }
+        else if (r.res === 'hookFree') { SOUND.weed(); SOUND.lampDrop(); ctx.number(G[r.side].hook.x, G.walk - 40, 'THE LAMP IS FREE', '#8fd160'); }
+        else if (r.res === 'fast') { ctx.SFX.clank(); if (!show.told.fast) { show.told.fast = true; ctx.number(G[r.side].hook.x, G.walk - 40, 'THE LAMP IS HOOKED FAST', '#9aa39a'); } } else if (r.res === 'drop') { SOUND.lampDrop(); } }
     }
   };
   H.warded = e => { if (!(e.wardSaid > ctx.time)) { e.wardSaid = ctx.time + 5; ctx.number(e.x, e.y - 50, 'THE WATER TAKES IT: STRAND HER FIRST', '#9aa39a'); } };
@@ -172,6 +176,7 @@ export function makeGreenteethHands(ctx) {
       g.fillStyle = '#2a2c30'; g.fillRect(px - 2, py - 22, 5, 22); g.fillStyle = '#5a6068'; g.fillRect(px - 2, py - 22, 1, 22);
       g.fillStyle = '#3a3e44'; g.fillRect(px + 3, py - 26 - up, 2, 20); for (let y = py - 26 - up; y < py - 6 - up; y += 3) { g.fillStyle = '#8a929c'; g.fillRect(px + 5, y, 1, 1); }
       g.fillStyle = '#4a4e52'; g.beginPath(); g.arc(px, py - 16, 4, 0, 7); g.fill(); g.fillStyle = '#9aa3b0'; g.fillRect(px - 1, py - 17, 2, 2);
+      if (pd.work > 0) { const need = GT.crank[Math.max(0, Math.min(2, ((e && e.phase) || 1) - 1))]; for (let i = 0; i < need; i++) { g.fillStyle = i < pd.work ? '#8fd160' : '#1e1624'; g.fillRect(px - need * 2 + i * 4, py - 34, 3, 2); } }   /* (claude/canalfix3) how far the paddle is worked */
       if (pd.knot > 0) { for (let i = 0; i < 9; i++) { g.fillStyle = i % 3 ? '#2a4a22' : '#9ac850'; g.fillRect(px - 5 + (i * 3) % 11, py - 20 + (i * 5) % 10, 3, 2); } }
       const hot = e && ((show.hide === side && e.base === 'culvert') || (e.lured && GM.special && show.lamps[side].st === 'lit')) || (e && e.mode === 'handTell' && side === 'E') || (pd.knot > 0) || (side === 'E' && !pd.open && e && e.phase === 1 && Math.abs(e.x - Q.face) < 110);
       if (hot && !pd.open) { const k = 0.5 + 0.5 * Math.sin(time * 6); g.globalAlpha = 0.35 + 0.4 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(px - 6.5, py - 29.5, 14, 30); g.globalAlpha = 1; }
@@ -181,6 +186,7 @@ export function makeGreenteethHands(ctx) {
       /* the lamp's iron bracket out over the water, and the lamp on its hook */
       const hx = R(Q.hook.x - cx), hy = R(Q.hook.y - cy); g.fillStyle = '#2a2c30'; g.fillRect(Math.min(hx, dir > 0 ? w1 - 2 : w0 + 1), hy - 2, Math.abs(hx - (dir > 0 ? w1 - 2 : w0 + 1)) + 1, 2); g.fillRect(hx, hy - 2, 1, 5);
       const L = show.lamps[side]; if (L.st === 'hook' || (L.st === 'none' && show.lampsHung !== false)) lamp(g, hx, hy + 10, time, L.st === 'hook' ? 1 : 0.55);
+      if (L.st === 'hook' && L.knot > 0) for (let i = 0; i < 7; i++) { g.fillStyle = i % 3 ? '#2a4a22' : '#9ac850'; g.fillRect(hx - 4 + (i * 3) % 9, hy - 4 + (i * 5) % 8, 3, 2); }   /* (claude/canalfix3) the weed she bound the hook with */
     }
     /* the narrowboat's broken cabin and tiller, over its deck */
     const wx = R(G.wreck.x0 - cx), wy = R(G.wreck.y - cy); g.fillStyle = '#1e1a16'; g.fillRect(wx + 30, wy - 10, 56, 10); g.fillStyle = '#7a2e1e'; g.fillRect(wx + 30, wy - 10, 56, 2);
@@ -224,8 +230,8 @@ export function makeGreenteethHands(ctx) {
       g.globalCompositeOperation = 'lighter'; for (const [lx, ly, r] of lights) { const gr = g.createRadialGradient(R(lx - cx), R(ly - cy), 2, R(lx - cx), R(ly - cy), r); gr.addColorStop(0, 'rgba(120,100,50,' + (0.35 * show.fog).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(R(lx - cx) - r, R(ly - cy) - r, r * 2, r * 2); } g.globalCompositeOperation = 'source-over';   /* the lantern light, warm in the fog */
       for (let i = 0; i < 6; i++) { const fx = x0 + ((i * 131 + time * 8 * (i % 2 ? 1 : -1)) % w + w) % w, fy = y0 + 40 + (i * 37) % (hgt - 60); g.globalAlpha = 0.08 * show.fog; g.fillStyle = '#c8d8d0'; g.fillRect(R(fx), R(fy), 60, 6); } g.globalAlpha = 1; }
     /* HER EYES: always, over the water, the weed and the fog - two points of yellow-green where her head is */
-    if (e && !(e.hp <= 0)) { const hx = R(e.x + (e.face || 1) * 3 - cx), hy = R((e.mode === 'stranded' || e.mode === 'drag' ? e.y - 7 : e.mode === 'flushed' ? e.y - 5 : Math.max(e.y - GT.h + 4, surf + 2)) - cy);
-      const under = e.y - GT.h + 4 > surf + 2 && !GM.gtOpen(e), fl = 0.75 + 0.25 * Math.sin(time * 3);
+    if (e && !(e.hp <= 0)) { const hx = R(e.x + (e.face || 1) * 3 - cx), hy = R((e.mode === 'stranded' || e.mode === 'drag' ? e.y - 11 : e.mode === 'flushed' ? e.y - 8 : Math.max(e.y - 47, surf + 2)) - cy);   /* (claude/canalfix3) on her bigger head */
+      const under = e.y - 47 > surf + 2 && !GM.gtOpen(e), fl = 0.75 + 0.25 * Math.sin(time * 3);
       g.globalAlpha = (under ? 0.7 : 1) * fl; g.fillStyle = '#e8ff7a'; g.fillRect(hx - 3, hy, 2, 1); g.fillRect(hx + 1, hy, 2, 1);
       g.globalAlpha = 0.22 * fl * (show.fog > 0.3 ? 1.6 : 1); g.fillStyle = '#e8ff7a'; g.beginPath(); g.arc(hx, hy, 5, 0, 7); g.fill(); g.globalAlpha = 1;
       if (e.base === 'culvert' || e.mode === 'shiftTell') { const Q = G[show.hide || 'W']; g.globalAlpha = 0.6 + 0.3 * pulse; g.fillStyle = '#e8ff7a'; const qx = R(Q.face + Q.dir * 13 - cx); g.fillRect(qx - 3, R(G.bed - 12 - cy), 2, 1); g.fillRect(qx + 1, R(G.bed - 12 - cy), 2, 1); g.globalAlpha = 1; } }
@@ -239,6 +245,9 @@ export function makeGreenteethHands(ctx) {
       g.fillStyle = '#e8f4f0'; for (let i = 0; i < 8; i++) g.fillRect(R(Q.face + Q.dir * (4 + i * 3) - cx), sy - 2 - ((time * 50 + i * 7) % 10), 2, 1); }
     if (show.surge) { const s = show.surge, x = R(s.x - cx); g.fillStyle = '#e8f4f0'; g.fillRect(x - 12, sy - 16, 24, 4); g.fillStyle = '#bfe6f5'; g.fillRect(x - 16, sy - 12, 32, 6); g.fillStyle = '#7cc8c8'; g.fillRect(x - 20, sy - 6, 40, 6);
       for (let i = 0; i < 6; i++) { g.fillStyle = '#ffffff'; g.fillRect(x - 10 + i * 4, sy - 18 - ((time * 40 + i * 5) % 5), 1, 1); } }
+    if (e && e.oa) { const a = e.oa, k = 1 - Math.max(0, a.t) / a.len;   /* (claude/canalfix3) HER OPENING FIGHTS: the snap (yellow, at her jaws) and the swipe (a red low band) */
+      if (a.k === 'snap') { const x = R(e.x + a.dir * 14 - cx), y = R(e.y - 26 - cy); g.globalAlpha = 0.5 + 0.4 * pulse; g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 6, 3, 1); g.fillRect(x - 3, y - 3, 7, 1); g.fillRect(x - 5, y, 11, 1); g.globalAlpha = 1; }
+      else band(g, 'low', e.y, e.x - GT.oa.swipeR, e.x + GT.oa.swipeR, k, cx, cy, time); }
     if (e && e.mode === 'handTell') { const Q = G.E; g.globalAlpha = 0.5 + 0.4 * pulse; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(R(Q.paddle.x - cx) - 8.5, R(Q.paddle.y - cy) - 31.5, 18, 32); g.globalAlpha = 1; }
     if (show.water.depth > 0 && show.pad.E.open && e && e.phase < 4) { g.globalAlpha = 0.5; g.fillStyle = '#bfe6f5'; for (let i = 0; i < 5; i++) g.fillRect(R(G.x1 - 8 - i * 6 - cx), sy + 2 + ((time * 30 + i * 4) % 8), 3, 1); g.globalAlpha = 1; }   /* the water running out east */
     /* OPEN, and its clock */
