@@ -27,22 +27,22 @@
 //                                                     on it; a nest pocket east (a feather) under the bridge
 //   70-94    THE CAVE OF HANDS    the JAM (REQUIRED)  east ledges under a slinger, the painted cave (a silver, a feather); at the top THE JAM
 //                                                     seals the bridge: shut the gate above it, let a flood bank, release it - the burst washes it
-//   46-70    THE NARROWS          EXAM: all three     the walls close in; the second basket rides up on the flood, and above it the way on is a
+//   42-70    THE NARROWS          EXAM: all three     the walls close in; the second basket rides up on the flood, and above it the way on is a
 //                                                     long rope IN the channel under raptors and a slinger - ride on the flood, then hold the next
-//   22-46    THE SUMMIT           (the old nest)      the last climb (CHECKPOINT TWO at the dam's door); the old nest's vault west, off the route
+//   22-42    THE SUMMIT           (the old nest)      the last climb (CHECKPOINT TWO at the dam's door); the old nest's vault west, off the route
 //   ...then THE OLD DAM, the plateau east of the summit: THE GREAT RED CRAB (src/gorge-crab.js), and the road on to THE GLASS SEA.
 import { stageGorgeCrab } from './gorge-crab.js';
 
 export const REDGORGE = { W: 96, H: 170, floor: 166, ch: [22, 26], summit: 22 };
-export const SECTIONS = [['THE GORGE MOUTH', 166], ['THE DRY FALLS', 142], ['THE RAPTOR LEDGES', 118], ['THE CAVE OF HANDS', 94], ['THE NARROWS', 70], ['THE SUMMIT', 46]];
+export const SECTIONS = [['THE GORGE MOUTH', 166], ['THE DRY FALLS', 142], ['THE RAPTOR LEDGES', 118], ['THE CAVE OF HANDS', 94], ['THE NARROWS', 70], ['THE SUMMIT', 42]];
 /* the bridge rows, bottom to top (each section ends on one) */
-export const BRIDGES = [142, 118, 94, 70, 46];
+export const BRIDGES = [142, 118, 94, 70, 42];
 /* each mechanic's arc (tile ROWS: a climb) - TAUGHT, DEVELOPED, TWISTED, COMBINED/EXAMINED - read by tools/redgorge.mjs and the concept page */
 export const ARCS = {
-  flood: { teach: [160, 166], develop: [118, 142], twist: [94, 118], exam: [46, 70] },     /* the floor crossing; the falls race; the basket that rides it; the narrows */
-  gate: { teach: [118, 142], develop: [70, 94], twist: [6, 22], exam: [46, 70] },          /* the falls (optional); THE JAM (required); the crab's opening; the narrows' hold */
-  basket: { teach: [100, 118], exam: [61, 70] },                                           /* the raptor ledges; the narrows */
-  climb: { teach: [145, 163], develop: [119, 136], exam: [47, 60] },                       /* ledges, the falls' rope, the narrows' rope */
+  flood: { teach: [160, 166], develop: [118, 142], twist: [94, 118], exam: [42, 70] },     /* the floor crossing; the falls race; the basket that rides it; the narrows */
+  gate: { teach: [118, 142], develop: [70, 94], twist: [6, 22], exam: [42, 70] },          /* the falls (optional); THE JAM (required); the crab's opening; the narrows' hold */
+  basket: { teach: [100, 118], exam: [65, 70] },                                           /* the raptor ledges; the narrows */
+  climb: { teach: [145, 163], develop: [119, 136], exam: [43, 62] },                       /* ledges, the falls' rope, the narrows' rope */
 };
 
 export function buildRedGorge({ painter, T, TS }) {
@@ -79,7 +79,7 @@ export function buildRedGorge({ painter, T, TS }) {
   /* THE FIRST BASKET, taught where it costs nothing: by the channel on the east floor, it rides the flood up to a ledge with a silver (off the route) */
   basket('mouth', 27, F, 148, 160); ledge(29, 34, 148); ent('silver', 33, 147);
   ledge(36, 42, 162); ledge(30, 36, 159);                                      /* the way up to him (an optional fight) */
-  foe('slinger', 6, 147, 'mouthSling2', { face: 1 }); foe('cutthroat', 15, 144, 'mouthTop', { face: -1 });   /* the top of the west climb: a knife at the bridge's foot, a sling behind him */
+  foe('slinger', 6, 147, 'mouthSling2', { face: 1 }); foe('cutthroat', 24, 141, 'mouthTop', { face: -1 });   /* a sling behind the top of the west climb; a knife idling on BRIDGE ONE's span over the channel: the first bandit you watch the horn take */
   block(3, C1, 136, 138);                                                     /* the overhang over the west climb and the channel (the flood pours through its slot): cross */
   ledge(3, 44, 142);                                                          /* BRIDGE ONE */
 
@@ -90,7 +90,6 @@ export function buildRedGorge({ painter, T, TS }) {
   wheel(28, 135, 'falls'); gate('falls', 115);                                /* THE FIRST WHEEL: its gate across the channel over the falls */
   sign(35, 135, 'THE WHEEL SHUTS THE GATE ABOVE. SHUT, IT HOLDS ONE FLOOD.');
   block(27, 44, 119, 132);                                                    /* the falls' lip: sheer on the east - the only way up is the face */
-  foe('scorpion', 30, 138, 'fallsStep', { face: 1 });                          /* on the step up to the terrace */
   ent('raptor', CX + 3, 120, { squad: 'raptorFalls', guard: 126 });          /* a raptor over the falls' face: it stoops at you on the rope */
   rope(24, 119, 135);                                                         /* THE FALLS' FACE: a rope in the channel, seventeen rows */
   ent('scorpion', 34, 135, { face: -1, elite: true, gate: 27 });            /* THE FALLS' KEEPER: an elite scorpion holds the gate between the terrace and the falls' foot (eliteGates: it opens when he dies) */
@@ -109,8 +108,7 @@ export function buildRedGorge({ painter, T, TS }) {
   foe('cutthroat', 30, 117, 'basketFoot', { face: -1 }); foe('cutthroat', 34, 117, 'basketFoot', { face: -1 }); foe('slinger', 38, 117, 'basketFoot', { face: -1 });   /* they come along the bridge at you while you wait on the basket for a flood */
   ledge(9, 15, 97);
   foe('cutthroat', 6, 99, 'ledgeTop', { face: 1 }); foe('cutthroat', 12, 99, 'ledgeTop', { face: -1 }); foe('slinger', 4, 99, 'ledgeTop', { face: 1 });   /* they wait at the basket's top */
-  ent('raptor', CX, 106, { squad: 'raptorShaft', guard: 112 });                 /* two raptors over the basket's shaft and the bridge */
-  ent('raptor', CX + 4, 92, { squad: 'raptorBridge3', guard: 94 });
+  ent('raptor', CX, 106, { squad: 'raptorShaft', guard: 112 });                 /* a raptor over the basket's shaft and the bridge */
   /* the nest pocket on the east, under bridge three (FEATHER TWO): drop through the bridge and down the ledges */
   ledge(38, 44, 97); ledge(31, 37, 100); ledge(38, 44, 103); block(27, 44, 104, 111);   /* the pocket stands on rock: nothing to fall to */
   feather(43, 102); decor.push({ kind: 'nest', x: 41, y: 102 });
@@ -121,44 +119,55 @@ export function buildRedGorge({ painter, T, TS }) {
   // ================= 4. THE CAVE OF HANDS (70-94): climb EAST; THE JAM =================
   ledge(28, 33, 91); ledge(33, 40, 88);
   ledge(29, 35, 85); ledge(35, 44, 82);
-  foe('cutthroat', 31, 84, 'caveLedge', { face: 1 }); foe('cutthroat', 34, 84, 'caveLedge', { face: -1 });
+  foe('cutthroat', 23, 93, 'caveLedge', { face: 1 }); foe('cutthroat', 25, 93, 'caveLedge', { face: -1 });   /* on BRIDGE THREE's span over the channel: meet them in it - time the horn, or fight in the water's road */
   /* THE CAVE OF HANDS: cut into the east wall off the ledge at row 82 - painted hands, a silver, FEATHER THREE */
   air(45, 53, 78, 81); block(45, 53, 82, 82);
   decor.push({ kind: 'hands', x: 47, y: 79 }, { kind: 'hands', x: 50, y: 78 }); ent('silver', 52, 81); feather(50, 81);
   interiors.push([45, 53, 78, 81, 'rgCave']);
   ledge(30, 36, 79); ledge(36, 43, 76); ledge(30, 37, 73);
-  foe('cutthroat', 38, 75, 'caveTop', { face: -1 }); foe('cutthroat', 41, 75, 'caveTop', { face: -1 }); foe('slinger', 43, 75, 'caveTop', { face: -1 }); foe('scorpion', 33, 72, 'jamFoot', { face: 1 });   /* the knives over the cave, the sting at the jam's foot */
-  /* the slinger on the west lip, over the jam */
-  block(16, 21, 80, 80); foe('slinger', 19, 79, 'jamSling', { face: 1 });
+  foe('slinger', 43, 75, 'caveTop', { face: -1 }); foe('scorpion', 33, 72, 'jamFoot', { face: 1 });   /* the sling over the cave, the sting at the jam's foot */
+  block(16, 21, 80, 80);                                                      /* the west lip (a step off the rope below) */
   rope(4, 71, 87); ledge(6, 13, 80);                                          /* a way back up from bridge three's overhang (dropped onto from bridge four), and a reach to him */
   /* THE JAM: flotsam wedged on bridge four in the channel, seven rows high, beside the east overhang - the narrows' rope hangs to its top */
   block(C0, C1, 63, 69); jams.push({ x0: C0, x1: C1, y0: 63, y1: 69 }); ent('jam', CX, 69);   /* seven rows: no jump (nor a mantle) from the bridge gets on it */
-  block(27, 44, 63, 64);                                                      /* the overhang over the east */
+  /* THE JAM IS A FIGHT (the review: the wheel was roofed and both its slingers were under it, so the bank was free). The jam-lip SLINGER stands ON
+     the jam, seven rows over the wheel, and throws down the open slot beside it (the overhang now starts four columns east): out of reach, and
+     only the burst that breaks the jam takes him. Two KNIVES wait on the overhang's top and leap down the slot when the jam's gate is shut
+     (src/red-gorge-hands.js interact: squad 'jamDrop'), and a raptor keeps bridge four */
+  foe('slinger', 24, 62, 'jamSling', { face: 1 });
+  block(31, 44, 63, 64);                                                      /* the overhang over the east (the slot over the wheel, cols 27-30, open to the sky) */
+  foe('cutthroat', 33, 62, 'jamDrop', { face: -1 }); foe('cutthroat', 36, 62, 'jamDrop', { face: -1 });
+  ent('raptor', CX, 66, { squad: 'raptorJam', guard: 68 });                   /* it keeps bridge four: it stoops at you while the jam's gate banks */
   wheel(28, 69, 'jam'); gate('jam', 58);                                      /* THE JAM'S GATE, and its wheel on the bridge */
   ledge(3, 44, 70);                                                           /* BRIDGE FOUR */
 
-  // ================= 5. THE NARROWS (46-70): the walls close in; climb WEST: the basket, then the rope =================
-  block(3, 7, 47, 69); block(39, 44, 47, 63);                                 /* the narrows' walls */
-  block(8, 16, 61, 69);                                                       /* the west face (sheer) */
+  // ================= 5. THE NARROWS (42-70): the walls close in; climb WEST: the basket, then the rope =================
+  /* THE EXAM'S RACE IS A GAMBLE (the review: a 16-row rope from the basket's top cleared the 8 s window by 3 s, so the gate was optional). The basket
+     now stops at row 65, on a LANDING under the west mass (the top wheel and its two knives); the rope hangs TWENTY rows (43-62: bridge five is four
+     rows higher), its foot a hop over the landing's lip and still eight rows over bridge four (no jump from the bridge reaches it). Racing the next
+     flood up it from the landing is a thin margin under a slinger and two raptors; the gate (shut at the landing's wheel) holds the next flood, and
+     the climb is dry */
+  block(3, 7, 43, 69); block(39, 44, 43, 63);                                 /* the narrows' walls */
+  block(8, 16, 65, 69);                                                       /* the west face (sheer) */
   set(17, 70, T.AIR); set(18, 70, T.AIR);                                     /* the second basket's berth */
-  basket('narrows', 17, 70, 61, 66);                                         /* THE SECOND BASKET: up nine rows on the flood */
+  basket('narrows', 17, 70, 65, 66);                                         /* THE SECOND BASKET: up five rows on the flood, to the landing */
   wheel(20, 69, 'narrows');                                                   /* the narrows' gate: a wheel at the basket's foot... */
-  ledge(19, 21, 61); wheel(10, 60, 'narrows'); foe('cutthroat', 8, 60, 'narrowsTop', { face: 1 }); foe('cutthroat', 14, 60, 'narrowsTop', { face: -1 });   /* two knives at the basket's top, by the wheel you need */ gate('narrows', 44);          /* ...and one at its top, by the rope */
-  block(8, 21, 47, 59);                                                       /* the west mass: the only way on is the rope in the channel */
-  rope(22, 47, 62);                                                           /* THE NARROWS' ROPE: sixteen rows in the channel (its foot seven rows over bridge four: no jump from the bridge reaches it) */
-  ent('raptor', CX, 50, { squad: 'raptorsB', guard: 54 });                   /* a raptor over the rope */
+  ledge(19, 21, 65); wheel(10, 64, 'narrows'); foe('cutthroat', 9, 64, 'narrowsTop', { face: 1 }); foe('cutthroat', 14, 64, 'narrowsTop', { face: -1 });   /* the landing: two knives at the basket's top, by the wheel you need */ gate('narrows', 39);          /* ...and one at its top, over the rope */
+  block(8, 21, 43, 59);                                                       /* the west mass over the landing: the only way on is the rope in the channel */
+  rope(22, 43, 62);                                                           /* THE NARROWS' ROPE: twenty rows in the channel (its foot eight rows over bridge four: no jump from the bridge reaches it) */
+  ent('raptor', CX, 50, { squad: 'raptorsB', guard: 58 });                   /* a raptor over the rope: it hunts the rope's lower half too */
   /* the east shelf in the narrows: a slinger over the rope, and FEATHER FOUR behind him */
-  block(27, 33, 52, 52); ledge(34, 38, 52); ledge(33, 38, 49); foe('slinger', 29, 51, 'narrowsSling', { face: -1 });   /* down off bridge five's east end */
-  feather(37, 51);
-  block(8, C1, 40, 42);                                                       /* the overhang over the west and the channel */
-  ledge(3, 44, 46);                                                           /* BRIDGE FIVE */
+  block(27, 33, 48, 48); ledge(34, 38, 48); ledge(33, 38, 45); foe('slinger', 29, 47, 'narrowsSling', { face: -1 });   /* down off bridge five's east end */
+  feather(37, 47);
+  block(8, C1, 36, 38);                                                       /* the overhang over the west and the channel */
+  ledge(3, 44, 42);                                                           /* BRIDGE FIVE */
 
-  // ================= 6. THE SUMMIT (22-46): climb EAST; the old nest west =================
-  foe('cutthroat', 31, 45, 'bridge5', { face: -1 }); foe('cutthroat', 35, 45, 'bridge5', { face: -1 }); foe('cutthroat', 39, 45, 'bridge5', { face: -1 });   /* the bridge's east head, as you come off the rope */
-  ledge(30, 36, 43); ledge(36, 44, 40); ledge(29, 35, 37); ledge(35, 43, 34); ledge(30, 36, 31); ledge(36, 44, 28); ledge(33, 39, 25);
-  foe('cutthroat', 32, 36, 'summit', { face: 1 }); foe('cutthroat', 35, 36, 'summit', { face: -1 });
-  foe('slinger', 41, 27, 'summitSling', { face: -1 }); foe('cutthroat', 37, 27, 'summitKnife', { face: 1 });   /* his knife beside him */
-  ent('raptor', CX + 6, 32, { squad: 'raptorsC', guard: 37 });
+  // ================= 6. THE SUMMIT (22-42): climb EAST; the old nest west =================
+  foe('cutthroat', 31, 41, 'bridge5', { face: -1 }); foe('cutthroat', 35, 41, 'bridge5', { face: -1 }); foe('cutthroat', 39, 41, 'bridge5', { face: -1 });   /* the bridge's east head, as you come off the rope */
+  ledge(36, 44, 39); ledge(29, 35, 36); ledge(35, 43, 33); ledge(30, 36, 30); ledge(36, 44, 27); ledge(33, 39, 25);
+  foe('cutthroat', 33, 35, 'summit', { face: 1 }); foe('cutthroat', 24, 31, 'summit', { face: 1 });   /* one on the climb; one on THE OLD NEST's bridge over the channel: the vault walk crosses a fight at the horn */
+  foe('slinger', 41, 26, 'summitSling', { face: -1 }); foe('cutthroat', 37, 26, 'summitKnife', { face: 1 });   /* his knife beside him */
+  ent('raptor', CX + 6, 32, { squad: 'raptorsC', guard: 36 });
   /* THE OLD NEST: across a rope bridge at row 31 (over the channel) to the west wall: its vault behind a wall of woven branches */
   ledge(17, 29, 32); block(3, 16, 32, 33);
   ent('oldnest', 13, 31); decor.push({ kind: 'nest', x: 15, y: 31 });
@@ -188,6 +197,11 @@ export function buildRedGorge({ painter, T, TS }) {
     gates, jams, baskets, vaultDoors, decor,   /* decor: the nests and the painted hands, drawn by src/red-gorge-hands.js (greybox) */
     shade, shadeArt: [],
     rockZones: [[0, W - 1, 0, H - 1]],   /* the canyon's red sandstone everywhere (the caravan's rock skin until the art lane paints the gorge its own) */
+    /* THE ROPE BRIDGES ARE ROPE AND PLANK (the review: they drew as the desert's rock shelf, against the rule's own picture - the flood drops you
+       through the bridge). Each bridge and the old nest's are lashed poles (main.js ONEWAY art: L.ledgeZones -> LEDGE_SETS.lashed); the climbing
+       ledges stay rock shelves */
+    ledgeZones: [...BRIDGES.map(y => [3, 44, y, y, 'lashed']), [17, 29, 32, 32, 'lashed']],
+    climbLook: true,   /* UPGRADE D: on a rope or a gorge basket the camera looks UP the climb (main.js camera, STORMHOLD's towers' flag) */
     quest: { n: 4, item: 'feather', name: 'FEATHERS', done: 'FOUR FEATHERS: LAY THEM IN THE OLD NEST', thanks: 'THE OLD NEST OPENS' },
     sections: Object.fromEntries(SECTIONS.map(([n, y]) => [n, y])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */

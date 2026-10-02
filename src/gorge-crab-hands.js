@@ -44,8 +44,17 @@ export function makeGorgeCrabHands(ctx) {
           if ((pp.gcHit || '') === key) return; if (!ctx.overlap({ l: v.box[0], r: v.box[1], t: v.box[2], b: v.box[3] }, ctx.box(Q))) return;
           pp.gcHit = key; ctx.damagePlayer(e.x, d, { unblockable: !v.blockable, who: e, name }); }); }
       if (v.t === 'open') { ctx.sfx.waveCrash && ctx.sfx.waveCrash(); ctx.shake(4); ctx.burst(e.x, e.y - 20, 22, ['#7ab8e8', '#e8f4f8', '#b8382c'], 80, 0.9); ctx.number(e.x, e.y - 56, 'THE WATER THROWS HIM: CUT HIM', '#8fd160'); }
-      if (v.t === 'phase2') { ctx.enrage(e); ctx.number(e.x, e.y - 56, 'HE SMELLS THE HELD WATER: MAKE HIM SCUTTLE IN', '#ff9a5c'); }
+      if (v.t === 'phase2') { ctx.enrage(e); ctx.number(e.x, e.y - 56, 'HE SMELLS THE HELD WATER', '#ff9a5c'); }   /* (the review: the old line handed over the answer; his refusal at the bank says the rest) */
     }
+    /* PHASE TWO HAS A BODY (the review's fix 4): when the held water stops him at the bank - the engine's blocked() just holds his x - he REARS, claws up,
+       and hisses, and the water banked over the dam's gate drips (once a refusal, at most every CRAB.rearEvery s). The first scuttle that ends IN the
+       channel is marked: dust thrown up, and a ring under him where he dug in */
+    F.rearT = Math.max(0, (F.rearT || 0) - dt); F.rearCd = Math.max(0, (F.rearCd || 0) - dt);
+    if (B.phase === 2 && w.held && B.mode === 'walk' && !GC.inChannel(B.x) && GC.inChannel(B.x + B.face * 10) && Math.abs(P.x - e.x) > 30 && F.rearCd <= 0) {
+      F.rearT = CRAB.rearT; F.rearCd = CRAB.rearEvery; F.n.rears = (F.n.rears || 0) + 1; ctx.sfx.hiss && ctx.sfx.hiss();
+      const gx = (S.ch[0] + S.ch[1]) / 2; ctx.burst(gx, (GC.STAGE.gateRow + 1) * 16, 10, ['#7ab8e8', '#e8f4f8'], 30, 0.8, 200, 1); }
+    if (F.rearT > 0 && B.mode === 'walk') e.mode = 'rear';
+    if (B.phase === 2 && !F.dugSeen && GC.crabDug(F) && GC.inChannel(B.x)) { F.dugSeen = true; ctx.ring(e.x, S.floor - 4, 26, '#c9b27c'); ctx.burst(e.x, S.floor - 4, 16, ['#c9962a', '#8a6a52', '#e8dcc0'], 90, 0.7); ctx.shake(2); }
     /* a release with him out of the channel: water wasted, and the hit says so */
     if (w.burst && !F.burstSeen) { F.burstSeen = true; F.n.releases++; if (!GC.inChannel(B.x) && B.mode !== 'open') { F.n.wasted++; ctx.number(e.x, e.y - 56, 'HE IS NOT IN THE CHANNEL: THE WATER IS WASTED', '#9aa39a'); } }
     if (!w.burst) F.burstSeen = false;
@@ -53,7 +62,7 @@ export function makeGorgeCrabHands(ctx) {
   };
   /* A BLOW ON HIM: x CRAB.openMul on his back (the global rule makes every other blow a scratch) */
   H.take = e => GC.crabTake(F);
-  H.frame = e => { const m = e.mode; if (m === 'open') return CRAB_F.open; if (m === 'wake' || m === 'sleep' || m === 'recover') return CRAB_F.stand;
+  H.frame = e => { const m = e.mode; if (m === 'open') return CRAB_F.open; if (m === 'rear') return CRAB_F.crushTell;   /* (the rear borrows the claws-up pose until the art lane draws its own; it wears no mark) */ if (m === 'wake' || m === 'sleep' || m === 'recover') return CRAB_F.stand;
     if (CRAB_F[m] !== undefined && !Array.isArray(CRAB_F[m])) return CRAB_F[m]; return CRAB_F.walk[Math.floor(ctx.time() * 5) % 2]; };
   H.barName = e => 'THE GREAT RED CRAB' + (e.mode === 'open' ? '  ON HIS BACK' : e.mode === 'dug' ? '  DUG IN' : '');
   H.end = e => {};

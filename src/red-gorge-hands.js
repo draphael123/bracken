@@ -9,7 +9,7 @@ import { vultureStep } from './desert-foes.js';
 /* THE FLOOD'S CLOCK (s), its blow, and a released burst. GORGE.horn is the whole warning: two seconds is a dozen tiles at a run, and every place to
    stand in a channel is three tiles or less from dry rock (tools/redgorge.mjs proves it) */
 /* (dmg: a flood down the gorge is a fall and a beating; damDmg: the old dam's shallow spillway, where the crab fight is - tuned with the boss pilot at 10) */
-export const GORGE = { dry: 6.0, horn: 2.0, run: 2.4, first: 3.0, dmg: 25, damDmg: 10, down: 200, push: 90, foeDmg: 30, release: { tell: 0.35, run: 1.6 }, wellR: 22 };
+export const GORGE = { dry: 6.0, horn: 2.0, run: 2.4, first: 3.0, dmg: 25, damDmg: 10, down: 200, push: 90, foeDmg: 30, foeFlood: 0.5, foeNear: [360, 220], release: { tell: 0.35, run: 1.6 }, wellR: 22 };
 export const BASKET = { rise: 2.0, sink: 36, hold: 2.5 };          /* a basket climbs its shaft in RISE s of running water, holds HOLD s at the top, then sinks */
 export const RAPTOR = { sightY: 150, hp: 24, dmg: 20 };            /* THE RAPTOR: it hunts only a hero within SIGHTY px (up or down) of the bridge it keeps; its stoop hits harder than a vulture's (20, the vulture 10) */
 
@@ -26,7 +26,7 @@ export function makeRedGorgeHands(ctx) {
     if (!RG || RG.L !== L) {
       const ents = L.ents, ts = ctx.TS;
       RG = { L, phase: 'dry', t: GORGE.first, id: 0, said: {}, spans: [], pending: [],
-        n: { floods: 0, held: 0, releases: 0, wasted: 0, swept: 0, foesSwept: 0, jams: 0, rides: 0, shut: 0 },
+        n: { floods: 0, held: 0, releases: 0, wasted: 0, swept: 0, foesSwept: 0, foesTaken: 0, jams: 0, rides: 0, shut: 0 },
         channels: (L.channels || []).map(c => ({ ...c })),
         gates: (L.gates || []).map(g => ({ ...g, state: 'open', fx: 0 })),
         wheels: ents.filter(e => e.t === 'sluice').map(e => ({ x: e.x * ts + 8, y: (e.y + 1) * ts, gate: e.gate, arena: !!e.arena, cd: 0 })),
@@ -35,6 +35,9 @@ export function makeRedGorgeHands(ctx) {
         vault: (L.vaultDoors || []).map(v => ({ ...v, open: false })),
         wheelsW: ents.filter(e => e.t === 'waterwheel').map(e => ({ x: e.x * ts + 8, y: e.y * ts + 8, basket: e.basket, a: 0 })) };
     }
+    /* each foe's squad, by name (main.js does not carry an ent's squad onto the foe it spawns): matched by kind and spawn point, every spawn */
+    for (const q of L.ents) { if (!q.squad) continue; const px = q.x * ctx.TS + 8, py = (q.y + 1) * ctx.TS;
+      const e = ctx.enemies().find(f => f.alive && f.t === q.t && !f.rgSquad && Math.abs(f.x - px) < 4 && Math.abs(f.y - py) < 40); if (e) e.rgSquad = q.squad; }
     /* a death: the clock goes on, a burst in flight ends, a basket goes back to its foot */
     RG.spans = RG.spans.filter(s => s.kind === 'flood'); RG.pending = [];
     for (const m of ctx.movers().filter(q => q.gorge)) { m.y = m.y0; m.dy = 0; m.hold = 0; }
@@ -56,6 +59,9 @@ export function makeRedGorgeHands(ctx) {
   H.wetAt = (x, y, kinds) => RG ? wetAt(x, y, kinds) : null;
   const running = (chId, row, kinds) => RG.spans.some(s => s.ch === chId && row >= s.y0 && row <= s.y1 && (!kinds || kinds.includes(s.kind)));
 
+  /* THE JAM'S KNIVES (squad 'jamDrop'): they wait on the overhang's top over bridge four and leap down the slot by the wheel when its gate is shut -
+     the bank's ten seconds are a fight. Each walks west off the overhang's lip (rgLeap) and falls to the bridge (src/red-gorge.js) */
+  const leap = () => { for (const e of ctx.enemies()) if (e.alive && e.rgSquad === 'jamDrop' && !e.rgLeapt) { e.rgLeapt = true; e.rgLeap = 4; } };
   /* ---------- INTERACT (E): a wheel, or the old nest ---------- */
   H.interact = P => {
     if (!RG) return false;
@@ -63,7 +69,7 @@ export function makeRedGorgeHands(ctx) {
     if (w) { if (w.cd > 0) return true; w.cd = 0.4; const g = RG.gates.find(q => q.id === w.gate); if (!g) return true;
       if (RG.pending.some(p => p.g === g)) return true;
       ctx.sfx.ratchet && ctx.sfx.ratchet(); ctx.sparks(w.x, w.y - 16, P.face || 1, 3);
-      if (g.state === 'open') { g.state = 'shut'; g.fx = 0.5; RG.n.shut++; ctx.sfx.gateDrop && ctx.sfx.gateDrop(); ctx.number(w.x, w.y - 34, 'THE GATE IS SHUT: IT HOLDS THE NEXT FLOOD', '#7ab8e8'); }
+      if (g.state === 'open') { g.state = 'shut'; g.fx = 0.5; RG.n.shut++; if (g.id === 'jam') leap(); ctx.sfx.gateDrop && ctx.sfx.gateDrop(); ctx.number(w.x, w.y - 34, 'THE GATE IS SHUT: IT HOLDS THE NEXT FLOOD', '#7ab8e8'); }
       else if (g.state === 'shut') { g.state = 'open'; g.fx = 0.5; ctx.sfx.gateLift && ctx.sfx.gateLift(); ctx.number(w.x, w.y - 34, 'THE GATE IS OPEN', '#ffd36b'); }
       else { RG.pending.push({ g, t: GORGE.release.tell }); g.fx = GORGE.release.tell; ctx.sfx.gateLift && ctx.sfx.gateLift(); ctx.shake(2); ctx.number(w.x, w.y - 34, 'RELEASED: THE WATER COMES DOWN', '#8fd160'); }
       return true; }
@@ -113,9 +119,22 @@ export function makeRedGorgeHands(ctx) {
         ctx.burst(P.x, P.y - 10, 10, ['#7ab8e8', '#e8f4f8'], 80, 0.5); (RG.said['swept'] ? 0 : (RG.said['swept'] = 1, ctx.number(P.x, P.y - 34, 'THE FLOOD TAKES YOU', '#ff9a5c'))); }
       if (c.id === 'gorge' && !P.ground) P.vy = Math.max(P.vy || 0, GORGE.down * k);
       const mid = (c.x0 + c.x1 + 1) * ctx.TS / 2; ctx.moveHero((P.x < mid ? -1 : 1) * GORGE.push * k * dt); });
-    /* AND ON THE FOES: a bandit on a bridge in the channel is taken (a flyer is not) */
-    for (const e of ctx.enemies()) { if (!e.alive || e.noGrav || e.boss || e.t === 'gorgecrab') continue; const s = wetAt(e.x, e.y - 6); if (!s || e.rgSwept === s.id) continue;
-      e.rgSwept = s.id; RG.n.foesSwept++; ctx.hurtFoe(e, GORGE.foeDmg); e.vy = 160; ctx.burst(e.x, e.y - 8, 8, ['#7ab8e8', '#e8f4f8'], 70, 0.5); }
+    for (const e of ctx.enemies()) if (e.rgLeap > 0 && e.alive) { e.rgLeap -= dt; if (e.y < 69 * ctx.TS) ctx.moveFoe(e, -80 * dt); else e.rgLeap = 0; }
+    /* AND ON THE FOES: THE FLOOD TAKES THEM (the review: it did a third of a bandit's life and left him on the bridge). A common foe the water
+       catches is dropped through the bridge, pushed out to the nearer bank as a hero is, and loses GORGE.foeFlood of his life (two floods and he is
+       gone); a released BURST takes a common foe outright. An elite, a flyer and the boss stand it. Only near a hero (GORGE.foeNear px): a bandit
+       idling in the channel far up the gorge is waiting there for you, not washed away before you ever see him */
+    const nearHero = e => ctx.players.some(pp => !pp.dead && Math.abs(pp.x - e.x) < GORGE.foeNear[0] && Math.abs(pp.y - e.y) < GORGE.foeNear[1]);
+    for (const e of ctx.enemies()) { if (!e.alive || e.noGrav || e.boss || e.t === 'gorgecrab') continue;
+      if (e.rgFall > 0) e.rgFall = Math.max(0, e.rgFall - dt);
+      const s = wetAt(e.x, e.y - 6); if (!s) continue; const c = chOf(s.ch), mid = (c.x0 + c.x1 + 1) * ctx.TS / 2, common = !e.elite;
+      if (e.rgSwept !== s.id) { if (!nearHero(e)) continue; e.rgSwept = s.id; RG.n.foesSwept++; ctx.burst(e.x, e.y - 8, 8, ['#7ab8e8', '#e8f4f8'], 70, 0.5);
+        if (common && s.kind === 'burst') { RG.n.foesTaken++; ctx.hurtFoe(e, (e.hp || 1) + 999); ctx.number(e.x, e.y - 24, 'SWEPT AWAY', '#7ab8e8'); continue; }
+        ctx.hurtFoe(e, common ? Math.ceil((e.maxHp || e.hp || 30) * GORGE.foeFlood) : GORGE.foeDmg); e.vy = 160;
+        if (common && !RG.said.foeSwept) { RG.said.foeSwept = 1; ctx.number(e.x, e.y - 24, 'THE FLOOD TAKES HIM', '#7ab8e8'); } }
+      if (!common || !e.alive) continue;
+      if (c.id === 'gorge') e.rgFall = 0.2;   /* through the bridge (main.js updateDesertFoe: a foe with rgFall falls through a one-way) */
+      ctx.moveFoe(e, (e.x < mid ? -1 : 1) * GORGE.push * dt); }
     /* THE GATES, THE JAMS, THE BASKETS, THE NEST: what each is for, the first time you stand by it */
     for (const w of RG.wheels) if (!RG.said['w' + w.gate] && Math.abs(w.x - P0.x) < 44 && Math.abs(w.y - P0.y) < 24) (RG.said['w' + w.gate] ? 0 : (RG.said['w' + w.gate] = 1, ctx.number(P0.x, P0.y - 34, 'E AT THE WHEEL: SHUT THE GATE, OR RELEASE WHAT IT HOLDS', '#ffd36b')));
     for (const j of RG.jams) if (!j.open && !RG.said.jam && Math.abs((j.x0 + 2.5) * ctx.TS - P0.x) < 80 && Math.abs((j.y1 + 1) * ctx.TS - P0.y) < 24) (RG.said['jam'] ? 0 : (RG.said['jam'] = 1, ctx.number(P0.x, P0.y - 34, 'A JAM: ONLY A RELEASED BURST MOVES IT', '#ffd36b')));

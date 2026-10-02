@@ -56,6 +56,28 @@ try {
   ok(t.alone === 0, 'a minute of him with the floods running opens nothing (frames a natural flood ran over him: ' + t.caught + ') ' + JSON.stringify({ alone: t.alone, caught: t.caught }));
   ok(t.banked === 'full' && t.opened && t.openFor >= 3, 'the dam\'s gate banks a flood; released with him in the channel, he goes on his back for 3 s or more ' + JSON.stringify({ banked: t.banked, openFor: t.openFor, n: t.n }));
   ok(t.openHit > 40 * 1.4 && t.chipHit <= 40 * 0.05 + 0.01, 'a blow on his back lands x1.6, outside it a scratch: ' + t.openHit + ' / ' + t.chipHit);
+  /* THE FIX LANE (claude/redgorge, 10-02): the flood takes foes; the jam's knives leap when its gate shuts; the camera looks up a rope; a gorge slinger
+     throws only at what the camera shows */
+  const f = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
+  BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='redgorge'));BK.state='play';BK.god=true;BK.sim(10);const P=BK.P,G=()=>BK.redgorge();
+  const till=(ph,n=60*30)=>{for(let i=0;i<n&&G().phase!==ph;i++){P.hp=P.maxHp;BK.sim(1);}};
+  /* the knife idling on bridge one's span: a hero near, the flood drops him through the bridge and hurts him half his life */
+  const k=BK.enemies().find(e=>e.rgSquad==='mouthTop');BK.tp(10,141);BK.sim(2);till('dry');till('horn');const hp0=k.hp,y0=k.y;
+  for(let i=0;i<60*12&&G().phase!=='dry';i++){P.hp=P.maxHp;BK.tp(10,141);k.st&&(k.st.cd=9);BK.sim(1);}out.flood={lost:+((hp0-k.hp)/hp0).toFixed(2),fell:Math.round((k.y-y0)/16),alive:k.alive,x:Math.floor(k.x/16)};
+  /* a released burst takes a common foe outright: the jam-lip slinger goes with the jam */
+  const sl=BK.enemies().find(e=>e.rgSquad==='jamSling');const drop=BK.enemies().filter(e=>e.rgSquad==='jamDrop');const dy0=drop.map(e=>e.y);
+  till('dry');BK.tp(28,69);P.face=-1;BK.press('talk');BK.sim(3);out.jamShut=G().gates.find(g=>g.id==='jam').state;
+  for(let i=0;i<60*6;i++){P.hp=P.maxHp;BK.sim(1);}out.leapt=drop.map((e,i)=>Math.round((e.y-dy0[i])/16));
+  for(const e of drop)e.alive=false;
+  till('flood');till('dry');BK.tp(28,69);BK.press('talk');BK.sim(60);out.burst={jam:G().jams[0].open,sling:sl.alive,taken:G().n.foesTaken};
+  /* the camera looks up a rope (the narrows'), and not on the bridge under it */
+  BK.tp(22,55);P.climb=true;for(let i=0;i<90;i++){P.climb=true;P.vy=0;P.y=56*16;BK.sim(1);}const up=P.y-BK.cam[1];
+  P.climb=false;BK.tp(30,69);BK.sim(90);const flat=P.y-BK.cam[1];out.look={rope:Math.round(up),bridge:Math.round(flat)};
+  return out;})()`, 300000);
+  ok(f.flood.lost >= 0.45 && f.flood.fell >= 1, 'a flood takes a bandit on a bridge in the channel: through the bridge, half his life ' + JSON.stringify(f.flood));
+  ok(f.jamShut === 'shut' && f.leapt.every(d => d >= 6), 'the jam\'s gate shut, its two knives leap down the slot onto bridge four ' + JSON.stringify({ shut: f.jamShut, leapt: f.leapt }));
+  ok(f.burst.jam && !f.burst.sling && f.burst.taken >= 1, 'the burst that breaks the jam takes the jam-lip slinger outright ' + JSON.stringify(f.burst));
+  ok(f.look.rope - f.look.bridge >= 40, 'on a rope the camera looks up the climb (hero this far under the screen\'s top: rope ' + f.look.rope + ' px, bridge ' + f.look.bridge + ' px)');
   if (pg.errors.length) { ok(false, 'page errors: ' + pg.errors.slice(0, 3).join(' | ')); }
 } finally { pg.close(); }
 console.log(bad ? bad + ' FAILED' : 'redgorge-probe: all passed'); process.exitCode = bad ? 1 : 0;

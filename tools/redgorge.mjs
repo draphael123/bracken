@@ -52,7 +52,17 @@ for (const id of ['ledges', 'narrows']) { const Lb = lv.build(); Lb.moversExtra 
   const jamWheel = L.ents.find(e => e.t === 'sluice' && e.gate === 'jam'), jg = L.gates.find(q => q.id === 'jam'), j = L.jams[0];
   ok(jamWheel && R.seen.has(jamWheel.x + ',' + jamWheel.y) && jg.row < j.y0, 'THE JAM\'s wheel is reached in front of it, and its gate stands over it (row ' + jg.row + ' over ' + j.y0 + ')'); }
 { const nar = L.gates.find(q => q.id === 'narrows'), rope = ropes.find(r => r.y0 < 70); const ws = L.ents.filter(e => e.t === 'sluice' && e.gate === 'narrows');
-  ok(nar && rope && nar.row < rope.y0 && ws.length === 2 && ws.some(w => w.y >= 69) && ws.some(w => w.y <= 61), 'THE NARROWS: its gate over the rope, a wheel at the basket\'s foot and one at its top (the exam: ride on a flood, hold the next)'); }
+  ok(nar && rope && nar.row < rope.y0 && ws.length === 2 && ws.some(w => w.y >= 69) && ws.some(w => w.y <= 65), 'THE NARROWS: its gate over the rope, a wheel at the basket\'s foot and one at its top (the exam: ride on a flood, hold the next)');
+  ok(rope && rope.y1 - rope.y0 + 1 >= 20, 'THE NARROWS\' rope is ' + (rope && rope.y1 - rope.y0 + 1) + ' rows (>= 20: racing the next flood up it is a gamble, the gate the safe answer)');
+  /* its foot is out of a jump from bridge four: a hero's hand (8 px over his feet) under the rope's foot by more than the highest hero's jump (4.5 tiles) */
+  ok(rope && (70 * 16 - 8) - (rope.y1 + 1) * 16 > 4.5 * 16, 'the narrows\' rope\'s foot (row ' + (rope && rope.y1) + ') is out of the highest jump from bridge four: the basket stays required'); }
+/* THE JAM IS A FIGHT: a slinger stands on it with an open line down to its wheel (no rock over the wheel's column between them), and two knives
+   wait on the overhang for the gate to shut */
+{ const jw = L.ents.find(e => e.t === 'sluice' && e.gate === 'jam'), js = L.ents.find(e => e.squad === 'jamSling'), j = L.jams[0];
+  let open = !!(jw && js); if (open) for (let y = js.y + 1; y < jw.y; y++) if (at(jw.x, y) === T.SOLID) open = false;
+  ok(js && js.x >= j.x0 && js.x <= j.x1 && js.y === j.y0 - 1 && open, 'the jam-lip slinger stands ON THE JAM, and the column over its wheel is open to him (he throws into the bank)');
+  ok(L.ents.filter(e => e.squad === 'jamDrop').length === 2, 'two knives wait on the overhang to leap down when the jam\'s gate shuts');
+  ok(!L.ents.some(e => e.squad === 'fallsStep'), 'the falls\' step scorpion is gone (the teach must cost less than the exam)'); }
 /* THE OLD NEST and its vault */
 { const vx = L.vaultDoors[0], relic = L.ents.find(e => e.t === 'silver' && e.x < vx.x0 && e.y >= vx.y0 && e.y <= vx.y1), nest = L.ents.find(e => e.t === 'oldnest'), Ls = lv.build(); Ls.redgorge = false;
   ok(!L.ents.some(e => e.t === 'relic'), 'no relic in the gorge (Daniel 10-02: relics are cut; the vault pays a silver)');

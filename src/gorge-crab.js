@@ -27,6 +27,7 @@ export const CRAB = {
   openMul: 1.6, openT: 3.5, openRest: 2.0,     /* THE OPENING: three and a half seconds on his back (the house floor is 3), a blow x1.6 in it (tuned with the human-bot pilot, tools/redgorge-pilot.mjs); x0.05 outside (the global rule) */
   dmg: { pinch: 30, crush: 38, boulder: 30, scuttle: 31 }, p2: 1.3,   /* each told blow; phase two hits harder */
   speed: 58, scuttleV: 250, dugT: 1.4, keep: 40,
+  rearT: 0.6, rearEvery: 3.0,                  /* phase two: at the bank, the held water stops him - he rears and hisses (src/gorge-crab-hands.js) */
   dryP2: 4.5,                                   /* phase two: the dry spell between floods (src/red-gorge-hands.js GORGE.dry otherwise) */
 };
 /* EVERY CYCLE CHANGES: the order of each pass, phase one and phase two (cycle k uses [k % n]) */

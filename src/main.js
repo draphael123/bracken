@@ -1481,6 +1481,8 @@ let stop = 0, shake = 0, kick = 0, camX = 0, camY = 0, flash = 0, killFlash = 0,
    ordinary camY read below (the fresh spawn, a co-op catch-up, a warp landing) uses the same number so a level never
    snaps between two different framings. Falls and climbs still peek past it (lookDown, below) - this only moves the rest point. */
 const CAM_FOOT = 0.68;
+/* LOOKING UP A CLIMB (L.climbLook: STORMHOLD's towers, THE RED GORGE - its UPGRADE D): on a rope the camera looks up it 48 px, and in the gorge on a basket too */
+const lookingUp = () => !!(L && L.climbLook && (P.climb || (L.redgorge && P.onMover && P.onMover.gorge)));
 let boss = null, bossActive = false, bossWon = 0, camLock = null, bossMusicT = 0;
 let zoomT = 0, zoomAmt = 1, bossZoom = 0, birds = [], drops = [], pollen = [], lightT = 8, lightFlash = 0, thunderT = 0, pogoChain = 0, tongue = null;
 let burnT = {}; // per-tile burn timers for stake walls
@@ -18847,14 +18849,14 @@ function updateDesertFoe(e, dt) {
   if (Math.abs(e.x - P.x) > 420) return;
   if (Math.abs(e.x - P.x) < 190) beastSeen(e.t);
   const s = e.st; if (!s) return;
-  const grav = () => { e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground || r.hitY) e.vy = 0; };
+  const grav = () => { e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, e.rgFall > 0);   /* (THE RED GORGE: a foe the flood takes falls through the bridge, src/red-gorge-hands.js) */ if (r.ground || r.hitY) e.vy = 0; };
   if (e.stagger > 0 && e.t !== 'vulture' && e.t !== 'raptor') { grav(); return; }   /* knocked about: its machine waits */
   s.x = e.x; s.y = e.y;
   const w = { px: P.x, py: P.y, time, pface: P.face || 1 };
   /* THE SLINGER THROWS ONLY AT WHAT IS UNDER THE SKY: a hero with stone over his head between him and the sling - inside a tower (his
      own), a house, under a lintel - is out of his arc. (A straight line of sight was tried first and was wrong: his stone goes UP and
      over, and the line from a roof twelve rows up to the road below always ran through his own wall, so he never threw at all.) */
-  if (e.t === 'slinger') { const tx = Math.floor(P.x / TS); w.clear = true;
+  if (e.t === 'slinger') { const tx = Math.floor(P.x / TS); w.clear = true; if (L.redgorge) w.rise = lookingUp() ? 168 : 120;   /* THE RED GORGE: he throws only at what the camera shows under him (the review: four slingers threw from off the top of the screen) */
     for (let ty = Math.floor((P.y - 16) / TS); ty > Math.floor((e.y - 14) / TS) && w.clear; ty--) if (tileAt(tx, ty) === T.SOLID) w.clear = false; }
   const was = s.mode, x0 = e.x;
   const evs = CV_STEP[e.t](s, w, dt);
@@ -23108,7 +23110,7 @@ BKH = makeBanditKingHands({ get L() { return L; }, get players() { return player
    jams, the baskets, the old nest, the raptor's leash and the crab's fight (claude/redgorge) */
 RGH = makeRedGorgeHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), asPlayer: (p, fn) => asPlayer(p, fn), VW: () => VW, VH: () => VH,
-  hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d) => hurtEnemy(e, d, e.x, false), moveHero: dx => moveBody(P, dx, 0, false),
+  hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d) => hurtEnemy(e, d, e.x, false), moveHero: dx => moveBody(P, dx, 0, false), moveFoe: (e, dx) => { moveBody(e, dx, 0, false); if (e.st) e.st.x = e.x; },
   cellOpen: (x, y) => { if (x >= 0 && y >= 0 && x < LW && y < LH) { cellSet(x, y, T.AIR); destroyed.add(y * LW + x); } },   /* washed out / opened for good: a respawn leaves a destroyed cell as it is */
   questGot: () => straysGot.size, questN: () => questOf().n, crabPhase: () => (GCH && bossActive && boss && boss.t === 'gorgecrab' ? GCH.phase() : 1), crabDry: () => GCB.CRAB.dryP2 });
 GCH = makeGorgeCrabHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, gorge: { dam: () => (RGH ? RGH.dam() : null) },
@@ -24443,7 +24445,7 @@ function updateCamera(dt) {
   if (P.fly && flight) { camX = Math.max(0, Math.min(LW * TS - VW, flight.cx)); camY = Math.max(0, Math.min(LH * TS - VH, flight.cy)); shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt); return; }
   const lookDown = !SET.lookDown ? 0 : !P.ground && P.vy > 120 ? Math.min(60, (P.vy - 120) * 0.4) : (P.ground && keys.down && !P.block && P.atk < 0 ? 48 : 0);
   // the camera leads your speed as well as your shoulders, so a hard turn does not snap
-  let tx = P.x + P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28)) - VW / 2, ty = P.y - (VH * CAM_FOOT) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0) - (L.climbLook && P.climb ? 48 : 0);   /* L.climbLook (STORMHOLD's towers): on a ladder the camera looks UP it, so the Scalder at the top and his mark are on the screen before his pitch is */ // falling or crouching peeks below; the hollow looks up at her gills
+  let tx = P.x + P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28)) - VW / 2, ty = P.y - (VH * CAM_FOOT) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0) - (lookingUp() ? 48 : 0);   /* L.climbLook (STORMHOLD's towers): on a ladder the camera looks UP it, so the Scalder at the top and his mark are on the screen before his pitch is */ // falling or crouching peeks below; the hollow looks up at her gills
   /* THE SHARED SCREEN: the MIDPOINT of the two of them, and no shoulder lead - a lead that follows one hero's face
      is a lead that pushes the other one off the edge of the picture. */
   if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * CAM_FOOT + lookDown; }
