@@ -238,7 +238,7 @@ export function buildFogCanal({ painter, T, TS }) {
      archers and a bargee on the cut's bridges, and four small drops into the basin), THE WEIR goes straight over the broken sill into the lower
      river (one plunge that jars whoever is standing when she lands, then the rapids and their grindylows). Either way she comes out in the basin */
   gate('G7', 248, 17, 22, P4, P4, { weir: true }); block(248, 248, 23, H - 1);
-  const hr = (x0, x1, surf, bed) => { air(x0, x1, surf - 8, bed - 1); block(x0, x1, bed, H - 1); pools.push({ x0: px(x0), x1: px(x1 + 1), y: surf * TS + 4, shallow: true, swim: false, clear: true, bottom: bed * TS, canal: 'race' }); };   /* THE RACE runs shallow and fast: a hero thrown off her wades on down it, the flood at his back */
+  const hr = (x0, x1, surf, bed) => { air(x0, x1, surf - 8, bed - 1); block(x0, x1, bed, H - 1); pools.push({ x0: px(x0), x1: px(x1 + 1), y: surf * TS + 4, shallow: true, swim: false, clear: true, bottom: bed * TS, canal: 'race', handBack: true }); };   /* (claude/canalfix3: handBack - out of the run, a hero left wading in it is handed back like the deep canal; tools/canal-water.mjs) */   /* THE RACE runs shallow and fast: a hero thrown off her wades on down it, the flood at his back */
   hr(249, 254, 18, 21); hr(255, 263, 22, 25); hr(264, 272, 26, 29);           /* THE HEAD RACE, three steps down */
   block(261, 264, 16, 16); beams.push({ weir: true, x0: px(261), x1: px(265), y: 22 * TS - 2 - 9, name: 'THE FOOTBRIDGE' });   /* the footbridge over the second step (claude/canalfix: moved on 2 columns, so a rider standing at her bow - forward of the flood - meets it with her deck already down the step and can duck it) */
   archer(262, 15, 'the head race footbridge');                               /* (claude/canalfix, review fix 3) over the tiller's window: in the thin fog he looses at her lantern-lit deck */
@@ -248,9 +248,9 @@ export function buildFogCanal({ painter, T, TS }) {
   boom(252, 'head', 18);   /* on the first step's flat, in the tiller's window: a jump before the footbridge's duck */
   /* THE LOWER RIVER (the weir's side) under the cut's shelf: surface 44, straight into the basin */
   air(273, 325, 30, 43); block(273, 325, 49, H - 1);
-  pools.push({ x0: px(273), x1: px(326), y: 44 * TS + 4, shallow: true, swim: false, clear: true, bottom: 49 * TS, canal: 'lower river' });
+  pools.push({ x0: px(273), x1: px(326), y: 44 * TS + 4, shallow: true, swim: false, clear: true, bottom: 49 * TS, canal: 'lower river', handBack: true });
   /* THE MILL CUT: a stone leat on the hillside over the lower river, four levels, each on a shelf of its own */
-  const cut = (x0, x1, surf) => { block(x0, x1, surf + 2, surf + 4); pools.push({ x0: px(x0), x1: px(x1 + 1), y: surf * TS + 4, shallow: true, swim: false, clear: true, bottom: (surf + 2) * TS, canal: 'cut' }); };
+  const cut = (x0, x1, surf) => { block(x0, x1, surf + 2, surf + 4); pools.push({ x0: px(x0), x1: px(x1 + 1), y: surf * TS + 4, shallow: true, swim: false, clear: true, bottom: (surf + 2) * TS, canal: 'cut', handBack: true }); };
   cut(276, 290, 26); cut(291, 300, 30); cut(301, 308, 34); cut(309, 315, 38);
   for (const [x0, x1, y] of [[279, 281, 26], [295, 297, 30]]) { block(x0, x1, y - 4, y - 4); beams.push({ weir: true, x0: px(x0), x1: px(x1 + 1), y: y * TS - 2 - 9, name: 'A LOW BEAM' }); }
   /* (claude/canalfix) THE WEIR's own duck: the cut's lowest shelf (309-315) hangs one row over a rider standing on the rapids - told as a beam now, not

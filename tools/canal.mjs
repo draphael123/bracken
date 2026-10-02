@@ -262,6 +262,9 @@ if (!NOPAGE && lv) {
       fresh(); kill(e => true); { const cb = C(); cb.barge.x = 80 * TS - 97; BK.tp(78, 39); P.y = cb.barge.y; sim(30); P.vy = 0; const t0 = cb.nudges || 0, c0 = cb.clock; for (let i = 0; i < 4000 && cb.clock - c0 < 11; i++) BK.sim(1); const tg = cb.glint;
         out.clarity = [cb.barge.holdWhy, tg && tg.why, tg && tg.prop.t, tg && tg.prop.reach, +(cb.lampAng || 0).toFixed(2), (cb.nudges || 0) - t0, cb.lastNudge || null];
         P.face = 1; BK.tp(79, 39); sim(5); BK.press('atk'); sim(30); out.clarityDone = cb.glint ? cb.glint.why : null; }
+      // 14. (claude/canalfix3) NO WATER KEEPS YOU: a bright weed mat that gives way under you does not become the ground you are handed back to; wading in the race after the run, the canal hands you back
+      fresh(false); kill(e => true); { BK.tp(346, 40); sim(40); BK.tp(351, 43); sim(10); let fell = 0; for (let i = 0; i < 900; i++) { BK.sim(1); if (P.y > 44 * TS + 12) fell++; } out.weedBack = [fell, Math.floor(P.x / TS), Math.floor(P.y / TS)]; }
+      fresh(false); kill(e => true); { BK.tp(328, 40); sim(40); BK.tp(258, 24); sim(10); const t0 = C().clock; for (let i = 0; i < 400 && Math.floor(P.x / TS) < 300; i++) BK.sim(1); out.wadeBack = [+(C().clock - t0).toFixed(2), Math.floor(P.x / TS), Math.floor(P.y / TS)]; }
       fresh(); kill(e => true); { const cb = C(); for (const q of cb.bridges.slice(0, 2)) { q.across = false; q.k = 1; } cb.barge.x = 158 * TS; BK.tp(162, 31); sim(120); const tg = cb.glint; out.clarityFog = [cb.barge.holdWhy, tg && tg.why, tg && Math.floor(tg.prop.x / TS)]; }
       return out; })()`, 900000);
     ok(r.board && r.carried > 16, 'the barge did not carry a hero standing on her (' + JSON.stringify([r.board, r.carried]) + ')');
@@ -280,6 +283,8 @@ if (!NOPAGE && lv) {
     ok(r.weir[0] === 'loose' || r.weir[0] === 'float', 'the weir gate did not burst and let her run: ' + JSON.stringify(r.weir));
     ok(r.weir[1] === 0, 'the burst weir gate still stands in the grid');
     ok(r.clarity[0] === 'gate' && r.clarity[1] === 'gate' && r.clarity[2] === 'locksluice' && r.clarity[3] === 'L1' && r.clarity[4] < -0.05 && r.clarity[5] === 1 && r.clarity[6] === 'THE GATE IS SHUT: FIND ITS PADDLE', 'held at the shut gate, its paddle did not glint, her lantern did not swing to it, or no nudge named it after 10 s: ' + JSON.stringify(r.clarity));
+    ok(r.weedBack[1] >= 342 && r.weedBack[1] <= 350 && r.weedBack[2] <= 41, 'a bright weed mat that gave way was the ground the canal handed the hero back to (or he was left in the water): ' + JSON.stringify(r.weedBack));
+    ok(r.wadeBack[0] <= 2 && r.wadeBack[1] >= 326 && r.wadeBack[1] <= 336, 'wading in the race after the run, the canal did not hand the hero back to the basin bank: ' + JSON.stringify(r.wadeBack));
     ok(r.clarityDone === null, 'the paddle worked, it still glints (' + r.clarityDone + ')');
     ok(r.clarityFog[0] === 'fog' && r.clarityFog[1] === 'fog' && r.clarityFog[2] === 163, 'held at the fog wall, the bank horn does not glint: ' + JSON.stringify(r.clarityFog));
     if (pg.errors.length) fails.push('page errors: ' + pg.errors.slice(0, 3).join(' | '));

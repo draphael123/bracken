@@ -161,7 +161,12 @@ export function canalUpdate(st, H, dt) {
   H.eachHero(P => { if (P.dead) return;
     if (st.D.weir && ((b.mode === 'loose' && P.onMover === m) || (P.x > st.D.weir.head[0][0] && P.x < st.D.weir.end - 48 && !P.onMover))) P.safe = { x: st.D.weir.bank[0], y: st.D.weir.bank[1], L: H.L() };
     else if (P.onMover === m && b.mode === 'float') P.safe = { x: Math.max(b.x + 12, Math.min(b.x + b.w - 12, P.x)), y: b.y - 4, L: H.L() };   /* off her deck into the water: back onto her deck (she waits for whoever is not aboard) */
-    else if (P.ground && !P.onMover && !P.climb && !R.inWeed(st.D, st, P.x, P.y) && H.solidUnder(P.x, P.y)) P.safe = { x: P.x, y: P.y, L: H.L() }; });
+    else if (P.ground && !P.onMover && !P.climb && !R.inWeed(st.D, st, P.x, P.y) && H.solidUnder(P.x, P.y) && !atWater(H, P)) P.safe = { x: P.x, y: P.y, L: H.L() }; });   /* (claude/canalfix3) never ON the water: a bright weed mat that gives way, a wading bed - handed back there, you were handed back into the water: stuck */
+  // ---- (claude/canalfix3, Daniel: "you fall in the water and get stuck there") THE SHALLOW WATER HANDS YOU BACK TOO: the race, the cut and the lower river are no place to
+  //      be left wading once the run is over (they have no stair out) - after RIG.wadeBack s in one, the canal bites and puts you on the last ground you stood on ----
+  for (const p of H.L().pools || []) if (p.handBack && b.mode !== 'loose') H.eachHero(P => { const inIt = !P.dead && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 9 && P.y <= (p.bottom ?? 1e9) + 4;
+    if (!inIt) { if (P.wadeIn === p) { P.wadeIn = null; P.wadeT = 0; } return; } if (P.wadeIn !== p) { P.wadeIn = p; P.wadeT = 0; } P.wadeT += dt;
+    if (P.wadeT >= R.RIG.wadeBack && P.safe && P.safe.L === H.L()) { P.wadeT = 0; H.hurtHero(P.x, R.RIG.wadeBite, { unblockable: true, name: 'THE CANAL' }); if (!P.dead) { P.x = P.safe.x; P.y = P.safe.y; P.vx = 0; P.vy = 0; P.onMover = null; } S.splash && S.splash(); hint(st, H, 'handback', 'THE CANAL HANDS YOU BACK - AND BITES.'); } });
   // ---- THE HINTS THAT TEACH WHAT SHE DOES ----
   if (m && H.hero().onMover === m) hint(st, H, 'board', 'SHE CASTS OFF. SHE CARRIES YOU WHILE YOU RIDE HER, AND WAITS FOR YOU WHEN YOU ARE AHEAD.');
   { const a = st.D.arch; if (a && b.x + b.w >= a[0] * TS - 10 && b.x < (a[1] + 1) * TS && !aboard(st, H)) hint(st, H, 'arch', 'TOO LOW FOR ANYONE STANDING: SHE GOES ON THROUGH THE ARCH WITHOUT YOU. CATCH HER ON THE FAR SIDE.'); }   /* (claude/canalfix, review fix 7: told at the mouth, where she stalled before) */
@@ -204,6 +209,8 @@ function drawGlint(st, g, cx, cy, VW, VH, time) {
   g.globalAlpha = 1;
 }
 
+/* (claude/canalfix3) standing at a water surface or under it (a weed mat, a wading bed, a swim): no place to be handed back to */
+const atWater = (H, P) => (H.L().pools || []).some(p => !p.dry && P.x > p.x0 - 4 && P.x < p.x1 + 4 && P.y >= p.y - 6 && P.y <= (p.bottom ?? p.y + 64) + 2);
 /* ---------------- (claude/canalfix) THE PIECES THE FIX LANE ADDED ---------------- */
 /* a boom is live on the path she is taking: 'head' always, 'cut' / 'fall' by her helm (or the branch she took) */
 const boomLive = (st, bm) => { const b = st.barge, way = b.chosen || b.helm; return bm.path === 'head' || (bm.path === 'cut' ? way === 'cut' : way === 'weir'); };
