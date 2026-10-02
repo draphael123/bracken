@@ -38,6 +38,8 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 /* KNOWN HOLES. Each one is a path a tracked file points at that no clone has, with why. Delete a line the moment the
    file is committed - the tool tells you when that happens. A list that only ever grows is a way of not fixing it. */
 const MISSING = new Map([
+  ['src/bandit-king.js', 'REMOVED ON PURPOSE (claude/welltown3, Daniel 10-02): THE BANDIT KING became THE GANG LEADER, a mini (src/gang-leader.js), and the Well Town boss is THE CISTERN QUEEN (src/cistern-queen.js). Only the old lane report cites it.'],
+  ['src/bandit-king-hands.js', 'REMOVED ON PURPOSE with src/bandit-king.js (claude/welltown3): his hands went with him. Only the old lane report cites it.'],
   ['tools/lit-church.mjs', 'NOT BUILT YET, SAID SO. docs/concepts/the-lit-church.md and its brief name the level check the church lane will write; the level is scheduled after FAIRFIX2. Delete this line when the file is committed.'],
   ['.claude/briefs/desert-arc.md', 'AN INSTRUCTION NOT YET CARRIED OUT, not lost design. docs/desert-arc-brief.md:5 says to copy itself here when its branch merges; the branch has not merged, and the design is readable at docs/desert-arc-brief.md meanwhile. Delete this line when the copy happens - or drop the instruction if the arc is going to keep living in docs/.'],
   ['work/', 'SCRATCH, AND SEVERAL OF THESE CARRY A SESSION UUID (work/a33bc100-.../). Tracked documents cite a directory no clone has. Harmless where it is an aside about how a number was got; a dead end where a reader is told to go and read it. Re-point or drop them as each document is next touched.'],
