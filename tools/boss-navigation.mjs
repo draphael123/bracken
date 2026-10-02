@@ -5,7 +5,7 @@ try {
   for (const [lvl,h] of [['reef','warden'],['longwater','reaper'],['flotilla','knight'],['canal','knight'],['theatre','knight']]) {
     await pg.reload();
     const result=await pg.evalp(`(async()=>{
-      BK.manualSimulation=true;let seed=1919;${lvl==='theatre'?"(await import('/src/puppeteer.js')).PLAN.goLoft=1;":""}
+      BK.manualSimulation=true;let seed=1919;${lvl==='theatre'?"(await import('/src/puppeteer.js')).PLAN.goLoft=1;{const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;P0.xp.knight=xpFloor(22);P0.skillOwned.knight={};P0.loadouts.knight=[];if(P0.talents)P0.talents.knight={};}":""}
       Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
       const grounded=new Set();let loft=false,walk=0,swam=0;
       const r=await BK.bossLab({bosses:[${JSON.stringify(lvl)}],heroes:[${JSON.stringify(h)}],maxSecs:180,modes:true,onFrame:({P,boss})=>{if(P.ground&&Math.abs(P.y-boss.y)<3)grounded.add(boss.phase);const st=BK.L.arena&&BK.L.arena.stage;if(st&&P.ground&&Math.abs(P.y-st.gallery)<3)loft=true;const lk=BK.L.arena&&BK.L.arena.lock;if(lk){if(P.ground&&Math.abs(P.y-(lk.R-8)*16)<3)walk++;if(P.swim)swam++;}}});
@@ -14,6 +14,9 @@ try {
     const row=result.row;
     if(lvl==='flotilla') assert.deepEqual(result.groundedPhases,[1,2,3],'the pilot must stand on each fighting deck, not just jump within sword range');
     /* THE PUPPETEER: the pilot takes the hard way only on a roll (PLAN.goLoft per cycle), so this row pins the roll to 1: the question is whether it CAN ride the batten and stand on the gallery through ordinary inputs, not whether a seed happens to roll it (claude/integ51: in the theatre the seed-1919 fight won in 71 s without a roll) */
+    /* (claude/theatre3, a rules change: the Puppeteer is opened only by climbing to the gallery and cutting his slack bar, x0.05 outside it; a FRESH level-1 knight
+       walks too slowly to make the 12 s slack bar from the stage and needs 7+ cycles (300 s and more on seed 1919). This row's knight is the theatre's campaign
+       depth (level 22, no skills: as tools/combat-pilots.mjs and the mash bot), the time and the asserts are the same as every row) */
     if(lvl==='theatre') assert.ok(result.loft,'THE PUPPETEER: the pilot must ride the batten up and stand on the fly gallery (claude/puppeteer)');
     if(lvl==='canal') assert.ok(result.walk>60&&result.swam>60,'JENNY GREENTEETH (claude/lockkeeper): the pilot must swim her lock and climb the walers to a gate walkway: '+JSON.stringify({walk:result.walk,swam:result.swam}));
     assert.equal(row.killed,true,`${h} must reach and finish ${lvl} through ordinary inputs`);

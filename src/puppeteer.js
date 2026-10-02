@@ -56,7 +56,7 @@ export const PUP = {
   brute: { hp: 110, speed: 58, chopTell: 1.0, chopReach: 40, chop: 32, slamTell: 1.15, slamReach: 70, slamTop: 12, slam: 34, grabTell: 1.0, grabReach: 30, grab: 35,
     recover: 1.2, range: 44, scale: 1.5 },
   master: { hp: 150, swatTell: 0.9, swatReach: 58, swatTop: 64, swat: 24, stompTell: 1.1, stompHalf: 24, stomp: 30, reachTell: 1.0, reachT: 0.45, reachSpan: 200, reach: 22,
-    recover: 1.6, speed: 34, lowerT: 1.6 },
+    recover: 2.2, speed: 34, lowerT: 1.6 },   /* (THEATRE3: the king's green window - a slow, heavy thing spent after each blow) */
   whipEvery: 3.4, whipTell: 0.9, whipT: 0.35, whipReach: 240, whip: 16,
   slamPitT: 4.0, slamPitHalf: 1,       // phase 2: the slam breaks the boards (its column and one each side) for this long
   lowTop: 10, highTop: 24, highBot: 10,
@@ -529,9 +529,9 @@ function planOf(s) {
 /* the bot's way up: to the batten, strike the pin rail from it, ride it up, step off onto the gallery */
 function climb(out, P, bat, s) {
   if (!bat) return out;
-  const onBat = s.onBatten, mid = bat.x + bat.w / 2;
-  if (bat.st === 'down' && !onBat) { out.gx = mid - 4; out.face = 1; out.why = 'to the batten'; return out; }
-  if (bat.st === 'down' && onBat) { out.gx = mid - 4; out.face = 1; out.atk = !(bat.t > 0); out.why = 'strike the pin rail'; return out; }
+  const onBat = s.onBatten, mid = bat.x + bat.w / 2, edge = bat.x + bat.w - 7;   /* (THEATRE3: on the batten's pin-rail end, so the shortest blade reaches the rail) */
+  if (bat.st === 'down' && !onBat) { out.gx = edge; out.face = 1; out.why = 'to the batten'; return out; }
+  if (bat.st === 'down' && onBat) { out.gx = Math.abs(P.x - edge) > 3 ? edge : null; out.face = 1; out.atk = !(bat.t > 0) && Math.abs(P.x - edge) < 6; out.why = 'strike the pin rail'; return out; }
   if (onBat && bat.st !== 'down') { out.gx = null; out.why = 'ride'; if (bat.st === 'up') { out.gx = bat.x + bat.w + 24; out.why = 'step off'; } return out; }
   out.gx = mid + 40; out.why = 'wait for the batten'; return out;
 }
