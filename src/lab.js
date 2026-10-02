@@ -1525,6 +1525,10 @@ async function runbossLab(BK, opts) {
         const down=['grounded','crash','pinned','stuckTalons'].includes(boss.mode);
         if(!down){strike=false;const lamps=BK.props().filter(p=>p.owl&&!p.perch);const lamp=lamps.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];if(lamp){goal=lamp.x;if(!lamp.lit&&Math.abs(P.x-lamp.x)<22&&P.atk<0){k.block=false;P.face=Math.sign(lamp.x-P.x)||1;BK.press('atk');swings++;}}}
         if (boss.mode === 'skim' && Math.abs(boss.x-P.x)<64 && (boss.x-P.x)*boss.vx<0 && P.ground){k.jump=true;BK.press('jump');}
+        /* HER SWOOP, BY A LIT LAMP (claude/bosswave1: her windows pay x1.3 now, not double): "step aside by a lit lantern and it crashes into the light" -
+           the lamp put between her and you as she comes */
+        if (boss.mode === 'swoop' && (boss.x-P.x)*(boss.vx||0)<0 && Math.abs(boss.x-P.x)<120) { const lit=BK.props().filter(p=>p.owl&&!p.perch&&p.lit).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];
+          if (lit && Math.abs(lit.x-P.x)<56) { strike=false; goal=lit.x+(Math.sign(lit.x-boss.x)||1)*30; } }
       }
       /* THE WINDCALLER'S HOWL (claude/bosswave1: his fall is now his only opening): HE CALLS THE WIND is told, and a player braces through it -
          DOWN held on the ground (every hero has it; block is the same brace) - and he falls */

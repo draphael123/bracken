@@ -6086,8 +6086,10 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   if (e.t === 'chief' && e.mode === 'planted') dmg *= 2;
   if (e.t === 'ram' && ramOpen(e)) dmg *= 2;
   if (e.t === 'heart') { if (!mother || mother.mode !== 'open') return; dmg = 1; mother.mode = 'idle'; mother.modeT=2; mother.nodeRest=10; mother.tipped=false; mother.gillsOpen=false; mother.nodeMove=true; e.burn=0; e.bleed=0; } // each cut closes the heart: return to the living knot
-  if (e.t === 'owl' && (e.mode === 'crash' || e.mode === 'grounded')) dmg *= 2;
-  if (e.t === 'owl' && e.mode === 'pinned') dmg = Math.round(dmg * 2.5); /* under the dead bough: the window the player made pays best */
+  /* (claude/bosswave1) her windows pay x1.3 now, not double (the boss rule chips her everywhere else): the old double on the boards, and 2.5x under the bough,
+     gave the mash bot 92% of her in one grounded window. The bough, the window the player makes, still pays best. */
+  if (e.t === 'owl' && (e.mode === 'crash' || e.mode === 'grounded')) dmg = Math.round(dmg * 1.3);
+  if (e.t === 'owl' && e.mode === 'pinned') dmg = Math.round(dmg * 1.6);
   if (e.t === 'owl' && e.mode === 'sit') e.hits = (e.hits || 0) + 1;
   if (e.t === 'king' && e.mode === 'held') dmg *= 2; // held by a cage: his head is down
   if (e.t === 'windcaller' && !callerThere(e)) { SFX.buzz(); return; } // between stones there is nothing to cut (on a stone he is there: the boss rule chips him, claude/bosswave1)
@@ -14960,6 +14962,7 @@ function updateGreatHound(e, dt) {
 // THE REEVE'S OIL IS RENEWED BY THE BLOW: every weapon uses the same wick.
 function lightOwlLamp(pr) { pr.lit = true; pr.lampT = 14; pr.wasBurning = true; pr.hits = 0; }
 function snuffOwlLamp(pr) { pr.lit = false; pr.lampT = 0; pr.wasBurning = false; pr.hits = 0; burst(pr.x, pr.y - 30, 8, ['#ffd36b', '#3a3444'], 40, 0.5); }
+const OWL_EYES = 7;   /* s after she rises from the boards before a lamp can dazzle her again (claude/bosswave1) */
 /* the crown's hoist, while it still has a rope (THE HOIST, below; tools/owl-lamps.mjs runs this function with no movers at all) */
 const owlHoist = () => (typeof movers !== 'undefined' ? movers.find(m => m.hoist && m.arena && !(m.hs && m.hs.state === 'cut')) : null) || null;
 function updateOwl(e, dt) {
@@ -14971,7 +14974,10 @@ function updateOwl(e, dt) {
   if (e.mode === 'sleep') return;
   const lanterns = props.filter(pr => pr.t === 'lantern' && pr.owl);
   // THE LIGHT TAKES ITS EYES: light the lantern on the perch it sits on, or flare a lit floor lantern while it is close, and it drops
-  const dazzle = why => { if (['grounded', 'dazzled', 'descend', 'carry', 'wake', 'sleep', 'crash', 'stuckTalons', 'pinned'].includes(e.mode)) return; e.mode = 'dazzled'; e.vx = 0; e.vy = 0; e.hits = 0; e.lampT = 4; number(e.x, e.y - 24, why, '#ffd36b'); number(e.x, e.y - 36, 'DOUBLE DAMAGE', '#8fd160'); SFX.screech(); SFX.golemShatter(); flash = Math.max(flash, 0.25); shakeCam(5); burst(e.x, e.y - 8, 16, ['#fff6c8', '#ffd36b'], 90, 0.6); };
+  /* HER EYES TAKE THE LIGHT ONCE (claude/bosswave1): after she has been down in the light she cannot be dazzled again for OWL_EYES s - a lamp left
+     burning where she flies was a stun-lock (the mash bot swung at the lamps it walked past and won 4/6, 90% of it in one grounded chain) */
+  e.eyesT = Math.max(0, (e.eyesT || 0) - dt);
+  const dazzle = why => { if (e.eyesT > 0 || ['grounded', 'dazzled', 'descend', 'carry', 'wake', 'sleep', 'crash', 'stuckTalons', 'pinned'].includes(e.mode)) return; e.mode = 'dazzled'; e.vx = 0; e.vy = 0; e.hits = 0; e.lampT = 4; number(e.x, e.y - 24, why, '#ffd36b'); SFX.screech(); SFX.golemShatter(); flash = Math.max(flash, 0.25); shakeCam(5); burst(e.x, e.y - 8, 16, ['#fff6c8', '#ffd36b'], 90, 0.6); };
   e.lampT = Math.max(0, (e.lampT || 0) - dt);   /* THE LAMP'S WINDOW (Daniel, 2026-09-21): lit into her eyes or crashed into, she takes double for four seconds */
   for (const pr of lanterns) if (pr.lit && Math.hypot(pr.x-e.x, pr.y-30-(e.y-12)) < 110) dazzle('THE LIGHT IN HER EYES');   /* (78 -> 110: Daniel, the lamps reach further) */
   const perchLit = k => lanterns.some(pr => pr.perch && pr.lit && Math.abs(pr.x - e.perches[k].x) < 40);
@@ -15045,7 +15051,7 @@ function updateOwl(e, dt) {
     case 'fly': { const p = e.perches[e.next]; e.face = Math.sign(p.x - e.x) || e.face; const left = toward(p.x, p.y - 10, 210); if (left <= 1) { e.mode = 'land'; e.modeT = 0.2; } else if (e.modeT <= 0) { e.x = p.x; e.y = p.y - 10; e.mode = 'land'; e.modeT = 0.2; } break; }
     case 'land': { const p = e.perches[e.next]; e.y = Math.min(p.y, e.y + 60 * dt); if (e.modeT <= 0) { e.perchI = e.next; e.x = p.x; e.y = p.y; e.mode = 'sit'; e.modeT = p2 ? 1.4 : 2.0; e.hits = 0; dust(e.x, e.y, 3); SFX.land(); } break; }
     case 'descend': { const left = toward(e.tx, floor - 8, 240); e.face = Math.sign(P.x - e.x) || e.face; if (left <= 1 || e.modeT <= 0) { e.y = floor - 8; e.mode = 'grounded'; e.modeT = p2 ? 3.2 : 4; e.stagger = e.modeT; number(e.x, e.y - 24, 'ON THE GROUND: HIT IT', '#8fd160'); shakeCam(3); } break; }
-    case 'grounded': { e.y = floor - 8; if (Math.floor(e.modeT / 0.8) !== Math.floor((e.modeT + dt) / 0.8)) number(e.x, e.y - 24, 'HIT IT', '#8fd160'); if (e.modeT <= 0) { e.stagger = 0; const open = openPerches(); e.next = open.length ? open[Math.floor(Math.random() * open.length)] : e.perchI; for(const pr of lanterns)if(pr.lit&&Math.hypot(pr.x-e.x,pr.y-30-e.y)<125)snuffOwlLamp(pr); SFX.owlHoot(); ringAt(e.x,e.y-8,125,'#dfe8ff',0.5); e.mode = 'takeoff'; e.modeT = 0.25; e.willSwoop = true; e.grab = false; SFX.screech(); } break; }
+    case 'grounded': { e.y = floor - 8; if (Math.floor(e.modeT / 0.8) !== Math.floor((e.modeT + dt) / 0.8)) number(e.x, e.y - 24, 'HIT IT', '#8fd160'); if (e.modeT <= 0) { e.stagger = 0; e.eyesT = OWL_EYES; const open = openPerches(); e.next = open.length ? open[Math.floor(Math.random() * open.length)] : e.perchI; for(const pr of lanterns)if(pr.lit&&Math.hypot(pr.x-e.x,pr.y-30-e.y)<125)snuffOwlLamp(pr); SFX.owlHoot(); ringAt(e.x,e.y-8,125,'#dfe8ff',0.5); e.mode = 'takeoff'; e.modeT = 0.25; e.willSwoop = true; e.grab = false; SFX.screech(); } break; }
     case 'carry': { e.x += e.carryDir * 170 * dt; e.y = Math.max(floor - 70, e.y + e.vy * dt); P.x = e.x; P.y = e.y + 12; P.vx = 0; P.vy = 0; P.ground = false; P.caged = 0.2; if (Math.random() < dt * 20) parts.push({ x: P.x, y: P.y - 8, vx: 0, vy: 30, life: 0.3, max: 0.3, col: '#e8dcc0', size: 1, grav: 0 }); if (e.modeT <= 0 || e.x < A.x0 + 30 || e.x > A.x1 - 30) { damagePlayer(e.x, DMG.screech, { unblockable: true, up: true }); P.vx = e.carryDir * 200; P.vy = 120; number(P.x, P.y - 24, 'DROPPED', '#ff6b6b'); e.mode = 'fly'; e.modeT = 3; e.next = e.perchI; } break; }
     case 'crash': { if (e.y < floor - 8) e.y = Math.min(floor - 8, e.y + 300 * dt); if (Math.floor(e.modeT / 0.7) !== Math.floor((e.modeT + dt) / 0.7)) number(e.x, e.y - 24, 'DAZED', '#8fd160'); if (e.modeT <= 0) { e.stagger = 0; e.mode = 'fly'; e.modeT = 3; const open = openPerches(); e.next = open.length ? open[Math.floor(Math.random() * open.length)] : e.perchI; } break; }
     case 'parried': if (e.modeT <= 0) { e.mode = 'fly'; e.modeT = 3; e.stagger = 0; e.next = e.perchI; } break;

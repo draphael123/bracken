@@ -68,7 +68,7 @@ export const OPEN_RULE = {
   chief: e => e.mode === 'planted',                                          // his club in the ground
   king: e => e.mode === 'held' || e.open > 0,                                // held in a cage (his crown turns everything else already)
   ram: e => H.ramOpen(e),                                                    // into the wall, or off his leap
-  owl: e => e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'pinned' || e.lampT > 0,
+  owl: e => e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'pinned',   // (claude/bosswave1) down on the boards only: lampT open in the air made a lit lamp a free window
   abbot: e => abbotOpen(e),                                                  // the bell has him down
   windcaller: e => H.callerOpen(e),                                          // (claude/bosswave1) FALLEN only: his bolt sent back, or his howl braced through
   lance: e => H.lanceOpen(e),                                                // committed: planted, thrusting, reeling
