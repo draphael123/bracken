@@ -114,7 +114,7 @@ Branch `claude/bosswave1`, based on claude/batch55 d12c0941. origin/batch55 and 
 ## Checks run (named, never the suite)
 - **Green on the final commit:** boss-greed, mash-gate, boss-openings, boss-fight-end (48 fights), slopes-trace, tells, hint-shown, architecture, checkpoints, skins, dangling-paths, npc-removal, moor-gusts, owl-lamps, salvage-captain, weak-bosses.
 - **Green earlier on this branch:** hanging-hoist, small-adds.
-- **slopes-trace: kings rebased () and nothing else.**
+- **slopes-trace: kings rebased (--rebase=kings) and nothing else.**
   - The Great Hound is the kings mini. A walk in that trace fights him, and his new opening rule (greed is not counted inside an opening, plus his window cap) changes what happens.
   - Proved by bisecting: ee9e2b8c's main.js is identical; this lane's mini commit's main.js differs at kings walk 11.
   - wood, keep, burial and canal are unchanged.
