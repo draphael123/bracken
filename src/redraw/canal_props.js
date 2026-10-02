@@ -54,9 +54,10 @@ export function drawBarge(g, x, y, w, st, time) {
   const fl = 0.82 + 0.18 * Math.sin(time * 9) + 0.06 * Math.sin(time * 23);
   g.fillStyle = '#2a2420'; g.fillRect(x + 5, y - 34, 2, 34); g.fillStyle = '#4a4036'; g.fillRect(x + 5, y - 34, 1, 34); g.fillStyle = '#6a6058'; g.fillRect(x + 4, y - 12, 4, 2);
   g.fillStyle = '#2a2420'; g.fillRect(x + 5, y - 38, 8, 1); g.fillRect(x + 12, y - 38, 1, 3);
+  const ang = (st && st.lampAng) || 0; g.save(); g.translate(x + 12, y - 37); g.rotate(ang); g.translate(-(x + 12), -(y - 37));   /* (claude/canalfix3) her lantern swings toward what holds her */
   const gr = g.createRadialGradient(x + 12, y - 33, 2, x + 12, y - 33, 30); gr.addColorStop(0, 'rgba(255,207,106,' + (0.34 * fl).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,207,106,0)'); g.fillStyle = gr; g.fillRect(x - 18, y - 63, 60, 60);
   g.fillStyle = '#3a2c1c'; g.fillRect(x + 9, y - 36, 7, 1); g.fillRect(x + 9, y - 28, 7, 1); g.fillRect(x + 9, y - 35, 1, 7); g.fillRect(x + 15, y - 35, 1, 7); g.fillRect(x + 12, y - 35, 1, 7);
-  g.globalAlpha = fl; g.fillStyle = P.amber; g.fillRect(x + 10, y - 35, 2, 7); g.fillRect(x + 13, y - 35, 2, 7); g.fillStyle = '#fff2b0'; g.fillRect(x + 11, y - 33, 3, 3); g.globalAlpha = 1;
+  g.globalAlpha = fl; g.fillStyle = P.amber; g.fillRect(x + 10, y - 35, 2, 7); g.fillRect(x + 13, y - 35, 2, 7); g.fillStyle = '#fff2b0'; g.fillRect(x + 11, y - 33, 3, 3); g.globalAlpha = 1; g.restore();
   /* THE TILLER: the rudder post at the stern, the bar from its head to the grip amidships; the bar sweeps with the helm (up: the mill cut; down: the weir) */
   const hx = x + (w >> 1), px0 = x + 14, up = b && b.helm === 'cut', flash = st && st.tiller && st.tiller.flash > 0, gy = up ? y - 13 : y - 3;
   g.fillStyle = '#2a1c10'; g.fillRect(px0 - 1, y - 11, 3, 11); g.fillStyle = P.brass; g.fillRect(px0 - 2, y - 12, 5, 2); g.fillStyle = P.brass2; g.fillRect(px0 - 2, y - 12, 5, 1);       /* the rudder post, a brass head */

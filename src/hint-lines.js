@@ -47,6 +47,11 @@ export const CALL_LINES = new Set([
   'A SCRATCH: WAIT FOR HIS OPENING', 'TOO GREEDY: HE HITS BACK',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
+/* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the
+   hero has made no headway, one of these names the machine that holds her - never how to work it (the glint over the machine shows where). src/canal-hands.js */
+export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 'THE BRIDGE HOLDS HER: FIND ITS CAPSTAN', fog: 'THE FOG HOLDS HER: FIND THE FOGHORN',
+  door: 'THE DOOR IS TOO HIGH: THE LOCK UNDER HER IS LOW' };
+/* (they go straight to the hint box, src/canal-hands.js H.hint - not through number(), so they are not CALL_LINES) */
 export const CALL_COUNTS = [/^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
 export const isCallout = txt => typeof txt === 'string' && (CALL_LINES.has(txt) || CALL_COUNTS.some(r => r.test(txt)));
 /* what is drawn: the line, with the boss-name double space read as a colon ("THE GOBLIN QUEEN: OPEN") */

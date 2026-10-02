@@ -10,6 +10,7 @@ import { duckBox, duckClears } from './duck.js';
 import { beamHit } from './chase.js';
 import * as CTL from './redraw/canal_tiles.js';
 import * as CP from './redraw/canal_props.js';
+import { CANAL_NUDGE } from './hint-lines.js';
 const TS = 16;
 const GADGET = new Set(['locksluice', 'swingcap', 'foghorn', 'lanternpost']);
 
@@ -165,7 +166,44 @@ export function canalUpdate(st, H, dt) {
   if (m && H.hero().onMover === m) hint(st, H, 'board', 'SHE CASTS OFF. SHE CARRIES YOU WHILE YOU RIDE HER, AND WAITS FOR YOU WHEN YOU ARE AHEAD.');
   { const a = st.D.arch; if (a && b.x + b.w >= a[0] * TS - 10 && b.x < (a[1] + 1) * TS && !aboard(st, H)) hint(st, H, 'arch', 'TOO LOW FOR ANYONE STANDING: SHE GOES ON THROUGH THE ARCH WITHOUT YOU. CATCH HER ON THE FAR SIDE.'); }   /* (claude/canalfix, review fix 7: told at the mouth, where she stalled before) */
   if (side && aboard(st, H)) hint(st, H, 'side', 'THE TILLER AMIDSHIPS STEERS HER: STRIKE IT TO TURN HER HELM.');
+  clarity(st, H, dt);   /* (claude/canalfix3) */
 }
+/* ---------------- (claude/canalfix3) CLARITY: what holds her, glinted; her lantern swings to it; after ~10 s with no headway, a nudge names it ---------------- */
+export const NUDGE = { after: 10, again: 25, near: 3 * TS };   /* s held before the nudge, s before it says it again, px of headway that counts */
+const nearestProp = (cands, x) => cands.slice().sort((a, b) => Math.abs(a.x - x) - Math.abs(b.x - x))[0] || null;
+/* WHAT HOLDS HER: { why, prop } - the paddle of the shut gate ahead (of the chamber that is not level), the capstan of the bridge across, the ready horn of the bank;
+   or, in the basin lock's chamber while it is low, its paddle (the door is out of reach). null while nothing holds her, or the machine is already working */
+export function holdTarget(st) {
+  const b = st && st.barge; if (!b || b.mode !== 'float') return null; const front = b.x + b.w;
+  if (b.holdWhy === 'gate') { const g = st.gates.filter(q => !q.open && !q.burst && !q.weir && q.x * TS >= front - 6 && q.x * TS - front < 24).sort((p, q) => p.x - q.x)[0]; if (!g) return null;
+    const rs = [g.a, g.b].map(i => st.reaches[i]).filter(r => r && r.lo !== r.hi); if (rs.some(r => Math.abs(r.to - r.y) > 0.5)) return null;   /* the water is moving: it is working */
+    const prop = nearestProp(st.props.filter(p => p.t === 'locksluice' && rs.some(r => r.id === p.reach)), g.x * TS); return prop && { why: 'gate', prop }; }
+  if (b.holdWhy === 'bridge') { const i = st.bridges.findIndex(q => R.bridgeHolds(q) && q.across && q.x0 * TS >= front - 6 && q.x0 * TS - front < 24);   /* (the one at her bow: not the next one up the canal) */ if (i < 0) return null; const prop = st.props.find(p => p.t === 'swingcap' && p.bridge === i); return prop && { why: 'bridge', prop }; }
+  if (b.holdWhy === 'fog') { const f = st.fogs.find(q => R.fogThickAhead(q) && q.x0 * TS <= front + 8 && (q.x1 + 1) * TS > b.x); if (!f) return null;
+    const horns = st.props.filter(p => p.t === 'foghorn' && (p.fogs || []).includes(f.id)), ready = horns.filter(p => !(p.cd > 0)); const prop = nearestProp(ready.length ? ready : horns, b.x + b.w / 2); return prop && { why: 'fog', prop }; }
+  /* THE BASIN LOCK: she is in its chamber and it is low - the door over it is out of reach until it is filled (its paddle at her bow) */
+  const r = st.reaches[b.reach]; if (r && r.id === 'L5' && Math.abs(r.to - R.surfaceY(r.hi)) > 1) { const prop = st.props.find(p => p.t === 'locksluice' && p.reach === 'L5'); return prop && { why: 'door', prop }; }
+  return null;
+}
+function clarity(st, H, dt) {
+  const b = st.barge, tg = holdTarget(st), C = st.stall = st.stall || { key: null, t: 0, best: 1e9, said: -1 }; st.glint = tg;
+  /* HER LANTERN SWINGS TO IT (src/redraw/canal_props.js drawBarge reads st.lampAng): toward what holds her, or a slow sway */
+  const want = tg ? Math.max(-0.55, Math.min(0.55, -(tg.prop.x - (b.x + 12)) / 220)) : Math.sin(st.clock * 1.3) * 0.06; st.lampAng = (st.lampAng || 0) + (want - (st.lampAng || 0)) * Math.min(1, dt * 3);
+  const key = tg ? tg.why + '@' + Math.round(tg.prop.x) : null; if (key !== C.key) { C.key = key; C.t = 0; C.best = 1e9; C.said = -1; } if (!tg) return;
+  /* HEADWAY: the hero comes a few tiles nearer the machine than he has been, or strikes it - the clock starts again */
+  let d = 1e9; H.eachHero(P => { if (!P.dead) d = Math.min(d, Math.hypot(P.x - tg.prop.x, P.y - tg.prop.y)); }); if (d < C.best - NUDGE.near) { C.best = d; C.t = 0; } if (tg.prop.flash > 0) C.t = 0;
+  C.t += dt; if (C.t >= NUDGE.after && (C.said < 0 || st.clock - C.said >= NUDGE.again)) { C.said = st.clock; st.nudges = (st.nudges || 0) + 1; st.lastNudge = CANAL_NUDGE[tg.why]; H.hint(CANAL_NUDGE[tg.why]); }
+}
+/* THE GLINT over what holds her (after the fog, so it shows through it): a warm pulsing star and ring; off the screen, a chevron at its edge pointing the way */
+function drawGlint(st, g, cx, cy, VW, VH, time) {
+  const tg = st.glint; if (!tg) return; const p = tg.prop, x = Math.round(p.x - cx), y = Math.round(p.y - 18 - cy), k = 0.5 + 0.5 * Math.sin(time * 5);
+  if (x >= -8 && x <= VW + 8 && y >= -8 && y <= VH + 8) { g.globalAlpha = 0.35 + 0.45 * k; g.strokeStyle = '#ffe9a0'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, 9 + 3 * k, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = '#fff6c8'; const r = 3 + Math.round(3 * k); g.fillRect(x - r, y, r * 2 + 1, 1); g.fillRect(x, y - r, 1, r * 2 + 1); g.fillRect(x - 1, y - 1, 3, 3); g.globalAlpha = 1; return; }
+  const ex = Math.max(10, Math.min(VW - 10, x)), ey = Math.max(14, Math.min(VH - 14, y)), dx = Math.sign(x - ex), dy = Math.sign(y - ey); g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#ffe9a0';
+  for (let i = 0; i < 4; i++) g.fillRect(ex + dx * (i - 3) - (dy ? i : 0), ey + dy * (i - 3) - (dx ? i : 0), dy ? i * 2 + 1 : 1, dx ? i * 2 + 1 : 1);
+  g.globalAlpha = 1;
+}
+
 /* ---------------- (claude/canalfix) THE PIECES THE FIX LANE ADDED ---------------- */
 /* a boom is live on the path she is taking: 'head' always, 'cut' / 'fall' by her helm (or the branch she took) */
 const boomLive = (st, bm) => { const b = st.barge, way = b.chosen || b.helm; return bm.path === 'head' || (bm.path === 'cut' ? way === 'cut' : way === 'weir'); };
@@ -287,6 +325,7 @@ export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
     if (Math.abs(e.x - H.hero().x) < 90) { g.fillStyle = '#0a3a2a'; g.fillRect(rx - 1, ry + 1, 1, 1); g.fillRect(rx + 1, ry + 1, 1, 1); g.fillRect(rx, ry + 3, 1, 1); }   /* a faint face, close up */
     g.fillStyle = '#a0ffd2'; g.globalAlpha = 0.6; for (let k = 0; k < 3; k++) g.fillRect(rx - 4 - k * 3 + sw, ry + 4 + k * 2, 1, 1); g.globalAlpha = 1;
     if (tell) { g.strokeStyle = Math.floor(time * 12) % 2 ? '#ffd36b' : '#dcffe8'; g.lineWidth = 1; g.beginPath(); g.arc(x, y + 1, 9, 0, 6.3); g.stroke(); } }
+  drawGlint(st, g, cx, cy, VW, VH, time);   /* (claude/canalfix3) what holds her */
   /* EYES IN THE FOG (Jenny's, glimpsed): a pair that opens now and then where the fog is thickest, and is gone */
   for (const [ex, ey, ph] of st.eyes) { const x = ex * TS - cx, y = ey * TS - cy; if (x < -10 || x > VW + 10 || y < -10 || y > VH + 10) continue; const u = (time * 0.23 + (ph || 0)) % 1; if (u > 0.12) continue;
     g.globalAlpha = Math.sin(u / 0.12 * Math.PI) * 0.8; g.fillStyle = '#b8ff8a'; g.fillRect(x, y, 2, 1); g.fillRect(x + 5, y, 2, 1); g.globalAlpha = 1; }
