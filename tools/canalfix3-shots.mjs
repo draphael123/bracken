@@ -25,6 +25,7 @@ try {
     fresh(); C().barge.x = 326 * TS; BK.tp(333, 40); clear(); run(80); snap('7-the-basin-island');
     fresh(); C().barge.x = 160 * TS; BK.tp(170, 29); run(80); snap('8-the-water-at-night');
     fresh(); BK.tp(392, 41); run(30); snap('9-jenny');
+    fresh(); { const A = BK.L.arena; BK.tp(A.start[0], A.start[1]); for (let i = 0; i < 260; i++) BK.sim(1); BK.step(1); snap('9b-jenny-awake'); }
     if (BK.canalSwims) for (const [i, s] of BK.canalSwims().entries()) { fresh(); BK.tp(s[0], s[1]); run(80); snap('10-swim-' + i); }
     return res; })()`, 900000);
   for (const [name, d] of r) { writeFileSync(join(out, name + '.png'), Buffer.from(d.split(',')[1], 'base64')); console.log('work/claude/canalfix3/' + tag + '/' + name + '.png'); }

@@ -20,37 +20,42 @@ function bake(n, W, H, draw, ax, hw, hh) {
 }
 
 /* ================= JENNY GREENTEETH ================= */
+/* (claude/canalfix3, Daniel 10-02: "bigger, more intimidating") SHE IS DRAWN AT JK = 1.6 of the old figure - every point of her goes through J (her own scaled
+   primitives), so the hag is the same hag, half again as big: half out of the water, the arms long, the body box 32 x 44 (src/jenny-greenteeth.js GT.w/h) */
+const JK = 1.6, JS = v => Math.round(v * JK);
+const J = { line: (g, x0, y0, x1, y1, c, w) => line(g, JS(x0), JS(y0), JS(x1), JS(y1), c, Math.max(1, Math.round((w || 1) * JK))), rect: (g, x, y, w, h, c) => rect(g, JS(x), JS(y), Math.max(1, JS(x + w) - JS(x)), Math.max(1, JS(y + h) - JS(y)), c),
+  px: (g, x, y, c) => rect(g, JS(x), JS(y), Math.max(1, JS(x + 1) - JS(x)), Math.max(1, JS(y + 1) - JS(y)), c), circle: (g, x, y, r, c) => circle(g, JS(x), JS(y), Math.max(1, Math.round(r * JK)), c), fillPoly: (g, pts, c) => fillPoly(g, pts.map(([x, y]) => [JS(x), JS(y)]), c) };
 const JW = 52, JH = 44, JX = 24;
 export const JC = { skin: '#5e8a4a', skinD: '#3e6030', skinL: '#86b060', hair: '#23401e', hairD: '#162a14', hairL: '#4f7a2e', duck: '#9ac850',
   rag: '#3e4838', ragD: '#2a3026', teeth: '#c8e080', gum: '#5a1e24', mouth: '#1a0c10', eye: '#e8ff7a', eyeD: '#9ac830', nail: '#d0dcb0', mud: '#4a3a26' };
 /* a long thin arm: shoulder -> elbow -> hand, knuckly, with three claws at the hand spread along `a` (radians) */
 function arm(g, s, el, h, a = 0) {
-  line(g, s[0], s[1], el[0], el[1], JC.skinD, 2); line(g, el[0], el[1], h[0], h[1], JC.skinD, 2);
-  line(g, s[0], s[1] - 1, el[0], el[1] - 1, JC.skin); line(g, el[0], el[1] - 1, h[0], h[1] - 1, JC.skin); px(g, el[0], el[1], JC.skinL);
-  circle(g, h[0], h[1], 2, JC.skin);
-  for (let i = -1; i <= 1; i++) { const q = a + i * 0.5; line(g, h[0], h[1], Math.round(h[0] + Math.cos(q) * 4), Math.round(h[1] + Math.sin(q) * 4), JC.nail); }
+  J.line(g, s[0], s[1], el[0], el[1], JC.skinD, 2); J.line(g, el[0], el[1], h[0], h[1], JC.skinD, 2);
+  J.line(g, s[0], s[1] - 1, el[0], el[1] - 1, JC.skin); J.line(g, el[0], el[1] - 1, h[0], h[1] - 1, JC.skin); J.px(g, el[0], el[1], JC.skinL);
+  J.circle(g, h[0], h[1], 2, JC.skin);
+  for (let i = -1; i <= 1; i++) { const q = a + i * 0.5; J.line(g, h[0], h[1], Math.round(h[0] + Math.cos(q) * 4), Math.round(h[1] + Math.sin(q) * 4), JC.nail); }
 }
 /* the head: a long jaw, a hooked nose, the eyes, the teeth; `open` 0..2 how wide the mouth */
 function head(g, x, y, open = 0, hurt = false) {
-  fillPoly(g, [[x - 5, y - 6], [x + 4, y - 7], [x + 7, y - 2], [x + 7, y + 4 + open], [x + 2, y + 7 + open], [x - 4, y + 5], [x - 6, y]], JC.skin);
-  line(g, x - 5, y - 6, x + 4, y - 7, JC.skinL); line(g, x + 7, y - 2, x + 9, y + 1, JC.skinD); px(g, x + 9, y + 2, JC.skinD);   /* the hooked nose */
-  rect(g, x + 1, y - 3, 3, 2, hurt ? JC.eyeD : JC.eye); px(g, x + 3, y - 3, '#ffffff'); rect(g, x - 3, y - 3, 2, 2, hurt ? JC.eyeD : JC.eye);   /* the eyes, lit */
-  if (open > 0) { rect(g, x - 1, y + 2, 8, 2 + open, JC.mouth); rect(g, x - 1, y + 2, 8, 1, JC.gum);
-    for (let i = 0; i < 4; i++) { px(g, x + i * 2, y + 3, JC.teeth); px(g, x + i * 2 + 1, y + 3 + open, JC.teeth); } }
-  else { line(g, x - 1, y + 3, x + 6, y + 3, JC.mouth); px(g, x + 1, y + 4, JC.teeth); px(g, x + 4, y + 4, JC.teeth); px(g, x + 6, y + 3, JC.teeth); }
+  J.fillPoly(g, [[x - 5, y - 6], [x + 4, y - 7], [x + 7, y - 2], [x + 7, y + 4 + open], [x + 2, y + 7 + open], [x - 4, y + 5], [x - 6, y]], JC.skin);
+  J.line(g, x - 5, y - 6, x + 4, y - 7, JC.skinL); J.line(g, x + 7, y - 2, x + 9, y + 1, JC.skinD); J.px(g, x + 9, y + 2, JC.skinD);   /* the hooked nose */
+  J.rect(g, x + 1, y - 3, 3, 2, hurt ? JC.eyeD : JC.eye); J.px(g, x + 3, y - 3, '#ffffff'); J.rect(g, x - 3, y - 3, 2, 2, hurt ? JC.eyeD : JC.eye);   /* the eyes, lit */
+  if (open > 0) { J.rect(g, x - 1, y + 2, 8, 2 + open, JC.mouth); J.rect(g, x - 1, y + 2, 8, 1, JC.gum);
+    for (let i = 0; i < 4; i++) { J.px(g, x + i * 2, y + 3, JC.teeth); J.px(g, x + i * 2 + 1, y + 3 + open, JC.teeth); } }
+  else { J.line(g, x - 1, y + 3, x + 6, y + 3, JC.mouth); J.px(g, x + 1, y + 4, JC.teeth); J.px(g, x + 4, y + 4, JC.teeth); J.px(g, x + 6, y + 3, JC.teeth); }
 }
 /* the weed hair: a curtain of strands from the crown, hanging (or floating back) past the shoulders, duckweed caught in it */
 function hair(g, x, y, len, sway, back = 0) {
   for (let i = -6; i <= 5; i++) { const x0 = x + i, x1 = x + i - back + Math.round(Math.sin(i * 1.3 + sway) * 2), y1 = y + len - Math.abs(i) + (i % 3);
-    line(g, x0, y - 7, x1, y1, i % 2 ? JC.hair : JC.hairD); if (i % 3 === 0) px(g, x1, y1 - 3, JC.hairL); }
-  fillPoly(g, [[x - 6, y - 7], [x, y - 10], [x + 5, y - 8], [x + 6, y - 4], [x - 6, y - 4]], JC.hair);
-  for (const [dx, dy] of [[-4, 2], [3, 5], [-1, 9], [5, 11]]) px(g, x + dx - back, y + dy, JC.duck);
+    J.line(g, x0, y - 7, x1, y1, i % 2 ? JC.hair : JC.hairD); if (i % 3 === 0) J.px(g, x1, y1 - 3, JC.hairL); }
+  J.fillPoly(g, [[x - 6, y - 7], [x, y - 10], [x + 5, y - 8], [x + 6, y - 4], [x - 6, y - 4]], JC.hair);
+  for (const [dx, dy] of [[-4, 2], [3, 5], [-1, 9], [5, 11]]) J.px(g, x + dx - back, y + dy, JC.duck);
 }
 /* the body: a hunched back in wet sacking */
 function body(g, x, y, lean = 0) {
-  fillPoly(g, [[x - 9, y + 16], [x - 8, y + 4], [x - 3, y - 2 + lean], [x + 6, y + 1 + lean], [x + 9, y + 16]], JC.rag);
-  line(g, x - 7, y + 6, x - 5, y + 16, JC.ragD); line(g, x + 2, y + 4, x + 3, y + 16, JC.ragD); px(g, x - 2, y + 9, JC.hairL);
-  fillPoly(g, [[x - 4, y - 2 + lean], [x + 4, y - 1 + lean], [x + 3, y + 2 + lean], [x - 4, y + 2 + lean]], JC.skinD);   /* the scrawny neck and collarbone */
+  J.fillPoly(g, [[x - 9, y + 16], [x - 8, y + 4], [x - 3, y - 2 + lean], [x + 6, y + 1 + lean], [x + 9, y + 16]], JC.rag);
+  J.line(g, x - 7, y + 6, x - 5, y + 16, JC.ragD); J.line(g, x + 2, y + 4, x + 3, y + 16, JC.ragD); J.px(g, x - 2, y + 9, JC.hairL);
+  J.fillPoly(g, [[x - 4, y - 2 + lean], [x + 4, y - 1 + lean], [x + 3, y + 2 + lean], [x - 4, y + 2 + lean]], JC.skinD);   /* the scrawny neck and collarbone */
 }
 /* 0-1 swim, 2 tell (arms up, mouth open), 3 lunge (jaws), 4 reach (one arm long), 5 grab (both arms down, pulling), 6-7 stranded (clawing the mud),
    8 hurt, 9 dead, 10 flushed (on her back, limp), 11 hide (curled in the culvert), 12 drag (stretched, arms far forward) */
@@ -58,20 +63,20 @@ function drawJenny(g, f) {
   const B = JH - 2, X = JX;
   if (f === 6 || f === 7 || f === 12 || f === 9) {   /* PRONE in the mud */
     const y = B - 4, reach = f === 12 ? 14 : f === 7 ? 6 : 2;
-    fillPoly(g, [[X - 16, y + 3], [X - 14, y - 3], [X + 2, y - 5], [X + 8, y - 2], [X + 8, y + 3]], JC.rag);
-    line(g, X - 12, y - 1, X + 4, y - 3, JC.ragD);
-    for (let i = 0; i < 9; i++) line(g, X + 4 + (i % 3), y - 5, X - 8 - i * 2, y + 2 + (i % 2), i % 2 ? JC.hair : JC.hairD);   /* the hair spread over the mud */
+    J.fillPoly(g, [[X - 16, y + 3], [X - 14, y - 3], [X + 2, y - 5], [X + 8, y - 2], [X + 8, y + 3]], JC.rag);
+    J.line(g, X - 12, y - 1, X + 4, y - 3, JC.ragD);
+    for (let i = 0; i < 9; i++) J.line(g, X + 4 + (i % 3), y - 5, X - 8 - i * 2, y + 2 + (i % 2), i % 2 ? JC.hair : JC.hairD);   /* the hair spread over the mud */
     if (f === 9) { head(g, X + 10, y - 1, 0, true); arm(g, [X + 4, y - 2], [X + 12, y + 2], [X + 20, y + 2], 0.2); arm(g, [X - 4, y - 2], [X - 12, y + 1], [X - 20, y + 2], 3); return; }
     head(g, X + 11, y - 3, f === 7 ? 2 : 1);
     arm(g, [X + 5, y - 3], [X + 12 + reach / 2, y - 6], [X + 18 + reach, y + 1], 0.4); arm(g, [X + 2, y - 2], [X + 8 + reach / 2, y + 1], [X + 14 + reach, y + 2], 0.2);
-    rect(g, X - 16, y + 3, 30, 1, JC.mud); px(g, X + 18 + reach, y + 3, JC.mud); px(g, X + 14 + reach, y + 3, JC.mud); return; }
+    J.rect(g, X - 16, y + 3, 30, 1, JC.mud); J.px(g, X + 18 + reach, y + 3, JC.mud); J.px(g, X + 14 + reach, y + 3, JC.mud); return; }
   if (f === 10) {   /* FLUSHED: rolled on her back, limp, arms and hair floating */
-    const y = B - 6; fillPoly(g, [[X - 12, y + 2], [X - 10, y - 4], [X + 6, y - 5], [X + 10, y], [X + 6, y + 4]], JC.rag);
+    const y = B - 6; J.fillPoly(g, [[X - 12, y + 2], [X - 10, y - 4], [X + 6, y - 5], [X + 10, y], [X + 6, y + 4]], JC.rag);
     head(g, X + 12, y - 1, 1, true); arm(g, [X + 2, y - 4], [X - 4, y - 10], [X - 12, y - 8], 3.4); arm(g, [X + 4, y - 3], [X + 10, y - 10], [X + 16, y - 12], -0.6);
-    for (let i = 0; i < 7; i++) line(g, X + 16, y + i - 3, X + 22, y + i - 1, i % 2 ? JC.hair : JC.hairD); return; }
+    for (let i = 0; i < 7; i++) J.line(g, X + 16, y + i - 3, X + 22, y + i - 1, i % 2 ? JC.hair : JC.hairD); return; }
   if (f === 11) {   /* HIDING: a curled shape in the culvert's dark, only the eyes */
-    const y = B - 8; fillPoly(g, [[X - 8, y + 8], [X - 7, y - 2], [X + 4, y - 5], [X + 9, y + 2], [X + 8, y + 8]], JC.hairD);
-    rect(g, X + 1, y - 1, 3, 2, JC.eye); rect(g, X - 3, y - 1, 2, 2, JC.eye); return; }
+    const y = B - 8; J.fillPoly(g, [[X - 8, y + 8], [X - 7, y - 2], [X + 4, y - 5], [X + 9, y + 2], [X + 8, y + 8]], JC.hairD);
+    J.rect(g, X + 1, y - 1, 3, 2, JC.eye); J.rect(g, X - 3, y - 1, 2, 2, JC.eye); return; }
   /* UPRIGHT in the water: her head and shoulders over it, the rest drawn under the water's wash */
   const bob = f === 1 ? 1 : 0, lean = f === 3 ? 3 : f === 8 ? -3 : 0, hx = X + 2 + lean, hy = B - 26 + bob - (f === 2 || f === 4 ? 2 : 0);
   body(g, X, hy + 8, f === 3 ? 2 : 0);
@@ -85,7 +90,7 @@ function drawJenny(g, f) {
   else if (f === 5) { arm(g, sL, [X - 8, hy + 18], [X - 2, hy + 24], 1.6); arm(g, sR, [X + 10, hy + 18], [X + 6, hy + 25], 1.6); }
   else { arm(g, sL, [X - 12, hy + 6], [X - 16, hy + 2], -2.5); arm(g, sR, [X + 10, hy + 12], [X + 14, hy + 18], 1.0); }
 }
-export function bakeGreenteeth() { return bake(13, JW, JH, drawJenny, JX, 18, 24); }
+export function bakeGreenteeth() { return bake(13, JS(JW), JS(JH), drawJenny, JS(JX), 32, 44); }   /* (claude/canalfix3: 84 x 71, the body 32 x 44 - was 52 x 44 and 18 x 24) */
 
 /* ================= THE LOCK ================= */
 export function bakeLockSkins() {
