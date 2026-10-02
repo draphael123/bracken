@@ -9,7 +9,8 @@
 // the town, every mud wall is cracked dark where water would take it, and the skin's sips are on the HUD under the sun meter.
 //
 // THE THEMED KEY: four full WATER-SKINS lie about the town (the quest, L.quest). Poured into THE DRY CISTERN under the Kasbah street, the
-// cistern fills and ITS VAULT opens: the relic (THE WELL-KEEPER'S GOURD) and the third silver. The HUD counts them (WATER-SKINS n/4).
+// cistern fills and ITS VAULT opens: the third silver and a purse of coins (no relic: Daniel 10-02, relics are leaving the game). The HUD
+// counts them (WATER-SKINS n/4).
 //
 // SEVEN SECTIONS (columns; the street is row 30, the cisterns rows 34-40, the roofs rows 14-24):
 //   0-63     THE CARAVAN GATE   TEACH fill + pour    the first well in the open sun; the gatehouse (its shade, bowmen on its top); a bricked
@@ -220,7 +221,7 @@ export function buildWellTown({ painter, T, TS }) {
   air(431, 446, K + 1, K + 4); block(431, 446, K + 5, H - 1); air(431, 431, K, K); ladder(431, K, K + 4);
   ent('cistern', 437, K + 4);
   block(441, 441, K + 1, K + 4); vaultDoors.push({ x0: 441, x1: 441, y0: K + 1, y1: K + 4 });
-  ent('relic', 444, K + 4, { kind: 'gourd' }); ent('silver', 445, K + 4);  /* the vault: the relic, and SILVER THREE */
+  for (const x of [442, 443, 444]) ent('coin', x, K + 4); ent('silver', 445, K + 4);   /* the vault: SILVER THREE and a purse of coins */
   interiors.push([431, 446, K + 1, K + 4, 'wtCistern']);
   /* THE EXAM: the last well, held by thieves and a bowman over it; then the Kasbah's bricked door and, behind it, a fire under the gateway's
      lintel - two pours, a three-sip skin, the sun and a bowman */
@@ -258,12 +259,12 @@ export function buildWellTown({ painter, T, TS }) {
     checkRun: 200,                  /* four checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */
     /* WHAT EACH THING OPENS, and the line that says so (tools/level-quality.mjs `unlocks`; the lines are src/hint-lines.js callouts the hands say) */
     unlocks: [
-      { kind: 'stray', opens: 'THE DRY CISTERN\'s vault (the relic and the third silver) once all four are poured in', hud: 'WATER-SKINS n/4 (the quest counter); at the cistern: POUR THE SKINS IN: THE VAULT OPENS' },
+      { kind: 'stray', opens: 'THE DRY CISTERN\'s vault (the third silver and its coins) once all four are poured in', hud: 'WATER-SKINS n/4 (the quest counter); at the cistern: POUR THE SKINS IN: THE VAULT OPENS' },
       { kind: 'skinwell', opens: 'your skin: three sips to pour or drink', hud: 'YOUR SKIN IS FULL: E POURS, E DRINKS' },
       { kind: 'mudwall', opens: 'the lane it bricks (a pour)', hud: 'MUD: POUR YOUR SKIN ON IT' },
       { kind: 'oilfire', opens: 'the way it burns across (a pour)', hud: 'THE FIRE IS OUT - GO' },
       { kind: 'windlass', opens: 'the bucket down THE GREAT WELL into the cisterns (and back up)', hud: 'STRIKE THE WINDLASS: THE BUCKET GOES DOWN' },
-      { kind: 'cistern', opens: 'THE DRY CISTERN\'s vault: the relic and the third silver', hud: 'THE CISTERN FILLS: THE VAULT OPENS' },
+      { kind: 'cistern', opens: 'THE DRY CISTERN\'s vault: the third silver and its coins', hud: 'THE CISTERN FILLS: THE VAULT OPENS' },
     ],
     music: 'welltown',   /* Daniel's pick (10-02): "Desert Calmness and Fighting (Orchestral)" by Dizzy Crow, CC0 - the calm intro once, then its loop (audio/welltown.ogg, src/audio.js TRACK_INTRO) */
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],

@@ -9,7 +9,7 @@
 //   THE WATER BUDGET           walked left to right with a three-sip skin, filled at every well passed, it is never short at a required pour,
 //                              counting ONE DRINK for every sun stretch over SUN.maxWalk and ONE STOLEN SIP at every thief squad on the way (a
 //                              roof's water jar gives one); the first well stands before the first wall; the exam asks two pours after its last well
-//   THE THEMED KEY             four water-skins, the dry cistern, its vault holding the relic and a silver, shut until it is poured full
+//   THE THEMED KEY             four water-skins, the dry cistern, its vault holding a silver and coins (NO relic: Daniel 10-02), shut until it is poured full
 //   THE FOES                   every foe is in a designed squad (or the elite); the ranged foe is the reskinned bowman; the one new kind is the
 //                              water-thief; the roles are melee, ranged and runner
 //   THE SHOP AND THE BOSS      the market shrine, THE WELL STORE's room and map node; THE BANDIT KING's courtyard, its well, his opening >= 3 s, x0.05
@@ -87,7 +87,7 @@ const sunLong = [];
   ok(skins.length === 4 && L.quest && L.quest.n === 4 && /WATER-SKIN/.test(L.quest.name), 'FOUR WATER-SKINS, counted by the quest (the HUD: ' + L.quest.name + ' n/4)');
   ok(skins.every(s => reaches(L, (x, y) => Math.abs(x - s.x) <= 1 && Math.abs(y - s.y) <= 1)), 'every water-skin can be reached');
   const inVault = e => e.x > v.x1 && e.x <= v.x1 + 6 && e.y >= v.y0 && e.y <= v.y1;
-  ok(c && L.ents.some(e => e.t === 'relic' && inVault(e)) && L.ents.some(e => e.t === 'silver' && inVault(e)), 'THE DRY CISTERN\'s vault holds the relic and a silver');
+  ok(c && L.ents.some(e => e.t === 'silver' && inVault(e)) && L.ents.filter(e => e.t === 'coin' && inVault(e)).length >= 3 && !L.ents.some(e => e.t === 'relic'), 'THE DRY CISTERN\'s vault holds a silver and coins, and the town has no relic (Daniel 10-02: relics are leaving the game)');
   const shut = { ...L, vaultDoors: [], grid: (() => { const g = L.grid.slice(); for (let y = v.y0; y <= v.y1; y++) g[y * W + v.x0] = T.SOLID; return g; })() };
   ok(!reaches(shut, (x, y) => x > v.x1 && x <= v.x1 + 6 && y >= v.y0 && y <= v.y1) && reaches(L, (x, y) => x > v.x1 && x <= v.x1 + 6 && y >= v.y0 && y <= v.y1), 'the vault is shut until the cistern is filled, and opens onto the relic');
   ok((L.unlocks || []).some(u => u.kind === 'stray' && /VAULT/.test(u.hud)) && CALL_LINES.has('THE CISTERN FILLS: THE VAULT OPENS') && CALL_LINES.has('THE DRY CISTERN WANTS FOUR WATER-SKINS'), 'the HUD says what the skins are for (L.unlocks, the cistern\'s two callouts)'); }

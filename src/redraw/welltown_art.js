@@ -4,7 +4,7 @@
 //   bakeBanditBowman()  THE BANDIT BOWMAN - the archer's frames on a man of the town (0 stand | 1 draw | 2,3 walk | 4 stand | 5 full draw | 6 loose | 7 hurt)
 //   bakeWaterThief(ct)  THE WATER-THIEF - the cutthroat's frames (src/redraw/caravan_bandits.js) dyed the wells' blue, a skin at his hip
 //   bakeBanditKing()    THE BANDIT KING - a big man in brass and mud plate, a scimitar, a sling of oil jars (KING_F names the frames)
-//   bakeSkinIcon()      a full water-skin (the level's four quest pickups)      bakeGourdIcon()  THE WELL-KEEPER'S GOURD (the vault's relic)
+//   bakeSkinIcon()      a full water-skin (the level's four quest pickups)
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -77,4 +77,3 @@ export function bakeBanditKing() {
 
 /* ---------- ICONS ---------- */
 export function bakeSkinIcon() { const [c, g] = canvas(12, 12); ellipse(g, 6, 7, 4.5, 4, '#c9a070'); ellipse(g, 6, 6, 3, 2.5, '#e8c890'); rect(g, 5, 1, 2, 3, '#6a4426'); rect(g, 4, 1, 4, 1, '#3a7ab8'); px(g, 8, 8, '#7ab8e8'); outline(c, OUT); return c; }
-export function bakeGourdIcon() { const [c, g] = canvas(10, 12); circle(g, 5, 8, 3.5, '#c9962a'); circle(g, 5, 4, 2.2, '#e0b040'); rect(g, 4, 0, 2, 2, '#6a4426'); px(g, 4, 7, '#f0d070'); px(g, 6, 9, '#3a7ab8'); outline(c, OUT); return c; }

@@ -35,12 +35,18 @@ ENCOUNTERS: 20 designed squads (two cutthroats on a floor, bowmen on a roof, a t
 thieves at each well), none sprinkled.
 
 SET PIECE - THE GREAT WELL (agency): the square's bandits and its bowman on the well-house; the player chooses when to strike the windlass and
-ride (the bowman shoots down the shaft), whether to fill at the well head first (a thief keeps it), and in the cisterns whether to cut through
-the scorpions or go round under the pillars. Nothing moves the bucket but a blow on a windlass.
+ride, whether to fill at the well head first (a thief keeps it), and in the cisterns whether to cut through the sump's squad on the floor or
+go ROUND over the pillars' caps (the gallery under the raised vault, 197-238: a ladder up, water-skin two at its end). THE RIDE IS CONTESTED
+(claude/welltown-fix): when the bucket goes, the well head's thief and a square cutthroat come down the well after you, and the cistern's own
+well is held by two scorpions. Nothing moves the bucket but a blow on a windlass. The exam's last well (448) is a DEEP WELL: strike its
+windlass and its bucket winds up in 2 s, under the ledge bowman and two thieves, before you can fill.
+THE SHADE PLAN (claude/welltown-fix, the review's P1): every fight stands in shade a prop casts - market awnings over the stair, the square,
+the mud quarter's lanes and well, each roof (its bandits hold it) and the Kasbah street; the well-house roof is solid; the dovecote's inside is
+shade. No open-sun walk on the route is longer than SUN.maxWalk (5 s); `tools/welltown.mjs` THE SUN holds it.
 
-COLLECTIBLES (the themed key): four full WATER-SKINS (the gate house, the cistern's dead end, the dead street behind the rubble, the roost's
+COLLECTIBLES (the themed key): four full WATER-SKINS (the gate house, the end of the cisterns' gallery, the dead street behind the rubble, the roost's
 chimney ledge). The HUD counts them (WATER-SKINS n/4). Poured into THE DRY CISTERN under the Kasbah street (E at it), it fills and ITS VAULT
-opens: the relic THE WELL-KEEPER'S GOURD (your skin holds a fourth sip) and the third silver. Silvers: the bazaar roof walk, the dovecote's roof,
+opens: the third silver and a purse of coins (no relic: Daniel 10-02, relics are leaving the game). Silvers: the bazaar roof walk, the dovecote's roof,
 the vault.
 
 BOSS - THE BANDIT KING (the Kasbah courtyard, 40 tiles, the courtyard well in the middle, two troughs a row up)
@@ -49,14 +55,14 @@ stand, then a burning patch), THE CHARGE (red, shoulder first). THE OPENING IS C
 BURNS; pour your skin on him while he burns and the steam blinds him - OPEN for 3.0 s at x2.6 (tuned with the human-bot pilot: 15/21 = 71%). A pour while he does not burn runs off him.
 x0.05 chip otherwise (the global rule: A SCRATCH: WAIT FOR HIS OPENING). He always fights; EVERY CYCLE CHANGES (each pass of his chain is a new order: jar first, knives
 first with a charge after the jar, a charge into a jar). PHASE TWO (half health): two jars at once, and THE LIEUTENANTS - two cutthroats take
-the courtyard well (win it back to refill). Pilot target: the human bot (~250 ms) wins 60-75% with knight, warden, pyromancer; the mash bot loses.
+the courtyard well (win it back to refill). The trough fire of the old brief is NOT built (Daniel: no). Pilot target: the human bot (~250 ms) wins 60-75% with knight, warden, pyromancer; the mash bot loses.
 
-MUSIC: PLACEHOLDER - the level plays THE SUNKEN CARAVAN's track until Daniel picks its own CC0/CC-BY file (one batch of downloads with his go);
-the boss plays a short synth hook of his own ('banditking', `src/boss-music.js`), to be replaced by a composed theme.
+MUSIC: Daniel's pick, "Desert Calmness and Fighting (Orchestral)" by Dizzy Crow, CC0 (`audio/welltown.ogg`: its intro once, then its loop).
+The boss plays his own synth theme ('banditking', `src/boss-music.js`): 6/8 war drums, a Phrygian-dominant drone, a zurna; faster in phase two.
 BACKDROP: the caravan's sky and far ruins for now; the art lane gives it whitewash, blue doors, the wells' blue, the dovecote and the Kasbah.
 
-SIZE / RULES: 522 columns, 44 rows; four checkpoints (the market shrine, the bucket's foot, the mud quarter's well, the courtyard door), one per
-~128 route tiles; three silvers and one relic; no mini (desert concept: one boss per level, no minis); the level's own checks
+SIZE / RULES: 522 columns, 44 rows; four checkpoints (the market shrine, past the cistern's well, roof A outside the dovecote's window, the
+courtyard door), one per ~128 route tiles, and a respawn refills the skin (Daniel 10-02); three silvers and one relic; no mini (desert concept: one boss per level, no minis); the level's own checks
 `tools/welltown.mjs` and `tools/welltown-pilot.mjs`, and `level-quality` gates it.
 
 PROCESS: concept (this page) -> Opus greybox (claude/welltown) -> reviewer against THE MAGE'S FOLLY -> fixes -> Sonnet art and music.

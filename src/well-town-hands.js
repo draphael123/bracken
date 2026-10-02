@@ -17,7 +17,7 @@ export function makeWellTownHands(ctx) {
   const H = {};
   const cellsOf = m => { const out = []; for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) out.push([x, y]); return out; };
   const skinOf = pp => (pp.skin || (pp.skin = { sips: 0, max: SKINMAX }));
-  const maxOf = pp => (pp.relic === 'gourd' ? SKINMAX + 1 : SKINMAX);   /* THE WELL-KEEPER'S GOURD: a fourth sip */
+  const maxOf = pp => SKINMAX;   /* (no relic grows the skin: Daniel 10-02, relics are leaving the game - the vault pays silver and coins) */
 
   /* ---------- RESET: a fresh load is a fresh town; a respawn keeps what was poured (the walls stay open, the cistern stays full) ---------- */
   H.reset = () => {

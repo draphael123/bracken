@@ -5,8 +5,8 @@ import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER'
 import {buildBurningVillage} from './burning-village.js';
 import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
-import { buildFogCanal } from './fog-canal.js';
-import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its boss is THE BANDIT KING (src/bandit-king.js) */   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
+import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
+import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its boss is THE BANDIT KING (src/bandit-king.js) */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
