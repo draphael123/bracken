@@ -23,6 +23,7 @@ try {
       /* THE DICE PINNED (part 2): the crowd's choices - a brute's overhead or his sweep, a held swing - are dice, and a count of red blows
          over forty seconds should not hang on luck (seeded here; the page still rolls a few of its own between frames) */
       { let a = 20260928 >>> 0; Math.random = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+      BK.reset({ fresh: true });   /* THE CLOCK PINNED: the game clock (time) runs on in the page from the reload until this block starts, so how far it had got - and with it every sin(time) the crowd paces by - hung on how loaded the PC was; a fresh reset zeroes it */
       BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(lvl)})); BK.start(); BK.god = true;
       const L = BK.L, W = L.W, at = (x, y) => L.grid[y * W + x];
       /* A FLAT FLOOR: sixteen columns of ground with three rows of air over them, the nearest to the start */
