@@ -119,6 +119,14 @@ if (D) {
     for (let i = 0; i < 120; i++) { hero.x += 0.8; w.anim += DT; F.stepWisp(w, DT, X); } ok(w.x > hero.x + 20, 'the wisp did not keep ahead of the hero along its line');
     hero.x = w.x - 10; hero.y = w.y + 10; for (let i = 0; i < 120; i++) { w.anim += DT; F.stepWisp(w, DT, X); } ok(marks.includes('!') && hurt >= 1, 'the wisp did not gutter (!) and flare at a hero beside it');
     cleared = true; for (let i = 0; i < 300; i++) { w.anim += DT; F.stepWisp(w, DT, X); } ok(w.mode === 'shy' && Math.hypot(w.x - w.hx, w.y - w.hy) < 8, 'in air a horn has cleared, the wisp did not shy back to where it started');
+    /* (claude/canalfix3) THE EMBER WISP'S AI, COLD: it harasses (no blow lands before its told !), darts, falls away; popped it is an ember that re-forms ONCE */
+    { const h = { x: 400, y: 300, dead: false }, q = F.newWisp({ t: 'willowisp', x: 440, y: 300, anim: 0, hp: 1, lure: [27, 18] }, TS); let hits = 0, toldFirst = null; const mk2 = [];
+      const X2 = { hero: () => h, cleared: () => false, solid: () => false, hurtHero: () => { hits++; if (toldFirst === null) toldFirst = mk2.includes('!'); }, mark: (e, t) => mk2.push(t), sfx: {}, hint: () => {}, ring: () => {} };
+      q.lured = true; for (let i = 0; i < 60 * 12; i++) { q.anim += DT; F.stepWisp(q, DT, X2); }
+      ok(hits >= 3 && toldFirst === true, 'the wisp does not harass (darts that land, each told first): ' + hits + ' darts, told first ' + toldFirst);
+      ok(F.wispTake(q, 5) === 0 && q.mode === 'spark', 'a popped wisp did not leave an ember to re-form');
+      for (let i = 0; i < 60 * 3; i++) { q.anim += DT; F.stepWisp(q, DT, X2); } ok(q.reformed && q.mode !== 'spark' && F.wispTake(q, 5) === 5, 'the wisp did not re-form once (and only once)');
+      const z = F.newWisp({ t: 'willowisp', x: 440, y: 300, anim: 0, hp: 1 }, TS); F.wispTake(z, 5); ok(F.wispTake(z, 1) >= 1, 'a blow on the ember does not put it out'); }
   }
 }
 
@@ -250,6 +258,17 @@ if (!NOPAGE && lv) {
         for (let i = 0; i < 900 && cb.barge.x + 48 < 262 * TS; i++) { const w = want(), far = Math.abs(P.x - w) > 6; k.right = far && P.x < w; k.left = far && P.x > w; k.down = !far; BK.sim(1); const ch = BK.chase.states()[0]; if (ch.hold > lastHold + 0.3) hits++; lastHold = ch.hold; }
         k.left = k.right = k.down = false; return [hits, Math.round(P.x - cb.barge.x), Math.round(100 - P.hp)]; };   /* [the flood's contacts, where he ended on her deck, damage]: ducked all the way, so a beam is not what finds him */
       out.lapStern = lapRun(false); out.lapBow = lapRun(true);
+      // 13. (claude/canalfix3) CLARITY: held at the first lock's shut gate, the paddle that lets her go GLINTS, her lantern swings to it, and after ~10 s with no headway a nudge names it
+      fresh(); kill(e => true); { const cb = C(); cb.barge.x = 80 * TS - 97; BK.tp(78, 39); P.y = cb.barge.y; sim(30); P.vy = 0; const t0 = cb.nudges || 0, c0 = cb.clock; for (let i = 0; i < 4000 && cb.clock - c0 < 11; i++) BK.sim(1); const tg = cb.glint;
+        out.clarity = [cb.barge.holdWhy, tg && tg.why, tg && tg.prop.t, tg && tg.prop.reach, +(cb.lampAng || 0).toFixed(2), (cb.nudges || 0) - t0, cb.lastNudge || null];
+        P.face = 1; BK.tp(79, 39); sim(5); BK.press('atk'); sim(30); out.clarityDone = cb.glint ? cb.glint.why : null; }
+      // 14. (claude/canalfix3) NO WATER KEEPS YOU: a bright weed mat that gives way under you does not become the ground you are handed back to; wading in the race after the run, the canal hands you back
+      fresh(false); kill(e => true); { BK.tp(346, 40); sim(40); BK.tp(351, 43); sim(10); let fell = 0; for (let i = 0; i < 900; i++) { BK.sim(1); if (P.y > 44 * TS + 12) fell++; } out.weedBack = [fell, Math.floor(P.x / TS), Math.floor(P.y / TS)]; }
+      // 15. (claude/canalfix3) A SAFE SWIM: the flooded cellar is swum freely (no bite), and the first time, the quay's grindylow comes, bumps the grate and cannot pass
+      fresh(false); { const gq = BK.enemies().find(e => e.t === 'grindylow' && e.x < 40 * TS); kill(e => e !== gq); BK.tp(24, 46); const hp2 = P.hp; let bump = false, hit = false, minX = 1e9;
+        for (let i = 0; i < 500; i++) { BK.sim(1); if (gq.bump) { bump = true; if (gq.bump.hit) hit = true; } minX = Math.min(minX, gq.x); } out.swim = [P.swim, hp2 - P.hp, bump, hit, Math.floor(minX / TS)]; }
+      fresh(false); kill(e => true); { BK.tp(328, 40); sim(40); BK.tp(258, 24); sim(10); const t0 = C().clock; for (let i = 0; i < 400 && Math.floor(P.x / TS) < 300; i++) BK.sim(1); out.wadeBack = [+(C().clock - t0).toFixed(2), Math.floor(P.x / TS), Math.floor(P.y / TS)]; }
+      fresh(); kill(e => true); { const cb = C(); for (const q of cb.bridges.slice(0, 2)) { q.across = false; q.k = 1; } cb.barge.x = 158 * TS; BK.tp(162, 31); sim(120); const tg = cb.glint; out.clarityFog = [cb.barge.holdWhy, tg && tg.why, tg && Math.floor(tg.prop.x / TS)]; }
       return out; })()`, 900000);
     ok(r.board && r.carried > 16, 'the barge did not carry a hero standing on her (' + JSON.stringify([r.board, r.carried]) + ')');
     ok(r.ducked === 0 && r.stood > 0, 'the low bridge did not find a rider standing, or found one ducked (ducked ' + r.ducked + ', stood ' + r.stood + ')');
@@ -266,6 +285,12 @@ if (!NOPAGE && lv) {
     ok(r.water[0] > 0 && r.water[2] <= 39, 'the canal did not bite and hand the hero back to the bank: ' + JSON.stringify(r.water));
     ok(r.weir[0] === 'loose' || r.weir[0] === 'float', 'the weir gate did not burst and let her run: ' + JSON.stringify(r.weir));
     ok(r.weir[1] === 0, 'the burst weir gate still stands in the grid');
+    ok(r.clarity[0] === 'gate' && r.clarity[1] === 'gate' && r.clarity[2] === 'locksluice' && r.clarity[3] === 'L1' && r.clarity[4] < -0.05 && r.clarity[5] === 1 && r.clarity[6] === 'THE GATE IS SHUT: FIND ITS PADDLE', 'held at the shut gate, its paddle did not glint, her lantern did not swing to it, or no nudge named it after 10 s: ' + JSON.stringify(r.clarity));
+    ok(r.weedBack[1] >= 342 && r.weedBack[1] <= 350 && r.weedBack[2] <= 41, 'a bright weed mat that gave way was the ground the canal handed the hero back to (or he was left in the water): ' + JSON.stringify(r.weedBack));
+    ok(r.wadeBack[0] <= 2 && r.wadeBack[1] >= 326 && r.wadeBack[1] <= 336, 'wading in the race after the run, the canal did not hand the hero back to the basin bank: ' + JSON.stringify(r.wadeBack));
+    ok(r.swim[0] && r.swim[1] === 0 && r.swim[2] && r.swim[3] && r.swim[4] >= 36, 'the flooded cellar is not a safe swim, or the quay grindylow did not bump its grate (and stay on the green side): ' + JSON.stringify(r.swim));
+    ok(r.clarityDone === null, 'the paddle worked, it still glints (' + r.clarityDone + ')');
+    ok(r.clarityFog[0] === 'fog' && r.clarityFog[1] === 'fog' && r.clarityFog[2] === 163, 'held at the fog wall, the bank horn does not glint: ' + JSON.stringify(r.clarityFog));
     if (pg.errors.length) fails.push('page errors: ' + pg.errors.slice(0, 3).join(' | '));
   } finally { pg.close(); }
 }

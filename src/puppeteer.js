@@ -10,14 +10,19 @@
 //                  along the boards: jump it) and a GRAB (!!, get out of reach) - PUP.brute.dmg, two or three of them and you are in trouble - and after
 //                  every swing a long RECOVERY that is the window to cut him or hit him. Two strings: the ARM (cut it and the chop and the grab are gone:
 //                  the arm hangs limp) and the BACK (cut it and the slam is gone: he stoops).
-// DAMAGE IS PLAIN. A puppet takes a blow like anything else (a flash, a knock, a number, its health bar under it). Its strings are the SHORTCUT: always
-// drawn, cut whenever a blow crosses one; cut in the GOLD (a windup or a blow) it also CANCELS that blow and staggers the puppet. A cut is a SNAP: a
-// hit-stop, the string whipping away, the limb falling limp, that attack gone. A puppet with its strings all cut, or its health gone, DROPS in a heap
-// and stays down PUP.downT s (a ring counts it out), then he strings it again.
-// HOW TO HURT HIM. He HANGS FROM HIS CONTROL BAR over the stage. Every puppet you drop lowers his bar (drawn: he sinks on his line, out of reach); with
-// BOTH down he is DRAGGED TO THE BOARDS - "HE'S DOWN - STRIKE HIM", a ring, OPEN, a timer - for PUP.downOpenT s at PUP.openMul. The ALWAYS-THERE, HARD
-// way: climb to the gallery (the batten at the stage door, the pin rail beside it) and strike the LINE HE HANGS FROM: he is jolted down onto the
-// gallery boards, open for PUP.joltT s (then not again for PUP.joltCd s). Anywhere else a blow that reaches him is PUP.ward.
+// THEATRE3 (2026-10-02, after Daniel played it: "extremely easy" - the loop was kill the puppets, he drops open, wail on him, repeat; a mash bot won
+// 5 of 6). The loop is rebuilt so that pressing attack never wins it:
+// A PUPPET IS HURT ONLY IN ITS TOLD RECOVERY. After every blow it throws a puppet hangs spent and GLOWS GREEN (PUP 'recover', and the stagger of a
+// gold cut): then a blow takes its health and a swing across a string cuts it. Any other time the wood turns the blade - a CLANK, a grey spark, and
+// the first time the hint box says why (never "nothing works"). A cut in the GOLD (a windup or a blow) still CANCELS that blow and staggers it.
+// A puppet with its strings all cut, or its health gone, DROPS in a heap and stays down PUP.downT s (a ring counts it out), then he strings it again.
+// HOW TO HURT HIM. He HANGS FROM HIS CONTROL BAR over the stage, out of reach. Every puppet you drop lowers his bar; with BOTH down his bar is SLACK
+// for PUP.slackT s - he kneels on the fly gallery, holding nothing - and THAT is the opening to EARN: climb to the gallery (the batten at the stage door,
+// the pin rail beside it) under fire (the house throws, he whips) and CUT HIS CONTROL BAR. He falls to the boards, OPEN for PUP.downOpenT s at
+// PUP.openMul - and he FIGHTS BACK from the floor (a told low flail, !!: jump it). Both puppets down and the bar left alone opens nothing: he strings
+// them again. Anywhere else a blow that reaches him is PUP.ward.
+// THE HOUSE throws told props at you all fight (a shadow and a ! where it will land; every third a sandbag, !!). EACH CYCLE (each time he is cut down)
+// he re-strings faster (cycleK) and adds a move (CYCLE_MOVES: a sandbag cut loose over you, the house throwing in pairs, the Brute's second chop).
 // PHASES (each changes how the duo combines, rule A10):
 //   1 (full to 2/3)  ONE AT A TIME: they take turns to strike.
 //   2 (2/3 to 1/3)   TOGETHER: the Harlequin harasses while the Brute winds up; the Brute's SLAM breaks the boards where it lands (a trapdoor pit, told
@@ -30,21 +35,28 @@
 
 export const PUP = {
   hp: 720, w: 16, h: 40, markH: 50,
-  ward: 0.05, openMul: 1.0, joltMul: 1.0,
-  downOpenT: 3.0,                      // BOTH PUPPETS DOWN: he is on the boards this long
-  joltT: 1.2, joltCd: 12.0,             // THE HARD WAY: his line struck from the gallery
+  ward: 0.05, openMul: 1.75,          // (THEATRE3: the opening is earned the hard way now - up the batten under fire - so it pays half again)
+  downOpenT: 3.0,                      // HIS BAR CUT: he is on the boards this long (Daniel 10-01: keep 3.0 s; boss-openings asserts >= 3 s)
+  slackT: 12.0,                        // BOTH PUPPETS DOWN: his bar hangs slack this long (x cycleK) - the time to climb and cut it
   hangLow: 56,                         // one puppet down: his bar sinks this far below the gallery (still out of reach from the boards)
-  descendT: 0.7, haulT: 1.2, riseT: 0.8,
+  descendT: 0.6, haulT: 1.2, riseT: 0.8,
   sceneT: 1.6,
-  downT: { harlequin: 4.0, marionette: 6.0, masterpiece: 7.0 },   // a dropped puppet stays down this long, then he strings it again
-  cutStun: 0.7,                        // a GOLD cut: the puppet staggers this long
+  downT: { harlequin: 6.0, marionette: 8.0, masterpiece: 9.0 },   // a dropped puppet stays down this long (x cycleK), then he strings it again
+  restring: 0.15, restringMin: 0.55,   // EACH CYCLE he re-strings faster: his down and slack times x (1 - restring x cycle), never under restringMin
+  cutStun: 0.7,                        // a GOLD cut: the puppet staggers this long (and glows green: it can be hurt)
   flySpeed: 170,
-  harl: { hp: 40, speed: 130, jabTell: 0.36, jabNext: 0.24, jabT: 0.1, jabs: 3, jabReach: 26, jab: 10, kickTell: 0.5, kickT: 0.2, kickReach: 34, kick: 12,
-    rest: 0.35, still: 0.7, dart: 2.2 },
+  /* HE FIGHTS BACK FROM THE BOARDS: a told low flail of his cane and his bar's ends round him while he is open (!!, jump it) */
+  flailFirst: 0.7, flailEvery: 1.1, flailTell: 0.45, flailT: 0.2, flailReach: 46, flail: 14,
+  /* THE HOUSE: a prop thrown at you all fight, told by its shadow and a mark where it lands. Every bagEvery-th a sandbag (!!, no shield turns it) */
+  house: { every: [4.5, 3.8, 3.2], tell: 0.9, half: 14, dmg: 8, bagEvery: 3, bagHalf: 18, bagDmg: 14, top: 26 },
+  /* CYCLE 1 ON: he cuts a sandbag loose from the flies over you (a wide shadow, !!) */
+  flyBag: { every: 9.0, tell: 1.1, half: 22, dmg: 16 },
+  harl: { hp: 40, speed: 130, jabTell: 0.36, jabNext: 0.24, jabT: 0.1, jabs: 2, jabReach: 26, jab: 10, kickTell: 0.5, kickT: 0.2, kickReach: 34, kick: 12,
+    rest: 0.6, still: 0.7, dart: 2.2 },
   brute: { hp: 110, speed: 58, chopTell: 1.0, chopReach: 40, chop: 32, slamTell: 1.15, slamReach: 70, slamTop: 12, slam: 34, grabTell: 1.0, grabReach: 30, grab: 35,
     recover: 1.2, range: 44, scale: 1.5 },
   master: { hp: 150, swatTell: 0.9, swatReach: 58, swatTop: 64, swat: 24, stompTell: 1.1, stompHalf: 24, stomp: 30, reachTell: 1.0, reachT: 0.45, reachSpan: 200, reach: 22,
-    recover: 1.6, speed: 34, lowerT: 1.6 },
+    recover: 2.2, speed: 34, lowerT: 1.6 },   /* (THEATRE3: the king's green window - a slow, heavy thing spent after each blow) */
   whipEvery: 3.4, whipTell: 0.9, whipT: 0.35, whipReach: 240, whip: 16,
   slamPitT: 4.0, slamPitHalf: 1,       // phase 2: the slam breaks the boards (its column and one each side) for this long
   lowTop: 10, highTop: 24, highBot: 10,
@@ -77,8 +89,19 @@ export const SCENES = [
 export const sceneOf = cycle => (cycle <= 0 ? 0 : 1 + ((cycle - 1) % 3));
 
 export const pupPhase = e => (e.hp <= e.maxHp * PUP.p3 ? 3 : e.hp <= e.maxHp * PUP.p2 ? 2 : 1);
-export const pupOpen = e => !!e && (e.mode === 'downed' || e.mode === 'jolted');
-export const pupTake = e => (e.mode === 'downed' ? PUP.openMul : e.mode === 'jolted' ? PUP.joltMul : PUP.ward);
+/* OPEN: on the boards after his bar is cut - kneeling, or flailing back from there (his flail is a blow, and he is still open through it) */
+export const OPEN_MODES = ['downed', 'flailTell', 'flail'];
+export const pupOpen = e => !!e && OPEN_MODES.includes(e.mode);
+export const pupTake = e => (pupOpen(e) ? PUP.openMul : PUP.ward);
+/* A PUPPET CAN BE HURT (a blow takes its health, a swing across a string cuts it) only in its told recovery, glowing green - or staggered by a gold cut */
+export const hurtable = p => !!p && p.alive !== false && !heaped(p) && (p.mode === 'recover' || p.mode === 'stagger');
+/* EACH CYCLE HE RE-STRINGS FASTER, and adds a move */
+export const cycleK = cycle => Math.max(PUP.restringMin, 1 - PUP.restring * Math.max(0, cycle || 0));
+export const CYCLE_MOVES = ['house', 'sandbag', 'pairs', 'twochop'];
+export const movesOf = cycle => CYCLE_MOVES.slice(0, 1 + Math.min(CYCLE_MOVES.length - 1, Math.max(0, cycle || 0)));
+/* BOTH DOWN: the bar is slack (and can be cut) while show.slack runs, in these modes of his */
+export const SLACK_MODES = ['slack', 'whipLowTell', 'whipHighTell', 'whip'];
+export const barSlack = (e, show) => !!e && !!show && show.slack > 0 && SLACK_MODES.includes(e.mode);
 export const whipBand = (kind, floor) => (kind === 'low' ? [floor - PUP.lowTop, floor] : [floor - PUP.highTop, floor - PUP.highBot]);
 export const bandCatches = (kind, floor, box) => { const [t, b] = whipBand(kind, floor); return box.b > t && box.t < b; };
 const BLOWS = ['jab', 'kick', 'chop', 'slam', 'grab', 'swat', 'stomp', 'reach'];
@@ -90,7 +113,7 @@ export const canUse = (p, move) => !limbGone(p, NEEDS[move]);
 /* GOLD: a cut in a windup or a blow is a bonus cut (it cancels the blow). A string can be cut at any time */
 export const pupTaut = p => { if (!p || !p.alive) return false; const m = p.mode || '';
   return m.endsWith('Tell') || BLOWS.includes(m) || m === 'fly'; };
-export function barOf(e, big) { const y = e.y - 34;
+export function barOf(e, big) { const y = e.y - (e.slackBar ? 14 : 34);   /* (slack: the bar in his lap, at a blade's height from the gallery boards) */
   return big ? { x0: e.x - 22, x1: e.x + 22, y } : { x0: e.x - 7, x1: e.x + 7, y }; }
 export const heaped = p => !p.alive || p.mode === 'heap' || p.mode === 'fall' || p.mode === 'collapse' || p.mode === 'packed';
 /* EVERY STRING NOW: { p, i, k, limb, x0, y0, x1, y1, taut } (cut ones are left out) */
@@ -110,7 +133,8 @@ export function segHitsBox(x0, y0, x1, y1, b) {
     const r = q / p; if (p < 0) { if (r > t1) return false; if (r > t0) t0 = r; } else { if (r < t0) return false; if (r < t1) t1 = r; } }
   return t0 <= t1;
 }
-/* A BLOW IN BOX hb: every string it crosses is cut - one of each puppet a swing (`seen` is the swing's hit set). A cut in the gold is .gold.
+/* A BLOW IN BOX hb: every string it crosses is cut - one of each puppet a swing (`seen` is the swing's hit set) - IF the string is in the GOLD
+   (a windup or a blow: .gold) or its puppet glows GREEN (hurtable). A slack string on a puppet that is not spent CLANKS: show.clanks gets { p, at }.
    Returns [{ p, k, limb, gold, at }] */
 export function strikeStrings(e, show, hb, seen) {
   const cuts = []; if (!e || !show || !hb) return cuts;
@@ -118,6 +142,7 @@ export function strikeStrings(e, show, hb, seen) {
   for (const s of stringsOf(e, show)) { const pt = s.p.strTag || (s.p.strTag = {});
     if (once.has(pt) || !segHitsBox(s.x0, s.y0, s.x1, s.y1, hb)) continue;
     once.add(pt); const st = s.p.str[s.i], at = { x: Math.max(hb.l, Math.min(hb.r, s.x1)), y: Math.max(hb.t, Math.min(hb.b, s.y1)) };
+    if (!s.taut && !hurtable(s.p)) { (show.clanks = show.clanks || []).push({ p: s.p, at }); show.n.clank = (show.n.clank || 0) + 1; continue; }
     st.cut = true; st.cutAt = at; st.gold = s.taut; show.n.cut++; if (s.taut) show.n.goldCut++;
     cuts.push({ p: s.p, k: s.k, limb: s.limb, gold: s.taut, at }); }
   return cuts;
@@ -125,7 +150,7 @@ export function strikeStrings(e, show, hb, seen) {
 export const stringsLeft = p => (p.str || []).filter(s => !s.cut).length;
 
 /* ---------- THE COUNTERWEIGHT: the batten at the stage door, the pin rail beside it (free from the first minute: the hard way up is always there) ---------- */
-export const BATTEN = { riseSpeed: 170, lowerSpeed: 60, hold: 4.5, cool: 0.8 };
+export const BATTEN = { riseSpeed: 170, lowerSpeed: 110, hold: 3.5, cool: 0.6 };   /* (THEATRE3: back down sooner - the way up is the way to every opening now) */
 export function pinStrike(b, free) { if (!free) return 'locked'; if (b.st !== 'down' || b.t > 0) return 'busy'; b.st = 'rise'; return 'free'; }
 export function stepBatten(b, dt) {
   b.t = Math.max(0, (b.t || 0) - dt);
@@ -138,9 +163,9 @@ export const sandbagK = b => (b.down === b.up ? 0 : (b.down - b.y) / (b.down - b
 
 /* ---------- THE SHOW ---------- */
 export function newShow(A) {
-  return { A, puppets: [], turn: 0, gap: 1.0, line: true, free: true, cycle: 0, scene: 0, nextScene: 0, pits: [], joltCd: 0,
-    n: { cut: 0, goldCut: 0, cancel: 0, heap: 0, drop: 0, downed: 0, jolt: 0, scene: 0, jab: 0, kick: 0, chop: 0, slam: 0, grab: 0, swat: 0, stomp: 0, reach: 0, whip: 0,
-      pit: 0, pin: 0, fly: 0, dart: 0, rise: 0, fall: 0 } };
+  return { A, puppets: [], turn: 0, gap: 1.0, line: true, free: true, cycle: 0, scene: 0, nextScene: 0, pits: [], slack: 0, drops: [], houseCd: 2.4, bagCd: PUP.flyBag.every, clanks: [],
+    n: { cut: 0, goldCut: 0, cancel: 0, heap: 0, drop: 0, downed: 0, slack: 0, barCut: 0, taut: 0, restrung: 0, scene: 0, jab: 0, kick: 0, chop: 0, slam: 0, grab: 0, swat: 0, stomp: 0, reach: 0, whip: 0,
+      flail: 0, prop: 0, bag: 0, flybag: 0, pair: 0, chop2: 0, clank: 0, pit: 0, pin: 0, fly: 0, dart: 0, rise: 0, fall: 0 } };
 }
 export function newPuppet(p, show) {
   const S = STRINGS[p.t]; p.str = S.map(() => ({ cut: false })); p.mode = p.t === 'masterpiece' ? 'lower' : 'hang'; p.modeT = p.t === 'masterpiece' ? PUP.master.lowerT : 0;
@@ -160,7 +185,7 @@ const onLoft = (show, h) => !!h && Math.abs((h.lastFloor ?? show.A.floor) - show
 const startTell = (p, mode, len) => { p.mode = mode; p.modeT = len; p.tellLen = len; p.tellId = (p.tellId || 0) + 1; };
 /* DROP A PUPPET: its strings are all cut or its health is gone - a heap, down PUP.downT s */
 function drop(p, show, ev, c) { if (heaped(p)) return; const big = p.t === 'masterpiece';
-  p.mode = big ? 'collapse' : p.y < show.A.floor - 4 ? 'fall' : 'heap'; p.modeT = big ? 0.6 : 0; p.vy = 0; p.flown = false; p.downT = PUP.downT[p.t] || 6; p.str.forEach(s => { s.cut = true; });
+  p.mode = big ? 'collapse' : p.y < show.A.floor - 4 ? 'fall' : 'heap'; p.modeT = big ? 0.6 : 0; p.vy = 0; p.flown = false; p.downT = (PUP.downT[p.t] || 6) * cycleK(show.cycle); p.str.forEach(s => { s.cut = true; });
   show.n.heap++; ev.push({ t: 'heap', p }); c.sound(big ? 'collapse' : 'heap'); }
 function restring(p) { p.str.forEach(s => { s.cut = false; s.cutAt = null; s.gold = false; }); p.hp = p.maxHp; p.alive = true; p.flown = false; p.downT = 0; p.left0 = undefined; }
 
@@ -219,7 +244,9 @@ function puppetStep(p, e, show, dt, c, ev, hero, mayStrike) {
     case 'jab': if (p.modeT <= 0) { if ((p.combo || 0) > 1 && canUse(p, 'jab') && hero && Math.abs(hero.x - p.x) < PUP.harl.jabReach + 18) { p.combo--; startTell(p, 'jabTell', PUP.harl.jabNext); p.face = Math.sign(hero.x - p.x) || p.face; c.say('!', '#ffd36b'); }
       else { p.mode = 'recover'; p.modeT = PUP.harl.rest; } } return;
     case 'kick': if (p.modeT <= 0) { p.mode = 'recover'; p.modeT = PUP.harl.rest; } return;
-    case 'chop': case 'grab': case 'slam': if (p.modeT <= 0) { p.mode = 'recover'; p.modeT = PUP.brute.recover; if (show.turn === p) show.turn = 0; ev.push({ t: 'recover', p }); } return;   /* (his recovery is no blow: the Harlequin may strike in it - that is the duo) */
+    case 'chop': case 'grab': case 'slam': if (p.modeT <= 0 && p.mode === 'chop' && !p.chop2 && movesOf(show.cycle).includes('twochop') && canUse(p, 'chop') && hero && Math.abs(hero.x - p.x) < PUP.brute.chopReach + 24) {
+        p.chop2 = true; p.face = Math.sign(hero.x - p.x) || p.face; startTell(p, 'chopTell', PUP.brute.chopTell * 0.6); show.n.chop2++; ev.push({ t: 'chopTell', p }); c.say('!!', '#ff6b6b'); c.sound('chopTell'); return; }   /* CYCLE 3 ON: THE SECOND CHOP - the recovery you waited for is a second, quicker windup first */
+      if (p.modeT <= 0) { p.chop2 = false; p.mode = 'recover'; p.modeT = PUP.brute.recover; if (show.turn === p) show.turn = 0; ev.push({ t: 'recover', p }); } return;   /* (his recovery is no blow: the Harlequin may strike in it - that is the duo) */
     case 'swat': case 'stomp': if (p.modeT <= 0) { p.mode = 'recover'; p.modeT = PUP.master.recover; } return;
     case 'reach': { const r1 = PUP.master.reachSpan * Math.min(1, 1 - Math.max(0, p.modeT) / PUP.master.reachT); p.reachR = r1;
       c.band('high', p.reachY || A.gallery, p.x - r1, p.x + r1, PUP.master.reach, 'THE REACH', 'reach' + show.n.reach);
@@ -266,27 +293,29 @@ function puppetStep(p, e, show, dt, c, ev, hero, mayStrike) {
 export function stepShow(e, show, dt, c) {
   const ev = []; if (!e || !show) return ev;
   const A = show.A, heroes = (c.heroes || []).filter(h => h.alive);
-  e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.vx = 0; show.joltCd = Math.max(0, show.joltCd - dt);
+  e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.vx = 0;
   if (e.mode !== e.lastMode) { e.lastMode = e.mode; e.tellId = (e.tellId || 0) + 1; }
   if (!e.alive || e.mode === 'sleep') return ev;
-  if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'work'; c.number(e.x, e.y - 60, 'DROP BOTH PUPPETS AND HE COMES DOWN', '#ffd36b'); } return ev; }
+  if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'work'; c.number(e.x, e.y - 60, 'DROP BOTH PUPPETS, THEN CUT HIS BAR', '#ffd36b'); } return ev; }
   const hero = heroes.slice().sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] || null;
   for (const h of heroes) if (h.lastFloor === undefined) h.lastFloor = heroFloor(show, h);
   /* the slam's broken boards mend */
   for (const pt of show.pits) { pt.t -= dt; if (pt.t <= 0 && !heroes.some(h => Math.floor(h.x / A.TS) >= pt.x0 && Math.floor(h.x / A.TS) <= pt.x1 && h.y > A.floor + 2)) { pt.done = true; c.pit(pt.x0, pt.x1, false); } }
   show.pits = show.pits.filter(pt => !pt.done);
+  houseStep(e, show, dt, c, ev, hero);
   /* ---- THE PHASE, between beats ---- */
   const ph = pupPhase(e);
   if (ph > e.phase && (e.mode === 'work' || e.mode === 'hang1')) {
     e.phase = ph; ev.push({ t: 'phase', ph });
     if (ph === 3) { for (const p of show.puppets) if (p.t === 'marionette' && p.alive) { p.mode = 'packed'; p.alive = false; c.pack(p); }
       if (!show.puppets.some(p => p.t === 'masterpiece')) c.summon('masterpiece', (A.x0 + A.x1) / 2, A.gallery + 10);
-      c.sound('masterTell'); c.number(e.x, e.y - 60, 'DROP THE KING AND THE HARLEQUIN: HE FALLS', '#ffd36b'); }
+      c.sound('masterTell'); c.number(e.x, e.y - 60, 'DROP THE KING AND THE HARLEQUIN, THEN CUT HIS BAR', '#ffd36b'); }
     if (ph === 2) c.number(e.x, e.y - 60, 'TOGETHER NOW: HIS SLAM BREAKS THE BOARDS', '#ffd36b'); }
-  e.open = pupOpen(e) ? Math.max(0, e.modeT) : 0;
+  e.slackBar = barSlack(e, show);
+  e.open = pupOpen(e) ? Math.max(0, e.openT || 0) : 0;
   const stage = show.puppets.filter(p => p.mode !== 'packed' && p.t !== 'acrobat');
   const live = stage.filter(p => !heaped(p));
-  const busy = ['downed', 'descend', 'haul', 'scene', 'jolted'].includes(e.mode);
+  const busy = ['downed', 'flailTell', 'flail', 'descend', 'haul', 'scene'].includes(e.mode) || show.slack > 0;
   if (show.turn && (heaped(show.turn) || !show.puppets.includes(show.turn) || !(/Tell$/.test(show.turn.mode) || BLOWS.includes(show.turn.mode) || show.turn.mode === 'recover'))) show.turn = 0;
   if (!show.turn) show.gap -= dt;
   /* WHO MAY STRIKE: phase 1, one at a time (the turn); phase 2 on, both */
@@ -294,37 +323,54 @@ export function stepShow(e, show, dt, c) {
     if (busy && !heaped(p) && /Tell$/.test(p.mode)) p.mode = 'hang';
     const may = !busy && (e.phase >= 2 || !show.turn || show.turn === p || (p.t === 'harlequin' && show.turn && show.turn.t !== 'harlequin' && !/Tell$/.test(show.turn.mode) ? true : p.t === 'harlequin' && show.turn && show.turn.mode.endsWith('Tell') && show.turn.modeT < show.turn.tellLen - 0.4));   /* (phase 1: they do not START together; the Harlequin may come in while the Brute is well into a windup or a swing) */
     puppetStep(p, e, show, dt, c, ev, hero, may); }
+  const loftHero = hero && onLoft(show, hero) && Math.abs(hero.x - e.x) < PUP.whipReach + 20 ? hero : null;
   /* ---- HIS OWN BEATS ---- */
   switch (e.mode) {
     case 'descend': { const k = 1 - Math.max(0, e.modeT) / PUP.descendT; e.y = e.y0 + (A.floor - e.y0) * k;
-      if (e.modeT <= 0) { e.y = A.floor; e.mode = 'downed'; e.modeT = PUP.downOpenT; e.open = e.modeT; e.onStage = true; show.n.downed++; ev.push({ t: 'downed' }); c.sound('land'); c.number(e.x, e.y - 60, "HE'S DOWN - STRIKE HIM", '#ffd36b'); } return ev; }
-    case 'downed': if (e.modeT <= 0) { e.mode = 'haul'; e.modeT = PUP.haulT; e.open = 0; c.sound('ascend'); ev.push({ t: 'haul' }); } return ev;
+      if (e.modeT <= 0) { e.y = A.floor; e.mode = 'downed'; e.openT = PUP.downOpenT; e.open = e.openT; e.flailCd = PUP.flailFirst; e.onStage = true; show.n.downed++; ev.push({ t: 'downed' }); c.sound('land'); c.number(e.x, e.y - 60, "HE'S DOWN - STRIKE HIM", '#ffd36b'); } return ev; }
+    case 'downed': case 'flailTell': case 'flail': {
+      /* OPEN, AND HE FIGHTS BACK FROM THE BOARDS: a told low flail round him (!!: jump it) */
+      e.openT = (e.openT || 0) - dt; e.open = Math.max(0, e.openT);
+      if (e.openT <= 0) { e.mode = 'haul'; e.modeT = PUP.haulT; e.open = 0; c.sound('ascend'); ev.push({ t: 'haul' }); return ev; }
+      if (e.mode === 'downed') { e.flailCd = (e.flailCd ?? PUP.flailFirst) - dt; const h = hero && Math.abs(hero.y - A.floor) < 30 ? hero : null;
+        if (h) e.face = Math.sign(h.x - e.x) || e.face;
+        if (e.flailCd <= 0 && h && Math.abs(h.x - e.x) < PUP.flailReach + 30 && e.openT > PUP.flailTell + PUP.flailT) { e.mode = 'flailTell'; e.modeT = PUP.flailTell; e.tellLen = PUP.flailTell; ev.push({ t: 'flailTell' }); c.say('!!', '#ff6b6b'); c.sound('flailTell'); } }
+      else if (e.mode === 'flailTell' && e.modeT <= 0) { e.mode = 'flail'; e.modeT = PUP.flailT; show.n.flail++; ev.push({ t: 'flail' }); c.sound('flail');
+        c.hit([e.x - PUP.flailReach, e.x + PUP.flailReach, A.floor - PUP.lowTop - 2, A.floor], PUP.flail, 'THE FLAIL', { from: e.x, unblockable: true }); }
+      else if (e.mode === 'flail' && e.modeT <= 0) { e.mode = 'downed'; e.flailCd = PUP.flailEvery; }
+      return ev; }
     case 'haul': { const k = 1 - Math.max(0, e.modeT) / PUP.haulT; e.y = A.floor + (A.gallery - A.floor) * k;
       if (e.modeT <= 0) { e.y = A.gallery; e.onStage = false; show.cycle++; show.nextScene = sceneOf(show.cycle); if (show.nextScene === show.scene) show.nextScene = 1 + (show.scene % 3);
         e.mode = 'scene'; e.modeT = PUP.sceneT; ev.push({ t: 'sceneTell', to: show.nextScene }); c.sound('sceneTell'); c.number(e.x, e.y - 60, 'SCENE CHANGE: WATCH THE BOARDS', '#ffd36b'); } return ev; }
     case 'scene': if (e.modeT <= 0) { sceneLay(show, c); for (const p of stage) { restring(p); p.mode = p.t === 'masterpiece' ? 'lower' : 'rise'; p.modeT = p.t === 'masterpiece' ? PUP.master.lowerT : PUP.riseT; if (p.t !== 'masterpiece') p.y = A.floor; }
         show.n.rise++; c.sound('rise'); e.mode = 'work'; show.turn = 0; show.gap = 1.0; ev.push({ t: 'restrung' }); } return ev;
-    case 'jolted': if (e.modeT <= 0) { e.mode = 'work'; e.open = 0; } return ev;
     case 'whipLowTell': case 'whipHighTell':
       if (e.modeT <= 0) { e.whipKind = e.mode === 'whipLowTell' ? 'low' : 'high'; e.mode = 'whip'; e.modeT = PUP.whipT; e.whipR = 0; show.n.whip++; ev.push({ t: 'whip', kind: e.whipKind }); c.sound('whip'); }
-      return ev;
+      slackClock(e, show, dt, c, ev, stage); return ev;
     case 'whip': { const r1 = PUP.whipReach * Math.min(1, 1 - Math.max(0, e.modeT) / PUP.whipT); e.whipR = r1; const f = e.face || 1;
       c.band(e.whipKind, A.gallery, f > 0 ? e.x : e.x - r1, f > 0 ? e.x + r1 : e.x, PUP.whip, 'THE WHIP', 'whip' + show.n.whip);
-      if (e.modeT <= 0) { e.mode = 'work'; e.whipCd = PUP.whipEvery; e.whipR = 0; } return ev; }
+      if (e.modeT <= 0) { e.mode = show.slack > 0 ? 'slack' : 'work'; e.whipCd = PUP.whipEvery; e.whipR = 0; }
+      slackClock(e, show, dt, c, ev, stage); return ev; }
+    case 'slack': {
+      /* BOTH PUPPETS DOWN: he kneels on the fly gallery with his bar slack in his hands - out of reach from the boards. Climb and cut it before he
+         strings them again. He stays where he knelt, and whips a hero who comes up onto the gallery (every phase) */
+      e.y += Math.sign(A.gallery - e.y) * Math.min(Math.abs(A.gallery - e.y), 90 * dt);
+      if (hero) e.face = Math.sign(hero.x - e.x) || e.face;
+      if (loftHero) { e.whipCd -= dt; if (e.whipCd <= 0 && Math.abs(e.y - A.gallery) < 2) { startWhip(e, show, c, ev, loftHero); return ev; } }
+      slackClock(e, show, dt, c, ev, stage); return ev; }
   }
-  /* ---- WORK: he hangs from his bar. How many of his puppets are down sets how low it hangs; with them all down he is dragged to the boards ---- */
+  /* ---- WORK: he hangs from his bar. How many of his puppets are down sets how low it hangs; with them all down the bar goes SLACK ---- */
   const down = stage.filter(p => heaped(p)).length;
-  if (stage.length && down === stage.length) { e.y0 = e.y; e.mode = 'descend'; e.modeT = PUP.descendT; show.n.drop++; ev.push({ t: 'descend' }); c.sound('descend'); return ev; }
+  if (stage.length && down === stage.length) { show.slack = PUP.slackT * cycleK(show.cycle); e.mode = 'slack'; e.modeT = 0; e.whipCd = Math.min(e.whipCd || 0, 1.2); show.n.slack++; show.n.drop++;
+    ev.push({ t: 'slack' }); c.sound('descend'); c.number(e.x, e.y - 60, 'HIS BAR IS SLACK: CLIMB AND CUT IT', '#ffd36b'); return ev; }
   /* one down: the other is being strung again once its time is out (he cannot hold a bar with a dead puppet for ever) */
   for (const p of stage) if (heaped(p) && p.downT <= 0 && p.mode === 'heap') { restring(p); p.mode = p.t === 'masterpiece' ? 'lower' : 'rise'; p.modeT = p.t === 'masterpiece' ? PUP.master.lowerT : PUP.riseT; p.y = p.t === 'masterpiece' ? A.gallery + 20 : A.floor; ev.push({ t: 'rise', p }); c.sound('rise'); }
   const hangTo = A.gallery + (down > 0 ? PUP.hangLow : 0);
   e.y += Math.sign(hangTo - e.y) * Math.min(Math.abs(hangTo - e.y), 80 * dt);
   e.mode = down > 0 ? 'hang1' : 'work';
   /* HIS WHIP, a hero on the gallery near him (phase 2 on) */
-  const loftHero = hero && onLoft(show, hero) && Math.abs(hero.x - e.x) < PUP.whipReach + 20 ? hero : null;
   if (e.phase >= 2 && loftHero && down === 0) { e.whipCd -= dt;
-    if (e.whipCd <= 0) { const kind = (e.whipN++) % 2 ? 'high' : 'low'; e.face = Math.sign(loftHero.x - e.x) || e.face || -1;
-      e.mode = kind === 'low' ? 'whipLowTell' : 'whipHighTell'; e.modeT = PUP.whipTell; ev.push({ t: 'whipTell', kind }); c.say('!!', '#ff6b6b'); c.sound('whipTell'); return ev; } }
+    if (e.whipCd <= 0) { startWhip(e, show, c, ev, loftHero); return ev; } }
   /* HIS FEET: over his puppets */
   let tx = e.home; const tgt = live.length ? live : stage;
   if (tgt.length) tx = tgt.reduce((a, p) => a + p.x, 0) / tgt.length;
@@ -334,12 +380,42 @@ export function stepShow(e, show, dt, c) {
   if (hero) e.face = Math.sign(hero.x - e.x) || e.face;
   return ev;
 }
-/* THE HARD WAY: a blow on the line he hangs from, from the gallery: he is jolted down onto the boards of the gallery, open */
+function startWhip(e, show, c, ev, h) { const kind = (e.whipN++) % 2 ? 'high' : 'low'; e.face = Math.sign(h.x - e.x) || e.face || -1;
+  e.mode = kind === 'low' ? 'whipLowTell' : 'whipHighTell'; e.modeT = PUP.whipTell; ev.push({ t: 'whipTell', kind }); c.say('!!', '#ff6b6b'); c.sound('whipTell'); }
+/* THE SLACK RUNS OUT: he strings both again (faster each cycle) and his bar is taut */
+function slackClock(e, show, dt, c, ev, stage) {
+  if (!(show.slack > 0)) return; show.slack -= dt; if (show.slack > 0) return;
+  show.slack = 0; const A = show.A; show.n.restrung++;
+  for (const p of stage) if (heaped(p)) { restring(p); p.mode = p.t === 'masterpiece' ? 'lower' : 'rise'; p.modeT = p.t === 'masterpiece' ? PUP.master.lowerT : PUP.riseT; p.y = p.t === 'masterpiece' ? A.gallery + 20 : A.floor; }
+  if (e.mode === 'slack') e.mode = 'work'; show.turn = 0; show.gap = 1.0; ev.push({ t: 'restrung' }); c.sound('rise'); c.number(e.x, e.y - 60, 'TOO SLOW: HE STRINGS THEM AGAIN', '#ff9a5c');
+}
+/* THE HOUSE THROWS, ALL FIGHT (and from cycle 1 he cuts a sandbag loose over you): a shadow and a mark where it will land, then the prop */
+function houseStep(e, show, dt, c, ev, hero) {
+  const A = show.A, H = PUP.house, moves = movesOf(show.cycle);
+  if (hero && !['sleep', 'wake', 'descend', 'downed', 'flailTell', 'flail', 'haul', 'scene'].includes(e.mode)) {   /* (the house holds its breath while he is down, and through the scene change) */
+    const fy = heroFloor(show, hero), drop = (x, kind) => { const bag = kind === 'bag' || kind === 'flybag', B = kind === 'flybag' ? PUP.flyBag : null;
+      const len = B ? B.tell : H.tell, d = { id: (show.dropN = (show.dropN || 0) + 1), x: Math.max(A.x0 + 8, Math.min(A.x1 - 8, x)), fy, t: len, len, kind, half: B ? B.half : bag ? H.bagHalf : H.half, dmg: B ? B.dmg : bag ? H.bagDmg : H.dmg, bag };
+      show.drops.push(d); show.n[kind === 'flybag' ? 'flybag' : bag ? 'bag' : 'prop']++; ev.push({ t: kind + 'Tell', x: d.x, fy });
+      c.number(d.x, fy - 34, bag ? '!!' : '!', bag ? '#ff6b6b' : '#ffd36b'); c.sound(bag ? 'bagTell' : 'propTell'); return d; };
+    show.houseCd -= dt;
+    if (show.houseCd <= 0) { const kind = (show.n.prop + show.n.bag) % H.bagEvery === H.bagEvery - 1 ? 'bag' : 'prop'; drop(hero.x, kind);
+      if (moves.includes('pairs')) { drop(hero.x + (hero.face || 1) * 40, 'prop'); show.n.pair++; }   /* CYCLE 2 ON: a pair - one on you, one where you are going */
+      show.houseCd = H.every[Math.max(0, Math.min(2, (e.phase || 1) - 1))]; }
+    if (moves.includes('sandbag')) { show.bagCd -= dt; if (show.bagCd <= 0) { drop(hero.x, 'flybag'); show.bagCd = PUP.flyBag.every; } }   /* CYCLE 1 ON: HIS sandbag */
+  }
+  for (const d of show.drops) { d.t -= dt; if (d.t > 0) continue; d.done = true; ev.push({ t: d.kind, x: d.x });
+    c.hit([d.x - d.half, d.x + d.half, d.fy - H.top, d.fy + 2], d.dmg, d.kind === 'flybag' ? 'THE SANDBAG' : 'THE HOUSE', { from: d.x, unblockable: d.bag, up: d.bag }); c.sound(d.bag ? 'bagLand' : 'propLand'); }
+  show.drops = show.drops.filter(d => !d.done);
+}
+/* HIS LINE, from the grid to his bar (drawn) */
 export function hangLine(e, show) { const A = show.A; return { x0: e.x + 3, y0: A.y0, x1: e.x + 3, y1: e.y - 40 }; }
-export function strikeLine(e, show, hb) {
-  if (!e || !show || show.joltCd > 0 || !['work', 'hang1'].includes(e.mode)) return false;
-  const l = hangLine(e, show); if (!segHitsBox(l.x0, l.y0, l.x1, l.y1, hb)) return false;
-  e.mode = 'jolted'; e.modeT = PUP.joltT; e.open = e.modeT; e.y = show.A.gallery; show.joltCd = PUP.joltCd; show.n.jolt++; return true;
+/* HIS CONTROL BAR, struck by a blow in box hb: 'cut' while it is slack (he falls to the boards, open), 'taut' if it is not (a clank), false if the box misses it */
+export const barBox = e => (e.slackBar ? { l: e.x - 12, r: e.x + 12, t: e.y - 22, b: e.y - 6 } : { l: e.x - 12, r: e.x + 12, t: e.y - 44, b: e.y - 26 });
+export function cutBar(e, show, hb) {
+  if (!e || !show || !hb || !e.alive) return false; const b = barBox(e);
+  if (!(hb.r > b.l && hb.l < b.r && hb.b > b.t && hb.t < b.b)) return false;
+  if (!barSlack(e, show)) { if (['work', 'hang1'].includes(e.mode)) { show.n.taut++; return 'taut'; } return false; }
+  show.slack = 0; e.slackBar = false; e.y0 = e.y; e.mode = 'descend'; e.modeT = PUP.descendT; e.whipR = 0; show.n.barCut++; return 'cut';
 }
 function sceneLay(show, c) {
   const A = show.A, sx = A.sx, R = Math.round(A.floor / A.TS), cells = new Map();
@@ -375,7 +451,7 @@ export function stagePuppeteer(W, T, TS, sx, R) {
 /* ---------- THE BOT'S READING (src/lab.js): A HUMAN BOT ----------
    It sees a tell PLAN.react s after it began, misreads PLAN.missDodge of them, and goes for a string (rather than the body) PLAN.goString of the time.
    s = { P: { x, y, face, ground, atk }, e, show, reach, shield, onBatten, t, rng, mem } */
-export const PLAN = { react: 0.25, missDodge: 0.2, goString: 0.5, goLoft: 0.3 };
+export const PLAN = { react: 0.25, missDodge: 0.2, goString: 0.5, goGold: 0.3, goLoft: 0.3 };   /* (goLoft: kept for tools/boss-navigation.mjs; THEATRE3 climbs whenever his bar is slack) */
 export function puppetPlan(s) { const out = planOf(s), P = s.P, A = s.show.A;
   if (P.ground && P.y > A.floor + 8 && !out.down) { out.jump = true; if (out.gx == null) out.gx = P.x + (P.face || 1) * 30; }   /* in a broken-board pit, going somewhere: jump out */
   return out; }
@@ -390,11 +466,19 @@ function planOf(s) {
   const onGal = Math.abs(P.y - A.gallery) < 6 && P.ground, onStage = P.y > A.gallery + 20, clampX = x => Math.max(A.x0 + 12, Math.min(A.x1 - 12, x));
   const pups = show.puppets.filter(p => p.alive && !heaped(p) && p.mode !== 'packed' && p.mode !== 'lower');
   const near = (p, r) => Math.abs(p.x - P.x) < r && Math.abs((p.floorY ?? p.y) - P.y) < 14;
-  /* ---- 1. HE IS OPEN: to him ---- */
-  if (pupOpen(e) && sees(e)) { const hisFloor = e.y > A.gallery + 20 ? 'stage' : 'loft';
-    if ((hisFloor === 'stage' && onStage) || (hisFloor === 'loft' && onGal)) { const d = e.x - P.x; out.face = Math.sign(d) || 1; out.gx = Math.abs(d) > reach - 4 ? e.x - out.face * (reach - 8) : null; out.atk = Math.abs(d) < reach + 8; out.why = 'open'; }
-    else if (hisFloor === 'stage' && onGal) { out.drop = true; out.why = 'down to him'; return out; } }
-  if (e.mode === 'descend' && onStage && sees(e)) { const d = e.x - P.x; out.face = Math.sign(d) || 1; out.gx = clampX(e.x - out.face * (reach - 10)); out.why = 'under him'; }
+  const open = pupOpen(e);
+  /* ---- 0. A PROP OR A SANDBAG COMING DOWN ON YOU (its shadow under you): step off it, a human beat late ---- */
+  for (const d of show.drops || []) { if (Math.abs(d.fy - P.y) > 10 || Math.abs(d.x - P.x) > d.half + 10) continue;
+    const key = 'drop|' + d.id; if (!seenFor(key) || roll(key + '|d', PLAN.missDodge) || d.t > 0.55) continue;
+    if (open && !d.bag && onStage && Math.abs(e.x - P.x) < reach + 6) continue;   /* (in his opening a light prop is worth taking) */
+    out.gx = clampX(d.x + (P.x < d.x ? -1 : 1) * (d.half + 20)); out.face = Math.sign(e.x - P.x) || P.face; out.why = 'off the shadow'; return out; }
+  /* ---- 1. HE IS OPEN (his bar cut, on the boards): to him - and jump his flail ---- */
+  if (open && sees(e)) {
+    if (onStage) { const d = e.x - P.x;
+      if (e.mode === 'flailTell' && Math.abs(d) < PUP.flailReach + 16 && dodges(e) && e.modeT < 0.22 && P.ground) { out.jump = true; out.why = 'jump his flail'; return out; }
+      out.face = Math.sign(d) || 1; out.gx = Math.abs(d) > reach - 4 ? clampX(e.x - out.face * (reach - 8)) : null; out.atk = Math.abs(d) < reach + 8 && e.mode !== 'flailTell'; out.why = 'open'; return out; }
+    if (onGal || s.onBatten) { out.drop = true; out.why = 'down to him'; return out; } }
+  if (e.mode === 'descend' && onStage && sees(e)) { const d = e.x - P.x; out.face = Math.sign(d) || 1; out.gx = clampX(e.x - out.face * (reach - 10)); out.why = 'under him'; return out; }
   /* ---- 2. A BLOW COMING at you: answer it (a misread is a miss) ---- */
   const threats = pups.filter(p => { const k = tellOf(p.mode) || p.mode; return BLOWS.includes(k) && (/Tell$/.test(p.mode) || BLOWS.includes(p.mode)) && sees(p); })
     .sort((a, b) => (/Tell$/.test(a.mode) ? a.modeT : 0) - (/Tell$/.test(b.mode) ? b.modeT : 0));
@@ -406,43 +490,48 @@ function planOf(s) {
     if ((k === 'slam' || k === 'kick') && (!tell || p.modeT < 0.18) && P.ground) { out.jump = true; out.why = 'jump the ' + k; return out; }
     if ((k === 'jab' || k === 'swat') && s.shield && (!tell || p.modeT < (k === 'jab' ? 0.2 : 0.35))) { out.block = true; out.atk = false; out.face = Math.sign(p.x - P.x) || 1; out.why = 'block the ' + k; return out; }
     if (tell && p.modeT < (k === 'jab' ? 0.25 : 0.45) && k !== 'slam' && k !== 'kick') { out.gx = clampX(p.x + (P.x < p.x ? -1 : 1) * (r + 22)); out.atk = false; out.why = 'back off the ' + k; return out; } }
-  if (out.why === 'open' || out.why === 'under him') return out;
-  /* ---- 2b. THE HARD WAY, now and then (a roll per cycle): up the batten, strike the line he hangs from, and back down after the jolt ---- */
+  /* ---- 2b. HIS WHIP on the gallery ---- */
   const wk = e.mode === 'whipLowTell' || (e.mode === 'whip' && e.whipKind === 'low') ? 'low' : e.mode === 'whipHighTell' || (e.mode === 'whip' && e.whipKind === 'high') ? 'high' : null;
   if (wk && onGal && (e.mode === 'whip' || dodges(e))) { if (wk === 'low' && (e.mode === 'whip' || e.modeT < 0.2)) { out.jump = true; out.why = 'jump the whip'; return out; }
     if (wk === 'high' && (e.mode === 'whip' || e.modeT < 0.3)) { out.down = true; out.why = 'duck the whip'; return out; } }
-  const goUp = show.joltCd <= 0 && ['work', 'hang1', 'whipLowTell', 'whipHighTell', 'whip'].includes(e.mode) && roll('loft|' + e.phase + '|' + show.n.drop + '|' + show.n.jolt, PLAN.goLoft);
-  if (goUp && onStage) return climb(out, P, show.batten, s);
-  if (goUp && onGal) { const l = hangLine(e, show), d = l.x0 - P.x; out.face = Math.sign(d) || 1; out.gx = Math.abs(d) > reach - 10 ? clampX(l.x0 - out.face * (reach - 12)) : null;
-    out.atk = Math.abs(d) < reach - 2; out.jump = out.atk && P.ground && l.y1 < P.y - 20; out.why = 'strike his line'; return out; }
-  if (onGal && !goUp) { out.drop = true; out.why = 'back down'; return out; }
-  /* ---- 3. OFFENCE: the Brute in his recovery first (the big window), else the Harlequin when he is close, else the nearest one ---- */
+  /* ---- 3. HIS BAR IS SLACK: up the batten and cut it ---- */
+  if (barSlack(e, show) && seenFor('slack|' + show.n.slack)) {
+    if (onGal) { const b = barBox(e), mid = (b.l + b.r) / 2, d = mid - P.x; out.face = Math.sign(d) || 1; out.gx = Math.abs(d) > reach - 10 ? clampX(mid - out.face * (reach - 12)) : null;
+      out.atk = Math.abs(d) < reach - 2; out.why = 'cut his bar'; return out; }
+    return climb(out, P, show.batten, s); }
+  if (s.onBatten && !onGal && show.batten && show.batten.st !== 'down') { out.drop = true; out.why = 'off the batten'; return out; }
+  if (onGal) { out.drop = true; out.why = 'back down'; return out; }
+  /* ---- 4. OFFENCE: a puppet glowing green (spent, or staggered) - its body, or a string (decided once a window) ---- */
   const brute = pups.find(p => p.t === 'marionette' || p.t === 'masterpiece'), harl = pups.find(p => p.t === 'harlequin');
-  const recovering = brute && brute.mode === 'recover' && sees(brute);
-  let tgt = recovering ? brute : harl && near(harl, 60) ? harl : brute || harl;
+  const green = pups.filter(p => hurtable(p) && sees(p)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+  const blade = P.y - 9, stringAt = tgt => stringsOf(e, show).filter(q => q.p === tgt).map(q => { const k2 = q.y1 === q.y0 ? 1 : Math.max(0, Math.min(1, (blade - q.y0) / (q.y1 - q.y0))); return { x: q.x0 + (q.x1 - q.x0) * k2, y: q.y0 + (q.y1 - q.y0) * k2 }; }).filter(o => Math.abs(o.y - blade) < 7);
+  if (green) { const wantString = roll(keyOf(green) + '|s', PLAN.goString), strs = stringAt(green);
+    const aim = wantString && strs.length ? strs.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0].x : green.x;
+    if (P.ground && P.y < A.floor - 20 && P.y > A.gallery + 20 && (green.floorY ?? green.y) > P.y + 20 && Math.abs(green.x - P.x) < 120) { out.drop = true; out.why = 'down off the flat'; return out; }
+    const d = aim - P.x, side = Math.sign(d) || 1, stand = (green === brute && !wantString ? (green.w || 18) / 2 + reach - 8 : reach - 10);
+    out.face = side; if (Math.abs(d) > stand + 2) out.gx = clampX(aim - side * stand);
+    out.atk = Math.abs(d) < stand + 8 && Math.abs((green.floorY ?? green.y) - P.y) < 30; out.why = (wantString ? 'cut the ' : 'hit the ') + NAME[green.t]; return out; }
+  /* ---- 5. NOTHING GREEN: draw a blow and wait it out just inside his reach (a gold cut of a winding string, now and then) ---- */
+  const tgt = harl && near(harl, 60) ? harl : brute || harl;
   if (!tgt) return out;
-  /* a string, or the body: decided once a target-window */
-  const wantString = roll(keyOf(tgt) + '|s', PLAN.goString);
-  const blade = P.y - 9, strs = stringsOf(e, show).filter(q => q.p === tgt).map(q => { const k2 = q.y1 === q.y0 ? 1 : Math.max(0, Math.min(1, (blade - q.y0) / (q.y1 - q.y0))); return { x: q.x0 + (q.x1 - q.x0) * k2, y: q.y0 + (q.y1 - q.y0) * k2 }; }).filter(o => Math.abs(o.y - blade) < 7);
-  const aim = wantString && strs.length ? strs.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0].x : tgt.x;
-  /* not into a Brute winding up (wait out of his reach for the recovery) */
+  if (/Tell$/.test(tgt.mode) && sees(tgt) && roll(keyOf(tgt) + '|g', PLAN.goGold)) { const strs = stringAt(tgt);
+    if (strs.length) { const x = strs.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0].x, d = x - P.x; out.face = Math.sign(d) || 1;
+      if (Math.abs(d) > reach - 10) out.gx = clampX(x - out.face * (reach - 12)); out.atk = Math.abs(d) < reach - 2; out.why = 'gold cut'; return out; } }
   if (tgt === brute && /Tell$/.test(brute.mode) && dodges(brute)) { const r = PUP.brute.slamReach + 20; out.gx = clampX(brute.x + (P.x < brute.x ? -1 : 1) * r); out.face = Math.sign(brute.x - P.x) || 1; out.why = 'wait out the windup'; return out; }
-  /* on a flat over a target on the boards: drop down to it */
   if (P.ground && P.y < A.floor - 20 && P.y > A.gallery + 20 && (tgt.floorY ?? tgt.y) > P.y + 20 && Math.abs(tgt.x - P.x) < 120) { out.drop = true; out.why = 'down off the flat'; return out; }
-  const d = aim - P.x, side = Math.sign(d) || 1, stand = tgt === brute && !wantString ? (tgt.w || 18) / 2 + reach - 8 : reach - 10;
-  out.face = side; if (Math.abs(d) > stand + 2) out.gx = clampX(aim - side * stand);
-  out.atk = Math.abs(d) < stand + 8 && Math.abs((tgt.floorY ?? tgt.y) - P.y) < 30; out.why = (wantString ? 'cut the ' : 'hit the ') + NAME[tgt.t];
+  const d = tgt.x - P.x, side = Math.sign(d) || 1, bait = tgt === brute ? PUP.brute.chopReach - 6 : PUP.harl.jabReach;
+  out.face = side; if (Math.abs(Math.abs(d) - bait) > 6) out.gx = clampX(tgt.x - side * bait); out.why = 'draw the ' + NAME[tgt.t];
   /* THE HARLEQUIN PUNISHES STANDING STILL: shuffle */
-  if (!out.gx && !out.atk && harl && near(harl, 50)) out.gx = clampX(P.x + (P.x < harl.x ? -14 : 14));
+  if (!out.gx && harl && near(harl, 50)) out.gx = clampX(P.x + (P.x < harl.x ? -14 : 14));
   return out;
 }
 
 /* the bot's way up: to the batten, strike the pin rail from it, ride it up, step off onto the gallery */
 function climb(out, P, bat, s) {
   if (!bat) return out;
-  const onBat = s.onBatten, mid = bat.x + bat.w / 2;
-  if (bat.st === 'down' && !onBat) { out.gx = mid - 4; out.face = 1; out.why = 'to the batten'; return out; }
-  if (bat.st === 'down' && onBat) { out.gx = mid - 4; out.face = 1; out.atk = !(bat.t > 0); out.why = 'strike the pin rail'; return out; }
+  const onBat = s.onBatten, mid = bat.x + bat.w / 2, edge = bat.x + bat.w - 7;   /* (THEATRE3: on the batten's pin-rail end, so the shortest blade reaches the rail) */
+  if (bat.st === 'down' && !onBat) { out.gx = edge; out.face = 1; out.why = 'to the batten'; return out; }
+  if (bat.st === 'down' && onBat) { out.gx = Math.abs(P.x - edge) > 3 ? edge : null; out.face = 1; out.atk = !(bat.t > 0) && Math.abs(P.x - edge) < 6; out.why = 'strike the pin rail'; return out; }
   if (onBat && bat.st !== 'down') { out.gx = null; out.why = 'ride'; if (bat.st === 'up') { out.gx = bat.x + bat.w + 24; out.why = 'step off'; } return out; }
   out.gx = mid + 40; out.why = 'wait for the batten'; return out;
 }
@@ -455,7 +544,10 @@ export function pupFrame(e) {
     if (m === 'whip') return PUP_F.whip;
     if (m === 'descend') return PUP_F.ride;
     if (m === 'haul') return PUP_F.climb;
-    if (m === 'downed' || m === 'jolted') return PUP_F.fallen;
+    if (m === 'flailTell') return PUP_F.tell;
+    if (m === 'flail') return PUP_F.whip;
+    if (m === 'downed') return PUP_F.fallen;
+    if (m === 'slack') return PUP_F.restring[Math.floor(a * 3) % 2];   /* kneeling on the gallery, fumbling at his slack strings */
     if (m === 'hang1') return PUP_F.ride;
     if (e.flash > 0.05) return PUP_F.hurt;
     return PUP_F.work[Math.floor(a * 3) % 2];

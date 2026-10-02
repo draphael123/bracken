@@ -44,6 +44,9 @@ function rig(o = {}) {
   const run = (n, f) => { for (let i = 0; i < n; i++) { if (f) f(i); step(); } };
   return { show, e, hero, log, c, step, run, place };
 }
+/* (claude/canalfix3) A PADDLE IS WORKED: strike it until it does something, a third of a second apart; a hook bound with weed is cut free, then struck */
+const work = (r, side, n = 14) => { let res; for (let i = 0; i < n; i++) { res = M.strikePaddle(r.e, r.show, side); if (res !== 'crank' && res !== 'busy') return res; for (let k = 0; k < 20; k++) r.step(); } return res; };
+const unhook = (r, side) => { let res; for (let i = 0; i < 6; i++) { res = M.strikeHook(r.e, r.show, side); if (res !== 'hookKnot' && res !== 'hookFree') return res; r.step(); } return res; };
 const until = (r, pred, n = 600, f) => { for (let i = 0; i < n; i++) { if (pred()) return true; if (f) f(i); r.step(); } return pred(); };
 const awake = r => { until(r, () => r.e.mode !== 'wake', 200); return r; };
 
@@ -57,7 +60,7 @@ const awake = r => { until(r, () => r.e.mode !== 'wake', 200); return r; };
   for (const ph of [1, 2, 3]) { const r = awake(rig({ hp: ph === 1 ? GT.hp : ph === 2 ? GT.hp * 0.6 : GT.hp * 0.3 }));
     if (ph === 1) { r.show.cyc[1] = 1; M.applyCycle(r.show, 1, r.c); }   /* (her second cycle: the tear) */
     r.run(60 * 80, i => { if (i % 100 === 0) { const w = rnd(); r.place(w < 0.35 ? 'swim' : w < 0.55 ? 'walkE' : w < 0.7 ? 'walkW' : 'weed'); if (w >= 0.7 && r.hero.onWeed < 0) r.place('swim'); r.hero.x = r.hero.onTile || r.hero.onWeed >= 0 ? r.hero.x : A.x0 + 100 + rnd() * (A.x1 - A.x0 - 200); }
-      if (i % 900 === 450 && !r.show.pad.E.open) M.strikePaddle(r.e, r.show, 'E'); if (i % 900 === 300 && r.show.pad.W.knot) { M.strikePaddle(r.e, r.show, 'W'); M.strikePaddle(r.e, r.show, 'W'); } });
+      if (i % 900 >= 450 && i % 900 <= 560 && i % 20 === 10 && !r.show.pad.E.open) M.strikePaddle(r.e, r.show, 'E');   /* (claude/canalfix3: worked, several strikes) */ if (i % 900 === 300 && r.show.pad.W.knot) { M.strikePaddle(r.e, r.show, 'W'); M.strikePaddle(r.e, r.show, 'W'); } });
     for (const k of ['grab', 'lash', 'reach', 'bite', 'tear', 'surge', 'hand', 'pair']) if (r.show.n[k]) fired[k] = true; }
   for (const k of ['grab', 'lash', 'reach', 'bite', 'tear', 'surge', 'hand', 'pair']) ok(fired[k], 'HER ' + k.toUpperCase() + ' never fired in a fuzz of all three phases (rule A3)'); }
 
@@ -65,7 +68,7 @@ const awake = r => { until(r, () => r.e.mode !== 'wake', 200); return r; };
 { const r = awake(rig()); let opened = 0; r.place('walkW'); r.run(60 * 60, () => { if (M.gtOpen(r.e)) opened++; });
   ok(opened === 0, 'left alone for a minute she was open ' + opened + ' frames'); ok(M.gtTake(r.e) === GT.ward && GT.ward <= 0.06, 'working her lock she takes ' + M.gtTake(r.e) + ' of a blow (the ward is ' + GT.ward + ')'); }
 { const r = awake(rig({ ex: A.E.face - 90 })); r.place('walkE'); r.e.x = A.E.face - 90;
-  const res = M.strikePaddle(r.e, r.show, 'E'); ok(res === 'drain', 'the lower paddle struck in her first cycle did not drain (' + res + ')');
+  const res = work(r, 'E'); r.e.x = Math.min(r.e.x, A.E.face - 90); ok(res === 'drain', 'the lower paddle worked in her first cycle did not drain (' + res + ')');
   ok(until(r, () => r.e.mode === 'stranded', 60 * 3), 'the lock drained under her and she was not stranded (mode ' + r.e.mode + ', depth ' + r.show.water.depth.toFixed(0) + ')');
   ok(M.gtOpen(r.e) && M.gtTake(r.e) === GT.openMul && r.e.modeT <= 3.6 && r.e.modeT >= 3, 'stranded she is not open at ' + GT.openMul + ' for at least 3 s (' + r.e.modeT.toFixed(2) + ' s)');
   ok(r.log.lines.includes('SHE IS STRANDED: CUT HER'), 'her stranding was not said in the hint box');
@@ -74,11 +77,11 @@ const awake = r => { until(r, () => r.e.mode !== 'wake', 200); return r; };
   ok(r.show.C.name !== C0, 'the lock after her first stranding is the same lock (' + C0 + ')');
   r.run(60 * 4); ok(r.show.n.strand === 1 && r.e.mode !== 'stranded', 'the water coming back up stranded her again (' + r.show.n.strand + ' strandings): aground is only as the drain runs'); }
 { const r = awake(rig()); r.place('walkE'); r.e.x = A.mid; r.show.cyc[1] = 1; M.applyCycle(r.show, 1, r.c); until(r, () => Math.abs(r.show.water.depth - GT.lv.half) < 1, 120);
-  const res = M.strikePaddle(r.e, r.show, 'E'); r.run(60 * 5); ok(res === 'running' && r.e.mode !== 'stranded' && r.show.water.depth > GT.aground, 'a drain run against the running upper paddle stranded her (' + res + ', ' + r.e.mode + ')');
+  const res = work(r, 'E'); r.run(60 * 5); ok(res === 'running' && r.e.mode !== 'stranded' && r.show.water.depth > GT.aground, 'a drain run against the running upper paddle stranded her (' + res + ', ' + r.e.mode + ')');
   ok(r.log.lines.includes('THE UPPER PADDLE IS RUNNING: SHUT IT FIRST'), 'the running upper paddle was not said'); }
 /* HER HAND: from half water she reaches the paddle before she is aground. Unstruck she shuts it; struck she lets go, and is stranded */
 for (const strike of [false, true]) { const r = awake(rig()); r.place('walkE'); r.show.cyc[1] = 1; M.applyCycle(r.show, 1, r.c); r.show.pad.W.open = false; r.show.pad.W.knot = 0; r.show.water.target = GT.lv.half;
-  until(r, () => Math.abs(r.show.water.depth - GT.lv.half) < 1, 200); r.e.x = A.E.face - 90; M.strikePaddle(r.e, r.show, 'E');
+  until(r, () => Math.abs(r.show.water.depth - GT.lv.half) < 1, 200); work(r, 'E'); r.e.x = A.E.face - 90;
   ok(until(r, () => r.e.mode === 'handTell', 60), 'the drain opened from half water and her hand never went to the paddle');
   if (strike) { r.step(); ok(M.handCut(r.e, r.show), 'her hand could not be struck off the paddle'); ok(until(r, () => r.e.mode === 'stranded', 60 * 3), 'her hand struck, the lock drained and she was not stranded (' + r.e.mode + ')'); }
   else { ok(until(r, () => !r.show.pad.E.open, 60 * 2) && r.show.n.shut === 1 && r.e.mode !== 'stranded', 'her hand left alone did not shut the drain (' + r.e.mode + ')'); ok(r.log.lines.includes('SHE SHUT THE PADDLE'), 'her shutting the paddle was not said'); } }
@@ -106,8 +109,8 @@ ok(GT.strandT >= 3 && GT.flushT >= 3 && GT.bigT >= 3 && GT.bigT <= 3.6 && GT.str
   ok(until(r, () => r.e.base === 'culvert', 60 * 8), 'flooded, she never hid in a culvert (' + r.e.base + ')');
   ok(Math.abs(r.show.water.depth - GT.lv.high) < 2 && GT.lv.high < R * TS - A.walk, 'the flood did not bring the water up under the walkways (' + r.show.water.depth.toFixed(0) + ')');
   const side = r.show.hide, other = side === 'W' ? 'E' : 'W';
-  const wrong = M.strikePaddle(r.e, r.show, other); ok(wrong === 'notHere' || wrong === 'drain', 'the paddle of the culvert she is NOT in did something to her (' + wrong + ')'); r.show.pad.E.open = false; r.show.pad.W.open = false;
-  r.run(40); const res = M.strikePaddle(r.e, r.show, side);
+  const wrong = work(r, other); ok(wrong === 'notHere' || wrong === 'drain', 'the paddle of the culvert she is NOT in did something to her (' + wrong + ')'); r.show.pad.E.open = false; r.show.pad.W.open = false;
+  r.run(40); r.show.hide = side; r.e.base = 'culvert'; const res = work(r, side);
   ok(res === 'flush' && r.e.mode === 'flushed' && M.gtTake(r.e) === GT.openMul && r.e.modeT <= GT.flushT, 'the paddle of her culvert did not throw her out, open (' + res + ', ' + r.e.mode + ')'); }
 
 // ---- PHASE 3: the fog, the lamps, THE BIG ONE ----
@@ -116,11 +119,36 @@ ok(GT.strandT >= 3 && GT.flushT >= 3 && GT.bigT >= 3 && GT.bigT <= 3.6 && GT.str
   ok(r.e.mode === 'fogTell', 'below a third the fog did not come down (' + r.e.mode + ')'); ok(until(r, () => r.e.mode !== 'fogTell', 300) && r.show.fog > 0.5, 'the fog did not come down over the lock');
   for (const side of ['E', 'W']) { const q = side === 'E' ? r : awake(rig({ hp: GT.hp * 0.3 })); if (side === 'W') { q.e.phase = 3; q.e.base = q.e.mode = 'lurk'; q.show.cyc[3] = 0; M.applyCycle(q.show, 3, q.c); q.show.fog = 1; q.run(30); }
     q.place(side === 'E' ? 'walkE' : 'walkW'); q.run(10);
-    ok(M.strikeHook(q.e, q.show, side) === 'drop', 'the ' + side + ' lamp would not come off its hook in the fog');
+    ok(unhook(q, side) === 'drop', 'the ' + side + ' lamp would not come off its hook in the fog (once its weed was cut)');
     ok(until(q, () => q.e.lured, 60 * 8), 'she never went for the ' + side + ' lamp in the water (' + q.e.mode + '/' + q.e.base + ')');
-    const res = M.strikePaddle(q.e, q.show, side);
+    const res = work(q, side);
     if (side === 'E') { ok(res === 'drainBig' && until(q, () => q.e.mode === 'stranded', 60 * 4) && q.e.big && M.gtTake(q.e) === GT.bigMul && q.e.modeT >= GT.bigT - 0.4, 'the drain with her at the east lamp did not strand her for THE BIG ONE (' + res + ', ' + q.e.mode + ')'); }
     else ok(res === 'flushBig' && q.e.mode === 'flushed' && q.e.big && M.gtTake(q.e) === GT.bigMul, 'the flood with her at the west lamp did not throw her for THE BIG ONE (' + res + ', ' + q.e.mode + ')'); } }
+
+// ---- (claude/canalfix3, Daniel 10-02: "very easy: hit the gates, attack, repeat") ----
+/* (a) SHE CONTESTS THE PADDLES: one strike is not enough; the work slips back left alone, and her blow shakes you off it; while you work it she comes for you there */
+{ const r = awake(rig({ ex: A.mid })); r.place('walkE'); ok(M.strikePaddle(r.e, r.show, 'E') === 'crank' && !r.show.pad.E.open, 'one strike opened a paddle: it must be WORKED (GT.crank)');
+  ok(GT.crank.every(n => n >= 3) && GT.crank[0] * GT.crankCd >= 1.0 && GT.crank[2] * GT.crankCd <= 1.9, 'working a paddle is not ~1.2-1.8 s at the walkway (crank ' + GT.crank + ' x ' + GT.crankCd + ' s)');
+  r.run(Math.ceil(GT.crankSlip * 60) + 10); ok(r.show.pad.E.work === 0, 'the work on a paddle left alone did not slip back');
+  M.strikePaddle(r.e, r.show, 'E'); r.run(20); M.strikePaddle(r.e, r.show, 'E'); M.crankShaken(r.show); ok(r.show.pad.E.work === 0 && r.show.n.shaken === 1, 'her blow on a hero working the paddle did not shake the work off it');
+  const r2 = awake(rig({ ex: A.mid })); r2.place('walkE'); r2.log.hits = []; r2.log.bands = []; let near = false;
+  for (let i = 0; i < 60 * 6; i++) { if (i % 70 === 0) M.strikePaddle(r2.e, r2.show, 'E');   /* (slow work, a strike every 1.17 s - under the slip) */ r2.step(); if (r2.show.pad.E.open) break; if (Math.abs(r2.e.x - A.E.face) < 6 * TS + 4) near = true; }
+  ok(near && (r2.log.hits.length + r2.log.bands.length) >= 1, 'working the east paddle she did not come for the hero there and strike at the walkway (near ' + near + ', ' + (r2.log.hits.length + r2.log.bands.length) + ' blows)'); }
+/* (b) SHE FIGHTS IN HER OPENINGS: stranded, a hero beside her is snapped at and swiped at - each told - and the window is still at least 3 s */
+{ const r = awake(rig({ ex: A.E.face - 90 })); r.place('walkE'); work(r, 'E'); r.e.x = Math.min(r.e.x, A.E.face - 90); until(r, () => r.e.mode === 'stranded', 60 * 4);
+  Object.assign(r.hero, { x: r.e.x + 30, y: A.bed, ground: true, swim: false, onTile: true, onWeed: -1 }); const t0 = r.e.modeT, says = []; r.c.say = m => says.push(m); r.log.hits = []; r.log.bands = []; let ticks = 0;
+  while (r.e.mode === 'stranded' && ticks < 600) { r.hero.x = r.e.x + 30; r.step(); ticks++; }
+  ok(t0 >= 3 && ticks * DT >= 2.9, 'her stranded window is not 3 s any more (' + t0.toFixed(2) + ' s, ran ' + (ticks * DT).toFixed(2) + ')');
+  ok(r.show.n.openAtk >= 2 && r.log.hits.some(h => h.name === M.MOVE_NAME.bite) && r.log.bands.some(b => b.name === 'HER CLAWS') && says.includes('!') && says.includes('!!'), 'stranded, she did not snap (!) and swipe (!!) at the hero beside her: ' + JSON.stringify({ n: r.show.n.openAtk, says })); }
+/* (c) EACH PHASE BREAKS THE LAST TRICK: the flood comes with the paddle you drained her with knotted; flushed from a culvert, she goes back into it with its paddle knotted; in the fog the lamp hooks are bound with weed */
+{ const r = awake(rig()); r.place('walkE'); r.show.lastPad = 'E'; r.e.hp = GT.hp * 0.6; until(r, () => r.e.base === 'culvert' || r.e.base === 'shift', 60 * 6);
+  ok(r.show.pad.E.knot > 0, 'the flood did not come with the paddle she was drained by (E) knotted');
+  r.show.pad.E.knot = 0; r.show.pad.W.knot = 0; until(r, () => r.e.base === 'culvert', 60 * 8); const side = r.show.hide; work(r, side); until(r, () => r.e.mode === 'dive', 60 * 4); until(r, () => r.e.mode !== 'dive', 60);
+  ok(r.show.hide === side && r.show.pad[side].knot > 0, 'flushed from the ' + side + ' culvert she did not go back into it with its paddle knotted (hide ' + r.show.hide + ', knot ' + r.show.pad[side].knot + ')');
+  const q = awake(rig({ hp: GT.hp * 0.3 })); q.e.phase = 3; q.e.base = q.e.mode = 'lurk'; q.show.cyc[3] = 0; M.applyCycle(q.show, 3, q.c); ok(M.strikeHook(q.e, q.show, 'E') === 'hookKnot', 'in the fog the lamp hook is not bound with weed (cut it first)');
+  ok(M.CYCLES[3].length >= 2, 'the fog has one cycle: every cycle must change'); }
+/* (d) BIGGER: her body is half again as big and half out of the water */
+ok(GT.w >= 30 && GT.h >= 42, 'her body box is ' + GT.w + ' x ' + GT.h + ' (Daniel: about 32 x 44)');
 
 // ---- THE HUMAN BOT ----
 ok(M.PLAN.react >= 0.2 && M.PLAN.missDodge > 0 && M.PLAN.missHand > 0 && M.PLAN.late > 0, 'the bot plays perfectly (PLAN ' + JSON.stringify(M.PLAN) + ')');

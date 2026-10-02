@@ -3,8 +3,9 @@
 //   drawBack   THE SWINGBOATS' A-frame and the partner boat swinging the other way behind; THE CHAIR-O-PLANE's mast, its turning crown and the chairs round the back
 //              of it (small, dim, up under the crown - and a mummer riding one, as a shape)
 //   drawMover  the swingboat you ride (a painted boat on two iron rods) and a near chair of the chair-o-plane (on its chains from the crown)
-//   drawNests  THE PRIZE FLOORS a bull's-eye opens: once open, each plank run is a boarded walk with a lip and a post under it, and a nest has its prize stall's awning;
-//              shut, the place shows as a faint outline of boards and a pennant, so you can see there is somewhere to go
+//   drawNests  THE PRIZE FLOORS (claude/fairfix4, Daniel 2026-10-02: "the floors must be VISIBLE from the start"): a nest is a solid, lit tent floor from the first
+//              frame - boards with a lip, posts, its prize stall's striped awning and a lantern - and the bull's-eye opens only THE WAY IN: each plank run up to it
+//              stands RAISED until then (a gangplank swung up on its hinge and roped, a bull's-eye painted on it), and swings down into a boarded step when it opens
 import { boatAt, chairAt, CHAIRO } from '../fair-rides.js';
 const TS = 16;
 const K = { wood: '#7a5230', woodL: '#a67a48', woodD: '#4e321a', woodDD: '#2e1e10', brass: '#e8c23a', brassD: '#a87a18', red: '#b8382c', redD: '#7a2418', cream: '#ece0c4', creamD: '#c8b890',
@@ -81,8 +82,18 @@ export function drawMover(g, m, cx, cy, time) {
 }
 
 /* ---- THE PRIZE FLOORS (review / Daniel: "bull's-eye rooms unclear - make it obvious you can walk there") ---- */
+/* THE WAY IN, SHUT: the gangplank swung up on its hinge (the end toward the nest, hx) and roped there, a bull's-eye painted on its underside - the same red and cream rings as the
+   targets, so the eye ties the two together - and a faint line of where it will lie */
+function raised(g, x, y, w, hingeRight, time) {
+  g.globalAlpha = 0.3; g.setLineDash([2, 3]); g.strokeStyle = K.cream; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(x) + 0.5, Math.round(y) + 0.5); g.lineTo(Math.round(x + w) - 0.5, Math.round(y) + 0.5); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+  const h = Math.min(44, Math.max(20, w)), hx = hingeRight ? x + w - 6 : x, top = y - h + 5;
+  r(g, hx, top, 6, h, K.wood); r(g, hingeRight ? hx : hx + 5, top, 1, h, K.woodL); r(g, hingeRight ? hx + 5 : hx, top, 1, h, K.woodDD);   // the plank on end, lit on one side
+  for (let j = top + 5; j < y; j += 8) r(g, hx + 1, j, 4, 1, K.woodD);                                                                 // its boards
+  r(g, hx - 1, y + 2, 8, 3, K.iron); r(g, hx + 2, y + 3, 2, 1, K.ironL);                                                                // the hinge
+  ln(g, hx + 3, top, hx + 3 + (hingeRight ? 8 : -8), top - 10, K.creamD);                                                              // the rope that holds it up
+  const by = top + Math.round(h * 0.4), bx = hx + 3; for (const [rr, col] of [[5, K.red], [3, K.cream], [1, K.red]]) { g.fillStyle = col; g.beginPath(); g.arc(bx, by, rr, 0, 6.3); g.fill(); }   // the bull's-eye
+}
 function boards(g, x, y, w, open, solidBelow) {
-  if (!open) { g.globalAlpha = 0.35; g.setLineDash([3, 3]); g.strokeStyle = K.cream; g.lineWidth = 1; g.strokeRect(Math.round(x) + 0.5, Math.round(y) + 0.5, Math.round(w) - 1, 4); g.setLineDash([]); g.globalAlpha = 1; return; }
   r(g, x, y, w, 5, K.wood); r(g, x, y, w, 1, K.woodL); r(g, x, y + 4, w, 2, K.woodDD);              // the boards, a light edge on top, a dark lip under
   for (let i = 6; i < w; i += 8) { r(g, x + i, y + 1, 1, 3, K.woodD); r(g, x + i - 3, y + 2, 1, 1, K.ironL); }   // the joints and the nails
   const post = h => { r(g, x + 2, y + 6, 3, h, K.woodD); r(g, x + w - 5, y + 6, 3, h, K.woodD); };
@@ -94,15 +105,20 @@ export function drawNests(g, cx, cy, VW, L, F, time) {
   const below = (x, row) => { for (let y = row + 1; y < Math.min(L.H, row + 4); y++) if (solidAt(x, y)) return (y - row - 1) * TS; return 40; };
   for (const Y of G.galleries || []) {
     const spec = (L.galleries || []).find(q => (q.id || 0) === Y.id) || {}, open = !!Y.open;
-    for (const [x0, x1, row] of Y.planks || []) { const sx = x0 * TS - cx, w = (x1 - x0 + 1) * TS; if (sx > VW + 20 || sx + w < -20) continue; if (solidAt(x0, row) && L.grid[row * L.W + x0] === 1) continue;
-      boards(g, sx, row * TS - cy, w, open, below(x0, row)); }
-    const N = spec.nest; if (!N) continue; const nx = N.x0 * TS - cx, nw = (N.x1 - N.x0 + 1) * TS, ny = N.row * TS - cy; if (nx > VW + 30 || nx + nw < -30) continue;
-    /* THE PRIZE STALL over the nest: two posts, a striped awning, a pennant - shut, it is there in outline, so the eye knows there is a place up there */
-    g.globalAlpha = open ? 1 : 0.4;
+    const N = spec.nest, nmid = N ? (N.x0 + N.x1 + 1) / 2 : null;
+    for (const [x0, x1, row] of Y.planks || []) { const sx = x0 * TS - cx, w = (x1 - x0 + 1) * TS; if (sx > VW + 60 || sx + w < -60) continue; if (solidAt(x0, row) && L.grid[row * L.W + x0] === 1) continue;
+      if (open) boards(g, sx, row * TS - cy, w, true, below(x0, row)); else raised(g, sx, row * TS - cy, w, nmid !== null && nmid > (x0 + x1 + 1) / 2, time); }
+    if (!N) continue; const nx = N.x0 * TS - cx, nw = (N.x1 - N.x0 + 1) * TS, ny = N.row * TS - cy; if (nx > VW + 30 || nx + nw < -30) continue;
+    /* THE TENT FLOOR (claude/fairfix4): solid boards from the start - the floor is always there, only the way in is shut - and a lantern hung in the stall lights it */
+    if (L.grid[N.row * L.W + N.x0] !== 1) boards(g, nx, ny, nw, true, below(N.x0, N.row));
+    { const lx = nx + nw / 2, ly = ny - 20, fl = 0.85 + 0.15 * Math.sin(time * 7 + N.x0); g.globalCompositeOperation = 'lighter'; const gr = g.createRadialGradient(lx, ly, 1, lx, ly, 34 * fl);
+      gr.addColorStop(0, 'rgba(255,200,110,0.45)'); gr.addColorStop(1, 'rgba(255,170,60,0)'); g.fillStyle = gr; g.fillRect(lx - 36, ly - 36, 72, 72); g.globalCompositeOperation = 'source-over';
+      r(g, lx - 2, ly - 3, 4, 5, K.brass); r(g, lx - 1, ly - 2, 2, 3, '#fff0b0'); ln(g, lx, ly - 3, lx, ny - 32, K.woodD); }
+    /* THE PRIZE STALL over the nest: two posts, a striped awning, a pennant (brass while the way in is shut, green once it is open) */
+    g.globalAlpha = 1;
     r(g, nx - 2, ny - 30, 3, 30, K.woodD); r(g, nx + nw - 1, ny - 30, 3, 30, K.woodD);
     for (let i = 0; i < nw + 4; i += 8) { r(g, nx - 2 + i, ny - 34, 8, 5, (i / 8) % 2 ? K.cream : K.red); g.fillStyle = (i / 8) % 2 ? K.cream : K.red; g.beginPath(); g.arc(nx + 2 + i, ny - 29, 4, 0, Math.PI); g.fill(); }
     ln(g, nx + nw / 2, ny - 34, nx + nw / 2, ny - 44, K.woodD); g.fillStyle = open ? '#8fd160' : K.brass; g.beginPath(); g.moveTo(nx + nw / 2 + 1, ny - 44); g.lineTo(nx + nw / 2 + 9, ny - 41 + Math.sin(time * 4) * 1.2); g.lineTo(nx + nw / 2 + 1, ny - 38); g.fill();
     g.globalAlpha = 1;
-    if (open && !solidAt(N.x0, N.row)) r(g, nx, ny + 4, nw, 2, K.woodDD);
   }
 }

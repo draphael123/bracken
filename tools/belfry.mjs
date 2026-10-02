@@ -16,5 +16,6 @@ vm.runInContext(s.slice(s.indexOf('function updateRoc(e, dt)'),s.indexOf('// THE
 const b={mode:'wake',modeT:0,hp:1100,maxHp:1100,phase:1,anim:0};const modes=new Set();for(let i=0;i<3000;i++){c.updateRoc(b,1/60);modes.add(b.mode);if(b.mode==='carry')b.hp--;}
 for(const m of ['gust','talon','shed','carry','shriek'])assert(modes.has(m),m+' occurs');
 assert(hurts>0);b.hp=500;c.updateRoc(b,1/60);assert.equal(b.mode,'roofTell');for(let i=0;i<80;i++)c.updateRoc(b,1/60);assert(L.belfry.roofGone&&rocks.length===7);assert(rocks.every(r=>r.roof&&r.delay>=.5));
-assert(!s.slice(s.indexOf('function updateRoc'),s.indexOf('// THE RIMEWRIGHT')).includes('openHp'),'no damage-window cap');
+/* (the bare 'function updateRoc' prefix also matched updateRockGoblin, so the slice swallowed updateGreatHound's openHp once bosswave1 gave the hound its GH_TAKE window: slice the Roc's own function only) */
+assert(!s.slice(s.indexOf('function updateRoc(e, dt)'),s.indexOf('// THE RIMEWRIGHT',s.indexOf('function updateRoc(e, dt)'))).includes('openHp'),'no damage-window cap');
 console.log('Belfry beam/ladder, five attacks, hit-to-break carry, and seven warned phase-two roof tiles verified.');

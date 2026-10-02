@@ -11,4 +11,7 @@ e.mode='salvageCargo';e.modeT=.01;P.x=280;P.y=480;updateSalvageCaptain(e,.02,c);
 e.mode='salvageCargo';e.modeT=.01;e.cargo=[280];P.x=314;hits.length=0;updateSalvageCaptain(e,.02,c);assert.equal(hits.length,0,'stepping off the mark is safe');
 e.mode='salvageCargo';e.modeT=.01;e.cargo=[280];P.x=280;P.y=420;updateSalvageCaptain(e,.02,c);assert.equal(hits.length,0,'jump clears the impact');
 e.mode='salvageBroadsideTell';e.modeT=.01;c.active=false;const n=shots.length;updateSalvageCaptain(e,2,c);assert.equal(shots.length,n);assert.equal(e.mode,'salvageBroadsideTell');
+/* (claude/bosswave1) HIS OPENING: the pin parried rests him open 3 s or more (it was 1.8 s and not an opening); the pin that lands opens nothing */
+{ c.active=true;const cb={...c,hit:()=>'blocked'};e.mode='salvagePinTell';e.modeT=.01;e.face=1;e.open=0;P.x=e.x+20;P.y=e.y;updateSalvageCaptain(e,.02,cb);assert.equal(e.mode,'salvageRest');assert(e.open>=3,'a parried pin opens him 3 s: '+e.open);
+  e.mode='salvagePinTell';e.modeT=.01;e.open=0;updateSalvageCaptain(e,.02,c);assert(!(e.open>0),'a pin that lands opens nothing'); }
 console.log('Salvage Captain: four base attacks, phase-two crossfire, non-damaging warnings, cargo escape lanes, and inactive encounter gate verified.');

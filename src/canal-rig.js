@@ -38,6 +38,8 @@ export const RIG = {
   bargeR: 76,          /* px the barge's own lantern lights, round its stern pole */
   weedSlow: 0.3,       /* a swimmer in weed-choked water keeps this share of his way */
   weedDmg: 5,          /* health a second the weed takes from a swimmer caught in it */
+  wadeBack: 1.0,       /* (claude/canalfix3) s a hero is left wading in the race, the cut or the lower river (out of the run) before the canal hands him back */
+  wadeBite: 10,        /* and what it bites */
   crash: 22,           /* the broken weir: what the plunge does to a hero standing on the deck when she lands */
 };
 export const surfaceY = row => row * TS + 4;

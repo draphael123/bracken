@@ -68,16 +68,16 @@ export const OPEN_RULE = {
   chief: e => e.mode === 'planted',                                          // his club in the ground
   king: e => e.mode === 'held' || e.open > 0,                                // held in a cage (his crown turns everything else already)
   ram: e => H.ramOpen(e),                                                    // into the wall, or off his leap
-  owl: e => e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'pinned' || e.lampT > 0,
+  owl: e => e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'pinned',   // (claude/bosswave1) down on the boards only: lampT open in the air made a lit lamp a free window
   abbot: e => abbotOpen(e),                                                  // the bell has him down
-  windcaller: e => H.callerOpen(e),                                          // between stones nothing is there anyway
+  windcaller: e => H.callerOpen(e),                                          // (claude/bosswave1) FALLEN only: his bolt sent back, or his howl braced through
   lance: e => H.lanceOpen(e),                                                // committed: planted, thrusting, reeling
   gqueen: e => H.gqOpen(e),                                                  // pinned, or her plate off
   herald: e => e.mode === 'mired' || e.mode === 'reel',
   reefmaw: e => e.mode === 'stuck' || e.mode === 'reel' || e.mode === 'beached',
   quarter: e => e.mode === 'cut' || e.mode === 'reel',                       // her blade in a rope
   captain: e => e.mode === 'beach' || e.mode === 'reel',                     // beached on his own planking
-  tollmaster: e => e.open > 0,                                               // both hands over his head
+  tollmaster: e => e.open > 0,                                               // (claude/bosswave1) the ledger turned on a shield, only (THE DARK is no longer open)
   bellcrab: e => e.phase === 3 || e.open > 0,                                // a stone on his crown, or out of the bell
   drownedking: e => e.open > 0,
   harbormaster: e => e.open > 0,
@@ -96,11 +96,14 @@ export const OPEN_RULE = {
   puppeteer: e => pupOpen(e),
   gorgecrab: e => e.mode === 'open',                                         // THE GREAT RED CRAB: thrown on his back by a released burst (claude/redgorge)
   banditking: e => e.mode === 'open',                                        // THE BANDIT KING: blind in the steam (claude/welltown's boss; one row, the welltown fix lane adds the same)
+  grandmother: e => H.granOpen(e),                                           // (claude/bosswave1) her rap after a silent listen, or her feel turned on a shield
   greenteeth: e => gtOpen(e),                                                // stranded or flushed (her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,
   gravewarden: e => graveOpen(e), forgemaster: e => H.forgeOpen(e), golem: e => e.crackT > 0 || e.mode === 'stagger',
-  lancer: e => !e.mounted || e.mode === 'blown' || e.mode === 'rear' || e.mode === 'reel' || e.open > 0,
+  lancer: e => e.open > 0,   // (claude/bosswave1) unhorsed, reared on a shield, or his swipe or cut answered: 3 s each (on foot or after every charge was open before)
+  greathound: e => e.open > 0,   // (claude/bosswave1) its lunge taken on a shield (it skids), or its pups killed in time (it whines)
+  bosun: e => e.open > 0,   // (claude/bosswave1, the mini) his belaying pin parried
   barrowrider: e => brOpen(e), sexton: e => sextonOpen(e), hedgewarden: e => hedgeOpen(e),
 };
 /* BOSSES WITH THEIR OWN TWENTIETH: the rule leaves their number alone (it would be a twentieth of a twentieth) and only counts greed */
@@ -110,23 +113,26 @@ export const NO_GREED = new Set(['pyromancer']);
 export const OWN_WARD = new Set(['puppeteer', 'wickerqueen', 'greenteeth']);
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
-  grandmother: 'TODO boss wave: no opening in code (only a vanish that nothing hits); left at full damage',
   mother: 'her body is armoured to every blade already (ARMOURED); the heart node is her opening and it is not the boss',
   kraken: 'no blade reaches the body; the arms carry his openings (knelled, pinned, looking) in krakenHurt',
 };
 /* MINIS WITH NO OPENING IN CODE: every blow on them counts toward their greed (they keep their damage, so nothing is made unbeatable) */
-export const MINI_EVERY_BLOW = new Set(['bosun', 'greathound', 'spider']);
+export const MINI_EVERY_BLOW = new Set(['spider']);   /* (claude/bosswave1: the bosun and the great hound have openings now) */
+/* MINIS ON THE CHIP (claude/bosswave1, Daniel 10-02: "give each a real opening first, then put minis on the chip"): each has a told opening of
+   3 s or more in OPEN_RULE and in its own code, and outside it a hero's blow lands at GREED.chip like a boss's. The rest keep full damage. */
+export const CHIP_MINI = new Set(['greathound', 'bosun', 'lancer', 'homunculus']);
 export function install(helpers) { H = helpers || {}; }
 
 /* IS HE OPEN? true / false for a boss or mini with a rule, null for anything else (the boss lab's own fallback then answers) */
 export function openOf(e) {
   if (!e) return null;
-  if (e.broken > 0) return true;
+  if (e.broken > 0 && !(e.xpRole === 'mini' && CHIP_MINI.has(e.t))) return true;   /* (claude/bosswave1) a mini on the chip is open only in his own told opening: broken he is stood still, not opened - the
+     mash bot broke them with taps and a spear held out, and took the Serjeant and the Great Hound in those breaks */
   const r = OPEN_RULE[e.t]; if (!r) return null;
   try { return !!r(e); } catch { return null; }
 }
 /* DOES THE CHIP APPLY TO HIM? (a boss, with a rule, not on the no-opening list) */
-export const chipped = (e, isBoss) => !!(e && isBoss && OPEN_RULE[e.t] && !NO_OPENING[e.t]);
+export const chipped = (e, isBoss) => !!(e && (isBoss || (e.xpRole === 'mini' && CHIP_MINI.has(e.t))) && OPEN_RULE[e.t] && !NO_OPENING[e.t]);
 
 /* THE CHIP, at the tail of wardedDamage: dmg is what his own code made of the blow, raw what the blow was before any of it.
    Returns what comes off the bar. Called only for a hero's blow (or his burn) on THE boss. */

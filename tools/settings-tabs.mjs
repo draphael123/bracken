@@ -19,7 +19,7 @@ assert.deepEqual(TABS.map(t => t.name), ['AUDIO', 'DISPLAY', 'GAMEPLAY', 'CONTRO
 const seen = new Map();
 for (const t of TABS) for (const k of TAB_ITEMS[t.id]) { if (isHeaderRow(k)) continue; assert(!seen.has(k), `row "${k}" is on two tabs (${seen.get(k)} and ${t.id})`); seen.set(k, t.id); }
 for (const k of LEGACY_ROWS) assert(tabOf(k), `the old Settings row "${k}" is on no tab`);
-assert.equal(tabOf('Combat'), 'gameplay'); assert.equal(tabOf('Sound test'), 'audio'); assert.equal(tabOf('Reduce motion'), 'access'); assert.equal(tabOf('Rebind keys'), 'controls');
+assert.equal(tabOf('Difficulty'), 'gameplay'); assert.equal(tabOf('Sound test'), 'audio'); assert.equal(tabOf('Reduce motion'), 'access'); assert.equal(tabOf('Rebind keys'), 'controls');
 
 /* ---- 4a. the defaults are the old key lists ---- */
 { const t = keysTable(emptyBinds());
@@ -50,9 +50,9 @@ try {
     navigator.getGamepads = () => [fake]; const tap = b => { fake.buttons[b].pressed = true; ui.pollPad(); BK.step(1); fake.buttons[b].pressed = false; ui.pollPad(); BK.step(1); };
 
     /* ---- 2. an OLD settings file ---- */
-    const old = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: false, sfx: 0.3, musicVol: 0.4, shake: true, shakeAmt: 0.5, sfxFiles: false, voices: false, hitstop: false, numbers: false, timer: false, ambient: false, difficulty: 'hard', combat: 'classic', speed: 0.85, speedV2: 1, assist: true, wayOn: true, iron: true, blockToggle: true, textFast: true, swapZX: true, rumble: false, ambVol: 0.2, uiVol: 0.6, bigText: true, colorSafe: true, reduceMotion: true, flashes: false, scale: 3, scanlines: true, bright: 1.25, tenths: true };
+    const old = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: false, sfx: 0.3, musicVol: 0.4, shake: true, shakeAmt: 0.5, sfxFiles: false, voices: false, hitstop: false, numbers: false, timer: false, ambient: false, difficulty: 'hard', combat: 'weighty', speed: 0.85, speedV2: 1, assist: true, wayOn: true, iron: true, blockToggle: true, textFast: true, swapZX: true, rumble: false, ambVol: 0.2, uiVol: 0.6, bigText: true, colorSafe: true, reduceMotion: true, flashes: false, scale: 3, scanlines: true, bright: 1.25, tenths: true };
     const set = ui.readSettings(JSON.stringify(old)); const S = ui.settings();
-    out.oldKept = Object.keys(old).filter(k => JSON.stringify(S[k]) !== JSON.stringify(old[k]));
+    out.oldKept = Object.keys(old).filter(k => k !== 'combat' && JSON.stringify(S[k]) !== JSON.stringify(old[k])); out.combatDropped = !('combat' in S);   /* the retired Weighty switch: an old save that had it loads clean */
     out.bindsEmpty = JSON.stringify(S.binds); out.coopSeenOld = S.coopHelpSeen;
     ui.readSettings(JSON.stringify({ binds: { kb: { jump: ['<b>', 'x'], zzz: ['q'] }, pad1: 'no' } }));
     out.cleaned = JSON.stringify(ui.settings().binds);
@@ -65,7 +65,7 @@ try {
     out.union = [...union];
     ui.settingsTab = 'audio'; ui.menuI = 0; key('ArrowRight'); out.afterRight = ui.settingsTab; key('ArrowLeft'); out.afterLeft = ui.settingsTab; key('Tab'); out.afterTab = ui.settingsTab;
     ui.settingsTab = 'audio'; tap(5); out.afterRB = ui.settingsTab; tap(4); out.afterLB = ui.settingsTab;
-    ui.settingsTab = 'gameplay'; const rows = ui.menuRows(); ui.menuI = rows.indexOf('Combat'); const c0 = S.combat; key('ArrowRight'); out.combat = [c0, ui.settings().combat]; key('ArrowLeft');
+    ui.settingsTab = 'gameplay'; const rows = ui.menuRows(); ui.menuI = rows.indexOf('Hit stop'); const c0 = S.hitstop; key('ArrowRight'); out.combat = [c0, ui.settings().hitstop]; out.noCombatRow = !rows.includes('Combat'); key('ArrowLeft');
 
     /* ---- 4. rebinding ---- */
     BK.state = 'menu'; ui.rebind.open(0); out.rebindState = BK.state; const rb = ui.rebind.state();
@@ -108,7 +108,7 @@ try {
   for (const k of LEGACY_ROWS) assert(o.union.includes(k), 'the game shows the old row ' + k);
   assert.equal(o.tabs.length, 5);
   assert.equal(o.afterRight, 'display'); assert.equal(o.afterLeft, 'audio'); assert.equal(o.afterTab, 'display', 'TAB steps the tab'); assert.equal(o.afterRB, 'display', 'RB steps the tab on a pad'); assert.equal(o.afterLB, 'audio', 'LB steps it back');
-  assert.notEqual(o.combat[0], o.combat[1], 'the COMBAT switch still flips on the Gameplay tab');
+  assert.notEqual(o.combat[0], o.combat[1], 'a Gameplay-tab toggle (Hit stop) still flips'); assert.equal(o.noCombatRow, true, 'the Weighty COMBAT row is retired'); assert.equal(o.combatDropped, true, 'an old save with weighty on loads into classic: the field is dropped');
   assert.equal(o.rebindState, 'rebind'); assert.equal(o.listening, true, 'Z/ENTER on a row listens'); assert.deepEqual(o.reserved, [false, 'null'], 'R is reserved and refused');
   assert.deepEqual(o.jump, ['i', 'Space'], 'jump rebound to I'); assert(o.conflict.jump && o.conflict.atk, 'binding I twice flags both rows: ' + JSON.stringify(o.conflict));
   assert.equal(o.newKeyJumps, true, 'the new key jumps in play'); assert.equal(o.oldKey, 'no', 'the old key no longer does');

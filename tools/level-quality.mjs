@@ -26,8 +26,8 @@ export const GATE = ['theatre', 'fair', 'canal', 'welltown', 'redgorge'];   /* t
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
-  theatre: ['roles'],
-  welltown: ['music'],   /* TODO(Daniel picks the track): THE WELL TOWN's greybox (claude/welltown) borrows THE SUNKEN CARAVAN's track ('caravan') as a placeholder until Daniel picks its own CC0/CC-BY file (nothing is downloaded by a lane); its boss room already plays its own synth hook ('banditking', src/boss-music.js) */   /* TODO(Daniel decides): the theatre has two roles (melee: mummers, stagehands, spiders, bats, swornswords; ranged: the drunks) and no support, heavy or runner. Lift this when a lane gives it a third role */
+  welltown: ['music'],   /* TODO(Daniel picks the track): THE WELL TOWN's greybox (claude/welltown) borrows THE SUNKEN CARAVAN's track ('caravan') as a placeholder until Daniel picks its own CC0/CC-BY file (nothing is downloaded by a lane); its boss room already plays its own synth hook ('banditking', src/boss-music.js) */
+  /* (claude/theatre3: the theatre's roles row is lifted - THE PROMPTER, the goblin priest reskinned, is its support; THE FLYMAN, the archer reskinned, throws) */
 };
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
@@ -130,7 +130,7 @@ export const MASH_ENFORCE = true, MASH_HP = 40;
    a level with no row from day one, EXCEPT the parts listed below: the ones the mash bot still beats after the combat pass (the boss waves'
    TODO list, docs/BOSS-AUDIT.md). The list may only SHRINK: a listed part that now holds fails until its entry is taken out. */
 /* (measured 2026-10-01 after the combat pass, docs/mash-bot.json: 9 bosses, 12 minis and 4 level runs the mash bot still beats) */
-export const MASH_REPORT_ONLY = { spore: ['boss'], kings: ['mini'], scree: ['boss'], hanging: ['boss', 'mini'], moor: ['boss'], storm: ['level'], crown: ['mini'], lamplit: ['boss', 'mini'], underleaf: ['boss'], deep: ['level'], keep: ['boss', 'level'], causeway: ['level'], harbor: ['mini'], waymeet: ['mini'], fields: ['mini'], burial: ['mini'], mage: ['mini'], fallingtower: ['mini'], witchlight: ['mini'], unburied: ['mini'], fair: ['boss'], theatre: ['boss'] };
+export const MASH_REPORT_ONLY = { spore: ['boss'], hanging: ['mini'], storm: ['level'], crown: ['mini'], lamplit: ['mini'], deep: ['level'], keep: ['level'], causeway: ['level'], fields: ['mini'], burial: ['mini'], fallingtower: ['mini'], witchlight: ['mini'], unburied: ['mini'] };
 /* THE GATE ON ONE LEVEL: { ok, hard: parts beaten and not listed, stale: listed parts that hold now, msg } */
 export function mashGate(lv) {
   const v = mashVerdict(lv), soft = MASH_REPORT_ONLY[lv.id] || [];

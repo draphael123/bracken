@@ -7,7 +7,7 @@
 //
 //   AUDIO          music, effects, voices, ambience, volumes, the sound test
 //   DISPLAY        picture size, theme, font, text colour, camera, shake, numbers, the clock, the look of the wood
-//   GAMEPLAY       difficulty, the COMBAT classic/weighty switch, hit stop, helpers, and (headed off below) saves + testing
+//   GAMEPLAY       difficulty, hit stop, helpers, and (headed off below) saves + testing
 //   CONTROLS       what each button does for your hero, REBINDING (keyboard + each pad), block hold/toggle, rumble, the co-op guide
 //   ACCESSIBILITY  readable text, less flashing and shake (Reduce motion), colour-safe marks, a rim on foes
 //
@@ -27,7 +27,7 @@ export const TAB_ITEMS = {
     '- LOOK -', 'UI colour', 'Font', 'Text colour', 'HUD', 'Foe health', 'Hit numbers', 'Timer', 'Tenths', 'FPS counter',
     '- WORLD -', 'Ground light', 'The air', 'Parallax', 'Arena tint', 'Weather', 'Ambient life', 'Look down',
     '- EFFECTS -', 'Screen shake', 'Shake strength', 'Particles', 'Impact FX', 'Boss intro'],
-  gameplay: ['- RULES -', 'Difficulty', 'Combat', 'Game speed', 'Hit stop', 'Iron Knight',
+  gameplay: ['- RULES -', 'Difficulty', 'Game speed', 'Hit stop', 'Iron Knight',
     '- HELPERS -', 'Jump assist', 'Way-on arrow', 'Text speed',
     '- SAVE -', 'Export save', 'Import save', 'Erase this save',
     '- TESTING -', 'God mode', 'Invincible', 'Hitboxes'],
@@ -37,7 +37,7 @@ export const TAB_ITEMS = {
 
 /* THE OLD SETTINGS LIST, kept as a snapshot for the check: every one of these must still be a row somewhere, under the same name
    (a saved value is keyed by the SET field behind the name, which the tabs never touch). */
-export const LEGACY_ROWS = ['Difficulty', 'Combat', 'Game speed', 'Jump assist', 'Way-on arrow', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble',
+export const LEGACY_ROWS = ['Difficulty', 'Game speed', 'Jump assist', 'Way-on arrow', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble',
   'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices',
   'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness',
   'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes',

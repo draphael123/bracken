@@ -1,20 +1,25 @@
-// tools/puppeteer-pilot.mjs [salts=1] [heroes=knight,warden,pyro] [level=theatre] - THE PUPPETEER (src/puppeteer.js) at NORMAL health, one pass per salt
-// (bossLab pins its dice per row; docs/INTEGRATOR.md section 6). One life per fight, no refills. Prints a row a fight (outcome, seconds, health left, his
-// health left, the phase reached, how many strings were cut, how often he came down / re-strung in the loft / fell with his masterpiece, how often the
-// batten was ridden, what did the damage) and a summary against the house band (60-75% wins, median win 90-150 s). Not in the suite: it is too long.
-// The level defaults to the theatre (his main stage is its end).
+// tools/puppeteer-pilot.mjs [salts=1] [heroes=knight,warden,pyro] [level=theatre] [--depth] - THE PUPPETEER (src/puppeteer.js) at NORMAL health, one pass per
+// salt (bossLab pins its dice per row; docs/INTEGRATOR.md section 6). One life per fight, no refills. Prints a row a fight (outcome, seconds, health taken,
+// his health left, the phase and cycle reached, the show's counts - drops, slack bars, bar cuts, clanks, flails, props - what did the damage, and how the
+// bot spent its time) and a summary against the house band (60-75% wins). --depth: the hero at the level's campaign depth, no skills (as
+// tools/combat-pilots.mjs); without it, the page's fresh hero. Not in the suite: it is too long.
 import { openPage } from './cdp.mjs';
-const salts = (process.argv[2] || '1').split(',').map(Number);
-const heroes = (process.argv[3] || 'knight,warden,pyro').split(',');
-const level = process.argv[4] || 'theatre';
+import { LEVELS } from '../src/level.js';
+import { depthsOf } from '../src/campaign-order.js';
+const pos = process.argv.slice(2).filter(a => !a.startsWith('--')), DEPTH = process.argv.includes('--depth');
+const salts = (pos[0] || '1').split(',').map(Number);
+const heroes = (pos[1] || 'knight,warden,pyro').split(',');
+const level = pos[2] || 'theatre', lvl = Math.max(1, depthsOf(LEVELS)[level] ?? 1);
 const pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
-  for (const salt of salts) { await pg.reload();
-    const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const phases={},ns={},at={};
-      const o=await BK.bossLab({bosses:[${JSON.stringify(level)}],heroes:${JSON.stringify(heroes)},healthMode:'normal',maxSecs:360,modes:true,salt:${salt},onFrame:({boss,h,f})=>{if((boss.phase||1)>(phases[h]||1)){at[h]=(at[h]||[]).concat(Math.round(f/6)/10);}phases[h]=Math.max(phases[h]||1,boss.phase||1);const sh=BK.puppeteerHands().show();if(sh)ns[h]={bossHp:Math.round(boss.hp)+'/'+boss.maxHp,cyc:sh.cycle,n:{...sh.n},hurt:{...(sh.hurt||{})}};}});
-      return o.rows.map(r=>({h:r.h,salt:${salt},out:r.outcome||r.skipped,secs:r.secs,taken:r.health&&Math.round(r.health.damageTaken),left:r.hpLeftPct,bossLeft:r.bossHpLeftPct??r.bossLeft,phase:phases[r.h],phaseAt:at[r.h],n:ns[r.h],hitBy:r.hitBy}));})()`, 3600000);
+  for (const salt of salts) for (const h of heroes) { await pg.reload();
+    const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const phases={},ns={},why={};let cyc=0;
+      ${DEPTH ? `{const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;P0.xp[${JSON.stringify(h)}]=xpFloor(${lvl});P0.skillOwned[${JSON.stringify(h)}]={};P0.loadouts[${JSON.stringify(h)}]=[];if(P0.talents)P0.talents[${JSON.stringify(h)}]={};}` : ''}
+      const o=await BK.bossLab({bosses:[${JSON.stringify(level)}],heroes:[${JSON.stringify(h)}],healthMode:'normal',maxSecs:360,modes:true,salt:${salt},onFrame:({boss,h,why:w})=>{phases[h]=Math.max(phases[h]||1,boss.phase||1);why[w||'-']=(why[w||'-']||0)+1;const sh=BK.puppeteerHands().show();if(sh){cyc=sh.cycle;ns[h]={bossHp:Math.round(boss.hp)+'/'+boss.maxHp,n:Object.fromEntries(Object.entries(sh.n).filter(([k,v])=>v)),hurt:{...(sh.hurt||{})}};}}});
+      const top=Object.entries(why).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>k+':'+Math.round(v/60)+'s');
+      return o.rows.map(r=>({h:r.h,salt:${salt},out:r.outcome||r.skipped,secs:r.secs,taken:r.health&&Math.round(r.health.damageTaken),maxHp:BK.P.maxHp,bossLeft:r.hpLeftPct,phase:phases[r.h],cycle:cyc,n:ns[r.h],hitBy:r.hitBy,why:top}));})()`, 3600000);
     for (const x of r) console.log(JSON.stringify(x)); rows.push(...r); }
   const wins = rows.filter(r => r.out === 'win'), secs = wins.map(r => r.secs).sort((a, b) => a - b);
-  console.log(JSON.stringify({ boss: 'puppeteer', fights: rows.length, wins: wins.length, pct: Math.round(100 * wins.length / Math.max(1, rows.length)), medianWin: secs.length ? secs[secs.length >> 1] : null }));
+  console.log(JSON.stringify({ boss: 'puppeteer', depth: DEPTH ? lvl : 'fresh', fights: rows.length, wins: wins.length, pct: Math.round(100 * wins.length / Math.max(1, rows.length)), medianWin: secs.length ? secs[secs.length >> 1] : null }));
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }

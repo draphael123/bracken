@@ -18,7 +18,9 @@
 //     RIDE, told first (RING.warn), and changes the horses' bob
 //   - THE HORSES: always inside a jump (their saddles 16-40 px up; a jump rises 51), above the low ribbon, one never far from any point of the boards, the
 //     front run the platforms and the back not
-//   - THE CROWNING never has more than two of hers alive
+//   - (claude/fairfix4) THE CROWNING calls no crowd: in phases 2-3 it stands up her COPIES (2, then 3), which freeze dead in a look, creep at a turned back and stab
+//     (a look cancels), and burst when struck; HER OWN BALL struck back sets her alight (an opening of 3 s+, nothing banked); THE BONFIRE RING is told, then burns
+//     the boards but for one travelling gap (and a rider)
 // THE LEVEL: the green is her carousel (the arena, its ten horses, the firebox by the centre column, her UPSTREAM of it: the first burn is the ride's), the door checkpoint stands
 //   before it, the elite still guards the door, her relic (the fair's one relic slot) waits for her death, and the gate ends the level after it
 // IN THE PAGE: the fight wakes past the door and the ride starts; faced her feet do not move (the ride carries her) and co-op one facing holds her; the
@@ -40,11 +42,11 @@ const bad = [], ok = (c, m) => { if (!c) bad.push(m); };
 const DT = 1 / 60, FLOOR = 448;
 const A = { x0: 9968, x1: 10672, floor: FLOOR }, EMB = W.embersOf(10360);
 const hero = (x, face, o = {}) => ({ x, y: FLOOR, face, alive: true, ...o });
-const QUIETCD = { lashCd: 1e9, crownCd: 1e9, floorCd: 1e9, thrustCd: 1e9, tossCd: 1e9, sweepCd: 1e9, leapCd: 1e9 };   /* (claude/fairfix3: and her ball, her sweep and her leap) */
+const QUIETCD = { lashCd: 1e9, crownCd: 1e9, floorCd: 1e9, thrustCd: 1e9, tossCd: 1e9, sweepCd: 1e9, leapCd: 1e9, ringCd: 1e9 };   /* (claude/fairfix4: and her bonfire ring) */   /* (claude/fairfix3: and her ball, her sweep and her leap) */
 /* a queen and a world. The host moves her by vx and, on a ride (o.ride px/s), carries her the ride's way; `log` counts what the world was asked to do */
 function rig(o = {}) {
   const e = W.newWickerQueen({ t: 'wickerqueen', x: o.x ?? 10600, y: FLOOR, hp: o.hp ?? W.WQ.hp, maxHp: W.WQ.hp, alive: true, face: -1 });
-  e.mode = o.mode || 'still'; for (const k of ['lashCd', 'crownCd', 'floorCd', 'thrustCd', 'tossCd', 'sweepCd', 'leapCd']) if (o[k] !== undefined) e[k] = o[k];
+  e.mode = o.mode || 'still'; for (const k of ['lashCd', 'crownCd', 'floorCd', 'thrustCd', 'tossCd', 'sweepCd', 'leapCd', 'ringCd']) if (o[k] !== undefined) e[k] = o[k];
   const log = { hits: [], lash: [], thrust: [], summons: 0, adds: 0, says: [], balls: [], sweep: [] }, ride = o.ride || 0;
   const c = { heroes: o.heroes || [hero(10300, -1)], A, embers: o.embers === undefined ? EMB : o.embers, ringDir: ride ? 1 : 0, canStep: () => true, mx: 10312, horses: () => o.horses || [],
     ball: (x, dir) => log.balls.push({ x, dir }), sweep: (kind, xa, xb, pass) => log.sweep.push({ kind, xa, xb, pass }),
@@ -121,7 +123,8 @@ function rig(o = {}) {
   ok(MARK['wickerqueen|thrustLowTell'] === '!!' && ANSWER['wickerqueen|thrustLowTell'] === 'jump' && HEIGHT['wickerqueen|thrustLowTell'] === 'low', 'HER SPEAR thrust LOW is not !! / jump / low in src/marks.js');
   ok(!('wickerqueen|throwTell' in MARK) && !('wickerqueen|sickleTell' in MARK), 'her sickle rows are still in src/marks.js');
   ok(MARK['wickerqueen|crownTell'] === '' && !ANSWER['wickerqueen|crownTell'], 'THE CROWNING wears a mark (it throws no blow)');
-  ok(W.WQ_TELLS.every(m => m in { stabTell: 1, lashLowTell: 1, lashHighTell: 1, floorTell: 1, thrustHighTell: 1, thrustLowTell: 1, crownTell: 1, tossTell: 1, sweepLowTell: 1, sweepHighTell: 1, leapTell: 1 }) && W.WQ_TELLS.length === 11, 'WQ_TELLS is not her eleven windups (claude/fairfix3: the ball, the two sweeps and the leap)');
+  ok(W.WQ_TELLS.every(m => m in { stabTell: 1, lashLowTell: 1, lashHighTell: 1, floorTell: 1, thrustHighTell: 1, thrustLowTell: 1, crownTell: 1, tossTell: 1, sweepLowTell: 1, sweepHighTell: 1, leapTell: 1, ringTell: 1 }) && W.WQ_TELLS.length === 12, 'WQ_TELLS is not her twelve windups (claude/fairfix3: the ball, the two sweeps and the leap; claude/fairfix4: the bonfire ring)');
+  ok(MARK['wickerqueen|ringTell'] === '!!' && ANSWER['wickerqueen|ringTell'] === 'dodge' && HEIGHT['wickerqueen|ringTell'] === 'low', 'THE BONFIRE RING is not !! / dodge (to the gap) / low in src/marks.js');
   ok(MARK['wickerqueen|tossTell'] === '!!' && ANSWER['wickerqueen|tossTell'] === 'jump' && HEIGHT['wickerqueen|tossTell'] === 'low', 'THE WICKER BALL is not !! / jump / low in src/marks.js');
   ok(MARK['wickerqueen|sweepLowTell'] === '!!' && ANSWER['wickerqueen|sweepLowTell'] === 'jump' && MARK['wickerqueen|sweepHighTell'] === '!!' && ANSWER['wickerqueen|sweepHighTell'] === 'duck' && HEIGHT['wickerqueen|sweepHighTell'] === 'high', 'THE RIBBON SWEEP is not !! / jump low, duck high in src/marks.js');
   ok(MARK['wickerqueen|leapTell'] === '!!' && ANSWER['wickerqueen|leapTell'] === 'dodge', 'HER LEAP is not !! / dodge in src/marks.js');
@@ -133,7 +136,7 @@ function rig(o = {}) {
   ok(W.spearCatches('high', FLOOR, stand) && !W.spearCatches('high', FLOOR, duck) && riders.every(b => W.spearCatches('high', FLOOR, b)), 'HER SPEAR thrust HIGH: catches a standing hero and every rider, misses a ducked one');
   ok(W.spearCatches('low', FLOOR, stand) && W.spearCatches('low', FLOOR, duck) && !W.spearCatches('low', FLOOR, jump) && riders.every(b => !W.spearCatches('low', FLOOR, b)), 'HER SPEAR thrust LOW: catches a hero on the boards (ducked too), misses a jumping one and every rider');
   ok(W.floorCatches(FLOOR, FLOOR, false) && !W.floorCatches(FLOOR, FLOOR - C.RING.lo, true) && !W.floorCatches(FLOOR, FLOOR - 20, false), 'THE FLOOR BURNS: a hero on the boards, not a rider, not a hero in the air');
-  for (const l of ['HIGH: DUCK IT', 'LOW: JUMP IT', 'THE FLOOR BURNS: RIDE A HORSE', 'HER SPEAR, HIGH: DUCK', 'HER SPEAR, LOW: JUMP', 'SHE BURNS: CUT HER', 'THE RIDE BRINGS HER TO THE FIRE', 'LEAD HER ONTO THE FIRE, THEN FACE HER', 'FULL DARK: THE RIDE QUICKENS', 'SHE IS ALIGHT: THE RIDE QUICKENS'])
+  for (const l of ['HIGH: DUCK IT', 'LOW: JUMP IT', 'THE FLOOR BURNS: RIDE A HORSE', 'HER SPEAR, HIGH: DUCK', 'HER SPEAR, LOW: JUMP', 'SHE BURNS: CUT HER', 'THE RIDE BRINGS HER TO THE FIRE', 'LEAD HER ONTO THE FIRE, THEN FACE HER', 'FULL DARK: THE RIDE QUICKENS', 'SHE IS ALIGHT: THE RIDE QUICKENS', 'THE WICKER BALL: STRIKE IT BACK', 'STRUCK BACK', 'HER OWN FIRE: SHE CATCHES', 'THE BONFIRE RING: FIND THE GAP'])
     ok(CALL_LINES.has(l), 'her teaching line "' + l + '" is not in src/hint-lines.js (number() would drop it: the archfix lesson)');
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), wu = main.split('\n').find(l => l.startsWith('const windingUp ='));
   ok(/e\.t === 'wickerqueen' && typeof e\.mode === 'string' && e\.mode\.endsWith\('Tell'\)/.test(wu), 'her tells are not in windingUp() (rule A2: they would wind up in silence)'); }
@@ -181,7 +184,7 @@ ok(W.WQ.burnT >= 3 && W.WQ.burnTP3 >= 3 && W.WQ.ward <= 0.05, 'her burn is not a
 // ---- (claude/fairfix3) THE WICKER BALL, THE RIBBON SWEEP, HER LEAP: told, then the blow; a look in the crouch holds the leap ----
 { const r = rig({ ...QUIETCD, tossCd: 0, embers: null, heroes: [hero(10300, 1)], x: 10500 }); let tell = null, ball = null;
   for (let i = 0; i < 120 && ball === null; i++) for (const v of r.step()) { if (v.t === 'tossTell' && tell === null) tell = i; if (v.t === 'ball') ball = { i, dir: v.dir }; }
-  ok(tell !== null && ball && (ball.i - tell) / 60 >= W.WQ.tossTell - 0.05 && ball.dir === -1 && r.log.balls.length === 1 && r.log.says.includes('THE WICKER BALL: JUMP IT'), 'THE WICKER BALL is not told and then bowled at the hero: ' + JSON.stringify({ tell, ball }));
+  ok(tell !== null && ball && (ball.i - tell) / 60 >= W.WQ.tossTell - 0.05 && ball.dir === -1 && r.log.balls.length === 1 && r.log.says.includes('THE WICKER BALL: STRIKE IT BACK'), 'THE WICKER BALL is not told and then bowled at the hero: ' + JSON.stringify({ tell, ball }));
   const s = rig({ ...QUIETCD, sweepCd: 0, hp: W.WQ.hp * 0.6, embers: null, heroes: [hero(10300, 1)], x: 10500 }); let st = null, sw = null;
   for (let i = 0; i < 240; i++) for (const v of s.step()) { if (v.t === 'sweepTell' && st === null) st = i; if (v.t === 'sweep' && sw === null) sw = i; }
   const xs = s.log.sweep.flatMap(q => [q.xa, q.xb]);
@@ -245,11 +248,43 @@ ok(W.WQ.burnT >= 3 && W.WQ.burnTP3 >= 3 && W.WQ.ward <= 0.05, 'her burn is not a
   ok(C.ringFor(r, false, 3) === 'stop', 'the ride did not stop'); for (let i = 0; i < 60 * 4; i++) C.ringStep(r, DT);
   ok(r.speed === 0, 'the ride did not wind down to a stop: ' + r.speed); }
 
-// ---- THE CROWNING: at most two of hers alive ----
-{ const r = rig({ heroes: [hero(10300, 1)], lashCd: 1e9, floorCd: 1e9, crownCd: 0.5, embers: null }); let maxAlive = 0, calls = 0;
-  for (let i = 0; i < 60 * 80; i++) { const ev = r.step(); for (const v of ev) if (v.t === 'crown') calls++; if (i % 600 === 300) r.log.adds = Math.max(0, r.log.adds - 1); maxAlive = Math.max(maxAlive, r.log.adds); }
-  ok(calls >= 3 && r.log.summons >= 3, 'the crowning did not call (' + calls + ' calls, ' + r.log.summons + ' mummers)');
-  ok(maxAlive <= W.WQ.crownCap && W.WQ.crownCap === 2, 'the crowning left ' + maxAlive + ' of hers alive (at most two)'); }
+// ---- (claude/fairfix4) THE CROWNING CALLS HER COPIES (phases 2-3), not a crowd: they freeze dead in a look, creep and stab at a turned back, and burst when struck ----
+{ const p1 = rig({ ...QUIETCD, crownCd: 0, embers: null, heroes: [hero(10300, 1)] }); for (let i = 0; i < 60 * 20; i++) p1.step();
+  ok(p1.e.n.crown === 0 && !p1.e.fakes.length && !p1.log.summons, 'PHASE 1: she crowned (copies or a crowd) - the copies are phases two and three: ' + JSON.stringify({ crown: p1.e.n.crown, fakes: p1.e.fakes.length, summons: p1.log.summons }));
+  const p2 = rig({ ...QUIETCD, crownCd: 0, hp: W.WQ.hp * 0.6, embers: null, heroes: [hero(10560, 1)], x: 10620 }); let tellF = 0, crowned = null;
+  for (let i = 0; i < 60 * 4 && !crowned; i++) { for (const v of p2.step()) if (v.t === 'crown') crowned = v; if (p2.e.mode === 'crownTell') tellF++; }
+  ok(crowned && p2.e.fakes.length === W.WQ.copies[1] && W.WQ.copies[1] >= 2 && tellF >= W.WQ.crownTell * 60 - 2 && !p2.log.summons, 'PHASE 2: the crowning did not stand up her copies after its tell (or called a crowd): ' + JSON.stringify({ crowned, fakes: p2.e.fakes.length, tellF, summons: p2.log.summons }));
+  ok(p2.e.fakes.every(f => f.x > A.x0 && f.x < A.x1 && Math.abs(f.x - p2.e.x) >= 60), 'her copies stand off the ring, or on top of her: ' + JSON.stringify(p2.e.fakes.map(f => Math.round(f.x))));
+  /* WATCHED, a copy is frozen dead (not a reed, its anim stops); unwatched it creeps to him */
+  const h = p2.c.heroes[0]; h.x = 10300; h.face = 1; const fx = p2.e.fakes.map(f => [f.x, f.anim]); for (let i = 0; i < 60; i++) { p2.step(); }
+  const seenF = p2.e.fakes.filter(f => f.seen);
+  ok(seenF.length >= 1 && seenF.every(f => { const was = fx[p2.e.fakes.indexOf(f)]; return was && f.x === was[0] && f.anim === was[1] && f.mode === 'still'; }), 'a WATCHED copy moved (or its anim ran): the copies freeze dead in a look: ' + JSON.stringify(p2.e.fakes.map(f => [f.seen, f.mode, Math.round(f.x)])));
+  h.face = -1; const x0 = p2.e.fakes.map(f => f.x); for (let i = 0; i < 60; i++) p2.step();
+  ok(p2.e.fakes.some((f, i) => Math.abs(f.x - x0[i]) > 20 && f.mode === 'creep'), 'with his back turned no copy crept: ' + JSON.stringify(p2.e.fakes.map(f => [f.mode, Math.round(f.x - x0[0])])));
+  /* at his back a copy glows and stabs (a look cancels the glow) */
+  const st = rig({ ...QUIETCD, crownCd: 1e9, hp: W.WQ.hp * 0.6, embers: null, heroes: [hero(10300, -1)], x: 10620 }); st.e.fakes.push({ x: 10318, y: FLOOR, face: -1, mode: 'still', modeT: 0, anim: 0, vx: 0, id: 1 });
+  let glow = 0, stabbed = null; for (let i = 0; i < 120 && !stabbed; i++) { st.step(); if (st.e.fakes[0].mode === 'glow') glow++; stabbed = st.log.hits.find(x => x.name === 'HER COPY'); }
+  ok(stabbed && stabbed.d === W.WQ.copyStab && glow >= W.WQ.glow * 60 - 1, 'a copy at a turned back did not glow (told) and stab: ' + JSON.stringify({ glow, stabbed }));
+  const cn = rig({ ...QUIETCD, crownCd: 1e9, hp: W.WQ.hp * 0.6, embers: null, heroes: [hero(10300, -1)], x: 10620 }); cn.e.fakes.push({ x: 10318, y: FLOOR, face: -1, mode: 'still', modeT: 0, anim: 0, vx: 0, id: 1 });
+  for (let i = 0; i < 120; i++) { cn.step(); if (cn.e.fakes[0].mode === 'glow') cn.c.heroes[0].face = 1; }
+  ok(!cn.log.hits.some(x => x.name === 'HER COPY') && cn.e.fakes[0].mode === 'still', 'a look during a copy\'s glow did not cancel its stab');
+  const struck = W.strikeCopy(cn.e, 0); ok(struck && !cn.e.fakes.length && W.WQ.copyBurst > 0 && W.WQ.copyBurst < W.WQ.copyStab, 'a struck copy did not burst (gone, a small hurt)');
+  const p3 = rig({ ...QUIETCD, crownCd: 0, hp: W.WQ.hp * 0.3, embers: null, heroes: [hero(10300, 1)], x: 10400 }); for (let i = 0; i < 60 * 3; i++) p3.step();
+  ok(p3.e.fakes.length === W.WQ.copies[2] && W.WQ.copies[2] > W.WQ.copies[1], 'PHASE 3 does not stand more copies: ' + p3.e.fakes.length); }
+// ---- (claude/fairfix4) HER OWN BALL STRUCK BACK: she catches, an opening of at least 3 s, and no fire is banked or spent ----
+{ const r = rig({ ...QUIETCD, embers: [{ ...EMB, fire: true, bank: 0 }], heroes: [hero(10500, 1)], x: 10600 }); r.e.mode = 'lashLowTell'; r.e.modeT = 0.5;
+  const lit = W.wqIgnite(r.e, r.c); let open = 0, ev = []; for (let i = 0; i < 60 * 6 && r.e.mode !== 'still'; i++) { ev.push(...r.step()); open = Math.max(open, r.e.open || 0); }
+  ok(lit && r.e.n.burn === 1 && open >= 3 && !(r.e.bank > 0) && ev.some(v => v.t === 'burnOut') && !ev.some(v => v.t === 'banked'), 'struck back, her own ball did not set her alight for 3 s+ (or it banked her fire): ' + JSON.stringify({ lit, burn: r.e.n.burn, open, bank: r.e.bank }));
+  r.e.mode = 'burn'; r.e.modeT = 1; ok(!W.wqIgnite(r.e, r.c), 'a ball lit her again while she already burned');
+  const up = rig({ ...QUIETCD, embers: null, heroes: [hero(10500, 1)] }); up.e.perch = 'pole'; up.e.lift = W.WQ.poleLift; ok(W.wqIgnite(up.e, up.c) && !up.e.perch && up.e.lift === 0, 'struck back at her on her perch, the ball did not knock her down onto the boards');
+  ok(W.WQ.retSet >= 0.6 && W.WQ.retReach <= 40 && W.WQ.retReach >= 24 && W.WQ.retLate > 0, 'the strike-back is not a timed blow (a held blade, a short reach): ' + JSON.stringify({ set: W.WQ.retSet, reach: W.WQ.retReach })); }
+// ---- (claude/fairfix4) THE BONFIRE RING: told (her mark, the gap set a run away), then the boards burn but for one travelling gap; a rider is over it ----
+{ const r = rig({ ...QUIETCD, ringCd: 0, embers: null, heroes: [hero(10300, 1)], x: 10500 }); let tell = null, ring = null, gaps = [];
+  for (let i = 0; i < 60 * 6; i++) { for (const v of r.step()) { if (v.t === 'ringTell' && tell === null) tell = { i, gap: v.gap }; if (v.t === 'ring' && ring === null) ring = i; } if (r.e.mode === 'ring') gaps.push(r.e.gapX); }
+  ok(tell && ring !== null && (ring - tell.i) / 60 >= W.WQ.ringTell - 0.05 && r.log.says.includes('THE BONFIRE RING: FIND THE GAP'), 'THE BONFIRE RING is not told before it burns: ' + JSON.stringify({ tell, ring }));
+  const gm = (tell.gap[0] + tell.gap[1]) / 2; ok(Math.abs(gm - 10300) >= W.WQ.gapFrom[0] - 1 && Math.abs(gm - 10300) <= W.WQ.gapFrom[1] + 1, 'the gap is not a good run from the hero: ' + Math.round(gm - 10300));
+  ok(gaps.length >= W.WQ.ringT * 60 - 2 && Math.abs(gaps[gaps.length - 1] - gaps[0]) > 40, 'the gap did not travel along the ring through the burn: ' + JSON.stringify([gaps[0], gaps[gaps.length - 1]]));
+  const e = { gapX: 10400 }; ok(!W.ringCatches(e, 10400, FLOOR, FLOOR, false) && W.ringCatches(e, 10300, FLOOR, FLOOR, false) && !W.ringCatches(e, 10300, FLOOR - C.RING.lo, FLOOR, true) && W.ringCatches(e, 10300, FLOOR - 20, FLOOR, false), 'THE BONFIRE RING: it must spare the gap and a rider, and burn the boards (a hop is still in it)'); }
 
 // ---- THE LEVEL ----
 const lv = LEVELS.find(l => l.id === 'fair'), L = lv.build(), G = L.green, Ar = L.arena;
@@ -283,7 +318,7 @@ try {
       const A = BK.L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.P.face = 1; BK.sim(150); return BK.boss; };
     const q = boot(), A = BK.L.arena, G = BK.L.green, fl = A.floor, emb = { x0: G.bonfire * 16 + 8 - 40, x1: G.bonfire * 16 + 8 + 40, mid: G.bonfire * 16 + 8 };
     for (const e of BK.enemies()) if (e !== q) e.alive = false;
-    const quiet = () => { q.lashCd = 99; q.crownCd = 99; q.floorCd = 99; q.thrustCd = 99; q.tossCd = 99; q.sweepCd = 99; q.leapCd = 99; q.rest = 0; };   /* (claude/fairfix3: her ball, her sweep and her leap too) */
+    const quiet = () => { q.lashCd = 99; q.crownCd = 99; q.floorCd = 99; q.thrustCd = 99; q.tossCd = 99; q.sweepCd = 99; q.leapCd = 99; q.ringCd = 99; q.rest = 0; };   /* (claude/fairfix3: her ball, her sweep and her leap too; claude/fairfix4: her bonfire ring) */
     const ring = () => BK.fairRing(), horses = () => BK.movers().filter(m => m.kind === 'carhorse' && !m.broken);
     out.woke = { active: BK.bossActive, t: q && q.t, mode: q && q.mode, ring: ring() };
     const hold = (x, face) => { BK.P.x = x; BK.P.y = fl; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = face; BK.P.onMover = null; };
@@ -352,17 +387,39 @@ try {
     // 11. PHASE THREE: alight, and the ride quickens again
     quiet(); q.hp = Math.floor(q.maxHp * 0.3); q.mode = 'still'; q.x = A.x1 - 40; for (let i = 0; i < 60 * 4; i++) { quiet(); hold(A.x0 + 60, 1); BK.sim(1); }
     out.alight = { phase: q.phase, dark: +(BK.L.dark || 0).toFixed(2), speed: ring().speed };
-    // 12. THE CROWNING: at most two of hers
-    q.mode = 'still'; q.x = A.x1 - 40; let maxQ = 0; q.crownCd = 0;
-    for (let i = 0; i < 60 * 40; i++) { hold(A.x0 + 60, 1); q.lashCd = 99; q.floorCd = 99; q.thrustCd = 99; q.tossCd = 99; q.sweepCd = 99; q.leapCd = 99; if (q.crownCd > 0.5) q.crownCd = 0.5; BK.P.inv = 99; BK.sim(1); maxQ = Math.max(maxQ, BK.enemies().filter(e => e.alive && e.fromQueen).length); if (i === 1200) for (const e of BK.enemies()) if (e.fromQueen) e.alive = false; }
-    out.crown = { calls: q.n.crown, max: maxQ };
+    // 12. (claude/fairfix4) THE CROWNING stands up HER COPIES in the page (no crowd); a blade through one bursts it into burning straw, a small hurt
+    quiet(); q.hp = Math.floor(q.maxHp * 0.6); q.mode = 'still'; q.x = A.x1 - 140; q.fakes.length = 0; q.crownCd = 0; const mumsBefore = BK.enemies().filter(e => e.alive && e.t === 'mummer').length;
+    for (let i = 0; i < 60 * 4 && q.fakes.length < 2; i++) { const c0 = q.crownCd; quiet(); q.crownCd = Math.min(c0, 99); hold(A.x0 + 60, 1); BK.P.inv = 99; BK.sim(1); }
+    out.crown = { calls: q.n.crown, copies: q.fakes.length, mummers: BK.enemies().filter(e => e.alive && e.t === 'mummer').length - mumsBefore };
+    { const f = q.fakes[0]; BK.god = false; BK.P.hp = BK.P.maxHp; BK.P.inv = 0; const hp0 = BK.P.hp; hold(f.x - 14, 1); BK.sim(2); none(); BK.press('atk'); for (let i = 0; i < 30; i++) { BK.P.inv = 0; quiet(); BK.sim(1); }
+      out.crown.struck = !q.fakes.includes(f); out.crown.hurt = hp0 - BK.P.hp; BK.god = true; BK.P.hp = BK.P.maxHp; q.fakes.length = 0; q.hp = q.maxHp; }
+    // 12b. (claude/fairfix4) HER OWN BALL STRUCK BACK, with real keys: a blade held and then begun as it reaches him sends it back and she catches; a mashed blade does not
+    const ballAs = mash => { quiet(); q.hp = q.maxHp; q.mode = 'still'; q.vx = 0; q.bank = 99; const F = BK.fair(); F.wqPits = (F.wqPits || []).filter(p => p.fire); F.wqBalls = []; q.x = emb.x1 + 170; q.tossCd = 0;
+      BK.god = false; BK.P.hp = BK.P.maxHp; BK.P.inv = 0; const hp0 = BK.P.hp, burn0 = q.n.burn; let pressed = 0, ret = false, catchSeen = false;
+      for (let i = 0; i < 60 * 5; i++) { if (i > 0) { const t0 = q.tossCd; quiet(); q.tossCd = t0 > 50 ? 99 : t0; } BK.P.inv = 0; none(); const b = (F.wqBalls || [])[0];
+        if (!BK.P.ground || Math.abs(BK.P.x - (q.x - 130)) > 40) { BK.P.x = q.x - 130; } BK.P.face = 1;
+        if (mash) { if (BK.P.atk < 0) { BK.press('atk'); pressed++; } } else if (b && !b.ret && !pressed && b.x - BK.P.x <= 30 && b.x - BK.P.x >= 14) { BK.press('atk'); pressed++; }
+        BK.sim(1); if (b && b.ret) ret = true; if (q.mode === 'catch' || q.mode === 'burn') catchSeen = true; if (catchSeen && q.mode === 'burn') break; }
+      const o = { pressed, ret, caught: catchSeen, burned: q.n.burn > burn0 || q.mode === 'burn', hurt: hp0 - BK.P.hp, open: q.open, bank: q.bank };
+      for (let i = 0; i < 60 * 6 && q.mode !== 'still'; i++) { quiet(); BK.P.inv = 99; BK.sim(1); } BK.god = true; BK.P.hp = BK.P.maxHp; q.bank = 0; return o; };
+    out.ball = { timed: ballAs(false), mash: ballAs(true) };
+    // 12c. (claude/fairfix4) THE BONFIRE RING in the page: outside the gap on the boards it burns; in the gap, or up on a horse, it does not
+    const ringAs = act => { quiet(); q.hp = q.maxHp; q.mode = 'still'; q.x = A.x0 + 120; q.ringCd = 0; q.bank = 99; { const F2 = BK.fair(); F2.wqPits = (F2.wqPits || []).filter(p => p.fire); } BK.god = false; BK.P.hp = BK.P.maxHp; BK.P.inv = 0; const hp0 = BK.P.hp; let told = 0, burnF = 0, mark = null;
+      if (act === 'ride') onHorse(); else hold(A.x0 + 360, 1);
+      for (let i = 0; i < 60 * 9; i++) { const r0 = q.ringCd; quiet(); q.ringCd = r0; BK.P.inv = 0; none(); BK.P.face = -1;
+        if (q.mode === 'ringTell') { told++; if (!mark) mark = BK.markOf(q); if (act === 'gap') hold(q.gapX, -1); }
+        if (q.mode === 'ring') { burnF++; if (act === 'gap') hold(q.gapX, -1); else if (act === 'stand') hold(Math.max(A.x0 + 30, Math.min(A.x1 - 30, q.gapX + (q.gapX < A.x1 - 140 ? 100 : -100))), -1); }
+        else if (act !== 'ride' && q.mode !== 'ringTell') hold(A.x0 + 360, -1);
+        BK.sim(1); if (burnF && q.mode !== 'ring') break; }
+      const lost = hp0 - BK.P.hp; BK.god = true; BK.P.hp = BK.P.maxHp; BK.P.onMover = null; q.bank = 0; return { lost, told, burnF, mark, mode: q.mode }; };
+    out.ring = { stand: ringAs('stand'), gap: ringAs('gap'), ride: ringAs('ride') };
     // 13. CO-OP: the warden facing her holds her feet while the knight's back is turned
     for (const e of BK.enemies()) if (e.fromQueen) e.alive = false;
     q.hp = q.maxHp; q.mode = 'still'; q.x = emb.x1 + 60; BK.coopStart('warden', false); BK.sim(2); const [PA, PB] = BK.players(); quiet();
     const place = (fa, fb) => { PA.x = q.x - 150; PA.y = fl; PA.vx = 0; PA.face = fa; PB.x = q.x - 120; PB.y = fl; PB.vx = 0; PB.face = fb; };
     let m1 = 0; for (let i = 0; i < 300; i++) { quiet(); place(-1, 1); BK.sim(1); m1 = Math.max(m1, Math.abs(q.vx)); }   /* (long enough for the ride to settle back to phase one's pace: her health was put back) */
     let m2 = 0; const q0x = q.x; for (let i = 0; i < 60; i++) { quiet(); PA.x = q0x - 150; PA.y = fl; PA.vx = 0; PA.face = -1; PB.x = q0x - 120; PB.y = fl; PB.vx = 0; PB.face = -1; BK.sim(1); m2 = Math.max(m2, q0x - q.x); }
-    out.coop = { oneFacing: m1, bothAway: Math.round(m2) }; BK.coopEnd();
+    out.coop = { oneFacing: m1, bothAway: Math.round(m2), mode: q.mode, x: Math.round(q.x), pa: Math.round(PA.x), rest: q.rest, ring: q.ringCd }; BK.coopEnd();
     // 14. HER DEATH: the ride stops, the relic, the gate, the level cleared at the gate
     for (const e of BK.enemies()) if (e.fromQueen) e.alive = false;
     const rel = () => BK.props().find(p => p.t === 'relic' && p.kind === 'maypole');   /* (hers: the back lot holds the fair's own glass, claude/fairfix2) */ out.death = { relicHidden: !!(rel() && rel().hidden) };
@@ -395,7 +452,11 @@ ok(R.brought.mode === 'burn' && R.brought.feet === 0 && R.brought.flung > 0, 'he
 ok(R.dark.phase === 2 && R.dark.dark >= 0.5 && R.dark.farMoved > 10 && R.dark.nearFeet === 0, 'PHASE 2 in the page (dark green, near look only): ' + JSON.stringify(R.dark));
 ok(R.dark.quickT > 1 && R.dark.speed > R.dark.s0 + 5, 'PHASE 2: the ride did not quicken, or not told first: ' + JSON.stringify(R.dark));
 ok(R.alight.phase === 3 && R.alight.dark < 0.2 && R.alight.speed > R.dark.speed + 5, 'PHASE 3 in the page (alight, the ride quicker again): ' + JSON.stringify(R.alight));
-ok(R.crown.calls >= 2 && R.crown.max > 0 && R.crown.max <= 2, 'the crowning in the page: ' + JSON.stringify(R.crown));
+ok(R.crown.calls >= 1 && R.crown.copies === 2 && R.crown.mummers <= 0 && R.crown.struck && R.crown.hurt > 0 && R.crown.hurt < 20, 'the crowning in the page did not stand up her copies (no crowd), or a struck copy did not burst into burning straw (a small hurt): ' + JSON.stringify(R.crown));
+{ const T = R.ball.timed, M = R.ball.mash; ok(T.pressed === 1 && T.ret && T.caught && T.burned && T.open >= 2.5, 'a blade held and begun as her ball reached him did not strike it back and set her alight in the page: ' + JSON.stringify(T));
+  ok(M.pressed > 3 && !M.ret && !M.caught && M.hurt > 0, 'a MASHED blade struck her ball back (it must only scatter it, and the ball hurts): ' + JSON.stringify(M)); }
+{ const G = R.ring; ok(G.stand.mark === '!!' && G.stand.told >= 80 && G.stand.burnF >= 150, 'THE BONFIRE RING is not told with its !! and then burning: ' + JSON.stringify(G.stand));
+  ok(G.stand.lost > 0 && G.gap.lost === 0 && G.ride.lost === 0, 'THE BONFIRE RING must burn a hero on the boards outside the gap, and spare one in the gap or on a horse: ' + JSON.stringify(G)); }
 ok(R.coop.oneFacing === 0 && R.coop.bothAway > 10, 'co-op in the page: ' + JSON.stringify(R.coop));
 ok(R.death.relicHidden && R.death.dead && !R.death.active && R.death.relicShown && R.death.relicKind && R.death.gateOpen && R.death.gotRelic, 'her death: ' + JSON.stringify(R.death));
 ok(R.death.ring && !R.death.ring.on && R.death.ring.speed === 0, 'her death did not stop the ride: ' + JSON.stringify(R.death.ring));

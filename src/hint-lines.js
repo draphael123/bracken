@@ -16,16 +16,20 @@ export const CALL_LINES = new Set([
   'LEAD HER ONTO THE FIRE, THEN FACE HER', 'THE RIDE BRINGS HER TO THE FIRE', 'THE WICKER CATCHES', 'SHE BURNS: CUT HER', 'THE FIRE IS BANKED', 'THE FIRE IS HOT AGAIN',
   'HIGH: DUCK IT', 'THE FLOOR BURNS: RIDE A HORSE', 'HER SPEAR, HIGH: DUCK', 'HER SPEAR, LOW: JUMP', 'FULL DARK: THE RIDE QUICKENS', 'SHE IS ALIGHT: THE RIDE QUICKENS', 'THE CROWNING',
   /* claude/fairfix3: her ball, her ribbon sweep, her fires (src/wicker-queen.js, src/main.js wqBallsStep / wqLightPit) */
-  'THE WICKER BALL: JUMP IT', 'THE RIBBONS SWEEP LOW: JUMP TWICE', 'THE RIBBONS SWEEP HIGH: DUCK', 'THAT FIRE IS SPENT', 'THE BALL RELIGHTS THE FIRE',
+  /* claude/fairfix4: her ball struck back into her, and THE BONFIRE RING (the ball's line was 'THE WICKER BALL: JUMP IT') */
+  'THE WICKER BALL: STRIKE IT BACK', 'STRUCK BACK', 'HER OWN FIRE: SHE CATCHES', 'THE BONFIRE RING: FIND THE GAP',
+  'THE RIBBONS SWEEP LOW: JUMP TWICE', 'THE RIBBONS SWEEP HIGH: DUCK', 'THAT FIRE IS SPENT', 'THE BALL RELIGHTS THE FIRE',
   /* the states that mean "hit him now" / "the ward is down" */
   'OPEN', 'WARDED', 'HE IS OPEN', 'DOUSED - HE IS OPEN', 'HIS HEAD IS UP. HE IS OPEN', 'HER SIDE IS OPEN', 'HER GUARD IS BROKEN',
   'THE GOBLIN QUEEN  OPEN', "THE QUEEN'S LANCE  OPEN", 'THE PALADIN  THE WARD IS DOWN', 'THE RAM LORD  DAZED', 'THE ROC  GROUNDED', 'THE RIMEWRIGHT  THAWED',
   'THE BURIED PRINCE  BAREHEADED', 'THE BURIED PRINCE  IN THE LIGHT', 'THE FORGEMASTER  STUNNED', 'THE FORGEMASTER  SCALDED', 'THE WINDCALLER  HOLD ON',
   /* the openings that say what to do */
-  'CUT HIM', 'HIT IT', 'HOLD HIM', 'HIT THE TALON', 'HE IS DOWN: CUT HIM', 'THE BOOK TURNS: CUT HIM', 'HIS HANDS ARE UP: CUT HIM',
+  'CUT HIM', 'HIT IT', 'HOLD HIM', 'HIT THE TALON', 'HE IS DOWN: CUT HIM', 'THE BOOK TURNS: CUT HIM',
   'IN THE MUD: CUT HIM', 'DOWN: CUT HER', 'THE LANCE STICKS: CUT HIM', 'THE POINT STICKS: CUT HIM', 'INTO THE STONE: CUT HER', 'THE RIME RUNS OFF IT: CUT IT',
   'IT FALLS - FINISH IT', 'IT SKIDS: HIT IT', 'IT LANDS: HIT IT', 'IT WHINES: HIT IT', 'INTO THE LANTERN: HIT IT', 'PINNED: HIT IT', 'ON THE GROUND: HIT IT',
   'DAZED: HIT HIM', 'SCALDED: HIT HIM', 'STUCK: JUMP ON IT', 'STRIKE ITS LEVER', 'STRIKE IT AGAIN', 'KILL THE PUPS FAST', 'THE IRON TAKES HALF: JAM HIS DRUM',
+  /* claude/bosswave1: the boss wave's earned openings, told (src/main.js, src/boss-greed.js OPEN_RULE) */
+  'HE FALLS: CUT HIM', 'HE RISES ON THE WIND', 'SHE RAPS THE FLOOR: CUT HER', 'NOTHING THERE: CUT HER', 'HE SHAKES IT OFF', 'IT GATHERS ITS GLASS', 'IT SHAKES IT OFF',
   'STUNG: HIS ARMS LIE STILL', 'BEHIND HER GUARD: BRING A GUN TO BEAR', 'THE COLD TAKES YOUR FIRE: A CANDLE AT THE WALL',
   /* the ones that say what to do about a hazard */
   'THE ROD: JUMP', 'LOW: JUMP IT', 'JUMP THE FLOCK', 'FROM BOTH WALLS: JUMP', 'JUMP! AND KEEP JUMPING', 'GET CLEAR', 'GET ABOVE THE ROOTS - AND THE SPORES',
@@ -38,11 +42,16 @@ export const CALL_LINES = new Set([
   'THE LOCK FLOODS: SHE HIDES IN THE CULVERTS', 'OPEN THE PADDLE OF HER CULVERT', 'THE CULVERT SPITS HER OUT: CUT HER', 'SHE IS NOT IN THAT CULVERT',
   'THE FOG COMES DOWN: SHE GOES FOR THE LIGHT', 'DROP A LAMP AT A GATE, THEN WORK ITS PADDLE', 'SHE WILL NOT LEAVE THE LIGHT: CUT HER', 'THE LIGHT GOES OUT',
   'STRIKE THE ARM THAT HOLDS YOU', 'THE LAMP IS HOOKED FAST', 'THE WATER TAKES IT: STRAND HER FIRST',
+  /* claude/canalfix3: she contests the paddles, fights in her openings, and each phase breaks the last trick */
+  'WORK THE PADDLE: SHE COMES FOR YOU', 'SHAKEN OFF THE PADDLE', 'SHE STILL BITES: BLOCK IT OR JUMP IT', 'SHE KNOTTED THE PADDLE YOU USED: CUT IT', 'THE WEED BINDS THE LAMP: CUT IT', 'THE LAMP IS FREE',
   'THE VAULT OPENS', 'THE CAMP GATE OPENS', 'THE FURNACE OPENS', 'THE HATCH OPENS', 'THE DOOR OPENS', 'THE WAY OPENS', 'A PORTAL OPENS', 'THE GRATE IS UP', 'THE HOIST IS FREE',
   /* claude/puppeteer (PUPPETEER3): THE PUPPETEER's openings and reads (src/puppeteer.js, src/puppeteer-hands.js) */
-  'DROP BOTH PUPPETS AND HE COMES DOWN', "HE'S DOWN - STRIKE HIM", 'ONE DOWN: HIS BAR DROPS', 'CUT: THE HARLEQUIN DROPS', 'THE ARM GOES LIMP: NO MORE CHOP OR GRAB',
-  'THE BACK GOES LIMP: NO MORE SLAM', 'A STRING PARTS', 'JOLTED: STRIKE HIM', 'OUT OF REACH: DROP HIS PUPPETS FIRST', 'SCENE CHANGE: WATCH THE BOARDS',
-  'TOGETHER NOW: HIS SLAM BREAKS THE BOARDS', 'DROP THE KING AND THE HARLEQUIN: HE FALLS',
+  "HE'S DOWN - STRIKE HIM", 'ONE DOWN: HIS BAR DROPS', 'CUT: THE HARLEQUIN DROPS', 'THE ARM GOES LIMP: NO MORE CHOP OR GRAB',
+  'THE BACK GOES LIMP: NO MORE SLAM', 'A STRING PARTS', 'OUT OF REACH: DROP HIS PUPPETS FIRST', 'SCENE CHANGE: WATCH THE BOARDS',
+  'TOGETHER NOW: HIS SLAM BREAKS THE BOARDS',
+  /* claude/theatre3: the loop rebuilt - a puppet is hurt only while it glows green; both down, his bar goes slack: climb and cut it */
+  'DROP BOTH PUPPETS, THEN CUT HIS BAR', 'DROP THE KING AND THE HARLEQUIN, THEN CUT HIS BAR', 'HIS BAR IS SLACK: CLIMB AND CUT IT', 'TOO SLOW: HE STRINGS THEM AGAIN',
+  'HIS BAR IS CUT: HE FALLS', 'HIS BAR IS TAUT: DROP BOTH PUPPETS FIRST', 'CLANK: STRIKE A PUPPET WHEN IT GLOWS GREEN', 'STRIKE HIS BAR, NOT HIM',
   /* claude/combat3: THE GLOBAL BOSS RULE (src/boss-greed.js) - a blow outside his opening is a scratch, and greed is answered */
   'A SCRATCH: WAIT FOR HIS OPENING', 'TOO GREEDY: HE HITS BACK',
   /* claude/welltown: THE WELL TOWN's skin, its mud and fire, its windlass and dry cistern, the water-thief (src/well-town-hands.js), and THE BANDIT KING (src/bandit-king-hands.js) */
@@ -57,6 +66,11 @@ export const CALL_LINES = new Set([
   'HE BURNS: POUR YOUR SKIN ON HIM', 'THE STEAM BLINDS HIM: CUT HIM', 'HE IS NOT BURNING: IT RUNS OFF HIM', 'THE MUD PLATE TURNS IT', 'HIS MEN TAKE THE WELL',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
+/* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the
+   hero has made no headway, one of these names the machine that holds her - never how to work it (the glint over the machine shows where). src/canal-hands.js */
+export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 'THE BRIDGE HOLDS HER: FIND ITS CAPSTAN', fog: 'THE FOG HOLDS HER: FIND THE FOGHORN',
+  door: 'THE DOOR IS TOO HIGH: THE LOCK UNDER HER IS LOW' };
+/* (they go straight to the hint box, src/canal-hands.js H.hint - not through number(), so they are not CALL_LINES) */
 export const CALL_COUNTS = [/^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
 export const isCallout = txt => typeof txt === 'string' && (CALL_LINES.has(txt) || CALL_COUNTS.some(r => r.test(txt)));
 /* what is drawn: the line, with the boss-name double space read as a colon ("THE GOBLIN QUEEN: OPEN") */

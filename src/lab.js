@@ -1140,20 +1140,25 @@ async function runbossLab(BK, opts) {
         /* (claude/fairfix3) HER FIRES ARE SEVERAL NOW (BK.L.wqPits: the firebox and the ring pits): lure her to the hot one nearest her; her ball is jumped, her sweep read like a
            lash (low: jump each pass; high: duck), her leap's crouch looked at (it holds her), and a told landing stepped away from */
         const G=BK.L.green,q=boss,mx=G.maypole*16+8,hot=(BK.L.wqPits||[]).filter(p=>!(p.fire?q.bank>0:p.bank>0)),pit=hot.sort((a,b)=>Math.abs(a.mid-q.x)-Math.abs(b.mid-q.x))[0],mid=pit?pit.mid:G.bonfire*16+8,E=pit?(pit.x1-pit.x0)/2:40,dq=q.x-P.x,sq=Math.sign(dq)||1;
-        const balls=(BK.fair()&&BK.fair().wqBalls)||[],ballNear=balls.find(b=>Math.abs(b.x-P.x)<36&&Math.sign(P.x-b.x)===b.dir),sweepK=q.mode==='sweepLowTell'?'low':q.mode==='sweepHighTell'?'high':q.mode==='sweep'?q.sweepKind:null,sFront=q.mode==='sweep'?wqSweepFront(A,q.sweepK||0,q.sweepDir||1):null;
+        /* (claude/fairfix4) HER BALL IS STRUCK BACK: coming at him he holds his blade (a mash only scatters it), faces it, and begins one blow as it reaches him - the Pyromancer
+           flares instead; a ball he cannot meet is jumped as before. HER COPIES are read like her crowd was: a glowing one is looked at, a near one cut down. THE BONFIRE RING:
+           the gap or a horse, whichever is nearer */
+        const balls=(BK.fair()&&BK.fair().wqBalls)||[],ballCome=balls.find(b=>!b.ret&&Math.abs(b.x-P.x)<150&&Math.sign(P.x-b.x)===b.dir),ballNear=balls.find(b=>!b.ret&&Math.abs(b.x-P.x)<36&&Math.sign(P.x-b.x)===b.dir),sweepK=q.mode==='sweepLowTell'?'low':q.mode==='sweepHighTell'?'high':q.mode==='sweep'?q.sweepKind:null,sFront=q.mode==='sweep'?wqSweepFront(A,q.sweepK||0,q.sweepDir||1):null;
         const landing=(q.mode==='leapTell'||q.mode==='leap')&&q.leapTo&&q.leapTo.kind==='floor'&&Math.abs(q.leapTo.x-P.x)<36;
         let gx=P.x,face=sq,swing=null,look=false;
         const lashK=q.mode==='lashLowTell'?'low':q.mode==='lashHighTell'?'high':q.mode==='lash'?q.lashKind:null,front=q.mode==='lash'?(q.lashR||0):-1,dm=Math.abs(P.x-mx);
-        const mums=BK.enemies().filter(e=>e.alive&&e.t==='mummer'&&Math.abs(e.x-P.x)<120&&Math.abs(e.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x));
+        const mums=[...BK.enemies().filter(e=>e.alive&&e.t==='mummer'),...(q.fakes||[]).map(f=>Object.assign(f,{w:22,alive:true}))].filter(e=>Math.abs(e.x-P.x)<120&&Math.abs(e.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x));
         const glowM=mums.find(e=>e.mode==='glow'),nearM=mums.find(e=>Math.abs(e.x-P.x)<60);
         const HS=BK.movers().filter(m=>m.kind==='carhorse'&&!m.broken),hc=m=>m.x+m.w/2,ride=P.onMover&&P.onMover.kind==='carhorse'?P.onMover:null;
-        const floorD=q.mode==='floorTell'||q.mode==='floor';
+        const ringOn=q.mode==='ringTell'||q.mode==='ring',gapX=ringOn?(q.gapX||0):0,horseD=Math.min(1e9,...HS.map(m=>Math.abs(hc(m)-P.x))),toGap=ringOn&&!ride&&Math.abs(gapX-P.x)<=horseD+20;
+        const floorD=q.mode==='floorTell'||q.mode==='floor'||(ringOn&&!toGap);
         const thrK=q.mode==='thrustHighTell'?'high':q.mode==='thrustLowTell'?'low':q.mode==='thrust'?q.thrustKind:null,thrTell=q.mode==='thrustHighTell'||q.mode==='thrustLowTell',adq=Math.abs(dq);
         const thrIn=!!thrK&&adq<96+12&&Math.sign(P.x-q.x)===(q.thrustDir||q.face)&&!(q.mode==='thrust'&&(q.tip||0)>adq+8);   /* her spear told (or running out) his way, and not yet past him */
         const highD=lashK==='high'||(thrK==='high'&&thrIn)||(sweepK==='high'&&(q.mode==='sweep'?Math.abs(sFront-P.x)<70:q.modeT<0.35));
         const side=-1,lureX=Math.max(A.x0+20,Math.min(A.x1-20,mid+side*46)),transit=Math.abs(lureX-P.x)>40&&Math.sign(lureX-P.x)!==sq;
         if(landing&&!highD){gx=P.x+(P.x<q.leapTo.x?-1:1)*60;face=sq;}   /* (claude/fairfix3) her landing is marked: off the mark */
         else if(q.mode==='leapTell'){face=sq;look=true;gx=P.x;}   /* her crouch: look at her, and the leap is held */
+        else if(toGap&&!highD){gx=gapX+(q.mode==='ring'?(q.gapDir||1)*6:0);face=sq;}   /* (claude/fairfix4) THE BONFIRE RING: into the gap, and keep in it as it travels */
         else if(floorD&&!highD){   /* UP ON A HORSE */
           const end=A.x1-70,ok=HS.filter(m=>hc(m)<end),pick=ok.sort((a,b)=>Math.abs(hc(a)-P.x)-Math.abs(hc(b)-P.x))[0];
           if(ride&&hc(ride)<end+30){gx=hc(ride);face=glowM?Math.sign(glowM.x-P.x)||1:sq;look=true;}
@@ -1173,7 +1178,15 @@ async function runbossLab(BK, opts) {
           if(Math.abs(gx-P.x)>8)face=Math.sign(gx-P.x)||1;else{face=(deep&&Math.abs(dq)<reach)||Math.abs(dq)<60?sq:-sq;look=face===sq;}}   /* THE LURE: upstream of the embers, back turned until she is well onto them (banked, she comes on across them to be brought back), then look */
         if(!ride&&lashK==='low'&&P.ground&&q.mode==='lash'&&front>dm-70&&front<dm+10){BK.press('jump');P.labJump=16;}
         if(!ride&&thrK==='low'&&thrIn&&P.ground&&((thrTell&&q.modeT<0.12)||q.mode==='thrust')){BK.press('jump');P.labJump=16;}   /* her LOW thrust: over it as the line runs out */
-        if(!ride&&P.ground&&ballNear){BK.press('jump');P.labJump=16;}   /* (claude/fairfix3) her wicker ball: over it */
+        let striking=false;
+        if(!ride&&P.ground&&ballCome&&!highD&&!floorD&&!toGap){const ahead=(ballCome.x-P.x)*Math.sign(ballCome.x-P.x),held=f-(P.labSwingF??-999)>=48;
+          if(held||ahead<60){striking=true;swing=null;gx=P.x;face=Math.sign(ballCome.x-P.x)||face;}   /* hold the blade and face it */
+          /* a human's hand, not a machine's: where he begins the blow is his own for each ball (0-44 px off, deterministic - the row's dice are left alone); the window is 6-32 */
+          const tgt=ballCome.labTgt??(ballCome.labTgt=((ballCome.n||0)*37+h.length*11)%45);
+          if(!ballCome.labTried&&h==='pyro'&&ahead<=tgt&&!(P.labFlare>0)){k.down=true;P.labFlare=30;ballCome.labTried=true;}   /* the ember flare */
+          else if(!ballCome.labTried&&h!=='pyro'&&held&&ahead<=tgt&&P.atk<0){P.face=face;BK.press('atk');swings++;P.labSwingF=f;ballCome.labTried=true;}}
+        if(P.labFlare>0)P.labFlare--;
+        if(!ride&&P.ground&&ballNear&&!(striking&&!ballNear.labTried)){BK.press('jump');P.labJump=16;}   /* (claude/fairfix3) her wicker ball: over it (when he is not meeting it, or his blow went wide) */
         if(!ride&&P.ground&&sweepK==='low'&&q.mode==='sweep'&&Math.abs(sFront-P.x)<34){BK.press('jump');P.labJump=16;}   /* her low sweep: over each pass */
         if(P.labJump>0){P.labJump--;k.jump=true;}
         const duck=!ride&&P.ground&&((lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20)))||(thrK==='high'&&thrIn&&(!thrTell||q.modeT<0.3))||(sweepK==='high'&&q.mode==='sweep'&&Math.abs(sFront-P.x)<60));   /* (claude/fairfix3) and under her high sweep as each pass comes by */
@@ -1181,7 +1194,7 @@ async function runbossLab(BK, opts) {
         /* looking at her he does not walk with his back to her: the ride carries them both, so the look holds */
         const want=Math.abs(gx-P.x)>5&&!(look&&Math.sign(gx-P.x)!==face);
         if(!duck&&want)k[gx>P.x?'right':'left']=true;else P.face=face;
-        if(!duck&&!floorD&&swing&&P.atk<0&&Math.abs(swing.x-P.x)<LAB_REACH[h]+(swing.w||10)/2+4&&Math.abs(swing.y-P.y)<30){P.face=Math.sign(swing.x-P.x)||1;BK.press('atk');swings++;}
+        if(!duck&&!floorD&&!striking&&swing&&P.atk<0&&Math.abs(swing.x-P.x)<LAB_REACH[h]+(swing.w||10)/2+4&&Math.abs(swing.y-P.y)<30){P.face=Math.sign(swing.x-P.x)||1;BK.press('atk');swings++;P.labSwingF=f;}
         const was=P.hp,m0=q.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:q.open>0});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='harbormaster'){
@@ -1209,9 +1222,12 @@ async function runbossLab(BK, opts) {
         if(P.labJump>0){P.labJump--;k.jump=true;}
         const guard=['salvagePinTell','salvageHookTell'].includes(boss.mode);
         if(guard&&SHIELDED(h)){k.block=true;gx=P.x;P.face=side;}
+        else if(guard&&h==='warden'&&boss.mode==='salvagePinTell'){k.block=DEFLECT_TAP(f);gx=P.x;P.face=side;}   /* (claude/bosswave1) the warden's deflect answers his pin too */
         else if(guard&&boss.modeT<.24){k[side>0?'left':'right']=true;BK.press('dodge');gx=P.x;}
+        /* (claude/bosswave1: he is on the chip now, his parried pin his opening) the hands stop short of his greed and step out of its ring */
+        const Gq=BK.greed,greedy=Gq&&!(boss.open>0)&&Gq.count(boss)>=Gq.limit(boss)-2;if(Gq&&boss.greedT>0&&Math.abs(dx)<(Gq.reach||60)+boss.w/2+18)gx=boss.x-side*((Gq.reach||60)+boss.w/2+30);
         if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
-        if(!guard&&!incoming&&(cargo===false||cargo===undefined)&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<28&&P.atk<0){P.face=side;BK.press('atk');swings++;}
+        if(!guard&&!incoming&&!greedy&&!(boss.greedT>0)&&(cargo===false||cargo===undefined)&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<28&&P.atk<0){P.face=side;BK.press('atk');swings++;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.mode==='salvageRest'});if(f%600===599)await yieldNow();continue;
       }
       const d = boss.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + (boss.w || 20) / 2, open = OPEN(boss, BK);
@@ -1560,13 +1576,28 @@ async function runbossLab(BK, opts) {
         const down=['grounded','crash','pinned','stuckTalons'].includes(boss.mode);
         if(!down){strike=false;const lamps=BK.props().filter(p=>p.owl&&!p.perch);const lamp=lamps.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];if(lamp){goal=lamp.x;if(!lamp.lit&&Math.abs(P.x-lamp.x)<22&&P.atk<0){k.block=false;P.face=Math.sign(lamp.x-P.x)||1;BK.press('atk');swings++;}}}
         if (boss.mode === 'skim' && Math.abs(boss.x-P.x)<64 && (boss.x-P.x)*boss.vx<0 && P.ground){k.jump=true;BK.press('jump');}
+        /* HER SWOOP, BY A LIT LAMP (claude/bosswave1: her windows pay x1.3 now, not double): "step aside by a lit lantern and it crashes into the light" -
+           the lamp put between her and you as she comes */
+        if (boss.mode === 'swoop' && (boss.x-P.x)*(boss.vx||0)<0 && Math.abs(boss.x-P.x)<120) { const lit=BK.props().filter(p=>p.owl&&!p.perch&&p.lit).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];
+          if (lit && Math.abs(lit.x-P.x)<56) { strike=false; goal=lit.x+(Math.sign(lit.x-boss.x)||1)*30; } }
       }
+      /* THE WINDCALLER'S HOWL (claude/bosswave1: his fall is now his only opening): HE CALLS THE WIND is told, and a player braces through it -
+         DOWN held on the ground (every hero has it; block is the same brace) - and he falls */
+      if (boss.t === 'windcaller' && (boss.mode === 'howlTell' || boss.mode === 'howl') && P.ground) { strike = false; goal = null; k.left = k.right = false; k.down = true; }
+      /* THE RAM'S CHARGE (claude/bosswave1: a charge that finds you stops on you and dazes nothing): rolled through as it arrives, so it runs on into the wall */
+      else if (boss.t === 'ram' && boss.mode === 'charge' && Math.abs(boss.x - P.x) < 72 && (boss.x - P.x) * (boss.vx || 0) < 0 && !(P.dodge > 0)) { strike = false; k.block = false; k[boss.x > P.x ? 'right' : 'left'] = true; BK.press('dodge'); }
+      else if (boss.t === 'ram' && (boss.mode === 'lower' || boss.mode === 'rear')) strike = false;   /* (his head goes down: no swing started that would still be running when he comes) */
+      /* THE GRANDMOTHER LISTENS (claude/bosswave1: her rap and her feel turned are her openings now): SHE IS LISTENING is told, and a player stands
+         still and silent through it - no step, no swing - and she raps the floor, open */
+      else if (boss.t === 'grandmother' && (boss.mode === 'listenTell' || boss.mode === 'listen')) { strike = false; goal = null; k.left = k.right = false; }
+      /* and his twister walks the heather toward him: a player keeps out of its way (it lifts and cuts whatever it touches), on the side away from it */
+      else if (boss.t === 'windcaller' && boss.twister && boss.mode !== 'fallen' && Math.abs(P.x - boss.twister.x) < 70) { strike = false; goal = boss.twister.x + (Math.sign(P.x - boss.twister.x) || 1) * 90; }
       /* THE CHIP AND THE GREED REPRISAL (claude/combat3, src/boss-greed.js): outside an opening a hero's blow on a boss is a twentieth, and
          the GREED.n-th in a few seconds is answered by a told burst round him. A player stops one blow short of it and stands off for the
          opening; when the ring closes on him he steps out of it. (BK.greed.open is strict: a boss with no rule is not "open" here, so a
          mini with none is never mashed into his reprisal either.) */
       if (BK.greed) { const G = BK.greed, out = (G.reach || 60) + (boss.w || 20) / 2;
-        if (strike && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - 1) { strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * ((LAB_STAND[h] || 12) + (boss.w || 20) / 2); }   /* (it holds its ground at sword's length and keeps answering him: it only stops swinging) */
+        if (strike && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - (boss.xpRole === 'mini' && G.chipped(boss) ? 2 : 1)) {   /* (claude/bosswave1: a mini on the chip answers harder - 26 a reprisal - so the hands stop two short) */ strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * ((LAB_STAND[h] || 12) + (boss.w || 20) / 2); }   /* (it holds its ground at sword's length and keeps answering him: it only stops swinging) */
         if (boss.greedT > 0 && ad < out + 18) { strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * (out + 30); } }
       // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
       // THE DECK MUST BE UNDER HER FEET: sword reach is not the top of the ladder.
