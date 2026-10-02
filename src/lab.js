@@ -1174,9 +1174,12 @@ async function runbossLab(BK, opts) {
         if(P.labJump>0){P.labJump--;k.jump=true;}
         const guard=['salvagePinTell','salvageHookTell'].includes(boss.mode);
         if(guard&&SHIELDED(h)){k.block=true;gx=P.x;P.face=side;}
+        else if(guard&&h==='warden'&&boss.mode==='salvagePinTell'){k.block=DEFLECT_TAP(f);gx=P.x;P.face=side;}   /* (claude/bosswave1) the warden's deflect answers his pin too */
         else if(guard&&boss.modeT<.24){k[side>0?'left':'right']=true;BK.press('dodge');gx=P.x;}
+        /* (claude/bosswave1: he is on the chip now, his parried pin his opening) the hands stop short of his greed and step out of its ring */
+        const Gq=BK.greed,greedy=Gq&&!(boss.open>0)&&Gq.count(boss)>=Gq.limit(boss)-2;if(Gq&&boss.greedT>0&&Math.abs(dx)<(Gq.reach||60)+boss.w/2+18)gx=boss.x-side*((Gq.reach||60)+boss.w/2+30);
         if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
-        if(!guard&&!incoming&&(cargo===false||cargo===undefined)&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<28&&P.atk<0){P.face=side;BK.press('atk');swings++;}
+        if(!guard&&!incoming&&!greedy&&!(boss.greedT>0)&&(cargo===false||cargo===undefined)&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<28&&P.atk<0){P.face=side;BK.press('atk');swings++;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.mode==='salvageRest'});if(f%600===599)await yieldNow();continue;
       }
       const d = boss.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + (boss.w || 20) / 2, open = OPEN(boss, BK);
@@ -1525,13 +1528,28 @@ async function runbossLab(BK, opts) {
         const down=['grounded','crash','pinned','stuckTalons'].includes(boss.mode);
         if(!down){strike=false;const lamps=BK.props().filter(p=>p.owl&&!p.perch);const lamp=lamps.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];if(lamp){goal=lamp.x;if(!lamp.lit&&Math.abs(P.x-lamp.x)<22&&P.atk<0){k.block=false;P.face=Math.sign(lamp.x-P.x)||1;BK.press('atk');swings++;}}}
         if (boss.mode === 'skim' && Math.abs(boss.x-P.x)<64 && (boss.x-P.x)*boss.vx<0 && P.ground){k.jump=true;BK.press('jump');}
+        /* HER SWOOP, BY A LIT LAMP (claude/bosswave1: her windows pay x1.3 now, not double): "step aside by a lit lantern and it crashes into the light" -
+           the lamp put between her and you as she comes */
+        if (boss.mode === 'swoop' && (boss.x-P.x)*(boss.vx||0)<0 && Math.abs(boss.x-P.x)<120) { const lit=BK.props().filter(p=>p.owl&&!p.perch&&p.lit).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];
+          if (lit && Math.abs(lit.x-P.x)<56) { strike=false; goal=lit.x+(Math.sign(lit.x-boss.x)||1)*30; } }
       }
+      /* THE WINDCALLER'S HOWL (claude/bosswave1: his fall is now his only opening): HE CALLS THE WIND is told, and a player braces through it -
+         DOWN held on the ground (every hero has it; block is the same brace) - and he falls */
+      if (boss.t === 'windcaller' && (boss.mode === 'howlTell' || boss.mode === 'howl') && P.ground) { strike = false; goal = null; k.left = k.right = false; k.down = true; }
+      /* THE RAM'S CHARGE (claude/bosswave1: a charge that finds you stops on you and dazes nothing): rolled through as it arrives, so it runs on into the wall */
+      else if (boss.t === 'ram' && boss.mode === 'charge' && Math.abs(boss.x - P.x) < 72 && (boss.x - P.x) * (boss.vx || 0) < 0 && !(P.dodge > 0)) { strike = false; k.block = false; k[boss.x > P.x ? 'right' : 'left'] = true; BK.press('dodge'); }
+      else if (boss.t === 'ram' && (boss.mode === 'lower' || boss.mode === 'rear')) strike = false;   /* (his head goes down: no swing started that would still be running when he comes) */
+      /* THE GRANDMOTHER LISTENS (claude/bosswave1: her rap and her feel turned are her openings now): SHE IS LISTENING is told, and a player stands
+         still and silent through it - no step, no swing - and she raps the floor, open */
+      else if (boss.t === 'grandmother' && (boss.mode === 'listenTell' || boss.mode === 'listen')) { strike = false; goal = null; k.left = k.right = false; }
+      /* and his twister walks the heather toward him: a player keeps out of its way (it lifts and cuts whatever it touches), on the side away from it */
+      else if (boss.t === 'windcaller' && boss.twister && boss.mode !== 'fallen' && Math.abs(P.x - boss.twister.x) < 70) { strike = false; goal = boss.twister.x + (Math.sign(P.x - boss.twister.x) || 1) * 90; }
       /* THE CHIP AND THE GREED REPRISAL (claude/combat3, src/boss-greed.js): outside an opening a hero's blow on a boss is a twentieth, and
          the GREED.n-th in a few seconds is answered by a told burst round him. A player stops one blow short of it and stands off for the
          opening; when the ring closes on him he steps out of it. (BK.greed.open is strict: a boss with no rule is not "open" here, so a
          mini with none is never mashed into his reprisal either.) */
       if (BK.greed) { const G = BK.greed, out = (G.reach || 60) + (boss.w || 20) / 2;
-        if (strike && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - 1) { strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * ((LAB_STAND[h] || 12) + (boss.w || 20) / 2); }   /* (it holds its ground at sword's length and keeps answering him: it only stops swinging) */
+        if (strike && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - (boss.xpRole === 'mini' && G.chipped(boss) ? 2 : 1)) {   /* (claude/bosswave1: a mini on the chip answers harder - 26 a reprisal - so the hands stop two short) */ strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * ((LAB_STAND[h] || 12) + (boss.w || 20) / 2); }   /* (it holds its ground at sword's length and keeps answering him: it only stops swinging) */
         if (boss.greedT > 0 && ad < out + 18) { strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * (out + 30); } }
       // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
       // THE DECK MUST BE UNDER HER FEET: sword reach is not the top of the ladder.

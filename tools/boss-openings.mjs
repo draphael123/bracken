@@ -149,8 +149,9 @@ try {
   {const b=boot('moor');const A=BK.L.arena;for(const e of BK.enemies())if(e!==b&&!e.maxHp)e.alive=false;
    const howl=brace=>{b.mode='howlTell';b.modeT=0.01;b.hits=0;b.howlT=99;b.stoneT=99;b.wallT=99;b.specialT=99;b.braceT=0;BK.P.x=(A.x0+A.x1)/2+60;BK.P.y=A.floor;BK.P.vy=0;BK.P.vx=0;
      let fell=false,moved=0;const x0=BK.P.x;for(let i=0;i<60*3;i++){BK.keys.block=brace;BK.sim(1);moved=Math.max(moved,Math.abs(BK.P.x-x0));if(b.mode==='fallen'){fell=true;break;}if(b.mode==='blink'||b.mode==='appear')break;}
-     BK.keys.block=false;const o={mode:b.mode,fell,moved:Math.round(moved),braceT:+(b.braceT||0).toFixed(2)};b.mode='cast';b.modeT=9;BK.sim(5);return o;};
-   const left=howl(false),held=howl(true);out.windcaller={left,held};}
+     BK.keys.block=false;let open=0;if(fell){BK.P.x=A.x0+20;for(let i=0;i<60*6&&BK.bossOpen(b);i++){BK.sim(1);open+=1/60;}}   /* (claude/bosswave1) how long the fall is open, left alone */
+     const o={mode:b.mode,fell,moved:Math.round(moved),braceT:+(b.braceT||0).toFixed(2),open:+open.toFixed(2)};b.mode='cast';b.modeT=9;BK.sim(5);return o;};
+   const left=howl(false),held=howl(true);b.mode='cast';b.modeT=9;b.hits=0;const castOpen=BK.bossOpen(b);out.windcaller={left,held,castOpen};}
 
   /* THE DUNE WORM: one breach, three ways. The hero stands where it will lock and leaves LATE (after the commit), as a player baits it */
   {const b=boot('caravan');const A=BK.L.arena;const w=BK.caravan().winches.find(q=>q.hollow);
@@ -252,6 +253,8 @@ try {
   assert.ok(!r.windcaller.left.fell, 'A11: a howl left to blow opens nothing: ' + JSON.stringify(r.windcaller));
   assert.ok(r.windcaller.left.moved > 40, 'and it walks an unbraced hero across the room: ' + JSON.stringify(r.windcaller));
   assert.ok(r.windcaller.held.fell, 'A11: braced through his howl, his own wind fails him and he falls, open: ' + JSON.stringify(r.windcaller));
+  assert.ok(r.windcaller.held.open >= 3, 'the fall is his opening, and it lasts 3 s or more left alone (the boss rule; claude/bosswave1): ' + JSON.stringify(r.windcaller));
+  assert.ok(r.windcaller.castOpen === false, 'casting on his stone he is NOT open (claude/bosswave1: callerOpen counted his casting as open - the mash bot beat him 4/6): ' + JSON.stringify(r.windcaller));
   assert.equal(r.worm.openSand.tangled, 0, 'THE DUNE WORM: a breach in the open sand opens nothing: ' + JSON.stringify(r.worm));
   assert.equal(r.worm.rolledIn.tangled, 0, 'a breach under his awning ROLLED IN opens nothing: ' + JSON.stringify(r.worm));
   assert.ok(r.worm.rolledOut.tangled >= 2.4 && r.worm.rolledOut.open >= 2.4, 'a breach under the awning rolled OUT comes up into it: tangled and open, the window: ' + JSON.stringify(r.worm));

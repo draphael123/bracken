@@ -1,9 +1,12 @@
 // Stormwreck Harbor's named boatswain: cargo, grapnel and the two quay guns.
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+/* HIS OPENING (claude/bosswave1: minis on the chip, src/boss-greed.js CHIP_MINI): the belaying pin PARRIED - he rests PIN_OPEN s (it was 1.8), open.
+   His other rests, after the grapnel, the cargo and the guns, are a breath and not an opening: a hero's blade is the boss rule's chip there. */
+export const PIN_OPEN=3.0;
 export function updateSalvageCaptain(e,dt,c){
  const {P,A,active,hit,seed,say,sound}=c;
  if(!active||!e.alive||P.dead)return;
- e.impactT=Math.max(0,(e.impactT||0)-dt);e.anim+=dt;e.modeT-=dt;e.vx=e.vy=0;e.y=A.floor;
+ e.impactT=Math.max(0,(e.impactT||0)-dt);e.anim+=dt;e.modeT-=dt;e.vx=e.vy=0;e.y=A.floor;if(e.open>0)e.open-=dt;
  const rest=(t=1.25)=>{e.mode='salvageRest';e.modeT=t;e.cargo=[];};
  if(e.phase===1&&e.hp<=e.hp0*.5){e.phase=2;e.mode='salvageRally';e.modeT=1.5;e.salvageN=0;e.cargo=[];say('BOTH GUNS!',true);sound('whistleCall');return;}
  if(e.mode==='salvageRally'){if(e.modeT<=0)rest(.6);return;}
@@ -20,7 +23,7 @@ export function updateSalvageCaptain(e,dt,c){
   say(({pin:'THE BELAYING PIN',hook:'THE GRAPNEL',cargo:'CARGO: LEAVE THE MARKS',broadside:'LOW SHOTS: JUMP',crossfire:'BOTH SIDES: JUMP'})[move],!['pin','hook'].includes(move));sound(move==='cargo'?'ropeHaul':'charge');return;
  }
  if(e.mode==='salvagePinTell'&&e.modeT<=0){
-  if(Math.sign(P.x-e.x)===e.face&&Math.abs(P.x-e.x)<48&&Math.abs(P.y-e.y)<26){const res=hit(e.x,c.pinDamage,false);if(res==='blocked'){rest(1.8);say('PARRIED: STRIKE',false);return;}}
+  if(Math.sign(P.x-e.x)===e.face&&Math.abs(P.x-e.x)<48&&Math.abs(P.y-e.y)<26){const res=hit(e.x,c.pinDamage,false);if(c.answered?c.answered(res):res==='blocked'){rest(PIN_OPEN);e.open=PIN_OPEN;say('PARRIED: STRIKE',false);return;}}
   sound('heavy');e.mode='salvagePin';e.modeT=.25;return;
  }
  if(e.mode==='salvageHookTell'&&e.modeT<=0){const x=e.x+e.face*12,y=e.y-18,d=Math.hypot(e.aimX-x,e.aimY-y)||1;seed({x,y,vx:(e.aimX-x)/d*260,vy:(e.aimY-y)/d*260,g:0,life:1.35,chain:true,boot:true,from:e});sound('grapple');rest(1.5);return;}
