@@ -42,8 +42,8 @@ export function buildFogCanal({ painter, T, TS }) {
   const nets = []; const ladder = (x, y0, y1) => nets.push([x, y0, y1]);   /* every ladder is hung LAST, over what is carved */
   const sign = (x, y, text) => ent('sign', x, y, { text });
   const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: -1 }, o || {}));
-  const bargee = (x, y, squad, o) => foe('gaffer', x, y, Object.assign({ squad, canal: { bargee: true } }, o || {}));   /* A BARGEE: the boat-hook man (the Ore Road's gaffer, reskinned in the brief's art notes), who hooks DOWN from a towpath */
-  const archer = (x, y, squad) => foe('archer', x, y, { squad, canal: { fogSight: true } });   /* in the fog he looses only at what is lit */
+  const bargee = (x, y, squad, o) => foe('gaffer', x, y, Object.assign({ squad, canal: { bargee: true, cnSkin: 'bargeman' } }, o || {}));   /* A BARGEE: the boat-hook man (the Ore Road's gaffer's AI under a human BARGEMAN's skin, claude/canalfix3: no goblins past the Goblin Queen), who hooks DOWN from a towpath */
+  const archer = (x, y, squad) => foe('archer', x, y, { squad, canal: { fogSight: true, cnSkin: 'watchman' } });   /* in the fog he looses only at what is lit (the goblin archer's AI as a WATCHMAN with a crossbow, claude/canalfix3) */
   const grindy = (x, surf, squad, o) => ent('grindylow', x, surf - 1, Object.assign({ squad, face: -1 }, o || {}));   /* at the water's edge: its row is the one over the surface */
   const wisp = (x, y, lure, squad) => ent('willowisp', x, y, { squad, lure });              /* lure: [x, y] (tiles) where it drifts to, as if it marked the way */
   const post = (x, y) => ent('lanternpost', x, y);
@@ -68,8 +68,8 @@ export function buildFogCanal({ painter, T, TS }) {
   const bridge = (x0, x1, row, init, cap) => { bridges.push({ x0, x1, row, init, pivot: cap[0] > x1 ? 'R' : 'L' }); if (init !== 'open') boards(x0, row, x1 - x0 + 1); ent('swingcap', cap[0], cap[1], { bridge: bridges.length - 1 }); return bridges.length - 1; };
   const fog = (id, x0, x1, y0, y1, o = {}) => { fogs.push(Object.assign({ id, x0, x1, y0, y1, a: 0.74, thick: false }, o)); };
   const horn = (x, y, ids, clear) => ent('foghorn', x, y, clear ? { fogs: ids, clear } : { fogs: ids });   /* clear: this horn's own seconds of clear air (claude/canalfix) */
-  const lamplighter = (x, y, squad) => foe('snuffer', x, y, { squad, canal: { lamplighter: true } });   /* THE LAMPLIGHTER (claude/canalfix, review fix 9): the snuffer's proven walk-to-a-lamp, reversed - he RELIGHTS a doused post, and his own lantern shows you to every archer near him. Kill him first */
-  const boarder = (x, y) => foe('gaffer', x, y, { squad: 'the boarding gang', canal: { bargee: true, boarder: true } });   /* UPGRADE C: waits out in the fog wall until she is held there (src/canal-hands.js gangStep) */
+  const lamplighter = (x, y, squad) => foe('snuffer', x, y, { squad, canal: { lamplighter: true, cnSkin: 'lamplighter' } });   /* THE LAMPLIGHTER (claude/canalfix, review fix 9): the snuffer's proven walk-to-a-lamp, reversed - he RELIGHTS a doused post, and his own lantern shows you to every archer near him. Kill him first */
+  const boarder = (x, y) => foe('gaffer', x, y, { squad: 'the boarding gang', canal: { bargee: true, boarder: true, cnSkin: 'riverrat' } });   /* UPGRADE C: waits out in the fog wall until she is held there (src/canal-hands.js gangStep) */
   /* THE TWO WEEDS (Jenny's, taught before her lock): BRIGHT blanket weed holds you for a moment (src/canal-rig.js RIG.weedHold) and then gives way; DARK weed is only water */
   const weed = (x0, x1, row, kind = 'dark') => { weeds.push([x0, x1, row, kind]); if (kind === 'bright') boards(x0, row, x1 - x0 + 1); };
 
@@ -293,7 +293,7 @@ export function buildFogCanal({ painter, T, TS }) {
   boards(326, 41, 10); horn(329, 40, ['F5'], 6.5); post(333, 40);            /* the west bank */
   const B4 = bridge(336, 341, 41, 'across', [342, 40]);
   boards(342, 41, 8); post(348, 40);                                         /* THE ISLAND */
-  foe('gaffer', 347, 40, { squad: 'the island', elite: true, gate: 372, canal: { bargee: true } });   /* THE DECK FOREMAN: the basin's elite, and the lock door is shut until he is down */
+  foe('gaffer', 347, 40, { squad: 'the island', elite: true, gate: 372, canal: { bargee: true, cnSkin: 'deckforeman' } });   /* THE DECK FOREMAN: the basin's elite, and the lock door is shut until he is down */
   lamplighter(349, 40, 'the island');                                        /* kill him first: he keeps the island's east post lit, and his lantern shows you to the theatre bridge (the bridge itself is dark: cross it unseen) */
   weedWater.push([349, 354, 'P5']); weed(349, 350, 44); weed(351, 352, 44, 'bright'); weed(353, 354, 44);
   wisp(353, 40, [354, 44], 'the weed');                                       /* over the weed: the lock's lamp, it seems */
