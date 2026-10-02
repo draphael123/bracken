@@ -94,7 +94,7 @@ import { lightSupport } from './fixtures.js';
 import { bakeFrog } from './redraw/frogking.js';
 import * as LWP from './lw_props.js';
 import { kitPose, kitPoseFrame, airPose, landPose, POSE_DASH } from './hero-poses.js';   /* EVERY ABILITY HAS A BODY: the pose an active plays while it fires */
-import { bakeGeomancer } from './chars.js';   /* THE GEOMANCER (2026-09-24): her rig */
+import { bakeGeomancer, withWeapon } from './chars.js';   /* THE GEOMANCER (2026-09-24): her rig */
 import { makeGeomancer, GEO as GEO_K } from './geomancer.js';   /* and her kit: the stone she raises and what she does with it */   /* EVERY ABILITY HAS A BODY: the pose an active plays while it fires */
 import * as RFP from './reef_props.js';
 import * as FLP from './flot_props.js';
@@ -573,8 +573,8 @@ const WARD_SETS = { black: { b: '#2a2e34', B: '#15181c' }, purple: { b: '#4a2f6a
 function applySkin() { setHeroVoice(hero()); if (PROG.perHero) PROG.charm = (PROG.charmOf || {})[hero()] || null;   /* the charm follows the hero, not the save (and never before the save has been migrated, or an old one loses it) */
    K = heroSet(PROG.skin, PROG.sword); }
 /* THE HERO AS HE WILL LOOK in a skin and with a weapon. The game and the store's previews bake him the same way, so the WEAPONS tab shows the hero you play, not always the knight */
-function heroSet(skinId, swordId, previewOnly = false, h = hero()) { const sk = skinById(skinId); const pal = Object.assign({}, h === 'pyro' ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal, swordById(swordId).pal);
-  return h === 'pyro' ? bakePyro(pal, previewOnly) : h === 'paladin' ? bakePaladin(PAL_SETS[sk.id] || {}, previewOnly) : h === 'pirate' ? bakeFreebooter(FREE_SETS[sk.id] || {}, previewOnly) : h === 'reaper' ? bakeReaper(REAP_SETS[sk.id] || {}, previewOnly) : h === 'warden' ? bakeWarden(WARD_SETS[sk.id] || {}, previewOnly) : h === 'geomancer' ? bakeGeomancer(WARD_SETS[sk.id] || {}, previewOnly) : bakeKnight(pal, false, previewOnly); }
+function heroSet(skinId, swordId, previewOnly = false, h = hero()) { const sk = skinById(skinId); const pal = h === 'pyro' ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal;   /* the skin dresses the hero; the weapon's palette goes to the weapon alone (chars.js withWeapon) */
+  return withWeapon((swordId && swordId.pal ? swordId : swordById(swordId)).pal, () => h === 'pyro' ? bakePyro(pal, previewOnly) : h === 'paladin' ? bakePaladin(PAL_SETS[sk.id] || {}, previewOnly) : h === 'pirate' ? bakeFreebooter(FREE_SETS[sk.id] || {}, previewOnly) : h === 'reaper' ? bakeReaper(REAP_SETS[sk.id] || {}, previewOnly) : h === 'warden' ? bakeWarden(WARD_SETS[sk.id] || {}, previewOnly) : h === 'geomancer' ? bakeGeomancer(WARD_SETS[sk.id] || {}, previewOnly) : bakeKnight(pal, false, previewOnly)); }
 function applyUpgrades() { const growth = growthAt(hero(), heroLevel()); P.maxHp = growth.hp + (PROG.items.heart ? 25 : 0); P.maxSt = growth.stamina + (PROG.items.wind ? 30 : 0); }
 let statFlash = 0; // the HUD plate flashes when a rank lands
 // THE BEAM A ROPE IS TIED TO. 16x6: a squared timber with an iron ring under it and a lashing round the ring.
@@ -4373,7 +4373,7 @@ function drawSlots() {
     text('SLOT ' + (i + 1), x + cw / 2, y + 8, sel ? '#fff6e0' : UI.dim, 'center');
     if (!p) { text('empty', x + cw / 2, y + 44, '#6a6a7a', 'center'); text('new game', x + cw / 2, y + 58, sel ? '#8fd160' : '#4a5a4a', 'center'); continue; }
     const cleared = LEVELS.filter(l => p[l.id] && p[l.id].cleared).length, medals = LEVELS.reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0);
-    const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const K2 = p.hero === 'paladin' ? preview('slot:paladin', () => bakePaladin({})) : p.hero === 'pyro' ? preview('slot:pyro:' + (p.skin || 'bracken'), () => bakePyro(PYRO_SETS[p.skin || 'bracken'] || {})) : p.hero === 'warden' ? preview('slot:warden:' + (p.skin || 'bracken'), () => bakeWarden(WARD_SETS[p.skin || 'bracken'] || {})) : p.hero === 'geomancer' ? preview('slot:geomancer:' + (p.skin || 'bracken'), () => bakeGeomancer(WARD_SETS[p.skin || 'bracken'] || {})) : skin ? preview('slot:' + skin.id + ':' + (p.sword || 'steel'), () => bakeKnight(Object.assign({}, skin.pal, (SWORDS.find(w => w.id === (p.sword || 'steel')) || SWORDS[0]).pal))) : K;
+    const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const K2 = p.hero === 'paladin' ? preview('slot:paladin', () => bakePaladin({})) : p.hero === 'pyro' ? preview('slot:pyro:' + (p.skin || 'bracken'), () => bakePyro(PYRO_SETS[p.skin || 'bracken'] || {})) : p.hero === 'warden' ? preview('slot:warden:' + (p.skin || 'bracken'), () => bakeWarden(WARD_SETS[p.skin || 'bracken'] || {})) : p.hero === 'geomancer' ? preview('slot:geomancer:' + (p.skin || 'bracken'), () => bakeGeomancer(WARD_SETS[p.skin || 'bracken'] || {})) : skin ? preview('slot:' + skin.id + ':' + (p.sword || 'steel'), () => withWeapon((SWORDS.find(w => w.id === (p.sword || 'steel')) || SWORDS[0]).pal, () => bakeKnight(skin.pal))) : K;
     drawSet(K2, 'idle', Math.floor(time * 4.5), x + cw / 2, y + 44, 1, false);
     text(cleared + ' / ' + levels + ' woods', x + cw / 2, y + 52, '#fff6e0', 'center');
     text((p.coins || 0) + ' gold', x + cw / 2, y + 64, '#ffd34a', 'center');
