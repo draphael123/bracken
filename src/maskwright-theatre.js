@@ -122,7 +122,8 @@ function buildBackstage({ painter, T, TS }) {
   lamp(90, 25, [[91, ST], [86, ST], [95, ST]], { hang: true });              /* at first on the landing itself */
   foe('mummer', 86, 33, { squad: 'the fitting' }); foe('mummer', 95, 33, { squad: 'the fitting' });
   foe('bat', 100, 19); foe('haunt', 104, 26, { squad: 'the workshop' });   /* a carving knife nobody is holding */
-  block(100, 102, 32, 33); coins([101, 30], [104, 32], [107, 32]); ent('mend', 109, 33);
+  boards(106, 24, 5); foe('archer', 108, 23, { flyman: true, squad: 'the fitting' });   /* THEATRE3 - A PINCER: a FLYMAN on the carvers' shelf (on the dock wall) lobs at your back while you turn to face the fitting's two players */
+  block(100, 102, 32, 33); coins([101, 30], [104, 32], [107, 32]);   /* (THEATRE3: the workshop's mend is gone - Daniel: "very easy"; the next checkpoint is 32 columns on, at the top of the tower) */
   /* THE GLUE STORE (a secret): the low workshop's dead end, back under the rooms past the fitting */
   ent('silver', 67, 33); coins([70, 33], [73, 33]); deco('props', 72, 33);
   block(111, 111, 18, 26); air(111, 111, 27, 33);                            /* the door into the scene dock */
@@ -142,6 +143,7 @@ function buildBackstage({ painter, T, TS }) {
   line('A', { x: 132, w: 3, rowIn: 33, rowOut: 25 }, { x: 142, w: 2, rowIn: 18, rowOut: ST }, [[135, 33], [131, 24]]);   /* TAUGHT: step on, strike the lock beside it, ride up */
   line('B', { x: 137, w: 3, rowIn: 25, rowOut: FL }, { x: 152, w: 2, rowIn: 23, rowOut: ST }, [[136, 24]], true);      /* DEVELOPED: it hangs up at the fly floor. Call it down, step across, send it up */
   foe('stagehand', 140, 33, { squad: 'the tower floor' });                   /* THE TOWER'S CREW: a stagehand on the tower floor - and when you ride up over him, he hauls a line on you */
+  foe('archer', 129, 24, { flyman: true, squad: 'the tower floor' });        /* THEATRE3 - A PINCER: a FLYMAN on the loading gallery over the tower floor throws down on you while his mate swings at you */
   spikes(145, 156, 33);                                                      /* THE WELL under the fly floor's gap: scenery nails and broken flats. A fall from the bridge is a bite and the whole tower again */
   foe('bat', 148, 12);
   coins([133, 31], [138, 23], [141, 18]);
@@ -153,8 +155,9 @@ function buildBackstage({ painter, T, TS }) {
   for (let x = 155; x <= 212; x++) set(x, FL, T.SOLID);                      /* ...and across the gap, the fly floor over the stage, to the pin rail over the right wing */
   ent('check', 141, FL - 1);                                                 /* CHECKPOINT TWO: the top of the tower */
   /* THE GRID: the roof walk, up a rope from the fly floor's near end; a silver at the far end of it */
-  boards(129, GR, 17); rope(143, GR + 1, FL - 1);
+  boards(128, GR, 18); rope(143, GR + 1, FL - 1);   /* (THEATRE3, floating geometry: the roof walk runs to the tower's wall, and the fly floor's near end hangs from it on the rope) */
   ent('silver', 130, GR - 1); coins([134, GR - 1], [138, GR - 1]); foe('spider', 136, GR + 2);
+  foe('archer', 142, GR - 1, { flyman: true, squad: 'the grid' });           /* THEATRE3: a FLYMAN on the grid over the bridge - he throws at your back while you wait on the batten (climb the rope and he is a free kill) */
   /* THE BRIDGE AND THE BAG: the fly floor stops over the tower (145-154 is open to the tower floor, eighteen rows down), a long batten hangs in
      under the gap, and a sandbag hangs over the far side where the fly floor's crew waits. Strike the lock: the batten flies up into the gap -
      a bridge - and its sandbag comes down on whoever stands under it. A fall is the whole tower again */
@@ -164,6 +167,7 @@ function buildBackstage({ painter, T, TS }) {
   coins([148, FL - 2], [151, FL - 2], [167, FL - 2]);
   /* THE LIGHTING BRIDGE: the fly floor over the stage, the crew's lamp on it and two more of the cast waiting in its light */
   lamp(186, FL - 1, [[196, FL], [178, FL]]);
+  foe('archer', 178, FL - 1, { flyman: true, squad: 'the lighting bridge' });   /* THEATRE3: a FLYMAN on the lighting bridge - he throws along the bridge as you cross it, and down onto the stage in the performance */
   foe('mummer', 194, FL - 1, { squad: 'the lighting bridge' }); foe('stagehand', 199, FL - 1, { squad: 'the lighting bridge' });   /* one of the cast held in the crew's lamp, and the crewman who works it */ foe('bat', 190, 9);
   coins([183, FL - 2], [203, FL - 2]);
   /* RIDE THE WEIGHT: the fly floor ends at the pin rail; the right wing is eighteen rows down. Line E's sandbag hangs level with the floor: stand on
@@ -178,7 +182,10 @@ function buildBackstage({ painter, T, TS }) {
   rope(163, BX, 33); rope(222, BX, 33);                                      /* THEATRE2: a rope up into each box - the audience and its lamps can be reached (a box lamp struck comes off its cue) */
   ent('cuelever', 220, 33);                                                  /* THE PROMPT DESK: strike it and the show's lamps hold where they are; strike it again and they take their cues */
   foe('drunk', 160, BX - 1, { footlights: true, range: 1, squad: 'the audience' });   /* THE AUDIENCE: they throw only at what is in the light */
+  foe('archer', 158, BX - 1, { flyman: true, squad: 'the flies' });         /* THEATRE3: and a FLYMAN in the stage-left box over the way down - the trap you are making for is under his sandbags (the rope at 163 goes up to him) */
   foe('drunk', 219, BX - 1, { footlights: true, range: 1, squad: 'the audience' });
+  foe('archer', 217, BX - 1, { flyman: true, squad: 'the flies' });         /* THEATRE3 - BEHIND YOU ON THE LIMELIGHT BEATS: a FLYMAN in the stage-right box throws at your back as you cross the stage right to left, frozen cast and all (the rope at 222 goes up to him) */
+  foe('gobpriest', 211, 33, { prompter: true, squad: 'the prompt corner' }); /* THEATRE3 - KILL HIM FIRST: THE PROMPTER at the prompt corner reads the cast its lines - they mend and stand firmer - until he is cut down */
   lamp(161, BX - 1, [[167, ST], [177, ST], [188, ST], [198, ST]], { hang: true, cue: 1.9, r: 36 });   /* the show's lamps, on their cues */
   lamp(216, BX - 1, [[206, ST], [196, ST], [186, ST], [176, ST]], { hang: true, cue: 1.6, r: 36 });
   lamp(184, FL, [[172, ST], [184, ST], [196, ST]], { hang: true, cue: 2.3, r: 40, i: 1 });
@@ -226,18 +233,20 @@ function buildBackstage({ painter, T, TS }) {
      winch spot from the fly-rail lamp (a cued follow spot, always running). Open it and that lamp reaches you on its cue - move. Past the flat, batten
      G up to the loading gallery; the door guard waits below it, and his sandbag is on its own lock: LURE him under it */
   air(225, 299, 12, 33);
-  boards(239, BX, 6); rope(238, BX, 29); foe('drunk', 242, BX - 1, { footlights: true, range: 1, squad: 'the prompt box' });   /* THE PROMPT BOX, a rope up to it */
+  boards(239, BX, 6); rope(238, BX, 33);   /* (THEATRE3, floating geometry: the prompt box's rope comes down to the boards - the box hangs on it) */ foe('drunk', 242, BX - 1, { footlights: true, range: 1, squad: 'the prompt box' });   /* THE PROMPT BOX, a rope up to it */
   lamp(236, 33, [[241, ST], [244, ST]], { i: 1 });                           /* the floor lamp: on the winch spot (you) - or on him */
   foe('mummer', 241, 33, { squad: 'the far wing' });
   flat({ a: 248, b: 258, w: 2, y0: 27, y1: 33, winch: [245, 33], name: 'the wing flat' });
   lamp(256, 20, [[244, ST], [252, ST]], { hang: true, cue: 2.2, always: true });   /* THE FOLLOW SPOT on the fly rail: the flat at A shadows its first aim */
   line('G', { x: 251, w: 3, rowIn: 33, rowOut: 26 }, { x: 268, w: 2, rowIn: 17, rowOut: ST }, [[250, 33], [254, 25]]);
-  boards(254, 26, 38);                                                       /* THE LOADING GALLERY: boards, so the follow spot shines through them */
+  boards(254, 26, 46);                                                       /* THE LOADING GALLERY: boards, so the follow spot shines through them (THEATRE3, floating geometry: it runs on to the stage door's wall, which holds it) */
   foe('mummer', 268, 33, { squad: 'the gallery floor' });                    /* under batten G's sandbag: it lands on him when you ride up */
   /* THE DOOR GUARD, the level's ELITE: the stage door is shut over its doorway until he is down. A sandbag hangs on its own line at 282, off where he
      stands: its locks are on the floor and on the gallery. Bring him under it */
   line('H', null, { x: 282, w: 2, rowIn: 18, rowOut: ST }, [[279, 33], [280, 25]]);
   foe('swornsword', 287, 33, { squad: 'the door guard', elite: true, gate: 300 });
+  foe('gobpriest', 284, 33, { prompter: true, squad: 'the door guard' });   /* THEATRE3: a PROMPTER behind the door guard keeps him on his feet - cut him first, or lure the guard away from him under the sandbag */
+  foe('archer', 286, 25, { flyman: true, squad: 'the door guard' });        /* THEATRE3 - A PINCER IN THE EXAM: a FLYMAN on the loading gallery's end throws down on the guard's floor */
   foe('mummer', 274, 25, { squad: 'the gallery' }); foe('bat', 286, 18);
   block(290, 291, 32, 33); block(292, 293, 30, 33); block(294, 295, 32, 33);   /* the stair off the gallery's end, and up to it from the wing floor (never a pocket) */
   coins([258, 24], [264, 24], [276, 24], [288, 24]); ent('mend', 296, 33);
@@ -344,7 +353,7 @@ export function buildMaskwrightTheatre(ctx) {
   foe('bat', 50, 14);
   deco('stands', 49, 41); deco('stands', 52, 41, { v: 1 }); deco('seats', 24, 30); deco('seats', 32, 32, { v: 1 });
   ent('silver', 61, 23); coins([59, 23], [63, 23]); rope(64, 24, 33);          /* the stage box: a silver, off the way */
-  foe('boo', 60, 23, { squad: 'the stage box' }); foe('boo', 52, 30, { squad: 'the pit ghost' });   /* THE HOUSE'S OWN DEAD (the shy dead): one in the stage box with its silver, one over the pit - they drift only while your back is turned, like the players */
+  foe('boo', 60, 23, { squad: 'the stage box' }); foe('drunk', 58, 23, { patron: true, range: 1, squad: 'the stage box' }); foe('archer', 63, 23, { flyman: true, squad: 'the stage box' });   /* THEATRE3 - THE HOUSE THROWS: a masked patron in the stage box pelts the pit and the apron (in the house they throw at anyone, lit or not) */ foe('boo', 52, 30, { squad: 'the pit ghost' });   /* THE HOUSE'S OWN DEAD (the shy dead): one in the stage box with its silver, one over the pit - they drift only while your back is turned, like the players */
   coins([12, 30], [14, 28], [16, 26], [24, 22], [28, 22], [40, 32], [50, 39], [55, 37], [66, 32]);
   function rope(x, y0, y1) { for (let y = y0; y <= y1; y++) set(x, y, T.NET); }
   /* THE MAIN STAGE: THE PUPPETEER's room, laid on the built level (his west wall is the stage door's column, built 372, his east wall 411); row ST+2 = 36 is rock under it. The gate (the level's end, past his east wall) opens when he falls */

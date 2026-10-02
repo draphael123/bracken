@@ -26,8 +26,9 @@
                        shut, and the rack sets its stone back (the Deep rework, docs/briefs/deep-rework-2.md)
      THE WICKER QUEEN  turn round on her while she stands on the bonfire's embers: the wicker catches and burns open; the same look short of them,
                        or her crossing them unseen, opens nothing (claude/fair3)
-     THE PUPPETEER     drop both his puppets (blows or cut strings) and he is dragged down to the boards, open; a minute of his puppets left alone -
-                       windups, blows - opens nothing (claude/puppeteer, PUPPETEER3)
+     THE PUPPETEER     drop both his puppets (gold cuts in their windups) and his bar goes slack - that alone opens nothing; climb to the gallery and
+                       cut the slack bar and he falls to the boards, open; a minute of his puppets left alone - windups, blows - opens nothing
+                       (claude/puppeteer, PUPPETEER3; claude/theatre3)
      JENNY GREENTEETH  drain her lock (strike the lower paddle) while she is at your gate: the water runs out from under her and she is stranded in
                        the mud, open; a minute of her left alone opens nothing (claude/lockkeeper)
      THE LAMPREEVE, THE HEADLESS PLOUGHMAN, THE HOMUNCULUS (minis, claude/weakboss): strike the lamp he hoods / bait the plough into the
@@ -184,9 +185,12 @@ try {
      windups, he comes down his line and kneels re-stringing them - open (on the Maskwright's Theatre's main stage) */
   {const b=boot('theatre');const S=BK.puppeteerHands().show(),A=BK.L.arena,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+60;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
-   let cutF=0,op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const p=S.puppets.find(q=>q.alive&&q.mode!=='heap'&&/Tell$/.test(q.mode));
+   let cutF=0,op=0,mode=null;S.houseCd=1e9;for(let i=0;i<60*40&&!(op>0)&&b.mode!=='slack';i++){P.hp=P.maxHp;const p=S.puppets.find(q=>q.alive&&q.mode!=='heap'&&(/Tell$/.test(q.mode)||q.mode==='recover'||q.mode==='stagger'));   /* (THEATRE3: in a windup - a gold cut - or glowing green in its recovery) */
      if(p&&P.atk<0){P.x=p.x-(p.t==='harlequin'?14:18);P.face=1;P.vx=0;BK.press('atk');cutF++;}BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='downed')mode='downed';}
-   out.puppeteer={alone:+alone.toFixed(1),swings:cutF,mode,open:+op.toFixed(1),onStage:b.mode==='downed'&&b.y===A.floor||mode==='downed'};}
+   const slackMode=b.mode;let slackOpen=0;for(let i=0;i<60*3;i++){P.hp=P.maxHp;BK.sim(1);slackOpen=Math.max(slackOpen,b.open||0);if(b.mode==='downed')mode='downed';}   /* (THEATRE3: both down, the bar slack: nothing opens on its own) */
+   if(b.mode==='slack'){P.x=b.x-16;P.y=A.stage.gallery;P.vx=0;P.vy=0;P.face=1;BK.sim(2);P.face=1;BK.press('atk');for(let i=0;i<60*2&&b.mode!=='downed';i++){P.hp=P.maxHp;BK.sim(1);}}   /* up on the gallery: a real swing at the slack bar */
+   for(let i=0;i<10;i++){BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='downed')mode=mode||'downed';}
+   out.puppeteer={alone:+alone.toFixed(1),swings:cutF,slackMode,slackOpen:+slackOpen.toFixed(1),mode:b.mode==='downed'?'downed':mode,open:+op.toFixed(1),onStage:b.mode==='downed'&&b.y===A.floor};}
   /* JENNY GREENTEETH (claude/lockkeeper): a minute of her left alone in her lock, the hero on a gate's walkway, opens nothing; a real swing at the
      lower paddle with her at that gate drains the lock from under her - stranded, open (THE FOG CANAL holds her) */
   {const b=boot('canal');const S=BK.greenteethHands().show(),G=S.A,P=BK.P;let alone=0;
@@ -270,7 +274,8 @@ try {
   assert.equal(r.greenteeth.alone, 0, 'JENNY GREENTEETH: a minute of her left alone opened her: ' + JSON.stringify(r.greenteeth));
   assert.ok(r.greenteeth.mode === 'stranded' && r.greenteeth.open >= 3, 'the lock drained with her at the gate and she was not stranded open for 3 s or more (the boss rule; claude/greenwire raised this from 1.4: her stranded window was 1.8 s): ' + JSON.stringify(r.greenteeth));
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
-  assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (PUPPETEER3: drop both puppets - blows or cuts - and he is dragged down to the boards, open) */ 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
+  assert.ok(r.puppeteer.slackMode === 'slack' && r.puppeteer.slackOpen === 0, 'THE PUPPETEER: both puppets down opened him by itself (THEATRE3: his bar goes slack; only the cut opens him): ' + JSON.stringify(r.puppeteer));
+  assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (THEATRE3: drop both puppets, climb, cut the slack bar - he falls to the boards, open >= 3 s) */ 'both puppets cut down and his slack bar cut, he did not come down open: ' + JSON.stringify(r.puppeteer));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }
