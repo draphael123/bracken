@@ -29,6 +29,8 @@ assert.equal(arena('crown').music, 'goblinroyal', "the Goblin Queen's arena is n
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");
 assert.equal(arena('oreroad').music, 'winchmaster', "the Winchmaster's arena is not on his mine-cart chase");
 assert.equal(arena('witchlight').music, 'gargoyle', "the Gate Gargoyle's arena is not on his stone-grind theme");
+assert.equal(arena('welltown').music, 'banditking', "THE BANDIT KING's courtyard is not on his own theme");
+assert.ok(A.MUSIC_NAMES.includes('banditking') && A.MUSIC_CREDITS.banditking, 'THE BANDIT KING has no Sound Test entry of his own');
 for (const n of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
 const generic = new Set(['boss', 'boss2', 'boss3', 'boss4', 'king', 'queen']);
 for (const [id, name] of [['mage', 'archmage'], ['fallingtower', 'undeadmage'], ['kings', 'king'], ['crown', 'gqueen'], ['keep', 'drownedking'], ['oreroad', 'winchmaster'], ['witchlight', 'gargoyle']]) assert.ok(!generic.has(arena(id).music), name + ' is still on a generic boss track');
@@ -44,8 +46,8 @@ const grab = async (name, loops) => {
 };
 const fmt = e => e.kind + ':' + e.type + ':' + (e.f === null ? '' : Math.round(e.f * 10) / 10);
 const results = {};
-const MAXGAP = { drownedking: 3 };   /* the dirge is in 6/8: its beats are three eighths apart, and the drone and choir ring across the gap */
-for (const name of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle']) {
+const MAXGAP = { drownedking: 3 };   /* (the Bandit King's 6/8 has a drum or a tek on every eighth but the second) */   /* the dirge is in 6/8: its beats are three eighths apart, and the drone and choir ring across the gap */
+for (const name of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'banditking', 'banditking:p2']) {
   const { S, len, ev } = await grab(name, 2);
   const tonal = ev.filter(e => e.kind === 'osc'), T0 = Math.min(...tonal.map(e => e.t)) - 1e-6, first = tonal.filter(e => e.t >= T0 && e.t < T0 + len - 1e-6), sec = tonal.filter(e => e.t >= T0 + len - 1e-6 && e.t < T0 + 2 * len - 1e-6);
   assert.ok(first.length > 150, name + ': only ' + first.length + ' notes in a loop');
@@ -68,6 +70,14 @@ assert.notEqual(results.archmage.hash, results['archmage:undead'].hash, 'the und
   assert.ok(flat(hz('D3')) && flat(hz('A2')), 'the undead organ is not a semitone flat of the living one (no Db3 / Ab2 in it)');
   const types = r => new Set(r.tonal.map(e => e.type)); assert.ok(types(L).has('triangle') && !types(U).has('triangle'), "the undead theme still has the living harpsichord's triangle voice");
   assert.ok(U.clicks >= 40 && U.clicks > L.clicks * 4, 'the undead theme has no bone percussion: ' + U.clicks + ' dry clicks a loop against the living ' + L.clicks); }
+/* THE BANDIT KING (claude/welltown-fix): 6/8, a war drum, a zurna; his second phase faster with the zurna an octave up */
+{ const K = results.banditking, K2 = results['banditking:p2'], S = BM.bossSynthOf('banditking');
+  assert.equal(S.total / 16, 6, 'his theme is not in 6/8 (six eighths a bar over 16 bars)');
+  assert.ok(K2.step < K.step * 0.85, 'his second phase is not faster (' + K2.step + ' s against ' + K.step + ' s)');
+  const lead = r => Math.max(...[...r.pitches].filter(p => p < 2000));
+  assert.ok(lead(K2) > lead(K) * 1.8, 'his second phase does not take the zurna up an octave (' + lead(K2) + ' Hz against ' + lead(K) + ')');
+  const has = n => [...K.pitches].some(p => Math.abs(p - BM.nf(n) * 0.94) <= 1);   /* (a reed's first pitch is its scoop, 0.94 of the note) */
+  assert.ok(has('Eb4') && has('F#4'), 'his zurna does not climb the augmented second (Eb - F#: Phrygian dominant)'); }
 const hs = Object.values(results).map(r => r.hash); assert.equal(new Set(hs).size, hs.length, 'two of the boss themes play the same notes');
 assert.equal(errors.length, 0, 'the scheduler threw: ' + (errors[0] && errors[0].message));
 const gainNow = A.debugAudio().musicGain.gain; A.music.play('archmage'); assert.ok(A.debugAudio().wantTrack === 'archmage');

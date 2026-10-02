@@ -26,9 +26,9 @@
 //                RATCHETING WINCH (square ticks that double up) on the last beat of every fourth bar.
 //   'gargoyle'   THE GATE GARGOYLE. C with Db and Gb (the tritone), 4/4 at 66 (eighth = 0.455 s), 16 bars = 58 s: a grinding sawtooth
 //                stone ostinato, a thud on every quarter, tritone stabs, the great bell and a falling peal of four bells every four bars.
-//   'banditking' THE BANDIT KING (claude/welltown, a PLACEHOLDER HOOK - TODO(Daniel/a music lane): his own theme). D Phrygian dominant, 4/4 at 104 (eighth =
-//                0.288 s), 8 bars = 18 s: a darbuka (doum on one and the and-of-two, teks between), a held drone, and a snake-charmer hook on a
-//                nasal saw that climbs the augmented second and falls back. Enough to be his, and to be replaced.
+//   'banditking' THE BANDIT KING (claude/welltown-fix, his own theme). D Phrygian dominant, 6/8 at 76 (eighth = 0.263 s), 16 bars = 25 s:
+//                a war-drum ostinato, a D-A drone, a reedy zurna lead with a late vibrato, and a half-step off-beat stab. 'banditking:p2' is his
+//                second phase: faster (eighth 0.21 s), the zurna an octave up, the drum doubled.
 export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1 };
 
 /* 'archmage:undead' is one name for the sound test and two for the scheduler: split it once, here. */
@@ -277,16 +277,62 @@ function gargoyle(i, delay, variant, env) {
   if (s === 0 && b === 0) for (const n of second ? ['C2', 'Gb2', 'C3'] : ['C2', 'Gb2']) held(env, 'sawtooth', nf(n), long * 4 * 0.98, 0.03 * g, delay, { lp: 380, att: 1.4, hold: 0.7, det: 14 });   // four bars of low breath underneath
 }
 
-// ---------------------------------------------------------------- THE BANDIT KING (a placeholder hook, claude/welltown)
-const BKM_STEP = 60 / 104 / 2, BKM_LEN = 8, BKM_BARSN = 8;
-const BKM_HOOK = ['D4', 'Eb4', 'F#4', 'G4', 'F#4', '-', 'Eb4', 'D4'], BKM_HOOK2 = ['A4', 'Bb4', 'A4', 'G4', 'F#4', 'G4', 'Eb4', 'D4'];
+// ---------------------------------------------------------------- THE BANDIT KING (claude/welltown-fix: his own theme, Daniel's brief 10-02)
+// D Phrygian dominant (D Eb F# G A Bb C), 6/8 (two dotted-quarter beats of three eighths), dotted-quarter = 76, eighth = 0.263 s, 16 bars = 25 s.
+//   THE WAR DRUM OSTINATO: a big low drum on the one, a second on the four, a dry tek on the three and the six, a ghost on the five; a roll
+//     over the last three eighths of every fourth bar.
+//   THE DRONE: D and A on two detuned saws under a sub, four bars a breath (Phrygian dominant hangs on its tonic).
+//   THE ZURNA: a reedy lead (a narrow square and a quieter saw through a lowpass, a scoop into the note, and a vibrato that comes in late,
+//     drawn as frequency automation so it costs no oscillator), climbing the augmented second (Eb - F#) and falling back. Second time round
+//     (bars 8-15) a grace note a step above leads into each long note.
+//   THE OFF-BEAT STAB: on the "and" of the second beat (eighth five) a low brass stab that steps a HALF-STEP, D and then Eb, two bars each.
+// 'banditking:p2' is HIS SECOND PHASE (bandit-king-hands.js plays it when his men take the well): the same piece faster (eighth 0.21 s), the
+// zurna an octave up, the drum doubled on the twos.
+const BKM_STEP = 60 / 76 / 3, BKM_LEN = 6, BKM_BARSN = 16, BKM_STEP2 = 60 / 95 / 3;
+const BKM_TUNE = [   // the zurna, six eighths a bar ('-' holds the note before)
+  ['A4', '-', 'G4', 'F#4', '-', 'Eb4'],
+  ['D4', '-', '-', '-', '-', '-'],
+  ['D4', 'Eb4', 'F#4', 'G4', '-', 'A4'],
+  ['Bb4', 'A4', 'G4', 'A4', '-', '-'],
+  ['A4', '-', 'Bb4', 'A4', 'G4', 'F#4'],
+  ['G4', '-', 'F#4', 'Eb4', '-', 'F#4'],
+  ['Eb4', '-', 'D4', 'C4', '-', 'Eb4'],
+  ['D4', '-', '-', '-', '-', '-'],
+];
+const BKM_STAB = ['D3', 'D3', 'Eb3', 'Eb3'];   // the half-step stab, two bars each
+/* A REED (the zurna): a scoop up into the note, then a vibrato that arrives late - automation on the oscillators' own pitch, no LFO oscillator */
+function reed(env, f, dur, v, delay, o2) {
+  const { ac, dest } = env, opt = { lp: 2600, rate: 6.2, depth: 0.014, late: 0.14, ...o2 }, t = ac.currentTime + delay;
+  const lp = ac.createBiquadFilter(), g = ac.createGain(); lp.type = 'lowpass'; lp.frequency.value = opt.lp; lp.Q.value = 1.4;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.025); g.gain.setValueAtTime(v, t + dur * 0.75); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  lp.connect(g); g.connect(dest);
+  for (const [type, k, det] of [['square', 1, 0], ['sawtooth', 0.45, 7]]) {
+    const o = ac.createOscillator(), og = ac.createGain(); o.type = type; if (det) o.detune.value = det; og.gain.value = k;
+    o.frequency.setValueAtTime(f * 0.94, t); o.frequency.linearRampToValueAtTime(f, t + 0.05);
+    for (let q = t + opt.late, up = true; q < t + dur; q += 0.5 / opt.rate, up = !up) o.frequency.linearRampToValueAtTime(f * (1 + (up ? opt.depth : -opt.depth)), q);
+    o.connect(og); og.connect(lp); o.start(t); o.stop(t + dur + 0.05);
+  }
+}
 function banditking(i, delay, variant, env) {
-  const bar = Math.floor(i / BKM_LEN), s = i % BKM_LEN, g = env.gain;
-  if (s === 0 || s === 3) pluck(env, 'sine', 96, 0.3, 0.8 * g, delay, { to: 52 });   // the doum
-  if (s === 2 || s === 5 || s === 6 || s === 7) noise(env, 0.05, (s === 6 ? 0.16 : 0.1) * g, 3200, 1.1, delay);   // the teks
-  if (s === 0 && bar % 4 === 0) for (const n of ['D2', 'A2']) held(env, 'sawtooth', nf(n), BKM_STEP * BKM_LEN * 4 * 0.98, 0.05 * g, delay, { lp: 420, att: 0.6, hold: 0.8, det: 9 });   // the drone
-  const n = (bar % 4 === 3 ? BKM_HOOK2 : BKM_HOOK)[s];
-  if (bar % 2 === 1 && n !== '-') held(env, 'sawtooth', nf(n), BKM_STEP * 0.9, 0.09 * g, delay, { lp: 1900, att: 0.02, hold: 0.5, from: 0.97 });   // the hook, every other bar
+  const p2 = variant === 'p2', step = p2 ? BKM_STEP2 : BKM_STEP, bar = Math.floor(i / BKM_LEN), s = i % BKM_LEN, second = bar >= 8, b = bar % 8, g = env.gain, long = step * BKM_LEN;
+  // THE WAR DRUM
+  if (s === 0) { pluck(env, 'sine', 88, 0.42, 0.95 * g, delay, { to: 40 }); noise(env, 0.06, 0.14 * g, 220, 0.7, delay); }
+  if (s === 3) { pluck(env, 'sine', 104, 0.32, 0.7 * g, delay, { to: 50 }); noise(env, 0.05, 0.1 * g, 260, 0.7, delay); }
+  if (s === 2 || s === 5) noise(env, 0.05, (s === 5 ? 0.15 : 0.11) * g, 3100, 1.2, delay);              // the teks
+  if (s === 4) noise(env, 0.03, 0.06 * g, 3600, 1.4, delay);                                              // the ghost
+  if (p2 && (s === 1 || s === 4)) pluck(env, 'sine', 120, 0.16, 0.35 * g, delay, { to: 70 });            // the second phase doubles the drum
+  if (b % 4 === 3 && s >= 3) { const tf = [170, 140, 118][s - 3]; pluck(env, 'sine', tf, 0.22, 0.7 * g, delay, { to: tf * 0.55 }); }   // the roll into the next phrase
+  // THE DRONE, four bars a breath, and a sub under it every bar
+  if (s === 0 && bar % 4 === 0) for (const n of ['D2', 'A2']) held(env, 'sawtooth', nf(n), long * 4 * 0.98, (second || p2 ? 0.055 : 0.045) * g, delay, { lp: 460, att: 0.7, hold: 0.8, det: 11 });
+  if (s === 0) pluck(env, 'sine', nf('D2'), long * 0.95, 0.28 * g, delay);
+  // THE OFF-BEAT STAB, a half-step: D, then Eb
+  if (s === 4) { const r = nf(BKM_STAB[(bar >> 1) % 4]); held(env, 'sawtooth', r, step * 0.9, 0.11 * g, delay, { lp: 900, att: 0.012, hold: 0.3, from: 0.97 }); held(env, 'sawtooth', r * 1.5, step * 0.9, 0.07 * g, delay, { lp: 800, att: 0.015, hold: 0.3, from: 0.97 }); }
+  // THE ZURNA (an octave up in his second phase)
+  const row = BKM_TUNE[b], nn = row[s];
+  if (nn !== '-') { let k = 1; while (s + k < BKM_LEN && row[s + k] === '-') k++;
+    const f = nf(nn) * (p2 ? 2 : 1), len = step * k * 0.96, v = (p2 ? 0.075 : 0.085) * g;
+    if (second && k >= 2) { reed(env, f * Math.pow(2, 2 / 12), step * 0.3, v * 0.8, delay, { late: 1 }); reed(env, f, len - step * 0.25, v, delay + step * 0.25); }   // a grace note a step above leads into a long note
+    else reed(env, f, len, v, delay); }
 }
 
 export const SYNTH_BOSS = {
@@ -298,7 +344,8 @@ export const SYNTH_BOSS = {
   gargoyle: { step: GG_STEP, total: GG_LEN * GG_BARSN, play: gargoyle },
 };
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
-export const SYNTH_VARIANT = { 'archmage:undead': { step: UD_STEP, total: UD_LEN * AM_BARSN, play: undeadmage } };
+export const SYNTH_VARIANT = { 'archmage:undead': { step: UD_STEP, total: UD_LEN * AM_BARSN, play: undeadmage },
+  'banditking:p2': { step: BKM_STEP2, total: BKM_LEN * BKM_BARSN, play: banditking } };   /* THE BANDIT KING's second phase: faster, the zurna an octave up */
 /* the whole track's loudness, next to a file track's 0.5 x the file's own level (audio.js trackVol) */
 export const BOSS_SYNTH_GAIN = 0.62;
 

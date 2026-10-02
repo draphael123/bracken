@@ -27,7 +27,6 @@ export const GATE = ['theatre', 'fair', 'canal', 'welltown'];   /* the fair re-g
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
   theatre: ['roles'],
-  welltown: ['music'],   /* TODO(Daniel picks the track): THE WELL TOWN's greybox (claude/welltown) borrows THE SUNKEN CARAVAN's track ('caravan') as a placeholder until Daniel picks its own CC0/CC-BY file (nothing is downloaded by a lane); its boss room already plays its own synth hook ('banditking', src/boss-music.js) */   /* TODO(Daniel decides): the theatre has two roles (melee: mummers, stagehands, spiders, bats, swornswords; ranged: the drunks) and no support, heavy or runner. Lift this when a lane gives it a third role */
 };
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];

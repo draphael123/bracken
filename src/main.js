@@ -23084,7 +23084,7 @@ WTH = makeWellTownHands({ get L() { return L; }, get players() { return players;
   questGot: () => straysGot.size, questN: () => questOf().n, get king() { return BKH; } });
 BKH = makeBanditKingHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),
-  damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), enrage: e => enrageBeat(e),
+  damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), enrage: e => enrageBeat(e), music: n => { if (bossActive) music.play(n); },   /* (his second phase plays the faster voicing of his theme, 'banditking:p2') */
   spawn: e => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) enemies[i].lieutenant = true; } });
 /* THE PUPPETEER'S HANDS (src/puppeteer-hands.js): main.js owns the world; the module owns his show (the strings, the batten, the tells) */
 PUPH = makePuppeteerHands({ get P() { return P; }, get L() { return L; }, get players() { return players; }, get enemies() { return enemies; }, get movers() { return movers; }, get boss() { return boss; }, get bossActive() { return bossActive; }, get time() { return time; },

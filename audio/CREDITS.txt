@@ -216,3 +216,10 @@ Each: converted to OGG Vorbis q4, 44.1 kHz stereo, edge silence trimmed, levelle
 - deepdread.ogg = "the_abyss" from "Ambience of a Fallen Age" by Umplix, CC0 - https://opengameart.org/node/138647 - a quiet dread layer under deep.ogg in THE DEEP (an 80 s section, 0:30-1:54 of the source, its last 6 s crossfaded onto its first 6 s so it loops seamlessly; played at half the track's gain)
 - underleaf.ogg = "Lush, Mossy Grotto" by Tarush Singhal, CC0 - https://opengameart.org/content/lush-mossy-grotto - UNDERLEAF's theme (2:17, the composer's own loop; trimmed of 30 ms of encoder silence)
 - mineworks.ogg = "At Work (Loop)" by HorrorPen, Creative Commons Attribution 3.0 (CC-BY 3.0, CREDIT REQUIRED) - https://opengameart.org/content/little-people-at-work-loop - the Sound Test's "mineworks" song (no level plays it yet). Credit line: "At Work" by HorrorPen, CC-BY 3.0, https://creativecommons.org/licenses/by/3.0/ - the Sound Test shows it shortened to fit one row ("At Work" - HorrorPen (CC-BY)); this file is the full credit.
+
+THE WELL TOWN (2026-10-02, claude/welltown-fix, Daniel's pick):
+- welltown.ogg = "Desert Calmness and Fighting (Orchestral)" by Dizzy Crow, CC0 - https://opengameart.org/content/desert-calmness-and-fighting-orchestral-141 -
+  THE WELL TOWN's level track. Changes: the pack's Negev-Desert-Intro (7.000 s) and Negev-Desert-Loop (42.000 s) joined into one file; the game plays the
+  intro once and then loops from 7.000 s (src/audio.js TRACK_INTRO). Raised 5.6 dB under a peak limiter (-1.5 dBFS) to about -12.5 LUFS integrated like the
+  rest of the library, and encoded to OGG Vorbis q4, 44.1 kHz stereo. The pack's Negev-Fight intro and loop are not used (the game has no combat-layer swap).
+- banditking (no file) = THE BANDIT KING's theme, synthesised for this game (src/boss-music.js): 6/8 war drums under a Phrygian-dominant drone, a zurna lead.

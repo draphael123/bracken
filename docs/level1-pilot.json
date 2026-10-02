@@ -48,14 +48,14 @@
   "bare": true
  },
  "welltown": {
-  "hash": "f84673aee0e9",
+  "hash": "80978686d57f",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 81,
-  "deaths": 3,
-  "kills": 0,
-  "lifts": 75,
+  "hits": 32,
+  "deaths": 0,
+  "kills": 5,
+  "lifts": 67,
   "walked": 100,
   "bare": true
  }

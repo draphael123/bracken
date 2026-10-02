@@ -38,7 +38,7 @@ export function makeBanditKingHands(ctx) {
           if ((pp.bkHit || '') === key) return; if (!ctx.overlap({ l: v.box[0], r: v.box[1], t: v.box[2], b: v.box[3] }, ctx.box(Q))) return;
           pp.bkHit = key; ctx.damagePlayer(e.x, d, { unblockable: !v.blockable, who: e, name }); if (v.what === 'charge' && !Q.dead) { Q.vx = (Math.sign(Q.x - e.x) || 1) * 180; Q.vy = -120; } }); }
       if (v.t === 'open') { ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.splash && ctx.sfx.splash(); ctx.shake(3); ctx.burst(e.x, e.y - 30, 20, ['#e8f4f8', '#cfd8dc', '#7a5a3a'], 70, 0.9); ctx.number(e.x, e.y - 60, 'THE STEAM BLINDS HIM: CUT HIM', '#8fd160'); }
-      if (v.t === 'phase2') { ctx.enrage(e);
+      if (v.t === 'phase2') { ctx.enrage(e); if (ctx.music) ctx.music('banditking:p2');   /* HIS SECOND PHASE: his theme faster, the zurna an octave up (src/boss-music.js) */
         const wx = S.well; for (let i = 0; i < KING.lieutenants; i++) { const x = Math.floor(wx / 16) + (i ? 2 : -2); ctx.spawn({ t: 'cutthroat', x, y: Math.floor(S.floor / 16) - 1, face: i ? -1 : 1, lieutenant: true }); }
         ctx.number(wx, S.floor - 40, 'HIS MEN TAKE THE WELL', '#ff9a5c'); }
     }

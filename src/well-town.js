@@ -265,7 +265,7 @@ export function buildWellTown({ painter, T, TS }) {
       { kind: 'windlass', opens: 'the bucket down THE GREAT WELL into the cisterns (and back up)', hud: 'STRIKE THE WINDLASS: THE BUCKET GOES DOWN' },
       { kind: 'cistern', opens: 'THE DRY CISTERN\'s vault: the relic and the third silver', hud: 'THE CISTERN FILLS: THE VAULT OPENS' },
     ],
-    music: 'caravan',   /* TODO(Daniel picks the track): a PLACEHOLDER, THE SUNKEN CARAVAN's own track borrowed until the Well Town has its own CC0/CC-BY file (tools/level-quality.mjs REPORT_ONLY lists the borrow). Nothing was downloaded */
+    music: 'welltown',   /* Daniel's pick (10-02): "Desert Calmness and Fighting (Orchestral)" by Dizzy Crow, CC0 - the calm intro once, then its loop (audio/welltown.ogg, src/audio.js TRACK_INTRO) */
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     sun: true, caravan: true,   /* THE SUN (src/sunstroke.js) and the desert's hands in main.js (the sun meter, the shade, the sand and stone skins, the bandits' AI) */
     ledgeKit: 'desert',

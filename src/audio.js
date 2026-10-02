@@ -2,7 +2,7 @@
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
 import { bossSynthOf, splitTrack, BOSS_SYNTH_GAIN } from './boss-music.js';   /* THE ARCHMAGES' and THE GOBLIN ROYALS' themes: synth tracks with no file (claude/bossmusic) */
-const TRACKS = { canal: './audio/canal.ogg', harvestfair: './audio/harvestfair.ogg', wickerqueen: './audio/wickerqueen.ogg', unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', deep: './audio/deep.ogg', deepdread: './audio/deepdread.ogg', underleaf: './audio/underleaf.ogg', mineworks: './audio/mineworks.ogg', marketday: './audio/marketday.ogg',
+const TRACKS = { welltown: './audio/welltown.ogg', canal: './audio/canal.ogg', harvestfair: './audio/harvestfair.ogg', wickerqueen: './audio/wickerqueen.ogg', unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.wav', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', theme4: './audio/theme4.mp3', boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', deep: './audio/deep.ogg', deepdread: './audio/deepdread.ogg', underleaf: './audio/underleaf.ogg', mineworks: './audio/mineworks.ogg', marketday: './audio/marketday.ogg',
   ambWind: './audio/ambWind.ogg', ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
   /* CC0: MintoDog's stage-select set, skrjablin's Sailor Waltz, Memoraphile's Spooky Dungeon (audio/CREDITS.txt) */
   musForest: './audio/musForest.ogg', musCastle: './audio/musCastle.ogg', musMountain: './audio/musMountain.ogg', musUnder: './audio/musUnder.ogg',
@@ -445,17 +445,20 @@ function audibleEnd(b) {
 // Each pass comes round 30 ms sooner than the file's length, which no ear can place.
 export const LOOP_XF = 0.03;
 const XF_IN = Float32Array.from({ length: 16 }, (_, i) => Math.sin(i / 15 * Math.PI / 2)), XF_OUT = XF_IN.slice().reverse();
-export function loopCopy(ctx, b, len, dest, at, first) {
+export function loopCopy(ctx, b, len, dest, at, first, off = 0) {
   const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b; s.connect(g); g.connect(dest);
   if (!first) g.gain.setValueCurveAtTime(XF_IN, at, LOOP_XF);   // the first copy comes in on the track's own fade
   g.gain.setValueCurveAtTime(XF_OUT, at + len - LOOP_XF, LOOP_XF);
-  s.start(at, 0, len); s.addEventListener('ended', () => { try { g.disconnect(); } catch {} });
+  s.start(at, off, len); s.addEventListener('ended', () => { try { g.disconnect(); } catch {} });
   return s;
 }
 // A DREAD LAYER UNDER A TRACK (Daniel 10-01, THE DEEP): a second, quiet file that loops under the main one on the same gain node, so it
 // fades, ducks, muffles and stops with the track and costs nothing else. The file is a seamless loop (its tail is crossfaded onto its head),
 // so it is looped natively. gain is relative to the track: 0.5 sits about 14 dB under it. deepdread.ogg is not a Sound Test song.
 const TRACK_LAYER = { deep: { file: 'deepdread', gain: 0.5 } };
+// AN INTRO, THEN THE LOOP (claude/welltown-fix): a file that is an intro and then a seamless loop names where the loop begins (s). The first
+// pass plays the whole file; every pass after it starts there. welltown.ogg = Dizzy Crow's Negev-Desert-Intro (7.000 s) + Negev-Desert-Loop.
+export const TRACK_INTRO = { welltown: 7.0 };
 let layerFor = null;
 function addLayer(name) {
   const L = TRACK_LAYER[name]; if (!L || !ac || currentTrack !== name || !trackG || trackG === layerFor || !trackBuf[L.file]) return;
@@ -473,10 +476,11 @@ function playFile(name) {
   if (trackG && musicSrcs.length) { const og = trackG, olds = musicSrcs; og.gain.setTargetAtTime(0, ac.currentTime, 0.22); setTimeout(() => { for (const s of olds) { try { s.stop(); } catch {} } try { og.disconnect(); } catch {} }, 1000); if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicSrcs = []; musicGen++; } else stopMusic(); // the old track fades under the new one
   currentTrack = name;
   const tg = ac.createGain(); tg.gain.value = 0.001; tg.connect(musicGain); trackG = tg; tg.gain.setTargetAtTime(TRACK_GAIN[name] || 1, ac.currentTime + 0.02, 0.28);
-  const gen = musicGen, b = trackBuf[name], len = trackEnd[name] || b.duration; let at = ac.currentTime + 0.03;
+  const gen = musicGen, b = trackBuf[name], end = trackEnd[name] || b.duration; let at = ac.currentTime + 0.03;
   const chain = first => {
     if (gen !== musicGen || currentTrack !== name) return;
-    const s = loopCopy(ac, b, len, tg, at, first); musicSrcs.push(s); musicSrc = s;
+    const off = first ? 0 : Math.min(TRACK_INTRO[name] || 0, end - 1), len = end - off;   /* AN INTRO, ONCE: every pass after the first starts at the loop (TRACK_INTRO) */
+    const s = loopCopy(ac, b, len, tg, at, first, off); musicSrcs.push(s); musicSrc = s;
     s.addEventListener('ended', () => { musicSrcs = musicSrcs.filter(q => q !== s); });
     const startAt = at; at += len - LOOP_XF;   // the next copy comes in under the last LOOP_XF of this one
     musicTimer = setTimeout(() => chain(false), Math.max(50, (startAt + len * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
@@ -1439,7 +1443,7 @@ Object.assign(SFX, {
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal'];
+export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
 // that page was CC0 or CC-BY (Daniel's 10-01 rule change) WITH its credit line here and in CREDITS.txt - 'Dark Carnival' and 'At Work' are the CC-BY ones; see the credited lanes' own reports). Three tracks have
@@ -1475,6 +1479,7 @@ export const MUSIC_CREDITS = {
   houndmaster: '"Boss Fight 2" — ansimuz', masthead: '"Slay The Evil" — HydroGene', hilltroll: '"Boss Battle #6" — nene',
   rimewright: '"Fields of Ice" — Jonathan So', captain: '"Stereotypical Boss" — Spring',
   tollmaster: '"Infinite Darkness" — HydroGene', grandmother: '"Ghost Land" — HydroGene',
+  welltown: '"Desert Calmness" — Dizzy Crow', banditking: '"The Bandit King" — BRACKEN',   /* (claude/welltown-fix: Dizzy Crow's CC0 track; his synth theme, src/boss-music.js) */
   canal: '"Hollowed Forest" — T. Grove', fields: '"Halloween Hullabaloo" — StarlightFrost', scarecrowking: '"Witch\'s Lair" — Juhani Junkala',
   causeway: '"Solemn Tide" — madameberry', kraken: '"Castle Boss" — madameberry',
   witchlight: '"Iremos Forest" — beardalaxy', oreroad: '"12 Music Loops" — SubspaceAudio',
