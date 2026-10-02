@@ -55,7 +55,7 @@ export function makeBanditKingHands(ctx) {
   H.pour = P => { if (!F || !ctx.bossActive || !ctx.boss || ctx.boss.t !== 'banditking' || !ctx.boss.alive) return null; const r = BKG.pourAt(F, P.x); if (!r) return null;
     if (r === 'wasted') ctx.number(P.x, P.y - 30, 'HE IS NOT BURNING: IT RUNS OFF HIM', '#9aa39a'); return r; };
   H.frame = e => { const m = e.mode; if (m === 'open') return KING_F.open; if (m === 'wake' || m === 'sleep' || m === 'recover') return KING_F.stand;
-    if (KING_F[m] !== undefined) return KING_F[m]; return KING_F.walk[Math.floor(ctx.time() * 4) % 2]; };
+    if (typeof KING_F[m] === 'number') return KING_F[m]; return KING_F.walk[Math.floor(ctx.time() * 4) % 2]; };
   H.barName = e => 'THE BANDIT KING' + (e.mode === 'open' ? '  OPEN' : e.burning > 0 ? '  BURNING' : '');
   H.end = e => { if (F) F.B.data.fires = []; for (const q of ctx.enemies()) if (q.alive && q.lieutenant) { q.alive = false; ctx.burst(q.x, q.y - 10, 8, ['#2a4a70', '#c9a070'], 50, 0.5); } };
   H.read = () => F && { mode: F.B.mode, phase: F.B.phase, cycle: F.cycle, n: { ...F.n }, burning: F.B.data.burning || 0, fires: BKG.kingFires(F).length };
