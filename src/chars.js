@@ -2753,10 +2753,10 @@ export function bakePaladin(skin = {}, previewOnly = false) {
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', maul: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 5], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', maul: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, maul: rest(-6) }),
     /* THE BUTT-SLIDE (src/slide.js): sat back on the ground with the legs run out in front, leaning away from the hill, the weapon tucked behind (a second frame for the cloth) */
-    slide: [0, 1].map(i => knightFrame({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 4], maul: [sh[0] - 1, sh[1] + 4, sh[0] - 9, sh[1] - 4] })),
+    slide: [0, 1].map(i => knightFrame({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 2], maul: [sh[0] - 1, sh[1] + 2, sh[0] - 9, sh[1] - 6] })),
     /* KNEEL IN PRAYER (src/crouch-b.js): down on one knee, the maul planted upright before him with both hands on the haft and his helm
        bowed to it, the light gathering at its head - brighter, and a mote off it, on the second beat (and held there once his bar is full) */
-    kneel: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], maul: [sh[0] + 4, sh[1] + 5, sh[0] + 4, sh[1] - 6], glow: [sh[0] + 4, sh[1] - 10 - i], plume: 0,
+    kneel: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], maul: [sh[0] + 4, sh[1] + 2, sh[0] + 4, sh[1] - 8], glow: [sh[0] + 4, sh[1] - 12 - i], plume: 0,
       bits: i ? [[10, -6, '#ffd36b'], [15, -8, '#fff6c8']] : null })),
     // AEGIS: the maul planted upright before him, both hands on the haft
     block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], maul: [sh[0] + 3, sh[1] + 9, sh[0] + 3, sh[1] - 5], glow: [sh[0] + 3, sh[1] - 9] })),

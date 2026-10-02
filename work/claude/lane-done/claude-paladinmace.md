@@ -6,3 +6,4 @@ Art only. Hitboxes, timings, frame counts, stats unchanged.
 - UNVERIFIED: not felt in motion; weight comes from the existing pose tables (head trailing in carry/slide, planted in idle/block/kneel) - no pose table was redrawn.
 ## QUESTIONS FOR DANIEL
 1. Head is ~7x8 px, haft ~11 px: recommend keep; say if you want it bigger/smaller.
+- Slide and kneel poses raised 2-3 px so the longer haft butt stays above the floor (slide, crouch-feet).
