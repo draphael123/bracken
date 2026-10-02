@@ -14,7 +14,7 @@ import { updateGraveWarden as stepGraveWarden, drawGraveWarden, wardenFrame as g
 import { newPushBlock, updatePushBlock, PB } from './push-blocks.js';   /* PUSHABLE BLOCKS (backlog #12, 2026-09-28) */
 import { bakeGraveWarden, bakeHedgeWarden, bakeGateGargoyle } from './redraw/queue_bosses.js';
 import * as WHF from './gargoyle-whelp.js';   /* THE GARGOYLE WHELP: its numbers, frames and art (docs/briefs/witchlight-whelps.md) */
-import * as CNH from './canal-hands.js'; import * as CNF from './canal-foes.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): its hands on the game, and its two new foes (the grindylow, the will-o'-the-wisp) */
+import * as CNB from './redraw/canal_backdrop.js'; import * as CFA from './redraw/canal_foes_art.js'; import * as CNH from './canal-hands.js'; import * as CNF from './canal-foes.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): its hands on the game, and its two new foes (the grindylow, the will-o'-the-wisp) */
 import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGargoyleWorld, GARG, gargCam, gargRegrowT, gargKeepFooting, drawSlabGhost, gargStomped, stepBall, drawBall } from './gate-gargoyle.js';   /* THE GATE GARGOYLE, the Witchlight Stair's boss */
 import { WIND, windZoneAt, onSpikes, windCatch, windStep, windBite, stompOn, drawWinds } from './spike-winds.js';   /* THE SPIKED MOAT AND ITS WINDS (the battlements and the Gargoyle's room) */
 import { updateHedgeWarden as stepHedgeWarden, drawHedgeWarden, hedgeFrame, hedgeTake, HEDGE, stepRoots, drawRoots, rootOut } from './hedge-warden.js';
@@ -1083,6 +1083,7 @@ function resolveTiles() {
     else if (t === T.SOFT) s = villT ? VILL.turf[(tileAt(x - 1, y) === T.AIR ? 1 : 0) + '' + (tileAt(x + 1, y) === T.AIR ? 1 : 0)][(rnd() * 4) | 0] : TILE.soft[(x + y) % 3];
     else if (t === T.SPIKE) s = L.fallingTower ? (TILE.towerSpikes || (TILE.towerSpikes = FTW.bakeTowerSpikes()))[(rnd() * 4) | 0] : L.palette && L.palette.nearSet === 'town' ? (TILE.townSpikes || (TILE.townSpikes = bakeTownSpikes()))[(rnd() * 4) | 0] : TILE.thorns[(rnd() * 4) | 0];   /* A TOWN DOES NOT GROW BRAMBLES: a railing with its points up and glass in the kerb */
     else if (t === T.CRATE) s = TILE.crate;
+    if (L.canal) { const ts = CNH.canalTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE FOG CANAL's tile kit: wet brick quays, the lit coping, the towpath, the decks, the gates (src/redraw/canal_tiles.js) */
     if (L.theatre) { const ts = THH.theatreTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE MASKWRIGHT'S THEATRE's tile kit (src/redraw/theatre_tiles.js) */
     tileSpr[y * LW + x] = s;
     { // how far under the open air this tile sits: the ground gets heavier the deeper it goes
@@ -18669,7 +18670,7 @@ SPR.stagehand = THF.bakeStagehand(); HAS_HURT.add('stagehand'); THF.bakeTheatreC
 SPR.mummer = FG.bakeMummer(); SPR.scarecrow = FG.bakeScarecrow(false); SPR.scarecrowM = FG.bakeScarecrow(true); SPR.hobbyhorse = FG.bakeHobbyHorse(); SPR.wickerqueen = bakeWickerQueen(); HAS_HURT.add('mummer'); HAS_HURT.add('hobbyhorse');   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
 SPR.greenteeth = bakeGreenteeth();   /* JENNY GREENTEETH (src/redraw/greenteeth_art.js) */
 SPR.puppeteer = bakePuppeteer(); SPR.marionette = bakeMarionette(); SPR.harlequin = bakeHarlequin(); SPR.acrobat = bakeAcrobat(); SPR.masterpiece = bakeMasterpiece();   /* THE PUPPETEER and his three (src/redraw/puppeteer_art.js) */   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
-SPR.grindylow = CNF.bakeGrindylow(); SPR.willowisp = CNF.bakeWisp();   /* THE FOG CANAL's pair (src/canal-foes.js, greybox) */
+SPR.grindylow = CNF.bakeGrindylow(); SPR.willowisp = CNF.bakeWisp(); SPR.lamplighter = CFA.bakeLamplighter();   /* THE FOG CANAL's pair (src/canal-foes.js, greybox) */
 SPR.cutthroat = CB.bakeCutthroat(); SPR.slinger = CB.bakeSlinger(); SPR.ambusher = CB.bakeAmbusher(); const CV_STONE = CB.bakeSlingStone();
 HAS_HURT.add('cutthroat'); HAS_HURT.add('slinger'); HAS_HURT.add('ambusher');
 let CV = null, CVART = null;
@@ -25626,6 +25627,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (SET.parallax === 'full') HB.drawHarbourLayer(g, 'far', BG.far, 0.15, VH - 186, cx, dY, time, VW, VH);
     HB.drawHarbourLayer(g, 'mid', BG.mid, 0.3, VH - 215, cx, dY, time, VW, VH); }
   else if (BG.storm) SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() });   /* THE HURRICANE: only her and the sea */
+  else if (L.canal) CNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE FOG CANAL's own far fields, mill, steeple, hedges, cottages and boats (src/redraw/canal_backdrop.js), not Waymeet's town */
   else if (FAIR) FB.drawBackdrop(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), SET.parallax === 'full');   /* THE HARVEST FAIR's own far fields, steeple, tents and wheel (src/redraw/fair_backdrop.js), not Waymeet's town */
   else { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
@@ -25637,6 +25639,7 @@ function drawWorld(cx, cy, showPlayer) {
   // a wood with parts in different light (L.tints: [x0, x1, rgb, alpha] in tiles), crossfaded over two dozen tiles at each seam
   if (L.tints) { const mx = (cx + VW / 2) / TS; for (const [x0, x1, c, a] of L.tints) { const k = Math.max(0, Math.min(1, Math.min(mx - x0 + 12, x1 - mx + 12) / 24)); if (k > 0.01) { g.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } }
   if (FAIR) { FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time); if (SET.parallax !== 'off') { FB.drawNear(g, cx, cy, VW, L, dusk(), time); FB.drawMotes(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy)); } }   /* the crowd and the bunting, the fireflies and sparks */
+  if (L.canal && SET.parallax !== 'off') CNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* the canal's reeds, mooring posts and hung lanterns */
   if (L.deep) drawDeepTint(cx, cy);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
@@ -25645,7 +25648,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
   if (BG.nearTrees && !L.colosseum) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
-  else if (!L.castle && !L.colosseum && !FAIR && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
+  else if (!L.castle && !L.colosseum && !FAIR && !L.canal && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
   SEA.seaBack(g, cx, cy, VW, VH, time, state === 'play' && !P.dead ? P : null);   /* and its living water, behind the tiles and everything that matters */
   if (L.cloudSea !== undefined) drawSkyRig(cx, cy);   /* the sky ship: her cloud, her gasbags, her sails */
   if (L.hangingTown && L.groundZones && SET.parallax !== 'off') HV.drawHangingBack(g, L, cx, cy, time, VW, VH);   /* THE CLIFF THE VILLAGE HANGS FROM, and each floor's landmark on it: behind the ropes, the rooms and the tiles */
@@ -26426,6 +26429,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (V2_HURT[e.t] !== undefined && e.flash > 0.06 && e.alive && !(typeof e.mode === 'string' && /Tell$|swing|swipe|dive|leap|aim|stab|cut/.test(e.mode))) frame = V2_HURT[e.t];
     /* THE HEXED FIELDS' BATS are the farm's dead ones, pale and red-eyed: baked the first time one is drawn, from the cave bat */
     let sprSet = e.t === 'mummer' && e.scare && !e.woke && !(e.hurtT > 0) ? SPR.scarecrowM : e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.fam ? SPR.familiar : SPR[e.t];
+    if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter;   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
     if (L.theatre) sprSet = THF.foeSet(e) || sprSet;
     if (e.shy && SPR.shy) sprSet = SPR.shy; else if (e.juggler && SPR.juggler) sprSet = SPR.juggler;   /* THE HARVEST FAIR's ranged pair (claude/fairfix2) */   /* THE THEATRE's own cast: the masked patron, the usher, the house's ghosts, the flying props */
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
@@ -26662,7 +26666,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 1;
     const tip = trail[trail.length - 1]; g.fillStyle = '#ffffff'; g.fillRect(Math.round(tip.x - cx) - 1, Math.round(tip.y - cy) - 1, 2, 2);
   }
-  drawReflections(cx, cy); drawWater(cx, cy, true); drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawAirHint(cx, cy);
+  drawReflections(cx, cy); drawWater(cx, cy, true); if (CANAL) CNH.drawCanalWater(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's sheen and lantern reflections */ drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawAirHint(cx, cy);
   for (const b of birds) drawSet(BIRD, null, Math.floor(b.t * 12) % 2, b.x - cx, b.y - cy, Math.sign(b.vx) || 1, false);
   drawCritters(cx, cy);
   if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
@@ -26870,7 +26874,7 @@ function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time, fallenBlocked)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's - its holes and windows only where no tile stands in front of them (round 2) */
   if (L.theatre && THH.paintTheatreRoom(g, st, sx, sy, w, h, tx0, ty0, time, camX, camY)) return;   /* THE MASKWRIGHT'S THEATRE's rooms (src/redraw/theatre_rooms.js) */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
-  if (L.canal && CNH.paintCanalRoom(g, st, sx, sy, w, h)) return;   /* THE FOG CANAL (greybox rooms) */
+  if (L.canal && CNH.paintCanalRoom(g, st, sx, sy, w, h, time)) return;   /* THE FOG CANAL (greybox rooms) */
   if (L.deepHolds && DH.paintHold(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE DEEP: a cargo hold, a galley, a gun deck, the tribute hold (src/deep-holds.js) */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
   if (L.caravan && CR.paintRuinRoom(g, st, sx, sy, w, h, tx0, ty0)) return;   /* and THE SUNKEN CARAVAN its ruins: the inside of a tower or a house, in the violet of the shade */

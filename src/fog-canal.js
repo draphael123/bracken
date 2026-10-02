@@ -347,6 +347,7 @@ export function buildFogCanal({ painter, T, TS }) {
       { kind: 'swingcap', opens: 'the way on for the barge (the bridge swung clear)', hud: 'THE BRIDGE STANDS ACROSS THE WATER: HER LANTERN POLE WILL NOT PASS UNDER IT.' },
       { kind: 'foghorn', opens: 'the fog wall and the basin fog, for a while', hud: 'THE FOGHORN: THE FOG LIFTS - FOR A WHILE. EVERY ARCHER SEES YOU NOW.' },
       { kind: 'lanternpost', opens: 'the dark (doused: the archers in the fog cannot see you)', hud: 'THE LANTERN IS OUT: IN THE DARK THE ARCHERS CANNOT SEE YOU. NOR CAN YOU.' } ],
+    bgSpan: 200,   /* the backdrop (src/redraw/canal_backdrop.js) rides within 200 px whatever storey the camera is on: the summit is not off the bottom of it */
     music: 'canal', dark: 0, night: true, nightA: 0.3, duskStart: 99999, duskLen: 1,
     palette: { sky: 'storm', far: 'town', mid: 'town', near: 'town', dress: 'village', darkCol: '8,14,18', haze: 'rgba(150,175,170,0.16)',
       grass: '#4a5a52', grassL: '#6a7a70', grassD: '#2e3a34', dirt: '#3e4440', dirtL: '#5a625c', dirtD: '#262c28', canopy: ['#0e1618', '#16222a', '#1e2e34', '#283a40'] },
