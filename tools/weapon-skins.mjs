@@ -4,7 +4,8 @@
    For every hero x skin x weapon this bakes the hero in the STEEL weapon and in that weapon and asserts:
      1. only WEAPON pixels differ (the diff is inside the weapon mask: the pixels the weapon palette is able to reach at all), in the store
         frames for every skin and in the FULL combat set (every pose, mirrored, hurt, white, bare) for the default skin;
-     2. the head (helm / cowl) is untouched in the idle frame, whatever the weapon - the probe is a fixed box, not derived from the bake,
+     (the freebooter's boxes skip the hip rows: her holstered pistol is a weapon pixel there)
+     2. the head, torso and legs (helm / cowl, body, hem) are untouched in the idle frame, whatever the weapon - the probe is a fixed box, not derived from the bake,
         so a baker that lets the weapon palette into the body fails it even if the mask followed along;
      3. a non-steel weapon VISIBLY changes the weapon (>= MIN_PX pixels in the swing frames). Needs the page (Chrome over CDP). */
 import assert from 'node:assert/strict';
@@ -45,7 +46,7 @@ try {
               const M = mask.get(p) || new Set();
               for (const px of set) { total++; if (!M.has(px)) { outside++; if (bad.length < 12) bad.push([h, sk, w, p, 'px ' + px + ' is not a weapon pixel']); } }
               if (!full && /atk/.test(p)) atk += set.size;
-              if (!full && /idle\[0\]/.test(p)) { const W = steel.get(p).w; for (const px of set) { const x = px % W, y = Math.floor(px / W); if (x >= (h === 'pyro' ? 8 : 11) && x <= (h === 'pyro' ? 18 : 19) && y >= 24 + (h === 'pyro' ? 0 : 6) && y <= 24 + (h === 'pyro' ? 7 : 11)) head++; } }
+              if (!full && /idle\\[0\\]/.test(p)) { const W = steel.get(p).w; const boxes = h === 'pyro' ? [[8, 17, 0, 7], [9, 17, 13, 17]] : h === 'pirate' ? [[11, 19, 6, 11], [11, 18, 12, 14], [11, 18, 18, 21]] : [[11, 19, 6, 11], [11, 18, 12, 21]]; for (const px of set) { const x = px % W, y = Math.floor(px / W) - 24; if (boxes.some(([x0, x1, y0, y1]) => x >= x0 && x <= x1 && y >= y0 && y <= y1)) head++; } }
             }
             rows.push({ h, sk, w, full, total, outside, atk, head });
           }
@@ -58,7 +59,7 @@ try {
   const fails = [];
   for (const r of nonSteel) {
     if (r.outside) fails.push(r.h + '/' + r.sk + '/' + r.w + (r.full ? ' (full set)' : '') + ': ' + r.outside + ' of ' + r.total + ' changed pixels are not weapon pixels');
-    if (r.head) fails.push(r.h + '/' + r.sk + '/' + r.w + ': the head changed (' + r.head + ' px) under a weapon skin');
+    if (r.head) fails.push(r.h + '/' + r.sk + '/' + r.w + ': the head/body changed (' + r.head + ' px) under a weapon skin');
     if (!r.full && r.atk < MIN_PX) fails.push(r.h + '/' + r.sk + '/' + r.w + ': the weapon barely changes (' + r.atk + ' px in the swing)');
   }
   const seen = new Set(nonSteel.map(r => r.h));

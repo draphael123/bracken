@@ -21,5 +21,5 @@ Base-fail proof used the base's heroSet, which ignores the sentinel object, so i
 is the independent half. Swing arc / slash streak colours drawn in main.js were left alone (effects, not sprites).
 
 ## QUESTIONS FOR DANIEL
-1. Pyromancer: ember/frost recolour her staff shaft, cage and flame. Recommend keep; alternative: flame only.
+1. Pyromancer: ember and frost now recolour her cage and flame only; the shaft keeps its wood (a recoloured shaft read as a blue sleeve band). Recommend keep.
 2. Hilts/guards/grips stay the hero's own (blade/head only). Recommend keep.

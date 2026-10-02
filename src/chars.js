@@ -1425,7 +1425,7 @@ function pyroFrame(o = {}) {
   // the staff goes behind her when she carries it, in front when she works it
   const putW = (x, y, k) => { if (WP && (k === 'r' || k === 'y')) px(g, Math.round(x), Math.round(y), k === 'y' ? WP.s : WP.S); else put(x, y, k); };   /* the staff's cage and flame: the weapon skin's, never the robe's */
   const drawStaff = () => { if (!staff) return;
-    const [x0, y0, x1, y1] = staff; line(g, x0, y0 + dy, x1, y1 + dy, WT(KP.w, 0.1), 2);
+    const [x0, y0, x1, y1] = staff; line(g, x0, y0 + dy, x1, y1 + dy, KP.w, 2);   /* (the shaft keeps its wood: a recoloured shaft across her sleeve read as a blue band on the robe, not a staff) */
     const ux = Math.sign(x1 - x0), uy = Math.sign(y1 - y0);
     // a brass cage at the head with the flame in it
     const hx = x1, hy = y1 + dy;
