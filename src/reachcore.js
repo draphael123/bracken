@@ -41,8 +41,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     /* (claude/fairfix3) and a bull's-eye's BARS drop once its targets are struck - the corn's bars over chimney one and the shutter over the night lane's end are the way on now */
     for (const gl of (L.galleries || [])) for (const [x0, x1, y0, y1] of (gl.bars || [])) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.AIR;
     /* THE WELL TOWN (src/well-town.js): a MUD WALL is one pour from a skin every hero carries (and the wells to fill it stand on the road before each), and
-       THE DRY CISTERN's vault door opens on the four water-skins the level lays down: both count as done, like the fair's one-blow walls (the plain fill: legs only) */
-    for (const m of [...(L.mudWalls || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+       THE DRY CISTERN's vault door opens on the four water-skins the level lays down: both count as done, like the fair's one-blow walls (the plain fill: legs only). The live level only (L.welltown): the draft, src/draft/well-town.js, measures its walls shut itself */
+    if (L.welltown) for (const m of [...(L.mudWalls || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
     for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
   }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the

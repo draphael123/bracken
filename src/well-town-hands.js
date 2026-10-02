@@ -5,7 +5,7 @@
 // thiefStep, stole, drawWorld, drawHud, read. Every teaching line goes through ctx.number with a line listed in src/hint-lines.js (the hint box).
 import { cutthroatStep } from './desert-foes.js';
 
-export const SKINMAX = 3, WELL_R = 24, POUR_R = 30, DRINK_AT = 0.2;
+export const SKINMAX = 3, WELL_R = 24, POUR_R = 48, DRINK_AT = 0.2;
 export const BUCKET = { down: 80, up: 64 };                      /* px/s: the brake off, it runs down; wound, it comes up slower */
 export const THIEF = { hp: 26, run: 96, runT: 3.5, dmg: 6 };     /* THE WATER-THIEF: lighter than the cutthroat, and quicker away */
 export const FIRE = { tick: 0.7, dmg: 3, reach: 6 };             /* a barricade's heat, a tick at its face */
@@ -29,7 +29,7 @@ export function makeWellTownHands(ctx) {
       /* A FIRE IS A BARRICADE: a burning column across the way, solid until it is poured out */
       for (const e of ents.filter(q => q.t === 'oilfire')) { let y0 = e.y; while (y0 > 0 && ctx.cellGet(e.x, y0 - 1) === ctx.T.AIR) y0--;
         const f = { x0: e.x, x1: e.x, y0, y1: e.y, lit: true, cd: 0, kind: e.barricade ? 'barricade' : e.gateway ? 'gateway' : 'stall' }; WT.fires.push(f);
-        for (const [x, y] of cellsOf(f)) ctx.cellSet(x, y, ctx.T.SOLID); }
+        for (const [x, y] of cellsOf(f)) ctx.cellBuild(x, y, ctx.T.SOLID); }
       const c = ents.find(e => e.t === 'cistern'); if (c) WT.cistern = { x: c.x * TS + 8, y: (c.y + 1) * TS, full: false };
       WT.windlasses = ents.filter(e => e.t === 'windlass').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS, top: !!e.top, bucket: e.bucket, cd: 0 }));
     }
@@ -49,20 +49,21 @@ export function makeWellTownHands(ctx) {
       if (!WT.said.full) { WT.said.full = 1; ctx.number(P.x, P.y - 30, 'YOUR SKIN IS FULL: E POURS, E DRINKS', '#7ab8e8'); } return true; }
     const c = WT.cistern;
     if (c && !c.full && Math.abs(c.x - P.x) <= WELL_R && Math.abs(c.y - P.y) <= 20) {
-      if (ctx.questGot() >= ctx.questN()) { c.full = true; for (const v of WT.vault) { v.open = true; for (const [x, y] of cellsOf(v)) ctx.cellSet(x, y, ctx.T.AIR); }
+      if (ctx.questGot() >= ctx.questN()) { c.full = true; for (const v of WT.vault) { v.open = true; for (const [x, y] of cellsOf(v)) ctx.cellOpen(x, y); }
         ctx.sfx.splash && ctx.sfx.splash(); ctx.shake(3); ctx.burst(c.x, c.y - 10, 18, ['#7ab8e8', '#e8f4f8', '#3a7ab8'], 70, 0.8); ctx.number(c.x, c.y - 34, 'THE CISTERN FILLS: THE VAULT OPENS', '#8fd160'); }
       else ctx.number(c.x, c.y - 34, 'THE DRY CISTERN WANTS FOUR WATER-SKINS', '#ffd36b');
       return true; }
     if (sk.sips <= 0) { ctx.number(P.x, P.y - 30, 'YOUR SKIN IS EMPTY: FILL IT AT A WELL', '#ff9a5c'); ctx.sfx.buzz && ctx.sfx.buzz(); return true; }
     /* POUR: in front of you, the nearest thing water changes */
-    const face = P.face || 1, hx = P.x + face * POUR_R;
-    const hits = m => hx >= m.x0 * 16 - 6 && hx <= (m.x1 + 1) * 16 + 6 && P.y > m.y0 * 16 && P.y - 14 <= (m.y1 + 1) * 16;
+    const face = P.face || 1;
+    /* in front of you: its near face between your body and POUR_R ahead (a step or two short of it still reaches), and at your height */
+    const hits = m => { const gap = face > 0 ? m.x0 * 16 - P.x : P.x - (m.x1 + 1) * 16; return gap >= -10 && gap <= POUR_R && P.y > m.y0 * 16 && P.y - 14 <= (m.y1 + 1) * 16; };
     const wall = WT.walls.find(m => !m.open && hits(m));
-    if (wall) { sk.sips--; WT.n.pours++; WT.n.walls++; wall.open = true; for (const [x, y] of cellsOf(wall)) ctx.cellSet(x, y, ctx.T.AIR);
+    if (wall) { sk.sips--; WT.n.pours++; WT.n.walls++; wall.open = true; for (const [x, y] of cellsOf(wall)) ctx.cellOpen(x, y);
       ctx.sfx.splash && ctx.sfx.splash(); ctx.dust(wall.x0 * 16 + 8, (wall.y1 + 1) * 16, 10); ctx.burst(wall.x0 * 16 + 8, wall.y0 * 16 + 20, 12, ['#7a5a3a', '#4e3622', '#7ab8e8'], 60, 0.6);
       ctx.number(P.x, P.y - 30, 'THE MUD GIVES WAY', '#8fd160'); return true; }
     const f = WT.fires.find(m => m.lit && hits(m));
-    if (f) { sk.sips--; WT.n.pours++; WT.n.fires++; f.lit = false; for (const [x, y] of cellsOf(f)) ctx.cellSet(x, y, ctx.T.AIR);
+    if (f) { sk.sips--; WT.n.pours++; WT.n.fires++; f.lit = false; for (const [x, y] of cellsOf(f)) ctx.cellOpen(x, y);
       ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(f.x0 * 16 + 8, f.y0 * 16 + 10, 16, ['#e8f4f8', '#9aa39a', '#7ab8e8'], 50, 0.9);
       ctx.number(P.x, P.y - 30, 'THE FIRE IS OUT - GO', '#8fd160'); return true; }
     const k = ctx.king && ctx.king.pour(P);
@@ -78,7 +79,7 @@ export function makeWellTownHands(ctx) {
     const hb = ctx.attackBox();
     /* THE WINDLASSES: a blow on one sends the bucket the other way (with whoever stands on it) */
     for (const w of WT.windlasses) { w.cd = Math.max(0, w.cd - dt);
-      if (hb && w.cd <= 0 && ctx.overlap(hb, { l: w.x - 14, r: w.x + 14, t: w.y - 28, b: w.y })) { const m = ctx.movers().find(q => q.windlass === w.bucket); if (!m || m.dir) continue;
+      if (hb && w.cd <= 0 && ctx.overlap(hb, { l: w.x - 16, r: w.x + 16, t: w.y - 28, b: w.y })) { const m = ctx.movers().find(q => q.windlass === w.bucket); if (!m || m.dir) continue;
         w.cd = 0.8; const atTop = m.y <= m.y0 + 1; m.dir = atTop ? 1 : -1; WT.n.rides++; ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.ropeHaul && ctx.sfx.ropeHaul(); ctx.sparks(w.x, w.y - 14, ctx.hero().face || 1, 4);
         ctx.number(w.x, w.y - 34, atTop ? 'STRIKE THE WINDLASS: THE BUCKET GOES DOWN' : 'THE BUCKET GOES UP', '#ffd36b'); } }
     /* THE FIRES' HEAT: a tick at a burning barricade's face */
@@ -89,6 +90,11 @@ export function makeWellTownHands(ctx) {
     /* THE MUD WALLS: say what they want, once each, the first time one is in front of you */
     const P = ctx.hero();
     for (const m of WT.walls) if (!m.open && !WT.said['m' + m.x0] && Math.abs(m.x0 * 16 + 8 - P.x) < 40 && P.y > m.y0 * 16 && P.y - 14 <= (m.y1 + 1) * 16) { WT.said['m' + m.x0] = 1; ctx.number(P.x, P.y - 30, 'MUD: POUR YOUR SKIN ON IT', '#ffd36b'); }
+    /* THE WINDLASS and THE DRY CISTERN: what each is for, the first time you stand by it */
+    const top = WT.windlasses.find(w => w.top);
+    if (top && !WT.said.windlass && Math.abs(top.x - P.x) < 48 && Math.abs(top.y - P.y) < 24) { WT.said.windlass = 1; ctx.number(P.x, P.y - 30, 'STRIKE THE WINDLASS: THE BUCKET GOES DOWN', '#ffd36b'); }
+    const cs = WT.cistern;
+    if (cs && !cs.full && !WT.said.cistern && Math.abs(cs.x - P.x) < 48 && Math.abs(cs.y - P.y) < 24 && ctx.questGot() < ctx.questN()) { WT.said.cistern = 1; ctx.number(P.x, P.y - 30, 'THE DRY CISTERN WANTS FOUR WATER-SKINS', '#ffd36b'); }
     /* THE SUN AND THE SKIN: the first time the sun has you and there is water, say so */
     if (!WT.said.sun && P.sun && P.sun.v > 0.6 && skinOf(P).sips > 0) { WT.said.sun = 1; ctx.number(P.x, P.y - 30, 'THE SUN IS OUT: DRINK FROM YOUR SKIN (E)', '#ffd36b'); }
     /* A THIEF CUT DOWN gives back what he took; one who got away with it (his run done) has drunk it */

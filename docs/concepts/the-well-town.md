@@ -46,7 +46,7 @@ the vault.
 BOSS - THE BANDIT KING (the Kasbah courtyard, 40 tiles, the courtyard well in the middle, two troughs a row up)
 His moves are the desert engine's (`src/desert-bosses.js` BANDIT_KING): SCIMITAR SWEEP (!), KNIFE FAN (!), OIL JAR (a red mark where you
 stand, then a burning patch), THE CHARGE (red, shoulder first). THE OPENING IS CAUSED BY THE LEVEL'S VERB: he walks through his own fire and
-BURNS; pour your skin on him while he burns and the steam blinds him - OPEN for 3.0 s at x1.6. A pour while he does not burn runs off him.
+BURNS; pour your skin on him while he burns and the steam blinds him - OPEN for 3.0 s at x2.6 (tuned with the human-bot pilot: 15/21 = 71%). A pour while he does not burn runs off him.
 x0.05 chip otherwise (THE MUD PLATE TURNS IT). He always fights; EVERY CYCLE CHANGES (each pass of his chain is a new order: jar first, knives
 first with a charge after the jar, a charge into a jar). PHASE TWO (half health): two jars at once, and THE LIEUTENANTS - two cutthroats take
 the courtyard well (win it back to refill). Pilot target: the human bot (~250 ms) wins 60-75% with knight, warden, pyromancer; the mash bot loses.

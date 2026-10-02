@@ -19,10 +19,10 @@ import { BANDIT_KING, makeBoss, bossStep, FLOOR, ARENA } from './desert-bosses.j
 
 export const KING = {
   hp: 640, w: 22, h: 40, markH: 54,
-  chip: 0.05, openMul: 2.4, openT: 3.0,          /* THE OPENING: three seconds (the house floor), the blow x1.6 in it; everything else x0.05 */
+  chip: 0.05, openMul: 2.6, openT: 3.0,          /* THE OPENING: three seconds (the house floor), the blow x2.6 in it (tuned with the human-bot pilot, tools/welltown-pilot.mjs); everything else x0.05 */
   dmg: { sweep: 12, knives: 8, jar: 10, burn: 3, charge: 14 }, p2: 1.15,   /* each told blow, and his fire's tick; phase two hits harder */
   burnTick: 0.6, fireR: 20, pourR: 44, wellR: 26, douse: 40,
-  lieutenants: 2,
+  lieutenants: 2, chargeH: 28,
 };
 /* EVERY CYCLE CHANGES: the order of each pass, phase one and phase two (cycle k uses [k % n]) */
 export const CHAINS = {
@@ -38,7 +38,9 @@ export function kingDef() {
   const jar = { ...J,
     start: (B, w) => { J.start(B, w); B.data.mark2 = B.phase === 2 ? clampX(B.data.mark + (B.data.mark < 320 ? 72 : -72)) : null; },
     hit: B => { const r = J.hit(B); if (B.phase === 2 && B.data.mark2 != null) B.data.fires.push({ x: B.data.mark2, t: 6 }); return r; } };
-  return { ...BANDIT_KING, hp: KING.hp, openT: KING.openT, chain: CHAINS[1][0].slice(), chain2: CHAINS[2][0].slice(), attacks: { ...BANDIT_KING.attacks, jar } };
+  /* THE CHARGE, SHOULDER FIRST: low (28 px, the engine's is 36), so a jump in time carries over his shoulder - the answer the tell asks for, with a hero's own jump */
+  const charge = { ...BANDIT_KING.attacks.charge, hit: B => ({ box: at(B.x, 16, KING.chargeH) }) };
+  return { ...BANDIT_KING, hp: KING.hp, openT: KING.openT, chain: CHAINS[1][0].slice(), chain2: CHAINS[2][0].slice(), attacks: { ...BANDIT_KING.attacks, jar, charge } };
 }
 
 /* THE COURTYARD. sx: its first column; R: its floor row. Forty columns (sx..sx+39), his walls at sx-1 and sx+40 (each a six-row door the fight
@@ -129,7 +131,7 @@ export function banditKingPlan(s) {
     if (seenFor(key) && !roll(key + 'd', PLAN.missDodge)) {
       if (name === 'jar') { const m = world(F, B.data.mark), m2 = B.data.mark2 != null ? world(F, B.data.mark2) : null;
         const near = Math.abs(P.x - m) < 44 || (m2 != null && Math.abs(P.x - m2) < 44);
-        if (near) { let gx = clamp(m + (Math.sign(m - kx) || side) * 46); if (m2 != null && Math.abs(gx - m2) < 44) gx = clamp(m - (Math.sign(m - kx) || side) * 46); out.gx = gx; out.why = 'off the jar\'s mark'; return out; } }
+        if (near) { let gx = clamp(m + (Math.sign(m - kx) || side) * 36); if (m2 != null && Math.abs(gx - m2) < 34) gx = clamp(m - (Math.sign(m - kx) || side) * 36); out.gx = gx; out.why = 'off the jar\'s mark'; return out; } }
       if (name === 'charge') { const d = Math.abs(kx - P.x), coming = Math.sign(P.x - kx) === Math.sign(B.data.dir || side); if (B.mode === 'act' && coming && d < 140) { if (P.ground && d < 100) out.jump = true; out.gx = clamp(kx - side * 80); out.why = 'over the charge'; return out; }
         if (B.mode === 'tell' && B.t < 0.1 && d < 140 && P.ground) { out.jump = true; out.gx = clamp(kx - side * 80); out.why = 'jump the charge early'; return out; } }
       if (name === 'knives' && Math.abs(kx - P.x) < 280) { if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the knives'; return out; }

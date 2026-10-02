@@ -23040,7 +23040,8 @@ GTH = makeGreenteethHands({ get P() { return P; }, get L() { return L; }, get pl
 WTH = makeWellTownHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n),
   attackBox: () => attackBox(), overlap: (a, b) => overlap(a, b), asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), VW: () => VW,
-  cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },
+  cellGet: (x, y) => tileAt(x, y), cellOpen: (x, y) => { if (x >= 0 && y >= 0 && x < LW && y < LH) { cellSet(x, y, T.AIR); destroyed.add(y * LW + x); } },   /* opened for good: a respawn (spawnEntitiesTail) leaves a destroyed cell as it is */
+  cellBuild: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) { grid0[y * LW + x] = t; cellSet(x, y, t); } },   /* a barricade the level lights at load: part of the level as built, so a respawn puts it back while it burns */
   questGot: () => straysGot.size, questN: () => questOf().n, get king() { return BKH; } });
 BKH = makeBanditKingHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),

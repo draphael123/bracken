@@ -207,5 +207,5 @@ out.errors=[];return out;})()`);
   assert.equal(res.buy.mail, false);
   assert.deepEqual(res.buy.skill, [true, true], 'buying an ability in the SKILLS tab broke');
   assert.deepEqual(pg2.errors, []);
-  console.log('ONE STORE: rules, six doors (map V/Q, wood Q, pause Store/Skills, three keepers) open the one store, fights refuse it, TAB/E/Q tabs, stock gated by progress (golden table), two old saves open intact, buying works, browsing is free.');
+  console.log('ONE STORE: rules, six doors (map V/Q, wood Q, pause Store/Skills, four keepers) open the one store, fights refuse it, TAB/E/Q tabs, stock gated by progress (golden table), two old saves open intact, buying works, browsing is free.');
 } finally { pg2.close(); }
