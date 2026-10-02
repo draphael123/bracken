@@ -28,8 +28,15 @@
 //   426-521  THE KASBAH          EXAM + BOSS          the last well, held; the Kasbah's bricked door and the fire behind it - two pours from a
 //                                                     three-sip skin in the sun under a bowman; THE DRY CISTERN and its vault; the courtyard of
 //                                                     THE BANDIT KING (src/bandit-king.js stageBanditKing) and the road out
+//
+// THE SHADE PLAN (claude/welltown-fix, the review's P1: the sun did 88% of a level-1 hero's damage). Every fight and climb stands in shade a
+// PROP casts - a market awning (`awn`, the caravan's own deco art; its shade is SHADE_OF.awning's span, so the art and the rule are the same
+// pixels), the well-house's solid roof, the gatehouse, the bazaar roof, the balcony, the dovecote's walls, the parapet, the Kasbah's gateway -
+// and no walk between two shades on the route is longer than SUN.maxWalk (tools/welltown.mjs THE SUN walks the pacing route and holds it).
+// The roofs' bandits stand IN their roof's awning: the shade is taken from them.
 import { SLOPE } from './slopes.js';
 import { stageBanditKing } from './bandit-king.js';
+import { SHADE_OF } from './redraw/desert.js';
 
 export const WELLTOWN = { W: 522, H: 44, street: 30 };
 export const SECTIONS = [['THE CARAVAN GATE', 0], ['THE LOWER MARKET', 64], ['THE WELL SQUARE', 150], ['THE CISTERNS', 166], ['THE MUD QUARTER', 259],
@@ -38,7 +45,7 @@ export const SECTIONS = [['THE CARAVAN GATE', 0], ['THE LOWER MARKET', 64], ['TH
 export const ARCS = {
   fill: { teach: [8, 14], develop: [76, 80], twist: [282, 292], exam: [446, 456] },               /* the wells: the first in the open; held by thieves later */
   pour: { teach: [44, 53], develop: [118, 124], twist: [372, 384], exam: [456, 468] },            /* a house door; a stall fire; the barricade you cannot go round; two at once */
-  windlass: { teach: [172, 180], develop: [176, 178] },                                          /* THE GREAT WELL: one machine, ridden down (the set piece) */
+  windlass: { teach: [172, 180], develop: [176, 178], exam: [446, 448] },                        /* THE GREAT WELL: ridden down (the set piece); the exam's DEEP WELL: wound up under fire */
   climb: { teach: [90, 92], develop: [320, 324], exam: [337, 353] },                              /* the bazaar posts, the dovecote, the roost's alley ladders */
   sun: { teach: [0, 28], develop: [150, 190], twist: [326, 425], exam: [440, 470] },              /* the skin is the only cure: drink it and you have less to pour */
 };
@@ -55,11 +62,15 @@ export function buildWellTown({ painter, T, TS }) {
   const bowman = (x, y, squad, o) => foe('archer', x, y, squad, Object.assign({ bandit: true }, o || {}));   /* THE BANDIT BOWMAN: the archer's draw and loose (RESKINNED, a man's height) */
   const thief = (x, y, squad) => foe('waterthief', x, y, squad);                                             /* THE WATER-THIEF: the cutthroat's feint and cut (RESKINNED), and he cuts your skin */
   const well = (x, y, o) => ent('skinwell', x, y, o || {});
-  const shade = [], mudWalls = [], vaultDoors = [], moversExtra = [], interiors = [];
+  const shade = [], cast = [], mudWalls = [], vaultDoors = [], moversExtra = [], interiors = [];
   /* A MUD WALL is a bricked-up DOORWAY: the house wall runs on above it (so it cannot be jumped), and only a pour opens it */
   const mudDoor = (x0, x1, wallTop, floorRow, rows = 3, o = {}) => { block(x0, x1, wallTop, floorRow - 1); mudWalls.push({ x0, x1, y0: floorRow - rows, y1: floorRow - 1, ...o }); ent('mudwall', x0, floorRow - 1, { x1, ...o }); };
   const fire = (x, y, o) => ent('oilfire', x, y, o || {});
   const skin = (x, y) => ent('stray', x, y, { kind: 'waterskin' });
+  /* A MARKET AWNING standing on the floor under (x, y): the prop, and the shade it casts (the same box src/sunstroke.js shadeZones gives an
+     awning: its canvas is 52 px wide, centred on the tile) */
+  const awn = (x, y, torn) => { ent('deco', x, y, { kind: torn ? 'awningTorn' : 'awning' }); const left = x * TS + 8 - 26, g = (y + 1) * TS, A = SHADE_OF.awning;
+    cast.push([left + A.x0, left + A.x1, g - A.h, g + 1]); };
 
   // ================= 1. THE CARAVAN GATE (0-63) =================
   ground(0, 15, S);
@@ -69,9 +80,9 @@ export function buildWellTown({ painter, T, TS }) {
   set(16, S - 1, SLOPE.R2A); set(17, S - 1, SLOPE.R2B); ground(18, 25, S - 1);   /* a dune ramp up to the gate */
   set(26, S - 2, SLOPE.R2A); set(27, S - 2, SLOPE.R2B); ground(28, 43, S - 2);
   /* THE GATEHOUSE: the town wall's mass over a passage three rows high (its shade), bowmen on its top, a ladder up its town face */
-  block(29, 41, 17, 24);
-  bowman(32, 16, 'gatehouse'); bowman(37, 16, 'gatehouse');
-  ladder(42, 17, 27);
+  block(29, 41, 19, 24);                                                      /* (its top two rows lower than the greybox's: a bowman on it sees the street, 144 px down) */
+  bowman(32, 18, 'gatehouse'); bowman(37, 18, 'gatehouse');
+  ladder(42, 19, 27);
   /* THE MUD HOUSE: a little house across the street, its door bricked with mud and a water-skin inside - the pour taught where it costs nothing
      (the street goes up its steps and over its roof) */
   ground(44, 63, S);
@@ -80,7 +91,7 @@ export function buildWellTown({ painter, T, TS }) {
   mudWalls.push({ x0: 46, x1: 46, y0: S - 3, y1: S - 1, optional: true }); ent('mudwall', 46, S - 1, { x1: 46, optional: true });
   skin(50, S - 1);                                                            /* WATER-SKIN ONE */
   interiors.push([47, 52, S - 3, S - 1, 'wtHouse']);
-  foe('cutthroat', 57, S - 1, 'gate'); foe('cutthroat', 61, S - 1, 'gate');   /* the gate's two knives, on the street past the house */
+  foe('cutthroat', 44, S - 3, 'gate'); foe('cutthroat', 45, S - 3, 'gate');   /* the gate's two knives, ON THE HOUSE'S STEPS: the optional pour is taught with them watching (its sip refills at 77) */
 
   // ================= 2. THE LOWER MARKET (64-149) =================
   ground(64, 89, S);
@@ -104,21 +115,25 @@ export function buildWellTown({ painter, T, TS }) {
   ent('silver', 128, 22);                                                     /* SILVER ONE: on the roof walk, in the sun */
   /* up to the square: the market stair */
   ground(132, 137, S); ground(138, 143, S - 2); ground(144, 149, S - 4);
+  awn(140, S - 3, true);                                                     /* a torn stall awning on the stair: shade between the bazaar and the square */
 
   // ================= 3. THE WELL SQUARE (150-205) and THE GREAT WELL =================
   const Q = S - 4;                                                            /* the square's floor row: 26 */
   ground(150, 192, Q);
   /* THE WELL-HOUSE: a roof on two posts over the square's west side, its bowmen on it */
-  boards(156, 163, Q - 5); ladder(156, Q - 5, Q - 1); ladder(163, Q - 5, Q - 1);
+  block(157, 162, Q - 5, Q - 5); ladder(156, Q - 5, Q - 1); ladder(163, Q - 5, Q - 1);   /* a SOLID roof (its shade is the square's first: the review's P1) */
+  shade.push([156 * TS, 164 * TS, (Q - 4) * TS, Q * TS + 1]);
   bowman(159, Q - 6, 'wellhouse');
-  foe('cutthroat', 167, Q - 1, 'square'); foe('cutthroat', 170, Q - 1, 'square');
+  foe('cutthroat', 168, Q - 1, 'square'); foe('cutthroat', 170, Q - 1, 'square', { follow: true });   /* the second one follows you down the well */
+  awn(169, Q - 1);                                                            /* the square's knives hold its awning */
   /* THE GREAT WELL: a shaft two wide from the square to the cistern's floor, its WINDLASS on the west lip (strike it: the brake comes off and the
      bucket runs down - with you on it), the well head on the east lip (fill there). The bucket is a lift that moves only on the windlass */
   const gx = 176, floorC = 40;
   air(gx, gx + 1, Q, floorC);
   ent('windlass', gx - 1, Q - 1, { bucket: 'great', top: true });
   well(gx + 3, Q - 1, { great: true });
-  thief(184, Q - 1, 'wellhead');                                              /* he keeps the well head */
+  foe('waterthief', 183, Q - 1, 'wellhead', { follow: true });               /* he keeps the well head - and when the bucket goes, he drops down the shaft after you */
+  awn(182, Q - 1, true);
   moversExtra.push({ kind: 'lift', windlass: 'great', x: gx * TS, y: Q * TS, y0: Q * TS, y1: floorC * TS, w: 32, h: 8, speed: 0, locked: true });
   /* THE RUBBLE: the street east of the square fell into the cisterns - a heap twelve rows high, no way over */
   block(193, 197, 13, Q - 1); ground(193, 197, 13);
@@ -128,14 +143,18 @@ export function buildWellTown({ painter, T, TS }) {
   const C0 = 166, C1 = 258;
   ground(198, 325, S);                                                        /* the mud quarter's street over the cisterns' east end (its west end: behind the rubble) */
   air(C0, C1, 34, 39);                                                        /* the hall: six rows */
-  for (let x = 188; x < 248; x += 12) block(x, x, 34, 35);                   /* the pillars, hung from the vault: the floor passes under them */
-  shade.push([C0 * TS, (C1 + 1) * TS, 34 * TS, 40 * TS + 1]);
-  interiors.push([C0, C1, 34, 39, 'wtCistern']);
+  /* THE CHOICE UNDER THE STREET (the concept: "cut through the scorpions or go round under the pillars"): from 197 the vault is raised three
+     rows and a gallery runs over the pillars' caps (a ladder up at 197, a drop at 238) - the ROUND way, past the sump's squad, with water-skin
+     two at its end; the floor under it is the QUICK way, through them. Both meet THE OLD STINGER at the gate */
+  air(197, 238, 31, 33); boards(198, 237, 34); ladder(197, 31, 39);
+  for (let x = 188; x < 248; x += 12) block(x, x, 34, 35);                   /* the pillars, hung from the vault: the floor passes under them, the gallery over their caps */
+  shade.push([C0 * TS, (C1 + 1) * TS, 31 * TS, 40 * TS + 1]);
+  interiors.push([C0, C1, 34, 39, 'wtCistern'], [197, 238, 31, 33, 'wtCistern']);
   well(gx + 5, 39, { cistern: true });                                        /* THE CISTERN'S OWN WELL: the water at the bucket's foot */
   ent('windlass', gx + 2, 39, { bucket: 'great', top: false });              /* the bucket's foot: the bottom windlass winds it back up */
-  ent('check', 188, 39);                                                      /* CHECKPOINT TWO: at the bucket's foot */
-  skin(168, 39);                                                              /* WATER-SKIN TWO: at the dark west end of the hall (a dead end) */
-  foe('scorpion', 199, 39, 'cistern'); foe('scorpion', 203, 39, 'cistern');
+  ent('check', 194, 39);                                                      /* CHECKPOINT TWO: past the cistern's well, at the foot of the gallery's ladder (earned: the well's scorpions are behind it) */
+  skin(234, 33);                                                              /* WATER-SKIN TWO: at the end of the gallery (the round way pays) */
+  foe('scorpion', 183, 39, 'cistern'); foe('scorpion', 186, 39, 'cistern');  /* THE CISTERN'S OWN WELL IS HELD: the refill at the bucket's foot is a fight */
   thief(218, 39, 'sump'); foe('scorpion', 222, 39, 'sump');
   /* THE OLD STINGER: the cistern's elite holds the gate in front of the rungs up (eliteGates: it opens when he dies) */
   ent('scorpion', 244, 39, { face: -1, elite: true, gate: 251 });
@@ -145,49 +164,57 @@ export function buildWellTown({ painter, T, TS }) {
 
   // ================= 5. THE MUD QUARTER (259-325) =================
   mudDoor(262, 263, 17, S);                                                   /* MUD WALL ONE: the first lane, bricked */
+  foe('cutthroat', 264, S - 1, 'wallOne'); foe('cutthroat', 266, S - 1, 'wallOne');   /* behind it, in their awning's shade: the pour opens onto them */
+  awn(265, S - 1);
   ground(268, 277, S - 2); boards(270, 275, 24);                              /* a step up, and a balcony over it */
   bowman(272, 23, 'balcony');
   shade.push([270 * TS, 276 * TS, 25 * TS, (S - 2) * TS + 1]);
-  well(283, S - 1);                                                           /* THE MUD QUARTER'S WELL, held */
-  ent('check', 280, S - 1);                                                   /* CHECKPOINT THREE */
+  well(283, S - 1);                                                           /* THE MUD QUARTER'S WELL, held (its thieves under the well's stall awnings) */
   thief(287, S - 1, 'well2'); thief(290, S - 1, 'well2');
+  awn(286, S - 1); awn(290, S - 1, true);
   mudDoor(296, 297, 17, S);                                                   /* MUD WALL TWO: the second lane */
   ground(300, 305, S - 2); ground(306, 311, S);
-  foe('cutthroat', 308, S - 1, 'lane2'); foe('cutthroat', 312, S - 1, 'lane2');
+  awn(303, S - 3);                                                            /* (the lane's pair stands behind MUD WALL ONE now: the review's fix 8) */
   /* THE DOVECOTE: a tower, rungs up its middle, a door through its foot, a window on its east face at the roofs' height, a hatch in its roof (and a
      silver on top: a dead end up) */
   { const x = 320; block(x, x + 4, 11, S - 1); air(x + 1, x + 3, 12, S - 1); air(x, x, S - 3, S - 1); ladder(x + 2, 11, S - 1);
     air(x + 4, x + 4, 15, 17); set(x + 3, 18, T.ONEWAY); block(x, x + 4, 11, 11); set(x + 2, 11, T.NET);   /* the window, and a sill off the ladder to it */
-    ent('silver', x + 2, 8); interiors.push([x + 1, x + 3, 12, S - 1, 'wtDovecote']); }
+    ent('silver', x + 2, 8); interiors.push([x + 1, x + 3, 12, S - 1, 'wtDovecote']);
+    shade.push([(x + 1) * TS, (x + 4) * TS, 12 * TS, S * TS + 1]); }                   /* the tower is a building: its inside is shade, the breather before the roost */
 
   // ================= 6. THE BANDITS' ROOST (326-425): rooftops in the open sun =================
   /* the houses stand solid from their roofs down to the street; the alleys between them drop to the street, a ladder in each */
   ground(326, 425, S);
   const house = (x0, x1, roof) => block(x0, x1, roof, S - 1);
   house(325, 336, 18);
+  ent('check', 326, 17);                                                      /* CHECKPOINT THREE: on roof A, outside the dovecote's window (the gaps even out: the review's fix 12) */
+  awn(331, 17);
   ladder(337, 18, S - 1);
   house(340, 350, 20); boards(345, 349, 15); ladder(347, 15, 19);          /* a perch on a pole over house B's roof: the bowman's */
   bowman(347, 14, 'perch1');
-  foe('cutthroat', 341, 19, 'roofB'); foe('cutthroat', 344, 19, 'roofB');
+  foe('cutthroat', 342, 19, 'roofB'); foe('cutthroat', 344, 19, 'roofB'); awn(342, 19);   /* roof B's pair holds its awning */
   ladder(353, 17, S - 1);
   house(354, 366, 17);
-  thief(360, 16, 'roofC');
+  thief(360, 16, 'roofC'); awn(360, 16, true);
+  well(364, 16, { jar: true, sips: 1 });                                      /* A WATER JAR on roof C: ONE sip (not a well - the roost's twist stays a choice), for the sip his cut takes (tools/welltown.mjs THE WATER BUDGET) */
   /* THE BURNING BARRICADE: house D's roof walk runs under the parapet (two rows high) and the bandits have set it alight. No way over the parapet,
      none under the house: pour it out */
   house(367, 384, 19); block(372, 384, 8, 16);
   fire(376, 18, { barricade: true });
+  boards(367, 370, 15); ladder(368, 15, 18); bowman(368, 14, 'perch2');        /* A SECOND PERCH, on a pole at house D's west end: the barricade is poured under his arrows */
   shade.push([372 * TS, 385 * TS, 17 * TS, 19 * TS + 1]);
   ladder(387, 19, S - 1);
   house(388, 400, 21);
-  foe('cutthroat', 392, 20, 'roofE'); foe('cutthroat', 396, 20, 'roofE');
+  foe('cutthroat', 392, 20, 'roofE'); foe('cutthroat', 395, 20, 'roofE'); awn(393, 20);   /* roof E's pair holds its awning */
   house(401, 420, 24); boards(401, 405, 18);                                  /* a lower terrace, and a chimney ledge over it (a hop up from house E) */
   skin(404, 17);                                                              /* WATER-SKIN FOUR: up on the chimney ledge */
-  thief(414, 23, 'terrace'); bowman(418, 23, 'terrace');
+  thief(413, 23, 'terrace'); bowman(418, 23, 'terrace'); awn(413, 23, true);
   ground(421, 425, 26);
 
   // ================= 7. THE KASBAH (426-521): the exam, the dry cistern, the courtyard =================
   const K = 28;                                                               /* the Kasbah street's floor row */
   ground(426, 472, K);
+  awn(437, K - 1);                                                            /* the Kasbah street's one awning, over the dry cistern's hole */
   /* THE DRY CISTERN: under the street, down a hole by its own ladder. Pour the four water-skins in (INTERACT at it): it fills and THE VAULT opens */
   air(431, 446, K + 1, K + 4); block(431, 446, K + 5, H - 1); air(431, 431, K, K); ladder(431, K, K + 4);
   ent('cistern', 437, K + 4);
@@ -196,7 +223,8 @@ export function buildWellTown({ painter, T, TS }) {
   interiors.push([431, 446, K + 1, K + 4, 'wtCistern']);
   /* THE EXAM: the last well, held by thieves and a bowman over it; then the Kasbah's bricked door and, behind it, a fire under the gateway's
      lintel - two pours, a three-sip skin, the sun and a bowman */
-  well(448, K - 1);
+  well(448, K - 1, { deep: true });                                           /* A DEEP WELL: its bucket is down - strike its windlass and wind it up (2 s), under the bowman and the thieves, before you can fill */
+  ent('windlass', 446, K - 1, { deep: true });
   boards(450, 454, 22); ladder(449, 22, K - 1);
   bowman(452, 21, 'kasbahLedge');
   thief(451, K - 1, 'kasbahWell'); thief(455, K - 1, 'kasbahWell');
@@ -221,7 +249,7 @@ export function buildWellTown({ painter, T, TS }) {
     arena: king.arena, gateAfterBoss: true,
     welltown: true,
     mudWalls, vaultDoors,
-    shade, shadeArt: shade.slice(),
+    shade: [...shade, ...cast], shadeArt: shade.slice(),   /* (an awning paints its own shade: only the rest is tinted) */
     quest: { n: 4, item: 'waterskin', name: 'WATER-SKINS', done: 'FOUR SKINS: POUR THEM IN THE DRY CISTERN', thanks: 'THE CISTERN IS FULL' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */

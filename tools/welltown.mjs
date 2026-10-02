@@ -3,8 +3,12 @@
 //   THE RULE IS LOAD-BEARING   every required mud wall and fire alone shuts the way to the courtyard; poured, the way is open
 //   THE WINDLASS IS THE WAY    without the bucket down THE GREAT WELL, the cisterns and everything past the rubble are out of reach
 //   THE DOVECOTE IS THE WAY UP without its rungs, the roofs (and the roost past them) are out of reach
-//   THE WATER BUDGET           walked left to right with a three-sip skin, filled at every well passed, it is never short at a required pour
-//                              (and the first well stands before the first wall); the exam asks two pours after its last well
+//   THE SUN (claude/welltown-fix: the review's P1, the sun did 88% of a level-1 hero's damage) walked along the pacing route (tools/pacing.mjs,
+//                              not the lowest footing: the cisterns lie under the street), no stretch between two shades is longer than
+//                              SUN.maxWalk s at RUN; every shade a fight stands in is cast by a prop (an awning ent, a solid roof, a rect)
+//   THE WATER BUDGET           walked left to right with a three-sip skin, filled at every well passed, it is never short at a required pour,
+//                              counting ONE DRINK for every sun stretch over SUN.maxWalk and ONE STOLEN SIP at every thief squad on the way (a
+//                              roof's water jar gives one); the first well stands before the first wall; the exam asks two pours after its last well
 //   THE THEMED KEY             four water-skins, the dry cistern, its vault holding the relic and a silver, shut until it is poured full
 //   THE FOES                   every foe is in a designed squad (or the elite); the ranged foe is the reskinned bowman; the one new kind is the
 //                              water-thief; the roles are melee, ranged and runner
@@ -18,6 +22,8 @@ import { KING, STAGE } from '../src/bandit-king.js';
 import { OPEN_RULE, OWN_WARD, NO_OPENING, GREED } from '../src/boss-greed.js';
 import { ROLES } from './level-quality.mjs';
 import { CALL_LINES } from '../src/hint-lines.js';
+import { SUN, shadeZones, inShade, roofShade } from '../src/sunstroke.js';
+import { pacing } from './pacing.mjs';
 
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; console.log('  ok  ' + m); };
 const lv = LEVELS.find(l => l.id === 'welltown'); assert.ok(lv, 'no welltown in LEVELS');
@@ -47,11 +53,33 @@ for (const [what, m] of required) ok(!reaches(withShut([m]), inArena), 'REQUIRED
   ok(reaches(L, (x, y) => y >= 34 && x > 180 && x < 250), 'and the bucket takes you down into them'); }
 { const g = L.grid.slice(); for (let y = 0; y < H; y++) if (g[y * W + 322] === T.NET) g[y * W + 322] = T.AIR;
   ok(!reaches({ ...L, grid: g }, inArena), 'THE DOVECOTE: with its rungs gone the roofs and the roost past them are out of reach'); }
+// ---- THE SUN ----
+const Z = shadeZones(L), cell = (x, y) => L.grid[y * W + x];
+const shaded = (x, y) => inShade(Z, x, y - 1) || roofShade(cell, x, y - 14, t => t === T.SOLID);
+const sunLong = [];
+{ const r = pacing(lv).route, pts = [];   /* the pacing route, filled in at a quarter tile (its nodes stand ~6 tiles apart), up to his courtyard */
+  for (let i = 1; i < r.length; i++) { const [ax, ay] = r[i - 1], [bx, by] = r[i]; if (ax >= ax0) break; const k = Math.max(1, Math.round(Math.hypot(bx - ax, by - ay) * 4));
+    for (let j = 0; j < k; j++) pts.push([(ax + (bx - ax) * j / k + 0.5) * TS, (Math.round(ay + (by - ay) * j / k) + 1) * TS]); }
+  const st = []; let s0 = null, len = 0;
+  for (let i = 0; i < pts.length; i++) { const [x, y] = pts[i], d = i ? Math.hypot(x - pts[i - 1][0], y - pts[i - 1][1]) : 0;
+    if (!shaded(x, y)) { if (s0 === null) { s0 = x; len = 0; } else len += d; } else if (s0 !== null) { st.push({ x0: Math.floor(s0 / TS), x1: Math.floor(x / TS), s: len / SUN.RUN }); s0 = null; } }
+  if (s0 !== null) st.push({ x0: Math.floor(s0 / TS), x1: ax0, s: len / SUN.RUN });
+  st.sort((a, b) => b.s - a.s); for (const q of st) if (q.s > SUN.maxWalk) sunLong.push(q);
+  ok(pts.length > 1500 && st[0].s <= SUN.maxWalk, 'THE SUN: walked along the route, the longest stretch between two shades is ' + st[0].s.toFixed(1) + ' s (columns ' + st[0].x0 + '-' + st[0].x1 + '), the rule ' + SUN.maxWalk + ' s; next ' + st.slice(1, 4).map(q => q.s.toFixed(1) + ' (' + q.x0 + ')').join(', '));
+  const props = L.ents.filter(e => e.t === 'deco' && /^awning/.test(e.kind)).length;
+  ok(props >= 12 && shaded((159 + 0.5) * TS, 26 * TS) && L.grid[21 * W + 159] === T.SOLID && shaded((322 + 0.5) * TS, 20 * TS),
+    'THE SHADE IS CAST BY THINGS: ' + props + ' awnings over the fights, the well-house roof (solid), the inside of the dovecote (its 18 rungs are the breather before the roost)'); }
 // ---- THE WATER BUDGET ----
-{ const wells = L.ents.filter(e => e.t === 'skinwell' && !e.arena).map(e => [e.x, 'well']), pours = required.map(([w, m]) => [m.x0, w]);
-  const ev = [...wells, ...pours].sort((a, b) => a[0] - b[0] || (a[1] === 'well' ? -1 : 1)); let sips = 0, short = null, last = null, after = 0;
-  for (const [x, k] of ev) { if (k === 'well') { sips = 3; last = x; after = 0; } else { if (sips <= 0 && !short) short = k; sips--; after++; } }
-  ok(!short, 'THE WATER BUDGET: ' + pours.length + ' required pours, ' + wells.length + ' wells on the road, a three-sip skin filled at each is never short');
+{ const wells = L.ents.filter(e => e.t === 'skinwell' && !e.arena && !e.jar).map(e => [e.x, 'well']), jars = L.ents.filter(e => e.t === 'skinwell' && e.jar).map(e => [e.x, 'jar']), pours = required.map(([w, m]) => [m.x0, w]);
+  const thieves = [...new Set(L.ents.filter(e => e.t === 'waterthief' && !(e.x >= ax0 && e.x <= ax1)).map(e => e.squad))].map(q => [Math.min(...L.ents.filter(e => e.squad === q).map(e => e.x)), 'thief ' + q]);
+  const drinks = sunLong.map(q => [q.x1, 'drink']);
+  const rank = { well: 0, jar: 1, thief: 2, drink: 3 }, kindOf = k => k.split(' ')[0];
+  const ev = [...wells, ...jars, ...pours, ...thieves, ...drinks].sort((a, b) => a[0] - b[0] || (rank[kindOf(a[1])] ?? 9) - (rank[kindOf(b[1])] ?? 9)); let sips = 0, short = null, last = null, after = 0, stolen = 0, drunk = 0, lastSip = {};
+  for (const [x, k] of ev) { const kk = kindOf(k); if (kk === 'well') { sips = 3; last = x; after = 0; } else if (kk === 'jar') sips = Math.min(3, sips + 1);
+    else if (kk === 'thief') { if (sips > 0) { sips--; stolen++; } } else if (kk === 'drink') { if (sips > 0) { sips--; drunk++; } }
+    else { if (sips <= 0 && !short) short = k + ' (@' + x + ')'; sips--; after++; lastSip[k] = sips; } }
+  ok(!short, 'THE WATER BUDGET: ' + pours.length + ' required pours, ' + wells.length + ' wells and ' + jars.length + ' jar on the road; a three-sip skin filled at each, less ' + stolen + ' sips to thieves and ' + drunk + ' drinks for the sun, is never short' + (short ? ' - SHORT at ' + short : ''));
+  { const b = required.find(([w]) => /barricade/.test(w)); ok(b && lastSip[b[0]] >= 0, 'THE ROOST LEG: the burning barricade still has its sip after the well-two thieves, door two, the roof-C thief and the sun'); }
   ok(Math.min(...wells.map(w => w[0])) < Math.min(...L.mudWalls.map(m => m.x0)), 'the first well stands before the first mud wall');
   ok(after >= 2 && last > 440, 'THE EXAM: after the last well (@' + last + ') two pours are asked (' + after + ') - a three-sip skin, a sip to spare for the sun'); }
 // ---- THE THEMED KEY ----

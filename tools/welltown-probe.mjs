@@ -25,7 +25,7 @@ try {
   for(const pr of BK.props().filter(p=>p.t==='stray'&&!p.got)){BK.P.x=pr.x;BK.P.y=pr.y;BK.sim(3);}out.skins=BK.village().saved();
   tp(436,32);BK.press('talk');BK.sim(3);out.cistern={full:W().cistern.full,vault:W().vault.map(v=>v.open)};
   return out;})()`, 300000);
-  ok(r.loaded.wells === 7 && r.loaded.walls === 4 && r.loaded.fires === 3, 'the town as built: 7 wells, 4 mud walls, 3 fires ' + JSON.stringify(r.loaded));
+  ok(r.loaded.wells === 8 && r.loaded.walls === 4 && r.loaded.fires === 3, 'the town as built: 7 wells and a jar, 4 mud walls, 3 fires ' + JSON.stringify(r.loaded));
   ok(r.fill === 3, 'E at a well fills the skin (3 sips)');
   ok(r.wall.open && r.wall.sips === 2, 'E facing a mud wall pours a sip on it: it gives way');
   ok(!r.stall.lit && r.stall.sips === 1, 'E facing a fire pours it out');
@@ -46,6 +46,30 @@ try {
   ok(Math.abs(t.openHit - 40 * 2.6) < 1 && Math.abs(t.chipHit - 2) < 0.01, 'a blow lands x2.6 in the opening and a hero\'s x0.05 outside it (the global chip): ' + t.openHit + ' / ' + t.chipHit);
   ok(t.chipLines.length === 1 && /SCRATCH/.test(t.chipLines[0]), 'ONE chip line, the global one (his own THE MUD PLATE TURNS IT is gone): ' + JSON.stringify(t.chipLines));
   ok(Math.abs(t.roomHit - 40) < 0.01, 'the room\'s blow on him lands whole (the global rule chips only a hero): ' + t.roomHit);
+  /* THE FIX LANE (claude/welltown-fix): the deep well winds, the ride is contested, a respawn refills the skin, E with a full skin beside a burning King pours */
+  const u = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
+  BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='welltown'));BK.state='play';BK.god=true;BK.sim(10);const P=BK.P,W=()=>BK.welltown();
+  out.startSips=P.skin.sips;
+  for(const e of BK.enemies())if(e.t!=='banditking'&&!(e.t==='waterthief'&&e.x>182*16&&e.x<185*16)&&!(e.t==='cutthroat'&&e.x>169*16&&e.x<172*16))e.alive=false;
+  /* THE GREAT WELL: the bucket goes, and the well head's men come down after you */
+  BK.tp(177,25);BK.sim(10);P.face=-1;BK.press('atk');BK.sim(12);for(let i=0;i<300;i++)BK.sim(1);
+  out.followers=BK.enemies().filter(e=>e.alive&&(e.t==='waterthief'||e.t==='cutthroat')).map(e=>[Math.round(e.x/16),Math.round(e.y/16)]);
+  /* THE DEEP WELL (448): E gives nothing until its windlass winds the bucket up; then it fills */
+  for(const e of BK.enemies())if(e.t!=='banditking')e.alive=false;
+  P.skin.sips=0;BK.tp(448,27);BK.sim(4);BK.press('talk');BK.sim(3);out.deepDown=P.skin.sips;
+  BK.tp(447,27);BK.sim(4);P.face=-1;BK.press('atk');BK.sim(12);const dw=W().wells.find(w=>w.deep);out.winding=dw.wind>0;for(let i=0;i<260&&!dw.up;i++)BK.sim(1);out.up=dw.up;
+  BK.tp(448,27);BK.sim(4);BK.press('talk');BK.sim(3);out.deepFill=P.skin.sips;out.downAgain=!dw.up;
+  /* A RESPAWN refills the skin */
+  P.skin.sips=0;BKT.respawn&&BKT.respawn();BK.sim(5);out.respawnSips=P.skin.sips;
+  /* THE COURTYARD WELL: a full skin, the King burning beside it - E pours on him */
+  const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);const b=BK.boss;let opened=0,tried=0;
+  for(let i=0;i<60*60&&!opened;i++){P.hp=P.maxHp;if(b.burning>0&&b.mode!=='open'){P.skin.sips=P.skin.max;const wx=A.well;b.x=wx+18;BK.banditKingHands().fight().B.x=b.x-A.x0;P.x=wx;P.face=1;tried++;BK.press('talk');}BK.sim(1);if(b.mode==='open')opened=1;}
+  out.wellPour={opened,tried,sips:P.skin.sips,max:P.skin.max};
+  return out;})()`, 300000);
+  ok(u.followers.length === 2 && u.followers.every(([x, y]) => y >= 37 && x >= 170 && x <= 184), 'THE RIDE IS CONTESTED: the bucket gone, the well head\'s thief and a square cutthroat are down at its foot ' + JSON.stringify(u.followers));
+  ok(u.deepDown === 0 && u.winding && u.up && u.deepFill === 3 && u.downAgain, 'THE DEEP WELL: nothing until its windlass is struck, then the bucket winds up (2 s) and it fills, and the bucket goes down again ' + JSON.stringify(u));
+  ok(u.respawnSips === 3, 'A CHECKPOINT RESPAWN REFILLS THE SKIN (Daniel): ' + u.respawnSips);
+  ok(u.wellPour.opened && u.wellPour.sips < u.wellPour.max, 'E AT THE COURTYARD WELL with a full skin, the King burning beside it: it POURS on him (not swallowed by the well) ' + JSON.stringify(u.wellPour));
   if (pg.errors.length) { ok(false, 'page errors: ' + pg.errors.slice(0, 3).join(' | ')); }
 } finally { pg.close(); }
 console.log(bad ? bad + ' FAILED' : 'welltown-probe: all passed'); process.exitCode = bad ? 1 : 0;

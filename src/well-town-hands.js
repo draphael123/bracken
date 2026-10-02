@@ -9,6 +9,8 @@ export const SKINMAX = 3, WELL_R = 24, POUR_R = 48, DRINK_AT = 0.2;
 export const BUCKET = { down: 80, up: 64 };                      /* px/s: the brake off, it runs down; wound, it comes up slower */
 export const THIEF = { hp: 26, run: 96, runT: 3.5, dmg: 6 };     /* THE WATER-THIEF: lighter than the cutthroat, and quicker away */
 export const FIRE = { tick: 0.7, dmg: 3, reach: 6 };             /* a barricade's heat, a tick at its face */
+export const DEEP = { wind: 2.0 };                               /* THE DEEP WELL (the exam's): a blow on its windlass winds its bucket up in this long, and a fill sends it down again */
+export const FOLLOW = { after: 1.6 };                            /* THE GREAT WELL's ride is contested: this long after the bucket goes, the well head's men are down the shaft after you */
 
 export function makeWellTownHands(ctx) {
   let WT = null;
@@ -23,7 +25,7 @@ export function makeWellTownHands(ctx) {
     if (!WT || WT.L !== L) {
       const TS = ctx.TS, ents = L.ents;
       WT = { L, said: {}, n: { fills: 0, pours: 0, drinks: 0, walls: 0, fires: 0, stolen: 0, back: 0, rides: 0 },
-        wells: ents.filter(e => e.t === 'skinwell').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS, arena: !!e.arena })),
+        wells: ents.filter(e => e.t === 'skinwell').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS, arena: !!e.arena, deep: !!e.deep, up: false, wind: 0, jar: e.jar ? (e.sips || 1) : 0, left: e.jar ? (e.sips || 1) : 0 })),
         walls: (L.mudWalls || []).map(m => ({ ...m, open: false })),
         fires: [], cistern: null, vault: (L.vaultDoors || []).map(m => ({ ...m, open: false })), windlasses: [], carriers: new Set() };
       /* A FIRE IS A BARRICADE: a burning column across the way, solid until it is poured out */
@@ -31,9 +33,16 @@ export function makeWellTownHands(ctx) {
         const f = { x0: e.x, x1: e.x, y0, y1: e.y, lit: true, cd: 0, kind: e.barricade ? 'barricade' : e.gateway ? 'gateway' : 'stall' }; WT.fires.push(f);
         for (const [x, y] of cellsOf(f)) ctx.cellBuild(x, y, ctx.T.SOLID); }
       const c = ents.find(e => e.t === 'cistern'); if (c) WT.cistern = { x: c.x * TS + 8, y: (c.y + 1) * TS, full: false };
-      WT.windlasses = ents.filter(e => e.t === 'windlass').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS, top: !!e.top, bucket: e.bucket, cd: 0 }));
+      WT.windlasses = ents.filter(e => e.t === 'windlass').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS, top: !!e.top, bucket: e.bucket, deep: !!e.deep, cd: 0 }));
+      for (const pp of ctx.players) { skinOf(pp); pp.skin.max = maxOf(pp); }
+    } else {
+      /* A RESPAWN (Daniel, 10-02): the checkpoint refills the skin - a death on the roof with an empty skin is not a walk back down the tower */
+      for (const pp of ctx.players) { const sk = skinOf(pp); sk.max = maxOf(pp); sk.sips = sk.max; }
     }
     for (const pp of ctx.players) { skinOf(pp); pp.skin.max = maxOf(pp); }
+    /* the foes are made again on a respawn: the deep well's bucket is down again, and the well head's men may follow you again */
+    for (const w of WT.wells) { if (w.deep) { w.up = false; w.wind = 0; } if (w.jar) w.left = w.jar; }
+    WT.followT = 0; WT.followed = false;
     const m = ctx.movers().find(q => q.windlass); if (m) { m.locked = true; if (WT.bucketY !== undefined) m.y = WT.bucketY; m.dir = 0; }
     if (window.BK) Object.assign(window.BK, { welltown: () => WT, welltownHands: () => H });
   };
@@ -45,7 +54,12 @@ export function makeWellTownHands(ctx) {
   H.interact = pp => {
     if (!WT) return false; const P = pp, sk = skinOf(P); sk.max = maxOf(P);
     const w = nearWell(P.x, P.y);
-    if (w) { if (sk.sips >= sk.max) { ctx.sfx.ui && ctx.sfx.ui(); return true; } sk.sips = sk.max; WT.n.fills++; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(w.x, w.y - 12, 8, ['#7ab8e8', '#e8f4f8'], 50, 0.5);
+    /* a DEEP well gives nothing until its bucket is wound up (its windlass); a fill sends the bucket down again */
+    if (w && w.deep && !w.up && sk.sips < sk.max) { ctx.number(P.x, P.y - 30, 'THE BUCKET IS DOWN: STRIKE THE WINDLASS', '#ffd36b'); ctx.sfx.buzz && ctx.sfx.buzz(); return true; }
+    /* a FULL skin at a well falls through to the pour (or the drink): beside the courtyard well, E at a burning King must pour, not be swallowed */
+    /* A WATER JAR: what is in it (a sip), once a life - not a well */
+    if (w && w.jar) { if (w.left > 0 && sk.sips < sk.max) { const n = Math.min(w.left, sk.max - sk.sips); w.left -= n; sk.sips += n; WT.n.jars = (WT.n.jars || 0) + 1; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(w.x, w.y - 12, 5, ['#7ab8e8', '#e8f4f8'], 40, 0.4); ctx.number(P.x, P.y - 30, 'A JAR: ONE SIP', '#7ab8e8'); return true; } }
+    else if (w && sk.sips < sk.max) { if (w.deep) w.up = false; sk.sips = sk.max; WT.n.fills++; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(w.x, w.y - 12, 8, ['#7ab8e8', '#e8f4f8'], 50, 0.5);
       if (!WT.said.full) { WT.said.full = 1; ctx.number(P.x, P.y - 30, 'YOUR SKIN IS FULL: E POURS, E DRINKS', '#7ab8e8'); } return true; }
     const c = WT.cistern;
     if (c && !c.full && Math.abs(c.x - P.x) <= WELL_R && Math.abs(c.y - P.y) <= 20) {
@@ -70,6 +84,7 @@ export function makeWellTownHands(ctx) {
     if (k) { sk.sips--; WT.n.pours++; ctx.burst(P.x + face * 24, P.y - 16, 10, ['#7ab8e8', '#e8f4f8'], 60, 0.5); return true; }
     /* nothing to pour on: DRINK, when the sun is on you (a sip spent on nothing is not taken) */
     if (P.sun && P.sun.v > DRINK_AT) { sk.sips--; WT.n.drinks++; P.sun.v = 0; P.sun.tick = 0.7; P.sun.n = 0; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(P.x, P.y - 18, 6, ['#7ab8e8', '#e8f4f8'], 30, 0.4); ctx.number(P.x, P.y - 30, 'THE SUN LETS GO OF YOU', '#7ab8e8'); return true; }
+    if (w && !w.jar) { ctx.sfx.ui && ctx.sfx.ui(); return true; }   /* a full skin at a well, nothing to pour on and no sun: the well has nothing more to give */
     return false;
   };
 
@@ -79,9 +94,20 @@ export function makeWellTownHands(ctx) {
     const hb = ctx.attackBox();
     /* THE WINDLASSES: a blow on one sends the bucket the other way (with whoever stands on it) */
     for (const w of WT.windlasses) { w.cd = Math.max(0, w.cd - dt);
+      if (hb && w.cd <= 0 && w.deep && ctx.overlap(hb, { l: w.x - 16, r: w.x + 16, t: w.y - 28, b: w.y })) { const dw = WT.wells.filter(q => q.deep).sort((a, b) => Math.abs(a.x - w.x) - Math.abs(b.x - w.x))[0];
+        w.cd = 0.8; if (!dw || dw.up || dw.wind > 0) continue; dw.wind = DEEP.wind; WT.n.winds = (WT.n.winds || 0) + 1; ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.ropeHaul && ctx.sfx.ropeHaul(); ctx.sparks(w.x, w.y - 14, ctx.hero().face || 1, 4);
+        ctx.number(w.x, w.y - 34, 'THE BUCKET COMES UP: HOLD THE WELL', '#ffd36b'); continue; }
+      if (w.deep) continue;
       if (hb && w.cd <= 0 && ctx.overlap(hb, { l: w.x - 16, r: w.x + 16, t: w.y - 28, b: w.y })) { const m = ctx.movers().find(q => q.windlass === w.bucket); if (!m || m.dir) continue;
-        w.cd = 0.8; const atTop = m.y <= m.y0 + 1; m.dir = atTop ? 1 : -1; WT.n.rides++; ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.ropeHaul && ctx.sfx.ropeHaul(); ctx.sparks(w.x, w.y - 14, ctx.hero().face || 1, 4);
+        w.cd = 0.8; const atTop = m.y <= m.y0 + 1; m.dir = atTop ? 1 : -1; WT.n.rides++; if (atTop && !WT.followed) WT.followT = FOLLOW.after; ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.ropeHaul && ctx.sfx.ropeHaul(); ctx.sparks(w.x, w.y - 14, ctx.hero().face || 1, 4);
         ctx.number(w.x, w.y - 34, atTop ? 'STRIKE THE WINDLASS: THE BUCKET GOES DOWN' : 'THE BUCKET GOES UP', '#ffd36b'); } }
+    /* THE DEEP WELL winds up */
+    for (const w of WT.wells) if (w.deep && w.wind > 0) { w.wind -= dt; if (w.wind <= 0) { w.wind = 0; w.up = true; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(w.x, w.y - 12, 6, ['#7ab8e8', '#e8f4f8'], 40, 0.4); } }
+    /* THE RIDE IS CONTESTED: the bucket gone, the well head's men (L.ents follow: true) come down the shaft after you, to the bucket's foot */
+    if (WT.followT > 0) { WT.followT -= dt; if (WT.followT <= 0) { WT.followed = true; const m = ctx.movers().find(q => q.windlass); const TS = ctx.TS;
+      const fol = ctx.enemies().filter(q => q.alive && WT.L.ents[parseInt(q.xpKey)] && WT.L.ents[parseInt(q.xpKey)].follow);
+      if (m && fol.length) { const foot = m.y1, mx = m.x + m.w / 2; fol.forEach((q, i) => { q.x = mx + (i % 2 ? 1 : -1) * (40 + 12 * i); q.y = foot - 3 * TS; q.vx = 0; q.vy = 0; if (q.st) q.st.x = q.x; ctx.dust(q.x, foot, 6); });
+        ctx.number(mx, foot - 40, 'THEY COME DOWN THE WELL AFTER YOU', '#ff9a5c'); } } }
     /* THE FIRES' HEAT: a tick at a burning barricade's face */
     for (const f of WT.fires) { if (!f.lit) continue; f.cd = Math.max(0, f.cd - dt);
       for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || f.cd > 0) return; const l = f.x0 * 16 - FIRE.reach, r = (f.x1 + 1) * 16 + FIRE.reach;
@@ -128,7 +154,13 @@ export function makeWellTownHands(ctx) {
     if (!WT) return; const R = Math.round, vw = ctx.VW();
     const on = x => x > cx - 40 && x < cx + vw + 40;
     /* THE WELLS: the only blue in the town */
+    const Pd = ctx.hero(), skd = Pd && skinOf(Pd);
     for (const w of WT.wells) { if (!on(w.x)) continue; const x = R(w.x - cx), y = R(w.y - cy);
+      if (w.jar) { g.fillStyle = '#a8603a'; g.fillRect(x - 4, y - 12, 8, 12); g.fillRect(x - 2, y - 15, 4, 3); g.fillStyle = w.left > 0 ? '#3a7ab8' : '#5a3a22'; g.fillRect(x - 2, y - 14, 4, 1);   /* A WATER JAR (greybox): blue at the lip while there is a sip in it */
+        if (w.left > 0 && skd && skd.sips < (skd.max || SKINMAX) && Math.abs(Pd.x - w.x) < WELL_R + 24 && Math.abs(Pd.y - w.y) < 28) ctx.text('E', x, y - 24, '#e8f4f8', 'center', 6); continue; }
+      /* E OVER A WELL while the skin is not full and you stand by it (as doors and shops say E); a deep well's bucket rope while it winds */
+      if (skd && skd.sips < (skd.max || SKINMAX) && Math.abs(Pd.x - w.x) < WELL_R + 24 && Math.abs(Pd.y - w.y) < 28) ctx.text(w.deep && !w.up ? 'E  WIND' : 'E', x, y - 34 - Math.round(Math.abs(Math.sin(time * 3))), '#e8f4f8', 'center', 6);
+      if (w.deep) { const k = w.up ? 1 : w.wind > 0 ? 1 - w.wind / DEEP.wind : 0; g.fillStyle = '#c9b27c'; g.fillRect(x - 1, y - 22, 1, 10); if (k > 0) { g.fillStyle = '#6a4426'; g.fillRect(x - 4, R(y - 8 - 6 * k), 8, 4); } }
       g.fillStyle = '#d8ccb0'; g.fillRect(x - 10, y - 9, 20, 9); g.fillStyle = '#a89878'; g.fillRect(x - 10, y - 9, 20, 2); g.fillStyle = '#3a7ab8'; g.fillRect(x - 8, y - 8, 16, 3);
       g.fillStyle = '#7ab8e8'; g.fillRect(x - 6 + (Math.floor(time * 2) % 3), y - 8, 3, 1); g.fillStyle = '#6a4426'; g.fillRect(x - 10, y - 22, 2, 13); g.fillRect(x + 8, y - 22, 2, 13); g.fillRect(x - 11, y - 23, 22, 2); }
     /* THE MUD WALLS: dark brown, cracked where the water would take them; opened, a heap of mud on the floor */
