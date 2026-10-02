@@ -28,7 +28,8 @@ export function makeCisternQueenHands(ctx) {
   /* WHAT HURT: the health each of her blows took, by name (the pilots print it) */
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
   const keyed = (pp, key) => { pp.cqKeys = pp.cqKeys || new Map(); if (pp.cqKeys.size > 80) pp.cqKeys.clear(); if (pp.cqKeys.has(key)) return true; pp.cqKeys.set(key, 1); return false; };
-  const onLedgeOf = (pp, G) => { if (!G || !pp.ground || Math.abs(pp.y - G.ledgeY) > 4) return null; if (pp.x >= G.ledgeW[0] && pp.x <= G.ledgeW[1] + 4) return 'W'; if (pp.x >= G.ledgeE[0] - 4 && pp.x <= G.ledgeE[1]) return 'E'; return null; };
+  /* ON A LEDGE: standing on its boards, or at the top of its rope ladder (the ladder's column is the ledge's end) */
+const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.ledgeY + 4 || pp.y < G.ledgeY - 18) return null; if (pp.x >= G.ledgeW[0] && pp.x <= G.ledgeW[1] + 18) return 'W'; if (pp.x >= G.ledgeE[0] - 18 && pp.x <= G.ledgeE[1]) return 'E'; return null; };
   H.onLedge = pp => onLedgeOf(pp, S && S.G);
   /* HER VENOM on a hero: a stack each, each lasting CQ.venom.t; the stamina regen is slowed by P.venomSlow (main.js) */
   const venom = (P, n) => { P.cqVenom = P.cqVenom || []; for (let i = 0; i < n; i++) { if (P.cqVenom.length >= CQ.venom.max) P.cqVenom.shift(); P.cqVenom.push(CQ.venom.t); }
@@ -104,7 +105,9 @@ export function makeCisternQueenHands(ctx) {
   /* ---------- A BLOW ON HER: in an opening x openMul; her raised claws turn a frontal one outside it (0); from behind, the global chip ---------- */
   H.take = (e, dmg) => { if (!S) return dmg; const P = ctx.hero();
     if (CQG.guarded(e, P.x)) { e.chipHit = ctx.time(); S.n.guarded++; e.guardFx = 0.2; if (!S.told.claws) { S.told.claws = 1; ctx.number(e.x, e.y - 80, 'HER CLAWS TURN IT: GET BEHIND, OR GET WATER ON HER', '#9aa39a'); } return 0; }
-    return dmg * CQG.qTake(e); };
+    if (CQG.qOpen(e)) { const cap = e.maxHp * CQ.openCap, d = Math.min(dmg * CQ.openMul, Math.max(0, cap - (S.openTaken || 0))); S.openTaken = (S.openTaken || 0) + d;
+      if (S.openTaken >= cap - 0.01 && e.open > 0.4) { e.open = 0.4; ctx.number(e.x, e.y - 70, 'SHE RIGHTS HERSELF', '#9aa39a'); S.n.capped = (S.n.capped || 0) + 1; } return d; }
+    return dmg; };
   /* ---------- THE POUR (src/well-town-hands.js asks: what would a pour land on, and pour it) ---------- */
   const heroOf = P => ({ x: P.x, y: P.y, face: P.face || 1, onLedge: onLedgeOf(P, S && S.G) });
   H.pourable = {

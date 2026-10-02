@@ -32,10 +32,11 @@
 
 export const CQ = {
   hp: 1000, w: 76, h: 38, markH: 78,
-  openMul: 2.2, openT: 3.2,                       /* her three openings (SOAKED, ON HER BACK, REARING): >= 3 s (tools/boss-openings.mjs), the blow x openMul */
+  openMul: 1.6, openT: 3.2, openCap: 0.14,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
+   */                       /* her three openings (SOAKED, ON HER BACK, REARING): >= 3 s (tools/boss-openings.mjs), the blow x openMul */
   p2: 2 / 3, p3: 1 / 3, enrage: 0.15,
   walk: 62, keep: 40, turn: 0.45,                  /* she walks you down; she turns to face you only between blows, and only after you have been behind her this long */
-  gap: [0.55, 0.45, 0.4], gapEnraged: 0.25,        /* the breath between blows, by phase */
+  gap: [0.7, 0.6, 0.5], gapEnraged: 0.3,        /* the breath between blows, by phase */
   /* P1 */
   pincerTell: 0.6, pincerT: 0.18, pincerReach: 50,
   snapTell: 0.5, snap2Tell: 0.38, snapT: 0.15, lungeTell: 0.6, lungeT: 0.32, lungeDist: 84,
@@ -44,7 +45,7 @@ export const CQ = {
   diveT: 0.6, moundSpeed: 120, moundMax: 2.6, strikeTell: 0.85, strikeT: 0.35, strikeR: 26, surfaceT: 0.5,
   chargeTell: 0.85, waveSpeed: 270,
   /* P2 */
-  climbT: 1.0, clingGap: 0.85,
+  climbT: 1.0, clingGap: 1.0,
   spitTell: 0.6, spitFly: 0.8, puddleT: 3.5, puddleTick: 0.5,
   sweepTell: 0.85, sweepSpeed: 520,
   slamTell: 0.75, rubbleFall: 0.85, rubbleR: 18,
@@ -63,14 +64,14 @@ export const CQ = {
   bucketFall: 0.55, bucketCd: 7.0, bucketR: 72,
   /* her venom: each stack slows your stamina by `slow`, and lasts `t` */
   venom: { max: 3, slow: 0.25, t: 6 },
-  dmg: { pincer: 14, snap: 12, lunge: 18, lance: 20, flick: 8, strike: 22, charge: 16, spit: 9, puddle: 3, sweep: 15, slam: 15, pin: 19, pounce: 22,
-    ambush: 17, wave: 13, grab: 6, sting: 30, roll: 20, tidal: 15, brood: 0 },
+  dmg: { pincer: 10, snap: 8, lunge: 13, lance: 14, flick: 5, strike: 16, charge: 11, spit: 7, puddle: 2, sweep: 11, slam: 11, pin: 14, pounce: 16,
+    ambush: 12, wave: 10, grab: 5, sting: 22, roll: 15, tidal: 11, brood: 0 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]; a cycle ends with the blow that holds her opening) */
 export const CYCLES = {
   1: [['pincer', 'flick', 'burrow:strike'], ['snapsnap', 'lance', 'burrow:charge'], ['flick', 'pincer', 'snapsnap', 'burrow:strike'], ['lance', 'snapsnap', 'flick', 'burrow:charge']],
-  2: [['wall:W', 'spit', 'sweep:low', 'pin', 'shaft', 'pounce'], ['wall:E', 'sweep:high', 'slam', 'ambush'], ['wall:W', 'slam', 'spit', 'sweep:high', 'pin'],
-      ['wall:E', 'spit', 'sweep:low', 'shaft', 'pounce'], ['wall:W', 'sweep:low', 'sweep:high', 'ambush']],
+  2: [['wall:W', 'spit', 'sweep:low', 'slam', 'sweep:high', 'pin'], ['wall:E', 'sweep:high', 'spit', 'slam', 'sweep:low', 'shaft', 'pounce'], ['wall:W', 'slam', 'spit', 'sweep:high', 'sweep:low', 'ambush'],
+      ['wall:E', 'spit', 'sweep:low', 'slam', 'sweep:high', 'pin'], ['wall:W', 'sweep:low', 'spit', 'sweep:high', 'slam', 'shaft', 'pounce']],
   3: [['wave', 'grab', 'roll'], ['brood', 'tidal', 'grab'], ['roll', 'wave', 'tidal', 'grab'], ['tidal', 'grab', 'wave', 'brood']],
   enraged: ['combo', 'grab', 'tidal', 'combo', 'wave', 'grab'],
 };
@@ -310,7 +311,7 @@ function surface(e, S, x) { e.gone = 0; S.pose = 'floor'; e.x = Math.max(S.G.x0 
 
 /* ---------- THE OPENINGS ---------- */
 export function openUp(e, S, how, c) {
-  const G = S.G; e.open = CQ.openT; S.n.opens++; S.n[how]++; setMode(e, how, CQ.openT + 0.05); e.gone = 0; S.bands = S.bands.filter(b => !b.rider);
+  const G = S.G; e.open = CQ.openT; S.openTaken = 0; S.n.opens++; S.n[how]++; setMode(e, how, CQ.openT + 0.05); e.gone = 0; S.bands = S.bands.filter(b => !b.rider);
   if (how === 'soaked') { if (S.mound) e.x = S.mound.x; S.mound = null; S.pose = 'floor'; e.y = G.floor; c.number(e.x, e.y - 70, 'FLOODED OUT: SHE IS SOAKED. CUT HER', '#8fd160'); c.sound('soak'); c.fx('burst', e.x, G.floor); }
   if (how === 'fallen') { e.x = S.pose === 'shaft' ? G.mid : S.wall === 'W' ? G.x0 + 52 : G.x1 - 52; e.y = G.floor; S.pose = 'floor'; c.number(e.x, e.y - 70, 'SHE LOSES HER GRIP: ON HER BACK. CUT HER', '#8fd160'); c.sound('fall'); c.shake(5); c.fx('land', e.x, G.floor);
     S.script.splice(S.step, 0, 'wall:' + (e.x < G.mid ? 'E' : 'W')); }
@@ -425,7 +426,6 @@ export function queenPlan(s) {
   if (m === 'grab' && S.claw && Math.abs(S.claw.x - P.x) < 40) { out.atk = P.atk < 0; out.face = Math.sign(S.claw.x - P.x) || 1; out.why = 'strike the claw'; return out; }
   if ((m === 'roll' || m === 'ambush' || m === 'lunge') && Math.sign(P.x - e.x) === (m === 'roll' ? Math.sign(S.cur.dir || 1) : e.face) && ad < 90) { out.jump = P.ground; if (ad < 50 && P.ground) out.dodge = true; out.why = 'over her body'; return out; }
   if (m === 'charge' || m === 'wave') { /* bands above */ }
-  if (pud) { out.gx = clamp(P.x + (P.x < pud.x ? -30 : 30)); out.why = 'out of the venom'; return out; }
   /* 3. NO WATER: the nearest basin (P1, P2: the flood fills the skin in P3 at a basin too) */
   if (s.sips <= 0 && S.ph < 3) { const bx = Math.abs(P.x - G.basinW) < Math.abs(P.x - G.basinE) ? G.basinW : G.basinE;
     if (onLedge) { out.down = true; out.jump = P.ground; out.gx = bx; out.why = 'down off the ledge for water'; return out; }
@@ -440,9 +440,11 @@ export function queenPlan(s) {
     if (onLedge === S.wall) { const tx = S.wall === 'W' ? ledge[0] + 30 : ledge[1] - 30; if (Math.abs(P.x - tx) > 10) { out.gx = tx; out.why = 'along the ledge'; return out; }
       if (!roll(key + 'p', PLAN.missPour)) { out.face = S.wall === 'W' ? -1 : 1; out.talk = true; out.why = 'pour down the wall above her'; } return out; }
     if (onLedge) { out.down = true; out.jump = P.ground; out.gx = lad; out.why = 'off the wrong ledge'; return out; }
+    if (P.y <= G.ledgeY + 10) { out.gx = S.wall === 'W' ? ledge[0] + 30 : ledge[1] - 30; out.jump = !!P.climb; out.why = 'onto the ledge'; return out; }
     if (Math.abs(P.x - lad) > 5 && !P.climb) { out.gx = lad; out.why = 'to her wall\'s ladder'; return out; }
-    out.up = true; if (P.climb && P.y <= G.ledgeY + 2) { out.gx = S.wall === 'W' ? ledge[0] + 30 : ledge[1] - 30; out.up = false; } out.why = 'up to the ledge'; return out; }
+    out.up = true; out.why = 'up to the ledge'; return out; }
   if (S.pose === 'shaft' && S.bucket.st === 'up') { if (onLedge) { out.down = true; out.jump = P.ground; } if (Math.abs(P.x - G.windlass) < 18) { out.face = Math.sign(G.windlass - P.x) || 1; out.atk = P.atk < 0; out.why = 'strike the windlass'; return out; } out.gx = G.windlass; out.why = 'to the windlass'; return out; }
+  if (pud) { out.gx = clamp(P.x + (P.x < pud.x ? -30 : 30)); out.why = 'out of the venom'; return out; }
   /* 6. P3: her brood - lure them over the sump, or cut them */
   const br = S.brood.filter(b => b.alive).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
   if (br && Math.abs(br.x - P.x) < reach + 16) { out.face = Math.sign(br.x - P.x) || 1; out.atk = P.atk < 0; out.why = 'cut the brood'; return out; }
