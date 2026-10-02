@@ -17,7 +17,7 @@ import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whit
 import * as CFA from './redraw/canal_foes_art.js';   /* (claude/canalart) the grindylow's and the wisp's pictures */
 
 export const GRIND = { hp: 20, w: 14, h: 14, leash: 56, swim: 60, tell: 0.75, reach: 18, hold: 2.4, pull: 26, mash: 3, grabDmg: 6, stun: 1.6, cd: 2.4, weak: 2, strandT: 7, edgeNear: 16 };
-export const WISP = { hp: 1, w: 10, h: 10, notice: 170, ahead: 56, drift: 36, near: 22, tell: 0.7, flareR: 30, dmg: 8, rest: 1.3, cd: 2.4 };
+export const WISP = { hp: 1, w: 10, h: 10, notice: 170, ahead: 56, drift: 34, turn: 1.5, harass: 48, home: 160, tell: 0.55, dash: 150, dashT: 0.45, hit: 11, dmg: 14, recoil: 0.8, cd: 1.6, reform: 2.2 };   /* (claude/canalfix3: the ember wisp's numbers - its turn, its tell, its dart; deadly by its 14-damage dart, never by hp) */
 export const CANAL_FOES = new Set(['grindylow', 'willowisp']);
 
 /* ================= THE GRINDYLOW ================= */
@@ -53,6 +53,11 @@ export function stepGrindylow(e, dt, X) {
   const G = GRIND, P = X.hero(), S = X.sfx;
   e.modeT -= dt; e.cd -= dt; e.bubT -= dt;
   if (e.aboard) return stepAboard(e, dt, X, P);
+  /* (claude/canalfix3) THE BUMP: it comes for a hero in a SAFE SWIM, hits the iron grate, and cannot get through (the clank and the ring are the lesson) */
+  if (e.bump) { const B = e.bump; B.t += dt; e.mode = 'bump'; const dx = B.x - e.x, dy = B.y - e.y, d = Math.hypot(dx, dy) || 1;
+    if (!B.hit) { const k = Math.min(d, 110 * dt); e.x += dx / d * k; e.y += dy / d * k; if (d < 3) { B.hit = B.t; S.clank && S.clank(); S.splash && S.splash(); X.ring(e.x, e.y, 12, '#9ad8c0'); } }
+    else if (B.t - B.hit > 0.25 && B.t - B.hit < 0.4) { S.clank && S.clank(); X.ring(e.x, e.y, 8, '#9ad8c0'); }
+    if ((B.hit && B.t - B.hit > 1.2) || B.t > 6) { e.bump = null; e.mode = 'dunk'; e.modeT = 1.2; e.cd = GRIND.cd; } e.vx = 0; e.vy = 0; return; }
   const s = X.surfaceAt(e.mode === 'stranded' ? e.x : e.hx) || X.surfaceAt(e.x);
   /* STRANDED: the lock drained away under it, and it is left on the wet steps at the water's new edge - out of the water, weak, and it grabs nobody.
      (claude/canalfix: it is left where a blade finds it, at the waterline, not up the wall where the water was; and it is measured against the
@@ -150,30 +155,52 @@ export const grindylowUp = e => e.aboard || (e.mode !== 'lurk' && e.mode !== 'du
 
 /* ================= THE WILL-O'-THE-WISP ================= */
 export function newWisp(e, TS) { const [lx, ly] = e.lure || [Math.floor(e.x / TS), Math.floor(e.y / TS)]; Object.assign(e, { hx: e.x, hy: e.y - 10, lx: lx * TS + 8, ly: ly * TS, mode: 'bob', modeT: 0, cd: 0, noGrav: true, y: e.y - 10 }); return e; }
-/* X: { hero(), cleared(x, y) (a horn has the fog clear here), hurtHero, mark, sfx, ring } */
+/* X: { hero(), cleared(x, y) (a horn has the fog clear here), solid(x, y), hurtHero, mark, sfx, ring, hint } */
+/* (claude/canalfix3, Daniel 10-02: "rebuild the wisp on the Burning Village's ember wisp") THE WISP IS THE EMBER WISP'S BODY AND AI, COLD: it drifts on a
+   wide turning circle (it cannot double back on you, and it will not pin you to a wall), and close to you it stops, GUTTERS (a yellow !: the shield
+   turns what comes) and DARTS through where you stood - only the dart burns, and it falls away after. It keeps its own trick: while there is line left,
+   it drifts on ahead of you along it as if it marked the way (off the bank, onto the weed). And it keeps the horn's rule: in air a horn has cleared it
+   shies back to where it started and harms nobody. Popped, it is an EMBER a moment and RE-FORMS once (strike the ember and it is out for good). */
 export function stepWisp(e, dt, X) {
-  const W = WISP, P = X.hero(), S = X.sfx; e.modeT -= dt; e.cd -= dt;
+  const W = WISP, P = X.hero(), S = X.sfx; e.modeT -= dt; e.cd -= dt; e.anim = e.anim || 0;
+  e.recoil = Math.max(0, (e.recoil || 0) - dt); e.dartCd = Math.max(0, (e.dartCd || 0) - dt);
   const dx = P.x - e.x, dy = (P.y - 10) - e.y, d = Math.hypot(dx, dy), seen = !P.dead && Math.abs(dx) < W.notice && Math.abs(dy) < 110;
+  const solid = (x, y) => !!(X.solid && X.solid(x, y));
   const go = (tx, ty, sp) => { const ex = tx - e.x, ey = ty - e.y, dd = Math.hypot(ex, ey) || 1, k = Math.min(dd, sp * dt); e.x += ex / dd * k; e.y += ey / dd * k; };
-  if (X.cleared(e.x, e.y) && e.mode !== 'flare') { if (e.mode !== 'shy') { e.mode = 'shy'; X.hint('shy', 'IN THE CLEAR AIR THE WISP HAS NO POST, AND NOTHING UNDER IT BUT WATER.'); } go(e.hx, e.hy, W.drift * 0.6); e.bob = Math.sin(e.anim * 2) * 2; return; }
-  switch (e.mode) {
-    case 'flareTell': e.x += Math.sin(e.anim * 40) * 0.4; if (e.modeT <= 0) { e.mode = 'flare'; e.modeT = 0.25; X.ring(e.x, e.y, W.flareR, '#c8ffe0'); S.zap && S.zap(); if (!P.dead && d < W.flareR) X.hurtHero(e.x, W.dmg, { who: e, name: 'THE WISP', noKnock: true });   /* a dazzle, not a shove: it never throws you into the water it lures you to */ } break;
-    case 'flare': if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = W.rest; e.cd = W.cd; } break;
-    case 'rest': if (e.modeT <= 0) e.mode = 'lure'; break;
-    case 'shy': e.mode = 'bob'; break;
-    default: {
-      if (!seen) { e.mode = 'bob'; go(e.hx, e.hy, W.drift * 0.5); break; }
-      e.mode = 'lure';
-      /* AHEAD OF YOU ALONG ITS LINE, from where it started to where it lures: a lamp that keeps a stride in front, the way a lamp on a path would */
-      const ax = e.lx - e.hx, ay = e.ly - e.hy, len = Math.hypot(ax, ay) || 1, ux = ax / len, uy = ay / len;
-      const along = Math.max(0, Math.min(len, (P.x - e.hx) * ux + (P.y - 10 - e.hy) * uy + W.ahead));
-      go(e.hx + ux * along, e.hy + uy * along, W.drift);
-      /* (claude/canalfix, review fix 10) THE TELL COMES AFTER THE LURE: once it has led you to the end of its line, the game names it */
-      if (along >= len - 2 && d < 90 && X.hint) X.hint('wisp', 'A LIGHT WITH NO POST UNDER IT IS A WISP: STRIKE IT.');
-      if (d < W.near && e.cd <= 0 && !P.dead) { e.mode = 'flareTell'; e.modeT = W.tell; X.mark(e, '!', '#ffd36b'); S.tell && S.tell(false); }
-    }
-  }
-  e.bob = Math.sin(e.anim * 3.1) * 3;
+  if (e.mode === 'spark') { e.vx = 0; e.vy = 0; if (e.modeT <= 0) { e.mode = 'bob'; e.reformed = true; e.recoil = W.recoil; e.dartCd = W.cd; X.mark && X.mark(e, '!', '#ffd36b'); X.ring && X.ring(e.x, e.y, 12, '#a0ffd2'); S.zap && S.zap(); } e.bob = Math.sin(e.anim * 9) * 1; return; }   /* the ember, re-forming */
+  if (X.cleared(e.x, e.y) && e.mode !== 'dash') { if (e.mode !== 'shy') { e.mode = 'shy'; X.hint('shy', 'IN THE CLEAR AIR THE WISP HAS NO POST, AND NOTHING UNDER IT BUT WATER.'); } go(e.hx, e.hy, W.drift * 0.8); e.bob = Math.sin(e.anim * 2) * 2; return; }
+  if (e.mode === 'shy') e.mode = 'bob';
+  if (e.mode === 'flareTell') { e.x += Math.sin(e.anim * 40) * 0.4; if (e.modeT <= 0) { e.mode = 'dash'; e.modeT = W.dashT; e.hitOnce = false; const dd = d || 1; e.vx = dx / dd * W.dash; e.vy = dy / dd * W.dash; X.ring(e.x, e.y, 10, '#c8ffe0'); S.zap && S.zap(); } return; }
+  if (e.mode === 'dash') { e.x += e.vx * dt; e.y += e.vy * dt; if (solid(e.x, e.y)) e.modeT = 0;
+    if (!e.hitOnce && !P.dead && Math.hypot(P.x - e.x, (P.y - 10) - e.y) < W.hit) { e.hitOnce = true; X.hurtHero(e.x, W.dmg, { who: e, name: 'THE WISP', noKnock: true }); }   /* a burn, not a shove: it never throws you into the water it lured you to */
+    if (e.modeT <= 0) { e.mode = 'hunt'; e.dartCd = W.cd; e.recoil = W.recoil; e.ang = Math.atan2(-e.vy, -e.vx); } e.face = e.vx < 0 ? -1 : 1; return; }
+  if (!seen) { e.mode = 'bob'; go(e.hx, e.hy, W.drift * 0.6); e.bob = Math.sin(e.anim * 3.1) * 3; return; }
+  /* ITS TRICK: ahead of you along its line while there is line left - a lamp that keeps a stride in front, the way a lamp on a path would */
+  const ax = e.lx - e.hx, ay = e.ly - e.hy, len = Math.hypot(ax, ay) || 1, ux = ax / len, uy = ay / len;
+  const along = Math.max(0, Math.min(len, (P.x - e.hx) * ux + (P.y - 10 - e.hy) * uy + W.ahead));
+  if (!e.lured && along < len - 2 && d > W.harass) { e.mode = 'lure'; go(e.hx + ux * along, e.hy + uy * along, W.drift * 1.2); e.bob = Math.sin(e.anim * 3.1) * 3; return; }
+  if (!e.lured && along >= len - 2) { e.lured = true; if (d < 90 && X.hint) X.hint('wisp', 'A LIGHT WITH NO POST UNDER IT IS A WISP: STRIKE IT.'); }   /* (claude/canalfix, review fix 10) the tell comes after the lure */
+  /* THE HUNT (the ember wisp's): close to you it stops and gutters, then darts */
+  e.mode = 'hunt';
+  if (!P.dead && e.recoil <= 0 && e.dartCd <= 0 && d < W.harass && e.cd <= 0) { e.mode = 'flareTell'; e.modeT = W.tell; X.mark(e, '!', '#ffd36b'); S.tell && S.tell(false); return; }
+  const home = Math.hypot(e.x - e.hx, e.y - e.hy) > W.home;
+  let tgt;
+  if (P.dead || home) tgt = Math.atan2(e.hy - e.y, e.hx - e.x);
+  else if (e.recoil > 0) tgt = Math.atan2(-dy, -dx);
+  else { tgt = Math.atan2(dy, dx); if (d < 64 && solid(P.x - (Math.sign(dx) || 1) * 22, P.y - 8)) tgt += Math.PI / 2; }   /* NEVER A CORNER */
+  let da = tgt - (e.ang ?? tgt); while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+  e.ang = (e.ang ?? tgt) + Math.max(-W.turn * dt, Math.min(W.turn * dt, da));
+  const sp = e.recoil > 0 ? 55 : home ? 42 : W.drift;
+  e.vx = Math.cos(e.ang) * sp; e.vy = Math.sin(e.ang) * sp + Math.sin(e.anim * 3) * 6;
+  e.x += e.vx * dt; e.y += e.vy * dt;
+  if (solid(e.x, e.y)) { e.x -= e.vx * dt; e.y -= e.vy * dt; e.ang += Math.PI * 0.6; }
+  e.face = e.vx < 0 ? -1 : 1; e.bob = Math.sin(e.anim * 3.1) * 2;
+}
+/* A BLOW ON THE WISP: the first pop leaves an ember that re-forms (nothing lands); a blow on the ember puts it out for good. Returns the damage to land */
+export function wispTake(e, dmg) {
+  if (e.mode === 'spark') return Math.max(dmg, e.hp);
+  if (!e.reformed && dmg >= e.hp) { e.mode = 'spark'; e.modeT = WISP.reform; e.vx = 0; e.vy = 0; e.popped = (e.popped || 0) + 1; return 0; }
+  return dmg;
 }
 
 /* ================= THE GREYBOX ART (the art lane replaces it: brief, "art notes") =================

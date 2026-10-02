@@ -34,7 +34,7 @@
 // tools/greenteeth.mjs. The chamber is laid by stageGreenteeth (THE FOG CANAL calls it, src/fog-canal.js section 7: the hidden standalone level 'greenlock' is gone, claude/greenwire).
 
 export const GT = {
-  hp: 720, w: 18, h: 24, markH: 34,
+  hp: 720, w: 32, h: 44, markH: 52,   /* (claude/canalfix3: half again as big - a body half out of the water, her hurt box to match, src/redraw/greenteeth_art.js) */
   ward: 0.05, openMul: 1.3, bigMul: 2.5,   /* (claude/greenwire: the stranded and flushed windows are 3.0 s, so x1.3 (was 1.8 s at x2.4) and the big one x2.5 (was 2.8): tuned with the human-bot pilot to 67% wins over 24 fights) */
   /* THE WATER: its heights over the bed, and how fast it moves */
   lv: { dry: 0, low: 48, half: 80, high: 112 },   /* (each leaves one waler a row over the water, and HIGH a row under the walkways) */
@@ -56,8 +56,15 @@ export const GT = {
   lampFall: 260, lampBurn: 7.0,
   wakeT: 1.6, floodTell: 2.0, fogTell: 2.0, knotHp: 2,
   gap: [0.55, 0.45, 0.4], pairEvery: 3, pairGap: 0.55,
-  dmg: { grab: 10, drag: 3, lash: 14, reach: 14, bite: 16, surge: 12 },
+  dmg: { grab: 14, drag: 4, lash: 20, reach: 20, bite: 22, surge: 18 },   /* (claude/canalfix3: deadly by her blows, not her health - was grab 10, drag 3, lash 14, reach 14, bite 16, surge 12; tuned with the human-speed bot) */
   p2: 2 / 3, p3: 1 / 3,
+  /* (claude/canalfix3, Daniel 10-02: "very easy: hit the gates, attack, repeat") SHE CONTESTS THE PADDLES: a paddle is WORKED - crank[phase] strikes, each
+     one cd apart (~1.2-1.8 s at the walkway) - and the work slips back if it is left crankSlip s or she lands a blow on you; while you work it she comes
+     for you at that gate (her blows every crankGap) */
+  crank: [4, 4, 5], crankCd: 0.3, crankSlip: 1.3, crankGap: 0.28,
+  /* SHE FIGHTS IN HER OPENINGS: stranded or flushed she still SNAPS (a yellow !: the shield turns it, or step back) and SWIPES low (a red !!: jump it) at
+     a hero beside her - the three seconds are a fight, not free blows */
+  oa: { first: 0.5, every: 0.75, snapTell: 0.5, snapR: 52, snapDmg: 22, swipeTell: 0.55, swipeR: 64, swipeDmg: 20, near: 90 },
 };
 /* THE MOVES: tell (s), blow (s), the mark's promise, the answer, the height (the marks table's rows are src/marks.js) */
 export const MOVES = {
@@ -85,7 +92,8 @@ export const CYCLES = {
       { name: 'THE CHOKED PADDLE', lvl: 'low', weed: 'C', lair: 26, knot: true, tear: true, pairs: true }],
   2: [{ name: 'THE FLOOD', lvl: 'high', weed: 'R' },
       { name: 'THE FLOOD', lvl: 'high', weed: 'R', pairs: true }],
-  3: [{ name: 'THE FOG', lvl: 'half', weed: 'F', pairs: true, doubles: true }],
+  3: [{ name: 'THE FOG', lvl: 'half', weed: 'F', pairs: true, doubles: true },
+      { name: 'THE DARK', lvl: 'low', weed: 'C', pairs: true, doubles: true, knot: true }],   /* (claude/canalfix3) every cycle changes: the drain choked in the dark - the flood's lamp is the way */
 };
 export const cycleOf = (ph, k) => { const L = CYCLES[ph]; return L[Math.min(k, L.length - 1)]; };
 /* the frames of her sprite (src/redraw/greenteeth_art.js) */
@@ -113,11 +121,11 @@ export const colX = (A, col) => (A.sx + col) * A.TS;
 
 /* ---------- THE SHOW ---------- */
 export function newShow(A) {
-  return { A, water: { depth: 0, target: 0, rate: 0 }, pad: { W: { open: false, knot: 0, cd: 0, to: 0 }, E: { open: false, knot: 0, cd: 0 } },
+  return { A, water: { depth: 0, target: 0, rate: 0 }, pad: { W: { open: false, knot: 0, cd: 0, to: 0, work: 0, workT: 0 }, E: { open: false, knot: 0, cd: 0, work: 0, workT: 0 } }, working: null, lastPad: null,
     weed: [], arms: [], armN: 0, surge: null, lamps: { W: { st: 'none' }, E: { st: 'none' } }, fog: 0, hide: null, shiftT: GT.shiftEvery,
     cyc: { 1: 0, 2: 0, 3: 0 }, cycle: 0, gap: 1.2, turns: 0, rot: 0, visit: 0, rest: 0, handWait: -1, told: {},
     n: { grab: 0, held: 0, freed: 0, lash: 0, reach: 0, bite: 0, tear: 0, surge: 0, pair: 0, hand: 0, handCut: 0, shut: 0, drain: 0, flood: 0, running: 0, knot: 0,
-      strand: 0, big: 0, flush: 0, wrongCulvert: 0, shift: 0, lamp: 0, lured: 0, lightOut: 0, weedGive: 0, refill: 0, cycle: 0, fast: 0 } };
+      strand: 0, big: 0, flush: 0, wrongCulvert: 0, shift: 0, lamp: 0, lured: 0, lightOut: 0, weedGive: 0, refill: 0, cycle: 0, fast: 0, crank: 0, slip: 0, shaken: 0, openAtk: 0, jam: 0, hookKnot: 0 } };
 }
 export function newGreenteeth(e) {
   return Object.assign(e, { mode: 'sleep', modeT: 0, base: 'lurk', phase: 1, open: 0, anim: 0, vx: 0, face: -1, big: false, lured: false });
@@ -133,7 +141,8 @@ export function applyCycle(show, ph, c) {
   show.pad.W.knot = 0; show.pad.E.knot = C.knot ? GT.knotHp : 0; show.pad.E.open = false;
   show.pad.W.open = !!C.flood; if (C.flood) { show.pad.W.knot = GT.knotHp; show.pad.W.to = GT.lv[C.lvl]; }
   show.water.target = GT.lv[C.lvl]; show.water.rate = GT.fillRate; show.visit = 0; show.rest = 0; show.turns = 0; show.gap = Math.max(show.gap, 1.0);
-  if (ph === 3) for (const s of ['W', 'E']) show.lamps[s] = { st: 'hook' };
+  if (ph === 3) for (const s of ['W', 'E']) show.lamps[s] = { st: 'hook', knot: GT.knotHp };   /* (claude/canalfix3) P3 BREAKS P2's TRICK: she has bound the lamp hooks with weed - cut a hook free first */
+  for (const s of ['W', 'E']) { show.pad[s].work = 0; show.pad[s].workT = 0; } show.working = null;
   if (c && c.cycle) c.cycle(C);
   return C;
 }
@@ -142,7 +151,8 @@ export function startFight(show) { show.cyc = { 1: 0, 2: 0, 3: 0 }; const C = ap
 /* ---------- THE WATER, THE PADDLES ---------- */
 function stepWater(show, dt, ev, c) {
   const w = show.water, P = show.pad;
-  for (const s of ['W', 'E']) if (P[s].cd > 0) P[s].cd -= dt;
+  for (const s of ['W', 'E']) { if (P[s].cd > 0) P[s].cd -= dt; if (P[s].workT > 0) { P[s].workT -= dt; if (P[s].workT <= 0 && P[s].work > 0) { P[s].work = 0; show.n.slip++; } } }
+  if (show.working && !(P[show.working].work > 0)) show.working = null;
   if (P.E.open && P.W.open) { w.target = w.depth; if (!show.told.running) { show.told.running = true; show.n.running++; c.number(show.A.E.paddle.x, show.A.walk - 40, 'THE UPPER PADDLE IS RUNNING: SHUT IT FIRST', '#ffd36b'); } }
   else if (P.E.open) { w.target = 0; w.rate = GT.drainRate; show.told.running = false; }
   else if (P.W.open) { w.target = P.W.to; w.rate = GT.fillRate; }
@@ -296,7 +306,7 @@ export function stepShow(e, show, dt, c) {
   if (e.mode !== e.lastMode) { e.lastMode = e.mode; e.tellId = (e.tellId || 0) + 1; }
   if (!e.alive || e.mode === 'sleep') return ev;
   const surf = surfY(show), depth = show.water.depth, hero = nearestHero(heroes, e.x);
-  e.open = gtOpen(e) ? Math.max(0, e.modeT) : 0;
+  e.open = gtOpen(e) ? Math.max(0, e.modeT) : 0; if (!gtOpen(e) && e.oa) e.oa = null;
   if (!special(e)) stepArms(e, show, dt, c, ev);
   switch (e.mode) {
     case 'wake': e.x += (clampIn(A, hero ? hero.x : A.mid) - e.x) * Math.min(1, dt * 0.5); e.y = A.bed; show.water.target = GT.lv.low; show.water.rate = GT.wakeRate;
@@ -308,7 +318,7 @@ export function stepShow(e, show, dt, c) {
         e.mode = 'surgeTell'; e.modeT = GT.surgeTell; e.surgeSide = 'W'; e.refill = true; ev.push({ t: 'surgeTell', refill: true }); c.say('!!'); c.sound('surgeTell'); }
       return ev; }
     case 'recoil': swimY(e, show); if (e.modeT <= 0) e.mode = e.base; return strandCheck(e, show, ev, c, heroes);
-    case 'stranded': { e.y = A.bed; const tx = A.W.cul.x, d = tx - e.x; e.x += Math.sign(d) * Math.min(Math.abs(d), GT.crawl * dt); e.face = Math.sign(d) || e.face;
+    case 'stranded': { openFight(e, show, dt, c, heroes, ev); e.y = A.bed; const tx = A.W.cul.x, d = tx - e.x; e.x += Math.sign(d) * Math.min(Math.abs(d), GT.crawl * dt); e.face = Math.sign(d) || e.face;
       if (Math.abs(d) < 8) e.modeT = Math.min(e.modeT, 0);
       if (e.modeT <= 0) { e.mode = 'drag'; e.modeT = GT.dragT; e.big = false; e.open = 0; ev.push({ t: 'drag' }); c.sound('drag'); } return ev; }
     case 'drag': { const k = Math.min(1, dt * 6); e.x += (A.W.cul.x - e.x) * k; e.y = A.bed;
@@ -318,13 +328,14 @@ export function stepShow(e, show, dt, c) {
           else { show.water.target = GT.lv[(show.C || {}).lvl || 'low']; show.water.rate = GT.fillRate; } e.newCycle = false; } }
       return ev;
     case 'surge': if (e.modeT <= 0) { e.refill = false; e.hidden = false; e.mode = e.base; if (e.base === 'culvert') { const G = A[show.hide]; e.x = G.cul.x; } show.gap = Math.max(show.gap, 0.6); } return ev;
-    case 'flushed': { e.y = surf + 8; e.x += (e.flushX - e.x) * Math.min(1, dt * 5);
+    case 'flushed': { openFight(e, show, dt, c, heroes, ev); e.y = surf + 8; e.x += (e.flushX - e.x) * Math.min(1, dt * 5);
       if (e.modeT <= 0) { e.mode = 'dive'; e.modeT = 0.4; e.big = false; e.open = 0; ev.push({ t: 'dive' }); } return ev; }
     case 'dive': e.y = Math.min(A.bed, e.y + 60 * dt); if (e.modeT <= 0) { show.cyc[e.phase]++; show.cycle++; show.n.cycle++; applyCycle(show, e.phase, c); ev.push({ t: 'cycle', cycle: show.cycle, name: show.C.name });
-        if (e.phase === 2) { show.hide = show.hide === 'W' ? 'E' : 'W'; e.base = 'shift'; } else { e.base = 'lurk'; for (const s of ['W', 'E']) show.lamps[s] = { st: 'hook' }; } e.mode = e.base; e.lured = false; } return ev;
+        if (e.phase === 2) { if (show.lastPad) { show.hide = show.lastPad; show.pad[show.lastPad].knot = GT.knotHp; show.n.jam++; c.number(A[show.lastPad].paddle.x, A.walk - 40, 'SHE KNOTTED THE PADDLE YOU USED: CUT IT', '#ffd36b'); } else show.hide = show.hide === 'W' ? 'E' : 'W'; e.base = 'shift'; } else {   /* (claude/canalfix3) P2 BREAKS ITS OWN TRICK: back in the culvert you flushed her from, and the weed knotted on its paddle */ e.base = 'lurk'; for (const s of ['W', 'E']) show.lamps[s] = { st: 'hook' }; } e.mode = e.base; e.lured = false; } return ev;
     case 'shiftTell': if (e.modeT <= 0) { e.mode = e.base = 'shift'; show.n.shift++; ev.push({ t: 'shift', to: show.hide }); } return ev;
     case 'floodTell': show.water.target = GT.lv.high; show.water.rate = GT.fillRate; if (e.modeT <= 0) { show.cyc[2] = 0; applyCycle(show, 2, c);
-        show.hide = hero && hero.x > A.mid ? 'E' : 'W'; e.mode = e.base = 'shift'; c.number(e.x, surf - 50, 'OPEN THE PADDLE OF HER CULVERT', '#ffd36b'); } return ev;
+        show.hide = hero && hero.x > A.mid ? 'E' : 'W'; e.mode = e.base = 'shift'; c.number(e.x, surf - 50, 'OPEN THE PADDLE OF HER CULVERT', '#ffd36b');
+        if (show.lastPad) { show.pad[show.lastPad].knot = GT.knotHp; show.n.jam++; } } return ev;   /* (claude/canalfix3) P2 BREAKS P1's TRICK: the paddle you drained her with comes knotted */
     case 'fogTell': show.fogTo = 1; show.water.target = GT.lv.half; show.water.rate = GT.drainRate; if (e.modeT <= 0) { show.cyc[3] = 0; applyCycle(show, 3, c); e.mode = e.base = 'lurk';
         c.number(e.x, surf - 50, 'DROP A LAMP AT A GATE, THEN WORK ITS PADDLE', '#ffd36b'); } return ev;
   }
@@ -354,6 +365,7 @@ export function stepShow(e, show, dt, c) {
       if (want !== show.hide) { show.hide = want; e.mode = 'shiftTell'; e.modeT = GT.shiftTell; ev.push({ t: 'shiftTell', to: want }); c.sound('shiftTell'); return ev; } } }
   else if (e.base === 'shift') { const G = A[show.hide]; tx = G.cul.x; if (Math.abs(e.x - tx) < 6) { e.base = 'culvert'; if (!armsBusy(show)) e.mode = 'culvert'; show.shiftT = GT.shiftEvery; ev.push({ t: 'inCulvert', side: show.hide }); } }
   else if (e.base === 'lured') { const L = litLamp(show); if (!L) { e.base = 'lurk'; e.lured = false; if (!armsBusy(show)) e.mode = 'lurk'; } else { tx = L.x; if (Math.abs(e.x - L.x) < 16 && !e.lured) { e.lured = true; show.n.lured++; ev.push({ t: 'lured', side: litSide(show) }); c.number(L.x, surf - 40, 'SHE WILL NOT LEAVE THE LIGHT: CUT HER', '#ffd36b'); } } }
+  else if (show.working && e.phase < 3 || (show.working && e.phase === 3 && !litLamp(show))) { const G = A[show.working]; tx = clampIn(A, G.face + G.dir * 5 * A.TS); show.rest = 0; }   /* (claude/canalfix3) SHE COMES FOR YOU while you work a paddle: to that gate */
   else { /* lurk: she hunts you, and after a visit's worth of blows she goes back to her lair in the wreck a while */
     if (e.phase === 3 && litLamp(show) && !armsBusy(show)) { e.base = 'lured'; e.mode = 'lured'; return ev; }
     if (show.rest > 0) { show.rest -= dt; tx = colX(A, C.lair || 20); }
@@ -366,18 +378,34 @@ export function stepShow(e, show, dt, c) {
   /* ---- A BLOW ---- */
   if (hero && show.gap <= 0 && !armsBusy(show)) {
     const lured = e.base === 'lured' && e.lured;
-    if (lured) { if (Math.abs(hero.x - e.x) < 60 && heroState(show, hero).wet) { chooseBlow(e, show, hero, c, ev); show.gap = GT.gap[e.phase - 1]; } }
-    else if (e.base === 'culvert' && show.turns % 4 === 3 && !special(e)) { show.turns++; e.mode = 'surgeTell'; e.modeT = GT.surgeTell; e.surgeSide = show.hide; e.refill = false; ev.push({ t: 'surgeTell' }); c.say('!!'); c.sound('surgeTell'); show.gap = GT.gap[e.phase - 1]; return ev; }
+    if (lured) { const hs2 = heroState(show, hero); if ((Math.abs(hero.x - e.x) < 60 && hs2.wet) || (show.working && hs2.footing && hs2.atGate)) { chooseBlow(e, show, hero, c, ev); show.gap = show.working ? GT.crankGap : GT.gap[e.phase - 1]; } }   /* (claude/canalfix3) lured, she still reaches for whoever works the paddle beside her light */
+    else if (e.base === 'culvert' && show.turns % 4 === 3 && !special(e) && !show.working) { show.turns++; e.mode = 'surgeTell'; e.modeT = GT.surgeTell; e.surgeSide = show.hide; e.refill = false; ev.push({ t: 'surgeTell' }); c.say('!!'); c.sound('surgeTell'); show.gap = GT.gap[e.phase - 1]; return ev; }
     else if (show.rest > 0 && e.phase === 1) { if (heroState(show, hero).grabbable && show.turns % 2 === 0) { show.turns++; startArm(e, show, 'grab', hero, c, ev); } else show.turns++; show.gap = GT.gap[0] * 1.6; }
-    else if (chooseBlow(e, show, hero, c, ev)) show.gap = GT.gap[e.phase - 1]; else show.gap = 0.3; }
+    else if (chooseBlow(e, show, hero, c, ev)) show.gap = show.working ? Math.min(GT.crankGap, GT.gap[e.phase - 1]) : GT.gap[e.phase - 1]; else show.gap = 0.3; }
   if (!armsBusy(show) && armMode(e.mode)) e.mode = e.base;
   if (!armsBusy(show) && !special(e) && e.mode !== e.base) e.mode = e.base;
   return ev;
 }
+/* (claude/canalfix3) SHE FIGHTS IN HER OPENINGS: stranded in the mud or thrown out on the water she still snaps (!: block it, or step back) and swipes low
+   (!!: jump it) at a hero beside her, each told - the window is a fight, and it stays the window (her modeT runs on) */
+function openFight(e, show, dt, c, heroes, ev) {
+  const A = show.A, O = GT.oa, h = nearestHero(heroes, e.x);
+  if (e.oa) { const a = e.oa; a.t -= dt; if (a.t > 0) return; e.oa = null; e.oaCd = O.every; show.n.openAtk++; ev.push({ t: a.k });
+    if (a.k === 'snap') { const x0 = a.dir > 0 ? e.x - 6 : e.x - O.snapR, x1 = a.dir > 0 ? e.x + O.snapR : e.x + 6; c.hit([x0, x1, e.y - 44, e.y + 6], O.snapDmg, MOVE_NAME.bite, { from: e.x }); c.sound('bite'); }
+    else { c.band('low', [e.y - 16, e.y + 6], e.x - O.swipeR, e.x + O.swipeR, O.swipeDmg, 'HER CLAWS', 'oa' + a.id, { from: e.x, push: a.dir * 160 }); c.sound('lash'); }
+    return; }
+  if (e.oaCd === undefined || e.oaFor !== e.tellId) { e.oaCd = O.first; e.oaFor = e.tellId; }
+  e.oaCd -= dt; if (e.oaCd > 0 || !h || Math.abs(h.x - e.x) > O.near || Math.abs(h.y - e.y) > 60) return;
+  const k = show.n.openAtk % 2 ? 'swipe' : 'snap'; e.oa = { k, t: k === 'snap' ? O.snapTell : O.swipeTell, len: k === 'snap' ? O.snapTell : O.swipeTell, dir: Math.sign(h.x - e.x) || 1, id: ++show.armN };
+  e.face = e.oa.dir; c.say(k === 'snap' ? '!' : '!!'); c.sound(k === 'snap' ? 'biteTell' : 'lashTell'); ev.push({ t: k + 'Tell' });
+  if (!show.told.openAtk) { show.told.openAtk = true; c.number(e.x, e.y - 60, 'SHE STILL BITES: BLOCK IT OR JUMP IT', '#ffd36b'); }
+}
+/* (claude/canalfix3) a blow of hers that lands on a hero working a paddle shakes him off it: the work is lost (the hands call this when she hurts him) */
+export function crankShaken(show) { if (!show || !show.working) return; const p = show.pad[show.working]; if (p.work > 0) { p.work = 0; p.workT = 0; show.n.shaken++; show.shakenSaid = true; } show.working = null; }
 const clampX = (A, x) => Math.max(A.x0 + 14, Math.min(A.x1 - 14, x));
 /* HER WATER: she keeps five tiles off the gates' faces (her arms reach up them; her body is never under a walker's ledge) */
 const clampIn = (A, x) => Math.max(A.x0 + 5 * A.TS, Math.min(A.x1 - 5 * A.TS, x));
-function swimY(e, show) { const A = show.A, surf = surfY(show); e.y = Math.min(A.bed, surf + GT.h); }
+function swimY(e, show) { const A = show.A, surf = surfY(show); e.y = Math.min(A.bed, surf + Math.round(GT.h * 0.5)); }   /* (claude/canalfix3) half out of the water */
 /* AGROUND: the water is under her depth and she is not in a culvert - stranded where she lies */
 function strandCheck(e, show, ev, c, heroes) {
   if (show.water.depth >= GT.aground || !show.pad.E.open || e.base === 'culvert' || e.hidden) return ev;   /* (aground only as the drain runs: in water coming back up she is swimming again) */
@@ -410,11 +438,16 @@ export function strikePaddle(e, show, side) {
   if (p.cd > 0) return 'busy'; p.cd = 0.5;
   if (p.knot > 0) { p.knot--; show.n.knot++; if (p.knot > 0) return 'knot'; if (side === 'W' && p.open) { p.open = false; show.water.target = show.water.depth; return 'unjam'; } return 'knotCut'; }
   if (e.mode === 'handTell' || e.mode === 'stranded' || e.mode === 'drag' || e.mode === 'flushed' || e.mode === 'floodTell' || e.mode === 'fogTell' || e.mode === 'wake') return p.open ? 'busy' : 'wait';
+  /* (claude/canalfix3) A PADDLE IS WORKED, not struck: GT.crank strikes, and she comes for you while you work it */
+  const flushes = e.base === 'culvert' && show.hide === side && !special(e), lit = litSide(show), big = e.lured && lit === side;
+  if (p.open && !flushes && !big) return 'busy';
+  p.work = (p.work || 0) + 1; p.workT = GT.crankSlip; p.cd = GT.crankCd; show.working = side;
+  if (p.work < GT.crank[Math.max(0, Math.min(2, (e.phase || 1) - 1))]) { show.n.crank++; return 'crank'; }
+  p.work = 0; p.workT = 0; show.working = null; show.lastPad = side;
   /* SHE IS IN THIS GATE'S CULVERT (phase 2): the rush throws her out */
-  if (e.base === 'culvert' && show.hide === side && !special(e)) { flush(e, show, side, false); return 'flush'; }
+  if (flushes) { flush(e, show, side, false); return 'flush'; }
   /* LURED TO THIS GATE'S LAMP (phase 3): she cannot get away - the drain strands her, the flood throws her */
-  const lit = litSide(show);
-  if (e.lured && lit === side) { if (side === 'W') { flush(e, show, side, true); return 'flushBig'; } p.open = true; show.n.drain++; return 'drainBig'; }
+  if (big) { if (side === 'W') { flush(e, show, side, true); return 'flushBig'; } p.open = true; show.n.drain++; return 'drainBig'; }
   if (side === 'E') { if (p.open) return 'busy'; p.open = true; show.n.drain++; if (show.pad.W.open) return 'running'; return 'drain'; }
   if (p.open) return 'busy'; p.open = true; p.to = nextUp(show.water.depth); show.n.flood++;
   if (e.base === 'culvert') { show.n.wrongCulvert++; return 'notHere'; }
@@ -429,6 +462,7 @@ function flush(e, show, side, big) {
 export function strikeHook(e, show, side) {
   const L = show.lamps[side]; if (e.phase < 3) { show.n.fast++; return 'fast'; }
   if (L.st !== 'hook') return 'none';
+  if (L.knot > 0) { L.knot--; show.n.hookKnot++; return L.knot > 0 ? 'hookKnot' : 'hookFree'; }   /* (claude/canalfix3) the weed she bound it with: cut it first */
   L.st = 'fall'; L.vy = 0; L.x = show.A[side].hook.x; L.y = show.A[side].hook.y + 10; show.n.lamp++; return 'drop';
 }
 /* the hand struck: she lets go of the paddle */
@@ -503,6 +537,11 @@ export function greenteethPlan(s) {
   }
   if (show.surge && seenFor('surge' + show.surge.id) && Math.abs(show.surge.x - P.x) < 70 && Math.sign(P.x - show.surge.x) === show.surge.dir && Math.abs(P.y - surf) < 30) {
     if (P.swim) out.down = true; else if (Math.abs(show.surge.x - P.x) < 34) out.jump = true; out.why = 'the surge'; return out; }
+  /* ---- 1b. (claude/canalfix3) SHE FIGHTS IN HER OPENINGS: her snap (block it, or step back) and her swipe (jump it) ---- */
+  if (e.oa && seenFor('oa' + e.oa.id) && !roll('oa' + e.oa.id, PLAN.missDodge)) { const a = e.oa;
+    if (a.k === 'swipe' && Math.abs(P.x - e.x) < GT.oa.swipeR + 8) { if (a.t < 0.16 && P.ground) out.jump = true; out.why = 'jump her swipe'; out.face = Math.sign(e.x - P.x) || 1; return out; }
+    if (a.k === 'snap' && Math.abs(P.x - e.x) < GT.oa.snapR + 10) { if (s.shield && a.t < 0.4) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block her snap'; return out; }
+      out.gx = clamp(e.x + (P.x < e.x ? -1 : 1) * (GT.oa.snapR + 22)); out.why = 'back off her snap'; return out; } }
   /* ---- 2. SHE IS OPEN: to her, and cut ---- */
   if (gtOpen(e) && seenFor('open' + e.tellId)) { const d = e.x - P.x; out.face = Math.sign(d) || 1;
     if (onWalk('E') || onWalk('W')) { out.gx = e.x; out.why = 'down to her'; if (Math.abs(d) < 60) out.drop = true; return out; }

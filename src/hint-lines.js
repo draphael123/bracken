@@ -42,6 +42,8 @@ export const CALL_LINES = new Set([
   'THE LOCK FLOODS: SHE HIDES IN THE CULVERTS', 'OPEN THE PADDLE OF HER CULVERT', 'THE CULVERT SPITS HER OUT: CUT HER', 'SHE IS NOT IN THAT CULVERT',
   'THE FOG COMES DOWN: SHE GOES FOR THE LIGHT', 'DROP A LAMP AT A GATE, THEN WORK ITS PADDLE', 'SHE WILL NOT LEAVE THE LIGHT: CUT HER', 'THE LIGHT GOES OUT',
   'STRIKE THE ARM THAT HOLDS YOU', 'THE LAMP IS HOOKED FAST', 'THE WATER TAKES IT: STRAND HER FIRST',
+  /* claude/canalfix3: she contests the paddles, fights in her openings, and each phase breaks the last trick */
+  'WORK THE PADDLE: SHE COMES FOR YOU', 'SHAKEN OFF THE PADDLE', 'SHE STILL BITES: BLOCK IT OR JUMP IT', 'SHE KNOTTED THE PADDLE YOU USED: CUT IT', 'THE WEED BINDS THE LAMP: CUT IT', 'THE LAMP IS FREE',
   'THE VAULT OPENS', 'THE CAMP GATE OPENS', 'THE FURNACE OPENS', 'THE HATCH OPENS', 'THE DOOR OPENS', 'THE WAY OPENS', 'A PORTAL OPENS', 'THE GRATE IS UP', 'THE HOIST IS FREE',
   /* claude/puppeteer (PUPPETEER3): THE PUPPETEER's openings and reads (src/puppeteer.js, src/puppeteer-hands.js) */
   "HE'S DOWN - STRIKE HIM", 'ONE DOWN: HIS BAR DROPS', 'CUT: THE HARLEQUIN DROPS', 'THE ARM GOES LIMP: NO MORE CHOP OR GRAB',
@@ -54,6 +56,11 @@ export const CALL_LINES = new Set([
   'A SCRATCH: WAIT FOR HIS OPENING', 'TOO GREEDY: HE HITS BACK',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
+/* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the
+   hero has made no headway, one of these names the machine that holds her - never how to work it (the glint over the machine shows where). src/canal-hands.js */
+export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 'THE BRIDGE HOLDS HER: FIND ITS CAPSTAN', fog: 'THE FOG HOLDS HER: FIND THE FOGHORN',
+  door: 'THE DOOR IS TOO HIGH: THE LOCK UNDER HER IS LOW' };
+/* (they go straight to the hint box, src/canal-hands.js H.hint - not through number(), so they are not CALL_LINES) */
 export const CALL_COUNTS = [/^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
 export const isCallout = txt => typeof txt === 'string' && (CALL_LINES.has(txt) || CALL_COUNTS.some(r => r.test(txt)));
 /* what is drawn: the line, with the boss-name double space read as a colon ("THE GOBLIN QUEEN: OPEN") */

@@ -7,7 +7,7 @@
 //     the foghorns (brass, a bellows box and a wind-up gauge), the lantern posts (an iron post and a caged lantern: steady AMBER, a pool of light on the ground)
 //   the WATER: a sheen, and every lantern's reflection (amber for the real ones, a cold green shimmer under a wisp: the false lantern is told apart from a real one on the water too)
 //   the FOG is feathered here: banks draw in soft-edged columns (a baked gradient) and drift; the extents they cover (the gameplay) are untouched.
-import { canvas, rect, px } from '../px.js';
+import { canvas, rect, px, outline } from '../px.js';
 const TS = 16;
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const R = Math.round;
@@ -54,9 +54,10 @@ export function drawBarge(g, x, y, w, st, time) {
   const fl = 0.82 + 0.18 * Math.sin(time * 9) + 0.06 * Math.sin(time * 23);
   g.fillStyle = '#2a2420'; g.fillRect(x + 5, y - 34, 2, 34); g.fillStyle = '#4a4036'; g.fillRect(x + 5, y - 34, 1, 34); g.fillStyle = '#6a6058'; g.fillRect(x + 4, y - 12, 4, 2);
   g.fillStyle = '#2a2420'; g.fillRect(x + 5, y - 38, 8, 1); g.fillRect(x + 12, y - 38, 1, 3);
+  const ang = (st && st.lampAng) || 0; g.save(); g.translate(x + 12, y - 37); g.rotate(ang); g.translate(-(x + 12), -(y - 37));   /* (claude/canalfix3) her lantern swings toward what holds her */
   const gr = g.createRadialGradient(x + 12, y - 33, 2, x + 12, y - 33, 30); gr.addColorStop(0, 'rgba(255,207,106,' + (0.34 * fl).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,207,106,0)'); g.fillStyle = gr; g.fillRect(x - 18, y - 63, 60, 60);
   g.fillStyle = '#3a2c1c'; g.fillRect(x + 9, y - 36, 7, 1); g.fillRect(x + 9, y - 28, 7, 1); g.fillRect(x + 9, y - 35, 1, 7); g.fillRect(x + 15, y - 35, 1, 7); g.fillRect(x + 12, y - 35, 1, 7);
-  g.globalAlpha = fl; g.fillStyle = P.amber; g.fillRect(x + 10, y - 35, 2, 7); g.fillRect(x + 13, y - 35, 2, 7); g.fillStyle = '#fff2b0'; g.fillRect(x + 11, y - 33, 3, 3); g.globalAlpha = 1;
+  g.globalAlpha = fl; g.fillStyle = P.amber; g.fillRect(x + 10, y - 35, 2, 7); g.fillRect(x + 13, y - 35, 2, 7); g.fillStyle = '#fff2b0'; g.fillRect(x + 11, y - 33, 3, 3); g.globalAlpha = 1; g.restore();
   /* THE TILLER: the rudder post at the stern, the bar from its head to the grip amidships; the bar sweeps with the helm (up: the mill cut; down: the weir) */
   const hx = x + (w >> 1), px0 = x + 14, up = b && b.helm === 'cut', flash = st && st.tiller && st.tiller.flash > 0, gy = up ? y - 13 : y - 3;
   g.fillStyle = '#2a1c10'; g.fillRect(px0 - 1, y - 11, 3, 11); g.fillStyle = P.brass; g.fillRect(px0 - 2, y - 12, 5, 2); g.fillStyle = P.brass2; g.fillRect(px0 - 2, y - 12, 5, 1);       /* the rudder post, a brass head */
@@ -84,7 +85,7 @@ export function drawGateOpen(g, sx, sy) { rect(g, sx, sy, 3, 6, '#2a1c10'); rect
 
 /* ============================== THE SWING BRIDGE: white railing, a pivot drum ============================== */
 export function drawBridge(g, br, sy, sx, len, px0, k, time) {
-  rect(g, sx, sy, Math.max(4, len), 6, '#684a2c'); rect(g, sx, sy, Math.max(4, len), 1, '#c8c0a0'); rect(g, sx, sy + 5, Math.max(4, len), 1, '#14100c'); for (let q = 3; q < len - 1; q += 5) rect(g, sx + q, sy + 1, 1, 4, '#2e2218');
+  rect(g, sx, sy, Math.max(4, len), 6, '#3a4048'); rect(g, sx, sy, Math.max(4, len), 1, '#a8b4bc'); rect(g, sx, sy + 5, Math.max(4, len), 1, '#14181c'); for (let q = 3; q < len - 1; q += 5) px(g, sx + q, sy + 3, '#c8d0d6');   /* (claude/canalfix3) cast iron, riveted: no boards */
   rect(g, sx, sy - 9, Math.max(4, len), 1, P.white); rect(g, sx, sy - 5, Math.max(4, len), 1, '#a8b4b0');                    /* the white rails */
   for (let q = 0; q < len; q += 14) rect(g, sx + q, sy - 9, 2, 9, P.white);
   if (len > 8) rect(g, sx + len - 2, sy - 9, 2, 9, P.white);
@@ -101,14 +102,14 @@ export function drawSluice(g, x, y, up, flash, r) {
   const wy = y - 15, a = (r ? r.y : 0) / 6; g.strokeStyle = flash ? '#ffffff' : up ? '#8fd160' : '#c8a040'; g.lineWidth = 2; g.beginPath(); g.arc(x + 6, wy, 6, 0, Math.PI * 2); g.stroke();               /* the wheel: green when the paddle is up (the chamber fills) */
   g.fillStyle = '#6a7078'; g.fillRect(x + 5, wy - 1, 2, 2); for (let k = 0; k < 4; k++) { const an = a + k * Math.PI / 2; g.fillRect(x + 6 + R(Math.cos(an) * 4), wy + R(Math.sin(an) * 4), 1, 1); }
   rect(g, x + 2, wy - 8, 4, 1, '#c8c0a0'); rect(g, x + 2, wy - 8, 1, 3, P.iron3);                                        /* the pawl */
-  rect(g, x + 10, wy - 2, 5, 2, '#8a6a3e');                                                                              /* the crank handle */
+  rect(g, x + 10, wy - 2, 5, 2, P.iron2);                                                                              /* the crank handle */
 }
 export function drawCapstan(g, x, y, holds, flash) {
-  rect(g, x - 8, y - 4, 16, 4, '#2a2c32'); rect(g, x - 8, y - 4, 16, 1, P.iron2); rect(g, x - 6, y - 10, 12, 6, '#46321f'); rect(g, x - 6, y - 10, 12, 1, '#8a6a3e'); for (const dx of [-4, 0, 4]) px(g, x + dx, y - 7, '#14100c');
-  rect(g, x - 7, y - 12, 14, 2, flash ? '#ffffff' : holds ? '#c8a040' : '#8fd160'); rect(g, x - 1, y - 16, 2, 5, '#8a6a3e'); rect(g, x - 8, y - 14, 5, 1, '#8a6a3e'); rect(g, x + 4, y - 14, 5, 1, '#8a6a3e');   /* the bars: amber while the bridge stands across, green when it is swung */
+  rect(g, x - 8, y - 4, 16, 4, '#2a2c32'); rect(g, x - 8, y - 4, 16, 1, P.iron2); rect(g, x - 6, y - 10, 12, 6, '#34383e'); rect(g, x - 6, y - 10, 12, 1, P.iron3); for (const dx of [-4, 0, 4]) px(g, x + dx, y - 7, '#14100c');
+  rect(g, x - 7, y - 12, 14, 2, flash ? '#ffffff' : holds ? '#c8a040' : '#8fd160'); rect(g, x - 1, y - 16, 2, 5, P.iron2); rect(g, x - 8, y - 14, 5, 1, P.iron2); rect(g, x + 4, y - 14, 5, 1, P.iron2);   /* the bars: amber while the bridge stands across, green when it is swung */
 }
 export function drawHorn(g, x, y, flash, k) {
-  rect(g, x - 5, y - 6, 10, 6, '#34383e'); rect(g, x - 5, y - 6, 10, 1, P.iron2); rect(g, x - 4, y - 14, 8, 8, '#5a3a22'); rect(g, x - 4, y - 14, 8, 1, '#8a6a3e'); px(g, x - 2, y - 10, '#14100c'); px(g, x + 2, y - 10, '#14100c');    /* the bellows box */
+  rect(g, x - 5, y - 6, 10, 6, '#34383e'); rect(g, x - 5, y - 6, 10, 1, P.iron2); rect(g, x - 4, y - 14, 8, 8, '#3c3236'); rect(g, x - 4, y - 14, 8, 1, P.iron2); px(g, x - 2, y - 10, '#14100c'); px(g, x + 2, y - 10, '#14100c');    /* the bellows box */
   g.fillStyle = flash ? '#ffffff' : P.brass; g.beginPath(); g.moveTo(x + 3, y - 20); g.lineTo(x + 15, y - 27); g.lineTo(x + 15, y - 13); g.lineTo(x + 3, y - 16); g.closePath(); g.fill(); rect(g, x + 14, y - 27, 2, 14, flash ? '#ffffff' : P.brass2); rect(g, x + 4, y - 19, 6, 1, P.brass2);
   rect(g, x - 8, y - 33, 16, 3, '#1b1626'); rect(g, x - 7, y - 32, R(14 * k), 1, k >= 1 ? '#8fd160' : '#c8a040');         /* the wind-up gauge: green, it will sound */
 }
@@ -123,9 +124,14 @@ export function drawPost(g, p, x, y, time) {
 
 /* ============================== THE WATER ============================== */
 export function drawWater(g, st, pools, cx, cy, VW, VH, time, lanterns, wisps) {
+  /* (claude/canalfix3, Daniel: "GREEN = HERS") a SAFE SWIM is clear dark blue, a clean sheen and no weed: it reads apart from her murky green at night, in the fog */
+  for (const p of pools) { if (!p.safeSwim || p.x1 < cx || p.x0 > cx + VW || p.y > cy + VH || (p.bottom ?? p.y) < cy) continue; const x0 = Math.max(p.x0, cx) - cx, x1 = Math.min(p.x1, cx + VW) - cx, sy = R(p.y - cy), h = (p.bottom ?? p.y + 64) - p.y;
+    g.fillStyle = 'rgba(20,70,150,0.55)'; g.fillRect(x0, sy, x1 - x0, h); g.fillStyle = 'rgba(120,190,255,0.5)'; g.fillRect(x0, sy, x1 - x0, 1);
+    g.fillStyle = 'rgba(170,220,255,0.35)'; for (let x = p.x0 - (p.x0 % 12); x < p.x1; x += 12) { const xx = x - cx + R(Math.sin(time * 1.1 + x * 0.2) * 2); if (xx > x0 && xx < x1 - 3) g.fillRect(xx, sy + 3 + ((x / 12) % 3) * 4, 3, 1); } }
   for (const p of pools) { if (!p.canal || p.canal === 'dock' || p.dry) continue; if (p.x1 < cx || p.x0 > cx + VW || p.y > cy + VH || p.y < cy - 20) continue;
     const x0 = Math.max(p.x0, cx), x1 = Math.min(p.x1, cx + VW), sy = R(p.y - cy), bot = p.bottom !== undefined ? p.bottom - cy : VH;
     g.save(); g.beginPath(); g.rect(x0 - cx, sy, x1 - x0, Math.max(2, Math.min(bot, VH) - sy)); g.clip();
+    g.fillStyle = 'rgba(46,90,40,0.34)'; g.fillRect(x0 - cx, sy, x1 - x0, Math.min(bot, VH) - sy); g.fillStyle = 'rgba(120,170,70,0.25)'; for (let x = x0 - (x0 % 23); x < x1; x += 23) g.fillRect(x - cx + R(Math.sin(time * 0.5 + x) * 3), sy + 1, 6, 1);   /* (claude/canalfix3) HER water: murky green, a scum of weed on it */
     g.fillStyle = 'rgba(150,196,210,0.22)'; for (let x = x0 - (x0 % 14); x < x1; x += 14) { const w = 5 + ((x / 14) % 3) * 3; g.fillRect(x - cx + R(Math.sin(time * 0.9 + x * 0.13) * 2), sy + 2 + ((x / 14) % 4) * 3, w, 1); }   /* a sheen */
     for (const l of lanterns) { if (l.x < x0 - 30 || l.x > x1 + 30) continue; const lx = l.x - cx;
       for (let i = 0; i < 9; i++) { const yy = sy + 2 + i * 3, wob = Math.sin(time * 3 + i * 1.3 + l.x) * (1 + i * 0.25), w = Math.max(2, 7 - i * 0.6 + Math.sin(time * 5 + i) * 1.2); g.globalAlpha = (0.55 - i * 0.055) * (l.k || 1); g.fillStyle = l.col || P.amber; g.fillRect(R(lx + wob - w / 2), yy, R(w), 1); }
@@ -173,8 +179,8 @@ export function drawWeed(g, kind, sx, sy, w, k0, shake, time) {
 }
 /* the boom: a chained log, bark and end-grain, iron bands, a chain draped to a ring on each bank, a red-and-white lane mark when it is live */
 export function drawBoom(g, sx, y, live, bargeFloat, time) {
-  rect(g, sx - 8, y - 6, 16, 6, '#4a3220'); rect(g, sx - 8, y - 6, 16, 1, '#8a6a3e'); rect(g, sx - 8, y - 1, 16, 1, '#1e1610'); for (const q of [-4, 1, 6]) rect(g, sx + q, y - 6, 1, 6, '#2a1c12');
-  rect(g, sx - 9, y - 5, 2, 4, '#7a5a30'); rect(g, sx + 7, y - 5, 2, 4, '#7a5a30'); px(g, sx - 8, y - 4, '#2a1c12'); px(g, sx + 8, y - 4, '#2a1c12');
+  rect(g, sx - 8, y - 6, 16, 6, '#2c3238'); rect(g, sx - 8, y - 6, 16, 1, '#7a848c'); rect(g, sx - 8, y - 1, 16, 1, '#101416'); for (const q of [-4, 1, 6]) rect(g, sx + q, y - 6, 1, 6, '#181c20');   /* (claude/canalfix3) an iron boom: a riveted spar, black-painted, no log */
+  rect(g, sx - 9, y - 5, 2, 4, '#4a525a'); rect(g, sx + 7, y - 5, 2, 4, '#4a525a'); px(g, sx - 8, y - 4, '#9aa2aa'); px(g, sx + 8, y - 4, '#9aa2aa');
   rect(g, sx - 5, y - 7, 2, 8, '#3a3e44'); rect(g, sx + 4, y - 7, 2, 8, '#3a3e44'); g.fillStyle = '#8a929c'; for (let q = 0; q < 4; q++) { g.fillRect(sx - 12 - q * 3, y - 3 + (q % 2), 2, 1); g.fillRect(sx + 10 + q * 3, y - 3 + (q % 2), 2, 1); }
   if (live && bargeFloat === false) { const fl = Math.floor(time * 8) % 2; g.fillStyle = fl ? '#ff6b6b' : '#ffffff'; for (const o of [-2, 2]) { g.fillRect(sx + o, y - 18, 1, 6); g.fillRect(sx + o, y - 10, 1, 1); } } }
 export function drawSkiff(g, sx, y, time) { const bob = Math.round(Math.sin(time * 2.2) * 0.6); y += bob; poly(g, [[sx, y - 1], [sx + 32, y - 1], [sx + 27, y + 5], [sx + 4, y + 5]], '#2a1a10'); rect(g, sx, y - 1, 32, 1, '#8a6a3e'); rect(g, sx + 6, y + 2, 20, 1, '#6a3a28'); rect(g, sx + 10, y - 3, 1, 3, '#3a2a1a'); rect(g, sx + 22, y - 3, 1, 3, '#3a2a1a'); rect(g, sx + 2, y - 3, 6, 2, '#1c2428'); rect(g, sx + 28, y - 5, 5, 2, '#684a2c'); }
@@ -183,27 +189,36 @@ export function drawSill(g, ax, ay) { rect(g, ax - 3, ay - 6, 10, 7, '#3a464c');
 /* Jenny's child's shoe: a small red-brown buckle shoe, one lace strap, a brass buckle */
 export function drawShoe(g, x, y) { rect(g, x, y - 3, 6, 3, '#6a3a2a'); rect(g, x, y - 4, 3, 1, '#8a5a3a'); rect(g, x + 3, y - 2, 3, 1, '#4a2418'); px(g, x + 2, y - 3, '#e0b84a'); rect(g, x, y, 6, 1, '#2a1410'); }
 
+/* (claude/canalfix3) THE STREET'S IRONWORK: railings along the backs of the street, the towpaths and the high footbridges (spear-topped posts, two rails), bollards on the quays */
+export function drawRailing(g, sx, top, w) { for (let x = 0; x <= w; x += 8) { rect(g, sx + x, top - 11, 1, 11, '#20262c'); px(g, sx + x, top - 12, '#6a747c'); } rect(g, sx, top - 10, w + 1, 1, '#3a4048'); rect(g, sx, top - 9, w + 1, 1, '#14181c'); rect(g, sx, top - 4, w + 1, 1, '#2c3238'); }
+export function drawBollard(g, x, top) { rect(g, x - 3, top - 7, 7, 7, '#22272c'); rect(g, x - 4, top - 9, 9, 2, '#3a4048'); rect(g, x - 4, top - 9, 9, 1, '#7a848c'); rect(g, x - 2, top - 6, 1, 5, '#4a525a'); }
+/* A SIGN on the canal: a cast-iron plaque, white-edged, on an iron post (the game's wooden board belongs to the woods) - the same 18 x 18 and anchor as PROP.sign */
+export function canalSign() { return once('sign', () => { const [c, g] = canvas(18, 18); rect(g, 8, 8, 2, 10, '#22272c'); rect(g, 8, 8, 1, 10, '#4a525a'); rect(g, 6, 16, 6, 2, '#2a3036');
+  rect(g, 1, 1, 16, 8, '#2a3036'); rect(g, 1, 1, 16, 1, '#cfd8d4'); rect(g, 1, 8, 16, 1, '#cfd8d4'); rect(g, 1, 1, 1, 8, '#cfd8d4'); rect(g, 16, 1, 1, 8, '#cfd8d4'); rect(g, 3, 3, 8, 1, '#a8b4b0'); rect(g, 3, 5, 11, 1, '#a8b4b0'); return outline(c, '#0c0e10'); }); }
+/* a barrel: staves, two iron hoops, a lit edge (the warehouse's stores; the street's) */
+export function barrel(g, x, floorY, w, h) { const y = floorY - h; rect(g, x + 1, y, w - 2, h, '#3e2e1e'); rect(g, x, y + 2, w, h - 4, '#4a3624'); rect(g, x + 2, y + 1, 1, h - 2, '#6a5034'); rect(g, x, y + 3, w, 1, '#2a2e34'); rect(g, x, y + h - 4, w, 1, '#2a2e34'); rect(g, x + 1, y, w - 2, 1, '#5a4430'); }
 /* ============================== THE ROOMS (what stands behind the tiles): the warehouse, the mill, Jenny's door ============================== */
 const BRICKS = (w, h, a, b, mort) => once('rbr' + w + h + a + b, () => { const [c, g] = canvas(w, h); rect(g, 0, 0, w, h, mort); for (let y = 0, row = 0; y < h; y += 5, row++) for (let x = -(row & 1) * 6; x < w; x += 12) { const t = ((x * 7 + y * 13) % 11) / 11; rect(g, x + 1, y + 1, 10, 3, t < 0.2 ? b : a); } return c; });
 export function paintRoom(g, rs, sx, sy, w, h, time) {
-  const room = { cnWarehouse: 1, cnMill: 2, cnDoor: 3 }[rs]; if (!room) return false;
+  const room = { cnWarehouse: 1, cnMill: 2, cnDoor: 3, cnCellar: 4, cnCistern: 4 }[rs]; if (!room) return false;   /* 4: (claude/canalfix3) the safe swims' vaults - bare wet brick */
   g.save(); g.beginPath(); g.rect(sx, sy, w, h); g.clip();
+  if (room === 4) { for (let y = sy; y < sy + h; y += 96) for (let x = sx; x < sx + w; x += 96) g.drawImage(BRICKS(96, 96, '#1a2228', '#222c34', '#0e1418'), x, y); g.restore(); return true; }
   if (room === 1 || room === 3) { g.drawImage(BRICKS(96, 96, room === 1 ? '#2a2224' : '#1c2426', room === 1 ? '#34292b' : '#242e30', room === 1 ? '#161213' : '#10181a'), 0, 0, 96, 96, sx, sy, 96, 96); for (let y = sy; y < sy + h; y += 96) for (let x = sx; x < sx + w; x += 96) g.drawImage(BRICKS(96, 96, room === 1 ? '#2a2224' : '#1c2426', room === 1 ? '#34292b' : '#242e30', room === 1 ? '#161213' : '#10181a'), x, y); }
-  else { g.fillStyle = '#2c2418'; g.fillRect(sx, sy, w, h); for (let x = sx; x < sx + w; x += 8) { g.fillStyle = (((x - sx) >> 3) % 3) ? '#32291c' : '#261e14'; g.fillRect(x, sy, 7, h); g.fillStyle = '#1a140c'; g.fillRect(x + 7, sy, 1, h); } }
-  /* timber: a post and beam frame, braced */
-  const post = x => { rect(g, x, sy, 6, h, '#3a2a18'); rect(g, x, sy, 1, h, '#5a4228'); rect(g, x + 5, sy, 1, h, '#1a1208'); };
-  if (room !== 3) { for (let x = sx + 2; x < sx + w; x += room === 1 ? 64 : 112) post(x); for (let y = sy + 4; y < sy + h; y += 80) { rect(g, sx, y, w, 5, '#3a2a18'); rect(g, sx, y, w, 1, '#5a4228'); rect(g, sx, y + 5, w, 1, '#120c06'); } }
+  else { for (let y = sy; y < sy + h; y += 96) for (let x = sx; x < sx + w; x += 96) g.drawImage(BRICKS(96, 96, '#2c2426', '#382c2c', '#171314'), x, y); }   /* (claude/canalfix3) the mill is brick inside too, not planking */
+  /* (claude/canalfix3, Daniel: TOO MUCH WOOD) a fireproof frame: cast-iron columns with a capital, iron beams riveted along */
+  const post = x => { rect(g, x + 1, sy, 4, h, '#2c3238'); rect(g, x + 1, sy, 1, h, '#5a646c'); rect(g, x + 4, sy, 1, h, '#121518'); for (let y = sy + 4; y < sy + h; y += 80) { rect(g, x - 1, y + 5, 8, 2, '#3a4048'); rect(g, x - 1, y + 5, 8, 1, '#6a747c'); } };
+  if (room !== 3) { for (let x = sx + 2; x < sx + w; x += room === 1 ? 64 : 112) post(x); for (let y = sy + 4; y < sy + h; y += 80) { rect(g, sx, y, w, 5, '#2c3238'); rect(g, sx, y, w, 1, '#5a646c'); rect(g, sx, y + 5, w, 1, '#0c0e10'); for (let x = sx + 3; x < sx + w; x += 6) px(g, x, y + 2, '#8a929a'); } }
   /* a moonlit window and its shaft */
   if (room !== 3) for (let x = sx + 22; x < sx + w - 14; x += room === 1 ? 60 : 96) { const y = sy + 22; rect(g, x, y, 12, 18, '#0a1218'); rect(g, x + 1, y + 1, 10, 16, '#4a6a82'); rect(g, x + 1, y + 1, 10, 3, '#8aa8bc'); rect(g, x + 5, y + 1, 1, 16, '#14202a'); rect(g, x + 1, y + 8, 10, 1, '#14202a');
     g.globalAlpha = 0.07; g.fillStyle = '#a8c8e0'; g.beginPath(); g.moveTo(x + 1, y + 17); g.lineTo(x + 11, y + 17); g.lineTo(x + 40, y + 120); g.lineTo(x + 10, y + 120); g.closePath(); g.fill(); g.globalAlpha = 1; }
   /* what is kept here: crates and sacks on the floor, a hoist rope with a hook, a lit lantern */
   const fl = sy + h;
-  if (room === 1) { for (let x = sx + 8; x < sx + w - 20; x += 46) { rect(g, x, fl - 14, 14, 14, '#4a3822'); rect(g, x, fl - 14, 14, 2, '#6a5030'); rect(g, x + 6, fl - 14, 2, 14, '#2e2214'); rect(g, x + 14, fl - 8, 12, 8, '#4a3822'); rect(g, x + 14, fl - 8, 12, 1, '#6a5030'); rect(g, x + 3, fl - 22, 9, 8, '#5a4428'); }
+  if (room === 1) { for (let x = sx + 8; x < sx + w - 20; x += 46) { barrel(g, x, fl, 10, 14); barrel(g, x + 11, fl, 10, 14); barrel(g, x + 5, fl - 14, 10, 12); }   /* (claude/canalfix3) barrels stacked, not crates */
     for (let x = sx + 40; x < sx + w - 8; x += 70) { rect(g, x, fl - 10, 10, 10, '#6a5a3a'); rect(g, x + 1, fl - 11, 8, 2, '#8a7a52'); rect(g, x + 3, fl - 6, 4, 1, '#3a2c18'); }
     rect(g, sx + 16, sy, 1, 60, '#6a5a3a'); rect(g, sx + 14, sy + 60, 5, 2, '#9aa2aa'); rect(g, sx + 18, sy + 60, 1, 4, '#9aa2aa'); }
   if (room === 2) { /* the mill: a great millstone on edge, a gear train, hanging sacks */
     for (let x = sx + 30; x < sx + w - 30; x += 130) { g.fillStyle = '#4a4a4c'; g.beginPath(); g.arc(x, fl - 26, 24, 0, 6.3); g.fill(); g.fillStyle = '#5a5a5c'; g.beginPath(); g.arc(x, fl - 26, 20, 0, 6.3); g.fill(); g.strokeStyle = '#34343a'; g.lineWidth = 1; for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; g.beginPath(); g.moveTo(x, fl - 26); g.lineTo(x + Math.cos(a) * 19, fl - 26 + Math.sin(a) * 19); g.stroke(); } g.fillStyle = '#2a2a2e'; g.beginPath(); g.arc(x, fl - 26, 4, 0, 6.3); g.fill(); }
-    for (let x = sx + 70; x < sx + w - 40; x += 150) { const a = time * 0.5 + x; g.strokeStyle = '#4a3a22'; g.lineWidth = 2; g.beginPath(); g.arc(x, sy + 50, 16, 0, 6.3); g.stroke(); g.lineWidth = 1; for (let k = 0; k < 6; k++) { const an = a + k * Math.PI / 3; g.beginPath(); g.moveTo(x, sy + 50); g.lineTo(x + Math.cos(an) * 16, sy + 50 + Math.sin(an) * 16); g.stroke(); } }
+    for (let x = sx + 70; x < sx + w - 40; x += 150) { const a = time * 0.5 + x; g.strokeStyle = '#3a4048'; g.lineWidth = 2; g.beginPath(); g.arc(x, sy + 50, 16, 0, 6.3); g.stroke(); g.lineWidth = 1; for (let k = 0; k < 6; k++) { const an = a + k * Math.PI / 3; g.beginPath(); g.moveTo(x, sy + 50); g.lineTo(x + Math.cos(an) * 16, sy + 50 + Math.sin(an) * 16); g.stroke(); } }
     for (let x = sx + 50; x < sx + w - 20; x += 90) { rect(g, x, sy + 30, 1, 22, '#6a5a3a'); rect(g, x - 4, sy + 52, 9, 12, '#8a7a52'); rect(g, x - 4, sy + 52, 9, 2, '#a89868'); } }
   const lx = sx + (room === 3 ? 20 : 44), ly = sy + 60; rect(g, lx, ly - 22, 1, 22, '#2a2420'); rect(g, lx - 3, ly - 6, 7, 7, '#1b1b20'); rect(g, lx - 2, ly - 5, 5, 5, '#ffcf6a');
   const gr = g.createRadialGradient(lx, ly - 2, 1, lx, ly - 2, 40); gr.addColorStop(0, 'rgba(255,207,106,0.30)'); gr.addColorStop(1, 'rgba(255,207,106,0)'); g.fillStyle = gr; g.fillRect(lx - 40, ly - 42, 80, 80);

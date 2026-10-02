@@ -1,0 +1,35 @@
+[
+ {
+  "id": "canal",
+  "hero": "knight",
+  "outcome": "win",
+  "secs": 67.8,
+  "bossLeft": 0,
+  "taken": 32,
+  "endHp": 145,
+  "opened": 0,
+  "swings": 38
+ },
+ {
+  "id": "canal",
+  "hero": "warden",
+  "outcome": "win",
+  "secs": 57.9,
+  "bossLeft": 0,
+  "taken": 31,
+  "endHp": 146,
+  "opened": 0,
+  "swings": 32
+ },
+ {
+  "id": "canal",
+  "hero": "pyro",
+  "outcome": "win",
+  "secs": 64.9,
+  "bossLeft": 0,
+  "taken": 27,
+  "endHp": 138,
+  "opened": 0,
+  "swings": 41
+ }
+]
