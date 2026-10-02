@@ -157,7 +157,7 @@ Also new: `tools/combat-pilots.mjs`, a measuring tool, not a check.
 
 ## Checks run (named, never the suite)
 
-**Green on the final merged branch:** <see final run below>
+**Green on the final merged branch:** boss-greed, mash-gate, canal, boss-fight-end (48 fights), verb-matrix, foe-tempo, tells, hint-shown, slopes-trace (every level identical), npc-removal, architecture, checkpoints, skins, dangling-paths, level-quality, answer-tags, untold-told, foe-tactics, weighty, archmage-folly, boss-openings (one run, after merging origin/master).
 
 **Earlier green on this branch:**
 - shake-mode, starter-kits, checkpoints, skins, attack-animation, attack-buffer, ability-poses
