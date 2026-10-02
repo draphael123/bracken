@@ -57,7 +57,12 @@ Tool: tools/redgorge-pilot.mjs now replaces a page that will not reload ("the fr
 **Mash bot** (re-stamped, `node tools/mash-bot.mjs redgorge --arena-only --write`): 0/6, unchanged. Every mash hero dies with him at 95-99%. The pyro deals no extra damage under the mash bot because it never releases the dam.
 
 ## Checks (named, never the suite)
-See the list in the final message. Green before this report: tells, hint-shown, architecture, dangling-paths, redgorge (+ the new spray assert), audio-assets.
+All green, run by name on the final code:
+- boss-openings, boss-greed, boss-fight-end, mash-gate;
+- redgorge (with the new spray assert), redgorge-probe;
+- tells, hint-shown, level-quality, architecture, dangling-paths, slopes-trace (every traced level identical), audio-assets.
+
+boss-greed failed once (`wood: a hero who stood off is not hurt by it (lost 13)`, the Goblin Queen, not the crab) while the PC was loaded. Run alone straight after, it was green.
 
 ## UNVERIFIED
 - Not played by hand. The steam and the hiss over him are seen only in code. The line goes through the hint box like the gorge's other lines (hint-shown is green).
