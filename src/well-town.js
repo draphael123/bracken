@@ -91,7 +91,8 @@ export function buildWellTown({ painter, T, TS }) {
   mudWalls.push({ x0: 46, x1: 46, y0: S - 3, y1: S - 1, optional: true }); ent('mudwall', 46, S - 1, { x1: 46, optional: true });
   skin(50, S - 1);                                                            /* WATER-SKIN ONE */
   interiors.push([47, 52, S - 3, S - 1, 'wtHouse']);
-  foe('cutthroat', 44, S - 3, 'gate'); foe('cutthroat', 45, S - 3, 'gate');   /* the gate's two knives, ON THE HOUSE'S STEPS: the optional pour is taught with them watching (its sip refills at 77) */
+  foe('cutthroat', 44, S - 3, 'gate'); foe('cutthroat', 45, S - 3, 'gate');
+  awn(43, S - 3, true);                                                      /* their awning at the foot of the gatehouse ladder: the gate's fight is not the sun's (the first well, out in the open, teaches the sun) */   /* the gate's two knives, ON THE HOUSE'S STEPS: the optional pour is taught with them watching (its sip refills at 77) */
 
   // ================= 2. THE LOWER MARKET (64-149) =================
   ground(64, 89, S);
@@ -225,6 +226,7 @@ export function buildWellTown({ painter, T, TS }) {
      lintel - two pours, a three-sip skin, the sun and a bowman */
   well(448, K - 1, { deep: true });                                           /* A DEEP WELL: its bucket is down - strike its windlass and wind it up (2 s), under the bowman and the thieves, before you can fill */
   ent('windlass', 446, K - 1, { deep: true });
+  awn(450, K - 1, true);                                                      /* the well's torn awning: the wind is a fight under arrows, not a death by sun (the walk to it is the sun's) */
   boards(450, 454, 22); ladder(449, 22, K - 1);
   bowman(452, 21, 'kasbahLedge');
   thief(451, K - 1, 'kasbahWell'); thief(455, K - 1, 'kasbahWell');
