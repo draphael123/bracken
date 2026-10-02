@@ -131,7 +131,7 @@ export function buildFogCanal({ painter, T, TS }) {
   gate('G2', 81, 32, 37, L1, P1); block(81, 81, 38, H - 1);
   sluice(80, 39, 'L1'); sluice(81, 31, 'L1');                                /* the paddle on the upper gate's face (at the deck), and the one on its top */
   grindy(79, 40, 'the lock steps');                                          /* under the paddle: at the barge's bow while you work it */
-  sign(66, 38, 'A LOCK. STRIKE THE PADDLE ON THE UPPER GATE AND THE CHAMBER FILLS.');
+  sign(66, 36, 'A LOCK. STRIKE THE PADDLE ON THE UPPER GATE AND THE CHAMBER FILLS.');
   /* THE MILL, built over the pound: its wharf floor is boards over the water (hop up from the barge), and four floors climb to its top, where the
      miller's door lets out onto the gallery over the mill bridge. The bridge holds the barge until it is swung */
   boards(86, 30, 24);                                                        /* the wharf floor over the water (under the east wall too: the loading bay) */
