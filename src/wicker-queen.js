@@ -66,7 +66,7 @@
 import { facedBy, nearestHero } from './mummer.js';
 
 export const WQ = {
-  hp: 640, w: 22, h: 60,
+  hp: 1100, w: 22, h: 60,             // (claude/fairfix4: 640 before. At the fair's campaign depth (hero level 23) a knight cut 640 away in four burns, 26-56 s; tools/combat-pilots.mjs)
   creep: 68, creepP3: 90,             // px/s while nobody looks (a hero runs 92; she is never faster). The ride's carry is on top of it (claude/fairfix3: 58 / 88 before)
   sight: 720, sightY: 170,            // the look reaches across the whole ride (phases 1 and 3)
   nearR: 96, nearY: 64,               // PHASE 2, FULL DARK: the look reaches only this far (a radius on the side you face)
@@ -74,7 +74,7 @@ export const WQ = {
   lashEvery: [6.5, 5.5, 4.8], lashFirst: 3.2, lashTell: 1.0, lashT: 0.5, lashReach: 460,
   lowTop: 10,                         // the LOW ribbon runs from the boards to 10 px up: a hero in a jump or on a horse (16+) is over it
   highTop: 64, highBot: 10,           // the HIGH ribbon runs 10-64 px up: a standing hero (14) and every rider (saddle 16-40) are in it, a ducked one (8) is under it
-  floorEvery: [11, 10, 8], floorFirst: 7.5, floorTell: 1.5, floorT: 1.8, floorTick: 0.6,   // THE FLOOR BURNS: its told time, how long it burns, a burn's tick (claude/fairfix4: every 11 s in phase one, from 12 - the bonfire ring shares its turns)
+  floorEvery: [11, 9.5, 7], floorFirst: 7.5, floorTell: 1.5, floorT: 1.8, floorTick: 0.6,   // THE FLOOR BURNS: its told time, how long it burns, a burn's tick (claude/fairfix4: every 11 s in phase one, from 12 - the bonfire ring shares its turns)
   /* HER SPEAR, THRUST: at a hero looking at her within its reach (from her middle); told for thrustTell s (the red line runs out to its length), the lunge takes
      thrustT s to carry the blade from her hand (thrustFrom) to the end of its reach, it is held out thrustHold s and drawn back over thrustBack s */
   thrustEvery: [7, 6, 5], thrustFirst: 4.5, thrustTell: 1.1, thrustT: 0.25, thrustHold: 0.3, thrustBack: 0.45, thrustFrom: 14, thrustReach: 96, thrustY: 70,
@@ -93,16 +93,16 @@ export const WQ = {
      of its middle, travelling gapSpeed px/s; it burns what is on the boards outside the gap up to ringTop px, every ringTick s */
   ringEvery: [16, 13, 11], ringFirst: 12, ringTell: 1.5, ringT: 2.8, gapHalf: 30, gapSpeed: 46, gapFrom: [110, 220], ringTop: 34, ringTick: 0.45,
   emberHalf: 40,                      // the embers: this far each side of the firebox's middle
-  catchT: 0.4, burnT: 3.2, burnTP3: 3.0, riseT: 0.6, throwBack: 44, bankT: 6,   // (claude/fairfix3: the opening is at least 3 s in every phase - the boss rule; it was 2.8 / 2.4)
-  burnMul: 0.9, ward: 0.05,           // what a blow is worth burning, and against the standing wicker (claude/fairfix3: x0.05 chip outside the burn, the boss rule; it was 0.25. And a burn is worth 0.9 a blow, from 1.35: with her ring pits and a 3 s burn the human bot won in 46-56 s, under the 90-150 s band)
+  catchT: 0.4, burnT: 3.0, burnTP3: 3.0, riseT: 0.6, throwBack: 44, bankT: 6,   // (claude/fairfix3: the opening is at least 3 s in every phase - the boss rule; it was 2.8 / 2.4)
+  burnMul: 0.7, ward: 0.05,           // what a blow is worth burning, and against the standing wicker (claude/fairfix3: x0.05 chip outside the burn, the boss rule; it was 0.25. And a burn is worth 0.9 a blow, from 1.35: with her ring pits and a 3 s burn the human bot won in 46-56 s, under the 90-150 s band. claude/fairfix4: 0.7, with her 1100 health - the human bot at the fair's depth wins 2 of 3 in 60-131 s)
   thrustClear: 24,                    // (claude/fairfix3, review #11) no thrust STARTS while she stands within this far of hot embers: a committed thrust no longer carries her across the opening
   rustle: 0.35,                       // her audio tell while she moves: the wicker creaks
-  dmg: { stab: 26, lash: 20, floor: 16, thrust: 22, ball: 18, sweep: 18, stomp: 18, ring: 14 },
+  dmg: { stab: 28, lash: 24, floor: 18, thrust: 26, ball: 22, sweep: 22, stomp: 20, ring: 18 },
   /* (claude/fairfix3) HER NEW BLOWS AND HER FIRES */
   tossEvery: [8, 7, 6], tossFirst: 4, tossTell: 0.9, tossT: 0.35, ballSpeed: 150, ballTop: 14,   // THE WICKER BALL: told, bowled along the boards; it hurts what stands in its 14 px
   sweepEvery: [0, 10, 8.5], sweepFirst: 3.5, sweepTell: 1.2, sweepT: 1.8,                              // THE RIBBON SWEEP (phases 2-3): told by the ribbons going taut, then two passes
   leapEvery: [11, 7.5, 6], leapFirst: 6.5, leapTell: 0.7, leapT: 0.6, leapMin: 150, leapArc: 44, stompR: 26, perchT: 2.6, poleLift: 76, horseOff: 2.2,
-  pits: { ring: 2, half: 22, life: 8, cap: 4 },                                                          // the ring pits: how many she starts with, their half-width, life, and the most at once (with the firebox)
+  pits: { ring: 1, half: 22, life: 8, cap: 4 },                                                          // the ring pits: how many she starts with, their half-width, life, and the most at once (with the firebox)
   p2: 2 / 3, p3: 1 / 3,
 };
 /* THE LASH ORDER: low and high mixed, never three alike, so the height has to be READ, not remembered */
@@ -226,7 +226,7 @@ export function updateWickerQueen(e, dt, c) {
   if (c.anim !== false) e.anim = (e.anim || 0) + dt;   /* (the game ticks it for every creature: its hands pass anim: false) */
   e.modeT -= dt; e.vx = 0;
   e.bank = Math.max(0, (e.bank || 0) - dt); e.rest = Math.max(0, (e.rest || 0) - dt);
-  const busy = e.mode === 'catch' || e.mode === 'burn' || e.mode === 'rise' || e.mode === 'leap';
+  const busy = e.mode === 'rise' || e.mode === 'leap';   /* (claude/fairfix4: SHE ALWAYS FIGHTS - her clocks run on while she burns, so she comes up off the fire swinging; only the fling and the leap stop them) */
   if (!busy) { e.lashCd -= dt; e.crownCd -= dt; e.floorCd -= dt; e.thrustCd -= dt; e.tossCd -= dt; e.sweepCd -= dt; e.leapCd -= dt; e.ringCd -= dt; e.perchT = Math.max(0, (e.perchT || 0) - dt); }
   const pits = pitsOf(c, e);
   const ph = wqPhase(e);
@@ -349,28 +349,28 @@ export function updateWickerQueen(e, dt, c) {
     toward(); e.mode = 'stabTell'; e.modeT = WQ.glow; ev.push({ t: 'glow' }); c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.sound('stabTell'); return ev; }
   if (!(e.rest > 0)) {
     const byFire = pits.some(p => !(p.bank > 0) && e.x >= p.x0 - WQ.thrustClear && e.x <= p.x1 + WQ.thrustClear);   /* (claude/fairfix3, review #11) no thrust starts at the fire's edge: a committed thrust no longer carries her across the opening */
+    if (ph >= 2 && e.crownCd <= 0) {   /* (claude/fairfix4) her copies first: the dark comes in with them */
+      if (e.fakes.length < (WQ.copies[ph - 1] || 0)) { e.mode = 'crownTell'; e.modeT = WQ.crownTell; ev.push({ t: 'crownTell' }); c.number(e.x, e.y - 78, 'THE CROWNING', '#e8c23a'); c.sound('crownTell'); return ev; }
+      e.crownCd = 2;   /* her copies all stand: she asks again in a moment */ }
     if (!up && !byFire && near && seen && e.thrustCd <= 0 && dx <= WQ.thrustReach - 8 && Math.abs((near.y || 0) - (e.y || 0)) < WQ.thrustY) {   /* LOOKED AT, IN HER SPEAR'S REACH: her feet are held, so her arms answer - she thrusts */
       toward(); const kind = THRUST_ORDER[(e.thrustN++) % THRUST_ORDER.length]; e.thrustDir = e.face; e.thrustKind = kind;
       e.mode = kind === 'low' ? 'thrustLowTell' : 'thrustHighTell'; e.modeT = WQ.thrustTell; e.tip = thrustTip(e); ev.push({ t: 'thrustTell', kind, dir: e.thrustDir });
       c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, kind === 'low' ? 'HER SPEAR, LOW: JUMP' : 'HER SPEAR, HIGH: DUCK', '#ff6b6b'); c.sound('thrustTell'); return ev; }
+    if (!up && e.floorCd <= 0) { e.mode = 'floorTell'; e.modeT = WQ.floorTell; ev.push({ t: 'floorTell' });   /* (claude/fairfix4: the floor before the ball, so the ball's quicker turns do not crowd it out) */
+      c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE FLOOR BURNS: RIDE A HORSE', '#ff6b6b'); c.sound('floorTell'); return ev; }
+    if (!up && e.ringCd <= 0 && near) {   /* (claude/fairfix4) THE BONFIRE RING: the gap is put a good run from the nearest hero, on the side with the room */
+      const A = c.A, d = WQ.gapFrom[0] + ((e.n.ring * 53) % (WQ.gapFrom[1] - WQ.gapFrom[0])), side = (near.x - A.x0 > A.x1 - near.x) ? -1 : 1;
+      e.gapX = Math.max(A.x0 + WQ.gapHalf + 8, Math.min(A.x1 - WQ.gapHalf - 8, near.x + side * d)); e.gapDir = c.ringDir ? Math.sign(c.ringDir) : -side;
+      e.mode = 'ringTell'; e.modeT = WQ.ringTell; ev.push({ t: 'ringTell', gap: gapOf(e) });
+      c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE BONFIRE RING: FIND THE GAP', '#ff6b6b'); c.sound('floorTell'); return ev; }
+    if (e.tossCd <= 0 && near) { e.mode = 'tossTell'; e.modeT = WQ.tossTell; ev.push({ t: 'tossTell' });   /* (claude/fairfix3) THE WICKER BALL */
+      c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE WICKER BALL: STRIKE IT BACK', '#ff6b6b'); c.sound('lashTell'); return ev; }
     if (e.lashCd <= 0) { const kind = LASH_ORDER[(e.lashN++) % LASH_ORDER.length];
       e.mode = kind === 'low' ? 'lashLowTell' : 'lashHighTell'; e.modeT = WQ.lashTell; ev.push({ t: 'lashTell', kind });
       c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, kind === 'low' ? 'LOW: JUMP IT' : 'HIGH: DUCK IT', '#ff6b6b'); c.sound('lashTell'); return ev; }
     if (ph >= 2 && e.sweepCd <= 0) { const kind = SWEEP_ORDER[(e.sweepN++) % SWEEP_ORDER.length];   /* (claude/fairfix3) THE RIBBON SWEEP, phases 2 and 3 */
       e.mode = kind === 'low' ? 'sweepLowTell' : 'sweepHighTell'; e.modeT = WQ.sweepTell; ev.push({ t: 'sweepTell', kind });
       c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, kind === 'low' ? 'THE RIBBONS SWEEP LOW: JUMP TWICE' : 'THE RIBBONS SWEEP HIGH: DUCK', '#ff6b6b'); c.sound('lashTell'); return ev; }
-    if (!up && e.floorCd <= 0) { e.mode = 'floorTell'; e.modeT = WQ.floorTell; ev.push({ t: 'floorTell' });   /* (claude/fairfix4: the floor before the ball, so the ball's quicker turns do not crowd it out) */
-      c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE FLOOR BURNS: RIDE A HORSE', '#ff6b6b'); c.sound('floorTell'); return ev; }
-    if (e.tossCd <= 0 && near) { e.mode = 'tossTell'; e.modeT = WQ.tossTell; ev.push({ t: 'tossTell' });   /* (claude/fairfix3) THE WICKER BALL */
-      c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE WICKER BALL: STRIKE IT BACK', '#ff6b6b'); c.sound('lashTell'); return ev; }
-    if (!up && e.ringCd <= 0 && near) {   /* (claude/fairfix4) THE BONFIRE RING: the gap is put a good run from the nearest hero, on the side with the room */
-      const A = c.A, d = WQ.gapFrom[0] + ((e.n.ring * 53) % (WQ.gapFrom[1] - WQ.gapFrom[0])), side = (near.x - A.x0 > A.x1 - near.x) ? -1 : 1;
-      e.gapX = Math.max(A.x0 + WQ.gapHalf + 8, Math.min(A.x1 - WQ.gapHalf - 8, near.x + side * d)); e.gapDir = c.ringDir ? Math.sign(c.ringDir) : -side;
-      e.mode = 'ringTell'; e.modeT = WQ.ringTell; ev.push({ t: 'ringTell', gap: gapOf(e) });
-      c.number(e.x, e.y - 78, '!!', '#ff6b6b'); c.number(e.x, e.y - 68, 'THE BONFIRE RING: FIND THE GAP', '#ff6b6b'); c.sound('floorTell'); return ev; }
-    if (ph >= 2 && e.crownCd <= 0) {
-      if (e.fakes.length < (WQ.copies[ph - 1] || 0)) { e.mode = 'crownTell'; e.modeT = WQ.crownTell; ev.push({ t: 'crownTell' }); c.number(e.x, e.y - 78, 'THE CROWNING', '#e8c23a'); c.sound('crownTell'); return ev; }
-      e.crownCd = 2;   /* her copies all stand: she asks again in a moment */ }
   }
   /* (claude/fairfix3) HER LEAP: every back turned, and the nearest hero far off (or she is up on a perch with her time there done): she crouches to leap */
   if (near && !seen && !(e.rest > 0) && ((up && e.perchT <= 0) || (!up && e.leapCd <= 0 && dx >= WQ.leapMin))) {

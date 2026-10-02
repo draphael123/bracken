@@ -1146,10 +1146,12 @@ async function runbossLab(BK, opts) {
         let striking=false;
         if(!ride&&P.ground&&ballCome&&!highD&&!floorD&&!toGap){const ahead=(ballCome.x-P.x)*Math.sign(ballCome.x-P.x),held=f-(P.labSwingF??-999)>=48;
           if(held||ahead<60){striking=true;swing=null;gx=P.x;face=Math.sign(ballCome.x-P.x)||face;}   /* hold the blade and face it */
-          if(h==='pyro'&&ahead<26&&ahead>4&&!(P.labFlare>0)){k.down=true;P.labFlare=30;}   /* the ember flare */
-          else if(h!=='pyro'&&held&&ahead<28&&ahead>12&&P.atk<0){P.face=face;BK.press('atk');swings++;P.labSwingF=f;}}
+          /* a human's hand, not a machine's: where he begins the blow is his own for each ball (0-44 px off, deterministic - the row's dice are left alone); the window is 6-32 */
+          const tgt=ballCome.labTgt??(ballCome.labTgt=((ballCome.n||0)*37+h.length*11)%45);
+          if(!ballCome.labTried&&h==='pyro'&&ahead<=tgt&&!(P.labFlare>0)){k.down=true;P.labFlare=30;ballCome.labTried=true;}   /* the ember flare */
+          else if(!ballCome.labTried&&h!=='pyro'&&held&&ahead<=tgt&&P.atk<0){P.face=face;BK.press('atk');swings++;P.labSwingF=f;ballCome.labTried=true;}}
         if(P.labFlare>0)P.labFlare--;
-        if(!ride&&P.ground&&ballNear&&!(ballCome&&striking&&(ballNear.x-P.x)*P.face>4)){BK.press('jump');P.labJump=16;}   /* (claude/fairfix3) her wicker ball: over it (when he is not meeting it) */
+        if(!ride&&P.ground&&ballNear&&!(striking&&!ballNear.labTried)){BK.press('jump');P.labJump=16;}   /* (claude/fairfix3) her wicker ball: over it (when he is not meeting it, or his blow went wide) */
         if(!ride&&P.ground&&sweepK==='low'&&q.mode==='sweep'&&Math.abs(sFront-P.x)<34){BK.press('jump');P.labJump=16;}   /* her low sweep: over each pass */
         if(P.labJump>0){P.labJump--;k.jump=true;}
         const duck=!ride&&P.ground&&((lashK==='high'&&((q.mode==='lashHighTell'&&q.modeT<0.25)||(q.mode==='lash'&&front<dm+20)))||(thrK==='high'&&thrIn&&(!thrTell||q.modeT<0.3))||(sweepK==='high'&&q.mode==='sweep'&&Math.abs(sFront-P.x)<60));   /* (claude/fairfix3) and under her high sweep as each pass comes by */
