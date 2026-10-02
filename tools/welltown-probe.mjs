@@ -25,7 +25,7 @@ try {
   for(const pr of BK.props().filter(p=>p.t==='stray'&&!p.got)){BK.P.x=pr.x;BK.P.y=pr.y;BK.sim(3);}out.skins=BK.village().saved();
   tp(436,32);BK.press('talk');BK.sim(3);out.cistern={full:W().cistern.full,vault:W().vault.map(v=>v.open)};
   return out;})()`, 300000);
-  ok(r.loaded.wells === 8 && r.loaded.walls === 4 && r.loaded.fires === 3, 'the town as built: 7 wells and a jar, 4 mud walls, 3 fires ' + JSON.stringify(r.loaded));
+  ok(r.loaded.wells === 8 && r.loaded.walls === 5 && r.loaded.fires === 3, 'the town as built: 7 wells and a jar, 5 mud walls (the first lesson's postern, claude/welltown3), 3 fires ' + JSON.stringify(r.loaded));
   ok(r.fill === 3, 'E at a well fills the skin (3 sips)');
   ok(r.wall.open && r.wall.sips === 2, 'E facing a mud wall pours a sip on it: it gives way');
   ok(!r.stall.lit && r.stall.sips === 1, 'E facing a fire pours it out');

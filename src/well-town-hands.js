@@ -4,6 +4,7 @@
 // (the cutthroat's AI, src/desert-foes.js, with a cut that takes a sip and a run for a well). main.js calls: reset, update, interact, bucket,
 // thiefStep, stole, drawWorld, drawHud, read. Every teaching line goes through ctx.number with a line listed in src/hint-lines.js (the hint box).
 import { cutthroatStep } from './desert-foes.js';
+import * as WTP from './redraw/welltown_props.js';
 
 export const SKINMAX = 3, WELL_R = 24, POUR_R = 48, DRINK_AT = 0.2;
 export const BUCKET = { down: 80, up: 64 };                      /* px/s: the brake off, it runs down; wound, it comes up slower */
@@ -51,6 +52,17 @@ export function makeWellTownHands(ctx) {
 
   /* ---------- INTERACT (E): fill at a well, fill the dry cistern, pour on what is in front, or drink ---------- */
   const nearWell = (x, y) => WT.wells.find(w => Math.abs(w.x - x) <= WELL_R && Math.abs(w.y - y) <= 20);
+  /* WHAT A POUR WOULD LAND ON, in front of you: a mud wall, a fire, or a boss that takes water (ctx.pourables(): each { aim(P) -> {x, y} | null,
+     pour(P) -> truthy }). Its near face between your body and POUR_R ahead (a step or two short of it still reaches), and at your height */
+  const pourTarget = P => {
+    const face = P.face || 1;
+    const hits = m => { const gap = face > 0 ? m.x0 * 16 - P.x : P.x - (m.x1 + 1) * 16; return gap >= -10 && gap <= POUR_R && P.y > m.y0 * 16 && P.y - 14 <= (m.y1 + 1) * 16; };
+    const at = (kind, m) => ({ kind, m, x: face > 0 ? m.x0 * 16 + 3 : (m.x1 + 1) * 16 - 3, y: Math.max(m.y0 * 16 + 6, Math.min((m.y1 + 1) * 16 - 6, P.y - 12)) });
+    const wall = WT.walls.find(m => !m.open && hits(m)); if (wall) return at('wall', wall);
+    const f = WT.fires.find(m => m.lit && hits(m)); if (f) return at('fire', f);
+    for (const b of (ctx.pourables ? ctx.pourables() : [])) { const p = b && b.aim && b.aim(P); if (p) return { kind: 'boss', b, x: p.x, y: p.y }; }
+    return null;
+  };
   H.interact = pp => {
     if (!WT) return false; const P = pp, sk = skinOf(P); sk.max = maxOf(P);
     const w = nearWell(P.x, P.y);
@@ -69,18 +81,16 @@ export function makeWellTownHands(ctx) {
       return true; }
     if (sk.sips <= 0) { ctx.number(P.x, P.y - 30, 'YOUR SKIN IS EMPTY: FILL IT AT A WELL', '#ff9a5c'); ctx.sfx.buzz && ctx.sfx.buzz(); return true; }
     /* POUR: in front of you, the nearest thing water changes */
-    const face = P.face || 1;
-    /* in front of you: its near face between your body and POUR_R ahead (a step or two short of it still reaches), and at your height */
-    const hits = m => { const gap = face > 0 ? m.x0 * 16 - P.x : P.x - (m.x1 + 1) * 16; return gap >= -10 && gap <= POUR_R && P.y > m.y0 * 16 && P.y - 14 <= (m.y1 + 1) * 16; };
-    const wall = WT.walls.find(m => !m.open && hits(m));
+    const face = P.face || 1, t = pourTarget(P);
+    const wall = t && t.kind === 'wall' ? t.m : null;
     if (wall) { sk.sips--; WT.n.pours++; WT.n.walls++; wall.open = true; for (const [x, y] of cellsOf(wall)) ctx.cellOpen(x, y);
       ctx.sfx.splash && ctx.sfx.splash(); ctx.dust(wall.x0 * 16 + 8, (wall.y1 + 1) * 16, 10); ctx.burst(wall.x0 * 16 + 8, wall.y0 * 16 + 20, 12, ['#7a5a3a', '#4e3622', '#7ab8e8'], 60, 0.6);
       ctx.number(P.x, P.y - 30, 'THE MUD GIVES WAY', '#8fd160'); return true; }
-    const f = WT.fires.find(m => m.lit && hits(m));
+    const f = t && t.kind === 'fire' ? t.m : null;
     if (f) { sk.sips--; WT.n.pours++; WT.n.fires++; f.lit = false; for (const [x, y] of cellsOf(f)) ctx.cellOpen(x, y);
       ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(f.x0 * 16 + 8, f.y0 * 16 + 10, 16, ['#e8f4f8', '#9aa39a', '#7ab8e8'], 50, 0.9);
       ctx.number(P.x, P.y - 30, 'THE FIRE IS OUT - GO', '#8fd160'); return true; }
-    const k = ctx.king && ctx.king.pour(P);
+    const k = t && t.kind === 'boss' ? t.b.pour(P) : (ctx.king && ctx.king.pour(P));
     if (k) { sk.sips--; WT.n.pours++; ctx.burst(P.x + face * 24, P.y - 16, 10, ['#7ab8e8', '#e8f4f8'], 60, 0.5); return true; }
     /* nothing to pour on: DRINK, when the sun is on you (a sip spent on nothing is not taken) */
     if (P.sun && P.sun.v > DRINK_AT) { sk.sips--; WT.n.drinks++; P.sun.v = 0; P.sun.tick = 0.7; P.sun.n = 0; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(P.x, P.y - 18, 6, ['#7ab8e8', '#e8f4f8'], 30, 0.4); ctx.number(P.x, P.y - 30, 'THE SUN LETS GO OF YOU', '#7ab8e8'); return true; }
@@ -149,48 +159,63 @@ export function makeWellTownHands(ctx) {
     sk.sips--; e.st.carry = 1; e.st.from = pp; e.st.mode = 'flee'; e.st.t = THIEF.runT; e.st.face = Math.sign(e.x - pp.x) || 1; if (WT) { WT.n.stolen++; WT.carriers.add(e); }
     ctx.burst(pp.x, pp.y - 14, 6, ['#7ab8e8', '#e8f4f8'], 60, 0.5); ctx.number(pp.x, pp.y - 30, 'HE CUT YOUR SKIN: CATCH HIM', '#ff9a5c'); };
 
-  /* ---------- DRAWING (greybox) ---------- */
+  /* ---------- WHAT E DOES NOW (no side effects): the HUD's live verb, the pour marker and the pour-arc read it (claude/welltown3: WELL CLARITY) ---------- */
+  H.verbNow = pp => {
+    if (!WT || !pp) return null; const P = pp, sk = skinOf(P); sk.max = maxOf(P);
+    const w = nearWell(P.x, P.y);
+    if (w && w.deep && !w.up && sk.sips < sk.max) return { verb: 'WIND' };
+    if (w && w.jar) { if (w.left > 0 && sk.sips < sk.max) return { verb: 'FILL' }; }
+    else if (w && sk.sips < sk.max) return { verb: 'FILL' };
+    const c = WT.cistern; if (c && !c.full && Math.abs(c.x - P.x) <= WELL_R && Math.abs(c.y - P.y) <= 20) return { verb: 'POUR IN' };
+    if (sk.sips <= 0) return { verb: 'EMPTY' };
+    const t = pourTarget(P); if (t) return { verb: 'POUR', target: t };
+    if (P.sun && P.sun.v > DRINK_AT) return { verb: 'DRINK' };
+    return null;
+  };
+
+  /* ---------- DRAWING: src/redraw/welltown_props.js draws each thing; this says where, and what state it is in ---------- */
   H.drawWorld = (g, cx, cy, time) => {
     if (!WT) return; const R = Math.round, vw = ctx.VW();
     const on = x => x > cx - 40 && x < cx + vw + 40;
-    /* THE WELLS: the only blue in the town */
-    const Pd = ctx.hero(), skd = Pd && skinOf(Pd);
+    const Pd = ctx.hero(), skd = Pd && skinOf(Pd), carry = !!skd && skd.sips > 0, room = !!skd && skd.sips < (skd.max || SKINMAX);
+    /* THE WELLS: the only blue in the town. A well that can fill your skin now GLINTS (a white star on its water) */
     for (const w of WT.wells) { if (!on(w.x)) continue; const x = R(w.x - cx), y = R(w.y - cy);
-      if (w.jar) { g.fillStyle = '#a8603a'; g.fillRect(x - 4, y - 12, 8, 12); g.fillRect(x - 2, y - 15, 4, 3); g.fillStyle = w.left > 0 ? '#3a7ab8' : '#5a3a22'; g.fillRect(x - 2, y - 14, 4, 1);   /* A WATER JAR (greybox): blue at the lip while there is a sip in it */
-        if (w.left > 0 && skd && skd.sips < (skd.max || SKINMAX) && Math.abs(Pd.x - w.x) < WELL_R + 24 && Math.abs(Pd.y - w.y) < 28) ctx.text('E', x, y - 24, '#e8f4f8', 'center', 6); continue; }
-      /* E OVER A WELL while the skin is not full and you stand by it (as doors and shops say E); a deep well's bucket rope while it winds */
-      if (skd && skd.sips < (skd.max || SKINMAX) && Math.abs(Pd.x - w.x) < WELL_R + 24 && Math.abs(Pd.y - w.y) < 28) ctx.text(w.deep && !w.up ? 'E  WIND' : 'E', x, y - 34 - Math.round(Math.abs(Math.sin(time * 3))), '#e8f4f8', 'center', 6);
-      if (w.deep) { const k = w.up ? 1 : w.wind > 0 ? 1 - w.wind / DEEP.wind : 0; g.fillStyle = '#c9b27c'; g.fillRect(x - 1, y - 22, 1, 10); if (k > 0) { g.fillStyle = '#6a4426'; g.fillRect(x - 4, R(y - 8 - 6 * k), 8, 4); } }
-      g.fillStyle = '#d8ccb0'; g.fillRect(x - 10, y - 9, 20, 9); g.fillStyle = '#a89878'; g.fillRect(x - 10, y - 9, 20, 2); g.fillStyle = '#3a7ab8'; g.fillRect(x - 8, y - 8, 16, 3);
-      g.fillStyle = '#7ab8e8'; g.fillRect(x - 6 + (Math.floor(time * 2) % 3), y - 8, 3, 1); g.fillStyle = '#6a4426'; g.fillRect(x - 10, y - 22, 2, 13); g.fillRect(x + 8, y - 22, 2, 13); g.fillRect(x - 11, y - 23, 22, 2); }
-    /* THE MUD WALLS: dark brown, cracked where the water would take them; opened, a heap of mud on the floor */
-    for (const m of WT.walls) { const x = R(m.x0 * 16 - cx), y = R(m.y0 * 16 - cy), w = (m.x1 - m.x0 + 1) * 16, h = (m.y1 - m.y0 + 1) * 16; if (!on(m.x0 * 16)) continue;
-      if (!m.open) { g.fillStyle = '#5e3a1c'; g.fillRect(x, y, w, h); g.fillStyle = '#3a2410'; for (let k = 0; k < h; k += 7) g.fillRect(x + 2 + (k % 5), y + k + 3, w - 5, 1); g.fillStyle = '#2a1a0a'; g.fillRect(x + w / 2 - 1, y + 2, 1, h - 4); g.fillRect(x + 3, y + h / 2, w - 6, 1); }
-      else { g.fillStyle = '#5e3a1c'; g.fillRect(x - 2, y + h - 4, w + 4, 4); } }
-    /* THE FIRES: flames over a burning barricade; out, charred timber */
+      const fillable = room && (w.jar ? w.left > 0 : !(w.deep && !w.up));
+      WTP.drawWell(g, x, y, { deep: w.deep, up: w.up, wind: w.wind > 0 ? 1 - w.wind / DEEP.wind : 0, jar: !!w.jar, left: w.left, glint: fillable ? 1 : 0 }, time);
+      if (fillable) { const ph = (time * 1.4 + w.x * 0.01) % 1, gx = x - 5 + Math.floor((w.x * 7) % 9), gy = y - (w.jar ? 15 : 8); if (ph < 0.35) { const k = ph < 0.18 ? 2 : 1; g.fillStyle = '#ffffff'; g.fillRect(gx, gy - k, 1, 2 * k + 1); g.fillRect(gx - k, gy, 2 * k + 1, 1); } }
+      /* E over it while you stand by it and it can give (as doors and shops say E); a deep well that is down says WIND */
+      if (skd && room && Math.abs(Pd.x - w.x) < WELL_R + 24 && Math.abs(Pd.y - w.y) < 28) { if (w.jar ? w.left > 0 : true) ctx.text(w.deep && !w.up ? 'E  WIND' : 'E', x, y - (w.jar ? 24 : 34) - Math.round(Math.abs(Math.sin(time * 3))), '#e8f4f8', 'center', 6); } }
+    /* THE MUD WALLS and THE FIRES: cracked and smouldering; while you carry water the near ones say so (a POUR marker over them) */
+    const near = m => Pd && Math.abs((m.x0 + m.x1 + 1) * 8 - Pd.x) < 150 && Math.abs((m.y1 + 1) * 16 - Pd.y) < 80;
+    const marker = (mx, my) => { const b = Math.round(Math.sin(time * 4) * 2), x = R(mx - cx), y = R(my - cy) + b; g.fillStyle = '#3a7ab8'; g.fillRect(x - 2, y - 2, 5, 5); g.fillRect(x - 1, y - 4, 3, 2); g.fillRect(x, y - 5, 1, 1); g.fillStyle = '#e8f4f8'; g.fillRect(x - 1, y - 1, 1, 2);
+      ctx.text('POUR', x, y - 13, '#7ab8e8', 'center', 6); };
+    for (const m of WT.walls) { if (!on(m.x0 * 16)) continue; const x = R(m.x0 * 16 - cx), y = R(m.y0 * 16 - cy), w = (m.x1 - m.x0 + 1) * 16, h = (m.y1 - m.y0 + 1) * 16;
+      const wet = !m.open && carry && near(m) ? 1 : 0; WTP.drawMudWall(g, x, y, w, h, { open: m.open, wet }, time); if (wet) marker((m.x0 + m.x1 + 1) * 8, m.y0 * 16 - 10); }
     for (const f of WT.fires) { if (!on(f.x0 * 16)) continue; const x = R(f.x0 * 16 - cx), y = R(f.y0 * 16 - cy), h = (f.y1 - f.y0 + 1) * 16;
-      g.fillStyle = f.lit ? '#5a3a1a' : '#2a2018'; g.fillRect(x + 3, y, 10, h);
-      if (f.lit) for (let k = 0; k < h; k += 6) { const fl = Math.sin(time * 14 + k) * 2; g.fillStyle = k % 12 ? '#ff9a3c' : '#ffd36b'; g.fillRect(x + 1 + fl, y + k, 14, 5); g.fillStyle = '#d84a14'; g.fillRect(x + 4 - fl, y + k + 2, 8, 3); } }
-    /* THE WINDLASSES and the rope down to the bucket */
+      const wet = f.lit && carry && near(f) ? 1 : 0; WTP.drawFire(g, x, y, h, { lit: f.lit, wet }, time); if (wet) marker((f.x0 + f.x1 + 1) * 8, f.y0 * 16 - 10); }
+    /* THE WINDLASSES and the great well's bucket and rope */
     const m = ctx.movers().find(q => q.windlass);
-    for (const w of WT.windlasses) { if (!on(w.x)) continue; const x = R(w.x - cx), y = R(w.y - cy);
-      g.fillStyle = '#6a4426'; g.fillRect(x - 7, y - 18, 2, 18); g.fillRect(x + 5, y - 18, 2, 18); g.fillStyle = '#8a5a32'; g.fillRect(x - 6, y - 16, 12, 6); g.fillStyle = '#c9b27c'; g.fillRect(x - 6, y - 14, 12, 2);
-      g.fillStyle = '#3a2a1a'; g.fillRect(x + 6, y - 13, 5, 2); }
-    if (m && on(m.x)) { const top = WT.windlasses.find(w => w.top); const x = R(m.x - cx), y = R(m.y - cy);
-      if (top) { g.fillStyle = '#c9b27c'; g.fillRect(x + 15, R(top.y - 14 - cy), 1, Math.max(0, y - R(top.y - 14 - cy))); }
-      g.fillStyle = '#6a4426'; g.fillRect(x, y, m.w, 6); g.fillStyle = '#8a5a32'; g.fillRect(x + 1, y + 1, m.w - 2, 2); g.fillStyle = '#3a7ab8'; g.fillRect(x + 4, y + 4, m.w - 8, 1); }
-    /* THE DRY CISTERN: a stone basin, blue when it is full; THE VAULT's door while it is shut */
-    const c = WT.cistern; if (c && on(c.x)) { const x = R(c.x - cx), y = R(c.y - cy); g.fillStyle = '#b8a888'; g.fillRect(x - 14, y - 10, 28, 10); g.fillStyle = c.full ? '#3a7ab8' : '#6a5a40'; g.fillRect(x - 12, y - 9, 24, 4);
-      if (!c.full) { g.fillStyle = '#7ab8e8'; for (let i = 0; i < ctx.questGot(); i++) g.fillRect(x - 10 + i * 6, y - 15, 4, 3); } }
-    for (const v of WT.vault) if (!v.open && on(v.x0 * 16)) { const x = R(v.x0 * 16 - cx), y = R(v.y0 * 16 - cy), h = (v.y1 - v.y0 + 1) * 16; g.fillStyle = '#8a7a5a'; g.fillRect(x, y, 16, h); g.fillStyle = '#c9962a'; g.fillRect(x + 6, y + h / 2 - 3, 4, 6); }
+    for (const w of WT.windlasses) { if (!on(w.x)) continue; WTP.drawWindlass(g, R(w.x - cx), R(w.y - cy), { top: w.top, deep: w.deep, struck: Math.max(0, w.cd / 0.8) }, time); }
+    if (m && on(m.x)) { const top = WT.windlasses.find(w => w.top); WTP.drawBucket(g, R(m.x - cx), R(m.y - cy), m.w, top ? R(top.y - 14 - cy) : null); }
+    /* THE DRY CISTERN and its vault */
+    const c = WT.cistern; if (c && on(c.x)) WTP.drawCistern(g, R(c.x - cx), R(c.y - cy), { full: c.full, got: ctx.questGot() });
+    for (const v of WT.vault) if (!v.open && on(v.x0 * 16)) WTP.drawVaultDoor(g, R(v.x0 * 16 - cx), R(v.y0 * 16 - cy), (v.y1 - v.y0 + 1) * 16);
     /* A THIEF RUNNING WITH YOUR SIP: a blue drop over him */
     for (const e of ctx.enemies()) if (e.alive && e.t === 'waterthief' && e.st && e.st.carry && on(e.x)) { const x = R(e.x - cx), y = R(e.y - (e.h || 18) - 12 - cy) + Math.round(Math.sin(time * 8) * 1.5); g.fillStyle = '#7ab8e8'; g.fillRect(x - 2, y, 4, 4); g.fillRect(x - 1, y - 2, 2, 2); }
+    /* THE POUR ARC: where a pour would land, dotted from your hand, while there is something in front of you to pour on */
+    const v = Pd && !Pd.dead && H.verbNow(Pd);
+    if (v && v.verb === 'POUR' && v.target) { const x0 = Pd.x + (Pd.face || 1) * 6, y0 = Pd.y - 16, x1 = v.target.x, y1 = v.target.y, n = 9, ph = (time * 3) % 1;
+      for (let i = 0; i <= n; i++) { const k = (i + ph) / (n + 1), xx = x0 + (x1 - x0) * k, yy = y0 + (y1 - y0) * k - Math.sin(k * Math.PI) * 14; g.fillStyle = i % 2 ? '#7ab8e8' : '#e8f4f8'; g.fillRect(R(xx - cx), R(yy - cy), 2, 2); }
+      g.fillStyle = 'rgba(122,184,232,0.45)'; g.fillRect(R(x1 - cx) - 5, R(y1 - cy) - 1, 10, 3); }
   };
-  /* THE SKIN on the HUD, under the sun meter: a drop a sip */
+  /* THE SKIN on the HUD, under the sun meter: a drop a sip, and what E does now (FILL, POUR, DRINK; a deep well's bucket says WIND) */
+  const VERB_COL = { FILL: '#e8f4f8', 'POUR IN': '#8fd160', POUR: '#8fd160', DRINK: '#7ab8e8', WIND: '#ffd36b', EMPTY: '#ff9a5c' };
   H.drawHud = (g, P) => {
     if (!WT || !P) return; const sk = skinOf(P), x = 22, y = 64;
     ctx.text('SKIN', x - 12, y + 2, '#7ab8e8', 'left', 6);
     for (let i = 0; i < (sk.max || SKINMAX); i++) { const dx = x + 12 + i * 8; g.fillStyle = 'rgba(20,20,40,0.6)'; g.fillRect(dx - 1, y - 1, 7, 8); g.fillStyle = i < sk.sips ? '#3a7ab8' : '#1a2430'; g.fillRect(dx, y, 5, 6); if (i < sk.sips) { g.fillStyle = '#7ab8e8'; g.fillRect(dx + 1, y + 1, 2, 2); } }
+    const v = !P.dead && H.verbNow(P);
+    if (v) ctx.text(v.verb === 'EMPTY' ? 'FILL AT A WELL' : v.verb === 'WIND' ? 'STRIKE THE WINDLASS' : 'E: ' + v.verb, x + 12 + (sk.max || SKINMAX) * 8 + 3, y + 2, VERB_COL[v.verb] || '#e8f4f8', 'left', 6);
   };
   H.read = () => WT && { n: { ...WT.n }, walls: WT.walls.map(m => m.open), fires: WT.fires.map(f => f.lit), cistern: WT.cistern && WT.cistern.full, vault: WT.vault.map(v => v.open), sips: skinOf(ctx.hero()).sips };
   return H;

@@ -78,6 +78,8 @@ export function buildWellTown({ painter, T, TS }) {
   block(0, 1, 0, H - 1);
   sign(6, S - 1, 'THE WELL TOWN. FILL YOUR SKIN AT A WELL. POUR IT ON MUD.');
   well(11, S - 1);                                                            /* THE FIRST WELL: out in the sun, before anything asks for water */
+  mudDoor(14, 14, 18, S);                                                     /* THE FIRST LESSON (claude/welltown3, WELL CLARITY): a postern in the town's outer wall, bricked with mud, three steps from the first well
+                                                                                 and out of every bowman's sight - fill, then pour, with nothing watching (required: the only way in) */
   set(16, S - 1, SLOPE.R2A); set(17, S - 1, SLOPE.R2B); ground(18, 25, S - 1);   /* a dune ramp up to the gate */
   set(26, S - 2, SLOPE.R2A); set(27, S - 2, SLOPE.R2B); ground(28, 43, S - 2);
   /* THE GATEHOUSE: the town wall's mass over a passage three rows high (its shade), bowmen on its top, a ladder up its town face */
