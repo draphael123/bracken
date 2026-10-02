@@ -16,7 +16,7 @@
 // THE BASKETS: a water-wheel by the channel winds a basket up its shaft while the water runs past it - the flood is the only lift up a sheer face.
 //
 // THE THEMED KEY: four RAPTOR FEATHERS in the gorge's nests (the quest, L.quest). Laid in THE OLD NEST (E at it) high on the summit's west wall,
-// they open its vault: the relic (THE RAPTOR'S PLUME: the flood pushes you half as hard) and a silver. The HUD counts them (FEATHERS n/4).
+// they open its vault: a silver (the relic once planned here is cut: Daniel 10-02). The HUD counts them (FEATHERS n/4).
 //
 // SIX SECTIONS (rows; the gorge floor is row 166, the plateau row 22; the climbing side alternates):
 //   142-166  THE GORGE MOUTH      TEACH the flood     you start on the east floor; the channel crosses the floor: the first horn, the first
@@ -164,7 +164,7 @@ export function buildRedGorge({ painter, T, TS }) {
   ent('oldnest', 13, 31); decor.push({ kind: 'nest', x: 15, y: 31 });
   block(3, 9, 25, 26); block(9, 9, 27, 31); vaultDoors.push({ x0: 9, x1: 9, y0: 27, y1: 31 });   /* the vault door: woven branches, five rows */
   air(3, 8, 27, 31); interiors.push([3, 8, 27, 31, 'rgNest']);
-  ent('relic', 5, 31, { kind: 'plume' }); ent('silver', 7, 31);
+  ent('silver', 6, 31);   /* the vault pays ONE SILVER (Daniel 10-02: relics are cut game-wide; THE RAPTOR'S PLUME is gone) */
   /* THE SUMMIT SHELF and the way out east into the old dam */
   block(38, 44, 22, 23); ent('check', 42, 21);                                /* CHECKPOINT TWO: at the dam's door */
   air(45, 48, 19, 21);                                                        /* the cut through the east wall */
@@ -194,11 +194,11 @@ export function buildRedGorge({ painter, T, TS }) {
     checkRun: 200,                  /* two checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */
     /* WHAT EACH THING OPENS, and the line that says so (tools/level-quality.mjs `unlocks`; the lines are src/hint-lines.js callouts the hands say) */
     unlocks: [
-      { kind: 'stray', opens: "THE OLD NEST's vault (THE RAPTOR'S PLUME and a silver) once all four feathers are laid in it", hud: 'FEATHERS n/4 (the quest counter); at the nest: THE OLD NEST WANTS FOUR FEATHERS' },
+      { kind: 'stray', opens: "THE OLD NEST's vault (a silver) once all four feathers are laid in it", hud: 'FEATHERS n/4 (the quest counter); at the nest: THE OLD NEST WANTS FOUR FEATHERS' },
       { kind: 'sluice', opens: 'its gate: shut, it holds the next flood (a dry crossing); held, E releases it (a burst that washes a jam out, and throws the crab)', hud: 'THE GATE IS SHUT: IT HOLDS THE NEXT FLOOD' },
       { kind: 'jam', opens: 'the bridge it seals (a released burst washes it out)', hud: 'A JAM: ONLY A RELEASED BURST MOVES IT' },
       { kind: 'waterwheel', opens: 'its basket up the sheer face while the water runs', hud: 'THE WHEEL TURNS WHEN THE WATER RUNS' },
-      { kind: 'oldnest', opens: "THE OLD NEST's vault: THE RAPTOR'S PLUME and a silver", hud: 'THE OLD NEST OPENS' },
+      { kind: 'oldnest', opens: "THE OLD NEST's vault (a silver)", hud: 'THE OLD NEST OPENS' },
     ],
     music: 'caravan',   /* TODO(Daniel picks the track): a PLACEHOLDER, THE SUNKEN CARAVAN's track borrowed until the gorge has its own CC0/CC-BY file (tools/level-quality.mjs REPORT_ONLY lists the borrow). Nothing was downloaded */
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],

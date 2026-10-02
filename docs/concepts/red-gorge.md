@@ -11,7 +11,7 @@ desert-arc concept of 2026-10-01, which wins where the two differ. The greybox i
 - RANGED: one RESKINNED shooter per level from a proven ranged AI, placed to hit you while you handle the level's rule. For L3 that means
   **bandit slingers on the gorge ledges**.
 - NEW FOES: at most ONE new type per level. The gorge's signature is the **raptor**. The rest are reskins of proven AIs. Role mix >= 3.
-- COLLECTIBLES UNLOCK, with a themed key per level and a HUD line that says what it opens. Each vault holds a relic and a silver. For L3:
+- COLLECTIBLES UNLOCK, with a themed key per level and a HUD line that says what it opens. Each vault holds a silver (relics cut 10-02). For L3:
   **feathers -> the nest vault**.
 - MUSIC: a unique downloaded CC0 track per level (Daniel gives the go before each download, all in one batch). Bosses get synth themes composed in code.
 - BOSSES: one per level, NO MINIS. L3 gets a **NEW GROUND BOSS (not the Roc - THE SKY ROAD KEEPS THE ROC) tied to the flood**, "e.g. a giant
@@ -62,8 +62,8 @@ desert-arc concept of 2026-10-01, which wins where the two differ. The greybox i
     SET PIECE     THE JAM. Agency: you choose when to shut its gate and when to release, under the jam-lip slinger. The burst also takes
                   any bandit on the bridge. Nothing moves the jam but your release.
     COLLECTIBLES  four RAPTOR FEATHERS (the falls' west nest, the nest pocket under bridge three, the Cave of Hands, the narrows' east
-                  shelf). The HUD counts them (FEATHERS n/4). Laid in THE OLD NEST (E), they open its vault: the relic THE RAPTOR'S
-                  PLUME (the flood pushes you half as hard and hurts half as much) and a silver.
+                  shelf). The HUD counts them (FEATHERS n/4). Laid in THE OLD NEST (E), they open its vault: a silver (THE RAPTOR'S
+                  PLUME relic is CUT: Daniel 10-02, relics are cut game-wide; the four-feather vault pays ONE SILVER).
                   Silvers: the mouth basket's ledge, the Cave of Hands, the vault.
     BOSS          THE GREAT RED CRAB, on the old dam's plateau east of the summit. The old spillway's channel runs through it, its
                   gate high in the back cliff, a wheel each side.
@@ -81,7 +81,7 @@ desert-arc concept of 2026-10-01, which wins where the two differ. The greybox i
     BACKDROP      the caravan's desert sky and mesas for now. The art lane gives it red-rock walls in strata, the channel's scoured pale
                   rock, the flotsam, the rope bridges, nests on the outer shelves, the Cave of Hands' painted hands, and the old dam.
     SIZE / RULES  96 x 170 (the gorge is 48 wide; the plateau east of its head). Six sections. The whole gorge is in the canyon's shadow
-                  (no sun damage: a shade plan from the start). Two checkpoints (the terrace, the dam's door). Three silvers and a relic.
+                  (no sun damage: a shade plan from the start). Two checkpoints (the terrace, the dam's door). Three silvers (no relic: cut 10-02).
                   No mini. Its own checks: tools/redgorge.mjs (node) and tools/redgorge-probe.mjs (page). The boss pilot is
                   tools/redgorge-pilot.mjs. level-quality gates it.
     PROCESS       concept (this page) -> Opus greybox (claude/redgorge) -> reviewer against THE MAGE'S FOLLY -> fixes -> Sonnet art and

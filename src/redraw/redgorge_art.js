@@ -3,7 +3,7 @@
 // column, ay = the row under the feet, w/h = the hit box.
 //   bakeRaptor(v)      THE CLIFF RAPTOR - the vulture's frames (src/redraw/desert_foes.js) dyed the gorge's rust and cream (its frames are the vulture's)
 //   bakeGorgeCrab()    THE GREAT RED CRAB - a crab as wide as a cart, red shell, two great claws (CRAB_F names the frames)
-//   bakeFeatherIcon()  a raptor's feather (the level's four quest pickups)      bakePlumeIcon()  THE RAPTOR'S PLUME (the old nest's relic)
+//   bakeFeatherIcon()  a raptor's feather (the level's four quest pickups)
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten, rgb, hex } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -62,4 +62,3 @@ export function bakeGorgeCrab() {
 
 /* ---------- ICONS ---------- */
 export function bakeFeatherIcon() { const [c, g] = canvas(10, 14); line(g, 2, 13, 7, 1, '#e8dcc0'); for (let i = 0; i < 6; i++) { line(g, 3 + i, 11 - i * 2, 1 + i, 9 - i * 2, '#c8643a'); line(g, 3 + i, 11 - i * 2, 6 + i * 0.5, 11 - i * 2, '#7a2e1c'); } px(g, 7, 1, '#f0dcb8'); outline(c, OUT); return c; }
-export function bakePlumeIcon() { const [c, g] = canvas(12, 14); for (let k = 0; k < 3; k++) { line(g, 3 + k * 3, 13, 4 + k * 3, 2, '#e8dcc0'); for (let i = 0; i < 4; i++) px(g, 3 + k * 3 + (i % 2 ? 1 : -1), 4 + i * 2, k === 1 ? '#e0603c' : '#c8643a'); } rect(g, 2, 12, 9, 2, '#c9962a'); outline(c, OUT); return c; }

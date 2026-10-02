@@ -4,7 +4,7 @@
 //     two seconds are a dozen tiles at a run. The two ROPES IN THE CHANNEL (the falls', the narrows') are the deliberate races, and each has a gate over
 //     it that holds a flood off it
 //   - EVERY MECHANIC IS REQUIRED (a real jump: three rows up, four across, a mantle as the reach model has it): with THE JAM in place the old dam cannot
-//     be reached, and washed out it can; without either BASKET the dam cannot be reached; THE OLD NEST's vault holds the relic until it is opened
+//     be reached, and washed out it can; without either BASKET the dam cannot be reached; THE OLD NEST's vault holds its silver until it is opened
 //   - every gate has a wheel the hero reaches before he needs it, and it sits ABOVE what it holds dry (the falls' rope, the jam, the narrows' rope)
 //   - every feather can be got; the old nest can be reached; two checkpoints, the last at the dam's door; the falls' keeper holds his gate
 //   - THE GREAT RED CRAB (src/gorge-crab.js, pure): two minutes of him with nothing released never opens him; a burst on him in the channel opens him for
@@ -54,10 +54,11 @@ for (const id of ['ledges', 'narrows']) { const Lb = lv.build(); Lb.moversExtra 
 { const nar = L.gates.find(q => q.id === 'narrows'), rope = ropes.find(r => r.y0 < 70); const ws = L.ents.filter(e => e.t === 'sluice' && e.gate === 'narrows');
   ok(nar && rope && nar.row < rope.y0 && ws.length === 2 && ws.some(w => w.y >= 69) && ws.some(w => w.y <= 61), 'THE NARROWS: its gate over the rope, a wheel at the basket\'s foot and one at its top (the exam: ride on a flood, hold the next)'); }
 /* THE OLD NEST and its vault */
-{ const relic = L.ents.find(e => e.t === 'relic'), nest = L.ents.find(e => e.t === 'oldnest'), Ls = lv.build(); Ls.redgorge = false;
+{ const vx = L.vaultDoors[0], relic = L.ents.find(e => e.t === 'silver' && e.x < vx.x0 && e.y >= vx.y0 && e.y <= vx.y1), nest = L.ents.find(e => e.t === 'oldnest'), Ls = lv.build(); Ls.redgorge = false;
+  ok(!L.ents.some(e => e.t === 'relic'), 'no relic in the gorge (Daniel 10-02: relics are cut; the vault pays a silver)');
   const Ln = lv.build(); for (const k of [...Ln.jams]) for (let y = k.y0; y <= k.y1; y++) for (let x = k.x0; x <= k.x1; x++) Ln.grid[y * Ln.W + x] = T.AIR; Ln.redgorge = false;   /* the jam washed, the vault still shut */
   const Rn = floodReach(Ln, T, real);
-  ok(relic && !Rn.seen.has(relic.x + ',' + relic.y) && open.R.seen.has(relic.x + ',' + relic.y), 'the relic is behind THE OLD NEST\'s vault door until four feathers open it');
+  ok(relic && !Rn.seen.has(relic.x + ',' + relic.y) && open.R.seen.has(relic.x + ',' + relic.y), 'the vault\'s SILVER is behind THE OLD NEST\'s woven door until four feathers open it');
   ok(nest && open.R.seen.has(nest.x + ',' + nest.y), 'the old nest itself can be reached'); }
 const feathers = L.ents.filter(e => e.t === 'stray' && e.kind === 'feather');
 ok(feathers.length === 4 && feathers.every(f => open.R.seen.has(f.x + ',' + f.y)) && new Set(feathers.map(f => f.x)).size === 4, 'four feathers, each one can be got (and no two share a column: the quest counts them by column)');

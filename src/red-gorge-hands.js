@@ -107,7 +107,7 @@ export function makeRedGorgeHands(ctx) {
     for (const w of RG.wheelsW) { const b = ctx.movers().find(m => m.gorge === w.basket); if (b && running('gorge', b.wheelRow)) w.a += dt * 9; }
     /* THE TORRENT ON THE HEROES: once a flood, a blow and down through the bridge; while in it, pushed down and out to the nearer bank */
     for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead) return;
-      const s = wetAt(P.x, P.y - 8); if (!s) return; const c = chOf(s.ch), k = pp.relic === 'plume' ? 0.5 : 1;
+      const s = wetAt(P.x, P.y - 8); if (!s) return; const c = chOf(s.ch), k = 1;
       if (pp.rgSwept !== s.id) { pp.rgSwept = s.id; RG.n.swept++; P.climb = false; if (c.id === 'gorge') P.drop = Math.max(P.drop || 0, 0.3);
         ctx.hurtHero(P.x, Math.round((c.id === 'dam' ? GORGE.damDmg : GORGE.dmg) * k), { unblockable: true, noKnock: true, name: s.kind === 'burst' ? 'THE BURST' : 'THE FLOOD' });
         ctx.burst(P.x, P.y - 10, 10, ['#7ab8e8', '#e8f4f8'], 80, 0.5); (RG.said['swept'] ? 0 : (RG.said['swept'] = 1, ctx.number(P.x, P.y - 34, 'THE FLOOD TAKES YOU', '#ff9a5c'))); }
