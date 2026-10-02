@@ -32,7 +32,8 @@ for (const lv of LEVELS) {
     if (band && !band.spots && !has) { bare.push(lv.id + ' ' + (s + 1)); continue; }
     if (!has) bad.push(lv.id + ': section ' + (s + 1) + ' (' + (tall ? 'rows ' : 'columns ') + s * size + '-' + ((s + 1) * size - 1) + ') has no designed encounter (no squad ent)');
   }
-  for (const n of names) { const m = sq.filter(e => e.squad === n); if (new Set(m.map(e => e.y)).size > 1) bad.push(lv.id + ': squad ' + n + ' is not on one floor'); if (m.some(e => e.garrison)) bad.push(lv.id + ': squad ' + n + ' carries garrison:true (it is sprinkled, not designed)'); }
+  /* A FLYMAN is exempt from the one-floor test (claude/theatre3, A PINCER: a rigging-gallery thrower stands on the loading gallery ON PURPOSE, above the floor squad he belongs to; his ledge is the design, and moving him to its own squad would count him as a second encounter against the density bar). Every other member of the squad still has to share one floor. */
+  for (const n of names) { const m = sq.filter(e => e.squad === n); if (new Set(m.filter(e => !e.flyman).map(e => e.y)).size > 1) bad.push(lv.id + ': squad ' + n + ' is not on one floor'); if (m.some(e => e.garrison)) bad.push(lv.id + ': squad ' + n + ' carries garrison:true (it is sprinkled, not designed)'); }
   if (sp.some(e => e.t === 'topiary')) bad.push(lv.id + ': sprinkled topiary (the maze is gone)');
   rows.push([lv.id, sp.length, sq.length, names.size, worst, screens.toFixed(1)]);
 }
