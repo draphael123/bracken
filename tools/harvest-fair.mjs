@@ -262,11 +262,12 @@ if (fair) {
     ok(lp.length >= 16, 'the fair has ' + lp.length + ' lamps'); ok(at(0, 118).every(l => l.life === 1), 'a lamp is out or guttering at the GATE (sunset)');
     ok(share(at(374, 640)) > share(at(0, 246)) + 0.3, 'the lamps do not go out along the way: ' + share(at(0, 246)).toFixed(2) + ' out early, ' + share(at(374, 640)).toFixed(2) + ' late');
     ok(lp.some(l => l.life > 0 && l.life < 1), 'no lamp is guttering'); ok(lp.every(l => l.x > 0 && l.x < L.W), 'a lamp stands off the map'); }
-  // THE MUSIC BOX WINDS DOWN, section by section: a fresh spring at the gate, run down at the green; never speeds up
-  { let prev = -1; for (const c of [0, 60, 118, 180, 246, 310, 374, 440, 502, 560, 620, 650]) { const w = FA.windAt(c); ok(w >= prev, 'the music box wound UP between columns (' + c + ')'); prev = w; }
-    ok(FA.windAt(5) < 0.1 && FA.windAt(640) >= 0.99 && FA.windAt(374) > FA.windAt(246) && FA.windAt(502) > FA.windAt(374), 'the music box does not wind down section by section'); }
+  // THE MUSIC BOX IS GONE (claude/fairfix4, Daniel 2026-10-02: "the old music" was the synth music box playing over "Dark Carnival"): no wind left to give it
+  ok(!('windAt' in FA), 'src/redraw/fair_world.js still hands out the music box wind (windAt)');
   const au = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
-  ok(/export const musicBox/.test(au) && /BOX_TUNE/.test(au) && /mummerBell()/.test(au) && /horseRear()/.test(au) && /hayRustle()/.test(au), 'the audio has no music box, bells, horse-rear or hay rustle');
+  ok(!/musicBox|BOX_TUNE|boxStep/.test(au) && /mummerBell()/.test(au) && /horseRear()/.test(au) && /hayRustle()/.test(au), 'the audio still has the synth music box (claude/fairfix4: it is gone, the fair plays only its file), or has lost its bells, horse-rear or hay rustle');
+  ok(au.includes("harvestfair: './audio/harvestfair.ogg'") && au.includes("wickerqueen: './audio/wickerqueen.ogg'") && !/wantTrack === 'harvestfair'|wantTrack === 'wickerqueen'/.test(au), 'the fair: its two tracks are not plain files with no synth layer keyed on them');
+  ok(!/musicBox/.test(readFileSync(new URL('../src/main.js', import.meta.url), 'utf8')), 'src/main.js still winds or stops a music box');
   ok(L.music === 'harvestfair', 'the fair base track is not its own harvestfair band organ');
   // THE ART: the foes and the world are real art files, not the L1 rectangles
   ok(existsSync(new URL('../src/redraw/fair_art.js', import.meta.url)) && existsSync(new URL('../src/redraw/fair_world.js', import.meta.url)) && !existsSync(new URL('../src/redraw/fair_' + 'greybox.js', import.meta.url)), 'the fair art files are not fair_art.js + fair_world.js (the L1 greybox file is gone)');
@@ -319,6 +320,8 @@ if (fair) {
       ok(top !== null && R - top + 1 <= rise && R - top >= 8, 'the striker at ' + s.x + ' does not throw you onto a plank over it: plank row ' + top + ', it throws ' + rise.toFixed(1) + ' rows'); }
     const GS3 = GS.filter(g => g.targets.length > 1); ok(GS3.length === 3 && GS3.every(g => g.targets.length === 3 && (g.planks.length >= 2 || (g.bars || []).length >= 1) && g.window >= 8 && g.window <= 15) && GS3[0].window > GS3[1].window && GS3[1].window > GS3[2].window, 'the shooting galleries are not three of three targets, each with a shorter window (taught, developed, examined): ' + JSON.stringify(GS.map(g => [g.targets.length, g.planks.length, g.window])));
     ok(GS.every(g => g.planks.every(([x0, x1, row]) => { for (let x = x0; x <= x1; x++) if (at(x, row) !== 0) return false; return true; })), 'a gallery plank is already built: it should only exist once the targets are hit');
+    /* THE PRIZE FLOORS STAND FROM THE START (claude/fairfix4, Daniel 2026-10-02: "the floors must be VISIBLE from the start ... the target opens the WAY IN, not the floor itself") */
+    ok(GS.filter(g => g.nest).length >= 3 && GS.filter(g => g.nest).every(g => { for (let x = g.nest.x0; x <= g.nest.x1; x++) if (at(x, g.nest.row) === 0) return false; return !g.planks.some(([a, b, row]) => row === g.nest.row && a <= g.nest.x1 && b >= g.nest.x0); }), 'a bull\'s-eye nest\'s floor is not built from the start (or is still one of the planks the targets raise): ' + JSON.stringify(GS.filter(g => g.nest).map(g => [g.id, g.nest, g.planks])));
     ok(new Set(GS3.map(g => Math.floor(g.targets[0].x / 100))).size === 3, 'the three galleries do not stand in three different stretches of the level');
     const loft = (L.ticketGates || [])[0]; ok(G && loft && L.ents.some(e => e.t === 'silver' && e.x > loft.x && e.x <= loft.x + 8 && e.y === G.nest.row - 1) && (L.tickets || []).filter(t => t.x >= G.nest.x0 && t.x <= G.nest.x1 && t.row === G.nest.row - 1).length >= 2, 'the crow\'s nest does not pay the tickets that open the loft, or the loft holds no silver (claude/fairfix3, review #14: keys open more keys)');
     /* TICKETS ARE KEYS (claude/fairfix2): no booth; three gates, dearer as you go, the last ALL of them - a hatch into THE BACK LOT, where the fair's own relic and its third silver lie */
@@ -476,13 +479,14 @@ try {
     only([el]); el.hp = 1; BKT.hurtEnemy(el, 5, el.x - 10, false); BK.sim(60);
     out.elite = { ...before, dead: !el.alive, open: !shut() };
     // 7. L2: every section draws without a throw (carousel, haystacks, lamps, the green, the crowd), the lamps are engine lights that follow their life, and a glowing mask draws its halo
-    BK.load(fi); BK.start(); BK.sim(5); BK.god = true; out.drawn = 0; for (const c of [30, 130, 300, 400, 526, 580, 646]) { BK.tp(c, 27); BK.sim(20); BK.step(1); out.drawn++; }
-    out.lamps = BK.fair().lamps.map(l => [l.life, l.lit]); out.musicBox = (await import('/src/audio.js')).musicBox.on;
+    BK.load(fi); BK.start(); BK.sim(5); BK.god = true; out.drawn = 0; out.tracks = []; for (const c of [30, 130, 300, 400, 526, 580, 646]) { BK.tp(c, 27); BK.sim(20); BK.step(1); out.drawn++; out.tracks.push([c, (await import('/src/audio.js')).music.want, BK.bossActive]); }
+    out.lamps = BK.fair().lamps.map(l => [l.life, l.lit]); { const AU = await import('/src/audio.js'); out.musicBox = 'musicBox' in AU; out.track = AU.music.want; }
     return out;
   })()`, 600000);
 } finally { pg2.close(); }
 console.log(JSON.stringify(R2).slice(0, 600));
 ok(R2.drawn === 7, 'a section of the fair did not draw (' + R2.drawn + ' of 7)');
+ok(R2.musicBox === false && R2.tracks.every(([c, w, boss]) => (boss ? (w === 'wickerqueen' || w === null) : w === 'harvestfair')) && R2.tracks.some(([, w]) => w === 'harvestfair'), 'the fair does not play only its own file track (harvestfair on the road, wickerqueen in her fight; no music box - claude/fairfix4): ' + JSON.stringify({ box: R2.musicBox, tracks: R2.tracks }));
 ok(R2.lamps.length >= 16 && R2.lamps.every(([life, lit]) => life >= 1 ? lit : life <= 0 ? !lit : true) && R2.lamps.some(([life]) => life === 0) && R2.lamps.some(([life]) => life === 1), 'the lamps are not engine lights that follow their life: ' + JSON.stringify(R2.lamps));
 ok(R2.modes.includes('creep') && R2.modes.includes('glow') && R2.modes.includes('strike'), 'a mummer with the hero\'s back turned did not creep, glow and strike: ' + R2.modes);
 ok(R2.bells >= 3, 'the bells did not jingle while a mummer crept (' + R2.bells + ')');
@@ -537,7 +541,7 @@ ok(!R.hit.alive && R.hit.blows >= 2 && R.hit.blows <= 5, 'a frozen mummer took '
     ok((() => { for (let x = 317; x <= 324; x++) if (at(x, 20) !== TT.SPIKE) return false; return true; })(), 'the hall roof under chair one is not spiked'); }
   // BULL'S-EYES OPEN THINGS: a lone target on a wheel car runs up planks; one in the corn drops a cage's bars (the bars stand at the start, a ticket behind them)
   { const BE = (L.galleries || []).filter(g => g.targets.length === 1); const onCar = BE.find(g => g.targets[0].on && g.targets[0].on.kind === 'gondola'), cage = BE.find(g => (g.bars || []).length);
-    ok(BE.length >= 2 && onCar && onCar.planks.length >= 2 && onCar.planks.every(([x0, x1, row]) => at(x0, row) === 0), 'no bull\'s-eye hangs on a wheel car and runs up planks');
+    ok(BE.length >= 2 && onCar && onCar.planks.length >= 1 && onCar.planks.every(([x0, x1, row]) => at(x0, row) === 0) && onCar.nest && at(onCar.nest.x0, onCar.nest.row) !== 0, 'no bull\'s-eye hangs on a wheel car and runs up planks to a shelf that stands from the start');   /* (claude/fairfix4: the shelf's floor is built, so the planks it runs up are the way in - one run, not two) */
     ok(cage && cage.bars.every(([x0, x1, y0, y1]) => at(x0, y0) === 1 && at(x1, y1) === 1) && (L.tickets || []).some(t => cage.bars.some(([x0]) => Math.abs(t.x - x0) <= 2)), 'no bull\'s-eye drops a cage\'s bars with a ticket behind them');
     const mv = [{ fair: 'gondola', idx: onCar.targets[0].on.idx, x: 1000, y: 300, w: 30 }]; FK.liveTargets([onCar], mv); ok(onCar.targets[0].px === 1015 && onCar.targets[0].py > 300, 'a bull\'s-eye on a ride does not move with it'); }
   // THE DOOR IN THE GLASS: a doorway in the hall only a TRUE mirror shows, to a room with a reward and a door back
@@ -603,7 +607,7 @@ try {
       none(); out.strike[hero] = { minY: Math.round(minY), landed, tickets: G().tickets - t0, rang: S.hits >= 1 }; }
     { load(); const S = G().strikers[0]; BK.tp(88, 27); BK.P.face = 1; BK.sim(30); const y0 = BK.P.y; let minY = 1e9; BK.press('atk'); for (let i = 0; i < 40; i++) { BK.sim(1); minY = Math.min(minY, BK.P.y); } out.lightHop = { rise: y0 - minY, tickets: G().tickets, rang: S.hits }; }
     // 2. THE GALLERY: three targets inside the window opens the planks (the tiles appear), two and the clock runs out resets them
-    load(); { const Gy = G().galleries[0], ts = Gy.targets; out.gal0 = { open: Gy.open, plank: grid(186, 19), n: ts.length };
+    load(); { const Gy = G().galleries[0], ts = Gy.targets; out.gal0 = { open: Gy.open, plank: grid(186, 19), n: ts.length, nest: grid(178, 13) };
       const hitAt = t => { BK.tp(t.x - 1, 21); BK.P.face = 1; BK.sim(4); BK.press('atk'); BK.sim(10); };
       hitAt(ts[0]); hitAt(ts[1]); out.gal2 = { hits: ts.filter(t => t.hit).length, open: Gy.open }; hitAt(ts[2]); out.gal3 = { hits: ts.filter(t => t.hit).length, open: Gy.open, plank: grid(186, 19), plank2: grid(183, 16), nest: grid(178, 13) }; }
     load(); { const Gy = G().galleries[0], ts = Gy.targets; const hitAt = t => { BK.tp(t.x - 1, 21); BK.P.face = 1; BK.sim(4); BK.press('atk'); BK.sim(10); };
@@ -642,7 +646,7 @@ console.log(JSON.stringify(R3).slice(0, 1400));
 ok(R3.slope.cells >= 24 && R3.slope.drawn === R3.slope.cells, 'a slope cell has no picture: ' + JSON.stringify(R3.slope) + ' (the tile painter draws slopes only for levels its guard names)');
 for (const h of ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer']) { const s = R3.strike[h]; ok(s && s.landed && s.minY <= 19 * 16 - 8 && s.rang && s.tickets === 2, 'the high striker does not throw ' + h + ' onto the boardwalk with a plunge: ' + JSON.stringify(s)); }
 ok(R3.lightHop.rang >= 1 && R3.lightHop.rise >= 10 && R3.lightHop.rise <= 40 && R3.lightHop.tickets === 0, 'a light blow on the striker does more than hop (or pays): ' + JSON.stringify(R3.lightHop));
-ok(R3.gal0.n === 3 && !R3.gal0.open && R3.gal0.plank === 0, 'the gallery starts open: ' + JSON.stringify(R3.gal0));
+ok(R3.gal0.n === 3 && !R3.gal0.open && R3.gal0.plank === 0 && R3.gal0.nest === 2, 'the gallery starts open, or its nest has no floor before it opens (claude/fairfix4): ' + JSON.stringify(R3.gal0));
 ok(R3.gal2.hits === 2 && !R3.gal2.open, 'the gallery opened on two hits: ' + JSON.stringify(R3.gal2));
 ok(R3.gal3.open && R3.gal3.plank === 2 && R3.gal3.plank2 === 2 && R3.gal3.nest === 2, 'three hits inside the window did not run the planks up to the crow\'s nest: ' + JSON.stringify(R3.gal3));
 ok(R3.galReset.hits === 0 && !R3.galReset.open && R3.galReset.plank === 0, 'two hits and a missed window did not reset the gallery: ' + JSON.stringify(R3.galReset));

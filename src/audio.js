@@ -522,7 +522,8 @@ const WAY_LEAD = [['D4', null, 'F4', null, 'A4', null, 'G4', null], ['F4', null,
 const WAY_BASS = ['D3', 'F3', 'A2', 'D3'];
 // THE HARVEST FAIR'S OWN MUSIC is a file now (claude/fairfix3, Daniel 2026-10-01): 'harvestfair' is "Dark Carnival" by Machine (CC-BY 3.0) and 'wickerqueen' "Ring Master" by
 // Bobjt (CC0), both looped and levelled (audio/CREDITS.txt). The synth band organ that stood here (and its tempo hook - a file's playbackRate would pitch it up a fourth
-// at the ride's full speed) is gone; the MUSIC BOX that winds down over the level (musicBox, below) still plays over the fair's own track.
+// at the ride's full speed) is gone, and so is the synth MUSIC BOX that wound down over the level on top of it (claude/fairfix4, Daniel 2026-10-02: "the old music"): the fair
+// plays its file track and nothing else.
 
 // THE PUPPETEER'S OVERTURE (claude/puppeteer): no file - a D-minor march for a toy theatre, a music-box line over an organ bass and a timpani on
 // the bar. It runs at 132 and does not let up: the strings are always moving. (Played for arena.music 'puppeteer'.)
@@ -821,27 +822,6 @@ Object.assign(SFX, {
   wqAlight() { noise(0.9, 0.24, 800, 0.5); tone('sawtooth', 70, 160, 0.9, 0.1); noise(0.5, 0.1, 3600, 1.2, 0.2); },
   calliopeTurn() { [784, 659, 523, 392].forEach((f, i) => tone('square', f, f, 0.12, 0.06, i * 0.08)); },
 });
-// ---------- THE MUSIC BOX (THE HARVEST FAIR): a tune the level plays over its own track (harvestfair stays the base) and that WINDS DOWN as you go: each note comes later, flatter and
-// quieter, and more of the comb's teeth are missing, until at the green it drops one note into the quiet now and then. Synth only (no file). main.js hands it the wind (0 = a
-// fresh spring, 1 = run down) from the section the hero is in, and stops it on leaving the level. It plays into the music bus, so the music volume and the mute cover it.
-const BOX_N = { C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880, B5: 987.77, C6: 1046.5, D6: 1174.66, E6: 1318.51, F6: 1396.91, G6: 1567.98, A6: 1760 };
-const BOX_TUNE = ['C6','E6','G6','E6','C6','G5','A5','C6','F6','E6','D6','B5','C6','E6','G6','A6','G6','E6','F6','D6','B5','G5','C6','C6'];
-let boxW = null, boxTimer = null, boxI = 0;
-function boxStep() {
-  boxTimer = null; if (boxW === null || !ac) return;
-  if (wantTrack !== 'harvestfair') { boxW = null; return; }   /* the box plays only under the fair's own track: the map, a menu or another level's music ends it */
-  const w = boxW, per = 0.3 + w * w * 1.7;   /* a note every 0.3 s fresh, every 2 s at the end */
-  const nm = BOX_TUNE[boxI % BOX_TUNE.length]; boxI++;
-  if (musicOn && musicGain && Math.random() > w * w * 0.8) {   /* the missing teeth: none at first, most at the end */
-    const f = BOX_N[nm] * (1 - 0.08 * w * w), d = 0.45 + w * 0.9;
-    tone('sine', f, f * (1 - 0.012 * w), d, 0.2 * (1 - 0.45 * w), 0, musicGain); tone('sine', f * 4.01, f * 4, 0.14, 0.05 * (1 - w * 0.6), 0, musicGain); }
-  boxTimer = setTimeout(boxStep, per * 1000);
-}
-export const musicBox = {
-  wind(w) { boxW = Math.max(0, Math.min(1, w)); if (!boxTimer && ac) boxTimer = setTimeout(boxStep, 50); },
-  stop() { boxW = null; if (boxTimer) clearTimeout(boxTimer); boxTimer = null; },
-  get on() { return boxW !== null; }, get wound() { return boxW; },
-};
 // ---------- personality: every goblin has a voice of its own pitch, and the beasts their own calls ----------
 const GOB_V = { burngob: 0.95, sprig: 1.25, thief: 1.2, sapper: 1.35, archer: 1.15, pike: 0.95, shield: 0.85, brute: 0.65, hearthgob: 0.75, temperer: 0.85, scalder: 1.05, miner: 0.9, tippler: 0.7, sheargob: 1.2, gaffer: 0.95, sentry: 1.05, sweep: 1.3, thorn: 0.8, rockgoblin: 0.8, snuffer: 0.9, cutter: 1.0, horn: 0.9, shaman: 1.1, stormshaman: 1.1, master: 0.72, sailer: 1.1, kite: 1.3, masthead: 0.7, gobpriest: 1.05, gobmage: 1.15 };
 Object.assign(SFX, {

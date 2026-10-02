@@ -155,7 +155,7 @@ import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
 import { WEIGHTY, weighty, setWeighty, combatFrom, weightyHere, recoveryFor, poiseRule, guardCount } from './weighty.js';   /* COMBAT: CLASSIC / WEIGHTY (claude/ssproto): one switch, off by default */
 import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
@@ -4322,7 +4322,7 @@ const BEASTS = [
   { t: 'shy', name: 'THE STALLHOLDER', sub: 'three throws a penny', desc: 'The coconut shy\'s man, up on his stall roof with a basket of coconuts. Looked at, he only tosses one from hand to hand. Turn your back and he lobs it where you are running to (its ring shows where it lands); a hard shy-ball (red !!) goes through a shield. Any blow puts him on his back.' },
   { t: 'barker', name: 'THE BARKER', sub: 'roll up, roll up', desc: 'The fair\'s caller, on his crate with a speaking trumpet. Every few seconds he raises the trumpet (you hear it drawn and see the rings go out) and CALLS: every hero in earshot is turned to face him and held that way a moment - off the mummers you were watching. Hit him while the trumpet is up and the call dies in his throat. Come too close and he swings his cane (a yellow !). Kill him first. In two-player his call turns you both.' },
   { t: 'greenteeth', name: 'JENNY GREENTEETH', sub: 'the lock at the end of the fog canal', desc: 'The river hag of the old tales, who drags people under with long green arms. She is the water\'s: a bubbling ring on the water where you stand is an arm coming (step out of it), a line along the water is a lash (jump it), an arm beside your ledge swipes high (duck it), and her green teeth come up at the edge (a shield turns them). Held, mash, or strike the arm. The lock is yours to work: the lower paddle drains it, the upper floods it, and she fights you for both. Drain it while she is at your gate and she is STRANDED in the mud - cut her before she drags herself back to the culvert. Flooded, she hides in a culvert: open that gate\'s paddle and the rush throws her out. In the fog, drop a lamp into the water at a gate: she goes for the light and will not leave it - then work that gate\'s paddle. The bright weed holds you a while; the dark weed is only water with a skin on it.' },
-  { t: 'wickerqueen', name: 'THE WICKER QUEEN', sub: 'the maypole green at nightfall', desc: 'She moves only while you look away, but her arms do not need your back: her ribbons and her long spear come even while you look. Duck the high lash and the high thrust, jump the low ones; when the boards burn, ride a horse. Jump her burning wicker ball, and the ribbons when they sweep the ring. With every back turned she leaps - to your back, the pole or a horse - and the landing is marked. Turn your back to draw her across the green, then turn round while she stands on any hot embers: the wicker catches. Cut her while she burns. In two-player either look holds her.' },
+  { t: 'wickerqueen', name: 'THE WICKER QUEEN', sub: 'the maypole green at nightfall', desc: 'She moves only while you look away, but her arms do not need your back: her ribbons and her long spear come even while you look. Duck the high lash and the high thrust, jump the low ones; when the boards burn, ride a horse. Jump the ribbons when they sweep the ring. With every back turned she leaps - to your back, the pole or a horse - and the landing is marked. Her burning wicker ball: hold your blade, then strike it back as it reaches you, and her own fire sets her alight. Or draw her across the green with your back turned and turn round while she stands on hot embers. Cut her while she burns. In the dark she raises wicker copies: hers is the crown that really burns, the ribbons that blow, the only shadow, and a copy freezes dead in your look. When the lanterns flare, the bonfire ring comes: find the dark gap, or ride a horse. In two-player either look holds her.' },
   { t: 'puppeteer', name: 'THE PUPPETEER', sub: "the main stage of the Maskwright's Theatre", desc: 'He hangs from his control bar over the stage and works a duo: THE HARLEQUIN, fast and weak, and THE BRUTE, slow and heavy. Wood turns a blade until a puppet is spent: after each blow it glows green, and then it can be hit or its strings cut - a cut limb goes limp and its attack is gone. Drop both and his control bar goes slack: ride the batten up to the gallery while the house throws at you, and cut it. He falls to the boards, open - and he fights back from there.' },
   { t: 'marionette', name: 'THE BRUTE', sub: 'a toy soldier half again your height', desc: 'Slow and heavy: a told chop no shield holds, a ground slam you jump, a grab you step out of - two or three of them and you are in trouble. After every swing he stands spent: hit him, or cut a string. The ARM string takes his chop and grab, the BACK string his slam.' },
   { t: 'acrobat', name: 'THE ACROBAT', sub: 'a tumbler on two strings', desc: 'He hoists it over you and lets it fall: its shadow on the boards is where. Re-strung, it learns to swing across the stage at head height - duck it.' },
@@ -8609,7 +8609,7 @@ function bossEnd(e) {
     case 'wickerqueen': { /* THE FAIR IS OVER: the wicker goes up all at once, her players go back into the crowd, the green's light comes back, and the fair's one relic lies where she burned */
       shakeCam(10); zoomKick(1.16, 0.6); killFlash = 0.12; L.dark = 0; if (L.ring) WC.ringFor(L.ring, false); if (FAIR) { if (FAIR.fire) FAIR.fire.r = 58; if (FAIR.wqLt) FAIR.wqLt.r = 0; }
       for (let i = 0; i < 40; i++) parts.push({ x: x + (Math.random() - 0.5) * 30, y: y - Math.random() * 70, vx: (Math.random() - 0.5) * 80, vy: -40 - Math.random() * 90, life: 1.6, max: 1.6, col: ['#ffc850', '#f08a28', '#d84a14', '#b08a4e'][(Math.random() * 4) | 0], size: 2, grav: -30 });
-      for (const q of enemies) if (q.alive && q.fromQueen) { q.alive = false; burst(q.x, q.y - 10, 10, COLS.mummer, 60, 0.5); spawnCorpse(q, 1); }
+      for (const f of (e.fakes || [])) for (let i = 0; i < 12; i++) flame(f.x + (Math.random() - 0.5) * 20, (A ? A.floor : y) - Math.random() * 60, 1, 4, 60, 3); if (e.fakes) e.fakes.length = 0;   /* (claude/fairfix4) her copies go up with her */
       { const rel = props.find(p => p.t === 'relic' && p.bossDrop); if (rel) { rel.hidden = false; if (A) rel.x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, x)); burst(rel.x, rel.y - 8, 16, ['#c9a0ff', '#fff6e0'], 70, 0.8); } }
       SFX.wqAlight(); say('THE FAIR IS OVER', '#ffb040'); break; }
     case 'strawking': { /* THE FIELD GOES OUT: his straw burns down to its frame, the crows go up off the scaffold, and the fire goes out of the field */
@@ -18431,7 +18431,7 @@ function theatreReset() { THEATRE = L && L.theatre ? THH.theatreReset(THX) : nul
 let FAIR = null;
 function fairReset() {
   const kept = FAIR && FAIR.L === L ? { games: FAIR.games, keys: FAIR.keys, burnDone: FAIR.effigyBurnDone } : null;   /* (claude/fairfix2) TICKETS ARE KEYS: a death on this level keeps every ticket held, every gate opened and every target struck */
-  FAIR = null; musicBox.stop(); for (const pp of players) { pp.faceLock = 0; pp.car = null; }
+  FAIR = null; for (const pp of players) { pp.faceLock = 0; pp.car = null; }
   if (!L || !(L.carousels || enemies.some(e => e.t === 'mummer' || e.t === 'hobbyhorse'))) return;
   FAIR = { bells: 0, strikes: 0, charges: 0, turns: 0, warns: 0, freezes: 0, calls: 0, cuts: 0, works: 0, runOver: 0, lamps: (L.lamps || []).map(l => ({ ...l, lit: l.life > 0, b: l.life >= 1 ? 1 : 0 })), sq: {} };
   for (const lp of FAIR.lamps) if (lp.life > 0) lights.push({ x: lp.x * TS + 8, y: (lp.y + 1) * TS - 32, r: 46, warm: true, lantern: lp });   /* a lamp is an engine light: the dusk lays its glow, and a guttering one is on and off */
@@ -18540,7 +18540,7 @@ function updateBarker(e, dt) {
 function updateFair(dt) {
   for (const pp of players) if (pp.faceLock > 0) pp.faceLock = Math.max(0, pp.faceLock - dt);
   if (FAIR) for (const lp of FAIR.lamps) if (lp.life > 0 && lp.life < 1) { const was = lp.lit; lp.b = FAW.lampBright(lp, time); lp.lit = lp.b > 0.3; if (lp.lit !== was && Math.abs(lp.x * TS - P.x) < 240 && SET.ambient && Math.random() < 0.35) SFX.lampGutter(); }
-  if (FAIR) { FAIR.tkShow = Math.max(0, (FAIR.tkShow || 0) - dt); for (const k in FAIR.sq) FAIR.sq[k] = Math.max(0, FAIR.sq[k] - dt * 5); if (state === 'play' && !P.dead) musicBox.wind(FAW.windAt(P.x / TS)); }
+  if (FAIR) { FAIR.tkShow = Math.max(0, (FAIR.tkShow || 0) - dt); for (const k in FAIR.sq) FAIR.sq[k] = Math.max(0, FAIR.sq[k] - dt * 5); }   /* (claude/fairfix4: the synth music box that wound down over the fair's track is gone - the fair plays only its file, "Dark Carnival") */
   if (FAIR && L.green && state === 'play' && Math.abs(P.x - L.green.bonfire * TS) < 260 && Math.random() < dt * 30) flame(L.green.bonfire * TS + 8, L.green.floor * TS - 8, 2, 4, 40, 3);   /* the bonfire */
   if (FAIR && state === 'play') { if (L.crumbles && L.crumbles.length) updateCrumbles(dt);   /* (claude/fairfix2) the collapsing stalls (src/tower-collapse.js) */
     const ch = chases.find(c => c.sp.id === 'effigy'); if (ch) { if (ch.st.phase === 'run' || FAIR.effigyBurnDone) FAIR.effigyBurnT += dt; else FAIR.effigyBurnT = 0; if (ch.st.phase === 'done') FAIR.effigyBurnDone = true; } }   /* THE EFFIGY CATCHES FIRE with its chase, and is ash once you outrun it */
@@ -18617,6 +18617,8 @@ function updateWickerQueen(e, dt) {
   const R = L.ring, emb = wqEmbers();
   e.y = fl - (e.lift || 0);   /* (claude/fairfix3) up on the pole's collar, on a horse, or in a leap */
   const pits = wqPits(e, R, dt);
+  /* (claude/fairfix4) THE SWING CLOCK for her ball: a blow BEGUN this frame (P.atk starts again from 0), and whether the blade had been held WQ.retSet s before it (a mash had not) */
+  for (const pp of players) { const a = pp.atk ?? -1, st = a >= 0 && (!(pp.wqAtkP >= 0) || a < pp.wqAtkP); pp.wqAtkP = a; pp.wqStart = st; if (st) { pp.wqFresh = time - (pp.wqSwingAt ?? -99) >= WQN.WQ.retSet; pp.wqSwingAt = time; } }
   const evs = WQN.updateWickerQueen(e, dt, { heroes, anim: false, A: { x0: A.x0, x1: A.x1, floor: fl }, embers: pits, ringDir: R ? WC.RING.dir : 0,
     mx, horses: () => movers.filter(m => m.kind === 'carhorse').map(m => ({ i: m.i, x: m.x + m.w / 2, lift: fl - m.y, front: !m.broken })),
     ball: (x, dir) => { FAIR.wqBalls = FAIR.wqBalls || []; FAIR.wqBalls.push({ x, dir, t: 0, n: e.n.toss }); },   /* (claude/fairfix3) THE WICKER BALL: rolled by wqBallsStep */
@@ -18640,14 +18642,7 @@ function updateWickerQueen(e, dt) {
     thrust: (kind, x0, x1) => { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || pp.wqTh === e.n.thrust) return; if (P.x < x0 - 6 || P.x > x1 + 6) return;
       pp.wqTh = e.n.thrust; const hb = duckBox(P);
       if (WQN.spearCatches(kind, fl, { t: hb.t, b: hb.b })) damagePlayer(e.x, WQN.WQ.dmg.thrust, { who: e, name: 'HER SPEAR', unblockable: true }); }); },
-    adds: () => enemies.filter(q => q.alive && q.fromQueen).length,
-    /* THE CROWNING: the crowd at the edge of the light sends in her players - one behind the hero she means and one ahead of him, inside the green
-       and on his screen (a mummer past 420 px would stand frozen by the game's own rule) */
-    summon: n => { const face = P.face || 1, xs = [P.x - face * 240, P.x + face * 280];
-      for (let i = 0; i < n; i++) { const px2 = Math.max(A.x0 + 24, Math.min(A.x1 - 24, xs[i % 2])), n0 = enemies.length;
-        spawnEnt({ t: 'mummer', x: Math.floor(px2 / TS), y: Math.floor(fl / TS) - 1, face: Math.sign(P.x - px2) || 1 });
-        for (let k = n0; k < enemies.length; k++) enemies[k].fromQueen = true;
-        burst(px2, fl - 10, 10, ['#221a30', '#e8c23a', '#b8382c'], 50, 0.5); } },
+    /* (claude/fairfix4) THE CROWNING calls no crowd now: her COPIES are hers (e.fakes, src/wicker-queen.js), stood up by the module and struck here (wqCopiesStep) */
   });
   /* HER FEET, then THE RIDE: it carries her while she stands (frozen in a look, or at her blows; walking she strides against it at her own pace, and flung by
      the fire she is off it) and every hero with his feet on its boards */
@@ -18656,8 +18651,18 @@ function updateWickerQueen(e, dt) {
   for (const v of evs) {   /* (claude/fairfix3) HER FIRES: a ring pit she burned on is spent; where her burning floor goes out a pit is left alight */
     if (v.t === 'banked' && v.spent && v.pit) FAIR.wqPits = (FAIR.wqPits || []).filter(p => p !== v.pit);
     if (v.t === 'floorOut') wqLightPit(e.x, 'THE BOARDS SMOULDER');
-    if (v.t === 'leapTell') SFX.wqSickleTell(); if (v.t === 'stomp') { shakeCam(3); dust(e.x, fl, 10); } }
+    if (v.t === 'leapTell') SFX.wqSickleTell(); if (v.t === 'stomp') { shakeCam(3); dust(e.x, fl, 10); }
+    if (v.t === 'crown') { for (const f of e.fakes) if (f.anim === 0) burst(f.x, fl - 30, 12, ['#b08a4e', '#e8c23a', '#6e5028'], 60, 0.6); if (v.swap) burst(e.x, fl - 30, 12, ['#b08a4e', '#e8c23a', '#6e5028'], 60, 0.6); callout('HER COPIES: HERS IS THE CROWN THAT BURNS'); }
+    if (v.t === 'ringTell') callout('THE BONFIRE RING: FIND THE GAP OR A HORSE'); }
   wqBallsStep(e, fl, A, carry, dt);
+  wqCopiesStep(e, fl);
+  /* (claude/fairfix4) THE BONFIRE RING: the wall of fire on the boards, all but the gap; a hero on the boards outside it burns (each WQ.ringTick), a rider and a hero in the gap do not */
+  if (e.mode === 'ring') { const [ga, gb] = WQN.gapOf(e);
+    for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead) return; const onHorse = !!(P.onMover && P.onMover.kind === 'carhorse');
+      if (WQN.ringCatches(e, P.x, P.y, fl, onHorse)) { pp.wqRingT = (pp.wqRingT || 0) - dt; if (pp.wqRingT <= 0) { pp.wqRingT = WQN.WQ.ringTick; damagePlayer(P.x, WQN.WQ.dmg.ring, { who: e, name: 'THE BONFIRE RING', unblockable: true, noKnock: true }); } }
+      else pp.wqRingT = 0; });
+    if (Math.random() < dt * 60) { let x = A.x0 + Math.random() * (A.x1 - A.x0); if (x < ga || x > gb) flame(x, fl - 2, 1, 5, 70, 3); } }
+  else for (const pp of players) pp.wqRingT = 0;
   if (carry) for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || !P.ground || P.onMover || !WC.onBoards(R, P.x, P.y)) return; moveBody(P, carry * dt, 0, false); });
   /* THE FLOOR BURNS: a hero with his feet on the boards burns (at once, then each WQ.floorTick), and the heat throws him up off them - toward a horse */
   if (e.mode === 'floor') { for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead) return;
@@ -18694,15 +18699,41 @@ function wqLightPit(x, say) { const A = L.arena, ps = FAIR.wqPits || []; if (ps.
    lights a ring pit there, and rolled over the banked firebox it lights that again */
 function wqBallsStep(e, fl, A, carry, dt) {
   if (!FAIR || !FAIR.wqBalls) return; const fire = wqEmbers();
-  FAIR.wqBalls = FAIR.wqBalls.filter(b => { b.t += dt; b.x += (b.dir * WQN.WQ.ballSpeed + carry) * dt; if (Math.random() < dt * 30) flame(b.x, fl - 8, 1, 3, 40, 2);
-    for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || (pp.wqBall || -1) === b.n) return; const hb = duckBox(P); if (Math.abs(P.x - b.x) < 10 && hb.b > fl - WQN.WQ.ballTop) { pp.wqBall = b.n; damagePlayer(b.x, WQN.WQ.dmg.ball, { who: e, name: 'THE WICKER BALL', unblockable: true }); } });
+  FAIR.wqBalls = FAIR.wqBalls.filter(b => { b.t += dt; b.x += (b.dir * (b.ret ? WQN.WQ.retSpeed : WQN.WQ.ballSpeed) + (b.ret ? 0 : carry)) * dt; if (Math.random() < dt * 30) flame(b.x, fl - 8, 1, 3, 40, 2);
+    /* (claude/fairfix4) STRUCK BACK: back along the boards into her - she catches (WQN.wqIgnite); a struck-back ball hurts nobody */
+    if (b.ret) { if (Math.abs(b.x - e.x) < WQN.WQ.retHit && WQN.wqIgnite(e, { number: (x, y, m, col) => number(x, y, m, col), sound: () => SFX.wqCatch() })) { burst(e.x, fl - 20, 14, ['#ffc850', '#f08a28', '#fff0b0'], 90, 0.5); shakeCam(3); return false; }
+      if (b.x < A.x0 + 12 || b.x > A.x1 - 12 || b.t > 8 || Math.abs(b.x - e.x) < WQN.WQ.retHit) { burst(b.x, fl - 8, 10, ['#ffc850', '#f08a28', '#4e3a1a'], 70, 0.5); return false; } return true; }
+    b.ripe = false;
+    for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || b.ret) return; const toward = Math.sign(P.x - b.x) === b.dir, ahead = (b.x - P.x) * (P.face || 1), low = P.y > fl - 24 && !(P.onMover && P.onMover.kind === 'carhorse');
+      if (toward && low && ahead >= WQN.WQ.retLate && ahead <= WQN.WQ.retReach) { b.ripe = true;   /* in his reach: the ball flashes white */
+        const flare = isPyro() && P.emberUp && Math.abs(P.x - b.x) < 34;   /* THE EMBER FLARE sends it back too */
+        if ((pp.wqStart && pp.wqFresh) || flare) { b.ret = true; b.dir = -b.dir; b.t = 0; b.by = pp.n || 1; SFX.shieldCatch(); burst(b.x, fl - 8, 8, ['#fff0b0', '#ffc850'], 80, 0.3); number(b.x, fl - 26, 'STRUCK BACK', '#8fd160'); return; }
+        if (pp.wqStart && !b.wild) { b.wild = true; burst(b.x, fl - 8, 5, ['#c9d1dc', '#ffc850'], 60, 0.25); callout('TOO WILD: WAIT, THEN STRIKE AS IT COMES'); } }
+      if ((pp.wqBall || -1) === b.n) return; const hb = duckBox(P); if (Math.abs(P.x - b.x) < 10 && hb.b > fl - WQN.WQ.ballTop) { pp.wqBall = b.n; damagePlayer(b.x, WQN.WQ.dmg.ball, { who: e, name: 'THE WICKER BALL', unblockable: true }); } });
+    if (b.ret) return true;
     if (fire && e.bank > 0 && b.x > fire.x0 && b.x < fire.x1) { e.bank = 0; number(b.x, fl - 30, 'THE BALL RELIGHTS THE FIRE', '#ffb040'); }
     if (b.x < A.x0 + 12 || b.x > A.x1 - 12 || b.t > 8) { wqLightPit(Math.max(A.x0 + 40, Math.min(A.x1 - 40, b.x)), 'THE BALL LIGHTS THE BOARDS'); burst(b.x, fl - 8, 10, ['#ffc850', '#f08a28', '#4e3a1a'], 70, 0.5); return false; }
     return true; });
 }
+/* (claude/fairfix4) HER COPIES, STRUCK: a hero's blade (or a plunge) through a copy bursts it into burning straw - a small hurt to whoever stands in it (WQ.copyBurstR) */
+function wqCopiesStep(e, fl) {
+  if (!e.fakes || !e.fakes.length) return; const W = WQN.WQ;
+  for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || P.dead || !(P.atk >= 0 || P.plunge)) return; const ab = attackBox(); if (!ab) return;
+    for (let i = e.fakes.length - 1; i >= 0; i--) { const f = e.fakes[i]; if (P.hitSet && P.hitSet.has(f)) continue;
+      if (!overlap(ab, { l: f.x - W.w / 2, r: f.x + W.w / 2, t: fl - W.h, b: fl })) continue; if (P.hitSet) P.hitSet.add(f);
+      WQN.strikeCopy(e, i); SFX.wqRustle(); SFX.wqCatch(); shakeCam(2); hitstop(0.03);
+      for (let k = 0; k < 18; k++) flame(f.x + (Math.random() - 0.5) * 22, fl - Math.random() * 64, 1, 4, 60, 3); burst(f.x, fl - 30, 16, ['#b08a4e', '#e8c23a', '#6e5028', '#f08a28'], 90, 0.6);
+      for (const p2 of players) asPlayer(p2, () => { if (upright(p2) && !P.dead && Math.abs(P.x - f.x) < W.copyBurstR && Math.abs(P.y - fl) < 40) damagePlayer(f.x, W.copyBurst, { who: e, name: 'BURNING STRAW', unblockable: true, noKnock: true }); });
+      callout('A COPY: STRAW AND FIRE'); } });
+}
 /* her embers on the green's floor: hot (they will catch her) or banked, grey, for WQ.bankT after a burn */
 function drawWickerGround(cx, cy) {
   const emb = wqEmbers(), q = boss && boss.t === 'wickerqueen' ? boss : null; if (!emb || !L.arena) return;
+  /* (claude/fairfix4) SHE CASTS THE ONLY SHADOW (the bonfire's light on her, not on straw), and HER COPIES stand in the world: watched, frozen dead (their anim stops) */
+  if (q && q.alive && bossActive) { const sx = Math.round(q.x - cx), sy = Math.round(L.arena.floor - cy), k = 1 - Math.min(0.6, (q.lift || 0) / 120);
+    g.fillStyle = 'rgba(10,6,14,' + (0.45 * k).toFixed(2) + ')'; g.beginPath(); g.ellipse(sx + 6, sy - 1, 15 * k, 3, 0, 0, 6.3); g.fill();
+    for (const f of q.fakes || []) { const fr = f.mode === 'glow' ? WQN.WQ_F.stabTell : f.mode === 'recover' ? WQN.WQ_F.stab : f.mode === 'creep' ? WQN.WQ_F.creep[Math.floor((f.anim || 0) * 5) % 2] : WQN.WQ_F.still;
+      if (f.x < cx - 80 || f.x > cx + VW + 80) continue; drawSet(SPR.wickerqueen, null, fr, Math.round(f.x - cx), Math.round(L.arena.floor - cy), f.face || 1, false); } }
   const fy = Math.round(L.arena.floor - cy), banked = !!(q && q.alive && q.bank > 0);
   WQD.drawPits(g, cx, cy, VW, (FAIR && FAIR.wqPits || []).filter(p => !p.fire), L.arena.floor, time);   /* (claude/fairfix3) the ring pits (src/redraw/wicker_fx.js) */
   for (let x = emb.x0; x <= emb.x1; x += 3) { const k = 0.5 + 0.5 * Math.sin(time * 5 + x * 0.3), sx = Math.round(x - cx); if (sx < -4 || sx > VW + 4) continue;
@@ -18739,6 +18770,9 @@ function drawWickerOver(cx, cy) {
       for (let i = 0; i < 6; i++) { g.fillStyle = RB[i]; const yy = Math.round(t + (b - t) * (i / 6) - cy + Math.sin(time * 40 + i) * 1);
         for (const d of [-1, 1]) { const lo = Math.max(x0, Math.min(mx, mx + d * r)), hi = Math.min(x1, Math.max(mx, mx + d * r)); if (hi > lo) g.fillRect(Math.round(lo - cx), yy, Math.round(hi - lo), 1); } } } }
   if (q.mode === 'stabTell') FAW.drawGlow(g, Math.round(q.x + (q.face || 1) * 2 - cx), Math.round(q.y - 70 - cy), time);
+  for (const f of q.fakes || []) if (f.mode === 'glow') FAW.drawGlow(g, Math.round(f.x + (f.face || 1) * 2 - cx), Math.round(L.arena.floor - 70 - cy), time);   /* (claude/fairfix4) a copy's stab, told the mummers' way */
+  WQD.drawReal(g, cx, cy, q, time);   /* (claude/fairfix4) HER tells against her copies: real fire flickering in her crown, her ribbons blowing - always moving, held or not */
+  WQD.drawRing(g, cx, cy, VW, q, L.arena, fl, time);   /* (claude/fairfix4) THE BONFIRE RING: the lanterns flare but over the gap, then the wall of fire with its one gap */
   WQD.drawOver(g, cx, cy, VW, q, L.arena, fl, mx, FAIR && FAIR.wqBalls, players, time);   /* (claude/fairfix3) her wicker balls, the ribbon sweep (taut, then whipping round), her leap's landing mark, the pole's collar */
   if (L.dark) for (const m of enemies) if (m.alive && m.t === 'mummer' && m.mode === 'glow') FAW.drawGlow(g, Math.round(m.x - cx), Math.round(m.y - 24 - cy), time);
 }
@@ -18751,6 +18785,9 @@ function wqHoles(hole, cx, cy) {
   if (q.mode.startsWith('lash')) hole(L.green.maypole * TS + 8 - cx, q.y - 30 - cy, 50, 0.7);
   for (const m of enemies) if (m.alive && m.fromQueen && m.mode === 'glow') hole(m.x - cx, m.y - 20 - cy, 30, 0.8);
   const emb = wqEmbers(); if (emb && !(q.bank > 0)) hole(emb.mid - cx, L.arena.floor - 6 - cy, 40, 0.6);
+  hole(q.x - cx, q.y - 84 - cy, 18, 0.7);   /* (claude/fairfix4) her crown burns with real fire: in the full dark it is the light you find her by (her copies' straw crowns give none) */
+  if (q.mode === 'ringTell' || q.mode === 'ring') for (let x = L.arena.x0 + 20; x < L.arena.x1; x += 64) { const [ga, gb] = WQN.gapOf(q); if (x < ga - 10 || x > gb + 10) hole(x - cx, L.arena.floor - (q.mode === 'ring' ? 14 : 100) - cy, 34, 0.6); }
+  for (const f of q.fakes || []) if (f.mode === 'glow') hole(f.x - cx, L.arena.floor - 60 - cy, 30, 0.8);
   for (const p of (FAIR && FAIR.wqPits) || []) if (!p.fire) hole(p.mid - cx, L.arena.floor - 6 - cy, 30, 0.55); for (const b of (FAIR && FAIR.wqBalls) || []) hole(b.x - cx, L.arena.floor - 8 - cy, 26, 0.7);   /* (claude/fairfix3) her ring pits and balls light her dark */
   for (const m of movers) if (m.kind === 'carhorse' && !m.broken) hole(m.x + m.w / 2 - cx, m.y - 4 - cy, 22, 0.55);   /* the carousel's horses carry their own bulbs: you can always find one (claude/fairboss) */
 }

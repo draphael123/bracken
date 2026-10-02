@@ -137,6 +137,3 @@ export function drawGlow(g, x, y, time) {
   g.globalCompositeOperation = 'lighter'; const r = 26 + Math.sin(time * 26) * 3, gr = g.createRadialGradient(x, y, 2, x, y, r);
   gr.addColorStop(0, 'rgba(255,50,30,0.75)'); gr.addColorStop(0.5, 'rgba(255,40,20,0.3)'); gr.addColorStop(1, 'rgba(255,30,10,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); g.globalCompositeOperation = 'source-over'; }
 
-// ---------------- THE WIND of the music box by column: a fresh spring at the gate, run down at the green, section by section (src/audio.js musicBox) ----------------
-const WIND = [[0, 0], [118, 0.1], [246, 0.3], [374, 0.5], [502, 0.72], [620, 0.9], [640, 1]];
-export function windAt(col) { if (col <= 0) return 0; for (let i = 1; i < WIND.length; i++) if (col <= WIND[i][0]) { const [a, wa] = WIND[i - 1], [b, wb] = WIND[i]; return wa + (wb - wa) * (col - a) / (b - a); } return 1; }
