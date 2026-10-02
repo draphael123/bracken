@@ -7,7 +7,7 @@
  *      (bracken.progress) still opens as slot 1.
  *   D. THE SCREEN: ARROWS wrap over all five (right from 5 is 1, left from 1 is 5), UP/DOWN walk the five rows, Z opens the
  *      picked slot, X twice erases only it. Every card draws its slot number, and a filled one its HERO and HERO LEVEL besides the
- *      woods, gold and medal points; all five fit the screen (the textfit 'slots' scope checks the pixels).
+ *      woods, gold and medal points, the LAST-PLAYED slot carries a LAST PLAYED tag and the picker opens with the cursor on it; all five fit the screen (the textfit 'slots' scope checks the pixels).
  */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -63,6 +63,15 @@ for(const w of ['KNIGHT','PYROMANCER','PALADIN','WARDEN'])if(!T.includes(w))F('n
 for(const lv of [3,4,5,7])if(!T.includes('LEVEL '+lv))F('no LEVEL '+lv+' on a card');
 if(T.filter(s=>s==='empty').length!==1)F('the empty slot is not drawn once');
 for(const q of rec.filter(q=>q.kind==='text'))if(q.x0<0||q.x0+q.w>BK.view.VW||q.y0<0||q.y0+q.h>BK.view.VH)F('off screen: '+q.s);
+/* THE LAST-PLAYED SAVE is tagged, and the picker opens with the cursor on it (bracken.slot is the active index) */
+ls.setItem('bracken.slot','2');BK.loadSlot(2);BK.state='title';BK.ui.slotI=0;
+{const it=BK.ui.titleItems();const k=it.findIndex(s=>s==='CHOOSE A SAVE'||s==='NEW GAME');if(k<0)F('no CHOOSE A SAVE on the title: '+it);else{BK.ui.titleI=k;press('confirm');
+if(BK.state!=='slots')F('the title did not open the picker: '+BK.state);if(BK.ui.slotI!==2)F('the picker opened on slot '+(BK.ui.slotI+1)+', not the last-played slot 3');}}
+window.__textRec=[];BK.step(1);const rec2=window.__textRec;window.__textRec=null;
+const tags=rec2.filter(q=>q.kind==='text'&&q.s==='LAST PLAYED');if(tags.length!==1)F('LAST PLAYED is drawn '+tags.length+' times, wanted once');
+else{const mine=rec2.find(q=>q.kind==='text'&&q.s==='SLOT 3');if(!mine||Math.abs(tags[0].y0-mine.y0)>4)F('the LAST PLAYED tag is not on the SLOT 3 row');}
+BK.loadSlot(0);BK.state='slots';BK.ui.slotI=0;window.__textRec=[];BK.step(1);const rec3=window.__textRec;window.__textRec=null;
+{const tg=rec3.find(q=>q.kind==='text'&&q.s==='LAST PLAYED'),s1=rec3.find(q=>q.kind==='text'&&q.s==='SLOT 1');if(!tg||!s1||Math.abs(tg.y0-s1.y0)>4)F('after playing slot 1 the tag did not move to it');}
 /* Z opens the picked one; X X erases only it */
 BK.ui.slotI=4;press('confirm');if(BK.slot!==4||BKT.PROG.hero!=='warden')F('Z on slot 5 opened slot '+(BK.slot+1)+' as '+BKT.PROG.hero);
 BK.state='slots';BK.ui.slotI=4;const keep=[0,1,2].map(i=>ls.getItem(K(i)));press('atk');press('atk');

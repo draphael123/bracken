@@ -24,3 +24,8 @@ See the final message for the green list.
 1. Rows vs a 3+2 grid of cards: I recommend rows (built); a grid cannot hold the words at this font size.
 2. The medal line says "MEDAL PTS" in 6 px caps (was 8 px lower case) to fit; OK, or prefer "MEDALS"?
 3. Should a new slot's first-time prompt say anything about which slot is "last played"? Not built.
+
+## Follow-up: LAST PLAYED tag (Daniel approved rows + MEDAL PTS)
+- The row of the slot in `bracken.slot` (the last one opened) carries a gold 6 px `LAST PLAYED` tag at the right of its first line; LEVEL now sits right after the hero name to make room. The picker already opened with the cursor on that slot (`slotI = slot` when CHOOSE A SAVE is picked on the title); the check now asserts it through the real title menu.
+- tools/save-slots.mjs asserts: the picker opens on slot 3 after slot 3 was last played, exactly one tag is drawn and it is on the SLOT 3 row, and after loading slot 1 the tag moves to slot 1. Red first: on the commit before the tag the tag asserts fail (0 tags); the cursor assert already held on the base.
+- textfit slots stays clean (OVERFLOW/OFFSCREEN/COLLIDE/TRUNCATED/SMUDGE all 0). after.png updated.
