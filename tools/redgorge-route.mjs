@@ -65,18 +65,20 @@ try {
       const rope = (x, top) => { walk(x, { tol: 2, noFight: true }); for (let j = 0; j < 30 && !P().climb; j++) { clear(); k.up = true; if (j === 6 && !P().climb) { k.jump = true; BK.press('jump'); } tick(1); }
         for (let j = 0; j < 900 && P().climb; j++) { clear(); k.up = true; tick(1); }
         clear(); tick(2); if (feet() > top + 1) return false; k.jump = true; BK.press('jump'); tick(20); clear(); tick(10); return feet() < top; };
+      const leapShaft = () => { walk(16, { tol: 2, noFight: true }); settle(); clear(); k.right = true; k.jump = true; BK.press('jump'); for (let j = 0; j < 60; j++) { tick(1); if (j > 18) k.jump = false; if (j > 4 && P().ground) break; } clear(); tick(2); D('shaft', col(), feet()); return col() >= 19 && feet() === 65; };
       /* THE NARROWS: off the landing's lip and onto the rope in the channel (a hop up and right, UP held) */
-      const ontoRope = x => { walk(x - 1, { tol: 3, noFight: true }); settle();
+      const ontoRope = x => { if (col() < 19) { walk(16, { tol: 2, noFight: true }); leapShaft(); }   /* over the basket's shaft (a hole while the basket is down) to the lip */
+        walk(x - 1, { tol: 3, noFight: true }); settle(); D('rope from', Math.round(P().x), Math.round(P().y), G().phase);
         for (let j = 0; j < 60 && !P().climb; j++) { clear(); if (j < 18) k.jump = true; if (j > 8) k.up = true; if (j < 14) k.right = true; if (j === 0) BK.press('jump'); tick(1); }   /* (jump first, then UP: an UP held into the jump waits for an up-slash) */
-        for (let j = 0; j < 900 && P().climb; j++) { clear(); k.up = true; tick(1); } };
+        D('rope grab', P().climb, Math.round(P().x), Math.round(P().y)); for (let j = 0; j < 900 && P().climb; j++) { clear(); k.up = true; tick(1); } D('rope end', Math.round(P().x), Math.round(P().y), feet()); };
       /* A BASKET: stand on it, wait for the water to wind it to its top, then step off toward DIR */
       /* A BASKET: clear the knives at its berth first (a hand that fights beside the berth steps into it when the basket is up: it is a hole in the
          bridge), wait at its edge for the basket to be home, step on, and stand still on it while the water winds it up; then step off toward toCol */
       const basket = (id, dir, toCol) => { const m = BK.movers().find(q => q.gorge === id), edge = Math.floor((m.x + m.w) / TS) + 1;
         const on = () => P().ground && Math.abs(P().y - m.y) < 3 && P().x > m.x + 2 && P().x < m.x + m.w - 2;
-        walk(edge, { tol: 3 }); for (let i = 0; i < 40 && fight(); i++) {}
-        for (let a = 0; a < 4 && !on(); a++) { walk(edge, { tol: 3, noFight: true }); waitFor(() => m.y >= m.y0 - 0.5, 60 * 14, { noFight: true }); walk(Math.floor((m.x + 16) / TS), { tol: 4, noJump: true, noFight: true }); clear(); tick(6);
-          if (!on() && feet() > Math.round(m.y0 / TS) + 1) return false; }
+        D(id, 'start', Math.round(P().x), Math.round(P().y)); walk(edge, { tol: 3 }); for (let i = 0; i < 40 && fight(); i++) {} D(id, 'at edge', Math.round(P().x), Math.round(P().y), P().hp | 0);
+        for (let a = 0; a < 4 && !on(); a++) { walk(edge, { tol: 3, noFight: true }); waitFor(() => m.y >= m.y0 - 0.5 && G().phase === 'dry' && G().t > 1, 60 * 20, { noFight: true });   /* (home, and the water not about to come: stepping on takes a second) */ walk(Math.floor((m.x + 16) / TS), { tol: 4, noJump: true, noFight: true }); clear(); tick(6);
+          D(id, 'board try', a, Math.round(P().x), Math.round(P().y), Math.round(m.y), on()); if (!on() && feet() > Math.round(m.y0 / TS) + 1) return false; }
         for (let j = 0; j < 60 * 30 && !(on() && m.y <= m.y1 + 1); j++) { if (j % 30 === 0) D(id, G().phase, Math.round(P().x), Math.round(P().y), Math.round(m.y), on(), P().hp | 0); clear(); if (!on() && P().ground) k[(m.x + 16) > P().x ? 'right' : 'left'] = true; tick(1); }
         if (!(m.y <= m.y1 + 1)) return false; return walk(toCol, { tol: 3 }); };
       const leg = (name, start, fn) => { let ok = false, tries = 0, lifted = false; const t0 = frames; legDmg = {};
@@ -97,13 +99,13 @@ try {
       leg('THE LEDGES BASKET: ride it on a flood, and its top', [20, 117], () => basket('ledges', -1, 12) && hops([[12, 97], [12, 94]])) || lift([12, 93]);
       /* ===== 4. THE CAVE OF HANDS ===== */
       leg('across bridge three (its knives in the channel), up the cave ledges to bridge four', [12, 93], () => walk(30) && hops([[30, 91], [33, 88], [34, 85], [35, 82], [36, 79], [36, 76], [36, 73], [33, 70]])) || lift([33, 69]);
-      leg('THE JAM: shut its gate, hold the bank, release', [33, 69], () => { wheel(28, () => gate('jam') !== 'open'); if (!waitFor(() => gate('jam') === 'full', 60 * 14)) return false; wheel(28); return waitFor(() => G().jams[0].open, 60 * 3); }) || lift([21, 69]);
+      leg('THE JAM: shut its gate, hold the bank, release', [33, 69], () => { { const sl = BK.enemies().find(e => e.rgSquad === 'jamSling'); D('jam sling', sl && sl.alive, sl && Math.round(sl.x), sl && Math.round(sl.y), sl && sl.st && sl.st.mode); } wheel(28, () => gate('jam') !== 'open'); if (!waitFor(() => gate('jam') === 'full', 60 * 14)) return false; wheel(28); const ok = waitFor(() => G().jams[0].open, 60 * 3); waitFor(() => !G().spans.length, 60 * 4); return ok; }) || lift([21, 69]);
       /* ===== 5. THE NARROWS (the exam) ===== */
       leg('THE NARROWS BASKET: ride it to the landing, its knives', [21, 69], () => basket('narrows', -1, 13) && waitFor(() => !BK.enemies().some(e => e.alive && !e.noGrav && Math.abs(e.y - P().y) < 20 && Math.abs(e.x - P().x) < 120), 60 * 10)) || lift([13, 64]);
-      if (PLAN === 'gate') leg('THE NARROWS: shut the gate at the landing, let it bank, climb the dry rope', [13, 64], () => { wheel(10, () => gate('narrows') !== 'open'); if (!waitFor(() => gate('narrows') === 'full', 60 * 14)) return false; ontoRope(22); clear(); k.jump = true; BK.press('jump'); tick(20); clear(); tick(10); return feet() <= 42; }) || lift([24, 41]);
-      else leg('THE NARROWS: race the next flood up the twenty-row rope', [13, 64], () => { walk(20); waitFor(() => G().phase === 'flood', 60 * 14); waitFor(() => G().phase === 'dry', 60 * 4); ontoRope(22); clear(); k.jump = true; BK.press('jump'); tick(20); clear(); tick(10); return feet() <= 42; }) || lift([24, 41]);
+      if (PLAN === 'gate') leg('THE NARROWS: shut the gate at the landing, let it bank, climb the dry rope', [13, 64], () => { wheel(10, () => gate('narrows') !== 'open'); D('narrows gate', gate('narrows'), Math.round(P().x), Math.round(P().y)); if (!waitFor(() => gate('narrows') === 'full', 60 * 14)) return false; D('narrows full', Math.round(P().x), Math.round(P().y)); ontoRope(22); clear(); k.jump = true; BK.press('jump'); tick(20); clear(); tick(10); return feet() <= 42; }) || lift([28, 41]);
+      else leg('THE NARROWS: race the next flood up the twenty-row rope', [13, 64], () => { walk(16, { tol: 2 }); leapShaft(); waitFor(() => G().phase === 'flood', 60 * 14); waitFor(() => G().phase === 'dry', 60 * 4); ontoRope(22); clear(); k.jump = true; BK.press('jump'); tick(20); clear(); tick(10); return feet() <= 42; }) || lift([28, 41]);
       /* ===== 6. THE SUMMIT ===== */
-      leg('bridge five\\'s knives, up the summit ledges to the dam\\'s door (checkpoint two)', [24, 41], () => walk(37) && hops([[37, 39], [36, 36, -1], [35, 33], [35, 30], [36, 27], [37, 25], [37, 22, 1]]) && walk(44)) || lift([44, 21]);
+      leg('bridge five\\'s knives, up the summit ledges to the dam\\'s door (checkpoint two)', [28, 41], () => walk(37) && hops([[37, 39], [36, 36, -1], [35, 33], [35, 30], [36, 27], [37, 25], [37, 22, 1]]) && walk(44)) || lift([44, 21]);
       leg('THE OLD DAM: through the door, the crab wakes', [44, 21], () => { walk(56, { noFight: true }); wait(90, { noFight: true }); return BK.bossActive && BK.boss && BK.boss.t === 'gorgecrab'; });
       return { dbg, plan: PLAN, hero: ${JSON.stringify(hero)}, maxHp, legs, dips, lowest: Math.round(lowest * 100), deaths: BK.stats().deaths, s: +(frames / 60).toFixed(1) };
     })()`, 2400000);

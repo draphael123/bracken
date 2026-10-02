@@ -131,12 +131,12 @@ export function buildRedGorge({ painter, T, TS }) {
   /* THE JAM: flotsam wedged on bridge four in the channel, seven rows high, beside the east overhang - the narrows' rope hangs to its top */
   block(C0, C1, 63, 69); jams.push({ x0: C0, x1: C1, y0: 63, y1: 69 }); ent('jam', CX, 69);   /* seven rows: no jump (nor a mantle) from the bridge gets on it */
   /* THE JAM IS A FIGHT (the review: the wheel was roofed and both its slingers were under it, so the bank was free). The jam-lip SLINGER stands ON
-     the jam, seven rows over the wheel, and throws down the open slot beside it (the overhang now starts four columns east): out of reach, and
+     the jam, seven rows over the wheel, and throws down the open slot beside it (the overhang now starts seven columns east): out of reach, and
      only the burst that breaks the jam takes him. Two KNIVES wait on the overhang's top and leap down the slot when the jam's gate is shut
      (src/red-gorge-hands.js interact: squad 'jamDrop'), and a raptor keeps bridge four */
-  foe('slinger', 24, 62, 'jamSling', { face: 1 });
-  block(31, 44, 63, 64);                                                      /* the overhang over the east (the slot over the wheel, cols 27-30, open to the sky) */
-  foe('cutthroat', 33, 62, 'jamDrop', { face: -1 }); foe('cutthroat', 36, 62, 'jamDrop', { face: -1 });
+  foe('slinger', 25, 62, 'jamSling', { face: 1 });   /* (at the jam's east end: a stone from further west breaks on the jam's own top) */
+  block(34, 44, 63, 64);                                                      /* the overhang over the east (the slot over the wheel and the bridge, cols 27-33, open to the sky) */
+  foe('cutthroat', 35, 62, 'jamDrop', { face: -1 }); foe('cutthroat', 37, 62, 'jamDrop', { face: -1 });
   ent('raptor', CX, 66, { squad: 'raptorJam', guard: 68 });                   /* it keeps bridge four: it stoops at you while the jam's gate banks */
   wheel(28, 69, 'jam'); gate('jam', 58);                                      /* THE JAM'S GATE, and its wheel on the bridge */
   ledge(3, 44, 70);                                                           /* BRIDGE FOUR */

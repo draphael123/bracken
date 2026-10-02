@@ -122,12 +122,12 @@ export function makeRedGorgeHands(ctx) {
     for (const e of ctx.enemies()) if (e.rgLeap > 0 && e.alive) { e.rgLeap -= dt; if (e.y < 69 * ctx.TS) ctx.moveFoe(e, -80 * dt); else e.rgLeap = 0; }
     /* AND ON THE FOES: THE FLOOD TAKES THEM (the review: it did a third of a bandit's life and left him on the bridge). A common foe the water
        catches is dropped through the bridge, pushed out to the nearer bank as a hero is, and loses GORGE.foeFlood of his life (two floods and he is
-       gone); a released BURST takes a common foe outright. An elite, a flyer and the boss stand it. Only near a hero (GORGE.foeNear px): a bandit
+       gone); a released BURST takes a common foe outright (the jam-lip slinger is dug into the flotsam over the water's line: only the burst that breaks the jam takes him). An elite, a flyer and the boss stand it. Only near a hero (GORGE.foeNear px): a bandit
        idling in the channel far up the gorge is waiting there for you, not washed away before you ever see him */
     const nearHero = e => ctx.players.some(pp => !pp.dead && Math.abs(pp.x - e.x) < GORGE.foeNear[0] && Math.abs(pp.y - e.y) < GORGE.foeNear[1]);
     for (const e of ctx.enemies()) { if (!e.alive || e.noGrav || e.boss || e.t === 'gorgecrab') continue;
       if (e.rgFall > 0) e.rgFall = Math.max(0, e.rgFall - dt);
-      const s = wetAt(e.x, e.y - 6); if (!s) continue; const c = chOf(s.ch), mid = (c.x0 + c.x1 + 1) * ctx.TS / 2, common = !e.elite;
+      const s = wetAt(e.x, e.y - 6); if (!s || (e.rgSquad === 'jamSling' && s.kind !== 'burst')) continue; const c = chOf(s.ch), mid = (c.x0 + c.x1 + 1) * ctx.TS / 2, common = !e.elite;
       if (e.rgSwept !== s.id) { if (!nearHero(e)) continue; e.rgSwept = s.id; RG.n.foesSwept++; ctx.burst(e.x, e.y - 8, 8, ['#7ab8e8', '#e8f4f8'], 70, 0.5);
         if (common && s.kind === 'burst') { RG.n.foesTaken++; ctx.hurtFoe(e, (e.hp || 1) + 999); ctx.number(e.x, e.y - 24, 'SWEPT AWAY', '#7ab8e8'); continue; }
         ctx.hurtFoe(e, common ? Math.ceil((e.maxHp || e.hp || 30) * GORGE.foeFlood) : GORGE.foeDmg); e.vy = 160;
