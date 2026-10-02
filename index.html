@@ -9,6 +9,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0b1410">
+<meta name="apple-mobile-web-app-title" content="BRACKEN">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <title>BRACKEN</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen&family=VT323&display=swap" rel="stylesheet">
@@ -16,6 +20,9 @@
   html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1410; }
   /* dvh follows the phone's shrinking address bar; the old 100% jumped every time it hid */
   @supports (height: 100dvh) { html, body { height: 100dvh; } }
+  /* the notch and the home bar, read by src/touch.js so no button sits under them (viewport-fit=cover above) */
+  #safe { position: fixed; left: 0; top: 0; width: 0; height: 0; visibility: hidden; pointer-events: none;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
   body { touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
   canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
   #boot { position: fixed; left: 12px; bottom: 10px; color: #cfc6b0; font: 12px monospace; opacity: .8; pointer-events: none; }
@@ -34,6 +41,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="safe"></div>
 <div id="rotate"><div class="bk">BRACKEN</div><div class="ph"></div><b>TURN IT SIDEWAYS</b><div>BRACKEN plays in landscape.<br>Rotate the phone and tap to play full screen.</div><button id="anyway">play it upright anyway</button></div>
 <div id="boot">booting…</div>
 <script>
@@ -64,6 +72,13 @@
     // reappears on its own; nothing to do here but keep the canvas the size of what we were given
     addEventListener('resize', () => { const c = document.getElementById('c'); if (c) { c.style.width = '100%'; c.style.height = '100%'; } });
   })();
+</script>
+<script>
+  // INSTALLABLE: a service worker keeps the game shell for a fast, offline-tolerant relaunch (sw.js: network first, so a deploy always wins).
+  // Only on https (or ?sw=1 on localhost); never inside a tool run (?nosw), where a cache between the test and the code would only confuse.
+  (function () { try { const p = new URLSearchParams(location.search); if (!('serviceWorker' in navigator) || p.has('nosw')) return;
+    if (location.protocol !== 'https:' && p.get('sw') !== '1') return;
+    addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {})); } catch (e) {} })();
 </script>
 <script type="module" src="./src/loading-screen.js"></script>
 <script type="module" src="./src/main.js"></script>

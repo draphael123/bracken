@@ -158,6 +158,7 @@ import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
+import { createTouch } from './touch.js'; import { interactVerb, VERB_HOOKS } from './touch-interact.js';   /* THE PHONE'S HANDS (claude/mobile): the stick, the buttons, the contextual action button, tap menus */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 
@@ -3211,7 +3212,7 @@ function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) 
    the growth, the heal, and any passive that came with the level - never a slot: there are two, always. */
 function levelUp(n, from) { lvUpN = n; if (state !== 'play') return; if (from === undefined) from = n - 1;
   lvUpT = 2.6; const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh));
-  SFX.rankUp(); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b');
+  SFX.rankUp(); TCH.buzz('levelup'); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b');
   lvHealOwed = { n, from: lvHealOwed ? lvHealOwed.from : from }; levelHealTick();
   saveProgress(); }
 const fightLive = () => !!(bossActive || miniActive || ambushLive());
@@ -3574,6 +3575,13 @@ function secretWants(lv) {
     return ['PUT DOWN ' + Math.round(lv.needsKills.pct * 100) + '% OF ' + nm, 'YOU HAVE PUT DOWN ' + Math.round(killPct(lv) * 100) + '%']; }
   return ['SOMETHING IS STILL OWED', ''];
 }
+/* A TAP ON THE MAP (src/touch.js): a node you are not on is walked to along the road (mapGoal steps updateMap takes), a side road is jumped to as the panel does, and a tap on the one you stand on goes in - the same as ENTER */
+let mapGoal = null;
+function mapTap(nd) { if (mapPanel.open || map.walking || state !== 'map') return; const i = NODES.indexOf(nd);
+  if (i === map.node) { confirmPress = true; return; }
+  if (nodeLocked(nd) && nd.kind === 'level') { SFX.buzz(); number(nd.x, nd.y - 14, LEVELS[nd.level].secret ? 'NOT YET' : 'LOCKED', '#9aa39a'); return; }
+  if (nd.spur) { map.node = i; map.seg = NODE_AT[i]; map.t = 0; PROG.mapNode = i; PROG.mapNodeId = nd.id; const a = PATH[NODE_AT[i]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55)); SFX.uiSel(); return; }
+  mapGoal = i; }
 function mapGo(dir) {
   if (map.walking) return;
   let nx = map.node + dir;
@@ -3616,6 +3624,7 @@ function updateMap(dt) {
     if (Math.random() < dt * 10) { const [px, py] = mapPos(); parts.push({ x: px + camX + (Math.random() - 0.5) * 4, y: py + camY, vx: 0, vy: -8, life: 0.3, max: 0.3, col: '#c9b27c', size: 1, grav: 0 }); }
   }
   if (leftPress) mapGo(-1); if (rightPress) mapGo(1);
+  if (mapGoal !== null && !map.walking) { if (mapGoal === map.node) mapGoal = null; else { mapGo(mapGoal > map.node ? 1 : -1); if (!map.walking) mapGoal = null; } }   /* (a tap on a far node: one step a frame the walk is idle) */
   // up and down set the difficulty of the wood you are standing at - UNLESS this press instead steps onto/off a class-level side road (branchStep)
   if ((upPress || downPress) && !map.walking) { const dir = upPress ? -1 : 1; const nd = NODES[map.node];
     if (nd.kind !== 'store' && branchStep(dir)) { /* handled: entered, left, or buzzed at a locked side road */ }
@@ -3669,6 +3678,7 @@ function drawMap() {
     for (const id of ['store', 'highstore', 'chandler', 'waymeet']) { const sn = nd(id); if (sn && Math.random() < (id === 'waymeet' ? 0.35 : 0.5)) parts.push({ x: sn.x + (id === 'waymeet' ? -6 : 3) + camX, y: sn.y - (id === 'waymeet' ? 14 : 22) + camY, vx: 4 + Math.random() * 4, vy: -12, life: 1.6, max: 1.6, col: 'rgba(230,230,230,0.7)', size: 2, grav: -6 }); } }
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;               /* it is not on the map until you have earned it */
+    TCH.hit(nd.x - 13, nd.y - Math.round(mapCamY) - 15, 26, 28, () => mapTap(nd));
     g.drawImage(MAPSIGN, nd.x + 8, nd.y - 12);
     const lk = nodeLocked(nd); const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
     /* THE ICON, on the disc itself: one per level (never two alike, docs/map-icons.png is the contact sheet),
@@ -4077,6 +4087,7 @@ function drawStore() {
   // TWO ROWS OF TABS, FOUR ACROSS (the order is src/store.js's); each is 9 tall so the skills tab still has its room
   { const perRow = 4, tw = Math.floor((w - 16) / perRow);
     STORE_TABS.forEach((t, k) => { const row = Math.floor(k / perRow), col = k % perRow, tx = x + 8 + col * tw, ty = 16 + row * 10, sel = k === storeTab; g.fillStyle = sel ? 'rgba(60,90,60,0.8)' : 'rgba(40,36,50,0.7)'; g.fillRect(tx, ty, tw - 3, 9); if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(tx + 0.5, ty + 0.5, tw - 4, 8); } text(t.name, tx + (tw - 3) / 2, ty + 2, sel ? UI.sel : UI.dim, 'center', 6); }); }
+  { const perRow = 4, tw = Math.floor((w - 16) / perRow); STORE_TABS.forEach((t, k) => TCH.hit(x + 8 + (k % perRow) * tw, 16 + Math.floor(k / perRow) * 10 - 1, tw - 3, 11, () => { if (storeTab !== k) { storeTab = k; storeI = 0; storeMsgT = 0; SFX.ui(); } })); }   /* (the tabs, tapped) */
   const tab = STORE_TABS[storeTab];
   if (tab.talent) { drawSkills(); return; }   /* SKILLS is the tree and its loadout, with the live previews */
   const items = storeItems(tab);
@@ -4084,6 +4095,7 @@ function drawStore() {
   // where it has the room to be read. The old rows clipped every description at two short lines.
   const listX = x + 8, listW = w - 16 - 112, pvX = x + w - 108, pvY = 38, pvW = 100, pvH = h - 53;
   const ROWS = 9, ROWH = 13, off = Math.max(0, Math.min(Math.max(0, items.length - ROWS), storeI - ROWS + 2));
+  items.forEach((k2, i) => { if (i >= off && i < off + ROWS) TCH.hit(listX, 40 + (i - off) * ROWH - 2, listW, ROWH - 1, () => { if (storeI === i) confirmPress = true; else { storeI = i; SFX.ui(); } }); });   /* a tap picks a row, a tap on the picked one buys or equips it */
   // the scroll marks go in the GUTTER left of the list, not over the first and last rows' prices
   if (off > 0) text('^', listX - 5, 41, UI.dim, 'center', 6);
   if (off + ROWS < items.length) text('v', listX - 5, 38 + ROWS * ROWH - 10, UI.dim, 'center', 6);
@@ -4380,6 +4392,7 @@ function drawSlots() {
   const levels = LEVELS.filter(l => !l.hidden).length;
   for (let i = 0; i < SLOTS; i++) {
     const p = readSlot(i), { x, y, w, h } = slotRect(i), sel = i === slotI;
+    TCH.hit(x, y, w, h, () => { if (slotI === i) confirmPress = true; else { slotI = i; slotMsg = ''; SFX.ui(); } });
     if (sel) { g.globalAlpha = 0.18 + 0.08 * Math.sin(time * 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 1, w + 2, h + 2); g.globalAlpha = 1; }
     g.fillStyle = sel ? 'rgba(30,26,44,0.95)' : 'rgba(20,16,30,0.85)'; g.fillRect(x, y, w, h); g.strokeStyle = sel ? '#ffd36b' : '#4a4a5a'; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
     text('SLOT ' + (i + 1), x + 44, y + 4, sel ? '#fff6e0' : UI.dim);
@@ -4487,6 +4500,7 @@ function menuAdjust(dir) {
   const k = menuItems()[menuI];
   if (k === '@TABS') { settingsTab = stepTab(settingsTab, dir); menuI = 0; menuBarY = null; SFX.ui(); return; }
   if (isHeader(k)) return;
+  if (TCH.adjustRow(k, dir)) { applySettings(); saveSettings(); SFX.ui(); return; }
   if (k === 'Brightness') SET.bright = BRIGHTS[(BRIGHTS.indexOf(SET.bright) + dir + BRIGHTS.length) % BRIGHTS.length];
   else if (k === 'Parallax') SET.parallax = PARALLAX[(PARALLAX.indexOf(SET.parallax) + dir + PARALLAX.length) % PARALLAX.length];
   else if (k === 'Arena tint') SET.tint = TINTS[(TINTS.indexOf(SET.tint) + dir + TINTS.length) % TINTS.length];
@@ -4514,6 +4528,7 @@ function menuAdjust(dir) {
 }
 function menuConfirm() {
   const k = menuItems()[menuI];
+  if (TCH.confirmRow(k)) { if (k !== 'Edit layout') { applySettings(); saveSettings(); } SFX.ui(); return; }   /* the TOUCH tab's own rows (src/touch.js) */
   if (k === 'Resume') { state = menuFrom; SFX.menuClose(); }
   else if (k === 'Map') { if (menuFrom !== 'play' || !fog) { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { mapOpen('pause'); SFX.uiSel(); } }
   else if (k === 'Co-op') {
@@ -4733,7 +4748,7 @@ const KEYS = {
 };
 addEventListener('keydown', e => {
   if (e.repeat) { e.preventDefault(); return; }
-  initAudio(); anyPress = true;
+  initAudio(); anyPress = true; TCH.keyUsed();
   if (state === 'rebind' && rebindKey(e)) { e.preventDefault(); return; }   /* a key being chosen for an action: used up here (src/controls.js) */
   if (state === 'title' && e.shiftKey && e.key === 'B') { bjOpen(); e.preventDefault(); return; }   /* THE HIDDEN BOSS LIST: SHIFT+B on the title screen (docs/PLAYTEST.md) */
   if (state === 'editor') { // the editor owns the letters; only the arrows fall through, to pan
@@ -4876,39 +4891,24 @@ function padRawTick(gps) {
   if (state !== 'play' && state !== 'talk') { if (rose(12)) upPress = true; if (rose(13)) downPress = true; if (rose(14)) leftPress = true; if (rose(15)) rightPress = true; }
   padRawPrev = cur; return used;
 }
-// Touch: on-screen pad on touch devices (or ?touch=1). Zones are in display pixels.
-const touchOn = ('ontouchstart' in window && navigator.maxTouchPoints > 0) || q.get('touch') === '1';
-const touches = new Map(); let touchZones = [];
-function layoutTouch() {
-  const W = disp.width, H = disp.height, b = Math.round(Math.min(W, H) * 0.11);
-  touchZones = [
-    { k: 'left', x: b * 0.4, y: H - b * 2.4, w: b * 1.4, h: b * 1.4, label: '<' }, { k: 'right', x: b * 2.2, y: H - b * 2.4, w: b * 1.4, h: b * 1.4, label: '>' },
-    { k: 'up', x: b * 1.3, y: H - b * 3.9, w: b * 1.4, h: b * 1.4, label: '^' }, { k: 'down', x: b * 1.3, y: H - b * 1.3, w: b * 1.4, h: b * 1.2, label: 'v' },
-    { k: 'jump', x: W - b * 1.8, y: H - b * 2.6, w: b * 1.4, h: b * 1.4, label: 'A' }, { k: 'atk', x: W - b * 3.4, y: H - b * 1.8, w: b * 1.4, h: b * 1.4, label: 'X' },
-    { k: 'dodge', x: W - b * 3.4, y: H - b * 3.6, w: b * 1.4, h: b * 1.4, label: 'B' }, { k: 'block', x: W - b * 1.8, y: H - b * 4.4, w: b * 1.4, h: b * 1.4, label: 'Y' },
-    { k: 'pause', x: W - b * 1.4, y: b * 0.3, w: b * 1.1, h: b * 0.8, label: 'II' },
-    { k: 'throw', x: W - b * 5.0, y: H - b * 2.6, w: b * 1.2, h: b * 1.2, label: 'F', skill: 0 },
-    {k:'skill2',x:W-b*6.4,y:H-b*2.6,w:b*1.2,h:b*1.2,label:'G',skill:1},
-    {k:'skill3',x:W-b*5,y:H-b*4.1,w:b*1.2,h:b*1.2,label:'3',skill:2},
-    {k:'skill4',x:W-b*6.4,y:H-b*4.1,w:b*1.2,h:b*1.2,label:'4',skill:3},
-  ];
-}
-const zoneOn = z => z.skill === undefined || (state === 'store' ? z.skill < slotsAt(heroLevel()) : !!skillAt(z.skill));
-function zoneAt(x, y) { for (const z of touchZones) if (zoneOn(z) && x >= z.x && x < z.x + z.w && y >= z.y && y < z.y + z.h) return z.k; return null; }
-function touchPress(k) { initAudio(); anyPress = true; if (k === 'jump') { jumpPress = true; confirmPress = true; } if (k === 'atk') atkPress = true; if (k === 'dodge') dodgePress = true; if (k === 'throw') throwPress = true; if(k==='skill2')skill2Press=true;if(k==='skill3')skill3Press=true;if(k==='skill4')skill4Press=true; if (k === 'up') talkPress = true; if (k === 'pause') pausePress = true; if (k === 'left') leftPress = true; if (k === 'right') rightPress = true; if (k === 'up') upPress = true; if (k === 'down') downPress = true; if (k !== 'pause' && k !== 'up') keys[k] = true; }
-function touchRelease(k) { if (k && k !== 'pause' && k !== 'up') keys[k] = false; }
-if (touchOn) {
-  layoutTouch(); addEventListener('resize', layoutTouch);
-  const upd = e => { e.preventDefault(); for (const t of e.changedTouches) { const k = zoneAt(t.clientX * DPR, t.clientY * DPR); const old = touches.get(t.identifier); if (old !== k) { touchRelease(old); if (k) touchPress(k); touches.set(t.identifier, k); } } };
-  disp.addEventListener('touchstart', upd, { passive: false }); disp.addEventListener('touchmove', upd, { passive: false });
-  const end = e => { e.preventDefault(); for (const t of e.changedTouches) { touchRelease(touches.get(t.identifier)); touches.delete(t.identifier); } };
-  disp.addEventListener('touchend', end, { passive: false }); disp.addEventListener('touchcancel', end, { passive: false });
-}
-function drawTouch() {
-  if (!touchOn) return;
-  dg.font = Math.round(touchZones[0].w * 0.45) + 'px "Press Start 2P", monospace'; dg.textAlign = 'center'; dg.textBaseline = 'middle';
-  for (const z of touchZones) { if (!zoneOn(z)) continue; const held = [...touches.values()].includes(z.k); dg.fillStyle = held ? 'rgba(143,209,96,0.55)' : 'rgba(20,16,30,0.42)'; dg.beginPath(); dg.roundRect(z.x, z.y, z.w, z.h, z.w * 0.25); dg.fill(); dg.strokeStyle = 'rgba(255,246,224,0.6)'; dg.lineWidth = 2; dg.stroke(); dg.fillStyle = 'rgba(255,246,224,0.85)'; dg.fillText(z.label, z.x + z.w / 2, z.y + z.h / 2); }
-}
+// Touch (src/touch.js): a floating stick, big ATTACK + JUMP with DODGE and BLOCK arced round the thumb, one contextual action button, tap menus,
+// a TOUCH settings tab, assists and haptics. This is only the glue: what a press MEANS lives here, what a thumb DOES lives there.
+const touchPressName = k => { initAudio(); anyPress = true; padLast = false;
+  if (k === 'jump') { jumpPress = true; jumpUpKey = false; } else if (k === 'confirm') confirmPress = true; else if (k === 'atk') atkPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true;
+  else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true;
+  else if (k === 'left') leftPress = true; else if (k === 'right') rightPress = true; else if (k === 'up') upPress = true; else if (k === 'down') downPress = true; };
+/* WHAT INTERACT WOULD DO NOW (src/touch-interact.js reads the same reach tests the keyboard path does) */
+const touchVerbNow = () => interactVerb({ P, state, props, talkers, L, warping: !!warp, talking: !!talk, shopRoom: !!(L && L.shop), hasKey: n => hasKey(n),
+  doorOpen: pr => !pr.mirror || FK.mirrorDoorOpen(L, pr, P), ferryOwes: () => { const fm = movers.find(mv => mv.ferry); return !!(fm && !fm.paid && !fm.free && fm.toll); } });
+/* AUTO-FACE (a touch assist): a swing turns to a foe just behind you when none is in front */
+const touchAutoFace = () => { if (state !== 'play' || !P || P.dead || P.hurt > 0) return; const f = TCH.faceFor(P, enemies.filter(e => e.alive && !e.harmless)); if (f) P.face = f; };
+const TCH = createTouch({ disp, dg, q, SET, save: () => saveSettings(), geom: () => ({ DPR, S, offX, offY }), state: () => state, keys, initAudio: () => initAudio(),
+  press: touchPressName, skillOn: i => !!skillAt(i), verb: touchVerbNow, autoFace: touchAutoFace });
+const touchOn = TCH.on, touchZones = () => TCH.allButtons();
+Object.assign(SETTING_TIPS, TCH.tips);
+{
+  if (touchOn && !SET.touchInit) { SET.touchInit = 1; if (SET.parts === 'normal' && SET.parallax === 'full') TCH.applyLite(true); saveSettings(); } }   /* A PHONE'S FIRST RUN: lighter particles and fewer backdrop layers, unless the player had already chosen */
+const drawTouch = () => TCH.draw();
 function clearPresses() { jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = false; jumpUpKey = false;
   if (players) for (const p of players) if (p !== players[0] && p.press) p.press = {}; }   /* the other hands are one-shot too, and are emptied on the same beat */
 
@@ -5198,7 +5198,7 @@ function rumble(ms, mag) { if (!SET.rumble) return; try { const gps = navigator.
 function sndAt(x, y, big) { const dx = x - (camX + VW / 2), dy = y - (camY + VH / 2), d = Math.hypot(dx, dy * 1.3), near = VW * 0.55;
   return { pan: Math.max(-0.7, Math.min(0.7, dx / (VW * 0.75))), v: d <= near ? 1 : Math.max(big ? 0.6 : 0.18, 1 - (d - near) / (VW * 0.9)) }; }
 // the player's own sounds are never placed: whatever hurts them, the cry is theirs
-function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { const r = damagePlayer0(fromX, dmg, o);
+function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { const hp0 = P.hp, r = damagePlayer0(fromX, dmg, o); if (r === 'blocked') TCH.buzz(P.parryT > 0.2 ? 'parry' : 'block'); else if (P.hp < hp0) TCH.buzz('hit');
   if (r === 'blocked') creditTurn(fromX);   /* and whether that was a blow turned for the PARTNER (the co-op block) */
   /* THE AUDITS' EAR (tools/audit-*.mjs): when a tool has set BK.log to an array, every blow on the hero is written down with the line it came from. Off (null) in play; it changes nothing. */
   if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgP', fromX, dmg, res: r, t: time, who: o && o.who ? o.who.t : null, by: (o && o.who) || updFoe || null, blow: o && o.blow || null, unblockable: !!(o && o.unblockable), stack: new Error().stack });
@@ -23758,7 +23758,7 @@ function callRaft(pr) {
 }
 function openTalk(t) { if (t.raftCall) { callRaft(t.who); return; } if (t.take) { takeTorch(t.who); return; } talk = { lines: t.lines.filter(Boolean), i: 0, who: t.who, name: t.name }; if (!talk.lines.length) { talk = null; return; } talkTo = t.who; state = 'talk'; SFX.text(); if (t.who && t.who.t === 'npc') t.who.lineI = 0; }
 function closeTalk() { talk = null; talkTo = null; state = 'play'; SFX.menuClose(); }
-const talkGlyph = () => padLast ? 'UP' : touchOn ? '^' : 'E';
+const talkGlyph = () => padLast ? 'UP' : touchOn ? (TCH.verbLabel() || 'TAP') : 'E';
 function updateProps(dt) {
   windFx.t = Math.max(0, windFx.t - dt); if (windFx.t <= 0) { windFx.on = false; windFx.soon = false; }
   if (talkPress && state === 'play' && !P.dead && !(P.hurt > 0) && !(P.asleep > 0)) { const t = talkers()[0]; if (t) openTalk(t); }
@@ -24608,6 +24608,7 @@ function update(dt) {
   }
   if (state === 'menu') {
     menuMsgT = Math.max(0, menuMsgT - dt);
+    if (TCH.editing()) { if (pausePress) TCH.endEdit(); return; }
     if (menuKind === 'map') { if (mapPress && mapFrom === 'play') pausePress = true; updatePauseMap(dt); return; }
     if (menuKind === 'settings') { const t = mapPress || talkPress ? 1 : talentsPress ? -1 : 0; if (t) { settingsTab = stepTab(settingsTab, t); menuI = 0; menuBarY = null; SFX.ui(); } }   /* TAB or E: the next tab; Q: the one before (LB / RB on a pad) */
     { const M = menuItems(); if (upPress) { do { menuI = (menuI + M.length - 1) % M.length; } while (isHeader(M[menuI])); SFX.ui(); }
@@ -24649,7 +24650,7 @@ function update(dt) {
        P.carry above, but only for a hoist's own load (P.ballast.t === 'load') - an underwater ballast stone (P.ballast on
        a different prop, takeBallast/dropBallast) is untouched: JUMP still drops it, ATTACK still swings, same as always. */
     if (P.ballast && P.ballast.t === 'load') { if (atkPress && !P.dead) throwLoad(P.ballast); atkPress = false; keys.atk = false; P.abuf = 0; }
-    if (jumpPress) { P.jbuf = SET.assist ? 0.2 : 0.12; P.jbufUp = jumpUpKey; P.jbufUpT = 0; } if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; P.abufUp = !!keys.up; P.abufLow = !!keys.down; } if (dodgePress) { P.dbuf = 0.12; P.dbufDir = 0; }
+    if (jumpPress) { P.jbuf = (SET.assist ? 0.2 : 0.12) * TCH.bufScale(); P.jbufUp = jumpUpKey; P.jbufUpT = 0; } if (atkPress) { P.abuf = 0.15 * TCH.bufScale(); P.abufDown = !!keys.down && !P.ground; P.abufUp = !!keys.up; P.abufLow = !!keys.down; } if (dodgePress) { P.dbuf = 0.12 * TCH.bufScale(); P.dbufDir = 0; }
     /* ONE DODGE, TWO WAYS TO ASK FOR IT (2026-09-24). Tapping a way twice IS the dodge button, pointed. It is read here with the
        other presses, not in updatePlayer: a double tap made during a hitstop is no longer lost, and everything that answers the
        button (a perch, a pin, a landing, the ceiling) answers the double tap the same way. */
@@ -27618,13 +27619,14 @@ const SET_TABS_NAME = id => (SET_TABS.find(t => t.id === id) || SET_TABS[0]).nam
 /* THE TAB STRIP: five labels across the top of Settings; the row it lives on (the first) is selectable, and LEFT/RIGHT change tab there */
 function drawTabStrip(x, y, w) {
   const sel = menuI === 0, gap = 4, ws = SET_TABS.map(t => textW(t.short, 6) + 8), tot = ws.reduce((a, b) => a + b, 0) + gap * (SET_TABS.length - 1); let sx = Math.round(x + (w - tot) / 2);
-  SET_TABS.forEach((t, k) => { const on = t.id === settingsTab;
+  SET_TABS.forEach((t, k) => { TCH.hit(sx, y - 2, ws[k], 14, () => { settingsTab = t.id; menuI = 0; menuBarY = null; SFX.ui(); }); const on = t.id === settingsTab;
     g.fillStyle = on ? (sel ? 'rgba(143,209,96,0.34)' : 'rgba(255,211,107,0.22)') : 'rgba(255,255,255,0.06)'; g.fillRect(sx, y, ws[k], 10);
     if (on) { g.fillStyle = '#ffd36b'; g.fillRect(sx, y + 10, ws[k], 1); }
     text(t.short, sx + ws[k] / 2, y + 2, on ? UI.title : UI.dim, 'center', 6); sx += ws[k] + gap; });
   if (sel) { text('<', x + 8, y + 2, UI.sel, 'center', 6); text('>', x + w - 8, y + 2, UI.sel, 'center', 6); }
 }
 function drawMenu() {
+  if (TCH.editing()) return;   /* the touch layout editor draws its own screen (src/touch.js) */
   if (menuKind === 'map') { drawPauseMap(); return; }
   const open = Math.min(1, (time - menuSince) / 0.22), eo = 1 - Math.pow(1 - open, 3);
   g.fillStyle = 'rgba(10,14,12,' + (0.7 * eo).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
@@ -27643,9 +27645,10 @@ function drawMenu() {
     const yy = top0 + (i - base - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : UI.title) : (dim ? '#5a5f5a' : UI.dim);
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); g.fillStyle = '#ffd36b'; for (const dx of [x + w / 2 - hw - 2, x + w / 2 + hw + 1]) { g.fillRect(Math.round(dx), yy + 2, 1, 3); g.fillRect(Math.round(dx) - 1, yy + 3, 3, 1); } text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     const onoff = v => v ? 'ON' : 'OFF';
-    const v = k === 'Slot 3 key' ? SET.skill3Key.toUpperCase() : k === 'Slot 4 key' ? SET.skill4Key.toUpperCase() : k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? onoff(SET.wayOn) : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeMode === 'off' ? 'OFF' : SET.shakeMode === 'full' ? 'FULL' : 'ON HIT') : k === 'Shake strength' ? (SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
+    const tv = TCH.rowValue(k), v = tv != null ? tv : k === 'Slot 3 key' ? SET.skill3Key.toUpperCase() : k === 'Slot 4 key' ? SET.skill4Key.toUpperCase() : k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? onoff(SET.wayOn) : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeMode === 'off' ? 'OFF' : SET.shakeMode === 'full' ? 'FULL' : 'ON HIT') : k === 'Shake strength' ? (SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
     const vs = v ? (sel ? '< ' + v + ' >' : String(v)) : '';
     const vw = vs ? textW(vs, 8) + 8 : 0;
+    if (!isHeader(k) && k !== '@TABS') TCH.hit(x + 5, yy - 2, w - 10, 11, gx => { menuI = i; menuBarY = null; if (!vs) confirmPress = true; else if (gx >= x + w - 10 - vw && gx < x + w - 10 - vw / 2) leftPress = true; else rightPress = true; });   /* a tap on a row: a plain row goes in, a row with a value turns it (the left half of the value turns it back) */
     text(fitText(k, w - 30 - vw, 8), x + 16 + (sel ? 2 : 0), yy, col);
     if (vs) { g.fillStyle = sel ? 'rgba(143,209,96,0.22)' : 'rgba(255,255,255,0.06)'; g.fillRect(x + w - 10 - vw, yy - 1, vw, 9); text(vs, x + w - 14, yy, col, 'right'); }
   });
@@ -28116,7 +28119,7 @@ function drawEdPalette() {
 }
 
 function render() {
-  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;   /* one bad draw (a throw between a save and its restore) must never poison the frames after it: the Falling Tower purple screen */
+  TCH.beginFrame(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;   /* one bad draw (a throw between a save and its restore) must never poison the frames after it: the Falling Tower purple screen */
   setView(desiredView());
   const sh = SET.shake ? shake : 0;
   const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, camX)) + kick + (sh ? (Math.random() - 0.5) * sh * 2 : 0)), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, camY)) + (sh ? (Math.random() - 0.5) * sh * 2 : 0)); /* never past the level's edge, whatever moved the camera */
@@ -28370,7 +28373,7 @@ function render() {
       panel(mx + ox, my, mw, mh);
       const want = my + 6 + titleI * 13; titleBarY = titleBarY === null ? want : titleBarY + (want - titleBarY) * 0.3;
       g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, mw - 8, 12); g.fillStyle = UI.sel; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, 2, 12);
-      items.forEach((k, i) => { const sel = i === titleI, yy = my + 6 + i * 13, a = Math.max(0, Math.min(1, (since - 0.45 - i * 0.07) / 0.2));
+      items.forEach((k, i) => { TCH.hit(mx + ox + 4, my + 4 + i * 13, mw - 8, 13, () => { titleI = i; confirmPress = true; initAudio(); }); const sel = i === titleI, yy = my + 6 + i * 13, a = Math.max(0, Math.min(1, (since - 0.45 - i * 0.07) / 0.2));
         g.globalAlpha = a; text(k, mx + ox + 16 + (sel ? 2 : 0), yy, sel ? UI.title : UI.dim, 'left'); g.globalAlpha = 1;
         if (sel) { const bob = Math.round(Math.sin(time * 6) * 1.5), cxs = mx + ox + 8 + bob; g.fillStyle = '#c9d1dc'; g.fillRect(cxs, yy + 3, 5, 1); g.fillStyle = '#e0b040'; g.fillRect(cxs + 5, yy + 1, 1, 5); g.fillStyle = '#7a4a2a'; g.fillRect(cxs + 6, yy + 3, 2, 1); } });
       // what waits in the save you would continue
@@ -28378,7 +28381,7 @@ function render() {
       g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(mx + ox + 6, my + mh - 14, mw - 12, 1);
       text(sv ? 'SLOT ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SLOT ' + (slot + 1) + '  A NEW KNIGHT',
         mx + ox + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
-    text(touchOn ? 'touch pad on screen' : 'ARROWS choose   Z or X enter   ESC settings', VW / 2, 169, UI.dim, 'center', 6);
+    text(touchOn ? 'tap an item' : 'ARROWS choose   Z or X enter   ESC settings', VW / 2, 169, UI.dim, 'center', 6);
   }
 
   if (state === 'slots') drawSlots();
@@ -28510,6 +28513,7 @@ function tick(now) {
   pollGamepad();
   let dt = (now - last) / 1000; last = now;
   if (!(dt >= 0)) dt = 0; if (dt > 0.12) dt = 0.12;
+  TCH.tick(dt);
   acc += dt;
   let n = 0; const tu = performance.now();
   while (acc >= STEP && n < 8) { update(STEP); acc -= STEP; n++; clearPresses(); }
@@ -28565,7 +28569,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   flyers: () => FLYERS,   /* the creatures that legitimately have no floor under them: src/playtest.js's runtime floater sample reads this instead of keeping a second list */
   waterKin: () => HEEL_SWIMS,   /* what the sea does not drown: it lives IN or BY the water, not on a floor tile - the same list the runtime floater sample reads instead of keeping a second one */
   risen: () => risen, bodies: () => bodies,
-  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, wardJav: () => wardJav, spearRain: () => spearRain, geo: () => GEO, geoK: GEO_K, realmWaves: () => realmWaves, damagePlayer: (x, d, o) => damagePlayer(x, d, o), skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'skill3') skill3Press = true; if (k === 'skill4') skill4Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; if (k === 'left') leftPress = true; if (k === 'right') rightPress = true; if (k === 'up') upPress = true; if (k === 'down') downPress = true; }, unpress: () => clearPresses(),   /* (the bot's duck: a swing or a roll it asked for this frame is taken back) */ get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get front() { return { fade: frontFade, covered: frontCovered }; }, set hideHero(v) { heroHidden = !!v; }, set frontOff(v) { frontOff = !!v; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, tileSpr: () => tileSpr, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, vines: () => vines, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones: () => touchZones, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
+  get throneBlock() { return throneBlock; }, get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, wardJav: () => wardJav, spearRain: () => spearRain, geo: () => GEO, geoK: GEO_K, realmWaves: () => realmWaves, damagePlayer: (x, d, o) => damagePlayer(x, d, o), skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'skill3') skill3Press = true; if (k === 'skill4') skill4Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; if (k === 'left') leftPress = true; if (k === 'right') rightPress = true; if (k === 'up') upPress = true; if (k === 'down') downPress = true; }, unpress: () => clearPresses(),   /* (the bot's duck: a swing or a roll it asked for this frame is taken back) */ get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, RELICS, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get front() { return { fade: frontFade, covered: frontCovered }; }, set hideHero(v) { heroHidden = !!v; }, set frontOff(v) { frontOff = !!v; }, get escape() { return escape; }, rocks: () => rocks, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, tileSpr: () => tileSpr, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, vines: () => vines, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones, touch: TCH, touchVerbs: VERB_HOOKS, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   /* THE DEATH COST, for tools/death-cost.mjs: whose bundle and carry, a blow on a chosen hero (by a chosen creature, or a hazard), and the level count */
   dc: { bundle: n => bundleOf(players[n || 0]), carry: n => carryOf(players[n || 0]), tick: dt => dcTick(dt), hit: (n, who) => asPlayer(players[n || 0], () => damagePlayer(P.x, 999, who ? { who, unblockable: true, blow: 'the test' } : { name: 'THE SPIKES' })), get got() { return got; }, set got(v) { got = v; }, sess: () => dcSess, draws: () => dcDraws, hazard: (x, y) => dcHazard(x, y), checkpoint: () => checkpoint },
@@ -28661,7 +28665,7 @@ if (q.get('playtest') === '1') setTimeout(async () => {
 if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
 if (q.get('chase') === 'demo') { chaseDemo(q.get('hero')); }   /* THE PLAYTEST CHASE DEMO: ?chase=demo[&hero=<id>] (docs/PLAYTEST.md), never saved */
 window.BK.levelJump = (id, h) => levelJump(id, h);
-window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on => mapFooter(open, on).map(f => ({ ...f, w: textW(f.t, 6) })))); window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */
+window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on => mapFooter(open, on).map(f => ({ ...f, w: textW(f.t, 6) })))); window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */ window.BK.mapNodes = () => ({ node: map.node, walking: map.walking, goal: mapGoal, hitOrder: NODES.map((n, i) => (nodeSecret(n) ? -1 : i)).filter(i => i >= 0), ids: NODES.map(n => n.id), spur: NODES.map(n => !!n.spur), locked: NODES.map(n => !!nodeLocked(n)) });   /* tools/touch.mjs: which node each tap box on the map belongs to */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'))) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'))) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 LS.bootDone();
