@@ -93,7 +93,6 @@ export const BY_HAND = {
   'archer|draw': '!',        // an arrow: a seed the shield turns
   'sprig|biteTell': '!',     // the bite: a plain damagePlayer
   'shield|shoveTell': '!',   // the shove: a plain damagePlayer, blocked it only pushes
-  'shield|counterTell': '!', // (weighty, Kingswood: src/weighty.js) the counter after it PARRIES a mashing hero: a plain damagePlayer, a shield turns it
   'thorn|wind': '!',         // the charge: contact damage the shield turns
   'wasp|stingTell': '!',     // the river wasp's dart: a shield turns it
   'sailer|sail': '!',        // (updateSailer, not inline, but an if-chain) the big sailer under canvas: blocked, she spills
@@ -204,7 +203,7 @@ export const MARK = {
   'scalder|ladleTell': '!', 'scalder|pourTell': '!!', 'scarecrow|swipeTell': '!', 'scorpion|clawTell': '!', 'scorpion|tailTell': '!!', 'scout|lungeTell': '!',
   'scout|pinchTell': '!', 'scout|snapTell': '!', 'scout|strikeTell': '!', 'scout|thrustTell': '!', 'seawitch|callTell': '!!', 'sexton|dropTell': '!!',
   'sexton|rushTell': '!', 'sexton|swingTell': '!', 'sexton|tollTell': '!!', 'shardling|shedTell': '!!', 'sheargob|cutTell': '!!', 'sheargob|snipTell': '!',
-  'shield|counterTell': '!', 'shield|elChargeTell': '!', 'shield|elWallTell': '', 'shield|shoveTell': '!', 'siren|lungeTell': '!', 'siren|pinchTell': '!',
+  'shield|elChargeTell': '!', 'shield|elWallTell': '', 'shield|shoveTell': '!', 'siren|lungeTell': '!', 'siren|pinchTell': '!',
   'siren|snapTell': '!', 'siren|strikeTell': '!', 'siren|thrustTell': '!', 'slinger|kickTell': '!', 'slinger|slingTell': '!', 'snuffer|snuffTell': '',
   'snuffer|swipeTell': '!', 'soldier|grabTell': '!!', 'soldier|raise': '!!', 'soldier|slashTell': '!', 'soldier|windUp': '!', 'spider|drop': '!',
   'spider|dropTell': '!', 'spider|reelTell': '!', 'spider|spitTell': '!', 'spitcap|swellTell': '!!', 'spit|spitTell': '!', 'sporeling|biteTell': '!',
@@ -331,7 +330,7 @@ export const ANSWER = {
   'scout|lungeTell': 'block', 'scout|pinchTell': 'block', 'scout|snapTell': 'block', 'scout|strikeTell': 'block', 'scout|thrustTell': 'block',
   'seawitch|callTell': 'dodge',
   'sheargob|cutTell': 'dodge', 'sheargob|snipTell': 'block',
-  'shield|counterTell': 'block', 'shield|elChargeTell': 'block', 'shield|shoveTell': 'block',   // (the counter: weighty, Kingswood)
+  'shield|elChargeTell': 'block', 'shield|shoveTell': 'block',
   'siren|lungeTell': 'block', 'siren|pinchTell': 'block', 'siren|snapTell': 'block', 'siren|strikeTell': 'block', 'siren|thrustTell': 'block',
   'slinger|kickTell': 'block', 'slinger|slingTell': 'block',
   'snuffer|swipeTell': 'block',
@@ -517,7 +516,7 @@ export const HEIGHT = {
   'seawitch|callTell': 'low',
   'shardling|shedTell': 'low',
   'sheargob|cutTell': 'low', 'sheargob|snipTell': 'low',
-  'shield|counterTell': 'low', 'shield|elChargeTell': 'low', 'shield|shoveTell': 'low',   // (the counter is the rim at the body: weighty, Kingswood)
+  'shield|elChargeTell': 'low', 'shield|shoveTell': 'low',
   'siren|lungeTell': 'low', 'siren|pinchTell': 'low', 'siren|snapTell': 'low', 'siren|strikeTell': 'low', 'siren|thrustTell': 'low',
   'slinger|kickTell': 'low', 'slinger|slingTell': 'low',
   'snuffer|swipeTell': 'low',

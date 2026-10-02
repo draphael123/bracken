@@ -38,6 +38,8 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 /* KNOWN HOLES. Each one is a path a tracked file points at that no clone has, with why. Delete a line the moment the
    file is committed - the tool tells you when that happens. A list that only ever grows is a way of not fixing it. */
 const MISSING = new Map([
+  ['tools/weighty.mjs', 'RETIRED ON PURPOSE (claude/retireweighty, Daniel 10-02): Combat3 made classic hit harder than Weighty, so the Weighty mode and its check were deleted. The old lane reports (claude-ssproto, claude-combat3) still name it as history.'],
+  ['src/weighty.js', 'RETIRED ON PURPOSE with tools/weighty.mjs (claude/retireweighty): the Weighty combat module is gone; claude-ssproto.md describes it as history.'],
   ['tools/lit-church.mjs', 'NOT BUILT YET, SAID SO. docs/concepts/the-lit-church.md and its brief name the level check the church lane will write; the level is scheduled after FAIRFIX2. Delete this line when the file is committed.'],
   ['.claude/briefs/desert-arc.md', 'AN INSTRUCTION NOT YET CARRIED OUT, not lost design. docs/desert-arc-brief.md:5 says to copy itself here when its branch merges; the branch has not merged, and the design is readable at docs/desert-arc-brief.md meanwhile. Delete this line when the copy happens - or drop the instruction if the arc is going to keep living in docs/.'],
   ['work/', 'SCRATCH, AND SEVERAL OF THESE CARRY A SESSION UUID (work/a33bc100-.../). Tracked documents cite a directory no clone has. Harmless where it is an aside about how a number was got; a dead end where a reader is told to go and read it. Re-point or drop them as each document is next touched.'],
