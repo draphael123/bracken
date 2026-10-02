@@ -5956,7 +5956,7 @@ function hazardFoe(e) {
 function bossChip(e, dmg, raw = dmg, hero = false) {
   /* THE GLOBAL BOSS RULE (claude/combat3, src/boss-greed.js): last of all, after every boss's own multiplier, a HERO'S blow (or his burn) on
      THE boss outside an opening lands at a twentieth of what it was (raw) - or at what his own ward made of it, if that is less */
-  if (hero && e === boss && GB.chipped(e, true)) { const d0 = dmg; dmg = GB.chipOf(e, dmg, raw); if (dmg < d0) e.chipHit = time; }
+  if (hero && (e === boss || e.xpRole === 'mini') && GB.chipped(e, e === boss)) { const d0 = dmg;   /* (claude/bosswave1: and a mini on the chip, GB.CHIP_MINI) */ dmg = GB.chipOf(e, dmg, raw); if (dmg < d0) e.chipHit = time; }
   return dmg;
 }
 function wardedDamage(e, dmg) {
@@ -5984,7 +5984,7 @@ function hurtEnemy(e, dmg, fromX, plunge) { const blow = BLOW; BLOW = null;   /*
 function greedHit(e, fromX, blow) {
   const isB = e === boss, isM = e.xpRole === 'mini';
   if (!blow || !(isB || isM) || !e.alive) return;
-  if (isB && e.chipHit === time) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * ((e.w || 20) / 2), e.y - (e.h || 20) / 2, Math.sign(fromX - e.x) || 1, 3);
+  if ((isB || GB.chipped(e, false)) && e.chipHit === time) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * ((e.w || 20) / 2), e.y - (e.h || 20) / 2, Math.sign(fromX - e.x) || 1, 3);
     if (!(e.chipSaid > time)) { e.chipSaid = time + 5; number(e.x, e.y - (e.h || 20) - 14, 'A SCRATCH: WAIT FOR HIS OPENING', '#9aa39a');
       PROG.chipTold = (PROG.chipTold || 0) + 1; if (PROG.chipTold <= 2) { hintT = 4.5; hintMsg = 'OUTSIDE HIS OPENINGS A BOSS TAKES A SCRATCH. READ HIM, ANSWER HIM, THEN STRIKE.'; } } }
   if (GB.noteGreed(e, time, isB, isM)) SFX.tell(true);
@@ -11830,7 +11830,7 @@ function updateTurret(e, dt) {
    PHASE TWO (A10, half health): its tricks come in PAIRS, the second told as the first ends, and only the second's miss breaks
    the jar - and a broken jar now leaves a cloud of its smoke where it smashed, and when the bare window ends it HIDES IN THE
    SMOKE (a breath, at most HOM.hideT) and comes out of it at you with a scuttle. ---------- */
-const HOM = { bare: { swipe: 1.3, scuttle: 2.0, pounce: 2.0, pound: 2.0, flask: 2.2 }, bareP2: 0.85, gloat: 0.55, hideT: 1.4, smokeT: 4.5, smokeR: 22 };
+const HOM = { bare: { swipe: 1.3, scuttle: 2.0, pounce: 2.0, pound: 2.0, flask: 2.2 }, bareP2: 0.85, bareMin: 3.0, bareTake: 1.15, bareCap: 0.34,   /* (claude/bosswave1) bare it takes x1.15 (was 1.6) and a third of its blood at most: one flask that missed was the whole fight */ gloat: 0.55, hideT: 1.4, smokeT: 4.5, smokeR: 22 };
 /* a trick is over: it landed (the jar stays on), or it missed and the jar breaks WHERE YOU WERE */
 function homDone(e) {
   const tk = e.trick; e.trick = null;
@@ -11841,7 +11841,7 @@ function homDone(e) {
   burst(x, fy - 4, 18, ['#c8e8f0', '#ffffff', '#8ab0c8', '#8fd160'], 110, 0.55); SFX.flaskBreak(); shakeCam(3);
   number(x, fy - 26, 'MISSED: ITS JAR BREAKS', '#8fd160');
   if (e.phase === 2) { MG.smokes = MG.smokes || []; MG.smokes.push({ x, y: fy, t: HOM.smokeT }); }
-  e.mode = 'bare'; e.modeT = HOM.bare[tk || 'swipe'] * (e.phase === 2 ? HOM.bareP2 : 1); e.open = e.modeT; e.vx = 0; e.bares = (e.bares || 0) + 1;
+  e.mode = 'bare'; e.modeT = Math.max(HOM.bareMin, HOM.bare[tk || 'swipe'] * (e.phase === 2 ? HOM.bareP2 : 1)); e.open = e.modeT;   /* (claude/bosswave1: on the chip now, so its one window is never under HOM.bareMin s) */ e.vx = 0; e.bares = (e.bares || 0) + 1;
   mageHint('bare', 'IT MISSED, AND ITS JAR IS GONE. CUT IT WHILE IT IS BARE - EVERY TRICK YOU DODGE IS ANOTHER JAR.');
 }
 function updateHomunculus(e, dt) {
@@ -11890,8 +11890,8 @@ function updateHomunculus(e, dt) {
     case 'pound': e.vx = 0; if (e.modeT <= 0) homDone(e); break;   /* the waves run their length before it knows */
     case 'gloat': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.T.trick = e.phase === 2 ? 1.6 : 2.2; } break;
     /* THE OPENING: bare, its jar in pieces where you stood */
-    case 'bare': e.vx = 0; if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - 18, vx: 0, vy: 20, life: 0.4, max: 0.4, col: '#8fd160', size: 1, grav: 60 });
-      if (e.modeT <= 0) { e.open = 0; const sm = (MG.smokes || []).filter(s => s.t > HOM.hideT).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0];
+    case 'bare': e.vx = 0; if (e.bareHp === undefined) e.bareHp = e.hp; if (e.modeT > 0 && e.bareHp - e.hp >= fullHp(e) * HOM.bareCap) { e.modeT = 0; number(e.x, e.y - 40, 'IT GATHERS ITS GLASS', MVIO[3]); } if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - 18, vx: 0, vy: 20, life: 0.4, max: 0.4, col: '#8fd160', size: 1, grav: 60 });
+      if (e.modeT <= 0) { e.open = 0; e.bareHp = undefined; const sm = (MG.smokes || []).filter(s => s.t > HOM.hideT).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0];
         if (e.phase === 2 && sm && !e.smoked) { e.smoked = true; e.hidden = true; e.mode = 'hide'; e.modeT = HOM.hideT; e.x = sm.x; e.vx = 0; e.vy = 0; SFX.puff(); burst(sm.x, sm.y - 10, 10, ['#6a5a7a', '#9a8aaa'], 50, 0.5); number(sm.x, sm.y - 34, 'IT IS IN THE SMOKE', MVIO[3]); }
         else { e.mode = 'walk'; e.T.trick = e.phase === 2 ? 1.6 : 2.4; } } break;
     /* PHASE TWO: it hides in the smoke of its own broken jar, and comes out of it at you */
@@ -12288,7 +12288,7 @@ function archHurt(e, dmg, fromX, blow) {
 /* the health each part of the fight ends at (ARCH.gates): the duel at two thirds, the flood, the orrery and the room turned over 12% each
    (66-54-42-30), and THE MIRRORS from 30% to the end (claude/folly3) */
 function archGate(e) { const R = MG && MG.A, sub = R ? R.sub : 0; return e.stage === 1 ? e.maxHp * ARCH.gates[0] : e.stage === 2 ? e.maxHp * (ARCH.gates[sub] ?? 0) : 0; }
-function homHurt(e, dmg) { if (e.hidden) return 0; return e.open > 0 ? Math.round(dmg * 1.6) : Math.max(1, Math.round(dmg * 0.35)); }   /* bare, it takes the blow; in its jar most of it glances; in the smoke there is nothing there to hit (claude/weakboss: 2 and 0.55 were) */
+function homHurt(e, dmg) { if (e.hidden) return 0; return e.open > 0 ? Math.round(dmg * HOM.bareTake) : Math.max(1, Math.round(dmg * 0.3)); }   /* (claude/bosswave1: the jar 0.35 -> 0.3, as bare fell 1.6 -> 1.15, so the jar still turns most of a blow) bare, it takes the blow; in its jar most of it glances; in the smoke there is nothing there to hit (claude/weakboss: 2 and 0.55 were) */
 const archBarName = b => b.fam ? (b.open > 0 ? 'THE FAMILIAR  THE EYE' : 'THE FAMILIAR  UNBOUND') : b.mode === 'ward' ? 'THE ARCHMAGE  WARDED' : b.open > 0 ? 'THE ARCHMAGE  OPEN' : b.stage === 2 ? (MG && MG.A && MG.A.sub === 1 ? 'THE ARCHMAGE  THE FLOOD' : MG && MG.A && MG.A.sub === 2 ? 'THE ARCHMAGE  THE ORRERY' : 'THE ARCHMAGE  TURNED OVER') : 'THE ARCHMAGE';
 /* the room's timekeeping that is not his: the circle he draws, and the orrery's counterweight */
 function updateArchmageRoom(dt, hb) {
@@ -14918,7 +14918,12 @@ function updateWeaver(e, dt) {
 }
 
 // The Great Hound: a beast, not a rider. Lunge (jump it: blocked, it skids), pounce (dodge: it lands stunned), howl (kill both pups fast and it whines). Enraged, it snaps at anything next to it.
+/* ITS OPENINGS (claude/bosswave1: minis on the chip): its lunge taken on a shield (IT SKIDS), or its pups killed in time (IT WHINES) - each
+   GH_OPEN s, told. Its landing off a pounce (0.8 s, free to anyone) is no longer one. */
+const GH_OPEN = 3.0, GH_TAKE = 0.34;   /* ... and a window is worth a third of it at most: one whine took 75% of it from the mash bot */
 function updateGreatHound(e, dt) {
+  if (e.open > 0) { if (e.openHp === undefined || e.openAt !== e.openN) { e.openHp = e.hp; e.openAt = e.openN; } e.open -= dt;
+    if (e.openHp - e.hp >= e.maxHp * GH_TAKE) { e.open = 0; e.modeT = Math.min(e.modeT, 0); e.stagger = 0; number(e.x, e.y - e.h - 12, 'IT SHAKES IT OFF', '#ff9a5c'); } }
   e.modeT -= dt; e.vy += 1000 * dt; if (e.vy > 320) e.vy = 320; e.hitT = Math.max(0, e.hitT - dt);
   const d = P.x - e.x, ad = Math.abs(d); const M = L.mini || { x0: 0, x1: LW * TS, floor: e.y }; const p2 = e.phase === 2;
   if (e.mode === 'wait') { const r = moveBody(e, 0, e.vy * dt, false); if (r.ground) e.vy = 0; return; }
@@ -14926,11 +14931,11 @@ function updateGreatHound(e, dt) {
   for (const k of ['lungeT', 'pounceT', 'howlT']) e[k] -= dt;
   const tell = (txt, col, t, mode) => { e.mode = mode; e.modeT = t; e.face = Math.sign(d) || e.face; e.vx *= 0.2; number(e.x, e.y - e.h - 12, txt, col); };
   const tc = enemies.find(h => h.alive && h.t === 'hound' && h.turncoat);
-  if (tc && Math.abs(tc.x - e.x) < 20 && Math.abs(tc.y - e.y) < 16 && !(tc.biteT > 0) && e.mode !== 'pounce') { tc.biteT = 3.5; e.mode = 'stun'; e.modeT = 1.6; e.stagger = 1.6; e.vx = 0; number(e.x, e.y - e.h - 12, 'THE KENNEL HOUND BITES IT', '#8fd160'); SFX.yelp(); tc.retreat = 1.0; tc.vx = -(Math.sign(e.x - tc.x) || 1) * 150; }
+  if (tc && Math.abs(tc.x - e.x) < 20 && Math.abs(tc.y - e.y) < 16 && !(tc.biteT > 0) && e.mode !== 'pounce') { tc.biteT = 3.5; e.mode = 'stun'; e.modeT = 1.6; e.stagger = 1.6;   /* (claude/bosswave1) a stagger, not an opening: the kennel hound bites every 3.5 s, and as a 3 s opening it held the hound open all fight */ e.vx = 0; number(e.x, e.y - e.h - 12, 'THE KENNEL HOUND BITES IT', '#8fd160'); SFX.yelp(); tc.retreat = 1.0; tc.vx = -(Math.sign(e.x - tc.x) || 1) * 150; }
   let want = 0;
   if (e.mode === 'stun' || e.mode === 'skid' || e.mode === 'whine' || e.mode === 'landed') { if (e.mode === 'skid') want = e.vx * 0.9; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.4; e.stagger = 0; } }
   else if (e.mode === 'lungeTell') { if (e.modeT <= 0) { e.mode = 'lunge'; e.modeT = 0.55; e.vx = e.face * (p2 ? 300 : 270); SFX.bark(); dust(e.x - e.face * 10, e.y, 8); } }
-  else if (e.mode === 'lunge') { want = e.face * (p2 ? 300 : 270); if (!P.dead && ad < 18 && Math.abs(P.y - e.y) < 18 && e.hitT <= 0) { e.hitT = 0.6; const res = damagePlayer(e.x, DMG.greathound); if (res === 'blocked') { e.mode = 'skid'; e.modeT = 2.0; e.stagger = 2.0; e.vx = e.face * 140; number(e.x, e.y - e.h - 12, 'IT SKIDS: HIT IT', '#8fd160'); SFX.yelp(); } else if (res === 'hit') { P.vx = e.face * 220; } } if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.6; } }
+  else if (e.mode === 'lunge') { want = e.face * (p2 ? 300 : 270); if (!P.dead && ad < 18 && Math.abs(P.y - e.y) < 18 && e.hitT <= 0) { e.hitT = 0.6; const res = damagePlayer(e.x, DMG.greathound); if (res === 'blocked') { e.mode = 'skid'; e.modeT = GH_OPEN; e.stagger = GH_OPEN; e.open = GH_OPEN; e.openN = (e.openN || 0) + 1; e.vx = e.face * 140; number(e.x, e.y - e.h - 12, 'IT SKIDS: HIT IT', '#8fd160'); SFX.yelp(); } else if (res === 'hit') { P.vx = e.face * 220; } } if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.6; } }
   else if (e.mode === 'pounceTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'pounce'; e.modeT = 1.4; e.vy = -320; const tx = ad < 64 ? P.x + e.face * 46 : P.x; e.vx = (tx - e.x) / 0.64; e.airT = 0; SFX.leap(); SFX.bark(); number(e.x, e.y - e.h - 12, ad < 64 ? 'OVER YOU' : 'POUNCE', '#ff6b6b'); } }
   else if (e.mode === 'pounce') { want = e.vx; e.airT += dt; if (e.airT > 0.15 && e.vy >= 0 && e.y >= M.floor - 1) { e.y = M.floor; e.vy = 0; e.vx = 0; shakeCam(5); SFX.thud(); dust(e.x, e.y, 12); for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 16, y: M.floor, dir: dd, life: 1.2, sp: 150 }); e.mode = 'landed'; e.modeT = 0.8; e.stagger = 0.8; number(e.x, e.y - e.h - 12, 'IT LANDS: HIT IT', '#8fd160'); if (!P.dead && ad < 24 && Math.abs(P.y - e.y) < 20 && P.ground && P.dodge <= 0) { const res = damagePlayer(e.x, DMG.pounce); if (res === 'hit') P.vx = (Math.sign(P.x - e.x) || 1) * 220; } } }
   else if (e.mode === 'howlTell') { if (e.modeT <= 0) { e.mode = 'howl'; e.modeT = 0.8; SFX.bark(); SFX.roar(); number(e.x, e.y - e.h - 12, p2 ? 'THE PACK HOWL' : 'AWOOO', '#c080ff');
@@ -14940,7 +14945,7 @@ function updateGreatHound(e, dt) {
   else if (e.mode === 'howl') { if (e.modeT <= 0) { e.mode = 'circle'; e.modeT = 9; } }
   else if (e.mode === 'circle') { // keeps its distance while the pups work; both pups dead in time and it whines
     e.face = Math.sign(d) || e.face; want = ad < 90 ? -e.face * 110 : ad > 150 ? e.face * 90 : 0;
-    if (pups.length === 0) { e.mode = 'whine'; e.modeT = 2.4; e.stagger = 2.4; e.vx = 0; number(e.x, e.y - e.h - 12, 'IT WHINES: HIT IT', '#8fd160'); SFX.yelp(); SFX.yelp(); }
+    if (pups.length === 0) { e.mode = 'whine'; e.modeT = GH_OPEN; e.stagger = GH_OPEN; e.open = GH_OPEN; e.openN = (e.openN || 0) + 1; e.vx = 0; number(e.x, e.y - e.h - 12, 'IT WHINES: HIT IT', '#8fd160'); SFX.yelp(); SFX.yelp(); }
     else if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.5; }
   }
   else if (e.mode === 'snapTell') { if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.5; SFX.slash(); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 30 && Math.abs(P.y - e.y) < 20) { const res = damagePlayer(e.x, DMG.snap); if (res === 'hit') P.vx = e.face * 160; else if (res === 'blocked') { e.stagger = 0.6; e.mode = 'stun'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, 'PARRIED', '#8fd160'); } } for (const h of enemies) if (h.alive && h.turncoat && Math.sign(h.x - e.x) === e.face && Math.abs(h.x - e.x) < 30) hurtEnemy(h, 15, e.x, false); } }
@@ -15865,6 +15870,7 @@ function lancerFrame(e) {
   if (e.hurtT > 0) return 15;
   return m === 'unhorsed' ? 13 : m === 'cutTell' ? 11 : m === 'cut' ? 12 : Math.abs(e.vx) > 6 ? 9 + Math.floor(e.anim * 6) % 2 : 9;
 }
+const LANCER_OPEN = 3.0;
 function updateLancer(e, dt) {
   const A = e.mini && L.mini ? L.mini : null, lo = A ? A.x0 + 22 : e.hx0, hi = A ? A.x1 - 22 : e.hx1;
   const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
@@ -15873,7 +15879,8 @@ function updateLancer(e, dt) {
   if (e.mini && !miniActive) { const r0 = moveBody(e, 0, e.vy * dt, false); if (r0.ground) e.vy = 0; return; }   /* the Serjeant of the Lists waits for the gate to shut */
   if (e.mini && e.phase === 1 && e.hp < e.hp0 / 2) { e.phase = 2; number(e.x, e.y - 46, 'HE LOWERS HIS VISOR', '#ff6b6b'); SFX.roar(); }
   const near = ad < 230 && dy < 50 && !P.dead;
-  const unhorse = () => { e.mounted = false; e.mode = 'unhorsed'; e.modeT = 1.3; e.open = 1.3; e.vx = -e.face * 70; e.w = 10; e.h = 16; e.cd = 0.8;
+  const LO = t => e.mini ? Math.max(t, LANCER_OPEN) : t;   /* (claude/bosswave1) THE SERJEANT (the mini) is on the chip: each of his windows lasts LANCER_OPEN s */
+  const unhorse = () => { e.mounted = false; e.mode = 'unhorsed'; e.modeT = LO(1.3); e.open = LO(1.3); e.vx = -e.face * 70; e.w = 10; e.h = 16; e.cd = 0.8;
     number(e.x, e.y - 44, 'UNHORSED', '#8fd160'); SFX.heavy(); SFX.clank(); shakeCam(5); hitstop(0.08); lancerLoose(e); };
   let want = 0;
   if (e.mounted) switch (e.mode) {
@@ -15892,7 +15899,7 @@ function updateLancer(e, dt) {
       if (Math.random() < dt * 14) dust(e.x - e.face * 12, e.y, 2);
       if (e.hitT <= 0 && !P.dead && Math.abs(P.x - (e.x + e.face * 12)) < 20 && dy < 30) { e.hitT = 9;
         const res = damagePlayer(e.x, DMG.lancerCharge, { up: true });
-        if (res === 'blocked') { if (e.mini && e.hp > e.hp0 / 2) { e.mode = 'rear'; e.modeT = 1.5; e.open = 1.5; e.vx = 0; number(e.x, e.y - 50, 'THE HORSE REARS', '#8fd160'); SFX.snort(); shakeCam(4); } else unhorse(); break; }
+        if (res === 'blocked') { if (e.mini && e.hp > e.hp0 / 2) { e.mode = 'rear'; e.modeT = LO(1.5); e.open = LO(1.5); e.vx = 0; number(e.x, e.y - 50, 'THE HORSE REARS', '#8fd160'); SFX.snort(); shakeCam(4); } else unhorse(); break; }
         if (res === 'hit') { P.vx = e.face * 280; P.vy = -210; P.ground = false; } }
       if (!e.passed && Math.sign(P.x - e.x) !== e.face && ad > 34) { e.passed = true; e.modeT = Math.min(e.modeT, 0.5); }
       if ((e.face > 0 && e.x >= hi) || (e.face < 0 && e.x <= lo) || e.modeT <= 0) { e.mode = 'blown'; e.modeT = 1.1; e.cd = 1.2; want = 0; }
@@ -15900,7 +15907,7 @@ function updateLancer(e, dt) {
     case 'swipeTell': want = 0;
       if (e.modeT <= 0) { e.mode = 'swipe'; e.modeT = 0.3; SFX.slash();
         if (!P.dead && Math.sign(d) === e.face && ad < 48 && dy < 30) { const res = damagePlayer(e.x, DMG.lancerSwipe);
-          if (answered(res)) { e.mode = 'reel'; e.modeT = 1.2; e.stagger = 1.2; number(e.x, e.y - 50, 'OPEN', '#8fd160'); SFX.clank(); } } }
+          if (answered(res)) { e.mode = 'reel'; e.modeT = LO(1.2); e.stagger = LO(1.2); if (e.mini) e.open = LO(1.2); number(e.x, e.y - 50, 'OPEN', '#8fd160'); SFX.clank(); } } }
       break;
     case 'swipe': want = 0; if (e.modeT <= 0) { e.mode = 'ride'; e.modeT = 0.3; e.cd = 1.3; } break;
     case 'blown': want = 0; if (e.modeT <= 0) { e.mode = 'ride'; e.modeT = 0.2; } break;
@@ -15913,7 +15920,7 @@ function updateLancer(e, dt) {
     case 'cutTell': want = 0;
       if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.24; SFX.slash(); e.vx = e.face * 70;
         if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 22) { const res = damagePlayer(e.x, DMG.lancerCut);
-          if (answered(res)) { e.mode = 'reel'; e.modeT = 1.2; e.stagger = 1.2; e.cd = 1.4; e.vx = -e.face * 120; number(e.x, e.y - 30, 'OPEN', '#8fd160'); SFX.clank(); } } }
+          if (answered(res)) { e.mode = 'reel'; e.modeT = LO(1.2); e.stagger = LO(1.2); if (e.mini) e.open = LO(1.2); e.cd = 1.4; e.vx = -e.face * 120; number(e.x, e.y - 30, 'OPEN', '#8fd160'); SFX.clank(); } } }
       break;
     case 'cut': want = 0; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.5; e.cd = 1.1; } break;
     case 'reel': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.stagger = 0; } break;
@@ -15925,7 +15932,7 @@ function updateLancer(e, dt) {
   if (e.stagger > 0 && e.mode !== 'charge') want = 0;
   if (e.mode === 'charge') e.vx += (want - e.vx) * Math.min(1, dt * 8); else e.vx += (want - e.vx) * Math.min(1, dt * 6);
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
-  if (r.hitX && e.mounted) { if (e.mode === 'charge') { e.mode = 'blown'; e.modeT = 1.4; e.open = 1.4; number(e.x, e.y - 50, 'INTO THE WALL', '#8fd160'); SFX.thud(); shakeCam(4); } else if (e.mode === 'ride') { e.mode = 'wheel'; e.modeT = 0.5; } e.vx = 0; }
+  if (r.hitX && e.mounted) { if (e.mode === 'charge') { e.mode = 'blown'; e.modeT = LO(1.4); e.open = LO(1.4); number(e.x, e.y - 50, 'INTO THE WALL', '#8fd160'); SFX.thud(); shakeCam(4); } else if (e.mode === 'ride') { e.mode = 'wheel'; e.modeT = 0.5; } e.vx = 0; }
   if (e.mounted) { e.x = Math.max(lo - 4, Math.min(hi + 4, e.x)); if (e.mode === 'charge' || Math.abs(e.vx) > 30) { const ph = Math.floor(e.anim * (e.mode === 'charge' ? 7 : 3)); if (ph !== e.stepPh) SFX.thump(); e.stepPh = ph; } }
 }
 
@@ -22362,7 +22369,7 @@ function updateEnemies(dt) {
       if (hazardFoe(e)) continue;
       if (e.knock <= 0 && !(r && r.ground) && (e.knockAir = (e.knockAir || 0) + dt) < 1.5) e.knock = 0.001;   /* still in the air when the throw runs out: it keeps falling, into whatever is under it */
       if (e.knock > 0) continue; e.knockAir = 0; }
-    if(e.salvage){updateSalvageCaptain(e,dt,{P,A:L.mini,active:miniActive&&miniIntroT<=0,pinDamage:DMG.bosunPin,cargoDamage:18,shotDamage:12,hit:(x,dmg,hard)=>damagePlayer(x,dmg,{unblockable:hard,who:e}),seed:s=>seeds.push(s),say:(msg,hard)=>number(e.x,e.y-e.h-20,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>SFX[k]()});continue;}
+    if(e.salvage){updateSalvageCaptain(e,dt,{P,A:L.mini,active:miniActive&&miniIntroT<=0,pinDamage:DMG.bosunPin,cargoDamage:18,shotDamage:12,hit:(x,dmg,hard)=>damagePlayer(x,dmg,{unblockable:hard,who:e}),answered:res=>res==='blocked'||answered(res),seed:s=>seeds.push(s),say:(msg,hard)=>number(e.x,e.y-e.h-20,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>SFX[k]()});continue;}
     if (e.trainer) { if (e.lx1) e.x = Math.max(e.lx0, Math.min(e.lx1, e.x)); if (e.trainer === 'still' || (e.trialSt && e.trialSt.done)) { if (e.trainer !== 'still') { e.mode = 'walk'; e.modeT = 0; } e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; e.vy = Math.min(400, (e.vy || 0) + 1000 * dt); const r0 = moveBody(e, 0, e.vy * dt, false); if (r0 && r0.ground) e.vy = 0; e.anim = (e.anim || 0) + dt; continue; } }   /* THE TRIAL'S STILL MEN face you and take it; the drills fight on below */
     if (e.rallyT > 0) { e.rallyT -= dt; if (!windingUp(e) && e.modeT > 0) e.modeT -= dt * 0.6; if (e.cd > 0) e.cd -= dt * 0.6; }   /* RALLIED: it gets to the next blow sooner (never through the tell itself: that stays as long as it was) */
     if (e.wallT > 0) e.wallT -= dt;

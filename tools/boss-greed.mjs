@@ -16,7 +16,7 @@
    Red on master 3fd06c78: no src/boss-greed.js (and BK.greed undefined). Run: node tools/boss-greed.mjs */
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/level.js';
-import { OPEN_RULE, NO_OPENING, MINI_EVERY_BLOW, GREED, chipped } from '../src/boss-greed.js';
+import { OPEN_RULE, NO_OPENING, MINI_EVERY_BLOW, GREED, chipped, CHIP_MINI } from '../src/boss-greed.js';
 import { openPage } from './cdp.mjs';
 
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
@@ -30,6 +30,8 @@ for (const lv of campaign) {
   if (L.mini && L.mini.boss) { minis++; ok(OPEN_RULE[L.mini.boss] || MINI_EVERY_BLOW.has(L.mini.boss), lv.id + ': the mini ' + L.mini.boss + ' has no opening rule and is not on MINI_EVERY_BLOW'); }
 }
 ok(bosses >= 30, 'only ' + bosses + ' campaign bosses found');
+for (const t of CHIP_MINI) { ok(OPEN_RULE[t], 'the mini ' + t + ' is on the chip with no opening rule'); ok(chipped({ t, xpRole: 'mini' }, false), t + ' is on CHIP_MINI and must be chipped'); }
+ok(!chipped({ t: 'spider', xpRole: 'mini' }, false), 'a mini with no opening (the spider) keeps full damage');
 for (const t of Object.keys(NO_OPENING)) ok(!chipped({ t }, true), t + ' is on NO_OPENING and must never be chipped (left at full damage, never made unbeatable)');
 
 const pg = await openPage({ audio: false, fonts: false });
@@ -73,8 +75,8 @@ try {
       /* HIS BURN outside an opening */
       { freeze(b); shut[id](b); const h0 = b.hp; b.burn = 3; b.burnTick = 0; for (let f = 0; f < 120; f++) { shut[id](b); b.burn = 3; BK.sim(1); } o.burn4s = Math.round((h0 - b.hp) * 10) / 10; b.burn = 0; b.hp = h0; }
       out[id] = o; }
-    /* A MINI: the bosun (no rule: every blow counts) */
-    { const b = boot('harbor', true); const o = {}; if (b) { freeze(b); o.t = b.t; o.heroBlow = hero(b, 40); freeze(b);
+    /* A MINI: the bosun (claude/bosswave1: his parried pin is his opening, and he is on the chip outside it) */
+    { const b = boot('harbor', true); const o = {}; if (b) { freeze(b); b.open = 0; o.t = b.t; o.heroBlow = hero(b, 40); freeze(b); b.open = 3; o.heroOpen = hero(b, 40); b.open = 0; freeze(b);   /* (claude/bosswave1: on the chip outside his parried pin, whole inside it) */
       const P = BK.P; BK.god = false; P.inv = 0; P.hp = P.maxHp; let began = -1; for (let i = 0; i < ${GREED.nMini}; i++) { BKT.hurtAs('light', b, 1, b.x - 12, false); if (b.greedT > 0 && began < 0) began = i + 1; } o.greedBegan = began;
       freeze(b); P.hp = P.maxHp; P.inv = 0; const h0 = P.hp; BKT.damagePlayer(b.x, 20, { who: b }); o.miniHit = h0 - P.hp; P.hp = P.maxHp; P.inv = 0; BKT.damagePlayer(b.x, 20, {}); o.plainHit = h0 - P.hp; BK.god = true; }
       out.bosunMini = o; }
@@ -104,7 +106,8 @@ for (const [id, o] of Object.entries(R)) {
   if (!own) ok(o.burn4s <= 4 * 2 / 0.3 * cr + 1, id + ': his burn outside an opening is chipped (2 s of burn took ' + o.burn4s + ')');
 }
 { const m = R.bosunMini; ok(m && m.t === 'bosun', 'the bosun mini was not found');
-  if (m && m.t) { ok(m.heroBlow >= 20, 'a mini keeps his damage taken: a hero blow of 40 on the bosun took ' + m.heroBlow);
+  if (m && m.t) { ok(m.heroBlow <= Math.ceil(40 * GREED.chip), 'a mini on the chip (CHIP_MINI, claude/bosswave1): a hero blow of 40 on the bosun outside his opening took ' + m.heroBlow);
+    ok(m.heroOpen >= 20, 'and in his opening (his pin parried) it lands whole: took ' + m.heroOpen);
     ok(m.greedBegan === GREED.nMini, 'the bosun must answer the ' + GREED.nMini + 'th blow in a row (began on ' + m.greedBegan + ')');
     ok(m.miniHit > m.plainHit && Math.abs(m.miniHit / m.plainHit - GREED.miniHit) < 0.15, 'a mini hits ' + GREED.miniHit + 'x harder: ' + m.miniHit + ' against ' + m.plainHit); } }
 console.log(JSON.stringify(R));

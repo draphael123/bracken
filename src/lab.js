@@ -1174,9 +1174,12 @@ async function runbossLab(BK, opts) {
         if(P.labJump>0){P.labJump--;k.jump=true;}
         const guard=['salvagePinTell','salvageHookTell'].includes(boss.mode);
         if(guard&&SHIELDED(h)){k.block=true;gx=P.x;P.face=side;}
+        else if(guard&&h==='warden'&&boss.mode==='salvagePinTell'){k.block=DEFLECT_TAP(f);gx=P.x;P.face=side;}   /* (claude/bosswave1) the warden's deflect answers his pin too */
         else if(guard&&boss.modeT<.24){k[side>0?'left':'right']=true;BK.press('dodge');gx=P.x;}
+        /* (claude/bosswave1: he is on the chip now, his parried pin his opening) the hands stop short of his greed and step out of its ring */
+        const Gq=BK.greed,greedy=Gq&&!(boss.open>0)&&Gq.count(boss)>=Gq.limit(boss)-2;if(Gq&&boss.greedT>0&&Math.abs(dx)<(Gq.reach||60)+boss.w/2+18)gx=boss.x-side*((Gq.reach||60)+boss.w/2+30);
         if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
-        if(!guard&&!incoming&&(cargo===false||cargo===undefined)&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<28&&P.atk<0){P.face=side;BK.press('atk');swings++;}
+        if(!guard&&!incoming&&!greedy&&!(boss.greedT>0)&&(cargo===false||cargo===undefined)&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<28&&P.atk<0){P.face=side;BK.press('atk');swings++;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.mode==='salvageRest'});if(f%600===599)await yieldNow();continue;
       }
       const d = boss.x - P.x, ad = Math.abs(d), reach = LAB_REACH[h] + (boss.w || 20) / 2, open = OPEN(boss, BK);
@@ -1546,7 +1549,7 @@ async function runbossLab(BK, opts) {
          opening; when the ring closes on him he steps out of it. (BK.greed.open is strict: a boss with no rule is not "open" here, so a
          mini with none is never mashed into his reprisal either.) */
       if (BK.greed) { const G = BK.greed, out = (G.reach || 60) + (boss.w || 20) / 2;
-        if (strike && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - 1) { strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * ((LAB_STAND[h] || 12) + (boss.w || 20) / 2); }   /* (it holds its ground at sword's length and keeps answering him: it only stops swinging) */
+        if (strike && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - (boss.xpRole === 'mini' && G.chipped(boss) ? 2 : 1)) {   /* (claude/bosswave1: a mini on the chip answers harder - 26 a reprisal - so the hands stop two short) */ strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * ((LAB_STAND[h] || 12) + (boss.w || 20) / 2); }   /* (it holds its ground at sword's length and keeps answering him: it only stops swinging) */
         if (boss.greedT > 0 && ad < out + 18) { strike = false; goal = boss.x - (Math.sign(boss.x - P.x) || 1) * (out + 30); } }
       // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
       // THE DECK MUST BE UNDER HER FEET: sword reach is not the top of the ladder.

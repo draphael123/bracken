@@ -99,7 +99,9 @@ export const OPEN_RULE = {
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,
   gravewarden: e => graveOpen(e), forgemaster: e => H.forgeOpen(e), golem: e => e.crackT > 0 || e.mode === 'stagger',
-  lancer: e => !e.mounted || e.mode === 'blown' || e.mode === 'rear' || e.mode === 'reel' || e.open > 0,
+  lancer: e => e.open > 0,   // (claude/bosswave1) unhorsed, reared on a shield, or his swipe or cut answered: 3 s each (on foot or after every charge was open before)
+  greathound: e => e.open > 0,   // (claude/bosswave1) its lunge taken on a shield (it skids), or its pups killed in time (it whines)
+  bosun: e => e.open > 0,   // (claude/bosswave1, the mini) his belaying pin parried
   barrowrider: e => brOpen(e), sexton: e => sextonOpen(e), hedgewarden: e => hedgeOpen(e),
 };
 /* BOSSES WITH THEIR OWN TWENTIETH: the rule leaves their number alone (it would be a twentieth of a twentieth) and only counts greed */
@@ -113,18 +115,22 @@ export const NO_OPENING = {
   kraken: 'no blade reaches the body; the arms carry his openings (knelled, pinned, looking) in krakenHurt',
 };
 /* MINIS WITH NO OPENING IN CODE: every blow on them counts toward their greed (they keep their damage, so nothing is made unbeatable) */
-export const MINI_EVERY_BLOW = new Set(['bosun', 'greathound', 'spider']);
+export const MINI_EVERY_BLOW = new Set(['spider']);   /* (claude/bosswave1: the bosun and the great hound have openings now) */
+/* MINIS ON THE CHIP (claude/bosswave1, Daniel 10-02: "give each a real opening first, then put minis on the chip"): each has a told opening of
+   3 s or more in OPEN_RULE and in its own code, and outside it a hero's blow lands at GREED.chip like a boss's. The rest keep full damage. */
+export const CHIP_MINI = new Set(['greathound', 'bosun', 'lancer', 'homunculus']);
 export function install(helpers) { H = helpers || {}; }
 
 /* IS HE OPEN? true / false for a boss or mini with a rule, null for anything else (the boss lab's own fallback then answers) */
 export function openOf(e) {
   if (!e) return null;
-  if (e.broken > 0) return true;
+  if (e.broken > 0 && !(e.xpRole === 'mini' && CHIP_MINI.has(e.t))) return true;   /* (claude/bosswave1) a mini on the chip is open only in his own told opening: broken he is stood still, not opened - the
+     mash bot broke them with taps and a spear held out, and took the Serjeant and the Great Hound in those breaks */
   const r = OPEN_RULE[e.t]; if (!r) return null;
   try { return !!r(e); } catch { return null; }
 }
 /* DOES THE CHIP APPLY TO HIM? (a boss, with a rule, not on the no-opening list) */
-export const chipped = (e, isBoss) => !!(e && isBoss && OPEN_RULE[e.t] && !NO_OPENING[e.t]);
+export const chipped = (e, isBoss) => !!(e && (isBoss || (e.xpRole === 'mini' && CHIP_MINI.has(e.t))) && OPEN_RULE[e.t] && !NO_OPENING[e.t]);
 
 /* THE CHIP, at the tail of wardedDamage: dmg is what his own code made of the blow, raw what the blow was before any of it.
    Returns what comes off the bar. Called only for a hero's blow (or his burn) on THE boss. */
