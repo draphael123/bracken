@@ -13,7 +13,7 @@ try {
     const snap = (name) => { const c = document.createElement('canvas'); c.width = BK.view.VW * 2; c.height = BK.view.VH * 2; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, c.width, c.height); res.push([name, c.toDataURL('image/png')]); };
     const run = n => { for (let i = 0; i < n; i++) { BK.sim(1); if (i % 4 === 0) BK.step(1); } BK.step(1); };
     const view = (name, x, y) => { fresh(); BK.tp(x, y); run(24); snap(name); };
-    const lookv = (name, x, y) => { fresh(); BK.tp(x, y); run(8); BK.look(x, y); snap(name); };
+    const lookv = (name, x, y) => { fresh(); BK.tp(x, y); run(100); BK.tp(x, y); BK.look(x, y); snap(name); };
     lookv('1-gate-and-first-well', 12, 29);
     lookv('2-market-and-bazaar', 78, 29);
     lookv('2b-bazaar-roof', 112, 22);
