@@ -39,11 +39,13 @@ try {
   let stole=0;for(let i=0;i<900&&!stole;i++){P.hp=P.maxHp;BK.sim(1);if(th.st.carry)stole=1;}out.stole=[stole,P.skin.sips,th.st.mode];th.hp=1;BKT.hurtEnemy(th,99,th.x-10,false);BK.sim(30);out.back=P.skin.sips;
   BK.god=true;const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);const b=BK.boss;out.king={active:BK.bossActive,t:b.t};
   let opened=0;for(let i=0;i<60*60&&!opened;i++){P.hp=P.maxHp;if(b.burning>0){P.skin.sips=3;P.x=b.x-20;P.face=1;BK.press('talk');}BK.sim(1);if(b.mode==='open')opened=1;}
-  const h0=b.hp;BKT.hurtEnemy(b,40,b.x-10,false);out.openHit=+(h0-b.hp).toFixed(2);for(let i=0;i<600&&b.mode==='open';i++)BK.sim(1);const h1=b.hp;BKT.hurtEnemy(b,40,b.x-10,false);out.chipHit=+(h1-b.hp).toFixed(2);out.opened=opened;out.n=BK.banditKing().n;
+  const h0=b.hp;BKT.hurtEnemy(b,40,b.x-10,false);out.openHit=+(h0-b.hp).toFixed(2);for(let i=0;i<600&&b.mode==='open';i++)BK.sim(1);b.chipAcc=0;b.greedLog=[];b.chipSaid=0;BKT.PROG.chipTold=9;BK.textLab.hint('',0);const h1=b.hp;BKT.hurtAs('light',b,40,b.x-10,false);out.chipHit=+(h1-b.hp).toFixed(2);const hn=BKT.hintNow;out.chipLines=[hn&&hn.msg].filter(x=>/SCRATCH|PLATE/.test(x||''));const h2=b.hp;BKT.hurtEnemy(b,40,b.x-10,false);out.roomHit=+(h2-b.hp).toFixed(2);out.opened=opened;out.n=BK.banditKing().n;
   return out;})()`, 300000);
   ok(t.stole[0] && t.stole[1] === 2 && t.stole[2] === 'flee' && t.back === 3, "a water-thief's cut takes a sip and he runs; cut down, the sip is back " + JSON.stringify(t.stole) + ' back ' + t.back);
   ok(t.king.active && t.king.t === 'banditking' && t.opened, 'THE BANDIT KING wakes, burns, and a pour while he burns opens him');
-  ok(Math.abs(t.openHit - 40 * 2.6) < 1 && Math.abs(t.chipHit - 2) < 0.01, 'a blow lands x2.6 in the opening and x0.05 outside it: ' + t.openHit + ' / ' + t.chipHit);
+  ok(Math.abs(t.openHit - 40 * 2.6) < 1 && Math.abs(t.chipHit - 2) < 0.01, 'a blow lands x2.6 in the opening and a hero\'s x0.05 outside it (the global chip): ' + t.openHit + ' / ' + t.chipHit);
+  ok(t.chipLines.length === 1 && /SCRATCH/.test(t.chipLines[0]), 'ONE chip line, the global one (his own THE MUD PLATE TURNS IT is gone): ' + JSON.stringify(t.chipLines));
+  ok(Math.abs(t.roomHit - 40) < 0.01, 'the room\'s blow on him lands whole (the global rule chips only a hero): ' + t.roomHit);
   if (pg.errors.length) { ok(false, 'page errors: ' + pg.errors.slice(0, 3).join(' | ')); }
 } finally { pg.close(); }
 console.log(bad ? bad + ' FAILED' : 'welltown-probe: all passed'); process.exitCode = bad ? 1 : 0;

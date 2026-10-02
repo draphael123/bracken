@@ -95,6 +95,7 @@ export const OPEN_RULE = {
   wickerqueen: e => wqOpen(e),                                               // burning
   puppeteer: e => pupOpen(e),
   greenteeth: e => gtOpen(e),                                                // stranded or flushed (her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
+  banditking: e => e.mode === 'open',                                        // the steam: poured on while he burns (his mud plate keeps its own twentieth, src/bandit-king.js KING.chip: never a chip of a chip)
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,
   gravewarden: e => graveOpen(e), forgemaster: e => H.forgeOpen(e), golem: e => e.crackT > 0 || e.mode === 'stagger',

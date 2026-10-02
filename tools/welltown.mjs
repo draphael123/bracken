@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { KING, STAGE } from '../src/bandit-king.js';
+import { OPEN_RULE, OWN_WARD, NO_OPENING, GREED } from '../src/boss-greed.js';
 import { ROLES } from './level-quality.mjs';
 import { CALL_LINES } from '../src/hint-lines.js';
 
@@ -74,6 +75,7 @@ for (const [what, m] of required) ok(!reaches(withShut([m]), inArena), 'REQUIRED
   ok(L.ents.some(e => e.t === 'check' && e.x >= 64 && e.x < 90) && L.ents.some(e => e.t === 'sign' && /SHRINE KEEPS A SHOP/.test(e.text)), 'THE MARKET SHRINE: a checkpoint in the market, and the sign that says a lit shrine is a shop');
   ok(LEVELS.some(l => l.id === 'shopWell' && l.hidden && l.build().shop) && /id: 'wellstore', kind: 'store', shop: 'shopWell'/.test(main), "THE WELL STORE: the desert's walk-in room (shopWell) and its map node");
   ok(A.boss === 'banditking' && L.ents.some(e => e.t === 'skinwell' && e.arena && e.x >= ax0 && e.x <= ax1) && A.x1 - A.x0 === STAGE.W * TS, 'THE BANDIT KING\'s courtyard: ' + STAGE.W + ' tiles, its own well in it');
-  ok(KING.openT >= 3 && KING.chip === 0.05, 'his opening is ' + KING.openT + ' s (>= 3) and a blow outside it is x' + KING.chip);
+  ok(KING.openT >= 3 && OPEN_RULE.banditking && OPEN_RULE.banditking({ mode: 'open' }) && !OPEN_RULE.banditking({ mode: 'walk' }) && !OWN_WARD.has('banditking') && !NO_OPENING.banditking && GREED.chip === 0.05 && GREED.chipBy.banditking === undefined && KING.chip === undefined,
+    'his opening is ' + KING.openT + ' s (>= 3), it is his OPEN_RULE row (the steam), and outside it the ONE chip is the global x0.05 (no local chip of his own)');
   ok(!L.mini, 'no mini (the desert concept: one boss a level)'); }
 console.log('welltown: ' + n + ' checks pass');

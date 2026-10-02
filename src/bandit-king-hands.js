@@ -8,7 +8,7 @@ import { KING_F } from './redraw/welltown_art.js';
 const { KING } = BKG;
 
 export function makeBanditKingHands(ctx) {
-  let F = null, burnCd = 0, chipSaid = 0;
+  let F = null, burnCd = 0;
   const H = {};
   const A = () => (ctx.L && ctx.L.arena && ctx.L.arena.boss === 'banditking' ? ctx.L.arena : null);
   H.fight = () => F;
@@ -16,7 +16,7 @@ export function makeBanditKingHands(ctx) {
   H.owns = e => e.t === 'banditking';
   H.clear = () => { F = null; };
   H.spawnBoss = base => { const S = A(); if (!S) return null;
-    F = BKG.newFight(S, ctx.EHP.banditking); F.wake = 1.2; burnCd = 0; chipSaid = 0;
+    F = BKG.newFight(S, ctx.EHP.banditking); F.wake = 1.2; burnCd = 0;
     const e = { ...base, t: 'banditking', w: KING.w, h: KING.h, hp: ctx.EHP.banditking, maxHp: ctx.EHP.banditking, noGrav: true, markH: KING.markH, face: -1, mode: 'sleep', open: 0, phase: 1 };
     e.x = BKG.world(F, F.B.x); e.y = S.floor; return e; };
 
@@ -47,11 +47,10 @@ export function makeBanditKingHands(ctx) {
     burnCd = Math.max(0, burnCd - dt);
     if (burnCd <= 0) for (const f of BKG.kingFires(F)) for (const pp of ctx.players) ctx.asPlayer(pp, () => { const Q = ctx.hero(); if (Q.dead || burnCd > 0) return;
       if (Math.abs(Q.x - f.x) < KING.fireR && Q.y > S.floor - 10) { burnCd = KING.burnTick; ctx.damagePlayer(Q.x, KING.dmg.burn, { unblockable: true, noKnock: true, who: e, name: 'HIS FIRE' }); } });
-    chipSaid = Math.max(0, chipSaid - dt); F.pourFx = Math.max(0, F.pourFx - dt); F.steam = Math.max(0, F.steam - dt);
+    F.pourFx = Math.max(0, F.pourFx - dt); F.steam = Math.max(0, F.steam - dt);
   };
-  /* A BLOW ON HIM: x KING.openMul open, x KING.chip otherwise (and the hit says why) */
+  /* A BLOW ON HIM: x KING.openMul open; outside it the global chip (src/boss-greed.js) takes it to a twentieth and says so, once */
   H.take = e => BKG.kingTake(F);
-  H.warded = e => { if (chipSaid > 0) return; chipSaid = 2.5; ctx.sparks(e.x, e.y - 26, -(e.face || 1), 5); ctx.sfx.clank && ctx.sfx.clank(); ctx.number(e.x, e.y - 60, 'THE MUD PLATE TURNS IT', '#9aa39a'); };
   /* A POUR (the hero's INTERACT with a sip): true when it was poured at him */
   H.pour = P => { if (!F || !ctx.bossActive || !ctx.boss || ctx.boss.t !== 'banditking' || !ctx.boss.alive) return null; const r = BKG.pourAt(F, P.x); if (!r) return null;
     if (r === 'wasted') ctx.number(P.x, P.y - 30, 'HE IS NOT BURNING: IT RUNS OFF HIM', '#9aa39a'); return r; };

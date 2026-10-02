@@ -8,8 +8,9 @@
 //   THE OPENING IS CAUSED, BY THE LEVEL'S VERB: after an oil jar he walks through his own fire and BURNS. Pour your skin on him while he burns
 //     (INTERACT within reach) and the steam blinds him and softens his mud plate: OPEN for KING.openT seconds (>= 3, tools/boss-openings.mjs) at
 //     KING.openMul. A pour while he is not burning runs off him and opens nothing. A pour costs a sip: refill at the courtyard well.
-//   x0.05 CHIP OTHERWISE (KING.chip): a blow outside an opening barely marks him, and the hit says so (THE MUD PLATE TURNS IT). (COMBAT3's game-wide
-//     chip rule is not on master on 2026-10-01: this is his own, local, and it can go when the global one lands.)
+//   x0.05 CHIP OTHERWISE: COMBAT3's game-wide rule (src/boss-greed.js OPEN_RULE.banditking = his steam opening). His own local chip went when
+//     the global one landed (claude/welltown-fix), so there is one chip and one line (A SCRATCH: WAIT FOR HIS OPENING), never a chip of a chip;
+//     greed (4 blows outside the steam) is answered by the global reprisal.
 //   HE ALWAYS FIGHTS: the engine never idles him; between attacks he walks you down.
 //   EVERY CYCLE CHANGES: each pass of his chain is a different order (CHAINS[phase][cycle % n]): the jar first, then the knives first with a
 //     charge after the jar, then a charge into a jar; in phase two (half health) two jars at once and THE LIEUTENANTS: two of his knives come
@@ -19,7 +20,7 @@ import { BANDIT_KING, makeBoss, bossStep, FLOOR, ARENA } from './desert-bosses.j
 
 export const KING = {
   hp: 640, w: 22, h: 40, markH: 54,
-  chip: 0.05, openMul: 2.6, openT: 3.0,          /* THE OPENING: three seconds (the house floor), the blow x2.6 in it (tuned with the human-bot pilot, tools/welltown-pilot.mjs); everything else x0.05 */
+  openMul: 2.6, openT: 3.0,          /* THE OPENING: three seconds (the house floor), the blow x2.6 in it (tuned with the human-bot pilot, tools/welltown-pilot.mjs); everything else the global x0.05 */
   dmg: { sweep: 12, knives: 8, jar: 10, burn: 3, charge: 14 }, p2: 1.15,   /* each told blow, and his fire's tick; phase two hits harder */
   burnTick: 0.6, fireR: 20, pourR: 44, wellR: 26, douse: 40,
   lieutenants: 2, chargeH: 28,
@@ -70,8 +71,8 @@ export const world = (F, lx) => lx + F.A.x0;
 export const worldY = (F, ly) => ly - FLOOR + F.A.floor;
 export const kingOpen = F => !!F && F.B.mode === 'open';
 export const kingBurning = F => !!F && (F.B.data.burning || 0) > 0;
-/* the game's multiplier on a blow: x KING.openMul in the opening, x KING.chip otherwise */
-export const kingTake = F => kingOpen(F) ? KING.openMul : KING.chip;
+/* the game's multiplier on a blow: x KING.openMul in the opening; outside it the blow is left to the global chip (src/boss-greed.js) */
+export const kingTake = F => kingOpen(F) ? KING.openMul : 1;
 /* the mode the game sees: 'jarTell' while he tells the jar, 'jar' as it flies, 'walk', 'recover', 'open' */
 export const kingMode = B => B.mode === 'tell' ? B.a.name + 'Tell' : B.mode === 'act' ? B.a.name : B.mode;
 
