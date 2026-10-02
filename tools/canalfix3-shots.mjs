@@ -6,7 +6,7 @@ import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 const tag = process.argv[2] || 'after';
-const out = join(ROOT, 'work/claude/canalfix3', tag); mkdirSync(out, { recursive: true });
+const out = process.env.SHOTS_OUT || join(ROOT, 'work/claude/canalfix3', tag);   /* SHOTS_OUT: a scratch look while building */ mkdirSync(out, { recursive: true });
 const pg = await openPage({ audio: true });
 try {
   const r = await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); const TS = 16, res = [];

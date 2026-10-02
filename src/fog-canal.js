@@ -331,7 +331,7 @@ export function buildFogCanal({ painter, T, TS }) {
     arena: jenny.arena, gateAfterBoss: true,
     interiors: [[14, 29, 19, 38, 'cnWarehouse'], [86, 106, 13, 29, 'cnMill'], [371, 375, 37, 40, 'cnDoor']],
     canal: { reaches, gates, bridges, fogs, weedWater, weeds, beams: beams.filter(b => !b.weir), moorings, weir: weirSpec, barge: { x: 36 }, arcs: ARCS, sections: SECTIONS,
-      sides, arch: [130, 147, 32], gangAt: 165,   /* (claude/canalfix) her sides of the Waymeet pound; THE LONG ARCH [x0, x1, the tunnel roof's lowest row]; the fog wall's front, where the gang boards */
+      sides, arch: [130, 147, 32], gangAt: 165, jetties: [[175, 185, 30]], street: { railings: [[1, 12, 26], [45, 52, 37], [60, 66, 37], [176, 181, 25], [241, 246, 16], [341, 358, 34]], bollards: [[35, 39], [344, 41]] },   /* (claude/canalfix3) the one timber jetty (the fog wall's pier): every other ledge is stone, src/redraw/canal_tiles.js */   /* (claude/canalfix) her sides of the Waymeet pound; THE LONG ARCH [x0, x1, the tunnel roof's lowest row]; the fog wall's front, where the gang boards */
       /* JENNY GREENTEETH, FORESHADOWED (cheap and told): eyes that open in the fog now and then [x, y, phase], a child's shoe on a step, bubbles by the bank where nothing lives */
       eyes: [[146, 27, 0.1], [176, 29, 0.55], [235, 16, 0.75], [339, 38, 0.3]], shoes: [[35, 38], [372, 36]], bubbles: [[40, 40], [61, 40], [100, 33], [175, 33], [240, 18], [335, 44]] },
     chases, rigBands,
@@ -349,7 +349,8 @@ export function buildFogCanal({ painter, T, TS }) {
       { kind: 'lanternpost', opens: 'the dark (doused: the archers in the fog cannot see you)', hud: 'THE LANTERN IS OUT: IN THE DARK THE ARCHERS CANNOT SEE YOU. NOR CAN YOU.' } ],
     bgSpan: 200,   /* the backdrop (src/redraw/canal_backdrop.js) rides within 200 px whatever storey the camera is on: the summit is not off the bottom of it */
     music: 'canal', dark: 0, night: true, nightA: 0.3, duskStart: 99999, duskLen: 1,
-    palette: { sky: 'storm', far: 'town', mid: 'town', near: 'town', dress: 'village', darkCol: '8,14,18', haze: 'rgba(150,175,170,0.16)',
+    palette: { sky: 'storm', far: 'town', mid: 'town', near: 'town', dress: 'canal', noNear: true,   /* (claude/canalfix3, Daniel 10-02: a NIGHT CITY STREET - not the village's dovecote, lychgate, yews and stocks, and no forest bough over the lens or grass at its foot: the canal's own near layer, src/redraw/canal_backdrop.js) */
+      darkCol: '8,14,18', haze: 'rgba(150,175,170,0.16)',
       grass: '#4a5a52', grassL: '#6a7a70', grassD: '#2e3a34', dirt: '#3e4440', dirtL: '#5a625c', dirtD: '#262c28', canopy: ['#0e1618', '#16222a', '#1e2e34', '#283a40'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'water' }],
   };

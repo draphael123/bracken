@@ -26143,7 +26143,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const b of bombs) if (b.barrel) { g.save(); g.translate(Math.round(b.x - cx), Math.round(b.y - 7 - cy)); g.rotate(time * 7); g.drawImage(PROP.barrel, -6, -7); g.restore(); } else drawSet(SPR.bomb, null, 0, b.x - cx, b.y - 2 - cy, 1, Math.floor(time * 10) % 2 === 0 && b.fuse < 0.5);
   for (const f of foxes) drawSet(SPR.fox, null, Math.floor(f.t * 10) % 2, f.x - cx, f.y - cy, f.face, false);
   if (L.deep) drawDeepBack(cx, cy);
-  for (const s of signs) g.drawImage(PROP.sign, s.x - 9 - cx, s.y - 18 - cy);
+  for (const s of signs) g.drawImage(L.canal ? CNH.signArt() : PROP.sign, s.x - 9 - cx, s.y - 18 - cy);   /* (claude/canalfix3) the canal's signs are iron plaques */
   for (const pr of props) if (pr.t === 'npc' && pr.x > cx - 40 && pr.x < cx + VW + 40) { { const set = SPR[pr.kind] || SPR.shepherd, near = Math.abs(P.x - pr.x) < 90, ph = time + (pr.anim || 0) * 3, c0 = Array.isArray(set.R) ? set.R[0] : set.R, breathe = Math.sin(ph * 2.1) > 0.55 ? 1 + 1 / c0.height : 1;
         const face = near ? (P.x < pr.x ? -1 : 1) : (Math.floor(ph / 3.3) % 2 ? 1 : -1);
         const jig = P.dance > 0 && Math.abs(P.x - pr.x) < 110 && talkTo !== pr;   /* AND THE TOWN DANCES WITH YOU: anyone friendly nearby picks up the beat */
@@ -28489,7 +28489,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   shrines: () => shrines,   /* which checkpoints are lit: a harness that swims a level reads it */
   drawables() { const out = [], sh =(PROP.shrineOf && PROP.shrineOf[shrineKind()]) || PROP.shrine;
     for (const d of deco) out.push({ what: d.kind, c: d.anim ? d.anim[0] : d.c, x: d.x, y: d.y, bg: !!d.bg, stand: !!d.stand, hang: !!d.hang });
-    for (const s of signs) out.push({ what: 'sign', c: PROP.sign, x: s.x - 9, y: s.y - 18, stand: true });
+    for (const s of signs) out.push({ what: 'sign', c: L.canal ? CNH.signArt() : PROP.sign, x: s.x - 9, y: s.y - 18, stand: true });
     for (const s of shrines) out.push({ what: 'checkpoint', c: sh[0], x: s.x - 10, y: s.y - 34, stand: true });
     for (const pr of props) { const x = Math.round(pr.x), y = Math.round(pr.y);
       if (pr.t === 'brazier') out.push({ what: 'brazier', c: PROP.brazier[1], x: x - 7, y: y - 16, stand: true });

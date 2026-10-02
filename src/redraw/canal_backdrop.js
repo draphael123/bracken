@@ -15,6 +15,7 @@ const poly = (g, pts, col) => { g.fillStyle = col; g.beginPath(); pts.forEach(([
 const lerp = (a, b, t) => a + (b - a) * t;
 export const FAR_F = 0.15, MID_F = 0.3, NEAR_F = 0.6, SPAN = 720;
 const FAR_H = 96, FAR_GL = 72, MID_H = 130, MID_GL = 112, NEAR_H = 64, NEAR_GL = 56;
+/* (claude/canalfix3) the far layer is now the town's roofs and mill chimneys, the mid layer brick terraces, the near layer railings and bollards: a night city */
 export const C = { sky: '#10181e', ridge: '#1b2931', ridge2: '#223239', field: '#26373d', fieldD: '#1f2e34', furrow: '#2c3e44', poplar: '#15222a', poplar2: '#1a2a32',
   mill: '#18262e', millL: '#22343c', hedge: '#1b2a2c', hedgeL: '#233638', hedgeD: '#142022', wall: '#2a3338', wallL: '#36424a', roof: '#1a2228', roofL: '#26323a', brick: '#3a2a2c', brickL: '#4a3636',
   win: '#ffcf6a', winD: '#b88a3c', mist: '#7f989c', hull: '#202830', hullL: '#2c3640', cabin: '#34404a', stripeR: '#6a2c2c', stripeG: '#2c5a50', stripeY: '#8a6a2c', reed: '#243a32', reedL: '#34503e', post: '#2a2420', rope: '#6a5a40' };
@@ -63,10 +64,12 @@ function farStrip(LW) {
     for (let x = 0; x < w; x += 2) { const y = Ly.ridge(x * 0.7 + 90) + 12; rc(g, x, y, 2, FAR_GL - y, C.ridge2); }
     for (let x = 0; x < w; x++) { const y = Math.round(Ly.field(x)); rc(g, x, y, 1, FAR_H - y, C.field); }
     const rr = mulberry(31); for (let x = 0; x < w; x += 3) { const y = Math.round(Ly.field(x)) + 3 + Math.floor(rr() * 12); rc(g, x, y, 5 + Math.floor(rr() * 8), 1, rr() < 0.5 ? C.furrow : C.fieldD); }
-    for (const p of Ly.far.poplars) { const gy = Math.round(Ly.field(p.x)) + 1; rc(g, p.x, gy - 3, 1, 3, C.poplar);
-      for (let i = 0; i < p.h; i++) { const k = i / p.h, hw = Math.max(1, Math.round(p.w * Math.sin(Math.PI * Math.min(1, k * 0.9 + 0.1)) * 0.55)); rc(g, p.x - hw + 1, gy - 3 - i, hw * 2 - 1, 1, (i + p.x) % 5 === 0 ? C.poplar2 : C.poplar); } }
-    for (const m of Ly.far.mills) { const gy = Math.round(Ly.field(m.x)) + 1, h = m.h; poly(g, [[m.x - 5, gy], [m.x + 5, gy], [m.x + 3, gy - h], [m.x - 3, gy - h]], C.mill); rc(g, m.x - 4, gy - h * 0.6, 1, h * 0.6, C.millL);
-      poly(g, [[m.x - 4, gy - h], [m.x + 4, gy - h], [m.x, gy - h - 6]], C.mill); rc(g, m.x - 6, gy - 2, 12, 2, C.mill); rc(g, m.x - 1, gy - h * 0.45, 2, 3, C.winD); }
+    /* (claude/canalfix3, Daniel 10-02: a NIGHT CITY, not fields) the town's roofs: gabled terraces and their chimney stacks, where the poplars stood */
+    for (const p of Ly.far.poplars) { const gy = Math.round(Ly.field(p.x)) + 1, hw = 8 + p.w * 2, h = 8 + Math.round(p.h * 0.5); rc(g, p.x - hw, gy - h, hw * 2, h, C.poplar); rc(g, p.x - hw, gy - h, hw * 2, 1, C.poplar2);
+      poly(g, [[p.x - hw - 1, gy - h], [p.x + hw + 1, gy - h], [p.x + hw - 4, gy - h - 6], [p.x - hw + 4, gy - h - 6]], C.roof); rc(g, p.x + hw - 7, gy - h - 11, 3, 6, C.poplar); rc(g, p.x + hw - 8, gy - h - 12, 5, 1, C.poplar2); rc(g, p.x - hw + 4, gy - h - 9, 2, 4, C.poplar);
+      if ((p.x >> 3) % 3 === 0) rc(g, p.x - 3, gy - h + 4, 2, 2, C.winD); }
+    for (const m of Ly.far.mills) { const gy = Math.round(Ly.field(m.x)) + 1, h = m.h + 14; poly(g, [[m.x - 4, gy], [m.x + 4, gy], [m.x + 2, gy - h], [m.x - 2, gy - h]], C.mill); rc(g, m.x - 3, gy - h * 0.8, 1, h * 0.8, C.millL);   /* a mill chimney */
+      rc(g, m.x - 3, gy - h - 2, 6, 2, C.millL); rc(g, m.x - 3, gy - h * 0.55, 6, 1, C.millL); rc(g, m.x - 14, gy - 12, 28, 12, C.mill); rc(g, m.x - 14, gy - 12, 28, 1, C.millL); for (let k = 0; k < 4; k++) rc(g, m.x - 11 + k * 7, gy - 8, 2, 3, C.winD); }
     for (const s of Ly.far.steeples) { const gy = Math.round(Ly.field(s.x)) + 2; rc(g, s.x - 12, gy - 14, 24, 14, C.mill); rc(g, s.x - 12, gy - 14, 24, 1, C.millL); poly(g, [[s.x - 13, gy - 14], [s.x + 13, gy - 14], [s.x, gy - 24]], C.roof);
       rc(g, s.x - 4, gy - 38, 8, 24, C.mill); rc(g, s.x - 3, gy - 38, 1, 24, C.millL); poly(g, [[s.x - 5, gy - 38], [s.x + 5, gy - 38], [s.x, gy - 56]], C.roof); rc(g, s.x, gy - 62, 1, 7, C.mill); rc(g, s.x - 2, gy - 60, 5, 1, C.mill);
       rc(g, s.x - 1, gy - 32, 3, 5, C.sky); rc(g, s.x - 10, gy - 10, 3, 5, C.sky); rc(g, s.x + 7, gy - 10, 3, 5, C.sky); }
@@ -76,7 +79,9 @@ function farStrip(LW) {
 function midStrip(LW) {
   return once('mid' + LW, () => { const Ly = layout(LW), w = Ly.wMid, [c, g] = mk(w, MID_H), gy = MID_GL; rc(g, 0, gy, w, MID_H - gy, C.hedgeD);
     for (const it of Ly.mid.items) { const x0 = Math.round(it.x - it.w / 2), r = mulberry(Math.floor(it.sd || 1));
-      if (it.k === 'hedge') { for (let i = 0; i < it.w; i += 3) { const hh = it.h - 2 + Math.floor(r() * 4) - (i < 5 || i > it.w - 6 ? 3 : 0); rc(g, x0 + i, gy - hh, 3, hh, i % 6 ? C.hedge : C.hedgeL); } rc(g, x0 + 1, gy - 3, it.w - 2, 3, C.hedgeD); }
+      if (it.k === 'hedge') { const hh = it.h + 22; rc(g, x0, gy - hh, it.w, hh, C.brick); rc(g, x0, gy - hh, it.w, 2, C.brickL); poly(g, [[x0 - 2, gy - hh], [x0 + it.w + 2, gy - hh], [x0 + it.w - 6, gy - hh - 8], [x0 + 6, gy - hh - 8]], C.roof);   /* (claude/canalfix3) a brick terrace where a hedge stood */
+        for (let i = 6; i < it.w - 6; i += 12) { rc(g, x0 + i, gy - hh + 6, 5, 7, C.roof); rc(g, x0 + i, gy - hh + 17, 5, 7, C.roof); rc(g, x0 + i + 2, gy - hh - 12, 3, 6, C.brick); }
+        for (let i = 0; i < it.w; i += 4) rc(g, x0 + i, gy - 7, 1, 7, C.hedgeD); rc(g, x0, gy - 7, it.w, 1, C.hedgeD); rc(g, x0, gy - 3, it.w, 1, C.hedgeD); }   /* its area railing */
       else if (it.k === 'cottage') { rc(g, x0, gy - it.h, it.w, it.h, C.wall); rc(g, x0, gy - it.h, it.w, 1, C.wallL); poly(g, [[x0 - 3, gy - it.h], [x0 + it.w + 3, gy - it.h], [x0 + it.w / 2 + 4, gy - it.h - 14], [x0 + it.w / 2 - 4, gy - it.h - 14]], C.roof);
         rc(g, x0 + it.w - 9, gy - it.h - 18, 4, 9, C.brick); rc(g, x0 + it.w - 10, gy - it.h - 19, 6, 1, C.brickL); rc(g, x0 + 5, gy - 14, 6, 14, C.hedgeD); rc(g, x0 + it.w - 14, gy - it.h * 0.65, 6, 8, C.roof);
         for (let i = 0; i < it.w; i += 4) rc(g, x0 + i, gy - it.h + 3, 1, it.h - 6, C.wallL); }
@@ -94,8 +99,8 @@ function midStrip(LW) {
 function nearStrip(LW) {
   return once('near' + LW, () => { const Ly = layout(LW), w = Ly.wNear, [c, g] = mk(w, NEAR_H), gy = NEAR_GL;
     for (const it of Ly.near.items) { const r = mulberry(Math.floor(it.sd || it.x));
-      if (it.k === 'reeds') for (let i = 0; i < it.n; i++) { const x = it.x + i * 3 + Math.floor(r() * 2), h = 16 + Math.floor(r() * 18), lean = r() < 0.5 ? -1 : 1; for (let y = 0; y < h; y++) rc(g, x + Math.round(lean * y * y / (h * 9)), gy - y, 1, 1, y > h - 5 ? C.reedL : C.reed); rc(g, x + Math.round(lean * h / 9) - 1, gy - h - 2, 2, 5, C.post); }
-      else if (it.k === 'post') { rc(g, it.x, gy - it.h, 4, it.h, C.post); rc(g, it.x, gy - it.h, 4, 1, '#3a3430'); rc(g, it.x - 1, gy - it.h + 3, 6, 1, C.post); if (it.rope) { rc(g, it.x + 4, gy - it.h + 4, 5, 1, C.rope); rc(g, it.x + 8, gy - it.h + 5, 1, 4, C.rope); } }
+      if (it.k === 'reeds') { const w = it.n * 8 + 8; for (let i = 0; i <= w; i += 4) { rc(g, it.x + i, gy - 22, 1, 22, C.post); rc(g, it.x + i, gy - 24, 1, 2, '#3a4048'); } rc(g, it.x, gy - 20, w + 1, 1, C.post); rc(g, it.x, gy - 8, w + 1, 1, C.post); }   /* (claude/canalfix3) an iron railing, not reeds */
+      else if (it.k === 'post') { rc(g, it.x, gy - 12, 6, 12, '#20262c'); rc(g, it.x - 1, gy - 14, 8, 2, '#2c3238'); rc(g, it.x - 1, gy - 14, 8, 1, '#4a525a'); if (it.rope) { rc(g, it.x + 6, gy - 9, 5, 1, C.rope); rc(g, it.x + 10, gy - 8, 1, 4, C.rope); } }   /* an iron bollard */
       else if (it.k === 'lantern') { rc(g, it.x, gy - it.h, 3, it.h, C.post); rc(g, it.x, gy - it.h, 9, 2, C.post); rc(g, it.x + 7, gy - it.h, 1, 4, C.post); rc(g, it.x + 5, gy - it.h + 4, 5, 6, '#3a2a14'); rc(g, it.x + 6, gy - it.h + 5, 3, 4, '#ffcf6a'); rc(g, it.x + 5, gy - it.h + 3, 5, 1, C.post); } }
     fadeBase(g, w, NEAR_H, NEAR_GL - 24, 0.4); return c; });
 }
@@ -112,8 +117,8 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
   const Ly = layout(L.W);
   if (full) { const off = Math.round(cx * FAR_F), gl = Math.round(VH - 100 + dY * FAR_F), y0 = gl - FAR_GL, s = SC(VW, VH);
     s[1].clearRect(0, 0, VW, VH); s[1].drawImage(farStrip(L.W), off, 0, Math.min(VW, Ly.wFar - off), FAR_H, 0, y0, Math.min(VW, Ly.wFar - off), FAR_H); s[1].fillStyle = '#273a3f'; s[1].fillRect(0, y0 + FAR_H - 1, VW, VH); g.drawImage(s[0], 0, 0);
-    for (const m of Ly.far.mills) { const mx = m.x - off; if (mx < -50 || mx > VW + 50) continue; const gy = y0 + Math.round(Ly.field(m.x)) + 1, hy = gy - m.h + 2, a = time * 0.35 + m.ph; g.strokeStyle = '#18262e'; g.lineWidth = 1;
-      for (let i = 0; i < 4; i++) { const ang = a + i * Math.PI / 2; g.beginPath(); g.moveTo(mx, hy); g.lineTo(mx + Math.cos(ang) * 17, hy + Math.sin(ang) * 17); g.stroke(); g.strokeRect(Math.round(mx + Math.cos(ang) * 10) - 2.5, Math.round(hy + Math.sin(ang) * 10) - 2.5, 5, 5); } }
+    for (const m of Ly.far.mills) { const mx = m.x - off; if (mx < -50 || mx > VW + 50) continue; const gy = y0 + Math.round(Ly.field(m.x)) + 1, hy = gy - m.h - 16;   /* (claude/canalfix3) smoke off the mill chimney, drifting */
+      for (let i = 0; i < 5; i++) { const u = ((time * 0.12 + i / 5 + m.ph) % 1); g.globalAlpha = 0.18 * (1 - u); g.fillStyle = '#5a6a70'; g.beginPath(); g.ellipse(mx + u * 26, hy - u * 18, 3 + u * 8, 2 + u * 4, 0, 0, Math.PI * 2); g.fill(); } g.globalAlpha = 1; }
     for (const st of Ly.far.steeples) { const sx = st.x - off; if (sx < -30 || sx > VW + 30) continue; const gy = y0 + Math.round(Ly.field(st.x)) + 2; for (const [wx, wy] of [[0, 30], [-8, 8], [9, 8]]) { glow(g, sx + wx + 0.5, gy - wy, 7, 0.28); g.fillStyle = '#ffd98a'; g.fillRect(sx + wx - 1, gy - wy - 1, 3, 4); } }
     mist(g, VW, y0 + FAR_GL - 6, 3, 2.5, cx, FAR_F, time, 0.32, 11); }
   { const off = Math.round(cx * MID_F), gl = Math.round(VH - 118 + dY * MID_F), y0 = gl - MID_GL, s = SC(VW, VH);

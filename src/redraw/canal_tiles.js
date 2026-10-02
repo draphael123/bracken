@@ -25,7 +25,8 @@ function brick(v, deep) {
 /* the quay's coping: a flagstone with a lit lip and a dark shadow line under */
 function coping(v, l, r) {
   return once('cop' + v + l + r, () => { const [c, g] = canvas(16, 16), rr = mulberry(v * 17 + 3); rect(g, 0, 0, 16, 16, CT.stone0); rect(g, 0, 0, 16, 5, CT.stone1); rect(g, 0, 0, 16, 1, CT.stone4); rect(g, 0, 1, 16, 1, CT.stone3); rect(g, 0, 5, 16, 1, CT.mort);
-    rect(g, v * 4 + 3, 1, 1, 4, CT.stone0); for (let i = 0; i < 5; i++) px2(g, (rr() * 16) | 0, 2 + ((rr() * 3) | 0), CT.stone2);
+    if (!l && !r) { cobbles(g, v); rect(g, 0, 0, 16, 1, CT.stone4); }   /* (claude/canalfix3) THE STREET: cobbles on the open top, the dressed flag kept for the quay's edge */
+    else { rect(g, v * 4 + 3, 1, 1, 4, CT.stone0); for (let i = 0; i < 5; i++) px2(g, (rr() * 16) | 0, 2 + ((rr() * 3) | 0), CT.stone2); }
     for (let y = 6; y < 16; y++) for (let x = 0; x < 16; x++) { const t = (x * 7 + y * 13 + v) % 9; px2(g, x, y, t === 0 ? CT.brick2 : t < 3 ? CT.brick1 : CT.brick0); }
     for (let x = 0; x < 16; x += 8) rect(g, x + (v & 1) * 3, 6, 1, 10, CT.mort); rect(g, 0, 11, 16, 1, CT.mort);
     if (l) rect(g, 0, 0, 1, 16, CT.mort); if (r) rect(g, 15, 0, 1, 16, CT.mort); return c; });
@@ -48,10 +49,39 @@ function towboards(l, r, v) {
     rect(g, 4 + (v & 1) * 6, 2, 1, 4, CT.wood1); rect(g, 11, 2, 1, 4, CT.wood1); px2(g, 2, 4, CT.iron2); px2(g, 8, 4, CT.iron2); px2(g, 14, 4, CT.iron2);
     if (l) { rect(g, 0, 1, 2, 7, CT.wood3); px2(g, 0, 0, CT.wood2); } if (r) { rect(g, 14, 1, 2, 7, CT.wood3); px2(g, 15, 0, CT.wood2); } return c; });
 }
-/* a swing bridge's deck: pale painted boards (the white rail stands on it) with iron straps */
+/* a swing bridge's deck (claude/canalfix3: CAST IRON, not boards - a city canal's swing bridge): a riveted chequer plate on a lattice girder */
 function bridgeDeck(l, r) {
-  return once('br' + l + r, () => { const [c, g] = canvas(16, 16); rect(g, 0, 0, 16, 6, CT.wood3); rect(g, 0, 0, 16, 1, '#c8c0a0'); rect(g, 0, 1, 16, 1, CT.wood4); rect(g, 0, 5, 16, 1, CT.wood1); rect(g, 0, 6, 16, 2, '#14100c');
-    for (let x = 3; x < 16; x += 5) rect(g, x, 2, 1, 3, CT.wood1); rect(g, 0, 7, 16, 1, CT.iron); if (l) rect(g, 0, 0, 2, 7, CT.iron); if (r) rect(g, 14, 0, 2, 7, CT.iron); px2(g, 7, 3, CT.iron2); return c; });
+  return once('br' + l + r, () => { const [c, g] = canvas(16, 16); rect(g, 0, 0, 16, 4, '#3a4048'); rect(g, 0, 0, 16, 1, '#a8b4bc'); rect(g, 0, 1, 16, 1, '#5a646c');
+    for (let x = 1; x < 16; x += 3) px2(g, x, 2, '#6a747c'); rect(g, 0, 4, 16, 1, '#14181c'); rect(g, 0, 5, 16, 1, '#2a3036'); rect(g, 0, 9, 16, 1, '#2a3036');   /* the plate, its chequer, the girder's flanges */
+    for (let x = 0; x < 16; x += 6) { for (let k = 0; k < 4; k++) { px2(g, x + k, 5 + k, '#3a4048'); px2(g, x + 5 - k, 5 + k, '#3a4048'); } }                                             /* the lattice */
+    for (let x = 2; x < 16; x += 5) px2(g, x, 3, '#c8d0d6');                                                                                                                        /* rivet heads */
+    if (l) rect(g, 0, 0, 2, 10, '#22272c'); if (r) rect(g, 14, 0, 2, 10, '#22272c'); return c; });
+}
+/* (claude/canalfix3, Daniel 10-02: TOO MUCH WOOD - a canal through a city is stone and iron)
+   A STONE LEDGE: the towpath, the banks, the wharf - a dressed granite slab with a lit arris, its joints, and a stone corbel under each end */
+function stoneLedge(l, r, v) {
+  return once('sl' + l + r + v, () => { const [c, g] = canvas(16, 16);
+    rect(g, 0, 0, 16, 7, CT.stone1); rect(g, 0, 0, 16, 1, CT.stone4); rect(g, 0, 1, 16, 1, CT.stone3); rect(g, 0, 5, 16, 1, CT.stone0); rect(g, 0, 6, 16, 1, '#161a1c'); rect(g, 0, 7, 16, 1, '#0c0e10');
+    rect(g, 3 + v * 5, 1, 1, 5, CT.stone0); for (let k = 0; k < 4; k++) px2(g, (v * 5 + k * 4 + 1) % 16, 3, CT.stone2);                                                      /* a joint, a little texture */
+    const corbel = x0 => { rect(g, x0, 7, 5, 2, CT.stone1); rect(g, x0 + 1, 9, 3, 2, CT.stone1); rect(g, x0 + 2, 11, 1, 2, CT.stone1); rect(g, x0, 7, 5, 1, CT.stone2); };
+    if (l) { rect(g, 0, 0, 1, 7, CT.stone0); corbel(1); } if (r) { rect(g, 15, 0, 1, 7, CT.stone0); corbel(10); }
+    if (!l && !r && v === 1) { rect(g, 7, 7, 2, 1, CT.iron); rect(g, 7, 8, 1, 3, CT.iron); }                                                                              /* an iron bracket under the long runs */
+    return c; });
+}
+/* A FIREPROOF FLOOR (the warehouse's and the mill's floors): an iron beam with its rivets, and a shallow brick jack-arch sprung under it */
+function jackArch(l, r, v) {
+  return once('ja' + l + r + v, () => { const [c, g] = canvas(16, 16);
+    rect(g, 0, 0, 16, 2, CT.iron); rect(g, 0, 0, 16, 1, CT.iron2); for (let x = 2 + v; x < 16; x += 5) px2(g, x, 1, '#9aa2aa');
+    for (let x = 0; x < 16; x++) { const d = Math.round(3 * Math.sin(Math.PI * x / 16)); rect(g, x, 2, 1, 3 + d, ((x >> 1) + v) % 3 ? CT.brick1 : CT.brick2); px2(g, x, 4 + d, CT.mort); }   /* the arch's soffit */
+    for (let x = 0; x < 16; x += 4) px2(g, x, 3, CT.mort);
+    if (l) rect(g, 0, 0, 2, 7, CT.iron); if (r) rect(g, 14, 0, 2, 7, CT.iron); return c; });
+}
+/* COBBLES on the top of the street and the quays: rounded setts with a lit crown and the dark between them */
+function cobbles(g, v) { for (let row = 0; row < 2; row++) for (let x = -(row ? 2 : 0) - v; x < 16; x += 4) { rect(g, x + 1, 1 + row * 2, 3, 2, row ? CT.stone1 : CT.stone2); px2(g, x + 1, 1 + row * 2, CT.stone3); px2(g, x + 3, 2 + row * 2, CT.stone0); } }
+/* AN IRON LADDER: two flat-bar stiles and round rungs, the canal's own (up a lock wall, a warehouse front) */
+function ironLadder(v) {
+  return once('lad' + v, () => { const [c, g] = canvas(16, 16); rect(g, 2, 0, 2, 16, '#2a3036'); rect(g, 12, 0, 2, 16, '#2a3036'); rect(g, 2, 0, 1, 16, '#5a646c'); rect(g, 12, 0, 1, 16, '#5a646c');
+    for (let y = 2; y < 16; y += 5) { rect(g, 4, y, 8, 1, '#4a525a'); rect(g, 4, y + 1, 8, 1, '#14181c'); } for (const y of [1, 9]) { px2(g, 1, y, '#3a4048'); px2(g, 14, y, '#3a4048'); } return c; });
 }
 /* a lock gate leaf: black tarred timber, vertical planks, an iron strap every eight rows, the top end painted white (the balance beam's counterweight end) */
 function gateLeaf(top, v) {
@@ -95,7 +125,12 @@ export function canalTile(t, x, y, at, ctx) {
     if ((ctx.weedCells || new Set()).has(x + ',' + y)) return once('empty', () => canvas(16, 16)[0]);   /* the weed's own overlay draws its mat (the boards under bright weed are the floor the hero stands on) */
     const br = (ctx.bridges || []).find(b => b.row === y && x >= b.x0 && x <= b.x1); if (br) return bridgeDeck(x === br.x0, x === br.x1);
     if (inChamber) { const sx = lk.sx, ex = sx + 39, R = lk.R, K = skins(); if (y === R - 8 && (x <= sx + 4 || x >= ex - 4)) return K.walk; if (x <= sx + 3 || x >= ex - 3) return K.waler; }
-    const sameRow = k => at(x + k, y) === t; return towboards(!sameRow(-1), !sameRow(1), v);
+    const sameRow = k => at(x + k, y) === t, L0 = !sameRow(-1), R0 = !sameRow(1);
+    /* (claude/canalfix3, Daniel 10-02: TOO MUCH WOOD) timber only on the odd jetty; the towpaths and banks are stone ledges, the warehouse's and the mill's floors iron and brick */
+    if ((ctx.jetties || []).some(([x0, x1, row]) => y === row && x >= x0 && x <= x1)) return towboards(L0, R0, v);
+    if ((ctx.rooms || []).some(([x0, x1, y0, y1]) => x >= x0 && x <= x1 && y > y0 && y <= y1)) return jackArch(L0, R0, v);
+    return stoneLedge(L0, R0, v);
   }
+  if (t === T.NET) return ironLadder(v);   /* (claude/canalfix3) the canal's ladders are iron */
   return null;
 }

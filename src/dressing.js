@@ -1028,7 +1028,7 @@ GROUND_KITS.fair={density:.15,kinds:['flower','tuft']};   /* THE HARVEST FAIR: a
 ALLOWED_DECORATIONS.fair=ALLOWED_DECORATIONS.waymeet.slice();
 GROUND_KITS.theatre={density:0,kinds:[]};   /* THE MASKWRIGHT'S THEATRE: a playhouse - nothing is sprinkled; the furniture is placed by hand (src/redraw/theatre_props.js) */
 ALLOWED_DECORATIONS.theatre=['mirror','wardrobe','seats','stands','rack','props'];
-GROUND_KITS.canal={density:.12,kinds:['tuft']};   /* THE FOG CANAL: towpath grass; the locks, bridges and lanterns are the level's own (src/fog-canal.js) */
+GROUND_KITS.canal={density:0,kinds:[]};   /* THE FOG CANAL: a night city street of cobbles and stone - nothing sprinkled (claude/canalfix3: the towpath grass went with the wood); the locks, bridges, lanterns, railings and bollards are the level's own (src/fog-canal.js, src/redraw/canal_props.js) */
 ALLOWED_DECORATIONS.canal=[...ALLOWED_DECORATIONS.waymeet,'rowboat'];   /* off Waymeet's road: its barrels, crates and lanterns on the wharves, and a rowboat tied up */
 ALLOWED_DECORATIONS.reef.push('coiledCable','rumBarrels','capstanWreck','bellWreck');   /* the wreck junk: a capstan and a bell nobody will turn or ring (docs/briefs/reef-longer.md) */
 

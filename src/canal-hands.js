@@ -15,7 +15,7 @@ const GADGET = new Set(['locksluice', 'swingcap', 'foghorn', 'lanternpost']);
 
 /* THE TILE KIT (src/redraw/canal_tiles.js): the level's own data tells it where the water stands, the gates, the bridges and the weed */
 export function canalTile(t, x, y, at, T, L) { const D = L.canal; if (!D) return null;
-  if (!D.tctx) D.tctx = { T, gates: D.gates, bridges: D.bridges, lock: L.lockArena ? { sx: L.lockArena.sx, R: L.lockArena.R } : null, weedCells: new Set((D.weeds || []).flatMap(([x0, x1, row]) => { const o = []; for (let i = x0; i <= x1; i++) o.push(i + ',' + row); return o; })),
+  if (!D.tctx) D.tctx = { T, gates: D.gates, bridges: D.bridges, rooms: L.interiors || [], jetties: D.jetties || [], lock: L.lockArena ? { sx: L.lockArena.sx, R: L.lockArena.R } : null, weedCells: new Set((D.weeds || []).flatMap(([x0, x1, row]) => { const o = []; for (let i = x0; i <= x1; i++) o.push(i + ',' + row); return o; })),
     levels: (D.reaches || []).flatMap(r => [...new Set([r.lo, r.hi])].map(row => ({ row, x0: r.x0, x1: r.x1 }))) };
   return CTL.canalTile(t, x, y, at, D.tctx); }
 
@@ -229,7 +229,10 @@ export function drawCanal(st, g, H, cx, cy, VW, VH, time) {
     CP.drawBridge(g, br, sy, sx, len, px0, k, time); }
   // ---- the low beams of the Waymeet pound: timbers hanging from the footbridge ----
   for (const bm of D.beams || []) { const sx = bm.x0 - cx, w = bm.x1 - bm.x0; if (sx > VW || sx + w < 0) continue; const top = Math.floor(bm.y / TS) * TS - 24 - cy;
-    g.fillStyle = '#4a3422'; g.fillRect(sx, top, w, bm.y - cy - top); g.fillStyle = '#ff9a5c'; g.globalAlpha = 0.6; g.fillRect(sx, bm.y - cy - 2, w, 2); g.globalAlpha = 1; }
+    g.fillStyle = '#2c3238'; g.fillRect(sx, top, w, bm.y - cy - top); g.fillStyle = '#5a646c'; g.fillRect(sx, top, w, 1); for (let q = 2; q < w; q += 6) { g.fillStyle = '#8a929a'; g.fillRect(sx + q, bm.y - cy - 5, 1, 1); } g.fillStyle = '#ff9a5c';   /* (claude/canalfix3) the low bridge's girders are iron, riveted */ g.globalAlpha = 0.6; g.fillRect(sx, bm.y - cy - 2, w, 2); g.globalAlpha = 1; }
+  // ---- (claude/canalfix3) the street's ironwork: railings and bollards (behind the heroes) ----
+  for (const [x0, x1, row] of (D.street && D.street.railings) || []) { if (!on(x0, x1 + 1)) continue; CP.drawRailing(g, x0 * TS - cx, row * TS - cy, (x1 - x0 + 1) * TS - 1); }
+  for (const [bx, row] of (D.street && D.street.bollards) || []) { if (!on(bx - 1, bx + 1)) continue; CP.drawBollard(g, bx * TS + 8 - cx, row * TS - cy); }
   // ---- the machines ----
   for (const pr of st.props) { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -30 || x > VW + 30 || y < -60 || y > VH + 40) continue; const fl = pr.flash > 0;
     if (pr.t === 'locksluice') { const r = R.reachById(st, pr.reach), up = r && Math.abs(r.to - R.surfaceY(r.hi)) < 1; CP.drawSluice(g, x, y, up, fl, r); }
@@ -304,4 +307,6 @@ export function drawCanalWater(st, g, H, cx, cy, VW, VH, time) {
 export const canalFoeShown = e => e.t !== 'grindylow' || F.grindylowUp(e);
 
 /* the rooms behind the tiles (src/redraw/canal_props.js paintRoom): the warehouse, the mill, Jenny's door */
+/* (claude/canalfix3) the canal's sign: an iron plaque, not a wooden board */
+export const signArt = () => CP.canalSign();
 export function paintCanalRoom(g, rs, sx, sy, w, h, time) { return CP.paintRoom(g, rs, sx, sy, w, h, time || 0); }
