@@ -70,7 +70,7 @@ desert-arc concept of 2026-10-01, which wins where the two differ. The greybox i
                   His blows (the desert engine): THE PINCH (!), THE CRUSH (X, low), THE BOULDER (X, a red mark where you stand),
                   THE SCUTTLE (X, low and fast to where you stood; he digs in at its end).
                   THE OPENING (caused, told, >= 3 s): shut the gate, let a flood bank, and release it while he is IN the channel. He goes
-                  on his back for 3.5 s, and blows land x1.6. A natural flood never does it: he walks out at the horn. A release with him
+                  on his back for 4.0 s (3.5 until the fix lane's pilot), and blows land x1.6. A natural flood never does it: he walks out at the horn. A release with him
                   out of the channel is water wasted. x0.05 chip otherwise (the global rule, src/boss-greed.js).
                   He always fights, and every pass of his chain is a new order.
                   PHASE TWO (half): the floods come faster, two boulders at once, and he will not walk into the channel while the gate

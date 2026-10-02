@@ -49,7 +49,7 @@ try {
   const wl=A.wheels[0],dam=()=>G().gates.find(g=>g.id==='dam');
   for(let i=0;i<60*40&&dam().state!=='full';i++){P.hp=P.maxHp;P.x=wl;P.face=1;if(dam().state==='open'&&i%20===0)BK.press('talk');BK.sim(1);}out.banked=dam().state;
   let opened=0;for(let i=0;i<60*40&&!opened;i++){P.hp=P.maxHp;const c=BK.gorgeCrab(),far=c.x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0];P.x=far;P.face=Math.sign(c.x-far)||1;if(dam().state==='full'&&c.inChannel&&c.mode!=='open')BK.press('talk');if(dam().state==='open'&&i%30===0)BK.press('talk');BK.sim(1);if(b.mode==='open')opened=1;}
-  out.opened=opened;let op=0;for(let i=0;i<60*6&&b.mode==='open';i++){op+=1/60;if(i===10){const h0=b.hp;BKT.hurtAs('light',b,40,b.x-10,false);out.openHit=+(h0-b.hp).toFixed(2);}P.hp=P.maxHp;BK.sim(1);}out.openFor=+op.toFixed(2);
+  out.opened=opened;let op=0;for(let i=0;i<60*14&&b.mode==='open';i++){op+=1/60;if(i===10){const h0=b.hp;BKT.hurtAs('light',b,40,b.x-10,false);out.openHit=+(h0-b.hp).toFixed(2);}P.hp=P.maxHp;BK.sim(1);}out.openFor=+op.toFixed(2);
   BK.sim(30);const h1=b.hp;BKT.hurtAs('light',b,40,b.x-10,false);out.chipHit=+(h1-b.hp).toFixed(2);out.n=BK.gorgeCrab().n;
   return out;})()`, 300000);
   ok(t.crab.active && t.crab.t === 'gorgecrab', 'THE GREAT RED CRAB wakes on the old dam');

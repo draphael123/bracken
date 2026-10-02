@@ -24,7 +24,7 @@ import { makeBoss, bossStep, FLOOR } from './desert-bosses.js';
 
 export const CRAB = {
   hp: 1900, w: 46, h: 28, markH: 44,
-  openMul: 1.6, openT: 3.5, openRest: 2.0,     /* THE OPENING: three and a half seconds on his back (the house floor is 3), a blow x1.6 in it (tuned with the human-bot pilot, tools/redgorge-pilot.mjs); x0.05 outside (the global rule) */
+  openMul: 1.6, openT: 4.0, openRest: 2.0,     /* THE OPENING: four seconds on his back (3.5 until claude/redgorge-fix: the 21-fight pilot run one fight a page read knight 4/7, warden 4/7, pyro 6/7 = 67%) (the house floor is 3), a blow x1.6 in it (tuned with the human-bot pilot, tools/redgorge-pilot.mjs); x0.05 outside (the global rule) */
   dmg: { pinch: 30, crush: 38, boulder: 30, scuttle: 31 }, p2: 1.3,   /* each told blow; phase two hits harder */
   speed: 58, scuttleV: 250, dugT: 1.4, keep: 40,
   rearT: 0.6, rearEvery: 3.0,                  /* phase two: at the bank, the held water stops him - he rears and hisses (src/gorge-crab-hands.js) */
