@@ -1045,3 +1045,5 @@ GROUND_KITS.welltown={density:0,kinds:[]};   /* THE WELL TOWN (claude/welltown, 
 ALLOWED_DECORATIONS.welltown=['awning','awningTorn','cargoChest','rug','amphora','cargoSack','scrub','oxSkull'];   /* the caravan's desert props, placed: the market's awnings and wares */
 GROUND_KITS.shopWell={density:0,kinds:[]};   /* THE WELL STORE (claude/welltown): a walk-in room, nothing sprinkled */
 ALLOWED_DECORATIONS.shopWell=['wares','counter','lanternPost','barrels','waterButt'];
+GROUND_KITS.redgorge={density:0,kinds:[]};   /* THE RED GORGE (claude/redgorge, the greybox): no grass kit on red rock - its props are the hands' own (src/red-gorge-hands.js: nests, painted hands) and these, placed */
+ALLOWED_DECORATIONS.redgorge=['scrub','oxSkull','oxRibs','deadTreeD'];

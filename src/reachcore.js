@@ -43,6 +43,9 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     /* THE WELL TOWN (src/well-town.js): a MUD WALL is one pour from a skin every hero carries (and the wells to fill it stand on the road before each), and
        THE DRY CISTERN's vault door opens on the four water-skins the level lays down: both count as done, like the fair's one-blow walls (the plain fill: legs only). The live level only (L.welltown): the draft, src/draft/well-town.js, measures its walls shut itself */
     if (L.welltown) for (const m of [...(L.mudWalls || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+    /* THE RED GORGE (src/red-gorge.js, claude/redgorge): a JAM is one released burst (a wheel by it, and every flood banks behind its gate), and THE OLD NEST's vault opens on the four
+       feathers the level lays down: both count as done (the plain fill: legs only). tools/redgorge.mjs proves each JAM is a lock with a real jump */
+    if (L.redgorge) for (const m of [...(L.jams || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
     for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
   }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the

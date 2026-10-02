@@ -94,6 +94,8 @@ export const OPEN_RULE = {
   duneworm: e => !!(e.st && wormOpen(e.st)),                                 // tangled in the awning
   wickerqueen: e => wqOpen(e),                                               // burning
   puppeteer: e => pupOpen(e),
+  gorgecrab: e => e.mode === 'open',                                         // THE GREAT RED CRAB: thrown on his back by a released burst (claude/redgorge)
+  banditking: e => e.mode === 'open',                                        // THE BANDIT KING: blind in the steam (claude/welltown's boss; one row, the welltown fix lane adds the same)
   greenteeth: e => gtOpen(e),                                                // stranded or flushed (her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,

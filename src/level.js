@@ -6,7 +6,8 @@ import {buildBurningVillage} from './burning-village.js';
 import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
 import { buildFogCanal } from './fog-canal.js';
-import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its boss is THE BANDIT KING (src/bandit-king.js) */   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
+import { buildWellTown } from './well-town.js';
+import { buildRedGorge } from './red-gorge.js';   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE GREAT RED CRAB (src/gorge-crab.js) */   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its boss is THE BANDIT KING (src/bandit-king.js) */   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
@@ -7751,6 +7752,9 @@ export const LEVELS = [
      of 2026-10-01: needs 'caravan', not the brief's 'sunkencaravan'). APPENDED, so no index and no save moves. THE BANDIT KING is its boss, in the Kasbah's courtyard */
   { id: 'welltown', arc: 'the desert', name: 'THE WELL TOWN', sub: 'the wells are the only blue in it', rule: 'WATER IS CARRIED. FILL YOUR SKIN AT A WELL: POUR IT ON MUD AND FIRE, OR DRINK IT.', build: () => buildWellTown({ painter, T, TS }), needs: 'caravan' },
   { id: 'shopWell', name: 'THE WELL STORE', sub: 'ask the keeper', build: theShopWell, hidden: true },   /* THE WELL TOWN's walk-in store (claude/welltown): APPENDED, like every level */
+  /* THE RED GORGE (claude/redgorge, the GREYBOX, 2026-10-02): desert arc level 3 - a climb up a canyon whose channel floods on a clock - after THE WELL TOWN. APPENDED, so no
+     index and no save moves. THE GREAT RED CRAB is its boss, on the old dam at its head (the desert-arc concept: a new flood-tied ground boss; THE ROC stays for THE SKY ROAD) */
+  { id: 'redgorge', arc: 'the desert', name: 'THE RED GORGE', sub: 'the channel floods on the horn', rule: 'AT THE HORN THE FLOOD COMES DOWN THE CHANNEL. A SHUT GATE HOLDS ONE.', build: () => buildRedGorge({ painter, T, TS }), needs: 'welltown' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

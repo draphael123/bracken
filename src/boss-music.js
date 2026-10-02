@@ -29,7 +29,9 @@
 //   'banditking' THE BANDIT KING (claude/welltown, a PLACEHOLDER HOOK - TODO(Daniel/a music lane): his own theme). D Phrygian dominant, 4/4 at 104 (eighth =
 //                0.288 s), 8 bars = 18 s: a darbuka (doum on one and the and-of-two, teks between), a held drone, and a snake-charmer hook on a
 //                nasal saw that climbs the augmented second and falls back. Enough to be his, and to be replaced.
-export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1 };
+//   'gorgecrab'  THE GREAT RED CRAB (claude/redgorge, a PLACEHOLDER THEME - TODO(Daniel/a music lane): his own). A Phrygian, 4/4 at 92 (eighth = 0.326 s), 8 bars = 21 s:
+//                his claws (dry clacks on the off-beats), a slow low drone under the dam, and every other bar the water - a falling saw run, A down to the E.
+export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, gorgecrab: 1 };
 
 /* 'archmage:undead' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -289,7 +291,19 @@ function banditking(i, delay, variant, env) {
   if (bar % 2 === 1 && n !== '-') held(env, 'sawtooth', nf(n), BKM_STEP * 0.9, 0.09 * g, delay, { lp: 1900, att: 0.02, hold: 0.5, from: 0.97 });   // the hook, every other bar
 }
 
+// ---------------------------------------------------------------- THE GREAT RED CRAB (a placeholder theme, claude/redgorge)
+const GCM_STEP = 60 / 92 / 2, GCM_LEN = 8, GCM_BARSN = 8;
+const GCM_RUN = ['A4', 'G4', 'F4', 'E4', 'D4', 'C4', 'Bb3', 'A3'];
+function gorgecrab(i, delay, variant, env) {
+  const bar = Math.floor(i / GCM_LEN), s = i % GCM_LEN, g = env.gain;
+  if (s === 0 || s === 4) pluck(env, 'sine', 70, 0.35, 0.8 * g, delay, { to: 40 });   // the step of him
+  if (s === 1 || s === 3 || s === 6) noise(env, 0.03, 0.14 * g, 4200, 1.4, delay);   // the claws
+  if (s === 0 && bar % 4 === 0) for (const n of ['A1', 'E2']) held(env, 'sawtooth', nf(n), GCM_STEP * GCM_LEN * 4 * 0.98, 0.05 * g, delay, { lp: 360, att: 0.8, hold: 0.8, det: 11 });   // the dam
+  if (bar % 2 === 1) held(env, 'sawtooth', nf(GCM_RUN[s]), GCM_STEP * 0.85, 0.07 * g, delay, { lp: 1600, att: 0.01, hold: 0.4, from: 1.02 });   // the water, falling
+}
+
 export const SYNTH_BOSS = {
+  gorgecrab: { step: GCM_STEP, total: GCM_LEN * GCM_BARSN, play: gorgecrab },
   banditking: { step: BKM_STEP, total: BKM_LEN * BKM_BARSN, play: banditking },
   archmage: { step: AM_STEP, total: AM_LEN * AM_BARSN, play: archmage },
   goblinroyal: { step: GR_STEP, total: GR_LEN * GR_BARSN, play: goblinroyal },
