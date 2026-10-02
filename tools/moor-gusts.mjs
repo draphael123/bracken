@@ -111,6 +111,6 @@ assert(/gustRise\(\) \{/.test(audio), 'SFX.gustRise exists');
 assert(main.includes('if (soon && !z.rose && near) { z.rose = true; SFX.gustRise(); }'), 'the gust loop plays the build-up whistle');
 assert(/function drawMoorWeather\(cx,cy\) \{\s*for \(const z of \(L\.gusts \|\| \[\]\)\) if \(z\.told/.test(main), 'drawMoorWeather draws every told gust\'s build-up');
 assert(/boss\.mode === 'howl'[^\n]*!gustShove\(boss\.howlDir, CALLER_SHOVE, dt\)\) boss\.braceT/.test(main.slice(main.indexOf('function updateMoorWind'), main.indexOf('function drawToldGust'))), 'the Windcaller\'s howl shoves as the moor does, in the player\'s own update, and a brace held against it is counted on him');
-assert(/HIS WIND FAILS[^\n]*knockCaller\(e\)/.test(main), 'braced through, his howl knocks him down (the page proof is tools/boss-openings.mjs)');
+assert(/HIS WIND FAILS[^\n]*knockCaller\(e, true\)/.test(main),   /* (claude/bosswave1: the braced howl is his BIG fall) */ 'braced through, his howl knocks him down (the page proof is tools/boss-openings.mjs)');
 { const n = +(main.match(/HOWL_LEN = ([\d.]+)/) || [])[1], b = +(main.match(/HOWL_BRACE = ([\d.]+)/) || [])[1]; assert(b > n * 0.5 && b < n, 'the brace must hold most of the howl, not all of it: ' + b + ' of ' + n); }
 console.log('moor-gusts  ' + G.length + ' gusts, every one told; ' + shoves.length + ' shove on one beat (' + beat.join('/') + ' s, build-up ' + tell + ' s): ' + out.join('; ') + '.');

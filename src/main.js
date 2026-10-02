@@ -6090,7 +6090,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   if (e.t === 'owl' && e.mode === 'pinned') dmg = Math.round(dmg * 2.5); /* under the dead bough: the window the player made pays best */
   if (e.t === 'owl' && e.mode === 'sit') e.hits = (e.hits || 0) + 1;
   if (e.t === 'king' && e.mode === 'held') dmg *= 2; // held by a cage: his head is down
-  if (e.t === 'windcaller' && !callerOpen(e)) { SFX.buzz(); return; } // between stones there is nothing to cut
+  if (e.t === 'windcaller' && !callerThere(e)) { SFX.buzz(); return; } // between stones there is nothing to cut (on a stone he is there: the boss rule chips him, claude/bosswave1)
   if (e.t === 'windcaller') e.hits = (e.hits || 0) + 1;
   if (e.t === 'herald') { if (e.mode === 'mired') dmg = Math.round(dmg * 1.5); else if (e.mode !== 'reel') { dmg = Math.max(1, Math.round(dmg * 0.35)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 8, e.y - 24, Math.sign(e.x - fromX) || 1, 4); } }
   if (e.t === 'tideguard' && e.mode !== 'rest' && e.mode !== 'thrust' && !(e.stagger > 0) && Math.sign(fromX - e.x) === e.face) { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); }
@@ -14681,7 +14681,7 @@ function updateWindcaller(e, dt) {
     /* THE HOWL IS THE MOOR'S GUST (docs/briefs/gale-moor-rework.md §4): it shoves like one, and like one it cannot move a hero who
        braces. Hold your ground through nearly all of it and his own wind fails him - he falls, open, as a bolt sent back drops him
        (A11: the opening is caused). Left unbraced it walks you to the wall and he blinks away, as it always did. */
-    case 'howl': { const dir = e.howlDir;   /* (the shove itself is in updateMoorWind, with the moor's gusts: after the legs, before the move) */ if (!P.dead && P.x > A.x0 && P.x < A.x1) { if (Math.random() < dt * 70) parts.push({ x: camX + Math.random() * VW, y: camY + Math.random() * VH, vx: dir * 320, vy: 0, life: 0.3, max: 0.3, col: '#e8f0f8', size: 1, grav: 0 }); } if ((e.hits || 0) >= (p2 ? 1 : 2)) goBlink(); else if (e.modeT <= 0) { if ((e.braceT || 0) >= HOWL_BRACE) { number(e.x, e.y - 30, 'HIS WIND FAILS', '#bfe6f5'); SFX.gust(); knockCaller(e); } else goBlink(); } break; }
+    case 'howl': { const dir = e.howlDir;   /* (the shove itself is in updateMoorWind, with the moor's gusts: after the legs, before the move) */ if (!P.dead && P.x > A.x0 && P.x < A.x1) { if (Math.random() < dt * 70) parts.push({ x: camX + Math.random() * VW, y: camY + Math.random() * VH, vx: dir * 320, vy: 0, life: 0.3, max: 0.3, col: '#e8f0f8', size: 1, grav: 0 }); } if ((e.hits || 0) >= (p2 ? 1 : 2)) goBlink(); else if (e.modeT <= 0) { if ((e.braceT || 0) >= HOWL_BRACE) { number(e.x, e.y - 30, 'HIS WIND FAILS', '#bfe6f5'); SFX.gust(); knockCaller(e, true); } else goBlink(); } break; }
     case 'blink': if (e.modeT <= 0 && (e.blinks = (e.blinks || 0) + 1) % 3 === 0) { const gx = Math.max(A.x0 + 48, Math.min(A.x1 - 48, P.x + (P.x < (A.x0 + A.x1) / 2 ? 110 : -110))); e.x = gx; e.y = A.floor; e.grounded = true; e.mode = 'appear'; e.modeT = 0.45; burst(e.x, e.y - 12, 14, ['#c9a0ff', '#e8dcc0'], 60, 0.5, -40, 1); SFX.puff(); }
       else if (e.modeT <= 0) { e.grounded = false; const far = roosts.filter(r => Math.abs(r[0] * TS + 16 - e.x) > 20 && Math.abs(r[0] * TS + 16 - P.x) > 50); const pool = far.length ? far : roosts; const pick = pool[Math.floor(Math.random() * pool.length)]; if (pick) { e.x = pick[0] * TS + 16; e.y = (pick[1] + 1) * TS; } e.mode = 'appear'; e.modeT = 0.45; burst(e.x, e.y - 12, 14, ['#c9a0ff', '#e8dcc0'], 60, 0.5, -40, 1); SFX.puff(); } break;
     case 'appear': if (e.modeT <= 0) { if (e.grounded) { e.mode = 'ground'; e.modeT = 3.4; e.hits = 0; SFX.callerChant(); } else { e.mode = 'cast'; e.modeT = castLen; e.castT = 0.6; } } break;
@@ -14689,16 +14689,28 @@ function updateWindcaller(e, dt) {
     case 'ground': { e.y = A.floor; e.hits = 0; e.castFlash = 0.1; if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 40, y: e.y - Math.random() * 40, vx: (e.x - P.x > 0 ? -1 : 1) * 0, vy: -30, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#c9a0ff' : '#e8dcc0', size: 1, grav: 0 });
       if (e.modeT <= 0) { for (let k = 0; k < 6; k++) { const a = -Math.PI * (k + 0.5) / 6; seeds.push({ x: e.x, y: e.y - 16, vx: Math.cos(a) * 110, vy: Math.sin(a) * 110, dead: false, life: 3, bolt: true }); } SFX.callerBlast(); shakeCam(3); goBlink(); } break; }
     // knocked off his stone by his own bolt: down on the ground and open until he gathers himself
-    case 'fallen': { e.y = Math.min(A.floor, e.y + 360 * dt); e.hits = 0; if (e.y >= A.floor && !e.fellT) { e.fellT = 1; dust(e.x, e.y, 10); SFX.thud(); shakeCam(4); } if (e.modeT <= 0) { e.fellT = 0; goBlink(); } break; }
+    case 'fallen': { e.y = Math.min(A.floor, e.y + 360 * dt); e.hits = 0; if (e.y >= A.floor && !e.fellT) { e.fellT = 1; dust(e.x, e.y, 10); SFX.thud(); shakeCam(4); }
+      /* A FALL IS WORTH A SHARE OF HIM, NOT HALF OF HIM (claude/bosswave1): he gets up the moment CALLER_FALL_TAKE of his blood has gone in this fall - the warden
+         took 50% off one fall, so two falls (bolts sent back by a swing that never stopped) won the fight for the mash bot */
+      if (e.modeT > 0 && (e.fallHp || 0) - e.hp >= e.maxHp * (e.fallBig ? CALLER_FALL_TAKE_BIG : CALLER_FALL_TAKE)) { e.modeT = 0; number(e.x, e.y - 30, 'HE RISES ON THE WIND', '#bfe6f5'); }
+      if (e.modeT <= 0) { e.fellT = 0; goBlink(); } break; }
   }
 }
 const HOWL_LEN = 2.2, HOWL_BRACE = 1.6, CALLER_SHOVE = 200;   /* his howl: how long it blows, how much of it a brace must hold, and its shove */
-const callerOpen = e => e.mode === 'twister' || e.mode === 'lightning' || e.mode === 'cast' || e.mode === 'howlTell' || e.mode === 'howl' || e.mode === 'ground' || e.mode === 'fallen';
+/* HIS ONE OPENING IS THE FALL (claude/bosswave1, Daniel 10-02: "Hollow Knight / Salt & Sanctuary"). callerOpen used to count his casting,
+   his twister, his lightning, his howl and his gathering on the ground as open - he was open most of the fight, and the mash bot beat him 4/6.
+   Now he is open only when he is DOWN: knocked off his stone by his own bolt sent back, or by his own howl braced through (knockCaller) - told by
+   HIS WIND FAILS, the green ring under him, and CALLER_FALL seconds on the heather. Everywhere else he is THERE (callerThere) and a blade reaches
+   him for a scratch (the boss rule's chip, src/boss-greed.js) and still chases him off his stone; only between stones is there nothing to cut. */
+const CALLER_FALL = 3.4, CALLER_FALL_TAKE = 0.2, CALLER_FALL_BIG = 4.4, CALLER_FALL_TAKE_BIG = 0.4;   /* s he lies on the heather (it was 3, the drop from his stone included): >= 3 s open on the ground (boss-openings) - or until a fifth of his blood has gone in it.
+   HIS OWN HOWL BRACED THROUGH is the big fall (the one a mash never earns: it asks you to stop and hold DOWN): longer, and worth two of a bolt's */
+const callerOpen = e => e.mode === 'fallen';
+const callerThere = e => e.mode !== 'blink' && e.mode !== 'appear' && e.mode !== 'sleep';
 // the wind in his arena drops while he is casting or down: the pushing is what the howl is for
 const callerCalm = () => !!(boss && boss.t === 'windcaller' && boss.alive && ['cast', 'ground', 'fallen', 'appear'].includes(boss.mode));
 // his bolts come back at him: struck, blocked, or caught in the Aegis
 function returnBolt(s) { const wc = (s.owner && s.owner.alive) ? s.owner : enemies.find(e => e.t === 'windcaller' && e.alive); if (!wc) return false; const dx = wc.x - s.x, dy = (wc.y - 14) - s.y, d = Math.hypot(dx, dy) || 1; s.dead = false; s.vx = dx / d * 270; s.vy = dy / d * 270; s.g = 0; s.reflected = true; s.life = 2.5; SFX.parry(); return true; }
-function knockCaller(e) { if (!['cast', 'howlTell', 'howl', 'appear'].includes(e.mode)) return; e.mode = 'fallen'; e.modeT = 3; e.hits = 0; e.fellT = 0; e.grounded = false; burst(e.x, e.y - 12, 16, ['#c9a0ff', '#e8dcc0', '#6faa4a'], 70, 0.5, -20, 1); SFX.callerChant(); shakeCam(5); }
+function knockCaller(e, big = false) { if (e.mode === 'fallen' || e.mode === 'blink' || e.mode === 'sleep' || e.mode === 'wake') return;   /* (claude/bosswave1: a bolt sent back drops him from ANY of his casts - his fall is his only opening now, so it comes whenever it is earned) */ e.mode = 'fallen'; e.modeT = big ? CALLER_FALL_BIG : CALLER_FALL; e.fallBig = big; e.fallHp = e.hp; e.hits = 0; e.fellT = 0; e.grounded = false; number(e.x, e.y - 44, 'HE FALLS: CUT HIM', '#8fd160'); burst(e.x, e.y - 12, 16, ['#c9a0ff', '#e8dcc0', '#6faa4a'], 70, 0.5, -20, 1); SFX.callerChant(); shakeCam(5); }
 // the storm shaman: he holds the far end of a span and throws slow bolts at anyone on it. They can be sent back.
 /* THE SEA WITCH. Six of the Hurricane Deck's posts were held by a GOBLIN SHAMAN, which is the one thing aboard
    that never signed her articles, so she has her own caster now. It is deliberately the SAME FIGHT: the same

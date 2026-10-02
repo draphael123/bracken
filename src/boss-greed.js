@@ -70,7 +70,7 @@ export const OPEN_RULE = {
   ram: e => H.ramOpen(e),                                                    // into the wall, or off his leap
   owl: e => e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'pinned' || e.lampT > 0,
   abbot: e => abbotOpen(e),                                                  // the bell has him down
-  windcaller: e => H.callerOpen(e),                                          // between stones nothing is there anyway
+  windcaller: e => H.callerOpen(e),                                          // (claude/bosswave1) FALLEN only: his bolt sent back, or his howl braced through
   lance: e => H.lanceOpen(e),                                                // committed: planted, thrusting, reeling
   gqueen: e => H.gqOpen(e),                                                  // pinned, or her plate off
   herald: e => e.mode === 'mired' || e.mode === 'reel',
