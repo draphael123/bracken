@@ -214,7 +214,7 @@ export function buildRedGorge({ painter, T, TS }) {
       { kind: 'waterwheel', opens: 'its basket up the sheer face while the water runs', hud: 'THE WHEEL TURNS WHEN THE WATER RUNS' },
       { kind: 'oldnest', opens: "THE OLD NEST's vault (a silver)", hud: 'THE OLD NEST OPENS' },
     ],
-    music: 'caravan',   /* TODO(Daniel picks the track): a PLACEHOLDER, THE SUNKEN CARAVAN's track borrowed until the gorge has its own CC0/CC-BY file (tools/level-quality.mjs REPORT_ONLY lists the borrow). Nothing was downloaded */
+    music: 'redgorge',   /* "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick (10-02); credited in src/audio.js MUSIC_CREDITS, audio/CREDITS.txt and the credits page (src/credits.js) */
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     caravan: true,   /* the desert's hands in main.js (the sandstone skins, the bandits' AI); THE SUN never reaches the floor of the gorge (the shade above) */
     ledgeKit: 'desert',

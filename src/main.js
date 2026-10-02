@@ -157,7 +157,7 @@ import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
 import { WEIGHTY, weighty, setWeighty, combatFrom, weightyHere, recoveryFor, poiseRule, guardCount } from './weighty.js';   /* COMBAT: CLASSIC / WEIGHTY (claude/ssproto): one switch, off by default */
 import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
+import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, MUSIC_CREDITS_ROW, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook, musicBox } from './audio.js';
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
@@ -27512,12 +27512,12 @@ function drawCredits() {
   const pages = creditPages(MUSIC_CREDITS), pg = pages[Math.min(creditsPage, pages.length - 1)];
   text('CREDITS - MUSIC', VW / 2, y + 6, UI.title, 'center');
   if (pg.kind === 'ccby') {
-    text('CREDIT REQUIRED (CC-BY 3.0)', VW / 2, y + 22, '#8fd160', 'center', 6);
-    CC_BY.forEach(([, track, who, lic], i) => { const yy = y + 36 + i * 22;
-      text(fitText('"' + track + '" - ' + who, w - 16, 6), VW / 2, yy, UI.text, 'center', 6);
-      text(lic + ': creativecommons.org/licenses/by/3.0', VW / 2, yy + 9, UI.dim, 'center', 6); });
-    text('ALL THE REST IS CC0 OR PUBLIC DOMAIN,', VW / 2, y + 88, UI.dim, 'center', 6);
-    text('FROM OPENGAMEART.ORG. THANK YOU:', VW / 2, y + 97, UI.dim, 'center', 6);
+    text('CREDIT REQUIRED (CC-BY)', VW / 2, y + 20, '#8fd160', 'center', 6);
+    let yy = y + 31;   /* each CC-BY track: its name and composer, and its licence - or, where the licensor words the credit, that wording whole (claude/redgorge-fix: Kevin MacLeod's) */
+    for (const [, track, who, lic, url, full] of CC_BY) { const lines = full || ['"' + track + '" - ' + who, lic + ': ' + url];
+      lines.forEach((ln, j) => text(j ? ln : fitText(ln, w - 16, 6), VW / 2, yy + j * 9, j ? UI.dim : UI.text, 'center', 6)); yy += lines.length * 9 + 4; }   /* (a licence line is drawn whole, as it always was) */
+    text('ALL THE REST IS CC0 OR PUBLIC DOMAIN,', VW / 2, yy + 2, UI.dim, 'center', 6);
+    text('FROM OPENGAMEART.ORG. THANK YOU:', VW / 2, yy + 11, UI.dim, 'center', 6);
   } else {
     const colW = (w - 20) / 2;
     pg.names.forEach((n, i) => { const col = Math.floor(i / 8), row = i % 8; text(fitText(n, colW - 10, 6), x + 12 + col * colW, y + 24 + row * 11, UI.text, 'left', 6); });
@@ -27550,7 +27550,7 @@ function drawSoundTest() {
   /* THE CREDIT LINE. Only a song already unlocked names its own maker - a locked one is '???' above and stays
      unnamed below it too, or the lock is not really a lock. fitText is a safety net, not the plan: MUSIC_CREDITS is
      kept short enough that it almost never has to cut (tools/textfit.mjs 'soundtest' sweeps every one unlocked). */
-  if (soundCat === 1) { const n = list[soundI], line = musicUnlocked(n) ? (MUSIC_CREDITS[n] || 'made for BRACKEN') : 'not yet heard'; text(fitText(line, w - 16), x + w / 2, y + h - 34, UI.dim, 'center'); }
+  if (soundCat === 1) { const n = list[soundI], line = musicUnlocked(n) ? (MUSIC_CREDITS_ROW[n] || MUSIC_CREDITS[n] || 'made for BRACKEN') : 'not yet heard'; text(fitText(line, w - 16), x + w / 2, y + h - 34, UI.dim, 'center'); }
   text('Z play   LEFT/RIGHT tab   ESC back', VW / 2, y + h - 10, UI.dim, 'center');
 }
 const UI = { text: '#f0e8d4', title: '#fff6e0', dim: '#c2c9c2', border: '#d9c28c', sel: '#a8e06e', gold: '#ffd34a', silver: '#eaf0ff', plate: 'rgba(16,13,24,0.96)' };

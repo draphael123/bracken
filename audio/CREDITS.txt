@@ -1,4 +1,4 @@
-Music (CC0 / public domain, and - from 2026-10-01, with Daniel's say-so - CC-BY tracks WITH their credit here and in the Sound Test, from OpenGameArt.org; 'Dark Carnival' and 'At Work' below are the CC-BY ones):
+Music (CC0 / public domain, and - from 2026-10-01, with Daniel's say-so - CC-BY tracks WITH their credit here and in the Sound Test, from OpenGameArt.org; 'Dark Carnival', 'At Work' and 'Old Road' below are the CC-BY ones):
 - theme.ogg = "Juhani Junkala [Chiptune Adventures] 1. Stage 1.ogg" from "4 Chiptunes (Adventure)" by Juhani Junkala (SubspaceAudio)
   https://opengameart.org/content/4-chiptunes-adventure
 
@@ -216,3 +216,10 @@ Each: converted to OGG Vorbis q4, 44.1 kHz stereo, edge silence trimmed, levelle
 - deepdread.ogg = "the_abyss" from "Ambience of a Fallen Age" by Umplix, CC0 - https://opengameart.org/node/138647 - a quiet dread layer under deep.ogg in THE DEEP (an 80 s section, 0:30-1:54 of the source, its last 6 s crossfaded onto its first 6 s so it loops seamlessly; played at half the track's gain)
 - underleaf.ogg = "Lush, Mossy Grotto" by Tarush Singhal, CC0 - https://opengameart.org/content/lush-mossy-grotto - UNDERLEAF's theme (2:17, the composer's own loop; trimmed of 30 ms of encoder silence)
 - mineworks.ogg = "At Work (Loop)" by HorrorPen, Creative Commons Attribution 3.0 (CC-BY 3.0, CREDIT REQUIRED) - https://opengameart.org/content/little-people-at-work-loop - the Sound Test's "mineworks" song (no level plays it yet). Credit line: "At Work" by HorrorPen, CC-BY 3.0, https://creativecommons.org/licenses/by/3.0/ - the Sound Test shows it shortened to fit one row ("At Work" - HorrorPen (CC-BY)); this file is the full credit.
+
+THE RED GORGE (2026-10-02, claude/redgorge-fix, Daniel's pick; the file fetched with his yes - the lane downloaded nothing):
+- redgorge.ogg = "Old Road" by Kevin MacLeod, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://incompetech.com - THE RED GORGE's level track.
+  Credit, exactly as the licensor asks: "Old Road" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/
+  Changes: resampled to 44.1 kHz; the last 2.0 s crossfaded onto the first 2.0 s so it loops seamlessly (111.95 s); raised 4.1 dB under a peak limiter
+  (-1.5 dBFS) to about -12.4 LUFS integrated like the rest of the library; encoded to OGG Vorbis q4 stereo.
+- gorgecrab (no file) = THE GREAT RED CRAB's theme, synthesised for this game (src/boss-music.js): a clacking stop-start march at 110 bpm over a Phrygian drone.

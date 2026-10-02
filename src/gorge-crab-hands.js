@@ -5,6 +5,7 @@
 // read, fight, clear. Every teaching line goes through ctx.number with a line listed in src/hint-lines.js.
 import * as GC from './gorge-crab.js';
 import { CRAB_F } from './redraw/redgorge_art.js';
+import { BOSS_PHASE } from './boss-music.js';   /* his theme's phase two (the doubled hats, the flood surge) */
 const { CRAB } = GC;
 
 export function makeGorgeCrabHands(ctx) {
@@ -15,10 +16,10 @@ export function makeGorgeCrabHands(ctx) {
   H.fight = () => F;
   H.on = () => !!(F && A());
   H.owns = e => e.t === 'gorgecrab';
-  H.clear = () => { F = null; };
+  H.clear = () => { F = null; BOSS_PHASE.gorgecrab = 1; };
   H.phase = () => (F ? F.B.phase : 1);
   H.spawnBoss = base => { const S = A(); if (!S) return null;
-    F = GC.newFight(S, ctx.EHP.gorgecrab); F.wake = 1.2;
+    F = GC.newFight(S, ctx.EHP.gorgecrab); F.wake = 1.2; BOSS_PHASE.gorgecrab = 1;
     const e = { ...base, t: 'gorgecrab', w: CRAB.w, h: CRAB.h, hp: ctx.EHP.gorgecrab, maxHp: ctx.EHP.gorgecrab, noGrav: true, markH: CRAB.markH, face: -1, mode: 'sleep', open: 0, phase: 1 };
     e.x = GC.world(F, F.B.x); e.y = S.floor; return e; };
   H.water = water;
@@ -44,7 +45,7 @@ export function makeGorgeCrabHands(ctx) {
           if ((pp.gcHit || '') === key) return; if (!ctx.overlap({ l: v.box[0], r: v.box[1], t: v.box[2], b: v.box[3] }, ctx.box(Q))) return;
           pp.gcHit = key; ctx.damagePlayer(e.x, d, { unblockable: !v.blockable, who: e, name }); }); }
       if (v.t === 'open') { ctx.sfx.waveCrash && ctx.sfx.waveCrash(); ctx.shake(4); ctx.burst(e.x, e.y - 20, 22, ['#7ab8e8', '#e8f4f8', '#b8382c'], 80, 0.9); ctx.number(e.x, e.y - 56, 'THE WATER THROWS HIM: CUT HIM', '#8fd160'); }
-      if (v.t === 'phase2') { ctx.enrage(e); ctx.number(e.x, e.y - 56, 'HE SMELLS THE HELD WATER', '#ff9a5c'); }   /* (the review: the old line handed over the answer; his refusal at the bank says the rest) */
+      if (v.t === 'phase2') { ctx.enrage(e); BOSS_PHASE.gorgecrab = 2; ctx.number(e.x, e.y - 56, 'HE SMELLS THE HELD WATER', '#ff9a5c'); }   /* (the review: the old line handed over the answer; his refusal at the bank says the rest) */
     }
     /* PHASE TWO HAS A BODY (the review's fix 4): when the held water stops him at the bank - the engine's blocked() just holds his x - he REARS, claws up,
        and hisses, and the water banked over the dam's gate drips (once a refusal, at most every CRAB.rearEvery s). The first scuttle that ends IN the

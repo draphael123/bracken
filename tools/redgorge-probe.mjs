@@ -73,7 +73,13 @@ try {
   /* the camera looks up a rope (the narrows'), and not on the bridge under it */
   BK.tp(22,55);P.climb=true;for(let i=0;i<90;i++){P.climb=true;P.vy=0;P.y=56*16;BK.sim(1);}const up=P.y-BK.cam[1];
   P.climb=false;BK.tp(30,69);BK.sim(90);const flat=P.y-BK.cam[1];out.look={rope:Math.round(up),bridge:Math.round(flat)};
+  /* THE PLAYTEST'S STALL (Daniel, 10-02: on bridge two, the basket was not seen as the way on): a glint on the basket, and after ten seconds
+     standing about without headway, a nudge that names it */
+  BK.load(LEVELS.findIndex(l=>l.id==='redgorge'));BK.state='play';BK.god=true;BK.sim(5);for(const e of BK.enemies())e.alive=false;
+  const bm=BK.movers().find(q=>q.gorge==='ledges');for(let i=0;i<60*20&&bm.y<bm.y0-0.5;i++)BK.sim(1);
+  BK.tp(23,117);BK.sim(3);out.glint=BK.redgorgeHands().read().glint;for(let i=0;i<60*20&&!BK.redgorgeHands().read().lastNudge;i++){BK.tp(23,117);BK.sim(1);}out.nudge=BK.redgorgeHands().read().lastNudge;
   return out;})()`, 300000);
+  ok(f.glint === 'basket' && /BASKET/.test(f.nudge || ''), 'on bridge two the basket is glinted, and ten seconds without headway names it: ' + JSON.stringify({ glint: f.glint, nudge: f.nudge }));
   ok(f.flood.lost >= 0.45 && f.flood.fell >= 1, 'a flood takes a bandit on a bridge in the channel: through the bridge, half his life ' + JSON.stringify(f.flood));
   ok(f.jamShut === 'shut' && f.leapt.every(d => d >= 6), 'the jam\'s gate shut, its two knives leap down the slot onto bridge four ' + JSON.stringify({ shut: f.jamShut, leapt: f.leapt }));
   ok(f.burst.jam && !f.burst.sling && f.burst.taken >= 1, 'the burst that breaks the jam takes the jam-lip slinger outright ' + JSON.stringify(f.burst));

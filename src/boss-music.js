@@ -29,8 +29,9 @@
 //   'banditking' THE BANDIT KING (claude/welltown, a PLACEHOLDER HOOK - TODO(Daniel/a music lane): his own theme). D Phrygian dominant, 4/4 at 104 (eighth =
 //                0.288 s), 8 bars = 18 s: a darbuka (doum on one and the and-of-two, teks between), a held drone, and a snake-charmer hook on a
 //                nasal saw that climbs the augmented second and falls back. Enough to be his, and to be replaced.
-//   'gorgecrab'  THE GREAT RED CRAB (claude/redgorge, a PLACEHOLDER THEME - TODO(Daniel/a music lane): his own). A Phrygian, 4/4 at 92 (eighth = 0.326 s), 8 bars = 21 s:
-//                his claws (dry clacks on the off-beats), a slow low drone under the dam, and every other bar the water - a falling saw run, A down to the E.
+//   'gorgecrab'  THE GREAT RED CRAB (claude/redgorge-fix, Daniel's approved brief). A Phrygian, 4/4 at 110, 16 bars = 35 s: a heavy clacking stop-start
+//                march (toms, a claw clack on two and four, hats), a Phrygian drone, a stuttering bass riff and a half-step sidestepping brass lead;
+//                phase two doubles the hats and adds a flood surge (BOSS_PHASE, set by src/gorge-crab-hands.js).
 export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, gorgecrab: 1 };
 
 /* 'archmage:undead' is one name for the sound test and two for the scheduler: split it once, here. */
@@ -291,15 +292,38 @@ function banditking(i, delay, variant, env) {
   if (bar % 2 === 1 && n !== '-') held(env, 'sawtooth', nf(n), BKM_STEP * 0.9, 0.09 * g, delay, { lp: 1900, att: 0.02, hold: 0.5, from: 0.97 });   // the hook, every other bar
 }
 
-// ---------------------------------------------------------------- THE GREAT RED CRAB (a placeholder theme, claude/redgorge)
-const GCM_STEP = 60 / 92 / 2, GCM_LEN = 8, GCM_BARSN = 8;
-const GCM_RUN = ['A4', 'G4', 'F4', 'E4', 'D4', 'C4', 'Bb3', 'A3'];
+// ---------------------------------------------------------------- THE GREAT RED CRAB (claude/redgorge-fix, Daniel's approved brief, 10-02)
+// A Phrygian (A Bb C D E F G), 4/4 at 110 (eighth = 0.273 s), 16 bars = 35 s. A HEAVY CLACKING STOP-START MARCH: stomping low toms (one, the
+// and-of-two, three), a snappy CLAW CLACK on two and four, dry hat clacks on the off-beats, a Phrygian drone (a sub sine and a lowpassed saw on A,
+// rubbing up to Bb every fourth bar), a SYNCOPATED STUTTERING BASS RIFF (doubled sixteenths, A - Bb - A - G), and a DETUNED BRASSY LEAD that
+// SIDESTEPS IN HALF-STEPS (E - F - E - Eb - E: a crab's walk). The last bar of every four STOPS dead on its third beat - two lone clacks - and the
+// next comes back in on a double tom. The second eight bars bring the lead an octave up with a fifth under it.
+// PHASE TWO (src/gorge-crab-hands.js sets BOSS_PHASE.gorgecrab = 2 when he turns): the hat clacks double, and every fourth bar a FLOOD SURGE
+// sweeps up under the stop (rising noise and a saw sliding up an octave).
+export const BOSS_PHASE = { gorgecrab: 1 };
+const GCM_STEP = 60 / 110 / 2, GCM_LEN = 8, GCM_BARSN = 16;
+const GCM_BASS = [['A1', 2], ['-', 0], ['A1', 1], ['Bb1', 1], ['-', 0], ['A1', 2], ['G1', 1], ['A1', 1]];   // [note, 1 = one stroke / 2 = a stuttered pair]
+const GCM_LEAD = [['E4', 1.6], ['-'], ['F4', 0.9], ['E4', 0.9], ['-'], ['Eb4', 0.9], ['E4', 1.8], ['-']];   // the sidestep: E, up a half, back, down a half, back
+const GCM_LEAD2 = [['A4', 1.6], ['-'], ['Bb4', 0.9], ['A4', 0.9], ['G#4', 0.9], ['A4', 0.9], ['C5', 0.9], ['Bb4', 1.6]];
 function gorgecrab(i, delay, variant, env) {
-  const bar = Math.floor(i / GCM_LEN), s = i % GCM_LEN, g = env.gain;
-  if (s === 0 || s === 4) pluck(env, 'sine', 70, 0.35, 0.8 * g, delay, { to: 40 });   // the step of him
-  if (s === 1 || s === 3 || s === 6) noise(env, 0.03, 0.14 * g, 4200, 1.4, delay);   // the claws
-  if (s === 0 && bar % 4 === 0) for (const n of ['A1', 'E2']) held(env, 'sawtooth', nf(n), GCM_STEP * GCM_LEN * 4 * 0.98, 0.05 * g, delay, { lp: 360, att: 0.8, hold: 0.8, det: 11 });   // the dam
-  if (bar % 2 === 1) held(env, 'sawtooth', nf(GCM_RUN[s]), GCM_STEP * 0.85, 0.07 * g, delay, { lp: 1600, att: 0.01, hold: 0.4, from: 1.02 });   // the water, falling
+  const bar = Math.floor(i / GCM_LEN), s = i % GCM_LEN, b = bar % 4, second = bar >= 8, g = env.gain, p2 = BOSS_PHASE.gorgecrab === 2;
+  const stop = b === 3 && s >= 4;   // THE STOP: the fourth bar dies on its third beat
+  // THE MARCH: stomping toms, the claw clack, the hats
+  if (!stop && (s === 0 || s === 3 || s === 4)) pluck(env, 'sine', s === 3 ? 82 : 96, 0.28, (s === 0 ? 0.9 : 0.7) * g, delay, { to: 44 });
+  if (b === 0 && s === 0 && bar > 0) pluck(env, 'sine', 120, 0.22, 0.6 * g, delay + GCM_STEP / 2, { to: 50 });   // the double tom: back in after the stop
+  if (s === 2 || s === 6) { noise(env, 0.05, 0.24 * g, 3400, 1.6, delay); pluck(env, 'square', 1900, 0.025, 0.07 * g, delay, { lp: 3600 }); }   // THE CLAW CLACK on two and four
+  if (s % 2 === 1 || (stop && s === 6)) { noise(env, 0.025, 0.1 * g, 6200, 1.8, delay); if (p2) noise(env, 0.025, 0.08 * g, 6800, 1.8, delay + GCM_STEP / 2); }   // the hats (phase two: doubled)
+  if (stop) { if (p2 && s === 4) { for (let k = 0; k < 6; k++) noise(env, 0.12, (0.05 + k * 0.02) * g, 500 + k * 650, 0.8, delay + k * GCM_STEP * 0.6);   // THE FLOOD SURGE
+    held(env, 'sawtooth', nf('A2'), GCM_STEP * 3.8, 0.07 * g, delay, { lp: 1400, att: 0.3, hold: 0.8, from: 1, to: 2, slide: true, det: 9 }); } return; }
+  // THE DRONE under the dam: A, rubbing up to the flat second every fourth bar
+  if (s === 0 && b % 2 === 0) { const r = b === 2 ? 'Bb1' : 'A1'; pluck(env, 'sine', nf(r) * 0.5, GCM_STEP * GCM_LEN * 2 * 0.95, 0.32 * g, delay); held(env, 'sawtooth', nf(r), GCM_STEP * GCM_LEN * 2 * 0.95, 0.05 * g, delay, { lp: 330, att: 0.4, hold: 0.8, det: 13 }); }
+  // THE BASS RIFF: syncopated, stuttering
+  const [bn, st] = GCM_BASS[s];
+  if (bn !== '-') { const f = nf(bn) * (b === 2 ? nf('Bb1') / nf('A1') : 1); pluck(env, 'sawtooth', f, GCM_STEP * 0.45, 0.2 * g, delay, { lp: 520 }); if (st === 2) pluck(env, 'sawtooth', f, GCM_STEP * 0.4, 0.16 * g, delay + GCM_STEP / 2, { lp: 520 }); }
+  // THE LEAD: brassy, detuned, sidestepping (bars two and three of each four; every bar in the second half)
+  if (b === 1 || b === 2 || second) { const ln = ((bar % 2) ? GCM_LEAD2 : GCM_LEAD)[s];
+    if (ln[0] !== '-') { const up = second ? 2 : 1; held(env, 'sawtooth', nf(ln[0]) * up, GCM_STEP * ln[1], 0.075 * g, delay, { lp: second ? 2400 : 1800, att: 0.02, hold: 0.55, det: 12, from: 0.97 });
+      if (second) held(env, 'square', nf(ln[0]) * 0.75, GCM_STEP * ln[1], 0.03 * g, delay, { lp: 1200, att: 0.02, hold: 0.5 }); } }
 }
 
 export const SYNTH_BOSS = {

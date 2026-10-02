@@ -13,6 +13,16 @@ export const GORGE = { dry: 6.0, horn: 2.0, run: 2.4, first: 3.0, dmg: 25, damDm
 export const BASKET = { rise: 2.0, sink: 36, hold: 2.5 };          /* a basket climbs its shaft in RISE s of running water, holds HOLD s at the top, then sinks */
 export const RAPTOR = { sightY: 150, hp: 24, dmg: 20 };            /* THE RAPTOR: it hunts only a hero within SIGHTY px (up or down) of the bridge it keeps; its stoop hits harder than a vulture's (20, the vulture 10) */
 
+/* WHAT YOU MUST USE NEXT (Daniel's playtest, 10-02: on bridge two he could not see that the basket was the way on). The canal's answer
+   (claude/canalfix3): a pulsing GLINT on the thing the climb needs next, and after NUDGE.after s with no headway up the gorge, a short NUDGE
+   naming it (once, then again only after NUDGE.again s). No sign spoils it: the glint says WHERE, the nudge only WHAT */
+export const NUDGE = { after: 10, again: 25, rise: 3 };
+export const GORGE_NUDGE = {
+  fallsRope: 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY',
+  basket: 'THE BASKET: STAND ON IT. THE FLOOD WINDS IT UP',
+  jam: 'THE WHEEL: SHUT THE GATE, LET IT FILL, THEN RELEASE IT',
+  narrowsRope: 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY',
+};
 export function makeRedGorgeHands(ctx) {
   let RG = null;
   const H = {};
@@ -26,7 +36,7 @@ export function makeRedGorgeHands(ctx) {
     if (!RG || RG.L !== L) {
       const ents = L.ents, ts = ctx.TS;
       RG = { L, phase: 'dry', t: GORGE.first, id: 0, said: {}, spans: [], pending: [],
-        n: { floods: 0, held: 0, releases: 0, wasted: 0, swept: 0, foesSwept: 0, foesTaken: 0, jams: 0, rides: 0, shut: 0 },
+        n: { floods: 0, held: 0, releases: 0, wasted: 0, swept: 0, foesSwept: 0, foesTaken: 0, nudges: 0, jams: 0, rides: 0, shut: 0 },
         channels: (L.channels || []).map(c => ({ ...c })),
         gates: (L.gates || []).map(g => ({ ...g, state: 'open', fx: 0 })),
         wheels: ents.filter(e => e.t === 'sluice').map(e => ({ x: e.x * ts + 8, y: (e.y + 1) * ts, gate: e.gate, arena: !!e.arena, cd: 0 })),
@@ -85,7 +95,7 @@ export function makeRedGorgeHands(ctx) {
   /* ---------- EVERY FRAME ---------- */
   H.update = dt => {
     if (!RG) return;
-    const P0 = ctx.hero();
+    const P0 = ctx.hero(); RG.clock = (RG.clock || 0) + dt; if (!P0.dead) stall(P0, dt);
     /* THE CLOCK: dry -> horn -> flood (phase two of the crab's fight: the dry spells shorten) */
     RG.t -= dt;
     if (RG.t <= 0) {
@@ -142,6 +152,20 @@ export function makeRedGorgeHands(ctx) {
     const n = RG.nest; if (n && !n.open && !RG.said.nest && Math.abs(n.x - P0.x) < 48 && Math.abs(n.y - P0.y) < 24 && ctx.questGot() < ctx.questN()) (RG.said['nest'] ? 0 : (RG.said['nest'] = 1, ctx.number(P0.x, P0.y - 34, 'THE OLD NEST WANTS FOUR FEATHERS', '#ffd36b')));
   };
 
+  /* ---------- THE GLINT AND THE NUDGE: what the climb needs next, by where the hero is ---------- */
+  const nextThing = P => { const ts = ctx.TS, row = P.y / ts, col = P.x / ts, bk = id => ctx.movers().find(m => m.gorge === id);
+    const onB = m => m && P.onMover === m, jam = RG.jams[0];
+    if (row > 118.5 && row <= 136.5 && col > 19 && !P.climb) return { key: 'fallsRope', x: 24 * ts + 8, y: 135 * ts };
+    if (row > 100.5 && row <= 118.5) { const m = bk('ledges'); if (m && !onB(m)) return { key: 'basket', x: m.x + 16, y: m.y - 4 }; }
+    if (row > 66 && row <= 70.5 && jam && !jam.open && col > 26) { const w = RG.wheels.find(q => q.gate === 'jam'); return { key: 'jam', x: w.x, y: w.y - 30 }; }
+    if (row > 66 && row <= 70.5 && jam && jam.open) { const m = bk('narrows'); if (m && !onB(m)) return { key: 'basket', x: m.x + 16, y: m.y - 4 }; }
+    if (row > 60 && row <= 65.5 && col < 22 && !P.climb) return { key: 'narrowsRope', x: 22 * ts + 8, y: 62 * ts };
+    return null; };
+  const stall = (P, dt) => { const tg = RG.glint = nextThing(P), C = RG.stall = RG.stall || { key: null, t: 0, best: 1e9, said: {} };
+    if (!tg) { C.key = null; return; } if (tg.key !== C.key) { C.key = tg.key; C.t = 0; C.best = P.y; }
+    if (P.y < C.best - NUDGE.rise * ctx.TS) { C.best = P.y; C.t = 0; }
+    C.t += dt; const last = C.said[tg.key]; if (C.t >= NUDGE.after && (last === undefined || RG.clock - last >= NUDGE.again)) { C.said[tg.key] = RG.clock; RG.n.nudges++; RG.lastNudge = GORGE_NUDGE[tg.key]; const x = P.x, y = P.y - 34, c = '#ffe9a0';   /* (each line a literal: tools/hint-shown reads the calls) */
+      if (tg.key === 'basket') ctx.number(x, y, 'THE BASKET: STAND ON IT. THE FLOOD WINDS IT UP', c); else if (tg.key === 'jam') ctx.number(x, y, 'THE WHEEL: SHUT THE GATE, LET IT FILL, THEN RELEASE IT', c); else ctx.number(x, y, 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY', c); } };
   /* ---------- A BASKET: called from updateMovers before the generic lift (it moves only on running water) ---------- */
   H.basket = (m, dt) => {
     const oy = m.y; m.dx = 0;
@@ -194,7 +218,8 @@ export function makeRedGorgeHands(ctx) {
     for (const w of RG.wheelsW) { const x = R(w.x - cx), y = R(w.y - cy); if (y < -30 || y > vh + 30) continue; g.strokeStyle = '#6a4426'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 9, 0, Math.PI * 2); g.stroke();
       g.beginPath(); for (let k = 0; k < 6; k++) { g.moveTo(x, y); g.lineTo(x + Math.cos(w.a + k * Math.PI / 3) * 11, y + Math.sin(w.a + k * Math.PI / 3) * 11); } g.stroke(); }
     for (const m of ctx.movers()) if (m.gorge) { const x = R(m.x - cx), y = R(m.y - cy); if (y < -40 || y > vh + 40) continue; g.fillStyle = '#c9b27c'; g.fillRect(x + 15, R(m.y1 - 40 - cy), 1, Math.max(0, y - R(m.y1 - 40 - cy)));
-      g.fillStyle = '#6a4426'; g.fillRect(x, y, m.w, 8); g.fillStyle = '#8a5a32'; for (let k = 1; k < m.w; k += 5) g.fillRect(x + k, y + 1, 3, 6); }
+      g.fillStyle = '#6a4426'; g.fillRect(x, y, m.w, 8); g.fillStyle = '#8a5a32'; for (let k = 1; k < m.w; k += 5) g.fillRect(x + k, y + 1, 3, 6);
+      g.fillStyle = '#c9a060'; g.fillRect(x - 1, y - 7, 2, 15); g.fillRect(x + m.w - 1, y - 7, 2, 15); g.fillRect(x - 1, y - 7, m.w + 1, 1); g.fillStyle = '#8a6a3a'; for (let k = 2; k < m.w; k += 4) g.fillRect(x + k, y + 8, 2, 3); }   /* (the playtest: a woven basket with sides and a rim on its rope, not one more plank of the bridge) */
     /* THE JAMS: flotsam - branches and a drowned cart's wheel - wedged in the channel */
     for (const j of RG.jams) { if (j.open) continue; const x = R(j.x0 * ts - cx), y = R(j.y0 * ts - cy), wpx = (j.x1 - j.x0 + 1) * ts, h = (j.y1 - j.y0 + 1) * ts; if (y > vh || y + h < 0) continue;
       g.fillStyle = '#4e3622'; g.fillRect(x, y, wpx, h); g.strokeStyle = '#8a5a32'; g.lineWidth = 2; g.beginPath(); for (let k = 0; k < 9; k++) { const a = (k * 37) % 13 / 13; g.moveTo(x + a * wpx, y + ((k * 11) % h)); g.lineTo(x + ((a + 0.4) % 1) * wpx, y + ((k * 23 + 9) % h)); } g.stroke();
@@ -204,6 +229,12 @@ export function makeRedGorgeHands(ctx) {
     for (const d of RG.L.decor || []) { const x = R(d.x * ts + 8 - cx), y = R((d.y + 1) * ts - cy); if (x < -30 || x > vw + 30 || y < -30 || y > vh + 30) continue;
       if (d.kind === 'nest') { g.fillStyle = '#6a4426'; g.fillRect(x - 10, y - 5, 20, 5); g.fillStyle = '#8a5a32'; for (let k = -9; k < 10; k += 3) g.fillRect(x + k, y - 7 + (k & 1), 2, 3); }
       else if (d.kind === 'hands') { g.fillStyle = '#e8dcc0'; for (let k = 0; k < 3; k++) { g.fillRect(x - 6 + k * 6, y - 12, 4, 5); for (let q = 0; q < 4; q++) g.fillRect(x - 6 + k * 6 + q, y - 15, 1, 3); } } }
+    /* THE GLINT over what the climb needs next (a warm pulsing star and ring; off the screen, a chevron at its edge) */
+    if (RG.glint) { const p = RG.glint, x = R(p.x - cx), y = R(p.y - 18 - cy), k = 0.5 + 0.5 * Math.sin(time * 5);
+      if (x >= -8 && x <= vw + 8 && y >= -8 && y <= vh + 8) { g.globalAlpha = 0.35 + 0.45 * k; g.strokeStyle = '#ffe9a0'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, 9 + 3 * k, 0, Math.PI * 2); g.stroke();
+        g.fillStyle = '#fff6c8'; const r = 3 + R(3 * k); g.fillRect(x - r, y, r * 2 + 1, 1); g.fillRect(x, y - r, 1, r * 2 + 1); g.fillRect(x - 1, y - 1, 3, 3); g.globalAlpha = 1; }
+      else { const ex = Math.max(10, Math.min(vw - 10, x)), ey = Math.max(14, Math.min(vh - 14, y)), dx = Math.sign(x - ex), dy = Math.sign(y - ey); g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#ffe9a0';
+        for (let i = 0; i < 4; i++) g.fillRect(ex + dx * (i - 3) - (dy ? i : 0), ey + dy * (i - 3) - (dx ? i : 0), dy ? i * 2 + 1 : 1, dx ? i * 2 + 1 : 1); g.globalAlpha = 1; } }
     for (const v of RG.vault) if (!v.open) { const x = R(v.x0 * ts - cx), y = R(v.y0 * ts - cy), h = (v.y1 - v.y0 + 1) * ts; g.fillStyle = '#5a3a1e'; g.fillRect(x, y, ts, h); g.strokeStyle = '#8a5a32'; g.lineWidth = 1; g.beginPath(); for (let k = 0; k < h; k += 5) { g.moveTo(x, y + k); g.lineTo(x + ts, y + k + 3); } g.stroke(); }
   };
   /* THE FLOOD on the HUD, under the sun's meter: the clock to the horn, the horn, the torrent */
@@ -214,6 +245,6 @@ export function makeRedGorgeHands(ctx) {
     const k = RG.phase === 'dry' ? 1 - Math.max(0, RG.t) / GORGE.dry : RG.phase === 'horn' ? 1 : Math.max(0, RG.t) / GORGE.run;
     g.fillStyle = 'rgba(20,20,40,0.6)'; g.fillRect(x + 14, y, 32, 5); g.fillStyle = col; g.fillRect(x + 15, y + 1, Math.round(30 * Math.min(1, k)), 3);
   };
-  H.read = () => RG && { phase: RG.phase, t: RG.t, n: { ...RG.n }, gates: Object.fromEntries(RG.gates.map(q => [q.id, q.state])), jams: RG.jams.map(j => j.open), spans: RG.spans.map(s => ({ ...s })), nest: RG.nest && RG.nest.open, vault: RG.vault.map(v => v.open) };
+  H.read = () => RG && { glint: RG.glint && RG.glint.key, lastNudge: RG.lastNudge || null, phase: RG.phase, t: RG.t, n: { ...RG.n }, gates: Object.fromEntries(RG.gates.map(q => [q.id, q.state])), jams: RG.jams.map(j => j.open), spans: RG.spans.map(s => ({ ...s })), nest: RG.nest && RG.nest.open, vault: RG.vault.map(v => v.open) };
   return H;
 }
