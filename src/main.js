@@ -76,13 +76,14 @@ import { makeCrouchB } from './crouch-b.js'; let CRB = null;
 import * as PM from './puppeteer.js'; import { makePuppeteerHands } from './puppeteer-hands.js'; import { bakePuppeteer, bakeMarionette, bakeHarlequin, bakeAcrobat, bakeMasterpiece } from './redraw/puppeteer_art.js'; let PUPH = null;   /* THE PUPPETEER (claude/puppeteer): the Maskwright's Theatre's boss - src/puppeteer.js the fight, src/puppeteer-hands.js its hands, src/redraw/puppeteer_art.js the art */   /* PER-HERO CROUCH TWISTS, PART B (claude/crouchb): the paladin kneels in prayer, the geomancer senses the earth, the death knight harvests a body */
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease } from './attack-tokens.js';
+import * as GB from './boss-greed.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
 import { installTactics, braceHit } from './foe-tactics.js';
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
 import { FIN, FINISH_OK, finishReady, finishFoe } from './finishers.js';
 import { POGO_CHAIN, bounce as pogoBounce, firedropSpares } from './pogo-chain.js';   /* OFF THEIR HEADS: one rebound for every hero, the stomp a pogo too (src/pogo-chain.js) */   /* EXECUTIONS: a broken common foe is finished, each hero his own way (src/finishers.js) */   /* THE COMBAT PASS, PART 2: held wind-ups, reactive waiting, the brute's cover, the squad hook (src/foe-tactics.js) */   /* ATTACK TOKENS: one or two common foes swing at a hero at once, the rest wait on a ring (src/attack-tokens.js) */
 import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
-import { COMBAT, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
+import { COMBAT, HEAL, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
 import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving } from './progression.js';
 import { depthsOf } from './campaign-order.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
@@ -516,7 +517,7 @@ const amul = k => skillScale(heroLevel()); // skill damage grows, cooldowns and 
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, skillIcon: k => skillIcon(k), talIcon: (i, w) => talIcon(i, w), TAL_KIND: (i, w) => TAL_KIND(i, w), ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPress(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
-  damagePlayer: (x, d, o) => damagePlayer(x, d, o), hurtEnemy: (e, d, x, pl) => hurtEnemy(e, d, x, pl), number: (x, y, t, c) => number(x, y, t, c), get hintNow() { return { t: hintT, msg: hintMsg }; }, respawn: () => respawn(), fullHp: e => fullHp(e), risen: () => risen, bodies: () => bodies, acorns: () => acorns, heavyWind: () => heavyWind(),
+  damagePlayer: (x, d, o) => damagePlayer(x, d, o), hurtEnemy: (e, d, x, pl) => hurtEnemy(e, d, x, pl), hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), number: (x, y, t, c) => number(x, y, t, c), get hintNow() { return { t: hintT, msg: hintMsg }; }, respawn: () => respawn(), fullHp: e => fullHp(e), risen: () => risen, bodies: () => bodies, acorns: () => acorns, heavyWind: () => heavyWind(),
   treeNodes: () => treeNodes(), get treeI() { return treeI; }, set treeI(v) { treeI = v; }, get treeMsg() { return treeMsg; }, get treeResetT() { return treeResetT; }, get talentsBackT() { return talentsBackT; }, get talentsBackWho() { return talentsBackWho; }, novas: () => novas, wardCap: () => wardCap(), raiseCue: () => raiseCue(), raisePips: () => raisePips(), heroSet: (s, w, p, h) => heroSet(s, w, p, h), skinIds: () => SKINS.map(k => k.id) };   /* for the labs and the harnesses */
 /* THE PRACTICE YARD, from the store: a portal into the straw men and plain platforms, for trying a hero without a wood to lose */
 const PRACTICE = [{ id: 'heroTrial', name: "THE HERO'S TRIAL", price: 0, practice: 'trial', desc: 'the guided yard for the hero you are, a gate a verb: the dash attack, rising cut and low sweep too.' }, { id: 'practiceYard', name: 'THE PRACTICE YARD', price: 0, practice: true, desc: 'step through the portal into a yard of straw men and plain platforms. nothing there can kill you. pause to leave.' }];
@@ -2676,7 +2677,7 @@ function eliteWatch() {
       ambushSay('THE WAY IS OPEN', ELITE[e.t].name, '#8fd160', 2.2); }
     /* THE PURSE AND A HEART, for one that was put down (not one a lab swept off the board) */
     if (e.hp <= 0) { PROG.coins = (PROG.coins || 0) + EL.gold; carryOf(P).purse += EL.gold; number(e.x, e.y - e.h - 14, EL.gold, '#ffd34a'); for (let i = 0; i < 5; i++) dropCoinAt(e.x + (Math.random() - 0.5) * 24, e.y - 16);
-      healths.push({ x: e.x, y: e.y - 20, vy: -160, t: 0 }); SFX.medal(); ringAt(e.x, e.y - 12, 30, '#ffd36b', 0.4); e.paidGold = EL.gold; }
+      if (HEAL.eliteHeart) healths.push({ x: e.x, y: e.y - 20, vy: -160, t: 0 }); SFX.medal();   /* (claude/combat3: his gold, and no heart - src/combat.js HEAL) */ ringAt(e.x, e.y - 12, 30, '#ffd36b', 0.4); e.paidGold = EL.gold; }
   }
 }
 function eliteDone(e) { if (e.elBack) { e.mode = e.elBack[0]; e.modeT = e.elBack[1]; } e.elBack = null; e.elT = EL.every; e.vx = 0; }
@@ -4698,6 +4699,7 @@ function selectStart() {
 // ---------- input ----------
 const keys = {};
 let throwPress = false, skill2Press = false, skill3Press = false, skill4Press = false, talkPress = false, padLast = false; // padLast: the last press came from a gamepad (prompts show pad glyphs)
+let jumpUpKey = false;   /* the jump press this frame came from a key that is UP too (ArrowUp, W): see UP_SLASH */
 let jumpPress = false, atkPress = false, dodgePress = false, pausePress = false, anyPress = false, upPress = false, downPress = false, leftPress = false, rightPress = false, confirmPress = false, talentsPress = false, mapPress = false;
 const isKey = (e, names) => names.includes(e.key) || names.includes(e.code);
 // A LIST TAKES A CHOICE FROM A KEY THAT IS NOT A DIRECTION. Z, ENTER, SPACE or X: never up, which moves it.
@@ -4722,7 +4724,7 @@ addEventListener('keydown', e => {
   }
   const zx = SET.swapZX && (e.key === 'z' || e.key === 'Z' || e.key === 'x' || e.key === 'X');
   const jumpK = zx ? isKey(e, ['x', 'X']) : isKey(e, KEYS.jump), atkK = zx ? isKey(e, ['z', 'Z']) : isKey(e, KEYS.atk);
-  if (jumpK) { jumpPress = true; keys.jump = true; }
+  if (jumpK) { jumpPress = true; keys.jump = true; jumpUpKey = isKey(e, KEYS.up); }   /* (claude/combat3: a jump asked for by an UP key, which waits a beat for an up-slash - UP_SLASH.grace) */
   if (atkK) { atkPress = true; keys.atk = true; }
   if (isKey(e, KEYS.block)) keys.block = SET.blockToggle ? !keys.block : true;
   if (isKey(e, KEYS.dodge)) { dodgePress = true; keys.dodge = true; }
@@ -4885,7 +4887,7 @@ function drawTouch() {
   dg.font = Math.round(touchZones[0].w * 0.45) + 'px "Press Start 2P", monospace'; dg.textAlign = 'center'; dg.textBaseline = 'middle';
   for (const z of touchZones) { if (!zoneOn(z)) continue; const held = [...touches.values()].includes(z.k); dg.fillStyle = held ? 'rgba(143,209,96,0.55)' : 'rgba(20,16,30,0.42)'; dg.beginPath(); dg.roundRect(z.x, z.y, z.w, z.h, z.w * 0.25); dg.fill(); dg.strokeStyle = 'rgba(255,246,224,0.6)'; dg.lineWidth = 2; dg.stroke(); dg.fillStyle = 'rgba(255,246,224,0.85)'; dg.fillText(z.label, z.x + z.w / 2, z.y + z.h / 2); }
 }
-function clearPresses() { jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = false;
+function clearPresses() { jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = false; jumpUpKey = false;
   if (players) for (const p of players) if (p !== players[0] && p.press) p.press = {}; }   /* the other hands are one-shot too, and are emptied on the same beat */
 
 // ---------- collision ----------
@@ -5196,7 +5198,8 @@ function knockLandsSafe(x, y) {
   return false;
 }
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false } = {}) {
-  { const src = who || updFoe; if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE)); }   /* DISARMED: it fights bare */   /* who / blow / name: for the line under a death (killerOf) - the creature, its blow's name, or a hazard's name */
+  { const src = who || updFoe; if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
+    if (src && src.xpRole === 'mini' && dmg > 0) dmg = Math.round(dmg * GB.GREED.miniHit); }   /* A MINI HITS HARDER (claude/combat3): he keeps his damage taken, and his blows land GREED.miniHit harder */   /* DISARMED: it fights bare */   /* who / blow / name: for the line under a death (killerOf) - the creature, its blow's name, or a hazard's name */
   if (!(dmg > 0)) dmg = 10; // a missing table entry must never poison the health bar
   if (P.relic === 'banner') dmg = Math.max(1, Math.round(dmg * 0.8)); // the Queen's banner: they pull their blows
   if (!P.dead && P.dodge > 0 && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; P.st = Math.min(P.maxSt, P.st + 20); P.evadeCutT = time + 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
@@ -5686,7 +5689,7 @@ let BLOW = null;
 const blowHas = (b, v) => !!b && (b === v || (Array.isArray(b) && b.includes(v)));
 const famHas = (list, blow) => !!list && [].concat(list).some(v => blowHas(blow, v));   /* a family's key, glance or unbalance: one verb or a list of them */
 function hurtAs(blow, e, dmg, fromX, plunge) { BLOW = blow; return hurtEnemy(e, dmg, fromX, plunge); }
-const meleeBlow = plunge => plunge || P.plunge ? 'plunge' : P.heavy ? 'heavy' : P.swingKind === 'sweep' ? 'sweep' : P.swingKind === 'rise' ? 'rise' : P.dashCut ? 'dash' : 'light';
+const meleeBlow = plunge => plunge || P.plunge ? 'plunge' : P.heavy ? 'heavy' : P.swingKind === 'sweep' ? 'sweep' : P.swingKind === 'rise' || P.swingKind === 'airUp' ? 'rise' : P.dashCut ? 'dash' : 'light';
 const familyOf = e => (e.xpRole || e.mini || e.elite || e.big || e.trainer || e.turncoat || e === boss) ? null : FAMILY[FAMILY_OF[e.t]] || null;   /* (not maxHp: Waymeet's sworn swords and hedge knights carry one, and are the common roster all the same) */
 const foeOpen0 = e => (e.disarmOpenT || 0) > time || e.broken > 0 || e.open > 0 || e.parried > 0 || (e.stagger || 0) >= 0.5 || e.knock > 0 || e.frozen > 0 || (e.launchedT || 0) > time;
 /* OPEN BEFORE THE BLOW, not because of it: the swing pass works out a cut's damage (swingDmg, which staggers on a third cut) before
@@ -5938,7 +5941,14 @@ function hazardFoe(e) {
    PARKED, deliberately, for Daniel: the Archmage's stage gate (archHurt) and the Undead Archmage's `gather` bonus are
    NOT folded in here. They are not wards - one can refuse a blow outright and the other is a reward for opening him -
    so routing damage-over-time through them is a balance change rather than a bug fix, and it is his call. */
-function wardedDamage(e, dmg) {
+function wardedDamage(e, dmg, raw = dmg, hero = false) {
+  dmg = wardedDamage0(e, dmg);
+  /* THE GLOBAL BOSS RULE (claude/combat3, src/boss-greed.js): last of all, after every boss's own multiplier, a HERO'S blow (or his burn) on
+     THE boss outside an opening lands at a twentieth of what it was (raw) - or at what his own ward made of it, if that is less */
+  if (hero && e === boss && GB.chipped(e, true)) { const d0 = dmg; dmg = GB.chipOf(e, dmg, raw); if (dmg < d0) e.chipHit = time; }
+  return dmg;
+}
+function wardedDamage0(e, dmg) {
   if (e.geoTomb && GEO) dmg = GEO.tombHit(e, dmg);   /* ENTOMBED: a blow on the tomb cracks it and lands half as hard again (geomancer.js) */
   if (e.t === 'hedgewarden') dmg = hedgeTake(e, dmg);
   if (e.t === 'sexton') { const d0 = dmg; dmg = sextonTake(e, dmg); if (dmg > d0) sparks(e.x, e.y - 30, -(e.face || 1), 6); }   /* THE SEXTON caught in his own bell pit: every blow lands double */   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
@@ -5959,7 +5969,16 @@ function hurtEnemy(e, dmg, fromX, plunge) { const blow = BLOW; BLOW = null;   /*
   if (P.score) { P.score.dmg += Math.max(0, hp0 - e.hp); if (alive0 && !e.alive) P.score.kills++; }
   if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgE', t: e.t, e, dmg, fromX, plunge: !!plunge, hp0, hp: e.hp, alive: e.alive, poise0: po0, poise: e.poise || 0, broken: e.broken || 0, atk: P.atk, heavy: !!P.heavy, combo: P.combo, swingKind: P.swingKind || null, blow, glanced: e.glancedAt === time, keyed: e.keyHit === time, stop, shake, kick, time, stack: new Error().stack });   /* (the audits' ear: see damagePlayer) */
   return r; } finally { emitAt(was); } }
-function hurtEnemy0(e, dmg, fromX, plunge, blow) {
+/* GREED (claude/combat3, src/boss-greed.js): a hero's blow that met the chip says so, and the GREED.n-th outside an opening starts his reprisal */
+function greedHit(e, fromX, blow) {
+  const isB = e === boss, isM = e.xpRole === 'mini';
+  if (!blow || !(isB || isM) || !e.alive) return;
+  if (isB && e.chipHit === time) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * ((e.w || 20) / 2), e.y - (e.h || 20) / 2, Math.sign(fromX - e.x) || 1, 3);
+    if (!(e.chipSaid > time)) { e.chipSaid = time + 5; number(e.x, e.y - (e.h || 20) - 14, 'A SCRATCH: WAIT FOR HIS OPENING', '#9aa39a');
+      PROG.chipTold = (PROG.chipTold || 0) + 1; if (PROG.chipTold <= 2) { hintT = 4.5; hintMsg = 'OUTSIDE HIS OPENINGS A BOSS TAKES A SCRATCH. READ HIM, ANSWER HIM, THEN STRIKE.'; } } }
+  if (GB.noteGreed(e, time, isB, isM)) SFX.tell(true);
+}
+function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   /* HE IS UNTOUCHABLE BETWEEN TWO PLACES, NOT WHILE HE WORKS. Being immune through the collapse as well meant the one
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
@@ -6130,12 +6149,13 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) {
   /* HIS HEALTH IS GATED BY THE STAGE, so while he holds the floor down no blow can take any of it - which left the one
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
      spell (undead-mage.js), and that is the window the player makes in this fight. */
-  dmg = wardedDamage(e, dmg);   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
+  dmg = wardedDamage(e, dmg, raw0, !!blow);   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
+  greedHit(e, fromX, blow);
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit && !wPoise(e, fromX)) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
   if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.7; }
-  number(e.x, e.y - e.h - 6, dmg, glance ? '#9aa39a' : plunge ? '#ffd36b' : '#fff6e0');
+  if (!(e.chipHit === time && dmg < 1)) number(e.x, e.y - e.h - 6, dmg, glance || e.chipHit === time ? '#9aa39a' : plunge ? '#ffd36b' : '#fff6e0');   /* (a scratch under a whole point shows no 0: the clank and the grey spark say it) */
   const dir = Math.sign(e.x - fromX) || 1;
   if (!glance) hitSpray(e, dir);   /* (a glance has its own spark and its own sound: glanceBeat) */
   if (!e.maxHp && e.alive && !isSolid(Math.floor((e.x + dir * (e.w / 2 + 3)) / TS), Math.floor((e.y - 4) / TS))) e.x += dir * 2;
@@ -6229,7 +6249,7 @@ function breakCrate(tx, ty) {
   burst(tx * TS + 8, ty * TS + 8, 10, ['#8a5a32', '#a8743f', '#5c3a1d'], 80, 0.5, 350, 2);
   const key = tx + ',' + ty;
   if (!collectedCrates.has(key)) acorns.push({ x: tx * TS + 8, y: ty * TS + 8, got: false, ph: 0, crate: key, vy: -60 });
-  if (!healCrates.has(key) && Math.random() < 0.3) { healCrates.add(key); healths.push({ x: tx * TS + 8, y: ty * TS + 8, vy: -140, t: 0 }); } // a crate sometimes holds a heart
+  if (!healCrates.has(key) && Math.random() < HEAL.crate) { healCrates.add(key); healths.push({ x: tx * TS + 8, y: ty * TS + 8, vy: -140, t: 0 }); } // a crate sometimes holds a heart
 }
 let healths = []; const healCrates = new Set();
 function updateHealths(dt) { for (const h of healths) { h.t += dt; if (h.stay && h.t > 20) h.t -= 4 * Math.PI; h.vy = h.stay ? 0 : Math.min(300, h.vy + 700 * dt);   /* a stash heart hangs where it was put, under water too */ const ny = h.y + h.vy * dt, tx = Math.floor(h.x / TS), ty = Math.floor(ny / TS);
@@ -7182,6 +7202,8 @@ function attackBox() {
   }
   if (isWarden() && wardJav) { if (P.atk < 0.04 || P.atk >= 0.16 || P.plunge) return P.plunge ? { l: P.x - 8, r: P.x + 8, t: P.y - 6, b: P.y + 10 } : null;   /* BARE-HANDED (the JAVELIN is out): a short jab */
     return P.face > 0 ? { l: P.x + 2, r: P.x + 15, t: P.y - 16, b: P.y - 4 } : { l: P.x - 15, r: P.x - 2, t: P.y - 16, b: P.y - 4 }; }
+  if (P.swingKind === 'airUp' && !P.heavy) { if (P.atk < 0.02 || P.atk >= 0.17) return null; const U = UP_SLASH.air[hero()] || UP_SLASH.air.knight, cx0 = P.x + P.face * U.lean;   /* (claude/combat3) THE AIR UP-SLASH: over his head, not in front */
+    return { l: cx0 - U.w, r: cx0 + U.w, t: P.y - U.top, b: P.y - 10 }; }
   /* ==== THE GEOMANCER. The stave's boxes, cut to her frames (chars.js bakeGeomancer): the head-strike lands the stone 21 px out and
      over her hood, the butt-jab 21 px out at the belt, the spin sweeps behind her and 23 out in front. Her held X is a crack along
      the floor and not a blow (FAULT LINE: the crack hits, geomancer.js), and her UP+X is the SPUR - a spike of stone in front of her. ==== */
@@ -7833,6 +7855,13 @@ function updatePlayer(dt) {
   // LETTING GO COMES FIRST. Standing on the floor of the sea with a stone in your hands, the jump key is
   // not a jump - there is nothing to jump with. It is the only way up, and the ground jump was eating the
   // buffer before the water ever saw it.
+  /* UP + ATTACK ON THE GROUND IS THE UP-SLASH, NOT A JUMP (claude/combat3): a jump asked for by an UP key on the ground waits UP_SLASH.grace for an
+     attack. If one comes (or the up-slash has just begun) the jump is eaten and the attack is the slash from his feet; if none comes he jumps, a
+     beat later. Z, Space, K and the pad's A jump at once, as always. */
+  if (P.jbuf > 0 && P.jbufUp && P.ground && !P.swim && !P.climb) {
+    if (P.abuf > 0 || (P.atk >= 0 && P.atk < UP_SLASH.grace + 0.05 && P.swingKind === 'rise')) { P.jbuf = 0; P.jbufUp = false; }
+    else if ((P.jbufUpT = (P.jbufUpT || 0) + dt) < UP_SLASH.grace) { P.jbufStash = P.jbuf; P.jbuf = 0; }
+    else P.jbufUp = false; }
   if (P.jbuf > 0 && P.ballast && P.swim) { P.jbuf = 0; dropBallast(true); }
   else if (P.jbuf > 0 && !P.ground && !(P.coyote > 0) && P.airJump > 0 && tal('endlessSky') && !bladeHeld && !stunned && !P.plunge && (!dodging || P.dash > 0) && !P.swim && !P.climb) { P.airJump = 0; P.jbuf = 0; if (dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; } P.vy = JUMPV; P.canCut = true; P.jumpT = time; P.airHang = false; SFX.pJump(); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#bfe6f5'], 90); ringAt(P.x, P.y, 10, '#bfe6f5', 0.22); }   /* ENDLESS SKY: the jump the plunge gave back */
   /* THE POLE VAULT: a jump taken OUT OF A DASH. She plants the heel and goes over - the same distance every time,
@@ -7864,6 +7893,7 @@ function updatePlayer(dt) {
      seven, and the coyote step only reached its sixth frame on a remainder of 1e-17. They are read, then spent; a remainder
      under a thousandth of a frame is nothing, not one more frame (tools/audit-input.mjs: coyote 6, buffer 7). */
   for (const k of ['coyote', 'jbuf']) { const left = P[k] - dt; P[k] = left > 1e-5 ? left : 0; }
+  if (P.jbufStash > 0) { P.jbuf = P.jbufStash; P.jbufStash = 0; }   /* (the up-key jump held for its grace: it is still asked for next frame) */
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
   const cutOut = dodging && P.dash > 0 && P.atk < 0 && dashCutNow();   /* X EARLY IN THE DODGE is the dash attack: it is the one thing that ends it */
@@ -7875,7 +7905,7 @@ function updatePlayer(dt) {
         embers.push({ x: P.x, y: P.y - 4, vx: 0, vy: 300, life: 1.1, hit: new Set(), plunge: true });
         burst(P.x, P.y + 2, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 120, 2);
         number(P.x, P.y - 26, 'FIREDROP', '#ff9a5c'); } } }
-    else if (P.atk < 0 && P.plungeRec <= 0 && !(P.dashRec > 0)) { const aimUp=P.abufUp??keys.up, aimLow=P.abufLow??keys.down; P.abuf = 0; P.abufUp=P.abufLow=undefined; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 28 : isPirate() ? 9 : isReaper() ? 23 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (dashCutNow()) dashAttack(); else if (aimUp && !aimLow && (P.ground || P.swim || time - (P.jumpT || -9) < 0.18)) risingCut();   /* up is a jump key too: the cut rides the jump it started. In the water up is the stroke upward, and the cut rides that */ else if (P.ground && aimLow) lowSweep();   /* (on the sea bed too; in open water down+swing is the plunge, the water's own low blow) */ else if (P.ground) P.vx = P.face * 75; } }
+    else if (P.atk < 0 && P.plungeRec <= 0 && !(P.dashRec > 0)) { const aimUp=P.abufUp??keys.up, aimLow=P.abufLow??keys.down; P.abuf = 0; P.abufUp=P.abufLow=undefined; if (spend((P.relic === 'gauntlet' ? 0.5 : 1) * (Math.round((isPaladin() ? 28 : isPirate() ? 9 : isReaper() ? 23 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (dashCutNow()) dashAttack(); else if (aimUp && !aimLow && (P.ground || P.swim || time - (P.jumpT || -9) < 0.18)) risingCut(); else if (aimUp && !aimLow && !P.ground && !P.swim && !P.climb) airUpCut();   /* (claude/combat3) THE AIR UP-SLASH */   /* up is a jump key too: the cut rides the jump it started. In the water up is the stroke upward, and the cut rides that */ else if (P.ground && aimLow) lowSweep();   /* (on the sea bed too; in open water down+swing is the plunge, the water's own low blow) */ else if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk < 0 && P.swingKind) P.swingKind = null;
   if (P.atk < 0) { P.bashing = false; P.runThrough = false; P.rtHit = null; P.rtWound = 0; }   /* the lunge is over when the blow is */
@@ -22177,7 +22207,15 @@ const FIN_API = { hero: () => hero(), number: (x, y, t, c) => number(x, y, t, c)
 /* THE POGO'S WORLD (src/pogo-chain.js): the rebound is POGO's, and the chain is the one the landing resets */
 POGO_CHAIN.plunge = POGO;
 const POGO_API = { get P() { return P; }, keys, SFX, number: (x, y, t, c) => number(x, y, t, c), squash: (a, b, c) => squash(a, b, c), bump: () => ++pogoChain, spare: e => { for (const b of embers) if (b.plunge) b.hit.add(e); } };
+installTempo(TK, TOKENS);   /* TIGHTER, STILL TOLD (claude/combat3, src/foe-tempo.js): first on the grant, so a held wind-up adds its beat to the tightened tell */
 const TAC_HOOK = installTactics(TK, TOKENS, { turned: () => SFX.shieldScrape() });   /* held wind-ups on a grant, and each kind's own way of waiting (src/foe-tactics.js) */
+/* THE GREED REPRISAL'S WORLD (claude/combat3, src/boss-greed.js): the openings that live here, and what the told counter may touch */
+GB.install({ frogOpen: e => frogOpen(e), ramOpen: e => ramOpen(e), callerOpen: e => callerOpen(e), lanceOpen: e => lanceOpen(e), gqOpen: e => gqOpen(e), forgeOpen: e => forgeOpen(e) });
+const GREED_API = { dt: 0, get time() { return time; }, get P() { return P; },
+  hurt: (e, d) => damagePlayer(e.x, d, { who: e, unblockable: true, name: 'HIS REPRISAL' }),
+  ring: (x, y, r, c, l) => ringAt(x, y, r, c, l),
+  mark: e => { number(e.x, e.y - (e.markH || e.h || 20) - 16, '!!', '#ff6b6b'); number(e.x, e.y - (e.h || 20) - 30, 'TOO GREEDY: HE HITS BACK', '#ff6b6b'); },
+  boom: e => { SFX.heavy(); shakeCam(5); ringAt(e.x, e.y - (e.h || 20) / 2, GB.GREED.reach + (e.w || 20) / 2, '#ff6b6b', 0.3); burst(e.x, e.y - (e.h || 20) / 2, 16, ['#ff6b6b', '#ffd36b', '#fff6e0'], 140, 0.5); } };
 function updateEnemies(dt) {
   updatePack(dt); eliteWatch(); tkApi.dt = dt;
   if (L.witch) updateHedgeRoots(dt);   /* THE HEDGE WARDEN's roots and THE ROOTED GARDEN's */
@@ -22188,6 +22226,7 @@ function updateEnemies(dt) {
        boss in the game answers to whichever of them walked into it, with no branch of its own. (P is put back to
        player one at the call site the moment the sweep is over.) */
     if (coop()) P = nearestHero(e);
+    if (e.greedT > 0 || e.chipT > 0) { GREED_API.dt = dt; GB.greedStep(e, GREED_API); }   /* HIS REPRISAL, told and then thrown (src/boss-greed.js) */
     tokenPre(TK, e, P, tkApi);   /* ATTACK TOKENS: may it ask for a blow at this hero? */
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
     { const wu = windingUp(e); if (wu && !e.wuWas && Math.abs(e.x - P.x) < 420) { SFX.tell(!!e.maxHp || !!e.big || !!e.mini); if (e.maxHp || e.mini) hitstop(0.045); /* half a frame of stop as it commits: here it comes */ } if (wu) { if (!e.wuWas && !P.dead && Math.abs(e.x - P.x) < 260 && heightOf(tellKey(e)) === 'high') duckTeach(); if (!e.wuWas && !P.dead && isPyro() && Math.abs(e.x - P.x) < 200 && markOf(e) === '!') emberTeach(); if (!e.wuWas && CA) CA.onTell(e); noteTell(e, time); } else if (e.wuWas) noteRelease(e);   /* THE UNIVERSAL DUCK: which blow it told, and the mode that blow is (src/duck.js) */
@@ -22208,7 +22247,7 @@ function updateEnemies(dt) {
     if(updateBalcony(e,dt))continue;
     if (e.t === 'heart') { e.burn=0; e.bleed=0; } // the living membrane takes deliberate cuts only
     if(e.fleeT>0){e.fleeT-=dt;e.vx=e.face*100;e.vy=Math.min(300,(e.vy||0)+900*dt);moveBody(e,e.vx*dt,e.vy*dt,false);if(e.fleeT<=0)e.alive=false;continue;}
-    if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { const bd = wardedDamage(e, 2); e.hp -= bd; if (e.heatOwner) asPlayer(e.heatOwner, () => gainHeat(HEAT.burn)); e.flash = 0.06; number(e.x, e.y - e.h - 8, bd, '#ff9a5c'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
+    if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { const bd = wardedDamage(e, 2, 2, true); e.hp -= bd; if (e.heatOwner) asPlayer(e.heatOwner, () => gainHeat(HEAT.burn)); e.flash = 0.06; if (bd >= 1) number(e.x, e.y - e.h - 8, bd, '#ff9a5c');   /* (a burn on a boss outside his opening is chipped too: claude/combat3) */ if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
     if (e.bleed > 0) { e.bleed -= dt; e.bleedT = (e.bleedT || 0) - dt; if (e.bleedT <= 0) { e.bleedT = 0.5; if (e.alive) { e.hp -= (e.bleedN || 1); e.flash = 0.05; number(e.x, e.y - e.h - 8, e.bleedN || 1, '#c9463d'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } }
       if (Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - e.h / 2, vx: 0, vy: 30, life: 0.4, max: 0.4, col: '#8f2f28', size: 1, grav: 120 }); }
     if (e.frozen > 0) e.frozen -= dt;
@@ -23204,12 +23243,26 @@ function drawKnightKit(cx, cy) {
     if (f > 0) g.arc(x, y, 20, 0.9 - 2.2 * k, 0.9); else g.arc(x, y, 20, Math.PI - 0.9, Math.PI - 0.9 + 2.2 * k); g.stroke(); }
   g.restore(); }
 function risingCut() { if (!spend(5)) { P.vx = P.face * 75; return; } P.swingKind = 'rise'; noteVerb('rise'); P.swingMul = Math.max(P.swingMul || 1, 1.1);
-  P.vx = P.face * 40; P.vy = isPaladin() || isReaper() ? -150 : -250; P.ground = false; P.canCut = false; P.airHang = true;   /* a leaping uppercut; the maul and the greatsword barely leave the floor */
+  /* ON THE GROUND IT STAYS ON THE GROUND (claude/combat3; Daniel 10-01: players read the up attack as 'only while jumping'): a short overhead slash from
+     the feet, his own rise frames. The leaping uppercut is kept for the cut thrown out of a jump (within its first 0.18 s: the cut rides that jump) */
+  const grounded = P.ground && !P.swim && !UP_SLASH.groundLeap;
+  if (grounded) { P.vx = P.face * 30; squash(0.85, 1.15, 0.1); }
+  else { P.vx = P.face * 40; P.vy = isPaladin() || isReaper() ? -150 : -250; P.ground = false; P.canCut = false; P.airHang = true; }   /* a leaping uppercut; the maul and the greatsword barely leave the floor */
   const c = specialCol(); streaks(P.x + P.face * 8, P.y - 6, P.face, c, 120);
   if (isPyro()) { burst(P.x + P.face * 14, P.y - 6, 10, c, 90, 0.4, -120, 2); }   /* a pillar of it */
   else if (isPaladin()) { motes(P.x + P.face * 12, P.y - 8, 8, 8); SFX.clank(); }
   else if (isReaper()) burst(P.x + P.face * 12, P.y - 10, 8, c, 70, 0.4, -40, 1);
-  SFX.pJump(); }
+  if (!grounded) SFX.pJump(); }
+/* THE UP-SLASH (claude/combat3, the combat pass; Daniel 10-01: a basic up attack for every hero, on the ground and in the air).
+   grace: s an UP-key jump on the ground waits for an attack (ArrowUp and W are jump keys too: up + attack is the slash, not a jump);
+   groundLeap: the old leaping ground uppercut (false: it is a slash from the feet); air: each hero's air up-slash box (half width, top above
+   his feet, lean toward his face), read off his own airUp frames (src/chars.js directionalPoses) */
+const UP_SLASH = { grace: 0.05, groundLeap: false,
+  air: { knight: { w: 13, top: 44, lean: 3 }, warden: { w: 9, top: 50, lean: 2 }, pyro: { w: 12, top: 46, lean: 3 }, paladin: { w: 15, top: 44, lean: 3 },
+    pirate: { w: 12, top: 42, lean: 3 }, reaper: { w: 16, top: 48, lean: 3 }, geomancer: { w: 12, top: 46, lean: 3 } } };
+/* THE AIR UP-SLASH: up + attack in the air (past the jump's first 0.18 s, where the rising cut still rides it). No lift, no hang: a blow over his head */
+function airUpCut() { P.swingKind = 'airUp'; noteVerb('rise'); const c = specialCol();
+  for (let i = 0; i < 5; i++) parts.push({ x: P.x + P.face * (8 - i * 4), y: P.y - 20 - Math.sin(i / 4 * Math.PI) * 18, vx: 0, vy: -40, life: 0.2, max: 0.2, col: c[i % c.length], size: 1, grav: 0 }); }
 function lowSweep() { if (!spend(5)) { P.vx = P.face * 75; return; } P.swingKind = 'sweep'; noteVerb('sweep'); P.vx = P.face * (isPaladin() ? 60 : 130); squash(1.2, 0.8, 0.12);
   if (CA) { CA.lowSwing(!!P.ducking); if (P.caTrip || P.caPoke) return; }   /* CROUCHED AND STILL: the knight's SHIELD TRIP, the warden's LOW POKE (src/crouch-a.js) */
   const c = specialCol(); dust(P.x + P.face * 10, P.y, 4);
@@ -23230,6 +23283,8 @@ function swingKindHit(e) {
     else e.stagger = Math.max(e.stagger || 0, 0.3);
   } }
 function swingKindTrail(k, px0) { const c = specialCol()[0];
+  if (P.swingKind === 'airUp') { const a = -0.35 - 2.4 * Math.min(1, k * 1.6), r = (UP_SLASH.air[hero()] || UP_SLASH.air.knight).top - 14;   /* (claude/combat3) the blade over his head, front to back */
+    trail.push({ x0: P.x + P.face * Math.cos(a + 0.4) * r, y0: P.y - 12 + Math.sin(a + 0.4) * r, x: P.x + P.face * Math.cos(a) * r, y: P.y - 12 + Math.sin(a) * r, life: 0.08 }); return; }
   if (P.swingKind === 'rise') { const y = P.y - 4 - (isWarden() ? 39 : 35) * Math.min(1, k * 2); trail.push({ x0: px0 + P.face * 5, y0: Math.min(P.y - 4, y + 10), x: P.x + P.face * (isWarden() ? 8 : 12), y, life: 0.08 }); }
   else { const reach = isWarden() ? 40 : isPyro() || isPaladin() || isReaper() ? 34 : 28, x = P.x + P.face * (8 + (reach - 8) * Math.min(1, k * 2)); trail.push({ x0: x - P.face * 10, y0: P.y - 4, x, y: P.y - 4, life: 0.08 }); }
   if (Math.random() < 0.5) parts.push({ x: px0 + P.face * 14, y: P.y - (P.swingKind === 'rise' ? 14 + k * 16 : 2), vx: P.face * 30, vy: P.swingKind === 'rise' ? -60 : -10, life: 0.2, max: 0.2, col: c, size: 1, grav: 0 }); }
@@ -24460,7 +24515,7 @@ function update(dt) {
        P.carry above, but only for a hoist's own load (P.ballast.t === 'load') - an underwater ballast stone (P.ballast on
        a different prop, takeBallast/dropBallast) is untouched: JUMP still drops it, ATTACK still swings, same as always. */
     if (P.ballast && P.ballast.t === 'load') { if (atkPress && !P.dead) throwLoad(P.ballast); atkPress = false; keys.atk = false; P.abuf = 0; }
-    if (jumpPress) P.jbuf = SET.assist ? 0.2 : 0.12; if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; P.abufUp = !!keys.up; P.abufLow = !!keys.down; } if (dodgePress) { P.dbuf = 0.12; P.dbufDir = 0; }
+    if (jumpPress) { P.jbuf = SET.assist ? 0.2 : 0.12; P.jbufUp = jumpUpKey; P.jbufUpT = 0; } if (atkPress) { P.abuf = 0.15; P.abufDown = !!keys.down && !P.ground; P.abufUp = !!keys.up; P.abufLow = !!keys.down; } if (dodgePress) { P.dbuf = 0.12; P.dbufDir = 0; }
     /* ONE DODGE, TWO WAYS TO ASK FOR IT (2026-09-24). Tapping a way twice IS the dodge button, pointed. It is read here with the
        other presses, not in updatePlayer: a double tap made during a hitstop is no longer lost, and everything that answers the
        button (a perch, a pin, a landing, the ceiling) answers the double tap the same way. */
@@ -25290,6 +25345,13 @@ function drawCutArc(cx, cy) {
 function drawSwing(cx, cy) {
   drawRiseCrescent(cx, cy); drawRiposteGlint(cx, cy);
   if (drawCutArc(cx, cy)) return;
+  if (!P.dead && P.atk >= 0 && !P.heavy && P.swingKind === 'airUp') {   /* (claude/combat3) THE AIR UP-SLASH: a crescent over his head, front to back */
+    if (P.atk < 0.02 || P.atk >= 0.17) return;
+    const k = (P.atk - 0.02) / 0.15, x = Math.round(P.x - cx), y = Math.round(P.y - cy) - 12, f = P.face, r = (UP_SLASH.air[hero()] || UP_SLASH.air.knight).top - 14;
+    const head = -0.35 - 2.4 * Math.min(1, k * 1.6), tail = Math.min(-0.35, head + 1.1);
+    g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = specialCol()[0]; g.lineWidth = 2; g.globalAlpha = SET.reduceMotion ? 0.3 : 0.6 * (1 - k * 0.6); g.beginPath();
+    if (f > 0) g.arc(x, y, r, head, tail); else g.arc(x, y, r, Math.PI - tail, Math.PI - head); g.stroke(); g.restore(); return;
+  }
   if (!P.dead && P.atk >= 0 && !P.heavy && (P.swingKind === 'rise' || P.swingKind === 'sweep')) {
     const rising = P.swingKind === 'rise', end = rising ? 0.17 : 0.15;
     if (P.atk < 0.02 || P.atk >= end) return;
@@ -28415,7 +28477,10 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
      table did. null means "this one has no gate of its own", and the lab treats it as always open, as it always did. */
   gqShards: () => gqShards,   /* the pieces of the Goblin Queen's plate (tools/queen-court.mjs) */
   playerLight: () => playerLight(), litNear: (x, y, r) => litNear(x, y, r),   /* claude/weakboss: the Lampreeve's dark, asked by tools/weak-bosses.mjs and the lab */
-  bossOpen(e) { return e && (e.t === 'lampreeve' || e.t === 'homunculus') ? e.open > 0 : e && e.t === 'puppeteer' ? PM.pupOpen(e) : e && e.t === 'gqueen' ? gqOpen(e) : e && e.t === 'reefmaw' ? ['stuck', 'reel', 'beached'].includes(e.mode) : e && e.t === 'duneworm' ? !!(e.st && DWM.wormOpen(e.st)) : e && e.t === 'gargoyle' ? gargOpen(e) : e && e.t === 'lance' ? lanceOpen(e) : e && e.t === 'pyromancer' ? e.open > 0 : e && e.t === 'abbot' ? abbotOpen(e) : e && e.t === 'wickerqueen' ? WQN.wqOpen(e) : e && e.t === 'winchmaster' ? winchOpen(e) : e && e.t === 'herald' ? (e.mode === 'mired' || e.mode === 'reel') : null; }, heavyCost: () => heavyCost(), stepCost: () => (isPaladin() ? 28 : isPirate() ? 9 : isReaper() ? 23 : sword().cost),
+  /* (claude/combat3) ONE PREDICATE FOR EVERY BOSS AND MINI NOW (src/boss-greed.js OPEN_RULE): the chip, the lab's bot and the mash probe ask the same one */
+  tempo: TEMPO,   /* (claude/combat3) the common foes' tempo knob, for tools/foe-tempo.mjs */
+  greed: { chipped: e => GB.chipped(e, e === boss), open: e => GB.openOf(e), count: e => GB.greedCount(e, time), limit: e => (e === boss ? GB.GREED.n : GB.GREED.nMini), reach: GB.GREED.reach, G: GB.GREED, rules: GB },
+  bossOpen(e) { const g0 = GB.openOf(e); if (g0 !== null) return g0; return e && (e.t === 'lampreeve' || e.t === 'homunculus') ? e.open > 0 : e && e.t === 'puppeteer' ? PM.pupOpen(e) : e && e.t === 'gqueen' ? gqOpen(e) : e && e.t === 'reefmaw' ? ['stuck', 'reel', 'beached'].includes(e.mode) : e && e.t === 'duneworm' ? !!(e.st && DWM.wormOpen(e.st)) : e && e.t === 'gargoyle' ? gargOpen(e) : e && e.t === 'lance' ? lanceOpen(e) : e && e.t === 'pyromancer' ? e.open > 0 : e && e.t === 'abbot' ? abbotOpen(e) : e && e.t === 'wickerqueen' ? WQN.wqOpen(e) : e && e.t === 'winchmaster' ? winchOpen(e) : e && e.t === 'herald' ? (e.mode === 'mired' || e.mode === 'reel') : null; }, heavyCost: () => heavyCost(), stepCost: () => (isPaladin() ? 28 : isPirate() ? 9 : isReaper() ? 23 : sword().cost),
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
      tool listens (damagePlayer and hurtEnemy write to it), else null; the rest are the numbers a blow leaves behind, the hero's live reach, his set, the particles */

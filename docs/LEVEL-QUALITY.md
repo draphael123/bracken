@@ -53,8 +53,9 @@ mini with the knight, warden and pyromancer, two seeds each, at the hero level t
 and mashes through the main route (lifted where it is stuck, counted). Daniel's target is Hollow Knight / Salt and Sanctuary: a first attempt at a boss usually ends in death and
 a level pushes you under half health. **THE TARGET RULE: the mash bot must LOSE to the level's boss with all three heroes, and in the level must die or drop under 40% health.**
 The result is cached in `docs/mash-bot.json` (stamped with `levelHash`, like the pilot's cache; a boss-module edit does not stale it, so re-run after a boss change) and read by the
-`mash` row for GATED levels; `node tools/mash-bot.mjs --assert <id>` is the same check for a boss check's own use. It is REPORT-ONLY (WARN) while `MASH_ENFORCE` in
-`tools/level-quality.mjs` is false: the combat pass and the boss fixes turn it on. The audit of the whole campaign is `docs/BOSS-AUDIT.md`.
+`mash` row for GATED levels; `node tools/mash-bot.mjs --assert <id>` is the same check for a boss check's own use. Since the combat pass (claude/combat3, 2026-10-01) it is ENFORCED per
+part (boss, mini, level run) on every campaign level by `mashGate` (`tools/mash-gate.mjs` in the suite, and this row for gated levels): a new level is enforced from day one, and the
+parts the mash bot still beats are listed in `MASH_REPORT_ONLY` in `tools/level-quality.mjs` for their boss waves. That list may only shrink. The audit of the whole campaign is `docs/BOSS-AUDIT.md`.
 
 ### Report-only measures
 

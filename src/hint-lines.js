@@ -37,6 +37,8 @@ export const CALL_LINES = new Set([
   'DROP BOTH PUPPETS AND HE COMES DOWN', "HE'S DOWN - STRIKE HIM", 'ONE DOWN: HIS BAR DROPS', 'CUT: THE HARLEQUIN DROPS', 'THE ARM GOES LIMP: NO MORE CHOP OR GRAB',
   'THE BACK GOES LIMP: NO MORE SLAM', 'A STRING PARTS', 'JOLTED: STRIKE HIM', 'OUT OF REACH: DROP HIS PUPPETS FIRST', 'SCENE CHANGE: WATCH THE BOARDS',
   'TOGETHER NOW: HIS SLAM BREAKS THE BOARDS', 'DROP THE KING AND THE HARLEQUIN: HE FALLS',
+  /* claude/combat3: THE GLOBAL BOSS RULE (src/boss-greed.js) - a blow outside his opening is a scratch, and greed is answered */
+  'A SCRATCH: WAIT FOR HIS OPENING', 'TOO GREEDY: HE HITS BACK',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 export const CALL_COUNTS = [/^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];

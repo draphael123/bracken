@@ -59,7 +59,7 @@ const pageSrc = `(() => {
         const d = Math.max(0, before - Math.max(0, P.hp)); lost += d; if (boss.hp < bhp - 1e-6) { landed++; if (!attackish.test(m0 || '')) calmBlow = f; }
         if (d > 0 && f - calmBlow <= 30) reprisal += d; low = Math.min(low, boss.hp);
         if (o.probe && (f === 240 || f === 720 || f === 1500 || f === 3000) && boss.alive && !P.dead) {   /* THE CHIP PROBE: a clean 10-point blow on him NOW (outside any opening the bot made), measured and given back */
-          const open = BK.bossOpen ? BK.bossOpen(boss) : null, h0 = boss.hp; BKT.hurtEnemy(boss, 40, P.x, false); const got = h0 - boss.hp; boss.hp = h0; chip.push({ f, mul: +(got / 40).toFixed(3), open: open === null || open === undefined ? (boss.open > 0 ? true : null) : !!open, mode: boss.mode }); }
+          const open = BK.bossOpen ? BK.bossOpen(boss) : null, h0 = boss.hp, gl = boss.greedLog, ca = boss.chipAcc; BKT.hurtAs('light', boss, 40, P.x, false); const got = h0 - boss.hp; boss.hp = h0; boss.greedLog = gl; boss.chipAcc = ca;   /* (claude/combat3) a HERO'S blow, as the chip rule reads one (hurtAs names it); its greed count and chip remainder put back with the health */ chip.push({ f, mul: +(got / 40).toFixed(3), open: open === null || open === undefined ? (boss.open > 0 ? true : null) : !!open, mode: boss.mode }); }
         if (f % 900 === 899) await new Promise(r => setTimeout(r, 0));
       }
       const out = P.dead ? 'dead' : boss.alive ? 'timeout' : 'win';

@@ -122,7 +122,20 @@ export const MASH_FILE = fileURLToPath(new URL('../docs/mash-bot.json', import.m
 /* THE MASH GATE (claude/mashbot, 2026-10-01; tools/mash-bot.mjs, docs/BOSS-AUDIT.md). A player who ONLY MASHES ATTACK must lose to the level's boss (all three heroes) and
    must die or drop under MASH_HP percent health in the level. Read from the cache docs/mash-bot.json (hash-stamped like the pilot's), never run live. REPORT-ONLY (WARN) until
    MASH_ENFORCE is set: the combat pass and the boss fixes turn it on; the target rule is already in docs/NEW-LEVEL-CHECKLIST.md. */
-export const MASH_ENFORCE = false, MASH_HP = 40;
+export const MASH_ENFORCE = true, MASH_HP = 40;
+/* PER LEVEL, PER PART (claude/combat3, the combat pass; Daniel 2026-10-01: "MASH_ENFORCE per boss as fixed - enforce for every boss that now passes;
+   new levels/bosses enforced from day one; the rest stay report-only until their wave"). MASH_ENFORCE was one switch. Now every part of every
+   campaign level - its boss, its mini, its level run - is ENFORCED by mashGate (the mash row here, and tools/mash-gate.mjs for every level),
+   a level with no row from day one, EXCEPT the parts listed below: the ones the mash bot still beats after the combat pass (the boss waves'
+   TODO list, docs/BOSS-AUDIT.md). The list may only SHRINK: a listed part that now holds fails until its entry is taken out. */
+export const MASH_REPORT_ONLY = {};
+/* THE GATE ON ONE LEVEL: { ok, hard: parts beaten and not listed, stale: listed parts that hold now, msg } */
+export function mashGate(lv) {
+  const v = mashVerdict(lv), soft = MASH_REPORT_ONLY[lv.id] || [];
+  if (v.state === 'missing' || v.state === 'stale') return { ok: false, hard: [v.state], stale: [], msg: v.msg };
+  const why = v.why.concat(v.levelRun ? [] : ['level']), hard = why.filter(p => !soft.includes(p)), stale = soft.filter(p => !why.includes(p));
+  return { ok: !hard.length && !stale.length, hard, stale, msg: v.msg + (hard.length ? ' - ENFORCED: ' + hard.join(', ') : '') + (soft.length ? ' [report-only for the boss waves: ' + soft.join(', ') + ']' : '') + (stale.length ? ' - ' + stale.join(', ') + ' HOLDS NOW: take it out of MASH_REPORT_ONLY.' + lv.id : '') };
+}
 let MASHC = null; const mashCache = () => MASHC || (MASHC = existsSync(MASH_FILE) ? JSON.parse(readFileSync(MASH_FILE, 'utf8')) : {});
 export function mashVerdict(lv) {
   const row = mashCache()[lv.id], gated = GATE.includes(lv.id), cmd = 'node tools/mash-bot.mjs ' + lv.id + ' --level ' + lv.id + ' --write';
@@ -134,7 +147,7 @@ export function mashVerdict(lv) {
   if (row.level) { const worst = Object.entries(row.level).sort((a, b) => b[1].minHpPct - a[1].minHpPct)[0], r = worst[1], cleared = r.deaths === 0 && r.minHpPct >= MASH_HP;
     parts.push('level: best mash hero ' + worst[0] + ' lowest hp ' + r.minHpPct + '%, ' + r.deaths + ' deaths, walked ' + r.walked + '%, ' + r.lifts + ' lifts' + (cleared ? ' (CLEARED without dropping under ' + MASH_HP + '%)' : '')); if (cleared) why.push('level'); }
   else parts.push('level mode not run: ' + cmd);
-  return { ok: !why.length && !!row.level, state: why.length ? 'beaten' : 'ok', msg: parts.join('; ') + (why.length ? ' - THE MASH BOT BEATS THE ' + why.join(' AND ').toUpperCase() : '') };
+  return { ok: !why.length && !!row.level, why, levelRun: !!row.level, state: why.length ? 'beaten' : 'ok', msg: parts.join('; ') + (why.length ? ' - THE MASH BOT BEATS THE ' + why.join(' AND ').toUpperCase() : '') };
 }
 let PILOT = null; const pilotCache = () => PILOT || (PILOT = existsSync(PILOT_FILE) ? JSON.parse(readFileSync(PILOT_FILE, 'utf8')) : {});
 
@@ -260,7 +273,7 @@ export function measure(lv) {
     : pilotState === 'stale' ? 'the level changed since its pilot ran (hash ' + prow.hash + ' now ' + phash + '): re-run node tools/level1-pilot.mjs ' + lv.id + ' --write'
     : pilotState === 'notbare' ? 'the pilot ran with talents or skills present: it must be a fresh level-1 hero'
     : prow.hits + ' blows taken by a fresh level-1 ' + prow.hero + ' (' + prow.deaths + ' deaths, walked ' + prow.walked + '%) (>=' + LIM.pilotHits + (pilotState === 'soft' ? '): A WALK, NOT A LEVEL' : ')') + (prow.lifts !== undefined ? ', ' + prow.lifts + ' lifts' : '');
-  const mashV = gated ? mashVerdict(lv) : { ok: true, msg: '' };
+  const mashV = gated ? mashGate(lv) : { ok: true, msg: '' };   /* (claude/combat3: per part, MASH_REPORT_ONLY) */
   const sa = slopeArt(), painted = slopeCells ? slopesPainted(L) : true;
   const m = { id: lv.id, tall, emptyShare, slopeCells, slopePainted: painted, slopeArtOk: sa.ok, slopeArtWhy: sa.why, W, routeTiles, flat: flat.n, flatAt: flat.at, flatShare: flat.long / Math.max(1, end), terrainShare: terrainFlat.long / Math.max(1, end), terrainFlat: terrainFlat.n, terrainFlatAt: terrainFlat.at, routeBands: bands.size, multiShare, gadgetKinds: gadgets.length, gadgetDeveloped: developed.length, gadgets, music, borrowedFrom, shared, trackFile: !!trackFile,
     encountersN: enc.length, bodyDensity, roleKinds, roleCount, rangedN, unmapped, collectKinds, interactKinds, pilotState, pilotHits: prow ? prow.hits : null, secrets: loot.length, secretEnts, checks, checkSpacing: checks ? routeTiles / checks : Infinity, density, emptyScreens, holes, span, back, pockets, per };
@@ -282,7 +295,7 @@ export function measure(lv) {
     ['mash', !gated || mashV.ok, gated ? mashV.msg : 'not gated (node tools/mash-bot.mjs ' + lv.id + ' to measure)'],
     ['route', (m.span >= LIM.routeSpan || m.back >= LIM.routeSpan) && m.pockets >= LIM.branches, 'route spans ' + m.span + ' rows, ' + m.back + ' tiles back, ' + m.pockets + ' branches/pockets (>=' + LIM.branches + ')'],
   ];
-  const soft = (REPORT_ONLY[lv.id] || []).concat(MASH_ENFORCE ? [] : ['mash']);   /* the mash gate is report-only until MASH_ENFORCE */
+  const soft = (REPORT_ONLY[lv.id] || []).concat(MASH_ENFORCE ? [] : ['mash']);   /* (the mash row is per part now: mashGate reads MASH_REPORT_ONLY) */
   m.bar = bar; m.pass = bar.every(b => b[1] || soft.includes(b[0])); m.failed = bar.filter(b => !b[1] && !soft.includes(b[0])).map(b => b[0]); m.reportOnly = bar.filter(b => !b[1] && soft.includes(b[0])).map(b => b[0]);
   return m;
 }

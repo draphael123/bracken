@@ -95,7 +95,7 @@ against THE MAGE'S FOLLY (Daniel's benchmark) and says which box is empty, with 
 - [ ] **Every hero can do it** (the shield-bracing lesson): test the Pyromancer and the Freebooter beside the Knight. No softlocks: the real jump is
       about 3.2-4.5 tiles, not the reach model's 6; walk it with real keys.
 
-### Mash test (target rule; report-only until the combat pass lands, `MASH_ENFORCE` in tools/level-quality.mjs)
+### Mash test (ENFORCED from day one since the combat pass, 2026-10-01: `tools/mash-gate.mjs`; `MASH_REPORT_ONLY` in tools/level-quality.mjs lists the old parts left to the boss waves)
 - [ ] **A player who only mashes attack LOSES.** `node tools/mash-bot.mjs <id> --level <id> --write`: the mash bot (no block, dodge, jump or mechanic) must lose to the level's
       boss with the knight, the warden and the pyromancer, and must die or drop under 40% health in the level. Daniel's target is Hollow Knight / Salt and Sanctuary: a first
       attempt at a boss usually ends in death. Commit `docs/mash-bot.json`; the gate's `mash` row reads it. See `docs/BOSS-AUDIT.md` for where the campaign stands.
@@ -118,7 +118,9 @@ against THE MAGE'S FOLLY (Daniel's benchmark) and says which box is empty, with 
       memorised in a minute.
 - [ ] **Short, EARNED openings, at least 3 s.** The player CAUSES the opening with the level's own mechanic (the Paladin's: starve his light; the
       Queen's: she breaks her own pillars); `boss-openings` asserts a window of at least 3 seconds. No opening that arrives on its own clock.
-- [ ] **x0.05 chip otherwise.** Hits outside an opening do almost nothing, so openings are the only way and the player learns to wait for them.
+- [ ] **x0.05 chip otherwise.** Hits outside an opening do almost nothing, so openings are the only way and the player learns to wait for them. Since the combat pass this is
+      GLOBAL (`src/boss-greed.js`): give the new boss an `OPEN_RULE` entry (when he is open) and he gets the chip and the GREED REPRISAL (a told counter after
+      `GREED.n` blows outside an opening) for free; `tools/boss-greed.mjs` fails a campaign boss with no rule. A boss with no opening is not chipped (`NO_OPENING`, a TODO).
 - [ ] **Piloted by a human-speed bot (about 250 ms reaction)**, three heroes by one seed (knight, warden, pyro), one BEFORE and one AFTER a change,
       21+ runs for a new boss with a 60-75% win rate for the human bot (the Lit Church concept's target). Bot numbers guide; Daniel's hands decide.
 
