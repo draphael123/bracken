@@ -1475,7 +1475,7 @@ export const MUSIC_CREDITS = {
   houndmaster: '"Boss Fight 2" — ansimuz', masthead: '"Slay The Evil" — HydroGene', hilltroll: '"Boss Battle #6" — nene',
   rimewright: '"Fields of Ice" — Jonathan So', captain: '"Stereotypical Boss" — Spring',
   tollmaster: '"Infinite Darkness" — HydroGene', grandmother: '"Ghost Land" — HydroGene',
-  canal: '"Lanterns in the Hollowed Forest" — Tsorthan Grove', fields: '"Halloween Hullabaloo" — StarlightFrost', scarecrowking: '"Witch\'s Lair" — Juhani Junkala',
+  canal: '"Hollowed Forest" — T. Grove', fields: '"Halloween Hullabaloo" — StarlightFrost', scarecrowking: '"Witch\'s Lair" — Juhani Junkala',
   causeway: '"Solemn Tide" — madameberry', kraken: '"Castle Boss" — madameberry',
   witchlight: '"Iremos Forest" — beardalaxy', oreroad: '"12 Music Loops" — SubspaceAudio',
   unburied: '"Void Estate" — Zane Little', deathknight: '"Bald Mountain" — Mussorgsky',
