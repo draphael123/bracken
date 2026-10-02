@@ -63,7 +63,7 @@ export function makeGorgeCrabHands(ctx) {
   };
   /* A BLOW ON HIM: x CRAB.openMul on his back (the global rule makes every other blow a scratch) */
   H.take = e => GC.crabTake(F);
-  H.frame = e => { const m = e.mode; if (m === 'open') return CRAB_F.open; if (m === 'rear') return CRAB_F.crushTell;   /* (the rear borrows the claws-up pose until the art lane draws its own; it wears no mark) */ if (m === 'wake' || m === 'sleep' || m === 'recover') return CRAB_F.stand;
+  H.frame = e => { const m = e.mode; if (m === 'open') return CRAB_F.open; if (m === 'rear') return CRAB_F.rear;   /* (his own pose: the front of him up, claws wide, hissing - redraw/redgorge_art.js) */ if (m === 'wake' || m === 'sleep' || m === 'recover') return CRAB_F.stand;
     if (CRAB_F[m] !== undefined && !Array.isArray(CRAB_F[m])) return CRAB_F[m]; return CRAB_F.walk[Math.floor(ctx.time() * 5) % 2]; };
   H.barName = e => 'THE GREAT RED CRAB' + (e.mode === 'open' ? '  ON HIS BACK' : e.mode === 'dug' ? '  DUG IN' : '');
   H.end = e => {};

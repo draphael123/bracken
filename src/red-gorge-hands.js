@@ -5,6 +5,7 @@
 // main.js calls: reset, on, update, interact, basket, raptorStep, dam, drawWorld, drawHud, read. Every teaching line goes through ctx.number with a
 // line listed in src/hint-lines.js (the hint box). THE GREAT RED CRAB (src/gorge-crab-hands.js) reads the dam's water through dam().
 import { vultureStep } from './desert-foes.js';
+import * as RGP from './redraw/redgorge_props.js';
 
 /* THE FLOOD'S CLOCK (s), its blow, and a released burst. GORGE.horn is the whole warning: two seconds is a dozen tiles at a run, and every place to
    stand in a channel is three tiles or less from dry rock (tools/redgorge.mjs proves it) */
@@ -190,52 +191,19 @@ export function makeRedGorgeHands(ctx) {
       pending: RG.pending.some(p => p.g === g), x0: c.x0 * ctx.TS, x1: (c.x1 + 1) * ctx.TS, t: RG.t }; };
 
   /* ---------- DRAWING (greybox) ---------- */
+  /* what the art needs from the hands (src/redraw/redgorge_props.js) */
+  const scene = () => ({ channels: RG.channels, spans: RG.spans, gates: RG.gates, wheels: RG.wheels, wheelsW: RG.wheelsW.map(w => { const b = ctx.movers().find(m => m.gorge === w.basket); w.run = !!(b && running('gorge', b.wheelRow)); return w; }), jams: RG.jams, nest: RG.nest, vault: RG.vault, phase: RG.phase, t: RG.t, L: RG.L, floodSpan, chOf });
+  const kit = (cx, cy, time) => ({ TS: ctx.TS, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time, movers: ctx.movers, questGot: ctx.questGot, questN: ctx.questN });
+  H.drawOver = (g, cx, cy, time) => { if (RG) RGP.drawOver(g, scene(), kit(cx, cy, time)); };
   H.drawWorld = (g, cx, cy, time) => {
-    if (!RG) return; const R = Math.round, ts = ctx.TS, vw = ctx.VW(), vh = ctx.VH();
-    const onY = (y0, y1) => y1 > cy - 20 && y0 < cy + vh + 20;
-    for (const c of RG.channels) { const x0 = R(c.x0 * ts - cx), wpx = (c.x1 - c.x0 + 1) * ts; if (x0 > vw || x0 + wpx < 0) continue;
-      /* the scoured channel: pale streaks down its rock (the rule's second voice) */
-      g.globalAlpha = 0.18; g.fillStyle = '#f0d8c0'; for (let k = 0; k < wpx; k += 7) g.fillRect(x0 + k, R(Math.max(c.y0 * ts, cy) - cy), 2, R(Math.min((c.y1 + 1) * ts, cy + vh) - Math.max(c.y0 * ts, cy))); g.globalAlpha = 1;
-      /* THE HORN: a trickle down the channel where the flood will run */
-      if (RG.phase === 'horn') { const sp = floodSpan(c); if (sp && onY(sp[0] * ts, (sp[1] + 1) * ts)) { g.fillStyle = 'rgba(122,184,232,0.55)';
-        for (let k = 3; k < wpx; k += 11) for (let y = Math.max(sp[0] * ts, cy); y < Math.min((sp[1] + 1) * ts, cy + vh); y += 9) g.fillRect(x0 + k + (R(time * 30 + y) % 3), R(y - cy + (time * 120) % 9), 1, 4); } } }
-    /* THE TORRENT (a flood) and THE BURST: the water down its span */
-    for (const s of RG.spans) { const c = chOf(s.ch), x0 = R(c.x0 * ts - cx), wpx = (c.x1 - c.x0 + 1) * ts, ya = Math.max(s.y0 * ts, cy - 4), yb = Math.min((s.y1 + 1) * ts, cy + vh + 4); if (yb <= ya) continue;
-      g.fillStyle = s.kind === 'burst' ? 'rgba(58,122,184,0.72)' : 'rgba(90,150,200,0.6)'; g.fillRect(x0, R(ya - cy), wpx, R(yb - ya));
-      g.fillStyle = 'rgba(232,244,248,0.7)'; for (let k = 2; k < wpx; k += 6) for (let y = ya; y < yb; y += 14) g.fillRect(x0 + k, R(y - cy + (time * 340 + k * 7) % 14), 1, 6); }
-    /* THE GATES: timber across the channel - shut is set down, full has the water banked over it, open is raised */
-    for (const gt of RG.gates) { const c = chOf(gt.ch), x0 = R(c.x0 * ts - cx), wpx = (c.x1 - c.x0 + 1) * ts, y = R(gt.row * ts - cy); if (y < -40 || y > vh + 20) continue;
-      if (gt.state === 'open') { g.fillStyle = '#5a3a1e'; g.fillRect(x0 - 2, y - 2, 2, 18); g.fillRect(x0 + wpx, y - 2, 2, 18); g.fillStyle = '#7a5230'; g.fillRect(x0, y - 4, wpx, 3); continue; }
-      if (gt.state === 'full') { g.fillStyle = 'rgba(58,122,184,0.75)'; g.fillRect(x0, y - 22, wpx, 22); g.fillStyle = '#e8f4f8'; g.fillRect(x0 + (R(time * 20) % wpx), y - 22, 3, 1); }
-      g.fillStyle = '#6a4426'; g.fillRect(x0, y, wpx, 12); g.fillStyle = '#8a5a32'; for (let k = 0; k < wpx; k += 8) g.fillRect(x0 + k, y + 1, 6, 10); g.fillStyle = '#3a2410'; g.fillRect(x0, y + 5, wpx, 2);
-      if (gt.fx > 0) { g.fillStyle = '#ffd36b'; g.fillRect(x0, y - 1, wpx, 1); } }
-    /* THE WHEELS: a spoked wheel on a post, its rope to the gate */
-    for (const w of RG.wheels) { const x = R(w.x - cx), y = R(w.y - cy); if (x < -30 || x > vw + 30 || y < -30 || y > vh + 30) continue; const gt = RG.gates.find(q => q.id === w.gate);
-      g.fillStyle = '#5a3a1e'; g.fillRect(x - 1, y - 14, 3, 14); g.strokeStyle = gt && gt.state === 'full' ? '#7ab8e8' : gt && gt.state === 'shut' ? '#c9b27c' : '#8a5a32'; g.lineWidth = 2;
-      g.beginPath(); g.arc(x + 0.5, y - 16, 7, 0, Math.PI * 2); g.stroke(); const a = time * (gt && gt.fx > 0 ? 8 : 0); g.beginPath(); for (let k = 0; k < 4; k++) { g.moveTo(x + 0.5, y - 16); g.lineTo(x + 0.5 + Math.cos(a + k * Math.PI / 2) * 7, y - 16 + Math.sin(a + k * Math.PI / 2) * 7); } g.stroke();
-      if (gt) { g.fillStyle = gt.state === 'full' ? '#7ab8e8' : gt.state === 'shut' ? '#c9b27c' : '#6a5a40'; g.fillRect(x - 3, y - 30, 7, 3); } }
-    /* THE WATER-WHEELS by the baskets, and each basket's rope */
-    for (const w of RG.wheelsW) { const x = R(w.x - cx), y = R(w.y - cy); if (y < -30 || y > vh + 30) continue; g.strokeStyle = '#6a4426'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 9, 0, Math.PI * 2); g.stroke();
-      g.beginPath(); for (let k = 0; k < 6; k++) { g.moveTo(x, y); g.lineTo(x + Math.cos(w.a + k * Math.PI / 3) * 11, y + Math.sin(w.a + k * Math.PI / 3) * 11); } g.stroke(); }
-    for (const m of ctx.movers()) if (m.gorge) { const x = R(m.x - cx), y = R(m.y - cy); if (y < -40 || y > vh + 40) continue; g.fillStyle = '#c9b27c'; g.fillRect(x + 15, R(m.y1 - 40 - cy), 1, Math.max(0, y - R(m.y1 - 40 - cy)));
-      g.fillStyle = '#6a4426'; g.fillRect(x, y, m.w, 8); g.fillStyle = '#8a5a32'; for (let k = 1; k < m.w; k += 5) g.fillRect(x + k, y + 1, 3, 6);
-      g.fillStyle = '#c9a060'; g.fillRect(x - 1, y - 7, 2, 15); g.fillRect(x + m.w - 1, y - 7, 2, 15); g.fillRect(x - 1, y - 7, m.w + 1, 1); g.fillStyle = '#8a6a3a'; for (let k = 2; k < m.w; k += 4) g.fillRect(x + k, y + 8, 2, 3); }   /* (the playtest: a woven basket with sides and a rim on its rope, not one more plank of the bridge) */
-    /* THE JAMS: flotsam - branches and a drowned cart's wheel - wedged in the channel */
-    for (const j of RG.jams) { if (j.open) continue; const x = R(j.x0 * ts - cx), y = R(j.y0 * ts - cy), wpx = (j.x1 - j.x0 + 1) * ts, h = (j.y1 - j.y0 + 1) * ts; if (y > vh || y + h < 0) continue;
-      g.fillStyle = '#4e3622'; g.fillRect(x, y, wpx, h); g.strokeStyle = '#8a5a32'; g.lineWidth = 2; g.beginPath(); for (let k = 0; k < 9; k++) { const a = (k * 37) % 13 / 13; g.moveTo(x + a * wpx, y + ((k * 11) % h)); g.lineTo(x + ((a + 0.4) % 1) * wpx, y + ((k * 23 + 9) % h)); } g.stroke();
-      g.strokeStyle = '#c9b27c'; g.beginPath(); g.arc(x + wpx * 0.6, y + h * 0.55, 9, 0, Math.PI * 2); g.stroke(); }
-    /* THE OLD NEST and its vault door of woven branches */
-    const n = RG.nest; if (n) { const x = R(n.x - cx), y = R(n.y - cy); g.fillStyle = '#7a5a3a'; g.fillRect(x - 12, y - 7, 24, 7); g.fillStyle = '#c9962a'; for (let i = 0; i < Math.min(4, ctx.questGot()); i++) g.fillRect(x - 9 + i * 5, y - 13, 2, 6); }
-    for (const d of RG.L.decor || []) { const x = R(d.x * ts + 8 - cx), y = R((d.y + 1) * ts - cy); if (x < -30 || x > vw + 30 || y < -30 || y > vh + 30) continue;
-      if (d.kind === 'nest') { g.fillStyle = '#6a4426'; g.fillRect(x - 10, y - 5, 20, 5); g.fillStyle = '#8a5a32'; for (let k = -9; k < 10; k += 3) g.fillRect(x + k, y - 7 + (k & 1), 2, 3); }
-      else if (d.kind === 'hands') { g.fillStyle = '#e8dcc0'; for (let k = 0; k < 3; k++) { g.fillRect(x - 6 + k * 6, y - 12, 4, 5); for (let q = 0; q < 4; q++) g.fillRect(x - 6 + k * 6 + q, y - 15, 1, 3); } } }
+    if (!RG) return; const R = Math.round, vw = ctx.VW(), vh = ctx.VH();
+    RGP.drawBack(g, scene(), kit(cx, cy, time));   /* the art lives in src/redraw/redgorge_props.js (claude/redgorge-art) */
     /* THE GLINT over what the climb needs next (a warm pulsing star and ring; off the screen, a chevron at its edge) */
     if (RG.glint) { const p = RG.glint, x = R(p.x - cx), y = R(p.y - 18 - cy), k = 0.5 + 0.5 * Math.sin(time * 5);
       if (x >= -8 && x <= vw + 8 && y >= -8 && y <= vh + 8) { g.globalAlpha = 0.35 + 0.45 * k; g.strokeStyle = '#ffe9a0'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, 9 + 3 * k, 0, Math.PI * 2); g.stroke();
         g.fillStyle = '#fff6c8'; const r = 3 + R(3 * k); g.fillRect(x - r, y, r * 2 + 1, 1); g.fillRect(x, y - r, 1, r * 2 + 1); g.fillRect(x - 1, y - 1, 3, 3); g.globalAlpha = 1; }
       else { const ex = Math.max(10, Math.min(vw - 10, x)), ey = Math.max(14, Math.min(vh - 14, y)), dx = Math.sign(x - ex), dy = Math.sign(y - ey); g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#ffe9a0';
         for (let i = 0; i < 4; i++) g.fillRect(ex + dx * (i - 3) - (dy ? i : 0), ey + dy * (i - 3) - (dx ? i : 0), dy ? i * 2 + 1 : 1, dx ? i * 2 + 1 : 1); g.globalAlpha = 1; } }
-    for (const v of RG.vault) if (!v.open) { const x = R(v.x0 * ts - cx), y = R(v.y0 * ts - cy), h = (v.y1 - v.y0 + 1) * ts; g.fillStyle = '#5a3a1e'; g.fillRect(x, y, ts, h); g.strokeStyle = '#8a5a32'; g.lineWidth = 1; g.beginPath(); for (let k = 0; k < h; k += 5) { g.moveTo(x, y + k); g.lineTo(x + ts, y + k + 3); } g.stroke(); }
   };
   /* THE FLOOD on the HUD, under the sun's meter: the clock to the horn, the horn, the torrent */
   H.drawHud = (g, P) => {
