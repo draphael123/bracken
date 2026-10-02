@@ -2285,9 +2285,9 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 2], greatsword: rest(-6) }),
     /* THE BUTT-SLIDE (src/slide.js): sat back on the ground with the legs run out in front, leaning away from the hill, the weapon tucked behind (a second frame for the cloth) */
     slide: [0, 1].map(i => knightFrame({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [sh[0], sh[1], sh[0] - 3, sh[1]], greatsword: [sh[0] - 3, sh[1] - 1, sh[0] - 15, sh[1] - 10] })),
-    /* BLOOD HARVEST (src/crouch-b.js): down on one knee over the body, the greatsword let down to lie on the ground behind him and the sword
+    /* BLOOD HARVEST (src/crouch-b.js): down on one knee over the body, the greatsword let down to lie ON the ground behind him (planted: its underside on the boots' row, smallfix2) and the sword
        hand reaching down into what lies there - the blood coming up into the palm, more of it on the second beat */
-    harvest: [0, 1].map(i => knightFrame({ dy: 3, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 4], greatsword: [sh[0] - 3, sh[1] - 1, sh[0] - 15, sh[1] + 1], plume: i + 1,
+    harvest: [0, 1].map(i => knightFrame({ dy: 3, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 4], greatsword: [sh[0] - 3, sh[1] + 1, sh[0] - 15, sh[1] + 2], plume: i + 1,
       bits: i ? [[13, 12, '#ff4a5a'], [14, 11, '#c0283a'], [12, 10, '#ff9a9a'], [14, 9, '#c0283a']] : [[13, 12, '#c0283a'], [14, 11, '#7a1020']] })),
     /* THE TOLL: the point driven into the ground in both hands, head down, taking it out of them */
     block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 3 + i], greatsword: [sh[0] + 2, sh[1] - 4 + i, sh[0] + 3, sh[1] + 13 + i], glow: [sh[0] + 3, sh[1] + 13] })),

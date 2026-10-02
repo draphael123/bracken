@@ -8376,8 +8376,8 @@ function drawBossJump() {
   const n = bjTable.length, start = Math.max(0, Math.min(n - BJ_ROWS, bjI - (BJ_ROWS >> 1)));
   for (let i = start; i < Math.min(n, start + BJ_ROWS); i++) { const r = bjTable[i], cy0 = y + 20 + (i - start) * 11, sel = i === bjI;
     if (sel) text('>', x + 8, cy0, '#8fd160', 'left', 6);
-    text(fitText(r.name.replace(/^THE /, ''), 138, 6), x + 16, cy0, r.kind === 'mini' ? (sel ? '#ffd36b' : '#c9a24a') : (sel ? '#fff6e0' : '#c9d1dc'), 'left', 6);
-    text(fitText(r.levelName.replace(/^THE /, ''), 112, 6), x + w - 8, cy0, sel ? UI.text : UI.dim, 'right', 6); }
+    text(fitText(r.name.replace(/^THE /, ''), 126, 6), x + 16, cy0, r.kind === 'mini' ? (sel ? '#ffd36b' : '#c9a24a') : (sel ? '#fff6e0' : '#c9d1dc'), 'left', 6);
+    text(fitText(r.levelName.replace(/^THE /, ''), 130, 6), x + w - 8, cy0, sel ? UI.text : UI.dim, 'right', 6); }
   text((bjI + 1) + '/' + n, x + w - 8, y + 6, UI.dim, 'right', 6);
   const hd = HEROES.find(q => q.id === bjHero);
   text('HERO  <  ' + fitText(hd ? hd.name : bjHero.toUpperCase(), 120, 6) + '  >', VW / 2, y + h - 31, UI.sel, 'center', 6);

@@ -1,0 +1,36 @@
+{
+ "issues": [
+  {
+   "key": "TRUNCATED|MASKWRIGHT'S THEATRE|main.js:8380|",
+   "type": "TRUNCATED",
+   "screen": "bossjump #42",
+   "s": "MASKWRIGHT'S THEATRE",
+   "at": "main.js:8380",
+   "via": "main.js:28302 < main.js:28435",
+   "n": 6,
+   "out": "MASKWRIGHT'S THEAT",
+   "maxW": 112,
+   "shot": 0,
+   "file": "work\\claude\\smallfix2\\before-textfit\\textfit\\000-TRUNCATED-bossjump_#42.png"
+  }
+ ],
+ "stats": {
+  "frames": 253,
+  "texts": 7276,
+  "screens": {
+   "bestiary": 192,
+   "pick": 7,
+   "bossjump": 54
+  }
+ },
+ "shots": [
+  {
+   "k": 0,
+   "screen": "bossjump #42",
+   "types": [
+    "TRUNCATED"
+   ],
+   "file": "work\\claude\\smallfix2\\before-textfit\\textfit\\000-TRUNCATED-bossjump_#42.png"
+  }
+ ]
+}
