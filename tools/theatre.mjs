@@ -63,7 +63,7 @@ if (lv) {
   const ids = [...nodes.matchAll(/id: '([a-z]+)', kind: 'level'/g)].map(m => m[1]);
   ok(ids.indexOf('canal') === ids.indexOf('waymeet') + 1 && ids.indexOf('theatre') === ids.indexOf('canal') + 1 && ids.indexOf('fair') === ids.indexOf('theatre') + 1, 'the map does not run Waymeet, the canal, the theatre, the fair: ' + ids.join(','));
   { const au = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
-    ok(L.music === 'theatre' && !existsSync(new URL('../audio/theatre.ogg', import.meta.url)) && au.includes('function scheduleTheatre(') && au.includes('export function theatreAct('), 'the theatre does not play its own synth track (src/audio.js scheduleTheatre / theatreAct; it has no file)'); }
+    ok(L.music === 'theatre' && existsSync(new URL('../audio/theatre.ogg', import.meta.url)) && au.includes("theatre: './audio/theatre.ogg'") && !au.includes('function scheduleTheatre(') && au.includes('export function theatreAct(') && au.includes("theatre: '\"Apparitions Ball\" "), 'the theatre does not play its own recorded track (audio/theatre.ogg, "Apparitions Ball" by Bobjt, credited; claude/theatre3) with its acts still told (theatreAct)'); }
   ok(existsSync(new URL('../docs/briefs/maskwright-theatre.md', import.meta.url)), 'the brief (docs/briefs/maskwright-theatre.md) is not committed');
   // FIVE FLOORS, and the route reaches every one of them
   const RF = floodReach(L, T, { rides: true }), rows = new Set([...RF.seen].map(k => +k.split(',')[1]));
@@ -122,7 +122,7 @@ if (lv) {
   // FEWER, BETTER: placed by hand, every foe in a named encounter
   ok(foes.every(e => typeof e.squad === 'string' || e.t === 'bat' || e.t === 'spider'), 'a foe stands in no named encounter: ' + foes.filter(e => !e.squad && e.t !== 'bat' && e.t !== 'spider').map(e => e.t + '@' + e.x).join(' '));
   ok(!L.ents.some(e => e.garrison), 'sprinkled garrison stands in the theatre');
-  ok(L.ents.filter(e => e.t === 'drunk').every(e => e.footlights && D.spots.some(s => Math.abs(s.x - (e.x * TS + 8)) < 400)), 'a drunk in a box is not the audience (footlights) or has no lamp to see by');
+  ok(L.ents.filter(e => e.t === 'drunk').every(e => e.patron ? e.x < HOUSE : e.footlights && D.spots.some(s => Math.abs(s.x - (e.x * TS + 8)) < 400)), 'a drunk in a box is not the audience (footlights) or has no lamp to see by (only the house masked patrons throw unlit: claude/theatre3)');
   // CHECKPOINTS (Daniel: fewer), the silvers, THE PUPPETEER's room
   const ck = L.ents.filter(e => e.t === 'check'); ok(ck.length === 4 && !ck.some(e => e.filled), 'the theatre has ' + ck.length + ' checkpoints, not the four it places (THEATRE2: the house made the route 520 tiles; the 175-tile rule needs four)');
   ok(L.ents.filter(e => e.t === 'silver').length === 3, 'the theatre does not carry the campaign\'s three silvers');

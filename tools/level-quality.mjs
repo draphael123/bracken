@@ -26,7 +26,7 @@ export const GATE = ['theatre', 'fair', 'canal'];   /* the fair re-gated by clau
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
-  theatre: ['roles'],   /* TODO(Daniel decides): the theatre has two roles (melee: mummers, stagehands, spiders, bats, swornswords; ranged: the drunks) and no support, heavy or runner. Lift this when a lane gives it a third role */
+  /* (claude/theatre3: the theatre's roles row is lifted - THE PROMPTER, the goblin priest reskinned, is its support; THE FLYMAN, the archer reskinned, throws) */
 };
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
