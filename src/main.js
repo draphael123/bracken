@@ -1,4 +1,5 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
+import { layoutPlates } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
@@ -3316,32 +3317,32 @@ const WOOD_PATH = [[62, 112], [96, 100], [126, 74], [156, 66], [190, 78], [222, 
    segments can share a Y-range, so none can cross, whatever X does. THE ORE ROAD is the second-to-last node,
    mid-climb with road on both sides. THE UNDERCROWN is a short stub off HIGHCROWN, clear of OREROAD (~27px). */
 const CRAG_NODES = [
-  { id: 'scree', kind: 'level', level: 5, x: 48, y: 136, name: 'THE SCREE PATH' },
-  { id: 'hanging', kind: 'level', level: 6, x: 72, y: 121, name: 'THE HANGING VILLAGE' },
-  { id: 'highstore', kind: 'store', shop: 'shopCrag', needs: 'scree', x: 108, y: 105, name: 'THE HIGH STORE' },
-  { id: 'spire', kind: 'level', level: 7, x: 150, y: 89, name: 'THE MONASTERY' },   /* the Sunspire and its Roc went in the monastery rework; the map had not heard */
-  { id: 'moor', kind: 'level', level: 8, x: 192, y: 73, name: 'GALE MOOR' },
-  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 228, y: 58, name: 'THE ORE ROAD' },   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
-  { id: 'storm', kind: 'level', level: 9, x: 252, y: 42, name: 'STORMHOLD' },
+  { id: 'scree', kind: 'level', level: 5, x: 48, y: 131, plate: 'above', name: 'THE SCREE PATH' },
+  { id: 'hanging', kind: 'level', level: 6, x: 69, y: 124, name: 'THE HANGING VILLAGE' },
+  { id: 'highstore', kind: 'store', shop: 'shopCrag', needs: 'scree', x: 106, y: 106, plate: 'below', name: 'THE HIGH STORE' },
+  { id: 'spire', kind: 'level', level: 7, x: 147, y: 80, plate: 'above', name: 'THE MONASTERY' },   /* the Sunspire and its Roc went in the monastery rework; the map had not heard */
+  { id: 'moor', kind: 'level', level: 8, x: 189, y: 80, plate: 'right', name: 'GALE MOOR' },
+  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 233, y: 61, plate: 'right', name: 'THE ORE ROAD' },   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
+  { id: 'storm', kind: 'level', level: 9, x: 260, y: 58, plate: 'below', name: 'STORMHOLD' },
   { id: 'crown', kind: 'level', level: 10, x: 260, y: 26, name: 'HIGHCROWN' },
-  { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 278, y: 36, spur: true, name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
+  { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 279, y: 25, plate: 'above', spur: true, name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
 ];
 /* THE CRAG TAIL history: map-redesign §6 first fixed the corner-dive; the integrator then caught that fix
    self-crossing near the entrance and a local patch (moving only the entry) read as a tangle near HIGHSTORE with
    no clean alternative below it (exhaustive search, work/claude/crag-route-search.mjs) - so this whole sheet was
    relaid instead (docs/crag-options.png, option B). See the comment on CRAG_NODES above for this option's shape. */
-const CRAG_PATH = [[40, 152], [48, 136], [72, 121], [108, 105], [150, 89], [192, 73], [228, 58], [252, 42], [260, 26]];
+const CRAG_PATH = [[40,152], [48,131], [69,124], [106,106], [147,80], [189,80], [233,61], [260,58], [260,26]];
 /* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
    another; the coast's own eight are spread over the whole sheet now, and the road climbs off its top edge onto the inland one. */
-const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 140, y: 140, name: 'THE LONG WATER' },
-  { id: 'reef', kind: 'level', level: LEVELS.findIndex(l => l.id === 'reef'), x: 240, y: 125, name: 'THE SHIPWRECK REEF' },
-  { id: 'chandler', kind: 'store', shop: 'shopSea', needs: 'reef', x: 265, y: 95, name: 'THE CHANDLER' },
-  { id: 'flotilla', kind: 'level', level: LEVELS.findIndex(l => l.id === 'flotilla'), x: 220, y: 55, name: 'THE FLOTILLA' },
-  { id: 'hurricane', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hurricane'), x: 130, y: 25, name: 'THE HURRICANE DECK' },
-  { id: 'lamplit', kind: 'level', level: LEVELS.findIndex(l => l.id === 'lamplit'), x: 40, y: 45, name: 'THE LAMPLIT STREET' },
-  { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 50, y: 95, name: 'THE DEEP' },
-  { id: 'keep', kind: 'level', level: LEVELS.findIndex(l=>l.id==='keep'), x: 105, y: 80, name: 'THE UNDERWATER KEEP' },
-  { id: 'causeway', kind: 'level', level: LEVELS.findIndex(l=>l.id==='causeway'), x: 160, y: 100, name: 'THE DROWNED CAUSEWAY' }];   /* STORMWRECK HARBOR IS GONE FROM THE ROAD (Daniel, 2026-09-20: it offered nothing the coast had not). Its level still builds and is still tested; it is simply not on the map, and Waymeet needs the Causeway again. */
+const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 157, y: 143, plate: 'right', name: 'THE LONG WATER' },
+  { id: 'reef', kind: 'level', level: LEVELS.findIndex(l => l.id === 'reef'), x: 240, y: 130, plate: 'below', name: 'THE SHIPWRECK REEF' },
+  { id: 'chandler', kind: 'store', shop: 'shopSea', needs: 'reef', x: 271, y: 96, plate: 'right', name: 'THE CHANDLER' },
+  { id: 'flotilla', kind: 'level', level: LEVELS.findIndex(l => l.id === 'flotilla'), x: 218, y: 55, plate: 'left', name: 'THE FLOTILLA' },
+  { id: 'hurricane', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hurricane'), x: 132, y: 26, plate: 'above', name: 'THE HURRICANE DECK' },
+  { id: 'lamplit', kind: 'level', level: LEVELS.findIndex(l => l.id === 'lamplit'), x: 43, y: 45, plate: 'left', name: 'THE LAMPLIT STREET' },
+  { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 51, y: 94, plate: 'left', name: 'THE DEEP' },
+  { id: 'keep', kind: 'level', level: LEVELS.findIndex(l=>l.id==='keep'), x: 127, y: 84, plate: 'right', name: 'THE UNDERWATER KEEP' },
+  { id: 'causeway', kind: 'level', level: LEVELS.findIndex(l=>l.id==='causeway'), x: 128, y: 114, plate: 'left', name: 'THE DROWNED CAUSEWAY' }];   /* STORMWRECK HARBOR IS GONE FROM THE ROAD (Daniel, 2026-09-20: it offered nothing the coast had not). Its level still builds and is still tested; it is simply not on the map, and Waymeet needs the Causeway again. */
 /* [160,100] -> [26,96] -> [26,26] -> [140,8]: the exit tail was [160,100] -> [195,65] -> [140,8] until the
    integrator's crossing check caught it - that rightward swing toward the seam cut back across the FLOTILLA ->
    HURRICANE leg. A first re-fix ([110,50]) cleared that leg but still crossed the NEXT one, HURRICANE -> LAMPLIT
@@ -3354,23 +3355,23 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
    entry now sits at x=260 too, directly under Highcrown, so that connector is short and near-vertical like
    every other seam on the map. LONGWATER stays the first stop; the entry->longwater leg is the only thing that
    changed, and it clears every later segment (verified, no self-crossing). */
-const COAST_PATH = [[260, 172], [140, 140], [190, 135], [240, 125], [258, 112], [265, 95], [245, 75], [220, 55], [175, 38], [130, 25], [85, 32], [40, 45], [42, 70], [50, 95], [105, 80], [160, 100], [26, 96], [26, 26], [140, 8]];
+const COAST_PATH = [[260,172], [157,143], [169,118], [240,130], [250,110], [271,96], [249,70], [218,55], [174,38], [132,26], [86,33], [43,45], [43,71], [51,94], [127,84], [128,114], [26,98], [26,28], [140,8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
-const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 40, y: 162, name: 'WAYMEET' },
-  { id: 'canal', kind: 'level', level: LEVELS.findIndex(l => l.id === 'canal'), x: 48, y: 156, name: 'THE FOG CANAL' },   /* THE FOG CANAL (claude/canal): the main road out of WAYMEET, in road order (map-grammar); THE MASKWRIGHT'S THEATRE comes after it */
-  { id: 'theatre', kind: 'level', level: LEVELS.findIndex(l => l.id === 'theatre'), x: 60, y: 151, name: "THE MASKWRIGHT'S THEATRE" },   /* THE MASKWRIGHT'S THEATRE (claude/theatre): on the road between THE FOG CANAL and THE HARVEST FAIR (in road order: the map-grammar rule; saves keep the node by its id) */
-  { id: 'fair', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fair'), x: 72, y: 148, name: 'THE HARVEST FAIR' },   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): the second stop on the road inland, on the road between WAYMEET and THE HEXED FIELDS */
-  { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 62, y: 122, name: 'THE HEXED FIELDS' },   /* moved up-left of Waymeet, off the entrance V (map-redesign §6, 2b) - the only node this fix moves */
-  { id: 'burial', kind: 'level', level: LEVELS.findIndex(l=>l.id==='burial'), x: 130, y: 82, name: 'THE BURIAL CAVERNS' },
-  { id: 'witchlight', kind: 'level', level: LEVELS.findIndex(l => l.id === 'witchlight'), x: 170, y: 66, name: 'THE WITCHLIGHT STAIR' },   /* the road up the tower hill, between the caverns and the Folly (batch 4c) */
-  { id: 'mage', kind: 'level', level: LEVELS.findIndex(l => l.id === 'mage'), x: 214, y: 76, name: "THE MAGE'S FOLLY" },
-  { id: 'fallingtower', kind: 'level',level:LEVELS.findIndex(l=>l.id==='fallingtower'),x:260,y:34,name:'THE FALLING TOWER'},
-  { id: 'unburied', kind: 'level', level: LEVELS.findIndex(l => l.id === 'unburied'), x: 158, y: 46, spur: true, name: 'THE UNBURIED FIELD' }];   /* the Death Knight's class level, a side road off THE WITCHLIGHT STAIR (map-redesign §4.2). APPENDED LAST so every older node keeps its index (saves) */   /* the tower on the hill over the fields: the road climbs to it */   /* the farms under the Archmage's hill: on the road, past Waymeet's spur */   /* the hunt, the quarry pass, the frostfell and the sky ship are gone from the road (their builders are benched) */
+const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 28, y: 156, plate: 'above', name: 'WAYMEET' },
+  { id: 'canal', kind: 'level', level: LEVELS.findIndex(l => l.id === 'canal'), x: 38, y: 126, name: 'THE FOG CANAL' },   /* THE FOG CANAL (claude/canal): the main road out of WAYMEET, in road order (map-grammar); THE MASKWRIGHT'S THEATRE comes after it */
+  { id: 'theatre', kind: 'level', level: LEVELS.findIndex(l => l.id === 'theatre'), x: 90, y: 155, plate: 'right', name: "THE MASKWRIGHT'S THEATRE" },   /* THE MASKWRIGHT'S THEATRE (claude/theatre): on the road between THE FOG CANAL and THE HARVEST FAIR (in road order: the map-grammar rule; saves keep the node by its id) */
+  { id: 'fair', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fair'), x: 106, y: 136, plate: 'above', name: 'THE HARVEST FAIR' },   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): the second stop on the road inland, on the road between WAYMEET and THE HEXED FIELDS */
+  { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 85, y: 107, plate: 'above', name: 'THE HEXED FIELDS' },   /* moved up-left of Waymeet, off the entrance V (map-redesign §6, 2b) - the only node this fix moves */
+  { id: 'burial', kind: 'level', level: LEVELS.findIndex(l=>l.id==='burial'), x: 124, y: 77, plate: 'above', name: 'THE BURIAL CAVERNS' },
+  { id: 'witchlight', kind: 'level', level: LEVELS.findIndex(l => l.id === 'witchlight'), x: 178, y: 41, plate: 'above', name: 'THE WITCHLIGHT STAIR' },   /* the road up the tower hill, between the caverns and the Folly (batch 4c) */
+  { id: 'mage', kind: 'level', level: LEVELS.findIndex(l => l.id === 'mage'), x: 211, y: 77, plate: 'below', name: "THE MAGE'S FOLLY" },
+  { id: 'fallingtower', kind: 'level',level:LEVELS.findIndex(l=>l.id==='fallingtower'),x: 260, y: 34, plate: 'right',name:'THE FALLING TOWER'},
+  { id: 'unburied', kind: 'level', level: LEVELS.findIndex(l => l.id === 'unburied'), x: 157, y: 46, plate: 'below', spur: true, name: 'THE UNBURIED FIELD' }];   /* the Death Knight's class level, a side road off THE WITCHLIGHT STAIR (map-redesign §4.2). APPENDED LAST so every older node keeps its index (saves) */   /* the tower on the hill over the fields: the road climbs to it */   /* the farms under the Archmage's hill: on the road, past Waymeet's spur */   /* the hunt, the quarry pass, the frostfell and the sky ship are gone from the road (their builders are benched) */
 /* WAYMEET, REDRAWN (map-redesign §6, 2b). The old polyline walked out to Waymeet and back over the same two points -
    the return leg painted at full road weight on top of the outbound one, so the required town read as a dead end.
    Waymeet does not move. The road now enters, runs through it, and climbs away in a new direction; THE HEXED FIELDS
    moves so the road leaving Waymeet does not have to double back across its own entrance to reach it. */
-const INLAND_PATH = [[140, 176], [40, 162], [48, 156], [60, 151], [72, 148], [62, 122], [130, 82], [170, 66], [214, 76], [260, 34]];
+const INLAND_PATH = [[140,176], [28,156], [38,126], [90,155], [106,136], [85,107], [124,77], [178,41], [211,77], [260,34]];
 /* THE FIFTH SHEET, EMPTY (map-redesign §4.1/§8 step 2). DESERT_NODES is [] on purpose - none of the desert's eight
    levels is in LEVELS yet, and a node whose level index is -1 crashes nodeLocked's LEVELS[-1] on the map's first
    frame (§8). This is geometry and a seam only: the entry point the desert's own road will start from one day, and
@@ -3716,8 +3717,9 @@ function drawMap() {
   // node labels
   // node plates. The name is on a board you can read over the trees, and what you have taken out of that
   // wood is written under it, so the map answers "what have I left there?" without walking to it.
-  const placed = [], hit = (x, y, w, h) => placed.some(r => x < r.x + r.w + 2 && x + w + 2 > r.x && y < r.y + r.h + 2 && y + h + 2 > r.y);
-  for (const n2 of NODES) { if (nodeSecret(n2)) continue; placed.push(n2.kind === 'store' ? { x: n2.x - 12, y: n2.y - 22, w: 24, h: 28 } : { x: n2.x - 8, y: n2.y - 20, w: 16, h: 26 }); }   /* (the store's hut is wider than a node) */ // the nodes and their flags are not to be covered either
+  /* THE PLATES' PLACES come from src/map-plates.js (one function, shared with tools/map-spacing.mjs, which fails the build when two
+     nodes or plates would overlap); a node's own `plate: 'above' | 'below' | 'left' | 'right'` is the side tried first. */
+  const plateAt = layoutPlates(NODES.filter(n2 => !nodeSecret(n2)).map(n2 => { const lk2 = nodeLocked(n2), lb = n2.kind === 'store' ? (n2.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[n2.level].secret && lk2) ? '? ? ?' : LEVELS[n2.level].name; return { id: n2.id, x: n2.x, y: n2.y, kind: n2.kind, plate: n2.plate, label: lb, twoLine: n2.kind === 'level' && !!PROG[LEVELS[n2.level].id] && !lk2 }; }), VW);
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;
     const lk = nodeLocked(nd), here = NODES[map.node] === nd;
@@ -3725,11 +3727,7 @@ function drawMap() {
     const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
     const twoLine = !!p && !lk;
     const tw = Math.max(lbl.length * 6 + 10, twoLine ? 44 : 0), th = twoLine ? 17 : 10;
-    let lx = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x)), ly = nd.y + 12;
-    { const own = placed.findIndex(r => r.x === nd.x - 8 && r.y === nd.y - 20); const mine = own >= 0 ? placed.splice(own, 1)[0] : null;
-      const tries = [[0, 12], [-tw / 2 - 4, 12], [tw / 2 + 4, 12], [0, -22 - th], [0, 22], [-tw / 2 - 4, -10], [tw / 2 + 4, -10]];
-      for (const [dx, dy] of tries) { const x = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x + dx)), y = nd.y + dy; if (!hit(x - tw / 2, y, tw, th)) { lx = x; ly = y; break; } }
-      if (mine) placed.push(mine); placed.push({ x: lx - tw / 2, y: ly, w: tw, h: th }); }
+    const pl = plateAt.get(nd.id), lx = pl.x + pl.w / 2, ly = pl.y;
     /* A BOARD PUSHED AWAY FROM ITS NODE points back at it. On a crowded road the long names get shoved wherever there is room,
        and THE BURNING VILLAGE's board landed on the Store's hut: players walked to the Store and pressed Z (Daniel, 2026-09-21) */
     { const bx = Math.max(lx - tw / 2, Math.min(lx + tw / 2, nd.x)), by = Math.max(ly, Math.min(ly + th, nd.y)), far = Math.hypot(bx - nd.x, by - nd.y);
@@ -28566,6 +28564,7 @@ if (q.get('playtest') === '1') setTimeout(async () => {
 if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
 if (q.get('chase') === 'demo') { chaseDemo(q.get('hero')); }   /* THE PLAYTEST CHASE DEMO: ?chase=demo[&hero=<id>] (docs/PLAYTEST.md), never saved */
 window.BK.levelJump = (id, h) => levelJump(id, h);
+window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'))) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'))) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 LS.bootDone();
