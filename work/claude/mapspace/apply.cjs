@@ -11,10 +11,10 @@ for(const file of files){
   for(const l of t){const m=l.match(/^(\w+) (\d+) (\d+) plate=(\w+) \(was/);if(!m)continue;
     const [,id,x,y,pl]=m;
     const lines=s.split('\r\n');
-    const i=lines.findIndex(L=>L.includes("id: '"+id+"',")||L.includes("id:'"+id+"'"));
+    const i=lines.findIndex(L=>L.includes("id: '"+id+"', kind:")||L.includes("id:'"+id+"'"));
     if(i<0)throw new Error('no node '+id);
     let L=lines[i];
-    L=L.replace(/x: ?\d+, ?y: ?\d+/,(q)=>'x: '+x+', y: '+y+(pl!=='undefined'?", plate: '"+pl+"'":''));
+    L=L.replace(/ plate: '\w+',/,'').replace(/x: ?\d+, ?y: ?\d+/,(q)=>'x: '+x+', y: '+y+(pl!=='undefined'?", plate: '"+pl+"'":''));
     lines[i]=L;s=lines.join('\r\n');
   }
 }

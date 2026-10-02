@@ -158,6 +158,7 @@ if (take('slopes-trace')) results.push(run('slopes-trace', process.execPath, ['t
 if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,pick,practice,plates,bossfix,soundtest', '--strict'], { PORT: String(portFor(4)) }));
 /* THE SOUND TEST'S LOCK, in the page (docs: a song unlocks on being heard in play, never by browsing the menu itself;
    sound effects are always open): tools/soundtest.mjs */
+if (take('map-footer')) results.push(run('map-footer', process.execPath, ['tools/map-footer.mjs'], { PORT: String(portFor(9)) }));
 if (take('soundtest')) results.push(run('soundtest', process.execPath, ['tools/soundtest.mjs'], { PORT: String(portFor(8)) }));
 if (!SUBSET) results.push(run('profile-cleanup', process.execPath, ['tools/profile-cleanup.mjs']));   /* every way a tool can end leaves nothing in Temp */   /* the full run only: a subset did not make the mess and must not be failed by it */
 if (!SUBSET) results.push(run('profile-leaks', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(SUITE_T0), '--run', process.env.BRACKEN_RUN, '--check']));

@@ -5,12 +5,15 @@
 //   1. two nodes closer than MIN_NODE_GAP (their discs and flags read as one blob);
 //   2. a plate that found no free side (it is drawn on its default spot, on top of something);
 //   3. any final overlap: plate-plate, plate-node box (any other node), node box-node box;
+//   5. THE INFO PANEL (218x58, the box that opens on the node you stand on), the top HUD bar and the footer strip are BLOCKED rects: for every node
+//      selected, at the camera height the game would choose, the panel, header and footer may cover no node box or board of the selected node, its
+//      road neighbours (or the node it hangs off) - src/map-plates.js placePanel, the same function the game draws with.
 //   4. a plate pushed more than FAR px from its node (it reads as another node's plate even with the leader line).
 // New campaign nodes (the welltown desert nodes, the redgorge branch...) must pass this at merge.
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { LEVELS } from '../src/level.js';
-import { layoutPlates, nodeBox, MIN_NODE_GAP, PLATE_PAD } from '../src/map-plates.js';
+import { layoutPlates, nodeBox, MIN_NODE_GAP, PLATE_PAD, placePanel, plateNodes } from '../src/map-plates.js';
 
 const FAR = 26, VW = 320;
 const src = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
@@ -18,8 +21,7 @@ const ctx = vm.createContext({ LEVELS });
 vm.runInContext(src.slice(src.indexOf('const MAPW ='), src.indexOf('const MAPC =')) + '\nglobalThis.route = { NODES };', ctx);
 const NODES = ctx.route.NODES;
 
-const nodes = NODES.map(n => ({ id: n.id, x: n.x, y: n.y, kind: n.kind, plate: n.plate,
-  label: n.kind === 'store' ? (n.id === 'highstore' ? 'HIGH STORE' : 'STORE') : LEVELS[n.level].name, twoLine: n.kind === 'level' }));
+const nodes = plateNodes(NODES, n => LEVELS[n.level].name);
 const plates = layoutPlates(nodes, VW);
 const over = (a, b, pad) => a.x < b.x + b.w + pad && a.x + a.w + pad > b.x && a.y < b.y + b.h + pad && a.y + a.h + pad > b.y;
 const bad = [];
@@ -37,5 +39,6 @@ for (let i = 0; i < nodes.length; i++) {
     if (over(pb, nodeBox(a), 0)) bad.push(b.id + ' plate covers node ' + a.id);
   }
 }
+for (const n of nodes) { const r = placePanel(n, nodes, plates); if (!r.ok) bad.push(n.id + ": the info panel / header / footer would hide " + [...new Set(r.hits.map(h => h.id + " " + h.what))].join(", ") + " (best try: camera anchor " + r.anchor + ", panel at " + r.x + "," + r.y + ")"); }
 if (bad.length) { console.error('map-spacing FAIL (' + bad.length + ' offences, nodes: ' + nodes.length + '):\n  ' + bad.join('\n  ')); process.exit(1); }
 console.log('map-spacing ok: ' + nodes.length + ' nodes, every plate clear (min node gap ' + MIN_NODE_GAP + ', pad ' + PLATE_PAD + ')');

@@ -1,5 +1,5 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
-import { layoutPlates } from './map-plates.js';
+import { layoutPlates, plateNodes, placePanel } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
@@ -3300,42 +3300,42 @@ const levelLocked = lv => !godMode() && (!!lv.locked || (lv.needs && !(PROG[lv.n
 // from the walk.
 const MAPW = 320, MAPH = 900, DESERT_Y = 0, INLAND_Y = 180, COAST_Y = 360, CRAG_Y = 540, WOOD_Y = 720;
 const WOOD_NODES = [
-  { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, name: 'BRACKEN WOOD' },
-  { id: 'store', kind: 'store', shop: 'shop', x: 156, y: 66, name: 'THE STORE' },
-  { id: 'marsh', kind: 'level', level: 1, x: 246, y: 118, name: 'MARSH WOOD' },
-  { id: 'stockade', kind: 'level', level: 2, x: 296, y: 34, name: 'THE STOCKADE' },
-  { id: 'burning', kind: 'level', level: LEVELS.findIndex(l => l.id === 'burning'), x: 262, y: 6, spur: true, name: 'THE BURNING VILLAGE' },   /* A SPUR off the road between the Stockade and Sporewood: the Pyromancer's class level, and optional, so the road does not go through it */
-  { id: 'spore', kind: 'level', level: 3, x: 214, y: 26, name: 'SPOREWOOD' },
-  { id: 'kings', kind: 'level', level: 4, x: 120, y: 30, name: 'KINGSWOOD' },
-  { id: 'underleaf', kind: 'level', level: 16, x: 74, y: 76, spur: true, name: 'UNDERLEAF' },   /* the secret, and now off the road in the picture as well as in the fiction */
+  { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, plate: 'left', name: 'BRACKEN WOOD' },
+  { id: 'store', kind: 'store', shop: 'shop', x: 156, y: 68, plate: 'left', name: 'THE STORE' },
+  { id: 'marsh', kind: 'level', level: 1, x: 251, y: 129, plate: 'right', name: 'MARSH WOOD' },
+  { id: 'stockade', kind: 'level', level: 2, x: 288, y: 47, plate: 'right', name: 'THE STOCKADE' },
+  { id: 'burning', kind: 'level', level: LEVELS.findIndex(l => l.id === 'burning'), x: 254, y: 8, plate: 'left', spur: true, name: 'THE BURNING VILLAGE' },   /* A SPUR off the road between the Stockade and Sporewood: the Pyromancer's class level, and optional, so the road does not go through it */
+  { id: 'spore', kind: 'level', level: 3, x: 199, y: 38, plate: 'above', name: 'SPOREWOOD' },
+  { id: 'kings', kind: 'level', level: 4, x: 141, y: 24, name: 'KINGSWOOD' },
+  { id: 'underleaf', kind: 'level', level: 16, x: 67, y: 70, plate: 'right', spur: true, name: 'UNDERLEAF' },   /* the secret, and now off the road in the picture as well as in the fiction */
 ];
 /* the road itself, and nothing but: the Burning Village and Underleaf hang off it on spurs (NODES `spur: true`) */
-const WOOD_PATH = [[62, 112], [96, 100], [126, 74], [156, 66], [190, 78], [222, 104], [246, 118], [268, 84], [296, 34], [252, 28], [214, 26], [170, 26], [120, 30], [92, 42], [64, 54], [40, 64]];   /* [170,26]: nudged 4px off the top margin, map-grammar's own rule (map-redesign §6 item 2 applies to every sheet, not only the two this brief re-routed) */
+const WOOD_PATH = [[62,112], [96,104], [122,79], [156,68], [187,80], [215,112], [251,129], [263,80], [288,47], [254,27], [199,38], [171,26], [141,24], [98,33], [66,54], [40,64]];   /* [170,26]: nudged 4px off the top margin, map-grammar's own rule (map-redesign §6 item 2 applies to every sheet, not only the two this brief re-routed) */
 /* OPTION B — THE SINGLE DIAGONAL S (docs/crag-options.png, letter B). Every node moved. One continuous climb from
    bottom-left to top-right, X sweeping through a smooth ogee (half-sine) curve as Y falls strictly - no hairpins,
    no loop, one line the eye can follow start to finish. Correct by construction: strictly-falling Y means no two
    segments can share a Y-range, so none can cross, whatever X does. THE ORE ROAD is the second-to-last node,
    mid-climb with road on both sides. THE UNDERCROWN is a short stub off HIGHCROWN, clear of OREROAD (~27px). */
 const CRAG_NODES = [
-  { id: 'scree', kind: 'level', level: 5, x: 48, y: 131, plate: 'above', name: 'THE SCREE PATH' },
-  { id: 'hanging', kind: 'level', level: 6, x: 69, y: 124, name: 'THE HANGING VILLAGE' },
-  { id: 'highstore', kind: 'store', shop: 'shopCrag', needs: 'scree', x: 106, y: 106, plate: 'below', name: 'THE HIGH STORE' },
-  { id: 'spire', kind: 'level', level: 7, x: 147, y: 80, plate: 'above', name: 'THE MONASTERY' },   /* the Sunspire and its Roc went in the monastery rework; the map had not heard */
-  { id: 'moor', kind: 'level', level: 8, x: 189, y: 80, plate: 'right', name: 'GALE MOOR' },
-  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 233, y: 61, plate: 'right', name: 'THE ORE ROAD' },   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
-  { id: 'storm', kind: 'level', level: 9, x: 260, y: 58, plate: 'below', name: 'STORMHOLD' },
-  { id: 'crown', kind: 'level', level: 10, x: 260, y: 26, name: 'HIGHCROWN' },
-  { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 279, y: 25, plate: 'above', spur: true, name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
+  { id: 'scree', kind: 'level', level: 5, x: 47, y: 104, plate: 'above', name: 'THE SCREE PATH' },
+  { id: 'hanging', kind: 'level', level: 6, x: 76, y: 113, name: 'THE HANGING VILLAGE' },
+  { id: 'highstore', kind: 'store', shop: 'shopCrag', needs: 'scree', x: 105, y: 106, plate: 'below', name: 'THE HIGH STORE' },
+  { id: 'spire', kind: 'level', level: 7, x: 149, y: 71, plate: 'above', name: 'THE MONASTERY' },   /* the Sunspire and its Roc went in the monastery rework; the map had not heard */
+  { id: 'moor', kind: 'level', level: 8, x: 190, y: 77, plate: 'right', name: 'GALE MOOR' },
+  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 232, y: 74, plate: 'right', name: 'THE ORE ROAD' },   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
+  { id: 'storm', kind: 'level', level: 9, x: 264, y: 55, plate: 'below', name: 'STORMHOLD' },
+  { id: 'crown', kind: 'level', level: 10, x: 260, y: 26, plate: 'below', name: 'HIGHCROWN' },
+  { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 276, y: 8, plate: 'above', spur: true, name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
 ];
 /* THE CRAG TAIL history: map-redesign §6 first fixed the corner-dive; the integrator then caught that fix
    self-crossing near the entrance and a local patch (moving only the entry) read as a tangle near HIGHSTORE with
    no clean alternative below it (exhaustive search, work/claude/crag-route-search.mjs) - so this whole sheet was
    relaid instead (docs/crag-options.png, option B). See the comment on CRAG_NODES above for this option's shape. */
-const CRAG_PATH = [[40,152], [48,131], [69,124], [106,106], [147,80], [189,80], [233,61], [260,58], [260,26]];
+const CRAG_PATH = [[40,152], [47,104], [76,113], [105,106], [149,71], [190,77], [232,74], [264,55], [260,26]];
 /* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
    another; the coast's own eight are spread over the whole sheet now, and the road climbs off its top edge onto the inland one. */
-const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 157, y: 143, plate: 'right', name: 'THE LONG WATER' },
-  { id: 'reef', kind: 'level', level: LEVELS.findIndex(l => l.id === 'reef'), x: 240, y: 130, plate: 'below', name: 'THE SHIPWRECK REEF' },
+const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 158, y: 154, plate: 'right', name: 'THE LONG WATER' },
+  { id: 'reef', kind: 'level', level: LEVELS.findIndex(l => l.id === 'reef'), x: 233, y: 130, plate: 'below', name: 'THE SHIPWRECK REEF' },
   { id: 'chandler', kind: 'store', shop: 'shopSea', needs: 'reef', x: 271, y: 96, plate: 'right', name: 'THE CHANDLER' },
   { id: 'flotilla', kind: 'level', level: LEVELS.findIndex(l => l.id === 'flotilla'), x: 218, y: 55, plate: 'left', name: 'THE FLOTILLA' },
   { id: 'hurricane', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hurricane'), x: 132, y: 26, plate: 'above', name: 'THE HURRICANE DECK' },
@@ -3355,23 +3355,23 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
    entry now sits at x=260 too, directly under Highcrown, so that connector is short and near-vertical like
    every other seam on the map. LONGWATER stays the first stop; the entry->longwater leg is the only thing that
    changed, and it clears every later segment (verified, no self-crossing). */
-const COAST_PATH = [[260,172], [157,143], [169,118], [240,130], [250,110], [271,96], [249,70], [218,55], [174,38], [132,26], [86,33], [43,45], [43,71], [51,94], [127,84], [128,114], [26,98], [26,28], [140,8]];
+const COAST_PATH = [[260,172], [158,154], [169,118], [233,130], [250,110], [271,96], [249,70], [218,55], [172,41], [132,26], [90,26], [43,45], [43,71], [51,94], [127,84], [128,114], [26,98], [27,25], [140,8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
-const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 28, y: 156, plate: 'above', name: 'WAYMEET' },
-  { id: 'canal', kind: 'level', level: LEVELS.findIndex(l => l.id === 'canal'), x: 38, y: 126, name: 'THE FOG CANAL' },   /* THE FOG CANAL (claude/canal): the main road out of WAYMEET, in road order (map-grammar); THE MASKWRIGHT'S THEATRE comes after it */
-  { id: 'theatre', kind: 'level', level: LEVELS.findIndex(l => l.id === 'theatre'), x: 90, y: 155, plate: 'right', name: "THE MASKWRIGHT'S THEATRE" },   /* THE MASKWRIGHT'S THEATRE (claude/theatre): on the road between THE FOG CANAL and THE HARVEST FAIR (in road order: the map-grammar rule; saves keep the node by its id) */
-  { id: 'fair', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fair'), x: 106, y: 136, plate: 'above', name: 'THE HARVEST FAIR' },   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): the second stop on the road inland, on the road between WAYMEET and THE HEXED FIELDS */
-  { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 85, y: 107, plate: 'above', name: 'THE HEXED FIELDS' },   /* moved up-left of Waymeet, off the entrance V (map-redesign §6, 2b) - the only node this fix moves */
-  { id: 'burial', kind: 'level', level: LEVELS.findIndex(l=>l.id==='burial'), x: 124, y: 77, plate: 'above', name: 'THE BURIAL CAVERNS' },
-  { id: 'witchlight', kind: 'level', level: LEVELS.findIndex(l => l.id === 'witchlight'), x: 178, y: 41, plate: 'above', name: 'THE WITCHLIGHT STAIR' },   /* the road up the tower hill, between the caverns and the Folly (batch 4c) */
-  { id: 'mage', kind: 'level', level: LEVELS.findIndex(l => l.id === 'mage'), x: 211, y: 77, plate: 'below', name: "THE MAGE'S FOLLY" },
-  { id: 'fallingtower', kind: 'level',level:LEVELS.findIndex(l=>l.id==='fallingtower'),x: 260, y: 34, plate: 'right',name:'THE FALLING TOWER'},
-  { id: 'unburied', kind: 'level', level: LEVELS.findIndex(l => l.id === 'unburied'), x: 157, y: 46, plate: 'below', spur: true, name: 'THE UNBURIED FIELD' }];   /* the Death Knight's class level, a side road off THE WITCHLIGHT STAIR (map-redesign §4.2). APPENDED LAST so every older node keeps its index (saves) */   /* the tower on the hill over the fields: the road climbs to it */   /* the farms under the Archmage's hill: on the road, past Waymeet's spur */   /* the hunt, the quarry pass, the frostfell and the sky ship are gone from the road (their builders are benched) */
+const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 25, y: 153, plate: 'above', name: 'WAYMEET' },
+  { id: 'canal', kind: 'level', level: LEVELS.findIndex(l => l.id === 'canal'), x: 38, y: 120, plate: 'left', name: 'THE FOG CANAL' },   /* THE FOG CANAL (claude/canal): the main road out of WAYMEET, in road order (map-grammar); THE MASKWRIGHT'S THEATRE comes after it */
+  { id: 'theatre', kind: 'level', level: LEVELS.findIndex(l => l.id === 'theatre'), x: 90, y: 149, plate: 'left', name: "THE MASKWRIGHT'S THEATRE" },   /* THE MASKWRIGHT'S THEATRE (claude/theatre): on the road between THE FOG CANAL and THE HARVEST FAIR (in road order: the map-grammar rule; saves keep the node by its id) */
+  { id: 'fair', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fair'), x: 104, y: 122, plate: 'left', name: 'THE HARVEST FAIR' },   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): the second stop on the road inland, on the road between WAYMEET and THE HEXED FIELDS */
+  { id: 'fields', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fields'), x: 93, y: 86, plate: 'left', name: 'THE HEXED FIELDS' },   /* moved up-left of Waymeet, off the entrance V (map-redesign §6, 2b) - the only node this fix moves */
+  { id: 'burial', kind: 'level', level: LEVELS.findIndex(l=>l.id==='burial'), x: 124, y: 83, plate: 'below', name: 'THE BURIAL CAVERNS' },
+  { id: 'witchlight', kind: 'level', level: LEVELS.findIndex(l => l.id === 'witchlight'), x: 159, y: 43, plate: 'below', name: 'THE WITCHLIGHT STAIR' },   /* the road up the tower hill, between the caverns and the Folly (batch 4c) */
+  { id: 'mage', kind: 'level', level: LEVELS.findIndex(l => l.id === 'mage'), x: 208, y: 64, plate: 'left', name: "THE MAGE'S FOLLY" },
+  { id: 'fallingtower', kind: 'level',level:LEVELS.findIndex(l=>l.id==='fallingtower'),x: 260, y: 34, plate: 'above',name:'THE FALLING TOWER'},
+  { id: 'unburied', kind: 'level', level: LEVELS.findIndex(l => l.id === 'unburied'), x: 142, y: 43, spur: true, name: 'THE UNBURIED FIELD' }];   /* the Death Knight's class level, a side road off THE WITCHLIGHT STAIR (map-redesign §4.2). APPENDED LAST so every older node keeps its index (saves) */   /* the tower on the hill over the fields: the road climbs to it */   /* the farms under the Archmage's hill: on the road, past Waymeet's spur */   /* the hunt, the quarry pass, the frostfell and the sky ship are gone from the road (their builders are benched) */
 /* WAYMEET, REDRAWN (map-redesign §6, 2b). The old polyline walked out to Waymeet and back over the same two points -
    the return leg painted at full road weight on top of the outbound one, so the required town read as a dead end.
    Waymeet does not move. The road now enters, runs through it, and climbs away in a new direction; THE HEXED FIELDS
    moves so the road leaving Waymeet does not have to double back across its own entrance to reach it. */
-const INLAND_PATH = [[140,176], [28,156], [38,126], [90,155], [106,136], [85,107], [124,77], [178,41], [211,77], [260,34]];
+const INLAND_PATH = [[140,176], [25,153], [38,120], [90,149], [104,122], [93,86], [124,83], [159,43], [208,64], [260,34]];
 /* THE FIFTH SHEET, EMPTY (map-redesign §4.1/§8 step 2). DESERT_NODES is [] on purpose - none of the desert's eight
    levels is in LEVELS yet, and a node whose level index is -1 crashes nodeLocked's LEVELS[-1] on the map's first
    frame (§8). This is geometry and a seam only: the entry point the desert's own road will start from one day, and
@@ -3632,8 +3632,14 @@ function updateMap(dt) {
   }
   if (pausePress) { state = 'title'; SFX.ui(); }
   PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id;
-  { const [, py] = mapPos(); const want = Math.max(0, Math.min(MAPH - VH, py - VH * 0.55)); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
+  { const [, py] = mapPos(); const sit = !map.walking && NODES[map.node], want = Math.max(0, Math.min(MAPH - VH, py - VH * (sit ? mapPanelFor(sit).anchor : 0.55))); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
 }
+/* THE MAP'S PLATES AND INFO PANEL (src/map-plates.js): one layout for every board, and for each node a camera height and panel corner that cover no node or board around it */
+let mapPlateCache = null;
+function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES, n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
+function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates); c.panels.set(nd.id, r); } return r; }
+/* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
+function mapFooter(open, on) { return [{ t: open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: 'F CO-OP ' + (on ? 'ON' : 'OFF'), x: VW - 4, right: true }]; }
 function drawMap() {
   g.__world = true;   /* the map has its own camera: a label off the edge of the buffer is off the edge of the MAP, not a bug */
   g.save(); g.translate(0, -Math.round(mapCamY));
@@ -3719,7 +3725,7 @@ function drawMap() {
   // wood is written under it, so the map answers "what have I left there?" without walking to it.
   /* THE PLATES' PLACES come from src/map-plates.js (one function, shared with tools/map-spacing.mjs, which fails the build when two
      nodes or plates would overlap); a node's own `plate: 'above' | 'below' | 'left' | 'right'` is the side tried first. */
-  const plateAt = layoutPlates(NODES.filter(n2 => !nodeSecret(n2)).map(n2 => { const lk2 = nodeLocked(n2), lb = n2.kind === 'store' ? (n2.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[n2.level].secret && lk2) ? '? ? ?' : LEVELS[n2.level].name; return { id: n2.id, x: n2.x, y: n2.y, kind: n2.kind, plate: n2.plate, label: lb, twoLine: n2.kind === 'level' && !!PROG[LEVELS[n2.level].id] && !lk2 }; }), VW);
+  const plateAt = mapPlates().plates;   /* the worst case (every level two-line), so a board never moves with your progress and the lint proves what you see */
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;
     const lk = nodeLocked(nd), here = NODES[map.node] === nd;
@@ -3767,9 +3773,8 @@ function drawMap() {
   const nd = NODES[map.node];
   if (!map.walking) {
     const store = nd.kind === 'store';
-    const cw = Math.min(VW - 12, 218), ch = store ? 26 : 58;
-    const onRight = nd.x < VW / 2;                                   // the card goes to the far side of the node
-    const cx0 = onRight ? VW - cw - 6 : 6, low = nd.y - mapCamY > VH * 0.55, cy0 = low ? 21 : VH - 12 - ch;
+    const pp = mapPanelFor(nd), cw = pp.w, ch = pp.h;
+    const cx0 = pp.x, cy0 = pp.y;   /* the corner (and the camera height, in updateMap) that hides nothing around this node: placePanel */
     panel(cx0, cy0, cw, ch, UI.sel);
     { const secret = nd.kind === 'level' && LEVELS[nd.level].secret && nodeLocked(nd);
       text(fitText(secret ? '? ? ?' : nd.name, cw - 52, 8), cx0 + 8, cy0 + 5, UI.title); }
@@ -3810,10 +3815,9 @@ function drawMap() {
   { /* the hero standing beside player one already says WHO (see below); this just says the key and whether he is
        there, so the line stays short enough to sit beside the rest of the footer without crowding it out - both
        measured with textW at size 6: 234 + 66 leaves a clear 12px between them at 320 wide. */
-    const on = coopShown(), coopLbl = 'F CO-OP ' + (on ? 'ON' : 'OFF');
+    const on = coopShown();
     g.fillStyle = 'rgba(12,10,18,0.78)'; g.fillRect(0, VH - 11, VW, 11);
-    text(mapPanel.open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS MOVE  Z ENTER  TAB ALL LEVELS  X BEASTS', 4, VH - 8, UI.dim, 'left', 6);
-    text(coopLbl, VW - 4, VH - 8, on ? '#8fd160' : UI.dim, 'right', 6); }
+    for (const f of mapFooter(mapPanel.open, on)) text(f.t, f.x, VH - 8, f.right ? (on ? '#8fd160' : UI.dim) : UI.dim, f.right ? 'right' : 'left', 6); }
   if (mapPanel.open) drawMapPanel();   /* over everything else, on the side away from the token so it never covers it or the node you are standing on */
   g.__world = false;
 }
@@ -28564,7 +28568,7 @@ if (q.get('playtest') === '1') setTimeout(async () => {
 if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
 if (q.get('chase') === 'demo') { chaseDemo(q.get('hero')); }   /* THE PLAYTEST CHASE DEMO: ?chase=demo[&hero=<id>] (docs/PLAYTEST.md), never saved */
 window.BK.levelJump = (id, h) => levelJump(id, h);
-window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */
+window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on => mapFooter(open, on).map(f => ({ ...f, w: textW(f.t, 6) })))); window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'))) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'))) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 LS.bootDone();

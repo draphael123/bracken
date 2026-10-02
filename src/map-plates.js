@@ -29,3 +29,39 @@ export function layoutPlates(nodes, VW = 320) {
   });
   return out;
 }
+
+/* THE INFO PANEL and the screen furniture. The selected node's box (name / best / medal / what is left) is drawn in SCREEN space over the map:
+   218 x 58 (a store's 218 x 26) in one of four corners, and the camera may put the node anywhere from a fifth to the bottom of the screen.
+   Header bar on top, footer strip under. placePanel picks the first (anchor, corner) whose panel, header and footer cover no node box and no plate
+   in view; the game and tools/map-spacing.mjs both call it, so what the lint proves is what is drawn. */
+export const SCREEN = { VW: 320, VH: 180, HEADER: 19, FOOTER: 11, MAPH: 900 };
+export const NEAR = 0;   // what counts as "around the selected node": anything within this many px of it, and its road neighbours, must stay readable
+export const ANCHORS = [0.55, 0.4, 0.7, 0.3, 0.8, 0.25, 0.9, 0.2, 0.35, 0.45, 0.6, 0.65, 0.75, 0.85];   // the node's screen height, as a fraction of VH (0.55 = the map's own default)
+export function panelSize(nd) { return { w: Math.min(SCREEN.VW - 12, 218), h: nd.kind === 'store' ? 26 : 58 }; }
+export function plateNodes(NODES, nameOf) { return NODES.map(n => ({ id: n.id, x: n.x, y: n.y, kind: n.kind, spur: !!n.spur, plate: n.plate, label: n.kind === 'store' ? (n.id === 'highstore' ? 'HIGH STORE' : 'STORE') : nameOf(n), twoLine: n.kind === 'level' })); }
+const hitR = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+/* the nodes beside this one on the road: the last and next ROAD node in list order (a spur: the one it hangs off, and nothing else) */
+export function neighbours(nd, nodes) {
+  const road = nodes.filter(n => !n.spur), i = road.findIndex(n => n.id === nd.id);
+  if (i >= 0) return [road[i - 1], road[i + 1]].filter(Boolean).map(n => n.id).concat(nodes.filter(n => n.spur && Math.hypot(n.x - nd.x, n.y - nd.y) < 40).map(n => n.id));
+  let best = null; for (const n of road) if (!best || Math.hypot(n.x - nd.x, n.y - nd.y) < Math.hypot(best.x - nd.x, best.y - nd.y)) best = n; return best ? [best.id] : [];
+}
+export function placePanel(nd, nodes, plates, S = SCREEN) {
+  const { w, h } = panelSize(nd), rects = [];
+  for (const n of nodes) { rects.push({ id: n.id, what: 'node', ...nodeBox(n) }); const p = plates.get(n.id); rects.push({ id: n.id, what: 'plate', x: p.x, y: p.y, w: p.w, h: p.h }); }
+  const care = new Set([nd.id, ...neighbours(nd, nodes)]); let first = null;
+  for (const a of ANCHORS) {
+    const camY = Math.max(0, Math.min(S.MAPH - S.VH, nd.y - S.VH * a));
+    const spots = []; for (const right of [nd.x < S.VW / 2, nd.x >= S.VW / 2]) for (const low of [nd.y - camY <= S.VH * 0.55, nd.y - camY > S.VH * 0.55]) spots.push([right ? S.VW - w - 6 : 6, low ? S.VH - S.FOOTER - 1 - h : 21]);
+    for (let y = 21; y <= S.VH - S.FOOTER - 1 - h; y += 6) for (let x = 6; x <= S.VW - w - 6; x += 8) spots.push([x, y]);
+    for (const [px, py] of spots) {
+      const pr = { x: px, y: py, w, h };
+      const blocked = [pr, { x: 0, y: 0, w: S.VW, h: S.HEADER }, { x: 0, y: S.VH - S.FOOTER, w: S.VW, h: S.FOOTER }];
+      const hits = rects.filter(r => { if (!care.has(r.id) && Math.hypot(Math.max(0, r.x - nd.x, nd.x - r.x - r.w), Math.max(0, r.y - nd.y, nd.y - r.y - r.h)) > NEAR) return false; const q = { x: r.x, y: r.y - camY, w: r.w, h: r.h }; return q.y < S.VH && q.y + q.h > 0 && blocked.some(b => hitR(q, b)); });
+      const self = nodes.find(n => n.id === nd.id), sy = nd.y - camY;
+      if (!hits.length && sy > S.HEADER + 8 && sy < S.VH - S.FOOTER - 8) return { ok: true, camY, anchor: a, ...pr, hits: [] };
+      if (!first || hits.length < first.hits.length) first = { ok: false, camY, anchor: a, ...pr, hits };
+    }
+  }
+  return first;
+}

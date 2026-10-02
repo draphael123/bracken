@@ -1,26 +1,26 @@
 // Offline relayout search for tools/map-spacing.mjs offenders. Usage: node work/claude/mapspace/solve.mjs CRAG|COAST|INLAND [seed] [iters]
 import fs from 'node:fs'; import vm from 'node:vm';
 import { LEVELS } from '../../../src/level.js';
-import { layoutPlates, nodeBox, MIN_NODE_GAP } from '../../../src/map-plates.js';
+import { layoutPlates, nodeBox, MIN_NODE_GAP, placePanel, plateNodes } from '../../../src/map-plates.js';
 const src = fs.readFileSync(new URL('../../../src/main.js', import.meta.url), 'utf8');
 const ctx = vm.createContext({ LEVELS });
-vm.runInContext(src.slice(src.indexOf('const MAPW ='), src.indexOf('const MAPC =')) + '\nglobalThis.r={NODES,PATH,DESERT_Y,INLAND_Y,COAST_Y,CRAG_Y,WOOD_Y,CRAG_NODES,COAST_NODES,INLAND_NODES,CRAG_PATH,COAST_PATH,INLAND_PATH,WOOD_Y};', ctx);
+vm.runInContext(src.slice(src.indexOf('const MAPW ='), src.indexOf('const MAPC =')) + '\nglobalThis.r={NODES,PATH,DESERT_Y,INLAND_Y,COAST_Y,CRAG_Y,WOOD_Y,CRAG_NODES,COAST_NODES,INLAND_NODES,CRAG_PATH,COAST_PATH,INLAND_PATH,WOOD_NODES,WOOD_PATH};', ctx);
 const R = ctx.r; const name = process.argv[2]; let seed = +(process.argv[3] || 1); const ITERS = +(process.argv[4] || 80000);
 const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
 const gauss = () => (rnd() + rnd() + rnd() + rnd() - 2) * 1.7;
-const OFF = { CRAG: R.CRAG_Y, COAST: R.COAST_Y, INLAND: R.INLAND_Y }[name];
+const OFF = { CRAG: R.CRAG_Y, COAST: R.COAST_Y, INLAND: R.INLAND_Y, WOOD: R.WOOD_Y }[name];
 const LN = R[name + '_NODES'], LP = R[name + '_PATH'];
 const items = LP.map(([x, y], i) => { const n = LN.find(n => !n.spur && n.x === x && n.y === y); return { id: n ? n.id : null, x, y, fixed: i === 0 || i === LP.length - 1, wp: !n }; });
 const spurs = LN.filter(n => n.spur).map(n => ({ id: n.id, x: n.x, y: n.y, spur: true }));
-const sides = {}; for (const n of LN) sides[n.id] = undefined;
+const sides = {}; for (const n of LN) sides[n.id] = n.plate;
 const orig = items.map(i => [i.x, i.y]), origSp = spurs.map(s => [s.x, s.y]);
 const MARGIN = 24;
 const labelOf = n => n.kind === 'store' ? (n.id === 'highstore' ? 'HIGH STORE' : 'STORE') : LEVELS[n.level].name;
 const build = () => R.NODES.map(n => {
   const loc = LN.find(l => l.id === n.id);
-  if (!loc) return { id: n.id, x: n.x, y: n.y, kind: n.kind, plate: n.plate, label: labelOf(n), twoLine: n.kind === 'level' };
+  if (!loc) return { id: n.id, x: n.x, y: n.y, kind: n.kind, spur: !!n.spur, plate: n.plate, label: labelOf(n), twoLine: n.kind === 'level' };
   const it = items.find(i => i.id === n.id) || spurs.find(s => s.id === n.id);
-  return { id: n.id, x: it.x, y: it.y + OFF, kind: n.kind, plate: sides[n.id], label: labelOf(n), twoLine: n.kind === 'level' };
+  return { id: n.id, x: it.x, y: it.y + OFF, kind: n.kind, spur: !!n.spur, plate: sides[n.id], label: labelOf(n), twoLine: n.kind === 'level' };
 });
 const orient = (p, q, r) => (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1]);
 const cross = (p1, p2, p3, p4) => { const o1 = orient(p1, p2, p3), o2 = orient(p1, p2, p4), o3 = orient(p3, p4, p1), o4 = orient(p3, p4, p2); return o1 !== 0 && o2 !== 0 && o3 !== 0 && o4 !== 0 && (o1 > 0) !== (o2 > 0) && (o3 > 0) !== (o4 > 0); };
@@ -41,6 +41,7 @@ function cost(detail) {
       if (over(nodeBox(a), nodeBox(b))) { c += 10; bad.push('box ' + a.id + b.id); }
     }
   }
+  if (process.env.PANEL !== "0") for (const n of nodes) { if (n.y < OFF - 90 || n.y > OFF + 270) continue; const r = placePanel(plateNodes(R.NODES, () => "").length ? n : n, nodes, plates); if (!r.ok) { c += 8 + 2 * r.hits.length; bad.push("panel " + n.id); } }
   const P = items.map(i => [i.x, i.y + OFF]);
   const segs = []; for (let i = 0; i + 1 < P.length; i++) segs.push([P[i], P[i + 1], i]);
   for (let i = 0; i < segs.length; i++) for (let j = i + 2; j < segs.length; j++) if (cross(segs[i][0], segs[i][1], segs[j][0], segs[j][1])) { c += 30; bad.push('xing ' + i + '-' + j); }
@@ -59,7 +60,7 @@ function cost(detail) {
   spurs.forEach((s, i) => { {const d=Math.hypot(s.x - origSp[i][0], s.y - origSp[i][1]); c += 0.03*d + (d>MAXD?(d-MAXD)*2:0);} });
   return detail ? { c, bad } : c;
 }
-const free = [...items.filter(i => !i.fixed), ...spurs];
+const SPURS_FIX = 0; const free = [...items.filter(i => !i.fixed), ...spurs];
 const SIDES = [undefined, 'above', 'below', 'left', 'right'];
 let cur = cost(), best = cur, bestSnap = JSON.stringify([items, spurs, sides]);
 for (let it = 0; it < ITERS; it++) {
