@@ -16,7 +16,7 @@ const P = { w0: '#1e1208', w1: '#3a2614', w2: '#5e4022', w3: '#86602e', w4: '#b0
 function stick(g, x0, y0, x1, y1, th, col, hi) { const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0))); for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, y = y0 + (y1 - y0) * i / n; rc(g, x - th / 2, y - th / 2, th, th, col); if (hi && th >= 3) rc(g, x - th / 2, y - th / 2, th, 1, hi); } }
 
 // ================= THE JAM: brush, bleached driftwood, drowned timber, a cart's wheel, an ox's skull =================
-function jamArt(w, h) {
+export function jamArt(w, h) {
   return once('jam' + w + 'x' + h, () => { const [c, g] = mk(w, h), r = mulberry(2087); rc(g, 0, 0, w, h, '#1a1008');
     for (let i = 0; i < 60; i++) { const x0 = r() * w, y0 = r() * h, a = r() * Math.PI, len = 14 + r() * 36, th = r() < 0.3 ? 4 : r() < 0.6 ? 3 : 2, tone = r();   /* brush and boughs, any way up */
       stick(g, x0, y0, x0 + Math.cos(a) * len, y0 + Math.sin(a) * len, th, tone < 0.3 ? P.w1 : tone < 0.7 ? P.w2 : P.w3, th >= 3 ? P.w4 : null); }
@@ -34,22 +34,26 @@ function jamArt(w, h) {
     return c; });
 }
 // ================= THE OLD NEST: a huge bowl of sticks on the west wall =================
-function nestArt(w, h, sm) {
-  return once('nest' + w + 'x' + h + sm, () => { const [c, g] = mk(w, h), r = mulberry(8123 + w);
-    for (let i = 0; i < (sm ? 26 : 90); i++) { const t = r(), x0 = w * (0.05 + t * 0.9), y0 = h * (0.5 + r() * 0.4), a = (r() - 0.5) * 0.9, len = (sm ? 8 : 14) + r() * (sm ? 8 : 18); stick(g, x0 - Math.cos(a) * len / 2, y0 - Math.sin(a) * len / 2, x0 + Math.cos(a) * len / 2, y0 + Math.sin(a) * len / 2, sm ? 2 : 3, [P.w1, P.w2, P.w3, P.w4][(r() * 4) | 0], P.w5); }
-    for (let x = 0; x < w; x++) { const k = (x / w - 0.5) * 2, top = h * 0.46 + k * k * h * 0.34; rc(g, x, top, 1, 2, P.w3); rc(g, x, top - 1, 1, 1, P.w5); }
-    rc(g, w * 0.12, h * 0.52, w * 0.76, h * 0.2, '#150c06');                                          /* the hollow of the bowl, dark */
-    for (let i = 0; i < (sm ? 6 : 18); i++) { const x = w * (0.12 + r() * 0.76), y = h * (0.46 + r() * 0.1); stick(g, x, y, x + (r() - 0.5) * 12, y - 2 - r() * 5, 1, r() < 0.5 ? '#c8a060' : '#8a6a38'); }   /* sticks standing out of the rim */
+export function nestArt(w, h, sm) {
+  return once('nest' + w + 'x' + h + sm, () => { const [c, g] = mk(w, h), r = mulberry(8123 + w), cxn = w / 2, ry = h * 0.2, rimY = h * 0.42, rx = w * 0.47, th = sm ? 2 : 3;
+    const ell = (x, y, ax, ay, col) => { for (let yy = -ay; yy <= ay; yy++) { const half = ax * Math.sqrt(Math.max(0, 1 - (yy * yy) / (ay * ay))); rc(g, x - half, y + yy, half * 2, 1, col); } };
+    for (let yy = rimY; yy < h - 1; yy++) { const k = (yy - rimY) / (h - 1 - rimY), half = rx * Math.sqrt(Math.max(0, 1 - k * k)); rc(g, cxn - half, yy, half * 2, 1, P.w1); }                  /* the body: a deep bowl, dark under the weave */
+    for (let i = 0; i < (sm ? 40 : 150); i++) { const k = r(), yy = rimY + k * (h - 2 - rimY), half = rx * Math.sqrt(Math.max(0, 1 - (k * k))), x0 = cxn - half + r() * half * 2, a = (r() - 0.5) * 1.5, len = (sm ? 7 : 12) + r() * (sm ? 7 : 14);   /* woven sticks, each along the bowl's curve */
+      stick(g, Math.max(0, x0 - Math.cos(a) * len / 2), yy - Math.sin(a) * len / 2, Math.min(w - 1, x0 + Math.cos(a) * len / 2), yy + Math.sin(a) * len / 2, th - (r() < 0.4 ? 1 : 0), [P.w1, P.w2, P.w3, P.w2, P.w4][(r() * 5) | 0], P.w5); }
+    ell(cxn, rimY, rx, ry, P.w3); ell(cxn, rimY + 1, rx - 2, ry - 1, '#120a05'); ell(cxn, rimY + 2, rx - 5, ry - 3, '#0a0603');                        /* the rim, and the dark hollow of the bowl */
+    for (let x = 0; x < w; x++) { const k = (x - cxn) / rx; if (Math.abs(k) > 1) continue; const yy = rimY - ry * Math.sqrt(1 - k * k); rc(g, x, yy - 1, 1, 2, P.w4); if (r() < 0.5) rc(g, x, yy - 2, 1, 1, P.w5); }
+    for (let i = 0; i < (sm ? 7 : 22); i++) { const k = (r() * 2 - 1) * 0.92, x = cxn + k * rx, y = rimY - ry * Math.sqrt(1 - k * k); stick(g, x, y, x + (r() - 0.5) * 12, y - 2 - r() * (sm ? 4 : 7), 1, r() < 0.5 ? '#c8a060' : '#8a6a38'); }   /* sticks standing out of the rim */
     return c; });
 }
 // ================= THE PAINTED HAND: ochre blown round a hand held on the rock =================
-function handArt(v) {
-  return once('hand' + v, () => { const W = 26, H = 30, [c, g] = mk(W, H), r = mulberry(v * 17 + 3), cx = 13, cy = 19, m = new Uint8Array(W * H), at = (x, y) => x >= 0 && y >= 0 && x < W && y < H && m[y * W + x];
-    const lean = (v % 3) - 1;   /* the hand's silhouette: palm, wrist, thumb, four fingers (their tips leaning a little) */
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const dx = x - cx, dy = y - cy; const palm = Math.abs(dx) <= 4 && dy >= -3 && dy <= 6, wr = Math.abs(dx) <= 3 && dy > 6 && dy <= 10, th = dx >= 4 && dx <= 8 + 0 && dy >= -2 + (dx - 4) * -1 && dy <= 3 - (dx - 4) * 2 && dy < 4,
-      fing = [[-3, -11], [-1, -13], [1, -12], [3, -9]].some(([fx, fy], i) => Math.abs(dx - fx - lean * (-dy) / 6) <= 0.9 && dy <= -3 && dy >= fy); if (palm || wr || th || fing) m[y * W + x] = 1; }
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { if (m[y * W + x]) continue; let d = 99; for (let q = -4; q <= 4; q++) for (let k = -4; k <= 4; k++) if (at(x + k, y + q)) d = Math.min(d, Math.hypot(k, q));
-      if (d <= 4 && r() < 0.95 - d * 0.2) rc(g, x, y, 1, 1, r() < 0.55 ? P.ochre : r() < 0.6 ? P.ochreL : '#8a5a1a'); }   /* the blown pigment round it, dense at the edge */
+export function handArt(v) {
+  return once('hand' + v, () => { const W = 40, H = 44, [c, g] = mk(W, H), r = mulberry(v * 17 + 3), cx = 20, cy = 28, m = new Uint8Array(W * H), at = (x, y) => x >= 0 && y >= 0 && x < W && y < H && m[y * W + x], lean = (v % 3) - 1;
+    const fill = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (x >= 0 && x < W && y >= 0 && y < H) m[y * W + x] = 1; };
+    fill(cx - 6, cx + 6, cy - 4, cy + 8); fill(cx - 4, cx + 4, cy + 9, cy + 15);                                   /* palm, wrist */
+    [[-6, 14], [-2, 18], [2, 17], [6, 13]].forEach(([fx, len], i) => { for (let t = 0; t < len; t++) { const x = cx + fx + Math.round(lean * t / 9 + (i - 1.5) * t / 14); fill(x - 1, x + 1, cy - 4 - t, cy - 4 - t); } });   /* four fingers, fanned */
+    for (let t = 0; t < 9; t++) { const x = cx + 6 + t, y = cy + 2 - Math.round(t * 0.9); fill(x, x + 2, y - 1, y + 1); }   /* the thumb, out to the side */
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { if (m[y * W + x]) continue; let d = 99; for (let q = -5; q <= 5; q++) for (let k = -5; k <= 5; k++) if (at(x + k, y + q)) d = Math.min(d, Math.hypot(k, q));
+      if (d <= 5 && r() < 1.0 - d * 0.17) rc(g, x, y, 1, 1, r() < 0.55 ? P.ochre : r() < 0.6 ? P.ochreL : '#8a5a1a'); }   /* the blown pigment: dense at the edge, thinning out */
     return c; });
 }
 // ================= WATER: a scrolled texture =================
@@ -142,13 +146,13 @@ export function drawBack(g, S, K) {
     g.fillStyle = P.wetL; for (let k = 0; k < 8; k++) { const dx = 6 + ((k * 23) % (wpx - 10)), dy = ((k * 31 + R(time * (full ? 70 : 28))) % (h - 8)); g.globalAlpha = full ? 0.9 : 0.5; g.fillRect(x + dx, y + 6 + dy, 1, 3); } g.globalAlpha = 1;   /* water seeping through, hard when the bank is full behind it */
     g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(x, y, wpx, 1); }
   /* THE NESTS and THE PAINTED HANDS */
-  const n = S.nest; if (n) { const x = R(n.x - cx), y = R(n.y - cy); if (x > -60 && x < vw + 60 && y > -30 && y < vh + 60) { const w = 72, h = 36; g.drawImage(nestArt(w, h, 0), x - w / 2, y - h + 8);
-      const got = Math.min(4, K.questGot()), fx = x - 22; for (let i = 0; i < 4; i++) { const on = i < got, fxx = fx + i * 14, fyy = y - h + 18 + (i & 1) * 2; if (!on) { g.globalAlpha = 0.35; g.fillStyle = '#2a1a10'; g.fillRect(fxx, fyy + 6, 4, 2); g.globalAlpha = 1; continue; }
+  const n = S.nest; if (n) { const x = R(n.x - cx), y = R(n.y - cy); if (x > -60 && x < vw + 60 && y > -30 && y < vh + 60) { const w = 80, h = 44; g.drawImage(nestArt(w, h, 0), x - w / 2, y - h + 4);
+      const got = Math.min(4, K.questGot()), fx = x - 26; for (let i = 0; i < 4; i++) { const on = i < got, fxx = fx + i * 16, fyy = y - h + 6 + (i & 1) * 3; if (!on) { g.globalAlpha = 0.35; g.fillStyle = '#2a1a10'; g.fillRect(fxx, fyy + 6, 4, 2); g.globalAlpha = 1; continue; }
         g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(fxx, fyy + 12); g.lineTo(fxx + 7, fyy - 4); g.stroke(); g.fillStyle = '#c8643a'; for (let k = 0; k < 5; k++) g.fillRect(fxx + k * 1.4, fyy + 9 - k * 3, 3, 2); g.fillStyle = '#7a2e1c'; for (let k = 0; k < 4; k++) g.fillRect(fxx + 3 + k * 1.4, fyy + 10 - k * 3, 2, 1);
         g.globalAlpha = 0.4 + 0.3 * Math.sin(time * 4 + i); g.fillStyle = '#ffe9a0'; g.fillRect(fxx + 7, fyy - 5, 1, 1); g.globalAlpha = 1; } } }
   for (const d of S.L.decor || []) { const x = R(d.x * TS + 8 - cx), y = R((d.y + 1) * TS - cy); if (x < -40 || x > vw + 40 || y < -30 || y > vh + 50) continue;
     if (d.kind === 'nest') g.drawImage(nestArt(30, 16, 1), x - 15, y - 14);
-    else if (d.kind === 'hands') for (let k = 0; k < 4; k++) { const hx = x - 18 + k * 12 + (k & 1) * 3, hy = y - 30 + ((k * 7) % 11); g.drawImage(handArt(k + d.x), hx - 2, hy - 4); } }
+    else if (d.kind === 'hands') for (let k = 0; k < 2; k++) { const hx = x - 16 + k * 26, hy = y - 40 + k * 8; g.drawImage(handArt(k + (d.x & 1) * 2), hx, hy, 28, 31); } }
   /* THE CAVE is cool and dark inside: a blue-black wash over its room (the painted hands glow a little through it) */
   { const cv = (S.L.interiors || []).find(q => q[4] === 'rgCave'); if (cv) { const x = R(cv[0] * TS - cx), y = R(cv[2] * TS - cy), w = (cv[1] - cv[0] + 1) * TS, h = (cv[3] - cv[2] + 1) * TS; if (x < vw && x + w > 0 && y < vh && y + h > 0) { g.fillStyle = 'rgba(14,20,44,0.38)'; g.fillRect(x, y, w, h); } } }
   /* THE VAULT DOOR: woven branches lashed over a frame, a feather sign on it */
@@ -169,6 +173,7 @@ function damFace(w, h, chTiles) {
     return c; });
 }
 
+const SHM = (() => { let sc = null; return (w, h) => { if (!sc || sc[0].width < w) sc = mk(Math.max(w, 640), h); return sc; }; })();
 // ================= OVER THE HEROES: spray, dust in the light, heat at the rim =================
 export function drawOver(g, S, K) {
   const { TS, cx, cy, vw, vh, time } = K;
@@ -182,7 +187,9 @@ export function drawOver(g, S, K) {
   { const lit = Math.max(0, 1 - (cy - 60) / 520); for (let i = 0; i < 46; i++) { const sx = (i * 97.13) % 1, sy = (i * 61.7) % 1, x = ((sx * (vw + 80) - cx * 1.15 + time * (4 + (i % 5) * 2) + 4000 * (vw + 80)) % (vw + 80)), y = ((sy * (vh + 40) - cy * 1.15 + Math.sin(time * 0.5 + i) * 6 + 4000 * (vh + 40)) % (vh + 40));
       const a = (0.1 + 0.5 * lit) * (0.6 + 0.4 * Math.sin(time * 1.3 + i * 2.1)); if (a < 0.04) continue; g.globalAlpha = a; g.fillStyle = lit > 0.3 ? '#ffd8a0' : '#b8a090'; g.fillRect(R(x) - 40, R(y) - 20, i % 4 === 0 ? 2 : 1, 1); } g.globalAlpha = 1; }
   /* HEAT SHIMMER at the RIM ONLY: a wobble through a thin band at the gorge's top edge, and over the dam's plateau floor - the shaded gorge below has none */
-  if (K.shimmer !== false) { const band = (sy0, h, xa, xb) => { if (sy0 > vh || sy0 + h < 0 || xb <= xa) return; for (let y = 0; y < h; y += 3) { const yy = R(sy0 + y); if (yy < 0 || yy > vh - 3) continue; const sh = Math.round(Math.sin(time * 3.1 + y * 0.9 + xa * 0.01) * 1.4); if (sh) g.drawImage(g.canvas, xa, yy, xb - xa, 3, xa + sh, yy, xb - xa, 3); } };
+  if (K.shimmer !== false) { const band = (sy0, h, xa, xb) => { sy0 = R(sy0); if (sy0 > vh || sy0 + h < 0 || xb <= xa) return; const sc = SHM(vw, 64), top = Math.max(0, sy0), hh = Math.min(h, vh - top) - Math.max(0, top - sy0); if (hh <= 0) return;   /* one copy of the band, then strips of it back, each nudged: a self-copy per strip cost a whole-canvas copy each */
+      sc[1].clearRect(0, 0, sc[0].width, sc[0].height); sc[1].drawImage(g.canvas, xa, top, xb - xa, hh, 0, 0, xb - xa, hh);
+      for (let y = 0; y < hh; y += 3) { const sh = Math.round(Math.sin(time * 3.1 + (top + y) * 0.9 + xa * 0.01) * 1.4); if (sh) g.drawImage(sc[0], 0, y, xb - xa, 3, xa + sh, top + y, xb - xa, 3); } };
     band(60 - cy, 44, 0, vw);
     const dam = S.channels.find(c => c.id === 'dam'); if (dam) band(22 * TS - 30 - cy, 30, Math.max(0, (dam.x0 - 14) * TS - cx), Math.min(vw, (dam.x1 + 15) * TS - cx)); }
 }
