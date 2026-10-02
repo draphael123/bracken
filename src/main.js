@@ -5999,7 +5999,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
   if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing */
-  if (e.t === 'grindylow') { const k = CNF.grindylowTake(e); if (!k) { SFX.splash && SFX.splash(); return; } dmg *= k; }   /* THE FOG CANAL: under the water nothing finds it; the ripple knocks it up; out of the water it takes double */
+  if (e.t === 'grindylow') { const k = CNF.grindylowTake(e); if (!k) { SFX.splash && SFX.splash(); return; } dmg *= k; }
+  if (e.t === 'willowisp') { dmg = CNF.wispTake(e, dmg); if (!dmg) { SFX.zap && SFX.zap(); ringAt(e.x, e.y - 6, 14, '#a0ffd2', 0.4); return; } }   /* (claude/canalfix3) THE WISP: popped, an ember that re-forms once */   /* THE FOG CANAL: under the water nothing finds it; the ripple knocks it up; out of the water it takes double */
   if(e.behind)return;   /* (claude/fairfix3) a mummer riding a chair-o-plane's chair round the back of the mast */
   if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake'||e.mode==='realmTell')return;
    if(realmWarded(e)&&!(e.open>0)){realmWardHit(e);SFX.clank();SFX.crack();shakeCam(2);ringAt(e.x,e.y-22,26,REALM.col[e.realm.kind][1],0.3);sparks(e.x,e.y-24,P.face,8);return;}}   /* WARDED (claude/archfix): a clang, a flare of his ward, the word over him (drawn by drawRealmFx: number() drops any sentence not a move word, so the old line here was never on the screen) and the banner naming the opening again */   /* IN A REALM his ward holds until its one opening (src/mage-realms.js) */   /* between two places, he is in neither */
@@ -20293,7 +20294,7 @@ const CNX = { T, L: () => L, movers: () => movers, enemies: () => enemies, isSol
   checkpoint: () => (typeof checkpoint !== 'undefined' && checkpoint && L && L.START && !(checkpoint.x === L.START.x * TS + 8 && checkpoint.y === (L.START.y + 1) * TS)) ? checkpoint : null, hurtHero: (x, d, o) => damagePlayer(x, d, o),
   solidUnder: (x, y) => { const t = tileAt(Math.floor(x / TS), Math.floor((y + 2) / TS)); return isSolid(Math.floor(x / TS), Math.floor((y + 2) / TS)) || isOneWay(t); }, makeCanvas: (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; } };
 /* the grindylow's and the wisp's context (src/canal-foes.js) */
-const CNFX = { hero: () => P, barge: () => CANAL && CANAL.barge, surfaceAt: x => CNH.surfaceAt(CANAL, CNX, x), solidAt: (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return isSolid(tx, ty) || isOneWay(tileAt(tx, ty)); },
+const CNFX = { hero: () => P, barge: () => CANAL && CANAL.barge, solid: (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)), surfaceAt: x => CNH.surfaceAt(CANAL, CNX, x), solidAt: (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return isSolid(tx, ty) || isOneWay(tileAt(tx, ty)); },
   press: () => ({ jump: jumpPress, atk: atkPress, left: leftPress, right: rightPress }), hurtHero: (x, d, o) => damagePlayer(x, d, o), mark: (e, txt, col) => number(e.x, e.y - (e.h || 10) - 10, txt, col), sfx: SFX,
   hint: (k, msg) => CNH.tellHint(CANAL, CNX, k, msg), ring: (x, y, r, col) => ringAt(x, y, r, col, 0.4), cleared: (x, y) => CNH.clearedAt(CANAL, x, y) };
 function canalReset() { CANAL = L && L.canal ? CNH.canalReset(CNX) : null;

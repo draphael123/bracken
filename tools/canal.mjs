@@ -119,6 +119,14 @@ if (D) {
     for (let i = 0; i < 120; i++) { hero.x += 0.8; w.anim += DT; F.stepWisp(w, DT, X); } ok(w.x > hero.x + 20, 'the wisp did not keep ahead of the hero along its line');
     hero.x = w.x - 10; hero.y = w.y + 10; for (let i = 0; i < 120; i++) { w.anim += DT; F.stepWisp(w, DT, X); } ok(marks.includes('!') && hurt >= 1, 'the wisp did not gutter (!) and flare at a hero beside it');
     cleared = true; for (let i = 0; i < 300; i++) { w.anim += DT; F.stepWisp(w, DT, X); } ok(w.mode === 'shy' && Math.hypot(w.x - w.hx, w.y - w.hy) < 8, 'in air a horn has cleared, the wisp did not shy back to where it started');
+    /* (claude/canalfix3) THE EMBER WISP'S AI, COLD: it harasses (no blow lands before its told !), darts, falls away; popped it is an ember that re-forms ONCE */
+    { const h = { x: 400, y: 300, dead: false }, q = F.newWisp({ t: 'willowisp', x: 440, y: 300, anim: 0, hp: 1, lure: [27, 18] }, TS); let hits = 0, toldFirst = null; const mk2 = [];
+      const X2 = { hero: () => h, cleared: () => false, solid: () => false, hurtHero: () => { hits++; if (toldFirst === null) toldFirst = mk2.includes('!'); }, mark: (e, t) => mk2.push(t), sfx: {}, hint: () => {}, ring: () => {} };
+      q.lured = true; for (let i = 0; i < 60 * 12; i++) { q.anim += DT; F.stepWisp(q, DT, X2); }
+      ok(hits >= 3 && toldFirst === true, 'the wisp does not harass (darts that land, each told first): ' + hits + ' darts, told first ' + toldFirst);
+      ok(F.wispTake(q, 5) === 0 && q.mode === 'spark', 'a popped wisp did not leave an ember to re-form');
+      for (let i = 0; i < 60 * 3; i++) { q.anim += DT; F.stepWisp(q, DT, X2); } ok(q.reformed && q.mode !== 'spark' && F.wispTake(q, 5) === 5, 'the wisp did not re-form once (and only once)');
+      const z = F.newWisp({ t: 'willowisp', x: 440, y: 300, anim: 0, hp: 1 }, TS); F.wispTake(z, 5); ok(F.wispTake(z, 1) >= 1, 'a blow on the ember does not put it out'); }
   }
 }
 
