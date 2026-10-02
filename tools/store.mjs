@@ -29,7 +29,7 @@ const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.deepEqual(ids, S.TAB_IDS, 'main.js STORE_TABS and src/store.js TABS disagree: ' + ids + ' vs ' + S.TAB_IDS);
   assert.deepEqual(S.TAB_IDS.slice(0, 5), ['heroes', 'skins', 'weapons', 'charms', 'skills'], "Daniel's five tabs come first, in order");
   for (const [k, e] of Object.entries(S.ENTRIES)) assert.ok(S.TAB_IDS.includes(e.tab), 'entry ' + k + ' opens a tab that does not exist: ' + e.tab);
-  assert.deepEqual(Object.keys(S.SHOP_START).sort(), ['shop', 'shopCrag', 'shopSea'], 'the walk-in rooms are the three shop levels');
+  assert.deepEqual(Object.keys(S.SHOP_START).sort(), ['shop', 'shopCrag', 'shopSea', 'shopWell'], 'the walk-in rooms are the four shop levels (claude/welltown added THE WELL STORE)');
   for (const t of Object.values(S.SHOP_START)) assert.ok(S.TAB_IDS.includes(t));
   assert.equal(S.stepTab(0, -1), S.TAB_IDS.length - 1); assert.equal(S.stepTab(S.TAB_IDS.length - 1, 1), 0); assert.equal(S.stepTab(2, 1), 3);
   assert.equal(S.tabIndex('skills'), 4); assert.equal(S.tabIndex('nope'), 0);
@@ -74,7 +74,7 @@ wood();BK.ui.openMenu('play');BK.ui.menuI=BK.ui.menuRows().indexOf('Store');BK.s
 wood();BK.ui.openMenu('play');BK.ui.menuI=BK.ui.menuRows().indexOf('Skills');BK.step(2);BK.press('confirm');BK.sim(2);reach.pauseSkills=[BK.state,tabNow()];BK.press('pause');BK.sim(2);
 reach.menuHasEquip=BK.ui.menuRows().includes('Equip');
 reach.shops={};const shopRows={};
-for(const id of ['shop','shopCrag','shopSea']){fresh();BK.load(levelAt(id));BK.state='play';BK.sim(60);const kp=BK.props().find(p=>p.t==='npc'&&p.kind==='keeper');if(!kp){F(id+': no keeper');continue;}BK.P.x=kp.x;BK.P.y=kp.y;BK.sim(2);BK.press('talk');BK.sim(2);
+for(const id of ['shop','shopCrag','shopSea','shopWell']){fresh();BK.load(levelAt(id));BK.state='play';BK.sim(60);const kp=BK.props().find(p=>p.t==='npc'&&p.kind==='keeper');if(!kp){F(id+': no keeper');continue;}BK.P.x=kp.x;BK.P.y=kp.y;BK.sim(2);BK.press('talk');BK.sim(2);
  reach.shops[id]=[BK.state,tabNow(),BK.ui.storeBack];shopRows[id]=rows();BK.press('pause');BK.sim(2);reach.shops[id].push(BK.state);}
 out.reach=reach;out.sameStock=Object.values(shopRows).every(v=>v===stock);out.tabIds=BK.ui.storeRows().map(t=>t.id);
 /* D. a fight refuses the store */
@@ -161,7 +161,7 @@ for(const [name,old] of Object.entries(SEEDS)){
   if(how==='map')BK.ui.storeOpen('map','heroes');else if(how==='skills')BK.ui.storeOpen('map','skills');else if(how==='pause'){BK.state='play';BK.enemies().forEach(e=>e.alive=false);BK.ui.storeOpen('menu','heroes');}
   else{BK.load(levelAt(how));BK.state='play';BK.sim(60);const kp=BK.props().find(p=>p.t==='npc'&&p.kind==='keeper');BK.P.x=kp.x;BK.P.y=kp.y;BK.sim(2);BK.press('talk');BK.sim(2);}
   return BK.state==='store';};
- for(const how of ['map','skills','pause','shop','shopCrag','shopSea']){
+ for(const how of ['map','skills','pause','shop','shopCrag','shopSea','shopWell']){
   if(!open(how)){rec.problems.push(how+': did not open');continue;}
   const R=BK.ui.storeRows();rec.entries[how]=JSON.stringify(R);
   /* EVERYTHING IT OWNED is owned, and what it wore is worn; EVERYTHING IT COULD BUY is buyable; what was locked is locked */

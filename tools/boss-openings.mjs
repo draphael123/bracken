@@ -32,6 +32,8 @@
                        the mud, open; a minute of her left alone opens nothing (claude/lockkeeper)
      THE LAMPREEVE, THE HEADLESS PLOUGHMAN, THE HOMUNCULUS (minis, claude/weakboss): strike the lamp he hoods / bait the plough into the
                        trough or the fence / make a trick miss you - each against the same thing left alone, in tools/weak-bosses.mjs
+     THE BANDIT KING   pour your skin on him while he burns (he walks through his own fire): the steam blinds him, open; a pour while he does not burn runs
+                       off him, and a minute of him left alone opens nothing (claude/welltown)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -192,6 +194,13 @@ try {
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.W.stand;P.y=G.walk;P.vy=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let op=0,mode=null;for(let i=0;i<60*6&&!(op>0);i++){P.hp=P.maxHp;P.x=G.E.paddle.x-14;P.y=G.walk;P.vy=0;P.face=1;b.x=Math.min(b.x,G.E.face-90);if(!S.pad.E.open&&!(S.pad.E.cd>0)&&P.atk<0)BK.press('atk');BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='stranded')mode='stranded';}
    out.greenteeth={alone:+alone.toFixed(1),mode,open:+op.toFixed(1),drains:S.n.drain};}
+  /* THE BANDIT KING (claude/welltown): a minute of him left alone - jars, fire, charges - opens nothing; a pour at him while he is not burning runs off him;
+     a pour while he burns (he walked through his own fire) blinds him in the steam - open (THE WELL TOWN holds him) */
+  {const b=boot('welltown');const F=BK.banditKingHands().fight(),A=BK.L.arena,P=BK.P;let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+40;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
+   F.B.data.burning=0;F.B.data.fires=[];P.skin.sips=3;P.x=b.x-20;P.face=1;let dry=0;BK.press('talk');for(let i=0;i<40;i++){P.hp=P.maxHp;BK.sim(1);dry=Math.max(dry,b.open||0);}const dryPours=F.n.wasted;
+   let op=0,mode=null;for(let i=0;i<60*20&&!(op>0);i++){P.hp=P.maxHp;if(!(F.B.data.burning>0)&&F.B.mode==='walk')F.B.data.fires=[{x:F.B.x,t:3}];if(F.B.data.burning>0&&F.B.openCd<=0){P.skin.sips=3;P.x=b.x-20;P.face=1;BK.press('talk');}BK.sim(1);if(b.mode==='open')mode='open';op=Math.max(op,b.open||0);}
+   out.banditking={alone:+alone.toFixed(1),dry:+dry.toFixed(1),dryPours,mode,open:+op.toFixed(1)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -268,6 +277,9 @@ try {
   assert.ok(r.greenteeth.mode === 'stranded' && r.greenteeth.open >= 3, 'the lock drained with her at the gate and she was not stranded open for 3 s or more (the boss rule; claude/greenwire raised this from 1.4: her stranded window was 1.8 s): ' + JSON.stringify(r.greenteeth));
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (PUPPETEER3: drop both puppets - blows or cuts - and he is dragged down to the boards, open) */ 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
+  assert.equal(r.banditking.alone, 0, 'THE BANDIT KING: a minute of him left alone opened him: ' + JSON.stringify(r.banditking));
+  assert.ok(r.banditking.dry === 0 && r.banditking.dryPours >= 1, 'a pour at him while he was not burning opened him (or was not counted as wasted): ' + JSON.stringify(r.banditking));
+  assert.ok(r.banditking.mode === 'open' && r.banditking.open >= 3, 'a pour while he burned did not blind him open for 3 s or more (the boss rule): ' + JSON.stringify(r.banditking));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }
