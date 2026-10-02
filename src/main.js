@@ -25525,16 +25525,28 @@ function drawCutArc(cx, cy) {
     g.globalAlpha = (SET.reduceMotion ? 0.35 : 1) * fade * [0.9, 0.6, 0.35, 0.2][i]; g.strokeStyle = i === 0 ? '#ffffff' : i === 1 ? '#fff6e0' : col; g.lineWidth = [1.5, 2.5, 4, 6][i] + (P.cutStage - 1) * 0.5;
     g.beginPath(); if (f > 0) g.ellipse(x, y, 24 - i, 22 - i, 0, tail, head); else g.ellipse(x, y, 24 - i, 22 - i, 0, Math.PI - head, Math.PI - tail); g.stroke(); }
   g.restore(); return true; }
+/* THE AIR UP-SLASH SMEAR (claude/airupart; combat3 drew one thin arc): a crisp tapered crescent the blade's tip drew, front to back over his head - a
+   white core inside a coloured body, fat in the middle and fine at both ends, swept in with the live blow (0.02-0.17 s) and let fade through the follow-through
+   (to 0.24 s, art only: the hit box is unchanged). The pivot is his shoulder and the radius the blade's reach, read off the hand-drawn frames (chars.js AIRUP_*). */
+function drawAirUpCrescent(cx, cy) {
+  if (P.atk < 0.02 || P.atk >= 0.24) return;
+  const k = Math.min(1, (P.atk - 0.02) / 0.15), fade = P.atk < 0.17 ? 1 : 1 - (P.atk - 0.17) / 0.07, x = Math.round(P.x - cx), y = Math.round(P.y - cy) - 12, f = P.face;
+  const R = (UP_SLASH.air[hero()] || UP_SLASH.air.knight).top - 14, head = -0.35 - 2.4 * Math.min(1, k * 1.5), tail = Math.min(-0.35, head + 1.5 - 0.5 * (1 - fade)), col = specialCol();
+  const ring = (rOut, w0, a0, a1) => { const n = 14, pts = [], w = w0 * Math.min(1, Math.max(0, (a0 - a1) / 1.2));   /* (a short arc is a fine line, not a blob) */
+    for (let i = 0; i <= n; i++) { const t = i / n, an = a1 + (a0 - a1) * t, th = w * Math.sin(Math.PI * Math.pow(t, 0.8)); pts.push([an, th]); }
+    g.beginPath();
+    pts.forEach(([an, th], i) => { const px = x + f * Math.cos(an) * rOut, py = y + Math.sin(an) * rOut; if (i) g.lineTo(Math.round(px), Math.round(py)); else g.moveTo(Math.round(px), Math.round(py)); });
+    for (let i = pts.length - 1; i >= 0; i--) { const [an, th] = pts[i], ri = rOut - th; g.lineTo(Math.round(x + f * Math.cos(an) * ri), Math.round(y + Math.sin(an) * ri)); }
+    g.closePath(); g.fill(); };
+  g.save(); g.globalCompositeOperation = 'lighter'; const al = (SET.reduceMotion ? 0.4 : 1) * fade;
+  g.fillStyle = col[1]; g.globalAlpha = 0.45 * al; ring(R + 1, 8, tail, head);          /* the soft body */
+  g.fillStyle = col[0]; g.globalAlpha = 0.8 * al; ring(R, 5, tail, head);                /* the colour */
+  g.fillStyle = '#ffffff'; g.globalAlpha = 0.95 * al; ring(R - 0.5, 2, Math.min(-0.35, head + 0.9), head);   /* the white core, at the leading edge */
+  g.restore(); }
 function drawSwing(cx, cy) {
   drawRiseCrescent(cx, cy); drawRiposteGlint(cx, cy);
   if (drawCutArc(cx, cy)) return;
-  if (!P.dead && P.atk >= 0 && !P.heavy && P.swingKind === 'airUp') {   /* (claude/combat3) THE AIR UP-SLASH: a crescent over his head, front to back */
-    if (P.atk < 0.02 || P.atk >= 0.17) return;
-    const k = (P.atk - 0.02) / 0.15, x = Math.round(P.x - cx), y = Math.round(P.y - cy) - 12, f = P.face, r = (UP_SLASH.air[hero()] || UP_SLASH.air.knight).top - 14;
-    const head = -0.35 - 2.4 * Math.min(1, k * 1.6), tail = Math.min(-0.35, head + 1.1);
-    g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = specialCol()[0]; g.lineWidth = 2; g.globalAlpha = SET.reduceMotion ? 0.3 : 0.6 * (1 - k * 0.6); g.beginPath();
-    if (f > 0) g.arc(x, y, r, head, tail); else g.arc(x, y, r, Math.PI - tail, Math.PI - head); g.stroke(); g.restore(); return;
-  }
+  if (!P.dead && P.atk >= 0 && !P.heavy && P.swingKind === 'airUp') { drawAirUpCrescent(cx, cy); return; }   /* (claude/airupart) */
   if (!P.dead && P.atk >= 0 && !P.heavy && (P.swingKind === 'rise' || P.swingKind === 'sweep')) {
     const rising = P.swingKind === 'rise', end = rising ? 0.17 : 0.15;
     if (P.atk < 0.02 || P.atk >= end) return;

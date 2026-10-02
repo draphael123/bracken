@@ -307,17 +307,35 @@ function storeFrames(card, knight, mode) {
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
   return { R: F };
 }
+/* THE AIR UP-SLASH TABLES (claude/airupart). Coordinates are pixels from his feet (x forward, y up is negative), angles in degrees from straight ahead,
+   counter-clockwise. A beat is: body lean/lift (dx, dy), the legs and how far they are drawn up, the helm lift (hy), the shoulder lift, the plume, and for the
+   Pyromancer her trail/hem/cowl; the free arm (arm2) flings back for balance. */
+const AIRUP_BODY = [
+  { dx: -1, dy: 1, legs: 'jump', legsDy: 0, hy: 0, sho: 0, plume: 1, arm2: 0, trail: 1, feet: [[11, 17], [16, 16]], hemW: 12, cowl: 0 },     /* 0 the coil: crouched, the blade low and forward */
+  { dx: 1, dy: -2, legs: 'jump', legsDy: -1, hy: 0, sho: 1, plume: 2, arm2: 2, trail: 2, feet: [[11, 15], [16, 14]], hemW: 11, cowl: 1 },   /* 1 the rise: stretching up, the blade through the front */
+  { dx: -1, dy: -3, legs: 'jump', legsDy: -3, hy: -1, sho: 1, plume: 2, arm2: 3, trail: 3, feet: [[11, 14], [15, 13]], hemW: 10, cowl: 2 }, /* 2 the arch: long and bowed back, the blade straight over him */
+  { dx: -2, dy: -1, legs: 'jump2', legsDy: -1, hy: 0, sho: 0, plume: 1, arm2: 1, trail: 2, feet: [[11, 16], [16, 15]], hemW: 11, cowl: 0 },   /* 3 the follow-through: the blade gone on behind, the body coming down */
+];
+const AIRUP_ANG = [4, 48, 102, 134], AIRUP_HAND = [[4, -9], [7, -15], [3, -22], [-1, -18]];
+const AIRUP_WEAPON = { sword: { len: 21 }, cutlass: { len: 19, free: true }, greatsword: { len: 23, two: true, hand: [[3, -8], [6, -14], [2, -20], [-1, -17]] },
+  maul: { len: 21, two: true, hand: [[3, -8], [6, -14], [2, -20], [-1, -17]] }, spear: { len: 27, free: true, hand: [[3, -8], [6, -13], [2, -17], [-1, -15]] },
+  staff: { len: 22, two: true }, stave: { len: 23, two: true } };
 function directionalPoses(F, weapon, { make = knightFrame, extra = {}, pyro = false, scale = 1 } = {}) {
   padHeroFrames(F);
   const ay = pyro ? 20 : 22, ax = 16, reach = weapon === 'spear' ? 40 : ['maul', 'greatsword', 'staff'].includes(weapon) ? 34 : 28;
   const pose = (kind, i) => {
-    /* THE AIR UP-SLASH (claude/combat3): in the air, up + attack - the blade from in front of him up over his head and on behind it, legs tucked */
-    if (kind === 'airUp') { const L2 = weapon === 'spear' ? 1.15 : 1, dxA = [0, 0, 1, 0][i], dyA = [-1, -2, -2, -1][i];
-      const endA = [[16, -18], [10, -36], [-2, -42], [-12, -30]][i].map((v, j) => Math.round(v * (j ? L2 : 1))), handA = [[3, -12], [3, -19], [1, -22], [-2, -18]][i];
-      const xyA = ([x, y]) => [ax + Math.round(x / scale) - dxA, ay + Math.round(y / scale) - dyA], gA = xyA(handA), tA = xyA(endA), armA = [16, 12, ...gA];
-      if (pyro) return pyroFrame({ top: ATTACK_HEADROOM, wide: 32, lean: dxA, dy: dyA, sit: 0, trail: i === 1 || i === 2 ? 3 : 1, feet: [[11, 16], [16, 15]], hemW: 11,
-        staff: [...gA, ...tA], arm: armA, arm2: [11, 11, gA[0] - 3, gA[1] + 2], cowl: i % 3, flame: i, flick: i % 2 });
-      return make({ ...extra, top: ATTACK_HEADROOM, wide: 32, dx: dxA, dy: dyA, legs: 'jump2', arm: armA, [weapon]: [...gA, ...tA], plume: i === 1 || i === 2 ? 2 : 1, sho: i === 1 ? 1 : 0 }); }
+    /* THE AIR UP-SLASH, hand-drawn (claude/airupart; combat3 had a procedural stand-in): the blade from low in front, up through the front,
+       over his head and on behind it, in the four beats the timing already has (wind-up 0.02 s, the rise to 0.08, the blade OVER him until 0.17 -
+       the live box - then the follow-through). Each beat is a body (lean, lift, helm, shoulders, tucked legs, cloth) and a hand with the weapon at
+       an angle; the weapon is the same length in every beat, so the arc reads as one swing. */
+    if (kind === 'airUp') { const B = AIRUP_BODY[i], W2 = AIRUP_WEAPON[weapon] || AIRUP_WEAPON.sword, ang = (W2.ang ? W2.ang[i] : AIRUP_ANG[i]) * Math.PI / 180;
+      const hand = [...(W2.hand ? W2.hand[i] : AIRUP_HAND[i])], minY = -(ay + ATTACK_HEADROOM - (pyro ? 5 : 2));
+      let len = W2.len; const tipAt = l => [hand[0] + Math.cos(ang) * l, hand[1] - Math.sin(ang) * l];
+      while (len > 8 && (tipAt(len)[1] < minY || tipAt(len)[0] < -15)) len -= 0.5;   /* (a frame is 24 px of headroom and 32 wide: the blade shortens to stay inside it) */
+      const tipR = tipAt(len).map(Math.round), xyA = ([x, y]) => [ax + x - (pyro ? 0 : B.dx), ay + y - B.dy], gA = xyA(hand), tA = xyA(tipR), armA = [16, 12 + (B.sho ? -1 : 0), ...gA];
+      const arm2 = W2.two ? [11, 11, gA[0] - 2 + (i === 0 ? 1 : 0), gA[1] + 2] : W2.free && B.arm2 ? [11, 11, 8 - B.dx, 15 + B.arm2] : null;   /* (a two-hander holds on with both; the pirate and the warden fling the free arm out for balance; the shielded knight keeps it on the kite) */
+      if (pyro) return pyroFrame({ top: ATTACK_HEADROOM, wide: 32, lean: B.dx, dy: B.dy, sit: 0, trail: B.trail, feet: B.feet, hemW: B.hemW, staff: [...gA, ...tA], arm: armA, arm2: arm2 || [11, 11, gA[0] - 3, gA[1] + 2], cowl: B.cowl, flame: i, flick: i % 2 });
+      return make({ ...extra, ...(W2.extra ? W2.extra[i] : {}), top: ATTACK_HEADROOM, wide: 32, dx: B.dx, dy: B.dy, legs: B.legs, legsDy: B.legsDy, hy: B.hy, sho: B.sho, plume: B.plume, arm: armA, ...(arm2 ? { arm2 } : {}), [weapon]: [...gA, ...tA] }); }
     const rise = kind === 'rise', dx = [-1, 1, 2, 1][i], dy = rise ? [2, 0, -1, 0][i] : [2, 3, 3, 1][i];
     const end = rise ? [[18, -3], [weapon === 'spear' ? 14 : 24, -25], [weapon === 'spear' ? 8 : 12, weapon === 'spear' ? -43 : -39], [18, -24]][i] : [[14, -12], [reach - 5, -5], [reach - 1, -4], [20, -10]][i];
     const hand = rise ? [[1, -7], [6, -15], [5, -21], [4, -12]][i] : [[1, -9], [5, -6], [7, -6], [3, -8]][i];
