@@ -78,6 +78,13 @@ function jackArch(l, r, v) {
 }
 /* COBBLES on the top of the street and the quays: rounded setts with a lit crown and the dark between them */
 function cobbles(g, v) { for (let row = 0; row < 2; row++) for (let x = -(row ? 2 : 0) - v; x < 16; x += 4) { rect(g, x + 1, 1 + row * 2, 3, 2, row ? CT.stone1 : CT.stone2); px2(g, x + 1, 1 + row * 2, CT.stone3); px2(g, x + 3, 2 + row * 2, CT.stone0); } }
+/* (claude/canalfix3) A GRATE: heavy iron bars in a stone frame, the water dark behind them - the line Jenny cannot cross into a safe swim */
+function grate(v, vertical) { return once('gr' + v + vertical, () => { const [c, g] = canvas(16, 16); rect(g, 0, 0, 16, 16, '#0c1820');
+  if (vertical) { for (let x = 1; x < 16; x += 4) { rect(g, x, 0, 2, 16, '#3a4048'); rect(g, x, 0, 1, 16, '#6a747c'); } rect(g, 0, 7, 16, 1, '#2a3036'); }
+  else { for (let y = 1; y < 16; y += 4) { rect(g, 0, y, 16, 2, '#3a4048'); rect(g, 0, y, 16, 1, '#6a747c'); } for (let x = 3; x < 16; x += 6) rect(g, x, 0, 1, 16, '#2a3036'); }
+  for (let k = 0; k < 3; k++) px2(g, (v * 5 + k * 6) % 16, (k * 7 + v) % 16, '#1e3a4a'); return c; }); }
+/* A HATCH: an iron grate let into a floor (stand on it; drop through it) */
+function hatch() { return once('hatch', () => { const [c, g] = canvas(16, 16); rect(g, 0, 0, 16, 4, '#2a3036'); rect(g, 0, 0, 16, 1, '#8a949c'); for (let x = 1; x < 16; x += 3) rect(g, x, 1, 1, 3, '#0c1820'); rect(g, 0, 4, 16, 1, '#0c0e10'); return c; }); }
 /* AN IRON LADDER: two flat-bar stiles and round rungs, the canal's own (up a lock wall, a warehouse front) */
 function ironLadder(v) {
   return once('lad' + v, () => { const [c, g] = canvas(16, 16); rect(g, 2, 0, 2, 16, '#2a3036'); rect(g, 12, 0, 2, 16, '#2a3036'); rect(g, 2, 0, 1, 16, '#5a646c'); rect(g, 12, 0, 1, 16, '#5a646c');
@@ -110,6 +117,7 @@ export function canalTile(t, x, y, at, ctx) {
       if ((x === sx || x === ex) && y < R) return K.gate[(y + (x === sx ? 0 : 1)) % 3 === 0 ? 1 : (y > R - 4 ? 2 : 0)];
       if (y === R && x > sx && x < ex) return K.bed[x % 3]; if (y === R + 1 && x > sx && x < ex) return K.bed2;
       if (y === R - 2 && x >= sx + 15 && x <= sx + 24) return K.deck; if (y === R - 1 && x >= sx + 15 && x <= sx + 24) return K.hull; }
+    if ((ctx.grates || []).some(([a, b, c, d]) => x >= a && x <= b && y >= c && y <= d)) return grate(v, (ctx.grates || []).some(([a, b]) => a === b && a === x));   /* (claude/canalfix3) */
     const g = (ctx.gates || []).find(q => q.x === x && y >= q.top && y <= q.bot); if (g) return gateLeaf(y === g.top, (y + x) % 3 === 0 ? 1 : 0);
     const top = air(0, -1), l = air(-1, 0), r = air(1, 0), bl = air(0, 1);
     if (top) return coping(v, l, r);
@@ -127,6 +135,7 @@ export function canalTile(t, x, y, at, ctx) {
     if (inChamber) { const sx = lk.sx, ex = sx + 39, R = lk.R, K = skins(); if (y === R - 8 && (x <= sx + 4 || x >= ex - 4)) return K.walk; if (x <= sx + 3 || x >= ex - 3) return K.waler; }
     const sameRow = k => at(x + k, y) === t, L0 = !sameRow(-1), R0 = !sameRow(1);
     /* (claude/canalfix3, Daniel 10-02: TOO MUCH WOOD) timber only on the odd jetty; the towpaths and banks are stone ledges, the warehouse's and the mill's floors iron and brick */
+    if (ctx.hatches && ctx.hatches.has(x + ',' + y)) return hatch();   /* (claude/canalfix3) the hatch into a safe swim */
     if ((ctx.jetties || []).some(([x0, x1, row]) => y === row && x >= x0 && x <= x1)) return towboards(L0, R0, v);
     if ((ctx.rooms || []).some(([x0, x1, y0, y1]) => x >= x0 && x <= x1 && y > y0 && y <= y1)) return jackArch(L0, R0, v);
     return stoneLedge(L0, R0, v);

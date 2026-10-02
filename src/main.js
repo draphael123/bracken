@@ -20299,7 +20299,7 @@ const CNFX = { hero: () => P, barge: () => CANAL && CANAL.barge, solid: (x, y) =
   hint: (k, msg) => CNH.tellHint(CANAL, CNX, k, msg), ring: (x, y, r, col) => ringAt(x, y, r, col, 0.4), cleared: (x, y) => CNH.clearedAt(CANAL, x, y) };
 function canalReset() { CANAL = L && L.canal ? CNH.canalReset(CNX) : null;
   if (CANAL) for (const e of enemies) { const src = L.ents[+String(e.xpKey || '').split('.')[0]]; if (src && src.canal && src.t === e.t) Object.assign(e, src.canal); }   /* a bargee's hook, an archer's eyes in the fog (the ent's canal flags) */
-  if (window.BK) Object.assign(window.BK, { canal: () => CANAL }); }
+  if (window.BK) Object.assign(window.BK, { canal: () => CANAL, canalSwims: () => ((L.canal && L.canal.swims) || []).map(q => [Math.round((q.x0 + q.x1) / 2), q.surf + 3]) }); }   /* (claude/canalfix3) the safe swims, for tools/canalfix3-shots.mjs */
 /* ---------- THE CHASE ENGINE (claude/chase, src/chase.js): L.chases = [spec], opt-in. The state is in memory, never saved. ---------- */
 let chases = [], chaseBeamCd = 0, chaseMusicOn = false;
 function chasesLoad() { chases = (L.chases || []).map(c => ({ sp: chaseSpec(c), st: newChase() })); chaseBeamCd = 0; chaseMusicOn = false; }

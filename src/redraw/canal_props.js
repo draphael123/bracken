@@ -124,9 +124,14 @@ export function drawPost(g, p, x, y, time) {
 
 /* ============================== THE WATER ============================== */
 export function drawWater(g, st, pools, cx, cy, VW, VH, time, lanterns, wisps) {
+  /* (claude/canalfix3, Daniel: "GREEN = HERS") a SAFE SWIM is clear dark blue, a clean sheen and no weed: it reads apart from her murky green at night, in the fog */
+  for (const p of pools) { if (!p.safeSwim || p.x1 < cx || p.x0 > cx + VW || p.y > cy + VH || (p.bottom ?? p.y) < cy) continue; const x0 = Math.max(p.x0, cx) - cx, x1 = Math.min(p.x1, cx + VW) - cx, sy = R(p.y - cy), h = (p.bottom ?? p.y + 64) - p.y;
+    g.fillStyle = 'rgba(20,70,150,0.55)'; g.fillRect(x0, sy, x1 - x0, h); g.fillStyle = 'rgba(120,190,255,0.5)'; g.fillRect(x0, sy, x1 - x0, 1);
+    g.fillStyle = 'rgba(170,220,255,0.35)'; for (let x = p.x0 - (p.x0 % 12); x < p.x1; x += 12) { const xx = x - cx + R(Math.sin(time * 1.1 + x * 0.2) * 2); if (xx > x0 && xx < x1 - 3) g.fillRect(xx, sy + 3 + ((x / 12) % 3) * 4, 3, 1); } }
   for (const p of pools) { if (!p.canal || p.canal === 'dock' || p.dry) continue; if (p.x1 < cx || p.x0 > cx + VW || p.y > cy + VH || p.y < cy - 20) continue;
     const x0 = Math.max(p.x0, cx), x1 = Math.min(p.x1, cx + VW), sy = R(p.y - cy), bot = p.bottom !== undefined ? p.bottom - cy : VH;
     g.save(); g.beginPath(); g.rect(x0 - cx, sy, x1 - x0, Math.max(2, Math.min(bot, VH) - sy)); g.clip();
+    g.fillStyle = 'rgba(46,90,40,0.34)'; g.fillRect(x0 - cx, sy, x1 - x0, Math.min(bot, VH) - sy); g.fillStyle = 'rgba(120,170,70,0.25)'; for (let x = x0 - (x0 % 23); x < x1; x += 23) g.fillRect(x - cx + R(Math.sin(time * 0.5 + x) * 3), sy + 1, 6, 1);   /* (claude/canalfix3) HER water: murky green, a scum of weed on it */
     g.fillStyle = 'rgba(150,196,210,0.22)'; for (let x = x0 - (x0 % 14); x < x1; x += 14) { const w = 5 + ((x / 14) % 3) * 3; g.fillRect(x - cx + R(Math.sin(time * 0.9 + x * 0.13) * 2), sy + 2 + ((x / 14) % 4) * 3, w, 1); }   /* a sheen */
     for (const l of lanterns) { if (l.x < x0 - 30 || l.x > x1 + 30) continue; const lx = l.x - cx;
       for (let i = 0; i < 9; i++) { const yy = sy + 2 + i * 3, wob = Math.sin(time * 3 + i * 1.3 + l.x) * (1 + i * 0.25), w = Math.max(2, 7 - i * 0.6 + Math.sin(time * 5 + i) * 1.2); g.globalAlpha = (0.55 - i * 0.055) * (l.k || 1); g.fillStyle = l.col || P.amber; g.fillRect(R(lx + wob - w / 2), yy, R(w), 1); }
@@ -195,8 +200,9 @@ export function barrel(g, x, floorY, w, h) { const y = floorY - h; rect(g, x + 1
 /* ============================== THE ROOMS (what stands behind the tiles): the warehouse, the mill, Jenny's door ============================== */
 const BRICKS = (w, h, a, b, mort) => once('rbr' + w + h + a + b, () => { const [c, g] = canvas(w, h); rect(g, 0, 0, w, h, mort); for (let y = 0, row = 0; y < h; y += 5, row++) for (let x = -(row & 1) * 6; x < w; x += 12) { const t = ((x * 7 + y * 13) % 11) / 11; rect(g, x + 1, y + 1, 10, 3, t < 0.2 ? b : a); } return c; });
 export function paintRoom(g, rs, sx, sy, w, h, time) {
-  const room = { cnWarehouse: 1, cnMill: 2, cnDoor: 3 }[rs]; if (!room) return false;
+  const room = { cnWarehouse: 1, cnMill: 2, cnDoor: 3, cnCellar: 4, cnCistern: 4 }[rs]; if (!room) return false;   /* 4: (claude/canalfix3) the safe swims' vaults - bare wet brick */
   g.save(); g.beginPath(); g.rect(sx, sy, w, h); g.clip();
+  if (room === 4) { for (let y = sy; y < sy + h; y += 96) for (let x = sx; x < sx + w; x += 96) g.drawImage(BRICKS(96, 96, '#1a2228', '#222c34', '#0e1418'), x, y); g.restore(); return true; }
   if (room === 1 || room === 3) { g.drawImage(BRICKS(96, 96, room === 1 ? '#2a2224' : '#1c2426', room === 1 ? '#34292b' : '#242e30', room === 1 ? '#161213' : '#10181a'), 0, 0, 96, 96, sx, sy, 96, 96); for (let y = sy; y < sy + h; y += 96) for (let x = sx; x < sx + w; x += 96) g.drawImage(BRICKS(96, 96, room === 1 ? '#2a2224' : '#1c2426', room === 1 ? '#34292b' : '#242e30', room === 1 ? '#161213' : '#10181a'), x, y); }
   else { for (let y = sy; y < sy + h; y += 96) for (let x = sx; x < sx + w; x += 96) g.drawImage(BRICKS(96, 96, '#2c2426', '#382c2c', '#171314'), x, y); }   /* (claude/canalfix3) the mill is brick inside too, not planking */
   /* (claude/canalfix3, Daniel: TOO MUCH WOOD) a fireproof frame: cast-iron columns with a capital, iron beams riveted along */

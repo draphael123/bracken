@@ -53,6 +53,11 @@ export function stepGrindylow(e, dt, X) {
   const G = GRIND, P = X.hero(), S = X.sfx;
   e.modeT -= dt; e.cd -= dt; e.bubT -= dt;
   if (e.aboard) return stepAboard(e, dt, X, P);
+  /* (claude/canalfix3) THE BUMP: it comes for a hero in a SAFE SWIM, hits the iron grate, and cannot get through (the clank and the ring are the lesson) */
+  if (e.bump) { const B = e.bump; B.t += dt; e.mode = 'bump'; const dx = B.x - e.x, dy = B.y - e.y, d = Math.hypot(dx, dy) || 1;
+    if (!B.hit) { const k = Math.min(d, 110 * dt); e.x += dx / d * k; e.y += dy / d * k; if (d < 3) { B.hit = B.t; S.clank && S.clank(); S.splash && S.splash(); X.ring(e.x, e.y, 12, '#9ad8c0'); } }
+    else if (B.t - B.hit > 0.25 && B.t - B.hit < 0.4) { S.clank && S.clank(); X.ring(e.x, e.y, 8, '#9ad8c0'); }
+    if ((B.hit && B.t - B.hit > 1.2) || B.t > 6) { e.bump = null; e.mode = 'dunk'; e.modeT = 1.2; e.cd = GRIND.cd; } e.vx = 0; e.vy = 0; return; }
   const s = X.surfaceAt(e.mode === 'stranded' ? e.x : e.hx) || X.surfaceAt(e.x);
   /* STRANDED: the lock drained away under it, and it is left on the wet steps at the water's new edge - out of the water, weak, and it grabs nobody.
      (claude/canalfix: it is left where a blade finds it, at the waterline, not up the wall where the water was; and it is measured against the

@@ -16,7 +16,7 @@ const GADGET = new Set(['locksluice', 'swingcap', 'foghorn', 'lanternpost']);
 
 /* THE TILE KIT (src/redraw/canal_tiles.js): the level's own data tells it where the water stands, the gates, the bridges and the weed */
 export function canalTile(t, x, y, at, T, L) { const D = L.canal; if (!D) return null;
-  if (!D.tctx) D.tctx = { T, gates: D.gates, bridges: D.bridges, rooms: L.interiors || [], jetties: D.jetties || [], lock: L.lockArena ? { sx: L.lockArena.sx, R: L.lockArena.R } : null, weedCells: new Set((D.weeds || []).flatMap(([x0, x1, row]) => { const o = []; for (let i = x0; i <= x1; i++) o.push(i + ',' + row); return o; })),
+  if (!D.tctx) D.tctx = { T, gates: D.gates, bridges: D.bridges, rooms: L.interiors || [], jetties: D.jetties || [], grates: D.grates || [], hatches: new Set((D.hatches || []).map(([x, y]) => x + ',' + y)), lock: L.lockArena ? { sx: L.lockArena.sx, R: L.lockArena.R } : null, weedCells: new Set((D.weeds || []).flatMap(([x0, x1, row]) => { const o = []; for (let i = x0; i <= x1; i++) o.push(i + ',' + row); return o; })),
     levels: (D.reaches || []).flatMap(r => [...new Set([r.lo, r.hi])].map(row => ({ row, x0: r.x0, x1: r.x1 }))) };
   return CTL.canalTile(t, x, y, at, D.tctx); }
 
@@ -172,6 +172,7 @@ export function canalUpdate(st, H, dt) {
   { const a = st.D.arch; if (a && b.x + b.w >= a[0] * TS - 10 && b.x < (a[1] + 1) * TS && !aboard(st, H)) hint(st, H, 'arch', 'TOO LOW FOR ANYONE STANDING: SHE GOES ON THROUGH THE ARCH WITHOUT YOU. CATCH HER ON THE FAR SIDE.'); }   /* (claude/canalfix, review fix 7: told at the mouth, where she stalled before) */
   if (side && aboard(st, H)) hint(st, H, 'side', 'THE TILLER AMIDSHIPS STEERS HER: STRIKE IT TO TURN HER HELM.');
   clarity(st, H, dt);   /* (claude/canalfix3) */
+  swimStep(st, H, dt);
 }
 /* ---------------- (claude/canalfix3) CLARITY: what holds her, glinted; her lantern swings to it; after ~10 s with no headway, a nudge names it ---------------- */
 export const NUDGE = { after: 10, again: 25, near: 3 * TS };   /* s held before the nudge, s before it says it again, px of headway that counts */
@@ -198,6 +199,16 @@ function clarity(st, H, dt) {
   /* HEADWAY: the hero comes a few tiles nearer the machine than he has been, or strikes it - the clock starts again */
   let d = 1e9; H.eachHero(P => { if (!P.dead) d = Math.min(d, Math.hypot(P.x - tg.prop.x, P.y - tg.prop.y)); }); if (d < C.best - NUDGE.near) { C.best = d; C.t = 0; } if (tg.prop.flash > 0) C.t = 0;
   C.t += dt; if (C.t >= NUDGE.after && (C.said < 0 || st.clock - C.said >= NUDGE.again)) { C.said = st.clock; st.nudges = (st.nudges || 0) + 1; st.lastNudge = CANAL_NUDGE[tg.why]; H.hint(CANAL_NUDGE[tg.why]); }
+}
+/* (claude/canalfix3) THE SAFE SWIMS: the first time a hero swims one, the nearest grindylow on the green side of its grate comes for him, BUMPS THE BARS (a clank,
+   a ring) and cannot get through - GREEN IS HERS, BLUE IS SAFE, taught with no sign. canal-foes.js stepGrindylow runs e.bump */
+function swimStep(st, H, dt) {
+  const pools = H.L().pools || [];
+  for (const sw of st.D.swims || []) { if (sw.taught) continue; const p = pools[sw.pool]; if (!p) continue; let inIt = false;
+    H.eachHero(P => { if (!P.dead && P.swim && P.x > p.x0 && P.x < p.x1 && P.y > p.y) inIt = true; }); if (!inIt) continue; sw.taught = true;
+    const [gx, gy0, gy1, dir] = sw.grate, gpx = gx * TS + 8 + (sw.grate[3] === -1 ? 0 : 8 * 1.5), gpy = (dir === -1 ? gy0 : (gy0 + gy1) / 2) * TS;
+    const gr = H.enemies().filter(e => e.alive && e.t === 'grindylow' && !e.aboard && Math.abs(e.x - (sw.bumpFrom * TS + 8)) < 160).sort((a, b) => Math.abs(a.x - gpx) - Math.abs(b.x - gpx))[0];
+    if (gr) { gr.bump = { x: dir === -1 ? gpx + 24 : gx * TS + 16 + 6, y: dir === -1 ? gy0 * TS - 2 : gpy, t: 0, hit: 0 }; st.bumps = (st.bumps || 0) + 1; } }
 }
 /* THE GLINT over what holds her (after the fog, so it shows through it): a warm pulsing star and ring; off the screen, a chevron at its edge pointing the way */
 function drawGlint(st, g, cx, cy, VW, VH, time) {
