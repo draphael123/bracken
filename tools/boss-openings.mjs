@@ -208,8 +208,8 @@ try {
   {const b=boot('redgorge');const A=BK.L.arena,P=BK.P,G=()=>BK.redgorge(),dam=()=>G().gates.find(g=>g.id==='dam'),c=()=>BK.gorgeCrab();let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+40;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    const bank=()=>{for(let i=0;i<60*30&&dam().state!=='full';i++){P.hp=P.maxHp;if(dam().state==='open'&&i%20===0){P.x=A.wheels[0];BK.press('talk');}BK.sim(1);}};
-   bank();let wasted=0;for(let i=0;i<60*20&&dam().state==='full';i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0],near=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[0]:A.wheels[1];P.x=near;if(!c().inChannel&&Math.abs(b.x-near)>60)BK.press('talk');BK.sim(1);wasted=Math.max(wasted,b.open||0);}
-   const w0=c().n.wasted;bank();let op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0];P.x=far;if(dam().state==='full'&&c().inChannel&&b.mode!=='open')BK.press('talk');BK.sim(1);if(b.mode==='open')mode='open';op=Math.max(op,b.open||0);}
+   bank();let wasted=0;for(let i=0;i<60*20&&dam().state==='full';i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0],near=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[0]:A.wheels[1];P.x=near;if(!c().inChannel&&b.mode!=='open'&&dam().state==='full')BK.press('talk');BK.sim(1);wasted=Math.max(wasted,b.open||0);}
+   for(let i=0;i<20;i++){P.hp=P.maxHp;BK.sim(1);wasted=Math.max(wasted,b.open||0);}const w0=c().n.wasted;bank();let op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0];P.x=far;if(dam().state==='full'&&c().inChannel&&b.mode!=='open')BK.press('talk');BK.sim(1);if(b.mode==='open')mode='open';op=Math.max(op,b.open||0);}
    out.gorgecrab={alone:+alone.toFixed(1),wasted:+wasted.toFixed(1),wastedN:w0,mode,open:+op.toFixed(1)};}
   return out;})()`, 300000);
 

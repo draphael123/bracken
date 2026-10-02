@@ -79,6 +79,7 @@ export function buildRedGorge({ painter, T, TS }) {
   /* THE FIRST BASKET, taught where it costs nothing: by the channel on the east floor, it rides the flood up to a ledge with a silver (off the route) */
   basket('mouth', 27, F, 148, 160); ledge(29, 34, 148); ent('silver', 33, 147);
   ledge(36, 42, 162); ledge(30, 36, 159);                                      /* the way up to him (an optional fight) */
+  foe('slinger', 6, 147, 'mouthSling2', { face: 1 }); foe('cutthroat', 15, 144, 'mouthTop', { face: -1 });   /* the top of the west climb: a knife at the bridge's foot, a sling behind him */
   block(3, C1, 136, 138);                                                     /* the overhang over the west climb and the channel (the flood pours through its slot): cross */
   ledge(3, 44, 142);                                                          /* BRIDGE ONE */
 
@@ -89,6 +90,8 @@ export function buildRedGorge({ painter, T, TS }) {
   wheel(28, 135, 'falls'); gate('falls', 115);                                /* THE FIRST WHEEL: its gate across the channel over the falls */
   sign(35, 135, 'THE WHEEL SHUTS THE GATE ABOVE. SHUT, IT HOLDS ONE FLOOD.');
   block(27, 44, 119, 132);                                                    /* the falls' lip: sheer on the east - the only way up is the face */
+  foe('scorpion', 30, 138, 'fallsStep', { face: 1 });                          /* on the step up to the terrace */
+  ent('raptor', CX + 3, 120, { squad: 'raptorFalls', guard: 126 });          /* a raptor over the falls' face: it stoops at you on the rope */
   rope(24, 119, 135);                                                         /* THE FALLS' FACE: a rope in the channel, seventeen rows */
   ent('scorpion', 34, 135, { face: -1, elite: true, gate: 27 });            /* THE FALLS' KEEPER: an elite scorpion holds the gate between the terrace and the falls' foot (eliteGates: it opens when he dies) */
   /* the west lip: the slinger's shelf over the falls, and a nest past him (FEATHER ONE) */
@@ -103,8 +106,9 @@ export function buildRedGorge({ painter, T, TS }) {
   set(17, 118, T.AIR); set(18, 118, T.AIR);                                   /* the basket's berth in the bridge */
   basket('ledges', 17, 118, 100, 112);                                       /* THE FIRST BASKET: its wheel at the channel's lip, row 112 */
   sign(20, 117, 'THE WHEEL TURNS WHEN THE WATER RUNS.');
+  foe('cutthroat', 30, 117, 'basketFoot', { face: -1 }); foe('cutthroat', 34, 117, 'basketFoot', { face: -1 }); foe('slinger', 38, 117, 'basketFoot', { face: -1 });   /* they come along the bridge at you while you wait on the basket for a flood */
   ledge(9, 15, 97);
-  foe('cutthroat', 6, 99, 'ledgeTop', { face: 1 }); foe('cutthroat', 12, 99, 'ledgeTop', { face: -1 });   /* they wait at the basket's top */
+  foe('cutthroat', 6, 99, 'ledgeTop', { face: 1 }); foe('cutthroat', 12, 99, 'ledgeTop', { face: -1 }); foe('slinger', 4, 99, 'ledgeTop', { face: 1 });   /* they wait at the basket's top */
   ent('raptor', CX, 106, { squad: 'raptorShaft', guard: 112 });                 /* two raptors over the basket's shaft and the bridge */
   ent('raptor', CX + 4, 92, { squad: 'raptorBridge3', guard: 94 });
   /* the nest pocket on the east, under bridge three (FEATHER TWO): drop through the bridge and down the ledges */
@@ -123,6 +127,7 @@ export function buildRedGorge({ painter, T, TS }) {
   decor.push({ kind: 'hands', x: 47, y: 79 }, { kind: 'hands', x: 50, y: 78 }); ent('silver', 52, 81); feather(50, 81);
   interiors.push([45, 53, 78, 81, 'rgCave']);
   ledge(30, 36, 79); ledge(36, 43, 76); ledge(30, 37, 73);
+  foe('cutthroat', 38, 75, 'caveTop', { face: -1 }); foe('cutthroat', 41, 75, 'caveTop', { face: -1 }); foe('slinger', 43, 75, 'caveTop', { face: -1 }); foe('scorpion', 33, 72, 'jamFoot', { face: 1 });   /* the knives over the cave, the sting at the jam's foot */
   /* the slinger on the west lip, over the jam */
   block(16, 21, 80, 80); foe('slinger', 19, 79, 'jamSling', { face: 1 });
   rope(4, 71, 87); ledge(6, 13, 80);                                          /* a way back up from bridge three's overhang (dropped onto from bridge four), and a reach to him */
@@ -138,7 +143,7 @@ export function buildRedGorge({ painter, T, TS }) {
   set(17, 70, T.AIR); set(18, 70, T.AIR);                                     /* the second basket's berth */
   basket('narrows', 17, 70, 61, 66);                                         /* THE SECOND BASKET: up nine rows on the flood */
   wheel(20, 69, 'narrows');                                                   /* the narrows' gate: a wheel at the basket's foot... */
-  ledge(19, 21, 61); wheel(10, 60, 'narrows'); gate('narrows', 44);          /* ...and one at its top, by the rope */
+  ledge(19, 21, 61); wheel(10, 60, 'narrows'); foe('cutthroat', 8, 60, 'narrowsTop', { face: 1 }); foe('cutthroat', 14, 60, 'narrowsTop', { face: -1 });   /* two knives at the basket's top, by the wheel you need */ gate('narrows', 44);          /* ...and one at its top, by the rope */
   block(8, 21, 47, 59);                                                       /* the west mass: the only way on is the rope in the channel */
   rope(22, 47, 62);                                                           /* THE NARROWS' ROPE: sixteen rows in the channel (its foot seven rows over bridge four: no jump from the bridge reaches it) */
   ent('raptor', CX, 50, { squad: 'raptorsB', guard: 54 });                   /* a raptor over the rope */
@@ -149,9 +154,10 @@ export function buildRedGorge({ painter, T, TS }) {
   ledge(3, 44, 46);                                                           /* BRIDGE FIVE */
 
   // ================= 6. THE SUMMIT (22-46): climb EAST; the old nest west =================
+  foe('cutthroat', 31, 45, 'bridge5', { face: -1 }); foe('cutthroat', 35, 45, 'bridge5', { face: -1 }); foe('cutthroat', 39, 45, 'bridge5', { face: -1 });   /* the bridge's east head, as you come off the rope */
   ledge(30, 36, 43); ledge(36, 44, 40); ledge(29, 35, 37); ledge(35, 43, 34); ledge(30, 36, 31); ledge(36, 44, 28); ledge(33, 39, 25);
   foe('cutthroat', 32, 36, 'summit', { face: 1 }); foe('cutthroat', 35, 36, 'summit', { face: -1 });
-  foe('slinger', 41, 27, 'summitSling', { face: -1 });
+  foe('slinger', 41, 27, 'summitSling', { face: -1 }); foe('cutthroat', 37, 27, 'summitKnife', { face: 1 });   /* his knife beside him */
   ent('raptor', CX + 6, 32, { squad: 'raptorsC', guard: 37 });
   /* THE OLD NEST: across a rope bridge at row 31 (over the channel) to the west wall: its vault behind a wall of woven branches */
   ledge(17, 29, 32); block(3, 16, 32, 33);

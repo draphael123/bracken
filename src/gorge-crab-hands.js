@@ -49,7 +49,7 @@ export function makeGorgeCrabHands(ctx) {
     /* a release with him out of the channel: water wasted, and the hit says so */
     if (w.burst && !F.burstSeen) { F.burstSeen = true; F.n.releases++; if (!GC.inChannel(B.x) && B.mode !== 'open') { F.n.wasted++; ctx.number(e.x, e.y - 56, 'HE IS NOT IN THE CHANNEL: THE WATER IS WASTED', '#9aa39a'); } }
     if (!w.burst) F.burstSeen = false;
-    if (!F.said.wheel && Math.abs(P.x - e.x) < 400) { F.said.wheel = 1; ctx.number(P.x, P.y - 40, 'HIS SHELL TURNS A BLADE: THE DAM\'S WATER THROWS HIM', '#ffd36b'); }
+    if (!F.said.wheel && Math.abs(P.x - e.x) < 400) { F.said.wheel = 1; ctx.number(P.x, P.y - 40, 'HIS SHELL TURNS A BLADE: RELEASE THE DAM ON HIM', '#ffd36b'); }
   };
   /* A BLOW ON HIM: x CRAB.openMul on his back (the global rule makes every other blow a scratch) */
   H.take = e => GC.crabTake(F);

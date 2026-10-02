@@ -18876,6 +18876,7 @@ function updateDesertFoe(e, dt) {
     if (v.t === 'land') { cvS('stoneThud'); dust(v.x, v.y, 3); continue; }
     if (v.t !== 'hit' || P.dead) continue;
     if (v.stone && s.stone && s.stone.t > 0.3 && tileAt(Math.floor(s.stone.x / TS), Math.floor(s.stone.y / TS)) === T.SOLID) {   /* (clear of his own parapet first) */ dust(s.stone.x, s.stone.y, 3); cvS('stoneThud'); s.stone = null; continue; }   /* it breaks on the stone it meets */
+    if (v.stone && L.redgorge) v.dmg = 13;   /* THE RED GORGE (claude/redgorge): a stone slung down off a gorge's lip lands harder than one across a yard (the caravan's 8) */
     if (v.stone) { const [l, r, t, b] = v.box; if (s.stone && overlap({ l, r, t, b }, box(P))) { s.stone = null; damagePlayer(v.box[0] + 4, v.dmg, { who: e, name: 'A SLINGSTONE' }); } continue; }   /* a stone is spent on what it hits, blocked or not */
     if (e.cvHit) continue;
     const [l, r, t, b] = v.box; if (!overlap({ l, r, t, b }, box(P))) continue;

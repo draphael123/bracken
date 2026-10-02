@@ -74,4 +74,67 @@ This is a GREYBOX for review. The next step is the reviewer against THE MAGE'S F
 ### Merge glue
 - `src/boss-greed.js` has one `banditking` OPEN_RULE row, so boss-greed passes with welltown merged. The coordinator said the welltown fix lane adds the same row.
 
-NUMBERS / CHECKS / UNVERIFIED / QUESTIONS: below.
+- Two pilots now reach a waypoint only at its own height on a TALL level: `tools/mash-bot.mjs` (level mode) and `tools/level1-pilot.mjs`. They used to reach it by column alone, which met a climb's waypoints on the floor under them and never met the ledges' foes. Only tall levels change. Their cached rows stay valid until someone re-runs them.
+
+## Numbers
+
+- **level-quality redgorge: CLEARS.**
+  - Flat 0%. 32 height bands.
+  - 5 gadget kinds, 3 developed (sluice, water-wheel and basket, each in 3 places).
+  - 4 secrets. 2 checkpoints, one per 121 route tiles.
+  - Ranged: 9 slingers. Roles: melee, ranged, runner.
+  - Unlocks declared. Route spans 144 rows, with 11 pockets.
+  - Music WARN: the placeholder borrow (report-only).
+- **Level-1 no-ability pilot** (knight, 3 runs): 9 blows, 0 deaths, 48 lifts. This clears the floor of 2 but is low: the Folly reads 3, the theatre 16, welltown 81. The bot is lifted past every rope and basket, which are where the flood hurts.
+- **Mash bot:**
+  - Boss: holds 0/6. Every mash hero dies with the crab at 95-99%.
+  - Level (hero L31): knight dies; warden lowest 37%; pyro 33%. All are under the 40% bar.
+- **Human-bot boss pilot** (`tools/redgorge-pilot.mjs`, hero L31, normal health), 21 fights:
+  - **14/21 = 67%** (knight 3/7, warden 4/7, pyro 7/7). Median win 84.5 s, 5-8 openings a fight.
+  - Every death had the crab at 1-18% left.
+  - Tuning history:
+    - hp 760, x2.4: 3/3 wins in 19-50 s
+    - hp 1800: 3/3
+    - hp 2100, x1.6: 3/3 in 110-166 s
+    - more damage: 6/6, then 4/6
+    - one step too far: 8/16
+    - final (hp 1900, x1.6, pinch 30, crush 38, boulder 30, scuttle 31, phase two x1.3): 14/21
+- **Route:** pacing reads 241 route tiles, because the reach model takes the climb's short cuts. The real walk is longer: the ropes, the baskets and the waits for a flood.
+
+## Checks (all green, run by name, never the suite)
+
+- **Required:** architecture, checkpoints, checkpoint-gaps, skins, dangling-paths, boss-fight-end, slopes-trace (every level unchanged; redgorge is not traced), npc-removal.
+- **This level's own:** redgorge, redgorge-probe.
+- **Also green:**
+  - level-quality, mash-gate, one-new-foe, tells, answer-tags, hint-shown, sprinkle-cap
+  - spawns, traps, elites, collectables, deadends, killzones, keys, content-audit, dressing, audio-assets, boss-music
+  - map-grammar, shop-gates, floaters, signs, audit, threat-holes, boss-openings, boss-greed, level-jump, untold-told, foe-tactics
+  - welltown, store
+- **Flake:** untold-told once failed with "fresh lab page did not initialize" while it ran beside another page check. It was green alone.
+
+## UNVERIFIED
+
+- Not played by hand, and no screenshots were taken. All the art is greybox:
+  - procedural water, gates, wheels, baskets, jam and nests;
+  - the raptor is the vulture tinted rust;
+  - the crab is a baked placeholder.
+- No route pilot with real keys was written. The level walks in the reach model with a real jump (`tools/redgorge.mjs`) and in the probe by teleport, but no scripted hand has climbed it end to end.
+- The flood's sweep through a bridge and the push to the bank were tested once (the probe), not felt. A hero swept on a rope falls to the bridge below: that is the intended cost.
+- The raptor lands where it struck. On a rope or the basket, that means it perches in the air for a moment.
+- The answer mix (answer-tags report): the gorge asks for only block and dodge among its common foes. The crab's crush and scuttle ask for a jump, but bosses are not counted.
+- Co-op: E (the wheels, the nest) is wired for player 1 only, as in welltown.
+
+## QUESTIONS FOR DANIEL (the recommended option is built)
+
+1. **Music.** Pick the gorge's CC0/CC-BY track (in one batch with the Well Town's). Should the crab keep his synth theme? *Rec:* a canyon track for the level, and compose the crab's theme properly from the placeholder. *Built:* the caravan track as a placeholder, and the 'gorgecrab' hook.
+2. **The boss's name and kind.** THE GREAT RED CRAB, a giant canyon crab, is the concept's own example. *Rec:* keep it. *Alternative:* "the sluice warden" (a man at the dam).
+3. **His opening** is a released burst while he is in the spillway (3.5 s, x1.6). In phase two only his scuttle carries him in. *Rec:* keep. The reviewer should feel whether phase two's "stand in the channel and make him scuttle" reads without a sign.
+4. **Hero level for the pilot.** I tuned at the campaign depth (L31, as combat-pilots does). Welltown's pilot used the default hero. *Rec:* tune every desert boss at the campaign depth.
+5. **The raptor's role** is counted as RUNNER (hit and run) for the roles measure. *Rec:* keep. *Alternative:* a hornblower bandit as a support role.
+6. **Two checkpoints** (the terrace, and the dam's door), so a death in the narrows costs the climb from the falls. *Rec:* keep (the Salt & Sanctuary direction). If the reviewer finds it harsh, put one back at bridge four.
+7. **The flood's bite:** 25 base in the gorge, 10 in the dam's spillway, plus heavier gorge stones (13) and raptor stoops (20). This is what makes a mashing hero drop under 40%. *Rec:* keep it, and let the reviewer judge the falls' rope race.
+8. **Tool changes to shared files:**
+   - the level-quality tall-row places;
+   - the mash-bot and level1-pilot tall-height waypoints.
+   *Rec:* keep. They only change how TALL levels are read. Re-stamp the other tall levels' rows in their own lanes.
+9. **The Bandit King's OPEN_RULE row** was added here so boss-greed passes with welltown merged. The welltown fix lane adds the same row, so expect a duplicate key at merge. *Rec:* keep one copy.

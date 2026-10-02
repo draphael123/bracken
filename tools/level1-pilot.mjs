@@ -29,7 +29,7 @@ try {
       for (let run = 0; run < ${runs}; run++) { BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(id)})); BK.state = 'play'; BK.start(); BK.god = false; BK.reset();
       const k0 = BK.stats().kills, d0 = BK.stats().deaths; let bot = makeBot(BK), lifts = 0, frames = 0, reached = 0;
       for (const [wx, wy] of way) { if (frames > ${steps}) break; let got = false;
-        for (let i = 0; i < 240 && frames < ${steps}; i++, frames++) { bot(wx * TS + 8); BK.sim(1); if (Math.abs(BK.P.x - (wx * TS + 8)) < 10) { got = true; break; } }
+        for (let i = 0; i < 240 && frames < ${steps}; i++, frames++) { bot(wx * TS + 8); BK.sim(1); if (Math.abs(BK.P.x - (wx * TS + 8)) < 10 && (!${!!P.tall} || Math.abs(BK.P.y - (wy + 1) * TS) < 3 * TS)) { got = true; break; } }   /* (claude/redgorge) on a TALL level a waypoint is reached at its own height (by column alone a climb's waypoints were met on the floor under them) */
         if (!got) { lifts++; BK.tp(wx, wy); bot = makeBot(BK); BK.sim(2); } reached++; if (frames % 600 === 0) await new Promise(r => setTimeout(r, 0)); }
       tot.hits += BK.hitsTaken; tot.deaths += BK.stats().deaths - d0; tot.kills += BK.stats().kills - k0; tot.lifts += lifts; tot.frames += frames; tot.reached += reached; }
       return { hits: tot.hits, deaths: tot.deaths, kills: tot.kills, walked: Math.round(tot.reached / (way.length * ${runs}) * 100), lifts: tot.lifts, frames: tot.frames, bare }; })()`, 1800000);

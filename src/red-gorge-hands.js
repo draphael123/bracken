@@ -8,9 +8,10 @@ import { vultureStep } from './desert-foes.js';
 
 /* THE FLOOD'S CLOCK (s), its blow, and a released burst. GORGE.horn is the whole warning: two seconds is a dozen tiles at a run, and every place to
    stand in a channel is three tiles or less from dry rock (tools/redgorge.mjs proves it) */
-export const GORGE = { dry: 6.0, horn: 2.0, run: 2.4, first: 3.0, dmg: 10, down: 200, push: 90, foeDmg: 30, release: { tell: 0.35, run: 1.6 }, wellR: 22 };
+/* (dmg: a flood down the gorge is a fall and a beating; damDmg: the old dam's shallow spillway, where the crab fight is - tuned with the boss pilot at 10) */
+export const GORGE = { dry: 6.0, horn: 2.0, run: 2.4, first: 3.0, dmg: 25, damDmg: 10, down: 200, push: 90, foeDmg: 30, release: { tell: 0.35, run: 1.6 }, wellR: 22 };
 export const BASKET = { rise: 2.0, sink: 36, hold: 2.5 };          /* a basket climbs its shaft in RISE s of running water, holds HOLD s at the top, then sinks */
-export const RAPTOR = { sightY: 150, hp: 24 };                     /* THE RAPTOR: it hunts only a hero within SIGHTY px (up or down) of the bridge it keeps */
+export const RAPTOR = { sightY: 150, hp: 24, dmg: 20 };            /* THE RAPTOR: it hunts only a hero within SIGHTY px (up or down) of the bridge it keeps; its stoop hits harder than a vulture's (20, the vulture 10) */
 
 export function makeRedGorgeHands(ctx) {
   let RG = null;
@@ -83,7 +84,7 @@ export function makeRedGorgeHands(ctx) {
     RG.t -= dt;
     if (RG.t <= 0) {
       if (RG.phase === 'dry') { RG.phase = 'horn'; RG.t += GORGE.horn; ctx.sfx.hornBlast && ctx.sfx.hornBlast(); ctx.sfx.rumble && ctx.sfx.rumble();
-        say('horn', P0.x, P0.y - 34, 'THE HORN: THE FLOOD IS COMING', '#ff9a5c'); }
+        (RG.said['horn'] ? 0 : (RG.said['horn'] = 1, ctx.number(P0.x, P0.y - 34, 'THE HORN: THE FLOOD IS COMING', '#ff9a5c'))); }
       else if (RG.phase === 'horn') { RG.phase = 'flood'; RG.t += GORGE.run; RG.n.floods++; RG.id++; ctx.sfx.waveCrash && ctx.sfx.waveCrash();
         for (const c of RG.channels) { const held = gatesIn(c.id).find(g => g.row >= c.y0 - 1 && g.state === 'shut'); const sp = floodSpan(c);
           if (held) { held.state = 'full'; held.fx = 0.8; RG.n.held++; if (Math.abs(held.row * ctx.TS - P0.y) < 260 && Math.abs((c.x0 + 2) * ctx.TS - P0.x) < 360) ctx.number((c.x0 + 2.5) * ctx.TS, held.row * ctx.TS - 10, 'THE GATE HOLDS THE FLOOD', '#7ab8e8'); }
@@ -108,18 +109,18 @@ export function makeRedGorgeHands(ctx) {
     for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead) return;
       const s = wetAt(P.x, P.y - 8); if (!s) return; const c = chOf(s.ch), k = pp.relic === 'plume' ? 0.5 : 1;
       if (pp.rgSwept !== s.id) { pp.rgSwept = s.id; RG.n.swept++; P.climb = false; if (c.id === 'gorge') P.drop = Math.max(P.drop || 0, 0.3);
-        ctx.hurtHero(P.x, Math.round(GORGE.dmg * k), { unblockable: true, noKnock: true, name: s.kind === 'burst' ? 'THE BURST' : 'THE FLOOD' });
-        ctx.burst(P.x, P.y - 10, 10, ['#7ab8e8', '#e8f4f8'], 80, 0.5); say('swept', P.x, P.y - 34, 'THE FLOOD TAKES YOU', '#ff9a5c'); }
+        ctx.hurtHero(P.x, Math.round((c.id === 'dam' ? GORGE.damDmg : GORGE.dmg) * k), { unblockable: true, noKnock: true, name: s.kind === 'burst' ? 'THE BURST' : 'THE FLOOD' });
+        ctx.burst(P.x, P.y - 10, 10, ['#7ab8e8', '#e8f4f8'], 80, 0.5); (RG.said['swept'] ? 0 : (RG.said['swept'] = 1, ctx.number(P.x, P.y - 34, 'THE FLOOD TAKES YOU', '#ff9a5c'))); }
       if (c.id === 'gorge' && !P.ground) P.vy = Math.max(P.vy || 0, GORGE.down * k);
       const mid = (c.x0 + c.x1 + 1) * ctx.TS / 2; ctx.moveHero((P.x < mid ? -1 : 1) * GORGE.push * k * dt); });
     /* AND ON THE FOES: a bandit on a bridge in the channel is taken (a flyer is not) */
     for (const e of ctx.enemies()) { if (!e.alive || e.noGrav || e.boss || e.t === 'gorgecrab') continue; const s = wetAt(e.x, e.y - 6); if (!s || e.rgSwept === s.id) continue;
       e.rgSwept = s.id; RG.n.foesSwept++; ctx.hurtFoe(e, GORGE.foeDmg); e.vy = 160; ctx.burst(e.x, e.y - 8, 8, ['#7ab8e8', '#e8f4f8'], 70, 0.5); }
     /* THE GATES, THE JAMS, THE BASKETS, THE NEST: what each is for, the first time you stand by it */
-    for (const w of RG.wheels) if (!RG.said['w' + w.gate] && Math.abs(w.x - P0.x) < 44 && Math.abs(w.y - P0.y) < 24) say('w' + w.gate, P0.x, P0.y - 34, 'E AT THE WHEEL: SHUT THE GATE, OR RELEASE WHAT IT HOLDS', '#ffd36b');
-    for (const j of RG.jams) if (!j.open && !RG.said.jam && Math.abs((j.x0 + 2.5) * ctx.TS - P0.x) < 80 && Math.abs((j.y1 + 1) * ctx.TS - P0.y) < 24) say('jam', P0.x, P0.y - 34, 'A JAM: ONLY A RELEASED BURST MOVES IT', '#ffd36b');
-    for (const m of ctx.movers()) if (m.gorge && !RG.said['b' + m.gorge] && Math.abs(m.x + 16 - P0.x) < 48 && Math.abs(m.y0 - P0.y) < 24) say('b' + m.gorge, P0.x, P0.y - 34, 'THE WHEEL TURNS WHEN THE WATER RUNS', '#ffd36b');
-    const n = RG.nest; if (n && !n.open && !RG.said.nest && Math.abs(n.x - P0.x) < 48 && Math.abs(n.y - P0.y) < 24 && ctx.questGot() < ctx.questN()) say('nest', P0.x, P0.y - 34, 'THE OLD NEST WANTS FOUR FEATHERS', '#ffd36b');
+    for (const w of RG.wheels) if (!RG.said['w' + w.gate] && Math.abs(w.x - P0.x) < 44 && Math.abs(w.y - P0.y) < 24) (RG.said['w' + w.gate] ? 0 : (RG.said['w' + w.gate] = 1, ctx.number(P0.x, P0.y - 34, 'E AT THE WHEEL: SHUT THE GATE, OR RELEASE WHAT IT HOLDS', '#ffd36b')));
+    for (const j of RG.jams) if (!j.open && !RG.said.jam && Math.abs((j.x0 + 2.5) * ctx.TS - P0.x) < 80 && Math.abs((j.y1 + 1) * ctx.TS - P0.y) < 24) (RG.said['jam'] ? 0 : (RG.said['jam'] = 1, ctx.number(P0.x, P0.y - 34, 'A JAM: ONLY A RELEASED BURST MOVES IT', '#ffd36b')));
+    for (const m of ctx.movers()) if (m.gorge && !RG.said['b' + m.gorge] && Math.abs(m.x + 16 - P0.x) < 48 && Math.abs(m.y0 - P0.y) < 24) (RG.said['b' + m.gorge] ? 0 : (RG.said['b' + m.gorge] = 1, ctx.number(P0.x, P0.y - 34, 'THE WHEEL TURNS WHEN THE WATER RUNS', '#ffd36b')));
+    const n = RG.nest; if (n && !n.open && !RG.said.nest && Math.abs(n.x - P0.x) < 48 && Math.abs(n.y - P0.y) < 24 && ctx.questGot() < ctx.questN()) (RG.said['nest'] ? 0 : (RG.said['nest'] = 1, ctx.number(P0.x, P0.y - 34, 'THE OLD NEST WANTS FOUR FEATHERS', '#ffd36b')));
   };
 
   /* ---------- A BASKET: called from updateMovers before the generic lift (it moves only on running water) ---------- */
@@ -135,7 +136,7 @@ export function makeRedGorgeHands(ctx) {
   H.raptorStep = (s, w, dt) => {
     if (s.g0 === undefined) s.g0 = s.groundY;   /* the bridge it keeps */
     if (s.mode === 'circle') { s.groundY = s.g0; if (Math.abs(w.py - s.g0) > RAPTOR.sightY) s.cd = Math.max(s.cd, 0.4); }
-    const out = vultureStep(s, w, dt);
+    const out = vultureStep(s, w, dt); for (const v of out) if (v.t === 'hit') v.dmg = RAPTOR.dmg;
     if (s.mode === 'dive') s.groundY = s.ty;   /* it lands where it struck (a rope, the basket, a ledge), not back on its bridge */
     return out; };
 

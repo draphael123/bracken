@@ -73,7 +73,7 @@ const pageSrc = `(() => {
       for (const [wx, wy] of way) { if (frames > o.steps) break; let got = false; const gx = wx * TS + 8;
         for (let i = 0; i < 240 && frames < o.steps; i++, frames++) {
           k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false; if (k.throw !== undefined) k.throw = false;
-          if (Math.abs(P.x - gx) < 10) { got = true; break; } k[gx > P.x ? 'right' : 'left'] = true; if (P.atk < 0) BK.press('atk');
+          if (Math.abs(P.x - gx) < 10 && (!o.tall || Math.abs(P.y - (wy + 1) * TS) < 3 * TS)) { got = true; break; }   /* (claude/redgorge) ON A TALL LEVEL A WAYPOINT IS REACHED AT ITS OWN HEIGHT: by column alone a climb's waypoints were 'reached' on the floor below them, and the bot never met the ledges' foes */ k[gx > P.x ? 'right' : 'left'] = true; if (P.atk < 0) BK.press('atk');
           const before = P.hp; BK.sim(1); lostHp += Math.max(0, before - Math.max(0, P.hp)); minHp = Math.min(minHp, Math.max(0, P.hp) / P.maxHp); }
         if (!got) { lifts++; BK.tp(wx, wy); BK.sim(2); } reached++; if (frames % 600 === 0) await new Promise(r => setTimeout(r, 0)); }
       return { deaths: BK.stats().deaths - d0, minHpPct: Math.round(minHp * 100), hpLostPct: Math.round(lostHp / P.maxHp * 100), hits: BK.hitsTaken, walked: Math.round(reached / way.length * 100), lifts, frames, kills: BK.stats().kills, heroLevel: o.lvl };
@@ -105,7 +105,7 @@ try {
       const P = pacing(lv), way = []; for (const [x, y] of P.route) { const l = way[way.length - 1]; if (!l || Math.abs(x - l[0]) >= 8 || Math.abs(y - l[1]) >= 6) way.push([x, y]); }
       const lres = {};
       for (const hero of (has('all') || has('quick') ? ['knight'] : heroes)) {
-        let r; try { r = await pg.evalp(`__mashLevel(${JSON.stringify({ id, hero, seed: 1, mini: false, lvl: lvOf(id), way, steps: 40000 })})`, 1800000); }
+        let r; try { r = await pg.evalp(`__mashLevel(${JSON.stringify({ id, hero, seed: 1, mini: false, lvl: lvOf(id), way, steps: 40000, tall: !!P.tall })})`, 1800000); }
         catch (e) { console.log(id + ' LEVEL ' + hero + ' ERR ' + e.message.slice(0, 120)); pg.close(); pg = await openPage({ audio: false, fonts: false }); await pg.evalp(pageSrc); continue; }
         lres[hero] = r; rows.push({ id, level: true, hero, ...r });
         console.log(id + ' LEVEL L' + r.heroLevel + ' ' + hero + ': lowest hp ' + r.minHpPct + '%, hp lost ' + r.hpLostPct + '%, deaths ' + r.deaths + ', walked ' + r.walked + '% of waypoints, ' + r.lifts + ' lifts, ' + r.hits + ' blows taken'); }
