@@ -60,9 +60,9 @@ parts the mash bot still beats are listed in `MASH_REPORT_ONLY` in `tools/level-
 ### Report-only measures
 
 `REPORT_ONLY = { levelId: [measure] }` in the tool lets a measure print as WARN without failing one level, with a TODO naming who decides. Today: `theatre: ['roles']` (the
-theatre has two roles, melee and ranged: no support, heavy or runner). Daniel decides whether to lift it by giving the theatre a third role or by accepting two. And `welltown: ['music']` (claude/welltown): THE WELL TOWN's greybox plays THE SUNKEN CARAVAN's track as a placeholder until Daniel picks its own file (its boss room already has its own synth hook); lift it when the track lands.
+theatre has two roles, melee and ranged: no support, heavy or runner). Daniel decides whether to lift it by giving the theatre a third role or by accepting two. And `welltown: ['music']` (claude/welltown): THE WELL TOWN's greybox plays THE SUNKEN CARAVAN's track as a placeholder until Daniel picks its own file (its boss room already has its own synth hook); lift it when the track lands. And `redgorge: ['music']` (claude/redgorge): THE RED GORGE's greybox borrows the same placeholder; its boss room plays its own synth theme (`'gorgecrab'`).
 
-Tall levels (floors, not a walk: Hanging Village, Spire, Deep, Falling Tower, Undercrown, Crown, Keep, Burial, Witchlight) skip flat and density.
+Tall levels (floors, not a walk: Hanging Village, Spire, Deep, Falling Tower, Undercrown, Crown, Keep, Burial, Witchlight, the Red Gorge) skip flat and density, and on a tall level a mechanic's PLACE is a cluster of ROWS 12 apart, not of columns (claude/redgorge: a climb's machines stand one over another; the system arrays are still placed by column).
 
 ## Why the limits sit where they do
 

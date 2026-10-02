@@ -105,8 +105,8 @@ export function buildRedGorge({ painter, T, TS }) {
   sign(20, 117, 'THE WHEEL TURNS WHEN THE WATER RUNS.');
   ledge(9, 15, 97);
   foe('cutthroat', 6, 99, 'ledgeTop', { face: 1 }); foe('cutthroat', 12, 99, 'ledgeTop', { face: -1 });   /* they wait at the basket's top */
-  ent('raptor', CX, 106, { squad: 'raptorsA', guard: 112 });                 /* two raptors over the basket's shaft and the bridge */
-  ent('raptor', CX + 4, 92, { squad: 'raptorsA', guard: 94 });
+  ent('raptor', CX, 106, { squad: 'raptorShaft', guard: 112 });                 /* two raptors over the basket's shaft and the bridge */
+  ent('raptor', CX + 4, 92, { squad: 'raptorBridge3', guard: 94 });
   /* the nest pocket on the east, under bridge three (FEATHER TWO): drop through the bridge and down the ledges */
   ledge(38, 44, 97); ledge(31, 37, 100); ledge(38, 44, 103); block(27, 44, 104, 111);   /* the pocket stands on rock: nothing to fall to */
   feather(43, 102); decor.push({ kind: 'nest', x: 41, y: 102 });

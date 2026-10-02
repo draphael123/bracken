@@ -34,6 +34,8 @@
                        trough or the fence / make a trick miss you - each against the same thing left alone, in tools/weak-bosses.mjs
      THE BANDIT KING   pour your skin on him while he burns (he walks through his own fire): the steam blinds him, open; a pour while he does not burn runs
                        off him, and a minute of him left alone opens nothing (claude/welltown)
+     THE GREAT RED CRAB  shut the dam's gate, let a flood bank, release it while he is in the spillway: thrown on his back, open; a release with him
+                       out of it opens nothing, and a minute of him with the floods running (gate open) opens nothing (claude/redgorge)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -201,6 +203,14 @@ try {
    F.B.data.burning=0;F.B.data.fires=[];P.skin.sips=3;P.x=b.x-20;P.face=1;let dry=0;BK.press('talk');for(let i=0;i<40;i++){P.hp=P.maxHp;BK.sim(1);dry=Math.max(dry,b.open||0);}const dryPours=F.n.wasted;
    let op=0,mode=null;for(let i=0;i<60*20&&!(op>0);i++){P.hp=P.maxHp;if(!(F.B.data.burning>0)&&F.B.mode==='walk')F.B.data.fires=[{x:F.B.x,t:3}];if(F.B.data.burning>0&&F.B.openCd<=0){P.skin.sips=3;P.x=b.x-20;P.face=1;BK.press('talk');}BK.sim(1);if(b.mode==='open')mode='open';op=Math.max(op,b.open||0);}
    out.banditking={alone:+alone.toFixed(1),dry:+dry.toFixed(1),dryPours,mode,open:+op.toFixed(1)};}
+  /* THE GREAT RED CRAB (claude/redgorge): a minute of him with the dam's gate open and the floods running opens nothing; a release with him out of the
+     spillway opens nothing (water wasted); a release with him in it throws him on his back - open (THE RED GORGE holds him) */
+  {const b=boot('redgorge');const A=BK.L.arena,P=BK.P,G=()=>BK.redgorge(),dam=()=>G().gates.find(g=>g.id==='dam'),c=()=>BK.gorgeCrab();let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+40;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
+   const bank=()=>{for(let i=0;i<60*30&&dam().state!=='full';i++){P.hp=P.maxHp;if(dam().state==='open'&&i%20===0){P.x=A.wheels[0];BK.press('talk');}BK.sim(1);}};
+   bank();let wasted=0;for(let i=0;i<60*20&&dam().state==='full';i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0],near=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[0]:A.wheels[1];P.x=near;if(!c().inChannel&&Math.abs(b.x-near)>60)BK.press('talk');BK.sim(1);wasted=Math.max(wasted,b.open||0);}
+   const w0=c().n.wasted;bank();let op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0];P.x=far;if(dam().state==='full'&&c().inChannel&&b.mode!=='open')BK.press('talk');BK.sim(1);if(b.mode==='open')mode='open';op=Math.max(op,b.open||0);}
+   out.gorgecrab={alone:+alone.toFixed(1),wasted:+wasted.toFixed(1),wastedN:w0,mode,open:+op.toFixed(1)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -277,6 +287,9 @@ try {
   assert.ok(r.greenteeth.mode === 'stranded' && r.greenteeth.open >= 3, 'the lock drained with her at the gate and she was not stranded open for 3 s or more (the boss rule; claude/greenwire raised this from 1.4: her stranded window was 1.8 s): ' + JSON.stringify(r.greenteeth));
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (PUPPETEER3: drop both puppets - blows or cuts - and he is dragged down to the boards, open) */ 'both puppets cut down in their windups and he did not come down open: ' + JSON.stringify(r.puppeteer));
+  assert.equal(r.gorgecrab.alone, 0, 'THE GREAT RED CRAB: a minute of him with the floods running opened him: ' + JSON.stringify(r.gorgecrab));
+  assert.ok(r.gorgecrab.wasted === 0 && r.gorgecrab.wastedN >= 1, 'a release with him out of the spillway opened him (or was not counted as wasted): ' + JSON.stringify(r.gorgecrab));
+  assert.ok(r.gorgecrab.mode === 'open' && r.gorgecrab.open >= 3, 'a release with him in the spillway did not throw him open for 3 s or more (the boss rule): ' + JSON.stringify(r.gorgecrab));
   assert.equal(r.banditking.alone, 0, 'THE BANDIT KING: a minute of him left alone opened him: ' + JSON.stringify(r.banditking));
   assert.ok(r.banditking.dry === 0 && r.banditking.dryPours >= 1, 'a pour at him while he was not burning opened him (or was not counted as wasted): ' + JSON.stringify(r.banditking));
   assert.ok(r.banditking.mode === 'open' && r.banditking.open >= 3, 'a pour while he burned did not blind him open for 3 s or more (the boss rule): ' + JSON.stringify(r.banditking));

@@ -132,7 +132,12 @@ export function makeRedGorgeHands(ctx) {
   };
 
   /* ---------- THE RAPTOR: the vulture's machine, keeping its own bridge ---------- */
-  H.raptorStep = (s, w, dt) => { if (s.mode === 'circle' && Math.abs(w.py - s.groundY) > RAPTOR.sightY) s.cd = Math.max(s.cd, 0.4); return vultureStep(s, w, dt); };
+  H.raptorStep = (s, w, dt) => {
+    if (s.g0 === undefined) s.g0 = s.groundY;   /* the bridge it keeps */
+    if (s.mode === 'circle') { s.groundY = s.g0; if (Math.abs(w.py - s.g0) > RAPTOR.sightY) s.cd = Math.max(s.cd, 0.4); }
+    const out = vultureStep(s, w, dt);
+    if (s.mode === 'dive') s.groundY = s.ty;   /* it lands where it struck (a rope, the basket, a ledge), not back on its bridge */
+    return out; };
 
   /* ---------- THE DAM, for THE GREAT RED CRAB (src/gorge-crab-hands.js): the plateau's water now ---------- */
   H.dam = () => { if (!RG) return null; const c = chOf('dam'), g = RG.gates.find(q => q.ch === 'dam'); if (!c || !g) return null;

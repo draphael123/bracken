@@ -2,7 +2,7 @@
 // (a horn, then the torrent) and sweeps a hero in the channel; a wheel shuts a gate and the next flood banks behind it (the channel under it stays dry);
 // a release washes THE JAM out; a basket rides up on running water and sinks back; four feathers open THE OLD NEST's vault; THE GREAT RED CRAB wakes,
 // walks out of the channel at the horn (a natural flood never opens him), and a release with him in the channel throws him on his back (open 3 s or
-// more; a blow there lands x2.4, outside it a twentieth). A smoke test, not a suite check:
+// more; a blow there lands x1.6, outside it a twentieth). A smoke test, not a suite check:
 //   node tools/redgorge-probe.mjs
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false }); let bad = 0;
@@ -55,7 +55,7 @@ try {
   ok(t.crab.active && t.crab.t === 'gorgecrab', 'THE GREAT RED CRAB wakes on the old dam');
   ok(t.alone === 0, 'a minute of him with the floods running opens nothing (frames a natural flood ran over him: ' + t.caught + ') ' + JSON.stringify({ alone: t.alone, caught: t.caught }));
   ok(t.banked === 'full' && t.opened && t.openFor >= 3, 'the dam\'s gate banks a flood; released with him in the channel, he goes on his back for 3 s or more ' + JSON.stringify({ banked: t.banked, openFor: t.openFor, n: t.n }));
-  ok(t.openHit > 40 * 2 && t.chipHit <= 40 * 0.05 + 0.01, 'a blow on his back lands x2.4, outside it a scratch: ' + t.openHit + ' / ' + t.chipHit);
+  ok(t.openHit > 40 * 1.4 && t.chipHit <= 40 * 0.05 + 0.01, 'a blow on his back lands x1.6, outside it a scratch: ' + t.openHit + ' / ' + t.chipHit);
   if (pg.errors.length) { ok(false, 'page errors: ' + pg.errors.slice(0, 3).join(' | ')); }
 } finally { pg.close(); }
 console.log(bad ? bad + ' FAILED' : 'redgorge-probe: all passed'); process.exitCode = bad ? 1 : 0;

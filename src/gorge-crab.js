@@ -23,9 +23,9 @@
 import { makeBoss, bossStep, FLOOR } from './desert-bosses.js';
 
 export const CRAB = {
-  hp: 760, w: 46, h: 28, markH: 44,
-  openMul: 2.4, openT: 3.5, openRest: 2.0,     /* THE OPENING: three and a half seconds on his back (the house floor is 3), a blow x2.4 in it; x0.05 outside (the global rule) */
-  dmg: { pinch: 12, crush: 16, boulder: 12, scuttle: 14 }, p2: 1.15,   /* each told blow; phase two hits harder */
+  hp: 1900, w: 46, h: 28, markH: 44,
+  openMul: 1.6, openT: 3.5, openRest: 2.0,     /* THE OPENING: three and a half seconds on his back (the house floor is 3), a blow x1.6 in it (tuned with the human-bot pilot, tools/redgorge-pilot.mjs); x0.05 outside (the global rule) */
+  dmg: { pinch: 30, crush: 38, boulder: 30, scuttle: 31 }, p2: 1.3,   /* each told blow; phase two hits harder */
   speed: 58, scuttleV: 250, dugT: 1.4, keep: 40,
   dryP2: 4.5,                                   /* phase two: the dry spell between floods (src/red-gorge-hands.js GORGE.dry otherwise) */
 };
@@ -46,7 +46,7 @@ const at = (x, half, h = 40) => [x - half, x + half, FLOOR - h, FLOOR];
 /* his def for one fight */
 export function crabDef() {
   return {
-    name: 'THE GREAT RED CRAB', hp: CRAB.hp, speed: CRAB.speed, cd: 1.0, openT: CRAB.openT, openRest: CRAB.openRest, phase2: 0.5, keep: CRAB.keep, patience: 1.6,
+    name: 'THE GREAT RED CRAB', hp: CRAB.hp, speed: CRAB.speed, cd: 0.8, openT: CRAB.openT, openRest: CRAB.openRest, phase2: 0.5, keep: CRAB.keep, patience: 1.6,
     chain: CHAINS[1][0].slice(), chain2: CHAINS[2][0].slice(),
     attacks: {
       pinch: { mark: '!', tell: 0.55, act: 0.25, range: [0, 66], hit: B => ({ box: front(B, 60, 30) }) },
