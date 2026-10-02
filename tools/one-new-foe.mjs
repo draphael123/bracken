@@ -79,6 +79,9 @@ assert.equal(C.orphans.length, 0, C.orphans.length + ' level(s) are gated on som
 assert.equal(C.order.length, rows.length, 'the walk placed ' + C.order.length + ' of ' + rows.length
   + ' campaign levels: some level is not reachable from ' + C.roots[0] + ' and would be silently skipped');
 
+/* A LEVEL DANIEL GAVE A NUMBER OF NEW FOES (the floor is one; this is exact). THE FOG CANAL (claude/canal, Daniel 2026-09-30): the rule is lifted to TWO for it -
+   the GRINDYLOW and the WILL-O'-THE-WISP - and its bargees and archers are the game's own (the gaffer and the archer), so it brings those two and no other */
+const NEW_EXACTLY = { canal: ['grindylow', 'willowisp'] }, exact = [];
 const seen = new Set();
 const fresh = [], failed = [], stale = [];
 for (const id of C.order) {
@@ -88,6 +91,7 @@ for (const id of C.order) {
 
   if (news.length) { fresh.push([id, news.length]); if (GRANDFATHERED[id]) stale.push(id); }
   else if (!GRANDFATHERED[id]) failed.push(id);
+  if (NEW_EXACTLY[id]) { const want = NEW_EXACTLY[id].slice().sort().join(','), got = news.slice().sort().join(','); if (got !== want) exact.push(id + ' brings ' + (got || 'nothing new') + ', not exactly ' + want); }
 }
 
 const counts = fresh.map(f => f[1]).sort((a, b) => a - b);
@@ -98,6 +102,7 @@ if (failed.length) assert.fail(failed.length + ' level(s) bring no foe the game 
   + '\n  "Already seen" is the GATE CHAIN, not the LEVELS array: each one is measured against everything the player'
   + '\n  reaches before it. The median level brings ' + median + ' new foes, so one is a floor and not a target.');
 
+assert.equal(exact.length, 0, 'a level brings other new foes than Daniel gave it: ' + exact.join('; '));
 assert.equal(stale.length, 0, 'these are on the grandfather list and no longer need to be — delete their entries: ' + stale.join(', '));
 console.log('    one-new-foe    walked off the gate chain, not the LEVELS array: ' + C.order.length + ' campaign levels, '
   + C.forks.length + ' fork(s) (' + C.forks.map(([id, v]) => v.join('/') + ' both off ' + id).join('; ') + ')');

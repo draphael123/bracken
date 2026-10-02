@@ -33,6 +33,7 @@ import { wormOpen } from './dune-worm.js';
 import { mageOpen } from './undead-mage.js';
 import { pupOpen } from './puppeteer.js';
 import { wqOpen } from './wicker-queen.js';
+import { gtOpen } from './jenny-greenteeth.js';
 import { sextonOpen } from './sexton.js';
 import { hedgeOpen } from './hedge-warden.js';
 import { brOpen, bkOpen } from './unburied-foes.js';
@@ -92,7 +93,8 @@ export const OPEN_RULE = {
   bloodknight: e => bkOpen(e),                                               // stuck
   duneworm: e => !!(e.st && wormOpen(e.st)),                                 // tangled in the awning
   wickerqueen: e => wqOpen(e),                                               // burning
-  puppeteer: e => pupOpen(e),                                                // downed or jolted
+  puppeteer: e => pupOpen(e),
+  greenteeth: e => gtOpen(e),                                                // stranded or flushed (her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,
   gravewarden: e => graveOpen(e), forgemaster: e => H.forgeOpen(e), golem: e => e.crackT > 0 || e.mode === 'stagger',

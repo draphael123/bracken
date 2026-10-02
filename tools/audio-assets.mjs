@@ -33,7 +33,7 @@ for (const [name, files] of Object.entries(manifest)) for (const f of files) { m
 // every song in the Sound Test's own list either plays a real file or is one of the synth-only tracks with
 // no file at all (the synth boss/theatre/fair tracks named below); anything else claiming to be
 // a song and NOT in TRACKS would show in the Sound Test and then fail silently on Z.
-const NO_FILE_BY_DESIGN = new Set(['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer']);   /* the boss themes in src/boss-music.js; 'puppeteer' is his music box, synthesised in src/audio.js (THE PUPPETEER, in the theatre now); the fair's 'harvestfair' and 'wickerqueen' (claude/fairfix3) and 'deep', 'underleaf', 'mineworks' (claude/musicswap) are files now */
+const NO_FILE_BY_DESIGN = new Set(['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'greenteeth']);   /* the boss themes in src/boss-music.js; 'puppeteer' is his music box, synthesised in src/audio.js (THE PUPPETEER, in the theatre now); the fair's 'harvestfair' and 'wickerqueen' (claude/fairfix3) and 'deep', 'underleaf', 'mineworks' (claude/musicswap) are files now */
 for (const n of MUSIC_NAMES) if (!TRACKS[n] && !NO_FILE_BY_DESIGN.has(n)) problems.push("MUSIC_NAMES has '" + n + "' but TRACKS has no file for it (add one, or list it in NO_FILE_BY_DESIGN if that is meant)");
 
 // ---------- 2. every level and boss has a music track assigned ----------

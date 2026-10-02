@@ -128,10 +128,17 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   mummer: 5, hobbyhorse: 6, stringjack: 5, barker: 7,   /* (claude/fairfix) the string-jack weighs a mummer; the barker an elite caller who does little harm himself but turns every hero */
   stagehand: 5,   /* THE STAGEHAND (the Maskwright's Theatre): 56 health, an unblockable 18 in front and a 16 dropped on you from above; slow */
   spotlamp: 0, flylock: 0, flatwinch: 0, stagetrap: 0, startrap: 0,   /* THE MASKWRIGHT'S THEATRE's machinery (src/theatre-rig.js): a lamp, a rope-lock, a winch, a stage trap and the star trap fight nobody */
+  /* THE FOG CANAL (src/canal-foes.js; docs/briefs/fog-canal.md): the GRINDYLOW is 20 health and a told ankle grab (!!, jump it) that pulls you into the
+     canal (the water's 20 is the real cost), hidden under the surface until it rises - a read and a punish more than a fight, so a 3 (a sprig is 2);
+     the WILL-O'-THE-WISP is one blow of health and a small told flare, but it LURES you off the bank: a 1.5 (the marshlight). The canal's machinery
+     (a lock's paddle, a swing bridge's capstan, a foghorn, a lantern post) fights nobody */
+  grindylow: 3, willowisp: 1.5, locksluice: 0, swingcap: 0, foghorn: 0, lanternpost: 0,
   /* THE WICKER QUEEN, the fair's boss (claude/fair3): a boss is a 6 */
   wickerqueen: 6,
   /* THE FAIR'S GAMES (claude/fairlevel, src/fair-games.js): a striker's pad, a gallery's target, a ticket and the prize booth are machines you work, not foes - furniture, written down at 0 so the tools read them as gadgets */
   striker: 0, gtarget: 0, ticket: 0, booth: 0,
+  /* JENNY GREENTEETH, THE FOG CANAL's boss (claude/lockkeeper): a boss is a 6 */
+  greenteeth: 6,
   /* THE DUNE WORM, the caravan's boss (2026-09-25): a boss is a 6. awningwinch is his trap and the camp's machine - furniture */
   duneworm: 6, awningwinch: 0,
   /* THE PUPPETEER, the Maskwright's Theatre's boss (claude/puppeteer): a boss is a 6; his soldier, harlequin and masterpiece are his fight, not a crowd of their own */

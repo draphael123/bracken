@@ -183,7 +183,7 @@ if (fair) {
   const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   const nodes = src.slice(src.indexOf('const INLAND_NODES'), src.indexOf('const INLAND_PATH'));
   const ids = [...nodes.matchAll(/id: '([a-z]+)', kind: 'level'/g)].map(m => m[1]);
-  ok(ids.indexOf('waymeet') >= 0 && ids.indexOf('theatre') === ids.indexOf('waymeet') + 1 && ids.indexOf('fair') === ids.indexOf('theatre') + 1 && ids.indexOf('fields') === ids.indexOf('fair') + 1, 'the map does not run Waymeet, the theatre, the fair, the Hexed Fields in that order: ' + ids.join(','));
+  ok(ids.indexOf('waymeet') >= 0 && ids.indexOf('canal') === ids.indexOf('waymeet') + 1 && ids.indexOf('theatre') === ids.indexOf('canal') + 1 && ids.indexOf('fair') === ids.indexOf('theatre') + 1 && ids.indexOf('fields') === ids.indexOf('fair') + 1, 'the map does not run Waymeet, the canal, the theatre, the fair, the Hexed Fields in that order (claude/canalfix: the fog canal between Waymeet and the playhouse): ' + ids.join(','));
   ok(existsSync(new URL('../docs/briefs/harvest-fair.md', import.meta.url)), 'docs/briefs/harvest-fair.md (the brief) is not committed');
   const L = fair.build(), T = { BOUNCER: 10, SPIKE: 3 }, TS = 16;
   const facers = L.ents.filter(e => e.t === 'mummer' || e.t === 'hobbyhorse'), mum = L.ents.filter(e => e.t === 'mummer'), horse = L.ents.filter(e => e.t === 'hobbyhorse');

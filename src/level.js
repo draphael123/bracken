@@ -5,6 +5,7 @@ import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER'
 import {buildBurningVillage} from './burning-village.js';
 import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
+import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
@@ -7723,7 +7724,10 @@ export const LEVELS = [
   { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'theatre' },   /* (claude/theatre: the playhouse stands between Waymeet and the fair now) */
   /* THE MASKWRIGHT'S THEATRE (claude/theatre, the greybox): the playhouse where the fair's masks are made, between WAYMEET and THE HARVEST FAIR (the fair
      needs it now). APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE PUPPETEER (claude/puppeteer) is its boss */
-  { id: 'theatre', name: "THE MASKWRIGHT'S THEATRE", sub: 'the playhouse where the masks are made', rule: 'THE HOUSE IS WATCHING. WHAT STANDS IN THE LIGHT CANNOT MOVE.', build: () => buildMaskwrightTheatre({ painter, T, TS }), needs: 'waymeet' },
+  { id: 'theatre', name: "THE MASKWRIGHT'S THEATRE", sub: 'the playhouse where the masks are made', rule: 'THE HOUSE IS WATCHING. WHAT STANDS IN THE LIGHT CANNOT MOVE.', build: () => buildMaskwrightTheatre({ painter, T, TS }), needs: 'canal' },   /* (claude/canalfix: the road runs Waymeet -> THE FOG CANAL -> the theatre -> the fair) */
+  /* THE FOG CANAL (claude/canal, the greybox): out of WAYMEET by night barge into the old town's theatre quarter. APPENDED, so no index and no save
+     moves; its place on the road is its needs and its map node. JENNY GREENTEETH (claude/lockkeeper, wired by claude/greenwire) is its boss, in the lock chamber at its end */
+  { id: 'canal', name: 'THE FOG CANAL', sub: 'out of Waymeet by night barge', rule: 'THE BARGE GOES WHERE THE WATER LETS IT. A LANTERN SHOWS YOU - TO THEM TOO.', build: () => buildFogCanal({ painter, T, TS }), needs: 'waymeet' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

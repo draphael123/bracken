@@ -114,7 +114,12 @@ for (const l of C.lines) {
   const ehp = src.slice(src.indexOf('const EHP = {'));
   const EHP = new Set([...ehp.slice(0, ehp.indexOf('};')).matchAll(/([a-zA-Z][a-zA-Z0-9]*)\s*:/g)].map(m => m[1]));
   const seen = new Set();
-  for (const q of LEVELS) { if (q.id === 'oreroad' || /^(shop|trial|custom)/.test(q.id)) continue;
+  /* EARLIER MEANS THE GATE CHAIN (tools/campaign-order.mjs, as tools/one-new-foe.mjs walks it), as the line above says: this read EVERY other level,
+     so the day a later level used one of the road's creatures again (THE FOG CANAL's bargees are the gaffer, claude/canal) the road stopped bringing it */
+  const { chainOf } = await import('./campaign-order.mjs');
+  const C = chainOf(LEVELS.filter(q => !/^(shop|trial|custom)/.test(q.id)).map(q => ({ id: q.id, needs: q.needs, needsTime: q.needsTime, needsKills: q.needsKills })));
+  const earlier = new Set(C.order.slice(0, Math.max(0, C.order.indexOf('oreroad'))));
+  for (const q of LEVELS) { if (q.id === 'oreroad' || /^(shop|trial|custom)/.test(q.id) || !earlier.has(q.id)) continue;
     let R; try { R = q.build(); } catch { continue; }
     for (const e of (R.ents || [])) if (e && e.t && EHP.has(e.t)) seen.add(e.t);
     for (const r of (R.garrison || [])) if (Array.isArray(r) && EHP.has(r[0])) seen.add(r[0]); }

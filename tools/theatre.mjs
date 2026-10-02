@@ -57,11 +57,11 @@ ok(!!lv, 'there is no level with id "theatre"');
 let L = null;
 if (lv) {
   L = lv.build(); const D = L.theatre, A = D.arcs;
-  ok(lv.needs === 'waymeet' && fair && fair.needs === 'theatre', 'the road does not run WAYMEET -> the theatre -> THE HARVEST FAIR (theatre needs ' + lv.needs + ', fair needs ' + (fair && fair.needs) + ')');
+  ok(lv.needs === 'canal' && fair && fair.needs === 'theatre', 'the road does not run THE FOG CANAL -> the theatre -> THE HARVEST FAIR (claude/canalfix; theatre needs ' + lv.needs + ', fair needs ' + (fair && fair.needs) + ')');
   ok(/MASKWRIGHT/.test(lv.name) && /LIGHT/.test(lv.rule || ''), 'the level is not named, or its rule does not say the light');
   const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), nodes = src.slice(src.indexOf('const INLAND_NODES'), src.indexOf('const INLAND_PATH'));
   const ids = [...nodes.matchAll(/id: '([a-z]+)', kind: 'level'/g)].map(m => m[1]);
-  ok(ids.indexOf('theatre') === ids.indexOf('waymeet') + 1 && ids.indexOf('fair') === ids.indexOf('theatre') + 1, 'the map does not run Waymeet, the theatre, the fair: ' + ids.join(','));
+  ok(ids.indexOf('canal') === ids.indexOf('waymeet') + 1 && ids.indexOf('theatre') === ids.indexOf('canal') + 1 && ids.indexOf('fair') === ids.indexOf('theatre') + 1, 'the map does not run Waymeet, the canal, the theatre, the fair: ' + ids.join(','));
   { const au = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
     ok(L.music === 'theatre' && !existsSync(new URL('../audio/theatre.ogg', import.meta.url)) && au.includes('function scheduleTheatre(') && au.includes('export function theatreAct('), 'the theatre does not play its own synth track (src/audio.js scheduleTheatre / theatreAct; it has no file)'); }
   ok(existsSync(new URL('../docs/briefs/maskwright-theatre.md', import.meta.url)), 'the brief (docs/briefs/maskwright-theatre.md) is not committed');
