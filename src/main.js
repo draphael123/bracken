@@ -4441,8 +4441,11 @@ function drawSlots() {
     g.save(); g.beginPath(); g.rect(x + 1, y + 1, 40, h - 2); g.clip(); drawSet(K2, 'idle', Math.floor(time * 4.5), x + 22, y + h - 2, 1, false); g.restore();
     text(hn, x + 90, y + 4, '#fff6e0'); text('LEVEL ' + slotLevel(p), x + 96 + inkW(hn, 8), y + 4, '#8fd160');
     if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6);   /* the save the game last opened (bracken.slot); the picker starts its cursor on it */
-    let tx = x + 44; for (const [s2, col] of [[cleared + '/' + levels + ' WOODS', '#c9d1dc'], [(p.coins || 0) + ' GOLD', '#ffd34a'], [medals + ' MEDAL PTS', '#c9d1dc']]) { text(s2, tx, y + 17, col, 'left', 6); tx += inkW(s2, 6) + 10; }
-    if (cleared >= levels) text('COMPLETE', x + w - 6, y + 17, '#8fd160', 'right', 6);
+    const stat = pts => [[cleared + '/' + levels + ' WOODS', '#c9d1dc'], [(p.coins || 0) + ' GOLD', '#ffd34a'], [medals + pts, '#c9d1dc']], done = cleared >= levels;
+    /* (a full save with a big purse: COMPLETE sits at the right of this row, so the last label gives way - MEDAL PTS -> PTS - before it would run into it; textfit slots) */
+    const rowEnd = pts => 44 + stat(pts).reduce((a, [s2]) => a + inkW(s2, 6) + 10, -10), room = w - 6 - (done ? inkW('COMPLETE', 6) + 6 : 0), medalPts = rowEnd(' MEDAL PTS') <= room ? ' MEDAL PTS' : ' PTS';
+    let tx = x + 44; for (const [s2, col] of stat(medalPts)) { text(s2, tx, y + 17, col, 'left', 6); tx += inkW(s2, 6) + 10; }
+    if (done) text('COMPLETE', x + w - 6, y + 17, '#8fd160', 'right', 6);
   }
   text(slotMsgT > 0 && slotMsg ? slotMsg : 'ARROWS pick  Z play  X erase  ESC', VW / 2, VH - 12, slotMsgT > 0 ? '#ffd36b' : UI.dim, 'center');
 }

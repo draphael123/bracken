@@ -31,6 +31,8 @@ import { openPage, ROOT } from './cdp.mjs';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
 // EVERY HINT IN THE SOURCE. A hint is `hintMsg = <expression>` or `tombHint(key, '...')`. String literals are joined;
@@ -54,6 +56,11 @@ function hints() {
 
 // THE PAGE SIDE. Serialised and run in the page, so it may only use what is passed in.
 async function pageTextFit(input) {
+  /* THE SLOW PART WAS getImageData: the game bakes level art by reading its canvases back (tile colours, props, rims), and a canvas
+     with no willReadFrequently is GPU-backed, so every read stalls on a GPU round trip (~2 s of a 2-4 s BK.load in headless Chrome;
+     the talk scope loads 37 levels x 6 heroes). Canvases made from here on are CPU-backed: same pixels, no readback stall. */
+  if (!window.__tfCpuCanvas) { window.__tfCpuCanvas = true; const gc = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (t, o) { return gc.call(this, t, t === '2d' ? Object.assign({ willReadFrequently: true }, o) : o); }; }
   const BK = window.BK, TL = BK.textLab, lvm = await import('/src/level.js'), G = BK.g;
   const issues = [], stats = { frames: 0, texts: 0, screens: {} }, seenIssue = new Set();
   const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
@@ -132,7 +139,7 @@ async function pageTextFit(input) {
     await yieldNow(); }
 
   if (want('talk')) { const done = new Set();
-    for (const h of HEROES) for (const [l, i] of campaign) { try { toPlay(i, h); } catch (e) { issues.push({ type: 'ERROR', screen: 'talk ' + l.id, s: 'load: ' + e.message, n: 1 }); continue; }
+    for (const h of (input.talkHeroes || HEROES)) for (const [l, i] of campaign) { try { toPlay(i, h); } catch (e) { issues.push({ type: 'ERROR', screen: 'talk ' + l.id, s: 'load: ' + e.message, n: 1 }); continue; }
       for (const t of TL.talkers()) { const key = t.lines.join('|') + '|' + t.name; if (done.has(key)) continue; done.add(key);
         const lines = t.lines.filter(Boolean);
         for (let p = 0; p < lines.length; p++) frame('talk ' + l.id + ' ' + t.kind + '@' + t.x + ',' + t.y + ' [' + h + '] page ' + (p + 1) + '/' + lines.length, () => { BK.state = 'play'; TL.talk(lines, t.name); if (TL.talking) TL.talking.i = p; }, { cover: q => q.size === 8 && lines[p].includes(q.s.trim()) });
@@ -267,7 +274,40 @@ async function main() {
   const input = { only, hints: hints() };
   console.log(input.hints.length + ' hint messages read out of src/main.js');
   const t0 = Date.now();
-  const r = await pg.evalp('(' + pageTextFit.toString() + ')(' + JSON.stringify(input) + ')');
+  /* EACH SCOPE UNDER ITS OWN TIMER, THE HEAVY ONES ON THEIR OWN PAGES. The whole sweep used to be ONE evaluate (30-minute ceiling) over
+     one page: BK.load alone is ~1-2 s, the talk scope does it 37 levels x 6 heroes (a sign's words are baked per hero at load, so
+     every hero needs its own load), so the unscoped run was ~25 min of plain slowness, with nothing printed and no way to tell it from
+     a hang. Now: every scope is its own call (its time printed); one that outlives TEXTFIT_SCOPE_TIMEOUT seconds (default 480)
+     FAILS the run by name; the long scopes (talk per hero, plates, boss, bossfix) each get a page of their own, TEXTFIT_PAGES at a
+     time (default 5). The short ones stay together, in order, on one page (the hero pick before the menu, whose pause map stays up). */
+  for (const o of only) if (!SCOPES.includes(o)) console.log('(unknown scope "' + o + '" ignored; scopes: ' + SCOPES.join(' ') + ')');
+  const want = s => !only.length || only.includes(s);
+  const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'], LONG = ['talk', 'plates', 'bossfix', 'boss'];
+  const units = [];   /* in report order */
+  for (const sc of SCOPES) if (want(sc)) { if (sc === 'talk') for (const h of HEROES) units.push({ sc, heroes: [h], label: 'talk[' + h + ']' }); else units.push({ sc, label: sc }); }
+  const jobs = [];    /* a job is a run of units on one page */
+  for (const sc of ['boss', 'plates']) units.filter(u => u.sc === sc).forEach(u => jobs.push([u]));
+  units.filter(u => u.sc === 'talk').forEach(u => jobs.push([u]));
+  units.filter(u => u.sc === 'bossfix').forEach(u => jobs.push([u]));
+  const rest = units.filter(u => !LONG.includes(u.sc)); if (rest.length) jobs.unshift(rest);
+  const nPages = Math.max(1, Math.min(jobs.length, +process.env.TEXTFIT_PAGES || 5));
+  const pages = [pg]; for (let k = 1; k < nPages; k++) pages.push(await openPage());   /* (one after another: four boots at once starve each other past the page's own 30 s wait) */
+  const closeAll = async () => { for (const p of pages) { try { await p.close(); } catch {} } };
+  const results = new Map(), queue = jobs.slice(); let shotBudget = 120;
+  const worker = async p => { for (let job; (job = queue.shift());) for (const u of job) { const ts = Date.now(); let part;
+    try { part = await p.evalp('(' + pageTextFit.toString() + ')(' + JSON.stringify({ ...input, only: [u.sc], talkHeroes: u.heroes, maxShots: shotBudget }) + ')', SCOPE_TIMEOUT_S * 1000); }
+    catch (e) { console.error('\nTEXTFIT SCOPE "' + u.label + '" FAILED after ' + Math.round((Date.now() - ts) / 1000) + 's (limit ' + SCOPE_TIMEOUT_S + 's; TEXTFIT_SCOPE_TIMEOUT changes it): ' + e.message);
+      await closeAll(); process.exit(1); }
+    part.urls = []; for (const sh of part.shots) part.urls.push(await p.evalp('window.__textfitShots[' + sh.k + '].png')); shotBudget = Math.max(0, shotBudget - part.shots.length);
+    results.set(u, part); console.log('  scope ' + u.label.padEnd(14) + String(part.stats.frames).padStart(6) + ' screens  ' + ((Date.now() - ts) / 1000).toFixed(1) + 's'); } };
+  await Promise.all(pages.map(worker));
+  const r = { issues: [], stats: { frames: 0, texts: 0, screens: {} }, shots: [] }, shotUrls = [], seen = new Set();
+  for (const u of units) { const part = results.get(u);
+    for (const it of part.issues) { if (seen.has(it.key)) continue; seen.add(it.key); r.issues.push(it); }   /* (talk by hero finds a sign once per page; one entry each) */
+    r.stats.frames += part.stats.frames; r.stats.texts += part.stats.texts;
+    for (const k in part.stats.screens) r.stats.screens[k] = (r.stats.screens[k] || 0) + part.stats.screens[k];
+    const base = r.shots.length; for (const it of part.issues) if (it.shot !== undefined) it.shot += base;
+    part.shots.forEach((sh, k) => { shotUrls.push(part.urls[k]); r.shots.push({ ...sh, k: r.shots.length }); }); }
   const by = {}; for (const it of r.issues) (by[it.type] = by[it.type] || []).push(it);
   const ORDER = ['OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'OVERDRAWN', 'LONGHINT', 'SMUDGE', 'ERROR'];
   for (const ty of ORDER) { const list = by[ty] || []; if (!list.length) continue;
@@ -278,7 +318,7 @@ async function main() {
   console.log('\n' + r.stats.frames + ' screens drawn, ' + r.stats.texts + ' strings measured, ' + Math.round((Date.now() - t0) / 1000) + 's. ' + ORDER.map(t => t + ' ' + (by[t] || []).length).join('  '));
   mkdirSync(OUT, { recursive: true });
   const SHOTS = join(OUT, 'textfit'); mkdirSync(SHOTS, { recursive: true });
-  for (const s of r.shots) { const url = await pg.evalp('window.__textfitShots[' + s.k + '].png');
+  for (const s of r.shots) { const url = shotUrls[s.k];
     s.file = join(SHOTS, String(s.k).padStart(3, '0') + '-' + s.types.join('+') + '-' + s.screen.replace(/[^\w@,.#-]+/g, '_').slice(0, 70) + '.png');
     writeFileSync(s.file, Buffer.from(url.split(',')[1], 'base64')); }
   for (const it of r.issues) if (it.shot !== undefined) it.file = r.shots[it.shot].file;
