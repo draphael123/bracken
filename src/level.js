@@ -65,6 +65,7 @@ function grow(L, ret, col, n) {
   if (R.sleeps) R.sleeps = R.sleeps.map(p => ({ ...p, x0: shp(p.x0), x1: shpEnd(p.x1) }));
   if (R.moversExtra) R.moversExtra = R.moversExtra.map(m => { const o = { ...m }; for (const k of ['x', 'x0', 'x1', 'px']) if (typeof o[k] === 'number') o[k] = shp(o[k]); return o; });
   for (const k of ['weather', 'ambient']) if (R[k]) R[k] = R[k].map(z => ({ ...z, x0: shp(z.x0), x1: z.x1 >= 99999 ? z.x1 : shpEnd(z.x1) }));
+  if (R.ambient) for (let i = 0; i + 1 < R.ambient.length; i++) if (R.ambient[i].x1 < R.ambient[i + 1].x0) R.ambient[i].x1 = R.ambient[i + 1].x0;   /* a zone ended where columns were inserted and the next began after them: the gap played the wood's birdsong (claude/identity0) */
   for (const k of ['arena', 'mini']) if (R[k]) { const A = { ...R[k] }; for (const f of ['x0', 'x1', 'trigger']) if (typeof A[f] === 'number') A[f] = shp(A[f]); for (const f of ['wallL', 'wallR', 'gate']) if (typeof A[f] === 'number') A[f] = sh(A[f]); if (A.dais) A.dais = { ...A.dais, x0: shp(A.dais.x0), x1: shp(A.dais.x1) }; R[k] = A; }
   if (R.ambushes) R.ambushes = R.ambushes.map(A => ({ ...A, wallL: sh(A.wallL), wallR: sh(A.wallR), trigger: typeof A.trigger === 'number' ? sh(A.trigger) : A.trigger, check: Array.isArray(A.check) ? [sh(A.check[0]), A.check[1]] : A.check, waves: A.waves.map(w => w.map(([t, x, y, o]) => [t, sh(x), y, o])) }));   /* an ambush is in TILES, like the walls */
   if (R.interiors) R.interiors = R.interiors.map(([x0, x1, y0, y1, st]) => [sh(x0), sh(x1), y0, y1, st]); // keep the room's KIND: dropping it made every grown level's interior the default timber
@@ -691,7 +692,7 @@ function theStockade() {
     duskStart: undefined, music: 'stockade', night: true, lessons: [{ kind: 'dashatk', x0: 11, x1: 29 }],   /* the dash attack's lesson (lessonHint in main.js) */
     palette: { dress: 'camp', ledges: 'lashed', haze: 'rgba(24,18,44,0.3)', sky: 'night',   /* nothing in a goblin camp is sawn: split poles, laid side by side and lashed */ canopy: ['#16301f', '#1f4a2a', '#2a5e36', '#3a7a48'] },
     weather: [{ x0: 1900, x1: 99999, kind: 'smoke' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'fire' }],   /* the camp's braziers and cook fires (claude/identity0: it was forest birdsong) */
 
     escapeGate: 344, arena: { x0: 327 * TS, x1: 361 * TS, floor: 20 * TS, trigger: 332 * TS, wallL: 326, wallR: 362, boss: 'chief', music: 'boss2', tint: '#c9463d', tintA: 0.1, fx: 'embers' },
   }
@@ -1170,7 +1171,7 @@ function kingswood() {
     interiors: [[45, 84, 17, 19], [85, 150, 17, 21], [211, 275, 16, 20]], // hollowed trunks and burrows: a dark planked backdrop behind the play layer
     palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.16)', grass: '#8a7a2a', grassL: '#c9a83a', grassD: '#5a4a1a', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', canopy: ['#7a2a1a', '#a83a2a', '#c9463d', '#e07060'], hall: true },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    ambient: [{ x0: 0, x1: 45 * TS, kind: 'forest' }, { x0: 45 * TS, x1: 150 * TS, kind: 'fire' }, { x0: 150 * TS, x1: 211 * TS, kind: 'forest' }, { x0: 211 * TS, x1: 275 * TS, kind: 'fire' }, { x0: 275 * TS, x1: 316 * TS, kind: 'forest' }, { x0: 316 * TS, x1: 99999, kind: 'fire' }],   /* the open wood keeps its birds; the court's halls (the trunk halls, the great hall) have hearth fires and no birds (claude/identity0) */
 
     arena: { x0: 316 * TS, x1: 370 * TS, floor: 14 * TS, trigger: 322 * TS, wallL: 315, wallR: 371, boss: 'king', music: 'goblinroyal', tint: '#c9463d', tintA: 0.12, fx: 'embers' },
     mini: { x0: 168 * TS, x1: 189 * TS, floor: 14 * TS, trigger: 172 * TS, wallL: 167, gate: 190, boss: 'greathound' },
@@ -1637,7 +1638,7 @@ function underleaf() {
   coins([255, 20], [263, 21], [269, 23], [258, 20], [265, 21]);
   ent('archer', 262, 21, { face: 1 }); ent('assassin', 254, 20, { face: 1 });
   ent('sign', 254, R - 1, { text: 'THE BELL TOWER HAS A STRAW ROOF AND NOBODY ON IT. CLIMB UP: A CANDLE IS BURNING BY THE BELL.' });
-  ent('deco', 252, R - 1, { kind: 'lychgate' });
+  /* (the lychgate that stood at the bell tower went: the lychgate/dovecote/stocks set is WAYMEET'S alone - claude/identity0) */
   ent('deco', 260, R - 1, { kind: 'yew', v: 0 }); ent('deco', 300, R - 1, { kind: 'yew', v: 1 });
   for (const [gx, v] of [[256, 0], [258, 1], [266, 2], [269, 0], [272, 1], [304, 2], [308, 0], [312, 1]])
     ent('deco', gx, R - 1, { kind: 'grave', v });
@@ -1693,7 +1694,7 @@ function underleaf() {
   ent('window', 364, R - 3, { gob: 'archer', dx: 362, dy: R - 1 });
   ladder(351, 27); ladder(391, 27); run(353, 389, 27, 3);
   ent('deco', 342, R - 1, { kind: 'gardenWall', v: 0 }); ent('deco', 350, R - 1, { kind: 'trough' });
-  ent('deco', 346, R - 1, { kind: 'dovecote' }); ent('deco', 398, R - 1, { kind: 'skep' });
+  ent('deco', 398, R - 1, { kind: 'skep' });   /* (the dovecote went with the set: Waymeet's alone) */
   ent('deco', 374, 27, { kind: 'washing' }); ent('deco', 394, R - 1, { kind: 'barrels' });
   // ---- THE SCHOOLROOM: three benches to stand on, and the master's desk up on its dais ----
   room(210, 258, 7, 15, 'hall');
@@ -1722,7 +1723,7 @@ function underleaf() {
   ent('well', 418, R - 1, { pair: 462 }); ent('well', 462, R - 1, { pair: 418 });
   ent('deco', 430, R - 1, { kind: 'stall' }); ent('deco', 448, R - 1, { kind: 'stall' });
   ent('deco', 424, R - 1, { kind: 'lanternPost' }); ent('deco', 454, R - 1, { kind: 'lanternPost' });
-  ent('deco', 410, R - 1, { kind: 'stocks' }); ent('deco', 464, R - 1, { kind: 'trough' });   /* off the lock gate's column */
+  ent('deco', 464, R - 1, { kind: 'trough' });   /* (the stocks went with the set: Waymeet's alone) */   /* off the lock gate's column */
   for (let x = 436; x <= 442; x++) set(x, R, T.AIR);
   block(436, 442, R + 1, 45); water(436, 442, R);   /* the duck pond, out in the open */
   thatch(420, 430, 28); thatch(452, 462, 28);
@@ -1767,7 +1768,7 @@ function underleaf() {
     palette: { set: 'village', sky: 'night', far: 'village', mid: 'village', near: 'village', dress: 'village', haze: 'rgba(40,44,70,0.20)',
       grass: '#3a5a46', grassL: '#4e7a58', grassD: '#263a2e', dirt: '#3a3444', dirtL: '#4a4458', dirtD: '#26222e',
       canopy: ['#1c2430', '#242e3c', '#2c3848', '#36445a'] },
-    weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],   /* a sleeping village at night: a thin wind and the crickets, no birds (claude/identity0) */
     /* camBelow lifted 1 -> 4 (look-and-feel review, 2026-09-26): at 1, the worst-case frame put the bridge's floor only
        one tile off the bottom edge - inside the boss plate's own 28px band (bossPlate, ~VH-28..VH), so THE GRANDMOTHER's
        nameplate sat on the hero standing in front of her. 4 keeps the plate clear at any camera position this arena can
@@ -3513,7 +3514,7 @@ function highcrownWhole() {
      banquet hall's are the highest floors there are: it stood a soldier and a pike up on the armoury's slates, out of everyone's reach. */
   R.calm = (R.calm || []).concat([[468, 545, 36, 49], [722, 765, 0, 9], [783, 791, 8, 12]]);   /* (and the bell turret's top is the sentry's alone: you land on it) */
   // the snow and the wind stop at the forge-house wall: past it is inside the walls, and on fire. They come back on the leads.
-  R.weather = [{ x0: 0, x1: 468 * TS, kind: 'snow' }, { x0: 766 * TS, x1: 802 * TS, kind: 'snow' }]; R.ambient = [{ x0: 0, x1: 468 * TS, kind: 'wind' }, { x0: 766 * TS, x1: 802 * TS, kind: 'wind' }];
+  R.weather = [{ x0: 0, x1: 468 * TS, kind: 'snow' }, { x0: 766 * TS, x1: 802 * TS, kind: 'snow' }]; R.ambient = [{ x0: 0, x1: 468 * TS, kind: 'wind' }, { x0: 468 * TS, x1: 545 * TS, kind: 'fire' }, { x0: 545 * TS, x1: 722 * TS, kind: 'hall' }, { x0: 722 * TS, x1: 766 * TS, kind: 'crowd' }, { x0: 766 * TS, x1: 99999, kind: 'wind' }];   /* (claude/identity0: the castle between the snow zones had NO zone and played the wood's birdsong: the forge-house fires, the halls, the banquet murmur) */
   // The furnace approach and the captains' gallery each get a complete additional encounter.
   { const X=470, n=40, F=grow(R,R,X,n); shiftCrown(F.R,X,n);
     F.block(X,X+n-1,64,F.R.H-1); F.block(X,X+n-1,46,49);
@@ -3826,7 +3827,7 @@ function theShop() {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [],
     duskStart: -1, duskLen: 1, music: 'store', night: true, shop: true, interiors: [[2, 37, 13, 19, 'hall']],
     palette: { hall: true, sky: 'night', dress: 'none', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', grass: '#6a5a3a', grassL: '#8a7a4a', grassD: '#3a2a1a' },
-    weather: [], ambient: [],
+    weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'town' }],   /* THE STORE: the town through its shutters, not the wood's birds (claude/identity0) */
   };
 }
 
@@ -7238,7 +7239,7 @@ function theHexedFields() {
     palette: { sky: [[40, 48, 96], [104, 120, 164]], far: 'fields', mid: 'fields', near: 'fields', dress: 'village', haze: 'rgba(130,150,210,0.10)',
       grass: '#7a946e', grassL: '#a4bc8e', grassD: '#4a6048', dirt: '#5e5444', dirtL: '#7a6c54', dirtD: '#3c3428', canopy: ['#161a2a', '#1e2436', '#262e44', '#303a52'] },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
-    ambient: [{ x0: 0, x1: 340 * TS, kind: 'wind' }, { x0: 340 * TS, x1: 402 * TS, kind: 'hall' }, { x0: 402 * TS, x1: 464 * TS, kind: 'wind' }, { x0: 464 * TS, x1: 539 * TS, kind: 'hold' }, { x0: 539 * TS, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 340 * TS, kind: 'wind' }, { x0: 340 * TS, x1: 402 * TS, kind: 'hall' }, { x0: 402 * TS, x1: 464 * TS, kind: 'wind' }, { x0: 464 * TS, x1: 539 * TS, kind: 'barn' }, { x0: 539 * TS, x1: 99999, kind: 'wind' }],
     mini: { x0: 296 * TS, x1: 327 * TS, floor: G * TS, y0: (G - 10) * TS, y1: (G + 1) * TS, trigger: 300 * TS, wallL: 295, gate: 327, boss: 'ploughman', name: 'THE HEADLESS PLOUGHMAN',
       baits: [[303, 'trough'], [320, 'fence']] },   /* THE BAIT (claude/weakboss): a stone trough and a rail fence standing in his field - his plough sticks in them, and nowhere else. Drawn and run in main.js (plBaits) */
     ambushes: [{ name: 'THE PICKERS\' SUPPER', row: O - 1, wallL: 152, wallR: 178, check: [151, O - 1], waves: [[['scarecrow', 158], ['scarecrow', 174], ['pumpkin', 163], ['pumpkin', 170]], [['farmhand', 160, O - 3], ['swornsword', 167], ['pumpkin', 176], ['hedgeknight', 171]]] }],   /* wave two, the road's patrol walking in on the supper: a sworn sword that plants, a hedge knight to BREAK (poise-heavy, where the hounds were), a pumpkin light enough to throw into the brambles, and the ghost through the wall */
