@@ -1,3 +1,4 @@
+import { VARIETY, varietyPass } from './variety-pass.js';   /* (claude/variety) the sea set's shock eel: every third eel in the Keep and the Deep */
 import { SWEEP_SKINS, sweepSkins } from './goblin-sweep.js';   /* (claude/goblinsweep) NO LIVING GOBLINS past the Goblin Queen: the sprinkled snuffers and the lawn's hound wear skins */
 import { THIN, CHECK_DROP } from './checkpoint-thin.js';
 import { SPRINKLE, PLAN } from './foe-tactics.js';   /* THE SPRINKLE CUT: the halved rows and the designed encounters (see garrison()) */
@@ -4818,7 +4819,7 @@ function theFlotilla() {
   // THE CHOKE: her boarding net is the only quick way through the hulk's waist and they are standing in the
   // doorway of it, where a wide swing catches the frame and a heavy blow does not.
   ent('boarder', 152, 21, { face: -1 }); ent('boarder', 156, 21, { face: -1 }); ent('bosun', 160, 21, { face: -1 });
-  ent('cutlass', 168, 21, { face: -1 }); ent('netter', 130, 29, { face: 1 });
+  ent('sapper', 168, 21, { face: -1, cnSkin: 'powderboy' }); ent('netter', 130, 29, { face: 1 });   /* (claude/variety) THE POWDER MONKEY: the second hull's gun-deck, by the deck gun at 192 */
   ent('sign', 148, 21, { text: 'NO ROOM TO SWING IN THE NET DOORWAY: GO THROUGH HEAVY, OR ROUND BY THE HOLD.' });
   net(145, 146, 10, 21); ent('marine', 146, 9, { face: -1 });
   ent('sign', 144, 21, { text: 'THE HOLD IS FLOODED. THERE IS A LADDER AT EITHER END.' });
@@ -4857,7 +4858,7 @@ function theFlotilla() {
   ent('sign', 228, 24, { text: 'STRIKE THE GUN TO OPEN THE FLAGSHIP\'S SIDE. KEGS BLOW IF HIT: MIND YOUR FEET.' });
   // THE RIGGING: three marines above her deck, shooting down it while you cross, and a spar to go up after them
   ent('marine', 198, 14, { face: -1 }); ent('marine', 210, 14, { face: -1 }); ent('lookout', 222, 14, { face: -1 });
-  ent('crab', 200, 24, { face: -1 }); ent('cutlass', 224, 24, { face: -1 }); ent('bosun', 214, 24, { face: 1 });
+  ent('crab', 200, 24, { face: -1 }); ent('sapper', 224, 24, { face: -1, cnSkin: 'powderboy' });   /* ...and one beside the three kegs (196 / 206 / 220): what he throws lights them */ ent('bosun', 214, 24, { face: 1 });
   ent('boarder', 236, 24, { face: -1 }); ent('sailor', 190, 24, { face: 1 });
   net(196, 197, 15, 23); net(210, 211, 15, 23); net(224, 225, 15, 23);
   for (let x = 197; x <= 224; x++) set(x, 14, T.ONEWAY);
@@ -4887,7 +4888,7 @@ function theFlotilla() {
   rail(245, 248, 21); rail(296, 299, 15);
   ent('sign', 250, 21, { text: 'THE QUARTERMASTER WILL NOT FIGHT ON ONE DECK: SHE CLIMBS AND CUTS THE WAY UP.' });
   ent('marine', 306, 15, { face: -1 }); ent('marine', 340, 10, { face: -1 }); // they were standing in the air over her quarterdeck
-  ent('cutlass', 262, 21, { face: -1 }); ent('cutlass', 284, 21, { face: -1 }); ent('boarder', 320, 15, { face: -1 });
+  ent('cutlass', 262, 21, { face: -1 }); ent('sapper', 284, 21, { face: -1, cnSkin: 'powderboy' });   /* ...and one on the flagship's deck among her four guns (266 / 322 / 312 / 348) */ ent('boarder', 320, 15, { face: -1 });
   ent('cutlass', 274, 21, { face: 1 }); ent('bosun', 284, 21, { face: -1 }); ent('lookout', 316, 15, { face: 1 }); ent('cutlass', 344, 15, { face: -1 });
   for (const [x, y] of [[266, 21], [322, 21], [312, 15], [348, 10]]) ent('cannon', x, y, { deck: true });
   // HER AFT GUN DECK: it was fifty tiles of empty corridor under her quarterdeck. It is her magazine now.
@@ -8497,4 +8498,5 @@ for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.b
 
 import { applyStuckSigns } from './stuck-spots.js';   /* THE STUCK-POINT SIGNS (claude/stuckfix): a sign at the point of use, kept in src/stuck-spots.js */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => applyStuckSigns(b(...a), lv.id); }
+for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && VARIETY[lv.id]) lv.build = (...a) => varietyPass(b(...a), lv.id); }   /* (claude/variety) before the sweep wrapper: sweep still sees the finished ents */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && SWEEP_SKINS[lv.id]) lv.build = (...a) => sweepSkins(b(...a), lv.id); }   /* (claude/goblinsweep) the sprinkled goblins' reskins: the last wrapper, so the sprinkler's foes are seen */
