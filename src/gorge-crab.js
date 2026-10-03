@@ -81,7 +81,7 @@ export function stageGorgeCrab(W, T, TS, sx, R) {
   for (const lx of STAGE.wheels) ent('sluice', sx + lx, R - 1, { gate: 'dam', arena: true });
   ent('gorgecrab', sx + STAGE.crab, R - 1, { face: -1 });
   const arena = { x0: sx * TS, x1: ex * TS, floor: R * TS, trigger: (sx + 5) * TS, wallL: sx - 1, wallR: ex, boss: 'gorgecrab', music: 'gorgecrab',
-    tint: '#d0704a', tintA: 0.07, start: [sx + 3, R - 1], ch: [(sx + STAGE.ch[0]) * TS, (sx + STAGE.ch[1] + 1) * TS], wheels: STAGE.wheels.map(lx => (sx + lx) * TS + 8) };
+    tint: '#d0704a', tintA: 0.07, start: [sx + 6, R - 1], ch: [(sx + STAGE.ch[0]) * TS, (sx + STAGE.ch[1] + 1) * TS], wheels: STAGE.wheels.map(lx => (sx + lx) * TS + 8) };
   return { arena, channel: [sx + STAGE.ch[0], sx + STAGE.ch[1]], gateRow: STAGE.gateRow };
 }
 

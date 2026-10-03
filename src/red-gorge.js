@@ -165,7 +165,7 @@ export function buildRedGorge({ painter, T, TS }) {
   // ================= 6. THE SUMMIT (22-42): climb EAST; the old nest west =================
   foe('cutthroat', 31, 41, 'bridge5', { face: -1 }); foe('cutthroat', 35, 41, 'bridge5', { face: -1 }); foe('cutthroat', 39, 41, 'bridge5', { face: -1 });   /* the bridge's east head, as you come off the rope */
   ledge(36, 44, 39); ledge(29, 35, 36); ledge(35, 43, 33); ledge(30, 36, 30); ledge(36, 44, 27); ledge(33, 39, 25);
-  foe('cutthroat', 33, 35, 'summit', { face: 1 }); foe('cutthroat', 24, 31, 'summit', { face: 1 });   /* one on the climb; one on THE OLD NEST's bridge over the channel: the vault walk crosses a fight at the horn */
+  foe('cutthroat', 33, 35, 'summit', { face: 1 }); foe('cutthroat', 24, 31, 'summitNest', { face: 1 });   /* one on the climb; one on THE OLD NEST's bridge over the channel: the vault walk crosses a fight at the horn */
   foe('slinger', 41, 26, 'summitSling', { face: -1 }); foe('cutthroat', 37, 26, 'summitKnife', { face: 1 });   /* his knife beside him */
   ent('raptor', CX + 6, 32, { squad: 'raptorsC', guard: 36 });
   /* THE OLD NEST: across a rope bridge at row 31 (over the channel) to the west wall: its vault behind a wall of woven branches */
