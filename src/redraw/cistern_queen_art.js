@@ -105,8 +105,6 @@ export function drawQueen(g, e, S, x, y, time, cx, cy) {
   if (m === 'tidalTell') { o.venomHot = true; } if (m === 'waveTell') { o.claw = 'up'; } if (m === 'pounceTell') { o.claw = 'up'; o.tail = 'high'; o.crouch = true; } if (m === 'lungeTell') o.crouch = true; if (m === 'rollTell') { o.claw = 'down'; o.legs = 'still'; o.lean = true; }
   if (e.guardFx > 0) o.flash = true;
   const face = e.face || 1;
-  /* (claude/welltown5) HER STINGER STUCK in the floor after a sting: the tail runs down to it, the stinger hot-white (it glints: src/cistern-queen-hands.js) */
-  if (S.stinger && S.stinger.t > 0 && S.pose !== 'wall' && (m === 'stuck' || m === 'pinned')) { o.tail = 'lance'; o.lanceTo = [(S.stinger.x - e.x) * face, S.stinger.y - e.y]; o.hot = true; }
   g.save(); g.translate(x, y);
   const onWall = S.pose === 'wall' && m !== 'pin' && m !== 'pinned';
   /* ON A WALL: her legs on the stone, her back to the hall, head down to the floor and her tail up toward the ledge over her */
