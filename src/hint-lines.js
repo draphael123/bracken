@@ -79,6 +79,8 @@ export const CALL_LINES = new Set([
   'THE FLOOD TAKES YOU', 'E AT THE WHEEL: SHUT THE GATE, OR RELEASE WHAT IT HOLDS', 'A JAM: ONLY A RELEASED BURST MOVES IT', 'THE WHEEL TURNS WHEN THE WATER RUNS',
   'THE OLD NEST WANTS FOUR FEATHERS', 'THE OLD NEST OPENS', 'THE WATER THROWS HIM: CUT HIM', 'HE SMELLS THE HELD WATER', 'HE IS NOT IN THE CHANNEL: THE WATER IS WASTED', 'THE SPRAY DAMPS YOUR FIRE',
   'HIS SHELL TURNS A BLADE: RELEASE THE DAM ON HIM', 'THE FLOOD TAKES HIM', 'SWEPT AWAY', 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY', 'THE BASKET: STAND ON IT. THE FLOOD WINDS IT UP', 'THE WHEEL: SHUT THE GATE, LET IT FILL, THEN RELEASE IT',
+  /* claude/desertfoes: the fire scorpion's burning patch, the venom scorpion's sting, the sandworm and the flood, the dynamite bandit's fuse (src/desert-foes2-hands.js) */
+  'WATER PUTS IT OUT', 'THE PATCH GOES OUT', 'VENOM: YOUR STAMINA COMES BACK SLOWER', 'THE HORN DRIVES IT UNDER', 'THE FLOOD DOUSES THE FUSE',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the

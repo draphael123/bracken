@@ -135,6 +135,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   grindylow: 3, willowisp: 1.5, locksluice: 0, swingcap: 0, foghorn: 0, lanternpost: 0,
   /* THE WELL TOWN (src/well-town.js, claude/welltown): the WATER-THIEF is the cutthroat's feint and cut (a 3, as the cutthroat) on a lighter, faster body that
      cuts your skin and runs for a well: a 3. THE CISTERN QUEEN is a boss: a 6; THE GANG LEADER a mini: a 5 (claude/welltown3). The town's wells, mud walls, fires, windlasses and dry cistern fight nobody */
+  /* THE SANDWORM (claude/desertfoes, src/desert-foes2.js): the sand goblin's buried strike with the Dune Worm's told ripple and an open beat after it: a 2.5 */
+  sandworm: 2.5,
   waterthief: 3, cisternqueen: 6, gangleader: 5, qwindlass: 0, djwindlass: 0, djinn: 6, skinwell: 0, mudwall: 0, oilfire: 0, windlass: 0, cistern: 0,
   /* THE RED GORGE (src/red-gorge.js, claude/redgorge): the CLIFF RAPTOR is the vulture's dive (a 2) over a bridge with a flood under it: a 2.5. THE GREAT RED CRAB is a
      boss: a 6. The gorge's sluice wheels, jams, water-wheels and the old nest fight nobody */
