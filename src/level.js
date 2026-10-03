@@ -8493,3 +8493,6 @@ export function thinCheckpoints(L, id) {
   L.ents = L.ents.filter(e => e.t !== 'check' || !drop.some(([x, y]) => x === e.x && y === e.y)); return L;
 }
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => thinCheckpoints(groundCheckpoints(b(...a)), lv.id); }
+
+import { applyStuckSigns } from './stuck-spots.js';   /* THE STUCK-POINT SIGNS (claude/stuckfix): a sign at the point of use, kept in src/stuck-spots.js */
+for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => applyStuckSigns(b(...a), lv.id); }
