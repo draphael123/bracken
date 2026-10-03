@@ -9397,6 +9397,9 @@ function drawSeaHud() {
     g.globalAlpha = a; g.fillStyle = col; g.fillRect(hx - 1, 72, 2, 46); g.fillRect(hx - 3, 70, 6, 2); g.fillRect(hx - 2, 68, 4, 2); g.fillRect(hx - 1, 66, 2, 2);
     for (let i = 0; i < 4; i++) text('HEEL'[i], hx + (roll.dir > 0 ? 7 : -7), 76 + i * 9, col, 'center', 6);
     for (let i = 0; i < 3; i++) { const yy = 80 + i * 12 + Math.floor(time * 12) % 4; g.fillRect(lx - 3, yy, 6, 2); g.fillRect(lx - 2, yy + 2, 4, 2); g.fillRect(lx - 1, yy + 4, 2, 2); }
+    /* THE HEEL ARROW AT YOUR FEET (the rule-use audit: 'no heel-direction cue' - the banner names the side, but the eye is on the hero): three chevrons run from him down the slope, the way he will be taken, amber on the count and red once she is over; green when a line, a bitt or sand has him */
+    if (P.ground && !P.swim && onDeck(P.x, P.y)) { const px2 = Math.round(P.x - camX), py2 = Math.round(P.y - camY) - 34, d = roll.dir, hold = roll.state === 'heel' && P.heelHeld; g.globalAlpha = hold ? 0.5 : a; g.fillStyle = hold ? '#8fd160' : col;
+      for (let i = 0; i < 3; i++) { const ox = d * (6 + i * 7 + (Math.floor(time * 10) % 3) * 2); g.fillRect(px2 + ox, py2, 2, 2); g.fillRect(px2 + ox - d, py2 - 2, 2, 2); g.fillRect(px2 + ox - d, py2 + 2, 2, 2); g.fillRect(px2 + ox - 2 * d, py2 - 4, 2, 2); g.fillRect(px2 + ox - 2 * d, py2 + 4, 2, 2); } }
     g.globalAlpha = 1; }
   if (roll.state === 'heel') text(P.heelHeld === 'line' ? 'HOLDING THE LINE' : P.heelHeld === 'bitt' ? 'BRACED ON A BITT' : P.heelHeld === 'sand' ? 'SURE ON THE SAND' : 'SHE IS ON HER BEAM ENDS', VW / 2, 72, P.heelHeld ? '#8fd160' : '#ff6b6b', 'center', 6);   /* under the ambush plate, not on it */
 }
