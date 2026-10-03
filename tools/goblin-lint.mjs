@@ -18,12 +18,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
+import { SKIN_MAPS } from '../src/redraw/undercrown_skins.js';   /* the recoloured skins (claude/goblinsweep) are baked from a table, not assigned one by one */
 
 export const GOBLIN_KINDS = new Set(['sprig', 'shield', 'thorn', 'archer', 'sapper', 'brute', 'rockgoblin', 'gobpriest', 'gobmage', 'assassin', 'berserker',
   'burngob', 'hearthgob', 'stormshaman', 'sailer', 'horn', 'thief', 'miner', 'sheargob', 'gaffer', 'kite', 'sandgob', 'chief', 'lance', 'snuffer',
   'propman', 'tippler', 'scalder', 'sentry', 'pike', 'temperer']);
 /* the levels whose goblins are reskinned (a lane adds its level here when it fixes it) */
-export const FIXED = ['canal'];
+export const FIXED = ['canal', 'undercrown', 'lamplit'];   /* (claude/goblinsweep: the Undercrown's miners, rock goblins, sprigs, propmen and sentry; Lamplit Street's snuffers) */
 
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const beasts = main.slice(main.indexOf('const BEASTS = ['), main.indexOf('];', main.indexOf('const BEASTS = [')));
@@ -57,9 +58,10 @@ for (const lv of after) {
   const gob = (L.ents || []).filter(e => GOBLIN_KINDS.has(e.t) && !undead(e));
   const bare = gob.filter(e => !skinOf(e)), skinned = gob.filter(e => skinOf(e));
   if (FIXED.includes(lv.id)) {
+    for (const al of (L.alarms || [])) for (const gd of (al.garrison || [])) if (GOBLIN_KINDS.has(gd.t) && !gd.cnSkin) fails.push(lv.id + ': the alarm ' + al.id + "'s garrison has a living " + gd.t + ' (give it cnSkin)');   /* (claude/goblinsweep) a rung bell's garrison is spawned from the alarm, not the ent list */
     for (const e of bare) fails.push(lv.id + ': a ' + e.t + ' at (' + e.x + ', ' + e.y + ') is a goblin with no reskin (give its ent canal.cnSkin)');
     for (const e of skinned) { const s = skinOf(e); fixedSkins++;
-      if (!new RegExp('SPR\\.' + s + '\\s*=').test(main)) fails.push(lv.id + ': the skin ' + s + ' (a ' + e.t + ') has no sprite (SPR.' + s + ' in src/main.js)');
+      if (!new RegExp('SPR\\.' + s + '\\s*=').test(main) && !SKIN_MAPS[s]) fails.push(lv.id + ': the skin ' + s + ' (a ' + e.t + ') has no sprite (SPR.' + s + ' in src/main.js)');
       if (!cards.has(s)) fails.push(lv.id + ': the skin ' + s + ' has no bestiary card (a BEASTS row t: \'' + s + '\')'); }
     report.push('  FIXED   ' + lv.id.padEnd(12) + gob.length + ' goblin-AI foes, all reskinned');
   } else if (bare.length) {
