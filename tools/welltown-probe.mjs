@@ -19,7 +19,7 @@ try {
   tp(119,29);P.face=1;BK.press('talk');BK.sim(3);out.stall={lit:W().fires.find(f=>f.x0===121).lit,sips:P.skin.sips};
   /* a death: the poured wall and fire stay open, the barricade not yet poured stays alight */
   BKT.respawn&&BKT.respawn();BK.sim(5);const G=BK.L.grid,Wd=BK.L.W;out.afterDeath={wall:G[29*Wd+262],stall:G[29*Wd+121],barricade:G[18*Wd+376]};
-  for(const e of BK.enemies())if(!keep.has(e.t))e.alive=false;
+  for(const e of BK.enemies())e.alive=false;
   const m=BK.movers().find(q=>q.windlass);tp(177,25);BK.sim(10);P.face=-1;BK.press('atk');BK.sim(12);out.bucketDir=m.dir;for(let i=0;i<600&&m.dir;i++)BK.sim(1);out.down={y:m.y,y1:m.y1,P:Math.round(P.y)};
   tp(176,39);BK.sim(5);P.face=1;BK.press('atk');BK.sim(12);for(let i=0;i<800&&m.dir;i++)BK.sim(1);out.up={y:m.y,y0:m.y0};
   for(const pr of BK.props().filter(p=>p.t==='stray'&&!p.got)){BK.P.x=pr.x;BK.P.y=pr.y;BK.sim(3);}out.skins=BK.village().saved();
