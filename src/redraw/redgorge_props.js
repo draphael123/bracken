@@ -99,7 +99,7 @@ export function drawBack(g, S, K) {
     for (const [ex, dir] of [[xa, 1], [xb - 1, -1]]) { if (ex < -12 || ex > vw + 12) continue; g.fillStyle = P.w1; g.fillRect(R(ex) - (dir > 0 ? 1 : 3), by * TS - cy - 14, 4, 18); g.fillStyle = P.w3; g.fillRect(R(ex) - (dir > 0 ? 1 : 3), by * TS - cy - 14, 1, 18); g.fillStyle = P.rope; g.fillRect(R(ex) - (dir > 0 ? 2 : 3), by * TS - cy - 10, 6, 2); g.fillRect(R(ex) - (dir > 0 ? 2 : 3), by * TS - cy - 4, 6, 2); } }
   /* THE GATES: a stone-cheeked timber frame across the channel - the board RAISED between the posts (open), SET DOWN (shut), or SET DOWN with the water banked over it (full) */
   for (const gt of S.gates) { const c = S.chOf(gt.ch), x0 = R(c.x0 * TS - cx), wpx = (c.x1 - c.x0 + 1) * TS, y = R(gt.row * TS - cy); if (y < -60 || y > vh + 40 || x0 > vw + 12 || x0 + wpx < -12) continue;
-    const open = gt.state === 'open', full = gt.state === 'full', lift = open ? 26 : 0, jit = gt.fx > 0 ? R(Math.sin(time * 60) * 1.2) : 0;
+    const open = gt.state === 'open', full = gt.state === 'full', want = open ? 26 : 0; gt.visLift = gt.visLift === undefined ? want : gt.visLift + Math.sign(want - gt.visLift) * Math.min(Math.abs(want - gt.visLift), 1.6); const lift = gt.visLift, jit = gt.fx > 0 ? R(Math.sin(time * 60) * 1.2) : 0;
     /* the cheeks: stone piers either side, courses and a lit top */
     for (const sx of [x0 - 9, x0 + wpx]) { g.fillStyle = P.stone0; g.fillRect(sx, y - 34, 9, 52); for (let ry = -34; ry < 18; ry += 8) { g.fillStyle = (ry & 8) ? P.stone2 : P.stone1; g.fillRect(sx + 1, y + ry + 1, 7, 7); g.fillStyle = P.stone3; g.fillRect(sx + 1, y + ry + 1, 7, 1); } g.fillStyle = '#f6c488'; g.fillRect(sx, y - 35, 9, 1); g.fillStyle = P.stone1; g.fillRect(sx, y - 34, 9, 2); }
     /* the hoist: a beam across the piers, the board hung on two chains from it */
@@ -119,6 +119,9 @@ export function drawBack(g, S, K) {
     g.strokeStyle = P.w3; g.lineWidth = 2; g.beginPath(); for (let k = 0; k < 8; k++) { g.moveTo(x + 0.5, hubY); g.lineTo(x + 0.5 + Math.cos(spin + k * Math.PI / 4) * 9, hubY + Math.sin(spin + k * Math.PI / 4) * 9); } g.stroke();
     g.fillStyle = '#ffe9a0'; for (let k = 0; k < 8; k += 2) g.fillRect(R(x + 0.5 + Math.cos(spin + k * Math.PI / 4) * 11) - 1, R(hubY + Math.sin(spin + k * Math.PI / 4) * 11) - 1, 3, 3);   /* the handle pegs */
     g.fillStyle = P.iron; g.fillRect(x - 1, hubY - 1, 4, 4); g.fillStyle = P.ironL; g.fillRect(x, hubY, 1, 1);
+    { const gx = x + 13, gy = y - 30, lift2 = Math.round((gt.visLift === undefined ? (gt.state === 'open' ? 26 : 0) : gt.visLift) * 14 / 26);   /* THE GATE GAUGE: an iron-framed slot, the timber board up (open) or dropped (shut), a blue skin over it when it holds the flood */
+      g.fillStyle = P.iron; g.fillRect(gx - 1, gy - 1, 12, 30); g.fillStyle = P.w0; g.fillRect(gx, gy, 10, 28); g.fillStyle = P.w2; g.fillRect(gx, gy + 28 - 10 - lift2, 10, 10); g.fillStyle = P.w4; g.fillRect(gx, gy + 28 - 10 - lift2, 10, 1); g.fillStyle = P.iron; g.fillRect(gx, gy + 28 - 7 - lift2, 10, 1);
+      if (gt.state === 'full') { g.fillStyle = P.wetL; g.fillRect(gx, gy + 28 - 13 - lift2, 10, 3); } }
     g.fillStyle = gt.state === 'full' ? P.wetL : gt.state === 'shut' ? '#c9b27c' : '#ffb04a'; g.fillRect(x + 6, y - 26, 5, 3); g.fillStyle = P.iron; g.fillRect(x + 8, y - 24, 1, 5); }   /* a tag: blue full, tan shut, amber open */
   /* THE WATER-WHEELS by the baskets: a paddle wheel on a bracket at the channel's lip; it turns only while water runs, and it throws spray when it does */
   for (const w of S.wheelsW) { const x = R(w.x - cx), y = R(w.y - cy); if (y < -30 || y > vh + 30 || x < -30 || x > vw + 30) continue; const run = w.run, a = w.a;
