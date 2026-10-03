@@ -71,15 +71,22 @@ ok(CQ.openT >= 3 && CQ.openCap > 0 && CQ.openCap <= 0.2, 'her openings last ' + 
     overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t, box: b => ({ l: b.x - 5, r: b.x + 5, t: b.y - 20, b: b.y }), attackBox: () => null, enrage() {}, music() {} };
   const H = GLM.makeGangLeaderHands(ctx); foe = H.spawn({ x: 400, y: 400, alive: true }); foe.alive = true;
   for (let i = 0; i < 120; i++) H.update(foe, 1 / 60);                      /* awake: he walks at you */
-  ok(said.includes('POUR WATER WHERE HE RUNS: HE SLIPS') && hero.skin.sips === 3, 'his fight starts told (POUR WATER WHERE HE RUNS) and with a full skin');
+  ok(said.includes('WET GROUND SLOWS HIM: POUR TO PEN HIM IN') && hero.skin.sips === 3, 'his fight starts told (WET GROUND SLOWS HIM) and with a full skin');
   const a = H.pourable.aim(hero); ok(a && a.what === 'floor' && Math.abs(a.x - (hero.x + GLM.GL.pourAt)) < 1, 'a pour in his courtyard aims at the floor a step in front of you (the HUD says POUR)');
-  H.pourable.pour(hero); ok(H.fight().puddles.length === 1 && said.includes('A PUDDLE: HE SLIPS IF HE RUNS IN IT'), 'it leaves a told puddle');
-  foe.mode = 'walk'; foe.modeT = 5; let slipped = false; const tr = []; for (let i = 0; i < 400 && !slipped; i++) { H.update(foe, 1 / 60); slipped = foe.mode === 'slipped'; if (i % 20 === 0) tr.push(foe.mode + '@' + Math.round(foe.x)); } if (!slipped) console.log(tr.join(' '), JSON.stringify(H.fight().puddles));
-  ok(slipped && said.includes('HE SLIPS: CUT HIM') && !H.fight().puddles.some(q => !q.dead), 'he runs into it and SLIPS (told), and the puddle is spent');
+  H.pourable.pour(hero); ok(H.fight().puddles.length === 1 && said.includes('MUD: HE STOPS AT ITS EDGE. A DASH SLIPS HIM'), 'it leaves a told puddle (mud)');
+  /* MUD (claude/glhotfix): walking, he stops at the edge of a puddle and stays out of it; slowed inside; a DASH through it still slips him */
+  foe.mode = 'walk'; foe.modeT = 99; foe.x = 400; hero.x = 100; for (let i = 0; i < 400; i++) { H.update(foe, 1 / 60); foe.modeT = 99; if (foe.mode !== 'walk') foe.mode = 'walk'; }
+  const q0 = H.fight().puddles[0]; ok(q0 && foe.x > q0.x + GLM.GL.puddleR && foe.x < q0.x + GLM.GL.puddleR + 8 && foe.mode === 'walk', 'walking, he STOPS at the puddle edge (x ' + Math.round(foe.x) + ', puddle ' + Math.round(q0 ? q0.x : 0) + ') and does not step in');
+  foe.x = q0.x + 6; const x0 = foe.x; H.update(foe, 1 / 60); ok(Math.abs(foe.x - x0) < GLM.GL.walk / 60 * GLM.GL.mudSlow + 0.01, 'inside the mud he is slowed to x' + GLM.GL.mudSlow);
+  foe.x = 200; foe.mode = 'dash'; foe.modeT = 0.5; foe.face = -1; let slipped = false; for (let i = 0; i < 200 && !slipped; i++) { H.update(foe, 1 / 60); slipped = foe.mode === 'slipped'; }
+  ok(slipped && said.includes('HE SLIPS: CUT HIM') && !H.fight().puddles.some(q => !q.dead), 'a DASH through it SLIPS him (told), and the puddle is spent');
+  ok(GLM.GL.puddleT >= 8 && GLM.GL.puddleT <= 10 && GLM.GL.hp === 1500, 'the puddle lasts ' + GLM.GL.puddleT + ' s and he is a mini (' + GLM.GL.hp + ' hp)');
   ok(H.take(foe, 10, hero.x) === 10, 'down, he takes a blow whole');
   for (let i = 0; i < 200 && foe.mode === 'slipped'; i++) H.update(foe, 1 / 60); ok(foe.mode !== 'slipped', 'and he is up again in ' + GLM.GL.slipT + ' s');
   H.lightForTest(foe); ok(GLM.glOpen(foe) && H.take(foe, 10, hero.x) === 10 * GLM.GL.openMul, 'alight, a blow lands x' + GLM.GL.openMul);
-  H.puddleAt(foe.x + 20); for (let i = 0; i < 120 && GLM.glOpen(foe); i++) H.update(foe, 1 / 60);
+  { const x0 = foe.x; for (let i = 0; i < 90 && GLM.glOpen(foe); i++) H.update(foe, 1 / 60); ok(GLM.glOpen(foe) && foe.x === x0 && foe.mode === 'burning', 'burning he is ROOTED: he stands beating at the flames (no step, no back-pedal)'); }
+  H.lightForTest(foe);
+  H.lightForTest(foe); H.puddleAt(foe.x + 20); for (let i = 0; i < 120 && GLM.glOpen(foe); i++) H.update(foe, 1 / 60);
   ok(!GLM.glOpen(foe) && said.includes('THE WATER PUTS HIM OUT') && H.fight().n.doused === 1, 'burning, a puddle under him PUTS HIM OUT (told)');
   hero.glBurn = 1; const s = H.pourable.aim(hero); ok(s && s.what === 'self' && H.pourable.pour(hero) === 'self' && !(hero.glBurn > 0) && said.includes('THE WATER PUTS YOU OUT'), 'alight yourself, the pour goes over you and puts you out');
   ok(GLM.GL.dodge <= 0.25 && GLM.GL.dodgeCd >= 4, 'the dodge is rare (' + GLM.GL.dodge * 100 + '%, once in ' + GLM.GL.dodgeCd + ' s at most): he is open to your blows otherwise'); }
