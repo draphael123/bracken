@@ -19,10 +19,10 @@
 // main.js calls makeGangLeaderHands(ctx): spawn, owns, update, take, pourable, frame, barName, drawOver, end, read. The bot's reading is glPlan (src/lab.js).
 
 export const GL = {
-  hp: 2200, w: 16, h: 30, markH: 44,                 /* (claude/welltown5: every blow lands whole now - 1000 went in 25-40 s for the human bot) */
+  hp: 2900, w: 16, h: 30, markH: 44,                 /* (claude/welltown5: every blow lands whole now - 1000 went in 25-40 s for the human bot) */
   openMul: 1.5, openT: 3.2, capK: 0.2,   /* (Daniel 10-03: burning x1.5, and the per-burn cap stays - no more than a third of him a burning, a fifth here)
   */
-  walk: 78, dash: 250, dashAt: 84, keep: 26, gap: [0.32, 0.24],   /* phase two (half health): quicker between blows */
+  walk: 78, dash: 250, dashAt: 84, keep: 26, gap: [0.26, 0.2],   /* phase two (half health): quicker between blows */
   dashTell: 0.36, dashMax: 0.55, dashCd: 2.2, dashReach: 30,      /* THE DASH (!!): stood off beyond dashAt he gathers and DASHES in with a cut - roll through it, jump it, or pour in his path */
   cutTell: 0.42, cutT: 0.14, cut2Tell: 0.24, crossTell: 0.2, cutReach: 34, cutStep: 80,   /* (each cut steps in at cutStep px/s: a quick man's cut follows you) */
   whirlTell: 0.62, whirlT: 0.5, whirlR: 40,
@@ -32,7 +32,7 @@ export const GL = {
   burnWalk: 34,                                     /* burning, he staggers away from you beating at the flames */
   puddleT: 6, puddleR: 16, pourAt: 30, slipT: 1.6,  /* THE WATER: a pour's puddle lasts puddleT s, pourAt px in front of you; a slip downs him slipT s */
   burnT: 2.6, burnTick: 0.5,                        /* his fire CATCHES you: you burn this long unless you douse yourself */
-  dmg: { cut: 30, whirl: 40, bottle: 16, fire: 7, riposte: 36, burn: 4, dash: 38 },
+  dmg: { cut: 34, whirl: 44, bottle: 16, fire: 7, riposte: 28, burn: 4, dash: 28 },
 };
 /* EVERY CYCLE CHANGES (k % n); phase two from half health. (claude/welltown5: a bottle in most cycles, not every other blow - a bottle struck home
    is a fifth of him, so the bottles pace the fight; his blades and his dash are the danger between them) */
@@ -88,7 +88,7 @@ export function glPlan(s) {
   if (/Tell$/.test(m) && seen() && !roll(key, PLAN.miss)) {
     if (m === 'riposteTell' && ad < 90) { out.gx = clamp(e.x + side * 100); if (ad < 60) out.dodge = true; out.why = 'off the riposte'; return out; }
     if ((m === 'cutTell' || m === 'cut2Tell' || m === 'crossTell') && ad < 70) { mem.backT = t + 0.9;
-      if (s.deflect) { out.face = toHim; out.block = e.modeT < 0.22; out.why = 'deflect the cut on the beat'; return out; }   /* THE WARDEN: her shaft turns a yellow blow swept on the beat */
+      if (s.deflect && !(P.busy > 0)) { out.face = toHim; out.block = e.modeT < 0.22; out.why = 'deflect the cut on the beat'; return out; }   /* THE WARDEN: her shaft turns a yellow blow swept on the beat */
       if (s.shield) { out.block = true; out.face = toHim; out.why = 'block the cut'; return out; } out.gx = clamp(e.x + side * 80); out.why = 'back off the cut'; return out; }
     if (m === 'whirlTell' && ad < GL.whirlR + 30) { out.gx = clamp(e.x + side * (GL.whirlR + 40)); if (ad < GL.whirlR && e.modeT < 0.2) out.dodge = true; out.why = 'out of the whirl'; return out; }
     if (m === 'throwTell') { /* the bottle comes: wait for it (above) */ }
@@ -97,7 +97,7 @@ export function glPlan(s) {
       if (dry) { mem.dashF = F.act; out.why = 'ready for the dash'; } }
   }
   /* the rest of a combo once its first cut was read: keep out of it (or keep the shield up) */
-  if ((m === 'cut' || m === 'cut2Tell' || m === 'cut2' || m === 'cross') && ad < 70 && mem.backT > t) { if (s.deflect) { out.face = toHim; out.block = m !== 'cut2Tell' || e.modeT < 0.22; out.why = 'deflect the combo'; return out; } if (s.shield) { out.block = true; out.face = toHim; out.why = 'block the combo'; return out; } out.gx = clamp(e.x + side * 90); out.why = 'out of the combo'; return out; }
+  if ((m === 'cut' || m === 'cut2Tell' || m === 'cut2' || m === 'cross') && ad < 70 && mem.backT > t) { if (s.deflect && !(P.busy > 0)) { out.face = toHim; out.block = m !== 'cut2Tell' || e.modeT < 0.22; out.why = 'deflect the combo'; return out; } if (s.shield) { out.block = true; out.face = toHim; out.why = 'block the combo'; return out; } out.gx = clamp(e.x + side * 90); out.why = 'out of the combo'; return out; }
   if (m === 'dash' && Math.sign(P.x - e.x) === (e.face || 1) && ad < 70 && mem.dashF === F.act && !roll('dmiss' + F.act, PLAN.miss)) { out.dodge = ad < 46; out.jump = !out.dodge && P.ground; out.gx = clamp(e.x - side * 60); out.why = 'through the dash'; return out; }
   if (m === 'whirl' && ad < GL.whirlR + 12) { out.gx = clamp(e.x + side * (GL.whirlR + 40)); out.dodge = ad < GL.whirlR; out.why = 'out of the whirl'; return out; }
   if (fire) { out.gx = clamp(P.x + (P.x < fire.x ? -40 : 40)); out.why = 'out of the fire'; return out; }
@@ -153,7 +153,7 @@ export function makeGangLeaderHands(ctx) {
     if (glOpen(e)) { e.open = 0; F.openTaken = 0; F.n.doused++; F.gapNext = 0.2; set(e, 'recover', 0.45); ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.splash && ctx.sfx.splash();
       ctx.burst(e.x, e.y - 18, 16, ['#e8f4f8', '#c8d0d8', '#9aa39a'], 50, 0.9); ctx.number(e.x, e.y - 56, 'THE WATER PUTS HIM OUT', '#9aa39a'); return; }
     F.n.slips++; F.cur = { k: 'slip', id: ++F.act }; e.dashing = false; set(e, 'slipped', GL.slipT); ctx.shake(3); ctx.dust(e.x, e.y, 8);
-    ctx.number(e.x, e.y - 56, F.n.slips === 1 ? 'HE SLIPS: CUT HIM' : 'HE SLIPS', '#8fd160');
+    if (F.n.slips === 1) ctx.number(e.x, e.y - 56, 'HE SLIPS: CUT HIM', '#8fd160'); else ctx.number(e.x, e.y - 56, 'HE SLIPS', '#8fd160');
   }
   H.update = (e, dt) => {
     if (!F || !e.alive) return; const Ar = F.A, P = nearest(e), fl = Ar.floor; e.y = fl;
@@ -219,7 +219,7 @@ export function makeGangLeaderHands(ctx) {
     if (pp.glBurnTick <= 0) { pp.glBurnTick = GL.burnTick; const e = live(); ctx.asPlayer(pp, () => hurt('ALIGHT', () => ctx.damagePlayer(pp.x - (pp.face || 1) * 4, GL.dmg.burn, { who: e, name: 'ALIGHT', unblockable: true, noKnock: true }))); } } }
   /* HE BURNS: his own bottle, struck home. Open, x GL.openMul, and no more than GL.capK of him in one burning */
   function light(e, b) { if (!e.alive) return; e.open = GL.openT; F.openTaken = 0; F.n.opens++; set(e, 'burning', GL.openT + 0.05); F.bottles = F.bottles.filter(q => q.back); ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.crack && ctx.sfx.crack();
-    ctx.burst(e.x, e.y - 18, 22, ['#ff9a3c', '#ffd36b', '#d84a14'], 90, 0.8); ctx.shake(3); ctx.number(e.x, e.y - 56, F.n.opens === 1 ? 'HE IS ALIGHT: CUT HIM - KEEP THE WATER OFF HIM' : 'HE IS ALIGHT: CUT HIM', '#8fd160'); }
+    ctx.burst(e.x, e.y - 18, 22, ['#ff9a3c', '#ffd36b', '#d84a14'], 90, 0.8); ctx.shake(3); if (F.n.opens === 1) ctx.number(e.x, e.y - 56, 'HE IS ALIGHT: CUT HIM - KEEP THE WATER OFF HIM', '#8fd160'); else ctx.number(e.x, e.y - 56, 'HE IS ALIGHT: CUT HIM', '#8fd160'); }
   H.lightForTest = e => light(e, null);
   /* A PUDDLE: a pour on his floor (or a test's) */
   H.puddleAt = x => { if (!F) return null; const Ar = F.A; x = Math.max(Ar.x0 + 14, Math.min(Ar.x1 - 14, x)); const q = { x, t: GL.puddleT }; F.puddles = F.puddles.filter(p => Math.abs(p.x - x) > GL.puddleR); F.puddles.push(q); F.n.puddles++;
