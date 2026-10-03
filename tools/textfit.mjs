@@ -43,7 +43,7 @@ function hints() {
   const exprAt = (line, from) => { let depth = 0, q = null, i = from; for (; i < line.length; i++) { const c = line[i];
     if (q) { if (c === '\\') i++; else if (c === q) q = null; continue; } if (c === "'" || c === '"' || c === '`') { q = c; continue; }
     if (c === '(' || c === '[' || c === '{') depth++; else if (c === ')' || c === ']' || c === '}') { if (!depth) break; depth--; } else if ((c === ';' || c === ',') && !depth) break; } return line.slice(from, i); };
-  const build = (e, pick) => { let s = e.replace(/\?\s*'((?:[^'\\]|\\.)*)'\s*:\s*'((?:[^'\\]|\\.)*)'/g, (m, a, b) => "'" + (pick ? a : b) + "'");
+  const build = (e, pick) => { let s = e.replace(/[\w.]+(?:\(\))?\s*(?:===|!==)\s*(?:'[^']*'|[\w.]+)\s*(?=\?\s*')/g, '').replace(/\?\s*'((?:[^'\\]|\\.)*)'\s*:\s*'((?:[^'\\]|\\.)*)'/g, (m, a, b) => "'" + (pick ? a : b) + "'");
     const parts = []; let last = 0, m; lit.lastIndex = 0;
     while ((m = lit.exec(s))) { if (s.slice(last, m.index).replace(/[\s+()]/g, '')) parts.push('9'); parts.push(m[1].replace(/\\'/g, "'")); last = m.index + m[0].length; }
     return parts.join(''); };

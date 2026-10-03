@@ -243,7 +243,7 @@ export function drawNight(g, cx, cy, VW, VH, L, F, o) {
   /* THE TICKET PLATE (claude/fairfix2: Daniel, 'tickets are unclear'): what you hold of all the fair has, and how many still lie in the stretch you stand in (claude/fairfix3:
      "the HUD shows tickets LEFT PER AREA"; the review's #6: the old second line lay across the play field on every screen). For a few seconds after a pickup or a gate's ask
      (o.tkShow) it opens out: every area's count, and what thirty of them open */
-  if (G && o.text && !o.skip) { const w = 92, x0 = VW - 8 - w, rows = o.areas || [], here = rows[o.areaI] || null, open = (o.tkShow || 0) > 0, h = open ? 24 + rows.length * 8 + 9 : 22;
+  if (G && o.text && !o.skip) { const w = 104, x0 = VW - 8 - w, rows = o.areas || [], here = rows[o.areaI] || null, open = (o.tkShow || 0) > 0, h = open ? 24 + rows.length * 8 + 9 : 22;
     g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(x0, 60, w, h); g.drawImage(ticketSpr(), x0 + 2, 62);
     o.text('TICKETS ' + G.tickets + '/' + (G.total || 0), VW - 12, 63, '#7fe8f0', 'right', 8, 'shadow');
     if (here) o.text('HERE: ' + here.left + ' LEFT', VW - 12, 73, here.left ? '#c8d8e0' : '#8fd160', 'right', 6, 'shadow');
