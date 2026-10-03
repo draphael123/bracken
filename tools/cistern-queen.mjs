@@ -63,4 +63,14 @@ ok(CQ.openT >= 3 && CQ.openCap > 0 && CQ.openCap <= 0.2, 'her openings last ' + 
   ok(new Set(chains.map(c => c.join(','))).size === chains.length, 'every one of his cycles is a different order');
   for (const [m, mk] of Object.entries(GLM.GL_MODES)) ok(BY_HAND['gangleader|' + m] === mk && MARK['gangleader|' + m] === mk, 'gangleader|' + m + ' wears ' + mk);
   ok(GLM.GL.openT >= 3 && GLM.GL.capK <= 1 / 3 + 1e-9 && GLM.GL.dodge > 0 && GLM.GL.dodge < 1 && GLM.GL.recoverT >= 0.3 && GLM.GL.reflectR >= 12, 'his opening (burning) is ' + GLM.GL.openT + ' s, a third of him at most; he slips ' + GLM.GL.dodge * 100 + '% of the blows while he stalks you (never off balance: ' + GLM.GL.recoverT + ' s after each of his blows), and his bottle is easy to strike back (' + GLM.GL.reflectR + ' px)'); }
+/* THE VENOM ICON (claude/welltown-polish, src/venom-hud.js): a drop a stack under the stamina bar, the stacks as the hands keep them (P.cqVenom), the cap, the slow */
+{ const { venomIcon, drawVenomIcon, VENOM_HUD } = await import('../src/venom-hud.js'), V = CQ.venom;
+  ok(VENOM_HUD.max === V.max && VENOM_HUD.stackT === V.t, 'the venom icon holds as many drops as her venom stacks (' + V.max + ') and a drop empties over the whole clock of a stack (' + V.t + ' s)');
+  ok(venomIcon({ cqVenom: [], venomT: 0 }, V) === null && venomIcon(null, V) === null, 'a clean hero shows no icon (nothing under the bar)');
+  const one = venomIcon({ cqVenom: [6], venomT: 1.2, venomSlow: 1 - V.slow }, V), three = venomIcon({ cqVenom: [2, 6, 4, 5], venomT: 1.2, venomSlow: 0.25 }, V), plain = venomIcon({ cqVenom: [], venomT: 1.5, venomSlow: 1 }, V);
+  ok(one && one.stacks === 1 && one.drops[0] === 1 && one.slow === 25 && one.slots === V.max, 'one stack: one full drop, the slowdown said (-25%), the other slots dark');
+  ok(three && three.stacks === V.max && three.drops.length === V.max && three.drops[0] >= three.drops[1] && three.drops[1] >= three.drops[2] && three.slow === 75, 'a fourth stack changes nothing: three drops, the freshest first, -75%');
+  ok(plain && plain.stacks === 1 && plain.mode === 'plain' && plain.slow === 0 && plain.drops[0] < 1, 'any other poison (P.venomT) is ONE draining drop and no slowdown');
+  const ops = []; const g = { fillRect: (...a) => ops.push(a), set fillStyle(v) {}, set globalAlpha(v) {} }, said = [];
+  drawVenomIcon(g, (t, ...r) => said.push(t), 16, 21, three, 0); ok(ops.length > 60 && said.join() === '-75%' && ops.every(([x, y]) => y >= 20 && y <= 28 && x >= 16), 'it draws in the gap under the stamina bar (rows 20-28) and says -75%'); }
 console.log('cistern-queen: ' + n + ' checks pass');

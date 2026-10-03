@@ -110,6 +110,9 @@ export function makeWellTownHands(ctx) {
         w.cd = 0.8; if (!dw || dw.up || dw.wind > 0) continue; dw.wind = DEEP.wind; WT.n.winds = (WT.n.winds || 0) + 1; ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.ropeHaul && ctx.sfx.ropeHaul(); ctx.sparks(w.x, w.y - 14, ctx.hero().face || 1, 4);
         ctx.number(w.x, w.y - 34, 'THE BUCKET COMES UP: HOLD THE WELL', '#ffd36b'); continue; }
       if (w.deep) continue;
+      /* THE GREAT WELL's windlass stands in THE MARKET COURTYARD (claude/welltown-polish): while THE GANG LEADER lives it is fouled - a blow only rings off it, so the well is no way out of his fight */
+      if (w.top && hb && w.cd <= 0 && ctx.enemies().some(q => q.alive && q.t === 'gangleader') && ctx.overlap(hb, { l: w.x - 16, r: w.x + 16, t: w.y - 28, b: w.y })) { w.cd = 0.8; ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(w.x, w.y - 14, ctx.hero().face || 1, 3);
+        if (!WT.said.fouled) { WT.said.fouled = 1; ctx.number(w.x, w.y - 34, 'THE WINDLASS IS FOULED: FINISH HIM FIRST', '#ff9a5c'); } continue; }
       if (hb && w.cd <= 0 && ctx.overlap(hb, { l: w.x - 16, r: w.x + 16, t: w.y - 28, b: w.y })) { const m = ctx.movers().find(q => q.windlass === w.bucket); if (!m || m.dir) continue;
         w.cd = 0.8; const atTop = m.y <= m.y0 + 1; m.dir = atTop ? 1 : -1; WT.n.rides++; if (atTop && !WT.followed) WT.followT = FOLLOW.after; ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.ropeHaul && ctx.sfx.ropeHaul(); ctx.sparks(w.x, w.y - 14, ctx.hero().face || 1, 4);
         ctx.number(w.x, w.y - 34, atTop ? 'STRIKE THE WINDLASS: THE BUCKET GOES DOWN' : 'THE BUCKET GOES UP', '#ffd36b'); } }
@@ -130,7 +133,7 @@ export function makeWellTownHands(ctx) {
     for (const m of WT.walls) if (!m.open && !WT.said['m' + m.x0] && Math.abs(m.x0 * 16 + 8 - P.x) < 40 && P.y > m.y0 * 16 && P.y - 14 <= (m.y1 + 1) * 16) { WT.said['m' + m.x0] = 1; ctx.number(P.x, P.y - 30, 'MUD: POUR YOUR SKIN ON IT', '#ffd36b'); }
     /* THE WINDLASS and THE DRY CISTERN: what each is for, the first time you stand by it */
     const top = WT.windlasses.find(w => w.top);
-    if (top && !WT.said.windlass && Math.abs(top.x - P.x) < 48 && Math.abs(top.y - P.y) < 24) { WT.said.windlass = 1; ctx.number(P.x, P.y - 30, 'STRIKE THE WINDLASS: THE BUCKET GOES DOWN', '#ffd36b'); }
+    if (top && !WT.said.windlass && !ctx.enemies().some(q => q.alive && q.t === 'gangleader') && Math.abs(top.x - P.x) < 48 && Math.abs(top.y - P.y) < 24) { WT.said.windlass = 1; ctx.number(P.x, P.y - 30, 'STRIKE THE WINDLASS: THE BUCKET GOES DOWN', '#ffd36b'); }
     const cs = WT.cistern;
     if (cs && !cs.full && !WT.said.cistern && Math.abs(cs.x - P.x) < 48 && Math.abs(cs.y - P.y) < 24 && ctx.questGot() < ctx.questN()) { WT.said.cistern = 1; ctx.number(P.x, P.y - 30, 'THE DRY CISTERN WANTS FOUR WATER-SKINS', '#ffd36b'); }
     /* THE SUN AND THE SKIN: the first time the sun has you and there is water, say so */

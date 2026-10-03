@@ -7748,7 +7748,7 @@ export const LEVELS = [
      moves; its place on the road is its needs and its map node. JENNY GREENTEETH (claude/lockkeeper, wired by claude/greenwire) is its boss, in the lock chamber at its end */
   { id: 'canal', name: 'THE FOG CANAL', sub: 'out of Waymeet by night barge', rule: 'THE BARGE GOES WHERE THE WATER LETS IT. A LANTERN SHOWS YOU - TO THEM TOO.', build: () => buildFogCanal({ painter, T, TS }), needs: 'waymeet' },
   /* THE WELL TOWN (claude/welltown, the GREYBOX, 2026-10-01): desert arc level 2 - the arc's town and its shop - after THE SUNKEN CARAVAN (the desert-arc concept
-     of 2026-10-01: needs 'caravan', not the brief's 'sunkencaravan'). APPENDED, so no index and no save moves. THE BANDIT KING is its boss, in the Kasbah's courtyard */
+     of 2026-10-01: needs 'caravan', not the brief's 'sunkencaravan'). APPENDED, so no index and no save moves. its mini is THE GANG LEADER (the market courtyard, the Well Square) and its boss THE CISTERN QUEEN (claude/welltown3, claude/welltown-polish) */
   { id: 'welltown', arc: 'the desert', name: 'THE WELL TOWN', sub: 'the wells are the only blue in it', rule: 'WATER IS CARRIED. FILL YOUR SKIN AT A WELL: POUR IT ON MUD AND FIRE, OR DRINK IT.', build: () => buildWellTown({ painter, T, TS }), needs: 'caravan' },
   { id: 'shopWell', name: 'THE WELL STORE', sub: 'ask the keeper', build: theShopWell, hidden: true },   /* THE WELL TOWN's walk-in store (claude/welltown): APPENDED, like every level */
 ];

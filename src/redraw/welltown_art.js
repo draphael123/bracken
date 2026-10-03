@@ -1,9 +1,8 @@
-// src/redraw/welltown_art.js - THE WELL TOWN's PLACEHOLDER art (claude/welltown, the greybox; the bowman and the thief are redrawn (claude/welltown3-art); the King stays the other lane's). px.js
+// src/redraw/welltown_art.js - THE WELL TOWN's PLACEHOLDER art (claude/welltown, the greybox; the bowman and the thief are redrawn (claude/welltown3-art)). px.js
 // primitives only. The contract is caravan_bandits.js's: every frame faces RIGHT (L is the flip), one canvas size per set, ax = the body's centre
 // column, ay = the row under the feet, w/h = the hit box.
 //   bakeBanditBowman()  THE BANDIT BOWMAN - the archer's frames on a man of the town (0 stand | 1 draw | 2,3 walk | 4 stand | 5 full draw | 6 loose | 7 hurt)
 //   bakeWaterThief(ct)  THE WATER-THIEF - the cutthroat's frames (src/redraw/caravan_bandits.js) dyed the wells' blue, a skin at his hip
-//   bakeBanditKing()    THE BANDIT KING - a big man in brass and mud plate, a scimitar, a sling of oil jars (KING_F names the frames)
 //   bakeSkinIcon()      a full water-skin (the level's four quest pickups)
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten } from '../px.js';
 import { OUT } from '../art.js';
@@ -51,39 +50,6 @@ export function bakeWaterThief(ct) {
     /* the skin on his hip: a leather bag with a tied neck and a drip */
     ellipse(g, x, y, 3.4, 4, '#2a1c12'); ellipse(g, x, y, 2.6, 3.2, '#b07a48'); px(g, x - 1, y - 1, '#d8a870'); px(g, x - 1, y, '#d8a870'); rect(g, x - 1, y - 4, 2, 2, '#2a1c12'); px(g, x, y - 4, '#6a4426'); px(g, x, y + 4, '#4aa8f0'); return d; });
   return pack(F, ct.ax, ct.ay, 10, 18);
-}
-
-/* ---------- THE BANDIT KING ---------- */
-export const KING_F = { stand: 0, walk: [1, 2], sweepTell: 3, sweep: 4, knivesTell: 5, knives: 6, jarTell: 7, jar: 8, chargeTell: 9, charge: 10, open: 11, hurt: 12, dead: 13 };
-const KG = { brass: '#c9962a', brassL: '#f0c860', brassD: '#8a5e18', mud: '#7a5a3a', mudD: '#4e3622', cloth: '#7a2a2a', clothD: '#4e1a1a', skin: '#a8704a', beard: '#2a1a12',
-  steel: '#c9d1dc', steelL: '#f4f8ff', jar: '#b8743a', jarL: '#e0a060', oil: '#3a2a12', eye: '#f0dca0', steam: '#e8f4f8' };
-export function bakeBanditKing() {
-  const W = 64, H = 60, cx = 28, G = 58;
-  const F = Array.from({ length: 14 }, (_, f) => { const [c, g] = canvas(W, H);
-    if (f === KING_F.dead) { ellipse(g, cx, G - 6, 20, 6, KG.mud); ellipse(g, cx - 6, G - 9, 8, 5, KG.brass); circle(g, cx + 14, G - 8, 5, KG.skin); line(g, cx - 18, G - 3, cx - 30, G - 1, KG.steel, 2); outline(c, OUT); return c; }
-    const walk = f === 1 || f === 2, lean = f === KING_F.charge ? 4 : f === KING_F.chargeTell ? -3 : f === KING_F.hurt ? -3 : f === KING_F.open ? -2 : 0, top = 18, hip = 40;
-    const st = walk ? (f === 1 ? 3 : -3) : f === KING_F.charge ? 4 : 0;
-    rect(g, cx - 8 + st, hip, 6, G - hip - 3, KG.cloth); rect(g, cx + 2 - st, hip, 6, G - hip - 3, KG.clothD);
-    rect(g, cx - 10 + st, G - 4, 9, 4, KG.mudD); rect(g, cx + 1 - st, G - 4, 9, 4, KG.mudD);
-    fillPoly(g, [[cx - 11 + lean, top], [cx + 11 + lean, top], [cx + 13, hip + 3], [cx - 13, hip + 3]], KG.mud);              /* the mud plate */
-    rect(g, cx - 10 + lean, top + 4, 20, 4, KG.brass); rect(g, cx - 10 + lean, top + 4, 20, 1, KG.brassL); rect(g, cx - 12, hip - 2, 25, 4, KG.brassD);   /* brass bands, the belt */
-    for (let i = 0; i < 3; i++) px(g, cx - 6 + i * 6 + lean, top + 14, KG.mudD);
-    for (let i = 0; i < 3; i++) { ellipse(g, cx - 14 + lean, top + 10 + i * 7, 3, 3.5, KG.jar); px(g, cx - 14 + lean, top + 7 + i * 7, KG.oil); }   /* the sling of oil jars */
-    const hx = cx + 2 + lean, hy = top - 7; circle(g, hx, hy, 6, KG.skin); ellipse(g, hx, hy + 4, 6, 4, KG.beard); ellipse(g, hx, hy - 5, 7, 3, KG.cloth); rect(g, hx - 7, hy - 6, 14, 2, KG.brass);
-    px(g, hx + 3, hy - 1, KG.eye); px(g, hx + 4, hy - 1, KG.eye);
-    const sh = [cx + 10 + lean, top + 4];
-    const blade = (x0, y0, x1, y1, col) => { line(g, x0, y0, x1, y1, col, 2); px(g, x1, y1, KG.steelL); };
-    if (f === KING_F.sweepTell) { line(g, ...sh, cx - 6, top - 10, KG.skin, 3); blade(cx - 6, top - 10, cx - 24, top - 22, KG.steelL); }
-    else if (f === KING_F.sweep) { line(g, ...sh, cx + 22, top + 12, KG.skin, 3); blade(cx + 22, top + 12, cx + 34, top + 24, KG.steel); for (let i = 0; i < 8; i++) px(g, cx + 14 + i * 3, top - 4 + i * 4, KG.steelL); }
-    else if (f === KING_F.knivesTell) { line(g, ...sh, cx + 6, top - 8, KG.skin, 3); for (let i = 0; i < 3; i++) line(g, cx + 4 + i * 3, top - 9, cx + 6 + i * 3, top - 15, KG.steel); }
-    else if (f === KING_F.knives) { line(g, ...sh, cx + 26, top + 6, KG.skin, 3); for (let i = -1; i <= 1; i++) line(g, cx + 30, top + 6 + i * 4, cx + 36, top + 6 + i * 6, KG.steelL); }
-    else if (f === KING_F.jarTell) { line(g, ...sh, cx + 4, top - 12, KG.skin, 3); ellipse(g, cx + 4, top - 15, 4, 5, KG.jar); px(g, cx + 4, top - 20, '#ff8a3a'); px(g, cx + 5, top - 21, '#ffd36b'); }
-    else if (f === KING_F.jar) { line(g, ...sh, cx + 24, top - 2, KG.skin, 3); }
-    else if (f === KING_F.chargeTell || f === KING_F.charge) { line(g, ...sh, cx + 16, top + 14, KG.skin, 3); blade(cx + 16, top + 14, cx + 10, top + 30, KG.steel); rect(g, cx + 8 + lean, top - 2, 6, 10, KG.brassD); }
-    else { line(g, ...sh, cx + 14, top + 16, KG.skin, 3); blade(cx + 14, top + 16, cx + 26, top + 26, KG.steel); }
-    if (f === KING_F.open) for (let i = 0; i < 9; i++) circle(g, cx - 10 + i * 3, top - 4 - (i % 3) * 4, 2.5, KG.steam);   /* blind in the steam, the mud running */
-    outline(c, OUT); return c; });
-  return pack(F, cx, G, 22, 40);
 }
 
 /* ---------- ICONS ---------- */

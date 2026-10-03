@@ -8,8 +8,8 @@
 import { canvas, flipX, whiten, outline } from '../px.js';
 import { OUT } from '../art.js';
 
-export const QC = { chit0: '#160f0d', chit1: '#2a1c17', chit2: '#46302a', chit3: '#6e4c3a', rim: '#b08658', sand: '#d8b47a', belly: '#7a5e44', bellyL: '#a08060',
-  eye: '#ff6a3a', eyeL: '#ffd0a0', sting: '#ffb84a', stingHot: '#fff2c0', stingCore: '#ff6a2a', venom: '#a6e04a', venomD: '#4e7a24', wet: '#7ab8e8', wetL: '#d8eef8', claw: '#5a3c2e', clawL: '#9a7050' };
+export const QC = { chit0: '#1a100c', chit1: '#5a3c2e', chit2: '#86593f', chit3: '#b8805a', rim: '#f2cf90', sand: '#d8b47a', belly: '#9a7a58', bellyL: '#c8a87c', leg: '#a06c46', legD: '#6e4630', legL: '#d9a56c',
+  eye: '#ff6a3a', eyeL: '#ffd0a0', sting: '#ffb84a', stingHot: '#fff2c0', stingCore: '#ff6a2a', venom: '#a6e04a', venomD: '#4e7a24', wet: '#7ab8e8', wetL: '#d8eef8', claw: '#9c6642', clawL: '#e4a86c' };
 const R = Math.round;
 const fr = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
 const ell = (g, c, x, y, rx, ry, rot = 0) => { g.fillStyle = c; g.beginPath(); g.ellipse(R(x), R(y), Math.max(0.5, rx), Math.max(0.5, ry), rot, 0, Math.PI * 2); g.fill(); };
@@ -19,15 +19,17 @@ const ln = (g, c, w, pts) => { g.strokeStyle = c; g.lineWidth = w; g.lineCap = '
    tail: 'curl'|'lance'|'sweep'|'flick'|'high'|'pin'|'down', clawReach, lanceTo: [dx, dy], hot (the stinger told), wet, flash, legs: 'walk'|'splay'|'kick'|'still' } */
 export function drawBody(g, o) {
   const t = o.t || 0, k = o.walk ? Math.sin(t * 12) : 0, wet = o.wet || 0;
-  const C = o.flash ? { chit0: '#fff', chit1: '#fff', chit2: '#fff', chit3: '#fff', rim: '#fff', belly: '#fff', bellyL: '#fff', claw: '#fff', clawL: '#fff' } : QC;
-  /* THE LEGS: four a side, from under the body to the floor */
+  const C = o.flash ? { chit0: '#fff', chit1: '#fff', chit2: '#fff', chit3: '#fff', rim: '#fff', belly: '#fff', bellyL: '#fff', claw: '#fff', clawL: '#fff', legD: '#fff', leg: '#fff', legL: '#fff' } : QC;
+  /* THE LEGS (polish): thick, lighter than the floor and the body, a dark edge under a lit one, a knee and a pale foot-claw - they read on the dark hall */
   const legs = o.legs || 'walk';
   for (let i = 0; i < 4; i++) { const bx = -26 + i * 15, ph = (i % 2 ? 1 : -1) * k;
-    for (const side of [0, 1]) { const sh = side ? 0 : 1, col = side ? C.chit2 : C.chit1;
-      if (legs === 'kick') { const a = Math.sin(t * 16 + i * 1.7 + side) * 6; ln(g, col, 3, [[bx, -14], [bx - 6 + a, -34], [bx + 4 + a, -46]]); continue; }
-      const fx = bx + (legs === 'splay' ? (i - 1.5) * 9 : ph * 5 - 4), lift = legs === 'walk' ? Math.max(0, ph) * 4 : 0;
-      ln(g, col, 3, [[bx, -14 - sh], [fx - 6, -26 + sh * 2], [fx - 10, -lift]]); fr(g, C.chit0, fx - 11, -1 - lift, 3, 1); } }
-  /* THE TAIL: six segments from her rump, curled up over her back to the stinger (or out at what it is doing) */
+    for (const side of [0, 1]) { const sh = side ? 0 : 1, col = side ? C.leg : C.legD, hi = side ? C.legL : C.leg;
+      let pts;
+      if (legs === 'kick') { const a = Math.sin(t * 16 + i * 1.7 + side) * 6; pts = [[bx, -14], [bx - 6 + a, -34], [bx + 4 + a, -46]]; }
+      else { const fx = bx + (legs === 'splay' ? (i - 1.5) * 9 : ph * 5 - 4), lift = legs === 'walk' ? Math.max(0, ph) * 4 : 0; pts = [[bx, -14 - sh], [fx - 7, -30 + sh * 2], [fx - 11, -lift]]; }
+      ln(g, C.chit0, 7, pts); ln(g, col, 4.6, pts); ln(g, hi, 1.4, pts.map(([x, y]) => [x - 0.8, y - 1]));
+      const [kx, ky] = pts[1], [fx2, fy2] = pts[2]; ell(g, hi, kx, ky, 2.6, 2.6); fr(g, C.rim, kx - 1, ky - 3, 2, 2); ell(g, C.legL, fx2, fy2, 2.4, 1.6); fr(g, C.rim, fx2 - 3, fy2 - 1, 5, 1); } }
+  /* THE TAIL: seven segments from her rump, curled up over her back to the stinger (or out at what it is doing). Dark edge, lit top. */
   const tail = o.tail || 'curl', segs = [];
   { let px = -42, py = -22; segs.push([px, py]);
     const path = { curl: [[-58, -40], [-60, -64], [-48, -84], [-26, -94], [-6, -88], [4, -74]],
@@ -35,38 +37,48 @@ export function drawBody(g, o) {
       sweep: [[-62, -30], [-80, -32], [-98, -30], [-116, -26], [-132, -20], [-146, -14]],
       flick: [[-60, -36], [-72, -56], [-70, -78], [-56, -92], [-36, -96], [-20, -92]],
       down: [[-58, -24], [-74, -20], [-88, -14], [-100, -8], [-110, -4], [-118, -2]],
-      pin: [[-58, -40], [-56, -66], [-36, -84], [-6, -88], [24, -72], [44, -46]] }[tail] || null;
+      pin: [[-58, -40], [-56, -66], [-36, -84], [-6, -88], [24, -72], [44, -46]],
+      back: [[-64, -26], [-86, -22], [-108, -20], [-128, -24], [-146, -34], [-158, -50]],          /* SWEEP LOW told: drawn back low behind her, the stinger cocked up at the end */
+      backHigh: [[-62, -48], [-84, -70], [-104, -92], [-124, -108], [-146, -112], [-162, -102]],   /* SWEEP HIGH told: thrown back and up, the whole arc behind her */
+      spit: [[-58, -40], [-50, -68], [-24, -90], [6, -98], [34, -92], [58, -78]] }[tail] || null;   /* VENOM SPIT told: the tail arched forward over her head, the stinger aimed at you */
     if (tail === 'lance' && o.lanceTo) { const [tx, ty] = o.lanceTo; for (let i = 1; i <= 6; i++) { const q = i / 6, ax = px + (tx - px) * q, ay = py + (ty - py) * q - Math.sin(q * Math.PI) * 70; segs.push([ax, ay]); } }
     else for (const [ax, ay] of path || []) segs.push([ax + (tail === 'curl' ? Math.sin(t * 2.2) * 2 : 0), ay + (tail === 'curl' ? Math.cos(t * 2.2) * 2 : 0)]); }
-  for (let i = segs.length - 1; i >= 1; i--) { const [x0, y0] = segs[i - 1], [x1, y1] = segs[i], r = 9 - i * 0.6; ln(g, C.chit1, r * 2, [[x0, y0], [x1, y1]]); ell(g, C.chit2, x1, y1, r, r * 0.85); ell(g, C.chit3, x1 - 1, y1 - r * 0.4, r * 0.55, r * 0.3); fr(g, C.rim, x1 - r * 0.5, y1 - r * 0.85, r, 1); }
-  /* THE STINGER: lit - an amber bulb with a hooked barb, white-hot while it is told */
-  { const [sx, sy] = segs[segs.length - 1], [qx, qy] = segs[segs.length - 2] || [sx - 4, sy + 4], a = Math.atan2(sy - qy, sx - qx);
-    const hot = o.hot ? 0.6 + 0.4 * Math.abs(Math.sin(t * 18)) : 0, glow = 0.35 + 0.25 * Math.abs(Math.sin(t * 3)) + hot * 0.5;
-    g.globalAlpha = Math.min(1, glow * 0.6); ell(g, o.hot ? QC.stingHot : QC.sting, sx, sy, 14 + hot * 6, 14 + hot * 6); g.globalAlpha = 1;
-    ell(g, QC.stingCore, sx, sy, 7, 6, a); ell(g, o.hot ? QC.stingHot : QC.sting, sx - 1, sy - 1, 4.5, 3.5, a);
-    const bx = sx + Math.cos(a) * 14, by = sy + Math.sin(a) * 14; ln(g, QC.chit0, 3, [[sx + Math.cos(a) * 5, sy + Math.sin(a) * 5], [bx, by], [bx + Math.cos(a + 1.9) * 6, by + Math.sin(a + 1.9) * 6]]);
-    ln(g, o.hot ? QC.stingHot : QC.rim, 1, [[sx + Math.cos(a) * 6, sy + Math.sin(a) * 6], [bx, by]]); }
-  /* THE BODY: a long segmented carapace, the underbelly paler, a sandy rim light along the top */
-  ell(g, C.belly, -6, -16, 46, 10); ell(g, C.chit1, -4, -24, 48, 16);
-  for (let i = 0; i < 5; i++) { const x = -38 + i * 16; ell(g, i % 2 ? C.chit2 : C.chit1, x, -26, 11, 14); fr(g, C.rim, x - 8, -39 + Math.abs(i - 2), 16, 2); fr(g, C.chit3, x - 6, -34 + Math.abs(i - 2), 10, 2); }
+  for (let i = segs.length - 1; i >= 1; i--) { const [x0, y0] = segs[i - 1], [x1, y1] = segs[i], r = 10.5 - i * 0.7;
+    ln(g, C.chit0, r * 2 + 3, [[x0, y0], [x1, y1]]); ln(g, C.chit2, r * 2, [[x0, y0], [x1, y1]]);
+    ell(g, C.chit0, x1, y1, r + 1.4, r * 0.85 + 1.4); ell(g, C.chit2, x1, y1, r, r * 0.85); ell(g, C.chit3, x1 - 1, y1 - r * 0.35, r * 0.62, r * 0.36); fr(g, C.rim, x1 - r * 0.6, y1 - r * 0.9, r * 1.2, 1.5); }
+  /* THE STINGER (polish): an amber bulb in a real halo (a gradient, not a flat disc), a pale hook and a core - and white-hot, bigger and ringed while it is told */
+  { const [sx, sy] = segs[segs.length - 1], [qx, qy] = segs[segs.length - 2] || [sx - 4, sy + 4], a = Math.atan2(sy - qy, sx - qx), green = o.venomHot;
+    const hot = o.hot ? 0.6 + 0.4 * Math.abs(Math.sin(t * 18)) : 0, glow = 0.55 + 0.2 * Math.abs(Math.sin(t * 3)) + hot * 0.35, R0 = 22 + hot * 12;
+    const cA = green ? '166,224,74' : '255,184,74', cH = green ? '214,255,140' : '255,242,192';
+    const gr = g.createRadialGradient(sx, sy, 2, sx, sy, R0); gr.addColorStop(0, 'rgba(' + (o.hot ? cH : cA) + ',' + Math.min(1, glow) + ')'); gr.addColorStop(0.45, 'rgba(' + cA + ',' + (glow * 0.4) + ')'); gr.addColorStop(1, 'rgba(' + cA + ',0)');
+    g.fillStyle = gr; g.fillRect(sx - R0, sy - R0, R0 * 2, R0 * 2);
+    if (o.hot) { g.strokeStyle = 'rgba(' + cH + ',' + (0.5 + 0.4 * hot) + ')'; g.lineWidth = 1.5; g.beginPath(); g.arc(sx, sy, 11 + hot * 5, 0, Math.PI * 2); g.stroke(); }
+    ell(g, QC.chit0, sx, sy, 11, 10, a); ell(g, green ? QC.venom : QC.stingCore, sx, sy, 9, 8, a); ell(g, o.hot ? (green ? '#eaffb0' : QC.stingHot) : (green ? '#d6f8a0' : '#ffd070'), sx - 1, sy - 1, 5, 4, a);
+    const bx = sx + Math.cos(a) * 15, by = sy + Math.sin(a) * 15, h1 = [bx + Math.cos(a + 1.9) * 7, by + Math.sin(a + 1.9) * 7];
+    ln(g, QC.chit0, 5, [[sx + Math.cos(a) * 5, sy + Math.sin(a) * 5], [bx, by], h1]); ln(g, o.hot ? QC.stingHot : '#ffe2a0', 2.2, [[sx + Math.cos(a) * 6, sy + Math.sin(a) * 6], [bx, by], h1]); }
+  /* THE BODY: a long segmented carapace, the underbelly paler, a continuous sandy rim light along the top and the head */
+  ell(g, C.chit0, -4, -24, 50, 18); ell(g, C.belly, -6, -16, 46, 10); ell(g, C.chit1, -4, -24, 48, 16);
+  for (let i = 0; i < 5; i++) { const x = -38 + i * 16; ell(g, C.chit0, x, -26, 12.4, 15.4); ell(g, i % 2 ? C.chit3 : C.chit2, x, -26, 11, 14); fr(g, C.chit3, x - 6, -34 + Math.abs(i - 2), 10, 2); }
+  ln(g, C.rim, 2, [[-46, -36], [-36, -40], [-20, -42], [-4, -42], [12, -41], [28, -38], [38, -34]]);
   ell(g, C.bellyL, -6, -12, 40, 3);
   /* THE HEAD and the eyes (a cluster, lit) */
-  ell(g, C.chit2, 40, -24, 16, 13); fr(g, C.rim, 30, -36, 20, 2);
-  for (const [ex, ey] of [[46, -30], [50, -28], [43, -27]]) { fr(g, QC.eye, ex, ey, 2, 2); fr(g, QC.eyeL, ex, ey, 1, 1); }
-  ln(g, C.chit3, 2, [[52, -20], [58, -16]]); ln(g, C.chit3, 2, [[52, -24], [60, -26]]);
-  /* THE CLAWS: two great pincers on long arms. GUARD: held up in front of her face (the raised claws that turn a blow) */
+  ell(g, C.chit0, 40, -24, 17.5, 14.5); ell(g, C.chit3, 40, -24, 16, 13); fr(g, C.rim, 30, -36, 20, 2);
+  for (const [ex, ey] of [[46, -30], [50, -28], [43, -27]]) { ell(g, QC.eye, ex, ey, 2.4, 2.4); fr(g, QC.eyeL, ex - 1, ey - 1, 1.5, 1.5); }
+  ln(g, C.chit0, 4, [[52, -20], [59, -15]]); ln(g, C.clawL, 2, [[52, -20], [59, -15]]); ln(g, C.chit0, 4, [[52, -24], [61, -26]]); ln(g, C.clawL, 2, [[52, -24], [61, -26]]);
+  /* THE CLAWS (polish): two great pincers on thick lit arms - pale-rimmed, tipped bright, so the GUARD (the raised claws that turn a blow) and every snap read against the hall */
   const claw = o.claw || 'guard', reach = o.clawReach || 0;
-  for (const side of [1, 0]) { const col = side ? C.claw : C.chit1, colL = side ? C.clawL : C.chit3, dy = side ? 0 : 4;
+  for (const side of [1, 0]) { const col = side ? C.claw : C.chit3, colL = side ? C.clawL : C.claw, dy = side ? 0 : 4;
     let sh = [44, -22 + dy], el, hand, open = 0.3;
     if (claw === 'guard') { el = [62, -40 + dy]; hand = [70 - side * 6, -60 + dy * 2]; open = 0.25 + 0.15 * Math.sin(t * 3 + side); }
     else if (claw === 'down') { el = [60, -14 + dy]; hand = [74, -6 + dy]; open = 0.1; }
     else if (claw === 'up') { el = [56, -60 + dy]; hand = [50 + side * 14, -88 + dy]; open = 0.6 + 0.3 * Math.sin(t * 20 + side * 2); }
     else if (claw === 'snap') { el = [70, -28 + dy]; hand = [94, -26 + dy]; open = side ? 0.05 : 0.9; }
     else { el = [70, -26 + dy]; hand = [86 + reach, -22 + dy]; open = 0.75; }
-    ln(g, col, 7, [sh, el, hand]); ell(g, colL, el[0], el[1] - 2, 3, 2);
-    /* the pincer: a heavy palm and two fingers that open */
-    const [hx, hy] = hand; ell(g, col, hx, hy, 11, 8); ell(g, colL, hx - 2, hy - 4, 6, 2.5);
-    ln(g, col, 4, [[hx + 6, hy - 3], [hx + 18, hy - 6 - open * 10]]); ln(g, col, 4, [[hx + 6, hy + 3], [hx + 18, hy + 4 + open * 6]]); fr(g, QC.rim, hx + 14, hy - 7 - open * 10, 4, 1); }
+    ln(g, C.chit0, 11, [sh, el, hand]); ln(g, col, 8, [sh, el, hand]); ln(g, colL, 2, [[sh[0], sh[1] - 3], [el[0], el[1] - 3], [hand[0], hand[1] - 3]]); ell(g, colL, el[0], el[1] - 1, 4, 3); fr(g, C.rim, el[0] - 2, el[1] - 4, 4, 1);
+    /* the pincer: a heavy palm and two long fingers that open, the tips bright */
+    const [hx, hy] = hand, u = [[hx + 6, hy - 3], [hx + 20, hy - 7 - open * 11]], d = [[hx + 6, hy + 3], [hx + 20, hy + 5 + open * 7]];
+    ln(g, C.chit0, 9.5, u); ln(g, C.chit0, 9.5, d); ell(g, C.chit0, hx, hy, 15.5, 12.5);
+    ln(g, col, 6.5, u); ln(g, col, 6.5, d); ell(g, col, hx, hy, 14, 11); ell(g, colL, hx - 2, hy - 4, 8, 3.2); ln(g, C.rim, 1.4, [[hx - 8, hy - 6], [hx + 6, hy - 8], u[1]]); fr(g, '#f6e0b0', u[1][0] - 1, u[1][1] - 1, 4, 3); fr(g, '#f6e0b0', d[1][0] - 1, d[1][1] - 1, 4, 3); }
   /* WET: the water running off her */
   if (wet > 0) { g.globalAlpha = 0.35 * wet; ell(g, QC.wet, -4, -26, 50, 16); g.globalAlpha = 1; for (let i = 0; i < 6; i++) { const x = -40 + i * 15, y = -10 + ((t * 40 + i * 13) % 16); fr(g, QC.wetL, x, y, 1, 2); } }
 }
@@ -82,14 +94,15 @@ export function drawQueen(g, e, S, x, y, time, cx, cy) {
   if (m === 'lanceTell') { o.tail = 'high'; o.hot = true; } if (m === 'lance' && S.cur) { o.tail = 'lance'; o.lanceTo = [(S.cur.x - e.x) * (e.face || 1), 0]; o.hot = true; }
   if (m === 'flickTell' || m === 'flick') o.tail = 'flick';
   if (m === 'barbTell' || m === 'barb') { o.tail = 'pin'; o.hot = true; }
-  if (m === 'sweepLowTell' || m === 'sweepHighTell') { o.tail = 'high'; o.hot = true; } if (m === 'sweepLow' || m === 'sweepHigh') o.tail = 'sweep';
+  if (m === 'sweepLowTell') { o.tail = 'back'; o.hot = true; o.claw = 'down'; } if (m === 'sweepHighTell') { o.tail = 'backHigh'; o.hot = true; o.claw = 'up'; } if (m === 'sweepLow' || m === 'sweepHigh') o.tail = 'sweep';
   if (m === 'pinTell') { o.tail = 'pin'; o.hot = true; } if (m === 'pin' || m === 'pinned') { o.tail = 'pin'; o.claw = 'down'; }
   if (m === 'grabTell') { o.claw = 'snap'; } if ((m === 'grab' || m === 'hold') && S.claw) { o.claw = 'forward'; o.clawReach = S.claw.reach; }
   if (m === 'tidalTell') { o.tail = 'high'; o.hot = true; } if (m === 'tidal') o.tail = 'sweep';
   if (m === 'soaked') { o.claw = 'down'; o.tail = 'down'; o.legs = 'splay'; o.wet = 1; o.walk = false; }
   if (m === 'rear') { o.claw = 'up'; o.legs = 'kick'; }
   if (m === 'recover' || m === 'surface') o.legs = 'still';
-  if (m === 'slamTell') { o.claw = 'up'; } if (m === 'spitTell') { o.claw = 'down'; o.tail = 'high'; }
+  if (m === 'slamTell') { o.claw = 'up'; o.hot = false; } if (m === 'spitTell') { o.claw = 'down'; o.tail = 'spit'; o.hot = true; o.venomHot = true; }
+  if (m === 'tidalTell') { o.venomHot = true; } if (m === 'waveTell') { o.claw = 'up'; } if (m === 'pounceTell') { o.claw = 'up'; o.tail = 'high'; o.crouch = true; } if (m === 'lungeTell') o.crouch = true; if (m === 'rollTell') { o.claw = 'down'; o.legs = 'still'; o.lean = true; }
   if (e.guardFx > 0) o.flash = true;
   const face = e.face || 1;
   g.save(); g.translate(x, y);
@@ -101,6 +114,7 @@ export function drawQueen(g, e, S, x, y, time, cx, cy) {
   else if (m === 'rear') { g.translate(-10, 0); g.rotate(-0.55 * face); }
   else if (m === 'roll') { g.translate(0, -24); g.rotate(time * 14 * face); g.translate(0, 24); o.legs = 'still'; o.claw = 'down'; o.tail = 'down'; }
   if (!onWall) g.scale(face, 1);
+  if (o.crouch && !onWall) { g.translate(-4, 6); g.rotate(-0.1); } if (o.lean && !onWall) g.rotate(0.14);   /* a CROUCH gathers her low before a lunge or a pounce; the roll's tell leans her back */
   drawBody(g, o);
   g.restore();
   /* the guard's spark: a blow turned on the claws */

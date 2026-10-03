@@ -61,11 +61,15 @@ try {
       walk(119, { tol: 2 }); interact(1, () => !fire(121).lit); leg('THE BAZAAR: the stall fire poured out', fire(121) && !fire(121).lit);
       leg('under the bazaar roof, out the far end', walk(133));
       // ---- 3. THE WELL SQUARE: the great well, the windlass ----
-      leg('up the market stair into the square', walk(170));
+      leg('up the market stair to the square's door (checkpoint)', walk(148));
+      walk(165); for (let j = 0; j < 40 && !BK.miniActive; j++) wait(3); leg('into the market courtyard: THE GANG LEADER wakes', !!BK.miniActive);
+      for (let j = 0; j < 1800 && BK.miniActive; j++) { if (!fight()) wait(1); }
+      leg('THE GANG LEADER down: the courtyard's wall opens, the windlass is free', !BK.miniActive && !BK.enemies().some(q => q.t === 'gangleader' && q.alive));
+      walk(170);
       walk(179, { tol: 3 }); interact(0, () => sips() === 3); leg('the skin filled at THE GREAT WELL', sips() === 3);
       const bucket = BK.movers().find(m => m.windlass); for (let i = 0; i < 30 && fight(); i++) {} walk(177, { tol: 3, noFight: true });   /* (the well head's thief cut down first: a fight walks you off the bucket; stand square on the bucket, not on the well's lip) */ wait(10); strike(-1, () => bucket.dir || bucket.y > bucket.y0 + 2); for (let j = 0; j < 400 && P().y < 38 * TS; j++) tick(1); wait(20);
       leg('THE WINDLASS struck: the bucket down into the cisterns', P().y > 38 * TS);
-      walk(181, { tol: 3 }); interact(0, () => sips() >= 3); leg('the cistern\\'s own well, at the bucket\\'s foot (held: its scorpions, and the men down the well after you)', sips() === 3);
+      walk(181, { tol: 3 }); interact(0, () => sips() >= 3); leg('the cistern\\'s own well, at the bucket\\'s foot (held: its scorpions)', sips() === 3);
       leg('checkpoint two, past the well', walk(194));
       // ---- 4. THE CISTERNS ----
       leg('through the pillared hall', walk(238));
@@ -93,8 +97,8 @@ try {
       walk(456, { tol: 2 }); interact(1, () => wall(458).open); leg('THE KASBAH\\'S DOOR poured away', wall(458) && wall(458).open);
       if (sips() < 1) { for (let i = 0; i < 6 && !(deep().up || deep().wind > 0); i++) { walk(447, { tol: 3 }); strike(-1, () => deep().up || deep().wind > 0); } for (let j = 0; j < 400 && !deep().up; j++) wait(1); walk(448, { tol: 3 }); interact(0); }
       walk(462, { tol: 2 }); interact(1, () => !fire(464).lit); leg('the gateway fire poured out', fire(464) && !fire(464).lit);
-      leg('the courtyard door (checkpoint four)', walk(470));
-      walk(482); wait(60); leg('into the courtyard: THE BANDIT KING wakes', BK.bossActive && BK.boss && BK.boss.t === 'banditking');
+      leg('the Kasbah courtyard's door (checkpoint four)', walk(470));
+      walk(512); leg('through the Kasbah courtyard: the garrison cut down on the way', P().x > 505 * TS);
       BK.log = null;
       return { hero: ${JSON.stringify(hero)}, lifted, log, hurt, state: BK.state, deaths: deaths(), s: +(frames / 60).toFixed(1) };
     })()`, 1200000);

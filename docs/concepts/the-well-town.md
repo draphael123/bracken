@@ -86,7 +86,7 @@ THE WELL TOWN BOSS CHANGE (Daniel, 2026-10-02, after playing the greybox; copied
   human bot 50-60%; screen-filling silhouette, lit stinger.
 
 AS BUILT (claude/welltown3)
-- THE GANG LEADER (`src/gang-leader.js`, a mini in the Kasbah courtyard, 474-513; his gate at 514 lifts when he falls): DOUBLE CUT and CROSS CUT (! a
+- THE GANG LEADER (`src/gang-leader.js`, a mini in the MARKET COURTYARD - the Well Square at the head of the market stair, 152-191, his wall at 151 shut behind you; moved from the Kasbah by claude/welltown-polish, Daniel 10-02. THE GREAT WELL's windlass stands in it and is FOULED until he falls. The Kasbah's courtyard (473-513) is the garrison's: two knives, a thief, a bowman on each of two ledges. A sixth checkpoint stands at the square's door, 147): DOUBLE CUT and CROSS CUT (! a
   shield turns them; his other blade guards while he cuts, so a blow from the front then is turned), THE WHIRL (!!), MOLOTOVS (!: strike one back and it
   flies home and sets him ALIGHT - open 3.2 s at x1.4, a fifth of him a burning at most, inside Daniel's third). He slips most blades while he stalks you
   and comes back with a RIPOSTE (!!); after each of his own blows he is OFF BALANCE (0.35 s, two clean cuts). No charge. The douse at the well is gone.
@@ -100,3 +100,5 @@ AS BUILT (claude/welltown3)
   global x0.05. Venom: a stack a sting/spit/lance/pin/tidal hit, each -25% stamina regen for 6 s (three at most). Her own synth theme ('cisternqueen':
   a low pulsing C# drone, scraping clicks, a hissing rising motif; ':p2' quicker and an octave up; ':p3' adds the surge and drips).
 - Measured: human bot 7/12 = 58% on her, 4/6 on him; mash bot 0/6 on each; `tools/cistern-queen.mjs` holds the spec.
+
+WELLTOWN POLISH (claude/welltown-polish): the Gang Leader moved to the market courtyard (above); the Cistern Queen's poses were hand-polished (lighter, thicker legs and claws, a rim light, a gradient-lit stinger, new told silhouettes: tail thrown back for the sweeps, arched forward and green for the spit and the tidal tail, a crouch for the lunge and the pounce); a VENOM ICON (`src/venom-hud.js`) shows a drop a stack under the stamina bar; the dead `bakeBanditKing` is gone from `src/redraw/welltown_art.js`.

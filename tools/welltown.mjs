@@ -71,8 +71,8 @@ const sunLong = [];
   st.sort((a, b) => b.s - a.s); for (const q of st) if (q.s > SUN.maxWalk) sunLong.push(q);
   ok(pts.length > 1500 && st[0].s <= SUN.maxWalk, 'THE SUN: walked along the route, the longest stretch between two shades is ' + st[0].s.toFixed(1) + ' s (columns ' + st[0].x0 + '-' + st[0].x1 + '), the rule ' + SUN.maxWalk + ' s; next ' + st.slice(1, 4).map(q => q.s.toFixed(1) + ' (' + q.x0 + ')').join(', '));
   const props = L.ents.filter(e => e.t === 'deco' && /^awning/.test(e.kind)).length;
-  ok(props >= 12 && shaded((159 + 0.5) * TS, 26 * TS) && L.grid[21 * W + 159] === T.SOLID && shaded((322 + 0.5) * TS, 20 * TS),
-    'THE SHADE IS CAST BY THINGS: ' + props + ' awnings over the fights, the well-house roof (solid), the inside of the dovecote (its 18 rungs are the breather before the roost)'); }
+  ok(props >= 12 && shaded((159 + 0.5) * TS, 26 * TS) && shaded((182 + 0.5) * TS, 26 * TS) && shaded((322 + 0.5) * TS, 20 * TS) && shaded((495 + 0.5) * TS, 28 * TS),
+    'THE SHADE IS CAST BY THINGS: ' + props + " awnings over the fights, the market courtyard's canopies (the Gang Leader's fight is in shade, both ends), the Kasbah courtyard's walls, the inside of the dovecote (its 18 rungs are the breather before the roost)"); }
 // ---- THE WATER BUDGET ----
 { const wells = L.ents.filter(e => e.t === 'skinwell' && !e.arena && !e.jar).map(e => [e.x, 'well']), jars = L.ents.filter(e => e.t === 'skinwell' && e.jar).map(e => [e.x, 'jar']), pours = required.map(([w, m]) => [m.x0, w]);
   const thieves = [...new Set(L.ents.filter(e => e.t === 'waterthief' && !(e.x >= ax0 && e.x <= ax1)).map(e => e.squad))].map(q => [Math.min(...L.ents.filter(e => e.squad === q).map(e => e.x)), 'thief ' + q]);
@@ -118,11 +118,16 @@ const sunLong = [];
   /* THE GANG LEADER: the courtyard's mini (Daniel 10-02: the Bandit King "feels like a mini") */
   const M = L0.mini;
   ok(M && M.boss === 'gangleader' && /GANG LEADER/.test(M.name) && M.music === 'banditking' && L.ents.some(e => e.t === 'gangleader' && e.mini) && (M.x1 - M.x0) / TS === GSTAGE.W && L.ents.some(e => e.t === 'skinwell' && e.arena && e.x * TS >= M.x0 && e.x * TS <= M.x1),
-    "THE GANG LEADER: a mini in the Kasbah's courtyard (" + GSTAGE.W + ' tiles, its well), on the old King\'s theme');
+    "THE GANG LEADER: a mini in the MARKET COURTYARD (" + GSTAGE.W + " tiles, the great well's head), on the old King's theme");
+  ok(M.x0 >= 150 * TS && M.x1 <= 193 * TS && M.wallL === 151 && M.wallR === 192 && L0.ents.some(e => e.t === 'windlass' && e.top && e.x * TS > M.x0 && e.x * TS < M.x1) && L0.ents.some(e => e.t === 'skinwell' && e.great && e.x * TS > M.x0 && e.x * TS < M.x1),
+    'his courtyard is the Well Square at the head of the market stair (151-192): the great well and its windlass are in it');
+  ok(!L0.ents.some(e => e.t === 'gangleader' && e.x > 440), 'and the Kasbah is not his any more: nothing of his stands past column 440');
   ok(GL.openT >= 3 && GL.capK <= 1 / 3 + 1e-9 && OPEN_RULE.gangleader && OPEN_RULE.gangleader({ mode: 'burning', open: 2 }) && !OPEN_RULE.gangleader({ mode: 'walk', open: 0 }),
     'his opening (BURNING, his own bottle struck home) is ' + GL.openT + ' s (>= 3), and one burning takes a third of him at most (Daniel\'s mini rule)');
-  { const g = L0.grid, gate = []; for (let y = 0; y < H; y++) if (g[y * W + M.gate] === T.PORT) gate.push(y);
-    const shut = { ...L, grid: L.grid.map((t, i) => (i % W === M.gate && gate.includes(Math.floor(i / W)) ? T.SOLID : t)) };
-    ok(gate.length >= 5 && !reaches(shut, inArena), 'his gate (' + gate.length + ' rows) shuts the way on to the old well until he falls'); }
+  { const rows = []; for (let y = M.floor / TS - 6; y <= M.floor / TS - 1; y++) rows.push(y);
+    const shut = { ...L, grid: L.grid.map((t, i) => (i % W === M.wallL && rows.includes(Math.floor(i / W)) ? T.SOLID : t)) };
+    ok(reaches(L, inArena) && !reaches(shut, inArena), 'the way on to the old well runs through his courtyard: with his wall shut (' + rows.length + ' rows) the cisterns and the old well are out of reach, until he falls and it opens'); }
+  { const k = L0.ents.filter(e => e.x > 473 && e.x < 515 && /^(cutthroat|archer|waterthief)$/.test(e.t)), sq = new Set(k.map(e => e.squad));
+    ok(k.length >= 5 && k.some(e => e.t === 'archer') && sq.size >= 3, 'THE KASBAH COURTYARD is not empty: ' + k.length + ' of the garrison in ' + sq.size + ' squads (two bowmen on ledges, a pair of knives and a thief in the yard)'); }
   ok(!L.ents.some(e => e.t === 'banditking'), 'no Bandit King: the courtyard is the Gang Leader\'s, the boss is the Queen\'s'); }
 console.log('welltown: ' + n + ' checks pass');

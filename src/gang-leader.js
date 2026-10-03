@@ -1,4 +1,4 @@
-// src/gang-leader.js - THE GANG LEADER, THE WELL TOWN's mini-boss in the courtyard of the Kasbah (claude/welltown3; Daniel 2026-10-02: the Bandit
+// src/gang-leader.js - THE GANG LEADER, THE WELL TOWN's mini-boss in the market's courtyard, the Well Square (claude/welltown3, moved from the Kasbah by claude/welltown-polish; Daniel 2026-10-02: the Bandit
 // King "feels like a mini" - so he is one now, and the town's boss is THE CISTERN QUEEN under it). The bandits' captain: two curved swords, a sling of
 // oil bottles, a quick man.
 //   TWO SWORDS     DOUBLE CUT (! !: two quick cuts a shield turns) and CROSS CUT (! then a third, quicker), and THE WHIRL (!!: both blades round
@@ -34,18 +34,19 @@ export const GL_MODES = { cutTell: '!', cut2Tell: '!', crossTell: '!', whirlTell
 const PARRY = new Set(['cutTell', 'cut', 'cut2Tell', 'cut2', 'crossTell', 'cross']);
 export const glOpen = e => !!e && e.mode === 'burning' && (e.open || 0) > 0;
 
-/* THE COURTYARD. sx: its first column; R: its floor row. Forty columns, his walls at sx-1 (shut behind you) and sx+40 (his gate: it lifts when he
-   falls), the courtyard well in the middle, a stone trough each side (a row up, boards) */
-export const STAGE = { W: 40, door: 6, well: 19, troughs: [[6, 9], [30, 33]], him: 28 };
+/* THE MARKET COURTYARD (claude/welltown-polish, Daniel 10-02: he moved from the Kasbah to the market). sx: its first column; R: its floor row. Forty columns,
+   his wall at sx-1 (shut behind you) and a solid wall at sx+40 (the fallen street's rubble stands against it: no gate to lift), the great well's head
+   (the courtyard's well, wherever the level put it) and a stone trough each side (a row up, boards). The way on past him - THE GREAT WELL's windlass - is fouled
+   until he falls (src/well-town-hands.js), so the wall that opens behind you when he dies lets you back to the stair and the well is yours.
+   No wall of his own reaches the Great Well's lip: the bucket stands at the floor's level over the shaft, a platform to him as to you. */
+export const STAGE = { W: 40, door: 6, well: 27, troughs: [[6, 9], [31, 34]], him: 30 };
 export function stageGangLeader(W, T, TS, sx, R) {
   const { set, block, ent, air } = W, ex = sx + STAGE.W;
   air(sx, ex - 1, 0, R - 1);
-  block(sx - 1, sx - 1, R - 16, R - STAGE.door - 1); block(ex, ex, R - 16, R - STAGE.door - 1);
-  for (let y = R - STAGE.door; y <= R - 1; y++) set(ex, y, T.PORT);                                     /* his gate: shut until he falls */
+  block(sx - 1, sx - 1, R - 16, R - STAGE.door - 1); block(ex, ex, R - 16, R - 1);
   for (const [a, b] of STAGE.troughs) for (let x = sx + a; x <= sx + b; x++) set(x, R - 1, T.ONEWAY);
-  ent('skinwell', sx + STAGE.well, R - 1, { arena: true });
   ent('gangleader', sx + STAGE.him, R - 1, { face: -1, mini: true });
-  const mini = { x0: sx * TS, x1: ex * TS, floor: R * TS, y0: (R - 16) * TS, y1: (R + 1) * TS, trigger: (sx + 5) * TS, wallL: sx - 1, gate: ex, boss: 'gangleader',
+  const mini = { x0: sx * TS, x1: ex * TS, floor: R * TS, y0: (R - 16) * TS, y1: (R + 1) * TS, trigger: (sx + 5) * TS, wallL: sx - 1, wallR: ex, gate: sx - 1, boss: 'gangleader',
     name: 'THE GANG LEADER', music: 'banditking', well: (sx + STAGE.well) * TS + 8 };
   return { mini };
 }

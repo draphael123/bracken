@@ -18,7 +18,7 @@
 //   64-149   THE LOWER MARKET   DEVELOP              stalls and awnings, the market well, THE MARKET SHRINE (the arc's shop: a lit shrine opens
 //                                                     the store); THE COVERED BAZAAR - under its roof a stall fire (pour it, a sip) or over it, in
 //                                                     the sun, past its bowmen (a silver on the roof walk)
-//   150-205  THE WELL SQUARE    SET PIECE            THE GREAT WELL: its WINDLASS lowers the bucket into the cisterns - strike it and ride; the
+//   150-205  THE WELL SQUARE    MINI + SET PIECE     THE MARKET COURTYARD (150-192): THE GANG LEADER, a mini (src/gang-leader.js stageGangLeader). THE GREAT WELL: its WINDLASS lowers the bucket into the cisterns - strike it and ride; the
 //                                                     street beyond is down (the rubble), so the well is the only way on
 //   166-258  THE CISTERNS       (under the square)   the pillared hall, cool and dark: scorpions, a water-thief, the cistern's own well at the
 //                                                     bucket's foot, THE OLD STINGER at the gate to the rungs up (the level's gated elite)
@@ -27,8 +27,8 @@
 //   326-425  THE BANDITS' ROOST  DEVELOP in the sun   rooftops in open sun (the skin is drink AND pour now), bowmen on the stacks, THE BURNING
 //                                                     BARRICADE under the parapet: a pour you cannot go round
 //   426-521  THE KASBAH          EXAM + BOSS          the last well, held; the Kasbah's bricked door and the fire behind it - two pours from a
-//                                                     three-sip skin in the sun under a bowman; THE DRY CISTERN and its vault; the courtyard of
-//                                                     THE GANG LEADER, a mini (src/gang-leader.js stageGangLeader); THE OLD WELL down into
+//                                                     three-sip skin in the sun under a bowman; THE DRY CISTERN and its vault; the garrison's
+//                                                     courtyard (its well, its knives and two bowmen); THE OLD WELL down into
 //                                                     THE QUEEN'S CISTERN under the street (src/cistern-queen.js stageCisternQueen) and the road out
 //
 // THE SHADE PLAN (claude/welltown-fix, the review's P1: the sun did 88% of a level-1 hero's damage). Every fight and climb stands in shade a
@@ -124,26 +124,25 @@ export function buildWellTown({ painter, T, TS }) {
   awn(140, S - 3, true);                                                     /* a torn stall awning on the stair: shade between the bazaar and the square */
 
   // ================= 3. THE WELL SQUARE (150-205) and THE GREAT WELL =================
+  ent('check', 147, S - 5);                                                    /* CHECKPOINT: THE SQUARE'S DOOR, at the head of the market stair (claude/welltown-polish): the Gang Leader's courtyard is the next 40 tiles - a death must not send you back through the bazaar */
   const Q = S - 4;                                                            /* the square's floor row: 26 */
   ground(150, 192, Q);
-  /* THE WELL-HOUSE: a roof on two posts over the square's west side, its bowmen on it */
-  block(157, 162, Q - 5, Q - 5); ladder(156, Q - 5, Q - 1); ladder(163, Q - 5, Q - 1);   /* a SOLID roof (its shade is the square's first: the review's P1) */
-  shade.push([156 * TS, 164 * TS, (Q - 4) * TS, Q * TS + 1]);
-  bowman(159, Q - 6, 'wellhouse');
-  foe('cutthroat', 168, Q - 1, 'square'); foe('cutthroat', 170, Q - 1, 'square', { follow: true });   /* the second one follows you down the well */
-  awn(169, Q - 1);                                                            /* the square's knives hold its awning */
+  /* THE MARKET COURTYARD (claude/welltown-polish, Daniel 10-02): THE GANG LEADER's - the square at the head of the market stair, forty tiles from 152,
+     his wall shut behind you at 151 and the fallen street's rubble shut at 192 (src/gang-leader.js stageGangLeader). The well-house, its bowman and the square's knives went
+     to the Kasbah's courtyard (7, below): the square is his, and the way on (THE GREAT WELL's windlass, in the middle of it) is fouled until he falls */
   /* THE GREAT WELL: a shaft two wide from the square to the cistern's floor, its WINDLASS on the west lip (strike it: the brake comes off and the
      bucket runs down - with you on it), the well head on the east lip (fill there). The bucket is a lift that moves only on the windlass */
   const gx = 176, floorC = 40;
   air(gx, gx + 1, Q, floorC);
   ent('windlass', gx - 1, Q - 1, { bucket: 'great', top: true });
-  well(gx + 3, Q - 1, { great: true });
-  foe('waterthief', 183, Q - 1, 'wellhead', { follow: true });               /* he keeps the well head - and when the bucket goes, he drops down the shaft after you */
-  awn(182, Q - 1, true);
+  well(gx + 3, Q - 1, { great: true, arena: true });                         /* (the courtyard's well, in the Gang Leader's reach: the skin is filled mid-fight) */
   moversExtra.push({ kind: 'lift', windlass: 'great', x: gx * TS, y: Q * TS, y0: Q * TS, y1: floorC * TS, w: 32, h: 8, speed: 0, locked: true });
   /* THE RUBBLE: the street east of the square fell into the cisterns - a heap twelve rows high, no way over */
   block(193, 197, 13, Q - 1); ground(193, 197, 13);
-  sign(189, Q - 1, 'THE STREET IS DOWN.');
+  sign(190, Q - 1, 'THE STREET IS DOWN.');
+  const gang = stageGangLeader({ set, block, ent, air }, T, TS, 152, Q);
+  shade.push([151 * TS, 193 * TS, (Q - 16) * TS, Q * TS + 1]);                /* the market's canopies are strung across the square (awnings, their rope and the cloth between): his fight is not the sun's */
+  for (const x of [156, 166, 184]) awn(x, Q - 1, x === 166);
 
   // ================= 4. THE CISTERNS (166-258, rows 34-40, under the square and the mud quarter) =================
   const C0 = 166, C1 = 258;
@@ -241,11 +240,15 @@ export function buildWellTown({ painter, T, TS }) {
   fire(464, K - 1, { gateway: true });                                        /* and a fire in it */
   shade.push([460 * TS, 469 * TS, 25 * TS, K * TS + 1]);
   ent('check', 470, K - 1);                                                   /* CHECKPOINT FOUR: the courtyard door */
-  /* THE COURTYARD: THE GANG LEADER's (src/gang-leader.js stageGangLeader, a MINI: Daniel 10-02 - the Bandit King "feels like a mini"), forty tiles from
-     474, the wall shut behind you at 473 and his gate at 514, which lifts when he falls */
+  /* THE KASBAH'S COURTYARD: the garrison's last stand (it was the Gang Leader's; he is in the market now - claude/welltown-polish). Two gateways in the
+     Kasbah's walls (473 and 514, a passage six rows high), a pair of knives and a thief holding the yard, a bowman on each of two ledges. The route
+     is the floor; a ledge is a fight from above that a pour does not reach, so the skin is for the well, not the wall */
   ground(473, 583, K);
-  const gang = stageGangLeader({ set, block, ent, air }, T, TS, 474, K);
-  shade.push([473 * TS, 515 * TS, (K - 16) * TS, K * TS + 1]);                /* the courtyard lies in the shadow of the Kasbah's walls: his fight is not the sun's */
+  block(473, 473, K - 16, K - 7); block(514, 514, K - 16, K - 7);             /* the gateways' walls (they were the mini's door and gate) */
+  shade.push([473 * TS, 515 * TS, (K - 16) * TS, K * TS + 1]);                /* the courtyard lies in the shadow of the Kasbah's walls */
+  boards(480, 485, K - 6); ladder(479, K - 6, K - 1); bowman(483, K - 7, 'kasbahArch');   /* a gallery on the west wall, over the gateway's lintel */
+  foe('cutthroat', 490, K - 1, 'court'); foe('cutthroat', 496, K - 1, 'court'); thief(500, K - 1, 'court'); awn(493, K - 1, true);   /* the knives hold the yard under its awning (the exam's last well is behind you: no refill here, the old well's skin comes full) */
+  boards(504, 509, K - 6); ladder(510, K - 6, K - 1); bowman(507, K - 7, 'kasbahArch2');   /* and a second gallery over the east gateway */
   /* THE OLD WELL: past his gate, the Kasbah's own well, dry - its shaft goes down through the street into THE QUEEN'S CISTERN (src/cistern-queen.js
      stageCisternQueen): forty tiles of dry cistern, fifteen rows high, under the street from 528. You drop in down the shaft */
   ent('check', 519, K - 1);                                                   /* CHECKPOINT FIVE: the old well's head, the boss's door */

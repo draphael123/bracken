@@ -12,7 +12,7 @@ try {
   ok(jump && jump.state === 'play' && Math.abs(jump.at[0] - jump.start[0]) <= 1 && !jump.god, '?level=welltown lands in play at its entrance, no god mode: ' + JSON.stringify(jump));
   const r = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
   const id=LEVELS.findIndex(l=>l.id==='welltown');BK.setHero('knight');BK.reset({fresh:true});BK.load(id);BK.state='play';BK.god=true;BK.sim(30);
-  const W=()=>BK.welltown(),P=BK.P,tp=(x,y)=>{BK.tp(x,y);BK.sim(4);},keep=new Set(['banditking']);
+  const W=()=>BK.welltown(),P=BK.P,tp=(x,y)=>{BK.tp(x,y);BK.sim(4);};
   out.loaded={wells:W().wells.length,walls:W().walls.length,fires:W().fires.length,sips:P.skin.sips};
   tp(11,29);BK.press('talk');BK.sim(3);out.fill=P.skin.sips;
   tp(259,29);P.face=1;BK.press('talk');BK.sim(3);out.wall={open:W().walls.find(m=>m.x0===262).open,sips:P.skin.sips};
@@ -25,7 +25,7 @@ try {
   for(const pr of BK.props().filter(p=>p.t==='stray'&&!p.got)){BK.P.x=pr.x;BK.P.y=pr.y;BK.sim(3);}out.skins=BK.village().saved();
   tp(436,32);BK.press('talk');BK.sim(3);out.cistern={full:W().cistern.full,vault:W().vault.map(v=>v.open)};
   return out;})()`, 300000);
-  ok(r.loaded.wells === 10 && r.loaded.walls === 5 && r.loaded.fires === 3, 'the town as built: 7 wells and a jar (and the two springs in her hall), 5 mud walls (the first lesson: a postern, claude/welltown3), 3 fires ' + JSON.stringify(r.loaded));
+  ok(r.loaded.wells === 9 && r.loaded.walls === 5 && r.loaded.fires === 3, 'the town as built: 6 wells and a jar (and the two springs in her hall), 5 mud walls (the first lesson: a postern, claude/welltown3), 3 fires ' + JSON.stringify(r.loaded));
   ok(r.fill === 3, 'E at a well fills the skin (3 sips)');
   ok(r.wall.open && r.wall.sips === 2, 'E facing a mud wall pours a sip on it: it gives way');
   ok(!r.stall.lit && r.stall.sips === 1, 'E facing a fire pours it out');
@@ -52,12 +52,12 @@ try {
   const u = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
   BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='welltown'));BK.state='play';BK.god=true;BK.sim(10);const P=BK.P,W=()=>BK.welltown();
   out.startSips=P.skin.sips;
-  for(const e of BK.enemies())if(e.t!=='banditking'&&!(e.t==='waterthief'&&e.x>182*16&&e.x<185*16)&&!(e.t==='cutthroat'&&e.x>169*16&&e.x<172*16))e.alive=false;
-  /* THE GREAT WELL: the bucket goes, and the well head's men come down after you */
-  BK.tp(177,25);BK.sim(10);P.face=-1;BK.press('atk');BK.sim(12);for(let i=0;i<300;i++)BK.sim(1);
-  out.followers=BK.enemies().filter(e=>e.alive&&(e.t==='waterthief'||e.t==='cutthroat')).map(e=>[Math.round(e.x/16),Math.round(e.y/16)]);
+  for(const e of BK.enemies())if(e.t!=='gangleader')e.alive=false;
+  /* THE MARKET COURTYARD (claude/welltown-polish): THE GREAT WELL's windlass stands in the Gang Leader's reach and is FOULED while he lives - a blow only rings off it - and works the moment he is down */
+  { const m=BK.movers().find(q=>q.windlass);BK.tp(177,25);BK.sim(10);P.face=-1;BK.press('atk');BK.sim(12);out.fouled={dir:m.dir,y:m.y,y0:m.y0,he:BK.enemies().some(e=>e.t==='gangleader'&&e.alive)};
+    {const gl=BK.enemies().find(e=>e.t==='gangleader');gl.hp=1;BKT.hurtEnemy(gl,99999,gl.x-10,false);}for(let i=0;i<120;i++)BK.sim(1);BK.tp(177,25);BK.sim(10);P.face=-1;BK.press('atk');BK.sim(12);out.freed=m.dir;for(let i=0;i<300;i++)BK.sim(1);out.followers=BK.enemies().filter(e=>e.alive&&(e.t==='waterthief'||e.t==='cutthroat')).length; }
   /* THE DEEP WELL (448): E gives nothing until its windlass winds the bucket up; then it fills */
-  for(const e of BK.enemies())if(e.t!=='banditking')e.alive=false;
+  for(const e of BK.enemies())e.alive=false;
   P.skin.sips=0;BK.tp(448,27);BK.sim(4);BK.press('talk');BK.sim(3);out.deepDown=P.skin.sips;
   BK.tp(447,27);BK.sim(4);P.face=-1;BK.press('atk');BK.sim(12);const dw=W().wells.find(w=>w.deep);out.winding=dw.wind>0;for(let i=0;i<260&&!dw.up;i++)BK.sim(1);out.up=dw.up;
   BK.tp(448,27);BK.sim(4);BK.press('talk');BK.sim(3);out.deepFill=P.skin.sips;out.downAgain=!dw.up;
@@ -69,7 +69,7 @@ try {
   BK.tp(150,25);BK.sim(3);P.sun=P.sun||{};P.sun.v=0.8;out.verbSun=(H.verbNow(P)||{}).verb;
   P.skin.sips=1;W().wells.find(w=>w.deep).up=false;BK.tp(448,27);BK.sim(3);out.verbDeep=(H.verbNow(P)||{}).verb;
   return out;})()`, 300000);
-  ok(u.followers.length === 2 && u.followers.every(([x, y]) => y >= 37 && x >= 170 && x <= 184), 'THE RIDE IS CONTESTED: the bucket gone, the well head\'s thief and a square cutthroat are down at its foot ' + JSON.stringify(u.followers));
+  ok(u.fouled.he && !u.fouled.dir && u.fouled.y === u.fouled.y0 && u.freed === 1 && u.followers === 0, "THE GREAT WELL's WINDLASS is fouled while the Gang Leader lives (the bucket stays up) and works once he is down; the square's men went to the Kasbah, so nobody follows down the shaft " + JSON.stringify([u.fouled, u.freed, u.followers]));
   ok(u.deepDown === 0 && u.winding && u.up && u.deepFill === 3 && u.downAgain, 'THE DEEP WELL: nothing until its windlass is struck, then the bucket winds up (2 s) and it fills, and the bucket goes down again ' + JSON.stringify(u));
   ok(u.respawnSips === 3, 'A CHECKPOINT RESPAWN REFILLS THE SKIN (Daniel): ' + u.respawnSips);
   ok(u.verbWell === 'FILL' && u.verbWall === 'POUR' && u.lesson.open && u.lesson.sips === 2 && u.verbSun === 'DRINK' && u.verbDeep === 'WIND', 'THE HUD SAYS WHAT E DOES: FILL at a well, POUR facing the first lesson mud (and it opens), DRINK in the sun, WIND at a deep well that is down ' + JSON.stringify([u.verbWell, u.verbWall, u.lesson, u.verbSun, u.verbDeep]));
