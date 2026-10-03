@@ -194,7 +194,7 @@ export function buildRedGorge({ painter, T, TS }) {
     arena: crab.arena, gateAfterBoss: true,
     redgorge: true,
     channels: [{ id: 'gorge', x0: C0, x1: C1, y0: 0, y1: F - 1 }, { id: 'dam', x0: crab.channel[0], x1: crab.channel[1], y0: crab.gateRow + 1, y1: REDGORGE.summit - 1 }],
-    gates, jams, baskets, vaultDoors, decor,   /* decor: the nests and the painted hands, drawn by src/red-gorge-hands.js (greybox) */
+    gates, jams, baskets, vaultDoors, decor, ropes,   /* ropes: [col, row0, row1] (the hands glint and tell them, and knot their feet); */ /* decor: the nests and the painted hands, drawn by src/red-gorge-hands.js (greybox) */
     shade, shadeArt: [],
     rockZones: [[0, W - 1, 0, H - 1]],   /* the canyon's red sandstone everywhere (the caravan's rock skin until the art lane paints the gorge its own) */
     /* THE ROPE BRIDGES ARE ROPE AND PLANK (the review: they drew as the desert's rock shelf, against the rule's own picture - the flood drops you
