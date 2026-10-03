@@ -5917,7 +5917,7 @@ function deflectPays(x, y) {
 function deflectLesson() {
   if (!L || L.trial || (PROG.turnSeen || 0) >= 2) return;
   PROG.turnSeen = (PROG.turnSeen || 0) + 1; saveProgress(); hintT = 4.5;
-  hintMsg = 'TAP C ON THE BEAT: THE SHAFT TURNS A YELLOW BLOW AND SWATS WHAT FLIES AT HER. NEVER A RED ONE.';
+  hintMsg = 'TAP C ON THE BEAT: THE SHAFT TURNS A YELLOW BLOW AND SWATS WHAT FLIES. NEVER A RED ONE.';
 }
 function drawPoise(e, cx, cy) {
   const m = poiseMax(e); if (!m) return; const w = Math.max(14, Math.min(40, (e.w || 12) + 6)), x = Math.round(e.x - w / 2 - cx), y = Math.round(e.y - (e.h || 16) - 10 - cy);
@@ -6165,7 +6165,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
     if (!(e.armourSaid > 0)) { e.armourSaid = 1.2; ringAt(e.x, e.y - 30, 26, '#c9a0ff', 0.3);
       number(e.x, e.y - 52, 'WARDED', '#c9a0ff');
       PROG.gqTold = (PROG.gqTold || 0) + 1;
-      if (PROG.gqTold <= 3 || (e.phase === 2 && !e.plateHinted)) { if (e.phase === 2) e.plateHinted = true; hintT = 4.5; hintMsg = e.phase === 2 ? 'CRACK HER PLATE: DROP A CHANDELIER ON HER, OR STRIKE HER BACK WHILE SHE POINTS.' : 'WHEN SHE HOLDS COURT BESIDE A PILLAR, BREAK IT: THREE BLOWS AND IT COMES DOWN ON HER. OR CUT A CHANDELIER DOWN ON HER.'; } }
+      if (PROG.gqTold <= 3 || (e.phase === 2 && !e.plateHinted)) { if (e.phase === 2) e.plateHinted = true; hintT = 4.5; hintMsg = e.phase === 2 ? 'CRACK HER PLATE: DROP A CHANDELIER ON HER, OR STRIKE HER BACK WHILE SHE POINTS.' : 'BREAK HER PILLAR: THREE BLOWS DROP IT ON HER. OR CUT A CHANDELIER DOWN.'; } }
     return; } } // her court's plate turns every blade: a pin gets through (a pillar or a chandelier on her), and in round two her plate off
   if (e.t === 'roc') { if (rocOpen(e)) dmg = Math.round(dmg * 1.5); else { dmg = Math.max(1, Math.round(dmg * 0.1)); if (Math.random() < 0.5) { sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 3); } } } // in the air she is quick and hard to hurt; down, she is not (a tenth, not a half: the quick blades were killing her off her rakes and her rises, and the openings stopped being the fight)
   if (e.t === 'kite' && e.mode !== 'fall') { e.mode = 'fall'; e.vy = -40; e.vx = (Math.sign(e.x - fromX) || 1) * 60; number(e.x, e.y - 40, 'THE STRING', '#ffd36b'); SFX.crack(); }
@@ -7247,7 +7247,7 @@ function lessonHint(kind) {
   else if (kind === 'sweep') hintMsg = 'HIS SHIELD TURNED IT. DOWN+SWING: THE LOW SWEEP GOES UNDER IT AND TRIPS HIM.';
   else if (kind === 'down') hintMsg = DOWN_STRIKE[hero()] ? 'THE DOWN ATTACK SHAKES THE GROUND BESIDE YOU. ONE THAT CATCHES NOTHING ROOTS YOU A BEAT.' : 'COME DOWN AMONG THEM. A PLUNGE THAT CATCHES NOTHING LEAVES YOU STANDING A BEAT.';
   else if (kind === 'parry') hintMsg = hero() === 'knight' ? 'A PERFECT GUARD: IT COST NOTHING AND HE REELS. CUT NOW - THE NEXT CUT LANDS HEAVY.' : 'ON THE BEAT: HE REELS OPEN. CUT HIM NOW.';
-  else if (kind === 'dashatk') hintMsg = 'A GUARD MET AT A RUN GOES OFF BALANCE: DODGE AT HIM AND SWING AT ONCE, THEN CUT HIM WHILE HE REELS.';
+  else if (kind === 'dashatk') hintMsg = 'A GUARD MET AT A RUN GOES OFF BALANCE: DODGE AT HIM, SWING AT ONCE, THEN CUT HIM.';
   else hintMsg = 'THREE SWINGS IN A RUN: THE THIRD IS A HEAVY CUT THAT SHOVES. STOP, AND IT STARTS OVER.';
   return true;
 }
@@ -13502,7 +13502,7 @@ function drawCauseOverlay(cx, cy) {
         g.globalAlpha = CT.ph === 'warn' ? 0.5 + 0.45 * k : 0.35; g.fillStyle = '#f4fbff';
         for (let x = Math.floor(Math.max(p.x0, cx) / 12) * 12; x < Math.min(p.x1, cx + VW + 12); x += 12) { const sx = Math.round(x - cx + Math.sin(time * 2 + x) * 2); g.fillRect(sx, y - 1, 8, 2); if ((x / 12) % 3 === 0) g.fillRect(sx + 2, y - 3, 4, 2); }
         g.globalAlpha = 1; } }
-    if (!bossActive) { const C = L.causeTide, w = 96, x = Math.round(VW / 2 - w / 2), y = 22, warn = CT.ph === 'warn';
+    if (!bossActive) { const C = L.causeTide, w = 96, x = Math.round(VW / 2 - w / 2), y = 62, warn = CT.ph === 'warn';
       g.fillStyle = 'rgba(12,18,20,0.8)'; g.fillRect(x, y, w, 12); g.strokeStyle = warn ? (Math.floor(time * 6) % 2 ? '#ff6b6b' : '#ffd36b') : '#5e6c68'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, 11);
       g.fillStyle = 'rgba(74,154,138,0.55)'; g.fillRect(x + 2, y + 2, Math.round((w - 4) * CT.k), 8);
       g.fillStyle = '#dff0f5'; g.fillRect(x + 2, y + 10, Math.round((w - 4) * Math.max(0, CT.t) / C[CT.ph]), 1);
@@ -19094,7 +19094,7 @@ function updateDuneWormBoss(e, dt) {
   /* HE WAKES: bossStart puts him in 'wake' for the name card - he heaves up out of the middle of the hollow and roars - and then the machine has him */
   if (e.mode === 'wake') { e.modeT -= dt; if (e.modeT > 0) return;
     e.st = DWM.newWorm({ x0: A.x0, x1: A.x1, floorY: A.floor }, e.x); e.st.hp = e.hp; e.st.maxHp = e.maxHp;
-    PROG.dwTold = (PROG.dwTold || 0) + 1; if (PROG.dwTold <= 3) { hintT = 5; hintMsg = 'HE COMES UP UNDER YOU. STAND UNDER THE SHADE, STEP OFF LATE, AND HE COMES UP INTO THE CANVAS.'; } }
+    PROG.dwTold = (PROG.dwTold || 0) + 1; if (PROG.dwTold <= 3) { hintT = 5; hintMsg = 'HE COMES UP UNDER YOU. STAND IN THE SHADE, STEP OFF LATE: HE SURFACES INTO THE CANVAS.'; } }
   const W = e.st || (e.st = DWM.newWorm({ x0: A.x0, x1: A.x1, floorY: A.floor }, e.x)); W.hp = e.hp; W.maxHp = e.maxHp;
   const onSand = !P.dead && P.ground && Math.abs(P.y - A.floor) < 3;
   const evs = DWM.wormStep(W, { px: P.x, py: P.y, pGround: onSand, canopy: dwCanopy(), rng: Math.random }, dt);   /* his dice: how long he stays down, and the order of his three surfaced moves each round */
@@ -20985,7 +20985,7 @@ function updateMonkProps(dt, hb) {
         ringAt(b.x, b.y - 18, 34, '#8fd160', 0.6); burst(b.x, b.y - 18, 20, ['#e8a83a', '#f2ecd8', '#8e3a32'], 100, 0.6);
         number(b.x, b.y - 58, 'THE NOTE GOES THROUGH THE RITE', '#8fd160'); }
       else { pr.cool = pr.coolMax = 2.5; pr.ring = 0.4; number(pr.x, pr.y - 36, b ? 'HE IS NOT UNDER IT' : 'IT RINGS', '#9aa39a');
-        if (b && !(PROG.abbotBellTold > 1)) { PROG.abbotBellTold = (PROG.abbotBellTold || 0) + 1; hintT = 4; hintMsg = 'THE BELL ONLY ANSWERS WITH HIM UNDER IT. GUARD HIS CHAIN AND IT HAULS HIM; BAIT HIS PROCESSION AND HE WALKS THERE.'; } } }
+        if (b && !(PROG.abbotBellTold > 1)) { PROG.abbotBellTold = (PROG.abbotBellTold || 0) + 1; hintT = 4; hintMsg = 'THE BELL ANSWERS ONLY WITH HIM UNDER IT. GUARD HIS CHAIN TO HAUL HIM, OR BAIT HIS PROCESSION.'; } } }
     else if (pr.roc) {
       if (over) { pr.cool = pr.coolMax = 6; pr.ring = 1.4; SFX.sting(); shakeCam(7); zoomKick(1.1, 0.3); rumble(180, 0.7);
         ringAt(b.x, b.y - 14, 30, '#8fd160', 0.6); hurtEnemy(b, 20, pr.x, true); b.mode = 'downed'; b.modeT = 4.8; if(L.belfry)b.x=pr.x; b.vx = 0; b.vy = 40; b.panes = []; SFX.queenShriek();
@@ -23208,7 +23208,7 @@ CA = makeCrouchA({ get P() { return P; }, get L() { return L; }, get enemies() {
 /* TEACH THE WARD: the first yellow blow told near the pyromancer says what her crouch does to it. Twice in a save, once a level */
 let emberTaughtIn = null;
 function emberTeach() { if ((PROG.emberTold || 0) >= 2 || emberTaughtIn === levelIndex) return; emberTaughtIn = levelIndex; PROG.emberTold = (PROG.emberTold || 0) + 1;
-  hintT = 5; hintMsg = 'A YELLOW MARK: TAP DOWN AS IT LANDS AND YOUR FLARE CANCELS IT, SCORCHES IT, AND FEEDS YOUR HEAT. TAP TOO SOON AND YOU ARE LEFT OPEN.'; }
+  hintT = 5; hintMsg = 'YELLOW MARK: TAP DOWN AS IT LANDS TO CANCEL IT AND FEED HEAT. TOO SOON LEAVES YOU OPEN.'; }
 /* THE CROUCH TWISTS, PART B (src/crouch-b.js): main.js owns the world, the save and the keys; the module owns what the paladin's, the
    geomancer's and the death knight's duck does besides duck. Called from updatePlayer (update), the hero's pose pick and draw, and a respawn (clear) */
 CRB = makeCrouchB({ get P() { return P; }, get L() { return L; }, get enemies() { return enemies; }, get bodies() { return bodies; }, get parts() { return parts; }, get time() { return time; }, get levelIndex() { return levelIndex; },
@@ -23681,7 +23681,7 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
   if (ripHeavy) { P.ripostes = (P.ripostes || 0) + 1; SFX.riposte(); number(P.x, P.y - 30, 'RIPOSTE', '#ffd36b'); ringAt(P.x + P.face * 12, P.y - 11, 22, '#fff6c8', 0.25); streaks(P.x + P.face * 12, P.y - 12, 7, ['#ffffff', '#ffd36b'], 190); zoomKick(1.03, 0.14); }
   if (P.heavySwing) { SFX.heavy(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#fff6e0', '#c9d1dc'], 140);
     if ((PROG.thirdSeen || 0) < 2 && !lessonAt('third') && !ripHeavy) {   /* (not on a riposte: that heavy cut was the guard's, not the run's) */ PROG.thirdSeen = (PROG.thirdSeen || 0) + 1; hintT = 4;   /* (not in the wood's third-cut stretch: the lesson there says it, once, as the first blow lands) */
-      hintMsg = hero() === 'knight' ? 'THE THIRD SWING IN A RUN THROWS THEM. THROW THEM AT A WALL, THE SPIKES OR EACH OTHER.' : 'THE THIRD SWING IN A RUN IS A HEAVY CUT THAT SHOVES. STOP SWINGING AND IT STARTS OVER.'; } } }
+      hintMsg = hero() === 'knight' ? 'THE THIRD SWING IN A RUN THROWS THEM: AT A WALL, THE SPIKES OR EACH OTHER.' : 'THE THIRD SWING IN A RUN IS A HEAVY SHOVE. STOP SWINGING AND IT STARTS OVER.'; } } }
 /* ==== THE TIP. The Warden's one rule, and the only thing a player has to learn about her: a blow pays by WHERE ALONG
    THE SPEAR it landed. The last quarter - 34 px out and beyond, which is the leaf of the head and a little behind it -
    is the TIP and pays thirty percent more, with extra poise on it. The middle is a glancing blow at three quarters.
