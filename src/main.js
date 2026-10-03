@@ -158,6 +158,7 @@ import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, 
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
 import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
+import { villageLandmarks, woodLandmarks } from './landmarks.js';
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, MUSIC_CREDITS_ROW, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
@@ -22217,7 +22218,8 @@ function placeLandmarks() {
   const flats = []; for (let y = 4; y < LH - 1; y++) for (let x = 6; x < Math.min(LW - 8, arenaX0); x++) { let ok = !roof(x, y); for (let k = 0; k < 6 && ok; k++) if (!(tileAt(x + k, y) === T.SOLID && tileAt(x + k, y - 1) === T.AIR && tileAt(x + k, y - 2) === T.AIR && tileAt(x + k, y - 3) === T.AIR)) ok = false; if (ok) flats.push([x, y]); }
   const used = []; const pick = () => { for (let t = 0; t < 40; t++) { const f = flats[(rnd() * flats.length) | 0]; if (f && used.every(u => Math.abs(u[0] - f[0]) > 40)) { used.push(f); return f; } } return null; };
   const put = (c, dx, dy, extra = {}) => { const f = pick(); if (f) decor.push(Object.assign({ k: 'landmark', landmark: true, bg: true, x: f[0] * TS + dx, y: f[1] * TS - c.height + dy, c }, extra)); return f; };
-  if (dress === 'wood') { put(PROP.oldOak[0], 8, 0); put(PROP.oldOak[1], 8, 0); put(PROP.beehive, 10, 0); put(PROP.beehive, 30, 0); put(PROP.birdhouse, 20, 0); put(PROP.birdhouse, 50, 0); put(PROP.lanternPost, 40, 0); }
+  const lmId = curId(), lmPut = ([n, i, dx]) => put(i < 0 ? PROP[n] : PROP[n][i], dx, 0);   /* (src/landmarks.js: the village set is Waymeet's alone; Kingswood's court has no beehives or birdhouses) */
+  if (dress === 'wood') for (const e of woodLandmarks(lmId)) lmPut(e);
   if (dress === 'marsh') { put(PROP.fishTrap[0], 12, 0); put(PROP.fishTrap[1], 44, 0); put(PROP.lanternPost, 24, 0); put(PROP.birdhouse, 60, 0); }
   if (dress === 'camp') { put(PROP.spearRack, 12, 0); put(PROP.spearRack, 52, 0); put(PROP.barrelStack, 30, 0); put(PROP.barrelStack, 70, 0); put(PROP.bones[0], 20, 0); put(PROP.bones[1], 60, 0); }
   if (dress === 'myc') { put(PROP.bones[0], 16, 0); put(PROP.bones[1], 56, 0); }
@@ -22225,7 +22227,7 @@ function placeLandmarks() {
   if (dress === 'marsh') { put(PROP.oldOak[1], 8, 0); put(PROP.oldOak[0], 8, 0); }
   if (dress === 'camp') { put(PROP.totem[0], 20, 0); put(PROP.totem[1], 20, 0); }
   if (dress === 'battlefield') { put(ub().wreck, 10, 0); put(PROP.lychgate, 20, 0); put(ub().standard, 6, 0); put(ub().wreck, 30, 0); put(ub().standard, 12, 0); }   /* THE UNBURIED FIELD: the engines they lost, the old standards, and the churchyard gate the Hexed Fields have too */
-  if (dress === 'village') { put(PROP.dovecote, 14, 0); put(PROP.lychgate, 20, 0); put(PROP.yew[0], 8, 0); put(PROP.yew[1], 40, 0); put(PROP.stocks, 26, 0); put(PROP.trough, 52, 0); }
+  for (const e of villageLandmarks(lmId, dress)) lmPut(e);
   if (dress === 'myc') { put(PROP.giantCap, 0, 0); }
 }
 function spawnCritters() {

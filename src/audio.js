@@ -53,7 +53,7 @@ export const musicIsFile = () => !!trackBuf[currentTrack];
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
 export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
 export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
-const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : 0.14) * ambVol;
+const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : 0.14) * ambVol;
 function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }
 
 // ---------- where a sound comes from ----------
@@ -606,6 +606,42 @@ const AMB_LP = { tavern: 1300, hold: 600, hall: 800 };
 const AMB_SHOTS = { shore: [['amb_gull', 0.22, 0, 5]], ship: [['amb_creak', 0.3, 1800, 3], ['amb_gull', 0.14, 0, 9]],
   town: [['amb_hammer', 0.12, 1200, 4], ['vo_hum_alert', 0.05, 900, 11]], cave: [['drip', 0, 0, 3]], drip: [['drip', 0, 0, 2]],
   tavern: [['vo_hum_alert', 0.08, 1600, 5], ['sfx:fuse', 0, 0, 3]], hold: [['amb_creak', 0.4, 1200, 2]], hall: [['drip', 0, 0, 4]] };
+
+/* IDENTITY PASS 0 (claude/identity0): THREE SYNTH BEDS, no files. FIRE for the burning village, the camps and the forge halls (a low roar and a
+   crackle that never stops); CROWD for a town square or an audience (a murmur of voices with the odd laugh-rise); BARN for the Hexed Fields' farm
+   buildings (wind through boards, a settling beam, hay, an owl) - the ship-hold creak was the barn's air before. */
+function loopNoise(freq, q, gain, type = 'bandpass') {
+  const src = ac.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+  const f = ac.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+  const g = ac.createGain(); g.gain.value = gain; src.connect(f); f.connect(g); g.connect(ambGain); src.start(); ambNodes.push(src);
+  return { f, g };
+}
+function lfoOn(param, hz, depth) { const o = ac.createOscillator(); o.frequency.value = hz; const d = ac.createGain(); d.gain.value = depth; o.connect(d); d.connect(param); o.start(); ambNodes.push(o); }
+let ambTick = null, ambTickMs = 500;
+const SYNTH_BEDS = {
+  fire() {
+    const roar = loopNoise(260, 0.7, 0.9, 'lowpass'); lfoOn(roar.g.gain, 0.23, 0.35);
+    const hiss = loopNoise(3200, 0.6, 0.22); lfoOn(hiss.g.gain, 0.5, 0.1);
+    ambTick = () => { if (Math.random() < 0.7) noise(0.015 + Math.random() * 0.03, 0.05 + Math.random() * 0.07, 2200 + Math.random() * 3200, 1.3);
+      if (Math.random() < 0.08) { noise(0.06, 0.16, 1400, 0.9); tone('triangle', 180 + Math.random() * 120, 70, 0.07, 0.04); } };
+    ambTickMs = 160;
+  },
+  crowd() {
+    const a = loopNoise(480, 1.1, 0.8); lfoOn(a.g.gain, 0.19, 0.25); lfoOn(a.f.frequency, 0.11, 120);
+    const b = loopNoise(1150, 2.2, 0.28); lfoOn(b.g.gain, 0.31, 0.12);
+    ambTick = () => { if (Math.random() < 0.3) { const f = 120 + Math.random() * 110; tone('sawtooth', f, f * (0.9 + Math.random() * 0.25), 0.18 + Math.random() * 0.2, 0.012); }
+      if (Math.random() < 0.025) for (let i = 0; i < 4; i++) tone('triangle', 260 + Math.random() * 90, 220, 0.09, 0.02, i * 0.12); };
+    ambTickMs = 400;
+  },
+  barn() {
+    const w = loopNoise(240, 1.6, 0.8); lfoOn(w.g.gain, 0.13, 0.4); lfoOn(w.f.frequency, 0.06, 90);
+    const boards = loopNoise(1500, 3, 0.07); lfoOn(boards.g.gain, 0.09, 0.05);
+    ambTick = () => { if (Math.random() < 0.06) tone('sawtooth', 80 + Math.random() * 40, 55 + Math.random() * 20, 0.45, 0.018);
+      if (Math.random() < 0.12) noise(0.12 + Math.random() * 0.1, 0.05, 2600, 0.7);
+      if (Math.random() < 0.025 && SFX.owlHoot) SFX.owlHoot(); };
+    ambTickMs = 700;
+  },
+};
 let ambShotTimer = null;
 function ambShots(kind) {
   if (ambShotTimer) clearInterval(ambShotTimer); ambShotTimer = null; const list = AMB_SHOTS[kind]; if (!list) return;
@@ -635,6 +671,7 @@ export const ambient = {
       if (trackBuf[FILE]) go(); else { trackPending[FILE] || fetch(TRACKS[FILE]).then(r => r.arrayBuffer()).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[FILE] = b; go(); }).catch(() => {}); }
       return;
     }
+    if (SYNTH_BEDS[kind]) { ambTick = null; SYNTH_BEDS[kind](); const tk = ambTick, kk = kind; if (tk) ambShotTimer = setInterval(() => { if (ambKind === kk && ac) tk(); }, ambTickMs); start(); return; }
     const src = ac.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
     const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = kind === 'water' ? 900 : kind === 'rain' ? 1400 : kind === 'wind' ? 420 : 140; f.Q.value = kind === 'hive' ? 4 : kind === 'rain' ? 0.4 : 0.6;
     const g = ac.createGain(); g.gain.value = kind === 'hive' ? 0.5 : 1;
@@ -1374,7 +1411,7 @@ Object.assign(SFX, {
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'redgorge', 'gorgecrab'];
-export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];
+export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn'];
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
 // that page was CC0 or CC-BY (Daniel's 10-01 rule change) WITH its credit line here and in CREDITS.txt - 'Dark Carnival' and 'At Work' are the CC-BY ones; see the credited lanes' own reports). Three tracks have
 // no outside credit because nothing outside BRACKEN made them (store, underkeep, fallingtower, stormharbor, burial

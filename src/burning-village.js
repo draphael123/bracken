@@ -262,7 +262,7 @@ export function buildBurningVillage({ painter, T, TS }) {
     palette: { set: 'village', sky: 'night', far: 'village', mid: 'village', near: 'village', dress: 'village', haze: 'rgba(255,120,48,0.14)',
       grass: '#4a4a2e', grassL: '#6a6436', grassD: '#2e2c1c', dirt: '#4a3a2e', dirtL: '#5e4a38', dirtD: '#2e241c',
       canopy: ['#2a1a16', '#3a221a', '#4a2c1e', '#5e3822'] },
-    weather: [{ x0: 0, x1: 99999, kind: 'embers' }], ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    weather: [{ x0: 0, x1: 99999, kind: 'embers' }], ambient: [{ x0: 0, x1: 99999, kind: 'fire' }],   /* a village on fire: the roar and crackle of it, not birdsong (claude/identity0) */
     arena: { x0: 454 * TS, x1: 496 * TS, floor: F * TS, trigger: 458 * TS, wallL: 453, wallR: 497, boss: 'pyromancer', music: 'pyroboss',
       tint: '#ff6b2c', tintA: 0.1, fx: 'embers' },
   };

@@ -206,6 +206,7 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
       stone: '#77716c', stoneD: '#4c4844', stoneL: '#9c968e', canopy: ['#1a1418', '#261c22', '#32242c'], nearCol: '#3e3428', nearDark: '#241c17', grade: ['#b0685a', 0.12] },   /* grade: an ember soft-light, where the default is the wood's green */
     night: true, nightA: 0.1,   /* a light wash, so the lamps and the hero's glow read; the dusk is in the sky, not in a navy blanket */
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }],   /* low ground fog, the whole field */
+    ambient: [{ x0: 0, x1: 318 * TS, kind: 'wind' }, { x0: 318 * TS, x1: 99999, kind: 'hall' }],   /* a wind over the dead field, and the stone's hush under the chapel (claude/identity0: it had no zone and played the wood's birdsong) */
     tints: [[318, 419, [34, 28, 52], 0.14]],   /* under the chapel's walls the light goes cold and grey */
     masonry: [[318, W - 1, 20, H - 1], [295, 297, G - 9, G - 5]],   /* THE CHAPEL OF THE FALLEN ORDER is laid stone from its crypt door to the Death Knight's back wall, and so is the gate's lintel */   /* (its old loop, "Haunting Chiptune Loop [Void Estate]", CC0 - audio/CREDITS.txt - is retired from the level: see music below) */
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G }, pools, falls: [], moversExtra, interiors: [], gusts: [], encounters, pegs, garrison, elites,
