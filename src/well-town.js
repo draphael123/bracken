@@ -74,6 +74,13 @@ export function buildWellTown({ painter, T, TS }) {
      awning: its canvas is 52 px wide, centred on the tile) */
   const awn = (x, y, torn) => { ent('deco', x, y, { kind: torn ? 'awningTorn' : 'awning' }); const left = x * TS + 8 - 26, g = (y + 1) * TS, A = SHADE_OF.awning;
     cast.push([left + A.x0, left + A.x1, g - A.h, g + 1]); };
+  /* THE SHADE'S CASTERS (claude/welltown5, Daniel played it 10-03: "some sections where it's not clear that things will actually give you shade"): every
+     tinted shade sits UNDER a thing drawn overhead - an awning (above), the tiles of a roof, a lintel, a balcony, a parapet or a vault, or one of these:
+     A CLOTH CANOPY strung on a rope over columns x0..x1, its cloth at row `row`, over the floor row `floor` (src/redraw/welltown_props.js drawCaster), and
+     its shade from the cloth down; or A WELL-HOUSE ROOF on two posts. tools/welltown.mjs THE SHADE HAS A CASTER holds both ways */
+  const casters = [];
+  const canopy = (x0, x1, row, floor, o = {}) => { casters.push({ kind: 'cloth', x0: x0 * TS, x1: (x1 + 1) * TS, y: row * TS, yb: row * TS + 12, floor: floor * TS, ...o }); shade.push([x0 * TS, (x1 + 1) * TS, row * TS + 10, floor * TS + 1]); };
+  const wellRoof = (x0, x1, row, floor) => { casters.push({ kind: 'roof', x0: x0 * TS, x1: (x1 + 1) * TS, y: row * TS, yb: row * TS + 9, floor: floor * TS }); shade.push([x0 * TS, (x1 + 1) * TS, row * TS + 9, floor * TS + 1]); };
 
   // ================= 1. THE CARAVAN GATE (0-63) =================
   ground(0, 15, S);
@@ -101,8 +108,7 @@ export function buildWellTown({ painter, T, TS }) {
 
   // ================= 2. THE LOWER MARKET (64-149) =================
   ground(64, 89, S);
-  ent('deco', 66, S - 1, { kind: 'awning' }); ent('deco', 73, S - 1, { kind: 'awningTorn' });   /* the stalls' awnings: shade */
-  shade.push([64 * TS, 76 * TS, (S - 4) * TS, S * TS + 1]);
+  for (const x of [65, 68, 71, 74]) awn(x, S - 1, x % 2 === 0);              /* the stalls' awnings, a row of them (claude/welltown5: the shade is theirs, under them - no tinted box over them any more) */
   thief(70, S - 1, 'stalls');                                                 /* a water-thief working the stalls */
   well(77, S - 1);                                                            /* THE MARKET WELL */
   ent('check', 82, S - 1);                                                    /* CHECKPOINT ONE: THE MARKET SHRINE - lit, it is the arc's shop (buy here: src/store.js mayBuy) */
@@ -141,7 +147,7 @@ export function buildWellTown({ painter, T, TS }) {
   block(193, 197, 13, Q - 1); ground(193, 197, 13);
   sign(190, Q - 1, 'THE STREET IS DOWN.');
   const gang = stageGangLeader({ set, block, ent, air }, T, TS, 152, Q);
-  shade.push([151 * TS, 193 * TS, (Q - 16) * TS, Q * TS + 1]);                /* the market's canopies are strung across the square (awnings, their rope and the cloth between): his fight is not the sun's */
+  canopy(151, 192, Q - 6, Q);                                                 /* the market's CLOTHS strung across the square on a rope, wall to wall (claude/welltown5: drawn, and the shade is under them): his fight is not the sun's */
   for (const x of [156, 166, 184]) awn(x, Q - 1, x === 166);
 
   // ================= 4. THE CISTERNS (166-258, rows 34-40, under the square and the mud quarter) =================
@@ -245,7 +251,7 @@ export function buildWellTown({ painter, T, TS }) {
      is the floor; a ledge is a fight from above that a pour does not reach, so the skin is for the well, not the wall */
   ground(473, 583, K);
   block(473, 473, K - 16, K - 7); block(514, 514, K - 16, K - 7);             /* the gateways' walls (they were the mini's door and gate) */
-  shade.push([473 * TS, 515 * TS, (K - 16) * TS, K * TS + 1]);                /* the courtyard lies in the shadow of the Kasbah's walls */
+  canopy(473, 514, K - 5, K, { v: 1 });                                       /* the garrison's cloths strung over the yard from wall to wall under its galleries, low enough to be seen (claude/welltown5: it was a tint with nothing over it) */
   boards(480, 485, K - 6); ladder(479, K - 6, K - 1); bowman(483, K - 7, 'kasbahArch');   /* a gallery on the west wall, over the gateway's lintel */
   foe('cutthroat', 490, K - 1, 'court'); foe('cutthroat', 496, K - 1, 'court'); thief(500, K - 1, 'court'); awn(493, K - 1, true);   /* the knives hold the yard under its awning (the exam's last well is behind you: no refill here, the old well's skin comes full) */
   boards(504, 509, K - 6); ladder(510, K - 6, K - 1); bowman(507, K - 7, 'kasbahArch2');   /* and a second gallery over the east gateway */
@@ -259,7 +265,8 @@ export function buildWellTown({ painter, T, TS }) {
   block(524, 571, K + 1, H - 1);                                              /* the rock under the street, the hall carved out of it */
   const queen = stageCisternQueen({ set, block, ent, air }, T, TS, 528, QF, K);
   for (const n of queen.ladders) nets.push(n);
-  shade.push([528 * TS, 568 * TS, (K + 1) * TS, (QF + 2) * TS + 1]);
+  shade.push([528 * TS, 568 * TS, (K + 1) * TS, (QF + 2) * TS + 1]);          /* her hall: under the street's rock - and under the shaft, the old well's roof (below) */
+  wellRoof(545, 550, K - 4, K);                                               /* THE OLD WELL's head: a well-house roof on two posts over the shaft (claude/welltown5: the light down the shaft is under it) */
   interiors.push([528, 567, QF - 15, QF - 1, 'wtQueen'], [545, 550, QF, QF + 1, 'wtQueen']);   /* (and the sump under the shaft) */
   /* THE WAY OUT: her east wall opens when she dies (the arena's own wall) onto the cistern's old outflow, and the road out of town */
   air(569, 579, QF - 6, QF - 1);
@@ -275,6 +282,7 @@ export function buildWellTown({ painter, T, TS }) {
     welltown: true,
     mudWalls, vaultDoors,
     shade: [...shade, ...cast], shadeArt: shade.slice(),   /* (an awning paints its own shade: only the rest is tinted) */
+    casters,                                               /* the cloths and the well-house roof over the tinted shade (src/well-town-hands.js drawWorld draws them) */
     quest: { n: 4, item: 'waterskin', name: 'WATER-SKINS', done: 'FOUR SKINS: POUR THEM IN THE DRY CISTERN', thanks: 'THE CISTERN IS FULL' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */

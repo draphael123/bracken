@@ -153,3 +153,33 @@ export function drawVaultDoor(g, x, y, h) {
   fr(g, '#8a5e18', x + 4, y + h / 2 - 5, 8, 9); fr(g, '#c9962a', x + 5, y + h / 2 - 4, 6, 7); fr(g, '#f0c860', x + 5, y + h / 2 - 4, 6, 1); pxl(g, '#2a1a08', x + 8, y + h / 2 - 1); fr(g, '#2a1a08', x + 8, y + h / 2, 1, 2);
   fr(g, K.water, x + 7, y + 4, 2, 3); fr(g, K.water, x + 6, y + 6, 4, 2); pxl(g, K.waterLL, x + 7, y + 6);
 }
+
+/* ---- A SHADE CASTER (claude/welltown5, Daniel 10-03: "there should be shade overhanging areas that give you shade"): the thing overhead that casts a
+   tinted shade under it. x0..x1, y = its top (screen px), floor = the floor line under it (screen px). kind 'cloth': market cloths strung on a rope
+   across the span (striped panels, each sagging, scalloped hems, guy ropes at the ends - tied to the walls or to palm posts when s.posts); kind 'roof':
+   a well-house roof of palm beams and reed matting on two posts. The tinted shade under it is main.js's (L.shadeArt); this draws only the caster ---- */
+const CLOTH = ['#e8dcc2', '#b8463a', '#d8a24a', '#e8dcc2', '#9a5a3a'];
+export function drawCaster(g, x0, x1, y, floor, s, time) {
+  const w = x1 - x0;
+  /* its shadow on the floor under it: a violet band where the shade meets the ground (the tint above it is main.js's) */
+  g.fillStyle = 'rgba(78,46,90,0.34)'; g.fillRect(x0, floor - 2, w, 2); g.fillStyle = 'rgba(78,46,90,0.22)'; g.fillRect(x0, floor, w, 5);
+  if (s.kind === 'roof') {
+    for (const px0 of [x0 + 3, x1 - 6]) { fr(g, K.palmD, px0, y + 6, 3, floor - y - 6); fr(g, K.palmL, px0, y + 6, 1, floor - y - 6); }
+    fr(g, K.palmDD, x0 - 2, y + 6, w + 4, 3); fr(g, K.palm, x0 - 2, y + 6, w + 4, 2);
+    for (let i = 0; i < w + 8; i += 2) { const k = Math.abs(i - (w + 8) / 2) / ((w + 8) / 2); fr(g, i % 4 ? '#c8a868' : '#a8884c', x0 - 4 + i, y + R(4 * k), 2, 6 - R(4 * k)); }
+    fr(g, '#7a5e30', x0 - 4, y + 5, w + 8, 1);
+    return;
+  }
+  const n = Math.max(1, Math.round(w / 72)), pw = w / n, sway = Math.sin(time * 1.3) * 0.6;
+  fr(g, K.ropeD, x0, y + 1, w, 1);                                                                                     /* the rope it hangs from */
+  for (let p = 0; p < n; p++) { const a = x0 + p * pw, col = CLOTH[(p + (s.v || 0)) % CLOTH.length];
+    for (let x = 0; x < pw; x++) { const sag = R((5 + sway) * Math.sin(x / pw * Math.PI)), y0 = y + 2 + sag, c = ((x >> 2) & 1) ? col : tintC(col);
+      fr(g, c, a + x, y0 - sag * 0.5, 1, 7 + sag * 0.5); fr(g, '#00000030', a + x, y0 + 6, 1, 1);
+      if ((x % 4 === 1 || x % 4 === 2)) fr(g, c, a + x, y0 + 7, 1, 1); }                                                 /* scallops */
+    fr(g, K.ropeD, a, y, 2, 3); }                                                                                       /* a knot at each panel */
+  for (const [px0, d] of [[x0, -1], [x1 - 1, 1]]) {
+    if (s.posts) { fr(g, K.palmD, px0 - (d > 0 ? 2 : 0), y, 3, floor - y); fr(g, K.palmL, px0 - (d > 0 ? 2 : 0), y, 1, floor - y); }
+    else for (let i = 0; i < 6; i++) pxl(g, K.ropeD, px0 + d * i * 0.5, y - i);                                         /* tied off at the wall */
+  }
+}
+const tintC = c => { const n = parseInt(c.slice(1), 16), f = 0.82; return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v * f).toString(16).padStart(2, '0')).join(''); };

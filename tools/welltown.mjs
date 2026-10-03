@@ -73,6 +73,24 @@ const sunLong = [];
   const props = L.ents.filter(e => e.t === 'deco' && /^awning/.test(e.kind)).length;
   ok(props >= 12 && shaded((159 + 0.5) * TS, 26 * TS) && shaded((182 + 0.5) * TS, 26 * TS) && shaded((322 + 0.5) * TS, 20 * TS) && shaded((495 + 0.5) * TS, 28 * TS),
     'THE SHADE IS CAST BY THINGS: ' + props + " awnings over the fights, the market courtyard's canopies (the Gang Leader's fight is in shade, both ends), the Kasbah courtyard's walls, the inside of the dovecote (its 18 rungs are the breather before the roost)"); }
+// ---- THE SHADE HAS A CASTER (claude/welltown5, Daniel played it 10-03: "not clear that things will actually give you shade") ----
+/* BOTH WAYS. (1) every shade zone (L.shade: the tinted rects and the awnings' own) has a CASTER over every column of it: looking straight up from the
+   zone's first open cell the eye meets a caster prop (an awning, a strung cloth, the well-house roof: L.casters) or a tile (a roof, a lintel, boards, a
+   vault) before the sky. (2) every caster prop has its shade under it: each of its columns lies in a zone whose top is the prop's own underside */
+{ const tileCast = (x, y) => { const c = L.grid[Math.floor(y / TS) * W + Math.floor(x / TS)]; return c === T.SOLID || c === T.ONEWAY || c === T.NET; };
+  const props = [...L.ents.filter(e => e.t === 'deco' && /^awning/.test(e.kind)).map(e => { const left = e.x * TS + 8 - 26, g = (e.y + 1) * TS; return { kind: e.kind + '@' + e.x, x0: left + 3, x1: left + 49, y: g - 30, yb: g - 17 }; }),
+    ...(L.casters || []).map(k => ({ ...k, kind: k.kind + '@' + Math.floor(k.x0 / TS) }))];
+  const bare = [];
+  for (const z of L.shade) { const cols = [];
+    for (let x = z[0] + 2; x <= z[1] - 2; x += 4) { let y = z[2]; while (y <= z[3] && tileCast(x, y)) y += 4; if (y > z[3]) continue;
+      let hit = false; for (let py = y; py >= 0 && !hit; py -= 2) hit = tileCast(x, py) || props.some(p => x >= p.x0 && x <= p.x1 && py >= p.y && py <= p.yb);
+      if (!hit) cols.push(Math.floor(x / TS)); }
+    if (cols.length) bare.push('cols ' + Math.min(...cols) + '-' + Math.max(...cols) + ' rows ' + Math.floor(z[2] / TS) + '-' + Math.floor(z[3] / TS)); }
+  ok(!bare.length, 'THE SHADE HAS A CASTER: every one of ' + L.shade.length + ' shade zones has an awning, a strung cloth, a roof or a lintel over every column of it' + (bare.length ? ' - BARE (a tint with nothing over it): ' + bare.join('; ') : ''));
+  const dry = [];
+  for (const p of props) { const cols = []; for (let x = p.x0 + 2; x <= p.x1 - 2; x += 4) if (!L.shade.some(z => x >= z[0] && x <= z[1] && z[2] >= p.y - 2 && z[2] <= p.yb + 4)) cols.push(Math.floor(x / TS));
+    if (cols.length) dry.push(p.kind + ' (cols ' + Math.min(...cols) + '-' + Math.max(...cols) + ')'); }
+  ok(props.length >= 14 && !dry.length, 'AND EVERY CASTER CASTS: each of ' + props.length + ' awnings, cloths and roofs has its shade under it, from its own underside' + (dry.length ? ' - NO SHADE UNDER: ' + dry.join('; ') : '')); }
 // ---- THE WATER BUDGET ----
 { const wells = L.ents.filter(e => e.t === 'skinwell' && !e.arena && !e.jar).map(e => [e.x, 'well']), jars = L.ents.filter(e => e.t === 'skinwell' && e.jar).map(e => [e.x, 'jar']), pours = required.map(([w, m]) => [m.x0, w]);
   const thieves = [...new Set(L.ents.filter(e => e.t === 'waterthief' && !(e.x >= ax0 && e.x <= ax1)).map(e => e.squad))].map(q => [Math.min(...L.ents.filter(e => e.squad === q).map(e => e.x)), 'thief ' + q]);

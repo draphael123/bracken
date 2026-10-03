@@ -186,6 +186,8 @@ export function makeWellTownHands(ctx) {
     if (!WT) return; const R = Math.round, vw = ctx.VW();
     const on = x => x > cx - 40 && x < cx + vw + 40;
     const Pd = ctx.hero(), skd = Pd && skinOf(Pd), carry = !!skd && skd.sips > 0, room = !!skd && skd.sips < (skd.max || SKINMAX);
+    /* THE SHADE'S CASTERS (claude/welltown5): the cloths strung over the squares and the old well's roof, over the tint main.js lays under them */
+    for (const k of (WT.L.casters || [])) { if (k.x1 < cx - 40 || k.x0 > cx + vw + 40) continue; WTP.drawCaster(g, R(k.x0 - cx), R(k.x1 - cx), R(k.y - cy), R(k.floor - cy), k, time); }
     /* THE WELLS: the only blue in the town. A well that can fill your skin now GLINTS (a white star on its water) */
     for (const w of WT.wells) { if (!on(w.x)) continue; const x = R(w.x - cx), y = R(w.y - cy);
       const fillable = room && (w.jar ? w.left > 0 : !(w.deep && !w.up));
