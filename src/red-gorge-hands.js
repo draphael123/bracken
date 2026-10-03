@@ -19,6 +19,8 @@ export const RAPTOR = { sightY: 150, hp: 24, dmg: 20 };            /* THE RAPTOR
    naming it (once, then again only after NUDGE.again s). No sign spoils it: the glint says WHERE, the nudge only WHAT */
 export const NUDGE = { after: 10, again: 25, rise: 3 };
 export const GORGE_NUDGE = {
+  fallsWheel: 'THE WHEEL: PRESS E AT IT. THE GATE SHUTS AND HOLDS THE FLOOD, AND THE FALLS RUN DRY',
+  fallsHold: 'THE GATE IS SHUT: WAIT FOR THE HORN. IT HOLDS THE FLOOD, THEN CLIMB THE DRY ROPE',
   fallsRope: 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY',
   basket: 'THE BASKET: STAND ON IT. THE FLOOD WINDS IT UP',
   jam: 'THE WHEEL: SHUT THE GATE, LET IT FILL, THEN RELEASE IT',
@@ -159,7 +161,11 @@ export function makeRedGorgeHands(ctx) {
   /* ---------- THE GLINT AND THE NUDGE: what the climb needs next, by where the hero is ---------- */
   const nextThing = P => { const ts = ctx.TS, row = P.y / ts, col = P.x / ts, bk = id => ctx.movers().find(m => m.gorge === id);
     const onB = m => m && P.onMover === m, jam = RG.jams[0];
-    if (row > 118.5 && row <= 136.5 && col > 19 && !P.climb) return { key: 'fallsRope', x: 24 * ts + 8, y: 135 * ts };
+    /* THE FALLS (Daniel 10-03: the gap up the falls cannot be jumped, and the wheel on the terrace was not seen): the glint is on the WHEEL until its gate holds the flood */
+    if (row > 118.5 && row <= 136.5 && col > 19 && !P.climb) { const fg = RG.gates.find(q => q.id === 'falls'), fw = RG.wheels.find(q => q.gate === 'falls');
+      if (fg && fw && fg.state === 'open') return { key: 'fallsWheel', x: fw.x, y: fw.y - 30 };
+      if (fg && fw && fg.state === 'shut') return { key: 'fallsHold', x: fw.x, y: fw.y - 30 };
+      return { key: 'fallsRope', x: 24 * ts + 8, y: 135 * ts }; }
     if (row > 100.5 && row <= 118.5) { const m = bk('ledges'); if (m && !onB(m)) return { key: 'basket', x: m.x + 16, y: m.y - 4 }; }
     if (row > 66 && row <= 70.5 && jam && !jam.open && col > 26) { const w = RG.wheels.find(q => q.gate === 'jam'); return { key: 'jam', x: w.x, y: w.y - 30 }; }
     if (row > 66 && row <= 70.5 && jam && jam.open) { const m = bk('narrows'); if (m && !onB(m)) return { key: 'basket', x: m.x + 16, y: m.y - 4 }; }
@@ -169,7 +175,7 @@ export function makeRedGorgeHands(ctx) {
     if (!tg) { C.key = null; return; } if (tg.key !== C.key) { C.key = tg.key; C.t = 0; C.best = P.y; }
     if (P.y < C.best - NUDGE.rise * ctx.TS) { C.best = P.y; C.t = 0; }
     C.t += dt; const last = C.said[tg.key]; if (C.t >= NUDGE.after && (last === undefined || RG.clock - last >= NUDGE.again)) { C.said[tg.key] = RG.clock; RG.n.nudges++; RG.lastNudge = GORGE_NUDGE[tg.key]; const x = P.x, y = P.y - 34, c = '#ffe9a0';   /* (each line a literal: tools/hint-shown reads the calls) */
-      if (tg.key === 'basket') ctx.number(x, y, 'THE BASKET: STAND ON IT. THE FLOOD WINDS IT UP', c); else if (tg.key === 'jam') ctx.number(x, y, 'THE WHEEL: SHUT THE GATE, LET IT FILL, THEN RELEASE IT', c); else ctx.number(x, y, 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY', c); } };
+      if (tg.key === 'fallsWheel') ctx.number(x, y, 'THE WHEEL: PRESS E AT IT. THE GATE SHUTS AND HOLDS THE FLOOD', c); else if (tg.key === 'fallsHold') ctx.number(x, y, 'THE GATE IS SHUT: WAIT FOR THE HORN, THEN CLIMB THE DRY ROPE', c); else if (tg.key === 'basket') ctx.number(x, y, 'THE BASKET: STAND ON IT. THE FLOOD WINDS IT UP', c); else if (tg.key === 'jam') ctx.number(x, y, 'THE WHEEL: SHUT THE GATE, LET IT FILL, THEN RELEASE IT', c); else ctx.number(x, y, 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY', c); } };
   /* ---------- A BASKET: called from updateMovers before the generic lift (it moves only on running water) ---------- */
   H.basket = (m, dt) => {
     const oy = m.y; m.dx = 0;
