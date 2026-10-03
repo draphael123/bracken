@@ -69,7 +69,9 @@ try {
         for (let f = 0; f < 90; f++) { shut[id](b); P.x = b.x - 30; P.y = b.y; P.inv = 0; P.vx = 0; BK.sim(1); t += 1 / 60; if (BK.textLab && BK.textLab.nums().some(n => n.txt === '!!')) o.markUp = true; if (P.hp < hp0 && firstHurtT < 0) firstHurtT = t; }
         o.hurtAfter = +firstHurtT.toFixed(2); o.hurt = hp0 - P.hp;
         freeze(b); P.hp = P.maxHp; P.inv = 0; for (let i = 0; i < ${GREED.n}; i++) { shut[id](b); BKT.hurtAs('light', b, 10, b.x - 12, false); }
-        const hp1 = P.hp; for (let f = 0; f < 90; f++) { shut[id](b); P.x = b.x - 220; P.y = b.y; P.inv = 0; BK.sim(1); } o.hurtFar = hp1 - P.hp;
+        const hp1 = P.hp; o.farMin = 1e9; for (let f = 0; f < 90; f++) { shut[id](b);
+          /* STAND OFF ON THE ROOMY SIDE: the camera lock walls the hero in at the arena edge, and a chasing boss (the Hornet Queen hovers to P.x) closes a clamped 115 px inside 0.6 s - the flake was the burst landing on a hero the wall had pulled back in, not a long reach */
+          const AR = BK.L.arena, side = (b.x - AR.x0 >= AR.x1 - b.x) ? -1 : 1; P.x = Math.max(AR.x0 + 8, Math.min(AR.x1 - 8, b.x + side * 220)); P.y = b.y; P.inv = 0; BK.sim(1); o.farMin = Math.min(o.farMin, Math.abs(P.x - b.x)); } o.hurtFar = hp1 - P.hp;
         if (opener[id]) { freeze(b); opener[id](b); for (let i = 0; i < ${GREED.n} + 2; i++) { opener[id](b); BKT.hurtAs('light', b, 1, b.x - 12, false); } o.greedInOpen = b.greedT > 0; }
         BK.god = true; }
       /* HIS BURN outside an opening */
@@ -101,6 +103,7 @@ for (const [id, o] of Object.entries(R)) {
   ok(o.greedBegan === GREED.n, id + ': the reprisal must begin on the ' + GREED.n + 'th greedy blow (began on ' + o.greedBegan + ')');
   ok(o.markUp, id + ': the reprisal must be TOLD - a red !! over him');
   ok(o.hurt > 0 && o.hurtAfter >= GREED.tell - 0.05, id + ': the reprisal lands on the hero beside him only after its tell (' + GREED.tell + ' s): hurt ' + o.hurt + ' at ' + o.hurtAfter + ' s');
+  ok(o.farMin > GREED.reach + 40, id + ': the stood-off hero must really stand off (closest he got: ' + o.farMin + ' px; reach ' + GREED.reach + ' + half the boss)');
   ok(o.hurtFar === 0, id + ': a hero who stood off is not hurt by it (lost ' + o.hurtFar + ')');
   if (o.greedInOpen !== undefined) ok(!o.greedInOpen, id + ': blows in his opening must never count as greed');
   if (!own) ok(o.burn4s <= 4 * 2 / 0.3 * cr + 1, id + ': his burn outside an opening is chipped (2 s of burn took ' + o.burn4s + ')');
