@@ -11,7 +11,7 @@ import * as RGP from './redraw/redgorge_props.js';
    stand in a channel is three tiles or less from dry rock (tools/redgorge.mjs proves it) */
 /* (dmg: a flood down the gorge is a fall and a beating; damDmg: the old dam's shallow spillway, where the crab fight is - tuned with the boss pilot at 10) */
 export const GORGE = { dry: 6.0, horn: 2.0, run: 2.4, first: 3.0, dmg: 25, damDmg: 10, down: 200, push: 90, foeDmg: 30, foeFlood: 0.5, foeNear: [360, 220], release: { tell: 0.35, run: 1.6 }, wellR: 22 };
-export const BASKET = { rise: 2.0, sink: 36, hold: 2.5 };          /* a basket climbs its shaft in RISE s of running water, holds HOLD s at the top, then sinks */
+export const BASKET = { rise: 2.0, sink: 36, hold: 2.0, fall: 2.0 };          /* a basket climbs its shaft in RISE s of running water, holds HOLD s at the top, then drops its whole shaft in FALL s (Daniel 10-03: at 36 px/s an 18-row basket never reached the bridge between two floods, ~10 s apart - it hung out of reach, a soft-lock; the foot must be back well before the next flood) */
 export const RAPTOR = { sightY: 150, hp: 24, dmg: 20 };            /* THE RAPTOR: it hunts only a hero within SIGHTY px (up or down) of the bridge it keeps; its stoop hits harder than a vulture's (20, the vulture 10) */
 
 /* WHAT YOU MUST USE NEXT (Daniel's playtest, 10-02: on bridge two he could not see that the basket was the way on). The canal's answer
@@ -24,6 +24,7 @@ export const GORGE_NUDGE = {
   jam: 'THE WHEEL: SHUT THE GATE, LET IT FILL, THEN RELEASE IT',
   narrowsRope: 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY',
 };
+export const ROPE_TOLD = 'CLIMB THE ROPE: UP';   /* the first time you come to a rope's foot (a told prompt; the keys differ by device, so it names the direction only) */
 export function makeRedGorgeHands(ctx) {
   let RG = null;
   const H = {};
@@ -41,6 +42,7 @@ export function makeRedGorgeHands(ctx) {
         channels: (L.channels || []).map(c => ({ ...c })),
         gates: (L.gates || []).map(g => ({ ...g, state: 'open', fx: 0 })),
         wheels: ents.filter(e => e.t === 'sluice').map(e => ({ x: e.x * ts + 8, y: (e.y + 1) * ts, gate: e.gate, arena: !!e.arena, cd: 0 })),
+        ropes: (L.ropes || []).map(([x, y0, y1]) => ({ x: x * ts + 8, y0: y0 * ts, y1: (y1 + 1) * ts, r0: y0, r1: y1 })),
         jams: (L.jams || []).map(j => ({ ...j, open: false })),
         nest: (() => { const e = ents.find(q => q.t === 'oldnest'); return e ? { x: e.x * ts + 8, y: (e.y + 1) * ts, open: false } : null; })(),
         vault: (L.vaultDoors || []).map(v => ({ ...v, open: false })),
@@ -150,6 +152,7 @@ export function makeRedGorgeHands(ctx) {
     for (const w of RG.wheels) if (!RG.said['w' + w.gate] && Math.abs(w.x - P0.x) < 44 && Math.abs(w.y - P0.y) < 24) (RG.said['w' + w.gate] ? 0 : (RG.said['w' + w.gate] = 1, ctx.number(P0.x, P0.y - 34, 'E AT THE WHEEL: SHUT THE GATE, OR RELEASE WHAT IT HOLDS', '#ffd36b')));
     for (const j of RG.jams) if (!j.open && !RG.said.jam && Math.abs((j.x0 + 2.5) * ctx.TS - P0.x) < 80 && Math.abs((j.y1 + 1) * ctx.TS - P0.y) < 24) (RG.said['jam'] ? 0 : (RG.said['jam'] = 1, ctx.number(P0.x, P0.y - 34, 'A JAM: ONLY A RELEASED BURST MOVES IT', '#ffd36b')));
     for (const m of ctx.movers()) if (m.gorge && !RG.said['b' + m.gorge] && Math.abs(m.x + 16 - P0.x) < 48 && Math.abs(m.y0 - P0.y) < 24) (RG.said['b' + m.gorge] ? 0 : (RG.said['b' + m.gorge] = 1, ctx.number(P0.x, P0.y - 34, 'THE WHEEL TURNS WHEN THE WATER RUNS', '#ffd36b')));
+    for (const r of RG.ropes) if (!RG.said.rope && !P0.climb && r.r1 - r.r0 >= 12 && Math.abs(r.x - P0.x) < 56 && P0.y > r.y0 - 8 && P0.y < r.y1 + 40) { RG.said.rope = 1; ctx.number(P0.x, P0.y - 34, 'CLIMB THE ROPE: UP', '#ffd36b'); }
     const n = RG.nest; if (n && !n.open && !RG.said.nest && Math.abs(n.x - P0.x) < 48 && Math.abs(n.y - P0.y) < 24 && ctx.questGot() < ctx.questN()) (RG.said['nest'] ? 0 : (RG.said['nest'] = 1, ctx.number(P0.x, P0.y - 34, 'THE OLD NEST WANTS FOUR FEATHERS', '#ffd36b')));
   };
 
@@ -172,7 +175,7 @@ export function makeRedGorgeHands(ctx) {
     const oy = m.y; m.dx = 0;
     if (RG && running('gorge', m.wheelRow)) { m.hold = BASKET.hold; m.y = Math.max(m.y1, m.y - (m.y0 - m.y1) / BASKET.rise * dt); if (oy > m.y1 + 4 && m.y <= m.y1 + 4 && RG) RG.n.rides++; }
     else if (m.hold > 0) m.hold -= dt;
-    else if (m.y < m.y0) m.y = Math.min(m.y0, m.y + BASKET.sink * dt);
+    else if (m.y < m.y0) m.y = Math.min(m.y0, m.y + Math.max(BASKET.sink, (m.y0 - m.y1) / BASKET.fall) * dt);
     m.dy = m.y - oy; return true;
   };
 
@@ -198,6 +201,10 @@ export function makeRedGorgeHands(ctx) {
   H.drawWorld = (g, cx, cy, time) => {
     if (!RG) return; const R = Math.round, vw = ctx.VW(), vh = ctx.VH();
     RGP.drawBack(g, scene(), kit(cx, cy, time));   /* the art lives in src/redraw/redgorge_props.js (claude/redgorge-art) */
+    /* THE LONG ROPES' FEET: a frayed end and two grip knots at a reachable height, so a rope reads as a thing to climb (Daniel 10-03) */
+    for (const r of RG.ropes) { if (r.r1 - r.r0 < 12) continue; const x = R(r.x - cx), yb = R(r.y1 - cy); if (x < -8 || x > vw + 8 || yb < -8 || yb > vh + 40) continue;
+      g.fillStyle = '#d9b36a'; for (const ky of [yb - 6, yb - 22]) { g.fillRect(x - 2, ky, 5, 3); g.fillStyle = '#7a5a30'; g.fillRect(x - 2, ky + 3, 5, 1); g.fillStyle = '#d9b36a'; }
+      g.fillStyle = '#b8924a'; g.fillRect(x - 3, yb, 1, 3); g.fillRect(x - 1, yb, 1, 5); g.fillRect(x + 1, yb, 1, 4); g.fillRect(x + 3, yb, 1, 2); }
     /* THE GLINT over what the climb needs next (a warm pulsing star and ring; off the screen, a chevron at its edge) */
     if (RG.glint) { const p = RG.glint, x = R(p.x - cx), y = R(p.y - 18 - cy), k = 0.5 + 0.5 * Math.sin(time * 5);
       if (x >= -8 && x <= vw + 8 && y >= -8 && y <= vh + 8) { g.globalAlpha = 0.35 + 0.45 * k; g.strokeStyle = '#ffe9a0'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, 9 + 3 * k, 0, Math.PI * 2); g.stroke();
