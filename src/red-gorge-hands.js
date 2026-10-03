@@ -6,6 +6,8 @@
 // line listed in src/hint-lines.js (the hint box). THE GREAT RED CRAB (src/gorge-crab-hands.js) reads the dam's water through dam().
 import { vultureStep } from './desert-foes.js';
 import * as RGP from './redraw/redgorge_props.js';
+import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';   /* THE GLINT + THE 10 s STALL NUDGE (claude/gorgemodule: shared with the canal and the route list) */
+import { STUCK_HANDS } from './stuck-spots.js';
 
 /* THE FLOOD'S CLOCK (s), its blow, and a released burst. GORGE.horn is the whole warning: two seconds is a dozen tiles at a run, and every place to
    stand in a channel is three tiles or less from dry rock (tools/redgorge.mjs proves it) */
@@ -14,18 +16,10 @@ export const GORGE = { dry: 6.0, horn: 2.0, run: 2.4, first: 3.0, dmg: 25, damDm
 export const BASKET = { rise: 2.0, sink: 36, hold: 2.0, fall: 2.0 };          /* a basket climbs its shaft in RISE s of running water, holds HOLD s at the top, then drops its whole shaft in FALL s (Daniel 10-03: at 36 px/s an 18-row basket never reached the bridge between two floods, ~10 s apart - it hung out of reach, a soft-lock; the foot must be back well before the next flood) */
 export const RAPTOR = { sightY: 150, hp: 24, dmg: 20 };            /* THE RAPTOR: it hunts only a hero within SIGHTY px (up or down) of the bridge it keeps; its stoop hits harder than a vulture's (20, the vulture 10) */
 
-/* WHAT YOU MUST USE NEXT (Daniel's playtest, 10-02: on bridge two he could not see that the basket was the way on). The canal's answer
-   (claude/canalfix3): a pulsing GLINT on the thing the climb needs next, and after NUDGE.after s with no headway up the gorge, a short NUDGE
-   naming it (once, then again only after NUDGE.again s). No sign spoils it: the glint says WHERE, the nudge only WHAT */
-export const NUDGE = { after: 10, again: 25, rise: 3 };
-export const GORGE_NUDGE = {
-  fallsWheel: 'THE WHEEL: PRESS E AT IT. THE GATE SHUTS AND HOLDS THE FLOOD, AND THE FALLS RUN DRY',
-  fallsHold: 'THE GATE IS SHUT: WAIT FOR THE HORN. IT HOLDS THE FLOOD, THEN CLIMB THE DRY ROPE',
-  fallsRope: 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY',
-  basket: 'THE BASKET: STAND ON IT. THE FLOOD WINDS IT UP',
-  jam: 'THE WHEEL: SHUT THE GATE, LET IT FILL, THEN RELEASE IT',
-  narrowsRope: 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY',
-};
+/* WHAT YOU MUST USE NEXT (Daniel's playtest, 10-02: on bridge two he could not see that the basket was the way on). A pulsing GLINT on the thing the climb needs
+   next, and after NUDGE.after s with no headway up the gorge, a short NUDGE naming it (once, then again only after NUDGE.again s). No sign spoils it: the glint says
+   WHERE, the nudge only WHAT. The glint, the stall clock and the nudge are the shared module's (src/stuck-guide.js); the gorge's route list is DATA, STUCK_HANDS in
+   src/stuck-spots.js (claude/gorgemodule: it was this file's own nextThing / stall / glint code) */
 export const ROPE_TOLD = 'CLIMB THE ROPE: UP';   /* the first time you come to a rope's foot (a told prompt; the keys differ by device, so it names the direction only) */
 export function makeRedGorgeHands(ctx) {
   let RG = null;
@@ -158,24 +152,13 @@ export function makeRedGorgeHands(ctx) {
     const n = RG.nest; if (n && !n.open && !RG.said.nest && Math.abs(n.x - P0.x) < 48 && Math.abs(n.y - P0.y) < 24 && ctx.questGot() < ctx.questN()) (RG.said['nest'] ? 0 : (RG.said['nest'] = 1, ctx.number(P0.x, P0.y - 34, 'THE OLD NEST WANTS FOUR FEATHERS', '#ffd36b')));
   };
 
-  /* ---------- THE GLINT AND THE NUDGE: what the climb needs next, by where the hero is ---------- */
-  const nextThing = P => { const ts = ctx.TS, row = P.y / ts, col = P.x / ts, bk = id => ctx.movers().find(m => m.gorge === id);
-    const onB = m => m && P.onMover === m, jam = RG.jams[0];
-    /* THE FALLS (Daniel 10-03: the gap up the falls cannot be jumped, and the wheel on the terrace was not seen): the glint is on the WHEEL until its gate holds the flood */
-    if (row > 118.5 && row <= 136.5 && col > 19 && !P.climb) { const fg = RG.gates.find(q => q.id === 'falls'), fw = RG.wheels.find(q => q.gate === 'falls');
-      if (fg && fw && fg.state === 'open') return { key: 'fallsWheel', x: fw.x, y: fw.y - 30 };
-      if (fg && fw && fg.state === 'shut') return { key: 'fallsHold', x: fw.x, y: fw.y - 30 };
-      return { key: 'fallsRope', x: 24 * ts + 8, y: 135 * ts }; }
-    if (row > 100.5 && row <= 118.5) { const m = bk('ledges'); if (m && !onB(m)) return { key: 'basket', x: m.x + 16, y: m.y - 4 }; }
-    if (row > 66 && row <= 70.5 && jam && !jam.open && col > 26) { const w = RG.wheels.find(q => q.gate === 'jam'); return { key: 'jam', x: w.x, y: w.y - 30 }; }
-    if (row > 66 && row <= 70.5 && jam && jam.open) { const m = bk('narrows'); if (m && !onB(m)) return { key: 'basket', x: m.x + 16, y: m.y - 4 }; }
-    if (row > 60 && row <= 65.5 && col < 22 && !P.climb) return { key: 'narrowsRope', x: 22 * ts + 8, y: 62 * ts };
-    return null; };
-  const stall = (P, dt) => { const tg = RG.glint = nextThing(P), C = RG.stall = RG.stall || { key: null, t: 0, best: 1e9, said: {} };
-    if (!tg) { C.key = null; return; } if (tg.key !== C.key) { C.key = tg.key; C.t = 0; C.best = P.y; }
-    if (P.y < C.best - NUDGE.rise * ctx.TS) { C.best = P.y; C.t = 0; }
-    C.t += dt; const last = C.said[tg.key]; if (C.t >= NUDGE.after && (last === undefined || RG.clock - last >= NUDGE.again)) { C.said[tg.key] = RG.clock; RG.n.nudges++; RG.lastNudge = GORGE_NUDGE[tg.key]; const x = P.x, y = P.y - 34, c = '#ffe9a0';   /* (each line a literal: tools/hint-shown reads the calls) */
-      if (tg.key === 'fallsWheel') ctx.number(x, y, 'THE WHEEL: PRESS E AT IT. THE GATE SHUTS AND HOLDS THE FLOOD', c); else if (tg.key === 'fallsHold') ctx.number(x, y, 'THE GATE IS SHUT: WAIT FOR THE HORN, THEN CLIMB THE DRY ROPE', c); else if (tg.key === 'basket') ctx.number(x, y, 'THE BASKET: STAND ON IT. THE FLOOD WINDS IT UP', c); else if (tg.key === 'jam') ctx.number(x, y, 'THE WHEEL: SHUT THE GATE, LET IT FILL, THEN RELEASE IT', c); else ctx.number(x, y, 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY', c); } };
+  /* ---------- THE GLINT AND THE NUDGE: what the climb needs next, by where the hero is (the route list: src/stuck-spots.js STUCK_HANDS) ---------- */
+  const handsState = name => name === 'gate.falls' ? ((RG.gates.find(q => q.id === 'falls') || {}).state || '') : name === 'jam' ? (RG.jams[0] ? (RG.jams[0].open ? 'open' : 'closed') : '') : '';
+  const stall = (P, dt) => { const TS = ctx.TS, r = resolve('redgorge', Math.floor(P.x / TS), Math.floor((P.y - 1) / TS), { TS, props: [], movers: ctx.movers(), hero: P, state: handsState }, STUCK_HANDS);
+    const stalls = RG.stalls = RG.stalls || {};   /* one clock per key: its 'said' outlasts a change of key, the headway clock starts again with it */
+    if (!r) { RG.glint = null; RG.stallKey = null; return; } const t = r.targets[0]; RG.glint = { key: r.key, x: t.x, y: t.y };
+    const C = stalls[r.key] = stalls[r.key] || newStall(); if (r.key !== RG.stallKey) { RG.stallKey = r.key; C.t = 0; C.best = 1e9; }
+    if (stallTick(C, P.y, dt, RG.clock, false)) { RG.n.nudges++; RG.lastNudge = r.line; ctx.number(P.x, P.y - 34, r.line, '#ffe9a0'); } };
   /* ---------- A BASKET: called from updateMovers before the generic lift (it moves only on running water) ---------- */
   H.basket = (m, dt) => {
     const oy = m.y; m.dx = 0;
@@ -211,12 +194,8 @@ export function makeRedGorgeHands(ctx) {
     for (const r of RG.ropes) { if (r.r1 - r.r0 < 12) continue; const x = R(r.x - cx), yb = R(r.y1 - cy); if (x < -8 || x > vw + 8 || yb < -8 || yb > vh + 40) continue;
       g.fillStyle = '#d9b36a'; for (const ky of [yb - 6, yb - 22]) { g.fillRect(x - 2, ky, 5, 3); g.fillStyle = '#7a5a30'; g.fillRect(x - 2, ky + 3, 5, 1); g.fillStyle = '#d9b36a'; }
       g.fillStyle = '#b8924a'; g.fillRect(x - 3, yb, 1, 3); g.fillRect(x - 1, yb, 1, 5); g.fillRect(x + 1, yb, 1, 4); g.fillRect(x + 3, yb, 1, 2); }
-    /* THE GLINT over what the climb needs next (a warm pulsing star and ring; off the screen, a chevron at its edge) */
-    if (RG.glint) { const p = RG.glint, x = R(p.x - cx), y = R(p.y - 18 - cy), k = 0.5 + 0.5 * Math.sin(time * 5);
-      if (x >= -8 && x <= vw + 8 && y >= -8 && y <= vh + 8) { g.globalAlpha = 0.35 + 0.45 * k; g.strokeStyle = '#ffe9a0'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, 9 + 3 * k, 0, Math.PI * 2); g.stroke();
-        g.fillStyle = '#fff6c8'; const r = 3 + R(3 * k); g.fillRect(x - r, y, r * 2 + 1, 1); g.fillRect(x, y - r, 1, r * 2 + 1); g.fillRect(x - 1, y - 1, 3, 3); g.globalAlpha = 1; }
-      else { const ex = Math.max(10, Math.min(vw - 10, x)), ey = Math.max(14, Math.min(vh - 14, y)), dx = Math.sign(x - ex), dy = Math.sign(y - ey); g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#ffe9a0';
-        for (let i = 0; i < 4; i++) g.fillRect(ex + dx * (i - 3) - (dy ? i : 0), ey + dy * (i - 3) - (dx ? i : 0), dy ? i * 2 + 1 : 1, dx ? i * 2 + 1 : 1); g.globalAlpha = 1; } }
+    /* THE GLINT over what the climb needs next (the shared glint: src/stuck-guide.js) */
+    if (RG.glint) drawGlint(g, R(RG.glint.x - cx), R(RG.glint.y - 18 - cy), vw, vh, time);
   };
   /* THE FLOOD on the HUD, under the sun's meter: the clock to the horn, the horn, the torrent */
   H.drawHud = (g, P) => {
