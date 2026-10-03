@@ -104,7 +104,8 @@ export function glPlan(s) {
   /* THE WATER: he comes at you - pour in his path (once per approach, and not every time) */
   const wet = (F.puddles || []).some(q => Math.sign(q.x - P.x) === toHim && Math.abs(q.x - P.x) < ad + 10);
   if (m === 'walk' && sips > 0 && ad > 44 && ad < 130 && P.ground && !wet && !roll('pour' + F.act, PLAN.missPour)) { out.face = toHim; out.talk = true; out.why = 'pour in his path'; return out; }
-  if (m === 'walk' && wet && ad > 75) { out.face = toHim; out.why = 'wait behind the puddle'; return out; }
+  /* MUD ZONING (claude/glhotfix): he will not step into it - hold the line a step beyond the reach of his blades, strike what he sends, cut him if the weapon reaches */
+  if (wet && ad > 40 && /^(walk|recover|cut|cut2|cross|cutTell|cut2Tell|crossTell|throwTell|throw|whirlTell)$/.test(m)) { out.gx = clamp(e.x + side * Math.max(52, Math.min(70, reach + 20))); out.face = toHim; out.atk = ad < reach + 4 && P.atk < 0 && (s.greed || 0) < 3 && m !== 'whirlTell' && m !== 'cutTell'; out.why = 'hold the mud line'; return out; }
   /* a dry skin: the well head (it glints), when he is not on you */
   if (sips <= 0 && A.well != null && (ad > 60 || m === 'recover') && !(F.puddles || []).length) { if (Math.abs(P.x - A.well) < 10 && P.ground) { out.talk = true; out.why = 'fill the skin at the well head'; return out; } out.gx = A.well; out.why = 'to the well head'; return out; }
   /* between his blows, and as he walks in: cut him (a blow short of greed), from where his reach is not */
