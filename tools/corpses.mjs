@@ -24,7 +24,7 @@ try {
       for (const k of kinds) { const row = { level: id, flag: k.f, t: k.t, errs: [] };
         BK.load(li); BK.state = 'play'; BK.god = true; BK.sim(4); if (BK.canal && BK.canal()) for (const f of BK.canal().fogs) { f.fade = 0; f.clear = 9999; }
         const e = foes().find(q => flag(q) === k.f && q.t === k.t); if (!e) { row.errs.push('foe not found after reload'); res.push(row); continue; }
-        e.x = BK.P.x + 48; e.y = BK.P.y; e.vx = 0; e.vy = 0; e.hp = 99; e.frozen = 9; e.waiting = false; for (let q = 0; q < 40; q++) BK.step(1);
+        if (e.pool) { BK.P.x = e.x - 48; BK.P.y = e.y; BK.P.vx = 0; BK.P.vy = 0; } else { e.x = BK.P.x + 48; e.y = BK.P.y; } e.vx = 0; e.vy = 0;   /* (a water foe is held to its pool: the hero goes to it) */ e.hp = 99; e.frozen = 9; e.waiting = false; for (let q = 0; q < (e.pool ? 240 : 40); q++) BK.step(1);   /* (the camera has a long way to come to a hero moved to a pool) */
         const alive = e.lastSet; row.liveSame = alive === BK.SPR[e.t]; if (alive && row.liveSame) row.errs.push('the living foe wears the BASE sheet (' + e.t + '), not its reskin'); if (!alive) row.errs.push('the living foe was never drawn (off screen?)');
         e.hurtT = 0.3; e.flash = 0.2; BK.step(1);
         const hurtF = e.lastFrame; if (e.lastSet !== alive) row.errs.push('the hurt frame drew a different set from the living one');
