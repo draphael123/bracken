@@ -18,6 +18,6 @@ self.addEventListener('fetch', e => {
   if (url.origin !== self.location.origin || req.headers.has('range')) return;
   if (!(req.mode === 'navigate' || CACHEABLE.test(url.pathname) || url.pathname.endsWith('/'))) return;   // audio and anything unknown go straight to the network
   const key = req.mode === 'navigate' ? './index.html' : req;   // every way into the game (/, /?x=1, /index.html) is the one cached page
-  e.respondWith(fetch(req, { cache: 'no-store' }).then(r => { if (r && r.ok) { const copy = r.clone(); caches.open(VERSION).then(c => c.put(key, copy)); } return r; })
+  e.respondWith(fetch(req, { cache: 'no-cache' }).then(r => { if (r && r.ok) { const copy = r.clone(); caches.open(VERSION).then(c => c.put(key, copy)); } return r; })
     .catch(() => caches.open(VERSION).then(c => c.match(key)).then(hit => hit || Response.error())));
 });

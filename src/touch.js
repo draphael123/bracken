@@ -15,12 +15,14 @@
 // hit boxes are in GAME pixels (the 320x180 sheet) because that is what the menus draw in.
 import { TABS, TAB_ITEMS } from './settings-ui.js';
 
-export const TOUCH_ROWS = ['- LAYOUT -', 'Touch size', 'Touch opacity', 'Left-handed', 'Edit layout', 'Reset layout', '- HELP -', 'Touch assists', 'Haptics', 'Lighter effects'];
+export const TOUCH_ROWS = ['- LAYOUT -', 'Touch size', 'Touch opacity', 'Left-handed', 'Edit layout', 'Reset layout', '- HELP -', 'Touch assists', 'Haptics', 'Lighter effects', '- PHONE -', 'Phone mode', 'Frame rate'];
 export const TOUCH_TIPS = {
   'Touch size': 'how big the buttons and the stick are', 'Touch opacity': 'how see-through the buttons are',
   'Left-handed': 'swaps the stick and the buttons', 'Edit layout': 'drag any button where your thumb wants it', 'Reset layout': 'every button back where it started',
   'Touch assists': 'a longer input buffer, and ATTACK turns to a foe just behind you', 'Haptics': 'a buzz on a hit, a block, a parry and a level-up (not on iPhone)',
   'Lighter effects': 'fewer particles and background layers, for a phone',
+  'Phone mode': 'AUTO draws at a light resolution on a phone; OFF is the full-sharpness picture (heavier); ON forces it. Reload after changing it',
+  'Frame rate': '30 halves the drawing work on a slow phone (the game still plays at full speed)',
 };
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const FONT = '"Press Start 2P", monospace';
@@ -48,7 +50,8 @@ const SPOT = {
 const LABEL = { throw: 'F', skill2: 'G', skill3: '3', skill4: '4' };
 
 export function createTouch(env) {
-  const { disp, dg, q, SET } = env;
+  const { disp, q, SET } = env;
+  let dg = env.dg;   // the context the buttons are drawn on: the main canvas's until the overlay is made, then the overlay's (see draw)
   const on = ('ontouchstart' in window && navigator.maxTouchPoints > 0) || q.get('touch') === '1';
   const touches = new Map();              // touch id -> { role: 'stick' | 'btn' | 'tap' | 'drag', k, ... }
   let stick = null;                       // { id, cx, cy, x, y, sec }  (display pixels)
@@ -68,14 +71,18 @@ export function createTouch(env) {
   }
 
   // ---------- geometry ----------
+  /* THE NOTCH, READ ONCE (claude/mobile2): getComputedStyle on every layout() call - several a frame and one per finger event - forced a style recalc each time.
+     The safe area only changes with the window, so it is read again after a resize / turn and at most every 2 s, never in the frame. */
+  let insCss = null, insAt = -1e9;
+  const dropIns = () => { insCss = null; }; addEventListener('resize', dropIns); addEventListener('orientationchange', dropIns);
   function insets() {   // CSS px -> display px; ?safe=t,r,b,l fakes a notch for the test
     const { DPR } = env.geom(); let v = [0, 0, 0, 0]; const o = q.get('safe');
     if (o) v = o.split(',').map(x => +x || 0);
-    else { const el = document.getElementById('safe'); if (el) { const cs = getComputedStyle(el); v = [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].map(x => parseFloat(x) || 0); } }
+    else { const now = performance.now(); if (!insCss || now - insAt > 2000) { const el = document.getElementById('safe'); insCss = [0, 0, 0, 0]; insAt = now; if (el) { const cs = getComputedStyle(el); insCss = [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].map(x => parseFloat(x) || 0); } } v = insCss; }
     return { t: v[0] * DPR, r: (v[1] || 0) * DPR, b: (v[2] || 0) * DPR, l: (v[3] || 0) * DPR };
   }
   function layout() {
-    const W = disp.width, H = disp.height, ins = insets(), key = [W, H, size(), left(), JSON.stringify(SET.touchPos || {}), ins.t, ins.r, ins.b, ins.l].join('|');
+    const W = disp.width, H = disp.height, ins = insets(), key = [W, H, size(), left(), layVer, ins.t, ins.r, ins.b, ins.l].join('|');
     if (lay && key === layKey) return lay; layKey = key;
     const { DPR } = env.geom(), s = Math.min(W, H) * 0.145 * size(), m = Math.max(10 * DPR, 0) , L = left(), sg = L ? -1 : 1;
     const pivX = L ? ins.l + m + s : W - ins.r - m - s, pivY = H - ins.b - m - 0.78 * s;
@@ -92,9 +99,11 @@ export function createTouch(env) {
     lay = { W, H, s, ins, m, btn, pills, back, stickR, zone: L ? { x0: W - zoneW, x1: W } : { x0: 0, x1: zoneW }, rest: { x: L ? W - ins.r - m - stickR * 1.25 : ins.l + m + stickR * 1.25, y: H - ins.b - m - stickR * 1.25 } };
     return lay;
   }
-  const relayout = () => { lay = null; };
+  let layVer = 0;
+  const relayout = () => { lay = null; layVer++; };
   addEventListener('resize', relayout);
-  const toDisp = t => { const r = disp.getBoundingClientRect(); return [(t.clientX - r.left) * disp.width / (r.width || 1), (t.clientY - r.top) * disp.height / (r.height || 1)]; };
+  let rect = null; addEventListener('resize', () => { rect = null; });   // the canvas is fixed to the window: its box is read once per finger-down, not per move
+  const toDisp = t => { const r = rect || (rect = disp.getBoundingClientRect()); return [(t.clientX - r.left) * disp.width / (r.width || 1), (t.clientY - r.top) * disp.height / (r.height || 1)]; };
   const toGame = (px, py) => { const { S, offX, offY } = env.geom(); return [(px - offX) / S, (py - offY) / S]; };
   const inCircle = (b, x, y, slop = 1.12) => Math.hypot(x - b.cx, y - b.cy) <= b.r * slop;
   const inRect = (b, x, y) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
@@ -189,12 +198,16 @@ export function createTouch(env) {
   }
   if (on) {
     const each = (e, f) => { e.preventDefault(); lastTouchAt = performance.now(); for (const t of e.changedTouches) { const [px, py] = toDisp(t); f(t.identifier, px, py); } };
-    disp.addEventListener('touchstart', e => { env.initAudio(); each(e, startTouch); }, { passive: false });
+    disp.addEventListener('touchstart', e => { rect = null; env.initAudio(); each(e, startTouch); }, { passive: false });
     disp.addEventListener('touchmove', e => each(e, moveTouch), { passive: false });
     const end = e => { e.preventDefault(); for (const t of e.changedTouches) endTouch(t.identifier); };
     disp.addEventListener('touchend', end, { passive: false }); disp.addEventListener('touchcancel', end, { passive: false });
     addEventListener('blur', releaseAll);
-    document.addEventListener('visibilitychange', () => { if (document.hidden) releaseAll(); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) releaseAll(); else wake(); });
+    /* THE SCREEN STAYS ON while the game is open (a thumb on a stick is not a screen touch the phone counts as idle for long): the Screen Wake Lock, asked for on a touch
+       and again when the page comes back (the browser drops it when the page is hidden). Silently nothing where it is not offered. */
+    let wl = null; const wake = () => { try { if (navigator.wakeLock && !wl && !document.hidden) navigator.wakeLock.request('screen').then(l => { wl = l; l.addEventListener('release', () => { wl = null; }); }).catch(() => {}); } catch {} };
+    disp.addEventListener('touchend', wake, { passive: true });
   }
 
   // ---------- the layout editor (Settings > TOUCH > Edit layout): drag a button, it keeps the spot ----------
@@ -225,8 +238,9 @@ export function createTouch(env) {
   }
   function roundRect(x, y, w, h, r) { dg.beginPath(); dg.roundRect(x, y, w, h, r); }
   function fit(text, maxW, px) { dg.font = px + 'px ' + FONT; while (px > 6 && dg.measureText(text).width > maxW) { px--; dg.font = px + 'px ' + FONT; } return px; }
+  let skillNow = null;   // { icon, k (0..1 of the wait left), secs } for the skill button being drawn, or null
   function icon(k, b, down) {
-    const { cx, cy, r } = b, u = r * 0.5; dg.save(); dg.translate(cx, cy);
+    const { cx, cy, r } = b, u = r * 0.5; skillNow = k in SKILL_OF && env.skillInfo && !editing ? env.skillInfo(SKILL_OF[k]) : null; dg.save(); dg.translate(cx, cy);
     dg.strokeStyle = 'rgba(255,246,224,0.95)'; dg.fillStyle = 'rgba(255,246,224,0.95)'; dg.lineWidth = Math.max(2, r * 0.12); dg.lineCap = 'round'; dg.lineJoin = 'round';
     if (k === 'atk') { dg.beginPath(); dg.moveTo(-u * 0.9, u * 0.9); dg.lineTo(u * 0.8, -u * 0.8); dg.stroke(); dg.beginPath(); dg.moveTo(-u * 0.55, u * 0.1); dg.lineTo(-u * 0.1, u * 0.55); dg.stroke(); dg.beginPath(); dg.moveTo(u * 0.8, -u * 0.8); dg.lineTo(u * 0.8, -u * 0.35); dg.moveTo(u * 0.8, -u * 0.8); dg.lineTo(u * 0.35, -u * 0.8); dg.stroke(); }
     else if (k === 'jump') { dg.beginPath(); dg.moveTo(-u * 0.8, u * 0.45); dg.lineTo(0, -u * 0.35); dg.lineTo(u * 0.8, u * 0.45); dg.stroke(); dg.beginPath(); dg.moveTo(-u * 0.8, u * 1.0); dg.lineTo(0, u * 0.2); dg.lineTo(u * 0.8, u * 1.0); dg.stroke(); }
@@ -234,6 +248,15 @@ export function createTouch(env) {
     else if (k === 'block') { dg.beginPath(); dg.moveTo(-u * 0.75, -u * 0.8); dg.lineTo(u * 0.75, -u * 0.8); dg.lineTo(u * 0.75, u * 0.1); dg.quadraticCurveTo(u * 0.7, u * 0.7, 0, u * 1.0); dg.quadraticCurveTo(-u * 0.7, u * 0.7, -u * 0.75, u * 0.1); dg.closePath(); dg.stroke(); }
     else if (k === 'pause') { dg.fillRect(-u * 0.55, -u * 0.7, u * 0.38, u * 1.4); dg.fillRect(u * 0.17, -u * 0.7, u * 0.38, u * 1.4); }
     else if (k === 'interact') { const word = (verb && verb.verb) || 'USE', px = fit(word, r * 1.55, Math.round(r * 0.55)); dg.font = px + 'px ' + FONT; dg.textAlign = 'center'; dg.textBaseline = 'middle'; dg.fillText(word, 0, 1); }
+    else if (k in SKILL_OF && skillNow && skillNow.icon) {   // THE SKILL'S OWN GLYPH (the same picture the HUD slot and the store use), a whole-number scale so the pixels stay square, the wait swept over it
+      const ic = skillNow.icon, iw = ic.width || 12, ih = ic.height || 12, sc = Math.max(1, Math.floor(r * 1.45 / Math.max(iw, ih))), dw = iw * sc, dh = ih * sc, busy = skillNow.k > 0;
+      dg.imageSmoothingEnabled = false; dg.globalAlpha *= busy ? 0.5 : 1; dg.drawImage(ic, Math.round(-dw / 2), Math.round(-dh / 2), dw, dh); dg.globalAlpha /= busy ? 0.5 : 1;
+      if (busy) {
+        dg.save(); dg.beginPath(); dg.arc(0, 0, r * 0.94, 0, 7); dg.clip(); dg.fillStyle = 'rgba(8,8,16,0.62)'; dg.beginPath(); dg.moveTo(0, 0); dg.arc(0, 0, r * 1.2, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, skillNow.k)); dg.closePath(); dg.fill(); dg.restore();
+        if (skillNow.secs >= 1) { const t = String(Math.ceil(skillNow.secs)), px = Math.round(r * 0.62); dg.font = px + 'px ' + FONT; dg.textAlign = 'center'; dg.textBaseline = 'middle'; dg.lineWidth = Math.max(2, px * 0.28); dg.strokeStyle = 'rgba(8,8,16,0.9)'; dg.strokeText(t, 0, 1); dg.fillStyle = '#fff6e0'; dg.fillText(t, 0, 1); }
+      }
+      const kp = Math.round(r * 0.4); dg.font = kp + 'px ' + FONT; dg.textAlign = 'right'; dg.textBaseline = 'alphabetic'; dg.lineWidth = Math.max(2, kp * 0.3); dg.strokeStyle = 'rgba(8,8,16,0.9)'; dg.strokeText(LABEL[k] || '', r * 0.86, r * 0.84); dg.fillStyle = 'rgba(255,246,224,0.9)'; dg.fillText(LABEL[k] || '', r * 0.86, r * 0.84);
+    }
     else { dg.font = Math.round(r * 0.9) + 'px ' + FONT; dg.textAlign = 'center'; dg.textBaseline = 'middle'; dg.fillText(LABEL[k] || '?', 0, 1); }
     dg.restore();
   }
@@ -263,9 +286,34 @@ export function createTouch(env) {
     dg.fillStyle = act && act.sec >= 0 ? 'rgba(143,209,96,0.7)' : 'rgba(255,246,224,0.35)'; dg.beginPath(); dg.arc(kx, ky, R * 0.42, 0, 7); dg.fill();
     dg.strokeStyle = 'rgba(255,246,224,0.85)'; dg.lineWidth = 2; dg.stroke();
   }
+  /* THE OVERLAY (claude/mobile2): the buttons are drawn on a canvas of their own, at the phone's FULL resolution, and only when something they show has changed
+     (a thumb moved, a button went down, a skill's wait ticked a step). The game's own canvas is half-resolution on a phone (main.js resize), so drawing the
+     buttons on it would be blocky; and redrawing them 60 times a second on top of a full-screen canvas was a cost for nothing - a still thumb costs nothing now. */
+  let ov = null, ovg = null, ovSig = '';
+  function overlay() {
+    if (ov) return true; if (typeof document === 'undefined' || !disp.parentNode) return false;
+    ov = document.createElement('canvas'); ov.id = 'touchlayer'; ov.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;touch-action:none;image-rendering:auto';
+    disp.parentNode.insertBefore(ov, disp.nextSibling); ovg = ov.getContext('2d'); return true;
+  }
+  function sigNow(L) {
+    const st = env.state(), parts = [st, editing ? 1 : 0, layVer, L.W, L.H, opacity(), drag ? drag.k : '', stick ? (stick.cx | 0) + ',' + (stick.cy | 0) + ',' + (stick.x | 0) + ',' + (stick.y | 0) + ',' + stick.sec : ''];
+    for (const t of touches.values()) if (t.role === 'btn') parts.push('d' + t.k);
+    if (playing() || editing) { for (const b of visibleBtns()) parts.push(b.k + '@' + (b.cx | 0) + ',' + (b.cy | 0)); parts.push(verb ? verb.verb : '');
+      if (playing() && env.skillInfo) for (let i = 0; i < 4; i++) { const s = env.skillInfo(i); parts.push(s ? (s.icon && s.icon.__id || s.id || 'x') + ':' + Math.round(s.k * 32) + ':' + Math.ceil(s.secs || 0) : '-'); } }
+    return parts.join('|');
+  }
   function draw() {
     if (!on) return;
-    const L = layout(), a0 = dg.globalAlpha; dg.globalAlpha = opacity();
+    const L = layout();
+    if (!overlay()) { paint(L); return; }
+    const g = env.geom(), k = (g.DEV || g.DPR) / g.DPR, w = Math.max(1, Math.round(disp.width * k)), h = Math.max(1, Math.round(disp.height * k)), sig = sigNow(L) + '|' + w + 'x' + h;
+    if (sig === ovSig) return; ovSig = sig;
+    if (ov.width !== w || ov.height !== h) { ov.width = w; ov.height = h; }
+    dg = ovg; dg.setTransform(k, 0, 0, k, 0, 0); dg.clearRect(0, 0, disp.width, disp.height); dg.globalAlpha = 1;
+    paint(L);
+  }
+  function paint(L) {
+    const a0 = dg.globalAlpha; dg.globalAlpha = opacity();
     if (editing) {
       dg.globalAlpha = 1; dg.fillStyle = 'rgba(10,14,12,0.72)'; dg.fillRect(0, 0, L.W, L.H);
       dg.globalAlpha = Math.max(0.6, opacity()); dg.strokeStyle = 'rgba(255,246,224,0.35)'; dg.setLineDash([8, 8]); dg.strokeRect(L.zone.x0 + 4, L.ins.t + L.m, L.zone.x1 - L.zone.x0 - 8, L.H - L.ins.t - L.ins.b - 2 * L.m); dg.setLineDash([]);
@@ -294,7 +342,7 @@ export function createTouch(env) {
     switch (k) {
       case 'Touch size': return Math.round(size() * 100) + '%'; case 'Touch opacity': return Math.round(opacity() * 100) + '%';
       case 'Left-handed': return onoff(left()); case 'Touch assists': return onoff(SET.touchAssist !== false); case 'Haptics': return onoff(SET.touchHaptics !== false);
-      case 'Lighter effects': return onoff(lite()); default: return null;
+      case 'Lighter effects': return onoff(lite()); case 'Phone mode': return (SET.phoneRes || 'auto').toUpperCase(); case 'Frame rate': return SET.fpsCap === 30 ? '30' : '60'; default: return null;
     }
   }
   /* a left / right on a Touch row: true when the row was ours (main.js then saves and plays the click) */
@@ -302,6 +350,8 @@ export function createTouch(env) {
     if (k === 'Touch size') SET.touchSize = step(SIZES, size(), dir); else if (k === 'Touch opacity') SET.touchOpacity = step(OPS, opacity(), dir);
     else if (k === 'Left-handed') { SET.touchLeft = !SET.touchLeft; SET.touchPos = {}; }   // (a dragged spot belongs to the hand it was made for) else if (k === 'Touch assists') SET.touchAssist = SET.touchAssist === false;
     else if (k === 'Haptics') { SET.touchHaptics = SET.touchHaptics === false; if (SET.touchHaptics) buzz([40]); } else if (k === 'Lighter effects') applyLite(!lite());
+    else if (k === 'Phone mode') { const M = ['auto', 'on', 'off'], i = M.indexOf(SET.phoneRes || 'auto'); SET.phoneRes = M[(i + dir + 3) % 3]; if (env.phoneMode) env.phoneMode(SET.phoneRes); }
+    else if (k === 'Frame rate') SET.fpsCap = SET.fpsCap === 30 ? 60 : 30;
     else return false;
     relayout(); return true;
   }

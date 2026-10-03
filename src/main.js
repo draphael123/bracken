@@ -169,7 +169,15 @@ await LS.step('modules');   /* every script is in and run: the fetch part of the
 // ---------- display ----------
 let VW = 320, VH = 180;
 const disp = document.getElementById('c');
-const dg = disp.getContext('2d');
+/* A PHONE (claude/mobile2): a coarse primary pointer. Decided once, here, because a canvas's context options cannot change after its first getContext.
+   SET.phoneRes ('auto' | 'on' | 'off', Settings > TOUCH > Phone mode) and ?phoneres=1 / 0 override the detection (SET is not built yet, so it is read from storage). */
+const COARSE = (() => { try { return matchMedia('(pointer: coarse)').matches && navigator.maxTouchPoints > 0; } catch { return false; } })();
+let PHONE_MODE = 'auto'; try { PHONE_MODE = JSON.parse(localStorage.getItem('bracken.settings') || '{}').phoneRes || 'auto'; } catch {}
+{ const u = /[?&]phoneres=([a-z0-9]+)/.exec(location.search); if (u) PHONE_MODE = u[1] === '1' || u[1] === 'on' ? 'on' : u[1] === '0' || u[1] === 'off' ? 'off' : PHONE_MODE; }
+const lowRes = () => PHONE_MODE === 'on' || (PHONE_MODE !== 'off' && COARSE);
+/* DESYNCHRONIZED + OPAQUE on a phone: the page's canvas is handed to the compositor without waiting for the main thread's commit (Chrome's low-latency canvas),
+   which cuts a frame of input lag and the per-frame layer update the main thread paid for. Desktop keeps the plain context. */
+const dg = disp.getContext('2d', lowRes() && !/[?&]desync=0/.test(location.search) ? { alpha: false, desynchronized: true } : undefined);
 const [buf, g0] = canvas(VW, VH); let g = g0;   /* `g` is the sheet being drawn on: the frame, except while drawFront paints the foreground onto its own sheet */
 // The view is 320x180, or a zoomed-out size picked from the display so the pixel scale stays an integer and the game never shrinks on screen:
 // the zoom drops the scale by a third and fills the display with it, capped at 640x360 (twice the world).
@@ -184,10 +192,15 @@ function setView(mode) {
   viewMode = mode; const [w, h] = viewFor(mode); if (VW === w && VH === h) return;
   VW = w; VH = h; buf.width = w; buf.height = h; g.imageSmoothingEnabled = false; resize(); if (L) { Object.assign(ART.C, PAL0, L.palette || {}); bakeBackdrop(L.palette || {}); }
 }
-let S = 3, offX = 0, offY = 0, scanPat = null, DPR = 1;
+let S = 3, offX = 0, offY = 0, scanPat = null, DPR = 1, DPR_DEV = 1;
 function resize() {
-  DPR = Math.max(1, Math.min(3, (typeof devicePixelRatio === 'number' && devicePixelRatio) || 1));
+  DPR = Math.max(1, Math.min(3, (typeof devicePixelRatio === 'number' && devicePixelRatio) || 1)); DPR_DEV = DPR;
   const cw = innerWidth || 1280, ch = innerHeight || 720;
+  /* A PHONE DRAWS AT HALF RESOLUTION (claude/mobile2): the display canvas was the whole glass in device pixels (2400x1080 on a 2.6x phone, 2.6 megapixels
+     cleared and re-scaled 60 times a second - the GPU's whole budget, menus included). The game is 320x180; a scale of 6 device pixels a game pixel looks the
+     same at 3 canvas pixels a game pixel, so the canvas is made that size and the browser scales it up (image-rendering: pixelated). A quarter of the pixels.
+     The touch buttons keep full resolution on their own overlay canvas (touch.js). Desktop, and SET.phoneRes 'off', draw as before. */
+  if (lowRes()) { const Sd = Math.floor(Math.min(cw * DPR / VW, ch * DPR / VH)); if (Sd >= 4) DPR = DPR_DEV * Math.ceil(Sd / 2) / Sd; }
   disp.width = Math.round(cw * DPR); disp.height = Math.round(ch * DPR);
   disp.style.width = cw + 'px'; disp.style.height = ch + 'px';
   S = Math.max(1, Math.floor(Math.min(disp.width / VW, disp.height / VH)));
@@ -223,6 +236,7 @@ if (!SET.speedV2) { SET.speed = 0.6; SET.speedV2 = 1; try { localStorage.setItem
 function saveSettings() { try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
 function applySettings() { setVolume(SET.sfx); setMusicVolume(SET.musicVol); music.set(SET.music); setSfxFiles(SET.sfxFiles); setVoices(SET.voices !== false); setUiVolume(SET.uiVol); setAmbientVolume(SET.ambVol); resize(); }
 applySettings();
+if (q.get('fps') === '1') SET.fps = true;   /* ?fps=1: the frame counter on, for a test on a real phone (not saved unless a setting is changed) */
 // Progress lives in one of five save slots. The old single save becomes slot 1 the first time it is read.
 const PROG = {}; let saveBlocked = ''; const SLOTS = 5; let slot = 0, slotI = 0, slotMsg = '', slotMsgT = 0;
 /* LOCAL CO-OP is built further down (the players list, the pass, the shared camera, downed and revive). These four
@@ -4824,6 +4838,9 @@ addEventListener('keyup', e => {
   if (isKey(e, KEYS.up)) keys.up = false;
 });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; edPaint = 0; });
+/* A PHONE THAT LOOKS AWAY PAUSES (claude/mobile2): a locked screen or an app switch hides the page, but the 125 ms fallback timer below keeps ticking the world (slowly) behind it,
+   so a foe could finish a hero nobody was watching. On touch devices a hidden page in play opens the pause menu. */
+document.addEventListener('visibilitychange', () => { if (document.hidden && TCH.on && state === 'play' && P && !P.dead) pausePress = true; });
 // ---- the editor's mouse. Screen pixels come in; edMouse turns them into tiles. ----
 {
   const toGame = ev => { const r = disp.getBoundingClientRect(); return [((ev.clientX - r.left) * DPR - offX) / S, ((ev.clientY - r.top) * DPR - offY) / S]; };
@@ -4927,8 +4944,11 @@ const touchVerbNow = () => interactVerb({ P, state, props, talkers, L, warping: 
   doorOpen: pr => !pr.mirror || FK.mirrorDoorOpen(L, pr, P), ferryOwes: () => { const fm = movers.find(mv => mv.ferry); return !!(fm && !fm.paid && !fm.free && fm.toll); } });
 /* AUTO-FACE (a touch assist): a swing turns to a foe just behind you when none is in front */
 const touchAutoFace = () => { if (state !== 'play' || !P || P.dead || P.hurt > 0) return; const f = TCH.faceFor(P, enemies.filter(e => e.alive && !e.harmless)); if (f) P.face = f; };
-const TCH = createTouch({ disp, dg, q, SET, save: () => saveSettings(), geom: () => ({ DPR, S, offX, offY }), state: () => state, keys, initAudio: () => initAudio(),
-  press: touchPressName, skillOn: i => !!skillAt(i), verb: touchVerbNow, autoFace: touchAutoFace });
+/* THE SKILL BUTTONS' PICTURES: the slot's own glyph (the one the HUD slot and the store draw) and how much of its wait is left */
+const touchSkillInfo = i => { const sk = skillAt(i); if (!sk) return null; const cd = skillCd(sk), max = sk === 'summonSkeleton' ? cdOf(sk) : CD_MAX[sk] || 3, busy = (sk === 'shieldThrow' && thrown) || cd > 0;
+  return { id: sk, icon: skillIcon(sk), k: busy ? (cd > 0 ? Math.min(1, cd / max) : 1) : 0, secs: cd }; };
+const TCH = createTouch({ disp, dg, q, SET, save: () => saveSettings(), geom: () => ({ DPR, DEV: DPR_DEV, S, offX, offY }), state: () => state, keys, initAudio: () => initAudio(),
+  press: touchPressName, skillOn: i => !!skillAt(i), skillInfo: touchSkillInfo, phoneMode: v => { PHONE_MODE = v; }, verb: touchVerbNow, autoFace: touchAutoFace });
 const touchOn = TCH.on, touchZones = () => TCH.allButtons();
 Object.assign(SETTING_TIPS, TCH.tips);
 {
@@ -28601,6 +28621,7 @@ const fmt = t => { const m = Math.floor(t / 60), s = Math.floor(t % 60), d = Mat
 
 // ---------- loop ----------
 let last = performance.now(), acc = 0, lastTick = 0, rafQueued = false; const STEP = 1 / 60;
+const EVERY_FRAME = /[?&]everyframe/.test(location.search); let drawnOnce = false, lastDrawnState = null, lastFrameAt = 0;
 let perf = { fps: 60, u: 0, r: 0, frames: 0, t0: 0 };
 function tick(now) {
   if (LS.busy) return;   /* the loading screen is up: nothing moves under it */
@@ -28613,12 +28634,14 @@ function tick(now) {
   acc += dt;
   let n = 0; const tu = performance.now();
   while (acc >= STEP && n < 8) { update(STEP); acc -= STEP; n++; clearPresses(); }
-  const tr = performance.now(); render(); const te = performance.now();
+  /* A PICTURE IS DRAWN ONLY WHEN SOMETHING STEPPED (claude/mobile2): the world moves in fixed 1/60 s steps, so a frame that ran none is the picture already on the glass.
+     On a 90 or 120 Hz phone (and a 144 Hz monitor) the game drew every refresh - up to twice the work for a picture that had not changed. ?everyframe puts the old way back. */
+  const tr = performance.now(); if (n > 0 || EVERY_FRAME || !drawnOnce || state !== lastDrawnState) { render(); drawnOnce = true; lastDrawnState = state; } const te = performance.now();
   perf.u += (tr - tu - perf.u) * 0.1; perf.r += (te - tr - perf.r) * 0.1; perf.frames++; if (te - perf.t0 > 500) { perf.fps = Math.round(perf.frames * 1000 / (te - perf.t0)); perf.frames = 0; perf.t0 = te; }
 }
 /* THE NEXT FRAME IS ASKED FOR EVEN IF THIS ONE THREW (claude/perf51): one exception used to end the requestAnimationFrame chain for good, and
    the game went on only on the 125 ms fallback below - four frames a second until a reload, which reads as lag, not as a crash */
-function frame(now) { rafQueued = false; try { tick(now); } finally { if (!rafQueued) { rafQueued = true; requestAnimationFrame(frame); } } }
+function frame(now) { rafQueued = false; try { const cap = SET.fpsCap === 30 ? 33.3 - 3 : 0; if (cap && now - lastFrameAt < cap) return; lastFrameAt = now; tick(now); } finally { if (!rafQueued) { rafQueued = true; requestAnimationFrame(frame); } } }
 setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now()); }, 125);
 await LS.drive(loadLevelG(0));   /* the first wood, inside the boot bar */
 await LS.step('final');
