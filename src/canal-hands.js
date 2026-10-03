@@ -11,6 +11,7 @@ import { beamHit } from './chase.js';
 import * as CTL from './redraw/canal_tiles.js';
 import * as CP from './redraw/canal_props.js';
 import { CANAL_NUDGE } from './hint-lines.js';
+import { NUDGE as SG_NUDGE, stallTick, drawGlint as glintAt } from './stuck-guide.js';   /* (claude/stuckfix: the glint and the 10 s stall clock are the shared module's now) */
 const TS = 16;
 const GADGET = new Set(['locksluice', 'swingcap', 'foghorn', 'lanternpost']);
 
@@ -175,7 +176,7 @@ export function canalUpdate(st, H, dt) {
   swimStep(st, H, dt);
 }
 /* ---------------- (claude/canalfix3) CLARITY: what holds her, glinted; her lantern swings to it; after ~10 s with no headway, a nudge names it ---------------- */
-export const NUDGE = { after: 10, again: 25, near: 3 * TS };   /* s held before the nudge, s before it says it again, px of headway that counts */
+export const NUDGE = SG_NUDGE;   /* s held before the nudge, s before it says it again, px of headway that counts (src/stuck-guide.js) */
 const nearestProp = (cands, x) => cands.slice().sort((a, b) => Math.abs(a.x - x) - Math.abs(b.x - x))[0] || null;
 /* WHAT HOLDS HER: { why, prop } - the paddle of the shut gate ahead (of the chamber that is not level), the capstan of the bridge across, the ready horn of the bank;
    or, in the basin lock's chamber while it is low, its paddle (the door is out of reach). null while nothing holds her, or the machine is already working */
@@ -197,8 +198,8 @@ function clarity(st, H, dt) {
   const want = tg ? Math.max(-0.55, Math.min(0.55, -(tg.prop.x - (b.x + 12)) / 220)) : Math.sin(st.clock * 1.3) * 0.06; st.lampAng = (st.lampAng || 0) + (want - (st.lampAng || 0)) * Math.min(1, dt * 3);
   const key = tg ? tg.why + '@' + Math.round(tg.prop.x) : null; if (key !== C.key) { C.key = key; C.t = 0; C.best = 1e9; C.said = -1; } if (!tg) return;
   /* HEADWAY: the hero comes a few tiles nearer the machine than he has been, or strikes it - the clock starts again */
-  let d = 1e9; H.eachHero(P => { if (!P.dead) d = Math.min(d, Math.hypot(P.x - tg.prop.x, P.y - tg.prop.y)); }); if (d < C.best - NUDGE.near) { C.best = d; C.t = 0; } if (tg.prop.flash > 0) C.t = 0;
-  C.t += dt; if (C.t >= NUDGE.after && (C.said < 0 || st.clock - C.said >= NUDGE.again)) { C.said = st.clock; st.nudges = (st.nudges || 0) + 1; st.lastNudge = CANAL_NUDGE[tg.why]; H.hint(CANAL_NUDGE[tg.why]); }
+  let d = 1e9; H.eachHero(P => { if (!P.dead) d = Math.min(d, Math.hypot(P.x - tg.prop.x, P.y - tg.prop.y)); }); 
+  if (stallTick(C, d, dt, st.clock, tg.prop.flash > 0)) { st.nudges = (st.nudges || 0) + 1; st.lastNudge = CANAL_NUDGE[tg.why]; H.hint(CANAL_NUDGE[tg.why]); }
 }
 /* (claude/canalfix3) THE SAFE SWIMS: the first time a hero swims one, the nearest grindylow on the green side of its grate comes for him, BUMPS THE BARS (a clank,
    a ring) and cannot get through - GREEN IS HERS, BLUE IS SAFE, taught with no sign. canal-foes.js stepGrindylow runs e.bump */
@@ -212,12 +213,7 @@ function swimStep(st, H, dt) {
 }
 /* THE GLINT over what holds her (after the fog, so it shows through it): a warm pulsing star and ring; off the screen, a chevron at its edge pointing the way */
 function drawGlint(st, g, cx, cy, VW, VH, time) {
-  const tg = st.glint; if (!tg) return; const p = tg.prop, x = Math.round(p.x - cx), y = Math.round(p.y - 18 - cy), k = 0.5 + 0.5 * Math.sin(time * 5);
-  if (x >= -8 && x <= VW + 8 && y >= -8 && y <= VH + 8) { g.globalAlpha = 0.35 + 0.45 * k; g.strokeStyle = '#ffe9a0'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, 9 + 3 * k, 0, Math.PI * 2); g.stroke();
-    g.fillStyle = '#fff6c8'; const r = 3 + Math.round(3 * k); g.fillRect(x - r, y, r * 2 + 1, 1); g.fillRect(x, y - r, 1, r * 2 + 1); g.fillRect(x - 1, y - 1, 3, 3); g.globalAlpha = 1; return; }
-  const ex = Math.max(10, Math.min(VW - 10, x)), ey = Math.max(14, Math.min(VH - 14, y)), dx = Math.sign(x - ex), dy = Math.sign(y - ey); g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#ffe9a0';
-  for (let i = 0; i < 4; i++) g.fillRect(ex + dx * (i - 3) - (dy ? i : 0), ey + dy * (i - 3) - (dx ? i : 0), dy ? i * 2 + 1 : 1, dx ? i * 2 + 1 : 1);
-  g.globalAlpha = 1;
+  const tg = st.glint; if (!tg) return; const p = tg.prop; glintAt(g, Math.round(p.x - cx), Math.round(p.y - 18 - cy), VW, VH, time);   /* (the shared glint: src/stuck-guide.js) */
 }
 
 /* (claude/canalfix3) standing at a water surface or under it (a weed mat, a wading bed, a swim): no place to be handed back to */
