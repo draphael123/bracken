@@ -35,7 +35,7 @@ import { pupOpen } from './puppeteer.js';
 import { wqOpen } from './wicker-queen.js';
 import { gtOpen } from './jenny-greenteeth.js';
 import { qOpen } from './cistern-queen.js';
-import { glOpen } from './gang-leader.js';
+import { glOpen } from './gang-leader.js'; import { djOpen } from './djinn.js';
 import { sextonOpen } from './sexton.js';
 import { hedgeOpen } from './hedge-warden.js';
 import { brOpen, bkOpen } from './unburied-foes.js';
@@ -107,6 +107,7 @@ export const OPEN_RULE = {
   greathound: e => e.open > 0,   // (claude/bosswave1) its lunge taken on a shield (it skids), or its pups killed in time (it whines)
   bosun: e => e.open > 0,   // (claude/bosswave1, the mini) his belaying pin parried
   barrowrider: e => brOpen(e), sexton: e => sextonOpen(e), hedgewarden: e => hedgeOpen(e),
+  djinn: e => djOpen(e) || e.hand > 0,                                      // THE DJINN (claude/welltown5): mud, doused, bailed out by the bucket - and his slammed hand
   gangleader: e => glOpen(e),                                                // burning: his own bottle, struck home (claude/welltown3)
 };
 /* BOSSES WITH THEIR OWN TWENTIETH: the rule leaves their number alone (it would be a twentieth of a twentieth) and only counts greed */

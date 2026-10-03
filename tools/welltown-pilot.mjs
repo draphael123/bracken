@@ -14,11 +14,11 @@ const pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
   for (const salt of salts) for (const h of heroes) { await pg.reload();
     const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;P0.xp[${JSON.stringify(h)}]=xpFloor(${lvl});P0.skillOwned[${JSON.stringify(h)}]={};P0.loadouts[${JSON.stringify(h)}]=[];if(P0.talents)P0.talents[${JSON.stringify(h)}]={};
-      let ph=1,last=null;const o=await BK.bossLab({bosses:['welltown'],heroes:[${JSON.stringify(h)}],healthMode:'normal',maxSecs:300,modes:true,salt:${salt}${MINI ? ',mini:true' : ''},onFrame:({boss})=>{ph=Math.max(ph,boss.phase||1);last=${MINI ? 'BK.gangLeader()' : 'BK.cisternQueen()'};}});
+      let ph=1,last=null;const o=await BK.bossLab({bosses:['welltown'],heroes:[${JSON.stringify(h)}],healthMode:'normal',maxSecs:300,modes:true,salt:${salt}${MINI ? ',mini:true' : ''},onFrame:({boss})=>{ph=Math.max(ph,boss.phase||1);last=${MINI ? 'BK.gangLeader()' : '(BK.djinn()||BK.cisternQueen())'};}});
       const r=o.rows[0]||{};return {h:${JSON.stringify(h)},salt:${salt},out:r.outcome||r.skipped,secs:r.secs,taken:r.health&&Math.round(r.health.damageTaken),bossLeft:r.hpLeftPct,phase:ph,n:last&&last.n,hurt:last&&last.hurt};})()`, 3600000);
     console.log(JSON.stringify(r)); rows.push(r); }
   const wins = rows.filter(r => r.out === 'win'), secs = wins.map(r => r.secs).sort((a, b) => a - b);
-  console.log(JSON.stringify({ boss: MINI ? 'gangleader' : 'cisternqueen', fights: rows.length, wins: wins.length, pct: Math.round(100 * wins.length / Math.max(1, rows.length)), medianWin: secs.length ? secs[secs.length >> 1] : null,
+  console.log(JSON.stringify({ boss: MINI ? 'gangleader' : 'djinn', fights: rows.length, wins: wins.length, pct: Math.round(100 * wins.length / Math.max(1, rows.length)), medianWin: secs.length ? secs[secs.length >> 1] : null,
     byHero: Object.fromEntries(heroes.map(h => [h, rows.filter(r => r.h === h && r.out === 'win').length + '/' + rows.filter(r => r.h === h).length])) }));
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }

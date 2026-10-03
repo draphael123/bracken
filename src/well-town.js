@@ -38,7 +38,7 @@
 // The roofs' bandits stand IN their roof's awning: the shade is taken from them.
 import { SLOPE } from './slopes.js';
 import { stageGangLeader } from './gang-leader.js';
-import { stageCisternQueen } from './cistern-queen.js';
+import { stageDjinn } from './djinn.js';   /* (claude/welltown5, Daniel 10-03: THE DJINN OF THE GREAT WELL is the town's boss; THE CISTERN QUEEN is benched for a level of her own - src/cistern-queen.js stageCisternQueen is kept, unplaced) */
 import { SHADE_OF } from './redraw/desert.js';
 
 export const WELLTOWN = { W: 584, H: 60, street: 30 };
@@ -259,11 +259,11 @@ export function buildWellTown({ painter, T, TS }) {
      stageCisternQueen): forty tiles of dry cistern, fifteen rows high, under the street from 528. You drop in down the shaft */
   ent('check', 519, K - 1);                                                   /* CHECKPOINT FIVE: the old well's head, the boss's door */
   awn(521, K - 1, true);
-  sign(523, K - 1, 'THE OLD WELL. IT RAN DRY THE YEAR SHE CAME.');
-  foe('scorpion', 516, K - 1, 'oldwell'); foe('scorpion', 526, K - 1, 'oldwell');   /* HER BROOD, up out of the shaft onto the street: the old well's mouth is held (the Old Stinger in the cisterns is one of hers) */
+  sign(523, K - 1, 'THE OLD WELL. SOMETHING IS BOUND AT THE BOTTOM.');
+  foe('scorpion', 516, K - 1, 'oldwell'); foe('scorpion', 526, K - 1, 'oldwell');   /* (the desert's scorpions, up out of the dry shaft onto the street) HER BROOD, up out of the shaft onto the street: the old well's mouth is held (the Old Stinger in the cisterns is one of hers) */
   const QF = 56;                                                              /* the cistern hall's floor row */
   block(524, 571, K + 1, H - 1);                                              /* the rock under the street, the hall carved out of it */
-  const queen = stageCisternQueen({ set, block, ent, air }, T, TS, 528, QF, K);
+  const queen = stageDjinn({ set, block, ent, air }, T, TS, 528, QF, K);   /* THE GREAT WELL's deep cistern: THE DJINN's hall (the same forty tiles the Queen's hall was) */
   for (const n of queen.ladders) nets.push(n);
   shade.push([528 * TS, 568 * TS, (K + 1) * TS, (QF + 2) * TS + 1]);          /* her hall: under the street's rock - and under the shaft, the old well's roof (below) */
   wellRoof(545, 550, K - 4, K);                                               /* THE OLD WELL's head: a well-house roof on two posts over the shaft (claude/welltown5: the light down the shaft is under it) */

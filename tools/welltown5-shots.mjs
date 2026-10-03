@@ -23,9 +23,11 @@ try {
       const gl = BK.enemies().find(e => e.t === 'gangleader'); snap('g1-fight-start');
       const H = BK.gangLeaderHands && BK.gangLeaderHands(); if (H && H.puddleAt) { H.puddleAt(gl.x - 40); run(4); snap('g2-puddle'); until(() => gl.mode === 'slipped', 900); snap('g3-he-slips'); }
       until(() => gl.mode === 'throwTell', 900); snap('g4-bottle'); if (H && H.lightForTest) { H.lightForTest(gl); run(10); snap('g5-alight'); } }
-    if (want('queen')) { fresh(); const A = BK.L.arena; BK.tp(A.start[0], A.start[1]); run(240); const q = BK.boss; snap('q1-queen-wakes');
-      if (q) { until(() => /lanceTell|pinTell|barbTell/.test(q.mode) || q.mode === 'stingLow', 1800); snap('q2-sting-tell'); until(() => q.mode === 'stingLow' || q.tailLow > 0, 900); snap('q3-stinger-low');
-        q.hp = q.maxHp * 0.6; until(() => q.phase === 2 || (BK.cisternQueen() || {}).ph === 2, 1200); run(120); snap('q4-p2-burning'); } }
+    if (want('djinn')) { fresh(); const A = BK.L.arena; BK.tp(A.start[0], A.start[1]); run(60); snap('d0-rising'); run(150); const q = BK.boss; snap('d1-sand');
+      if (q) { const S = BK.djinnHands().show(); until(() => q.mode === 'lashTell', 900); snap('d2-sand-lash-tell'); until(() => q.mode === 'devil' || q.mode === 'devilTell', 900); run(12); snap('d3-dust-devil');
+        until(() => q.mode === 'walk' && !(S.wary > 0), 900); BK.P.skin.sips = 3; BK.P.x = q.x - 50; BK.P.face = 1; BK.press('talk'); run(10); snap('d4-mud');
+        q.hp = q.maxHp * 0.6; until(() => S.ph === 2, 1200); run(80); snap('d5-fire'); until(() => q.mode === 'breath', 900); run(6); snap('d6-breath'); until(() => q.mode === 'pillarTell', 900); run(20); snap('d7-pillars-told');
+        q.hp = q.maxHp * 0.3; until(() => S.ph === 3, 1200); run(160); snap('d8-flood-column'); until(() => q.mode === 'reach', 1200); run(4); snap('d9-hand-on-ledge'); } }
     return res; })()`, 600000);
   for (const [name, url] of r) writeFileSync(join(out, name + '.png'), Buffer.from(url.split(',')[1], 'base64'));
   console.log('wrote', r.length, 'to', out); console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));

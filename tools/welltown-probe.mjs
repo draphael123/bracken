@@ -37,17 +37,17 @@ try {
   BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='welltown'));BK.state='play';BK.god=false;BK.sim(10);const P=BK.P;
   const th=BK.enemies().find(e=>e.t==='waterthief'&&e.alive);P.skin.sips=3;BK.tp(Math.floor(th.x/16)-2,Math.floor(th.y/16)-1);
   let stole=0;for(let i=0;i<900&&!stole;i++){P.hp=P.maxHp;BK.sim(1);if(th.st.carry)stole=1;}out.stole=[stole,P.skin.sips,th.st.mode];th.hp=1;BKT.hurtEnemy(th,99,th.x-10,false);BK.sim(30);out.back=P.skin.sips;
-  BK.god=true;const A=BK.L.arena;BK.tp(A.start[0],A.start[1]);BK.sim(150);const b=BK.boss,S=BK.cisternQueenHands().show();out.queen={active:BK.bossActive,t:b.t};
-  /* her raised claws: a blow from the front outside an opening is turned (0); from behind it is the global chip; in an opening it lands x2.2 */
+  BK.god=true;const A=BK.L.arena;BK.tp(A.start[0],A.start[1]);BK.sim(150);const b=BK.boss,S=BK.djinnHands().show();out.queen={active:BK.bossActive,t:b.t};
+  /* THE DJINN (claude/welltown5): a blade passes through his sand (0, front or back); a pour on him turns him to MUD; in it a blow lands x1.9 */
   for(let i=0;i<60*20&&b.mode!=='walk';i++){P.hp=P.maxHp;BK.sim(1);}
-  b.chipAcc=0;b.greedLog=[];b.chipSaid=0;BKT.PROG.chipTold=9;P.x=b.x+(b.face||1)*50;let h=b.hp;BKT.hurtAs('light',b,40,P.x,false);out.front=+(h-b.hp).toFixed(2);
-  b.chipAcc=0;b.greedLog=[];P.x=b.x-(b.face||1)*44;h=b.hp;BKT.hurtAs('light',b,40,P.x,false);out.behind=+(h-b.hp).toFixed(2);
-  let opened=0;for(let i=0;i<60*60&&!opened;i++){P.hp=P.maxHp;if(S.pose==='burrow'&&S.mound&&b.mode==='burrow'){P.skin.sips=3;P.x=S.mound.x-30;P.y=S.G.floor;P.face=1;BK.press('talk');}BK.sim(1);if(b.mode==='soaked')opened=1;}
-  out.opened=opened;b.greedLog=[];h=b.hp;P.x=b.x+(b.face||1)*40;BKT.hurtAs('light',b,40,P.x,false);out.openHit=+(h-b.hp).toFixed(2);out.mul=(await import('/src/cistern-queen.js')).CQ.openMul;out.n=BK.cisternQueen().n;
+  b.chipAcc=0;b.greedLog=[];b.chipSaid=0;BKT.PROG.chipTold=9;P.x=b.x+(b.face||1)*30;let h=b.hp;BKT.hurtAs('light',b,40,P.x,false);out.front=+(h-b.hp).toFixed(2);
+  b.chipAcc=0;b.greedLog=[];P.x=b.x-(b.face||1)*30;h=b.hp;BKT.hurtAs('light',b,40,P.x,false);out.behind=+(h-b.hp).toFixed(2);
+  let opened=0;for(let i=0;i<60*60&&!opened;i++){P.hp=P.maxHp;if(b.mode==='walk'&&S.wary<=0){P.skin.sips=3;P.x=b.x-50;P.y=S.G.floor;P.face=1;BK.press('talk');}BK.sim(1);if(b.mode==='mud')opened=1;}
+  out.opened=opened;b.greedLog=[];h=b.hp;P.x=b.x-30;BKT.hurtAs('light',b,40,P.x,false);out.openHit=+(h-b.hp).toFixed(2);out.mul=(await import('/src/djinn.js')).DJ.openMul;out.n=BK.djinn().n;
   return out;})()`, 300000);
   ok(t.stole[0] && t.stole[1] === 2 && t.stole[2] === 'flee' && t.back === 3, "a water-thief's cut takes a sip and he runs; cut down, the sip is back " + JSON.stringify(t.stole) + ' back ' + t.back);
-  ok(t.queen.active && t.queen.t === 'cisternqueen' && t.opened, 'THE CISTERN QUEEN wakes, burrows, and a pour on her mound floods her out: SOAKED');
-  ok(t.front === 0 && Math.abs(t.behind - 2) < 0.01 && Math.abs(t.openHit - 40 * t.mul) < 1, 'her claws turn a blow from the front (0), from behind it is the global x0.05 (' + t.behind + '), soaked it lands x' + t.mul + ' (' + t.openHit + ')');
+  ok(t.queen.active && t.queen.t === 'djinn' && t.opened, 'THE DJINN OF THE GREAT WELL rises, and a pour on him turns him to MUD');
+  ok(t.front === 0 && t.behind === 0 && Math.abs(t.openHit - 40 * t.mul) < 1, 'a blade passes through his sand (front ' + t.front + ', behind ' + t.behind + '); mud, it lands x' + t.mul + ' (' + t.openHit + ')');
   /* THE FIX LANE (claude/welltown-fix): the deep well winds, the ride is contested, a respawn refills the skin; and WELL CLARITY (claude/welltown3): the HUD's verb */
   const u = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
   BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='welltown'));BK.state='play';BK.god=true;BK.sim(10);const P=BK.P,W=()=>BK.welltown();

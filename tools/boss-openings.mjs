@@ -205,6 +205,21 @@ try {
   /* THE CISTERN QUEEN (claude/welltown3): a minute of her left alone opens nothing; a pour while she walks the floor runs into the sand; a pour on her
      mound floods her burrow - SOAKED, open; on her wall, a pour from that wall's ledge - ON HER BACK, open; in the flood, her claw struck as it comes -
      the grab broken, REARING, open (THE WELL TOWN holds her) */
+  /* THE DJINN OF THE GREAT WELL (claude/welltown5; THE WELL TOWN's boss now - the Cistern Queen is benched, her block stays below for her new level and is
+     skipped while no level places her): a minute of him alone opens nothing; a pour on him turns him to MUD; in phase two a pour DOUSES him; in the flood the
+     great bucket BAILS him out - each open 3 s or more */
+  {const b=boot('welltown');const DH=BK.djinnHands(),S=DH.show(),G=S.G,P=BK.P;let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.x0+30;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
+   const op={};const take=(how,setup,act)=>{let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;if(setup())act();BK.sim(1);if(b.mode===how)o=Math.max(o,b.open||0);}
+     let peak=o;for(let i=0;i<60*4&&b.mode===how;i++){P.hp=P.maxHp;BK.sim(1);}op[how]=+peak.toFixed(1);};
+   const pourAt=()=>{P.skin.sips=3;P.x=b.x-50;P.y=G.floor;P.vy=0;P.face=1;P.djBurn=0;BK.press('talk');};
+   take('mud',()=>b.mode==='walk'&&!(S.wary>0),pourAt);
+   b.hp=Math.round(b.maxHp*0.6);
+   take('doused',()=>S.ph===2&&b.mode==='walk'&&S.burn,pourAt);
+   b.hp=Math.round(b.maxHp*0.3);
+   take('bailed',()=>S.ph===3&&b.mode==='hover'&&S.bucket.st==='up',()=>{P.x=G.crank-12;P.y=G.ledgeY;P.vy=0;P.ground=true;P.face=1;if(P.atk<0)BK.press('atk');});
+   out.djinn={alone:+alone.toFixed(1),open:op,n:{mud:S.n.mud,doused:S.n.doused,bailed:S.n.bailed}};}
+  if(LEVELS.some(l=>{try{return l.build().arena&&l.build().arena.boss==='cisternqueen';}catch{return false;}}))
   {const b=boot('welltown');const QH=BK.cisternQueenHands(),S=QH.show(),G=S.G,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.x0+30;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let dry=0;for(let i=0;i<60*20&&b.mode!=='walk';i++){P.hp=P.maxHp;BK.sim(1);}P.skin.sips=3;P.x=b.x-60;P.face=1;BK.press('talk');for(let i=0;i<30;i++){P.hp=P.maxHp;BK.sim(1);dry=Math.max(dry,b.open||0);}const drySips=P.skin.sips;
@@ -312,9 +327,12 @@ try {
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.slackMode === 'slack' && r.puppeteer.slackOpen === 0, 'THE PUPPETEER: both puppets down opened him by itself (THEATRE3: his bar goes slack; only the cut opens him): ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (THEATRE3: drop both puppets, climb, cut the slack bar - he falls to the boards, open >= 3 s) */ 'both puppets cut down and his slack bar cut, he did not come down open: ' + JSON.stringify(r.puppeteer));
+  assert.equal(r.djinn.alone, 0, 'THE DJINN: a minute of him left alone opened him: ' + JSON.stringify(r.djinn));
+  assert.ok(r.djinn.open.mud >= 3 && r.djinn.open.doused >= 3 && r.djinn.open.bailed >= 3, 'his three water openings (mud, doused, bailed out) are not each 3 s or more: ' + JSON.stringify(r.djinn));
+  if (r.cisternqueen) {
   assert.equal(r.cisternqueen.alone, 0, 'THE CISTERN QUEEN: a minute of her left alone opened her: ' + JSON.stringify(r.cisternqueen));
   assert.ok(r.cisternqueen.dry === 0 && r.cisternqueen.drySips === 3, 'E at her on the open floor opened her (or spent a sip on nothing: the HUD never says POUR there): ' + JSON.stringify(r.cisternqueen));
-  assert.ok(r.cisternqueen.open.soaked >= 3 && r.cisternqueen.open.fallen >= 3 && r.cisternqueen.open.rear >= 3, 'her three openings (her burrow flooded, a pour down her wall, a grab broken) are not each 3 s or more (the boss rule): ' + JSON.stringify(r.cisternqueen));
+  } if (r.cisternqueen) assert.ok(r.cisternqueen.open.soaked >= 3 && r.cisternqueen.open.fallen >= 3 && r.cisternqueen.open.rear >= 3, 'her three openings (her burrow flooded, a pour down her wall, a grab broken) are not each 3 s or more (the boss rule): ' + JSON.stringify(r.cisternqueen));
   assert.equal(r.gangleader.alone, 0, 'THE GANG LEADER: a minute of him left alone opened him: ' + JSON.stringify(r.gangleader));
   assert.ok(r.gangleader.open >= 3 && r.gangleader.reflects >= 1, 'his bottle struck back did not set him alight for 3 s or more: ' + JSON.stringify(r.gangleader));
   assert.ok(r.gangleader.took <= r.gangleader.cap + 1 && r.gangleader.took >= r.gangleader.cap * 0.6, 'one burning took more than his cap (GL.capK, inside the third Daniel allows) or nothing like it: ' + JSON.stringify(r.gangleader));
