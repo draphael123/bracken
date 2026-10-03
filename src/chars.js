@@ -105,19 +105,30 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const [x0, y0, x1, y1] = staff.map((v, i) => v + (i & 1 ? dy : dx));
     line(g, x0, y0, x1, y1, KP.w, 2); px(g, x1, y1, KP.y); px(g, x1 + Math.sign(x1 - x0), y1 + Math.sign(y1 - y0), KP.r); px(g, x1 - Math.sign(y1 - y0), y1 + Math.sign(x1 - x0), KP.r);
   }
-  if (maul) { // THE PALADIN'S MAUL: an oak haft, a gold langet, and a squared steel head wedged across the
-    // end of it. It was one thin bar laid over a stick, which at this size reads as an axe blade.
+  if (maul) { // THE PALADIN'S MAUL (claude/paladinmace): a HEAVY TWO-HANDED FLANGED MACE. A long oak haft wound with leather at the grip, a gold socket, and a big
+    // head of two flanges round a studded core with a spike for a tip - read by its silhouette at game scale. BOTH hands are on the haft in every pose (the sword
+    // arm at the grip, the off hand a stride up the haft, or wherever an ability's own off arm lands). ONLY the head (core, flanges, stud, spike) takes a weapon
+    // skin (WT); the haft, wrap, socket and gauntlets keep their own colours.
     const [x0, y0, x1, y1] = maul.map((v, i) => v + (i & 1 ? dy : dx));
     const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax;
-    line(g, x0, y0, x1, y1, '#6a4428', 2);                                              // the haft
-    px(g, Math.round(x0 - ax), Math.round(y0 - ay), '#4a2e18');                          // its butt
-    const hx = x1 - ax * 0.5, hy = y1 - ay * 0.5;
-    const across = (t, hw, col) => line(g,
-      Math.round(hx + ax * t - qx * hw), Math.round(hy + ay * t - qy * hw),
-      Math.round(hx + ax * t + qx * hw), Math.round(hy + ay * t + qy * hw), col, 1);
-    for (let t = -2; t <= 2; t++) across(t, 3.5, KP.o);                                   // the block, outlined all round
-    for (let t = -1; t <= 1; t++) across(t, 2.5, t === -1 ? WT('#6e7a8c', 0.15) : t === 1 ? WT('#e8eef6', 1) : WT('#aab6c6', 0.6));
-    across(-3, 1.6, KP.y);                                                                // the langet, gold on the haft
+    const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
+    line(g, ...at(-5), ...at(len - 2), '#6a4428', 2);                                       // the haft, its butt five past the hand
+    for (let t = -4; t <= 6; t++) { px(g, ...at(t), t & 1 ? '#8a5a34' : '#3a2412'); px(g, ...at(t, 1), t & 1 ? '#3a2412' : '#8a5a34'); }   // the grip wrap
+    px(g, ...at(-5), KP.y);                                                                  // the pommel
+    const hx = x1 - ax * 3.5, hy = y1 - ay * 3.5;
+    const ROWS = { '-4': 1.5, '-3': 2.5, '-2': 4.5, '-1': 3, 0: 3, 1: 3, 2: 4.5, 3: 2.5, 4: 1.5, 5: 0.5 };                  // half-width by step along the haft: socket, flange, core, core+stud, flange, core, spike
+    const inside = new Map(), key = (X, Y) => X + ',' + Y;
+    for (let X = Math.floor(hx) - 6; X <= Math.ceil(hx) + 6; X++) for (let Y = Math.floor(hy) - 6; Y <= Math.ceil(hy) + 6; Y++) {
+      const ox = X - hx, oy = Y - hy, t = Math.round(ox * ax + oy * ay), o = ox * qx + oy * qy, hw = ROWS[t];
+      if (hw === undefined || Math.abs(o) > hw + 0.01) continue;
+      const lit = o < -0.5, dark = o > 0.5, edge = Math.abs(o) > hw - 0.6 && hw >= 2;
+      inside.set(key(X, Y), t === -4 ? KP.y : t >= 4 ? WT('#e8eef6', 1) : (t === -2 || t === 2) ? WT('#aab6c6', edge ? 0.15 : lit ? 1 : dark ? 0.4 : 0.7) : (t === 0 && Math.abs(o) < 0.8) ? WT('#e8eef6', 1) : WT('#aab6c6', lit ? 0.85 : dark ? 0.25 : 0.55));
+    }
+    for (const k of [...inside.keys()]) { const [X, Y] = k.split(',').map(Number); for (const [u, v] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!inside.has(key(X + u, Y + v))) px(g, X + u, Y + v, KP.o); }
+    for (const [k, c] of inside) { const [X, Y] = k.split(',').map(Number); px(g, X, Y, c); }
+    const t2 = Math.max(3, Math.min(6, len - 7)), h2 = arm2 ? [arm2[2] + dx, arm2[3] + dy] : at(t2);
+    if (!arm2) { const vx = BX + 3 + dx - h2[0], vy = BY + 8 + dy - h2[1], vl = Math.hypot(vx, vy) || 1, k = Math.min(1, 3.5 / vl); line(g, Math.round(h2[0] + vx * k), Math.round(h2[1] + vy * k), h2[0], h2[1], KP.S, 2); }                      // the off arm across to the haft
+    for (const [hx2, hy2] of [at(0), h2]) { px(g, hx2, hy2, KP.S); px(g, hx2 + 1, hy2, KP.S); px(g, hx2, hy2 + 1, KP.S); px(g, hx2 + 1, hy2 + 1, KP.s); }   // the gauntlets
   }
   if (spear && !SPEARLESS) { // THE WARDEN'S SPEAR: an ash haft, a bronze collar, a long leaf head, and an iron spike at the heel.
     // A sword is read by its blade and a spear by its LENGTH and its POINT, so the haft is one clean pixel the whole
@@ -2689,7 +2700,7 @@ export function bakePaladin(skin = {}, previewOnly = false) {
   const carry = (d = 0) => [sh[0] + 1, sh[1] + 3 + d, sh[0] - 8, sh[1] - 2 + d];  // slung back behind him at a run, clear of the helm
   // A STORE CARD NEEDS ONLY THE BREATH AND THE SWING, not the whole fighting life.
   const card = {
-    idle: () => ((previewOnly === 'icon' ? (BREATH).slice(0, 1) : (BREATH)).map(([dy, hy, sho, plume], i) => knightFrame({ dy, hy, sho, plume, maul: [sh[0] + 2, sh[1] + 1, sh[0] + 5, sh[1] + 9 - dy], bits: flap([3, 4], dy, breathLag(i), 'b', 'B') }))),
+    idle: () => ((previewOnly === 'icon' ? (BREATH).slice(0, 1) : (BREATH)).map(([dy, hy, sho, plume], i) => knightFrame({ dy, hy, sho, plume, maul: [sh[0] + 3, sh[1] + 1, sh[0] + 8, sh[1] + 9 - dy], bits: flap([3, 4], dy, breathLag(i), 'b', 'B') }))),
     atk: () => ([
       () => (knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 4], maul: [sh[0] - 2, sh[1] - 3, sh[0] - 7, sh[1] - 8], plume: 1 })),
       () => (// drawn back over the shoulder
@@ -2742,10 +2753,10 @@ export function bakePaladin(skin = {}, previewOnly = false) {
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', maul: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 5], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', maul: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, maul: rest(-6) }),
     /* THE BUTT-SLIDE (src/slide.js): sat back on the ground with the legs run out in front, leaning away from the hill, the weapon tucked behind (a second frame for the cloth) */
-    slide: [0, 1].map(i => knightFrame({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 4], maul: [sh[0] - 1, sh[1] + 4, sh[0] - 9, sh[1] - 4] })),
+    slide: [0, 1].map(i => knightFrame({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [sh[0], sh[1], sh[0] - 1, sh[1]], maul: [sh[0] - 1, sh[1], sh[0] - 12, sh[1] - 3] })),
     /* KNEEL IN PRAYER (src/crouch-b.js): down on one knee, the maul planted upright before him with both hands on the haft and his helm
        bowed to it, the light gathering at its head - brighter, and a mote off it, on the second beat (and held there once his bar is full) */
-    kneel: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], maul: [sh[0] + 4, sh[1] + 5, sh[0] + 4, sh[1] - 6], glow: [sh[0] + 4, sh[1] - 10 - i], plume: 0,
+    kneel: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], maul: [sh[0] + 4, sh[1], sh[0] + 4, sh[1] - 10], glow: [sh[0] + 4, sh[1] - 15 - i], plume: 0,
       bits: i ? [[10, -6, '#ffd36b'], [15, -8, '#fff6c8']] : null })),
     // AEGIS: the maul planted upright before him, both hands on the haft
     block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], maul: [sh[0] + 3, sh[1] + 9, sh[0] + 3, sh[1] - 5], glow: [sh[0] + 3, sh[1] - 9] })),
