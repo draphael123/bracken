@@ -24,10 +24,11 @@ const ONLY = (process.env.TOUCH_ONLY || '').split(',').filter(Boolean);   // TOU
 const section = async (name, fn) => { if (ONLY.length && !ONLY.includes(name) && !(name === 'play-setup' && ONLY.some(n => !['title', 'settings-tabs', 'layout-editor', 'back-pill', 'save-slots', 'map', 'store', 'persist', 'pwa-files', 'pwa-live', 'desktop', 'api'].includes(n)))) return; const t0 = Date.now(), e0 = pg.errors.length; try { await fn(); } catch (e) { fails.push(name + ': ' + String(e.message).split('\n')[0]); }
   if (pg.errors.length > e0) fails.push(name + ': the page threw: ' + pg.errors.slice(e0, e0 + 2).map(x => String(x).split('\n').slice(0, 2).join(' @ ')).join(' | '));   // (a throw is blamed on the section that was running)
   if (process.env.TOUCH_VERBOSE) console.log('  [' + name + '] ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s'); };
-const DPR = 2;
+const DSF = 2;   // the emulated device's scale factor
+let DPR = DSF;   // canvas pixels per CSS pixel: the same on a desktop canvas, and half-resolution phone canvas (claude/mobile2) is read from the page after each load (syncDpr)
 
 // ---------- the device and the thumb ----------
-await pg.send('Emulation.setDeviceMetricsOverride', { width: 844, height: 390, deviceScaleFactor: DPR, mobile: true, screenOrientation: { type: 'landscapePrimary', angle: 90 } });
+await pg.send('Emulation.setDeviceMetricsOverride', { width: 844, height: 390, deviceScaleFactor: DSF, mobile: true, screenOrientation: { type: 'landscapePrimary', angle: 90 } });
 await pg.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
 const active = new Map();
 const sendTouch = (type) => pg.send('Input.dispatchTouchEvent', { type, touchPoints: [...active].map(([id, p]) => ({ x: p.x, y: p.y, id })) });
@@ -39,6 +40,7 @@ const goto = async (query = '') => {
   await pg.send('Page.navigate', { url: 'http://localhost:' + pg.PORT + '/?touch=1&nosw' + query });
   await sleep(1500);
   for (let i = 0; i < 160; i++) { const r = await E('typeof window.BK === "object" && !!window.BK.lookPass', 3000).catch(() => false); if (r) break; await sleep(300); }
+  DPR = await E('document.getElementById("c").width / innerWidth');   // syncDpr
 };
 const keysNow = () => E('({ left: !!BK.keys.left, right: !!BK.keys.right, up: !!BK.keys.up, down: !!BK.keys.down, atk: !!BK.keys.atk, jump: !!BK.keys.jump, dodge: !!BK.keys.dodge, block: !!BK.keys.block })');
 const dbg = () => E('BK.touch.debug()');
@@ -93,7 +95,7 @@ try {
     let d = await dbg(); ok(d.editing, 'a tap on Edit layout did not start the editor');
     const atk = d.layout.btn.atk, x0 = atk.cx;
     await down(1, ...centre(atk)); await move(1, css(atk.cx) - 120, css(atk.cy) - 60); await up(1); await sleep(100);
-    d = await dbg(); ok(d.layout.btn.atk.cx < x0 - 150, 'dragging ATTACK did not move it (' + Math.round(x0) + ' -> ' + Math.round(d.layout.btn.atk.cx) + ')');
+    d = await dbg(); ok(d.layout.btn.atk.cx < x0 - 75 * DPR, 'dragging ATTACK did not move it (' + Math.round(x0) + ' -> ' + Math.round(d.layout.btn.atk.cx) + ')');
     const pos = await E('BK.SET.touchPos && BK.SET.touchPos.atk'); ok(Array.isArray(pos), 'the dragged spot was not stored in SET.touchPos');
     ok(await E('JSON.parse(localStorage.getItem("bracken.settings")).touchPos.atk') !== undefined, 'the dragged spot was not saved');
     await tap(...rectMid(d.bar.reset)); await sleep(150);
@@ -262,6 +264,26 @@ try {
     // HURT: no button while the hero is staggered (the keyboard's INTERACT is refused then too)
     await put([{ t: 'doorway', id: 'tD3', needs: null, test: 1 }]); await E('BK.P.hurt = 0.5'); d = await tick(); ok(d.verb === null, 'the button shows while the hero is hurt'); await E('BK.P.hurt = 0'); await drop();
   });
+  // ===================== SKILL GLYPHS ON THE SKILL BUTTONS (claude/mobile2) =====================
+  await section('skill-glyphs', async () => {
+    await E('BK.manualSimulation = true; BK.SET.touchSize = 0.7; BK.touch.relayout();');
+    await E("(() => { const h = BK.P.hero, P = BKT.PROG; P.loadouts = P.loadouts || {}; P.loadouts[h] = ['groundSlam', 'shieldThrow', 'risingCut', 'warCry']; })()"); await E('BK.touch.relayout()');
+    const slots = await E('[0, 1, 2, 3].map(i => BKT.skillAt(i))'); const have = slots.filter(Boolean).length;
+    ok(have >= 1, 'the hero has no skill equipped, nothing to draw');
+    await E('BK.touch.setVerbNow(null); BK.touch.tick(0.1); BK.touch.draw()'); await sleep(50);
+    let gl = await E('BK.touch.glyphs()'); const drawn = Object.keys(gl);
+    ok(drawn.length === have, 'the skill buttons drew ' + drawn.length + ' glyphs for ' + have + ' equipped skills');
+    // legible at the smallest size: the glyph is a whole-number scale of its pixels and at least 22 CSS px across
+    ok(drawn.every(k => gl[k].scale >= 1 && gl[k].side >= 20 * DSF), 'a skill glyph is too small at 70% touch size: ' + JSON.stringify(gl));
+    // the overlay really has pixels there (not just the circle)
+    const lit = await E(`(() => { const o = BK.touch.overlayCanvas(), g = o.getContext('2d'), L = BK.touch.debug().layout, b = L.btn.throw, k = o.width / BK.touch.debug().layout.W; const d = g.getImageData(Math.round((b.cx - b.r * 0.5) * k), Math.round((b.cy - b.r * 0.5) * k), Math.round(b.r * k), Math.round(b.r * k)).data; const seen = new Set(); for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 90) seen.add(d[i] + ',' + d[i + 1] + ',' + d[i + 2]); return seen.size; })()`);
+    ok(lit >= 3, 'the first skill button shows no glyph pixels (' + lit + ' colours)');
+    // the wait sweeps over it: half the wait left shows k = 0.5 and a different picture
+    const id = slots.find(Boolean), idx = slots.indexOf(id), key = ['throw', 'skill2', 'skill3', 'skill4'][idx];
+    await E(`(() => { BK.P.cds = BK.P.cds || {}; BK.P.cds[${JSON.stringify(id)}] = 1.5; BK.touch.draw(); })()`); gl = await E('BK.touch.glyphs()');
+    ok(gl[key] && gl[key].k > 0 && gl[key].k <= 1, 'a skill on cooldown did not show its wait sweep: ' + JSON.stringify(gl[key]));
+    await E(`BK.P.cds[${JSON.stringify(id)}] = 0; BK.SET.touchSize = 1; BK.touch.relayout();`);
+  });
   await section('dialog-tap', async () => {
     await E('BK.manualSimulation = false; BK.state = "gameover"'); await sleep(500);
     await tap(300, 100); await sleep(400);
@@ -330,7 +352,7 @@ try {
     const r = await E('({ on: BK.touch ? BK.touch.on : null, tabs: (BK.ui.menuRows && (BK.ui.openMenu("title"), BK.ui.menuRows().length)) })');
     ok(r.on === false, 'touch is ON on a desktop page');
     ok(await E('document.querySelector("canvas") !== null && !BK.touch.debug().buttons.length'), 'a desktop page has touch buttons');
-    await pg.send('Emulation.setDeviceMetricsOverride', { width: 844, height: 390, deviceScaleFactor: DPR, mobile: true, screenOrientation: { type: 'landscapePrimary', angle: 90 } });
+    await pg.send('Emulation.setDeviceMetricsOverride', { width: 844, height: 390, deviceScaleFactor: DSF, mobile: true, screenOrientation: { type: 'landscapePrimary', angle: 90 } });
     await pg.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
   });
 
@@ -350,7 +372,7 @@ try {
     ok(/viewport-fit=cover/.test(html) && /id="safe"/.test(html) && /safe-area-inset-top/.test(html), 'index.html lacks viewport-fit=cover or the safe-area probe');
     ok(/rel="apple-touch-icon"/.test(html), 'no apple-touch-icon (Add to Home Screen on iOS)');
     const sw = readFileSync(ROOT + 'sw.js', 'utf8');
-    ok(/VERSION\s*=\s*'bracken-shell-v\d+'/.test(sw) && /fetch\(req, \{ cache: 'no-store' \}\)/.test(sw) && /caches\.delete/.test(sw), 'sw.js is not version-keyed and network-first');
+    ok(/VERSION\s*=\s*'bracken-shell-v\d+'/.test(sw) && /fetch\(req, \{ cache: 'no-(?:store|cache)' \}\)/.test(sw) && /caches\.delete/.test(sw), 'sw.js is not version-keyed and network-first');
     ok(/\.ogg|audio/.test(sw) && !/\.(?:ogg|mp3|wav)\|/.test(sw.split('CACHEABLE')[1].split('\n')[0]), 'sw.js caches audio (126 MB)');
   });
   await section('pwa-live', async () => {

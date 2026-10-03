@@ -1,0 +1,255 @@
+{
+ "cpu": 4,
+ "viewport": "915x412@2.625",
+ "bootMs": 17925,
+ "titleMs": 17925,
+ "bootTrace": [
+  [
+   "modules",
+   101
+  ],
+  [
+   "hero",
+   872
+  ],
+  [
+   "art1",
+   484
+  ],
+  [
+   "art2",
+   1436
+  ],
+  [
+   "art3",
+   241
+  ],
+  [
+   "art4",
+   199
+  ],
+  [
+   "art5",
+   476
+  ],
+  [
+   "art6",
+   252
+  ],
+  [
+   "art7",
+   616
+  ],
+  [
+   "art8",
+   536
+  ],
+  [
+   "art9",
+   310
+  ],
+  [
+   "sub",
+   2562
+  ],
+  [
+   "sub",
+   90
+  ],
+  [
+   "sub",
+   66
+  ],
+  [
+   "sub",
+   34
+  ],
+  [
+   "sub",
+   4
+  ],
+  [
+   "sub",
+   6
+  ],
+  [
+   "tiles",
+   0
+  ],
+  [
+   "sub",
+   21
+  ],
+  [
+   "sub",
+   70
+  ],
+  [
+   "sub",
+   344
+  ],
+  [
+   "sub",
+   59
+  ],
+  [
+   "sub",
+   75
+  ],
+  [
+   "props",
+   255
+  ],
+  [
+   "sky",
+   454
+  ],
+  [
+   "misc1",
+   859
+  ],
+  [
+   "misc2",
+   801
+  ],
+  [
+   "misc3",
+   1842
+  ],
+  [
+   "l_build",
+   525
+  ],
+  [
+   "sub",
+   55
+  ],
+  [
+   "sub",
+   5
+  ],
+  [
+   "sub",
+   69
+  ],
+  [
+   "sub",
+   27
+  ],
+  [
+   "sub",
+   6
+  ],
+  [
+   "sub",
+   5
+  ],
+  [
+   "l_bake",
+   0
+  ],
+  [
+   "sub",
+   25
+  ],
+  [
+   "sub",
+   127
+  ],
+  [
+   "sub",
+   323
+  ],
+  [
+   "sub",
+   83
+  ],
+  [
+   "sub",
+   128
+  ],
+  [
+   "l_bake",
+   363
+  ],
+  [
+   "l_bake",
+   786
+  ],
+  [
+   "l_deep",
+   277
+  ],
+  [
+   "l_rest",
+   1417
+  ],
+  [
+   "final",
+   170
+  ]
+ ],
+ "bootScriptMs": 17092,
+ "perf": {
+  "coarse": true,
+  "dpr": 2.625,
+  "cv": "1201x541",
+  "set": {
+   "parallax": "near",
+   "touchInit": 1
+  }
+ },
+ "struct": {
+  "mp": 0.649741,
+  "tl": true,
+  "tlw": 2402,
+  "pre": 244,
+  "desync": true
+ },
+ "rows": [
+  {
+   "scene": "title",
+   "fps": 60,
+   "p95": 16.8,
+   "worst": 17.2,
+   "busyMsPerFrame": 5.1,
+   "scriptMs": 4.2
+  },
+  {
+   "scene": "map",
+   "fps": 59.9,
+   "p95": 16.8,
+   "worst": 18.2,
+   "busyMsPerFrame": 7.2,
+   "scriptMs": 6.1
+  },
+  {
+   "scene": "wood",
+   "fps": 60,
+   "p95": 16.8,
+   "worst": 17.1,
+   "busyMsPerFrame": 12.3,
+   "scriptMs": 11.3
+  },
+  {
+   "scene": "welltown",
+   "fps": 60.2,
+   "p95": 16.9,
+   "worst": 17.1,
+   "busyMsPerFrame": 12.6,
+   "scriptMs": 11.6
+  },
+  {
+   "scene": "redgorge",
+   "fps": 52.9,
+   "p95": 16.9,
+   "worst": 433.3,
+   "busyMsPerFrame": 16.5,
+   "scriptMs": 15.4
+  }
+ ],
+ "input": {
+  "firstMs": 94.9,
+  "stickMs": 0.1
+ }
+}

@@ -1,0 +1,60 @@
+{
+ "cpu": 4,
+ "viewport": "915x412@2.625",
+ "bootMs": 19166,
+ "titleMs": 19166,
+ "perf": {
+  "coarse": true,
+  "dpr": 2.625,
+  "cv": "2402x1082",
+  "set": {
+   "parallax": "near",
+   "touchInit": 1
+  }
+ },
+ "rows": [
+  {
+   "scene": "title",
+   "fps": 59.8,
+   "p95": 17.4,
+   "worst": 33.4,
+   "busyMsPerFrame": 12.3,
+   "scriptMs": 1.5
+  },
+  {
+   "scene": "map",
+   "fps": 60.4,
+   "p95": 17.5,
+   "worst": 20.8,
+   "busyMsPerFrame": 13.5,
+   "scriptMs": 2
+  },
+  {
+   "scene": "wood",
+   "fps": 49.1,
+   "p95": 33.7,
+   "worst": 34.3,
+   "busyMsPerFrame": 19.9,
+   "scriptMs": 6.3
+  },
+  {
+   "scene": "welltown",
+   "fps": 51.1,
+   "p95": 33.6,
+   "worst": 34,
+   "busyMsPerFrame": 19.1,
+   "scriptMs": 5.1
+  },
+  {
+   "scene": "redgorge",
+   "fps": 42.6,
+   "p95": 33.9,
+   "worst": 50.8,
+   "busyMsPerFrame": 22.9,
+   "scriptMs": 6.7
+  }
+ ],
+ "input": {
+  "stickMs": 100.7
+ }
+}

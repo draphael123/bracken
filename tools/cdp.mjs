@@ -36,6 +36,7 @@ export async function openPage(opts = {}) {
   const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
   let id = 0; const pending = new Map(), errors = [];
   ws.onmessage = ev => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
+    if (m.method && opts.onEvent) opts.onEvent(m);   /* (a tool that wants the protocol's events, e.g. Tracing.dataCollected: tools/mobile-profile.mjs) */
     if (m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception ? m.params.exceptionDetails.exception.description : m.params.exceptionDetails.text); };
   // Navigation can destroy a context before its evaluation answers. Bound the protocol wait as well.
   const send = (method, params = {}, wait = 15000) => new Promise((res, rej) => {
