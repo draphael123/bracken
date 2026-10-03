@@ -40,6 +40,7 @@
 //   deadends  every dead end pays: loot, a heart or a coin cache at the far end of every pocket (land, water, up high)
 //   textfit   (headless) no text runs past its plate or off the screen, is cut, clipped, smeared, overprinted or laid over the hero,
 //             and no meter is drawn across a word (every boss plate is drawn in its fight: 'plates')
+//   textfit-full (headless, ~8 min, 10 min budget) the unscoped textfit --strict: every talk page of every level for every hero, every boss fight
 //   rafts     an empty raft returns slowly, keeps its toll and passengers, and can cross again
 //   bells     every signed bell is live: a sentry runs for it, it drops its hall's gate (never on a lock gate), turns out the watch, and the gate lifts
 //   arena-supplies a fight written for height is fought in a room that has some: every boss attack that only lands
@@ -155,6 +156,12 @@ if (take('slopes-trace')) results.push(run('slopes-trace', process.execPath, ['t
 /* THE WORDS FIT: every hint, the bestiary, the store, the talent trees, the pause menu and every hero's HUD, drawn and measured (tools/textfit.mjs;
    the talk pages of every level and the boss fights are the long run: node tools/textfit.mjs --strict) */
 if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,pick,practice,bossjump,plates,bossfix,soundtest', '--strict'], { PORT: String(portFor(4)) }));
+/* THE FULL WORDS RUN, UNSCOPED AND STRICT: every sign and NPC page of every level for every hero, every boss fight. ~8 min, so it has its
+   own step and its own 10 minute budget (a hang is a FAIL by name, not a stalled release). It runs in the full gate only: a subset runs it
+   when it is NAMED exactly ('textfit-full'), never because 'textfit' matched (Daniel, 2026-10-03: the strict run found what the scoped one cannot) */
+if (!SUBSET || WANT.includes('textfit-full')) { const t0 = Date.now(), r = spawnSync(process.execPath, ['tools/textfit.mjs', '--strict'], { cwd: ROOT, encoding: 'utf8', timeout: 600000, env: { ...process.env, PORT: String(portFor(5)) } });
+  const out = ((r.stdout || '') + (r.stderr || '')).trim().split(String.fromCharCode(10)), timedOut = r.error && r.error.code === 'ETIMEDOUT';
+  results.push({ name: 'textfit-full', ok: r.status === 0 && !timedOut, ms: Date.now() - t0, last: timedOut ? 'TIMED OUT after 10 min' : out[out.length - 1] || '', out }); } else skipped++;
 /* THE SOUND TEST'S LOCK, in the page (docs: a song unlocks on being heard in play, never by browsing the menu itself;
    sound effects are always open): tools/soundtest.mjs */
 if (take('map-footer')) results.push(run('map-footer', process.execPath, ['tools/map-footer.mjs'], { PORT: String(portFor(9)) }));
