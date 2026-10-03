@@ -46,7 +46,7 @@ export function makeWellTownHands(ctx) {
     WT.followT = 0; WT.followed = false;
     const m = ctx.movers().find(q => q.windlass); if (m) { m.locked = true; if (WT.bucketY !== undefined) m.y = WT.bucketY; m.dir = 0; }
     if (window.BK) Object.assign(window.BK, { welltown: () => WT, welltownHands: () => H });
-    /* THE PHONE'S ACTION BUTTON (the claude/mobile lane's touch module reads BK.touchVerbs): what E would do here, as one word */
+    /* THE PHONE'S ACTION BUTTON (the claude/mobile lane's touch module reads BK.touchVerbs): what E would do here, as one word and the press that does it */
     if (window.BK && window.BK.touchVerbs && !window.BK.touchVerbs.includes(H.welltownVerb)) window.BK.touchVerbs.push(H.welltownVerb);
   };
   H.on = () => !!WT;
@@ -179,7 +179,7 @@ export function makeWellTownHands(ctx) {
   };
 
   /* the verb as one word, or null (pure: the HUD's own read) - 'FILL' | 'POUR' | 'DRINK' | 'WIND' | null */
-  H.welltownVerb = () => { const v = WT && H.verbNow(ctx.hero()); if (!v) return null; return v.verb === 'POUR IN' ? 'POUR' : v.verb === 'EMPTY' ? null : v.verb; };
+  H.welltownVerb = () => { const v = WT && H.verbNow(ctx.hero()); if (!v || v.verb === 'EMPTY') return null; return { verb: v.verb === 'POUR IN' ? 'POUR' : v.verb, key: v.verb === 'WIND' ? 'atk' : 'talk' }; };   /* (the touch module's hook shape: { verb, key }; the windlass is struck, the rest is INTERACT) */
 
   /* ---------- DRAWING: src/redraw/welltown_props.js draws each thing; this says where, and what state it is in ---------- */
   H.drawWorld = (g, cx, cy, time) => {
