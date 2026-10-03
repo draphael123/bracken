@@ -36,6 +36,18 @@ assert.ok(gq, 'no level has the Goblin Queen for its boss: this check has nothin
 const depth = depthsOf(LEVELS), after = LEVELS.filter(l => depth[l.id] !== null && depth[l.id] > depth[gq.id]);
 for (const id of FIXED) assert.ok(byId.has(id) && after.includes(byId.get(id)), id + ' is in FIXED but is not a level past the Goblin Queen');
 
+/* THE DEATH FRAMES TOO (claude/corpses, Daniel 10-02: 'the reskinned enemies use a goblin sprite when they die'). A reskin that is only worn while the foe LIVES is not a reskin:
+   the corpse, the knocked-back frame and the hurt flash must wear the same skin. The page test is tools/corpses.mjs (every reskinned foe is killed and its body's drawn set read back);
+   these source asserts are the Node-only half: the one reskinSet() picks every flag the living draw does, spawnCorpse stores it on the body, and the corpse draw reads it. */
+{ const rs0 = main.indexOf('function reskinSet(e)'); assert.ok(rs0 > 0, 'src/main.js has no reskinSet(e): a reskinned foe would die as its base sheet (claude/corpses)');
+  const rs = main.slice(rs0, main.indexOf('function spawnCorpse(e, dir)', rs0));
+  const living = main.slice(main.indexOf("let sprSet = e.t === 'mummer'"), main.indexOf('if (!sprSet) { g.fillStyle'));
+  for (const flag of ['e.cnSkin', 'e.lamplighter', 'e.shy', 'e.juggler', 'e.bandit', 'L.theatre', 'e.bone']) if (living.includes(flag)) assert.ok(rs.includes(flag), 'the living draw reskins by ' + flag + ' but reskinSet() (the corpse and hurt-frame skin) does not: that foe dies as its base sheet');
+  const sc = main.slice(main.indexOf('function spawnCorpse(e, dir)'), main.indexOf('function swordEffect(e)'));
+  assert.ok(sc.includes('reskinSet(e)') && sc.includes('c.set = '), 'spawnCorpse does not give the body its reskin (c.set = reskinSet(e)): a reskinned foe dies as its base sheet');
+  const draw = main.slice(main.indexOf('for (const c of corpses) {', main.indexOf('const al = Math.min(1, c.life / c.max * 2.5)') - 200), main.indexOf('for (const fx of deathFx) drawDeathFx'));
+  assert.ok(draw.includes('c.set ||'), 'the corpse draw does not use c.set: the body is drawn from SPR[c.t], the goblin sheet');
+}
 const undead = e => !!e.bone;   /* a goblin raised as bones (SPR.bonearcher) is not a living goblin */
 const skinOf = e => (e.canal && e.canal.cnSkin) || e.cnSkin || (e.juggler ? 'juggler' : e.shy ? 'shy' : null);   /* (the Harvest Fair's archers are its knife jugglers already: claude/fairfix2) */
 const report = [], fails = [];
@@ -58,4 +70,4 @@ for (const lv of after) {
 console.log('levels past the Goblin Queen (' + gq.id + ', depth ' + depth[gq.id] + '): ' + after.length);
 console.log(report.join('\n'));
 assert.equal(fails.length, 0, fails.slice(0, 12).join('\n'));
-console.log('ok  goblin-lint    ' + FIXED.join(', ') + ': no goblins (' + fixedSkins + ' reskinned foes, every skin drawn and carded); the levels listed REPORT are for a later sweep');
+console.log('ok  goblin-lint    ' + FIXED.join(', ') + ': no goblins (' + fixedSkins + ' reskinned foes, every skin drawn and carded, dead as well as alive); the levels listed REPORT are for a later sweep');

@@ -5536,6 +5536,18 @@ function openYardRespawn(dt) {   // in the open yard a straw man is back on his 
   for (const e of enemies) { if (e.alive) continue; e.downT = (e.downT || 0) + dt;
     if (e.downT > 2) { e.downT = 0; e.alive = true; e.hp = e.hp0 || e.maxHp || EHP[e.t] || 20; e.dying = 0; e.flash = 0; e.stagger = 0; e.mode = e.mode0 || e.mode; burst(e.x, e.y - 8, 8, ['#e0c088', '#c9a040'], 40, 0.4); } }
 }
+/* THE SET A RESKINNED FOE WEARS (claude/corpses): the living draw below picks a foe's set by a chain of reskin flags, and the corpse, the knocked-back frame and the hurt flash used to look
+   SPR[e.t] up again - so a canal bargeman, the Fair's stallholder and the Theatre's flyman all dropped dead as the goblin / drunk / archer under the skin. ONE function for the reskin sets
+   (null = the base sheet), asked by the living hurt frame and by spawnCorpse; tools/corpses.mjs proves it for every reskin on the build */
+function reskinSet(e) {
+  let s = null;
+  if (e.lamplighter && SPR.lamplighter) s = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) s = SPR[e.cnSkin];   /* THE FOG CANAL: the goblins' AI under a man's skin */
+  if (e.bone && e.t === 'archer' && SPR.bonearcher) s = SPR.bonearcher;
+  if (e.t === 'bat' && L.fields && SPR.batHaunt) s = SPR.batHaunt;
+  if (L.theatre) s = THF.foeSet(e) || s;   /* THE THEATRE's cast: the flyman, the prompter, the patron, the usher */
+  if (e.shy && SPR.shy) s = SPR.shy; else if (e.juggler && SPR.juggler) s = SPR.juggler; else if (e.bandit && SPR.banditArcher) s = SPR.banditArcher;   /* THE HARVEST FAIR's stallholder and knife juggler; the Well Town's bandit bowman (claude/welltown: a no-op until it merges) */
+  return s && s !== SPR[e.t] ? s : null;
+}
 function spawnCorpse(e, dir) {
   if (e.t === 'burngob') villageAshes(e);
   if(e.t==='undeadmage')e.lastFrame=UNDEADMAGE_F.dead;
@@ -5546,7 +5558,8 @@ function spawnCorpse(e, dir) {
   if ((e === boss || e.mini) && e.lastSet) { bossBodies.push({ set: e.lastSet, frame: e.t === 'prince' ? PRINCE_F.dead : e.t === 'archmage' ? (e.fam ? MF.FAMILIAR_F.dead : MF.ARCHMAGE_F.dead) : e.t === 'strawking' ? SK.STRAWKING_F.dead : e.t === 'wickerqueen' ? WQN.WQ_F.dead : e.t === 'greenteeth' ? GM.GT_F.dead : e.t === 'puppeteer' ? PM.PUP_F.dead : (e.lastFrame || 0), x: e.x, y: e.y, face: e.face || 1, big: e.lastBigF || 1, t: 0, dur: 1.4, rider: e.lastRider || null }); (e.t==='bellcrab'?SFX.seaBell:SFX.gobDieLow)(); return; }   /* a boss leaves a body, not a tumble */
   if (isPirate() && !P.loaded && !P.dead) reloadPistol('');   /* a kill seats a ball: it used to be any coin, which made the pistol free */
   const c = { t: e.t, color: e.color, x: e.x, y: e.y, vx: 0, vy: 0, rot: 0, spin: 0, face: e.face, life: 1, max: 1, frame: 0, grav: 900, bounced: false, ground: false };
-  if (HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) c.frame = SPR[e.t].R.length - 1;   /* it dies in the pose it was hit in, not mid-stride */
+  const rsk = reskinSet(e); if (rsk) c.set = rsk;   /* a reskinned foe dies in its OWN skin (claude/corpses) */
+  { const bs = rsk || SPR[e.t]; if (HAS_HURT.has(e.t) && bs && bs.R) c.frame = bs.R.length - 1; }   /* it dies in the pose it was hit in, not mid-stride */
   switch (e.t) {
     case 'lanternshade': case 'bonecorsair': case 'tidemarauder': Object.assign(c,{vx:dir*30,vy:-70,spin:dir*2,life:1.2,max:1.2});SFX.rattle();break;
     case 'bellguard': Object.assign(c,{vx:dir*25,vy:-65,spin:0,life:1.5,max:1.5});SFX.seaBell();break;
@@ -5621,7 +5634,7 @@ function spawnCorpse(e, dir) {
     case 'frog': Object.assign(c, { vx: -dir * 10, vy: -120, spin: dir * 0.8, life: 1.6, max: 1.6, grav: 600, royal: true }); break;
   }
   if(c.max>.05 && !e.maxHp && !e.mini){c.life+=COMBAT.corpseLinger;c.max=c.life;}
-  if (V2_DEATH[e.t] !== undefined && c.t === e.t) c.frame = V2_DEATH[e.t];   /* the redrawn ones have a death of their own */
+  if (V2_DEATH[e.t] !== undefined && c.t === e.t && !c.set) c.frame = V2_DEATH[e.t];   /* the redrawn ones have a death of their own */
   corpses.push(c);
   if (deathFx.length < 12) { const fx = deathBurst(materialOf(e.t), e.x, e.y, dir || 1, (e.x * 31 + e.y * 17) | 0, e.h || 16); fx.y0 = e.y - (e.h || 16); deathFx.push(fx); }   /* DEATH BY MATERIAL: bone clatters, armour sheds, a spirit comes apart upward */
 }
@@ -26265,8 +26278,8 @@ function drawWorld(cx, cy, showPlayer) {
     if (c.t === 'cap') drawRot(PARTS.cap, 0, c.x - cx, c.y - cy, c.face, c.rot, al);
     else if (c.t === 'stem') { const k = c.life / c.max; drawSet(PARTS.stem, null, 0, c.x - cx, c.y - cy, c.face, false, 1 + (1 - k) * 0.4, Math.max(0.1, k), al); }
     else if (c.t === 'plank') { g.save(); g.globalAlpha = al; g.translate(Math.round(c.x - cx), Math.round(c.y - cy)); g.rotate(c.rot); g.drawImage(TILE.plank[0], -8, -4); g.restore(); }
-    else if (SPR[c.t] || c.t === 'hopper') { const q = c.sq > 0 ? c.sq / 0.16 : 0, sink = c.settled ? Math.round((1 - c.life / c.max) * 2) : 0;   /* squash where it lands, sink as it goes */
-      drawRot(c.t === 'hopper' && c.color && c.color !== 'green' ? SPR['hopper_' + c.color] : SPR[c.t], c.frame, c.x - cx, c.y - cy + sink, c.face, c.rot, al, 1 + 0.3 * q, 1 - 0.3 * q); }
+    else if (c.set || SPR[c.t] || c.t === 'hopper') { const q = c.sq > 0 ? c.sq / 0.16 : 0, sink = c.settled ? Math.round((1 - c.life / c.max) * 2) : 0;   /* squash where it lands, sink as it goes */
+      const cs = c.set || (c.t === 'hopper' && c.color && c.color !== 'green' ? SPR['hopper_' + c.color] : SPR[c.t]); c.shown = cs;   /* (c.shown: what was drawn, for tools/corpses.mjs) */ drawRot(cs, c.frame, c.x - cx, c.y - cy + sink, c.face, c.rot, al, 1 + 0.3 * q, 1 - 0.3 * q); }
   }
   for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   /* what they were made of, after the bodies and before the living */
   if (boss && boss.t === 'lance' && boss.alive && boss.bowCall) drawBowCall(boss.bowCall, cx, cy);   /* drawn whether he is on the screen or not: his bowman is coming to where YOU are */
@@ -26327,7 +26340,7 @@ function drawWorld(cx, cy, showPlayer) {
        has one frame fewer than his, so the same index ran past the end of it */
     else if (e.hurtT > 0 && e.t === 'archmage') frame = e.fam ? MF.FAMILIAR_F.hurt : MF.ARCHMAGE_F.hurt;
     else if (e.hurtT > 0 && e.t === 'bellcrab' && e.phase === 3) frame = BELL_OUT_F.hurt;   /* out of the bell his hurt frame is his own set's */
-    else if (e.hurtT > 0 && HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) frame = SPR[e.t].R.length - 1; // knocked about, and it shows
+    else if (e.hurtT > 0 && HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) frame = (reskinSet(e) || SPR[e.t]).R.length - 1; // knocked about, and it shows (a reskin's own last frame: claude/corpses)
     else if (e.t === 'spit') frame = e.mouth > 0 ? 2 : (Math.floor(e.anim * 1.5) % 4 === 1 ? 1 : 0);
     else if (e.t === 'wasp') frame = Math.floor(e.anim * 30) % 3;
     else if (e.t === 'queen') frame = e.mode === 'winded' || e.mode === 'stuck' || e.mode === 'slamRest' ? 6 : e.mode === 'aim' ? 2 : e.mode === 'dive' ? 3 : (e.mode === 'volley' || e.mode === 'volleyUp') ? 4 : (e.mode === 'slamUp' || e.mode === 'slamHang' || e.mode === 'slam') ? 5 : (e.mode === 'sweep' || e.mode === 'sweepStart') ? 7 : Math.floor(e.anim * 26) % 2;
@@ -26582,7 +26595,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'lancer' && e.alive && e.mounted && e.mode === 'chargeTell') { const k = 0.5 + 0.5 * Math.sin(time * 20), fy = Math.round(e.y - cy) - 2, ex = Math.round(e.x - cx); g.globalAlpha = 0.3 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(ex, fy); g.lineTo(Math.round((e.face > 0 ? e.hx1 : e.hx0) - cx), fy); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }   /* THE LINE HE WILL RIDE, for the length of the tell */
     if (e.t === 'lancer' && e.alive && !e.mounted && e.open > 0) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 14 + k * 2, 4, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
     /* THE HURT FRAME (the redraw pass): a blow that lands shows on the body - but never over a windup, which is the tell */
-    if (V2_HURT[e.t] !== undefined && e.flash > 0.06 && e.alive && !(typeof e.mode === 'string' && /Tell$|swing|swipe|dive|leap|aim|stab|cut/.test(e.mode))) frame = V2_HURT[e.t];
+    if (V2_HURT[e.t] !== undefined && e.flash > 0.06 && e.alive && (!reskinSet(e) || reskinSet(e).R[V2_HURT[e.t]]) && !(typeof e.mode === 'string' && /Tell$|swing|swipe|dive|leap|aim|stab|cut/.test(e.mode))) frame = V2_HURT[e.t];
     /* THE HEXED FIELDS' BATS are the farm's dead ones, pale and red-eyed: baked the first time one is drawn, from the cave bat */
     let sprSet = e.t === 'mummer' && e.scare && !e.woke && !(e.hurtT > 0) ? SPR.scarecrowM : e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.fam ? SPR.familiar : SPR[e.t];
     if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin];   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
