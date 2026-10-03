@@ -7,3 +7,4 @@ Art only. Hitboxes, timings, frame counts, stats unchanged.
 ## QUESTIONS FOR DANIEL
 1. Head is ~7x8 px, haft ~11 px: recommend keep; say if you want it bigger/smaller.
 - Slide and kneel poses raised 2-3 px so the longer haft butt stays above the floor (slide, crouch-feet).
+- Round 2 (Daniel): head ~9x10 px, haft ~14 px (butt 5 past the hand), idle mace moved 3 px forward so the bigger head stays off the torso (weapon-skins probe); slide/kneel raised again; airUp/rise heads clear of the helm.
