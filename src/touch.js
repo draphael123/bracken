@@ -238,6 +238,7 @@ export function createTouch(env) {
   }
   function roundRect(x, y, w, h, r) { dg.beginPath(); dg.roundRect(x, y, w, h, r); }
   function fit(text, maxW, px) { dg.font = px + 'px ' + FONT; while (px > 6 && dg.measureText(text).width > maxW) { px--; dg.font = px + 'px ' + FONT; } return px; }
+  const glyphs = {};   // what each skill button last drew: { scale, side, r, k } (the test reads it)
   let skillNow = null;   // { icon, k (0..1 of the wait left), secs } for the skill button being drawn, or null
   function icon(k, b, down) {
     const { cx, cy, r } = b, u = r * 0.5; skillNow = k in SKILL_OF && env.skillInfo && !editing ? env.skillInfo(SKILL_OF[k]) : null; dg.save(); dg.translate(cx, cy);
@@ -249,8 +250,8 @@ export function createTouch(env) {
     else if (k === 'pause') { dg.fillRect(-u * 0.55, -u * 0.7, u * 0.38, u * 1.4); dg.fillRect(u * 0.17, -u * 0.7, u * 0.38, u * 1.4); }
     else if (k === 'interact') { const word = (verb && verb.verb) || 'USE', px = fit(word, r * 1.55, Math.round(r * 0.55)); dg.font = px + 'px ' + FONT; dg.textAlign = 'center'; dg.textBaseline = 'middle'; dg.fillText(word, 0, 1); }
     else if (k in SKILL_OF && skillNow && skillNow.icon) {   // THE SKILL'S OWN GLYPH (the same picture the HUD slot and the store use), a whole-number scale so the pixels stay square, the wait swept over it
-      const ic = skillNow.icon, iw = ic.width || 12, ih = ic.height || 12, sc = Math.max(1, Math.floor(r * 1.45 / Math.max(iw, ih))), dw = iw * sc, dh = ih * sc, busy = skillNow.k > 0;
-      dg.imageSmoothingEnabled = false; dg.globalAlpha *= busy ? 0.5 : 1; dg.drawImage(ic, Math.round(-dw / 2), Math.round(-dh / 2), dw, dh); dg.globalAlpha /= busy ? 0.5 : 1;
+      const ic = skillNow.icon, iw = ic.width || 12, ih = ic.height || 12, ok = ov ? ov.width / disp.width : 1, sc = Math.max(1, Math.round(r * 1.45 * ok / Math.max(iw, ih))) / ok, dw = iw * sc, dh = ih * sc, busy = skillNow.k > 0;
+      glyphs[k] = { scale: sc * ok, side: Math.max(dw, dh) * ok / 1, r, k: skillNow.k }; dg.imageSmoothingEnabled = false; dg.globalAlpha *= busy ? 0.5 : 1; dg.drawImage(ic, Math.round(-dw / 2), Math.round(-dh / 2), dw, dh); dg.globalAlpha /= busy ? 0.5 : 1;
       if (busy) {
         dg.save(); dg.beginPath(); dg.arc(0, 0, r * 0.94, 0, 7); dg.clip(); dg.fillStyle = 'rgba(8,8,16,0.62)'; dg.beginPath(); dg.moveTo(0, 0); dg.arc(0, 0, r * 1.2, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, skillNow.k)); dg.closePath(); dg.fill(); dg.restore();
         if (skillNow.secs >= 1) { const t = String(Math.ceil(skillNow.secs)), px = Math.round(r * 0.62); dg.font = px + 'px ' + FONT; dg.textAlign = 'center'; dg.textBaseline = 'middle'; dg.lineWidth = Math.max(2, px * 0.28); dg.strokeStyle = 'rgba(8,8,16,0.9)'; dg.strokeText(t, 0, 1); dg.fillStyle = '#fff6e0'; dg.fillText(t, 0, 1); }
@@ -382,6 +383,7 @@ export function createTouch(env) {
     editing: () => editing, endEdit: () => { editing = false; editEnd(); },
     // the numbers the test reads
     debug: () => { const L = layout(); return { on, layout: L, buttons: visibleBtns().map(b => ({ ...b })), pills: pillsNow(), stick: stick ? { ...stick } : null, verb, hits: hitsNow.length, held: { ...held }, editing, recent: recent(), bar: editing ? editBar() : null }; },
+    glyphs: () => JSON.parse(JSON.stringify(glyphs)), overlayCanvas: () => ov,
     allButtons: () => { const L = layout(); return Object.values(L.btn).map(b => ({ ...b })); },
     hitBoxes: () => hitsNow.map(h => ({ x: h.x, y: h.y, w: h.w, h: h.h })),
     setVerbNow: v => { verb = v; },

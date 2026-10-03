@@ -264,6 +264,26 @@ try {
     // HURT: no button while the hero is staggered (the keyboard's INTERACT is refused then too)
     await put([{ t: 'doorway', id: 'tD3', needs: null, test: 1 }]); await E('BK.P.hurt = 0.5'); d = await tick(); ok(d.verb === null, 'the button shows while the hero is hurt'); await E('BK.P.hurt = 0'); await drop();
   });
+  // ===================== SKILL GLYPHS ON THE SKILL BUTTONS (claude/mobile2) =====================
+  await section('skill-glyphs', async () => {
+    await E('BK.manualSimulation = true; BK.SET.touchSize = 0.7; BK.touch.relayout();');
+    await E("(() => { const h = BK.P.hero, P = BKT.PROG; P.loadouts = P.loadouts || {}; P.loadouts[h] = ['groundSlam', 'shieldThrow', 'risingCut', 'warCry']; })()"); await E('BK.touch.relayout()');
+    const slots = await E('[0, 1, 2, 3].map(i => BKT.skillAt(i))'); const have = slots.filter(Boolean).length;
+    ok(have >= 1, 'the hero has no skill equipped, nothing to draw');
+    await E('BK.touch.setVerbNow(null); BK.touch.tick(0.1); BK.touch.draw()'); await sleep(50);
+    let gl = await E('BK.touch.glyphs()'); const drawn = Object.keys(gl);
+    ok(drawn.length === have, 'the skill buttons drew ' + drawn.length + ' glyphs for ' + have + ' equipped skills');
+    // legible at the smallest size: the glyph is a whole-number scale of its pixels and at least 22 CSS px across
+    ok(drawn.every(k => gl[k].scale >= 1 && gl[k].side >= 20 * DSF), 'a skill glyph is too small at 70% touch size: ' + JSON.stringify(gl));
+    // the overlay really has pixels there (not just the circle)
+    const lit = await E(`(() => { const o = BK.touch.overlayCanvas(), g = o.getContext('2d'), L = BK.touch.debug().layout, b = L.btn.throw, k = o.width / BK.touch.debug().layout.W; const d = g.getImageData(Math.round((b.cx - b.r * 0.5) * k), Math.round((b.cy - b.r * 0.5) * k), Math.round(b.r * k), Math.round(b.r * k)).data; const seen = new Set(); for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 90) seen.add(d[i] + ',' + d[i + 1] + ',' + d[i + 2]); return seen.size; })()`);
+    ok(lit >= 3, 'the first skill button shows no glyph pixels (' + lit + ' colours)');
+    // the wait sweeps over it: half the wait left shows k = 0.5 and a different picture
+    const id = slots.find(Boolean), idx = slots.indexOf(id), key = ['throw', 'skill2', 'skill3', 'skill4'][idx];
+    await E(`(() => { BK.P.cds = BK.P.cds || {}; BK.P.cds[${JSON.stringify(id)}] = 1.5; BK.touch.draw(); })()`); gl = await E('BK.touch.glyphs()');
+    ok(gl[key] && gl[key].k > 0 && gl[key].k <= 1, 'a skill on cooldown did not show its wait sweep: ' + JSON.stringify(gl[key]));
+    await E(`BK.P.cds[${JSON.stringify(id)}] = 0; BK.SET.touchSize = 1; BK.touch.relayout();`);
+  });
   await section('dialog-tap', async () => {
     await E('BK.manualSimulation = false; BK.state = "gameover"'); await sleep(500);
     await tap(300, 100); await sleep(400);

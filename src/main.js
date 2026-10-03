@@ -178,7 +178,7 @@ const lowRes = () => PHONE_MODE === 'on' || (PHONE_MODE !== 'off' && COARSE);
 /* DESYNCHRONIZED + OPAQUE on a phone: the page's canvas is handed to the compositor without waiting for the main thread's commit (Chrome's low-latency canvas),
    which cuts a frame of input lag and the per-frame layer update the main thread paid for. Desktop keeps the plain context. */
 const dg = disp.getContext('2d', lowRes() && !/[?&]desync=0/.test(location.search) ? { alpha: false, desynchronized: true } : undefined);
-const [buf, g0] = canvas(VW, VH); let g = g0;   /* `g` is the sheet being drawn on: the frame, except while drawFront paints the foreground onto its own sheet */
+const [buf, g0] = canvas(VW, VH, true); let g = g0;   /* `g` is the sheet being drawn on: the frame, except while drawFront paints the foreground onto its own sheet */
 // The view is 320x180, or a zoomed-out size picked from the display so the pixel scale stays an integer and the game never shrinks on screen:
 // the zoom drops the scale by a third and fills the display with it, capped at 640x360 (twice the world).
 let viewMode = 'normal';

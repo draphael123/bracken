@@ -1,10 +1,14 @@
 // px.js — crisp pixel helpers. Everything here bakes into offscreen canvases once;
 // nothing is antialiased, so the art stays 16-bit at any integer scale.
 
-export function canvas(w, h) {
+/* BAKE CANVASES ARE CPU-SIDE (claude/mobile2): the art is baked by drawing and then READING PIXELS BACK (outline, contrast rims, shading): on a GPU-backed canvas every
+   getImageData stalls the graphics card, which was ~2 s of a 2-4 s level load and a big share of the boot, worse on a phone. willReadFrequently keeps a canvas in
+   memory; it is drawn from like any other. The one sheet that is drawn ON every frame (main.js's frame buffer) asks for the GPU one: canvas(w, h, true). ?gpucv=1 puts the old way back. */
+const CPU_BAKE = typeof location === 'undefined' || !/[?&]gpucv=1/.test(location.search);
+export function canvas(w, h, gpu = false) {
   const c = document.createElement('canvas');
   c.width = Math.max(1, w | 0); c.height = Math.max(1, h | 0);
-  const g = c.getContext('2d');
+  const g = c.getContext('2d', CPU_BAKE && !gpu ? { willReadFrequently: true } : undefined);
   g.imageSmoothingEnabled = false;
   return [c, g];
 }
