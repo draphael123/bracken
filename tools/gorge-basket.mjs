@@ -21,11 +21,15 @@ try {
       out.baskets[id]={rows:[m.y0/16,m.y1/16],dwells:best};}
     /* the ropes: the glint, the told prompt */
     BK.god=true;BK.tp(30,135);BK.sim(3);out.glintFalls=G().glint&&G().glint.key;
+    { const fw=G().wheels.find(q=>q.gate==='falls');BK.tp((fw.x-8)/16,134);BK.sim(3);BK.press('talk');BK.sim(6);out.fallsShut=G().gates.find(q=>q.id==='falls').state;out.glintHold=G().glint&&G().glint.key;
+      for(let i=0;i<60*20&&G().gates.find(q=>q.id==='falls').state!=='full';i++){BK.P.hp=BK.P.maxHp;BK.sim(1);} out.fallsFull=G().gates.find(q=>q.id==='falls').state;BK.tp(30,135);BK.sim(3);out.glintRope=G().glint&&G().glint.key; }
     BK.tp(18,64);BK.sim(3);out.glintNarrows=G().glint&&G().glint.key;
     BK.tp(21,135);BK.sim(5);out.toldRope=!!G().said.rope;
     return out;})()`, 240000);
   for (const [id, b] of Object.entries(r.baskets)) ok(b.dwells.length >= 3 && b.dwells.every(d => d >= MIN_DWELL), 'basket ' + id + ' (rows ' + b.rows.join('->') + '): back at its foot for >= ' + MIN_DWELL + ' s before each flood: ' + JSON.stringify(b.dwells));
-  ok(r.glintFalls === 'fallsRope', 'the falls rope glints from its terrace: ' + r.glintFalls);
+  ok(r.glintFalls === 'fallsWheel', 'the falls WHEEL (not the rope) glints from its terrace while the gate is open: ' + r.glintFalls);
+  ok(r.fallsShut === 'shut' && r.glintHold === 'fallsHold', 'E at the wheel shuts the falls gate, the glint stays on the wheel and the nudge says wait: ' + r.fallsShut + ' / ' + r.glintHold);
+  ok(r.fallsFull === 'full' && r.glintRope === 'fallsRope', 'once the gate holds the flood the glint moves to the rope: ' + r.fallsFull + ' / ' + r.glintRope);
   ok(r.glintNarrows === 'narrowsRope', 'the narrows rope glints from its landing: ' + r.glintNarrows);
   ok(r.toldRope, 'the told prompt CLIMB THE ROPE fired at the first rope foot');
   if (pg.errors.length) { console.log('page errors: ' + pg.errors.slice(0, 3).join(' | ')); bad++; }
