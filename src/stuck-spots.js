@@ -112,6 +112,6 @@ export const STUCK_SIGNS = {
 export function applyStuckSigns(L, id) {
   const S = STUCK_SIGNS[id]; if (!S || !L || !L.ents) return L;
   for (const f of S.fix || []) { const e = L.ents.find(q => q.t === 'sign' && q.x === f.x); if (e) e.text = f.text; }
-  for (const a of S.add || []) L.ents.push({ t: 'sign', x: a.x, y: a.y, text: a.text });
+  for (const a of S.add || []) L.ents.push({ t: 'sign', x: a.x, y: a.y, text: a.text, stuck: true });   /* (stuck: true - tools/level-quality.mjs levelHash leaves these out, so a stamped pilot / mash row stays valid) */
   return L;
 }
