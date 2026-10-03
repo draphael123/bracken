@@ -3827,7 +3827,7 @@ function theShop() {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 19 }, pools: [], falls: [], moversExtra: [],
     duskStart: -1, duskLen: 1, music: 'store', night: true, shop: true, interiors: [[2, 37, 13, 19, 'hall']],
     palette: { hall: true, sky: 'night', dress: 'none', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', grass: '#6a5a3a', grassL: '#8a7a4a', grassD: '#3a2a1a' },
-    weather: [], ambient: [],
+    weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'town' }],   /* THE STORE: the town through its shutters, not the wood's birds (claude/identity0) */
   };
 }
 

@@ -18,7 +18,7 @@ for (const k of ['fire', 'crowd', 'barn']) {
   if (!NAMES.includes(k)) fails.push(`AMBIENT_NAMES lacks the '${k}' bed`);
   if (!audioSrc.includes('  ' + k + '() {')) fails.push(`src/audio.js SYNTH_BEDS has no ${k}() bed`);
 }
-const SKIP = id => /^(trial_|shop|custom)/.test(id);
+const SKIP = id => /^(trial_|custom)/.test(id);
 const FOREST_OK = new Set(['wood', 'kings']);   /* a wood is a wood: no other level plays the birds */
 const SET = ['dovecote', 'lychgate', 'stocks'];
 /* reasoned exemptions, Daniel to overrule: the Monastery's churchyard (its graves, yew and lychgate) and its garden dovecote, and the Hanging Village's one
