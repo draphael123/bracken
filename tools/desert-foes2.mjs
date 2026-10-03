@@ -171,7 +171,7 @@ if (!process.argv.includes('--node')) {
       for(let i=0;i<60*10&&!(P.cqVenom&&P.cqVenom.length);i++){P.hp=999;P.x=v.x-30;P.face=1;BK.sim(1);}out.venom={stacks:(P.cqVenom||[]).length,slow:P.venomSlow,n:H().n.venom};
       v.alive=false;for(let i=0;i<60*20&&P.cqVenom.length;i++)BK.sim(1);out.venomAfter={stacks:(P.cqVenom||[]).length,slow:P.venomSlow};
       /* the corpses keep their skins */
-      const f3=spawn('scorpion',100,29,{cnSkin:'venomscorpion'});BK.sim(2);BKT.hurtEnemy(f3,999,f3.x-10,false);BK.sim(2);out.corpse=(BK.corpses().find(c=>Math.abs(c.x-f3.x)<4)||{}).t;
+      const f3=spawn('scorpion',100,29,{cnSkin:'venomscorpion'});BK.sim(2);BKT.hurtEnemy(f3,999,f3.x-10,false);BK.sim(2);{const c=BK.corpses().find(c=>Math.abs(c.x-f3.x)<4)||{};out.corpse=c.set&&c.set===BK.SPR.venomscorpion?"venomscorpion":(c.t||"none");}
       return out;})()`, 300000);
     ok(w.fire.skin === 'firescorpion' && w.fire.t === 'scorpion', 'a fire scorpion spawns as the scorpion with its skin');
     ok(w.patch >= 1 && w.patchAt && w.patchAt[1] === 0 && Math.abs(w.patchAt[0]) <= 40, 'its sting leaves a burning patch on the ground where it struck ' + JSON.stringify(w.patchAt));
@@ -199,7 +199,7 @@ if (!process.argv.includes('--node')) {
       for(let i=0;i<120;i++){P.hp=P.maxHp;P.x=30*16;BK.sim(1);}dyn.alive=false;
       till('flood');BK.sim(10);const b={x:24*16+8,y:165*16,vx:0,vy:0,fuse:1,dyn:true};BK.bombs().push(b);const fz=H().n.fizzled;BK.sim(2);out.douse={gone:!BK.bombs().includes(b),fizzled:H().n.fizzled-fz};
       /* the shield guard dies as a man */
-      const s=sg[0];s.alive=true;s.hp=5;BKT.hurtEnemy(s,999,s.x+10,false);BK.sim(2);out.sgCorpse=(BK.corpses().find(c=>Math.abs(c.x-s.x)<4)||{}).t;
+      const s=sg[0];s.alive=true;s.hp=5;BKT.hurtEnemy(s,999,s.x+10,false);BK.sim(2);{const c=BK.corpses().find(c=>Math.abs(c.x-s.x)<4)||{};out.sgCorpse=c.set&&c.set===BK.SPR.shieldguard?"shieldguard":(c.t||"none");}
       return out;})()`, 300000);
     ok(g.cast.worm && g.cast.dyn === 'sapper' && g.cast.shield === 'shield' && g.cast.h === 18, 'the gorge as built: a sandworm in the riverbed, a dynamite bandit (the sapper\'s AI) and shield guards (the shieldgob\'s), men\'s height');
     ok(g.woke === 1, 'the worm wakes as you stand in its bed');
