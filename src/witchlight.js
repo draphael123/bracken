@@ -80,7 +80,7 @@ export function buildWitchlight({ painter, T, TS }) {
   ent('sign', 35, FOOT, { text: 'STAND IN A RUNE COLUMN WHILE IT GLOWS AND IT LIFTS YOU.' });
   coins([23, FOOT - 1], [27, FOOT - 1], [31, FOOT - 1]);
   meet('THE CAVERN MOUTH', 12, 20, [['zombie', 14, FOOT], ['zombie', 18, FOOT], ['bonearcher', 20, FOOT]]);
-  meet('THE FIRST COLUMN', 35, 44, [['bonegob', 36, FOOT], ['imp', 41, FOOT - 14], ['zombie', 43, FOOT]]);
+  meet('THE FIRST COLUMN', 35, 44, [['bonegob', 36, FOOT], ['imp', 41, FOOT - 14], ['hound', 43, FOOT, { cnSkin: 'gravehound' }]]);   /* (claude/variety) the Stair's first grave hound: light-shy, it stops at a lamp's edge */
 
   // ---- 2. THE DRIFTING AQUEDUCT (c 50-139) ----
   for (const [a, b] of WL.PIERS) { block(a, b, PIER + 1, H - 1); skins.push([a, b, PIER + 1, H - 1, 'witch']); }   // the surviving piers
@@ -123,7 +123,7 @@ export function buildWitchlight({ painter, T, TS }) {
   ent('check', 224, PIER); ent('check', 242, 50);
   ent('sign', 223, PIER, { text: 'THE RUNE STAIR. THE COLUMNS LIGHT ONE AFTER ANOTHER: RIDE ONE AND STEP INTO THE NEXT.' });
   coins([230, 62], [234, 62], [242, 50], [246, 50]);
-  meet('THE STAIR FOOT', 222, 240, [['zombie', 230, PIER], ['husk', 234, PIER], ['bonearcher', 234, 62]]);
+  meet('THE STAIR FOOT', 222, 240, [['hound', 230, PIER, { cnSkin: 'gravehound' }], ['husk', 234, PIER], ['bonearcher', 234, 62]]);
   meet('THE IMPS IN THE SHAFT', 222, 249, [['imp', 228, 70], ['imp', 238, 57], ['imp', 244, 46]]);
 
   // ---- 5. THE ROOTED GARDEN and THE GARDEN GATE (c 250-356, row 40): half as long again (claude/hedgewarden2, 2026-09-28) ----

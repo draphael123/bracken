@@ -17,8 +17,8 @@ try {
   const r = await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); const res = [], seen = new Set();
     BK.manualSimulation = true; BK.SET.hud = 'minimal'; BK.setHero('knight'); BK.reset({ fresh: true });
     const foes = () => typeof BK.enemies === 'function' ? BK.enemies() : BK.enemies, corp = () => typeof BK.corpses === 'function' ? BK.corpses() : BK.corpses;
-    const flag = e => e.cnSkin ? 'cn:' + e.cnSkin : e.lamplighter ? 'lamplighter' : e.shy ? 'shy' : e.juggler ? 'juggler' : e.flyman ? 'flyman' : e.prompter ? 'prompter' : e.usher ? 'usher' : e.patron ? 'patron' : e.footlights ? 'footlights' : (e.bone && e.t === 'archer') ? 'bonearcher' : null;
-    for (const id of ['canal', 'fair', 'theatre', 'welltown', 'redgorge', 'undercrown', 'lamplit', 'witchlight']) { const li = LEVELS.findIndex(l => l.id === id); if (li < 0) continue;
+    const flag = e => e.cnSkin ? 'cn:' + e.cnSkin : e.lamplighter ? 'lamplighter' : e.shy ? 'shy' : e.juggler ? 'juggler' : e.flyman ? 'flyman' : e.prompter ? 'prompter' : e.bandit ? 'bandit' : e.usher ? 'usher' : e.patron ? 'patron' : e.footlights ? 'footlights' : (e.bone && e.t === 'archer') ? 'bonearcher' : null;
+    for (const id of ['canal', 'fair', 'theatre', 'welltown', 'redgorge', 'undercrown', 'lamplit', 'witchlight', 'fallingtower', 'burial', 'unburied']) { const li = LEVELS.findIndex(l => l.id === id); if (li < 0) continue;
       const kinds = []; BK.load(li); BK.state = 'play'; BK.god = true; BK.sim(4);
       for (const e0 of foes()) { const f = flag(e0); if (f && !kinds.some(k => k.f === f)) kinds.push({ f, t: e0.t, x: e0.x, y: e0.y, i: foes().indexOf(e0) }); }
       for (const k of kinds) { const row = { level: id, flag: k.f, t: k.t, errs: [] };

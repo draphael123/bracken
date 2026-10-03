@@ -85,7 +85,7 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
   ent('sign', 33, G, { text: 'STAKE LINE. THEY PLANTED THESE AGAINST HORSE, AND THE HORSE STILL COMES.' });
   coins([12, G], [26, G + 4], [43, G - 2], [55, G], [66, G + 3]);
   meet('THE FIRST BANNER', 32, 42, [['bannerbearer', 38, G], ['corpse', 33, G], ['corpse', 39, G], ['zombie', 41, G - 2]]);   /* off the stake line (34-36): 34 and 36 stood over the notch and fell into it */   // 41 sits on the grave mound (G-1..G solid): the mound's top is G-2
-  meet('THE TRENCH GUARD', 58, 74, [['zombie', 62, G + 4], ['zombie', 67, G + 4], ['bonearcher', 74, G]]);
+  meet('THE TRENCH GUARD', 58, 74, [['zombie', 62, G + 4], ['hound', 67, G + 4, { cnSkin: 'gravehound' }], ['bonearcher', 74, G]]);
 
   // ---- 2. THE SHIELD CROSSING (c 70-129): sixty columns of open ground under the ridge. Cover to cover, on the horn ----
   /* THE OLD TRENCH LINE (the rework, 2026-09-24): the first army's own trench across the foot of the crossing, two rows deep and
@@ -102,7 +102,7 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
   ent('sign', 120, G, { text: 'THE MOUNDS ARE NOT GROUND. THEY ARE WHAT IS LEFT OF THE SECOND DAY.' });
   coins([88, G], [98, G + 4], [116, G + 3], [127, G]);
   meet('THE MOUND LINE', 86, 102, [['bannerbearer', 93, G], ['corpse', 89, G], ['corpse', 95, G], ['wight', 100, G + 4]]   /* off the stake line (90-92) */);
-  meet('THE COVER RUN', 110, 128, [['bonearcher', 111, G], ['corpse', 116, G - 2], ['zombie', 121, G], ['husk', 126, G]]);
+  meet('THE COVER RUN', 110, 128, [['bonearcher', 111, G], ['corpse', 116, G - 2], ['hound', 121, G, { cnSkin: 'gravehound' }], ['husk', 126, G]]);
 
   // ---- 3. THE BROKEN CHARGE (c 130-229): the low route is a long trench of mud, the high route the wreckage over it ----
   const [l0, l1] = UF.LOW; air(l0, l1, G + 1, G + 5); plat(l0, G + 3, 2); plat(l1 - 1, G + 3, 2); plat(l1 - 2, G, 3); plat(l0, G, 3);   // the long trench (5 deep), two steps out at each end
@@ -124,7 +124,7 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
   ent('sign', 148, G - 3, { text: 'HORNS AND DUST ON THE HORIZON. THE HORSE COME DOWN THIS LANE AND THEY DO NOT STOP.' });
   ent('sign', 227, G - 3, { text: 'SIEGE OIL AND A TREBUCHET STILL LOADED. BOTH OF THEM WORK.' });
   coins([152, G + 5], [166, 28], [178, G + 5], [190, 30], [204, G + 5], [216, 29], [224, G]);
-  meet('THE CHARGE LANE', 152, 172, [['corpse', 154, G + 5], ['zombie', 158, G + 5], ['bonegob', 164, G + 5], ['corpse', 170, G + 5]]);
+  meet('THE CHARGE LANE', 152, 172, [['corpse', 154, G + 5], ['hound', 158, G + 5, { cnSkin: 'gravehound' }], ['bonegob', 164, G + 5], ['corpse', 170, G + 5]]);
   meet('THE TRENCH MELEE', 180, 206, [['bannerbearer', 186, G + 5], ['corpse', 182, G + 5], ['corpse', 190, G + 5], ['zombie', 199, G + 5], ['husk', 204, G + 5]]);
   meet('THE WRECK ARCHERS', 174, 212, [['bonearcher', 176, 30], ['bonearcher', 210, 29], ['harpy', 196, 24]]);
   meet('THE RAMPART', 214, 229, [['wight', 218, G + 5], ['corpse', 222, G + 5], ['bonegob', 227, G - 3], ['zombie', 224, 31]]);   // 227-228 is the rampart wall (G-2..G solid): its top is G-3

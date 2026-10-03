@@ -125,13 +125,13 @@ export function buildHarvestFair({ painter, T, TS }) {
   plat(133, R - 4, 3); foe('mummer', 134, { y: R - 5, squad: 'pincerRoof', cover: 'pincer' });   /* THE PINCER (claude/fairfix2: one of the pair is UP on a stall roof now): you walk under it to the other, and it
      DROPS off the roof behind you (the fair's mummers come down after you) - a mummer each side and you can face only one. (claude/fairfix3: drawn in tighter, six columns apart, and
      the boardwalk no longer goes over them) */
-  foe('mummer', 140, { squad: 'pincer' });
+  foe('brute', 140, { cnSkin: 'strongman', squad: 'pincer' });   /* (claude/variety) THE STRONGMAN: the pincer's ground man is a fairground brute with a mallet - it walks at you whether or not you look, so the roof mummer is the one you hold */
   /* THE KNIFE JUGGLER over the pincer (claude/fairfix2; the goblin archer's draw and loose, knives for arrows): on a stall roof behind the pair. He keeps the rule (claude/fairfix3):
      looked at, he juggles; at a turned back, he throws. Face the far mummer to hold it and his knives come into your back; face him and both mummers walk. Up on his roof he is a jump and a cut away */
   plat(127, R - 4, 3); foe('archer', 128, { y: R - 5, juggler: true, squad: 'pincerRoof', cover: 'pincer' });
   ramp(150, 6);                                           /* the stair: six rows up over twelve tiles */
   block(162, 185, R - 6, H - 1);                          /* the stall-top terrace */
-  foe('mummer', 170, { y: R - 7, squad: 'top' });      /* THE ONE AT THE TOP: on the terrace where you stop to catch your breath, by the gallery */
+  foe('brute', 170, { y: R - 7, cnSkin: 'strongman', squad: 'top' });      /* THE ONE AT THE TOP: on the terrace where you stop to catch your breath, by the gallery */
   ent('deco', 172, R - 7, { kind: 'stall', v: 0 }); post(180, R - 7, 1);
   ent('mend', 183, R - 7);                                /* a heart at the far end of the terrace, after the pincer */
   /* THE SHOOTING GALLERY (taught): on the terrace three targets hang at chest height on the gallery's back wall. Hit all three (any blow, any hero) inside twelve seconds and the planks run up the
@@ -236,7 +236,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* the ticket yard, and THE TOWER'S STAIR: three flights up to the landing (a mummer waits there under a lantern that gutters), then the step to the tower top */
   sign(346, 'THE HELTER-SKELTER. THE STAIR IS DARK. HOLD DOWN ON THE SLIDE AND RIDE IT.');
   plat(348, R - 3, 3); plat(351, R - 6, 3); plat(354, R - 9, 5); plat(359, R - 12, 2);   /* rows 25, 22, 19 (the landing, cols 354-358), 16: a 3-row step each; the tower top is row 14 */
-  foe('mummer', 357, { y: S - 9, squad: 'stair' });       /* on the landing: your dusk is short here; it is held only in the lantern's light or within arm's length. It drops after you (claude/fairfix2) */
+  foe('brute', 357, { y: S - 9, cnSkin: 'strongman', squad: 'stair' });       /* on the landing: your dusk is short here; it is held only in the lantern's light or within arm's length. It drops after you (claude/fairfix2) */
   plat(343, 19, 2); foe('archer', 343, { y: 18, juggler: true, squad: 'stairTop', cover: 'stair' });   /* and a KNIFE JUGGLER on a perch over the ticket yard (claude/fairfix2; claude/fairfix3: he stood on the
      tower top, ahead of the climb, where a look held him): behind you as you climb, his knives come up the stair at your back while the landing's mummer holds your look */
   post(355, 18, 0.5);
@@ -250,7 +250,7 @@ export function buildHarvestFair({ painter, T, TS }) {
      and a hobby-horse in it facing out. You come down the slide past it, drop to the road, and it is at your BACK */
   for (let x = 372; x <= 377; x++) for (let y = tower.top + (x - 367) + 1; y < R; y++) set(x, y, T.AIR);
   foe('hobbyhorse', 374, { face: 1, squad: 'foot' });
-  foe('mummer', 392, { y: R - 3, squad: 'foot2' });       /* and a mummer on the hill ahead: turn round to hold the horse and your back is to this one (the combine) */
+  foe('brute', 392, { y: R - 3, cnSkin: 'strongman', squad: 'foot2' });       /* and a mummer on the hill ahead: turn round to hold the horse and your back is to this one (the combine) */
   ent('deco', 363, tower.top - 1, { kind: 'bunting', hang: false });
 
   // ---------------- 4. THE HARVEST (379-502): COMBINE ----------------
@@ -294,7 +294,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   gallery({ id: 5, targets: [{ x: mx0 + 8, row: S }], window: 1, bars: [[mx1 - 7, mx1 - 7, 24, 27]], planks: [], say: "A BULL'S-EYE! THE BARS DROP: THE WAY UP" }); block(mx1 - 7, mx1 - 7, 24, 27); cages.push([mx1 - 7, mx1 - 7, 24, 27]); tk(mx1, 27);
   /* A MUMMER AT THE FOOT OF THE MAZE'S STAIR (claude/fairfix3: its two crows are cut - they dove whether you looked or not, the review's foe that ignores the mechanics): you come down
      past it, and it is at your back while you time the chairs */
-  foe('mummer', mx1 + 4, { squad: 'stairfoot' });
+  foe('brute', mx1 + 4, { cnSkin: 'strongman', squad: 'stairfoot' });
   /* THE CHAIR-O-PLANE (claude/fairfix3; Daniel: "more rides" - the swing carousel of the Edwardian fairs, chairs on chains flung out from a turning crown): a spiked pit fifteen
      wide (449-463) and the ride's mast in its middle (455). Its twelve chairs fly round on their chains; seen from the road the near ones come TOWARD you (right to left) at the
      height of a stall roof, and the far ones go round behind the mast, up under the crown, where no one can stand. So you cross AGAINST the ride: step into a chair as it
@@ -317,7 +317,7 @@ export function buildHarvestFair({ painter, T, TS }) {
      The fire takes the mummers it overtakes (runsOver). It pays off the effigy you watched them build, and it is the Queen's fire before you meet her */
   cut(469, 3, 44);                                        /* the descent 469-474, the lane 475-518 (floor row 31), the climb 519-524 */
   post(478, R + 2, 0.5); post(494, R + 2, 1); post(508, R + 2, 0);
-  foe('mummer', 478, { y: R + 2, squad: 'fire' }); foe('mummer', 505, { y: R + 2, squad: 'fire' });   /* each a few steps before a line of bunting */
+  foe('mummer', 478, { y: R + 2, squad: 'fire' }); foe('brute', 505, { y: R + 2, cnSkin: 'strongman', squad: 'fire' });   /* each a few steps before a line of bunting */
   block(490, 490, R + 2, R + 2); block(502, 502, R + 2, R + 2); fallen.push(490, 502);   /* two fallen stalls across the lane: a tile high, a hop */
   for (const [x0, row] of [[471, R - 1], [478, R - 2], [485, R - 1], [492, R - 2], [499, R - 1], [506, R - 2], [513, R - 1]]) {   /* the HIGH lane: seven stall roofs, a three-tile gap between, each one gives; past the last the lanes meet - drop into the straw and run the climb out with the fire behind */
     plat(x0, row, 4); crumbles.push({ x0, x1: x0 + 3, row, rows: 1, count: 0.7, kind: 'stall', fire: true }); }

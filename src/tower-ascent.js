@@ -155,7 +155,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     ent('check', 24, F.bot - 1); ent('sign', 20, F.bot - 1, { text: 'THE READING ROOM. THE GLYPHS TURN THE ROOM OVER: STAND ON ONE, AND FALL UP.' });
     ent('check', 40, slab - 1);                                                                     /* on the gallery: the flip is not asked twice */
     deco('readingDesk', 30, F.bot - 1); deco('globe', 52, F.bot - 1); deco('candelabra', 26, slab - 1); deco('bookpile', 34, slab - 1);
-    for (const [t, x, y, o] of [['broom', 24, F.bot - 7], ['apprentice', 32, F.bot - 7], ['tome', 40, F.bot - 12], ['armour', 48, F.bot - 13], ['tome', 30, under + 3], ['imp', 20, under + 4, { cnSkin: 'fireimp' }],
+    for (const [t, x, y, o] of [['tome', 24, F.bot - 7], ['apprentice', 32, F.bot - 7], ['tome', 40, F.bot - 12], ['armour', 48, F.bot - 13], ['tome', 30, under + 3], ['imp', 20, under + 4, { cnSkin: 'fireimp' }],
       ['tome', 36, under + 5], ['mimic', 46, slab - 1], ['tome', 28, slab - 8], ['apprentice', 22, slab - 7], ['tome', 52, slab - 4], ['broom', 18, F.bot - 12]]) foe(t, x, y, o);
   }
   // ---- 3. THE ORRERY CAGE. Brass ledges and crystal ones, and a rope up the middle past the model's arms. ----
@@ -186,7 +186,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     const stair = [[49, 10, roof - 3], [39, 9, roof - 6], [46, 10, roof - 9], [36, 9, roof - 12], [45, 10, roof - 15], [36, 9, roof - 18], [41, 9, roof - 21]];
     stair.forEach(([x0, len, row], j) => { ledge(x0, len, row); F.tiers.push([x0, len, row]); if (j < stair.length - 1) crumbles.push({ x0, x1: x0 + len - 1, row, chain: 'orrery', count: j === 0 ? 1.8 : 1.1, kind: 'stair' }); });
     ent('check', 54, roof - 1); ent('sign', 51, roof - 1, { text: 'THE STAIR IS FAILING. ONCE YOU ARE ON IT, IT GOES FROM THE BOTTOM UP. CLIMB.' });
-    for (const [t, x, y, o] of [['zombie', 42, roof - 1], ['broom', 24, G.top + 4], ['imp', 56, roof - 10, { cnSkin: 'venomimp' }], ['broom', 38, roof - 16], ['tome', 52, roof - 19], ['haunt', 40, roof - 3]]) foe(t, x, y, o);
+    for (const [t, x, y, o] of [['zombie', 42, roof - 1], ['tome', 24, G.top + 4], ['imp', 56, roof - 10, { cnSkin: 'venomimp' }], ['broom', 38, roof - 16], ['tome', 52, roof - 19], ['broom', 40, roof - 3]]) foe(t, x, y, o);
     hung.push([37, F.top], [56, F.top]);                                  /* turrets under the divider, hung by mageReset */
     pocket(F.tiers[4]);                                                   /* a pocket off the fifth tier, against the stair's own wall */
   }
@@ -218,7 +218,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     const endL = swings[2].land === stairL[1], lt = endL ? [15, 8] : [49, 8]; ledge(lt[0], lt[1], row); F.tiers.push([lt[0], lt[1], row]);   /* the last tier, off the third landing: the rope */
     ent('check', 15, F.bot - 1); ent('sign', 20, F.bot - 1, { text: 'THE PENDULUM GALLERY. THE CLOCK STILL KEEPS TIME. RIDE THE BOOKS OVER THE GEARS.' });
     deco('clockface', 36, F.top + 3, { hang: true }); deco('gears', 32, F.bot - 2);                  /* the face high over the pit, the wheels turning behind it */
-    for (const [t, x, y, o] of [['armour', 15, F.bot - 1], ['broom', 22, swings[0].row - 3], ['bat', 50, swings[0].row - 2], ['apprentice', 50, swings[0].row - 1], ['tome', 56, swings[1].row + 2],
+    for (const [t, x, y, o] of [['armour', 15, F.bot - 1], ['tome', 22, swings[0].row - 3], ['broom', 50, swings[0].row - 2], ['apprentice', 50, swings[0].row - 1], ['tome', 56, swings[1].row + 2],
       ['broom', 30, swings[1].row - 4], ['armour', 22, swings[1].row - 1], ['tome', 15, swings[2].row + 2], ['imp', 44, swings[2].row - 4, { cnSkin: 'venomimp' }], ['apprentice', 50, swings[2].row - 1], ['tome', 43, row - 3]]) foe(t, x, y, o);
     { const [lx, ll] = swings[1].land, c0 = lx + (ll >> 1) - 1; coins([c0, swings[1].row - 1], [c0 + 1, swings[1].row - 1], [c0 + 2, swings[1].row - 1]); }   /* the second landing pays: the longest ride in the tower */
     F.swings = swings;
@@ -269,7 +269,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     /* THE UPPER LOFT, over the frame: four tiers to the rope into the crown, and a pocket */
     F.tiers = [[44, 9, frame - 3], [34, 9, frame - 6], [24, 10, frame - 9], [14, 9, frame - 12]];
     for (const [x0, len, row] of F.tiers) ledge(x0, len, row);
-    for (const [t, x, y, o] of [['apprentice', 48, frame - 4], ['armour', 28, frame - 10], ['imp', 20, frame - 8, { cnSkin: 'fireimp' }], ['haunt', 40, frame - 9], ['tome', 30, frame - 13], ['tome', 50, frame - 2], ['broom', 18, frame - 15], ['mimic', 38, frame - 7]]) foe(t, x, y, o);
+    for (const [t, x, y, o] of [['apprentice', 48, frame - 4], ['armour', 28, frame - 10], ['imp', 20, frame - 8, { cnSkin: 'fireimp' }], ['broom', 40, frame - 9], ['tome', 30, frame - 13], ['tome', 50, frame - 2], ['broom', 18, frame - 15], ['mimic', 38, frame - 7]]) foe(t, x, y, o);
     pocket(F.tiers[1]);
   }
   // ---- 7. THE OPEN CROWN. The roof is gone. Broken ledges up the last floor to the parapet, and the carpet. ----
@@ -291,8 +291,8 @@ export function buildTowerAscent({ painter, T, TS }) {
     F.tiers.forEach(([x0, len, row], j) => put(who[j % who.length], x0, len, row));
   }
   /* THE SEAMS between floors, where a screen was empty: books over the cistern's poison, the gallery's top, the loft's floor, the crown's parapet */
-  for (const [t, x, y] of [['tome', 28, floors[4].bot - 6], ['tome', 42, floors[4].bot - 7], ['tome', 26, floors[3].top + 3], ['bat', 50, floors[3].top + 2], ['turret', 14, floors[3].bot - 1],
-    ['tome', 20, floors[0].top + 3], ['boo', 46, floors[0].top + 2], ['imp', 22, SKY + 3], ['tome', 48, SKY + 2]]) foe(t, x, y);
+  for (const [t, x, y] of [['tome', 28, floors[4].bot - 6], ['tome', 42, floors[4].bot - 7], ['tome', 26, floors[3].top + 3], ['broom', 50, floors[3].top + 2], ['turret', 14, floors[3].bot - 1],
+    ['tome', 20, floors[0].top + 3], ['broom', 46, floors[0].top + 2], ['imp', 22, SKY + 3], ['tome', 48, SKY + 2]]) foe(t, x, y);
   /* THE DESERT. Through the second door, and the only ground in the sky rows: open sand from one edge of the world to the other,
      under the Caravan's sky (src/sanctum.js drawDesertEnd), with the level's end a few steps on. THE SUNKEN CARAVAN needs this level:
      this is the road into it. Reached only by the portal; the world's own edges end it, not walls. */
