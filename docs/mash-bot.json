@@ -8199,7 +8199,42 @@
   }
  },
  "welltown": {
-  "hash": "5a6da9b921c9",
+  "hash": "8c1fa463703c",
+  "level": {
+   "knight": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 186,
+    "hits": 35,
+    "walked": 100,
+    "lifts": 52,
+    "frames": 12480,
+    "kills": 9,
+    "heroLevel": 30
+   },
+   "warden": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 163,
+    "hits": 31,
+    "walked": 100,
+    "lifts": 52,
+    "frames": 12480,
+    "kills": 12,
+    "heroLevel": 30
+   },
+   "pyro": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 156,
+    "hits": 30,
+    "walked": 100,
+    "lifts": 52,
+    "frames": 12480,
+    "kills": 8,
+    "heroLevel": 30
+   }
+  },
   "boss": {
    "boss": "djinn",
    "wins": 0,
@@ -8397,77 +8432,42 @@
      "chip": []
     }
    ]
-  },
-  "level": {
-   "knight": {
-    "deaths": 1,
-    "minHpPct": 0,
-    "hpLostPct": 170,
-    "hits": 30,
-    "walked": 100,
-    "lifts": 52,
-    "frames": 12480,
-    "kills": 9,
-    "heroLevel": 30
-   },
-   "warden": {
-    "deaths": 1,
-    "minHpPct": 0,
-    "hpLostPct": 173,
-    "hits": 33,
-    "walked": 100,
-    "lifts": 52,
-    "frames": 12480,
-    "kills": 15,
-    "heroLevel": 30
-   },
-   "pyro": {
-    "deaths": 1,
-    "minHpPct": 0,
-    "hpLostPct": 147,
-    "hits": 30,
-    "walked": 100,
-    "lifts": 52,
-    "frames": 12480,
-    "kills": 11,
-    "heroLevel": 30
-   }
   }
  },
  "redgorge": {
-  "hash": "6a09eb9f21c4",
+  "hash": "2fa3a515784a",
   "level": {
    "knight": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 100,
-    "hits": 11,
-    "walked": 100,
-    "lifts": 29,
-    "frames": 6960,
-    "kills": 7,
-    "heroLevel": 31
-   },
-   "warden": {
-    "deaths": 0,
-    "minHpPct": 17,
-    "hpLostPct": 71,
-    "hits": 7,
+    "hpLostPct": 91,
+    "hits": 10,
     "walked": 100,
     "lifts": 29,
     "frames": 6960,
     "kills": 5,
     "heroLevel": 31
    },
-   "pyro": {
+   "warden": {
     "deaths": 0,
-    "minHpPct": 23,
-    "hpLostPct": 63,
-    "hits": 7,
+    "minHpPct": 3,
+    "hpLostPct": 81,
+    "hits": 8,
     "walked": 100,
     "lifts": 29,
     "frames": 6960,
-    "kills": 7,
+    "kills": 6,
+    "heroLevel": 31
+   },
+   "pyro": {
+    "deaths": 0,
+    "minHpPct": 6,
+    "hpLostPct": 80,
+    "hits": 8,
+    "walked": 100,
+    "lifts": 29,
+    "frames": 6960,
+    "kills": 5,
     "heroLevel": 31
    }
   },

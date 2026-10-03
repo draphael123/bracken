@@ -26,7 +26,7 @@ import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed
 import * as SLD from './slide.js';   /* THE BUTT-SLIDE (claude/slide): the hit, the bounce, the dust of down held on a slope */
 import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, aheadTile, slopeRise, slopeGrade } from './slopes.js'; import { slopeTile } from './redraw/ground-slopes.js';   /* a slope in the level's own ground (claude/fairlevel) */
 import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, the vulture and the sand goblin, as pure state machines */
-import * as DF2 from './desert-foes2.js'; import { makeDesertFoes2Hands } from './desert-foes2-hands.js'; import * as DF2A from './redraw/desert_foes2.js'; let DF2H = null; const DYN = { near: 44, far: 120, dy: 60, tell: 0.7, cd: 2.4, flight: 0.65, fuse: 1.0, ring: 36 };   /* THE DYNAMITE BANDIT: lights between near and far px, holds it TELL s, it flies FLIGHT s and lies FUSE s in a RING px (explode's 36) */   /* THE DESERT'S SECOND CAST (claude/desertfoes): the fire and venom scorpions, the sandworm, the gorge's dynamite bandit and shield guard */
+import * as DF2 from './desert-foes2.js'; import { makeDesertFoes2Hands } from './desert-foes2-hands.js'; import * as DF2A from './redraw/desert_foes2.js'; let DF2H = null; const DF2_CORPSE = { firescorpion: 6, venomscorpion: 6, shieldguard: 4, dynamiter: 4 };   /* the frame each reskin lies in (src/redraw/desert_foes2.js) */ const DYN = { near: 44, far: 120, dy: 60, tell: 0.7, cd: 2.4, flight: 0.65, fuse: 1.0, ring: 36 };   /* THE DYNAMITE BANDIT: lights between near and far px, holds it TELL s, it flies FLIGHT s and lies FUSE s in a RING px (explode's 36) */   /* THE DESERT'S SECOND CAST (claude/desertfoes): the fire and venom scorpions, the sandworm, the gorge's dynamite bandit and shield guard */
 import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */
 import { qsPatchAt, qsGameStep } from './quicksand.js';
 import * as DWM from './dune-worm.js'; import { newStorm, stormStep, gustDrift, STORM } from './desert-rules.js';   /* THE DUNE WORM, the caravan's boss (docs/briefs/dune-worm.md), and the storm he calls into his hollow */
@@ -5571,7 +5571,6 @@ function openYardRespawn(dt) {   // in the open yard a straw man is back on his 
   for (const e of enemies) { if (e.alive) continue; e.downT = (e.downT || 0) + dt;
     if (e.downT > 2) { e.downT = 0; e.alive = true; e.hp = e.hp0 || e.maxHp || EHP[e.t] || 20; e.dying = 0; e.flash = 0; e.stagger = 0; e.mode = e.mode0 || e.mode; burst(e.x, e.y - 8, 8, ['#e0c088', '#c9a040'], 40, 0.4); } }
 }
-const DF2_CORPSE = { firescorpion: 6, venomscorpion: 6, shieldguard: 4, dynamiter: 4 };   /* the frame each reskin lies in (src/redraw/desert_foes2.js) */
 function spawnCorpse(e, dir) {
   if (e.t === 'burngob') villageAshes(e);
   if(e.t==='undeadmage')e.lastFrame=UNDEADMAGE_F.dead;
@@ -5658,10 +5657,10 @@ function spawnCorpse(e, dir) {
   }
   if(c.max>.05 && !e.maxHp && !e.mini){c.life+=COMBAT.corpseLinger;c.max=c.life;}
   if (V2_DEATH[e.t] !== undefined && c.t === e.t) c.frame = V2_DEATH[e.t];   /* the redrawn ones have a death of their own */
-  if (e.cnSkin && DF2_CORPSE[e.cnSkin] !== undefined && SPR[e.cnSkin]) { c.t = e.cnSkin; c.frame = DF2_CORPSE[e.cnSkin]; }   /* (claude/desertfoes) a reskin dies in its own skin, not the goblin's */
-  if (DF2H && e.cnSkin) DF2H.onDeath(e);
   corpses.push(c);
   if (deathFx.length < 12) { const fx = deathBurst(materialOf(e.t), e.x, e.y, dir || 1, (e.x * 31 + e.y * 17) | 0, e.h || 16); fx.y0 = e.y - (e.h || 16); deathFx.push(fx); }   /* DEATH BY MATERIAL: bone clatters, armour sheds, a spirit comes apart upward */
+  if (e.cnSkin && DF2_CORPSE[e.cnSkin] !== undefined && SPR[e.cnSkin] && !c.set) { c.t = e.cnSkin; c.frame = DF2_CORPSE[e.cnSkin]; }   /* (claude/desertfoes) a reskin dies in its own skin, not the goblin's (claude/corpses' reskinSet does this for every reskin: then c.set is there and this stands aside) */
+  if (DF2H && e.cnSkin) DF2H.onDeath(e);   /* a fire scorpion dies in its own fire */
 }
 // what the blade does besides cut
 function swordEffect(e) {
