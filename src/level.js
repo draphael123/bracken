@@ -1,3 +1,4 @@
+import { SWEEP_SKINS, sweepSkins } from './goblin-sweep.js';   /* (claude/goblinsweep) NO LIVING GOBLINS past the Goblin Queen: the sprinkled snuffers and the lawn's hound wear skins */
 import { THIN, CHECK_DROP } from './checkpoint-thin.js';
 import { SPRINKLE, PLAN } from './foe-tactics.js';   /* THE SPRINKLE CUT: the halved rows and the designed encounters (see garrison()) */
 import {polishTower,buildTowerAscent} from './tower-ascent.js';
@@ -2459,9 +2460,9 @@ function undercrown() {
   coins([8, 22], [12, 22], [16, 22], [22, 22], [28, 22], [34, 22], [40, 22]);
   ent('sign', 20, 23, { text: 'THREE BLOWS DROP THIS ROOF ON THEM. THE MOUND IT LEAVES IS YOUR WAY UP.' });
   timber(30, 24, 24, 36, 19, { deep: 3 });
-  ent('miner', 28, 23, { face: 1 }); ent('sprig', 34, 23, { face: -1 });
-  ent('propman', 20, 23, { face: 1 });
-  ent('rockgoblin', 40, 23, { face: -1 }); ent('miner', 44, 23, { face: -1 }); ent('sprig', 36, 23, { face: -1 });
+  ent('miner', 28, 23, { face: 1, cnSkin: 'navvy' }); ent('bonegob', 34, 23, { face: -1 });
+  ent('propman', 20, 23, { face: 1, cnSkin: 'timberman' });
+  ent('rockgoblin', 40, 23, { face: -1, cnSkin: 'bonechucker' }); ent('miner', 44, 23, { face: -1, cnSkin: 'navvy' }); ent('shardling', 36, 23, { face: -1 });
   ent('bat', 22, 20); ent('bat', 38, 20);
   ent('deco', 26, 23, { kind: 'barrels' }); ent('deco', 38, 23, { kind: 'wares' }); ent('deco', 12, 23, { kind: 'coffer' });
   
@@ -2481,10 +2482,10 @@ function undercrown() {
   ent('sign', 52, 33, { text: 'THE PROPMAN KEEPS THE TIMBER UP. KILL THE MAN FIRST, THEN CUT THE WOOD.' });
   timber(62, 34, 56, 70, 29, { deep: 2 });
   timber(78, 34, 72, 84, 29, { deep: 2, state: 'cracked' });
-  ent('propman', 68, 33, { face: -1 }); ent('propman', 80, 33, { face: -1 });
-  ent('rockgoblin', 62, 33, { face: -1 }); ent('miner', 74, 33, { face: 1 });
-  ent('sprig', 44, 33, { face: 1 }); ent('sprig', 56, 33, { face: -1 }); ent('miner', 54, 33, { face: -1 });
-  ent('rockgoblin', 44, 33, { face: -1 }); ent('sentry', 66, 33, { section: 'works', range: 9, face: 1 });
+  ent('propman', 68, 33, { face: -1, cnSkin: 'timberman' }); ent('propman', 80, 33, { face: -1, cnSkin: 'timberman' });
+  ent('rockgoblin', 62, 33, { face: -1, cnSkin: 'bonechucker' }); ent('miner', 74, 33, { face: 1, cnSkin: 'navvy' });
+  ent('bonegob', 44, 33, { face: 1 }); ent('shardling', 56, 33, { face: -1 }); ent('miner', 54, 33, { face: -1, cnSkin: 'navvy' });
+  ent('rockgoblin', 44, 33, { face: -1, cnSkin: 'bonechucker' }); ent('sentry', 66, 33, { section: 'works', range: 9, face: 1, cnSkin: 'minewarden' });
   ent('bell', 44, 33, { section: 'works' });
   ent('deco', 64, 33, { kind: 'wares' }); ent('deco', 76, 33, { kind: 'barrels' }); ent('deco', 44, 33, { kind: 'coffer' });
   ent('check', 68, 33);
@@ -2510,12 +2511,12 @@ function undercrown() {
   plat(34, 52, 4);                                                 /* and the step over the gap in the middle of it */
   timber(28, 54, 22, 34, 49, { deep: 2, state: 'going' });         /* the sets stand ON the planks, and the course they hold is the gallery's own roof */
   timber(44, 54, 38, 50, 49, { deep: 2 });
-  ent('propman', 54, 55, { face: -1 }); ent('propman', 70, 55, { face: 1 });
-  ent('rockgoblin', 66, 55, { face: -1 }); ent('rockgoblin', 14, 55, { face: 1 });
-  ent('miner', 74, 55, { face: -1 }); ent('miner', 58, 55, { face: 1 }); ent('sprig', 18, 55, { face: 1 });
+  ent('propman', 54, 55, { face: -1, cnSkin: 'timberman' }); ent('propman', 70, 55, { face: 1, cnSkin: 'timberman' });
+  ent('rockgoblin', 66, 55, { face: -1, cnSkin: 'bonechucker' }); ent('rockgoblin', 14, 55, { face: 1, cnSkin: 'bonechucker' });
+  ent('miner', 74, 55, { face: -1, cnSkin: 'navvy' }); ent('miner', 58, 55, { face: 1, cnSkin: 'navvy' }); ent('bonegob', 18, 55, { face: 1 });
   ent('grub', 82, 55, { face: -1 }); ent('grub', 12, 55, { face: 1 });
   ent('bat', 64, 50); ent('bat', 78, 50); ent('bat', 34, 50);
-  ent('rockgoblin', 60, 55, { face: 1 }); ent('sprig', 76, 55, { face: -1 });
+  ent('rockgoblin', 60, 55, { face: 1, cnSkin: 'bonechucker' }); ent('shardling', 76, 55, { face: -1 });
   ent('check', 62, 55);
   ent('deco', 70, 55, { kind: 'barrels' }); ent('deco', 16, 55, { kind: 'wares' }); ent('deco', 84, 55, { kind: 'coffer' });
   ent('sign', 66, 55, { text: 'GAS SITS IN THE LOW PLACES. SOMETHING OLD LIVES IN THE WATER.' });
@@ -2537,16 +2538,16 @@ function undercrown() {
   boards(30, 44, 112); boards(52, 66, 112); boards(40, 56, 100);
   plat(46, 106, 6); plat(24, 106, 6); plat(68, 106, 6);
   plat(10, 90, 6); plat(17, 94, 6); plat(24, 98, 8); plat(33, 100, 7);   /* the stages down the west wall: off the rope, and onto the top walkway */
-  ent('propman', 36, 111, { face: 1 });   /* he was THE OVERMAN, the stope's mini: cut 2026-09-21 (Daniel). A propman like the rest now */
-  ent('propman', 60, 111, { face: -1 });
-  ent('rockgoblin', 46, 99, { face: 1 }); ent('miner', 54, 99, { face: -1 });
-  ent('rockgoblin', 26, 121, { face: 1 }); ent('miner', 94, 121, { face: -1 }); ent('sprig', 82, 121, { face: -1 });
-  ent('sprig', 32, 111, { face: 1 }); ent('miner', 64, 111, { face: -1 });
+  ent('propman', 36, 111, { face: 1, cnSkin: 'timberman' });   /* he was THE OVERMAN, the stope's mini: cut 2026-09-21 (Daniel). A propman like the rest now */
+  ent('propman', 60, 111, { face: -1, cnSkin: 'timberman' });
+  ent('rockgoblin', 46, 99, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 54, 99, { face: -1, cnSkin: 'navvy' });
+  ent('rockgoblin', 26, 121, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 94, 121, { face: -1, cnSkin: 'navvy' }); ent('bonegob', 82, 121, { face: -1 });
+  ent('shardling', 32, 111, { face: 1 }); ent('miner', 64, 111, { face: -1, cnSkin: 'navvy' });
   ent('check', 46, 105);
   ent('sign', 30, 111, { text: 'THE PROPMEN RESET WHAT YOU CUT. TAKE THEM OFF THE SPAN FIRST; MIND YOUR OWN.' });
   ent('clinger', 7, 96, { face: 1 }); ent('clinger', 95, 104, { face: -1 });
   ent('bat', 40, 92); ent('bat', 62, 92); ent('bat', 52, 94); ent('bat', 30, 96); ent('bat', 74, 96);
-  ent('rockgoblin', 52, 111, { face: -1 }); ent('sprig', 44, 99, { face: 1 });
+  ent('rockgoblin', 52, 111, { face: -1, cnSkin: 'bonechucker' }); ent('bonegob', 44, 99, { face: 1 });
   timber(37, 112, 30, 44, 112, { deep: 1 });
   timber(59, 112, 52, 66, 112, { deep: 1, state: 'cracked' });
   timber(48, 100, 40, 56, 100, { deep: 1 });
@@ -2574,7 +2575,7 @@ function undercrown() {
   coins([108, 118], [114, 117], [120, 118], [126, 117], [132, 118], [138, 117], [117, 114], [118, 114], [129, 114]);
   ent('minerlamp', 102, 121, { lit: true }); ent('minerlamp', 146, 121, { lit: true }); ent('minerlamp', 104, 121, { lit: false });
   ent('deco', 99, 121, { kind: 'barrels' }); ent('deco', 148, 121, { kind: 'wares' });
-  ent('shardling', 103, 121, { face: -1 }); ent('rockgoblin', 144, 121, { face: -1 }); ent('miner', 142, 121, { face: -1 }); ent('shardling', 149, 121, { face: -1 });
+  ent('shardling', 103, 121, { face: -1 }); ent('rockgoblin', 144, 121, { face: -1, cnSkin: 'bonechucker' }); ent('miner', 142, 121, { face: -1, cnSkin: 'navvy' }); ent('shardling', 149, 121, { face: -1 });
   ent('bat', 112, 110); ent('bat', 124, 108); ent('bat', 136, 110);
   // THE WAY DOWN is a shaft off the east bank, into the barrow the miners broke into last and walled up first.
   shaft(144, 6, 122, 130);
@@ -2600,8 +2601,8 @@ function undercrown() {
   ent('check', 86, 140);
   ent('sign', 82, 140, { text: 'THE LAST DRIFT. THE LADDER DOWN IS AT THE FAR END.' });
   ent('minerlamp', 74, 140, { lit: false }); ent('minerlamp', 40, 140, { lit: true }); ent('deco', 62, 140, { kind: 'barrels' });
-  ent('rockgoblin', 68, 140, { face: -1 }); ent('miner', 50, 140, { face: 1 }); ent('sprig', 30, 140, { face: 1 });
-  ent('propman', 58, 140, { face: -1 });
+  ent('rockgoblin', 68, 140, { face: -1, cnSkin: 'bonechucker' }); ent('miner', 50, 140, { face: 1, cnSkin: 'navvy' }); ent('shardling', 30, 140, { face: 1 });
+  ent('propman', 58, 140, { face: -1, cnSkin: 'timberman' });
   timber(44, 141, 36, 54, 136, { deep: 2 });
   coins([78, 139], [70, 139], [62, 139], [54, 139], [46, 139], [38, 139], [30, 139], [22, 139], [16, 139]);
   shaft(10, 6, 141, 166);
@@ -2618,7 +2619,7 @@ function undercrown() {
   ent('sign', 20, 166, { text: 'THE PRINCE\'S TOMB. CUT A SET WHILE HE IS UNDER IT, AND KEEP THE LAMPS LIT.' });
   ent('minerlamp', 12, 166, { lit: true }); ent('minerlamp', 86, 166, { lit: true });
   ent('deco', 24, 166, { kind: 'barrels' }); ent('deco', 78, 166, { kind: 'wares' }); ent('deco', 8, 166, { kind: 'coffer' });
-  ent('sprig', 20, 166, { face: 1 }); ent('rockgoblin', 14, 166, { face: 1 }); ent('miner', 26, 166, { face: 1 });
+  ent('bonegob', 20, 166, { face: 1 }); ent('rockgoblin', 14, 166, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 26, 166, { face: 1, cnSkin: 'navvy' });
   coins([16, 165], [22, 165], [8, 165], [80, 165], [84, 165], [90, 165]);
   // the tomb itself: the sets, each post just OUTSIDE its span so the hand that cuts it is not under the roof it drops
   timber(36, 167, 37, 44, 155, { deep: 1, tomb: true, hp: 2, mound: 1 });
@@ -2650,7 +2651,7 @@ function undercrown() {
     /* THE WORKS BELL, which its own sign has promised since the day the level was built ("everything below here can hear it") and
        which never had an alarm: rung, the gallery's end drops shut over the shaft down, and the works below come up it
        (tools/bells.mjs found it, asking every level what it had asked of Highcrown) */
-    alarms: [{ id: 'works', gates: [[85, 30, 33]], garrison: [{ t: 'miner', x: 83, y: 33 }, { t: 'rockgoblin', x: 80, y: 33 }, { t: 'sprig', x: 82, y: 33 }] }],
+    alarms: [{ id: 'works', gates: [[85, 30, 33]], garrison: [{ t: 'miner', x: 83, y: 33, cnSkin: 'navvy' }, { t: 'rockgoblin', x: 80, y: 33, cnSkin: 'bonechucker' }, { t: 'bonegob', x: 82, y: 33 }] }],
     arena: { x0: 30 * TS, x1: 74 * TS, floor: 167 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'prince', music: 'musDungeon', tint: '#1e2420', tintA: 0.14, fx: 'dust', y0: 144 * TS, y1: 168 * TS },
   };
 }
@@ -7769,7 +7770,6 @@ const MIX = {
   moor: [['harpy', 'crow', 3]],
   waymeet: [['swornsword', 'hedgeknight', 4], ['swornsword', 'heavy', 8]],   /* a KNIGHT'S town: the hedge knight and the heavy, never the drowned watch or a goblin soldier */
   hunt: [['sprig', 'thief', 2], ['archer', 'javelin', 4]],
-  undercrown: [['sprig', 'shardling', 2]],
   deep: [['sailor', 'watch', 4]],
   skyship: [['kite', 'crow', 2]],
 };
@@ -8497,3 +8497,4 @@ for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.b
 
 import { applyStuckSigns } from './stuck-spots.js';   /* THE STUCK-POINT SIGNS (claude/stuckfix): a sign at the point of use, kept in src/stuck-spots.js */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => applyStuckSigns(b(...a), lv.id); }
+for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && SWEEP_SKINS[lv.id]) lv.build = (...a) => sweepSkins(b(...a), lv.id); }   /* (claude/goblinsweep) the sprinkled goblins' reskins: the last wrapper, so the sprinkler's foes are seen */
