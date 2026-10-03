@@ -24301,7 +24301,7 @@ function updateBore(dt) {
    drops on somebody standing in it. The tide itself is the street pool's own (the streetTide loop in updateMovers), and the Bore's is updateBore's. */
 function updateTideGates(dt) {
   if (!L.tidegates) return;
-  const sp = (L.pools || []).find(q => q.streetTide), k = sp && sp.lastK !== undefined ? sp.lastK : 0.5;
+  const sp = (L.pools || []).find(q => q.streetTide), k = L.causeTide && CT ? CT.k : sp && sp.lastK !== undefined ? sp.lastK : 0.5;   /* (the Causeway's tide is CT's, the Long Water's the street pool's) */
   for (const pr of props) { if (pr.t !== 'tidegate') continue;
     const want = pr.mode === 'high' ? k >= 0.6 : pr.mode === 'low' ? k <= 0.4 : !!(bore && bore.x !== null && bore.x < pr.col * TS + 8);
     const shut = L.grid[pr.y0 * LW + pr.col] === T.PORT; pr.open = !shut;

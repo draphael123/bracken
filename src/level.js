@@ -6894,6 +6894,8 @@ function theDrownedCauseway() {
   sign(426, R - 1, 'THE SPANS ARE DOWN. JUMP THEM AT LOW WATER, SWIM THEM AT HIGH. THE TOWER BELL TURNS IT.');
   block(462, 466, RH, 23); bell(464, RH - 1);
   net(461, 461, RH, 23);
+  /* THE BOOM (claude/ruleuse, the rule-use audit: 'either tide passes, so the bells were never needed'): a boom of chained logs across the road, shut down on it at low water and lifted by the flood. The ONE place the road needs a chosen tide - high - and the tower bell, fifteen tiles back, is the way to ask for it (src/main.js updateTideGates). Everywhere else either tide still passes. */
+  for (let y = 0; y < R; y++) set(479, y, T.PORT); ent('tidegate', 479, 16, { y0: 0, y1: R - 1, mode: 'high' });
   ent('petrel', 466, 12); ent('petrel', 446, 12); ent('petrel', 486, 10);
   ent('feeler', 444, R - 1); ent('feeler', 482, R - 1); ent('crab', 448, R - 1, { face: -1 }); ent('tideguard', 485, R - 1, { face: -1 }); ent('scout', 468, RH - 1, { face: -1 });
   ent('eel', 454, 36); ent('eel', 436, 34); ent('urchin', 455, 38);
@@ -6974,7 +6976,7 @@ function theDrownedCauseway() {
        their rock; crabs on the flats at low water; buoys riding the tide in the open water; the hamlet's stilts */
     causeLife: { gulls: [[88, 11], [150, 13], [372, 7], [498, 12], [541, 2]], smoke: [[106, 19]], seals: [[472, 475, 30]], crabs: [[81, 94, 28], [335, 338, 30], [389, 391, 30], [414, 420, 30]],
       buoys: [127, 135, 355, 395, 436, 453], stilts: [[85, 18, 28], [90, 18, 28]] },
-    music: 'causeway', duskStart: 99999, duskLen: 1, night: false,
+    music: 'causeway', duskStart: 99999, duskLen: 1, night: false, tidegates: true,
 
     palette: { set: 'shore', sky: 'storm', far: 'causeway', mid: 'causeway', near: 'reef', noFg: true, dress: 'shore', haze: 'rgba(120,150,140,0.14)',
       grass: '#5f7a68', grassL: '#7e9a86', grassD: '#40564a', dirt: '#4e5856', dirtL: '#66706c', dirtD: '#343c3a', canopy: ['#1e2e2c', '#2c403c', '#3a524c', '#506a62'] },
